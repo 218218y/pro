@@ -1,0 +1,5704 @@
+/*
+ * React UI Styles
+ *
+ * Sidebar UI is scoped to #reactSidebarRoot.
+ * Viewer overlays (undo/redo, camera, notes, toasts, modal) are scoped to body.wp-ui-react.
+ * Consolidated duplicates (no visual change expected).
+ */
+
+/* --------------------------------------------------------------------------
+ * React header tweaks
+ * Keep it visually identical to the legacy header buttons (see pro_styles.css)
+ * -------------------------------------------------------------------------- */
+
+#reactSidebarRoot .wp-r-header {
+  /* Quick tuning knobs (feel free to tweak):
+   * --wp-header-btn-icon-gap: spacing between the icon and the text inside header buttons
+   * --wp-header-logo-edge-gap: distance from the logo to the edge of the sidebar header
+   */
+  --wp-header-btn-icon-gap: 0px;
+  --wp-header-logo-edge-gap: 0px;
+  --wp-header-action-col-width: 50px;
+  --wp-header-btn-inline-pad: 6px;
+
+  /* In RTL, inline-start is the RIGHT side, so this pulls the logo closer to the right edge. */
+  padding-inline-start: var(--wp-header-logo-edge-gap);
+}
+
+#reactSidebarRoot .wp-r-header .header-actions {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: flex-start;
+  /* In RTL, inline-end is the LEFT side. Add a small inset so the buttons don't hug the tab edge. */
+  margin-inline-end: 8px;
+}
+
+#reactSidebarRoot .wp-r-header .wp-r-header-actions-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: stretch;
+  /* All header action buttons use the same column width (match PDF/Load) */
+  width: var(--wp-header-action-col-width);
+  flex: 0 0 var(--wp-header-action-col-width);
+  box-sizing: border-box;
+}
+
+#reactSidebarRoot .wp-r-header .wp-r-header-actions-col--export {
+  /* Export shortcuts column */
+  width: var(--wp-header-action-col-width);
+  flex: 0 0 var(--wp-header-action-col-width);
+  /* Align the PDF shortcut with the top row ("סקיצה") instead of centering it */
+  justify-content: flex-start;
+  align-items: stretch;
+}
+
+/* Site2 gate button (main site only): narrow column to the RIGHT of the export buttons */
+#reactSidebarRoot .wp-r-header .wp-r-header-actions-col--gate {
+  width: var(--wp-header-action-col-width);
+  flex: 0 0 var(--wp-header-action-col-width);
+  justify-content: flex-start;
+  align-items: stretch;
+}
+
+#reactSidebarRoot .wp-r-header .wp-r-header-export-row {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+#reactSidebarRoot .wp-r-header .wp-r-header-actions-col--main {
+  width: var(--wp-header-action-col-width);
+  flex: 0 0 var(--wp-header-action-col-width);
+}
+
+#reactSidebarRoot .wp-r-header-logo {
+  max-height: 70px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Header button polish: consistent icon alignment + clear hover */
+#reactSidebarRoot .wp-r-header .header-btn-small {
+  box-sizing: border-box;
+  height: 29px; /* 2 rows + gap must fit inside header(85px) minus padding */
+  padding: 4px var(--wp-header-btn-inline-pad);
+  font-size: 0.78rem;
+  border-radius: 10px; /* match the PDF icon button (rounded square, not a pill) */
+  gap: var(--wp-header-btn-icon-gap);
+  justify-content: flex-start;
+  text-overflow: ellipsis;
+}
+
+#reactSidebarRoot .wp-r-header .header-btn-small:hover:not(:disabled) {
+  filter: brightness(0.95);
+}
+
+#reactSidebarRoot .wp-r-header .header-btn-small i {
+  width: 18px;
+  flex: 0 0 18px;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Sketch button (neutral) */
+#reactSidebarRoot .wp-r-header .btn-header-sketch {
+  width: 100%;
+  min-width: 0;
+  padding: 4px var(--wp-header-btn-inline-pad);
+  justify-content: center;
+  align-items: center;
+  line-height: 1;
+  background: #fff;
+}
+
+#reactSidebarRoot .wp-r-header .btn-header-sketch.wp-r-btn-active {
+  background: #d1d5db;
+  border-color: #6b7280;
+  color: #6b7280;
+}
+
+#reactSidebarRoot .wp-r-header .btn-header-sketch i {
+  color: #f97316;
+  font-size: 1.15rem;
+  width: 100%;
+  flex: 1 1 auto;
+  margin-inline-end: 0;
+}
+
+/* Save button (keep the existing btn-save green background; only tighten border color) */
+#reactSidebarRoot .wp-r-header .btn-header-save.btn-save {
+  width: 100%;
+  min-width: 0;
+  padding: 4px var(--wp-header-btn-inline-pad);
+  justify-content: center;
+  align-items: center;
+  line-height: 1;
+  border: 1px solid #059669;
+}
+
+#reactSidebarRoot .wp-r-header .btn-header-save.btn-save i {
+  font-size: 1.15rem;
+  width: 100%;
+  flex: 1 1 auto;
+  margin-inline-end: 0;
+}
+
+/* Colored header exports (match the "Export" tab vibe, but as compact pills) */
+#reactSidebarRoot .wp-r-header .btn-header-export-sketch {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.35);
+  color: #1d4ed8;
+}
+
+#reactSidebarRoot .wp-r-header .btn-header-export-sketch:hover:not(:disabled) {
+  background: rgba(59, 130, 246, 0.16);
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+#reactSidebarRoot .wp-r-header .btn-header-export-sketch i {
+  color: #3b82f6;
+}
+
+/* Site2 tabs gate (main site only): compact icon-only button */
+#reactSidebarRoot .wp-r-header .btn-header-tabs-toggle {
+  width: 100%;
+  min-width: 0;
+  height: 29px;
+  padding: 4px var(--wp-header-btn-inline-pad);
+  border-radius: 10px;
+  justify-content: center;
+  align-items: center;
+  line-height: 1;
+  background: rgba(107, 114, 128, 0.08);
+  border-color: rgba(107, 114, 128, 0.35);
+}
+
+#reactSidebarRoot .wp-r-header .btn-header-tabs-toggle i {
+  color: #6b7280;
+  font-size: 1.15rem;
+  width: 100%;
+  flex: 1 1 auto;
+  margin-inline-end: 0;
+}
+
+#reactSidebarRoot .wp-r-header .btn-header-tabs-toggle:hover:not(:disabled) {
+  background: rgba(107, 114, 128, 0.12);
+  border-color: rgba(107, 114, 128, 0.5);
+}
+
+#reactSidebarRoot .wp-r-header .btn-header-tabs-toggle.wp-r-btn-active {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.5);
+}
+
+#reactSidebarRoot .wp-r-header .btn-header-tabs-toggle.wp-r-btn-active i {
+  color: #10b981;
+}
+
+/* Reset to default project (main site only): same compact icon-only size as Site2 gate */
+#reactSidebarRoot .wp-r-header .btn-header-reset-default {
+  width: 100%;
+  min-width: 0;
+  height: 29px;
+  padding: 4px var(--wp-header-btn-inline-pad);
+  border-radius: 10px;
+  justify-content: center;
+  align-items: center;
+  line-height: 1;
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+#reactSidebarRoot .wp-r-header .btn-header-reset-default i {
+  color: #ef4444;
+  font-size: 1.15rem;
+  width: 100%;
+  flex: 1 1 auto;
+  margin-inline-end: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#reactSidebarRoot .wp-r-header .btn-header-reset-default:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+/* PDF shortcut: compact icon-only button (centered next to the 2-row main column) */
+#reactSidebarRoot .wp-r-header .btn-header-export-pdf {
+  width: 100%;
+  min-width: 0;
+  padding: 4px var(--wp-header-btn-inline-pad);
+  justify-content: center;
+  background: rgba(220, 38, 38, 0.08);
+  border-color: rgba(220, 38, 38, 0.35);
+  color: #b91c1c;
+  align-items: center;
+}
+
+#reactSidebarRoot .wp-r-header .btn-header-export-pdf i {
+  color: #dc2626;
+  font-size: 1.15rem;
+  width: 100%;
+  flex: 1 1 auto;
+  margin-inline-end: 0;
+}
+
+#reactSidebarRoot .wp-r-header .btn-header-export-pdf:hover:not(:disabled) {
+  background: rgba(220, 38, 38, 0.12);
+  border-color: rgba(220, 38, 38, 0.5);
+}
+
+/* Load project shortcut: compact icon-only button (same size as PDF, blue folder) */
+#reactSidebarRoot .wp-r-header .btn-header-export-load {
+  width: 100%;
+  min-width: 0;
+  padding: 4px var(--wp-header-btn-inline-pad);
+  justify-content: center;
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.35);
+  color: #1d4ed8;
+  align-items: center;
+}
+
+#reactSidebarRoot .wp-r-header .btn-header-export-load i {
+  color: #3b82f6;
+  font-size: 1.15rem;
+  width: 100%;
+  flex: 1 1 auto;
+  margin-inline-end: 0;
+}
+
+#reactSidebarRoot .wp-r-header .btn-header-export-load:hover:not(:disabled) {
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+#reactSidebarRoot .wp-r-header .btn-header-export-dual {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.35);
+  color: #047857;
+}
+
+#reactSidebarRoot .wp-r-header .btn-header-export-dual:hover:not(:disabled) {
+  background: rgba(16, 185, 129, 0.16);
+  border-color: rgba(16, 185, 129, 0.5);
+}
+
+#reactSidebarRoot .wp-r-header .btn-header-export-dual i {
+  color: #10b981;
+}
+
+/* --------------------------------------------------------------------------
+ * Cloud sync panel (Export tab) layout
+ * -------------------------------------------------------------------------- */
+
+#reactSidebarRoot .wp-r-cloudsync-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+#reactSidebarRoot .wp-r-cloudsync-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+}
+
+#reactSidebarRoot .wp-r-cloudsync-mainbtn {
+  width: 100%;
+  justify-content: center;
+}
+
+#reactSidebarRoot .wp-r-cloudsync-subbtn {
+  /* Requested: same width as the main room buttons */
+  width: 100%;
+  justify-content: center;
+}
+/* --------------------------------------------------------------------------
+ * Visibility & layout
+ * -------------------------------------------------------------------------- */
+
+#reactSidebarRoot {
+  display: none;
+  height: 100%;
+}
+
+body.wp-ui-react #reactSidebarRoot {
+  display: block;
+  height: 100%;
+}
+
+body.wp-ui-react #sidebar > :not(#reactSidebarRoot) {
+  display: none !important;
+}
+
+#reactSidebarRoot .wp-react {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+#reactSidebarRoot .wp-r-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* --------------------------------------------------------------------------
+ * React-only component hooks
+ * -------------------------------------------------------------------------- */
+
+#reactSidebarRoot .wp-r-btn-small i {
+  margin-inline-end: 6px;
+}
+
+#reactSidebarRoot .wp-r-section-transparent {
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+/* --------------------------------------------------------------------------
+ * Structure tab (legacy-like, but cleaner)
+ * -------------------------------------------------------------------------- */
+
+#reactSidebarRoot .wp-r-structure-head {
+  background: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+#reactSidebarRoot .wp-r-restore-pill:hover {
+  filter: brightness(0.99);
+}
+
+#reactSidebarRoot .wp-r-restore-pill-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#reactSidebarRoot .wp-r-restore-text {
+  font-size: 0.95rem;
+}
+
+#reactSidebarRoot .wp-r-restore-time,
+#reactSidebarRoot .wp-r-restore-time-inline {
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+#reactSidebarRoot .wp-r-project-name-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #334155;
+  margin: 2px 0 6px;
+}
+
+#reactSidebarRoot .wp-r-project-input--compact {
+  margin-bottom: 10px;
+}
+
+#reactSidebarRoot .wp-r-project-io-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+#reactSidebarRoot .wp-r-project-io-row .wp-r-io-btn {
+  width: auto;
+  min-width: 120px;
+}
+
+#reactSidebarRoot .wp-r-savedmodels {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+#reactSidebarRoot .wp-r-savedmodels-select {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+#reactSidebarRoot .wp-r-savedmodels-toggle {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  padding: 10px 10px;
+  cursor: pointer;
+  text-align: right;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform 0.08s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
+}
+
+#reactSidebarRoot .wp-r-savedmodels-toggle:hover {
+  box-shadow: var(--shadow-md);
+}
+
+#reactSidebarRoot .wp-r-savedmodels-toggle:active {
+  transform: translateY(1px);
+  box-shadow: var(--shadow-sm);
+}
+
+#reactSidebarRoot .wp-r-savedmodels-toggle[aria-expanded='true'] {
+  background: #f0f9ff;
+  border-color: #93c5fd;
+  box-shadow:
+    inset 0 0 0 1px rgba(147, 197, 253, 0.65),
+    var(--shadow-sm);
+}
+
+#reactSidebarRoot .wp-r-savedmodels-toggle:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+
+#reactSidebarRoot .wp-r-savedmodels-rowactions {
+  display: flex;
+  gap: 4px;
+  direction: ltr;
+  align-items: center;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  /* Fill the fixed action column so icon stacks line up perfectly across presets and user models */
+  width: 100%;
+  min-width: 152px;
+  justify-self: stretch;
+}
+
+#reactSidebarRoot .wp-r-savedmodels-rowicon {
+  min-width: 34px;
+  padding: 6px 8px !important;
+}
+
+#reactSidebarRoot .wp-r-savedmodels-rowicon[aria-disabled='true'] {
+  opacity: 0.55;
+}
+
+#reactSidebarRoot .wp-r-savedmodels-list--reorderable {
+  /* Helps the browser understand this is a drag surface */
+  user-select: none;
+}
+
+#reactSidebarRoot .wp-r-savedmodels-dndhint {
+  position: relative;
+  background: #fff;
+  padding: 6px 10px;
+  font-size: 12px;
+  opacity: 0.75;
+  border-bottom: 1px dashed #e5e7eb;
+}
+
+#reactSidebarRoot .wp-r-savedmodels-row--draggable {
+  cursor: grab;
+}
+
+#reactSidebarRoot .wp-r-savedmodels-row--draggable:active {
+  cursor: grabbing;
+}
+
+#reactSidebarRoot .wp-r-savedmodels-row--dragging {
+  opacity: 0.45;
+}
+
+#reactSidebarRoot .wp-r-savedmodels-row--dropbefore {
+  box-shadow: inset 0 3px 0 0 #0ea5e9;
+}
+
+#reactSidebarRoot .wp-r-savedmodels-row--dropafter {
+  box-shadow: inset 0 -3px 0 0 #0ea5e9;
+}
+
+#reactSidebarRoot .wp-r-savedmodels-dropend {
+  height: 16px;
+}
+
+#reactSidebarRoot .wp-r-savedmodels-dropend--active {
+  box-shadow: inset 0 -3px 0 0 #0ea5e9;
+}
+
+#reactSidebarRoot .wp-r-savedmodels-emptydrop {
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+#reactSidebarRoot .wp-r-savedmodels-emptydrop--active {
+  border-color: #0ea5e9;
+  box-shadow: inset 0 0 0 2px rgba(14, 165, 233, 0.25);
+  background: #f0f9ff;
+}
+
+#reactSidebarRoot .wp-r-savedmodels-arrow[aria-disabled='true'] {
+  opacity: 0.55;
+}
+
+#reactSidebarRoot .wp-r-savedmodels-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  direction: rtl;
+  gap: 8px;
+  align-items: stretch;
+  margin-top: 6px;
+}
+
+#reactSidebarRoot .wp-r-savedmodels-btn {
+  margin: 0 !important;
+  font-size: 0.8rem !important;
+  padding: 8px 10px !important;
+  border-radius: 10px;
+}
+
+#reactSidebarRoot .wp-r-savedmodels-arrows {
+  display: flex;
+  gap: 5px;
+}
+
+#reactSidebarRoot .wp-r-savedmodels-arrow {
+  margin: 0 !important;
+  flex: 1;
+  padding: 8px 0 !important;
+  border-radius: 10px;
+}
+
+#reactSidebarRoot .wp-r-savedmodels-arrow i {
+  font-size: 1rem;
+}
+
+#reactSidebarRoot .control-section select {
+  width: 100%;
+}
+
+/* Wardrobe type selector: 2 big buttons (פתיחה/הזזה) with the original type-option styling,
+   plus a compact material row (סנדביץ/מלמין) underneath. */
+#reactSidebarRoot .wp-r-wardrobe-type-selector {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 6px;
+}
+
+#reactSidebarRoot .wp-r-wardrobe-type-selector .wp-r-wardrobe-type-row,
+#reactSidebarRoot .wp-r-wardrobe-type-selector .wp-r-wardrobe-material-row {
+  display: flex;
+  gap: 12px;
+  direction: rtl;
+  width: 100%;
+}
+
+#reactSidebarRoot .wp-r-wardrobe-type-selector .wp-r-material-option {
+  min-height: 34px;
+  padding: 8px 10px;
+  font-size: 0.82rem;
+}
+
+#reactSidebarRoot .wp-r-single-door-selector {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 10px;
+  direction: rtl;
+}
+
+#reactSidebarRoot .wp-r-single-door-selector .wp-r-type-option {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 56px;
+  padding: 12px 10px;
+  gap: 8px;
+}
+
+#reactSidebarRoot .wp-r-single-door-selector .wp-r-btn-label {
+  font-size: 0.95em;
+  white-space: normal;
+  line-height: 1.15;
+  text-align: center;
+}
+
+#reactSidebarRoot .wp-r-single-door-selector.wp-r-single-door-7 .wp-r-type-option {
+  padding: 10px 8px;
+  gap: 6px;
+  font-size: 0.92em;
+}
+
+#reactSidebarRoot .wp-r-single-door-selector.wp-r-single-door-7 .wp-r-type-icon {
+  font-size: 0.75em;
+}
+
+/* 3-door cabinet: make single-door position buttons less tall (UX request). */
+#reactSidebarRoot .wp-r-single-door-selector.wp-r-single-door-3 .wp-r-type-option {
+  min-height: 44px;
+  padding: 10px 10px;
+  gap: 6px;
+}
+
+#reactSidebarRoot .wp-r-single-door-selector.wp-r-single-door-3 .wp-r-btn-label {
+  font-size: 0.92em;
+}
+
+/* Structure (body split) selector: stack options vertically and span full width. */
+#reactSidebarRoot .type-selector.wp-r-structure-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+#reactSidebarRoot .wp-r-structure-selector .wp-r-type-option {
+  width: 100%;
+  padding: 0 10px; /* איפוס הריפוי האנכי */
+  height: 42px; /* קביעת גובה קבוע */
+  min-height: 42px; /* דריסת הגדרות גובה מינימלי קודמות */
+  font-size: 0.85rem; /* התאמת גודל הטקסט לגובה החדש */
+  line-height: 1; /* מירכוז הטקסט */
+}
+
+#reactSidebarRoot .wp-r-input-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#reactSidebarRoot .wp-r-input {
+  flex: 1;
+  min-width: 0;
+}
+
+#reactSidebarRoot .wp-r-input-row--with-addon {
+  display: grid;
+  /* Input gets most of the width; the mini link badge column is intentionally compact. */
+  grid-template-columns: 1fr var(--wp-r-link-badge-width, 78px);
+  align-items: center;
+  gap: 6px;
+  direction: rtl;
+}
+
+#reactSidebarRoot .wp-r-input-addon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+
+#reactSidebarRoot .wp-r-input-addon--spacer {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#reactSidebarRoot .wp-r-input-row--with-addon .wp-r-input {
+  width: 100%;
+}
+
+#reactSidebarRoot .wp-r-input-row--with-addon input[type='number'] {
+  /* Give the digits a bit more room (3+ digits) while keeping the field visually identical. */
+  padding-inline: 8px;
+}
+
+#reactSidebarRoot .wp-r-input-addon .wp-r-mini-link-toggle {
+  width: 100%;
+  justify-content: center;
+}
+
+#reactSidebarRoot .wp-r-dims-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas:
+    'width doors'
+    'depth height';
+  gap: 14px 12px;
+  direction: ltr;
+}
+
+#reactSidebarRoot .wp-r-dims-grid.wp-r-dims-grid--chest {
+  grid-template-areas:
+    'height drawers'
+    'depth width';
+}
+
+#reactSidebarRoot .wp-r-dims-grid > div {
+  direction: rtl;
+}
+
+#reactSidebarRoot .wp-r-dims-doors {
+  grid-area: doors;
+}
+
+#reactSidebarRoot .wp-r-dims-drawers {
+  grid-area: drawers;
+}
+
+#reactSidebarRoot .wp-r-dims-grid.wp-r-dims-grid--chest .wp-r-dims-drawers {
+  /* "מספר מגירות" – קצת יותר צר כדי שלא יאכל את כל השורה */
+  width: min(220px, 100%);
+  justify-self: end;
+}
+
+#reactSidebarRoot .wp-r-dims-width {
+  grid-area: width;
+}
+
+#reactSidebarRoot .wp-r-dims-height {
+  grid-area: height;
+}
+
+#reactSidebarRoot .wp-r-dims-depth {
+  grid-area: depth;
+}
+
+/* "מידות מיוחדות לפי תא" – שורה אחת (RTL): רוחב | גובה | עומק */
+#reactSidebarRoot .wp-r-cell-dims-row {
+  display: flex;
+  flex-direction: row;
+  direction: rtl;
+  gap: 12px;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+}
+
+#reactSidebarRoot .wp-r-cell-dims-row > div {
+  flex: 1;
+  min-width: 0;
+}
+
+#reactSidebarRoot .wp-r-step-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--panel-bg);
+  color: var(--text-main);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+}
+
+#reactSidebarRoot .wp-r-step-btn:hover {
+  background: var(--input-bg);
+}
+
+#reactSidebarRoot .wp-r-step-btn:active {
+  transform: translateY(1px);
+}
+
+#reactSidebarRoot .wp-r-link-btn {
+  margin-top: 6px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  opacity: 0.95;
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 7px 10px;
+  white-space: nowrap;
+  gap: 6px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition:
+    transform 0.06s ease,
+    box-shadow 0.12s ease,
+    background 0.12s ease,
+    border-color 0.12s ease,
+    color 0.12s ease;
+}
+
+#reactSidebarRoot .wp-r-link-btn:hover {
+  opacity: 1;
+  color: var(--text-main);
+  border-color: rgba(59, 130, 246, 0.55);
+  background: rgba(59, 130, 246, 0.06);
+  box-shadow:
+    0 1px 0 rgba(15, 23, 42, 0.04),
+    0 6px 16px rgba(15, 23, 42, 0.06),
+    0 0 0 3px rgba(59, 130, 246, 0.12);
+  transform: translateY(-1px);
+}
+
+#reactSidebarRoot .wp-r-link-btn:focus-visible {
+  outline: none;
+  border-color: rgba(59, 130, 246, 0.65);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+}
+
+#reactSidebarRoot .wp-r-link-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.03);
+}
+
+#reactSidebarRoot .wp-r-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+#reactSidebarRoot .wp-r-label-row > label {
+  margin: 0;
+  line-height: 1.2;
+}
+
+#reactSidebarRoot .wp-r-label-addon {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+#reactSidebarRoot .wp-r-mini-link-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  /* Taller pill = easier to click */
+  padding: 6px 8px;
+  min-height: 28px;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  background: var(--panel-bg);
+  color: var(--text-main);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  touch-action: manipulation;
+  transition:
+    transform 0.06s ease,
+    box-shadow 0.12s ease,
+    background 0.12s ease,
+    border-color 0.12s ease,
+    color 0.12s ease,
+    opacity 0.12s ease;
+}
+
+#reactSidebarRoot .wp-r-mini-link-toggle i {
+  font-size: 0.85em;
+  opacity: 0.95;
+}
+
+#reactSidebarRoot .wp-r-mini-link-toggle--auto {
+  background: rgba(0, 0, 0, 0.03);
+  color: var(--text-secondary);
+  opacity: 0.8;
+}
+
+#reactSidebarRoot .wp-r-mini-link-toggle--manual {
+  background: rgba(59, 130, 246, 0.06);
+  border-color: rgba(59, 130, 246, 0.45);
+}
+
+#reactSidebarRoot .wp-r-mini-link-toggle:hover {
+  opacity: 1;
+  transform: translateY(-1px);
+  box-shadow:
+    0 1px 0 rgba(15, 23, 42, 0.04),
+    0 6px 16px rgba(15, 23, 42, 0.06);
+}
+
+#reactSidebarRoot .wp-r-mini-link-toggle:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.03);
+}
+
+#reactSidebarRoot .wp-r-mini-link-toggle:focus-visible {
+  outline: none;
+  border-color: rgba(59, 130, 246, 0.65);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+}
+
+#reactSidebarRoot .wp-r-note {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 8px;
+}
+
+/* --------------------------------------------------------------------------
+ * Sketch/door edit-mode helpers (React)
+ * -------------------------------------------------------------------------- */
+
+#reactSidebarRoot .wp-r-editmode-toggle.type-option--compact.type-option--iconrow {
+  min-height: 42px;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+}
+
+/* Design tab: "חיתוך דלתות ידני" button should be noticeably shorter */
+#reactSidebarRoot .wp-r-split-custom-btn.wp-r-editmode-toggle.type-option--compact.type-option--iconrow {
+  min-height: 28px;
+  padding: 6px 12px;
+}
+
+#reactSidebarRoot .wp-r-editmode-block .wp-r-editmode-toggle {
+  width: 100%;
+}
+
+#reactSidebarRoot .wp-r-editmode-toggle.wp-r-editmode-toggle--fullrow {
+  width: 100%;
+}
+
+#reactSidebarRoot .wp-r-editmode-btn i {
+  margin-inline-end: 6px;
+}
+
+#reactSidebarRoot .wp-r-editmode-hint {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.25;
+}
+
+/* --------------------------------------------------------------------------
+ * Stage 2: Components + tokens (no inline styles)
+ * -------------------------------------------------------------------------- */
+
+#reactSidebarRoot .wp-r-tabs {
+  user-select: none;
+}
+
+#reactSidebarRoot .wp-r-label {
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+#reactSidebarRoot .wp-r-type-selector {
+  margin-bottom: 0;
+  gap: 8px;
+}
+
+#reactSidebarRoot .wp-r-custom-color {
+  background: #f1f5f9;
+  padding: var(--wp-r-space-4);
+  border-radius: var(--radius-md);
+  margin-top: var(--wp-r-space-4);
+  border: 1px dashed #cbd5e1;
+}
+
+/* Attach the "יצירת גוון חדש" panel to its toggle button (no white gap) */
+#reactSidebarRoot .btn-add-color.is-open {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+#reactSidebarRoot .btn-add-color.is-open + .wp-r-custom-color {
+  margin-top: 0;
+  border-top: 0;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+/* --------------------------------------------------------------------------
+ * Design tab: "יצירת גוון חדש" layout (palette + texture side-by-side)
+ * -------------------------------------------------------------------------- */
+
+#reactSidebarRoot .wp-r-custom-picker-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--wp-r-space-4);
+  align-items: start;
+  direction: rtl;
+}
+
+#reactSidebarRoot .wp-r-custom-picker-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wp-r-space-2);
+}
+
+#reactSidebarRoot .wp-r-custom-picker-title {
+  font-weight: 800;
+  color: #334155;
+  font-size: var(--wp-r-font-sm);
+  text-align: center;
+}
+
+#reactSidebarRoot .wp-r-custom-picker-col-palette {
+  text-align: center;
+}
+
+#reactSidebarRoot .wp-r-custom-picker-col-palette .wp-r-color-row {
+  justify-content: center;
+}
+
+#reactSidebarRoot .wp-r-custom-picker-col-texture {
+  text-align: center;
+}
+
+#reactSidebarRoot .wp-r-upload-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: stretch;
+}
+
+#reactSidebarRoot .wp-r-file-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+#reactSidebarRoot .wp-r-file-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  cursor: pointer;
+  font-weight: 800;
+  font-size: var(--wp-r-font-sm);
+  color: #0f172a;
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.06);
+  user-select: none;
+  width: 100%;
+  box-sizing: border-box;
+  justify-content: center;
+}
+
+#reactSidebarRoot .wp-r-file-btn:hover {
+  background: #f8fafc;
+}
+
+#reactSidebarRoot .wp-r-file-btn:active {
+  transform: translateY(1px);
+}
+
+#reactSidebarRoot .wp-r-file-name {
+  font-size: var(--wp-r-font-xs);
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+@media (max-width: 360px) {
+  #reactSidebarRoot .wp-r-custom-picker-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #reactSidebarRoot .wp-r-custom-picker-col-texture {
+    text-align: center;
+  }
+
+  #reactSidebarRoot .wp-r-upload-controls {
+    align-items: stretch;
+  }
+}
+
+#reactSidebarRoot .wp-r-muted {
+  color: var(--text-secondary);
+  font-size: var(--wp-r-font-sm);
+}
+
+#reactSidebarRoot .wp-r-color-row {
+  display: flex;
+  gap: var(--wp-r-space-3);
+  width: 100%;
+}
+
+#reactSidebarRoot .wp-r-color-input {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 42px;
+  width: 100%;
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  background: transparent;
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.06);
+  box-sizing: border-box;
+}
+
+#reactSidebarRoot .wp-r-color-input::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+#reactSidebarRoot .wp-r-color-input::-webkit-color-swatch {
+  border: none;
+  border-radius: var(--radius-sm);
+}
+
+#reactSidebarRoot .wp-r-color-input::-moz-color-swatch {
+  border: none;
+  border-radius: var(--radius-sm);
+}
+
+#reactSidebarRoot .wp-r-upload-ok {
+  margin-top: var(--wp-r-space-1);
+  font-size: var(--wp-r-font-xs);
+  font-weight: 700;
+  color: var(--save-color);
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+#reactSidebarRoot .wp-r-btn-compact {
+  padding: 8px 10px;
+  font-size: var(--wp-r-font-sm);
+}
+
+#reactSidebarRoot .wp-r-section-title-warn {
+  color: var(--wp-r-warn);
+  border-color: var(--wp-r-warn);
+}
+
+#reactSidebarRoot .wp-r-editmode-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: var(--wp-r-space-2);
+}
+
+#reactSidebarRoot .wp-r-toggle-divider {
+  /* Modern, clean separator (hairline + soft fade on edges).
+   * Implemented as a standalone row between toggle/buttons, with symmetric spacing.
+   */
+  margin: var(--wp-r-space-3) 12px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--border-color) 18%,
+    var(--border-color) 82%,
+    transparent
+  );
+  opacity: 0.75;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+#reactSidebarRoot .wp-r-placeholder-text {
+  color: var(--text-secondary);
+  font-size: var(--wp-r-font-md);
+  line-height: var(--wp-r-line-md);
+}
+
+#reactSidebarRoot .wp-r-icon-btn {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#reactSidebarRoot .wp-r-icon-btn i {
+  margin: 0;
+}
+
+#reactSidebarRoot .wp-r-color-hint {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  font-size: var(--wp-r-font-sm);
+  color: var(--text-secondary);
+}
+
+#reactSidebarRoot .wp-r-file-row-inline {
+  display: flex;
+  align-items: center;
+  gap: var(--wp-r-space-3);
+}
+
+#reactSidebarRoot .wp-r-file-input-inline {
+  flex: 1;
+  font-size: var(--wp-r-font-xs);
+}
+
+#reactSidebarRoot .wp-r-btn-xs {
+  padding: 5px 8px;
+  font-size: var(--wp-r-font-xs);
+}
+
+#reactSidebarRoot .wp-r-section-title-upgrade {
+  color: var(--upgrade-color);
+  border-color: var(--upgrade-color);
+}
+
+#reactSidebarRoot .curtain-btn[data-curtain='none'] {
+  background-color: #e2e8f0;
+}
+
+#reactSidebarRoot .curtain-btn[data-curtain='white'] {
+  background-color: #ffffff;
+}
+
+#reactSidebarRoot .curtain-btn[data-curtain='pink'] {
+  background-color: #fbcfe8;
+}
+
+#reactSidebarRoot .curtain-btn[data-curtain='purple'] {
+  background-color: #e9d5ff;
+}
+
+/* --------------------------------------------------------------------------
+ * Field spacing (match legacy vertical rhythm)
+ * -------------------------------------------------------------------------- */
+
+#reactSidebarRoot .wp-field {
+  margin-bottom: 18px;
+}
+
+#reactSidebarRoot .wp-field-label {
+  font-weight: 700;
+  color: #334155;
+  margin: 14px 0 10px;
+}
+
+#reactSidebarRoot .wp-field-sub {
+  margin-top: 10px;
+}
+
+#reactSidebarRoot .wp-r-header .header-btn-small {
+  width: 100%;
+  white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+ * Design tab: Door style buttons (match legacy compact look)
+ * -------------------------------------------------------------------------- */
+
+#reactSidebarRoot .tab-content[data-tab='design'] .wp-r-type-selector {
+  gap: 8px;
+  margin-bottom: 0;
+}
+
+#reactSidebarRoot .tab-content[data-tab='design'] .wp-r-type-selector .type-option {
+  padding: 10px;
+  font-size: 0.85rem;
+  line-height: 1.2;
+}
+
+/* --------------------------------------------------------------------------
+ * Structure tab: Restore button (subtle green style)
+ * -------------------------------------------------------------------------- */
+
+#reactSidebarRoot .wp-r-restore-pill {
+  width: 100%;
+  border-radius: var(--radius-lg, 16px);
+  padding: 15px;
+  border: 1px solid #10b981;
+  background: #ecfdf5;
+  color: #059669;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-weight: 700;
+  margin-bottom: 15px;
+  user-select: none;
+  font-family: Heebo, sans-serif;
+  font-size: 0.9rem;
+  line-height: 1.2;
+  transition: all 0.2s;
+  opacity: 1;
+  pointer-events: auto;
+  box-sizing: border-box;
+}
+
+#reactSidebarRoot .wp-r-restore-pill:hover:not(:disabled) {
+  filter: brightness(0.985);
+}
+
+#reactSidebarRoot .wp-r-restore-pill:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: #cbd5e1;
+  background: #f1f5f9;
+  color: #64748b;
+  border-style: dashed;
+}
+
+#reactSidebarRoot .wp-r-restore-pill i {
+  font-size: 1.2rem;
+}
+
+#reactSidebarRoot .wp-r-restore-text,
+#reactSidebarRoot .wp-r-restore-time,
+#reactSidebarRoot .wp-r-restore-time-inline {
+  font-size: inherit;
+  font-weight: 700;
+  opacity: 1;
+}
+
+/* --------------------------------------------------------------------------
+ * Interior tab: Layout & Manual division buttons (match legacy)
+ * -------------------------------------------------------------------------- */
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .type-option {
+  flex: 1;
+  text-align: center;
+  padding: 15px;
+  border: 2px solid var(--border-color, #e2e8f0);
+  border-radius: var(--radius-lg, 12px);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 600;
+  font-size: 0.9rem;
+  background: #fff;
+  color: var(--text-secondary, #64748b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .type-option:hover {
+  border-color: #cbd5e1;
+  transform: translateY(-2px);
+}
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .type-option.selected {
+  border-color: var(--primary, #3b82f6);
+  background: rgba(59, 130, 246, 0.05);
+  color: var(--primary, #3b82f6);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05));
+}
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .type-option--compact {
+  padding: 10px 12px;
+  font-size: 0.9rem;
+}
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .type-option--iconrow {
+  gap: 8px;
+  min-height: 42px;
+}
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .wp-layout-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  margin-bottom: 10px;
+  gap: 6px;
+}
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .wp-manual-toggle {
+  width: 100%;
+  margin-top: 6px;
+}
+
+#reactSidebarRoot
+  .tab-content[data-tab='interior']
+  .wp-tool-card--layout
+  .wp-manual-toggle.type-option--compact {
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  min-height: 38px;
+}
+
+#reactSidebarRoot
+  .tab-content[data-tab='interior']
+  .wp-tool-card--layout
+  .wp-manual-row
+  .type-option--compact {
+  padding: 8px;
+  font-size: 0.82rem;
+  min-height: 34px;
+}
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .wp-manual-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 6px;
+  border-radius: 6px;
+  background: rgba(241, 245, 249, 0.45);
+}
+
+/* Sketch mode controls live inside the "חלוקות פנים" card (compact, like manual tools) */
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .wp-sketch-row {
+  /* tighten spacing from the sketch toggle button */
+  margin-top: 2px;
+  /* reduce bottom "empty" area inside the frame */
+  padding: 4px 6px 0;
+  border-radius: 6px;
+  background: rgba(241, 245, 249, 0.35);
+}
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-r-label--center {
+  text-align: center;
+}
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .wp-sketch-row .wp-field {
+  /* reduce gaps between the sketch groups (shelves/rod -> drawers -> box) */
+  margin-bottom: 4px;
+}
+
+/* IMPORTANT: the generic `.type-selector` adds `margin-bottom: 20px` globally.
+ * In sketch-mode groups that creates huge vertical gaps and also inflates the box row height.
+ * Keep sketch groups compact.
+ */
+#reactSidebarRoot
+  .tab-content[data-tab='interior']
+  .wp-tool-card--layout
+  .wp-sketch-row
+  .wp-r-type-selector.type-selector {
+  margin-bottom: 6px !important;
+}
+
+/* In the box grid we don't want any extra bottom margin inside the right column,
+ * otherwise the whole row becomes taller and looks "misaligned".
+ */
+#reactSidebarRoot
+  .tab-content[data-tab='interior']
+  .wp-tool-card--layout
+  .wp-sketch-box-col--btn
+  .wp-r-type-selector.type-selector {
+  margin-bottom: 0 !important;
+}
+
+/* Make sketch headers a bit tighter so sections don't look "floating" */
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .wp-sketch-row .wp-r-label {
+  margin-bottom: 4px;
+}
+
+#reactSidebarRoot
+  .tab-content[data-tab='interior']
+  .wp-tool-card--layout
+  .wp-sketch-row
+  .wp-field:last-child {
+  margin-bottom: 0;
+}
+
+/* Make the sketch shelf buttons a bit shorter (user request: lower height) */
+#reactSidebarRoot
+  .tab-content[data-tab='interior']
+  .wp-sketch-shelf-btn.type-option--compact.type-option--iconrow {
+  min-height: 34px;
+  padding: 8px 10px;
+  font-size: 0.82rem;
+}
+
+/* Sketch shelves group: keep the 3 top buttons and the 4 variant buttons on a single row */
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .wp-sketch-shelf-headrow,
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .wp-sketch-shelf-subrow {
+  flex-wrap: nowrap;
+  gap: 6px;
+}
+
+#reactSidebarRoot
+  .tab-content[data-tab='interior']
+  .wp-tool-card--layout
+  .wp-sketch-shelf-headrow
+  .type-option,
+#reactSidebarRoot
+  .tab-content[data-tab='interior']
+  .wp-tool-card--layout
+  .wp-sketch-shelf-subrow
+  .type-option {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* Make the 4 variant buttons a touch more compact so they fit nicely */
+#reactSidebarRoot
+  .tab-content[data-tab='interior']
+  .wp-tool-card--layout
+  .wp-sketch-shelf-subbtn.type-option--compact.type-option--iconrow {
+  min-height: 32px;
+  padding: 7px 8px;
+  font-size: 0.78rem;
+}
+
+/* Bed storage (sketch box) size input shown under the tool buttons */
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .wp-sketch-storage-input {
+  margin-top: 6px;
+}
+
+/* Box controls: 2-column grid (RTL) with buttons and dimensions aligned row-by-row. */
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .wp-sketch-box-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+  direction: rtl;
+  align-items: start;
+}
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .wp-sketch-box-cell {
+  min-width: 0;
+}
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .wp-sketch-box-cell--door-hinge {
+  grid-column: 1;
+}
+
+#reactSidebarRoot
+  .tab-content[data-tab='interior']
+  .wp-tool-card--layout
+  .wp-sketch-box-btn.type-option--compact.type-option--iconrow {
+  width: 100%;
+  box-sizing: border-box;
+  height: 34px;
+  min-height: 34px;
+  padding: 0 10px;
+  font-size: 0.82rem;
+  border-radius: 6px;
+}
+
+#reactSidebarRoot
+  .tab-content[data-tab='interior']
+  .wp-tool-card--layout
+  .wp-sketch-box-btn.type-option:hover {
+  transform: translateY(-2px);
+}
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .wp-sketch-box-cell .wp-r-input {
+  width: 100%;
+  box-sizing: border-box;
+  height: 34px;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 2px solid var(--border-color, #e2e8f0);
+  border-radius: 6px;
+  background: #fff;
+  font-size: 0.82rem;
+  line-height: 1;
+}
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .wp-sketch-box-cell .wp-r-label {
+  margin-bottom: 4px !important;
+}
+
+#reactSidebarRoot
+  .tab-content[data-tab='interior']
+  .wp-tool-card--layout
+  .wp-sketch-storage-input
+  .wp-r-input {
+  width: 100%;
+  box-sizing: border-box;
+  height: 34px;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 2px solid var(--border-color, #e2e8f0);
+  border-radius: 6px;
+}
+/* Interior layout card bottom spacing: keep a comfortable gap before the "סיים מצב עריכה" row,
+ * and some space from the bottom of the card.
+ */
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout {
+  padding-bottom: 10px;
+}
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .wp-r-editmode-toggle--fullrow {
+  margin-top: 8px;
+}
+
+/* Reduce the gap between the internal-drawers card and the next card headers */
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--intdrawer {
+  margin-bottom: 6px;
+}
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .grid-divisions-row {
+  gap: 2px;
+  flex-wrap: nowrap;
+}
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .grid-divisions-row .type-option {
+  padding: 8px 2px;
+  font-size: 0.85rem;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .wp-chevron {
+  font-size: 0.8em;
+  margin-right: 5px;
+}
+
+/* --------------------------------------------------------------------------
+ * Interior tab: External drawers buttons – match legacy (tall like top buttons)
+ * -------------------------------------------------------------------------- */
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--extdrawer .type-option {
+  flex: 1;
+  text-align: center;
+  padding: 15px;
+  border: 2px solid var(--border-color, #e2e8f0);
+  border-radius: var(--radius-lg, 12px);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 600;
+  font-size: 0.9rem;
+  background: #fff;
+  color: var(--text-secondary, #64748b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--extdrawer .type-option:hover {
+  border-color: #cbd5e1;
+  transform: translateY(-2px);
+}
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--extdrawer .type-option.selected {
+  border-color: var(--primary, #3b82f6);
+  background: rgba(59, 130, 246, 0.05);
+  color: var(--primary, #3b82f6);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05));
+}
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--extdrawer .type-option--compact {
+  padding: 10px 12px;
+  font-size: 0.9rem;
+}
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--extdrawer .type-option--iconrow {
+  gap: 8px;
+  min-height: 42px;
+}
+
+/* External drawers: count buttons should match the divider edit-mode button height */
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--extdrawer .btn.btn-count {
+  /* Some global .btn styles may set a fixed height/padding; force match to divider button */
+  box-sizing: border-box;
+  padding: 10px 12px !important;
+  height: 35px !important;
+  min-height: 32px !important;
+  max-height: 42px !important;
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+/* --------------------------------------------------------------------------
+ * Interior tab: Handles (match legacy grouping)
+ * - Global handle (3 buttons) always visible
+ * - Advanced management reveals per-door/drawer editing buttons
+ * -------------------------------------------------------------------------- */
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--handles,
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--handles-advanced {
+  padding: 12px;
+}
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--handles .wp-header-row strong,
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--handles-advanced .wp-header-row strong {
+  font-size: 0.95rem;
+}
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-r-handle-btn.type-option--compact {
+  padding: 10px 10px;
+  font-size: 0.9rem;
+  min-height: 42px;
+  font-weight: 700;
+}
+
+#reactSidebarRoot
+  .tab-content[data-tab='interior']
+  .wp-tool-card--handles-advanced
+  .wp-r-handle-btn.type-option--compact {
+  padding: 10px 10px;
+  min-height: 42px;
+}
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-r-handle-global {
+  margin-bottom: 8px;
+}
+
+#reactSidebarRoot
+  .tab-content[data-tab='interior']
+  .wp-tool-card--handles-advanced
+  .btn.btn-danger.btn-inline.btn-sm {
+  white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+ * Render tab (הדמיה) – match legacy order, sizing and typography
+ * -------------------------------------------------------------------------- */
+
+#reactSidebarRoot .tab-content[data-tab='render'] .toggle-row span i {
+  margin-inline-end: 8px;
+  color: #64748b;
+}
+
+#reactSidebarRoot .tab-content[data-tab='render'] .wp-r-notes-action-container {
+  margin-top: 10px;
+  border-top: 1px dashed #e2e8f0;
+  padding-top: 10px;
+}
+
+#reactSidebarRoot .tab-content[data-tab='render'] .wp-r-notes-action-btn {
+  width: 100%;
+}
+
+#reactSidebarRoot .tab-content[data-tab='render'] .wp-r-floor-type-selector {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px !important;
+}
+
+#reactSidebarRoot .tab-content[data-tab='render'] .wp-r-floor-type-selector .type-option {
+  width: 100%;
+  text-align: center;
+  padding: 12px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  background: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
+  box-sizing: border-box;
+  margin: 0 !important;
+  transform: none !important;
+}
+
+#reactSidebarRoot .tab-content[data-tab='render'] .wp-r-floor-type-selector .type-option.selected {
+  border-color: rgba(59, 130, 246, 0.75);
+  box-shadow: inset 0 0 0 2px rgba(59, 130, 246, 0.25);
+  position: relative;
+  z-index: 1;
+}
+
+#reactSidebarRoot .tab-content[data-tab='render'] .wp-r-floor-type-selector .type-option i {
+  margin-inline-end: 6px;
+  font-size: 1.05rem;
+}
+
+#reactSidebarRoot .tab-content[data-tab='render'] .color-picker-row,
+#reactSidebarRoot .tab-content[data-tab='design'] .color-picker-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  direction: rtl;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+/* Design tab: when many colors exist, wrap to additional rows instead of squeezing everything into one line. */
+#reactSidebarRoot .tab-content[data-tab='design'] .color-picker-row {
+  flex-wrap: wrap;
+}
+
+/* Prevent swatches from shrinking on wrap (they're empty divs, so flexbox may shrink them to almost nothing). */
+#reactSidebarRoot .tab-content[data-tab='design'] .color-picker-row .color-dot-swatch {
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  min-width: 38px;
+  min-height: 38px;
+}
+
+#reactSidebarRoot .tab-content[data-tab='render'] .color-picker-row .color-dot-swatch,
+#reactSidebarRoot .tab-content[data-tab='design'] .color-picker-row .color-dot-swatch {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 999px !important;
+  border: 2px solid #e2e8f0 !important;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: block;
+  position: relative;
+}
+
+#reactSidebarRoot .tab-content[data-tab='render'] .color-picker-row .color-dot-swatch:hover,
+#reactSidebarRoot .tab-content[data-tab='design'] .color-picker-row .color-dot-swatch:hover {
+  border-color: rgba(59, 130, 246, 0.45) !important;
+}
+
+#reactSidebarRoot .tab-content[data-tab='render'] .color-picker-row .color-dot-swatch.is-selected,
+#reactSidebarRoot .tab-content[data-tab='design'] .color-picker-row .color-dot-swatch.is-selected {
+  border-color: rgba(59, 130, 246, 0.85) !important;
+  box-shadow: inset 0 0 0 2px rgba(59, 130, 246, 0.35);
+}
+
+#reactSidebarRoot .tab-content[data-tab='render'] .wp-r-lighting-wrapper {
+  margin-top: 15px;
+  border-top: 1px dashed #cbd5e1;
+  padding-top: 15px;
+}
+
+#reactSidebarRoot .tab-content[data-tab='render'] .wp-r-light-btn {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  text-align: center;
+}
+
+#reactSidebarRoot .tab-content[data-tab='render'] .wp-r-light-btn--natural i {
+  color: #f59e0b;
+}
+
+#reactSidebarRoot .tab-content[data-tab='render'] .wp-r-light-btn--evening i {
+  color: #64748b;
+}
+
+#reactSidebarRoot .tab-content[data-tab='render'] .wp-r-light-btn--front i {
+  color: #10b981;
+}
+
+#reactSidebarRoot .tab-content[data-tab='render'] .wp-r-light-box {
+  background: #f8fafc;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+#reactSidebarRoot .tab-content[data-tab='render'] .wp-r-light-label {
+  font-size: 0.85rem;
+  color: #475569;
+  display: block;
+  margin-bottom: 5px;
+}
+
+#reactSidebarRoot .tab-content[data-tab='render'] .wp-r-light-subtitle {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-top: 5px;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+#reactSidebarRoot .tab-content[data-tab='render'] .wp-r-light-box .lighting-slider {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+#reactSidebarRoot .tab-content[data-tab='render'] .wp-r-light-presets {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 15px;
+  align-items: stretch;
+}
+
+#reactSidebarRoot .tab-content[data-tab='render'] .wp-r-light-presets .type-option {
+  margin: 0;
+  border-width: 1px;
+  transform: none !important;
+  box-shadow: none !important;
+  box-sizing: border-box !important;
+  border: 1px solid #e2e8f0 !important;
+  background-clip: padding-box;
+  position: relative;
+  z-index: 0;
+}
+
+#reactSidebarRoot .tab-content[data-tab='render'] .wp-r-light-presets .type-option:hover {
+  transform: none !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: none !important;
+}
+
+#reactSidebarRoot .tab-content[data-tab='render'] .wp-r-light-presets .type-option.selected {
+  box-shadow: inset 0 0 0 2px #3b82f6 !important;
+  border-color: transparent !important;
+  background: rgba(59, 130, 246, 0.05) !important;
+  color: #3b82f6 !important;
+  z-index: 1;
+}
+
+/* --------------------------------------------------------------------------
+ * Interior tab: wide action buttons (internal drawers placement + drawer divider)
+ * -------------------------------------------------------------------------- */
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--intdrawer .type-option--iconrow,
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--divider .type-option--iconrow {
+  width: 100%;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+#reactSidebarRoot
+  .tab-content[data-tab='interior']
+  .wp-tool-card--intdrawer
+  .type-option--compact.type-option--iconrow,
+#reactSidebarRoot
+  .tab-content[data-tab='interior']
+  .wp-tool-card--divider
+  .type-option--compact.type-option--iconrow {
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  min-height: 42px;
+}
+
+/* --------------------------------------------------------------------------
+ * Export tab: modern, clean layout (React)
+ * -------------------------------------------------------------------------- */
+
+#reactSidebarRoot .wp-r-export-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 6px;
+}
+
+#reactSidebarRoot .wp-r-export-layout .control-section {
+  margin-bottom: 0;
+}
+
+#reactSidebarRoot .wp-r-btn-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+#reactSidebarRoot .wp-r-btn-row.wp-r-wrap {
+  flex-wrap: wrap;
+}
+
+/* Split button row: two equal columns (RTL: first button on the right, second on the left).
+   Using grid avoids weird asymmetry when buttons have different label lengths. */
+#reactSidebarRoot .wp-r-btn-row.wp-r-split-between {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+  /* Make both buttons match the tallest one (e.g. when one label wraps to 2 lines). */
+  align-items: stretch;
+}
+
+#reactSidebarRoot .wp-r-btn-row.wp-r-split-between > .btn {
+  width: 100% !important;
+  min-width: 0;
+  margin-bottom: 0 !important;
+  height: 100%;
+  /* Keep the row single-line by allowing the label INSIDE the button to wrap instead of pushing layout. */
+  white-space: normal;
+  line-height: 1.15;
+}
+
+#reactSidebarRoot .wp-r-btn-row > .btn {
+  margin-bottom: 0 !important;
+  flex: 1 1 120px;
+}
+
+#reactSidebarRoot .wp-r-project-panel .wp-r-project-io-btn {
+  min-height: 40px;
+  padding-top: 9px !important;
+  padding-bottom: 9px !important;
+}
+
+#reactSidebarRoot .wp-r-project-panel .wp-r-project-restore {
+  margin-top: 10px;
+}
+
+#reactSidebarRoot .wp-r-export-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+#reactSidebarRoot .wp-r-export-action {
+  width: 100%;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px 12px;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 700;
+  font-family: inherit;
+  text-align: right;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition:
+    transform 0.05s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+#reactSidebarRoot .wp-r-export-action:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  box-shadow:
+    0 1px 0 rgba(15, 23, 42, 0.04),
+    0 6px 16px rgba(15, 23, 42, 0.06);
+  transform: translateY(-1px);
+}
+
+#reactSidebarRoot .wp-r-export-action:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.03);
+}
+
+#reactSidebarRoot .wp-r-export-action:focus-visible {
+  outline: none;
+  border-color: rgba(59, 130, 246, 0.55);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+}
+
+#reactSidebarRoot .wp-r-export-action-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+#reactSidebarRoot .wp-r-export-action-icon i {
+  color: #3b82f6;
+}
+
+#reactSidebarRoot .wp-r-export-action-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+#reactSidebarRoot .wp-r-export-action-title {
+  font-weight: 800;
+  color: #0f172a;
+  font-size: 0.92rem;
+  line-height: 1.15;
+}
+
+#reactSidebarRoot .wp-r-export-action-sub {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  line-height: 1.15;
+}
+
+#reactSidebarRoot .wp-r-export-action--primary {
+  background: rgba(59, 130, 246, 0.06);
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
+#reactSidebarRoot .wp-r-export-action--primary .wp-r-export-action-icon {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.25);
+}
+
+#reactSidebarRoot .wp-r-export-action--accent {
+  background: rgba(16, 185, 129, 0.06);
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+#reactSidebarRoot .wp-r-export-action--accent .wp-r-export-action-icon i {
+  color: #10b981;
+}
+
+#reactSidebarRoot .wp-r-export-action--accent .wp-r-export-action-icon {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.25);
+}
+
+#reactSidebarRoot .header {
+  background: var(--panel-bg);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 85px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+#reactSidebarRoot .header-btn-small {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  height: 30px;
+  border-radius: 20px;
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  transition: all 0.2s;
+}
+
+#reactSidebarRoot .header-btn-small.is-dirty {
+  color: #fbbf24;
+  font-weight: 700;
+}
+
+#reactSidebarRoot .tabs {
+  display: flex;
+  padding: 15px 10px 0;
+  gap: 5px;
+  background: var(--panel-bg);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+/* When adding more than the legacy 5 tabs (e.g. the new 'סקיצה' tab),
+ * keep the existing tab width and enable horizontal scrolling instead of shrinking tabs. */
+#reactSidebarRoot .tabs.wp-r-tabs--scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+#reactSidebarRoot .tabs.wp-r-tabs--scroll .tab {
+  flex: 0 0 calc((100% - 20px) / 5);
+}
+
+#reactSidebarRoot .tab {
+  flex: 1;
+  text-align: center;
+  padding: 12px 2px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+#reactSidebarRoot .tab:hover {
+  color: var(--primary);
+  background: rgba(59, 130, 246, 0.05);
+}
+
+#reactSidebarRoot .tab.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  font-weight: 700;
+}
+
+#reactSidebarRoot .tab:focus,
+#reactSidebarRoot .type-option:focus-visible,
+body.wp-ui-react .btn-header-sketch:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.6) inset;
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+#reactSidebarRoot .scroll-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  background: #fafafa;
+}
+
+#reactSidebarRoot .tab-content {
+  display: none;
+}
+
+#reactSidebarRoot .tab-content.active {
+  display: block;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+body.wp-ui-react .btn {
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  font-family: inherit;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+body.wp-ui-react .btn:active {
+  transform: scale(0.98);
+}
+
+body.wp-ui-react .btn-primary {
+  background: #eff6ff !important;
+  color: #3b82f6 !important;
+  border: 1px solid #3b82f6 !important;
+  box-shadow: none !important;
+  font-weight: 700 !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+body.wp-ui-react .btn-primary:hover {
+  background: #dbeafe !important;
+  color: #1e40af !important;
+  border-color: #2563eb !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2) !important;
+}
+
+body.wp-ui-react .btn-primary:active {
+  background: #bfdbfe !important;
+  transform: translateY(0) !important;
+}
+
+body.wp-ui-react .btn-primary i {
+  color: inherit !important;
+}
+
+body.wp-ui-react .btn-accent {
+  background: #fff;
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+}
+
+body.wp-ui-react .btn-accent:hover {
+  border-color: var(--text-secondary);
+  background: #f8fafc;
+}
+
+body.wp-ui-react .btn-light {
+  background: #fff;
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  box-shadow: none;
+}
+
+body.wp-ui-react .btn-light:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+body.wp-ui-react .btn-success {
+  background: var(--save-color);
+  border: 1px solid #059669;
+  color: #fff;
+  box-shadow: none;
+}
+
+body.wp-ui-react .btn-success:hover {
+  background: #059669;
+}
+
+body.wp-ui-react .btn-save {
+  background: var(--save-color);
+  color: white;
+  box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+}
+
+body.wp-ui-react .btn-save:hover {
+  background: #059669;
+}
+
+body.wp-ui-react .btn-save.is-dirty {
+  background: #f59e0b;
+  border: 1px solid #d97706;
+}
+
+body.wp-ui-react .btn-delete {
+  background: #fee2e2;
+  color: var(--delete-color);
+}
+
+body.wp-ui-react .btn-delete:hover {
+  background: var(--delete-color);
+  color: white;
+}
+
+body.wp-ui-react .btn-danger {
+  background: #ef4444;
+  border: 1px solid #dc2626;
+  color: #fff;
+}
+
+body.wp-ui-react .btn-danger:hover {
+  filter: brightness(0.96);
+}
+
+body.wp-ui-react .btn-cancel {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+  box-shadow: none;
+}
+
+body.wp-ui-react .btn-cancel:hover {
+  background: #e2e8f0;
+}
+
+#reactSidebarRoot input[type='number'],
+#reactSidebarRoot input[type='text'],
+#reactSidebarRoot .project-input,
+#reactSidebarRoot select {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: #fff;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--text-main);
+  transition: all 0.2s;
+  appearance: none;
+}
+
+#reactSidebarRoot input:focus,
+#reactSidebarRoot select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  outline: none;
+}
+
+#reactSidebarRoot select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 10px center;
+  background-size: 16px;
+}
+
+#reactSidebarRoot .type-selector {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+#reactSidebarRoot .type-option {
+  flex: 1;
+  text-align: center;
+  padding: 15px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 600;
+  font-size: 0.9rem;
+  background: #fff;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+#reactSidebarRoot .type-option:hover {
+  border-color: #cbd5e1;
+  transform: translateY(-2px);
+}
+
+#reactSidebarRoot .type-option.selected {
+  border-color: var(--primary);
+  background: rgba(59, 130, 246, 0.05);
+  color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+#reactSidebarRoot .type-option--compact {
+  padding: 8px;
+  font-size: 0.8rem;
+}
+
+#reactSidebarRoot .type-option--iconrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 34px;
+}
+
+#reactSidebarRoot .grid-divisions-row {
+  gap: 2px;
+  flex-wrap: nowrap;
+}
+
+#reactSidebarRoot .grid-divisions-row .type-option {
+  padding: 8px 2px;
+  font-size: 0.85rem;
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#reactSidebarRoot .control-section {
+  background: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Inside a bordered section, avoid "mystery" extra bottom whitespace from default field margins. */
+#reactSidebarRoot .control-section > .wp-field:last-child {
+  margin-bottom: 0;
+}
+
+#reactSidebarRoot .control-section > .wp-field:last-child .toggle-row:last-child {
+  margin-bottom: 0;
+}
+
+#reactSidebarRoot .control-section > .type-selector:last-child {
+  margin-bottom: 0;
+}
+
+#reactSidebarRoot .section-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+  display: block;
+  border-right: 3px solid var(--primary);
+  padding-right: 10px;
+}
+
+#reactSidebarRoot .module-config {
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  padding: 12px;
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
+}
+
+#reactSidebarRoot .module-title {
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 6px;
+}
+
+#reactSidebarRoot .row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+#reactSidebarRoot .col {
+  flex: 1;
+}
+
+#reactSidebarRoot label {
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+#reactSidebarRoot .toggle-row {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  transition: background 0.2s;
+}
+
+#reactSidebarRoot .toggle-row:hover {
+  background: #f1f5f9;
+}
+
+#reactSidebarRoot .toggle-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: #cbd5e1;
+  border-radius: 24px;
+  transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+#reactSidebarRoot .toggle-switch::after {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border-radius: 50%;
+  transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+#reactSidebarRoot .toggle-row input[type='checkbox'],
+#reactSidebarRoot .groove-check-label input[type='checkbox'] {
+  opacity: 0;
+  position: absolute;
+  width: 0;
+  height: 0;
+  margin: 0;
+}
+
+#reactSidebarRoot input[type='checkbox']:checked + .toggle-switch {
+  background: #4e637e !important;
+  border: 1px solid #3b82f6 !important;
+  opacity: 1 !important;
+}
+
+#reactSidebarRoot input[type='checkbox']:checked + .toggle-switch::after {
+  background-color: #ffffff !important;
+  box-shadow: none !important;
+  left: 2px !important;
+  transform: translateX(18px) !important;
+}
+
+#reactSidebarRoot input[type='checkbox']:focus + .toggle-switch {
+  box-shadow: 0 0 0 2px rgba(78, 99, 126, 0.4) !important;
+}
+
+#reactSidebarRoot .groove-check-label {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: #f1f5f9;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text-main);
+}
+
+#reactSidebarRoot .groove-check-label:hover {
+  background: #e2e8f0;
+}
+
+#reactSidebarRoot .groove-check-label:focus-within {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.6);
+  background: #e2e8f0;
+}
+
+#reactSidebarRoot .wp-r-groove-lines-block {
+  margin-top: 10px;
+}
+
+#reactSidebarRoot .wp-r-groove-lines-label {
+  margin-bottom: 8px !important;
+}
+
+#reactSidebarRoot .wp-r-groove-lines-row {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: stretch;
+  gap: 8px;
+  direction: ltr;
+}
+
+#reactSidebarRoot .wp-r-groove-lines-input {
+  min-width: 0;
+  text-align: center;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  height: var(--wp-r-input-h);
+  padding-block: 0;
+}
+
+#reactSidebarRoot .wp-r-groove-lines-input--auto {
+  font-weight: 600;
+}
+
+#reactSidebarRoot .wp-r-groove-lines-input--auto::placeholder {
+  color: #64748b;
+  opacity: 1;
+  font-weight: 600;
+}
+
+#reactSidebarRoot .wp-r-groove-reset-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-shrink: 0;
+  min-width: 118px;
+  height: var(--wp-r-input-h);
+  padding: 0 14px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
+  color: #0f172a !important;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.08),
+    0 8px 20px rgba(148, 163, 184, 0.12) !important;
+  font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    border-color 0.16s ease,
+    background 0.16s ease;
+}
+
+#reactSidebarRoot .wp-r-groove-reset-btn i {
+  font-size: 0.78rem;
+  color: #3b82f6;
+}
+
+#reactSidebarRoot .wp-r-groove-reset-btn:hover {
+  border-color: #93c5fd !important;
+  background: linear-gradient(180deg, #ffffff 0%, #eff6ff 100%) !important;
+  box-shadow:
+    0 3px 10px rgba(59, 130, 246, 0.14),
+    0 10px 18px rgba(148, 163, 184, 0.14) !important;
+  transform: translateY(-1px);
+}
+
+#reactSidebarRoot .wp-r-groove-reset-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12) !important;
+}
+
+#reactSidebarRoot .wp-r-groove-reset-btn:focus-visible {
+  outline: none;
+  border-color: #60a5fa !important;
+  box-shadow:
+    0 0 0 3px rgba(59, 130, 246, 0.18),
+    0 8px 20px rgba(148, 163, 184, 0.14) !important;
+}
+
+#reactSidebarRoot .wp-r-sketch-drawer-height-field {
+  margin-top: 8px;
+  margin-bottom: 10px;
+}
+
+#reactSidebarRoot .wp-r-sketch-drawer-height-row {
+  display: grid;
+  grid-template-columns: max-content minmax(150px, 172px);
+  justify-content: end;
+  align-items: end;
+  gap: 8px;
+  direction: ltr;
+}
+
+#reactSidebarRoot .wp-r-sketch-drawer-height-control {
+  min-width: 0;
+  direction: rtl;
+}
+
+#reactSidebarRoot .wp-r-sketch-drawer-height-label {
+  display: block;
+  width: 100%;
+  margin-bottom: 6px !important;
+  text-align: center;
+  white-space: nowrap;
+}
+
+#reactSidebarRoot .wp-r-sketch-drawer-height-input {
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  height: var(--wp-r-input-h);
+  padding-block: 0;
+}
+
+#reactSidebarRoot .wp-r-sketch-drawer-height-reset-btn {
+  min-width: 104px;
+  height: var(--wp-r-input-h);
+  padding: 0 10px !important;
+  gap: 6px;
+  font-size: 0.78rem;
+}
+
+#reactSidebarRoot .wp-r-sketch-drawer-height-reset-btn i {
+  font-size: 0.72rem;
+}
+
+#reactSidebarRoot .wp-tool-card {
+  background: #f8fafc;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+#reactSidebarRoot .wp-tool-card.is-active,
+#reactSidebarRoot .wp-tool-card--layout.is-active,
+#reactSidebarRoot .wp-tool-card--extdrawer.is-active,
+#reactSidebarRoot .wp-tool-card--intdrawer.is-active,
+#reactSidebarRoot .wp-tool-card--paint.is-active,
+#reactSidebarRoot .wp-tool-card--hinge.is-active,
+#reactSidebarRoot .wp-tool-card--sketch.is-active,
+#reactSidebarRoot .wp-tool-card--handle.is-active,
+#reactSidebarRoot .wp-tool-card--divider.is-active {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+#reactSidebarRoot .wp-tool-card--curtain {
+  background: inherit;
+  border-color: #e2e8f0;
+  margin-top: 6px;
+}
+
+#reactSidebarRoot .wp-tool-card--divider {
+  padding: 8px;
+}
+
+#reactSidebarRoot .wp-tool-card--divider .wp-header-row {
+  margin-bottom: 6px;
+}
+
+#reactSidebarRoot .wp-tool-card--divider .wp-header-row strong {
+  font-size: 0.85rem;
+}
+
+#reactSidebarRoot .wp-tool-card--divider .type-option--compact {
+  padding: 6px;
+  font-size: 0.78rem;
+}
+
+#reactSidebarRoot .wp-tool-card--divider .type-option--iconrow {
+  min-height: 30px;
+  gap: 6px;
+}
+
+#reactSidebarRoot .wp-tool-card--divider .wp-hint--divider {
+  margin-top: 6px;
+  padding: 6px;
+  font-size: 0.78rem;
+}
+
+#reactSidebarRoot .wp-tool-card--intdrawer {
+  padding: 8px;
+}
+
+#reactSidebarRoot .wp-tool-card--intdrawer .wp-header-row {
+  margin-bottom: 6px;
+}
+
+#reactSidebarRoot .wp-tool-card--intdrawer .wp-header-row strong {
+  font-size: 0.85rem;
+}
+
+#reactSidebarRoot .wp-tool-card--intdrawer .type-option--compact {
+  padding: 6px;
+  font-size: 0.78rem;
+}
+
+#reactSidebarRoot .wp-tool-card--intdrawer .type-option--iconrow {
+  min-height: 30px;
+  gap: 6px;
+}
+
+#reactSidebarRoot .wp-tool-card--intdrawer .wp-hint--intdrawer {
+  margin-top: 6px;
+  padding: 6px;
+  font-size: 0.78rem;
+}
+
+#reactSidebarRoot .wp-hint,
+#reactSidebarRoot .wp-hint--paint,
+#reactSidebarRoot .wp-hint--divider,
+#reactSidebarRoot .wp-hint--intdrawer,
+#reactSidebarRoot .wp-hint--hinge,
+#reactSidebarRoot .wp-hint--warn,
+#reactSidebarRoot .wp-hint--danger,
+#reactSidebarRoot .wp-hint--handle {
+  margin-top: 8px;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  background: rgba(59, 130, 246, 0.08);
+  color: #1e3a8a;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+#reactSidebarRoot .wp-hint--warn {
+  background: rgba(245, 158, 11, 0.1);
+  color: #92400e;
+}
+
+#reactSidebarRoot .wp-hint--danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: #991b1b;
+}
+
+#reactSidebarRoot .wp-hint i,
+#reactSidebarRoot .wp-hint--paint i,
+#reactSidebarRoot .wp-hint--intdrawer i,
+#reactSidebarRoot .wp-hint--hinge i,
+#reactSidebarRoot .wp-hint--warn i,
+#reactSidebarRoot .wp-hint--danger i,
+#reactSidebarRoot .wp-hinge-label-active i {
+  color: #2563eb;
+}
+
+#reactSidebarRoot .manual-override {
+  border-color: var(--accent);
+  background: #fffbeb;
+}
+
+#reactSidebarRoot .wp-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#reactSidebarRoot .wp-mb-10 {
+  margin-bottom: 10px;
+}
+
+#reactSidebarRoot .wp-row {
+  display: flex;
+}
+
+#reactSidebarRoot .wp-gap-5 {
+  gap: 5px;
+}
+
+#reactSidebarRoot .wp-section-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+#reactSidebarRoot .wp-section-divider {
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px dashed #e2e8f0;
+}
+
+body.wp-ui-react .btn-inline {
+  width: auto !important;
+  margin-bottom: 0 !important;
+  white-space: nowrap;
+}
+
+body.wp-ui-react .btn-sm {
+  padding: 6px 10px !important;
+  font-size: 0.85rem !important;
+}
+
+#reactSidebarRoot .wp-flex-1 {
+  flex: 1;
+}
+
+#reactSidebarRoot .wp-wrap {
+  flex-wrap: wrap;
+}
+
+#reactSidebarRoot .wp-gap-8 {
+  gap: 8px;
+}
+
+#reactSidebarRoot .wp-gap-10 {
+  gap: 10px;
+}
+
+#reactSidebarRoot .wp-muted-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 8px;
+}
+
+#reactSidebarRoot .wp-layout-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  margin-bottom: 10px;
+  gap: 6px;
+}
+
+#reactSidebarRoot .wp-manual-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 8px;
+  border-radius: 6px;
+  background: #f1f5f9;
+}
+
+#reactSidebarRoot .wp-swatch-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+#reactSidebarRoot .wp-icon {
+  margin-left: 8px;
+}
+
+body.wp-ui-react .btn .wp-icon {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+#reactSidebarRoot .wp-chevron {
+  font-size: 0.8em;
+  margin-right: 5px;
+}
+
+#reactSidebarRoot .wp-r-rotate-180 {
+  transform: rotate(180deg);
+}
+
+#reactSidebarRoot .wp-mt-6 {
+  margin-top: 6px;
+}
+
+#reactSidebarRoot .wp-mt-8 {
+  margin-top: 8px;
+}
+
+#reactSidebarRoot .wp-mb-6 {
+  margin-bottom: 6px;
+}
+
+#reactSidebarRoot .color-picker-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+  padding: 5px 0;
+}
+
+#reactSidebarRoot .room-controls .color-picker-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+#reactSidebarRoot .color-dot {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid #e2e8f0;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  background-size: cover;
+  background-position: center;
+}
+
+#reactSidebarRoot .color-dot:hover {
+  transform: scale(1.15);
+  border-color: #cbd5e1;
+  z-index: 2;
+}
+
+#reactSidebarRoot .color-dot.selected {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4);
+  transform: scale(1.2);
+  z-index: 2;
+}
+
+#reactSidebarRoot .color-dot-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid #e2e8f0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  transition: all 0.18s ease;
+  background-size: cover;
+  background-position: center;
+}
+
+#reactSidebarRoot .color-dot-swatch:hover {
+  transform: scale(1.06);
+  border-color: #cbd5e1;
+}
+
+#reactSidebarRoot .color-dot-swatch.is-selected {
+  transform: scale(1.18);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+}
+
+body.wp-ui-react .btn-add-color {
+  background: white;
+  /* Keep border continuous (solid) instead of dashed. */
+  border: 1px solid var(--primary);
+  color: var(--primary);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  width: 100%;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+body.wp-ui-react .btn-add-color .wp-r-btn-add-label {
+  flex: 1;
+  text-align: center;
+  font-weight: 800;
+}
+
+body.wp-ui-react .btn-add-color:hover {
+  background: #eff6ff;
+}
+
+/* "יצירת גוון חדש" – show an active/pressed state when the section is open
+   (match the active look of "חלוקה ידנית" in Interior tab). */
+body.wp-ui-react .btn-add-color.is-open {
+  background: rgba(59, 130, 246, 0.05);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05));
+}
+
+body.wp-ui-react .btn-add-color.is-open:hover {
+  background: rgba(59, 130, 246, 0.08);
+}
+
+body.wp-ui-react .color-palette {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 4px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 2000;
+  flex-direction: column;
+  gap: 4px;
+}
+
+body.wp-ui-react .color-palette.is-horizontal {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+body.wp-ui-react .color-palette.show {
+  display: flex;
+}
+
+body.wp-ui-react .color-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 3px;
+  cursor: pointer;
+  border: 1px solid #e2e8f0;
+  transition: transform 0.1s;
+}
+
+body.wp-ui-react .color-swatch:hover {
+  transform: scale(1.1);
+  border-color: #94a3b8;
+}
+
+#reactSidebarRoot #btnCancelMainColor {
+  margin-top: 8px;
+}
+
+#reactSidebarRoot .texture-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid #e2e8f0;
+  cursor: pointer;
+  transition:
+    transform 0.2s,
+    border-color 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#reactSidebarRoot .texture-circle:hover {
+  transform: scale(1.1);
+}
+
+#reactSidebarRoot .texture-circle.selected {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+  transform: scale(1.15);
+}
+
+#reactSidebarRoot .multi-special-row {
+  display: flex;
+  gap: 15px;
+  justify-content: flex-start;
+  margin-top: 5px;
+}
+
+#reactSidebarRoot .color-dot-swatch.special-swatch {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background-color: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  border: 2px solid #cbd5e1;
+  transition: all 0.2s;
+}
+
+#reactSidebarRoot .color-dot-swatch.special-swatch.is-selected {
+  background-color: #eff6ff;
+  border-color: #3b82f6;
+  box-shadow: 0 4px 6px rgba(59, 130, 246, 0.2);
+}
+
+#reactSidebarRoot .special-swatch .swatch-icon {
+  font-size: 32px;
+  line-height: 1;
+  z-index: 1;
+}
+
+/* Saved colors: lock indicator sits *outside* the color circle (doesn't cover the swatch). */
+#reactSidebarRoot .tab-content[data-tab='design'] .color-picker-row {
+  gap: 12px;
+  overflow: visible;
+}
+
+#reactSidebarRoot .tab-content[data-tab='design'] .color-picker-row .wp-swatch-item {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+/* Saved colors reorder (drag & drop) */
+#reactSidebarRoot .tab-content[data-tab='design'] .color-picker-row.wp-savedcolors-reorderable {
+  user-select: none;
+}
+
+#reactSidebarRoot .tab-content[data-tab='design'] .color-picker-row .wp-swatch-item.is-draggable {
+  cursor: grab;
+}
+
+#reactSidebarRoot .tab-content[data-tab='design'] .color-picker-row .wp-swatch-item.is-draggable:active {
+  cursor: grabbing;
+}
+
+#reactSidebarRoot .tab-content[data-tab='design'] .color-picker-row .wp-swatch-item.is-dragging {
+  opacity: 0.45;
+}
+
+#reactSidebarRoot .tab-content[data-tab='design'] .color-picker-row .wp-swatch-item.is-dropbefore,
+#reactSidebarRoot .tab-content[data-tab='design'] .color-picker-row .wp-swatch-item.is-dropafter {
+  box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.65);
+  border-radius: 999px;
+}
+
+#reactSidebarRoot .tab-content[data-tab='design'] .color-picker-row .wp-savedcolors-dropend {
+  width: 14px;
+  height: 42px;
+  flex: 0 0 14px;
+  border-radius: 10px;
+}
+
+#reactSidebarRoot .tab-content[data-tab='design'] .color-picker-row .wp-savedcolors-dropend--active {
+  box-shadow: inset 0 0 0 2px rgba(14, 165, 233, 0.55);
+  background: rgba(14, 165, 233, 0.06);
+}
+
+#reactSidebarRoot .tab-content[data-tab='design'] .color-picker-row .wp-swatch-item .swatch-lock {
+  position: absolute;
+  left: -6px;
+  bottom: 2px;
+  top: auto;
+  transform: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  cursor: pointer;
+  z-index: 3;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(203, 213, 225, 0.95);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+  line-height: 1;
+  padding: 0;
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+#reactSidebarRoot .tab-content[data-tab='design'] .color-picker-row .wp-swatch-item .swatch-lock i {
+  font-size: 12px;
+  line-height: 1;
+}
+
+#reactSidebarRoot .tab-content[data-tab='design'] .color-picker-row .wp-swatch-item .swatch-lock:hover {
+  border-color: rgba(59, 130, 246, 0.55);
+  background: rgba(255, 255, 255, 0.98);
+}
+
+#reactSidebarRoot .tab-content[data-tab='design'] .color-picker-row .wp-swatch-item .swatch-lock:active {
+  transform: translateY(1px);
+}
+
+#reactSidebarRoot
+  .tab-content[data-tab='design']
+  .color-picker-row
+  .wp-swatch-item
+  .swatch-lock:focus-visible {
+  outline: 2px solid rgba(59, 130, 246, 0.55);
+  outline-offset: 2px;
+}
+
+#reactSidebarRoot .tab-content[data-tab='design'] .color-picker-row .wp-swatch-item .swatch-lock.is-unlocked {
+  opacity: 0.7;
+}
+
+#reactSidebarRoot .tab-content[data-tab='design'] .color-picker-row .wp-swatch-item .swatch-lock.is-locked {
+  opacity: 0.95;
+}
+
+#reactSidebarRoot .special-swatch .swatch-badge {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  font-size: 24px;
+  background: transparent;
+  padding: 0;
+  line-height: 1;
+  z-index: 2;
+  filter: drop-shadow(0px 0px 2px rgba(255, 255, 255, 0.8));
+}
+
+body.wp-ui-react .annotation-box {
+  position: absolute;
+  z-index: 1000;
+  border: 1px solid transparent;
+  background-color: transparent;
+  box-shadow: none;
+  pointer-events: none !important;
+  touch-action: none !important;
+}
+
+body.wp-ui-react .annotation-box.creating {
+  border: 2px dashed #3b82f6;
+  background-color: rgba(59, 130, 246, 0.1);
+  pointer-events: none !important;
+}
+
+body.wp-ui-react .annotation-box .editor {
+  width: 100%;
+  height: 100%;
+  pointer-events: none !important;
+  outline: none;
+  padding: 8px;
+  direction: rtl;
+  font-family: 'Heebo', sans-serif;
+  font-size: 14px;
+  color: #1e293b;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  box-sizing: border-box;
+}
+
+body.wp-ui-react .annotation-box .note-hit-pad {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  padding: 8px;
+  pointer-events: none !important;
+}
+
+body.wp-ui-react .annotation-box .note-hit {
+  display: inline-block;
+  max-width: 100%;
+  max-height: 100%;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  direction: rtl;
+  font-family: 'Heebo', sans-serif;
+  font-size: 14px;
+  color: #1e293b;
+  cursor: text;
+  pointer-events: auto !important;
+  opacity: 0;
+}
+
+body.wp-ui-react .editor b,
+body.wp-ui-react .editor strong {
+  font-weight: 700;
+  text-shadow: 0 0 0.5px currentColor;
+}
+
+body.wp-ui-react .annotation-box.active-edit {
+  border: 2px solid #3b82f6;
+  background-color: rgba(255, 255, 255, 0.1);
+  box-shadow: none;
+  z-index: 1005;
+  pointer-events: auto !important;
+  cursor: move;
+}
+
+body.wp-ui-react .annotation-box.active-edit .editor {
+  pointer-events: auto !important;
+  overflow-y: auto;
+}
+
+body.wp-ui-react .resize-handle {
+  display: none !important;
+  pointer-events: auto;
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background-color: white;
+  border: 1px solid #3b82f6;
+  border-radius: 50%;
+  z-index: 1020;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  touch-action: none !important;
+}
+
+body.wp-ui-react .annotation-box.active-edit .resize-handle {
+  display: flex !important;
+}
+
+body.wp-ui-react .resize-handle::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: #3b82f6;
+  border-radius: 50%;
+}
+
+body.wp-ui-react .handle-nw {
+  top: -10px;
+  left: -10px;
+  cursor: nw-resize;
+}
+
+body.wp-ui-react .handle-n {
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: move;
+}
+
+body.wp-ui-react .handle-ne {
+  top: -10px;
+  right: -10px;
+  cursor: ne-resize;
+}
+
+body.wp-ui-react .handle-e {
+  top: 50%;
+  right: -10px;
+  transform: translateY(-50%);
+  cursor: e-resize;
+}
+
+body.wp-ui-react .handle-se {
+  bottom: -10px;
+  right: -10px;
+  cursor: se-resize;
+}
+
+body.wp-ui-react .handle-s {
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: move;
+}
+
+body.wp-ui-react .handle-sw {
+  bottom: -10px;
+  left: -10px;
+  cursor: sw-resize;
+}
+
+body.wp-ui-react .handle-w {
+  top: 50%;
+  left: -10px;
+  transform: translateY(-50%);
+  cursor: w-resize;
+}
+
+body.wp-ui-react .handle-n::after,
+body.wp-ui-react .handle-s::after {
+  background-color: #ffedd5;
+  border: 1px solid #f97316;
+}
+
+body.wp-ui-react .floating-toolbar {
+  display: none;
+  position: absolute;
+  top: -16px;
+  left: 100%;
+  flex-direction: column;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0 8px;
+  margin-left: 12px;
+  z-index: 1010;
+  direction: rtl;
+  pointer-events: auto;
+}
+
+body.wp-ui-react .annotation-box .floating-toolbar {
+  display: none !important;
+}
+
+body.wp-ui-react .annotation-box.active-edit .floating-toolbar {
+  display: flex !important;
+}
+
+body.wp-ui-react #viewer-container.notes-hidden .annotation-box {
+  display: none !important;
+}
+
+body.wp-ui-react .toolbar-btn {
+  height: 36px;
+  min-height: 36px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
+  cursor: pointer;
+  padding: 0 10px;
+  font-size: 14px;
+  line-height: 1;
+  color: #1f2937;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+body.wp-ui-react .toolbar-btn:hover {
+  background-color: #f8fafc;
+}
+
+body.wp-ui-react .toolbar-btn:active {
+  transform: translateY(0.5px);
+}
+
+body.wp-ui-react .toolbar-btn.active-state,
+body.wp-ui-react .toolbar-btn[aria-pressed='true'] {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  font-weight: 700;
+}
+
+body.wp-ui-react .close-btn {
+  color: #ef4444;
+  border-color: #fecaca;
+  box-shadow: 0 1px 2px rgba(239, 68, 68, 0.15);
+}
+
+body.wp-ui-react .close-btn:hover {
+  background-color: #fef2f2;
+}
+
+body.wp-ui-react .toolbar-btn--square {
+  width: 36px;
+  padding: 0;
+}
+
+body.wp-ui-react .toolbar-color-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+body.wp-ui-react .toolbar-color-btn {
+  padding: 0;
+  background-clip: padding-box;
+}
+
+body.wp-ui-react .toolbar-size-select {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  background-image: none !important;
+  height: 36px;
+  width: 36px;
+  text-align: center;
+  text-align-last: center;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  line-height: 1;
+}
+
+body.wp-ui-react .toolbar-size-select::-ms-expand {
+  display: none;
+}
+
+body.wp-ui-react .toolbar-size-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+body.wp-ui-react .toolbar-size-btn {
+  font-weight: 700;
+}
+
+body.wp-ui-react .size-palette {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 6px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.18);
+  z-index: 2000;
+  flex-direction: column;
+  gap: 6px;
+}
+
+body.wp-ui-react .size-palette.is-horizontal {
+  flex-direction: row;
+  flex-wrap: wrap;
+  max-width: 260px;
+}
+
+body.wp-ui-react .size-palette.show {
+  display: flex;
+}
+
+body.wp-ui-react .size-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
+  cursor: pointer;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1;
+  font-weight: 700;
+  color: #1f2937;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+body.wp-ui-react .size-swatch:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+body.wp-ui-react .size-swatch:active {
+  transform: translateY(0.5px);
+}
+
+body.wp-ui-react .size-swatch.is-selected {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+body.wp-ui-react #btnDrawNote.active {
+  background-color: #eff6ff !important;
+  color: #3b82f6 !important;
+  border: 2px solid #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
+  font-weight: 700 !important;
+}
+
+body.wp-ui-react #btnDrawNote.active i {
+  color: #3b82f6 !important;
+}
+
+body.wp-ui-react #notes-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  pointer-events: none;
+  touch-action: none !important;
+}
+
+body.wp-ui-react.is-drawing #notes-overlay,
+body.wp-ui-react #notes-overlay[style*='pointer-events: auto'] {
+  pointer-events: auto !important;
+  cursor: crosshair;
+}
+
+body.wp-ui-react[data-door-status='open'] .annotation-box[data-doors-open='false'] {
+  display: none !important;
+}
+
+body.wp-ui-react[data-door-status='closed'] .annotation-box[data-doors-open='true'] {
+  display: none !important;
+}
+
+body.wp-ui-react.wp-primary-mode-active {
+  cursor: alias;
+}
+
+body.wp-ui-react .undo-redo-container {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  gap: 10px;
+  z-index: 100;
+}
+
+body.wp-ui-react .wp-floating-sketchsync {
+  position: fixed;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 105;
+}
+
+body.wp-ui-react .hint-bottom {
+  position: relative;
+  overflow: visible !important;
+}
+
+body.wp-ui-react .hint-bottom::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: 125% !important;
+  bottom: auto !important;
+  left: 0 !important;
+  transform: none !important;
+  display: inline-block !important;
+  width: auto !important;
+  min-width: max-content !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+  background: #1e293b;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  font-family: 'Heebo', sans-serif;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  z-index: 999999;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+body.wp-ui-react .hint-bottom::before {
+  content: '';
+  position: absolute;
+  top: 110% !important;
+  bottom: auto !important;
+  left: 14px !important;
+  transform: none !important;
+  border-width: 6px;
+  border-style: solid;
+  border-color: transparent transparent #1e293b transparent;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s;
+  z-index: 999999;
+}
+
+body.wp-ui-react .hint-bottom:hover::after,
+body.wp-ui-react .hint-bottom:hover::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+body.wp-ui-react .camera-controls {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  display: flex;
+  gap: 8px;
+  z-index: 100;
+}
+
+body.wp-ui-react .cam-btn {
+  background: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  color: #475569;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 1.1rem;
+  position: relative;
+}
+
+body.wp-ui-react .cam-btn:hover {
+  background: #f1f5f9;
+  transform: translateY(-3px);
+  color: #3b82f6;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+body.wp-ui-react .cam-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+  box-shadow: none;
+  background: #f1f5f9;
+  color: #cbd5e1;
+}
+
+body.wp-ui-react .cam-btn:disabled:hover {
+  transform: none;
+}
+
+body.wp-ui-react .cam-btn::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e293b;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  margin-bottom: 8px;
+  font-family: 'Heebo', sans-serif;
+}
+
+body.wp-ui-react .cam-btn:hover::after {
+  opacity: 1;
+}
+
+body.wp-ui-react .sticky-status-toast {
+  position: absolute;
+  top: -50px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 11000;
+  max-width: calc(100% - 32px);
+  box-sizing: border-box;
+  pointer-events: auto;
+  background: white;
+  padding: 10px 24px;
+  border-radius: 50px;
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: 'Heebo', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #1e293b;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+
+body.wp-ui-react .sticky-status-toast .status-texts {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 3px;
+  line-height: 1.1;
+}
+
+body.wp-ui-react .sticky-status-toast .status-label {
+  display: block;
+}
+
+body.wp-ui-react .sticky-status-toast .status-hint {
+  display: block;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #b91c1c;
+}
+
+body.wp-ui-react .sticky-status-toast.active {
+  opacity: 1;
+  visibility: visible;
+  top: 20px;
+}
+
+body.wp-ui-react .sticky-status-toast .status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+  0% {
+    transform: scale(0.95);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 1;
+  }
+}
+
+body.wp-ui-react .toast-container {
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  /* Keep toasts visible above high z-index overlays (e.g., PDF editor). */
+  z-index: 40000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
+  width: auto;
+  max-width: calc(100% - 32px);
+  box-sizing: border-box;
+}
+
+body.wp-ui-react #viewer-container > .toast-container,
+body.wp-ui-react .toast-container.toast-container--viewer {
+  position: absolute;
+  top: 20px;
+}
+
+body.wp-ui-react > .toast-container,
+body.wp-ui-react .toast-container.toast-container--body {
+  position: fixed;
+  top: 80px;
+}
+
+body.wp-ui-react .toast {
+  background: white;
+  padding: 12px 24px;
+  border-radius: 50px;
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #1e293b;
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  pointer-events: auto;
+}
+
+body.wp-ui-react .toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+body.wp-ui-react .toast-success i {
+  color: #10b981;
+}
+
+body.wp-ui-react .toast-error i {
+  color: #ef4444;
+}
+
+body.wp-ui-react .toast-info i {
+  color: #3b82f6;
+}
+
+body.wp-ui-react .modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(5px);
+  /* Must sit above all app overlays (e.g., PDF editor uses z-index ~20050). */
+  z-index: 45000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+}
+
+body.wp-ui-react .modal-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+body.wp-ui-react .modal-box {
+  background: white;
+  width: 320px;
+  padding: 25px;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  transform: scale(0.9);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 1px solid #e2e8f0;
+  text-align: center;
+}
+
+body.wp-ui-react .modal-overlay.open .modal-box {
+  transform: scale(1);
+}
+
+body.wp-ui-react .modal-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: #1e293b;
+}
+
+body.wp-ui-react .modal-message {
+  color: #64748b;
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+}
+
+body.wp-ui-react .modal-input {
+  width: 100%;
+  max-width: 520px;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+  font-size: 1rem;
+  margin: 0 auto 20px auto;
+  outline: none;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+  text-align: center;
+}
+
+body.wp-ui-react .modal-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+body.wp-ui-react .modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+#reactSidebarRoot .curtain-btn {
+  border-radius: 6px;
+  border: 2px solid transparent;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  min-width: 64px;
+  text-align: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+#reactSidebarRoot .curtain-btn:hover {
+  filter: brightness(0.98);
+}
+
+#reactSidebarRoot .curtain-btn.is-selected {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+body.wp-ui-react .btn-count {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #334155 !important;
+  width: auto !important;
+}
+
+body.wp-ui-react .btn-count.is-selected {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: #fff !important;
+}
+
+/* ------------------------------------------------------------
+   Quick actions dock (left floating menu)
+------------------------------------------------------------ */
+
+body.wp-ui-react .wp-qa-anchor {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+
+/* Small pin next to the toggle (locks the menu open) */
+body.wp-ui-react .wp-qa-toggle-pin {
+  position: absolute;
+  left: -6px;
+  bottom: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  cursor: pointer;
+  /* Keep the pin clickable/visible even when the main toggle is hovered */
+  z-index: 10008;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(203, 213, 225, 0.95);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+  line-height: 1;
+  padding: 0;
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  color: #475569;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: visible !important;
+}
+
+body.wp-ui-react .wp-qa-toggle-pin i {
+  font-size: 12px;
+  line-height: 1;
+}
+
+body.wp-ui-react .wp-qa-toggle-pin:hover {
+  border-color: rgba(59, 130, 246, 0.55);
+  background: rgba(255, 255, 255, 0.98);
+  transform: translateY(-1px);
+  z-index: 10009;
+}
+
+body.wp-ui-react .wp-qa-toggle-pin:active {
+  transform: translateY(0);
+}
+
+body.wp-ui-react .wp-qa-toggle-pin.is-on {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+/* Make the toggle much smaller than normal cam buttons */
+body.wp-ui-react .cam-btn.wp-qa-toggle {
+  width: 40px;
+  height: 40px;
+  font-size: 0.75rem;
+  line-height: 1;
+  padding: 0;
+}
+
+/* Keep hover subtle (never push the button down) */
+body.wp-ui-react .cam-btn.wp-qa-toggle:hover {
+  transform: translateY(-2px) !important;
+}
+
+/* Sync button docked under the toggle (shown when menu is open or sync is pinned) */
+body.wp-ui-react .wp-qa-sync-dock {
+  position: absolute;
+  left: 0;
+  top: 54px; /* 40px toggle + 14px breathing room */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10002;
+  overflow: visible;
+}
+
+/* Wrapper allows a small pin button to sit on the side, like the saved-colors lock */
+body.wp-ui-react .wp-qa-sync-wrap {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+
+/* Small pin button attached to the big sync circle */
+body.wp-ui-react .wp-qa-sync-pin {
+  position: absolute;
+  left: -6px;
+  right: auto;
+  bottom: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  cursor: pointer;
+  /* Keep the pin clickable/visible even when the big sync button is hovered */
+  z-index: 10008;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(203, 213, 225, 0.95);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+  line-height: 1;
+  padding: 0;
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #475569;
+  overflow: visible !important;
+}
+
+body.wp-ui-react .wp-qa-sync-pin i {
+  font-size: 12px;
+  line-height: 1;
+}
+
+body.wp-ui-react .wp-qa-sync-pin:hover {
+  border-color: rgba(59, 130, 246, 0.55);
+  background: rgba(255, 255, 255, 0.98);
+  transform: translateY(-2px);
+  color: #3b82f6;
+  z-index: 10009;
+}
+
+body.wp-ui-react .wp-qa-sync-pin:active {
+  transform: translateY(-1px);
+}
+
+body.wp-ui-react .wp-qa-sync-pin.is-on {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+/* Menu container opens to the right of the toggle */
+body.wp-ui-react .wp-qa-menu {
+  position: absolute;
+  left: 52px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  z-index: 10002;
+  overflow: visible;
+}
+
+body.wp-ui-react .wp-qa-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+/* (legacy) the old side-by-side pin is no longer used; kept intentionally blank */
+
+/* Small floating action buttons inside the menu */
+body.wp-ui-react .wp-qa-btn {
+  background: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  color: #475569;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 0.95rem;
+  position: relative;
+  overflow: visible !important;
+}
+
+body.wp-ui-react .wp-qa-btn:hover {
+  background: #f1f5f9;
+  transform: translateY(-2px);
+  color: #3b82f6;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10005;
+}
+
+/* The bottom sketch-sync button inside the menu */
+body.wp-ui-react .wp-qa-sync {
+  background: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  color: #475569;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 1rem;
+  position: relative;
+  overflow: visible !important;
+}
+
+body.wp-ui-react .wp-qa-sync:hover {
+  background: #f1f5f9;
+  transform: translateY(-2px);
+  color: #3b82f6;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10005;
+}
+
+/* Ensure tooltips never hide behind sibling buttons */
+body.wp-ui-react .wp-qa-menu .hint-bottom:hover {
+  z-index: 10006;
+}
+
+/* Also applies to the toggle and its pins */
+body.wp-ui-react .wp-qa-anchor .hint-bottom:hover {
+  z-index: 10006;
+}
+
+/* --- In-PDF Order Editor Overlay (auto-added) --- */
+body.wp-ui-react .wp-pdf-editor-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20050;
+  background: rgba(2, 6, 23, 0.6);
+  backdrop-filter: blur(2px);
+  display: flex;
+  flex-direction: column;
+}
+
+body.wp-ui-react .wp-pdf-editor-toolbar {
+  position: sticky;
+  top: 10px;
+  z-index: 20051;
+  display: grid;
+  /* Let the middle controls live only inside the space left between zoom and close. */
+  grid-template-columns: max-content minmax(0, 1fr) max-content;
+  align-items: center;
+  gap: 12px;
+  margin: 10px 12px 0;
+  padding: 12px 14px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.92));
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 18px;
+  box-shadow:
+    0 20px 48px rgba(15, 23, 42, 0.16),
+    0 1px 0 rgba(255, 255, 255, 0.72) inset;
+  backdrop-filter: blur(14px);
+  overflow: visible;
+  isolation: isolate;
+}
+
+body.wp-ui-react .wp-pdf-editor-toolbar-left {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  overflow: visible;
+}
+
+body.wp-ui-react .wp-pdf-editor-toolbar-left .wp-pdf-editor-zoom-val {
+  min-width: 52px;
+  text-align: center;
+}
+
+body.wp-ui-react .wp-pdf-editor-toolbar-left .wp-pdf-editor-zoom {
+  padding-inline-start: 0;
+}
+
+body.wp-ui-react .wp-pdf-editor-toolbar-center {
+  justify-self: stretch;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: visible;
+  padding-block: 4px;
+  padding-inline: 8px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+body.wp-ui-react .wp-pdf-editor-toolbar-center::-webkit-scrollbar {
+  display: none;
+}
+
+body.wp-ui-react .wp-pdf-editor-toolbar-right {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  overflow: visible;
+}
+
+body.wp-ui-react .wp-pdf-editor-toolbar-spacer {
+  flex: 1;
+}
+
+body.wp-ui-react .wp-pdf-editor-btn {
+  min-height: 42px;
+  padding: 10px 14px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.9));
+  color: #0f172a;
+  border-radius: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  z-index: 1;
+  box-shadow:
+    0 10px 24px rgba(15, 23, 42, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.8) inset;
+  transition:
+    transform 0.14s ease,
+    box-shadow 0.16s ease,
+    background 0.16s ease,
+    border-color 0.16s ease,
+    color 0.16s ease;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+body.wp-ui-react .wp-pdf-editor-btn i {
+  font-size: 14px;
+}
+
+body.wp-ui-react .wp-pdf-editor-btn:focus-visible {
+  outline: none;
+  z-index: 6;
+  box-shadow:
+    0 0 0 4px rgba(59, 130, 246, 0.18),
+    0 10px 24px rgba(15, 23, 42, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.8) inset;
+}
+
+body.wp-ui-react .wp-pdf-editor-btn:disabled {
+  opacity: 0.58;
+  cursor: default;
+  transform: none;
+  box-shadow: none;
+}
+
+body.wp-ui-react .wp-pdf-editor-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  z-index: 6;
+  border-color: rgba(59, 130, 246, 0.28);
+  box-shadow:
+    0 16px 32px rgba(15, 23, 42, 0.12),
+    0 1px 0 rgba(255, 255, 255, 0.9) inset;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(241, 245, 249, 0.96));
+}
+
+body.wp-ui-react .wp-pdf-editor-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow:
+    0 8px 18px rgba(15, 23, 42, 0.1),
+    0 1px 0 rgba(255, 255, 255, 0.8) inset;
+}
+
+body.wp-ui-react .wp-pdf-editor-btn--iconOnly {
+  padding: 0;
+  width: 38px;
+  min-width: 38px;
+  height: 38px;
+  justify-content: center;
+  gap: 0;
+}
+
+body.wp-ui-react .wp-pdf-editor-btn--iconOnly:disabled {
+  opacity: 0.55;
+  cursor: default;
+  transform: none;
+  box-shadow: none;
+}
+
+body.wp-ui-react .wp-pdf-editor-btn--iconOnly:hover:disabled {
+  transform: none;
+  box-shadow: none;
+}
+
+body.wp-ui-react .wp-icon-gmail {
+  display: block;
+}
+
+body.wp-ui-react .wp-pdf-editor-btn--primary {
+  border-color: rgba(37, 99, 235, 0.3);
+  background: linear-gradient(180deg, rgba(239, 246, 255, 0.98), rgba(219, 234, 254, 0.94));
+  color: #1d4ed8;
+}
+
+body.wp-ui-react .wp-pdf-editor-btn--primary:hover:not(:disabled) {
+  background: linear-gradient(180deg, rgba(239, 246, 255, 1), rgba(191, 219, 254, 0.98));
+  border-color: rgba(37, 99, 235, 0.44);
+}
+
+body.wp-ui-react .wp-pdf-editor-btn-plus {
+  font-weight: 800;
+  opacity: 0.62;
+  margin-inline: 1px;
+}
+
+body.wp-ui-react .wp-pdf-editor-btn .wp-icon-gmail {
+  width: 18px;
+  height: 18px;
+}
+
+body.wp-ui-react .wp-pdf-editor-btn--pdf {
+  border-color: rgba(22, 163, 74, 0.34);
+  background: linear-gradient(180deg, rgba(240, 253, 244, 0.98), rgba(220, 252, 231, 0.94));
+  color: #166534;
+}
+
+body.wp-ui-react .wp-pdf-editor-btn--pdf:hover:not(:disabled) {
+  background: linear-gradient(180deg, rgba(240, 253, 244, 1), rgba(187, 247, 208, 0.98));
+  border-color: rgba(22, 163, 74, 0.46);
+}
+
+body.wp-ui-react .wp-pdf-editor-btn--pdfImg {
+  border-color: rgba(99, 102, 241, 0.34);
+  background: linear-gradient(180deg, rgba(238, 242, 255, 0.98), rgba(224, 231, 255, 0.94));
+  color: #4338ca;
+}
+
+body.wp-ui-react .wp-pdf-editor-btn--pdfImg:hover:not(:disabled) {
+  background: linear-gradient(180deg, rgba(238, 242, 255, 1), rgba(199, 210, 254, 0.98));
+  border-color: rgba(99, 102, 241, 0.46);
+}
+
+body.wp-ui-react .wp-pdf-editor-btn--mail {
+  border-color: rgba(245, 158, 11, 0.34);
+  background: linear-gradient(180deg, rgba(255, 251, 235, 0.98), rgba(254, 243, 199, 0.94));
+  color: #92400e;
+}
+
+body.wp-ui-react .wp-pdf-editor-btn--mail:hover:not(:disabled) {
+  background: linear-gradient(180deg, rgba(255, 251, 235, 1), rgba(253, 230, 138, 0.98));
+  border-color: rgba(245, 158, 11, 0.46);
+}
+
+body.wp-ui-react .wp-pdf-editor-btn--gmail {
+  border-color: rgba(234, 67, 53, 0.34);
+  background: linear-gradient(180deg, rgba(254, 242, 242, 0.98), rgba(254, 226, 226, 0.94));
+  color: #b91c1c;
+}
+
+body.wp-ui-react .wp-pdf-editor-btn--gmail:hover:not(:disabled) {
+  background: linear-gradient(180deg, rgba(254, 242, 242, 1), rgba(254, 202, 202, 0.98));
+  border-color: rgba(234, 67, 53, 0.46);
+}
+
+body.wp-ui-react .wp-pdf-editor-zoom {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px;
+  border-radius: 15px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(248, 250, 252, 0.74));
+  box-shadow:
+    0 10px 24px rgba(15, 23, 42, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.8) inset;
+}
+
+body.wp-ui-react .wp-pdf-editor-zoom-val {
+  min-width: 52px;
+  padding-inline: 4px;
+  text-align: center;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: #0f172a;
+}
+
+body.wp-ui-react .wp-pdf-editor-imgopts {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  flex: 0 0 auto;
+  min-width: 0;
+  max-width: 100%;
+  gap: 10px;
+  margin-inline-start: 2px;
+  padding-inline-start: 10px;
+  border-inline-start: 1px solid rgba(148, 163, 184, 0.24);
+}
+
+body.wp-ui-react .wp-pdf-editor-zoom,
+body.wp-ui-react .wp-pdf-editor-imgopts {
+  position: relative;
+  overflow: visible;
+}
+
+body.wp-ui-react .wp-pdf-editor-toggle {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 14px;
+  border-radius: 13px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(248, 250, 252, 0.9));
+  color: #334155;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  z-index: 1;
+  box-shadow:
+    0 10px 22px rgba(15, 23, 42, 0.07),
+    0 1px 0 rgba(255, 255, 255, 0.8) inset;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease,
+    box-shadow 0.16s ease,
+    transform 0.14s ease,
+    color 0.16s ease;
+}
+
+body.wp-ui-react .wp-pdf-editor-toggle i {
+  opacity: 0.88;
+}
+
+body.wp-ui-react .wp-pdf-editor-toggle:hover {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(241, 245, 249, 0.96));
+  border-color: rgba(59, 130, 246, 0.24);
+  box-shadow:
+    0 14px 28px rgba(15, 23, 42, 0.11),
+    0 1px 0 rgba(255, 255, 255, 0.88) inset;
+  transform: translateY(-1px);
+  z-index: 6;
+}
+
+body.wp-ui-react .wp-pdf-editor-toggle:active {
+  transform: translateY(0);
+}
+
+body.wp-ui-react .wp-pdf-editor-toggle.is-on {
+  background: linear-gradient(180deg, rgba(219, 234, 254, 1), rgba(191, 219, 254, 0.96));
+  border-color: rgba(37, 99, 235, 0.44);
+  box-shadow:
+    0 0 0 3px rgba(59, 130, 246, 0.12),
+    0 14px 30px rgba(59, 130, 246, 0.18);
+  color: #1d4ed8;
+}
+
+body.wp-ui-react .wp-pdf-editor-toggle:focus-visible {
+  outline: none;
+  z-index: 6;
+  box-shadow:
+    0 0 0 4px rgba(59, 130, 246, 0.2),
+    0 10px 22px rgba(15, 23, 42, 0.08);
+}
+
+@media (max-width: 1480px) {
+  body.wp-ui-react .wp-pdf-editor-toolbar {
+    gap: 10px;
+    padding: 10px 12px;
+  }
+
+  body.wp-ui-react .wp-pdf-editor-btn,
+  body.wp-ui-react .wp-pdf-editor-toggle {
+    min-height: 40px;
+    padding: 9px 12px;
+    font-size: 12px;
+    gap: 7px;
+  }
+
+  body.wp-ui-react .wp-pdf-editor-btn i,
+  body.wp-ui-react .wp-pdf-editor-toggle i,
+  body.wp-ui-react .wp-pdf-editor-btn .wp-icon-gmail {
+    font-size: 13px;
+    width: 16px;
+    height: 16px;
+  }
+
+  body.wp-ui-react .wp-pdf-editor-btn--iconOnly {
+    width: 34px;
+    min-width: 34px;
+    height: 34px;
+    padding: 0;
+    gap: 0;
+  }
+
+  body.wp-ui-react .wp-pdf-editor-zoom {
+    gap: 4px;
+    padding: 2px;
+  }
+
+  body.wp-ui-react .wp-pdf-editor-zoom-val,
+  body.wp-ui-react .wp-pdf-editor-toolbar-left .wp-pdf-editor-zoom-val {
+    min-width: 46px;
+    font-size: 11px;
+  }
+
+  body.wp-ui-react .wp-pdf-editor-imgopts {
+    gap: 8px;
+    padding-inline-start: 8px;
+  }
+}
+
+@media (max-width: 1240px) {
+  body.wp-ui-react .wp-pdf-editor-toolbar {
+    gap: 8px;
+    padding: 9px 10px;
+  }
+
+  body.wp-ui-react .wp-pdf-editor-toolbar-center {
+    gap: 8px;
+  }
+
+  body.wp-ui-react .wp-pdf-editor-btn,
+  body.wp-ui-react .wp-pdf-editor-toggle {
+    min-height: 37px;
+    padding: 8px 10px;
+    font-size: 11.5px;
+    gap: 6px;
+    border-radius: 12px;
+  }
+
+  body.wp-ui-react .wp-pdf-editor-btn--iconOnly {
+    width: 32px;
+    min-width: 32px;
+    height: 32px;
+  }
+
+  body.wp-ui-react .wp-pdf-editor-zoom-val,
+  body.wp-ui-react .wp-pdf-editor-toolbar-left .wp-pdf-editor-zoom-val {
+    min-width: 42px;
+    font-size: 10.5px;
+  }
+
+  body.wp-ui-react .wp-pdf-editor-imgopts {
+    gap: 6px;
+    margin-inline-start: 0;
+    padding-inline-start: 6px;
+  }
+}
+
+body.wp-ui-react .wp-pdf-editor-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 13px;
+  color: #0f172a;
+}
+
+body.wp-ui-react .wp-pdf-editor-check input[type='checkbox'] {
+  transform: translateY(0.5px);
+}
+
+body.wp-ui-react .wp-pdf-editor-stage {
+  flex: 1;
+  overflow: auto;
+  padding: 18px;
+}
+
+body.wp-ui-react .wp-pdf-editor-stage.is-drop {
+  outline: 3px dashed rgba(37, 99, 235, 0.55);
+  outline-offset: -10px;
+  background: rgba(37, 99, 235, 0.06);
+}
+
+body.wp-ui-react .wp-pdf-editor-page {
+  position: relative;
+  margin: 0 auto;
+  background: #fff;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  border-radius: 10px;
+  /* Scales fonts/padding for overlay fields to match the current zoom */
+  --wp-pdf-zoom: 1;
+}
+
+body.wp-ui-react .wp-pdf-editor-page-wrap {
+  position: relative;
+  width: fit-content;
+  margin: 0 auto;
+  overflow: visible;
+  padding-right: 0;
+}
+
+body.wp-ui-react .wp-pdf-editor-canvas {
+  display: block;
+}
+
+body.wp-ui-react .wp-pdf-editor-input,
+body.wp-ui-react .wp-pdf-editor-textarea {
+  position: absolute;
+  box-sizing: border-box;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #0f172a;
+  font-family: 'DejaVu Sans', 'DejaVuSans', Arial, sans-serif;
+  font-size: calc(14px * var(--wp-pdf-zoom, 1));
+  line-height: 1.35;
+}
+
+body.wp-ui-react .wp-pdf-editor-input--small {
+  padding: calc(2px * var(--wp-pdf-zoom, 1)) calc(4px * var(--wp-pdf-zoom, 1));
+  font-size: calc(12px * var(--wp-pdf-zoom, 1));
+  line-height: 1.2;
+}
+
+body.wp-ui-react .wp-pdf-editor-textarea {
+  /* Keep the caret close to the right edge for Hebrew */
+  padding: calc(6px * var(--wp-pdf-zoom, 1)) calc(2px * var(--wp-pdf-zoom, 1))
+    calc(6px * var(--wp-pdf-zoom, 1)) calc(6px * var(--wp-pdf-zoom, 1));
+  resize: none;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+
+/* Match form-like UX: RTL inputs start on the right (caret + alignment) */
+body.wp-ui-react .wp-pdf-editor-input[dir='rtl'],
+body.wp-ui-react .wp-pdf-editor-textarea[dir='rtl'] {
+  direction: rtl;
+  text-align: right;
+  /* Better mixed Hebrew/English caret behavior in browsers */
+  unicode-bidi: plaintext;
+}
+
+body.wp-ui-react .wp-pdf-editor-input[dir='ltr'],
+body.wp-ui-react .wp-pdf-editor-textarea[dir='ltr'] {
+  direction: ltr;
+  text-align: left;
+  unicode-bidi: plaintext;
+}
+
+body.wp-ui-react .wp-pdf-editor-input:focus,
+body.wp-ui-react .wp-pdf-editor-textarea:focus {
+  background: rgba(255, 255, 255, 0.22);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
+  border-radius: calc(6px * var(--wp-pdf-zoom, 1));
+}
+
+/* In-PDF rich editors (contenteditable) */
+body.wp-ui-react .wp-pdf-editor-richbox {
+  position: absolute;
+  box-sizing: border-box;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  outline: none;
+  background: rgba(255, 255, 255, 0.72);
+  color: #0f172a;
+  font-family: 'DejaVu Sans', 'DejaVuSans', Arial, sans-serif;
+  font-size: calc(14px * var(--wp-pdf-zoom, 1));
+  line-height: 1.35;
+  border-radius: calc(6px * var(--wp-pdf-zoom, 1));
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: calc(6px * var(--wp-pdf-zoom, 1));
+  padding: calc(8px * var(--wp-pdf-zoom, 1));
+}
+
+body.wp-ui-react .wp-pdf-editor-rich-auto {
+  white-space: pre-wrap;
+  line-height: 1.25;
+}
+
+body.wp-ui-react .wp-pdf-editor-rich-delim {
+  opacity: 0.75;
+  font-size: calc(12px * var(--wp-pdf-zoom, 1));
+  border-top: 1px dashed rgba(0, 0, 0, 0.25);
+  padding-top: calc(6px * var(--wp-pdf-zoom, 1));
+  white-space: pre-wrap;
+}
+
+body.wp-ui-react .wp-pdf-editor-rich-editor {
+  outline: none;
+  min-height: calc(36px * var(--wp-pdf-zoom, 1));
+  flex: 1 1 auto;
+  width: 100%;
+  white-space: pre-wrap;
+  direction: rtl;
+  text-align: right;
+  unicode-bidi: plaintext;
+  line-height: 1.25;
+}
+
+body.wp-ui-react .wp-pdf-editor-rich-editor:focus {
+  background: rgba(255, 255, 255, 0.22);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
+  border-radius: calc(6px * var(--wp-pdf-zoom, 1));
+}
+
+body.wp-ui-react .wp-pdf-editor-rich-editor:empty:before {
+  content: attr(data-placeholder);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+/* Notes editor is an absolute positioned rich editor (same look as inputs) */
+body.wp-ui-react .wp-pdf-editor-rich-editor--notes {
+  position: absolute;
+  box-sizing: border-box;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  outline: none;
+  background: rgba(255, 255, 255, 0.72);
+  border-radius: calc(6px * var(--wp-pdf-zoom, 1));
+  overflow: auto;
+  padding: calc(8px * var(--wp-pdf-zoom, 1));
+}
+
+body.wp-ui-react .wp-pdf-editor-size-anchor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+  opacity: 0;
+}
+
+/* PDF editor: local confirm modal for inline manual notes */
+body.wp-ui-react .wp-pdf-inline-modal {
+  /* Make sure it sits above the PDF toolbar inside the overlay stacking context */
+  z-index: 46000;
+}
+
+body.wp-ui-react .wp-pdf-inline-modal .modal-box {
+  width: min(680px, calc(100vw - 40px));
+}
+
+body.wp-ui-react .wp-pdf-inline-message {
+  white-space: pre-wrap;
+  text-align: right;
+  direction: rtl;
+}
+
+body.wp-ui-react .wp-pdf-inline-preview {
+  margin: 0 0 18px 0;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+  max-height: 180px;
+  overflow: auto;
+  white-space: pre-wrap;
+  text-align: right;
+  direction: rtl;
+  font-size: 13px;
+  line-height: 1.35;
+  color: #0f172a;
+}
+
+#reactSidebarRoot .wp-door-trim-panel .type-option--compact {
+  padding: 6px 8px;
+  font-size: 0.78rem;
+}
+
+#reactSidebarRoot .wp-door-trim-panel .type-option--iconrow {
+  min-height: 30px;
+  gap: 5px;
+}
+
+#reactSidebarRoot .wp-door-trim-panel .btn.btn-count {
+  min-height: 30px;
+  padding: 5px 8px !important;
+  font-size: 0.78rem !important;
+  line-height: 1.15;
+}
+
+#reactSidebarRoot .wp-door-trim-span-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+#reactSidebarRoot .wp-door-trim-span-row {
+  display: flex;
+  gap: 6px;
+}
+
+#reactSidebarRoot .wp-door-trim-span-btn {
+  flex: 1 1 0;
+}
+
+body.wp-ui-react .wp-pdf-sketch-cta-wrap {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 18px;
+  z-index: 4;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+body.wp-ui-react .wp-pdf-sketch-cta-dock {
+  position: relative;
+  margin: 0 auto;
+  width: fit-content;
+  max-width: calc(100% - 24px);
+  pointer-events: auto;
+}
+
+body.wp-ui-react .wp-pdf-sketch-cta {
+  width: fit-content;
+  min-width: 0;
+  max-width: min(340px, calc(100vw - 64px));
+  min-height: 46px;
+  padding-inline: 16px;
+  justify-content: center;
+  border-radius: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+  box-shadow:
+    0 18px 42px rgba(15, 23, 42, 0.24),
+    0 1px 0 rgba(255, 255, 255, 0.24) inset;
+}
+
+body.wp-ui-react .wp-pdf-sketch-cta:hover:not(:disabled) {
+  box-shadow:
+    0 22px 48px rgba(15, 23, 42, 0.28),
+    0 1px 0 rgba(255, 255, 255, 0.28) inset;
+}
+
+body.wp-ui-react .wp-pdf-sketch-cta.is-on {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border-color: rgba(29, 78, 216, 0.88);
+  color: #ffffff;
+  box-shadow:
+    0 22px 48px rgba(29, 78, 216, 0.32),
+    0 1px 0 rgba(255, 255, 255, 0.22) inset;
+}
+
+body.wp-ui-react .wp-pdf-sketch-panel {
+  width: min(1180px, calc(100vw - 36px));
+  margin: 0 auto 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+body.wp-ui-react .wp-pdf-sketch-panel-body {
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 16px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.14);
+  padding: 16px;
+}
+
+body.wp-ui-react .wp-pdf-sketch-panel-shell {
+  display: grid;
+  grid-template-columns: 60px minmax(0, 1fr) 60px;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+body.wp-ui-react .wp-pdf-sketch-panel-content {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+body.wp-ui-react .wp-pdf-sketch-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+body.wp-ui-react .wp-pdf-sketch-panel-titlebox {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+body.wp-ui-react .wp-pdf-sketch-panel-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+body.wp-ui-react .wp-pdf-sketch-panel-subtitle {
+  font-size: 13px;
+  color: #475569;
+}
+
+body.wp-ui-react .wp-pdf-sketch-panel-active {
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(239, 246, 255, 0.95);
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+body.wp-ui-react .wp-pdf-sketch-toolbar {
+  display: block;
+  gap: 10px;
+}
+
+body.wp-ui-react .wp-pdf-sketch-toolbar-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  max-height: inherit;
+  overflow-y: auto;
+  overflow-x: visible;
+  overscroll-behavior: contain;
+}
+
+body.wp-ui-react .wp-pdf-sketch-toolbar-rail {
+  position: relative;
+  flex: 0 0 60px;
+  width: 60px;
+  min-width: 60px;
+  pointer-events: none;
+}
+
+body.wp-ui-react .wp-pdf-sketch-toolbar-rail--left {
+  justify-self: start;
+}
+
+body.wp-ui-react .wp-pdf-sketch-toolbar--floating {
+  position: sticky;
+  top: 90px;
+  align-self: flex-start;
+  width: auto;
+  min-width: 56px;
+  padding: 10px 8px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  box-shadow: 0 18px 38px rgba(15, 23, 42, 0.16);
+  z-index: 12;
+  pointer-events: auto;
+  overflow: visible;
+}
+
+body.wp-ui-react .wp-pdf-sketch-toolbar--floating.is-fixed {
+  position: fixed;
+}
+
+body.wp-ui-react .wp-pdf-sketch-toolbar--shape {
+  background: rgba(248, 250, 252, 0.98);
+}
+
+body.wp-ui-react .wp-pdf-sketch-toolbar-control {
+  position: relative;
+  z-index: 0;
+}
+
+body.wp-ui-react .wp-pdf-sketch-toolbar-control:focus-within {
+  z-index: 4;
+}
+
+body.wp-ui-react .wp-pdf-sketch-tool-btn,
+body.wp-ui-react .wp-pdf-sketch-toolbar-trigger {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  border-radius: 12px;
+  font-weight: 800;
+}
+
+body.wp-ui-react .wp-pdf-sketch-tool-btn--combo {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+body.wp-ui-react .wp-pdf-sketch-tool-btn-mainicon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+body.wp-ui-react .wp-pdf-sketch-tool-btn-caret {
+  position: absolute;
+  inset-inline-end: 5px;
+  bottom: 4px;
+  font-size: 10px;
+  opacity: 0.8;
+}
+
+body.wp-ui-react .wp-pdf-sketch-tool-palette {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 10px;
+}
+
+body.wp-ui-react .wp-pdf-sketch-tool-palette-btn {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  border-radius: 12px;
+}
+
+body.wp-ui-react .wp-pdf-sketch-tool-btn--shape {
+  color: #334155;
+}
+
+body.wp-ui-react .wp-pdf-sketch-tool-btn--shape.active-state {
+  color: #1d4ed8;
+  border-color: rgba(37, 99, 235, 0.45);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+body.wp-ui-react .wp-pdf-sketch-shape-icon {
+  display: inline-block;
+  box-sizing: border-box;
+  width: 22px;
+  height: 14px;
+  border: 2px solid currentColor;
+}
+
+body.wp-ui-react .wp-pdf-sketch-shape-icon--ellipse {
+  border-radius: 999px;
+}
+
+body.wp-ui-react .wp-pdf-sketch-toolbar-color-chip {
+  display: block;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.18);
+}
+
+body.wp-ui-react .wp-pdf-sketch-size-palette,
+body.wp-ui-react .wp-pdf-sketch-color-palette {
+  top: 50%;
+  left: auto;
+  right: calc(100% + 12px);
+  transform: translateY(-50%);
+  width: fit-content;
+  min-width: 0;
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.18);
+  align-items: center;
+  z-index: 30;
+}
+
+body.wp-ui-react .wp-pdf-sketch-floating-palette {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  right: auto !important;
+  transform: none !important;
+  margin: 0;
+  z-index: 46020;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+body.wp-ui-react .wp-pdf-sketch-color-palette {
+  max-width: 196px;
+  gap: 8px;
+}
+
+body.wp-ui-react .wp-pdf-sketch-color-swatch {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+}
+
+body.wp-ui-react .wp-pdf-sketch-color-swatch.is-selected {
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.24);
+  border-color: #2563eb;
+}
+
+body.wp-ui-react .wp-pdf-sketch-size-palette .size-swatch {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+}
+
+body.wp-ui-react .wp-pdf-sketch-toolbar-divider {
+  width: 32px;
+  height: 1px;
+  background: rgba(148, 163, 184, 0.45);
+  margin: 2px 0;
+}
+
+body.wp-ui-react .wp-pdf-sketch-status {
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: rgba(241, 245, 249, 0.92);
+  color: #0f172a;
+}
+
+body.wp-ui-react .wp-pdf-sketch-status.is-error {
+  background: rgba(254, 242, 242, 0.96);
+  color: #991b1b;
+}
+
+body.wp-ui-react .wp-pdf-sketch-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: min(860px, 100%);
+  margin-inline: auto;
+}
+
+body.wp-ui-react .wp-pdf-sketch-card {
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 16px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+}
+
+body.wp-ui-react .wp-pdf-sketch-card.is-selected {
+  border-color: rgba(37, 99, 235, 0.45);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+body.wp-ui-react .wp-pdf-sketch-card-title {
+  width: 100%;
+  border: 0;
+  background: rgba(248, 250, 252, 0.96);
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+body.wp-ui-react .wp-pdf-sketch-card-sub {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+body.wp-ui-react .wp-pdf-sketch-card-stage {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: linear-gradient(180deg, #e2e8f0, #f8fafc);
+}
+
+body.wp-ui-react .wp-pdf-sketch-card-image {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  pointer-events: none;
+  z-index: 1;
+}
+
+body.wp-ui-react .wp-pdf-sketch-card-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: crosshair;
+  z-index: 2;
+}
+
+body.wp-ui-react .wp-pdf-sketch-card-canvas.is-pen,
+body.wp-ui-react .wp-pdf-sketch-card-canvas.is-marker {
+  cursor: crosshair;
+}
+
+body.wp-ui-react .wp-pdf-sketch-card-canvas.is-text {
+  cursor: text;
+}
+
+body.wp-ui-react .wp-pdf-sketch-card-canvas.is-eraser {
+  cursor:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cpath d='M8 20l8-8 6 6-8 8H8z' fill='%23f8fafc' stroke='%23475569' stroke-width='1.6'/%3E%3Cpath d='M14 8l3-3c1-1 2.6-1 3.5 0l2.5 2.5c1 1 1 2.6 0 3.5l-3 3z' fill='%23e2e8f0' stroke='%23475569' stroke-width='1.6'/%3E%3Cpath d='M6 22h10' stroke='%2394a3b8' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E")
+      6 22,
+    crosshair;
+}
+
+body.wp-ui-react .wp-pdf-sketch-card-text-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+body.wp-ui-react .wp-pdf-sketch-card-text-layer.is-text-mode {
+  /*
+   * Keep the empty layer transparent to pointer hits so the canvas below can
+   * start a new text-box drag. Existing note boxes still opt-in to pointer
+   * events explicitly.
+   */
+  pointer-events: none;
+}
+
+body.wp-ui-react .wp-pdf-sketch-card-text-layer .annotation-box {
+  z-index: 3;
+}
+
+body.wp-ui-react .wp-pdf-sketch-card-text-layer .annotation-box .editor {
+  min-height: 100%;
+  overflow-wrap: anywhere;
+}
+
+body.wp-ui-react .wp-pdf-sketch-card-text-layer .annotation-box .note-hit {
+  opacity: 1;
+}
+
+body.wp-ui-react .wp-pdf-sketch-card-text-layer.is-text-mode .annotation-box {
+  pointer-events: auto !important;
+}
+
+body.wp-ui-react .wp-pdf-sketch-card-text-layer.is-text-mode .annotation-box .editor {
+  pointer-events: auto !important;
+}
+
+@media (max-width: 980px) {
+  body.wp-ui-react .wp-pdf-sketch-panel-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  body.wp-ui-react .wp-pdf-sketch-toolbar-rail {
+    flex: 0 0 auto;
+    width: 100%;
+    min-width: 0;
+    pointer-events: auto;
+  }
+
+  body.wp-ui-react .wp-pdf-sketch-toolbar-rail--left {
+    order: -1;
+  }
+
+  body.wp-ui-react .wp-pdf-sketch-toolbar--floating,
+  body.wp-ui-react .wp-pdf-sketch-toolbar--floating.is-fixed {
+    position: sticky;
+    top: 76px;
+    right: auto;
+    max-height: none;
+    width: 100%;
+  }
+
+  body.wp-ui-react .wp-pdf-sketch-toolbar-stack {
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-height: none;
+  }
+
+  body.wp-ui-react .wp-pdf-sketch-size-palette,
+  body.wp-ui-react .wp-pdf-sketch-color-palette {
+    top: calc(100% + 10px);
+    right: 50%;
+    left: auto;
+    transform: translateX(50%);
+  }
+
+  body.wp-ui-react .wp-pdf-sketch-grid {
+    width: 100%;
+  }
+}
+
+/* Structure/sketch controls: leg height + width side by side. */
+#reactSidebarRoot .wp-r-leg-size-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  direction: rtl;
+}
+
+#reactSidebarRoot .wp-r-leg-size-fields > * {
+  min-width: 0;
+}
+
+#reactSidebarRoot .wp-r-leg-size-fields .wp-field,
+#reactSidebarRoot .wp-r-leg-size-fields .wp-sketch-box-cell {
+  margin: 0;
+  min-width: 0;
+}
+
+#reactSidebarRoot .wp-r-leg-size-fields .wp-r-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#reactSidebarRoot .wp-r-leg-size-fields .wp-r-label,
+#reactSidebarRoot .wp-r-leg-size-field .wp-field-label {
+  display: block;
+  white-space: nowrap;
+  text-align: center;
+  line-height: 1.15;
+}
+
+/* --------------------------------------------------------------------------
+ * Structure + interior sketch base/legs selectors: compact single-row controls
+ * -------------------------------------------------------------------------- */
+
+/* Structure tab: only the secondary controls opened under the main "רגליים"
+ * base button are compacted. The main base-type buttons keep their existing
+ * height, so the hierarchy remains clear.
+ */
+#reactSidebarRoot
+  .tab-content[data-tab='structure']
+  :is(.wp-r-base-leg-style-selector, .wp-r-base-leg-color-selector) {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+#reactSidebarRoot
+  .tab-content[data-tab='structure']
+  :is(.wp-r-base-leg-style-selector, .wp-r-base-leg-color-selector)
+  .type-option {
+  min-width: 0;
+  min-height: 32px;
+  padding: 6px 8px;
+  font-size: 0.78rem;
+  line-height: 1.05;
+  border-radius: 8px;
+  margin-bottom: 0;
+}
+
+/* Interior tab / sketch add-box: the choice panels no longer reuse the generic
+ * .wp-layout-grid because that global utility is intentionally two columns.
+ * These panels declare their own 2/3-column grid so three choices stay on one row.
+ */
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .wp-sketch-choice-panel {
+  grid-column: 1 / -1;
+}
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .wp-sketch-choice-panel-inner {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .wp-sketch-choice-title {
+  margin-bottom: 8px;
+}
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .wp-sketch-choice-grid {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 0;
+  direction: rtl;
+}
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .wp-sketch-choice-grid--three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .wp-sketch-choice-grid--two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+#reactSidebarRoot
+  .tab-content[data-tab='interior']
+  .wp-tool-card--layout
+  .wp-sketch-choice-option.type-option {
+  width: 100%;
+  min-width: 0;
+  height: 30px;
+  min-height: 30px;
+  padding: 0 6px;
+  font-size: 0.76rem;
+  line-height: 1.05;
+  border-radius: 7px;
+  gap: 4px;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+#reactSidebarRoot
+  .tab-content[data-tab='interior']
+  .wp-tool-card--layout
+  .wp-sketch-choice-option.type-option
+  i {
+  font-size: 0.9em;
+}
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .wp-sketch-choice-notice {
+  margin-top: 8px;
+}
+
+/* Interior sketch leg dimensions are rendered inside the outer box grid. They
+ * must span the full row first; otherwise each field gets only a quarter of the
+ * panel and the Hebrew labels wrap.
+ */
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .wp-r-sketch-box-leg-size-fields {
+  grid-column: 1 / -1;
+  margin-top: 2px;
+}
+
+#reactSidebarRoot
+  .tab-content[data-tab='interior']
+  .wp-tool-card--layout
+  .wp-r-sketch-box-leg-size-fields
+  .wp-sketch-box-cell--input {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+#reactSidebarRoot
+  .tab-content[data-tab='interior']
+  .wp-tool-card--layout
+  .wp-r-sketch-box-leg-size-fields
+  .wp-r-label {
+  margin-bottom: 4px !important;
+  font-size: 0.82rem;
+}
+
+/* React option button primitives: one canonical surface for repeated choice grids. */
+#reactSidebarRoot .wp-r-option-button-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 8px;
+  align-items: stretch;
+  width: 100%;
+}
+
+#reactSidebarRoot .wp-r-option-button-group--two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+#reactSidebarRoot .wp-r-option-button-group--three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+#reactSidebarRoot .wp-r-option-button-group--compact {
+  gap: 7px;
+}
+
+#reactSidebarRoot .wp-r-option-button-group--micro {
+  gap: 6px;
+}
+
+#reactSidebarRoot .wp-r-option-button {
+  min-width: 0;
+}
+
+
+#reactSidebarRoot .wp-r-option-button--micro {
+  min-height: 34px;
+  padding-block: 6px;
+  padding-inline: 8px;
+  line-height: 1.15;
+}
+
+#reactSidebarRoot .wp-r-option-button--compact {
+  min-height: 38px;
+}

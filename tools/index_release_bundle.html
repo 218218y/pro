@@ -1,0 +1,219 @@
+<!-- *  Pro System
+ * Copyright (c) 2026 [רהיטי ברגיג]
+ * All Rights Reserved.
+ * Unauthorized copying of this file, via any medium is strictly prohibited.
+ * Proprietary and confidential.
+-->
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <style>
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+    </style>
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>עיצוב ארונות PRO - Release</title>
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
+    <!-- In dist/release we copy css/* contents into the dist root (no dist/css folder). -->
+    <link rel="stylesheet" href="pro_styles.css" />
+    <link rel="stylesheet" href="react_tokens.css" />
+    <link rel="stylesheet" href="react_styles.css" />
+
+    <script src="./wp_logo_data.js"></script>
+  </head>
+  <body>
+    <div id="sidebar">
+      <div id="reactSidebarRoot"></div>
+    </div>
+
+    <div id="viewer-container">
+      <div id="reactOverlayRoot"></div>
+      <div class="copyright-notice" aria-label="הערת זכויות והדמיה בלבד">
+        <span class="copyright-notice-line copyright-notice-line--top"
+          >הדמיה בלבד, תתכן סטיה במידות וצבעים</span
+        >
+        <span class="copyright-notice-line copyright-notice-line--bottom"
+          >© כל הזכויות שמורות לרהיטי ברגיג</span
+        >
+      </div>
+    </div>
+
+    <noscript>צריך להפעיל JavaScript כדי להריץ את WardrobePro.</noscript>
+
+    <!-- Release bundle loader (STRICT):
+         We load ONLY the generated Three vendor bundle.
+         No fallback.
+         This ensures release visuals match the vendor bundle exactly, and we immediately know
+         if the vendor is missing / incomplete. -->
+    <script type="module">
+      (function () {
+        function showFatalOverlay(title, err) {
+          try {
+            console.error('[WP LOADER]', title, err);
+          } catch (_) {}
+          const overlay = document.createElement('div');
+          overlay.style.cssText = [
+            'position:fixed',
+            'inset:0',
+            'z-index:999999',
+            'display:flex',
+            'align-items:center',
+            'justify-content:center',
+            'background:#0b1220',
+            'color:#fff',
+            'padding:24px',
+            'font-family:Heebo,Arial,sans-serif',
+            'text-align:center',
+          ].join(';');
+
+          const safe = s =>
+            String(s || '').replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' })[ch]);
+
+          overlay.innerHTML = `
+            <div style="max-width:920px;line-height:1.7">
+              <div style="font-size:22px;font-weight:800;margin-bottom:10px">שגיאת טעינה: ${safe(title)}</div>
+              <div style="opacity:.9;margin-bottom:14px">
+                לא הצלחנו לטעון את ספריות Three.js (vendor) כ־<b>ESM</b> — או שה־boot נכשל.
+              </div>
+              <div style="text-align:right;background:rgba(255,255,255,.08);padding:14px 16px;border-radius:14px">
+                <div style="font-weight:800;margin-bottom:8px">בדיקה מהירה:</div>
+                <ol style="margin:0;padding-right:18px">
+                  <li>ב־<b>release</b> צריך להיות הקובץ:</li>
+                  <li style="list-style:none;margin:8px 0 0 0">
+                    <div dir="ltr" style="background:rgba(0,0,0,.35);padding:10px 12px;border-radius:12px;display:inline-block">
+                      libs/three.vendor.js
+                    </div>
+                  </li>
+                  <li style="margin-top:10px">פתח קונסול כדי לראות מה חסר/נכשל</li>
+                  <li style="margin-top:8px">רענן (Ctrl+F5)</li>
+                </ol>
+                <div style="margin-top:10px;opacity:.85;font-size:13px">
+                  טיפ: אם אתה על נטפרי/פילטר — לפעמים קבצי JS מוחלפים בעמוד חסימה (HTML). במקרה כזה חייבים קבצים מקומיים תקינים.
+                </div>
+              </div>
+            </div>
+          `;
+          document.body.appendChild(overlay);
+        }
+
+        async function loadThreeVendor() {
+          const mod = await import('./libs/three.vendor.js');
+          const THREE =
+            mod && mod.THREE ? mod.THREE : mod && mod.default && mod.default.THREE ? mod.default.THREE : null;
+          if (!THREE) throw new Error('three.vendor.js loaded but missing export: THREE');
+
+          // Strict sanity-check:
+          // If the vendor bundle is missing key constants/exports, release visuals can drift.
+          // Fail fast with a clear error.
+          const required = [
+            'WebGLRenderer',
+            'SRGBColorSpace',
+            // tone mapping is optional (we accept either constant), but at least one must exist
+          ];
+          const missing = required.filter(k => !(k in THREE));
+          if (!('NeutralToneMapping' in THREE) && !('ACESFilmicToneMapping' in THREE)) {
+            missing.push('NeutralToneMapping|ACESFilmicToneMapping');
+          }
+          if (missing.length) {
+            throw new Error('three.vendor.js is missing required exports: ' + missing.join(', '));
+          }
+
+          return THREE;
+        }
+
+        async function boot() {
+          try {
+            const THREE = await loadThreeVendor();
+            const { boot } = await import('./wardrobepro.bundle.js');
+
+            // Runtime config module (optional):
+            // ../wp_runtime_config.mjs can export either:
+            //   export default { supabaseCloudSync: { ... } };
+            //   export default { config: { ... }, flags: { ... } };
+            async function loadRuntimeModule() {
+              try {
+                const url = new URL('../wp_runtime_config.mjs', import.meta.url).toString();
+                const mod = await import(url);
+                const raw = mod && typeof mod === 'object' && 'default' in mod ? mod.default : mod;
+                if (!raw || typeof raw !== 'object') return { config: null, flags: null };
+
+                const flags = raw.flags && typeof raw.flags === 'object' ? raw.flags : null;
+                const cfgRaw = raw.config && typeof raw.config === 'object' ? raw.config : raw;
+                let cfg = cfgRaw && typeof cfgRaw === 'object' ? Object.assign({}, cfgRaw) : null;
+
+                // If the module exported url/anonKey directly, treat it as supabaseCloudSync.
+                if (cfg && !('supabaseCloudSync' in cfg) && ('url' in cfg || 'anonKey' in cfg)) {
+                  cfg = { supabaseCloudSync: cfg };
+                }
+                // If we used the flat shape and also got flags, avoid merging flags into config.
+                if (cfg && cfg === raw && flags) {
+                  cfg = Object.assign({}, raw);
+                  delete cfg.flags;
+                }
+                return { config: cfg, flags };
+              } catch (_) {
+                // Missing file is OK (Cloud Sync disabled unless env vars are provided).
+                return { config: null, flags: null };
+              }
+            }
+
+            const runtime = await loadRuntimeModule();
+            const flags = Object.assign({ uiFramework: 'react' }, runtime.flags || {});
+            const config = Object.assign(
+              {
+                cacheBudgetMb: 128,
+                cacheMaxItems: 2000,
+                debugBootTimings: false,
+              },
+              runtime.config || {}
+            );
+
+            // Pure-ESM DI: inject browser env for modules that require window/document.
+            const app = await boot({
+              deps: {
+                THREE,
+                flags,
+                config,
+                browser: {
+                  window,
+                  document,
+                  location: window.location,
+                  navigator: window.navigator,
+                },
+              },
+            });
+
+            if (!app) throw new Error('ESM boot failed: app is null/undefined');
+          } catch (err) {
+            showFatalOverlay('Boot', err);
+          }
+        }
+
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+        else boot();
+      })();
+    </script>
+  </body>
+</html>

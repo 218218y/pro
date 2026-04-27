@@ -1,0 +1,80 @@
+/*
+ * React UI Tokens (Stage 2)
+ *
+ * Keep these small and boring: spacing, typography, and a few semantic accents.
+ * Colors/palette live in pro_styles.css (:root) and are reused here.
+ */
+
+:root {
+  /* Spacing */
+  --wp-r-space-1: 4px;
+  --wp-r-space-2: 8px;
+  --wp-r-space-3: 12px;
+  --wp-r-space-4: 16px;
+  --wp-r-space-5: 20px;
+
+  /* Typography */
+  --wp-r-font-xs: 0.8rem;
+  --wp-r-font-sm: 0.85rem;
+  --wp-r-font-md: 0.9rem;
+  --wp-r-line-md: 1.4;
+
+  /* Controls */
+  --wp-r-input-h: 34px;
+
+  /* Aliases to the legacy palette (keep React styling consistent without copying colors) */
+  --wp-r-border: var(--border-color);
+  --wp-r-panel-bg: var(--panel-bg);
+  --wp-r-input-bg: var(--input-bg);
+  --wp-r-text-main: var(--text-main);
+  --wp-r-text-secondary: var(--text-secondary);
+
+  /* Semantics */
+  --wp-r-warn: #d97706;
+}
+
+/* Simple utilities (React-only) */
+body.wp-ui-react #reactSidebarRoot .wp-r-label-block {
+  display: block;
+}
+
+body.wp-ui-react #reactSidebarRoot .wp-r-mt-1 {
+  margin-top: var(--wp-r-space-1);
+}
+
+body.wp-ui-react #reactSidebarRoot .wp-r-mt-2 {
+  margin-top: var(--wp-r-space-2);
+}
+
+body.wp-ui-react #reactSidebarRoot .wp-r-mt-3 {
+  margin-top: var(--wp-r-space-3);
+}
+
+body.wp-ui-react #reactSidebarRoot .wp-r-mt-4 {
+  margin-top: var(--wp-r-space-4);
+}
+
+body.wp-ui-react #reactSidebarRoot .wp-r-mt-5 {
+  margin-top: var(--wp-r-space-5);
+}
+
+body.wp-ui-react #reactSidebarRoot .wp-r-ml-1 {
+  margin-inline-start: var(--wp-r-space-1);
+}
+
+body.wp-ui-react #reactSidebarRoot .wp-r-flex {
+  display: flex;
+}
+
+body.wp-ui-react #reactSidebarRoot .wp-r-flex-center {
+  display: flex;
+  align-items: center;
+}
+
+body.wp-ui-react #reactSidebarRoot .wp-r-gap-2 {
+  gap: var(--wp-r-space-2);
+}
+
+body.wp-ui-react #reactSidebarRoot .wp-r-gap-3 {
+  gap: var(--wp-r-space-3);
+}

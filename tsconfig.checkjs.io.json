@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "checkJs": true,
+    "strict": false,
+    "noImplicitAny": false
+  },
+  "include": ["esm/native/io/**/*.ts", "types/**/*.d.ts", "types/**/*.ts"],
+  "exclude": ["node_modules", "libs/**", "dist", "release"]
+}

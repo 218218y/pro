@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.checkjs.platform.json",
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true,
+    "checkJs": false
+  },
+  "include": ["esm/native/platform/**/*.ts", "types/**/*.d.ts", "types/**/*.ts"],
+  "exclude": ["node_modules", "libs/**", "dist", "release"]
+}

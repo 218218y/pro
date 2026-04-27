@@ -1,0 +1,20 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "checkJs": true,
+    "strict": false,
+    "noImplicitAny": false
+  },
+  "include": [
+    "wp_logo_data.js",
+    "esm/prelude.ts",
+    "esm/app_container.ts",
+    "esm/entry_pro.ts",
+    "esm/entry_pro_main.ts",
+    "esm/main.ts",
+    "esm/boot/**/*.ts",
+    "types/**/*.d.ts",
+    "types/**/*.ts"
+  ],
+  "exclude": ["node_modules", "libs/**", "dist", "release"]
+}

@@ -1,0 +1,202 @@
+import type { CornerCellCfg } from './corner_geometry_plan.js';
+import type {
+  CornerWingInteriorCellRuntime,
+  CornerWingInteriorRuntime,
+} from './corner_wing_cell_interiors_contracts.js';
+
+export type CornerWingInteriorShelfRuntime = {
+  shelfMat: unknown;
+  glassShelfMat: unknown | null;
+  GLASS_SHELF_THICK: number;
+  DOUBLE_SHELF_THICK: number;
+  readCornerShelfVariant(cfgCell: CornerCellCfg, gridIndex: number): 'regular' | 'double' | 'glass' | 'brace';
+  addCornerShelfPins(
+    shelfY: number,
+    shelfZ: number,
+    shelfDepth: number,
+    shelfH: number,
+    isBrace: boolean,
+    leftInnerX: number,
+    rightInnerX: number,
+    moduleIndex: string
+  ): void;
+};
+
+export function createCornerWingInteriorShelfRuntime(
+  runtime: CornerWingInteriorRuntime
+): CornerWingInteriorShelfRuntime {
+  const shelfMat = runtime.getCornerMat('corner_shelves', runtime.bodyMat);
+  const GLASS_SHELF_THICK = 0.018;
+  const DOUBLE_SHELF_THICK = Math.max(runtime.woodThick, runtime.woodThick * 2);
+  let glassShelfMat: unknown | null = null;
+
+  try {
+    const cache = runtime.getOrCreateCacheRecord(runtime.App, 'cornerWingInteriorMaterialCache');
+    if (!cache.__cornerGlassShelfMat && typeof runtime.THREE.MeshStandardMaterial === 'function') {
+      const m = new runtime.THREE.MeshStandardMaterial({
+        color: 0xf2fbff,
+        transparent: true,
+        opacity: 0.25,
+        roughness: 0.15,
+        metalness: 0.0,
+      });
+      const matRec = runtime.asRecord(m);
+      matRec.depthWrite = false;
+      matRec.premultipliedAlpha = true;
+      if (runtime.THREE.DoubleSide != null) matRec.side = runtime.THREE.DoubleSide;
+      matRec.__keepMaterial = true;
+      cache.__cornerGlassShelfMat = m;
+    }
+    glassShelfMat = cache.__cornerGlassShelfMat || null;
+  } catch {
+    glassShelfMat = null;
+  }
+
+  const readCornerShelfVariant = (
+    cfgCell: CornerCellCfg,
+    gridIndex: number
+  ): 'regular' | 'double' | 'glass' | 'brace' => {
+    const customData = runtime.isRecord(cfgCell.customData) ? cfgCell.customData : null;
+    const variants = Array.isArray(customData?.shelfVariants) ? customData.shelfVariants : [];
+    const raw =
+      typeof variants[gridIndex - 1] === 'string'
+        ? String(variants[gridIndex - 1])
+            .trim()
+            .toLowerCase()
+        : '';
+    if (raw === 'double' || raw === 'glass' || raw === 'brace' || raw === 'regular') return raw;
+    return 'regular';
+  };
+
+  const pinRadius = 0.0025;
+  const pinLen = 0.012;
+  const pinEdgeOffsetDefault = 0.04;
+  let pinGeo: unknown | null = null;
+  let pinMat: ReturnType<CornerWingInteriorRuntime['asRecord']> | null = null;
+
+  const ensurePinResources = (): boolean => {
+    try {
+      if (!pinGeo) pinGeo = new runtime.THREE.CylinderGeometry(pinRadius, pinRadius, pinLen, 12);
+      if (!pinMat) {
+        pinMat = runtime.asRecord(runtime.getMaterial(null, 'metal'));
+        pinMat.__keepMaterial = true;
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const addCornerShelfPins = (
+    shelfY: number,
+    shelfZ: number,
+    shelfDepth: number,
+    shelfH: number,
+    isBrace: boolean,
+    leftInnerX: number,
+    rightInnerX: number,
+    moduleIndex: string
+  ) => {
+    if (isBrace) return;
+    if (!(rightInnerX > leftInnerX) || !(shelfDepth > 0)) return;
+    if (!ensurePinResources()) return;
+
+    const shelfBottom = shelfY - shelfH / 2;
+    const yPin = shelfBottom - pinRadius + 0.0005;
+    const backEdge = shelfZ - shelfDepth / 2;
+    const frontEdge = shelfZ + shelfDepth / 2;
+    const maxOff = shelfDepth / 2 - 0.02;
+    const edgeOff = Math.max(0.015, Math.min(pinEdgeOffsetDefault, maxOff));
+    const zBack = backEdge + edgeOff;
+    const zFront = frontEdge - edgeOff;
+
+    const mkPin = (x: number, z: number) => {
+      const m = new runtime.THREE.Mesh(pinGeo, pinMat);
+      m.rotation.z = Math.PI / 2;
+      m.position.set(x, yPin, z);
+      m.userData = m.userData || {};
+      m.userData.partId = 'corner_shelves';
+      m.userData.moduleIndex = moduleIndex;
+      m.userData.__kind = 'shelf_pin';
+      runtime.asRecord(m.material).__keepMaterial = true;
+      runtime.wingGroup.add(m);
+    };
+
+    mkPin(leftInnerX + pinLen / 2, zBack);
+    mkPin(leftInnerX + pinLen / 2, zFront);
+    mkPin(rightInnerX - pinLen / 2, zBack);
+    mkPin(rightInnerX - pinLen / 2, zFront);
+  };
+
+  return {
+    shelfMat,
+    glassShelfMat,
+    GLASS_SHELF_THICK,
+    DOUBLE_SHELF_THICK,
+    readCornerShelfVariant,
+    addCornerShelfPins,
+  };
+}
+
+export function addCornerWingGridShelf(
+  cellRuntime: CornerWingInteriorCellRuntime,
+  shelfRuntime: CornerWingInteriorShelfRuntime,
+  gridIndex: number
+): void {
+  const { runtime, cfgCell, cellKey, cellShelfW, cellInnerCenterX, cellInnerW, __braceSet } = cellRuntime;
+  const y = cellRuntime.effectiveBottomY + gridIndex * cellRuntime.localGridStep;
+  if (!(y < cellRuntime.effectiveTopY - 0.01)) return;
+
+  const shelfVariant = shelfRuntime.readCornerShelfVariant(cfgCell, gridIndex);
+  const isBraceShelf = !!__braceSet[gridIndex] || shelfVariant === 'brace';
+  const isGlassShelf = shelfVariant === 'glass';
+  const isDoubleShelf = shelfVariant === 'double';
+  const shelfDepth = isBraceShelf ? cellRuntime.__internalDepth : cellRuntime.__regularDepth;
+  const shelfH = isGlassShelf
+    ? shelfRuntime.GLASS_SHELF_THICK
+    : isDoubleShelf
+      ? shelfRuntime.DOUBLE_SHELF_THICK
+      : runtime.woodThick;
+  const shelfZ = cellRuntime.__backFaceZ + shelfDepth / 2;
+  const shelfMaterial =
+    isGlassShelf && shelfRuntime.glassShelfMat ? shelfRuntime.glassShelfMat : shelfRuntime.shelfMat;
+  const shelf = new runtime.THREE.Mesh(
+    new runtime.THREE.BoxGeometry(cellShelfW, shelfH, shelfDepth),
+    shelfMaterial
+  );
+  shelf.position.set(cellInnerCenterX, y, shelfZ);
+  shelf.userData = { partId: 'corner_shelves', moduleIndex: cellKey };
+  if (isGlassShelf) {
+    const shelfRec = runtime.asRecord(shelf);
+    shelfRec.castShadow = false;
+    shelfRec.receiveShadow = false;
+    shelfRec.renderOrder = 2;
+    const matRec = runtime.asRecord(shelf.material);
+    matRec.__keepMaterial = true;
+  }
+  runtime.addOutlines(shelf);
+  runtime.wingGroup.add(shelf);
+
+  shelfRuntime.addCornerShelfPins(
+    y,
+    shelfZ,
+    shelfDepth,
+    shelfH,
+    isBraceShelf,
+    cellRuntime.cellInnerLeftX,
+    cellRuntime.cellInnerRightX,
+    cellKey
+  );
+
+  if (!(cfgCell.intDrawersList || []).includes(gridIndex + 1) && runtime.showContentsEnabled) {
+    runtime.addFoldedClothes(
+      cellInnerCenterX,
+      y + shelfH / 2,
+      shelfZ,
+      Math.max(0.05, cellInnerW - 0.06),
+      runtime.wingGroup,
+      undefined,
+      shelfDepth
+    );
+  }
+}

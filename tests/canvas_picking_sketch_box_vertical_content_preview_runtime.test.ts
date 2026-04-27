@@ -1,0 +1,37 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+
+import { resolveSketchBoxVerticalContentPreview } from '../esm/native/services/canvas_picking_sketch_box_vertical_content_preview.ts';
+
+test('box shelf preview includes vertical clearance labels to the compartment top and bottom', () => {
+  const result = resolveSketchBoxVerticalContentPreview({
+    host: { tool: 'sketch_shelf:regular', moduleKey: 2, isBottom: false, ts: 1 },
+    contentKind: 'shelf',
+    boxId: 'box-1',
+    freePlacement: false,
+    targetBox: { id: 'box-1', shelves: [] },
+    targetGeo: {
+      centerX: 0,
+      innerW: 0.8,
+      innerD: 0.5,
+      innerBackZ: -0.25,
+    },
+    targetCenterY: 1,
+    targetHeight: 0.9,
+    pointerX: 0,
+    pointerY: 1.08,
+    woodThick: 0.02,
+    shelfVariant: 'regular',
+    shelfDepthOverrideM: null,
+    readSketchBoxDividers: () => [],
+    resolveSketchBoxSegments: () => [{ index: 0, centerX: 0, width: 0.8, xNorm: 0.5 }],
+    pickSketchBoxSegment: ({ segments }) => segments[0] ?? null,
+  });
+
+  assert.ok(result);
+  assert.equal(result?.preview.kind, 'shelf');
+  assert.deepEqual(
+    (result?.preview.clearanceMeasurements as { label: string }[]).map(entry => entry.label),
+    ['34 ס"מ', '50 ס"מ']
+  );
+});

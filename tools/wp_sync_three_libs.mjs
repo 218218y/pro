@@ -1,0 +1,167 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const projectRoot = path.resolve(__dirname, '..');
+const nodeModulesThree = path.join(projectRoot, 'node_modules', 'three');
+const packageJsonPath = path.join(nodeModulesThree, 'package.json');
+
+function readText(filePath) {
+  return fs.readFileSync(filePath, 'utf8');
+}
+
+function writeText(filePath, text) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, text, 'utf8');
+}
+
+function copyFile(srcRel, destRel, transform) {
+  const srcAbs = path.join(nodeModulesThree, srcRel);
+  const destAbs = path.join(projectRoot, destRel);
+  if (!fs.existsSync(srcAbs)) {
+    throw new Error(`Missing Three.js source file: ${path.relative(projectRoot, srcAbs)}`);
+  }
+  const source = readText(srcAbs);
+  const output = typeof transform === 'function' ? transform(source) : source;
+  writeText(destAbs, output);
+  return { srcRel, destRel };
+}
+
+function replaceImportModuleSpecifier(source, replacementPath, label) {
+  if (source.includes(replacementPath)) {
+    return source;
+  }
+
+  const importFromThreePattern = /import\s*\{[\s\S]*?\}\s*from\s*['"]three['"];?/;
+  const match = source.match(importFromThreePattern);
+  if (!match) {
+    throw new Error(`Could not find an import-from-three block while syncing ${label}`);
+  }
+
+  return source.replace(
+    importFromThreePattern,
+    match[0].replace(/from\s*['"]three['"];?/, `from '${replacementPath}';`)
+  );
+}
+
+function replaceImportBlock(source, fromPattern, replacementBlock, label) {
+  if (source.includes(replacementBlock)) {
+    return source;
+  }
+
+  const match = source.match(fromPattern);
+  if (!match) {
+    throw new Error(`Could not find expected import block while syncing ${label}`);
+  }
+
+  return source.replace(fromPattern, replacementBlock);
+}
+
+function rewriteLibsOrbitControls(source) {
+  return replaceImportModuleSpecifier(source, '../../../build/three.module.js', 'libs OrbitControls');
+}
+
+function rewriteLibsRoundedBoxGeometry(source) {
+  return replaceImportModuleSpecifier(source, '../../../build/three.module.js', 'libs RoundedBoxGeometry');
+}
+
+const ORBIT_CONTROLS_THREE_IMPORT_PATTERN =
+  /import\s*\{[\s\S]*?Controls[\s\S]*?MathUtils[\s\S]*?\}\s*from\s*['"]three['"];?/;
+const ORBIT_CONTROLS_TOOLS_IMPORT_BLOCK = [
+  "import { Controls } from 'three/src/extras/Controls.js';",
+  "import { MOUSE, TOUCH } from 'three/src/constants.js';",
+  "import { Quaternion } from 'three/src/math/Quaternion.js';",
+  "import { Spherical } from 'three/src/math/Spherical.js';",
+  "import { Vector2 } from 'three/src/math/Vector2.js';",
+  "import { Vector3 } from 'three/src/math/Vector3.js';",
+  "import { Plane } from 'three/src/math/Plane.js';",
+  "import { Ray } from 'three/src/math/Ray.js';",
+  "import { MathUtils } from 'three/src/math/MathUtils.js';",
+].join('\n');
+
+function rewriteToolsOrbitControls(source) {
+  return replaceImportBlock(
+    source,
+    ORBIT_CONTROLS_THREE_IMPORT_PATTERN,
+    ORBIT_CONTROLS_TOOLS_IMPORT_BLOCK,
+    'tools OrbitControls'
+  );
+}
+
+const ROUNDED_BOX_THREE_IMPORT_PATTERN =
+  /import\s*\{[\s\S]*?BoxGeometry[\s\S]*?Vector3[\s\S]*?\}\s*from\s*['"]three['"];?/;
+const ROUNDED_BOX_TOOLS_IMPORT_BLOCK = [
+  "import { BoxGeometry } from 'three/src/geometries/BoxGeometry.js';",
+  "import { Vector3 } from 'three/src/math/Vector3.js';",
+].join('\n');
+
+function rewriteToolsRoundedBoxGeometry(source) {
+  return replaceImportBlock(
+    source,
+    ROUNDED_BOX_THREE_IMPORT_PATTERN,
+    ROUNDED_BOX_TOOLS_IMPORT_BLOCK,
+    'tools RoundedBoxGeometry'
+  );
+}
+
+function main() {
+  if (!fs.existsSync(packageJsonPath)) {
+    throw new Error('three is not installed. Run npm install first.');
+  }
+
+  const threePkg = JSON.parse(readText(packageJsonPath));
+  const synced = [];
+
+  synced.push(copyFile('build/three.module.js', 'libs/three/build/three.module.js'));
+  synced.push(copyFile('build/three.core.js', 'libs/three/build/three.core.js'));
+  synced.push(
+    copyFile(
+      'examples/jsm/controls/OrbitControls.js',
+      'libs/three/examples/jsm/controls/OrbitControls.js',
+      rewriteLibsOrbitControls
+    )
+  );
+  synced.push(
+    copyFile(
+      'examples/jsm/geometries/RoundedBoxGeometry.js',
+      'libs/three/examples/jsm/geometries/RoundedBoxGeometry.js',
+      rewriteLibsRoundedBoxGeometry
+    )
+  );
+  synced.push(
+    copyFile(
+      'examples/jsm/controls/OrbitControls.js',
+      'tools/three_addons/OrbitControls.js',
+      rewriteToolsOrbitControls
+    )
+  );
+  synced.push(
+    copyFile(
+      'examples/jsm/geometries/RoundedBoxGeometry.js',
+      'tools/three_addons/RoundedBoxGeometry.js',
+      rewriteToolsRoundedBoxGeometry
+    )
+  );
+
+  const versionStamp = [
+    `three=${threePkg.version}`,
+    'This file is generated by tools/wp_sync_three_libs.mjs.',
+    'Run npm install (or npm run three:sync-libs) to refresh local Three.js mirrors.',
+  ].join('\n');
+  writeText(path.join(projectRoot, 'libs/three/VERSION.txt'), `${versionStamp}\n`);
+
+  console.log(`Synced local Three.js mirrors from node_modules/three@${threePkg.version}`);
+  for (const entry of synced) {
+    console.log(` - ${entry.destRel} <= ${entry.srcRel}`);
+  }
+  console.log(' - libs/three/VERSION.txt');
+}
+
+try {
+  main();
+} catch (error) {
+  console.error(`[wp_sync_three_libs] ${error instanceof Error ? error.message : String(error)}`);
+  process.exitCode = 1;
+}

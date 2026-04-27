@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.checkjs.services.json",
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true,
+    "checkJs": false
+  },
+  "include": ["esm/native/services/**/*.ts", "types/**/*.d.ts", "types/**/*.ts"],
+  "exclude": ["node_modules", "libs/**", "dist", "release"]
+}

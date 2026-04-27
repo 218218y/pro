@@ -1,0 +1,31 @@
+{
+  "generatedAt": "2026-01-09",
+  "needles": ["App.store.dispatch", "App.cfg.patch", "App.cfg.setScalar", "App.cfg.get("],
+  "totals": {
+    "App.store.dispatch": 15,
+    "App.cfg.patch": 18,
+    "App.cfg.setScalar": 21,
+    "App.cfg.get(": 3
+  },
+  "byFolder": {
+    "kernel": {
+      "App.store.dispatch": 9,
+      "App.cfg.patch": 18,
+      "App.cfg.setScalar": 21,
+      "App.cfg.get(": 3
+    },
+    "platform": {
+      "App.store.dispatch": 6,
+      "App.cfg.patch": 0,
+      "App.cfg.setScalar": 0,
+      "App.cfg.get(": 0
+    }
+  },
+  "policy": {
+    "allowedLegacyDirs": ["kernel", "platform"],
+    "gate": {
+      "failOnIncrease": true,
+      "compare": "baseline"
+    }
+  }
+}

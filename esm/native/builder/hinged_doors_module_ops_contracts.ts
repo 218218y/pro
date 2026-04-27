@@ -1,0 +1,73 @@
+import type { AppContainer, HingedDoorOpLike, ThreeLike, UnknownRecord } from '../../../types';
+import type { HingedDoorPipelineCfg } from './hinged_doors_shared.js';
+
+export type HingedDoorPivotSpec = {
+  pivotX?: number;
+  meshOffsetX?: number;
+  isLeftHinge?: boolean;
+  doorWidth?: number;
+};
+
+export type HingedDoorModuleOpsContext = {
+  App?: AppContainer;
+  THREE?: ThreeLike | null;
+  cfg: HingedDoorPipelineCfg;
+  index: number;
+  modulesLength: number;
+  moduleDoors: number;
+  modWidth: number;
+  currentX: number;
+  drawerHeightTotal: number;
+  effectiveBottomY: number;
+  startY: number;
+  woodThick: number;
+  cabinetBodyHeight: number;
+  D: number;
+  doorFrontZ: number;
+  splitLineY: number;
+  splitDoors: boolean;
+  stackKey: string;
+  isBottomStack: boolean;
+  opsList: HingedDoorOpLike[] | null;
+  hingedDoorPivotMap: Record<number, HingedDoorPivotSpec> | null;
+  globalHandleAbsY: number;
+  configRecord: UnknownRecord;
+  moduleCfgList: unknown[] | null;
+  isGroovesEnabled: boolean;
+  removeDoorsEnabled: boolean;
+  shadowMat: unknown;
+  externalW: number;
+  externalCenterX: number;
+  drawerTopEdgeAbsolute: number;
+  doorBottomY: number;
+  effectiveTopLimit: number;
+  totalDoorSpace: number;
+  singleDoorW: number;
+  getHingeDirSafe: (doorKey: string, defaultDir: 'left' | 'right') => 'left' | 'right';
+  isDoorSplitSafe: (map: unknown, doorId: number) => boolean;
+  isDoorSplitBottomSafe: (map: unknown, doorId: number) => boolean;
+  getPartColorValueSafe: (partId: string) => string | null;
+  grooveValSafe: (doorId: number, suffix: string, fallback: boolean) => boolean;
+  isDoorRemovedSafe: (partId: string) => boolean;
+  reportDoorSoftOnce: (op: string, error: unknown, extra?: Record<string, unknown>) => void;
+  resolveCurtainForPart: (partId: string, fallback: string | null | undefined) => string | null;
+  resolveSpecialForPart: (partId: string, curtainVal: string | null) => 'mirror' | 'glass' | null;
+  isDoorSplitExplicitOn: (map: unknown, doorIdNum: number) => boolean;
+};
+
+export type HingedDoorIterationState = {
+  currentDoorId: number;
+  nextGlobalDoorCounter: number;
+  doorLeftEdge: number;
+  pivotX: number;
+  meshOffsetX: number;
+  isLeftHinge: boolean;
+  doorWidth: number;
+  topSplitEnabled: boolean;
+  bottomSplitEnabled: boolean;
+  shouldSplitThisDoor: boolean;
+  sourceKey: string;
+  topKey: string;
+  midKey: string;
+  botKey: string;
+};

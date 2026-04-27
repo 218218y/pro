@@ -1,0 +1,43 @@
+export {
+  getRenderCache,
+  getRenderMeta,
+  getRenderMaterials,
+  readRenderCacheValue,
+  writeRenderCacheValue,
+  ensureRenderCacheObject,
+  ensureRenderMetaArray,
+  getAutoLightBuildKey,
+  setAutoLightBuildKey,
+  getAutoCameraBuildKey,
+  setAutoCameraBuildKey,
+  ensureRenderCacheMaps,
+  ensureRenderMetaMaps,
+  ensureRenderMaterialSlots,
+  ensureRenderMaterialSlot,
+  readRenderMaterialSlot,
+  writeRenderMaterialSlot,
+  bindLegacyRenderCompatRefs,
+  ensureRenderCacheMap,
+  ensureRenderMetaMap,
+} from './render_access_state_bags.js';
+
+export type { RenderRuntimeStateLike } from './render_access_state_runtime.js';
+
+export {
+  ensureRenderRuntimeState,
+  getAmbientLight,
+  setAmbientLight,
+  getDirectionalLight,
+  setDirectionalLight,
+  getShadowMap,
+  getMirrorRenderTarget,
+  markSplitHoverPickablesDirty,
+  trackMirrorSurface,
+  getMirrorCubeCamera,
+  getMirrorHideScratch,
+  invalidateMirrorTracking,
+  readAutoHideFloorCache,
+  writeAutoHideFloorCache,
+  readRendererCompatDefaults,
+  writeRendererCompatDefaults,
+} from './render_access_state_runtime.js';

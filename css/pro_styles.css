@@ -1,0 +1,175 @@
+/*
+ * App Shell Styles (Layout + Palette)
+ * Copyright (c) 2026 [רהיטי ברגיג]
+ * All Rights Reserved.
+ * Unauthorized use or copying of this stylesheet is prohibited.
+ */
+
+/* NOTE:
+ * React UI styles were moved out of this file to avoid cross-file overrides.
+ * See: css/react_tokens.css + css/react_styles.css
+ */
+
+/* ==========================================================================
+   1. משתנים (Variables)
+   ========================================================================== */
+:root {
+  /* Palette Modern */
+  --bg-app: #f0f2f5;
+  --panel-bg: #ffffff;
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --accent: #f59e0b;
+  --text-main: #1e293b;
+  --text-secondary: #64748b;
+  --border-color: #e2e8f0;
+  --input-bg: #f8fafc;
+
+  /* Dimensions & Shadows */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+  /* Action Colors */
+  --save-color: #10b981;
+  --delete-color: #ef4444;
+  --upgrade-color: #8b5cf6;
+}
+
+/* ==========================================================================
+   2. הגדרות גלובליות ואיפוס
+   ========================================================================== */
+body {
+  margin: 0;
+  font-family: 'Heebo', sans-serif;
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--bg-app);
+  color: var(--text-main);
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* החזרת בחירה לאלמנטים רלוונטיים - נשאר Important כדי לדרוס את ה-Body */
+input,
+textarea,
+select,
+.editor,
+.selectable {
+  -webkit-user-select: text !important;
+  user-select: text !important;
+  cursor: auto;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ==========================================================================
+   3. מבנה ראשי (Layout)
+   ========================================================================== */
+#sidebar {
+  width: 400px;
+  background: var(--panel-bg);
+  border-left: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  z-index: 20;
+  box-shadow: var(--shadow-lg);
+  transition: width 0.3s ease;
+}
+
+#viewer-container {
+  flex: 1;
+  position: relative;
+  background: radial-gradient(circle at 50% 50%, #f1f5f9 0%, #cbd5e1 100%);
+  cursor: grab;
+  overflow: hidden;
+  touch-action: none;
+}
+
+#viewer-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(241, 245, 249, 0.35) 0%,
+    rgba(241, 245, 249, 0.25) 40%,
+    rgba(203, 213, 225, 0) 70%
+  );
+  mix-blend-mode: screen;
+  filter: blur(30px);
+}
+
+body.is-dragover {
+  opacity: 0.7;
+}
+
+@media (max-width: 768px) {
+  #sidebar {
+    width: 100%;
+    height: 55%;
+    position: absolute;
+    bottom: 0;
+    top: auto;
+  }
+  #viewer-container {
+    height: 50%;
+  }
+}
+
+/* Copyright / disclaimer */
+.copyright-notice {
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  z-index: 100;
+  pointer-events: none;
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.35);
+  background: rgba(255, 255, 255, 0.35);
+  padding: 4px 8px;
+  border-radius: 4px;
+  backdrop-filter: blur(1px);
+  font-family: 'Heebo', sans-serif;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  letter-spacing: 0.3px;
+  text-align: right;
+  max-width: min(420px, calc(100vw - 30px));
+}
+
+.copyright-notice-line {
+  display: block;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.copyright-notice-line--bottom {
+  align-self: center;
+  text-align: center;
+}

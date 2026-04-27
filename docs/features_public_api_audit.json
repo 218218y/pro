@@ -1,0 +1,1109 @@
+{
+  "ok": true,
+  "policy": "Only feature entries listed here are public to layers outside esm/native/features. Add new entries deliberately with owner documentation; do not import feature internals ad-hoc.",
+  "publicEntries": [
+    "base_leg_support.js",
+    "door_style_overrides.js",
+    "door_trim.js",
+    "handle_finish_shared.js",
+    "interior_layout_presets/api.js",
+    "library_preset/library_preset.js",
+    "library_preset/module_defaults.js",
+    "mirror_layout.js",
+    "model_record/model_record_normalizer.js",
+    "modules_configuration/calc_module_structure.js",
+    "modules_configuration/corner_cells_api.js",
+    "modules_configuration/modules_config_api.js",
+    "modules_configuration/modules_config_contracts.js",
+    "project_config/project_config_lists_canonical.js",
+    "project_config/project_config_persisted_payload_shared.js",
+    "project_config/project_config_persisted_snapshot.js",
+    "project_config/project_config_snapshot_canonical.js",
+    "sketch_drawer_sizing.js",
+    "special_dims/index.js",
+    "special_dims/special_dims.js",
+    "stack_split/index.js",
+    "stack_split/module_config.js"
+  ],
+  "byFamily": {
+    "base_leg_support": [
+      "base_leg_support.js"
+    ],
+    "door_style_overrides": [
+      "door_style_overrides.js"
+    ],
+    "door_trim": [
+      "door_trim.js"
+    ],
+    "handle_finish_shared": [
+      "handle_finish_shared.js"
+    ],
+    "interior_layout_presets": [
+      "interior_layout_presets/api.js"
+    ],
+    "library_preset": [
+      "library_preset/library_preset.js",
+      "library_preset/module_defaults.js"
+    ],
+    "mirror_layout": [
+      "mirror_layout.js"
+    ],
+    "model_record": [
+      "model_record/model_record_normalizer.js"
+    ],
+    "modules_configuration": [
+      "modules_configuration/calc_module_structure.js",
+      "modules_configuration/corner_cells_api.js",
+      "modules_configuration/modules_config_api.js",
+      "modules_configuration/modules_config_contracts.js"
+    ],
+    "project_config": [
+      "project_config/project_config_lists_canonical.js",
+      "project_config/project_config_persisted_payload_shared.js",
+      "project_config/project_config_persisted_snapshot.js",
+      "project_config/project_config_snapshot_canonical.js"
+    ],
+    "sketch_drawer_sizing": [
+      "sketch_drawer_sizing.js"
+    ],
+    "special_dims": [
+      "special_dims/index.js",
+      "special_dims/special_dims.js"
+    ],
+    "stack_split": [
+      "stack_split/index.js",
+      "stack_split/module_config.js"
+    ]
+  },
+  "importSites": [
+    {
+      "file": "esm/native/builder/bootstrap_bindings.ts",
+      "entry": "modules_configuration/calc_module_structure.js"
+    },
+    {
+      "file": "esm/native/builder/build_flow_plan_dimensions.ts",
+      "entry": "special_dims/index.js"
+    },
+    {
+      "file": "esm/native/builder/build_flow_plan_inputs.ts",
+      "entry": "stack_split/index.js"
+    },
+    {
+      "file": "esm/native/builder/build_flow_plan_inputs.ts",
+      "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/builder/build_flow_plan_materials.ts",
+      "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/builder/build_no_main_sketch_host.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/builder/build_stack_split_bottom_layout.ts",
+      "entry": "stack_split/index.js"
+    },
+    {
+      "file": "esm/native/builder/build_stack_split_bottom_layout.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/builder/build_state_resolver.ts",
+      "entry": "project_config/project_config_lists_canonical.js"
+    },
+    {
+      "file": "esm/native/builder/build_wardrobe_flow_context_hinged.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/builder/core_carcass_shared.ts",
+      "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/builder/core_layout_compute.ts",
+      "entry": "special_dims/index.js"
+    },
+    {
+      "file": "esm/native/builder/core_pure_compute.ts",
+      "entry": "interior_layout_presets/api.js"
+    },
+    {
+      "file": "esm/native/builder/core_pure_compute.ts",
+      "entry": "interior_layout_presets/api.js"
+    },
+    {
+      "file": "esm/native/builder/corner_connector_door_emit_context.ts",
+      "entry": "door_trim.js"
+    },
+    {
+      "file": "esm/native/builder/corner_connector_door_emit_contracts.ts",
+      "entry": "door_trim.js"
+    },
+    {
+      "file": "esm/native/builder/corner_connector_door_emit_visuals.ts",
+      "entry": "mirror_layout.js"
+    },
+    {
+      "file": "esm/native/builder/corner_connector_door_emit_visuals.ts",
+      "entry": "door_trim.js"
+    },
+    {
+      "file": "esm/native/builder/corner_connector_door_emit_visuals.ts",
+      "entry": "door_style_overrides.js"
+    },
+    {
+      "file": "esm/native/builder/corner_connector_emit.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/builder/corner_connector_emit_shell_base.ts",
+      "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/builder/corner_state_normalize_config.ts",
+      "entry": "modules_configuration/corner_cells_api.js"
+    },
+    {
+      "file": "esm/native/builder/corner_state_normalize_contracts.ts",
+      "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/builder/corner_state_normalize_layout.ts",
+      "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/builder/corner_wing_cell_doors_context.ts",
+      "entry": "door_trim.js"
+    },
+    {
+      "file": "esm/native/builder/corner_wing_cell_doors_contracts.ts",
+      "entry": "door_trim.js"
+    },
+    {
+      "file": "esm/native/builder/corner_wing_cell_doors_rendering.ts",
+      "entry": "mirror_layout.js"
+    },
+    {
+      "file": "esm/native/builder/corner_wing_cell_doors_rendering.ts",
+      "entry": "door_trim.js"
+    },
+    {
+      "file": "esm/native/builder/corner_wing_cell_doors_rendering.ts",
+      "entry": "door_style_overrides.js"
+    },
+    {
+      "file": "esm/native/builder/corner_wing_cell_interiors_runtime.ts",
+      "entry": "mirror_layout.js"
+    },
+    {
+      "file": "esm/native/builder/corner_wing_extension_cells_config.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/builder/corner_wing_extension_emit.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/builder/corner_wing_extension_emit.ts",
+      "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/builder/door_trim_visuals.ts",
+      "entry": "door_trim.js"
+    },
+    {
+      "file": "esm/native/builder/door_visual_lookup_state.ts",
+      "entry": "mirror_layout.js"
+    },
+    {
+      "file": "esm/native/builder/handle_finish_runtime.ts",
+      "entry": "handle_finish_shared.js"
+    },
+    {
+      "file": "esm/native/builder/handles_apply_shared.ts",
+      "entry": "handle_finish_shared.js"
+    },
+    {
+      "file": "esm/native/builder/handles_mesh.ts",
+      "entry": "handle_finish_shared.js"
+    },
+    {
+      "file": "esm/native/builder/handles_shared.ts",
+      "entry": "handle_finish_shared.js"
+    },
+    {
+      "file": "esm/native/builder/hinged_doors_module_ops_handle_policy.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/builder/module_layout_pipeline.ts",
+      "entry": "special_dims/index.js"
+    },
+    {
+      "file": "esm/native/builder/module_layout_pipeline.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/builder/module_loop_pipeline_module_depth.ts",
+      "entry": "special_dims/index.js"
+    },
+    {
+      "file": "esm/native/builder/module_loop_pipeline_runtime_base.ts",
+      "entry": "stack_split/index.js"
+    },
+    {
+      "file": "esm/native/builder/module_loop_pipeline_runtime_base.ts",
+      "entry": "special_dims/index.js"
+    },
+    {
+      "file": "esm/native/builder/post_build_dimensions_module_metrics.ts",
+      "entry": "special_dims/index.js"
+    },
+    {
+      "file": "esm/native/builder/post_build_extras_pipeline.ts",
+      "entry": "stack_split/index.js"
+    },
+    {
+      "file": "esm/native/builder/post_build_sketch_door_cuts_modules.ts",
+      "entry": "sketch_drawer_sizing.js"
+    },
+    {
+      "file": "esm/native/builder/post_build_sketch_door_cuts_rebuild_visual.ts",
+      "entry": "door_style_overrides.js"
+    },
+    {
+      "file": "esm/native/builder/post_build_sketch_door_cuts_runtime.ts",
+      "entry": "door_style_overrides.js"
+    },
+    {
+      "file": "esm/native/builder/pure_api.ts",
+      "entry": "interior_layout_presets/api.js"
+    },
+    {
+      "file": "esm/native/builder/render_door_ops_shared_config.ts",
+      "entry": "door_style_overrides.js"
+    },
+    {
+      "file": "esm/native/builder/render_door_ops_shared_contracts.ts",
+      "entry": "door_style_overrides.js"
+    },
+    {
+      "file": "esm/native/builder/render_door_ops_sliding.ts",
+      "entry": "handle_finish_shared.js"
+    },
+    {
+      "file": "esm/native/builder/render_door_ops_sliding.ts",
+      "entry": "door_style_overrides.js"
+    },
+    {
+      "file": "esm/native/builder/render_drawer_ops_shared.ts",
+      "entry": "door_style_overrides.js"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_boxes_contents_drawers.ts",
+      "entry": "sketch_drawer_sizing.js"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_boxes_fronts_door_visuals.ts",
+      "entry": "door_style_overrides.js"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers.ts",
+      "entry": "door_style_overrides.js"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers.ts",
+      "entry": "sketch_drawer_sizing.js"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_boxes_fronts_support.ts",
+      "entry": "door_style_overrides.js"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_drawers_external.ts",
+      "entry": "door_style_overrides.js"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_drawers_external.ts",
+      "entry": "sketch_drawer_sizing.js"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_drawers_internal.ts",
+      "entry": "sketch_drawer_sizing.js"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_drawers_shared.ts",
+      "entry": "door_style_overrides.js"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_visuals_adornments.ts",
+      "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_visuals_adornments_normalize.ts",
+      "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/builder/render_ops_primitives.ts",
+      "entry": "handle_finish_shared.js"
+    },
+    {
+      "file": "esm/native/builder/store_access.ts",
+      "entry": "project_config/project_config_lists_canonical.js"
+    },
+    {
+      "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
+      "entry": "mirror_layout.js"
+    },
+    {
+      "file": "esm/native/builder/visuals_and_contents_door_visual_mirror.ts",
+      "entry": "mirror_layout.js"
+    },
+    {
+      "file": "esm/native/builder/visuals_and_contents_door_visual_mirror_styled.ts",
+      "entry": "mirror_layout.js"
+    },
+    {
+      "file": "esm/native/builder/visuals_chest_mode_build.ts",
+      "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/builder/visuals_chest_mode_inputs.ts",
+      "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/builder/visuals_chest_mode_materials.ts",
+      "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/core/api.ts",
+      "entry": "modules_configuration/corner_cells_api.js"
+    },
+    {
+      "file": "esm/native/data/model_record_normalizer.ts",
+      "entry": "model_record/model_record_normalizer.js"
+    },
+    {
+      "file": "esm/native/data/model_record_normalizer.ts",
+      "entry": "model_record/model_record_normalizer.js"
+    },
+    {
+      "file": "esm/native/io/project_io_config_snapshot_canonical.ts",
+      "entry": "project_config/project_config_lists_canonical.js"
+    },
+    {
+      "file": "esm/native/io/project_io_config_snapshot_canonical.ts",
+      "entry": "project_config/project_config_snapshot_canonical.js"
+    },
+    {
+      "file": "esm/native/io/project_io_load_helpers_config.ts",
+      "entry": "project_config/project_config_persisted_snapshot.js"
+    },
+    {
+      "file": "esm/native/io/project_io_load_helpers_maps.ts",
+      "entry": "project_config/project_config_persisted_payload_shared.js"
+    },
+    {
+      "file": "esm/native/io/project_io_save_helpers.ts",
+      "entry": "project_config/project_config_snapshot_canonical.js"
+    },
+    {
+      "file": "esm/native/io/project_io_save_helpers.ts",
+      "entry": "project_config/project_config_lists_canonical.js"
+    },
+    {
+      "file": "esm/native/io/project_io_save_helpers.ts",
+      "entry": "project_config/project_config_persisted_snapshot.js"
+    },
+    {
+      "file": "esm/native/io/project_payload_canonical.ts",
+      "entry": "modules_configuration/corner_cells_api.js"
+    },
+    {
+      "file": "esm/native/io/project_payload_shared.ts",
+      "entry": "project_config/project_config_persisted_payload_shared.js"
+    },
+    {
+      "file": "esm/native/io/project_schema_migrate.ts",
+      "entry": "mirror_layout.js"
+    },
+    {
+      "file": "esm/native/io/project_schema_migrate.ts",
+      "entry": "door_trim.js"
+    },
+    {
+      "file": "esm/native/io/project_schema_migrate.ts",
+      "entry": "door_style_overrides.js"
+    },
+    {
+      "file": "esm/native/io/project_schema_migrations_doors.ts",
+      "entry": "mirror_layout.js"
+    },
+    {
+      "file": "esm/native/kernel/domain_api.ts",
+      "entry": "modules_configuration/calc_module_structure.js"
+    },
+    {
+      "file": "esm/native/kernel/domain_api_modules_corner_corner_patch.ts",
+      "entry": "modules_configuration/corner_cells_api.js"
+    },
+    {
+      "file": "esm/native/kernel/domain_api_modules_corner_module_patch.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/kernel/domain_api_modules_corner_recompute_shared.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/kernel/domain_api_modules_corner_recompute_shared.ts",
+      "entry": "modules_configuration/calc_module_structure.js"
+    },
+    {
+      "file": "esm/native/kernel/domain_api_modules_corner_recompute_shared.ts",
+      "entry": "library_preset/module_defaults.js"
+    },
+    {
+      "file": "esm/native/kernel/domain_api_modules_corner_selectors.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/kernel/domain_api_modules_corner_selectors.ts",
+      "entry": "modules_configuration/corner_cells_api.js"
+    },
+    {
+      "file": "esm/native/kernel/domain_api_modules_corner_shared.ts",
+      "entry": "modules_configuration/corner_cells_api.js"
+    },
+    {
+      "file": "esm/native/kernel/domain_api_modules_corner_shared.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/kernel/domain_api_room_section_manual_width.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/kernel/domain_api_room_section_manual_width.ts",
+      "entry": "special_dims/index.js"
+    },
+    {
+      "file": "esm/native/kernel/domain_api_room_section_shared.ts",
+      "entry": "project_config/project_config_lists_canonical.js"
+    },
+    {
+      "file": "esm/native/kernel/kernel_install_support.ts",
+      "entry": "modules_configuration/corner_cells_api.js"
+    },
+    {
+      "file": "esm/native/kernel/kernel_project_capture_config_lists.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/kernel/kernel_project_capture_config_lists.ts",
+      "entry": "project_config/project_config_lists_canonical.js"
+    },
+    {
+      "file": "esm/native/kernel/kernel_project_capture_payload.ts",
+      "entry": "mirror_layout.js"
+    },
+    {
+      "file": "esm/native/kernel/kernel_project_capture_payload.ts",
+      "entry": "door_trim.js"
+    },
+    {
+      "file": "esm/native/kernel/kernel_project_capture_shared.ts",
+      "entry": "project_config/project_config_lists_canonical.js"
+    },
+    {
+      "file": "esm/native/kernel/kernel_project_config_snapshot_canonical.ts",
+      "entry": "project_config/project_config_snapshot_canonical.js"
+    },
+    {
+      "file": "esm/native/kernel/kernel_project_config_snapshot_canonical.ts",
+      "entry": "project_config/project_config_snapshot_canonical.js"
+    },
+    {
+      "file": "esm/native/kernel/kernel_project_config_snapshot_canonical.ts",
+      "entry": "project_config/project_config_snapshot_canonical.js"
+    },
+    {
+      "file": "esm/native/kernel/kernel_snapshot_store_build_state.ts",
+      "entry": "modules_configuration/calc_module_structure.js"
+    },
+    {
+      "file": "esm/native/kernel/kernel_snapshot_store_build_state.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/kernel/kernel_snapshot_store_build_state.ts",
+      "entry": "modules_configuration/corner_cells_api.js"
+    },
+    {
+      "file": "esm/native/kernel/kernel_state_kernel_config_maps_shared.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/kernel/kernel_state_kernel_config_maps_shared.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/kernel/kernel_state_kernel_config_maps_shared.ts",
+      "entry": "modules_configuration/corner_cells_api.js"
+    },
+    {
+      "file": "esm/native/kernel/kernel_state_kernel_config_modules_corner_ensure.ts",
+      "entry": "stack_split/module_config.js"
+    },
+    {
+      "file": "esm/native/kernel/kernel_state_kernel_config_modules_corner_ensure.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/kernel/kernel_state_kernel_config_modules_corner_ensure.ts",
+      "entry": "modules_configuration/modules_config_contracts.js"
+    },
+    {
+      "file": "esm/native/kernel/kernel_state_kernel_config_modules_corner_ensure.ts",
+      "entry": "modules_configuration/corner_cells_api.js"
+    },
+    {
+      "file": "esm/native/kernel/kernel_state_kernel_config_modules_corner_patch.ts",
+      "entry": "stack_split/module_config.js"
+    },
+    {
+      "file": "esm/native/kernel/kernel_state_kernel_config_modules_corner_patch.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/kernel/kernel_state_kernel_config_modules_corner_patch.ts",
+      "entry": "modules_configuration/corner_cells_api.js"
+    },
+    {
+      "file": "esm/native/kernel/kernel_state_kernel_config_shared.ts",
+      "entry": "stack_split/module_config.js"
+    },
+    {
+      "file": "esm/native/kernel/kernel_state_kernel_config_shared.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/kernel/kernel_state_kernel_config_shared.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/kernel/kernel_state_kernel_config_shared.ts",
+      "entry": "modules_configuration/corner_cells_api.js"
+    },
+    {
+      "file": "esm/native/kernel/state_api_config_namespace_core.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/kernel/state_api_stack_router_patch.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/kernel/state_api_stack_router_patch.ts",
+      "entry": "modules_configuration/corner_cells_api.js"
+    },
+    {
+      "file": "esm/native/kernel/state_api_stack_router_shared.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/kernel/state_api_stack_router_shared.ts",
+      "entry": "modules_configuration/corner_cells_api.js"
+    },
+    {
+      "file": "esm/native/kernel/state_api_surface_namespaces.ts",
+      "entry": "modules_configuration/corner_cells_api.js"
+    },
+    {
+      "file": "esm/native/kernel/state_api_surface_namespaces.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/platform/smoke_checks_scenario.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/platform/store_patch_apply.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/platform/store_patch_apply.ts",
+      "entry": "modules_configuration/corner_cells_api.js"
+    },
+    {
+      "file": "esm/native/platform/store_shared.ts",
+      "entry": "project_config/project_config_lists_canonical.js"
+    },
+    {
+      "file": "esm/native/services/api_services_project_surface.ts",
+      "entry": "model_record/model_record_normalizer.js"
+    },
+    {
+      "file": "esm/native/services/api_state_surface.ts",
+      "entry": "modules_configuration/corner_cells_api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_cell_dims_corner_cell_height_depth_apply.ts",
+      "entry": "special_dims/index.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_cell_dims_corner_cell_height_depth_context.ts",
+      "entry": "special_dims/index.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_cell_dims_corner_cell_height_depth_contracts.ts",
+      "entry": "special_dims/index.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_cell_dims_corner_cell_height_depth_state.ts",
+      "entry": "special_dims/index.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_cell_dims_corner_cell_width_apply.ts",
+      "entry": "special_dims/index.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_cell_dims_corner_cell_width_selection.ts",
+      "entry": "special_dims/index.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_cell_dims_corner_context.ts",
+      "entry": "modules_configuration/corner_cells_api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_cell_dims_corner_context.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_cell_dims_corner_context.ts",
+      "entry": "special_dims/index.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_cell_dims_corner_context.ts",
+      "entry": "special_dims/index.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_cell_dims_corner_contracts.ts",
+      "entry": "special_dims/index.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_cell_dims_corner_effects.ts",
+      "entry": "modules_configuration/corner_cells_api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_cell_dims_corner_global_apply.ts",
+      "entry": "special_dims/index.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_cell_dims_linear_apply.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_cell_dims_linear_apply.ts",
+      "entry": "special_dims/index.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_cell_dims_linear_context.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_cell_dims_linear_context_current.ts",
+      "entry": "special_dims/index.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_cell_dims_linear_context_modules.ts",
+      "entry": "modules_configuration/calc_module_structure.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_cell_dims_linear_context_modules.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_cell_dims_linear_normalize.ts",
+      "entry": "special_dims/index.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_cell_dims_linear_width.ts",
+      "entry": "special_dims/index.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_click_hit_flow_stack_runtime.ts",
+      "entry": "stack_split/index.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_action_hover_preview_paint.ts",
+      "entry": "mirror_layout.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_action_hover_preview_paint.ts",
+      "entry": "door_style_overrides.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_action_hover_preview_state.ts",
+      "entry": "door_trim.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_action_hover_preview_trim.ts",
+      "entry": "door_trim.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_action_hover_preview_trim.ts",
+      "entry": "mirror_layout.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_edit_shared.ts",
+      "entry": "door_trim.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_hover_targets_policy.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_trim_click.ts",
+      "entry": "mirror_layout.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_trim_click.ts",
+      "entry": "door_trim.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_generic_paint_hover_flow.ts",
+      "entry": "door_style_overrides.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_handle_assign_flow.ts",
+      "entry": "handle_finish_shared.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_hover_preview_modes_cell_dims_inputs.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_hover_preview_modes_cell_dims_state.ts",
+      "entry": "modules_configuration/corner_cells_api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_hover_preview_modes_cell_dims_state.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_hover_targets_config.ts",
+      "entry": "modules_configuration/corner_cells_api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_hover_targets_config.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_interior_hover_config.ts",
+      "entry": "modules_configuration/corner_cells_api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_interior_hover_config.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_interior_hover_layout_mode.ts",
+      "entry": "interior_layout_presets/api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_local_helpers_cell_dims.ts",
+      "entry": "modules_configuration/corner_cells_api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_local_helpers_cell_dims.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_local_helpers_cell_dims.ts",
+      "entry": "special_dims/index.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_local_helpers_shared.ts",
+      "entry": "special_dims/index.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_manual_layout_config_ops_shared.ts",
+      "entry": "interior_layout_presets/api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_manual_layout_sketch_hover_module_context_base.ts",
+      "entry": "sketch_drawer_sizing.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_manual_layout_sketch_hover_module_context_config.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_manual_layout_sketch_hover_module_context_config.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_manual_layout_sketch_hover_module_context_config.ts",
+      "entry": "modules_configuration/corner_cells_api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_manual_layout_sketch_stack_placement.ts",
+      "entry": "sketch_drawer_sizing.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_manual_layout_sketch_vertical_stack.ts",
+      "entry": "sketch_drawer_sizing.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_paint_flow_apply_door_style.ts",
+      "entry": "door_style_overrides.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_paint_flow_apply_special.ts",
+      "entry": "mirror_layout.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_paint_flow_mirror.ts",
+      "entry": "mirror_layout.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_paint_flow_shared.ts",
+      "entry": "mirror_layout.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_projection_runtime_box_wardrobe_fallback.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_sketch_box_content_commit_adornments.ts",
+      "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_sketch_box_dividers_shared.ts",
+      "entry": "sketch_drawer_sizing.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_sketch_box_dividers_shared.ts",
+      "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_sketch_direct_hit_workflow_drawer.ts",
+      "entry": "sketch_drawer_sizing.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_sketch_direct_hit_workflow_records.ts",
+      "entry": "interior_layout_presets/api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_sketch_free_boxes.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_sketch_free_boxes.ts",
+      "entry": "modules_configuration/corner_cells_api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_sketch_free_surface_preview_adornment_preview.ts",
+      "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_sketch_free_surface_preview_adornments.ts",
+      "entry": "sketch_drawer_sizing.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_sketch_module_stack_apply.ts",
+      "entry": "sketch_drawer_sizing.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_sketch_module_stack_commit_drawers.ts",
+      "entry": "sketch_drawer_sizing.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_sketch_module_surface_preview_flow.ts",
+      "entry": "sketch_drawer_sizing.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_split_hover_preview_line.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_split_hover_preview_line.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_split_hover_preview_line.ts",
+      "entry": "modules_configuration/corner_cells_api.js"
+    },
+    {
+      "file": "esm/native/services/cloud_sync_support_capture.ts",
+      "entry": "project_config/project_config_persisted_payload_shared.js"
+    },
+    {
+      "file": "esm/native/services/config_compounds_seed.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/services/config_compounds_seed.ts",
+      "entry": "modules_configuration/corner_cells_api.js"
+    },
+    {
+      "file": "esm/native/services/models_apply_project_snapshot.ts",
+      "entry": "model_record/model_record_normalizer.js"
+    },
+    {
+      "file": "esm/native/services/models_apply_project_snapshot.ts",
+      "entry": "project_config/project_config_snapshot_canonical.js"
+    },
+    {
+      "file": "esm/native/services/models_apply_project_snapshot.ts",
+      "entry": "project_config/project_config_persisted_snapshot.js"
+    },
+    {
+      "file": "esm/native/services/models_registry_normalization.ts",
+      "entry": "model_record/model_record_normalizer.js"
+    },
+    {
+      "file": "esm/native/ui/export_canvas.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/ui/react/actions/handles_actions.ts",
+      "entry": "handle_finish_shared.js"
+    },
+    {
+      "file": "esm/native/ui/react/actions/store_actions_ui_structure.ts",
+      "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/ui/react/selectors/config_selectors.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/ui/react/selectors/config_selectors.ts",
+      "entry": "special_dims/special_dims.js"
+    },
+    {
+      "file": "esm/native/ui/react/selectors/root_selectors.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/design_tab_multicolor_controller_runtime.ts",
+      "entry": "door_style_overrides.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/design_tab_multicolor_panel.tsx",
+      "entry": "door_style_overrides.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/design_tab_multicolor_panel_contracts.ts",
+      "entry": "door_style_overrides.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/design_tab_multicolor_panel_state.ts",
+      "entry": "door_style_overrides.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/design_tab_multicolor_panel_view.tsx",
+      "entry": "door_style_overrides.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/interior_layout_sketch_box_controls_runtime.ts",
+      "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/interior_layout_sketch_box_controls_section.tsx",
+      "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/interior_tab_helpers.tsx",
+      "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/interior_tab_helpers.tsx",
+      "entry": "handle_finish_shared.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/interior_tab_helpers.tsx",
+      "entry": "sketch_drawer_sizing.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/interior_tab_helpers.tsx",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/interior_tab_local_state_shared.ts",
+      "entry": "sketch_drawer_sizing.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/interior_tab_sections_handles.tsx",
+      "entry": "handle_finish_shared.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/interior_tab_sections_shared.ts",
+      "entry": "handle_finish_shared.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/interior_tab_view_state_runtime.ts",
+      "entry": "handle_finish_shared.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/interior_tab_view_state_shared.ts",
+      "entry": "handle_finish_shared.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/structure_tab_body_section_base.tsx",
+      "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/structure_tab_body_section_contracts.ts",
+      "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/structure_tab_library_helpers.ts",
+      "entry": "library_preset/library_preset.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/structure_tab_structural_controller_contracts.ts",
+      "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/structure_tab_view_state_contracts.ts",
+      "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts",
+      "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/structure_tab_workflows_controller_contracts.ts",
+      "entry": "library_preset/library_preset.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/structure_tab_workflows_controller_shared.ts",
+      "entry": "library_preset/library_preset.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/structure_tab_workflows_controller_shared.ts",
+      "entry": "special_dims/special_dims.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/use_structure_tab_view_state_contracts.ts",
+      "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/use_structure_tab_workflows_contracts.ts",
+      "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/use_structure_tab_workflows_controllers.tsx",
+      "entry": "library_preset/library_preset.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/use_structure_tab_workflows_shared.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    }
+  ],
+  "violations": []
+}

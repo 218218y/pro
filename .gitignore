@@ -1,0 +1,14 @@
+dist/
+libs/
+.artifacts/
+test-results/
+playwright-report/
+coverage/
+**/*.min.js
+node_modules/
+build/
+coverage/
+.cache/
+.env
+.DS_Store
+*.log
