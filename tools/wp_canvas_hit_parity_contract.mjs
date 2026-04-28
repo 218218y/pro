@@ -8,6 +8,7 @@ const files = {
   hoverScan: 'esm/native/services/canvas_picking_door_hover_targets_hit_scan.ts',
   clickRuntimeTest: 'tests/canvas_picking_click_hit_flow_runtime.test.ts',
   hoverClickRuntimeTest: 'tests/canvas_picking_hover_click_hit_identity_parity_runtime.test.ts',
+  stageRuntimeTest: 'tests/refactor_stage18_canvas_hit_parity_runtime.test.js',
 };
 
 const errors = [];
@@ -48,6 +49,24 @@ requireMatch(
   /const merged: UnknownRecord = \{\s*\.\.\.\(resolved \|\| \{\}\),\s*\.\.\.\(hit \|\| \{\}\),\s*\};/s,
   'shared metadata merger must preserve surface hit metadata over resolved parent defaults'
 );
+requireMatch(
+  files.owner,
+  owner,
+  /__wpSketchModuleKey/,
+  'identity owner must normalize sketch module metadata'
+);
+requireMatch(
+  files.owner,
+  owner,
+  /__wpSketchBoxDoorId/,
+  'identity owner must normalize sketch-box door metadata'
+);
+requireMatch(
+  files.owner,
+  owner,
+  /inferCanvasPickingFaceSideFromSign/,
+  'identity owner must infer mirror face side from face sign'
+);
 
 const clickState = read(files.clickState);
 requireMatch(
@@ -68,6 +87,12 @@ requireMatch(
   /hitObjectUserData:\s*\n\s*state\.doorHitUserData \|\| state\.foundPartUserData \|\| state\.primaryHitObject\?\.userData \|\| null/,
   'finalized click identity must use the strongest available hit metadata'
 );
+requireMatch(
+  files.clickState,
+  clickState,
+  /moduleStack:\s*state\.stackHintSource === 'none' \? null : state\.foundModuleStack/,
+  'finalized click identity must not invent a top stack when no stack hint exists'
+);
 
 const clickScanObjects = read(files.clickScanObjects);
 requireMatch(
@@ -87,6 +112,18 @@ requireMatch(
   clickScanObjects,
   /state\.doorHitUserData = mergedUserData;/,
   'click scan must store door metadata'
+);
+requireMatch(
+  files.clickScanObjects,
+  clickScanObjects,
+  /normalizeCanvasPickingModuleStack/,
+  'click scan must preserve explicit object stack metadata for hit identity parity'
+);
+requireMatch(
+  files.clickScanObjects,
+  clickScanObjects,
+  /state\.stackHintSource = 'objectTag';/,
+  'click scan must mark object-tag stack hints explicitly'
 );
 requireMatch(
   files.clickScanObjects,
@@ -122,6 +159,32 @@ requireMatch(
   hoverClickRuntimeTest,
   /hover and click preserve the same child-surface door identity/,
   'runtime test must prove hover/click child-surface parity'
+);
+requireMatch(
+  files.hoverClickRuntimeTest,
+  hoverClickRuntimeTest,
+  /mirror inside and outside hits infer canonical face side/,
+  'runtime test must cover mirror inside/outside parity'
+);
+requireMatch(
+  files.hoverClickRuntimeTest,
+  hoverClickRuntimeTest,
+  /lower split door child hits keep door identity/,
+  'runtime test must cover lower split-door parity'
+);
+requireMatch(
+  files.hoverClickRuntimeTest,
+  hoverClickRuntimeTest,
+  /sketch-box door hits preserve module and door identity/,
+  'runtime test must cover sketch-box door parity'
+);
+
+const stageRuntimeTest = read(files.stageRuntimeTest);
+requireMatch(
+  files.stageRuntimeTest,
+  stageRuntimeTest,
+  /stage 18 keeps mirror, split, and sketch identities canonical/,
+  'stage guard must pin mirror/split/sketch identity behavior'
 );
 
 if (errors.length) {

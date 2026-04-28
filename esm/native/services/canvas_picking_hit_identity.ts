@@ -1,4 +1,5 @@
 import type { UnknownRecord } from '../../../types';
+import { __wp_isDoorLikePartId, __wp_isDrawerLikePartId } from './canvas_picking_door_part_helpers.js';
 
 export type CanvasPickingHitTargetKind = 'door' | 'drawer' | 'module' | 'sketch' | 'unknown';
 export type CanvasPickingHitFaceSide = 'inside' | 'outside' | 'unknown';
@@ -44,6 +45,13 @@ function cleanString(value: unknown): string | null {
   return trimmed ? trimmed : null;
 }
 
+function cleanDoorId(value: unknown): string | null {
+  const text = cleanString(value);
+  if (text) return text;
+  if (typeof value === 'number' && Number.isInteger(value) && value > 0) return `d${value}`;
+  return null;
+}
+
 function cleanNumber(value: unknown): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
@@ -51,7 +59,11 @@ function cleanNumber(value: unknown): number | null {
 function cleanModuleIndex(value: unknown): CanvasPickingHitModuleIndex | null {
   if (typeof value === 'number' && Number.isInteger(value) && value >= 0) return value;
   if (value === 'corner') return 'corner';
-  if (typeof value === 'string' && /^corner:\d+$/.test(value)) return value as `corner:${number}`;
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (/^\d+$/.test(trimmed)) return Number(trimmed);
+    if (/^corner:\d+$/.test(trimmed)) return trimmed as `corner:${number}`;
+  }
   return null;
 }
 
@@ -64,10 +76,11 @@ export function normalizeCanvasPickingModuleStack(value: unknown): CanvasPicking
 
 export function inferCanvasPickingTargetKind(
   partId: string | null,
-  drawerId: string | null
+  drawerId: string | null,
+  doorId: string | null = null
 ): CanvasPickingHitTargetKind {
-  if (drawerId || (partId && /(?:^|_)drawer_|^drawer_|^lower_|^upper_/.test(partId))) return 'drawer';
-  if (partId && /^d\d+(?:_|$)/.test(partId)) return 'door';
+  if (drawerId || __wp_isDrawerLikePartId(partId)) return 'drawer';
+  if (doorId || __wp_isDoorLikePartId(partId)) return 'door';
   if (partId && /(?:shelf|rod|box|sketch|manual)/i.test(partId)) return 'sketch';
   return partId ? 'module' : 'unknown';
 }
@@ -76,10 +89,25 @@ export function inferCanvasPickingDoorId(
   partId: string | null,
   explicitDoorId?: string | null
 ): string | null {
-  const explicit = cleanString(explicitDoorId);
-  if (explicit) return explicit;
-  const match = partId ? /^((?:corner:)?d\d+)(?:_|$)/.exec(partId) : null;
-  return match ? match[1] : null;
+  const part = cleanString(partId);
+  const explicit = cleanDoorId(explicitDoorId);
+  if (explicit && explicit !== part) return explicit;
+  if (!part) return explicit || null;
+
+  const regularDoor = /^((?:lower_)?d\d+)(?:_|$)/.exec(part);
+  if (regularDoor?.[1]) return regularDoor[1];
+
+  const cornerDoor = /^((?:lower_)?corner(?:_pent)?_door_\d+)(?:_|$)/.exec(part);
+  if (cornerDoor?.[1]) return cornerDoor[1];
+
+  const sketchBoxDoor =
+    /^sketch_box(?:_free)?_.*_door_([a-z0-9_]+?)(?:_(?:accent|groove)_(?:top|bottom|left|right))?$/i.exec(
+      part
+    );
+  if (sketchBoxDoor?.[1]) return sketchBoxDoor[1];
+
+  if (__wp_isDoorLikePartId(part)) return part;
+  return explicit || null;
 }
 
 export function normalizeCanvasPickingFaceSide(value: unknown): CanvasPickingHitFaceSide {
@@ -89,24 +117,51 @@ export function normalizeCanvasPickingFaceSide(value: unknown): CanvasPickingHit
   return 'unknown';
 }
 
+function inferCanvasPickingFaceSideFromSign(faceSign: number | null): CanvasPickingHitFaceSide {
+  if (faceSign === -1) return 'inside';
+  if (faceSign === 1) return 'outside';
+  return 'unknown';
+}
+
+function inferCanvasPickingSplitPart(partId: string | null, explicitSplitPart: unknown): string | null {
+  const explicit = cleanString(explicitSplitPart);
+  if (explicit) return explicit;
+  const part = cleanString(partId);
+  if (!part) return null;
+  if (/_(?:top|upper)$/i.test(part)) return 'top';
+  if (/_(?:bot|bottom|lower)$/i.test(part)) return 'bottom';
+  if (/_mid$/i.test(part)) return 'mid';
+  if (/_full$/i.test(part)) return 'full';
+  return null;
+}
+
 export function readCanvasPickingHitIdentityUserData(value: unknown): Partial<CanvasPickingHitIdentity> {
   const rec = asRecord(value);
   if (!rec) return {};
   const partId = cleanString(rec.partId) || cleanString(rec.pid) || null;
   const drawerId = cleanString(rec.drawerId) || null;
-  const doorId = inferCanvasPickingDoorId(partId, cleanString(rec.doorId));
+  const doorId = inferCanvasPickingDoorId(
+    partId,
+    cleanDoorId(rec.doorId) || cleanDoorId(rec.__wpSketchBoxDoorId) || cleanDoorId(rec.__wpDoorId)
+  );
   const faceSign = cleanNumber(rec.faceSign) ?? cleanNumber(rec.normalSign) ?? null;
   const faceSide = normalizeCanvasPickingFaceSide(rec.faceSide ?? rec.side ?? rec.doorFaceSide);
+  const splitPart = inferCanvasPickingSplitPart(
+    partId,
+    cleanString(rec.splitPart) || cleanString(rec.segment) || cleanString(rec.doorSegment)
+  );
   return {
     partId,
     doorId,
     drawerId,
-    moduleIndex: cleanModuleIndex(rec.moduleIndex ?? rec.mi ?? rec.__wpModuleIndex),
+    moduleIndex: cleanModuleIndex(
+      rec.moduleIndex ?? rec.mi ?? rec.__wpModuleIndex ?? rec.__wpSketchModuleKey
+    ),
     moduleStack: normalizeCanvasPickingModuleStack(rec.moduleStack ?? rec.__wpStack ?? rec.stack),
     surfaceId: cleanString(rec.surfaceId) || cleanString(rec.surfaceKey) || null,
     faceSign,
     faceSide,
-    splitPart: cleanString(rec.splitPart) || cleanString(rec.segment) || null,
+    splitPart,
   };
 }
 
@@ -139,19 +194,22 @@ export function createCanvasPickingHitIdentity(input: IdentityInput): CanvasPick
   const fromUserData = readCanvasPickingHitIdentityUserData(input.userData);
   const partId = cleanString(input.partId) || fromUserData.partId || null;
   const drawerId = cleanString(input.drawerId) || fromUserData.drawerId || null;
-  const doorId = inferCanvasPickingDoorId(partId, cleanString(input.doorId) || fromUserData.doorId || null);
-  const faceSide = normalizeCanvasPickingFaceSide(input.faceSide || fromUserData.faceSide);
+  const doorId = inferCanvasPickingDoorId(partId, cleanDoorId(input.doorId) || fromUserData.doorId || null);
+  const faceSign = cleanNumber(input.faceSign) ?? fromUserData.faceSign ?? null;
+  const explicitFaceSide = normalizeCanvasPickingFaceSide(input.faceSide || fromUserData.faceSide);
+  const faceSide =
+    explicitFaceSide !== 'unknown' ? explicitFaceSide : inferCanvasPickingFaceSideFromSign(faceSign);
   return {
-    targetKind: inferCanvasPickingTargetKind(partId, drawerId),
+    targetKind: inferCanvasPickingTargetKind(partId, drawerId, doorId),
     partId,
     doorId,
     drawerId,
     moduleIndex: input.moduleIndex ?? fromUserData.moduleIndex ?? null,
     moduleStack: input.moduleStack ?? fromUserData.moduleStack ?? null,
     surfaceId: cleanString(input.surfaceId) || fromUserData.surfaceId || null,
-    faceSign: cleanNumber(input.faceSign) ?? fromUserData.faceSign ?? null,
+    faceSign,
     faceSide,
-    splitPart: cleanString(input.splitPart) || fromUserData.splitPart || null,
+    splitPart: inferCanvasPickingSplitPart(partId, cleanString(input.splitPart) || fromUserData.splitPart),
     source: input.source || 'unknown',
   };
 }

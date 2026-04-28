@@ -336,3 +336,30 @@ Immediate next slice:
 - Harden attention-pull listeners so online pull failures are reported as non-fatal and later events still work.
 - Keep the production owners in `esm/native/services/cloud_sync_coalescer_queue_runtime.ts`, `esm/native/services/cloud_sync_main_row_push_runtime.ts`, and `esm/native/services/cloud_sync_lifecycle_attention_pulls_handlers.ts`; no compatibility wrapper, no fallback branch outside the owning runtimes.
 - Verify with the focused Cloud Sync runtime tests, then the refactor guardrail lane.
+
+## 12. Live repository alignment - Canvas parity continuation
+
+The Cloud Sync hardening slice described above has now been completed in the working tree, and the next Canvas parity slice has been advanced beyond the initial child-surface case.
+
+Current Canvas parity coverage now includes:
+
+- mirror inside/outside identity parity when mirror surfaces expose `faceSign` without `faceSide`.
+- lower split-door identity parity for `lower_d...` part ids, including stack and split-part normalization.
+- sketch-box door identity parity using `__wpSketchModuleKey` and `__wpSketchBoxDoorId`.
+- click identity no longer invents a `top` stack when no object/module stack hint exists.
+
+Primary code owners:
+
+- `esm/native/services/canvas_picking_hit_identity.ts`
+- `esm/native/services/canvas_picking_click_hit_flow_state.ts`
+- `esm/native/services/canvas_picking_click_hit_flow_scan_objects.ts`
+
+Primary guardrails:
+
+- `tests/canvas_picking_hover_click_hit_identity_parity_runtime.test.ts`
+- `tests/canvas_picking_click_hit_flow_runtime.test.ts`
+- `tests/refactor_stage18_canvas_hit_parity_runtime.test.js`
+- `tools/wp_canvas_hit_identity_contract.mjs`
+- `tools/wp_canvas_hit_parity_contract.mjs`
+
+Remaining Canvas product-behavior follow-up should focus on browser/e2e commit flows, especially removed-door click blocking and full sketch hover/commit journeys. Do not add compatibility ladders for those; add behavior coverage first, then fix the owning service.

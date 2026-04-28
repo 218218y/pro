@@ -43,6 +43,18 @@ if (!/moduleStack:\s*input\.moduleStack \?\? fromUserData\.moduleStack \?\? null
     `${files.owner}: canonical identity must read moduleStack from userData when explicit input is absent`
   );
 }
+if (!/__wp_isDoorLikePartId/.test(owner) || !/__wp_isDrawerLikePartId/.test(owner)) {
+  errors.push(`${files.owner}: target kind inference must use the canonical door/drawer policy`);
+}
+if (!/inferCanvasPickingFaceSideFromSign/.test(owner)) {
+  errors.push(`${files.owner}: mirror faceSign hits must infer canonical faceSide`);
+}
+if (!/__wpSketchModuleKey/.test(owner) || !/__wpSketchBoxDoorId/.test(owner)) {
+  errors.push(`${files.owner}: sketch pick metadata must feed canonical hit identity`);
+}
+if (!/function inferCanvasPickingSplitPart/.test(owner)) {
+  errors.push(`${files.owner}: split-part suffixes must be normalized by the identity owner`);
+}
 
 for (const file of [files.hoverContracts, files.clickContracts]) {
   const source = read(file);

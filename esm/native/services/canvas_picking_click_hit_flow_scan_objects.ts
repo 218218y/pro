@@ -9,7 +9,10 @@ import {
 import type { RaycastHitLike } from './canvas_picking_engine.js';
 import { __wp_isViewportRoot } from './canvas_picking_local_helpers.js';
 import type { MutableCanvasPickingClickHitState } from './canvas_picking_click_hit_flow_state.js';
-import { mergeCanvasPickingHitIdentityUserData } from './canvas_picking_hit_identity.js';
+import {
+  mergeCanvasPickingHitIdentityUserData,
+  normalizeCanvasPickingModuleStack,
+} from './canvas_picking_hit_identity.js';
 
 export function scanCanvasPickingClickObjectHit(args: {
   App: AppContainer;
@@ -34,6 +37,13 @@ export function scanCanvasPickingClickObjectHit(args: {
     if (curr.userData?.partId != null) {
       const pid = String(curr.userData.partId);
       const mergedUserData = mergeCanvasPickingHitIdentityUserData(obj.userData, curr.userData);
+      const stackHint = normalizeCanvasPickingModuleStack(
+        mergedUserData?.moduleStack ?? mergedUserData?.__wpStack ?? mergedUserData?.stack
+      );
+      if (stackHint && state.stackHintSource !== 'moduleSelector') {
+        state.foundModuleStack = stackHint;
+        state.stackHintSource = 'objectTag';
+      }
       if (!state.foundPartId) {
         state.foundPartId = pid;
         state.foundPartUserData = mergedUserData;

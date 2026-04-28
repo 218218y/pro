@@ -32,11 +32,15 @@ npm run check:perf-hotpaths
 - Hover and click must describe the same visual target through canonical hit identity data.
 - `esm/native/services/canvas_picking_hit_identity.ts` owns stable identity fields such as target kind, part id, door/drawer id, module index, stack, surface id, face side/sign, split part, and source.
 - Click finalization should preserve the strongest available object metadata instead of re-guessing from weaker ids.
+- Mirror hits that expose only `faceSign` must still resolve a canonical inside/outside face side.
+- Split lower-stack door ids, sketch-box door metadata, and explicit object stack tags must flow through the same hit identity owner used by regular doors.
+- Click identity must not invent a `top` stack when no stack hint exists; use explicit object/module stack evidence only.
 - Identity helpers stay data-only: no DOM, scene mutation, store writes, timers, or UI operations.
 
 Relevant checks:
 
 ```bash
+npm run check:canvas-hit-identity
 npm run check:canvas-hit-parity
 ```
 

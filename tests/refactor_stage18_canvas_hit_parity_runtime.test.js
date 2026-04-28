@@ -10,10 +10,36 @@ const require = createRequire(import.meta.url);
 const ts = require('typescript');
 
 async function loadHitIdentityOwner() {
-  const source = readFileSync('esm/native/services/canvas_picking_hit_identity.ts', 'utf8').replace(
-    /import type \{[\s\S]*?\} from '\.\.\/\.\.\/\.\.\/types';\n/,
-    ''
+  const doorPartHelperShim = `
+function __wp_isDoorLikePartId(partId) {
+  const pid = typeof partId === 'string' ? partId : String(partId ?? '');
+  if (!pid) return false;
+  if (/^(?:lower_)?d\\d+(?:_|$)/.test(pid) && !pid.includes('_draw_')) return true;
+  if (/^sketch_box(?:_free)?_.+_door(?:_|$)/.test(pid)) return true;
+  if (pid.startsWith('sliding') || pid.startsWith('slide')) return true;
+  if (pid.startsWith('lower_sliding')) return true;
+  return (
+    pid.startsWith('corner_door') ||
+    pid.startsWith('corner_pent_door') ||
+    pid.startsWith('lower_corner_door') ||
+    pid.startsWith('lower_corner_pent_door')
   );
+}
+function __wp_isDrawerLikePartId(partId) {
+  const pid = typeof partId === 'string' ? partId : String(partId ?? '');
+  if (!pid) return false;
+  if (/^(?:lower_)?d\\d+_draw_/.test(pid)) return true;
+  if (pid.includes('_draw_')) return true;
+  if (pid.includes('drawer') || pid.includes('draw') || pid.includes('chest')) return true;
+  return false;
+}
+`;
+  const source = readFileSync('esm/native/services/canvas_picking_hit_identity.ts', 'utf8')
+    .replace(/import type \{[\s\S]*?\} from '\.\.\/\.\.\/\.\.\/types';\n/, '')
+    .replace(
+      /import \{\s*__wp_isDoorLikePartId,\s*__wp_isDrawerLikePartId,\s*\} from '\.\/canvas_picking_door_part_helpers\.js';\n/,
+      doorPartHelperShim
+    );
 
   const transpiled = ts.transpileModule(source, {
     compilerOptions: {
@@ -78,6 +104,62 @@ test('stage 18 keeps hover and click identities equivalent for child-surface doo
   assert.equal(clickIdentity.faceSide, 'inside');
   assert.notEqual(hoverIdentity.source, clickIdentity.source);
   assert.equal(areCanvasPickingHitIdentitiesEquivalent(hoverIdentity, clickIdentity), true);
+});
+
+test('stage 18 keeps mirror, split, and sketch identities canonical', async () => {
+  const {
+    createCanvasPickingClickHitIdentity,
+    createCanvasPickingDoorHoverHitIdentity,
+    mergeCanvasPickingHitIdentityUserData,
+  } = await loadHitIdentityOwner();
+
+  const mirrorIdentity = createCanvasPickingClickHitIdentity({
+    partId: 'd8_full',
+    doorId: 'd8_full',
+    drawerId: null,
+    moduleIndex: null,
+    moduleStack: null,
+    hitObjectUserData: {
+      __wpMirrorSurface: true,
+      surfaceId: 'door:d8:mirror:inside',
+      faceSign: -1,
+    },
+  });
+  assert.equal(mirrorIdentity.targetKind, 'door');
+  assert.equal(mirrorIdentity.doorId, 'd8');
+  assert.equal(mirrorIdentity.faceSide, 'inside');
+
+  const splitIdentity = createCanvasPickingDoorHoverHitIdentity({
+    partId: 'lower_d4_bot',
+    source: 'raycast',
+    hitObjectUserData: mergeCanvasPickingHitIdentityUserData(
+      { surfaceId: 'door:lower_d4:outside:bot', faceSign: 1 },
+      { partId: 'lower_d4_bot', __wpStack: 'bottom' }
+    ),
+  });
+  assert.equal(splitIdentity.targetKind, 'door');
+  assert.equal(splitIdentity.doorId, 'lower_d4');
+  assert.equal(splitIdentity.moduleStack, 'bottom');
+  assert.equal(splitIdentity.splitPart, 'bottom');
+  assert.equal(splitIdentity.faceSide, 'outside');
+
+  const sketchIdentity = createCanvasPickingClickHitIdentity({
+    partId: 'sketch_box_free_7_sbf_alpha_door_sbdr_1_accent_top',
+    doorId: 'sketch_box_free_7_sbf_alpha_door_sbdr_1_accent_top',
+    drawerId: null,
+    moduleIndex: null,
+    moduleStack: null,
+    hitObjectUserData: {
+      __wpSketchBoxDoorId: 'sbdr_1',
+      __wpSketchModuleKey: '7',
+      __wpSketchBoxDoor: true,
+      faceSign: 1,
+    },
+  });
+  assert.equal(sketchIdentity.targetKind, 'door');
+  assert.equal(sketchIdentity.doorId, 'sbdr_1');
+  assert.equal(sketchIdentity.moduleIndex, 7);
+  assert.equal(sketchIdentity.faceSide, 'outside');
 });
 
 test('stage 18 canvas parity contract is wired into guardrails', () => {

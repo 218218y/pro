@@ -89,7 +89,7 @@ export function finalizeCanvasPickingClickHitState(
       doorId: state.effectiveDoorId,
       drawerId: state.foundDrawerId,
       moduleIndex: state.foundModuleIndex,
-      moduleStack: state.foundModuleStack,
+      moduleStack: state.stackHintSource === 'none' ? null : state.foundModuleStack,
       hitObjectUserData:
         state.doorHitUserData || state.foundPartUserData || state.primaryHitObject?.userData || null,
     }),

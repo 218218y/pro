@@ -170,7 +170,7 @@ test('click hit flow carries door face metadata into canonical hit identity', ()
   assert.ok(hitState?.hitIdentity);
   assert.equal(hitState.hitIdentity?.targetKind, 'door');
   assert.equal(hitState.hitIdentity?.partId, 'd1_full');
-  assert.equal(hitState.hitIdentity?.doorId, 'd1_full');
+  assert.equal(hitState.hitIdentity?.doorId, 'd1');
   assert.equal(hitState.hitIdentity?.surfaceId, 'door:d1:inside');
   assert.equal(hitState.hitIdentity?.faceSide, 'inside');
   assert.equal(hitState.hitIdentity?.faceSign, -1);
@@ -210,7 +210,7 @@ test('click hit flow merges surface child metadata with parent door identity', (
 
   assert.ok(hitState?.hitIdentity);
   assert.equal(hitState.hitIdentity?.partId, 'd2_full');
-  assert.equal(hitState.hitIdentity?.doorId, 'd2_full');
+  assert.equal(hitState.hitIdentity?.doorId, 'd2');
   assert.equal(hitState.hitIdentity?.surfaceId, 'door:d2:outside');
   assert.equal(hitState.hitIdentity?.faceSide, 'outside');
   assert.equal(hitState.hitIdentity?.faceSign, 1);

@@ -10,3 +10,8 @@ This repository now keeps the refactor plan in two layers:
 - Short placeholder report targets under `docs/` are kept when package/tool scripts still reference them; the scripts can overwrite those files when a report is regenerated.
 
 Do not re-add large generated audit dumps or per-stage closeout docs under `docs/`. When the plan changes, update the current handoff workmap plus the compact progress marker or living guardrail document that owns the rule.
+
+Current live additions:
+
+- Cloud Sync recovery hardening is covered by focused runtime tests and `check:cloud-sync-races`.
+- Canvas mirror/split/sketch hit-identity parity is covered by focused runtime tests plus `check:canvas-hit-identity` and `check:canvas-hit-parity`.
