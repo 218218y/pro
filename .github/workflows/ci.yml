@@ -19,15 +19,21 @@ jobs:
     name: Verify
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    env:
+      # Opt JavaScript actions into the newer GitHub Actions runtime now, before
+      # Node.js 24 becomes the platform default.
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: 22
+          # Keep CI on the current stable runtime line supported by the project
+          # engines range (>=22.12), while avoiding Node 20 deprecation noise.
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
