@@ -39,19 +39,12 @@ function hasBlobText(value: unknown): value is BlobTextLike {
   return !!value && typeof value === 'object' && typeof Reflect.get(value, 'text') === 'function';
 }
 
-function readGlobalScopeMaybe(): Record<string, unknown> | null {
+function readFileReaderCtor(): FileReaderCtorLike | null {
   try {
-    const value = Function('return this')();
-    return value && (typeof value === 'object' || typeof value === 'function') ? Object(value) : null;
+    return isFileReaderCtorLike(FileReader) ? FileReader : null;
   } catch {
     return null;
   }
-}
-
-function readFileReaderCtor(): FileReaderCtorLike | null {
-  const scope = readGlobalScopeMaybe();
-  const ctor = scope ? Reflect.get(scope, 'FileReader') : null;
-  return isFileReaderCtorLike(ctor) ? ctor : null;
 }
 
 function resolveFileReaderFactory(
