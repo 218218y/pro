@@ -54,8 +54,12 @@ export function createCloudSyncAttentionPullHandlers(
   };
 
   const onOnline = (_ev: unknown): void => {
-    if (isCloudSyncLifecycleGuardDisposed(isDisposed)) return;
-    triggerAttentionPull('online');
+    try {
+      if (isCloudSyncLifecycleGuardDisposed(isDisposed)) return;
+      triggerAttentionPull('online');
+    } catch (err) {
+      _cloudSyncReportNonFatal(App, 'onlineListener.callback', err, { throttleMs: 10000 });
+    }
   };
 
   const onVisibilityChange = (_ev: unknown): void => {

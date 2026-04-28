@@ -46,6 +46,9 @@ npm run check:canvas-hit-parity
 - Long-lived timers must come from injected Cloud Sync dependencies or a single browser-runtime timer boundary, not direct global timer calls.
 - Pull coalescers and main-row push flows must reset stale queued work across dispose/suppression boundaries.
 - Repeated start/stop/pull calls must be singleflight or idempotent.
+- Debounced Cloud Sync work must re-check suppression when the timer fires, not only when it is scheduled.
+- Main-row push failures must be reported non-fatally and must still notify settled listeners so parked pulls can recover.
+- Browser attention listeners must report non-fatal pull errors and remain usable for later events.
 
 Relevant docs/checks:
 

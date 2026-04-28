@@ -31,8 +31,16 @@ requireNeedle(
 
 const pushRuntime = read('esm/native/services/cloud_sync_main_row_push_runtime.ts');
 const pushShared = read('esm/native/services/cloud_sync_main_row_push_shared.ts');
+const attentionHandlers = read('esm/native/services/cloud_sync_lifecycle_attention_pulls_handlers.ts');
 requireNeedle('cloud_sync_main_row_push_runtime.ts', pushRuntime, 'resetPendingPushAfterFlights();');
 requireNeedle('cloud_sync_main_row_push_runtime.ts', pushRuntime, 'if (args.suppressRef.v) {');
+requireNeedle('cloud_sync_main_row_push_runtime.ts', pushRuntime, 'Promise.resolve(args.runPushRemote())');
+requireNeedle('cloud_sync_main_row_push_runtime.ts', pushRuntime, 'cloudSyncMainRow.push');
+requireNeedle(
+  'cloud_sync_lifecycle_attention_pulls_handlers.ts',
+  attentionHandlers,
+  'onlineListener.callback'
+);
 requireNeedle(
   'cloud_sync_main_row_push_shared.ts',
   pushShared,
@@ -57,6 +65,7 @@ requireNeedle(
 );
 
 const pushFlowTest = read('tests/cloud_sync_main_row_push_flow_runtime.test.ts');
+const attentionTest = read('tests/cloud_sync_lifecycle_attention_runtime.test.ts');
 requireNeedle(
   'tests/cloud_sync_main_row_push_flow_runtime.test.ts',
   pushFlowTest,
@@ -65,7 +74,27 @@ requireNeedle(
 requireNeedle(
   'tests/cloud_sync_main_row_push_flow_runtime.test.ts',
   pushFlowTest,
+  'drops debounced push when suppression starts before the timer fires'
+);
+requireNeedle(
+  'tests/cloud_sync_main_row_push_flow_runtime.test.ts',
+  pushFlowTest,
+  'reports synchronous push failures and still notifies settled listeners'
+);
+requireNeedle(
+  'tests/cloud_sync_main_row_push_flow_runtime.test.ts',
+  pushFlowTest,
+  'reports async push rejections without leaving detached timer work unhandled'
+);
+requireNeedle(
+  'tests/cloud_sync_main_row_push_flow_runtime.test.ts',
+  pushFlowTest,
   'assert.equal(pushCalls, 2)'
+);
+requireNeedle(
+  'tests/cloud_sync_lifecycle_attention_runtime.test.ts',
+  attentionTest,
+  'online handler reports pull failures without breaking later attention events'
 );
 
 if (errors.length) {

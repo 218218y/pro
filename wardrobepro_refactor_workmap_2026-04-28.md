@@ -332,5 +332,7 @@ Plan corrections for this repository:
 Immediate next slice:
 
 - Strengthen `tests/cloud_sync_pull_coalescer_runtime.test.ts` so the coalescer proves recovery when `run()` throws synchronously.
-- Keep the production owner in `esm/native/services/cloud_sync_coalescer_queue_runtime.ts`; no compatibility wrapper, no fallback branch outside the coalescer runtime owner.
-- Verify with the focused Cloud Sync coalescer test, then the refactor guardrail lane.
+- Harden main-row push so debounce suppression and push failure recovery both notify/settle cleanly.
+- Harden attention-pull listeners so online pull failures are reported as non-fatal and later events still work.
+- Keep the production owners in `esm/native/services/cloud_sync_coalescer_queue_runtime.ts`, `esm/native/services/cloud_sync_main_row_push_runtime.ts`, and `esm/native/services/cloud_sync_lifecycle_attention_pulls_handlers.ts`; no compatibility wrapper, no fallback branch outside the owning runtimes.
+- Verify with the focused Cloud Sync runtime tests, then the refactor guardrail lane.

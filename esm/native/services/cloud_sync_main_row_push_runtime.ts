@@ -33,7 +33,7 @@ export function createCloudSyncMainRowPushFlow(
     }
     if (args.isPushInFlight()) return;
     state.pendingPushAfterFlight = false;
-    void runPushNow();
+    runPushNowDetached();
   };
 
   const notifyPushSettled = (): void => {
@@ -50,13 +50,34 @@ export function createCloudSyncMainRowPushFlow(
     }
   };
 
+  const reportPushFailure = (err: unknown): void => {
+    _cloudSyncReportNonFatal(args.App, 'cloudSyncMainRow.push', err, { throttleMs: 8000 });
+  };
+
   const runPushNow = (): Promise<void> => {
     clearPendingPush();
-    const push = args.runPushRemote();
-    void push.finally(() => {
+    let push: Promise<void>;
+    try {
+      push = Promise.resolve(args.runPushRemote());
+    } catch (err) {
+      reportPushFailure(err);
       notifyPushSettled();
-    });
+      return Promise.reject(err);
+    }
+    void push.then(
+      () => {
+        notifyPushSettled();
+      },
+      err => {
+        reportPushFailure(err);
+        notifyPushSettled();
+      }
+    );
     return push;
+  };
+
+  const runPushNowDetached = (): void => {
+    void runPushNow().catch(() => undefined);
   };
 
   const subscribePushSettled = (listener: () => void): (() => void) => {
@@ -76,7 +97,11 @@ export function createCloudSyncMainRowPushFlow(
     if (state.pushTimer) return;
     state.pushTimer = args.setTimeoutFn(() => {
       state.pushTimer = null;
-      void runPushNow();
+      if (args.suppressRef.v) {
+        resetPendingPushAfterFlights();
+        return;
+      }
+      runPushNowDetached();
     }, 700);
   };
 

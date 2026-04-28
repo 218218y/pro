@@ -250,6 +250,77 @@ test('cloud sync attention online pull does not stay blocked by subscribed statu
   }
 });
 
+test('cloud sync attention online handler reports pull failures without breaking later attention events', () => {
+  const win = Object.assign(createEventTarget(), {
+    navigator: { userAgent: 'unit-test', onLine: true },
+    location: { href: 'https://example.test/', search: '' },
+  });
+  const doc = Object.assign(createEventTarget(), {
+    visibilityState: 'visible',
+    createElement() {
+      return {} as any;
+    },
+    querySelector() {
+      return null;
+    },
+  });
+  (win as any).document = doc;
+  const reported: Array<{ error: unknown; ctx: any }> = [];
+  const pullCalls: Array<{ includeControls?: boolean; reason?: string; minRecentPullGapMs?: number }> = [];
+
+  const originalNow = Date.now;
+  let now = 10_000;
+  Date.now = () => now;
+
+  try {
+    let shouldThrow = true;
+    bindCloudSyncAttentionPulls({
+      App: {
+        deps: {
+          browser: {
+            window: win,
+            document: doc,
+            navigator: win.navigator,
+          },
+        },
+        services: {
+          platform: {
+            reportError(error: unknown, ctx: any) {
+              reported.push({ error, ctx });
+            },
+          },
+        },
+      } as any,
+      runtimeStatus: { realtime: { state: 'disconnected' } } as any,
+      suppressRef: { v: false },
+      pullAllNow: opts => {
+        if (shouldThrow) throw new Error('online pull failed');
+        pullCalls.push(opts || {});
+      },
+      addListener: (target, type, handler) => {
+        target?.addEventListener?.(type, handler);
+      },
+    });
+
+    now = 16_000;
+    win.dispatch('online');
+
+    assert.equal(reported.length, 1);
+    assert.equal((reported[0]?.error as Error).message, 'online pull failed');
+    assert.equal(reported[0]?.ctx?.op, 'onlineListener.callback');
+
+    shouldThrow = false;
+    now = 31_500;
+    win.dispatch('online');
+
+    assert.deepEqual(pullCalls, [
+      { includeControls: false, reason: 'attention:online', minRecentPullGapMs: 8000 },
+    ]);
+  } finally {
+    Date.now = originalNow;
+  }
+});
+
 test('cloud sync diagnostics storage listener republishes status only when the diagnostics flag actually changes', () => {
   const win = Object.assign(createEventTarget(), {
     navigator: { userAgent: 'unit-test', onLine: true },

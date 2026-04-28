@@ -9,7 +9,7 @@ It replaces the removed long-form planning docs with a durable audit contract: e
 - Refactor verification entry point: `verify:refactor-modernization`.
 - Guardrail aggregate lane: `check:refactor-guardrails`.
 - Stage regression lane: `test:refactor-stage-guards`.
-- Current Cloud Sync hardening slice: pull coalescer failure recovery is covered in the focused Cloud Sync sync-ops lane and guarded by `check:cloud-sync-races`.
+- Current Cloud Sync hardening slice: pull coalescer failure recovery, main-row push failure/suppression recovery, and attention-pull error recovery are covered in focused Cloud Sync lanes and guarded by `check:cloud-sync-races`.
 
 ## Retained audit anchors
 
