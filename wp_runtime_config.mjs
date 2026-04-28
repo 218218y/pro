@@ -11,7 +11,9 @@
 //
 // Cloud Sync:
 // - The anon key is PUBLIC by design (it will be shipped to the browser).
-// - This setup is intentionally "open": anyone with your site URL can read/write.
+// - This setup intentionally keeps Cloud Sync open/no-auth. Anyone with a room link can read/write that room.
+// - Private-room mode should not use a hardcoded shared room name. Leave `privateRoom` empty so each browser
+//   generates and stores its own stable room ID locally, while share links still keep that room open/no-auth.
 //
 export default {
   // Optional: runtime flags (kept separate from config).
@@ -33,9 +35,9 @@ export default {
       table: 'wp_shared_state',
       publicRoom: 'public',
 
-      // If set, the UI button "חדר פרטי" will use this ID (stable).
-      // If empty, the app can generate a stable one and keep it in localStorage.
-      privateRoom: 'bargig_private',
+      // Leave empty to generate a stable per-browser private room and keep it in localStorage.
+      // Cloud Sync remains open/no-auth: anyone with the generated room link can access that room.
+      privateRoom: '',
 
       // URL query param name for room selection.
       roomParam: 'room',
