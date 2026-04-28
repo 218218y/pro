@@ -37,9 +37,15 @@ function __wp_isDrawerLikePartId(partId) {
   const source = readFileSync('esm/native/services/canvas_picking_hit_identity.ts', 'utf8')
     .replace(/import type \{[\s\S]*?\} from '\.\.\/\.\.\/\.\.\/types';\n/, '')
     .replace(
-      /import \{\s*__wp_isDoorLikePartId,\s*__wp_isDrawerLikePartId,\s*\} from '\.\/canvas_picking_door_part_helpers\.js';\n/,
+      /import\s*\{\s*__wp_isDoorLikePartId\s*,\s*__wp_isDrawerLikePartId\s*,?\s*\}\s*from\s*['"]\.\/canvas_picking_door_part_helpers\.js['"];\s*/m,
       doorPartHelperShim
     );
+
+  assert.doesNotMatch(
+    source,
+    /canvas_picking_door_part_helpers\.js/,
+    'canvas hit identity fixture must inline the door-part helper shim'
+  );
 
   const transpiled = ts.transpileModule(source, {
     compilerOptions: {
