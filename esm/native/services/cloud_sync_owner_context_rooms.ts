@@ -1,6 +1,11 @@
 import type { AppContainer } from '../../../types';
 
-import { getRoomFromUrl, isExplicitSite2Bundle, randomRoomId, type SupabaseCfg } from './cloud_sync_config.js';
+import {
+  getRoomFromUrl,
+  isExplicitSite2Bundle,
+  randomRoomId,
+  type SupabaseCfg,
+} from './cloud_sync_config.js';
 import { resolveCloudSyncSketchRooms } from './cloud_sync_sketch_rooms.js';
 import type { CloudSyncReportNonFatal, StorageLike } from './cloud_sync_owner_context_runtime_shared.js';
 
@@ -29,9 +34,7 @@ function readStoredPrivateRoom(args: {
 }): string {
   const { App, storage, reportNonFatal } = args;
   try {
-    return typeof storage.getString === 'function'
-      ? readRoomString(storage.getString(PRIVATE_KEY))
-      : '';
+    return typeof storage.getString === 'function' ? readRoomString(storage.getString(PRIVATE_KEY)) : '';
   } catch (e) {
     reportNonFatal(App, 'privateRoom.read', e, { throttleMs: 8000 });
     return '';
@@ -85,8 +88,7 @@ export function createCloudSyncOwnerRooms(args: {
     return resolved || cfg.publicRoom;
   };
 
-  const getPrivateRoom = (): string =>
-    resolveStablePrivateRoom({ App, cfg, storage, reportNonFatal });
+  const getPrivateRoom = (): string => resolveStablePrivateRoom({ App, cfg, storage, reportNonFatal });
 
   const setPrivateRoom = (value: string): void => {
     writeStoredPrivateRoom({ App, storage, reportNonFatal, value });
