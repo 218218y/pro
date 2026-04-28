@@ -31,10 +31,15 @@ export function resolveDirectPaintTargetKey(args: {
   foundDrawerId?: string | null;
   activeStack: 'top' | 'bottom';
 }): string {
+  const effectiveDoorId =
+    typeof args.effectiveDoorId === 'string' && args.effectiveDoorId ? args.effectiveDoorId : null;
+  const foundDrawerId =
+    typeof args.foundDrawerId === 'string' && args.foundDrawerId ? args.foundDrawerId : null;
+  const foundPartId = args.foundPartId;
   const rawTarget =
-    (typeof args.effectiveDoorId === 'string' && args.effectiveDoorId) ||
-    (typeof args.foundDrawerId === 'string' && args.foundDrawerId) ||
-    args.foundPartId;
+    effectiveDoorId && (!isSpecialPart(foundPartId) || isSpecialPart(effectiveDoorId))
+      ? effectiveDoorId
+      : foundDrawerId || foundPartId;
   return resolvePaintPartKey(rawTarget, args.activeStack);
 }
 

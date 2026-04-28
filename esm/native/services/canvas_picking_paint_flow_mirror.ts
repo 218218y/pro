@@ -4,6 +4,8 @@ import {
   DEFAULT_FACE_SIGN,
   buildMirrorLayoutFromHit,
   findMirrorLayoutMatchInRect,
+  readMirrorLayoutFaceSign,
+  readMirrorLayoutList,
 } from '../features/mirror_layout.js';
 import { __wp_projectWorldPointToLocal } from './canvas_picking_local_helpers.js';
 import {
@@ -46,6 +48,67 @@ function hasSizedMirrorDraft(draft: { widthCm?: unknown; heightCm?: unknown }): 
   return readPositiveDraftCm(draft.widthCm) != null || readPositiveDraftCm(draft.heightCm) != null;
 }
 
+function normalizeMirrorHitIdentityFaceSign(value: unknown): 1 | -1 | null {
+  if (value === -1) return -1;
+  if (value === 1) return 1;
+  return null;
+}
+
+function targetMatchesHitIdentityDoor(args: CanvasPaintClickArgs, targetId: string | null): boolean {
+  const identity = args.hitIdentity;
+  if (!identity || identity.targetKind !== 'door' || !targetId) return false;
+  if (identity.partId === targetId || identity.doorId === targetId) return true;
+  return !!(identity.doorId && targetId.startsWith(`${identity.doorId}_`));
+}
+
+function readHitIdentityMirrorFaceSign(args: CanvasPaintClickArgs, targetId: string | null): 1 | -1 | null {
+  if (!targetMatchesHitIdentityDoor(args, targetId)) return null;
+  return normalizeMirrorHitIdentityFaceSign(args.hitIdentity?.faceSign);
+}
+
+function isFullDoorMirrorLayoutEntry(layout: unknown): boolean {
+  const entry = isRecord(layout) ? layout : null;
+  if (!entry) return false;
+  return (
+    entry.widthCm == null && entry.heightCm == null && entry.centerXNorm == null && entry.centerYNorm == null
+  );
+}
+
+function findFullDoorMirrorFaceMatch(
+  layouts: MirrorLayoutList | null | undefined,
+  faceSign: 1 | -1
+): { index: number } | null {
+  const list = readMirrorLayoutList(layouts);
+  for (let i = 0; i < list.length; i += 1) {
+    const layout = list[i];
+    if (
+      isFullDoorMirrorLayoutEntry(layout) &&
+      readMirrorLayoutFaceSign(layout, DEFAULT_FACE_SIGN) === faceSign
+    ) {
+      return { index: i };
+    }
+  }
+  return null;
+}
+
+function resolveFullDoorMirrorHitIdentityResult(args: {
+  clickArgs: CanvasPaintClickArgs;
+  layouts: MirrorLayoutList | null | undefined;
+  targetId: string | null;
+  hasSizedDraft: boolean;
+}): MirrorLayoutClickResult | null {
+  if (args.hasSizedDraft) return null;
+  const faceSign = readHitIdentityMirrorFaceSign(args.clickArgs, args.targetId);
+  if (faceSign == null) return null;
+  return {
+    nextLayout: null,
+    removeMatch: findFullDoorMirrorFaceMatch(args.layouts, faceSign),
+    canApplyMirror: true,
+    hitFaceSign: faceSign,
+    isFullDoorMirror: true,
+  };
+}
+
 function readDoorLeafRect(
   doorObj: unknown
 ): { minX: number; maxX: number; minY: number; maxY: number } | null {
@@ -71,12 +134,20 @@ export function resolveMirrorLayoutForPaintClick(
   const hitPoint = args.doorHitPoint ?? args.primaryHitPoint;
   const owner = resolveMirrorPlacementOwnerByPartId(isRecord(hitObj) ? hitObj : null, targetId || null);
   const rect = readDoorLeafRect(owner);
-  if (!owner || !rect || !hitPoint) return emptyMirrorLayoutClickResult();
-  const localPoint = __wp_projectWorldPointToLocal(args.App, hitPoint, owner);
-  if (!localPoint) return emptyMirrorLayoutClickResult();
-  const faceSign = resolveMirrorFaceSignFromLocalPoint(localPoint);
   const draft = readMirrorDraft(args.App);
   const hasSizedDraft = hasSizedMirrorDraft(draft);
+  const identityResult = (): MirrorLayoutClickResult | null =>
+    resolveFullDoorMirrorHitIdentityResult({
+      clickArgs: args,
+      layouts,
+      targetId: targetId || null,
+      hasSizedDraft,
+    });
+
+  if (!owner || !rect || !hitPoint) return identityResult() || emptyMirrorLayoutClickResult();
+  const localPoint = __wp_projectWorldPointToLocal(args.App, hitPoint, owner);
+  if (!localPoint) return identityResult() || emptyMirrorLayoutClickResult();
+  const faceSign = resolveMirrorFaceSignFromLocalPoint(localPoint);
   const nextLayout = hasSizedDraft
     ? buildMirrorLayoutFromHit({
         rect,

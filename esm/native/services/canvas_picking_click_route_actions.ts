@@ -16,6 +16,7 @@ export function tryHandleCanvasPickingActionRoute(args: CanvasPickingClickRouteA
     primaryHitPoint,
     doorHitPoint,
     doorHitY,
+    hitIdentity,
     primaryHitY: _primaryHitY,
   } = hitState;
   const {
@@ -61,6 +62,7 @@ export function tryHandleCanvasPickingActionRoute(args: CanvasPickingClickRouteA
       doorHitObject,
       primaryHitPoint,
       doorHitPoint,
+      hitIdentity,
     })
   ) {
     return true;

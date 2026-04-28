@@ -33,7 +33,9 @@ npm run check:perf-hotpaths
 - `esm/native/services/canvas_picking_hit_identity.ts` owns stable identity fields such as target kind, part id, door/drawer id, module index, stack, surface id, face side/sign, split part, and source.
 - Click finalization should preserve the strongest available object metadata instead of re-guessing from weaker ids.
 - Mirror hits that expose only `faceSign` must still resolve a canonical inside/outside face side.
+- Mirror paint commits must receive the finalized `hitIdentity`; full-door mirror fallback may use `faceSign` only when no sized mirror draft is active and must remove matching full-face layouts instead of duplicating them.
 - Split lower-stack door ids, sketch-box door metadata, and explicit object stack tags must flow through the same hit identity owner used by regular doors.
+- Paint target resolution must preserve sketch-box door part keys for special paint maps; canonical sketch door ids may describe identity but must not replace the persisted map key.
 - Click identity must not invent a `top` stack when no stack hint exists; use explicit object/module stack evidence only.
 - Identity helpers stay data-only: no DOM, scene mutation, store writes, timers, or UI operations.
 

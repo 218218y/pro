@@ -1,4 +1,5 @@
 import type { AppContainer } from '../../../types';
+import type { CanvasPickingHitIdentity } from './canvas_picking_hit_identity.js';
 
 export interface CanvasPaintClickArgs {
   App: AppContainer;
@@ -11,4 +12,5 @@ export interface CanvasPaintClickArgs {
   doorHitObject?: unknown;
   primaryHitPoint?: unknown;
   doorHitPoint?: unknown;
+  hitIdentity?: CanvasPickingHitIdentity | null;
 }

@@ -6,8 +6,13 @@ const files = {
   clickState: 'esm/native/services/canvas_picking_click_hit_flow_state.ts',
   clickScanObjects: 'esm/native/services/canvas_picking_click_hit_flow_scan_objects.ts',
   hoverScan: 'esm/native/services/canvas_picking_door_hover_targets_hit_scan.ts',
+  clickRouteActions: 'esm/native/services/canvas_picking_click_route_actions.ts',
+  paintContracts: 'esm/native/services/canvas_picking_paint_flow_contracts.ts',
+  paintMirror: 'esm/native/services/canvas_picking_paint_flow_mirror.ts',
+  paintApplySpecial: 'esm/native/services/canvas_picking_paint_flow_apply_special.ts',
   clickRuntimeTest: 'tests/canvas_picking_click_hit_flow_runtime.test.ts',
   hoverClickRuntimeTest: 'tests/canvas_picking_hover_click_hit_identity_parity_runtime.test.ts',
+  paintRuntimeTest: 'tests/canvas_picking_paint_flow_apply_runtime.test.ts',
   stageRuntimeTest: 'tests/refactor_stage18_canvas_hit_parity_runtime.test.js',
 };
 
@@ -140,6 +145,56 @@ requireMatch(
   'hover scan must use the shared canonical metadata merger'
 );
 
+const clickRouteActions = read(files.clickRouteActions);
+requireMatch(
+  files.clickRouteActions,
+  clickRouteActions,
+  /hitIdentity,\s*\n\s*primaryHitY: _primaryHitY/,
+  'click action route must read finalized hitIdentity'
+);
+requireMatch(
+  files.clickRouteActions,
+  clickRouteActions,
+  /tryHandleCanvasPaintClick\(\{[\s\S]*hitIdentity,[\s\S]*\}\)/,
+  'paint route must forward canonical hitIdentity into paint commit'
+);
+
+const paintContracts = read(files.paintContracts);
+requireMatch(
+  files.paintContracts,
+  paintContracts,
+  /import type \{ CanvasPickingHitIdentity \} from '\.\/canvas_picking_hit_identity\.js';/,
+  'paint click contract must use canonical hit identity type'
+);
+requireMatch(
+  files.paintContracts,
+  paintContracts,
+  /hitIdentity\?: CanvasPickingHitIdentity \| null;/,
+  'paint click args must expose optional canonical hitIdentity'
+);
+
+const paintMirror = read(files.paintMirror);
+requireMatch(
+  files.paintMirror,
+  paintMirror,
+  /resolveFullDoorMirrorHitIdentityResult/,
+  'mirror paint resolver must support full-door face selection from hitIdentity'
+);
+requireMatch(
+  files.paintMirror,
+  paintMirror,
+  /findFullDoorMirrorFaceMatch/,
+  'mirror hitIdentity fallback must remove matching full-face layouts instead of duplicating them'
+);
+
+const paintApplySpecial = read(files.paintApplySpecial);
+requireMatch(
+  files.paintApplySpecial,
+  paintApplySpecial,
+  /effectiveDoorId && \(!isSpecialPart\(foundPartId\) \|\| isSpecialPart\(effectiveDoorId\)\)/,
+  'direct paint target resolution must not let canonical door ids override special sketch door part keys'
+);
+
 const clickRuntimeTest = read(files.clickRuntimeTest);
 requireMatch(
   files.clickRuntimeTest,
@@ -177,6 +232,26 @@ requireMatch(
   hoverClickRuntimeTest,
   /sketch-box door hits preserve module and door identity/,
   'runtime test must cover sketch-box door parity'
+);
+
+const paintRuntimeTest = read(files.paintRuntimeTest);
+requireMatch(
+  files.paintRuntimeTest,
+  paintRuntimeTest,
+  /falls back to canonical hit identity for full-door face selection/,
+  'runtime test must cover mirror commit face selection from hitIdentity'
+);
+requireMatch(
+  files.paintRuntimeTest,
+  paintRuntimeTest,
+  /uses hit identity to remove an existing full-face mirror without geometry/,
+  'runtime test must cover full-face mirror removal through hitIdentity fallback'
+);
+requireMatch(
+  files.paintRuntimeTest,
+  paintRuntimeTest,
+  /sketch_box_free_alpha_door_sbdr_1/,
+  'runtime test must cover sketch-box door special paint target preservation'
 );
 
 const stageRuntimeTest = read(files.stageRuntimeTest);

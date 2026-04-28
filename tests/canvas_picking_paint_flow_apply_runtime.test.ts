@@ -269,6 +269,15 @@ test('paint flow helpers resolve scoped door-style and paint-part keys without l
     }),
     'sketch_ext_drawers_2_main_1'
   );
+  assert.equal(
+    resolveDirectPaintTargetKey({
+      foundPartId: 'sketch_box_free_alpha_door_sbdr_1',
+      effectiveDoorId: 'sbdr_1',
+      foundDrawerId: null,
+      activeStack: 'top',
+    }),
+    'sketch_box_free_alpha_door_sbdr_1'
+  );
 });
 
 test('paint special target detection includes sketch external drawer fronts so mirror/glass clicks do not degrade into color-only refreshes', () => {
@@ -435,6 +444,75 @@ test('mirror paint click treats blank mirror dimensions as a full-door mirror in
 
   assert.equal(result.canApplyMirror, true);
   assert.equal(result.removeMatch, null);
+  assert.equal(result.nextLayout, null);
+});
+
+test('mirror paint click falls back to canonical hit identity for full-door face selection', () => {
+  const App = createApp({
+    ui: { currentMirrorDraftWidthCm: '', currentMirrorDraftHeightCm: '' },
+  });
+
+  const result = resolveMirrorLayoutForPaintClick({
+    App: App as never,
+    foundPartId: 'd9_full',
+    effectiveDoorId: 'd9_full',
+    activeStack: 'top',
+    isPaintMode: true,
+    hitIdentity: {
+      targetKind: 'door',
+      partId: 'd9_full',
+      doorId: 'd9',
+      drawerId: null,
+      moduleIndex: null,
+      moduleStack: null,
+      surfaceId: 'door:d9:inside',
+      faceSign: -1,
+      faceSide: 'inside',
+      splitPart: 'full',
+      source: 'click',
+    },
+  });
+
+  assert.equal(result.canApplyMirror, true);
+  assert.equal(result.hitFaceSign, -1);
+  assert.equal(result.isFullDoorMirror, true);
+  assert.equal(result.removeMatch, null);
+  assert.equal(result.nextLayout, null);
+});
+
+test('mirror paint click uses hit identity to remove an existing full-face mirror without geometry', () => {
+  const App = createApp({
+    ui: { currentMirrorDraftWidthCm: '', currentMirrorDraftHeightCm: '' },
+  });
+
+  const result = resolveMirrorLayoutForPaintClick(
+    {
+      App: App as never,
+      foundPartId: 'd9_full',
+      effectiveDoorId: 'd9_full',
+      activeStack: 'top',
+      isPaintMode: true,
+      hitIdentity: {
+        targetKind: 'door',
+        partId: 'd9_full',
+        doorId: 'd9',
+        drawerId: null,
+        moduleIndex: null,
+        moduleStack: null,
+        surfaceId: 'door:d9:inside',
+        faceSign: -1,
+        faceSide: 'inside',
+        splitPart: 'full',
+        source: 'click',
+      },
+    },
+    [{ faceSign: -1 }, { faceSign: 1 }] as never
+  );
+
+  assert.equal(result.canApplyMirror, true);
+  assert.equal(result.hitFaceSign, -1);
+  assert.equal(result.isFullDoorMirror, true);
+  assert.equal(result.removeMatch?.index, 0);
   assert.equal(result.nextLayout, null);
 });
 
