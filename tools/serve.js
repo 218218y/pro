@@ -59,10 +59,19 @@ const MIME = {
 };
 
 function safeResolve(urlPath) {
-  // Prevent path traversal.
-  const normalized = path.normalize(urlPath).replace(/^([/\\])+/, '');
-  const abs = path.join(ROOT, normalized);
-  if (!abs.startsWith(ROOT)) return null;
+  let decoded = '';
+  try {
+    decoded = decodeURIComponent(String(urlPath || '/'));
+  } catch {
+    return null;
+  }
+
+  // Prevent path traversal. Use path.relative instead of startsWith so sibling
+  // directories with a shared prefix cannot bypass the root boundary.
+  const normalized = path.normalize(decoded).replace(/^([/\\])+/, '');
+  const abs = path.resolve(ROOT, normalized);
+  const rel = path.relative(ROOT, abs);
+  if (rel.startsWith('..') || path.isAbsolute(rel)) return null;
   return abs;
 }
 
