@@ -1,17 +1,5 @@
 {
-  "file": "css/react_styles.css",
-  "metrics": {
-    "important": 141,
-    "transitionAll": 22,
-    "zIndex": 52,
-    "boxShadow": 116
-  },
-  "max": {
-    "important": 141,
-    "transitionAll": 22,
-    "zIndex": 52,
-    "boxShadow": 116
-  },
-  "ok": true,
-  "violations": []
+  "placeholder": true,
+  "report": "npm run report:css-style",
+  "policy": "docs/QUALITY_GUARDRAILS.md"
 }

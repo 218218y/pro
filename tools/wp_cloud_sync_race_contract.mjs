@@ -22,19 +22,17 @@ requireNeedle(
   'context.state.queued && (context.deps.isDisposed() || context.deps.isSuppressed())'
 );
 requireNeedle('cloud_sync_coalescer_queue_runtime.ts', queueRuntime, '.finally(() => {');
+requireNeedle('cloud_sync_coalescer_queue_runtime.ts', queueRuntime, 'Promise.resolve(context.deps.run())');
+requireNeedle(
+  'cloud_sync_coalescer_queue_runtime.ts',
+  queueRuntime,
+  'context.deps.reportNonFatal(`pullCoalescer.${context.policy.scopeLabel}.run`, e);'
+);
 
 const pushRuntime = read('esm/native/services/cloud_sync_main_row_push_runtime.ts');
 const pushShared = read('esm/native/services/cloud_sync_main_row_push_shared.ts');
-requireNeedle(
-  'cloud_sync_main_row_push_runtime.ts',
-  pushRuntime,
-  'resetPendingPushAfterFlights();'
-);
-requireNeedle(
-  'cloud_sync_main_row_push_runtime.ts',
-  pushRuntime,
-  'if (args.suppressRef.v) {'
-);
+requireNeedle('cloud_sync_main_row_push_runtime.ts', pushRuntime, 'resetPendingPushAfterFlights();');
+requireNeedle('cloud_sync_main_row_push_runtime.ts', pushRuntime, 'if (args.suppressRef.v) {');
 requireNeedle(
   'cloud_sync_main_row_push_shared.ts',
   pushShared,
@@ -51,6 +49,11 @@ requireNeedle(
   'tests/cloud_sync_pull_coalescer_runtime.test.ts',
   coalescerTest,
   'drops queued follow-up work when suppression starts during an in-flight run'
+);
+requireNeedle(
+  'tests/cloud_sync_pull_coalescer_runtime.test.ts',
+  coalescerTest,
+  'reports synchronous run failures and recovers for later work'
 );
 
 const pushFlowTest = read('tests/cloud_sync_main_row_push_flow_runtime.test.ts');

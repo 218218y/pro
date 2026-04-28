@@ -1,4 +1,4 @@
-import type { AppContainer, UnknownRecord } from '../../../types';
+import type { AppContainer } from '../../../types';
 
 import {
   __wp_isDoorLikePartId,
@@ -9,20 +9,7 @@ import {
 import type { RaycastHitLike } from './canvas_picking_engine.js';
 import { __wp_isViewportRoot } from './canvas_picking_local_helpers.js';
 import type { MutableCanvasPickingClickHitState } from './canvas_picking_click_hit_flow_state.js';
-
-function asUserDataRecord(value: unknown): UnknownRecord | null {
-  return value && typeof value === 'object' && !Array.isArray(value) ? (value as UnknownRecord) : null;
-}
-
-function mergeClickHitUserData(hitUserData: unknown, resolvedUserData: unknown): UnknownRecord | null {
-  const hit = asUserDataRecord(hitUserData);
-  const resolved = asUserDataRecord(resolvedUserData);
-  if (!hit && !resolved) return null;
-  return {
-    ...(hit || {}),
-    ...(resolved || {}),
-  };
-}
+import { mergeCanvasPickingHitIdentityUserData } from './canvas_picking_hit_identity.js';
 
 export function scanCanvasPickingClickObjectHit(args: {
   App: AppContainer;
@@ -46,14 +33,18 @@ export function scanCanvasPickingClickObjectHit(args: {
   while (curr && !__wp_isViewportRoot(App, curr)) {
     if (curr.userData?.partId != null) {
       const pid = String(curr.userData.partId);
-      const mergedUserData = mergeClickHitUserData(obj.userData, curr.userData);
+      const mergedUserData = mergeCanvasPickingHitIdentityUserData(obj.userData, curr.userData);
       if (!state.foundPartId) {
         state.foundPartId = pid;
         state.foundPartUserData = mergedUserData;
       }
 
       if (__wp_isDoorLikePartId(pid) && !state.effectiveDoorId) {
-        state.effectiveDoorId = pid;
+        const resolvedDoorId =
+          typeof mergedUserData?.doorId === 'string' && mergedUserData.doorId.trim()
+            ? mergedUserData.doorId.trim()
+            : pid;
+        state.effectiveDoorId = resolvedDoorId;
         state.doorHitObject = obj;
         state.doorHitUserData = mergedUserData;
         state.doorHitPoint = hit.point || null;

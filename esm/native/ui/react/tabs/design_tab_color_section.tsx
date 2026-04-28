@@ -26,7 +26,7 @@ export function DesignTabColorSection(props: { model: DesignTabColorSectionModel
           const isSaved = id.indexOf('saved_') === 0;
           const isSelected =
             choice === id ||
-            (choice &&
+            (!!choice &&
               choice[0] === '#' &&
               model.readSavedColorValue(color).toLowerCase() === choice.toLowerCase());
 

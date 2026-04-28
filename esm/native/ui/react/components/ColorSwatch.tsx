@@ -65,7 +65,7 @@ export function ColorSwatch(props: ColorSwatchProps) {
       onClick={onPick}
       role="button"
       tabIndex={0}
-      onKeyDown={event => handleActivation(event, onPick)}
+      onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => handleActivation(event, onPick)}
     >
       {children}
     </div>
@@ -94,7 +94,7 @@ export function ColorSwatchItem(props: ColorSwatchItemProps) {
       role="button"
       tabIndex={0}
       draggable={draggable}
-      onKeyDown={event => handleActivation(event, onPick)}
+      onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => handleActivation(event, onPick)}
     >
       <div
         className={cx('color-dot-swatch', 'wp-r-color-swatch', selected && 'is-selected')}

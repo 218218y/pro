@@ -63,16 +63,10 @@
         "legacy-runtime-risk": 2
       }
     },
-    "esm/native/builder/build_wardrobe_flow_context_setup.ts": {
+    "esm/native/builder/build_string_normalizer.ts": {
       "total": 5,
       "categories": {
         "runtime-default": 5
-      }
-    },
-    "esm/native/builder/core_pure.ts": {
-      "total": 1,
-      "categories": {
-        "legacy-runtime-risk": 1
       }
     },
     "esm/native/builder/corner_connector_cornice_shared.ts": {

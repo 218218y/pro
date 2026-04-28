@@ -24,6 +24,8 @@ const owner = read(files.owner);
 for (const pattern of [
   /export type CanvasPickingHitIdentity = \{/,
   /export function createCanvasPickingHitIdentity\(/,
+  /export function mergeCanvasPickingHitIdentityUserData\(/,
+  /export function normalizeCanvasPickingModuleStack\(/,
   /export function createCanvasPickingDoorHoverHitIdentity\(/,
   /export function createCanvasPickingClickHitIdentity\(/,
   /export function areCanvasPickingHitIdentitiesEquivalent\(/,
@@ -31,6 +33,12 @@ for (const pattern of [
   if (!pattern.test(owner)) errors.push(`${files.owner}: missing ${pattern}`);
 }
 if (/\bas any\b/.test(owner)) errors.push(`${files.owner}: must not use as any`);
+if (!/moduleIndex:\s*input\.moduleIndex \?\? fromUserData\.moduleIndex \?\? null/.test(owner)) {
+  errors.push(`${files.owner}: canonical identity must read moduleIndex from userData when explicit input is absent`);
+}
+if (!/moduleStack:\s*input\.moduleStack \?\? fromUserData\.moduleStack \?\? null/.test(owner)) {
+  errors.push(`${files.owner}: canonical identity must read moduleStack from userData when explicit input is absent`);
+}
 
 for (const file of [files.hoverContracts, files.clickContracts]) {
   const source = read(file);
@@ -48,6 +56,11 @@ for (const file of [files.hoverScan, files.preferredFace]) {
   if (!/hitIdentity:\s*createCanvasPickingDoorHoverHitIdentity\(/.test(source)) {
     errors.push(`${file}: missing hitIdentity on returned DoorHoverHit`);
   }
+}
+
+const hoverScan = read(files.hoverScan);
+if (!/mergeCanvasPickingHitIdentityUserData/.test(hoverScan)) {
+  errors.push(`${files.hoverScan}: raycast hover hit identity must merge surface hit metadata with resolved part metadata`);
 }
 
 const clickState = read(files.clickState);

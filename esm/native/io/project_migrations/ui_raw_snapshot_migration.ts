@@ -75,6 +75,14 @@ function readMigrationScalar<K extends UiRawScalarKey>(
   return projectUiRawMigrationReaders[key](value);
 }
 
+function writeMigrationScalar<K extends UiRawScalarKey>(
+  raw: UiRawInputsLike,
+  key: K,
+  value: UiRawScalarValueMap[K]
+): void {
+  raw[key] = value;
+}
+
 function cloneUiSnapshot(ui: unknown): MutableUiSnapshotLike {
   return isRecord(ui) ? { ...ui } : {};
 }
@@ -95,7 +103,7 @@ export function migrateProjectUiSnapshotToCanonicalRaw(ui: unknown): ProjectUiRa
     if (hasOwn(raw, key) && typeof raw[key] !== 'undefined') continue;
     const migratedValue = readMigrationScalar(key, source[key]);
     if (typeof migratedValue === 'undefined') continue;
-    raw[key] = migratedValue;
+    writeMigrationScalar(raw, key, migratedValue);
     filledKeys.push(key);
   }
 

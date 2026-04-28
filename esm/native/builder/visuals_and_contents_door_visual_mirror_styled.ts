@@ -88,7 +88,7 @@ function readBoxGeometryDimension(geometry: unknown, index: number, key: BoxGeom
   return Number.isFinite(parameterValue) && parameterValue > 0 ? parameterValue : NaN;
 }
 
-function readCenterPanelMetrics(group: Object3DLike, role: string, zSign: number): CenterPanelMetrics | null {
+function readCenterPanelMetrics(group: Object3DLike, role: string): CenterPanelMetrics | null {
   for (let i = 0; i < group.children.length; i += 1) {
     const child = group.children[i];
     if (child.userData.__doorVisualRole !== role) continue;
@@ -153,7 +153,7 @@ function buildStyledDoorFrame(args: CreateStyledMirrorDoorVisualArgs): {
   else createTomDoorVisual(sharedStyleArgs);
 
   const centerRole = args.style === 'profile' ? 'door_profile_center_panel' : 'door_tom_center_panel';
-  const center = readCenterPanelMetrics(visualGroup, centerRole, args.zSign);
+  const center = readCenterPanelMetrics(visualGroup, centerRole);
   return { visualGroup, center };
 }
 

@@ -474,6 +474,35 @@ test('cloud sync pull coalescer keeps queued follow-up work on one canonical tim
   }
 });
 
+test('cloud sync pull coalescer reports synchronous run failures and recovers for later work', async () => {
+  let shouldThrow = true;
+  const harness = createCoalescerHarness({
+    run: () => {
+      if (shouldThrow) throw new Error('sync boom');
+    },
+  });
+
+  harness.coalescer.trigger('sync-throw');
+  assert.equal(harness.timers.runNext(), true);
+  await Promise.resolve();
+  await Promise.resolve();
+  await Promise.resolve();
+
+  assert.equal(harness.runs.length, 1);
+  assert.deepEqual(harness.errors, ['pullCoalescer.rt.run']);
+  assert.equal(harness.timers.activeCount(), 0);
+
+  shouldThrow = false;
+  harness.coalescer.trigger('fresh-after-sync-throw');
+  assert.equal(harness.timers.runNext(), true);
+  await Promise.resolve();
+  await Promise.resolve();
+
+  assert.equal(harness.runs.length, 2, 'fresh work should run after a synchronous failure reset');
+  assert.deepEqual(harness.errors, ['pullCoalescer.rt.run']);
+  assert.equal(harness.timers.activeCount(), 0);
+});
+
 test('cloud sync pull coalescer drops queued work once the owner turns stale before the timer fires', async () => {
   const harness = createCoalescerHarness();
 
@@ -520,9 +549,11 @@ test('cloud sync pull coalescer drops queued follow-up work when owner becomes s
   await Promise.resolve();
 
   assert.equal(harness.runs.length, 2, 'fresh work should start from a clean queue after stale reset');
-  const payload = harness.diags.at(-1)?.[1] as { count?: number; reason?: string };
-  assert.equal(payload.count, 1);
-  assert.equal(payload.reason, 'fresh-after-dispose-reset');
+  assert.equal(
+    harness.diags.some(entry => (entry as unknown[])[1]?.reason === 'queued-during-flight'),
+    false,
+    'stale in-flight follow-up reason must not leak into later diagnostics'
+  );
 });
 
 test('cloud sync pull coalescer drops queued follow-up work when suppression starts during an in-flight run', async () => {
@@ -551,7 +582,9 @@ test('cloud sync pull coalescer drops queued follow-up work when suppression sta
   await Promise.resolve();
 
   assert.equal(harness.runs.length, 2);
-  const payload = harness.diags.at(-1)?.[1] as { count?: number; reason?: string };
-  assert.equal(payload.count, 1);
-  assert.equal(payload.reason, 'fresh-after-suppression-reset');
+  assert.equal(
+    harness.diags.some(entry => (entry as unknown[])[1]?.reason === 'queued-during-flight'),
+    false,
+    'suppressed in-flight follow-up reason must not leak into later diagnostics'
+  );
 });

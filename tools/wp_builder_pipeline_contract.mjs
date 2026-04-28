@@ -35,8 +35,18 @@ requirePattern('esm/native/builder/internal_drawers_pipeline.ts', /export functi
 // Deps resolver owns fail-fast dependency validation and should not use broad `args && args.*` probing.
 requirePattern('esm/native/builder/builder_deps_resolver.ts', /export type ResolveBuilderDepsRequest/);
 requirePattern('esm/native/builder/builder_deps_resolver.ts', /request: ResolveBuilderDepsRequest \| null \| undefined/);
+requirePattern('esm/native/builder/builder_deps_resolver.ts', /function readBuilderDepsSection/);
+requirePattern('esm/native/builder/builder_deps_resolver.ts', /function bindKnownFunction<Fn>/);
+requirePattern('esm/native/builder/builder_deps_resolver.ts', /Reflect\.apply\(fn, owner, args\)/);
+requirePattern('esm/native/builder/builder_deps_resolver.ts', /function bindGetMaterialFn/);
+requirePattern('esm/native/builder/builder_deps_resolver.ts', /function readErrorMessage/);
 forbidPattern('esm/native/builder/builder_deps_resolver.ts', /args && args\./);
+forbidPattern('esm/native/builder/builder_deps_resolver.ts', /\b_obj\s*\(/);
 requirePattern('esm/native/builder/builder_deps_resolver.ts', /Missing critical deps throw here/);
+requirePattern('esm/native/builder/builder_deps_resolver.ts', /Builder tools missing: util\.cleanGroup/);
+requirePattern('esm/native/builder/builder_deps_resolver.ts', /Builder tools missing: materials\.getMaterial/);
+requirePattern('esm/native/builder/builder_deps_resolver.ts', /Builder tools missing: modules\.createDoorVisual/);
+requirePattern('esm/native/builder/builder_deps_resolver.ts', /Builder render helper missing: builderDeps\.render\.ensureWardrobeGroup/);
 
 // Core pure installation should be described as owner-provided surface filling, not legacy preservation.
 forbidPattern('esm/native/builder/core_pure.ts', /do not stomp legacy impls/);

@@ -48,6 +48,20 @@ function cleanNumber(value: unknown): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
+function cleanModuleIndex(value: unknown): CanvasPickingHitModuleIndex | null {
+  if (typeof value === 'number' && Number.isInteger(value) && value >= 0) return value;
+  if (value === 'corner') return 'corner';
+  if (typeof value === 'string' && /^corner:\d+$/.test(value)) return value as `corner:${number}`;
+  return null;
+}
+
+export function normalizeCanvasPickingModuleStack(value: unknown): CanvasPickingHitStack {
+  const raw = cleanString(value)?.toLowerCase();
+  if (raw === 'top' || raw === 'upper') return 'top';
+  if (raw === 'bottom' || raw === 'lower') return 'bottom';
+  return null;
+}
+
 export function inferCanvasPickingTargetKind(partId: string | null, drawerId: string | null): CanvasPickingHitTargetKind {
   if (drawerId || (partId && /(?:^|_)drawer_|^drawer_|^lower_|^upper_/.test(partId))) return 'drawer';
   if (partId && /^d\d+(?:_|$)/.test(partId)) return 'door';
@@ -81,11 +95,35 @@ export function readCanvasPickingHitIdentityUserData(value: unknown): Partial<Ca
     partId,
     doorId,
     drawerId,
+    moduleIndex: cleanModuleIndex(rec.moduleIndex ?? rec.mi ?? rec.__wpModuleIndex),
+    moduleStack: normalizeCanvasPickingModuleStack(rec.moduleStack ?? rec.__wpStack ?? rec.stack),
     surfaceId: cleanString(rec.surfaceId) || cleanString(rec.surfaceKey) || null,
     faceSign,
     faceSide,
     splitPart: cleanString(rec.splitPart) || cleanString(rec.segment) || null,
   };
+}
+
+export function mergeCanvasPickingHitIdentityUserData(hitUserData: unknown, resolvedUserData: unknown): UnknownRecord | null {
+  const hit = asRecord(hitUserData);
+  const resolved = asRecord(resolvedUserData);
+  if (!hit && !resolved) return null;
+
+  const merged: UnknownRecord = {
+    ...(resolved || {}),
+    ...(hit || {}),
+  };
+
+  const resolvedPartId = cleanString(resolved?.partId);
+  const resolvedPid = cleanString(resolved?.pid);
+  const resolvedDoorId = cleanString(resolved?.doorId);
+  const resolvedDrawerId = cleanString(resolved?.drawerId);
+  if (resolvedPartId) merged.partId = resolvedPartId;
+  if (resolvedPid) merged.pid = resolvedPid;
+  if (resolvedDoorId) merged.doorId = resolvedDoorId;
+  if (resolvedDrawerId) merged.drawerId = resolvedDrawerId;
+
+  return merged;
 }
 
 export function createCanvasPickingHitIdentity(input: IdentityInput): CanvasPickingHitIdentity {
@@ -99,8 +137,8 @@ export function createCanvasPickingHitIdentity(input: IdentityInput): CanvasPick
     partId,
     doorId,
     drawerId,
-    moduleIndex: input.moduleIndex ?? null,
-    moduleStack: input.moduleStack ?? null,
+    moduleIndex: input.moduleIndex ?? fromUserData.moduleIndex ?? null,
+    moduleStack: input.moduleStack ?? fromUserData.moduleStack ?? null,
     surfaceId: cleanString(input.surfaceId) || fromUserData.surfaceId || null,
     faceSign: cleanNumber(input.faceSign) ?? fromUserData.faceSign ?? null,
     faceSide,

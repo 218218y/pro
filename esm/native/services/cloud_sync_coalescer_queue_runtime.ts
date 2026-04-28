@@ -60,8 +60,15 @@ export function createCloudSyncPullCoalescerFire(
       reason,
     });
 
-    Promise.resolve()
-      .then(() => context.deps.run())
+    let runPromise: Promise<void>;
+    try {
+      runPromise = Promise.resolve(context.deps.run());
+    } catch (e) {
+      context.deps.reportNonFatal(`pullCoalescer.${context.policy.scopeLabel}.run`, e);
+      runPromise = Promise.resolve();
+    }
+
+    void runPromise
       .catch(e => {
         context.deps.reportNonFatal(`pullCoalescer.${context.policy.scopeLabel}.run`, e);
       })

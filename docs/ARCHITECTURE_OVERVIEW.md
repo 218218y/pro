@@ -50,6 +50,7 @@ A good change usually does all of this:
 
 - `docs/dev_guide.md`
 - `docs/ARCHITECTURE_OWNERSHIP_MAP.md`
+- `docs/QUALITY_GUARDRAILS.md`
 - `docs/TEST_PORTFOLIO_GUIDELINES.md`
 - `docs/layering_completion_audit.md`
 - `docs/e2e_smoke.md`

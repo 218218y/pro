@@ -93,7 +93,7 @@ export function applyPaintPartMutation(args: {
   if (isSpecialPart(paintPartKey) && (paintSelection === 'mirror' || paintSelection === 'glass')) {
     if (paintSelection === 'mirror') {
       const mirrorResult = resolveMirrorLayout(clickArgs, existingMirrorLayouts);
-      const { nextLayout, removeMatch, canApplyMirror } = mirrorResult;
+      const { removeMatch, canApplyMirror } = mirrorResult;
       if (existingSpecial === 'mirror' && removeMatch) {
         const nextLayouts = existingMirrorLayouts.filter((_, idx) => idx !== removeMatch.index);
         if (nextLayouts.length) {

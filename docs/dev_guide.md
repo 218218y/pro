@@ -41,7 +41,7 @@ index_pro.html
 
 ## Change workflow
 
-1. Read `package.json`, this guide, `layering_completion_audit.md`, and the directly affected tests/files.
+1. Read `package.json`, this guide, `QUALITY_GUARDRAILS.md`, `layering_completion_audit.md`, and the directly affected tests/files.
 2. Identify the canonical owner before editing.
 3. Keep changes surgical: fix the owner, not callers one by one.
 4. Add/adjust behavior tests for user-visible behavior and thin guard tests for ownership boundaries.
@@ -83,4 +83,5 @@ Use `npm run gate` before normal handoff. Use `npm run gate:full` before release
 
 - Keep active docs short and operational.
 - Put facts where future work will actually look for them.
+- Consolidate durable rules into `QUALITY_GUARDRAILS.md` instead of scattering one-off policy files.
 - Do not create new closeout/stage files for completed work; update the living doc that owns the topic.

@@ -34,10 +34,25 @@ function loadStructureTabControlsModule(stubs = {}) {
   const mod = { exports: {} };
   const localRequire = specifier => {
     if (specifier === 'react/jsx-runtime') {
+      const renderJsx = (type, props) =>
+        typeof type === 'function' ? type(props || {}) : { type, props: props || {} };
       return {
-        jsx: (type, props) => ({ type, props }),
-        jsxs: (type, props) => ({ type, props }),
+        jsx: renderJsx,
+        jsxs: renderJsx,
         Fragment: Symbol.for('fragment'),
+      };
+    }
+    if (specifier === '../components/index.js') {
+      return {
+        OptionButton: ({ selected = false, children, icon, onClick, ...props }) => ({
+          type: 'button',
+          props: {
+            ...props,
+            children: icon ? [icon, children] : children,
+            'aria-pressed': selected,
+            onClick,
+          },
+        }),
       };
     }
     if (specifier === './structure_tab_dim_field.js')

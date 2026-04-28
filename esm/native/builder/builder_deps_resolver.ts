@@ -23,6 +23,7 @@ import type {
   BuilderAddRealisticHangerFn,
   BuilderOutlineFn,
   BuilderCallable,
+  BuilderArgs,
 } from '../../../types';
 
 export type ResolveBuilderDepsRequest = {
@@ -108,63 +109,64 @@ function readBuilderDepsSection(value: unknown): UnknownRecord | null {
   return value && typeof value === 'object' && !Array.isArray(value) ? (value as UnknownRecord) : null;
 }
 
-function bindKnownFunction<Fn>(owner: UnknownRecord, key: string): Fn | undefined {
+function bindKnownFunction<Fn>(owner: UnknownRecord, key: string): Fn | null {
   const fn = owner[key];
-  if (typeof fn !== 'function') return undefined;
-  return ((...args: unknown[]) => Reflect.apply(fn, owner, args)) as Fn;
+  if (typeof fn !== 'function') return null;
+  const bound = (...args: BuilderArgs): unknown => Reflect.apply(fn, owner, args);
+  return bound as Fn;
 }
 
-function bindCallable(owner: UnknownRecord, key: string): BuilderCallable | undefined {
+function bindCallable(owner: UnknownRecord, key: string): BuilderCallable | null {
   return bindKnownFunction<BuilderCallable>(owner, key);
 }
 
-function bindGetMaterialFn(owner: UnknownRecord, key: string): BuilderGetMaterialFn | undefined {
+function bindGetMaterialFn(owner: UnknownRecord, key: string): BuilderGetMaterialFn | null {
   return bindKnownFunction<BuilderGetMaterialFn>(owner, key);
 }
 
-function bindOutlineFn(owner: UnknownRecord, key: string): BuilderOutlineFn | undefined {
+function bindOutlineFn(owner: UnknownRecord, key: string): BuilderOutlineFn | null {
   return bindKnownFunction<BuilderOutlineFn>(owner, key);
 }
 
 function bindCalculateModuleStructureFn(
   owner: UnknownRecord,
   key: string
-): BuilderCalculateModuleStructureFn | undefined {
+): BuilderCalculateModuleStructureFn | null {
   return bindKnownFunction<BuilderCalculateModuleStructureFn>(owner, key);
 }
 
-function bindCreateDoorVisualFn(owner: UnknownRecord, key: string): BuilderCreateDoorVisualFn | undefined {
+function bindCreateDoorVisualFn(owner: UnknownRecord, key: string): BuilderCreateDoorVisualFn | null {
   return bindKnownFunction<BuilderCreateDoorVisualFn>(owner, key);
 }
 
 function bindCreateInternalDrawerBoxFn(
   owner: UnknownRecord,
   key: string
-): BuilderCreateInternalDrawerBoxFn | undefined {
+): BuilderCreateInternalDrawerBoxFn | null {
   return bindKnownFunction<BuilderCreateInternalDrawerBoxFn>(owner, key);
 }
 
-function bindBuildChestOnlyFn(owner: UnknownRecord, key: string): BuilderBuildChestOnlyFn | undefined {
+function bindBuildChestOnlyFn(owner: UnknownRecord, key: string): BuilderBuildChestOnlyFn | null {
   return bindKnownFunction<BuilderBuildChestOnlyFn>(owner, key);
 }
 
-function bindBuildCornerWingFn(owner: UnknownRecord, key: string): BuilderBuildCornerWingFn | undefined {
+function bindBuildCornerWingFn(owner: UnknownRecord, key: string): BuilderBuildCornerWingFn | null {
   return bindKnownFunction<BuilderBuildCornerWingFn>(owner, key);
 }
 
-function bindRebuildDrawerMetaFn(owner: UnknownRecord, key: string): BuilderRebuildDrawerMetaFn | undefined {
+function bindRebuildDrawerMetaFn(owner: UnknownRecord, key: string): BuilderRebuildDrawerMetaFn | null {
   return bindKnownFunction<BuilderRebuildDrawerMetaFn>(owner, key);
 }
 
-function bindAddHangingClothesFn(owner: UnknownRecord, key: string): BuilderAddHangingClothesFn | undefined {
+function bindAddHangingClothesFn(owner: UnknownRecord, key: string): BuilderAddHangingClothesFn | null {
   return bindKnownFunction<BuilderAddHangingClothesFn>(owner, key);
 }
 
-function bindAddFoldedClothesFn(owner: UnknownRecord, key: string): BuilderAddFoldedClothesFn | undefined {
+function bindAddFoldedClothesFn(owner: UnknownRecord, key: string): BuilderAddFoldedClothesFn | null {
   return bindKnownFunction<BuilderAddFoldedClothesFn>(owner, key);
 }
 
-function bindAddRealisticHangerFn(owner: UnknownRecord, key: string): BuilderAddRealisticHangerFn | undefined {
+function bindAddRealisticHangerFn(owner: UnknownRecord, key: string): BuilderAddRealisticHangerFn | null {
   return bindKnownFunction<BuilderAddRealisticHangerFn>(owner, key);
 }
 

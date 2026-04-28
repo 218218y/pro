@@ -65,7 +65,8 @@ export function TypeSelector() {
               key={option.id}
               selected={selected}
               className={readStructureTypeOptionClassName(selected)}
-              testId={`structure-type-${option.id}-button`}
+              data-testid={`structure-type-${option.id}-button`}
+              aria-pressed={selected}
               data-structure-type={option.id}
               icon={<i className={option.iconClassName} aria-hidden="true" />}
               onClick={() => {
@@ -91,7 +92,8 @@ export function TypeSelector() {
               selected={selected}
               density="compact"
               className={readStructureTypeOptionClassName(selected, { compact: true, material: true })}
-              testId={`structure-board-material-${option.id}-button`}
+              data-testid={`structure-board-material-${option.id}-button`}
+              aria-pressed={selected}
               data-board-material={option.id}
               onClick={() => {
                 if (selected) return;

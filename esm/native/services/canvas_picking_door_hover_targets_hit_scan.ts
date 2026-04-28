@@ -3,7 +3,10 @@ import type { DoorHoverHit, IsViewportRootFn, StrFn } from './canvas_picking_doo
 import type { RaycastHitLike } from './canvas_picking_engine.js';
 import { __isReusableVectorLike } from './canvas_picking_door_hover_targets_shared.js';
 import { __resolveDoorGroupForPartId } from './canvas_picking_door_hover_targets_match.js';
-import { createCanvasPickingDoorHoverHitIdentity } from './canvas_picking_hit_identity.js';
+import {
+  createCanvasPickingDoorHoverHitIdentity,
+  mergeCanvasPickingHitIdentityUserData,
+} from './canvas_picking_hit_identity.js';
 
 export function __resolveHoverHitFromRaycastHit(args: {
   App: AppContainer;
@@ -44,7 +47,10 @@ export function __resolveHoverHitFromRaycastHit(args: {
     wardrobeGroup,
     hitIdentity: createCanvasPickingDoorHoverHitIdentity({
       partId: nearestPart.partId,
-      hitObjectUserData: nearestPart.node.userData,
+      hitObjectUserData: mergeCanvasPickingHitIdentityUserData(
+        hitObject?.userData,
+        nearestPart.node.userData
+      ),
       source: 'raycast',
     }),
   };
