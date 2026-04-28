@@ -1,6 +1,6 @@
 import type { AppContainer } from '../../../types';
 
-import { getRoomFromUrl, isExplicitSite2Bundle, type SupabaseCfg } from './cloud_sync_config.js';
+import { getRoomFromUrl, isExplicitSite2Bundle, randomRoomId, type SupabaseCfg } from './cloud_sync_config.js';
 import { resolveCloudSyncSketchRooms } from './cloud_sync_sketch_rooms.js';
 import type { CloudSyncReportNonFatal, StorageLike } from './cloud_sync_owner_context_runtime_shared.js';
 
@@ -18,6 +18,58 @@ export type CloudSyncOwnerRooms = {
 const PRIVATE_KEY = 'wp_private_room';
 const SKETCH_ROOM_SUFFIX = '::sketch';
 
+function readRoomString(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function readStoredPrivateRoom(args: {
+  App: AppContainer;
+  storage: StorageLike;
+  reportNonFatal: CloudSyncReportNonFatal;
+}): string {
+  const { App, storage, reportNonFatal } = args;
+  try {
+    return typeof storage.getString === 'function'
+      ? readRoomString(storage.getString(PRIVATE_KEY))
+      : '';
+  } catch (e) {
+    reportNonFatal(App, 'privateRoom.read', e, { throttleMs: 8000 });
+    return '';
+  }
+}
+
+function writeStoredPrivateRoom(args: {
+  App: AppContainer;
+  storage: StorageLike;
+  reportNonFatal: CloudSyncReportNonFatal;
+  value: string;
+}): void {
+  const { App, storage, reportNonFatal } = args;
+  const next = readRoomString(args.value);
+  if (!next) return;
+  try {
+    if (typeof storage.setString === 'function') storage.setString(PRIVATE_KEY, next);
+  } catch (e) {
+    reportNonFatal(App, 'privateRoom.write', e, { throttleMs: 8000 });
+  }
+}
+
+function resolveStablePrivateRoom(args: {
+  App: AppContainer;
+  cfg: SupabaseCfg;
+  storage: StorageLike;
+  reportNonFatal: CloudSyncReportNonFatal;
+}): string {
+  const { App, cfg, storage, reportNonFatal } = args;
+  const stored = readStoredPrivateRoom({ App, storage, reportNonFatal });
+  if (stored) return stored;
+
+  const configured = readRoomString(cfg.privateRoom);
+  const next = configured || randomRoomId();
+  writeStoredPrivateRoom({ App, storage, reportNonFatal, value: next });
+  return next;
+}
+
 export function createCloudSyncOwnerRooms(args: {
   App: AppContainer;
   cfg: SupabaseCfg;
@@ -33,33 +85,17 @@ export function createCloudSyncOwnerRooms(args: {
     return resolved || cfg.publicRoom;
   };
 
-  const getPrivateRoom = (): string => {
-    try {
-      return typeof storage.getString === 'function'
-        ? String(storage.getString(PRIVATE_KEY) || '').trim()
-        : '';
-    } catch (e) {
-      reportNonFatal(App, 'privateRoom.read', e, { throttleMs: 8000 });
-      return '';
-    }
-  };
+  const getPrivateRoom = (): string =>
+    resolveStablePrivateRoom({ App, cfg, storage, reportNonFatal });
 
   const setPrivateRoom = (value: string): void => {
-    const next = String(value || '').trim();
-    if (!next) return;
-    try {
-      if (typeof storage.setString === 'function') storage.setString(PRIVATE_KEY, next);
-    } catch (e) {
-      reportNonFatal(App, 'privateRoom.write', e, { throttleMs: 8000 });
-    }
+    writeStoredPrivateRoom({ App, storage, reportNonFatal, value });
   };
 
   const getGateBaseRoom = (): string => {
     const urlRoom = getRoomFromUrl(App, cfg.roomParam);
     if (urlRoom) return urlRoom;
-    const configuredPrivateRoom = String(cfg.privateRoom || '').trim();
-    if (configuredPrivateRoom) return configuredPrivateRoom;
-    return cfg.publicRoom;
+    return getPrivateRoom() || cfg.publicRoom;
   };
 
   const getSketchRoom = (): string => {
