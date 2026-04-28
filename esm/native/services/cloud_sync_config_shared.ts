@@ -120,10 +120,34 @@ export function hasAnySupabaseCfgKey(rec: SupabaseCfgRaw | null): boolean {
   );
 }
 
+function readCryptoRandomBytes(length: number): Uint8Array | null {
+  try {
+    // Keep this helper free of globalThis/Function-eval style access. In browsers, `crypto`
+    // is an ambient global; in non-browser tests this branch may simply be unavailable.
+    if (typeof crypto === 'undefined' || typeof crypto.getRandomValues !== 'function') return null;
+    const bytes = new Uint8Array(length);
+    crypto.getRandomValues(bytes);
+    return bytes;
+  } catch {
+    return null;
+  }
+}
+
+function encodeRoomBytes(bytes: Uint8Array): string {
+  const alphabet = '0123456789abcdefghijklmnopqrstuvwxyz';
+  let out = '';
+  for (const byte of bytes) out += alphabet[byte % alphabet.length];
+  return out;
+}
+
 export function randomRoomId(): string {
-  // short-ish, URL safe
-  const a = Math.random().toString(36).slice(2, 8);
-  const b = Math.random().toString(36).slice(2, 8);
+  const bytes = readCryptoRandomBytes(16);
+  if (bytes) return `room_${encodeRoomBytes(bytes)}`;
+
+  // Fallback for constrained/non-browser test runtimes only. Runtime private-room mode
+  // will still persist the first generated room, so this does not rotate unexpectedly.
+  const a = Math.random().toString(36).slice(2, 10);
+  const b = Math.random().toString(36).slice(2, 10);
   return `room_${a}${b}`;
 }
 
