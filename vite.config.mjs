@@ -8,9 +8,16 @@ import {
   resolveObservabilityBuildModeFromViteMode,
 } from './tools/wp_observability_build.js';
 
+function shouldEmitSourceMaps(mode) {
+  // Keep source maps opt-in for production/release builds so deployed bundles do not
+  // accidentally expose the source tree. Developers can still enable them explicitly.
+  return mode !== 'production' && process.env.WP_SOURCEMAP === '1';
+}
+
 export default defineConfig(({ mode }) => {
   const isModules = mode === 'modules';
   const observabilityBuildMode = resolveObservabilityBuildModeFromViteMode(mode);
+  const sourcemap = shouldEmitSourceMaps(mode);
 
   return {
     plugins: [react()],
@@ -38,7 +45,7 @@ export default defineConfig(({ mode }) => {
     build: isModules
       ? {
           outDir: 'dist_vite',
-          sourcemap: true,
+          sourcemap,
           rolldownOptions: {
             input: {
               entry_pro: './esm/entry_pro.ts',
@@ -54,7 +61,7 @@ export default defineConfig(({ mode }) => {
         }
       : {
           outDir: 'dist_vite',
-          sourcemap: true,
+          sourcemap,
           rolldownOptions: {
             input: {
               index_pro: './index_pro.html',
