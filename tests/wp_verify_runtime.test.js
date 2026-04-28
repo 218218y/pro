@@ -107,7 +107,9 @@ test('verify flow orders core checks and skips bundle commands when requested', 
 
   assert.equal(result.skipBundle, true);
   assert.equal(result.hasFormatWarn, false);
+  assert.ok(steps.includes('npm:check:refactor-guardrails'));
   assert.ok(steps.includes('npm:test'));
+  assert.ok(steps.indexOf('npm:check:refactor-guardrails') < steps.indexOf('npm:test'));
   assert.ok(steps.includes('node:tools/wp_esm_check.js'));
   assert.ok(!steps.includes('npm:bundle'));
   assert.ok(!steps.includes('npm:bundle:site2'));

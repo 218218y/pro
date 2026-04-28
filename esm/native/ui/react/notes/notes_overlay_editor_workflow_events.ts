@@ -8,6 +8,7 @@ import {
   type NotesOverlayEditorCore,
   type UseNotesOverlayEditorWorkflowsArgs,
 } from './notes_overlay_editor_workflow_shared.js';
+import { installDomEventListener } from '../effects/dom_event_cleanup.js';
 
 export type NotesOverlayEditorEventHandlers = Pick<
   import('./notes_overlay_editor_workflow_shared.js').NotesOverlayEditorWorkflows,
@@ -159,10 +160,13 @@ export function useNotesOverlayEditorWorkflowEvents(
       captureAndCommitDraft('react:notes:outsidePointerDown');
     };
 
-    win.addEventListener('pointerdown', onPointerDownCapture, true);
-    return () => {
-      win.removeEventListener('pointerdown', onPointerDownCapture, true);
-    };
+    return installDomEventListener({
+      target: win,
+      type: 'pointerdown',
+      listener: onPointerDownCapture as EventListener,
+      options: true,
+      label: 'notesOverlayOutsidePointerDown',
+    });
   }, [doc, editMode, notesEnabled, activeIndex, interaction, editorRefs, captureAndCommitDraft]);
 
   return {

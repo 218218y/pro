@@ -5,6 +5,7 @@ import {
   clearCloudSyncMainRowPendingPush,
   createCloudSyncMainRowPushMutableState,
   requestCloudSyncMainRowPendingPushAfterFlights,
+  resetCloudSyncMainRowPendingPushAfterFlights,
 } from './cloud_sync_main_row_push_shared.js';
 
 export function createCloudSyncMainRowPushFlow(
@@ -20,8 +21,17 @@ export function createCloudSyncMainRowPushFlow(
     requestCloudSyncMainRowPendingPushAfterFlights(state, args.clearTimeoutFn);
   };
 
+  const resetPendingPushAfterFlights = (): void => {
+    resetCloudSyncMainRowPendingPushAfterFlights(state, args.clearTimeoutFn);
+  };
+
   const flushPendingPushAfterFlights = (): void => {
-    if (args.suppressRef.v || args.isPushInFlight() || !state.pendingPushAfterFlight) return;
+    if (!state.pendingPushAfterFlight) return;
+    if (args.suppressRef.v) {
+      resetPendingPushAfterFlights();
+      return;
+    }
+    if (args.isPushInFlight()) return;
     state.pendingPushAfterFlight = false;
     void runPushNow();
   };
@@ -71,9 +81,8 @@ export function createCloudSyncMainRowPushFlow(
   };
 
   const dispose = (): void => {
-    state.pendingPushAfterFlight = false;
+    resetPendingPushAfterFlights();
     state.pushSettledListeners.clear();
-    clearPendingPush();
   };
 
   return {

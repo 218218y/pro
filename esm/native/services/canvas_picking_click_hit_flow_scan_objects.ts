@@ -1,4 +1,4 @@
-import type { AppContainer } from '../../../types';
+import type { AppContainer, UnknownRecord } from '../../../types';
 
 import {
   __wp_isDoorLikePartId,
@@ -9,6 +9,20 @@ import {
 import type { RaycastHitLike } from './canvas_picking_engine.js';
 import { __wp_isViewportRoot } from './canvas_picking_local_helpers.js';
 import type { MutableCanvasPickingClickHitState } from './canvas_picking_click_hit_flow_state.js';
+
+function asUserDataRecord(value: unknown): UnknownRecord | null {
+  return value && typeof value === 'object' && !Array.isArray(value) ? (value as UnknownRecord) : null;
+}
+
+function mergeClickHitUserData(hitUserData: unknown, resolvedUserData: unknown): UnknownRecord | null {
+  const hit = asUserDataRecord(hitUserData);
+  const resolved = asUserDataRecord(resolvedUserData);
+  if (!hit && !resolved) return null;
+  return {
+    ...(hit || {}),
+    ...(resolved || {}),
+  };
+}
 
 export function scanCanvasPickingClickObjectHit(args: {
   App: AppContainer;
@@ -32,11 +46,16 @@ export function scanCanvasPickingClickObjectHit(args: {
   while (curr && !__wp_isViewportRoot(App, curr)) {
     if (curr.userData?.partId != null) {
       const pid = String(curr.userData.partId);
-      if (!state.foundPartId) state.foundPartId = pid;
+      const mergedUserData = mergeClickHitUserData(obj.userData, curr.userData);
+      if (!state.foundPartId) {
+        state.foundPartId = pid;
+        state.foundPartUserData = mergedUserData;
+      }
 
       if (__wp_isDoorLikePartId(pid) && !state.effectiveDoorId) {
         state.effectiveDoorId = pid;
         state.doorHitObject = obj;
+        state.doorHitUserData = mergedUserData;
         state.doorHitPoint = hit.point || null;
         state.doorHitY = hit.point && typeof hit.point.y === 'number' ? hit.point.y : null;
       }

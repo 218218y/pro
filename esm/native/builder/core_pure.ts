@@ -64,7 +64,7 @@ export function installBuilderCorePure(App: unknown) {
   B.corePure = C;
   if (C.__esm_v1) return C;
 
-  // Fill missing keys only (do not stomp legacy impls if already present).
+  // Fill missing keys only: installed surfaces remain owner-provided, local pure ops fill gaps.
   const core = _asObject(builderCorePure) || {};
   for (const k of Object.keys(core)) {
     if (typeof C[k] === 'undefined') C[k] = core[k];

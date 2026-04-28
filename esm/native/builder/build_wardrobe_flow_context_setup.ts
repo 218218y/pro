@@ -3,22 +3,11 @@ import { prepareBuildScene } from './pre_build_reset.js';
 import { buildChestModeIfNeeded } from './chest_mode_pipeline.js';
 import { pickChestModeUi } from './build_wardrobe_flow_context_ui.js';
 import { resolveBuildWardrobeContextReaders } from './build_wardrobe_flow_context_readers.js';
+import { createBuildStringNormalizer } from './build_string_normalizer.js';
 
-import type { AppContainer, ProjectSavedNotesLike } from '../../../types';
+import type { ProjectSavedNotesLike } from '../../../types';
 import type { PreparedBuildWardrobeFlow } from './build_wardrobe_flow_prepare.js';
 
-type BuildStringNormalizer = (value: unknown, fallback?: string) => string;
-
-function fallbackToBuildString(value: unknown, fallback?: string): string {
-  if (value == null) return fallback || '';
-  return String(value);
-}
-
-function createBuildStringNormalizer(App: AppContainer | null | undefined): BuildStringNormalizer {
-  const platformStringify = App?.util?.str;
-  if (typeof platformStringify !== 'function') return fallbackToBuildString;
-  return (value: unknown, fallback?: string): string => platformStringify(value, fallback || '');
-}
 
 export type PreparedBuildWardrobeContextSetup = {
   notesToPreserve: ProjectSavedNotesLike | null;
@@ -27,7 +16,7 @@ export type PreparedBuildWardrobeContextSetup = {
   >['calculateModuleStructureFn'];
   getMaterialFn: ReturnType<typeof resolveBuildWardrobeContextReaders>['getMaterialFn'];
   addOutlinesMesh: ReturnType<typeof resolveBuildWardrobeContextReaders>['addOutlinesMesh'];
-  toStr: BuildStringNormalizer;
+  toStr: ReturnType<typeof createBuildStringNormalizer>;
 };
 
 export function prepareBuildWardrobeContextSetup(

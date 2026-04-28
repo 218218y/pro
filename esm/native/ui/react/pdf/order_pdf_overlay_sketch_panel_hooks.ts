@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import type { MutableRefObject } from 'react';
 
 import { getNodeDocument } from '../viewport_layout_runtime.js';
+import { installDomEventListener } from '../effects/dom_event_cleanup.js';
 
 export { getNodeDocument, getNodeWindow } from '../viewport_layout_runtime.js';
 export { useCanvasRedraw } from './order_pdf_overlay_sketch_panel_canvas_hooks.js';
@@ -79,7 +80,12 @@ export function useOrderPdfSketchPaletteDismiss(args: {
       }
       onDismiss();
     };
-    doc.addEventListener('pointerdown', onDocPointerDown, true);
-    return () => doc.removeEventListener('pointerdown', onDocPointerDown, true);
+    return installDomEventListener({
+      target: doc,
+      type: 'pointerdown',
+      listener: onDocPointerDown as EventListener,
+      options: true,
+      label: 'orderPdfSketchPaletteDismiss',
+    });
   }, [active, onDismiss, open, paletteRefs, toolbarRef]);
 }

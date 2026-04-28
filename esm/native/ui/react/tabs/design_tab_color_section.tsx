@@ -1,5 +1,6 @@
 import type { DragEvent, MouseEvent, ReactElement } from 'react';
 
+import { ColorSwatchItem } from '../components/index.js';
 import { MultiColorPanel, __designTabReportNonFatal } from './design_tab_multicolor_panel.js';
 import type { DesignTabColorSectionModel } from './use_design_tab_controller_contracts.js';
 
@@ -29,7 +30,6 @@ export function DesignTabColorSection(props: { model: DesignTabColorSectionModel
               choice[0] === '#' &&
               model.readSavedColorValue(color).toLowerCase() === choice.toLowerCase());
 
-          const className = 'color-dot-swatch' + (isSelected ? ' is-selected' : '');
           const style = model.getSwatchStyle(color);
           const isDragging = !!model.draggingColorId && model.draggingColorId === id;
           const isOver = !!model.dragOverColorId && model.dragOverColorId === id;
@@ -43,16 +43,17 @@ export function DesignTabColorSection(props: { model: DesignTabColorSectionModel
           }
 
           return (
-            <div
+            <ColorSwatchItem
               key={id}
-              className={'wp-swatch-item' + (isSaved ? ' is-saved' : '') + dndExtra}
+              className={dndExtra}
               title={
                 model.readSavedColorName(color) + (model.canReorderColorSwatches ? ' (גרור לשינוי סדר)' : '')
               }
-              onClick={() => model.onPickSwatch(color)}
-              role="button"
-              tabIndex={0}
+              onPick={() => model.onPickSwatch(color)}
+              saved={isSaved}
+              selected={isSelected}
               draggable={model.canReorderColorSwatches}
+              swatchStyle={style}
               onDragStart={(event: DragEvent<HTMLDivElement>) => model.onSwatchDragStart(id, event)}
               onDragEnd={model.onSwatchDragEnd}
               onDragOver={(event: DragEvent<HTMLDivElement>) => model.onSwatchDragOver(id, event)}
@@ -63,7 +64,6 @@ export function DesignTabColorSection(props: { model: DesignTabColorSectionModel
               data-color-value={String(model.readSavedColorValue(color) || '').toLowerCase()}
               data-selected={isSelected ? 'true' : 'false'}
             >
-              <div className={className} style={style} aria-hidden="true" />
 
               {isSaved ? (
                 <button
@@ -101,7 +101,7 @@ export function DesignTabColorSection(props: { model: DesignTabColorSectionModel
                   <i className={model.isSavedColorLocked(color) ? 'fas fa-lock' : 'fas fa-unlock'} />
                 </button>
               ) : null}
-            </div>
+            </ColorSwatchItem>
           );
         })}
 

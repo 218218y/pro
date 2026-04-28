@@ -14,9 +14,6 @@ export function applyHandles(ctx: unknown): void {
   const runtime = createHandlesApplyRuntime(ctx);
   const App = runtime.App;
 
-  const t0 = typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now();
-  void t0;
-
   runtime.syncDoorVisibilityForRemovedDoors();
   applyDoorHandles(runtime);
   applyDrawerHandles(runtime);

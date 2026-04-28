@@ -5,6 +5,7 @@ import type {
   MouseVectorLike,
   RaycasterLike,
 } from './canvas_picking_engine.js';
+import type { CanvasPickingHitIdentity } from './canvas_picking_hit_identity.js';
 
 export type ModuleKey = number | 'corner' | `corner:${number}`;
 
@@ -22,6 +23,7 @@ export type CanvasPickingClickHitState = {
   moduleHitY: number | null;
   doorHitY: number | null;
   primaryHitY: number | null;
+  hitIdentity?: CanvasPickingHitIdentity | null;
 };
 
 export type CanvasPickingClickHitFlowArgs = {

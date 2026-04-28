@@ -1,6 +1,7 @@
 import type { InlineDetailsConfirmState } from './order_pdf_overlay_contracts.js';
 import { CAPTURE_TRUE } from './order_pdf_overlay_constants.js';
 import type { RefBox } from './order_pdf_overlay_interactions_shared.js';
+import { installDomEventListener } from '../effects/dom_event_cleanup.js';
 import {
   createOrderPdfOverlayInitialFocusSession,
   resolveOrderPdfOverlayKeyboardGuardAction,
@@ -75,18 +76,14 @@ export function installOrderPdfOverlayKeyboardGuards(deps: KeyboardGuardDeps): (
     }
   };
 
-  try {
-    win.addEventListener('keydown', onKey, CAPTURE_TRUE);
-  } catch (__wpErr) {
-    reportNonFatal('orderPdfKeyboard:addEventListener', __wpErr);
-  }
-  return () => {
-    try {
-      win.removeEventListener('keydown', onKey, CAPTURE_TRUE);
-    } catch (__wpErr) {
-      reportNonFatal('orderPdfKeyboard:removeEventListener', __wpErr);
-    }
-  };
+  return installDomEventListener({
+    target: win,
+    type: 'keydown',
+    listener: onKey as EventListener,
+    options: CAPTURE_TRUE,
+    label: 'orderPdfKeyboard',
+    onError: reportNonFatal,
+  });
 }
 export function installOrderPdfOverlayFocusTrap(deps: FocusTrapDeps): () => void {
   const {
@@ -147,19 +144,18 @@ export function installOrderPdfOverlayFocusTrap(deps: FocusTrapDeps): () => void
     }
   };
 
-  try {
-    win.addEventListener('keydown', onKeyDown, CAPTURE_TRUE);
-  } catch (__wpErr) {
-    reportNonFatal('orderPdfFocusTrap:addEventListener', __wpErr);
-  }
+  const cleanupKeydown = installDomEventListener({
+    target: win,
+    type: 'keydown',
+    listener: onKeyDown as EventListener,
+    options: CAPTURE_TRUE,
+    label: 'orderPdfFocusTrap',
+    onError: reportNonFatal,
+  });
 
   return () => {
     focusSession.cancel();
-    try {
-      win.removeEventListener('keydown', onKeyDown, CAPTURE_TRUE);
-    } catch (__wpErr) {
-      reportNonFatal('orderPdfFocusTrap:removeEventListener', __wpErr);
-    }
+    cleanupKeydown();
     try {
       const prev = prevFocusRef.current;
       prevFocusRef.current = null;

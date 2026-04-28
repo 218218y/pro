@@ -3,6 +3,7 @@ import type { UnknownRecord } from '../../../types';
 import { asRecord } from '../runtime/record.js';
 import type { HitObjectLike } from './canvas_picking_engine.js';
 import type { CanvasPickingClickHitState, ModuleKey } from './canvas_picking_click_contracts.js';
+import { createCanvasPickingClickHitIdentity } from './canvas_picking_hit_identity.js';
 
 export type CanvasPickingHitCandidate = { mi: ModuleKey; hitY: number | null };
 
@@ -14,6 +15,8 @@ export type MutableCanvasPickingClickHitState = CanvasPickingClickHitState & {
   stackHintSource: StackHintSource;
   selectorHitTop: CanvasPickingHitCandidate | null;
   selectorHitBottom: CanvasPickingHitCandidate | null;
+  foundPartUserData: UnknownRecord | null;
+  doorHitUserData: UnknownRecord | null;
 };
 
 export function asHitObject(value: unknown): HitObjectNode | null {
@@ -58,6 +61,8 @@ export function createMutableCanvasPickingClickHitState(): MutableCanvasPickingC
     stackHintSource: 'none',
     selectorHitTop: null,
     selectorHitBottom: null,
+    foundPartUserData: null,
+    doorHitUserData: null,
   };
 }
 
@@ -79,5 +84,14 @@ export function finalizeCanvasPickingClickHitState(
     moduleHitY: state.moduleHitY,
     doorHitY: state.doorHitY,
     primaryHitY: state.primaryHitY,
+    hitIdentity: createCanvasPickingClickHitIdentity({
+      partId: state.foundPartId,
+      doorId: state.effectiveDoorId,
+      drawerId: state.foundDrawerId,
+      moduleIndex: state.foundModuleIndex,
+      moduleStack: state.foundModuleStack,
+      hitObjectUserData:
+        state.doorHitUserData || state.foundPartUserData || state.primaryHitObject?.userData || null,
+    }),
   };
 }

@@ -1,4 +1,5 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
+import type { CanvasPickingHitIdentity } from './canvas_picking_hit_identity.js';
 import type {
   HitObjectLike,
   MouseVectorLike,
@@ -73,6 +74,7 @@ export type DoorHoverHit = {
   hitY: number;
   hitPoint: ReusableVectorLike | null;
   wardrobeGroup: UnknownRecord;
+  hitIdentity?: CanvasPickingHitIdentity | null;
 };
 
 export type NormalizeDoorBaseKeyFn = (

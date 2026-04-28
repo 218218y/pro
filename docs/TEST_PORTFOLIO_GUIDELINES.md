@@ -43,3 +43,21 @@ npm run gate
 ```
 
 Use browser/E2E only when the changed surface needs browser proof or touches a user journey covered by `docs/e2e_smoke.md`.
+
+## Portfolio audit lane
+
+Stage 9 adds a portfolio-level audit:
+
+```bash
+npm run check:test-portfolio
+npm run report:test-portfolio
+npm run test:refactor-stage-guards
+```
+
+The audit is not a snapshot test for every assertion. It protects the control plane around tests:
+
+- package scripts must not reference missing test files;
+- files with `legacy` in the name must state their purpose as migration, compatibility, cleanup, root, guard, audit, contract, or surface coverage;
+- refactor stage guard tests must be reachable from one package script.
+
+This keeps the test suite useful as architecture changes instead of turning it into a museum with flaky lighting.

@@ -138,3 +138,80 @@ test('click hit flow repairs stack choice from fallback hit y and promotes the m
   assert.equal(hitState?.primaryHitObject, body);
   assert.equal(hitState?.primaryHitY, -6);
 });
+
+test('click hit flow carries door face metadata into canonical hit identity', () => {
+  const doorFace = {
+    type: 'Mesh',
+    material: { visible: true, opacity: 1 },
+    userData: {
+      partId: 'd1_full',
+      surfaceId: 'door:d1:inside',
+      faceSide: 'inside',
+      faceSign: -1,
+      splitPart: 'full',
+    },
+    parent: null,
+  };
+
+  const intersects = [{ object: doorFace, point: { x: 1, y: 2, z: 3 } }];
+  const raycaster = createRaycaster(intersects);
+  const mouse = { x: 0, y: 0 };
+  const App = createApp();
+
+  const hitState = resolveCanvasPickingClickHitState({
+    App,
+    ndcX: 0,
+    ndcY: 0,
+    isRemoveDoorMode: false,
+    raycaster,
+    mouse,
+  });
+
+  assert.ok(hitState?.hitIdentity);
+  assert.equal(hitState.hitIdentity?.targetKind, 'door');
+  assert.equal(hitState.hitIdentity?.partId, 'd1_full');
+  assert.equal(hitState.hitIdentity?.doorId, 'd1_full');
+  assert.equal(hitState.hitIdentity?.surfaceId, 'door:d1:inside');
+  assert.equal(hitState.hitIdentity?.faceSide, 'inside');
+  assert.equal(hitState.hitIdentity?.faceSign, -1);
+  assert.equal(hitState.hitIdentity?.splitPart, 'full');
+});
+
+test('click hit flow merges surface child metadata with parent door identity', () => {
+  const doorGroup = {
+    type: 'Group',
+    userData: { partId: 'd2_full' },
+    parent: null,
+  } as any;
+  const faceMesh = {
+    type: 'Mesh',
+    material: { visible: true, opacity: 1 },
+    userData: {
+      surfaceId: 'door:d2:outside',
+      faceSide: 'outside',
+      faceSign: 1,
+    },
+    parent: doorGroup,
+  };
+
+  const intersects = [{ object: faceMesh, point: { x: 0, y: 4, z: 0 } }];
+  const raycaster = createRaycaster(intersects);
+  const mouse = { x: 0, y: 0 };
+  const App = createApp();
+
+  const hitState = resolveCanvasPickingClickHitState({
+    App,
+    ndcX: 0,
+    ndcY: 0,
+    isRemoveDoorMode: false,
+    raycaster,
+    mouse,
+  });
+
+  assert.ok(hitState?.hitIdentity);
+  assert.equal(hitState.hitIdentity?.partId, 'd2_full');
+  assert.equal(hitState.hitIdentity?.doorId, 'd2_full');
+  assert.equal(hitState.hitIdentity?.surfaceId, 'door:d2:outside');
+  assert.equal(hitState.hitIdentity?.faceSide, 'outside');
+  assert.equal(hitState.hitIdentity?.faceSign, 1);
+});

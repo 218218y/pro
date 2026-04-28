@@ -3,6 +3,7 @@ import type { MutableRefObject } from 'react';
 
 import type { OrderPdfSketchTextBox } from './order_pdf_overlay_contracts.js';
 import { getNodeWindow } from '../viewport_layout_runtime.js';
+import { composeDomEventCleanups, installDomEventListener } from '../effects/dom_event_cleanup.js';
 import {
   updateOrderPdfSketchTextBoxInteractionPreview,
   type OrderPdfSketchTextBoxInteractionPreview,
@@ -158,14 +159,32 @@ export function useOrderPdfSketchTextLayerInteractionSession(
       }
     };
 
-    win.addEventListener('pointermove', onPointerMove, true);
-    win.addEventListener('pointerup', finishInteraction, true);
-    win.addEventListener('pointercancel', finishInteraction, true);
+    const cleanupPointerEvents = composeDomEventCleanups([
+      installDomEventListener({
+        target: win,
+        type: 'pointermove',
+        listener: onPointerMove as EventListener,
+        options: true,
+        label: 'orderPdfTextLayer:pointermove',
+      }),
+      installDomEventListener({
+        target: win,
+        type: 'pointerup',
+        listener: finishInteraction as EventListener,
+        options: true,
+        label: 'orderPdfTextLayer:pointerup',
+      }),
+      installDomEventListener({
+        target: win,
+        type: 'pointercancel',
+        listener: finishInteraction as EventListener,
+        options: true,
+        label: 'orderPdfTextLayer:pointercancel',
+      }),
+    ]);
     return () => {
       cancelScheduledInteractionFrame();
-      win.removeEventListener('pointermove', onPointerMove, true);
-      win.removeEventListener('pointerup', finishInteraction, true);
-      win.removeEventListener('pointercancel', finishInteraction, true);
+      cleanupPointerEvents();
     };
   }, [
     cancelScheduledInteractionFrame,

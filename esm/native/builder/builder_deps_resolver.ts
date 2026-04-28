@@ -17,6 +17,7 @@ import type {
   BuilderBuildCornerWingFn,
   BuilderCalculateModuleStructureFn,
   BuilderRebuildDrawerMetaFn,
+  BuilderGetMaterialFn,
   BuilderAddHangingClothesFn,
   BuilderAddFoldedClothesFn,
   BuilderAddRealisticHangerFn,
@@ -24,180 +25,38 @@ import type {
   BuilderCallable,
 } from '../../../types';
 
-/** @typedef {import('../../../types').AppContainer} AppContainer */
-/** @typedef {import('../../../types').BuilderDepsRootLike} BuilderDepsRootLike */
-/** @typedef {import('../../../types').BuilderDepsResolvedLike} BuilderDepsResolvedLike */
-
-function _isRecord(x: unknown): x is UnknownRecord {
-  return !!x && typeof x === 'object' && !Array.isArray(x);
-}
-
-function _obj(x: unknown): UnknownRecord | null {
-  return _isRecord(x) ? x : null;
-}
-
-function readErrorMessage(e: unknown): string | null {
-  if (e instanceof Error) return e.message;
-  const rec = _obj(e);
-  return rec && typeof rec.message === 'string' ? rec.message : null;
-}
-
-function bindCallable(owner: UnknownRecord, key: string): BuilderCallable | null {
-  const value = owner[key];
-  if (typeof value !== 'function') return null;
-  return (...args) => Reflect.apply(value, owner, args);
-}
-
-function bindOutlineFn(owner: UnknownRecord, key: string): BuilderOutlineFn | null {
-  const value = owner[key];
-  if (typeof value !== 'function') return null;
-  return mesh => Reflect.apply(value, owner, [mesh]);
-}
-
-function bindCreateDoorVisualFn(owner: UnknownRecord, key: string): BuilderCreateDoorVisualFn | null {
-  const value = owner[key];
-  if (typeof value !== 'function') return null;
-  return (
-    w,
-    h,
-    thickness,
-    mat,
-    style,
-    hasGrooves,
-    isMirror,
-    curtainType,
-    baseMaterial,
-    frontFaceSign,
-    forceCurtainFix,
-    mirrorLayout,
-    groovePartId
-  ) =>
-    Reflect.apply(value, owner, [
-      w,
-      h,
-      thickness,
-      mat,
-      style,
-      hasGrooves,
-      isMirror,
-      curtainType,
-      baseMaterial,
-      frontFaceSign,
-      forceCurtainFix,
-      mirrorLayout,
-      groovePartId,
-    ]);
-}
-
-function bindCreateInternalDrawerBoxFn(
-  owner: UnknownRecord,
-  key: string
-): BuilderCreateInternalDrawerBoxFn | null {
-  const value = owner[key];
-  if (typeof value !== 'function') return null;
-  return (w, h, d, mat, drawerMat, outlineFunc, hasDivider, addHandle) =>
-    Reflect.apply(value, owner, [w, h, d, mat, drawerMat, outlineFunc, hasDivider, addHandle]);
-}
-
-function bindCalculateModuleStructureFn(
-  owner: UnknownRecord,
-  key: string
-): BuilderCalculateModuleStructureFn | null {
-  const value = owner[key];
-  if (typeof value !== 'function') return null;
-  return (doorsCount, singlePos, structureSelectValue, wardrobeType, app) =>
-    Reflect.apply(value, owner, [doorsCount, singlePos, structureSelectValue, wardrobeType, app]);
-}
-
-function bindBuildChestOnlyFn(owner: UnknownRecord, key: string): BuilderBuildChestOnlyFn | null {
-  const value = owner[key];
-  if (typeof value !== 'function') return null;
-  return (...args) => Reflect.apply(value, owner, args);
-}
-
-function bindBuildCornerWingFn(owner: UnknownRecord, key: string): BuilderBuildCornerWingFn | null {
-  const value = owner[key];
-  if (typeof value !== 'function') return null;
-  return (mainW, mainH, mainD, woodThick, startY, materials, metaOrCtx, ctxMaybe) =>
-    Reflect.apply(value, owner, [mainW, mainH, mainD, woodThick, startY, materials, metaOrCtx, ctxMaybe]);
-}
-
-function bindRebuildDrawerMetaFn(owner: UnknownRecord, key: string): BuilderRebuildDrawerMetaFn | null {
-  const value = owner[key];
-  if (typeof value !== 'function') return null;
-  return () => Reflect.apply(value, owner, []);
-}
-
-function bindAddHangingClothesFn(owner: UnknownRecord, key: string): BuilderAddHangingClothesFn | null {
-  const value = owner[key];
-  if (typeof value !== 'function') return null;
-  return (
-    rodX,
-    rodY,
-    rodZ,
-    width,
-    parentGroup,
-    maxHeight,
-    isRestrictedDepth,
-    showContentsOverride,
-    doorStyleOverride
-  ) =>
-    Reflect.apply(value, owner, [
-      rodX,
-      rodY,
-      rodZ,
-      width,
-      parentGroup,
-      maxHeight,
-      isRestrictedDepth,
-      showContentsOverride,
-      doorStyleOverride,
-    ]);
-}
-
-function bindAddFoldedClothesFn(owner: UnknownRecord, key: string): BuilderAddFoldedClothesFn | null {
-  const value = owner[key];
-  if (typeof value !== 'function') return null;
-  return (shelfX, shelfY, shelfZ, width, parentGroup, maxHeight, maxDepth) =>
-    Reflect.apply(value, owner, [shelfX, shelfY, shelfZ, width, parentGroup, maxHeight, maxDepth]);
-}
-
-function bindAddRealisticHangerFn(owner: UnknownRecord, key: string): BuilderAddRealisticHangerFn | null {
-  const value = owner[key];
-  if (typeof value !== 'function') return null;
-  return (rodX, rodY, rodZ, parentGroup, moduleWidth, enabledOverride) =>
-    Reflect.apply(value, owner, [rodX, rodY, rodZ, parentGroup, moduleWidth, enabledOverride]);
-}
+export type ResolveBuilderDepsRequest = {
+  App: AppContainer;
+  builderDeps: BuilderDepsRootLike;
+  label?: string;
+};
 
 /**
  * Resolve and validate builder dependencies from the canonical builder deps surface.
  *
- * NOTE: This function is fail-fast (throws) for missing critical deps.
- *
- * @param {{ App: AppContainer, builderDeps: BuilderDepsRootLike, label?:string }} args
- * @returns {BuilderDepsResolvedLike}
+ * This is the single fail-fast entry point for live builder orchestration deps.
+ * Missing critical deps throw here instead of letting downstream pipelines limp
+ * forward with null/no-op behavior.
  */
-export function resolveBuilderDepsOrThrow(args: {
-  App: AppContainer;
-  builderDeps: BuilderDepsRootLike;
-  label?: string;
-}): BuilderDepsResolvedLike {
-  const App = args && args.App;
-  const B = args && args.builderDeps;
-  const label = (args && args.label) || 'native/builder/deps';
+export function resolveBuilderDepsOrThrow(
+  request: ResolveBuilderDepsRequest | null | undefined
+): BuilderDepsResolvedLike {
+  const App = request?.App;
+  const B = request?.builderDeps;
+  const label = request?.label || 'native/builder/deps';
 
   if (!App) throw new Error('[WardrobePro] Builder requires App');
   if (!B || typeof B !== 'object') throw new Error('[WardrobePro] builder deps missing: deps.builder');
 
-  const util = _obj(B.util) || {};
-  const materials = _obj(B.materials) || {};
-  const modules = _obj(B.modules) || {};
-  const contents = _obj(B.contents) || {};
-  const notes = _obj(B.notes) || {};
-  const render = _obj(B.render) || {};
+  const util = readBuilderDepsSection(B.util) || {};
+  const materials = readBuilderDepsSection(B.materials) || {};
+  const modules = readBuilderDepsSection(B.modules) || {};
+  const contents = readBuilderDepsSection(B.contents) || {};
+  const notes = readBuilderDepsSection(B.notes) || {};
+  const render = readBuilderDepsSection(B.render) || {};
 
   const cleanGroup = bindCallable(util, 'cleanGroup');
-  const getMaterial = bindCallable(materials, 'getMaterial');
+  const getMaterial = bindGetMaterialFn(materials, 'getMaterial');
   if (!cleanGroup) throw new Error('Builder tools missing: util.cleanGroup');
   if (!getMaterial) throw new Error('Builder tools missing: materials.getMaterial');
 
@@ -243,4 +102,77 @@ export function resolveBuilderDepsOrThrow(args: {
     getNotesForSave: bindCallable(notes, 'getNotesForSave'),
     restoreNotesFromSave: bindCallable(notes, 'restoreNotesFromSave'),
   };
+}
+
+function readBuilderDepsSection(value: unknown): UnknownRecord | null {
+  return value && typeof value === 'object' && !Array.isArray(value) ? (value as UnknownRecord) : null;
+}
+
+function bindKnownFunction<Fn>(owner: UnknownRecord, key: string): Fn | undefined {
+  const fn = owner[key];
+  if (typeof fn !== 'function') return undefined;
+  return ((...args: unknown[]) => Reflect.apply(fn, owner, args)) as Fn;
+}
+
+function bindCallable(owner: UnknownRecord, key: string): BuilderCallable | undefined {
+  return bindKnownFunction<BuilderCallable>(owner, key);
+}
+
+function bindGetMaterialFn(owner: UnknownRecord, key: string): BuilderGetMaterialFn | undefined {
+  return bindKnownFunction<BuilderGetMaterialFn>(owner, key);
+}
+
+function bindOutlineFn(owner: UnknownRecord, key: string): BuilderOutlineFn | undefined {
+  return bindKnownFunction<BuilderOutlineFn>(owner, key);
+}
+
+function bindCalculateModuleStructureFn(
+  owner: UnknownRecord,
+  key: string
+): BuilderCalculateModuleStructureFn | undefined {
+  return bindKnownFunction<BuilderCalculateModuleStructureFn>(owner, key);
+}
+
+function bindCreateDoorVisualFn(owner: UnknownRecord, key: string): BuilderCreateDoorVisualFn | undefined {
+  return bindKnownFunction<BuilderCreateDoorVisualFn>(owner, key);
+}
+
+function bindCreateInternalDrawerBoxFn(
+  owner: UnknownRecord,
+  key: string
+): BuilderCreateInternalDrawerBoxFn | undefined {
+  return bindKnownFunction<BuilderCreateInternalDrawerBoxFn>(owner, key);
+}
+
+function bindBuildChestOnlyFn(owner: UnknownRecord, key: string): BuilderBuildChestOnlyFn | undefined {
+  return bindKnownFunction<BuilderBuildChestOnlyFn>(owner, key);
+}
+
+function bindBuildCornerWingFn(owner: UnknownRecord, key: string): BuilderBuildCornerWingFn | undefined {
+  return bindKnownFunction<BuilderBuildCornerWingFn>(owner, key);
+}
+
+function bindRebuildDrawerMetaFn(owner: UnknownRecord, key: string): BuilderRebuildDrawerMetaFn | undefined {
+  return bindKnownFunction<BuilderRebuildDrawerMetaFn>(owner, key);
+}
+
+function bindAddHangingClothesFn(owner: UnknownRecord, key: string): BuilderAddHangingClothesFn | undefined {
+  return bindKnownFunction<BuilderAddHangingClothesFn>(owner, key);
+}
+
+function bindAddFoldedClothesFn(owner: UnknownRecord, key: string): BuilderAddFoldedClothesFn | undefined {
+  return bindKnownFunction<BuilderAddFoldedClothesFn>(owner, key);
+}
+
+function bindAddRealisticHangerFn(owner: UnknownRecord, key: string): BuilderAddRealisticHangerFn | undefined {
+  return bindKnownFunction<BuilderAddRealisticHangerFn>(owner, key);
+}
+
+function readErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (error && typeof error === 'object' && 'message' in error) {
+    const message = (error as { message?: unknown }).message;
+    return typeof message === 'string' ? message : '';
+  }
+  return '';
 }

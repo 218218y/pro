@@ -48,3 +48,11 @@ export function requestCloudSyncMainRowPendingPushAfterFlights(
   state.pendingPushAfterFlight = true;
   clearCloudSyncMainRowPendingPush(state, clearTimeoutFn);
 }
+
+export function resetCloudSyncMainRowPendingPushAfterFlights(
+  state: CloudSyncMainRowPushMutableState,
+  clearTimeoutFn: (id: TimeoutHandleLike | null | undefined) => void
+): void {
+  state.pendingPushAfterFlight = false;
+  clearCloudSyncMainRowPendingPush(state, clearTimeoutFn);
+}

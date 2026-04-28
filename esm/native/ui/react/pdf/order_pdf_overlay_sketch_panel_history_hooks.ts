@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { MutableRefObject } from 'react';
 
 import { getNodeWindow } from '../viewport_layout_runtime.js';
+import { installDomEventListener } from '../effects/dom_event_cleanup.js';
 import type { OrderPdfSketchAnnotationPageKey } from './order_pdf_overlay_contracts.js';
 import type {
   OrderPdfSketchAnnotationItem,
@@ -136,7 +137,12 @@ export function useOrderPdfSketchHistoryShortcuts(args: {
       }
       onRedo(activeKey);
     };
-    win.addEventListener('keydown', onKeyDown, true);
-    return () => win.removeEventListener('keydown', onKeyDown, true);
+    return installDomEventListener({
+      target: win,
+      type: 'keydown',
+      listener: onKeyDown as EventListener,
+      options: true,
+      label: 'orderPdfSketchHistoryShortcuts',
+    });
   }, [open, activeKey, activeHasStrokes, activeHasRedo, onUndo, onRedo, toolbarRef]);
 }

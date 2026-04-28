@@ -72,6 +72,7 @@ function createCoalescerHarness(opts?: {
   diagCooldownMs?: number;
   run?: () => Promise<void> | void;
   isDisposed?: () => boolean;
+  isSuppressed?: () => boolean;
   subscribeMainPushSettled?: ((listener: () => void) => () => void) | null;
 }) {
   const timers = createTimerHarness();
@@ -80,6 +81,7 @@ function createCoalescerHarness(opts?: {
   const errors: string[] = [];
   let mainPushInFlight = false;
   let disposed = false;
+  let suppressed = false;
   let subscribeCount = 0;
   let unsubscribeCount = 0;
   const pushSettledListeners = new Set<() => void>();
@@ -95,7 +97,7 @@ function createCoalescerHarness(opts?: {
     maxDelayMs: opts?.maxDelayMs ?? 0,
     diagCooldownMs: opts?.diagCooldownMs,
     isDisposed: () => (typeof opts?.isDisposed === 'function' ? opts.isDisposed() : disposed),
-    isSuppressed: () => false,
+    isSuppressed: () => (typeof opts?.isSuppressed === 'function' ? opts.isSuppressed() : suppressed),
     isMainPushInFlight: () => mainPushInFlight,
     subscribeMainPushSettled:
       opts && 'subscribeMainPushSettled' in opts
@@ -125,6 +127,9 @@ function createCoalescerHarness(opts?: {
     },
     setDisposed(next: boolean) {
       disposed = !!next;
+    },
+    setSuppressed(next: boolean) {
+      suppressed = !!next;
     },
     emitMainPushSettled() {
       for (const listener of [...pushSettledListeners]) listener();
@@ -485,4 +490,68 @@ test('cloud sync pull coalescer drops queued work once the owner turns stale bef
 
   harness.coalescer.trigger('ignored-while-stale');
   assert.equal(harness.timers.activeCount(), 0, 'disposed owner should not arm new queued timers');
+});
+
+test('cloud sync pull coalescer drops queued follow-up work when owner becomes stale during an in-flight run', async () => {
+  const deferred = createDeferredRun();
+  const harness = createCoalescerHarness({ run: () => deferred.promise });
+
+  harness.coalescer.trigger('first');
+  assert.equal(harness.timers.runNext(), true);
+  await Promise.resolve();
+  assert.equal(harness.runs.length, 1);
+
+  harness.coalescer.trigger('queued-during-flight');
+  assert.equal(harness.timers.activeCount(), 0);
+
+  harness.setDisposed(true);
+  deferred.resolve();
+  await Promise.resolve();
+  await Promise.resolve();
+  await Promise.resolve();
+
+  assert.equal(harness.runs.length, 1, 'disposed owner must not run queued follow-up work');
+  assert.equal(harness.timers.activeCount(), 0, 'disposed owner must not arm a stale follow-up timer');
+
+  harness.setDisposed(false);
+  harness.coalescer.trigger('fresh-after-dispose-reset');
+  assert.equal(harness.timers.runNext(), true);
+  await Promise.resolve();
+  await Promise.resolve();
+
+  assert.equal(harness.runs.length, 2, 'fresh work should start from a clean queue after stale reset');
+  const payload = harness.diags.at(-1)?.[1] as { count?: number; reason?: string };
+  assert.equal(payload.count, 1);
+  assert.equal(payload.reason, 'fresh-after-dispose-reset');
+});
+
+test('cloud sync pull coalescer drops queued follow-up work when suppression starts during an in-flight run', async () => {
+  const deferred = createDeferredRun();
+  const harness = createCoalescerHarness({ run: () => deferred.promise });
+
+  harness.coalescer.trigger('first');
+  assert.equal(harness.timers.runNext(), true);
+  await Promise.resolve();
+  assert.equal(harness.runs.length, 1);
+
+  harness.coalescer.trigger('queued-during-flight');
+  harness.setSuppressed(true);
+  deferred.resolve();
+  await Promise.resolve();
+  await Promise.resolve();
+  await Promise.resolve();
+
+  assert.equal(harness.runs.length, 1, 'suppressed owner must not run queued follow-up work');
+  assert.equal(harness.timers.activeCount(), 0, 'suppressed owner must not arm a stale follow-up timer');
+
+  harness.setSuppressed(false);
+  harness.coalescer.trigger('fresh-after-suppression-reset');
+  assert.equal(harness.timers.runNext(), true);
+  await Promise.resolve();
+  await Promise.resolve();
+
+  assert.equal(harness.runs.length, 2);
+  const payload = harness.diags.at(-1)?.[1] as { count?: number; reason?: string };
+  assert.equal(payload.count, 1);
+  assert.equal(payload.reason, 'fresh-after-suppression-reset');
 });

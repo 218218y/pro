@@ -95,6 +95,7 @@ export function runVerifyFlow({ projectRoot, childEnv, flags, runners = {} }) {
   npmRunImpl({ projectRoot, childEnv, scriptName: 'wiring:guard' });
   npmRunImpl({ projectRoot, childEnv, scriptName: 'ui:dom-guard' });
   npmRunImpl({ projectRoot, childEnv, scriptName: 'ui:bindkey-guard' });
+  npmRunImpl({ projectRoot, childEnv, scriptName: 'check:refactor-guardrails' });
   npmRunImpl({ projectRoot, childEnv, scriptName: 'test' });
 
   if (!skipBundle) {

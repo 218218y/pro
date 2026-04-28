@@ -1,5 +1,6 @@
 import type { CloudSyncPanelApiDeps } from '../../../types';
 
+import { getBrowserTimers } from '../runtime/api.js';
 import { buildCloudSyncPanelApiOp } from './cloud_sync_panel_api_support.js';
 import { createCloudSyncPanelSnapshotReaders } from './cloud_sync_panel_api_snapshots_reads.js';
 import {
@@ -19,14 +20,15 @@ import {
 export function createCloudSyncPanelSnapshotController(
   deps: CloudSyncPanelApiDeps
 ): CloudSyncPanelSnapshotController {
+  const timers = getBrowserTimers(deps.App);
   const runtimeDeps: CloudSyncPanelSnapshotRuntimeDeps = {
     App: deps.App,
     reportNonFatal: deps.reportNonFatal,
     subscribeFloatingSketchSyncEnabledState: deps.subscribeFloatingSketchSyncEnabledState,
     subscribeSite2TabsGateSnapshot: deps.subscribeSite2TabsGateSnapshot,
     now: deps.now,
-    setTimeoutFn: typeof deps.setTimeoutFn === 'function' ? deps.setTimeoutFn : setTimeout,
-    clearTimeoutFn: typeof deps.clearTimeoutFn === 'function' ? deps.clearTimeoutFn : clearTimeout,
+    setTimeoutFn: typeof deps.setTimeoutFn === 'function' ? deps.setTimeoutFn : timers.setTimeout,
+    clearTimeoutFn: typeof deps.clearTimeoutFn === 'function' ? deps.clearTimeoutFn : timers.clearTimeout,
   };
   const panelApiOp = (name: string): string => buildCloudSyncPanelApiOp(name);
   const { readPanelSnapshot, readSite2TabsGateSnapshot } = createCloudSyncPanelSnapshotReaders(deps);

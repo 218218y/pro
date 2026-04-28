@@ -1,6 +1,6 @@
-import type { CSSProperties, ReactElement } from 'react';
+import type { ReactElement } from 'react';
 
-import { ToggleRow } from '../components/index.js';
+import { ColorSwatch, OptionButton, OptionButtonGroup, ToggleRow } from '../components/index.js';
 import { CURTAIN_OPTIONS, type CurtainPreset } from './design_tab_multicolor_shared.js';
 import {
   MULTI_BTN_FINISH_EDIT,
@@ -39,40 +39,21 @@ function MultiColorSwatchDotButton(props: {
   onPickBrush: (paintId: string, curtainPreset?: CurtainPreset) => void;
 }): ReactElement {
   const dot = props.dot;
-  const className =
-    'color-dot-swatch wp-r-color-swatch' +
-    (dot.isSpecial ? ' special-swatch' : '') +
-    (dot.selected ? ' is-selected' : '');
-
-  const style: CSSProperties =
-    dot.isTexture && dot.textureData
-      ? { backgroundImage: `url(${dot.textureData})` }
-      : dot.val
-        ? { backgroundColor: dot.val }
-        : {};
-
   const pick = () => props.onPickBrush(dot.paintId, dot.curtainPreset);
 
   return (
-    <div
+    <ColorSwatch
       key={dot.key}
-      className={className}
       title={dot.title}
-      style={style}
-      onClick={pick}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(event: import('react').KeyboardEvent<HTMLDivElement>) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          event.stopPropagation();
-          pick();
-        }
-      }}
+      selected={dot.selected}
+      special={dot.isSpecial}
+      backgroundImage={dot.isTexture && dot.textureData ? dot.textureData : undefined}
+      backgroundColor={!dot.isTexture && dot.val ? dot.val : undefined}
+      onPick={pick}
     >
       {dot.isSpecial ? <span className="swatch-icon">{dot.icon || ''}</span> : null}
       {dot.isSpecial && dot.badge ? <span className="swatch-badge">{dot.badge}</span> : null}
-    </div>
+    </ColorSwatch>
   );
 }
 
@@ -141,27 +122,22 @@ function MultiColorDoorStyleSection(props: {
   return (
     <div className="multi-special-section">
       <div className="multi-special-header">{MULTI_DOOR_STYLE_HEADER}</div>
-      <div className="wp-row wp-gap-8">
-        {MULTI_DOOR_STYLE_OPTIONS.map(option => {
-          const selected = props.activeDoorStyleOverride === option.id;
-          return (
-            <button
-              key={option.id}
-              type="button"
-              className={
-                'type-option type-option--compact type-option--iconrow wp-flex-1' +
-                (selected ? ' selected' : '')
-              }
-              data-door-style={option.id}
-              onClick={() => props.onPickDoorStyle(option.id)}
-              title={option.label}
-              aria-pressed={selected}
-            >
-              {option.label}
-            </button>
-          );
-        })}
-      </div>
+      <OptionButtonGroup columns="auto" density="compact" className="wp-r-design-door-style-options">
+        {MULTI_DOOR_STYLE_OPTIONS.map(option => (
+          <OptionButton
+            key={option.id}
+            density="compact"
+            layout="iconRow"
+            className="wp-flex-1"
+            selected={props.activeDoorStyleOverride === option.id}
+            data-door-style={option.id}
+            onClick={() => props.onPickDoorStyle(option.id)}
+            title={option.label}
+          >
+            {option.label}
+          </OptionButton>
+        ))}
+      </OptionButtonGroup>
     </div>
   );
 }
@@ -174,27 +150,20 @@ function MultiColorCurtainSection(props: {
     <div className="wp-tool-card wp-tool-card--curtain">
       <div className="wp-section-title">{MULTI_CURTAIN_TITLE}</div>
 
-      <div className="wp-row wp-gap-10 wp-wrap">
+      <OptionButtonGroup columns="auto" density="compact" className="wp-r-design-curtain-options">
         {CURTAIN_OPTIONS.map(curtain => (
-          <div
+          <OptionButton
             key={curtain.id}
-            className={'curtain-btn' + (props.curtainChoice === curtain.id ? ' is-selected' : '')}
+            density="compact"
+            className="curtain-btn"
+            selected={props.curtainChoice === curtain.id}
             data-curtain={curtain.id}
             onClick={() => props.onSetCurtainPreset(curtain.id)}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(event: import('react').KeyboardEvent<HTMLDivElement>) => {
-              if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                event.stopPropagation();
-                props.onSetCurtainPreset(curtain.id);
-              }
-            }}
           >
             {curtain.label}
-          </div>
+          </OptionButton>
         ))}
-      </div>
+      </OptionButtonGroup>
     </div>
   );
 }

@@ -72,6 +72,9 @@ export function createCloudSyncPullCoalescerFire(
           return;
         }
         controls.stopWaitingForMainPush();
+        if (context.state.queued && (context.deps.isDisposed() || context.deps.isSuppressed())) {
+          resetPullCoalescerState(context.state);
+        }
       });
   };
 }
