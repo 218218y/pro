@@ -67,10 +67,10 @@ Expected 0 exact duplicate script command group(s), found 2.
 
 הכפילויות:
 
-| קבוצה | scripts | פקודה |
-|---|---|---|
-| release | `release`, `release:client` | `node tools/wp_release.js --build-mode client` |
-| three sync | `postinstall`, `three:sync-libs` | `node tools/wp_sync_three_libs.mjs` |
+| קבוצה      | scripts                          | פקודה                                          |
+| ---------- | -------------------------------- | ---------------------------------------------- |
+| release    | `release`, `release:client`      | `node tools/wp_release.js --build-mode client` |
+| three sync | `postinstall`, `three:sync-libs` | `node tools/wp_sync_three_libs.mjs`            |
 
 קבצים רלוונטיים:
 
@@ -86,20 +86,20 @@ Expected 0 exact duplicate script command group(s), found 2.
 
 קבצים גדולים במיוחד שכדאי להמשיך לדקק בזהירות:
 
-| קובץ | שורות בקירוב | הערה |
-|---|---:|---|
-| `esm/native/runtime/perf_runtime_surface.ts` | 812 | surface רחב מאוד; לבדוק אם אפשר לפצל reader/writer/reporting |
-| `esm/native/builder/scheduler_debug_stats.ts` | 530 | לוגיקת debug/stats יכולה להפוך לבעלים פנימיים קטנים |
-| `esm/native/builder/corner_connector_interior_special.ts` | 525 | סכנת ערבוב geometry, material, policy, emit |
-| `esm/native/kernel/domain_api_surface_sections_shared.ts` | 473 | surface/shared כבד - לבדוק ownership |
-| `esm/native/data/preset_models.ts` | 457 | data גדול; לשקול data partition או generator |
-| `esm/native/runtime/slice_write_access_dispatch.ts` | 439 | write dispatch hotpath - לא לגעת בלי tests ממוקדים |
-| `esm/native/ui/react/pdf/order_pdf_overlay_export_actions.ts` | 415 | UI + export orchestration hotspot |
-| `esm/native/services/models.ts` | 402 | service surface רחב |
-| `esm/native/builder/scheduler_shared.ts` | 398 | core scheduling policy |
-| `esm/native/ui/react/tabs/interior_tab_helpers.tsx` | 388 | UI helpers עם סיכון להפוך ל־god-helper |
-| `esm/native/builder/room.ts` | 387 | visual update/healing sensitive |
-| `esm/native/builder/render_preview_sketch_measurements.ts` | 373 | sketch/render measurement hotspot |
+| קובץ                                                          | שורות בקירוב | הערה                                                         |
+| ------------------------------------------------------------- | -----------: | ------------------------------------------------------------ |
+| `esm/native/runtime/perf_runtime_surface.ts`                  |          812 | surface רחב מאוד; לבדוק אם אפשר לפצל reader/writer/reporting |
+| `esm/native/builder/scheduler_debug_stats.ts`                 |          530 | לוגיקת debug/stats יכולה להפוך לבעלים פנימיים קטנים          |
+| `esm/native/builder/corner_connector_interior_special.ts`     |          525 | סכנת ערבוב geometry, material, policy, emit                  |
+| `esm/native/kernel/domain_api_surface_sections_shared.ts`     |          473 | surface/shared כבד - לבדוק ownership                         |
+| `esm/native/data/preset_models.ts`                            |          457 | data גדול; לשקול data partition או generator                 |
+| `esm/native/runtime/slice_write_access_dispatch.ts`           |          439 | write dispatch hotpath - לא לגעת בלי tests ממוקדים           |
+| `esm/native/ui/react/pdf/order_pdf_overlay_export_actions.ts` |          415 | UI + export orchestration hotspot                            |
+| `esm/native/services/models.ts`                               |          402 | service surface רחב                                          |
+| `esm/native/builder/scheduler_shared.ts`                      |          398 | core scheduling policy                                       |
+| `esm/native/ui/react/tabs/interior_tab_helpers.tsx`           |          388 | UI helpers עם סיכון להפוך ל־god-helper                       |
+| `esm/native/builder/room.ts`                                  |          387 | visual update/healing sensitive                              |
+| `esm/native/builder/render_preview_sketch_measurements.ts`    |          373 | sketch/render measurement hotspot                            |
 
 ### 2.4 CSS/UI style debt
 
@@ -148,6 +148,7 @@ Expected 0 exact duplicate script command group(s), found 2.
 ### 3.1 לא לשבור תיקונים קיימים
 
 בכל שלב:
+
 1. לקרוא קודם את owner doc / tests / implementation.
 2. לזהות האם הבדיקה הישנה שומרת legacy או התנהגות קנונית.
 3. אם הקוד החדש נכון והבדיקה ישנה - לעדכן בדיקה, לא להחזיר קוד אחורה.
@@ -156,6 +157,7 @@ Expected 0 exact duplicate script command group(s), found 2.
 ### 3.2 כל שינוי צריך להיות חד־מסלולי
 
 אסור להשאיר שני מסלולים:
+
 - canonical + legacy
 - store + DOM snapshot
 - ctx + args object
@@ -168,6 +170,7 @@ Expected 0 exact duplicate script command group(s), found 2.
 ### 3.3 הפרדה בין migration boundary לבין runtime
 
 מותר לנרמל shape ישן רק ב:
+
 - project import/load
 - persisted payload migration
 - browser adapter boundary
@@ -179,6 +182,7 @@ Expected 0 exact duplicate script command group(s), found 2.
 
 לא חוסכים render/build אם זה מסתיר state שגוי. קודם נכונות, אחר כך dedupe/coalescing.  
 שיפור ביצועים נכון הוא:
+
 - פחות rebuild כפול
 - פחות render follow-through כפול
 - פחות DOM measurement repeated
@@ -664,6 +668,7 @@ Expected 0 exact duplicate script command group(s), found 2.
 ### ממצאים
 
 Cloud Sync הוא אזור עצום ומכוסה בהרבה בדיקות:
+
 - `cloud_sync`: כ־110 test files לפי closeout audit.
 - הרבה קבצים תחת `esm/native/services/cloud_sync_*`.
 - יש שימוש אחד ב־`as any`:
@@ -951,67 +956,77 @@ Cloud Sync הוא אזור עצום ומכוסה בהרבה בדיקות:
 
 ## 7. Verification matrix מומלץ לכל שלב
 
-| שלב | בדיקות מינימום |
-|---|---|
-| Tooling/gates | `npm run check:script-duplicates`, `npm run perf:smoke`, `npm run test:perf-toolchain-core` |
-| Runtime selectors | `typecheck:strict-runtime`, `test:runtime-access-surfaces`, `test:state-config-kernel-surfaces` |
-| Project migration | `test:project-surfaces`, `project_io_*`, save/load payload parity |
-| Builder | `typecheck:builder`, `test:builder-surfaces`, `test:door-build-surfaces`, `test:render-surfaces` |
-| UI tabs/CSS | `typecheck:strict-ui`, `test:tab-surfaces`, relevant runtime tests |
-| Canvas | `test:canvas-interaction-surfaces`, `test:canvas-surfaces`, `test:sketch-surfaces` |
-| Order PDF/Notes | `test:order-pdf-surfaces`, `test:overlay-export-family-runtime`, notes tests |
-| Cloud Sync | `test:cloud-sync-family-contracts`, `test:cloud-sync-surfaces` |
-| Full confidence | `npm run gate`, `npm run verify:gate:no-bundle`, `npm run e2e:smoke`, `npm run perf:browser` |
+| שלב               | בדיקות מינימום                                                                                   |
+| ----------------- | ------------------------------------------------------------------------------------------------ |
+| Tooling/gates     | `npm run check:script-duplicates`, `npm run perf:smoke`, `npm run test:perf-toolchain-core`      |
+| Runtime selectors | `typecheck:strict-runtime`, `test:runtime-access-surfaces`, `test:state-config-kernel-surfaces`  |
+| Project migration | `test:project-surfaces`, `project_io_*`, save/load payload parity                                |
+| Builder           | `typecheck:builder`, `test:builder-surfaces`, `test:door-build-surfaces`, `test:render-surfaces` |
+| UI tabs/CSS       | `typecheck:strict-ui`, `test:tab-surfaces`, relevant runtime tests                               |
+| Canvas            | `test:canvas-interaction-surfaces`, `test:canvas-surfaces`, `test:sketch-surfaces`               |
+| Order PDF/Notes   | `test:order-pdf-surfaces`, `test:overlay-export-family-runtime`, notes tests                     |
+| Cloud Sync        | `test:cloud-sync-family-contracts`, `test:cloud-sync-surfaces`                                   |
+| Full confidence   | `npm run gate`, `npm run verify:gate:no-bundle`, `npm run e2e:smoke`, `npm run perf:browser`     |
 
 ---
 
 ## 8. סדר פתיחת PRים מומלץ
 
 ### PR 1 - Toolchain truthfulness
+
 - תקן duplicate scripts.
 - עדכן docs.
 - הוסף/תקן test לכלי.
 - אין שינוי מוצר.
 
 ### PR 2 - Legacy fallback audit
+
 - הוסף audit + allowlist.
 - דוח מלא.
 - אין שינוי behavior עדיין.
 
 ### PR 3 - Project migration boundary
+
 - העבר compatibility ראשון ל־`io/project_migrations`.
 - השאר runtime behavior עם adapter זמני מתועד אם חייבים.
 - tests של import ישן + runtime canonical.
 
 ### PR 4 - Runtime selectors hardening
+
 - הקשחה הדרגתית של `ui_raw/config/runtime`.
 - הסרת fallback runtime ראשון.
 - עדכון tests ישנים.
 
 ### PR 5 - Builder context cleanup
+
 - חתימות ctx-only.
 - deps fail-fast.
 - הסרת args רחבים.
 
 ### PR 6 - Canvas hover/commit identity
+
 - unified hit record.
 - בדיקות mirror/split/removed/sketch.
 
 ### PR 7 - UI button system + CSS debt
+
 - primitives לכפתורים.
 - refactor של tabs קריטיים.
 - הפחתת `!important`.
 
 ### PR 8 - Order PDF/Notes sink policy
+
 - raw innerHTML audit.
 - listener cleanup tests.
 
 ### PR 9 - Cloud Sync hardening
+
 - הסרת `as any`.
 - race/timer tests.
 - status publication proof.
 
 ### PR 10 - Perf closeout
+
 - render/build/hover/export/cloud budgets.
 - update baseline רק אחרי מדידה אמיתית.
 

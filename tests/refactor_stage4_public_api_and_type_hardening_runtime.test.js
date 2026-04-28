@@ -34,8 +34,14 @@ test('cloud sync lifecycle pull helper uses the runtime status contract without 
 test('interior layout preset custom seeding is exposed through the family API entry', () => {
   const api = readFileSync('esm/native/features/interior_layout_presets/api.ts', 'utf8');
   const custom = readFileSync('esm/native/features/interior_layout_presets/custom_from_preset.ts', 'utf8');
-  const manualOps = readFileSync('esm/native/services/canvas_picking_manual_layout_config_ops_shared.ts', 'utf8');
-  const directHitRecords = readFileSync('esm/native/services/canvas_picking_sketch_direct_hit_workflow_records.ts', 'utf8');
+  const manualOps = readFileSync(
+    'esm/native/services/canvas_picking_manual_layout_config_ops_shared.ts',
+    'utf8'
+  );
+  const directHitRecords = readFileSync(
+    'esm/native/services/canvas_picking_sketch_direct_hit_workflow_records.ts',
+    'utf8'
+  );
 
   assert.match(api, /buildPresetBackedCustomData/);
   assert.match(api, /computeInteriorPresetOps/);

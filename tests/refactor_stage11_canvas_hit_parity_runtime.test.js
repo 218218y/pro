@@ -19,5 +19,8 @@ test('canvas click hit identity parity contract is enforced', () => {
 test('refactor guardrail lane includes canvas hit parity contract', () => {
   const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
   assert.match(pkg.scripts['check:refactor-guardrails'], /check:canvas-hit-parity/);
-  assert.match(pkg.scripts['test:refactor-stage-guards'], /refactor_stage11_canvas_hit_parity_runtime\.test\.js/);
+  assert.match(
+    pkg.scripts['test:refactor-stage-guards'],
+    /refactor_stage11_canvas_hit_parity_runtime\.test\.js/
+  );
 });

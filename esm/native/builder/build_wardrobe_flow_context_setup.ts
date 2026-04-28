@@ -8,7 +8,6 @@ import { createBuildStringNormalizer } from './build_string_normalizer.js';
 import type { ProjectSavedNotesLike } from '../../../types';
 import type { PreparedBuildWardrobeFlow } from './build_wardrobe_flow_prepare.js';
 
-
 export type PreparedBuildWardrobeContextSetup = {
   notesToPreserve: ProjectSavedNotesLike | null;
   calculateModuleStructureFn: ReturnType<

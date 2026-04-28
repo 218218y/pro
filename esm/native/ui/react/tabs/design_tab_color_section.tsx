@@ -64,7 +64,6 @@ export function DesignTabColorSection(props: { model: DesignTabColorSectionModel
               data-color-value={String(model.readSavedColorValue(color) || '').toLowerCase()}
               data-selected={isSelected ? 'true' : 'false'}
             >
-
               {isSaved ? (
                 <button
                   type="button"

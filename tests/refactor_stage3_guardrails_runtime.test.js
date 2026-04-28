@@ -9,11 +9,7 @@ function runNodeScript(script) {
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
   });
-  assert.equal(
-    result.status,
-    0,
-    `${script} failed\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`
-  );
+  assert.equal(result.status, 0, `${script} failed\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`);
 }
 
 test('project load uses migration owners for canonical UI and config snapshots', () => {

@@ -5,7 +5,7 @@ import path from 'node:path';
 const ROOT = process.cwd();
 const TEST_ROOT = path.join(ROOT, 'tests');
 const args = new Set(process.argv.slice(2));
-const getArgValue = (name) => {
+const getArgValue = name => {
   const prefix = `${name}=`;
   for (const arg of args) if (arg.startsWith(prefix)) return arg.slice(prefix.length);
   return null;
@@ -14,7 +14,8 @@ const jsonOut = getArgValue('--json-out');
 const mdOut = getArgValue('--md-out');
 const shouldPrint = !args.has('--no-print');
 const TEST_FILE_RE = /(?:\.test\.(?:js|tsx|ts|mjs|cjs)|\.spec\.(?:js|tsx|ts|mjs|cjs))$/;
-const PACKAGE_TEST_REF_RE = /tests\/[^\s"']+?(?:\.test\.(?:js|tsx|ts|mjs|cjs)|\.spec\.(?:js|tsx|ts|mjs|cjs))/g;
+const PACKAGE_TEST_REF_RE =
+  /tests\/[^\s"']+?(?:\.test\.(?:js|tsx|ts|mjs|cjs)|\.spec\.(?:js|tsx|ts|mjs|cjs))/g;
 
 function walk(dir) {
   const entries = [];
@@ -31,16 +32,35 @@ function walk(dir) {
 }
 
 function normalize(file) {
-  return file.split(path.sep).join('/').replace(`${ROOT.replaceAll('\\', '/')}/`, '');
+  return file
+    .split(path.sep)
+    .join('/')
+    .replace(`${ROOT.replaceAll('\\', '/')}/`, '');
 }
 
 function classify(rel) {
   const name = rel.toLowerCase();
-  if (name.includes('/e2e/') || /(?:^|[_.-])e2e(?:[_.-]|$)/.test(name) || /\.spec\.(?:js|tsx|ts|mjs|cjs)$/.test(name)) return 'e2e-smoke';
+  if (
+    name.includes('/e2e/') ||
+    /(?:^|[_.-])e2e(?:[_.-]|$)/.test(name) ||
+    /\.spec\.(?:js|tsx|ts|mjs|cjs)$/.test(name)
+  )
+    return 'e2e-smoke';
   if (/perf|performance|browser_perf|budget|benchmark/.test(name)) return 'perf-smoke';
-  if (/migration|project_io|import|save_load|payload|canonicalization|legacy/.test(name)) return 'legacy-migration';
-  if (/contract|surface|guard|audit|policy|layer|ownership|public_api|type_hardening|closeout|control_plane/.test(name)) return 'contract';
-  if (/cloud_sync|order_pdf|notes|canvas|picking|builder|render|scheduler|project|export|door|drawer|sketch|service|controller|flow|integration/.test(name)) return 'integration';
+  if (/migration|project_io|import|save_load|payload|canonicalization|legacy/.test(name))
+    return 'legacy-migration';
+  if (
+    /contract|surface|guard|audit|policy|layer|ownership|public_api|type_hardening|closeout|control_plane/.test(
+      name
+    )
+  )
+    return 'contract';
+  if (
+    /cloud_sync|order_pdf|notes|canvas|picking|builder|render|scheduler|project|export|door|drawer|sketch|service|controller|flow|integration/.test(
+      name
+    )
+  )
+    return 'integration';
   return 'runtime-unit';
 }
 
@@ -57,7 +77,7 @@ function collectPackageTestRefs() {
 function buildReport() {
   const tests = (fs.existsSync(TEST_ROOT) ? walk(TEST_ROOT) : [])
     .map(normalize)
-    .filter((rel) => TEST_FILE_RE.test(rel))
+    .filter(rel => TEST_FILE_RE.test(rel))
     .sort();
   const refs = collectPackageTestRefs();
   const packageRefSet = new Set(refs.map(({ file }) => file));
@@ -75,10 +95,13 @@ function buildReport() {
     const category = classify(file);
     categories[category] = (categories[category] || 0) + 1;
     records.push({ file, category });
-    if (/legacy/i.test(file) && !/(migration|compat|cleanup|guard|audit|contract|surface|root)/i.test(file)) legacyRuntimeNames.push(file);
+    if (/legacy/i.test(file) && !/(migration|compat|cleanup|guard|audit|contract|surface|root)/i.test(file))
+      legacyRuntimeNames.push(file);
   }
   const missingPackageRefs = refs.filter(({ file }) => !fs.existsSync(path.join(ROOT, file)));
-  const unreferencedStageGuards = tests.filter((file) => /tests\/refactor_stage\d+_.*\.test\.js$/.test(file) && !packageRefSet.has(file));
+  const unreferencedStageGuards = tests.filter(
+    file => /tests\/refactor_stage\d+_.*\.test\.js$/.test(file) && !packageRefSet.has(file)
+  );
   return {
     generatedAt: new Date().toISOString(),
     totals: { tests: tests.length, packageTestReferences: refs.length },
@@ -97,19 +120,30 @@ function renderMarkdown(report) {
   for (const [category, count] of Object.entries(report.categories)) lines.push(`| ${category} | ${count} |`);
   lines.push('', '## Guard results', '', '| Check | Failures |', '|---|---:|');
   lines.push(`| No stale package test references | ${report.failures.missingPackageRefs.length} |`);
-  lines.push(`| Legacy tests are explicitly migration/compat/cleanup/root/guard/audit/contract scoped | ${report.failures.legacyRuntimeNames.length} |`);
-  lines.push(`| Refactor stage guard tests are referenced by package scripts | ${report.failures.unreferencedStageGuards.length} |`, '');
-  if (Object.values(report.failures).some((items) => items.length)) {
+  lines.push(
+    `| Legacy tests are explicitly migration/compat/cleanup/root/guard/audit/contract scoped | ${report.failures.legacyRuntimeNames.length} |`
+  );
+  lines.push(
+    `| Refactor stage guard tests are referenced by package scripts | ${report.failures.unreferencedStageGuards.length} |`,
+    ''
+  );
+  if (Object.values(report.failures).some(items => items.length)) {
     lines.push('## Failure details', '');
     for (const [key, items] of Object.entries(report.failures)) {
       if (!items.length) continue;
       lines.push(`### ${key}`, '');
-      for (const item of items.slice(0, 100)) lines.push(`- ${typeof item === 'string' ? item : `${item.script}: ${item.file}`}`);
+      for (const item of items.slice(0, 100))
+        lines.push(`- ${typeof item === 'string' ? item : `${item.script}: ${item.file}`}`);
       if (items.length > 100) lines.push(`- ... ${items.length - 100} more`);
       lines.push('');
     }
   }
-  lines.push('## Policy', '', 'This audit is intentionally a portfolio map, not a brittle snapshot of every assertion. It protects against stale package references and unnamed legacy runtime coverage while allowing the test suite to keep evolving.', '');
+  lines.push(
+    '## Policy',
+    '',
+    'This audit is intentionally a portfolio map, not a brittle snapshot of every assertion. It protects against stale package references and unnamed legacy runtime coverage while allowing the test suite to keep evolving.',
+    ''
+  );
   return `${lines.join('\n')}\n`;
 }
 
@@ -118,12 +152,15 @@ const failures = Object.values(report.failures).reduce((sum, items) => sum + ite
 if (jsonOut) fs.writeFileSync(jsonOut, `${JSON.stringify(report, null, 2)}\n`);
 if (mdOut) fs.writeFileSync(mdOut, renderMarkdown(report));
 if (shouldPrint) {
-  console.log(`[test-portfolio-audit] tests=${report.totals.tests} refs=${report.totals.packageTestReferences}`);
+  console.log(
+    `[test-portfolio-audit] tests=${report.totals.tests} refs=${report.totals.packageTestReferences}`
+  );
   for (const [category, count] of Object.entries(report.categories)) console.log(`- ${category}: ${count}`);
 }
 if (failures) {
   console.error(`[test-portfolio-audit] FAILED with ${failures} issue(s)`);
-  for (const [key, items] of Object.entries(report.failures)) if (items.length) console.error(`- ${key}: ${items.length}`);
+  for (const [key, items] of Object.entries(report.failures))
+    if (items.length) console.error(`- ${key}: ${items.length}`);
   process.exit(1);
 }
 console.log('[test-portfolio-audit] ok');

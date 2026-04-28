@@ -10,7 +10,10 @@ test('stage 10 refactor integration audit is wired into guardrails and verify la
   assert.match(pkg.scripts['verify:refactor-modernization'], /npm run check:legacy-fallbacks/);
   assert.match(pkg.scripts['verify:refactor-modernization'], /npm run check:refactor-guardrails/);
   assert.match(pkg.scripts['verify:refactor-modernization'], /npm run test:refactor-stage-guards/);
-  assert.match(pkg.scripts['test:refactor-stage-guards'], /tests\/refactor_stage10_refactor_integration_runtime\.test\.js/);
+  assert.match(
+    pkg.scripts['test:refactor-stage-guards'],
+    /tests\/refactor_stage10_refactor_integration_runtime\.test\.js/
+  );
 
   const verifyFlow = fs.readFileSync('tools/wp_verify_flow.js', 'utf8');
   const guardIndex = verifyFlow.indexOf("scriptName: 'check:refactor-guardrails'");

@@ -16,7 +16,9 @@ if (/performance\.now\s*\(|Date\.now\s*\(/.test(handlesApply)) {
   checks.push('esm/native/builder/handles_apply.ts: applyHandles hotpath must not keep unused timing probes');
 }
 if (!/runPlatformRenderFollowThrough\(App, \{ updateShadows: false \}\)/.test(handlesApply)) {
-  checks.push('esm/native/builder/handles_apply.ts: applyHandles must keep render follow-through on the platform owner');
+  checks.push(
+    'esm/native/builder/handles_apply.ts: applyHandles must keep render follow-through on the platform owner'
+  );
 }
 
 const schedulerShared = read('esm/native/builder/scheduler_shared.ts');
@@ -28,8 +30,13 @@ if (/(^|[^A-Za-z0-9_$.])setTimeout\s*\(/m.test(schedulerShared)) {
 }
 
 const schedulerRuntime = read('esm/native/builder/scheduler_runtime.ts');
-if (!/shouldSuppressSatisfiedRequest/.test(schedulerRuntime) || !/shouldSuppressRepeatedExecute/.test(schedulerRuntime)) {
-  checks.push('esm/native/builder/scheduler_runtime.ts: scheduler must keep request and execute dedupe gates');
+if (
+  !/shouldSuppressSatisfiedRequest/.test(schedulerRuntime) ||
+  !/shouldSuppressRepeatedExecute/.test(schedulerRuntime)
+) {
+  checks.push(
+    'esm/native/builder/scheduler_runtime.ts: scheduler must keep request and execute dedupe gates'
+  );
 }
 
 if (checks.length) {

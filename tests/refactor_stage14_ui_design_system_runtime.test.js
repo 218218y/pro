@@ -25,8 +25,14 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
   assert.match(colorSwatch, /children\?: ReactNode/);
   assert.match(colorSwatch, /special\?: boolean/);
   assert.match(designPanel, /<ColorSwatch[\s\S]*special=\{dot\.isSpecial\}/);
-  assert.match(designPanel, /<OptionButtonGroup columns="auto" density="compact" className="wp-r-design-door-style-options">/);
-  assert.match(designPanel, /<OptionButtonGroup columns="auto" density="compact" className="wp-r-design-curtain-options">/);
+  assert.match(
+    designPanel,
+    /<OptionButtonGroup columns="auto" density="compact" className="wp-r-design-door-style-options">/
+  );
+  assert.match(
+    designPanel,
+    /<OptionButtonGroup columns="auto" density="compact" className="wp-r-design-curtain-options">/
+  );
   assert.doesNotMatch(designPanel, /className=\{\s*'type-option type-option--compact type-option--iconrow/);
   assert.doesNotMatch(designPanel, /className=\{'curtain-btn' \+/);
 });

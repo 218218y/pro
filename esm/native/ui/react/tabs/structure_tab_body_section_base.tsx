@@ -64,7 +64,11 @@ export function StructureBodyBaseControls(props: {
         <>
           <div className="wp-field">
             <div className="wp-field-label">סוג רגליים</div>
-            <OptionButtonGroup columns={3} density="micro" className="wp-r-wardrobe-type-selector wp-r-base-leg-style-selector">
+            <OptionButtonGroup
+              columns={3}
+              density="micro"
+              className="wp-r-wardrobe-type-selector wp-r-base-leg-style-selector"
+            >
               {BASE_LEG_STYLE_OPTIONS.map(option => (
                 <StructureBodyTypeOptionButton
                   key={option.value}
@@ -79,7 +83,11 @@ export function StructureBodyBaseControls(props: {
 
           <div className="wp-field">
             <div className="wp-field-label">צבע רגליים</div>
-            <OptionButtonGroup columns={3} density="micro" className="wp-r-wardrobe-type-selector wp-r-base-leg-color-selector">
+            <OptionButtonGroup
+              columns={3}
+              density="micro"
+              className="wp-r-wardrobe-type-selector wp-r-base-leg-color-selector"
+            >
               {BASE_LEG_COLOR_OPTIONS.map(option => (
                 <StructureBodyTypeOptionButton
                   key={option.value}

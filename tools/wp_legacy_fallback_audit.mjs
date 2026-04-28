@@ -97,8 +97,10 @@ function isBrowserAdapterPath(relPath, lineText) {
   return (
     /(^|\/)adapters\/browser(\/|$)/.test(relPath) ||
     /(^|\/)entry_pro/.test(relPath) ||
-    /(^|\/)native\/(platform|ui)\//.test(relPath) &&
-      /\b(browser|dom|document|window|raf|timer|clipboard|overlay|fatal overlay|localStorage)\b/i.test(lineText)
+    (/(^|\/)native\/(platform|ui)\//.test(relPath) &&
+      /\b(browser|dom|document|window|raf|timer|clipboard|overlay|fatal overlay|localStorage)\b/i.test(
+        lineText
+      ))
   );
 }
 
@@ -129,7 +131,10 @@ export function classifyLegacyFallbackOccurrence({ relPath, lineText, term }) {
   return 'unknown';
 }
 
-export function collectLegacyFallbackOccurrences({ projectRoot = process.cwd(), sourceRoot = DEFAULT_SOURCE_ROOT } = {}) {
+export function collectLegacyFallbackOccurrences({
+  projectRoot = process.cwd(),
+  sourceRoot = DEFAULT_SOURCE_ROOT,
+} = {}) {
   const rootDir = path.resolve(projectRoot, sourceRoot);
   const occurrences = [];
 
@@ -169,10 +174,12 @@ export function summarizeLegacyFallbackOccurrences(occurrences) {
   }
 
   const byFile = Object.fromEntries(
-    [...files.entries()].sort((a, b) => a[0].localeCompare(b[0])).map(([file, stats]) => [
-      file,
-      { total: stats.total, categories: Object.fromEntries(Object.entries(stats.categories).sort()) },
-    ])
+    [...files.entries()]
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([file, stats]) => [
+        file,
+        { total: stats.total, categories: Object.fromEntries(Object.entries(stats.categories).sort()) },
+      ])
   );
 
   const hotFiles = Object.entries(byFile)
@@ -228,7 +235,13 @@ export function compareLegacyFallbackAllowlist(summary, allowlist) {
       const expectedCount = expectedStats.categories?.[category] || 0;
       const actualCount = actualStats.categories?.[category] || 0;
       if (expectedCount !== actualCount) {
-        failures.push({ kind: 'category-count', file, category, expected: expectedCount, actual: actualCount });
+        failures.push({
+          kind: 'category-count',
+          file,
+          category,
+          expected: expectedCount,
+          actual: actualCount,
+        });
       }
     }
   }
@@ -265,7 +278,9 @@ export function toLegacyFallbackMarkdown(payload) {
   lines.push('');
   lines.push('## Policy');
   lines.push('');
-  lines.push('- Runtime compatibility must not grow silently. New `legacy`/`fallback` mentions require an intentional category and allowlist update.');
+  lines.push(
+    '- Runtime compatibility must not grow silently. New `legacy`/`fallback` mentions require an intentional category and allowlist update.'
+  );
   lines.push('- `project-migration` belongs at import/load/persisted-payload boundaries.');
   lines.push('- `browser-adapter` belongs at browser/DOM/environment adapter boundaries.');
   lines.push('- `legacy-runtime-risk` is the review queue for possible old live-path compatibility.');
@@ -296,7 +311,10 @@ export function toLegacyFallbackMarkdown(payload) {
   return `${lines.join('\n')}\n`;
 }
 
-export function runLegacyFallbackAudit({ projectRoot = process.cwd(), args = parseLegacyFallbackAuditArgs() } = {}) {
+export function runLegacyFallbackAudit({
+  projectRoot = process.cwd(),
+  args = parseLegacyFallbackAuditArgs(),
+} = {}) {
   const sourceRoot = args.sourceRoot || DEFAULT_SOURCE_ROOT;
   const occurrences = collectLegacyFallbackOccurrences({ projectRoot, sourceRoot });
   const summary = summarizeLegacyFallbackOccurrences(occurrences);

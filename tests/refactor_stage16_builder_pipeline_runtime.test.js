@@ -21,5 +21,8 @@ test('stage16 builder pipeline contract is wired and protects the context path',
   assert.match(resolver, /ResolveBuilderDepsRequest/);
   assert.doesNotMatch(resolver, /args && args\./);
   assert.match(pkg.scripts['check:refactor-guardrails'], /check:builder-pipeline-contract/);
-  assert.match(pkg.scripts['test:refactor-stage-guards'], /refactor_stage16_builder_pipeline_runtime\.test\.js/);
+  assert.match(
+    pkg.scripts['test:refactor-stage-guards'],
+    /refactor_stage16_builder_pipeline_runtime\.test\.js/
+  );
 });

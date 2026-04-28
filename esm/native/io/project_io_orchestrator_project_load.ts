@@ -126,9 +126,7 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
     }
 
     const loadSnapshot = buildProjectUiSnapshot(data, deps.getProjectNameFromState());
-    const loadUiPreview = normalizeProjectIoUiState(
-      buildCanonicalProjectUiSnapshot(loadSnapshot.uiState)
-    );
+    const loadUiPreview = normalizeProjectIoUiState(buildCanonicalProjectUiSnapshot(loadSnapshot.uiState));
     try {
       assertCanonicalUiRawDims(loadUiPreview, 'project.load.preview');
     } catch {

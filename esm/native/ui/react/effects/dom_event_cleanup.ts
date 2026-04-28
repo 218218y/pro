@@ -1,8 +1,16 @@
 export type DomEventCleanupErrorHandler = (op: string, err: unknown) => void;
 
 export type DomEventTargetLike = {
-  addEventListener?: (type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions) => void;
-  removeEventListener?: (type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions) => void;
+  addEventListener?: (
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: boolean | AddEventListenerOptions
+  ) => void;
+  removeEventListener?: (
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: boolean | EventListenerOptions
+  ) => void;
 };
 
 export type InstallDomEventListenerArgs = {
@@ -33,7 +41,8 @@ function reportEventCleanupError(
 export function installDomEventListener(args: InstallDomEventListenerArgs): () => void {
   const { target, type, listener, options, removeOptions, label, onError } = args;
   const add = target && typeof target.addEventListener === 'function' ? target.addEventListener : null;
-  const remove = target && typeof target.removeEventListener === 'function' ? target.removeEventListener : null;
+  const remove =
+    target && typeof target.removeEventListener === 'function' ? target.removeEventListener : null;
   if (!target || !add || !remove) return noopCleanup;
 
   try {

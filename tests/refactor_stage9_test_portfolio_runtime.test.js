@@ -8,7 +8,10 @@ test('stage 9 test portfolio audit is wired into refactor guardrails', () => {
   assert.ok(fs.existsSync('tools/wp_test_portfolio_audit.mjs'));
   assert.ok(fs.existsSync('docs/TEST_PORTFOLIO_GUIDELINES.md'));
   assert.ok(fs.existsSync('docs/REFACTOR_WORKMAP_PROGRESS.md'));
-  assert.equal(packageJson.scripts['check:test-portfolio'], 'node tools/wp_test_portfolio_audit.mjs --no-print');
+  assert.equal(
+    packageJson.scripts['check:test-portfolio'],
+    'node tools/wp_test_portfolio_audit.mjs --no-print'
+  );
   assert.match(packageJson.scripts['check:refactor-guardrails'], /check:test-portfolio/);
 });
 

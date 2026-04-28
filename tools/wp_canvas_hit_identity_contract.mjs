@@ -34,17 +34,24 @@ for (const pattern of [
 }
 if (/\bas any\b/.test(owner)) errors.push(`${files.owner}: must not use as any`);
 if (!/moduleIndex:\s*input\.moduleIndex \?\? fromUserData\.moduleIndex \?\? null/.test(owner)) {
-  errors.push(`${files.owner}: canonical identity must read moduleIndex from userData when explicit input is absent`);
+  errors.push(
+    `${files.owner}: canonical identity must read moduleIndex from userData when explicit input is absent`
+  );
 }
 if (!/moduleStack:\s*input\.moduleStack \?\? fromUserData\.moduleStack \?\? null/.test(owner)) {
-  errors.push(`${files.owner}: canonical identity must read moduleStack from userData when explicit input is absent`);
+  errors.push(
+    `${files.owner}: canonical identity must read moduleStack from userData when explicit input is absent`
+  );
 }
 
 for (const file of [files.hoverContracts, files.clickContracts]) {
   const source = read(file);
-  if (!/CanvasPickingHitIdentity/.test(source)) errors.push(`${file}: must expose hitIdentity on public hit contract`);
+  if (!/CanvasPickingHitIdentity/.test(source))
+    errors.push(`${file}: must expose hitIdentity on public hit contract`);
   if (!/hitIdentity\?: CanvasPickingHitIdentity \| null;/.test(source)) {
-    errors.push(`${file}: hitIdentity field must stay explicit and optional for backwards-compatible fixtures`);
+    errors.push(
+      `${file}: hitIdentity field must stay explicit and optional for backwards-compatible fixtures`
+    );
   }
 }
 
@@ -60,7 +67,9 @@ for (const file of [files.hoverScan, files.preferredFace]) {
 
 const hoverScan = read(files.hoverScan);
 if (!/mergeCanvasPickingHitIdentityUserData/.test(hoverScan)) {
-  errors.push(`${files.hoverScan}: raycast hover hit identity must merge surface hit metadata with resolved part metadata`);
+  errors.push(
+    `${files.hoverScan}: raycast hover hit identity must merge surface hit metadata with resolved part metadata`
+  );
 }
 
 const clickState = read(files.clickState);

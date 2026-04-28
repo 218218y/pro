@@ -183,11 +183,7 @@ function restoreWardrobeTypeProfile(
     return;
   }
 
-  const restoreMeta = _metaNoBuild(
-    actions,
-    { immediate: true },
-    'actions:room:setWardrobeType:restore'
-  );
+  const restoreMeta = _metaNoBuild(actions, { immediate: true }, 'actions:room:setWardrobeType:restore');
   cfgBatch(
     App,
     function () {

@@ -27,10 +27,16 @@ for (const file of migratedFiles) {
     errors.push(`${file}: migrated effect must use installDomEventListener`);
   }
   const withoutImports = source.replace(/^import[^\n]*addEventListener[^\n]*$/gm, '');
-  if (/\.[a-zA-Z]*addEventListener\s*\(/.test(withoutImports) || /\baddEventListener\s*\(/.test(withoutImports)) {
+  if (
+    /\.[a-zA-Z]*addEventListener\s*\(/.test(withoutImports) ||
+    /\baddEventListener\s*\(/.test(withoutImports)
+  ) {
     errors.push(`${file}: direct addEventListener is forbidden after migration`);
   }
-  if (/\.[a-zA-Z]*removeEventListener\s*\(/.test(withoutImports) || /\bremoveEventListener\s*\(/.test(withoutImports)) {
+  if (
+    /\.[a-zA-Z]*removeEventListener\s*\(/.test(withoutImports) ||
+    /\bremoveEventListener\s*\(/.test(withoutImports)
+  ) {
     errors.push(`${file}: direct removeEventListener is forbidden after migration`);
   }
 }

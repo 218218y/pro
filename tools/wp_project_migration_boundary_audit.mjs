@@ -34,7 +34,10 @@ function findRuntimeImportsFromProjectMigrations(projectRoot) {
   for (const file of walkFiles(path.join(projectRoot, RUNTIME_ROOT))) {
     const rel = path.relative(projectRoot, file).split(path.sep).join('/');
     const text = read(file);
-    if (/from\s+['\"][.\/]+io\/project_migrations\//.test(text) || /from\s+['\"][.\/]+project_migrations\//.test(text)) {
+    if (
+      /from\s+['\"][.\/]+io\/project_migrations\//.test(text) ||
+      /from\s+['\"][.\/]+project_migrations\//.test(text)
+    ) {
       failures.push(`${rel} imports the project migration boundary; runtime must stay below IO.`);
     }
   }
@@ -52,7 +55,9 @@ export function runProjectMigrationBoundaryAudit(projectRoot = process.cwd()) {
   if (fs.existsSync(projectLoadPath)) {
     const projectLoad = read(projectLoadPath);
     if (!projectLoad.includes("from './project_migrations/index.js'")) {
-      failures.push('project load must use the project_migrations owner for project-ingress UI raw canonicalization.');
+      failures.push(
+        'project load must use the project_migrations owner for project-ingress UI raw canonicalization.'
+      );
     }
     if (/ensureUiRawDimsFromSnapshot|hasEssentialUiDimsFromSnapshot/.test(projectLoad)) {
       failures.push('project load must not use runtime fail-soft ui.raw completion helpers directly.');

@@ -4,15 +4,15 @@ This is the compact lifecycle contract for cloud sync. Keep implementation detai
 
 ## Core phases
 
-| Phase | Meaning |
-| --- | --- |
-| `idle` | Sync is not active. |
-| `starting` | Local startup/install path is preparing sync. |
-| `pulling` | Remote state is being fetched/applied. |
-| `realtime` | Live realtime/polling subscriptions are active. |
+| Phase       | Meaning                                                                  |
+| ----------- | ------------------------------------------------------------------------ |
+| `idle`      | Sync is not active.                                                      |
+| `starting`  | Local startup/install path is preparing sync.                            |
+| `pulling`   | Remote state is being fetched/applied.                                   |
+| `realtime`  | Live realtime/polling subscriptions are active.                          |
 | `attention` | User/action attention is required or a recoverable problem was detected. |
-| `stopping` | Sync is being disabled or cleaned up. |
-| `error` | A non-silent failure was surfaced. |
+| `stopping`  | Sync is being disabled or cleaned up.                                    |
+| `error`     | A non-silent failure was surfaced.                                       |
 
 ## Ownership rules
 

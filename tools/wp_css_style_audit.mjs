@@ -52,4 +52,6 @@ if (check && !report.ok) {
   for (const v of report.violations) console.error(`- ${v.metric}: ${v.value} > ${v.max}`);
   process.exit(1);
 }
-console.log(`[css-style-audit] ok important=${metrics.important} transitionAll=${metrics.transitionAll} zIndex=${metrics.zIndex} boxShadow=${metrics.boxShadow}`);
+console.log(
+  `[css-style-audit] ok important=${metrics.important} transitionAll=${metrics.transitionAll} zIndex=${metrics.zIndex} boxShadow=${metrics.boxShadow}`
+);

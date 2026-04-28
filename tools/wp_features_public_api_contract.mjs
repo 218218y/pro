@@ -131,7 +131,9 @@ function main() {
     for (const violation of result.violations) console.error(`- ${violation}`);
     process.exit(1);
   }
-  console.log(`[features-public-api] ok (${result.publicEntries.length} public entries, ${result.importSites.length} import sites)`);
+  console.log(
+    `[features-public-api] ok (${result.publicEntries.length} public entries, ${result.importSites.length} import sites)`
+  );
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main();

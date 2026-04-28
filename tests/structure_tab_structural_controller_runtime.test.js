@@ -272,7 +272,6 @@ test('[structure-structural-controller] commitStructural collapses to a canonica
   );
 });
 
-
 test('[structure-structural-controller] user structure buttons are historyable while auto sync stays ui-only', () => {
   const calls = [];
   const mod = loadStructureStructuralControllerModule(calls);
@@ -281,7 +280,8 @@ test('[structure-structural-controller] user structure buttons are historyable w
   controller.commitStructural({ structureSelect: 'default' }, 'react:structure:pattern');
 
   const userBatch = calls.find(
-    entry => entry[0] === 'applyStructureTemplateRecomputeBatch' && entry[1].source === 'react:structure:pattern'
+    entry =>
+      entry[0] === 'applyStructureTemplateRecomputeBatch' && entry[1].source === 'react:structure:pattern'
   );
   assert.ok(userBatch);
   assert.equal(userBatch[1].meta.noBuild, true);

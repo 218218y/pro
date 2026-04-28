@@ -10,8 +10,10 @@ const require = createRequire(import.meta.url);
 const ts = require('typescript');
 
 async function loadHitIdentityOwner() {
-  const source = readFileSync('esm/native/services/canvas_picking_hit_identity.ts', 'utf8')
-    .replace(/import type \{[\s\S]*?\} from '\.\.\/\.\.\/\.\.\/types';\n/, '');
+  const source = readFileSync('esm/native/services/canvas_picking_hit_identity.ts', 'utf8').replace(
+    /import type \{[\s\S]*?\} from '\.\.\/\.\.\/\.\.\/types';\n/,
+    ''
+  );
 
   const transpiled = ts.transpileModule(source, {
     compilerOptions: {
@@ -81,5 +83,8 @@ test('stage 18 keeps hover and click identities equivalent for child-surface doo
 test('stage 18 canvas parity contract is wired into guardrails', () => {
   const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
   assert.match(pkg.scripts['check:refactor-guardrails'], /check:canvas-hit-parity/);
-  assert.match(pkg.scripts['test:refactor-stage-guards'], /refactor_stage18_canvas_hit_parity_runtime\.test\.js/);
+  assert.match(
+    pkg.scripts['test:refactor-stage-guards'],
+    /refactor_stage18_canvas_hit_parity_runtime\.test\.js/
+  );
 });

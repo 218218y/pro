@@ -3,6 +3,7 @@ libs/
 .artifacts/
 test-results/
 playwright-report/
+.artifacts/
 coverage/
 **/*.min.js
 node_modules/

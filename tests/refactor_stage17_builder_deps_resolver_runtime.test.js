@@ -162,7 +162,11 @@ test('stage17 builder deps resolver resolves required deps and preserves owner b
   assert.deepEqual(resolved.createDoorVisual('door'), { value: 'door', owner: 'modules-owner' });
   assert.equal(resolved.pruneCachesSafe('root'), 'platform-pruned');
 
-  assert.deepEqual(fixture.calls[0], ['render.ensureWardrobeGroup', fixture.builderDeps.render, fixture.THREE]);
+  assert.deepEqual(fixture.calls[0], [
+    'render.ensureWardrobeGroup',
+    fixture.builderDeps.render,
+    fixture.THREE,
+  ]);
   assert.deepEqual(fixture.calls[1], ['util.cleanGroup', fixture.builderDeps.util, 'group']);
   assert.deepEqual(fixture.calls[2], ['materials.getMaterial', fixture.builderDeps.materials, 'oak']);
   assert.deepEqual(fixture.calls[3], ['modules.createDoorVisual', fixture.builderDeps.modules, 'door']);

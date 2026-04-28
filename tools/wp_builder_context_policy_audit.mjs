@@ -17,11 +17,19 @@ const forbidden = [
 
 function walk(dir, out = []) {
   let entries = [];
-  try { entries = readdirSync(dir); } catch { return out; }
+  try {
+    entries = readdirSync(dir);
+  } catch {
+    return out;
+  }
   for (const entry of entries) {
     const abs = join(dir, entry);
     let st;
-    try { st = statSync(abs); } catch { continue; }
+    try {
+      st = statSync(abs);
+    } catch {
+      continue;
+    }
     if (st.isDirectory()) walk(abs, out);
     else if (/\.(?:ts|tsx|js|mjs)$/.test(entry)) out.push(abs);
   }

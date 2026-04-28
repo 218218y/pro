@@ -31,7 +31,9 @@ for (const abs of walk(servicesRoot)) {
     const trimmed = line.trim();
     if (!trimmed || trimmed.startsWith('//')) return;
     if (directCallPattern.test(line)) {
-      violations.push(`${rel}:${index + 1}: direct global timer call; use injected deps or getBrowserTimers(App)`);
+      violations.push(
+        `${rel}:${index + 1}: direct global timer call; use injected deps or getBrowserTimers(App)`
+      );
     }
     if (directFallbackPattern.test(line)) {
       violations.push(`${rel}:${index + 1}: direct global timer fallback; use getBrowserTimers(App)`);
@@ -42,7 +44,9 @@ for (const abs of walk(servicesRoot)) {
 const snapshotRuntime = path.join(root, 'esm/native/services/cloud_sync_panel_api_snapshots_runtime.ts');
 const snapshotSource = fs.readFileSync(snapshotRuntime, 'utf8');
 if (!/getBrowserTimers\(deps\.App\)/.test(snapshotSource)) {
-  violations.push('esm/native/services/cloud_sync_panel_api_snapshots_runtime.ts: must resolve fallback timers through getBrowserTimers(deps.App)');
+  violations.push(
+    'esm/native/services/cloud_sync_panel_api_snapshots_runtime.ts: must resolve fallback timers through getBrowserTimers(deps.App)'
+  );
 }
 
 if (violations.length) {

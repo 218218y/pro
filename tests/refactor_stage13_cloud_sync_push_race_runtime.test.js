@@ -25,9 +25,6 @@ test('stage 13 cloud sync push flow clears stale pending follow-up push on suppr
 
   assert.match(runtimeSource, /if \(args\.suppressRef\.v\) \{\s*resetPendingPushAfterFlights\(\);\s*return;/);
   assert.match(sharedSource, /resetCloudSyncMainRowPendingPushAfterFlights/);
-  assert.match(
-    runtimeTest,
-    /drops pending follow-up push when suppression starts during an in-flight push/
-  );
+  assert.match(runtimeTest, /drops pending follow-up push when suppression starts during an in-flight push/);
   assert.match(runtimeTest, /assert\.equal\(pushCalls, 2\)/);
 });

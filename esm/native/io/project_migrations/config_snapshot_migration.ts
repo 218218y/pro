@@ -22,16 +22,17 @@ export interface ProjectConfigMigrationResult {
   missingKeys: ProjectConfigMigrationRequiredKey[];
 }
 
-export const PROJECT_CONFIG_MIGRATION_REQUIRED_KEYS: readonly ProjectConfigMigrationRequiredKey[] = Object.freeze([
-  'wardrobeType',
-  'boardMaterial',
-  'isManualWidth',
-  'showDimensions',
-  'isMultiColorMode',
-  'isLibraryMode',
-  'preChestState',
-  'grooveLinesCount',
-]);
+export const PROJECT_CONFIG_MIGRATION_REQUIRED_KEYS: readonly ProjectConfigMigrationRequiredKey[] =
+  Object.freeze([
+    'wardrobeType',
+    'boardMaterial',
+    'isManualWidth',
+    'showDimensions',
+    'isMultiColorMode',
+    'isLibraryMode',
+    'preChestState',
+    'grooveLinesCount',
+  ]);
 
 function hasOwn(record: UnknownRecord, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(record, key);

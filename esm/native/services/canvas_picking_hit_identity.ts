@@ -62,14 +62,20 @@ export function normalizeCanvasPickingModuleStack(value: unknown): CanvasPicking
   return null;
 }
 
-export function inferCanvasPickingTargetKind(partId: string | null, drawerId: string | null): CanvasPickingHitTargetKind {
+export function inferCanvasPickingTargetKind(
+  partId: string | null,
+  drawerId: string | null
+): CanvasPickingHitTargetKind {
   if (drawerId || (partId && /(?:^|_)drawer_|^drawer_|^lower_|^upper_/.test(partId))) return 'drawer';
   if (partId && /^d\d+(?:_|$)/.test(partId)) return 'door';
   if (partId && /(?:shelf|rod|box|sketch|manual)/i.test(partId)) return 'sketch';
   return partId ? 'module' : 'unknown';
 }
 
-export function inferCanvasPickingDoorId(partId: string | null, explicitDoorId?: string | null): string | null {
+export function inferCanvasPickingDoorId(
+  partId: string | null,
+  explicitDoorId?: string | null
+): string | null {
   const explicit = cleanString(explicitDoorId);
   if (explicit) return explicit;
   const match = partId ? /^((?:corner:)?d\d+)(?:_|$)/.exec(partId) : null;
@@ -104,7 +110,10 @@ export function readCanvasPickingHitIdentityUserData(value: unknown): Partial<Ca
   };
 }
 
-export function mergeCanvasPickingHitIdentityUserData(hitUserData: unknown, resolvedUserData: unknown): UnknownRecord | null {
+export function mergeCanvasPickingHitIdentityUserData(
+  hitUserData: unknown,
+  resolvedUserData: unknown
+): UnknownRecord | null {
   const hit = asRecord(hitUserData);
   const resolved = asRecord(resolvedUserData);
   if (!hit && !resolved) return null;

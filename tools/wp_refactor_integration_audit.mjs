@@ -14,7 +14,8 @@ const scripts = pkg.scripts || {};
 const errors = [];
 
 function requireScript(name) {
-  if (!Object.prototype.hasOwnProperty.call(scripts, name)) errors.push(`package.json: missing script ${name}`);
+  if (!Object.prototype.hasOwnProperty.call(scripts, name))
+    errors.push(`package.json: missing script ${name}`);
   return String(scripts[name] || '');
 }
 
@@ -45,7 +46,8 @@ const requiredGuardScripts = [
 
 for (const script of requiredGuardScripts) requireScript(script);
 const guardrailCommand = requireScript('check:refactor-guardrails');
-for (const script of requiredGuardScripts) requireNeedle('check:refactor-guardrails', guardrailCommand, `npm run ${script}`);
+for (const script of requiredGuardScripts)
+  requireNeedle('check:refactor-guardrails', guardrailCommand, `npm run ${script}`);
 
 const requiredStageGuardTests = [
   'tests/refactor_stage3_guardrails_runtime.test.js',
@@ -66,7 +68,8 @@ const requiredStageGuardTests = [
   'tests/refactor_stage18_canvas_hit_parity_runtime.test.js',
 ];
 const stageGuardCommand = requireScript('test:refactor-stage-guards');
-for (const testFile of requiredStageGuardTests) requireNeedle('test:refactor-stage-guards', stageGuardCommand, testFile);
+for (const testFile of requiredStageGuardTests)
+  requireNeedle('test:refactor-stage-guards', stageGuardCommand, testFile);
 
 const verifyRefactorCommand = requireScript('verify:refactor-modernization');
 for (const script of [
@@ -87,7 +90,27 @@ if (guardIndex < 0 || testIndex < 0 || guardIndex > testIndex) {
 }
 
 const progressDoc = read('docs/REFACTOR_WORKMAP_PROGRESS.md');
-for (const stage of ['Stage 0', 'Stage 1', 'Stage 2', 'Stage 3', 'Stage 4', 'Stage 5', 'Stage 6', 'Stage 7', 'Stage 8', 'Stage 9', 'Stage 10', 'Stage 11', 'Stage 12', 'Stage 13', 'Stage 14', 'Stage 15', 'Stage 16', 'Stage 17', 'Stage 18']) {
+for (const stage of [
+  'Stage 0',
+  'Stage 1',
+  'Stage 2',
+  'Stage 3',
+  'Stage 4',
+  'Stage 5',
+  'Stage 6',
+  'Stage 7',
+  'Stage 8',
+  'Stage 9',
+  'Stage 10',
+  'Stage 11',
+  'Stage 12',
+  'Stage 13',
+  'Stage 14',
+  'Stage 15',
+  'Stage 16',
+  'Stage 17',
+  'Stage 18',
+]) {
   requireNeedle('docs/REFACTOR_WORKMAP_PROGRESS.md', progressDoc, stage);
 }
 requireNeedle('docs/REFACTOR_WORKMAP_PROGRESS.md', progressDoc, 'verify:refactor-modernization');
