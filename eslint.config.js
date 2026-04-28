@@ -237,7 +237,9 @@ const APP_BAG_RESTRICTIONS = APP_BAG_PROPS.flatMap(p => [
 
 export default [
   {
-    ignores: ['dist/**', 'libs/**', 'node_modules/**'],
+    // Generated Three.js mirrors are refreshed from node_modules; verify their
+    // runtime contract through wp_three_vendor_contract instead of ESLint style rules.
+    ignores: ['dist/**', 'libs/**', 'node_modules/**', 'tools/three_addons/**'],
   },
 
   // Legacy / pre-ESM source (./js). Only present in older repos.

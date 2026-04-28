@@ -18,6 +18,7 @@ This file keeps the active engineering policies in one place. Historical stage n
 - Builder code must not use DOM/storage/global timer access directly.
 - Render hotpaths should not gain casual probes or duplicate render triggers. Measure through explicit perf/debug owners.
 - Perf baselines should be updated only after measured improvement or a deliberate accepted product change.
+- Generated Three.js mirrors under `tools/three_addons/` are vendor refresh outputs. Keep them out of ESLint style gates and validate their runtime surface through `wp_three_vendor_contract`.
 
 Relevant checks:
 
@@ -25,6 +26,7 @@ Relevant checks:
 npm run check:builder-context-policy
 npm run check:builder-pipeline-contract
 npm run check:perf-hotpaths
+npm run contract:three-vendor
 ```
 
 ## Canvas picking
