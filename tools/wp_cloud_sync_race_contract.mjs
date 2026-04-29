@@ -10,6 +10,16 @@ function requireNeedle(label, source, needle) {
   if (!source.includes(needle)) errors.push(`${label}: missing ${needle}`);
 }
 
+function requireOrder(label, source, first, second) {
+  const firstIndex = source.indexOf(first);
+  const secondIndex = source.indexOf(second);
+  if (firstIndex < 0) errors.push(`${label}: missing ${first}`);
+  if (secondIndex < 0) errors.push(`${label}: missing ${second}`);
+  if (firstIndex >= 0 && secondIndex >= 0 && firstIndex > secondIndex) {
+    errors.push(`${label}: expected ${first} before ${second}`);
+  }
+}
+
 const queueRuntime = read('esm/native/services/cloud_sync_coalescer_queue_runtime.ts');
 requireNeedle(
   'cloud_sync_coalescer_queue_runtime.ts',
@@ -38,6 +48,9 @@ const lifecycleRuntimeStart = read('esm/native/services/cloud_sync_lifecycle_run
 const lifecycleRuntimeSetup = read('esm/native/services/cloud_sync_lifecycle_runtime_setup.ts');
 const lifecycleRealtimeStartGuard = read(
   'esm/native/services/cloud_sync_lifecycle_runtime_realtime_start.ts'
+);
+const realtimeTransitionShared = read(
+  'esm/native/services/cloud_sync_lifecycle_realtime_support_status_shared.ts'
 );
 const realtimeTransportCleanup = read(
   'esm/native/services/cloud_sync_lifecycle_realtime_transport_cleanup.ts'
@@ -73,6 +86,28 @@ requireNeedle(
   pollingStartRuntime,
   'cloudSyncPolling.realtimeRecoveryRestart'
 );
+requireNeedle(
+  'cloud_sync_lifecycle_support_polling_start_runtime.ts',
+  pollingStartRuntime,
+  'intervalHandle = setIntervalFn(onPollTick, pollIntervalMs);'
+);
+requireNeedle(
+  'cloud_sync_lifecycle_support_polling_start_runtime.ts',
+  pollingStartRuntime,
+  'pollTimerRef.current = intervalHandle;'
+);
+requireOrder(
+  'cloud_sync_lifecycle_support_polling_start_runtime.ts polling start installs the owner timer before publishing active status',
+  pollingStartRuntime,
+  'pollTimerRef.current = intervalHandle;',
+  'const pollingStatus = syncCloudSyncPollingStatusInPlace({'
+);
+requireOrder(
+  'cloud_sync_lifecycle_support_polling_start_runtime.ts polling start publishes before diagnostics',
+  pollingStartRuntime,
+  'if (shouldPublish) publishStatus();',
+  "diag('polling:start', pollingStatus);"
+);
 requireNeedle('cloud_sync_lifecycle_realtime_runtime_start.ts', realtimeStartRuntime, 'realtime.startFlight');
 requireNeedle(
   'cloud_sync_lifecycle_realtime_runtime_start.ts',
@@ -105,6 +140,16 @@ requireNeedle(
   'cloud_sync_lifecycle_runtime_realtime_start.ts',
   lifecycleRealtimeStartGuard,
   '`${op}.fallback`'
+);
+requireNeedle(
+  'cloud_sync_lifecycle_runtime_realtime_start.ts',
+  lifecycleRealtimeStartGuard,
+  'const startResult = cloudSyncRealtime.startRealtime();'
+);
+requireNeedle(
+  'cloud_sync_lifecycle_realtime_support_status_shared.ts',
+  realtimeTransitionShared,
+  'if (hasPollingTransitionError) throw pollingTransitionError;'
 );
 requireNeedle('cloud_sync_lifecycle_realtime_transport_cleanup.ts', realtimeTransportCleanup, 'clearHints');
 
@@ -187,6 +232,11 @@ requireNeedle(
   'tests/cloud_sync_lifecycle_owner_realtime_start_runtime.test.ts',
   read('tests/cloud_sync_lifecycle_owner_realtime_start_runtime.test.ts'),
   'reports fallback failures without rejecting'
+);
+requireNeedle(
+  'tests/refactor_stage22_cloud_sync_lifecycle_owner_recovery_runtime.test.js',
+  read('tests/refactor_stage22_cloud_sync_lifecycle_owner_recovery_runtime.test.js'),
+  'stage 24 polling fallback publishes active state only after timer installation succeeds'
 );
 
 if (errors.length) {

@@ -119,10 +119,16 @@ for (const stage of [
   'Stage 21',
   'Stage 22',
   'Stage 23',
+  'Stage 24',
 ]) {
   requireNeedle('docs/REFACTOR_WORKMAP_PROGRESS.md', progressDoc, stage);
 }
 requireNeedle('docs/REFACTOR_WORKMAP_PROGRESS.md', progressDoc, 'verify:refactor-modernization');
+requireNeedle(
+  'docs/REFACTOR_WORKMAP_PROGRESS.md',
+  progressDoc,
+  'polling fallback timer-install-before-publication ordering'
+);
 
 if (errors.length) {
   console.error('[refactor-integration-audit] FAILED');

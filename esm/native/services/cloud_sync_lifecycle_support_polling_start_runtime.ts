@@ -108,14 +108,6 @@ export function startCloudSyncPolling(args: CloudSyncLifecycleStartPollingArgs):
     });
     return;
   }
-  const pollingStatus = syncCloudSyncPollingStatusInPlace({
-    runtimeStatus,
-    active: true,
-    intervalMs: pollIntervalMs,
-    reason,
-  });
-  if (shouldPublish) publishStatus();
-  diag('polling:start', pollingStatus);
 
   let intervalHandle: IntervalHandleLike | null = null;
   const onPollTick = createCloudSyncPollingTick({
@@ -143,6 +135,15 @@ export function startCloudSyncPolling(args: CloudSyncLifecycleStartPollingArgs):
   });
   intervalHandle = setIntervalFn(onPollTick, pollIntervalMs);
   pollTimerRef.current = intervalHandle;
+
+  const pollingStatus = syncCloudSyncPollingStatusInPlace({
+    runtimeStatus,
+    active: true,
+    intervalMs: pollIntervalMs,
+    reason,
+  });
+  if (shouldPublish) publishStatus();
+  diag('polling:start', pollingStatus);
   kickCloudSyncRealtimeRecovery({
     App,
     runtimeStatus,

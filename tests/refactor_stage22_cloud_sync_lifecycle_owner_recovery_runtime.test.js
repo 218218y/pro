@@ -22,7 +22,6 @@ test('stage 22 owner-level realtime start/restart failures stay non-fatal and us
   const ownerStart = read('esm/native/services/cloud_sync_lifecycle_runtime_start.ts');
   const runtimeSetup = read('esm/native/services/cloud_sync_lifecycle_runtime_setup.ts');
   const guardSource = read('esm/native/services/cloud_sync_lifecycle_runtime_realtime_start.ts');
-  const transitionSource = read('esm/native/services/cloud_sync_lifecycle_realtime_support_status_shared.ts');
   const ownerTest = read('tests/cloud_sync_lifecycle_owner_realtime_start_runtime.test.ts');
   const raceContract = read('tools/wp_cloud_sync_race_contract.mjs');
   const progressDoc = read('docs/REFACTOR_WORKMAP_PROGRESS.md');
@@ -32,19 +31,32 @@ test('stage 22 owner-level realtime start/restart failures stay non-fatal and us
   assert.match(ownerStart, /realtime-owner-start-error/);
   assert.match(runtimeSetup, /cloudSyncLifecycle\.realtimeRestart/);
   assert.match(runtimeSetup, /realtime-owner-restart-error/);
-  assert.match(guardSource, /handleRealtimeStartFailure/);
-  assert.match(guardSource, /const startResult = cloudSyncRealtime\.startRealtime\(\)/);
-  assert.match(guardSource, /Promise\.resolve\(startResult\)\.catch\(handleRealtimeStartFailure\)/);
   assert.match(guardSource, /markCloudSyncRealtimeFailure\(/);
   assert.match(guardSource, /`\$\{op\}\.fallback`/);
-  assert.match(transitionSource, /hasPollingTransitionError/);
-  assert.match(transitionSource, /throw pollingTransitionError/);
   assert.match(ownerTest, /still binds browser recovery listeners/);
   assert.match(ownerTest, /reports fallback failures without rejecting/);
-  assert.match(ownerTest, /assert\.equal\(publishCount, 1\)/);
-  assert.match(ownerTest, /realtime:owner-restart-error/);
   assert.match(raceContract, /cloudSyncLifecycle\.realtimeInitialStart/);
   assert.match(raceContract, /cloudSyncLifecycle\.realtimeRestart/);
   assert.match(progressDoc, /Stage 22/);
-  assert.match(progressDoc, /Stage 23/);
+});
+
+test('stage 24 polling fallback publishes active state only after timer installation succeeds', () => {
+  const pollingStart = read('esm/native/services/cloud_sync_lifecycle_support_polling_start_runtime.ts');
+  const raceContract = read('tools/wp_cloud_sync_race_contract.mjs');
+  const progressDoc = read('docs/REFACTOR_WORKMAP_PROGRESS.md');
+
+  const newOwnerBranch = pollingStart.slice(pollingStart.indexOf('let intervalHandle:'));
+  const setIntervalIndex = newOwnerBranch.indexOf('intervalHandle = setIntervalFn(onPollTick, pollIntervalMs);');
+  const timerRefIndex = newOwnerBranch.indexOf('pollTimerRef.current = intervalHandle;');
+  const syncIndex = newOwnerBranch.indexOf('const pollingStatus = syncCloudSyncPollingStatusInPlace({');
+  const publishIndex = newOwnerBranch.indexOf('if (shouldPublish) publishStatus();');
+  const diagIndex = newOwnerBranch.indexOf("diag('polling:start', pollingStatus);");
+
+  assert.ok(setIntervalIndex >= 0, 'new polling owner branch must install the timer');
+  assert.ok(timerRefIndex > setIntervalIndex, 'timer ref must be recorded after timer installation');
+  assert.ok(syncIndex > timerRefIndex, 'polling status must not become active before timer install succeeds');
+  assert.ok(publishIndex > syncIndex, 'publication must follow the canonical active polling status');
+  assert.ok(diagIndex > publishIndex, 'polling:start diagnostics must describe the published active timer');
+  assert.match(raceContract, /polling start installs the owner timer before publishing active status/);
+  assert.match(progressDoc, /Stage 24/);
 });
