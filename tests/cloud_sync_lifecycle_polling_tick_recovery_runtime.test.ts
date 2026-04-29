@@ -32,7 +32,7 @@ function createPollingApp(reported: Array<{ error: unknown; ctx: any }>) {
   } as any;
 }
 
-async function flushCloudSyncRecoveryMicrotasks(): Promise<void> {
+async function flushCloudSyncPollingTickMicrotasks(): Promise<void> {
   await Promise.resolve();
   await Promise.resolve();
 }
@@ -132,14 +132,13 @@ test('cloud sync polling tick reports async restart and refresh rejections witho
     },
   });
 
-  assert.equal(pollTimerRef.current, 42);
   assert.doesNotThrow(() => ticks[0]());
-  await flushCloudSyncRecoveryMicrotasks();
-
   assert.equal(runtimeStatus.polling.active, true);
   assert.equal(pollTimerRef.current, 42);
   assert.equal(restartCalls, 1);
   assert.equal(pullCalls, 1);
+
+  await flushCloudSyncPollingTickMicrotasks();
   assert.equal(reported.length, 2);
   assert.equal((reported[0]?.error as Error).message, 'tick restart rejected');
   assert.equal(reported[0]?.ctx?.op, 'cloudSyncPolling.tickRealtimeRestart');
@@ -149,7 +148,7 @@ test('cloud sync polling tick reports async restart and refresh rejections witho
   rejectRestart = false;
   rejectPull = false;
   assert.doesNotThrow(() => ticks[0]());
-  await flushCloudSyncRecoveryMicrotasks();
+  await flushCloudSyncPollingTickMicrotasks();
   assert.equal(restartCalls, 2);
   assert.equal(pullCalls, 2);
   assert.equal(reported.length, 2);

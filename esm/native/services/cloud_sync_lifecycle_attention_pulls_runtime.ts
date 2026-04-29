@@ -26,10 +26,10 @@ export function createCloudSyncAttentionPullMutableState(
 }
 
 function getCloudSyncAttentionPullReportOp(reason: string): string {
-  if (reason === 'focus') return 'focusListener.callback';
   if (reason === 'online') return 'onlineListener.callback';
+  if (reason === 'focus') return 'focusListener.callback';
   if (reason === 'visibility') return 'visibilityListener.callback';
-  return 'cloudSyncAttentionPull.callback';
+  return 'cloudSyncAttention.pull';
 }
 
 export function requestCloudSyncAttentionPull(
@@ -54,7 +54,6 @@ export function requestCloudSyncAttentionPull(
     opts: profile.opts,
     policy: profile.policy,
     reportOp: getCloudSyncAttentionPullReportOp(reason),
-    reportThrottleMs: 10000,
   });
   if (!refreshRequest.accepted) return false;
   state.lastAttentionPullAt = now;

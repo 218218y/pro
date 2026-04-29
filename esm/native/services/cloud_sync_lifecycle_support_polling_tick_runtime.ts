@@ -81,7 +81,6 @@ export function createCloudSyncPollingTick(args: {
         opts: profile.opts,
         policy: profile.policy,
         reportOp: 'cloudSyncPolling.tickRefresh',
-        reportThrottleMs: 8000,
       });
     } catch (err) {
       reportCloudSyncPollingTickError(App, 'cloudSyncPolling.tickRefresh', err);

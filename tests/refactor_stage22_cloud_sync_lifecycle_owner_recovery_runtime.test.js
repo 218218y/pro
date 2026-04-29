@@ -83,7 +83,7 @@ test('stage 26 lifecycle refresh and attention pulls report sync and async pull 
   const raceContract = read('tools/wp_cloud_sync_race_contract.mjs');
   const progressDoc = read('docs/REFACTOR_WORKMAP_PROGRESS.md');
 
-  assert.match(refresh, /blockedBy: CloudSyncLifecycleRefreshBlockReason \| 'suppressed' \| 'recent-pull' \| 'pull-error' \| null/);
+  assert.match(refresh, /blockedBy:\s*[\s\S]*'pull-error'[\s\S]*\| null/);
   assert.match(refresh, /Promise\.resolve\(pullResult\)\.catch/);
   assert.match(refresh, /reportOp = 'cloudSyncLifecycle\.refreshPull'/);
   assert.match(attentionRuntime, /getCloudSyncAttentionPullReportOp\(reason\)/);
@@ -110,4 +110,20 @@ test('stage 27 polling recovery hooks observe async rejections without losing fa
   assert.match(refreshTest, /reports async recovery hook rejections without losing fallback polling/);
   assert.match(raceContract, /cloud sync polling start reports async recovery hook rejections without losing fallback polling/);
   assert.match(progressDoc, /Stage 27/);
+});
+
+test('stage 28 cloud sync async recovery implementation stays aligned with the documented closeout', () => {
+  const refresh = read('esm/native/services/cloud_sync_lifecycle_support_refresh.ts');
+  const attentionRuntime = read('esm/native/services/cloud_sync_lifecycle_attention_pulls_runtime.ts');
+  const pollingTick = read('esm/native/services/cloud_sync_lifecycle_support_polling_tick_runtime.ts');
+  const progressDoc = read('docs/REFACTOR_WORKMAP_PROGRESS.md');
+  const integrationAudit = read('tools/wp_refactor_integration_audit.mjs');
+
+  assert.match(refresh, /return \{ accepted: false, blockedBy: 'pull-error' \}/);
+  assert.match(refresh, /observeCloudSyncLifecycleRefreshPullResult/);
+  assert.match(attentionRuntime, /reportOp: getCloudSyncAttentionPullReportOp\(reason\)/);
+  assert.match(pollingTick, /reportOp: 'cloudSyncPolling\.tickRefresh'/);
+  assert.match(pollingTick, /observeCloudSyncPollingTickHook/);
+  assert.match(progressDoc, /Stage 28/);
+  assert.match(integrationAudit, /Stage 28/);
 });

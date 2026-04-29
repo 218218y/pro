@@ -20,7 +20,12 @@ export type CloudSyncLifecycleRefreshPolicy = {
 
 export type CloudSyncLifecycleRefreshRequestResult = {
   accepted: boolean;
-  blockedBy: CloudSyncLifecycleRefreshBlockReason | 'suppressed' | 'recent-pull' | 'pull-error' | null;
+  blockedBy:
+    | CloudSyncLifecycleRefreshBlockReason
+    | 'suppressed'
+    | 'recent-pull'
+    | 'pull-error'
+    | null;
 };
 
 export type CloudSyncLifecycleRefreshRequestArgs = {
@@ -31,28 +36,24 @@ export type CloudSyncLifecycleRefreshRequestArgs = {
   opts?: CloudSyncPullAllNowOptions;
   policy?: CloudSyncLifecycleRefreshPolicy;
   reportOp?: string;
-  reportThrottleMs?: number;
 };
 
 function reportCloudSyncLifecycleRefreshError(args: {
   App: AppContainer;
   reportOp: string;
-  reportThrottleMs: number;
-  err: unknown;
+  error: unknown;
 }): void {
-  const { App, reportOp, reportThrottleMs, err } = args;
-  _cloudSyncReportNonFatal(App, reportOp, err, { throttleMs: reportThrottleMs });
+  _cloudSyncReportNonFatal(args.App, args.reportOp, args.error, { throttleMs: 8000 });
 }
 
 function observeCloudSyncLifecycleRefreshPullResult(args: {
   App: AppContainer;
   reportOp: string;
-  reportThrottleMs: number;
   pullResult: unknown;
 }): void {
-  const { App, reportOp, reportThrottleMs, pullResult } = args;
-  void Promise.resolve(pullResult).catch(err => {
-    reportCloudSyncLifecycleRefreshError({ App, reportOp, reportThrottleMs, err });
+  const { App, reportOp, pullResult } = args;
+  void Promise.resolve(pullResult).catch(error => {
+    reportCloudSyncLifecycleRefreshError({ App, reportOp, error });
   });
 }
 
@@ -67,7 +68,6 @@ export function requestCloudSyncLifecycleRefresh(
     opts,
     policy,
     reportOp = 'cloudSyncLifecycle.refreshPull',
-    reportThrottleMs = 8000,
   } = args;
   if (suppressRef.v) return { accepted: false, blockedBy: 'suppressed' };
 
@@ -93,10 +93,11 @@ export function requestCloudSyncLifecycleRefresh(
 
   try {
     const pullResult = pullAllNow(normalized);
-    observeCloudSyncLifecycleRefreshPullResult({ App, reportOp, reportThrottleMs, pullResult });
-  } catch (err) {
-    reportCloudSyncLifecycleRefreshError({ App, reportOp, reportThrottleMs, err });
+    observeCloudSyncLifecycleRefreshPullResult({ App, reportOp, pullResult });
+  } catch (error) {
+    reportCloudSyncLifecycleRefreshError({ App, reportOp, error });
     return { accepted: false, blockedBy: 'pull-error' };
   }
+
   return { accepted: true, blockedBy: null };
 }
