@@ -10,6 +10,7 @@ export type ProjectUiRawMigrationResult = {
   ui: UnknownRecord;
   raw: UiRawInputsLike;
   filledKeys: UiRawScalarKey[];
+  normalizedKeys: UiRawScalarKey[];
 };
 
 type MutableUiSnapshotLike = UnknownRecord & { raw?: UnknownRecord | null };
@@ -98,9 +99,20 @@ export function migrateProjectUiSnapshotToCanonicalRaw(ui: unknown): ProjectUiRa
   const source = cloneUiSnapshot(ui);
   const raw = cloneUiRawInputs(source.raw);
   const filledKeys: UiRawScalarKey[] = [];
+  const normalizedKeys: UiRawScalarKey[] = [];
 
   for (const key of UI_RAW_SCALAR_KEYS) {
-    if (hasOwn(raw, key) && typeof raw[key] !== 'undefined') continue;
+    if (hasOwn(raw, key) && typeof raw[key] !== 'undefined') {
+      const previousRawValue = raw[key];
+      const canonicalRawValue = readMigrationScalar(key, previousRawValue);
+      if (typeof canonicalRawValue !== 'undefined') {
+        writeMigrationScalar(raw, key, canonicalRawValue);
+        if (!Object.is(previousRawValue, canonicalRawValue)) normalizedKeys.push(key);
+        continue;
+      }
+      delete raw[key];
+    }
+
     const migratedValue = readMigrationScalar(key, source[key]);
     if (typeof migratedValue === 'undefined') continue;
     writeMigrationScalar(raw, key, migratedValue);
@@ -111,6 +123,7 @@ export function migrateProjectUiSnapshotToCanonicalRaw(ui: unknown): ProjectUiRa
     ui: { ...source, raw },
     raw,
     filledKeys,
+    normalizedKeys,
   };
 }
 

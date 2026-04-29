@@ -375,3 +375,33 @@ Primary guardrails:
 - `tools/wp_canvas_hit_parity_contract.mjs`
 
 Remaining Canvas product-behavior follow-up should focus on browser/e2e commit flows, especially broader visual split journeys and full sketch hover/commit journeys. Do not add compatibility ladders for those; add behavior coverage first, then fix the owning service.
+---
+
+## 13. Live repository alignment - Stage 19 project migration selector hardening
+
+Stage 19 is a focused runtime-selector hardening slice, not a broad rewrite.
+
+What changed:
+
+- Project ingress now canonicalizes existing typed `ui.raw` scalar values, not only missing legacy top-level `ui.*` values.
+- Invalid typed `ui.raw` scalar values are removed before migration fallback materialization, so a bad raw value cannot block a valid legacy value from being migrated.
+- Experimental/non-typed `ui.raw` keys remain preserved.
+- Canonical runtime selectors remain raw-only: they do not read legacy top-level `ui.width`/`ui.height`/etc. directly.
+- A focused runtime test proves the intended split: compatibility lives in `io/project_migrations`, while runtime selectors stay strict.
+
+Primary code owner:
+
+- `esm/native/io/project_migrations/ui_raw_snapshot_migration.ts`
+
+Primary guardrails:
+
+- `tests/project_migration_runtime_selector_hardening_runtime.test.ts`
+- `tests/refactor_stage19_project_migration_selector_hardening_runtime.test.js`
+- `tools/wp_refactor_integration_audit.mjs`
+- `docs/REFACTOR_WORKMAP_PROGRESS.md`
+
+Next recommended slices after Stage 19:
+
+1. A real browser/e2e Canvas behavior slice for mirror/split/sketch actions.
+2. A Cloud Sync reconnect/hidden-tab/realtime-timeout behavior slice.
+3. A narrow runtime selector family cleanup only when covered by migration fixtures.

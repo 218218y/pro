@@ -66,6 +66,7 @@ const requiredStageGuardTests = [
   'tests/refactor_stage16_builder_pipeline_runtime.test.js',
   'tests/refactor_stage17_builder_deps_resolver_runtime.test.js',
   'tests/refactor_stage18_canvas_hit_parity_runtime.test.js',
+  'tests/refactor_stage19_project_migration_selector_hardening_runtime.test.js',
 ];
 const stageGuardCommand = requireScript('test:refactor-stage-guards');
 for (const testFile of requiredStageGuardTests)
@@ -110,6 +111,7 @@ for (const stage of [
   'Stage 16',
   'Stage 17',
   'Stage 18',
+  'Stage 19',
 ]) {
   requireNeedle('docs/REFACTOR_WORKMAP_PROGRESS.md', progressDoc, stage);
 }

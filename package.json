@@ -244,7 +244,7 @@
     "check:canvas-hit-identity": "node tools/wp_canvas_hit_identity_contract.mjs",
     "check:cloud-sync-timers": "node tools/wp_cloud_sync_timer_contract.mjs",
     "check:perf-hotpaths": "node tools/wp_perf_hotpath_contract.mjs",
-    "test:refactor-stage-guards": "node --test tests/refactor_stage3_guardrails_runtime.test.js tests/refactor_stage4_public_api_and_type_hardening_runtime.test.js tests/refactor_stage5_ui_option_buttons_runtime.test.js tests/refactor_stage6_ui_effect_cleanup_runtime.test.js tests/refactor_stage7_canvas_hit_identity_runtime.test.js tests/refactor_stage8_cloud_sync_and_perf_runtime.test.js tests/refactor_stage9_test_portfolio_runtime.test.js tests/refactor_stage10_refactor_integration_runtime.test.js tests/refactor_stage11_canvas_hit_parity_runtime.test.js tests/refactor_stage12_cloud_sync_race_runtime.test.js tests/refactor_stage13_cloud_sync_push_race_runtime.test.js tests/refactor_stage14_ui_design_system_runtime.test.js tests/refactor_stage15_design_swatch_system_runtime.test.js tests/refactor_stage16_builder_pipeline_runtime.test.js tests/refactor_stage17_builder_deps_resolver_runtime.test.js tests/refactor_stage18_canvas_hit_parity_runtime.test.js",
+    "test:refactor-stage-guards": "node --test tests/refactor_stage3_guardrails_runtime.test.js tests/refactor_stage4_public_api_and_type_hardening_runtime.test.js tests/refactor_stage5_ui_option_buttons_runtime.test.js tests/refactor_stage6_ui_effect_cleanup_runtime.test.js tests/refactor_stage7_canvas_hit_identity_runtime.test.js tests/refactor_stage8_cloud_sync_and_perf_runtime.test.js tests/refactor_stage9_test_portfolio_runtime.test.js tests/refactor_stage10_refactor_integration_runtime.test.js tests/refactor_stage11_canvas_hit_parity_runtime.test.js tests/refactor_stage12_cloud_sync_race_runtime.test.js tests/refactor_stage13_cloud_sync_push_race_runtime.test.js tests/refactor_stage14_ui_design_system_runtime.test.js tests/refactor_stage15_design_swatch_system_runtime.test.js tests/refactor_stage16_builder_pipeline_runtime.test.js tests/refactor_stage17_builder_deps_resolver_runtime.test.js tests/refactor_stage18_canvas_hit_parity_runtime.test.js tests/refactor_stage19_project_migration_selector_hardening_runtime.test.js",
     "check:test-portfolio": "node tools/wp_test_portfolio_audit.mjs --no-print",
     "report:test-portfolio": "node tools/wp_test_portfolio_audit.mjs --json-out docs/test_portfolio_audit.json --md-out docs/TEST_PORTFOLIO_AUDIT.md",
     "check:refactor-integration": "node tools/wp_refactor_integration_audit.mjs",
@@ -252,7 +252,8 @@
     "check:canvas-hit-parity": "node tools/wp_canvas_hit_parity_contract.mjs",
     "check:cloud-sync-races": "node tools/wp_cloud_sync_race_contract.mjs",
     "check:ui-design-system": "node tools/wp_ui_design_system_contract.mjs",
-    "check:builder-pipeline-contract": "node tools/wp_builder_pipeline_contract.mjs"
+    "check:builder-pipeline-contract": "node tools/wp_builder_pipeline_contract.mjs",
+    "test:project-migration-selector-hardening": "node tools/wp_run_tsx_tests.mjs tests/project_migration_runtime_selector_hardening_runtime.test.ts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",

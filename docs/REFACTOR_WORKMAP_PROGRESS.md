@@ -5,12 +5,13 @@ It replaces the removed long-form planning docs with a durable audit contract: e
 
 ## Current baseline
 
-- Active baseline: Stage 18 source layout, Cloud Sync recovery hardening, and Canvas mirror/split/sketch hit-identity parity.
+- Active baseline: Stage 18 source layout, Cloud Sync recovery hardening, Canvas mirror/split/sketch hit-identity parity, and Stage 19 project migration selector hardening.
 - Refactor verification entry point: `verify:refactor-modernization`.
 - Guardrail aggregate lane: `check:refactor-guardrails`.
 - Stage regression lane: `test:refactor-stage-guards`.
 - Current Cloud Sync hardening slice: pull coalescer failure recovery, main-row push failure/suppression recovery, and attention-pull error recovery are covered in focused Cloud Sync lanes and guarded by `check:cloud-sync-races`.
 - Current Canvas parity slice: mirror face-sign inference, full-door mirror commit fallback from canonical hit identity, sketch-box special-paint target preservation, lower split-door identity/stack/split-part parity, split click commit base/bounds parity, removed-door transparent restore/blocking parity, and sketch-box door module/door identity are covered by focused runtime tests and guarded by `check:canvas-hit-identity` plus `check:canvas-hit-parity`.
+- Current Project migration selector hardening slice: project-ingress `ui.raw` migration now canonicalizes existing typed scalar values, removes invalid typed raw values before fallback materialization, preserves experimental raw keys, and proves canonical runtime selectors remain raw-only.
 
 ## Retained audit anchors
 
@@ -35,6 +36,7 @@ These anchors are intentionally concise. Do not expand them back into the old pl
 - Stage 16 — builder pipeline guardrails retained.
 - Stage 17 — builder dependency resolver guardrails retained.
 - Stage 18 — canvas hit-parity follow-up, mirror/split/sketch identity parity, and current source layout guardrails retained.
+- Stage 19 — project migration selector hardening, typed `ui.raw` scalar canonicalization, and raw-only runtime selector guardrails retained.
 
 ## Maintenance rule
 
