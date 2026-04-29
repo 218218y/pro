@@ -76,6 +76,10 @@ export function validateSupabaseCloudSync(
   for (const key of SUPABASE_STRING_KEYS) {
     const value = readOwn(cfg, key);
     if (typeof value === 'undefined' || value === null) continue;
+    if (key === 'privateRoom' && typeof value === 'string') {
+      writeOwn(cfg, key, value.trim());
+      continue;
+    }
     const next = asString(value);
     if (!next) {
       issues.push({

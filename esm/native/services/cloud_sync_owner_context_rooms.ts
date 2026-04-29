@@ -95,9 +95,7 @@ export function createCloudSyncOwnerRooms(args: {
   };
 
   const getGateBaseRoom = (): string => {
-    const urlRoom = getRoomFromUrl(App, cfg.roomParam);
-    if (urlRoom) return urlRoom;
-    return getPrivateRoom() || cfg.publicRoom;
+    return currentRoom();
   };
 
   const getSketchRoom = (): string => {

@@ -62,3 +62,16 @@ test('P9: validateRuntimeConfig failFast flags missing supabase keys as error', 
   // In strict mode we still drop invalid config rather than returning partially broken objects.
   assert.equal(config.supabaseCloudSync, undefined);
 });
+
+test('P9: validateRuntimeConfig accepts empty privateRoom for generated private rooms', () => {
+  const { config, issues } = validateRuntimeConfig({
+    supabaseCloudSync: {
+      url: 'https://example.supabase.co',
+      anonKey: 'anon-key',
+      privateRoom: '   ',
+    },
+  });
+
+  assert.equal(config.supabaseCloudSync.privateRoom, '');
+  assert.equal(issues.some(i => i.path === 'supabaseCloudSync.privateRoom'), false);
+});

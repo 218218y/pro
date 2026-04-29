@@ -61,8 +61,6 @@ export function resolveCloudSyncGateBaseRoom(deps: CloudSyncSketchOpsBaseDeps): 
   }
   const urlRoom = getRoomFromUrl(App, cfg.roomParam);
   if (urlRoom) return urlRoom;
-  const privateRoom = String(cfg.privateRoom || '').trim();
-  if (privateRoom) return privateRoom;
   return cfg.publicRoom;
 }
 

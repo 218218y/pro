@@ -130,6 +130,74 @@ test('cloud sync tabs gate uses the current gate base room for push and pull', a
   assert.equal(rooms.at(-1), 'room-b::tabsGate');
 });
 
+test('cloud sync tabs gate defaults to the public room when no room URL is selected', async () => {
+  const app = createBrowserApp('main');
+  const storage = createStorage();
+  const rooms: string[] = [];
+
+  const ops = createCloudSyncTabsGateOps({
+    App: app as any,
+    cfg: { anonKey: 'anon', roomParam: 'room', publicRoom: 'public', privateRoom: 'private-room' },
+    storage,
+    restUrl: 'https://example.test',
+    clientId: 'client-1',
+    getRow: async (_rest, _anon, room) => {
+      rooms.push(room);
+      return null;
+    },
+    upsertRow: async (_rest, _anon, room) => {
+      rooms.push(room);
+      return { ok: true, row: { updated_at: '2026-03-16T00:00:00Z', payload: {} } as any };
+    },
+    setTimeoutFn: (() => 0) as any,
+    clearTimeoutFn: (() => undefined) as any,
+    emitRealtimeHint: () => undefined,
+  });
+
+  assert.equal((await ops.pushTabsGateNow(true, 0)).ok, true);
+  assert.equal(rooms[0], 'public::tabsGate');
+});
+
+test('cloud sync tabs gate public-room push is visible to site2 public-room pull', async () => {
+  const rows = new Map<string, { updated_at: string; payload: AnyRecord }>();
+
+  const createOps = (siteVariant: 'main' | 'site2') =>
+    createCloudSyncTabsGateOps({
+      App: createBrowserApp(siteVariant) as any,
+      cfg: {
+        anonKey: 'anon',
+        roomParam: 'room',
+        publicRoom: 'public',
+        privateRoom: `${siteVariant}-private`,
+      },
+      storage: createStorage(),
+      restUrl: 'https://example.test',
+      clientId: `${siteVariant}-client`,
+      getRow: async (_rest, _anon, room) => (rows.get(room) || null) as any,
+      upsertRow: async (_rest, _anon, room, payload) => {
+        const row = {
+          updated_at: new Date().toISOString(),
+          payload: { ...(payload as AnyRecord) },
+        };
+        rows.set(room, row);
+        return { ok: true, row: row as any };
+      },
+      setTimeoutFn: (() => 0) as any,
+      clearTimeoutFn: (() => undefined) as any,
+      emitRealtimeHint: () => undefined,
+    });
+
+  const mainOps = createOps('main');
+  const site2Ops = createOps('site2');
+
+  assert.equal((await mainOps.pushTabsGateNow(true, 0)).ok, true);
+  assert.equal(rows.has('public::tabsGate'), true);
+
+  await site2Ops.pullTabsGateOnce(true);
+  assert.equal(site2Ops.tabsGateOpenRef.value, true);
+  assert.equal(site2Ops.tabsGateUntilRef.value > Date.now(), true);
+});
+
 test('cloud sync tabs gate site2 ignores local open fallback when cloud row is missing', async () => {
   const app = createBrowserApp('site2');
   const storage = createStorage({

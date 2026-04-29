@@ -242,6 +242,43 @@ test('floating sketch sync direct push preserves thrown error messages', async (
   });
 });
 
+test('floating sketch sync defaults to the public room when no room URL is selected', async () => {
+  const rooms: string[] = [];
+  const ops = createCloudSyncSketchOps({
+    App: {
+      deps: {
+        browser: {
+          location: { search: '', pathname: '/index_pro.html' },
+        },
+      },
+    } as any,
+    cfg: {
+      anonKey: 'anon',
+      roomParam: 'room',
+      publicRoom: 'public',
+      privateRoom: 'private-room',
+      site2SketchInitialAutoLoad: true,
+      site2SketchInitialMaxAgeHours: 12,
+    },
+    storage: {},
+    restUrl: 'https://example.invalid',
+    clientId: 'local-client',
+    currentRoom: () => 'public',
+    getRow: async () => null as any,
+    upsertRow: async (_rest, _anon, room) => {
+      rooms.push(room);
+      return { ok: true, row: { updated_at: '2026-03-27T11:00:00.000Z', payload: {} } as any };
+    },
+    emitRealtimeHint: () => undefined,
+    runtimeStatus: { realtime: { status: 'idle' } } as any,
+    publishStatus: () => undefined,
+    diag: () => undefined,
+  });
+
+  assert.equal((await ops.pushFloatingSketchSyncPinnedNow(true)).ok, true);
+  assert.equal(rooms[0], 'public::syncPin');
+});
+
 test('cloud sync sketch push does not contaminate pull baseline across directional rooms', async () => {
   const loadedWidths: number[] = [];
   let pullReads = 0;

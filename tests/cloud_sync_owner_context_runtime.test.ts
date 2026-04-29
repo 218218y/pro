@@ -119,6 +119,18 @@ test('cloud sync owner context composes room helpers and per-tab client identity
   assert.equal(ctx?.keyColorOrder, 'saved-colors:order');
 });
 
+test('cloud sync owner context uses the public room for gate rows when no room URL is selected', () => {
+  const { app } = createBrowserApp();
+
+  const ctx = createCloudSyncOwnerContext(app as any);
+  assert.ok(ctx);
+  assert.equal(ctx?.currentRoom(), 'public-room');
+  assert.equal(ctx?.getPrivateRoom(), 'private-room');
+  assert.equal(ctx?.getGateBaseRoom(), 'public-room');
+  assert.equal(ctx?.getSite2TabsRoom(), 'public-room::tabsGate');
+  assert.equal(ctx?.getFloatingSyncRoom(), 'public-room::syncPin');
+});
+
 test('cloud sync owner context starts disabled realtime with an empty channel surface', () => {
   const { app } = createBrowserApp();
   (app.deps as AnyRecord).config.supabaseCloudSync.realtime = false;
