@@ -22,32 +22,79 @@ function requireNotIncludes(rel, text, needle, message) {
   if (text.includes(needle)) failures.push(`${rel}: ${message || `must not contain ${needle}`}`);
 }
 
-function readFunctionBody(rel, source, name) {
+function findMatchingDelimiter(source, openAt, openChar, closeChar) {
+  let depth = 0;
+  for (let i = openAt; i < source.length; i += 1) {
+    const ch = source[i];
+    if (ch === openChar) depth += 1;
+    else if (ch === closeChar) {
+      depth -= 1;
+      if (depth === 0) return i;
+    }
+  }
+  return -1;
+}
+
+function previousNonWhitespaceChar(source, beforeIndex) {
+  for (let i = beforeIndex - 1; i >= 0; i -= 1) {
+    if (!/\s/.test(source[i])) return source[i];
+  }
+  return '';
+}
+
+function findFunctionBodyOpen(rel, source, name) {
   const marker = `function ${name}`;
   const markerAt = source.indexOf(marker);
   if (markerAt < 0) {
     failures.push(`${rel}: missing function ${name}`);
-    return '';
+    return -1;
   }
 
-  const openAt = source.indexOf('{', markerAt);
-  if (openAt < 0) {
-    failures.push(`${rel}: cannot locate body for ${name}`);
-    return '';
+  const paramsOpenAt = source.indexOf('(', markerAt + marker.length);
+  if (paramsOpenAt < 0) {
+    failures.push(`${rel}: cannot locate parameters for ${name}`);
+    return -1;
   }
 
-  let depth = 0;
-  for (let i = openAt; i < source.length; i += 1) {
+  const paramsCloseAt = findMatchingDelimiter(source, paramsOpenAt, '(', ')');
+  if (paramsCloseAt < 0) {
+    failures.push(`${rel}: unterminated parameters for ${name}`);
+    return -1;
+  }
+
+  for (let i = paramsCloseAt + 1; i < source.length; i += 1) {
     const ch = source[i];
-    if (ch === '{') depth += 1;
-    else if (ch === '}') {
-      depth -= 1;
-      if (depth === 0) return source.slice(openAt + 1, i);
+    if (ch !== '{') continue;
+
+    const previous = previousNonWhitespaceChar(source, i);
+    if (previous === ':' || previous === '<' || previous === '|' || previous === '&' || previous === ',') {
+      const typeCloseAt = findMatchingDelimiter(source, i, '{', '}');
+      if (typeCloseAt < 0) {
+        failures.push(`${rel}: unterminated return type for ${name}`);
+        return -1;
+      }
+      i = typeCloseAt;
+      continue;
     }
+
+    return i;
   }
 
-  failures.push(`${rel}: unterminated body for ${name}`);
-  return '';
+  failures.push(`${rel}: cannot locate body for ${name}`);
+  return -1;
+}
+
+function readFunctionBody(rel, source, name) {
+  const openAt = findFunctionBodyOpen(rel, source, name);
+  if (openAt < 0) return '';
+
+  const closeAt = findMatchingDelimiter(source, openAt, '{', '}');
+  if (closeAt < 0) {
+    failures.push(`${rel}: unterminated body for ${name}`);
+    return '';
+  }
+
+  return source.slice(openAt + 1, closeAt);
 }
 
 function requireFunctionIncludes(rel, source, name, needle, message) {
