@@ -5,11 +5,11 @@ import { join } from 'node:path';
 const root = process.cwd();
 const failures = [];
 
-function read(rel) {
+function read(file) {
   try {
-    return readFileSync(join(root, rel), 'utf8');
+    return readFileSync(join(root, file), 'utf8');
   } catch (err) {
-    failures.push(`${rel}: cannot read (${err?.message || err})`);
+    failures.push(`${file}: cannot read (${err?.message || err})`);
     return '';
   }
 }
@@ -20,6 +20,44 @@ function requireIncludes(rel, text, needle, message) {
 
 function requireNotIncludes(rel, text, needle, message) {
   if (text.includes(needle)) failures.push(`${rel}: ${message || `must not contain ${needle}`}`);
+}
+
+function readFunctionBody(rel, source, name) {
+  const marker = `function ${name}`;
+  const markerAt = source.indexOf(marker);
+  if (markerAt < 0) {
+    failures.push(`${rel}: missing function ${name}`);
+    return '';
+  }
+
+  const openAt = source.indexOf('{', markerAt);
+  if (openAt < 0) {
+    failures.push(`${rel}: cannot locate body for ${name}`);
+    return '';
+  }
+
+  let depth = 0;
+  for (let i = openAt; i < source.length; i += 1) {
+    const ch = source[i];
+    if (ch === '{') depth += 1;
+    else if (ch === '}') {
+      depth -= 1;
+      if (depth === 0) return source.slice(openAt + 1, i);
+    }
+  }
+
+  failures.push(`${rel}: unterminated body for ${name}`);
+  return '';
+}
+
+function requireFunctionIncludes(rel, source, name, needle, message) {
+  const body = readFunctionBody(rel, source, name);
+  requireIncludes(`${rel}#${name}`, body, needle, message);
+}
+
+function requireFunctionNotIncludes(rel, source, name, needle, message) {
+  const body = readFunctionBody(rel, source, name);
+  requireNotIncludes(`${rel}#${name}`, body, needle, message);
 }
 
 const loaderRel = 'esm/native/io/project_io_orchestrator_project_load.ts';
@@ -93,6 +131,34 @@ requireIncludes(
   uiSelectors,
   'assertCanonicalUiRawDims',
   'runtime must expose canonical ui.raw assertion'
+);
+requireFunctionIncludes(
+  uiSelectorsRel,
+  uiSelectors,
+  'readUiRawScalarFromSnapshot',
+  'readUiDirectScalar(ui, key)',
+  'legacy snapshot reader may be tolerant, but that tolerance must stay isolated in the non-canonical reader'
+);
+requireFunctionIncludes(
+  uiSelectorsRel,
+  uiSelectors,
+  'readUiRawScalarFromCanonicalSnapshot',
+  'Object.prototype.hasOwnProperty.call(raw, key)',
+  'canonical reader must require an explicit ui.raw key instead of reading legacy ui.* fields'
+);
+requireFunctionNotIncludes(
+  uiSelectorsRel,
+  uiSelectors,
+  'readUiRawScalarFromCanonicalSnapshot',
+  'readUiDirectScalar',
+  'canonical reader must not fall back to legacy ui.* fields'
+);
+requireFunctionNotIncludes(
+  uiSelectorsRel,
+  uiSelectors,
+  'assertCanonicalUiRawDims',
+  'readUiRawScalarFromSnapshot',
+  'canonical assertion must not validate through tolerant snapshot readers'
 );
 
 if (failures.length) {
