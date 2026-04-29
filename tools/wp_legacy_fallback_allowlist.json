@@ -1186,6 +1186,12 @@
         "runtime-default": 4
       }
     },
+    "esm/native/services/cloud_sync_config_shared.ts": {
+      "total": 1,
+      "categories": {
+        "runtime-default": 1
+      }
+    },
     "esm/native/services/cloud_sync_delete_temp_shared.ts": {
       "total": 2,
       "categories": {
