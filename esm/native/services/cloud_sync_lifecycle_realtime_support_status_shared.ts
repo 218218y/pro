@@ -83,6 +83,8 @@ export function applyCloudSyncRealtimeLifecycleTransition(
     diagEvent,
     diagPayload,
   } = args;
+  let hasPollingTransitionError = false;
+  let pollingTransitionError: unknown;
 
   const result = mutateCloudSyncLifecycleSnapshot({
     runtimeStatus,
@@ -100,8 +102,14 @@ export function applyCloudSyncRealtimeLifecycleTransition(
         ...(typeof channel === 'string' ? { channel } : {}),
         syncRealtimeStatus,
       });
-      runPollingTransition?.();
+      try {
+        runPollingTransition?.();
+      } catch (err) {
+        hasPollingTransitionError = true;
+        pollingTransitionError = err;
+      }
     },
   });
+  if (hasPollingTransitionError) throw pollingTransitionError;
   return result.changed;
 }

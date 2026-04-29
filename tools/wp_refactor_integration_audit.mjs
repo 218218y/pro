@@ -118,6 +118,7 @@ for (const stage of [
   'Stage 20',
   'Stage 21',
   'Stage 22',
+  'Stage 23',
 ]) {
   requireNeedle('docs/REFACTOR_WORKMAP_PROGRESS.md', progressDoc, stage);
 }

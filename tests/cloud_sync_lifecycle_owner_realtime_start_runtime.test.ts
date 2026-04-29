@@ -109,6 +109,8 @@ test('cloud sync lifecycle realtime start guard reports fallback failures withou
   const { app } = makeApp({ realtime: true, pollMs: 25 });
   const runtimeStatus = createRuntimeStatus();
   const reported: Array<{ error: unknown; ctx: any }> = [];
+  const diagEvents: Array<{ event: string; payload: unknown }> = [];
+  let publishCount = 0;
 
   app.platform.reportError = (error: unknown, ctx: any) => {
     reported.push({ error, ctx });
@@ -118,8 +120,12 @@ test('cloud sync lifecycle realtime start guard reports fallback failures withou
     startCloudSyncRealtimeWithLifecycleFallback({
       App: app as any,
       runtimeStatus,
-      publishStatus: () => undefined,
-      diag: () => undefined,
+      publishStatus: () => {
+        publishCount += 1;
+      },
+      diag: (event, payload) => {
+        diagEvents.push({ event, payload });
+      },
       startPolling: () => {
         throw new Error('owner fallback failed');
       },
@@ -138,6 +144,10 @@ test('cloud sync lifecycle realtime start guard reports fallback failures withou
 
   assert.equal(runtimeStatus.realtime.state, 'error');
   assert.equal(runtimeStatus.lastError, 'owner rejected');
+  assert.equal(publishCount, 1);
+  assert.deepEqual(diagEvents, [
+    { event: 'realtime:owner-restart-error', payload: 'owner rejected' },
+  ]);
   assert.equal(reported.length, 2);
   assert.equal((reported[0]?.error as Error).message, 'owner rejected');
   assert.equal(reported[0]?.ctx?.op, 'cloudSyncLifecycle.realtimeRestart');
