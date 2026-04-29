@@ -43,6 +43,7 @@ const pushRuntime = read('esm/native/services/cloud_sync_main_row_push_runtime.t
 const pushShared = read('esm/native/services/cloud_sync_main_row_push_shared.ts');
 const pullRuntime = read('esm/native/services/cloud_sync_main_row_pull_runtime.ts');
 const pollingStartRuntime = read('esm/native/services/cloud_sync_lifecycle_support_polling_start_runtime.ts');
+const pollingTickRuntime = read('esm/native/services/cloud_sync_lifecycle_support_polling_tick_runtime.ts');
 const realtimeStartRuntime = read('esm/native/services/cloud_sync_lifecycle_realtime_runtime_start.ts');
 const lifecycleRuntimeStart = read('esm/native/services/cloud_sync_lifecycle_runtime_start.ts');
 const lifecycleRuntimeSetup = read('esm/native/services/cloud_sync_lifecycle_runtime_setup.ts');
@@ -107,6 +108,26 @@ requireOrder(
   pollingStartRuntime,
   'if (shouldPublish) publishStatus();',
   "diag('polling:start', pollingStatus);"
+);
+requireNeedle(
+  'cloud_sync_lifecycle_support_polling_tick_runtime.ts cloud sync polling tick callback failures stay non-fatal and reusable',
+  pollingTickRuntime,
+  'cloudSyncPolling.tickRealtimeRestart'
+);
+requireNeedle(
+  'cloud_sync_lifecycle_support_polling_tick_runtime.ts cloud sync polling tick callback failures stay non-fatal and reusable',
+  pollingTickRuntime,
+  'cloudSyncPolling.tickRefresh'
+);
+requireNeedle(
+  'cloud_sync_lifecycle_support_polling_tick_runtime.ts cloud sync polling tick callback failures stay non-fatal and reusable',
+  pollingTickRuntime,
+  'cloudSyncPolling.tickAutoStop'
+);
+requireNeedle(
+  'cloud_sync_lifecycle_support_polling_tick_runtime.ts',
+  pollingTickRuntime,
+  'reportCloudSyncPollingTickError(App, '
 );
 requireNeedle('cloud_sync_lifecycle_realtime_runtime_start.ts', realtimeStartRuntime, 'realtime.startFlight');
 requireNeedle(
@@ -173,6 +194,7 @@ requireNeedle(
 const pushFlowTest = read('tests/cloud_sync_main_row_push_flow_runtime.test.ts');
 const mainRowTest = read('tests/cloud_sync_main_row_runtime.test.ts');
 const attentionTest = read('tests/cloud_sync_lifecycle_attention_runtime.test.ts');
+const pollingTickRecoveryTest = read('tests/cloud_sync_lifecycle_polling_tick_recovery_runtime.test.ts');
 requireNeedle(
   'tests/cloud_sync_main_row_push_flow_runtime.test.ts',
   pushFlowTest,
@@ -234,9 +256,24 @@ requireNeedle(
   'reports fallback failures without rejecting'
 );
 requireNeedle(
+  'tests/cloud_sync_lifecycle_polling_tick_recovery_runtime.test.ts',
+  pollingTickRecoveryTest,
+  'reports restart and refresh failures without detaching later ticks'
+);
+requireNeedle(
+  'tests/cloud_sync_lifecycle_polling_tick_recovery_runtime.test.ts',
+  pollingTickRecoveryTest,
+  'reports auto-stop failures without throwing from the timer callback'
+);
+requireNeedle(
   'tests/refactor_stage22_cloud_sync_lifecycle_owner_recovery_runtime.test.js',
   read('tests/refactor_stage22_cloud_sync_lifecycle_owner_recovery_runtime.test.js'),
   'stage 24 polling fallback publishes active state only after timer installation succeeds'
+);
+requireNeedle(
+  'tests/refactor_stage22_cloud_sync_lifecycle_owner_recovery_runtime.test.js',
+  read('tests/refactor_stage22_cloud_sync_lifecycle_owner_recovery_runtime.test.js'),
+  'stage 25 polling tick recovery keeps timer callbacks non-fatal and reusable'
 );
 
 if (errors.length) {

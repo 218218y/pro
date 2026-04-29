@@ -60,3 +60,19 @@ test('stage 24 polling fallback publishes active state only after timer installa
   assert.match(raceContract, /polling start installs the owner timer before publishing active status/);
   assert.match(progressDoc, /Stage 24/);
 });
+
+test('stage 25 polling tick recovery keeps timer callbacks non-fatal and reusable', () => {
+  const pollingTick = read('esm/native/services/cloud_sync_lifecycle_support_polling_tick_runtime.ts');
+  const tickTest = read('tests/cloud_sync_lifecycle_polling_tick_recovery_runtime.test.ts');
+  const raceContract = read('tools/wp_cloud_sync_race_contract.mjs');
+  const progressDoc = read('docs/REFACTOR_WORKMAP_PROGRESS.md');
+
+  assert.match(pollingTick, /cloudSyncPolling\.tickRealtimeRestart/);
+  assert.match(pollingTick, /cloudSyncPolling\.tickRefresh/);
+  assert.match(pollingTick, /cloudSyncPolling\.tickAutoStop/);
+  assert.match(pollingTick, /requestCloudSyncLifecycleRefresh\(/);
+  assert.match(tickTest, /reports restart and refresh failures without detaching later ticks/);
+  assert.match(tickTest, /reports auto-stop failures without throwing from the timer callback/);
+  assert.match(raceContract, /cloud sync polling tick callback failures stay non-fatal and reusable/);
+  assert.match(progressDoc, /Stage 25/);
+});
