@@ -78,6 +78,7 @@ function StructureTabInner(props: { active: boolean }) {
   const dimensionsProps = {
     isSliding: state.isSliding,
     isLibraryMode: state.isLibraryMode,
+    libraryUpperDoorsRemoved: state.libraryUpperDoorsRemoved,
     isManualWidth: state.isManualWidth,
     width: state.width,
     height: state.height,
@@ -105,6 +106,7 @@ function StructureTabInner(props: { active: boolean }) {
     onClearCellDimsHeight: workflows.clearCellDimsHeight,
     onClearCellDimsDepth: workflows.clearCellDimsDepth,
     onToggleStackSplit: workflows.toggleStackSplit,
+    onToggleLibraryUpperDoors: workflows.toggleLibraryUpperDoors,
     renderStackLinkBadge: workflows.renderStackLinkBadge,
     onResetAutoWidth: workflows.resetAutoWidth,
   };

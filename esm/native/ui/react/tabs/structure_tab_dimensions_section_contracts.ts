@@ -5,6 +5,7 @@ import type { StructureTabNumericKey } from './structure_tab_shared.js';
 export const STRUCTURE_CELL_DIMS_SECTION_TEST_ID = 'structure-cell-dims-section';
 export const STRUCTURE_CELL_DIMS_MODE_BUTTON_TEST_ID = 'structure-cell-dims-mode-button';
 export const STRUCTURE_CELL_DIMS_RESET_BUTTON_TEST_ID = 'structure-cell-dims-reset-button';
+export const STRUCTURE_LIBRARY_UPPER_DOORS_BUTTON_TEST_ID = 'structure-library-upper-doors-button';
 export const STRUCTURE_STACK_SPLIT_SECTION_TEST_ID = 'structure-stack-split-section';
 export const STRUCTURE_STACK_SPLIT_MODE_BUTTON_TEST_ID = 'structure-stack-split-mode-button';
 
@@ -14,6 +15,7 @@ export type StructureStackLinkField = 'depth' | 'width' | 'doors';
 export type StructureDimensionsContentProps = {
   isSliding: boolean;
   isLibraryMode: boolean;
+  libraryUpperDoorsRemoved: boolean;
   isManualWidth: boolean;
   width: number;
   height: number;
@@ -41,6 +43,7 @@ export type StructureDimensionsContentProps = {
   onClearCellDimsHeight: () => void;
   onClearCellDimsDepth: () => void;
   onToggleStackSplit: () => void;
+  onToggleLibraryUpperDoors: () => void;
   renderStackLinkBadge: (field: StructureStackLinkField, isManual: boolean) => ReactNode;
   onResetAutoWidth: () => void;
 };

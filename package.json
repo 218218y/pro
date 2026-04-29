@@ -40,7 +40,7 @@
     "lint:runtime": "node tools/wp_lint.js --profile runtime",
     "lint:strict": "node tools/wp_lint.js --profile migrate --strict",
     "modernize:vars": "node tools/wp_modernize_vars.js",
-    "release": "npm run release:client",
+    "release": "node tools/wp_release.js --build-mode client",
     "release:debug": "node tools/wp_release.js --debug",
     "release:parity": "node tools/wp_release_parity.js --strict-build",
     "release:parity:source": "node tools/wp_release_parity.js --source-only",

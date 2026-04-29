@@ -1,8 +1,11 @@
 import type { ReactElement } from 'react';
 
-import { InlineNotice } from '../components/index.js';
+import { InlineNotice, ModeToggleButton } from '../components/index.js';
 import { DimField } from './structure_tab_controls.js';
-import type { StructureDimensionsContentProps } from './structure_tab_dimensions_section_contracts.js';
+import {
+  STRUCTURE_LIBRARY_UPPER_DOORS_BUTTON_TEST_ID,
+  type StructureDimensionsContentProps,
+} from './structure_tab_dimensions_section_contracts.js';
 
 export function StructureDimensionsMainFields(props: {
   doors: StructureDimensionsContentProps['doors'];
@@ -10,8 +13,11 @@ export function StructureDimensionsMainFields(props: {
   height: StructureDimensionsContentProps['height'];
   depth: StructureDimensionsContentProps['depth'];
   isManualWidth: StructureDimensionsContentProps['isManualWidth'];
+  isLibraryMode: StructureDimensionsContentProps['isLibraryMode'];
+  libraryUpperDoorsRemoved: StructureDimensionsContentProps['libraryUpperDoorsRemoved'];
   onSetRaw: StructureDimensionsContentProps['onSetRaw'];
   onResetAutoWidth: StructureDimensionsContentProps['onResetAutoWidth'];
+  onToggleLibraryUpperDoors: StructureDimensionsContentProps['onToggleLibraryUpperDoors'];
 }): ReactElement {
   return (
     <>
@@ -66,6 +72,20 @@ export function StructureDimensionsMainFields(props: {
           />
         </div>
       </div>
+
+
+      {props.isLibraryMode ? (
+        <div style={{ marginTop: 10 }}>
+          <ModeToggleButton
+            active={props.libraryUpperDoorsRemoved}
+            onClick={props.onToggleLibraryUpperDoors}
+            className="wp-r-mode-btn"
+            data-testid={STRUCTURE_LIBRARY_UPPER_DOORS_BUTTON_TEST_ID}
+          >
+            {props.libraryUpperDoorsRemoved ? 'החזר דלתות עליונות' : 'בלי דלתות עליונות'}
+          </ModeToggleButton>
+        </div>
+      ) : null}
 
       <InlineNotice>טיפ: שינוי "דלתות" יעדכן גם רוחב אוטומטית (אלא אם הפעלת רוחב ידני).</InlineNotice>
     </>

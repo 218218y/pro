@@ -14,6 +14,7 @@ import {
   selectHasAnyCellDimsOverrides,
   selectHingeMap,
   selectIsLibraryMode,
+  selectLibraryUpperDoorsRemoved,
   selectIsManualWidth,
   selectPreChestState,
   selectWardrobeType,
@@ -117,6 +118,7 @@ export function useStructureTabViewStateState(app: AppContainer): StructureTabVi
   );
 
   const hasAnyCellDimsOverrides = useCfgSelector(selectHasAnyCellDimsOverrides);
+  const libraryUpperDoorsRemoved = useCfgSelector(cfg => selectLibraryUpperDoorsRemoved(cfg, doors));
   const modulesCount = useStoreSelector(st => readModulesCountFromRootSnapshot(st, doors));
 
   const defaultCellWidth = useMemo(
@@ -173,6 +175,7 @@ export function useStructureTabViewStateState(app: AppContainer): StructureTabVi
     isManualWidth,
     preChestState: normalizeStructureTabPreChestState(preChestState),
     isLibraryMode,
+    libraryUpperDoorsRemoved,
     hingeMap: normalizeStructureTabHingeMap(hingeMap),
     primaryMode,
     hingeModeId,

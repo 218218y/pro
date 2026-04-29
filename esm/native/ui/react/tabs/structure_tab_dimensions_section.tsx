@@ -20,8 +20,11 @@ export function StructureDimensionsContent(props: StructureDimensionsContentProp
         height={props.height}
         depth={props.depth}
         isManualWidth={props.isManualWidth}
+        isLibraryMode={props.isLibraryMode}
+        libraryUpperDoorsRemoved={props.libraryUpperDoorsRemoved}
         onSetRaw={props.onSetRaw}
         onResetAutoWidth={props.onResetAutoWidth}
+        onToggleLibraryUpperDoors={props.onToggleLibraryUpperDoors}
       />
 
       {!props.isSliding ? (

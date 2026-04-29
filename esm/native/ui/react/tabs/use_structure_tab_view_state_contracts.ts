@@ -28,6 +28,7 @@ export type StructureTabViewState = {
   isManualWidth: boolean;
   preChestState: ProjectPreChestStateLike;
   isLibraryMode: boolean;
+  libraryUpperDoorsRemoved: boolean;
   hingeMap: HingeMap;
   primaryMode: string;
   hingeModeId: string;

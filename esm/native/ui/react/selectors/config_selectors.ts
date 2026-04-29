@@ -141,6 +141,18 @@ export function selectRemovedDoorsDirty(cfg: ConfigStateLike): boolean {
   }
 }
 
+export function selectLibraryUpperDoorsRemoved(cfg: ConfigStateLike, upperDoorsCount: unknown): boolean {
+  const count = Math.max(0, Math.round(Number(upperDoorsCount) || 0));
+  if (count <= 0) return false;
+
+  const map = readConfigMapFromSnapshot(cfg, 'removedDoorsMap', {});
+  for (let doorId = 1; doorId <= count; doorId += 1) {
+    if (map[`removed_d${doorId}_full`] !== true) return false;
+  }
+
+  return true;
+}
+
 export function selectHasAnyCellDimsOverrides(cfg: ConfigStateLike): boolean {
   try {
     const modules = readModulesConfigurationListFromConfigSnapshot(cfg, 'modulesConfiguration');

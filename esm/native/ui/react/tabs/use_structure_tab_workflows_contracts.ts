@@ -24,6 +24,7 @@ export type UseStructureTabWorkflowsResult = {
   renderStackLinkBadge: (field: StructureStackLinkField, isManual: boolean) => ReactElement;
   toggleStackSplit: () => void;
   toggleLibraryMode: () => void;
+  toggleLibraryUpperDoors: () => void;
   resetAllCellDimsOverrides: () => void;
   clearCellDimsWidth: () => void;
   clearCellDimsHeight: () => void;

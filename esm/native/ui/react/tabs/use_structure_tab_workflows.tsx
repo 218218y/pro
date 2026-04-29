@@ -1,6 +1,8 @@
 import { useCallback } from 'react';
 
+import { callDoorsAction } from '../../../runtime/actions_access_domains.js';
 import { enterStructureEditMode, exitStructureEditMode } from './structure_tab_shared.js';
+import { runHistoryBatch, setUiFlag } from '../actions/store_actions.js';
 import type {
   UseStructureTabWorkflowsArgs,
   UseStructureTabWorkflowsResult,
@@ -54,6 +56,38 @@ export function useStructureTabWorkflows(args: UseStructureTabWorkflowsArgs): Us
     workflowController.toggleLibraryMode();
   }, [workflowController]);
 
+
+  const toggleLibraryUpperDoors = useCallback(() => {
+    const upperDoorsCount = Math.max(0, Math.round(Number(state.doors) || 0));
+    if (upperDoorsCount <= 0) return;
+
+    const shouldRemove = !state.libraryUpperDoorsRemoved;
+    const meta = {
+      source: shouldRemove
+        ? 'react:structure:libraryUpperDoors:remove'
+        : 'react:structure:libraryUpperDoors:restore',
+      immediate: true,
+    };
+
+    runHistoryBatch(
+      app,
+      () => {
+        if (shouldRemove) setUiFlag(app, 'removeDoorsEnabled', true, meta);
+
+        for (let doorId = 1; doorId <= upperDoorsCount; doorId += 1) {
+          callDoorsAction(app, 'setRemoved', `d${doorId}_full`, shouldRemove, meta);
+        }
+      },
+      meta
+    );
+
+    try {
+      fb?.toast(shouldRemove ? 'הדלתות העליונות הוסרו' : 'הדלתות העליונות הוחזרו', 'success');
+    } catch {
+      // Feedback is best-effort only; the state mutation above is the source of truth.
+    }
+  }, [app, fb, state.doors, state.libraryUpperDoorsRemoved]);
+
   const resetAllCellDimsOverrides = useCallback(() => {
     workflowController.resetAllCellDimsOverrides();
   }, [workflowController]);
@@ -82,6 +116,7 @@ export function useStructureTabWorkflows(args: UseStructureTabWorkflowsArgs): Us
     renderStackLinkBadge,
     toggleStackSplit: structuralController.toggleStackSplit,
     toggleLibraryMode,
+    toggleLibraryUpperDoors,
     resetAllCellDimsOverrides,
     clearCellDimsWidth,
     clearCellDimsHeight,
