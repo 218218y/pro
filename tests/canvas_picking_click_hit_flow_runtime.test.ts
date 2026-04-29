@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { resolveCanvasPickingClickHitState } from '../esm/native/services/canvas_picking_click_hit_flow.ts';
+import { __isEligiblePaintIntersect } from '../esm/native/services/canvas_picking_door_hover_targets_hit_paint.ts';
 
 function createRaycaster(intersects: any[]) {
   return {
@@ -214,4 +215,147 @@ test('click hit flow merges surface child metadata with parent door identity', (
   assert.equal(hitState.hitIdentity?.surfaceId, 'door:d2:outside');
   assert.equal(hitState.hitIdentity?.faceSide, 'outside');
   assert.equal(hitState.hitIdentity?.faceSign, 1);
+});
+
+test('click hit flow ignores fully transparent material arrays outside remove-door mode', () => {
+  const wardrobeGroup = {
+    type: 'Group',
+    userData: { partId: 'wardrobe-root' },
+    children: [] as unknown[],
+    parent: null,
+  };
+  const transparentDoorGroup = {
+    type: 'Group',
+    userData: { partId: 'd9_full', __wpDoorRemoved: true },
+    children: [] as unknown[],
+    parent: wardrobeGroup,
+  };
+  const transparentDoorFace = {
+    type: 'Mesh',
+    material: [{ visible: true, opacity: 0 }],
+    userData: {},
+    parent: transparentDoorGroup,
+  };
+  const visiblePanel = {
+    type: 'Mesh',
+    material: { visible: true, opacity: 1 },
+    userData: { partId: 'body_left' },
+    parent: wardrobeGroup,
+  };
+  transparentDoorGroup.children.push(transparentDoorFace);
+  wardrobeGroup.children.push(transparentDoorGroup, visiblePanel);
+
+  const hitState = resolveCanvasPickingClickHitState({
+    App: createApp({ app: { render: { camera: {}, scene: {}, wardrobeGroup } } }),
+    ndcX: 0,
+    ndcY: 0,
+    isRemoveDoorMode: false,
+    raycaster: createRaycaster([
+      { object: transparentDoorFace, point: { x: 0, y: 1, z: 0 } },
+      { object: visiblePanel, point: { x: 0, y: 0.2, z: 0 } },
+    ]),
+    mouse: { x: 0, y: 0 },
+  });
+
+  assert.ok(hitState);
+  assert.equal(hitState?.primaryHitObject, visiblePanel);
+  assert.equal(hitState?.foundPartId, 'body_left');
+  assert.equal(hitState?.effectiveDoorId, null);
+});
+
+test('click hit flow accepts transparent restore targets only when the removed-door owner is tagged', () => {
+  const wardrobeGroup = {
+    type: 'Group',
+    userData: { partId: 'wardrobe-root' },
+    children: [] as unknown[],
+    parent: null,
+  };
+  const transparentHelper = {
+    type: 'Mesh',
+    material: { visible: true, opacity: 0 },
+    userData: { partId: 'body_left' },
+    parent: wardrobeGroup,
+  };
+  const removedDoorGroup = {
+    type: 'Group',
+    userData: { partId: 'd10_full', __wpDoorRemoved: true },
+    children: [] as unknown[],
+    parent: wardrobeGroup,
+  };
+  const removedDoorFace = {
+    type: 'Mesh',
+    material: { visible: true, opacity: 0 },
+    userData: {},
+    parent: removedDoorGroup,
+  };
+  removedDoorGroup.children.push(removedDoorFace);
+  wardrobeGroup.children.push(transparentHelper, removedDoorGroup);
+
+  const hitState = resolveCanvasPickingClickHitState({
+    App: createApp({ app: { render: { camera: {}, scene: {}, wardrobeGroup } } }),
+    ndcX: 0,
+    ndcY: 0,
+    isRemoveDoorMode: true,
+    raycaster: createRaycaster([
+      { object: transparentHelper, point: { x: 0, y: 1, z: 0 } },
+      { object: removedDoorFace, point: { x: 0, y: 0.2, z: 0 } },
+    ]),
+    mouse: { x: 0, y: 0 },
+  });
+
+  assert.ok(hitState);
+  assert.equal(hitState?.primaryHitObject, removedDoorFace);
+  assert.equal(hitState?.foundPartId, 'd10_full');
+  assert.equal(hitState?.effectiveDoorId, 'd10_full');
+});
+
+test('hover eligibility treats transparent material arrays as restore targets only for removed doors', () => {
+  const App = createApp();
+  const viewportRoot = { type: 'Group', userData: { partId: 'root' }, parent: null };
+  const removedDoorGroup = {
+    type: 'Group',
+    userData: { partId: 'd11_full', __wpDoorRemoved: true },
+    parent: viewportRoot,
+  };
+  const removedDoorFace = {
+    type: 'Mesh',
+    material: [{ visible: true, opacity: 0 }],
+    userData: {},
+    parent: removedDoorGroup,
+  };
+  const helperFace = {
+    type: 'Mesh',
+    material: [{ visible: true, opacity: 0 }],
+    userData: { partId: 'body_left' },
+    parent: viewportRoot,
+  };
+  const isViewportRoot = (_App: unknown, node: unknown) => node === viewportRoot;
+
+  assert.equal(
+    __isEligiblePaintIntersect({
+      App,
+      hit: { object: removedDoorFace },
+      isViewportRoot,
+      allowTransparentRestoreTargets: false,
+    }),
+    false
+  );
+  assert.equal(
+    __isEligiblePaintIntersect({
+      App,
+      hit: { object: removedDoorFace },
+      isViewportRoot,
+      allowTransparentRestoreTargets: true,
+    }),
+    true
+  );
+  assert.equal(
+    __isEligiblePaintIntersect({
+      App,
+      hit: { object: helperFace },
+      isViewportRoot,
+      allowTransparentRestoreTargets: true,
+    }),
+    false
+  );
 });

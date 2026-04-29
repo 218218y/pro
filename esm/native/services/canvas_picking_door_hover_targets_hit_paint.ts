@@ -1,26 +1,8 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
 import { __wp_resolveNearestActionablePartFromHit } from './canvas_picking_core_helpers.js';
 import type { HitObjectLike, RaycastHitLike } from './canvas_picking_engine.js';
-import {
-  type IsViewportRootFn,
-  __asObject,
-  __readParentHitObject,
-} from './canvas_picking_door_hover_targets_shared.js';
-
-function __isTransparentRestoreTargetObject(
-  App: AppContainer,
-  value: unknown,
-  isViewportRoot: IsViewportRootFn
-): boolean {
-  let curr: HitObjectLike | null = __asObject<HitObjectLike>(value);
-  while (curr && !isViewportRoot(App, curr)) {
-    const currRec = __asObject<UnknownRecord>(curr);
-    const userData = currRec ? __asObject<UnknownRecord>(currRec.userData) : null;
-    if (userData?.__wpDoorRemoved === true) return true;
-    curr = __readParentHitObject(currRec);
-  }
-  return false;
-}
+import { isCanvasPickingMaterialHitEligible } from './canvas_picking_transparent_hit_policy.js';
+import { type IsViewportRootFn, __asObject } from './canvas_picking_door_hover_targets_shared.js';
 
 export function __isEligiblePaintIntersect(args: {
   App: AppContainer;
@@ -37,13 +19,12 @@ export function __isEligiblePaintIntersect(args: {
   const objUserData = __asObject<UnknownRecord>(objRec.userData);
   if (objUserData && objUserData.isModuleSelector) return false;
 
-  const material = __asObject<UnknownRecord>(objRec.material);
-  if (material && material.visible === false) return false;
-  if (material && material.opacity === 0) {
-    if (!allowTransparentRestoreTargets) return false;
-    if (!__isTransparentRestoreTargetObject(App, obj, isViewportRoot)) return false;
-  }
-  return true;
+  return isCanvasPickingMaterialHitEligible({
+    App,
+    object: obj,
+    isViewportRoot,
+    allowTransparentRestoreTargets,
+  });
 }
 
 export function __readPrimaryBlockingPaintPartId(args: {
@@ -62,9 +43,16 @@ export function __readPrimaryBlockingPaintPartId(args: {
     const objUserData = __asObject<UnknownRecord>(objRec.userData);
     if (objUserData && objUserData.isModuleSelector) continue;
 
-    const material = __asObject<UnknownRecord>(objRec.material);
-    if (material && material.visible === false) continue;
-    if (material && material.opacity === 0) continue;
+    if (
+      !isCanvasPickingMaterialHitEligible({
+        App,
+        object: obj,
+        isViewportRoot: () => false,
+        allowTransparentRestoreTargets: false,
+      })
+    ) {
+      continue;
+    }
 
     const { nearestPartId, actionablePartId } = __wp_resolveNearestActionablePartFromHit(
       App,

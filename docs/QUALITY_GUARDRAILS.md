@@ -38,6 +38,7 @@ npm run contract:three-vendor
 - Mirror paint commits must receive the finalized `hitIdentity`; full-door mirror fallback may use `faceSign` only when no sized mirror draft is active and must remove matching full-face layouts instead of duplicating them.
 - Split lower-stack door ids, sketch-box door metadata, and explicit object stack tags must flow through the same hit identity owner used by regular doors.
 - Split click commits must normalize effective top/bot/mid part ids through the same split map-key policy and split-hover base-key owner before reading family bounds or dispatching split actions.
+- Transparent removed-door restore hitboxes must be pickable only in remove-door mode and only when their owner carries removed-door metadata; transparent material arrays must not block normal clicks.
 - Paint target resolution must preserve sketch-box door part keys for special paint maps; canonical sketch door ids may describe identity but must not replace the persisted map key.
 - Click identity must not invent a `top` stack when no stack hint exists; use explicit object/module stack evidence only.
 - Identity helpers stay data-only: no DOM, scene mutation, store writes, timers, or UI operations.

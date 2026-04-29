@@ -3,9 +3,11 @@ import { readFileSync } from 'node:fs';
 
 const files = {
   owner: 'esm/native/services/canvas_picking_hit_identity.ts',
+  transparentHitPolicy: 'esm/native/services/canvas_picking_transparent_hit_policy.ts',
   clickState: 'esm/native/services/canvas_picking_click_hit_flow_state.ts',
   clickScanObjects: 'esm/native/services/canvas_picking_click_hit_flow_scan_objects.ts',
   hoverScan: 'esm/native/services/canvas_picking_door_hover_targets_hit_scan.ts',
+  hoverHitPaint: 'esm/native/services/canvas_picking_door_hover_targets_hit_paint.ts',
   clickRouteActions: 'esm/native/services/canvas_picking_click_route_actions.ts',
   splitClickShared: 'esm/native/services/canvas_picking_door_split_click_shared.ts',
   paintContracts: 'esm/native/services/canvas_picking_paint_flow_contracts.ts',
@@ -75,6 +77,26 @@ requireMatch(
   'identity owner must infer mirror face side from face sign'
 );
 
+const transparentHitPolicy = read(files.transparentHitPolicy);
+requireMatch(
+  files.transparentHitPolicy,
+  transparentHitPolicy,
+  /export function readCanvasPickingMaterialHitPolicy\(/,
+  'transparent hit policy owner must normalize scalar and array material visibility'
+);
+requireMatch(
+  files.transparentHitPolicy,
+  transparentHitPolicy,
+  /export function isCanvasPickingTransparentRestoreTarget\(/,
+  'transparent hit policy owner must gate restore hits by removed-door metadata'
+);
+requireMatch(
+  files.transparentHitPolicy,
+  transparentHitPolicy,
+  /visibleMaterials\.every\(materialRecord => materialRecord\.opacity === 0\)/,
+  'transparent hit policy must treat all-transparent material arrays as transparent'
+);
+
 const clickState = read(files.clickState);
 requireMatch(
   files.clickState,
@@ -102,6 +124,12 @@ requireMatch(
 );
 
 const clickScanObjects = read(files.clickScanObjects);
+requireMatch(
+  files.clickScanObjects,
+  clickScanObjects,
+  /isCanvasPickingMaterialHitEligible/,
+  'click scan must use the shared transparent hit policy'
+);
 requireMatch(
   files.clickScanObjects,
   clickScanObjects,
@@ -145,6 +173,14 @@ requireMatch(
   hoverScan,
   /mergeCanvasPickingHitIdentityUserData/,
   'hover scan must use the shared canonical metadata merger'
+);
+
+const hoverHitPaint = read(files.hoverHitPaint);
+requireMatch(
+  files.hoverHitPaint,
+  hoverHitPaint,
+  /isCanvasPickingMaterialHitEligible/,
+  'hover hit eligibility must use the shared transparent hit policy'
 );
 
 const clickRouteActions = read(files.clickRouteActions);
@@ -223,6 +259,18 @@ requireMatch(
   clickRuntimeTest,
   /merges surface child metadata with parent door identity/,
   'runtime test must cover child surface + parent part merge'
+);
+requireMatch(
+  files.clickRuntimeTest,
+  clickRuntimeTest,
+  /ignores fully transparent material arrays outside remove-door mode/,
+  'runtime test must prove transparent removed placeholders do not block normal clicks'
+);
+requireMatch(
+  files.clickRuntimeTest,
+  clickRuntimeTest,
+  /accepts transparent restore targets only when the removed-door owner is tagged/,
+  'runtime test must prove remove mode only picks tagged transparent restore targets'
 );
 const hoverClickRuntimeTest = read(files.hoverClickRuntimeTest);
 requireMatch(

@@ -347,6 +347,7 @@ Current Canvas parity coverage now includes:
 - full-door mirror commit fallback from canonical `hitIdentity.faceSign` when no sized mirror draft geometry is available, including removal of matching full-face layouts instead of duplicating them.
 - lower split-door identity parity for `lower_d...` part ids, including stack and split-part normalization.
 - split click commit parity for lower/corner top/bot/mid part ids, where action selection and custom split positions now use the same full-family bounds as hover.
+- removed-door transparent restore/blocking parity, where click and hover share one material policy so invisible restore hitboxes are only pickable in remove-door mode and only when tagged as removed-door owners.
 - sketch-box door identity parity using `__wpSketchModuleKey` and `__wpSketchBoxDoorId`.
 - sketch-box door special-paint target preservation so canonical sketch door ids do not replace the persisted `doorSpecialMap`/`mirrorLayoutMap` part key.
 - click identity no longer invents a `top` stack when no object/module stack hint exists.
@@ -361,6 +362,7 @@ Primary code owners:
 - `esm/native/services/canvas_picking_click_hit_flow_state.ts`
 - `esm/native/services/canvas_picking_click_hit_flow_scan_objects.ts`
 - `esm/native/services/canvas_picking_door_split_click_shared.ts`
+- `esm/native/services/canvas_picking_transparent_hit_policy.ts`
 
 Primary guardrails:
 
@@ -372,4 +374,4 @@ Primary guardrails:
 - `tools/wp_canvas_hit_identity_contract.mjs`
 - `tools/wp_canvas_hit_parity_contract.mjs`
 
-Remaining Canvas product-behavior follow-up should focus on browser/e2e commit flows, especially removed-door click blocking, broader visual split journeys, and full sketch hover/commit journeys. Do not add compatibility ladders for those; add behavior coverage first, then fix the owning service.
+Remaining Canvas product-behavior follow-up should focus on browser/e2e commit flows, especially broader visual split journeys and full sketch hover/commit journeys. Do not add compatibility ladders for those; add behavior coverage first, then fix the owning service.

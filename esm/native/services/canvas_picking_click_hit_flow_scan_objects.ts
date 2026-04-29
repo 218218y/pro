@@ -8,6 +8,7 @@ import {
 } from './canvas_picking_core_helpers.js';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
 import { __wp_isViewportRoot } from './canvas_picking_local_helpers.js';
+import { isCanvasPickingMaterialHitEligible } from './canvas_picking_transparent_hit_policy.js';
 import type { MutableCanvasPickingClickHitState } from './canvas_picking_click_hit_flow_state.js';
 import {
   mergeCanvasPickingHitIdentityUserData,
@@ -23,8 +24,16 @@ export function scanCanvasPickingClickObjectHit(args: {
   const { App, hit, isRemoveDoorMode, state } = args;
   const obj = hit.object;
 
-  if (obj.material && obj.material.visible === false) return;
-  if (obj.material && obj.material.opacity === 0 && !isRemoveDoorMode) return;
+  if (
+    !isCanvasPickingMaterialHitEligible({
+      App,
+      object: obj,
+      isViewportRoot: __wp_isViewportRoot,
+      allowTransparentRestoreTargets: isRemoveDoorMode,
+    })
+  ) {
+    return;
+  }
 
   if (!state.primaryHitObject) {
     state.primaryHitObject = obj;

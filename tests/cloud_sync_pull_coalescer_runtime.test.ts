@@ -601,7 +601,11 @@ test('cloud sync pull coalescer clears inFlight immediately on synchronous run t
   assert.equal(harness.timers.runNext(), true);
 
   harness.coalescer.trigger('sync-second-same-tick');
-  assert.equal(harness.timers.activeCount(), 1, 'same-tick retrigger should be queued after sync throw recovery');
+  assert.equal(
+    harness.timers.activeCount(),
+    1,
+    'same-tick retrigger should be queued after sync throw recovery'
+  );
 
   shouldThrow = false;
   assert.equal(harness.timers.runNext(), true);
