@@ -348,6 +348,7 @@ Current Canvas parity coverage now includes:
 - lower split-door identity parity for `lower_d...` part ids, including stack and split-part normalization.
 - split click commit parity for lower/corner top/bot/mid part ids, where action selection and custom split positions now use the same full-family bounds as hover.
 - removed-door transparent restore/blocking parity, where click and hover share one material policy so invisible restore hitboxes are only pickable in remove-door mode and only when tagged as removed-door owners.
+- sketch hover/commit host identity precedence, where manual sketch commit matching now prefers canonical `hostModuleKey`/`hostIsBottom` over stale legacy module fields.
 - sketch-box door identity parity using `__wpSketchModuleKey` and `__wpSketchBoxDoorId`.
 - sketch-box door special-paint target preservation so canonical sketch door ids do not replace the persisted `doorSpecialMap`/`mirrorLayoutMap` part key.
 - click identity no longer invents a `top` stack when no object/module stack hint exists.
@@ -363,18 +364,23 @@ Primary code owners:
 - `esm/native/services/canvas_picking_click_hit_flow_scan_objects.ts`
 - `esm/native/services/canvas_picking_door_split_click_shared.ts`
 - `esm/native/services/canvas_picking_transparent_hit_policy.ts`
+- `esm/native/services/canvas_picking_manual_layout_sketch_hover_intent_snapshot.ts`
+- `esm/native/services/canvas_picking_sketch_hover_matching.ts`
 
 Primary guardrails:
 
 - `tests/canvas_picking_hover_click_hit_identity_parity_runtime.test.ts`
 - `tests/canvas_picking_click_hit_flow_runtime.test.ts`
 - `tests/canvas_picking_door_split_click_runtime.test.ts`
+- `tests/canvas_picking_manual_layout_sketch_hover_intent_runtime.test.ts`
+- `tests/canvas_picking_sketch_hover_matching_runtime.test.ts`
 - `tests/canvas_picking_paint_flow_apply_runtime.test.ts`
 - `tests/refactor_stage18_canvas_hit_parity_runtime.test.js`
 - `tools/wp_canvas_hit_identity_contract.mjs`
 - `tools/wp_canvas_hit_parity_contract.mjs`
 
 Remaining Canvas product-behavior follow-up should focus on browser/e2e commit flows, especially broader visual split journeys and full sketch hover/commit journeys. Do not add compatibility ladders for those; add behavior coverage first, then fix the owning service.
+
 ---
 
 ## 13. Live repository alignment - Stage 19 project migration selector hardening

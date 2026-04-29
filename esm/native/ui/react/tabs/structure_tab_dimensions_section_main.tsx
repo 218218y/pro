@@ -73,7 +73,6 @@ export function StructureDimensionsMainFields(props: {
         </div>
       </div>
 
-
       {props.isLibraryMode ? (
         <div style={{ marginTop: 10 }}>
           <ModeToggleButton

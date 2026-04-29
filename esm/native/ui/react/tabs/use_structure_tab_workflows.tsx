@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-import { callDoorsAction } from '../../../runtime/actions_access_domains.js';
+import { callDoorsAction } from '../../../services/api.js';
 import { enterStructureEditMode, exitStructureEditMode } from './structure_tab_shared.js';
 import { runHistoryBatch, setUiFlag } from '../actions/store_actions.js';
 import type {
@@ -56,7 +56,6 @@ export function useStructureTabWorkflows(args: UseStructureTabWorkflowsArgs): Us
     workflowController.toggleLibraryMode();
   }, [workflowController]);
 
-
   const toggleLibraryUpperDoors = useCallback(() => {
     const upperDoorsCount = Math.max(0, Math.round(Number(state.doors) || 0));
     if (upperDoorsCount <= 0) return;
@@ -82,7 +81,10 @@ export function useStructureTabWorkflows(args: UseStructureTabWorkflowsArgs): Us
     );
 
     try {
-      fb?.toast(shouldRemove ? 'הדלתות העליונות הוסרו' : 'הדלתות העליונות הוחזרו', 'success');
+      const toast = fb?.toast;
+      if (typeof toast === 'function') {
+        toast(shouldRemove ? 'הדלתות העליונות הוסרו' : 'הדלתות העליונות הוחזרו', 'success');
+      }
     } catch {
       // Feedback is best-effort only; the state mutation above is the source of truth.
     }

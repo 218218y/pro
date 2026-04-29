@@ -41,6 +41,7 @@ npm run contract:three-vendor
 - Transparent removed-door restore hitboxes must be pickable only in remove-door mode and only when their owner carries removed-door metadata; transparent material arrays must not block normal clicks.
 - Paint target resolution must preserve sketch-box door part keys for special paint maps; canonical sketch door ids may describe identity but must not replace the persisted map key.
 - Click identity must not invent a `top` stack when no stack hint exists; use explicit object/module stack evidence only.
+- Sketch hover/commit matching must prefer canonical `hostModuleKey`/`hostIsBottom` over legacy `moduleKey`/`isBottom` fields so a stale or mixed hover snapshot cannot commit into the wrong module stack.
 - Identity helpers stay data-only: no DOM, scene mutation, store writes, timers, or UI operations.
 
 Relevant checks:

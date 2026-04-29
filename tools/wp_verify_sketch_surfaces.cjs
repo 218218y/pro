@@ -10,6 +10,8 @@ const GROUPS = [
       'tools/wp_run_tsx_tests.mjs',
       'tests/sketch_manual_tool_host_runtime.test.ts',
       'tests/canvas_picking_layout_edit_flow_manual_runtime.test.ts',
+      'tests/canvas_picking_manual_layout_sketch_hover_intent_runtime.test.ts',
+      'tests/canvas_picking_sketch_hover_matching_runtime.test.ts',
       'tests/canvas_picking_manual_layout_sketch_hover_routing_runtime.test.ts',
       'tests/canvas_picking_manual_layout_sketch_hover_module_context_runtime.test.ts',
       'tests/canvas_picking_manual_layout_sketch_hover_module_preview_runtime.test.ts',

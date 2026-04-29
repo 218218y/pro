@@ -14,5 +14,5 @@ Do not re-add large generated audit dumps or per-stage closeout docs under `docs
 Current live additions:
 
 - Cloud Sync recovery hardening is covered by focused runtime tests and `check:cloud-sync-races`.
-- Canvas mirror/split/sketch hit-identity parity, split click commit base/bounds parity, removed-door transparent restore/blocking parity, full-door mirror commit fallback, and sketch-box special-paint target preservation are covered by focused runtime tests plus `check:canvas-hit-identity` and `check:canvas-hit-parity`.
+- Canvas mirror/split/sketch hit-identity parity, split click commit base/bounds parity, removed-door transparent restore/blocking parity, full-door mirror commit fallback, sketch hover/commit host identity precedence, and sketch-box special-paint target preservation are covered by focused runtime tests plus `check:canvas-hit-identity` and `check:canvas-hit-parity`.
 - Project migration selector hardening now canonicalizes existing typed `ui.raw` scalar values at project ingress and proves canonical runtime selectors do not fall back to legacy top-level UI fields.

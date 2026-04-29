@@ -13,9 +13,13 @@ const files = {
   paintContracts: 'esm/native/services/canvas_picking_paint_flow_contracts.ts',
   paintMirror: 'esm/native/services/canvas_picking_paint_flow_mirror.ts',
   paintApplySpecial: 'esm/native/services/canvas_picking_paint_flow_apply_special.ts',
+  sketchHoverIntentSnapshot:
+    'esm/native/services/canvas_picking_manual_layout_sketch_hover_intent_snapshot.ts',
+  sketchHoverMatching: 'esm/native/services/canvas_picking_sketch_hover_matching.ts',
   clickRuntimeTest: 'tests/canvas_picking_click_hit_flow_runtime.test.ts',
   splitClickRuntimeTest: 'tests/canvas_picking_door_split_click_runtime.test.ts',
   hoverClickRuntimeTest: 'tests/canvas_picking_hover_click_hit_identity_parity_runtime.test.ts',
+  sketchHoverIntentRuntimeTest: 'tests/canvas_picking_manual_layout_sketch_hover_intent_runtime.test.ts',
   paintRuntimeTest: 'tests/canvas_picking_paint_flow_apply_runtime.test.ts',
   stageRuntimeTest: 'tests/refactor_stage18_canvas_hit_parity_runtime.test.js',
 };
@@ -183,6 +187,28 @@ requireMatch(
   'hover hit eligibility must use the shared transparent hit policy'
 );
 
+const sketchHoverIntentSnapshot = read(files.sketchHoverIntentSnapshot);
+requireMatch(
+  files.sketchHoverIntentSnapshot,
+  sketchHoverIntentSnapshot,
+  /readSketchHoverHostModuleKey/,
+  'manual sketch hover snapshots must use the canonical sketch host module-key reader'
+);
+requireMatch(
+  files.sketchHoverIntentSnapshot,
+  sketchHoverIntentSnapshot,
+  /readSketchHoverHostIsBottom/,
+  'manual sketch hover snapshots must use the canonical sketch host stack reader'
+);
+
+const sketchHoverMatching = read(files.sketchHoverMatching);
+requireMatch(
+  files.sketchHoverMatching,
+  sketchHoverMatching,
+  /'hostModuleKey'\) \?\? readRecordValue\(hoverRec, 'moduleKey'\)/,
+  'sketch hover matching must prefer canonical hostModuleKey before legacy moduleKey'
+);
+
 const clickRouteActions = read(files.clickRouteActions);
 requireMatch(
   files.clickRouteActions,
@@ -296,6 +322,14 @@ requireMatch(
   hoverClickRuntimeTest,
   /sketch-box door hits preserve module and door identity/,
   'runtime test must cover sketch-box door parity'
+);
+
+const sketchHoverIntentRuntimeTest = read(files.sketchHoverIntentRuntimeTest);
+requireMatch(
+  files.sketchHoverIntentRuntimeTest,
+  sketchHoverIntentRuntimeTest,
+  /prefers canonical host identity fields over legacy module fields/,
+  'runtime test must cover sketch hover/commit host identity precedence'
 );
 
 const splitClickRuntimeTest = read(files.splitClickRuntimeTest);

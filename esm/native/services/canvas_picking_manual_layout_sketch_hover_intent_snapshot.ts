@@ -7,6 +7,10 @@ import {
   type MatchManualLayoutSketchHoverArgs,
   type ReadManualLayoutSketchHoverSnapshotArgs,
 } from './canvas_picking_manual_layout_sketch_hover_intent_shared.js';
+import {
+  readSketchHoverHostIsBottom,
+  readSketchHoverHostModuleKey,
+} from './canvas_picking_sketch_hover_matching.js';
 import { asRecord } from '../runtime/record.js';
 
 export function readManualLayoutSketchHoverSnapshot(
@@ -29,8 +33,8 @@ export function readManualLayoutSketchHoverSnapshot(
     hover,
     rec: hover,
     tool: readRecordString(hover, 'tool') || '',
-    moduleKey: args.toModuleKey(hover.moduleKey),
-    isBottom: hover.isBottom === true,
+    moduleKey: readSketchHoverHostModuleKey(hover, args.toModuleKey),
+    isBottom: readSketchHoverHostIsBottom(hover),
     ts: readRecordNumber(hover, 'ts'),
     kind: readRecordString(hover, 'kind') || '',
     op: readRecordString(hover, 'op') || '',

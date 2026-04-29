@@ -8,6 +8,19 @@ import {
   resolveManualLayoutSketchHoverMatchState,
 } from '../esm/native/services/canvas_picking_manual_layout_sketch_hover_intent.ts';
 
+type SketchModuleKey = number | 'corner' | `corner:${number}` | null;
+
+function toSketchModuleKey(value: unknown): SketchModuleKey {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (value === 'corner') return value;
+  if (typeof value === 'string' && value.startsWith('corner:')) return value as `corner:${number}`;
+  if (typeof value === 'string' && value.trim()) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+
 test('manual-layout sketch hover match state accepts a recent matching hover snapshot', () => {
   const now = 2_000;
   const state = resolveManualLayoutSketchHoverMatchState({
@@ -20,7 +33,7 @@ test('manual-layout sketch hover match state accepts a recent matching hover sna
       op: 'remove',
       removeIdx: 1,
     },
-    toModuleKey: value => (typeof value === 'number' || typeof value === 'string' ? (value as any) : null),
+    toModuleKey: toSketchModuleKey,
     tool: 'sketch_rod',
     moduleKey: 'corner:2',
     isBottom: true,
@@ -46,7 +59,7 @@ test('manual-layout sketch hover match state rejects stale or mismatched hover s
       kind: 'shelf',
       op: 'remove',
     },
-    toModuleKey: value => (typeof value === 'number' || typeof value === 'string' ? (value as any) : null),
+    toModuleKey: toSketchModuleKey,
     tool: 'sketch_shelf:glass',
     moduleKey: 3,
     isBottom: false,
@@ -62,7 +75,7 @@ test('manual-layout sketch hover match state rejects stale or mismatched hover s
       kind: 'shelf',
       op: 'remove',
     },
-    toModuleKey: value => (typeof value === 'number' || typeof value === 'string' ? (value as any) : null),
+    toModuleKey: toSketchModuleKey,
     tool: 'sketch_shelf:glass',
     moduleKey: 3,
     isBottom: false,
@@ -73,6 +86,44 @@ test('manual-layout sketch hover match state rejects stale or mismatched hover s
   assert.equal(stale.hoverOk, false);
   assert.equal(mismatched.hoverOk, false);
   assert.equal(mismatched.hoverRec.kind, 'shelf');
+});
+
+test('manual-layout sketch hover match state prefers canonical host identity fields over legacy module fields', () => {
+  const now = 9_000;
+  const hover = {
+    tool: 'sketch_box:40',
+    moduleKey: 3,
+    isBottom: false,
+    hostModuleKey: '4',
+    hostIsBottom: true,
+    ts: now - 100,
+    kind: 'box',
+    op: 'remove',
+  };
+
+  const canonicalHost = resolveManualLayoutSketchHoverMatchState({
+    hover,
+    toModuleKey: toSketchModuleKey,
+    tool: 'sketch_box:40',
+    moduleKey: 4,
+    isBottom: true,
+    now,
+    maxAgeMs: 900,
+  });
+  const legacyHost = resolveManualLayoutSketchHoverMatchState({
+    hover,
+    toModuleKey: toSketchModuleKey,
+    tool: 'sketch_box:40',
+    moduleKey: 3,
+    isBottom: false,
+    now,
+    maxAgeMs: 900,
+  });
+
+  assert.equal(canonicalHost.hoverOk, true);
+  assert.equal(canonicalHost.snapshot.moduleKey, 4);
+  assert.equal(canonicalHost.snapshot.isBottom, true);
+  assert.equal(legacyHost.hoverOk, false);
 });
 
 test('manual-layout hover intent readers normalize box-content and vertical removal payloads', () => {

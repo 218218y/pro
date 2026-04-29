@@ -17,7 +17,10 @@ function runNode(args) {
 }
 
 test('stage 19 project migration selector hardening runtime tests pass', () => {
-  runNode(['tools/wp_run_tsx_tests.mjs', 'tests/project_migration_runtime_selector_hardening_runtime.test.ts']);
+  runNode([
+    'tools/wp_run_tsx_tests.mjs',
+    'tests/project_migration_runtime_selector_hardening_runtime.test.ts',
+  ]);
   runNode(['tools/wp_project_migration_boundary_audit.mjs']);
 });
 
@@ -35,10 +38,7 @@ test('stage 19 project migration selector guard is wired into the refactor contr
   );
 
   const integrationAudit = readFileSync('tools/wp_refactor_integration_audit.mjs', 'utf8');
-  assert.match(
-    integrationAudit,
-    /refactor_stage19_project_migration_selector_hardening_runtime\.test\.js/
-  );
+  assert.match(integrationAudit, /refactor_stage19_project_migration_selector_hardening_runtime\.test\.js/);
 
   const progress = readFileSync('docs/REFACTOR_WORKMAP_PROGRESS.md', 'utf8');
   assert.match(progress, /Stage 19/);
