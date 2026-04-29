@@ -5,11 +5,11 @@ It replaces the removed long-form planning docs with a durable audit contract: e
 
 ## Current baseline
 
-- Active baseline: Stage 18 source layout, Cloud Sync recovery hardening, Canvas mirror/split/sketch hit-identity parity, and Stage 19 project migration selector hardening.
+- Active baseline: Stage 18 source layout, Canvas mirror/split/sketch hit-identity parity, Stage 19 project migration selector hardening, Stage 20 Cloud Sync polling recovery hardening, Stage 21 Cloud Sync realtime start/restart recovery hardening, and Stage 22 Cloud Sync lifecycle-owner realtime start/restart recovery hardening.
 - Refactor verification entry point: `verify:refactor-modernization`.
 - Guardrail aggregate lane: `check:refactor-guardrails`.
 - Stage regression lane: `test:refactor-stage-guards`.
-- Current Cloud Sync hardening slice: pull coalescer failure recovery, main-row push failure/suppression recovery, pending-push-vs-recovery-pull ordering, and attention-pull error recovery are covered in focused Cloud Sync lanes and guarded by `check:cloud-sync-races`.
+- Current Cloud Sync hardening slice: pull coalescer failure recovery, main-row push failure/suppression recovery, pending-push-vs-recovery-pull ordering, attention-pull error recovery, realtime-timeout polling recovery hook failures, realtime start/restart setup failures, and owner-level realtime start/restart rejection fallbacks are covered in focused Cloud Sync lanes and guarded by `check:cloud-sync-races`.
 - Current Canvas parity slice: mirror face-sign inference, full-door mirror commit fallback from canonical hit identity, sketch-box special-paint target preservation, lower split-door identity/stack/split-part parity, split click commit base/bounds parity, removed-door transparent restore/blocking parity, sketch hover/commit host identity precedence, and sketch-box door module/door identity are covered by focused runtime tests and guarded by `check:canvas-hit-identity` plus `check:canvas-hit-parity`.
 - Current Project migration selector hardening slice: project-ingress `ui.raw` migration now canonicalizes existing typed scalar values, removes invalid typed raw values before fallback materialization, preserves experimental raw keys, and proves canonical runtime selectors remain raw-only.
 
@@ -37,6 +37,9 @@ These anchors are intentionally concise. Do not expand them back into the old pl
 - Stage 17 — builder dependency resolver guardrails retained.
 - Stage 18 — canvas hit-parity follow-up, mirror/split/sketch identity parity, and current source layout guardrails retained.
 - Stage 19 — project migration selector hardening, typed `ui.raw` scalar canonicalization, and raw-only runtime selector guardrails retained.
+- Stage 20 — Cloud Sync polling recovery hardening retained: realtime-timeout fallback polling must stay armed even when recovery pull/restart hooks fail.
+- Stage 21 — Cloud Sync realtime start/restart recovery hardening retained: unexpected realtime start-flight failures and hint-cleanup failures must be reported as non-fatal and leave polling fallback reachable.
+- Stage 22 — Cloud Sync lifecycle-owner realtime start/restart recovery hardening retained: owner-level realtime initial-start/restart failures must not break browser recovery listener binding and must fall back to polling through a non-fatal error path.
 
 ## Maintenance rule
 

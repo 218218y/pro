@@ -142,3 +142,69 @@ test('cloud sync realtime transport disconnect ignores stale token and handles c
   transport.handleRealtimeDisconnect('CLOSED', subscribedRef, currentToken, disconnectStateRef);
   assert.equal(publishCount, 1, 'disconnect should only apply once for active token');
 });
+
+test('cloud sync realtime transport cleanup reports hint clearing failures and still clears transport refs', () => {
+  const reported: Array<{ error: unknown; ctx: any }> = [];
+  let removeCalls = 0;
+  let disconnectCalls = 0;
+  const clearedTimers: unknown[] = [];
+
+  const client = {
+    removeChannel() {
+      removeCalls += 1;
+    },
+    realtime: {
+      disconnect() {
+        disconnectCalls += 1;
+      },
+    },
+  } as any;
+  const channel = {} as any;
+  const refs = {
+    connectTimer: 99 as any,
+    client,
+    channel,
+  };
+
+  const runtimeStatus = {
+    realtime: { enabled: true, mode: 'broadcast', state: 'subscribed', channel: 'wp:room-a' },
+    polling: { active: false, intervalMs: 5000, reason: '' },
+  } as any;
+
+  const transport = createCloudSyncRealtimeTransport({
+    App: {
+      services: {
+        platform: {
+          reportError(error: unknown, ctx: any) {
+            reported.push({ error, ctx });
+          },
+        },
+      },
+    } as any,
+    refs,
+    runtimeStatus,
+    publishStatus: () => undefined,
+    diag: () => undefined,
+    startPolling: () => undefined,
+    clearTimeoutFn: id => {
+      clearedTimers.push(id);
+    },
+    setSendRealtimeHint: () => {
+      throw new Error('hint setter failed');
+    },
+  });
+
+  transport.sentAtByKey.set('main', 123);
+
+  assert.doesNotThrow(() => transport.cleanupRealtimeTransport('test.cleanup'));
+  assert.equal(refs.client, null);
+  assert.equal(refs.channel, null);
+  assert.equal(refs.connectTimer, null);
+  assert.equal(transport.sentAtByKey.size, 0, 'hint dedupe map must clear even when the hint setter fails');
+  assert.deepEqual(clearedTimers, [99]);
+  assert.equal(removeCalls, 1);
+  assert.equal(disconnectCalls, 1);
+  assert.equal(reported.length, 1);
+  assert.equal((reported[0]?.error as Error).message, 'hint setter failed');
+  assert.equal(reported[0]?.ctx?.op, 'test.cleanup.clearHints');
+});

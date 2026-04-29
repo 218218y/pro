@@ -1204,6 +1204,12 @@
         "runtime-default": 2
       }
     },
+    "esm/native/services/cloud_sync_lifecycle_runtime_realtime_start.ts": {
+      "total": 1,
+      "categories": {
+        "runtime-default": 1
+      }
+    },
     "esm/native/services/cloud_sync_lifecycle_support_realtime.ts": {
       "total": 6,
       "categories": {

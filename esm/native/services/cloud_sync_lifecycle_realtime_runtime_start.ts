@@ -1,4 +1,6 @@
 import { startCloudSyncRealtimeChannel } from './cloud_sync_lifecycle_realtime_channel.js';
+import { normalizeUnknownError } from '../runtime/error_normalization.js';
+import { _cloudSyncReportNonFatal } from './cloud_sync_support.js';
 import {
   hasLiveRealtimeTransport,
   type CloudSyncRealtimeLifecycleArgs,
@@ -66,6 +68,21 @@ export function startCloudSyncRealtimeLifecycle(
           void startCloudSyncRealtimeLifecycle(args);
         },
       });
+    })
+    .catch(err => {
+      _cloudSyncReportNonFatal(App, 'realtime.startFlight', err, { throttleMs: 6000 });
+      try {
+        transport.setRealtimeFailure(
+          'error',
+          normalizeUnknownError(err).message,
+          'realtime:start-flight-error',
+          'realtime-start-error'
+        );
+      } catch (fallbackErr) {
+        _cloudSyncReportNonFatal(App, 'realtime.startFlightFallback', fallbackErr, {
+          throttleMs: 6000,
+        });
+      }
     })
     .finally(() => {
       if (mutableState.startFlight === flight) mutableState.startFlight = null;

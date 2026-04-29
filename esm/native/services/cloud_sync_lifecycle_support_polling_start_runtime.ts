@@ -5,6 +5,7 @@ import type {
   CloudSyncRuntimeStatus,
 } from '../../../types';
 
+import { _cloudSyncReportNonFatal } from './cloud_sync_support.js';
 import type { CloudSyncPullAllNowFn } from './cloud_sync_lifecycle_support_bindings.js';
 import {
   hasCanonicalPollingStatus,
@@ -43,15 +44,24 @@ function shouldKickCloudSyncRealtimeRecovery(args: {
 }
 
 function kickCloudSyncRealtimeRecovery(args: {
+  App: AppContainer;
   runtimeStatus: CloudSyncRuntimeStatus;
   reason: string;
   pullAllNow: CloudSyncPullAllNowFn;
   restartRealtime?: (() => void) | undefined;
 }): void {
-  const { runtimeStatus, reason, pullAllNow, restartRealtime } = args;
+  const { App, runtimeStatus, reason, pullAllNow, restartRealtime } = args;
   if (!shouldKickCloudSyncRealtimeRecovery({ runtimeStatus, reason })) return;
-  pullAllNow({ reason: `${reason}.recover` });
-  restartRealtime?.();
+  try {
+    pullAllNow({ reason: `${reason}.recover` });
+  } catch (err) {
+    _cloudSyncReportNonFatal(App, 'cloudSyncPolling.realtimeRecoveryPull', err, { throttleMs: 8000 });
+  }
+  try {
+    restartRealtime?.();
+  } catch (err) {
+    _cloudSyncReportNonFatal(App, 'cloudSyncPolling.realtimeRecoveryRestart', err, { throttleMs: 8000 });
+  }
 }
 
 export function startCloudSyncPolling(args: CloudSyncLifecycleStartPollingArgs): void {
@@ -90,6 +100,7 @@ export function startCloudSyncPolling(args: CloudSyncLifecycleStartPollingArgs):
     });
     if (shouldPublish) publishStatus();
     kickCloudSyncRealtimeRecovery({
+      App,
       runtimeStatus,
       reason,
       pullAllNow,
@@ -133,6 +144,7 @@ export function startCloudSyncPolling(args: CloudSyncLifecycleStartPollingArgs):
   intervalHandle = setIntervalFn(onPollTick, pollIntervalMs);
   pollTimerRef.current = intervalHandle;
   kickCloudSyncRealtimeRecovery({
+    App,
     runtimeStatus,
     reason,
     pullAllNow,

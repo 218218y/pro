@@ -1,4 +1,5 @@
 import { createCloudSyncRealtimeLifecycle } from './cloud_sync_lifecycle_realtime.js';
+import { startCloudSyncRealtimeWithLifecycleFallback } from './cloud_sync_lifecycle_runtime_realtime_start.js';
 import { createCloudSyncRealtimeScopedHandlerMapFromTriggers } from './cloud_sync_pull_scopes.js';
 import {
   createCloudSyncLifecycleAddListener,
@@ -111,7 +112,17 @@ export function createCloudSyncLifecycleRuntimeDeps(
     setSendRealtimeHint,
   });
   restartRealtimeRef.current = () => {
-    void cloudSyncRealtime.startRealtime();
+    startCloudSyncRealtimeWithLifecycleFallback({
+      App,
+      runtimeStatus,
+      publishStatus,
+      diag,
+      startPolling,
+      cloudSyncRealtime,
+      op: 'cloudSyncLifecycle.realtimeRestart',
+      diagEvent: 'realtime:owner-restart-error',
+      pollingReason: 'realtime-owner-restart-error',
+    });
   };
 
   return {

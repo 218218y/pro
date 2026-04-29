@@ -31,7 +31,12 @@ export function cleanupCloudSyncRealtimeTransport(
 
   invalidateCloudSyncRealtimeTransport(mutableState);
   if (!opts?.keepHints) {
-    clearCloudSyncRealtimeHints({ mutableState, setSendRealtimeHint });
+    try {
+      clearCloudSyncRealtimeHints({ mutableState, setSendRealtimeHint });
+    } catch (err) {
+      mutableState.sentAtByKey.clear();
+      _cloudSyncReportNonFatal(App, `${op}.clearHints`, err, { throttleMs: 4000 });
+    }
   }
 
   const client = refs.client;

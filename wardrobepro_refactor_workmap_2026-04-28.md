@@ -411,3 +411,105 @@ Next recommended slices after Stage 19:
 1. A real browser/e2e Canvas behavior slice for mirror/split/sketch actions.
 2. A Cloud Sync reconnect/hidden-tab/realtime-timeout behavior slice.
 3. A narrow runtime selector family cleanup only when covered by migration fixtures.
+
+## 14. Live repository alignment - Stage 20 Cloud Sync polling recovery hardening
+
+Stage 20 is a small Cloud Sync behavior-safety slice. It does not reopen the broader Cloud Sync architecture and it does not add compatibility wrappers.
+
+What changed:
+
+- Realtime-timeout polling fallback now treats recovery pull/restart hooks as non-fatal side work.
+- If `pullAllNow({ reason: "realtime-timeout.recover" })` throws, polling still remains armed and the error is reported through the Cloud Sync non-fatal reporting surface.
+- If `restartRealtime()` throws during the same recovery kick, polling still remains armed and the restart error is reported separately.
+- The Cloud Sync race contract now guards the two recovery reporting operations so future edits cannot accidentally turn this back into a thrown lifecycle callback.
+- A focused support-runtime test documents the intended behavior: fallback polling is the critical recovery path; recovery hooks are helpful, but they must not break the fallback.
+
+Primary code owner:
+
+- `esm/native/services/cloud_sync_lifecycle_support_polling_start_runtime.ts`
+
+Primary guardrails:
+
+- `tests/cloud_sync_lifecycle_support_runtime.test.ts`
+- `tests/refactor_stage20_cloud_sync_polling_recovery_runtime.test.js`
+- `tools/wp_cloud_sync_race_contract.mjs`
+- `tools/wp_refactor_integration_audit.mjs`
+- `docs/REFACTOR_WORKMAP_PROGRESS.md`
+
+Remaining recommended slices after Stage 20:
+
+1. Browser/e2e Canvas behavior flows for broader mirror/split/sketch journeys.
+2. Cloud Sync end-to-end reconnect behavior with real browser lifecycle events.
+3. A narrow runtime selector cleanup only when backed by migration fixtures from real payloads.
+4. CSS/design-system continuation only for real selection controls, not action buttons in disguise.
+
+
+---
+
+## 15. Live repository alignment - Stage 21 Cloud Sync realtime start/restart recovery hardening
+
+Stage 21 continues the Cloud Sync lifecycle hardening without opening a broad architecture rewrite. The target is the narrow but important realtime start/restart seam: failures during pre-start cleanup or fallback status transition must not leak as unhandled Promise failures, and cleanup of realtime hint state must not block timer/ref cleanup.
+
+What changed:
+
+- Realtime start flights now catch unexpected setup failures at the owning lifecycle seam, report them through the Cloud Sync non-fatal reporting surface, and transition to a realtime error plus polling fallback through the existing realtime failure path.
+- If that fallback transition itself fails, the fallback failure is reported separately and the start flight still settles instead of leaking a rejected Promise.
+- Realtime transport cleanup now treats hint-sender cleanup as non-fatal side work. Even if the hint setter throws, the dedupe map is cleared and timer/client/channel refs continue to be cleaned.
+- The Cloud Sync race contract now guards the start-flight recovery markers and the hint cleanup recovery marker so future edits cannot reintroduce throwing lifecycle setup.
+
+Primary code owners:
+
+- `esm/native/services/cloud_sync_lifecycle_realtime_runtime_start.ts`
+- `esm/native/services/cloud_sync_lifecycle_realtime_transport_cleanup.ts`
+
+Primary guardrails:
+
+- `tests/cloud_sync_lifecycle_realtime_start_recovery_runtime.test.ts`
+- `tests/cloud_sync_lifecycle_realtime_transport_runtime.test.ts`
+- `tests/refactor_stage21_cloud_sync_realtime_start_recovery_runtime.test.js`
+- `tools/wp_cloud_sync_race_contract.mjs`
+- `tools/wp_refactor_integration_audit.mjs`
+- `docs/REFACTOR_WORKMAP_PROGRESS.md`
+
+Remaining recommended slices after Stage 21:
+
+1. Browser/e2e Canvas behavior flows for broader mirror/split/sketch journeys.
+2. A real browser lifecycle Cloud Sync reconnect journey that drives focus/online/visibility/realtime timeout together.
+3. A narrow runtime selector cleanup only when backed by migration fixtures from real payloads.
+4. CSS/design-system continuation only for real selection controls, not action buttons in disguise.
+
+
+---
+
+## 16. Live repository alignment - Stage 22 Cloud Sync lifecycle-owner realtime recovery hardening
+
+Stage 22 closes the owner-level seam above the Stage 21 realtime transport/start-flight hardening. Stage 21 made the realtime implementation resilient; Stage 22 makes the lifecycle owner resilient even if a future `startRealtime()` implementation throws synchronously or returns a rejected Promise before the inner realtime guard can recover.
+
+What changed:
+
+- Initial realtime lifecycle start is now routed through a small owner-level guard instead of a bare `void startRealtime()` call.
+- Realtime restart requests from polling recovery use the same guard, so rejected restart attempts are reported as non-fatal instead of becoming detached Promise failures.
+- The fallback path marks realtime as `error`, preserves the normalized error message on `runtimeStatus.lastError`, and starts polling with a deterministic owner-level recovery reason.
+- Browser recovery listeners for diagnostics, focus, online, and visibility are still bound even when realtime start fails immediately.
+- A focused runtime test covers both initial owner start failure and fallback-transition failure, while the Cloud Sync race contract and refactor stage guard make the owner-level recovery seam durable.
+
+Primary code owners:
+
+- `esm/native/services/cloud_sync_lifecycle_runtime_realtime_start.ts`
+- `esm/native/services/cloud_sync_lifecycle_runtime_start.ts`
+- `esm/native/services/cloud_sync_lifecycle_runtime_setup.ts`
+
+Primary guardrails:
+
+- `tests/cloud_sync_lifecycle_owner_realtime_start_runtime.test.ts`
+- `tests/refactor_stage22_cloud_sync_lifecycle_owner_recovery_runtime.test.js`
+- `tools/wp_cloud_sync_race_contract.mjs`
+- `tools/wp_refactor_integration_audit.mjs`
+- `docs/REFACTOR_WORKMAP_PROGRESS.md`
+
+Remaining recommended slices after Stage 22:
+
+1. Browser/e2e Canvas behavior flows for broader mirror/split/sketch journeys.
+2. A real browser lifecycle Cloud Sync reconnect journey that drives focus/online/visibility/realtime timeout together in Playwright when test infrastructure is available.
+3. A narrow runtime selector cleanup only when backed by migration fixtures from real payloads.
+4. CSS/design-system continuation only for real selection controls, not action buttons in disguise.

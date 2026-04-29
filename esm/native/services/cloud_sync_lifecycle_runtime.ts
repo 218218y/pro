@@ -18,6 +18,7 @@ export function createCloudSyncLifecycleOps(args: CloudSyncLifecycleArgs): Cloud
         diagStorageKey: args.diagStorageKey,
         publishStatus: args.publishStatus,
         updateDiagEnabled: args.updateDiagEnabled,
+        diag: args.diag,
         suppressRef: args.suppressRef,
         isDisposed: args.isDisposed,
         deps,

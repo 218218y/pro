@@ -768,6 +768,64 @@ test('cloud sync polling start/stop can heal timer state without publishing an i
   assert.deepEqual(publishCalls, []);
 });
 
+test('cloud sync polling realtime recovery reports pull and restart failures without breaking polling fallback', () => {
+  const reported: Array<{ error: unknown; ctx: any }> = [];
+  const intervalCallbacks: Array<() => void> = [];
+  const publishCalls: string[] = [];
+  const diagCalls: Array<{ event: string; payload: unknown }> = [];
+  const runtimeStatus = {
+    realtime: { enabled: true, mode: 'broadcast', state: 'timeout', channel: '' },
+    polling: { active: false, intervalMs: 0, reason: '' },
+    lastError: '',
+  } as any;
+  const pollTimerRef = { current: null as any };
+
+  startCloudSyncPolling({
+    App: {
+      services: {
+        platform: {
+          reportError(error: unknown, ctx: any) {
+            reported.push({ error, ctx });
+          },
+        },
+      },
+    } as any,
+    pollTimerRef,
+    setIntervalFn: handler => {
+      intervalCallbacks.push(handler);
+      return 21 as any;
+    },
+    clearIntervalFn: () => undefined,
+    runtimeStatus,
+    pollIntervalMs: 5000,
+    publishStatus: () => {
+      publishCalls.push(String(runtimeStatus.polling.reason));
+    },
+    diag: (event, payload) => {
+      diagCalls.push({ event: String(event), payload });
+    },
+    reason: 'realtime-timeout',
+    pullAllNow: () => {
+      throw new Error('recovery pull failed');
+    },
+    restartRealtime: () => {
+      throw new Error('restart failed');
+    },
+  });
+
+  assert.equal(pollTimerRef.current, 21, 'polling fallback must remain armed after recovery hook failures');
+  assert.equal(intervalCallbacks.length, 1);
+  assert.equal(runtimeStatus.polling.active, true);
+  assert.equal(runtimeStatus.polling.reason, 'realtime-timeout');
+  assert.deepEqual(publishCalls, ['realtime-timeout']);
+  assert.equal(diagCalls[0]?.event, 'polling:start');
+  assert.equal(reported.length, 2);
+  assert.equal((reported[0]?.error as Error).message, 'recovery pull failed');
+  assert.equal(reported[0]?.ctx?.op, 'cloudSyncPolling.realtimeRecoveryPull');
+  assert.equal((reported[1]?.error as Error).message, 'restart failed');
+  assert.equal(reported[1]?.ctx?.op, 'cloudSyncPolling.realtimeRecoveryRestart');
+});
+
 test('cloud sync realtime status sync preserves the canonical realtime branch ref and heals drifted keys in place', () => {
   const runtimeStatus = {
     realtime: {

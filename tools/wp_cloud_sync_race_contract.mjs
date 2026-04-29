@@ -32,6 +32,12 @@ requireNeedle(
 const pushRuntime = read('esm/native/services/cloud_sync_main_row_push_runtime.ts');
 const pushShared = read('esm/native/services/cloud_sync_main_row_push_shared.ts');
 const pullRuntime = read('esm/native/services/cloud_sync_main_row_pull_runtime.ts');
+const pollingStartRuntime = read('esm/native/services/cloud_sync_lifecycle_support_polling_start_runtime.ts');
+const realtimeStartRuntime = read('esm/native/services/cloud_sync_lifecycle_realtime_runtime_start.ts');
+const lifecycleRuntimeStart = read('esm/native/services/cloud_sync_lifecycle_runtime_start.ts');
+const lifecycleRuntimeSetup = read('esm/native/services/cloud_sync_lifecycle_runtime_setup.ts');
+const lifecycleRealtimeStartGuard = read('esm/native/services/cloud_sync_lifecycle_runtime_realtime_start.ts');
+const realtimeTransportCleanup = read('esm/native/services/cloud_sync_lifecycle_realtime_transport_cleanup.ts');
 const attentionHandlers = read('esm/native/services/cloud_sync_lifecycle_attention_pulls_handlers.ts');
 requireNeedle('cloud_sync_main_row_push_runtime.ts', pushRuntime, 'resetPendingPushAfterFlights();');
 requireNeedle('cloud_sync_main_row_push_runtime.ts', pushRuntime, 'if (args.suppressRef.v) {');
@@ -52,6 +58,62 @@ requireNeedle(
   'cloud_sync_main_row_pull_runtime.ts',
   pullRuntime,
   'args.isPushInFlight() || args.hasPendingPushWork?.()'
+);
+requireNeedle(
+  'cloud_sync_lifecycle_support_polling_start_runtime.ts',
+  pollingStartRuntime,
+  'cloudSyncPolling.realtimeRecoveryPull'
+);
+requireNeedle(
+  'cloud_sync_lifecycle_support_polling_start_runtime.ts',
+  pollingStartRuntime,
+  'cloudSyncPolling.realtimeRecoveryRestart'
+);
+requireNeedle('cloud_sync_lifecycle_realtime_runtime_start.ts', realtimeStartRuntime, 'realtime.startFlight');
+requireNeedle(
+  'cloud_sync_lifecycle_realtime_runtime_start.ts',
+  realtimeStartRuntime,
+  'realtime.startFlightFallback'
+);
+requireNeedle(
+  'cloud_sync_lifecycle_realtime_runtime_start.ts',
+  realtimeStartRuntime,
+  'realtime:start-flight-error'
+);
+requireNeedle(
+  'cloud_sync_lifecycle_runtime_start.ts',
+  lifecycleRuntimeStart,
+  'cloudSyncLifecycle.realtimeInitialStart'
+);
+requireNeedle(
+  'cloud_sync_lifecycle_runtime_start.ts',
+  lifecycleRuntimeStart,
+  'realtime-owner-start-error'
+);
+requireNeedle(
+  'cloud_sync_lifecycle_runtime_setup.ts',
+  lifecycleRuntimeSetup,
+  'cloudSyncLifecycle.realtimeRestart'
+);
+requireNeedle(
+  'cloud_sync_lifecycle_runtime_setup.ts',
+  lifecycleRuntimeSetup,
+  'realtime-owner-restart-error'
+);
+requireNeedle(
+  'cloud_sync_lifecycle_runtime_realtime_start.ts',
+  lifecycleRealtimeStartGuard,
+  'markCloudSyncRealtimeFailure'
+);
+requireNeedle(
+  'cloud_sync_lifecycle_runtime_realtime_start.ts',
+  lifecycleRealtimeStartGuard,
+  '`${op}.fallback`'
+);
+requireNeedle(
+  'cloud_sync_lifecycle_realtime_transport_cleanup.ts',
+  realtimeTransportCleanup,
+  'clearHints'
 );
 
 const coalescerTest = read('tests/cloud_sync_pull_coalescer_runtime.test.ts');
@@ -109,6 +171,31 @@ requireNeedle(
   attentionTest,
   'online handler reports pull failures without breaking later attention events'
 );
+requireNeedle(
+  'tests/cloud_sync_lifecycle_support_runtime.test.ts',
+  read('tests/cloud_sync_lifecycle_support_runtime.test.ts'),
+  'realtime recovery reports pull and restart failures without breaking polling fallback'
+);
+requireNeedle(
+  'tests/cloud_sync_lifecycle_realtime_start_recovery_runtime.test.ts',
+  read('tests/cloud_sync_lifecycle_realtime_start_recovery_runtime.test.ts'),
+  'reports unexpected setup failures and falls back to polling'
+);
+requireNeedle(
+  'tests/cloud_sync_lifecycle_realtime_transport_runtime.test.ts',
+  read('tests/cloud_sync_lifecycle_realtime_transport_runtime.test.ts'),
+  'reports hint clearing failures and still clears transport refs'
+);
+requireNeedle(
+  'tests/cloud_sync_lifecycle_owner_realtime_start_runtime.test.ts',
+  read('tests/cloud_sync_lifecycle_owner_realtime_start_runtime.test.ts'),
+  'still binds browser recovery listeners'
+);
+requireNeedle(
+  'tests/cloud_sync_lifecycle_owner_realtime_start_runtime.test.ts',
+  read('tests/cloud_sync_lifecycle_owner_realtime_start_runtime.test.ts'),
+  'reports fallback failures without rejecting'
+);
 
 if (errors.length) {
   console.error('[cloud-sync-race-contract] FAILED');
@@ -117,3 +204,4 @@ if (errors.length) {
 }
 
 console.log('[cloud-sync-race-contract] ok');
+process.exit(0);
