@@ -40,26 +40,43 @@ test('stage 19 project migration selector guard is wired into the refactor contr
 
   const integrationAudit = readFileSync('tools/wp_refactor_integration_audit.mjs', 'utf8');
   assert.match(integrationAudit, /refactor_stage19_project_migration_selector_hardening_runtime\.test\.js/);
-  assert.match(integrationAudit, /Stage 29/);
-  assert.match(integrationAudit, /Stage 30/);
 
   const progress = readFileSync('docs/REFACTOR_WORKMAP_PROGRESS.md', 'utf8');
   assert.match(progress, /Stage 19/);
-  assert.match(progress, /Stage 29/);
-  assert.match(progress, /Stage 30/);
 });
 
-test('stage 29 and 30 canonical ui.raw runtime selectors stay separated from legacy fallbacks', () => {
-  const selectors = readFileSync('esm/native/runtime/ui_raw_selectors.ts', 'utf8');
-  const policyAudit = readFileSync('tools/wp_runtime_selector_policy_audit.mjs', 'utf8');
-  const runtimeTest = readFileSync('tests/project_migration_runtime_selector_hardening_runtime.test.ts', 'utf8');
-
-  assert.match(selectors, /readCanonicalUiRawNumberFromSnapshot/);
-  assert.match(selectors, /readCanonicalUiRawIntFromSnapshot/);
-  assert.match(selectors, /readCanonicalUiRawDimsCmFromSnapshot/);
-  assert.match(policyAudit, /canonical dimensions reader must not use tolerant legacy numeric readers/);
-  assert.match(
-    runtimeTest,
-    /canonical ui\.raw batch readers fail fast before project ingress migration and stay raw-only afterwards/
+test('stage 31 and 32 project selector public API closeout is anchored', () => {
+  const coreApi = readFileSync('esm/native/core/api.ts', 'utf8');
+  const stateSurface = readFileSync('esm/native/services/api_state_surface.ts', 'utf8');
+  const selectorTest = readFileSync(
+    'tests/project_migration_runtime_selector_hardening_runtime.test.ts',
+    'utf8'
   );
+  const selectorAudit = readFileSync('tools/wp_runtime_selector_policy_audit.mjs', 'utf8');
+  const integrationAudit = readFileSync('tools/wp_refactor_integration_audit.mjs', 'utf8');
+  const progress = readFileSync('docs/REFACTOR_WORKMAP_PROGRESS.md', 'utf8');
+
+  for (const symbol of [
+    'readUiRawScalarFromCanonicalSnapshot',
+    'hasCanonicalEssentialUiRawDimsFromSnapshot',
+    'assertCanonicalUiRawDims',
+    'readCanonicalUiRawNumberFromSnapshot',
+    'readCanonicalUiRawIntFromSnapshot',
+    'readCanonicalUiRawDimsCmFromSnapshot',
+    'readCanonicalUiRawDimsCmFromStore',
+  ]) {
+    assert.match(coreApi, new RegExp(`\\b${symbol}\\b`));
+    assert.match(stateSurface, new RegExp(`\\b${symbol}\\b`));
+    assert.match(selectorAudit, new RegExp(`\\b${symbol}\\b`));
+  }
+
+  assert.match(
+    selectorTest,
+    /canonical ui\.raw readers are exposed through public core and state surfaces/
+  );
+  assert.match(selectorAudit, /requirePublicUiRawExports/);
+  assert.match(integrationAudit, /Stage 31/);
+  assert.match(integrationAudit, /Stage 32/);
+  assert.match(progress, /Stage 31/);
+  assert.match(progress, /Stage 32/);
 });

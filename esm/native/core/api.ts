@@ -68,16 +68,23 @@ export {
 
 export {
   readUiRawScalarFromSnapshot,
+  readUiRawScalarFromCanonicalSnapshot,
   hasEssentialUiDimsFromSnapshot,
+  hasCanonicalEssentialUiRawDimsFromSnapshot,
   ensureUiRawDimsFromSnapshot,
+  assertCanonicalUiRawDims,
   readUiRawNumberFromSnapshot,
   readUiRawIntFromSnapshot,
+  readCanonicalUiRawNumberFromSnapshot,
+  readCanonicalUiRawIntFromSnapshot,
+  readCanonicalUiRawDimsCmFromSnapshot,
   readUiRawNumberFromStore,
   readUiRawIntFromStore,
   readUiRawNumberFromStoreUi,
   readUiRawIntFromStoreUi,
   readUiRawDimsCmFromSnapshot,
   readUiRawDimsCmFromStore,
+  readCanonicalUiRawDimsCmFromStore,
 } from '../runtime/ui_raw_selectors.js';
 
 export {

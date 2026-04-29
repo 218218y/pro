@@ -22,12 +22,12 @@ function requireNotIncludes(rel, text, needle, message) {
   if (text.includes(needle)) failures.push(`${rel}: ${message || `must not contain ${needle}`}`);
 }
 
-function findMatchingDelimiter(source, openAt, openChar, closeChar) {
+function findMatchingParen(source, openAt) {
   let depth = 0;
   for (let i = openAt; i < source.length; i += 1) {
     const ch = source[i];
-    if (ch === openChar) depth += 1;
-    else if (ch === closeChar) {
+    if (ch === '(') depth += 1;
+    else if (ch === ')') {
       depth -= 1;
       if (depth === 0) return i;
     }
@@ -35,66 +35,75 @@ function findMatchingDelimiter(source, openAt, openChar, closeChar) {
   return -1;
 }
 
-function previousNonWhitespaceChar(source, beforeIndex) {
-  for (let i = beforeIndex - 1; i >= 0; i -= 1) {
-    if (!/\s/.test(source[i])) return source[i];
+function findFunctionBodyOpen(source, fromIndex) {
+  let depth = 0;
+  for (let i = fromIndex; i < source.length; i += 1) {
+    const ch = source[i];
+    if (ch === '{') {
+      if (depth === 0) {
+        let j = i + 1;
+        while (j < source.length && /\s/.test(source[j])) j += 1;
+        const next = source.slice(j, j + 5);
+        if (next !== 'width' && next !== 'heigh' && next !== 'depth' && next !== 'doors' && next !== 'chest') {
+          return i;
+        }
+      }
+      depth += 1;
+    } else if (ch === '}') {
+      depth = Math.max(0, depth - 1);
+      let j = i + 1;
+      while (j < source.length && /\s/.test(source[j])) j += 1;
+      if (depth === 0 && source[j] === '{') return j;
+    } else if (ch === '=') {
+      let j = i + 1;
+      while (j < source.length && /\s/.test(source[j])) j += 1;
+      if (source[j] === '>') {
+        j += 1;
+        while (j < source.length && /\s/.test(source[j])) j += 1;
+        return source[j] === '{' ? j : -1;
+      }
+    }
   }
-  return '';
+  return -1;
 }
 
-function findFunctionBodyOpen(rel, source, name) {
+function readFunctionBody(rel, source, name) {
   const marker = `function ${name}`;
   const markerAt = source.indexOf(marker);
   if (markerAt < 0) {
     failures.push(`${rel}: missing function ${name}`);
-    return -1;
+    return '';
   }
 
   const paramsOpenAt = source.indexOf('(', markerAt + marker.length);
   if (paramsOpenAt < 0) {
     failures.push(`${rel}: cannot locate parameters for ${name}`);
-    return -1;
+    return '';
   }
-
-  const paramsCloseAt = findMatchingDelimiter(source, paramsOpenAt, '(', ')');
+  const paramsCloseAt = findMatchingParen(source, paramsOpenAt);
   if (paramsCloseAt < 0) {
-    failures.push(`${rel}: unterminated parameters for ${name}`);
-    return -1;
-  }
-
-  for (let i = paramsCloseAt + 1; i < source.length; i += 1) {
-    const ch = source[i];
-    if (ch !== '{') continue;
-
-    const previous = previousNonWhitespaceChar(source, i);
-    if (previous === ':' || previous === '<' || previous === '|' || previous === '&' || previous === ',') {
-      const typeCloseAt = findMatchingDelimiter(source, i, '{', '}');
-      if (typeCloseAt < 0) {
-        failures.push(`${rel}: unterminated return type for ${name}`);
-        return -1;
-      }
-      i = typeCloseAt;
-      continue;
-    }
-
-    return i;
-  }
-
-  failures.push(`${rel}: cannot locate body for ${name}`);
-  return -1;
-}
-
-function readFunctionBody(rel, source, name) {
-  const openAt = findFunctionBodyOpen(rel, source, name);
-  if (openAt < 0) return '';
-
-  const closeAt = findMatchingDelimiter(source, openAt, '{', '}');
-  if (closeAt < 0) {
-    failures.push(`${rel}: unterminated body for ${name}`);
+    failures.push(`${rel}: cannot close parameters for ${name}`);
     return '';
   }
 
-  return source.slice(openAt + 1, closeAt);
+  const openAt = findFunctionBodyOpen(source, paramsCloseAt + 1);
+  if (openAt < 0) {
+    failures.push(`${rel}: cannot locate body for ${name}`);
+    return '';
+  }
+
+  let depth = 0;
+  for (let i = openAt; i < source.length; i += 1) {
+    const ch = source[i];
+    if (ch === '{') depth += 1;
+    else if (ch === '}') {
+      depth -= 1;
+      if (depth === 0) return source.slice(openAt + 1, i);
+    }
+  }
+
+  failures.push(`${rel}: unterminated body for ${name}`);
+  return '';
 }
 
 function requireFunctionIncludes(rel, source, name, needle, message) {
@@ -107,17 +116,40 @@ function requireFunctionNotIncludes(rel, source, name, needle, message) {
   requireNotIncludes(`${rel}#${name}`, body, needle, message);
 }
 
+function requirePublicUiRawExports(rel, source) {
+  for (const symbol of [
+    'readUiRawScalarFromCanonicalSnapshot',
+    'hasCanonicalEssentialUiRawDimsFromSnapshot',
+    'assertCanonicalUiRawDims',
+    'readCanonicalUiRawNumberFromSnapshot',
+    'readCanonicalUiRawIntFromSnapshot',
+    'readCanonicalUiRawDimsCmFromSnapshot',
+    'readCanonicalUiRawDimsCmFromStore',
+  ]) {
+    requireIncludes(
+      rel,
+      source,
+      symbol,
+      `${rel} public API must expose canonical ui.raw selector ${symbol}`
+    );
+  }
+}
+
 const loaderRel = 'esm/native/io/project_io_orchestrator_project_load.ts';
 const migrationsRel = 'esm/native/io/project_migrations/index.ts';
 const uiSelectorsRel = 'esm/native/runtime/ui_raw_selectors.ts';
 const cfgMigrationRel = 'esm/native/io/project_migrations/config_snapshot_migration.ts';
 const runtimeSelectorTestRel = 'tests/project_migration_runtime_selector_hardening_runtime.test.ts';
+const coreApiRel = 'esm/native/core/api.ts';
+const stateSurfaceRel = 'esm/native/services/api_state_surface.ts';
 
 const loader = read(loaderRel);
 const migrations = read(migrationsRel);
 const uiSelectors = read(uiSelectorsRel);
 const cfgMigration = read(cfgMigrationRel);
 const runtimeSelectorTest = read(runtimeSelectorTestRel);
+const coreApi = read(coreApiRel);
+const stateSurface = read(stateSurfaceRel);
 
 requireIncludes(
   loaderRel,
@@ -263,11 +295,20 @@ requireFunctionNotIncludes(
   'canonical dimensions reader must not use tolerant legacy numeric readers'
 );
 
+requirePublicUiRawExports(coreApiRel, coreApi);
+requirePublicUiRawExports(stateSurfaceRel, stateSurface);
+
 requireIncludes(
   runtimeSelectorTestRel,
   runtimeSelectorTest,
   'canonical ui.raw batch readers fail fast before project ingress migration and stay raw-only afterwards',
   'runtime selector tests must cover canonical batch readers against legacy ui.* fallback regression'
+);
+requireIncludes(
+  runtimeSelectorTestRel,
+  runtimeSelectorTest,
+  'canonical ui.raw readers are exposed through public core and state surfaces',
+  'runtime selector tests must lock the public API surface for canonical ui.raw readers'
 );
 requireIncludes(
   runtimeSelectorTestRel,

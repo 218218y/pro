@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 
 import {
   buildCanonicalProjectUiSnapshot,
@@ -107,4 +108,27 @@ test('canonical ui.raw batch readers fail fast before project ingress migration 
     doorsCount: 4,
     chestDrawersCount: 7,
   });
+});
+
+test('canonical ui.raw readers are exposed through public core and state surfaces', () => {
+  const coreApi = readFileSync('esm/native/core/api.ts', 'utf8');
+  const stateSurface = readFileSync('esm/native/services/api_state_surface.ts', 'utf8');
+  const expectedExports = [
+    'readUiRawScalarFromCanonicalSnapshot',
+    'hasCanonicalEssentialUiRawDimsFromSnapshot',
+    'assertCanonicalUiRawDims',
+    'readCanonicalUiRawNumberFromSnapshot',
+    'readCanonicalUiRawIntFromSnapshot',
+    'readCanonicalUiRawDimsCmFromSnapshot',
+    'readCanonicalUiRawDimsCmFromStore',
+  ];
+
+  for (const symbol of expectedExports) {
+    assert.match(coreApi, new RegExp(`\\b${symbol}\\b`), `core/api.ts must export ${symbol}`);
+    assert.match(
+      stateSurface,
+      new RegExp(`\\b${symbol}\\b`),
+      `services/api_state_surface.ts must export ${symbol}`
+    );
+  }
 });

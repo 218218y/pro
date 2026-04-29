@@ -126,10 +126,26 @@ for (const stage of [
   'Stage 28',
   'Stage 29',
   'Stage 30',
+  'Stage 31',
+  'Stage 32',
 ]) {
   requireNeedle('docs/REFACTOR_WORKMAP_PROGRESS.md', progressDoc, stage);
 }
 requireNeedle('docs/REFACTOR_WORKMAP_PROGRESS.md', progressDoc, 'verify:refactor-modernization');
+
+const projectSelectorStageGuard = read(
+  'tests/refactor_stage19_project_migration_selector_hardening_runtime.test.js'
+);
+requireNeedle(
+  'tests/refactor_stage19_project_migration_selector_hardening_runtime.test.js',
+  projectSelectorStageGuard,
+  'stage 31 and 32 project selector public API closeout is anchored'
+);
+requireNeedle(
+  'tests/refactor_stage19_project_migration_selector_hardening_runtime.test.js',
+  projectSelectorStageGuard,
+  'readCanonicalUiRawDimsCmFromStore'
+);
 
 if (errors.length) {
   console.error('[refactor-integration-audit] FAILED');
