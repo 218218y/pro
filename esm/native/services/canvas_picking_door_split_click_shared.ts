@@ -17,20 +17,15 @@ import {
   __wp_isSplitBottom,
   __wp_isSplit,
   __wp_isSplitExplicit,
+  __wp_getSplitHoverDoorBaseKey,
 } from './canvas_picking_core_helpers.js';
 
 export function resolveCanvasDoorSplitBaseKey(App: AppContainer, effectiveDoorId: string): string {
   const doorIdStr = __wp_str(App, effectiveDoorId);
   try {
-    if (doorIdStr.startsWith('d')) return doorIdStr.split('_')[0] || doorIdStr;
-    if (doorIdStr.startsWith('corner_door')) {
-      const parts = doorIdStr.split('_');
-      return parts[2] ? `corner_door_${parts[2]}` : doorIdStr;
-    }
-    if (doorIdStr.startsWith('corner_pent_door')) {
-      const parts = doorIdStr.split('_');
-      return parts[3] ? `corner_pent_door_${parts[3]}` : doorIdStr;
-    }
+    const splitMapKey = __splitKey(doorIdStr);
+    const splitBase = splitMapKey.startsWith('split_') ? splitMapKey.slice('split_'.length) : doorIdStr;
+    return __wp_getSplitHoverDoorBaseKey(splitBase) || splitBase || doorIdStr;
   } catch (err) {
     __wp_reportPickingIssue(App, err, {
       where: 'canvasPicking',

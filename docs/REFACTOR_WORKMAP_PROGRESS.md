@@ -10,7 +10,7 @@ It replaces the removed long-form planning docs with a durable audit contract: e
 - Guardrail aggregate lane: `check:refactor-guardrails`.
 - Stage regression lane: `test:refactor-stage-guards`.
 - Current Cloud Sync hardening slice: pull coalescer failure recovery, main-row push failure/suppression recovery, and attention-pull error recovery are covered in focused Cloud Sync lanes and guarded by `check:cloud-sync-races`.
-- Current Canvas parity slice: mirror face-sign inference, full-door mirror commit fallback from canonical hit identity, sketch-box special-paint target preservation, lower split-door identity/stack/split-part parity, and sketch-box door module/door identity are covered by focused runtime tests and guarded by `check:canvas-hit-identity` plus `check:canvas-hit-parity`.
+- Current Canvas parity slice: mirror face-sign inference, full-door mirror commit fallback from canonical hit identity, sketch-box special-paint target preservation, lower split-door identity/stack/split-part parity, split click commit base/bounds parity, and sketch-box door module/door identity are covered by focused runtime tests and guarded by `check:canvas-hit-identity` plus `check:canvas-hit-parity`.
 
 ## Retained audit anchors
 

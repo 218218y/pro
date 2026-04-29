@@ -7,10 +7,12 @@ const files = {
   clickScanObjects: 'esm/native/services/canvas_picking_click_hit_flow_scan_objects.ts',
   hoverScan: 'esm/native/services/canvas_picking_door_hover_targets_hit_scan.ts',
   clickRouteActions: 'esm/native/services/canvas_picking_click_route_actions.ts',
+  splitClickShared: 'esm/native/services/canvas_picking_door_split_click_shared.ts',
   paintContracts: 'esm/native/services/canvas_picking_paint_flow_contracts.ts',
   paintMirror: 'esm/native/services/canvas_picking_paint_flow_mirror.ts',
   paintApplySpecial: 'esm/native/services/canvas_picking_paint_flow_apply_special.ts',
   clickRuntimeTest: 'tests/canvas_picking_click_hit_flow_runtime.test.ts',
+  splitClickRuntimeTest: 'tests/canvas_picking_door_split_click_runtime.test.ts',
   hoverClickRuntimeTest: 'tests/canvas_picking_hover_click_hit_identity_parity_runtime.test.ts',
   paintRuntimeTest: 'tests/canvas_picking_paint_flow_apply_runtime.test.ts',
   stageRuntimeTest: 'tests/refactor_stage18_canvas_hit_parity_runtime.test.js',
@@ -159,6 +161,20 @@ requireMatch(
   'paint route must forward canonical hitIdentity into paint commit'
 );
 
+const splitClickShared = read(files.splitClickShared);
+requireMatch(
+  files.splitClickShared,
+  splitClickShared,
+  /const splitMapKey = __splitKey\(doorIdStr\);/,
+  'split click normalization must reuse canonical split map-key policy'
+);
+requireMatch(
+  files.splitClickShared,
+  splitClickShared,
+  /return __wp_getSplitHoverDoorBaseKey\(splitBase\) \|\| splitBase \|\| doorIdStr;/,
+  'split click normalization must use the same base-key owner as split hover before reading bounds'
+);
+
 const paintContracts = read(files.paintContracts);
 requireMatch(
   files.paintContracts,
@@ -232,6 +248,26 @@ requireMatch(
   hoverClickRuntimeTest,
   /sketch-box door hits preserve module and door identity/,
   'runtime test must cover sketch-box door parity'
+);
+
+const splitClickRuntimeTest = read(files.splitClickRuntimeTest);
+requireMatch(
+  files.splitClickRuntimeTest,
+  splitClickRuntimeTest,
+  /lower split door clicks resolve bottom split action using full-family bounds/,
+  'runtime test must cover lower split commit action parity'
+);
+requireMatch(
+  files.splitClickRuntimeTest,
+  splitClickRuntimeTest,
+  /lower corner custom split commits canonical split position against full-family bounds/,
+  'runtime test must cover lower corner custom split commit bounds parity'
+);
+requireMatch(
+  files.splitClickRuntimeTest,
+  splitClickRuntimeTest,
+  /lower_corner_pent_door_3_bot/,
+  'runtime test must pin lower corner pent split base normalization'
 );
 
 const paintRuntimeTest = read(files.paintRuntimeTest);

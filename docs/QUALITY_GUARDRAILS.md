@@ -18,7 +18,7 @@ This file keeps the active engineering policies in one place. Historical stage n
 - Builder code must not use DOM/storage/global timer access directly.
 - Render hotpaths should not gain casual probes or duplicate render triggers. Measure through explicit perf/debug owners.
 - Perf baselines should be updated only after measured improvement or a deliberate accepted product change.
-- Generated Three.js mirrors under `tools/three_addons/` are vendor refresh outputs. Keep them out of ESLint style gates and validate their runtime surface through `wp_three_vendor_contract`.
+- Generated Three.js mirrors under `tools/three_addons/` are vendor refresh outputs. Keep them out of source style gates and validate their runtime surface through `wp_three_vendor_contract`.
 
 Relevant checks:
 
@@ -37,6 +37,7 @@ npm run contract:three-vendor
 - Mirror hits that expose only `faceSign` must still resolve a canonical inside/outside face side.
 - Mirror paint commits must receive the finalized `hitIdentity`; full-door mirror fallback may use `faceSign` only when no sized mirror draft is active and must remove matching full-face layouts instead of duplicating them.
 - Split lower-stack door ids, sketch-box door metadata, and explicit object stack tags must flow through the same hit identity owner used by regular doors.
+- Split click commits must normalize effective top/bot/mid part ids through the same split map-key policy and split-hover base-key owner before reading family bounds or dispatching split actions.
 - Paint target resolution must preserve sketch-box door part keys for special paint maps; canonical sketch door ids may describe identity but must not replace the persisted map key.
 - Click identity must not invent a `top` stack when no stack hint exists; use explicit object/module stack evidence only.
 - Identity helpers stay data-only: no DOM, scene mutation, store writes, timers, or UI operations.
