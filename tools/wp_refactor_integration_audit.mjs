@@ -128,23 +128,22 @@ for (const stage of [
   'Stage 30',
   'Stage 31',
   'Stage 32',
+  'Stage 33',
+  'Stage 34',
+  'Stage 35',
 ]) {
   requireNeedle('docs/REFACTOR_WORKMAP_PROGRESS.md', progressDoc, stage);
 }
 requireNeedle('docs/REFACTOR_WORKMAP_PROGRESS.md', progressDoc, 'verify:refactor-modernization');
-
-const projectSelectorStageGuard = read(
-  'tests/refactor_stage19_project_migration_selector_hardening_runtime.test.js'
-);
 requireNeedle(
   'tests/refactor_stage19_project_migration_selector_hardening_runtime.test.js',
-  projectSelectorStageGuard,
-  'stage 31 and 32 project selector public API closeout is anchored'
+  read('tests/refactor_stage19_project_migration_selector_hardening_runtime.test.js'),
+  'stage 33 to 35 project config migration replace-owned branches are anchored'
 );
 requireNeedle(
-  'tests/refactor_stage19_project_migration_selector_hardening_runtime.test.js',
-  projectSelectorStageGuard,
-  'readCanonicalUiRawDimsCmFromStore'
+  'tests/project_config_migration_replace_keys_runtime.test.ts',
+  read('tests/project_config_migration_replace_keys_runtime.test.ts'),
+  'materializes every replace-owned branch'
 );
 
 if (errors.length) {

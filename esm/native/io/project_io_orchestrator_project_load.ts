@@ -21,6 +21,7 @@ import { assertCanonicalUiRawDims } from '../runtime/ui_raw_selectors.js';
 import {
   buildCanonicalProjectConfigSnapshot,
   buildCanonicalProjectUiSnapshot,
+  PROJECT_CONFIG_SNAPSHOT_REPLACE_KEYS,
 } from './project_migrations/index.js';
 import { setAutoCameraBuildKey } from '../runtime/render_access.js';
 import {
@@ -62,30 +63,6 @@ function buildProjectLoadCommittedUiSnapshot(uiSnap: UnknownRecord): UnknownReco
   };
 }
 
-const PROJECT_LOAD_CONFIG_REPLACE_KEYS = {
-  modulesConfiguration: true,
-  stackSplitLowerModulesConfiguration: true,
-  cornerConfiguration: true,
-  groovesMap: true,
-  grooveLinesCountMap: true,
-  splitDoorsMap: true,
-  splitDoorsBottomMap: true,
-  removedDoorsMap: true,
-  drawerDividersMap: true,
-  individualColors: true,
-  doorSpecialMap: true,
-  doorStyleMap: true,
-  mirrorLayoutMap: true,
-  doorTrimMap: true,
-  savedColors: true,
-  colorSwatchesOrder: true,
-  savedNotes: true,
-  preChestState: true,
-  handlesMap: true,
-  hingeMap: true,
-  curtainMap: true,
-} as const;
-
 function buildProjectLoadCanonicalPatch(
   cfg: UnknownRecord,
   committedUiSnap: UnknownRecord,
@@ -93,7 +70,7 @@ function buildProjectLoadCanonicalPatch(
 ): UnknownRecord {
   return {
     // Project loads must replace snapshot-owned config branches so empty maps/lists clear stale state.
-    config: cfgPatchWithReplaceKeys({ ...cfg }, PROJECT_LOAD_CONFIG_REPLACE_KEYS),
+    config: cfgPatchWithReplaceKeys({ ...cfg }, PROJECT_CONFIG_SNAPSHOT_REPLACE_KEYS),
     ui: { ...committedUiSnap },
     runtime: {
       sketchMode: !!committedUiSnap.sketchMode,

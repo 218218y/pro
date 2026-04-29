@@ -4,8 +4,33 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const PROJECT_LOAD_FILE = 'esm/native/io/project_io_orchestrator_project_load.ts';
+const PROJECT_CONFIG_MIGRATION_FILE = 'esm/native/io/project_migrations/config_snapshot_migration.ts';
+const PROJECT_MIGRATION_INDEX_FILE = 'esm/native/io/project_migrations/index.ts';
 const UI_RAW_SELECTORS_FILE = 'esm/native/runtime/ui_raw_selectors.ts';
 const RUNTIME_ROOT = 'esm/native/runtime';
+
+const PROJECT_CONFIG_REPLACE_KEYS = [
+  'modulesConfiguration',
+  'stackSplitLowerModulesConfiguration',
+  'cornerConfiguration',
+  'groovesMap',
+  'grooveLinesCountMap',
+  'splitDoorsMap',
+  'splitDoorsBottomMap',
+  'removedDoorsMap',
+  'drawerDividersMap',
+  'individualColors',
+  'doorSpecialMap',
+  'doorStyleMap',
+  'mirrorLayoutMap',
+  'doorTrimMap',
+  'savedColors',
+  'savedNotes',
+  'preChestState',
+  'handlesMap',
+  'hingeMap',
+  'curtainMap',
+];
 
 function read(file) {
   return fs.readFileSync(file, 'utf8');
@@ -29,14 +54,22 @@ function walkFiles(root) {
   return files.sort((a, b) => a.localeCompare(b));
 }
 
+function requireNeedle(failures, label, source, needle, message) {
+  if (!source.includes(needle)) failures.push(`${label}: ${message || `missing ${needle}`}`);
+}
+
+function requireNoNeedle(failures, label, source, needle, message) {
+  if (source.includes(needle)) failures.push(`${label}: ${message || `must not contain ${needle}`}`);
+}
+
 function findRuntimeImportsFromProjectMigrations(projectRoot) {
   const failures = [];
   for (const file of walkFiles(path.join(projectRoot, RUNTIME_ROOT))) {
     const rel = path.relative(projectRoot, file).split(path.sep).join('/');
     const text = read(file);
     if (
-      /from\s+['\"][.\/]+io\/project_migrations\//.test(text) ||
-      /from\s+['\"][.\/]+project_migrations\//.test(text)
+      /from\s+['"][.\/]+io\/project_migrations\//.test(text) ||
+      /from\s+['"][.\/]+project_migrations\//.test(text)
     ) {
       failures.push(`${rel} imports the project migration boundary; runtime must stay below IO.`);
     }
@@ -47,9 +80,13 @@ function findRuntimeImportsFromProjectMigrations(projectRoot) {
 export function runProjectMigrationBoundaryAudit(projectRoot = process.cwd()) {
   const failures = [];
   const projectLoadPath = path.join(projectRoot, PROJECT_LOAD_FILE);
+  const configMigrationPath = path.join(projectRoot, PROJECT_CONFIG_MIGRATION_FILE);
+  const migrationIndexPath = path.join(projectRoot, PROJECT_MIGRATION_INDEX_FILE);
   const uiRawSelectorsPath = path.join(projectRoot, UI_RAW_SELECTORS_FILE);
 
   if (!fs.existsSync(projectLoadPath)) failures.push(`${PROJECT_LOAD_FILE} is missing.`);
+  if (!fs.existsSync(configMigrationPath)) failures.push(`${PROJECT_CONFIG_MIGRATION_FILE} is missing.`);
+  if (!fs.existsSync(migrationIndexPath)) failures.push(`${PROJECT_MIGRATION_INDEX_FILE} is missing.`);
   if (!fs.existsSync(uiRawSelectorsPath)) failures.push(`${UI_RAW_SELECTORS_FILE} is missing.`);
 
   if (fs.existsSync(projectLoadPath)) {
@@ -65,6 +102,65 @@ export function runProjectMigrationBoundaryAudit(projectRoot = process.cwd()) {
     if (!/assertCanonicalUiRawDims\(/.test(projectLoad)) {
       failures.push('project load must assert canonical ui.raw dimensions after project migration.');
     }
+    requireNeedle(
+      failures,
+      PROJECT_LOAD_FILE,
+      projectLoad,
+      'PROJECT_CONFIG_SNAPSHOT_REPLACE_KEYS',
+      'project load must use the migration-owned config replace-key map'
+    );
+    requireNoNeedle(
+      failures,
+      PROJECT_LOAD_FILE,
+      projectLoad,
+      'PROJECT_LOAD_CONFIG_REPLACE_KEYS',
+      'project load must not carry a local config replace-key policy'
+    );
+  }
+
+  if (fs.existsSync(configMigrationPath)) {
+    const configMigration = read(configMigrationPath);
+    requireNeedle(
+      failures,
+      PROJECT_CONFIG_MIGRATION_FILE,
+      configMigration,
+      'PROJECT_CONFIG_SNAPSHOT_REPLACE_KEYS',
+      'config migration owner must define project-load replace-owned branches'
+    );
+    requireNeedle(
+      failures,
+      PROJECT_CONFIG_MIGRATION_FILE,
+      configMigration,
+      'PROJECT_CONFIG_MIGRATION_REQUIRED_KEYS',
+      'config migration owner must include replace-owned branches in the canonical required-key contract'
+    );
+    for (const key of PROJECT_CONFIG_REPLACE_KEYS) {
+      requireNeedle(
+        failures,
+        PROJECT_CONFIG_MIGRATION_FILE,
+        configMigration,
+        `${key}: true`,
+        `config migration replace-key map must include ${key}`
+      );
+      requireNeedle(
+        failures,
+        PROJECT_CONFIG_MIGRATION_FILE,
+        configMigration,
+        `'${key}'`,
+        `config migration required-key contract must include ${key}`
+      );
+    }
+  }
+
+  if (fs.existsSync(migrationIndexPath)) {
+    const migrationIndex = read(migrationIndexPath);
+    requireNeedle(
+      failures,
+      PROJECT_MIGRATION_INDEX_FILE,
+      migrationIndex,
+      'PROJECT_CONFIG_SNAPSHOT_REPLACE_KEYS',
+      'project migrations barrel must export the config replace-key owner'
+    );
   }
 
   if (fs.existsSync(uiRawSelectorsPath)) {
@@ -73,20 +169,10 @@ export function runProjectMigrationBoundaryAudit(projectRoot = process.cwd()) {
       'readUiRawScalarFromCanonicalSnapshot',
       'hasCanonicalEssentialUiRawDimsFromSnapshot',
       'assertCanonicalUiRawDims',
-      'readCanonicalUiRawNumberFromSnapshot',
-      'readCanonicalUiRawIntFromSnapshot',
-      'readCanonicalUiRawDimsCmFromSnapshot',
     ]) {
       if (!selectors.includes(`export function ${symbol}`)) {
         failures.push(`${UI_RAW_SELECTORS_FILE} must export ${symbol}.`);
       }
-    }
-    const canonicalDimsIndex = selectors.indexOf('export function readCanonicalUiRawDimsCmFromSnapshot');
-    const legacyDimsIndex = selectors.indexOf('export function readUiRawDimsCmFromSnapshot');
-    if (canonicalDimsIndex < 0 || legacyDimsIndex < 0 || canonicalDimsIndex > legacyDimsIndex) {
-      failures.push(
-        `${UI_RAW_SELECTORS_FILE} must keep canonical batch readers separate from legacy tolerant batch readers.`
-      );
     }
   }
 

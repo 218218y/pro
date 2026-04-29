@@ -9,6 +9,8 @@ export {
   buildCanonicalProjectConfigSnapshot,
   migrateProjectConfigSnapshotToCanonical,
   PROJECT_CONFIG_MIGRATION_REQUIRED_KEYS,
+  PROJECT_CONFIG_SNAPSHOT_REPLACE_KEYS,
   type ProjectConfigMigrationRequiredKey,
   type ProjectConfigMigrationResult,
+  type ProjectConfigSnapshotReplaceKey,
 } from './config_snapshot_migration.js';
