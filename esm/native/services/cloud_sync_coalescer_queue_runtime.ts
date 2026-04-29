@@ -65,7 +65,16 @@ export function createCloudSyncPullCoalescerFire(
       runPromise = Promise.resolve(context.deps.run());
     } catch (e) {
       context.deps.reportNonFatal(`pullCoalescer.${context.policy.scopeLabel}.run`, e);
-      runPromise = Promise.resolve();
+      context.state.inFlight = false;
+      if (context.state.queued && !context.deps.isDisposed() && !context.deps.isSuppressed()) {
+        controls.scheduleQueuedRun();
+      } else {
+        controls.stopWaitingForMainPush();
+        if (context.state.queued && (context.deps.isDisposed() || context.deps.isSuppressed())) {
+          resetPullCoalescerState(context.state);
+        }
+      }
+      return;
     }
 
     void runPromise

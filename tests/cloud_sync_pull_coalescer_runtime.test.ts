@@ -588,3 +588,30 @@ test('cloud sync pull coalescer drops queued follow-up work when suppression sta
     'suppressed in-flight follow-up reason must not leak into later diagnostics'
   );
 });
+
+test('cloud sync pull coalescer clears inFlight immediately on synchronous run throws so a same-tick retrigger is accepted', async () => {
+  let shouldThrow = true;
+  const harness = createCoalescerHarness({
+    run: () => {
+      if (shouldThrow) throw new Error('sync immediate boom');
+    },
+  });
+
+  harness.coalescer.trigger('sync-first');
+  assert.equal(harness.timers.runNext(), true);
+
+  harness.coalescer.trigger('sync-second-same-tick');
+  assert.equal(harness.timers.activeCount(), 1, 'same-tick retrigger should be queued after sync throw recovery');
+
+  shouldThrow = false;
+  assert.equal(harness.timers.runNext(), true);
+  await Promise.resolve();
+  await Promise.resolve();
+
+  assert.equal(harness.runs.length, 2);
+  assert.equal(
+    harness.errors.filter(op => op === 'pullCoalescer.rt.run').length,
+    1,
+    'sync throw should still be reported exactly once'
+  );
+});
