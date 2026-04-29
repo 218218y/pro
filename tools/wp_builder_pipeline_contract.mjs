@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-import { readFileSync } from 'node:fs';
+import { readSourceText } from './wp_source_text.mjs';
 
 function read(file) {
-  return readFileSync(file, 'utf8');
+  return readSourceText(file);
 }
 
 const errors = [];

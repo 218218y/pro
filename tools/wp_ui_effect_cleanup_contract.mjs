@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readFileSync } from 'node:fs';
+import { readSourceText } from './wp_source_text.mjs';
 
 const cleanupOwner = 'esm/native/ui/react/effects/dom_event_cleanup.ts';
 const migratedFiles = [
@@ -11,7 +11,7 @@ const migratedFiles = [
 ];
 
 const errors = [];
-const ownerSource = readFileSync(cleanupOwner, 'utf8');
+const ownerSource = readSourceText(cleanupOwner);
 for (const pattern of [
   /export function installDomEventListener\(/,
   /export function composeDomEventCleanups\(/,
@@ -22,7 +22,7 @@ for (const pattern of [
 if (/as any\b/.test(ownerSource)) errors.push(`${cleanupOwner}: must not use as any`);
 
 for (const file of migratedFiles) {
-  const source = readFileSync(file, 'utf8');
+  const source = readSourceText(file);
   if (!/installDomEventListener/.test(source)) {
     errors.push(`${file}: migrated effect must use installDomEventListener`);
   }

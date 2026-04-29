@@ -229,7 +229,7 @@
     "bundle:perf": "node tools/wp_bundle.js --build-mode perf",
     "bundle:debug": "node tools/wp_bundle.js --build-mode debug",
     "release:perf": "node tools/wp_release.js --build-mode perf",
-    "release:client": "node tools/wp_release.js --build-mode client",
+    "release:client": "npm run release",
     "check:runtime-selector-policy": "node tools/wp_runtime_selector_policy_audit.mjs",
     "check:html-sinks": "node tools/wp_html_sink_audit.mjs",
     "check:css-style": "node tools/wp_css_style_audit.mjs --check",

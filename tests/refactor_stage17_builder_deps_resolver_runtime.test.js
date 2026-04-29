@@ -1,16 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
+import { readSourceText } from '../tools/wp_source_text.mjs';
 
 const require = createRequire(import.meta.url);
 const ts = require('typescript');
 
 async function loadResolverForRuntimeTest() {
-  const source = readFileSync('esm/native/builder/builder_deps_resolver.ts', 'utf8')
+  const source = readSourceText('esm/native/builder/builder_deps_resolver.ts')
     .replace(
       /import \{ assertTHREE \} from '\.\.\/runtime\/api\.js';/,
       `function assertTHREE(App, label = '') {\n  const THREE = App && App.deps && App.deps.THREE;\n  if (!THREE) throw new Error('[WardrobePro] missing THREE for ' + label);\n  return THREE;\n}`

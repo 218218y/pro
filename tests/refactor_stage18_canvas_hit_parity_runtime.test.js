@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
 import test from 'node:test';
+import { readSourceText } from '../tools/wp_source_text.mjs';
 
 const require = createRequire(import.meta.url);
 const ts = require('typescript');
@@ -34,7 +35,7 @@ function __wp_isDrawerLikePartId(partId) {
   return false;
 }
 `;
-  const source = readFileSync('esm/native/services/canvas_picking_hit_identity.ts', 'utf8')
+  const source = readSourceText('esm/native/services/canvas_picking_hit_identity.ts')
     .replace(/import type \{[\s\S]*?\} from '\.\.\/\.\.\/\.\.\/types';\n/, '')
     .replace(
       /import\s*\{\s*__wp_isDoorLikePartId\s*,\s*__wp_isDrawerLikePartId\s*,?\s*\}\s*from\s*['"]\.\/canvas_picking_door_part_helpers\.js['"];\s*/m,
@@ -169,7 +170,7 @@ test('stage 18 keeps mirror, split, and sketch identities canonical', async () =
 });
 
 test('stage 18 canvas parity contract is wired into guardrails', () => {
-  const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
+  const pkg = JSON.parse(readSourceText('package.json'));
   assert.match(pkg.scripts['check:refactor-guardrails'], /check:canvas-hit-parity/);
   assert.match(
     pkg.scripts['test:refactor-stage-guards'],

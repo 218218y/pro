@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
 import test from 'node:test';
+import { readSourceText } from '../tools/wp_source_text.mjs';
 
 function runNodeScript(script, args = []) {
   const result = spawnSync(process.execPath, [script, ...args], {
@@ -25,22 +25,18 @@ test('production source does not use unsafe any casts', () => {
 });
 
 test('cloud sync lifecycle pull helper uses the runtime status contract without any-cast bypass', () => {
-  const source = readFileSync('esm/native/services/cloud_sync_lifecycle_bindings.ts', 'utf8');
+  const source = readSourceText('esm/native/services/cloud_sync_lifecycle_bindings.ts');
   assert.match(source, /CloudSyncRuntimeStatus/);
   assert.doesNotMatch(source, /as any/);
   assert.match(source, /runtimeStatus,\n\s+minGapMs/);
 });
 
 test('interior layout preset custom seeding is exposed through the family API entry', () => {
-  const api = readFileSync('esm/native/features/interior_layout_presets/api.ts', 'utf8');
-  const custom = readFileSync('esm/native/features/interior_layout_presets/custom_from_preset.ts', 'utf8');
-  const manualOps = readFileSync(
-    'esm/native/services/canvas_picking_manual_layout_config_ops_shared.ts',
-    'utf8'
-  );
-  const directHitRecords = readFileSync(
-    'esm/native/services/canvas_picking_sketch_direct_hit_workflow_records.ts',
-    'utf8'
+  const api = readSourceText('esm/native/features/interior_layout_presets/api.ts');
+  const custom = readSourceText('esm/native/features/interior_layout_presets/custom_from_preset.ts');
+  const manualOps = readSourceText('esm/native/services/canvas_picking_manual_layout_config_ops_shared.ts');
+  const directHitRecords = readSourceText(
+    'esm/native/services/canvas_picking_sketch_direct_hit_workflow_records.ts'
   );
 
   assert.match(api, /buildPresetBackedCustomData/);

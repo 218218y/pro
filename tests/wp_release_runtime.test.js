@@ -209,6 +209,7 @@ test('release metadata records the client observability mode for shipped bundles
 test('package release scripts keep client mode explicit for shipped site bundles', () => {
   const pkg = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf8'));
   assert.match(pkg.scripts.release, /--build-mode client/);
+  assert.equal(pkg.scripts['release:client'], 'npm run release');
   assert.match(pkg.scripts['release:release'], /--build-mode client/);
   assert.match(pkg.scripts['release:site2'], /--build-mode client/);
   assert.equal(pkg.scripts.bundle, 'npm run release:release');
