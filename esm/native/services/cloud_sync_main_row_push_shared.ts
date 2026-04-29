@@ -15,6 +15,7 @@ export type CloudSyncMainRowPushFlow = {
   pushNow: () => Promise<void>;
   subscribePushSettled: (listener: () => void) => () => void;
   clearPendingPush: () => void;
+  hasPendingPushWork: () => boolean;
   dispose: () => void;
 };
 
@@ -55,4 +56,8 @@ export function resetCloudSyncMainRowPendingPushAfterFlights(
 ): void {
   state.pendingPushAfterFlight = false;
   clearCloudSyncMainRowPendingPush(state, clearTimeoutFn);
+}
+
+export function hasCloudSyncMainRowPendingPushWork(state: CloudSyncMainRowPushMutableState): boolean {
+  return !!state.pushTimer || state.pendingPushAfterFlight;
 }

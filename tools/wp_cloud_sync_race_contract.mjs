@@ -31,6 +31,7 @@ requireNeedle(
 
 const pushRuntime = read('esm/native/services/cloud_sync_main_row_push_runtime.ts');
 const pushShared = read('esm/native/services/cloud_sync_main_row_push_shared.ts');
+const pullRuntime = read('esm/native/services/cloud_sync_main_row_pull_runtime.ts');
 const attentionHandlers = read('esm/native/services/cloud_sync_lifecycle_attention_pulls_handlers.ts');
 requireNeedle('cloud_sync_main_row_push_runtime.ts', pushRuntime, 'resetPendingPushAfterFlights();');
 requireNeedle('cloud_sync_main_row_push_runtime.ts', pushRuntime, 'if (args.suppressRef.v) {');
@@ -45,6 +46,12 @@ requireNeedle(
   'cloud_sync_main_row_push_shared.ts',
   pushShared,
   'resetCloudSyncMainRowPendingPushAfterFlights'
+);
+requireNeedle('cloud_sync_main_row_push_shared.ts', pushShared, 'hasCloudSyncMainRowPendingPushWork');
+requireNeedle(
+  'cloud_sync_main_row_pull_runtime.ts',
+  pullRuntime,
+  'args.isPushInFlight() || args.hasPendingPushWork?.()'
 );
 
 const coalescerTest = read('tests/cloud_sync_pull_coalescer_runtime.test.ts');
@@ -65,6 +72,7 @@ requireNeedle(
 );
 
 const pushFlowTest = read('tests/cloud_sync_main_row_push_flow_runtime.test.ts');
+const mainRowTest = read('tests/cloud_sync_main_row_runtime.test.ts');
 const attentionTest = read('tests/cloud_sync_lifecycle_attention_runtime.test.ts');
 requireNeedle(
   'tests/cloud_sync_main_row_push_flow_runtime.test.ts',
@@ -90,6 +98,11 @@ requireNeedle(
   'tests/cloud_sync_main_row_push_flow_runtime.test.ts',
   pushFlowTest,
   'assert.equal(pushCalls, 2)'
+);
+requireNeedle(
+  'tests/cloud_sync_main_row_runtime.test.ts',
+  mainRowTest,
+  'parks recovery pulls behind a debounced pending push so local changes flush first'
 );
 requireNeedle(
   'tests/cloud_sync_lifecycle_attention_runtime.test.ts',

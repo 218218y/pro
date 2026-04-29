@@ -10,7 +10,7 @@ import {
   type CreateCloudSyncMainRowOpsArgs,
 } from './cloud_sync_main_row_shared.js';
 import { createCloudSyncMainRowPullFlow } from './cloud_sync_main_row_pull.js';
-import { createCloudSyncMainRowPushFlow } from './cloud_sync_main_row_push.js';
+import { createCloudSyncMainRowPushFlow, type CloudSyncMainRowPushFlow } from './cloud_sync_main_row_push.js';
 
 export type { CloudSyncMainRowOps, CreateCloudSyncMainRowOpsArgs } from './cloud_sync_main_row_shared.js';
 
@@ -35,12 +35,14 @@ export function createCloudSyncMainRowOps(args: CreateCloudSyncMainRowOpsArgs): 
   });
 
   let remoteOpsRef: ReturnType<typeof createCloudSyncMainRowRemoteOps> | null = null;
+  let pushFlowRef: CloudSyncMainRowPushFlow | null = null;
   const pullFlow = createCloudSyncMainRowPullFlow({
     setTimeoutFn: args.setTimeoutFn,
     clearTimeoutFn: args.clearTimeoutFn,
     suppressRef: args.suppressRef,
     diag: args.diag,
     isPushInFlight: state.isPushInFlight,
+    hasPendingPushWork: () => pushFlowRef?.hasPendingPushWork() ?? false,
     runPullRemote: isInitial => remoteOpsRef?.pullOnce(isInitial) ?? Promise.resolve(),
   });
 
@@ -69,6 +71,7 @@ export function createCloudSyncMainRowOps(args: CreateCloudSyncMainRowOpsArgs): 
     runPushRemote: () => remoteOpsRef?.pushNow() ?? Promise.resolve(),
     flushPendingPullAfterFlights: pullFlow.flushPendingPullAfterFlights,
   });
+  pushFlowRef = pushFlow;
 
   const dispose = (): void => {
     try {

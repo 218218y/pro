@@ -4,6 +4,7 @@ import {
   type CreateCloudSyncMainRowPushFlowArgs,
   clearCloudSyncMainRowPendingPush,
   createCloudSyncMainRowPushMutableState,
+  hasCloudSyncMainRowPendingPushWork,
   requestCloudSyncMainRowPendingPushAfterFlights,
   resetCloudSyncMainRowPendingPushAfterFlights,
 } from './cloud_sync_main_row_push_shared.js';
@@ -88,6 +89,8 @@ export function createCloudSyncMainRowPushFlow(
     };
   };
 
+  const hasPendingPushWork = (): boolean => hasCloudSyncMainRowPendingPushWork(state);
+
   const schedulePush = (): void => {
     if (args.suppressRef.v) return;
     if (args.isPushInFlight()) {
@@ -115,6 +118,7 @@ export function createCloudSyncMainRowPushFlow(
     pushNow: runPushNow,
     subscribePushSettled,
     clearPendingPush,
+    hasPendingPushWork,
     dispose,
   };
 }

@@ -132,6 +132,17 @@ function runNextActiveTimer(harness: ReturnType<typeof createHarness>): void {
   timer!.handler();
 }
 
+function runActiveTimerWhere(
+  harness: ReturnType<typeof createHarness>,
+  predicate: (timer: { handler: () => void; active: boolean; ms: number }) => boolean,
+  message = 'expected an active timer matching the requested predicate'
+): void {
+  const timer = harness.timers.find(entry => entry.active && predicate(entry));
+  assert.ok(timer, message);
+  timer!.active = false;
+  timer!.handler();
+}
+
 function runAllActiveTimers(harness: ReturnType<typeof createHarness>): number {
   let ran = 0;
   while (harness.timers.some(entry => entry.active)) {
@@ -1294,6 +1305,140 @@ test('cloud sync main row preserves one follow-up push request raised while a pu
     'a parked follow-up push should replay after the active write settles'
   );
   assert.deepEqual(harness.upsertCalls[1]?.payload.savedModels, [{ id: 'model-2', name: 'Model 2' }]);
+});
+
+test('cloud sync main row parks recovery pulls behind a debounced pending push so local changes flush first', async () => {
+  const rows = [{ updated_at: '2026-04-02T20:13:00.000Z', payload: {} }];
+  const harness = createHarness({ rows });
+  let resolvePush:
+    | ((value: {
+        ok: true;
+        row?: { room: string; updated_at: string; payload: Record<string, unknown> };
+      }) => void)
+    | null = null;
+  (harness as any).ops = createCloudSyncMainRowOps({
+    App: {
+      services: {
+        models: {
+          ensureLoaded() {
+            return undefined;
+          },
+        },
+      },
+      maps: {
+        setSavedColors() {
+          return undefined;
+        },
+        setColorSwatchesOrder() {
+          return undefined;
+        },
+      },
+    } as any,
+    cfg: { anonKey: 'anon' } as any,
+    restUrl: 'https://example.test/rest',
+    room: 'room-a',
+    storage: harness.storage as any,
+    keyModels: 'savedModels',
+    keyColors: 'savedColors',
+    keyColorOrder: 'colorOrder',
+    keyPresetOrder: 'presetOrder',
+    keyHiddenPresets: 'hiddenPresets',
+    getRow: async (_restUrl, _anonKey, room) => {
+      harness.getRowCalls.push({ room });
+      return rows.length ? (rows.shift() ?? null) : null;
+    },
+    upsertRow: async (_restUrl, _anonKey, room, payload) => {
+      harness.upsertCalls.push({ room, payload: payload as Record<string, unknown> });
+      return await new Promise(resolve => {
+        resolvePush = value => {
+          resolve({
+            ...value,
+            row: {
+              room,
+              updated_at: '2026-04-02T20:13:30.000Z',
+              payload: payload as Record<string, unknown>,
+            },
+          } as any);
+        };
+      });
+    },
+    setTimeoutFn: (handler, ms) => {
+      const timer = { handler, active: true, ms: Number(ms) || 0 };
+      harness.timers.push(timer);
+      return timer as any;
+    },
+    clearTimeoutFn: (id: unknown) => {
+      const timer = id as { active?: boolean } | null;
+      if (timer && typeof timer === 'object') timer.active = false;
+    },
+    runtimeStatus: {
+      realtime: { state: 'idle', enabled: true, mode: 'broadcast', channel: '' },
+      polling: { active: false, intervalMs: 5000, reason: '' },
+      room: 'room-a',
+      clientId: 'client-a',
+      instanceId: 'instance-a',
+      lastPullAt: 0,
+      lastPushAt: 0,
+      lastRealtimeEventAt: 0,
+      lastError: '',
+      diagEnabled: false,
+    } as any,
+    publishStatus: () => undefined,
+    suppressRef: { v: false },
+    getSendRealtimeHint: () => null,
+  });
+
+  const pushSettled = new Promise<void>(resolve => {
+    const unsubscribe = harness.ops.subscribePushSettled(() => {
+      unsubscribe();
+      resolve();
+    });
+  });
+
+  harness.storage.setJSON('savedModels', [{ id: 'model-2', name: 'Model 2' }]);
+  harness.ops.schedulePush();
+  harness.ops.schedulePullSoon({ immediate: true, reason: 'realtime.main' });
+
+  assert.deepEqual(
+    harness.timers.filter(timer => timer.active).map(timer => timer.ms),
+    [700],
+    'recovery pull should stay parked while a debounced local push is still pending'
+  );
+
+  runActiveTimerWhere(
+    harness,
+    timer => timer.ms === 700,
+    'expected the debounced push timer to remain the only active main-row timer'
+  );
+  await Promise.resolve();
+
+  assert.equal(harness.upsertCalls.length, 1);
+  assert.deepEqual(harness.upsertCalls[0]?.payload.savedModels, [{ id: 'model-2', name: 'Model 2' }]);
+  assert.equal(
+    harness.getRowCalls.length,
+    0,
+    'recovery pull must not fetch remote state before the pending local push has settled'
+  );
+
+  resolvePush?.({ ok: true });
+  await pushSettled;
+  await Promise.resolve();
+
+  assert.deepEqual(
+    harness.timers.filter(timer => timer.active).map(timer => timer.ms),
+    [0],
+    'once the push settles, the parked recovery pull should rearm as the canonical follow-up'
+  );
+
+  runActiveTimerWhere(
+    harness,
+    timer => timer.ms === 0,
+    'expected the parked recovery pull to rearm immediately after the push settles'
+  );
+  await Promise.resolve();
+  await Promise.resolve();
+
+  assert.equal(harness.getRowCalls.length, 1);
 });
 
 test('cloud sync main row preserves canonical main pull reasons when pull-all and realtime requests coalesce', async () => {

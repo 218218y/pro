@@ -9,7 +9,7 @@ It replaces the removed long-form planning docs with a durable audit contract: e
 - Refactor verification entry point: `verify:refactor-modernization`.
 - Guardrail aggregate lane: `check:refactor-guardrails`.
 - Stage regression lane: `test:refactor-stage-guards`.
-- Current Cloud Sync hardening slice: pull coalescer failure recovery, main-row push failure/suppression recovery, and attention-pull error recovery are covered in focused Cloud Sync lanes and guarded by `check:cloud-sync-races`.
+- Current Cloud Sync hardening slice: pull coalescer failure recovery, main-row push failure/suppression recovery, pending-push-vs-recovery-pull ordering, and attention-pull error recovery are covered in focused Cloud Sync lanes and guarded by `check:cloud-sync-races`.
 - Current Canvas parity slice: mirror face-sign inference, full-door mirror commit fallback from canonical hit identity, sketch-box special-paint target preservation, lower split-door identity/stack/split-part parity, split click commit base/bounds parity, removed-door transparent restore/blocking parity, sketch hover/commit host identity precedence, and sketch-box door module/door identity are covered by focused runtime tests and guarded by `check:canvas-hit-identity` plus `check:canvas-hit-parity`.
 - Current Project migration selector hardening slice: project-ingress `ui.raw` migration now canonicalizes existing typed scalar values, removes invalid typed raw values before fallback materialization, preserves experimental raw keys, and proves canonical runtime selectors remain raw-only.
 

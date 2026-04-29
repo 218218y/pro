@@ -22,6 +22,7 @@ export type CreateCloudSyncMainRowPullFlowArgs = {
   suppressRef: { v: boolean };
   diag?: CloudSyncDiagFn;
   isPushInFlight: () => boolean;
+  hasPendingPushWork?: () => boolean;
   runPullRemote: (isInitial: boolean) => Promise<void>;
 };
 

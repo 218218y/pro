@@ -59,6 +59,7 @@ npm run check:canvas-hit-parity
 - Repeated start/stop/pull calls must be singleflight or idempotent.
 - Debounced Cloud Sync work must re-check suppression when the timer fires, not only when it is scheduled.
 - Main-row push failures must be reported non-fatally and must still notify settled listeners so parked pulls can recover.
+- Recovery pulls must not run ahead of a debounced main-row push; reconnect/attention/polling refresh work stays parked until the pending local write settles.
 - Browser attention listeners must report non-fatal pull errors and remain usable for later events.
 
 Relevant docs/checks:

@@ -30,7 +30,7 @@ export function createCloudSyncMainRowPullFlow(
   };
 
   const readActivePullBlocker = (): PullFollowUpBlocker | null => {
-    if (args.isPushInFlight()) return 'push';
+    if (args.isPushInFlight() || args.hasPendingPushWork?.()) return 'push';
     if (state.pullInFlight) return 'pull';
     return null;
   };
