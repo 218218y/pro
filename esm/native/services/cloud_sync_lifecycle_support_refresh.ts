@@ -1,5 +1,6 @@
 import type { AppContainer, CloudSyncRuntimeStatus } from '../../../types';
 
+import { _cloudSyncReportNonFatal } from './cloud_sync_support.js';
 import {
   readCloudSyncLifecycleRefreshBlockReason,
   type CloudSyncLifecycleRefreshBlockReason,
@@ -19,7 +20,7 @@ export type CloudSyncLifecycleRefreshPolicy = {
 
 export type CloudSyncLifecycleRefreshRequestResult = {
   accepted: boolean;
-  blockedBy: CloudSyncLifecycleRefreshBlockReason | 'suppressed' | 'recent-pull' | null;
+  blockedBy: CloudSyncLifecycleRefreshBlockReason | 'suppressed' | 'recent-pull' | 'pull-error' | null;
 };
 
 export type CloudSyncLifecycleRefreshRequestArgs = {
@@ -29,12 +30,45 @@ export type CloudSyncLifecycleRefreshRequestArgs = {
   pullAllNow: CloudSyncPullAllNowFn;
   opts?: CloudSyncPullAllNowOptions;
   policy?: CloudSyncLifecycleRefreshPolicy;
+  reportOp?: string;
+  reportThrottleMs?: number;
 };
+
+function reportCloudSyncLifecycleRefreshError(args: {
+  App: AppContainer;
+  reportOp: string;
+  reportThrottleMs: number;
+  err: unknown;
+}): void {
+  const { App, reportOp, reportThrottleMs, err } = args;
+  _cloudSyncReportNonFatal(App, reportOp, err, { throttleMs: reportThrottleMs });
+}
+
+function observeCloudSyncLifecycleRefreshPullResult(args: {
+  App: AppContainer;
+  reportOp: string;
+  reportThrottleMs: number;
+  pullResult: unknown;
+}): void {
+  const { App, reportOp, reportThrottleMs, pullResult } = args;
+  void Promise.resolve(pullResult).catch(err => {
+    reportCloudSyncLifecycleRefreshError({ App, reportOp, reportThrottleMs, err });
+  });
+}
 
 export function requestCloudSyncLifecycleRefresh(
   args: CloudSyncLifecycleRefreshRequestArgs
 ): CloudSyncLifecycleRefreshRequestResult {
-  const { App, runtimeStatus, suppressRef, pullAllNow, opts, policy } = args;
+  const {
+    App,
+    runtimeStatus,
+    suppressRef,
+    pullAllNow,
+    opts,
+    policy,
+    reportOp = 'cloudSyncLifecycle.refreshPull',
+    reportThrottleMs = 8000,
+  } = args;
   if (suppressRef.v) return { accepted: false, blockedBy: 'suppressed' };
 
   const blockedBy = readCloudSyncLifecycleRefreshBlockReason({
@@ -57,6 +91,12 @@ export function requestCloudSyncLifecycleRefresh(
     return { accepted: false, blockedBy: 'recent-pull' };
   }
 
-  pullAllNow(normalized);
+  try {
+    const pullResult = pullAllNow(normalized);
+    observeCloudSyncLifecycleRefreshPullResult({ App, reportOp, reportThrottleMs, pullResult });
+  } catch (err) {
+    reportCloudSyncLifecycleRefreshError({ App, reportOp, reportThrottleMs, err });
+    return { accepted: false, blockedBy: 'pull-error' };
+  }
   return { accepted: true, blockedBy: null };
 }

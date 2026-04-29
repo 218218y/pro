@@ -32,6 +32,11 @@ function createPollingApp(reported: Array<{ error: unknown; ctx: any }>) {
   } as any;
 }
 
+async function flushCloudSyncRecoveryMicrotasks(): Promise<void> {
+  await Promise.resolve();
+  await Promise.resolve();
+}
+
 test('cloud sync polling tick reports restart and refresh failures without detaching later ticks', () => {
   const reported: Array<{ error: unknown; ctx: any }> = [];
   const ticks: Array<() => void> = [];
@@ -88,6 +93,66 @@ test('cloud sync polling tick reports restart and refresh failures without detac
   assert.doesNotThrow(() => ticks[0]());
   assert.equal(restartCalls, 2);
   assert.equal(pullCalls, 2);
+});
+
+test('cloud sync polling tick reports async restart and refresh rejections without detaching later ticks', async () => {
+  const reported: Array<{ error: unknown; ctx: any }> = [];
+  const ticks: Array<() => void> = [];
+  const runtimeStatus = {
+    realtime: { enabled: true, mode: 'broadcast', state: 'timeout', channel: '' },
+    polling: { active: false, intervalMs: 0, reason: '' },
+    lastPullAt: 0,
+  } as any;
+  const pollTimerRef = { current: null as number | null };
+  let restartCalls = 0;
+  let pullCalls = 0;
+  let rejectRestart = true;
+  let rejectPull = true;
+
+  startCloudSyncPolling({
+    App: createPollingApp(reported),
+    pollTimerRef,
+    setIntervalFn: handler => {
+      ticks.push(handler);
+      return 42;
+    },
+    clearIntervalFn: () => undefined,
+    runtimeStatus,
+    pollIntervalMs: 5000,
+    publishStatus: () => undefined,
+    diag: () => undefined,
+    reason: 'realtime-disabled',
+    pullAllNow: () => {
+      pullCalls += 1;
+      if (rejectPull) return Promise.reject(new Error('tick pull rejected')) as any;
+    },
+    restartRealtime: () => {
+      restartCalls += 1;
+      if (rejectRestart) return Promise.reject(new Error('tick restart rejected')) as any;
+    },
+  });
+
+  assert.equal(pollTimerRef.current, 42);
+  assert.doesNotThrow(() => ticks[0]());
+  await flushCloudSyncRecoveryMicrotasks();
+
+  assert.equal(runtimeStatus.polling.active, true);
+  assert.equal(pollTimerRef.current, 42);
+  assert.equal(restartCalls, 1);
+  assert.equal(pullCalls, 1);
+  assert.equal(reported.length, 2);
+  assert.equal((reported[0]?.error as Error).message, 'tick restart rejected');
+  assert.equal(reported[0]?.ctx?.op, 'cloudSyncPolling.tickRealtimeRestart');
+  assert.equal((reported[1]?.error as Error).message, 'tick pull rejected');
+  assert.equal(reported[1]?.ctx?.op, 'cloudSyncPolling.tickRefresh');
+
+  rejectRestart = false;
+  rejectPull = false;
+  assert.doesNotThrow(() => ticks[0]());
+  await flushCloudSyncRecoveryMicrotasks();
+  assert.equal(restartCalls, 2);
+  assert.equal(pullCalls, 2);
+  assert.equal(reported.length, 2);
 });
 
 test('cloud sync polling tick reports auto-stop failures without throwing from the timer callback', () => {

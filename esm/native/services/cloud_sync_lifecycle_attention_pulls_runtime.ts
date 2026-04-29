@@ -25,6 +25,13 @@ export function createCloudSyncAttentionPullMutableState(
   };
 }
 
+function getCloudSyncAttentionPullReportOp(reason: string): string {
+  if (reason === 'focus') return 'focusListener.callback';
+  if (reason === 'online') return 'onlineListener.callback';
+  if (reason === 'visibility') return 'visibilityListener.callback';
+  return 'cloudSyncAttentionPull.callback';
+}
+
 export function requestCloudSyncAttentionPull(
   args: Pick<CloudSyncAttentionPullArgs, 'App' | 'runtimeStatus' | 'suppressRef' | 'pullAllNow'> & {
     isDisposed?: () => boolean;
@@ -46,6 +53,8 @@ export function requestCloudSyncAttentionPull(
     pullAllNow,
     opts: profile.opts,
     policy: profile.policy,
+    reportOp: getCloudSyncAttentionPullReportOp(reason),
+    reportThrottleMs: 10000,
   });
   if (!refreshRequest.accepted) return false;
   state.lastAttentionPullAt = now;

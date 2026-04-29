@@ -14,6 +14,17 @@ function reportCloudSyncPollingTickError(App: AppContainer, op: string, err: unk
   _cloudSyncReportNonFatal(App, op, err, { throttleMs: 8000 });
 }
 
+function observeCloudSyncPollingTickHook(args: {
+  App: AppContainer;
+  op: string;
+  hookResult: unknown;
+}): void {
+  const { App, op, hookResult } = args;
+  void Promise.resolve(hookResult).catch(err => {
+    reportCloudSyncPollingTickError(App, op, err);
+  });
+}
+
 export function createCloudSyncPollingTick(args: {
   App: AppContainer;
   pollTimerRef: { current: IntervalHandleLike | null };
@@ -49,7 +60,12 @@ export function createCloudSyncPollingTick(args: {
     }
     if (runtimeStatus.realtime?.enabled !== false) {
       try {
-        restartRealtime?.();
+        const restartResult = restartRealtime?.();
+        observeCloudSyncPollingTickHook({
+          App,
+          op: 'cloudSyncPolling.tickRealtimeRestart',
+          hookResult: restartResult,
+        });
       } catch (err) {
         reportCloudSyncPollingTickError(App, 'cloudSyncPolling.tickRealtimeRestart', err);
       }
@@ -64,6 +80,8 @@ export function createCloudSyncPollingTick(args: {
         pullAllNow,
         opts: profile.opts,
         policy: profile.policy,
+        reportOp: 'cloudSyncPolling.tickRefresh',
+        reportThrottleMs: 8000,
       });
     } catch (err) {
       reportCloudSyncPollingTickError(App, 'cloudSyncPolling.tickRefresh', err);

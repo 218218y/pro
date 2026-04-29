@@ -61,7 +61,7 @@ test('stage 24 polling fallback publishes active state only after timer installa
   assert.match(progressDoc, /Stage 24/);
 });
 
-test('stage 25 polling tick recovery keeps timer callbacks non-fatal and reusable', () => {
+test('stage 25 polling tick callback failures are non-fatal and keep later ticks reachable', () => {
   const pollingTick = read('esm/native/services/cloud_sync_lifecycle_support_polling_tick_runtime.ts');
   const tickTest = read('tests/cloud_sync_lifecycle_polling_tick_recovery_runtime.test.ts');
   const raceContract = read('tools/wp_cloud_sync_race_contract.mjs');
@@ -70,9 +70,44 @@ test('stage 25 polling tick recovery keeps timer callbacks non-fatal and reusabl
   assert.match(pollingTick, /cloudSyncPolling\.tickRealtimeRestart/);
   assert.match(pollingTick, /cloudSyncPolling\.tickRefresh/);
   assert.match(pollingTick, /cloudSyncPolling\.tickAutoStop/);
-  assert.match(pollingTick, /requestCloudSyncLifecycleRefresh\(/);
-  assert.match(tickTest, /reports restart and refresh failures without detaching later ticks/);
-  assert.match(tickTest, /reports auto-stop failures without throwing from the timer callback/);
-  assert.match(raceContract, /cloud sync polling tick callback failures stay non-fatal and reusable/);
+  assert.match(tickTest, /without detaching later ticks/);
+  assert.match(tickTest, /auto-stop failures without throwing from the timer callback/);
+  assert.match(raceContract, /cloud sync polling tick reports restart and refresh failures without detaching later ticks/);
   assert.match(progressDoc, /Stage 25/);
+});
+
+test('stage 26 lifecycle refresh and attention pulls report sync and async pull failures through one seam', () => {
+  const refresh = read('esm/native/services/cloud_sync_lifecycle_support_refresh.ts');
+  const attentionRuntime = read('esm/native/services/cloud_sync_lifecycle_attention_pulls_runtime.ts');
+  const refreshTest = read('tests/cloud_sync_lifecycle_refresh_async_recovery_runtime.test.ts');
+  const raceContract = read('tools/wp_cloud_sync_race_contract.mjs');
+  const progressDoc = read('docs/REFACTOR_WORKMAP_PROGRESS.md');
+
+  assert.match(refresh, /blockedBy: CloudSyncLifecycleRefreshBlockReason \| 'suppressed' \| 'recent-pull' \| 'pull-error' \| null/);
+  assert.match(refresh, /Promise\.resolve\(pullResult\)\.catch/);
+  assert.match(refresh, /reportOp = 'cloudSyncLifecycle\.refreshPull'/);
+  assert.match(attentionRuntime, /getCloudSyncAttentionPullReportOp\(reason\)/);
+  assert.match(attentionRuntime, /onlineListener\.callback/);
+  assert.match(refreshTest, /reports synchronous pull failures as pull-error without throwing/);
+  assert.match(refreshTest, /reports async pull rejections without detaching callers/);
+  assert.match(raceContract, /cloud sync lifecycle refresh reports async pull rejections without detaching callers/);
+  assert.match(progressDoc, /Stage 26/);
+});
+
+test('stage 27 polling recovery hooks observe async rejections without losing fallback polling', () => {
+  const pollingStart = read('esm/native/services/cloud_sync_lifecycle_support_polling_start_runtime.ts');
+  const pollingTick = read('esm/native/services/cloud_sync_lifecycle_support_polling_tick_runtime.ts');
+  const tickTest = read('tests/cloud_sync_lifecycle_polling_tick_recovery_runtime.test.ts');
+  const refreshTest = read('tests/cloud_sync_lifecycle_refresh_async_recovery_runtime.test.ts');
+  const raceContract = read('tools/wp_cloud_sync_race_contract.mjs');
+  const progressDoc = read('docs/REFACTOR_WORKMAP_PROGRESS.md');
+
+  assert.match(pollingStart, /observeCloudSyncPollingRecoveryHook/);
+  assert.match(pollingStart, /Promise\.resolve\(hookResult\)\.catch/);
+  assert.match(pollingTick, /observeCloudSyncPollingTickHook/);
+  assert.match(pollingTick, /Promise\.resolve\(hookResult\)\.catch/);
+  assert.match(tickTest, /reports async restart and refresh rejections without detaching later ticks/);
+  assert.match(refreshTest, /reports async recovery hook rejections without losing fallback polling/);
+  assert.match(raceContract, /cloud sync polling start reports async recovery hook rejections without losing fallback polling/);
+  assert.match(progressDoc, /Stage 27/);
 });

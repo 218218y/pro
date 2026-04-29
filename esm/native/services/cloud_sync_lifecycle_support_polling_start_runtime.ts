@@ -43,6 +43,25 @@ function shouldKickCloudSyncRealtimeRecovery(args: {
   );
 }
 
+function reportCloudSyncPollingRecoveryFailure(
+  App: AppContainer,
+  op: string,
+  err: unknown
+): void {
+  _cloudSyncReportNonFatal(App, op, err, { throttleMs: 8000 });
+}
+
+function observeCloudSyncPollingRecoveryHook(args: {
+  App: AppContainer;
+  op: string;
+  hookResult: unknown;
+}): void {
+  const { App, op, hookResult } = args;
+  void Promise.resolve(hookResult).catch(err => {
+    reportCloudSyncPollingRecoveryFailure(App, op, err);
+  });
+}
+
 function kickCloudSyncRealtimeRecovery(args: {
   App: AppContainer;
   runtimeStatus: CloudSyncRuntimeStatus;
@@ -53,14 +72,24 @@ function kickCloudSyncRealtimeRecovery(args: {
   const { App, runtimeStatus, reason, pullAllNow, restartRealtime } = args;
   if (!shouldKickCloudSyncRealtimeRecovery({ runtimeStatus, reason })) return;
   try {
-    pullAllNow({ reason: `${reason}.recover` });
+    const pullResult = pullAllNow({ reason: `${reason}.recover` });
+    observeCloudSyncPollingRecoveryHook({
+      App,
+      op: 'cloudSyncPolling.realtimeRecoveryPull',
+      hookResult: pullResult,
+    });
   } catch (err) {
-    _cloudSyncReportNonFatal(App, 'cloudSyncPolling.realtimeRecoveryPull', err, { throttleMs: 8000 });
+    reportCloudSyncPollingRecoveryFailure(App, 'cloudSyncPolling.realtimeRecoveryPull', err);
   }
   try {
-    restartRealtime?.();
+    const restartResult = restartRealtime?.();
+    observeCloudSyncPollingRecoveryHook({
+      App,
+      op: 'cloudSyncPolling.realtimeRecoveryRestart',
+      hookResult: restartResult,
+    });
   } catch (err) {
-    _cloudSyncReportNonFatal(App, 'cloudSyncPolling.realtimeRecoveryRestart', err, { throttleMs: 8000 });
+    reportCloudSyncPollingRecoveryFailure(App, 'cloudSyncPolling.realtimeRecoveryRestart', err);
   }
 }
 
