@@ -36,8 +36,12 @@ const pollingStartRuntime = read('esm/native/services/cloud_sync_lifecycle_suppo
 const realtimeStartRuntime = read('esm/native/services/cloud_sync_lifecycle_realtime_runtime_start.ts');
 const lifecycleRuntimeStart = read('esm/native/services/cloud_sync_lifecycle_runtime_start.ts');
 const lifecycleRuntimeSetup = read('esm/native/services/cloud_sync_lifecycle_runtime_setup.ts');
-const lifecycleRealtimeStartGuard = read('esm/native/services/cloud_sync_lifecycle_runtime_realtime_start.ts');
-const realtimeTransportCleanup = read('esm/native/services/cloud_sync_lifecycle_realtime_transport_cleanup.ts');
+const lifecycleRealtimeStartGuard = read(
+  'esm/native/services/cloud_sync_lifecycle_runtime_realtime_start.ts'
+);
+const realtimeTransportCleanup = read(
+  'esm/native/services/cloud_sync_lifecycle_realtime_transport_cleanup.ts'
+);
 const attentionHandlers = read('esm/native/services/cloud_sync_lifecycle_attention_pulls_handlers.ts');
 requireNeedle('cloud_sync_main_row_push_runtime.ts', pushRuntime, 'resetPendingPushAfterFlights();');
 requireNeedle('cloud_sync_main_row_push_runtime.ts', pushRuntime, 'if (args.suppressRef.v) {');
@@ -85,21 +89,13 @@ requireNeedle(
   lifecycleRuntimeStart,
   'cloudSyncLifecycle.realtimeInitialStart'
 );
-requireNeedle(
-  'cloud_sync_lifecycle_runtime_start.ts',
-  lifecycleRuntimeStart,
-  'realtime-owner-start-error'
-);
+requireNeedle('cloud_sync_lifecycle_runtime_start.ts', lifecycleRuntimeStart, 'realtime-owner-start-error');
 requireNeedle(
   'cloud_sync_lifecycle_runtime_setup.ts',
   lifecycleRuntimeSetup,
   'cloudSyncLifecycle.realtimeRestart'
 );
-requireNeedle(
-  'cloud_sync_lifecycle_runtime_setup.ts',
-  lifecycleRuntimeSetup,
-  'realtime-owner-restart-error'
-);
+requireNeedle('cloud_sync_lifecycle_runtime_setup.ts', lifecycleRuntimeSetup, 'realtime-owner-restart-error');
 requireNeedle(
   'cloud_sync_lifecycle_runtime_realtime_start.ts',
   lifecycleRealtimeStartGuard,
@@ -110,11 +106,7 @@ requireNeedle(
   lifecycleRealtimeStartGuard,
   '`${op}.fallback`'
 );
-requireNeedle(
-  'cloud_sync_lifecycle_realtime_transport_cleanup.ts',
-  realtimeTransportCleanup,
-  'clearHints'
-);
+requireNeedle('cloud_sync_lifecycle_realtime_transport_cleanup.ts', realtimeTransportCleanup, 'clearHints');
 
 const coalescerTest = read('tests/cloud_sync_pull_coalescer_runtime.test.ts');
 requireNeedle(

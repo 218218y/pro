@@ -443,7 +443,6 @@ Remaining recommended slices after Stage 20:
 3. A narrow runtime selector cleanup only when backed by migration fixtures from real payloads.
 4. CSS/design-system continuation only for real selection controls, not action buttons in disguise.
 
-
 ---
 
 ## 15. Live repository alignment - Stage 21 Cloud Sync realtime start/restart recovery hardening
@@ -477,7 +476,6 @@ Remaining recommended slices after Stage 21:
 2. A real browser lifecycle Cloud Sync reconnect journey that drives focus/online/visibility/realtime timeout together.
 3. A narrow runtime selector cleanup only when backed by migration fixtures from real payloads.
 4. CSS/design-system continuation only for real selection controls, not action buttons in disguise.
-
 
 ---
 

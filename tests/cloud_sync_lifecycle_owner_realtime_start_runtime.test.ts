@@ -48,7 +48,7 @@ test('cloud sync lifecycle owner reports realtime start failures and still binds
   const reported: Array<{ error: unknown; ctx: any }> = [];
   const pollingReasons: string[] = [];
 
-  app.services.platform.reportError = (error: unknown, ctx: any) => {
+  app.platform.reportError = (error: unknown, ctx: any) => {
     reported.push({ error, ctx });
   };
 
@@ -110,7 +110,7 @@ test('cloud sync lifecycle realtime start guard reports fallback failures withou
   const runtimeStatus = createRuntimeStatus();
   const reported: Array<{ error: unknown; ctx: any }> = [];
 
-  app.services.platform.reportError = (error: unknown, ctx: any) => {
+  app.platform.reportError = (error: unknown, ctx: any) => {
     reported.push({ error, ctx });
   };
 
