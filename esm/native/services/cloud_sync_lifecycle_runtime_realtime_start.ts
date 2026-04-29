@@ -35,23 +35,28 @@ export function startCloudSyncRealtimeWithLifecycleFallback(
     pollingReason,
   } = args;
 
-  void Promise.resolve()
-    .then(() => cloudSyncRealtime.startRealtime())
-    .catch(err => {
-      _cloudSyncReportNonFatal(App, op, err, { throttleMs: 6000 });
-      try {
-        markCloudSyncRealtimeFailure({
-          runtimeStatus,
-          publishStatus,
-          diag,
-          startPolling,
-          state: 'error',
-          lastError: normalizeUnknownError(err).message,
-          diagEvent,
-          pollingReason,
-        });
-      } catch (fallbackErr) {
-        _cloudSyncReportNonFatal(App, `${op}.fallback`, fallbackErr, { throttleMs: 6000 });
-      }
-    });
+  const handleRealtimeStartFailure = (err: unknown): void => {
+    _cloudSyncReportNonFatal(App, op, err, { throttleMs: 6000 });
+    try {
+      markCloudSyncRealtimeFailure({
+        runtimeStatus,
+        publishStatus,
+        diag,
+        startPolling,
+        state: 'error',
+        lastError: normalizeUnknownError(err).message,
+        diagEvent,
+        pollingReason,
+      });
+    } catch (fallbackErr) {
+      _cloudSyncReportNonFatal(App, `${op}.fallback`, fallbackErr, { throttleMs: 6000 });
+    }
+  };
+
+  try {
+    const startResult = cloudSyncRealtime.startRealtime();
+    void Promise.resolve(startResult).catch(handleRealtimeStartFailure);
+  } catch (err) {
+    handleRealtimeStartFailure(err);
+  }
 }
