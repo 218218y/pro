@@ -218,6 +218,57 @@ export function readUiRawIntFromSnapshot(ui: unknown, key: UiRawScalarKey, fallb
   return typeof n === 'number' ? n : fallback;
 }
 
+/**
+ * Canonical-only numeric reader for runtime/build paths.
+ * This never falls back to legacy `ui.*`; project ingress must migrate those shapes first.
+ */
+export function readCanonicalUiRawNumberFromSnapshot(
+  ui: unknown,
+  key: UiRawScalarKey,
+  fallback: number
+): number {
+  const v = readUiRawScalarFromCanonicalSnapshot(ui, key);
+  const n = coerceFiniteNumber(v);
+  return typeof n === 'number' ? n : fallback;
+}
+
+/**
+ * Canonical-only integer reader for runtime/build paths.
+ * This never falls back to legacy `ui.*`; project ingress must migrate those shapes first.
+ */
+export function readCanonicalUiRawIntFromSnapshot(
+  ui: unknown,
+  key: UiRawScalarKey,
+  fallback: number
+): number {
+  const v = readUiRawScalarFromCanonicalSnapshot(ui, key);
+  const n = coerceFiniteInt(v);
+  return typeof n === 'number' ? n : fallback;
+}
+
+/**
+ * Canonical-only batch dimensions reader for runtime/build paths.
+ * It fails fast when essential ui.raw dimensions are absent, keeping legacy migration at project ingress.
+ */
+export function readCanonicalUiRawDimsCmFromSnapshot(
+  ui: unknown,
+  context = 'ui.raw'
+): {
+  widthCm: number;
+  heightCm: number;
+  depthCm: number;
+  doorsCount: number;
+  chestDrawersCount: number;
+} {
+  assertCanonicalUiRawDims(ui, context);
+  const widthCm = readCanonicalUiRawNumberFromSnapshot(ui, 'width', 160);
+  const heightCm = readCanonicalUiRawNumberFromSnapshot(ui, 'height', 240);
+  const depthCm = readCanonicalUiRawNumberFromSnapshot(ui, 'depth', 55);
+  const doorsCount = readCanonicalUiRawIntFromSnapshot(ui, 'doors', 4);
+  const chestDrawersCount = readCanonicalUiRawIntFromSnapshot(ui, 'chestDrawersCount', 4);
+  return { widthCm, heightCm, depthCm, doorsCount, chestDrawersCount };
+}
+
 export function readUiRawNumberFromStore(store: unknown, key: UiRawScalarKey, fallback: number): number {
   const v = readUiRawScalarFromStore(store, key);
   const n = coerceFiniteNumber(v);
@@ -239,6 +290,11 @@ export function readUiRawNumberFromStoreUi(store: unknown, key: UiRawScalarKey, 
 export function readUiRawIntFromStoreUi(store: unknown, key: UiRawScalarKey, fallback: number): number {
   const ui = readUiStateFromStore(store);
   return readUiRawIntFromSnapshot(ui, key, fallback);
+}
+
+export function readCanonicalUiRawDimsCmFromStore(store: unknown) {
+  const ui = readUiStateFromStore(store);
+  return readCanonicalUiRawDimsCmFromSnapshot(ui);
 }
 
 // Batch helper (handy for chest/door flows)

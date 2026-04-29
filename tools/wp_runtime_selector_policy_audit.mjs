@@ -64,11 +64,13 @@ const loaderRel = 'esm/native/io/project_io_orchestrator_project_load.ts';
 const migrationsRel = 'esm/native/io/project_migrations/index.ts';
 const uiSelectorsRel = 'esm/native/runtime/ui_raw_selectors.ts';
 const cfgMigrationRel = 'esm/native/io/project_migrations/config_snapshot_migration.ts';
+const runtimeSelectorTestRel = 'tests/project_migration_runtime_selector_hardening_runtime.test.ts';
 
 const loader = read(loaderRel);
 const migrations = read(migrationsRel);
 const uiSelectors = read(uiSelectorsRel);
 const cfgMigration = read(cfgMigrationRel);
+const runtimeSelectorTest = read(runtimeSelectorTestRel);
 
 requireIncludes(
   loaderRel,
@@ -132,6 +134,24 @@ requireIncludes(
   'assertCanonicalUiRawDims',
   'runtime must expose canonical ui.raw assertion'
 );
+requireIncludes(
+  uiSelectorsRel,
+  uiSelectors,
+  'readCanonicalUiRawNumberFromSnapshot',
+  'runtime must expose canonical ui.raw number reader for live/build code'
+);
+requireIncludes(
+  uiSelectorsRel,
+  uiSelectors,
+  'readCanonicalUiRawIntFromSnapshot',
+  'runtime must expose canonical ui.raw int reader for live/build code'
+);
+requireIncludes(
+  uiSelectorsRel,
+  uiSelectors,
+  'readCanonicalUiRawDimsCmFromSnapshot',
+  'runtime must expose canonical ui.raw dimension batch reader for live/build code'
+);
 requireFunctionIncludes(
   uiSelectorsRel,
   uiSelectors,
@@ -159,6 +179,54 @@ requireFunctionNotIncludes(
   'assertCanonicalUiRawDims',
   'readUiRawScalarFromSnapshot',
   'canonical assertion must not validate through tolerant snapshot readers'
+);
+requireFunctionIncludes(
+  uiSelectorsRel,
+  uiSelectors,
+  'readCanonicalUiRawNumberFromSnapshot',
+  'readUiRawScalarFromCanonicalSnapshot(ui, key)',
+  'canonical number reader must use canonical scalar reads only'
+);
+requireFunctionNotIncludes(
+  uiSelectorsRel,
+  uiSelectors,
+  'readCanonicalUiRawNumberFromSnapshot',
+  'readUiRawScalarFromSnapshot',
+  'canonical number reader must not use tolerant snapshot reads'
+);
+requireFunctionIncludes(
+  uiSelectorsRel,
+  uiSelectors,
+  'readCanonicalUiRawDimsCmFromSnapshot',
+  'assertCanonicalUiRawDims(ui, context)',
+  'canonical dimensions reader must fail fast when project ingress did not migrate ui.raw dimensions'
+);
+requireFunctionIncludes(
+  uiSelectorsRel,
+  uiSelectors,
+  'readCanonicalUiRawDimsCmFromSnapshot',
+  'readCanonicalUiRawNumberFromSnapshot',
+  'canonical dimensions reader must compose canonical numeric readers'
+);
+requireFunctionNotIncludes(
+  uiSelectorsRel,
+  uiSelectors,
+  'readCanonicalUiRawDimsCmFromSnapshot',
+  'readUiRawNumberFromSnapshot',
+  'canonical dimensions reader must not use tolerant legacy numeric readers'
+);
+
+requireIncludes(
+  runtimeSelectorTestRel,
+  runtimeSelectorTest,
+  'canonical ui.raw batch readers fail fast before project ingress migration and stay raw-only afterwards',
+  'runtime selector tests must cover canonical batch readers against legacy ui.* fallback regression'
+);
+requireIncludes(
+  runtimeSelectorTestRel,
+  runtimeSelectorTest,
+  'readCanonicalUiRawDimsCmFromSnapshot(legacySnapshot',
+  'runtime selector tests must prove canonical batch readers reject unmigrated legacy snapshots'
 );
 
 if (failures.length) {

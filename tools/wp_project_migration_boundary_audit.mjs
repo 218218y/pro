@@ -73,10 +73,20 @@ export function runProjectMigrationBoundaryAudit(projectRoot = process.cwd()) {
       'readUiRawScalarFromCanonicalSnapshot',
       'hasCanonicalEssentialUiRawDimsFromSnapshot',
       'assertCanonicalUiRawDims',
+      'readCanonicalUiRawNumberFromSnapshot',
+      'readCanonicalUiRawIntFromSnapshot',
+      'readCanonicalUiRawDimsCmFromSnapshot',
     ]) {
       if (!selectors.includes(`export function ${symbol}`)) {
         failures.push(`${UI_RAW_SELECTORS_FILE} must export ${symbol}.`);
       }
+    }
+    const canonicalDimsIndex = selectors.indexOf('export function readCanonicalUiRawDimsCmFromSnapshot');
+    const legacyDimsIndex = selectors.indexOf('export function readUiRawDimsCmFromSnapshot');
+    if (canonicalDimsIndex < 0 || legacyDimsIndex < 0 || canonicalDimsIndex > legacyDimsIndex) {
+      failures.push(
+        `${UI_RAW_SELECTORS_FILE} must keep canonical batch readers separate from legacy tolerant batch readers.`
+      );
     }
   }
 

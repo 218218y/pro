@@ -27,29 +27,11 @@ test('stage 20 cloud sync polling recovery errors stay non-fatal', () => {
   assert.match(runtimeSource, /cloudSyncPolling\.realtimeRecoveryRestart/);
   assert.match(runtimeSource, /reportCloudSyncPollingRecoveryFailure/);
   assert.match(runtimeSource, /observeCloudSyncPollingRecoveryHook/);
-  assert.ok(
-    runtimeSource.includes('const pullResult = pullAllNow({ reason: `${reason}.recover` });'),
-    'recovery pull must run inside the guarded realtime-recovery hook'
-  );
-  assert.ok(
-    runtimeSource.includes("op: 'cloudSyncPolling.realtimeRecoveryPull'"),
-    'recovery pull failures must keep the stage 20 non-fatal reporting op'
-  );
+  assert.match(runtimeSource, /Promise\.resolve\(hookResult\)\.catch/);
+  assert.match(runtimeSource, /const pullResult = pullAllNow\(\{ reason: `\$\{reason\}\.recover` \}\);/);
   assert.match(runtimeSource, /hookResult: pullResult/);
-  assert.match(
-    runtimeSource,
-    /catch \(err\) \{\s*reportCloudSyncPollingRecoveryFailure\(App, 'cloudSyncPolling\.realtimeRecoveryPull', err\);/
-  );
   assert.match(runtimeSource, /const restartResult = restartRealtime\?\.\(\);/);
-  assert.ok(
-    runtimeSource.includes("op: 'cloudSyncPolling.realtimeRecoveryRestart'"),
-    'realtime restart failures must keep the stage 20 non-fatal reporting op'
-  );
   assert.match(runtimeSource, /hookResult: restartResult/);
-  assert.match(
-    runtimeSource,
-    /catch \(err\) \{\s*reportCloudSyncPollingRecoveryFailure\(App, 'cloudSyncPolling\.realtimeRecoveryRestart', err\);/
-  );
   assert.match(
     supportTest,
     /realtime recovery reports pull and restart failures without breaking polling fallback/

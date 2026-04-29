@@ -7,6 +7,10 @@ import {
 } from '../esm/native/io/project_migrations/ui_raw_snapshot_migration.ts';
 import {
   assertCanonicalUiRawDims,
+  readCanonicalUiRawDimsCmFromSnapshot,
+  readCanonicalUiRawIntFromSnapshot,
+  readCanonicalUiRawNumberFromSnapshot,
+  readUiRawNumberFromSnapshot,
   readUiRawScalarFromCanonicalSnapshot,
 } from '../esm/native/runtime/ui_raw_selectors.ts';
 
@@ -75,4 +79,32 @@ test('canonical runtime selector stays raw-only while project ingress migrates l
   assert.equal(readUiRawScalarFromCanonicalSnapshot(canonicalSnapshot, 'depth'), 55);
   assert.equal(readUiRawScalarFromCanonicalSnapshot(canonicalSnapshot, 'doors'), 4);
   assert.doesNotThrow(() => assertCanonicalUiRawDims(canonicalSnapshot, 'stage19.canonical'));
+});
+
+test('canonical ui.raw batch readers fail fast before project ingress migration and stay raw-only afterwards', () => {
+  const legacySnapshot = {
+    width: '160',
+    height: '240',
+    depth: '55',
+    doors: '4',
+    chestDrawersCount: '7',
+  };
+
+  assert.equal(readUiRawNumberFromSnapshot(legacySnapshot, 'width', 999), 160);
+  assert.equal(readCanonicalUiRawNumberFromSnapshot(legacySnapshot, 'width', 999), 999);
+  assert.equal(readCanonicalUiRawIntFromSnapshot(legacySnapshot, 'doors', 9), 9);
+  assert.throws(
+    () => readCanonicalUiRawDimsCmFromSnapshot(legacySnapshot, 'stage29.legacy'),
+    /stage29\.legacy missing canonical ui\.raw dimension\(s\): doors, width, height, depth/
+  );
+
+  const canonicalSnapshot = buildCanonicalProjectUiSnapshot(legacySnapshot);
+
+  assert.deepEqual(readCanonicalUiRawDimsCmFromSnapshot(canonicalSnapshot, 'stage29.canonical'), {
+    widthCm: 160,
+    heightCm: 240,
+    depthCm: 55,
+    doorsCount: 4,
+    chestDrawersCount: 7,
+  });
 });
