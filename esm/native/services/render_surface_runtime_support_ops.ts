@@ -77,11 +77,11 @@ export function addNode(parent: unknown, child: unknown): void {
   }
 }
 
-export function ensureRendererShadowMap(renderer: unknown, shadowType: unknown): void {
+export function ensureRendererShadowMap(renderer: unknown, shadowType: unknown, enabled = true): void {
   const rr = readRendererWritable(renderer);
   if (!rr) return;
   rr.shadowMap = typeof rr.shadowMap === 'object' && rr.shadowMap !== null ? rr.shadowMap : {};
-  rr.shadowMap.enabled = true;
+  rr.shadowMap.enabled = !!enabled;
   rr.shadowMap.type = shadowType;
   rr.shadowMap.autoUpdate = false;
 }
