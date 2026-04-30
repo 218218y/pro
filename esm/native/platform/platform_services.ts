@@ -8,6 +8,7 @@ import {
   setLoopRaf,
   setRafScheduledAt,
 } from '../runtime/render_access.js';
+import { getBrowserTimers } from '../runtime/api.js';
 import { readRuntimeStateFromApp } from '../runtime/root_state_access.js';
 import { getBuilderBuildUi } from '../runtime/builder_service_access.js';
 import {
@@ -155,11 +156,22 @@ export function installPlatformServiceSurface(
       setLoopRaf(
         App,
         requestAnimationFrameFn(function __wpKickRenderLoop() {
+          const runKick = () => {
+            try {
+              animate();
+            } catch (e) {
+              setLoopRaf(App, 0);
+              reportErrorViaPlatform(App, e, 'animate');
+            }
+          };
+
           try {
-            animate();
-          } catch (e) {
-            setLoopRaf(App, 0);
-            reportErrorViaPlatform(App, e, 'animate');
+            // Keep the RAF kick itself cheap. The first real render can compile
+            // shaders / upload buffers, so run it in the next task after the frame
+            // boundary rather than inside the RAF handler that Chrome reports.
+            getBrowserTimers(App).setTimeout(runKick, 0);
+          } catch {
+            runKick();
           }
         })
       );

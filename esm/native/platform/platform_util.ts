@@ -175,10 +175,20 @@ export function installPlatformUtilSurface(App: AppContainer, deps: PlatformUtil
 
   installStableSurfaceMethod(platform.util, 'afterPaint', '__wpAfterPaint', () => {
     return function (fn: PlatformTask) {
-      deps.requestAnimationFrameFn(function () {
-        deps.requestAnimationFrameFn(function () {
+      function runAfterPaintTask() {
+        try {
+          deps.setTimeoutFn(function () {
+            fn && fn();
+          }, 0);
+        } catch {
           fn && fn();
-        });
+        }
+      }
+
+      // Keep the paint-boundary RAF callbacks lightweight. Heavy boot work should run
+      // after the browser gets a paint opportunity, not inside the RAF handler itself.
+      deps.requestAnimationFrameFn(function () {
+        deps.requestAnimationFrameFn(runAfterPaintTask);
       });
     };
   });
