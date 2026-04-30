@@ -57,6 +57,23 @@ function incrementRenderSlotCounter(
   return next;
 }
 
+function isFrameWithinBudget(nowMs: number, frameStartMs: number, budgetMs: number): boolean {
+  const elapsed = frameStartMs > 0 ? nowMs - frameStartMs : 0;
+  return !elapsed || elapsed < budgetMs;
+}
+
+function markBudgetDeferred(
+  getRenderSlot: RenderSlotReader,
+  setRenderSlot: RenderSlotWriter,
+  app: AppContainer,
+  nowMs: number,
+  counterKey: string
+): void {
+  setRenderSlot(app, '__mirrorBudgetDeferredAtMs', nowMs);
+  incrementRenderSlotCounter(getRenderSlot, setRenderSlot, app, '__mirrorBudgetDeferredCount');
+  incrementRenderSlotCounter(getRenderSlot, setRenderSlot, app, counterKey);
+}
+
 function getMirrorHideScratchList(A: AppContainer): UnknownRecord[] {
   const scratch = getMirrorHideScratch(A);
   return Array.isArray(scratch) ? scratch.filter(isRecord) : [];
@@ -112,7 +129,7 @@ export function createRenderLoopMirrorDriver(
       : Math.max(baseInterval, 250);
     const motionActive = !!getRenderSlot<boolean>(A, '__mirrorMotionActive');
     const interval = motionActive ? moveInterval : baseInterval;
-    const disableDuringMotion = !!readConfigLooseScalarFromApp(A, 'MIRROR_DISABLE_DURING_MOTION', false);
+    const disableDuringMotion = !!readConfigLooseScalarFromApp(A, 'MIRROR_DISABLE_DURING_MOTION', true);
 
     const frameStart0 = getRenderSlot<number>(A, '__frameStartMs');
     const frameStart = typeof frameStart0 === 'number' && Number.isFinite(frameStart0) ? frameStart0 : 0;
@@ -122,8 +139,7 @@ export function createRenderLoopMirrorDriver(
       readConfigNumberLooseFromApp(A, 'MIRROR_MOVE_FRAME_BUDGET_MS', Math.max(4, Math.min(idleBudgetMs, 10)))
     );
     const budgetMs = motionActive ? moveBudgetMs : idleBudgetMs;
-    const elapsed = frameStart > 0 ? mirrorNow - frameStart : 0;
-    const canRunInBudget = !elapsed || elapsed < budgetMs;
+    const canRunInBudget = isFrameWithinBudget(mirrorNow, frameStart, budgetMs);
 
     try {
       const mirrorsArr = ensureRenderMetaArray<UnknownRecord>(A, 'mirrors');
@@ -200,11 +216,15 @@ export function createRenderLoopMirrorDriver(
         }
       }
 
-      const shouldRunMirrorCube =
-        hasMirror &&
-        canRunInBudget &&
-        !(motionActive && disableDuringMotion) &&
-        (interval === 0 || last < 0 || mirrorNow - last >= interval);
+      const intervalDue = interval === 0 || last < 0 || mirrorNow - last >= interval;
+      const mirrorDisabledForMotion = motionActive && disableDuringMotion;
+      if (hasMirror && canRunInBudget && mirrorDisabledForMotion && intervalDue) {
+        setRenderSlot(A, '__mirrorMotionDeferredAtMs', mirrorNow);
+        incrementRenderSlotCounter(getRenderSlot, setRenderSlot, A, '__mirrorMotionDeferredCount');
+      }
+
+      let shouldRunMirrorCube =
+        hasMirror && canRunInBudget && !mirrorDisabledForMotion && intervalDue;
 
       if (shouldRunMirrorCube && mirrorsArr && mirrorsArr.length) {
         let foundMirrorForUpdate = false;
@@ -214,6 +234,20 @@ export function createRenderLoopMirrorDriver(
           if (__tryHideMirrorSurface(o, tex, mirrorsToHide)) foundMirrorForUpdate = true;
         }
         if (!foundMirrorForUpdate) hasMirror = false;
+      }
+
+      if (shouldRunMirrorCube && hasMirror) {
+        const beforeCubeUpdateNow = __now();
+        if (!isFrameWithinBudget(beforeCubeUpdateNow, frameStart, budgetMs)) {
+          markBudgetDeferred(
+            getRenderSlot,
+            setRenderSlot,
+            A,
+            beforeCubeUpdateNow,
+            '__mirrorCubeBudgetSkipCount'
+          );
+          shouldRunMirrorCube = false;
+        }
       }
 
       if (shouldRunMirrorCube && hasMirror) {

@@ -32,11 +32,11 @@ function makeSlots(seed: Record<string, unknown>) {
 function createDriver(
   app: AnyRecord,
   slots: Record<string, unknown>,
-  options?: { now?: number; onTag?: () => void; onHide?: () => void }
+  options?: { now?: number | (() => number); onTag?: () => void; onHide?: () => void }
 ) {
   return createRenderLoopMirrorDriver(app as never, {
     report: () => undefined,
-    now: () => options?.now ?? 0,
+    now: () => (typeof options?.now === 'function' ? options.now() : (options?.now ?? 0)),
     isTaggedMirrorSurface(obj) {
       options?.onTag?.();
       return !!obj?.__taggedMirror;
@@ -44,6 +44,7 @@ function createDriver(
     tryHideMirrorSurface(obj, _tex, list) {
       options?.onHide?.();
       if (!obj?.__taggedMirror) return false;
+      obj.visible = false;
       list.push(obj);
       return true;
     },
@@ -89,9 +90,9 @@ test('render loop mirror driver defers tracked prune and presence scans when the
 
   assert.equal(tagChecks, 0);
   assert.equal(hideAttempts, 0);
-  assert.equal((app.render.mirrorCubeCamera as AnyRecord).updateCalls, 0);
+  assert.equal(((app.render as AnyRecord).mirrorCubeCamera as AnyRecord).updateCalls, 0);
   assert.equal(
-    (app.render.meta as AnyRecord).mirrors.length,
+    (((app.render as AnyRecord).meta as AnyRecord).mirrors as unknown[]).length,
     3,
     'tracked mirrors should stay untouched while budget-deferred'
   );
@@ -134,13 +135,14 @@ test('render loop mirror driver prunes tracked mirrors and updates the cube once
   driver.updateMirrorCube();
 
   assert.equal(
-    (app.render.meta as AnyRecord).mirrors.length,
+    (((app.render as AnyRecord).meta as AnyRecord).mirrors as unknown[]).length,
     1,
     'duplicate/orphan tracked mirrors should be compacted once work can run'
   );
   assert.equal(tagChecks, 1);
   assert.equal(hideAttempts, 1);
-  assert.equal((app.render.mirrorCubeCamera as AnyRecord).updateCalls, 1);
+  assert.equal(((app.render as AnyRecord).mirrorCubeCamera as AnyRecord).updateCalls, 1);
+  assert.equal(trackedMirror.visible, true, 'temporarily hidden mirrors should always be restored');
   assert.equal(slots.__mirrorTrackedPruneAtMs, 110);
   assert.equal(slots.__mirrorPresenceKnown, true);
   assert.equal(slots.__mirrorPresenceHasMirror, true);
@@ -187,4 +189,65 @@ test('render loop mirror driver keeps unknown presence unresolved when a budget-
   );
   assert.equal(slots.__mirrorPresenceBudgetSkipCount, 1);
   assert.equal(slots.__mirrorBudgetDeferredCount, 1);
+});
+
+test('render loop mirror driver defers the expensive cube update when mirror prep exhausts the frame budget', () => {
+  const trackedMirror = { isMesh: true, __taggedMirror: true, parent: {}, visible: true };
+  const app = makeApp([trackedMirror]);
+  const slots = makeSlots({
+    __mirrorLastUpdateMs: -1,
+    __mirrorMotionActive: false,
+    __frameStartMs: 100,
+    __mirrorDirty: true,
+    __mirrorPresenceKnown: true,
+    __mirrorPresenceHasMirror: true,
+    __mirrorPresenceCheckedAtMs: 80,
+    __mirrorTrackedPruneAtMs: 0,
+  });
+  const nowValues = [105, 130];
+
+  const driver = createDriver(app, slots, {
+    now: () => nowValues.shift() ?? 130,
+  });
+
+  driver.updateMirrorCube();
+
+  assert.equal(((app.render as AnyRecord).mirrorCubeCamera as AnyRecord).updateCalls, 0);
+  assert.equal(trackedMirror.visible, true, 'mirror visibility must be restored after a deferred cube update');
+  assert.equal(slots.__mirrorDirty, true, 'dirty state should remain armed for the next budget-safe frame');
+  assert.equal(slots.__mirrorLastUpdateMs, -1);
+  assert.equal(slots.__mirrorBudgetDeferredAtMs, 130);
+  assert.equal(slots.__mirrorBudgetDeferredCount, 1);
+  assert.equal(slots.__mirrorCubeBudgetSkipCount, 1);
+});
+
+test('render loop mirror driver defers cube updates during camera/door motion by default', () => {
+  const trackedMirror = { isMesh: true, __taggedMirror: true, parent: {}, visible: true };
+  const app = makeApp([trackedMirror]);
+  const slots = makeSlots({
+    __mirrorLastUpdateMs: -1,
+    __mirrorMotionActive: true,
+    __frameStartMs: 100,
+    __mirrorDirty: true,
+    __mirrorPresenceKnown: true,
+    __mirrorPresenceHasMirror: true,
+    __mirrorPresenceCheckedAtMs: 80,
+    __mirrorTrackedPruneAtMs: 0,
+  });
+  let hideAttempts = 0;
+
+  const driver = createDriver(app, slots, {
+    now: 105,
+    onHide: () => {
+      hideAttempts += 1;
+    },
+  });
+
+  driver.updateMirrorCube();
+
+  assert.equal(hideAttempts, 0, 'motion-deferred mirror updates should skip the hide/update prep entirely');
+  assert.equal(((app.render as AnyRecord).mirrorCubeCamera as AnyRecord).updateCalls, 0);
+  assert.equal(slots.__mirrorDirty, true, 'dirty state should remain armed until motion settles');
+  assert.equal(slots.__mirrorMotionDeferredAtMs, 105);
+  assert.equal(slots.__mirrorMotionDeferredCount, 1);
 });
