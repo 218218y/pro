@@ -9,6 +9,16 @@ const PROJECT_MIGRATION_INDEX_FILE = 'esm/native/io/project_migrations/index.ts'
 const UI_RAW_SELECTORS_FILE = 'esm/native/runtime/ui_raw_selectors.ts';
 const RUNTIME_ROOT = 'esm/native/runtime';
 
+const PROJECT_CONFIG_SCALAR_REQUIRED_KEYS = [
+  'wardrobeType',
+  'boardMaterial',
+  'isManualWidth',
+  'showDimensions',
+  'isMultiColorMode',
+  'isLibraryMode',
+  'grooveLinesCount',
+];
+
 const PROJECT_CONFIG_REPLACE_KEYS = [
   'modulesConfiguration',
   'stackSplitLowerModulesConfiguration',
@@ -77,6 +87,19 @@ function findRuntimeImportsFromProjectMigrations(projectRoot) {
   return failures;
 }
 
+function requireOrderedNeedles(failures, label, source, needles, message) {
+  let cursor = -1;
+  for (const needle of needles) {
+    const next = source.indexOf(needle, cursor + 1);
+    if (next < 0) {
+      failures.push(`${label}: ${message || 'missing ordered needle'} (${needle})`);
+      continue;
+    }
+    if (next < cursor) failures.push(`${label}: ${needle} is out of order`);
+    cursor = next;
+  }
+}
+
 export function runProjectMigrationBoundaryAudit(projectRoot = process.cwd()) {
   const failures = [];
   const projectLoadPath = path.join(projectRoot, PROJECT_LOAD_FILE);
@@ -124,8 +147,29 @@ export function runProjectMigrationBoundaryAudit(projectRoot = process.cwd()) {
       failures,
       PROJECT_CONFIG_MIGRATION_FILE,
       configMigration,
-      'PROJECT_CONFIG_SNAPSHOT_REPLACE_KEYS',
-      'config migration owner must define project-load replace-owned branches'
+      'PROJECT_CONFIG_SCALAR_MIGRATION_REQUIRED_KEYS',
+      'config migration owner must define deterministic scalar required-key order'
+    );
+    requireNeedle(
+      failures,
+      PROJECT_CONFIG_MIGRATION_FILE,
+      configMigration,
+      'PROJECT_CONFIG_SNAPSHOT_REPLACE_KEY_ORDER',
+      'config migration owner must define deterministic project-load replace-owned branches'
+    );
+    requireNeedle(
+      failures,
+      PROJECT_CONFIG_MIGRATION_FILE,
+      configMigration,
+      'buildProjectConfigSnapshotReplaceKeyMap',
+      'config migration replace-key map must be derived from the deterministic owner order'
+    );
+    requireNeedle(
+      failures,
+      PROJECT_CONFIG_MIGRATION_FILE,
+      configMigration,
+      'isProjectConfigSnapshotReplaceKey',
+      'config migration owner must expose a type-narrowing replace-key guard'
     );
     requireNeedle(
       failures,
@@ -134,33 +178,68 @@ export function runProjectMigrationBoundaryAudit(projectRoot = process.cwd()) {
       'PROJECT_CONFIG_MIGRATION_REQUIRED_KEYS',
       'config migration owner must include replace-owned branches in the canonical required-key contract'
     );
-    for (const key of PROJECT_CONFIG_REPLACE_KEYS) {
-      requireNeedle(
-        failures,
-        PROJECT_CONFIG_MIGRATION_FILE,
-        configMigration,
-        `${key}: true`,
-        `config migration replace-key map must include ${key}`
-      );
+    requireNoNeedle(
+      failures,
+      PROJECT_CONFIG_MIGRATION_FILE,
+      configMigration,
+      '...Object.keys(PROJECT_CONFIG_SNAPSHOT_REPLACE_KEYS)',
+      'required-key contract must not depend on object-key enumeration order'
+    );
+    requireOrderedNeedles(
+      failures,
+      PROJECT_CONFIG_MIGRATION_FILE,
+      configMigration,
+      [
+        'PROJECT_CONFIG_SCALAR_MIGRATION_REQUIRED_KEYS',
+        'PROJECT_CONFIG_SNAPSHOT_REPLACE_KEY_ORDER',
+        'PROJECT_CONFIG_SNAPSHOT_REPLACE_KEYS',
+        'PROJECT_CONFIG_MIGRATION_REQUIRED_KEYS',
+      ],
+      'config migration owner order must stay scalar keys -> replace-key order -> map -> required keys'
+    );
+    for (const key of PROJECT_CONFIG_SCALAR_REQUIRED_KEYS) {
       requireNeedle(
         failures,
         PROJECT_CONFIG_MIGRATION_FILE,
         configMigration,
         `'${key}'`,
-        `config migration required-key contract must include ${key}`
+        `config migration scalar required-key order must include ${key}`
+      );
+    }
+    for (const key of PROJECT_CONFIG_REPLACE_KEYS) {
+      requireNeedle(
+        failures,
+        PROJECT_CONFIG_MIGRATION_FILE,
+        configMigration,
+        `'${key}'`,
+        `config migration replace-key order must include ${key}`
+      );
+      requireNeedle(
+        failures,
+        PROJECT_CONFIG_MIGRATION_FILE,
+        configMigration,
+        `out[key] = true`,
+        'config migration replace-key map must be built from the owner order'
       );
     }
   }
 
   if (fs.existsSync(migrationIndexPath)) {
     const migrationIndex = read(migrationIndexPath);
-    requireNeedle(
-      failures,
-      PROJECT_MIGRATION_INDEX_FILE,
-      migrationIndex,
+    for (const symbol of [
+      'PROJECT_CONFIG_SCALAR_MIGRATION_REQUIRED_KEYS',
+      'PROJECT_CONFIG_SNAPSHOT_REPLACE_KEY_ORDER',
       'PROJECT_CONFIG_SNAPSHOT_REPLACE_KEYS',
-      'project migrations barrel must export the config replace-key owner'
-    );
+      'isProjectConfigSnapshotReplaceKey',
+    ]) {
+      requireNeedle(
+        failures,
+        PROJECT_MIGRATION_INDEX_FILE,
+        migrationIndex,
+        symbol,
+        `project migrations barrel must export ${symbol}`
+      );
+    }
   }
 
   if (fs.existsSync(uiRawSelectorsPath)) {

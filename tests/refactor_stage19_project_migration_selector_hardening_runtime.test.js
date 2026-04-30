@@ -107,3 +107,36 @@ test('stage 33 to 35 project config migration replace-owned branches are anchore
     assert.match(progress, new RegExp(stage));
   }
 });
+
+test('stage 36 to 38 deterministic project config replace-key closeout is anchored', () => {
+  const configMigration = readFileSync(
+    'esm/native/io/project_migrations/config_snapshot_migration.ts',
+    'utf8'
+  );
+  const migrationIndex = readFileSync('esm/native/io/project_migrations/index.ts', 'utf8');
+  const replaceTest = readFileSync('tests/project_config_migration_replace_keys_runtime.test.ts', 'utf8');
+  const boundaryAudit = readFileSync('tools/wp_project_migration_boundary_audit.mjs', 'utf8');
+  const integrationAudit = readFileSync('tools/wp_refactor_integration_audit.mjs', 'utf8');
+  const progress = readFileSync('docs/REFACTOR_WORKMAP_PROGRESS.md', 'utf8');
+
+  for (const symbol of [
+    'PROJECT_CONFIG_SCALAR_MIGRATION_REQUIRED_KEYS',
+    'PROJECT_CONFIG_SNAPSHOT_REPLACE_KEY_ORDER',
+    'isProjectConfigSnapshotReplaceKey',
+  ]) {
+    assert.match(configMigration, new RegExp(`\\b${symbol}\\b`));
+    assert.match(migrationIndex, new RegExp(`\\b${symbol}\\b`));
+    assert.match(boundaryAudit, new RegExp(`\\b${symbol}\\b`));
+  }
+  assert.match(configMigration, /buildProjectConfigSnapshotReplaceKeyMap/);
+  assert.doesNotMatch(
+    configMigration,
+    /\.\.\.Object\.keys\(PROJECT_CONFIG_SNAPSHOT_REPLACE_KEYS\)/,
+    'required-key order must not be derived from Object.keys(map)'
+  );
+  assert.match(replaceTest, /deterministic and type-narrowed/);
+  for (const stage of ['Stage 36', 'Stage 37', 'Stage 38']) {
+    assert.match(integrationAudit, new RegExp(stage));
+    assert.match(progress, new RegExp(stage));
+  }
+});

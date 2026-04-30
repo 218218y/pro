@@ -131,6 +131,9 @@ for (const stage of [
   'Stage 33',
   'Stage 34',
   'Stage 35',
+  'Stage 36',
+  'Stage 37',
+  'Stage 38',
 ]) {
   requireNeedle('docs/REFACTOR_WORKMAP_PROGRESS.md', progressDoc, stage);
 }
@@ -141,9 +144,34 @@ requireNeedle(
   'stage 33 to 35 project config migration replace-owned branches are anchored'
 );
 requireNeedle(
+  'tests/refactor_stage19_project_migration_selector_hardening_runtime.test.js',
+  read('tests/refactor_stage19_project_migration_selector_hardening_runtime.test.js'),
+  'stage 36 to 38 deterministic project config replace-key closeout is anchored'
+);
+requireNeedle(
   'tests/project_config_migration_replace_keys_runtime.test.ts',
   read('tests/project_config_migration_replace_keys_runtime.test.ts'),
   'materializes every replace-owned branch'
+);
+requireNeedle(
+  'tests/project_config_migration_replace_keys_runtime.test.ts',
+  read('tests/project_config_migration_replace_keys_runtime.test.ts'),
+  'deterministic and type-narrowed'
+);
+requireNeedle(
+  'esm/native/io/project_migrations/config_snapshot_migration.ts',
+  read('esm/native/io/project_migrations/config_snapshot_migration.ts'),
+  'PROJECT_CONFIG_SNAPSHOT_REPLACE_KEY_ORDER'
+);
+requireNeedle(
+  'esm/native/io/project_migrations/config_snapshot_migration.ts',
+  read('esm/native/io/project_migrations/config_snapshot_migration.ts'),
+  'isProjectConfigSnapshotReplaceKey'
+);
+requireNeedle(
+  'tools/wp_project_migration_boundary_audit.mjs',
+  read('tools/wp_project_migration_boundary_audit.mjs'),
+  'required-key contract must not depend on object-key enumeration order'
 );
 
 if (errors.length) {

@@ -48,49 +48,71 @@ export interface ProjectConfigMigrationResult {
 }
 
 /**
+ * Scalar project config keys that every canonical project-load snapshot must materialize.
+ *
+ * Keeping this as an ordered tuple makes diagnostics deterministic and avoids deriving the required
+ * contract from object-key enumeration.
+ */
+export const PROJECT_CONFIG_SCALAR_MIGRATION_REQUIRED_KEYS = Object.freeze([
+  'wardrobeType',
+  'boardMaterial',
+  'isManualWidth',
+  'showDimensions',
+  'isMultiColorMode',
+  'isLibraryMode',
+  'grooveLinesCount',
+] as const satisfies readonly ProjectConfigScalarMigrationRequiredKey[]);
+
+/**
  * Snapshot-owned project config branches must be replaced on load.
  *
- * Keeping this list with the project migration owner prevents the loader from carrying a second
- * compatibility policy that can drift away from the canonical snapshot contract. Every key here
- * must be materialized by `buildCanonicalProjectConfigSnapshot` so empty saved maps/lists clear
+ * Keeping this ordered list with the project migration owner prevents the loader from carrying a
+ * second compatibility policy that can drift away from the canonical snapshot contract. Every key
+ * here must be materialized by `buildCanonicalProjectConfigSnapshot` so empty saved maps/lists clear
  * stale live config state instead of silently merging with it.
  */
-export const PROJECT_CONFIG_SNAPSHOT_REPLACE_KEYS: Readonly<
-  Record<ProjectConfigSnapshotReplaceKey, true>
-> = Object.freeze({
-  modulesConfiguration: true,
-  stackSplitLowerModulesConfiguration: true,
-  cornerConfiguration: true,
-  groovesMap: true,
-  grooveLinesCountMap: true,
-  splitDoorsMap: true,
-  splitDoorsBottomMap: true,
-  removedDoorsMap: true,
-  drawerDividersMap: true,
-  individualColors: true,
-  doorSpecialMap: true,
-  doorStyleMap: true,
-  mirrorLayoutMap: true,
-  doorTrimMap: true,
-  savedColors: true,
-  savedNotes: true,
-  preChestState: true,
-  handlesMap: true,
-  hingeMap: true,
-  curtainMap: true,
-});
+export const PROJECT_CONFIG_SNAPSHOT_REPLACE_KEY_ORDER = Object.freeze([
+  'modulesConfiguration',
+  'stackSplitLowerModulesConfiguration',
+  'cornerConfiguration',
+  'groovesMap',
+  'grooveLinesCountMap',
+  'splitDoorsMap',
+  'splitDoorsBottomMap',
+  'removedDoorsMap',
+  'drawerDividersMap',
+  'individualColors',
+  'doorSpecialMap',
+  'doorStyleMap',
+  'mirrorLayoutMap',
+  'doorTrimMap',
+  'savedColors',
+  'savedNotes',
+  'preChestState',
+  'handlesMap',
+  'hingeMap',
+  'curtainMap',
+] as const satisfies readonly ProjectConfigSnapshotReplaceKey[]);
+
+function buildProjectConfigSnapshotReplaceKeyMap(): Readonly<Record<ProjectConfigSnapshotReplaceKey, true>> {
+  const out = {} as Record<ProjectConfigSnapshotReplaceKey, true>;
+  for (const key of PROJECT_CONFIG_SNAPSHOT_REPLACE_KEY_ORDER) out[key] = true;
+  return Object.freeze(out);
+}
+
+export function isProjectConfigSnapshotReplaceKey(
+  key: string
+): key is ProjectConfigSnapshotReplaceKey {
+  return Object.prototype.hasOwnProperty.call(PROJECT_CONFIG_SNAPSHOT_REPLACE_KEYS, key);
+}
+
+export const PROJECT_CONFIG_SNAPSHOT_REPLACE_KEYS = buildProjectConfigSnapshotReplaceKeyMap();
 
 export const PROJECT_CONFIG_MIGRATION_REQUIRED_KEYS: readonly ProjectConfigMigrationRequiredKey[] =
   Object.freeze([
-    'wardrobeType',
-    'boardMaterial',
-    'isManualWidth',
-    'showDimensions',
-    'isMultiColorMode',
-    'isLibraryMode',
-    'grooveLinesCount',
-    ...Object.keys(PROJECT_CONFIG_SNAPSHOT_REPLACE_KEYS),
-  ] as ProjectConfigMigrationRequiredKey[]);
+    ...PROJECT_CONFIG_SCALAR_MIGRATION_REQUIRED_KEYS,
+    ...PROJECT_CONFIG_SNAPSHOT_REPLACE_KEY_ORDER,
+  ] as const satisfies readonly ProjectConfigMigrationRequiredKey[]);
 
 function hasOwn(record: UnknownRecord, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(record, key);
