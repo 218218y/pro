@@ -17,7 +17,6 @@ import {
   readCameraPosition,
   readControlsLike,
   readControlsTarget,
-  readFiniteNumber,
   readObject3DLike,
   readObject3DWritable,
   readRendererLike,

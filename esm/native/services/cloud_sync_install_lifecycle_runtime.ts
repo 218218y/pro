@@ -1,9 +1,24 @@
+import type { CloudSyncDiagPayload } from '../../../types';
+
 import { addCloudSyncCleanup, runCloudSyncInitialPulls } from './cloud_sync_owner_support.js';
 import { type CloudSyncInstallLifecycleArgs } from './cloud_sync_install_lifecycle_shared.js';
 import { prepareCloudSyncInstallLifecycle } from './cloud_sync_install_lifecycle_runtime_setup.js';
 
 const INITIAL_PULL_START_DELAY_MS = 250;
 const INITIAL_PULL_PHASE_YIELD_MS = 16;
+
+function toCloudSyncDiagPayload(error: unknown): CloudSyncDiagPayload {
+  if (error == null) return error;
+  if (typeof error === 'string' || typeof error === 'number' || typeof error === 'boolean') return error;
+  if (error instanceof Error) {
+    return {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+    };
+  }
+  return { message: String(error) };
+}
 
 function scheduleCloudSyncInitialPulls(args: {
   setTimeoutFn: (handler: () => void, ms: number) => unknown;
@@ -75,7 +90,7 @@ export async function installCloudSyncOwnerLifecycle(args: CloudSyncInstallLifec
       }),
     onError: error => {
       try {
-        args.ownerContext.diag('initialPulls.error', error);
+        args.ownerContext.diag('initialPulls.error', toCloudSyncDiagPayload(error));
       } catch {
         // Non-fatal: lifecycle should stay installed even when diagnostics fail.
       }
