@@ -98,6 +98,15 @@ export function updateRenderLoopFrontOverlaySeamsVisibility(
 
   let cache: FrontOverlayCache | null = readFrontOverlayCache(frontOverlayState.cache);
 
+  // Startup/idle frames usually have closed doors and a fully opaque front overlay.
+  // In that state there is nothing to update, so avoid the initial wardrobeGroup
+  // traversal entirely. The cache is still built on the first real transition, and
+  // an existing cache is still used to restore alpha back to 1 when closing doors.
+  if (alpha >= 0.999 && !inGlobalDoorTransition && (!cache || cache.wgUuid !== wgUuid)) {
+    if (cache && cache.wgUuid !== wgUuid) frontOverlayState.cache = null;
+    return;
+  }
+
   const needsRescan =
     !cache ||
     cache.wgUuid !== wgUuid ||
