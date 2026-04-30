@@ -133,6 +133,7 @@ function makeThreeStub(): AnyRecord {
     clearArgs: unknown[] = [];
     sizeArgs: unknown[] = [];
     pixelRatio = 0;
+    constructor(public rendererOpts: AnyRecord = {}) {}
     setClearColor(...args: unknown[]) {
       this.clearArgs = args;
     }
@@ -208,6 +209,12 @@ test('render surface runtime owns viewport creation and camera pose helpers', ()
   assert.ok((App.render as AnyRecord).mirrorCubeCamera);
   assert.ok((App.render as AnyRecord).mirrorRenderTarget);
 
+  const renderer = surface.renderer as AnyRecord;
+  assert.equal(renderer.pixelRatio, 1.5);
+  assert.equal(renderer.shadowMap.enabled, false);
+  assert.equal(renderer.rendererOpts.antialias, false);
+  assert.equal(renderer.rendererOpts.powerPreference, 'high-performance');
+
   const core = getViewportRenderCore(App as any);
   assert.equal(core?.renderer, surface.renderer);
   assert.equal(core?.scene, surface.scene);
@@ -245,4 +252,55 @@ test('render surface runtime owns viewport creation and camera pose helpers', ()
 
   assert.equal(stampMirrorLastUpdate(App as any, 1234), true);
   assert.equal((App.render as AnyRecord).__mirrorLastUpdateMs, 1234);
+});
+
+test('render surface runtime defaults to a light startup WebGL profile', () => {
+  const App: AnyRecord = {
+    deps: { THREE: makeThreeStub() },
+    browser: { win: { devicePixelRatio: 3 } },
+  };
+
+  const surface = createViewportSurface(App as any, {
+    container: {
+      clientWidth: 800,
+      clientHeight: 600,
+      appendChild: () => undefined,
+    },
+  });
+
+  const renderer = surface.renderer as AnyRecord;
+  assert.equal((App.render as AnyRecord).mirrorRenderTarget.size, 128);
+  assert.equal(renderer.pixelRatio, 1);
+  assert.equal(renderer.shadowMap.enabled, false);
+  assert.equal(renderer.rendererOpts.antialias, false);
+  assert.equal(renderer.rendererOpts.powerPreference, 'high-performance');
+});
+
+test('render surface runtime still allows explicit quality overrides', () => {
+  const App: AnyRecord = {
+    deps: { THREE: makeThreeStub() },
+    config: {
+      MIRROR_CUBE_SIZE: 512,
+      PIXEL_RATIO_MAX: 2,
+      RENDER_ANTIALIAS: true,
+      RENDER_SHADOWS_ENABLED: true,
+      WEBGL_POWER_PREFERENCE: 'default',
+    },
+    browser: { win: { devicePixelRatio: 3 } },
+  };
+
+  const surface = createViewportSurface(App as any, {
+    container: {
+      clientWidth: 800,
+      clientHeight: 600,
+      appendChild: () => undefined,
+    },
+  });
+
+  const renderer = surface.renderer as AnyRecord;
+  assert.equal((App.render as AnyRecord).mirrorRenderTarget.size, 512);
+  assert.equal(renderer.pixelRatio, 2);
+  assert.equal(renderer.shadowMap.enabled, true);
+  assert.equal(renderer.rendererOpts.antialias, true);
+  assert.equal(renderer.rendererOpts.powerPreference, 'default');
 });
