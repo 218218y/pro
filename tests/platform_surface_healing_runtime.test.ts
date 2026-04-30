@@ -68,7 +68,54 @@ test('platform util install heals drifted util/reportError seams while preservin
   assert.deepEqual(calls, [['report', 'boom', 'ctx']]);
 });
 
-test('platform util afterPaint keeps heavy work outside the RAF callback', () => {
+test('platform util afterPaint prefers idle work after the paint boundary when available', () => {
+  const App: any = { platform: { util: Object.create(null) } };
+  const order: string[] = [];
+  const rafQueue: Array<(ts?: number) => void> = [];
+  const idleQueue: Array<() => void> = [];
+  const timeoutQueue: Array<() => void> = [];
+
+  installPlatformUtilSurface(App, {
+    getVerboseCfg: () => ({ enabled: true, dedupeMs: 0 }),
+    isDebugOn: () => true,
+    setTimeoutFn: (fn: () => void) => {
+      timeoutQueue.push(fn);
+      return timeoutQueue.length;
+    },
+    clearTimeoutFn: () => {},
+    requestAnimationFrameFn: (cb: (ts?: number) => void) => {
+      rafQueue.push(cb);
+      return rafQueue.length;
+    },
+    requestIdleCallbackFn: cb => {
+      idleQueue.push(cb);
+      return idleQueue.length;
+    },
+  });
+
+  App.platform.util.afterPaint(() => order.push('afterPaint-task'));
+
+  assert.equal(rafQueue.length, 1);
+  assert.equal(idleQueue.length, 0);
+  assert.equal(timeoutQueue.length, 0);
+  assert.deepEqual(order, []);
+
+  rafQueue.shift()?.(0);
+  assert.equal(rafQueue.length, 1);
+  assert.equal(idleQueue.length, 0);
+  assert.equal(timeoutQueue.length, 0);
+  assert.deepEqual(order, []);
+
+  rafQueue.shift()?.(16);
+  assert.equal(idleQueue.length, 1);
+  assert.equal(timeoutQueue.length, 0);
+  assert.deepEqual(order, [], 'second RAF should schedule idle work but not run it inline');
+
+  idleQueue.shift()?.();
+  assert.deepEqual(order, ['afterPaint-task']);
+});
+
+test('platform util afterPaint falls back to a macrotask when idle callback is unavailable', () => {
   const App: any = { platform: { util: Object.create(null) } };
   const order: string[] = [];
   const rafQueue: Array<(ts?: number) => void> = [];
@@ -91,16 +138,9 @@ test('platform util afterPaint keeps heavy work outside the RAF callback', () =>
 
   App.platform.util.afterPaint(() => order.push('afterPaint-task'));
 
-  assert.equal(rafQueue.length, 1);
-  assert.equal(timeoutQueue.length, 0);
-  assert.deepEqual(order, []);
-
   rafQueue.shift()?.(0);
-  assert.equal(rafQueue.length, 1);
-  assert.equal(timeoutQueue.length, 0);
-  assert.deepEqual(order, []);
-
   rafQueue.shift()?.(16);
+
   assert.equal(timeoutQueue.length, 1);
   assert.deepEqual(order, [], 'second RAF should schedule the task but not run it inline');
 
@@ -154,7 +194,65 @@ test('platform service install heals drifted service seams while preserving cano
   assert.deepEqual(App.services.platform.getDimsM(), { w: 1.8, h: 2.4, d: 0.55 });
 });
 
-test('platform service ensureRenderLoop keeps the first animate kick outside the RAF callback', () => {
+test('platform service ensureRenderLoop prefers idle work for the first animate kick', () => {
+  const calls: string[] = [];
+  let rafCb: ((ts?: number) => void) | null = null;
+  const idleQueue: Array<() => void> = [];
+  const timeoutQueue: Array<() => void> = [];
+  const App: any = {
+    services: { platform: Object.create(null) },
+    store: {
+      getState: () => ({
+        ui: {},
+        config: {},
+        runtime: { wardrobeWidthM: 1.8, wardrobeHeightM: 2.4, wardrobeDepthM: 0.55 },
+        mode: {},
+        meta: {},
+      }),
+    },
+    render: Object.create(null),
+    lifecycle: Object.create(null),
+    deps: {
+      browser: {
+        requestIdleCallback: (cb: IdleRequestCallback) => {
+          calls.push('idle-scheduled');
+          idleQueue.push(() => cb({} as IdleDeadline));
+          return idleQueue.length;
+        },
+        setTimeout: (fn: () => void) => {
+          calls.push('timeout-scheduled');
+          timeoutQueue.push(fn);
+          return timeoutQueue.length;
+        },
+        clearTimeout: () => {},
+        performanceNow: () => 0,
+      },
+    },
+  };
+
+  installPlatformServiceSurface(App, cb => {
+    calls.push('raf-scheduled');
+    rafCb = cb;
+    return 7;
+  });
+
+  App.services.platform.setAnimate(() => calls.push('animate'));
+
+  assert.deepEqual(calls, ['raf-scheduled']);
+  assert.equal(typeof rafCb, 'function');
+  assert.equal(idleQueue.length, 0);
+  assert.equal(timeoutQueue.length, 0);
+
+  rafCb?.(16);
+  assert.deepEqual(calls, ['raf-scheduled', 'idle-scheduled']);
+  assert.equal(idleQueue.length, 1);
+  assert.equal(timeoutQueue.length, 0);
+
+  idleQueue.shift()?.();
+  assert.deepEqual(calls, ['raf-scheduled', 'idle-scheduled', 'animate']);
+});
+
+test('platform service ensureRenderLoop falls back to a macrotask for the first animate kick', () => {
   const calls: string[] = [];
   let rafCb: ((ts?: number) => void) | null = null;
   const timeoutQueue: Array<() => void> = [];
@@ -191,10 +289,6 @@ test('platform service ensureRenderLoop keeps the first animate kick outside the
   });
 
   App.services.platform.setAnimate(() => calls.push('animate'));
-
-  assert.deepEqual(calls, ['raf-scheduled']);
-  assert.equal(typeof rafCb, 'function');
-  assert.equal(timeoutQueue.length, 0);
 
   rafCb?.(16);
   assert.deepEqual(calls, ['raf-scheduled', 'timeout-scheduled']);
