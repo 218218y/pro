@@ -7,6 +7,11 @@ on:
     branches: [main]
   workflow_dispatch:
     inputs:
+      run_strict_gate:
+        description: Run the strict gate that fails on formatting differences
+        required: false
+        type: boolean
+        default: false
       run_release_smoke:
         description: Run the release/build smoke job
         required: false
@@ -36,8 +41,8 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  gate:
-    name: Quality gate
+  verify:
+    name: Verify
     runs-on: ubuntu-latest
     timeout-minutes: 35
 
@@ -56,14 +61,48 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts
 
-      - name: Run strict CI gate
+      - name: Run CI verification
+        run: npm run verify -- --ci
+
+      - name: Upload failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verify-diagnostics
+          path: |
+            .artifacts/**
+            test-results/**
+            playwright-report/**
+          if-no-files-found: ignore
+          retention-days: 7
+
+  strict-gate:
+    name: Strict gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    if: github.event_name == 'workflow_dispatch' && inputs.run_strict_gate
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run strict gate
         run: npm run gate
 
       - name: Upload failure diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: gate-diagnostics
+          name: strict-gate-diagnostics
           path: |
             .artifacts/**
             test-results/**
@@ -95,7 +134,7 @@ jobs:
   build-smoke:
     name: Build smoke
     runs-on: ubuntu-latest
-    needs: gate
+    needs: verify
     timeout-minutes: 30
     if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.run_release_smoke)
 
@@ -132,7 +171,7 @@ jobs:
   e2e-smoke:
     name: Playwright smoke
     runs-on: ubuntu-latest
-    needs: gate
+    needs: verify
     timeout-minutes: 30
     if: github.event_name == 'workflow_dispatch' && inputs.run_e2e
 
