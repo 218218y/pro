@@ -37,8 +37,12 @@ import type {
   ViewportContainerLike,
 } from './render_surface_runtime_support.js';
 
-const DEFAULT_MIRROR_CUBE_SIZE = 256;
-const DEFAULT_MAX_PIXEL_RATIO = 1.5;
+const DEFAULT_MIRROR_CUBE_SIZE = 128;
+const DEFAULT_MAX_PIXEL_RATIO = 1;
+const DEFAULT_RENDER_ANTIALIAS = false;
+const DEFAULT_RENDER_SHADOWS_ENABLED = false;
+const DEFAULT_WEBGL_POWER_PREFERENCE = 'high-performance';
+
 function readConfigNumber(
   App: AppLike,
   key: 'MIRROR_CUBE_SIZE' | 'PIXEL_RATIO_MAX',
@@ -46,8 +50,26 @@ function readConfigNumber(
 ): number {
   const value = readConfigLooseScalarFromApp(App, key, fallback);
   if (key === 'MIRROR_CUBE_SIZE') return clampNumber(value, fallback, 64, 1024);
-  return readFiniteNumber(value, fallback);
+  return clampNumber(value, fallback, 0.75, 2);
 }
+
+function readConfigBoolean(App: AppLike, key: string, fallback: boolean): boolean {
+  const value = readConfigLooseScalarFromApp(App, key, fallback);
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number') return value !== 0;
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'on') return true;
+    if (normalized === '0' || normalized === 'false' || normalized === 'no' || normalized === 'off') return false;
+  }
+  return fallback;
+}
+
+function readConfigString(App: AppLike, key: string, fallback: string): string {
+  const value = readConfigLooseScalarFromApp(App, key, fallback);
+  return typeof value === 'string' && value.trim() ? value.trim() : fallback;
+}
+
 function getRenderBag(App: AppLike): RenderBag {
   ensureRenderNamespace(App);
   ensureRenderRuntimeState(App);
@@ -213,7 +235,12 @@ export function createViewportSurface(
   render.camera = camera;
   writeVec3(readCameraPosition(camera), 0, 2.2, 5.5);
   const renderer = readRendererLike(
-    new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: false, alpha: true })
+    new THREE.WebGLRenderer({
+      antialias: readConfigBoolean(App, 'RENDER_ANTIALIAS', DEFAULT_RENDER_ANTIALIAS),
+      preserveDrawingBuffer: false,
+      alpha: true,
+      powerPreference: readConfigString(App, 'WEBGL_POWER_PREFERENCE', DEFAULT_WEBGL_POWER_PREFERENCE),
+    })
   );
   if (!renderer)
     throw new Error(
@@ -228,7 +255,12 @@ export function createViewportSurface(
     const dpr = win && typeof win.devicePixelRatio === 'number' ? Number(win.devicePixelRatio) : 1;
     const maxPixelRatio = readConfigNumber(App, 'PIXEL_RATIO_MAX', DEFAULT_MAX_PIXEL_RATIO);
     if (rr?.setPixelRatio) rr.setPixelRatio(Math.min(dpr, maxPixelRatio));
-    ensureRendererShadowMap(renderer, THREE.PCFShadowMap);
+    const shadowsEnabled = readConfigBoolean(
+      App,
+      'RENDER_SHADOWS_ENABLED',
+      DEFAULT_RENDER_SHADOWS_ENABLED
+    );
+    ensureRendererShadowMap(renderer, THREE.PCFShadowMap, shadowsEnabled);
     if (typeof container.appendChild === 'function' && rr?.domElement) container.appendChild(rr.domElement);
   } catch {}
   const domElement = readRendererWritable(renderer)?.domElement;
