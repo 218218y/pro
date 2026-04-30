@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createRenderLoopVisualEffects } from '../esm/native/platform/render_loop_visual_effects.js';
+import { updateRenderLoopFrontOverlaySeamsVisibility } from '../esm/native/platform/render_loop_visual_effects_front_overlay.js';
 
 function asRecord(value: unknown, fallback: Record<string, unknown> = {}) {
   return value && typeof value === 'object' && !Array.isArray(value)
@@ -105,4 +106,55 @@ test('render loop visual effects mark mirror dirty when finite sample changes ma
   assert.equal(slots.__mirrorMotionUntilMs, 1120);
   assert.equal(slots.__mirrorMotionActive, true);
   assert.equal((slots.__mirrorMotionSnap as Record<string, unknown>).px, 1.01);
+});
+
+test('front overlay skips the initial closed-door opaque scan', () => {
+  const app: Record<string, unknown> = { services: { doors: { getOpen: () => false } } };
+  const state: Record<string, unknown> = {};
+  let collectCalls = 0;
+  let applyCalls = 0;
+
+  updateRenderLoopFrontOverlaySeamsVisibility(app as never, {
+    frontOverlayState: () => state,
+    collectFrontOverlayNodes: () => {
+      collectCalls += 1;
+      return [{ visible: true, userData: {} }];
+    },
+    getWardrobeGroup: () => ({ uuid: 'wg-1', traverse: () => undefined }),
+    getDoorsArray: () => [],
+    applyOpacityScale: () => {
+      applyCalls += 1;
+    },
+  });
+
+  assert.equal(collectCalls, 0, 'closed startup frame should not traverse wardrobeGroup');
+  assert.equal(applyCalls, 0);
+  assert.equal(state.cache, undefined);
+  assert.equal(state.frameCounter, 1);
+});
+
+test('front overlay still scans on the first real door-open transition', () => {
+  const app: Record<string, unknown> = { services: { doors: { getOpen: () => true } } };
+  const state: Record<string, unknown> = {};
+  const node = { visible: true, userData: {} };
+  let collectCalls = 0;
+  let applyCalls = 0;
+
+  updateRenderLoopFrontOverlaySeamsVisibility(app as never, {
+    frontOverlayState: () => state,
+    collectFrontOverlayNodes: () => {
+      collectCalls += 1;
+      return [node];
+    },
+    getWardrobeGroup: () => ({ uuid: 'wg-1', traverse: () => undefined }),
+    getDoorsArray: () => [],
+    applyOpacityScale: () => {
+      applyCalls += 1;
+    },
+  });
+
+  assert.equal(collectCalls, 1, 'open transition should build the overlay cache');
+  assert.equal(applyCalls, 0, 'fully hidden overlay does not need opacity scaling');
+  assert.equal(node.visible, false);
+  assert.equal(!!state.cache, true);
 });
