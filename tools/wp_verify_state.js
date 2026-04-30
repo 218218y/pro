@@ -10,11 +10,16 @@ export function parseVerifyArgs(argv = []) {
       args.includes('--no-bundles') ||
       args.includes('--skip-bundle'),
     gate: args.includes('--gate') || args.includes('--strict'),
+    softFormat:
+      args.includes('--soft-format') ||
+      args.includes('--format-warn') ||
+      args.includes('--warn-on-format'),
   };
 }
 
 export function classifyFormatCheckResult(fmt, opts = {}) {
   const gate = opts && opts.gate === true;
+  const softFormat = opts && opts.softFormat === true;
   if (!fmt || typeof fmt !== 'object') {
     return {
       ok: false,
@@ -49,7 +54,7 @@ export function classifyFormatCheckResult(fmt, opts = {}) {
   const isFormattingDiff =
     out.includes('Code style issues found') || out.includes('Run Prettier with --write');
   if (isFormattingDiff) {
-    if (gate) {
+    if (gate && !softFormat) {
       return {
         ok: false,
         fatal: true,
@@ -62,7 +67,9 @@ export function classifyFormatCheckResult(fmt, opts = {}) {
       ok: true,
       fatal: false,
       hasFormatWarn: true,
-      message: '\n⚠️  Prettier check: formatting differences found (warning only).',
+      message: softFormat
+        ? '\n⚠️  Prettier check: formatting differences found (warning only by --soft-format).'
+        : '\n⚠️  Prettier check: formatting differences found (warning only).',
       exitCode: 0,
     };
   }
