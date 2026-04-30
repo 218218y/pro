@@ -30,6 +30,7 @@ type AddHangingClothesFn = (
 
 type RodConfigLike = {
   legMat?: unknown;
+  rodMat?: unknown;
   intDrawersList?: unknown[];
   intDrawersSlot?: unknown;
   isCustom?: boolean;
@@ -63,6 +64,11 @@ type RenderInteriorRodArgs = InteriorValueRecord & {
   addHangingClothes?: AddHangingClothesFn | null;
   doorStyle?: string | null;
   legMat?: unknown;
+  rodMat?: unknown;
+};
+
+type RodMaterialCache = InteriorValueRecord & {
+  interiorRodMat?: unknown;
 };
 
 function isRecord(value: unknown): value is InteriorValueRecord {
@@ -81,6 +87,25 @@ function readFiniteNumber(value: unknown, fallback = 0): number {
 function readOptionalFiniteNumber(value: unknown): number | null {
   const next = Number(value);
   return Number.isFinite(next) ? next : null;
+}
+
+function resolveRodMaterial(args: {
+  THREE: InteriorTHREESurface;
+  cache: RodMaterialCache;
+  explicitMat?: unknown;
+}): unknown {
+  const { THREE, cache, explicitMat } = args;
+  if (explicitMat != null) return explicitMat;
+
+  if (!cache.interiorRodMat) {
+    cache.interiorRodMat = new THREE.MeshStandardMaterial({
+      color: 0x888888,
+      metalness: 0.8,
+      roughness: 0.2,
+    });
+  }
+
+  return cache.interiorRodMat;
 }
 
 function readDrawerSlots(args: RenderInteriorRodArgs, config: RodConfigLike): number[] {
@@ -185,8 +210,12 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
       if (manualHeightLimit == null) availableHeight = yPos - highestDrawerBelowRodY;
     }
 
-    const legMat = safeArgs.legMat ?? cfg.legMat;
-    const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, innerW - 0.04, 12), legMat);
+    const rodMat = resolveRodMaterial({
+      THREE,
+      cache: __matCache(App),
+      explicitMat: safeArgs.rodMat ?? cfg.rodMat,
+    });
+    const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, innerW - 0.04, 12), rodMat);
     if (!rod.position || !rod.rotation || typeof rod.position.set !== 'function') return false;
     rod.rotation.z = Math.PI / 2;
     rod.position.set(internalCenterX, yPos, internalZ);
