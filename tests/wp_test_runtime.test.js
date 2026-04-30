@@ -11,7 +11,7 @@ import {
   createRunBanner,
 } from '../tools/wp_test_state.js';
 import { getNodeArgs } from '../tools/wp_test_shared.js';
-import { ensureDistBuilt, runTestFlow } from '../tools/wp_test_flow.js';
+import { ensureDistBuilt, extractFailedTestNames, runTestFlow } from '../tools/wp_test_flow.js';
 
 function tempDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'wp-test-'));
@@ -82,6 +82,56 @@ test('test flow derives tsx loader when ts tests exist and dist build is missing
   assert.equal(runCalls.length, 1);
   assert.deepEqual(runCalls[0].nodeArgs, ['--import', 'tsx']);
   assert.equal(result.ok, true);
+});
+
+test('test flow writes failure diagnostics with parsed test names and junit output', () => {
+  const root = tempDir();
+  fs.mkdirSync(path.join(root, 'tests'), { recursive: true });
+  fs.mkdirSync(path.join(root, 'dist', 'esm'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'dist', 'esm', 'main.js'), 'export {}\n', 'utf8');
+  fs.writeFileSync(path.join(root, 'tests', 'failing_runtime.test.js'), 'export {}\n', 'utf8');
+
+  const reportDir = path.join(root, '.artifacts', 'test-report');
+  const output = [
+    'TAP version 13',
+    '# Subtest: keeps saved model payload stable',
+    'not ok 1 - keeps saved model payload stable',
+    '  ---',
+    '  error: expected payload to be stable',
+    '  ...',
+  ].join('\n');
+
+  const result = runTestFlow({
+    projectRoot: root,
+    childEnv: { ...process.env, WP_TEST_REPORT_DIR: reportDir },
+    flags: { forceTsx: false, noBuild: true, pattern: '' },
+    runners: {
+      runOne() {
+        return { status: 1, stdout: output, stderr: 'AssertionError: expected payload to be stable\n' };
+      },
+    },
+  });
+
+  assert.equal(result.ok, false);
+  assert.equal(result.fail, 1);
+  assert.deepEqual(result.failures[0].failedTests, ['keeps saved model payload stable']);
+
+  const markdown = fs.readFileSync(path.join(reportDir, 'failed-tests.md'), 'utf8');
+  const junit = fs.readFileSync(path.join(reportDir, 'junit', 'wp-tests.xml'), 'utf8');
+  const summary = JSON.parse(fs.readFileSync(path.join(reportDir, 'failure-summary.json'), 'utf8'));
+
+  assert.match(markdown, /keeps saved model payload stable/);
+  assert.match(markdown, /tests\/failing_runtime\.test\.js/);
+  assert.match(junit, /keeps saved model payload stable/);
+  assert.equal(summary.failedFiles[0].file, 'tests/failing_runtime.test.js');
+  assert.ok(fs.existsSync(path.join(reportDir, 'logs', 'tests_failing_runtime.test.js.log')));
+});
+
+test('failed test parser supports TAP and spec-style failure lines', () => {
+  assert.deepEqual(
+    extractFailedTestNames('not ok 12 - applies material safely\n✖ renders saved swatch row (3.2ms)\n'),
+    ['applies material safely', 'renders saved swatch row']
+  );
 });
 
 test('ensureDistBuilt fails in no-build mode when dist is missing', () => {
