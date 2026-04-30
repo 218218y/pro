@@ -28,6 +28,35 @@ export function installPlatformUtilSurface(App: AppContainer, deps: PlatformUtil
     return current && typeof current.reportError === 'function' ? current.reportError : null;
   }
 
+  function schedulePostPaintTask(fn: PlatformTask): void {
+    let didRun = false;
+    const runOnce = () => {
+      if (didRun) return;
+      didRun = true;
+      fn && fn();
+    };
+
+    try {
+      if (deps.requestIdleCallbackFn) {
+        deps.requestIdleCallbackFn(
+          function () {
+            runOnce();
+          },
+          { timeout: 250 }
+        );
+        return;
+      }
+    } catch {
+      // Fall back to a macrotask below.
+    }
+
+    try {
+      deps.setTimeoutFn(runOnce, 0);
+    } catch {
+      runOnce();
+    }
+  }
+
   installStableSurfaceMethod(platform.util, 'str', '__wpStr', () => {
     return function (v: unknown, fallback?: unknown) {
       if (v === null || typeof v === 'undefined')
@@ -175,20 +204,14 @@ export function installPlatformUtilSurface(App: AppContainer, deps: PlatformUtil
 
   installStableSurfaceMethod(platform.util, 'afterPaint', '__wpAfterPaint', () => {
     return function (fn: PlatformTask) {
-      function runAfterPaintTask() {
-        try {
-          deps.setTimeoutFn(function () {
-            fn && fn();
-          }, 0);
-        } catch {
-          fn && fn();
-        }
-      }
-
-      // Keep the paint-boundary RAF callbacks lightweight. Heavy boot work should run
-      // after the browser gets a paint opportunity, not inside the RAF handler itself.
+      // Two RAFs preserve the existing "after a paint opportunity" contract.
+      // The actual boot/task work is then scheduled as idle work when the browser
+      // supports it, so heavy startup work no longer runs inside the RAF callback
+      // and does not compete with immediate rendering work as aggressively.
       deps.requestAnimationFrameFn(function () {
-        deps.requestAnimationFrameFn(runAfterPaintTask);
+        deps.requestAnimationFrameFn(function () {
+          schedulePostPaintTask(fn);
+        });
       });
     };
   });
