@@ -5,11 +5,9 @@ import type {
   UnknownRecord,
 } from '../../../../types/index.js';
 
-import type { PersistedProjectConfigBranchKey } from '../../features/project_config/project_config_snapshot_canonical_shared.js';
 import { buildProjectConfigSnapshot as buildProjectConfigSnapshotFromProjectLoad } from '../project_io_load_helpers_config.js';
 
-export type ProjectConfigSnapshotReplaceKey = Extract<
-  PersistedProjectConfigBranchKey,
+export type ProjectConfigSnapshotReplaceKey =
   | 'modulesConfiguration'
   | 'stackSplitLowerModulesConfiguration'
   | 'cornerConfiguration'
@@ -29,8 +27,7 @@ export type ProjectConfigSnapshotReplaceKey = Extract<
   | 'preChestState'
   | 'handlesMap'
   | 'hingeMap'
-  | 'curtainMap'
->;
+  | 'curtainMap';
 
 export type ProjectConfigScalarMigrationRequiredKey =
   | 'wardrobeType'
