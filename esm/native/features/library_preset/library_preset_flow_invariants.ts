@@ -16,7 +16,36 @@ import {
   doorPartKeys,
   normDoorCount,
 } from './library_preset_shared.js';
-import { createInvariantDoorMapMutators } from './library_preset_flow_shared.js';
+import {
+  createInvariantDoorMapMutators,
+  type LibraryPresetInvariantDoorMutators,
+} from './library_preset_flow_shared.js';
+
+function readSeededDoorCount(raw: unknown, currentCount: number): number {
+  const n = Math.round(Number(raw));
+  if (!Number.isFinite(n)) return currentCount;
+  return Math.max(0, Math.min(currentCount, n));
+}
+
+function seedTopLibraryDoorDefault(mutators: LibraryPresetInvariantDoorMutators, doorId: number): void {
+  const base = `d${doorId}`;
+  mutators.setSpecial(`${base}_full`, 'glass');
+  mutators.setSpecial(base, 'glass');
+  for (const key of doorPartKeys(doorId)) mutators.setCurtain(key, 'none');
+}
+
+function cleanNewBottomLibraryDoorDefault(
+  mutators: LibraryPresetInvariantDoorMutators,
+  doorId: number
+): void {
+  const base = `d${doorId}`;
+  mutators.delSpecial(base);
+  for (const key of doorPartKeys(doorId)) {
+    mutators.delColor(key);
+    mutators.delSpecial(key);
+    mutators.delCurtainIfNone(key);
+  }
+}
 
 export function ensureLibraryPresetInvariants(env: LibraryPresetEnv, args: LibraryPresetEnsureArgs): void {
   if (!args.isLibraryMode) return;
@@ -28,6 +57,11 @@ export function ensureLibraryPresetInvariants(env: LibraryPresetEnv, args: Libra
     const ui = env.ui.get();
     const topDoorsCount = normDoorCount(args.doors, args.wardrobeType);
     const bottomDoorsCount = normDoorCount(args.stackSplitLowerDoors, args.wardrobeType);
+    const seededTopDoorsCount = readSeededDoorCount(args.seededTopDoorsCount, topDoorsCount);
+    const seededBottomDoorsCount = readSeededDoorCount(
+      args.seededBottomDoorsCount,
+      bottomDoorsCount
+    );
     const { topCfgList, bottomCfgList } = buildLibraryModuleConfigLists(
       topDoorsCount,
       bottomDoorsCount,
@@ -42,30 +76,20 @@ export function ensureLibraryPresetInvariants(env: LibraryPresetEnv, args: Libra
     const baseSpecial: DoorSpecialMap = cloneDoorSpecialMap(cfg.doorSpecialMap);
     const mutators = createInvariantDoorMapMutators(baseColors, baseCurtains, baseSpecial);
 
-    for (let id = 1; id <= topDoorsCount; id++) {
-      const base = `d${id}`;
-      mutators.setSpecial(`${base}_full`, 'glass');
-      mutators.setSpecial(base, 'glass');
-      // Keep the top library doors as glass, but do not force curtainMap back to "none" here.
-      // Library-mode activation seeds the default no-curtain state once; after that, curtain
-      // selection is user-editable and invariants must preserve the override instead of erasing it.
+    for (let id = seededTopDoorsCount + 1; id <= topDoorsCount; id++) {
+      seedTopLibraryDoorDefault(mutators, id);
     }
 
     const bottomBase = 1000;
-    for (let i = 1; i <= bottomDoorsCount; i++) {
-      const doorId = bottomBase + i;
-      const base = `d${doorId}`;
-      mutators.delSpecial(base);
-      for (const key of doorPartKeys(doorId)) {
-        mutators.delColor(key);
-        mutators.delSpecial(key);
-        mutators.delCurtainIfNone(key);
-      }
+    for (let i = seededBottomDoorsCount + 1; i <= bottomDoorsCount; i++) {
+      cleanNewBottomLibraryDoorDefault(mutators, bottomBase + i);
     }
 
     const nextTopCfgs = buildNextLibraryModuleCfgList(curTopCfgs, topCfgList);
     const nextBottomCfgs = buildNextLibraryModuleCfgList(curBottomCfgs, bottomCfgList);
-    const changed = mutators.markChanged() || !!nextTopCfgs || !!nextBottomCfgs || !cfg.isMultiColorMode;
+    const doorMapsChanged = mutators.markChanged();
+    const structuralStateChanged = doorMapsChanged || !!nextTopCfgs || !!nextBottomCfgs;
+    const changed = structuralStateChanged || !cfg.isMultiColorMode;
 
     if (!changed) return;
 
@@ -77,6 +101,10 @@ export function ensureLibraryPresetInvariants(env: LibraryPresetEnv, args: Libra
       if (mutators.nextSpecial) runtime.setCfgDoorSpecialMap(mutators.nextSpecial, meta);
       if (nextTopCfgs) runtime.setCfgModulesConfiguration(nextTopCfgs, meta);
       if (nextBottomCfgs) runtime.setCfgLowerModulesConfiguration(nextBottomCfgs, meta);
+
+      if (structuralStateChanged) {
+        runtime.runStructuralRecompute(env.ui.get(), `${src}:rebuild`);
+      }
     }, meta);
   } catch {
     // ignore

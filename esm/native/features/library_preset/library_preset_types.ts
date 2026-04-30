@@ -120,6 +120,18 @@ export type LibraryPresetEnsureArgs = {
   doors: number;
   stackSplitLowerDoors: number;
   modulesCount: number;
+  /**
+   * Number of upper library doors whose default policy has already been materialized.
+   * Invariants use this to seed glass only for newly-added upper doors while preserving
+   * existing user overrides.
+   */
+  seededTopDoorsCount?: number;
+  /**
+   * Number of lower library doors whose default policy has already been materialized.
+   * Invariants use this to clean only newly-added lower doors while preserving existing
+   * user overrides.
+   */
+  seededBottomDoorsCount?: number;
 };
 
 export type LibraryPresetController = {
