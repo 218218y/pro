@@ -26,9 +26,7 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts
       - name: Run closeout profile
-        env:
-          PROFILE: ${{ github.event.inputs.profile }}
-        run: node tools/wp_verify_closeout.cjs --profile "$PROFILE" --write --append-state --log-dir .artifacts/closeout-logs
+        run: node tools/wp_run_closeout_profile.cjs "${{ github.event.inputs.profile }}"
       - name: Publish closeout summary
         if: success() || failure()
         run: |
