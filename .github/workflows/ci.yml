@@ -6,23 +6,40 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      run_release_smoke:
+        description: Run the release/build smoke job
+        required: false
+        type: boolean
+        default: true
+      run_e2e:
+        description: Run the Playwright smoke suite
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+defaults:
+  run:
+    shell: bash
+
+env:
+  CI: true
+  # Opt JavaScript actions into the newer GitHub Actions runtime now, before
+  # Node.js 24 becomes the platform default.
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
-  verify:
-    name: Verify
+  gate:
+    name: Quality gate
     runs-on: ubuntu-latest
-    timeout-minutes: 25
-    env:
-      # Opt JavaScript actions into the newer GitHub Actions runtime now, before
-      # Node.js 24 becomes the platform default.
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    timeout-minutes: 35
 
     steps:
       - name: Checkout
@@ -39,8 +56,113 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts
 
-      - name: Verify CI suite
-        run: npm run verify -- --ci
+      - name: Run strict CI gate
+        run: npm run gate
+
+      - name: Upload failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate-diagnostics
+          path: |
+            .artifacts/**
+            test-results/**
+            playwright-report/**
+          if-no-files-found: ignore
+          retention-days: 7
+
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
 
       - name: Audit high severity dependencies
         run: npm audit --audit-level=high
+
+  build-smoke:
+    name: Build smoke
+    runs-on: ubuntu-latest
+    needs: gate
+    timeout-minutes: 30
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.run_release_smoke)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run Vite production build
+        run: npm run vite:build
+
+      - name: Run release parity source smoke
+        run: npm run release:parity:source
+
+      - name: Upload build diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-smoke-diagnostics
+          path: |
+            .artifacts/**
+            dist/**
+          if-no-files-found: ignore
+          retention-days: 7
+
+  e2e-smoke:
+    name: Playwright smoke
+    runs-on: ubuntu-latest
+    needs: gate
+    timeout-minutes: 30
+    if: github.event_name == 'workflow_dispatch' && inputs.run_e2e
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Install Playwright browsers
+        run: npm run e2e:install -- --with-deps
+
+      - name: Run Playwright smoke suite
+        run: npm run e2e:smoke
+
+      - name: Upload Playwright diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-smoke-diagnostics
+          path: |
+            .artifacts/**
+            test-results/**
+            playwright-report/**
+          if-no-files-found: ignore
+          retention-days: 7
