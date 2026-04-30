@@ -39,8 +39,8 @@ export type LibraryPresetConfigSnapshot = UnknownRecord & {
   doorStyleMap?: DoorStyleMap;
 };
 
-export type LibraryPresetUiOverride = Partial<LibraryPresetUiSnapshot> & {
-  raw?: Partial<LibraryPresetUiRawState>;
+export type LibraryPresetUiOverride = Omit<Partial<LibraryPresetUiSnapshot>, 'raw'> & {
+  raw?: LibraryPresetUiRawState;
 };
 
 export type LibraryPresetPreState = {

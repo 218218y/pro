@@ -11,6 +11,7 @@ import type {
   LibraryPresetToggleArgs,
   LibraryPresetUiOverride,
   LibraryPresetUiRawState,
+  LibraryPresetUiSnapshot,
   MergeUiOverrideFn,
 } from './library_preset_types.js';
 
@@ -96,6 +97,15 @@ export function buildLibraryUiOverride(
   patch: LibraryPresetUiOverride
 ): LibraryPresetUiOverride {
   return mergeUiOverride(env.ui.get(), patch);
+}
+
+export function buildLibraryUiSnapshotOverride(ui: LibraryPresetUiSnapshot): LibraryPresetUiOverride {
+  const baseUi = isRec(ui) ? ui : {};
+  const { raw: _ignoredRaw, ...baseShallow } = baseUi;
+  const out: LibraryPresetUiOverride = { ...baseShallow };
+  const raw = readLibraryPresetUiRawState(baseUi.raw);
+  if (Object.keys(raw).length) out.raw = raw;
+  return out;
 }
 
 export function seedBottomDimensions(args: LibraryPresetToggleArgs): {

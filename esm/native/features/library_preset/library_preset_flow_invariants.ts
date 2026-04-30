@@ -17,6 +17,7 @@ import {
   normDoorCount,
 } from './library_preset_shared.js';
 import {
+  buildLibraryUiSnapshotOverride,
   createInvariantDoorMapMutators,
   type LibraryPresetInvariantDoorMutators,
 } from './library_preset_flow_shared.js';
@@ -103,7 +104,7 @@ export function ensureLibraryPresetInvariants(env: LibraryPresetEnv, args: Libra
       if (nextBottomCfgs) runtime.setCfgLowerModulesConfiguration(nextBottomCfgs, meta);
 
       if (structuralStateChanged) {
-        runtime.runStructuralRecompute(env.ui.get(), `${src}:rebuild`);
+        runtime.runStructuralRecompute(buildLibraryUiSnapshotOverride(ui), `${src}:rebuild`);
       }
     }, meta);
   } catch {
