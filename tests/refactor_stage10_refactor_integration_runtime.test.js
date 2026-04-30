@@ -1,8 +1,24 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { spawnSync } from 'node:child_process';
+
+import {
+  REFACTOR_COMPLETED_STAGE_LABELS,
+  REFACTOR_INTEGRATION_ANCHORS,
+  assertRefactorStageCatalogIsWellFormed,
+} from '../tools/wp_refactor_stage_catalog.mjs';
 
 const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+
+function runNodeScript(script) {
+  const result = spawnSync(process.execPath, [script], {
+    cwd: process.cwd(),
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  assert.equal(result.status, 0, `${script} failed\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`);
+}
 
 test('stage 10 refactor integration audit is wired into guardrails and verify lane', () => {
   assert.match(pkg.scripts['check:refactor-guardrails'], /npm run check:refactor-integration/);
@@ -30,8 +46,31 @@ test('stage 10 refactor integration audit covers guardrails, stage tests, verify
     'verify:refactor-modernization',
     'tools/wp_verify_flow.js',
     'docs/REFACTOR_WORKMAP_PROGRESS.md',
-    'Stage 13',
+    'REFACTOR_COMPLETED_STAGE_LABELS',
   ]) {
     assert.ok(audit.includes(expected), `audit should include ${expected}`);
   }
+});
+
+test('stage 39 to 41 refactor control-plane stage catalog is anchored', () => {
+  assert.equal(assertRefactorStageCatalogIsWellFormed(), true);
+  assert.equal(REFACTOR_COMPLETED_STAGE_LABELS.at(0), 'Stage 0');
+  assert.equal(REFACTOR_COMPLETED_STAGE_LABELS.at(-1), 'Stage 41');
+  assert.equal(new Set(REFACTOR_COMPLETED_STAGE_LABELS).size, REFACTOR_COMPLETED_STAGE_LABELS.length);
+
+  const progress = fs.readFileSync('docs/REFACTOR_WORKMAP_PROGRESS.md', 'utf8');
+  for (const stage of REFACTOR_COMPLETED_STAGE_LABELS) {
+    assert.match(progress, new RegExp(`${stage.replace(' ', '\\s+')}\\b`));
+  }
+
+  const audit = fs.readFileSync('tools/wp_refactor_integration_audit.mjs', 'utf8');
+  assert.match(audit, /REFACTOR_COMPLETED_STAGE_LABELS/);
+  assert.match(audit, /REFACTOR_INTEGRATION_ANCHORS/);
+  assert.ok(
+    REFACTOR_INTEGRATION_ANCHORS.some(anchor =>
+      anchor.needle.includes('stage 39 to 41 refactor control-plane stage catalog is anchored')
+    )
+  );
+
+  runNodeScript('tools/wp_refactor_integration_audit.mjs');
 });

@@ -1,6 +1,13 @@
 #!/usr/bin/env node
 import { readFileSync } from 'node:fs';
 
+import {
+  REFACTOR_COMPLETED_STAGE_LABELS,
+  REFACTOR_INTEGRATION_ANCHORS,
+  REFACTOR_STAGE_PROGRESS_MARKER,
+  assertRefactorStageCatalogIsWellFormed,
+} from './wp_refactor_stage_catalog.mjs';
+
 function read(file) {
   return readFileSync(file, 'utf8');
 }
@@ -19,8 +26,14 @@ function requireScript(name) {
   return String(scripts[name] || '');
 }
 
-function requireNeedle(label, source, needle) {
-  if (!source.includes(needle)) errors.push(`${label}: missing ${needle}`);
+function requireNeedle(label, source, needle, message) {
+  if (!source.includes(needle)) errors.push(`${label}: ${message || `missing ${needle}`}`);
+}
+
+try {
+  assertRefactorStageCatalogIsWellFormed();
+} catch (err) {
+  errors.push(`tools/wp_refactor_stage_catalog.mjs: ${err?.message || err}`);
 }
 
 const requiredGuardScripts = [
@@ -93,86 +106,19 @@ if (guardIndex < 0 || testIndex < 0 || guardIndex > testIndex) {
   errors.push('tools/wp_verify_flow.js: check:refactor-guardrails must run before npm test');
 }
 
-const progressDoc = read('docs/REFACTOR_WORKMAP_PROGRESS.md');
-for (const stage of [
-  'Stage 0',
-  'Stage 1',
-  'Stage 2',
-  'Stage 3',
-  'Stage 4',
-  'Stage 5',
-  'Stage 6',
-  'Stage 7',
-  'Stage 8',
-  'Stage 9',
-  'Stage 10',
-  'Stage 11',
-  'Stage 12',
-  'Stage 13',
-  'Stage 14',
-  'Stage 15',
-  'Stage 16',
-  'Stage 17',
-  'Stage 18',
-  'Stage 19',
-  'Stage 20',
-  'Stage 21',
-  'Stage 22',
-  'Stage 23',
-  'Stage 24',
-  'Stage 25',
-  'Stage 26',
-  'Stage 27',
-  'Stage 28',
-  'Stage 29',
-  'Stage 30',
-  'Stage 31',
-  'Stage 32',
-  'Stage 33',
-  'Stage 34',
-  'Stage 35',
-  'Stage 36',
-  'Stage 37',
-  'Stage 38',
-]) {
-  requireNeedle('docs/REFACTOR_WORKMAP_PROGRESS.md', progressDoc, stage);
+const progressDoc = read(REFACTOR_STAGE_PROGRESS_MARKER.file);
+for (const stage of REFACTOR_COMPLETED_STAGE_LABELS) {
+  requireNeedle(REFACTOR_STAGE_PROGRESS_MARKER.file, progressDoc, stage);
 }
-requireNeedle('docs/REFACTOR_WORKMAP_PROGRESS.md', progressDoc, 'verify:refactor-modernization');
 requireNeedle(
-  'tests/refactor_stage19_project_migration_selector_hardening_runtime.test.js',
-  read('tests/refactor_stage19_project_migration_selector_hardening_runtime.test.js'),
-  'stage 33 to 35 project config migration replace-owned branches are anchored'
+  REFACTOR_STAGE_PROGRESS_MARKER.file,
+  progressDoc,
+  REFACTOR_STAGE_PROGRESS_MARKER.verifyEntryPoint
 );
-requireNeedle(
-  'tests/refactor_stage19_project_migration_selector_hardening_runtime.test.js',
-  read('tests/refactor_stage19_project_migration_selector_hardening_runtime.test.js'),
-  'stage 36 to 38 deterministic project config replace-key closeout is anchored'
-);
-requireNeedle(
-  'tests/project_config_migration_replace_keys_runtime.test.ts',
-  read('tests/project_config_migration_replace_keys_runtime.test.ts'),
-  'materializes every replace-owned branch'
-);
-requireNeedle(
-  'tests/project_config_migration_replace_keys_runtime.test.ts',
-  read('tests/project_config_migration_replace_keys_runtime.test.ts'),
-  'deterministic and type-narrowed'
-);
-requireNeedle(
-  'esm/native/io/project_migrations/config_snapshot_migration.ts',
-  read('esm/native/io/project_migrations/config_snapshot_migration.ts'),
-  'PROJECT_CONFIG_SNAPSHOT_REPLACE_KEY_ORDER'
-);
-requireNeedle(
-  'esm/native/io/project_migrations/config_snapshot_migration.ts',
-  read('esm/native/io/project_migrations/config_snapshot_migration.ts'),
-  'isProjectConfigSnapshotReplaceKey'
-);
-requireNeedle(
-  'tools/wp_project_migration_boundary_audit.mjs',
-  read('tools/wp_project_migration_boundary_audit.mjs'),
-  'required-key contract must not depend on object-key enumeration order'
-);
+
+for (const anchor of REFACTOR_INTEGRATION_ANCHORS) {
+  requireNeedle(anchor.file, read(anchor.file), anchor.needle, anchor.message);
+}
 
 if (errors.length) {
   console.error('[refactor-integration-audit] FAILED');
