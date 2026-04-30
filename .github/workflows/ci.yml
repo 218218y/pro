@@ -85,6 +85,13 @@ jobs:
       - name: Run CI verification
         run: npm run verify -- --ci
 
+      - name: Publish test failure summary
+        if: success() || failure()
+        run: |
+          if [ -f .artifacts/test-report/failed-tests.md ]; then
+            cat .artifacts/test-report/failed-tests.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Upload failure diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
@@ -182,6 +189,13 @@ jobs:
 
       - name: Run strict gate
         run: npm run gate
+
+      - name: Publish test failure summary
+        if: success() || failure()
+        run: |
+          if [ -f .artifacts/test-report/failed-tests.md ]; then
+            cat .artifacts/test-report/failed-tests.md >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Upload failure diagnostics
         if: failure()
