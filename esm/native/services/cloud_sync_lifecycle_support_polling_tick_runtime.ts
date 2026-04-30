@@ -14,11 +14,7 @@ function reportCloudSyncPollingTickError(App: AppContainer, op: string, err: unk
   _cloudSyncReportNonFatal(App, op, err, { throttleMs: 8000 });
 }
 
-function observeCloudSyncPollingTickHook(args: {
-  App: AppContainer;
-  op: string;
-  hookResult: unknown;
-}): void {
+function observeCloudSyncPollingTickHook(args: { App: AppContainer; op: string; hookResult: unknown }): void {
   const { App, op, hookResult } = args;
   void Promise.resolve(hookResult).catch(err => {
     reportCloudSyncPollingTickError(App, op, err);

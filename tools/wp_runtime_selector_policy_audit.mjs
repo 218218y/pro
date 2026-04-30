@@ -44,7 +44,13 @@ function findFunctionBodyOpen(source, fromIndex) {
         let j = i + 1;
         while (j < source.length && /\s/.test(source[j])) j += 1;
         const next = source.slice(j, j + 5);
-        if (next !== 'width' && next !== 'heigh' && next !== 'depth' && next !== 'doors' && next !== 'chest') {
+        if (
+          next !== 'width' &&
+          next !== 'heigh' &&
+          next !== 'depth' &&
+          next !== 'doors' &&
+          next !== 'chest'
+        ) {
           return i;
         }
       }
@@ -126,12 +132,7 @@ function requirePublicUiRawExports(rel, source) {
     'readCanonicalUiRawDimsCmFromSnapshot',
     'readCanonicalUiRawDimsCmFromStore',
   ]) {
-    requireIncludes(
-      rel,
-      source,
-      symbol,
-      `${rel} public API must expose canonical ui.raw selector ${symbol}`
-    );
+    requireIncludes(rel, source, symbol, `${rel} public API must expose canonical ui.raw selector ${symbol}`);
   }
 }
 

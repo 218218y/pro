@@ -43,11 +43,7 @@ function shouldKickCloudSyncRealtimeRecovery(args: {
   );
 }
 
-function reportCloudSyncPollingRecoveryFailure(
-  App: AppContainer,
-  op: string,
-  err: unknown
-): void {
+function reportCloudSyncPollingRecoveryFailure(App: AppContainer, op: string, err: unknown): void {
   _cloudSyncReportNonFatal(App, op, err, { throttleMs: 8000 });
 }
 

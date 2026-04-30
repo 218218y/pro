@@ -28,7 +28,11 @@ test('project config migration materializes every replace-owned branch so projec
       true,
       `${key} must be present on canonical project config snapshots`
     );
-    assert.notEqual(cfg[key], undefined, `${key} must not be undefined on canonical project config snapshots`);
+    assert.notEqual(
+      cfg[key],
+      undefined,
+      `${key} must not be undefined on canonical project config snapshots`
+    );
     assert.equal(
       PROJECT_CONFIG_MIGRATION_REQUIRED_KEYS.includes(key),
       true,
@@ -50,10 +54,11 @@ test('project config migration fails fast when a replace-owned branch is missing
 test('project config replace-key owner remains immutable and reusable by project load', () => {
   assert.equal(Object.isFrozen(PROJECT_CONFIG_SNAPSHOT_REPLACE_KEY_ORDER), true);
   assert.equal(Object.isFrozen(PROJECT_CONFIG_SNAPSHOT_REPLACE_KEYS), true);
-  assert.deepEqual(
-    PROJECT_CONFIG_SNAPSHOT_REPLACE_KEY_ORDER.slice(0, 3),
-    ['modulesConfiguration', 'stackSplitLowerModulesConfiguration', 'cornerConfiguration']
-  );
+  assert.deepEqual(PROJECT_CONFIG_SNAPSHOT_REPLACE_KEY_ORDER.slice(0, 3), [
+    'modulesConfiguration',
+    'stackSplitLowerModulesConfiguration',
+    'cornerConfiguration',
+  ]);
   assert.deepEqual(
     Object.keys(PROJECT_CONFIG_SNAPSHOT_REPLACE_KEYS),
     [...PROJECT_CONFIG_SNAPSHOT_REPLACE_KEY_ORDER],

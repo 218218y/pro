@@ -20,12 +20,7 @@ export type CloudSyncLifecycleRefreshPolicy = {
 
 export type CloudSyncLifecycleRefreshRequestResult = {
   accepted: boolean;
-  blockedBy:
-    | CloudSyncLifecycleRefreshBlockReason
-    | 'suppressed'
-    | 'recent-pull'
-    | 'pull-error'
-    | null;
+  blockedBy: CloudSyncLifecycleRefreshBlockReason | 'suppressed' | 'recent-pull' | 'pull-error' | null;
 };
 
 export type CloudSyncLifecycleRefreshRequestArgs = {

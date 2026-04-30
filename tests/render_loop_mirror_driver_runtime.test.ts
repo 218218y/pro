@@ -213,7 +213,11 @@ test('render loop mirror driver defers the expensive cube update when mirror pre
   driver.updateMirrorCube();
 
   assert.equal(((app.render as AnyRecord).mirrorCubeCamera as AnyRecord).updateCalls, 0);
-  assert.equal(trackedMirror.visible, true, 'mirror visibility must be restored after a deferred cube update');
+  assert.equal(
+    trackedMirror.visible,
+    true,
+    'mirror visibility must be restored after a deferred cube update'
+  );
   assert.equal(slots.__mirrorDirty, true, 'dirty state should remain armed for the next budget-safe frame');
   assert.equal(slots.__mirrorLastUpdateMs, -1);
   assert.equal(slots.__mirrorBudgetDeferredAtMs, 130);

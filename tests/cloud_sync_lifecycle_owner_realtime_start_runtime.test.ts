@@ -145,9 +145,7 @@ test('cloud sync lifecycle realtime start guard reports fallback failures withou
   assert.equal(runtimeStatus.realtime.state, 'error');
   assert.equal(runtimeStatus.lastError, 'owner rejected');
   assert.equal(publishCount, 1);
-  assert.deepEqual(diagEvents, [
-    { event: 'realtime:owner-restart-error', payload: 'owner rejected' },
-  ]);
+  assert.deepEqual(diagEvents, [{ event: 'realtime:owner-restart-error', payload: 'owner rejected' }]);
   assert.equal(reported.length, 2);
   assert.equal((reported[0]?.error as Error).message, 'owner rejected');
   assert.equal(reported[0]?.ctx?.op, 'cloudSyncLifecycle.realtimeRestart');

@@ -73,5 +73,8 @@ test('P9: validateRuntimeConfig accepts empty privateRoom for generated private 
   });
 
   assert.equal(config.supabaseCloudSync.privateRoom, '');
-  assert.equal(issues.some(i => i.path === 'supabaseCloudSync.privateRoom'), false);
+  assert.equal(
+    issues.some(i => i.path === 'supabaseCloudSync.privateRoom'),
+    false
+  );
 });

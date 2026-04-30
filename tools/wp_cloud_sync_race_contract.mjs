@@ -81,11 +81,7 @@ requireNeedle(
   'args.isPushInFlight() || args.hasPendingPushWork?.()'
 );
 
-requireNeedle(
-  'cloud_sync_lifecycle_support_refresh.ts',
-  refreshRuntime,
-  "'pull-error'"
-);
+requireNeedle('cloud_sync_lifecycle_support_refresh.ts', refreshRuntime, "'pull-error'");
 requireNeedle(
   'cloud_sync_lifecycle_support_refresh.ts',
   refreshRuntime,
@@ -96,11 +92,7 @@ requireNeedle(
   refreshRuntime,
   'observeCloudSyncLifecycleRefreshPullResult'
 );
-requireNeedle(
-  'cloud_sync_lifecycle_support_refresh.ts',
-  refreshRuntime,
-  'Promise.resolve(pullResult).catch'
-);
+requireNeedle('cloud_sync_lifecycle_support_refresh.ts', refreshRuntime, 'Promise.resolve(pullResult).catch');
 requireNeedle(
   'cloud_sync_lifecycle_support_refresh.ts',
   refreshRuntime,

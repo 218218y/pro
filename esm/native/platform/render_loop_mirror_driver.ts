@@ -223,8 +223,7 @@ export function createRenderLoopMirrorDriver(
         incrementRenderSlotCounter(getRenderSlot, setRenderSlot, A, '__mirrorMotionDeferredCount');
       }
 
-      let shouldRunMirrorCube =
-        hasMirror && canRunInBudget && !mirrorDisabledForMotion && intervalDue;
+      let shouldRunMirrorCube = hasMirror && canRunInBudget && !mirrorDisabledForMotion && intervalDue;
 
       if (shouldRunMirrorCube && mirrorsArr && mirrorsArr.length) {
         let foundMirrorForUpdate = false;

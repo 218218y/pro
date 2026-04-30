@@ -100,9 +100,7 @@ function buildProjectConfigSnapshotReplaceKeyMap(): Readonly<Record<ProjectConfi
   return Object.freeze(out);
 }
 
-export function isProjectConfigSnapshotReplaceKey(
-  key: string
-): key is ProjectConfigSnapshotReplaceKey {
+export function isProjectConfigSnapshotReplaceKey(key: string): key is ProjectConfigSnapshotReplaceKey {
   return Object.prototype.hasOwnProperty.call(PROJECT_CONFIG_SNAPSHOT_REPLACE_KEYS, key);
 }
 

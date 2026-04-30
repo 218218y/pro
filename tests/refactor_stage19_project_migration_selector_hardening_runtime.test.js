@@ -89,10 +89,7 @@ test('stage 31 and 32 project selector public API closeout is anchored', () => {
     assert.match(selectorAudit, new RegExp(`\\b${symbol}\\b`));
   }
 
-  assert.match(
-    selectorTest,
-    /canonical ui\.raw readers are exposed through public core and state surfaces/
-  );
+  assert.match(selectorTest, /canonical ui\.raw readers are exposed through public core and state surfaces/);
   assert.match(selectorAudit, /requirePublicUiRawExports/);
   assert.match(integrationAudit, /REFACTOR_COMPLETED_STAGE_LABELS/);
   assertCatalogCoversStages('Stage 31', 'Stage 32');
