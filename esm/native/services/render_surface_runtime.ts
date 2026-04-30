@@ -37,11 +37,10 @@ import type {
   ViewportContainerLike,
 } from './render_surface_runtime_support.js';
 
-const DEFAULT_MIRROR_CUBE_SIZE = 128;
-const DEFAULT_MAX_PIXEL_RATIO = 1;
-const DEFAULT_RENDER_ANTIALIAS = false;
-const DEFAULT_RENDER_SHADOWS_ENABLED = false;
-const DEFAULT_WEBGL_POWER_PREFERENCE = 'high-performance';
+const DEFAULT_MIRROR_CUBE_SIZE = 256;
+const DEFAULT_MAX_PIXEL_RATIO = 1.5;
+const DEFAULT_RENDER_ANTIALIAS = true;
+const DEFAULT_RENDER_SHADOWS_ENABLED = true;
 
 function readConfigNumber(
   App: AppLike,
@@ -63,11 +62,6 @@ function readConfigBoolean(App: AppLike, key: string, fallback: boolean): boolea
     if (normalized === '0' || normalized === 'false' || normalized === 'no' || normalized === 'off') return false;
   }
   return fallback;
-}
-
-function readConfigString(App: AppLike, key: string, fallback: string): string {
-  const value = readConfigLooseScalarFromApp(App, key, fallback);
-  return typeof value === 'string' && value.trim() ? value.trim() : fallback;
 }
 
 function getRenderBag(App: AppLike): RenderBag {
@@ -239,7 +233,6 @@ export function createViewportSurface(
       antialias: readConfigBoolean(App, 'RENDER_ANTIALIAS', DEFAULT_RENDER_ANTIALIAS),
       preserveDrawingBuffer: false,
       alpha: true,
-      powerPreference: readConfigString(App, 'WEBGL_POWER_PREFERENCE', DEFAULT_WEBGL_POWER_PREFERENCE),
     })
   );
   if (!renderer)
