@@ -3,6 +3,11 @@ import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
+import {
+  REFACTOR_COMPLETED_STAGE_LABELS,
+  REFACTOR_INTEGRATION_ANCHORS,
+} from '../tools/wp_refactor_stage_catalog.mjs';
+
 function runNode(args) {
   const result = spawnSync(process.execPath, args, {
     cwd: process.cwd(),
@@ -13,6 +18,19 @@ function runNode(args) {
     result.status,
     0,
     `${args.join(' ')} failed\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`
+  );
+}
+
+function assertCatalogCoversStages(...stages) {
+  for (const stage of stages) {
+    assert.ok(REFACTOR_COMPLETED_STAGE_LABELS.includes(stage), `catalog must include ${stage}`);
+  }
+}
+
+function assertCatalogAnchorsNeedle(needle) {
+  assert.ok(
+    REFACTOR_INTEGRATION_ANCHORS.some(anchor => anchor.needle.includes(needle)),
+    `catalog anchors must include ${needle}`
   );
 }
 
@@ -76,8 +94,8 @@ test('stage 31 and 32 project selector public API closeout is anchored', () => {
     /canonical ui\.raw readers are exposed through public core and state surfaces/
   );
   assert.match(selectorAudit, /requirePublicUiRawExports/);
-  assert.match(integrationAudit, /Stage 31/);
-  assert.match(integrationAudit, /Stage 32/);
+  assert.match(integrationAudit, /REFACTOR_COMPLETED_STAGE_LABELS/);
+  assertCatalogCoversStages('Stage 31', 'Stage 32');
   assert.match(progress, /Stage 31/);
   assert.match(progress, /Stage 32/);
 });
@@ -102,8 +120,10 @@ test('stage 33 to 35 project config migration replace-owned branches are anchore
   assert.match(replaceTest, /materializes every replace-owned branch/);
   assert.match(replaceTest, /fails fast when a replace-owned branch is missing/);
   assert.match(boundaryAudit, /PROJECT_CONFIG_SNAPSHOT_REPLACE_KEYS/);
+  assert.match(integrationAudit, /REFACTOR_INTEGRATION_ANCHORS/);
+  assertCatalogCoversStages('Stage 33', 'Stage 34', 'Stage 35');
+  assertCatalogAnchorsNeedle('stage 33 to 35 project config migration replace-owned branches are anchored');
   for (const stage of ['Stage 33', 'Stage 34', 'Stage 35']) {
-    assert.match(integrationAudit, new RegExp(stage));
     assert.match(progress, new RegExp(stage));
   }
 });
@@ -135,8 +155,11 @@ test('stage 36 to 38 deterministic project config replace-key closeout is anchor
     'required-key order must not be derived from Object.keys(map)'
   );
   assert.match(replaceTest, /deterministic and type-narrowed/);
+  assert.match(integrationAudit, /REFACTOR_COMPLETED_STAGE_LABELS/);
+  assert.match(integrationAudit, /REFACTOR_INTEGRATION_ANCHORS/);
+  assertCatalogCoversStages('Stage 36', 'Stage 37', 'Stage 38');
+  assertCatalogAnchorsNeedle('stage 36 to 38 deterministic project config replace-key closeout is anchored');
   for (const stage of ['Stage 36', 'Stage 37', 'Stage 38']) {
-    assert.match(integrationAudit, new RegExp(stage));
     assert.match(progress, new RegExp(stage));
   }
 });

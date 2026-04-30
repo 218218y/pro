@@ -6,6 +6,7 @@ import { spawnSync } from 'node:child_process';
 import {
   REFACTOR_COMPLETED_STAGE_LABELS,
   REFACTOR_INTEGRATION_ANCHORS,
+  REFACTOR_STAGE_PROGRESS_MARKER,
   assertRefactorStageCatalogIsWellFormed,
 } from '../tools/wp_refactor_stage_catalog.mjs';
 
@@ -45,11 +46,15 @@ test('stage 10 refactor integration audit covers guardrails, stage tests, verify
     'requiredStageGuardTests',
     'verify:refactor-modernization',
     'tools/wp_verify_flow.js',
-    'docs/REFACTOR_WORKMAP_PROGRESS.md',
+    'REFACTOR_STAGE_PROGRESS_MARKER',
     'REFACTOR_COMPLETED_STAGE_LABELS',
+    'REFACTOR_INTEGRATION_ANCHORS',
   ]) {
     assert.ok(audit.includes(expected), `audit should include ${expected}`);
   }
+
+  assert.equal(REFACTOR_STAGE_PROGRESS_MARKER.file, 'docs/REFACTOR_WORKMAP_PROGRESS.md');
+  assert.equal(REFACTOR_STAGE_PROGRESS_MARKER.verifyEntryPoint, 'verify:refactor-modernization');
 });
 
 test('stage 39 to 41 refactor control-plane stage catalog is anchored', () => {
@@ -58,7 +63,7 @@ test('stage 39 to 41 refactor control-plane stage catalog is anchored', () => {
   assert.equal(REFACTOR_COMPLETED_STAGE_LABELS.at(-1), 'Stage 41');
   assert.equal(new Set(REFACTOR_COMPLETED_STAGE_LABELS).size, REFACTOR_COMPLETED_STAGE_LABELS.length);
 
-  const progress = fs.readFileSync('docs/REFACTOR_WORKMAP_PROGRESS.md', 'utf8');
+  const progress = fs.readFileSync(REFACTOR_STAGE_PROGRESS_MARKER.file, 'utf8');
   for (const stage of REFACTOR_COMPLETED_STAGE_LABELS) {
     assert.match(progress, new RegExp(`${stage.replace(' ', '\\s+')}\\b`));
   }

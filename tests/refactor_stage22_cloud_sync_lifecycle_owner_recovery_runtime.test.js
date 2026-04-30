@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
+import { REFACTOR_COMPLETED_STAGE_LABELS } from '../tools/wp_refactor_stage_catalog.mjs';
+
 function read(file) {
   return readFileSync(file, 'utf8');
 }
@@ -125,5 +127,6 @@ test('stage 28 cloud sync async recovery implementation stays aligned with the d
   assert.match(pollingTick, /reportOp: 'cloudSyncPolling\.tickRefresh'/);
   assert.match(pollingTick, /observeCloudSyncPollingTickHook/);
   assert.match(progressDoc, /Stage 28/);
-  assert.match(integrationAudit, /Stage 28/);
+  assert.ok(REFACTOR_COMPLETED_STAGE_LABELS.includes('Stage 28'), 'catalog must include Stage 28');
+  assert.match(integrationAudit, /REFACTOR_COMPLETED_STAGE_LABELS/);
 });
