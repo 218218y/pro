@@ -210,10 +210,13 @@ test('render surface runtime owns viewport creation and camera pose helpers', ()
   assert.ok((App.render as AnyRecord).mirrorRenderTarget);
 
   const renderer = surface.renderer as AnyRecord;
+  assert.equal((App.render as AnyRecord).mirrorRenderTarget.size, 300);
   assert.equal(renderer.pixelRatio, 1.5);
-  assert.equal(renderer.shadowMap.enabled, false);
-  assert.equal(renderer.rendererOpts.antialias, false);
-  assert.equal(renderer.rendererOpts.powerPreference, 'high-performance');
+  assert.equal(renderer.shadowMap.enabled, true);
+  assert.equal(renderer.rendererOpts.antialias, true);
+  assert.equal(renderer.rendererOpts.preserveDrawingBuffer, false);
+  assert.equal(renderer.rendererOpts.alpha, true);
+  assert.equal(Object.prototype.hasOwnProperty.call(renderer.rendererOpts, 'powerPreference'), false);
 
   const core = getViewportRenderCore(App as any);
   assert.equal(core?.renderer, surface.renderer);
@@ -254,7 +257,7 @@ test('render surface runtime owns viewport creation and camera pose helpers', ()
   assert.equal((App.render as AnyRecord).__mirrorLastUpdateMs, 1234);
 });
 
-test('render surface runtime defaults to a light startup WebGL profile', () => {
+test('render surface runtime defaults preserve the restored high-quality WebGL profile', () => {
   const App: AnyRecord = {
     deps: { THREE: makeThreeStub() },
     browser: { win: { devicePixelRatio: 3 } },
@@ -269,22 +272,23 @@ test('render surface runtime defaults to a light startup WebGL profile', () => {
   });
 
   const renderer = surface.renderer as AnyRecord;
-  assert.equal((App.render as AnyRecord).mirrorRenderTarget.size, 128);
-  assert.equal(renderer.pixelRatio, 1);
-  assert.equal(renderer.shadowMap.enabled, false);
-  assert.equal(renderer.rendererOpts.antialias, false);
-  assert.equal(renderer.rendererOpts.powerPreference, 'high-performance');
+  assert.equal((App.render as AnyRecord).mirrorRenderTarget.size, 256);
+  assert.equal(renderer.pixelRatio, 1.5);
+  assert.equal(renderer.shadowMap.enabled, true);
+  assert.equal(renderer.rendererOpts.antialias, true);
+  assert.equal(renderer.rendererOpts.preserveDrawingBuffer, false);
+  assert.equal(renderer.rendererOpts.alpha, true);
+  assert.equal(Object.prototype.hasOwnProperty.call(renderer.rendererOpts, 'powerPreference'), false);
 });
 
-test('render surface runtime still allows explicit quality overrides', () => {
+test('render surface runtime still allows explicit render-performance overrides', () => {
   const App: AnyRecord = {
     deps: { THREE: makeThreeStub() },
     config: {
       MIRROR_CUBE_SIZE: 512,
       PIXEL_RATIO_MAX: 2,
-      RENDER_ANTIALIAS: true,
-      RENDER_SHADOWS_ENABLED: true,
-      WEBGL_POWER_PREFERENCE: 'default',
+      RENDER_ANTIALIAS: false,
+      RENDER_SHADOWS_ENABLED: false,
     },
     browser: { win: { devicePixelRatio: 3 } },
   };
@@ -300,7 +304,8 @@ test('render surface runtime still allows explicit quality overrides', () => {
   const renderer = surface.renderer as AnyRecord;
   assert.equal((App.render as AnyRecord).mirrorRenderTarget.size, 512);
   assert.equal(renderer.pixelRatio, 2);
-  assert.equal(renderer.shadowMap.enabled, true);
-  assert.equal(renderer.rendererOpts.antialias, true);
-  assert.equal(renderer.rendererOpts.powerPreference, 'default');
+  assert.equal(renderer.shadowMap.enabled, false);
+  assert.equal(renderer.rendererOpts.antialias, false);
+  assert.equal(renderer.rendererOpts.preserveDrawingBuffer, false);
+  assert.equal(renderer.rendererOpts.alpha, true);
 });
