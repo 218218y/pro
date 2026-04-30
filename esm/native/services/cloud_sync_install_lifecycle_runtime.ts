@@ -4,11 +4,9 @@ import { addCloudSyncCleanup, runCloudSyncInitialPulls } from './cloud_sync_owne
 import { type CloudSyncInstallLifecycleArgs } from './cloud_sync_install_lifecycle_shared.js';
 import { prepareCloudSyncInstallLifecycle } from './cloud_sync_install_lifecycle_runtime_setup.js';
 
-const INITIAL_PULL_START_DELAY_MS = 250;
-const INITIAL_PULL_PHASE_YIELD_MS = 16;
-
 function toCloudSyncDiagPayload(error: unknown): CloudSyncDiagPayload {
-  if (error == null) return error;
+  if (error === null) return null;
+  if (typeof error === 'undefined') return undefined;
   if (typeof error === 'string' || typeof error === 'number' || typeof error === 'boolean') return error;
   if (error instanceof Error) {
     return {
@@ -21,38 +19,25 @@ function toCloudSyncDiagPayload(error: unknown): CloudSyncDiagPayload {
 }
 
 function scheduleCloudSyncInitialPulls(args: {
-  setTimeoutFn: (handler: () => void, ms: number) => unknown;
   isInstallLive: () => boolean;
   run: (yieldBetweenPulls: () => Promise<void>) => Promise<void>;
   onError?: (error: unknown) => void;
 }): void {
-  const { setTimeoutFn, isInstallLive, run, onError } = args;
+  const { isInstallLive, run, onError } = args;
 
   const waitForNextPhase = (): Promise<void> => {
-    return new Promise(resolve => {
-      if (!isInstallLive()) {
-        resolve();
-        return;
-      }
-
-      try {
-        setTimeoutFn(resolve, INITIAL_PULL_PHASE_YIELD_MS);
-      } catch {
-        resolve();
-      }
-    });
+    if (!isInstallLive()) return Promise.resolve();
+    return Promise.resolve();
   };
 
-  try {
-    setTimeoutFn(() => {
+  void Promise.resolve()
+    .then(() => {
       if (!isInstallLive()) return;
-      void run(waitForNextPhase).catch(error => {
-        if (typeof onError === 'function') onError(error);
-      });
-    }, INITIAL_PULL_START_DELAY_MS);
-  } catch (error) {
-    if (typeof onError === 'function') onError(error);
-  }
+      return run(waitForNextPhase);
+    })
+    .catch(error => {
+      if (typeof onError === 'function') onError(error);
+    });
 }
 
 export async function installCloudSyncOwnerLifecycle(args: CloudSyncInstallLifecycleArgs): Promise<void> {
@@ -77,7 +62,6 @@ export async function installCloudSyncOwnerLifecycle(args: CloudSyncInstallLifec
   cloudSyncLifecycle.start();
 
   scheduleCloudSyncInitialPulls({
-    setTimeoutFn: args.ownerContext.setTimeoutFn,
     isInstallLive: liveness.isInstallLive,
     run: yieldBetweenPulls =>
       runCloudSyncInitialPulls({
