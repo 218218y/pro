@@ -15,25 +15,28 @@ function tempDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'wp-verify-'));
 }
 
-test('verify args parsing preserves gate/no-build/skip-bundle policy', () => {
+test('verify args parsing preserves gate/no-build/skip-bundle/soft-format policy', () => {
   assert.deepEqual(parseVerifyArgs(['--gate', '--no-build', '--ci']), {
     gate: true,
     noBuild: true,
     skipBundle: true,
+    softFormat: false,
   });
-  assert.deepEqual(parseVerifyArgs(['--strict', '--skip-bundle']), {
+  assert.deepEqual(parseVerifyArgs(['--strict', '--skip-bundle', '--soft-format']), {
     gate: true,
     noBuild: false,
     skipBundle: true,
+    softFormat: true,
   });
   assert.deepEqual(parseVerifyArgs([]), {
     gate: false,
     noBuild: false,
     skipBundle: false,
+    softFormat: false,
   });
 });
 
-test('format check classification warns in normal mode and fails in gate mode', () => {
+test('format check classification warns in normal mode and fails in strict gate mode', () => {
   const diff = {
     ok: false,
     code: 1,
@@ -51,6 +54,11 @@ test('format check classification warns in normal mode and fails in gate mode', 
   assert.equal(fatal.ok, false);
   assert.equal(fatal.fatal, true);
   assert.match(fatal.message, /gate mode/);
+
+  const softGate = classifyFormatCheckResult(diff, { gate: true, softFormat: true });
+  assert.equal(softGate.ok, true);
+  assert.equal(softGate.hasFormatWarn, true);
+  assert.match(softGate.message, /soft-format/);
 
   assert.match(createVerifySuccessMessage({ gate: true, hasFormatWarn: false }), /gate mode/);
   assert.match(createVerifySuccessMessage({ gate: false, hasFormatWarn: true }), /formatting warnings/);
