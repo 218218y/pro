@@ -48,3 +48,54 @@ test('cloud sync owner support stops the initial bootstrap fanout after the curr
 
   assert.deepEqual(calls, ['main']);
 });
+
+test('cloud sync owner support yields between initial pull phases without changing phase order', async () => {
+  const calls: string[] = [];
+
+  await runCloudSyncInitialPulls({
+    pullMainOnce: async () => {
+      calls.push('main');
+    },
+    pullSketchOnce: async () => {
+      calls.push('sketch');
+    },
+    pullTabsGateOnce: async () => {
+      calls.push('tabs');
+    },
+    pullFloatingSketchSyncPinnedOnce: async () => {
+      calls.push('floating');
+    },
+    yieldBetweenPulls: async () => {
+      calls.push('yield');
+    },
+  });
+
+  assert.deepEqual(calls, ['main', 'yield', 'sketch', 'yield', 'tabs', 'yield', 'floating']);
+});
+
+test('cloud sync owner support does not yield once the install turns stale between phases', async () => {
+  const calls: string[] = [];
+  let active = true;
+
+  await runCloudSyncInitialPulls({
+    pullMainOnce: async () => {
+      calls.push('main');
+      active = false;
+    },
+    pullSketchOnce: async () => {
+      calls.push('sketch');
+    },
+    pullTabsGateOnce: async () => {
+      calls.push('tabs');
+    },
+    pullFloatingSketchSyncPinnedOnce: async () => {
+      calls.push('floating');
+    },
+    shouldContinue: () => active,
+    yieldBetweenPulls: async () => {
+      calls.push('yield');
+    },
+  });
+
+  assert.deepEqual(calls, ['main']);
+});

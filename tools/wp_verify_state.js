@@ -11,9 +11,7 @@ export function parseVerifyArgs(argv = []) {
       args.includes('--skip-bundle'),
     gate: args.includes('--gate') || args.includes('--strict'),
     softFormat:
-      args.includes('--soft-format') ||
-      args.includes('--format-warn') ||
-      args.includes('--warn-on-format'),
+      args.includes('--soft-format') || args.includes('--format-warn') || args.includes('--warn-on-format'),
   };
 }
 

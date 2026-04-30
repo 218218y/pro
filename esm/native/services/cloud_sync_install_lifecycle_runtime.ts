@@ -2,21 +2,39 @@ import { addCloudSyncCleanup, runCloudSyncInitialPulls } from './cloud_sync_owne
 import { type CloudSyncInstallLifecycleArgs } from './cloud_sync_install_lifecycle_shared.js';
 import { prepareCloudSyncInstallLifecycle } from './cloud_sync_install_lifecycle_runtime_setup.js';
 
+const INITIAL_PULL_START_DELAY_MS = 250;
+const INITIAL_PULL_PHASE_YIELD_MS = 16;
+
 function scheduleCloudSyncInitialPulls(args: {
   setTimeoutFn: (handler: () => void, ms: number) => unknown;
   isInstallLive: () => boolean;
-  run: () => Promise<void>;
+  run: (yieldBetweenPulls: () => Promise<void>) => Promise<void>;
   onError?: (error: unknown) => void;
 }): void {
   const { setTimeoutFn, isInstallLive, run, onError } = args;
 
+  const waitForNextPhase = (): Promise<void> => {
+    return new Promise(resolve => {
+      if (!isInstallLive()) {
+        resolve();
+        return;
+      }
+
+      try {
+        setTimeoutFn(resolve, INITIAL_PULL_PHASE_YIELD_MS);
+      } catch {
+        resolve();
+      }
+    });
+  };
+
   try {
     setTimeoutFn(() => {
       if (!isInstallLive()) return;
-      void run().catch(error => {
+      void run(waitForNextPhase).catch(error => {
         if (typeof onError === 'function') onError(error);
       });
-    }, 250);
+    }, INITIAL_PULL_START_DELAY_MS);
   } catch (error) {
     if (typeof onError === 'function') onError(error);
   }
@@ -46,13 +64,14 @@ export async function installCloudSyncOwnerLifecycle(args: CloudSyncInstallLifec
   scheduleCloudSyncInitialPulls({
     setTimeoutFn: args.ownerContext.setTimeoutFn,
     isInstallLive: liveness.isInstallLive,
-    run: () =>
+    run: yieldBetweenPulls =>
       runCloudSyncInitialPulls({
         pullMainOnce,
         pullSketchOnce,
         pullTabsGateOnce,
         pullFloatingSketchSyncPinnedOnce,
         shouldContinue: liveness.isInstallLive,
+        yieldBetweenPulls,
       }),
     onError: error => {
       try {

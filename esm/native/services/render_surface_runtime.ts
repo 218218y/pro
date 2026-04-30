@@ -58,8 +58,10 @@ function readConfigBoolean(App: AppLike, key: string, fallback: boolean): boolea
   if (typeof value === 'number') return value !== 0;
   if (typeof value === 'string') {
     const normalized = value.trim().toLowerCase();
-    if (normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'on') return true;
-    if (normalized === '0' || normalized === 'false' || normalized === 'no' || normalized === 'off') return false;
+    if (normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'on')
+      return true;
+    if (normalized === '0' || normalized === 'false' || normalized === 'no' || normalized === 'off')
+      return false;
   }
   return fallback;
 }
@@ -248,11 +250,7 @@ export function createViewportSurface(
     const dpr = win && typeof win.devicePixelRatio === 'number' ? Number(win.devicePixelRatio) : 1;
     const maxPixelRatio = readConfigNumber(App, 'PIXEL_RATIO_MAX', DEFAULT_MAX_PIXEL_RATIO);
     if (rr?.setPixelRatio) rr.setPixelRatio(Math.min(dpr, maxPixelRatio));
-    const shadowsEnabled = readConfigBoolean(
-      App,
-      'RENDER_SHADOWS_ENABLED',
-      DEFAULT_RENDER_SHADOWS_ENABLED
-    );
+    const shadowsEnabled = readConfigBoolean(App, 'RENDER_SHADOWS_ENABLED', DEFAULT_RENDER_SHADOWS_ENABLED);
     ensureRendererShadowMap(renderer, THREE.PCFShadowMap, shadowsEnabled);
     if (typeof container.appendChild === 'function' && rr?.domElement) container.appendChild(rr.domElement);
   } catch {}
