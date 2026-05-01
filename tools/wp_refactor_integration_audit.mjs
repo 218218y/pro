@@ -83,6 +83,11 @@ const requiredStageGuardTests = [
   'tests/refactor_stage20_cloud_sync_polling_recovery_runtime.test.js',
   'tests/refactor_stage21_cloud_sync_realtime_start_recovery_runtime.test.js',
   'tests/refactor_stage22_cloud_sync_lifecycle_owner_recovery_runtime.test.js',
+  'tests/refactor_stage42_legacy_fallback_inventory_guard.test.js',
+  'tests/refactor_stage43_perf_runtime_surface_ownership_guard.test.js',
+  'tests/refactor_stage44_scheduler_debug_stats_ownership_guard.test.js',
+  'tests/refactor_stage45_corner_connector_special_ownership_guard.test.js',
+  'tests/refactor_stage46_domain_api_shared_ownership_guard.test.js',
 ];
 const stageGuardCommand = requireScript('test:refactor-stage-guards');
 for (const testFile of requiredStageGuardTests)

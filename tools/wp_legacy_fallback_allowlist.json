@@ -978,7 +978,7 @@
         "project-migration": 1
       }
     },
-    "esm/native/runtime/perf_runtime_surface.ts": {
+    "esm/native/runtime/perf_runtime_core.ts": {
       "total": 6,
       "categories": {
         "runtime-default": 6
@@ -1048,10 +1048,10 @@
       }
     },
     "esm/native/runtime/ui_raw_selectors.ts": {
-      "total": 14,
+      "total": 21,
       "categories": {
-        "project-migration": 2,
-        "runtime-default": 12
+        "project-migration": 5,
+        "runtime-default": 16
       }
     },
     "esm/native/runtime/ui_write_access.ts": {
@@ -1289,9 +1289,9 @@
       }
     },
     "esm/native/services/render_surface_runtime.ts": {
-      "total": 4,
+      "total": 7,
       "categories": {
-        "runtime-default": 4
+        "runtime-default": 7
       }
     },
     "esm/native/services/scene_view.ts": {

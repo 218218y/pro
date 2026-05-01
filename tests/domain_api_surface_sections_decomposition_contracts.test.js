@@ -4,8 +4,24 @@ import assert from 'node:assert/strict';
 import { readSource, assertMatchesAll, assertLacksAll } from './_source_bundle.js';
 
 const sectionsFacade = readSource('../esm/native/kernel/domain_api_surface_sections.ts', import.meta.url);
-const sectionsSharedOwner = readSource(
+const sectionsSharedFacade = readSource(
   '../esm/native/kernel/domain_api_surface_sections_shared.ts',
+  import.meta.url
+);
+const sectionsContractsOwner = readSource(
+  '../esm/native/kernel/domain_api_surface_sections_contracts.ts',
+  import.meta.url
+);
+const sectionsPrefixedMapsOwner = readSource(
+  '../esm/native/kernel/domain_api_surface_sections_prefixed_maps.ts',
+  import.meta.url
+);
+const sectionsMapWritesOwner = readSource(
+  '../esm/native/kernel/domain_api_surface_sections_map_writes.ts',
+  import.meta.url
+);
+const sectionsRemovedDoorsOwner = readSource(
+  '../esm/native/kernel/domain_api_surface_sections_removed_doors.ts',
   import.meta.url
 );
 const sectionsStateOwner = readSource(
@@ -58,19 +74,79 @@ test('[domain-api-sections] facade stays thin while shared helpers, state wiring
   );
 });
 
-test('[domain-api-sections] shared, state, and binding owners hold the canonical prefixed-map helpers, state readers, and family factories', () => {
+test('[domain-api-sections] shared facade delegates contracts, prefixed maps, map writes, and removed-door ownership', () => {
   assertMatchesAll(
     assert,
-    sectionsSharedOwner,
+    sectionsSharedFacade,
+    [
+      /domain_api_surface_sections_contracts\.js/,
+      /domain_api_surface_sections_prefixed_maps\.js/,
+      /domain_api_surface_sections_map_writes\.js/,
+      /domain_api_surface_sections_removed_doors\.js/,
+      /commitCanonicalPrefixedMapValue/,
+      /canonicalRemovedDoorPartId/,
+    ],
+    'sectionsSharedFacade'
+  );
+  assertLacksAll(
+    assert,
+    sectionsSharedFacade,
     [
       /export function canonicalRemovedDoorPartId\(/,
       /export function commitCanonicalPrefixedMapValue\(/,
       /export function writeSimpleMapValueWithFallback\(/,
       /export function shouldSkipCanonicalPrefixedMapCommit\(/,
-      /export const DOMAIN_API_SECTION_KEYS = \[/,
+      /writeMapKey\(/,
     ],
-    'sectionsSharedOwner'
+    'sectionsSharedFacade'
   );
+
+  assertMatchesAll(
+    assert,
+    sectionsContractsOwner,
+    [
+      /export interface DomainApiSurfaceSectionsContext/,
+      /export interface DomainApiSurfaceSectionsState/,
+      /export const DOMAIN_API_SECTION_KEYS = \[/,
+      /export function uniqueSurfaceTargets\(/,
+    ],
+    'sectionsContractsOwner'
+  );
+  assertMatchesAll(
+    assert,
+    sectionsPrefixedMapsOwner,
+    [
+      /export interface PrefixedMapSemantics/,
+      /export const splitDoorMapSemantics/,
+      /export function readPrefixedToggleMapFlag\(/,
+      /export function listPrefixedMapCleanupKeys\(/,
+    ],
+    'sectionsPrefixedMapsOwner'
+  );
+  assertMatchesAll(
+    assert,
+    sectionsMapWritesOwner,
+    [
+      /export function commitCanonicalPrefixedMapValue\(/,
+      /export function writeSimpleMapValueWithFallback\(/,
+      /export function shouldSkipCanonicalPrefixedMapCommit\(/,
+      /writeMapKey\(/,
+    ],
+    'sectionsMapWritesOwner'
+  );
+  assertMatchesAll(
+    assert,
+    sectionsRemovedDoorsOwner,
+    [
+      /export function canonicalRemovedDoorPartId\(/,
+      /export function listRemovedDoorLookupKeys\(/,
+      /export function listRemovedDoorCleanupKeys\(/,
+    ],
+    'sectionsRemovedDoorsOwner'
+  );
+});
+
+test('[domain-api-sections] state and binding owners hold readers and family factories', () => {
   assertMatchesAll(
     assert,
     sectionsStateOwner,

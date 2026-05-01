@@ -77,6 +77,22 @@ const schedulerOwner = readSource('../esm/native/builder/scheduler.ts', import.m
 const schedulerRuntime = readSource('../esm/native/builder/scheduler_runtime.ts', import.meta.url);
 const schedulerShared = readSource('../esm/native/builder/scheduler_shared.ts', import.meta.url);
 const schedulerDebug = readSource('../esm/native/builder/scheduler_debug_stats.ts', import.meta.url);
+const schedulerDebugReasonStore = readSource(
+  '../esm/native/builder/scheduler_debug_stats_reason_store.ts',
+  import.meta.url
+);
+const schedulerDebugSignaturePolicy = readSource(
+  '../esm/native/builder/scheduler_debug_stats_signature_policy.ts',
+  import.meta.url
+);
+const schedulerDebugRecorders = readSource(
+  '../esm/native/builder/scheduler_debug_stats_recorders.ts',
+  import.meta.url
+);
+const schedulerDebugBudget = readSource(
+  '../esm/native/builder/scheduler_debug_stats_budget.ts',
+  import.meta.url
+);
 const buildDedupeSignatureOwner = readSource(
   '../esm/native/builder/build_dedupe_signature.ts',
   import.meta.url
@@ -613,11 +629,46 @@ test('[builder-surface-family] orchestration owners remain thin around canonical
     assert,
     schedulerDebug,
     [
+      /from '\.\/scheduler_debug_stats_reason_store\.js'/,
+      /from '\.\/scheduler_debug_stats_signature_policy\.js'/,
+      /from '\.\/scheduler_debug_stats_recorders\.js'/,
+      /from '\.\/scheduler_debug_stats_budget\.js'/,
+    ],
+    'scheduler debug facade'
+  );
+  assertLacksAll(
+    assert,
+    schedulerDebug,
+    [/function readReasonStat\(/, /readBuildDedupeSignatureFromState\(/, /export function recordBuildExecute\(/],
+    'scheduler debug facade'
+  );
+  assertMatchesAll(
+    assert,
+    schedulerDebugReasonStore,
+    [/export function createBuildDebugStats\(/, /export function ensureBuildDebugStats\(/, /getReasonStats\(/],
+    'scheduler debug reason store'
+  );
+  assertMatchesAll(
+    assert,
+    schedulerDebugSignaturePolicy,
+    [
       /from '\.\/build_dedupe_signature\.js'/,
       /readBuildDedupeSignatureFromState\(/,
-      /export function recordBuildExecute\(/,
+      /export function shouldSuppressDuplicatePendingRequest\(/,
     ],
-    'scheduler debug'
+    'scheduler debug signature policy'
+  );
+  assertMatchesAll(
+    assert,
+    schedulerDebugRecorders,
+    [/from '\.\/scheduler_debug_stats_reason_store\.js'/, /export function recordBuildExecute\(/],
+    'scheduler debug recorders'
+  );
+  assertMatchesAll(
+    assert,
+    schedulerDebugBudget,
+    [/export function summarizeBuildDebugBudget\(/, /function ratio\(/],
+    'scheduler debug budget summary'
   );
   assertMatchesAll(
     assert,

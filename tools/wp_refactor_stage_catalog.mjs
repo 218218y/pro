@@ -1,5 +1,5 @@
 export const REFACTOR_COMPLETED_STAGE_LABELS = Object.freeze(
-  Array.from({ length: 42 }, (_, index) => `Stage ${index}`)
+  Array.from({ length: 47 }, (_, index) => `Stage ${index}`)
 );
 
 export const REFACTOR_STAGE_PROGRESS_MARKER = Object.freeze({
@@ -22,6 +22,31 @@ export const REFACTOR_INTEGRATION_ANCHORS = Object.freeze([
     file: 'tests/refactor_stage10_refactor_integration_runtime.test.js',
     needle: 'stage 39 to 41 refactor control-plane stage catalog is anchored',
     message: 'stage 39-41 refactor control-plane catalog guard must stay anchored',
+  },
+  {
+    file: 'tests/refactor_stage42_legacy_fallback_inventory_guard.test.js',
+    needle: 'stage 42 legacy fallback inventory closeout is anchored',
+    message: 'stage 42 legacy fallback inventory closeout guard must stay anchored',
+  },
+  {
+    file: 'tests/refactor_stage43_perf_runtime_surface_ownership_guard.test.js',
+    needle: 'stage 43 perf runtime ownership split is anchored',
+    message: 'stage 43 perf runtime ownership split guard must stay anchored',
+  },
+  {
+    file: 'tests/refactor_stage44_scheduler_debug_stats_ownership_guard.test.js',
+    needle: 'stage 44 scheduler debug stats ownership split is anchored',
+    message: 'stage 44 scheduler debug stats ownership split guard must stay anchored',
+  },
+  {
+    file: 'tests/refactor_stage45_corner_connector_special_ownership_guard.test.js',
+    needle: 'stage 45 corner connector special interior ownership split is anchored',
+    message: 'stage 45 corner connector special interior ownership split guard must stay anchored',
+  },
+  {
+    file: 'tests/refactor_stage46_domain_api_shared_ownership_guard.test.js',
+    needle: 'stage 46 domain API shared ownership split is anchored',
+    message: 'stage 46 domain API shared ownership split guard must stay anchored',
   },
   {
     file: 'tests/project_config_migration_replace_keys_runtime.test.ts',

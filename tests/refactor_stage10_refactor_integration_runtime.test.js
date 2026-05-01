@@ -31,6 +31,26 @@ test('stage 10 refactor integration audit is wired into guardrails and verify la
     pkg.scripts['test:refactor-stage-guards'],
     /tests\/refactor_stage10_refactor_integration_runtime\.test\.js/
   );
+  assert.match(
+    pkg.scripts['test:refactor-stage-guards'],
+    /tests\/refactor_stage42_legacy_fallback_inventory_guard\.test\.js/
+  );
+  assert.match(
+    pkg.scripts['test:refactor-stage-guards'],
+    /tests\/refactor_stage43_perf_runtime_surface_ownership_guard\.test\.js/
+  );
+  assert.match(
+    pkg.scripts['test:refactor-stage-guards'],
+    /tests\/refactor_stage44_scheduler_debug_stats_ownership_guard\.test\.js/
+  );
+  assert.match(
+    pkg.scripts['test:refactor-stage-guards'],
+    /tests\/refactor_stage45_corner_connector_special_ownership_guard\.test\.js/
+  );
+  assert.match(
+    pkg.scripts['test:refactor-stage-guards'],
+    /tests\/refactor_stage46_domain_api_shared_ownership_guard\.test\.js/
+  );
 
   const verifyFlow = fs.readFileSync('tools/wp_verify_flow.js', 'utf8');
   const guardIndex = verifyFlow.indexOf("scriptName: 'check:refactor-guardrails'");
@@ -60,7 +80,7 @@ test('stage 10 refactor integration audit covers guardrails, stage tests, verify
 test('stage 39 to 41 refactor control-plane stage catalog is anchored', () => {
   assert.equal(assertRefactorStageCatalogIsWellFormed(), true);
   assert.equal(REFACTOR_COMPLETED_STAGE_LABELS.at(0), 'Stage 0');
-  assert.equal(REFACTOR_COMPLETED_STAGE_LABELS.at(-1), 'Stage 41');
+  assert.equal(REFACTOR_COMPLETED_STAGE_LABELS.at(-1), 'Stage 46');
   assert.equal(new Set(REFACTOR_COMPLETED_STAGE_LABELS).size, REFACTOR_COMPLETED_STAGE_LABELS.length);
 
   const progress = fs.readFileSync(REFACTOR_STAGE_PROGRESS_MARKER.file, 'utf8');
@@ -74,6 +94,31 @@ test('stage 39 to 41 refactor control-plane stage catalog is anchored', () => {
   assert.ok(
     REFACTOR_INTEGRATION_ANCHORS.some(anchor =>
       anchor.needle.includes('stage 39 to 41 refactor control-plane stage catalog is anchored')
+    )
+  );
+  assert.ok(
+    REFACTOR_INTEGRATION_ANCHORS.some(anchor =>
+      anchor.needle.includes('stage 42 legacy fallback inventory closeout is anchored')
+    )
+  );
+  assert.ok(
+    REFACTOR_INTEGRATION_ANCHORS.some(anchor =>
+      anchor.needle.includes('stage 43 perf runtime ownership split is anchored')
+    )
+  );
+  assert.ok(
+    REFACTOR_INTEGRATION_ANCHORS.some(anchor =>
+      anchor.needle.includes('stage 44 scheduler debug stats ownership split is anchored')
+    )
+  );
+  assert.ok(
+    REFACTOR_INTEGRATION_ANCHORS.some(anchor =>
+      anchor.needle.includes('stage 45 corner connector special interior ownership split is anchored')
+    )
+  );
+  assert.ok(
+    REFACTOR_INTEGRATION_ANCHORS.some(anchor =>
+      anchor.needle.includes('stage 46 domain API shared ownership split is anchored')
     )
   );
 

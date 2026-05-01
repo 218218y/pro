@@ -6,6 +6,24 @@
 
 ---
 
+> עדכון מצב — 30 באפריל 2026:
+> התוכנית ההיסטורית במסמך הזה עדיין נכונה ככיוון ארכיטקטוני, אבל חלק מהשלבים שבה כבר הושלמו בפועל עד Stage 41. לכן אין לבצע אותה בצורה עיוורת מהתחלה. baseline נוכחי: כפילויות scripts כבר סגורות, guardrails קיימים, והפער המיידי שנמצא בהרצה הוא drift במלאי `legacy`/`fallback` בעקבות תוספות קנוניות ב־`ui.raw` וב־render surface runtime. שלב העבודה שנוסף הוא **Stage 42 — Legacy fallback inventory closeout**: ליישר allowlist ודוחות מול הקוד הנוכחי, לעגן זאת בבדיקת runtime ייעודית, ולהשאיר את `verify:refactor-modernization` כנתיב האימות הראשי.
+
+> עדכון Stage 43 — 30 באפריל 2026:
+> ה־hotspot `esm/native/runtime/perf_runtime_surface.ts` פורק לבעלויות ממוקדות: core למדידות ו־action classification, fingerprint ל־state summary, debug surfaces ל־store/build/render diagnostics, ו־facade קטן שמחזיק את ה־API הציבורי ואת התקנת `__WP_PERF__`. השלב מעוגן בבדיקת guard כדי שהקובץ לא יחזור לגדול כ־god surface.
+
+
+> עדכון Stage 44 — 30 באפריל 2026:
+> ה־hotspot `esm/native/builder/scheduler_debug_stats.ts` פורק ל־facade ציבורי קטן ולבעלויות פנימיות ממוקדות: reason-store, signature/suppression policy, counter recorders, ו־budget summary. ה־API הציבורי נשמר דרך facade כדי למנוע שבירת imports קיימים, והבעלות החדשה מעוגנת ב־guard ייעודי.
+
+
+> עדכון Stage 45 — 1 במאי 2026:
+> ה־hotspot `esm/native/builder/corner_connector_interior_special.ts` פורק ל־facade ציבורי קטן ולבעלויות פנימיות ממוקדות: types, metric policy, polygon/shape geometry, folded-content planning, ו־scene application. ה־API הציבורי נשמר דרך ה־facade, והבעלות החדשה מעוגנת ב־guard ייעודי כדי שה־special interior לא יחזור להיות קובץ כלבו.
+
+
+> עדכון Stage 46 — 1 במאי 2026:
+> ה־hotspot `esm/native/kernel/domain_api_surface_sections_shared.ts` פורק מ־shared implementation רחב ל־facade קטן ולבעלויות ממוקדות: contracts/section registry, prefixed-map semantics, canonical map write/skip policy, ו־removed-door key policy. ה־API הציבורי נשמר דרך facade כדי לא לשבור imports קיימים, והבעלות החדשה מעוגנת ב־guard ייעודי.
+
 ## 1. תקציר מנהלים
 
 המצב הכללי של הפרויקט טוב מאוד ביחס לפרויקט שעבר מיגרציה גדולה: הארכיטקטורה כבר מכוונת ל־Pure ESM, Store-driven SSOT, שכבות, surface contracts, verify lanes, בדיקות רבות, וסגירה הדרגתית של חובות refactor. אין סימנים מיידיים לחזרה ל־`window.App`, `globalThis.App`, `window.THREE`, או `globalThis.THREE` בתוך `esm/`, ואין `export default` אמיתי ב־`esm/`.

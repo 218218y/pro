@@ -38,25 +38,36 @@ test('room owner resolves active room design state through canonical shared sele
 });
 
 test('corner special interior owner derives folded-clothes placement from canonical content plans', () => {
-  const special = read('esm/native/builder/corner_connector_interior_special.ts');
+  const facade = read('esm/native/builder/corner_connector_interior_special.ts');
+  const types = read('esm/native/builder/corner_connector_interior_special_types.ts');
+  const metrics = read('esm/native/builder/corner_connector_interior_special_metrics.ts');
+  const contents = read('esm/native/builder/corner_connector_interior_special_contents.ts');
+  const apply = read('esm/native/builder/corner_connector_interior_special_apply.ts');
 
-  assert.match(special, /type FoldedClothesSurfacePlan = \{/);
-  assert.match(special, /function readCentimetersAsMeters\(/);
-  assert.match(special, /function emitFoldedClothesPlan\(/);
-  assert.match(special, /function createLeftShelvesContentsPlan\(/);
-  assert.match(special, /function createPentagonTopContentsPlan\(/);
-  assert.match(special, /const plans = createLeftShelvesContentsPlan\(\{/);
-  assert.match(special, /const plans = createPentagonTopContentsPlan\(\{/);
-  assert.match(special, /function emitFoldedClothesPlans\(/);
+  assert.match(facade, /corner_connector_interior_special_apply\.js/);
+  assert.match(facade, /createLeftShelvesContentsPlanImpl\(args\)/);
+  assert.match(facade, /createPentagonTopContentsPlanImpl\(args\)/);
+  assert.doesNotMatch(facade, /function emitFoldedClothesPlan\(/);
+
+  assert.match(types, /export type FoldedClothesSurfacePlan = \{/);
+  assert.match(metrics, /function readCentimetersAsMeters\(/);
+  assert.match(metrics, /const postDepth = readCentimetersAsMeters\(postDepthCmRaw, 0\.55\);/);
+  assert.match(metrics, /const postH = readCentimetersAsMeters\(postHeightCmRaw, 1\.8\);/);
+  assert.match(metrics, /const cellH = readCentimetersAsMeters\(topCellHCmRaw, 0\.3\);/);
+
+  assert.match(contents, /function emitFoldedClothesPlan\(/);
+  assert.match(contents, /export function createLeftShelvesContentsPlan\(/);
+  assert.match(contents, /export function createPentagonTopContentsPlan\(/);
+  assert.match(contents, /export function emitFoldedClothesPlans\(/);
+  assert.match(contents, /op: 'special:leftSurface:floor'/);
+  assert.match(contents, /op: 'special:topContents:lower'/);
+
+  assert.match(apply, /const plans = createLeftShelvesContentsPlan\(\{/);
+  assert.match(apply, /const plans = createPentagonTopContentsPlan\(\{/);
   assert.match(
-    special,
+    apply,
     /emitFoldedClothesPlans\(plans, cornerGroup, emitFoldedClothes, reportErrorThrottled, App\);/
   );
-  assert.match(special, /const postDepth = readCentimetersAsMeters\(postDepthCmRaw, 0\.55\);/);
-  assert.match(special, /const postH = readCentimetersAsMeters\(postHeightCmRaw, 1\.8\);/);
-  assert.match(special, /const cellH = readCentimetersAsMeters\(topCellHCmRaw, 0\.3\);/);
-  assert.match(special, /op: 'special:leftSurface:floor'/);
-  assert.match(special, /op: 'special:topContents:lower'/);
 });
 
 test('room owner keeps low-level scene primitives and floor texture work delegated to dedicated owners', () => {
