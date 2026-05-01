@@ -350,7 +350,6 @@ function summarizeEntries(entries: WardrobeProPerfEntry[]): WardrobeProPerfMetri
   };
 }
 
-
 export function getPerfSummary(App: AppContainer): Record<string, WardrobeProPerfMetricSummary> {
   const out: Record<string, WardrobeProPerfMetricSummary> = {};
   const groups = new Map<string, WardrobeProPerfEntry[]>();

@@ -8,6 +8,7 @@ const modelsTypes = readSource('../types/models.ts', import.meta.url);
 const typesIndex = readSource('../types/index.ts', import.meta.url);
 const buildTypes = readBuildTypesBundle(import.meta.url);
 const modelsService = readSource('../esm/native/services/models.ts', import.meta.url);
+const modelsSurfaceInstall = readSource('../esm/native/services/models_surface_install.ts', import.meta.url);
 const modelsAccess = readSource('../esm/native/runtime/models_access.ts', import.meta.url);
 const modelsAccessShared = readSource('../esm/native/runtime/models_access_shared.ts', import.meta.url);
 const modelsAccessContracts = readSource('../esm/native/runtime/models_access_contracts.ts', import.meta.url);
@@ -17,7 +18,11 @@ const modelsAccessCommands = readSource('../esm/native/runtime/models_access_com
 const cloudSyncTypes = readSource('../types/cloud_sync.ts', import.meta.url);
 
 const modelsHelpers = bundleSources(
-  ['../esm/native/services/models_registry.ts', '../esm/native/services/models_apply_ops.ts'],
+  [
+    '../esm/native/services/models_registry.ts',
+    '../esm/native/services/models_apply_ops.ts',
+    '../esm/native/services/models_surface_install.ts',
+  ],
   import.meta.url,
   { stripNoise: true }
 );
@@ -34,6 +39,7 @@ const modelsNamedOnlyPaths = [
   '../esm/native/services/models_registry_storage_keys.ts',
   '../esm/native/services/models_registry_storage_persistence.ts',
   '../esm/native/services/models_registry_storage_state.ts',
+  '../esm/native/services/models_surface_install.ts',
 ];
 
 const structureModelsBundle = bundleSources(
@@ -184,18 +190,37 @@ test('models contracts keep canonical service, helper, and typed access seams', 
     [
       /\.\/models_registry\.js/,
       /\.\/models_apply_ops\.js/,
+      /\.\/models_surface_install\.js/,
       /function _normalizeModel\(m: unknown\): SavedModelLike \| null/,
       /function _normalizeList\(list: unknown\): SavedModelLike\[\]/,
+      /const MODELS_SERVICE_OPERATIONS = \{/,
       /export function installModelsService\(App: AppContainer\): ModelsServiceLike/,
-      /stable_surface_methods\.js/,
-      /const MODELS_SURFACE_BINDINGS: ModelsSurfaceBindingMap = \{/,
-      /function installModelsSurfaceMethods\(App: AppContainer, models: InstallableModelsService\): void/,
-      /stableKey: '__wpSetNormalizer'/,
-      /stableKey: '__wpApply'/,
+      /return installModelsServiceSurface\(App, MODELS_SERVICE_OPERATIONS\);/,
     ],
     'modelsService'
   );
   assertMatchesAll(assert, modelsService, [/normalizeModelsOpts\(/], 'modelsService');
+  assertLacksAll(
+    assert,
+    modelsService,
+    [/stable_surface_methods\.js/, /const MODELS_SURFACE_BINDINGS: ModelsSurfaceBindingMap = \{/],
+    'modelsService'
+  );
+
+  assertMatchesAll(
+    assert,
+    modelsSurfaceInstall,
+    [
+      /stable_surface_methods\.js/,
+      /const MODELS_SURFACE_BINDINGS: ModelsSurfaceBindingMap = \{/,
+      /function installModelsSurfaceMethods\(/,
+      /export function installModelsServiceSurface\(/,
+      /_hydrateFromApp\(App\);/,
+      /stableKey: '__wpSetNormalizer'/,
+      /stableKey: '__wpApply'/,
+    ],
+    'modelsSurfaceInstall'
+  );
 
   for (const rel of modelsNamedOnlyPaths) {
     assertLacksAll(assert, readSource(rel, import.meta.url), [/export default\s+/], rel);

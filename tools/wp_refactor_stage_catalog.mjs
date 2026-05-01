@@ -1,5 +1,5 @@
 export const REFACTOR_COMPLETED_STAGE_LABELS = Object.freeze(
-  Array.from({ length: 47 }, (_, index) => `Stage ${index}`)
+  Array.from({ length: 48 }, (_, index) => `Stage ${index}`)
 );
 
 export const REFACTOR_STAGE_PROGRESS_MARKER = Object.freeze({
@@ -47,6 +47,11 @@ export const REFACTOR_INTEGRATION_ANCHORS = Object.freeze([
     file: 'tests/refactor_stage46_domain_api_shared_ownership_guard.test.js',
     needle: 'stage 46 domain API shared ownership split is anchored',
     message: 'stage 46 domain API shared ownership split guard must stay anchored',
+  },
+  {
+    file: 'tests/refactor_stage47_models_service_surface_ownership_guard.test.js',
+    needle: 'stage 47 models service surface ownership split is anchored',
+    message: 'stage 47 models service surface ownership split guard must stay anchored',
   },
   {
     file: 'tests/project_config_migration_replace_keys_runtime.test.ts',

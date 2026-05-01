@@ -1,7 +1,4 @@
-export {
-  DOMAIN_API_SECTION_KEYS,
-  uniqueSurfaceTargets,
-} from './domain_api_surface_sections_contracts.js';
+export { DOMAIN_API_SECTION_KEYS, uniqueSurfaceTargets } from './domain_api_surface_sections_contracts.js';
 export type {
   DomainApiSurfaceSectionBag,
   DomainApiSurfaceSectionBindingFactory,

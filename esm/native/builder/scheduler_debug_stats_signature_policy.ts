@@ -1,13 +1,6 @@
-import type {
-  BuildStateLike,
-  BuilderSchedulerStateInternalLike,
-} from '../../../types/index.js';
+import type { BuildStateLike, BuilderSchedulerStateInternalLike } from '../../../types/index.js';
 
-import {
-  type SchedulerPendingPlan,
-  readBuildSignature,
-  readPlanState,
-} from './scheduler_shared.js';
+import { type SchedulerPendingPlan, readBuildSignature, readPlanState } from './scheduler_shared.js';
 import { readBuildDedupeSignatureFromState } from './build_dedupe_signature.js';
 
 export function readBuildDedupeSignature(state: BuildStateLike | null | undefined): unknown {

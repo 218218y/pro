@@ -59,10 +59,7 @@ export function ensureLibraryPresetInvariants(env: LibraryPresetEnv, args: Libra
     const topDoorsCount = normDoorCount(args.doors, args.wardrobeType);
     const bottomDoorsCount = normDoorCount(args.stackSplitLowerDoors, args.wardrobeType);
     const seededTopDoorsCount = readSeededDoorCount(args.seededTopDoorsCount, topDoorsCount);
-    const seededBottomDoorsCount = readSeededDoorCount(
-      args.seededBottomDoorsCount,
-      bottomDoorsCount
-    );
+    const seededBottomDoorsCount = readSeededDoorCount(args.seededBottomDoorsCount, bottomDoorsCount);
     const { topCfgList, bottomCfgList } = buildLibraryModuleConfigLists(
       topDoorsCount,
       bottomDoorsCount,

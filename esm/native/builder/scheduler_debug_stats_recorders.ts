@@ -1,7 +1,4 @@
-import type {
-  BuildStateLike,
-  BuilderSchedulerStateInternalLike,
-} from '../../../types/index.js';
+import type { BuildStateLike, BuilderSchedulerStateInternalLike } from '../../../types/index.js';
 
 import { type SchedulerPendingPlan } from './scheduler_shared.js';
 import {
@@ -9,10 +6,7 @@ import {
   getReasonStats,
   normalizeBuildReason,
 } from './scheduler_debug_stats_reason_store.js';
-import {
-  readPendingSignature,
-  readStateSignature,
-} from './scheduler_debug_stats_signature_policy.js';
+import { readPendingSignature, readStateSignature } from './scheduler_debug_stats_signature_policy.js';
 
 export function recordSkippedDuplicatePendingRequest(
   state: BuilderSchedulerStateInternalLike,

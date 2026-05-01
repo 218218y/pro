@@ -88,6 +88,7 @@ const requiredStageGuardTests = [
   'tests/refactor_stage44_scheduler_debug_stats_ownership_guard.test.js',
   'tests/refactor_stage45_corner_connector_special_ownership_guard.test.js',
   'tests/refactor_stage46_domain_api_shared_ownership_guard.test.js',
+  'tests/refactor_stage47_models_service_surface_ownership_guard.test.js',
 ];
 const stageGuardCommand = requireScript('test:refactor-stage-guards');
 for (const testFile of requiredStageGuardTests)

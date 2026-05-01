@@ -12,17 +12,17 @@
 > עדכון Stage 43 — 30 באפריל 2026:
 > ה־hotspot `esm/native/runtime/perf_runtime_surface.ts` פורק לבעלויות ממוקדות: core למדידות ו־action classification, fingerprint ל־state summary, debug surfaces ל־store/build/render diagnostics, ו־facade קטן שמחזיק את ה־API הציבורי ואת התקנת `__WP_PERF__`. השלב מעוגן בבדיקת guard כדי שהקובץ לא יחזור לגדול כ־god surface.
 
-
 > עדכון Stage 44 — 30 באפריל 2026:
 > ה־hotspot `esm/native/builder/scheduler_debug_stats.ts` פורק ל־facade ציבורי קטן ולבעלויות פנימיות ממוקדות: reason-store, signature/suppression policy, counter recorders, ו־budget summary. ה־API הציבורי נשמר דרך facade כדי למנוע שבירת imports קיימים, והבעלות החדשה מעוגנת ב־guard ייעודי.
-
 
 > עדכון Stage 45 — 1 במאי 2026:
 > ה־hotspot `esm/native/builder/corner_connector_interior_special.ts` פורק ל־facade ציבורי קטן ולבעלויות פנימיות ממוקדות: types, metric policy, polygon/shape geometry, folded-content planning, ו־scene application. ה־API הציבורי נשמר דרך ה־facade, והבעלות החדשה מעוגנת ב־guard ייעודי כדי שה־special interior לא יחזור להיות קובץ כלבו.
 
-
 > עדכון Stage 46 — 1 במאי 2026:
 > ה־hotspot `esm/native/kernel/domain_api_surface_sections_shared.ts` פורק מ־shared implementation רחב ל־facade קטן ולבעלויות ממוקדות: contracts/section registry, prefixed-map semantics, canonical map write/skip policy, ו־removed-door key policy. ה־API הציבורי נשמר דרך facade כדי לא לשבור imports קיימים, והבעלות החדשה מעוגנת ב־guard ייעודי.
+
+> עדכון Stage 47 — 1 במאי 2026:
+> ה־hotspot `esm/native/services/models.ts` פורק כך שה־facade הציבורי נשאר בעל הפקודות הקנוניות בלבד, בעוד התקנת stable surface, רענון live App context, ו־healing של public method slots עברו ל־`esm/native/services/models_surface_install.ts`. ה־API הציבורי נשמר דרך `installModelsService(App)` מ־`models.ts`, והבעלות החדשה מעוגנת ב־guard ייעודי.
 
 ## 1. תקציר מנהלים
 

@@ -639,13 +639,21 @@ test('[builder-surface-family] orchestration owners remain thin around canonical
   assertLacksAll(
     assert,
     schedulerDebug,
-    [/function readReasonStat\(/, /readBuildDedupeSignatureFromState\(/, /export function recordBuildExecute\(/],
+    [
+      /function readReasonStat\(/,
+      /readBuildDedupeSignatureFromState\(/,
+      /export function recordBuildExecute\(/,
+    ],
     'scheduler debug facade'
   );
   assertMatchesAll(
     assert,
     schedulerDebugReasonStore,
-    [/export function createBuildDebugStats\(/, /export function ensureBuildDebugStats\(/, /getReasonStats\(/],
+    [
+      /export function createBuildDebugStats\(/,
+      /export function ensureBuildDebugStats\(/,
+      /getReasonStats\(/,
+    ],
     'scheduler debug reason store'
   );
   assertMatchesAll(

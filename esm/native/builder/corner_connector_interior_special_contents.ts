@@ -3,7 +3,10 @@
 // This owner plans and emits folded-clothes surfaces. It deliberately does not
 // create connector geometry or mutate shelf meshes.
 
-import type { CornerConnectorInteriorEmitters, CornerConnectorInteriorFlowParams } from './corner_connector_interior_shared.js';
+import type {
+  CornerConnectorInteriorEmitters,
+  CornerConnectorInteriorFlowParams,
+} from './corner_connector_interior_shared.js';
 import type { FoldedClothesSurfacePlan } from './corner_connector_interior_special_types.js';
 
 function emitFoldedClothesPlan(

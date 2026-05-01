@@ -3,10 +3,7 @@
 // This owner contains polygon inset/shape conversion only. Scene mutation stays
 // in the apply owner.
 
-import type {
-  CornerConnectorInteriorFlowParams,
-  P2,
-} from './corner_connector_interior_shared.js';
+import type { CornerConnectorInteriorFlowParams, P2 } from './corner_connector_interior_shared.js';
 
 export function createInsetPolygon(
   polygon: readonly P2[],

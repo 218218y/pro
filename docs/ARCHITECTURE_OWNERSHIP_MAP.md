@@ -39,6 +39,7 @@ Use this map to find the owner before editing. The goal is to prevent “just on
 | Manual layout/sketch flows   | focused `canvas_picking_*manual*`, `*sketch*`, and layout-edit owners            |
 | Notes overlay                | notes overlay state/persistence/palette runtime owners                           |
 | Order PDF                    | order-pdf overlay/editor/draft/sketch/export runtime owners                      |
+| Saved models service         | `esm/native/services/models.ts` public facade plus focused `models_*` owners     |
 | Cloud sync                   | `esm/native/services/cloud_sync_*` lifecycle, transport, panel, and scope owners |
 | Autosave/history/project I/O | focused service owners under `esm/native/services/*` and `esm/native/io/*`       |
 

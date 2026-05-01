@@ -51,6 +51,10 @@ test('stage 10 refactor integration audit is wired into guardrails and verify la
     pkg.scripts['test:refactor-stage-guards'],
     /tests\/refactor_stage46_domain_api_shared_ownership_guard\.test\.js/
   );
+  assert.match(
+    pkg.scripts['test:refactor-stage-guards'],
+    /tests\/refactor_stage47_models_service_surface_ownership_guard\.test\.js/
+  );
 
   const verifyFlow = fs.readFileSync('tools/wp_verify_flow.js', 'utf8');
   const guardIndex = verifyFlow.indexOf("scriptName: 'check:refactor-guardrails'");
@@ -80,7 +84,7 @@ test('stage 10 refactor integration audit covers guardrails, stage tests, verify
 test('stage 39 to 41 refactor control-plane stage catalog is anchored', () => {
   assert.equal(assertRefactorStageCatalogIsWellFormed(), true);
   assert.equal(REFACTOR_COMPLETED_STAGE_LABELS.at(0), 'Stage 0');
-  assert.equal(REFACTOR_COMPLETED_STAGE_LABELS.at(-1), 'Stage 46');
+  assert.equal(REFACTOR_COMPLETED_STAGE_LABELS.at(-1), 'Stage 47');
   assert.equal(new Set(REFACTOR_COMPLETED_STAGE_LABELS).size, REFACTOR_COMPLETED_STAGE_LABELS.length);
 
   const progress = fs.readFileSync(REFACTOR_STAGE_PROGRESS_MARKER.file, 'utf8');
@@ -119,6 +123,11 @@ test('stage 39 to 41 refactor control-plane stage catalog is anchored', () => {
   assert.ok(
     REFACTOR_INTEGRATION_ANCHORS.some(anchor =>
       anchor.needle.includes('stage 46 domain API shared ownership split is anchored')
+    )
+  );
+  assert.ok(
+    REFACTOR_INTEGRATION_ANCHORS.some(anchor =>
+      anchor.needle.includes('stage 47 models service surface ownership split is anchored')
     )
   );
 

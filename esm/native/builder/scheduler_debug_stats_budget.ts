@@ -1,7 +1,4 @@
-import type {
-  BuilderDebugStatsLike,
-  BuildDebugBudgetSummaryLike,
-} from '../../../types/index.js';
+import type { BuilderDebugStatsLike, BuildDebugBudgetSummaryLike } from '../../../types/index.js';
 
 function readCount(value: unknown): number {
   return typeof value === 'number' ? Math.max(0, value) : 0;
