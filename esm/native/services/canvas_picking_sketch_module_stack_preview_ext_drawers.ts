@@ -3,7 +3,7 @@ import {
   createManualLayoutSketchNormalizedCenterReader,
   resolveManualLayoutSketchExternalDrawerPlacement,
 } from './canvas_picking_manual_layout_sketch_stack_placement.js';
-import { buildVerticalClearanceMeasurementEntries } from './canvas_picking_hover_clearance_measurements.js';
+import { buildSketchModuleStackAwareMeasurementEntries } from './canvas_picking_sketch_neighbor_measurements.js';
 import { createManualLayoutSketchStackHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import type {
   RecordMap,
@@ -90,9 +90,17 @@ export function resolveSketchModuleExternalDrawersPreview(
   const frontZ = frontPlaneZ + visualT / 2 + 0.001;
   const baseY = placement.yCenter - placement.stackH / 2;
   const previewW = Math.max(0.05, outerW - 0.004);
-  const clearanceMeasurements = buildVerticalClearanceMeasurementEntries({
-    containerMinY: bottomY,
-    containerMaxY: topY,
+  const clearanceMeasurements = buildSketchModuleStackAwareMeasurementEntries({
+    bottomY,
+    topY,
+    totalHeight,
+    pad,
+    woodThick,
+    cfgRef: args.cfgRef,
+    info: args.info,
+    shelves: args.shelves,
+    drawers,
+    extDrawers,
     targetCenterX: centerX,
     targetCenterY: placement.yCenter,
     targetWidth: previewW,

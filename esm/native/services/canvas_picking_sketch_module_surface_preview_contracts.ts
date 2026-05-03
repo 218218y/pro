@@ -46,6 +46,8 @@ export type ResolveSketchModuleSurfacePreviewArgs = {
   boxes: RecordMap[];
   storageBarriers: RecordMap[];
   shelves: RecordMap[];
+  drawers?: RecordMap[];
+  extDrawers?: RecordMap[];
   rods: RecordMap[];
   isCornerKey: (value: unknown) => boolean;
   resolveSketchBoxGeometry: (args: {
@@ -79,6 +81,8 @@ export type SketchModuleShelfRemovePreviewArgs = {
   spanH: number;
   pad: number;
   shelves: RecordMap[];
+  drawers?: RecordMap[];
+  extDrawers?: RecordMap[];
   variant: string;
   shelfDepthOverrideM: number | null;
   innerW: number;

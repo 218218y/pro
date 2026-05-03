@@ -16,6 +16,8 @@ export type ResolveSketchModuleStackPreviewArgs = {
   contentKind: 'drawers' | 'ext_drawers';
   moduleKey: ModuleKey;
   cfgRef: RecordMap | null;
+  info?: RecordMap;
+  shelves?: RecordMap[];
   bottomY: number;
   topY: number;
   totalHeight: number;

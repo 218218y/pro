@@ -112,8 +112,20 @@ test('shelf remove preview includes vertical clearance labels to the compartment
   });
 
   assert.equal(Array.isArray(result.result?.preview?.clearanceMeasurements), true);
+  const measurements = result.result?.preview?.clearanceMeasurements as {
+    label: string;
+    labelY?: number;
+    role?: string;
+    styleKey?: string;
+  }[];
   assert.deepEqual(
-    (result.result?.preview?.clearanceMeasurements as { label: string }[]).map(entry => entry.label),
-    ['79 ס"מ', '39 ס"מ']
+    measurements.map(entry => entry.label),
+    ['79 ס"מ', '39 ס"מ', '37 ס"מ']
   );
+  assert.equal(measurements.find(entry => entry.role === 'cell' && entry.label === '79 ס"מ')?.labelY, 1.2);
+  assert.equal(measurements.find(entry => entry.role === 'cell' && entry.label === '39 ס"מ')?.labelY, 0);
+  const neighbor = measurements.find(entry => entry.role === 'neighbor' && entry.label === '37 ס"מ');
+  assert.ok(neighbor);
+  assert.ok(Math.abs((neighbor?.labelY ?? 0) - 0.782) < 1e-9);
+  assert.equal(neighbor?.styleKey, 'neighbor');
 });

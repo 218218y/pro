@@ -208,3 +208,78 @@ test('sketch placement measurements keep label flags fixed on the cabinet front 
   assert.equal(label.position.z > line.position.z, true);
   assert.deepEqual([label.scale.x, label.scale.y, label.scale.z], [0.432, 0.216, 1]);
 });
+
+test('sketch placement measurements render neighbor labels with their own style and honor explicit edge anchor positions', () => {
+  const shared = createRenderPreviewSketchShared({
+    asObject<T extends object = AnyRecord>(value: unknown): T | null {
+      return value && typeof value === 'object' ? (value as T) : null;
+    },
+  });
+  const g = new FakeGroup();
+  const THREE = {
+    BufferGeometry: FakeBufferGeometry,
+    Group: FakeGroup,
+    Line: FakeLine,
+    LineBasicMaterial: FakeLineBasicMaterial,
+    Mesh: FakeMesh,
+    MeshBasicMaterial: FakeMeshBasicMaterial,
+    PlaneGeometry: FakePlaneGeometry,
+    Vector3: FakeVector3,
+    DoubleSide: 'double-side',
+  };
+
+  applySketchPlacementMeasurements({
+    App: createApp() as never,
+    input: {
+      clearanceMeasurements: [
+        {
+          startX: 0.62,
+          startY: 0.45,
+          endX: 0.62,
+          endY: 1.45,
+          z: 0.02,
+          label: '100 ס"מ',
+          labelX: 0.62,
+          labelY: 1.45,
+          styleKey: 'cell',
+          textScale: 0.82,
+        },
+        {
+          startX: 0.54,
+          startY: 0.8,
+          endX: 0.54,
+          endY: 1.08,
+          z: 0.02,
+          label: '28 ס"מ',
+          labelX: 0.54,
+          labelY: 1.08,
+          styleKey: 'neighbor',
+          textScale: 0.72,
+        },
+      ],
+    } as never,
+    THREE,
+    g: g as never,
+    shared,
+  });
+
+  const measurementGroup = g.children[0] as FakeGroup;
+  const cellLine = measurementGroup.children[0] as FakeLine;
+  const cellLabel = measurementGroup.children[1] as FakeMesh;
+  const neighborLine = measurementGroup.children[2] as FakeLine;
+  const neighborLabel = measurementGroup.children[3] as FakeMesh;
+
+  assert.equal(cellLabel.position.x, 0.62);
+  assert.equal(cellLabel.position.y, 1.45);
+  assert.equal(neighborLabel.position.x, 0.54);
+  assert.equal(neighborLabel.position.y, 1.08);
+  assert.ok(Math.abs(cellLabel.scale.x - 0.3936) < 1e-12);
+  assert.ok(Math.abs(cellLabel.scale.y - 0.1968) < 1e-12);
+  assert.equal(cellLabel.scale.z, 1);
+  assert.ok(Math.abs(neighborLabel.scale.x - 0.324) < 1e-12);
+  assert.ok(Math.abs(neighborLabel.scale.y - 0.162) < 1e-12);
+  assert.equal(neighborLabel.scale.z, 1);
+  assert.notEqual(cellLine.material, neighborLine.material);
+  assert.equal((cellLine.material as FakeLineBasicMaterial).opts.color, 0x2b7dbb);
+  assert.equal((neighborLine.material as FakeLineBasicMaterial).opts.color, 0x000000);
+});

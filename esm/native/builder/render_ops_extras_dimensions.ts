@@ -68,8 +68,9 @@ export function getDimLabelEntry(textStr: unknown, ctx: unknown, styleKeyIn?: un
   }
 
   const isCell = styleKey === 'cell';
-  const width = isCell ? 96 : 128;
-  const height = isCell ? 48 : 64;
+  const isNeighbor = styleKey === 'neighbor';
+  const width = isCell || isNeighbor ? 96 : 128;
+  const height = isCell || isNeighbor ? 48 : 64;
 
   const canvas = readCanvas(createCanvasViaPlatform(App, width, height));
   if (!canvas) throw new Error('[DimLabel] cannot create canvas');
@@ -79,10 +80,14 @@ export function getDimLabelEntry(textStr: unknown, ctx: unknown, styleKeyIn?: un
   const ctx2d = canvas.getContext('2d');
   if (!ctx2d) throw new Error('[DimLabel] cannot get 2d context');
 
-  ctx2d.fillStyle = isCell ? 'rgba(232,244,255,0.62)' : 'rgba(255,255,255,0.7)';
+  ctx2d.fillStyle = isCell
+    ? 'rgba(232,244,255,0.62)'
+    : isNeighbor
+      ? 'rgba(255,255,255,0.9)'
+      : 'rgba(255,255,255,0.7)';
   ctx2d.fillRect(0, 0, width, height);
-  ctx2d.font = isCell ? 'bold 28px Arial' : 'bold 40px Arial';
-  ctx2d.fillStyle = isCell ? '#0b4f79' : 'black';
+  ctx2d.font = isCell ? 'bold 28px Arial' : isNeighbor ? 'bold 30px Arial' : 'bold 40px Arial';
+  ctx2d.fillStyle = isCell ? '#0b4f79' : isNeighbor ? '#111111' : 'black';
   ctx2d.textAlign = 'center';
   ctx2d.textBaseline = 'middle';
   ctx2d.fillText(String(textStr || ''), width / 2, height / 2);

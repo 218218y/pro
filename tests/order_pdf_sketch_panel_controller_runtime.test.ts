@@ -54,7 +54,6 @@ test('[order-pdf] sketch panel controller falls back to the first available page
   );
 });
 
-
 test('[order-pdf] sketch panel controller keeps independent freehand width defaults', () => {
   const widthsByTool = createDefaultOrderPdfSketchStrokeToolWidths();
 
@@ -75,19 +74,13 @@ test('[order-pdf] sketch panel controller preserves manual width per drawing too
     widthsByTool: afterMarkerChange,
   });
 
-  assert.equal(
-    resolveOrderPdfSketchStrokeToolWidth({ tool: 'marker', widthsByTool: afterPenChange }),
-    10
-  );
+  assert.equal(resolveOrderPdfSketchStrokeToolWidth({ tool: 'marker', widthsByTool: afterPenChange }), 10);
   assert.equal(resolveOrderPdfSketchStrokeToolWidth({ tool: 'pen', widthsByTool: afterPenChange }), 4);
   assert.equal(resolveOrderPdfSketchStrokeToolWidth({ tool: 'eraser', widthsByTool: afterPenChange }), 2);
 });
 
 test('[order-pdf] sketch panel controller resolves text-mode width from remembered drawing tool', () => {
-  assert.equal(
-    resolveOrderPdfSketchActiveWidthTool({ tool: 'text', lastNonTextTool: 'marker' }),
-    'marker'
-  );
+  assert.equal(resolveOrderPdfSketchActiveWidthTool({ tool: 'text', lastNonTextTool: 'marker' }), 'marker');
   assert.equal(resolveOrderPdfSketchActiveWidthTool({ tool: 'pen', lastNonTextTool: 'marker' }), 'pen');
 });
 

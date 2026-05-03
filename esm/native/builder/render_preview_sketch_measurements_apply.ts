@@ -36,7 +36,6 @@ export function applySketchPlacementMeasurements(args: {
   }
 
   const { userData, measurementGroup } = ensureMeasurementGroup(g, THREE, shared);
-  const lineMaterial = ensureMeasurementLineMaterial(userData, THREE, shared);
   const slots = userData.__measurementSlots || [];
   measurementGroup.visible = true;
 
@@ -51,6 +50,9 @@ export function applySketchPlacementMeasurements(args: {
     if (startX == null || startY == null || endX == null || endY == null || !label) continue;
 
     const z = readFinite(entry.z) ?? 0;
+    const styleKey =
+      entry.styleKey === 'cell' ? 'cell' : entry.styleKey === 'neighbor' ? 'neighbor' : 'default';
+    const lineMaterial = ensureMeasurementLineMaterial(userData, styleKey, THREE, shared);
     const slot = ensureMeasurementSlot({
       slots,
       index: used,
@@ -75,7 +77,6 @@ export function applySketchPlacementMeasurements(args: {
     slot.line.visible = true;
     slot.line.renderOrder = 10031;
 
-    const styleKey = entry.styleKey === 'cell' ? 'cell' : 'default';
     const dimEntry = getDimLabelEntry(label, { App }, styleKey);
     slot.label.material = ensureMeasurementLabelMaterial(
       userData,
@@ -95,6 +96,7 @@ export function applySketchPlacementMeasurements(args: {
 
     const textScale = Math.max(0.55, readFinite(entry.textScale) ?? 0.9);
     if (styleKey === 'cell') slot.label.scale?.set?.(0.48 * textScale, 0.24 * textScale, 1);
+    else if (styleKey === 'neighbor') slot.label.scale?.set?.(0.45 * textScale, 0.225 * textScale, 1);
     else slot.label.scale?.set?.(0.6 * textScale, 0.3 * textScale, 1);
   }
 

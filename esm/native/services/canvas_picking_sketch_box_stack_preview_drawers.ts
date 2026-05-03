@@ -2,7 +2,7 @@ import {
   buildManualLayoutSketchExternalDrawerBlockers,
   resolveManualLayoutSketchInternalDrawerPlacement,
 } from './canvas_picking_manual_layout_sketch_stack_placement.js';
-import { buildVerticalClearanceMeasurementEntries } from './canvas_picking_hover_clearance_measurements.js';
+import { buildSketchBoxStackAwareMeasurementEntries } from './canvas_picking_sketch_neighbor_measurements.js';
 import { createManualLayoutSketchBoxContentHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import type {
   ResolveSketchBoxStackPreviewArgs,
@@ -19,8 +19,16 @@ export function resolveSketchBoxDrawersPreview(
 ): ResolveSketchBoxStackPreviewResult {
   const ctx = resolveSketchBoxStackPreviewContext(args);
   const { host, boxId, freePlacement, pointerY, targetGeo, targetHeight, woodThick } = args;
-  const { boxBottomY, boxTopY, readCenterY, activeSegment, localDrawers, localExtDrawers, frontOverlay } =
-    ctx;
+  const {
+    boxBottomY,
+    boxTopY,
+    readCenterY,
+    boxSegments,
+    activeSegment,
+    localDrawers,
+    localExtDrawers,
+    frontOverlay,
+  } = ctx;
 
   const placement = resolveManualLayoutSketchInternalDrawerPlacement({
     desiredCenterY: pointerY,
@@ -44,9 +52,21 @@ export function resolveSketchBoxDrawersPreview(
   const previewW = Math.max(0.05, (activeSegment ? activeSegment.width : targetGeo.innerW) - 0.03);
   const previewD = Math.max(0.05, targetGeo.innerD - 0.02);
   const previewZ = targetGeo.innerBackZ + targetGeo.innerD / 2;
-  const clearanceMeasurements = buildVerticalClearanceMeasurementEntries({
-    containerMinY: boxBottomY + woodThick,
-    containerMaxY: boxTopY - woodThick,
+  const clearanceMeasurements = buildSketchBoxStackAwareMeasurementEntries({
+    bottomY: boxBottomY + woodThick,
+    topY: boxTopY - woodThick,
+    totalHeight: targetHeight,
+    pad: woodThick,
+    woodThick,
+    neighborBottomY: boxBottomY,
+    neighborTopY: boxTopY,
+    neighborTotalHeight: targetHeight,
+    neighborPad: woodThick,
+    targetBox: args.targetBox,
+    targetGeo,
+    activeSegment,
+    boxSegments,
+    pickSegment: args.pickSketchBoxSegment,
     targetCenterX: previewX,
     targetCenterY: placement.yCenter,
     targetWidth: previewW,

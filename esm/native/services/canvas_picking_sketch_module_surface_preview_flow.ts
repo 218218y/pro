@@ -67,6 +67,8 @@ export function resolveSketchModuleSurfacePreview(
         spanH,
         pad,
         shelves,
+        drawers: args.drawers,
+        extDrawers: args.extDrawers,
         variant,
         shelfDepthOverrideM: args.shelfDepthOverrideM,
         innerW,

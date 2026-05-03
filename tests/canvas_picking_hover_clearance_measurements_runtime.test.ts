@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   buildRectClearanceMeasurementEntries,
+  buildStackAwareVerticalClearanceMeasurementEntries,
   buildVerticalClearanceMeasurementEntries,
 } from '../esm/native/services/canvas_picking_hover_clearance_measurements.ts';
 
@@ -104,4 +105,39 @@ test('vertical clearance builder keeps front-facing labels even when drawn behin
   assert.equal(entries[0].z, -0.005);
   assert.equal(entries[0].labelFaceSign, 1);
   assert.equal(entries[1].labelFaceSign, 1);
+});
+
+test('stack-aware vertical clearance builder centers both cell and neighbor measurement lines inside the active opening width', () => {
+  const entries = buildStackAwareVerticalClearanceMeasurementEntries({
+    containerMinY: 0,
+    containerMaxY: 2.2,
+    targetCenterX: -0.36,
+    targetCenterY: 0.9,
+    targetWidth: 0.72,
+    targetHeight: 0.02,
+    neighbors: [
+      { minY: 1.28, maxY: 1.3, kind: 'shelf' },
+      { minY: 0.42, maxY: 0.58, kind: 'drawer' },
+    ],
+    styleKey: 'cell',
+    textScale: 0.82,
+  });
+
+  const cellEntries = entries.filter(entry => entry.role === 'cell');
+  const neighborEntries = entries.filter(entry => entry.role === 'neighbor');
+  assert.equal(cellEntries.length, 2);
+  assert.equal(neighborEntries.length, 2);
+  assert.ok(
+    cellEntries.every(
+      entry => typeof entry.startX === 'number' && Math.abs(Number(entry.startX) + 0.36) < 0.05
+    )
+  );
+  assert.ok(
+    neighborEntries.every(
+      entry => typeof entry.startX === 'number' && Math.abs(Number(entry.startX) + 0.36) < 0.05
+    )
+  );
+  assert.ok((neighborEntries[0]?.startX ?? 0) < (cellEntries[0]?.startX ?? 0));
+  assert.ok(cellEntries.every(entry => entry.styleKey === 'cell'));
+  assert.ok(neighborEntries.every(entry => entry.styleKey === 'neighbor'));
 });

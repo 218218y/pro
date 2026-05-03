@@ -1,4 +1,4 @@
-import { buildVerticalClearanceMeasurementEntries } from './canvas_picking_hover_clearance_measurements.js';
+import { buildSketchModuleStackAwareMeasurementEntries } from './canvas_picking_sketch_neighbor_measurements.js';
 import {
   createSketchModuleShelfPreviewGeometry,
   findNearestSketchModuleRod,
@@ -156,9 +156,17 @@ export function resolveSketchModuleContentPreview(args: {
     variant: variantPreview,
     shelfDepthOverrideM,
   });
-  const clearanceMeasurements = buildVerticalClearanceMeasurementEntries({
-    containerMinY: bottomY,
-    containerMaxY: topY,
+  const clearanceMeasurements = buildSketchModuleStackAwareMeasurementEntries({
+    bottomY,
+    topY,
+    totalHeight: spanH,
+    pad,
+    woodThick,
+    cfgRef: source.cfgRef,
+    info: source.info,
+    shelves: source.shelves,
+    drawers: source.drawers,
+    extDrawers: source.extDrawers,
     targetCenterX: previewX,
     targetCenterY: yClamped,
     targetWidth: shelfPreview.w,

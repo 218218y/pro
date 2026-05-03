@@ -6,6 +6,7 @@ import type {
 import type { RenderPreviewSketchShared } from './render_preview_sketch_shared.js';
 import type {
   MeasurementSlot,
+  MeasurementStyleKey,
   MeasurementTHREESurface,
   MeasurementUserData,
 } from './render_preview_sketch_measurements_types.js';
@@ -87,22 +88,44 @@ export function ensureMeasurementGroup(
   return { userData, measurementGroup };
 }
 
-export function ensureMeasurementLineMaterial(
-  userData: MeasurementUserData,
+function createMeasurementLineMaterial(
+  styleKey: MeasurementStyleKey,
   THREE: MeasurementTHREESurface,
   shared: RenderPreviewSketchShared
 ): PreviewMaterialLike {
-  const existing = userData.__measurementLineMat;
-  if (existing) return existing;
+  const color = styleKey === 'neighbor' ? 0x000000 : 0x2b7dbb;
+  const opacity = styleKey === 'neighbor' ? 1 : 0.96;
   const material = new THREE.LineBasicMaterial({
-    color: 0x2b7dbb,
+    color,
     transparent: true,
-    opacity: 0.96,
+    opacity,
     depthWrite: false,
     depthTest: false,
   });
   shared.markKeepMaterial(material);
-  userData.__measurementLineMat = material;
+  return material;
+}
+
+export function ensureMeasurementLineMaterial(
+  userData: MeasurementUserData,
+  styleKey: MeasurementStyleKey,
+  THREE: MeasurementTHREESurface,
+  shared: RenderPreviewSketchShared
+): PreviewMaterialLike {
+  if (!(userData.__measurementLineMatCache instanceof Map)) {
+    userData.__measurementLineMatCache = new Map<MeasurementStyleKey, PreviewMaterialLike>();
+  }
+  const cached = userData.__measurementLineMatCache.get(styleKey);
+  if (cached) return cached;
+
+  if (styleKey === 'cell' && userData.__measurementLineMat) {
+    userData.__measurementLineMatCache.set(styleKey, userData.__measurementLineMat);
+    return userData.__measurementLineMat;
+  }
+
+  const material = createMeasurementLineMaterial(styleKey, THREE, shared);
+  if (styleKey === 'cell') userData.__measurementLineMat = material;
+  userData.__measurementLineMatCache.set(styleKey, material);
   return material;
 }
 

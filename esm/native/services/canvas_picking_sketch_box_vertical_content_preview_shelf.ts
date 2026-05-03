@@ -1,4 +1,4 @@
-import { buildVerticalClearanceMeasurementEntries } from './canvas_picking_hover_clearance_measurements.js';
+import { buildSketchBoxStackAwareMeasurementEntries } from './canvas_picking_sketch_neighbor_measurements.js';
 import { createManualLayoutSketchBoxContentHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import type {
   ResolveSketchBoxVerticalContentPreviewArgs,
@@ -98,9 +98,21 @@ export function resolveSketchBoxShelfPreview(
   const shelfInnerW = readFiniteSegmentNumber(shelfSegment, 'width') ?? targetGeo.innerW;
   const previewW = Math.max(0.02, shelfInnerW - (isBrace ? 0.002 : 0.014));
   const previewZ = targetGeo.innerBackZ + shelfDepth / 2;
-  const clearanceMeasurements = buildVerticalClearanceMeasurementEntries({
-    containerMinY: targetCenterY - targetHeight / 2 + woodThick,
-    containerMaxY: targetCenterY + targetHeight / 2 - woodThick,
+  const clearanceMeasurements = buildSketchBoxStackAwareMeasurementEntries({
+    bottomY: targetCenterY - targetHeight / 2 + woodThick,
+    topY: targetCenterY + targetHeight / 2 - woodThick,
+    totalHeight: targetHeight,
+    pad: woodThick,
+    woodThick,
+    neighborBottomY: targetCenterY - targetHeight / 2,
+    neighborTopY: targetCenterY + targetHeight / 2,
+    neighborTotalHeight: targetHeight,
+    neighborPad: woodThick,
+    targetBox,
+    targetGeo,
+    activeSegment: shelfSegment,
+    boxSegments,
+    pickSegment: pickSketchBoxSegment,
     targetCenterX: shelfCenterX,
     targetCenterY: previewY,
     targetWidth: previewW,
