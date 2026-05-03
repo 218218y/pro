@@ -26,6 +26,13 @@ test('corner sketch external drawers carry scoped module metadata and reuse real
       '../esm/native/builder/render_interior_sketch_drawers.ts',
       '../esm/native/builder/render_interior_sketch_drawers_shared.ts',
       '../esm/native/builder/render_interior_sketch_drawers_external.ts',
+      '../esm/native/builder/render_interior_sketch_drawers_external_apply.ts',
+      '../esm/native/builder/render_interior_sketch_drawers_external_context.ts',
+      '../esm/native/builder/render_interior_sketch_drawers_external_plan.ts',
+      '../esm/native/builder/render_interior_sketch_drawers_external_group.ts',
+      '../esm/native/builder/render_interior_sketch_drawers_external_visual.ts',
+      '../esm/native/builder/render_interior_sketch_drawers_external_box.ts',
+      '../esm/native/builder/render_interior_sketch_drawers_external_motion.ts',
       '../esm/native/builder/render_interior_sketch_drawers_internal.ts',
     ],
     import.meta.url
@@ -42,15 +49,21 @@ test('corner sketch external drawers carry scoped module metadata and reuse real
     sketchGeometrySrc,
     /const matchesScopedModuleKey = !!wantModuleKey && childModuleKey === wantModuleKey;/
   );
-  assert.match(sketchDrawersSrc, /groupUd\.moduleIndex = resolvedModuleIndex \|\| moduleIndex;/);
+  assert.match(sketchDrawersSrc, /groupUd\.moduleIndex = resolvedModuleIndex \|\| context\.moduleIndex;/);
   assert.match(sketchDrawersSrc, /groupUd\.__wpStack = resolvedStackKey;/);
   assert.match(sketchDrawersSrc, /const doorStyle = resolveSketchDoorStyle\(App, input\);/);
   assert.match(
     sketchDrawersSrc,
-    /resolveSketchFrontVisualState\(input, partId\)[\s\S]*visual = input\.createDoorVisual\([\s\S]*frontFaceMat,[\s\S]*frontVisualState\.isGlass \? 'glass' : resolveEffectiveDoorStyle\(doorStyle, doorStyleMap, partId\),[\s\S]*frontVisualState\.mirrorLayout,[\s\S]*partId/
+    /resolveSketchFrontVisualState\(context\.input, opPlan\.partId\)[\s\S]*context\.input\.createDoorVisual\([\s\S]*materialSet\.frontFaceMat,[\s\S]*frontVisualState\.isGlass[\s\S]*resolveEffectiveDoorStyle\(context\.doorStyle, context\.doorStyleMap, opPlan\.partId\),[\s\S]*frontVisualState\.mirrorLayout,[\s\S]*opPlan\.partId/
   );
-  assert.match(sketchDrawersSrc, /applySketchModulePickMetaDeep\(visualObj, partId, moduleKeyStr, \{/);
-  assert.match(sketchDrawersSrc, /applySketchModulePickMetaDeep\(groupNode, partId, moduleKeyStr, \{/);
+  assert.match(
+    sketchDrawersSrc,
+    /applySketchModulePickMetaDeep\(visualObj, opPlan\.partId, context\.moduleKeyStr, \{/
+  );
+  assert.match(
+    sketchDrawersSrc,
+    /applySketchModulePickMetaDeep\(groupNode, opPlan\.partId, context\.moduleKeyStr, \{/
+  );
   assert.doesNotMatch(
     sketchDrawersSrc,
     /applySketchBoxPickMetaDeep\(groupNode, partId, moduleKeyStr, drawerId/

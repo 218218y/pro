@@ -16,6 +16,14 @@ export async function readSketchBoxFrontsBundle(): Promise<string> {
     '../esm/native/builder/render_interior_sketch_boxes_fronts_door_visuals.ts',
     '../esm/native/builder/render_interior_sketch_boxes_fronts_doors.ts',
     '../esm/native/builder/render_interior_sketch_boxes_fronts_drawers.ts',
+    '../esm/native/builder/render_interior_sketch_boxes_fronts_drawers_types.ts',
+    '../esm/native/builder/render_interior_sketch_boxes_fronts_drawers_context.ts',
+    '../esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts',
+    '../esm/native/builder/render_interior_sketch_boxes_fronts_drawers_group.ts',
+    '../esm/native/builder/render_interior_sketch_boxes_fronts_drawers_visual.ts',
+    '../esm/native/builder/render_interior_sketch_boxes_fronts_drawers_box.ts',
+    '../esm/native/builder/render_interior_sketch_boxes_fronts_drawers_motion.ts',
+    '../esm/native/builder/render_interior_sketch_boxes_fronts_drawers_apply.ts',
   ]);
 }
 

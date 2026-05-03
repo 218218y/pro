@@ -143,35 +143,46 @@ test('sketch external drawers source keeps module faces aligned to real door spa
   const src = [
     await readSourceFiles([
       '../esm/native/builder/render_interior_sketch_ops.ts',
+      '../esm/native/builder/render_interior_sketch_ops_input.ts',
       '../esm/native/builder/render_interior_sketch_module_geometry.ts',
       '../esm/native/builder/render_interior_sketch_drawers.ts',
       '../esm/native/builder/render_interior_sketch_drawers_shared.ts',
       '../esm/native/builder/render_interior_sketch_drawers_external.ts',
+      '../esm/native/builder/render_interior_sketch_drawers_external_apply.ts',
+      '../esm/native/builder/render_interior_sketch_drawers_external_context.ts',
+      '../esm/native/builder/render_interior_sketch_drawers_external_plan.ts',
+      '../esm/native/builder/render_interior_sketch_drawers_external_group.ts',
+      '../esm/native/builder/render_interior_sketch_drawers_external_visual.ts',
+      '../esm/native/builder/render_interior_sketch_drawers_external_box.ts',
+      '../esm/native/builder/render_interior_sketch_drawers_external_motion.ts',
       '../esm/native/builder/render_interior_sketch_drawers_internal.ts',
       '../esm/native/builder/render_interior_sketch_boxes.ts',
     ]),
     await readSketchBoxFrontsBundle(),
   ].join('\n');
   const sketchPickMeta = await readSourceFiles(['../esm/native/builder/render_interior_sketch_pick_meta.ts']);
-  const shared = await readSourceFiles(['../esm/native/builder/render_interior_sketch_shared.ts']);
+  const shared = await readSourceFiles([
+    '../esm/native/builder/render_interior_sketch_shared.ts',
+    '../esm/native/builder/render_interior_sketch_shared_external_drawers.ts',
+  ]);
   assert.match(src, /const moduleDoorFaceSpan = resolveSketchModuleDoorFaceSpan\(\{/);
-  assert.match(src, /const drawerFaceW = moduleDoorFaceSpan\?\.spanW \?\? outerW;/);
+  assert.match(src, /const drawerFaceW = context\.moduleDoorFaceSpan\?\.spanW \?\? context\.outerW;/);
   assert.match(
     src,
-    /const drawerFaceOffsetX = \(moduleDoorFaceSpan\?\.centerX \?\? internalCenterX\) - internalCenterX;/
+    /const drawerFaceOffsetX =\s*\(context\.moduleDoorFaceSpan\?\.centerX \?\? context\.internalCenterX\) - context\.internalCenterX;/
   );
   assert.match(
     src,
-    /applySketchExternalDrawerFaceOverrides\(drawerOps, drawerFaceW, drawerFaceOffsetX, frontZ\);/
+    /applySketchExternalDrawerFaceOverrides\(drawerOps, drawerFaceW, drawerFaceOffsetX, context\.frontZ\);/
   );
   assert.match(shared, /drawer\.faceW = faceW;/);
   assert.match(sketchPickMeta, /export function applySketchModulePickMeta\(/);
   assert.match(src, /const faceW = Math\.max\(0\.05, toFiniteNumber\(op\.faceW\) \?\? visualW\);/);
-  assert.match(src, /visualObj\.position\?\.set\?\.\(faceOffsetX, faceVertical\.offsetY, 0\);/);
+  assert.match(src, /visualObj\.position\?\.set\?\.\(opPlan\.faceOffsetX, opPlan\.faceOffsetY, 0\);/);
   assert.match(src, /const doorStyle = resolveSketchDoorStyle\(App, input\);/);
   assert.match(
     src,
-    /resolveSketchFrontVisualState\(input, partId\)[\s\S]*visual = createDoorVisual\([\s\S]*frontFaceMat,[\s\S]*frontVisualState\.isGlass \? 'glass' : resolveEffectiveDoorStyle\(doorStyle, doorStyleMap, partId\),[\s\S]*frontVisualState\.mirrorLayout,[\s\S]*partId/
+    /resolveSketchFrontVisualState\(context\.input, opPlan\.partId\)[\s\S]*context\.input\.createDoorVisual\([\s\S]*materialSet\.frontFaceMat,[\s\S]*frontVisualState\.isGlass[\s\S]*resolveEffectiveDoorStyle\(context\.doorStyle, context\.doorStyleMap, opPlan\.partId\),[\s\S]*frontVisualState\.mirrorLayout,[\s\S]*opPlan\.partId/
   );
   assert.match(src, /const boxExtDrawers = asRecordArray<InteriorValueRecord>\(box\.extDrawers\);/);
 });
@@ -180,6 +191,7 @@ test('sketch box drawers and external drawers source use divider-aware spans', a
   const src = [
     await readSourceFiles([
       '../esm/native/builder/render_interior_sketch_ops.ts',
+      '../esm/native/builder/render_interior_sketch_ops_input.ts',
       '../esm/native/builder/render_interior_sketch_boxes.ts',
       '../esm/native/builder/render_interior_sketch_boxes_contents.ts',
       '../esm/native/builder/render_interior_sketch_boxes_contents_parts.ts',
@@ -225,6 +237,7 @@ test('sketch external drawers source matches regular width span, floor alignment
     '../esm/native/builder/render_interior_sketch_drawers.ts',
     '../esm/native/builder/render_interior_sketch_drawers_shared.ts',
     '../esm/native/builder/render_interior_sketch_drawers_external.ts',
+    '../esm/native/builder/render_interior_sketch_drawers_external_plan.ts',
     '../esm/native/builder/render_interior_sketch_boxes.ts',
   ]);
   assert.match(
@@ -236,7 +249,7 @@ test('sketch external drawers source matches regular width span, floor alignment
     /const moduleDoors = Math\.max\(1, Math\.floor\(toFiniteNumber\(input\.moduleDoors\) \?\? 1\)\);/
   );
   assert.match(sketchSrc, /const pivotMap = readObject<InteriorValueRecord>\(input\.hingedDoorPivotMap\);/);
-  assert.match(sketchSrc, /startY: baseY - woodThick,/);
+  assert.match(sketchSrc, /startY: baseY - context\.woodThick,/);
 });
 
 test('sketch external drawer cuts and reveal frames use visible face envelope and segmented door frames', async () => {

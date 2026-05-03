@@ -21,7 +21,10 @@ function sketchBoxFrontsBundle() {
 }
 
 test('sketch box UI exposes a dedicated double-door mode under the single-door action', () => {
-  const helpers = read('esm/native/ui/react/tabs/interior_tab_helpers.tsx');
+  const helpers = [
+    read('esm/native/ui/react/tabs/interior_tab_helpers.tsx'),
+    read('esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts'),
+  ].join('\n');
   const sections = [
     read('esm/native/ui/react/tabs/interior_tab_sections.tsx'),
     read('esm/native/ui/react/tabs/interior_layout_sketch_box_controls_section.tsx'),

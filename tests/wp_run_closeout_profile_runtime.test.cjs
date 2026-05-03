@@ -52,10 +52,7 @@ test('closeout profile runner builds canonical arguments for safe workflow usage
 });
 
 test('closeout profile runner rejects invalid profiles instead of falling back to default', () => {
-  assert.throws(
-    () => createCloseoutArgs({ profile: 'typo-profile' }),
-    /Invalid profile: typo-profile/
-  );
+  assert.throws(() => createCloseoutArgs({ profile: 'typo-profile' }), /Invalid profile: typo-profile/);
   assert.throws(() => createCloseoutArgs({ profile: '' }), /Invalid profile: \(empty\)/);
 });
 

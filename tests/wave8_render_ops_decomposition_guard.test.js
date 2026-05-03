@@ -5,7 +5,11 @@ import fs from 'node:fs';
 const read = rel => fs.readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8');
 
 const renderOps = read('esm/native/builder/render_ops.ts');
-const sketchOps = read('esm/native/builder/render_interior_sketch_ops.ts');
+const sketchOps = [
+  read('esm/native/builder/render_interior_sketch_ops.ts'),
+  read('esm/native/builder/render_interior_sketch_ops_factory.ts'),
+  read('esm/native/builder/render_interior_sketch_ops_apply.ts'),
+].join('\n');
 const carcassOps = read('esm/native/builder/render_carcass_ops.ts');
 const audit = read('docs/layering_completion_audit.md');
 
@@ -27,10 +31,16 @@ test('[wave8] render_ops extracts sketch extras and carcass flows into focused h
 
   assert.match(
     sketchOps,
+    /export \{ createBuilderRenderInteriorSketchOps \} from '\.\/render_interior_sketch_ops_factory\.js';/
+  );
+  assert.match(
+    sketchOps,
     /export function createBuilderRenderInteriorSketchOps\(deps: RenderInteriorSketchOpsDeps\)/
   );
-  assert.match(sketchOps, /function applyInteriorSketchExtras\(args: unknown\)/);
-  assert.match(sketchOps, /return \{[\s\S]*applyInteriorSketchExtras,[\s\S]*\};/);
+  assert.match(
+    sketchOps,
+    /applyInteriorSketchExtras: \(args: unknown\) => applyInteriorSketchExtrasOwner\(owner, args\)/
+  );
 
   assert.match(carcassOps, /export function createBuilderRenderCarcassOps\(deps: RenderCarcassOpsDeps\)/);
   assert.match(carcassOps, /function applyCarcassOps\(opsIn: unknown, ctxIn: unknown\)/);

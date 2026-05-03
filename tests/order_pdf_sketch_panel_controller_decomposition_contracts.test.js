@@ -7,6 +7,10 @@ const main = readSource(
   '../esm/native/ui/react/pdf/order_pdf_overlay_sketch_panel_controller.ts',
   import.meta.url
 );
+const hook = readSource(
+  '../esm/native/ui/react/pdf/order_pdf_overlay_sketch_panel_controller_hook.ts',
+  import.meta.url
+);
 const stateHooks = readSource(
   '../esm/native/ui/react/pdf/order_pdf_overlay_sketch_panel_controller_state_hooks.ts',
   import.meta.url
@@ -18,6 +22,10 @@ const annotationHooks = readSource(
 
 test('order pdf sketch panel controller keeps state and annotation ownership split', () => {
   assertMatchesAll(assert, main, [
+    /order_pdf_overlay_sketch_panel_controller_hook\.js/,
+    /order_pdf_overlay_sketch_panel_controller_types\.js/,
+  ]);
+  assertMatchesAll(assert, hook, [
     /order_pdf_overlay_sketch_panel_controller_state_hooks\.js/,
     /order_pdf_overlay_sketch_panel_controller_annotation_hooks\.js/,
     /useOrderPdfSketchPanelState\(/,
@@ -25,6 +33,12 @@ test('order pdf sketch panel controller keeps state and annotation ownership spl
     /export function useOrderPdfSketchPanelController\(/,
   ]);
   assertLacksAll(assert, main, [
+    /const \[tool, setToolState\] = useState</,
+    /const handleAppendStroke = useCallback\(/,
+    /const handleUpsertTextBox = useCallback\(/,
+    /const handleDeleteTextBox = useCallback\(/,
+  ]);
+  assertLacksAll(assert, hook, [
     /const \[tool, setToolState\] = useState</,
     /const handleAppendStroke = useCallback\(/,
     /const handleUpsertTextBox = useCallback\(/,

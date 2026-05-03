@@ -185,8 +185,14 @@ const autosaveBundle = bundleSources(
 );
 
 const room = read('esm/native/builder/room.ts');
+const roomActiveState = read('esm/native/builder/room_active_state.ts');
+const roomLifecycle = read('esm/native/builder/room_lifecycle.ts');
+const roomDesignSurface = read('esm/native/builder/room_design_surface.ts');
 const roomBundle = [
   read('esm/native/builder/room.ts'),
+  read('esm/native/builder/room_active_state.ts'),
+  read('esm/native/builder/room_design_surface.ts'),
+  read('esm/native/builder/room_lifecycle.ts'),
   read('esm/native/builder/room_internal_shared.ts'),
   read('esm/native/builder/room_shared_types.ts'),
   read('esm/native/builder/room_shared_utils.ts'),
@@ -403,18 +409,19 @@ test('[builder-access] deleted helper duplicates stay removed and critical calls
     assert.equal(exists(rel), false, `expected deleted file: ${rel}`);
   }
 
-  assert.match(room, /export function setRoomDesignActive\(/);
-  assert.match(room, /ensureRoomDesignService\(A\)/);
-  assert.doesNotMatch(room, /A\.services\s*=\s*/);
-  assert.doesNotMatch(room, /services\.roomDesign\s*=\s*/);
+  assert.match(roomLifecycle, /export function setRoomDesignActive\(/);
+  assert.match(roomDesignSurface, /ensureRoomDesignService\(A\)/);
+  assert.doesNotMatch(roomBundle, /A\.services\s*=\s*/);
+  assert.doesNotMatch(roomBundle, /services\.roomDesign\s*=\s*/);
   assert.match(
-    room,
+    roomDesignSurface,
     /setActive:\s*\{[\s\S]*?stableKey:\s*'__wpRoomSetActive'[\s\S]*?setRoomDesignActive\(on, meta, context\.App\)/
   );
-  assert.doesNotMatch(room, /deps\.builder\.modules/);
+  assert.match(roomActiveState, /__readRoomDesignRuntimeFlags\(A\)/);
+  assert.doesNotMatch(roomBundle, /deps\.builder\.modules/);
   assert.match(roomBundle, /assertThreeViaDeps\(/);
   assert.match(visuals, /assertThreeViaDeps\(/);
-  assert.doesNotMatch(room, /assertTHREE\(/);
+  assert.doesNotMatch(roomBundle, /assertTHREE\(/);
   assert.doesNotMatch(visuals, /assertTHREE\(/);
 
   assert.match(cornerWing, /from '\.\.\/runtime\/builder_service_access\.js'/);

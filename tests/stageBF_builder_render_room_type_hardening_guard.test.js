@@ -32,6 +32,9 @@ const renderOpsBundle = normalizeWhitespace(
 const room = normalizeWhitespace(
   fs.readFileSync(new URL('../esm/native/builder/room.ts', import.meta.url), 'utf8')
 );
+const roomSharedTypes = normalizeWhitespace(
+  fs.readFileSync(new URL('../esm/native/builder/room_shared_types.ts', import.meta.url), 'utf8')
+);
 const renderExtras = normalizeWhitespace(
   ['../esm/native/builder/render_ops_extras.ts', '../esm/native/builder/render_ops_extras_shared.ts']
     .map(rel => fs.readFileSync(new URL(rel, import.meta.url), 'utf8'))
@@ -91,9 +94,9 @@ test('[stageBF] builder render + room seams expose shared typed contracts instea
   );
 
   assert.match(
-    room,
-    /type RoomTextureParams = RoomTextureParamsLike;/,
-    'room.ts should share RoomTextureParamsLike'
+    roomSharedTypes,
+    /export type RoomTextureParams = RoomTextureParamsLike;/,
+    'room shared types should keep RoomTextureParams mapped to RoomTextureParamsLike while room.ts stays a facade'
   );
   assert.match(
     renderExtras,

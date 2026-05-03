@@ -23,6 +23,18 @@ const sessionHooks = readSource(
   '../esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_text_layer_pointer_session_hooks.ts',
   import.meta.url
 );
+const sessionTypes = readSource(
+  '../esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_text_layer_pointer_session_hooks_types.ts',
+  import.meta.url
+);
+const interactionSessionHooks = readSource(
+  '../esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_text_layer_pointer_interaction_session_hooks.ts',
+  import.meta.url
+);
+const createSessionHooks = readSource(
+  '../esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_text_layer_pointer_create_session_hooks.ts',
+  import.meta.url
+);
 
 test('order pdf text-layer pointer hooks keep shared, box, and canvas ownership split', () => {
   assertMatchesAll(assert, main, [
@@ -72,7 +84,23 @@ test('order pdf text-layer pointer hooks keep shared, box, and canvas ownership 
   ]);
 
   assertMatchesAll(assert, sessionHooks, [
+    /order_pdf_overlay_sketch_card_text_layer_pointer_session_hooks_types\.js/,
+    /order_pdf_overlay_sketch_card_text_layer_pointer_interaction_session_hooks\.js/,
+    /order_pdf_overlay_sketch_card_text_layer_pointer_create_session_hooks\.js/,
+  ]);
+  assertMatchesAll(assert, sessionTypes, [
     /export type OrderPdfSketchTextLayerInteractionSession = /,
     /export type OrderPdfSketchTextLayerCreateSession = /,
+    /export type OrderPdfSketchClientPoint = /,
+  ]);
+  assertMatchesAll(assert, interactionSessionHooks, [
+    /export function useOrderPdfSketchTextLayerInteractionSession\(/,
+    /updateOrderPdfSketchTextBoxInteractionPreview/,
+    /installDomEventListener/,
+  ]);
+  assertMatchesAll(assert, createSessionHooks, [
+    /export function useOrderPdfSketchTextLayerCreateSession\(/,
+    /updateOrderPdfSketchTextCreateSession/,
+    /requestAnimationFrame/,
   ]);
 });

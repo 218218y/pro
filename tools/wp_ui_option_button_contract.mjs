@@ -12,7 +12,7 @@ const required = [
   },
   { file: 'esm/native/ui/react/components/index.ts', patterns: [/export \* from '\.\/OptionButton\.js';/] },
   {
-    file: 'esm/native/ui/react/tabs/interior_tab_helpers.tsx',
+    file: 'esm/native/ui/react/tabs/interior_tab_helpers_buttons.tsx',
     patterns: [
       /import \{ OptionButton \} from '\.\.\/components\/index\.js';/,
       /<OptionButton[\s\S]*density="compact"/,

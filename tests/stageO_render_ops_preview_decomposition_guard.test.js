@@ -7,7 +7,14 @@ const read = rel => fs.readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8
 const renderOps = read('esm/native/builder/render_ops.ts');
 const previewOps = read('esm/native/builder/render_preview_ops.ts');
 const previewMarkerOps = read('esm/native/builder/render_preview_marker_ops.ts');
+const previewMarkerFactory = read('esm/native/builder/render_preview_marker_ops_factory.ts');
+const previewMarkerSplit = read('esm/native/builder/render_preview_marker_ops_split.ts');
 const previewSketchOps = read('esm/native/builder/render_preview_sketch_ops.ts');
+const previewSketchFactory = read('esm/native/builder/render_preview_sketch_ops_factory.ts');
+const previewSketchContext = read('esm/native/builder/render_preview_sketch_ops_context.ts');
+const previewSketchState = read('esm/native/builder/render_preview_sketch_ops_state.ts');
+const previewSketchMaterials = read('esm/native/builder/render_preview_sketch_ops_materials.ts');
+const previewSketchApply = read('esm/native/builder/render_preview_sketch_ops_apply.ts');
 const previewSketchShared = read('esm/native/builder/render_preview_sketch_shared.ts');
 const previewSketchPipeline = read('esm/native/builder/render_preview_sketch_pipeline.ts');
 const previewSketchPipelineShared = read('esm/native/builder/render_preview_sketch_pipeline_shared.ts');
@@ -54,10 +61,19 @@ test('[stageO] render_ops preview/hover helpers are extracted behind a focused h
   );
 
   // Smarter seam checks: validate the focused helpers themselves, not the aggregator text layout.
-  assert.match(previewMarkerOps, /function ensureSplitHoverMarker\(args: PreviewMarkerArgs\)/);
-  assert.match(previewSketchOps, /function ensureSketchPlacementPreview\(args: unknown\)/);
-  assert.match(previewSketchOps, /createRenderPreviewSketchShared\(deps\)/);
-  assert.match(previewSketchOps, /applySketchPlacementPreview\(\{/);
+  assert.match(previewMarkerOps, /render_preview_marker_ops_factory\.js/);
+  assert.match(previewMarkerFactory, /createSplitHoverMarkerOwner\(ctx\)/);
+  assert.match(previewMarkerSplit, /function ensureSplitHoverMarker\(args: PreviewMarkerArgs\)/);
+  assert.match(previewSketchOps, /render_preview_sketch_ops_factory\.js/);
+  assert.match(previewSketchFactory, /createRenderPreviewSketchOpsContext\(deps\)/);
+  assert.match(previewSketchFactory, /ensureSketchPlacementPreviewOwner\(owner, args\)/);
+  assert.match(previewSketchContext, /createRenderPreviewSketchShared\(deps\)/);
+  assert.match(previewSketchState, /export function ensureSketchPlacementPreviewOwner\(/);
+  assert.match(
+    previewSketchMaterials,
+    /matBoxOverlay: createSketchMeshMaterial\(THREE, shared, 0xfbbf24, 0\.3, false\)/
+  );
+  assert.match(previewSketchApply, /applySketchPlacementPreview\(\{/);
   assert.match(
     previewSketchShared,
     /export function createRenderPreviewSketchShared\(deps: Pick<RenderPreviewOpsDeps, 'asObject'>\)/

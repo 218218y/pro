@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-04-30T19:21:42.428Z",
+  "generatedAt": "2026-05-03T09:46:43.259Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 922,
-    "totalFiles": 287,
+    "totalOccurrences": 919,
+    "totalFiles": 291,
     "byCategory": {
-      "runtime-default": 731,
+      "runtime-default": 728,
       "browser-adapter": 18,
       "project-migration": 21,
       "test-fixture": 7,
@@ -341,28 +341,40 @@
           "runtime-default": 2
         }
       },
-      "esm/native/builder/render_interior_sketch_boxes_contents_parts.ts": {
-        "total": 5,
-        "categories": {
-          "runtime-default": 5
-        }
-      },
       "esm/native/builder/render_interior_sketch_boxes_fronts_support.ts": {
         "total": 3,
         "categories": {
           "runtime-default": 3
         }
       },
-      "esm/native/builder/render_interior_sketch_boxes_shell.ts": {
-        "total": 4,
+      "esm/native/builder/render_interior_sketch_boxes_shell_apply.ts": {
+        "total": 1,
         "categories": {
-          "runtime-default": 4
+          "runtime-default": 1
         }
       },
-      "esm/native/builder/render_interior_sketch_shared.ts": {
-        "total": 4,
+      "esm/native/builder/render_interior_sketch_boxes_shell_materials.ts": {
+        "total": 2,
         "categories": {
-          "runtime-default": 4
+          "runtime-default": 2
+        }
+      },
+      "esm/native/builder/render_interior_sketch_boxes_shell_types.ts": {
+        "total": 1,
+        "categories": {
+          "runtime-default": 1
+        }
+      },
+      "esm/native/builder/render_interior_sketch_shared_box_doors.ts": {
+        "total": 2,
+        "categories": {
+          "runtime-default": 2
+        }
+      },
+      "esm/native/builder/render_interior_sketch_shared_numbers.ts": {
+        "total": 2,
+        "categories": {
+          "runtime-default": 2
         }
       },
       "esm/native/builder/render_interior_sketch_support_rods.ts": {
@@ -419,7 +431,7 @@
           "runtime-default": 1
         }
       },
-      "esm/native/builder/scheduler_shared.ts": {
+      "esm/native/builder/scheduler_shared_deps.ts": {
         "total": 2,
         "categories": {
           "runtime-default": 2
@@ -1020,11 +1032,16 @@
           "runtime-default": 1
         }
       },
-      "esm/native/runtime/slice_write_access_dispatch.ts": {
-        "total": 5,
+      "esm/native/runtime/slice_write_access_dispatch_order.ts": {
+        "total": 4,
         "categories": {
-          "project-migration": 1,
           "runtime-default": 4
+        }
+      },
+      "esm/native/runtime/slice_write_access_dispatch.ts": {
+        "total": 1,
+        "categories": {
+          "project-migration": 1
         }
       },
       "esm/native/runtime/slice_write_access.ts": {
@@ -1571,10 +1588,16 @@
           "runtime-default": 1
         }
       },
-      "esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_text_layer_hooks.ts": {
-        "total": 2,
+      "esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_text_layer_active_hooks.ts": {
+        "total": 1,
         "categories": {
-          "runtime-default": 2
+          "runtime-default": 1
+        }
+      },
+      "esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_text_layer_editor_hooks.ts": {
+        "total": 3,
+        "categories": {
+          "runtime-default": 3
         }
       },
       "esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_text_layer_interactions_hooks.ts": {
@@ -1655,7 +1678,7 @@
           "runtime-default": 2
         }
       },
-      "esm/native/ui/react/tabs/interior_tab_helpers.tsx": {
+      "esm/native/ui/react/tabs/interior_tab_helpers_core.ts": {
         "total": 4,
         "categories": {
           "runtime-default": 4
@@ -2813,41 +2836,6 @@
       "text": "// Moves the legacy createRod closure out of BuilderCore."
     },
     {
-      "file": "esm/native/builder/render_interior_sketch_boxes_contents_parts.ts",
-      "line": 19,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: unknown;"
-    },
-    {
-      "file": "esm/native/builder/render_interior_sketch_boxes_contents_parts.ts",
-      "line": 21,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const { getPartMaterial, isFn, partId, fallback } = args;"
-    },
-    {
-      "file": "esm/native/builder/render_interior_sketch_boxes_contents_parts.ts",
-      "line": 30,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return fallback;"
-    },
-    {
-      "file": "esm/native/builder/render_interior_sketch_boxes_contents_parts.ts",
-      "line": 64,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: boxMat,"
-    },
-    {
-      "file": "esm/native/builder/render_interior_sketch_boxes_contents_parts.ts",
-      "line": 157,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: bodyMat,"
-    },
-    {
       "file": "esm/native/builder/render_interior_sketch_boxes_fronts_support.ts",
       "line": 16,
       "term": "fallback",
@@ -2869,60 +2857,60 @@
       "text": "return fallback;"
     },
     {
-      "file": "esm/native/builder/render_interior_sketch_boxes_shell.ts",
-      "line": 130,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: unknown;"
-    },
-    {
-      "file": "esm/native/builder/render_interior_sketch_boxes_shell.ts",
-      "line": 132,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const { getPartMaterial, isFn, boxPid, fallback } = args;"
-    },
-    {
-      "file": "esm/native/builder/render_interior_sketch_boxes_shell.ts",
-      "line": 133,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "let boxMat = fallback;"
-    },
-    {
-      "file": "esm/native/builder/render_interior_sketch_boxes_shell.ts",
-      "line": 308,
+      "file": "esm/native/builder/render_interior_sketch_boxes_shell_apply.ts",
+      "line": 54,
       "term": "fallback",
       "category": "runtime-default",
       "text": "fallback: renderArgs.bodyMat,"
     },
     {
-      "file": "esm/native/builder/render_interior_sketch_shared.ts",
-      "line": 187,
+      "file": "esm/native/builder/render_interior_sketch_boxes_shell_materials.ts",
+      "line": 4,
       "term": "fallback",
       "category": "runtime-default",
-      "text": "export function toNormalizedUnit(value: unknown, fallback = 0.5): number {"
+      "text": "const { getPartMaterial, isFn, boxPid, fallback } = args;"
     },
     {
-      "file": "esm/native/builder/render_interior_sketch_shared.ts",
-      "line": 189,
+      "file": "esm/native/builder/render_interior_sketch_boxes_shell_materials.ts",
+      "line": 5,
       "term": "fallback",
       "category": "runtime-default",
-      "text": "if (num == null) return fallback;"
+      "text": "let boxMat = fallback;"
     },
     {
-      "file": "esm/native/builder/render_interior_sketch_shared.ts",
-      "line": 327,
+      "file": "esm/native/builder/render_interior_sketch_boxes_shell_types.ts",
+      "line": 33,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "fallback: unknown;"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_shared_box_doors.ts",
+      "line": 17,
       "term": "fallback",
       "category": "runtime-default",
       "text": "export function readSketchBoxDoorId(value: unknown, fallback: string): string {"
     },
     {
-      "file": "esm/native/builder/render_interior_sketch_shared.ts",
-      "line": 330,
+      "file": "esm/native/builder/render_interior_sketch_shared_box_doors.ts",
+      "line": 20,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return raw != null && String(raw) ? String(raw) : fallback;"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_shared_numbers.ts",
+      "line": 11,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "export function toNormalizedUnit(value: unknown, fallback = 0.5): number {"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_shared_numbers.ts",
+      "line": 13,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "if (num == null) return fallback;"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_support_rods.ts",
@@ -3016,15 +3004,15 @@
       "text": "return runPendingBuildRuntime(A, opts?.reason || 'fallback', forceBuild);"
     },
     {
-      "file": "esm/native/builder/scheduler_shared.ts",
-      "line": 131,
+      "file": "esm/native/builder/scheduler_shared_deps.ts",
+      "line": 30,
       "term": "fallback",
       "category": "runtime-default",
       "text": "function wrapBuilderCallable(value: unknown, fallback: BuilderCallable): BuilderCallable {"
     },
     {
-      "file": "esm/native/builder/scheduler_shared.ts",
-      "line": 134,
+      "file": "esm/native/builder/scheduler_shared_deps.ts",
+      "line": 33,
       "term": "fallback",
       "category": "runtime-default",
       "text": ": bindBuilderCallable(fallback);"
@@ -5327,42 +5315,42 @@
     },
     {
       "file": "esm/native/runtime/perf_runtime_core.ts",
-      "line": 34,
+      "line": 48,
       "term": "fallback",
       "category": "runtime-default",
       "text": "function normalizeName(value: unknown, fallback = 'unknown'): string {"
     },
     {
       "file": "esm/native/runtime/perf_runtime_core.ts",
-      "line": 35,
+      "line": 49,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return typeof value === 'string' && value.trim() ? value.trim() : fallback;"
     },
     {
       "file": "esm/native/runtime/perf_runtime_core.ts",
-      "line": 72,
+      "line": 86,
       "term": "fallback",
       "category": "runtime-default",
       "text": "function mergePerfDetail(primary: unknown, fallback: unknown): unknown {"
     },
     {
       "file": "esm/native/runtime/perf_runtime_core.ts",
-      "line": 73,
+      "line": 87,
       "term": "fallback",
       "category": "runtime-default",
       "text": "if (typeof primary === 'undefined') return fallback;"
     },
     {
       "file": "esm/native/runtime/perf_runtime_core.ts",
-      "line": 74,
+      "line": 88,
       "term": "fallback",
       "category": "runtime-default",
       "text": "if (typeof fallback === 'undefined') return primary;"
     },
     {
       "file": "esm/native/runtime/perf_runtime_core.ts",
-      "line": 76,
+      "line": 90,
       "term": "fallback",
       "category": "runtime-default",
       "text": "const fallbackRecord = asRecord<Record<string, unknown>>(fallback);"
@@ -5648,36 +5636,36 @@
       "text": "// - Keep store-backed fallbacks for minimal harnesses."
     },
     {
-      "file": "esm/native/runtime/slice_write_access_dispatch.ts",
-      "line": 123,
+      "file": "esm/native/runtime/slice_write_access_dispatch_order.ts",
+      "line": 68,
       "term": "fallbacks",
       "category": "runtime-default",
       "text": "fallbacks: readonly T[];"
     },
     {
-      "file": "esm/native/runtime/slice_write_access_dispatch.ts",
-      "line": 129,
+      "file": "esm/native/runtime/slice_write_access_dispatch_order.ts",
+      "line": 74,
       "term": "fallbacks",
       "category": "runtime-default",
       "text": "out.push(...args.fallbacks);"
     },
     {
-      "file": "esm/native/runtime/slice_write_access_dispatch.ts",
-      "line": 261,
+      "file": "esm/native/runtime/slice_write_access_dispatch_order.ts",
+      "line": 106,
+      "term": "fallbacks",
+      "category": "runtime-default",
+      "text": "fallbacks: resolveRootFallbackDispatchTargets(opts),"
+    },
+    {
+      "file": "esm/native/runtime/slice_write_access_dispatch_order.ts",
+      "line": 122,
       "term": "fallbacks",
       "category": "runtime-default",
       "text": "fallbacks: resolveRootFallbackDispatchTargets(opts),"
     },
     {
       "file": "esm/native/runtime/slice_write_access_dispatch.ts",
-      "line": 277,
-      "term": "fallbacks",
-      "category": "runtime-default",
-      "text": "fallbacks: resolveRootFallbackDispatchTargets(opts),"
-    },
-    {
-      "file": "esm/native/runtime/slice_write_access_dispatch.ts",
-      "line": 308,
+      "line": 40,
       "term": "fallbacks",
       "category": "project-migration",
       "text": "'[WardrobePro] Unexpected root payload read: dispatch targets do not require root fallbacks'"
@@ -7678,15 +7666,29 @@
       "text": "fallback: source,"
     },
     {
-      "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_text_layer_hooks.ts",
-      "line": 79,
+      "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_text_layer_active_hooks.ts",
+      "line": 26,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "readEditorText: (id: string, fallback: string) => string;"
+    },
+    {
+      "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_text_layer_editor_hooks.ts",
+      "line": 14,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "readEditorText: (id: string, fallback: string) => string;"
+    },
+    {
+      "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_text_layer_editor_hooks.ts",
+      "line": 30,
       "term": "fallback",
       "category": "runtime-default",
       "text": "(id: string, fallback: string) =>"
     },
     {
-      "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_text_layer_hooks.ts",
-      "line": 80,
+      "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_text_layer_editor_hooks.ts",
+      "line": 31,
       "term": "fallback",
       "category": "runtime-default",
       "text": "readOrderPdfSketchEditorTextValue(editorRefs.current[id] || null, fallback),"
@@ -8000,29 +8002,29 @@
       "text": "const base = Number.isFinite(parsed) ? parsed : typeof current === 'number' ? current : fallback;"
     },
     {
-      "file": "esm/native/ui/react/tabs/interior_tab_helpers.tsx",
-      "line": 40,
+      "file": "esm/native/ui/react/tabs/interior_tab_helpers_core.ts",
+      "line": 9,
       "term": "fallback",
       "category": "runtime-default",
       "text": "export function asStr(v: unknown, fallback = ''): string {"
     },
     {
-      "file": "esm/native/ui/react/tabs/interior_tab_helpers.tsx",
-      "line": 42,
+      "file": "esm/native/ui/react/tabs/interior_tab_helpers_core.ts",
+      "line": 11,
       "term": "fallback",
       "category": "runtime-default",
       "text": "if (v === null || v === undefined) return fallback;"
     },
     {
-      "file": "esm/native/ui/react/tabs/interior_tab_helpers.tsx",
-      "line": 46,
+      "file": "esm/native/ui/react/tabs/interior_tab_helpers_core.ts",
+      "line": 15,
       "term": "fallback",
       "category": "runtime-default",
       "text": "export function asNum(v: unknown, fallback = 0): number {"
     },
     {
-      "file": "esm/native/ui/react/tabs/interior_tab_helpers.tsx",
-      "line": 48,
+      "file": "esm/native/ui/react/tabs/interior_tab_helpers_core.ts",
+      "line": 17,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return Number.isFinite(n) ? n : fallback;"

@@ -66,7 +66,17 @@ const CASES = [
         ],
       ],
       ['esm/native/builder/render_carcass_ops_base.ts', [/function applyCarcassBaseOps\(/]],
-      ['esm/native/builder/render_carcass_ops_cornice.ts', [/function applyCarcassCorniceOps\(/]],
+      ['esm/native/builder/render_carcass_ops_cornice.ts', [/render_carcass_ops_cornice_apply\.js/]],
+      ['esm/native/builder/render_carcass_ops_cornice_apply.ts', [/function applyCarcassCorniceOps\(/]],
+      [
+        'esm/native/builder/render_carcass_ops_cornice_segments.ts',
+        [/export function createWaveFrontSegment\(/],
+      ],
+      ['esm/native/builder/render_carcass_ops_cornice_miter.ts', [/export function applyMiterTrims\(/]],
+      [
+        'esm/native/builder/render_carcass_ops_cornice_finalize.ts',
+        [/export function finalizeCorniceMesh\(/],
+      ],
       ['esm/native/builder/render_carcass_ops_shared_readers.ts', [/export function __asContext\(/]],
       ['esm/native/builder/render_carcass_ops_shared_runtime.ts', [/export function __readThreeCtorLike\(/]],
       ['esm/native/builder/render_carcass_ops_shared_geometry.ts', [/export function __stripMiterCaps\(/]],

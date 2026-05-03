@@ -9,8 +9,14 @@ function read(rel) {
 
 test('corner and sketch external drawer fronts forward glass/mirror state through the canonical door visual seam', () => {
   const corner = read('esm/native/builder/corner_wing_cell_interiors_storage.ts');
-  const sketchExternal = read('esm/native/builder/render_interior_sketch_drawers_external.ts');
-  const sketchBoxDrawers = read('esm/native/builder/render_interior_sketch_boxes_fronts_drawers.ts');
+  const sketchExternal = [
+    read('esm/native/builder/render_interior_sketch_drawers_external.ts'),
+    read('esm/native/builder/render_interior_sketch_drawers_external_visual.ts'),
+  ].join('\n');
+  const sketchBoxDrawers = [
+    read('esm/native/builder/render_interior_sketch_boxes_fronts_drawers.ts'),
+    read('esm/native/builder/render_interior_sketch_boxes_fronts_drawers_visual.ts'),
+  ].join('\n');
   const sketchState = read('esm/native/builder/render_interior_sketch_visuals_door_state.ts');
 
   assert.match(sketchState, /export function resolveSketchFrontVisualState\(/);
@@ -22,13 +28,19 @@ test('corner and sketch external drawer fronts forward glass/mirror state throug
   assert.match(corner, /isGlass \? 'glass' : runtime\.doorStyle/);
   assert.match(corner, /isGlass \? readCurtainType\(curtain\) : null/);
 
-  assert.match(sketchExternal, /resolveSketchFrontVisualState\(input, partId\)/);
-  assert.match(sketchExternal, /frontVisualState\.isGlass \? 'glass' : resolveEffectiveDoorStyle/);
+  assert.match(sketchExternal, /resolveSketchFrontVisualState\(context\.input, opPlan\.partId\)/);
+  assert.match(
+    sketchExternal,
+    /frontVisualState\.isGlass[\s\S]*\? 'glass'[\s\S]*: resolveEffectiveDoorStyle/
+  );
   assert.match(sketchExternal, /frontVisualState\.isMirror/);
   assert.match(sketchExternal, /frontVisualState\.mirrorLayout/);
 
-  assert.match(sketchBoxDrawers, /resolveSketchFrontVisualState\(input, partId\)/);
-  assert.match(sketchBoxDrawers, /frontVisualState\.isGlass \? 'glass' : resolveEffectiveDoorStyle/);
+  assert.match(sketchBoxDrawers, /resolveSketchFrontVisualState\(context\.input, opPlan\.partId\)/);
+  assert.match(
+    sketchBoxDrawers,
+    /frontVisualState\.isGlass[\s\S]*\? 'glass'[\s\S]*: resolveEffectiveDoorStyle/
+  );
   assert.match(sketchBoxDrawers, /frontVisualState\.isMirror/);
   assert.match(sketchBoxDrawers, /frontVisualState\.mirrorLayout/);
 });

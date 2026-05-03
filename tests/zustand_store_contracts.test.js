@@ -14,6 +14,7 @@ const provide = read('esm/native/builder/provide.ts');
 const scheduler = read('esm/native/builder/scheduler.ts');
 const schedulerRuntime = read('esm/native/builder/scheduler_runtime.ts');
 const schedulerShared = read('esm/native/builder/scheduler_shared.ts');
+const schedulerSharedBuildPlan = read('esm/native/builder/scheduler_shared_build_plan.ts');
 const cfgAccess = readFirstExisting(['../esm/native/runtime/cfg_access.ts'], import.meta.url);
 const cfgAccessBundle = normalizeWhitespace(
   [
@@ -85,7 +86,7 @@ test('[zustand-store] builder/store/config seams stay canonical and typed', () =
     readBuildTypesBundle(import.meta.url),
     /export interface BuilderSchedulerDepsLike[\s\S]{0,200}stateKernel\?: StateKernelLike;/
   );
-  assert.match(`${scheduler}\n${schedulerShared}`, /getBuildStateMaybe\(App, uiOverride\)/);
+  assert.match(schedulerSharedBuildPlan, /getBuildStateMaybe\(App, uiOverride\)/);
   assert.doesNotMatch(scheduler, /s\.deps\.stateKernel/);
 
   assert.doesNotMatch(cfgAccess, /App\.cfg\b/);

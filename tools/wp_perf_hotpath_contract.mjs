@@ -21,12 +21,16 @@ if (!/runPlatformRenderFollowThrough\(App, \{ updateShadows: false \}\)/.test(ha
   );
 }
 
-const schedulerShared = read('esm/native/builder/scheduler_shared.ts');
-if (!/getBrowserTimers\(App\)/.test(schedulerShared)) {
-  checks.push('esm/native/builder/scheduler_shared.ts: scheduler timers must use getBrowserTimers(App)');
+const schedulerSharedTimers = read('esm/native/builder/scheduler_shared_timers.ts');
+if (!/getBrowserTimers\(App\)/.test(schedulerSharedTimers)) {
+  checks.push(
+    'esm/native/builder/scheduler_shared_timers.ts: scheduler timers must use getBrowserTimers(App)'
+  );
 }
-if (/(^|[^A-Za-z0-9_$.])setTimeout\s*\(/m.test(schedulerShared)) {
-  checks.push('esm/native/builder/scheduler_shared.ts: scheduler must not call global setTimeout directly');
+if (/(^|[^A-Za-z0-9_$.])setTimeout\s*\(/m.test(schedulerSharedTimers)) {
+  checks.push(
+    'esm/native/builder/scheduler_shared_timers.ts: scheduler must not call global setTimeout directly'
+  );
 }
 
 const schedulerRuntime = read('esm/native/builder/scheduler_runtime.ts');

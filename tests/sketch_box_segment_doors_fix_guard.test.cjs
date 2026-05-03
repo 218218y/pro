@@ -43,7 +43,10 @@ test('sketch box doors are tracked per segment and door hover resolves the canon
     read('esm/native/services/canvas_picking_door_hinge_groove_click.ts'),
     read('esm/native/services/canvas_picking_door_remove_click.ts'),
   ].join('\n');
-  const hoverTargets = read('esm/native/services/canvas_picking_door_hover_targets_hit.ts');
+  const hoverTargets = [
+    read('esm/native/services/canvas_picking_door_hover_targets_hit.ts'),
+    read('esm/native/services/canvas_picking_door_hover_targets_match.ts'),
+  ].join('\n');
 
   assert.match(render, /const boxDoors = readSketchBoxDoors\(box\);/);
   assert.match(render, /const doorPid = `\$\{boxPid\}_door_\$\{doorId\}`/);

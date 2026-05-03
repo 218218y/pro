@@ -20,7 +20,12 @@ function normalizeProfile(value) {
   return String(value || '').trim();
 }
 
-function createCloseoutArgs({ profile, appendState = true, stopOnFail = false, logDir = '.artifacts/closeout-logs' }) {
+function createCloseoutArgs({
+  profile,
+  appendState = true,
+  stopOnFail = false,
+  logDir = '.artifacts/closeout-logs',
+}) {
   const normalizedProfile = normalizeProfile(profile);
   if (!ALLOWED_PROFILES.includes(normalizedProfile)) {
     throw new Error(

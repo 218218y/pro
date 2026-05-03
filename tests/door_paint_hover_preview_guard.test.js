@@ -23,7 +23,10 @@ const DOOR_ACTION_PREVIEW_STATE = path.resolve(
   process.cwd(),
   'esm/native/services/canvas_picking_door_action_hover_preview_state.ts'
 );
-const PREVIEW_MARKERS = path.resolve(process.cwd(), 'esm/native/builder/render_preview_marker_ops.ts');
+const PREVIEW_MARKERS = path.resolve(
+  process.cwd(),
+  'esm/native/builder/render_preview_marker_ops_door_action.ts'
+);
 
 test('[door-paint-hover] paint hover passes the live UI state into door hover resolution', () => {
   const hoverFlow = fs.readFileSync(HOVER_FLOW, 'utf8');

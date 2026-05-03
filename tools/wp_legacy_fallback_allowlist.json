@@ -331,28 +331,40 @@
         "runtime-default": 2
       }
     },
-    "esm/native/builder/render_interior_sketch_boxes_contents_parts.ts": {
-      "total": 5,
-      "categories": {
-        "runtime-default": 5
-      }
-    },
     "esm/native/builder/render_interior_sketch_boxes_fronts_support.ts": {
       "total": 3,
       "categories": {
         "runtime-default": 3
       }
     },
-    "esm/native/builder/render_interior_sketch_boxes_shell.ts": {
-      "total": 4,
+    "esm/native/builder/render_interior_sketch_boxes_shell_apply.ts": {
+      "total": 1,
       "categories": {
-        "runtime-default": 4
+        "runtime-default": 1
       }
     },
-    "esm/native/builder/render_interior_sketch_shared.ts": {
-      "total": 4,
+    "esm/native/builder/render_interior_sketch_boxes_shell_materials.ts": {
+      "total": 2,
       "categories": {
-        "runtime-default": 4
+        "runtime-default": 2
+      }
+    },
+    "esm/native/builder/render_interior_sketch_boxes_shell_types.ts": {
+      "total": 1,
+      "categories": {
+        "runtime-default": 1
+      }
+    },
+    "esm/native/builder/render_interior_sketch_shared_box_doors.ts": {
+      "total": 2,
+      "categories": {
+        "runtime-default": 2
+      }
+    },
+    "esm/native/builder/render_interior_sketch_shared_numbers.ts": {
+      "total": 2,
+      "categories": {
+        "runtime-default": 2
       }
     },
     "esm/native/builder/render_interior_sketch_support_rods.ts": {
@@ -409,7 +421,7 @@
         "runtime-default": 1
       }
     },
-    "esm/native/builder/scheduler_shared.ts": {
+    "esm/native/builder/scheduler_shared_deps.ts": {
       "total": 2,
       "categories": {
         "runtime-default": 2
@@ -1010,11 +1022,16 @@
         "runtime-default": 1
       }
     },
-    "esm/native/runtime/slice_write_access_dispatch.ts": {
-      "total": 5,
+    "esm/native/runtime/slice_write_access_dispatch_order.ts": {
+      "total": 4,
       "categories": {
-        "project-migration": 1,
         "runtime-default": 4
+      }
+    },
+    "esm/native/runtime/slice_write_access_dispatch.ts": {
+      "total": 1,
+      "categories": {
+        "project-migration": 1
       }
     },
     "esm/native/runtime/slice_write_access.ts": {
@@ -1561,10 +1578,16 @@
         "runtime-default": 1
       }
     },
-    "esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_text_layer_hooks.ts": {
-      "total": 2,
+    "esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_text_layer_active_hooks.ts": {
+      "total": 1,
       "categories": {
-        "runtime-default": 2
+        "runtime-default": 1
+      }
+    },
+    "esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_text_layer_editor_hooks.ts": {
+      "total": 3,
+      "categories": {
+        "runtime-default": 3
       }
     },
     "esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_text_layer_interactions_hooks.ts": {
@@ -1645,7 +1668,7 @@
         "runtime-default": 2
       }
     },
-    "esm/native/ui/react/tabs/interior_tab_helpers.tsx": {
+    "esm/native/ui/react/tabs/interior_tab_helpers_core.ts": {
       "total": 4,
       "categories": {
         "runtime-default": 4

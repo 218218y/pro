@@ -73,7 +73,10 @@ test('[mirror-center] mirror by-size hover uses shared center snap and full-axis
 });
 
 test('[box-controls] box advanced controls stay collapsed until box mode is active', () => {
-  const helpers = read('esm/native/ui/react/tabs/interior_tab_helpers.tsx');
+  const helpers = [
+    read('esm/native/ui/react/tabs/interior_tab_helpers.tsx'),
+    read('esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts'),
+  ].join('\n');
   assert.match(interiorSketchBundle, /const isSketchBoxControlsOpen =/);
   assert.match(
     interiorSketchBundle,

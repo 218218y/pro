@@ -208,7 +208,10 @@ test('library preset invariants preserve custom top-door curtains instead of res
   );
 });
 
-function createInvariantTestEnv(cfgState: any, uiState: any = {}): {
+function createInvariantTestEnv(
+  cfgState: any,
+  uiState: any = {}
+): {
   env: LibraryPresetEnv;
   configCalls: Array<[string, unknown]>;
   recomputes: Array<{ uiOverride: LibraryPresetUiOverride; src: string }>;

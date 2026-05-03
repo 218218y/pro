@@ -22,6 +22,8 @@ test('box rods and storage keep xNorm / segment placement across hover and commi
     read('esm/native/builder/render_interior_sketch_boxes.ts'),
     read('esm/native/builder/render_interior_sketch_boxes_contents.ts'),
     read('esm/native/builder/render_interior_sketch_boxes_contents_parts.ts'),
+    read('esm/native/builder/render_interior_sketch_boxes_contents_parts_barriers.ts'),
+    read('esm/native/builder/render_interior_sketch_boxes_contents_parts_rods.ts'),
   ].join('\n');
 
   assert.match(previewOwner, /canvas_picking_sketch_box_vertical_content_preview_rod\.js/);

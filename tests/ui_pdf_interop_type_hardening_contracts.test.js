@@ -24,6 +24,9 @@ const pdfImportInteractive = readSource(
 const pdfImportPages = readSource('esm/native/ui/react/pdf/order_pdf_overlay_pdf_import_pages.ts');
 const pdfImportShared = readSource('esm/native/ui/react/pdf/order_pdf_overlay_pdf_import_shared.ts');
 const sketchPreview = readSource('esm/native/ui/react/pdf/order_pdf_overlay_sketch_preview.ts');
+const sketchPreviewPdfDocument = readSource(
+  'esm/native/ui/react/pdf/order_pdf_overlay_sketch_preview_pdf_document.ts'
+);
 const notesControllerTypes = readSource('esm/native/ui/react/notes/notes_overlay_controller_types.ts');
 const notesControllerState = readSource('esm/native/ui/react/notes/notes_overlay_controller_state.ts');
 const notesWorkflowShared = readSource('esm/native/ui/react/notes/notes_overlay_editor_workflow_shared.ts');
@@ -40,6 +43,7 @@ const pdfInteropFiles = [
   pdfImportPages,
   pdfImportShared,
   sketchPreview,
+  sketchPreviewPdfDocument,
 ];
 
 const notesTimerFiles = [
@@ -67,7 +71,8 @@ test('ui type hardening routes order-pdf seams through the local pdf-lib bridge'
   assert.match(pdfImportInteractive, /order_pdf_overlay_pdf_lib\.js/);
   assert.match(pdfImportPages, /order_pdf_overlay_pdf_lib\.js/);
   assert.match(pdfImportShared, /order_pdf_overlay_pdf_lib\.js/);
-  assert.match(sketchPreview, /order_pdf_overlay_pdf_lib\.js/);
+  assert.match(sketchPreview, /order_pdf_overlay_sketch_preview_build\.js/);
+  assert.match(sketchPreviewPdfDocument, /order_pdf_overlay_pdf_lib\.js/);
 });
 
 test('ui type hardening normalizes notes typing timers to TimeoutHandleLike', () => {

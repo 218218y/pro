@@ -7,10 +7,17 @@ import { normalizeWhitespace } from './_source_bundle.js';
 const read = rel => fs.readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8');
 
 test('[sketch free box] dimension overlay is rendered from sketch box geometry and keeps height right / depth left', () => {
-  const src = read('esm/native/builder/render_interior_sketch_ops.ts');
+  const src = [
+    read('esm/native/builder/render_interior_sketch_ops.ts'),
+    read('esm/native/builder/render_interior_sketch_ops_input.ts'),
+    read('esm/native/builder/render_interior_sketch_ops_dimensions.ts'),
+    read('esm/native/builder/render_interior_sketch_ops_boxes.ts'),
+    read('esm/native/builder/render_interior_sketch_ops_apply.ts'),
+  ].join('\n');
   const boxes = [
     read('esm/native/builder/render_interior_sketch_boxes.ts'),
     read('esm/native/builder/render_interior_sketch_boxes_shell.ts'),
+    read('esm/native/builder/render_interior_sketch_boxes_shell_frame.ts'),
   ].join('\n');
   const layout = [
     read('esm/native/builder/render_interior_sketch_layout.ts'),
@@ -22,17 +29,20 @@ test('[sketch free box] dimension overlay is rendered from sketch box geometry a
   const srcNorm = normalizeWhitespace(src);
   const boxesNorm = normalizeWhitespace(boxes);
   const layoutNorm = normalizeWhitespace(layout);
-  assert.match(srcNorm, /const renderOps = (?:asRecord|asValueRecord)\(__ops\(App\)\);/);
-  assert.match(srcNorm, /const addDimensionLine = asDimensionLineFn\(renderOps\?\.addDimensionLine\);/);
+  assert.match(srcNorm, /const renderOps = (?:asRecord|asValueRecord)\(owner\.ops\(App\)\);/);
   assert.match(
     srcNorm,
-    /const showDimensions = !!(?:asRecord|asValueRecord)\(input\.cfg\)\?\.showDimensions;/
+    /const addDimensionLine = asDimensionLineFn\(resolved\.renderOps\?\.addDimensionLine\);/
   );
   assert.match(
     srcNorm,
-    /const freeBoxDimensionOverlayContext = showDimensions && THREE && addDimensionLine \? \{ THREE, addDimensionLine \} : null;/
+    /const showDimensions = !!(?:asRecord|asValueRecord)\(resolved\.input\.cfg\)\?\.showDimensions;/
   );
-  assert.match(srcNorm, /const renderFreeBoxDimensionsEnabled = !!freeBoxDimensionOverlayContext;/);
+  assert.match(
+    srcNorm,
+    /const freeBoxDimensionOverlayContext = showDimensions && THREE && addDimensionLine \? \{ THREE, addDimensionLine, entries: \[\] \} : null;/
+  );
+  assert.match(srcNorm, /renderFreeBoxDimensionsEnabled: !!freeBoxDimensionOverlayContext,/);
   assert.match(layoutNorm, /export const renderSketchFreeBoxDimensions = \(args:/);
   assert.match(layoutNorm, /const heightLineX = centerX \+ halfW \+ heightLineGap;/);
   assert.match(layoutNorm, /const depthLineX = centerX - halfW - depthLineGap;/);
@@ -43,10 +53,10 @@ test('[sketch free box] dimension overlay is rendered from sketch box geometry a
   assert.match(layoutNorm, /export const renderSketchFreeBoxDimensionOverlays = \(args:/);
   assert.match(layoutNorm, /function areSketchFreeBoxDimensionSegmentsAdjacent\(/);
   assert.match(layoutNorm, /function mergeSketchFreeBoxDimensionSpans\(/);
-  assert.match(srcNorm, /const freeBoxDimensionEntries = renderFreeBoxDimensionsEnabled \? \[\] : null;/);
+  assert.match(srcNorm, /freeBoxDimensionEntries: freeBoxDimensionOverlayContext\?\.entries \?\? null,/);
   assert.match(
     srcNorm,
-    /renderSketchFreeBoxDimensionOverlays\(\{[\s\S]*THREE: freeBoxDimensionOverlayContext\.THREE,[\s\S]*addDimensionLine: freeBoxDimensionOverlayContext\.addDimensionLine,[\s\S]*entries: freeBoxDimensionEntries,[\s\S]*\}\);/
+    /renderSketchFreeBoxDimensionOverlays\(\{[\s\S]*THREE: context\.THREE,[\s\S]*addDimensionLine: context\.addDimensionLine,[\s\S]*entries: context\.entries,[\s\S]*\}\);/
   );
   assert.match(
     boxesNorm,

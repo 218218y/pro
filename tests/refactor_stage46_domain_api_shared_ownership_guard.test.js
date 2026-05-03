@@ -49,17 +49,29 @@ test('stage 46 domain API shared ownership split is anchored', () => {
   assert.ok(prefixedMaps.includes('export const splitDoorMapSemantics'));
   assert.ok(prefixedMaps.includes('export const grooveMapSemantics'));
   assert.ok(prefixedMaps.includes('export function readPrefixedToggleMapFlag'));
-  assert.equal(prefixedMaps.includes('writeMapKey('), false, 'prefixed-map owner must stay read/normalization only');
+  assert.equal(
+    prefixedMaps.includes('writeMapKey('),
+    false,
+    'prefixed-map owner must stay read/normalization only'
+  );
 
   assert.ok(mapWrites.includes('export function areDomainMapValuesEquivalent'));
   assert.ok(mapWrites.includes('export function shouldSkipCanonicalPrefixedMapCommit'));
   assert.ok(mapWrites.includes('export function commitCanonicalPrefixedMapValue'));
   assert.ok(mapWrites.includes('export function writeSimpleMapValueWithFallback'));
   assert.ok(mapWrites.includes('writeMapKey('), 'map write owner must own direct map writes');
-  assert.equal(mapWrites.includes('canonicalRemovedDoorPartId'), false, 'map write owner must not own door-id rules');
+  assert.equal(
+    mapWrites.includes('canonicalRemovedDoorPartId'),
+    false,
+    'map write owner must not own door-id rules'
+  );
 
   assert.ok(removedDoors.includes('export function canonicalRemovedDoorPartId'));
   assert.ok(removedDoors.includes('export function listRemovedDoorLookupKeys'));
   assert.ok(removedDoors.includes('export function listRemovedDoorCleanupKeys'));
-  assert.equal(removedDoors.includes('writeMapKey('), false, 'removed-door owner must stay a pure key-policy owner');
+  assert.equal(
+    removedDoors.includes('writeMapKey('),
+    false,
+    'removed-door owner must stay a pure key-policy owner'
+  );
 });

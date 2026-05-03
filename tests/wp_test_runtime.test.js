@@ -12,6 +12,7 @@ import {
 } from '../tools/wp_test_state.js';
 import { getNodeArgs } from '../tools/wp_test_shared.js';
 import { ensureDistBuilt, extractFailedTestNames, runTestFlow } from '../tools/wp_test_flow.js';
+import { formatNodeTestOutputForConsole, isNodeTestSummaryDiagnosticLine } from '../tools/wp_test_console.js';
 
 function tempDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'wp-test-'));
@@ -125,6 +126,27 @@ test('test flow writes failure diagnostics with parsed test names and junit outp
   assert.match(junit, /keeps saved model payload stable/);
   assert.equal(summary.failedFiles[0].file, 'tests/failing_runtime.test.js');
   assert.ok(fs.existsSync(path.join(reportDir, 'logs', 'tests_failing_runtime.test.js.log')));
+});
+
+test('test console formatter removes node:test blue info summary diagnostics only', () => {
+  assert.equal(isNodeTestSummaryDiagnosticLine('ℹ tests 4'), true);
+  assert.equal(isNodeTestSummaryDiagnosticLine('\u001b[34mℹ tests 4\u001b[39m'), true);
+  assert.equal(isNodeTestSummaryDiagnosticLine('# pass 3'), true);
+  assert.equal(isNodeTestSummaryDiagnosticLine('✔ keeps saved swatches stable (1.2ms)'), false);
+  assert.equal(isNodeTestSummaryDiagnosticLine('✖ fails with useful assertion (1.2ms)'), false);
+
+  const formatted = formatNodeTestOutputForConsole(
+    [
+      '✔ keeps saved swatches stable (1.2ms)',
+      'ℹ tests 1',
+      'ℹ suites 0',
+      'ℹ pass 1',
+      'ℹ fail 0',
+      'ℹ duration_ms 12.5',
+      '',
+    ].join('\n')
+  );
+  assert.equal(formatted, '✔ keeps saved swatches stable (1.2ms)\n');
 });
 
 test('failed test parser supports TAP and spec-style failure lines', () => {

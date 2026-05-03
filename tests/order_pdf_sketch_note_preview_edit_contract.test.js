@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFirstExisting } from './_read_src.js';
 
 const hookSrc = readFirstExisting(
-  ['../esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_text_layer_hooks.ts'],
+  ['../esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_text_layer_active_hooks.ts'],
   import.meta.url
 );
 const noteBoxSrc = readFirstExisting(

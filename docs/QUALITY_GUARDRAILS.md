@@ -11,6 +11,28 @@ This file keeps the active engineering policies in one place. Historical stage n
 - New modules must not perform work on import. Expose explicit install/setup functions.
 - Production TypeScript should avoid `as any`; prefer concrete types, `unknown` plus narrowing, and narrow local casts only when unavoidable.
 
+## Public facades and external API boundaries
+
+Use `docs/FACADE_AND_PUBLIC_API_POLICY.md` as the active decision policy for split modules.
+
+- A facade is correct when it protects a deliberate public import boundary, a service/family entry point, a browser/adapter boundary, or a widely used stable seam.
+- A facade is not correct when it exists only to hide arbitrary fragmentation, preserve a bad name forever, or bypass a public API contract.
+- Do not keep splitting by line count alone. A cohesive 150–300 line owner is usually better than several tiny files that scatter one responsibility across the project.
+- Split when there are real separate responsibilities, high volatility, lifecycle/side-effect seams, behavior-test seams, or an import boundary worth protecting.
+- External API changes must be deliberate: inventory current consumers, introduce the canonical API, migrate internal imports, keep a compatibility shim only when it has an owner and removal criteria, and then remove the old entry after guards prove it is unused.
+- Tiny facades should stay tiny. They may re-export, compose a stable factory/hook, or normalize a narrow public contract; they must not regain business logic, hidden state, timers, DOM access, storage access, or fallback chains.
+- Private owner modules should be imported only by their facade or by sibling owners inside the same implementation family. Cross-family consumers should use the public facade unless the policy explicitly marks a lower-level owner as public.
+- Ownership guard tests are useful, but they are not enough by themselves. Every risky split should also keep behavior/runtime coverage for the public operation that the facade exposes.
+
+Relevant checks:
+
+```bash
+npm run check:docs-control-plane
+npm run verify:refactor-modernization
+npm run check:refactor-guardrails
+npm run test:refactor-stage-guards
+```
+
 ## Builder and render
 
 - Builder orchestration moves through prepared/context objects after the prepare seam, not loose `args` bags.

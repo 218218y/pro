@@ -4,7 +4,7 @@ import { readSourceText } from './wp_source_text.mjs';
 const cleanupOwner = 'esm/native/ui/react/effects/dom_event_cleanup.ts';
 const migratedFiles = [
   'esm/native/ui/react/pdf/order_pdf_overlay_shell_interactions.ts',
-  'esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_text_layer_pointer_session_hooks.ts',
+  'esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_text_layer_pointer_interaction_session_hooks.ts',
   'esm/native/ui/react/pdf/order_pdf_overlay_sketch_panel_hooks.ts',
   'esm/native/ui/react/pdf/order_pdf_overlay_sketch_panel_history_hooks.ts',
   'esm/native/ui/react/notes/notes_overlay_editor_workflow_events.ts',

@@ -20,10 +20,18 @@ test('stage 42 legacy fallback inventory closeout is anchored', () => {
   assert.equal(audit.summary.byFile['esm/native/services/render_surface_runtime.ts'].total, 7);
   assert.match(markdown, /Legacy \/ fallback audit/);
 
-  const result = spawnSync(process.execPath, ['tools/wp_legacy_fallback_audit.mjs', '--check', '--no-print'], {
-    cwd: process.cwd(),
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe'],
-  });
-  assert.equal(result.status, 0, `legacy fallback audit failed\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`);
+  const result = spawnSync(
+    process.execPath,
+    ['tools/wp_legacy_fallback_audit.mjs', '--check', '--no-print'],
+    {
+      cwd: process.cwd(),
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    }
+  );
+  assert.equal(
+    result.status,
+    0,
+    `legacy fallback audit failed\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`
+  );
 });

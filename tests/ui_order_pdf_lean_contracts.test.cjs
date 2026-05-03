@@ -24,11 +24,15 @@ test('order pdf sketch hooks use DOM event types for window and document listene
   const pointerSessionHooks = read(
     'esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_text_layer_pointer_session_hooks.ts'
   );
+  const pointerInteractionSessionHooks = read(
+    'esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_text_layer_pointer_interaction_session_hooks.ts'
+  );
   assert.match(hooks, /globalThis\.KeyboardEvent/);
   assert.ok(
     /globalThis\.PointerEvent/.test(card) ||
       /globalThis\.PointerEvent/.test(cardTextLayer) ||
-      /globalThis\.PointerEvent/.test(pointerSessionHooks)
+      /globalThis\.PointerEvent/.test(pointerSessionHooks) ||
+      /globalThis\.PointerEvent/.test(pointerInteractionSessionHooks)
   );
 });
 

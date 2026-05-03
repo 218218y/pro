@@ -45,7 +45,10 @@ test('stage 44 scheduler debug stats ownership split is anchored', () => {
     'recordBuildExecute',
     'summarizeBuildDebugBudget',
   ]) {
-    assert.ok(facade.includes(publicExport), `scheduler debug facade must keep public export ${publicExport}`);
+    assert.ok(
+      facade.includes(publicExport),
+      `scheduler debug facade must keep public export ${publicExport}`
+    );
   }
 
   for (const internalNeedle of [
@@ -97,10 +100,7 @@ test('stage 44 scheduler debug stats ownership split is anchored', () => {
     recorders.includes('export function recordBuildExecute'),
     'execute counter mutation must live in scheduler_debug_stats_recorders.ts'
   );
-  assert.ok(
-    recorders.includes('getReasonStats'),
-    'recorders must share the centralized reason-store seam'
-  );
+  assert.ok(recorders.includes('getReasonStats'), 'recorders must share the centralized reason-store seam');
 
   assert.ok(
     budget.includes('export function summarizeBuildDebugBudget'),

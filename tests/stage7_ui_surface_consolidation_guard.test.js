@@ -160,6 +160,10 @@ const interiorBundle = bundleSources(
     '../esm/native/ui/react/tabs/interior_tab_workflows_controller_handles.ts',
     '../esm/native/ui/react/tabs/interior_tab_workflows_controller_trim.ts',
     '../esm/native/ui/react/tabs/interior_tab_helpers.tsx',
+    '../esm/native/ui/react/tabs/interior_tab_helpers_core.ts',
+    '../esm/native/ui/react/tabs/interior_tab_helpers_buttons.tsx',
+    '../esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts',
+    '../esm/native/ui/react/tabs/interior_tab_helpers_types.ts',
   ],
   import.meta.url
 );

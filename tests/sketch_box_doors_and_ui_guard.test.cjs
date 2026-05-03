@@ -43,7 +43,10 @@ test('manual sketch box UI exposes 40cm default and box-door controls', () => {
     'esm/native/ui/react/tabs/interior_layout_sketch_shelves_section.tsx',
     'esm/native/ui/react/tabs/interior_layout_sketch_section_types.ts'
   );
-  const helpers = read('esm/native/ui/react/tabs/interior_tab_helpers.tsx');
+  const helpers = bundle(
+    'esm/native/ui/react/tabs/interior_tab_helpers.tsx',
+    'esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts'
+  );
 
   assert.match(view, /sketchBoxHeightCm: 40,/);
   assert.match(view, /sketchBoxHeightDraft: '40',/);
@@ -62,6 +65,11 @@ test('sketch box renderer keeps the flat-slab path but upgrades free-box profile
   ].join('\n');
   const renderSharedBundle = [
     read('esm/native/builder/render_interior_sketch_shared.ts'),
+    read('esm/native/builder/render_interior_sketch_shared_types.ts'),
+    read('esm/native/builder/render_interior_sketch_shared_records.ts'),
+    read('esm/native/builder/render_interior_sketch_shared_numbers.ts'),
+    read('esm/native/builder/render_interior_sketch_shared_external_drawers.ts'),
+    read('esm/native/builder/render_interior_sketch_shared_box_doors.ts'),
     read('esm/native/builder/render_interior_sketch_layout.ts'),
     read('esm/native/builder/render_interior_sketch_layout_dividers.ts'),
     sketchBoxFrontsBundle(),
@@ -142,6 +150,11 @@ test('sketch box door toggles preserve motion seeds for free boxes, patch saved 
   ].join('\n');
   const renderSharedBundle = [
     read('esm/native/builder/render_interior_sketch_shared.ts'),
+    read('esm/native/builder/render_interior_sketch_shared_types.ts'),
+    read('esm/native/builder/render_interior_sketch_shared_records.ts'),
+    read('esm/native/builder/render_interior_sketch_shared_numbers.ts'),
+    read('esm/native/builder/render_interior_sketch_shared_external_drawers.ts'),
+    read('esm/native/builder/render_interior_sketch_shared_box_doors.ts'),
     read('esm/native/builder/render_interior_sketch_pick_meta.ts'),
   ].join('\n');
   const handleAssign = read('esm/native/services/canvas_picking_handle_assign_flow.ts');
@@ -206,7 +219,10 @@ test('door-action hover supports dedicated handle and hinge face previews', () =
   const hoverFlowCore = read('esm/native/services/canvas_picking_hover_flow_core.ts');
   const hoverFlowNonSplit = read('esm/native/services/canvas_picking_hover_flow_nonsplit.ts');
   const hoverFlowNonSplitFace = read('esm/native/services/canvas_picking_hover_flow_nonsplit_face.ts');
-  const hoverFlowNonSplitPreview = read('esm/native/services/canvas_picking_hover_flow_nonsplit_preview.ts');
+  const hoverFlowNonSplitPreview = bundle(
+    'esm/native/services/canvas_picking_hover_flow_nonsplit_preview.ts',
+    'esm/native/services/canvas_picking_hover_flow_nonsplit_preview_door.ts'
+  );
   const hoverModes = [
     'esm/native/services/canvas_picking_door_action_hover_flow.ts',
     'esm/native/services/canvas_picking_door_action_hover_state.ts',
