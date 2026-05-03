@@ -86,3 +86,22 @@ test('vertical clearance builder emits only top and bottom cm labels for stacked
   assert.equal(entries[0].styleKey, 'cell');
   assert.equal(entries[0].textScale, 0.82);
 });
+
+test('vertical clearance builder keeps front-facing labels even when drawn behind the cabinet center', () => {
+  const entries = buildVerticalClearanceMeasurementEntries({
+    containerMinY: 0,
+    containerMaxY: 2.4,
+    targetCenterX: 0,
+    targetCenterY: 1.2,
+    targetWidth: 0.87,
+    targetHeight: 0.02,
+    z: -0.005,
+    styleKey: 'cell',
+    textScale: 0.82,
+  });
+
+  assert.equal(entries.length, 2);
+  assert.equal(entries[0].z, -0.005);
+  assert.equal(entries[0].labelFaceSign, 1);
+  assert.equal(entries[1].labelFaceSign, 1);
+});

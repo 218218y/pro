@@ -15,6 +15,9 @@ function sketchBoxFrontsBundle() {
     read('esm/native/builder/render_interior_sketch_boxes_fronts_door_layout.ts'),
     read('esm/native/builder/render_interior_sketch_boxes_fronts_door_accents.ts'),
     read('esm/native/builder/render_interior_sketch_boxes_fronts_door_visuals.ts'),
+    read('esm/native/builder/render_interior_sketch_boxes_fronts_door_visual_materials.ts'),
+    read('esm/native/builder/render_interior_sketch_boxes_fronts_door_visual_routes.ts'),
+    read('esm/native/builder/render_interior_sketch_boxes_fronts_door_visual_core.ts'),
     read('esm/native/builder/render_interior_sketch_boxes_fronts_doors.ts'),
     read('esm/native/builder/render_interior_sketch_boxes_fronts_drawers.ts'),
   ].join('\n');

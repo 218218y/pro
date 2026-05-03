@@ -33,6 +33,23 @@ npm run check:refactor-guardrails
 npm run test:refactor-stage-guards
 ```
 
+## Measurement and refactor closeout
+
+- Stage 80 closes the current refactor track. Do not add Stage 81 unless a new, concrete ownership seam passes the professional split gate in `docs/REFACTOR_NEXT_STAGE_PLAN.md`.
+- Refactor completion is not proven by smaller files. It is proven by stable public seams, behavior tests, hotpath guards, and practical smoke baselines.
+- Keep `check:perf-hotpaths` as the fast source-level performance gate for render/scheduler hotpaths.
+- Use `perf:smoke` and `perf:browser` for measured runtime/browser baselines when dependencies and a browser environment are available; update baselines only after a deliberate product/performance decision.
+- If a future performance issue appears, start from measured regressions and the owning surface, not from broad file decomposition.
+
+Relevant checks:
+
+```bash
+npm run check:perf-hotpaths
+npm run check:refactor-closeout
+npm run perf:smoke
+npm run perf:browser
+```
+
 ## Builder and render
 
 - Builder orchestration moves through prepared/context objects after the prepare seam, not loose `args` bags.

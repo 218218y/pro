@@ -1,8 +1,6 @@
 import type { ReactElement } from 'react';
 
 import {
-  SKETCH_TOOL_BOX_BASE_PREFIX,
-  SKETCH_TOOL_BOX_CORNICE_PREFIX,
   SKETCH_TOOL_BOX_DIVIDER,
   SKETCH_TOOL_BOX_DOOR,
   SKETCH_TOOL_BOX_DOUBLE_DOOR,
@@ -11,10 +9,7 @@ import {
   SKETCH_BOX_HEIGHT_MIN_CM,
   SKETCH_BOX_OPTIONAL_DIM_MAX_CM,
   SKETCH_BOX_OPTIONAL_DIM_MIN_CM,
-  type SketchBoxLegColor,
-  type SketchBoxLegStyle,
   cx,
-  isSketchBoxTool,
 } from './interior_tab_helpers.js';
 import {
   BASE_LEG_HEIGHT_MAX_CM,
@@ -28,6 +23,13 @@ import {
   SketchBoxToolButton,
   SketchBoxToolRow,
 } from './interior_layout_sketch_box_controls_components.js';
+import {
+  SKETCH_BOX_BASE_OPTIONS,
+  SKETCH_BOX_CORNICE_OPTIONS,
+  SKETCH_BOX_LEG_COLOR_OPTIONS,
+  SKETCH_BOX_LEG_STYLE_OPTIONS,
+} from './interior_layout_sketch_box_controls_options.js';
+import { readSketchBoxControlsViewState } from './interior_layout_sketch_box_controls_state.js';
 import {
   commitSketchBoxHeightDraft,
   commitSketchBoxLegHeightDraft,
@@ -48,55 +50,17 @@ import {
 } from './interior_layout_sketch_box_controls_runtime.js';
 import type { InteriorSketchBoxControlsSectionProps } from './interior_layout_sketch_section_types.js';
 
-type SketchBoxBaseOption = Readonly<{ id: 'plinth' | 'legs' | 'none'; label: string }>;
-type SketchBoxCorniceOption = Readonly<{ id: 'classic' | 'wave'; label: string }>;
-type SketchBoxLegStyleOption = Readonly<{ id: SketchBoxLegStyle; label: string }>;
-type SketchBoxLegColorOption = Readonly<{ id: SketchBoxLegColor; label: string }>;
-
-const SKETCH_BOX_BASE_OPTIONS: readonly [SketchBoxBaseOption, SketchBoxBaseOption, SketchBoxBaseOption] = [
-  { id: 'plinth', label: 'צוקל' },
-  { id: 'legs', label: 'רגליים' },
-  { id: 'none', label: 'ללא' },
-];
-
-const SKETCH_BOX_CORNICE_OPTIONS: readonly [SketchBoxCorniceOption, SketchBoxCorniceOption] = [
-  { id: 'classic', label: 'קרניז רגיל' },
-  { id: 'wave', label: 'קרניז גל' },
-];
-
-const SKETCH_BOX_LEG_STYLE_OPTIONS: readonly [
-  SketchBoxLegStyleOption,
-  SketchBoxLegStyleOption,
-  SketchBoxLegStyleOption,
-] = [
-  { id: 'tapered', label: 'שפיץ' },
-  { id: 'round', label: 'עגולות' },
-  { id: 'square', label: 'מרובעות' },
-];
-
-const SKETCH_BOX_LEG_COLOR_OPTIONS: readonly [
-  SketchBoxLegColorOption,
-  SketchBoxLegColorOption,
-  SketchBoxLegColorOption,
-] = [
-  { id: 'black', label: 'שחור' },
-  { id: 'nickel', label: 'ניקל' },
-  { id: 'gold', label: 'זהב' },
-];
-
 export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControlsSectionProps): ReactElement {
-  const { isSketchBoxControlsOpen } = props;
-  const isSketchBoxToolActive = props.isSketchToolActive && isSketchBoxTool(props.manualToolRaw);
-  const isDividerToolActive = props.isSketchToolActive && props.manualToolRaw === SKETCH_TOOL_BOX_DIVIDER;
-  const isDoorToolActive = props.isSketchToolActive && props.manualToolRaw === SKETCH_TOOL_BOX_DOOR;
-  const isDoorHingeToolActive =
-    props.isSketchToolActive && props.manualToolRaw === SKETCH_TOOL_BOX_DOOR_HINGE;
-  const isDoubleDoorToolActive =
-    props.isSketchToolActive && props.manualToolRaw === SKETCH_TOOL_BOX_DOUBLE_DOOR;
-  const isBaseToolActive =
-    props.isSketchToolActive && props.manualToolRaw.startsWith(SKETCH_TOOL_BOX_BASE_PREFIX);
-  const isCorniceToolActive =
-    props.isSketchToolActive && props.manualToolRaw.startsWith(SKETCH_TOOL_BOX_CORNICE_PREFIX);
+  const {
+    isSketchBoxControlsOpen,
+    isSketchBoxToolActive,
+    isDividerToolActive,
+    isDoorToolActive,
+    isDoorHingeToolActive,
+    isDoubleDoorToolActive,
+    isBaseToolActive,
+    isCorniceToolActive,
+  } = readSketchBoxControlsViewState(props);
 
   return (
     <div className="wp-field">

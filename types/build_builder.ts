@@ -96,6 +96,9 @@ export interface BuilderPreviewMeasurementEntryLike extends UnknownRecord {
   labelY?: BuilderPreviewScalar;
   styleKey?: string | null;
   textScale?: BuilderPreviewScalar;
+  faceSign?: BuilderPreviewScalar;
+  viewFaceSign?: BuilderPreviewScalar;
+  labelFaceSign?: BuilderPreviewScalar;
 }
 
 export interface BuilderPreviewMarkerLike extends UnknownRecord {
@@ -127,6 +130,9 @@ export interface SketchPlacementPreviewArgsLike extends UnknownRecord {
   fillFront?: BuilderPreviewBool;
   fillBack?: BuilderPreviewBool;
   overlayThroughScene?: BuilderPreviewBool;
+  faceSign?: BuilderPreviewScalar;
+  viewFaceSign?: BuilderPreviewScalar;
+  labelFaceSign?: BuilderPreviewScalar;
   clearanceMeasurements?: BuilderPreviewMeasurementEntryLike[] | null;
 }
 export interface InteriorLayoutHoverPreviewArgsLike extends UnknownRecord {

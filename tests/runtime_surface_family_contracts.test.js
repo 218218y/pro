@@ -116,14 +116,47 @@ const families = [
     ],
     ownerChecks: [
       {
-        label: 'runtime selectors owner',
+        label: 'runtime selectors facade',
         rel: '../esm/native/runtime/runtime_selectors.ts',
+        patterns: [
+          /from '\.\/runtime_selectors_shared\.js';/,
+          /from '\.\/runtime_selectors_snapshot\.js';/,
+          /from '\.\/runtime_selectors_store\.js';/,
+          /readRuntimeScalarOrDefaultFromApp/,
+          /readRuntimeScalarFromSnapshot/,
+        ],
+      },
+      {
+        label: 'runtime selectors shared owner',
+        rel: '../esm/native/runtime/runtime_selectors_shared.ts',
+        patterns: [
+          /from '\.\/record\.js';/,
+          /export const DEFAULTS:/,
+          /export function readRuntimeValue\(/,
+          /export function getRuntimeScalarDefault/,
+          /export const EMPTY_RUNTIME:/,
+        ],
+      },
+      {
+        label: 'runtime selectors snapshot owner',
+        rel: '../esm/native/runtime/runtime_selectors_snapshot.ts',
+        patterns: [
+          /from '\.\/runtime_selectors_shared\.js';/,
+          /from '\.\/runtime_selectors_normalizers\.js';/,
+          /export function readRuntimeScalarFromSnapshot/,
+          /export function readRuntimeScalarOrDefault/,
+          /readRuntimeValue\(rt, key\)/,
+        ],
+      },
+      {
+        label: 'runtime selectors store owner',
+        rel: '../esm/native/runtime/runtime_selectors_store.ts',
         patterns: [
           /from '\.\/root_state_access\.js';/,
           /from '\.\/store_surface_access\.js';/,
-          /from '\.\/record\.js';/,
-          /readRuntimeScalarOrDefaultFromApp/,
-          /const DEFAULTS:/,
+          /export function readRuntimeStateFromApp/,
+          /export function readRuntimeScalarOrDefaultFromApp/,
+          /getStoreSurfaceMaybe\(App\)/,
         ],
       },
       {

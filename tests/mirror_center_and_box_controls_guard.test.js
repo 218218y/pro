@@ -9,6 +9,7 @@ const interiorSketchBundle = bundleSources(
     '../esm/native/ui/react/tabs/interior_layout_sketch_sections.tsx',
     '../esm/native/ui/react/tabs/interior_layout_door_trim_section.tsx',
     '../esm/native/ui/react/tabs/interior_layout_sketch_box_controls_section.tsx',
+    '../esm/native/ui/react/tabs/interior_layout_sketch_box_controls_state.ts',
     '../esm/native/ui/react/tabs/interior_layout_sketch_drawers_section.tsx',
     '../esm/native/ui/react/tabs/interior_layout_sketch_shelves_section.tsx',
     '../esm/native/ui/react/tabs/interior_layout_sketch_section_types.ts',

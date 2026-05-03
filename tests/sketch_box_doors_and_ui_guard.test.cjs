@@ -19,6 +19,9 @@ function sketchBoxFrontsBundle() {
     'esm/native/builder/render_interior_sketch_boxes_fronts_door_layout.ts',
     'esm/native/builder/render_interior_sketch_boxes_fronts_door_accents.ts',
     'esm/native/builder/render_interior_sketch_boxes_fronts_door_visuals.ts',
+    'esm/native/builder/render_interior_sketch_boxes_fronts_door_visual_materials.ts',
+    'esm/native/builder/render_interior_sketch_boxes_fronts_door_visual_routes.ts',
+    'esm/native/builder/render_interior_sketch_boxes_fronts_door_visual_core.ts',
     'esm/native/builder/render_interior_sketch_boxes_fronts_doors.ts',
     'esm/native/builder/render_interior_sketch_boxes_fronts_drawers.ts'
   );
@@ -38,6 +41,14 @@ test('manual sketch box UI exposes 40cm default and box-door controls', () => {
     'esm/native/ui/react/tabs/interior_layout_door_trim_section.tsx',
     'esm/native/ui/react/tabs/interior_layout_sketch_box_controls_section.tsx',
     'esm/native/ui/react/tabs/interior_layout_sketch_box_controls_runtime.ts',
+    'esm/native/ui/react/tabs/interior_layout_sketch_box_controls_runtime_types.ts',
+    'esm/native/ui/react/tabs/interior_layout_sketch_box_controls_runtime_sync.ts',
+    'esm/native/ui/react/tabs/interior_layout_sketch_box_controls_runtime_dimensions.ts',
+    'esm/native/ui/react/tabs/interior_layout_sketch_box_controls_runtime_panels.ts',
+    'esm/native/ui/react/tabs/interior_layout_sketch_box_controls_runtime_base.ts',
+    'esm/native/ui/react/tabs/interior_layout_sketch_box_controls_runtime_cornice.ts',
+    'esm/native/ui/react/tabs/interior_layout_sketch_box_controls_state.ts',
+    'esm/native/ui/react/tabs/interior_layout_sketch_box_controls_options.ts',
     'esm/native/ui/react/tabs/interior_layout_sketch_box_controls_components.tsx',
     'esm/native/ui/react/tabs/interior_layout_sketch_drawers_section.tsx',
     'esm/native/ui/react/tabs/interior_layout_sketch_shelves_section.tsx',
@@ -86,16 +97,13 @@ test('sketch box renderer keeps the flat-slab path but upgrades free-box profile
   );
   assert.match(
     render,
-    /const styledVisual = createDoorVisual\([\s\S]*effectiveDoorStyle,[\s\S]*boxDoor\.groove === true,[\s\S]*doorPid/
+    /const styledVisual = visualRoute\.createDoorVisual\([\s\S]*visualRoute\.effectiveDoorStyle,[\s\S]*boxDoor\.groove === true,[\s\S]*doorPid/
   );
   assert.match(
     render,
-    /const doorSlab = new THREE\.Mesh\(new THREE\.BoxGeometry\(doorW, doorH, doorD\), doorMat\)/
+    /const doorSlab = new THREE\.Mesh\(new THREE\.BoxGeometry\(doorW, doorH, doorD\), materials\.doorMat\)/
   );
-  assert.match(
-    render,
-    /if \(!doorVisualState\.isMirror && !doorVisualState\.isGlass && !canUseStyledDoorVisual\) \{/
-  );
+  assert.match(render, /shouldUseClassicAccents: !doorVisualState\.isMirror && !doorVisualState\.isGlass/);
   assert.match(render, /if \(boxDoor\.groove === true\) \{/);
   assert.match(render, /addAccent\(`\$\{doorPid\}_accent_top`/);
   assert.doesNotMatch(render, /const handlePid = `\$\{doorPid\}_handle`/);

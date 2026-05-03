@@ -15,8 +15,17 @@ test('stage 42 legacy fallback inventory closeout is anchored', () => {
   assert.equal(allowlist.version, 1);
   assert.equal(allowlist.sourceRoot, 'esm');
   assert.ok(allowlist.entries['esm/native/runtime/ui_raw_selectors.ts']);
+  assert.ok(allowlist.entries['esm/native/runtime/ui_raw_selectors_snapshot.ts']);
+  assert.ok(allowlist.entries['esm/native/runtime/ui_raw_selectors_canonical.ts']);
+  assert.ok(allowlist.entries['esm/native/runtime/ui_raw_selectors_store.ts']);
   assert.ok(allowlist.entries['esm/native/services/render_surface_runtime.ts']);
-  assert.equal(audit.summary.byFile['esm/native/runtime/ui_raw_selectors.ts'].total, 21);
+  const uiRawSelectorFallbackTotal = [
+    'esm/native/runtime/ui_raw_selectors.ts',
+    'esm/native/runtime/ui_raw_selectors_snapshot.ts',
+    'esm/native/runtime/ui_raw_selectors_canonical.ts',
+    'esm/native/runtime/ui_raw_selectors_store.ts',
+  ].reduce((sum, file) => sum + (audit.summary.byFile[file]?.total || 0), 0);
+  assert.equal(uiRawSelectorFallbackTotal, 25);
   assert.equal(audit.summary.byFile['esm/native/services/render_surface_runtime.ts'].total, 7);
   assert.match(markdown, /Legacy \/ fallback audit/);
 

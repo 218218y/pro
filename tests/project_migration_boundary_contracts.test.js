@@ -39,7 +39,9 @@ test('project UI raw migration owns old direct-dimension materialization', () =>
 });
 
 test('canonical ui.raw selector is raw-only and old fail-soft helpers remain quarantined', () => {
-  const source = readSource('esm/native/runtime/ui_raw_selectors.ts');
+  const facade = readSource('esm/native/runtime/ui_raw_selectors.ts');
+  const source = readSource('esm/native/runtime/ui_raw_selectors_canonical.ts');
+  const tolerantSource = readSource('esm/native/runtime/ui_raw_selectors_snapshot.ts');
   const canonicalBody = exportedFunctionBody(source, 'readUiRawScalarFromCanonicalSnapshot');
   const assertBody = exportedFunctionBody(source, 'assertCanonicalUiRawDims');
 
@@ -47,7 +49,9 @@ test('canonical ui.raw selector is raw-only and old fail-soft helpers remain qua
   assert.match(canonicalBody, /getRawFromUiSnapshot\(ui\)/);
   assert.match(canonicalBody, /hasOwnProperty\.call\(raw, key\)/);
   assert.match(assertBody, /missingEssentialUiRawDims\(ui\)/);
-  assert.match(source, /export function ensureUiRawDimsFromSnapshot/);
+  assert.match(tolerantSource, /export function ensureUiRawDimsFromSnapshot/);
+  assert.match(facade, /readUiRawScalarFromCanonicalSnapshot/);
+  assert.match(facade, /ensureUiRawDimsFromSnapshot/);
 });
 
 test('project load route migrates then asserts canonical ui.raw before commit', () => {

@@ -53,6 +53,7 @@ const requiredGuardScripts = [
   'check:cloud-sync-timers',
   'check:cloud-sync-races',
   'check:perf-hotpaths',
+  'check:refactor-closeout',
   'check:test-portfolio',
   'check:refactor-integration',
 ];
@@ -109,6 +110,19 @@ const requiredStageGuardTests = [
   'tests/refactor_stage65_render_carcass_cornice_ownership_guard.test.js',
   'tests/refactor_stage66_render_interior_sketch_shared_ownership_guard.test.js',
   'tests/refactor_stage67_render_preview_marker_ownership_guard.test.js',
+  'tests/refactor_stage68_render_preview_sketch_ops_ownership_guard.test.js',
+  'tests/refactor_stage69_render_interior_sketch_external_drawers_ownership_guard.test.js',
+  'tests/refactor_stage70_render_interior_sketch_ops_ownership_guard.test.js',
+  'tests/refactor_stage71_render_interior_sketch_boxes_shell_ownership_guard.test.js',
+  'tests/refactor_stage72_render_interior_sketch_boxes_fronts_drawers_ownership_guard.test.js',
+  'tests/refactor_stage73_render_interior_sketch_boxes_contents_parts_ownership_guard.test.js',
+  'tests/refactor_stage74_refactor_next_stage_plan_guard.test.js',
+  'tests/refactor_stage75_sketch_box_door_visual_ownership_guard.test.js',
+  'tests/refactor_stage76_drawer_shared_contract_ownership_guard.test.js',
+  'tests/refactor_stage77_sketch_box_controls_runtime_ownership_guard.test.js',
+  'tests/refactor_stage78_runtime_access_surfaces_ownership_guard.test.js',
+  'tests/refactor_stage79_order_pdf_export_commands_ownership_guard.test.js',
+  'tests/refactor_stage80_measurement_perf_closeout_guard.test.js',
 ];
 const stageGuardCommand = requireScript('test:refactor-stage-guards');
 for (const testFile of requiredStageGuardTests)

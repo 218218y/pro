@@ -153,7 +153,15 @@ const CASES = [
     helpers: [
       [
         'esm/native/builder/render_drawer_ops_shared.ts',
-        [/export function readExternalDrawerOp\(/, /export function resolveDrawerVisualState\(/],
+        [/render_drawer_ops_shared_ops\.js/, /render_drawer_ops_shared_visual_state\.js/],
+      ],
+      [
+        'esm/native/builder/render_drawer_ops_shared_ops.ts',
+        [/export function readExternalDrawerOp\(/, /export function readInternalDrawerOp\(/],
+      ],
+      [
+        'esm/native/builder/render_drawer_ops_shared_visual_state.ts',
+        [/export function resolveDrawerVisualState\(/],
       ],
       [
         'esm/native/builder/render_drawer_ops_external.ts',

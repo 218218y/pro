@@ -287,7 +287,7 @@
         "runtime-default": 6
       }
     },
-    "esm/native/builder/render_drawer_ops_shared.ts": {
+    "esm/native/builder/render_drawer_ops_shared_guards.ts": {
       "total": 2,
       "categories": {
         "runtime-default": 2
@@ -1008,12 +1008,30 @@
         "runtime-default": 5
       }
     },
-    "esm/native/runtime/runtime_selectors.ts": {
-      "total": 30,
+    "esm/native/runtime/runtime_selectors_normalizers.ts": {
+      "total": 11,
       "categories": {
         "legacy-runtime-risk": 1,
-        "project-migration": 1,
-        "runtime-default": 28
+        "runtime-default": 10
+      }
+    },
+    "esm/native/runtime/runtime_selectors_shared.ts": {
+      "total": 3,
+      "categories": {
+        "runtime-default": 3
+      }
+    },
+    "esm/native/runtime/runtime_selectors_snapshot.ts": {
+      "total": 12,
+      "categories": {
+        "legacy-runtime-risk": 1,
+        "runtime-default": 11
+      }
+    },
+    "esm/native/runtime/runtime_selectors_store.ts": {
+      "total": 4,
+      "categories": {
+        "runtime-default": 4
       }
     },
     "esm/native/runtime/runtime_write_access.ts": {
@@ -1064,11 +1082,37 @@
         "project-migration": 1
       }
     },
-    "esm/native/runtime/ui_raw_selectors.ts": {
-      "total": 21,
+    "esm/native/runtime/ui_raw_selectors_canonical.ts": {
+      "total": 8,
       "categories": {
-        "project-migration": 5,
-        "runtime-default": 16
+        "legacy-runtime-risk": 1,
+        "project-migration": 3,
+        "runtime-default": 4
+      }
+    },
+    "esm/native/runtime/ui_raw_selectors_shared.ts": {
+      "total": 2,
+      "categories": {
+        "legacy-runtime-risk": 2
+      }
+    },
+    "esm/native/runtime/ui_raw_selectors_snapshot.ts": {
+      "total": 7,
+      "categories": {
+        "project-migration": 3,
+        "runtime-default": 4
+      }
+    },
+    "esm/native/runtime/ui_raw_selectors_store.ts": {
+      "total": 8,
+      "categories": {
+        "runtime-default": 8
+      }
+    },
+    "esm/native/runtime/ui_raw_selectors.ts": {
+      "total": 2,
+      "categories": {
+        "legacy-runtime-risk": 2
       }
     },
     "esm/native/runtime/ui_write_access.ts": {

@@ -70,6 +70,30 @@ const pdfOverlay = [
   readFirstExisting(['../esm/native/ui/react/pdf/order_pdf_overlay_editor_surface.tsx'], import.meta.url),
   readFirstExisting(['../esm/native/ui/react/pdf/order_pdf_overlay_export_actions.ts'], import.meta.url),
   readFirstExisting(['../esm/native/ui/react/pdf/order_pdf_overlay_export_commands.ts'], import.meta.url),
+  readFirstExisting(
+    ['../esm/native/ui/react/pdf/order_pdf_overlay_export_commands_types.ts'],
+    import.meta.url
+  ),
+  readFirstExisting(
+    ['../esm/native/ui/react/pdf/order_pdf_overlay_export_commands_errors.ts'],
+    import.meta.url
+  ),
+  readFirstExisting(
+    ['../esm/native/ui/react/pdf/order_pdf_overlay_export_commands_load_pdf.ts'],
+    import.meta.url
+  ),
+  readFirstExisting(
+    ['../esm/native/ui/react/pdf/order_pdf_overlay_export_commands_downloads.ts'],
+    import.meta.url
+  ),
+  readFirstExisting(
+    ['../esm/native/ui/react/pdf/order_pdf_overlay_export_commands_gmail.ts'],
+    import.meta.url
+  ),
+  readFirstExisting(
+    ['../esm/native/ui/react/pdf/order_pdf_overlay_export_commands_pdfjs.ts'],
+    import.meta.url
+  ),
   readFirstExisting(['../esm/native/ui/react/pdf/order_pdf_overlay_action_feedback.ts'], import.meta.url),
 ].join('\n');
 const pdfOverlayText = bundleSources(

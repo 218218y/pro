@@ -139,6 +139,8 @@ function requirePublicUiRawExports(rel, source) {
 const loaderRel = 'esm/native/io/project_io_orchestrator_project_load.ts';
 const migrationsRel = 'esm/native/io/project_migrations/index.ts';
 const uiSelectorsRel = 'esm/native/runtime/ui_raw_selectors.ts';
+const uiSnapshotSelectorsRel = 'esm/native/runtime/ui_raw_selectors_snapshot.ts';
+const uiCanonicalSelectorsRel = 'esm/native/runtime/ui_raw_selectors_canonical.ts';
 const cfgMigrationRel = 'esm/native/io/project_migrations/config_snapshot_migration.ts';
 const runtimeSelectorTestRel = 'tests/project_migration_runtime_selector_hardening_runtime.test.ts';
 const coreApiRel = 'esm/native/core/api.ts';
@@ -147,6 +149,8 @@ const stateSurfaceRel = 'esm/native/services/api_state_surface.ts';
 const loader = read(loaderRel);
 const migrations = read(migrationsRel);
 const uiSelectors = read(uiSelectorsRel);
+const uiSnapshotSelectors = read(uiSnapshotSelectorsRel);
+const uiCanonicalSelectors = read(uiCanonicalSelectorsRel);
 const cfgMigration = read(cfgMigrationRel);
 const runtimeSelectorTest = read(runtimeSelectorTestRel);
 const coreApi = read(coreApiRel);
@@ -233,64 +237,64 @@ requireIncludes(
   'runtime must expose canonical ui.raw dimension batch reader for live/build code'
 );
 requireFunctionIncludes(
-  uiSelectorsRel,
-  uiSelectors,
+  uiSnapshotSelectorsRel,
+  uiSnapshotSelectors,
   'readUiRawScalarFromSnapshot',
   'readUiDirectScalar(ui, key)',
   'legacy snapshot reader may be tolerant, but that tolerance must stay isolated in the non-canonical reader'
 );
 requireFunctionIncludes(
-  uiSelectorsRel,
-  uiSelectors,
+  uiCanonicalSelectorsRel,
+  uiCanonicalSelectors,
   'readUiRawScalarFromCanonicalSnapshot',
   'Object.prototype.hasOwnProperty.call(raw, key)',
   'canonical reader must require an explicit ui.raw key instead of reading legacy ui.* fields'
 );
 requireFunctionNotIncludes(
-  uiSelectorsRel,
-  uiSelectors,
+  uiCanonicalSelectorsRel,
+  uiCanonicalSelectors,
   'readUiRawScalarFromCanonicalSnapshot',
   'readUiDirectScalar',
   'canonical reader must not fall back to legacy ui.* fields'
 );
 requireFunctionNotIncludes(
-  uiSelectorsRel,
-  uiSelectors,
+  uiCanonicalSelectorsRel,
+  uiCanonicalSelectors,
   'assertCanonicalUiRawDims',
   'readUiRawScalarFromSnapshot',
   'canonical assertion must not validate through tolerant snapshot readers'
 );
 requireFunctionIncludes(
-  uiSelectorsRel,
-  uiSelectors,
+  uiCanonicalSelectorsRel,
+  uiCanonicalSelectors,
   'readCanonicalUiRawNumberFromSnapshot',
   'readUiRawScalarFromCanonicalSnapshot(ui, key)',
   'canonical number reader must use canonical scalar reads only'
 );
 requireFunctionNotIncludes(
-  uiSelectorsRel,
-  uiSelectors,
+  uiCanonicalSelectorsRel,
+  uiCanonicalSelectors,
   'readCanonicalUiRawNumberFromSnapshot',
   'readUiRawScalarFromSnapshot',
   'canonical number reader must not use tolerant snapshot reads'
 );
 requireFunctionIncludes(
-  uiSelectorsRel,
-  uiSelectors,
+  uiCanonicalSelectorsRel,
+  uiCanonicalSelectors,
   'readCanonicalUiRawDimsCmFromSnapshot',
   'assertCanonicalUiRawDims(ui, context)',
   'canonical dimensions reader must fail fast when project ingress did not migrate ui.raw dimensions'
 );
 requireFunctionIncludes(
-  uiSelectorsRel,
-  uiSelectors,
+  uiCanonicalSelectorsRel,
+  uiCanonicalSelectors,
   'readCanonicalUiRawDimsCmFromSnapshot',
   'readCanonicalUiRawNumberFromSnapshot',
   'canonical dimensions reader must compose canonical numeric readers'
 );
 requireFunctionNotIncludes(
-  uiSelectorsRel,
-  uiSelectors,
+  uiCanonicalSelectorsRel,
+  uiCanonicalSelectors,
   'readCanonicalUiRawDimsCmFromSnapshot',
   'readUiRawNumberFromSnapshot',
   'canonical dimensions reader must not use tolerant legacy numeric readers'

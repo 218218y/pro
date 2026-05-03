@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-05-03T09:46:43.259Z",
+  "generatedAt": "2026-05-03T13:19:36.163Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 919,
-    "totalFiles": 291,
+    "totalOccurrences": 925,
+    "totalFiles": 298,
     "byCategory": {
       "runtime-default": 728,
       "browser-adapter": 18,
       "project-migration": 21,
       "test-fixture": 7,
-      "legacy-runtime-risk": 145,
+      "legacy-runtime-risk": 151,
       "unknown": 0
     },
     "byFile": {
@@ -297,7 +297,7 @@
           "runtime-default": 6
         }
       },
-      "esm/native/builder/render_drawer_ops_shared.ts": {
+      "esm/native/builder/render_drawer_ops_shared_guards.ts": {
         "total": 2,
         "categories": {
           "runtime-default": 2
@@ -1018,12 +1018,30 @@
           "runtime-default": 5
         }
       },
-      "esm/native/runtime/runtime_selectors.ts": {
-        "total": 30,
+      "esm/native/runtime/runtime_selectors_normalizers.ts": {
+        "total": 11,
         "categories": {
           "legacy-runtime-risk": 1,
-          "project-migration": 1,
-          "runtime-default": 28
+          "runtime-default": 10
+        }
+      },
+      "esm/native/runtime/runtime_selectors_shared.ts": {
+        "total": 3,
+        "categories": {
+          "runtime-default": 3
+        }
+      },
+      "esm/native/runtime/runtime_selectors_snapshot.ts": {
+        "total": 12,
+        "categories": {
+          "legacy-runtime-risk": 1,
+          "runtime-default": 11
+        }
+      },
+      "esm/native/runtime/runtime_selectors_store.ts": {
+        "total": 4,
+        "categories": {
+          "runtime-default": 4
         }
       },
       "esm/native/runtime/runtime_write_access.ts": {
@@ -1074,11 +1092,37 @@
           "project-migration": 1
         }
       },
-      "esm/native/runtime/ui_raw_selectors.ts": {
-        "total": 21,
+      "esm/native/runtime/ui_raw_selectors_canonical.ts": {
+        "total": 8,
         "categories": {
-          "project-migration": 5,
-          "runtime-default": 16
+          "legacy-runtime-risk": 1,
+          "project-migration": 3,
+          "runtime-default": 4
+        }
+      },
+      "esm/native/runtime/ui_raw_selectors_shared.ts": {
+        "total": 2,
+        "categories": {
+          "legacy-runtime-risk": 2
+        }
+      },
+      "esm/native/runtime/ui_raw_selectors_snapshot.ts": {
+        "total": 7,
+        "categories": {
+          "project-migration": 3,
+          "runtime-default": 4
+        }
+      },
+      "esm/native/runtime/ui_raw_selectors_store.ts": {
+        "total": 8,
+        "categories": {
+          "runtime-default": 8
+        }
+      },
+      "esm/native/runtime/ui_raw_selectors.ts": {
+        "total": 2,
+        "categories": {
+          "legacy-runtime-risk": 2
         }
       },
       "esm/native/runtime/ui_write_access.ts": {
@@ -1789,15 +1833,6 @@
     },
     "hotFiles": [
       {
-        "file": "esm/native/runtime/runtime_selectors.ts",
-        "total": 30,
-        "categories": {
-          "legacy-runtime-risk": 1,
-          "project-migration": 1,
-          "runtime-default": 28
-        }
-      },
-      {
         "file": "esm/native/ui/react/tabs/interior_tab_view_state_shared.ts",
         "total": 24,
         "categories": {
@@ -1828,14 +1863,6 @@
         }
       },
       {
-        "file": "esm/native/runtime/ui_raw_selectors.ts",
-        "total": 21,
-        "categories": {
-          "project-migration": 5,
-          "runtime-default": 16
-        }
-      },
-      {
         "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_preview_session.ts",
         "total": 16,
         "categories": {
@@ -1861,6 +1888,22 @@
         "total": 12,
         "categories": {
           "runtime-default": 12
+        }
+      },
+      {
+        "file": "esm/native/runtime/runtime_selectors_snapshot.ts",
+        "total": 12,
+        "categories": {
+          "legacy-runtime-risk": 1,
+          "runtime-default": 11
+        }
+      },
+      {
+        "file": "esm/native/runtime/runtime_selectors_normalizers.ts",
+        "total": 11,
+        "categories": {
+          "legacy-runtime-risk": 1,
+          "runtime-default": 10
         }
       },
       {
@@ -1920,6 +1963,22 @@
         }
       },
       {
+        "file": "esm/native/runtime/ui_raw_selectors_canonical.ts",
+        "total": 8,
+        "categories": {
+          "legacy-runtime-risk": 1,
+          "project-migration": 3,
+          "runtime-default": 4
+        }
+      },
+      {
+        "file": "esm/native/runtime/ui_raw_selectors_store.ts",
+        "total": 8,
+        "categories": {
+          "runtime-default": 8
+        }
+      },
+      {
         "file": "esm/native/ui/export/export_canvas_engine.ts",
         "total": 8,
         "categories": {
@@ -1946,6 +2005,14 @@
         "categories": {
           "legacy-runtime-risk": 6,
           "project-migration": 1
+        }
+      },
+      {
+        "file": "esm/native/runtime/ui_raw_selectors_snapshot.ts",
+        "total": 7,
+        "categories": {
+          "project-migration": 3,
+          "runtime-default": 4
         }
       },
       {
@@ -1979,27 +2046,6 @@
       },
       {
         "file": "esm/native/features/door_trim_shared.ts",
-        "total": 6,
-        "categories": {
-          "runtime-default": 6
-        }
-      },
-      {
-        "file": "esm/native/features/library_preset/library_preset_shared.ts",
-        "total": 6,
-        "categories": {
-          "runtime-default": 6
-        }
-      },
-      {
-        "file": "esm/native/kernel/kernel_builder_request_policy_shared.ts",
-        "total": 6,
-        "categories": {
-          "runtime-default": 6
-        }
-      },
-      {
-        "file": "esm/native/kernel/kernel_builder_request_policy.ts",
         "total": 6,
         "categories": {
           "runtime-default": 6
@@ -2745,15 +2791,15 @@
       "text": "return typeof value === 'string' && value ? value : fallback;"
     },
     {
-      "file": "esm/native/builder/render_drawer_ops_shared.ts",
-      "line": 88,
+      "file": "esm/native/builder/render_drawer_ops_shared_guards.ts",
+      "line": 12,
       "term": "fallback",
       "category": "runtime-default",
       "text": "export function readFinite(value: unknown, fallback = 0): number {"
     },
     {
-      "file": "esm/native/builder/render_drawer_ops_shared.ts",
-      "line": 89,
+      "file": "esm/native/builder/render_drawer_ops_shared_guards.ts",
+      "line": 13,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return typeof value === 'number' && Number.isFinite(value) ? value : fallback;"
@@ -5419,211 +5465,211 @@
       "text": "return typeof value === 'number' && Number.isFinite(value) ? value : fallback;"
     },
     {
-      "file": "esm/native/runtime/runtime_selectors.ts",
-      "line": 5,
+      "file": "esm/native/runtime/runtime_selectors_normalizers.ts",
+      "line": 3,
       "term": "legacy",
-      "category": "project-migration",
-      "text": "// - Allow legacy persisted values (string, '', null) without spreading checks everywhere."
+      "category": "legacy-runtime-risk",
+      "text": "// Keeps string/number legacy tolerance in one audited table instead of spreading"
     },
     {
-      "file": "esm/native/runtime/runtime_selectors.ts",
-      "line": 47,
+      "file": "esm/native/runtime/runtime_selectors_normalizers.ts",
+      "line": 71,
       "term": "fallback",
       "category": "runtime-default",
-      "text": "[K in RuntimeScalarKey]: (value: unknown, fallback: RuntimeScalarValueMap[K]) => RuntimeScalarValueMap[K];"
+      "text": "export function readBooleanLike(value: unknown, fallback: boolean): boolean {"
     },
     {
-      "file": "esm/native/runtime/runtime_selectors.ts",
-      "line": 146,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "function readBooleanLike(value: unknown, fallback: boolean): boolean {"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors.ts",
-      "line": 147,
+      "file": "esm/native/runtime/runtime_selectors_normalizers.ts",
+      "line": 72,
       "term": "fallback",
       "category": "runtime-default",
       "text": "if (value === undefined || value === null) return fallback;"
     },
     {
-      "file": "esm/native/runtime/runtime_selectors.ts",
-      "line": 151,
+      "file": "esm/native/runtime/runtime_selectors_normalizers.ts",
+      "line": 76,
       "term": "fallback",
       "category": "runtime-default",
       "text": "if (!s) return fallback;"
     },
     {
-      "file": "esm/native/runtime/runtime_selectors.ts",
-      "line": 157,
+      "file": "esm/native/runtime/runtime_selectors_normalizers.ts",
+      "line": 82,
       "term": "fallback",
       "category": "runtime-default",
-      "text": "function readFiniteNumberLike(value: unknown, fallback: number): number {"
+      "text": "export function readFiniteNumberLike(value: unknown, fallback: number): number {"
     },
     {
-      "file": "esm/native/runtime/runtime_selectors.ts",
-      "line": 163,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return fallback;"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors.ts",
-      "line": 166,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "function readFiniteNullableNumberLike(value: unknown, fallback: number | null): number | null {"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors.ts",
-      "line": 173,
+      "file": "esm/native/runtime/runtime_selectors_normalizers.ts",
+      "line": 88,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return fallback;"
     },
     {
-      "file": "esm/native/runtime/runtime_selectors.ts",
-      "line": 176,
+      "file": "esm/native/runtime/runtime_selectors_normalizers.ts",
+      "line": 91,
       "term": "fallback",
       "category": "runtime-default",
-      "text": "function normalizeDrawersOpenId(value: unknown, fallback: string | number | null): string | number | null {"
+      "text": "export function readFiniteNullableNumberLike(value: unknown, fallback: number | null): number | null {"
     },
     {
-      "file": "esm/native/runtime/runtime_selectors.ts",
-      "line": 180,
+      "file": "esm/native/runtime/runtime_selectors_normalizers.ts",
+      "line": 98,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return fallback;"
     },
     {
-      "file": "esm/native/runtime/runtime_selectors.ts",
-      "line": 225,
+      "file": "esm/native/runtime/runtime_selectors_normalizers.ts",
+      "line": 101,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "export function normalizeDrawersOpenId(value: unknown, fallback: string | number | null): string | number | null {"
+    },
+    {
+      "file": "esm/native/runtime/runtime_selectors_normalizers.ts",
+      "line": 105,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "return fallback;"
+    },
+    {
+      "file": "esm/native/runtime/runtime_selectors_normalizers.ts",
+      "line": 109,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "[K in RuntimeScalarKey]: (value: unknown, fallback: RuntimeScalarValueMap[K]) => RuntimeScalarValueMap[K];"
+    },
+    {
+      "file": "esm/native/runtime/runtime_selectors_shared.ts",
+      "line": 58,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "fallback?: RuntimeScalarValueMap[K]"
+    },
+    {
+      "file": "esm/native/runtime/runtime_selectors_shared.ts",
+      "line": 60,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "return typeof fallback !== 'undefined' ? fallback : DEFAULTS[key];"
+    },
+    {
+      "file": "esm/native/runtime/runtime_selectors_shared.ts",
+      "line": 60,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "return typeof fallback !== 'undefined' ? fallback : DEFAULTS[key];"
+    },
+    {
+      "file": "esm/native/runtime/runtime_selectors_snapshot.ts",
+      "line": 29,
       "term": "legacy",
       "category": "legacy-runtime-risk",
       "text": "/** Read a boolean runtime key (supports legacy string values). */"
     },
     {
-      "file": "esm/native/runtime/runtime_selectors.ts",
-      "line": 226,
+      "file": "esm/native/runtime/runtime_selectors_snapshot.ts",
+      "line": 30,
       "term": "fallback",
       "category": "runtime-default",
       "text": "export function readRuntimeBoolFromSnapshot(rt: unknown, key: string, fallback: boolean): boolean {"
     },
     {
-      "file": "esm/native/runtime/runtime_selectors.ts",
-      "line": 228,
+      "file": "esm/native/runtime/runtime_selectors_snapshot.ts",
+      "line": 32,
       "term": "fallback",
       "category": "runtime-default",
-      "text": "return readBooleanLike(getRtFromSnapshot(rt)[key], fallback);"
+      "text": "return readBooleanLike(readRuntimeValue(rt, key), fallback);"
     },
     {
-      "file": "esm/native/runtime/runtime_selectors.ts",
-      "line": 230,
+      "file": "esm/native/runtime/runtime_selectors_snapshot.ts",
+      "line": 34,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return fallback;"
     },
     {
-      "file": "esm/native/runtime/runtime_selectors.ts",
-      "line": 235,
+      "file": "esm/native/runtime/runtime_selectors_snapshot.ts",
+      "line": 39,
       "term": "fallback",
       "category": "runtime-default",
       "text": "export function readRuntimeNumberFromSnapshot(rt: unknown, key: string, fallback: number): number {"
     },
     {
-      "file": "esm/native/runtime/runtime_selectors.ts",
-      "line": 237,
+      "file": "esm/native/runtime/runtime_selectors_snapshot.ts",
+      "line": 41,
       "term": "fallback",
       "category": "runtime-default",
-      "text": "return readFiniteNumberLike(getRtFromSnapshot(rt)[key], fallback);"
+      "text": "return readFiniteNumberLike(readRuntimeValue(rt, key), fallback);"
     },
     {
-      "file": "esm/native/runtime/runtime_selectors.ts",
-      "line": 239,
+      "file": "esm/native/runtime/runtime_selectors_snapshot.ts",
+      "line": 43,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return fallback;"
     },
     {
-      "file": "esm/native/runtime/runtime_selectors.ts",
-      "line": 247,
+      "file": "esm/native/runtime/runtime_selectors_snapshot.ts",
+      "line": 51,
       "term": "fallback",
       "category": "runtime-default",
       "text": "fallback: number | null"
     },
     {
-      "file": "esm/native/runtime/runtime_selectors.ts",
-      "line": 250,
+      "file": "esm/native/runtime/runtime_selectors_snapshot.ts",
+      "line": 54,
       "term": "fallback",
       "category": "runtime-default",
-      "text": "return readFiniteNullableNumberLike(getRtFromSnapshot(rt)[key], fallback);"
+      "text": "return readFiniteNullableNumberLike(readRuntimeValue(rt, key), fallback);"
     },
     {
-      "file": "esm/native/runtime/runtime_selectors.ts",
-      "line": 252,
+      "file": "esm/native/runtime/runtime_selectors_snapshot.ts",
+      "line": 56,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return fallback;"
     },
     {
-      "file": "esm/native/runtime/runtime_selectors.ts",
-      "line": 259,
+      "file": "esm/native/runtime/runtime_selectors_snapshot.ts",
+      "line": 64,
       "term": "fallback",
       "category": "runtime-default",
       "text": "fallback?: RuntimeScalarValueMap[K]"
     },
     {
-      "file": "esm/native/runtime/runtime_selectors.ts",
-      "line": 261,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof fallback !== 'undefined' ? fallback : DEFAULTS[key];"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors.ts",
-      "line": 261,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof fallback !== 'undefined' ? fallback : DEFAULTS[key];"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors.ts",
-      "line": 268,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback?: RuntimeScalarValueMap[K]"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors.ts",
-      "line": 270,
+      "file": "esm/native/runtime/runtime_selectors_snapshot.ts",
+      "line": 66,
       "term": "fallback",
       "category": "runtime-default",
       "text": "const def = getRuntimeScalarDefault(key, fallback);"
     },
     {
-      "file": "esm/native/runtime/runtime_selectors.ts",
-      "line": 279,
+      "file": "esm/native/runtime/runtime_selectors_store.ts",
+      "line": 43,
       "term": "fallback",
       "category": "runtime-default",
       "text": "fallback?: RuntimeScalarValueMap[K]"
     },
     {
-      "file": "esm/native/runtime/runtime_selectors.ts",
-      "line": 282,
+      "file": "esm/native/runtime/runtime_selectors_store.ts",
+      "line": 46,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return readRuntimeScalarOrDefault(rt, key, fallback);"
     },
     {
-      "file": "esm/native/runtime/runtime_selectors.ts",
-      "line": 288,
+      "file": "esm/native/runtime/runtime_selectors_store.ts",
+      "line": 52,
       "term": "fallback",
       "category": "runtime-default",
       "text": "fallback?: RuntimeScalarValueMap[K]"
     },
     {
-      "file": "esm/native/runtime/runtime_selectors.ts",
-      "line": 291,
+      "file": "esm/native/runtime/runtime_selectors_store.ts",
+      "line": 55,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return readRuntimeScalarOrDefault(rt, key, fallback);"
@@ -5755,151 +5801,193 @@
       "text": "// This is NOT a legacy compatibility shim: it is the canonical home for these helpers"
     },
     {
-      "file": "esm/native/runtime/ui_raw_selectors.ts",
-      "line": 5,
+      "file": "esm/native/runtime/ui_raw_selectors_canonical.ts",
+      "line": 4,
       "term": "legacy",
-      "category": "project-migration",
-      "text": "// - Allow legacy persisted values (string, '', null) without spreading checks everywhere."
+      "category": "legacy-runtime-risk",
+      "text": "// It never falls back to legacy `ui.*` fields."
     },
     {
-      "file": "esm/native/runtime/ui_raw_selectors.ts",
-      "line": 193,
-      "term": "legacy",
-      "category": "project-migration",
-      "text": "// Fill raw.* from ui.* if missing (legacy snapshots sometimes persisted only normalized fields)."
-    },
-    {
-      "file": "esm/native/runtime/ui_raw_selectors.ts",
-      "line": 209,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readUiRawNumberFromSnapshot(ui: unknown, key: UiRawScalarKey, fallback: number): number {"
-    },
-    {
-      "file": "esm/native/runtime/ui_raw_selectors.ts",
-      "line": 212,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof n === 'number' ? n : fallback;"
-    },
-    {
-      "file": "esm/native/runtime/ui_raw_selectors.ts",
-      "line": 215,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readUiRawIntFromSnapshot(ui: unknown, key: UiRawScalarKey, fallback: number): number {"
-    },
-    {
-      "file": "esm/native/runtime/ui_raw_selectors.ts",
-      "line": 218,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof n === 'number' ? n : fallback;"
-    },
-    {
-      "file": "esm/native/runtime/ui_raw_selectors.ts",
-      "line": 223,
+      "file": "esm/native/runtime/ui_raw_selectors_canonical.ts",
+      "line": 52,
       "term": "legacy",
       "category": "project-migration",
       "text": "* This never falls back to legacy `ui.*`; project ingress must migrate those shapes first."
     },
     {
-      "file": "esm/native/runtime/ui_raw_selectors.ts",
-      "line": 228,
+      "file": "esm/native/runtime/ui_raw_selectors_canonical.ts",
+      "line": 57,
       "term": "fallback",
       "category": "runtime-default",
       "text": "fallback: number"
     },
     {
-      "file": "esm/native/runtime/ui_raw_selectors.ts",
-      "line": 232,
+      "file": "esm/native/runtime/ui_raw_selectors_canonical.ts",
+      "line": 61,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return typeof n === 'number' ? n : fallback;"
     },
     {
-      "file": "esm/native/runtime/ui_raw_selectors.ts",
-      "line": 237,
+      "file": "esm/native/runtime/ui_raw_selectors_canonical.ts",
+      "line": 66,
       "term": "legacy",
       "category": "project-migration",
       "text": "* This never falls back to legacy `ui.*`; project ingress must migrate those shapes first."
     },
     {
-      "file": "esm/native/runtime/ui_raw_selectors.ts",
-      "line": 242,
+      "file": "esm/native/runtime/ui_raw_selectors_canonical.ts",
+      "line": 71,
       "term": "fallback",
       "category": "runtime-default",
       "text": "fallback: number"
     },
     {
-      "file": "esm/native/runtime/ui_raw_selectors.ts",
-      "line": 246,
+      "file": "esm/native/runtime/ui_raw_selectors_canonical.ts",
+      "line": 75,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return typeof n === 'number' ? n : fallback;"
     },
     {
-      "file": "esm/native/runtime/ui_raw_selectors.ts",
-      "line": 251,
+      "file": "esm/native/runtime/ui_raw_selectors_canonical.ts",
+      "line": 80,
       "term": "legacy",
       "category": "project-migration",
       "text": "* It fails fast when essential ui.raw dimensions are absent, keeping legacy migration at project ingress."
     },
     {
-      "file": "esm/native/runtime/ui_raw_selectors.ts",
-      "line": 272,
+      "file": "esm/native/runtime/ui_raw_selectors_shared.ts",
+      "line": 5,
+      "term": "legacy",
+      "category": "legacy-runtime-risk",
+      "text": "// the legacy fallback boundary explicit instead of spreading parsing policy"
+    },
+    {
+      "file": "esm/native/runtime/ui_raw_selectors_shared.ts",
+      "line": 5,
+      "term": "fallback",
+      "category": "legacy-runtime-risk",
+      "text": "// the legacy fallback boundary explicit instead of spreading parsing policy"
+    },
+    {
+      "file": "esm/native/runtime/ui_raw_selectors_snapshot.ts",
+      "line": 3,
+      "term": "legacy",
+      "category": "project-migration",
+      "text": "// These helpers intentionally allow legacy `ui.*` fallback. Canonical live/build"
+    },
+    {
+      "file": "esm/native/runtime/ui_raw_selectors_snapshot.ts",
+      "line": 3,
+      "term": "fallback",
+      "category": "project-migration",
+      "text": "// These helpers intentionally allow legacy `ui.*` fallback. Canonical live/build"
+    },
+    {
+      "file": "esm/native/runtime/ui_raw_selectors_snapshot.ts",
+      "line": 58,
+      "term": "legacy",
+      "category": "project-migration",
+      "text": "// Fill raw.* from ui.* if missing (legacy snapshots sometimes persisted only normalized fields)."
+    },
+    {
+      "file": "esm/native/runtime/ui_raw_selectors_snapshot.ts",
+      "line": 74,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "export function readUiRawNumberFromSnapshot(ui: unknown, key: UiRawScalarKey, fallback: number): number {"
+    },
+    {
+      "file": "esm/native/runtime/ui_raw_selectors_snapshot.ts",
+      "line": 77,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "return typeof n === 'number' ? n : fallback;"
+    },
+    {
+      "file": "esm/native/runtime/ui_raw_selectors_snapshot.ts",
+      "line": 80,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "export function readUiRawIntFromSnapshot(ui: unknown, key: UiRawScalarKey, fallback: number): number {"
+    },
+    {
+      "file": "esm/native/runtime/ui_raw_selectors_snapshot.ts",
+      "line": 83,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "return typeof n === 'number' ? n : fallback;"
+    },
+    {
+      "file": "esm/native/runtime/ui_raw_selectors_store.ts",
+      "line": 15,
       "term": "fallback",
       "category": "runtime-default",
       "text": "export function readUiRawNumberFromStore(store: unknown, key: UiRawScalarKey, fallback: number): number {"
     },
     {
-      "file": "esm/native/runtime/ui_raw_selectors.ts",
-      "line": 275,
+      "file": "esm/native/runtime/ui_raw_selectors_store.ts",
+      "line": 18,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return typeof n === 'number' ? n : fallback;"
     },
     {
-      "file": "esm/native/runtime/ui_raw_selectors.ts",
-      "line": 278,
+      "file": "esm/native/runtime/ui_raw_selectors_store.ts",
+      "line": 21,
       "term": "fallback",
       "category": "runtime-default",
       "text": "export function readUiRawIntFromStore(store: unknown, key: UiRawScalarKey, fallback: number): number {"
     },
     {
-      "file": "esm/native/runtime/ui_raw_selectors.ts",
-      "line": 281,
+      "file": "esm/native/runtime/ui_raw_selectors_store.ts",
+      "line": 24,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return typeof n === 'number' ? n : fallback;"
     },
     {
-      "file": "esm/native/runtime/ui_raw_selectors.ts",
-      "line": 285,
+      "file": "esm/native/runtime/ui_raw_selectors_store.ts",
+      "line": 28,
       "term": "fallback",
       "category": "runtime-default",
       "text": "export function readUiRawNumberFromStoreUi(store: unknown, key: UiRawScalarKey, fallback: number): number {"
     },
     {
-      "file": "esm/native/runtime/ui_raw_selectors.ts",
-      "line": 287,
+      "file": "esm/native/runtime/ui_raw_selectors_store.ts",
+      "line": 30,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return readUiRawNumberFromSnapshot(ui, key, fallback);"
     },
     {
-      "file": "esm/native/runtime/ui_raw_selectors.ts",
-      "line": 290,
+      "file": "esm/native/runtime/ui_raw_selectors_store.ts",
+      "line": 33,
       "term": "fallback",
       "category": "runtime-default",
       "text": "export function readUiRawIntFromStoreUi(store: unknown, key: UiRawScalarKey, fallback: number): number {"
     },
     {
-      "file": "esm/native/runtime/ui_raw_selectors.ts",
-      "line": 292,
+      "file": "esm/native/runtime/ui_raw_selectors_store.ts",
+      "line": 35,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return readUiRawIntFromSnapshot(ui, key, fallback);"
+    },
+    {
+      "file": "esm/native/runtime/ui_raw_selectors.ts",
+      "line": 6,
+      "term": "legacy",
+      "category": "legacy-runtime-risk",
+      "text": "//   focused owners so legacy fallback policy cannot leak into live/build paths."
+    },
+    {
+      "file": "esm/native/runtime/ui_raw_selectors.ts",
+      "line": 6,
+      "term": "fallback",
+      "category": "legacy-runtime-risk",
+      "text": "//   focused owners so legacy fallback policy cannot leak into live/build paths."
     },
     {
       "file": "esm/native/runtime/ui_write_access.ts",

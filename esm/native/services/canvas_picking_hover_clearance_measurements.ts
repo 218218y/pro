@@ -9,11 +9,35 @@ export type HoverClearanceMeasurementEntry = {
   labelY?: number;
   styleKey?: 'default' | 'cell';
   textScale?: number;
+  faceSign?: number;
+  viewFaceSign?: number;
+  labelFaceSign?: number;
 };
 
 function clampFinite(value: unknown, fallback: number): number {
   const n = typeof value === 'number' ? value : Number(value);
   return Number.isFinite(n) ? n : fallback;
+}
+
+function normalizeFaceSign(value: unknown): number | undefined {
+  const n = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(n)) return undefined;
+  return n < 0 ? -1 : 1;
+}
+
+function resolveFaceMetadata(args: {
+  faceSign?: unknown;
+  viewFaceSign?: unknown;
+  labelFaceSign?: unknown;
+}): Pick<HoverClearanceMeasurementEntry, 'faceSign' | 'viewFaceSign' | 'labelFaceSign'> {
+  const meta: Pick<HoverClearanceMeasurementEntry, 'faceSign' | 'viewFaceSign' | 'labelFaceSign'> = {};
+  const faceSign = normalizeFaceSign(args.faceSign);
+  const viewFaceSign = normalizeFaceSign(args.viewFaceSign);
+  const labelFaceSign = normalizeFaceSign(args.labelFaceSign);
+  if (faceSign != null) meta.faceSign = faceSign;
+  if (viewFaceSign != null) meta.viewFaceSign = viewFaceSign;
+  if (labelFaceSign != null) meta.labelFaceSign = labelFaceSign;
+  return meta;
 }
 
 function roundClearanceCmValue(valueM: number): number {
@@ -40,6 +64,9 @@ export function buildVerticalClearanceMeasurementEntries(args: {
   z?: number;
   styleKey?: 'default' | 'cell';
   textScale?: number;
+  faceSign?: unknown;
+  viewFaceSign?: unknown;
+  labelFaceSign?: unknown;
 }): HoverClearanceMeasurementEntry[] {
   const targetWidth = Math.max(0.0001, clampFinite(args.targetWidth, 0));
   return buildRectClearanceMeasurementEntries({
@@ -58,6 +85,9 @@ export function buildVerticalClearanceMeasurementEntries(args: {
     showRight: false,
     styleKey: args.styleKey,
     textScale: args.textScale,
+    faceSign: args.faceSign,
+    viewFaceSign: args.viewFaceSign,
+    labelFaceSign: args.labelFaceSign ?? args.viewFaceSign ?? args.faceSign ?? 1,
   });
 }
 export function buildRectClearanceMeasurementEntries(args: {
@@ -80,6 +110,9 @@ export function buildRectClearanceMeasurementEntries(args: {
   horizontalLabelOutset?: number;
   styleKey?: 'default' | 'cell';
   textScale?: number;
+  faceSign?: unknown;
+  viewFaceSign?: unknown;
+  labelFaceSign?: unknown;
 }): HoverClearanceMeasurementEntry[] {
   const containerMinX = clampFinite(args.containerMinX, 0);
   const containerMaxX = clampFinite(args.containerMaxX, 0);
@@ -105,6 +138,7 @@ export function buildRectClearanceMeasurementEntries(args: {
   const minHorizontalCm = Math.max(0, clampFinite(args.minHorizontalCm, 0));
   const horizontalLabelPlacement = args.horizontalLabelPlacement === 'outside' ? 'outside' : 'center';
   const horizontalLabelOutset = Math.max(0, clampFinite(args.horizontalLabelOutset, 0.06));
+  const faceMetadata = resolveFaceMetadata(args);
 
   const entries: HoverClearanceMeasurementEntry[] = [];
 
@@ -119,6 +153,7 @@ export function buildRectClearanceMeasurementEntries(args: {
       label: roundClearanceCmLabel(topClearance),
       styleKey,
       textScale,
+      ...faceMetadata,
     });
   }
 
@@ -133,6 +168,7 @@ export function buildRectClearanceMeasurementEntries(args: {
       label: roundClearanceCmLabel(bottomClearance),
       styleKey,
       textScale,
+      ...faceMetadata,
     });
   }
 
@@ -149,6 +185,7 @@ export function buildRectClearanceMeasurementEntries(args: {
       labelY: targetCenterY,
       styleKey,
       textScale,
+      ...faceMetadata,
     });
   }
 
@@ -165,6 +202,7 @@ export function buildRectClearanceMeasurementEntries(args: {
       labelY: targetCenterY,
       styleKey,
       textScale,
+      ...faceMetadata,
     });
   }
 

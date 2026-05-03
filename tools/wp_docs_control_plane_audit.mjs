@@ -14,6 +14,7 @@ const coreDocs = [
   'docs/install_idempotency_patterns.md',
   'docs/supabase_cloud_sync_setup.md',
   'docs/supabase_cloud_sync.sql',
+  'docs/REFACTOR_NEXT_STAGE_PLAN.md',
 ];
 
 function walk(target, files = []) {

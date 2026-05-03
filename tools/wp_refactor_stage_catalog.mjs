@@ -1,5 +1,5 @@
 export const REFACTOR_COMPLETED_STAGE_LABELS = Object.freeze(
-  Array.from({ length: 74 }, (_, index) => `Stage ${index}`)
+  Array.from({ length: 81 }, (_, index) => `Stage ${index}`)
 );
 
 export const REFACTOR_STAGE_PROGRESS_MARKER = Object.freeze({
@@ -185,11 +185,55 @@ export const REFACTOR_INTEGRATION_ANCHORS = Object.freeze([
     needle: 'stage 73 render interior sketch box static contents ownership split is anchored',
     message: 'stage 73 render interior sketch box static contents ownership split guard must stay anchored',
   },
+  {
+    file: 'tests/refactor_stage74_refactor_next_stage_plan_guard.test.js',
+    needle: 'stage 74 refactor next-stage plan quality gate is anchored',
+    message: 'stage 74 refactor next-stage plan quality gate must stay anchored',
+  },
+  {
+    file: 'tests/refactor_stage75_sketch_box_door_visual_ownership_guard.test.js',
+    needle: 'stage 75 sketch box door visual ownership split is anchored',
+    message: 'stage 75 sketch box door visual ownership split must stay anchored',
+  },
+  {
+    file: 'tests/refactor_stage76_drawer_shared_contract_ownership_guard.test.js',
+    needle: 'stage 76 drawer shared render contract ownership split is anchored',
+    message: 'stage 76 drawer shared render contract ownership split must stay anchored',
+  },
+  {
+    file: 'tests/refactor_stage77_sketch_box_controls_runtime_ownership_guard.test.js',
+    needle: 'stage 77 sketch box controls runtime ownership split is anchored',
+    message: 'stage 77 sketch box controls runtime ownership split must stay anchored',
+  },
+
+  {
+    file: 'tests/refactor_stage78_runtime_access_surfaces_ownership_guard.test.js',
+    needle: 'stage 78 runtime access surfaces ownership split is anchored',
+    message: 'stage 78 runtime access surfaces ownership split must stay anchored',
+  },
+
+  {
+    file: 'tests/refactor_stage79_order_pdf_export_commands_ownership_guard.test.js',
+    needle: 'stage 79 order pdf export command ownership split is anchored',
+    message: 'stage 79 order pdf export command ownership split must stay anchored',
+  },
+
+  {
+    file: 'tests/refactor_stage80_measurement_perf_closeout_guard.test.js',
+    needle: 'stage 80 measurement and performance closeout is anchored',
+    message: 'stage 80 measurement and performance closeout must stay anchored',
+  },
 
   {
     file: 'tests/project_config_migration_replace_keys_runtime.test.ts',
     needle: 'materializes every replace-owned branch',
     message: 'project config migration must prove replace-owned branch materialization',
+  },
+
+  {
+    file: 'tests/refactor_stage80_measurement_perf_closeout_guard.test.js',
+    needle: 'stage 80 measurement and performance closeout is anchored',
+    message: 'stage 80 measurement and performance closeout must stay anchored',
   },
 
   {

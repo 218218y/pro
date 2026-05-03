@@ -249,8 +249,8 @@ export function runProjectMigrationBoundaryAudit(projectRoot = process.cwd()) {
       'hasCanonicalEssentialUiRawDimsFromSnapshot',
       'assertCanonicalUiRawDims',
     ]) {
-      if (!selectors.includes(`export function ${symbol}`)) {
-        failures.push(`${UI_RAW_SELECTORS_FILE} must export ${symbol}.`);
+      if (!selectors.includes(symbol)) {
+        failures.push(`${UI_RAW_SELECTORS_FILE} public facade must export ${symbol}.`);
       }
     }
   }

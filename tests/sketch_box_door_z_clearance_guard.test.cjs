@@ -30,6 +30,30 @@ function sketchBoxFrontsBundle() {
       'utf8'
     ),
     fs.readFileSync(
+      path.join(
+        __dirname,
+        '..',
+        'esm/native/builder/render_interior_sketch_boxes_fronts_door_visual_materials.ts'
+      ),
+      'utf8'
+    ),
+    fs.readFileSync(
+      path.join(
+        __dirname,
+        '..',
+        'esm/native/builder/render_interior_sketch_boxes_fronts_door_visual_routes.ts'
+      ),
+      'utf8'
+    ),
+    fs.readFileSync(
+      path.join(
+        __dirname,
+        '..',
+        'esm/native/builder/render_interior_sketch_boxes_fronts_door_visual_core.ts'
+      ),
+      'utf8'
+    ),
+    fs.readFileSync(
       path.join(__dirname, '..', 'esm/native/builder/render_interior_sketch_boxes_fronts_doors.ts'),
       'utf8'
     ),
