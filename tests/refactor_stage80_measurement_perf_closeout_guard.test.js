@@ -4,7 +4,9 @@ import fs from 'node:fs';
 
 import {
   REFACTOR_COMPLETED_STAGE_LABELS,
+  REFACTOR_HIGH_STAGE_METADATA,
   REFACTOR_INTEGRATION_ANCHORS,
+  REFACTOR_POST_CLOSEOUT_GUARDRAILS,
 } from '../tools/wp_refactor_stage_catalog.mjs';
 
 function read(file) {
@@ -34,6 +36,15 @@ test('stage 80 measurement and performance closeout is anchored', () => {
 
   assert.equal(REFACTOR_COMPLETED_STAGE_LABELS.at(-1), 'Stage 80');
   assert.equal(REFACTOR_COMPLETED_STAGE_LABELS.length, 81);
+  assert.deepEqual(
+    REFACTOR_HIGH_STAGE_METADATA.map(entry => entry.stage),
+    [74, 75, 76, 77, 78, 79, 80],
+    'high-number completed stages must have explicit catalog metadata'
+  );
+  assert.ok(
+    REFACTOR_POST_CLOSEOUT_GUARDRAILS.some(entry => entry.script === 'check:private-owner-imports'),
+    'post-closeout private-owner import guardrail must stay cataloged'
+  );
   assert.ok(
     REFACTOR_INTEGRATION_ANCHORS.some(anchor =>
       anchor.needle.includes('stage 80 measurement and performance closeout is anchored')

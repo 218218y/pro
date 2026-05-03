@@ -22,12 +22,15 @@ Use `docs/FACADE_AND_PUBLIC_API_POLICY.md` as the active decision policy for spl
 - External API changes must be deliberate: inventory current consumers, introduce the canonical API, migrate internal imports, keep a compatibility shim only when it has an owner and removal criteria, and then remove the old entry after guards prove it is unused.
 - Tiny facades should stay tiny. They may re-export, compose a stable factory/hook, or normalize a narrow public contract; they must not regain business logic, hidden state, timers, DOM access, storage access, or fallback chains.
 - Private owner modules should be imported only by their facade or by sibling owners inside the same implementation family. Cross-family consumers should use the public facade unless the policy explicitly marks a lower-level owner as public.
+- `check:private-owner-imports` is the cross-family guard for registered recent facade/owner splits. Add a family there when a split creates private owners that must not leak to unrelated consumers.
 - Ownership guard tests are useful, but they are not enough by themselves. Every risky split should also keep behavior/runtime coverage for the public operation that the facade exposes.
+- Completed high-number stages must be registered in `tools/wp_refactor_stage_catalog.mjs` with explicit owner/guard/lane metadata instead of relying only on prose in workmap files.
 
 Relevant checks:
 
 ```bash
 npm run check:import-cycles
+npm run check:private-owner-imports
 npm run check:docs-control-plane
 npm run verify:refactor-modernization
 npm run check:refactor-guardrails

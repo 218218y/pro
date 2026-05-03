@@ -15,6 +15,35 @@ So import-cycle work is now a guardrail, not an immediate decomposition target. 
 
 The same baseline check confirmed that `check:legacy-fallbacks`, `check:refactor-closeout`, and `check:docs-control-plane` pass. Future work should therefore start from measured product risk, behavior coverage, or a newly proven ownership seam, not from the older draft's cycle-removal phase.
 
+## Post-Stage-80 boundary hardening
+
+The first post-closeout hardening slice is complete: `npm run check:private-owner-imports` now protects the recent facade/owner splits with a single import-boundary audit instead of isolated regex checks only.
+
+The audit covers six high-risk public facade families:
+
+- Builder sketch-box door visuals.
+- Builder drawer shared render contracts.
+- UI sketch-box controls runtime.
+- Runtime `ui.raw` selectors.
+- Runtime selector facades.
+- Order PDF export commands.
+
+Each registered private owner may be imported by its public facade and sibling owners in the same family. Cross-family consumers must import the public facade. This keeps the Stage 75-79 split work stable without creating Stage 81 or splitting more code.
+
+## Control-plane metadata closeout
+
+The stage catalog now carries explicit metadata for completed Stages 74-80:
+
+- stage id and label;
+- stable slug;
+- stage kind;
+- public facade or primary surface;
+- guard file;
+- verification lane;
+- completion status.
+
+The catalog also records post-closeout guardrails such as `check:import-cycles` and `check:private-owner-imports`. `check:refactor-integration` validates that this metadata matches package scripts and guard files. This keeps future work honest: a stage is not just a number in prose, it has an owner, a guard, and a lane.
+
 ## Stage 74 decision
 
 Stage 74 is a planning and control-plane stage, not another automatic file split.
@@ -118,6 +147,7 @@ Do not create Stage 81 just to continue the numbering. If no fresh ownership sea
 | Order PDF split              | targeted PDF/editor guards, text-layer/sketch-preview guards, lint on changed files |
 | Planning/control-plane stage | docs-control-plane audit, refactor integration audit, stage guard suite             |
 | Refactor baseline audit      | `check:import-cycles`, `check:legacy-fallbacks`, `check:refactor-closeout`          |
+| Facade/import-boundary guard | `check:private-owner-imports`, `check:refactor-integration`                         |
 
 ## Stop conditions
 

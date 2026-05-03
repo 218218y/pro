@@ -3,7 +3,9 @@ import { readFileSync } from 'node:fs';
 
 import {
   REFACTOR_COMPLETED_STAGE_LABELS,
+  REFACTOR_HIGH_STAGE_METADATA,
   REFACTOR_INTEGRATION_ANCHORS,
+  REFACTOR_POST_CLOSEOUT_GUARDRAILS,
   REFACTOR_STAGE_PROGRESS_MARKER,
   assertRefactorStageCatalogIsWellFormed,
 } from './wp_refactor_stage_catalog.mjs';
@@ -38,6 +40,7 @@ try {
 
 const requiredGuardScripts = [
   'check:import-cycles',
+  'check:private-owner-imports',
   'check:project-migration-boundary',
   'check:runtime-selector-policy',
   'check:html-sinks',
@@ -128,6 +131,23 @@ const requiredStageGuardTests = [
 const stageGuardCommand = requireScript('test:refactor-stage-guards');
 for (const testFile of requiredStageGuardTests)
   requireNeedle('test:refactor-stage-guards', stageGuardCommand, testFile);
+
+for (const stage of REFACTOR_HIGH_STAGE_METADATA) {
+  requireNeedle('test:refactor-stage-guards', stageGuardCommand, stage.guard);
+  const verificationCommand = requireScript(stage.verificationLane);
+  if (stage.verificationLane === 'test:refactor-stage-guards') {
+    requireNeedle(stage.verificationLane, verificationCommand, stage.guard);
+  } else if (stage.guard) {
+    requireNeedle(stage.verificationLane, verificationCommand, stage.guard);
+  }
+}
+
+for (const guardrail of REFACTOR_POST_CLOSEOUT_GUARDRAILS) {
+  const scriptCommand = requireScript(guardrail.script);
+  requireNeedle('check:refactor-guardrails', guardrailCommand, `npm run ${guardrail.script}`);
+  requireNeedle(guardrail.script, scriptCommand, guardrail.tool);
+  if (guardrail.guard) requireNeedle(guardrail.script, scriptCommand, guardrail.guard);
+}
 
 const verifyRefactorCommand = requireScript('verify:refactor-modernization');
 for (const script of [

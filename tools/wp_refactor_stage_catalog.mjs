@@ -7,6 +7,98 @@ export const REFACTOR_STAGE_PROGRESS_MARKER = Object.freeze({
   verifyEntryPoint: 'verify:refactor-modernization',
 });
 
+export const REFACTOR_HIGH_STAGE_METADATA = Object.freeze([
+  {
+    stage: 74,
+    label: 'Stage 74',
+    slug: 'refactor-next-stage-plan-quality-gate',
+    kind: 'planning-gate',
+    status: 'completed',
+    primarySurface: 'docs/REFACTOR_NEXT_STAGE_PLAN.md',
+    guard: 'tests/refactor_stage74_refactor_next_stage_plan_guard.test.js',
+    verificationLane: 'test:refactor-stage-guards',
+  },
+  {
+    stage: 75,
+    label: 'Stage 75',
+    slug: 'sketch-box-door-visual-ownership',
+    kind: 'ownership-split',
+    status: 'completed',
+    publicFacade: 'esm/native/builder/render_interior_sketch_boxes_fronts_door_visuals.ts',
+    guard: 'tests/refactor_stage75_sketch_box_door_visual_ownership_guard.test.js',
+    verificationLane: 'test:refactor-stage-guards',
+  },
+  {
+    stage: 76,
+    label: 'Stage 76',
+    slug: 'drawer-shared-render-contract-ownership',
+    kind: 'ownership-split',
+    status: 'completed',
+    publicFacade: 'esm/native/builder/render_drawer_ops_shared.ts',
+    guard: 'tests/refactor_stage76_drawer_shared_contract_ownership_guard.test.js',
+    verificationLane: 'test:refactor-stage-guards',
+  },
+  {
+    stage: 77,
+    label: 'Stage 77',
+    slug: 'sketch-box-controls-runtime-ownership',
+    kind: 'ownership-split',
+    status: 'completed',
+    publicFacade: 'esm/native/ui/react/tabs/interior_layout_sketch_box_controls_runtime.ts',
+    guard: 'tests/refactor_stage77_sketch_box_controls_runtime_ownership_guard.test.js',
+    verificationLane: 'test:refactor-stage-guards',
+  },
+  {
+    stage: 78,
+    label: 'Stage 78',
+    slug: 'runtime-access-surfaces-ownership',
+    kind: 'runtime-boundary',
+    status: 'completed',
+    publicFacade: 'esm/native/runtime/ui_raw_selectors.ts',
+    additionalPublicFacades: ['esm/native/runtime/runtime_selectors.ts'],
+    guard: 'tests/refactor_stage78_runtime_access_surfaces_ownership_guard.test.js',
+    verificationLane: 'test:refactor-stage-guards',
+  },
+  {
+    stage: 79,
+    label: 'Stage 79',
+    slug: 'order-pdf-export-command-ownership',
+    kind: 'ownership-split',
+    status: 'completed',
+    publicFacade: 'esm/native/ui/react/pdf/order_pdf_overlay_export_commands.ts',
+    guard: 'tests/refactor_stage79_order_pdf_export_commands_ownership_guard.test.js',
+    verificationLane: 'test:refactor-stage-guards',
+  },
+  {
+    stage: 80,
+    label: 'Stage 80',
+    slug: 'measurement-performance-closeout',
+    kind: 'measurement-closeout',
+    status: 'completed',
+    primarySurface: 'docs/REFACTOR_NEXT_STAGE_PLAN.md',
+    guard: 'tests/refactor_stage80_measurement_perf_closeout_guard.test.js',
+    verificationLane: 'check:refactor-closeout',
+  },
+]);
+
+export const REFACTOR_POST_CLOSEOUT_GUARDRAILS = Object.freeze([
+  {
+    id: 'post-stage-80-import-cycle-baseline',
+    script: 'check:import-cycles',
+    tool: 'tools/wp_cycles.js',
+    verificationLane: 'check:refactor-guardrails',
+    scope: 'esm and types import graph',
+  },
+  {
+    id: 'post-stage-80-private-owner-import-boundary',
+    script: 'check:private-owner-imports',
+    tool: 'tools/wp_private_owner_import_boundary_audit.mjs',
+    guard: 'tests/private_owner_import_boundary_audit_runtime.test.js',
+    verificationLane: 'check:refactor-guardrails',
+    scope: 'registered facade/private-owner families',
+  },
+]);
+
 export const REFACTOR_INTEGRATION_ANCHORS = Object.freeze([
   {
     file: 'tests/refactor_stage19_project_migration_selector_hardening_runtime.test.js',
@@ -275,6 +367,48 @@ export function assertRefactorStageCatalogIsWellFormed() {
       throw new Error(`refactor stage catalog out of order at index ${index}: ${label}`);
     }
   });
+
+  const highStageIds = new Set();
+  const highStageSlugs = new Set();
+  for (const entry of REFACTOR_HIGH_STAGE_METADATA) {
+    if (!Number.isInteger(entry.stage) || entry.stage < 0) {
+      throw new Error(`high-stage metadata has invalid stage: ${entry.stage}`);
+    }
+    if (entry.label !== `Stage ${entry.stage}`) {
+      throw new Error(`high-stage metadata label mismatch for stage ${entry.stage}`);
+    }
+    if (!labels.includes(entry.label)) {
+      throw new Error(`high-stage metadata references incomplete stage ${entry.label}`);
+    }
+    if (highStageIds.has(entry.stage)) {
+      throw new Error(`duplicate high-stage metadata for ${entry.label}`);
+    }
+    if (!entry.slug || highStageSlugs.has(entry.slug)) {
+      throw new Error(`missing or duplicate high-stage slug for ${entry.label}`);
+    }
+    if (!entry.guard || !entry.verificationLane || !entry.status) {
+      throw new Error(`high-stage metadata is incomplete for ${entry.label}`);
+    }
+    highStageIds.add(entry.stage);
+    highStageSlugs.add(entry.slug);
+  }
+
+  for (const stage of [74, 75, 76, 77, 78, 79, 80]) {
+    if (!highStageIds.has(stage)) {
+      throw new Error(`high-stage metadata missing Stage ${stage}`);
+    }
+  }
+
+  const postCloseoutIds = new Set();
+  for (const entry of REFACTOR_POST_CLOSEOUT_GUARDRAILS) {
+    if (!entry.id || postCloseoutIds.has(entry.id)) {
+      throw new Error('post-closeout guardrail metadata has a missing or duplicate id');
+    }
+    if (!entry.script || !entry.tool || !entry.verificationLane || !entry.scope) {
+      throw new Error(`post-closeout guardrail metadata is incomplete for ${entry.id}`);
+    }
+    postCloseoutIds.add(entry.id);
+  }
 
   return true;
 }

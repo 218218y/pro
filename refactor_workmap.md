@@ -1176,3 +1176,9 @@ Cloud Sync הוא אזור עצום ומכוסה בהרבה בדיקות:
 
 > עדכון התאמה לתכנית החדשה מהשורש — 3 במאי 2026:
 > התכנית החדשה נבדקה מול הקוד בפועל. ממצא מחזורי ה־imports שבה אינו יעד פירוק מיידי כרגע: `wp_cycles` מדווח 0 מחזורים גם ב־`esm` וגם ב־`types`. לכן הכיוון המקצועי הוא לעגן זאת כ־guard קבוע (`check:import-cycles`) בתוך `check:refactor-guardrails` ו־`verify:refactor-modernization`, ולהמשיך רק לפי באג אמיתי, מדידת ביצועים, כיסוי התנהגותי חסר, או seam חדש שמוכח לפי שער Stage 74. אין לפתוח Stage 81 רק כדי להמשיך מספור.
+
+> עדכון Post-Stage-80 — 3 במאי 2026:
+> בוצע צעד שדרוג רוחבי בלי לפרק עוד קוד: נוסף `check:private-owner-imports`, audit אחד שמגן על משפחות facade/private-owner רשומות ומונע מצרכנים לא קשורים לייבא owners פרטיים ישירות. הכיסוי מתחיל במשפחות Stage 75-79 — sketch-box door visuals, drawer shared contracts, sketch-box controls runtime, `ui.raw` selectors, runtime selectors ו־Order PDF export commands — ומחובר ל־`check:refactor-guardrails`. זה משמר את הפיצולים המקצועיים שכבר נעשו ומונע נסיגה לארכיטקטורה מעורבבת בלי לפתוח Stage 81 מלאכותי.
+
+> עדכון קטלוג שלבים — 3 במאי 2026:
+> קטלוג ה־refactor שודרג כך ששלבי 74-80 אינם רק טווח מספרי אלא רשומות metadata מפורשות: slug, סוג שלב, facade או surface ראשי, guard, verification lane וסטטוס. בנוסף נרשמו guardrails של post-closeout כמו `check:import-cycles` ו־`check:private-owner-imports`. `check:refactor-integration` מאמת שהמטא־דאטה מחוברת לסקריפטים ולקבצי ה־guard, כך שהמשך העבודה נשען על control plane ברור ולא על פרוזה שנשכחת.

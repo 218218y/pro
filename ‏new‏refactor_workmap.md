@@ -662,5 +662,7 @@ Plan correction:
 - Do not start a new numbered refactor stage by default; Stage 80 is the active closeout baseline.
 - Future upgrades should be selected only from a real bug, measured performance regression, missing behavior coverage, or a newly proven ownership seam that passes `docs/REFACTOR_NEXT_STAGE_PLAN.md`.
 - The first professional implementation slice is to wire the existing `tools/wp_cycles.js` audit into the active refactor verification lane as `check:import-cycles`, covering both `esm` and `types`.
+- The next completed hardening slice is `check:private-owner-imports`, a cross-family audit that protects registered facade/private-owner splits from direct private-owner imports.
+- The refactor stage catalog now carries explicit metadata for completed Stages 74-80 and post-closeout guardrails, so future work can be audited by owner, guard, and verification lane instead of stage numbers alone.
 
 ---

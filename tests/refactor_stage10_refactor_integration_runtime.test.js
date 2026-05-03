@@ -5,7 +5,9 @@ import { spawnSync } from 'node:child_process';
 
 import {
   REFACTOR_COMPLETED_STAGE_LABELS,
+  REFACTOR_HIGH_STAGE_METADATA,
   REFACTOR_INTEGRATION_ANCHORS,
+  REFACTOR_POST_CLOSEOUT_GUARDRAILS,
   REFACTOR_STAGE_PROGRESS_MARKER,
   assertRefactorStageCatalogIsWellFormed,
 } from '../tools/wp_refactor_stage_catalog.mjs';
@@ -152,6 +154,8 @@ test('stage 10 refactor integration audit covers guardrails, stage tests, verify
     'tools/wp_verify_flow.js',
     'REFACTOR_STAGE_PROGRESS_MARKER',
     'REFACTOR_COMPLETED_STAGE_LABELS',
+    'REFACTOR_HIGH_STAGE_METADATA',
+    'REFACTOR_POST_CLOSEOUT_GUARDRAILS',
     'REFACTOR_INTEGRATION_ANCHORS',
   ]) {
     assert.ok(audit.includes(expected), `audit should include ${expected}`);
@@ -166,6 +170,35 @@ test('stage 39 to 41 refactor control-plane stage catalog is anchored', () => {
   assert.equal(REFACTOR_COMPLETED_STAGE_LABELS.at(0), 'Stage 0');
   assert.equal(REFACTOR_COMPLETED_STAGE_LABELS.at(-1), `Stage ${REFACTOR_COMPLETED_STAGE_LABELS.length - 1}`);
   assert.equal(new Set(REFACTOR_COMPLETED_STAGE_LABELS).size, REFACTOR_COMPLETED_STAGE_LABELS.length);
+  assert.deepEqual(
+    REFACTOR_HIGH_STAGE_METADATA.map(entry => entry.stage),
+    [74, 75, 76, 77, 78, 79, 80]
+  );
+  assert.deepEqual(
+    REFACTOR_POST_CLOSEOUT_GUARDRAILS.map(entry => entry.script),
+    ['check:import-cycles', 'check:private-owner-imports']
+  );
+
+  for (const entry of REFACTOR_HIGH_STAGE_METADATA) {
+    assert.equal(entry.label, `Stage ${entry.stage}`);
+    assert.equal(entry.status, 'completed');
+    assert.ok(entry.slug, `${entry.label} should have a slug`);
+    assert.ok(fs.existsSync(entry.guard), `${entry.label} guard should exist`);
+    assert.match(
+      pkg.scripts[entry.verificationLane],
+      new RegExp(entry.guard.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    );
+  }
+
+  for (const entry of REFACTOR_POST_CLOSEOUT_GUARDRAILS) {
+    assert.ok(pkg.scripts[entry.script], `${entry.script} should exist`);
+    assert.match(pkg.scripts['check:refactor-guardrails'], new RegExp(entry.script.replace(/:/g, ':')));
+    assert.match(pkg.scripts[entry.script], new RegExp(entry.tool.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+    if (entry.guard) {
+      assert.ok(fs.existsSync(entry.guard), `${entry.guard} should exist`);
+      assert.match(pkg.scripts[entry.script], new RegExp(entry.guard.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+    }
+  }
 
   const progress = fs.readFileSync(REFACTOR_STAGE_PROGRESS_MARKER.file, 'utf8');
   for (const stage of REFACTOR_COMPLETED_STAGE_LABELS) {
