@@ -1182,3 +1182,6 @@ Cloud Sync הוא אזור עצום ומכוסה בהרבה בדיקות:
 
 > עדכון קטלוג שלבים — 3 במאי 2026:
 > קטלוג ה־refactor שודרג כך ששלבי 74-80 אינם רק טווח מספרי אלא רשומות metadata מפורשות: slug, סוג שלב, facade או surface ראשי, guard, verification lane וסטטוס. בנוסף נרשמו guardrails של post-closeout כמו `check:import-cycles` ו־`check:private-owner-imports`. `check:refactor-integration` מאמת שהמטא־דאטה מחוברת לסקריפטים ולקבצי ה־guard, כך שהמשך העבודה נשען על control plane ברור ולא על פרוזה שנשכחת.
+
+> עדכון Project Import Fixtures — 3 במאי 2026:
+> נוסף `check:project-import-fixtures` עם קבצי JSON אמיתיים תחת `tests/fixtures/project_import/`. הבדיקה מריצה פרויקט legacy עטוף ופרויקט מינימלי עם ענפים ריקים דרך schema normalization, בניית UI snapshot, canonical `ui.raw` migration ו־canonical config replace-owned materialization. זה מחזק סיכון מוצרי אמיתי של ייבוא פרויקטים בלי להוסיף fallback runtime חדש.

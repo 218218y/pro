@@ -19,6 +19,7 @@ Do not re-add large generated audit dumps or per-stage closeout docs under `docs
 - `check:import-cycles` is now wired into `check:refactor-guardrails` and `verify:refactor-modernization` so future refactor work cannot silently reintroduce cycles.
 - `check:private-owner-imports` now guards registered public facade/private owner families so recent Stage 75-79 owners cannot be imported directly from unrelated consumers.
 - `tools/wp_refactor_stage_catalog.mjs` now records explicit metadata for completed Stages 74-80 and post-closeout guardrails, and `check:refactor-integration` validates that metadata against package scripts and guard files.
+- `check:project-import-fixtures` now guards real project import JSON fixtures through schema normalization, canonical `ui.raw` migration, and config replace-owned branch materialization.
 - Cloud Sync recovery hardening is covered by focused runtime tests and `check:cloud-sync-races`.
 - Canvas mirror/split/sketch hit-identity parity, split click commit base/bounds parity, removed-door transparent restore/blocking parity, full-door mirror commit fallback, sketch hover/commit host identity precedence, and sketch-box special-paint target preservation are covered by focused runtime tests plus `check:canvas-hit-identity` and `check:canvas-hit-parity`.
 - Project migration selector hardening canonicalizes existing typed `ui.raw` scalar values at project ingress and proves canonical runtime selectors do not fall back to legacy top-level UI fields.

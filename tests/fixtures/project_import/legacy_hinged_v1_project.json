@@ -1,0 +1,164 @@
+{
+  "__schema": "wardrobepro.project",
+  "__version": 1,
+  "payload": {
+    "projectName": "Legacy Top-Level Name",
+    "settings": {
+      "projectName": "Legacy Hinged Import",
+      "wardrobeType": "hinged",
+      "boardMaterial": "melamine",
+      "width": "183.5",
+      "height": "242",
+      "depth": "61.2",
+      "doors": "4",
+      "cornerWidth": "72",
+      "cornerSide": "left",
+      "structureSelection": "[2,1,1]",
+      "stackSplitEnabled": true,
+      "stackSplitLowerHeight": "95",
+      "stackSplitLowerDepth": "48",
+      "stackSplitLowerWidth": "160",
+      "stackSplitLowerDoors": "3",
+      "globalHandleType": "edge",
+      "singleDoorPosition": "right"
+    },
+    "toggles": {
+      "splitDoors": true,
+      "removeDoors": true,
+      "showDimensions": false,
+      "multiColor": true,
+      "grooves": true,
+      "notesEnabled": true,
+      "handleControl": true
+    },
+    "modulesConfiguration": [
+      {
+        "layout": "drawers",
+        "doors": "2",
+        "customData": {
+          "zone": "base"
+        }
+      },
+      {
+        "layout": "hanging",
+        "doors": "1"
+      }
+    ],
+    "stackSplitLowerModulesConfiguration": [
+      {
+        "extDrawersCount": "3"
+      }
+    ],
+    "cornerConfiguration": {
+      "modulesConfiguration": [
+        {
+          "layout": "shelves",
+          "doors": "2"
+        }
+      ],
+      "stackSplitLower": {
+        "modulesConfiguration": [
+          {
+            "layout": "drawers",
+            "doors": "1"
+          }
+        ]
+      }
+    },
+    "splitDoorsMap": {
+      "d1_full": true,
+      "splitPos_d1_full": "[0.33,0.66]",
+      "d2_top": "false"
+    },
+    "splitDoorsBottomMap": {
+      "splitBottom_d1_top": "true",
+      "d2_bot": "0"
+    },
+    "removedDoorsMap": {
+      "d4": true,
+      "junk": "maybe"
+    },
+    "groovesMap": {
+      "d1": "on",
+      "d2": "off"
+    },
+    "grooveLinesCountMap": {
+      "d1": "3",
+      "d2": "0"
+    },
+    "handlesMap": {
+      "d1": "edge-black",
+      "d2": null
+    },
+    "hingeMap": {
+      "d1": {
+        "side": "left"
+      }
+    },
+    "curtainMap": {
+      "d1": "linen",
+      "d2": null
+    },
+    "individualColors": {
+      "d1": "#ffffff",
+      "d2": null
+    },
+    "doorSpecialMap": {
+      "d3": "mirror"
+    },
+    "doorStyleMap": {
+      "d1": "profile",
+      "d2": "bad"
+    },
+    "mirrorLayoutMap": {
+      "d3": [
+        {
+          "widthCm": "45",
+          "heightCm": "150"
+        }
+      ]
+    },
+    "doorTrimMap": {
+      "d1": [
+        {
+          "axis": "vertical",
+          "color": "gold",
+          "span": "custom",
+          "sizeCm": "6"
+        }
+      ]
+    },
+    "drawerDividersMap": {
+      "m1": "true"
+    },
+    "savedColors": [
+      "oak",
+      {
+        "id": "matte-white",
+        "value": "#f7f7f7"
+      },
+      {
+        "id": ""
+      }
+    ],
+    "savedNotes": [
+      {
+        "id": "note-1",
+        "text": "Install clearances",
+        "style": {
+          "left": "12px",
+          "top": "20px"
+        },
+        "doorsOpen": true
+      }
+    ],
+    "preChestState": {
+      "dims": {
+        "width": "90"
+      }
+    },
+    "isLibraryMode": true,
+    "grooveLinesCount": "4",
+    "orderPdfEditorZoom": "1.25"
+  }
+}

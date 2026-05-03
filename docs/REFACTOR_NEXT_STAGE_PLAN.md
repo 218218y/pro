@@ -44,6 +44,17 @@ The stage catalog now carries explicit metadata for completed Stages 74-80:
 
 The catalog also records post-closeout guardrails such as `check:import-cycles` and `check:private-owner-imports`. `check:refactor-integration` validates that this metadata matches package scripts and guard files. This keeps future work honest: a stage is not just a number in prose, it has an owner, a guard, and a lane.
 
+## Project import fixture hardening
+
+The next product-risk hardening slice is complete: `npm run check:project-import-fixtures` now runs real JSON project fixtures through schema normalization, UI snapshot construction, canonical `ui.raw` migration, and canonical config snapshot materialization.
+
+The fixtures cover two important import cases:
+
+- an enveloped legacy project loaded from JSON text with numeric strings, split-door maps, removed-door maps, saved colors, notes, stack-split settings, and persisted config branches;
+- a minimal project envelope with empty replace-owned branches so project load proves those branches are explicit clears instead of accidental stale-state merges.
+
+This keeps project compatibility at the project ingress layer and gives future import work behavior coverage without adding runtime fallback paths.
+
 ## Stage 74 decision
 
 Stage 74 is a planning and control-plane stage, not another automatic file split.
@@ -143,6 +154,7 @@ Do not create Stage 81 just to continue the numbering. If no fresh ownership sea
 | ---------------------------- | ----------------------------------------------------------------------------------- |
 | Builder render split         | `typecheck:builder`, relevant render/visual guards, new ownership guard             |
 | Runtime/API hardening        | runtime selector/API tests, migration boundary guard, type-hardening audit          |
+| Project import/load ingress  | `check:project-import-fixtures`, project migration boundary, runtime selector guard |
 | React UI split               | targeted UI tests, design-system/option-button guards, lint on changed files        |
 | Order PDF split              | targeted PDF/editor guards, text-layer/sketch-preview guards, lint on changed files |
 | Planning/control-plane stage | docs-control-plane audit, refactor integration audit, stage guard suite             |

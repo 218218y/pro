@@ -119,10 +119,12 @@ npm run check:cloud-sync-races
 - Old persisted shapes may be converted once in `esm/native/io/project_migrations/`.
 - After load/import migration, runtime and builder paths should read canonical state only.
 - Tolerant compatibility readers may remain for staged migration, but new live paths should prefer canonical readers/assertions.
+- Real project import fixtures under `tests/fixtures/project_import/` guard string/envelope ingress, canonical `ui.raw` materialization, config replace-owned branches, and map cleanup behavior.
 
 Relevant checks:
 
 ```bash
+npm run check:project-import-fixtures
 npm run check:project-migration-boundary
 npm run check:runtime-selector-policy
 ```

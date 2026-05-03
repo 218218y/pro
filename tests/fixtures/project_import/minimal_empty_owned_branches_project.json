@@ -1,0 +1,40 @@
+{
+  "project": {
+    "settings": {
+      "projectName": "Empty Owned Branches Import",
+      "wardrobeType": "sliding",
+      "boardMaterial": "sandwich",
+      "width": 160,
+      "height": 240,
+      "depth": 55,
+      "doors": 2,
+      "structureSelection": "[1,1]"
+    },
+    "toggles": {
+      "showDimensions": true,
+      "multiColor": false
+    },
+    "modulesConfiguration": [],
+    "stackSplitLowerModulesConfiguration": [],
+    "cornerConfiguration": {},
+    "groovesMap": {},
+    "grooveLinesCountMap": {},
+    "splitDoorsMap": {},
+    "splitDoorsBottomMap": {},
+    "removedDoorsMap": {},
+    "drawerDividersMap": {},
+    "individualColors": {},
+    "doorSpecialMap": {},
+    "doorStyleMap": {},
+    "mirrorLayoutMap": {},
+    "doorTrimMap": {},
+    "handlesMap": {},
+    "hingeMap": {},
+    "curtainMap": {},
+    "savedColors": [],
+    "savedNotes": [],
+    "preChestState": null,
+    "isLibraryMode": false,
+    "grooveLinesCount": null
+  }
+}

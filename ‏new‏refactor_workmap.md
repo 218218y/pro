@@ -10,22 +10,21 @@
 
 מהסריקה הנוכחית:
 
-* `check:script-duplicates` נקי: **0 כפילויות scripts**.
-* `wp_refactor_closeout_audit` עבר.
-* `wp_refactor_integration_audit` עבר.
-* `features-public-api` נקי: **22 public entries**, כ־**259 import sites**.
-* `type-hardening` נקי: **0 `as any` casts** ב־`esm/types`.
-* יש עדיין **925 מופעי legacy/fallback מסווגים**, מתוכם **151 מוגדרים כ־legacy-runtime-risk**.
-* נמצאו **2 מחזורי imports משמעותיים**:
+- `check:script-duplicates` נקי: **0 כפילויות scripts**.
+- `wp_refactor_closeout_audit` עבר.
+- `wp_refactor_integration_audit` עבר.
+- `features-public-api` נקי: **22 public entries**, כ־**259 import sites**.
+- `type-hardening` נקי: **0 `as any` casts** ב־`esm/types`.
+- יש עדיין **925 מופעי legacy/fallback מסווגים**, מתוכם **151 מוגדרים כ־legacy-runtime-risk**.
+- נמצאו **2 מחזורי imports משמעותיים**:
+  - מחזור גדול של **29 קבצים** סביב Order PDF / export / React PDF overlay.
+  - מחזור של **18 קבצי types** תחת `types/`.
 
-  * מחזור גדול של **29 קבצים** סביב Order PDF / export / React PDF overlay.
-  * מחזור של **18 קבצי types** תחת `types/`.
-* מבחינת ביצועים, בדוח browser perf רואים שהבעיה המרכזית היא לא רק “קוד איטי”, אלא בעיקר:
-
-  * selector fanout.
-  * ריבוי commits.
-  * build requests רבים במסלולי authoring.
-  * מסלולי project restore / invalid import / persistence recovery ארוכים מדי.
+- מבחינת ביצועים, בדוח browser perf רואים שהבעיה המרכזית היא לא רק “קוד איטי”, אלא בעיקר:
+  - selector fanout.
+  - ריבוי commits.
+  - build requests רבים במסלולי authoring.
+  - מסלולי project restore / invalid import / persistence recovery ארוכים מדי.
 
 כלומר: הפרויקט כבר עבר דרך ארוכה, אבל עכשיו צריך לסגור את הדברים שמבדילים בין “קוד עובד” לבין “קוד נקי, אחיד, קל לתחזוקה, ועמיד לשנה קדימה”.
 
@@ -38,27 +37,24 @@
 ## פעולות
 
 1. להריץ ולתעד כקו בסיס:
-
-   * `npm run verify:refactor-modernization`
-   * `npm run check:refactor-guardrails`
-   * `npm run test:refactor-stage-guards`
-   * smoke / perf לפי מה שזמין בסביבה.
+   - `npm run verify:refactor-modernization`
+   - `npm run check:refactor-guardrails`
+   - `npm run test:refactor-stage-guards`
+   - smoke / perf לפי מה שזמין בסביבה.
 
 2. להוסיף או לעדכן audit קטן עבור:
-
-   * import cycles.
-   * fan-in/fan-out חריגים.
-   * legacy-runtime-risk budget.
-   * CSS debt budget.
-   * perf budget.
+   - import cycles.
+   - fan-in/fan-out חריגים.
+   - legacy-runtime-risk budget.
+   - CSS debt budget.
+   - perf budget.
 
 3. להחליט ש־“ירוק” לבד לא מספיק. כל שלב צריך להוכיח:
-
-   * בעלות ברורה.
-   * בדיקות התנהגותיות.
-   * בלי fallback חדש.
-   * בלי facade שמתחיל לצבור לוגיקה.
-   * בלי תיקון מקומי שמסתיר בעיית שורש.
+   - בעלות ברורה.
+   - בדיקות התנהגותיות.
+   - בלי fallback חדש.
+   - בלי facade שמתחיל לצבור לוגיקה.
+   - בלי תיקון מקומי שמסתיר בעיית שורש.
 
 ## תוצאה רצויה
 
@@ -74,9 +70,9 @@
 
 כרגע יש מחזור גדול סביב:
 
-* `esm/native/ui/export/export_order_pdf_*`
-* `esm/native/ui/export_canvas.ts`
-* `esm/native/ui/react/pdf/order_pdf_overlay_*`
+- `esm/native/ui/export/export_order_pdf_*`
+- `esm/native/ui/export_canvas.ts`
+- `esm/native/ui/react/pdf/order_pdf_overlay_*`
 
 הבעיה הארכיטקטונית: שכבת export טהורה יחסית תלויה בחלקים מתוך React overlay, ובמקביל React overlay קורא חזרה אל export. זה יוצר היברידיות: UI, state draft, text regions, annotations ו־export engine מעורבבים.
 
@@ -95,17 +91,17 @@ order_pdf/react_overlay
 
 העיקרון:
 
-* React overlay יכול להשתמש ב־domain/draft/text/annotations.
-* Export engine יכול להשתמש ב־domain/draft/text/annotations.
-* אבל export engine לא אמור לייבא React runtime.
-* React runtime לא אמור להיות חלק מהלוגיקה הקנונית של PDF draft/export.
+- React overlay יכול להשתמש ב־domain/draft/text/annotations.
+- Export engine יכול להשתמש ב־domain/draft/text/annotations.
+- אבל export engine לא אמור לייבא React runtime.
+- React runtime לא אמור להיות חלק מהלוגיקה הקנונית של PDF draft/export.
 
 ## תוצאה רצויה
 
-* אפס import cycle סביב Order PDF.
-* Export PDF הופך למסלול headless/testable.
-* React overlay נשאר UI/controller בלבד.
-* קל יותר להוסיף בעתיד export נוסף, Gmail draft, preview, או template חדש בלי לגעת בחצי פרויקט.
+- אפס import cycle סביב Order PDF.
+- Export PDF הופך למסלול headless/testable.
+- React overlay נשאר UI/controller בלבד.
+- קל יותר להוסיף בעתיד export נוסף, Gmail draft, preview, או template חדש בלי לגעת בחצי פרויקט.
 
 ---
 
@@ -113,41 +109,39 @@ order_pdf/react_overlay
 
 יש מחזור בין קבצי `types`, למשל סביב:
 
-* `types/app.ts`
-* `types/build.ts`
-* `types/kernel.ts`
-* `types/state.ts`
-* `types/runtime.ts`
-* `types/project.ts`
+- `types/app.ts`
+- `types/build.ts`
+- `types/kernel.ts`
+- `types/state.ts`
+- `types/runtime.ts`
+- `types/project.ts`
 
 זה לא תמיד שובר runtime, אבל זה סימן שהטיפוסים הפכו ל־“סלט מרכזי”.
 
 ## כיוון תיקון
 
 1. ליצור שכבת types בסיסית:
-
-   * `types/core.ts`
-   * `types/primitives.ts`
-   * `types/domain.ts`
-   * `types/store_contracts.ts`
-   * `types/build_contracts.ts`
+   - `types/core.ts`
+   - `types/primitives.ts`
+   - `types/domain.ts`
+   - `types/store_contracts.ts`
+   - `types/build_contracts.ts`
 
 2. להפריד:
-
-   * טיפוסי domain.
-   * טיפוסי runtime.
-   * טיפוסי app/container.
-   * טיפוסי persistence/project.
-   * טיפוסי builder.
+   - טיפוסי domain.
+   - טיפוסי runtime.
+   - טיפוסי app/container.
+   - טיפוסי persistence/project.
+   - טיפוסי builder.
 
 3. להשתמש ב־`import type` בלבד איפה שזה באמת טיפוס.
 
 ## תוצאה רצויה
 
-* אין cycles ב־types.
-* קובץ טיפוסים לא מושך חצי מערכת.
-* קל יותר להבין מי תלוי במי.
-* פחות סיכון לשבור build בגלל שינוי טיפוס קטן.
+- אין cycles ב־types.
+- קובץ טיפוסים לא מושך חצי מערכת.
+- קל יותר להבין מי תלוי במי.
+- פחות סיכון לשבור build בגלל שינוי טיפוס קטן.
 
 ---
 
@@ -157,8 +151,8 @@ order_pdf/react_overlay
 
 כרגע יש:
 
-* **925** מופעים מסווגים.
-* **151** מופעים בקטגוריית `legacy-runtime-risk`.
+- **925** מופעים מסווגים.
+- **151** מופעים בקטגוריית `legacy-runtime-risk`.
 
 ## מוקדים ראשונים לבדיקה
 
@@ -218,31 +212,28 @@ runtime path
 ## נקודות עבודה
 
 1. להפריד לחלוטין בין:
-
-   * canonical runtime readers.
-   * migration readers.
-   * default value helpers.
+   - canonical runtime readers.
+   - migration readers.
+   - default value helpers.
 
 2. קבצים כמו:
-
-   * `config_selectors_readers.ts`
-   * `runtime_selectors_normalizers.ts`
-   * `ui_raw_selectors_*`
+   - `config_selectors_readers.ts`
+   - `runtime_selectors_normalizers.ts`
+   - `ui_raw_selectors_*`
 
    צריכים להיות ברורים מאוד: האם הם runtime canonical או migration tolerant.
 
 3. כל reader עם הערה כמו “supports legacy string values” צריך להיבדק:
-
-   * אם זה live runtime — כנראה להעביר למיגרציה.
-   * אם זה import compatibility — להשאיר שם בלבד.
-   * אם זה UI input coercion — לקרוא לזה coercion ולא legacy.
+   - אם זה live runtime — כנראה להעביר למיגרציה.
+   - אם זה import compatibility — להשאיר שם בלבד.
+   - אם זה UI input coercion — לקרוא לזה coercion ולא legacy.
 
 ## תוצאה רצויה
 
-* runtime/build קוראים state קנוני בלבד.
-* fallback ישן לא זולג למסלול חי.
-* פרויקט ישן נטען? כן, אבל מתנרמל בכניסה.
-* אחרי load, אין “אולי השדה פה ואולי שם”.
+- runtime/build קוראים state קנוני בלבד.
+- fallback ישן לא זולג למסלול חי.
+- פרויקט ישן נטען? כן, אבל מתנרמל בכניסה.
+- אחרי load, אין “אולי השדה פה ואולי שם”.
 
 ---
 
@@ -252,33 +243,33 @@ runtime path
 
 ## קבצים עם fan-in גבוה שכדאי לבדוק בזהירות
 
-* `esm/native/runtime/record.ts`
-* `esm/native/services/api.ts`
-* `esm/native/runtime/api.ts`
-* `esm/native/ui/react/pdf/order_pdf_overlay_contracts.ts`
-* `esm/native/runtime/render_access.ts`
-* `esm/native/runtime/builder_service_access.ts`
-* `esm/native/runtime/platform_access.ts`
-* `esm/native/services/canvas_picking_engine.ts`
-* `esm/native/services/cloud_sync_support.ts`
+- `esm/native/runtime/record.ts`
+- `esm/native/services/api.ts`
+- `esm/native/runtime/api.ts`
+- `esm/native/ui/react/pdf/order_pdf_overlay_contracts.ts`
+- `esm/native/runtime/render_access.ts`
+- `esm/native/runtime/builder_service_access.ts`
+- `esm/native/runtime/platform_access.ts`
+- `esm/native/services/canvas_picking_engine.ts`
+- `esm/native/services/cloud_sync_support.ts`
 
 ## כלל עבודה
 
 Facade טוב:
 
-* מייצא API ציבורי.
-* דק.
-* בלי state פנימי כבד.
-* בלי side effects.
-* בלי fallback chains.
-* בלי business logic.
+- מייצא API ציבורי.
+- דק.
+- בלי state פנימי כבד.
+- בלי side effects.
+- בלי fallback chains.
+- בלי business logic.
 
 Facade רע:
 
-* “רק עוד helper קטן”.
-* מתחיל לייבא מכל מקום.
-* הופך למקום שבו כל הבעיות נפתרות זמנית.
-* מסתיר ownership לא ברור.
+- “רק עוד helper קטן”.
+- מתחיל לייבא מכל מקום.
+- הופך למקום שבו כל הבעיות נפתרות זמנית.
+- מסתיר ownership לא ברור.
 
 ## תוצאה רצויה
 
@@ -294,11 +285,11 @@ Facade רע:
 
 מסלולים כבדים:
 
-* `project.restore-last-session.missing-autosave` סביב 17 שניות.
-* `project.persistence-recovery.burst` סביב 15 שניות.
-* `cabinet-core.mixed-edit-burst` סביב 11 שניות.
-* `cabinet-door-drawer-authoring.mode-burst` סביב 10 שניות.
-* `cabinet-build-variants.structure-material-door-burst` סביב 9 שניות.
+- `project.restore-last-session.missing-autosave` סביב 17 שניות.
+- `project.persistence-recovery.burst` סביב 15 שניות.
+- `cabinet-core.mixed-edit-burst` סביב 11 שניות.
+- `cabinet-door-drawer-authoring.mode-burst` סביב 10 שניות.
+- `cabinet-build-variants.structure-material-door-burst` סביב 9 שניות.
 
 האבחון המרכזי בדוח: **selector fanout**.
 
@@ -308,20 +299,20 @@ Facade רע:
 
 לבדוק:
 
-* האם פעולות UI יוצרות כמה commits כשאפשר commit אחד.
-* האם patch שלא משנה ערך עדיין גורם notify.
-* האם `ui+config` נכתב יחד במקומות שיכולים להתפצל או להתאחד בצורה נכונה יותר.
-* האם selector notifications רחבות מדי.
+- האם פעולות UI יוצרות כמה commits כשאפשר commit אחד.
+- האם patch שלא משנה ערך עדיין גורם notify.
+- האם `ui+config` נכתב יחד במקומות שיכולים להתפצל או להתאחד בצורה נכונה יותר.
+- האם selector notifications רחבות מדי.
 
 ### 6.2 Selector fanout
 
 להקטין rerenders על ידי:
 
-* selectors צרים יותר.
-* stable references.
-* batch updates למסלולי burst.
-* הפרדה בין state שצריך build לבין state UI-only.
-* מניעת notify כשאין שינוי סמנטי אמיתי.
+- selectors צרים יותר.
+- stable references.
+- batch updates למסלולי burst.
+- הפרדה בין state שצריך build לבין state UI-only.
+- מניעת notify כשאין שינוי סמנטי אמיתי.
 
 ### 6.3 Builder scheduling
 
@@ -335,28 +326,28 @@ requests ~= executes
 
 צריך לבדוק:
 
-* אילו actions יכולות להתאחד בתוך burst.
-* איפה debounce מותר ואיפה אסור.
-* איפה action הוא UI-only ולא צריך build.
-* האם project load מפעיל build יותר מפעם אחת.
-* האם שינוי צבע/טקסטורה/דלת גורם יותר עבודה ממה שצריך.
+- אילו actions יכולות להתאחד בתוך burst.
+- איפה debounce מותר ואיפה אסור.
+- איפה action הוא UI-only ולא צריך build.
+- האם project load מפעיל build יותר מפעם אחת.
+- האם שינוי צבע/טקסטורה/דלת גורם יותר עבודה ממה שצריך.
 
 ### 6.4 Render/material caching
 
 מקומות פוטנציאליים:
 
-* geometry/material creation.
-* Three.js object traversal.
-* text/measurement labels.
-* PDF/image capture.
-* notes export render.
-* scene lighting renderer.
+- geometry/material creation.
+- Three.js object traversal.
+- text/measurement labels.
+- PDF/image capture.
+- notes export render.
+- scene lighting renderer.
 
 אבל לא לעשות caching עיוור. כל cache צריך:
 
-* key ברור.
-* invalidation ברור.
-* בדיקה שמוכיחה שאין stale visual state.
+- key ברור.
+- invalidation ברור.
+- בדיקה שמוכיחה שאין stale visual state.
 
 ---
 
@@ -367,30 +358,27 @@ requests ~= executes
 ## נקודות עבודה
 
 1. לוודא שכל save/load/restore מחזיר outcome ברור:
-
-   * dispatched
-   * pending
-   * ok
-   * failed
-   * recovered
+   - dispatched
+   - pending
+   - ok
+   - failed
+   - recovered
 
 2. בדוח perf יש `project.save.dispatched` עם pending שלא נראה סגור מספיק טוב. ייתכן שזה רק instrumentation, אבל צריך לוודא שאין מצב שבו save “נשלח” אבל אין signal נקי שהוא הסתיים.
 
 3. invalid import צריך להיכשל מהר:
-
-   * בלי build מיותר.
-   * בלי restore מיותר.
-   * בלי state mutation חלקי.
+   - בלי build מיותר.
+   - בלי restore מיותר.
+   - בלי state mutation חלקי.
 
 4. restore missing autosave לא אמור להיות מסלול של 17 שניות אם אין מה לשחזר. צריך לבדוק אם יש timeout/cleanup/attempt sequence יקר מדי.
 
 5. cloud sync:
-
-   * singleflight.
-   * cleanup timers.
-   * no stale queued work.
-   * no push/pull race.
-   * no UI ownership inside service lifecycle.
+   - singleflight.
+   - cleanup timers.
+   - no stale queued work.
+   - no push/pull race.
+   - no UI ownership inside service lifecycle.
 
 ## תוצאה רצויה
 
@@ -402,41 +390,38 @@ requests ~= executes
 
 ה־CSS audit עבר, אבל המספרים מראים שיש חוב עיצובי:
 
-* `!important`: כ־141
-* `transition: all`: כ־22
-* `z-index`: כ־52
-* `box-shadow`: כ־116
+- `!important`: כ־141
+- `transition: all`: כ־22
+- `z-index`: כ־52
+- `box-shadow`: כ־116
 
 זה לא בהכרח באג, אבל זה סימן שצריך סטנדרט אחיד יותר.
 
 ## נקודות עבודה
 
 1. להפוך CSS tokens למקור אמת:
-
-   * spacing
-   * shadow
-   * z-index layers
-   * transitions
-   * colors
+   - spacing
+   - shadow
+   - z-index layers
+   - transitions
+   - colors
 
 2. לצמצם `!important` רק למקומות עם הצדקה אמיתית.
 
 3. להחליף `transition: all` ל־properties מדויקים.
 
 4. לוודא שכל controls שחוזרים על עצמם משתמשים בפרימיטיבים קיימים:
-
-   * `OptionButton`
-   * `OptionButtonGroup`
-   * `ColorSwatch`
-   * `ColorSwatchItem`
+   - `OptionButton`
+   - `OptionButtonGroup`
+   - `ColorSwatch`
+   - `ColorSwatchItem`
 
 5. לבדוק במיוחד:
-
-   * tabs.
-   * overlay feedback.
-   * notes overlay.
-   * Order PDF overlay.
-   * cloud sync panel.
+   - tabs.
+   - overlay feedback.
+   - notes overlay.
+   - Order PDF overlay.
+   - cloud sync panel.
 
 ## תוצאה רצויה
 
@@ -464,21 +449,21 @@ order_pdf/
 
 ## עקרונות
 
-* draft normalization לא תלוי ב־React.
-* text regions לא תלויות ב־overlay runtime.
-* annotations הן domain/model, לא React state בלבד.
-* export engine לא מייבא UI.
-* Gmail draft הוא adapter/operation, לא חלק מליבת PDF.
+- draft normalization לא תלוי ב־React.
+- text regions לא תלויות ב־overlay runtime.
+- annotations הן domain/model, לא React state בלבד.
+- export engine לא מייבא UI.
+- Gmail draft הוא adapter/operation, לא חלק מליבת PDF.
 
 ## בדיקות נדרשות
 
-* draft normalization.
-* text region merge.
-* annotation persistence.
-* export output contract.
-* open/close/reopen lifecycle.
-* invalid template / missing asset.
-* Gmail draft failure non-fatal.
+- draft normalization.
+- text region merge.
+- annotation persistence.
+- export output contract.
+- open/close/reopen lifecycle.
+- invalid template / missing asset.
+- Gmail draft failure non-fatal.
 
 ---
 
@@ -492,14 +477,13 @@ order_pdf/
 2. למחוק שדות legacy כמו `moduleKey` / `isBottom` ממסלולי commit אם כבר יש `hostModuleKey` / `hostIsBottom`.
 3. לוודא ש־manual layout / sketch / split / mirror / paint לא ממציאים זהות מחדש.
 4. להוסיף בדיקות מסע מלאות:
-
-   * hover
-   * preview
-   * click
-   * commit
-   * save
-   * reload
-   * re-hover
+   - hover
+   - preview
+   - click
+   - commit
+   - save
+   - reload
+   - re-hover
 
 ## תוצאה רצויה
 
@@ -518,11 +502,10 @@ order_pdf/
 3. לוודא שאין כפילות keys / aliases.
 4. לוודא שכל preset עובר validation אחיד.
 5. להוסיף בדיקת contract:
-
-   * כל preset נטען.
-   * כל preset מנורמל.
-   * אין keys כפולים.
-   * אין שדות deprecated במסלול canonical.
+   - כל preset נטען.
+   - כל preset מנורמל.
+   - אין keys כפולים.
+   - אין שדות deprecated במסלול canonical.
 
 ---
 
@@ -534,10 +517,10 @@ order_pdf/
 
 בהרצה הנוכחית של audit:
 
-* כ־981 test files.
-* כ־471 references מ־package scripts.
-* הרבה contract/integration coverage.
-* legacy tests מסווגים.
+- כ־981 test files.
+- כ־471 references מ־package scripts.
+- הרבה contract/integration coverage.
+- legacy tests מסווגים.
 
 ## נקודות עבודה
 
@@ -545,12 +528,11 @@ order_pdf/
 2. להעדיף behavior tests על פני “הקובץ הזה חייב לייצא בדיוק כך”.
 3. לשמור contract tests רק לגבולות ציבוריים אמיתיים.
 4. להוסיף בדיקות שמונעות חזרה:
-
-   * no import cycles.
-   * no runtime legacy fallback growth.
-   * no React import inside export engine.
-   * no migration reader inside live builder path.
-   * no broad selector notify on no-op patch.
+   - no import cycles.
+   - no runtime legacy fallback growth.
+   - no React import inside export engine.
+   - no migration reader inside live builder path.
+   - no broad selector notify on no-op patch.
 
 ---
 
@@ -559,21 +541,18 @@ order_pdf/
 ## עדיפות 1 — הכי חשוב
 
 1. לשבור import cycles:
-
-   * Order PDF/export/React.
-   * `types/`.
+   - Order PDF/export/React.
+   - `types/`.
 
 2. לצמצם `legacy-runtime-risk`:
-
-   * להתחיל מ־10 הקבצים עם הכי הרבה risk.
-   * להעביר compatibility ל־project ingress/migrations.
+   - להתחיל מ־10 הקבצים עם הכי הרבה risk.
+   - להעביר compatibility ל־project ingress/migrations.
 
 3. לחזק canonical runtime path:
-
-   * `ui.raw`
-   * `config`
-   * `runtime`
-   * `project load`
+   - `ui.raw`
+   - `config`
+   - `runtime`
+   - `project load`
 
 אלה הדברים שהכי משפיעים על יציבות ותחזוקה.
 
@@ -602,13 +581,13 @@ order_pdf/
 
 חשוב לא פחות.
 
-* לא לפצל קבצים רק בגלל שהם גדולים.
-* לא להסיר fallback בלי להבין אם הוא default, migration, browser adapter או legacy חי.
-* לא לעדכן בדיקה ישנה כדי שתעבור לפני שמתקנים את הארכיטקטורה.
-* לא להוסיף facade חדש כדי לברוח מ־cycle.
-* לא להכניס caching בלי invalidation ברור.
-* לא להוסיף debounce כללי שיסתיר race או יפגע בחוויית משתמש.
-* לא לתקן symptoms בעשרה callers במקום לתקן owner אחד.
+- לא לפצל קבצים רק בגלל שהם גדולים.
+- לא להסיר fallback בלי להבין אם הוא default, migration, browser adapter או legacy חי.
+- לא לעדכן בדיקה ישנה כדי שתעבור לפני שמתקנים את הארכיטקטורה.
+- לא להוסיף facade חדש כדי לברוח מ־cycle.
+- לא להכניס caching בלי invalidation ברור.
+- לא להוסיף debounce כללי שיסתיר race או יפגע בחוויית משתמש.
+- לא לתקן symptoms בעשרה callers במקום לתקן owner אחד.
 
 ---
 
@@ -644,6 +623,7 @@ order_pdf/
 5. הוספת guard שמונע חזרה של cycles ו־fallbacks למסלול runtime.
 
 זה צעד עמוק, אבל לא מפוזר. הוא ייגע בשורש, לא בקוסמטיקה.
+
 # Repository alignment update - 2026-05-03
 
 This draft was checked against the live repository before implementation.
@@ -664,5 +644,6 @@ Plan correction:
 - The first professional implementation slice is to wire the existing `tools/wp_cycles.js` audit into the active refactor verification lane as `check:import-cycles`, covering both `esm` and `types`.
 - The next completed hardening slice is `check:private-owner-imports`, a cross-family audit that protects registered facade/private-owner splits from direct private-owner imports.
 - The refactor stage catalog now carries explicit metadata for completed Stages 74-80 and post-closeout guardrails, so future work can be audited by owner, guard, and verification lane instead of stage numbers alone.
+- The latest completed product-risk slice is `check:project-import-fixtures`, which runs real project JSON fixtures through schema normalization, canonical `ui.raw` migration, and config replace-owned branch materialization.
 
 ---
