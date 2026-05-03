@@ -28,9 +28,9 @@ export function createDefaultOrderPdfSketchStrokeToolWidths(): OrderPdfSketchStr
   return { ...ORDER_PDF_SKETCH_STROKE_TOOL_DEFAULT_WIDTHS };
 }
 
-function normalizeOrderPdfSketchStrokeWidth(value: number | null | undefined, fallback: number): number {
+function normalizeOrderPdfSketchStrokeWidth(value: number | null | undefined, defaultWidth: number): number {
   const width = Number(value);
-  return Number.isFinite(width) && width > 0 ? width : fallback;
+  return Number.isFinite(width) && width > 0 ? width : defaultWidth;
 }
 
 export function resolveOrderPdfSketchActiveWidthTool(args: {
@@ -44,8 +44,8 @@ export function resolveOrderPdfSketchStrokeToolWidth(args: {
   tool: OrderPdfSketchStrokeTool;
   widthsByTool: Partial<OrderPdfSketchStrokeToolWidthMap> | null | undefined;
 }): number {
-  const fallback = ORDER_PDF_SKETCH_STROKE_TOOL_DEFAULT_WIDTHS[args.tool] || 2;
-  return normalizeOrderPdfSketchStrokeWidth(args.widthsByTool?.[args.tool], fallback);
+  const defaultWidth = ORDER_PDF_SKETCH_STROKE_TOOL_DEFAULT_WIDTHS[args.tool] || 2;
+  return normalizeOrderPdfSketchStrokeWidth(args.widthsByTool?.[args.tool], defaultWidth);
 }
 
 export function updateOrderPdfSketchStrokeToolWidth(args: {
@@ -53,8 +53,8 @@ export function updateOrderPdfSketchStrokeToolWidth(args: {
   width: number;
   widthsByTool: OrderPdfSketchStrokeToolWidthMap;
 }): OrderPdfSketchStrokeToolWidthMap {
-  const fallback = ORDER_PDF_SKETCH_STROKE_TOOL_DEFAULT_WIDTHS[args.tool] || 2;
-  const nextWidth = normalizeOrderPdfSketchStrokeWidth(args.width, fallback);
+  const defaultWidth = ORDER_PDF_SKETCH_STROKE_TOOL_DEFAULT_WIDTHS[args.tool] || 2;
+  const nextWidth = normalizeOrderPdfSketchStrokeWidth(args.width, defaultWidth);
   if (Object.is(args.widthsByTool[args.tool], nextWidth)) return args.widthsByTool;
   return {
     ...args.widthsByTool,
