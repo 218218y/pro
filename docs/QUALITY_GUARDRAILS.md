@@ -27,6 +27,7 @@ Use `docs/FACADE_AND_PUBLIC_API_POLICY.md` as the active decision policy for spl
 Relevant checks:
 
 ```bash
+npm run check:import-cycles
 npm run check:docs-control-plane
 npm run verify:refactor-modernization
 npm run check:refactor-guardrails

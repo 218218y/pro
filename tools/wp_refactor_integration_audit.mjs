@@ -37,6 +37,7 @@ try {
 }
 
 const requiredGuardScripts = [
+  'check:import-cycles',
   'check:project-migration-boundary',
   'check:runtime-selector-policy',
   'check:html-sinks',
@@ -131,6 +132,7 @@ for (const testFile of requiredStageGuardTests)
 const verifyRefactorCommand = requireScript('verify:refactor-modernization');
 for (const script of [
   'check:script-duplicates',
+  'check:import-cycles',
   'check:legacy-fallbacks',
   'check:refactor-guardrails',
   'test:refactor-stage-guards',

@@ -4,6 +4,17 @@ Date: 2026-05-03
 Baseline: Stage 80 complete; measurement/performance closeout completed after the Stage 74 planning gate.  
 Purpose: keep the remaining modernization work professional, useful, and bounded. This document is intentionally not a wish list of large files. It is the decision gate for deciding whether the next stage should split code, improve tests, harden contracts, or stop.
 
+## Repository alignment update
+
+The root `new refactor_workmap` draft was reviewed against the live codebase on 2026-05-03. Its direction is useful, but two assumptions are now stale:
+
+- `node tools/wp_cycles.js esm --json` reports 0 cycle groups across 2491 files and 7558 edges.
+- `node tools/wp_cycles.js types --json` reports 0 cycle groups across 72 files and 174 edges.
+
+So import-cycle work is now a guardrail, not an immediate decomposition target. The active lane wires `npm run check:import-cycles` into `check:refactor-guardrails` and `verify:refactor-modernization` so future Order PDF, export, React overlay, or type changes cannot reintroduce cycles silently.
+
+The same baseline check confirmed that `check:legacy-fallbacks`, `check:refactor-closeout`, and `check:docs-control-plane` pass. Future work should therefore start from measured product risk, behavior coverage, or a newly proven ownership seam, not from the older draft's cycle-removal phase.
+
 ## Stage 74 decision
 
 Stage 74 is a planning and control-plane stage, not another automatic file split.
@@ -106,6 +117,7 @@ Do not create Stage 81 just to continue the numbering. If no fresh ownership sea
 | React UI split               | targeted UI tests, design-system/option-button guards, lint on changed files        |
 | Order PDF split              | targeted PDF/editor guards, text-layer/sketch-preview guards, lint on changed files |
 | Planning/control-plane stage | docs-control-plane audit, refactor integration audit, stage guard suite             |
+| Refactor baseline audit      | `check:import-cycles`, `check:legacy-fallbacks`, `check:refactor-closeout`          |
 
 ## Stop conditions
 

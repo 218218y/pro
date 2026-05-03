@@ -644,3 +644,23 @@ order_pdf/
 5. הוספת guard שמונע חזרה של cycles ו־fallbacks למסלול runtime.
 
 זה צעד עמוק, אבל לא מפוזר. הוא ייגע בשורש, לא בקוסמטיקה.
+# Repository alignment update - 2026-05-03
+
+This draft was checked against the live repository before implementation.
+
+Current verified baseline:
+
+- `node tools/wp_cycles.js esm --json`: 0 cycle groups.
+- `node tools/wp_cycles.js types --json`: 0 cycle groups.
+- `npm run check:legacy-fallbacks`: pass.
+- `npm run check:refactor-closeout`: pass.
+- `npm run check:docs-control-plane`: pass.
+
+Plan correction:
+
+- The import-cycle section in this draft is now a guardrail item, not an immediate code-splitting target.
+- Do not start a new numbered refactor stage by default; Stage 80 is the active closeout baseline.
+- Future upgrades should be selected only from a real bug, measured performance regression, missing behavior coverage, or a newly proven ownership seam that passes `docs/REFACTOR_NEXT_STAGE_PLAN.md`.
+- The first professional implementation slice is to wire the existing `tools/wp_cycles.js` audit into the active refactor verification lane as `check:import-cycles`, covering both `esm` and `types`.
+
+---
