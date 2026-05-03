@@ -11,6 +11,57 @@ export type OrderPdfSketchPaletteKey = 'draw' | 'width' | 'color';
 export type OrderPdfSketchFreehandTool = Extract<OrderPdfSketchStrokeTool, 'pen' | 'marker'>;
 export type OrderPdfSketchTextBoxMutationKind = 'ignore' | 'append' | 'replace';
 
+export type OrderPdfSketchRememberedStrokeTool = Exclude<OrderPdfSketchTool, 'text'>;
+export type OrderPdfSketchStrokeToolWidthMap = Record<OrderPdfSketchStrokeTool, number>;
+
+export const ORDER_PDF_SKETCH_STROKE_TOOL_DEFAULT_WIDTHS = Object.freeze({
+  pen: 2,
+  marker: 6,
+  eraser: 2,
+  line: 2,
+  square: 2,
+  circle: 2,
+  ellipse: 2,
+} satisfies OrderPdfSketchStrokeToolWidthMap);
+
+export function createDefaultOrderPdfSketchStrokeToolWidths(): OrderPdfSketchStrokeToolWidthMap {
+  return { ...ORDER_PDF_SKETCH_STROKE_TOOL_DEFAULT_WIDTHS };
+}
+
+function normalizeOrderPdfSketchStrokeWidth(value: number | null | undefined, fallback: number): number {
+  const width = Number(value);
+  return Number.isFinite(width) && width > 0 ? width : fallback;
+}
+
+export function resolveOrderPdfSketchActiveWidthTool(args: {
+  tool: OrderPdfSketchTool;
+  lastNonTextTool: OrderPdfSketchRememberedStrokeTool;
+}): OrderPdfSketchStrokeTool {
+  return args.tool === 'text' ? args.lastNonTextTool : args.tool;
+}
+
+export function resolveOrderPdfSketchStrokeToolWidth(args: {
+  tool: OrderPdfSketchStrokeTool;
+  widthsByTool: Partial<OrderPdfSketchStrokeToolWidthMap> | null | undefined;
+}): number {
+  const fallback = ORDER_PDF_SKETCH_STROKE_TOOL_DEFAULT_WIDTHS[args.tool] || 2;
+  return normalizeOrderPdfSketchStrokeWidth(args.widthsByTool?.[args.tool], fallback);
+}
+
+export function updateOrderPdfSketchStrokeToolWidth(args: {
+  tool: OrderPdfSketchStrokeTool;
+  width: number;
+  widthsByTool: OrderPdfSketchStrokeToolWidthMap;
+}): OrderPdfSketchStrokeToolWidthMap {
+  const fallback = ORDER_PDF_SKETCH_STROKE_TOOL_DEFAULT_WIDTHS[args.tool] || 2;
+  const nextWidth = normalizeOrderPdfSketchStrokeWidth(args.width, fallback);
+  if (Object.is(args.widthsByTool[args.tool], nextWidth)) return args.widthsByTool;
+  return {
+    ...args.widthsByTool,
+    [args.tool]: nextWidth,
+  };
+}
+
 export function resolveOrderPdfSketchActiveKey(args: {
   entries: OrderPdfSketchPreviewEntry[];
   activeKey: OrderPdfSketchAnnotationPageKey;

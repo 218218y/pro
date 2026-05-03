@@ -5,20 +5,21 @@ import type {
   OrderPdfSketchPreviewEntry,
   OrderPdfSketchTool,
 } from './order_pdf_overlay_contracts.js';
-import {
-  ORDER_PDF_SKETCH_COLOR_SWATCHES,
-  ORDER_PDF_SKETCH_WIDTH_OPTIONS,
-} from './order_pdf_overlay_sketch_annotations.js';
+import { ORDER_PDF_SKETCH_COLOR_SWATCHES } from './order_pdf_overlay_sketch_annotations.js';
 import {
   resolveOrderPdfSketchControlState,
   resolveOrderPdfSketchExitTextTool,
   resolveOrderPdfSketchToolTransition,
 } from './order_pdf_overlay_sketch_panel_runtime.js';
 import {
+  createDefaultOrderPdfSketchStrokeToolWidths,
   isOrderPdfSketchFreehandTool,
   resolveOrderPdfSketchActiveKey,
+  resolveOrderPdfSketchActiveWidthTool,
   resolveOrderPdfSketchDrawTriggerResult,
+  resolveOrderPdfSketchStrokeToolWidth,
   toggleOrderPdfSketchActivePalette,
+  updateOrderPdfSketchStrokeToolWidth,
   type OrderPdfSketchFreehandTool,
   type OrderPdfSketchPaletteKey,
 } from './order_pdf_overlay_sketch_panel_controller_runtime.js';
@@ -29,7 +30,7 @@ export function useOrderPdfSketchPanelState(args: { open: boolean; entries: Orde
   const [freehandTool, setFreehandTool] = useState<OrderPdfSketchFreehandTool>('pen');
   const [lastNonTextTool, setLastNonTextTool] = useState<Exclude<OrderPdfSketchTool, 'text'>>('pen');
   const [color, setColor] = useState<string>(ORDER_PDF_SKETCH_COLOR_SWATCHES[0]);
-  const [width, setWidth] = useState<number>(ORDER_PDF_SKETCH_WIDTH_OPTIONS[0] || 2);
+  const [widthsByTool, setWidthsByTool] = useState(createDefaultOrderPdfSketchStrokeToolWidths);
   const [activeKey, setActiveKey] = useState<OrderPdfSketchAnnotationPageKey>('renderSketch');
   const [activePalette, setActivePalette] = useState<OrderPdfSketchPaletteKey | null>(null);
 
@@ -37,6 +38,9 @@ export function useOrderPdfSketchPanelState(args: { open: boolean; entries: Orde
     () => resolveOrderPdfSketchControlState({ tool, activePalette }),
     [tool, activePalette]
   );
+
+  const widthTool = resolveOrderPdfSketchActiveWidthTool({ tool, lastNonTextTool });
+  const width = resolveOrderPdfSketchStrokeToolWidth({ tool: widthTool, widthsByTool });
 
   useEffect(() => {
     const nextKey = resolveOrderPdfSketchActiveKey({ entries, activeKey });
@@ -74,6 +78,7 @@ export function useOrderPdfSketchPanelState(args: { open: boolean; entries: Orde
       freehandTool,
       activePalette,
     });
+    setLastNonTextTool(nextTool);
     setToolState(nextTool);
     setActivePalette(nextPalette);
   }, [freehandTool, activePalette]);
@@ -90,14 +95,24 @@ export function useOrderPdfSketchPanelState(args: { open: boolean; entries: Orde
 
   const handleSelectFreehandTool = useCallback((nextTool: OrderPdfSketchFreehandTool) => {
     setFreehandTool(nextTool);
+    setLastNonTextTool(nextTool);
     setToolState(nextTool);
     setActivePalette(null);
   }, []);
 
-  const handleSelectWidth = useCallback((nextWidth: number) => {
-    setWidth(nextWidth);
-    setActivePalette(null);
-  }, []);
+  const handleSelectWidth = useCallback(
+    (nextWidth: number) => {
+      setWidthsByTool(prev =>
+        updateOrderPdfSketchStrokeToolWidth({
+          tool: widthTool,
+          width: nextWidth,
+          widthsByTool: prev,
+        })
+      );
+      setActivePalette(null);
+    },
+    [widthTool]
+  );
 
   const handleSelectColor = useCallback((nextColor: string) => {
     setColor(nextColor);

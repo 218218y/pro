@@ -2,11 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  createDefaultOrderPdfSketchStrokeToolWidths,
   resolveOrderPdfSketchActiveKey,
+  resolveOrderPdfSketchActiveWidthTool,
   resolveOrderPdfSketchDrawTriggerResult,
+  resolveOrderPdfSketchStrokeToolWidth,
   toggleOrderPdfSketchActivePalette,
   resolveOrderPdfSketchDeletedTextBox,
   resolveOrderPdfSketchTextBoxMutation,
+  updateOrderPdfSketchStrokeToolWidth,
 } from '../esm/native/ui/react/pdf/order_pdf_overlay_sketch_panel_controller_runtime.ts';
 import {
   buildOrderPdfSketchPreviewEntryMap,
@@ -48,6 +52,43 @@ test('[order-pdf] sketch panel controller falls back to the first available page
     }),
     'renderSketch'
   );
+});
+
+
+test('[order-pdf] sketch panel controller keeps independent freehand width defaults', () => {
+  const widthsByTool = createDefaultOrderPdfSketchStrokeToolWidths();
+
+  assert.equal(resolveOrderPdfSketchStrokeToolWidth({ tool: 'pen', widthsByTool }), 2);
+  assert.equal(resolveOrderPdfSketchStrokeToolWidth({ tool: 'marker', widthsByTool }), 6);
+});
+
+test('[order-pdf] sketch panel controller preserves manual width per drawing tool', () => {
+  const defaults = createDefaultOrderPdfSketchStrokeToolWidths();
+  const afterMarkerChange = updateOrderPdfSketchStrokeToolWidth({
+    tool: 'marker',
+    width: 10,
+    widthsByTool: defaults,
+  });
+  const afterPenChange = updateOrderPdfSketchStrokeToolWidth({
+    tool: 'pen',
+    width: 4,
+    widthsByTool: afterMarkerChange,
+  });
+
+  assert.equal(
+    resolveOrderPdfSketchStrokeToolWidth({ tool: 'marker', widthsByTool: afterPenChange }),
+    10
+  );
+  assert.equal(resolveOrderPdfSketchStrokeToolWidth({ tool: 'pen', widthsByTool: afterPenChange }), 4);
+  assert.equal(resolveOrderPdfSketchStrokeToolWidth({ tool: 'eraser', widthsByTool: afterPenChange }), 2);
+});
+
+test('[order-pdf] sketch panel controller resolves text-mode width from remembered drawing tool', () => {
+  assert.equal(
+    resolveOrderPdfSketchActiveWidthTool({ tool: 'text', lastNonTextTool: 'marker' }),
+    'marker'
+  );
+  assert.equal(resolveOrderPdfSketchActiveWidthTool({ tool: 'pen', lastNonTextTool: 'marker' }), 'pen');
 });
 
 test('[order-pdf] sketch panel controller keeps only one floating palette active at a time', () => {
