@@ -10,6 +10,17 @@ function lineCount(source) {
   return source.split(/\r\n|\r|\n/).length;
 }
 
+function normalizeSource(source) {
+  return source
+    .replace(/\s+/g, ' ')
+    .replace(/\(\s+/g, '(')
+    .replace(/\s+\)/g, ')')
+    .replace(/,\s+/g, ', ')
+    .replace(/\{\s+/g, '{ ')
+    .replace(/\s+\}/g, ' }')
+    .trim();
+}
+
 test('stage 72 render interior sketch box external drawers ownership split is anchored', () => {
   const facade = read('esm/native/builder/render_interior_sketch_boxes_fronts_drawers.ts');
   const apply = read('esm/native/builder/render_interior_sketch_boxes_fronts_drawers_apply.ts');
@@ -77,8 +88,9 @@ test('stage 72 render interior sketch box external drawers ownership split is an
 
   assert.match(visual, /export function addSketchBoxExternalDrawerFrontVisual\(/);
   assert.match(visual, /resolveSketchFrontVisualState\(context\.input, opPlan\.partId\)/);
+  const normalizedVisual = normalizeSource(visual);
   assert.match(
-    visual,
+    normalizedVisual,
     /resolveEffectiveDoorStyle\(context\.doorStyle, context\.doorStyleMap, opPlan\.partId\)/
   );
   assert.match(visual, /applySketchBoxPickMetaDeep\(visualObj, opPlan\.partId, context\.moduleKeyStr, bid/);

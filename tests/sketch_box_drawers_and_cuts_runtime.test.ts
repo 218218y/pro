@@ -10,6 +10,17 @@ import {
   readSourceFiles,
 } from './sketch_box_runtime_helpers.ts';
 
+function normalizeSource(source: string): string {
+  return source
+    .replace(/\s+/g, ' ')
+    .replace(/\(\s+/g, '(')
+    .replace(/\s+\)/g, ')')
+    .replace(/,\s+/g, ', ')
+    .replace(/\{\s+/g, '{ ')
+    .replace(/\s+\}/g, ' }')
+    .trim();
+}
+
 test('free-placement sketch box internal drawers render through internal drawer ops', () => {
   const capturedOps: Array<Record<string, unknown>> = [];
   const { applyInteriorSketchExtras, makeArgs } = createSketchInteriorHarness({
@@ -180,8 +191,9 @@ test('sketch external drawers source keeps module faces aligned to real door spa
   assert.match(src, /const faceW = Math\.max\(0\.05, toFiniteNumber\(op\.faceW\) \?\? visualW\);/);
   assert.match(src, /visualObj\.position\?\.set\?\.\(opPlan\.faceOffsetX, opPlan\.faceOffsetY, 0\);/);
   assert.match(src, /const doorStyle = resolveSketchDoorStyle\(App, input\);/);
+  const normalizedSrc = normalizeSource(src);
   assert.match(
-    src,
+    normalizedSrc,
     /resolveSketchFrontVisualState\(context\.input, opPlan\.partId\)[\s\S]*const effectiveFrameStyle = resolveEffectiveDoorStyle\(context\.doorStyle, context\.doorStyleMap, opPlan\.partId\);[\s\S]*context\.input\.createDoorVisual\([\s\S]*materialSet\.frontFaceMat,[\s\S]*frontVisualState\.isGlass \? 'glass' : effectiveFrameStyle,[\s\S]*frontVisualState\.mirrorLayout,[\s\S]*opPlan\.partId,[\s\S]*frontVisualState\.isGlass \? \{ glassFrameStyle: effectiveFrameStyle \} : null/
   );
   assert.match(src, /const boxExtDrawers = asRecordArray<InteriorValueRecord>\(box\.extDrawers\);/);

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { bundleSources } from './_source_bundle.js';
+import { bundleSources, normalizeWhitespace } from './_source_bundle.js';
 
 const cornerSrc = bundleSources(
   [
@@ -52,8 +52,9 @@ test('corner sketch external drawers carry scoped module metadata and reuse real
   assert.match(sketchDrawersSrc, /groupUd\.moduleIndex = resolvedModuleIndex \|\| context\.moduleIndex;/);
   assert.match(sketchDrawersSrc, /groupUd\.__wpStack = resolvedStackKey;/);
   assert.match(sketchDrawersSrc, /const doorStyle = resolveSketchDoorStyle\(App, input\);/);
+  const normalizedSketchDrawersSrc = normalizeWhitespace(sketchDrawersSrc);
   assert.match(
-    sketchDrawersSrc,
+    normalizedSketchDrawersSrc,
     /resolveSketchFrontVisualState\(context\.input, opPlan\.partId\)[\s\S]*const effectiveFrameStyle = resolveEffectiveDoorStyle\(context\.doorStyle, context\.doorStyleMap, opPlan\.partId\);[\s\S]*context\.input\.createDoorVisual\([\s\S]*materialSet\.frontFaceMat,[\s\S]*frontVisualState\.isGlass \? 'glass' : effectiveFrameStyle,[\s\S]*frontVisualState\.mirrorLayout,[\s\S]*opPlan\.partId,[\s\S]*frontVisualState\.isGlass \? \{ glassFrameStyle: effectiveFrameStyle \} : null/
   );
   assert.match(

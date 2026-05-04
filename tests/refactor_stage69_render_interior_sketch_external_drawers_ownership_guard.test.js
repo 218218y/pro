@@ -10,6 +10,17 @@ function lineCount(source) {
   return source.split(/\r\n|\r|\n/).length;
 }
 
+function normalizeSource(source) {
+  return source
+    .replace(/\s+/g, ' ')
+    .replace(/\(\s+/g, '(')
+    .replace(/\s+\)/g, ')')
+    .replace(/,\s+/g, ', ')
+    .replace(/\{\s+/g, '{ ')
+    .replace(/\s+\}/g, ' }')
+    .trim();
+}
+
 test('stage 69 render interior sketch external drawers ownership split is anchored', () => {
   const facade = read('esm/native/builder/render_interior_sketch_drawers_external.ts');
   const apply = read('esm/native/builder/render_interior_sketch_drawers_external_apply.ts');
@@ -82,8 +93,9 @@ test('stage 69 render interior sketch external drawers ownership split is anchor
   assert.match(visual, /resolveSketchExternalDrawerFrontMaterials\(/);
   assert.match(visual, /context\.resolveCachedMirrorMaterial\(\)/);
   assert.match(visual, /context\.input\.createDoorVisual\(/);
+  const normalizedVisual = normalizeSource(visual);
   assert.match(
-    visual,
+    normalizedVisual,
     /const effectiveFrameStyle = resolveEffectiveDoorStyle\(context\.doorStyle, context\.doorStyleMap, opPlan\.partId\);[\s\S]*frontVisualState\.isGlass \? 'glass' : effectiveFrameStyle[\s\S]*frontVisualState\.isGlass \? \{ glassFrameStyle: effectiveFrameStyle \} : null/
   );
   assert.match(visual, /new context\.THREE\.Mesh\(/);
