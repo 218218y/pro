@@ -234,6 +234,22 @@ test('paint glass mutation defaults every clicked glass front to regular profile
 
   assert.equal(state.special.d6_full, 'glass');
   assert.equal(state.style.d6_full, 'tom');
+
+  applyPaintPartMutation({
+    state,
+    paintPartKey: 'corner_c0_draw_1',
+    paintSelection: 'glass',
+    clickArgs: {
+      App: state.App,
+      foundPartId: 'corner_c0_draw_1',
+      activeStack: 'top',
+      isPaintMode: true,
+    },
+  });
+
+  assert.equal(state.special.corner_c0_draw_1, 'glass');
+  assert.equal(state.curtains.corner_c0_draw_1, 'none');
+  assert.equal(state.style.corner_c0_draw_1, 'profile');
 });
 
 test('paint color mutation clears stale curtains but preserves mirror layouts for mirror-special doors', () => {
@@ -325,7 +341,10 @@ test('paint flow helpers resolve scoped door-style and paint-part keys without l
   );
 });
 
-test('paint special target detection includes sketch external drawer fronts so mirror/glass clicks do not degrade into color-only refreshes', () => {
+test('paint special target detection includes corner and sketch external drawer fronts so mirror/glass clicks rebuild as door specials', () => {
+  assert.equal(isSpecialPart('corner_c0_draw_1'), true);
+  assert.equal(isSpecialPart('corner_c1_draw_shoe'), true);
+  assert.equal(isSpecialPart('lower_corner_c0_draw_2'), true);
   assert.equal(isSpecialPart('sketch_ext_drawers_2_main_1'), true);
   assert.equal(isSpecialPart('sketch_box_free_a_ext_drawers_3_1'), true);
 });

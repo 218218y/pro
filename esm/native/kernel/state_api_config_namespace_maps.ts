@@ -48,13 +48,15 @@ export function installStateApiConfigNamespaceMaps(ctx: StateApiConfigNamespaceM
       curtainMap: unknown,
       meta?: ActionMetaLike,
       doorSpecialMap?: unknown,
-      mirrorLayoutMap?: unknown
+      mirrorLayoutMap?: unknown,
+      doorStyleMap?: unknown
     ) {
       const cfg0 = asRecord(safeCall(() => configNs.get?.())) || {};
       const prevColors = asRecord(cfg0.individualColors) || {};
       const prevCurtains = asRecord(cfg0.curtainMap) || {};
       const prevSpecial = asRecord(cfg0.doorSpecialMap) || {};
       const prevMirrorLayout = asRecord(cfg0.mirrorLayoutMap) || {};
+      const prevDoorStyle = asRecord(cfg0.doorStyleMap) || {};
 
       const nextColors = reuseEquivalentValue(
         prevColors,
@@ -78,6 +80,10 @@ export function installStateApiConfigNamespaceMaps(ctx: StateApiConfigNamespaceM
               prevMirrorLayout,
               isRecord(mirrorLayoutMap) ? shallowCloneObj(mirrorLayoutMap) : {}
             );
+      const nextDoorStyle =
+        doorStyleMap === undefined
+          ? null
+          : reuseEquivalentValue(prevDoorStyle, isRecord(doorStyleMap) ? shallowCloneObj(doorStyleMap) : {});
 
       const basePatch: UnknownRecord = {};
       const replaceKeys: string[] = [];
@@ -96,6 +102,10 @@ export function installStateApiConfigNamespaceMaps(ctx: StateApiConfigNamespaceM
       if (nextMirrorLayout && !Object.is(prevMirrorLayout, nextMirrorLayout)) {
         basePatch.mirrorLayoutMap = nextMirrorLayout;
         replaceKeys.push('mirrorLayoutMap');
+      }
+      if (nextDoorStyle && !Object.is(prevDoorStyle, nextDoorStyle)) {
+        basePatch.doorStyleMap = nextDoorStyle;
+        replaceKeys.push('doorStyleMap');
       }
       if (!Object.keys(basePatch).length) return cfg0;
       const patch = toConfigPatch(cfgPatchWithReplaceKeys(basePatch, replaceKeys));

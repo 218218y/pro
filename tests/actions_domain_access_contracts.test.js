@@ -227,7 +227,7 @@ test('[actions-domain] project IO, notes persistence, and boot paths use canonic
       /getSaveProjectAction/,
       /renderModelUiViaActionsOrThrow\(/,
       /setMultiModeViaActions\(App(?: as any)?, !!next, m(?: as any)?\)/,
-      /applyPaintViaActions\(App, individualColors, curtainMap, meta, doorSpecialMap(?:, mirrorLayoutMap)?\)/,
+      /applyPaintViaActions\([\s\S]*App,[\s\S]*individualColors,[\s\S]*curtainMap,[\s\S]*meta,[\s\S]*doorSpecialMap,[\s\S]*mirrorLayoutMap,[\s\S]*doorStyleMap \?\? undefined[\s\S]*\)/,
       /runHistoryBatchViaActions\(App, meta, fn\)/,
     ],
     'actionsBootBundle'

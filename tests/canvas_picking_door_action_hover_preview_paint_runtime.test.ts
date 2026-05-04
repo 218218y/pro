@@ -45,6 +45,78 @@ function createIdentityDoorOwner(userData: Record<string, unknown>) {
   };
 }
 
+test('glass hover preview treats regular corner external drawers as special door fronts', () => {
+  const owner = createIdentityDoorOwner({
+    partId: 'corner_c0_draw_1',
+    __doorWidth: 0.8,
+    __doorHeight: 0.22,
+  });
+  const marker: Record<string, unknown> = {
+    visible: false,
+    material: 'base',
+    userData: {
+      __matAdd: 'add',
+      __matRemove: 'remove',
+      __matGroove: 'groove',
+    },
+    position: {
+      copy(_next: unknown) {
+        return undefined;
+      },
+    },
+    quaternion: {
+      copy(_next: unknown) {
+        return undefined;
+      },
+    },
+    scale: {
+      last: null as [number, number, number] | null,
+      set(x: number, y: number, z: number) {
+        this.last = [x, y, z];
+      },
+    },
+  };
+
+  const handled = tryHandleDoorPaintHoverPreview({
+    App: {
+      maps: {
+        getMap() {
+          return {};
+        },
+      },
+    } as never,
+    THREE: { Vector3: Vec3, Quaternion: Quat },
+    hit: {
+      hitDoorPid: 'corner_c0_draw_1',
+      hitDoorGroup: owner as never,
+      hitPoint: null,
+    },
+    groupRec: owner as never,
+    userData: owner.userData as never,
+    wardrobeGroup: {
+      worldToLocal(target: Vec3) {
+        return target;
+      },
+    } as never,
+    doorMarker: marker as never,
+    markerUd: marker.userData as never,
+    local: new Vec3() as never,
+    localHit: new Vec3() as never,
+    wq: new Quat() as never,
+    zOff: 0.02,
+    scopedHitDoorPid: 'corner_c0_draw_1',
+    canonDoorPartKeyForMaps: (id: string) => id,
+    normalizedPaintSelection: 'glass',
+    setSketchPreview: null,
+    readUi: () => ({ curtainChoice: 'none' }) as never,
+  });
+
+  assert.equal(handled, true);
+  assert.equal(marker.visible, true);
+  assert.equal(marker.material, 'add');
+  assert.deepEqual((marker.scale as { last: [number, number, number] | null }).last, [0.8, 0.22, 1]);
+});
+
 test('mirror remove hover uses the canonical size rect even when door bounds metadata differs', () => {
   const sizeRect = { minX: -0.5, maxX: 0.5, minY: -1, maxY: 1 };
   const layout = buildMirrorLayoutFromHit({

@@ -13,9 +13,16 @@ const cornerSrc = bundleSources(
 );
 
 test('corner sketch external drawers carry scoped module metadata and reuse real corner door face spans', async () => {
+  assert.match(cornerSrc, /cfg: runtime\.__cfg,/);
+  assert.match(cornerSrc, /cfg,/);
+  assert.match(cornerSrc, /config: cfgCell,/);
   assert.match(cornerSrc, /moduleIndex: cellIdx,/);
   assert.match(cornerSrc, /moduleKey: cellKey,/);
   assert.match(cornerSrc, /stackKey,|stackKey: __stackKey,/);
+  assert.match(cornerSrc, /createDoorVisual: runtime\.createDoorVisual,/);
+  assert.match(cornerSrc, /createDoorVisual,/);
+  assert.match(cornerSrc, /getPartColorValue: \(partId: string\) =>/);
+  assert.match(cornerSrc, /getPartColorValue,/);
 
   const sketchGeometrySrc = await readFile(
     new URL('../esm/native/builder/render_interior_sketch_module_geometry.ts', import.meta.url),

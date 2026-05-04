@@ -189,7 +189,8 @@ export interface ConfigActionsNamespaceLike extends UnknownRecord {
     curtains: unknown,
     meta?: ActionMetaLike,
     doorSpecialMap?: unknown,
-    mirrorLayoutMap?: unknown
+    mirrorLayoutMap?: unknown,
+    doorStyleMap?: unknown
   ) => unknown;
   setHingeMap?: (next: HingeMap, meta?: ActionMetaLike) => unknown;
   setHandlesMap?: (next: HandlesMap, meta?: ActionMetaLike) => unknown;
@@ -502,14 +503,17 @@ export interface ColorsActionsLike extends UnknownRecord {
    * Apply painted colors/curtains maps.
    *
    * `doorSpecialMap` is optional (newer flows attach special door types such as
-   * glass/mirror). Older callers only pass the first 2-3 args.
+   * glass/mirror). `doorStyleMap` is also optional and travels in the same
+   * paint snapshot so framed-glass decisions rebuild atomically. Older callers
+   * only pass the first 2-3 args.
    */
   applyPaint?: (
     colors: unknown,
     curtains: unknown,
     meta?: ActionMetaLike,
     doorSpecialMap?: unknown,
-    mirrorLayoutMap?: unknown
+    mirrorLayoutMap?: unknown,
+    doorStyleMap?: unknown
   ) => unknown;
   setMultiMode?: (isOn: boolean, meta?: ActionMetaLike) => unknown;
   [k: string]: unknown;

@@ -225,7 +225,8 @@ export function applyPaintViaActions(
   curtains: unknown,
   meta?: ActionMetaLike,
   doorSpecialMap?: unknown,
-  mirrorLayoutMap?: unknown
+  mirrorLayoutMap?: unknown,
+  doorStyleMap?: unknown
 ): boolean {
   const fn = getColorsActionFn<
     (
@@ -233,11 +234,12 @@ export function applyPaintViaActions(
       curtains: unknown,
       meta?: ActionMetaLike,
       doorSpecialMap?: unknown,
-      mirrorLayoutMap?: unknown
+      mirrorLayoutMap?: unknown,
+      doorStyleMap?: unknown
     ) => unknown
   >(App, 'applyPaint');
   if (typeof fn !== 'function') return false;
-  fn(colors, curtains, meta, doorSpecialMap, mirrorLayoutMap);
+  fn(colors, curtains, meta, doorSpecialMap, mirrorLayoutMap, doorStyleMap);
   return true;
 }
 

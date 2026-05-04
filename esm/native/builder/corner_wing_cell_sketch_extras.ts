@@ -1,5 +1,9 @@
 import { getBuilderRenderOps } from '../runtime/builder_service_access.js';
-import type { BuilderCreateInternalDrawerBoxFn, UnknownCallable } from '../../../types';
+import type {
+  BuilderCreateDoorVisualFn,
+  BuilderCreateInternalDrawerBoxFn,
+  UnknownCallable,
+} from '../../../types';
 import type {
   AddFoldedClothesLike,
   GroupLike,
@@ -14,6 +18,7 @@ type CornerWingCellSketchExtrasParams = {
   App: unknown;
   THREE: ThreeCornerCellLike;
   wingGroup: GroupLike;
+  cfg: unknown;
   cfgCell: CornerCellCfg;
   cellIdx: number;
   cellKey: string;
@@ -31,6 +36,8 @@ type CornerWingCellSketchExtrasParams = {
   __fullDepthCenterZ: number;
   __z: (z: number) => number;
   getCornerMat: (partId: string, fallback: unknown) => unknown;
+  getPartColorValue?: (partId: string) => unknown;
+  createDoorVisual: BuilderCreateDoorVisualFn;
   createInternalDrawerBox: BuilderCreateInternalDrawerBoxFn;
   addOutlines: (mesh: unknown) => void;
   showContentsEnabled: boolean;
@@ -44,6 +51,7 @@ export function applyCornerWingCellSketchExtras(params: CornerWingCellSketchExtr
     App,
     THREE,
     wingGroup,
+    cfg,
     cfgCell,
     cellIdx,
     cellKey,
@@ -61,6 +69,8 @@ export function applyCornerWingCellSketchExtras(params: CornerWingCellSketchExtr
     __fullDepthCenterZ,
     __z,
     getCornerMat,
+    getPartColorValue,
+    createDoorVisual,
     createInternalDrawerBox,
     addOutlines,
     showContentsEnabled,
@@ -113,6 +123,8 @@ export function applyCornerWingCellSketchExtras(params: CornerWingCellSketchExtr
       App,
       THREE,
       wardrobeGroup: wingGroup,
+      cfg,
+      config: cfgCell,
       createBoard,
       createRod,
       currentShelfMat: shelfMat,
@@ -135,6 +147,8 @@ export function applyCornerWingCellSketchExtras(params: CornerWingCellSketchExtr
       stackKey,
       // Multi-color support for sketch extras in corner wing.
       getPartMaterial: (pid: string) => getCornerMat(pid, bodyMat),
+      getPartColorValue,
+      createDoorVisual,
       createInternalDrawerBox,
       addOutlines,
       showContentsEnabled,

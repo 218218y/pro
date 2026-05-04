@@ -189,6 +189,12 @@ export function emitCornerWingExternalDrawers(
     dGroup.userData.moduleIndex = cellKey;
     dGroup.userData.__wpStack = runtime.__stackKey;
     dGroup.userData.__wpType = 'extDrawer';
+    dGroup.userData.__doorWidth = dW;
+    dGroup.userData.__doorHeight = height;
+    dGroup.userData.__wpFaceOffsetX = 0;
+    dGroup.userData.__wpFaceOffsetY = 0;
+    dGroup.userData.__wpFrontZ = cellRuntime.__z(0.01);
+    dGroup.userData.__wpFrontThickness = runtime.woodThick;
 
     const dVis = runtime.createDoorVisual(
       dW,

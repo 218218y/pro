@@ -139,17 +139,32 @@ export function applyPaintConfigSnapshot(args: PaintConfigSnapshotArgs): void {
   const individualColors = cloneIndividualColorsMap(args.individualColors);
   const curtainMap = cloneCurtainMap(args.curtainMap);
   const doorSpecialMap = cloneDoorSpecialMap(args.doorSpecialMap || {});
-  const doorStyleMap = args.doorStyleMap ? cloneDoorStyleMap(args.doorStyleMap) : null;
+  const doorStyleMap = typeof args.doorStyleMap !== 'undefined' ? cloneDoorStyleMap(args.doorStyleMap) : null;
   const mirrorLayoutMap = cloneMirrorLayoutMap(args.mirrorLayoutMap || {});
 
-  if (applyPaintViaActions(App, individualColors, curtainMap, meta, doorSpecialMap, mirrorLayoutMap)) {
-    if (doorStyleMap) cfgSetMap(App, 'doorStyleMap', doorStyleMap, meta);
+  if (
+    applyPaintViaActions(
+      App,
+      individualColors,
+      curtainMap,
+      meta,
+      doorSpecialMap,
+      mirrorLayoutMap,
+      doorStyleMap ?? undefined
+    )
+  ) {
     return;
   }
 
-  setCfgIndividualColors(App, individualColors, meta);
-  setCfgCurtainMap(App, curtainMap, meta);
-  setCfgDoorSpecialMap(App, doorSpecialMap, meta);
-  if (doorStyleMap) cfgSetMap(App, 'doorStyleMap', doorStyleMap, meta);
-  setCfgMirrorLayoutMap(App, mirrorLayoutMap, meta);
+  cfgBatch(
+    App,
+    function () {
+      setCfgIndividualColors(App, individualColors, meta);
+      setCfgCurtainMap(App, curtainMap, meta);
+      setCfgDoorSpecialMap(App, doorSpecialMap, meta);
+      if (doorStyleMap !== null) cfgSetMap(App, 'doorStyleMap', doorStyleMap, meta);
+      setCfgMirrorLayoutMap(App, mirrorLayoutMap, meta);
+    },
+    meta
+  );
 }

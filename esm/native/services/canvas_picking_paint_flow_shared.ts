@@ -208,6 +208,7 @@ export function isSpecialPart(__paintPartKey: string): boolean {
   if (__paintPartKey.startsWith('lower_corner_door') || __paintPartKey.startsWith('lower_corner_pent_door')) {
     return true;
   }
+  if (/^(?:lower_)?corner_c\d+_draw_(?:shoe|\d+)$/.test(__paintPartKey)) return true;
   if (/^sketch_box(?:_free)?_.+_door(?:_|$)/.test(__paintPartKey)) return true;
   if (__paintPartKey.startsWith('sketch_ext_drawers_')) return true;
   if (/^sketch_box(?:_free)?_.+_ext_drawers_/.test(__paintPartKey)) return true;

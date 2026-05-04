@@ -216,7 +216,8 @@ export function installDomainApiColorsSection(args: InstallDomainApiColorsSectio
       nextCurtains: unknown,
       meta: ActionMetaLike | undefined,
       nextDoorSpecialMap?: unknown,
-      nextMirrorLayoutMap?: unknown
+      nextMirrorLayoutMap?: unknown,
+      nextDoorStyleMap?: unknown
     ) {
       meta = _meta(meta, 'actions:colors:applyPaint');
       if (typeof configActions.applyPaintSnapshot !== 'function') {
@@ -227,7 +228,8 @@ export function installDomainApiColorsSection(args: InstallDomainApiColorsSectio
         nextCurtains,
         meta,
         nextDoorSpecialMap,
-        nextMirrorLayoutMap
+        nextMirrorLayoutMap,
+        nextDoorStyleMap
       );
     };
 }

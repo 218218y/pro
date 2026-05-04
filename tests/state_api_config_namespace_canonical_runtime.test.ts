@@ -327,3 +327,37 @@ test('[state-api.config] applyProjectSnapshot canonicalizes and detaches non-str
   assert.equal((inputPreChest.dims as AnyRecord).width, 70);
   assert.equal((inputExtra.nested as AnyRecord).enabled, true);
 });
+
+test('[state-api.config] applyPaintSnapshot commits door style with special glass atomically', () => {
+  const store = createStoreStub({
+    ui: {},
+    config: {
+      individualColors: {},
+      curtainMap: {},
+      doorSpecialMap: {},
+      mirrorLayoutMap: {},
+      doorStyleMap: {},
+    },
+    runtime: {},
+    mode: { primary: 'none', opts: {} },
+    meta: {},
+  });
+  const App: AnyRecord = { actions: {}, store };
+  installStateApi(App as any);
+
+  (App.actions as any).config.applyPaintSnapshot(
+    {},
+    {},
+    { source: 'test:paint-style-snapshot' },
+    { drawer_1: 'glass' },
+    {},
+    { drawer_1: 'tom' }
+  );
+
+  const committedPatch = asRec(store.commits[0]?.patch);
+  const replace = asRec(committedPatch.__replace);
+  assert.deepEqual(asRec(committedPatch.doorSpecialMap), { drawer_1: 'glass' });
+  assert.deepEqual(asRec(committedPatch.doorStyleMap), { drawer_1: 'tom' });
+  assert.equal(replace.doorSpecialMap, true);
+  assert.equal(replace.doorStyleMap, true);
+});
