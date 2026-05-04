@@ -88,8 +88,12 @@ test('stage 76 drawer shared render contract ownership split is anchored', () =>
   assert.doesNotMatch(ops, /readDoorStyleMap|readCurtainType|readCreateDoorVisual|resolveDrawerVisualState/);
 
   assert.match(visualState, /export function resolveDrawerVisualState/);
-  assert.match(visualState, /readCurtainType\(cfg\.curtainMap \? cfg\.curtainMap\[partId\] : null\)/);
+  assert.match(visualState, /from '\.\/door_visual_lookup_state\.js';/);
+  assert.match(visualState, /readCurtainType\(readDoorVisualMapValue\(cfg\.curtainMap, partId\)\)/);
+  assert.match(visualState, /const special = readDoorVisualMapValue\(cfg\.doorSpecialMap, partId\);/);
   assert.match(visualState, /if \(isMirror\) \{/);
+  assert.doesNotMatch(visualState, /cfg\.curtainMap\s*\?\s*cfg\.curtainMap\[partId\]/);
+  assert.doesNotMatch(visualState, /cfg\.doorSpecialMap\s*\?\s*cfg\.doorSpecialMap\[partId\]/);
   assert.doesNotMatch(visualState, /readDoorStyleMap|readExternalDrawerOp|readCreateDoorVisual|new THREE\./);
 
   assert.match(drawerFacade, /from '\.\/render_drawer_ops_shared\.js';/);
