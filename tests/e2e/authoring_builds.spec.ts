@@ -14,6 +14,7 @@ import {
   readCabinetDoorDrawerAuthoringFingerprint,
   readChestStructureFingerprint,
   readCornerStructureFingerprint,
+  readDebugStoreState,
   readLibraryStructureFingerprint,
   readLinearModuleSpecialDims,
   readRenderDebugStats,
@@ -766,6 +767,47 @@ test.describe('Playwright authoring build coverage', () => {
     );
     expectMeaningfulBuildAndRenderDelta('library-load-project', loadDelta);
     expect(await readLibraryStructureFingerprint(page)).toEqual(expectedLibraryFingerprint);
+
+    expectNoRuntimeIssues(issues);
+  });
+
+  test('library door count edits rebuild without loops and keep upper/lower module defaults stable', async ({
+    page,
+  }) => {
+    test.slow();
+    const issues = collectRuntimeIssues(page);
+    await gotoSmokeApp(page);
+
+    await resetBuildDebugStats(page);
+    await resetRenderDebugStats(page);
+
+    const doorEditDelta = await measureBuildAndRenderDelta(
+      page,
+      async () => {
+        await setLibraryMode(page, true);
+        await setStructureDoors(page, 5);
+        await setStackSplitDimension(page, 'stackSplitLowerDoors', 3);
+      },
+      { minBuildRequests: 1, minBuildExecutes: 1, minRenderRequests: 1 }
+    );
+    expectMeaningfulBuildAndRenderDelta('library-door-count-edits', doorEditDelta);
+
+    const stack = await readStackSplitFingerprint(page);
+    expect(stack.doors).toBe(5);
+    expect(stack.stackSplitEnabled).toBe(true);
+    expect(stack.stackSplitLowerDoors).toBe(3);
+
+    const state = await readDebugStoreState(page);
+    const config = (state.config || {}) as Record<string, unknown>;
+    expect(config.isLibraryMode).toBe(true);
+    expect((config.modulesConfiguration as Array<Record<string, unknown>>).map(item => item.doors)).toEqual([
+      1,
+      2,
+      2,
+    ]);
+    expect(
+      (config.stackSplitLowerModulesConfiguration as Array<Record<string, unknown>>).map(item => item.doors)
+    ).toEqual([1, 2]);
 
     expectNoRuntimeIssues(issues);
   });

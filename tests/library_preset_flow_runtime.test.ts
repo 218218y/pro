@@ -461,3 +461,96 @@ test('library preset controller tracks seeded door counts so later upper doors r
   assert.equal(nextSpecial.d3_full, 'glass');
   assert.equal(recomputes.length, 1);
 });
+
+test('library preset invariants are idempotent after linked upper door count edit', () => {
+  const uiState: any = {
+    structureSelect: '',
+    singleDoorPos: 'left',
+    raw: {
+      width: 160,
+      height: 240,
+      depth: 55,
+      doors: 4,
+      chestDrawersCount: 4,
+      stackSplitLowerHeight: 80,
+      stackSplitLowerDepth: 55,
+      stackSplitLowerWidth: 160,
+      stackSplitLowerDoors: 4,
+      stackSplitLowerDoorsManual: false,
+    },
+  };
+  const initialCfgs = buildLibraryModuleConfigLists(4, 4, 'hinged', uiState);
+  const cfgState: any = {
+    modulesConfiguration: initialCfgs.topCfgList,
+    stackSplitLowerModulesConfiguration: initialCfgs.bottomCfgList,
+    isMultiColorMode: true,
+    individualColors: {},
+    curtainMap: {
+      d1_full: 'none',
+      d2_full: 'none',
+      d3_full: 'none',
+      d4_full: 'none',
+    },
+    doorSpecialMap: {
+      d1: 'glass',
+      d1_full: 'glass',
+      d2: 'glass',
+      d2_full: 'glass',
+      d3: 'glass',
+      d3_full: 'glass',
+      d4: 'glass',
+      d4_full: 'glass',
+    },
+  };
+
+  const { env, configCalls, recomputes } = createInvariantTestEnv(cfgState, uiState);
+  const controller = createLibraryPresetController();
+
+  controller.ensureInvariants(env, {
+    isLibraryMode: true,
+    wardrobeType: 'hinged',
+    doors: 4,
+    stackSplitLowerDoors: 4,
+    modulesCount: 4,
+  });
+  assert.equal(configCalls.length, 0, 'initial canonical library state should not be rewritten');
+
+  uiState.raw.width = 200;
+  uiState.raw.doors = 5;
+
+  controller.ensureInvariants(env, {
+    isLibraryMode: true,
+    wardrobeType: 'hinged',
+    doors: 5,
+    stackSplitLowerDoors: 5,
+    modulesCount: 5,
+  });
+  assert.deepEqual(
+    cfgState.modulesConfiguration.map((item: any) => item.doors),
+    [1, 2, 2]
+  );
+  assert.deepEqual(
+    cfgState.stackSplitLowerModulesConfiguration.map((item: any) => item.doors),
+    [1, 2, 2]
+  );
+  assert.equal(recomputes.length, 1, 'first linked door edit should rebuild once after canonicalizing library state');
+  assert.equal(
+    recomputes[0].uiOverride.raw?.doors,
+    5,
+    'library rebuild override must keep raw doors instead of falling back to the recompute default'
+  );
+
+  configCalls.length = 0;
+  recomputes.length = 0;
+
+  controller.ensureInvariants(env, {
+    isLibraryMode: true,
+    wardrobeType: 'hinged',
+    doors: 5,
+    stackSplitLowerDoors: 5,
+    modulesCount: 5,
+  });
+
+  assert.equal(configCalls.length, 0, 'canonical linked library door state should be stable after one ensure');
+  assert.equal(recomputes.length, 0, 'stable linked library door state should not request another rebuild');
+});

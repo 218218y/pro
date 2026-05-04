@@ -12,6 +12,11 @@ import type {
 export type LibraryPresetUiRawState = Partial<
   Pick<
     UiRawInputsLike,
+    | 'width'
+    | 'height'
+    | 'depth'
+    | 'doors'
+    | 'chestDrawersCount'
     | 'stackSplitLowerHeight'
     | 'stackSplitLowerDepth'
     | 'stackSplitLowerWidth'

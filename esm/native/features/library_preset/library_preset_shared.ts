@@ -15,6 +15,11 @@ import { calculateModuleStructure } from '../modules_configuration/calc_module_s
 import { buildLibraryModuleCfgs } from './module_defaults.js';
 
 type LibraryPresetRawKey =
+  | 'width'
+  | 'height'
+  | 'depth'
+  | 'doors'
+  | 'chestDrawersCount'
   | 'stackSplitLowerHeight'
   | 'stackSplitLowerDepth'
   | 'stackSplitLowerWidth'
@@ -24,6 +29,11 @@ type LibraryPresetRawKey =
   | 'stackSplitLowerDoorsManual';
 
 const LIBRARY_PRESET_RAW_KEYS: LibraryPresetRawKey[] = [
+  'width',
+  'height',
+  'depth',
+  'doors',
+  'chestDrawersCount',
   'stackSplitLowerHeight',
   'stackSplitLowerDepth',
   'stackSplitLowerWidth',
