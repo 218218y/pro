@@ -21,6 +21,8 @@ Do not re-add large generated audit dumps, dated workmap handoff files, or per-s
 - `check:project-import-fixtures` now guards real project import JSON fixtures through schema normalization, canonical `ui.raw` migration, and config replace-owned branch materialization.
 - `check:css-style` now reads its ratchet from `tools/wp_css_style_budget.json`, so CSS cascade debt limits are explicit and can only move by a deliberate budget change.
 - `check:cloud-sync-offline-reconnect` now guards Cloud Sync visible offline reconnect eligibility and hidden reconnect parking until visible return.
+- `e2e:cloud-sync-reconnect` now covers a real browser offline/online transition and post-reconnect Cloud Sync action.
+- `perf:smoke` and `perf:browser` were refreshed on 2026-05-04; both measured lanes pass, and the browser baseline report was updated.
 - Cloud Sync recovery hardening is covered by focused runtime tests and `check:cloud-sync-races`.
 - Canvas mirror/split/sketch hit-identity parity, split click commit base/bounds parity, removed-door transparent restore/blocking parity, full-door mirror commit fallback, sketch hover/commit host identity precedence, and sketch-box special-paint target preservation are covered by focused runtime tests plus `check:canvas-hit-identity` and `check:canvas-hit-parity`.
 - Project migration selector hardening canonicalizes existing typed `ui.raw` scalar values at project ingress and proves canonical runtime selectors do not fall back to legacy top-level UI fields.

@@ -1098,6 +1098,16 @@ export async function toggleCloudSyncFloatingPin(page: Page): Promise<void> {
   await expectCheckboxState(input, !before);
 }
 
+export async function syncCloudSyncSketchFromPanel(page: Page): Promise<void> {
+  await openMainTab(page, 'export');
+  await expectCloudSyncPanel(page);
+  const beforeCount = (await readPerfSummary(page))['cloudSync.syncSketch']?.count || 0;
+  const button = page.locator('button[data-testid="cloud-sync-sync-sketch-button"]');
+  await expect(button).toBeVisible();
+  await button.click();
+  await expectPerfMetricCount(page, 'cloudSync.syncSketch', beforeCount + 1);
+}
+
 export async function exportSnapshotFromExport(page: Page): Promise<Download> {
   const button = page.locator('button[data-testid="export-snapshot-button"]');
   await expect(button).toBeVisible();

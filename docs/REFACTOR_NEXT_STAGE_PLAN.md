@@ -81,6 +81,14 @@ The guard proves two product-risk cases:
 
 This keeps offline/hidden behavior inside the lifecycle refresh policy instead of adding browser-binding fallbacks or duplicate state paths.
 
+The browser smoke follow-up is also complete: `npm run e2e:cloud-sync-reconnect` runs a focused Playwright flow that moves the browser offline and back online, verifies the Cloud Sync panel stays stable, and proves a real sketch sync action remains usable after reconnect.
+
+## Performance measurement refresh
+
+The post-closeout measurement slice was refreshed on 2026-05-04. `npm run perf:smoke` passes under the stored budget when run as the foreground perf lane, and `npm run perf:browser` passes while refreshing `docs/BROWSER_PERF_AND_E2E_BASELINE.md`.
+
+No code change was made from these measurements because the enforced budgets passed. Future performance work should start only from a measured regression or an accepted product decision to improve one of the reported hotspot candidates.
+
 ## Workmap file cleanup
 
 The dated root workmaps and the root `new refactor_workmap` draft were removed after consolidation. The repository now keeps one short root pointer plus the canonical docs above, so future work does not need to choose between competing historical plans.
@@ -186,7 +194,7 @@ Do not create Stage 81 just to continue the numbering. If no fresh ownership sea
 | Runtime/API hardening        | runtime selector/API tests, migration boundary guard, type-hardening audit          |
 | Project import/load ingress  | `check:project-import-fixtures`, project migration boundary, runtime selector guard |
 | CSS cascade cleanup          | `check:css-style`, `report:css-style`, budget decrease when counts improve          |
-| Cloud Sync reconnect         | `check:cloud-sync-offline-reconnect`, lifecycle lane, race/timer guards             |
+| Cloud Sync reconnect         | `check:cloud-sync-offline-reconnect`, `e2e:cloud-sync-reconnect`, race/timer guards |
 | React UI split               | targeted UI tests, design-system/option-button guards, lint on changed files        |
 | Order PDF split              | targeted PDF/editor guards, text-layer/sketch-preview guards, lint on changed files |
 | Planning/control-plane stage | docs-control-plane audit, refactor integration audit, stage guard suite             |

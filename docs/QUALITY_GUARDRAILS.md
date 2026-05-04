@@ -43,6 +43,7 @@ npm run test:refactor-stage-guards
 - Refactor completion is not proven by smaller files. It is proven by stable public seams, behavior tests, hotpath guards, and practical smoke baselines.
 - Keep `check:perf-hotpaths` as the fast source-level performance gate for render/scheduler hotpaths.
 - Use `perf:smoke` and `perf:browser` for measured runtime/browser baselines when dependencies and a browser environment are available; update baselines only after a deliberate product/performance decision.
+- Run `perf:smoke` as the foreground perf lane when enforcing total-runtime budgets; concurrent browser perf work can add machine noise to the aggregate time while individual script timings remain healthy.
 - If a future performance issue appears, start from measured regressions and the owning surface, not from broad file decomposition.
 
 Relevant checks:
@@ -120,6 +121,7 @@ npm run check:canvas-hit-parity
 - Recovery pulls must not run ahead of a debounced main-row push; reconnect/attention/polling refresh work stays parked until the pending local write settles.
 - Browser attention listeners must report non-fatal pull errors and remain usable for later events.
 - Offline attention attempts must not consume reconnect eligibility; hidden reconnects must wait for a visible return before pulling.
+- Browser reconnect smoke should prove the visible Cloud Sync panel stays stable across offline/online transitions and that a real Cloud Sync action remains usable after reconnect.
 
 Relevant docs/checks:
 
@@ -128,6 +130,7 @@ docs/CLOUD_SYNC_LIFECYCLE_STATE_MACHINE.md
 npm run check:cloud-sync-timers
 npm run check:cloud-sync-races
 npm run check:cloud-sync-offline-reconnect
+npm run e2e:cloud-sync-reconnect
 ```
 
 ## Project load and runtime selectors
