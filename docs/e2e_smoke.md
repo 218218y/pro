@@ -8,6 +8,7 @@ Use E2E smoke tests for browser-level confidence, not as a replacement for focus
 npm run e2e:smoke:list
 npm run e2e:smoke
 npm run e2e:cloud-sync-reconnect
+npm run e2e:canvas-pointer-parity
 npm run e2e:smoke:headed
 npm run perf:browser
 ```
@@ -25,6 +26,7 @@ Keep E2E focused on critical journeys:
 - order PDF open/edit/export lifecycle
 - cloud sync visible controls
 - cloud sync offline/reconnect smoke around visible controls and post-reconnect actions
+- canvas hover/click pointer parity around real browser pointer events
 - settings backup import/export resilience
 
 ## What does not belong in E2E

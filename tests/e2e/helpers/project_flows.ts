@@ -136,6 +136,11 @@ export type DebugNdcPoint = {
   y: number;
 };
 
+type CanvasClientPoint = {
+  x: number;
+  y: number;
+};
+
 type DebugCanvasHitSnapshot = {
   x: number;
   y: number;
@@ -952,6 +957,59 @@ export async function clickCanvasViaDebugNdc(page: Page, point: DebugNdcPoint): 
   );
   if (!clicked) throw new Error('Expected __WP_DEBUG__.canvas.clickNdc() during E2E smoke');
   await waitForTwoAnimationFrames(page);
+}
+
+async function resolveCanvasClientPointForNdc(
+  page: Page,
+  point: DebugNdcPoint
+): Promise<CanvasClientPoint | null> {
+  const canvas = page.locator('#viewer-container canvas').first();
+  await expect(canvas).toBeVisible();
+  const box = await canvas.boundingBox();
+  if (!box || !(box.width > 0) || !(box.height > 0)) return null;
+
+  const clientPoint = {
+    x: box.x + ((point.x + 1) / 2) * box.width,
+    y: box.y + ((1 - point.y) / 2) * box.height,
+  };
+  const canvasReceivesPointer = await page.evaluate(({ x, y }) => {
+    const canvasEl = document.querySelector('#viewer-container canvas');
+    const hitEl = document.elementFromPoint(x, y);
+    return !!canvasEl && !!hitEl && (hitEl === canvasEl || canvasEl.contains(hitEl));
+  }, clientPoint);
+
+  return canvasReceivesPointer ? clientPoint : null;
+}
+
+async function readCanvasCursor(page: Page): Promise<string> {
+  const canvas = page.locator('#viewer-container canvas').first();
+  return await canvas.evaluate(node => {
+    const el = node as HTMLElement;
+    return el.style.cursor || window.getComputedStyle(el).cursor || '';
+  });
+}
+
+async function waitForCanvasPointerCursor(page: Page, timeoutMs = 1500): Promise<boolean> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if ((await readCanvasCursor(page)) === 'pointer') return true;
+    await page.waitForTimeout(50);
+  }
+  return (await readCanvasCursor(page)) === 'pointer';
+}
+
+async function clickCanvasViaBrowserPointerNdc(page: Page, point: DebugNdcPoint): Promise<boolean> {
+  const clientPoint = await resolveCanvasClientPointForNdc(page, point);
+  if (!clientPoint) return false;
+
+  await page.mouse.move(clientPoint.x, clientPoint.y);
+  await waitForTwoAnimationFrames(page);
+  if (!(await waitForCanvasPointerCursor(page))) return false;
+
+  await page.mouse.down();
+  await page.mouse.up();
+  await waitForTwoAnimationFrames(page);
+  return true;
 }
 
 function isLinearModuleHitInStack(
@@ -1834,6 +1892,52 @@ export async function applyCellDimsToReachableLinearModule(
 
   throw new Error(
     `Expected cell dims click to apply to a reachable ${stack} module; scanned ${scannedHits.join(', ')}`
+  );
+}
+
+export async function applyCellDimsToReachableLinearModuleViaBrowserPointer(
+  page: Page,
+  expected: Partial<Omit<ModuleSpecialDimsSnapshot, 'moduleIndex' | 'doors'>>,
+  options: { stack?: 'top' | 'bottom'; candidates?: readonly DebugNdcPoint[] } = {}
+): Promise<ModuleSpecialDimsSnapshot> {
+  const stack = options.stack || 'top';
+  const before = await readLinearModuleSpecialDims(page, stack);
+  const beforeByModule = new Map(before.map(snapshot => [snapshot.moduleIndex, JSON.stringify(snapshot)]));
+  const candidates = options.candidates || DEFAULT_LINEAR_CELL_DIMS_NDC_CANDIDATES;
+  const scannedHits: string[] = [];
+
+  for (const point of candidates) {
+    const hit = await inspectCanvasViaDebugNdc(page, point);
+    const hitDescription = describeCanvasHitCandidate(point, hit);
+    scannedHits.push(hitDescription);
+    if (!isLinearModuleHitInStack(hit, stack) || !hit.isCellDimsMode) continue;
+
+    const clicked = await clickCanvasViaBrowserPointerNdc(page, point);
+    if (!clicked) {
+      scannedHits.push(`${hitDescription}:browser-pointer-miss`);
+      continue;
+    }
+
+    const after = await readLinearModuleSpecialDims(page, stack);
+    const changedExpected = after.find(snapshot => {
+      const prevSerialized = beforeByModule.get(snapshot.moduleIndex) || '';
+      return matchesModuleSpecialDims(snapshot, expected) && JSON.stringify(snapshot) !== prevSerialized;
+    });
+    if (!changedExpected) {
+      throw new Error(
+        `Expected browser pointer click at ${hitDescription} to apply cell dims; no matching module changed`
+      );
+    }
+    if (changedExpected.moduleIndex !== hit.moduleIndex) {
+      throw new Error(
+        `Expected browser pointer click at ${hitDescription} to update module ${hit.moduleIndex}, but module ${changedExpected.moduleIndex} changed`
+      );
+    }
+    return changedExpected;
+  }
+
+  throw new Error(
+    `Expected browser pointer hover/click to apply to a reachable ${stack} module; scanned ${scannedHits.join(', ')}`
   );
 }
 

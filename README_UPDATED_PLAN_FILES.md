@@ -23,6 +23,7 @@ Do not re-add large generated audit dumps, dated workmap handoff files, or per-s
 - `check:cloud-sync-offline-reconnect` now guards Cloud Sync visible offline reconnect eligibility and hidden reconnect parking until visible return.
 - `e2e:cloud-sync-reconnect` now covers a real browser offline/online transition and post-reconnect Cloud Sync action.
 - `perf:smoke` and `perf:browser` were refreshed on 2026-05-04; both measured lanes pass, and the browser baseline report was updated.
+- `e2e:canvas-pointer-parity` now covers real browser pointer hover/click parity for a Canvas cell-dims commit.
 - Cloud Sync recovery hardening is covered by focused runtime tests and `check:cloud-sync-races`.
 - Canvas mirror/split/sketch hit-identity parity, split click commit base/bounds parity, removed-door transparent restore/blocking parity, full-door mirror commit fallback, sketch hover/commit host identity precedence, and sketch-box special-paint target preservation are covered by focused runtime tests plus `check:canvas-hit-identity` and `check:canvas-hit-parity`.
 - Project migration selector hardening canonicalizes existing typed `ui.raw` scalar values at project ingress and proves canonical runtime selectors do not fall back to legacy top-level UI fields.

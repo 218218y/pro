@@ -21,6 +21,7 @@ This is the root workmap pointer for future work. Older long-form workmaps were 
 - CSS cascade debt is ratcheted by `check:css-style` using `tools/wp_css_style_budget.json`.
 - Cloud Sync offline/reconnect behavior is guarded by `check:cloud-sync-offline-reconnect`.
 - Cloud Sync browser reconnect is smoked by `e2e:cloud-sync-reconnect`.
+- Canvas browser pointer parity is smoked by `e2e:canvas-pointer-parity`.
 - Performance measurement was refreshed on 2026-05-04: `perf:smoke` passed under the stored budget and `perf:browser` passed while refreshing `docs/BROWSER_PERF_AND_E2E_BASELINE.md`.
 
 ## Remaining Product-Risk Work
@@ -28,9 +29,8 @@ This is the root workmap pointer for future work. Older long-form workmaps were 
 These are the useful remaining upgrade lanes, ordered by value:
 
 1. Behavior coverage for the last facade splits, especially where a public facade exposes real user-facing behavior rather than only ownership boundaries.
-2. Canvas hover/click parity in a browser smoke path, complementing the existing source/runtime contracts.
-3. CSS cleanup that lowers `tools/wp_css_style_budget.json` after real cascade improvements land.
-4. Targeted performance owner changes only when future `perf:smoke` or `perf:browser` measurements show a real regression, or when a deliberate product decision accepts a measured hotspot improvement.
+2. CSS cleanup that lowers `tools/wp_css_style_budget.json` after real cascade improvements land.
+3. Targeted performance owner changes only when future `perf:smoke` or `perf:browser` measurements show a real regression, or when a deliberate product decision accepts a measured hotspot improvement.
 
 ## Historical Cleanup
 

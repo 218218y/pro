@@ -102,12 +102,14 @@ npm run contract:three-vendor
 - Click identity must not invent a `top` stack when no stack hint exists; use explicit object/module stack evidence only.
 - Sketch hover/commit matching must prefer canonical `hostModuleKey`/`hostIsBottom` over legacy `moduleKey`/`isBottom` fields so a stale or mixed hover snapshot cannot commit into the wrong module stack.
 - Identity helpers stay data-only: no DOM, scene mutation, store writes, timers, or UI operations.
+- Browser pointer smoke should exercise a real `pointermove`/`pointerdown`/`pointerup` path for at least one canvas operation, proving hover eligibility and click commit resolve to the same canonical target.
 
 Relevant checks:
 
 ```bash
 npm run check:canvas-hit-identity
 npm run check:canvas-hit-parity
+npm run e2e:canvas-pointer-parity
 ```
 
 ## Cloud Sync

@@ -28,6 +28,7 @@
     "e2e:smoke:list": "playwright test -c playwright.config.ts --list",
     "e2e:smoke:headed": "node tools/wp_playwright_preflight.js && playwright test -c playwright.config.ts --headed",
     "e2e:cloud-sync-reconnect": "node tools/wp_playwright_preflight.js && playwright test -c playwright.config.ts tests/e2e/cloud_sync_reconnect.spec.ts",
+    "e2e:canvas-pointer-parity": "node tools/wp_playwright_preflight.js && playwright test -c playwright.config.ts tests/e2e/canvas_pointer_parity.spec.ts",
     "esm:check": "node tools/wp_build_dist.js --no-assets && node tools/wp_esm_check.js",
     "format": "node node_modules/prettier/bin/prettier.cjs . --write",
     "format:check": "node node_modules/prettier/bin/prettier.cjs . --check",
