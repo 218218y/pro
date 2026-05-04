@@ -21,7 +21,7 @@ export function StructureDimensionsContent(props: StructureDimensionsContentProp
         depth={props.depth}
         isManualWidth={props.isManualWidth}
         isLibraryMode={props.isLibraryMode}
-        libraryUpperDoorsRemoved={props.libraryUpperDoorsRemoved}
+        libraryUpperDoorsHidden={props.libraryUpperDoorsHidden}
         onSetRaw={props.onSetRaw}
         onResetAutoWidth={props.onResetAutoWidth}
         onToggleLibraryUpperDoors={props.onToggleLibraryUpperDoors}

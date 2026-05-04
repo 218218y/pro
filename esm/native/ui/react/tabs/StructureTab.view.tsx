@@ -78,7 +78,7 @@ function StructureTabInner(props: { active: boolean }) {
   const dimensionsProps = {
     isSliding: state.isSliding,
     isLibraryMode: state.isLibraryMode,
-    libraryUpperDoorsRemoved: state.libraryUpperDoorsRemoved,
+    libraryUpperDoorsHidden: state.libraryUpperDoorsHidden,
     isManualWidth: state.isManualWidth,
     width: state.width,
     height: state.height,

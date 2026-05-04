@@ -32,6 +32,13 @@ import {
 } from './structure_tab_view_state_runtime.js';
 import { getModeConst } from './structure_tab_shared.js';
 
+function readLibraryUpperDoorsHiddenPreference(value: unknown, fallback: boolean): boolean {
+  if (value === true || value === false) return value;
+  if (value === 1 || value === '1' || value === 'true') return true;
+  if (value === 0 || value === '0' || value === 'false') return false;
+  return fallback;
+}
+
 export function useStructureTabViewStateState(app: AppContainer): StructureTabViewState {
   const {
     width,
@@ -118,7 +125,20 @@ export function useStructureTabViewStateState(app: AppContainer): StructureTabVi
   );
 
   const hasAnyCellDimsOverrides = useCfgSelector(selectHasAnyCellDimsOverrides);
-  const libraryUpperDoorsRemoved = useCfgSelector(cfg => selectLibraryUpperDoorsRemoved(cfg, doors));
+  const { libraryUpperDoorsHiddenRaw } = useUiSelectorShallow(ui => ({
+    libraryUpperDoorsHiddenRaw: ui.libraryUpperDoorsHidden,
+  }));
+  const libraryUpperDoorsEffectivelyRemoved = useCfgSelector(cfg =>
+    selectLibraryUpperDoorsRemoved(cfg, doors)
+  );
+  const libraryUpperDoorsHidden = useMemo(
+    () =>
+      readLibraryUpperDoorsHiddenPreference(
+        libraryUpperDoorsHiddenRaw,
+        libraryUpperDoorsEffectivelyRemoved
+      ),
+    [libraryUpperDoorsHiddenRaw, libraryUpperDoorsEffectivelyRemoved]
+  );
   const modulesCount = useStoreSelector(st => readModulesCountFromRootSnapshot(st, doors));
 
   const defaultCellWidth = useMemo(
@@ -175,7 +195,7 @@ export function useStructureTabViewStateState(app: AppContainer): StructureTabVi
     isManualWidth,
     preChestState: normalizeStructureTabPreChestState(preChestState),
     isLibraryMode,
-    libraryUpperDoorsRemoved,
+    libraryUpperDoorsHidden,
     hingeMap: normalizeStructureTabHingeMap(hingeMap),
     primaryMode,
     hingeModeId,

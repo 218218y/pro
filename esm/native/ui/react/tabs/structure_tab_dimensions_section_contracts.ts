@@ -15,7 +15,7 @@ export type StructureStackLinkField = 'depth' | 'width' | 'doors';
 export type StructureDimensionsContentProps = {
   isSliding: boolean;
   isLibraryMode: boolean;
-  libraryUpperDoorsRemoved: boolean;
+  libraryUpperDoorsHidden: boolean;
   isManualWidth: boolean;
   width: number;
   height: number;

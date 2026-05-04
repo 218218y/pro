@@ -52,17 +52,61 @@ export function useStructureTabWorkflows(args: UseStructureTabWorkflowsArgs): Us
     [app, state.cellDimsModeId]
   );
 
+  const getUpperDoorsCount = useCallback((): number => {
+    return Math.max(0, Math.round(Number(state.doors) || 0));
+  }, [state.doors]);
+
+  const setLibraryUpperDoorsRemoved = useCallback(
+    (upperDoorsCount: number, on: boolean, meta: { source: string; immediate: boolean }) => {
+      if (upperDoorsCount <= 0) return;
+      if (on) setUiFlag(app, 'removeDoorsEnabled', true, meta);
+      for (let doorId = 1; doorId <= upperDoorsCount; doorId += 1) {
+        callDoorsAction(app, 'setRemoved', `d${doorId}_full`, !!on, meta);
+      }
+    },
+    [app]
+  );
+
   const toggleLibraryMode = useCallback(() => {
+    const wasLibraryMode = !!state.isLibraryMode;
+    const shouldHideUpperDoorsInLibrary = !!state.libraryUpperDoorsHidden;
+    const upperDoorsCount = getUpperDoorsCount();
+
     workflowController.toggleLibraryMode();
-  }, [workflowController]);
+
+    if (upperDoorsCount <= 0 || !shouldHideUpperDoorsInLibrary) return;
+
+    const meta = {
+      source: wasLibraryMode
+        ? 'react:structure:libraryUpperDoors:restoreForRegular'
+        : 'react:structure:libraryUpperDoors:applyForLibrary',
+      immediate: true,
+    };
+
+    runHistoryBatch(
+      app,
+      () => {
+        setUiFlag(app, 'libraryUpperDoorsHidden', true, meta);
+        setLibraryUpperDoorsRemoved(upperDoorsCount, !wasLibraryMode, meta);
+      },
+      meta
+    );
+  }, [
+    app,
+    getUpperDoorsCount,
+    setLibraryUpperDoorsRemoved,
+    state.isLibraryMode,
+    state.libraryUpperDoorsHidden,
+    workflowController,
+  ]);
 
   const toggleLibraryUpperDoors = useCallback(() => {
-    const upperDoorsCount = Math.max(0, Math.round(Number(state.doors) || 0));
+    const upperDoorsCount = getUpperDoorsCount();
     if (upperDoorsCount <= 0) return;
 
-    const shouldRemove = !state.libraryUpperDoorsRemoved;
+    const shouldHideUpperDoors = !state.libraryUpperDoorsHidden;
     const meta = {
-      source: shouldRemove
+      source: shouldHideUpperDoors
         ? 'react:structure:libraryUpperDoors:remove'
         : 'react:structure:libraryUpperDoors:restore',
       immediate: true,
@@ -71,11 +115,8 @@ export function useStructureTabWorkflows(args: UseStructureTabWorkflowsArgs): Us
     runHistoryBatch(
       app,
       () => {
-        if (shouldRemove) setUiFlag(app, 'removeDoorsEnabled', true, meta);
-
-        for (let doorId = 1; doorId <= upperDoorsCount; doorId += 1) {
-          callDoorsAction(app, 'setRemoved', `d${doorId}_full`, shouldRemove, meta);
-        }
+        setUiFlag(app, 'libraryUpperDoorsHidden', shouldHideUpperDoors, meta);
+        setLibraryUpperDoorsRemoved(upperDoorsCount, shouldHideUpperDoors, meta);
       },
       meta
     );
@@ -83,12 +124,15 @@ export function useStructureTabWorkflows(args: UseStructureTabWorkflowsArgs): Us
     try {
       const toast = fb?.toast;
       if (typeof toast === 'function') {
-        toast(shouldRemove ? 'הדלתות העליונות הוסרו' : 'הדלתות העליונות הוחזרו', 'success');
+        toast(
+          shouldHideUpperDoors ? 'הדלתות העליונות הוסרו' : 'הדלתות העליונות הוחזרו',
+          'success'
+        );
       }
     } catch {
       // Feedback is best-effort only; the state mutation above is the source of truth.
     }
-  }, [app, fb, state.doors, state.libraryUpperDoorsRemoved]);
+  }, [app, fb, getUpperDoorsCount, setLibraryUpperDoorsRemoved, state.libraryUpperDoorsHidden]);
 
   const resetAllCellDimsOverrides = useCallback(() => {
     workflowController.resetAllCellDimsOverrides();

@@ -14,7 +14,7 @@ export function StructureDimensionsMainFields(props: {
   depth: StructureDimensionsContentProps['depth'];
   isManualWidth: StructureDimensionsContentProps['isManualWidth'];
   isLibraryMode: StructureDimensionsContentProps['isLibraryMode'];
-  libraryUpperDoorsRemoved: StructureDimensionsContentProps['libraryUpperDoorsRemoved'];
+  libraryUpperDoorsHidden: StructureDimensionsContentProps['libraryUpperDoorsHidden'];
   onSetRaw: StructureDimensionsContentProps['onSetRaw'];
   onResetAutoWidth: StructureDimensionsContentProps['onResetAutoWidth'];
   onToggleLibraryUpperDoors: StructureDimensionsContentProps['onToggleLibraryUpperDoors'];
@@ -76,12 +76,12 @@ export function StructureDimensionsMainFields(props: {
       {props.isLibraryMode ? (
         <div style={{ marginTop: 10 }}>
           <ModeToggleButton
-            active={props.libraryUpperDoorsRemoved}
+            active={props.libraryUpperDoorsHidden}
             onClick={props.onToggleLibraryUpperDoors}
             className="wp-r-mode-btn"
             data-testid={STRUCTURE_LIBRARY_UPPER_DOORS_BUTTON_TEST_ID}
           >
-            {props.libraryUpperDoorsRemoved ? 'החזר דלתות עליונות' : 'בלי דלתות עליונות'}
+            {props.libraryUpperDoorsHidden ? 'החזר דלתות עליונות' : 'הסר דלתות עליונות'}
           </ModeToggleButton>
         </div>
       ) : null}
