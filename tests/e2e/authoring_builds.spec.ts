@@ -801,9 +801,7 @@ test.describe('Playwright authoring build coverage', () => {
     const config = (state.config || {}) as Record<string, unknown>;
     expect(config.isLibraryMode).toBe(true);
     expect((config.modulesConfiguration as Array<Record<string, unknown>>).map(item => item.doors)).toEqual([
-      1,
-      2,
-      2,
+      1, 2, 2,
     ]);
     expect(
       (config.stackSplitLowerModulesConfiguration as Array<Record<string, unknown>>).map(item => item.doors)

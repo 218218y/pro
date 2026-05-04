@@ -176,7 +176,8 @@ export function readCreateInternalDrawerBox(value: unknown): BuilderCreateIntern
     hasDivider,
     addHandle,
     options
-  ) => Reflect.apply(value, undefined, [w, h, d, mat, drawerMat, outlineFunc, hasDivider, addHandle, options]);
+  ) =>
+    Reflect.apply(value, undefined, [w, h, d, mat, drawerMat, outlineFunc, hasDivider, addHandle, options]);
   return createInternalDrawerBox;
 }
 

@@ -263,8 +263,6 @@ test('glass door visual reuses the exact profile frame and only swaps the center
   assert.equal(glassPane.material.transparent, true);
 });
 
-
-
 test('glass door visual can reuse the Tom frame without leaving the wood center insert behind the glass', () => {
   const glassArgs = createCommonArgs();
   const visual = createGlassDoorVisual({

@@ -85,15 +85,14 @@ function removeNode(parent: Object3DLike, node: Object3DLike): void {
   }
 }
 
-
-
 function collectNodesByRolePrefix(visualGroup: Object3DLike, rolePrefix: string): Object3DLike[] {
   const matches: Object3DLike[] = [];
   const stack = Array.isArray(visualGroup.children) ? [...visualGroup.children] : [];
   while (stack.length) {
     const node = stack.shift();
     if (!node) continue;
-    const role = typeof node.userData?.__doorVisualRole === 'string' ? String(node.userData.__doorVisualRole) : '';
+    const role =
+      typeof node.userData?.__doorVisualRole === 'string' ? String(node.userData.__doorVisualRole) : '';
     if (role.startsWith(rolePrefix)) matches.push(node);
     if (Array.isArray(node.children) && node.children.length) stack.push(...node.children);
   }
@@ -119,7 +118,13 @@ function appendTomCenterSurround(
     visualGroup.add(strip);
   };
 
-  appendStrip(center.width, horizontalBand, 0, openingH / 2 + horizontalBand / 2, 'door_tom_center_surround_top');
+  appendStrip(
+    center.width,
+    horizontalBand,
+    0,
+    openingH / 2 + horizontalBand / 2,
+    'door_tom_center_surround_top'
+  );
   appendStrip(
     center.width,
     horizontalBand,
@@ -153,7 +158,10 @@ function createGlassMaterial(args: GlassDoorVisualArgs) {
 function appendGlassPane(args: GlassDoorVisualArgs, glassW: number, glassH: number, glassFaceZ: number) {
   const { THREE, visualGroup, tagDoorVisualPart, zSign } = args;
   const glassDepth = 0.005;
-  const glassPane = new THREE.Mesh(new THREE.BoxGeometry(glassW, glassH, glassDepth), createGlassMaterial(args));
+  const glassPane = new THREE.Mesh(
+    new THREE.BoxGeometry(glassW, glassH, glassDepth),
+    createGlassMaterial(args)
+  );
   glassPane.userData = glassPane.userData || {};
   glassPane.userData.__keepMaterial = true;
   glassPane.renderOrder = 2;
@@ -220,7 +228,11 @@ function appendCurtain(args: GlassDoorVisualArgs, glassW: number, glassH: number
   visualGroup.add(curtainMesh);
 }
 
-function buildProfileGlass(args: GlassDoorVisualArgs): { glassW: number; glassH: number; glassPaneZ: number } {
+function buildProfileGlass(args: GlassDoorVisualArgs): {
+  glassW: number;
+  glassH: number;
+  glassPaneZ: number;
+} {
   const layout = appendProfileDoorFrame({
     App: args.App,
     THREE: args.THREE,
@@ -234,7 +246,12 @@ function buildProfileGlass(args: GlassDoorVisualArgs): { glassW: number; glassH:
     mat: args.mat,
     zSign: args.zSign,
   });
-  const { glassW, glassH, glassPane } = appendGlassPane(args, layout.centerW, layout.centerH, layout.centerFaceZ);
+  const { glassW, glassH, glassPane } = appendGlassPane(
+    args,
+    layout.centerW,
+    layout.centerH,
+    layout.centerFaceZ
+  );
   return { glassW, glassH, glassPaneZ: glassPane.position.z };
 }
 
@@ -264,7 +281,8 @@ function buildTomGlass(args: GlassDoorVisualArgs): { glassW: number; glassH: num
   if (!center) {
     const fallbackW = Math.max(0.02, args.w - 0.09);
     const fallbackH = Math.max(0.02, args.h - 0.09);
-    const fallbackFaceZ = (args.thickness / 2 - Math.max(0.008, Math.min(0.014, args.thickness - 0.004))) * args.zSign;
+    const fallbackFaceZ =
+      (args.thickness / 2 - Math.max(0.008, Math.min(0.014, args.thickness - 0.004))) * args.zSign;
     const { glassPane } = appendGlassPane(args, fallbackW, fallbackH, fallbackFaceZ);
     return { glassW: fallbackW, glassH: fallbackH, glassPaneZ: glassPane.position.z };
   }
@@ -272,8 +290,17 @@ function buildTomGlass(args: GlassDoorVisualArgs): { glassW: number; glassH: num
   const openingRect = readMirrorPlacementRectMetadata(center.node);
   removeNode(args.visualGroup, center.node);
 
-  const openingW = Math.max(0.02, Math.min(center.width, (openingRect?.maxX ?? center.width / 2) - (openingRect?.minX ?? -center.width / 2)));
-  const openingH = Math.max(0.02, Math.min(center.height, (openingRect?.maxY ?? center.height / 2) - (openingRect?.minY ?? -center.height / 2)));
+  const openingW = Math.max(
+    0.02,
+    Math.min(center.width, (openingRect?.maxX ?? center.width / 2) - (openingRect?.minX ?? -center.width / 2))
+  );
+  const openingH = Math.max(
+    0.02,
+    Math.min(
+      center.height,
+      (openingRect?.maxY ?? center.height / 2) - (openingRect?.minY ?? -center.height / 2)
+    )
+  );
 
   if (openingW < center.width || openingH < center.height) {
     appendTomCenterSurround(args, center, openingW, openingH);
@@ -295,7 +322,11 @@ function buildFlatGlass(args: GlassDoorVisualArgs): { glassW: number; glassH: nu
 export function createGlassDoorVisual(args: GlassDoorVisualArgs) {
   const frameStyle = normalizeGlassFrameStyle(args.frameStyle);
   const layout =
-    frameStyle === 'flat' ? buildFlatGlass(args) : frameStyle === 'tom' ? buildTomGlass(args) : buildProfileGlass(args);
+    frameStyle === 'flat'
+      ? buildFlatGlass(args)
+      : frameStyle === 'tom'
+        ? buildTomGlass(args)
+        : buildProfileGlass(args);
   appendCurtain(args, layout.glassW, layout.glassH, layout.glassPaneZ);
   return args.visualGroup;
 }

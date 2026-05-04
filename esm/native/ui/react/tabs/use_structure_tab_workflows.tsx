@@ -124,10 +124,7 @@ export function useStructureTabWorkflows(args: UseStructureTabWorkflowsArgs): Us
     try {
       const toast = fb?.toast;
       if (typeof toast === 'function') {
-        toast(
-          shouldHideUpperDoors ? 'הדלתות העליונות הוסרו' : 'הדלתות העליונות הוחזרו',
-          'success'
-        );
+        toast(shouldHideUpperDoors ? 'הדלתות העליונות הוסרו' : 'הדלתות העליונות הוחזרו', 'success');
       }
     } catch {
       // Feedback is best-effort only; the state mutation above is the source of truth.

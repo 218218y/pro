@@ -533,7 +533,11 @@ test('library preset invariants are idempotent after linked upper door count edi
     cfgState.stackSplitLowerModulesConfiguration.map((item: any) => item.doors),
     [1, 2, 2]
   );
-  assert.equal(recomputes.length, 1, 'first linked door edit should rebuild once after canonicalizing library state');
+  assert.equal(
+    recomputes.length,
+    1,
+    'first linked door edit should rebuild once after canonicalizing library state'
+  );
   assert.equal(
     recomputes[0].uiOverride.raw?.doors,
     5,
@@ -551,6 +555,10 @@ test('library preset invariants are idempotent after linked upper door count edi
     modulesCount: 5,
   });
 
-  assert.equal(configCalls.length, 0, 'canonical linked library door state should be stable after one ensure');
+  assert.equal(
+    configCalls.length,
+    0,
+    'canonical linked library door state should be stable after one ensure'
+  );
   assert.equal(recomputes.length, 0, 'stable linked library door state should not request another rebuild');
 });

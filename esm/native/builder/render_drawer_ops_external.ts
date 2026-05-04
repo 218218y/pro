@@ -86,7 +86,12 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
           drawerMirrorMat = getMirrorMaterial({ App, THREE });
           if (!drawerMirrorMat) drawerMirrorMat = drawerWoodMat;
         }
-        const effectiveDrawerFrameStyleRaw = resolveDoorVisualStyle(null, doorStyle, cfg.doorStyleMap, partId);
+        const effectiveDrawerFrameStyleRaw = resolveDoorVisualStyle(
+          null,
+          doorStyle,
+          cfg.doorStyleMap,
+          partId
+        );
         const effectiveDrawerFrameStyle =
           effectiveDrawerFrameStyleRaw === 'glass' ? 'profile' : effectiveDrawerFrameStyleRaw;
         const effectiveDrawerStyle = drawerVisualState.isGlass ? 'glass' : effectiveDrawerFrameStyle;

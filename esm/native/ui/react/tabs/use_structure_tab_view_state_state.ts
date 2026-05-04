@@ -133,10 +133,7 @@ export function useStructureTabViewStateState(app: AppContainer): StructureTabVi
   );
   const libraryUpperDoorsHidden = useMemo(
     () =>
-      readLibraryUpperDoorsHiddenPreference(
-        libraryUpperDoorsHiddenRaw,
-        libraryUpperDoorsEffectivelyRemoved
-      ),
+      readLibraryUpperDoorsHiddenPreference(libraryUpperDoorsHiddenRaw, libraryUpperDoorsEffectivelyRemoved),
     [libraryUpperDoorsHiddenRaw, libraryUpperDoorsEffectivelyRemoved]
   );
   const modulesCount = useStoreSelector(st => readModulesCountFromRootSnapshot(st, doors));

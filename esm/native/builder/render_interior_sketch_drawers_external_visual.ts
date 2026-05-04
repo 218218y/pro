@@ -71,7 +71,11 @@ function createSketchExternalDrawerFrontVisual(
   if (!context.isFn(context.input.createDoorVisual)) return null;
 
   try {
-    const effectiveFrameStyle = resolveEffectiveDoorStyle(context.doorStyle, context.doorStyleMap, opPlan.partId);
+    const effectiveFrameStyle = resolveEffectiveDoorStyle(
+      context.doorStyle,
+      context.doorStyleMap,
+      opPlan.partId
+    );
     return context.input.createDoorVisual(
       opPlan.faceW,
       opPlan.visualH,

@@ -45,7 +45,8 @@ function loadDesignTabMulticolorControllerModule(reportCalls) {
     if (specifier === '../../../features/door_style_overrides.js') {
       return {
         encodeDoorStyleOverridePaintToken: value => `__door_style__:${value}`,
-        isGlassPaintSelection: value => value === 'glass' || String(value || '').startsWith('__wp_glass_style__:'),
+        isGlassPaintSelection: value =>
+          value === 'glass' || String(value || '').startsWith('__wp_glass_style__:'),
       };
     }
     if (specifier === './design_tab_multicolor_shared.js') {

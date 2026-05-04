@@ -135,7 +135,17 @@ export function resolveCornerWingServices(App: AppContainer) {
     addHandle,
     options
   ) => {
-    const out = createInternalDrawerBoxRaw(w, h, d, mat, drawerMat, outlineFunc, hasDivider, addHandle, options);
+    const out = createInternalDrawerBoxRaw(
+      w,
+      h,
+      d,
+      mat,
+      drawerMat,
+      outlineFunc,
+      hasDivider,
+      addHandle,
+      options
+    );
     if (!isObject3DLike(out)) {
       throw new TypeError('[WardrobePro] createInternalDrawerBox returned a non-Object3D value.');
     }

@@ -191,5 +191,9 @@ test('external drawer build treats glass specials like real glass fronts, keeps 
   assert.equal(drawerBoxCalls.length, 1);
   assert.deepEqual(drawerBoxCalls[0][8], { omitFrontPanel: true });
   assert.equal(wardrobeGroup.children.length, 1);
-  assert.equal(wardrobeGroup.children[0].children.length, 2, 'glass drawer should not keep a wood connector behind the glass');
+  assert.equal(
+    wardrobeGroup.children[0].children.length,
+    2,
+    'glass drawer should not keep a wood connector behind the glass'
+  );
 });

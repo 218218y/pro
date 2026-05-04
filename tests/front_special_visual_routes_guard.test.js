@@ -25,7 +25,10 @@ test('corner and sketch external drawer fronts forward glass/mirror state throug
   assert.match(corner, /const curtain =/);
   assert.match(corner, /const special = runtime\.__resolveSpecial\(id, curtain\);/);
   assert.match(corner, /const isGlass = special === 'glass';/);
-  assert.match(corner, /const effectiveFrameStyle = resolveEffectiveDoorStyle\(runtime\.doorStyle, doorStyleMap, id\);/);
+  assert.match(
+    corner,
+    /const effectiveFrameStyle = resolveEffectiveDoorStyle\(runtime\.doorStyle, doorStyleMap, id\);/
+  );
   assert.match(corner, /isGlass \? 'glass' : effectiveFrameStyle/);
   assert.match(corner, /isGlass \? \{ glassFrameStyle: effectiveFrameStyle \} : null/);
   assert.match(corner, /isGlass \? \{ omitFrontPanel: true \} : null/);

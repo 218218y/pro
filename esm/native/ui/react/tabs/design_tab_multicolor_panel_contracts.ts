@@ -1,4 +1,7 @@
-import { encodeGlassFrameStylePaintToken, type DoorStyleOverrideValue } from '../../../features/door_style_overrides.js';
+import {
+  encodeGlassFrameStylePaintToken,
+  type DoorStyleOverrideValue,
+} from '../../../features/door_style_overrides.js';
 import type { CurtainPreset, DefaultSwatch, SavedColor } from './design_tab_multicolor_shared.js';
 
 export const MULTI_ICON_BRUSH = '🖌️';
@@ -25,7 +28,6 @@ export const MULTI_MIRROR_HEIGHT = 'גובה מראה';
 export const MULTI_MIRROR_WIDTH = 'רוחב מראה';
 export const MULTI_MIRROR_AUTO = 'אוטומטי';
 export const MULTI_SECTION_TITLE = 'צביעה מתקדמת ותוספות';
-
 
 export const MULTI_GLASS_STYLE_OPTIONS: ReadonlyArray<{
   id: Exclude<DoorStyleOverrideValue, 'profile'>;

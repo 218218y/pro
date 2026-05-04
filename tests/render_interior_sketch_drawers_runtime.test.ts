@@ -62,7 +62,14 @@ class FakeMeshStandardMaterial {
 function createExternalDrawerArgs() {
   const mirrorMat = { id: 'mirror-mat' };
   let mirrorCalls = 0;
-  const doorVisualCalls: Array<{ partId: string; faceMat: unknown; isMirror: boolean; faceH: number; style: unknown; options: unknown }> = [];
+  const doorVisualCalls: Array<{
+    partId: string;
+    faceMat: unknown;
+    isMirror: boolean;
+    faceH: number;
+    style: unknown;
+    options: unknown;
+  }> = [];
   const drawerBoxCalls: unknown[][] = [];
   const App: any = {
     services: {
@@ -206,7 +213,6 @@ test('render sketch external drawers honors per-stack custom drawer height', () 
   assert.ok(Math.abs(Number(secondGroup.userData.__doorHeight) - 0.292) < 1e-9);
 });
 
-
 test('render sketch glass drawers keep the selected frame style and remove hidden wood parts behind the glass', () => {
   const { args, doorVisualCalls, drawerBoxCalls, App } = createExternalDrawerArgs();
   args.input.cfg.doorSpecialMap = {
@@ -231,7 +237,11 @@ test('render sketch glass drawers keep the selected frame style and remove hidde
   const drawers = App.render?.drawersArray || [];
   assert.equal(drawers.length, 1);
   const drawerGroup = drawers[0]?.group as FakeGroup;
-  assert.equal(drawerGroup.children.length, 2, 'glass sketch drawer should omit the connector behind the glass');
+  assert.equal(
+    drawerGroup.children.length,
+    2,
+    'glass sketch drawer should omit the connector behind the glass'
+  );
 });
 
 test('render sketch internal drawers keeps the default sketch height independent of local span', () => {
