@@ -96,52 +96,53 @@ export function applyPaintPartMutation(args: {
   const existingMirrorLayouts = readMirrorLayoutList(state.mirror0[paintPartKey]);
   const resolveMirrorLayout = args.resolveMirrorLayout || resolveMirrorLayoutForPaintClick;
   const glassFrameStyle = resolveGlassFrameStylePaintSelection(paintSelection);
+  const isSpecialPaintPart = isSpecialPart(paintPartKey);
 
-  if (isSpecialPart(paintPartKey) && (paintSelection === 'mirror' || glassFrameStyle)) {
-    if (paintSelection === 'mirror') {
-      const mirrorResult = resolveMirrorLayout(clickArgs, existingMirrorLayouts);
-      const { removeMatch, canApplyMirror } = mirrorResult;
-      if (existingSpecial === 'mirror' && removeMatch) {
-        const nextLayouts = existingMirrorLayouts.filter((_, idx) => idx !== removeMatch.index);
-        if (nextLayouts.length) {
-          state.ensureSpecial()[paintPartKey] = 'mirror';
-          delete state.ensureCurtains()[paintPartKey];
-          state.ensureMirrorLayout()[paintPartKey] = nextLayouts;
-        } else {
-          delete state.ensureSpecial()[paintPartKey];
-          delete state.ensureCurtains()[paintPartKey];
-          delete state.ensureMirrorLayout()[paintPartKey];
-        }
-        return;
-      }
-
-      if (!canApplyMirror) return;
-
-      const isTogglingCanonicalOutsideMirror =
-        existingSpecial === 'mirror' &&
-        isFullDoorMirrorClick(mirrorResult) &&
-        normalizeMirrorClickFaceSign(mirrorResult.hitFaceSign) === 1 &&
-        !existingMirrorLayouts.length;
-      if (isTogglingCanonicalOutsideMirror) {
+  if (isSpecialPaintPart && paintSelection === 'mirror') {
+    const mirrorResult = resolveMirrorLayout(clickArgs, existingMirrorLayouts);
+    const { removeMatch, canApplyMirror } = mirrorResult;
+    if (existingSpecial === 'mirror' && removeMatch) {
+      const nextLayouts = existingMirrorLayouts.filter((_, idx) => idx !== removeMatch.index);
+      if (nextLayouts.length) {
+        state.ensureSpecial()[paintPartKey] = 'mirror';
+        delete state.ensureCurtains()[paintPartKey];
+        state.ensureMirrorLayout()[paintPartKey] = nextLayouts;
+      } else {
         delete state.ensureSpecial()[paintPartKey];
         delete state.ensureCurtains()[paintPartKey];
         delete state.ensureMirrorLayout()[paintPartKey];
-        return;
       }
-
-      const nextLayouts = resolveMirrorLayoutsAfterAdd({
-        existingSpecial,
-        existingMirrorLayouts,
-        result: mirrorResult,
-      });
-
-      state.ensureSpecial()[paintPartKey] = 'mirror';
-      delete state.ensureCurtains()[paintPartKey];
-      if (nextLayouts && nextLayouts.length) state.ensureMirrorLayout()[paintPartKey] = nextLayouts;
-      else delete state.ensureMirrorLayout()[paintPartKey];
       return;
     }
 
+    if (!canApplyMirror) return;
+
+    const isTogglingCanonicalOutsideMirror =
+      existingSpecial === 'mirror' &&
+      isFullDoorMirrorClick(mirrorResult) &&
+      normalizeMirrorClickFaceSign(mirrorResult.hitFaceSign) === 1 &&
+      !existingMirrorLayouts.length;
+    if (isTogglingCanonicalOutsideMirror) {
+      delete state.ensureSpecial()[paintPartKey];
+      delete state.ensureCurtains()[paintPartKey];
+      delete state.ensureMirrorLayout()[paintPartKey];
+      return;
+    }
+
+    const nextLayouts = resolveMirrorLayoutsAfterAdd({
+      existingSpecial,
+      existingMirrorLayouts,
+      result: mirrorResult,
+    });
+
+    state.ensureSpecial()[paintPartKey] = 'mirror';
+    delete state.ensureCurtains()[paintPartKey];
+    if (nextLayouts && nextLayouts.length) state.ensureMirrorLayout()[paintPartKey] = nextLayouts;
+    else delete state.ensureMirrorLayout()[paintPartKey];
+    return;
+  }
+
+  if (isSpecialPaintPart && glassFrameStyle != null) {
     const existingStyle = state.style0[paintPartKey] || null;
     const shouldRemove =
       existingSpecial === 'glass' && existingCurtain === curtainChoice && existingStyle === glassFrameStyle;
