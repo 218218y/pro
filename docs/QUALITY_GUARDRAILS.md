@@ -119,6 +119,7 @@ npm run check:canvas-hit-parity
 - Main-row push failures must be reported non-fatally and must still notify settled listeners so parked pulls can recover.
 - Recovery pulls must not run ahead of a debounced main-row push; reconnect/attention/polling refresh work stays parked until the pending local write settles.
 - Browser attention listeners must report non-fatal pull errors and remain usable for later events.
+- Offline attention attempts must not consume reconnect eligibility; hidden reconnects must wait for a visible return before pulling.
 
 Relevant docs/checks:
 
@@ -126,6 +127,7 @@ Relevant docs/checks:
 docs/CLOUD_SYNC_LIFECYCLE_STATE_MACHINE.md
 npm run check:cloud-sync-timers
 npm run check:cloud-sync-races
+npm run check:cloud-sync-offline-reconnect
 ```
 
 ## Project load and runtime selectors

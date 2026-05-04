@@ -19,6 +19,7 @@ This is the root workmap pointer for future work. Older long-form workmaps were 
 - Private facade/owner splits are guarded by `check:private-owner-imports`.
 - Project import behavior is guarded by `check:project-import-fixtures` with real JSON fixtures.
 - CSS cascade debt is ratcheted by `check:css-style` using `tools/wp_css_style_budget.json`.
+- Cloud Sync offline/reconnect behavior is guarded by `check:cloud-sync-offline-reconnect`.
 
 ## Remaining Product-Risk Work
 
@@ -26,7 +27,7 @@ These are the useful remaining upgrade lanes, ordered by value:
 
 1. Behavior coverage for the last facade splits, especially where a public facade exposes real user-facing behavior rather than only ownership boundaries.
 2. Measured performance work with `perf:smoke` and `perf:browser`, then targeted owner changes only where the measurements show a regression.
-3. Cloud Sync offline/reconnect behavior coverage in the browser/runtime lane.
+3. Cloud Sync browser smoke around real offline/reconnect flows, complementing the new runtime guard.
 4. Canvas hover/click parity in a browser smoke path, complementing the existing source/runtime contracts.
 5. CSS cleanup that lowers `tools/wp_css_style_budget.json` after real cascade improvements land.
 

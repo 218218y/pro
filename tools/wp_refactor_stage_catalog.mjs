@@ -113,6 +113,14 @@ export const REFACTOR_POST_CLOSEOUT_GUARDRAILS = Object.freeze([
     verificationLane: 'check:refactor-guardrails',
     scope: 'CSS cascade debt budget ratchet',
   },
+  {
+    id: 'post-stage-80-cloud-sync-offline-reconnect',
+    script: 'check:cloud-sync-offline-reconnect',
+    tool: 'tools/wp_run_tsx_tests.mjs',
+    guard: 'tests/cloud_sync_offline_reconnect_runtime.test.ts',
+    verificationLane: 'check:refactor-guardrails',
+    scope: 'Cloud Sync offline/reconnect attention behavior',
+  },
 ]);
 
 export const REFACTOR_INTEGRATION_ANCHORS = Object.freeze([

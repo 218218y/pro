@@ -70,6 +70,17 @@ The current ratchet covers:
 
 Future CSS work should lower these budgets after cleanup. Increasing a budget is allowed only when a deliberate product/design decision accepts the extra cascade debt.
 
+## Cloud Sync offline/reconnect behavior hardening
+
+The Cloud Sync offline/reconnect hardening slice is complete: `npm run check:cloud-sync-offline-reconnect` now guards browser attention behavior for reconnect paths.
+
+The guard proves two product-risk cases:
+
+- visible offline attention attempts stay quiet and do not consume reconnect eligibility;
+- a reconnect while the tab is hidden stays parked until the document becomes visible, then pulls through the canonical `attention:visibility` path.
+
+This keeps offline/hidden behavior inside the lifecycle refresh policy instead of adding browser-binding fallbacks or duplicate state paths.
+
 ## Workmap file cleanup
 
 The dated root workmaps and the root `new refactor_workmap` draft were removed after consolidation. The repository now keeps one short root pointer plus the canonical docs above, so future work does not need to choose between competing historical plans.
@@ -175,6 +186,7 @@ Do not create Stage 81 just to continue the numbering. If no fresh ownership sea
 | Runtime/API hardening        | runtime selector/API tests, migration boundary guard, type-hardening audit          |
 | Project import/load ingress  | `check:project-import-fixtures`, project migration boundary, runtime selector guard |
 | CSS cascade cleanup          | `check:css-style`, `report:css-style`, budget decrease when counts improve          |
+| Cloud Sync reconnect         | `check:cloud-sync-offline-reconnect`, lifecycle lane, race/timer guards             |
 | React UI split               | targeted UI tests, design-system/option-button guards, lint on changed files        |
 | Order PDF split              | targeted PDF/editor guards, text-layer/sketch-preview guards, lint on changed files |
 | Planning/control-plane stage | docs-control-plane audit, refactor integration audit, stage guard suite             |

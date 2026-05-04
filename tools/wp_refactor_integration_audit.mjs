@@ -57,6 +57,7 @@ const requiredGuardScripts = [
   'check:canvas-hit-parity',
   'check:cloud-sync-timers',
   'check:cloud-sync-races',
+  'check:cloud-sync-offline-reconnect',
   'check:perf-hotpaths',
   'check:refactor-closeout',
   'check:test-portfolio',
