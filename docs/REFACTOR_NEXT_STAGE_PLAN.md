@@ -6,7 +6,9 @@ Purpose: keep the remaining modernization work professional, useful, and bounded
 
 ## Repository alignment update
 
-The root `new refactor_workmap` draft was reviewed against the live codebase on 2026-05-03. Its direction is useful, but two assumptions are now stale:
+The former root `new refactor_workmap` draft was reviewed against the live codebase on 2026-05-03. Its useful decisions have now been consolidated into this plan, `refactor_workmap.md`, `docs/REFACTOR_WORKMAP_PROGRESS.md`, and `docs/QUALITY_GUARDRAILS.md`. The old draft and dated workmap handoff files are no longer active source of truth.
+
+Two assumptions in the older draft are now stale:
 
 - `node tools/wp_cycles.js esm --json` reports 0 cycle groups across 2491 files and 7558 edges.
 - `node tools/wp_cycles.js types --json` reports 0 cycle groups across 72 files and 174 edges.
@@ -54,6 +56,23 @@ The fixtures cover two important import cases:
 - a minimal project envelope with empty replace-owned branches so project load proves those branches are explicit clears instead of accidental stale-state merges.
 
 This keeps project compatibility at the project ingress layer and gives future import work behavior coverage without adding runtime fallback paths.
+
+## CSS cascade ratchet hardening
+
+The CSS cascade hardening slice is complete: `npm run check:css-style` now reads explicit limits from `tools/wp_css_style_budget.json` instead of embedding budget numbers inside the audit script.
+
+The current ratchet covers:
+
+- `!important` count;
+- `transition: all` count;
+- ad hoc `z-index` declarations;
+- one-off `box-shadow` declarations.
+
+Future CSS work should lower these budgets after cleanup. Increasing a budget is allowed only when a deliberate product/design decision accepts the extra cascade debt.
+
+## Workmap file cleanup
+
+The dated root workmaps and the root `new refactor_workmap` draft were removed after consolidation. The repository now keeps one short root pointer plus the canonical docs above, so future work does not need to choose between competing historical plans.
 
 ## Stage 74 decision
 
@@ -155,6 +174,7 @@ Do not create Stage 81 just to continue the numbering. If no fresh ownership sea
 | Builder render split         | `typecheck:builder`, relevant render/visual guards, new ownership guard             |
 | Runtime/API hardening        | runtime selector/API tests, migration boundary guard, type-hardening audit          |
 | Project import/load ingress  | `check:project-import-fixtures`, project migration boundary, runtime selector guard |
+| CSS cascade cleanup          | `check:css-style`, `report:css-style`, budget decrease when counts improve          |
 | React UI split               | targeted UI tests, design-system/option-button guards, lint on changed files        |
 | Order PDF split              | targeted PDF/editor guards, text-layer/sketch-preview guards, lint on changed files |
 | Planning/control-plane stage | docs-control-plane audit, refactor integration audit, stage guard suite             |

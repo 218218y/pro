@@ -1,5 +1,19 @@
 {
-  "placeholder": true,
-  "report": "npm run report:css-style",
-  "policy": "docs/QUALITY_GUARDRAILS.md"
+  "file": "css/react_styles.css",
+  "budget": "tools/wp_css_style_budget.json",
+  "policy": "CSS cascade debt ratchet. Counts may stay at or below these limits; lower a limit only after cleanup lands, and raise it only with an explicit product/design reason.",
+  "metrics": {
+    "important": 141,
+    "transitionAll": 22,
+    "zIndex": 52,
+    "boxShadow": 116
+  },
+  "max": {
+    "important": 141,
+    "transitionAll": 22,
+    "zIndex": 52,
+    "boxShadow": 116
+  },
+  "ok": true,
+  "violations": []
 }

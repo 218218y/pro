@@ -105,6 +105,14 @@ export const REFACTOR_POST_CLOSEOUT_GUARDRAILS = Object.freeze([
     verificationLane: 'check:refactor-guardrails',
     scope: 'real project import fixtures and canonical load ingress',
   },
+  {
+    id: 'post-stage-80-css-cascade-budget',
+    script: 'check:css-style',
+    tool: 'tools/wp_css_style_audit.mjs',
+    guard: 'tools/wp_css_style_budget.json',
+    verificationLane: 'check:refactor-guardrails',
+    scope: 'CSS cascade debt budget ratchet',
+  },
 ]);
 
 export const REFACTOR_INTEGRATION_ANCHORS = Object.freeze([

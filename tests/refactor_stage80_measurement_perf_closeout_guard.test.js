@@ -27,6 +27,9 @@ test('stage 80 measurement and performance closeout is anchored', () => {
   const progress = read('docs/REFACTOR_WORKMAP_PROGRESS.md');
   const workmap = read('refactor_workmap.md');
   const integrationAudit = read('tools/wp_refactor_integration_audit.mjs');
+  const cssBudget = readJson('tools/wp_css_style_budget.json');
+  const cssAudit = read('tools/wp_css_style_audit.mjs');
+  const cssReport = read('docs/CSS_STYLE_AUDIT.md');
   const perfHotpath = read('tools/wp_perf_hotpath_contract.mjs');
   const perfSmoke = read('tools/wp_perf_smoke.mjs');
   const perfSmokeShared = read('tools/wp_perf_smoke_shared.js');
@@ -74,6 +77,18 @@ test('stage 80 measurement and performance closeout is anchored', () => {
   assert.match(scripts['perf:smoke:update-baseline'], /docs\/PERF_AND_STABILITY_BASELINE\.md/);
   assert.equal(scripts['perf:browser'], 'node tools/wp_browser_perf_smoke.mjs --enforce');
   assert.match(scripts['perf:browser:update-baseline'], /--update-baseline/);
+  assert.equal(
+    scripts['check:css-style'],
+    'node tools/wp_css_style_audit.mjs --check --budget=tools/wp_css_style_budget.json'
+  );
+  assert.match(scripts['report:css-style'], /--budget=tools\/wp_css_style_budget\.json/);
+  assert.equal(cssBudget.file, 'css/react_styles.css');
+  assert.equal(cssBudget.metrics.important.max, 141);
+  assert.equal(cssBudget.metrics.transitionAll.max, 22);
+  assert.equal(cssBudget.metrics.zIndex.max, 52);
+  assert.equal(cssBudget.metrics.boxShadow.max, 116);
+  assert.match(cssAudit, /budgetPath/);
+  assert.match(cssAudit, /unknown metric/);
 
   assert.match(perfSmoke, /runPerfSmokeFlow/);
   assert.match(perfSmokeShared, /PERF_AND_STABILITY_BASELINE/);
@@ -104,6 +119,9 @@ test('stage 80 measurement and performance closeout is anchored', () => {
   assert.match(quality, /npm run check:refactor-closeout/);
   assert.match(quality, /npm run perf:smoke/);
   assert.match(quality, /npm run perf:browser/);
+  assert.match(quality, /## CSS cascade/);
+  assert.match(quality, /tools\/wp_css_style_budget\.json/);
+  assert.match(cssReport, /Budget: `tools\/wp_css_style_budget\.json`/);
 
   assert.match(perfBaselineDoc, /Tool-owned report target/);
   assert.match(perfBaselineDoc, /tools\/wp_perf_smoke_baseline\.json/);
@@ -113,5 +131,5 @@ test('stage 80 measurement and performance closeout is anchored', () => {
   assert.match(browserBaselineDoc, /## Runtime perf summary/);
 
   assert.match(progress, /Stage 80/);
-  assert.match(workmap, /Stage 80 — Measurement and performance guard closeout retained/);
+  assert.match(workmap, /Stage 80 - Measurement and performance guard closeout retained/);
 });

@@ -54,6 +54,21 @@ npm run perf:smoke
 npm run perf:browser
 ```
 
+## CSS cascade
+
+- `tools/wp_css_style_budget.json` is the active CSS debt ratchet for `css/react_styles.css`.
+- `check:css-style` must read that budget file instead of embedding limits in code.
+- New CSS should not increase `!important`, `transition: all`, ad hoc `z-index`, or one-off `box-shadow` counts.
+- When CSS cleanup lowers a count, lower the matching budget in the same change. Raising a budget requires an explicit product/design reason in the review.
+- `report:css-style` regenerates the checked-in report targets from the same budget.
+
+Relevant checks:
+
+```bash
+npm run check:css-style
+npm run report:css-style
+```
+
 ## Builder and render
 
 - Builder orchestration moves through prepared/context objects after the prepare seam, not loose `args` bags.

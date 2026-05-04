@@ -302,7 +302,6 @@ export function buildStackAwareVerticalClearanceMeasurementEntries(args: {
     viewFaceSign: args.viewFaceSign,
     labelFaceSign: args.labelFaceSign ?? args.viewFaceSign ?? args.faceSign ?? 1,
   });
-  const styleKey = args.styleKey === 'cell' ? 'cell' : 'default';
   const z = typeof args.z === 'number' && Number.isFinite(args.z) ? args.z : undefined;
   const minVerticalCm = Math.max(0, clampFinite(args.minVerticalCm, 0));
   const neighborTextScale = Math.max(0.74, baseTextScale * 0.94);

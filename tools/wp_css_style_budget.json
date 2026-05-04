@@ -1,0 +1,22 @@
+{
+  "file": "css/react_styles.css",
+  "policy": "CSS cascade debt ratchet. Counts may stay at or below these limits; lower a limit only after cleanup lands, and raise it only with an explicit product/design reason.",
+  "metrics": {
+    "important": {
+      "max": 141,
+      "description": "Locks the current !important count so cascade exceptions do not grow silently."
+    },
+    "transitionAll": {
+      "max": 22,
+      "description": "Locks transition: all usage; new transitions should name concrete properties."
+    },
+    "zIndex": {
+      "max": 52,
+      "description": "Locks stacking-context pressure until z-index layers are tokenized."
+    },
+    "boxShadow": {
+      "max": 116,
+      "description": "Locks one-off shadow count until shadows move to shared tokens."
+    }
+  }
+}

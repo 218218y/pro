@@ -176,7 +176,7 @@ test('stage 39 to 41 refactor control-plane stage catalog is anchored', () => {
   );
   assert.deepEqual(
     REFACTOR_POST_CLOSEOUT_GUARDRAILS.map(entry => entry.script),
-    ['check:import-cycles', 'check:private-owner-imports', 'check:project-import-fixtures']
+    ['check:import-cycles', 'check:private-owner-imports', 'check:project-import-fixtures', 'check:css-style']
   );
 
   for (const entry of REFACTOR_HIGH_STAGE_METADATA) {

@@ -4,27 +4,70 @@ import { dirname, join } from 'node:path';
 
 const root = process.cwd();
 const args = new Set(process.argv.slice(2));
-const jsonOutArg = process.argv.find(arg => arg.startsWith('--json-out='));
-const mdOutArg = process.argv.find(arg => arg.startsWith('--md-out='));
-const jsonOut = jsonOutArg ? jsonOutArg.slice('--json-out='.length) : null;
-const mdOut = mdOutArg ? mdOutArg.slice('--md-out='.length) : null;
+
+function readOption(name) {
+  const flag = `--${name}`;
+  const inlinePrefix = `${flag}=`;
+  const inline = process.argv.find(arg => arg.startsWith(inlinePrefix));
+  if (inline) return inline.slice(inlinePrefix.length);
+  const index = process.argv.indexOf(flag);
+  if (index >= 0 && index + 1 < process.argv.length) return process.argv[index + 1];
+  return null;
+}
+
+const jsonOut = readOption('json-out');
+const mdOut = readOption('md-out');
+const budgetPath = readOption('budget') || 'tools/wp_css_style_budget.json';
 const check = args.has('--check') || (!jsonOut && !mdOut);
 
-const rel = 'css/react_styles.css';
+const metricReaders = Object.freeze({
+  important: source => (source.match(/!important/g) || []).length,
+  transitionAll: source => (source.match(/transition\s*:\s*all\b/gi) || []).length,
+  zIndex: source => (source.match(/z-index\s*:/gi) || []).length,
+  boxShadow: source => (source.match(/box-shadow\s*:/gi) || []).length,
+});
+
+function readBudget() {
+  const budget = JSON.parse(readFileSync(join(root, budgetPath), 'utf8'));
+  if (!budget || typeof budget !== 'object' || Array.isArray(budget)) {
+    throw new Error(`${budgetPath}: CSS style budget must be an object`);
+  }
+  if (typeof budget.file !== 'string' || !budget.file) {
+    throw new Error(`${budgetPath}: missing file`);
+  }
+  if (!budget.metrics || typeof budget.metrics !== 'object' || Array.isArray(budget.metrics)) {
+    throw new Error(`${budgetPath}: missing metrics`);
+  }
+  return budget;
+}
+
+const budget = readBudget();
+const rel = budget.file;
 const source = readFileSync(join(root, rel), 'utf8');
-const metrics = {
-  important: (source.match(/!important/g) || []).length,
-  transitionAll: (source.match(/transition\s*:\s*all\b/gi) || []).length,
-  zIndex: (source.match(/z-index\s*:/gi) || []).length,
-  boxShadow: (source.match(/box-shadow\s*:/gi) || []).length,
+const metrics = {};
+const max = {};
+const notes = {};
+for (const [key, entry] of Object.entries(budget.metrics)) {
+  const readMetric = metricReaders[key];
+  if (!readMetric) throw new Error(`${budgetPath}: unknown metric ${key}`);
+  const limit = Number(entry && typeof entry === 'object' ? entry.max : entry);
+  if (!Number.isFinite(limit) || limit < 0) {
+    throw new Error(`${budgetPath}: invalid max for ${key}`);
+  }
+  metrics[key] = readMetric(source);
+  max[key] = limit;
+  notes[key] =
+    entry && typeof entry === 'object' && typeof entry.description === 'string' ? entry.description : '';
+}
+const report = {
+  file: rel,
+  budget: budgetPath,
+  policy: budget.policy || '',
+  metrics,
+  max,
+  ok: true,
+  violations: [],
 };
-const max = {
-  important: 141,
-  transitionAll: 22,
-  zIndex: 52,
-  boxShadow: 116,
-};
-const report = { file: rel, metrics, max, ok: true, violations: [] };
 for (const [key, limit] of Object.entries(max)) {
   if (metrics[key] > limit) {
     report.ok = false;
@@ -39,9 +82,12 @@ if (jsonOut) {
 }
 if (mdOut) {
   const rows = Object.keys(max)
-    .map(key => `| ${key} | ${metrics[key]} | ${max[key]} | ${metrics[key] <= max[key] ? 'ok' : 'FAIL'} |`)
+    .map(
+      key =>
+        `| ${key} | ${metrics[key]} | ${max[key]} | ${metrics[key] <= max[key] ? 'ok' : 'FAIL'} | ${notes[key]} |`
+    )
     .join('\n');
-  const md = `# CSS Style Audit\n\n| Metric | Current | Max | Status |\n|---|---:|---:|---|\n${rows}\n`;
+  const md = `# CSS Style Audit\n\nBudget: \`${budgetPath}\`  \nFile: \`${rel}\`\n\n${budget.policy || ''}\n\n| Metric | Current | Max | Status | Note |\n|---|---:|---:|---|---|\n${rows}\n`;
   const target = join(root, mdOut);
   mkdirSync(dirname(target), { recursive: true });
   writeFileSync(target, md);
