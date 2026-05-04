@@ -84,7 +84,7 @@ test('stage 80 measurement and performance closeout is anchored', () => {
   assert.match(scripts['report:css-style'], /--budget=tools\/wp_css_style_budget\.json/);
   assert.equal(cssBudget.file, 'css/react_styles.css');
   assert.equal(cssBudget.metrics.important.max, 141);
-  assert.equal(cssBudget.metrics.transitionAll.max, 22);
+  assert.equal(cssBudget.metrics.transitionAll.max, 0);
   assert.equal(cssBudget.metrics.zIndex.max, 52);
   assert.equal(cssBudget.metrics.boxShadow.max, 116);
   assert.match(cssAudit, /budgetPath/);

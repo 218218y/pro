@@ -70,6 +70,8 @@ The current ratchet covers:
 
 Future CSS work should lower these budgets after cleanup. Increasing a budget is allowed only when a deliberate product/design decision accepts the extra cascade debt.
 
+The first CSS cleanup slice is complete: `css/react_styles.css` no longer uses `transition: all`; each affected rule now names the properties it animates, and `tools/wp_css_style_budget.json` locks `transitionAll` at 0. Remaining CSS cleanup should focus only on safe reductions to `!important`, `z-index`, or `box-shadow`.
+
 ## Cloud Sync offline/reconnect behavior hardening
 
 The Cloud Sync offline/reconnect hardening slice is complete: `npm run check:cloud-sync-offline-reconnect` now guards browser attention behavior for reconnect paths.

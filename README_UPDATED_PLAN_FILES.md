@@ -20,6 +20,7 @@ Do not re-add large generated audit dumps, dated workmap handoff files, or per-s
 - `tools/wp_refactor_stage_catalog.mjs` now records explicit metadata for completed Stages 74-80 and post-closeout guardrails, and `check:refactor-integration` validates that metadata against package scripts and guard files.
 - `check:project-import-fixtures` now guards real project import JSON fixtures through schema normalization, canonical `ui.raw` migration, and config replace-owned branch materialization.
 - `check:css-style` now reads its ratchet from `tools/wp_css_style_budget.json`, so CSS cascade debt limits are explicit and can only move by a deliberate budget change.
+- CSS `transition: all` usage has been cleared from `css/react_styles.css`, and the ratchet now locks `transitionAll` at 0.
 - `check:cloud-sync-offline-reconnect` now guards Cloud Sync visible offline reconnect eligibility and hidden reconnect parking until visible return.
 - `e2e:cloud-sync-reconnect` now covers a real browser offline/online transition and post-reconnect Cloud Sync action.
 - `perf:smoke` and `perf:browser` were refreshed on 2026-05-04; both measured lanes pass, and the browser baseline report was updated.

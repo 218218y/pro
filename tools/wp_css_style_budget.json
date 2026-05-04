@@ -7,7 +7,7 @@
       "description": "Locks the current !important count so cascade exceptions do not grow silently."
     },
     "transitionAll": {
-      "max": 22,
+      "max": 0,
       "description": "Locks transition: all usage; new transitions should name concrete properties."
     },
     "zIndex": {
