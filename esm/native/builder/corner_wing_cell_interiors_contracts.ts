@@ -32,7 +32,7 @@ export type CornerWingInteriorRuntime = {
   __isDoorRemoved: CornerWingCellFlowParams['ctx']['__isDoorRemoved'];
   __stackScopePartKey: CornerWingCellFlowParams['ctx']['__stackScopePartKey'];
   __handlesMap: unknown;
-  __individualColors: unknown;
+  __individualColors: CornerWingCellFlowParams['ctx']['__individualColors'];
   __doorSpecialMap: unknown;
   __readScopedMapVal: CornerWingCellFlowParams['ctx']['__readScopedMapVal'];
   __readScopedReader: CornerWingCellFlowParams['ctx']['__readScopedReader'];
