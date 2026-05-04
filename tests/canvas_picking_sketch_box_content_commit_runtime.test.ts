@@ -159,3 +159,108 @@ test('sketch-box base commit stores leg style color and custom height', () => {
   assert.equal(box.baseLegWidthCm, 6);
   assert.ok(Math.abs(box.absY - 0.76) < 1e-9);
 });
+
+test('sketch-box base commit keeps floor-supported legs anchored when removing or switching base', () => {
+  const floorY = 0.08;
+  const box = createBox({
+    absY: floorY + 0.5 + 0.18,
+    heightM: 1,
+    baseType: 'legs',
+    baseLegStyle: 'round',
+    baseLegColor: 'gold',
+    baseLegHeightCm: 18,
+    baseLegWidthCm: 6,
+  });
+
+  commitSketchModuleBoxContent({
+    box,
+    contentKind: 'base',
+    floorY,
+    hoverRec: {
+      kind: 'box_content',
+      contentKind: 'base',
+      op: 'add',
+      baseType: 'plinth',
+    },
+  });
+
+  assert.equal(box.baseType, 'plinth');
+  assert.ok(Math.abs(box.absY - (floorY + 0.5 + 0.08)) < 1e-9);
+  assert.equal(box.baseLegHeightCm, undefined);
+
+  commitSketchModuleBoxContent({
+    box,
+    contentKind: 'base',
+    floorY,
+    hoverRec: {
+      kind: 'box_content',
+      contentKind: 'base',
+      op: 'remove',
+      baseType: 'plinth',
+    },
+  });
+
+  assert.equal(box.baseType, 'none');
+  assert.ok(Math.abs(box.absY - (floorY + 0.5)) < 1e-9);
+});
+
+test('sketch-box base commit updates floor-supported leg height from the floor upward', () => {
+  const floorY = 0.08;
+  const box = createBox({
+    absY: floorY + 0.5 + 0.18,
+    heightM: 1,
+    baseType: 'legs',
+    baseLegStyle: 'round',
+    baseLegColor: 'black',
+    baseLegHeightCm: 18,
+    baseLegWidthCm: 6,
+  });
+
+  commitSketchModuleBoxContent({
+    box,
+    contentKind: 'base',
+    floorY,
+    hoverRec: {
+      kind: 'box_content',
+      contentKind: 'base',
+      op: 'add',
+      baseType: 'legs',
+      baseLegStyle: 'square',
+      baseLegColor: 'nickel',
+      baseLegHeightCm: 24,
+      baseLegWidthCm: 7,
+    },
+  });
+
+  assert.equal(box.baseType, 'legs');
+  assert.equal(box.baseLegStyle, 'square');
+  assert.equal(box.baseLegColor, 'nickel');
+  assert.equal(box.baseLegHeightCm, 24);
+  assert.equal(box.baseLegWidthCm, 7);
+  assert.ok(Math.abs(box.absY - (floorY + 0.5 + 0.24)) < 1e-9);
+});
+
+test('sketch-box base commit does not move elevated free boxes when changing base support', () => {
+  const floorY = 0.08;
+  const box = createBox({
+    absY: 1.45,
+    heightM: 1,
+    baseType: 'legs',
+    baseLegHeightCm: 18,
+  });
+
+  commitSketchModuleBoxContent({
+    box,
+    contentKind: 'base',
+    floorY,
+    hoverRec: {
+      kind: 'box_content',
+      contentKind: 'base',
+      op: 'add',
+      baseType: 'plinth',
+    },
+  });
+
+  assert.equal(box.baseType, 'plinth');
+  assert.equal(box.absY, 1.45);
+});

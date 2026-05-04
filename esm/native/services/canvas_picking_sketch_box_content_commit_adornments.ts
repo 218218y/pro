@@ -14,10 +14,8 @@ function getSketchBoxAdornmentBaseHeight(baseType: unknown, source?: unknown): n
   if (normalized === 'legs') {
     if (source && typeof source === 'object') {
       const rec = source as Record<string, unknown>;
-      const heightM = Number(rec.heightM);
-      if (Number.isFinite(heightM) && heightM > 0) return heightM;
       const heightCm = Number(rec.heightCm);
-      if (Number.isFinite(heightCm) && heightCm > 0) return heightCm / 100;
+      if (Number.isFinite(heightCm) && heightCm > 0) return Math.max(0.01, heightCm / 100);
     }
     return readBaseLegOptions(source).heightM;
   }
