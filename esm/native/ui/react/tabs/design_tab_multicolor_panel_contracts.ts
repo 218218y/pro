@@ -103,7 +103,6 @@ export type CreateDesignTabMulticolorViewStateArgs = {
   mirrorDraftWidth: string;
   paintColor: string | null;
   activeDoorStyleOverride: DoorStyleOverrideValue | null;
-  activeGlassFrameStyle: DoorStyleOverrideValue | null;
   defaultSwatches: ReadonlyArray<DefaultSwatch>;
   savedSwatches: ReadonlyArray<SavedColor>;
 };
