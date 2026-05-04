@@ -137,6 +137,74 @@ test('hinged door build keeps explicit glass visuals instead of normalizing them
   assert.deepEqual(calls[0][13], { glassFrameStyle: 'profile' });
 });
 
+
+test('split hinged glass doors inherit the full-door glass frame style instead of falling back to full-glass flat style', () => {
+  const calls = [];
+  const THREE = createThreeStub();
+  const wardrobeGroup = new THREE.Group();
+  const applyHingedDoorsOps = createApplyHingedDoorsOps({
+    __app: input => input.App,
+    __ops: () => undefined,
+    __wardrobeGroup: () => wardrobeGroup,
+    __reg: () => undefined,
+    __doors: () => [],
+    __markSplitHoverPickablesDirty: () => undefined,
+    __tagAndTrackMirrorSurfaces: () => 0,
+    getMirrorMaterial: () => ({ kind: 'mirror' }),
+  });
+
+  const didApply = applyHingedDoorsOps({
+    App: {},
+    THREE,
+    ops: [
+      {
+        partId: 'd1_top',
+        width: 0.5,
+        height: 0.6,
+        x: 0,
+        y: 0.3,
+        z: 0,
+        pivotX: 0,
+        meshOffsetX: 0,
+        isLeftHinge: true,
+        isRemoved: false,
+        isMirror: false,
+        hasGroove: false,
+        style: 'glass',
+        curtain: 'none',
+      },
+      {
+        partId: 'd1_bot',
+        width: 0.5,
+        height: 0.6,
+        x: 0,
+        y: -0.3,
+        z: 0,
+        pivotX: 0,
+        meshOffsetX: 0,
+        isLeftHinge: true,
+        isRemoved: false,
+        isMirror: false,
+        hasGroove: false,
+        style: 'glass',
+        curtain: 'none',
+      },
+    ],
+    cfg: { doorStyleMap: { d1_full: 'profile' } },
+    doorStyle: 'flat',
+    globalFrontMat: { kind: 'front' },
+    createDoorVisual: createDoorVisualSpy(calls),
+    getPartMaterial: () => ({ kind: 'wood' }),
+  });
+
+  assert.equal(didApply, true);
+  assert.equal(calls.length, 2);
+  assert.equal(calls[0][4], 'glass');
+  assert.deepEqual(calls[0][13], { glassFrameStyle: 'profile' });
+  assert.equal(calls[1][4], 'glass');
+  assert.deepEqual(calls[1][13], { glassFrameStyle: 'profile' });
+});
+
 test('external drawer build treats glass specials like real glass fronts, keeps the selected frame style, and hides the inner wood front', () => {
   const calls = [];
   const drawerBoxCalls = [];

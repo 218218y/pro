@@ -92,6 +92,15 @@ export function readDoorStyleMap(value: unknown): DoorStyleMap {
   return out;
 }
 
+function readDoorStyleOverrideFromMap(
+  map: UnknownRecord,
+  key: string
+): DoorStyleOverrideValue | null {
+  if (!key) return null;
+  const value = typeof map[key] === 'string' ? String(map[key]).trim().toLowerCase() : '';
+  return isDoorStyleOverrideValue(value) ? value : null;
+}
+
 export function resolveDoorStyleOverrideValue(
   doorStyleMap: DoorStyleMap | Record<string, unknown> | null | undefined,
   partId: unknown
@@ -99,18 +108,26 @@ export function resolveDoorStyleOverrideValue(
   const map = asRecord(doorStyleMap);
   if (!map) return null;
   const directKey = typeof partId === 'string' ? partId.trim() : String(partId ?? '').trim();
-  const direct = typeof map[directKey] === 'string' ? String(map[directKey]).trim().toLowerCase() : '';
-  if (isDoorStyleOverrideValue(direct)) return direct;
+  const direct = readDoorStyleOverrideFromMap(map, directKey);
+  if (direct) return direct;
+
+  const segmentMatch = directKey.match(/^(.*)_(?:top|bot|mid\d*)$/i);
+  if (segmentMatch && segmentMatch[1]) {
+    const fullFromSegment = `${segmentMatch[1]}_full`;
+    const fullStyle = readDoorStyleOverrideFromMap(map, fullFromSegment);
+    if (fullStyle) return fullStyle;
+  }
+
   const scopedKey = toDoorStyleOverrideMapKey(directKey);
   if (scopedKey && scopedKey !== directKey) {
-    const scoped = typeof map[scopedKey] === 'string' ? String(map[scopedKey]).trim().toLowerCase() : '';
-    if (isDoorStyleOverrideValue(scoped)) return scoped;
+    const scoped = readDoorStyleOverrideFromMap(map, scopedKey);
+    if (scoped) return scoped;
   }
-  const legacyMatch = scopedKey.match(/^(.*)_(?:full|top|bot|mid\d*)$/i);
+
+  const legacyMatch = (scopedKey || directKey).match(/^(.*)_(?:full|top|bot|mid\d*)$/i);
   if (legacyMatch && legacyMatch[1]) {
-    const legacyBase = legacyMatch[1];
-    const legacy = typeof map[legacyBase] === 'string' ? String(map[legacyBase]).trim().toLowerCase() : '';
-    if (isDoorStyleOverrideValue(legacy)) return legacy;
+    const legacy = readDoorStyleOverrideFromMap(map, legacyMatch[1]);
+    if (legacy) return legacy;
   }
   return null;
 }
