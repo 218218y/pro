@@ -108,7 +108,8 @@ export function createApplySlidingDoorsOps(deps: BuilderRenderDoorDeps) {
           1,
           false,
           resolveMirrorLayout(cfg, slideID),
-          slideID
+          slideID,
+          visualState.isGlass ? { glassFrameStyle: effectiveDoorStyleBase } : null
         );
       } else {
         visual = new THREE.Mesh(new THREE.BoxGeometry(doorOp.width, doorOp.height, 0.022), slideMat);

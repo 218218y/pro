@@ -25,8 +25,10 @@ import {
 } from './canvas_picking_door_action_hover_preview_shared.js';
 import type { UnknownRecord } from '../../../types';
 import {
+  isGlassPaintSelection,
   parseDoorStyleOverridePaintToken,
   resolveDoorStyleOverrideValue,
+  resolveGlassFrameStylePaintSelection,
 } from '../features/door_style_overrides.js';
 import { buildRectClearanceMeasurementEntries } from './canvas_picking_hover_clearance_measurements.js';
 
@@ -61,9 +63,9 @@ export function tryHandleDoorPaintHoverPreview(args: DoorPaintHoverPreviewArgs):
   const curtainMap = __readMapRecord(App, 'curtainMap');
   const doorSpecialMap = __readMapRecord(App, 'doorSpecialMap');
   const mirrorLayoutMap = __readMapRecord(App, 'mirrorLayoutMap');
+  const doorStyleMap = __readMapRecord(App, 'doorStyleMap');
   const existingDoorStyle = (() => {
     const doorStyleSelection = parseDoorStyleOverridePaintToken(normalizedPaintSelection);
-    const doorStyleMap = __readMapRecord(App, 'doorStyleMap');
     return doorStyleSelection
       ? (resolveDoorStyleOverrideValue(doorStyleMap, partKey) ?? undefined)
       : undefined;
@@ -210,13 +212,18 @@ export function tryHandleDoorPaintHoverPreview(args: DoorPaintHoverPreviewArgs):
           markerUd.__matGroove ||
           baseMarkerMaterial
         : markerUd.__matMirror || markerUd.__matAdd || markerUd.__matGroove || baseMarkerMaterial;
-  } else if (normalizedPaintSelection === 'glass') {
+  } else if (isGlassPaintSelection(normalizedPaintSelection)) {
     if (!__isSpecialPaintTarget(partKey)) {
       if (doorMarker) doorMarker.visible = false;
       return false;
     }
     const curtainChoice = __readCurtainChoice(readUi, App);
-    const willRemoveGlass = existingSpecial === 'glass' && existingCurtain === curtainChoice;
+    const glassFrameStyleSelection = resolveGlassFrameStylePaintSelection(normalizedPaintSelection);
+    const existingGlassFrameStyle = resolveDoorStyleOverrideValue(doorStyleMap, partKey) ?? null;
+    const willRemoveGlass =
+      existingSpecial === 'glass' &&
+      existingCurtain === curtainChoice &&
+      existingGlassFrameStyle === glassFrameStyleSelection;
     previewMaterial = willRemoveGlass
       ? markerUd.__matRemove || markerUd.__matGroove || baseMarkerMaterial
       : markerUd.__matAdd || markerUd.__matGroove || baseMarkerMaterial;

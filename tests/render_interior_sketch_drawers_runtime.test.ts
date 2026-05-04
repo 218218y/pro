@@ -62,7 +62,8 @@ class FakeMeshStandardMaterial {
 function createExternalDrawerArgs() {
   const mirrorMat = { id: 'mirror-mat' };
   let mirrorCalls = 0;
-  const doorVisualCalls: Array<{ partId: string; faceMat: unknown; isMirror: boolean; faceH: number }> = [];
+  const doorVisualCalls: Array<{ partId: string; faceMat: unknown; isMirror: boolean; faceH: number; style: unknown; options: unknown }> = [];
+  const drawerBoxCalls: unknown[][] = [];
   const App: any = {
     services: {
       builder: {
@@ -87,13 +88,16 @@ function createExternalDrawerArgs() {
         },
       },
       addOutlines: () => {},
-      createInternalDrawerBox: () => new FakeMesh(new FakeBoxGeometry(1, 1, 1), { id: 'drawer-box-mat' }),
+      createInternalDrawerBox: (...callArgs: unknown[]) => {
+        drawerBoxCalls.push(callArgs);
+        return new FakeMesh(new FakeBoxGeometry(1, 1, 1), { id: 'drawer-box-mat' });
+      },
       createDoorVisual: (
         _faceW: number,
         faceH: number,
         _faceD: number,
         faceMat: unknown,
-        _style: unknown,
+        style: unknown,
         _isOpen: boolean,
         isMirror: boolean,
         _curtainType: unknown,
@@ -101,9 +105,10 @@ function createExternalDrawerArgs() {
         _hingeCount: number,
         _doubleDoor: boolean,
         _mirrorLayout: unknown,
-        partId: string
+        partId: string,
+        options: unknown
       ) => {
-        doorVisualCalls.push({ partId, faceMat, isMirror, faceH });
+        doorVisualCalls.push({ partId, faceMat, isMirror, faceH, style, options });
         return new FakeMesh(new FakeBoxGeometry(1, 1, 1), faceMat);
       },
     },
@@ -144,7 +149,7 @@ function createExternalDrawerArgs() {
     },
   };
 
-  return { args, mirrorCallsRef: () => mirrorCalls, doorVisualCalls, App, mirrorMat };
+  return { args, mirrorCallsRef: () => mirrorCalls, doorVisualCalls, drawerBoxCalls, App, mirrorMat };
 }
 
 test('render sketch external drawer fronts flush their outer edge to adjacent full-height door fronts', () => {
@@ -199,6 +204,34 @@ test('render sketch external drawers honors per-stack custom drawer height', () 
   const secondGroup = drawers[1]?.group as FakeGroup;
   assert.ok(Math.abs(Number(firstGroup.userData.__doorHeight) - 0.292) < 1e-9);
   assert.ok(Math.abs(Number(secondGroup.userData.__doorHeight) - 0.292) < 1e-9);
+});
+
+
+test('render sketch glass drawers keep the selected frame style and remove hidden wood parts behind the glass', () => {
+  const { args, doorVisualCalls, drawerBoxCalls, App } = createExternalDrawerArgs();
+  args.input.cfg.doorSpecialMap = {
+    sketch_ext_drawers_module_2_left_1: 'glass',
+  };
+  args.input.cfg.curtainMap = {
+    sketch_ext_drawers_module_2_left_1: 'white',
+  };
+  args.input.cfg.doorStyleMap = {
+    sketch_ext_drawers_module_2_left_1: 'tom',
+  };
+  args.extDrawers = [{ id: 'left', count: 1, yNormC: 0.5 }];
+
+  applySketchExternalDrawers(args);
+
+  assert.equal(doorVisualCalls.length, 1);
+  assert.equal(doorVisualCalls[0]?.style, 'glass');
+  assert.deepEqual(doorVisualCalls[0]?.options, { glassFrameStyle: 'tom' });
+  assert.equal(drawerBoxCalls.length, 1);
+  assert.deepEqual(drawerBoxCalls[0]?.[8], { omitFrontPanel: true });
+
+  const drawers = App.render?.drawersArray || [];
+  assert.equal(drawers.length, 1);
+  const drawerGroup = drawers[0]?.group as FakeGroup;
+  assert.equal(drawerGroup.children.length, 2, 'glass sketch drawer should omit the connector behind the glass');
 });
 
 test('render sketch internal drawers keeps the default sketch height independent of local span', () => {

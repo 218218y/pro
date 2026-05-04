@@ -78,7 +78,8 @@ export function createDoorVisual(
   frontFaceSign: number = 1,
   forceCurtainFix: boolean = false,
   mirrorLayout: MirrorLayoutList | null = null,
-  groovePartId: string | null = null
+  groovePartId: string | null = null,
+  options: { glassFrameStyle?: 'flat' | 'profile' | 'tom' | null } | null = null
 ): Object3DLike {
   App = __ensureApp(App);
   const THREE = __ensureTHREE(App);
@@ -170,6 +171,7 @@ export function createDoorVisual(
       curtainType,
       zSign,
       forceCurtainFix: __forceCurtainFix,
+      frameStyle: options?.glassFrameStyle || null,
     });
   }
 

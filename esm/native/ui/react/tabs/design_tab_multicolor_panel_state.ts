@@ -1,4 +1,8 @@
-import { isDoorStyleOverridePaintToken } from '../../../features/door_style_overrides.js';
+import {
+  isDoorStyleOverridePaintToken,
+  isGlassPaintSelection,
+  resolveGlassFrameStylePaintSelection,
+} from '../../../features/door_style_overrides.js';
 import { isCurtainPreset, type CurtainPreset } from './design_tab_multicolor_shared.js';
 import {
   MULTI_MSG_HINT_DOOR_STYLE,
@@ -27,7 +31,7 @@ function isSelectedPaintDot(
   }
 
   if (dot.paintId === 'glass') {
-    if (paintColor !== 'glass') return false;
+    if (!isGlassPaintSelection(paintColor)) return false;
     if (dot.curtainPreset) return curtainChoice === dot.curtainPreset;
     if (dot.id === 'glass_curtain') return curtainChoice !== 'none';
     return false;
@@ -54,7 +58,7 @@ function resolvePaintHint(
   activeDoorStyleOverride: MultiColorPanelViewState['activeDoorStyleOverride']
 ): string | null {
   if (!paintActive || paintColor === 'mirror') return null;
-  if (paintColor === 'glass') return MULTI_MSG_HINT_GLASS;
+  if (isGlassPaintSelection(paintColor)) return MULTI_MSG_HINT_GLASS;
   if (activeDoorStyleOverride) return MULTI_MSG_HINT_DOOR_STYLE;
   return MULTI_MSG_HINT_PAINT;
 }
@@ -119,6 +123,7 @@ export function createDesignTabMulticolorViewState(
     mirrorDraftHeight: args.mirrorDraftHeight,
     mirrorDraftWidth: args.mirrorDraftWidth,
     activeDoorStyleOverride: args.activeDoorStyleOverride,
+    activeGlassFrameStyle: resolveGlassFrameStylePaintSelection(args.paintColor),
     defaultSwatches,
     savedSwatches,
     specialSwatches,

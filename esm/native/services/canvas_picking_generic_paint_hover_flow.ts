@@ -14,7 +14,7 @@ import {
   createPreviewOpsArgs,
 } from './canvas_picking_generic_paint_hover_shared.js';
 import { resolveNonDoorHoverTargetFromObject } from './canvas_picking_generic_paint_hover_target.js';
-import { isDoorStyleOverridePaintToken } from '../features/door_style_overrides.js';
+import { isDoorStyleOverridePaintToken, isGlassPaintSelection } from '../features/door_style_overrides.js';
 import { resolvePaintPreviewGroupBox } from './canvas_picking_generic_paint_hover_preview.js';
 
 export function tryHandleGenericPartPaintHover(args: {
@@ -43,7 +43,7 @@ export function tryHandleGenericPartPaintHover(args: {
   if (
     !selection ||
     selection === 'mirror' ||
-    selection === 'glass' ||
+    isGlassPaintSelection(selection) ||
     isDoorStyleOverridePaintToken(selection)
   )
     return false;

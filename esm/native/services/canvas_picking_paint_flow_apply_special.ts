@@ -1,6 +1,7 @@
 import type { MirrorLayoutEntry, MirrorLayoutList } from '../../../types';
 
 import { readMirrorLayoutList } from '../features/mirror_layout.js';
+import { resolveGlassFrameStylePaintSelection } from '../features/door_style_overrides.js';
 import {
   __wp_canonDoorPartKeyForMaps,
   __wp_scopeCornerPartKeyForStack,
@@ -94,8 +95,9 @@ export function applyPaintPartMutation(args: {
     : null;
   const existingMirrorLayouts = readMirrorLayoutList(state.mirror0[paintPartKey]);
   const resolveMirrorLayout = args.resolveMirrorLayout || resolveMirrorLayoutForPaintClick;
+  const glassFrameStyle = resolveGlassFrameStylePaintSelection(paintSelection);
 
-  if (isSpecialPart(paintPartKey) && (paintSelection === 'mirror' || paintSelection === 'glass')) {
+  if (isSpecialPart(paintPartKey) && (paintSelection === 'mirror' || glassFrameStyle)) {
     if (paintSelection === 'mirror') {
       const mirrorResult = resolveMirrorLayout(clickArgs, existingMirrorLayouts);
       const { removeMatch, canApplyMirror } = mirrorResult;
@@ -140,7 +142,9 @@ export function applyPaintPartMutation(args: {
       return;
     }
 
-    const shouldRemove = existingSpecial === 'glass' && existingCurtain === curtainChoice;
+    const existingStyle = state.style0[paintPartKey] || null;
+    const shouldRemove =
+      existingSpecial === 'glass' && existingCurtain === curtainChoice && existingStyle === glassFrameStyle;
     if (shouldRemove) {
       delete state.ensureSpecial()[paintPartKey];
       delete state.ensureCurtains()[paintPartKey];
@@ -150,6 +154,7 @@ export function applyPaintPartMutation(args: {
 
     state.ensureSpecial()[paintPartKey] = 'glass';
     state.ensureCurtains()[paintPartKey] = curtainChoice;
+    state.ensureStyle()[paintPartKey] = glassFrameStyle;
     delete state.ensureMirrorLayout()[paintPartKey];
     return;
   }

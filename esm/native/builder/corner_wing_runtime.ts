@@ -99,7 +99,8 @@ export function resolveCornerWingServices(App: AppContainer) {
     frontFaceSign,
     forceCurtainFix,
     mirrorLayout,
-    groovePartId
+    groovePartId,
+    options
   ) => {
     const out = createDoorVisualRaw(
       w,
@@ -114,7 +115,8 @@ export function resolveCornerWingServices(App: AppContainer) {
       frontFaceSign,
       forceCurtainFix,
       mirrorLayout,
-      groovePartId
+      groovePartId,
+      options
     );
     if (!isObject3DLike(out)) {
       throw new TypeError('[WardrobePro] createDoorVisual returned a non-Object3D value.');
@@ -130,9 +132,10 @@ export function resolveCornerWingServices(App: AppContainer) {
     drawerMat,
     outlineFunc,
     hasDivider,
-    addHandle
+    addHandle,
+    options
   ) => {
-    const out = createInternalDrawerBoxRaw(w, h, d, mat, drawerMat, outlineFunc, hasDivider, addHandle);
+    const out = createInternalDrawerBoxRaw(w, h, d, mat, drawerMat, outlineFunc, hasDivider, addHandle, options);
     if (!isObject3DLike(out)) {
       throw new TypeError('[WardrobePro] createInternalDrawerBox returned a non-Object3D value.');
     }

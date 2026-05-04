@@ -36,7 +36,8 @@ function addSketchExternalDrawerBox(
         context.bodyMat,
         context.input.addOutlines,
         false,
-        false
+        false,
+        opPlan.omitBoxFrontPanel === true ? { omitFrontPanel: true } : null
       )
     : new context.THREE.Mesh(
         new context.THREE.BoxGeometry(opPlan.boxW, opPlan.boxH, opPlan.boxD),
@@ -60,7 +61,7 @@ function addSketchExternalDrawerConnector(
   opPlan: SketchExternalDrawerOpPlan,
   groupNode: InteriorGroupLike
 ): void {
-  if (!hasPositiveConnectorDimensions(opPlan)) return;
+  if (opPlan.omitConnectorPanel === true || !hasPositiveConnectorDimensions(opPlan)) return;
 
   const connector = new context.THREE.Mesh(
     new context.THREE.BoxGeometry(opPlan.connectorW, opPlan.connectorH, opPlan.connectorD),

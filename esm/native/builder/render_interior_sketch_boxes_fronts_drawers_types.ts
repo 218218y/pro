@@ -79,6 +79,8 @@ export type SketchBoxExternalDrawerOpPlan = {
   boxH: number;
   boxD: number;
   boxOffsetZ: number;
+  omitBoxFrontPanel?: boolean;
+  omitConnectorPanel?: boolean;
   connectorW: number | null;
   connectorH: number | null;
   connectorD: number | null;

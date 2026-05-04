@@ -84,7 +84,7 @@ test('stage 69 render interior sketch external drawers ownership split is anchor
   assert.match(visual, /context\.input\.createDoorVisual\(/);
   assert.match(
     visual,
-    /frontVisualState\.isGlass[\s\S]*\? 'glass'[\s\S]*: resolveEffectiveDoorStyle\(context\.doorStyle, context\.doorStyleMap, opPlan\.partId\)/
+    /const effectiveFrameStyle = resolveEffectiveDoorStyle\(context\.doorStyle, context\.doorStyleMap, opPlan\.partId\);[\s\S]*frontVisualState\.isGlass \? 'glass' : effectiveFrameStyle[\s\S]*frontVisualState\.isGlass \? \{ glassFrameStyle: effectiveFrameStyle \} : null/
   );
   assert.match(visual, /new context\.THREE\.Mesh\(/);
   assert.match(visual, /applySketchModulePickMetaDeep\(visualObj, opPlan\.partId, context\.moduleKeyStr, \{/);

@@ -110,7 +110,8 @@ export function createSegmentVisual(args: {
         1,
         false,
         flags.segmentMirrorLayout,
-        segmentPartId
+        segmentPartId,
+        flags.segmentIsGlass ? { glassFrameStyle: flags.effectiveDoorStyle } : null
       );
     } catch {
       visual = null;

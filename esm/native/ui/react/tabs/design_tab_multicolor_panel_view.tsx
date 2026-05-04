@@ -7,6 +7,8 @@ import {
   MULTI_CURTAIN_TITLE,
   MULTI_DOOR_STYLE_HEADER,
   MULTI_DOOR_STYLE_OPTIONS,
+  MULTI_GLASS_STYLE_HEADER,
+  MULTI_GLASS_STYLE_OPTIONS,
   MULTI_MIRROR_AUTO,
   MULTI_MIRROR_HEIGHT,
   MULTI_MIRROR_WIDTH,
@@ -142,6 +144,33 @@ function MultiColorDoorStyleSection(props: {
   );
 }
 
+function MultiColorGlassStyleSection(props: {
+  activeGlassFrameStyle: DoorStyleOverrideValue | null;
+  onPickBrush: (paintId: string, curtainPreset?: CurtainPreset) => void;
+}): ReactElement {
+  return (
+    <div className="multi-special-section">
+      <div className="multi-special-header">{MULTI_GLASS_STYLE_HEADER}</div>
+      <OptionButtonGroup columns="auto" density="compact" className="wp-r-design-glass-style-options">
+        {MULTI_GLASS_STYLE_OPTIONS.map(option => (
+          <OptionButton
+            key={option.id}
+            density="compact"
+            layout="iconRow"
+            className="wp-flex-1"
+            selected={props.activeGlassFrameStyle === option.id}
+            data-glass-style={option.id}
+            onClick={() => props.onPickBrush(option.paintId)}
+            title={option.label}
+          >
+            {option.label}
+          </OptionButton>
+        ))}
+      </OptionButtonGroup>
+    </div>
+  );
+}
+
 function MultiColorCurtainSection(props: {
   curtainChoice: CurtainPreset;
   onSetCurtainPreset: (curtainPreset: CurtainPreset) => void;
@@ -216,7 +245,14 @@ function MultiColorPanelBody(props: Omit<MultiColorPanelViewProps, 'embedded'>):
               </div>
             </div>
 
-            {viewState.paintActive && viewState.paintColor === 'glass' ? (
+            {viewState.paintActive && viewState.activeGlassFrameStyle ? (
+              <MultiColorGlassStyleSection
+                activeGlassFrameStyle={viewState.activeGlassFrameStyle}
+                onPickBrush={props.onPickBrush}
+              />
+            ) : null}
+
+            {viewState.paintActive && viewState.activeGlassFrameStyle ? (
               <MultiColorCurtainSection
                 curtainChoice={viewState.curtainChoice}
                 onSetCurtainPreset={props.onSetCurtainPreset}

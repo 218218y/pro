@@ -48,6 +48,16 @@ export type NullableBuilderObject3DFn<Args extends BuilderArgs = BuilderArgs> =
   BuilderObject3DFn<Args> | null;
 export type BuilderOutlineFn = (mesh: unknown) => unknown;
 export type NullableBuilderOutlineFn = BuilderOutlineFn | null;
+export type BuilderDoorVisualFrameStyle = 'flat' | 'profile' | 'tom';
+
+export type BuilderDoorVisualOptions = {
+  glassFrameStyle?: BuilderDoorVisualFrameStyle | null;
+};
+
+export type BuilderInternalDrawerBoxOptions = {
+  omitFrontPanel?: boolean;
+};
+
 export type BuilderCreateDoorVisualFn = (
   w: number,
   h: number,
@@ -61,7 +71,8 @@ export type BuilderCreateDoorVisualFn = (
   frontFaceSign?: number,
   forceCurtainFix?: boolean,
   mirrorLayout?: MirrorLayoutList | null,
-  groovePartId?: string | null
+  groovePartId?: string | null,
+  options?: BuilderDoorVisualOptions | null
 ) => Object3DLike;
 export type BuilderCreateInternalDrawerBoxFn = (
   w: number,
@@ -71,7 +82,8 @@ export type BuilderCreateInternalDrawerBoxFn = (
   drawerMat: unknown,
   outlineFunc?: BuilderOutlineFn | null,
   hasDivider?: boolean,
-  addHandle?: boolean
+  addHandle?: boolean,
+  options?: BuilderInternalDrawerBoxOptions | null
 ) => Object3DLike;
 
 export type BuilderPreviewScalar = number | string | null | undefined;

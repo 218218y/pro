@@ -80,6 +80,13 @@ function createDoorVisualSpy(calls) {
   };
 }
 
+function createInternalDrawerBoxSpy(calls) {
+  return (...args) => {
+    calls.push(args);
+    return { children: [], add() {}, position: { set() {} }, userData: {} };
+  };
+}
+
 test('hinged door build keeps explicit glass visuals instead of normalizing them back to flat/profile defaults', () => {
   const calls = [];
   const THREE = createThreeStub();
@@ -127,10 +134,12 @@ test('hinged door build keeps explicit glass visuals instead of normalizing them
   assert.equal(calls.length, 1);
   assert.equal(calls[0][4], 'glass');
   assert.equal(calls[0][7], 'white');
+  assert.deepEqual(calls[0][13], { glassFrameStyle: 'profile' });
 });
 
-test('external drawer build treats glass specials like real glass fronts and forwards the curtain', () => {
+test('external drawer build treats glass specials like real glass fronts, keeps the selected frame style, and hides the inner wood front', () => {
   const calls = [];
+  const drawerBoxCalls = [];
   const THREE = createThreeStub();
   const wardrobeGroup = new THREE.Group();
   const renderDrawerOps = createBuilderRenderDrawerOps({
@@ -167,7 +176,7 @@ test('external drawer build treats glass specials like real glass fronts and for
     doorStyle: 'profile',
     globalFrontMat: { kind: 'front' },
     createDoorVisual: createDoorVisualSpy(calls),
-    createInternalDrawerBox: () => ({ children: [], add() {}, position: { set() {} }, userData: {} }),
+    createInternalDrawerBox: createInternalDrawerBoxSpy(drawerBoxCalls),
     getPartMaterial: () => ({ kind: 'wood' }),
     bodyMat: { kind: 'body' },
     addOutlines: () => undefined,
@@ -178,4 +187,9 @@ test('external drawer build treats glass specials like real glass fronts and for
   assert.equal(calls[0][4], 'glass');
   assert.equal(calls[0][6], false);
   assert.equal(calls[0][7], 'purple');
+  assert.deepEqual(calls[0][13], { glassFrameStyle: 'tom' });
+  assert.equal(drawerBoxCalls.length, 1);
+  assert.deepEqual(drawerBoxCalls[0][8], { omitFrontPanel: true });
+  assert.equal(wardrobeGroup.children.length, 1);
+  assert.equal(wardrobeGroup.children[0].children.length, 2, 'glass drawer should not keep a wood connector behind the glass');
 });

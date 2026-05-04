@@ -49,7 +49,9 @@ export function appendSketchBoxDoorCoreVisual(args: {
       materials.doorBaseMat,
       1,
       false,
-      doorVisualState.mirrorLayout
+      doorVisualState.mirrorLayout,
+      doorPid,
+      doorVisualState.isGlass ? { glassFrameStyle: visualRoute.effectiveDoorStyle } : null
     );
     const specialVisualObj = readObject<InteriorGroupLike>(specialVisual) || asMesh(specialVisual);
     if (specialVisualObj) {

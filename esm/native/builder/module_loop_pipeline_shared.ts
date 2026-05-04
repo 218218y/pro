@@ -142,7 +142,8 @@ export function readCreateDoorVisual(value: unknown): BuilderCreateDoorVisualFn 
     frontFaceSign,
     forceCurtainFix,
     mirrorLayout,
-    groovePartId
+    groovePartId,
+    options
   ) =>
     Reflect.apply(value, undefined, [
       w,
@@ -158,6 +159,7 @@ export function readCreateDoorVisual(value: unknown): BuilderCreateDoorVisualFn 
       forceCurtainFix,
       mirrorLayout,
       groovePartId,
+      options,
     ]);
   return createDoorVisual;
 }
@@ -172,8 +174,9 @@ export function readCreateInternalDrawerBox(value: unknown): BuilderCreateIntern
     drawerMat,
     outlineFunc,
     hasDivider,
-    addHandle
-  ) => Reflect.apply(value, undefined, [w, h, d, mat, drawerMat, outlineFunc, hasDivider, addHandle]);
+    addHandle,
+    options
+  ) => Reflect.apply(value, undefined, [w, h, d, mat, drawerMat, outlineFunc, hasDivider, addHandle, options]);
   return createInternalDrawerBox;
 }
 

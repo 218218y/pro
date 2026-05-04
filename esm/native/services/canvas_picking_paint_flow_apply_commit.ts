@@ -26,6 +26,7 @@ export function commitPaintFlowState(args: {
       individualColors: state.colors,
       curtainMap: state.curtains,
       doorSpecialMap: state.special,
+      doorStyleMap: summary.styleChanged ? state.style : undefined,
       mirrorLayoutMap: state.mirrorLayout,
       meta,
     });

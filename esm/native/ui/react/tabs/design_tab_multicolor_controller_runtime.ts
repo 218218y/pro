@@ -13,6 +13,7 @@ import {
 } from './design_tab_multicolor_shared.js';
 import {
   encodeDoorStyleOverridePaintToken,
+  isGlassPaintSelection,
   type DoorStyleOverrideValue,
 } from '../../../features/door_style_overrides.js';
 
@@ -108,7 +109,7 @@ export function createDesignTabMulticolorController(
     }
 
     setPaintToolColor(args.app, paintId, reportNonFatal, getToolsImpl);
-    if (paintId === 'glass' && curtainPreset) setCurtain(curtainPreset);
+    if (isGlassPaintSelection(paintId) && curtainPreset) setCurtain(curtainPreset);
     args.setPaintColor(paintId);
   };
 
@@ -118,7 +119,7 @@ export function createDesignTabMulticolorController(
       return;
     }
     setPaintToolColor(args.app, paintId, reportNonFatal, getToolsImpl);
-    if (paintId === 'glass' && curtainPreset) setCurtain(curtainPreset);
+    if (isGlassPaintSelection(paintId) && curtainPreset) setCurtain(curtainPreset);
     args.setPaintColor(paintId);
   };
 

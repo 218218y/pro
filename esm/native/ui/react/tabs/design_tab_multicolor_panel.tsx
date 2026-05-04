@@ -10,6 +10,7 @@ import { createDesignTabMulticolorController } from './design_tab_multicolor_con
 import { MultiColorPanelView } from './design_tab_multicolor_panel_view.js';
 import { createDesignTabMulticolorViewState } from './design_tab_multicolor_panel_state.js';
 import {
+  isGlassPaintSelection,
   parseDoorStyleOverridePaintToken,
   type DoorStyleOverrideValue,
 } from '../../../features/door_style_overrides.js';
@@ -82,7 +83,7 @@ export function MultiColorPanel(props: { embedded?: boolean } = {}) {
   const setCurtainPreset = useCallback(
     (curtainPreset: CurtainPreset) => {
       multicolorController.setCurtain(curtainPreset);
-      setPaintColor('glass');
+      setPaintColor(current => (isGlassPaintSelection(current) ? current : 'glass'));
     },
     [multicolorController]
   );

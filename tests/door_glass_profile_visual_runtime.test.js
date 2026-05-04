@@ -30,6 +30,15 @@ class FakeObject3D {
   }
   add(child) {
     this.children.push(child);
+    if (child && typeof child === 'object') child.parent = this;
+    return child;
+  }
+  remove(child) {
+    const index = this.children.indexOf(child);
+    if (index >= 0) {
+      this.children.splice(index, 1);
+      if (child && typeof child === 'object') child.parent = null;
+    }
     return child;
   }
 }
@@ -252,6 +261,53 @@ test('glass door visual reuses the exact profile frame and only swaps the center
   assert.ok(glassPane.geometry.args[0] < glassArgs.w);
   assert.ok(glassPane.geometry.args[1] < glassArgs.h);
   assert.equal(glassPane.material.transparent, true);
+});
+
+
+
+test('glass door visual can reuse the Tom frame without leaving the wood center insert behind the glass', () => {
+  const glassArgs = createCommonArgs();
+  const visual = createGlassDoorVisual({
+    App: {},
+    ...glassArgs,
+    curtainType: 'none',
+    forceCurtainFix: false,
+    frameStyle: 'tom',
+  });
+
+  const roles = collectRoles(visual);
+  assert.ok(roles.some(role => role.startsWith('door_tom_')));
+  assert.ok(roles.includes('door_glass_center_panel'));
+  assert.ok(roles.includes('door_tom_center_surround_top'));
+  assert.ok(roles.includes('door_tom_center_surround_bottom'));
+  assert.ok(roles.includes('door_tom_center_surround_left'));
+  assert.ok(roles.includes('door_tom_center_surround_right'));
+  assert.ok(!roles.includes('door_tom_center_panel'));
+  assert.ok(!roles.includes('door_profile_center_panel'));
+  assert.ok(!roles.some(role => role.startsWith('door_accent_')));
+
+  const glassPane = findRole(visual, 'door_glass_center_panel');
+  assert.ok(glassPane);
+  assert.equal(glassPane.geometry?.type, 'BoxGeometry');
+  assert.ok(glassPane.geometry.args[0] < 0.51, 'glass must stay inside the inner Tom opening');
+  assert.ok(glassPane.geometry.args[1] < 0.91, 'glass must stay inside the inner Tom opening');
+});
+
+test('glass door visual can be rendered as a flat glass slab when the selected frame style is flat', () => {
+  const glassArgs = createCommonArgs();
+  const visual = createGlassDoorVisual({
+    App: {},
+    ...glassArgs,
+    curtainType: 'none',
+    forceCurtainFix: false,
+    frameStyle: 'flat',
+  });
+
+  const roles = collectRoles(visual);
+  assert.ok(roles.includes('door_glass_center_panel'));
+  assert.ok(!roles.some(role => role.startsWith('door_profile_')));
+  assert.ok(!roles.some(role => role.startsWith('door_tom_')));
+  assert.ok(!roles.some(role => role.startsWith('door_accent_')));
 });
 
 test('styled mirror door keeps the profile frame and reads center-panel dimensions from Three.js BoxGeometry parameters', () => {

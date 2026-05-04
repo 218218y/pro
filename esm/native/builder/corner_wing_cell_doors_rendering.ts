@@ -109,13 +109,14 @@ export function processCornerDoorVisual(
 
   const cfgRecord = ctx.asRecord(ctx.getCfg(ctx.App));
   const doorStyleMap = isValueRecord(cfgRecord.doorStyleMap) ? cfgRecord.doorStyleMap : undefined;
+  const effectiveFrameStyle = resolveEffectiveDoorStyle(ctx.doorStyle, doorStyleMap, id);
 
   const vis = ctx.createDoorVisual(
     args.width,
     args.height,
     0.018,
     isMirror ? ctx.getMirrorMat() : woodMat,
-    style || resolveEffectiveDoorStyle(ctx.doorStyle, doorStyleMap, id),
+    style || effectiveFrameStyle,
     hasGroove && !isMirror,
     isMirror,
     readCurtainType(curtain),
@@ -123,7 +124,8 @@ export function processCornerDoorVisual(
     frontSign,
     false,
     mirrorLayout,
-    groovePartId
+    groovePartId,
+    special === 'glass' ? { glassFrameStyle: effectiveFrameStyle } : null
   );
   vis.position.set(args.meshOffset, 0, 0);
   args.group.add(vis);

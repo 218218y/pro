@@ -69,7 +69,8 @@ export function readCreateDoorVisual(value: unknown): BuilderCreateDoorVisualFn 
     frontFaceSign,
     forceCurtainFix,
     mirrorLayout,
-    groovePartId
+    groovePartId,
+    options
   ) => {
     const next = readObject3D(
       value(
@@ -85,7 +86,8 @@ export function readCreateDoorVisual(value: unknown): BuilderCreateDoorVisualFn 
         frontFaceSign,
         forceCurtainFix,
         mirrorLayout,
-        groovePartId
+        groovePartId,
+        options
       )
     );
     if (!next) throw new Error('[render_drawer_ops] createDoorVisual returned invalid object');
@@ -95,8 +97,8 @@ export function readCreateDoorVisual(value: unknown): BuilderCreateDoorVisualFn 
 
 export function readCreateInternalDrawerBox(value: unknown): BuilderCreateInternalDrawerBoxFn | null {
   if (!isFunction(value)) return null;
-  return (w, h, d, mat, drawerMat, outlineFunc, hasDivider, addHandle) => {
-    const next = readObject3D(value(w, h, d, mat, drawerMat, outlineFunc, hasDivider, addHandle));
+  return (w, h, d, mat, drawerMat, outlineFunc, hasDivider, addHandle, options) => {
+    const next = readObject3D(value(w, h, d, mat, drawerMat, outlineFunc, hasDivider, addHandle, options));
     if (!next) throw new Error('[render_drawer_ops] createInternalDrawerBox returned invalid object');
     return next;
   };

@@ -60,6 +60,7 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
       );
       const specificMat = getPartMaterial ? getPartMaterial(partId) : null;
       const drawerVisualState = resolveDrawerVisualState(cfg, partId, getPartColorValue);
+      const omitConnectorPanel = drawerVisualState.isGlass;
       const faceW = readFinitePositive(drawerOp.faceW) ?? drawerOp.visualW;
       const faceOffsetX = readFinite(drawerOp.faceOffsetX, 0);
       const baseFrontZ =
@@ -85,17 +86,16 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
           drawerMirrorMat = getMirrorMaterial({ App, THREE });
           if (!drawerMirrorMat) drawerMirrorMat = drawerWoodMat;
         }
+        const effectiveDrawerFrameStyleRaw = resolveDoorVisualStyle(null, doorStyle, cfg.doorStyleMap, partId);
+        const effectiveDrawerFrameStyle =
+          effectiveDrawerFrameStyleRaw === 'glass' ? 'profile' : effectiveDrawerFrameStyleRaw;
+        const effectiveDrawerStyle = drawerVisualState.isGlass ? 'glass' : effectiveDrawerFrameStyle;
         visual = createDoorVisual(
           faceW,
           drawerOp.visualH,
           drawerOp.visualT || 0.02,
           drawerVisualState.isMirror ? drawerMirrorMat : drawerWoodMat,
-          resolveDoorVisualStyle(
-            drawerVisualState.isGlass ? 'glass' : null,
-            doorStyle,
-            cfg.doorStyleMap,
-            partId
-          ),
+          effectiveDrawerStyle,
           hasGroove && !drawerVisualState.isGlass,
           drawerVisualState.isMirror,
           drawerVisualState.isGlass ? drawerVisualState.curtainType : null,
@@ -103,7 +103,8 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
           1,
           false,
           null,
-          partId
+          partId,
+          drawerVisualState.isGlass ? { glassFrameStyle: effectiveDrawerFrameStyle } : null
         );
       } else {
         visual = new THREE.Mesh(
@@ -122,7 +123,8 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
             bodyMat,
             addOutlines,
             hasDivider,
-            false
+            false,
+            drawerVisualState.isGlass ? { omitFrontPanel: true } : null
           )
         : new THREE.Mesh(new THREE.BoxGeometry(drawerOp.boxW, drawerOp.boxH, drawerOp.boxD), bodyMat);
       drawerBox.position.set(0, 0, drawerOp.boxOffsetZ || 0);
@@ -131,6 +133,7 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
       group.add(visual);
 
       if (
+        !omitConnectorPanel &&
         typeof drawerOp.connectW === 'number' &&
         typeof drawerOp.connectH === 'number' &&
         typeof drawerOp.connectD === 'number'

@@ -69,12 +69,14 @@ function createManualState(overrides: Partial<PaintFlowMutableState> = {}): Pain
   let colors = { ...(overrides.colors0 || {}) };
   let curtains = { ...(overrides.curtains0 || {}) };
   let special = { ...(overrides.special0 || {}) };
+  let style = { ...(overrides.style0 || {}) };
   let mirrorLayout = { ...(overrides.mirror0 || {}) };
   return {
     App: overrides.App || createApp(),
     colors0: overrides.colors0 || {},
     curtains0: overrides.curtains0 || {},
     special0: overrides.special0 || {},
+    style0: overrides.style0 || {},
     mirror0: overrides.mirror0 || {},
     get colors() {
       return colors;
@@ -85,12 +87,16 @@ function createManualState(overrides: Partial<PaintFlowMutableState> = {}): Pain
     get special() {
       return special;
     },
+    get style() {
+      return style;
+    },
     get mirrorLayout() {
       return mirrorLayout;
     },
     ensureColors: () => colors,
     ensureCurtains: () => curtains,
     ensureSpecial: () => special,
+    ensureStyle: () => style,
     ensureMirrorLayout: () => mirrorLayout,
   };
 }
@@ -192,6 +198,44 @@ test('paint special mutation toggles off a canonical full mirror when the same m
   assert.equal(state.mirrorLayout.d3_full, undefined);
 });
 
+test('paint glass mutation defaults every clicked glass front to regular profile glass and supports explicit glass variants', () => {
+  const state = createManualState({
+    App: createApp({ ui: { currentCurtainChoice: 'none' } }),
+    style0: { d5_full: 'tom' },
+  });
+
+  applyPaintPartMutation({
+    state,
+    paintPartKey: 'd5_full',
+    paintSelection: 'glass',
+    clickArgs: {
+      App: state.App,
+      foundPartId: 'd5_full',
+      activeStack: 'top',
+      isPaintMode: true,
+    },
+  });
+
+  assert.equal(state.special.d5_full, 'glass');
+  assert.equal(state.curtains.d5_full, 'none');
+  assert.equal(state.style.d5_full, 'profile');
+
+  applyPaintPartMutation({
+    state,
+    paintPartKey: 'd6_full',
+    paintSelection: '__wp_glass_style__:tom',
+    clickArgs: {
+      App: state.App,
+      foundPartId: 'd6_full',
+      activeStack: 'top',
+      isPaintMode: true,
+    },
+  });
+
+  assert.equal(state.special.d6_full, 'glass');
+  assert.equal(state.style.d6_full, 'tom');
+});
+
 test('paint color mutation clears stale curtains but preserves mirror layouts for mirror-special doors', () => {
   const state = createManualState({
     special0: { d1_right: 'mirror' },
@@ -236,6 +280,7 @@ test('paint flow summary enables no-build material refresh only for color-only d
   assert.equal(summary.colorsChanged, true);
   assert.equal(summary.curtainsChanged, false);
   assert.equal(summary.specialChanged, false);
+  assert.equal(summary.styleChanged, false);
   assert.equal(summary.mirrorLayoutChanged, false);
   assert.equal(summary.useNoBuildMaterialRefresh, true);
 });

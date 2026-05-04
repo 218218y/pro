@@ -60,13 +60,18 @@ export function pushCornerConnectorDoorSegmentVisual(
   const isMirror = special === 'mirror';
   const hasGroove = ctx.groovesEnabled && !isMirror && !!readScopedReaderAny(ctx, ctx.getGroove, partId);
   const style = special === 'glass' ? 'glass' : null;
+  const effectiveFrameStyle = resolveEffectiveDoorStyle(
+    ctx.doorStyle,
+    readDoorStyleMap(ctx.getCfg(ctx.App)),
+    partId
+  );
 
   const vis = ctx.createDoorVisual(
     Math.max(0.03, ctx.doorW - 0.004),
     Math.max(0.2, segH - 0.004),
     0.018,
     isMirror ? ctx.getMirrorMat() : woodMat,
-    style || resolveEffectiveDoorStyle(ctx.doorStyle, readDoorStyleMap(ctx.getCfg(ctx.App)), partId),
+    style || effectiveFrameStyle,
     hasGroove,
     isMirror,
     readCurtainTypeLocal(curtain),
@@ -74,7 +79,8 @@ export function pushCornerConnectorDoorSegmentVisual(
     ctx.outwardZSign,
     true,
     readCornerConnectorMirrorLayout(ctx, partId),
-    partId
+    partId,
+    special === 'glass' ? { glassFrameStyle: effectiveFrameStyle } : null
   );
   vis.position.set(state.meshOffset, 0, 0);
   hinge.add(vis);

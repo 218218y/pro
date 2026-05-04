@@ -42,6 +42,29 @@ export function isDoorStyleOverridePaintToken(value: unknown): boolean {
   return parseDoorStyleOverridePaintToken(value) != null;
 }
 
+export const GLASS_FRAME_STYLE_PAINT_PREFIX = '__wp_glass_style__:';
+
+export function encodeGlassFrameStylePaintToken(style: unknown): string {
+  return `${GLASS_FRAME_STYLE_PAINT_PREFIX}${normalizeDoorStyleOverrideValue(style, 'profile')}`;
+}
+
+export function parseGlassFrameStylePaintToken(value: unknown): DoorStyleOverrideValue | null {
+  if (typeof value !== 'string') return null;
+  const raw = String(value).trim();
+  if (!raw.startsWith(GLASS_FRAME_STYLE_PAINT_PREFIX)) return null;
+  const style = raw.slice(GLASS_FRAME_STYLE_PAINT_PREFIX.length).trim().toLowerCase();
+  return isDoorStyleOverrideValue(style) ? style : null;
+}
+
+export function isGlassPaintSelection(value: unknown): boolean {
+  return resolveGlassFrameStylePaintSelection(value) != null;
+}
+
+export function resolveGlassFrameStylePaintSelection(value: unknown): DoorStyleOverrideValue | null {
+  if (value === 'glass') return 'profile';
+  return parseGlassFrameStylePaintToken(value);
+}
+
 function isSegmentedDoorBaseId(partId: string): boolean {
   return (
     /^(?:lower_)?d\d+$/.test(partId) ||

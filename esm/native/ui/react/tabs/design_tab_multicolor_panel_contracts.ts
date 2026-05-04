@@ -1,4 +1,4 @@
-import type { DoorStyleOverrideValue } from '../../../features/door_style_overrides.js';
+import { encodeGlassFrameStylePaintToken, type DoorStyleOverrideValue } from '../../../features/door_style_overrides.js';
 import type { CurtainPreset, DefaultSwatch, SavedColor } from './design_tab_multicolor_shared.js';
 
 export const MULTI_ICON_BRUSH = '🖌️';
@@ -17,11 +17,24 @@ export const MULTI_SPECIAL_HEADER = 'מראה או זכוכית לדלתות';
 export const MULTI_DOOR_STYLE_HEADER = 'סגנון חזית לדלתות ומגירות';
 export const MULTI_LABEL_MIRROR = 'מראה';
 export const MULTI_LABEL_GLASS = 'זכוכית';
+export const MULTI_GLASS_STYLE_HEADER = 'אפשרויות זכוכית';
+export const MULTI_LABEL_GLASS_FULL = 'זכוכית מלאה';
+export const MULTI_LABEL_GLASS_TOM = 'זכוכית פרופיל תום';
 export const MULTI_CURTAIN_TITLE = 'בחר צבע וילון לדלת הזכוכית:';
 export const MULTI_MIRROR_HEIGHT = 'גובה מראה';
 export const MULTI_MIRROR_WIDTH = 'רוחב מראה';
 export const MULTI_MIRROR_AUTO = 'אוטומטי';
 export const MULTI_SECTION_TITLE = 'צביעה מתקדמת ותוספות';
+
+
+export const MULTI_GLASS_STYLE_OPTIONS: ReadonlyArray<{
+  id: Exclude<DoorStyleOverrideValue, 'profile'>;
+  paintId: string;
+  label: string;
+}> = [
+  { id: 'flat', paintId: encodeGlassFrameStylePaintToken('flat'), label: MULTI_LABEL_GLASS_FULL },
+  { id: 'tom', paintId: encodeGlassFrameStylePaintToken('tom'), label: MULTI_LABEL_GLASS_TOM },
+];
 
 export const MULTI_DOOR_STYLE_OPTIONS: ReadonlyArray<{ id: DoorStyleOverrideValue; label: string }> = [
   { id: 'flat', label: 'פוסט' },
@@ -75,6 +88,7 @@ export type MultiColorPanelViewState = {
   mirrorDraftHeight: string;
   mirrorDraftWidth: string;
   activeDoorStyleOverride: DoorStyleOverrideValue | null;
+  activeGlassFrameStyle: DoorStyleOverrideValue | null;
   defaultSwatches: ReadonlyArray<MultiColorSwatchDot>;
   savedSwatches: ReadonlyArray<MultiColorSwatchDot>;
   specialSwatches: ReadonlyArray<MultiColorSwatchDot>;
@@ -89,6 +103,7 @@ export type CreateDesignTabMulticolorViewStateArgs = {
   mirrorDraftWidth: string;
   paintColor: string | null;
   activeDoorStyleOverride: DoorStyleOverrideValue | null;
+  activeGlassFrameStyle: DoorStyleOverrideValue | null;
   defaultSwatches: ReadonlyArray<DefaultSwatch>;
   savedSwatches: ReadonlyArray<SavedColor>;
 };

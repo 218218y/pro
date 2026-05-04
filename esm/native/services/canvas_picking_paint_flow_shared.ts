@@ -4,6 +4,7 @@ import type {
   CurtainMap,
   DoorSpecialMap,
   DoorSpecialValue,
+  DoorStyleMap,
   IndividualColorsMap,
   MirrorLayoutEntry,
   MirrorLayoutMap,
@@ -11,6 +12,7 @@ import type {
 } from '../../../types';
 
 import { getBuilderMaterialsService } from '../runtime/builder_service_access.js';
+import { isGlassPaintSelection, readDoorStyleMap } from '../features/door_style_overrides.js';
 import { __wp_map, __wp_ui } from './canvas_picking_core_helpers.js';
 import {
   CHEST_BODY_PARTS,
@@ -87,6 +89,12 @@ export function cloneDoorSpecialMap(src: DoorSpecialMap): DoorSpecialMap {
   return out;
 }
 
+export function cloneDoorStyleMap(src: DoorStyleMap): DoorStyleMap {
+  const out: DoorStyleMap = {};
+  for (const [key, value] of Object.entries(src || {})) out[key] = value;
+  return out;
+}
+
 export function cloneMirrorLayoutConfigMap(src: MirrorLayoutMap): MirrorLayoutMap {
   const out: MirrorLayoutMap = {};
   for (const [key, value] of Object.entries(src || {})) {
@@ -106,6 +114,10 @@ export function readCurtainMap(App: AppContainer): CurtainMap {
 
 export function readDoorSpecialMap(App: AppContainer): DoorSpecialMap {
   return cloneDoorSpecialMap(readNamedMap(App, 'doorSpecialMap'));
+}
+
+export function readDoorStyleConfigMap(App: AppContainer): DoorStyleMap {
+  return cloneDoorStyleMap(readDoorStyleMap(__wp_map(App, 'doorStyleMap')));
 }
 
 export function readMirrorLayoutConfigMap(App: AppContainer): MirrorLayoutMap {
@@ -211,7 +223,7 @@ export function getPaintSourceTag(paint: string, foundPartId: string): string {
     .trim()
     .toLowerCase();
   if (selection === 'mirror') return 'paint.apply:mirror';
-  if (selection === 'glass') return 'paint.apply:glass';
+  if (isGlassPaintSelection(selection)) return 'paint.apply:glass';
   if (
     foundPartId &&
     (MAIN_BODY_PARTS.includes(foundPartId) ||

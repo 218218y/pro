@@ -164,7 +164,12 @@ test('library preset invariants preserve custom top-door curtains instead of res
     },
     config: {
       get: () => cfgState,
-      applyProjectSnapshot: () => undefined,
+      applyProjectSnapshot: (next: any) => {
+        if (next && Object.prototype.hasOwnProperty.call(next, 'doorStyleMap')) {
+          configCalls.push(['doorStyleMap', next.doorStyleMap]);
+          cfgState.doorStyleMap = next.doorStyleMap;
+        }
+      },
       setModulesConfiguration: next => configCalls.push(['modulesConfiguration', next]),
       setLowerModulesConfiguration: next => configCalls.push(['stackSplitLowerModulesConfiguration', next]),
       setLibraryMode: on => configCalls.push(['isLibraryMode', on]),
@@ -230,7 +235,12 @@ function createInvariantTestEnv(
     },
     config: {
       get: () => cfgState,
-      applyProjectSnapshot: () => undefined,
+      applyProjectSnapshot: (next: any) => {
+        if (next && Object.prototype.hasOwnProperty.call(next, 'doorStyleMap')) {
+          configCalls.push(['doorStyleMap', next.doorStyleMap]);
+          cfgState.doorStyleMap = next.doorStyleMap;
+        }
+      },
       setModulesConfiguration: next => {
         configCalls.push(['modulesConfiguration', next]);
         cfgState.modulesConfiguration = next;
@@ -330,6 +340,12 @@ test('library preset invariants seed glass only for newly added upper doors and 
   const nextCurtains = curtainCall?.[1] as Record<string, unknown>;
   assert.equal(nextCurtains.d2_full, 'white', 'existing custom upper-door curtain should be preserved');
   assert.equal(nextCurtains.d4_full, 'none');
+
+  const styleCall = configCalls.find(([name]) => name === 'doorStyleMap');
+  assert.ok(styleCall, 'new upper glass door should default to regular profile glass');
+  const nextStyle = styleCall?.[1] as Record<string, unknown>;
+  assert.equal(nextStyle.d4, 'profile');
+  assert.equal(nextStyle.d4_full, 'profile');
 
   assert.equal(recomputes.length, 1, 'new glass defaults must trigger a rebuild after maps are written');
   assert.equal(recomputes[0].src, 'react:structure:library:ensure:rebuild');

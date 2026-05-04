@@ -25,13 +25,16 @@ test('corner and sketch external drawer fronts forward glass/mirror state throug
   assert.match(corner, /const curtain =/);
   assert.match(corner, /const special = runtime\.__resolveSpecial\(id, curtain\);/);
   assert.match(corner, /const isGlass = special === 'glass';/);
-  assert.match(corner, /isGlass \? 'glass' : runtime\.doorStyle/);
+  assert.match(corner, /const effectiveFrameStyle = resolveEffectiveDoorStyle\(runtime\.doorStyle, doorStyleMap, id\);/);
+  assert.match(corner, /isGlass \? 'glass' : effectiveFrameStyle/);
+  assert.match(corner, /isGlass \? \{ glassFrameStyle: effectiveFrameStyle \} : null/);
+  assert.match(corner, /isGlass \? \{ omitFrontPanel: true \} : null/);
   assert.match(corner, /isGlass \? readCurtainType\(curtain\) : null/);
 
   assert.match(sketchExternal, /resolveSketchFrontVisualState\(context\.input, opPlan\.partId\)/);
   assert.match(
     sketchExternal,
-    /frontVisualState\.isGlass[\s\S]*\? 'glass'[\s\S]*: resolveEffectiveDoorStyle/
+    /const effectiveFrameStyle = resolveEffectiveDoorStyle[\s\S]*frontVisualState\.isGlass \? 'glass' : effectiveFrameStyle[\s\S]*frontVisualState\.isGlass \? \{ glassFrameStyle: effectiveFrameStyle \} : null/
   );
   assert.match(sketchExternal, /frontVisualState\.isMirror/);
   assert.match(sketchExternal, /frontVisualState\.mirrorLayout/);
@@ -39,7 +42,7 @@ test('corner and sketch external drawer fronts forward glass/mirror state throug
   assert.match(sketchBoxDrawers, /resolveSketchFrontVisualState\(context\.input, opPlan\.partId\)/);
   assert.match(
     sketchBoxDrawers,
-    /frontVisualState\.isGlass[\s\S]*\? 'glass'[\s\S]*: resolveEffectiveDoorStyle/
+    /const effectiveFrameStyle = resolveEffectiveDoorStyle[\s\S]*frontVisualState\.isGlass \? 'glass' : effectiveFrameStyle[\s\S]*frontVisualState\.isGlass \? \{ glassFrameStyle: effectiveFrameStyle \} : null/
   );
   assert.match(sketchBoxDrawers, /frontVisualState\.isMirror/);
   assert.match(sketchBoxDrawers, /frontVisualState\.mirrorLayout/);

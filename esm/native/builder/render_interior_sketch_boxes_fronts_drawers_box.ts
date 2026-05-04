@@ -32,7 +32,8 @@ function addSketchBoxExternalDrawerBox(
         boxMat,
         context.input.addOutlines,
         false,
-        false
+        false,
+        opPlan.omitBoxFrontPanel === true ? { omitFrontPanel: true } : null
       )
     : new context.THREE.Mesh(new context.THREE.BoxGeometry(opPlan.boxW, opPlan.boxH, opPlan.boxD), boxMat);
   const drawerBoxObj = (readObject<InteriorGroupLike>(drawerBox) || asMesh(drawerBox)) ?? null;
@@ -51,7 +52,13 @@ function addSketchBoxExternalDrawerConnector(
   opPlan: SketchBoxExternalDrawerOpPlan,
   groupNode: InteriorGroupLike
 ): void {
-  if (opPlan.connectorW == null || opPlan.connectorH == null || opPlan.connectorD == null) return;
+  if (
+    opPlan.omitConnectorPanel === true ||
+    opPlan.connectorW == null ||
+    opPlan.connectorH == null ||
+    opPlan.connectorD == null
+  )
+    return;
 
   const { boxId: bid, boxMat } = context.shell;
   const connector = new context.THREE.Mesh(

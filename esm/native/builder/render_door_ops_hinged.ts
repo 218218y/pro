@@ -125,12 +125,16 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
 
       let visual;
       if (createDoorVisual) {
+        const effectiveDoorStyle = resolveDoorVisualStyle(doorOp.style, doorStyle, cfg.doorStyleMap, partId);
+        const glassFrameStyleRaw =
+          doorOp.style === 'glass' ? resolveDoorVisualStyle(null, doorStyle, cfg.doorStyleMap, partId) : null;
+        const glassFrameStyle = glassFrameStyleRaw === 'glass' ? null : glassFrameStyleRaw;
         visual = createDoorVisual(
           (doorOp.width || 0) - 0.004,
           (doorOp.height || 0) - 0.004,
           0.018,
           isMirrorDoor ? mirrorMat : woodMat,
-          resolveDoorVisualStyle(doorOp.style, doorStyle, cfg.doorStyleMap, partId),
+          effectiveDoorStyle,
           doorOp.hasGroove,
           isMirrorDoor,
           readCurtainType(doorOp.curtain),
@@ -138,7 +142,8 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
           1,
           false,
           resolveMirrorLayout(cfg, partId),
-          partId
+          partId,
+          glassFrameStyle ? { glassFrameStyle } : null
         );
       } else {
         visual = new THREE.Mesh(

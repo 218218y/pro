@@ -97,7 +97,8 @@ export function readDoorVisualFactory(value: unknown): BuilderCreateDoorVisualFn
     frontFaceSign,
     forceCurtainFix,
     mirrorLayout,
-    groovePartId
+    groovePartId,
+    options
   ) => {
     const next = readObject3D(
       value(
@@ -113,7 +114,8 @@ export function readDoorVisualFactory(value: unknown): BuilderCreateDoorVisualFn
         frontFaceSign,
         forceCurtainFix,
         mirrorLayout,
-        groovePartId
+        groovePartId,
+        options
       )
     );
     if (!next) throw new Error('[render_door_ops] createDoorVisual returned invalid object');

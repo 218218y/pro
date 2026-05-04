@@ -3,6 +3,7 @@ import type {
   AppContainer,
   CurtainMap,
   DoorSpecialMap,
+  DoorStyleMap,
   IndividualColorsMap,
   MirrorLayoutMap,
   ModuleConfigLike,
@@ -20,6 +21,7 @@ import {
   setCfgCurtainMap,
   setCfgDepth,
   setCfgDoorSpecialMap,
+  cfgSetMap,
   setCfgMirrorLayoutMap,
   setCfgHeight,
   setCfgIndividualColors,
@@ -63,6 +65,12 @@ function cloneDoorSpecialMap(src: DoorSpecialMap): DoorSpecialMap {
   return out;
 }
 
+function cloneDoorStyleMap(src: DoorStyleMap): DoorStyleMap {
+  const out: DoorStyleMap = {};
+  for (const [key, value] of Object.entries(src || {})) out[key] = value;
+  return out;
+}
+
 function cloneMirrorLayoutMap(src: MirrorLayoutMap): MirrorLayoutMap {
   const out: MirrorLayoutMap = {};
   for (const [key, value] of Object.entries(src || {})) {
@@ -89,6 +97,7 @@ export interface PaintConfigSnapshotArgs {
   individualColors: IndividualColorsMap;
   curtainMap: CurtainMap;
   doorSpecialMap?: DoorSpecialMap;
+  doorStyleMap?: DoorStyleMap;
   mirrorLayoutMap?: MirrorLayoutMap;
   meta?: ActionMetaLike;
 }
@@ -130,12 +139,17 @@ export function applyPaintConfigSnapshot(args: PaintConfigSnapshotArgs): void {
   const individualColors = cloneIndividualColorsMap(args.individualColors);
   const curtainMap = cloneCurtainMap(args.curtainMap);
   const doorSpecialMap = cloneDoorSpecialMap(args.doorSpecialMap || {});
+  const doorStyleMap = args.doorStyleMap ? cloneDoorStyleMap(args.doorStyleMap) : null;
   const mirrorLayoutMap = cloneMirrorLayoutMap(args.mirrorLayoutMap || {});
 
-  if (applyPaintViaActions(App, individualColors, curtainMap, meta, doorSpecialMap, mirrorLayoutMap)) return;
+  if (applyPaintViaActions(App, individualColors, curtainMap, meta, doorSpecialMap, mirrorLayoutMap)) {
+    if (doorStyleMap) cfgSetMap(App, 'doorStyleMap', doorStyleMap, meta);
+    return;
+  }
 
   setCfgIndividualColors(App, individualColors, meta);
   setCfgCurtainMap(App, curtainMap, meta);
   setCfgDoorSpecialMap(App, doorSpecialMap, meta);
+  if (doorStyleMap) cfgSetMap(App, 'doorStyleMap', doorStyleMap, meta);
   setCfgMirrorLayoutMap(App, mirrorLayoutMap, meta);
 }

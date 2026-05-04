@@ -182,7 +182,7 @@ test('sketch external drawers source keeps module faces aligned to real door spa
   assert.match(src, /const doorStyle = resolveSketchDoorStyle\(App, input\);/);
   assert.match(
     src,
-    /resolveSketchFrontVisualState\(context\.input, opPlan\.partId\)[\s\S]*context\.input\.createDoorVisual\([\s\S]*materialSet\.frontFaceMat,[\s\S]*frontVisualState\.isGlass[\s\S]*resolveEffectiveDoorStyle\(context\.doorStyle, context\.doorStyleMap, opPlan\.partId\),[\s\S]*frontVisualState\.mirrorLayout,[\s\S]*opPlan\.partId/
+    /resolveSketchFrontVisualState\(context\.input, opPlan\.partId\)[\s\S]*const effectiveFrameStyle = resolveEffectiveDoorStyle\(context\.doorStyle, context\.doorStyleMap, opPlan\.partId\);[\s\S]*context\.input\.createDoorVisual\([\s\S]*materialSet\.frontFaceMat,[\s\S]*frontVisualState\.isGlass \? 'glass' : effectiveFrameStyle,[\s\S]*frontVisualState\.mirrorLayout,[\s\S]*opPlan\.partId,[\s\S]*frontVisualState\.isGlass \? \{ glassFrameStyle: effectiveFrameStyle \} : null/
   );
   assert.match(src, /const boxExtDrawers = asRecordArray<InteriorValueRecord>\(box\.extDrawers\);/);
 });

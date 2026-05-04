@@ -18,6 +18,8 @@ export function addSketchBoxExternalDrawerFrontVisual(
   const { shell } = context;
   const { boxId: bid, isFreePlacement } = shell;
   const frontVisualState = resolveSketchFrontVisualState(context.input, opPlan.partId);
+  opPlan.omitBoxFrontPanel = frontVisualState.isGlass;
+  opPlan.omitConnectorPanel = frontVisualState.isGlass;
   const materialSet = resolveSketchBoxExternalDrawerFrontMaterials(
     context,
     opPlan.frontMat,
@@ -70,14 +72,13 @@ function createSketchBoxExternalDrawerFrontVisual(
   if (!context.isFn(context.createDoorVisual)) return null;
 
   try {
+    const effectiveFrameStyle = resolveEffectiveDoorStyle(context.doorStyle, context.doorStyleMap, opPlan.partId);
     return context.createDoorVisual(
       opPlan.faceW,
       opPlan.visualH,
       opPlan.visualD,
       materialSet.frontFaceMat,
-      frontVisualState.isGlass
-        ? 'glass'
-        : resolveEffectiveDoorStyle(context.doorStyle, context.doorStyleMap, opPlan.partId),
+      frontVisualState.isGlass ? 'glass' : effectiveFrameStyle,
       false,
       frontVisualState.isMirror,
       frontVisualState.curtainType,
@@ -85,7 +86,8 @@ function createSketchBoxExternalDrawerFrontVisual(
       1,
       false,
       frontVisualState.mirrorLayout,
-      opPlan.partId
+      opPlan.partId,
+      frontVisualState.isGlass ? { glassFrameStyle: effectiveFrameStyle } : null
     );
   } catch {
     return null;

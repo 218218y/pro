@@ -1,3 +1,4 @@
+import { resolveEffectiveDoorStyle } from '../features/door_style_overrides.js';
 import { readCurtainType } from './render_door_ops_shared.js';
 import type { SlotMetaLike } from './corner_wing_cell_shared.js';
 import type {
@@ -175,6 +176,8 @@ export function emitCornerWingExternalDrawers(
     const isGlass = special === 'glass';
     const hasGroove =
       runtime.groovesEnabled && !isMirror && !isGlass && !!runtime.readScopedReaderAny(runtime.getGroove, id);
+    const doorStyleMap = runtime.readMapOrEmpty(runtime.App, 'doorStyleMap');
+    const effectiveFrameStyle = resolveEffectiveDoorStyle(runtime.doorStyle, doorStyleMap, id);
 
     const dGroup = new runtime.THREE.Group();
     dGroup.userData = dGroup.userData || {};
@@ -192,7 +195,7 @@ export function emitCornerWingExternalDrawers(
       height,
       runtime.woodThick,
       isMirror ? runtime.__getMirrorMat() : woodMat,
-      isGlass ? 'glass' : runtime.doorStyle,
+      isGlass ? 'glass' : effectiveFrameStyle,
       hasGroove,
       isMirror,
       isGlass ? readCurtainType(curtain) : null,
@@ -200,7 +203,8 @@ export function emitCornerWingExternalDrawers(
       1,
       false,
       runtime.readMirrorLayout(id),
-      id
+      id,
+      isGlass ? { glassFrameStyle: effectiveFrameStyle } : null
     );
     dVis.position.set(0, 0, 0);
 
@@ -213,7 +217,8 @@ export function emitCornerWingExternalDrawers(
       runtime.bodyMat,
       runtime.addOutlines,
       hasDivider,
-      false
+      false,
+      isGlass ? { omitFrontPanel: true } : null
     );
     dBox.position.set(0, 0, -cellD / 2 + 0.005);
 

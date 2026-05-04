@@ -1,5 +1,5 @@
 import type { TagDoorVisualPartFn } from './visuals_and_contents_door_visual_support_contracts.js';
-import type { AppContainer, Object3DLike, ThreeLike } from '../../../types/index.js';
+import type { AppContainer, BuilderDoorVisualFrameStyle, Object3DLike, ThreeLike } from '../../../types/index.js';
 
 export type AddOutlinesFn = (mesh: Object3DLike) => void;
 export type DoorVisualGroupLike = Object3DLike;
@@ -18,6 +18,7 @@ export type GlassDoorVisualArgs = {
   curtainType: string | null;
   zSign: number;
   forceCurtainFix: boolean;
+  frameStyle?: BuilderDoorVisualFrameStyle | null;
 };
 
 export type StyledDoorVisualArgs = {

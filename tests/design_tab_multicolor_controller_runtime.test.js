@@ -45,6 +45,7 @@ function loadDesignTabMulticolorControllerModule(reportCalls) {
     if (specifier === '../../../features/door_style_overrides.js') {
       return {
         encodeDoorStyleOverridePaintToken: value => `__door_style__:${value}`,
+        isGlassPaintSelection: value => value === 'glass' || String(value || '').startsWith('__wp_glass_style__:'),
       };
     }
     if (specifier === './design_tab_multicolor_shared.js') {
@@ -108,6 +109,14 @@ test('[design-tab-multicolor-controller] paint actions flow through one canonica
   assert.ok(calls.some(entry => entry[0] === 'tool.setPaintColor' && entry[1] === 'glass'));
   assert.ok(calls.some(entry => entry[0] === 'setCurtainChoice' && entry[2] === 'pink'));
   assert.deepEqual(setPaintColorCalls, ['glass']);
+
+  calls.length = 0;
+  setPaintColorCalls.length = 0;
+  paintActive = true;
+  controller.pickBrush('__wp_glass_style__:tom', 'white');
+  assert.ok(calls.some(entry => entry[0] === 'tool.setPaintColor' && entry[1] === '__wp_glass_style__:tom'));
+  assert.ok(calls.some(entry => entry[0] === 'setCurtainChoice' && entry[2] === 'white'));
+  assert.deepEqual(setPaintColorCalls, ['__wp_glass_style__:tom']);
 
   paintActive = true;
   calls.length = 0;

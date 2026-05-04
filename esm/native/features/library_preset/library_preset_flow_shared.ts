@@ -69,6 +69,8 @@ export function applyTopLibraryDoorPolicy(target: LibraryDoorMaps, topDoorsCount
     const base = `d${id}`;
     target.special[`${base}_full`] = 'glass';
     target.special[base] = 'glass';
+    target.style[`${base}_full`] = 'profile';
+    target.style[base] = 'profile';
     for (const key of doorPartKeys(id)) {
       target.curtains[key] = 'none';
     }
@@ -84,6 +86,7 @@ export function applyBottomLibraryDoorPolicy(target: LibraryDoorMaps, bottomDoor
     for (const key of doorPartKeys(doorId)) {
       if (Object.prototype.hasOwnProperty.call(target.colors, key)) delete target.colors[key];
       if (Object.prototype.hasOwnProperty.call(target.special, key)) delete target.special[key];
+      if (Object.prototype.hasOwnProperty.call(target.style, key)) delete target.style[key];
       if (Object.prototype.hasOwnProperty.call(target.curtains, key) && target.curtains[key] === 'none') {
         delete target.curtains[key];
       }
@@ -180,22 +183,27 @@ export type LibraryPresetInvariantDoorMutators = {
   nextColors: IndividualColorsMap | null;
   nextCurtains: CurtainMap | null;
   nextSpecial: DoorSpecialMap | null;
+  nextStyle: DoorStyleMap | null;
   markChanged: () => boolean;
   setCurtain: (key: string, val: string) => void;
   setSpecial: (key: string, val: 'glass' | 'mirror' | null) => void;
   delSpecial: (key: string) => void;
   delColor: (key: string) => void;
   delCurtainIfNone: (key: string) => void;
+  setStyle: (key: string, val: 'flat' | 'profile' | 'tom') => void;
+  delStyle: (key: string) => void;
 };
 
 export function createInvariantDoorMapMutators(
   baseColors: IndividualColorsMap,
   baseCurtains: CurtainMap,
-  baseSpecial: DoorSpecialMap
+  baseSpecial: DoorSpecialMap,
+  baseStyle: DoorStyleMap
 ): LibraryPresetInvariantDoorMutators {
   let nextColors: IndividualColorsMap | null = null;
   let nextCurtains: CurtainMap | null = null;
   let nextSpecial: DoorSpecialMap | null = null;
+  let nextStyle: DoorStyleMap | null = null;
   let changed = false;
 
   return {
@@ -207,6 +215,9 @@ export function createInvariantDoorMapMutators(
     },
     get nextSpecial() {
       return nextSpecial;
+    },
+    get nextStyle() {
+      return nextStyle;
     },
     markChanged: () => changed,
     setCurtain: (key, val) => {
@@ -253,6 +264,22 @@ export function createInvariantDoorMapMutators(
       if (!nextCurtains) nextCurtains = { ...baseCurtains };
       if (Object.prototype.hasOwnProperty.call(nextCurtains, key)) {
         delete nextCurtains[key];
+        changed = true;
+      }
+    },
+    setStyle: (key, val) => {
+      const cur = nextStyle ? nextStyle[key] : baseStyle[key];
+      if (cur === val) return;
+      if (!nextStyle) nextStyle = { ...baseStyle };
+      nextStyle[key] = val;
+      changed = true;
+    },
+    delStyle: key => {
+      const srcMap = nextStyle || baseStyle;
+      if (!Object.prototype.hasOwnProperty.call(srcMap, key)) return;
+      if (!nextStyle) nextStyle = { ...baseStyle };
+      if (Object.prototype.hasOwnProperty.call(nextStyle, key)) {
+        delete nextStyle[key];
         changed = true;
       }
     },
