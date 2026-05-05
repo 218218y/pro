@@ -13,7 +13,7 @@ import {
   DEFAULT_HINGED_DOORS,
   DEFAULT_WIDTH,
   HINGED_DEFAULT_DEPTH,
-} from '../features/wardrobe_dimension_defaults.js';
+} from './wardrobe_dimension_defaults.js';
 
 export function createDefaultState(opts?: { noneMode?: string }): RootStateLike {
   opts = opts && typeof opts === 'object' ? opts : {};

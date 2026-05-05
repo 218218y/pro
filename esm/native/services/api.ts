@@ -25,6 +25,10 @@ export {
   triggerCanvasDownloadViaBrowser,
   validateRuntimeConfig,
   validateRuntimeFlags,
+  DEFAULT_WIDTH,
+  DEFAULT_HEIGHT,
+  getDefaultDepthForWardrobeType,
+  getDefaultDoorsForWardrobeType,
 } from './api_runtime_base_surface.js';
 
 export {

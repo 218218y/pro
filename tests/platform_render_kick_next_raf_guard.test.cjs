@@ -8,12 +8,16 @@ const source = fs.readFileSync(
   'utf8'
 );
 
-test('platform render scheduler does not defer interactive render kicks to idle work', () => {
-  assert.doesNotMatch(source, /scheduleFirstRenderKick/);
-  assert.doesNotMatch(source, /requestIdleCallbackMaybe/);
+test('platform render scheduler runs the first animate kick after RAF via injected browser tasks', () => {
   assert.match(
     source,
-    /requestAnimationFrameFn\(function __wpKickRenderLoop\(\) \{\s*try \{\s*animate\(\);/,
-    'render wakeups should run animate directly from the next RAF callback'
+    /function scheduleRenderKickTask\(App: AppContainer, animate: \(\) => unknown\): void/
+  );
+  assert.match(source, /requestIdleCallbackMaybe\(App\)/);
+  assert.match(source, /getBrowserTimers\(App\)\.setTimeout\(runOnce, 0\)/);
+  assert.match(
+    source,
+    /requestAnimationFrameFn\(function __wpKickRenderLoop\(\) \{\s*scheduleRenderKickTask\(App, animate\);/,
+    'render wakeups should schedule the first animate kick after the RAF callback'
   );
 });

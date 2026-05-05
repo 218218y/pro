@@ -48,6 +48,11 @@ type CorniceParams = {
   topY: number;
 };
 
+type CorniceSideClosure = {
+  startDepth: number;
+  internal: boolean;
+};
+
 type CorniceRun = {
   left: number;
   right: number;
@@ -55,8 +60,8 @@ type CorniceRun = {
   endIndex: number;
   depth: number;
   topY: number;
-  leftSideStartDepth: number | null;
-  rightSideStartDepth: number | null;
+  leftSide: CorniceSideClosure | null;
+  rightSide: CorniceSideClosure | null;
 };
 
 type CorniceSectionParams = {
@@ -66,8 +71,8 @@ type CorniceSectionParams = {
   depth: number;
   woodThick: number;
   topY: number;
-  leftSideStartDepth: number | null;
-  rightSideStartDepth: number | null;
+  leftSide: CorniceSideClosure | null;
+  rightSide: CorniceSideClosure | null;
 };
 
 function shouldBuildSegmentedCornice(prepared: PreparedCarcassInput): boolean {
@@ -96,8 +101,8 @@ function buildSegmentedCornice(
       depth: run.depth,
       woodThick: prepared.woodThick,
       topY: run.topY,
-      leftSideStartDepth: run.leftSideStartDepth,
-      rightSideStartDepth: run.rightSideStartDepth,
+      leftSide: run.leftSide,
+      rightSide: run.rightSide,
     };
     if (corniceTypeNorm === 'wave') {
       segments.push(...buildWaveCorniceSection(section));
@@ -153,8 +158,8 @@ function buildCorniceRuns(prepared: PreparedCarcassInput): CorniceRun[] {
         endIndex: i,
         depth,
         topY,
-        leftSideStartDepth: null,
-        rightSideStartDepth: null,
+        leftSide: null,
+        rightSide: null,
       });
     }
 
@@ -163,8 +168,8 @@ function buildCorniceRuns(prepared: PreparedCarcassInput): CorniceRun[] {
 
   for (let i = 0; i < runs.length; i++) {
     const run = runs[i];
-    run.leftSideStartDepth = resolveRunSideStartDepth(run, runs[i - 1]);
-    run.rightSideStartDepth = resolveRunSideStartDepth(run, runs[i + 1]);
+    run.leftSide = resolveRunSideClosure(run, runs[i - 1]);
+    run.rightSide = resolveRunSideClosure(run, runs[i + 1]);
   }
 
   return runs.filter(run => run.right - run.left > CORNICE_EPS);
@@ -179,11 +184,21 @@ function sameCornicePlane(
   );
 }
 
-function resolveRunSideStartDepth(run: CorniceRun, neighbor: CorniceRun | undefined): number | null {
-  if (!neighbor) return CARCASS_BACK_INSET_Z;
-  if (Math.abs(run.topY - neighbor.topY) > CORNICE_EPS) return CARCASS_BACK_INSET_Z;
+function resolveRunSideClosure(run: CorniceRun, neighbor: CorniceRun | undefined): CorniceSideClosure | null {
+  if (!neighbor) {
+    return { startDepth: CARCASS_BACK_INSET_Z, internal: false };
+  }
+  if (Math.abs(run.topY - neighbor.topY) > CORNICE_EPS) {
+    return {
+      startDepth: CARCASS_BACK_INSET_Z,
+      internal: run.topY < neighbor.topY - CORNICE_EPS,
+    };
+  }
   if (run.depth > neighbor.depth + CORNICE_EPS) {
-    return Math.min(run.depth - 0.02, Math.max(CARCASS_BACK_INSET_Z, neighbor.depth));
+    return {
+      startDepth: Math.min(run.depth - 0.02, Math.max(CARCASS_BACK_INSET_Z, neighbor.depth)),
+      internal: true,
+    };
   }
   return null;
 }
@@ -197,8 +212,8 @@ function buildWaveCornice(params: CorniceParams): MutableRecord {
     depth: D,
     woodThick,
     topY,
-    leftSideStartDepth: CARCASS_BACK_INSET_Z,
-    rightSideStartDepth: CARCASS_BACK_INSET_Z,
+    leftSide: { startDepth: CARCASS_BACK_INSET_Z, internal: false },
+    rightSide: { startDepth: CARCASS_BACK_INSET_Z, internal: false },
   });
 
   return buildLegacyCorniceEnvelope({
@@ -213,13 +228,13 @@ function buildWaveCornice(params: CorniceParams): MutableRecord {
 }
 
 function buildWaveCorniceSection(params: CorniceSectionParams): MutableRecord[] {
-  const { left, right, globalD, depth, woodThick, topY, leftSideStartDepth, rightSideStartDepth } = params;
+  const { left, right, globalD, depth, woodThick, topY, leftSide, rightSide } = params;
   const sectionW = Math.max(0.001, right - left);
   const yPlace = topY + CORNICE_Y_EPS;
   const frameT = Math.max(0.01, Math.min(0.028, woodThick || 0.018));
   const waveAmp = Math.min(Math.max(sectionW * 0.03, 0.03), 0.06);
-  const leftInset = leftSideStartDepth == null ? 0 : frameT;
-  const rightInset = rightSideStartDepth == null ? 0 : frameT;
+  const leftInset = leftSide == null ? 0 : frameT;
+  const rightInset = rightSide == null ? 0 : frameT;
   const frontW = Math.max(0.02, sectionW - leftInset - rightInset);
   const frontLeft = left + leftInset;
   const frontRight = right - rightInset;
@@ -240,9 +255,9 @@ function buildWaveCorniceSection(params: CorniceSectionParams): MutableRecord[] 
     },
   ];
 
-  if (leftSideStartDepth != null) {
-    const sideDepth = Math.max(0.02, depth - leftSideStartDepth);
-    const sideZ = -globalD / 2 + leftSideStartDepth + sideDepth / 2;
+  if (leftSide != null) {
+    const sideDepth = Math.max(0.02, depth - leftSide.startDepth);
+    const sideZ = -globalD / 2 + leftSide.startDepth + sideDepth / 2;
     segments.push({
       kind: 'cornice_wave_side',
       width: frameT,
@@ -255,9 +270,9 @@ function buildWaveCorniceSection(params: CorniceSectionParams): MutableRecord[] 
     });
   }
 
-  if (rightSideStartDepth != null) {
-    const sideDepth = Math.max(0.02, depth - rightSideStartDepth);
-    const sideZ = -globalD / 2 + rightSideStartDepth + sideDepth / 2;
+  if (rightSide != null) {
+    const sideDepth = Math.max(0.02, depth - rightSide.startDepth);
+    const sideZ = -globalD / 2 + rightSide.startDepth + sideDepth / 2;
     segments.push({
       kind: 'cornice_wave_side',
       width: frameT,
@@ -282,8 +297,8 @@ function buildProfileCornice(params: CorniceParams): MutableRecord {
     depth: D,
     woodThick,
     topY,
-    leftSideStartDepth: CARCASS_BACK_INSET_Z,
-    rightSideStartDepth: CARCASS_BACK_INSET_Z,
+    leftSide: { startDepth: CARCASS_BACK_INSET_Z, internal: false },
+    rightSide: { startDepth: CARCASS_BACK_INSET_Z, internal: false },
   });
 
   return buildLegacyCorniceEnvelope({
@@ -298,13 +313,14 @@ function buildProfileCornice(params: CorniceParams): MutableRecord {
 }
 
 function buildProfileCorniceSection(params: CorniceSectionParams): MutableRecord[] {
-  const { left, right, globalD, depth, topY, leftSideStartDepth, rightSideStartDepth } = params;
+  const { left, right, globalD, depth, topY, leftSide, rightSide } = params;
   const yPlace = topY + CORNICE_Y_EPS;
   const sectionW = Math.max(0.001, right - left);
-  const leftOverhang = leftSideStartDepth == null ? 0 : PROFILE_OVERHANG_X;
-  const rightOverhang = rightSideStartDepth == null ? 0 : PROFILE_OVERHANG_X;
+  const leftOverhang = leftSide != null && !leftSide.internal ? PROFILE_OVERHANG_X : 0;
+  const rightOverhang = rightSide != null && !rightSide.internal ? PROFILE_OVERHANG_X : 0;
   const profileFront = makeCorniceProfile(PROFILE_OVERHANG_Z);
   const profileSide = makeCorniceProfile(PROFILE_OVERHANG_X);
+  const profileSideInternal = makeInternalBoundaryCorniceProfile(PROFILE_OVERHANG_X);
   const sideEndZ = -globalD / 2 + depth + PROFILE_OVERHANG_Z;
 
   const segments: MutableRecord[] = [
@@ -314,24 +330,24 @@ function buildProfileCorniceSection(params: CorniceSectionParams): MutableRecord
       profile: profileFront,
       rotationY: -Math.PI / 2,
       flipX: false,
-      miterStartTrim: rightSideStartDepth == null ? 0 : PROFILE_OVERHANG_X + PROFILE_SEAM_EPS,
-      miterEndTrim: leftSideStartDepth == null ? 0 : PROFILE_OVERHANG_X + PROFILE_SEAM_EPS,
+      miterStartTrim: rightSide != null && !rightSide.internal ? PROFILE_OVERHANG_X + PROFILE_SEAM_EPS : 0,
+      miterEndTrim: leftSide != null && !leftSide.internal ? PROFILE_OVERHANG_X + PROFILE_SEAM_EPS : 0,
       x: (left - leftOverhang + right + rightOverhang) / 2,
       y: yPlace,
       z: -globalD / 2 + depth,
     },
   ];
 
-  if (leftSideStartDepth != null) {
-    const sideStartZ = -globalD / 2 + leftSideStartDepth;
+  if (leftSide != null) {
+    const sideStartZ = -globalD / 2 + leftSide.startDepth;
     const sideLen = Math.max(0.001, sideEndZ - sideStartZ);
     const sideCenterZ = (sideStartZ + sideEndZ) / 2;
     segments.push({
       kind: 'cornice_profile_seg',
       length: sideLen,
-      profile: profileSide,
+      profile: leftSide.internal ? profileSideInternal : profileSide,
       rotationY: 0,
-      flipX: true,
+      flipX: !leftSide.internal,
       miterEndTrim: PROFILE_OVERHANG_Z + PROFILE_SEAM_EPS,
       x: left,
       y: yPlace,
@@ -339,16 +355,16 @@ function buildProfileCorniceSection(params: CorniceSectionParams): MutableRecord
     });
   }
 
-  if (rightSideStartDepth != null) {
-    const sideStartZ = -globalD / 2 + rightSideStartDepth;
+  if (rightSide != null) {
+    const sideStartZ = -globalD / 2 + rightSide.startDepth;
     const sideLen = Math.max(0.001, sideEndZ - sideStartZ);
     const sideCenterZ = (sideStartZ + sideEndZ) / 2;
     segments.push({
       kind: 'cornice_profile_seg',
       length: sideLen,
-      profile: profileSide,
+      profile: rightSide.internal ? profileSideInternal : profileSide,
       rotationY: 0,
-      flipX: false,
+      flipX: rightSide.internal,
       miterEndTrim: PROFILE_OVERHANG_Z + PROFILE_SEAM_EPS,
       x: right,
       y: yPlace,
@@ -357,6 +373,13 @@ function buildProfileCorniceSection(params: CorniceSectionParams): MutableRecord
   }
 
   return segments;
+}
+
+function makeInternalBoundaryCorniceProfile(overhang: number): MutableRecord[] {
+  return makeCorniceProfile(overhang).map(point => ({
+    ...point,
+    x: Math.max(0, __asNum(point.x, 0)),
+  }));
 }
 
 function makeCorniceProfile(overhang: number): MutableRecord[] {

@@ -1,6 +1,6 @@
 // Canonical wardrobe dimension defaults (centimeters).
 //
-// Keep fallback dimensions here so runtime state, build sanitizing, platform
+// Keep wardrobe dimension defaults here so runtime state, build sanitizing, platform
 // helpers, and exports cannot silently drift apart.
 
 export const DEFAULT_WIDTH = 160;

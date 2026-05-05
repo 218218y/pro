@@ -139,9 +139,9 @@ export function readLibraryPresetDefaultDoorCount(wardrobeType: 'hinged' | 'slid
   return normDoorCount(LIBRARY_PRESET_DEFAULT_DOORS, wardrobeType);
 }
 
-function readPositiveNumber(raw: unknown, fallback: number): number {
+function readPositiveNumber(raw: unknown, defaultValue: number): number {
   const n = Number(raw);
-  return Number.isFinite(n) && n > 0 ? n : fallback;
+  return Number.isFinite(n) && n > 0 ? n : defaultValue;
 }
 
 export function seedBottomDimensions(

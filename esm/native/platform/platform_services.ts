@@ -10,6 +10,7 @@ import {
 } from '../runtime/render_access.js';
 import { readConfigStateFromApp, readRuntimeStateFromApp } from '../runtime/root_state_access.js';
 import { getBuilderBuildUi } from '../runtime/builder_service_access.js';
+import { getBrowserTimers, requestIdleCallbackMaybe } from '../runtime/api.js';
 import {
   ensurePlatformService,
   getPlatformRenderDebugBudget,
@@ -23,7 +24,7 @@ import {
   DEFAULT_HEIGHT,
   DEFAULT_WIDTH,
   getDefaultDepthForWardrobeType,
-} from '../features/wardrobe_dimension_defaults.js';
+} from '../runtime/wardrobe_dimension_defaults.js';
 
 import { ensurePlatformPerf, isRecord, readBuildUiSurface } from './platform_shared.js';
 
@@ -41,6 +42,33 @@ function readNumberish(value: unknown): number {
 function invokeEnsureRenderLoop(platform: AppContainer['services']['platform'] | null | undefined): void {
   const ensureRenderLoop = platform && typeof platform === 'object' ? platform.ensureRenderLoop : null;
   if (typeof ensureRenderLoop === 'function') ensureRenderLoop();
+}
+
+function scheduleRenderKickTask(App: AppContainer, animate: () => unknown): void {
+  const runOnce = () => {
+    try {
+      animate();
+    } catch (e) {
+      setLoopRaf(App, 0);
+      reportErrorViaPlatform(App, e, 'animate');
+    }
+  };
+
+  const idle = requestIdleCallbackMaybe(App);
+  if (idle) {
+    try {
+      idle(runOnce, { timeout: 250 });
+      return;
+    } catch {
+      // Fall back to the injected timer below.
+    }
+  }
+
+  try {
+    getBrowserTimers(App).setTimeout(runOnce, 0);
+  } catch {
+    runOnce();
+  }
 }
 
 export function installPlatformServiceSurface(
@@ -144,7 +172,7 @@ export function installPlatformServiceSurface(
       }
 
       if (loopRaf) {
-        const now = typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now();
+        const now = getBrowserTimers(App).now();
         const last = getLastFrameTs(App);
         const scheduledAt = getRafScheduledAt(App);
         const age = scheduledAt ? now - scheduledAt : last ? now - last : 0;
@@ -158,17 +186,12 @@ export function installPlatformServiceSurface(
       const animate = getAnimateFn(App);
       if (typeof animate !== 'function') return;
 
-      const kickNow = typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now();
+      const kickNow = getBrowserTimers(App).now();
       setRafScheduledAt(App, kickNow);
       setLoopRaf(
         App,
         requestAnimationFrameFn(function __wpKickRenderLoop() {
-          try {
-            animate();
-          } catch (e) {
-            setLoopRaf(App, 0);
-            reportErrorViaPlatform(App, e, 'animate');
-          }
+          scheduleRenderKickTask(App, animate);
         })
       );
     };

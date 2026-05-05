@@ -76,6 +76,21 @@ export {
   validateRuntimeConfig,
   validateRuntimeFlags,
 
+  // Shared wardrobe dimension defaults
+  DEFAULT_WIDTH,
+  DEFAULT_HEIGHT,
+  HINGED_DEFAULT_DEPTH,
+  SLIDING_DEFAULT_DEPTH,
+  DEFAULT_HINGED_DOORS,
+  DEFAULT_SLIDING_DOORS,
+  HINGED_DEFAULT_PER_DOOR_WIDTH,
+  SLIDING_DEFAULT_PER_DOOR_WIDTH,
+  normalizeWardrobeDimensionDefaultType,
+  getDefaultDepthForWardrobeType,
+  getDefaultDoorsForWardrobeType,
+  getDefaultPerDoorWidthForWardrobeType,
+  getDefaultWidthForWardrobeType,
+
   // Assertions
   assertApp,
   assertBrowserDocument,
@@ -157,6 +172,8 @@ export {
   endPerfSpan,
   runPerfAction,
 } from '../runtime/api.js';
+
+export type { WardrobeDimensionDefaultType } from '../runtime/api.js';
 
 export { getBrowserSurfaceMaybe } from '../runtime/browser_surface_access.js';
 

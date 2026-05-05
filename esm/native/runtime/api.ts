@@ -252,3 +252,20 @@ export {
   endPerfSpan,
   runPerfAction,
 } from './observability_surface.js';
+
+export {
+  DEFAULT_WIDTH,
+  DEFAULT_HEIGHT,
+  HINGED_DEFAULT_DEPTH,
+  SLIDING_DEFAULT_DEPTH,
+  DEFAULT_HINGED_DOORS,
+  DEFAULT_SLIDING_DOORS,
+  HINGED_DEFAULT_PER_DOOR_WIDTH,
+  SLIDING_DEFAULT_PER_DOOR_WIDTH,
+  normalizeWardrobeDimensionDefaultType,
+  getDefaultDepthForWardrobeType,
+  getDefaultDoorsForWardrobeType,
+  getDefaultPerDoorWidthForWardrobeType,
+  getDefaultWidthForWardrobeType,
+} from './wardrobe_dimension_defaults.js';
+export type { WardrobeDimensionDefaultType } from './wardrobe_dimension_defaults.js';
