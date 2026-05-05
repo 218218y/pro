@@ -1,18 +1,18 @@
 # Legacy / fallback audit
 
-Generated at: 2026-05-03T13:19:36.163Z
+Generated at: 2026-05-05T19:48:57.204Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **925**
-- Files with occurrences: **298**
+- Total categorized occurrences: **905**
+- Files with occurrences: **294**
 - Category counts:
   - `runtime-default`: **728**
   - `browser-adapter`: **18**
   - `project-migration`: **21**
   - `test-fixture`: **7**
-  - `legacy-runtime-risk`: **151**
+  - `legacy-runtime-risk`: **131**
   - `unknown`: **0**
 
 ## Policy
@@ -45,7 +45,6 @@ Generated at: 2026-05-03T13:19:36.163Z
 - `esm/native/runtime/storage_access.ts` — **8** (runtime-default: 8)
 - `esm/native/runtime/ui_raw_selectors_canonical.ts` — **8** (legacy-runtime-risk: 1, project-migration: 3, runtime-default: 4)
 - `esm/native/runtime/ui_raw_selectors_store.ts` — **8** (runtime-default: 8)
-- `esm/native/ui/export/export_canvas_engine.ts` — **8** (legacy-runtime-risk: 8)
 - `esm/native/features/modules_configuration/corner_cells_snapshot_shared.ts` — **7** (runtime-default: 7)
 - `esm/native/features/modules_configuration/modules_config_contracts.ts` — **7** (runtime-default: 7)
 - `esm/native/runtime/cache_access.ts` — **7** (legacy-runtime-risk: 6, project-migration: 1)
@@ -55,7 +54,8 @@ Generated at: 2026-05-03T13:19:36.163Z
 - `esm/native/builder/render_door_ops_shared_ops.ts` — **6** (runtime-default: 6)
 - `esm/native/features/door_style_overrides.ts` — **6** (legacy-runtime-risk: 3, runtime-default: 3)
 - `esm/native/features/door_trim_shared.ts` — **6** (runtime-default: 6)
+- `esm/native/features/library_preset/library_preset_shared.ts` — **6** (runtime-default: 6)
 
 ## Allowlist check
 
-- Not run.
+- Passed: current categorized inventory matches the allowlist.

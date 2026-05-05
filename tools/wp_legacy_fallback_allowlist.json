@@ -1421,12 +1421,6 @@
         "runtime-default": 7
       }
     },
-    "esm/native/ui/export/export_canvas_engine.ts": {
-      "total": 8,
-      "categories": {
-        "legacy-runtime-risk": 8
-      }
-    },
     "esm/native/ui/export/export_canvas_workflow_contracts.ts": {
       "total": 1,
       "categories": {
@@ -1498,24 +1492,6 @@
       "categories": {
         "browser-adapter": 1,
         "legacy-runtime-risk": 1
-      }
-    },
-    "esm/native/ui/notes_export_render_runtime.ts": {
-      "total": 6,
-      "categories": {
-        "legacy-runtime-risk": 6
-      }
-    },
-    "esm/native/ui/notes_export_render_shared.ts": {
-      "total": 1,
-      "categories": {
-        "legacy-runtime-risk": 1
-      }
-    },
-    "esm/native/ui/notes_export_render_transform.ts": {
-      "total": 5,
-      "categories": {
-        "legacy-runtime-risk": 5
       }
     },
     "esm/native/ui/notes_service_sanitize.ts": {

@@ -36,6 +36,9 @@
    * Keep z-index decisions semantic. Local layers are intentionally small;
    * overlay layers preserve the historical ordering while avoiding raw magic numbers.
    */
+  --wp-z-canvas: 0;
+  --wp-z-sidebar: 20;
+  --wp-z-dropdown: 2000;
   --wp-z-local-base: 0;
   --wp-z-local-raised: 1;
   --wp-z-local-hover: 2;
@@ -51,7 +54,7 @@
   --wp-z-note-box-interactive: 1005;
   --wp-z-note-toolbar: 1010;
   --wp-z-note-resize-handle: 1020;
-  --wp-z-popover: 2000;
+  --wp-z-popover: var(--wp-z-dropdown);
   --wp-z-quick-actions-dock: 10002;
   --wp-z-quick-actions-hover: 10005;
   --wp-z-quick-actions-tooltip: 10006;
@@ -61,7 +64,8 @@
   --wp-z-pdf-editor-overlay: 20050;
   --wp-z-pdf-editor-toolbar: 20051;
   --wp-z-toast: 40000;
-  --wp-z-modal-overlay: 45000;
+  --wp-z-modal: 45000;
+  --wp-z-modal-overlay: var(--wp-z-modal);
   --wp-z-pdf-inline-modal: 46000;
   --wp-z-pdf-sketch-floating-palette: 46020;
   --wp-z-tooltip: 999999;

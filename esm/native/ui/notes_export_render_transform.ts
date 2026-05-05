@@ -23,7 +23,7 @@ export function createTransformRuntime(transform: ExportNotesTransform | null): 
   return {
     hasAffine: a !== null && b !== null && c !== null && d !== null && e !== null && f !== null,
     affine: { a: a ?? 1, b: b ?? 0, c: c ?? 0, d: d ?? 1, e: e ?? 0, f: f ?? 0 },
-    legacy: {
+    scaleTranslate: {
       sx: typeof transform?.sx === 'number' && Number.isFinite(transform.sx) ? transform.sx : 1,
       sy: typeof transform?.sy === 'number' && Number.isFinite(transform.sy) ? transform.sy : 1,
       dx: typeof transform?.dx === 'number' && Number.isFinite(transform.dx) ? transform.dx : 0,
@@ -96,8 +96,8 @@ export function createMapPoint(
       };
     }
     return {
-      x: xCss * runtime.legacy.sx + runtime.legacy.dx,
-      y: yCss * runtime.legacy.sy + runtime.legacy.dy,
+      x: xCss * runtime.scaleTranslate.sx + runtime.scaleTranslate.dx,
+      y: yCss * runtime.scaleTranslate.sy + runtime.scaleTranslate.dy,
     };
   };
 

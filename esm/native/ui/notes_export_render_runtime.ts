@@ -95,10 +95,12 @@ export async function renderAllNotesToCanvas(
         if (Number.isFinite(kx) && kx > 1e-6) sX = Math.abs(kx);
         if (Number.isFinite(ky) && ky > 1e-6) sY = Math.abs(ky);
       } else {
-        if (Number.isFinite(transform.legacy.sx) && transform.legacy.sx > 1e-6)
-          sX = Math.abs(transform.legacy.sx);
-        if (Number.isFinite(transform.legacy.sy) && transform.legacy.sy > 1e-6)
-          sY = Math.abs(transform.legacy.sy);
+        if (Number.isFinite(transform.scaleTranslate.sx) && transform.scaleTranslate.sx > 1e-6) {
+          sX = Math.abs(transform.scaleTranslate.sx);
+        }
+        if (Number.isFinite(transform.scaleTranslate.sy) && transform.scaleTranslate.sy > 1e-6) {
+          sY = Math.abs(transform.scaleTranslate.sy);
+        }
       }
     }
 

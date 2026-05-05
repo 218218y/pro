@@ -5,7 +5,7 @@ export type Mat4Vec4 = { x: number; y: number; z: number; w: number };
 export type NoteTransformRuntime = {
   hasAffine: boolean;
   affine: { a: number; b: number; c: number; d: number; e: number; f: number };
-  legacy: { sx: number; sy: number; dx: number; dy: number };
+  scaleTranslate: { sx: number; sy: number; dx: number; dy: number };
   planeOk: boolean;
   prePVInv: number[] | null;
   postPV: number[] | null;

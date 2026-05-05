@@ -22,8 +22,8 @@ export interface RefTransform {
 }
 
 // Notes export transform (consumed by ui/notes_export.ts).
-// Kept as a flexible bag: supports legacy scale/translate, affine,
-// and optional plane-based projective remap.
+// Kept as a flexible bag: supports axis-aligned scale/translate,
+// affine, and optional plane-based projective remap.
 export type NotesExportTransformLike = Record<string, unknown>;
 
 export function computeTransformFromRefs(
@@ -96,7 +96,7 @@ export function buildNotesExportTransform(args: {
 }): NotesExportTransformLike | null {
   const { preRef, postRef } = args;
 
-  const legacy = computeTransformFromRefs(preRef, postRef);
+  const scaleTranslate = computeTransformFromRefs(preRef, postRef);
   const affine = computeAffineFromRefs(preRef, postRef);
 
   const planeOk =
@@ -109,7 +109,7 @@ export function buildNotesExportTransform(args: {
     args.postPv.length === 16;
 
   // If we have *no* usable mapping, bail.
-  if (!legacy && !affine && !planeOk) return null;
+  if (!scaleTranslate && !affine && !planeOk) return null;
 
   // Prefer the plane-based mapping when available.
   const out: NotesExportTransformLike = {
@@ -124,11 +124,11 @@ export function buildNotesExportTransform(args: {
     out.planeNormal = { x: args.planeNormal.x, y: args.planeNormal.y, z: args.planeNormal.z };
   }
 
-  if (legacy) {
-    out.sx = legacy.sx;
-    out.sy = legacy.sy;
-    out.dx = legacy.dx;
-    out.dy = legacy.dy;
+  if (scaleTranslate) {
+    out.sx = scaleTranslate.sx;
+    out.sy = scaleTranslate.sy;
+    out.dx = scaleTranslate.dx;
+    out.dy = scaleTranslate.dy;
   }
   if (affine) {
     out.a = affine.a;
