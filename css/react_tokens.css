@@ -31,6 +31,40 @@
 
   /* Semantics */
   --wp-r-warn: #d97706;
+
+  /* Stacking layers
+   * Keep z-index decisions semantic. Local layers are intentionally small;
+   * overlay layers preserve the historical ordering while avoiding raw magic numbers.
+   */
+  --wp-z-local-base: 0;
+  --wp-z-local-raised: 1;
+  --wp-z-local-hover: 2;
+  --wp-z-local-active: 3;
+  --wp-z-local-cta: 4;
+  --wp-z-local-focus: 6;
+  --wp-z-notes-overlay: 10;
+  --wp-z-pdf-sketch-toolbar: 12;
+  --wp-z-pdf-sketch-palette: 30;
+  --wp-z-viewer-controls: 100;
+  --wp-z-floating-sketch-sync: 105;
+  --wp-z-note-box: 1000;
+  --wp-z-note-box-interactive: 1005;
+  --wp-z-note-toolbar: 1010;
+  --wp-z-note-resize-handle: 1020;
+  --wp-z-popover: 2000;
+  --wp-z-quick-actions-dock: 10002;
+  --wp-z-quick-actions-hover: 10005;
+  --wp-z-quick-actions-tooltip: 10006;
+  --wp-z-quick-actions-pin: 10008;
+  --wp-z-quick-actions-pin-hover: 10009;
+  --wp-z-status-toast: 11000;
+  --wp-z-pdf-editor-overlay: 20050;
+  --wp-z-pdf-editor-toolbar: 20051;
+  --wp-z-toast: 40000;
+  --wp-z-modal-overlay: 45000;
+  --wp-z-pdf-inline-modal: 46000;
+  --wp-z-pdf-sketch-floating-palette: 46020;
+  --wp-z-tooltip: 999999;
 }
 
 /* Simple utilities (React-only) */

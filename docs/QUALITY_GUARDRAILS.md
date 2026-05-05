@@ -59,7 +59,8 @@ npm run perf:browser
 
 - `tools/wp_css_style_budget.json` is the active CSS debt ratchet for `css/react_styles.css`.
 - `check:css-style` must read that budget file instead of embedding limits in code.
-- New CSS should not increase `!important`, `transition: all`, ad hoc `z-index`, or one-off `box-shadow` counts.
+- New CSS should not increase `!important`, `transition: all`, total `z-index`, or one-off `box-shadow` counts.
+- Every `z-index` declaration in `css/react_styles.css` must use a shared `--wp-z-*` token; raw numbers belong only in `css/react_tokens.css`.
 - When CSS cleanup lowers a count, lower the matching budget in the same change. Raising a budget requires an explicit product/design reason in the review.
 - `report:css-style` regenerates the checked-in report targets from the same budget.
 

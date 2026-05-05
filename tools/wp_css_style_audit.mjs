@@ -20,10 +20,21 @@ const mdOut = readOption('md-out');
 const budgetPath = readOption('budget') || 'tools/wp_css_style_budget.json';
 const check = args.has('--check') || (!jsonOut && !mdOut);
 
+function countZIndexWithoutToken(source) {
+  const declarations = source.matchAll(/z-index\s*:\s*([^;]+);/gi);
+  let count = 0;
+  for (const declaration of declarations) {
+    const value = String(declaration[1] || '').trim();
+    if (!/^var\(--wp-z-[^)]+\)$/i.test(value)) count += 1;
+  }
+  return count;
+}
+
 const metricReaders = Object.freeze({
   important: source => (source.match(/!important/g) || []).length,
   transitionAll: source => (source.match(/transition\s*:\s*all\b/gi) || []).length,
   zIndex: source => (source.match(/z-index\s*:/gi) || []).length,
+  zIndexTokenless: countZIndexWithoutToken,
   boxShadow: source => (source.match(/box-shadow\s*:/gi) || []).length,
 });
 
@@ -98,6 +109,7 @@ if (check && !report.ok) {
   for (const v of report.violations) console.error(`- ${v.metric}: ${v.value} > ${v.max}`);
   process.exit(1);
 }
-console.log(
-  `[css-style-audit] ok important=${metrics.important} transitionAll=${metrics.transitionAll} zIndex=${metrics.zIndex} boxShadow=${metrics.boxShadow}`
-);
+const metricSummary = Object.keys(metrics)
+  .map(key => `${key}=${metrics[key]}`)
+  .join(' ');
+console.log(`[css-style-audit] ok ${metricSummary}`);

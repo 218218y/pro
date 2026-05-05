@@ -86,9 +86,11 @@ test('stage 80 measurement and performance closeout is anchored', () => {
   assert.equal(cssBudget.metrics.important.max, 141);
   assert.equal(cssBudget.metrics.transitionAll.max, 0);
   assert.equal(cssBudget.metrics.zIndex.max, 52);
+  assert.equal(cssBudget.metrics.zIndexTokenless.max, 0);
   assert.equal(cssBudget.metrics.boxShadow.max, 116);
   assert.match(cssAudit, /budgetPath/);
   assert.match(cssAudit, /unknown metric/);
+  assert.match(cssAudit, /countZIndexWithoutToken/);
 
   assert.match(perfSmoke, /runPerfSmokeFlow/);
   assert.match(perfSmokeShared, /PERF_AND_STABILITY_BASELINE/);
