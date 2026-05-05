@@ -6,7 +6,10 @@
 import type { CornerWingCellFlowParams } from './corner_wing_cell_shared.js';
 import { createCornerWingInteriorCellRuntime } from './corner_wing_cell_interiors_cell.js';
 import { createCornerWingInteriorRuntime } from './corner_wing_cell_interiors_runtime.js';
-import { createCornerWingInteriorShelfRuntime } from './corner_wing_cell_interiors_shelves.js';
+import {
+  addCornerWingBottomFloorContents,
+  createCornerWingInteriorShelfRuntime,
+} from './corner_wing_cell_interiors_shelves.js';
 import {
   createCornerWingInteriorLayoutOps,
   emitCornerWingExternalDrawers,
@@ -25,6 +28,7 @@ export function applyCornerWingCellInteriors(params: CornerWingCellFlowParams): 
     const layoutOps = createCornerWingInteriorLayoutOps(runtime, cellRuntime, shelfRuntime);
 
     emitCornerWingExternalDrawers(runtime, cellRuntime, shelfRuntime);
+    addCornerWingBottomFloorContents(cellRuntime, shelfRuntime);
 
     applyCornerWingCellLayout({
       cfgCell: cellRuntime.cfgCell,
