@@ -92,10 +92,7 @@ export function readDoorStyleMap(value: unknown): DoorStyleMap {
   return out;
 }
 
-function readDoorStyleOverrideFromMap(
-  map: UnknownRecord,
-  key: string
-): DoorStyleOverrideValue | null {
+function readDoorStyleOverrideFromMap(map: UnknownRecord, key: string): DoorStyleOverrideValue | null {
   if (!key) return null;
   const value = typeof map[key] === 'string' ? String(map[key]).trim().toLowerCase() : '';
   return isDoorStyleOverrideValue(value) ? value : null;

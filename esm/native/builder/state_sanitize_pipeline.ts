@@ -9,7 +9,7 @@ import {
   DEFAULT_WIDTH,
   getDefaultDepthForWardrobeType,
   getDefaultDoorsForWardrobeType,
-} from '../features/wardrobe_dimension_defaults.js';
+} from '../runtime/wardrobe_dimension_defaults.js';
 
 type SanitizedDims = {
   skipBuild: boolean;

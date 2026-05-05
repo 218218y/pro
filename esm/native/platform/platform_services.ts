@@ -25,7 +25,7 @@ import {
   DEFAULT_HEIGHT,
   DEFAULT_WIDTH,
   getDefaultDepthForWardrobeType,
-} from '../features/wardrobe_dimension_defaults.js';
+} from '../runtime/wardrobe_dimension_defaults.js';
 
 import { ensurePlatformPerf, isRecord, readBuildUiSurface } from './platform_shared.js';
 

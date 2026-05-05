@@ -25,7 +25,7 @@ import {
   getDefaultDepthForWardrobeType,
   getDefaultDoorsForWardrobeType,
   getDefaultPerDoorWidthForWardrobeType,
-} from '../features/wardrobe_dimension_defaults.js';
+} from '../runtime/wardrobe_dimension_defaults.js';
 import {
   canonicalizeWardrobeTypeProfileConfigSnapshot,
   cloneUiStateSnapshot,
