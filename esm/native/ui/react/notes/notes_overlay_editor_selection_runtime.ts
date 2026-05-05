@@ -1,4 +1,4 @@
-import { normalizeCssColorToHex, normalizeLegacyFontSizeValue } from './notes_overlay_helpers_style.js';
+import { normalizeCssColorToHex, normalizeEditorFontSizeValue } from './notes_overlay_helpers_style.js';
 import { resolveNotesToolbarFontSizeUi } from './notes_overlay_text_style_runtime.js';
 
 export type SelectionOffsets = { start: number; end: number };
@@ -229,14 +229,14 @@ export function readToolbarSelectionStateRuntime(
 
     let nextSize: string | null = null;
     try {
-      nextSize = normalizeLegacyFontSizeValue(currentDoc.queryCommandValue('fontSize'));
+      nextSize = normalizeEditorFontSizeValue(currentDoc.queryCommandValue('fontSize'));
     } catch {
       nextSize = null;
     }
     if (!nextSize) {
       const node = readRangeStartElement(range);
       if (node && typeof win.getComputedStyle === 'function') {
-        nextSize = normalizeLegacyFontSizeValue(win.getComputedStyle(node).fontSize);
+        nextSize = normalizeEditorFontSizeValue(win.getComputedStyle(node).fontSize);
       }
     }
 

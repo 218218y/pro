@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 
 import { notesOverlayReportNonFatal } from './notes_overlay_helpers.js';
-import { resolveNotesLegacyFontSizeFromUi } from './notes_overlay_text_style_runtime.js';
+import { resolveNotesEditorFontSizeFromUi } from './notes_overlay_text_style_runtime.js';
 import { stopToolbarBubble, stopToolbarPointer } from './notes_overlay_note_card_toolbar_events.js';
 import { NOTE_TOOLBAR_SIZES, type NoteCardToolbarProps } from './notes_overlay_note_card_toolbar_shared.js';
 
@@ -89,7 +89,7 @@ export function NoteCardToolbarSizeControl(
       >
         {NOTE_TOOLBAR_SIZES.map(vUi => {
           const isSel = vUi === toolbarFontSize;
-          const vLegacy = resolveNotesLegacyFontSizeFromUi(vUi);
+          const editorFontSize = resolveNotesEditorFontSizeFromUi(vUi);
           return (
             <button
               key={vUi}
@@ -108,10 +108,10 @@ export function NoteCardToolbarSizeControl(
                 setColorPaletteOpen(false);
                 ensureSelectionForIndex(i);
                 focusEditor(i);
-                execCommand('fontSize', vLegacy);
+                execCommand('fontSize', editorFontSize);
                 setToolbarFontSize(vUi);
                 setSizePaletteOpen(false);
-                updateNoteStyleDefaults(i, { fontSize: vLegacy }, 'react:notes:fontSize');
+                updateNoteStyleDefaults(i, { fontSize: editorFontSize }, 'react:notes:fontSize');
                 reapplyTypingDefaults(i, { color: toolbarColor, fontSize: vUi, bold: toolbarBoldOn });
               }}
             >

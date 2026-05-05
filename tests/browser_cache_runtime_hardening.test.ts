@@ -121,29 +121,30 @@ test('browser_env prefers injected browser deps and cache_access keeps normalize
   ]);
 });
 
-test('cache_access migrates legacy root cache bag into canonical runtimeCache service slot', () => {
-  const legacyTop = { persisted: true } as any;
+test('cache_access drops obsolete root cache alias without adopting it into runtimeCache', () => {
+  const rootTop = { persisted: true } as any;
   const App: any = {
     cache: {
       stackSplitLowerTopY: 12,
-      internalGridMap: legacyTop,
+      internalGridMap: rootTop,
     },
   };
 
   const cache = getRuntimeCacheServiceMaybe(App);
 
-  assert.equal(cache, App.services.runtimeCache);
+  assert.equal(cache, null);
   assert.equal(App.cache, undefined);
-  assert.equal(readStackSplitLowerTopY(App), 12);
-  assert.equal(getInternalGridMap(App), legacyTop);
+  assert.equal(App.services, undefined);
+  assert.equal(readStackSplitLowerTopY(App), null);
+  assert.notEqual(getInternalGridMap(App), rootTop);
 
   const reset = resetInternalGridMaps(App);
-  assert.notEqual(reset.top, legacyTop);
+  assert.notEqual(reset.top, rootTop);
   assert.equal(App.services.runtimeCache.internalGridMap, reset.top);
   assert.equal(App.services.runtimeCache.internalGridMapSplitBottom, reset.bottom);
 });
 
-test('cache_access reconciles hybrid root cache without overwriting canonical runtimeCache values', () => {
+test('cache_access drops hybrid root cache without overwriting canonical runtimeCache values', () => {
   const canonicalTop = {
     shared: { source: 'runtime-cache' },
     liveOnly: { source: 'runtime-cache' },
@@ -164,11 +165,11 @@ test('cache_access reconciles hybrid root cache without overwriting canonical ru
       stackSplitLowerTopY: 12,
       internalGridMap: {
         shared: { source: 'root-cache' },
-        migratedOnly: { source: 'root-cache' },
+        rootOnly: { source: 'root-cache' },
       },
       internalGridMapSplitBottom: {
         bottomLive: { source: 'root-cache' },
-        bottomMigratedOnly: { source: 'root-cache' },
+        bottomRootOnly: { source: 'root-cache' },
       },
       lateOnlyMetric: { source: 'root-cache' },
     },
@@ -182,10 +183,10 @@ test('cache_access reconciles hybrid root cache without overwriting canonical ru
   assert.equal(App.services.runtimeCache.internalGridMap, canonicalTop);
   assert.equal(App.services.runtimeCache.internalGridMap.shared.source, 'runtime-cache');
   assert.equal(App.services.runtimeCache.internalGridMap.liveOnly.source, 'runtime-cache');
-  assert.equal(App.services.runtimeCache.internalGridMap.migratedOnly.source, 'root-cache');
+  assert.equal('rootOnly' in App.services.runtimeCache.internalGridMap, false);
   assert.equal(App.services.runtimeCache.internalGridMapSplitBottom, canonicalBottom);
   assert.equal(App.services.runtimeCache.internalGridMapSplitBottom.bottomLive.source, 'runtime-cache');
-  assert.equal(App.services.runtimeCache.internalGridMapSplitBottom.bottomMigratedOnly.source, 'root-cache');
+  assert.equal('bottomRootOnly' in App.services.runtimeCache.internalGridMapSplitBottom, false);
   assert.deepEqual(App.services.runtimeCache.noMainSketchWorkspaceMetrics, { source: 'runtime-cache' });
-  assert.deepEqual(App.services.runtimeCache.lateOnlyMetric, { source: 'root-cache' });
+  assert.equal('lateOnlyMetric' in App.services.runtimeCache, false);
 });

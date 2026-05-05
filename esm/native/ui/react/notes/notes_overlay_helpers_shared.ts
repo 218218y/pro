@@ -39,15 +39,15 @@ export function notesOverlayReportNonFatal(op: string, err: unknown, dedupeMs = 
 export const MIN_CREATE = 30;
 export const MIN_SIZE = 50;
 
-export function uiFontSizeToLegacy(ui: string): string {
+export function toolbarFontSizeToEditorFontSize(ui: string): string {
   const n = parseInt(String(ui || '').trim(), 10);
   if (!Number.isFinite(n)) return '4';
   const clamped = Math.max(1, Math.min(5, n));
   return String(clamped + 1);
 }
 
-export function legacyFontSizeToUi(legacy: string): string {
-  const n = parseInt(String(legacy || '').trim(), 10);
+export function editorFontSizeToToolbarFontSize(editorSize: string): string {
+  const n = parseInt(String(editorSize || '').trim(), 10);
   if (!Number.isFinite(n)) return '3';
   const clamped = Math.max(2, Math.min(6, n));
   return String(clamped - 1);

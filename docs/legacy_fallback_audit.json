@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-05-05T19:48:57.204Z",
+  "generatedAt": "2026-05-05T20:11:33.557Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 905,
-    "totalFiles": 294,
+    "totalOccurrences": 889,
+    "totalFiles": 293,
     "byCategory": {
       "runtime-default": 728,
       "browser-adapter": 18,
-      "project-migration": 21,
+      "project-migration": 20,
       "test-fixture": 7,
-      "legacy-runtime-risk": 131,
+      "legacy-runtime-risk": 116,
       "unknown": 0
     },
     "byFile": {
@@ -855,13 +855,6 @@
           "runtime-default": 2
         }
       },
-      "esm/native/runtime/cache_access.ts": {
-        "total": 7,
-        "categories": {
-          "legacy-runtime-risk": 6,
-          "project-migration": 1
-        }
-      },
       "esm/native/runtime/cfg_access_core.ts": {
         "total": 5,
         "categories": {
@@ -1571,16 +1564,14 @@
         }
       },
       "esm/native/ui/react/notes/notes_overlay_helpers_shared.ts": {
-        "total": 5,
+        "total": 3,
         "categories": {
-          "legacy-runtime-risk": 2,
           "runtime-default": 3
         }
       },
       "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts": {
-        "total": 23,
+        "total": 16,
         "categories": {
-          "legacy-runtime-risk": 7,
           "runtime-default": 16
         }
       },
@@ -1824,18 +1815,17 @@
         }
       },
       {
-        "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-        "total": 23,
-        "categories": {
-          "legacy-runtime-risk": 7,
-          "runtime-default": 16
-        }
-      },
-      {
         "file": "esm/native/runtime/config_selectors_shared.ts",
         "total": 21,
         "categories": {
           "runtime-default": 21
+        }
+      },
+      {
+        "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
+        "total": 16,
+        "categories": {
+          "runtime-default": 16
         }
       },
       {
@@ -1969,14 +1959,6 @@
         }
       },
       {
-        "file": "esm/native/runtime/cache_access.ts",
-        "total": 7,
-        "categories": {
-          "legacy-runtime-risk": 6,
-          "project-migration": 1
-        }
-      },
-      {
         "file": "esm/native/runtime/ui_raw_selectors_snapshot.ts",
         "total": 7,
         "categories": {
@@ -2022,6 +2004,13 @@
       },
       {
         "file": "esm/native/features/library_preset/library_preset_shared.ts",
+        "total": 6,
+        "categories": {
+          "runtime-default": 6
+        }
+      },
+      {
+        "file": "esm/native/kernel/kernel_builder_request_policy_shared.ts",
         "total": 6,
         "categories": {
           "runtime-default": 6
@@ -4553,55 +4542,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "return buildNormalizedErrorResult('error', error, fallback);"
-    },
-    {
-      "file": "esm/native/runtime/cache_access.ts",
-      "line": 6,
-      "term": "legacy",
-      "category": "project-migration",
-      "text": "// - Migrate and delete any legacy root cache bag on first touch so hybrid state does not linger."
-    },
-    {
-      "file": "esm/native/runtime/cache_access.ts",
-      "line": 112,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "function adoptLegacyRootCache(App: unknown, legacy: CacheBag): CacheBag {"
-    },
-    {
-      "file": "esm/native/runtime/cache_access.ts",
-      "line": 115,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "mergeCacheBagMissingFields(current, legacy);"
-    },
-    {
-      "file": "esm/native/runtime/cache_access.ts",
-      "line": 120,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "mergeCacheBagMissingFields(servicesCache, legacy);"
-    },
-    {
-      "file": "esm/native/runtime/cache_access.ts",
-      "line": 133,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "const legacy = rootCache;"
-    },
-    {
-      "file": "esm/native/runtime/cache_access.ts",
-      "line": 134,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "return legacy ? adoptLegacyRootCache(App, legacy) : null;"
-    },
-    {
-      "file": "esm/native/runtime/cache_access.ts",
-      "line": 134,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "return legacy ? adoptLegacyRootCache(App, legacy) : null;"
     },
     {
       "file": "esm/native/runtime/cfg_access_core.ts",
@@ -7363,20 +7303,6 @@
     },
     {
       "file": "esm/native/ui/react/notes/notes_overlay_helpers_shared.ts",
-      "line": 49,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "export function legacyFontSizeToUi(legacy: string): string {"
-    },
-    {
-      "file": "esm/native/ui/react/notes/notes_overlay_helpers_shared.ts",
-      "line": 50,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "const n = parseInt(String(legacy || '').trim(), 10);"
-    },
-    {
-      "file": "esm/native/ui/react/notes/notes_overlay_helpers_shared.ts",
       "line": 60,
       "term": "fallback",
       "category": "runtime-default",
@@ -7398,164 +7324,115 @@
     },
     {
       "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 34,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "fontSizeKind?: 'toolbar' | 'legacy';"
-    },
-    {
-      "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 77,
+      "line": 80,
       "term": "fallback",
       "category": "runtime-default",
       "text": "export function resolveNotesToolbarColor(value: unknown, fallback = DEFAULT_NOTES_TOOLBAR_COLOR): string {"
     },
     {
       "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 81,
+      "line": 84,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return raw || fallback;"
     },
     {
       "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 86,
+      "line": 89,
       "term": "fallback",
       "category": "runtime-default",
-      "text": "fallback = DEFAULT_NOTES_LEGACY_FONT_SIZE"
+      "text": "fallback = DEFAULT_NOTES_EDITOR_FONT_SIZE"
     },
     {
       "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 89,
+      "line": 92,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return normalized || fallback;"
     },
     {
       "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 94,
+      "line": 97,
       "term": "fallback",
       "category": "runtime-default",
       "text": "fallback = DEFAULT_NOTES_TOOLBAR_FONT_SIZE"
     },
     {
       "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 97,
+      "line": 100,
       "term": "fallback",
       "category": "runtime-default",
-      "text": "return normalized ? legacyFontSizeToUi(normalized) : fallback;"
+      "text": "return normalized ? editorFontSizeToToolbarFontSize(normalized) : fallback;"
     },
     {
       "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 102,
+      "line": 105,
       "term": "fallback",
       "category": "runtime-default",
-      "text": "fallback = DEFAULT_NOTES_LEGACY_FONT_SIZE"
+      "text": "fallback = DEFAULT_NOTES_EDITOR_FONT_SIZE"
     },
     {
       "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 107,
+      "line": 110,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return fallback;"
     },
     {
       "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 112,
+      "line": 115,
       "term": "fallback",
       "category": "runtime-default",
-      "text": "fallback = DEFAULT_NOTES_LEGACY_FONT_SIZE"
+      "text": "fallback = DEFAULT_NOTES_EDITOR_FONT_SIZE"
     },
     {
       "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 130,
+      "line": 137,
       "term": "fallback",
       "category": "runtime-default",
-      "text": "return resolveNotesLegacyFontSize(value, fallback);"
+      "text": "return resolveNotesEditorFontSize(value, fallback);"
     },
     {
       "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 133,
+      "line": 140,
       "term": "fallback",
       "category": "runtime-default",
       "text": "export function resolveNotesFontSizePx(value: unknown, fallback = DEFAULT_NOTES_FONT_SIZE_PX): number {"
     },
     {
       "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 134,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "const legacy = resolveNotesLegacyFontSize(value, DEFAULT_NOTES_LEGACY_FONT_SIZE);"
-    },
-    {
-      "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 135,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "const px = parseFloat(legacyFontSizeToPx(legacy));"
-    },
-    {
-      "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 136,
+      "line": 143,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return Number.isFinite(px) ? px : fallback;"
     },
     {
       "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 141,
+      "line": 148,
       "term": "fallback",
       "category": "runtime-default",
       "text": "fallback = DEFAULT_NOTES_TOOLBAR_FONT_SIZE"
     },
     {
       "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 147,
+      "line": 154,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return resolveNotesToolbarFontSizeUi(value, fallback);"
     },
     {
       "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 150,
+      "line": 157,
       "term": "fallback",
       "category": "runtime-default",
       "text": "export function resolveNotesFontSizePxFromUi(value: unknown, fallback = DEFAULT_NOTES_FONT_SIZE_PX): number {"
     },
     {
       "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 151,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "const legacy = resolveNotesLegacyFontSizeFromUi(value, DEFAULT_NOTES_LEGACY_FONT_SIZE);"
-    },
-    {
-      "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 152,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "const px = parseFloat(legacyFontSizeToPx(legacy));"
-    },
-    {
-      "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 153,
+      "line": 160,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return Number.isFinite(px) ? px : fallback;"
-    },
-    {
-      "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 213,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "options?.fontSizeKind === 'legacy'"
-    },
-    {
-      "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 238,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "{ fontSizeKind: 'legacy' }"
     },
     {
       "file": "esm/native/ui/react/overlay_pdf_host.tsx",

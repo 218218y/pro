@@ -1,6 +1,6 @@
 import { normalizeHexColor as normalizeHexColorInner } from './notes_overlay_helpers_style_color.js';
 
-export function legacyFontSizeToPx(v: unknown): string {
+export function editorFontSizeToPx(v: unknown): string {
   let n = 4;
   try {
     if (typeof v === 'number' && Number.isFinite(v)) n = Math.round(v);
@@ -76,7 +76,7 @@ export function normalizeCssColorToHex(v: unknown): string | null {
   return normalizeHexColorInner(s) || rgbToHex(s);
 }
 
-export function pxToLegacyFontSize(v: unknown): string | null {
+export function pxToEditorFontSize(v: unknown): string | null {
   if (typeof v !== 'string') return null;
   const s = v.trim().toLowerCase();
   if (!s.endsWith('px')) return null;
@@ -96,7 +96,7 @@ export function pxToLegacyFontSize(v: unknown): string | null {
   return String(best);
 }
 
-export function normalizeLegacyFontSizeValue(v: unknown): string | null {
+export function normalizeEditorFontSizeValue(v: unknown): string | null {
   if (typeof v === 'number' && Number.isFinite(v)) {
     const n = Math.round(v);
     if (n >= 1 && n <= 7) return String(n);
@@ -109,7 +109,7 @@ export function normalizeLegacyFontSizeValue(v: unknown): string | null {
   const n = parseInt(s, 10);
   if (Number.isFinite(n) && n >= 1 && n <= 7) return String(n);
 
-  const fromPx = pxToLegacyFontSize(s);
+  const fromPx = pxToEditorFontSize(s);
   if (fromPx) return fromPx;
 
   return null;

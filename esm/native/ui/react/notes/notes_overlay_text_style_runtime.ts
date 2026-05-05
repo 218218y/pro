@@ -1,21 +1,24 @@
 import type { SavedNoteStyle } from '../../../../../types';
 
-import { legacyFontSizeToUi, uiFontSizeToLegacy } from './notes_overlay_helpers_shared.js';
 import {
-  legacyFontSizeToPx,
+  editorFontSizeToToolbarFontSize,
+  toolbarFontSizeToEditorFontSize,
+} from './notes_overlay_helpers_shared.js';
+import {
+  editorFontSizeToPx,
   normalizeCssColorToHex,
-  normalizeLegacyFontSizeValue,
+  normalizeEditorFontSizeValue,
 } from './notes_overlay_helpers_style.js';
 
 export const DEFAULT_NOTES_TOOLBAR_COLOR = '#000000';
 export const DEFAULT_NOTES_CARD_TEXT_COLOR = '#1e293b';
-export const DEFAULT_NOTES_LEGACY_FONT_SIZE = '4';
+export const DEFAULT_NOTES_EDITOR_FONT_SIZE = '4';
 export const DEFAULT_NOTES_TOOLBAR_FONT_SIZE = '3';
 export const DEFAULT_NOTES_FONT_SIZE_PX = 18;
 
 export type NotesToolbarFormatting = {
   color: string;
-  legacyFontSize: string;
+  editorFontSize: string;
   fontSizeUi: string;
 };
 
@@ -31,7 +34,7 @@ export type NotesEditorFormattingDefaults = {
 };
 
 export type NotesEditorFormattingOptions = {
-  fontSizeKind?: 'toolbar' | 'legacy';
+  fontSizeKind?: 'toolbar' | 'editor';
 };
 
 type NotesEditorCommandDoc = Pick<Document, 'execCommand' | 'queryCommandState'>;
@@ -81,11 +84,11 @@ export function resolveNotesToolbarColor(value: unknown, fallback = DEFAULT_NOTE
   return raw || fallback;
 }
 
-export function resolveNotesLegacyFontSize(
+export function resolveNotesEditorFontSize(
   value: unknown,
-  fallback = DEFAULT_NOTES_LEGACY_FONT_SIZE
+  fallback = DEFAULT_NOTES_EDITOR_FONT_SIZE
 ): string {
-  const normalized = normalizeLegacyFontSizeValue(value);
+  const normalized = normalizeEditorFontSizeValue(value);
   return normalized || fallback;
 }
 
@@ -93,23 +96,23 @@ export function resolveNotesToolbarFontSizeUi(
   value: unknown,
   fallback = DEFAULT_NOTES_TOOLBAR_FONT_SIZE
 ): string {
-  const normalized = normalizeLegacyFontSizeValue(value);
-  return normalized ? legacyFontSizeToUi(normalized) : fallback;
+  const normalized = normalizeEditorFontSizeValue(value);
+  return normalized ? editorFontSizeToToolbarFontSize(normalized) : fallback;
 }
 
-export function resolveNotesLegacyFontSizeFromUi(
+export function resolveNotesEditorFontSizeFromUi(
   value: unknown,
-  fallback = DEFAULT_NOTES_LEGACY_FONT_SIZE
+  fallback = DEFAULT_NOTES_EDITOR_FONT_SIZE
 ): string {
   const raw = readTrimmedString(value);
   const size = parseInt(raw, 10);
-  if (Number.isFinite(size) && size >= 1 && size <= 5) return uiFontSizeToLegacy(String(size));
+  if (Number.isFinite(size) && size >= 1 && size <= 5) return toolbarFontSizeToEditorFontSize(String(size));
   return fallback;
 }
 
-export function resolveNotesLegacyFontSizeFromToolbarValue(
+export function resolveNotesEditorFontSizeFromToolbarValue(
   value: unknown,
-  fallback = DEFAULT_NOTES_LEGACY_FONT_SIZE
+  fallback = DEFAULT_NOTES_EDITOR_FONT_SIZE
 ): string {
   const raw = readTrimmedString(value);
   const size =
@@ -118,21 +121,25 @@ export function resolveNotesLegacyFontSizeFromToolbarValue(
       : raw
         ? parseInt(raw, 10)
         : Number.NaN;
-  if (Number.isFinite(size) && size >= 1 && size <= 5) return uiFontSizeToLegacy(String(size));
-
-  const pxValue = readPxNumber(value);
-  if (pxValue != null) return uiFontSizeToLegacy(findNearestNotesToolbarUiSizeForPx(pxValue));
-
-  if (typeof value === 'number' && Number.isFinite(value) && value > 5) {
-    return uiFontSizeToLegacy(findNearestNotesToolbarUiSizeForPx(value));
+  if (Number.isFinite(size) && size >= 1 && size <= 5) {
+    return toolbarFontSizeToEditorFontSize(String(size));
   }
 
-  return resolveNotesLegacyFontSize(value, fallback);
+  const pxValue = readPxNumber(value);
+  if (pxValue != null) {
+    return toolbarFontSizeToEditorFontSize(findNearestNotesToolbarUiSizeForPx(pxValue));
+  }
+
+  if (typeof value === 'number' && Number.isFinite(value) && value > 5) {
+    return toolbarFontSizeToEditorFontSize(findNearestNotesToolbarUiSizeForPx(value));
+  }
+
+  return resolveNotesEditorFontSize(value, fallback);
 }
 
 export function resolveNotesFontSizePx(value: unknown, fallback = DEFAULT_NOTES_FONT_SIZE_PX): number {
-  const legacy = resolveNotesLegacyFontSize(value, DEFAULT_NOTES_LEGACY_FONT_SIZE);
-  const px = parseFloat(legacyFontSizeToPx(legacy));
+  const editorFontSize = resolveNotesEditorFontSize(value, DEFAULT_NOTES_EDITOR_FONT_SIZE);
+  const px = parseFloat(editorFontSizeToPx(editorFontSize));
   return Number.isFinite(px) ? px : fallback;
 }
 
@@ -148,8 +155,8 @@ export function resolveNotesToolbarFontSizeUiFromPx(
 }
 
 export function resolveNotesFontSizePxFromUi(value: unknown, fallback = DEFAULT_NOTES_FONT_SIZE_PX): number {
-  const legacy = resolveNotesLegacyFontSizeFromUi(value, DEFAULT_NOTES_LEGACY_FONT_SIZE);
-  const px = parseFloat(legacyFontSizeToPx(legacy));
+  const editorFontSize = resolveNotesEditorFontSizeFromUi(value, DEFAULT_NOTES_EDITOR_FONT_SIZE);
+  const px = parseFloat(editorFontSizeToPx(editorFontSize));
   return Number.isFinite(px) ? px : fallback;
 }
 
@@ -157,14 +164,14 @@ export function readNotesToolbarFormatting(
   style: Partial<SavedNoteStyle> | null | undefined
 ): NotesToolbarFormatting {
   const styleRec = style || {};
-  const legacyFontSize = resolveNotesLegacyFontSize(
+  const editorFontSize = resolveNotesEditorFontSize(
     styleRec.fontSize || styleRec.baseFontSize,
-    DEFAULT_NOTES_LEGACY_FONT_SIZE
+    DEFAULT_NOTES_EDITOR_FONT_SIZE
   );
   return {
     color: resolveNotesToolbarColor(styleRec.textColor, DEFAULT_NOTES_TOOLBAR_COLOR),
-    legacyFontSize,
-    fontSizeUi: legacyFontSizeToUi(legacyFontSize),
+    editorFontSize,
+    fontSizeUi: editorFontSizeToToolbarFontSize(editorFontSize),
   };
 }
 
@@ -172,12 +179,12 @@ export function readNotesCardFormatting(
   style: Partial<SavedNoteStyle> | null | undefined
 ): NotesCardFormatting {
   const styleRec = style || {};
-  const legacyFontSize = resolveNotesLegacyFontSize(
+  const editorFontSize = resolveNotesEditorFontSize(
     styleRec.baseFontSize || styleRec.fontSize,
-    DEFAULT_NOTES_LEGACY_FONT_SIZE
+    DEFAULT_NOTES_EDITOR_FONT_SIZE
   );
   return {
-    baseFontPx: legacyFontSizeToPx(legacyFontSize),
+    baseFontPx: editorFontSizeToPx(editorFontSize),
     baseTextColor: resolveNotesToolbarColor(
       styleRec.baseTextColor || styleRec.textColor,
       DEFAULT_NOTES_CARD_TEXT_COLOR
@@ -209,11 +216,11 @@ export function applyNotesEditorFormattingDefaults(
   }
 
   if (typeof defaults.fontSize !== 'undefined') {
-    const legacyFontSize =
-      options?.fontSizeKind === 'legacy'
-        ? resolveNotesLegacyFontSize(defaults.fontSize, DEFAULT_NOTES_LEGACY_FONT_SIZE)
-        : resolveNotesLegacyFontSizeFromToolbarValue(defaults.fontSize, DEFAULT_NOTES_LEGACY_FONT_SIZE);
-    if (legacyFontSize) doc.execCommand('fontSize', false, legacyFontSize);
+    const editorFontSize =
+      options?.fontSizeKind === 'editor'
+        ? resolveNotesEditorFontSize(defaults.fontSize, DEFAULT_NOTES_EDITOR_FONT_SIZE)
+        : resolveNotesEditorFontSizeFromToolbarValue(defaults.fontSize, DEFAULT_NOTES_EDITOR_FONT_SIZE);
+    if (editorFontSize) doc.execCommand('fontSize', false, editorFontSize);
   }
 
   if (typeof defaults.bold === 'boolean') {
@@ -233,9 +240,9 @@ export function applyNotesEditorStyleDefaults(
     doc,
     {
       color: formatting.color,
-      fontSize: formatting.legacyFontSize,
+      fontSize: formatting.editorFontSize,
     },
-    { fontSizeKind: 'legacy' }
+    { fontSizeKind: 'editor' }
   );
   return formatting;
 }

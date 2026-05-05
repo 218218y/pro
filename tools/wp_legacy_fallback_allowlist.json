@@ -845,13 +845,6 @@
         "runtime-default": 2
       }
     },
-    "esm/native/runtime/cache_access.ts": {
-      "total": 7,
-      "categories": {
-        "legacy-runtime-risk": 6,
-        "project-migration": 1
-      }
-    },
     "esm/native/runtime/cfg_access_core.ts": {
       "total": 5,
       "categories": {
@@ -1561,16 +1554,14 @@
       }
     },
     "esm/native/ui/react/notes/notes_overlay_helpers_shared.ts": {
-      "total": 5,
+      "total": 3,
       "categories": {
-        "legacy-runtime-risk": 2,
         "runtime-default": 3
       }
     },
     "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts": {
-      "total": 23,
+      "total": 16,
       "categories": {
-        "legacy-runtime-risk": 7,
         "runtime-default": 16
       }
     },

@@ -1,18 +1,18 @@
 # Legacy / fallback audit
 
-Generated at: 2026-05-05T19:48:57.204Z
+Generated at: 2026-05-05T20:11:33.557Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **905**
-- Files with occurrences: **294**
+- Total categorized occurrences: **889**
+- Files with occurrences: **293**
 - Category counts:
   - `runtime-default`: **728**
   - `browser-adapter`: **18**
-  - `project-migration`: **21**
+  - `project-migration`: **20**
   - `test-fixture`: **7**
-  - `legacy-runtime-risk`: **131**
+  - `legacy-runtime-risk`: **116**
   - `unknown`: **0**
 
 ## Policy
@@ -27,8 +27,8 @@ Generated at: 2026-05-05T19:48:57.204Z
 
 - `esm/native/ui/react/tabs/interior_tab_view_state_shared.ts` — **24** (runtime-default: 24)
 - `esm/native/runtime/config_selectors_readers.ts` — **23** (legacy-runtime-risk: 1, runtime-default: 22)
-- `esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts` — **23** (legacy-runtime-risk: 7, runtime-default: 16)
 - `esm/native/runtime/config_selectors_shared.ts` — **21** (runtime-default: 21)
+- `esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts` — **16** (runtime-default: 16)
 - `esm/native/ui/react/pdf/order_pdf_overlay_sketch_preview_session.ts` — **16** (runtime-default: 16)
 - `esm/native/platform/three_geometry_cache_patch_contracts.ts` — **14** (runtime-default: 14)
 - `esm/native/platform/platform_util.ts` — **12** (runtime-default: 12)
@@ -47,7 +47,6 @@ Generated at: 2026-05-05T19:48:57.204Z
 - `esm/native/runtime/ui_raw_selectors_store.ts` — **8** (runtime-default: 8)
 - `esm/native/features/modules_configuration/corner_cells_snapshot_shared.ts` — **7** (runtime-default: 7)
 - `esm/native/features/modules_configuration/modules_config_contracts.ts` — **7** (runtime-default: 7)
-- `esm/native/runtime/cache_access.ts` — **7** (legacy-runtime-risk: 6, project-migration: 1)
 - `esm/native/runtime/ui_raw_selectors_snapshot.ts` — **7** (project-migration: 3, runtime-default: 4)
 - `esm/native/services/render_surface_runtime.ts` — **7** (runtime-default: 7)
 - `esm/native/ui/export/export_canvas_delivery_shared.ts` — **7** (runtime-default: 7)
@@ -55,6 +54,7 @@ Generated at: 2026-05-05T19:48:57.204Z
 - `esm/native/features/door_style_overrides.ts` — **6** (legacy-runtime-risk: 3, runtime-default: 3)
 - `esm/native/features/door_trim_shared.ts` — **6** (runtime-default: 6)
 - `esm/native/features/library_preset/library_preset_shared.ts` — **6** (runtime-default: 6)
+- `esm/native/kernel/kernel_builder_request_policy_shared.ts` — **6** (runtime-default: 6)
 
 ## Allowlist check
 

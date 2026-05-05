@@ -6,14 +6,14 @@ import {
   applyNotesEditorStyleDefaults,
   readNotesCardFormatting,
   readNotesToolbarFormatting,
+  resolveNotesEditorFontSizeFromToolbarValue,
   resolveNotesFontSizePxFromUi,
-  resolveNotesLegacyFontSizeFromToolbarValue,
   resolveNotesToolbarColor,
   resolveNotesToolbarFontSizeUi,
   resolveNotesToolbarFontSizeUiFromPx,
 } from '../esm/native/ui/react/notes/notes_overlay_text_style_runtime.js';
 
-test('readNotesToolbarFormatting normalizes saved-note text color and legacy font size once', () => {
+test('readNotesToolbarFormatting normalizes saved-note text color and editor font size once', () => {
   const formatting = readNotesToolbarFormatting({
     textColor: 'rgb(239, 68, 68)',
     fontSize: '6',
@@ -21,7 +21,7 @@ test('readNotesToolbarFormatting normalizes saved-note text color and legacy fon
 
   assert.deepEqual(formatting, {
     color: '#ef4444',
-    legacyFontSize: '6',
+    editorFontSize: '6',
     fontSizeUi: '5',
   });
 });
@@ -40,11 +40,11 @@ test('readNotesCardFormatting prefers base style values and preserves stable fal
   });
 });
 
-test('resolveNotes font helpers normalize ui, legacy, and px values through one canonical path', () => {
-  assert.equal(resolveNotesLegacyFontSizeFromToolbarValue('1'), '2');
-  assert.equal(resolveNotesLegacyFontSizeFromToolbarValue('5'), '6');
-  assert.equal(resolveNotesLegacyFontSizeFromToolbarValue('6'), '6');
-  assert.equal(resolveNotesLegacyFontSizeFromToolbarValue('24px'), '6');
+test('resolveNotes font helpers normalize toolbar, editor, and px values through one canonical path', () => {
+  assert.equal(resolveNotesEditorFontSizeFromToolbarValue('1'), '2');
+  assert.equal(resolveNotesEditorFontSizeFromToolbarValue('5'), '6');
+  assert.equal(resolveNotesEditorFontSizeFromToolbarValue('6'), '6');
+  assert.equal(resolveNotesEditorFontSizeFromToolbarValue('24px'), '6');
   assert.equal(resolveNotesToolbarFontSizeUi('6'), '5');
   assert.equal(resolveNotesToolbarFontSizeUiFromPx(24), '5');
   assert.equal(resolveNotesFontSizePxFromUi('5'), 24);
@@ -82,7 +82,7 @@ test('applyNotesEditorFormattingDefaults writes color and font size and only tog
   ]);
 });
 
-test('applyNotesEditorFormattingDefaults preserves bold state when it already matches and accepts legacy size input', () => {
+test('applyNotesEditorFormattingDefaults preserves bold state when it already matches and accepts editor size input', () => {
   const commands: Array<[string, boolean, string | undefined]> = [];
   const doc = {
     execCommand(cmd: string, _showUi: boolean, value?: string) {
@@ -125,7 +125,7 @@ test('applyNotesEditorStyleDefaults reuses the same canonical formatting resolut
 
   assert.deepEqual(formatting, {
     color: '#000000',
-    legacyFontSize: '5',
+    editorFontSize: '5',
     fontSizeUi: '4',
   });
   assert.deepEqual(commands, [
