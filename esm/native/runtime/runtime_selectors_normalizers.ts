@@ -1,6 +1,6 @@
 // Runtime scalar normalizers (ESM)
 //
-// Keeps string/number legacy tolerance in one audited table instead of spreading
+// Keeps string/number normalization in one audited table instead of spreading
 // per-key casts through runtime access surfaces.
 
 import type { RuntimeScalarKey, RuntimeScalarValueMap } from '../../../types/index.js';
@@ -68,48 +68,51 @@ export function isRuntimeScalarValue<K extends RuntimeScalarKey>(
   return false;
 }
 
-export function readBooleanLike(value: unknown, fallback: boolean): boolean {
-  if (value === undefined || value === null) return fallback;
+export function readBooleanLike(value: unknown, defaultValue: boolean): boolean {
+  if (value === undefined || value === null) return defaultValue;
   if (typeof value === 'boolean') return value;
   if (typeof value === 'number') return !!value;
   const s = typeof value === 'string' ? value.trim().toLowerCase() : '';
-  if (!s) return fallback;
+  if (!s) return defaultValue;
   if (s === 'true' || s === '1' || s === 'yes' || s === 'on') return true;
   if (s === 'false' || s === '0' || s === 'no' || s === 'off') return false;
   return !!value;
 }
 
-export function readFiniteNumberLike(value: unknown, fallback: number): number {
+export function readFiniteNumberLike(value: unknown, defaultValue: number): number {
   if (typeof value === 'number' && Number.isFinite(value)) return value;
   if (typeof value === 'string') {
     const n = Number(value);
     if (Number.isFinite(n)) return n;
   }
-  return fallback;
+  return defaultValue;
 }
 
-export function readFiniteNullableNumberLike(value: unknown, fallback: number | null): number | null {
+export function readFiniteNullableNumberLike(value: unknown, defaultValue: number | null): number | null {
   if (value === null) return null;
   if (typeof value === 'number' && Number.isFinite(value)) return value;
   if (typeof value === 'string') {
     const n = Number(value);
     if (Number.isFinite(n)) return n;
   }
-  return fallback;
+  return defaultValue;
 }
 
 export function normalizeDrawersOpenId(
   value: unknown,
-  fallback: string | number | null
+  defaultValue: string | number | null
 ): string | number | null {
   if (value === null) return null;
   if (typeof value === 'string') return value.trim() ? value : null;
   if (typeof value === 'number') return Number.isFinite(value) ? value : null;
-  return fallback;
+  return defaultValue;
 }
 
 export const RUNTIME_SCALAR_NORMALIZERS: {
-  [K in RuntimeScalarKey]: (value: unknown, fallback: RuntimeScalarValueMap[K]) => RuntimeScalarValueMap[K];
+  [K in RuntimeScalarKey]: (
+    value: unknown,
+    defaultValue: RuntimeScalarValueMap[K]
+  ) => RuntimeScalarValueMap[K];
 } = {
   sketchMode: readBooleanLike,
   globalClickMode: readBooleanLike,

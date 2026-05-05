@@ -26,21 +26,21 @@ export function readRuntimeScalarFromSnapshot<K extends RuntimeScalarKey>(
   }
 }
 
-/** Read a boolean runtime key (supports legacy string values). */
-export function readRuntimeBoolFromSnapshot(rt: unknown, key: string, fallback: boolean): boolean {
+/** Read a boolean runtime key (supports persisted string values). */
+export function readRuntimeBoolFromSnapshot(rt: unknown, key: string, defaultValue: boolean): boolean {
   try {
-    return readBooleanLike(readRuntimeValue(rt, key), fallback);
+    return readBooleanLike(readRuntimeValue(rt, key), defaultValue);
   } catch {
-    return fallback;
+    return defaultValue;
   }
 }
 
 /** Read a finite number runtime key (supports numeric strings). */
-export function readRuntimeNumberFromSnapshot(rt: unknown, key: string, fallback: number): number {
+export function readRuntimeNumberFromSnapshot(rt: unknown, key: string, defaultValue: number): number {
   try {
-    return readFiniteNumberLike(readRuntimeValue(rt, key), fallback);
+    return readFiniteNumberLike(readRuntimeValue(rt, key), defaultValue);
   } catch {
-    return fallback;
+    return defaultValue;
   }
 }
 
@@ -48,12 +48,12 @@ export function readRuntimeNumberFromSnapshot(rt: unknown, key: string, fallback
 export function readRuntimeNullableNumberFromSnapshot(
   rt: unknown,
   key: string,
-  fallback: number | null
+  defaultValue: number | null
 ): number | null {
   try {
-    return readFiniteNullableNumberLike(readRuntimeValue(rt, key), fallback);
+    return readFiniteNullableNumberLike(readRuntimeValue(rt, key), defaultValue);
   } catch {
-    return fallback;
+    return defaultValue;
   }
 }
 
@@ -61,9 +61,9 @@ export function readRuntimeNullableNumberFromSnapshot(
 export function readRuntimeScalarOrDefault<K extends RuntimeScalarKey>(
   rt: unknown,
   key: K,
-  fallback?: RuntimeScalarValueMap[K]
+  defaultValue?: RuntimeScalarValueMap[K]
 ): RuntimeScalarValueMap[K] {
-  const def = getRuntimeScalarDefault(key, fallback);
+  const def = getRuntimeScalarDefault(key, defaultValue);
   const rawValue = readRuntimeValue(rt, key);
   if (typeof rawValue === 'undefined') return def;
   return RUNTIME_SCALAR_NORMALIZERS[key](rawValue, def);

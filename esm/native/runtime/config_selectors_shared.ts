@@ -12,7 +12,7 @@ export type WardrobeTypeValue = ConfigScalarValueMap['wardrobeType'];
 export type GlobalHandleTypeValue = ConfigScalarValueMap['globalHandleType'];
 export type ConfigScalarState = ConfigStateLike & { [K in ConfigScalarKey]?: ConfigScalarValueMap[K] };
 export type ConfigScalarDefaults = Partial<{ [K in ConfigScalarKey]: ConfigScalarValueMap[K] }>;
-export type ConfigScalarFallback = ConfigScalarValueMap[ConfigScalarKey] | undefined;
+export type ConfigScalarDefaultValue = ConfigScalarValueMap[ConfigScalarKey] | undefined;
 
 export type ReadConfigScalar = {
   <K extends ConfigScalarKey>(cfg: unknown, key: K): ConfigScalarValueMap[K] | undefined;
@@ -23,23 +23,23 @@ export type ReadConfigScalarOrDefault = {
   <K extends ConfigScalarKey>(
     cfg: unknown,
     key: K,
-    fallback?: ConfigScalarValueMap[K]
+    defaultValue?: ConfigScalarValueMap[K]
   ): ConfigScalarValueMap[K];
-  (cfg: unknown, key: ConfigScalarKey, fallback?: ConfigScalarFallback): unknown;
+  (cfg: unknown, key: ConfigScalarKey, defaultValue?: ConfigScalarDefaultValue): unknown;
 };
 
 export type ReadConfigScalarOrDefaultFromRoot = {
   <K extends ConfigScalarKey>(
     storeOrApp: unknown,
     key: K,
-    fallback?: ConfigScalarValueMap[K]
+    defaultValue?: ConfigScalarValueMap[K]
   ): ConfigScalarValueMap[K];
-  (storeOrApp: unknown, key: ConfigScalarKey, fallback?: ConfigScalarFallback): unknown;
+  (storeOrApp: unknown, key: ConfigScalarKey, defaultValue?: ConfigScalarDefaultValue): unknown;
 };
 
 export type ReadConfigArray = {
-  <T = unknown>(cfg: unknown, key: string, fallback?: T[]): T[];
-  (cfg: unknown, key: string, fallback?: unknown[]): unknown[];
+  <T = unknown>(cfg: unknown, key: string, defaultValue?: T[]): T[];
+  (cfg: unknown, key: string, defaultValue?: unknown[]): unknown[];
 };
 
 function isObj(v: unknown): v is UnknownRecord {
@@ -107,40 +107,43 @@ export function getCfgRecord(cfg: unknown): UnknownRecord {
   return asUnknownRecord(getCfgFromSnapshot(cfg)) ?? Object.create(null);
 }
 
-export function normalizeBoolean(value: unknown, fallback: boolean): boolean {
-  if (value === undefined || value === null) return fallback;
+export function normalizeBoolean(value: unknown, defaultValue: boolean): boolean {
+  if (value === undefined || value === null) return defaultValue;
   if (typeof value === 'boolean') return value;
   if (typeof value === 'number') return !!value;
   const s = typeof value === 'string' ? value.trim().toLowerCase() : '';
-  if (!s) return fallback;
+  if (!s) return defaultValue;
   if (s === 'true' || s === '1' || s === 'yes' || s === 'on') return true;
   if (s === 'false' || s === '0' || s === 'no' || s === 'off') return false;
   return !!value;
 }
 
-export function normalizeBoardMaterial(value: unknown, fallback: BoardMaterialValue): BoardMaterialValue {
+export function normalizeBoardMaterial(value: unknown, defaultValue: BoardMaterialValue): BoardMaterialValue {
   const s = String(value ?? '').trim();
-  return s === 'sandwich' || s === 'melamine' ? s : fallback;
+  return s === 'sandwich' || s === 'melamine' ? s : defaultValue;
 }
 
-export function normalizeWardrobeType(value: unknown, fallback: WardrobeTypeValue): WardrobeTypeValue {
+export function normalizeWardrobeType(value: unknown, defaultValue: WardrobeTypeValue): WardrobeTypeValue {
   const s = String(value ?? '').trim();
-  return s === 'hinged' || s === 'sliding' ? s : fallback;
+  return s === 'hinged' || s === 'sliding' ? s : defaultValue;
 }
 
 export function normalizeGlobalHandleType(
   value: unknown,
-  fallback: GlobalHandleTypeValue
+  defaultValue: GlobalHandleTypeValue
 ): GlobalHandleTypeValue {
   const s = String(value ?? '').trim();
-  return s === 'standard' || s === 'edge' || s === 'none' ? s : fallback;
+  return s === 'standard' || s === 'edge' || s === 'none' ? s : defaultValue;
 }
 
-export function normalizeNullableGrooveLinesCount(value: unknown, fallback: number | null): number | null {
+export function normalizeNullableGrooveLinesCount(
+  value: unknown,
+  defaultValue: number | null
+): number | null {
   if (value === null) return null;
-  if (typeof value === 'undefined' || value === '') return fallback;
+  if (typeof value === 'undefined' || value === '') return defaultValue;
   const n = Number(value);
-  if (!Number.isFinite(n)) return fallback;
+  if (!Number.isFinite(n)) return defaultValue;
   return Math.max(1, Math.floor(n));
 }
 
@@ -162,7 +165,7 @@ export function readScalarValue(cfg: unknown, key: ConfigScalarKey): unknown {
 
 export function pickDefaultScalar(
   key: ConfigScalarKey,
-  fallback?: ConfigScalarFallback
+  defaultValue?: ConfigScalarDefaultValue
 ): ConfigScalarValueMap[ConfigScalarKey] | undefined {
-  return typeof fallback !== 'undefined' ? fallback : DEFAULTS[key];
+  return typeof defaultValue !== 'undefined' ? defaultValue : DEFAULTS[key];
 }

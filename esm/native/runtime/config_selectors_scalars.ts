@@ -4,7 +4,7 @@ import { readConfigStateFromStore } from './root_state_access.js';
 import { getStoreSurfaceMaybe } from './store_surface_access.js';
 import { getConfigRootMaybe } from './app_roots_access.js';
 import type {
-  ConfigScalarFallback,
+  ConfigScalarDefaultValue,
   ReadConfigScalar,
   ReadConfigScalarOrDefault,
   ReadConfigScalarOrDefaultFromRoot,
@@ -65,8 +65,8 @@ export const readConfigScalarFromApp: ReadConfigScalar = (App: unknown, key: Con
   return readConfigScalarFromSnapshot(c, key);
 };
 
-export function readConfigLooseScalarFromApp(App: unknown, key: string, fallback?: unknown): unknown {
-  if (!key) return fallback;
+export function readConfigLooseScalarFromApp(App: unknown, key: string, defaultValue?: unknown): unknown {
+  if (!key) return defaultValue;
   try {
     const cfg = readConfigStateFromApp(App);
     const value = getCfgRecord(cfg)[key];
@@ -77,22 +77,22 @@ export function readConfigLooseScalarFromApp(App: unknown, key: string, fallback
 
   const direct = getConfigRootMaybe<UnknownRecord>(App);
   const value = direct?.[key];
-  return typeof value === 'undefined' || value === null || value === '' ? fallback : value;
+  return typeof value === 'undefined' || value === null || value === '' ? defaultValue : value;
 }
 
-export function readConfigNumberLooseFromApp(App: unknown, key: string, fallback: number): number {
-  const value = readConfigLooseScalarFromApp(App, key, fallback);
+export function readConfigNumberLooseFromApp(App: unknown, key: string, defaultValue: number): number {
+  const value = readConfigLooseScalarFromApp(App, key, defaultValue);
   const num = typeof value === 'number' ? value : Number(value);
-  return Number.isFinite(num) ? num : fallback;
+  return Number.isFinite(num) ? num : defaultValue;
 }
 
 /** Convenience: read scalar keys with safe defaults (typed). */
 export const readConfigScalarOrDefault: ReadConfigScalarOrDefault = (
   cfg: unknown,
   key: ConfigScalarKey,
-  fallback?: ConfigScalarFallback
+  defaultValue?: ConfigScalarDefaultValue
 ): unknown => {
-  const def = pickDefaultScalar(key, fallback);
+  const def = pickDefaultScalar(key, defaultValue);
   const value = readScalarValue(cfg, key);
 
   if (typeof value === 'undefined' || value === null || (typeof value === 'string' && value === '')) {
@@ -122,9 +122,9 @@ export const readConfigScalarOrDefault: ReadConfigScalarOrDefault = (
   }
 
   if (isNullableNumberConfigKey(key)) {
-    let fallbackNumber: number | null = null;
-    if (typeof def === 'number') fallbackNumber = def;
-    return normalizeNullableGrooveLinesCount(value, fallbackNumber);
+    let numberDefault: number | null = null;
+    if (typeof def === 'number') numberDefault = def;
+    return normalizeNullableGrooveLinesCount(value, numberDefault);
   }
 
   return value ?? def;
@@ -133,17 +133,17 @@ export const readConfigScalarOrDefault: ReadConfigScalarOrDefault = (
 export const readConfigScalarOrDefaultFromStore: ReadConfigScalarOrDefaultFromRoot = (
   store: unknown,
   key: ConfigScalarKey,
-  fallback?: ConfigScalarFallback
+  defaultValue?: ConfigScalarDefaultValue
 ): unknown => {
   const cfg = readConfigStateFromStore(store);
-  return readConfigScalarOrDefault(cfg, key, fallback);
+  return readConfigScalarOrDefault(cfg, key, defaultValue);
 };
 
 export const readConfigScalarOrDefaultFromApp: ReadConfigScalarOrDefaultFromRoot = (
   App: unknown,
   key: ConfigScalarKey,
-  fallback?: ConfigScalarFallback
+  defaultValue?: ConfigScalarDefaultValue
 ): unknown => {
   const cfg = readConfigStateFromApp(App);
-  return readConfigScalarOrDefault(cfg, key, fallback);
+  return readConfigScalarOrDefault(cfg, key, defaultValue);
 };

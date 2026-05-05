@@ -1,18 +1,18 @@
 # Legacy / fallback audit
 
-Generated at: 2026-05-05T20:11:33.557Z
+Generated at: 2026-05-05T20:21:30.779Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **889**
-- Files with occurrences: **293**
+- Total categorized occurrences: **803**
+- Files with occurrences: **286**
 - Category counts:
-  - `runtime-default`: **728**
+  - `runtime-default`: **645**
   - `browser-adapter`: **18**
   - `project-migration`: **20**
   - `test-fixture`: **7**
-  - `legacy-runtime-risk`: **116**
+  - `legacy-runtime-risk`: **113**
   - `unknown`: **0**
 
 ## Policy
@@ -26,15 +26,10 @@ Generated at: 2026-05-05T20:11:33.557Z
 ## Hot files
 
 - `esm/native/ui/react/tabs/interior_tab_view_state_shared.ts` — **24** (runtime-default: 24)
-- `esm/native/runtime/config_selectors_readers.ts` — **23** (legacy-runtime-risk: 1, runtime-default: 22)
-- `esm/native/runtime/config_selectors_shared.ts` — **21** (runtime-default: 21)
 - `esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts` — **16** (runtime-default: 16)
 - `esm/native/ui/react/pdf/order_pdf_overlay_sketch_preview_session.ts` — **16** (runtime-default: 16)
 - `esm/native/platform/three_geometry_cache_patch_contracts.ts` — **14** (runtime-default: 14)
 - `esm/native/platform/platform_util.ts` — **12** (runtime-default: 12)
-- `esm/native/runtime/config_selectors_scalars.ts` — **12** (runtime-default: 12)
-- `esm/native/runtime/runtime_selectors_snapshot.ts` — **12** (legacy-runtime-risk: 1, runtime-default: 11)
-- `esm/native/runtime/runtime_selectors_normalizers.ts` — **11** (legacy-runtime-risk: 1, runtime-default: 10)
 - `esm/native/ui/pdf/order_pdf_document_fields_runtime.ts` — **11** (runtime-default: 11)
 - `esm/native/ui/react/actions/cloud_sync_actions.ts` — **11** (runtime-default: 11)
 - `esm/native/features/base_leg_support.ts` — **10** (runtime-default: 10)
@@ -55,6 +50,11 @@ Generated at: 2026-05-05T20:11:33.557Z
 - `esm/native/features/door_trim_shared.ts` — **6** (runtime-default: 6)
 - `esm/native/features/library_preset/library_preset_shared.ts` — **6** (runtime-default: 6)
 - `esm/native/kernel/kernel_builder_request_policy_shared.ts` — **6** (runtime-default: 6)
+- `esm/native/kernel/kernel_builder_request_policy.ts` — **6** (runtime-default: 6)
+- `esm/native/runtime/doors_access_services.ts` — **6** (runtime-default: 6)
+- `esm/native/runtime/modules_recompute_request_policy.ts` — **6** (runtime-default: 6)
+- `esm/native/runtime/perf_runtime_core.ts` — **6** (runtime-default: 6)
+- `esm/native/services/canvas_picking_hover_preview_modes_shared.ts` — **6** (runtime-default: 6)
 
 ## Allowlist check
 

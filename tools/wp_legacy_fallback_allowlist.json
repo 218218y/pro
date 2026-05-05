@@ -851,25 +851,6 @@
         "runtime-default": 5
       }
     },
-    "esm/native/runtime/config_selectors_readers.ts": {
-      "total": 23,
-      "categories": {
-        "legacy-runtime-risk": 1,
-        "runtime-default": 22
-      }
-    },
-    "esm/native/runtime/config_selectors_scalars.ts": {
-      "total": 12,
-      "categories": {
-        "runtime-default": 12
-      }
-    },
-    "esm/native/runtime/config_selectors_shared.ts": {
-      "total": 21,
-      "categories": {
-        "runtime-default": 21
-      }
-    },
     "esm/native/runtime/config_selectors.ts": {
       "total": 1,
       "categories": {
@@ -999,32 +980,6 @@
       "total": 5,
       "categories": {
         "runtime-default": 5
-      }
-    },
-    "esm/native/runtime/runtime_selectors_normalizers.ts": {
-      "total": 11,
-      "categories": {
-        "legacy-runtime-risk": 1,
-        "runtime-default": 10
-      }
-    },
-    "esm/native/runtime/runtime_selectors_shared.ts": {
-      "total": 3,
-      "categories": {
-        "runtime-default": 3
-      }
-    },
-    "esm/native/runtime/runtime_selectors_snapshot.ts": {
-      "total": 12,
-      "categories": {
-        "legacy-runtime-risk": 1,
-        "runtime-default": 11
-      }
-    },
-    "esm/native/runtime/runtime_selectors_store.ts": {
-      "total": 4,
-      "categories": {
-        "runtime-default": 4
       }
     },
     "esm/native/runtime/runtime_write_access.ts": {

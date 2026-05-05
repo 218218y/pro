@@ -53,7 +53,7 @@ export function readRuntimeValue(rt: unknown, key: RuntimeScalarKey | string): u
 
 export function getRuntimeScalarDefault<K extends RuntimeScalarKey>(
   key: K,
-  fallback?: RuntimeScalarValueMap[K]
+  defaultValue?: RuntimeScalarValueMap[K]
 ): RuntimeScalarValueMap[K] {
-  return typeof fallback !== 'undefined' ? fallback : DEFAULTS[key];
+  return typeof defaultValue !== 'undefined' ? defaultValue : DEFAULTS[key];
 }

@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-05-05T20:11:33.557Z",
+  "generatedAt": "2026-05-05T20:21:30.779Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 889,
-    "totalFiles": 293,
+    "totalOccurrences": 803,
+    "totalFiles": 286,
     "byCategory": {
-      "runtime-default": 728,
+      "runtime-default": 645,
       "browser-adapter": 18,
       "project-migration": 20,
       "test-fixture": 7,
-      "legacy-runtime-risk": 116,
+      "legacy-runtime-risk": 113,
       "unknown": 0
     },
     "byFile": {
@@ -861,25 +861,6 @@
           "runtime-default": 5
         }
       },
-      "esm/native/runtime/config_selectors_readers.ts": {
-        "total": 23,
-        "categories": {
-          "legacy-runtime-risk": 1,
-          "runtime-default": 22
-        }
-      },
-      "esm/native/runtime/config_selectors_scalars.ts": {
-        "total": 12,
-        "categories": {
-          "runtime-default": 12
-        }
-      },
-      "esm/native/runtime/config_selectors_shared.ts": {
-        "total": 21,
-        "categories": {
-          "runtime-default": 21
-        }
-      },
       "esm/native/runtime/config_selectors.ts": {
         "total": 1,
         "categories": {
@@ -1009,32 +990,6 @@
         "total": 5,
         "categories": {
           "runtime-default": 5
-        }
-      },
-      "esm/native/runtime/runtime_selectors_normalizers.ts": {
-        "total": 11,
-        "categories": {
-          "legacy-runtime-risk": 1,
-          "runtime-default": 10
-        }
-      },
-      "esm/native/runtime/runtime_selectors_shared.ts": {
-        "total": 3,
-        "categories": {
-          "runtime-default": 3
-        }
-      },
-      "esm/native/runtime/runtime_selectors_snapshot.ts": {
-        "total": 12,
-        "categories": {
-          "legacy-runtime-risk": 1,
-          "runtime-default": 11
-        }
-      },
-      "esm/native/runtime/runtime_selectors_store.ts": {
-        "total": 4,
-        "categories": {
-          "runtime-default": 4
         }
       },
       "esm/native/runtime/runtime_write_access.ts": {
@@ -1807,21 +1762,6 @@
         }
       },
       {
-        "file": "esm/native/runtime/config_selectors_readers.ts",
-        "total": 23,
-        "categories": {
-          "legacy-runtime-risk": 1,
-          "runtime-default": 22
-        }
-      },
-      {
-        "file": "esm/native/runtime/config_selectors_shared.ts",
-        "total": 21,
-        "categories": {
-          "runtime-default": 21
-        }
-      },
-      {
         "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
         "total": 16,
         "categories": {
@@ -1847,29 +1787,6 @@
         "total": 12,
         "categories": {
           "runtime-default": 12
-        }
-      },
-      {
-        "file": "esm/native/runtime/config_selectors_scalars.ts",
-        "total": 12,
-        "categories": {
-          "runtime-default": 12
-        }
-      },
-      {
-        "file": "esm/native/runtime/runtime_selectors_snapshot.ts",
-        "total": 12,
-        "categories": {
-          "legacy-runtime-risk": 1,
-          "runtime-default": 11
-        }
-      },
-      {
-        "file": "esm/native/runtime/runtime_selectors_normalizers.ts",
-        "total": 11,
-        "categories": {
-          "legacy-runtime-risk": 1,
-          "runtime-default": 10
         }
       },
       {
@@ -2011,6 +1928,41 @@
       },
       {
         "file": "esm/native/kernel/kernel_builder_request_policy_shared.ts",
+        "total": 6,
+        "categories": {
+          "runtime-default": 6
+        }
+      },
+      {
+        "file": "esm/native/kernel/kernel_builder_request_policy.ts",
+        "total": 6,
+        "categories": {
+          "runtime-default": 6
+        }
+      },
+      {
+        "file": "esm/native/runtime/doors_access_services.ts",
+        "total": 6,
+        "categories": {
+          "runtime-default": 6
+        }
+      },
+      {
+        "file": "esm/native/runtime/modules_recompute_request_policy.ts",
+        "total": 6,
+        "categories": {
+          "runtime-default": 6
+        }
+      },
+      {
+        "file": "esm/native/runtime/perf_runtime_core.ts",
+        "total": 6,
+        "categories": {
+          "runtime-default": 6
+        }
+      },
+      {
+        "file": "esm/native/services/canvas_picking_hover_preview_modes_shared.ts",
         "total": 6,
         "categories": {
           "runtime-default": 6
@@ -4579,398 +4531,6 @@
       "text": "return value === undefined ? fallback : value;"
     },
     {
-      "file": "esm/native/runtime/config_selectors_readers.ts",
-      "line": 8,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "/** Read a boolean config key (supports legacy string values). */"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_readers.ts",
-      "line": 9,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readConfigBoolFromSnapshot(cfg: unknown, key: string, fallback: boolean): boolean {"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_readers.ts",
-      "line": 11,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "if (value === undefined || value === null) return fallback;"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_readers.ts",
-      "line": 15,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "if (!s) return fallback;"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_readers.ts",
-      "line": 21,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readConfigBoolFromStore(store: unknown, key: string, fallback: boolean): boolean {"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_readers.ts",
-      "line": 23,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return readConfigBoolFromSnapshot(c, key, fallback);"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_readers.ts",
-      "line": 26,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readConfigBoolFromApp(App: unknown, key: string, fallback: boolean): boolean {"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_readers.ts",
-      "line": 28,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return readConfigBoolFromSnapshot(c, key, fallback);"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_readers.ts",
-      "line": 31,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "/** Read an enum-like string key with an allow-list + fallback. */"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_readers.ts",
-      "line": 36,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: T"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_readers.ts",
-      "line": 41,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return allowed.find(a => a === vv) ?? fallback;"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_readers.ts",
-      "line": 48,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: T"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_readers.ts",
-      "line": 51,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return readConfigEnumFromSnapshot(c, key, allowed, fallback);"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_readers.ts",
-      "line": 58,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: T"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_readers.ts",
-      "line": 61,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return readConfigEnumFromSnapshot(c, key, allowed, fallback);"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_readers.ts",
-      "line": 65,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readConfigStringFromSnapshot(cfg: unknown, key: string, fallback: string): string {"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_readers.ts",
-      "line": 68,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return s && s.trim() ? s : fallback;"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_readers.ts",
-      "line": 75,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: string | null"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_readers.ts",
-      "line": 80,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return s ? s : fallback;"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_readers.ts",
-      "line": 87,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: unknown[] = []"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_readers.ts",
-      "line": 90,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "if (!Array.isArray(value)) return fallback;"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_readers.ts",
-      "line": 97,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: UnknownRecord = {}"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_readers.ts",
-      "line": 100,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return asUnknownRecord(value) ?? fallback;"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_scalars.ts",
-      "line": 68,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readConfigLooseScalarFromApp(App: unknown, key: string, fallback?: unknown): unknown {"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_scalars.ts",
-      "line": 69,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "if (!key) return fallback;"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_scalars.ts",
-      "line": 80,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof value === 'undefined' || value === null || value === '' ? fallback : value;"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_scalars.ts",
-      "line": 83,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readConfigNumberLooseFromApp(App: unknown, key: string, fallback: number): number {"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_scalars.ts",
-      "line": 84,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const value = readConfigLooseScalarFromApp(App, key, fallback);"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_scalars.ts",
-      "line": 86,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return Number.isFinite(num) ? num : fallback;"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_scalars.ts",
-      "line": 93,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback?: ConfigScalarFallback"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_scalars.ts",
-      "line": 95,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const def = pickDefaultScalar(key, fallback);"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_scalars.ts",
-      "line": 136,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback?: ConfigScalarFallback"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_scalars.ts",
-      "line": 139,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return readConfigScalarOrDefault(cfg, key, fallback);"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_scalars.ts",
-      "line": 145,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback?: ConfigScalarFallback"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_scalars.ts",
-      "line": 148,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return readConfigScalarOrDefault(cfg, key, fallback);"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_shared.ts",
-      "line": 26,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback?: ConfigScalarValueMap[K]"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_shared.ts",
-      "line": 28,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "(cfg: unknown, key: ConfigScalarKey, fallback?: ConfigScalarFallback): unknown;"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_shared.ts",
-      "line": 35,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback?: ConfigScalarValueMap[K]"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_shared.ts",
-      "line": 37,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "(storeOrApp: unknown, key: ConfigScalarKey, fallback?: ConfigScalarFallback): unknown;"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_shared.ts",
-      "line": 41,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "<T = unknown>(cfg: unknown, key: string, fallback?: T[]): T[];"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_shared.ts",
-      "line": 42,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "(cfg: unknown, key: string, fallback?: unknown[]): unknown[];"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_shared.ts",
-      "line": 110,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function normalizeBoolean(value: unknown, fallback: boolean): boolean {"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_shared.ts",
-      "line": 111,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "if (value === undefined || value === null) return fallback;"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_shared.ts",
-      "line": 115,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "if (!s) return fallback;"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_shared.ts",
-      "line": 121,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function normalizeBoardMaterial(value: unknown, fallback: BoardMaterialValue): BoardMaterialValue {"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_shared.ts",
-      "line": 123,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return s === 'sandwich' || s === 'melamine' ? s : fallback;"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_shared.ts",
-      "line": 126,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function normalizeWardrobeType(value: unknown, fallback: WardrobeTypeValue): WardrobeTypeValue {"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_shared.ts",
-      "line": 128,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return s === 'hinged' || s === 'sliding' ? s : fallback;"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_shared.ts",
-      "line": 133,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: GlobalHandleTypeValue"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_shared.ts",
-      "line": 136,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return s === 'standard' || s === 'edge' || s === 'none' ? s : fallback;"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_shared.ts",
-      "line": 139,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function normalizeNullableGrooveLinesCount(value: unknown, fallback: number | null): number | null {"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_shared.ts",
-      "line": 141,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "if (typeof value === 'undefined' || value === '') return fallback;"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_shared.ts",
-      "line": 143,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "if (!Number.isFinite(n)) return fallback;"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_shared.ts",
-      "line": 165,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback?: ConfigScalarFallback"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_shared.ts",
-      "line": 167,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof fallback !== 'undefined' ? fallback : DEFAULTS[key];"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_shared.ts",
-      "line": 167,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof fallback !== 'undefined' ? fallback : DEFAULTS[key];"
-    },
-    {
       "file": "esm/native/runtime/config_selectors.ts",
       "line": 5,
       "term": "legacy",
@@ -5382,216 +4942,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "return typeof value === 'number' && Number.isFinite(value) ? value : fallback;"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors_normalizers.ts",
-      "line": 3,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Keeps string/number legacy tolerance in one audited table instead of spreading"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors_normalizers.ts",
-      "line": 71,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readBooleanLike(value: unknown, fallback: boolean): boolean {"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors_normalizers.ts",
-      "line": 72,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "if (value === undefined || value === null) return fallback;"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors_normalizers.ts",
-      "line": 76,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "if (!s) return fallback;"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors_normalizers.ts",
-      "line": 82,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readFiniteNumberLike(value: unknown, fallback: number): number {"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors_normalizers.ts",
-      "line": 88,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return fallback;"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors_normalizers.ts",
-      "line": 91,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readFiniteNullableNumberLike(value: unknown, fallback: number | null): number | null {"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors_normalizers.ts",
-      "line": 98,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return fallback;"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors_normalizers.ts",
-      "line": 103,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: string | number | null"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors_normalizers.ts",
-      "line": 108,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return fallback;"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors_normalizers.ts",
-      "line": 112,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "[K in RuntimeScalarKey]: (value: unknown, fallback: RuntimeScalarValueMap[K]) => RuntimeScalarValueMap[K];"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors_shared.ts",
-      "line": 56,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback?: RuntimeScalarValueMap[K]"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors_shared.ts",
-      "line": 58,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof fallback !== 'undefined' ? fallback : DEFAULTS[key];"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors_shared.ts",
-      "line": 58,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof fallback !== 'undefined' ? fallback : DEFAULTS[key];"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors_snapshot.ts",
-      "line": 29,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "/** Read a boolean runtime key (supports legacy string values). */"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors_snapshot.ts",
-      "line": 30,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readRuntimeBoolFromSnapshot(rt: unknown, key: string, fallback: boolean): boolean {"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors_snapshot.ts",
-      "line": 32,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return readBooleanLike(readRuntimeValue(rt, key), fallback);"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors_snapshot.ts",
-      "line": 34,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return fallback;"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors_snapshot.ts",
-      "line": 39,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readRuntimeNumberFromSnapshot(rt: unknown, key: string, fallback: number): number {"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors_snapshot.ts",
-      "line": 41,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return readFiniteNumberLike(readRuntimeValue(rt, key), fallback);"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors_snapshot.ts",
-      "line": 43,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return fallback;"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors_snapshot.ts",
-      "line": 51,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: number | null"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors_snapshot.ts",
-      "line": 54,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return readFiniteNullableNumberLike(readRuntimeValue(rt, key), fallback);"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors_snapshot.ts",
-      "line": 56,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return fallback;"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors_snapshot.ts",
-      "line": 64,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback?: RuntimeScalarValueMap[K]"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors_snapshot.ts",
-      "line": 66,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const def = getRuntimeScalarDefault(key, fallback);"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors_store.ts",
-      "line": 43,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback?: RuntimeScalarValueMap[K]"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors_store.ts",
-      "line": 46,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return readRuntimeScalarOrDefault(rt, key, fallback);"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors_store.ts",
-      "line": 52,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback?: RuntimeScalarValueMap[K]"
-    },
-    {
-      "file": "esm/native/runtime/runtime_selectors_store.ts",
-      "line": 55,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return readRuntimeScalarOrDefault(rt, key, fallback);"
     },
     {
       "file": "esm/native/runtime/runtime_write_access.ts",

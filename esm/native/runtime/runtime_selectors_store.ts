@@ -40,17 +40,17 @@ export function readRuntimeScalarFromApp<K extends RuntimeScalarKey>(
 export function readRuntimeScalarOrDefaultFromStore<K extends RuntimeScalarKey>(
   store: unknown,
   key: K,
-  fallback?: RuntimeScalarValueMap[K]
+  defaultValue?: RuntimeScalarValueMap[K]
 ): RuntimeScalarValueMap[K] {
   const rt = readRuntimeStateFromStore(store);
-  return readRuntimeScalarOrDefault(rt, key, fallback);
+  return readRuntimeScalarOrDefault(rt, key, defaultValue);
 }
 
 export function readRuntimeScalarOrDefaultFromApp<K extends RuntimeScalarKey>(
   App: unknown,
   key: K,
-  fallback?: RuntimeScalarValueMap[K]
+  defaultValue?: RuntimeScalarValueMap[K]
 ): RuntimeScalarValueMap[K] {
   const rt = readRuntimeStateFromApp(App);
-  return readRuntimeScalarOrDefault(rt, key, fallback);
+  return readRuntimeScalarOrDefault(rt, key, defaultValue);
 }
