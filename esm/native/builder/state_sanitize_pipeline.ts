@@ -4,6 +4,12 @@ import { ensureBuilderService } from '../runtime/builder_service_access.js';
 import { coerceFiniteInt, coerceFiniteNumber } from '../runtime/num_coerce.js';
 import { syncDimensionRuntimePatch } from '../runtime/dimension_sync_coalescer.js';
 import { metaUiOnly } from '../runtime/meta_profiles_access.js';
+import {
+  DEFAULT_HEIGHT,
+  DEFAULT_WIDTH,
+  getDefaultDepthForWardrobeType,
+  getDefaultDoorsForWardrobeType,
+} from '../features/wardrobe_dimension_defaults.js';
 
 type SanitizedDims = {
   skipBuild: boolean;
@@ -78,11 +84,14 @@ export function sanitizeBuildDimsAndSyncRuntime(args: {
   const minWLimit = isChestMode ? 20 : 40;
   const minHLimit = isChestMode ? 20 : 100;
 
-  const rawWidth = _toNum(raw.width, 160);
-  const rawHeight = _toNum(raw.height, 240);
-  const rawDepth = _toNum(raw.depth, 55);
+  const defaultDepth = getDefaultDepthForWardrobeType(cfg.wardrobeType);
+  const defaultDoors = getDefaultDoorsForWardrobeType(cfg.wardrobeType);
+
+  const rawWidth = _toNum(raw.width, DEFAULT_WIDTH);
+  const rawHeight = _toNum(raw.height, DEFAULT_HEIGHT);
+  const rawDepth = _toNum(raw.depth, defaultDepth);
   // Prefer raw['doors'] but fall back to ui.doors (some loaders/flows persist only the normalized field).
-  const rawDoors = _toInt(raw['doors'] != null ? raw['doors'] : ui.doors, 4);
+  const rawDoors = _toInt(raw['doors'] != null ? raw['doors'] : ui.doors, defaultDoors);
   const rawChestDrawers = _toInt(raw.chestDrawersCount, 4);
 
   const forceBuild = !!ui.forceBuild;

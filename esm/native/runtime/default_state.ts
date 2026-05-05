@@ -8,6 +8,13 @@
 
 import type { RootStateLike } from '../../../types';
 
+import {
+  DEFAULT_HEIGHT,
+  DEFAULT_HINGED_DOORS,
+  DEFAULT_WIDTH,
+  HINGED_DEFAULT_DEPTH,
+} from '../features/wardrobe_dimension_defaults.js';
+
 export function createDefaultState(opts?: { noneMode?: string }): RootStateLike {
   opts = opts && typeof opts === 'object' ? opts : {};
   const NONE = typeof opts.noneMode === 'string' && opts.noneMode ? opts.noneMode : 'none';
@@ -17,15 +24,15 @@ export function createDefaultState(opts?: { noneMode?: string }): RootStateLike 
       // Core structural inputs (single source-of-truth for build essentials).
       // Must match the default values in index_pro.html inputs.
       raw: {
-        width: 160,
-        height: 240,
-        depth: 55,
-        doors: 4,
+        width: DEFAULT_WIDTH,
+        height: DEFAULT_HEIGHT,
+        depth: HINGED_DEFAULT_DEPTH,
+        doors: DEFAULT_HINGED_DOORS,
         chestDrawersCount: 4,
         stackSplitLowerHeight: 60,
-        stackSplitLowerDepth: 55,
-        stackSplitLowerWidth: 160,
-        stackSplitLowerDoors: 4,
+        stackSplitLowerDepth: HINGED_DEFAULT_DEPTH,
+        stackSplitLowerWidth: DEFAULT_WIDTH,
+        stackSplitLowerDoors: DEFAULT_HINGED_DOORS,
 
         // Stack split linking policy (lower values are linked to overall unless manual is true).
         stackSplitLowerDepthManual: false,
@@ -43,8 +50,8 @@ export function createDefaultState(opts?: { noneMode?: string }): RootStateLike 
       cornerWidth: 120,
       // Corner wardrobe (independent controls)
       cornerDoors: 3,
-      cornerHeight: 240,
-      cornerDepth: 55,
+      cornerHeight: DEFAULT_HEIGHT,
+      cornerDepth: HINGED_DEFAULT_DEPTH,
       baseType: 'plinth',
       baseLegStyle: 'tapered',
       baseLegColor: 'black',

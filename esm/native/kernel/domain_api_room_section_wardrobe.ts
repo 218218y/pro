@@ -22,6 +22,11 @@ import { runAppStructuralModulesRecompute } from '../runtime/modules_recompute_r
 import { patchViaActions } from '../runtime/actions_access_mutations.js';
 import type { InstallDomainApiRoomSectionArgs, MetaNoBuildFn } from './domain_api_room_section_shared.js';
 import {
+  getDefaultDepthForWardrobeType,
+  getDefaultDoorsForWardrobeType,
+  getDefaultPerDoorWidthForWardrobeType,
+} from '../features/wardrobe_dimension_defaults.js';
+import {
   canonicalizeWardrobeTypeProfileConfigSnapshot,
   cloneUiStateSnapshot,
   normalizeWardrobeType,
@@ -224,12 +229,12 @@ function initWardrobeTypeDefaults(
   meta: ActionMetaLike | UnknownRecord | null | undefined
 ): void {
   const rawPatch: Record<string, unknown> = {};
-  const doorsI = next === 'sliding' ? 2 : 4;
+  const doorsI = getDefaultDoorsForWardrobeType(next);
   rawPatch.doors = doorsI;
 
-  const perDoor = next === 'sliding' ? 80 : 40;
+  const perDoor = getDefaultPerDoorWidthForWardrobeType(next);
   rawPatch.width = doorsI * perDoor;
-  rawPatch.depth = next === 'sliding' ? 60 : 55;
+  rawPatch.depth = getDefaultDepthForWardrobeType(next);
 
   const uiPatch: UiStateLike = { raw: rawPatch };
   if (

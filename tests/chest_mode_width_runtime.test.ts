@@ -47,3 +47,27 @@ test('regular hinged wardrobe with zero doors still collapses width to zero', ()
   assert.equal(dims.widthCm, 0);
   assert.equal(dims.doorsCount, 0);
 });
+
+test('sanitizer uses hinged depth fallback when raw depth is missing', () => {
+  const dims = sanitizeBuildDimsAndSyncRuntime({
+    App: null,
+    ui: { raw: { width: 160, height: 240, doors: 4, chestDrawersCount: 4 } },
+    cfg: { wardrobeType: 'hinged' },
+  });
+
+  assert.equal(dims.skipBuild, false);
+  assert.equal(dims.depthCm, 55);
+  assert.equal(dims.doorsCount, 4);
+});
+
+test('sanitizer uses sliding depth and door fallbacks when raw values are missing', () => {
+  const dims = sanitizeBuildDimsAndSyncRuntime({
+    App: null,
+    ui: { raw: { width: 160, height: 240, chestDrawersCount: 4 } },
+    cfg: { wardrobeType: 'sliding' },
+  });
+
+  assert.equal(dims.skipBuild, false);
+  assert.equal(dims.depthCm, 60);
+  assert.equal(dims.doorsCount, 2);
+});

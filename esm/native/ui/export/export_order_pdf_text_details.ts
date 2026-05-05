@@ -2,6 +2,13 @@ import type { AppContainer } from '../../../../types/app.js';
 import type { OrderPdfDraftLike } from '../../../../types/build.js';
 import type { ExportOrderPdfDeps } from './export_order_pdf_types.js';
 
+import {
+  DEFAULT_HEIGHT,
+  DEFAULT_WIDTH,
+  getDefaultDepthForWardrobeType,
+  getDefaultDoorsForWardrobeType,
+} from '../../features/wardrobe_dimension_defaults.js';
+
 export function createOrderPdfTextDetailsOps(deps: ExportOrderPdfDeps) {
   const {
     asRecord,
@@ -134,10 +141,12 @@ export function createOrderPdfTextDetailsOps(deps: ExportOrderPdfDeps) {
 
     const wardrobeType = getCfgString(cfg, 'wardrobeType', 'hinged');
     const boardMaterial = getCfgString(cfg, 'boardMaterial', 'sandwich');
-    const doors = getUiRawInt(ui, 'doors', 4);
-    const width = getUiRawNumber(ui, 'width', 160);
-    const height = getUiRawNumber(ui, 'height', 240);
-    const depth = getUiRawNumber(ui, 'depth', 60);
+    const defaultDepth = getDefaultDepthForWardrobeType(wardrobeType);
+    const defaultDoors = getDefaultDoorsForWardrobeType(wardrobeType);
+    const doors = getUiRawInt(ui, 'doors', defaultDoors);
+    const width = getUiRawNumber(ui, 'width', DEFAULT_WIDTH);
+    const height = getUiRawNumber(ui, 'height', DEFAULT_HEIGHT);
+    const depth = getUiRawNumber(ui, 'depth', defaultDepth);
 
     const selectedModelId = String(ui['selectedModelId'] || '').trim();
     const doorStyleKey = String(ui['doorStyle'] ?? cfg['doorStyle'] ?? 'flat').trim();

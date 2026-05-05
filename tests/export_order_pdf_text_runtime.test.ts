@@ -83,3 +83,24 @@ test('export order pdf text ops keep canonical draft defaults and bidi stabiliza
     ['ltr', 'rtl', 'ltr']
   );
 });
+
+test('export order pdf text uses wardrobe-type depth fallback only when raw depth is missing', () => {
+  const makeOps = (wardrobeType: 'hinged' | 'sliding') =>
+    createExportOrderPdfTextOps(
+      createTextDeps({
+        getCfg: () => ({ wardrobeType, boardMaterial: 'sandwich', doorStyle: 'flat' }),
+        getUi: () => ({ raw: { width: 160, height: 240 } }),
+        getModelById: () => null,
+      })
+    );
+
+  const hingedDetails = makeOps('hinged').buildOrderDetailsText({} as never);
+  assert.match(hingedDetails, /סוג: פתיחה/);
+  assert.match(hingedDetails, /דלתות: 4, סנדביץ', פוסט/);
+  assert.match(hingedDetails, /מידות \(ס"מ\): 160×240×55/);
+
+  const slidingDetails = makeOps('sliding').buildOrderDetailsText({} as never);
+  assert.match(slidingDetails, /סוג: הזזה/);
+  assert.match(slidingDetails, /דלתות: 2, סנדביץ', פוסט/);
+  assert.match(slidingDetails, /מידות \(ס"מ\): 160×240×60/);
+});

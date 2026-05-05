@@ -10,7 +10,7 @@ import {
 } from '../runtime/render_access.js';
 import { getBrowserTimers } from '../runtime/api.js';
 import { requestIdleCallbackMaybe } from '../runtime/browser_env_timers.js';
-import { readRuntimeStateFromApp } from '../runtime/root_state_access.js';
+import { readConfigStateFromApp, readRuntimeStateFromApp } from '../runtime/root_state_access.js';
 import { getBuilderBuildUi } from '../runtime/builder_service_access.js';
 import {
   ensurePlatformService,
@@ -21,6 +21,11 @@ import {
 } from '../runtime/platform_access.js';
 import { installStableSurfaceMethod } from '../runtime/stable_surface_methods.js';
 import { isLifecycleTabHidden } from '../runtime/app_roots_access.js';
+import {
+  DEFAULT_HEIGHT,
+  DEFAULT_WIDTH,
+  getDefaultDepthForWardrobeType,
+} from '../features/wardrobe_dimension_defaults.js';
 
 import { ensurePlatformPerf, isRecord, readBuildUiSurface } from './platform_shared.js';
 
@@ -121,9 +126,12 @@ export function installPlatformServiceSurface(
       if (!Number.isFinite(hCm) && typeof hh === 'number' && Number.isFinite(hh)) hCm = hh * 100;
       if (!Number.isFinite(dCm) && typeof dd === 'number' && Number.isFinite(dd)) dCm = dd * 100;
 
-      if (!Number.isFinite(wCm)) wCm = 160;
-      if (!Number.isFinite(hCm)) hCm = 240;
-      if (!Number.isFinite(dCm)) dCm = 55;
+      const cfg = readConfigStateFromApp(App);
+      const defaultDepth = getDefaultDepthForWardrobeType(cfg.wardrobeType);
+
+      if (!Number.isFinite(wCm)) wCm = DEFAULT_WIDTH;
+      if (!Number.isFinite(hCm)) hCm = DEFAULT_HEIGHT;
+      if (!Number.isFinite(dCm)) dCm = defaultDepth;
 
       return { w: wCm / 100, h: hCm / 100, d: dCm / 100 };
     };

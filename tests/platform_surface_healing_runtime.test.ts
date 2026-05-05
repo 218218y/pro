@@ -297,3 +297,28 @@ test('platform service ensureRenderLoop falls back to a macrotask for the first 
   timeoutQueue.shift()?.();
   assert.deepEqual(calls, ['raf-scheduled', 'timeout-scheduled', 'animate']);
 });
+
+test('platform getDimsM uses wardrobe-type depth fallback when build/runtime depth is missing', () => {
+  const createApp = (wardrobeType: 'hinged' | 'sliding') => ({
+    services: { platform: Object.create(null) },
+    store: {
+      getState: () => ({
+        ui: {},
+        config: { wardrobeType },
+        runtime: {},
+        mode: {},
+        meta: {},
+      }),
+    },
+    render: Object.create(null),
+    lifecycle: Object.create(null),
+  });
+
+  const hingedApp: any = createApp('hinged');
+  installPlatformServiceSurface(hingedApp, () => 1);
+  assert.deepEqual(hingedApp.services.platform.getDimsM(), { w: 1.6, h: 2.4, d: 0.55 });
+
+  const slidingApp: any = createApp('sliding');
+  installPlatformServiceSurface(slidingApp, () => 1);
+  assert.deepEqual(slidingApp.services.platform.getDimsM(), { w: 1.6, h: 2.4, d: 0.6 });
+});
