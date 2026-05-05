@@ -152,7 +152,36 @@ export function createAddGridShelf(args: {
     _isBrace: boolean
   ): void => {};
 
-  function resolveContentsMaxHeightFromSurface(gridIndex: number, surfaceTopY: number): number {
+  function resolveBaseContentsMaxHeight(shelfH: number): number {
+    if (!shelfSet[1]) return 0;
+    const firstShelfBottomY = effectiveBottomY + localGridStep - shelfH / 2;
+    return Math.max(0, firstShelfBottomY - effectiveBottomY - 0.006);
+  }
+
+  function addBaseShelfContents(): void {
+    if (!shelfSet[1] || !__isFn(addFoldedClothes)) return;
+    const hasDrawerInBottomSpace = isInternalDrawersEnabled && intDrawersSlot === 1;
+    if (hasDrawerInBottomSpace) return;
+
+    const isBrace = !!braceSet[1];
+    const shelfDepth = isBrace ? internalDepth : regularDepth;
+    const shelfZ = isBrace ? internalZ : regularZ;
+    const maxHeight = resolveBaseContentsMaxHeight(woodThick);
+    if (!(maxHeight > 0)) return;
+
+    addFoldedClothes(
+      internalCenterX,
+      effectiveBottomY,
+      shelfZ,
+      innerW - 0.06,
+      group,
+      maxHeight,
+      shelfDepth
+    );
+  }
+
+  function resolveShelfContentsMaxHeight(gridIndex: number, shelfY: number, shelfH: number): number {
+    const shelfTopY = shelfY + shelfH / 2;
     let topLimitY = effectiveTopY;
     const maxGrid = Math.max(0, Math.floor(Number(gridDivisions) || 0));
 
@@ -163,46 +192,10 @@ export function createAddGridShelf(args: {
       }
     }
 
-    return Math.max(0, topLimitY - surfaceTopY - 0.006);
+    return Math.max(0, topLimitY - shelfTopY - 0.006);
   }
 
-  function hasInternalDrawerInCellAboveSurface(gridIndex: number): boolean {
-    return isInternalDrawersEnabled && intDrawersSlot === gridIndex + 1;
-  }
-
-  function addFoldedContentsOnSurface(args: {
-    gridIndex: number;
-    surfaceTopY: number;
-    shelfZ: number;
-    shelfDepth: number;
-  }): void {
-    if (hasInternalDrawerInCellAboveSurface(args.gridIndex) || !__isFn(addFoldedClothes)) return;
-    addFoldedClothes(
-      internalCenterX,
-      args.surfaceTopY,
-      args.shelfZ,
-      innerW - 0.06,
-      group,
-      resolveContentsMaxHeightFromSurface(args.gridIndex, args.surfaceTopY),
-      args.shelfDepth
-    );
-  }
-
-  function hasAnyInteriorShelf(): boolean {
-    return Object.keys(shelfSet).length > 0;
-  }
-
-  function addBottomFloorContents(): void {
-    if (!hasAnyInteriorShelf() || !(effectiveBottomY < effectiveTopY - 0.01)) return;
-    addFoldedContentsOnSurface({
-      gridIndex: 0,
-      surfaceTopY: effectiveBottomY,
-      shelfZ: regularZ,
-      shelfDepth: regularDepth,
-    });
-  }
-
-  addBottomFloorContents();
+  addBaseShelfContents();
 
   return function addGridShelf(gridIndex: number): void {
     const y = effectiveBottomY + Number(gridIndex || 0) * localGridStep;
@@ -219,11 +212,17 @@ export function createAddGridShelf(args: {
     addBraceDarkSeams(y, shelfZ, shelfDepth, isBrace);
     addShelfPins(y, shelfZ, shelfDepth, woodThick, isBrace);
 
-    addFoldedContentsOnSurface({
-      gridIndex: Number(gridIndex || 0),
-      surfaceTopY: y + woodThick / 2,
-      shelfZ,
-      shelfDepth,
-    });
+    const hasDrawerInSpace = isInternalDrawersEnabled && intDrawersSlot === Number(gridIndex || 0) + 1;
+    if (!hasDrawerInSpace && __isFn(addFoldedClothes)) {
+      addFoldedClothes(
+        internalCenterX,
+        y + woodThick / 2,
+        shelfZ,
+        innerW - 0.06,
+        group,
+        resolveShelfContentsMaxHeight(Number(gridIndex || 0), y, woodThick),
+        shelfDepth
+      );
+    }
   };
 }

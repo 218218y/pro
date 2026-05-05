@@ -12,7 +12,10 @@ import {
   readModuleKeyString,
 } from './render_interior_custom_ops_shared.js';
 import { computeCustomModuleInnerFaces } from './render_interior_custom_ops_wall_faces.js';
-import { createAddCustomGridShelf } from './render_interior_custom_ops_shelves.js';
+import {
+  addCustomBaseShelfContents,
+  createAddCustomGridShelf,
+} from './render_interior_custom_ops_shelves.js';
 import {
   applyCustomInteriorGridLayout,
   applyCustomStorageBarrier,
@@ -120,6 +123,32 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
       gridDivisions,
       shelfSet,
       shelfVariantByIndex,
+      internalCenterX,
+      innerW,
+      woodThick,
+      internalDepth,
+      internalZ,
+      isInternalDrawersEnabled,
+      activeSlots,
+    });
+
+    addCustomBaseShelfContents({
+      group,
+      addFoldedClothes: input.addFoldedClothes,
+      braceSet,
+      shelfSet,
+      shelfVariantByIndex,
+      braceMetrics: {
+        regularDepth,
+        regularZ,
+        regularShelfWidth,
+        braceShelfWidth,
+        braceCenterX,
+        leftInnerX,
+        rightInnerX,
+      },
+      effectiveBottomY,
+      localGridStep,
       internalCenterX,
       innerW,
       woodThick,

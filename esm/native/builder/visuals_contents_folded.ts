@@ -11,6 +11,7 @@ import {
   seededRandom,
   type AppAwareAddFoldedClothesFn,
 } from './visuals_contents_shared.js';
+import type { Object3DLike } from '../../../types/index.js';
 
 function addShelfBooks(args: {
   THREE: ReturnType<typeof ensureVisualsContentsTHREE>;
@@ -18,7 +19,7 @@ function addShelfBooks(args: {
   shelfY: number;
   shelfZ: number;
   width: number;
-  parentGroup: { add?: (child: unknown) => unknown };
+  parentGroup: Object3DLike;
   maxHeight: number;
   maxDepth?: number;
   addOutlines: (mesh: unknown) => unknown;

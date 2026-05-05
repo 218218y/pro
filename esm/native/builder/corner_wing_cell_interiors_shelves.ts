@@ -148,13 +148,15 @@ function cornerShelfHeightForVariant(
   return runtime.woodThick;
 }
 
-function resolveCornerContentsMaxHeightFromSurface(
+function resolveCornerShelfContentsMaxHeight(
   cellRuntime: CornerWingInteriorCellRuntime,
   shelfRuntime: CornerWingInteriorShelfRuntime,
   gridIndex: number,
-  surfaceTopY: number
+  shelfY: number,
+  shelfH: number
 ): number {
   const { runtime, cfgCell } = cellRuntime;
+  const shelfTopY = shelfY + shelfH / 2;
   let topLimitY = cellRuntime.effectiveTopY;
   const customData = runtime.isRecord(cfgCell.customData) ? cfgCell.customData : null;
   const shelves = Array.isArray(customData?.shelves) ? customData.shelves : [];
@@ -169,61 +171,7 @@ function resolveCornerContentsMaxHeightFromSurface(
     }
   }
 
-  return Math.max(0, topLimitY - surfaceTopY - 0.006);
-}
-
-function hasCornerInternalDrawerInCellAboveSurface(
-  cellRuntime: CornerWingInteriorCellRuntime,
-  gridIndex: number
-): boolean {
-  return (cellRuntime.cfgCell.intDrawersList || []).includes(gridIndex + 1);
-}
-
-function addCornerWingFoldedContentsOnSurface(
-  cellRuntime: CornerWingInteriorCellRuntime,
-  shelfRuntime: CornerWingInteriorShelfRuntime,
-  args: { gridIndex: number; surfaceTopY: number; shelfZ: number; shelfDepth: number }
-): void {
-  const { runtime, cellInnerCenterX, cellInnerW } = cellRuntime;
-  if (!runtime.showContentsEnabled || hasCornerInternalDrawerInCellAboveSurface(cellRuntime, args.gridIndex)) {
-    return;
-  }
-  runtime.addFoldedClothes(
-    cellInnerCenterX,
-    args.surfaceTopY,
-    args.shelfZ,
-    Math.max(0.05, cellInnerW - 0.06),
-    runtime.wingGroup,
-    resolveCornerContentsMaxHeightFromSurface(cellRuntime, shelfRuntime, args.gridIndex, args.surfaceTopY),
-    args.shelfDepth
-  );
-}
-
-function hasAnyCornerInteriorShelf(cellRuntime: CornerWingInteriorCellRuntime): boolean {
-  const customData = cellRuntime.runtime.isRecord(cellRuntime.cfgCell.customData)
-    ? cellRuntime.cfgCell.customData
-    : null;
-  const shelves = Array.isArray(customData?.shelves) ? customData.shelves : [];
-  return shelves.some(Boolean);
-}
-
-export function addCornerWingBottomFloorContents(
-  cellRuntime: CornerWingInteriorCellRuntime,
-  shelfRuntime: CornerWingInteriorShelfRuntime
-): void {
-  if (
-    !hasAnyCornerInteriorShelf(cellRuntime) ||
-    !(cellRuntime.effectiveBottomY < cellRuntime.effectiveTopY - 0.01)
-  ) {
-    return;
-  }
-  const shelfDepth = cellRuntime.__regularDepth;
-  addCornerWingFoldedContentsOnSurface(cellRuntime, shelfRuntime, {
-    gridIndex: 0,
-    surfaceTopY: cellRuntime.effectiveBottomY,
-    shelfZ: cellRuntime.__backFaceZ + shelfDepth / 2,
-    shelfDepth,
-  });
+  return Math.max(0, topLimitY - shelfTopY - 0.006);
 }
 
 export function addCornerWingGridShelf(
@@ -231,7 +179,7 @@ export function addCornerWingGridShelf(
   shelfRuntime: CornerWingInteriorShelfRuntime,
   gridIndex: number
 ): void {
-  const { runtime, cfgCell, cellKey, cellShelfW, cellInnerCenterX, __braceSet } = cellRuntime;
+  const { runtime, cfgCell, cellKey, cellShelfW, cellInnerCenterX, cellInnerW, __braceSet } = cellRuntime;
   const y = cellRuntime.effectiveBottomY + gridIndex * cellRuntime.localGridStep;
   if (!(y < cellRuntime.effectiveTopY - 0.01)) return;
 
@@ -271,10 +219,15 @@ export function addCornerWingGridShelf(
     cellKey
   );
 
-  addCornerWingFoldedContentsOnSurface(cellRuntime, shelfRuntime, {
-    gridIndex,
-    surfaceTopY: y + shelfH / 2,
-    shelfZ,
-    shelfDepth,
-  });
+  if (!(cfgCell.intDrawersList || []).includes(gridIndex + 1) && runtime.showContentsEnabled) {
+    runtime.addFoldedClothes(
+      cellInnerCenterX,
+      y + shelfH / 2,
+      shelfZ,
+      Math.max(0.05, cellInnerW - 0.06),
+      runtime.wingGroup,
+      resolveCornerShelfContentsMaxHeight(cellRuntime, shelfRuntime, gridIndex, y, shelfH),
+      shelfDepth
+    );
+  }
 }
