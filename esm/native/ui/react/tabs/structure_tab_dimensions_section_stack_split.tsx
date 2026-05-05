@@ -2,6 +2,7 @@ import type { ReactElement } from 'react';
 
 import { InlineNotice, ModeToggleButton } from '../components/index.js';
 import { DimField } from './structure_tab_controls.js';
+import { readStructureDimensionBounds } from './structure_tab_dimension_constraints.js';
 import {
   STRUCTURE_STACK_SPLIT_MODE_BUTTON_TEST_ID,
   STRUCTURE_STACK_SPLIT_SECTION_TEST_ID,
@@ -47,6 +48,10 @@ export function StructureStackSplitControls(props: {
                 onCommit={value => props.onSetRaw('stackSplitLowerHeight', value)}
                 step={5}
                 buttonsStep={5}
+                bounds={readStructureDimensionBounds({
+                  key: 'stackSplitLowerHeight',
+                  height: props.height,
+                })}
                 reserveInputAddon={true}
               />
             </div>
@@ -59,6 +64,7 @@ export function StructureStackSplitControls(props: {
                 onCommit={value => props.onSetRaw('stackSplitLowerDepth', value)}
                 step={5}
                 buttonsStep={5}
+                bounds={readStructureDimensionBounds({ key: 'stackSplitLowerDepth' })}
                 inputAddon={props.renderStackLinkBadge('depth', props.stackSplitLowerDepthManual)}
               />
             </div>
@@ -74,6 +80,7 @@ export function StructureStackSplitControls(props: {
                 onCommit={value => props.onSetRaw('stackSplitLowerDoors', value)}
                 step={1}
                 buttonsStep={1}
+                bounds={readStructureDimensionBounds({ key: 'stackSplitLowerDoors' })}
                 inputAddon={props.renderStackLinkBadge('doors', props.stackSplitLowerDoorsManual)}
               />
             </div>
@@ -86,6 +93,7 @@ export function StructureStackSplitControls(props: {
                 onCommit={value => props.onSetRaw('stackSplitLowerWidth', value)}
                 step={5}
                 buttonsStep={5}
+                bounds={readStructureDimensionBounds({ key: 'stackSplitLowerWidth' })}
                 inputAddon={props.renderStackLinkBadge('width', props.stackSplitLowerWidthManual)}
               />
             </div>

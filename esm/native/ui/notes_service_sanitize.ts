@@ -6,15 +6,31 @@ import type { NotesServiceApp } from './notes_service_shared.js';
 export type SavedNoteStyle = NotesSavedNoteStyle;
 export type SavedNote = NotesSavedNote;
 
+declare const sanitizedNotesHtmlBrand: unique symbol;
+export type SanitizedNotesHtmlString = string & {
+  readonly [sanitizedNotesHtmlBrand]: 'notes-rich';
+};
+
+function asSanitizedNotesHtml(html: string): SanitizedNotesHtmlString {
+  return String(html || '') as SanitizedNotesHtmlString;
+}
+
 function stripAllHtml(s: string): string {
   return String(s || '').replace(/<[^>]*>/g, '');
 }
 
-export function sanitizeRichTextHTML(App: NotesServiceApp, html: string): string {
-  const raw = typeof html === 'string' ? html : '';
-  const doc = getNotesDocument(App);
-  if (!doc) return stripAllHtml(raw);
-  return sanitizeHtmlByPolicy(doc, raw, 'notes-rich');
+export function sanitizeRichTextHTMLWithDocument(
+  doc: Document | null | undefined,
+  html: unknown
+): SanitizedNotesHtmlString {
+  const raw = typeof html === 'string' ? html : html == null ? '' : String(html);
+  if (!raw) return asSanitizedNotesHtml('');
+  if (!doc) return asSanitizedNotesHtml(stripAllHtml(raw));
+  return asSanitizedNotesHtml(sanitizeHtmlByPolicy(doc, raw, 'notes-rich'));
+}
+
+export function sanitizeRichTextHTML(App: NotesServiceApp, html: string): SanitizedNotesHtmlString {
+  return sanitizeRichTextHTMLWithDocument(getNotesDocument(App), html);
 }
 
 function normPx(v: unknown, fallbackPx: string): string {

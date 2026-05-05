@@ -2,9 +2,9 @@ import type { AppContainer, MetaActionsNamespaceLike } from '../../../../../type
 
 import { applyUiRawScalarPatch, setUiFlag } from '../actions/store_actions.js';
 import { applyStructureTemplateRecomputeBatch, structureTabReportNonFatal } from './structure_tab_core.js';
+import { normalizeStructureRawValue } from './structure_tab_dimension_constraints.js';
 import {
   buildRawUiPatch,
-  normalizeDoorsValue,
   readRawPatch,
   type StructureTabStackSplitField,
   type StructureUiPatch,
@@ -60,8 +60,21 @@ export function setStackSplitLowerLinkModeValue(args: {
         : stackSplitLowerDoors;
 
   const nextValue = nextManual ? curValue : topValue;
+  const valueKeyForBounds =
+    field === 'depth'
+      ? 'stackSplitLowerDepth'
+      : field === 'width'
+        ? 'stackSplitLowerWidth'
+        : 'stackSplitLowerDoors';
   const normalizedValue =
-    field === 'doors' ? normalizeDoorsValue(wardrobeType, Number(nextValue) || 0) : Number(nextValue) || 0;
+    normalizeStructureRawValue({
+      key: valueKeyForBounds,
+      value: nextValue,
+      wardrobeType,
+      width,
+      depth,
+      doors,
+    }) ?? (field === 'doors' ? Math.max(0, Math.round(Number(nextValue) || 0)) : Number(nextValue) || 0);
 
   const uiPatch = buildRawUiPatch({ [manualKey]: nextManual, [valueKey]: normalizedValue });
   const source = `react:structure:stackSplit:link:${field}:${nextManual ? 'manual' : 'auto'}`;
@@ -145,21 +158,54 @@ export function toggleStackSplitState(args: {
     Number.isFinite(stackSplitLowerHeight) && stackSplitLowerHeight > 0
       ? stackSplitLowerHeight
       : Math.min(60, maxBottom || 60);
-  const bottomHeight = Math.max(20, Math.min(seededBottomHeight, maxBottom || seededBottomHeight));
+  const bottomHeight =
+    normalizeStructureRawValue({
+      key: 'stackSplitLowerHeight',
+      value: seededBottomHeight,
+      wardrobeType,
+      height,
+      width,
+      depth,
+    }) ?? Math.max(20, Math.min(seededBottomHeight, maxBottom || seededBottomHeight));
 
   const seededBottomDepth =
     Number.isFinite(stackSplitLowerDepth) && stackSplitLowerDepth > 0
       ? stackSplitLowerDepth
       : Math.max(20, Math.min(depth - 5, depth));
-  const bottomDepth = Math.max(20, seededBottomDepth);
+  const bottomDepth =
+    normalizeStructureRawValue({
+      key: 'stackSplitLowerDepth',
+      value: seededBottomDepth,
+      wardrobeType,
+      height,
+      width,
+      depth,
+    }) ?? Math.max(20, seededBottomDepth);
 
   const seededBottomWidth =
     Number.isFinite(stackSplitLowerWidth) && stackSplitLowerWidth > 0 ? stackSplitLowerWidth : width;
-  const bottomWidth = Math.max(20, seededBottomWidth);
+  const bottomWidth =
+    normalizeStructureRawValue({
+      key: 'stackSplitLowerWidth',
+      value: seededBottomWidth,
+      wardrobeType,
+      height,
+      width,
+      depth,
+    }) ?? Math.max(20, seededBottomWidth);
 
   const seededBottomDoors =
-    Number.isFinite(stackSplitLowerDoors) && stackSplitLowerDoors > 0 ? stackSplitLowerDoors : doors;
-  const bottomDoors = normalizeDoorsValue(wardrobeType, seededBottomDoors);
+    Number.isFinite(stackSplitLowerDoors) && stackSplitLowerDoors >= 0 ? stackSplitLowerDoors : doors;
+  const bottomDoors =
+    normalizeStructureRawValue({
+      key: 'stackSplitLowerDoors',
+      value: seededBottomDoors,
+      wardrobeType,
+      height,
+      width,
+      depth,
+      doors,
+    }) ?? Math.max(0, Math.round(Number(seededBottomDoors) || 0));
 
   const uiPatch: StructureUiPatch = {
     stackSplitEnabled: true,

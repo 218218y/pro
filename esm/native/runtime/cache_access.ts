@@ -53,6 +53,44 @@ function readLegacyRootCacheMaybe(App: unknown): CacheBag | null {
   return app ? asCacheBag(app.cache) : null;
 }
 
+function isCacheValueMissing(value: unknown): boolean {
+  return value === undefined || value === null;
+}
+
+function mergeCacheMapEntries(target: CacheMapRecord, source: CacheMapRecord): void {
+  for (const key of Object.keys(source)) {
+    if (!isCacheValueMissing(target[key])) continue;
+    target[key] = source[key];
+  }
+}
+
+function mergeCacheMapField(target: CacheBag, source: CacheBag, key: InternalGridMapKey): boolean {
+  const sourceMap = asCacheBag(source[key]);
+  if (!sourceMap) return false;
+
+  const targetMap = asCacheBag(target[key]);
+  if (targetMap) {
+    mergeCacheMapEntries(targetMap, sourceMap);
+    return true;
+  }
+
+  if (!isCacheValueMissing(target[key])) return false;
+  target[key] = sourceMap;
+  return true;
+}
+
+function mergeCacheBagMissingFields(target: CacheBag, source: CacheBag): void {
+  for (const key of Object.keys(source)) {
+    if (key === 'internalGridMap' || key === 'internalGridMapSplitBottom') {
+      mergeCacheMapField(target, source, key);
+      continue;
+    }
+
+    if (!isCacheValueMissing(target[key])) continue;
+    target[key] = source[key];
+  }
+}
+
 function deleteLegacyRootCache(App: unknown): void {
   const app = asCacheApp(App);
   if (!app || !('cache' in app)) return;
@@ -74,23 +112,25 @@ function ensureRuntimeCacheSlot(App: unknown): CacheBag {
 function adoptLegacyRootCache(App: unknown, legacy: CacheBag): CacheBag {
   const current = asCacheBag(getServiceSlotMaybe<RuntimeCacheServiceLike>(App, 'runtimeCache'));
   if (current) {
-    Object.assign(current, legacy);
+    mergeCacheBagMissingFields(current, legacy);
     deleteLegacyRootCache(App);
     return current;
   }
   const servicesCache = ensureRuntimeCacheSlot(App);
-  Object.assign(servicesCache, legacy);
+  mergeCacheBagMissingFields(servicesCache, legacy);
   deleteLegacyRootCache(App);
   return servicesCache;
 }
 
 export function getRuntimeCacheServiceMaybe(App: unknown): CacheBag | null {
   const current = asCacheBag(getServiceSlotMaybe<RuntimeCacheServiceLike>(App, 'runtimeCache'));
+  const rootCache = readLegacyRootCacheMaybe(App);
   if (current) {
+    if (rootCache) mergeCacheBagMissingFields(current, rootCache);
     deleteLegacyRootCache(App);
     return current;
   }
-  const legacy = readLegacyRootCacheMaybe(App);
+  const legacy = rootCache;
   return legacy ? adoptLegacyRootCache(App, legacy) : null;
 }
 

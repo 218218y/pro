@@ -3,6 +3,10 @@ import type { ReactElement } from 'react';
 import { ToggleRow } from '../components/index.js';
 import { DimField } from './structure_tab_controls.js';
 import {
+  readStructureChestDrawersBounds,
+  readStructureDimensionBounds,
+} from './structure_tab_dimension_constraints.js';
+import {
   STRUCTURE_CHEST_MODE_TOGGLE_TEST_ID,
   STRUCTURE_CHEST_SECTION_TEST_ID,
   STRUCTURE_CHEST_DIMENSION_FIELDS,
@@ -20,6 +24,7 @@ function StructureChestDimsGrid(props: StructureChestSectionProps): ReactElement
           onCommit={props.onSetChestDrawersCount}
           step={1}
           buttonsStep={1}
+          bounds={readStructureChestDrawersBounds()}
         />
       </div>
 
@@ -37,6 +42,10 @@ function StructureChestDimsGrid(props: StructureChestSectionProps): ReactElement
               }
               step={field.step}
               buttonsStep={field.buttonsStep}
+              bounds={readStructureDimensionBounds({
+                key: field.activeId as 'height' | 'width' | 'depth',
+                isChestMode: true,
+              })}
             />
           </div>
         );

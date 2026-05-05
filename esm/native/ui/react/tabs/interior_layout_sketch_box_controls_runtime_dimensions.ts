@@ -30,10 +30,10 @@ export function updateSketchBoxHeightDraft(props: InteriorSketchBoxControlsSecti
 }
 
 export function commitSketchBoxHeightDraft(props: InteriorSketchBoxControlsSectionProps): void {
-  const raw = props.sketchBoxHeightDraft;
-  const n = Number(raw);
-  const next = Number.isFinite(n)
-    ? clampSketch(n, SKETCH_BOX_HEIGHT_MIN_CM, SKETCH_BOX_HEIGHT_MAX_CM)
+  const raw = props.sketchBoxHeightDraft.trim();
+  const parsed = Number(raw);
+  const next = isWithinBounds(parsed, SKETCH_BOX_HEIGHT_MIN_CM, SKETCH_BOX_HEIGHT_MAX_CM)
+    ? parsed
     : clampSketch(props.sketchBoxHeightCm, SKETCH_BOX_HEIGHT_MIN_CM, SKETCH_BOX_HEIGHT_MAX_CM);
   props.setSketchBoxHeightCm(next);
   props.setSketchBoxHeightDraft(String(next));
@@ -73,15 +73,20 @@ export function commitSketchBoxOptionalDimensionDraft(
 
   const parsed = Number(raw);
   const current = getOptionalDimensionValue(props, field);
-  const next = Number.isFinite(parsed)
-    ? clampSketch(parsed, OPTIONAL_DIM_BOUNDS.min, OPTIONAL_DIM_BOUNDS.max)
-    : typeof current === 'number'
-      ? clampSketch(current, OPTIONAL_DIM_BOUNDS.min, OPTIONAL_DIM_BOUNDS.max)
+  const next = isWithinBounds(parsed, OPTIONAL_DIM_BOUNDS.min, OPTIONAL_DIM_BOUNDS.max)
+    ? parsed
+    : isWithinBounds(current, OPTIONAL_DIM_BOUNDS.min, OPTIONAL_DIM_BOUNDS.max)
+      ? current
       : '';
 
   setOptionalDimensionValue(props, field, next);
   setOptionalDimensionDraft(props, field, typeof next === 'number' ? String(next) : '');
   applyOptionalDimensionValue(props, field, next);
+}
+
+function isWithinBounds(value: unknown, min: number, max: number): value is number {
+  const n = Number(value);
+  return Number.isFinite(n) && n >= min && n <= max;
 }
 
 function applyOptionalDimensionValue(

@@ -1,7 +1,11 @@
 import type { Dispatch, KeyboardEvent, MutableRefObject, PointerEvent, SetStateAction } from 'react';
 
 import type { SavedNoteStyle } from '../../../../../types';
-import { isEmptyHtml } from './notes_overlay_helpers.js';
+import {
+  sanitizeRichTextHTMLWithDocument,
+  type SanitizedNotesHtmlString,
+} from '../../notes_service_sanitize.js';
+import { isEmptyHtml } from './notes_overlay_helpers_shared.js';
 import { readNotesCardFormatting } from './notes_overlay_text_style_runtime.js';
 
 export type NoteCardProps = {
@@ -48,19 +52,19 @@ export type NoteCardProps = {
 export type NoteCardDerived = {
   style: SavedNoteStyle;
   isActive: boolean;
-  noteHtml: string;
+  noteHtml: SanitizedNotesHtmlString;
   hasText: boolean;
   baseFontPx: string;
   baseTextColor: string;
 };
 
 export function readNoteCardDerived(
-  props: Pick<NoteCardProps, 'note' | 'editMode' | 'activeIndex' | 'index'>
+  props: Pick<NoteCardProps, 'note' | 'editMode' | 'activeIndex' | 'index' | 'doc'>
 ): NoteCardDerived {
   const { note, editMode, activeIndex, index } = props;
   const style: SavedNoteStyle = note?.style ?? {};
   const isActive = editMode && activeIndex === index;
-  const noteHtml = String(note && note.text ? note.text : '');
+  const noteHtml = sanitizeRichTextHTMLWithDocument(props.doc, note && note.text ? note.text : '');
   const hasText = !isEmptyHtml(noteHtml);
   const { baseFontPx, baseTextColor } = readNotesCardFormatting(style);
 

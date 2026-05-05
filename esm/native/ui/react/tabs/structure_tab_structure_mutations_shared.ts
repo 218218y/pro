@@ -1,5 +1,7 @@
 import type { UnknownRecord } from '../../../../../types';
 
+import { WARDROBE_DOORS_MAX, WARDROBE_SLIDING_DOORS_MIN } from '../../../services/api.js';
+
 import type { SingleDoorPos } from './structure_tab_library_helpers.js';
 
 export type StructureTabNumericKey =
@@ -45,11 +47,12 @@ export function createRecord(): UnknownRecord {
 }
 
 export function minDoorsAllowed(wardrobeType: string): number {
-  return wardrobeType === 'sliding' ? 2 : 0;
+  return wardrobeType === 'sliding' ? WARDROBE_SLIDING_DOORS_MIN : 0;
 }
 
 export function normalizeDoorsValue(wardrobeType: string, value: number): number {
-  return Math.max(minDoorsAllowed(wardrobeType), Math.round(Number(value) || 0));
+  const rounded = Math.round(Number(value) || 0);
+  return Math.max(minDoorsAllowed(wardrobeType), Math.min(WARDROBE_DOORS_MAX, rounded));
 }
 
 export function readSingleDoorPosOr(value: unknown, fallback: SingleDoorPos): SingleDoorPos {

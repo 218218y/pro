@@ -3,6 +3,10 @@ import type { ReactElement } from 'react';
 import { Button, ToggleRow } from '../components/index.js';
 import { DimField } from './structure_tab_controls.js';
 import {
+  readStructureCornerDimensionBounds,
+  readStructureCornerDoorsBounds,
+} from './structure_tab_dimension_constraints.js';
+import {
   STRUCTURE_CORNER_MODE_TOGGLE_TEST_ID,
   STRUCTURE_CORNER_SECTION_TEST_ID,
   STRUCTURE_CORNER_SIDE_BUTTON_TEST_ID,
@@ -64,6 +68,7 @@ export function StructureCornerSection(props: StructureCornerSectionProps): Reac
                   onCommit={props.onCommitCornerDoors}
                   step={1}
                   buttonsStep={1}
+                  bounds={readStructureCornerDoorsBounds()}
                 />
               </div>
 
@@ -79,6 +84,9 @@ export function StructureCornerSection(props: StructureCornerSectionProps): Reac
                       onCommit={onCommit}
                       step={field.step}
                       buttonsStep={field.buttonsStep}
+                      bounds={readStructureCornerDimensionBounds(field.activeId, {
+                        cornerDoors: props.cornerDoors,
+                      })}
                     />
                   </div>
                 );

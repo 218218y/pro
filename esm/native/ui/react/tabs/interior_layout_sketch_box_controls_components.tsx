@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import type { CSSProperties, ReactElement, ReactNode } from 'react';
 
 import { InlineNotice } from '../components/InlineNotice.js';
@@ -11,17 +12,27 @@ type NumericFieldProps = {
   max: number;
   step: number;
   placeholder?: string;
+  allowEmpty?: boolean;
   onChange: (raw: string) => void;
   onBlur: () => void;
 };
 
 export function SketchBoxNumericField(props: NumericFieldProps): ReactElement {
+  const inputId = useId();
+  const errorId = `${inputId}-error`;
+  const validationMessage = readSketchBoxNumericValidationMessage(props.value, {
+    min: props.min,
+    max: props.max,
+    allowEmpty: !!props.allowEmpty,
+  });
+
   return (
     <div className="wp-sketch-box-cell wp-sketch-box-cell--input">
-      <label className="wp-r-label wp-r-label--center" style={{ marginBottom: 6 }}>
+      <label htmlFor={inputId} className="wp-r-label wp-r-label--center" style={{ marginBottom: 6 }}>
         {props.label}
       </label>
       <input
+        id={inputId}
         type="number"
         className="wp-r-input"
         value={props.value}
@@ -29,6 +40,8 @@ export function SketchBoxNumericField(props: NumericFieldProps): ReactElement {
         max={props.max}
         step={props.step}
         placeholder={props.placeholder}
+        aria-invalid={validationMessage ? true : undefined}
+        aria-describedby={validationMessage ? errorId : undefined}
         onFocus={(event: import('react').FocusEvent<HTMLInputElement>) => {
           event.target.select();
         }}
@@ -37,8 +50,33 @@ export function SketchBoxNumericField(props: NumericFieldProps): ReactElement {
         }}
         onBlur={props.onBlur}
       />
+      {validationMessage ? (
+        <div id={errorId} className="wp-r-input-error" role="alert">
+          {validationMessage}
+        </div>
+      ) : null}
     </div>
   );
+}
+
+function readSketchBoxNumericValidationMessage(
+  raw: string,
+  bounds: { min: number; max: number; allowEmpty: boolean }
+): string | null {
+  const text = String(raw || '').trim();
+  if (!text) return null;
+  if (text === '-' || text === '.' || text === '-.') return null;
+
+  const value = Number(text);
+  if (!Number.isFinite(value)) return 'יש להזין מספר תקין';
+  if (value < bounds.min || value > bounds.max) {
+    return `הטווח המותר: ${formatSketchBoxNumericBound(bounds.min)}–${formatSketchBoxNumericBound(bounds.max)}`;
+  }
+  return null;
+}
+
+function formatSketchBoxNumericBound(value: number): string {
+  return Math.abs(value - Math.round(value)) < 0.0001 ? String(Math.round(value)) : String(value);
 }
 
 type ToolButtonProps = {

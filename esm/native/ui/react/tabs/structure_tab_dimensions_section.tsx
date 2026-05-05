@@ -15,6 +15,7 @@ export function StructureDimensionsContent(props: StructureDimensionsContentProp
   return (
     <>
       <StructureDimensionsMainFields
+        isSliding={props.isSliding}
         doors={props.doors}
         width={props.width}
         height={props.height}

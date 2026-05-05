@@ -17,6 +17,10 @@ import {
   readPreChestState,
 } from './structure_tab_actions_controller_shared.js';
 import type { StructureTabCornerChestActionsArgs } from './structure_tab_corner_chest_actions_controller_contracts.js';
+import {
+  normalizeStructureDimensionValue,
+  readStructureChestDrawersBounds,
+} from './structure_tab_dimension_constraints.js';
 
 export function createStructureTabChestActionsController(args: StructureTabCornerChestActionsArgs) {
   const toggleChestMode = (next: boolean) => {
@@ -126,7 +130,10 @@ export function createStructureTabChestActionsController(args: StructureTabCorne
   };
 
   const setChestDrawersCount = (nn: number) => {
-    const next = Math.max(2, Math.round(nn));
+    const next =
+      normalizeStructureDimensionValue(nn, readStructureChestDrawersBounds()) ??
+      readStructureChestDrawersBounds().min ??
+      2;
     const actionMeta: ActionMetaLike = {
       source: 'react:structure:chest:count',
       immediate: true,

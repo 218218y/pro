@@ -226,7 +226,7 @@ export function getStackSplitFromFlags(flags: unknown): {
     lowerHeightCm: Number.isFinite(bh) ? bh : 0,
     lowerDepthCm: Number.isFinite(bd) ? bd : 0,
     lowerWidthCm: Number.isFinite(bw) ? bw : 0,
-    lowerDoorsCount: Number.isFinite(bdoors) ? Math.max(1, bdoors) : 0,
+    lowerDoorsCount: Number.isFinite(bdoors) ? Math.max(0, bdoors) : 0,
   };
 }
 

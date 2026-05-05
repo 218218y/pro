@@ -25,6 +25,7 @@ export function NoteCard(props: NoteCardProps): ReactElement {
     editMode,
     activeIndex: props.activeIndex,
     index: i,
+    doc: props.doc,
   });
 
   return (

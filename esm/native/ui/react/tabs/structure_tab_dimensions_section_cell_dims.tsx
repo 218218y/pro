@@ -2,6 +2,7 @@ import type { ReactElement } from 'react';
 
 import { InlineNotice, ModeToggleButton } from '../components/index.js';
 import { OptionalDimField } from './structure_tab_controls.js';
+import { readStructureDimensionBounds } from './structure_tab_dimension_constraints.js';
 import {
   STRUCTURE_CELL_DIMS_MODE_BUTTON_TEST_ID,
   STRUCTURE_CELL_DIMS_RESET_BUTTON_TEST_ID,
@@ -14,6 +15,7 @@ export function StructureCellDimsControls(props: {
   cellDimsEditActive: StructureDimensionsContentProps['cellDimsEditActive'];
   hasAnyCellDimsOverrides: StructureDimensionsContentProps['hasAnyCellDimsOverrides'];
   defaultCellWidth: StructureDimensionsContentProps['defaultCellWidth'];
+  width: StructureDimensionsContentProps['width'];
   cellDimsWidth: StructureDimensionsContentProps['cellDimsWidth'];
   cellDimsHeight: StructureDimensionsContentProps['cellDimsHeight'];
   cellDimsDepth: StructureDimensionsContentProps['cellDimsDepth'];
@@ -82,6 +84,7 @@ export function StructureCellDimsControls(props: {
                 }}
                 step={5}
                 buttonsStep={5}
+                bounds={readStructureDimensionBounds({ key: 'cellDimsWidth' })}
               />
             </div>
             <div className="wp-r-dims-height">
@@ -99,6 +102,7 @@ export function StructureCellDimsControls(props: {
                 }}
                 step={5}
                 buttonsStep={5}
+                bounds={readStructureDimensionBounds({ key: 'cellDimsHeight' })}
               />
             </div>
             <div className="wp-r-dims-depth">
@@ -116,6 +120,7 @@ export function StructureCellDimsControls(props: {
                 }}
                 step={5}
                 buttonsStep={5}
+                bounds={readStructureDimensionBounds({ key: 'cellDimsDepth' })}
               />
             </div>
           </div>

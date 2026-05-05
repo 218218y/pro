@@ -1,12 +1,13 @@
 import type { PointerEvent, ReactElement } from 'react';
 
-import { notesOverlayReportNonFatal } from './notes_overlay_helpers.js';
+import { notesOverlayReportNonFatal } from './notes_overlay_helpers_shared.js';
+import type { SanitizedNotesHtmlString } from '../../notes_service_sanitize.js';
 
 export function NoteCardPreview(props: {
   index: number;
   isActive: boolean;
   hasText: boolean;
-  noteHtml: string;
+  noteHtml: SanitizedNotesHtmlString;
   baseFontPx: string;
   baseTextColor: string;
   openNoteForEdit: (index: number) => void;

@@ -7,6 +7,7 @@ import {
   blurStructureDimOnWheel,
   formatStructureDraftValue,
   isStructureSameNumericValue,
+  readStructureDimensionValidationMessage,
   readStructureOptionalCommit,
   resolveStructurePlaceholderArrowStep,
   resolveStructureSpinnerPointerStep,
@@ -20,7 +21,7 @@ export function OptionalDimField(props: StructureOptionalDimFieldProps) {
 
   const commitMaybe = useCallback(
     (raw: string) => {
-      const next = readStructureOptionalCommit(raw);
+      const next = readStructureOptionalCommit(raw, props.bounds);
       if (next.kind === 'empty') {
         props.onCommit(null);
         return;
@@ -28,7 +29,7 @@ export function OptionalDimField(props: StructureOptionalDimFieldProps) {
       if (next.kind !== 'value') return;
       props.onCommit(next.value);
     },
-    [props.onCommit]
+    [props.bounds, props.onCommit]
   );
 
   const handleNativeSpinMouseDown = useCallback(
@@ -38,6 +39,7 @@ export function OptionalDimField(props: StructureOptionalDimFieldProps) {
         draft,
         placeholder: props.placeholder,
         step: props.step,
+        bounds: props.bounds,
       });
       if (next == null) return;
       const value = String(next);
@@ -53,10 +55,12 @@ export function OptionalDimField(props: StructureOptionalDimFieldProps) {
         structureTabReportNonFatal('L48', __wpErr);
       }
     },
-    [commitMaybe, draft, props.placeholder, props.step]
+    [commitMaybe, draft, props.bounds, props.placeholder, props.step]
   );
 
   const inputId = useStructureDimInputId(props.activeId, 'dimopt');
+  const errorId = `${inputId}-error`;
+  const validationMessage = readStructureDimensionValidationMessage(draft, props.bounds, true);
 
   return (
     <div className="wp-r-field" data-wp-react-active={props.activeId}>
@@ -67,10 +71,14 @@ export function OptionalDimField(props: StructureOptionalDimFieldProps) {
           name={String(props.activeId || 'dim')}
           data-wp-active-id={props.activeId}
           aria-label={props.label}
+          aria-invalid={validationMessage ? true : undefined}
+          aria-describedby={validationMessage ? errorId : undefined}
           type="number"
           className="wp-r-input"
           value={draft}
           placeholder={props.placeholder != null ? String(props.placeholder) : undefined}
+          min={props.bounds?.allowZero ? 0 : props.bounds?.min}
+          max={props.bounds?.max}
           step={props.step}
           onFocus={(e: import('react').FocusEvent<HTMLInputElement>) => {
             selectStructureDimInput(e, 'L72');
@@ -82,7 +90,7 @@ export function OptionalDimField(props: StructureOptionalDimFieldProps) {
             commitMaybe(value);
           }}
           onBlur={() => {
-            const next = readStructureOptionalCommit(draft);
+            const next = readStructureOptionalCommit(draft, props.bounds);
             if (next.kind === 'empty') {
               if (props.value === '') return;
               props.onCommit(null);
@@ -108,6 +116,7 @@ export function OptionalDimField(props: StructureOptionalDimFieldProps) {
               draft,
               placeholder: props.placeholder,
               step: props.step,
+              bounds: props.bounds,
             });
             if (next == null) return;
             const value = String(next);
@@ -119,6 +128,11 @@ export function OptionalDimField(props: StructureOptionalDimFieldProps) {
           onWheel={blurStructureDimOnWheel}
         />
       </div>
+      {validationMessage ? (
+        <div id={errorId} className="wp-r-input-error" role="alert">
+          {validationMessage}
+        </div>
+      ) : null}
     </div>
   );
 }

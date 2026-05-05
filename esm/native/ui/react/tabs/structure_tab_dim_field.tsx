@@ -5,6 +5,7 @@ import {
   blurStructureDimOnWheel,
   formatStructureDraftValue,
   isStructureSameNumericValue,
+  readStructureDimensionValidationMessage,
   readStructureRequiredCommit,
   selectStructureDimInput,
   useStructureDimInputId,
@@ -16,16 +17,18 @@ export function DimField(props: StructureDimFieldProps) {
 
   const commitIfValid = useCallback(
     (raw: string) => {
-      const next = readStructureRequiredCommit(raw);
+      const next = readStructureRequiredCommit(raw, props.bounds);
       if (next.kind !== 'value') return;
       props.onCommit(next.value);
     },
-    [props.onCommit]
+    [props.bounds, props.onCommit]
   );
 
   const inputId = useStructureDimInputId(props.activeId, 'dim');
+  const errorId = `${inputId}-error`;
   const ariaLabel = props.ariaLabel || (typeof props.label === 'string' ? props.label : 'שדה מידה');
   const hasInputAddon = !!props.inputAddon || !!props.reserveInputAddon;
+  const validationMessage = readStructureDimensionValidationMessage(draft, props.bounds);
 
   return (
     <div className="wp-r-field" data-wp-react-active={props.activeId}>
@@ -39,9 +42,13 @@ export function DimField(props: StructureDimFieldProps) {
           name={String(props.activeId || 'dim')}
           data-wp-active-id={props.activeId}
           aria-label={ariaLabel}
+          aria-invalid={validationMessage ? true : undefined}
+          aria-describedby={validationMessage ? errorId : undefined}
           type="number"
           className={hasInputAddon ? 'wp-r-input wp-r-input--with-addon' : 'wp-r-input'}
           value={draft}
+          min={props.bounds?.allowZero ? 0 : props.bounds?.min}
+          max={props.bounds?.max}
           step={props.step}
           onFocus={(e: import('react').FocusEvent<HTMLInputElement>) => {
             selectStructureDimInput(e, 'L40');
@@ -52,7 +59,7 @@ export function DimField(props: StructureDimFieldProps) {
             commitIfValid(value);
           }}
           onBlur={() => {
-            const next = readStructureRequiredCommit(draft);
+            const next = readStructureRequiredCommit(draft, props.bounds);
             if (next.kind !== 'value') {
               setDraft(formatStructureDraftValue(props.value));
               return;
@@ -77,6 +84,11 @@ export function DimField(props: StructureDimFieldProps) {
           </div>
         ) : null}
       </div>
+      {validationMessage ? (
+        <div id={errorId} className="wp-r-input-error" role="alert">
+          {validationMessage}
+        </div>
+      ) : null}
     </div>
   );
 }

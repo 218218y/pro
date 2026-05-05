@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 
+import type { StructureDimInputBounds } from './structure_tab_dimension_field_shared.js';
+
 export type StructureDimFieldProps = {
   label: ReactNode;
   ariaLabel?: string;
@@ -10,6 +12,7 @@ export type StructureDimFieldProps = {
   onCommit: (n: number) => void;
   step: number;
   buttonsStep: number;
+  bounds?: StructureDimInputBounds;
   activeId: string;
 };
 
@@ -20,5 +23,6 @@ export type StructureOptionalDimFieldProps = {
   onCommit: (n: number | null) => void;
   step: number;
   buttonsStep: number;
+  bounds?: StructureDimInputBounds;
   activeId: string;
 };

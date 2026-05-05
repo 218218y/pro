@@ -18,6 +18,7 @@ import {
   sumDoorsFromStructure,
 } from './structure_tab_library_helpers.js';
 import { applyStructureTemplateRecomputeBatch, structureTabReportNonFatal } from './structure_tab_core.js';
+import { normalizeStructureRawValue } from './structure_tab_dimension_constraints.js';
 import {
   buildRawUiPatch,
   normalizeDoorsValue,
@@ -49,8 +50,11 @@ export function commitStructureRawValue(args: {
   nextValue: number;
   getDisplayedRawValue: DisplayedValueReader;
   wardrobeType: string;
+  isChestMode: boolean;
   isManualWidth: boolean;
   width: number;
+  height: number;
+  depth: number;
   doors: number;
   structureSelectRaw: string;
   singleDoorPosRaw: string;
@@ -62,8 +66,11 @@ export function commitStructureRawValue(args: {
     nextValue,
     getDisplayedRawValue,
     wardrobeType,
+    isChestMode,
     isManualWidth,
     width,
+    height,
+    depth,
     doors,
     structureSelectRaw,
     singleDoorPosRaw,
@@ -85,7 +92,20 @@ export function commitStructureRawValue(args: {
     );
   };
 
-  const value = key === 'doors' || key === 'stackSplitLowerDoors' ? Math.round(nextValue) : nextValue;
+  const normalizedValue = normalizeStructureRawValue({
+    key,
+    value: nextValue,
+    wardrobeType,
+    isChestMode,
+    width,
+    height,
+    depth,
+    doors,
+  });
+  if (normalizedValue == null) return;
+
+  const value =
+    key === 'doors' || key === 'stackSplitLowerDoors' ? Math.round(normalizedValue) : normalizedValue;
 
   const prevDisplayedValue = getDisplayedRawValue(key);
   const isIntegerField = key === 'doors' || key === 'stackSplitLowerDoors';
@@ -110,7 +130,7 @@ export function commitStructureRawValue(args: {
   }
 
   if (key === 'stackSplitLowerDoors') {
-    const doorsN = normalizeDoorsValue(wardrobeType, value);
+    const doorsN = Math.max(0, Math.round(Number(value) || 0));
     const uiPatch = buildRawUiPatch({ stackSplitLowerDoors: doorsN, stackSplitLowerDoorsManual: true });
     const source = 'react:structure:stackSplitLowerDoors';
     const m = meta.noBuildImmediate(source);
@@ -153,7 +173,19 @@ export function commitStructureRawValue(args: {
     }
 
     const rawPatch: StructureRawPatch = { doors: doorsN };
-    if (!treatManualWidth) rawPatch.width = isNoMainWardrobe ? 0 : doorsN * perDoor;
+    if (!treatManualWidth) {
+      const autoWidth = normalizeStructureRawValue({
+        key: 'width',
+        value: doorsN * perDoor,
+        wardrobeType,
+        isChestMode,
+        width,
+        height,
+        depth,
+        doors: doorsN,
+      });
+      rawPatch.width = isNoMainWardrobe ? 0 : (autoWidth ?? doorsN * perDoor);
+    }
 
     const uiPatch: StructureUiPatch = { raw: rawPatch };
 

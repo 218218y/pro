@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   isStructureSameNumericValue,
+  readStructureDimensionValidationMessage,
   readStructureOptionalCommit,
   readStructureRequiredCommit,
   resolveStructurePlaceholderArrowStep,
@@ -21,6 +22,21 @@ test('[structure-dim-shared] optional commit parsing preserves empty semantics',
   assert.deepEqual(readStructureOptionalCommit('.'), { kind: 'pending' });
   assert.deepEqual(readStructureOptionalCommit('-2'), { kind: 'invalid' });
   assert.deepEqual(readStructureOptionalCommit('55'), { kind: 'value', value: 55 });
+});
+
+test('[structure-dim-shared] bounded commits reject out-of-range values before raw state changes', () => {
+  const bounds = { min: 20, max: 150 };
+  assert.deepEqual(readStructureRequiredCommit('19', bounds), { kind: 'invalid' });
+  assert.deepEqual(readStructureRequiredCommit('151', bounds), { kind: 'invalid' });
+  assert.deepEqual(readStructureRequiredCommit('55', bounds), { kind: 'value', value: 55 });
+  assert.equal(readStructureDimensionValidationMessage('151', bounds), 'הטווח המותר: 20–150');
+});
+
+test('[structure-dim-shared] integer bounds reject decimal door counts explicitly', () => {
+  const bounds = { min: 0, max: 14, integer: true };
+  assert.deepEqual(readStructureRequiredCommit('3.5', bounds), { kind: 'invalid' });
+  assert.deepEqual(readStructureRequiredCommit('3', bounds), { kind: 'value', value: 3 });
+  assert.equal(readStructureDimensionValidationMessage('3.5', bounds), 'יש להזין מספר שלם');
 });
 
 test('[structure-dim-shared] numeric equality keeps blur commits from re-firing on same values', () => {

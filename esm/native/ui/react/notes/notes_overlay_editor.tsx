@@ -2,13 +2,14 @@ import { memo, useCallback } from 'react';
 import type { KeyboardEvent } from 'react';
 
 import { notesOverlayReportNonFatal } from './notes_overlay_helpers_shared.js';
+import type { SanitizedNotesHtmlString } from '../../notes_service_sanitize.js';
 
 type NoteEditorProps = {
   index: number;
   isActive: boolean;
   baseFontPx: string;
   baseTextColor: string;
-  noteHtml: string;
+  noteHtml: SanitizedNotesHtmlString;
   registerRef: (index: number, el: HTMLDivElement | null) => void;
   onBlur: (index: number) => void;
   onMouseUp: (index: number) => void;

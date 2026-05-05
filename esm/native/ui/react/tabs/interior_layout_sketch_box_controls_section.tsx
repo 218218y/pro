@@ -110,6 +110,7 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
               max={SKETCH_BOX_OPTIONAL_DIM_MAX_CM}
               step={1}
               placeholder="אוטומטי"
+              allowEmpty={true}
               onChange={raw => {
                 updateSketchBoxOptionalDimensionDraft(props, 'width', raw);
               }}
@@ -125,6 +126,7 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
               max={SKETCH_BOX_OPTIONAL_DIM_MAX_CM}
               step={1}
               placeholder="אוטומטי"
+              allowEmpty={true}
               onChange={raw => {
                 updateSketchBoxOptionalDimensionDraft(props, 'depth', raw);
               }}

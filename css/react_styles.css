@@ -718,6 +718,17 @@ body.wp-ui-react #sidebar > :not(#reactSidebarRoot) {
   justify-content: center;
 }
 
+#reactSidebarRoot .wp-r-input[aria-invalid='true'] {
+  border-color: var(--danger, #d33);
+}
+
+#reactSidebarRoot .wp-r-input-error {
+  margin-top: 4px;
+  color: var(--danger, #d33);
+  font-size: 0.78rem;
+  line-height: 1.25;
+}
+
 #reactSidebarRoot .wp-r-dims-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

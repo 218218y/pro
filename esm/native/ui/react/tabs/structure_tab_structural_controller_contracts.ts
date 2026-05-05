@@ -27,6 +27,7 @@ export type CreateStructureTabStructuralControllerArgs = {
   app: AppContainer;
   meta: MetaActionsNamespaceLike;
   wardrobeType: string;
+  isChestMode: boolean;
   isManualWidth: boolean;
   width: number;
   height: number;
