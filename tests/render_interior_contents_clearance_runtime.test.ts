@@ -58,10 +58,12 @@ test('renderInteriorPresetOps passes real shelf-space clearance to folded/librar
     true
   );
 
-  assert.equal(calls.length, 2);
-  assert.equal(Number(calls[0].maxHeight.toFixed(3)), 0.376);
-  assert.ok(calls[0].maxHeight < 0.5, 'first shelf should not fall back to the oversized default');
-  assert.equal(Number(calls[0].maxDepth.toFixed(2)), 0.45);
+  assert.equal(calls.length, 3);
+  assert.equal(Number(calls[0].shelfY.toFixed(3)), 0);
+  assert.equal(Number(calls[0].maxHeight.toFixed(3)), 0.385);
+  assert.equal(Number(calls[1].maxHeight.toFixed(3)), 0.376);
+  assert.ok(calls[1].maxHeight < 0.5, 'first shelf should not fall back to the oversized default');
+  assert.equal(Number(calls[1].maxDepth.toFixed(2)), 0.45);
 });
 
 test('renderInteriorCustomOps accounts for the next custom shelf thickness in content clearance', () => {
@@ -84,8 +86,77 @@ test('renderInteriorCustomOps accounts for the next custom shelf thickness in co
     true
   );
 
+  assert.equal(calls.length, 3);
+  assert.equal(Number(calls[0].shelfY.toFixed(3)), 0);
+  assert.equal(Number(calls[0].maxHeight.toFixed(3)), 0.385);
+  assert.equal(Number(calls[1].maxHeight.toFixed(3)), 0.367);
+  assert.ok(calls[1].maxHeight < 0.5, 'custom shelf contents should use measured clearance');
+  assert.equal(Number(calls[1].maxDepth.toFixed(2)), 0.45);
+});
+
+
+test('renderInteriorPresetOps places contents on the bottom floor surface and skips it when slot 1 has drawers', () => {
+  const calls: FoldedCall[] = [];
+  const renderer = createBuilderRenderInteriorPresetOps({
+    app: () => ({}),
+    ops: () => ({}),
+    wardrobeGroup: () => ({ children: [] }),
+    three: value => value,
+    renderOpsHandleCatch: () => undefined,
+    assertTHREE: () => null,
+  });
+
+  assert.equal(
+    renderer.applyInteriorPresetOps({
+      ...commonInput(calls),
+      presetOps: { shelves: [1], rods: [] },
+    }),
+    true
+  );
+
   assert.equal(calls.length, 2);
-  assert.equal(Number(calls[0].maxHeight.toFixed(3)), 0.367);
-  assert.ok(calls[0].maxHeight < 0.5, 'custom shelf contents should use measured clearance');
-  assert.equal(Number(calls[0].maxDepth.toFixed(2)), 0.45);
+  assert.equal(calls[0].shelfY, 0);
+  assert.equal(Number(calls[0].maxHeight.toFixed(3)), 0.385);
+
+  const drawerCalls: FoldedCall[] = [];
+  assert.equal(
+    renderer.applyInteriorPresetOps({
+      ...commonInput(drawerCalls),
+      presetOps: { shelves: [1], rods: [] },
+      isInternalDrawersEnabled: true,
+      intDrawersSlot: 1,
+    }),
+    true
+  );
+
+  assert.deepEqual(
+    drawerCalls.map(call => Number(call.shelfY.toFixed(3))),
+    [0.409]
+  );
+});
+
+test('renderInteriorCustomOps places contents on the bottom floor surface and respects custom shelf clearance', () => {
+  const calls: FoldedCall[] = [];
+  const renderer = createBuilderRenderInteriorCustomOps({
+    app: () => ({}),
+    ops: () => ({}),
+    wardrobeGroup: () => ({ children: [] }),
+    three: value => value,
+    matCache: () => null,
+    renderOpsHandleCatch: () => undefined,
+    assertTHREE: () => null,
+  });
+
+  assert.equal(
+    renderer.applyInteriorCustomOps({
+      ...commonInput(calls),
+      customOps: { shelves: [1], shelfVariants: { 1: 'double' }, rods: [] },
+    }),
+    true
+  );
+
+  assert.equal(calls.length, 2);
+  assert.equal(calls[0].shelfY, 0);
+  assert.equal(Number(calls[0].maxHeight.toFixed(3)), 0.376);
+  assert.equal(Number(calls[1].shelfY.toFixed(3)), 0.418);
 });
