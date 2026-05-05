@@ -96,7 +96,6 @@ test('library preset rematerialization resets stale regular-grid shelves to the 
   assert.equal(normalized?.customData?.storage, false);
 });
 
-
 test('library preset rematerialization resets stale shelf arrays when gridDivisions was never materialized', () => {
   const expected = createLibraryTopModuleConfig(2);
   const staleImplicitRegularGrid = {

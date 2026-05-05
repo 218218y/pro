@@ -41,7 +41,6 @@ export function nowMs(App: AppLike): number {
   }
 }
 
-
 export const CAMERA_MOVE_RENDERING_UNTIL_SLOT = '__wpCameraMoveRenderingUntilMs';
 
 export function markCameraMoveRenderingActive(App: AppLike, untilMs: number): void {

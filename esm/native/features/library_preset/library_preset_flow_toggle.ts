@@ -115,7 +115,9 @@ export function applyLibraryPresetMode(
       expectedCfgs.bottomCfgList
     : expectedCfgs.bottomCfgList;
 
-  const nextDoorMaps = resumeState ? createLibraryDoorMapsFromConfig(resumeState.cfg) : createLibraryDoorMaps(env);
+  const nextDoorMaps = resumeState
+    ? createLibraryDoorMapsFromConfig(resumeState.cfg)
+    : createLibraryDoorMaps(env);
   if (!resumeState) {
     applyTopLibraryDoorPolicy(nextDoorMaps, topDoorsCount);
     applyBottomLibraryDoorPolicy(nextDoorMaps, bottomDoorsCount);
@@ -150,10 +152,7 @@ export function applyLibraryPresetMode(
       resumeRaw ? !!resumeRaw.stackSplitLowerDepthManual : !!args.stackSplitLowerDepthManual,
       meta
     );
-    runtime.setUiStackSplitLowerWidthManual(
-      resumeRaw ? !!resumeRaw.stackSplitLowerWidthManual : false,
-      meta
-    );
+    runtime.setUiStackSplitLowerWidthManual(resumeRaw ? !!resumeRaw.stackSplitLowerWidthManual : false, meta);
     runtime.setUiStackSplitLowerDoorsManual(
       resumeRaw ? !!resumeRaw.stackSplitLowerDoorsManual : !!args.stackSplitLowerDoorsManual,
       meta
@@ -175,9 +174,7 @@ export function applyLibraryPresetMode(
             stackSplitLowerDepthManual: resumeRaw
               ? !!resumeRaw.stackSplitLowerDepthManual
               : !!args.stackSplitLowerDepthManual,
-            stackSplitLowerWidthManual: resumeRaw
-              ? !!resumeRaw.stackSplitLowerWidthManual
-              : false,
+            stackSplitLowerWidthManual: resumeRaw ? !!resumeRaw.stackSplitLowerWidthManual : false,
             stackSplitLowerDoorsManual: resumeRaw
               ? !!resumeRaw.stackSplitLowerDoorsManual
               : !!args.stackSplitLowerDoorsManual,

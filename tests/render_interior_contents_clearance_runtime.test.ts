@@ -112,7 +112,10 @@ test('renderInteriorPresetOps does not add folded contents to open hanging botto
     true
   );
 
-  assert.equal(calls.some(call => call.shelfY === 0), false);
+  assert.equal(
+    calls.some(call => call.shelfY === 0),
+    false
+  );
 });
 
 test('renderInteriorCustomOps accounts for the next custom shelf thickness in content clearance', () => {

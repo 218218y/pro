@@ -169,15 +169,7 @@ export function createAddGridShelf(args: {
     const maxHeight = resolveBaseContentsMaxHeight(woodThick);
     if (!(maxHeight > 0)) return;
 
-    addFoldedClothes(
-      internalCenterX,
-      effectiveBottomY,
-      shelfZ,
-      innerW - 0.06,
-      group,
-      maxHeight,
-      shelfDepth
-    );
+    addFoldedClothes(internalCenterX, effectiveBottomY, shelfZ, innerW - 0.06, group, maxHeight, shelfDepth);
   }
 
   function resolveShelfContentsMaxHeight(gridIndex: number, shelfY: number, shelfH: number): number {

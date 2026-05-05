@@ -1,13 +1,40 @@
 // Builder core carcass cornice assembly.
 
 import type { MutableRecord } from './core_pure_shared.js';
+import { __asNum } from './core_pure_shared.js';
 import { CARCASS_BACK_INSET_Z, type PreparedCarcassInput } from './core_carcass_shared.js';
+
+const CORNICE_EPS = 1e-6;
+const CORNICE_Y_EPS = 0.0006;
+
+const WAVE_MAX_HEIGHT = 0.095;
+const WAVE_CYCLES = 2;
+
+const PROFILE_HEIGHT = 0.08;
+const PROFILE_OVERHANG_X = 0.06;
+const PROFILE_OVERHANG_Z = 0.04;
+const PROFILE_INSET_ON_ROOF = 0.03;
+const PROFILE_BACK_STEP = 0.02;
+const PROFILE_SEAM_EPS = 0.0;
+
+const PROFILE_BASE_H = 0.022;
+const PROFILE_STEP1_OUT = 0.006;
+const PROFILE_SLOPE_H = 0.03;
+const PROFILE_SLOPE_OUT = 0.018;
+const PROFILE_STEP2_OUT = 0.006;
+const PROFILE_CAP_RISE = 0.012;
+const PROFILE_CAP_OUT = 0.004;
+const PROFILE_TOP_LIP_OUT = 0.003;
 
 export function buildCarcassCornice(prepared: PreparedCarcassInput): MutableRecord | null {
   const { totalW, D, startY, cabinetBodyHeight, hasCornice, corniceType } = prepared;
   if (!hasCornice) return null;
 
   const corniceTypeNorm = String(corniceType || 'classic').toLowerCase();
+  if (shouldBuildSegmentedCornice(prepared)) {
+    return buildSegmentedCornice(prepared, corniceTypeNorm);
+  }
+
   if (corniceTypeNorm === 'wave') {
     return buildWaveCornice({ totalW, D, woodThick: prepared.woodThick, topY: startY + cabinetBodyHeight });
   }
@@ -21,181 +48,357 @@ type CorniceParams = {
   topY: number;
 };
 
-function buildWaveCornice(params: CorniceParams): MutableRecord {
-  const { totalW, D, woodThick, topY } = params;
-  const epsY = 0.0006;
-  const yPlace = topY + epsY;
-  const frameT = Math.max(0.01, Math.min(0.028, woodThick || 0.018));
-  const maxH = 0.095;
-  const waveAmp = Math.min(Math.max(totalW * 0.03, 0.03), 0.06);
-  const waveCycles = 2;
+type CorniceRun = {
+  left: number;
+  right: number;
+  startIndex: number;
+  endIndex: number;
+  depth: number;
+  topY: number;
+  leftSideStartDepth: number | null;
+  rightSideStartDepth: number | null;
+};
 
-  const frontSeg: MutableRecord = {
-    kind: 'cornice_wave_front',
-    width: Math.max(0.02, totalW - 2 * frameT),
-    depth: frameT,
-    heightMax: maxH,
-    waveAmp,
-    waveCycles,
-    x: 0,
-    y: yPlace + maxH / 2,
-    z: D / 2 - frameT,
-    partId: 'cornice_wave_front',
-  };
+type CorniceSectionParams = {
+  left: number;
+  right: number;
+  globalD: number;
+  depth: number;
+  woodThick: number;
+  topY: number;
+  leftSideStartDepth: number | null;
+  rightSideStartDepth: number | null;
+};
 
-  const sideH = maxH;
-  const sideDepth = Math.max(0.02, D - CARCASS_BACK_INSET_Z);
-  const sideZ = CARCASS_BACK_INSET_Z / 2;
+function shouldBuildSegmentedCornice(prepared: PreparedCarcassInput): boolean {
+  const { moduleWidths, moduleHeightsRaw, moduleDepths, isStepped, isDepthStepped } = prepared;
+  if (!moduleWidths || moduleWidths.length <= 1) return false;
+  if (!isStepped && !isDepthStepped) return false;
+  if (isStepped && (!moduleHeightsRaw || moduleHeightsRaw.length !== moduleWidths.length)) return false;
+  if (isDepthStepped && (!moduleDepths || moduleDepths.length !== moduleWidths.length)) return false;
+  return true;
+}
 
-  const leftSeg: MutableRecord = {
-    kind: 'cornice_wave_side',
-    width: frameT,
-    height: sideH,
-    depth: sideDepth,
-    x: -totalW / 2 + frameT / 2,
-    y: yPlace + sideH / 2,
-    z: sideZ,
-    partId: 'cornice_wave_side_left',
-  };
+function buildSegmentedCornice(
+  prepared: PreparedCarcassInput,
+  corniceTypeNorm: string
+): MutableRecord | null {
+  const runs = buildCorniceRuns(prepared);
+  if (!runs.length) return null;
 
-  const rightSeg: MutableRecord = {
-    kind: 'cornice_wave_side',
-    width: frameT,
-    height: sideH,
-    depth: sideDepth,
-    x: totalW / 2 - frameT / 2,
-    y: yPlace + sideH / 2,
-    z: sideZ,
-    partId: 'cornice_wave_side_right',
-  };
+  const segments: MutableRecord[] = [];
+  for (let i = 0; i < runs.length; i++) {
+    const run = runs[i];
+    const section: CorniceSectionParams = {
+      left: run.left,
+      right: run.right,
+      globalD: prepared.D,
+      depth: run.depth,
+      woodThick: prepared.woodThick,
+      topY: run.topY,
+      leftSideStartDepth: run.leftSideStartDepth,
+      rightSideStartDepth: run.rightSideStartDepth,
+    };
+    if (corniceTypeNorm === 'wave') {
+      segments.push(...buildWaveCorniceSection(section));
+    } else {
+      segments.push(...buildProfileCorniceSection(section));
+    }
+  }
 
+  const maxTopY = runs.reduce(
+    (max, run) => Math.max(max, run.topY),
+    prepared.startY + prepared.cabinetBodyHeight
+  );
+  const maxDepth = runs.reduce((max, run) => Math.max(max, run.depth), prepared.D);
+  const isWave = corniceTypeNorm === 'wave';
   return buildLegacyCorniceEnvelope({
-    totalW,
-    D,
-    topY,
-    height: maxH,
-    mode: 'wave_frame',
-    z: 0,
-    segments: [frontSeg, leftSeg, rightSeg],
+    totalW: prepared.totalW,
+    D: maxDepth,
+    topY: maxTopY,
+    height: isWave ? WAVE_MAX_HEIGHT : PROFILE_HEIGHT,
+    mode: isWave ? 'wave_frame_segmented' : 'profile_open_back_segmented',
+    z: isWave ? 0 : 0.02,
+    segments,
   });
 }
 
-function buildProfileCornice(params: CorniceParams): MutableRecord {
-  const { totalW, D, topY } = params;
-  const cHeight = 0.08;
-  const overhangX = 0.06;
-  const overhangZ = 0.04;
-  const insetOnRoof = 0.03;
-  const backStep = 0.02;
-  const seamEps = 0.0;
-  const epsY = 0.0006;
-  const yPlace = topY + epsY;
+function buildCorniceRuns(prepared: PreparedCarcassInput): CorniceRun[] {
+  const { totalW, D, H, woodThick, startY, cabinetBodyHeight, moduleWidths, moduleHeightsRaw, moduleDepths } =
+    prepared;
+  if (!moduleWidths || !moduleWidths.length) return [];
 
-  const profBaseH = 0.022;
-  const profStep1Out = 0.006;
-  const profSlopeH = 0.03;
-  const profSlopeOut = 0.018;
-  const profStep2Out = 0.006;
-  const profCapRise = 0.012;
-  const profCapOut = 0.004;
-  const profTopLipOut = 0.003;
+  const runs: CorniceRun[] = [];
+  let internalLeft = -totalW / 2 + woodThick;
 
-  const makeCorniceProfile = (overhang: number): MutableRecord[] => {
-    const oh = Math.max(0.001, overhang);
-    const step1Base = Math.max(0, profStep1Out);
-    const slopeBase = Math.max(0, profSlopeOut);
-    const step2Base = Math.max(0, profStep2Out);
-    const capBase = Math.max(0, profCapOut);
-    const lipBase = Math.max(0, profTopLipOut);
+  for (let i = 0; i < moduleWidths.length; i++) {
+    const moduleWidth = moduleWidths[i];
+    const left = i === 0 ? -totalW / 2 : internalLeft;
+    const right = i === moduleWidths.length - 1 ? totalW / 2 : internalLeft + moduleWidth + woodThick;
+    const depth = Math.max(woodThick, moduleDepths ? __asNum(moduleDepths[i], D) : D);
+    const rawHeight = moduleHeightsRaw ? moduleHeightsRaw[i] : H;
+    const totalHeight = __asNum(rawHeight, H);
+    const bodyHeight = Math.min(cabinetBodyHeight, Math.max(woodThick * 2, totalHeight - startY));
+    const topY = startY + bodyHeight;
 
-    let xMaxBase = step1Base + slopeBase + step2Base + capBase + lipBase;
-    if (!Number.isFinite(xMaxBase) || xMaxBase < 1e-6) xMaxBase = 1;
-    const sx = oh / xMaxBase;
+    const prev = runs[runs.length - 1];
+    if (prev && sameCornicePlane(prev, { depth, topY })) {
+      prev.right = right;
+      prev.endIndex = i;
+    } else {
+      runs.push({
+        left,
+        right,
+        startIndex: i,
+        endIndex: i,
+        depth,
+        topY,
+        leftSideStartDepth: null,
+        rightSideStartDepth: null,
+      });
+    }
 
-    const step1 = step1Base * sx;
-    const slopeOut = slopeBase * sx;
-    const step2 = step2Base * sx;
-    const capOut = capBase * sx;
+    internalLeft += moduleWidth + (i < moduleWidths.length - 1 ? woodThick : 0);
+  }
 
-    const y1 = Math.min(profBaseH, cHeight * 0.6);
-    const y2 = Math.min(y1 + profSlopeH, cHeight * 0.92);
-    const y3 = Math.min(y2 + profCapRise, cHeight * 0.96);
+  for (let i = 0; i < runs.length; i++) {
+    const run = runs[i];
+    run.leftSideStartDepth = resolveRunSideStartDepth(run, runs[i - 1]);
+    run.rightSideStartDepth = resolveRunSideStartDepth(run, runs[i + 1]);
+  }
 
-    const x1 = step1;
-    const x2 = x1 + slopeOut;
-    const x3 = x2 + step2;
-    const x4 = x3 + capOut;
-    const x5 = oh;
-    const xTopReturn = Math.max(0, oh - backStep);
+  return runs.filter(run => run.right - run.left > CORNICE_EPS);
+}
 
-    return [
-      { x: -insetOnRoof, y: 0 },
-      { x: 0, y: 0 },
-      { x: 0, y: y1 },
-      { x: x1, y: y1 },
-      { x: x2, y: y2 },
-      { x: x3, y: y2 },
-      { x: x4, y: y3 },
-      { x: x5, y: y3 },
-      { x: xTopReturn, y: cHeight },
-      { x: -insetOnRoof, y: cHeight },
-    ];
-  };
+function sameCornicePlane(
+  run: Pick<CorniceRun, 'depth' | 'topY'>,
+  metrics: { depth: number; topY: number }
+): boolean {
+  return (
+    Math.abs(run.depth - metrics.depth) <= CORNICE_EPS && Math.abs(run.topY - metrics.topY) <= CORNICE_EPS
+  );
+}
 
-  const profileFront = makeCorniceProfile(overhangZ);
-  const profileSide = makeCorniceProfile(overhangX);
+function resolveRunSideStartDepth(run: CorniceRun, neighbor: CorniceRun | undefined): number | null {
+  if (!neighbor) return CARCASS_BACK_INSET_Z;
+  if (Math.abs(run.topY - neighbor.topY) > CORNICE_EPS) return CARCASS_BACK_INSET_Z;
+  if (run.depth > neighbor.depth + CORNICE_EPS) {
+    return Math.min(run.depth - 0.02, Math.max(CARCASS_BACK_INSET_Z, neighbor.depth));
+  }
+  return null;
+}
 
-  const frontSeg: MutableRecord = {
-    kind: 'cornice_profile_seg',
-    length: Math.max(0.001, totalW + 2 * overhangX),
-    profile: profileFront,
-    rotationY: -Math.PI / 2,
-    flipX: false,
-    miterStartTrim: overhangX + seamEps,
-    miterEndTrim: overhangX + seamEps,
-    x: 0,
-    y: yPlace,
-    z: D / 2,
-  };
-
-  const sideStartZ = -D / 2 + CARCASS_BACK_INSET_Z;
-  const sideEndZ = D / 2 + overhangZ;
-  const sideLen = Math.max(0.001, sideEndZ - sideStartZ);
-  const sideCenterZ = (sideStartZ + sideEndZ) / 2;
-
-  const leftSeg: MutableRecord = {
-    kind: 'cornice_profile_seg',
-    length: sideLen,
-    profile: profileSide,
-    rotationY: 0,
-    flipX: true,
-    miterEndTrim: overhangZ + seamEps,
-    x: -totalW / 2,
-    y: yPlace,
-    z: sideCenterZ,
-  };
-
-  const rightSeg: MutableRecord = {
-    kind: 'cornice_profile_seg',
-    length: sideLen,
-    profile: profileSide,
-    rotationY: 0,
-    flipX: false,
-    miterEndTrim: overhangZ + seamEps,
-    x: totalW / 2,
-    y: yPlace,
-    z: sideCenterZ,
-  };
+function buildWaveCornice(params: CorniceParams): MutableRecord {
+  const { totalW, D, woodThick, topY } = params;
+  const segments = buildWaveCorniceSection({
+    left: -totalW / 2,
+    right: totalW / 2,
+    globalD: D,
+    depth: D,
+    woodThick,
+    topY,
+    leftSideStartDepth: CARCASS_BACK_INSET_Z,
+    rightSideStartDepth: CARCASS_BACK_INSET_Z,
+  });
 
   return buildLegacyCorniceEnvelope({
     totalW,
     D,
     topY,
-    height: cHeight,
+    height: WAVE_MAX_HEIGHT,
+    mode: 'wave_frame',
+    z: 0,
+    segments,
+  });
+}
+
+function buildWaveCorniceSection(params: CorniceSectionParams): MutableRecord[] {
+  const { left, right, globalD, depth, woodThick, topY, leftSideStartDepth, rightSideStartDepth } = params;
+  const sectionW = Math.max(0.001, right - left);
+  const yPlace = topY + CORNICE_Y_EPS;
+  const frameT = Math.max(0.01, Math.min(0.028, woodThick || 0.018));
+  const waveAmp = Math.min(Math.max(sectionW * 0.03, 0.03), 0.06);
+  const leftInset = leftSideStartDepth == null ? 0 : frameT;
+  const rightInset = rightSideStartDepth == null ? 0 : frameT;
+  const frontW = Math.max(0.02, sectionW - leftInset - rightInset);
+  const frontLeft = left + leftInset;
+  const frontRight = right - rightInset;
+  const frontZ = -globalD / 2 + depth - frameT;
+
+  const segments: MutableRecord[] = [
+    {
+      kind: 'cornice_wave_front',
+      width: frontW,
+      depth: frameT,
+      heightMax: WAVE_MAX_HEIGHT,
+      waveAmp,
+      waveCycles: WAVE_CYCLES,
+      x: (frontLeft + frontRight) / 2,
+      y: yPlace + WAVE_MAX_HEIGHT / 2,
+      z: frontZ,
+      partId: 'cornice_wave_front',
+    },
+  ];
+
+  if (leftSideStartDepth != null) {
+    const sideDepth = Math.max(0.02, depth - leftSideStartDepth);
+    const sideZ = -globalD / 2 + leftSideStartDepth + sideDepth / 2;
+    segments.push({
+      kind: 'cornice_wave_side',
+      width: frameT,
+      height: WAVE_MAX_HEIGHT,
+      depth: sideDepth,
+      x: left + frameT / 2,
+      y: yPlace + WAVE_MAX_HEIGHT / 2,
+      z: sideZ,
+      partId: 'cornice_wave_side_left',
+    });
+  }
+
+  if (rightSideStartDepth != null) {
+    const sideDepth = Math.max(0.02, depth - rightSideStartDepth);
+    const sideZ = -globalD / 2 + rightSideStartDepth + sideDepth / 2;
+    segments.push({
+      kind: 'cornice_wave_side',
+      width: frameT,
+      height: WAVE_MAX_HEIGHT,
+      depth: sideDepth,
+      x: right - frameT / 2,
+      y: yPlace + WAVE_MAX_HEIGHT / 2,
+      z: sideZ,
+      partId: 'cornice_wave_side_right',
+    });
+  }
+
+  return segments;
+}
+
+function buildProfileCornice(params: CorniceParams): MutableRecord {
+  const { totalW, D, topY, woodThick } = params;
+  const segments = buildProfileCorniceSection({
+    left: -totalW / 2,
+    right: totalW / 2,
+    globalD: D,
+    depth: D,
+    woodThick,
+    topY,
+    leftSideStartDepth: CARCASS_BACK_INSET_Z,
+    rightSideStartDepth: CARCASS_BACK_INSET_Z,
+  });
+
+  return buildLegacyCorniceEnvelope({
+    totalW,
+    D,
+    topY,
+    height: PROFILE_HEIGHT,
     mode: 'profile_open_back',
     z: 0.02,
-    segments: [frontSeg, leftSeg, rightSeg],
+    segments,
   });
+}
+
+function buildProfileCorniceSection(params: CorniceSectionParams): MutableRecord[] {
+  const { left, right, globalD, depth, topY, leftSideStartDepth, rightSideStartDepth } = params;
+  const yPlace = topY + CORNICE_Y_EPS;
+  const sectionW = Math.max(0.001, right - left);
+  const leftOverhang = leftSideStartDepth == null ? 0 : PROFILE_OVERHANG_X;
+  const rightOverhang = rightSideStartDepth == null ? 0 : PROFILE_OVERHANG_X;
+  const profileFront = makeCorniceProfile(PROFILE_OVERHANG_Z);
+  const profileSide = makeCorniceProfile(PROFILE_OVERHANG_X);
+  const sideEndZ = -globalD / 2 + depth + PROFILE_OVERHANG_Z;
+
+  const segments: MutableRecord[] = [
+    {
+      kind: 'cornice_profile_seg',
+      length: Math.max(0.001, sectionW + leftOverhang + rightOverhang),
+      profile: profileFront,
+      rotationY: -Math.PI / 2,
+      flipX: false,
+      miterStartTrim: rightSideStartDepth == null ? 0 : PROFILE_OVERHANG_X + PROFILE_SEAM_EPS,
+      miterEndTrim: leftSideStartDepth == null ? 0 : PROFILE_OVERHANG_X + PROFILE_SEAM_EPS,
+      x: (left - leftOverhang + right + rightOverhang) / 2,
+      y: yPlace,
+      z: -globalD / 2 + depth,
+    },
+  ];
+
+  if (leftSideStartDepth != null) {
+    const sideStartZ = -globalD / 2 + leftSideStartDepth;
+    const sideLen = Math.max(0.001, sideEndZ - sideStartZ);
+    const sideCenterZ = (sideStartZ + sideEndZ) / 2;
+    segments.push({
+      kind: 'cornice_profile_seg',
+      length: sideLen,
+      profile: profileSide,
+      rotationY: 0,
+      flipX: true,
+      miterEndTrim: PROFILE_OVERHANG_Z + PROFILE_SEAM_EPS,
+      x: left,
+      y: yPlace,
+      z: sideCenterZ,
+    });
+  }
+
+  if (rightSideStartDepth != null) {
+    const sideStartZ = -globalD / 2 + rightSideStartDepth;
+    const sideLen = Math.max(0.001, sideEndZ - sideStartZ);
+    const sideCenterZ = (sideStartZ + sideEndZ) / 2;
+    segments.push({
+      kind: 'cornice_profile_seg',
+      length: sideLen,
+      profile: profileSide,
+      rotationY: 0,
+      flipX: false,
+      miterEndTrim: PROFILE_OVERHANG_Z + PROFILE_SEAM_EPS,
+      x: right,
+      y: yPlace,
+      z: sideCenterZ,
+    });
+  }
+
+  return segments;
+}
+
+function makeCorniceProfile(overhang: number): MutableRecord[] {
+  const oh = Math.max(0.001, overhang);
+  const step1Base = Math.max(0, PROFILE_STEP1_OUT);
+  const slopeBase = Math.max(0, PROFILE_SLOPE_OUT);
+  const step2Base = Math.max(0, PROFILE_STEP2_OUT);
+  const capBase = Math.max(0, PROFILE_CAP_OUT);
+  const lipBase = Math.max(0, PROFILE_TOP_LIP_OUT);
+
+  let xMaxBase = step1Base + slopeBase + step2Base + capBase + lipBase;
+  if (!Number.isFinite(xMaxBase) || xMaxBase < 1e-6) xMaxBase = 1;
+  const sx = oh / xMaxBase;
+
+  const step1 = step1Base * sx;
+  const slopeOut = slopeBase * sx;
+  const step2 = step2Base * sx;
+  const capOut = capBase * sx;
+
+  const y1 = Math.min(PROFILE_BASE_H, PROFILE_HEIGHT * 0.6);
+  const y2 = Math.min(y1 + PROFILE_SLOPE_H, PROFILE_HEIGHT * 0.92);
+  const y3 = Math.min(y2 + PROFILE_CAP_RISE, PROFILE_HEIGHT * 0.96);
+
+  const x1 = step1;
+  const x2 = x1 + slopeOut;
+  const x3 = x2 + step2;
+  const x4 = x3 + capOut;
+  const x5 = oh;
+  const xTopReturn = Math.max(0, oh - PROFILE_BACK_STEP);
+
+  return [
+    { x: -PROFILE_INSET_ON_ROOF, y: 0 },
+    { x: 0, y: 0 },
+    { x: 0, y: y1 },
+    { x: x1, y: y1 },
+    { x: x2, y: y2 },
+    { x: x3, y: y2 },
+    { x: x4, y: y3 },
+    { x: x5, y: y3 },
+    { x: xTopReturn, y: PROFILE_HEIGHT },
+    { x: -PROFILE_INSET_ON_ROOF, y: PROFILE_HEIGHT },
+  ];
 }
 
 type LegacyCorniceEnvelopeParams = {

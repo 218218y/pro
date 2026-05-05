@@ -274,7 +274,6 @@ test('library preset mode defaults to 6 upper and lower doors while preserving t
   assert.equal(recomputes[0].uiOverride.raw?.stackSplitLowerWidthManual, false);
 });
 
-
 test('library preset mode does not reuse stale library width after returning from a wider library', () => {
   const uiState: any = {
     stackSplitEnabled: false,

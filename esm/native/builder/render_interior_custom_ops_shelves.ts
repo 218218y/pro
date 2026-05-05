@@ -298,7 +298,10 @@ export function addCustomBaseShelfContents(args: {
 
   const firstShelfVariant = shelfVariantByIndex[1] || 'regular';
   const firstShelfH = shelfHeightForVariant(firstShelfVariant, woodThick);
-  const maxHeight = Math.max(0, effectiveBottomY + localGridStep - firstShelfH / 2 - effectiveBottomY - 0.006);
+  const maxHeight = Math.max(
+    0,
+    effectiveBottomY + localGridStep - firstShelfH / 2 - effectiveBottomY - 0.006
+  );
   if (!(maxHeight > 0)) return;
 
   const isBrace = !!braceSet[1] || firstShelfVariant === 'brace';
@@ -307,4 +310,3 @@ export function addCustomBaseShelfContents(args: {
 
   addFoldedClothes(internalCenterX, effectiveBottomY, shelfZ, innerW - 0.06, group, maxHeight, shelfDepth);
 }
-

@@ -162,7 +162,12 @@ test('[state-api.config] applyProjectSnapshot materializes top modules against l
 
 test('[state-api.config] applyProjectSnapshot keeps library module signature from the incoming snapshot', () => {
   const store = createStoreStub({
-    ui: { doors: 4, singleDoorPos: '', structureSelect: '[2,2]', raw: { doors: 4, structureSelect: '[2,2]' } },
+    ui: {
+      doors: 4,
+      singleDoorPos: '',
+      structureSelect: '[2,2]',
+      raw: { doors: 4, structureSelect: '[2,2]' },
+    },
     config: {
       wardrobeType: 'hinged',
       isLibraryMode: false,

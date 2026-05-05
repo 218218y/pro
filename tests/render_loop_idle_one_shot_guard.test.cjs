@@ -4,10 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = process.cwd();
-const source = fs.readFileSync(
-  path.join(root, 'esm/native/platform/render_loop_impl_runtime.ts'),
-  'utf8'
-);
+const source = fs.readFileSync(path.join(root, 'esm/native/platform/render_loop_impl_runtime.ts'), 'utf8');
 
 test('render loop keeps plain render wakeups one-shot and continues only for real motion', () => {
   assert.match(

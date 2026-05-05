@@ -257,12 +257,7 @@ export function computeModulesAndLayout(args: ComputeModulesAndLayoutArgs): Comp
     coreLayout = null;
   }
 
-  moduleCfgList = ensureLibraryMissingTopModuleConfigs(
-    cfg,
-    modules,
-    moduleCfgList,
-    sourceModuleCfgList
-  );
+  moduleCfgList = ensureLibraryMissingTopModuleConfigs(cfg, modules, moduleCfgList, sourceModuleCfgList);
 
   const moduleInternalWidths = readFiniteNumberList(coreLayout?.moduleInternalWidths);
 

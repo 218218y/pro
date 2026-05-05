@@ -158,9 +158,7 @@ export function seedBottomDimensions(
   const minTopCm = 40;
   const maxBottom = Math.max(0, args.height - minTopCm);
   const libraryDefaultDoors = readLibraryPresetDefaultDoorCount(args.wardrobeType);
-  const topDoorsCount = resumeRaw
-    ? normDoorCount(resumeRaw.doors, args.wardrobeType)
-    : libraryDefaultDoors;
+  const topDoorsCount = resumeRaw ? normDoorCount(resumeRaw.doors, args.wardrobeType) : libraryDefaultDoors;
   const bottomDoorsCount = resumeRaw
     ? normDoorCount(resumeRaw.stackSplitLowerDoors ?? topDoorsCount, args.wardrobeType)
     : libraryDefaultDoors;
