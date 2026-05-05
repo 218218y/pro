@@ -8,6 +8,37 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const ts = require('typescript');
 
+const serviceApiDimensionConstants = Object.freeze({
+  WARDROBE_WIDTH_MIN: 40,
+  WARDROBE_CHEST_WIDTH_MIN: 20,
+  WARDROBE_WIDTH_MAX: 560,
+  WARDROBE_HEIGHT_MIN: 100,
+  WARDROBE_CHEST_HEIGHT_MIN: 20,
+  WARDROBE_HEIGHT_MAX: 300,
+  WARDROBE_DEPTH_MIN: 20,
+  WARDROBE_DEPTH_MAX: 150,
+  WARDROBE_DOORS_MIN: 0,
+  WARDROBE_SLIDING_DOORS_MIN: 2,
+  WARDROBE_DOORS_MAX: 14,
+  WARDROBE_CHEST_DRAWERS_MIN: 2,
+  WARDROBE_CHEST_DRAWERS_MAX: 8,
+  WARDROBE_CELL_DIM_MIN: 20,
+  WARDROBE_CELL_WIDTH_MIN: 40,
+  WARDROBE_CELL_WIDTH_MAX: 560,
+  WARDROBE_CELL_HEIGHT_MIN: 100,
+  WARDROBE_CELL_HEIGHT_MAX: 300,
+  WARDROBE_CELL_DEPTH_MIN: 20,
+  WARDROBE_CELL_DEPTH_MAX: 150,
+  STACK_SPLIT_LOWER_HEIGHT_MIN: 20,
+  STACK_SPLIT_MIN_TOP_HEIGHT: 40,
+  STACK_SPLIT_LOWER_DEPTH_MIN: 20,
+  STACK_SPLIT_LOWER_DEPTH_MAX: 150,
+  STACK_SPLIT_LOWER_WIDTH_MIN: 30,
+  STACK_SPLIT_LOWER_WIDTH_MAX: 800,
+  STACK_SPLIT_LOWER_DOORS_MIN: 0,
+  STACK_SPLIT_LOWER_DOORS_MAX: 20,
+});
+
 function loadStructureActionsControllerModule(calls, overrides = {}) {
   const file = path.join(
     process.cwd(),
@@ -56,6 +87,7 @@ function loadStructureActionsControllerModule(calls, overrides = {}) {
     }
     if (specifier === '../../../services/api.js') {
       return {
+        ...serviceApiDimensionConstants,
         adjustCameraForChest: (...args) => calls.push(['adjustCameraForChest', ...args]),
         adjustCameraForCorner: (...args) => calls.push(['adjustCameraForCorner', ...args]),
         createStructuralModulesRecomputeOpts: () => ({ structureChanged: true, preserveTemplate: true }),
