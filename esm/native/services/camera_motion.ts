@@ -1,14 +1,20 @@
 import { assertApp } from '../runtime/api.js';
 import {
   type AppLike,
+  clearCameraMoveRenderingActive,
   getDimsSafe,
   getRAF,
   getRenderCameraAccess,
   getTHREE,
   lerpVectorsSafe,
+  markCameraMoveRenderingActive,
   nowMs,
   safeCloneVec,
+  wakeCameraRenderLoop,
 } from './camera_shared.js';
+
+const CAMERA_MOVE_DURATION_MS = 800;
+const CAMERA_MOVE_RENDER_SETTLE_MS = 96;
 
 let moveGeneration = 0;
 
@@ -69,11 +75,13 @@ export function moveCamera(App: AppLike, view: string): void {
 
   const startPos = safeCloneVec(THREE, cam.position);
   const startTarget = safeCloneVec(THREE, controls.target);
-  const duration = 800;
+  const duration = CAMERA_MOVE_DURATION_MS;
 
   const raf = getRAF(app);
   const gen = ++moveGeneration;
   const startTime = nowMs(app);
+  const renderUntilMs = startTime + duration + CAMERA_MOVE_RENDER_SETTLE_MS;
+  markCameraMoveRenderingActive(app, renderUntilMs);
 
   function step() {
     if (gen !== moveGeneration) return;
@@ -87,8 +95,17 @@ export function moveCamera(App: AppLike, view: string): void {
       if (typeof controls.update === 'function') controls.update();
     } catch (_) {}
 
-    if (progress < 1) raf(step);
+    wakeCameraRenderLoop(app);
+
+    if (progress < 1) {
+      raf(step);
+      return;
+    }
+
+    clearCameraMoveRenderingActive(app);
+    wakeCameraRenderLoop(app);
   }
 
   raf(step);
+  wakeCameraRenderLoop(app);
 }

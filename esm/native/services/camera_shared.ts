@@ -9,8 +9,12 @@ import type { Vector3Like } from '../../../types/three_like.js';
 
 import { assertApp, assertTHREE, getBrowserTimers } from '../runtime/api.js';
 import { asRecord } from '../runtime/record.js';
-import { getDimsMFromPlatform } from '../runtime/platform_access.js';
-import { getCamera, getControls } from '../runtime/render_access.js';
+import {
+  ensureRenderLoopViaPlatform,
+  getDimsMFromPlatform,
+  triggerRenderViaPlatform,
+} from '../runtime/platform_access.js';
+import { getCamera, getControls, setRenderSlot } from '../runtime/render_access.js';
 import { readRootState } from '../runtime/root_state_access.js';
 
 export type AppLike = AppContainer | (UnknownRecord & { services?: unknown }) | null | undefined;
@@ -35,6 +39,30 @@ export function nowMs(App: AppLike): number {
   } catch {
     return Date.now();
   }
+}
+
+
+export const CAMERA_MOVE_RENDERING_UNTIL_SLOT = '__wpCameraMoveRenderingUntilMs';
+
+export function markCameraMoveRenderingActive(App: AppLike, untilMs: number): void {
+  try {
+    const next = Number.isFinite(untilMs) && untilMs > 0 ? untilMs : 0;
+    setRenderSlot(App, CAMERA_MOVE_RENDERING_UNTIL_SLOT, next);
+  } catch (_) {}
+}
+
+export function clearCameraMoveRenderingActive(App: AppLike): void {
+  markCameraMoveRenderingActive(App, 0);
+}
+
+export function wakeCameraRenderLoop(App: AppLike): void {
+  try {
+    if (triggerRenderViaPlatform(App, false)) return;
+  } catch (_) {}
+
+  try {
+    ensureRenderLoopViaPlatform(App);
+  } catch (_) {}
 }
 
 export function getRAF(App: AppLike): RafLike {

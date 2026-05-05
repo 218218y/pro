@@ -49,7 +49,10 @@ export function buildStructureUiSnapshotFromValues(ctx: {
 
 export function buildStructureCfgSnapshot(value: unknown): UnknownRecord {
   const cfg = asProjectConfigRecord(value);
-  return { wardrobeType: normalizeWardrobeType(cfg.wardrobeType) };
+  return {
+    wardrobeType: normalizeWardrobeType(cfg.wardrobeType),
+    isLibraryMode: !!cfg.isLibraryMode,
+  };
 }
 
 export function buildStructureUiSnapshotFromSettings(

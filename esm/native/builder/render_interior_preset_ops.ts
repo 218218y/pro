@@ -50,6 +50,8 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
     const effectiveBottomY = Number(input.effectiveBottomY || 0);
     const effectiveTopY = Number(input.effectiveTopY || 0);
     const localGridStep = Number(input.localGridStep || 0);
+    const rawGridDivisions = Number(input.gridDivisions || 0);
+    const gridDivisions = Number.isFinite(rawGridDivisions) && rawGridDivisions > 0 ? rawGridDivisions : 6;
     const innerW = Number(input.innerW || 0);
     const woodThick = Number(input.woodThick || 0.018);
     const internalDepth = Number(input.internalDepth || 0);
@@ -62,6 +64,13 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
     const currentShelfMat = input.currentShelfMat;
     const bodyMat = input.bodyMat;
     const braceSet = buildBraceShelfIndexSet(input);
+    const shelfSet: Record<number, true> = Object.create(null);
+    if (Array.isArray(ops.shelves)) {
+      for (const rawShelfIndex of ops.shelves) {
+        const shelfIndex = parseInt(String(rawShelfIndex), 10);
+        if (Number.isFinite(shelfIndex)) shelfSet[shelfIndex] = true;
+      }
+    }
 
     const regularShelfDepthCap = 0.45;
     const regularDepth =
@@ -101,6 +110,8 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
       effectiveBottomY,
       effectiveTopY,
       localGridStep,
+      gridDivisions,
+      shelfSet,
       internalCenterX,
       braceCenterX,
       innerW,

@@ -69,3 +69,83 @@ test('library preset invariants rematerialize preserved modules against canonica
   assert.deepEqual(normalized?.customData?.rods, [false, false, false, false, false]);
   assert.equal(normalized?.customData?.storage, true);
 });
+
+test('library preset rematerialization resets stale regular-grid shelves to the top-library 4-shelf template', () => {
+  const expected = createLibraryTopModuleConfig(1);
+  const staleRegularGrid = {
+    ...expected,
+    gridDivisions: 6,
+    customData: {
+      shelves: [true, true, true, true, true, false],
+      rods: [false, false, false, false, false, false],
+      storage: false,
+    },
+    doors: 1,
+  };
+
+  const next = buildNextLibraryModuleCfgList([staleRegularGrid], [expected]);
+  const normalized = next?.[0];
+
+  assert.equal(normalized?.gridDivisions, 5);
+  assert.deepEqual(
+    normalized?.customData?.shelves,
+    [true, true, true, true, false],
+    'upper library modules should materialize with 4 shelf boards, not a stale 5-board regular-grid shape'
+  );
+  assert.deepEqual(normalized?.customData?.rods, [false, false, false, false, false]);
+  assert.equal(normalized?.customData?.storage, false);
+});
+
+
+test('library preset rematerialization resets stale shelf arrays when gridDivisions was never materialized', () => {
+  const expected = createLibraryTopModuleConfig(2);
+  const staleImplicitRegularGrid = {
+    ...expected,
+    gridDivisions: undefined,
+    customData: {
+      shelves: [true, true, true, true, true],
+      rods: [false, false, false, false, false],
+      storage: false,
+    },
+    doors: 2,
+  };
+
+  const next = buildNextLibraryModuleCfgList([staleImplicitRegularGrid], [expected]);
+  const normalized = next?.[0];
+
+  assert.equal(normalized?.gridDivisions, 5);
+  assert.deepEqual(normalized?.customData?.shelves, [true, true, true, true, false]);
+  assert.deepEqual(normalized?.customData?.rods, [false, false, false, false, false]);
+});
+
+test('library preset ignores stale regular structureSelect when it no longer matches library door count', () => {
+  const staleRegularUi = {
+    structureSelect: '[2,2]',
+    singleDoorPos: 'left',
+  };
+
+  assert.deepEqual(
+    calcDoorsSignatureFromUi(6, 'hinged', staleRegularUi),
+    [2, 2, 2],
+    '6-door library must not reuse a stale 4-door structure signature'
+  );
+
+  const { topCfgList } = buildLibraryModuleConfigLists(6, 6, 'hinged', staleRegularUi);
+  assert.deepEqual(
+    topCfgList.map(item => item?.doors),
+    [2, 2, 2]
+  );
+  assert.deepEqual(
+    topCfgList.map(item => item?.gridDivisions),
+    [5, 5, 5],
+    'all 3 upper library cells should use the 4-shelf / 5-space library template'
+  );
+  assert.deepEqual(
+    topCfgList.map(item => item?.customData?.shelves),
+    [
+      [true, true, true, true, false],
+      [true, true, true, true, false],
+      [true, true, true, true, false],
+    ]
+  );
+});

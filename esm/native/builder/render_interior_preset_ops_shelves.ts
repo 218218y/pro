@@ -21,9 +21,11 @@ export function createAddGridShelf(args: {
   addFoldedClothes?: InteriorOpsCallable;
   currentShelfMat: unknown;
   braceSet: Record<number, true>;
+  shelfSet: Record<number, true>;
   effectiveBottomY: number;
   effectiveTopY: number;
   localGridStep: number;
+  gridDivisions: number;
   internalCenterX: number;
   braceCenterX: number;
   innerW: number;
@@ -48,9 +50,11 @@ export function createAddGridShelf(args: {
     addFoldedClothes,
     currentShelfMat,
     braceSet,
+    shelfSet,
     effectiveBottomY,
     effectiveTopY,
     localGridStep,
+    gridDivisions,
     internalCenterX,
     braceCenterX,
     innerW,
@@ -148,6 +152,21 @@ export function createAddGridShelf(args: {
     _isBrace: boolean
   ): void => {};
 
+  function resolveShelfContentsMaxHeight(gridIndex: number, shelfY: number, shelfH: number): number {
+    const shelfTopY = shelfY + shelfH / 2;
+    let topLimitY = effectiveTopY;
+    const maxGrid = Math.max(0, Math.floor(Number(gridDivisions) || 0));
+
+    for (let nextIndex = gridIndex + 1; nextIndex < maxGrid; nextIndex += 1) {
+      if (shelfSet[nextIndex]) {
+        topLimitY = effectiveBottomY + nextIndex * localGridStep - woodThick / 2;
+        break;
+      }
+    }
+
+    return Math.max(0, topLimitY - shelfTopY - 0.006);
+  }
+
   return function addGridShelf(gridIndex: number): void {
     const y = effectiveBottomY + Number(gridIndex || 0) * localGridStep;
     if (!(y < effectiveTopY - 0.01)) return;
@@ -171,7 +190,7 @@ export function createAddGridShelf(args: {
         shelfZ,
         innerW - 0.06,
         group,
-        undefined,
+        resolveShelfContentsMaxHeight(Number(gridIndex || 0), y, woodThick),
         shelfDepth
       );
     }

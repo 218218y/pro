@@ -447,8 +447,10 @@ test('library preset contracts stay typed and keep semantic write wrappers for s
       /LibraryPresetUiSnapshot/,
       /LibraryPresetConfigSnapshot/,
       /let preState: LibraryPresetPreState \| null = null;/,
+      /let lastLibraryState: LibraryPresetPreState \| null = null;/,
+      /lastLibraryState = captureLibraryPresetPreState\(env\);/,
       /preState = restoreLibraryPresetPreState\(env, args, helpers\.mergeUiOverride, preState\);/,
-      /preState = applyLibraryPresetMode\(env, args, helpers\.mergeUiOverride\);/,
+      /preState = applyLibraryPresetMode\(env, args, helpers\.mergeUiOverride, lastLibraryState\);/,
     ],
     'libraryPreset'
   );
@@ -499,6 +501,7 @@ test('library preset contracts stay typed and keep semantic write wrappers for s
     [
       /export function readLibraryPresetUiRawState\(/,
       /export function buildLibraryModuleConfigLists\(/,
+      /export function normalizeLibraryStructureSelectForDoors\(/,
       /export function canPreserveLibraryModuleCfg\(/,
       /export function buildNextLibraryModuleCfgList\(/,
     ],

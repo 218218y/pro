@@ -3,7 +3,7 @@ import { getBuildUIFromPlatform } from '../runtime/platform_access.js';
 import { ensureBuilderService, getBuilderAddOutlines } from '../runtime/builder_service_access.js';
 import { readRuntimeScalarOrDefaultFromApp } from '../runtime/runtime_selectors.js';
 import { assertThreeViaDeps } from '../runtime/three_access.js';
-import { getUi } from './store_access.js';
+import { getCfg, getUi } from './store_access.js';
 
 import type {
   AppContainer,
@@ -89,6 +89,18 @@ export function resolveShowContents(buildUI: UnknownRecord, showContentsOverride
   return false;
 }
 
+export function resolveLibraryContents(buildUI: UnknownRecord, passedApp: unknown): boolean {
+  if (buildUI && typeof buildUI.isLibraryMode !== 'undefined') return !!buildUI.isLibraryMode;
+  try {
+    const App = asObject(passedApp) ? ensureVisualsContentsApp(passedApp) : null;
+    if (!App) return false;
+    const cfg = getCfg(App) || {};
+    return !!cfg.isLibraryMode;
+  } catch {
+    return false;
+  }
+}
+
 export function resolveShowHanger(App: AppContainer): boolean {
   try {
     const ui = getUi(App) || {};
@@ -122,4 +134,14 @@ export const CLOTH_COLORS = [
 export function getRandomClothColor() {
   const r = typeof seededRandom.random === 'function' ? seededRandom.random() : Math.random();
   return CLOTH_COLORS[Math.floor(r * CLOTH_COLORS.length)];
+}
+
+export const BOOK_COLORS = [
+  0x7a3e2e, 0x2f5d7c, 0x476a34, 0x8a6f2a, 0x5a3f7a, 0x8c3d4b, 0x36454f, 0xb08d57, 0x6b4e31, 0x1f4e5f,
+  0x9a4f2f, 0x3f6f5f,
+];
+
+export function getRandomBookColor() {
+  const r = typeof seededRandom.random === 'function' ? seededRandom.random() : Math.random();
+  return BOOK_COLORS[Math.floor(r * BOOK_COLORS.length)];
 }

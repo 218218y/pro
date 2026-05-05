@@ -8,8 +8,6 @@ import {
   setLoopRaf,
   setRafScheduledAt,
 } from '../runtime/render_access.js';
-import { getBrowserTimers } from '../runtime/api.js';
-import { requestIdleCallbackMaybe } from '../runtime/browser_env_timers.js';
 import { readConfigStateFromApp, readRuntimeStateFromApp } from '../runtime/root_state_access.js';
 import { getBuilderBuildUi } from '../runtime/builder_service_access.js';
 import {
@@ -25,7 +23,7 @@ import {
   DEFAULT_HEIGHT,
   DEFAULT_WIDTH,
   getDefaultDepthForWardrobeType,
-} from '../runtime/wardrobe_dimension_defaults.js';
+} from '../features/wardrobe_dimension_defaults.js';
 
 import { ensurePlatformPerf, isRecord, readBuildUiSurface } from './platform_shared.js';
 
@@ -43,36 +41,6 @@ function readNumberish(value: unknown): number {
 function invokeEnsureRenderLoop(platform: AppContainer['services']['platform'] | null | undefined): void {
   const ensureRenderLoop = platform && typeof platform === 'object' ? platform.ensureRenderLoop : null;
   if (typeof ensureRenderLoop === 'function') ensureRenderLoop();
-}
-
-function scheduleFirstRenderKick(App: AppContainer, runKick: () => void): void {
-  let didRun = false;
-  const runOnce = () => {
-    if (didRun) return;
-    didRun = true;
-    runKick();
-  };
-
-  try {
-    const requestIdleCallbackFn = requestIdleCallbackMaybe(App);
-    if (requestIdleCallbackFn) {
-      requestIdleCallbackFn(
-        function () {
-          runOnce();
-        },
-        { timeout: 120 }
-      );
-      return;
-    }
-  } catch {
-    // Fall back to a macrotask below.
-  }
-
-  try {
-    getBrowserTimers(App).setTimeout(runOnce, 0);
-  } catch {
-    runOnce();
-  }
 }
 
 export function installPlatformServiceSurface(
@@ -195,19 +163,12 @@ export function installPlatformServiceSurface(
       setLoopRaf(
         App,
         requestAnimationFrameFn(function __wpKickRenderLoop() {
-          const runKick = () => {
-            try {
-              animate();
-            } catch (e) {
-              setLoopRaf(App, 0);
-              reportErrorViaPlatform(App, e, 'animate');
-            }
-          };
-
-          // The first real render may compile shaders and upload buffers. Keep the
-          // RAF handler lightweight and run the heavy kick as idle work when the
-          // browser offers it, with a short timeout so startup remains responsive.
-          scheduleFirstRenderKick(App, runKick);
+          try {
+            animate();
+          } catch (e) {
+            setLoopRaf(App, 0);
+            reportErrorViaPlatform(App, e, 'animate');
+          }
         })
       );
     };

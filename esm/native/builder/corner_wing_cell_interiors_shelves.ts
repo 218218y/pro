@@ -138,6 +138,42 @@ export function createCornerWingInteriorShelfRuntime(
   };
 }
 
+function cornerShelfHeightForVariant(
+  runtime: CornerWingInteriorRuntime,
+  shelfRuntime: CornerWingInteriorShelfRuntime,
+  variant: 'regular' | 'double' | 'glass' | 'brace'
+): number {
+  if (variant === 'glass') return shelfRuntime.GLASS_SHELF_THICK;
+  if (variant === 'double') return shelfRuntime.DOUBLE_SHELF_THICK;
+  return runtime.woodThick;
+}
+
+function resolveCornerShelfContentsMaxHeight(
+  cellRuntime: CornerWingInteriorCellRuntime,
+  shelfRuntime: CornerWingInteriorShelfRuntime,
+  gridIndex: number,
+  shelfY: number,
+  shelfH: number
+): number {
+  const { runtime, cfgCell } = cellRuntime;
+  const shelfTopY = shelfY + shelfH / 2;
+  let topLimitY = cellRuntime.effectiveTopY;
+  const customData = runtime.isRecord(cfgCell.customData) ? cfgCell.customData : null;
+  const shelves = Array.isArray(customData?.shelves) ? customData.shelves : [];
+  const maxGrid = Math.max(0, Math.floor(Number(cellRuntime.gridDivisions) || 0));
+
+  for (let nextIndex = gridIndex + 1; nextIndex < maxGrid; nextIndex += 1) {
+    if (shelves[nextIndex - 1]) {
+      const nextVariant = shelfRuntime.readCornerShelfVariant(cfgCell, nextIndex);
+      const nextShelfH = cornerShelfHeightForVariant(runtime, shelfRuntime, nextVariant);
+      topLimitY = cellRuntime.effectiveBottomY + nextIndex * cellRuntime.localGridStep - nextShelfH / 2;
+      break;
+    }
+  }
+
+  return Math.max(0, topLimitY - shelfTopY - 0.006);
+}
+
 export function addCornerWingGridShelf(
   cellRuntime: CornerWingInteriorCellRuntime,
   shelfRuntime: CornerWingInteriorShelfRuntime,
@@ -150,13 +186,8 @@ export function addCornerWingGridShelf(
   const shelfVariant = shelfRuntime.readCornerShelfVariant(cfgCell, gridIndex);
   const isBraceShelf = !!__braceSet[gridIndex] || shelfVariant === 'brace';
   const isGlassShelf = shelfVariant === 'glass';
-  const isDoubleShelf = shelfVariant === 'double';
   const shelfDepth = isBraceShelf ? cellRuntime.__internalDepth : cellRuntime.__regularDepth;
-  const shelfH = isGlassShelf
-    ? shelfRuntime.GLASS_SHELF_THICK
-    : isDoubleShelf
-      ? shelfRuntime.DOUBLE_SHELF_THICK
-      : runtime.woodThick;
+  const shelfH = cornerShelfHeightForVariant(runtime, shelfRuntime, shelfVariant);
   const shelfZ = cellRuntime.__backFaceZ + shelfDepth / 2;
   const shelfMaterial =
     isGlassShelf && shelfRuntime.glassShelfMat ? shelfRuntime.glassShelfMat : shelfRuntime.shelfMat;
@@ -195,7 +226,7 @@ export function addCornerWingGridShelf(
       shelfZ,
       Math.max(0.05, cellInnerW - 0.06),
       runtime.wingGroup,
-      undefined,
+      resolveCornerShelfContentsMaxHeight(cellRuntime, shelfRuntime, gridIndex, y, shelfH),
       shelfDepth
     );
   }

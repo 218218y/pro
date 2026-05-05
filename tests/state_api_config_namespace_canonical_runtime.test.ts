@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { installStateApi } from '../esm/native/kernel/state_api.ts';
+import { createLibraryTopModuleConfig } from '../esm/native/features/library_preset/module_defaults.ts';
 
 type AnyRecord = Record<string, unknown>;
 
@@ -157,6 +158,61 @@ test('[state-api.config] applyProjectSnapshot materializes top modules against l
     [2, 2, 1]
   );
   assert.equal(asRec(store.commits[0]?.meta).source, 'test:project-snapshot');
+});
+
+test('[state-api.config] applyProjectSnapshot keeps library module signature from the incoming snapshot', () => {
+  const store = createStoreStub({
+    ui: { doors: 4, singleDoorPos: '', structureSelect: '[2,2]', raw: { doors: 4, structureSelect: '[2,2]' } },
+    config: {
+      wardrobeType: 'hinged',
+      isLibraryMode: false,
+      modulesConfiguration: [createLibraryTopModuleConfig(2), createLibraryTopModuleConfig(2)],
+    },
+    runtime: {},
+    mode: { primary: 'none', opts: {} },
+    meta: {},
+  });
+  const App: AnyRecord = { actions: {}, store };
+  installStateApi(App as any);
+
+  const incomingModules = [
+    createLibraryTopModuleConfig(2),
+    createLibraryTopModuleConfig(2),
+    createLibraryTopModuleConfig(2),
+  ];
+
+  const out = (App.actions as any).config.applyProjectSnapshot(
+    {
+      wardrobeType: 'hinged',
+      isLibraryMode: true,
+      modulesConfiguration: incomingModules,
+    },
+    { source: 'test:library-preset:config-before-ui' }
+  );
+
+  const patch = asRec(out);
+  const top = Array.isArray(patch.modulesConfiguration) ? (patch.modulesConfiguration as AnyRecord[]) : [];
+  assert.deepEqual(
+    top.map(entry => entry.doors),
+    [2, 2, 2]
+  );
+  assert.deepEqual(
+    top.map(entry => entry.gridDivisions),
+    [5, 5, 5]
+  );
+  assert.deepEqual(
+    top.map(entry => asRec(entry.customData).shelves),
+    [
+      [true, true, true, true, false],
+      [true, true, true, true, false],
+      [true, true, true, true, false],
+    ]
+  );
+
+  const committedTop = store.commits[0]?.patch.modulesConfiguration as AnyRecord[];
+  assert.equal(committedTop.length, 3);
+  assert.equal(committedTop[2].gridDivisions, 5);
+  assert.deepEqual(asRec(committedTop[2].customData).shelves, [true, true, true, true, false]);
 });
 
 test('[state-api.config] applyProjectSnapshot marks snapshot-owned visual/config branches for replace semantics', () => {

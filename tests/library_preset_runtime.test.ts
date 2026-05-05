@@ -25,6 +25,8 @@ test('library preset runtime: structural recompute stays on canonical env surfac
     },
     ui: {
       get: () => ({}),
+      setDoors: () => undefined,
+      setWidth: () => undefined,
       setStackSplitEnabled: () => undefined,
       setStackSplitLowerHeight: () => undefined,
       setStackSplitLowerDepth: () => undefined,

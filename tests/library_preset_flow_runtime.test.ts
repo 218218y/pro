@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  applyLibraryPresetMode,
   captureLibraryPresetPreState,
   ensureLibraryPresetInvariants,
   restoreLibraryPresetPreState,
@@ -68,6 +69,8 @@ test('library preset flow captures cloned pre-state and restores it through dedi
     },
     ui: {
       get: () => uiState,
+      setDoors: value => uiCalls.push(['doors', value]),
+      setWidth: value => uiCalls.push(['width', value]),
       setStackSplitEnabled: (on: boolean) => uiCalls.push(['stackSplitEnabled', on]),
       setStackSplitLowerHeight: value => uiCalls.push(['stackSplitLowerHeight', value]),
       setStackSplitLowerDepth: value => uiCalls.push(['stackSplitLowerDepth', value]),
@@ -136,6 +139,261 @@ test('library preset flow captures cloned pre-state and restores it through dedi
   assert.equal(recomputes[0].src, 'react:structure:library:off');
 });
 
+test('library preset mode defaults to 6 upper and lower doors while preserving the pre-library door count for restore', () => {
+  const uiState: any = {
+    stackSplitEnabled: false,
+    structureSelect: '',
+    singleDoorPos: 'left',
+    raw: {
+      doors: 4,
+      width: 160,
+      height: 240,
+      depth: 55,
+    },
+  };
+  const cfgState: any = {
+    modulesConfiguration: [{ doors: 2 }, { doors: 2 }],
+    stackSplitLowerModulesConfiguration: null,
+    isMultiColorMode: false,
+    individualColors: {},
+    curtainMap: {},
+    doorSpecialMap: {},
+    doorStyleMap: {},
+  };
+
+  const configSnapshots: any[] = [];
+  const uiCalls: Array<[string, unknown]> = [];
+  const recomputes: Array<{ uiOverride: LibraryPresetUiOverride; src: string }> = [];
+
+  const env: LibraryPresetEnv = {
+    history: { batch: fn => fn() },
+    meta: {
+      merge: (meta = {}, defaults = {}, src) => ({ ...defaults, ...meta, source: src || meta.source }),
+      noBuild: (meta = {}, src) => ({ ...meta, source: src || meta.source, noBuild: true }),
+      noHistory: (meta = {}, src) => ({ ...meta, source: src || meta.source, noHistory: true }),
+    },
+    config: {
+      get: () => cfgState,
+      applyProjectSnapshot: next => {
+        configSnapshots.push(next);
+        Object.assign(cfgState, next);
+      },
+      setModulesConfiguration: next => {
+        cfgState.modulesConfiguration = next;
+      },
+      setLowerModulesConfiguration: next => {
+        cfgState.stackSplitLowerModulesConfiguration = next;
+      },
+      setLibraryMode: on => {
+        cfgState.isLibraryMode = on;
+      },
+      setMultiColorMode: on => {
+        cfgState.isMultiColorMode = on;
+      },
+      setIndividualColors: next => {
+        cfgState.individualColors = next;
+      },
+      setCurtainMap: next => {
+        cfgState.curtainMap = next;
+      },
+      setDoorSpecialMap: next => {
+        cfgState.doorSpecialMap = next;
+      },
+    },
+    ui: {
+      get: () => uiState,
+      setDoors: value => {
+        uiCalls.push(['doors', value]);
+        uiState.raw.doors = value;
+      },
+      setWidth: value => {
+        uiCalls.push(['width', value]);
+        uiState.raw.width = value;
+      },
+      setStackSplitEnabled: on => {
+        uiCalls.push(['stackSplitEnabled', on]);
+        uiState.stackSplitEnabled = on;
+      },
+      setStackSplitLowerHeight: value => uiCalls.push(['stackSplitLowerHeight', value]),
+      setStackSplitLowerDepth: value => uiCalls.push(['stackSplitLowerDepth', value]),
+      setStackSplitLowerWidth: value => uiCalls.push(['stackSplitLowerWidth', value]),
+      setStackSplitLowerDoors: value => uiCalls.push(['stackSplitLowerDoors', value]),
+      setStackSplitLowerDepthManual: on => uiCalls.push(['stackSplitLowerDepthManual', on]),
+      setStackSplitLowerWidthManual: on => uiCalls.push(['stackSplitLowerWidthManual', on]),
+      setStackSplitLowerDoorsManual: on => uiCalls.push(['stackSplitLowerDoorsManual', on]),
+    },
+    runStructuralRecompute: (uiOverride, src) => {
+      recomputes.push({ uiOverride, src: String(src || '') });
+    },
+    multicolor: {
+      setEnabled: () => undefined,
+      exitPaintMode: () => undefined,
+    },
+  };
+
+  const preState = applyLibraryPresetMode(
+    env,
+    {
+      isLibraryMode: false,
+      wardrobeType: 'hinged',
+      doors: 4,
+      width: 160,
+      height: 240,
+      depth: 55,
+      stackSplitEnabled: false,
+      stackSplitLowerHeight: 0,
+      stackSplitLowerDepth: 0,
+      stackSplitLowerWidth: 0,
+      stackSplitLowerDoors: 0,
+      stackSplitLowerDepthManual: false,
+      stackSplitLowerWidthManual: false,
+      stackSplitLowerDoorsManual: false,
+      modulesCount: 4,
+    },
+    (_base, patch) => ({ ...patch })
+  );
+
+  assert.equal(preState?.ui.raw.doors, 4, 'pre-state keeps the regular wardrobe door count for restore');
+  assert.ok(uiCalls.some(([name, value]) => name === 'doors' && value === 6));
+  assert.ok(uiCalls.some(([name, value]) => name === 'width' && value === 240));
+  assert.ok(uiCalls.some(([name, value]) => name === 'stackSplitLowerDoors' && value === 6));
+  assert.ok(uiCalls.some(([name, value]) => name === 'stackSplitLowerWidth' && value === 240));
+  assert.ok(uiCalls.some(([name, value]) => name === 'stackSplitLowerWidthManual' && value === false));
+  assert.deepEqual(
+    configSnapshots[0].modulesConfiguration.map((item: any) => item.doors),
+    [2, 2, 2]
+  );
+  assert.deepEqual(
+    configSnapshots[0].stackSplitLowerModulesConfiguration.map((item: any) => item.doors),
+    [2, 2, 2]
+  );
+  assert.equal(recomputes[0].uiOverride.raw?.doors, 6);
+  assert.equal(recomputes[0].uiOverride.raw?.width, 240);
+  assert.equal(recomputes[0].uiOverride.raw?.stackSplitLowerDoors, 6);
+  assert.equal(recomputes[0].uiOverride.raw?.stackSplitLowerWidth, 240);
+  assert.equal(recomputes[0].uiOverride.raw?.stackSplitLowerWidthManual, false);
+});
+
+
+test('library preset mode does not reuse stale library width after returning from a wider library', () => {
+  const uiState: any = {
+    stackSplitEnabled: false,
+    structureSelect: '',
+    singleDoorPos: 'left',
+    raw: {
+      doors: 4,
+      width: 160,
+      height: 240,
+      depth: 55,
+      stackSplitLowerWidth: 320,
+      stackSplitLowerWidthManual: true,
+    },
+  };
+  const cfgState: any = {
+    modulesConfiguration: [{ doors: 2 }, { doors: 2 }],
+    stackSplitLowerModulesConfiguration: null,
+    isMultiColorMode: false,
+    individualColors: {},
+    curtainMap: {},
+    doorSpecialMap: {},
+    doorStyleMap: {},
+  };
+
+  const uiCalls: Array<[string, unknown]> = [];
+  const recomputes: Array<{ uiOverride: LibraryPresetUiOverride; src: string }> = [];
+
+  const env: LibraryPresetEnv = {
+    history: { batch: fn => fn() },
+    meta: {
+      merge: (meta = {}, defaults = {}, src) => ({ ...defaults, ...meta, source: src || meta.source }),
+      noBuild: (meta = {}, src) => ({ ...meta, source: src || meta.source, noBuild: true }),
+      noHistory: (meta = {}, src) => ({ ...meta, source: src || meta.source, noHistory: true }),
+    },
+    config: {
+      get: () => cfgState,
+      applyProjectSnapshot: next => Object.assign(cfgState, next),
+      setModulesConfiguration: next => {
+        cfgState.modulesConfiguration = next;
+      },
+      setLowerModulesConfiguration: next => {
+        cfgState.stackSplitLowerModulesConfiguration = next;
+      },
+      setLibraryMode: on => {
+        cfgState.isLibraryMode = on;
+      },
+      setMultiColorMode: on => {
+        cfgState.isMultiColorMode = on;
+      },
+      setIndividualColors: next => {
+        cfgState.individualColors = next;
+      },
+      setCurtainMap: next => {
+        cfgState.curtainMap = next;
+      },
+      setDoorSpecialMap: next => {
+        cfgState.doorSpecialMap = next;
+      },
+    },
+    ui: {
+      get: () => uiState,
+      setDoors: value => {
+        uiCalls.push(['doors', value]);
+        uiState.raw.doors = value;
+      },
+      setWidth: value => {
+        uiCalls.push(['width', value]);
+        uiState.raw.width = value;
+      },
+      setStackSplitEnabled: on => {
+        uiCalls.push(['stackSplitEnabled', on]);
+        uiState.stackSplitEnabled = on;
+      },
+      setStackSplitLowerHeight: value => uiCalls.push(['stackSplitLowerHeight', value]),
+      setStackSplitLowerDepth: value => uiCalls.push(['stackSplitLowerDepth', value]),
+      setStackSplitLowerWidth: value => uiCalls.push(['stackSplitLowerWidth', value]),
+      setStackSplitLowerDoors: value => uiCalls.push(['stackSplitLowerDoors', value]),
+      setStackSplitLowerDepthManual: on => uiCalls.push(['stackSplitLowerDepthManual', on]),
+      setStackSplitLowerWidthManual: on => uiCalls.push(['stackSplitLowerWidthManual', on]),
+      setStackSplitLowerDoorsManual: on => uiCalls.push(['stackSplitLowerDoorsManual', on]),
+    },
+    runStructuralRecompute: (uiOverride, src) => {
+      recomputes.push({ uiOverride, src: String(src || '') });
+    },
+    multicolor: {
+      setEnabled: () => undefined,
+      exitPaintMode: () => undefined,
+    },
+  };
+
+  applyLibraryPresetMode(
+    env,
+    {
+      isLibraryMode: false,
+      wardrobeType: 'hinged',
+      doors: 4,
+      width: 160,
+      height: 240,
+      depth: 55,
+      stackSplitEnabled: false,
+      stackSplitLowerHeight: 0,
+      stackSplitLowerDepth: 0,
+      stackSplitLowerWidth: 320,
+      stackSplitLowerDoors: 8,
+      stackSplitLowerDepthManual: false,
+      stackSplitLowerWidthManual: true,
+      stackSplitLowerDoorsManual: true,
+      modulesCount: 4,
+    },
+    (_base, patch) => ({ ...patch })
+  );
+
+  assert.ok(uiCalls.some(([name, value]) => name === 'width' && value === 240));
+  assert.ok(uiCalls.some(([name, value]) => name === 'stackSplitLowerWidth' && value === 240));
+  assert.ok(uiCalls.some(([name, value]) => name === 'stackSplitLowerWidthManual' && value === false));
+  assert.equal(recomputes[0].uiOverride.raw?.width, 240);
+  assert.equal(recomputes[0].uiOverride.raw?.stackSplitLowerWidth, 240);
+});
+
 test('library preset invariants preserve custom top-door curtains instead of resetting them to none', () => {
   const uiState: any = {
     structureSelect: '',
@@ -180,6 +438,8 @@ test('library preset invariants preserve custom top-door curtains instead of res
     },
     ui: {
       get: () => uiState,
+      setDoors: () => undefined,
+      setWidth: () => undefined,
       setStackSplitEnabled: () => undefined,
       setStackSplitLowerHeight: () => undefined,
       setStackSplitLowerDepth: () => undefined,
@@ -269,6 +529,8 @@ function createInvariantTestEnv(
     },
     ui: {
       get: () => uiState,
+      setDoors: () => undefined,
+      setWidth: () => undefined,
       setStackSplitEnabled: () => undefined,
       setStackSplitLowerHeight: () => undefined,
       setStackSplitLowerDepth: () => undefined,
@@ -561,4 +823,158 @@ test('library preset invariants are idempotent after linked upper door count edi
     'canonical linked library door state should be stable after one ensure'
   );
   assert.equal(recomputes.length, 0, 'stable linked library door state should not request another rebuild');
+});
+
+test('library preset controller resumes the last library door count and width after toggling back from regular mode', () => {
+  const uiState: any = {
+    stackSplitEnabled: false,
+    structureSelect: '[2,2]',
+    singleDoorPos: 'left',
+    raw: {
+      doors: 4,
+      width: 160,
+      height: 240,
+      depth: 55,
+    },
+  };
+  const cfgState: any = {
+    wardrobeType: 'hinged',
+    isLibraryMode: false,
+    modulesConfiguration: [{ doors: 2 }, { doors: 2 }],
+    stackSplitLowerModulesConfiguration: null,
+    isMultiColorMode: false,
+    individualColors: {},
+    curtainMap: {},
+    doorSpecialMap: {},
+    doorStyleMap: {},
+  };
+
+  const recomputes: Array<{ uiOverride: LibraryPresetUiOverride; src: string }> = [];
+  const env: LibraryPresetEnv = {
+    history: { batch: fn => fn() },
+    meta: {
+      merge: (meta = {}, defaults = {}, src) => ({ ...defaults, ...meta, source: src || meta.source }),
+      noBuild: (meta = {}, src) => ({ ...meta, source: src || meta.source, noBuild: true }),
+      noHistory: (meta = {}, src) => ({ ...meta, source: src || meta.source, noHistory: true }),
+    },
+    config: {
+      get: () => cfgState,
+      applyProjectSnapshot: next => Object.assign(cfgState, next),
+      setModulesConfiguration: next => {
+        cfgState.modulesConfiguration = next;
+      },
+      setLowerModulesConfiguration: next => {
+        cfgState.stackSplitLowerModulesConfiguration = next;
+      },
+      setLibraryMode: on => {
+        cfgState.isLibraryMode = on;
+      },
+      setMultiColorMode: on => {
+        cfgState.isMultiColorMode = on;
+      },
+      setIndividualColors: next => {
+        cfgState.individualColors = next;
+      },
+      setCurtainMap: next => {
+        cfgState.curtainMap = next;
+      },
+      setDoorSpecialMap: next => {
+        cfgState.doorSpecialMap = next;
+      },
+    },
+    ui: {
+      get: () => uiState,
+      setDoors: value => {
+        uiState.raw.doors = value;
+      },
+      setWidth: value => {
+        uiState.raw.width = value;
+      },
+      setStackSplitEnabled: on => {
+        uiState.stackSplitEnabled = on;
+      },
+      setStackSplitLowerHeight: value => {
+        uiState.raw.stackSplitLowerHeight = value;
+      },
+      setStackSplitLowerDepth: value => {
+        uiState.raw.stackSplitLowerDepth = value;
+      },
+      setStackSplitLowerWidth: value => {
+        uiState.raw.stackSplitLowerWidth = value;
+      },
+      setStackSplitLowerDoors: value => {
+        uiState.raw.stackSplitLowerDoors = value;
+      },
+      setStackSplitLowerDepthManual: on => {
+        uiState.raw.stackSplitLowerDepthManual = on;
+      },
+      setStackSplitLowerWidthManual: on => {
+        uiState.raw.stackSplitLowerWidthManual = on;
+      },
+      setStackSplitLowerDoorsManual: on => {
+        uiState.raw.stackSplitLowerDoorsManual = on;
+      },
+    },
+    runStructuralRecompute: (uiOverride, src) => {
+      recomputes.push({ uiOverride, src: String(src || '') });
+      return undefined;
+    },
+    multicolor: {
+      setEnabled: () => undefined,
+      exitPaintMode: () => undefined,
+    },
+  };
+  const controller = createLibraryPresetController();
+  const merge = (_base: any, patch: any) => ({ ...patch });
+  const makeArgs = (isLibraryMode: boolean): LibraryPresetToggleArgs => ({
+    isLibraryMode,
+    wardrobeType: 'hinged',
+    doors: Number(uiState.raw.doors) || 0,
+    width: Number(uiState.raw.width) || 0,
+    height: Number(uiState.raw.height) || 240,
+    depth: Number(uiState.raw.depth) || 55,
+    stackSplitEnabled: !!uiState.stackSplitEnabled,
+    stackSplitLowerHeight: Number(uiState.raw.stackSplitLowerHeight) || 0,
+    stackSplitLowerDepth: Number(uiState.raw.stackSplitLowerDepth) || 0,
+    stackSplitLowerWidth: Number(uiState.raw.stackSplitLowerWidth) || 0,
+    stackSplitLowerDoors: Number(uiState.raw.stackSplitLowerDoors) || 0,
+    stackSplitLowerDepthManual: !!uiState.raw.stackSplitLowerDepthManual,
+    stackSplitLowerWidthManual: !!uiState.raw.stackSplitLowerWidthManual,
+    stackSplitLowerDoorsManual: !!uiState.raw.stackSplitLowerDoorsManual,
+    modulesCount: Array.isArray(cfgState.modulesConfiguration) ? cfgState.modulesConfiguration.length : 0,
+  });
+
+  controller.toggleLibraryMode(env, makeArgs(false), { mergeUiOverride: merge });
+  assert.equal(uiState.raw.doors, 6);
+  assert.equal(uiState.raw.width, 240);
+  assert.deepEqual(
+    cfgState.modulesConfiguration.map((item: any) => item.gridDivisions),
+    [5, 5, 5],
+    'first library entry should materialize every 6-door upper module as library shelves'
+  );
+  assert.equal(recomputes.at(-1)?.uiOverride.structureSelect, '');
+
+  uiState.raw.doors = 8;
+  uiState.raw.width = 320;
+  uiState.raw.stackSplitLowerDoors = 8;
+  uiState.raw.stackSplitLowerWidth = 320;
+  const eightDoorCfgs = buildLibraryModuleConfigLists(8, 8, 'hinged', { ...uiState, structureSelect: '' });
+  cfgState.modulesConfiguration = eightDoorCfgs.topCfgList;
+  cfgState.stackSplitLowerModulesConfiguration = eightDoorCfgs.bottomCfgList;
+
+  controller.toggleLibraryMode(env, makeArgs(true), { mergeUiOverride: merge });
+  assert.equal(cfgState.isLibraryMode, false);
+  assert.equal(uiState.raw.doors, 4, 'regular wardrobe doors should be restored when closing library');
+  assert.equal(uiState.raw.width, 160, 'regular wardrobe width should be restored when closing library');
+
+  controller.toggleLibraryMode(env, makeArgs(false), { mergeUiOverride: merge });
+  assert.equal(uiState.raw.doors, 8, 'reopening library should resume the edited library door count');
+  assert.equal(uiState.raw.width, 320, 'reopening library should resume the edited library width');
+  assert.deepEqual(
+    cfgState.modulesConfiguration.map((item: any) => item.gridDivisions),
+    [5, 5, 5, 5],
+    'resumed 8-door library should keep upper modules on the 4-shelf library template'
+  );
+  assert.equal(recomputes.at(-1)?.uiOverride.raw?.doors, 8);
+  assert.equal(recomputes.at(-1)?.uiOverride.raw?.width, 320);
 });

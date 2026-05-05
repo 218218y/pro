@@ -108,7 +108,7 @@ export function ensureLibraryPresetInvariants(env: LibraryPresetEnv, args: Libra
       if (nextBottomCfgs) runtime.setCfgLowerModulesConfiguration(nextBottomCfgs, meta);
 
       if (structuralStateChanged) {
-        runtime.runStructuralRecompute(buildLibraryUiSnapshotOverride(ui), `${src}:rebuild`);
+        runtime.runStructuralRecompute(buildLibraryUiSnapshotOverride(ui, args.wardrobeType), `${src}:rebuild`);
       }
     }, meta);
   } catch {

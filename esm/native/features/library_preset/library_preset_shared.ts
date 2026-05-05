@@ -122,6 +122,43 @@ export function normDoorCount(raw: unknown, wardrobeType: 'hinged' | 'sliding'):
   return Math.max(minDoorsAllowed, Number.isFinite(n) ? n : minDoorsAllowed);
 }
 
+function readStructureSelectDoorSignature(value: unknown): number[] | null {
+  const s = String(value ?? '').trim();
+  if (!s) return null;
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(s);
+  } catch {
+    return null;
+  }
+
+  if (!Array.isArray(parsed)) return null;
+  const out: number[] = [];
+  for (const item of parsed) {
+    const n = parseInt(String(item ?? ''), 10);
+    if (!Number.isFinite(n) || n <= 0) return null;
+    out.push(Math.round(n));
+  }
+  return out.length ? out : null;
+}
+
+function sumDoorSignature(signature: number[]): number {
+  let sum = 0;
+  for (let i = 0; i < signature.length; i++) sum += Math.max(0, Math.round(signature[i] || 0));
+  return sum;
+}
+
+export function normalizeLibraryStructureSelectForDoors(
+  doorsCount: number,
+  wardrobeType: 'hinged' | 'sliding',
+  structureSelect: unknown
+): unknown {
+  const signature = readStructureSelectDoorSignature(structureSelect);
+  if (!signature) return structureSelect;
+  return sumDoorSignature(signature) === normDoorCount(doorsCount, wardrobeType) ? structureSelect : '';
+}
+
 function readDoorCountFromStructureItem(value: unknown): number {
   const n = isRec(value) ? Number(value.doors) : Number(value);
   return Math.max(1, Number.isFinite(n) ? Math.round(n) : 1);
@@ -132,10 +169,16 @@ export function calcDoorsSignatureFromUi(
   wardrobeType: 'hinged' | 'sliding',
   ui: LibraryPresetUiSnapshot
 ): number[] {
+  const normalizedDoorsCount = normDoorCount(doorsCount, wardrobeType);
+  const structureSelect = normalizeLibraryStructureSelectForDoors(
+    normalizedDoorsCount,
+    wardrobeType,
+    ui.structureSelect
+  );
   const structure = calculateModuleStructure(
-    normDoorCount(doorsCount, wardrobeType),
+    normalizedDoorsCount,
     ui.singleDoorPos,
-    ui.structureSelect,
+    structureSelect,
     wardrobeType
   );
   return Array.isArray(structure) ? structure.map(readDoorCountFromStructureItem) : [];
@@ -235,7 +278,12 @@ export function normalizePreservedLibraryModuleCfg(
   const src = asModuleConfig(current) || {};
   const templateCustom: UnknownRecord = isRec(template.customData) ? template.customData : {};
   const srcCustom: UnknownRecord = isRec(src.customData) ? src.customData : {};
-  const gridDivisions = readFiniteInt(src.gridDivisions, readFiniteInt(template.gridDivisions, 1, 1), 1);
+  const templateGridDivisions = readFiniteInt(template.gridDivisions, 1, 1);
+  const hasExplicitSrcGridDivisions =
+    Object.prototype.hasOwnProperty.call(src, 'gridDivisions') && src.gridDivisions != null;
+  const srcGridDivisions = readFiniteInt(src.gridDivisions, templateGridDivisions, 1);
+  const gridDivisions = templateGridDivisions;
+  const preserveCustomGridData = hasExplicitSrcGridDivisions && srcGridDivisions === templateGridDivisions;
 
   return {
     ...src,
@@ -255,9 +303,21 @@ export function normalizePreservedLibraryModuleCfg(
     customData: {
       ...templateCustom,
       ...srcCustom,
-      shelves: normalizeBoolArrayAgainstLength(srcCustom.shelves, templateCustom.shelves, gridDivisions),
-      rods: normalizeBoolArrayAgainstLength(srcCustom.rods, templateCustom.rods, gridDivisions),
-      storage: srcCustom.storage == null ? !!templateCustom.storage : !!srcCustom.storage,
+      shelves: normalizeBoolArrayAgainstLength(
+        preserveCustomGridData ? srcCustom.shelves : undefined,
+        templateCustom.shelves,
+        gridDivisions
+      ),
+      rods: normalizeBoolArrayAgainstLength(
+        preserveCustomGridData ? srcCustom.rods : undefined,
+        templateCustom.rods,
+        gridDivisions
+      ),
+      storage: preserveCustomGridData
+        ? srcCustom.storage == null
+          ? !!templateCustom.storage
+          : !!srcCustom.storage
+        : !!templateCustom.storage,
     },
     doors: readFiniteInt(template.doors, 0, 0),
   };

@@ -106,10 +106,21 @@ export function createInstalledRenderAnimate(
 
       __visualEffects.updateFrontOverlaySeamsVisibility();
 
+      let controlsStillMoving = false;
       {
         const c0 = getControls(A);
         const c = asRecordOrNull(c0);
-        if (c && typeof c['update'] === 'function') call0m(c, c['update']);
+        if (c && typeof c['update'] === 'function') {
+          // OrbitControls.update() returns true while damping/input still changes the camera.
+          // Treat that as a real animation; a plain render wakeup must remain one-shot.
+          controlsStillMoving = call0m(c, c['update']) === true;
+        }
+      }
+
+      const cameraMoveActiveUntil = Number(getRenderSlot(A, '__wpCameraMoveRenderingUntilMs')) || 0;
+      const cameraMoveRenderingActive = cameraMoveActiveUntil > frameStartMs;
+      if (cameraMoveActiveUntil > 0 && !cameraMoveRenderingActive) {
+        setRenderSlot(A, '__wpCameraMoveRenderingUntilMs', 0);
       }
 
       {
@@ -143,6 +154,12 @@ export function createInstalledRenderAnimate(
         if (renderer && typeof renderer['render'] === 'function' && scene0 && camera0) {
           call2m(renderer, renderer['render'], scene0, camera0);
         }
+      }
+
+      const shouldContinueLoop = motionFrame.isAnimating || controlsStillMoving || cameraMoveRenderingActive;
+      if (!shouldContinueLoop) {
+        clearLoopSchedule(A);
+        return;
       }
 
       const nextAnimate0 = getAnimateFn(A);

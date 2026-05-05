@@ -22,6 +22,8 @@ export type LibraryPresetRuntimeSurface = {
   setCfgCurtainMap: (next: CurtainMap, meta: ActionMetaLike) => unknown;
   setCfgDoorSpecialMap: (next: DoorSpecialMap, meta: ActionMetaLike) => unknown;
   setCfgDoorStyleMap: (next: DoorStyleMap, meta: ActionMetaLike) => unknown;
+  setUiDoors: (value: UiRawInputsLike['doors'], meta: ActionMetaLike) => unknown;
+  setUiWidth: (value: UiRawInputsLike['width'], meta: ActionMetaLike) => unknown;
   setUiStackSplitEnabled: (on: boolean, meta: ActionMetaLike) => unknown;
   setUiStackSplitLowerHeight: (
     value: UiRawInputsLike['stackSplitLowerHeight'],
@@ -82,6 +84,8 @@ export function createLibraryPresetRuntime(env: LibraryPresetEnv): LibraryPreset
     setCfgCurtainMap: (next, meta) => env.config.setCurtainMap(next, meta),
     setCfgDoorSpecialMap: (next, meta) => env.config.setDoorSpecialMap(next, meta),
     setCfgDoorStyleMap: (next, meta) => env.config.applyProjectSnapshot({ doorStyleMap: next }, meta),
+    setUiDoors: (value, meta) => env.ui.setDoors(value, meta),
+    setUiWidth: (value, meta) => env.ui.setWidth(value, meta),
     setUiStackSplitEnabled: (on, meta) => env.ui.setStackSplitEnabled(!!on, meta),
     setUiStackSplitLowerHeight: (value, meta) => env.ui.setStackSplitLowerHeight(value, meta),
     setUiStackSplitLowerDepth: (value, meta) => env.ui.setStackSplitLowerDepth(value, meta),

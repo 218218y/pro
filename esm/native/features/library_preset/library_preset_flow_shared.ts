@@ -24,8 +24,10 @@ import {
   doorPartKeys,
   isRec,
   normDoorCount,
+  normalizeLibraryStructureSelectForDoors,
   readLibraryPresetUiRawState,
 } from './library_preset_shared.js';
+import { calcLibraryPresetAutoWidth, LIBRARY_PRESET_DEFAULT_DOORS } from './module_defaults.js';
 
 type LibraryDoorMaps = {
   colors: IndividualColorsMap;
@@ -41,6 +43,8 @@ export function applyLibraryPresetUiRawState(
 ): void {
   const next = raw || {};
   const runtime = createLibraryPresetRuntime(env);
+  runtime.setUiDoors(next.doors, meta);
+  runtime.setUiWidth(next.width, meta);
   runtime.setUiStackSplitLowerHeight(next.stackSplitLowerHeight, meta);
   runtime.setUiStackSplitLowerDepth(next.stackSplitLowerDepth, meta);
   runtime.setUiStackSplitLowerWidth(next.stackSplitLowerWidth, meta);
@@ -50,15 +54,19 @@ export function applyLibraryPresetUiRawState(
   runtime.setUiStackSplitLowerDoorsManual(!!next.stackSplitLowerDoorsManual, meta);
 }
 
+export function createLibraryDoorMapsFromConfig(cfg: unknown): LibraryDoorMaps {
+  if (!isRec(cfg)) return { colors: {}, curtains: {}, special: {}, style: {} };
+  return {
+    colors: cloneStringMap(cfg.individualColors),
+    curtains: cloneStringMap(cfg.curtainMap),
+    special: cloneDoorSpecialMap(cfg.doorSpecialMap),
+    style: readDoorStyleMap(cfg.doorStyleMap),
+  };
+}
+
 export function createLibraryDoorMaps(env: LibraryPresetEnv): LibraryDoorMaps {
   try {
-    const cfg = env.config.get();
-    return {
-      colors: cloneStringMap(cfg.individualColors),
-      curtains: cloneStringMap(cfg.curtainMap),
-      special: cloneDoorSpecialMap(cfg.doorSpecialMap),
-      style: readDoorStyleMap(cfg.doorStyleMap),
-    };
+    return createLibraryDoorMapsFromConfig(env.config.get());
   } catch {
     return { colors: {}, curtains: {}, special: {}, style: {} };
   }
@@ -102,53 +110,92 @@ export function buildLibraryUiOverride(
   return mergeUiOverride(env.ui.get(), patch);
 }
 
-export function buildLibraryUiSnapshotOverride(ui: LibraryPresetUiSnapshot): LibraryPresetUiOverride {
+export function buildLibraryStructureSelectPatch(
+  ui: LibraryPresetUiSnapshot,
+  doorsCount: number,
+  wardrobeType: 'hinged' | 'sliding'
+): Pick<LibraryPresetUiOverride, 'structureSelect'> | {} {
+  const next = normalizeLibraryStructureSelectForDoors(doorsCount, wardrobeType, ui.structureSelect);
+  return next === ui.structureSelect ? {} : { structureSelect: next };
+}
+
+export function buildLibraryUiSnapshotOverride(
+  ui: LibraryPresetUiSnapshot,
+  wardrobeType: 'hinged' | 'sliding' = 'hinged'
+): LibraryPresetUiOverride {
   const baseUi = isRec(ui) ? ui : {};
   const { raw: _ignoredRaw, ...baseShallow } = baseUi;
   const out: LibraryPresetUiOverride = { ...baseShallow };
   const raw = readLibraryPresetUiRawState(baseUi.raw);
   if (Object.keys(raw).length) out.raw = raw;
+  const rawDoors = Number(raw.doors);
+  if (Number.isFinite(rawDoors)) {
+    Object.assign(out, buildLibraryStructureSelectPatch(baseUi, rawDoors, wardrobeType));
+  }
   return out;
 }
 
-export function seedBottomDimensions(args: LibraryPresetToggleArgs): {
+export function readLibraryPresetDefaultDoorCount(wardrobeType: 'hinged' | 'sliding'): number {
+  return normDoorCount(LIBRARY_PRESET_DEFAULT_DOORS, wardrobeType);
+}
+
+function readPositiveNumber(raw: unknown, fallback: number): number {
+  const n = Number(raw);
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+}
+
+export function seedBottomDimensions(
+  args: LibraryPresetToggleArgs,
+  resumeRaw?: Partial<LibraryPresetUiRawState> | null
+): {
   bottomH: number;
   bottomD: number;
+  topW: number;
   bottomW: number;
   bottomDoorsCount: number;
   topDoorsCount: number;
 } {
   const minTopCm = 40;
   const maxBottom = Math.max(0, args.height - minTopCm);
+  const libraryDefaultDoors = readLibraryPresetDefaultDoorCount(args.wardrobeType);
+  const topDoorsCount = resumeRaw
+    ? normDoorCount(resumeRaw.doors, args.wardrobeType)
+    : libraryDefaultDoors;
+  const bottomDoorsCount = resumeRaw
+    ? normDoorCount(resumeRaw.stackSplitLowerDoors ?? topDoorsCount, args.wardrobeType)
+    : libraryDefaultDoors;
   const preserveExistingLowerHeight =
+    !resumeRaw &&
     !!args.stackSplitEnabled &&
     Number.isFinite(args.stackSplitLowerHeight) &&
     args.stackSplitLowerHeight > 0 &&
     Math.abs(args.stackSplitLowerHeight - 60) > 0.01;
 
-  const seededBottomH = preserveExistingLowerHeight
-    ? args.stackSplitLowerHeight
-    : Math.min(80, maxBottom || 80);
+  const seededBottomH = resumeRaw
+    ? readPositiveNumber(resumeRaw.stackSplitLowerHeight, Math.min(80, maxBottom || 80))
+    : preserveExistingLowerHeight
+      ? args.stackSplitLowerHeight
+      : Math.min(80, maxBottom || 80);
   const bottomH = Math.max(20, Math.min(seededBottomH, maxBottom || seededBottomH));
 
-  const seededBottomD =
-    Number.isFinite(args.stackSplitLowerDepth) && args.stackSplitLowerDepth > 0
+  const defaultBottomD = Math.max(20, Math.min(args.depth - 5, args.depth));
+  const seededBottomD = resumeRaw
+    ? readPositiveNumber(resumeRaw.stackSplitLowerDepth, defaultBottomD)
+    : Number.isFinite(args.stackSplitLowerDepth) && args.stackSplitLowerDepth > 0
       ? args.stackSplitLowerDepth
-      : Math.max(20, Math.min(args.depth - 5, args.depth));
+      : defaultBottomD;
   const bottomD = Math.max(20, seededBottomD);
 
-  const seededBottomW =
-    Number.isFinite(args.stackSplitLowerWidth) && args.stackSplitLowerWidth > 0
-      ? args.stackSplitLowerWidth
-      : args.width;
-  const bottomW = Math.max(20, seededBottomW);
+  const topW = Math.max(20, readPositiveNumber(resumeRaw?.width, calcLibraryPresetAutoWidth(topDoorsCount)));
+  const bottomW = Math.max(20, readPositiveNumber(resumeRaw?.stackSplitLowerWidth, topW));
 
   return {
     bottomH,
     bottomD,
+    topW,
     bottomW,
-    topDoorsCount: normDoorCount(args.doors, args.wardrobeType),
-    bottomDoorsCount: normDoorCount(args.stackSplitLowerDoors, args.wardrobeType),
+    topDoorsCount,
+    bottomDoorsCount,
   };
 }
 

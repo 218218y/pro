@@ -11,6 +11,7 @@ import {
   setCfgModulesConfiguration,
   setCfgMultiColorMode,
   applyProjectConfigSnapshot,
+  setUiDoors,
   setUiStackSplitEnabled,
   setUiStackSplitLowerDepth,
   setUiStackSplitLowerDepthManual,
@@ -19,6 +20,7 @@ import {
   setUiStackSplitLowerHeight,
   setUiStackSplitLowerWidth,
   setUiStackSplitLowerWidthManual,
+  setUiWidth,
 } from '../actions/store_actions.js';
 import { exitPaintMode, setMultiEnabled } from '../../multicolor_service.js';
 import { runAppStructuralModulesRecompute } from '../../../services/api.js';
@@ -169,6 +171,8 @@ export function createStructureTabLibraryEnv(
     },
     ui: {
       get: () => getUiSnapshot(app),
+      setDoors: (next, m?: ActionMetaLike) => setUiDoors(app, next, m),
+      setWidth: (next, m?: ActionMetaLike) => setUiWidth(app, next, m),
       setStackSplitEnabled: (on: boolean, m?: ActionMetaLike) => setUiStackSplitEnabled(app, !!on, m),
       setStackSplitLowerHeight: (next, m?: ActionMetaLike) => setUiStackSplitLowerHeight(app, next, m),
       setStackSplitLowerDepth: (next, m?: ActionMetaLike) => setUiStackSplitLowerDepth(app, next, m),

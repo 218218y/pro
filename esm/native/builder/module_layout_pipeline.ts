@@ -24,6 +24,7 @@ import type {
 import type { HingeMap } from '../../../types/maps.js';
 
 import { readModulesConfigurationListFromConfigSnapshot } from '../features/modules_configuration/modules_config_api.js';
+import { createLibraryTopModuleConfig } from '../features/library_preset/module_defaults.js';
 import { reportErrorViaPlatform } from '../runtime/platform_access.js';
 
 type ModuleLike = BuildModuleStructureItemLike;
@@ -92,6 +93,30 @@ function isCoreLayoutLike(value: unknown): value is CoreLayoutLike {
 
 function readModuleConfigList(cfg: ConfigStateLike | null | undefined): ModulesConfigurationLike {
   return readModulesConfigurationListFromConfigSnapshot(cfg, 'modulesConfiguration');
+}
+
+function ensureLibraryMissingTopModuleConfigs(
+  cfg: ConfigStateLike | null | undefined,
+  modules: ModuleLike[],
+  moduleCfgList: ModulesConfigurationLike,
+  sourceModuleCfgList: ModulesConfigurationLike
+): ModulesConfigurationLike {
+  const cfgRec = asRecord<UnknownRecord>(cfg);
+  if (!cfgRec?.isLibraryMode || !Array.isArray(modules) || !modules.length) return moduleCfgList;
+
+  let nextList: ModulesConfigurationLike | null = null;
+  const readNext = (): ModulesConfigurationLike => {
+    if (!nextList) nextList = Array.isArray(moduleCfgList) ? moduleCfgList.slice() : [];
+    return nextList;
+  };
+
+  for (let i = 0; i < modules.length; i += 1) {
+    if (i < sourceModuleCfgList.length && sourceModuleCfgList[i]) continue;
+    const doors = Math.max(1, Math.round(toDoorCount(modules[i]) || 2));
+    readNext()[i] = createLibraryTopModuleConfig(doors);
+  }
+
+  return nextList || moduleCfgList;
 }
 
 function readHingeMap(value: unknown): HingeMap {
@@ -191,6 +216,7 @@ export function computeModulesAndLayout(args: ComputeModulesAndLayoutArgs): Comp
   }
 
   let moduleCfgList = readModuleConfigList(cfg);
+  const sourceModuleCfgList = moduleCfgList;
 
   // Guard: width overrides (specialDims.widthCm) are only meaningful when manual width is enabled.
   // If manual width is OFF, ignore leftover width overrides (often residue from older buggy flows)
@@ -230,6 +256,13 @@ export function computeModulesAndLayout(args: ComputeModulesAndLayoutArgs): Comp
     reportError(App, e, 'native/builder/module_layout_pipeline.computeModuleLayout');
     coreLayout = null;
   }
+
+  moduleCfgList = ensureLibraryMissingTopModuleConfigs(
+    cfg,
+    modules,
+    moduleCfgList,
+    sourceModuleCfgList
+  );
 
   const moduleInternalWidths = readFiniteNumberList(coreLayout?.moduleInternalWidths);
 

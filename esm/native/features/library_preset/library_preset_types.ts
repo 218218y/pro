@@ -88,6 +88,8 @@ type LibraryPresetConfigSurface = {
 
 type LibraryPresetUiSurface = {
   get: () => LibraryPresetUiSnapshot;
+  setDoors: (value: UiRawInputsLike['doors'], meta?: ActionMetaLike) => unknown;
+  setWidth: (value: UiRawInputsLike['width'], meta?: ActionMetaLike) => unknown;
   setStackSplitEnabled: (on: boolean, meta?: ActionMetaLike) => unknown;
   setStackSplitLowerHeight: (
     value: UiRawInputsLike['stackSplitLowerHeight'],

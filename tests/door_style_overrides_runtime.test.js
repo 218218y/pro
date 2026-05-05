@@ -57,7 +57,10 @@ test('[door-style-overrides] tokens, map normalization, and effective style reso
   assert.equal(mod.resolveDoorStyleOverrideValue({ d7: 'profile' }, 'd7_top'), 'profile');
   assert.equal(mod.resolveDoorStyleOverrideValue({ d7_full: 'profile' }, 'd7_top'), 'profile');
   assert.equal(mod.resolveDoorStyleOverrideValue({ d7_full: 'tom' }, 'd7_mid1'), 'tom');
-  assert.equal(mod.resolveEffectiveDoorStyle('flat', { d7_full: 'profile' }, 'd7_bot'), 'profile');
+  assert.equal(
+    mod.resolveEffectiveDoorStyle('flat', { d7_full: 'profile' }, 'd7_bot'),
+    'profile'
+  );
   assert.equal(mod.resolveEffectiveDoorStyle('flat', { drawer_4: 'profile' }, 'drawer_4'), 'profile');
   assert.equal(mod.resolveEffectiveDoorStyle('tom', {}, 'drawer_4'), 'tom');
 });

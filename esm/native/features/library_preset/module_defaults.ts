@@ -4,6 +4,14 @@ import type {
   NormalizedTopModuleConfigLike,
 } from '../../../../types';
 
+export const LIBRARY_PRESET_DEFAULT_DOORS = 6;
+export const LIBRARY_PRESET_DOOR_WIDTH_CM = 40;
+
+export function calcLibraryPresetAutoWidth(doors: unknown): number {
+  const n = Math.max(0, Math.round(Number(doors) || 0));
+  return n * LIBRARY_PRESET_DOOR_WIDTH_CM;
+}
+
 function normalizeDoors(raw: unknown): number {
   const n = Math.round(Number(raw) || 0);
   return Math.max(0, Number.isFinite(n) ? n : 0);

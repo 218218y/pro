@@ -193,6 +193,54 @@ test('visuals_contents folded clothes clamp depth inside shelf bounds and outlin
   assert.ok(parent.children.every(child => child.geometry.args[2] === 0.17));
 });
 
+test('visuals_contents folded shelf renders books instead of clothes in library mode', () => {
+  const { App, outlined } = createApp({
+    buildUI: { showContents: true },
+    config: { isLibraryMode: true },
+    runtime: { sketchMode: true },
+  });
+  const parent = new FakeGroup();
+
+  addFoldedClothes(App, 0, 0.2, 0, 0.6, parent as any, 0.25, 0.2);
+
+  assert.ok(parent.children.length > 0);
+  assert.equal(outlined.length, parent.children.length);
+  assert.ok(
+    parent.children.every(
+      child => child.userData.__kind === 'library_book' || child.userData.__kind === 'library_book_stack'
+    ),
+    'library contents should be marked as books, not the folded-clothes meshes'
+  );
+  assert.ok(parent.children.every(child => child.geometry?.type === 'BoxGeometry'));
+});
+
+test('visuals_contents library books fit small shelf clearance and disappear when too tight', () => {
+  const { App } = createApp({
+    buildUI: { showContents: true },
+    config: { isLibraryMode: true },
+  });
+  const parent = new FakeGroup();
+  const shelfY = 0.2;
+  const maxHeight = 0.1;
+
+  addFoldedClothes(App, 0, shelfY, 0, 0.6, parent as any, maxHeight, 0.2);
+
+  assert.ok(parent.children.length > 0);
+  for (const child of parent.children) {
+    const [bookWidth, bookHeight] = child.geometry.args;
+    const angleZ = Number(child.rotation?.z || 0);
+    const rotatedHeight =
+      child.userData.__kind === 'library_book'
+        ? Math.abs(bookHeight * Math.cos(angleZ)) + Math.abs(bookWidth * Math.sin(angleZ))
+        : bookHeight;
+    assert.ok(child.position.y + rotatedHeight / 2 <= shelfY + maxHeight - 0.014 + 1e-9);
+  }
+
+  const tinyParent = new FakeGroup();
+  addFoldedClothes(App, 0, shelfY, 0, 0.6, tinyParent as any, 0.075, 0.2);
+  assert.equal(tinyParent.children.length, 0);
+});
+
 test('visuals_contents realistic hanger respects showHanger override and scales to narrow modules', () => {
   const { App, outlined } = createApp({ buildUI: { showHanger: false }, ui: { showHanger: true } });
   const parent = new FakeGroup();

@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { installDomainApiModulesCorner } from '../esm/native/kernel/domain_api_modules_corner.ts';
 import { createLibraryTopModuleConfig } from '../esm/native/features/library_preset/module_defaults.ts';
 import { createDefaultTopModuleConfig } from '../esm/native/features/modules_configuration/module_defaults.ts';
+import { computeModulesAndLayout } from '../esm/native/builder/module_layout_pipeline.ts';
 
 type AnyRec = Record<string, any>;
 
@@ -103,6 +104,37 @@ test('library mode recompute seeds added modules with library shelves while pres
   assert.equal(next[2].doors, 1);
   assert.equal(next[2].gridDivisions, 5);
   assert.deepEqual(next[2].customData?.shelves, [true, true, true, true, false]);
+});
+
+test('library builder fills missing top module configs with library shelf defaults', () => {
+  const cfg = {
+    wardrobeType: 'hinged',
+    isLibraryMode: true,
+    modulesConfiguration: [createLibraryTopModuleConfig(2), createLibraryTopModuleConfig(2)],
+  };
+  const ui = {
+    raw: { doors: 6 },
+    structureSelect: '[2,2,2]',
+    singleDoorPos: 'left',
+  };
+
+  const result = computeModulesAndLayout({
+    App: {},
+    cfg,
+    ui,
+    totalW: 2.4,
+    woodThick: 0.018,
+    doorsCount: 6,
+    calculateModuleStructure: () => [{ doors: 2 }, { doors: 2 }, { doors: 2 }],
+  });
+
+  assert.equal(result.modules.length, 3);
+  assert.equal(result.moduleCfgList.length, 3);
+  assert.equal(result.moduleCfgList[2].doors, 2);
+  assert.equal(result.moduleCfgList[2].layout, 'shelves');
+  assert.equal(result.moduleCfgList[2].isCustom, true);
+  assert.equal(result.moduleCfgList[2].gridDivisions, 5);
+  assert.deepEqual(result.moduleCfgList[2].customData?.shelves, [true, true, true, true, false]);
 });
 
 test('structure recompute requests a builder rebuild when UI changes but modulesConfiguration stays identical', () => {

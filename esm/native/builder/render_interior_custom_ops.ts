@@ -70,6 +70,8 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
     const currentShelfMat = input.currentShelfMat;
     const bodyMat = input.bodyMat;
     const braceSet = buildBraceShelfIndexSet(input);
+    const shelfSet = buildShelfIndexSet(ops);
+    const shelfVariantByIndex = buildShelfVariantByIndex(ops);
 
     const regularShelfDepthCap = 0.45;
     const regularDepth =
@@ -113,7 +115,11 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
         rightInnerX,
       },
       effectiveBottomY,
+      effectiveTopY,
       localGridStep,
+      gridDivisions,
+      shelfSet,
+      shelfVariantByIndex,
       internalCenterX,
       innerW,
       woodThick,
@@ -128,8 +134,8 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
       effectiveBottomY,
       effectiveTopY,
       localGridStep,
-      shelfSet: buildShelfIndexSet(ops),
-      shelfVariantByIndex: buildShelfVariantByIndex(ops),
+      shelfSet,
+      shelfVariantByIndex,
       addGridShelf,
       checkAndCreateInternalDrawer: input.checkAndCreateInternalDrawer,
       createRod,

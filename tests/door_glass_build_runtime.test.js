@@ -137,6 +137,7 @@ test('hinged door build keeps explicit glass visuals instead of normalizing them
   assert.deepEqual(calls[0][13], { glassFrameStyle: 'profile' });
 });
 
+
 test('split hinged glass doors inherit the full-door glass frame style instead of falling back to full-glass flat style', () => {
   const calls = [];
   const THREE = createThreeStub();

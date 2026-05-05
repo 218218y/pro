@@ -19,6 +19,7 @@ export type InteriorPresetInput = InteriorValueRecord & {
   effectiveBottomY?: unknown;
   effectiveTopY?: unknown;
   localGridStep?: unknown;
+  gridDivisions?: unknown;
   innerW?: unknown;
   woodThick?: unknown;
   internalDepth?: unknown;

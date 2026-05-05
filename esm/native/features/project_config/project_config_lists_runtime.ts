@@ -31,6 +31,54 @@ function hasOwn(obj: unknown, key: string): boolean {
   return !!obj && typeof obj === 'object' && Object.prototype.hasOwnProperty.call(obj, key);
 }
 
+function readPositiveDoorSignatureFromModules(value: unknown): number[] | null {
+  if (!Array.isArray(value)) return null;
+  const out: number[] = [];
+  for (const item of value) {
+    const rec = asProjectConfigRecord(item);
+    const n = Math.round(Number(rec.doors));
+    if (!Number.isFinite(n) || n <= 0) return null;
+    out.push(n);
+  }
+  return out.length ? out : null;
+}
+
+function sumDoorSignature(signature: number[]): number {
+  let sum = 0;
+  for (let i = 0; i < signature.length; i += 1) sum += Math.max(0, Math.round(signature[i] || 0));
+  return sum;
+}
+
+function buildUiSnapshotForModuleSignature(uiSnapshot: unknown, signature: number[]): UnknownRecord {
+  const ui = asProjectConfigRecord(uiSnapshot);
+  const raw = asProjectConfigRecord(ui.raw);
+  const doors = sumDoorSignature(signature);
+  const structureSelect = JSON.stringify(signature);
+  return {
+    ...ui,
+    doors,
+    structureSelect,
+    raw: {
+      ...raw,
+      doors,
+      structureSelect,
+    },
+  };
+}
+
+function resolveTopModulesUiSnapshot(
+  source: UnknownRecord,
+  uiSnapshot: unknown,
+  cfgSnapshot: unknown
+): unknown {
+  const cfg = asProjectConfigRecord(cfgSnapshot);
+  if (!cfg.isLibraryMode) return uiSnapshot;
+
+  const signature = readPositiveDoorSignatureFromModules(source.modulesConfiguration);
+  if (!signature) return uiSnapshot;
+  return buildUiSnapshotForModuleSignature(uiSnapshot, signature);
+}
+
 function readProjectConfigSource<T extends UnknownRecord>(source: T | null | undefined): T {
   return asProjectConfigRecord(source) as T;
 }
@@ -75,14 +123,18 @@ function canonicalizeTopModulesList(
   cfgSnapshot: unknown,
   options?: ProjectConfigListsCanonicalizationOptions
 ): ModulesConfigurationLike {
+  const topUiSnapshot = resolveTopModulesUiSnapshot(source, uiSnapshot, cfgSnapshot);
   if (options?.topMode === 'materialize') {
     return materializeTopModulesConfigurationFromUiConfig(
       source.modulesConfiguration,
-      uiSnapshot,
+      topUiSnapshot,
       cfgSnapshot
     );
   }
-  return cloneModulesConfigurationSnapshot(source, 'modulesConfiguration', { uiSnapshot, cfgSnapshot });
+  return cloneModulesConfigurationSnapshot(source, 'modulesConfiguration', {
+    uiSnapshot: topUiSnapshot,
+    cfgSnapshot,
+  });
 }
 
 export interface CanonicalProjectConfigLists {
