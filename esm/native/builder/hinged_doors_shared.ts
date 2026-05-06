@@ -5,6 +5,7 @@
 // op assembly logic.
 
 import { assertThreeViaDeps } from '../runtime/three_access.js';
+import { HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type {
   BuildContextLike,
   BuilderCurtainResolver,
@@ -164,7 +165,9 @@ export function edgeHandleLongLiftAbsY(
     if (count > maxExtDrawersCount) maxExtDrawersCount = count;
   });
 
-  return maxExtDrawersCount >= 4 ? 0.1 : 0;
+  return maxExtDrawersCount >= HANDLE_DIMENSIONS.edge.longLiftDrawerCountThreshold
+    ? HANDLE_DIMENSIONS.edge.longLiftExtraM
+    : 0;
 }
 
 export function isLongEdgeHandleVariantForPart(
@@ -193,7 +196,9 @@ export function topSplitHandleInsetForPart(
   cfg: HingedDoorPipelineCfg | null | undefined,
   partId: string
 ): number {
-  return isLongEdgeHandleVariantForPart(cfg, partId) ? 0.2 : 0.1;
+  return isLongEdgeHandleVariantForPart(cfg, partId)
+    ? HANDLE_DIMENSIONS.edge.longClampPaddingM
+    : HANDLE_DIMENSIONS.edge.shortClampPaddingM;
 }
 
 export function requireThree(ctx: BuildContextLike): ThreeLike {

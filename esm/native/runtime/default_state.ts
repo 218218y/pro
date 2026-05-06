@@ -9,11 +9,16 @@
 import type { RootStateLike } from '../../../types';
 
 import {
+  DEFAULT_CHEST_DRAWERS_COUNT,
+  DEFAULT_CORNER_DOORS,
+  DEFAULT_CORNER_WIDTH,
   DEFAULT_HEIGHT,
   DEFAULT_HINGED_DOORS,
+  DEFAULT_STACK_SPLIT_LOWER_HEIGHT,
   DEFAULT_WIDTH,
   HINGED_DEFAULT_DEPTH,
-} from './wardrobe_dimension_defaults.js';
+  BASE_LEG_DIMENSIONS,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 export function createDefaultState(opts?: { noneMode?: string }): RootStateLike {
   opts = opts && typeof opts === 'object' ? opts : {};
@@ -28,8 +33,8 @@ export function createDefaultState(opts?: { noneMode?: string }): RootStateLike 
         height: DEFAULT_HEIGHT,
         depth: HINGED_DEFAULT_DEPTH,
         doors: DEFAULT_HINGED_DOORS,
-        chestDrawersCount: 4,
-        stackSplitLowerHeight: 60,
+        chestDrawersCount: DEFAULT_CHEST_DRAWERS_COUNT,
+        stackSplitLowerHeight: DEFAULT_STACK_SPLIT_LOWER_HEIGHT,
         stackSplitLowerDepth: HINGED_DEFAULT_DEPTH,
         stackSplitLowerWidth: DEFAULT_WIDTH,
         stackSplitLowerDoors: DEFAULT_HINGED_DOORS,
@@ -47,16 +52,16 @@ export function createDefaultState(opts?: { noneMode?: string }): RootStateLike 
       doorStyle: 'flat',
       singleDoorPos: 'left',
       structureSelect: '',
-      cornerWidth: 120,
+      cornerWidth: DEFAULT_CORNER_WIDTH,
       // Corner wardrobe (independent controls)
-      cornerDoors: 3,
+      cornerDoors: DEFAULT_CORNER_DOORS,
       cornerHeight: DEFAULT_HEIGHT,
       cornerDepth: HINGED_DEFAULT_DEPTH,
       baseType: 'plinth',
       baseLegStyle: 'tapered',
       baseLegColor: 'black',
-      baseLegHeightCm: 12,
-      baseLegWidthCm: 4,
+      baseLegHeightCm: BASE_LEG_DIMENSIONS.defaults.heightCm,
+      baseLegWidthCm: BASE_LEG_DIMENSIONS.defaults.taperedWidthCm,
       // Sliding wardrobes: top/bottom rails finish (default requested: nickel).
       slidingTracksColor: 'nickel',
       colorChoice: '#ffffff',

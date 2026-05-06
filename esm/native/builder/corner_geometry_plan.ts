@@ -1,3 +1,4 @@
+import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 // Corner wing: shared geometry + plan helpers
 //
 // Extracted from the original monolithic `corner_wing.ts` to keep the main builder
@@ -100,7 +101,9 @@ export function __isLongEdgeHandleVariantForPart(
 }
 
 export function __topSplitHandleInsetForPart(cfg: ValueRecord | null | undefined, partId: string): number {
-  return __isLongEdgeHandleVariantForPart(cfg, partId) ? 0.2 : 0.1;
+  return __isLongEdgeHandleVariantForPart(cfg, partId)
+    ? CORNER_WING_DIMENSIONS.connector.edgeHandleLongInsetM
+    : CORNER_WING_DIMENSIONS.connector.edgeHandleShortInsetM;
 }
 
 export function __edgeHandleLongLiftAbsYForCell(
@@ -110,7 +113,9 @@ export function __edgeHandleLongLiftAbsYForCell(
   const handleCfg = readCornerHandleCfg(cfg);
   if (!handleCfg || handleCfg.globalHandleType !== 'edge') return 0;
   const count = readExternalDrawerCount(cellCfg);
-  return count >= 4 ? 0.1 : 0;
+  return count >= CORNER_WING_DIMENSIONS.connector.edgeHandleLiftDrawerCountThreshold
+    ? CORNER_WING_DIMENSIONS.connector.edgeHandleLongLiftM
+    : 0;
 }
 
 export function __edgeHandleLongLiftAbsYForCornerCells(
@@ -125,7 +130,7 @@ export function __edgeHandleLongLiftAbsYForCornerCells(
     const cellCfg = isRecord(list[i]) ? list[i] : null;
     const lift = __edgeHandleLongLiftAbsYForCell(cfg, cellCfg);
     if (lift > maxLift) maxLift = lift;
-    if (maxLift >= 0.1) break;
+    if (maxLift >= CORNER_WING_DIMENSIONS.connector.edgeHandleLongLiftM) break;
   }
   return maxLift;
 }
@@ -137,7 +142,8 @@ export function __edgeHandleAlignedBaseAbsYForCornerCells(
   woodThick: number
 ): number {
   const handleCfg = readCornerHandleCfg(cfg);
-  if (!handleCfg || handleCfg.globalHandleType !== 'edge') return 1.05;
+  if (!handleCfg || handleCfg.globalHandleType !== 'edge')
+    return CORNER_WING_DIMENSIONS.connector.edgeHandleDefaultAbsY;
 
   const list = Array.isArray(cornerCellCfgs) ? cornerCellCfgs : [];
   let maxDrawerH = 0;
@@ -147,17 +153,23 @@ export function __edgeHandleAlignedBaseAbsYForCornerCells(
     if (!c) continue;
 
     let h = 0;
-    if (hasShoeDrawer(c)) h += 0.2;
+    if (hasShoeDrawer(c)) h += CORNER_WING_DIMENSIONS.drawers.shoeHeightM;
 
     const count = readExternalDrawerCount(c);
-    if (count > 0) h += count * 0.22;
+    if (count > 0) h += count * CORNER_WING_DIMENSIONS.drawers.externalRegularHeightM;
 
     if (h > maxDrawerH) maxDrawerH = h;
   }
 
-  const maxDoorBottom = startY + woodThick + maxDrawerH + (maxDrawerH > 0 ? 0.002 : 0);
-  if (maxDoorBottom > 0.9) return maxDoorBottom + 0.15;
-  return 1.05;
+  const maxDoorBottom =
+    startY +
+    woodThick +
+    maxDrawerH +
+    (maxDrawerH > 0 ? CORNER_WING_DIMENSIONS.connector.doorBottomOffsetM : 0);
+  if (maxDoorBottom > CORNER_WING_DIMENSIONS.connector.edgeHandleLiftDoorBottomThresholdM) {
+    return maxDoorBottom + CORNER_WING_DIMENSIONS.connector.edgeHandleLiftExtraM;
+  }
+  return CORNER_WING_DIMENSIONS.connector.edgeHandleDefaultAbsY;
 }
 
 export function __clampHandleAbsYForPart(
@@ -167,7 +179,9 @@ export function __clampHandleAbsYForPart(
   segBottomY: number,
   segTopY: number
 ): number {
-  const pad = __isLongEdgeHandleVariantForPart(cfg, partId) ? 0.2 : 0.1;
+  const pad = __isLongEdgeHandleVariantForPart(cfg, partId)
+    ? CORNER_WING_DIMENSIONS.connector.edgeHandleLongInsetM
+    : CORNER_WING_DIMENSIONS.connector.edgeHandleShortInsetM;
   let y = absY;
   const minY = segBottomY + pad;
   const maxY = segTopY - pad;

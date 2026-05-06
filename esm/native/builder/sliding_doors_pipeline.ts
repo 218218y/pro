@@ -5,6 +5,7 @@
 // - No silent fallback: if ops are missing, throw with context
 // - BuildContext-only API (no legacy arg objects)
 
+import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { isBuildContext } from './build_context.js';
 import { computeSlidingDoorOps } from './pure_api.js';
 import { requireBuilderRenderOps } from '../runtime/builder_service_access.js';
@@ -54,9 +55,9 @@ export function applySlidingDoorsIfNeeded(ctx: BuildContextLike) {
     cabinetBodyHeight: cabinetBodyHeight,
     startY: startY,
     numDoors: numDoors,
-    overlap: 0.03,
-    railHeight: 0.04,
-    railDepth: 0.075,
+    overlap: DOOR_SYSTEM_DIMENSIONS.sliding.overlapM,
+    railHeight: DOOR_SYSTEM_DIMENSIONS.sliding.railHeightM,
+    railDepth: DOOR_SYSTEM_DIMENSIONS.sliding.railDepthM,
   });
 
   const ui = ctx.ui || null;

@@ -1,3 +1,4 @@
+import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { getModulesActions } from '../runtime/actions_access_domains.js';
 import { readModulesConfigurationListFromConfigSnapshot } from '../features/modules_configuration/modules_config_api.js';
 import { cloneMaybe, isRecord } from './corner_geometry_plan.js';
@@ -49,7 +50,7 @@ function createCornerWingModuleCfgNormalizer(args: CornerWingCellDerivationArgs,
       hasShoeDrawer: false,
       intDrawersList: [],
       isCustom: false,
-      gridDivisions: 6,
+      gridDivisions: CORNER_WING_DIMENSIONS.cells.defaultGridDivisions,
       customData: readCornerCellCustomData(cfgBase.customData),
     };
 
@@ -76,7 +77,7 @@ function createCornerWingModuleCfgNormalizer(args: CornerWingCellDerivationArgs,
     cfg.isCustom = !!cfgBase.isCustom;
     cfg.gridDivisions = (() => {
       const gd = parseInt(String(cfgBase.gridDivisions ?? ''), 10);
-      return Number.isFinite(gd) && gd > 0 ? gd : 6;
+      return Number.isFinite(gd) && gd > 0 ? gd : CORNER_WING_DIMENSIONS.cells.defaultGridDivisions;
     })();
 
     const customData = cfg.customData;
@@ -105,7 +106,9 @@ function createCornerWingModuleCfgNormalizer(args: CornerWingCellDerivationArgs,
         cfg.hasShoeDrawer = false;
         cfg.extDrawersCount = 0;
         cfg.intDrawersList = [];
-        if (!Number.isFinite(rawGridDiv) || rawGridDiv <= 0) cfg.gridDivisions = 6;
+        if (!Number.isFinite(rawGridDiv) || rawGridDiv <= 0) {
+          cfg.gridDivisions = CORNER_WING_DIMENSIONS.cells.defaultGridDivisions;
+        }
         const hasShelves = anyTruthy(customData.shelves || []);
         const hasRods = anyTruthy(customData.rods || []);
         if (!hasShelves) customData.shelves = [false, true, false, true, false, false];
@@ -133,7 +136,7 @@ function createDefaultCornerCfgDetector() {
     const shoe = !!cfg.hasShoeDrawer;
     const list = Array.isArray(cfg.intDrawersList) ? cfg.intDrawersList : [];
     const custom = !!cfg.isCustom;
-    const gridDivisions = parseIntSafe(cfg.gridDivisions, 6);
+    const gridDivisions = parseIntSafe(cfg.gridDivisions, CORNER_WING_DIMENSIONS.cells.defaultGridDivisions);
     const customData = isValueRecord(cfg.customData) ? cfg.customData : {};
     const shelves = readUnknownArray(customData.shelves);
     const rods = readUnknownArray(customData.rods);
@@ -145,7 +148,7 @@ function createDefaultCornerCfgDetector() {
       shoe === false &&
       list.length === 0 &&
       custom === false &&
-      gridDivisions === 6 &&
+      gridDivisions === CORNER_WING_DIMENSIONS.cells.defaultGridDivisions &&
       storage === false &&
       allFalse(shelves) &&
       allFalse(rods)

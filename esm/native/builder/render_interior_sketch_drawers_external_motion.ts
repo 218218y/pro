@@ -8,6 +8,7 @@ import type {
 
 import { toFiniteNumber } from './render_interior_sketch_shared.js';
 import { createSketchDrawerMotionPoint } from './render_interior_sketch_drawers_shared.js';
+import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 export function registerSketchExternalDrawerMotionEntry(
   context: SketchExternalDrawerRenderContext,
@@ -19,7 +20,7 @@ export function registerSketchExternalDrawerMotionEntry(
     context.THREE,
     toFiniteNumber(opPlan.open?.x) ?? opPlan.px,
     toFiniteNumber(opPlan.open?.y) ?? opPlan.py,
-    toFiniteNumber(opPlan.open?.z) ?? opPlan.pz + 0.35
+    toFiniteNumber(opPlan.open?.z) ?? opPlan.pz + DRAWER_DIMENSIONS.external.openOffsetZM
   );
   const drawerEntry: DrawerVisualEntryLike = {
     group: groupNode,

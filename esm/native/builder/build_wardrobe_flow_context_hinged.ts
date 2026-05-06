@@ -1,3 +1,4 @@
+import { HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { getBuilderRenderOps } from '../runtime/builder_service_access.js';
 import { readModulesConfigurationListFromConfigSnapshot } from '../features/modules_configuration/modules_config_api.js';
 import { getExtraLongEdgeHandleLiftAbsY, getMaxGlobalExternalDrawerHeightM } from './build_handle_policy.js';
@@ -51,7 +52,7 @@ export function resolveBuildWardrobeHingedContext(args: {
   }
 
   const hingedDoorOpsList = useHingedDoorOps ? [] : null;
-  let globalHingedHandleAbsY = 1.05;
+  let globalHingedHandleAbsY = HANDLE_DIMENSIONS.edge.defaultGlobalAbsYM;
 
   if (useHingedDoorOps) {
     const modulesCfg = Array.isArray(plan.moduleCfgList)
@@ -61,9 +62,10 @@ export function resolveBuildWardrobeHingedContext(args: {
     const stackShiftY = plan.splitActiveForBuild && Number.isFinite(splitY) ? splitY : 0;
     const maxDoorBottomAbs = maxDoorBottom + stackShiftY;
 
-    if (maxDoorBottomAbs > 0.9) {
+    if (maxDoorBottomAbs > HANDLE_DIMENSIONS.edge.drawerLiftThresholdYM) {
       const extraLongEdgeLift = getExtraLongEdgeHandleLiftAbsYFn(cfg, modulesCfg);
-      globalHingedHandleAbsY = maxDoorBottomAbs + 0.15 + extraLongEdgeLift;
+      globalHingedHandleAbsY =
+        maxDoorBottomAbs + HANDLE_DIMENSIONS.edge.drawerLiftClearanceM + extraLongEdgeLift;
     }
   }
 

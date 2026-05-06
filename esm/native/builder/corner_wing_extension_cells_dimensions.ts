@@ -1,3 +1,4 @@
+import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { CornerCell, CornerCellCfg } from './corner_geometry_plan.js';
 import type {
   CornerWingCellCfgResolver,
@@ -15,14 +16,17 @@ export function buildCornerWingCells(
   const cornerCells: CornerCell[] = [];
   if (!(doorCount > 0) || !(defaultDoorWidth > 0.0001)) return cornerCells;
 
-  const cellCount = Math.max(1, Math.ceil(doorCount / 2));
+  const cellCount = Math.max(1, Math.ceil(doorCount / CORNER_WING_DIMENSIONS.cells.doorsPerCell));
   const doorsInCellList: number[] = [];
   const defaultCellWidths: number[] = [];
   const cellCfgs: CornerCellCfg[] = [];
 
   for (let ci = 0; ci < cellCount; ci += 1) {
-    const doorStart = ci * 2;
-    const doorsInCell = Math.min(2, Math.max(0, doorCount - doorStart));
+    const doorStart = ci * CORNER_WING_DIMENSIONS.cells.doorsPerCell;
+    const doorsInCell = Math.min(
+      CORNER_WING_DIMENSIONS.cells.doorsPerCell,
+      Math.max(0, doorCount - doorStart)
+    );
     doorsInCellList.push(Math.max(1, doorsInCell));
     defaultCellWidths.push(Math.max(0.0001, Math.max(1, doorsInCell) * defaultDoorWidth));
     cellCfgs.push(getCellCfg(ci));
@@ -37,8 +41,11 @@ export function buildCornerWingCells(
   let cursorX = args.blindWidth;
 
   for (let ci = 0; ci < cellCount; ci += 1) {
-    const doorStart = ci * 2;
-    const doorsInCell = Math.min(2, Math.max(0, doorCount - doorStart));
+    const doorStart = ci * CORNER_WING_DIMENSIONS.cells.doorsPerCell;
+    const doorsInCell = Math.min(
+      CORNER_WING_DIMENSIONS.cells.doorsPerCell,
+      Math.max(0, doorCount - doorStart)
+    );
     const width = cellWidths[ci];
     const startX = cursorX;
     const centerX = startX + width / 2;
@@ -51,7 +58,10 @@ export function buildCornerWingCells(
 
     const { bodyHeight, hasActiveHeight } = resolveCornerWingCellHeight(args, cfgCell, globalAbsHeightCm);
     const effectiveTopY = args.startY + bodyHeight - args.woodThick;
-    const gridDivisions = cfgCell.isCustom && cfgCell.gridDivisions ? cfgCell.gridDivisions : 6;
+    const gridDivisions =
+      cfgCell.isCustom && cfgCell.gridDivisions
+        ? cfgCell.gridDivisions
+        : CORNER_WING_DIMENSIONS.cells.defaultGridDivisions;
     const localGridStep = (effectiveTopY - effectiveBottomY) / gridDivisions;
 
     const { depth, hasActiveDepth } = resolveCornerWingCellDepth(args, cfgCell, globalDepthCm);
@@ -113,14 +123,21 @@ function resolveCornerWingCellWidths(
     const fixedWidth = fixedWidths[ci];
     let width = fixedWidth != null ? fixedWidth : (remainingWidth * doorsUnits) / denominator;
     if (!Number.isFinite(width) || width <= 0) width = defaultCellWidths[ci];
-    const minWidth = Math.max(0.05, doorsUnits * 0.2);
+    const minWidth = Math.max(
+      CORNER_WING_DIMENSIONS.cells.minWidthM,
+      doorsUnits * CORNER_WING_DIMENSIONS.cells.minDoorUnitWidthM
+    );
     if (width < minWidth) width = minWidth;
     widths.push(width);
   }
 
   const sumWidth = widths.reduce((acc, value) => acc + value, 0);
   const delta = activeWidth - sumWidth;
-  if (Number.isFinite(delta) && Math.abs(delta) > 1e-6 && widths.length > 0) {
+  if (
+    Number.isFinite(delta) &&
+    Math.abs(delta) > CORNER_WING_DIMENSIONS.cells.widthAdjustmentEpsilonM &&
+    widths.length > 0
+  ) {
     let adjustIndex = -1;
     for (let i = widths.length - 1; i >= 0; i -= 1) {
       if (fixedWidths[i] == null) {
@@ -129,7 +146,7 @@ function resolveCornerWingCellWidths(
       }
     }
     if (adjustIndex < 0) adjustIndex = widths.length - 1;
-    widths[adjustIndex] = Math.max(0.05, widths[adjustIndex] + delta);
+    widths[adjustIndex] = Math.max(CORNER_WING_DIMENSIONS.cells.minWidthM, widths[adjustIndex] + delta);
   }
 
   return widths;
@@ -137,8 +154,10 @@ function resolveCornerWingCellWidths(
 
 function resolveCornerWingDrawerHeight(cfgCell: CornerCellCfg): number {
   let total = 0;
-  if (cfgCell.hasShoeDrawer) total += 0.2;
-  if (cfgCell.extDrawersCount > 0) total += cfgCell.extDrawersCount * 0.22;
+  if (cfgCell.hasShoeDrawer) total += CORNER_WING_DIMENSIONS.drawers.shoeHeightM;
+  if (cfgCell.extDrawersCount > 0) {
+    total += cfgCell.extDrawersCount * CORNER_WING_DIMENSIONS.drawers.externalRegularHeightM;
+  }
   return total;
 }
 
@@ -153,11 +172,15 @@ function resolveCornerWingCellHeight(
   const hasActiveHeight =
     heightCm != null && Number.isFinite(heightCm) && Math.abs(heightCm - baseAbs) > 1e-6;
   if (hasActiveHeight && heightCm != null) {
-    const minAbsCm = (args.startY + args.woodThick * 2) * 100;
+    const minAbsCm =
+      (args.startY + args.woodThick * CORNER_WING_DIMENSIONS.cells.minBodyWoodMultiplier) * 100;
     const absCm = Math.max(minAbsCm, heightCm);
     const derivedBodyHeight = absCm / 100 - args.startY;
     if (Number.isFinite(derivedBodyHeight) && derivedBodyHeight > 0) {
-      bodyHeight = Math.max(args.woodThick * 2, derivedBodyHeight);
+      bodyHeight = Math.max(
+        args.woodThick * CORNER_WING_DIMENSIONS.cells.minBodyWoodMultiplier,
+        derivedBodyHeight
+      );
     }
   }
   return { bodyHeight, hasActiveHeight: !!hasActiveHeight };
@@ -173,10 +196,14 @@ function resolveCornerWingCellDepth(
   const base = baseDepthCm != null ? baseDepthCm : globalDepthCm;
   const hasActiveDepth = depthCm != null && Number.isFinite(depthCm) && Math.abs(depthCm - base) > 1e-6;
   if (hasActiveDepth && depthCm != null) {
-    const minAbsCm = Math.max(20, args.woodThick * 4 * 100);
+    const minAbsCm = Math.max(
+      CORNER_WING_DIMENSIONS.cells.minAbsDepthCm,
+      args.woodThick * CORNER_WING_DIMENSIONS.cells.minAbsDepthWoodMultiplier * 100
+    );
     const absCm = Math.max(minAbsCm, depthCm);
     const depthM = absCm / 100;
-    if (Number.isFinite(depthM) && depthM > 0) depth = Math.max(0.2, depthM);
+    if (Number.isFinite(depthM) && depthM > 0)
+      depth = Math.max(CORNER_WING_DIMENSIONS.wing.minDepthM, depthM);
   }
   return { depth, hasActiveDepth: !!hasActiveDepth };
 }

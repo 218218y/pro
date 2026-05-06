@@ -1,4 +1,5 @@
 import { reportError, shouldFailFast } from '../runtime/api.js';
+import { DRAWER_DIMENSIONS, HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { AppendHingedDoorOpsParams, HingedDoorPipelineCfg } from './hinged_doors_shared.js';
 import { readFiniteNumber, readRecord, readTextMap, readUnknownArray } from './hinged_doors_shared.js';
 import type { HingedDoorModuleOpsContext, HingedDoorPivotSpec } from './hinged_doors_module_ops_contracts.js';
@@ -68,7 +69,9 @@ export function createHingedDoorModuleOpsContext(
   const opsList = resolveHingedDoorOpsList(params && params.opsList);
   const hingedDoorPivotMap = readHingedDoorPivotMap(params && params.hingedDoorPivotMap);
   const globalHandleAbsY =
-    params && typeof params.globalHandleAbsY === 'number' ? params.globalHandleAbsY : 1.05;
+    params && typeof params.globalHandleAbsY === 'number'
+      ? params.globalHandleAbsY
+      : HANDLE_DIMENSIONS.edge.defaultGlobalAbsYM;
   const configRecord = readRecord((params && params.config) || {}) || {};
   const moduleCfgList = readUnknownArray(params && params.moduleCfgList);
   const isGroovesEnabled = !!(params && params.isGroovesEnabled);
@@ -188,7 +191,7 @@ export function createHingedDoorModuleOpsContext(
 
   if (cfg.wardrobeType !== 'hinged') return null;
 
-  const gapAboveDrawer = drawerHeightTotal > 0 ? 0.002 : 0;
+  const gapAboveDrawer = drawerHeightTotal > 0 ? DRAWER_DIMENSIONS.external.doorTopGapM : 0;
   const drawerTopEdgeAbsolute = effectiveBottomY;
   const doorBottomY = drawerTopEdgeAbsolute + gapAboveDrawer;
   const effectiveTopLimit = startY + cabinetBodyHeight - woodThick / 2;

@@ -1,3 +1,7 @@
+import {
+  INTERIOR_FITTINGS_DIMENSIONS,
+  MATERIAL_DIMENSIONS,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type {
   InteriorGroupLike,
   InteriorMaterialLike,
@@ -12,13 +16,13 @@ import {
   type ShelfVariant,
 } from './render_interior_custom_ops_shared.js';
 
-const BRACE_SIDE_GAP = 0.001;
-const BRACE_SEAM_PAD = 0.0001;
+const BRACE_SIDE_GAP = INTERIOR_FITTINGS_DIMENSIONS.shelves.braceSideGapM;
+const BRACE_SEAM_PAD = INTERIOR_FITTINGS_DIMENSIONS.shelves.braceSeamPadM;
 const BRACE_SEAM_W = Math.max(0, BRACE_SIDE_GAP - 2 * BRACE_SEAM_PAD);
-const PIN_RADIUS = 0.0025;
-const PIN_LEN = 0.012;
-const PIN_EDGE_OFFSET_DEFAULT = 0.04;
-const GLASS_THICK_M = 0.018;
+const PIN_RADIUS = INTERIOR_FITTINGS_DIMENSIONS.pins.radiusM;
+const PIN_LEN = INTERIOR_FITTINGS_DIMENSIONS.pins.lengthM;
+const PIN_EDGE_OFFSET_DEFAULT = INTERIOR_FITTINGS_DIMENSIONS.pins.edgeOffsetDefaultM;
+const GLASS_THICK_M = MATERIAL_DIMENSIONS.glassShelf.thicknessM;
 
 function shelfHeightForVariant(variant: ShelfVariant | undefined, woodThick: number): number {
   if (variant === 'glass') return GLASS_THICK_M;
@@ -99,7 +103,10 @@ export function createAddCustomGridShelf(args: {
       braceSeamGeoCache[key] = new threeSurface.BoxGeometry(
         BRACE_SEAM_W,
         woodThick,
-        Math.max(0.0001, depth - 0.0005)
+        Math.max(
+          INTERIOR_FITTINGS_DIMENSIONS.shelves.braceSeamDepthMinM,
+          depth - INTERIOR_FITTINGS_DIMENSIONS.shelves.braceSeamDepthInsetM
+        )
       );
     }
     return { geo: braceSeamGeoCache[key], mat: braceSeamMat };
@@ -146,11 +153,14 @@ export function createAddCustomGridShelf(args: {
     if (!ensurePinResources()) return;
 
     const shelfBottom = shelfY - shelfH / 2;
-    const yPin = shelfBottom - PIN_RADIUS + 0.0005;
+    const yPin = shelfBottom - PIN_RADIUS + INTERIOR_FITTINGS_DIMENSIONS.pins.bottomYOffsetM;
     const backEdge = shelfZ - shelfDepth / 2;
     const frontEdge = shelfZ + shelfDepth / 2;
-    const maxOff = shelfDepth / 2 - 0.02;
-    const edgeOff = Math.max(0.015, Math.min(PIN_EDGE_OFFSET_DEFAULT, maxOff));
+    const maxOff = shelfDepth / 2 - INTERIOR_FITTINGS_DIMENSIONS.pins.maxDepthSideClearanceM;
+    const edgeOff = Math.max(
+      INTERIOR_FITTINGS_DIMENSIONS.pins.minEdgeOffsetM,
+      Math.min(PIN_EDGE_OFFSET_DEFAULT, maxOff)
+    );
     const zBack = backEdge + edgeOff;
     const zFront = frontEdge - edgeOff;
 
@@ -185,7 +195,7 @@ export function createAddCustomGridShelf(args: {
       }
     }
 
-    return Math.max(0, topLimitY - shelfTopY - 0.006);
+    return Math.max(0, topLimitY - shelfTopY - INTERIOR_FITTINGS_DIMENSIONS.shelves.contentsHeightClearanceM);
   }
 
   let glassMat: InteriorMaterialLike | null = null;
@@ -248,7 +258,7 @@ export function createAddCustomGridShelf(args: {
         internalCenterX,
         shelfY + shelfH / 2,
         shelfZ,
-        innerW - 0.06,
+        innerW - INTERIOR_FITTINGS_DIMENSIONS.shelves.contentsWidthClearanceM,
         group,
         resolveShelfContentsMaxHeight(gridIndex, shelfY, shelfH),
         shelfDepth
@@ -300,7 +310,11 @@ export function addCustomBaseShelfContents(args: {
   const firstShelfH = shelfHeightForVariant(firstShelfVariant, woodThick);
   const maxHeight = Math.max(
     0,
-    effectiveBottomY + localGridStep - firstShelfH / 2 - effectiveBottomY - 0.006
+    effectiveBottomY +
+      localGridStep -
+      firstShelfH / 2 -
+      effectiveBottomY -
+      INTERIOR_FITTINGS_DIMENSIONS.shelves.contentsHeightClearanceM
   );
   if (!(maxHeight > 0)) return;
 
@@ -308,5 +322,13 @@ export function addCustomBaseShelfContents(args: {
   const shelfDepth = isBrace ? internalDepth : braceMetrics.regularDepth;
   const shelfZ = isBrace ? internalZ : braceMetrics.regularZ;
 
-  addFoldedClothes(internalCenterX, effectiveBottomY, shelfZ, innerW - 0.06, group, maxHeight, shelfDepth);
+  addFoldedClothes(
+    internalCenterX,
+    effectiveBottomY,
+    shelfZ,
+    innerW - INTERIOR_FITTINGS_DIMENSIONS.shelves.contentsWidthClearanceM,
+    group,
+    maxHeight,
+    shelfDepth
+  );
 }

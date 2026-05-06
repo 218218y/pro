@@ -1,3 +1,4 @@
+import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { buildSketchBoxStackAwareMeasurementEntries } from './canvas_picking_sketch_neighbor_measurements.js';
 import { createManualLayoutSketchBoxContentHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import type {
@@ -43,7 +44,12 @@ export function resolveSketchBoxShelfPreview(
   const variant = shelfVariant || 'regular';
   const isBrace = variant === 'brace';
   const isDouble = variant === 'double' || !variant;
-  const shelfH = variant === 'glass' ? 0.018 : isDouble ? Math.max(woodThick, woodThick * 2) : woodThick;
+  const shelfH =
+    variant === 'glass'
+      ? MATERIAL_DIMENSIONS.glassShelf.thicknessM
+      : isDouble
+        ? Math.max(woodThick, woodThick * 2)
+        : woodThick;
   let previewY = clampBoxCenterY(pointerY, shelfH / 2);
   const localShelves = readRecordArray(targetBox, 'shelves');
   let previewSegment: SketchBoxSegmentLike | null = activeSegment;

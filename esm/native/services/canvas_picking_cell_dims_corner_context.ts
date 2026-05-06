@@ -1,3 +1,8 @@
+import {
+  CM_PER_METER,
+  CORNER_WING_DIMENSIONS,
+  WARDROBE_DEFAULTS,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { AppContainer, UnknownRecord } from '../../../types';
 import type { CanvasCornerCellDimsArgs } from './canvas_picking_cell_dims_contracts.js';
 import { __wp_reportPickingIssue, __asNum, __asInt } from './canvas_picking_core_helpers.js';
@@ -88,10 +93,13 @@ export function buildCornerCellDimsContext(args: CanvasCornerCellDimsArgs): Corn
     ensureCornerCellConfigRef,
   } = args;
 
-  const cornerWBase = __asNum(ui.cornerWidth, 120);
-  const cornerHBase = __asNum(ui.cornerHeight, __asNum(raw.height, 240));
-  const cornerDBase = __asNum(ui.cornerDepth, __asNum(raw.depth, 55));
-  const wallLenBase = __asNum(ui.cornerCabinetWallLenCm, __asNum(ui.cornerCabinetWallLen, 103));
+  const cornerWBase = __asNum(ui.cornerWidth, CORNER_WING_DIMENSIONS.wing.defaultWidthCm);
+  const cornerHBase = __asNum(ui.cornerHeight, __asNum(raw.height, WARDROBE_DEFAULTS.heightCm));
+  const cornerDBase = __asNum(ui.cornerDepth, __asNum(raw.depth, WARDROBE_DEFAULTS.byType.hinged.depthCm));
+  const wallLenBase = __asNum(
+    ui.cornerCabinetWallLenCm,
+    __asNum(ui.cornerCabinetWallLen, CORNER_WING_DIMENSIONS.connector.defaultWallLengthM * CM_PER_METER)
+  );
 
   const cornerCfg0 = asCornerConfig(readCornerConfigurationSnapshotForStack(cfg, 'top'));
   const nextCornerCfg: CornerConfigShape = cloneRecord(cornerCfg0);

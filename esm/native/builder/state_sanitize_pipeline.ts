@@ -7,6 +7,7 @@ import { metaUiOnly } from '../runtime/meta_profiles_access.js';
 import {
   DEFAULT_HEIGHT,
   DEFAULT_WIDTH,
+  DEFAULT_CHEST_DRAWERS_COUNT,
   WARDROBE_CHEST_DRAWERS_MAX,
   WARDROBE_CHEST_DRAWERS_MIN,
   WARDROBE_CHEST_HEIGHT_MIN,
@@ -21,7 +22,7 @@ import {
   WARDROBE_WIDTH_MIN,
   getDefaultDepthForWardrobeType,
   getDefaultDoorsForWardrobeType,
-} from '../runtime/wardrobe_dimension_defaults.js';
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 type SanitizedDims = {
   skipBuild: boolean;
@@ -104,7 +105,7 @@ export function sanitizeBuildDimsAndSyncRuntime(args: {
   const rawDepth = _toNum(raw.depth, defaultDepth);
   // Prefer raw['doors'] but fall back to ui.doors (some loaders/flows persist only the normalized field).
   const rawDoors = _toInt(raw['doors'] != null ? raw['doors'] : ui.doors, defaultDoors);
-  const rawChestDrawers = _toInt(raw.chestDrawersCount, 4);
+  const rawChestDrawers = _toInt(raw.chestDrawersCount, DEFAULT_CHEST_DRAWERS_COUNT);
 
   const forceBuild = !!ui.forceBuild;
   const activeId = ui.__activeId ? String(ui.__activeId) : '';
@@ -134,7 +135,7 @@ export function sanitizeBuildDimsAndSyncRuntime(args: {
 
   const chestDrawersCount = Math.max(
     WARDROBE_CHEST_DRAWERS_MIN,
-    Math.min(WARDROBE_CHEST_DRAWERS_MAX, rawChestDrawers || 4)
+    Math.min(WARDROBE_CHEST_DRAWERS_MAX, rawChestDrawers || DEFAULT_CHEST_DRAWERS_COUNT)
   );
 
   // Keep sanitized dims in sync (build UI snapshot + runtime store).

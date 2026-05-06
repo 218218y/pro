@@ -1,3 +1,4 @@
+import { CHEST_MODE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { AppContainer, BuilderCreateInternalDrawerBoxFn } from '../../../types/index.js';
 
 import {
@@ -28,7 +29,8 @@ export const createInternalDrawerBox: AppAwareCreateInternalDrawerBoxFn = (
   const group = new THREE.Group();
   const outline =
     typeof outlineFunc === 'function' ? outlineFunc : (mesh: unknown) => addChestModeOutlines(mesh, App);
-  const thickness = 0.015;
+  const drawerBoxDimensions = CHEST_MODE_DIMENSIONS.drawerBox;
+  const thickness = drawerBoxDimensions.panelThicknessM;
   const innerH = h;
   const omitFrontPanel = options?.omitFrontPanel === true;
 
@@ -53,9 +55,20 @@ export const createInternalDrawerBox: AppAwareCreateInternalDrawerBoxFn = (
     try {
       const accentW = Number(w);
       const accentH = Number(innerH);
-      const accentZ = d / 2 + 0.0008;
-      if (Number.isFinite(accentW) && Number.isFinite(accentH) && accentW > 0.12 && accentH > 0.08) {
-        const lineT = Math.min(0.004, Math.max(0.0022, Math.min(accentW, accentH) * 0.035));
+      const accentZ = d / 2 + drawerBoxDimensions.accentZOffsetM;
+      if (
+        Number.isFinite(accentW) &&
+        Number.isFinite(accentH) &&
+        accentW > drawerBoxDimensions.accentMinWidthM &&
+        accentH > drawerBoxDimensions.accentMinHeightM
+      ) {
+        const lineT = Math.min(
+          drawerBoxDimensions.accentThicknessMaxM,
+          Math.max(
+            drawerBoxDimensions.accentThicknessMinM,
+            Math.min(accentW, accentH) * drawerBoxDimensions.accentThicknessRatio
+          )
+        );
         if (accentW > lineT * 2 && accentH > lineT * 2) {
           const accentMat = new THREE.MeshBasicMaterial({
             color: 0x4b4b4b,
@@ -72,15 +85,18 @@ export const createInternalDrawerBox: AppAwareCreateInternalDrawerBoxFn = (
 
           const addStrip = (sw: number, sh: number, x: number, y: number) => {
             if (!(sw > 0) || !(sh > 0)) return;
-            const strip = new THREE.Mesh(new THREE.BoxGeometry(sw, sh, 0.001), accentMat);
+            const strip = new THREE.Mesh(
+              new THREE.BoxGeometry(sw, sh, drawerBoxDimensions.accentStripDepthM),
+              accentMat
+            );
             strip.position.set(x, y, accentZ);
-            strip.renderOrder = 2;
+            strip.renderOrder = drawerBoxDimensions.accentRenderOrder;
             strip.userData = strip.userData || {};
             strip.userData.partId = 'internal_drawer_accent_line';
             group.add(strip);
           };
 
-          const sideH = Math.max(0.001, accentH - 2 * lineT);
+          const sideH = Math.max(drawerBoxDimensions.accentStripDepthM, accentH - 2 * lineT);
           addStrip(accentW, lineT, 0, accentH / 2 - lineT / 2);
           addStrip(accentW, lineT, 0, -(accentH / 2 - lineT / 2));
           addStrip(lineT, sideH, -(accentW / 2 - lineT / 2), 0);
@@ -112,12 +128,16 @@ export const createInternalDrawerBox: AppAwareCreateInternalDrawerBoxFn = (
 
   if (addHandle && !omitFrontPanel) {
     const handle = new THREE.Mesh(
-      new THREE.BoxGeometry(0.12, 0.02, 0.015),
+      new THREE.BoxGeometry(
+        drawerBoxDimensions.handleWidthM,
+        drawerBoxDimensions.handleHeightM,
+        drawerBoxDimensions.handleDepthM
+      ),
       new THREE.MeshStandardMaterial({ color: 0x555555 })
     );
     handle.userData = handle.userData || {};
     handle.userData.__keepMaterial = true;
-    handle.position.set(0, 0, d / 2 + 0.005);
+    handle.position.set(0, 0, d / 2 + drawerBoxDimensions.handleFrontOffsetM);
     group.add(handle);
   }
 

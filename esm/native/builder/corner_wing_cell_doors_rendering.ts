@@ -3,6 +3,7 @@
 // Keep mirror/trim/material lookup and door render bookkeeping in one place so
 // split/full emitters can focus on segment sizing only.
 
+import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { readMirrorLayoutListForPart } from '../features/mirror_layout.js';
 import { readDoorTrimListForPart } from '../features/door_trim.js';
 import { resolveEffectiveDoorStyle } from '../features/door_style_overrides.js';
@@ -65,7 +66,7 @@ export function createCornerDoorGroup(
     __hingeLeft: state.isLeftHinge,
     __doorMeshOffsetX: state.meshOffset,
     __handleAbsY: handleAbsY,
-    __wpFrontThickness: 0.018,
+    __wpFrontThickness: CORNER_WING_DIMENSIONS.connector.frontThicknessM,
     __wpDoorRemoved: isRemovedDoor,
   };
   return group;
@@ -80,7 +81,7 @@ export function processCornerDoorVisual(
     const removeDoorMode = ctx.MODES.REMOVE_DOOR || 'remove_door';
     if (removeDoorMode && ctx.isPrimaryMode(ctx.App, removeDoorMode)) {
       const box = new ctx.THREE.Mesh(
-        new ctx.THREE.BoxGeometry(args.width, args.height, 0.018),
+        new ctx.THREE.BoxGeometry(args.width, args.height, CORNER_WING_DIMENSIONS.connector.hitboxThicknessM),
         new ctx.THREE.MeshBasicMaterial({
           color: 0xff0000,
           transparent: true,
@@ -114,7 +115,7 @@ export function processCornerDoorVisual(
   const vis = ctx.createDoorVisual(
     args.width,
     args.height,
-    0.018,
+    CORNER_WING_DIMENSIONS.connector.frontThicknessM,
     isMirror ? ctx.getMirrorMat() : woodMat,
     style || effectiveFrameStyle,
     hasGroove && !isMirror,
@@ -143,7 +144,7 @@ export function processCornerDoorVisual(
     doorWidth: args.width,
     doorHeight: args.height,
     doorMeshOffsetX: args.meshOffset,
-    frontZ: 0.011,
+    frontZ: CORNER_WING_DIMENSIONS.connector.frontTrimZOffsetM,
     faceSign: frontSign,
   });
   return true;

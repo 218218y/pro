@@ -1,3 +1,4 @@
+import { CARCASS_CORNICE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type {
   CornerConnectorCorniceCtx,
   CornerConnectorCorniceHelpers,
@@ -14,28 +15,30 @@ export function applyCornerConnectorProfileCornice(args: {
   const { THREE, startY, wingH, bodyMat, addOutlines, getCornerMat, __sketchMode } = ctx;
   const { pts, cornerGroup, interiorX, interiorZ, mx } = locals;
   const { readNumFrom, asRecord } = helpers;
-  const cHeight = 0.08;
+  const corniceCommon = CARCASS_CORNICE_DIMENSIONS.common;
+  const corniceProfile = CARCASS_CORNICE_DIMENSIONS.profile;
+  const cHeight = corniceProfile.heightM;
 
-  const overhang = 0.04; // keep consistent with main FRONT overhang
-  const insetOnRoof = 0.03;
-  const backStep = 0.02;
+  const overhang = corniceProfile.overhangZM;
+  const insetOnRoof = corniceProfile.insetOnRoofM;
+  const backStep = corniceProfile.backStepM;
 
   const topY = startY + wingH;
-  const epsY = 0.0006;
+  const epsY = corniceCommon.yLiftM;
   const yPlace = topY + epsY;
 
   // Profile knobs (meters) – same as the upgraded main/wing cornice.
-  const profBaseH = 0.022;
-  const profStep1Out = 0.006;
-  const profSlopeH = 0.03;
-  const profSlopeOut = 0.018;
-  const profStep2Out = 0.006;
-  const profCapRise = 0.012;
-  const profCapOut = 0.004;
-  const profTopLipOut = 0.003;
+  const profBaseH = corniceProfile.baseHeightM;
+  const profStep1Out = corniceProfile.step1OutM;
+  const profSlopeH = corniceProfile.slopeHeightM;
+  const profSlopeOut = corniceProfile.slopeOutM;
+  const profStep2Out = corniceProfile.step2OutM;
+  const profCapRise = corniceProfile.capRiseM;
+  const profCapOut = corniceProfile.capOutM;
+  const profTopLipOut = corniceProfile.topLipOutM;
 
   const makeCorniceProfile = (ohIn: number) => {
-    const oh = Math.max(0.001, ohIn);
+    const oh = Math.max(corniceProfile.minOverhangM, ohIn);
 
     const step1Base = Math.max(0, profStep1Out);
     const slopeBase = Math.max(0, profSlopeOut);
@@ -44,7 +47,8 @@ export function applyCornerConnectorProfileCornice(args: {
     const lipBase = Math.max(0, profTopLipOut);
 
     let xMaxBase = step1Base + slopeBase + step2Base + capBase + lipBase;
-    if (!Number.isFinite(xMaxBase) || xMaxBase < 1e-6) xMaxBase = 1;
+    if (!Number.isFinite(xMaxBase) || xMaxBase < corniceCommon.epsilonM)
+      xMaxBase = corniceProfile.xMaxFallbackM;
     const sx = oh / xMaxBase;
 
     const step1 = step1Base * sx;
@@ -52,9 +56,9 @@ export function applyCornerConnectorProfileCornice(args: {
     const step2 = step2Base * sx;
     const capOut = capBase * sx;
 
-    const y1 = Math.min(profBaseH, cHeight * 0.6);
-    const y2 = Math.min(y1 + profSlopeH, cHeight * 0.92);
-    const y3 = Math.min(y2 + profCapRise, cHeight * 0.96);
+    const y1 = Math.min(profBaseH, cHeight * corniceProfile.baseHeightRatio);
+    const y2 = Math.min(y1 + profSlopeH, cHeight * corniceProfile.slopeHeightRatio);
+    const y3 = Math.min(y2 + profCapRise, cHeight * corniceProfile.capHeightRatio);
 
     const x1 = step1;
     const x2 = x1 + slopeOut;
@@ -86,7 +90,7 @@ export function applyCornerConnectorProfileCornice(args: {
   const dx = b.x - a.x;
   const dz = b.z - a.z;
   const segLen = Math.sqrt(dx * dx + dz * dz);
-  if (Number.isFinite(segLen) && segLen > 0.02) {
+  if (Number.isFinite(segLen) && segLen > corniceCommon.minSegmentLengthM) {
     const ux = dx / segLen;
     const uz = dz / segLen;
 
@@ -116,11 +120,11 @@ export function applyCornerConnectorProfileCornice(args: {
       const px = readNumFrom(profile[i], 'x', NaN);
       if (Number.isFinite(px)) xOuter = Math.max(xOuter, px);
     }
-    if (!Number.isFinite(xOuter) || xOuter <= 0) xOuter = 0.001;
+    if (!Number.isFinite(xOuter) || xOuter <= 0) xOuter = corniceProfile.minOverhangM;
 
     const clamp01 = (v: number) => Math.max(-1, Math.min(1, v));
     const safeCotHalf = (theta: number) => {
-      const t = Math.max(0.01, Math.min(Math.PI - 0.01, theta));
+      const t = Math.max(corniceCommon.thetaClampM, Math.min(Math.PI - corniceCommon.thetaClampM, theta));
       const h = Math.tan(t / 2);
       return h !== 0 ? 1 / h : 0;
     };
@@ -167,15 +171,16 @@ export function applyCornerConnectorProfileCornice(args: {
       if (!pos) return null;
       const zPos = segLen / 2;
       const zNeg = -segLen / 2;
-      const epsZ = 5e-4; // 0.5mm
+      const epsZ = corniceProfile.miterEpsilonZM;
 
       // Seal the *base band* join against adjacent cornice pieces.
       // In some builds, the neighboring module cornice strips its miter end-caps (to avoid Z-fighting).
       // If the pentagon diagonal miter trims the inner (x<=0) base band too aggressively, it can leave a
       // visible hole from the front near the bottom band. We keep the visible outer profile unchanged,
       // and only relax the trim by a few millimeters for the inner/base region to close the seam.
-      const baseBandY = Math.min(profBaseH, cHeight * 0.6) + 1e-6;
-      const baseSealEps = 0.003; // 3mm
+      const baseBandY =
+        Math.min(profBaseH, cHeight * corniceProfile.baseHeightRatio) + corniceProfile.baseBandEpsilonM;
+      const baseSealEps = corniceProfile.baseSealEpsilonM;
 
       for (let vi = 0; vi < pos.count; vi++) {
         const vx = Number(pos.getX(vi));

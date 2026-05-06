@@ -1,3 +1,4 @@
+import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 export function createSketchModuleShelfPreviewGeometry(args: {
   innerW: number;
   internalDepth: number;
@@ -17,7 +18,7 @@ export function createSketchModuleShelfPreviewGeometry(args: {
   const variant = args.variant || 'double';
   const isBrace = variant === 'brace';
   const isDouble = variant === 'double' || !variant;
-  const GLASS_THICK_M = 0.018;
+  const GLASS_THICK_M = MATERIAL_DIMENSIONS.glassShelf.thicknessM;
   const h = variant === 'glass' ? GLASS_THICK_M : isDouble ? Math.max(woodThick, woodThick * 2) : woodThick;
   let d = isBrace ? internalDepth : regularDepth;
   if (shelfDepthOverrideM != null && Number.isFinite(shelfDepthOverrideM) && shelfDepthOverrideM > 0) {

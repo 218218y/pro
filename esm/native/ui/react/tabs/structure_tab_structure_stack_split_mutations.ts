@@ -4,6 +4,13 @@ import { applyUiRawScalarPatch, setUiFlag } from '../actions/store_actions.js';
 import { applyStructureTemplateRecomputeBatch, structureTabReportNonFatal } from './structure_tab_core.js';
 import { normalizeStructureRawValue } from './structure_tab_dimension_constraints.js';
 import {
+  DEFAULT_STACK_SPLIT_LOWER_HEIGHT,
+  STACK_SPLIT_LOWER_HEIGHT_MIN,
+  STACK_SPLIT_LOWER_WIDTH_MIN,
+  STACK_SPLIT_MIN_TOP_HEIGHT,
+  WARDROBE_DEPTH_MIN,
+} from '../../../services/api.js';
+import {
   buildRawUiPatch,
   readRawPatch,
   type StructureTabStackSplitField,
@@ -152,12 +159,12 @@ export function toggleStackSplitState(args: {
     return;
   }
 
-  const minTopCm = 40;
+  const minTopCm = STACK_SPLIT_MIN_TOP_HEIGHT;
   const maxBottom = Math.max(0, height - minTopCm);
   const seededBottomHeight =
     Number.isFinite(stackSplitLowerHeight) && stackSplitLowerHeight > 0
       ? stackSplitLowerHeight
-      : Math.min(60, maxBottom || 60);
+      : Math.min(DEFAULT_STACK_SPLIT_LOWER_HEIGHT, maxBottom || DEFAULT_STACK_SPLIT_LOWER_HEIGHT);
   const bottomHeight =
     normalizeStructureRawValue({
       key: 'stackSplitLowerHeight',
@@ -166,12 +173,13 @@ export function toggleStackSplitState(args: {
       height,
       width,
       depth,
-    }) ?? Math.max(20, Math.min(seededBottomHeight, maxBottom || seededBottomHeight));
+    }) ??
+    Math.max(STACK_SPLIT_LOWER_HEIGHT_MIN, Math.min(seededBottomHeight, maxBottom || seededBottomHeight));
 
   const seededBottomDepth =
     Number.isFinite(stackSplitLowerDepth) && stackSplitLowerDepth > 0
       ? stackSplitLowerDepth
-      : Math.max(20, Math.min(depth - 5, depth));
+      : Math.max(WARDROBE_DEPTH_MIN, Math.min(depth - 5, depth));
   const bottomDepth =
     normalizeStructureRawValue({
       key: 'stackSplitLowerDepth',
@@ -180,7 +188,7 @@ export function toggleStackSplitState(args: {
       height,
       width,
       depth,
-    }) ?? Math.max(20, seededBottomDepth);
+    }) ?? Math.max(WARDROBE_DEPTH_MIN, seededBottomDepth);
 
   const seededBottomWidth =
     Number.isFinite(stackSplitLowerWidth) && stackSplitLowerWidth > 0 ? stackSplitLowerWidth : width;
@@ -192,7 +200,7 @@ export function toggleStackSplitState(args: {
       height,
       width,
       depth,
-    }) ?? Math.max(20, seededBottomWidth);
+    }) ?? Math.max(STACK_SPLIT_LOWER_WIDTH_MIN, seededBottomWidth);
 
   const seededBottomDoors =
     Number.isFinite(stackSplitLowerDoors) && stackSplitLowerDoors >= 0 ? stackSplitLowerDoors : doors;

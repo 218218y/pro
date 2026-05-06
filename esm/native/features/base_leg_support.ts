@@ -1,5 +1,7 @@
 import type { UnknownRecord } from '../../../types/index.js';
 
+import { BASE_LEG_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+
 export type BaseLegStyle = 'tapered' | 'round' | 'square';
 export type BaseLegColor = 'black' | 'nickel' | 'gold';
 
@@ -27,15 +29,15 @@ export type BaseLegOptions = {
   geometry: BaseLegGeometrySpec;
 };
 
-export const DEFAULT_BASE_LEG_STYLE: BaseLegStyle = 'tapered';
-export const DEFAULT_BASE_LEG_COLOR: BaseLegColor = 'black';
-export const DEFAULT_BASE_LEG_HEIGHT_CM = 12;
-export const BASE_LEG_HEIGHT_MIN_CM = 1;
-export const BASE_LEG_HEIGHT_MAX_CM = 60;
-export const DEFAULT_BASE_LEG_WIDTH_CM = 3.5;
-export const DEFAULT_TAPERED_BASE_LEG_WIDTH_CM = 4;
-export const BASE_LEG_WIDTH_MIN_CM = 1;
-export const BASE_LEG_WIDTH_MAX_CM = 30;
+export const DEFAULT_BASE_LEG_STYLE = BASE_LEG_DIMENSIONS.defaults.style as BaseLegStyle;
+export const DEFAULT_BASE_LEG_COLOR = BASE_LEG_DIMENSIONS.defaults.color as BaseLegColor;
+export const DEFAULT_BASE_LEG_HEIGHT_CM: number = BASE_LEG_DIMENSIONS.defaults.heightCm;
+export const BASE_LEG_HEIGHT_MIN_CM: number = BASE_LEG_DIMENSIONS.limits.heightMinCm;
+export const BASE_LEG_HEIGHT_MAX_CM: number = BASE_LEG_DIMENSIONS.limits.heightMaxCm;
+export const DEFAULT_BASE_LEG_WIDTH_CM: number = BASE_LEG_DIMENSIONS.defaults.widthCm;
+export const DEFAULT_TAPERED_BASE_LEG_WIDTH_CM: number = BASE_LEG_DIMENSIONS.defaults.taperedWidthCm;
+export const BASE_LEG_WIDTH_MIN_CM: number = BASE_LEG_DIMENSIONS.limits.widthMinCm;
+export const BASE_LEG_WIDTH_MAX_CM: number = BASE_LEG_DIMENSIONS.limits.widthMaxCm;
 
 const BASE_LEG_COLOR_HEX: Record<BaseLegColor, string> = {
   black: '#111111',

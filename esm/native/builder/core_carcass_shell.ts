@@ -2,11 +2,14 @@
 
 import { __asNum } from './core_pure_shared.js';
 import type { MutableRecord } from './core_pure_shared.js';
+import { CARCASS_SHELL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
   CARCASS_BACK_INSET_Z,
   CARCASS_FRONT_INSET_Z,
   type PreparedCarcassInput,
 } from './core_carcass_shared.js';
+
+const SHELL_DIMENSIONS = CARCASS_SHELL_DIMENSIONS;
 
 export type CarcassShellResult = {
   boards: MutableRecord[];
@@ -29,7 +32,10 @@ export function buildCarcassShell(prepared: PreparedCarcassInput): CarcassShellR
     isDepthStepped,
   } = prepared;
 
-  const floorCeilDepth = Math.max(0.02, D - (CARCASS_BACK_INSET_Z + CARCASS_FRONT_INSET_Z));
+  const floorCeilDepth = Math.max(
+    SHELL_DIMENSIONS.boardMinDepthM,
+    D - (CARCASS_BACK_INSET_Z + CARCASS_FRONT_INSET_Z)
+  );
   const floorCeilZ = (CARCASS_BACK_INSET_Z - CARCASS_FRONT_INSET_Z) / 2;
 
   const boards: MutableRecord[] = [];
@@ -45,7 +51,7 @@ export function buildCarcassShell(prepared: PreparedCarcassInput): CarcassShellR
     boards.push({
       kind: 'board',
       partId: 'body_floor',
-      width: totalW - 2 * woodThick - 0.001,
+      width: totalW - 2 * woodThick - SHELL_DIMENSIONS.floorCeilWidthClearanceM,
       height: woodThick,
       depth: floorCeilDepth,
       x: 0,
@@ -56,12 +62,12 @@ export function buildCarcassShell(prepared: PreparedCarcassInput): CarcassShellR
 
   const backPanel: MutableRecord = {
     kind: 'back_panel',
-    width: totalW - 0.002,
+    width: totalW - SHELL_DIMENSIONS.backPanelWidthClearanceM,
     height: cabinetBodyHeight,
-    depth: 0.005,
+    depth: SHELL_DIMENSIONS.backPanelThicknessM,
     x: 0,
     y: startY + cabinetBodyHeight / 2,
-    z: -D / 2 + 0.005,
+    z: -D / 2 + SHELL_DIMENSIONS.backPanelZM,
   };
 
   let backPanels: MutableRecord[] | null = null;
@@ -104,7 +110,7 @@ export function buildCarcassShell(prepared: PreparedCarcassInput): CarcassShellR
       {
         kind: 'board',
         partId: 'body_ceil',
-        width: totalW - 2 * woodThick - 0.001,
+        width: totalW - 2 * woodThick - SHELL_DIMENSIONS.floorCeilWidthClearanceM,
         height: woodThick,
         depth: floorCeilDepth,
         x: 0,
@@ -116,20 +122,20 @@ export function buildCarcassShell(prepared: PreparedCarcassInput): CarcassShellR
         partId: 'body_left',
         width: woodThick,
         height: cabinetBodyHeight,
-        depth: Math.max(0.05, D - 0.0078),
+        depth: Math.max(SHELL_DIMENSIONS.bodyMinDepthM, D - SHELL_DIMENSIONS.sideDepthClearanceM),
         x: -totalW / 2 + woodThick / 2,
         y: startY + cabinetBodyHeight / 2,
-        z: 0.0039,
+        z: SHELL_DIMENSIONS.sideZOffsetM,
       },
       {
         kind: 'board',
         partId: 'body_right',
         width: woodThick,
         height: cabinetBodyHeight,
-        depth: Math.max(0.05, D - 0.0078),
+        depth: Math.max(SHELL_DIMENSIONS.bodyMinDepthM, D - SHELL_DIMENSIONS.sideDepthClearanceM),
         x: totalW / 2 - woodThick / 2,
         y: startY + cabinetBodyHeight / 2,
-        z: 0.0039,
+        z: SHELL_DIMENSIONS.sideZOffsetM,
       }
     );
   }
@@ -155,8 +161,14 @@ function appendDepthSteppedFloorBoards(params: DepthSteppedFloorParams): void {
     const dm = moduleDepths[i];
     const floorLeft = i === 0 ? -totalW / 2 + woodThick : internalLeft;
     const floorRight = i === moduleWidths.length - 1 ? totalW / 2 - woodThick : internalLeft + w + woodThick;
-    const floorW = Math.max(0.001, floorRight - floorLeft - 0.001);
-    const floorDepth = Math.max(0.02, dm - (CARCASS_BACK_INSET_Z + CARCASS_FRONT_INSET_Z));
+    const floorW = Math.max(
+      SHELL_DIMENSIONS.boardMinDimensionM,
+      floorRight - floorLeft - SHELL_DIMENSIONS.floorCeilWidthClearanceM
+    );
+    const floorDepth = Math.max(
+      SHELL_DIMENSIONS.boardMinDepthM,
+      dm - (CARCASS_BACK_INSET_Z + CARCASS_FRONT_INSET_Z)
+    );
     const floorZ = -D / 2 + CARCASS_BACK_INSET_Z + floorDepth / 2;
 
     boards.push({
@@ -219,10 +231,10 @@ function appendSteppedShell(params: SteppedShellParams): void {
     partId: 'body_left',
     width: woodThick,
     height: bodyHeights[0],
-    depth: Math.max(0.05, leftDepth - 0.0078),
+    depth: Math.max(SHELL_DIMENSIONS.bodyMinDepthM, leftDepth - SHELL_DIMENSIONS.sideDepthClearanceM),
     x: -totalW / 2 + woodThick / 2,
     y: startY + bodyHeights[0] / 2,
-    z: leftZ + 0.0039,
+    z: leftZ + SHELL_DIMENSIONS.sideZOffsetM,
   });
 
   boards.push({
@@ -230,10 +242,10 @@ function appendSteppedShell(params: SteppedShellParams): void {
     partId: 'body_right',
     width: woodThick,
     height: bodyHeights[bodyHeights.length - 1],
-    depth: Math.max(0.05, rightDepth - 0.0078),
+    depth: Math.max(SHELL_DIMENSIONS.bodyMinDepthM, rightDepth - SHELL_DIMENSIONS.sideDepthClearanceM),
     x: totalW / 2 - woodThick / 2,
     y: startY + bodyHeights[bodyHeights.length - 1] / 2,
-    z: rightZ + 0.0039,
+    z: rightZ + SHELL_DIMENSIONS.sideZOffsetM,
   });
 
   let internalLeft = -totalW / 2 + woodThick;
@@ -242,9 +254,15 @@ function appendSteppedShell(params: SteppedShellParams): void {
     const h = bodyHeights[i];
     const ceilLeft = i === 0 ? -totalW / 2 + woodThick : internalLeft;
     const ceilRight = i === moduleWidths.length - 1 ? totalW / 2 - woodThick : internalLeft + w + woodThick;
-    const ceilW = Math.max(0.001, ceilRight - ceilLeft - 0.001);
+    const ceilW = Math.max(
+      SHELL_DIMENSIONS.boardMinDimensionM,
+      ceilRight - ceilLeft - SHELL_DIMENSIONS.floorCeilWidthClearanceM
+    );
     const ceilDm = isDepthStepped && moduleDepths ? moduleDepths[i] : D;
-    const ceilDepth = Math.max(0.02, ceilDm - (CARCASS_BACK_INSET_Z + CARCASS_FRONT_INSET_Z));
+    const ceilDepth = Math.max(
+      SHELL_DIMENSIONS.boardMinDepthM,
+      ceilDm - (CARCASS_BACK_INSET_Z + CARCASS_FRONT_INSET_Z)
+    );
     const ceilZ = -D / 2 + CARCASS_BACK_INSET_Z + ceilDepth / 2;
 
     boards.push({
@@ -260,16 +278,19 @@ function appendSteppedShell(params: SteppedShellParams): void {
 
     const leftBoundary = i === 0 ? -totalW / 2 : internalLeft;
     const rightBoundary = i === moduleWidths.length - 1 ? totalW / 2 : internalLeft + w + woodThick;
-    const segW = Math.max(0.001, rightBoundary - leftBoundary - 0.002);
+    const segW = Math.max(
+      SHELL_DIMENSIONS.boardMinDimensionM,
+      rightBoundary - leftBoundary - SHELL_DIMENSIONS.backPanelSegmentWidthClearanceM
+    );
 
     backPanels.push({
       kind: 'back_panel',
       width: segW,
-      height: Math.max(0.001, h),
-      depth: 0.005,
+      height: Math.max(SHELL_DIMENSIONS.boardMinDimensionM, h),
+      depth: SHELL_DIMENSIONS.backPanelThicknessM,
       x: (leftBoundary + rightBoundary) / 2,
       y: startY + h / 2,
-      z: -D / 2 + 0.005,
+      z: -D / 2 + SHELL_DIMENSIONS.backPanelZM,
     });
 
     internalLeft += w + (i < moduleWidths.length - 1 ? woodThick : 0);
@@ -300,20 +321,20 @@ function appendDepthSteppedSidesAndCeil(params: DepthSteppedShellParams): void {
       partId: 'body_left',
       width: woodThick,
       height: cabinetBodyHeight,
-      depth: Math.max(0.05, leftDepth - 0.0078),
+      depth: Math.max(SHELL_DIMENSIONS.bodyMinDepthM, leftDepth - SHELL_DIMENSIONS.sideDepthClearanceM),
       x: -totalW / 2 + woodThick / 2,
       y: startY + cabinetBodyHeight / 2,
-      z: leftZ + 0.0039,
+      z: leftZ + SHELL_DIMENSIONS.sideZOffsetM,
     },
     {
       kind: 'board',
       partId: 'body_right',
       width: woodThick,
       height: cabinetBodyHeight,
-      depth: Math.max(0.05, rightDepth - 0.0078),
+      depth: Math.max(SHELL_DIMENSIONS.bodyMinDepthM, rightDepth - SHELL_DIMENSIONS.sideDepthClearanceM),
       x: totalW / 2 - woodThick / 2,
       y: startY + cabinetBodyHeight / 2,
-      z: rightZ + 0.0039,
+      z: rightZ + SHELL_DIMENSIONS.sideZOffsetM,
     }
   );
 
@@ -323,8 +344,14 @@ function appendDepthSteppedSidesAndCeil(params: DepthSteppedShellParams): void {
     const dm = moduleDepths[i];
     const ceilLeft = i === 0 ? -totalW / 2 + woodThick : internalLeft;
     const ceilRight = i === moduleWidths.length - 1 ? totalW / 2 - woodThick : internalLeft + w + woodThick;
-    const ceilW = Math.max(0.001, ceilRight - ceilLeft - 0.001);
-    const ceilDepth = Math.max(0.02, dm - (CARCASS_BACK_INSET_Z + CARCASS_FRONT_INSET_Z));
+    const ceilW = Math.max(
+      SHELL_DIMENSIONS.boardMinDimensionM,
+      ceilRight - ceilLeft - SHELL_DIMENSIONS.floorCeilWidthClearanceM
+    );
+    const ceilDepth = Math.max(
+      SHELL_DIMENSIONS.boardMinDepthM,
+      dm - (CARCASS_BACK_INSET_Z + CARCASS_FRONT_INSET_Z)
+    );
     const ceilZ = -D / 2 + CARCASS_BACK_INSET_Z + ceilDepth / 2;
 
     boards.push({

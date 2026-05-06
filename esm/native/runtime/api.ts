@@ -256,12 +256,18 @@ export {
 export {
   DEFAULT_WIDTH,
   DEFAULT_HEIGHT,
+  DEFAULT_CHEST_DRAWERS_COUNT,
+  CHEST_MODE_DIMENSIONS,
   HINGED_DEFAULT_DEPTH,
   SLIDING_DEFAULT_DEPTH,
   DEFAULT_HINGED_DOORS,
   DEFAULT_SLIDING_DOORS,
   HINGED_DEFAULT_PER_DOOR_WIDTH,
   SLIDING_DEFAULT_PER_DOOR_WIDTH,
+  DEFAULT_CORNER_WIDTH,
+  DEFAULT_CORNER_DOORS,
+  DEFAULT_STACK_SPLIT_LOWER_HEIGHT,
+  STACK_SPLIT_SEAM_GAP_M,
   WARDROBE_WIDTH_MIN,
   WARDROBE_CHEST_WIDTH_MIN,
   WARDROBE_WIDTH_MAX,
@@ -295,5 +301,8 @@ export {
   getDefaultDoorsForWardrobeType,
   getDefaultPerDoorWidthForWardrobeType,
   getDefaultWidthForWardrobeType,
-} from './wardrobe_dimension_defaults.js';
-export type { WardrobeDimensionDefaultType } from './wardrobe_dimension_defaults.js';
+  getDefaultHeightForWardrobeType,
+  getDefaultChestDrawersCount,
+  resolveDefaultWardrobeDimensions,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
+export type { WardrobeDimensionDefaultType } from '../../shared/wardrobe_dimension_tokens_shared.js';

@@ -1,3 +1,4 @@
+import { CARCASS_INTERIOR_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { makeBoardCreator } from './board_factory.js';
 import { resolveBuildFlowPlanInputs } from './build_flow_plan_inputs.js';
 import { resolveBuildFlowPlanMaterials } from './build_flow_plan_materials.js';
@@ -59,7 +60,7 @@ export function resolveBuildFlowPlan(args: BuildFlowPlanResolveArgs): BuildFlowP
   });
 
   const internalDepth = Math.max(inputs.woodThick, layout.carcassD - inputs.depthReduction);
-  const internalZ = -layout.carcassD / 2 + internalDepth / 2 + 0.005;
+  const internalZ = -layout.carcassD / 2 + internalDepth / 2 + CARCASS_INTERIOR_DIMENSIONS.internalBackInsetM;
   const createBoard = makeBoardCreator({
     App,
     THREE,

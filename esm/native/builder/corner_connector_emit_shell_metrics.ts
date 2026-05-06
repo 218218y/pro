@@ -1,3 +1,4 @@
+import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { cloneMaybe, asRecord, isRecord } from './corner_geometry_plan.js';
 
 import type { AddEdgePanelFn, CornerConnectorSetup } from './corner_connector_emit_shared.js';
@@ -24,6 +25,7 @@ export function createCornerConnectorShellMetrics(setup: CornerConnectorSetup): 
     ctx: { woodThick, wingH, backPanelMaterialArray },
   } = setup;
 
+  const connectorDimensions = CORNER_WING_DIMENSIONS.connector;
   const backPanelMaterialArrayNoPO = backPanelMaterialArray.map((material: unknown) => {
     const clone = cloneMaybe(material);
     const rec = isRecord(clone) ? asRecord(clone) : null;
@@ -37,11 +39,14 @@ export function createCornerConnectorShellMetrics(setup: CornerConnectorSetup): 
 
   return {
     panelThick: woodThick,
-    backPanelThick: 0.005,
-    wallH: Math.max(0.05, wingH - 0.002),
-    backWallH: Math.max(0.05, wingH),
-    backPanelOutsideInsetX: 0.0025,
-    backPanelOutsideInsetZ: 0.0025,
+    backPanelThick: connectorDimensions.shellBackPanelThicknessM,
+    wallH: Math.max(
+      connectorDimensions.shellMinWallHeightM,
+      wingH - connectorDimensions.shellWallHeightClearanceM
+    ),
+    backWallH: Math.max(connectorDimensions.shellMinWallHeightM, wingH),
+    backPanelOutsideInsetX: connectorDimensions.shellBackPanelOutsideInsetM,
+    backPanelOutsideInsetZ: connectorDimensions.shellBackPanelOutsideInsetM,
     backPanelMaterialArrayNoPO,
   };
 }

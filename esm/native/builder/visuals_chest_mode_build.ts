@@ -1,5 +1,10 @@
 import { getDrawersArray, getViewportSurface, getWardrobeGroup } from '../runtime/render_access.js';
 import { getBuilderRenderOps } from '../runtime/builder_service_access.js';
+import {
+  CARCASS_BASE_DIMENSIONS,
+  CHEST_MODE_DIMENSIONS,
+  MATERIAL_DIMENSIONS,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { resolveBaseLegGeometrySpec } from '../features/base_leg_support.js';
 import { getCfg } from './store_access.js';
 
@@ -19,6 +24,10 @@ import {
   resolveChestModeMaterialPalette,
 } from './visuals_chest_mode_materials.js';
 import { createInternalDrawerBox } from './visuals_chest_mode_drawer_box.js';
+
+const PLINTH_DIMENSIONS = CARCASS_BASE_DIMENSIONS.plinth;
+const BASE_LEG_LAYOUT_DIMENSIONS = CARCASS_BASE_DIMENSIONS.legs;
+const CHEST_DIMENSIONS = CARCASS_BASE_DIMENSIONS.chest;
 
 export function buildChestOnly(App: AppContainer, opts?: UnknownRecord | null) {
   App = ensureChestModeApp(App);
@@ -48,8 +57,8 @@ export function buildChestOnly(App: AppContainer, opts?: UnknownRecord | null) {
   const D = inputs.D;
   const effectiveBaseType = inputs.effectiveBaseType;
   const drawersCount = inputs.drawersCount;
-  const thick = 0.018;
-  const baseH = effectiveBaseType === 'plinth' ? 0.08 : inputs.baseLegHeightM;
+  const thick = MATERIAL_DIMENSIONS.wood.thicknessM;
+  const baseH = effectiveBaseType === 'plinth' ? PLINTH_DIMENSIONS.heightM : inputs.baseLegHeightM;
 
   const createChestBoard = (
     w: number,
@@ -77,12 +86,23 @@ export function buildChestOnly(App: AppContainer, opts?: UnknownRecord | null) {
   createChestBoard(thick, sideH, D, totalW / 2 - thick / 2, baseH + thick + sideH / 2, 0, 'chest_right');
 
   const chestBodyHeight = H - baseH;
-  const back = new THREE.Mesh(new THREE.BoxGeometry(totalW, chestBodyHeight, 0.005), palette.globalBodyMat);
-  back.position.set(0, baseH + chestBodyHeight / 2, -D / 2 + 0.005);
+  const back = new THREE.Mesh(
+    new THREE.BoxGeometry(totalW, chestBodyHeight, CHEST_DIMENSIONS.backThicknessM),
+    palette.globalBodyMat
+  );
+  back.position.set(0, baseH + chestBodyHeight / 2, -D / 2 + CHEST_DIMENSIONS.backInsetM);
   wardrobeGroup.add(back);
 
   if (effectiveBaseType === 'plinth') {
-    createChestBoard(totalW - 0.04, baseH, D - 0.05, 0, baseH / 2, -0.02, 'chest_plinth');
+    createChestBoard(
+      totalW - PLINTH_DIMENSIONS.widthClearanceM,
+      baseH,
+      D - PLINTH_DIMENSIONS.depthClearanceM,
+      0,
+      baseH / 2,
+      -PLINTH_DIMENSIONS.frontInsetM,
+      'chest_plinth'
+    );
   } else {
     const legSpec = resolveBaseLegGeometrySpec(inputs.baseLegStyle, inputs.baseLegWidthCm);
     const legGeo =
@@ -90,14 +110,26 @@ export function buildChestOnly(App: AppContainer, opts?: UnknownRecord | null) {
         ? new THREE.BoxGeometry(legSpec.width, baseH, legSpec.depth)
         : new THREE.CylinderGeometry(legSpec.topRadius, legSpec.bottomRadius, baseH, legSpec.radialSegments);
     const positions = [
-      { x: -totalW / 2 + 0.05, z: D / 2 - 0.05 },
-      { x: totalW / 2 - 0.05, z: D / 2 - 0.05 },
-      { x: -totalW / 2 + 0.05, z: -D / 2 + 0.05 },
-      { x: totalW / 2 - 0.05, z: -D / 2 + 0.05 },
+      {
+        x: -totalW / 2 + BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM,
+        z: D / 2 - BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM,
+      },
+      {
+        x: totalW / 2 - BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM,
+        z: D / 2 - BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM,
+      },
+      {
+        x: -totalW / 2 + BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM,
+        z: -D / 2 + BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM,
+      },
+      {
+        x: totalW / 2 - BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM,
+        z: -D / 2 + BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM,
+      },
     ];
-    if (totalW > 1.2) {
-      positions.push({ x: 0, z: D / 2 - 0.05 });
-      positions.push({ x: 0, z: -D / 2 + 0.05 });
+    if (totalW > BASE_LEG_LAYOUT_DIMENSIONS.chestCenterSupportWidthThresholdM) {
+      positions.push({ x: 0, z: D / 2 - BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM });
+      positions.push({ x: 0, z: -D / 2 + BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM });
     }
     positions.forEach(pos => {
       const leg = new THREE.Mesh(legGeo, palette.legMat);
@@ -110,9 +142,9 @@ export function buildChestOnly(App: AppContainer, opts?: UnknownRecord | null) {
   const innerH = sideH;
   const startY = baseH + thick;
   const singleDrawerTotalH = innerH / drawersCount;
-  const gap = 0.004;
+  const gap = CHEST_DIMENSIONS.drawerGapM;
   const drawerFrontH = singleDrawerTotalH - gap;
-  const drawerWidth = totalW - 2 * thick - 0.004;
+  const drawerWidth = totalW - 2 * thick - CHEST_DIMENSIONS.drawerWidthClearanceM;
 
   for (let i = 0; i < drawersCount; i++) {
     const yCenter = startY + i * singleDrawerTotalH + singleDrawerTotalH / 2;
@@ -121,7 +153,7 @@ export function buildChestOnly(App: AppContainer, opts?: UnknownRecord | null) {
     const drawerGroup = new THREE.Group();
     drawerGroup.userData = { partId: drawerId, __doorWidth: drawerWidth, __doorHeight: drawerFrontH };
 
-    const frontThickness = 0.018;
+    const frontThickness = CHEST_DIMENSIONS.drawerFrontThicknessM;
     const frontMesh = new THREE.Mesh(
       new THREE.BoxGeometry(drawerWidth, drawerFrontH, frontThickness),
       frontMat
@@ -133,18 +165,22 @@ export function buildChestOnly(App: AppContainer, opts?: UnknownRecord | null) {
 
     if (i > 0) {
       const shadowLine = new THREE.Mesh(
-        new THREE.BoxGeometry(drawerWidth, gap, 0.001),
+        new THREE.BoxGeometry(drawerWidth, gap, CHEST_DIMENSIONS.drawerShadowLineThicknessM),
         new THREE.MeshBasicMaterial({ color: 0x000000 })
       );
-      shadowLine.position.set(0, -drawerFrontH / 2 - gap / 2, D / 2 + frontThickness / 2 + 0.001);
+      shadowLine.position.set(
+        0,
+        -drawerFrontH / 2 - gap / 2,
+        D / 2 + frontThickness / 2 + CHEST_DIMENSIONS.drawerShadowLineThicknessM
+      );
       drawerGroup.add(shadowLine);
     }
 
-    const boxH = drawerFrontH - 0.05;
-    const boxD = D - 0.05;
+    const boxH = drawerFrontH - CHEST_DIMENSIONS.drawerBoxHeightClearanceM;
+    const boxD = D - CHEST_DIMENSIONS.drawerBoxDepthClearanceM;
     const boxMesh = createInternalDrawerBox(
       App,
-      drawerWidth - 0.03,
+      drawerWidth - CHEST_DIMENSIONS.drawerBoxWidthClearanceM,
       boxH,
       boxD,
       palette.drawerBoxMat,
@@ -156,10 +192,14 @@ export function buildChestOnly(App: AppContainer, opts?: UnknownRecord | null) {
     boxMesh.position.set(0, 0, 0);
     drawerGroup.add(boxMesh);
 
-    const connDepth = 0.02;
-    const connZ = D / 2 - connDepth / 2 - 0.003;
+    const connDepth = CHEST_DIMENSIONS.connectorDepthM;
+    const connZ = D / 2 - connDepth / 2 - CHEST_DIMENSIONS.connectorBackInsetM;
     const connMesh = new THREE.Mesh(
-      new THREE.BoxGeometry(drawerWidth - 0.08, boxH - 0.02, connDepth),
+      new THREE.BoxGeometry(
+        drawerWidth - CHEST_DIMENSIONS.connectorWidthClearanceM,
+        boxH - CHEST_DIMENSIONS.connectorHeightClearanceM,
+        connDepth
+      ),
       palette.drawerBoxMat
     );
     connMesh.position.set(0, 0, connZ);
@@ -171,7 +211,7 @@ export function buildChestOnly(App: AppContainer, opts?: UnknownRecord | null) {
     getDrawersArray(App).push({
       group: drawerGroup,
       closed: new THREE.Vector3(0, yCenter, 0),
-      open: new THREE.Vector3(0, yCenter, 0.35),
+      open: new THREE.Vector3(0, yCenter, CHEST_DIMENSIONS.openOffsetZM),
       id: drawerId,
       dividerKey: drawerId,
     });
@@ -179,15 +219,15 @@ export function buildChestOnly(App: AppContainer, opts?: UnknownRecord | null) {
 
   if (getCfg(App).showDimensions && addDimensionLine) {
     addDimensionLine(
-      new THREE.Vector3(-totalW / 2, H + 0.1, 0),
-      new THREE.Vector3(totalW / 2, H + 0.1, 0),
+      new THREE.Vector3(-totalW / 2, H + CHEST_MODE_DIMENSIONS.dimensionGuideTopOffsetM, 0),
+      new THREE.Vector3(totalW / 2, H + CHEST_MODE_DIMENSIONS.dimensionGuideTopOffsetM, 0),
       new THREE.Vector3(0, 0, 0),
       (totalW * 100).toFixed(0),
       0.6
     );
     addDimensionLine(
-      new THREE.Vector3(totalW / 2 + 0.15, 0, 0),
-      new THREE.Vector3(totalW / 2 + 0.15, H, 0),
+      new THREE.Vector3(totalW / 2 + CHEST_MODE_DIMENSIONS.dimensionGuideSideOffsetM, 0, 0),
+      new THREE.Vector3(totalW / 2 + CHEST_MODE_DIMENSIONS.dimensionGuideSideOffsetM, H, 0),
       new THREE.Vector3(0, 0, 0),
       (H * 100).toFixed(0),
       0.6

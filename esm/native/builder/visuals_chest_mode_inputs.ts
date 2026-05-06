@@ -1,3 +1,4 @@
+import { WARDROBE_DEFAULTS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { readUiRawDimsCmFromSnapshot } from '../runtime/ui_raw_selectors.js';
 import { readBaseLegOptions, type BaseLegColor, type BaseLegStyle } from '../features/base_leg_support.js';
 
@@ -45,15 +46,15 @@ export function resolveChestModeBuildInputs(
     customColor = opts.customColor;
   } else {
     const dims = ui ? readUiRawDimsCmFromSnapshot(ui) : null;
-    const widthCm = dims ? dims.widthCm : 160;
-    const heightCm = dims ? dims.heightCm : 240;
-    const depthCm = dims ? dims.depthCm : 55;
+    const widthCm = dims ? dims.widthCm : WARDROBE_DEFAULTS.widthCm;
+    const heightCm = dims ? dims.heightCm : WARDROBE_DEFAULTS.heightCm;
+    const depthCm = dims ? dims.depthCm : WARDROBE_DEFAULTS.byType.hinged.depthCm;
 
     H = Number(heightCm) / 100;
     totalW = Number(widthCm) / 100;
     D = Number(depthCm) / 100;
 
-    drawersCount = dims ? dims.chestDrawersCount : 4;
+    drawersCount = dims ? dims.chestDrawersCount : WARDROBE_DEFAULTS.chestDrawersCount;
     rawBaseType = ui ? ui.baseType : '';
     legSource = ui;
     colorChoice = ui ? ui.colorChoice : '';
@@ -65,7 +66,7 @@ export function resolveChestModeBuildInputs(
     H,
     totalW,
     D,
-    drawersCount: Number.isFinite(drawersCount) ? drawersCount : 4,
+    drawersCount: Number.isFinite(drawersCount) ? drawersCount : WARDROBE_DEFAULTS.chestDrawersCount,
     effectiveBaseType: String(rawBaseType || '') === 'plinth' ? 'plinth' : 'legs',
     baseLegStyle: legOptions.style,
     baseLegColor: legOptions.color,

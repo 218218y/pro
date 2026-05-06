@@ -7,7 +7,14 @@ import {
   setUiCornerSide,
   setUiCornerWidth,
 } from '../actions/store_actions.js';
-import { adjustCameraForCorner, resetCameraPreset } from '../../../services/api.js';
+import {
+  DEFAULT_CORNER_DOORS,
+  DEFAULT_CORNER_WIDTH,
+  DEFAULT_HEIGHT,
+  HINGED_DEFAULT_DEPTH,
+  adjustCameraForCorner,
+  resetCameraPreset,
+} from '../../../services/api.js';
 import { asFiniteInt, asFiniteNumber, structureTabReportNonFatal } from './structure_tab_shared.js';
 import {
   commitStructureStatePatchWithRecompute,
@@ -26,10 +33,10 @@ export function createStructureTabCornerActionsController(args: StructureTabCorn
     const patch: CornerPatch = { cornerMode: !!nextOn };
     if (nextOn) {
       patch.cornerSide = args.cornerSide;
-      patch.cornerWidth = asFiniteNumber(args.cornerWidth, 120);
-      patch.cornerDoors = Math.max(0, asFiniteInt(args.cornerDoors, 3));
-      patch.cornerHeight = asFiniteNumber(args.cornerHeight, 240);
-      patch.cornerDepth = asFiniteNumber(args.cornerDepth, args.depth);
+      patch.cornerWidth = asFiniteNumber(args.cornerWidth, DEFAULT_CORNER_WIDTH);
+      patch.cornerDoors = Math.max(0, asFiniteInt(args.cornerDoors, DEFAULT_CORNER_DOORS));
+      patch.cornerHeight = asFiniteNumber(args.cornerHeight, DEFAULT_HEIGHT);
+      patch.cornerDepth = asFiniteNumber(args.cornerDepth, asFiniteNumber(args.depth, HINGED_DEFAULT_DEPTH));
     }
 
     commitStructureStatePatchWithRecompute({
@@ -93,7 +100,8 @@ export function createStructureTabCornerActionsController(args: StructureTabCorn
   };
 
   const commitCornerDoors = (nn: number) => {
-    const nextDoors = normalizeStructureDimensionValue(nn, readStructureCornerDoorsBounds()) ?? 3;
+    const nextDoors =
+      normalizeStructureDimensionValue(nn, readStructureCornerDoorsBounds()) ?? DEFAULT_CORNER_DOORS;
     if (nextDoors === Math.max(0, Math.round(Number(args.cornerDoors) || 0))) return;
 
     const patch: CornerPatch = { cornerDoors: nextDoors };

@@ -9,6 +9,7 @@ import {
   type NodeLike,
 } from './handles_shared.js';
 import { normalizeHandleFinishColor, resolveHandleFinishPalette } from '../features/handle_finish_shared.js';
+import { HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 export function createHandleMeshV7(
   type: unknown,
@@ -48,8 +49,14 @@ export function createHandleMeshV7(
       }));
 
     if (isDrawer) {
-      const targetEdgeLen = edgeHandleVariant === 'long' ? 0.4 : 0.2;
-      const handleW = Math.max(0.1, Math.min(w - 0.04, targetEdgeLen));
+      const targetEdgeLen =
+        edgeHandleVariant === 'long'
+          ? HANDLE_DIMENSIONS.edge.longLengthM
+          : HANDLE_DIMENSIONS.edge.shortLengthM;
+      const handleW = Math.max(
+        HANDLE_DIMENSIONS.edge.minLengthM,
+        Math.min(w - HANDLE_DIMENSIONS.edge.drawerWidthClearanceM, targetEdgeLen)
+      );
       const profile = createDrawerEdgeHandleProfile({
         THREE,
         material: edgeMat,
@@ -57,8 +64,13 @@ export function createHandleMeshV7(
       });
       if (profile) g.add(profile);
     } else {
-      const handleH = edgeHandleVariant === 'long' ? 0.4 : 0.2;
-      const xPos = isLeftHinge ? w + 0.002 : -w - 0.002;
+      const handleH =
+        edgeHandleVariant === 'long'
+          ? HANDLE_DIMENSIONS.edge.longLengthM
+          : HANDLE_DIMENSIONS.edge.shortLengthM;
+      const xPos = isLeftHinge
+        ? w + HANDLE_DIMENSIONS.edge.doorAnchorOffsetM
+        : -w - HANDLE_DIMENSIONS.edge.doorAnchorOffsetM;
       const profile = createDoorEdgeHandleProfile({
         THREE,
         material: edgeMat,
@@ -82,19 +94,27 @@ export function createHandleMeshV7(
     }));
 
   if (isDrawer) {
-    const geo = new THREE.BoxGeometry(0.16, 0.01, 0.02);
+    const geo = new THREE.BoxGeometry(
+      HANDLE_DIMENSIONS.standard.drawerWidthM,
+      HANDLE_DIMENSIONS.standard.drawerHeightM,
+      HANDLE_DIMENSIONS.standard.drawerDepthM
+    );
     const mesh = new THREE.Mesh(geo, stdMat);
     mesh.userData = { __keepMaterial: true };
-    mesh.position.set(0, 0, 0.02);
+    mesh.position.set(0, 0, HANDLE_DIMENSIONS.standard.frontZM);
     if (typeof addOutlines === 'function') addOutlines(mesh, ctx);
     g.add(mesh);
   } else {
-    const geo = new THREE.BoxGeometry(0.01, 0.16, 0.02);
+    const geo = new THREE.BoxGeometry(
+      HANDLE_DIMENSIONS.standard.doorWidthM,
+      HANDLE_DIMENSIONS.standard.doorHeightM,
+      HANDLE_DIMENSIONS.standard.doorDepthM
+    );
     const mesh = new THREE.Mesh(geo, stdMat);
     mesh.userData = { __keepMaterial: true };
-    const offset = 0.05;
+    const offset = HANDLE_DIMENSIONS.standard.doorOffsetM;
     const xPos = isLeftHinge ? w - offset : -w + offset;
-    mesh.position.set(xPos, 0, 0.02);
+    mesh.position.set(xPos, 0, HANDLE_DIMENSIONS.standard.frontZM);
     if (typeof addOutlines === 'function') addOutlines(mesh, ctx);
     g.add(mesh);
   }

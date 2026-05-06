@@ -1,3 +1,4 @@
+import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { CornerCellCfg } from './corner_geometry_plan.js';
 import type {
   CornerWingInteriorCellRuntime,
@@ -26,7 +27,7 @@ export function createCornerWingInteriorShelfRuntime(
   runtime: CornerWingInteriorRuntime
 ): CornerWingInteriorShelfRuntime {
   const shelfMat = runtime.getCornerMat('corner_shelves', runtime.bodyMat);
-  const GLASS_SHELF_THICK = 0.018;
+  const GLASS_SHELF_THICK = MATERIAL_DIMENSIONS.glassShelf.thicknessM;
   const DOUBLE_SHELF_THICK = Math.max(runtime.woodThick, runtime.woodThick * 2);
   let glassShelfMat: unknown | null = null;
 

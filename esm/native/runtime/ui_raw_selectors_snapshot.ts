@@ -14,6 +14,13 @@ import {
   readUiScalarValue,
   type EssentialUiDimKey,
 } from './ui_raw_selectors_shared.js';
+import {
+  DEFAULT_CHEST_DRAWERS_COUNT,
+  DEFAULT_HEIGHT,
+  DEFAULT_HINGED_DOORS,
+  DEFAULT_WIDTH,
+  HINGED_DEFAULT_DEPTH,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 /**
  * Read a raw scalar from a UI snapshot.
@@ -91,10 +98,10 @@ export function readUiRawDimsCmFromSnapshot(ui: unknown): {
   doorsCount: number;
   chestDrawersCount: number;
 } {
-  const widthCm = readUiRawNumberFromSnapshot(ui, 'width', 160);
-  const heightCm = readUiRawNumberFromSnapshot(ui, 'height', 240);
-  const depthCm = readUiRawNumberFromSnapshot(ui, 'depth', 55);
-  const doorsCount = readUiRawIntFromSnapshot(ui, 'doors', 4);
-  const chestDrawersCount = readUiRawIntFromSnapshot(ui, 'chestDrawersCount', 4);
+  const widthCm = readUiRawNumberFromSnapshot(ui, 'width', DEFAULT_WIDTH);
+  const heightCm = readUiRawNumberFromSnapshot(ui, 'height', DEFAULT_HEIGHT);
+  const depthCm = readUiRawNumberFromSnapshot(ui, 'depth', HINGED_DEFAULT_DEPTH);
+  const doorsCount = readUiRawIntFromSnapshot(ui, 'doors', DEFAULT_HINGED_DOORS);
+  const chestDrawersCount = readUiRawIntFromSnapshot(ui, 'chestDrawersCount', DEFAULT_CHEST_DRAWERS_COUNT);
   return { widthCm, heightCm, depthCm, doorsCount, chestDrawersCount };
 }

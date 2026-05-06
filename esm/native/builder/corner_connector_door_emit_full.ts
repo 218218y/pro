@@ -1,3 +1,4 @@
+import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
   clampCornerConnectorHandleAbsY,
   pushCornerConnectorDoorSegment,
@@ -21,7 +22,7 @@ export function appendCornerConnectorFullDoor(
       fullId,
       state.defaultHandleAbsY,
       ctx.doorBottomY,
-      ctx.effectiveTopLimit - 0.002
+      ctx.effectiveTopLimit - CORNER_WING_DIMENSIONS.connector.fullDoorTopHandleClearanceM
     )
   );
 }

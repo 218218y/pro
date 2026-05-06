@@ -1,3 +1,4 @@
+import { INTERIOR_FITTINGS_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { UnknownRecord } from '../../../types';
 import type {
   InteriorObjectLike,
@@ -177,8 +178,14 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
     ) {
       for (let slotIndex = 0; slotIndex < activeSlots.length; slotIndex++) {
         const activeSlot = activeSlots[slotIndex];
-        const drawerBottomY = effectiveBottomY + (activeSlot - 1) * localGridStep - 0.05;
-        const drawerTopY = effectiveBottomY + activeSlot * localGridStep + 0.05;
+        const drawerBottomY =
+          effectiveBottomY +
+          (activeSlot - 1) * localGridStep -
+          INTERIOR_FITTINGS_DIMENSIONS.rods.drawerVerticalGuardM;
+        const drawerTopY =
+          effectiveBottomY +
+          activeSlot * localGridStep +
+          INTERIOR_FITTINGS_DIMENSIONS.rods.drawerVerticalGuardM;
         if (yPos >= drawerBottomY && yPos <= drawerTopY) {
           return true;
         }
@@ -206,7 +213,8 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
           highestDrawerBelowRodY = drawerTopEdge;
         }
       }
-      if (yPos - highestDrawerBelowRodY < 0.75) enableHangingClothes = false;
+      if (yPos - highestDrawerBelowRodY < INTERIOR_FITTINGS_DIMENSIONS.rods.minHangingHeightM)
+        enableHangingClothes = false;
       if (manualHeightLimit == null) availableHeight = yPos - highestDrawerBelowRodY;
     }
 
@@ -215,7 +223,15 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
       cache: __matCache(App),
       explicitMat: safeArgs.rodMat ?? cfg.rodMat,
     });
-    const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, innerW - 0.04, 12), rodMat);
+    const rod = new THREE.Mesh(
+      new THREE.CylinderGeometry(
+        INTERIOR_FITTINGS_DIMENSIONS.rods.radiusM,
+        INTERIOR_FITTINGS_DIMENSIONS.rods.radiusM,
+        innerW - INTERIOR_FITTINGS_DIMENSIONS.rods.widthClearanceM,
+        12
+      ),
+      rodMat
+    );
     if (!rod.position || !rod.rotation || typeof rod.position.set !== 'function') return false;
     rod.rotation.z = Math.PI / 2;
     rod.position.set(internalCenterX, yPos, internalZ);
@@ -233,25 +249,32 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
       let depthLimit = Infinity;
 
       if (internalDepth != null) {
-        depthLimit = Math.min(depthLimit, internalDepth - 0.04);
+        depthLimit = Math.min(
+          depthLimit,
+          internalDepth - INTERIOR_FITTINGS_DIMENSIONS.rods.depthBackClearanceM
+        );
       }
 
       if (doorFrontZ != null) {
-        const availFront = doorFrontZ - 0.025 - internalZ;
+        const availFront = doorFrontZ - INTERIOR_FITTINGS_DIMENSIONS.rods.doorFrontClearanceM - internalZ;
         if (Number.isFinite(availFront)) depthLimit = Math.min(depthLimit, 2 * availFront);
       }
 
-      if (hasStorageBarrier) depthLimit = Math.min(depthLimit, 0.3);
+      if (hasStorageBarrier)
+        depthLimit = Math.min(depthLimit, INTERIOR_FITTINGS_DIMENSIONS.rods.storageDepthLimitM);
 
       if (Number.isFinite(depthLimit) && depthLimit > 0) {
-        depthHint = Math.min(0.45, Math.max(0.12, depthLimit));
+        depthHint = Math.min(
+          INTERIOR_FITTINGS_DIMENSIONS.rods.depthHintMaxM,
+          Math.max(INTERIOR_FITTINGS_DIMENSIONS.rods.depthHintMinM, depthLimit)
+        );
       }
 
       addHangingClothes(
         internalCenterX,
         yPos,
         internalZ,
-        innerW - 0.06,
+        innerW - INTERIOR_FITTINGS_DIMENSIONS.rods.contentsWidthClearanceM,
         group,
         availableHeight,
         depthHint,

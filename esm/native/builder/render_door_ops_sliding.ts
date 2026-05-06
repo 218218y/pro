@@ -1,3 +1,4 @@
+import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { resolveConfiguredHandleColor } from './handle_finish_runtime.js';
 import { resolveHandleFinishPalette } from '../features/handle_finish_shared.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
@@ -72,8 +73,8 @@ export function createApplySlidingDoorsOps(deps: BuilderRenderDoorDeps) {
       if (!doorOp) continue;
 
       const slideID = doorOp.partId;
-      const outerZ = rail.z - rail.depth / 2 - 0.012;
-      const innerZ = outerZ - 0.03;
+      const outerZ = rail.z - rail.depth / 2 - DOOR_SYSTEM_DIMENSIONS.sliding.trackOuterOffsetM;
+      const innerZ = outerZ - DOOR_SYSTEM_DIMENSIONS.sliding.trackInnerLaneGapM;
       const zPos = i % 2 === 0 ? innerZ : outerZ;
       const slideMat = getPartMaterial ? getPartMaterial(slideID) : null;
 
@@ -98,7 +99,7 @@ export function createApplySlidingDoorsOps(deps: BuilderRenderDoorDeps) {
         visual = createDoorVisual(
           doorOp.width,
           doorOp.height,
-          0.022,
+          DOOR_SYSTEM_DIMENSIONS.sliding.visualThicknessM,
           visualState.isMirror ? slideMirrorMat : slideWoodMat,
           effectiveDoorStyle,
           hasSlideGrooves,
@@ -112,7 +113,10 @@ export function createApplySlidingDoorsOps(deps: BuilderRenderDoorDeps) {
           visualState.isGlass ? { glassFrameStyle: effectiveDoorStyleBase } : null
         );
       } else {
-        visual = new THREE.Mesh(new THREE.BoxGeometry(doorOp.width, doorOp.height, 0.022), slideMat);
+        visual = new THREE.Mesh(
+          new THREE.BoxGeometry(doorOp.width, doorOp.height, DOOR_SYSTEM_DIMENSIONS.sliding.visualThicknessM),
+          slideMat
+        );
       }
 
       group.add(visual);
@@ -125,7 +129,7 @@ export function createApplySlidingDoorsOps(deps: BuilderRenderDoorDeps) {
         doorWidth: doorOp.width,
         doorHeight: doorOp.height,
         doorMeshOffsetX: 0,
-        frontZ: 0.014,
+        frontZ: DOOR_SYSTEM_DIMENSIONS.sliding.trimFrontZM,
         faceSign: 1,
       });
       group.userData = group.userData || {};
@@ -148,20 +152,36 @@ export function createApplySlidingDoorsOps(deps: BuilderRenderDoorDeps) {
           roughness: handlePalette.roughness,
           metalness: handlePalette.metalness,
         });
-        const profileZ = 0.024;
+        const profileZ = DOOR_SYSTEM_DIMENSIONS.sliding.handleProfileZOffsetM;
         if (handleType === 'standard') {
-          const profileGeo = new THREE.BoxGeometry(0.025, doorOp.height, 0.025);
+          const profileGeo = new THREE.BoxGeometry(
+            DOOR_SYSTEM_DIMENSIONS.sliding.standardHandleProfileWidthM,
+            doorOp.height,
+            DOOR_SYSTEM_DIMENSIONS.sliding.standardHandleProfileDepthM
+          );
           const leftProfile = new THREE.Mesh(profileGeo, profileMat);
-          leftProfile.position.set(-doorOp.width / 2 + 0.0125, 0, 0.025);
+          leftProfile.position.set(
+            -doorOp.width / 2 + DOOR_SYSTEM_DIMENSIONS.sliding.standardHandleProfileInsetM,
+            0,
+            DOOR_SYSTEM_DIMENSIONS.sliding.standardHandleProfileFrontZM
+          );
           if (addOutlines) addOutlines(leftProfile);
           group.add(leftProfile);
 
           const rightProfile = new THREE.Mesh(profileGeo, profileMat);
-          rightProfile.position.set(doorOp.width / 2 - 0.0125, 0, 0.025);
+          rightProfile.position.set(
+            doorOp.width / 2 - DOOR_SYSTEM_DIMENSIONS.sliding.standardHandleProfileInsetM,
+            0,
+            DOOR_SYSTEM_DIMENSIONS.sliding.standardHandleProfileFrontZM
+          );
           if (addOutlines) addOutlines(rightProfile);
           group.add(rightProfile);
         } else if (handleType === 'edge') {
-          const edgeGeo = new THREE.BoxGeometry(0.01, doorOp.height, 0.03);
+          const edgeGeo = new THREE.BoxGeometry(
+            DOOR_SYSTEM_DIMENSIONS.sliding.edgeHandleWidthM,
+            doorOp.height,
+            DOOR_SYSTEM_DIMENSIONS.sliding.edgeHandleDepthM
+          );
           const edgeMat = new THREE.MeshStandardMaterial({
             color: handlePalette.hex,
             emissive: handlePalette.emissiveHex,
@@ -170,25 +190,38 @@ export function createApplySlidingDoorsOps(deps: BuilderRenderDoorDeps) {
             metalness: handlePalette.metalness,
           });
           const leftEdge = new THREE.Mesh(edgeGeo, edgeMat);
-          leftEdge.position.set(-doorOp.width / 2 + 0.005, 0, profileZ);
+          leftEdge.position.set(
+            -doorOp.width / 2 + DOOR_SYSTEM_DIMENSIONS.sliding.edgeHandleInsetM,
+            0,
+            profileZ
+          );
           group.add(leftEdge);
 
           const rightEdge = new THREE.Mesh(edgeGeo, edgeMat);
-          rightEdge.position.set(doorOp.width / 2 - 0.005, 0, profileZ);
+          rightEdge.position.set(
+            doorOp.width / 2 - DOOR_SYSTEM_DIMENSIONS.sliding.edgeHandleInsetM,
+            0,
+            profileZ
+          );
           group.add(rightEdge);
         }
       }
 
       wardrobeGroup.add(group);
 
-      let doorDepthSpan = 0.048;
+      let doorDepthSpan =
+        DOOR_SYSTEM_DIMENSIONS.sliding.visualThicknessM +
+        DOOR_SYSTEM_DIMENSIONS.sliding.standardHandleProfileDepthM;
       const bounds = new THREE.Box3().setFromObject(group);
       const size = new THREE.Vector3();
       bounds.getSize(size);
       if (typeof size.z === 'number' && Number.isFinite(size.z) && size.z > 0) {
         doorDepthSpan = size.z;
       }
-      const stackZStep = Math.max(0.03, doorDepthSpan + 0.006);
+      const stackZStep = Math.max(
+        DOOR_SYSTEM_DIMENSIONS.sliding.runtimeStackZStepMinM,
+        doorDepthSpan + DOOR_SYSTEM_DIMENSIONS.sliding.runtimeStackZStepGapM
+      );
 
       const doorsArray = __doors(App);
       if (Array.isArray(doorsArray)) {

@@ -1,3 +1,4 @@
+import { DRAWER_DIMENSIONS, HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { readModulesConfigurationListFromConfigSnapshot } from '../features/modules_configuration/modules_config_api.js';
 import {
   edgeHandleLongLiftAbsY as edgeHandleLongLiftAbsYImpl,
@@ -20,19 +21,19 @@ export function computeDefaultHandleAbsY(ctx: HingedDoorModuleOpsContext, doorId
       const mm = readModuleConfigRecord(m);
       if (!mm) return;
       let hh = 0;
-      if (mm.hasShoeDrawer || mm.extDrawers === 'shoe') hh += 0.2;
+      if (mm.hasShoeDrawer || mm.extDrawers === 'shoe') hh += DRAWER_DIMENSIONS.external.shoeHeightM;
       const cc = Number(mm.extDrawersCount || (typeof mm.extDrawers === 'number' ? mm.extDrawers : 0));
-      if (cc > 0) hh += cc * 0.22;
+      if (cc > 0) hh += cc * DRAWER_DIMENSIONS.external.regularHeightM;
       if (hh > maxGlobalDrawerH) maxGlobalDrawerH = hh;
     });
   } catch (e) {
     ctx.reportDoorSoftOnce('computeDefaultHandleAbsY.modulesConfig', e, { doorId });
   }
-  let handleAbsHeight = 1.05;
+  let handleAbsHeight = HANDLE_DIMENSIONS.edge.defaultGlobalAbsYM;
   const maxDoorBottom = ctx.startY + ctx.woodThick + maxGlobalDrawerH;
-  if (maxDoorBottom > 0.9) {
+  if (maxDoorBottom > HANDLE_DIMENSIONS.edge.drawerLiftThresholdYM) {
     const extraLongEdgeLift = edgeHandleLongLiftAbsYImpl(ctx.cfg, modsCfg);
-    handleAbsHeight = maxDoorBottom + 0.15 + extraLongEdgeLift;
+    handleAbsHeight = maxDoorBottom + HANDLE_DIMENSIONS.edge.drawerLiftClearanceM + extraLongEdgeLift;
   }
   return handleAbsHeight;
 }
@@ -60,7 +61,9 @@ export function clampHandleAbsY(
   segTopY: number,
   partId?: string
 ): number {
-  const pad = isLongEdgeHandleVariantForPart(ctx.cfg, partId || '') ? 0.2 : 0.1;
+  const pad = isLongEdgeHandleVariantForPart(ctx.cfg, partId || '')
+    ? HANDLE_DIMENSIONS.edge.longClampPaddingM
+    : HANDLE_DIMENSIONS.edge.shortClampPaddingM;
   let y = absY;
   const minY = segBottomY + pad;
   const maxY = segTopY - pad;

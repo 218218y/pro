@@ -1,4 +1,9 @@
 import { _asObject, __asInt, __asNum } from './core_pure_shared.js';
+import {
+  DRAWER_DIMENSIONS,
+  MATERIAL_DIMENSIONS,
+  resolveExternalDrawerGeometry,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 export function computeExternalDrawersOpsForModule(input: unknown) {
   const inp = _asObject(input) || {};
@@ -13,10 +18,10 @@ export function computeExternalDrawersOpsForModule(input: unknown) {
   let externalW = __asNum(inp.externalW, 0);
   let D = __asNum(inp.depth, __asNum(inp.D, 0));
   let startY = __asNum(inp.startY, 0);
-  let woodThick = __asNum(inp.woodThick, 0.018);
+  let woodThick = __asNum(inp.woodThick, MATERIAL_DIMENSIONS.wood.thicknessM);
 
-  let shoeDrawerHeight = __asNum(inp.shoeDrawerHeight, 0.2);
-  let regDrawerHeight = __asNum(inp.regDrawerHeight, 0.22);
+  let shoeDrawerHeight = __asNum(inp.shoeDrawerHeight, DRAWER_DIMENSIONS.external.shoeHeightM);
+  let regDrawerHeight = __asNum(inp.regDrawerHeight, DRAWER_DIMENSIONS.external.regularHeightM);
 
   const hasShoe = !!inp.hasShoe;
   let regCount = __asInt(inp.regCount, 0);
@@ -32,17 +37,24 @@ export function computeExternalDrawersOpsForModule(input: unknown) {
   }
 
   const frontZ = __asNum(inp.frontZ, D / 2);
-  const zClosed = frontZ + 0.01;
-  const zOpen = frontZ + 0.35;
-  const visualW = externalW - 0.004;
-  const visualT = 0.02;
-  const boxW = externalW - 0.044;
-  const boxD = Math.max(woodThick, D - 0.1);
-  const boxOffsetZ = -D / 2 + 0.005;
-  const connectD = 0.03;
-  const connectZ = -0.01 - connectD / 2 - 0.003;
-  const connectW = externalW - 0.09;
-  const connectH = regDrawerHeight - 0.06;
+  const geom = resolveExternalDrawerGeometry({
+    externalWidthM: externalW,
+    depthM: D,
+    woodThicknessM: woodThick,
+    frontZM: frontZ,
+    drawerHeightM: regDrawerHeight,
+  });
+  const zClosed = geom.zClosed;
+  const zOpen = geom.zOpen;
+  const visualW = geom.visualW;
+  const visualT = geom.visualT;
+  const boxW = geom.boxW;
+  const boxD = geom.boxD;
+  const boxOffsetZ = geom.boxOffsetZ;
+  const connectD = geom.connectD;
+  const connectZ = geom.connectZ;
+  const connectW = geom.connectW;
+  const connectH = geom.connectH;
 
   if (hasShoe) {
     const shoeY = startY + woodThick + shoeDrawerHeight / 2;
@@ -54,10 +66,10 @@ export function computeExternalDrawersOpsForModule(input: unknown) {
       dividerKey: keyPrefix + 'div_ext_' + moduleIndex + '_shoe',
       moduleIndex: moduleIndex,
       visualW: visualW,
-      visualH: shoeDrawerHeight - 0.008,
+      visualH: shoeDrawerHeight - DRAWER_DIMENSIONS.external.visualHeightClearanceM,
       visualT: visualT,
       boxW: boxW,
-      boxH: shoeDrawerHeight - 0.04,
+      boxH: shoeDrawerHeight - DRAWER_DIMENSIONS.external.boxHeightClearanceM,
       boxD: boxD,
       boxOffsetZ: boxOffsetZ,
       connectW: connectW,
@@ -81,10 +93,10 @@ export function computeExternalDrawersOpsForModule(input: unknown) {
         dividerKey: keyPrefix + 'div_ext_' + moduleIndex + '_' + (k + 1),
         moduleIndex: moduleIndex,
         visualW: visualW,
-        visualH: regDrawerHeight - 0.008,
+        visualH: regDrawerHeight - DRAWER_DIMENSIONS.external.visualHeightClearanceM,
         visualT: visualT,
         boxW: boxW,
-        boxH: regDrawerHeight - 0.04,
+        boxH: regDrawerHeight - DRAWER_DIMENSIONS.external.boxHeightClearanceM,
         boxD: boxD,
         boxOffsetZ: boxOffsetZ,
         connectW: connectW,

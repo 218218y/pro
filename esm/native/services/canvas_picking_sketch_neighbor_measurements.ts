@@ -1,3 +1,4 @@
+import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
   buildManualLayoutSketchExternalDrawerBlockers,
   buildManualLayoutSketchInternalDrawerBlockers,
@@ -61,7 +62,7 @@ function pushRange(
 
 function shelfThicknessForVariant(variant: unknown, woodThick: number): number {
   const kind = variant != null && variant !== '' ? String(variant) : 'regular';
-  if (kind === 'glass') return 0.018;
+  if (kind === 'glass') return MATERIAL_DIMENSIONS.glassShelf.thicknessM;
   if (kind === 'double' || kind === '') return Math.max(woodThick, woodThick * 2);
   return woodThick;
 }

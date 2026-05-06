@@ -1,3 +1,5 @@
+import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+
 // Corner wing split-door emission.
 //
 // Own the segmented door policy so the public door owner can stay focused on
@@ -20,7 +22,7 @@ export function appendCornerWingSplitDoor(ctx: CornerWingDoorContext, state: Cor
   const topId = `${state.doorBaseId}_top`;
   const midId = `${state.doorBaseId}_mid`;
   const botId = `${state.doorBaseId}_bot`;
-  const topEdge = state.effectiveTopLimit - 0.002;
+  const topEdge = state.effectiveTopLimit - CORNER_WING_DIMENSIONS.connector.doorTopClearanceM;
   const customSplitCutsY = readCustomSplitCutsY(ctx, state);
 
   if (state.topSplitEnabled && customSplitCutsY.length) {
@@ -32,7 +34,7 @@ export function appendCornerWingSplitDoor(ctx: CornerWingDoorContext, state: Cor
       const segBottomY = segmentIndex === 0 ? state.doorBottomY : cuts[segmentIndex - 1] + ctx.splitGap / 2;
       const segTopY = segmentIndex === segCount - 1 ? topEdge : cuts[segmentIndex] - ctx.splitGap / 2;
       const segH = segTopY - segBottomY;
-      if (!(segH > 0.1)) continue;
+      if (!(segH > CORNER_WING_DIMENSIONS.connector.edgeHandleShortInsetM)) continue;
       const segY = segBottomY + segH / 2;
       const partId = partIdForSegment(state, segCount, segmentIndex);
       const defaultHandleAbsY = defaultHandleAbsYForPart(ctx, partId);
@@ -48,7 +50,11 @@ export function appendCornerWingSplitDoor(ctx: CornerWingDoorContext, state: Cor
     return;
   }
 
-  if (state.topSplitEnabled && state.bottomSplitEnabled && state.bottomLineY < state.splitLineY - 0.12) {
+  if (
+    state.topSplitEnabled &&
+    state.bottomSplitEnabled &&
+    state.bottomLineY < state.splitLineY - CORNER_WING_DIMENSIONS.connector.minSegmentHeightM
+  ) {
     const topTopY = topEdge;
     const topBottomY = state.splitLineY + ctx.splitGap / 2;
     const topH = topTopY - topBottomY;
@@ -175,8 +181,11 @@ function pushSegment(
 
   const added = processCornerDoorVisual(ctx, partId, {
     partId,
-    width: state.doorW - 0.004,
-    height: Math.max(0.15, segH - 0.004),
+    width: state.doorW - CORNER_WING_DIMENSIONS.connector.visualWidthClearanceM,
+    height: Math.max(
+      CORNER_WING_DIMENSIONS.connector.minFrontLengthM,
+      segH - CORNER_WING_DIMENSIONS.connector.visualHeightClearanceM
+    ),
     group,
     meshOffset: state.meshOffset,
     groovePartId: partId,

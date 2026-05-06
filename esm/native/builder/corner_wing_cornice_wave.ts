@@ -1,3 +1,7 @@
+import {
+  CARCASS_CORNICE_DIMENSIONS,
+  CARCASS_SHELL_DIMENSIONS,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { CorniceCtxLike, CorniceLocalsLike } from './corner_wing_cornice_contracts.js';
 import { getThreeCornice } from './corner_wing_cornice_contracts.js';
 
@@ -22,26 +26,34 @@ export function applyCornerWingWaveCornice(args: { ctx: CorniceCtxLike; locals: 
   // - Front: vertical strip on the roof front edge, TOP is a wave cut (peaks at ends + center).
   // - Sides: vertical strips, straight top, run from front to back (NO back strip).
   // - No top cover (open from above).
+  const corniceCommon = CARCASS_CORNICE_DIMENSIONS.common;
+  const corniceWave = CARCASS_CORNICE_DIMENSIONS.wave;
   const topY = startY + wingH;
-  const epsY = 0.0006; // tiny lift to avoid z-fighting with the roof boards
+  const epsY = corniceCommon.yLiftM; // tiny lift to avoid z-fighting with the roof boards
   const yPlace = topY + epsY;
 
-  // Wing local Z is slightly shifted in this module (front is near z≈0.005).
-  const zCenter = 0.005 - wingD / 2;
-  const frontPlaneZ = zCenter + wingD / 2; // ≈ 0.005
-  const backPlaneZ = zCenter - wingD / 2; // ≈ 0.005 - wingD
+  // Wing local Z is slightly shifted in this module (front follows CARCASS_SHELL_DIMENSIONS.frontInsetZM).
+  const zCenter = CARCASS_SHELL_DIMENSIONS.frontInsetZM - wingD / 2;
+  const frontPlaneZ = zCenter + wingD / 2;
+  const backPlaneZ = zCenter - wingD / 2;
   // The masonite back panel sits a bit IN FRONT of backPlaneZ.
   // Trim the cornice depth so it doesn't extend past the masonite from the rear view.
   const backPanelOutsideZ = __wingBackPanelCenterZ - __wingBackPanelThick / 2;
   const backTrimZ = Math.max(backPlaneZ, backPanelOutsideZ);
 
   // Frame thickness (meters): use panel thickness, clamped.
-  const frameT = Math.max(0.01, Math.min(0.028, woodThick || 0.018));
+  const frameT = Math.max(
+    corniceWave.frameThicknessMinM,
+    Math.min(corniceWave.frameThicknessMaxM, woodThick || corniceWave.fallbackWoodThicknessM)
+  );
 
   // Heights (meters)
-  const maxH = 0.095; // 9.5cm peak height
-  const waveAmp = Math.min(Math.max(wingW * 0.03, 0.03), 0.06); // 3–6cm dip
-  const waveCycles = 2; // peaks at ends + center
+  const maxH = corniceWave.maxHeightM; // peak height
+  const waveAmp = Math.min(
+    Math.max(wingW * corniceWave.amplitudeRatio, corniceWave.amplitudeMinM),
+    corniceWave.amplitudeMaxM
+  );
+  const waveCycles = corniceWave.cycles; // peaks at ends + center
 
   // Material: allow both whole-cornice coloring ('corner_cornice') and per-part coloring
   // ('corner_cornice_front' / 'corner_cornice_side_left' / 'corner_cornice_side_right').
@@ -57,11 +69,14 @@ export function applyCornerWingWaveCornice(args: { ctx: CorniceCtxLike; locals: 
     const leftInset = hasLeftSide ? frameT : 0;
     const rightInset = frameT; // right outer side always exists
 
-    const w = Math.max(0.02, wingW - leftInset - rightInset);
+    const w = Math.max(corniceCommon.minSegmentLengthM, wingW - leftInset - rightInset);
     const halfW = w / 2;
 
     // Sampling resolution: ~2cm, clamped.
-    const samples = Math.max(24, Math.min(180, Math.round(w / 0.02)));
+    const samples = Math.max(
+      corniceWave.sampleCountMin,
+      Math.min(corniceWave.sampleCountMax, Math.round(w / corniceWave.sampleSpacingM))
+    );
 
     const shape = new threeCornice.Shape();
     shape.moveTo(-halfW, 0);
@@ -98,7 +113,7 @@ export function applyCornerWingWaveCornice(args: { ctx: CorniceCtxLike; locals: 
   const sideH = maxH;
   const sideStartZ = backTrimZ;
   const sideEndZ = frontPlaneZ;
-  const sideDepth = Math.max(0.001, sideEndZ - sideStartZ);
+  const sideDepth = Math.max(corniceCommon.minBoxDimensionM, sideEndZ - sideStartZ);
   const sideZ = (sideStartZ + sideEndZ) / 2;
   const sideY = yPlace + sideH / 2;
 

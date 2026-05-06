@@ -3,6 +3,7 @@
 // Extracted from corner_ops_emit.ts to keep the public owner module focused on
 // canonical exports while this file owns the wing-specific geometry policy.
 
+import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { getInternalGridMap } from '../runtime/cache_access.js';
 import { addToWardrobeGroup, getRenderNamespace } from '../runtime/render_access.js';
 import { readMap, readMapOrEmpty, readSplitPosListFromMap } from '../runtime/maps_access.js';
@@ -80,7 +81,12 @@ export function emitCornerWingExtension(ctx: CornerOpsEmitContext): void {
   const materials = { front: frontMat, body: bodyMat };
 
   // If extension width is zero / too small, keep only the corner connector.
-  if (wingW <= 0.001 || activeWidth <= 0.01) return;
+  if (
+    wingW <= CORNER_WING_DIMENSIONS.wing.minGroupWidthM ||
+    activeWidth <= CORNER_WING_DIMENSIONS.wing.minActiveWidthM
+  ) {
+    return;
+  }
 
   const cornerDoorCount = resolveCornerWingDoorCount({ activeWidth, uiAny });
 
@@ -100,14 +106,19 @@ export function emitCornerWingExtension(ctx: CornerOpsEmitContext): void {
         ? new THREE.BoxGeometry(legSpec.width, baseH, legSpec.depth)
         : new THREE.CylinderGeometry(legSpec.topRadius, legSpec.bottomRadius, baseH, legSpec.radialSegments);
     const lMat = getMaterial(getBaseLegColorHex(baseLegColor), 'metal');
-    const legsCount = Math.max(2, Math.ceil(wingW / 0.6));
+    const legsCount = Math.max(
+      CORNER_WING_DIMENSIONS.baseLegs.minCount,
+      Math.ceil(wingW / CORNER_WING_DIMENSIONS.baseLegs.spacingM)
+    );
     for (let i = 0; i <= legsCount; i++) {
-      const xPos = i * ((wingW - 0.1) / legsCount) + 0.05;
+      const xPos =
+        i * ((wingW - CORNER_WING_DIMENSIONS.baseLegs.widthClearanceM) / legsCount) +
+        CORNER_WING_DIMENSIONS.baseLegs.insetM;
       const l1 = new THREE.Mesh(legGeo, lMat);
-      l1.position.set(xPos, stackOffsetY + baseH / 2, -0.05);
+      l1.position.set(xPos, stackOffsetY + baseH / 2, -CORNER_WING_DIMENSIONS.baseLegs.insetM);
       wingGroup.add(l1);
       const l2 = new THREE.Mesh(legGeo, lMat);
-      l2.position.set(xPos, stackOffsetY + baseH / 2, -wingD + 0.05);
+      l2.position.set(xPos, stackOffsetY + baseH / 2, -wingD + CORNER_WING_DIMENSIONS.baseLegs.insetM);
       wingGroup.add(l2);
     }
   }

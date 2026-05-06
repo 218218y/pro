@@ -1,3 +1,4 @@
+import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { getTools } from '../runtime/service_access.js';
 import { getDimsMFromPlatform } from '../runtime/platform_access.js';
 import { getDoorsArray } from '../runtime/render_access.js';
@@ -9,7 +10,7 @@ import {
   reportDoorsRuntimeNonFatal,
 } from './doors_runtime_shared.js';
 
-export const DOOR_OVERLAP = 0.03;
+export const DOOR_OVERLAP = DOOR_SYSTEM_DIMENSIONS.sliding.overlapM;
 
 export function readDoorsTotalWidth(App: AppLike): number {
   return readNumber(readRecord(getDimsMFromPlatform(App)), 'w', 0);
@@ -45,7 +46,10 @@ export function resolveSlidingDoorClosedState(
   let doorW = typeof door.width === 'number' && Number.isFinite(door.width) ? door.width : 0;
 
   if (closedX === undefined || closedX === null || isNaN(closedX)) {
-    const doorsCount = typeof door.total === 'number' && Number.isFinite(door.total) ? door.total : 2;
+    const doorsCount =
+      typeof door.total === 'number' && Number.isFinite(door.total)
+        ? door.total
+        : DOOR_SYSTEM_DIMENSIONS.sliding.defaultDoorsCount;
     const idx = typeof door.index === 'number' && Number.isFinite(door.index) ? door.index : 0;
     doorW = (totalW + (doorsCount - 1) * DOOR_OVERLAP) / doorsCount;
     closedX = idx * (doorW - DOOR_OVERLAP) - totalW / 2 + doorW / 2;
@@ -63,7 +67,10 @@ export function resolveSlidingDoorClosedState(
   }
 
   if (!(doorW > 0)) {
-    const doorsCount = typeof door.total === 'number' && Number.isFinite(door.total) ? door.total : 2;
+    const doorsCount =
+      typeof door.total === 'number' && Number.isFinite(door.total)
+        ? door.total
+        : DOOR_SYSTEM_DIMENSIONS.sliding.defaultDoorsCount;
     doorW = (totalW + (doorsCount - 1) * DOOR_OVERLAP) / doorsCount;
   }
 
@@ -77,15 +84,20 @@ export function resolveSlidingDoorOpenPosition(
   doorW: number,
   outerZ: number
 ): { finalX: number; finalZ: number } {
-  const doorsCount = (typeof door.total === 'number' && Number.isFinite(door.total) ? door.total : 2) || 2;
+  const doorsCount =
+    (typeof door.total === 'number' && Number.isFinite(door.total)
+      ? door.total
+      : DOOR_SYSTEM_DIMENSIONS.sliding.defaultDoorsCount) || DOOR_SYSTEM_DIMENSIONS.sliding.defaultDoorsCount;
   const idx = typeof door.index === 'number' && Number.isFinite(door.index) ? door.index : 0;
   const leftCount = Math.floor(doorsCount / 2);
-  const epsX = 0.002;
+  const epsX = DOOR_SYSTEM_DIMENSIONS.sliding.runtimeOpenEpsilonXM;
   const sideX = totalW / 2 + doorW / 2 + epsX;
   const onLeft = idx < leftCount;
   const stackPos = Number(onLeft ? idx : doorsCount - 1 - idx);
   const zStep =
-    typeof door.stackZStep === 'number' && Number.isFinite(door.stackZStep) ? door.stackZStep : 0.055;
+    typeof door.stackZStep === 'number' && Number.isFinite(door.stackZStep)
+      ? door.stackZStep
+      : DOOR_SYSTEM_DIMENSIONS.sliding.runtimeStackZStepDefaultM;
   return {
     finalX: onLeft ? -sideX : sideX,
     finalZ: outerZ - stackPos * zStep,

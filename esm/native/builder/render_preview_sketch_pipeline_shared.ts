@@ -1,3 +1,4 @@
+import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { AppContainer } from '../../../types';
 import type {
   PreviewGroupLike,
@@ -87,7 +88,7 @@ export function createSketchPlacementPreviewContext(args: ApplySketchPlacementPr
   const w = Number(input.w);
   const h = Number(input.h);
   const d = Number(input.d);
-  const woodThick = Number(input.woodThick || 0.018);
+  const woodThick = Number(input.woodThick || MATERIAL_DIMENSIONS.wood.thicknessM);
   const hasFinitePlacement = Number.isFinite(x) && Number.isFinite(y) && Number.isFinite(z) && w > 0 && d > 0;
 
   const setVisible = (m: PreviewMeshLike | null, on: boolean) => {

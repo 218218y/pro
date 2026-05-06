@@ -10,7 +10,17 @@ import {
   setUiHeight,
   setUiWidth,
 } from '../actions/store_actions.js';
-import { adjustCameraForChest, resetCameraPreset } from '../../../services/api.js';
+import {
+  CHEST_MODE_DIMENSIONS,
+  DEFAULT_CHEST_DRAWERS_COUNT,
+  DEFAULT_HEIGHT,
+  DEFAULT_HINGED_DOORS,
+  DEFAULT_WIDTH,
+  HINGED_DEFAULT_DEPTH,
+  WARDROBE_CHEST_DRAWERS_MIN,
+  adjustCameraForChest,
+  resetCameraPreset,
+} from '../../../services/api.js';
 import { asFiniteInt, asFiniteNumber, structureTabReportNonFatal } from './structure_tab_shared.js';
 import {
   commitStructureStatePatchWithRecompute,
@@ -31,7 +41,13 @@ export function createStructureTabChestActionsController(args: StructureTabCorne
       const uiPatch: UnknownRecord = {
         isChestMode: true,
         baseType: 'legs',
-        raw: { doors: 0, width: 50, height: 50, depth: 40, chestDrawersCount: 2 },
+        raw: {
+          doors: CHEST_MODE_DIMENSIONS.activeDefaults.doorsCount,
+          width: CHEST_MODE_DIMENSIONS.activeDefaults.widthCm,
+          height: CHEST_MODE_DIMENSIONS.activeDefaults.heightCm,
+          depth: CHEST_MODE_DIMENSIONS.activeDefaults.depthCm,
+          chestDrawersCount: CHEST_MODE_DIMENSIONS.activeDefaults.drawersCount,
+        },
       };
       commitStructureStatePatchWithRecompute({
         app: args.app,
@@ -65,12 +81,12 @@ export function createStructureTabChestActionsController(args: StructureTabCorne
             metaOn
           );
           setUiChestMode(args.app, true, metaOn);
-          setUiBaseType(args.app, 'legs', metaOn);
-          setUiDoors(args.app, 0, metaOn);
-          setUiWidth(args.app, 50, metaOn);
-          setUiHeight(args.app, 50, metaOn);
-          setUiDepth(args.app, 40, metaOn);
-          setUiChestDrawersCount(args.app, 2, metaOn);
+          setUiBaseType(args.app, CHEST_MODE_DIMENSIONS.activeDefaults.baseType, metaOn);
+          setUiDoors(args.app, CHEST_MODE_DIMENSIONS.activeDefaults.doorsCount, metaOn);
+          setUiWidth(args.app, CHEST_MODE_DIMENSIONS.activeDefaults.widthCm, metaOn);
+          setUiHeight(args.app, CHEST_MODE_DIMENSIONS.activeDefaults.heightCm, metaOn);
+          setUiDepth(args.app, CHEST_MODE_DIMENSIONS.activeDefaults.depthCm, metaOn);
+          setUiChestDrawersCount(args.app, CHEST_MODE_DIMENSIONS.activeDefaults.drawersCount, metaOn);
         },
         errorLine: 'L3293',
       });
@@ -85,10 +101,16 @@ export function createStructureTabChestActionsController(args: StructureTabCorne
     }
 
     const pre = readPreChestState(args.preChestState);
-    const doorsR = pre ? asFiniteInt(pre.doors, 4) : Math.max(1, asFiniteInt(args.doors, 4));
-    const widthR = pre ? asFiniteNumber(pre.width, 160) : asFiniteNumber(args.width, 160);
-    const heightR = pre ? asFiniteNumber(pre.height, 240) : asFiniteNumber(args.height, 240);
-    const depthR = pre ? asFiniteNumber(pre.depth, 55) : asFiniteNumber(args.depth, 55);
+    const doorsR = pre
+      ? asFiniteInt(pre.doors, DEFAULT_HINGED_DOORS)
+      : Math.max(1, asFiniteInt(args.doors, DEFAULT_HINGED_DOORS));
+    const widthR = pre ? asFiniteNumber(pre.width, DEFAULT_WIDTH) : asFiniteNumber(args.width, DEFAULT_WIDTH);
+    const heightR = pre
+      ? asFiniteNumber(pre.height, DEFAULT_HEIGHT)
+      : asFiniteNumber(args.height, DEFAULT_HEIGHT);
+    const depthR = pre
+      ? asFiniteNumber(pre.depth, HINGED_DEFAULT_DEPTH)
+      : asFiniteNumber(args.depth, HINGED_DEFAULT_DEPTH);
     const baseR =
       pre && typeof pre.base === 'string' && pre.base ? pre.base : String(args.baseType || 'plinth');
 
@@ -133,7 +155,7 @@ export function createStructureTabChestActionsController(args: StructureTabCorne
     const next =
       normalizeStructureDimensionValue(nn, readStructureChestDrawersBounds()) ??
       readStructureChestDrawersBounds().min ??
-      2;
+      WARDROBE_CHEST_DRAWERS_MIN;
     const actionMeta: ActionMetaLike = {
       source: 'react:structure:chest:count',
       immediate: true,

@@ -1,3 +1,4 @@
+import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { RenderSketchBoxStaticContentsArgs } from './render_interior_sketch_boxes_contents_parts_types.js';
 import type { SketchShelfExtra } from './render_interior_sketch_shared.js';
 
@@ -32,7 +33,11 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
     const isBrace = variant === 'brace';
     const isGlass = variant === 'glass';
     const isDouble = variant === 'double' || !variant;
-    const shelfH = isGlass ? 0.018 : isDouble ? Math.max(woodThick, woodThick * 2) : woodThick;
+    const shelfH = isGlass
+      ? MATERIAL_DIMENSIONS.glassShelf.thicknessM
+      : isDouble
+        ? Math.max(woodThick, woodThick * 2)
+        : woodThick;
     const shelfY = yFromBoxNorm(shelf.yNorm, shelfH / 2);
     if (shelfY == null) continue;
     const shelfSegment = resolveSketchBoxSegmentForContent({

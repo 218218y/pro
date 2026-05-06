@@ -1,3 +1,4 @@
+import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { readDoorTrimMap } from '../features/door_trim.js';
 
 import type { CornerConnectorDoorContext } from './corner_connector_door_emit_contracts.js';
@@ -68,7 +69,7 @@ export function createCornerConnectorDoorContextInternal(
   const dx = b.x - a.x;
   const dz = b.z - a.z;
   const len = Math.sqrt(dx * dx + dz * dz);
-  if (!Number.isFinite(len) || len <= 0.15) {
+  if (!Number.isFinite(len) || len <= CORNER_WING_DIMENSIONS.connector.minFrontLengthM) {
     addEdgePanel(pts[2], pts[3], 'corner_pent_front', showFrontPanel);
     return null;
   }
@@ -86,13 +87,16 @@ export function createCornerConnectorDoorContextInternal(
   };
   cornerGroup.add(mount);
 
-  const gap = 0.006;
-  const doorW = Math.max(0.05, (len - gap) / 2);
+  const gap = CORNER_WING_DIMENSIONS.connector.frontDoorGapM;
+  const doorW = Math.max(CORNER_WING_DIMENSIONS.connector.doorMinWidthM, (len - gap) / 2);
   const effectiveTopLimit = startY + wingH - woodThick / 2;
-  const doorBottomY = startY + woodThick + 0.002;
-  const doorH = Math.max(0.25, effectiveTopLimit - doorBottomY - 0.002);
+  const doorBottomY = startY + woodThick + CORNER_WING_DIMENSIONS.connector.doorBottomOffsetM;
+  const doorH = Math.max(
+    CORNER_WING_DIMENSIONS.connector.doorMinHeightM,
+    effectiveTopLimit - doorBottomY - CORNER_WING_DIMENSIONS.connector.doorTopClearanceM
+  );
   const doorCenterY = doorBottomY + doorH / 2;
-  const zOut = panelThick / 2 + 0.001;
+  const zOut = panelThick / 2 + CORNER_WING_DIMENSIONS.connector.doorOutsetM;
 
   const plusZ = new THREE.Vector3(0, 0, 1).applyEuler(mount.rotation).normalize();
   const insideV = new THREE.Vector3(interiorX - midX, 0, interiorZ - midZ);
@@ -110,8 +114,12 @@ export function createCornerConnectorDoorContextInternal(
   const doorTrimMap = readDoorTrimMap(cfg0.doorTrimMap);
   const splitMap0 = readMapOrEmpty(App, 'splitDoorsMap');
   const splitBottomMap0 = readMapOrEmpty(App, 'splitDoorsBottomMap');
-  const splitGap = 0.006;
-  const splitLineY = startY + woodThick + (4 * (effectiveTopLimit - (startY + woodThick))) / 6;
+  const splitGap = CORNER_WING_DIMENSIONS.connector.splitGapM;
+  const splitLineY =
+    startY +
+    woodThick +
+    (CORNER_WING_DIMENSIONS.connector.splitGridLineIndex * (effectiveTopLimit - (startY + woodThick))) /
+      CORNER_WING_DIMENSIONS.connector.splitGridDivisions;
   const bottomLineY = computeBottomLineY(
     cfg0,
     uiAny,
@@ -200,13 +208,14 @@ export function computeBottomLineY(
   effectiveTopLimit: number,
   asRecord: (value: unknown) => ValueRecord
 ): number {
-  let h = 0.5;
+  let h = CORNER_WING_DIMENSIONS.connector.bottomStorageHeightM;
   const layout = uiAny.layout ?? cfg0.layout;
-  if (layout === 'storage' || layout === 'storage_shelf') h = 0.5;
-  if (asRecord(cfg0.customData).storage) h = 0.5;
+  if (layout === 'storage' || layout === 'storage_shelf')
+    h = CORNER_WING_DIMENSIONS.connector.bottomStorageHeightM;
+  if (asRecord(cfg0.customData).storage) h = CORNER_WING_DIMENSIONS.connector.bottomStorageHeightM;
   const effectiveBottomY = startY + woodThick;
   let y = effectiveBottomY + h;
-  y = Math.max(y, doorBottomY + 0.08);
-  y = Math.min(y, effectiveTopLimit - 0.12);
+  y = Math.max(y, doorBottomY + CORNER_WING_DIMENSIONS.connector.bottomLineMinGapM);
+  y = Math.min(y, effectiveTopLimit - CORNER_WING_DIMENSIONS.connector.bottomLineTopGapM);
   return y;
 }

@@ -64,6 +64,18 @@ const sandbox = {
         },
       };
     }
+    if (spec === '../../../services/api.js') {
+      return {
+        DEFAULT_CHEST_DRAWERS_COUNT: 4,
+        DEFAULT_CORNER_DOORS: 3,
+        DEFAULT_CORNER_WIDTH: 120,
+        DEFAULT_HEIGHT: 240,
+        DEFAULT_HINGED_DOORS: 4,
+        DEFAULT_STACK_SPLIT_LOWER_HEIGHT: 60,
+        DEFAULT_WIDTH: 160,
+        getDefaultDepthForWardrobeType: value => (value === 'sliding' ? 60 : 55),
+      };
+    }
     if (spec === './structure_tab_saved_models_patterns.js') {
       return {
         STRUCTURE_PATTERNS: {

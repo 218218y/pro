@@ -1,3 +1,4 @@
+import { WARDROBE_DEFAULTS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { AppContainer } from '../../../types';
 
 export type Vector3Like = { x: number; y: number; z: number };
@@ -145,7 +146,7 @@ export function createRenderDimensionContext(argsIn: unknown): RenderDimensionCo
   const cornerDoorCountRaw = asFiniteNumber(args.cornerDoorCount, NaN);
   const cornerDoorCount = Number.isFinite(cornerDoorCountRaw)
     ? Math.max(0, Math.round(cornerDoorCountRaw))
-    : 3;
+    : WARDROBE_DEFAULTS.corner.doorsCount;
   const cornerWingVisible = isCornerMode && cornerDoorCount > 0;
   const cornerWallLenM = asFiniteNumber(args.cornerWallLenM);
   const cornerOffsetXM = asFiniteNumber(args.cornerOffsetXM);

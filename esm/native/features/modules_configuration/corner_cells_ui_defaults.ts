@@ -1,6 +1,7 @@
 // Corner-cell UI-derived default layout helpers.
 // Owns corner-side / width / door-count policy so patch + snapshot owners stay focused.
 
+import { CORNER_WING_DIMENSIONS, CM_PER_METER } from '../../../shared/wardrobe_dimension_tokens_shared.js';
 import { isRecord, type UnknownRecord } from './corner_cells_contracts.js';
 
 function readCornerUiRecord(value: unknown): UnknownRecord {
@@ -36,10 +37,18 @@ function readCornerDoorsCountFromUi(uiSnapshot: unknown): number {
     raw.cornerWidthCm ??
     raw.cornerWingWidthCm;
   let wingLenCm = Number.isFinite(parseFloat(String(widthRaw))) ? parseFloat(String(widthRaw)) : NaN;
-  if (!Number.isFinite(wingLenCm)) wingLenCm = 120;
+  if (!Number.isFinite(wingLenCm)) wingLenCm = CORNER_WING_DIMENSIONS.wing.defaultWidthCm;
   if (wingLenCm < 0) wingLenCm = 0;
-  const wingLenM = wingLenCm / 100;
-  return wingLenM > 0.01 ? Math.max(1, Math.round(wingLenM / 0.4)) : 0;
+  const wingLenM = wingLenCm / CM_PER_METER;
+  return wingLenM > CORNER_WING_DIMENSIONS.wing.minActiveWidthM
+    ? Math.max(
+        1,
+        Math.round(
+          wingLenM /
+            (CORNER_WING_DIMENSIONS.cells.doorsPerCell * CORNER_WING_DIMENSIONS.cells.minDoorUnitWidthM)
+        )
+      )
+    : 0;
 }
 
 export function resolveTopCornerCellDefaultLayout(index: number): string {
@@ -50,7 +59,7 @@ export function resolveTopCornerCellDefaultLayoutFromUi(uiSnapshot: unknown, ind
   const cellIndex = Number.isFinite(index) && index >= 0 ? Math.floor(index) : 0;
   const cornerSide = readCornerSideFromUi(uiSnapshot);
   const doors = readCornerDoorsCountFromUi(uiSnapshot);
-  const cellCount = Math.max(1, Math.ceil(Math.max(0, doors) / 2));
+  const cellCount = Math.max(1, Math.ceil(Math.max(0, doors) / CORNER_WING_DIMENSIONS.cells.doorsPerCell));
   if (cornerSide === 'left' && cellCount > 1) return cellIndex === cellCount - 1 ? 'hanging_top2' : 'shelves';
   return cellIndex === 0 ? 'hanging_top2' : 'shelves';
 }

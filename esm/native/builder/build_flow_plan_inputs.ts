@@ -7,6 +7,11 @@ import {
   normalizeBaseLegWidthCm,
 } from '../features/base_leg_support.js';
 import { readUiState } from './build_flow_readers.js';
+import {
+  CARCASS_INTERIOR_DIMENSIONS,
+  MATERIAL_DIMENSIONS,
+  WARDROBE_DEFAULTS,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 import type { BuildFlowPlanInputs, BuildFlowPlanInputsArgs } from './build_flow_plan_contracts.js';
 import type { UiRawInputsLike } from '../../../types';
@@ -38,15 +43,17 @@ export function resolveBuildFlowPlanInputs(args: BuildFlowPlanInputsArgs): Build
   const lowerWidthCm = split.lowerWidthCm;
   const lowerDoorsCount = split.lowerDoorsCount;
   const splitActiveForBuild = split.active;
-  const splitSeamGapM = splitActiveForBuild ? 0.002 : 0;
+  const splitSeamGapM = splitActiveForBuild ? WARDROBE_DEFAULTS.stackSplit.seamGapM : 0;
 
-  const H = Math.max(0.05, split.topHeightCm / 100 - splitSeamGapM);
+  const H = Math.max(CARCASS_INTERIOR_DIMENSIONS.minTopBodyHeightM, split.topHeightCm / 100 - splitSeamGapM);
   const totalW = widthCm / 100;
   const D = split.topDepthCm / 100;
 
   const isSliding = typeof cfg.wardrobeType !== 'undefined' && cfg.wardrobeType === 'sliding';
   const noMainWardrobe = !isSliding && doorsCount === 0;
-  const depthReduction = isSliding ? 0.12 : 0.03;
+  const depthReduction = isSliding
+    ? CARCASS_INTERIOR_DIMENSIONS.slidingDepthReductionM
+    : CARCASS_INTERIOR_DIMENSIONS.hingedDepthReductionM;
   const baseType = toStr(ui.baseType, '');
   const baseLegStyle = normalizeBaseLegStyle(ui.baseLegStyle);
   const baseLegColor = normalizeBaseLegColor(ui.baseLegColor);
@@ -85,6 +92,6 @@ export function resolveBuildFlowPlanInputs(args: BuildFlowPlanInputsArgs): Build
     splitDoors: !!ui.splitDoors,
     isGroovesEnabled: !!ui.groovesEnabled,
     isInternalDrawersEnabled: !!ui.internalDrawersEnabled,
-    woodThick: 0.018,
+    woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
   };
 }

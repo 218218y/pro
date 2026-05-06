@@ -1,6 +1,13 @@
 import type { Dispatch, ReactElement, SetStateAction } from 'react';
 
 import type { DoorTrimUiAxis, DoorTrimUiSpan } from './interior_tab_helpers.js';
+import {
+  DEFAULT_DOOR_TRIM_CROSS_SIZE_CM,
+  MAX_DOOR_TRIM_CROSS_SIZE_CM,
+  MAX_DOOR_TRIM_CUSTOM_CM,
+  MIN_DOOR_TRIM_CROSS_SIZE_CM,
+  MIN_DOOR_TRIM_CUSTOM_CM,
+} from '../../../features/door_trim.js';
 import { CountBtn } from './interior_tab_helpers.js';
 import {
   DOOR_TRIM_SPAN_PRIMARY_OPTIONS,
@@ -91,8 +98,8 @@ export function DoorTrimAxisPanel(props: DoorTrimAxisPanelProps): ReactElement {
           type="number"
           className="wp-r-input"
           value={props.customDraft}
-          min={4}
-          max={400}
+          min={MIN_DOOR_TRIM_CUSTOM_CM}
+          max={MAX_DOOR_TRIM_CUSTOM_CM}
           step={1}
           placeholder={props.customPlaceholder}
           onFocus={(e: import('react').FocusEvent<HTMLInputElement>) => e.target.select()}
@@ -106,7 +113,8 @@ export function DoorTrimAxisPanel(props: DoorTrimAxisPanelProps): ReactElement {
               return;
             }
             const next = Number(raw);
-            if (!Number.isFinite(next) || next < 4 || next > 400) return;
+            if (!Number.isFinite(next) || next < MIN_DOOR_TRIM_CUSTOM_CM || next > MAX_DOOR_TRIM_CUSTOM_CM)
+              return;
             props.setCustomCm(next);
             if (props.span === 'custom')
               props.activateDoorTrimMode(props.axis, 'custom', next, props.crossCm);
@@ -120,7 +128,13 @@ export function DoorTrimAxisPanel(props: DoorTrimAxisPanelProps): ReactElement {
                 props.activateDoorTrimMode(props.axis, 'custom', '', props.crossCm);
               return;
             }
-            const next = clampDoorTrimInput(raw, props.customCm, 4, 4, 400);
+            const next = clampDoorTrimInput(
+              raw,
+              props.customCm,
+              MIN_DOOR_TRIM_CUSTOM_CM,
+              MIN_DOOR_TRIM_CUSTOM_CM,
+              MAX_DOOR_TRIM_CUSTOM_CM
+            );
             props.setCustomCm(next);
             props.setCustomDraft(String(next));
             if (props.span === 'custom')
@@ -131,8 +145,8 @@ export function DoorTrimAxisPanel(props: DoorTrimAxisPanelProps): ReactElement {
           type="number"
           className="wp-r-input"
           value={props.crossDraft}
-          min={1}
-          max={120}
+          min={MIN_DOOR_TRIM_CROSS_SIZE_CM}
+          max={MAX_DOOR_TRIM_CROSS_SIZE_CM}
           step={0.5}
           placeholder={props.crossPlaceholder}
           onFocus={(e: import('react').FocusEvent<HTMLInputElement>) => e.target.select()}
@@ -152,7 +166,12 @@ export function DoorTrimAxisPanel(props: DoorTrimAxisPanelProps): ReactElement {
               return;
             }
             const next = Number(raw);
-            if (!Number.isFinite(next) || next < 1 || next > 120) return;
+            if (
+              !Number.isFinite(next) ||
+              next < MIN_DOOR_TRIM_CROSS_SIZE_CM ||
+              next > MAX_DOOR_TRIM_CROSS_SIZE_CM
+            )
+              return;
             props.setCrossCm(next);
             if (props.isDoorTrimMode) {
               props.activateDoorTrimMode(
@@ -178,7 +197,13 @@ export function DoorTrimAxisPanel(props: DoorTrimAxisPanelProps): ReactElement {
               }
               return;
             }
-            const next = clampDoorTrimInput(raw, props.crossCm, 3.5, 1, 120);
+            const next = clampDoorTrimInput(
+              raw,
+              props.crossCm,
+              DEFAULT_DOOR_TRIM_CROSS_SIZE_CM,
+              MIN_DOOR_TRIM_CROSS_SIZE_CM,
+              MAX_DOOR_TRIM_CROSS_SIZE_CM
+            );
             props.setCrossCm(next);
             props.setCrossDraft(String(next));
             if (props.isDoorTrimMode) {

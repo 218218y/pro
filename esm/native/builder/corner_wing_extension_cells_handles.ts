@@ -1,3 +1,4 @@
+import { CORNER_WING_DIMENSIONS, HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
   __edgeHandleAlignedBaseAbsYForCornerCells,
   __edgeHandleLongLiftAbsYForCornerCells,
@@ -20,8 +21,14 @@ export function resolveCornerWingDoorCount(
   const parsed = Number.isFinite(parseFloat(String(doorRaw))) ? parseFloat(String(doorRaw)) : NaN;
   return Number.isFinite(parsed)
     ? Math.max(0, Math.round(parsed))
-    : args.activeWidth > 0.01
-      ? Math.max(1, Math.round(args.activeWidth / 0.4))
+    : args.activeWidth > CORNER_WING_DIMENSIONS.wing.minActiveWidthM
+      ? Math.max(
+          1,
+          Math.round(
+            args.activeWidth /
+              (CORNER_WING_DIMENSIONS.cells.doorsPerCell * CORNER_WING_DIMENSIONS.cells.minDoorUnitWidthM)
+          )
+        )
       : 0;
 }
 
@@ -33,7 +40,7 @@ export function resolveCornerSharedLongEdgeHandleLiftAbsY(
   const cfgRec = asRecord(args.__cfg);
   if (!cfgRec || cfgRec.globalHandleType !== 'edge') return 0;
   if (!(doorCount > 0)) return 0;
-  const cellCount = Math.max(1, Math.ceil(doorCount / 2));
+  const cellCount = Math.max(1, Math.ceil(doorCount / CORNER_WING_DIMENSIONS.cells.doorsPerCell));
   const cellCfgs: CornerCellCfg[] = [];
   for (let ci = 0; ci < cellCount; ci += 1) cellCfgs.push(getCellCfg(ci));
   return __edgeHandleLongLiftAbsYForCornerCells(cfgRec, cellCfgs);
@@ -45,9 +52,9 @@ export function resolveCornerSharedAlignedEdgeHandleBaseAbsY(
   getCellCfg: CornerWingCellCfgResolver
 ): number {
   const cfgRec = asRecord(args.__cfg);
-  if (!cfgRec || cfgRec.globalHandleType !== 'edge') return 1.05;
-  if (!(doorCount > 0)) return 1.05;
-  const cellCount = Math.max(1, Math.ceil(doorCount / 2));
+  if (!cfgRec || cfgRec.globalHandleType !== 'edge') return HANDLE_DIMENSIONS.edge.defaultGlobalAbsYM;
+  if (!(doorCount > 0)) return HANDLE_DIMENSIONS.edge.defaultGlobalAbsYM;
+  const cellCount = Math.max(1, Math.ceil(doorCount / CORNER_WING_DIMENSIONS.cells.doorsPerCell));
   const cellCfgs: CornerCellCfg[] = [];
   for (let ci = 0; ci < cellCount; ci += 1) cellCfgs.push(getCellCfg(ci));
   return __edgeHandleAlignedBaseAbsYForCornerCells(cfgRec, cellCfgs, args.startY, args.woodThick);

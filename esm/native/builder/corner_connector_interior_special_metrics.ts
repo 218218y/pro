@@ -3,12 +3,16 @@
 // This owner keeps user-input normalization, post/shelf height clamping, and
 // equal-shelf placement out of the scene-emission code.
 
+import {
+  CM_PER_METER,
+  CORNER_CONNECTOR_INTERIOR_DIMENSIONS,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { CornerConnectorInteriorFlowParams } from './corner_connector_interior_shared.js';
 import type { CornerConnectorSpecialMetrics } from './corner_connector_interior_special_types.js';
 
-function readCentimetersAsMeters(raw: unknown, fallbackMeters: number): number {
+function readCentimetersAsMeters(raw: unknown, defaultMeters: number): number {
   const parsed = parseFloat(String(raw));
-  return Number.isFinite(parsed) ? parsed / 100 : fallbackMeters;
+  return Number.isFinite(parsed) ? parsed / CM_PER_METER : defaultMeters;
 }
 
 export function resolveCornerConnectorSpecialMetrics(args: {
@@ -36,29 +40,67 @@ export function resolveCornerConnectorSpecialMetrics(args: {
     backPanelOutsideInsetZ,
   } = args;
 
-  const postDepthCmRaw = uiAny.cornerPentSpecialPostDepthCm ?? uiAny.cornerPentPostDepthCm ?? 55;
-  const postHeightCmRaw = uiAny.cornerPentSpecialPostHeightCm ?? uiAny.cornerPentPostHeightCm ?? 180;
-  const topCellHCmRaw = uiAny.cornerPentSpecialTopCellHeightCm ?? uiAny.cornerPentTopCellHeightCm ?? 30;
+  const postDepthCmRaw =
+    uiAny.cornerPentSpecialPostDepthCm ??
+    uiAny.cornerPentPostDepthCm ??
+    CORNER_CONNECTOR_INTERIOR_DIMENSIONS.specialPost.depthDefaultCm;
+  const postHeightCmRaw =
+    uiAny.cornerPentSpecialPostHeightCm ??
+    uiAny.cornerPentPostHeightCm ??
+    CORNER_CONNECTOR_INTERIOR_DIMENSIONS.specialPost.heightDefaultCm;
+  const topCellHCmRaw =
+    uiAny.cornerPentSpecialTopCellHeightCm ??
+    uiAny.cornerPentTopCellHeightCm ??
+    CORNER_CONNECTOR_INTERIOR_DIMENSIONS.specialPost.topCellHeightDefaultCm;
   const postOffsetFromWallCmRaw =
     uiAny.cornerPentSpecialPostOffsetFromWallCm ?? uiAny.cornerPentPostOffsetFromWallCm;
 
-  const postDepth = readCentimetersAsMeters(postDepthCmRaw, 0.55);
-  const postH = readCentimetersAsMeters(postHeightCmRaw, 1.8);
-  const cellH = readCentimetersAsMeters(topCellHCmRaw, 0.3);
+  const postDepth = readCentimetersAsMeters(
+    postDepthCmRaw,
+    CORNER_CONNECTOR_INTERIOR_DIMENSIONS.specialPost.depthDefaultCm / CM_PER_METER
+  );
+  const postH = readCentimetersAsMeters(
+    postHeightCmRaw,
+    CORNER_CONNECTOR_INTERIOR_DIMENSIONS.specialPost.heightDefaultCm / CM_PER_METER
+  );
+  const cellH = readCentimetersAsMeters(
+    topCellHCmRaw,
+    CORNER_CONNECTOR_INTERIOR_DIMENSIONS.specialPost.topCellHeightDefaultCm / CM_PER_METER
+  );
 
-  const depth = Math.max(0.05, Math.min(Dmain, postDepth));
+  const depth = Math.max(
+    CORNER_CONNECTOR_INTERIOR_DIMENSIONS.specialPost.depthMinM,
+    Math.min(Dmain, postDepth)
+  );
   const backInset = Math.max(
     0,
-    Math.min(Math.min(L, depth) - 0.02, backPanelThick + backPanelOutsideInsetZ + 0.0006)
+    Math.min(
+      Math.min(L, depth) - CORNER_CONNECTOR_INTERIOR_DIMENSIONS.specialPost.postInsetClearanceM,
+      backPanelThick +
+        backPanelOutsideInsetZ +
+        CORNER_CONNECTOR_INTERIOR_DIMENSIONS.specialPost.panelGapEpsilonM
+    )
   );
-  const sideInset = Math.max(0, panelThick + 0.0006);
+  const sideInset = Math.max(
+    0,
+    panelThick + CORNER_CONNECTOR_INTERIOR_DIMENSIONS.specialPost.panelGapEpsilonM
+  );
 
   const floorTopY = startY + woodThick;
   const ceilBottomY = startY + wingH - woodThick;
   const availH = Math.max(0, ceilBottomY - floorTopY);
-  if (availH < 0.35) return null;
+  if (availH < CORNER_CONNECTOR_INTERIOR_DIMENSIONS.specialPost.minAvailableHeightM) return null;
 
-  const postHClamped = Math.max(0.2, Math.min(postH, Math.max(0.2, availH - 2 * (cellH + woodThick))));
+  const postHClamped = Math.max(
+    CORNER_CONNECTOR_INTERIOR_DIMENSIONS.specialPost.postHeightMinM,
+    Math.min(
+      postH,
+      Math.max(
+        CORNER_CONNECTOR_INTERIOR_DIMENSIONS.specialPost.postHeightMinM,
+        availH - 2 * (cellH + woodThick)
+      )
+    )
+  );
   const needH = postHClamped + 2 * (cellH + woodThick);
   const shelf1BottomY = floorTopY + postHClamped;
   const shelf2BottomY = shelf1BottomY + woodThick + cellH;
@@ -69,14 +111,23 @@ export function resolveCornerConnectorSpecialMetrics(args: {
   if (typeof postOffsetFromWallCmRaw !== 'undefined') {
     const off = readCentimetersAsMeters(postOffsetFromWallCmRaw, Number.NaN);
     if (Number.isFinite(off)) {
-      const t = Math.max(0.05, Math.min(0.95, off / Math.max(0.001, L)));
+      const t = Math.max(
+        CORNER_CONNECTOR_INTERIOR_DIMENSIONS.specialPost.postOffsetNormMin,
+        Math.min(
+          CORNER_CONNECTOR_INTERIOR_DIMENSIONS.specialPost.postOffsetNormMax,
+          off / Math.max(CORNER_CONNECTOR_INTERIOR_DIMENSIONS.specialPost.panelGapEpsilonM, L)
+        )
+      );
       postX = wallX + (0 - wallX) * t;
     }
   }
 
   const minX = Math.min(wallX, 0);
   const maxX = Math.max(wallX, 0);
-  postX = Math.max(minX + 0.03, Math.min(maxX - 0.03, postX));
+  postX = Math.max(
+    minX + CORNER_CONNECTOR_INTERIOR_DIMENSIONS.specialPost.postClampEdgeInsetM,
+    Math.min(maxX - CORNER_CONNECTOR_INTERIOR_DIMENSIONS.specialPost.postClampEdgeInsetM, postX)
+  );
 
   return {
     depth,
@@ -103,16 +154,17 @@ export function createEqualShelfBottomYs(args: {
   const { enabled, floorTopY, targetTop, woodThick } = args;
   if (!enabled) return [];
   const spanH = Math.max(0, targetTop - floorTopY);
-  if (spanH < 0.35) return [];
+  if (spanH < CORNER_CONNECTOR_INTERIOR_DIMENSIONS.specialPost.shelfSpanMinM) return [];
 
   const net = spanH - 3 * woodThick;
-  if (net <= 0.12) return [];
+  if (net <= CORNER_CONNECTOR_INTERIOR_DIMENSIONS.specialPost.shelfNetMinM) return [];
   const space = net / 4;
   const bottoms: number[] = [];
 
   for (let i = 1; i <= 3; i++) {
     const by = floorTopY + i * space + (i - 1) * woodThick;
-    if (by + woodThick <= targetTop - 0.002) bottoms.push(by);
+    if (by + woodThick <= targetTop - CORNER_CONNECTOR_INTERIOR_DIMENSIONS.specialPost.shelfTopClearanceM)
+      bottoms.push(by);
   }
   return bottoms;
 }

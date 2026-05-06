@@ -1,3 +1,7 @@
+import {
+  CARCASS_CORNICE_DIMENSIONS,
+  CARCASS_SHELL_DIMENSIONS,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type {
   CorniceCtxLike,
   CorniceHelpersLike,
@@ -30,30 +34,32 @@ export function applyCornerWingProfileCornice(args: {
   } = ctx;
   const { __wingBackPanelThick, __wingBackPanelCenterZ } = locals;
   const { readNumFrom } = helpers;
+  const corniceCommon = CARCASS_CORNICE_DIMENSIONS.common;
+  const corniceProfile = CARCASS_CORNICE_DIMENSIONS.profile;
   // New cornice profile (matches the upgraded main wardrobe cornice in core_pure.ts):
   // - Multi-layer crown molding profile (single solid shape)
   // - Front + sides only (no back piece)
   // - Mitered ends so front/side meet cleanly (no overlap / no corner spikes)
-  const cHeight = 0.08;
+  const cHeight = corniceProfile.heightM;
 
-  const overhangX = 0.06; // side overhang (meters)
-  const overhangZ = 0.04; // front overhang (meters)
-  const insetOnRoof = 0.03; // sits inward on the roof (meters)
-  const backStep = 0.02; // top return back (meters)
+  const overhangX = corniceProfile.overhangXM;
+  const overhangZ = corniceProfile.overhangZM;
+  const insetOnRoof = corniceProfile.insetOnRoofM;
+  const backStep = corniceProfile.backStepM;
 
   // Tiny anti-z-fight seam bias for miter joins.
-  const seamEps = 0.0005; // 0.5mm
+  const seamEps = corniceProfile.miterEpsilonZM;
 
   // Roof plane for the wing (cornice must start here).
   const topY = startY + wingH;
-  const epsY = 0.0006; // tiny lift to avoid z-fighting with the roof boards
+  const epsY = corniceCommon.yLiftM; // tiny lift to avoid z-fighting with the roof boards
   const yPlace = topY + epsY;
 
-  // Wing local Z is slightly shifted in this module (front is near z≈0.005).
+  // Wing local Z is slightly shifted in this module (front follows CARCASS_SHELL_DIMENSIONS.frontInsetZM).
   // Keep alignment consistent with the wing carcass/top boards:
-  const zCenter = 0.005 - wingD / 2;
-  const frontPlaneZ = zCenter + wingD / 2; // ≈ 0.005
-  const backPlaneZ = zCenter - wingD / 2; // ≈ 0.005 - wingD
+  const zCenter = CARCASS_SHELL_DIMENSIONS.frontInsetZM - wingD / 2;
+  const frontPlaneZ = zCenter + wingD / 2; // aligned with the carcass front inset
+  const backPlaneZ = zCenter - wingD / 2;
 
   // The masonite back panel sits a bit IN FRONT of backPlaneZ.
   // Trim the cornice depth so it doesn't extend past the masonite from the rear view.
@@ -61,18 +67,18 @@ export function applyCornerWingProfileCornice(args: {
   const backTrimZ = Math.max(backPlaneZ, backPanelOutsideZ);
 
   // Profile "knobs" (meters) – keep in sync with core_pure.ts
-  const profBaseH = 0.022;
-  const profStep1Out = 0.006;
-  const profSlopeH = 0.03;
-  const profSlopeOut = 0.018;
-  const profStep2Out = 0.006;
-  const profCapRise = 0.012;
-  const profCapOut = 0.004;
-  const profTopLipOut = 0.003;
+  const profBaseH = corniceProfile.baseHeightM;
+  const profStep1Out = corniceProfile.step1OutM;
+  const profSlopeH = corniceProfile.slopeHeightM;
+  const profSlopeOut = corniceProfile.slopeOutM;
+  const profStep2Out = corniceProfile.step2OutM;
+  const profCapRise = corniceProfile.capRiseM;
+  const profCapOut = corniceProfile.capOutM;
+  const profTopLipOut = corniceProfile.topLipOutM;
 
   const makeCorniceProfile = (overhang: number): CornicePoint[] => {
     // Build profile in base units, then scale horizontally so outer-most point == overhang.
-    const oh = Math.max(0.001, overhang);
+    const oh = Math.max(corniceProfile.minOverhangM, overhang);
 
     const step1Base = Math.max(0, profStep1Out);
     const slopeBase = Math.max(0, profSlopeOut);
@@ -81,7 +87,8 @@ export function applyCornerWingProfileCornice(args: {
     const lipBase = Math.max(0, profTopLipOut);
 
     let xMaxBase = step1Base + slopeBase + step2Base + capBase + lipBase;
-    if (!Number.isFinite(xMaxBase) || xMaxBase < 1e-6) xMaxBase = 1;
+    if (!Number.isFinite(xMaxBase) || xMaxBase < corniceCommon.epsilonM)
+      xMaxBase = corniceProfile.xMaxFallbackM;
     const sx = oh / xMaxBase;
 
     const step1 = step1Base * sx;
@@ -89,9 +96,9 @@ export function applyCornerWingProfileCornice(args: {
     const step2 = step2Base * sx;
     const capOut = capBase * sx;
 
-    const y1 = Math.min(profBaseH, cHeight * 0.6);
-    const y2 = Math.min(y1 + profSlopeH, cHeight * 0.92);
-    const y3 = Math.min(y2 + profCapRise, cHeight * 0.96);
+    const y1 = Math.min(profBaseH, cHeight * corniceProfile.baseHeightRatio);
+    const y2 = Math.min(y1 + profSlopeH, cHeight * corniceProfile.slopeHeightRatio);
+    const y3 = Math.min(y2 + profCapRise, cHeight * corniceProfile.capHeightRatio);
 
     const x1 = step1;
     const x2 = x1 + slopeOut;
@@ -124,10 +131,10 @@ export function applyCornerWingProfileCornice(args: {
   const corniceMatFor = (pid: CornicePartId) => getCornerMat(pid, baseCorniceMat);
 
   // Build 3 segments (front + left + right), with mitered ends like the main wardrobe.
-  const frontLen = Math.max(0.001, wingW + 2 * overhangX);
+  const frontLen = Math.max(corniceCommon.minBoxDimensionM, wingW + 2 * overhangX);
   const sideStartZ = backTrimZ;
   const sideEndZ = frontPlaneZ + overhangZ;
-  const sideLen = Math.max(0.001, sideEndZ - sideStartZ);
+  const sideLen = Math.max(corniceCommon.minBoxDimensionM, sideEndZ - sideStartZ);
   const sideCenterZ = (sideStartZ + sideEndZ) / 2;
 
   const segs: CorniceSegment[] = [
@@ -211,14 +218,14 @@ export function applyCornerWingProfileCornice(args: {
       for (let i = 0; i < profile.length; i++) {
         xOuter = Math.max(xOuter, profile[i].x);
       }
-      if (!Number.isFinite(xOuter) || xOuter <= 0) xOuter = 0.001;
+      if (!Number.isFinite(xOuter) || xOuter <= 0) xOuter = corniceProfile.minOverhangM;
 
       const pos = asBufferAttr(geo.getAttribute('position'));
       if (!pos) return null;
 
       const zPos = segLen / 2;
       const zNeg = -segLen / 2;
-      const epsZ = 5e-4; // 0.5mm
+      const epsZ = corniceProfile.miterEpsilonZM;
 
       for (let vi = 0; vi < pos.count; vi++) {
         const vx = Number(pos.getX(vi));

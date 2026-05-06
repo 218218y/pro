@@ -1,3 +1,4 @@
+import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { InteriorValueRecord } from './render_interior_ops_contracts.js';
 import type { ApplySketchShelvesArgs } from './render_interior_sketch_support_contracts.js';
 
@@ -80,7 +81,7 @@ export function applySketchShelves(args: ApplySketchShelvesArgs): void {
 
     const backZ0 = boxHere ? boxHere.innerBackZ : internalDepth > 0 ? backZ : internalZ;
     const shelfZ = backZ0 + shelfDepth / 2;
-    const GLASS_THICK_M = 0.018;
+    const GLASS_THICK_M = MATERIAL_DIMENSIONS.glassShelf.thicknessM;
     const shelfH = isGlass ? GLASS_THICK_M : isDouble ? Math.max(woodThick, woodThick * 2) : woodThick;
     const mat = isGlass && glassMat ? glassMat : currentShelfMat;
     const mesh = createBoard(shelfW, shelfH, shelfDepth, shelfX, y, shelfZ, mat, 'all_shelves');

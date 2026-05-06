@@ -1,3 +1,4 @@
+import { CARCASS_CORNICE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type {
   CornerConnectorCorniceCtx,
   CornerConnectorCorniceLocals,
@@ -16,13 +17,18 @@ export function applyCornerConnectorWaveCornice(args: {
   // - bottom sits on the roof plane
   // - inner face flush to the diagonal cabinet front
   // - only the TOP edge is wavy (peaks at ends + center)
+  const corniceCommon = CARCASS_CORNICE_DIMENSIONS.common;
+  const corniceWave = CARCASS_CORNICE_DIMENSIONS.wave;
   const topY = startY + wingH;
-  const epsY = 0.0006;
+  const epsY = corniceCommon.yLiftM;
   const yPlace = topY + epsY;
 
-  const frameT = Math.max(0.01, Math.min(0.028, woodThick || 0.018));
-  const maxH = 0.095;
-  const cycles = 2;
+  const frameT = Math.max(
+    corniceWave.frameThicknessMinM,
+    Math.min(corniceWave.frameThicknessMaxM, woodThick || corniceWave.fallbackWoodThicknessM)
+  );
+  const maxH = corniceWave.maxHeightM;
+  const cycles = corniceWave.cycles;
 
   // Visible diagonal edge (doors face): pts[2] -> pts[3]
   const a = pts[2];
@@ -30,16 +36,22 @@ export function applyCornerConnectorWaveCornice(args: {
   const dx = b.x - a.x;
   const dz = b.z - a.z;
   const segLen = Math.sqrt(dx * dx + dz * dz);
-  if (Number.isFinite(segLen) && segLen > 0.02) {
+  if (Number.isFinite(segLen) && segLen > corniceCommon.minSegmentLengthM) {
     const ang = Math.atan2(dz, dx);
     const midX = (a.x + b.x) / 2;
     const midZ = (a.z + b.z) / 2;
 
-    const amp = Math.min(Math.max(segLen * 0.03, 0.03), 0.06);
+    const amp = Math.min(
+      Math.max(segLen * corniceWave.amplitudeRatio, corniceWave.amplitudeMinM),
+      corniceWave.amplitudeMaxM
+    );
     const halfL = segLen / 2;
 
     // Sampling resolution: ~2cm, clamped.
-    const samples = Math.max(24, Math.min(180, Math.round(segLen / 0.02)));
+    const samples = Math.max(
+      corniceWave.sampleCountMin,
+      Math.min(corniceWave.sampleCountMax, Math.round(segLen / corniceWave.sampleSpacingM))
+    );
 
     if (hasCorniceExtrusionSupport(THREE)) {
       const shape = new THREE.Shape();
@@ -80,7 +92,7 @@ export function applyCornerConnectorWaveCornice(args: {
       const insideV = new THREE.Vector3(interiorX - midX, 0, interiorZ - midZ);
       if (
         typeof insideV.lengthSq === 'function' &&
-        insideV.lengthSq() > 1e-6 &&
+        insideV.lengthSq() > corniceWave.minInteriorNormalLengthSq &&
         typeof insideV.normalize === 'function'
       )
         insideV.normalize();
@@ -99,7 +111,7 @@ export function applyCornerConnectorWaveCornice(args: {
       const zShift = outwardZSign === 1 ? -frameT : 0;
 
       // Tiny inward inset to avoid z-fighting with the diagonal face.
-      const zInset = 0.0004;
+      const zInset = corniceWave.connectorInsetM;
       const zInsetSigned = (outwardZSign === 1 ? -1 : 1) * zInset;
 
       m.position.set(midX, yPlace, midZ);

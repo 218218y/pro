@@ -7,6 +7,8 @@ import type {
   UnknownRecord,
 } from '../../../types';
 
+import { DOOR_TRIM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+
 export type { DoorTrimAxis, DoorTrimColor, DoorTrimEntry, DoorTrimMap, DoorTrimSpan, UnknownRecord };
 
 export const DOOR_TRIM_COLORS: readonly DoorTrimColor[] = ['nickel', 'silver', 'gold', 'black'];
@@ -23,19 +25,20 @@ export const DOOR_TRIM_SPANS: readonly DoorTrimSpan[] = [
 export const DEFAULT_DOOR_TRIM_COLOR: DoorTrimColor = 'nickel';
 export const DEFAULT_DOOR_TRIM_SPAN: DoorTrimSpan = 'full';
 export const DEFAULT_DOOR_TRIM_AXIS: DoorTrimAxis = 'horizontal';
-export const DEFAULT_DOOR_TRIM_THICKNESS_M = 0.035;
-export const DEFAULT_DOOR_TRIM_DEPTH_M = 0.01;
-export const DOOR_TRIM_CENTER_SNAP_NORM_THRESHOLD = 0.04;
-export const MIN_DOOR_TRIM_SPAN_M = 0.04;
-export const MIN_DOOR_TRIM_CUSTOM_CM = 4;
-export const MAX_DOOR_TRIM_CUSTOM_CM = 400;
-export const MIN_DOOR_TRIM_CROSS_SIZE_CM = 1;
-export const MAX_DOOR_TRIM_CROSS_SIZE_CM = 120;
-export const DOOR_TRIM_MIRROR_SNAP_ZONE_M = 0.006;
+export const DEFAULT_DOOR_TRIM_THICKNESS_M: number = DOOR_TRIM_DIMENSIONS.defaults.thicknessM;
+export const DEFAULT_DOOR_TRIM_DEPTH_M: number = DOOR_TRIM_DIMENSIONS.defaults.depthM;
+export const DOOR_TRIM_CENTER_SNAP_NORM_THRESHOLD: number = DOOR_TRIM_DIMENSIONS.snap.centerNormThreshold;
+export const MIN_DOOR_TRIM_SPAN_M: number = DOOR_TRIM_DIMENSIONS.limits.minSpanM;
+export const MIN_DOOR_TRIM_CUSTOM_CM: number = DOOR_TRIM_DIMENSIONS.limits.customMinCm;
+export const MAX_DOOR_TRIM_CUSTOM_CM: number = DOOR_TRIM_DIMENSIONS.limits.customMaxCm;
+export const MIN_DOOR_TRIM_CROSS_SIZE_CM: number = DOOR_TRIM_DIMENSIONS.limits.crossSizeMinCm;
+export const MAX_DOOR_TRIM_CROSS_SIZE_CM: number = DOOR_TRIM_DIMENSIONS.limits.crossSizeMaxCm;
+export const DEFAULT_DOOR_TRIM_CROSS_SIZE_CM: number = DOOR_TRIM_DIMENSIONS.defaults.crossSizeCm;
+export const DOOR_TRIM_MIRROR_SNAP_ZONE_M: number = DOOR_TRIM_DIMENSIONS.snap.mirrorZoneM;
 // Keep trims visually attached to mirrors while still avoiding edge shimmer / aliasing.
-export const DOOR_TRIM_MIRROR_EDGE_GAP_M = 0.0008;
+export const DOOR_TRIM_MIRROR_EDGE_GAP_M: number = DOOR_TRIM_DIMENSIONS.snap.mirrorEdgeGapM;
 
-export const DEFAULT_DOOR_TRIM_CENTER_NORM = 0.5;
+export const DEFAULT_DOOR_TRIM_CENTER_NORM: number = DOOR_TRIM_DIMENSIONS.defaults.centerNorm;
 const CENTER_EPSILON = 1e-4;
 
 export type DoorTrimRect = {

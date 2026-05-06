@@ -1,30 +1,35 @@
 // Builder core carcass cornice assembly.
 
+import { CARCASS_CORNICE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { MutableRecord } from './core_pure_shared.js';
 import { __asNum } from './core_pure_shared.js';
 import { CARCASS_BACK_INSET_Z, type PreparedCarcassInput } from './core_carcass_shared.js';
 
-const CORNICE_EPS = 1e-6;
-const CORNICE_Y_EPS = 0.0006;
+const CORNICE_COMMON = CARCASS_CORNICE_DIMENSIONS.common;
+const CORNICE_WAVE = CARCASS_CORNICE_DIMENSIONS.wave;
+const CORNICE_PROFILE = CARCASS_CORNICE_DIMENSIONS.profile;
 
-const WAVE_MAX_HEIGHT = 0.095;
-const WAVE_CYCLES = 2;
+const CORNICE_EPS = CORNICE_COMMON.epsilonM;
+const CORNICE_Y_EPS = CORNICE_COMMON.yLiftM;
 
-const PROFILE_HEIGHT = 0.08;
-const PROFILE_OVERHANG_X = 0.06;
-const PROFILE_OVERHANG_Z = 0.04;
-const PROFILE_INSET_ON_ROOF = 0.03;
-const PROFILE_BACK_STEP = 0.02;
-const PROFILE_SEAM_EPS = 0.0;
+const WAVE_MAX_HEIGHT = CORNICE_WAVE.maxHeightM;
+const WAVE_CYCLES = CORNICE_WAVE.cycles;
 
-const PROFILE_BASE_H = 0.022;
-const PROFILE_STEP1_OUT = 0.006;
-const PROFILE_SLOPE_H = 0.03;
-const PROFILE_SLOPE_OUT = 0.018;
-const PROFILE_STEP2_OUT = 0.006;
-const PROFILE_CAP_RISE = 0.012;
-const PROFILE_CAP_OUT = 0.004;
-const PROFILE_TOP_LIP_OUT = 0.003;
+const PROFILE_HEIGHT = CORNICE_PROFILE.heightM;
+const PROFILE_OVERHANG_X = CORNICE_PROFILE.overhangXM;
+const PROFILE_OVERHANG_Z = CORNICE_PROFILE.overhangZM;
+const PROFILE_INSET_ON_ROOF = CORNICE_PROFILE.insetOnRoofM;
+const PROFILE_BACK_STEP = CORNICE_PROFILE.backStepM;
+const PROFILE_SEAM_EPS = CORNICE_PROFILE.seamEpsilonM;
+
+const PROFILE_BASE_H = CORNICE_PROFILE.baseHeightM;
+const PROFILE_STEP1_OUT = CORNICE_PROFILE.step1OutM;
+const PROFILE_SLOPE_H = CORNICE_PROFILE.slopeHeightM;
+const PROFILE_SLOPE_OUT = CORNICE_PROFILE.slopeOutM;
+const PROFILE_STEP2_OUT = CORNICE_PROFILE.step2OutM;
+const PROFILE_CAP_RISE = CORNICE_PROFILE.capRiseM;
+const PROFILE_CAP_OUT = CORNICE_PROFILE.capOutM;
+const PROFILE_TOP_LIP_OUT = CORNICE_PROFILE.topLipOutM;
 
 export function buildCarcassCornice(prepared: PreparedCarcassInput): MutableRecord | null {
   const { totalW, D, startY, cabinetBodyHeight, hasCornice, corniceType } = prepared;
@@ -123,7 +128,7 @@ function buildSegmentedCornice(
     topY: maxTopY,
     height: isWave ? WAVE_MAX_HEIGHT : PROFILE_HEIGHT,
     mode: isWave ? 'wave_frame_segmented' : 'profile_open_back_segmented',
-    z: isWave ? 0 : 0.02,
+    z: isWave ? 0 : CORNICE_PROFILE.legacyEnvelopeProfileZM,
     segments,
   });
 }
@@ -196,7 +201,10 @@ function resolveRunSideClosure(run: CorniceRun, neighbor: CorniceRun | undefined
   }
   if (run.depth > neighbor.depth + CORNICE_EPS) {
     return {
-      startDepth: Math.min(run.depth - 0.02, Math.max(CARCASS_BACK_INSET_Z, neighbor.depth)),
+      startDepth: Math.min(
+        run.depth - CORNICE_COMMON.minSegmentLengthM,
+        Math.max(CARCASS_BACK_INSET_Z, neighbor.depth)
+      ),
       internal: true,
     };
   }
@@ -229,13 +237,19 @@ function buildWaveCornice(params: CorniceParams): MutableRecord {
 
 function buildWaveCorniceSection(params: CorniceSectionParams): MutableRecord[] {
   const { left, right, globalD, depth, woodThick, topY, leftSide, rightSide } = params;
-  const sectionW = Math.max(0.001, right - left);
+  const sectionW = Math.max(CORNICE_COMMON.minBoxDimensionM, right - left);
   const yPlace = topY + CORNICE_Y_EPS;
-  const frameT = Math.max(0.01, Math.min(0.028, woodThick || 0.018));
-  const waveAmp = Math.min(Math.max(sectionW * 0.03, 0.03), 0.06);
+  const frameT = Math.max(
+    CORNICE_WAVE.frameThicknessMinM,
+    Math.min(CORNICE_WAVE.frameThicknessMaxM, woodThick || CORNICE_WAVE.fallbackWoodThicknessM)
+  );
+  const waveAmp = Math.min(
+    Math.max(sectionW * CORNICE_WAVE.amplitudeRatio, CORNICE_WAVE.amplitudeMinM),
+    CORNICE_WAVE.amplitudeMaxM
+  );
   const leftInset = leftSide == null ? 0 : frameT;
   const rightInset = rightSide == null ? 0 : frameT;
-  const frontW = Math.max(0.02, sectionW - leftInset - rightInset);
+  const frontW = Math.max(CORNICE_COMMON.minSegmentLengthM, sectionW - leftInset - rightInset);
   const frontLeft = left + leftInset;
   const frontRight = right - rightInset;
   const frontZ = -globalD / 2 + depth - frameT;
@@ -256,7 +270,7 @@ function buildWaveCorniceSection(params: CorniceSectionParams): MutableRecord[] 
   ];
 
   if (leftSide != null) {
-    const sideDepth = Math.max(0.02, depth - leftSide.startDepth);
+    const sideDepth = Math.max(CORNICE_COMMON.minSegmentLengthM, depth - leftSide.startDepth);
     const sideZ = -globalD / 2 + leftSide.startDepth + sideDepth / 2;
     segments.push({
       kind: 'cornice_wave_side',
@@ -271,7 +285,7 @@ function buildWaveCorniceSection(params: CorniceSectionParams): MutableRecord[] 
   }
 
   if (rightSide != null) {
-    const sideDepth = Math.max(0.02, depth - rightSide.startDepth);
+    const sideDepth = Math.max(CORNICE_COMMON.minSegmentLengthM, depth - rightSide.startDepth);
     const sideZ = -globalD / 2 + rightSide.startDepth + sideDepth / 2;
     segments.push({
       kind: 'cornice_wave_side',
@@ -307,7 +321,7 @@ function buildProfileCornice(params: CorniceParams): MutableRecord {
     topY,
     height: PROFILE_HEIGHT,
     mode: 'profile_open_back',
-    z: 0.02,
+    z: CORNICE_PROFILE.legacyEnvelopeProfileZM,
     segments,
   });
 }
@@ -315,7 +329,7 @@ function buildProfileCornice(params: CorniceParams): MutableRecord {
 function buildProfileCorniceSection(params: CorniceSectionParams): MutableRecord[] {
   const { left, right, globalD, depth, topY, leftSide, rightSide } = params;
   const yPlace = topY + CORNICE_Y_EPS;
-  const sectionW = Math.max(0.001, right - left);
+  const sectionW = Math.max(CORNICE_COMMON.minBoxDimensionM, right - left);
   const leftOverhang = leftSide != null && !leftSide.internal ? PROFILE_OVERHANG_X : 0;
   const rightOverhang = rightSide != null && !rightSide.internal ? PROFILE_OVERHANG_X : 0;
   const profileFront = makeCorniceProfile(PROFILE_OVERHANG_Z);
@@ -326,7 +340,7 @@ function buildProfileCorniceSection(params: CorniceSectionParams): MutableRecord
   const segments: MutableRecord[] = [
     {
       kind: 'cornice_profile_seg',
-      length: Math.max(0.001, sectionW + leftOverhang + rightOverhang),
+      length: Math.max(CORNICE_COMMON.minBoxDimensionM, sectionW + leftOverhang + rightOverhang),
       profile: profileFront,
       rotationY: -Math.PI / 2,
       flipX: false,
@@ -340,7 +354,7 @@ function buildProfileCorniceSection(params: CorniceSectionParams): MutableRecord
 
   if (leftSide != null) {
     const sideStartZ = -globalD / 2 + leftSide.startDepth;
-    const sideLen = Math.max(0.001, sideEndZ - sideStartZ);
+    const sideLen = Math.max(CORNICE_COMMON.minBoxDimensionM, sideEndZ - sideStartZ);
     const sideCenterZ = (sideStartZ + sideEndZ) / 2;
     segments.push({
       kind: 'cornice_profile_seg',
@@ -357,7 +371,7 @@ function buildProfileCorniceSection(params: CorniceSectionParams): MutableRecord
 
   if (rightSide != null) {
     const sideStartZ = -globalD / 2 + rightSide.startDepth;
-    const sideLen = Math.max(0.001, sideEndZ - sideStartZ);
+    const sideLen = Math.max(CORNICE_COMMON.minBoxDimensionM, sideEndZ - sideStartZ);
     const sideCenterZ = (sideStartZ + sideEndZ) / 2;
     segments.push({
       kind: 'cornice_profile_seg',
@@ -383,7 +397,7 @@ function makeInternalBoundaryCorniceProfile(overhang: number): MutableRecord[] {
 }
 
 function makeCorniceProfile(overhang: number): MutableRecord[] {
-  const oh = Math.max(0.001, overhang);
+  const oh = Math.max(CORNICE_PROFILE.minOverhangM, overhang);
   const step1Base = Math.max(0, PROFILE_STEP1_OUT);
   const slopeBase = Math.max(0, PROFILE_SLOPE_OUT);
   const step2Base = Math.max(0, PROFILE_STEP2_OUT);
@@ -391,7 +405,8 @@ function makeCorniceProfile(overhang: number): MutableRecord[] {
   const lipBase = Math.max(0, PROFILE_TOP_LIP_OUT);
 
   let xMaxBase = step1Base + slopeBase + step2Base + capBase + lipBase;
-  if (!Number.isFinite(xMaxBase) || xMaxBase < 1e-6) xMaxBase = 1;
+  if (!Number.isFinite(xMaxBase) || xMaxBase < CORNICE_COMMON.epsilonM)
+    xMaxBase = CORNICE_PROFILE.xMaxFallbackM;
   const sx = oh / xMaxBase;
 
   const step1 = step1Base * sx;
@@ -399,9 +414,9 @@ function makeCorniceProfile(overhang: number): MutableRecord[] {
   const step2 = step2Base * sx;
   const capOut = capBase * sx;
 
-  const y1 = Math.min(PROFILE_BASE_H, PROFILE_HEIGHT * 0.6);
-  const y2 = Math.min(y1 + PROFILE_SLOPE_H, PROFILE_HEIGHT * 0.92);
-  const y3 = Math.min(y2 + PROFILE_CAP_RISE, PROFILE_HEIGHT * 0.96);
+  const y1 = Math.min(PROFILE_BASE_H, PROFILE_HEIGHT * CORNICE_PROFILE.baseHeightRatio);
+  const y2 = Math.min(y1 + PROFILE_SLOPE_H, PROFILE_HEIGHT * CORNICE_PROFILE.slopeHeightRatio);
+  const y3 = Math.min(y2 + PROFILE_CAP_RISE, PROFILE_HEIGHT * CORNICE_PROFILE.capHeightRatio);
 
   const x1 = step1;
   const x2 = x1 + slopeOut;
@@ -437,10 +452,13 @@ type LegacyCorniceEnvelopeParams = {
 function buildLegacyCorniceEnvelope(params: LegacyCorniceEnvelopeParams): MutableRecord {
   const { totalW, D, topY, height, mode, z, segments } = params;
   const baseSize = Math.max(totalW, D);
-  const topRadius = (baseSize + 0.12) / Math.sqrt(2);
+  const topRadius = (baseSize + CORNICE_PROFILE.legacyEnvelopeTopRadiusPadM) / Math.sqrt(2);
   const bottomRadius = baseSize / Math.sqrt(2);
-  const scaleX = (totalW + 0.12) / (baseSize + 0.12);
-  const scaleZ = (D + 0.08) / (baseSize + 0.12);
+  const scaleX =
+    (totalW + CORNICE_PROFILE.legacyEnvelopeTopRadiusPadM) /
+    (baseSize + CORNICE_PROFILE.legacyEnvelopeTopRadiusPadM);
+  const scaleZ =
+    (D + CORNICE_PROFILE.legacyEnvelopeDepthPadM) / (baseSize + CORNICE_PROFILE.legacyEnvelopeTopRadiusPadM);
 
   return {
     kind: 'cornice',

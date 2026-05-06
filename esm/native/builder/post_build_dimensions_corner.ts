@@ -1,3 +1,8 @@
+import {
+  CM_PER_METER,
+  CORNER_WING_DIMENSIONS,
+  WARDROBE_DEFAULTS,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { getBuildUIFromPlatform } from '../runtime/platform_access.js';
 
 import type { AppContainer } from '../../../types/index.js';
@@ -18,12 +23,12 @@ export function readPostBuildCornerDimensions(args: {
   const { App, dimH, dimD } = args;
 
   let cornerSide: 'left' | 'right' = 'right';
-  let cornerWallLenM = 1.03;
+  let cornerWallLenM = CORNER_WING_DIMENSIONS.connector.defaultWallLengthM;
   let cornerOffsetXM = 0;
   let cornerOffsetZM = 0;
   let cornerConnectorEnabled = true;
-  let cornerDoorCount = 3;
-  let cornerWingLenM = 1.2;
+  let cornerDoorCount: number = WARDROBE_DEFAULTS.corner.doorsCount;
+  let cornerWingLenM = CORNER_WING_DIMENSIONS.wing.defaultWidthCm / CM_PER_METER;
   let cornerWingHeightM = NaN;
   let cornerWingDepthM = NaN;
 
@@ -65,39 +70,44 @@ export function readPostBuildCornerDimensions(args: {
 
     const wingLenRaw = pick('ui', 'cornerWidth');
     let wingLenCm = parseNum(wingLenRaw);
-    if (!Number.isFinite(wingLenCm)) wingLenCm = 120;
+    if (!Number.isFinite(wingLenCm)) wingLenCm = CORNER_WING_DIMENSIONS.wing.defaultWidthCm;
     if (wingLenCm < 0) wingLenCm = 0;
-    cornerWingLenM = wingLenCm / 100;
+    cornerWingLenM = wingLenCm / CM_PER_METER;
 
     const wingHeightRaw = pick('ui', 'cornerHeight', ['cornerHeightCm']);
     const wingHeightCm = parseNum(wingHeightRaw);
-    if (Number.isFinite(wingHeightCm) && wingHeightCm > 0) cornerWingHeightM = wingHeightCm / 100;
+    if (Number.isFinite(wingHeightCm) && wingHeightCm > 0) cornerWingHeightM = wingHeightCm / CM_PER_METER;
 
     const wingDepthRaw = pick('ui', 'cornerDepth', ['cornerDepthCm']);
     const wingDepthCm = parseNum(wingDepthRaw);
-    if (Number.isFinite(wingDepthCm) && wingDepthCm > 0) cornerWingDepthM = wingDepthCm / 100;
+    if (Number.isFinite(wingDepthCm) && wingDepthCm > 0) cornerWingDepthM = wingDepthCm / CM_PER_METER;
 
     const wallLenRaw = pick('ui', 'cornerCabinetWallLenCm', [
       'cornerCabinetWallLen',
       'cornerConnectorWallLenCm',
     ]);
     const wallLenCm = parseNum(wallLenRaw);
-    if (Number.isFinite(wallLenCm) && wallLenCm > 20) cornerWallLenM = wallLenCm / 100;
+    if (
+      Number.isFinite(wallLenCm) &&
+      wallLenCm > CORNER_WING_DIMENSIONS.connector.minWallLengthM * CM_PER_METER
+    )
+      cornerWallLenM = wallLenCm / CM_PER_METER;
 
     const offsetXRaw = pick('ui', 'cornerCabinetOffsetXcm', ['cornerCabinetOffsetX']);
     const offsetXCm = parseNum(offsetXRaw);
-    if (Number.isFinite(offsetXCm)) cornerOffsetXM = offsetXCm / 100;
+    if (Number.isFinite(offsetXCm)) cornerOffsetXM = offsetXCm / CM_PER_METER;
 
     const offsetZRaw = pick('ui', 'cornerCabinetOffsetZcm', ['cornerCabinetOffsetZ']);
     const offsetZCm = parseNum(offsetZRaw);
-    if (Number.isFinite(offsetZCm)) cornerOffsetZM = offsetZCm / 100;
+    if (Number.isFinite(offsetZCm)) cornerOffsetZM = offsetZCm / CM_PER_METER;
   } catch (error) {
     reportPostBuildSoft(App, 'dimensions.cornerUiRead', error);
   }
 
   if (cornerSide === 'left') cornerOffsetXM = -cornerOffsetXM;
 
-  if (!Number.isFinite(cornerWingLenM) || cornerWingLenM < 0) cornerWingLenM = 1.2;
+  if (!Number.isFinite(cornerWingLenM) || cornerWingLenM < 0)
+    cornerWingLenM = CORNER_WING_DIMENSIONS.wing.defaultWidthCm / CM_PER_METER;
   if (!Number.isFinite(cornerWingHeightM) || cornerWingHeightM <= 0) cornerWingHeightM = dimH;
   if (!Number.isFinite(cornerWingDepthM) || cornerWingDepthM <= 0) cornerWingDepthM = dimD;
 

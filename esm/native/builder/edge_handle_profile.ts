@@ -1,5 +1,7 @@
 import type { Object3DLike, ThreeLike } from '../../../types';
 
+import { HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+
 type EdgeProfileThreeLike = Pick<ThreeLike, 'Group' | 'Mesh' | 'BoxGeometry'>;
 
 type EdgeHandleProfileArgs = {
@@ -20,19 +22,19 @@ type PositionLike = Object3DLike['position'];
 
 type ObjectLike = Object3DLike;
 
-const EDGE_HANDLE_MOUNT_THICKNESS = 0.0045;
-const EDGE_HANDLE_MOUNT_DEPTH = 0.014;
-const EDGE_HANDLE_MOUNT_FRONT_Z = 0.006;
+const EDGE_HANDLE_MOUNT_THICKNESS = HANDLE_DIMENSIONS.edge.mountThicknessM;
+const EDGE_HANDLE_MOUNT_DEPTH = HANDLE_DIMENSIONS.edge.mountDepthM;
+const EDGE_HANDLE_MOUNT_FRONT_Z = HANDLE_DIMENSIONS.edge.mountFrontZM;
 
-const EDGE_HANDLE_RETURN_THICKNESS = 0.012;
-const EDGE_HANDLE_RETURN_DEPTH = 0.008;
-const EDGE_HANDLE_RETURN_FRONT_Z = 0.022;
-const EDGE_HANDLE_RETURN_INSET = 0.0115;
+const EDGE_HANDLE_RETURN_THICKNESS = HANDLE_DIMENSIONS.edge.returnThicknessM;
+const EDGE_HANDLE_RETURN_DEPTH = HANDLE_DIMENSIONS.edge.returnDepthM;
+const EDGE_HANDLE_RETURN_FRONT_Z = HANDLE_DIMENSIONS.edge.returnFrontZM;
+const EDGE_HANDLE_RETURN_INSET = HANDLE_DIMENSIONS.edge.returnInsetM;
 
-const EDGE_HANDLE_BRIDGE_THICKNESS = 0.007;
-const EDGE_HANDLE_BRIDGE_OVERLAP = 0.004;
+const EDGE_HANDLE_BRIDGE_THICKNESS = HANDLE_DIMENSIONS.edge.bridgeThicknessM;
+const EDGE_HANDLE_BRIDGE_OVERLAP = HANDLE_DIMENSIONS.edge.bridgeOverlapM;
 
-const EDGE_HANDLE_DRAWER_RETURN_DROP = 0.0135;
+const EDGE_HANDLE_DRAWER_RETURN_DROP = HANDLE_DIMENSIONS.edge.drawerReturnDropM;
 
 function setVec3(target: PositionLike, x: number, y: number, z: number): void {
   target.set(x, y, z);

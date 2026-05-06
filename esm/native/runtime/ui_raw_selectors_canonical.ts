@@ -12,6 +12,13 @@ import {
   missingEssentialUiRawDims,
   readUiScalarValue,
 } from './ui_raw_selectors_shared.js';
+import {
+  DEFAULT_CHEST_DRAWERS_COUNT,
+  DEFAULT_HEIGHT,
+  DEFAULT_HINGED_DOORS,
+  DEFAULT_WIDTH,
+  HINGED_DEFAULT_DEPTH,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 /**
  * Read a canonical `ui.raw` scalar without falling back to old `ui.*` fields.
@@ -90,10 +97,14 @@ export function readCanonicalUiRawDimsCmFromSnapshot(
   chestDrawersCount: number;
 } {
   assertCanonicalUiRawDims(ui, context);
-  const widthCm = readCanonicalUiRawNumberFromSnapshot(ui, 'width', 160);
-  const heightCm = readCanonicalUiRawNumberFromSnapshot(ui, 'height', 240);
-  const depthCm = readCanonicalUiRawNumberFromSnapshot(ui, 'depth', 55);
-  const doorsCount = readCanonicalUiRawIntFromSnapshot(ui, 'doors', 4);
-  const chestDrawersCount = readCanonicalUiRawIntFromSnapshot(ui, 'chestDrawersCount', 4);
+  const widthCm = readCanonicalUiRawNumberFromSnapshot(ui, 'width', DEFAULT_WIDTH);
+  const heightCm = readCanonicalUiRawNumberFromSnapshot(ui, 'height', DEFAULT_HEIGHT);
+  const depthCm = readCanonicalUiRawNumberFromSnapshot(ui, 'depth', HINGED_DEFAULT_DEPTH);
+  const doorsCount = readCanonicalUiRawIntFromSnapshot(ui, 'doors', DEFAULT_HINGED_DOORS);
+  const chestDrawersCount = readCanonicalUiRawIntFromSnapshot(
+    ui,
+    'chestDrawersCount',
+    DEFAULT_CHEST_DRAWERS_COUNT
+  );
   return { widthCm, heightCm, depthCm, doorsCount, chestDrawersCount };
 }

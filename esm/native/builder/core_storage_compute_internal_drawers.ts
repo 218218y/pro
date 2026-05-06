@@ -1,4 +1,5 @@
 import { _asObject } from './core_pure_shared.js';
+import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { InternalDrawerOpLike } from './core_pure_shared.js';
 
 export function computeInternalDrawersOpsForSlot(args: unknown): InternalDrawerOpLike[] {
@@ -20,29 +21,45 @@ export function computeInternalDrawersOpsForSlot(args: unknown): InternalDrawerO
   const hasDivider = !!a.hasDivider;
 
   if (!Number.isFinite(effectiveBottomY)) effectiveBottomY = 0;
-  if (!Number.isFinite(localGridStep) || localGridStep <= 0) localGridStep = 0.25;
+  if (!Number.isFinite(localGridStep) || localGridStep <= 0)
+    localGridStep = DRAWER_DIMENSIONS.internal.defaultGridStepM;
   if (!Number.isFinite(drawerSizingGridStep) || drawerSizingGridStep <= 0)
     drawerSizingGridStep = localGridStep;
   if (!Number.isFinite(internalCenterX)) internalCenterX = 0;
   if (!Number.isFinite(slotAvailableHeight) || slotAvailableHeight <= 0) slotAvailableHeight = localGridStep;
   if (!Number.isFinite(internalZ)) internalZ = 0;
-  if (!Number.isFinite(internalDepth)) internalDepth = 0.5;
-  if (!Number.isFinite(innerW)) innerW = 0.6;
+  if (!Number.isFinite(internalDepth)) internalDepth = DRAWER_DIMENSIONS.internal.defaultDepthM;
+  if (!Number.isFinite(innerW)) innerW = DRAWER_DIMENSIONS.internal.defaultInnerWidthM;
 
   const baseGridY = effectiveBottomY + (slotIndex - 1) * localGridStep;
-  const targetSingleDrawerH = (Math.min(0.35, drawerSizingGridStep - 0.02) - 0.02) / 2;
-  const maxSlotSingleDrawerH = (Math.min(0.35, slotAvailableHeight - 0.02) - 0.02) / 2;
+  const targetSingleDrawerH =
+    (Math.min(
+      DRAWER_DIMENSIONS.internal.maxSingleDrawerHeightM,
+      drawerSizingGridStep - DRAWER_DIMENSIONS.internal.verticalInsetM
+    ) -
+      DRAWER_DIMENSIONS.internal.verticalInsetM) /
+    2;
+  const maxSlotSingleDrawerH =
+    (Math.min(
+      DRAWER_DIMENSIONS.internal.maxSingleDrawerHeightM,
+      slotAvailableHeight - DRAWER_DIMENSIONS.internal.verticalInsetM
+    ) -
+      DRAWER_DIMENSIONS.internal.verticalInsetM) /
+    2;
   let singleDrawerH = Math.min(targetSingleDrawerH, maxSlotSingleDrawerH);
-  if (!Number.isFinite(singleDrawerH) || singleDrawerH <= 0) singleDrawerH = 0.01;
+  if (!Number.isFinite(singleDrawerH) || singleDrawerH <= 0)
+    singleDrawerH = DRAWER_DIMENSIONS.internal.minDrawerHeightM;
 
-  const internalDrawerWidth = innerW - 0.03;
-  const drawerDepth = internalDepth - 0.02;
+  const internalDrawerWidth = innerW - DRAWER_DIMENSIONS.internal.widthClearanceM;
+  const drawerDepth = internalDepth - DRAWER_DIMENSIONS.internal.depthClearanceM;
   const divKey = keyPrefix + 'div_int_' + moduleIndex + '_slot_' + slotIndex;
   const ops: InternalDrawerOpLike[] = [];
 
-  for (let j = 0; j < 2; j++) {
+  for (let j = 0; j < DRAWER_DIMENSIONS.internal.stackCount; j++) {
     const finalY =
-      j === 0 ? baseGridY + singleDrawerH / 2 + 0.01 : baseGridY + singleDrawerH + 0.03 + singleDrawerH / 2;
+      j === 0
+        ? baseGridY + singleDrawerH / 2 + DRAWER_DIMENSIONS.internal.firstDrawerBottomGapM
+        : baseGridY + singleDrawerH + DRAWER_DIMENSIONS.internal.betweenDrawersGapM + singleDrawerH / 2;
 
     ops.push({
       kind: 'internal_drawer',
@@ -56,7 +73,7 @@ export function computeInternalDrawersOpsForSlot(args: unknown): InternalDrawerO
       x: internalCenterX,
       y: finalY,
       z: internalZ,
-      openZ: internalZ + 0.25,
+      openZ: internalZ + DRAWER_DIMENSIONS.internal.openOffsetZM,
       hasDivider: hasDivider,
       dividerKey: divKey,
     });

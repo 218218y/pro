@@ -79,12 +79,18 @@ export {
   // Shared wardrobe dimension defaults
   DEFAULT_WIDTH,
   DEFAULT_HEIGHT,
+  DEFAULT_CHEST_DRAWERS_COUNT,
+  CHEST_MODE_DIMENSIONS,
   HINGED_DEFAULT_DEPTH,
   SLIDING_DEFAULT_DEPTH,
   DEFAULT_HINGED_DOORS,
   DEFAULT_SLIDING_DOORS,
   HINGED_DEFAULT_PER_DOOR_WIDTH,
   SLIDING_DEFAULT_PER_DOOR_WIDTH,
+  DEFAULT_CORNER_WIDTH,
+  DEFAULT_CORNER_DOORS,
+  DEFAULT_STACK_SPLIT_LOWER_HEIGHT,
+  STACK_SPLIT_SEAM_GAP_M,
   WARDROBE_WIDTH_MIN,
   WARDROBE_CHEST_WIDTH_MIN,
   WARDROBE_WIDTH_MAX,
@@ -118,6 +124,9 @@ export {
   getDefaultDoorsForWardrobeType,
   getDefaultPerDoorWidthForWardrobeType,
   getDefaultWidthForWardrobeType,
+  getDefaultHeightForWardrobeType,
+  getDefaultChestDrawersCount,
+  resolveDefaultWardrobeDimensions,
 
   // Assertions
   assertApp,

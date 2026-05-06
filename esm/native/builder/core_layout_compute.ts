@@ -1,4 +1,5 @@
 // Builder core pure layout computations.
+import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 import { getActiveWidthCmFromConfig } from '../features/special_dims/index.js';
 import {
@@ -42,7 +43,7 @@ export function normalizeModulesConfiguration(
 export function computeModuleLayout(input: unknown) {
   const inp = _asObject(input) || {};
   const totalW = __asNum(inp.totalW, 0);
-  const woodThick = __asNum(inp.woodThick, 0.018);
+  const woodThick = __asNum(inp.woodThick, MATERIAL_DIMENSIONS.wood.thicknessM);
 
   const modules = __normalizeModulesStructure(inp.modulesStructure);
   const totalDividersWidth = Math.max(0, modules.length - 1) * woodThick;

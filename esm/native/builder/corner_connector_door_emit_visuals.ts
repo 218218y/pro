@@ -1,3 +1,4 @@
+import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { MirrorLayoutList } from '../../../types';
 import { readMirrorLayoutListForPart } from '../features/mirror_layout.js';
 import { readDoorTrimListForPart } from '../features/door_trim.js';
@@ -36,7 +37,7 @@ export function pushCornerConnectorDoorSegmentVisual(
     __doorWidth: ctx.doorW,
     __doorHeight: segH,
     __doorMeshOffsetX: state.meshOffset,
-    __wpFrontThickness: 0.018,
+    __wpFrontThickness: CORNER_WING_DIMENSIONS.connector.frontThicknessM,
     __hingeLeft: state.hingeSide === 'left',
     __handleAbsY: handleAbsY,
     __wpStack: ctx.stackKey,
@@ -67,9 +68,15 @@ export function pushCornerConnectorDoorSegmentVisual(
   );
 
   const vis = ctx.createDoorVisual(
-    Math.max(0.03, ctx.doorW - 0.004),
-    Math.max(0.2, segH - 0.004),
-    0.018,
+    Math.max(
+      CORNER_WING_DIMENSIONS.connector.visualMinWidthM,
+      ctx.doorW - CORNER_WING_DIMENSIONS.connector.visualWidthClearanceM
+    ),
+    Math.max(
+      CORNER_WING_DIMENSIONS.connector.visualMinHeightM,
+      segH - CORNER_WING_DIMENSIONS.connector.visualHeightClearanceM
+    ),
+    CORNER_WING_DIMENSIONS.connector.frontThicknessM,
     isMirror ? ctx.getMirrorMat() : woodMat,
     style || effectiveFrameStyle,
     hasGroove,
@@ -98,7 +105,7 @@ export function pushCornerConnectorDoorSegmentVisual(
     doorWidth: ctx.doorW,
     doorHeight: segH,
     doorMeshOffsetX: state.meshOffset,
-    frontZ: 0.011,
+    frontZ: CORNER_WING_DIMENSIONS.connector.frontTrimZOffsetM,
     faceSign: ctx.outwardZSign,
   });
   ctx.addOutlines(vis);
@@ -118,7 +125,7 @@ function maybeAppendRemovedDoorHitbox(
 ): void {
   if (!ctx.isPrimaryMode(ctx.App, ctx.MODES.REMOVE_DOOR || 'remove_door')) return;
   const box = new ctx.THREE.Mesh(
-    new ctx.THREE.BoxGeometry(ctx.doorW, segH, 0.018),
+    new ctx.THREE.BoxGeometry(ctx.doorW, segH, CORNER_WING_DIMENSIONS.connector.hitboxThicknessM),
     new ctx.THREE.MeshBasicMaterial({
       color: 0xff0000,
       transparent: true,

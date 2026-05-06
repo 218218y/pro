@@ -1,3 +1,5 @@
+import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+
 // Corner wing door state derivation.
 //
 // Keep per-door geometry, hinge direction, and split-state derivation out of the
@@ -21,15 +23,19 @@ export function createCornerWingDoorState(ctx: CornerWingDoorContext, doorIdx: n
   const cellEffBottomY =
     cell && Number.isFinite(cell.effectiveBottomY) ? cell.effectiveBottomY : ctx.startY + ctx.woodThick;
   const cellDrawerH = cell && Number.isFinite(cell.drawerHeightTotal) ? cell.drawerHeightTotal : 0;
-  const doorBottomY = cellEffBottomY + (cellDrawerH > 0 ? 0.002 : 0);
+  const doorBottomY =
+    cellEffBottomY + (cellDrawerH > 0 ? CORNER_WING_DIMENSIONS.connector.doorBottomOffsetM : 0);
   const cellD =
     cell && Number.isFinite(ctx.asRecord(cell).depth)
-      ? Math.max(0.2, Number(ctx.asRecord(cell).depth))
+      ? Math.max(CORNER_WING_DIMENSIONS.wing.minDepthM, Number(ctx.asRecord(cell).depth))
       : ctx.wingD;
   const doorZShift = cellD - ctx.wingD;
   const effectiveTopLimit = getEffectiveTopLimitForDoor(ctx, doorIdx);
   const splitLineY =
-    ctx.startY + ctx.woodThick + (4 * (effectiveTopLimit - (ctx.startY + ctx.woodThick))) / 6;
+    ctx.startY +
+    ctx.woodThick +
+    (CORNER_WING_DIMENSIONS.cells.splitGridLineIndex * (effectiveTopLimit - (ctx.startY + ctx.woodThick))) /
+      CORNER_WING_DIMENSIONS.cells.defaultGridDivisions;
   const doorBaseId = `corner_door_${doorIdx + 1}`;
   const scopedDoorBaseId = ctx.stackKey === 'bottom' ? ctx.stackScopePartKey(doorBaseId) : doorBaseId;
   const geom = getDoorGeom(ctx, doorIdx);
@@ -47,7 +53,7 @@ export function createCornerWingDoorState(ctx: CornerWingDoorContext, doorIdx: n
   const isLeftHinge = chosenDirection === 'left';
   const pivotX = dX + (isLeftHinge ? -doorW / 2 : doorW / 2);
   const meshOffset = isLeftHinge ? doorW / 2 : -doorW / 2;
-  const totalDoorH = effectiveTopLimit - doorBottomY - 0.002;
+  const totalDoorH = effectiveTopLimit - doorBottomY - CORNER_WING_DIMENSIONS.connector.doorTopClearanceM;
   const topSplitEnabled = ctx.splitDoors && isSplit(ctx, doorBaseId);
   const bottomSplitEnabled = ctx.splitDoors && isSplitBottom(ctx, doorBaseId);
   const shouldSplit = ctx.splitDoors && (topSplitEnabled || bottomSplitEnabled);
@@ -101,7 +107,7 @@ export function clampHandleAbsY(
 }
 
 function getCellForDoor(ctx: CornerWingDoorContext, doorIdx: number) {
-  const cellIndex = Math.floor(doorIdx / 2);
+  const cellIndex = Math.floor(doorIdx / CORNER_WING_DIMENSIONS.cells.doorsPerCell);
   return ctx.cornerCells && ctx.cornerCells.length > 0
     ? ctx.cornerCells[cellIndex] || ctx.cornerCells[0]
     : null;
@@ -119,7 +125,9 @@ function getDoorGeom(ctx: CornerWingDoorContext, doorIdx: number): DoorGeomLike 
     const doorsInCell = Math.max(1, Number(ctx.asRecord(cell).doorsInCell) || 1);
     const doorW = Number(ctx.asRecord(cell).width) / doorsInCell;
     const doorStart = Number(ctx.asRecord(cell).doorStart);
-    const within = Number.isFinite(doorStart) ? doorIdx - doorStart : doorIdx % 2;
+    const within = Number.isFinite(doorStart)
+      ? doorIdx - doorStart
+      : doorIdx % CORNER_WING_DIMENSIONS.cells.doorsPerCell;
     const dX = Number(ctx.asRecord(cell).startX) + within * doorW + doorW / 2;
     return { cell, doorW, dX };
   }

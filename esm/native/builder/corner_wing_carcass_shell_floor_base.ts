@@ -1,8 +1,11 @@
+import { CARCASS_BASE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { CornerWingCarcassFlowParams } from './corner_wing_carcass_shared.js';
 import {
   type CornerWingCarcassShellMetrics,
   resolveCornerWingHorizPlacement,
 } from './corner_wing_carcass_shell_metrics.js';
+
+const PLINTH_DIMENSIONS = CARCASS_BASE_DIMENSIONS.plinth;
 
 export function applyCornerWingCarcassFloorAndBase(
   params: CornerWingCarcassFlowParams,
@@ -42,7 +45,7 @@ export function applyCornerWingCarcassFloorAndBase(
     const d = Number.isFinite(depth) && depth > 0 ? depth : wingD;
     const __hz = resolveCornerWingHorizPlacement(params, metrics, d, 0.05);
     const floorD = __hz.depth;
-    const w = Math.max(0.05, segW + 0.001);
+    const w = Math.max(PLINTH_DIMENSIONS.minSegmentWidthM, segW + PLINTH_DIMENSIONS.segmentWidthEpsilonM);
     const f = new THREE.Mesh(new THREE.BoxGeometry(w, woodThick, floorD), __floorMat);
     f.position.set(centerX, __floorY, __hz.z);
     f.userData = { partId, moduleIndex: moduleIndex || 'corner', kind: 'floorSeg' };
@@ -92,9 +95,9 @@ export function applyCornerWingCarcassFloorAndBase(
     moduleIndex?: string
   ) => {
     const d = Number.isFinite(depth) && depth > 0 ? depth : wingD;
-    const plinthD = Math.max(0.05, d - 0.05);
-    const w = Math.max(0.05, segW + 0.001);
-    const z = -wingD + d / 2 - 0.015;
+    const plinthD = Math.max(PLINTH_DIMENSIONS.minSegmentDepthM, d - PLINTH_DIMENSIONS.depthClearanceM);
+    const w = Math.max(PLINTH_DIMENSIONS.minSegmentWidthM, segW + PLINTH_DIMENSIONS.segmentWidthEpsilonM);
+    const z = -wingD + d / 2 - PLINTH_DIMENSIONS.frontInsetM;
     const pl = new THREE.Mesh(new THREE.BoxGeometry(w, baseH, plinthD), __plinthMat);
     pl.position.set(centerX, __plinthY, z);
     pl.userData = { partId, moduleIndex: moduleIndex || 'corner', kind: 'plinthSeg' };
@@ -121,9 +124,12 @@ export function applyCornerWingCarcassFloorAndBase(
       }
     }
   } else {
-    const __plD0 = Math.max(0.05, wingD - 0.05);
-    const z = -wingD / 2 - 0.015;
-    const plinth = new THREE.Mesh(new THREE.BoxGeometry(wingW - 0.02, baseH, __plD0), __plinthMat);
+    const __plD0 = Math.max(PLINTH_DIMENSIONS.minSegmentDepthM, wingD - PLINTH_DIMENSIONS.depthClearanceM);
+    const z = -wingD / 2 - PLINTH_DIMENSIONS.frontInsetM;
+    const plinth = new THREE.Mesh(
+      new THREE.BoxGeometry(wingW - PLINTH_DIMENSIONS.fallbackWidthClearanceM, baseH, __plD0),
+      __plinthMat
+    );
     plinth.position.set(wingW / 2, __plinthY, z);
     addOutlines(plinth);
     wingGroup.add(plinth);

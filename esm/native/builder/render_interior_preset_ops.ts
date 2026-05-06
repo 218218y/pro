@@ -1,3 +1,4 @@
+import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { RenderInteriorOpsDeps } from './render_interior_ops_contracts.js';
 
 import {
@@ -53,7 +54,7 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
     const rawGridDivisions = Number(input.gridDivisions || 0);
     const gridDivisions = Number.isFinite(rawGridDivisions) && rawGridDivisions > 0 ? rawGridDivisions : 6;
     const innerW = Number(input.innerW || 0);
-    const woodThick = Number(input.woodThick || 0.018);
+    const woodThick = Number(input.woodThick || MATERIAL_DIMENSIONS.wood.thicknessM);
     const internalDepth = Number(input.internalDepth || 0);
     const internalCenterX = Number(input.internalCenterX || 0);
     const internalZ = Number(input.internalZ || 0);

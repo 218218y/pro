@@ -1,3 +1,4 @@
+import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type {
   PreviewGroupLike,
   PreviewMaterialLike,
@@ -80,7 +81,7 @@ export function setInteriorLayoutHoverPreview(
   const internalZ = Number(input.internalZ);
   const internalDepth = Number(input.internalDepth);
   const innerW = Number(input.innerW);
-  const woodThick = Number(input.woodThick || 0.018);
+  const woodThick = Number(input.woodThick || MATERIAL_DIMENSIONS.wood.thicknessM);
   const backZ = internalZ - internalDepth / 2;
   const regularDepth = internalDepth > 0 ? Math.min(internalDepth, 0.45) : 0.45;
   const shelfVariant = typeof input.shelfVariant === 'string' ? String(input.shelfVariant) : '';
@@ -157,7 +158,7 @@ export function setInteriorLayoutHoverPreview(
   const shelfW = Math.max(0.05, innerW - (shelfVariant === 'brace' ? 0.002 : 0.014));
   const shelfH =
     shelfVariant === 'glass'
-      ? 0.018
+      ? MATERIAL_DIMENSIONS.glassShelf.thicknessM
       : shelfVariant === 'double'
         ? Math.max(woodThick, woodThick * 2)
         : woodThick;
