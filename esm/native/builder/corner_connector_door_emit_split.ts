@@ -43,7 +43,11 @@ export function appendCornerConnectorSplitDoor(
     return;
   }
 
-  if (state.topSplitEnabled && state.bottomSplitEnabled && ctx.bottomLineY < ctx.splitLineY - CORNER_WING_DIMENSIONS.connector.minSegmentHeightM) {
+  if (
+    state.topSplitEnabled &&
+    state.bottomSplitEnabled &&
+    ctx.bottomLineY < ctx.splitLineY - CORNER_WING_DIMENSIONS.connector.minSegmentHeightM
+  ) {
     const topTopY = topEdge;
     const topBottomY = ctx.splitLineY + ctx.splitGap / 2;
     const topH = topTopY - topBottomY;

@@ -65,7 +65,11 @@ export function appendGrooveStrips(args: {
     strip.userData = strip.userData || {};
     strip.userData.__keepMaterial = true;
     tagDoorVisualPart(strip, 'door_groove_strip');
-    strip.position.set(-targetW / 2 + i * gap, 0, zOffset + DOOR_VISUAL_DIMENSIONS.grooves.surfaceOffsetM * zSign);
+    strip.position.set(
+      -targetW / 2 + i * gap,
+      0,
+      zOffset + DOOR_VISUAL_DIMENSIONS.grooves.surfaceOffsetM * zSign
+    );
     visualGroup.add(strip);
   }
 }

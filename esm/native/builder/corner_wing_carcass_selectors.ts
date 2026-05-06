@@ -21,10 +21,14 @@ export function applyCornerWingCarcassSelectors(params: CornerWingCarcassFlowPar
       hitMat.colorWrite = false;
       hitMat.side = THREE.DoubleSide;
       const hitBox = new THREE.Mesh(
-        new THREE.BoxGeometry(Math.max(
-          CORNER_WING_DIMENSIONS.selector.minWidthM,
-          cell.width - CORNER_WING_DIMENSIONS.selector.widthClearanceM
-        ), __h, __hd),
+        new THREE.BoxGeometry(
+          Math.max(
+            CORNER_WING_DIMENSIONS.selector.minWidthM,
+            cell.width - CORNER_WING_DIMENSIONS.selector.widthClearanceM
+          ),
+          __h,
+          __hd
+        ),
         hitMat
       );
 
@@ -43,7 +47,11 @@ export function applyCornerWingCarcassSelectors(params: CornerWingCarcassFlowPar
     hitMat.colorWrite = false;
     hitMat.side = THREE.DoubleSide;
     const hitBox = new THREE.Mesh(
-      new THREE.BoxGeometry(Math.max(CORNER_WING_DIMENSIONS.selector.fallbackMinWidthM, activeWidth), cabinetBodyHeight, wingD),
+      new THREE.BoxGeometry(
+        Math.max(CORNER_WING_DIMENSIONS.selector.fallbackMinWidthM, activeWidth),
+        cabinetBodyHeight,
+        wingD
+      ),
       hitMat
     );
     hitBox.renderOrder = -1000;

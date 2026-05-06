@@ -293,16 +293,15 @@ function buildTomGlass(args: GlassDoorVisualArgs): { glassW: number; glassH: num
       args.h - 2 * DOOR_VISUAL_DIMENSIONS.tom.frameWidthM
     );
     const fallbackFaceZ =
-      (
-        args.thickness / 2 -
+      (args.thickness / 2 -
         Math.max(
           DOOR_VISUAL_DIMENSIONS.tom.recessDepthMinM,
           Math.min(
             DOOR_VISUAL_DIMENSIONS.tom.recessDepthMaxM,
             args.thickness - DOOR_VISUAL_DIMENSIONS.tom.recessDepthThicknessClearanceM
           )
-        )
-      ) * args.zSign;
+        )) *
+      args.zSign;
     const { glassPane } = appendGlassPane(args, fallbackW, fallbackH, fallbackFaceZ);
     return { glassW: fallbackW, glassH: fallbackH, glassPaneZ: glassPane.position.z };
   }

@@ -111,7 +111,10 @@ export function createCornerWingInteriorShelfRuntime(
     const backEdge = shelfZ - shelfDepth / 2;
     const frontEdge = shelfZ + shelfDepth / 2;
     const maxOff = shelfDepth / 2 - INTERIOR_FITTINGS_DIMENSIONS.pins.maxDepthSideClearanceM;
-    const edgeOff = Math.max(INTERIOR_FITTINGS_DIMENSIONS.pins.minEdgeOffsetM, Math.min(pinEdgeOffsetDefault, maxOff));
+    const edgeOff = Math.max(
+      INTERIOR_FITTINGS_DIMENSIONS.pins.minEdgeOffsetM,
+      Math.min(pinEdgeOffsetDefault, maxOff)
+    );
     const zBack = backEdge + edgeOff;
     const zFront = frontEdge - edgeOff;
 

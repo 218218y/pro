@@ -224,8 +224,14 @@ export function createStyledFullMirrorDoorVisual(args: CreateStyledMirrorDoorVis
   const layoutList = Array.isArray(args.mirrorLayout) && args.mirrorLayout.length ? args.mirrorLayout : [];
   const fullInsideLayouts = layoutList.filter(layout => readMirrorLayoutFaceSign(layout, args.zSign) === -1);
   const depthLayout = resolveMirrorDepthLayout(args.thickness);
-  const mirrorWidth = Math.max(DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM, args.w - FULL_MIRROR_INSET_M);
-  const mirrorHeight = Math.max(DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM, args.h - FULL_MIRROR_INSET_M);
+  const mirrorWidth = Math.max(
+    DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM,
+    args.w - FULL_MIRROR_INSET_M
+  );
+  const mirrorHeight = Math.max(
+    DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM,
+    args.h - FULL_MIRROR_INSET_M
+  );
 
   for (let i = 0; i < fullInsideLayouts.length; i += 1) {
     const mirrorMesh = new args.THREE.Mesh(

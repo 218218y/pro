@@ -168,8 +168,14 @@ export function computeModuleLayout(input: unknown) {
     const segCm = Number(moduleSegWidthsCm[i]) || 0;
 
     // Clear opening width: subtract boundary thickness (cm).
-    const leftBoundCm = i === 0 ? woodThick * CM_PER_METER : woodThick * CM_PER_METER * WARDROBE_LAYOUT_DIMENSIONS.boundarySharedThicknessMultiplier;
-    const rightBoundCm = i === modules.length - 1 ? woodThick * CM_PER_METER : woodThick * CM_PER_METER * WARDROBE_LAYOUT_DIMENSIONS.boundarySharedThicknessMultiplier;
+    const leftBoundCm =
+      i === 0
+        ? woodThick * CM_PER_METER
+        : woodThick * CM_PER_METER * WARDROBE_LAYOUT_DIMENSIONS.boundarySharedThicknessMultiplier;
+    const rightBoundCm =
+      i === modules.length - 1
+        ? woodThick * CM_PER_METER
+        : woodThick * CM_PER_METER * WARDROBE_LAYOUT_DIMENSIONS.boundarySharedThicknessMultiplier;
 
     const internalCm = Math.max(0, segCm - leftBoundCm - rightBoundCm);
     moduleInternalWidths[i] = internalCm / CM_PER_METER;

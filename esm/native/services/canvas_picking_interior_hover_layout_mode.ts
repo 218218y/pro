@@ -1,3 +1,4 @@
+import { CARCASS_SHELL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { computeInteriorPresetOps } from '../features/interior_layout_presets/api.js';
 import { __wp_resolveInteriorHoverTarget } from './canvas_picking_local_helpers.js';
 import type { CanvasInteriorHoverFlowArgs } from './canvas_picking_interior_hover_shared.js';
@@ -31,8 +32,12 @@ export function tryHandleCanvasPresetLayoutHover(args: CanvasInteriorHoverFlowAr
 
     const layoutType = readLayoutType(App);
     const ops = computeInteriorPresetOps(layoutType);
-    const divisions = readGridDivisions(target.info.gridDivisions);
-    const step = divisions > 0 ? target.spanH / divisions : target.spanH / 6;
+    const divisions = readGridDivisions(
+      CARCASS_SHELL_DIMENSIONS.drawerGridDivisions,
+      CARCASS_SHELL_DIMENSIONS.drawerGridDivisions
+    );
+    const step =
+      divisions > 0 ? target.spanH / divisions : target.spanH / CARCASS_SHELL_DIMENSIONS.drawerGridDivisions;
 
     const shelfYs = Array.isArray(ops.shelves)
       ? ops.shelves

@@ -244,6 +244,33 @@ function normalizeBoolArrayAgainstLength(value: unknown, fallback: unknown, targ
   return out;
 }
 
+function normalizeStringArrayAgainstLength(
+  value: unknown,
+  fallback: unknown,
+  targetLength: number
+): string[] {
+  const fallbackList = Array.isArray(fallback) ? fallback : [];
+  const srcList = Array.isArray(value) ? value : [];
+  const out = new Array(targetLength);
+  for (let i = 0; i < targetLength; i += 1) {
+    const raw = i < srcList.length ? srcList[i] : fallbackList[i];
+    out[i] = typeof raw === 'string' ? raw : raw == null ? '' : String(raw);
+  }
+  return out;
+}
+
+function cloneArray(value: unknown): unknown[] {
+  return Array.isArray(value) ? value.slice() : [];
+}
+
+function hasFiniteSavedGridFrame(cfg: ModuleConfigLike): boolean {
+  const saved = isRec(cfg.savedDims) ? cfg.savedDims : null;
+  if (!saved) return false;
+  const top = Number(saved.top);
+  const bottom = Number(saved.bottom);
+  return Number.isFinite(top) && Number.isFinite(bottom) && top > bottom;
+}
+
 function areLibraryModuleValuesEqual(prev: unknown, next: unknown): boolean {
   if (Object.is(prev, next)) return true;
 
@@ -282,10 +309,49 @@ export function normalizePreservedLibraryModuleCfg(
   const hasExplicitSrcGridDivisions =
     Object.prototype.hasOwnProperty.call(src, 'gridDivisions') && src.gridDivisions != null;
   const srcGridDivisions = readFiniteInt(src.gridDivisions, templateGridDivisions, 1);
-  const gridDivisions = templateGridDivisions;
-  const preserveCustomGridData = hasExplicitSrcGridDivisions && srcGridDivisions === templateGridDivisions;
+  const hasManualCustomGrid = !!src.isCustom && hasExplicitSrcGridDivisions && hasFiniteSavedGridFrame(src);
+  const gridDivisions = hasManualCustomGrid ? srcGridDivisions : templateGridDivisions;
+  const preserveCustomGridData =
+    hasManualCustomGrid || (hasExplicitSrcGridDivisions && srcGridDivisions === templateGridDivisions);
+  const customData: UnknownRecord = {
+    ...templateCustom,
+    ...srcCustom,
+    shelves: normalizeBoolArrayAgainstLength(
+      preserveCustomGridData ? srcCustom.shelves : undefined,
+      templateCustom.shelves,
+      gridDivisions
+    ),
+    rods: normalizeBoolArrayAgainstLength(
+      preserveCustomGridData ? srcCustom.rods : undefined,
+      templateCustom.rods,
+      gridDivisions
+    ),
+    storage: preserveCustomGridData
+      ? srcCustom.storage == null
+        ? !!templateCustom.storage
+        : !!srcCustom.storage
+      : !!templateCustom.storage,
+  };
 
-  return {
+  if (preserveCustomGridData || Array.isArray(templateCustom.shelfVariants)) {
+    customData.shelfVariants = normalizeStringArrayAgainstLength(
+      preserveCustomGridData ? srcCustom.shelfVariants : undefined,
+      templateCustom.shelfVariants,
+      gridDivisions
+    );
+  } else {
+    delete customData.shelfVariants;
+  }
+
+  if (preserveCustomGridData || Array.isArray(templateCustom.rodOps)) {
+    customData.rodOps = preserveCustomGridData
+      ? cloneArray(srcCustom.rodOps)
+      : cloneArray(templateCustom.rodOps);
+  } else {
+    delete customData.rodOps;
+  }
+
+  const next: ModuleConfigLike = {
     ...src,
     ...template,
     layout:
@@ -300,27 +366,19 @@ export function normalizePreservedLibraryModuleCfg(
         : [],
     isCustom: src.isCustom == null ? !!template.isCustom : !!src.isCustom,
     gridDivisions,
-    customData: {
-      ...templateCustom,
-      ...srcCustom,
-      shelves: normalizeBoolArrayAgainstLength(
-        preserveCustomGridData ? srcCustom.shelves : undefined,
-        templateCustom.shelves,
-        gridDivisions
-      ),
-      rods: normalizeBoolArrayAgainstLength(
-        preserveCustomGridData ? srcCustom.rods : undefined,
-        templateCustom.rods,
-        gridDivisions
-      ),
-      storage: preserveCustomGridData
-        ? srcCustom.storage == null
-          ? !!templateCustom.storage
-          : !!srcCustom.storage
-        : !!templateCustom.storage,
-    },
+    customData,
     doors: readFiniteInt(template.doors, 0, 0),
   };
+
+  if (preserveCustomGridData && Array.isArray(src.braceShelves)) {
+    next.braceShelves = src.braceShelves.slice();
+  } else if (Array.isArray(template.braceShelves)) {
+    next.braceShelves = template.braceShelves.slice();
+  } else {
+    delete next.braceShelves;
+  }
+
+  return next;
 }
 
 export function canPreserveLibraryModuleCfg(

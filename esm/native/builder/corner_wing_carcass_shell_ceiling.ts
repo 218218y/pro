@@ -34,7 +34,12 @@ export function applyCornerWingCarcassCeiling(
     : 0;
 
   if (metrics.__wingIsUnifiedCabinet) {
-    const __hz = resolveCornerWingHorizPlacement(params, metrics, wingD, CORNER_WING_DIMENSIONS.ceiling.minDepthM);
+    const __hz = resolveCornerWingHorizPlacement(
+      params,
+      metrics,
+      wingD,
+      CORNER_WING_DIMENSIONS.ceiling.minDepthM
+    );
     const __leftInsetX = woodThick + __wingAttachNoZFightingInsetX;
     const __rightInsetX = woodThick;
     const topW = Math.max(
@@ -53,7 +58,12 @@ export function applyCornerWingCarcassCeiling(
 
   for (const cell of cornerCells) {
     const cellD = Math.max(CORNER_WING_DIMENSIONS.selector.minDepthM, cell.depth);
-    const __hz = resolveCornerWingHorizPlacement(params, metrics, cellD, CORNER_WING_DIMENSIONS.ceiling.minDepthM);
+    const __hz = resolveCornerWingHorizPlacement(
+      params,
+      metrics,
+      cellD,
+      CORNER_WING_DIMENSIONS.ceiling.minDepthM
+    );
     const __h = Math.max(woodThick * 2, cell.bodyHeight);
 
     const __cellW = Math.max(CORNER_WING_DIMENSIONS.ceiling.minWidthM, cell.width);

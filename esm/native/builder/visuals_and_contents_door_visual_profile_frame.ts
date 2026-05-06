@@ -145,7 +145,12 @@ export function appendProfileDoorFrame(args: {
       Math.max(DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM, h - 2 * totalFrameW),
       stepDepthValue,
     ]),
-    () => new THREE.BoxGeometry(innerFrameW, Math.max(DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM, h - 2 * totalFrameW), stepDepthValue)
+    () =>
+      new THREE.BoxGeometry(
+        innerFrameW,
+        Math.max(DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM, h - 2 * totalFrameW),
+        stepDepthValue
+      )
   );
 
   const stepTop = new THREE.Mesh(stepGeoH, mat);
@@ -172,8 +177,14 @@ export function appendProfileDoorFrame(args: {
       DOOR_VISUAL_DIMENSIONS.profile.roundInsetMaxM
     )
   );
-  const roundSpanW = Math.max(DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM, w - outerFrameW - 2 * roundInset);
-  const roundSpanH = Math.max(DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM, h - outerFrameW - 2 * roundInset);
+  const roundSpanW = Math.max(
+    DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM,
+    w - outerFrameW - 2 * roundInset
+  );
+  const roundSpanH = Math.max(
+    DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM,
+    h - outerFrameW - 2 * roundInset
+  );
   appendRoundedMiterDoorFrame({
     App,
     THREE,

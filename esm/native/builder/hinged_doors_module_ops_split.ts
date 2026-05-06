@@ -67,7 +67,11 @@ export function appendSplitHingedDoorOps(
     return;
   }
 
-  if (state.topSplitEnabled && state.bottomSplitEnabled && bottomLineY < topSplitLineY - DOOR_SYSTEM_DIMENSIONS.hinged.split.minSegmentHeightM) {
+  if (
+    state.topSplitEnabled &&
+    state.bottomSplitEnabled &&
+    bottomLineY < topSplitLineY - DOOR_SYSTEM_DIMENSIONS.hinged.split.minSegmentHeightM
+  ) {
     appendTripleSplitHingedDoorSegments(ctx, state, visual, topSplitLineY, bottomLineY);
     return;
   }

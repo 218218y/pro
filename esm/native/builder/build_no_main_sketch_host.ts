@@ -214,7 +214,10 @@ export function maybeRenderNoMainSketchHost(args: {
     estimateNoMainWorkspaceWidthM(moduleCfg) || 0,
     NO_MAIN_SKETCH_DIMENSIONS.defaultWorkspaceWidthM
   );
-  const innerW = Math.max(NO_MAIN_SKETCH_DIMENSIONS.minInnerWidthM, workspaceWidthM - 2 * Number(args.woodThick));
+  const innerW = Math.max(
+    NO_MAIN_SKETCH_DIMENSIONS.minInnerWidthM,
+    workspaceWidthM - 2 * Number(args.woodThick)
+  );
   const effectiveBottomY = Number(args.woodThick);
   const effectiveTopY = Math.max(
     effectiveBottomY + NO_MAIN_SKETCH_DIMENSIONS.minGridSpanM,

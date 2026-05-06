@@ -117,6 +117,40 @@ test('library preset rematerialization resets stale shelf arrays when gridDivisi
   assert.deepEqual(normalized?.customData?.rods, [false, false, false, false, false]);
 });
 
+test('library preset invariants preserve manual custom library grids after a canvas click', () => {
+  const expected = createLibraryTopModuleConfig(2);
+  const manuallyEdited = {
+    ...expected,
+    isCustom: true,
+    gridDivisions: 8,
+    savedDims: { top: 2.4, bottom: 0.1 },
+    customData: {
+      shelves: [true, false, true, false, true, false, true],
+      rods: [false, true, false, false, false, true, false, false],
+      storage: true,
+      shelfVariants: ['glass', '', 'brace', '', 'double', '', ''],
+      rodOps: [{ gridIndex: 2, yFactor: 2, enableHangingClothes: true }],
+    },
+    braceShelves: [3],
+    doors: 2,
+  };
+
+  const next = buildNextLibraryModuleCfgList([manuallyEdited], [expected]);
+  const normalized = next?.[0];
+
+  assert.equal(normalized?.gridDivisions, 8);
+  assert.equal(normalized?.isCustom, true);
+  assert.deepEqual(normalized?.savedDims, { top: 2.4, bottom: 0.1 });
+  assert.deepEqual(normalized?.customData?.shelves, [true, false, true, false, true, false, true, false]);
+  assert.deepEqual(normalized?.customData?.rods, [false, true, false, false, false, true, false, false]);
+  assert.equal(normalized?.customData?.storage, true);
+  assert.deepEqual(normalized?.customData?.shelfVariants, ['glass', '', 'brace', '', 'double', '', '', '']);
+  assert.deepEqual(normalized?.customData?.rodOps, [
+    { gridIndex: 2, yFactor: 2, enableHangingClothes: true },
+  ]);
+  assert.deepEqual(normalized?.braceShelves, [3]);
+});
+
 test('library preset ignores stale regular structureSelect when it no longer matches library door count', () => {
   const staleRegularUi = {
     structureSelect: '[2,2]',

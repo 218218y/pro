@@ -80,7 +80,6 @@ export const WARDROBE_LIMITS = Object.freeze({
     lowerDoorsMin: 0,
     lowerDoorsMax: 20,
   }),
-
 });
 
 export const WARDROBE_LAYOUT_DIMENSIONS = Object.freeze({
