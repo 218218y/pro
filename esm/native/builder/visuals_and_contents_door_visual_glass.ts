@@ -1,3 +1,4 @@
+import { DOOR_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { __asBufferAttribute } from './visuals_and_contents_shared.js';
 import { appendProfileDoorFrame } from './visuals_and_contents_door_visual_profile_frame.js';
 import { createTomDoorVisual } from './visuals_and_contents_door_visual_tom.js';
@@ -141,7 +142,7 @@ function createGlassMaterial(args: GlassDoorVisualArgs) {
   const glassMat = new THREE.MeshStandardMaterial({
     color: 0xffffff,
     transparent: true,
-    opacity: 0.16,
+    opacity: DOOR_VISUAL_DIMENSIONS.glass.opacity,
     roughness: 0.08,
     metalness: 0.0,
   });
@@ -157,14 +158,14 @@ function createGlassMaterial(args: GlassDoorVisualArgs) {
 
 function appendGlassPane(args: GlassDoorVisualArgs, glassW: number, glassH: number, glassFaceZ: number) {
   const { THREE, visualGroup, tagDoorVisualPart, zSign } = args;
-  const glassDepth = 0.005;
+  const glassDepth = DOOR_VISUAL_DIMENSIONS.glass.paneDepthM;
   const glassPane = new THREE.Mesh(
     new THREE.BoxGeometry(glassW, glassH, glassDepth),
     createGlassMaterial(args)
   );
   glassPane.userData = glassPane.userData || {};
   glassPane.userData.__keepMaterial = true;
-  glassPane.renderOrder = 2;
+  glassPane.renderOrder = DOOR_VISUAL_DIMENSIONS.glass.paneRenderOrder;
   glassPane.position.set(0, 0, glassFaceZ - (glassDepth / 2) * zSign);
   tagDoorVisualPart(glassPane, 'door_glass_center_panel');
   visualGroup.add(glassPane);
@@ -187,7 +188,7 @@ function appendCurtain(args: GlassDoorVisualArgs, glassW: number, glassH: number
     side: THREE.DoubleSide,
     flatShading: false,
     transparent: true,
-    opacity: 0.72,
+    opacity: DOOR_VISUAL_DIMENSIONS.glass.curtainOpacity,
   });
   curtainMat.depthWrite = false;
   try {
@@ -198,13 +199,13 @@ function appendCurtain(args: GlassDoorVisualArgs, glassW: number, glassH: number
   if (forceCurtainFix) {
     try {
       curtainMat.emissive = new THREE.Color(curtainColor);
-      curtainMat.emissiveIntensity = 0.12;
+      curtainMat.emissiveIntensity = DOOR_VISUAL_DIMENSIONS.glass.curtainForcedEmissiveIntensity;
     } catch {
       // ignore
     }
   }
 
-  const curtainGeo = new THREE.PlaneGeometry(glassW, glassH, 256, 1);
+  const curtainGeo = new THREE.PlaneGeometry(glassW, glassH, DOOR_VISUAL_DIMENSIONS.glass.curtainSegments, 1);
   const posAttribute =
     curtainGeo.attributes && curtainGeo.attributes.position
       ? __asBufferAttribute(curtainGeo.attributes.position)
@@ -212,7 +213,9 @@ function appendCurtain(args: GlassDoorVisualArgs, glassW: number, glassH: number
   if (posAttribute) {
     for (let i = 0; i < posAttribute.count; i++) {
       const x = posAttribute.getX(i);
-      const waveZ = 0.008 * Math.sin(x * 120);
+      const waveZ =
+        DOOR_VISUAL_DIMENSIONS.glass.curtainWaveAmplitudeM *
+        Math.sin(x * DOOR_VISUAL_DIMENSIONS.glass.curtainWaveFrequency);
       posAttribute.setZ(i, waveZ);
     }
   }
@@ -220,9 +223,11 @@ function appendCurtain(args: GlassDoorVisualArgs, glassW: number, glassH: number
   const curtainMesh = new THREE.Mesh(curtainGeo, curtainMat);
   curtainMesh.userData = curtainMesh.userData || {};
   curtainMesh.userData.__keepMaterial = true;
-  curtainMesh.renderOrder = 1;
-  const curtainGap = forceCurtainFix ? 0.012 : 0.015;
-  const curtainZ = glassPaneZ - (0.005 / 2 + curtainGap) * zSign;
+  curtainMesh.renderOrder = DOOR_VISUAL_DIMENSIONS.glass.curtainRenderOrder;
+  const curtainGap = forceCurtainFix
+    ? DOOR_VISUAL_DIMENSIONS.glass.curtainForcedGapM
+    : DOOR_VISUAL_DIMENSIONS.glass.curtainDefaultGapM;
+  const curtainZ = glassPaneZ - (DOOR_VISUAL_DIMENSIONS.glass.paneDepthM / 2 + curtainGap) * zSign;
   curtainMesh.position.set(0, 0, curtainZ);
   tagDoorVisualPart(curtainMesh, 'door_glass_curtain');
   visualGroup.add(curtainMesh);
@@ -279,10 +284,25 @@ function buildTomGlass(args: GlassDoorVisualArgs): { glassW: number; glassH: num
 
   const center = findCenterPanelMetrics(args.visualGroup, 'door_tom_center_panel', args.zSign);
   if (!center) {
-    const fallbackW = Math.max(0.02, args.w - 0.09);
-    const fallbackH = Math.max(0.02, args.h - 0.09);
+    const fallbackW = Math.max(
+      DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM,
+      args.w - 2 * DOOR_VISUAL_DIMENSIONS.tom.frameWidthM
+    );
+    const fallbackH = Math.max(
+      DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM,
+      args.h - 2 * DOOR_VISUAL_DIMENSIONS.tom.frameWidthM
+    );
     const fallbackFaceZ =
-      (args.thickness / 2 - Math.max(0.008, Math.min(0.014, args.thickness - 0.004))) * args.zSign;
+      (
+        args.thickness / 2 -
+        Math.max(
+          DOOR_VISUAL_DIMENSIONS.tom.recessDepthMinM,
+          Math.min(
+            DOOR_VISUAL_DIMENSIONS.tom.recessDepthMaxM,
+            args.thickness - DOOR_VISUAL_DIMENSIONS.tom.recessDepthThicknessClearanceM
+          )
+        )
+      ) * args.zSign;
     const { glassPane } = appendGlassPane(args, fallbackW, fallbackH, fallbackFaceZ);
     return { glassW: fallbackW, glassH: fallbackH, glassPaneZ: glassPane.position.z };
   }
@@ -291,11 +311,11 @@ function buildTomGlass(args: GlassDoorVisualArgs): { glassW: number; glassH: num
   removeNode(args.visualGroup, center.node);
 
   const openingW = Math.max(
-    0.02,
+    DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM,
     Math.min(center.width, (openingRect?.maxX ?? center.width / 2) - (openingRect?.minX ?? -center.width / 2))
   );
   const openingH = Math.max(
-    0.02,
+    DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM,
     Math.min(
       center.height,
       (openingRect?.maxY ?? center.height / 2) - (openingRect?.minY ?? -center.height / 2)
@@ -311,9 +331,15 @@ function buildTomGlass(args: GlassDoorVisualArgs): { glassW: number; glassH: num
 }
 
 function buildFlatGlass(args: GlassDoorVisualArgs): { glassW: number; glassH: number; glassPaneZ: number } {
-  const glassInset = Math.max(0.002, Math.min(0.006, Math.min(args.w, args.h) * 0.01));
-  const glassW = Math.max(0.02, args.w - 2 * glassInset);
-  const glassH = Math.max(0.02, args.h - 2 * glassInset);
+  const glassInset = Math.max(
+    DOOR_VISUAL_DIMENSIONS.glass.flatInsetMinM,
+    Math.min(
+      DOOR_VISUAL_DIMENSIONS.glass.flatInsetMaxM,
+      Math.min(args.w, args.h) * DOOR_VISUAL_DIMENSIONS.glass.flatInsetRatio
+    )
+  );
+  const glassW = Math.max(DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM, args.w - 2 * glassInset);
+  const glassH = Math.max(DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM, args.h - 2 * glassInset);
   const faceZ = (args.thickness / 2) * args.zSign;
   const { glassPane } = appendGlassPane(args, glassW, glassH, faceZ);
   return { glassW, glassH, glassPaneZ: glassPane.position.z };

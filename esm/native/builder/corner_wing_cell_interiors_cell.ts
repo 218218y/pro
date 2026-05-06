@@ -1,3 +1,4 @@
+import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { CornerCell } from './corner_wing_cell_shared.js';
 import type {
   CornerWingInteriorCellRuntime,
@@ -52,9 +53,9 @@ export function getCornerCellInnerFacesX(
   if (!Number.isFinite(leftX)) leftX = start + runtime.woodThick;
   if (!Number.isFinite(rightX)) rightX = end - runtime.woodThick;
 
-  if (!(rightX > leftX + 0.02)) {
+  if (!(rightX > leftX + CORNER_WING_DIMENSIONS.interior.minInnerFaceGapM)) {
     const cx = c ? c.centerX : (start + end) / 2;
-    const w = Math.max(0.05, (c ? c.width : 0) - runtime.woodThick * 2);
+    const w = Math.max(CORNER_WING_DIMENSIONS.interior.minCellWidthM, (c ? c.width : 0) - runtime.woodThick * 2);
     leftX = cx - w / 2;
     rightX = cx + w / 2;
   }
@@ -68,15 +69,18 @@ export function createCornerWingInteriorCellRuntime(
 ): CornerWingInteriorCellRuntime {
   const cfgCell = cell.cfg;
   const cellKey = cell.key;
-  const cellW = Math.max(0.05, cell.width);
+  const cellW = Math.max(CORNER_WING_DIMENSIONS.interior.minCellWidthM, cell.width);
   const cellCenterX = cell.centerX;
   const facesX = getCornerCellInnerFacesX(runtime, cell.idx);
   const cellInnerLeftX = facesX.leftX;
   const cellInnerRightX = facesX.rightX;
-  const cellInnerW = Math.max(0.05, cellInnerRightX - cellInnerLeftX);
+  const cellInnerW = Math.max(CORNER_WING_DIMENSIONS.interior.minCellWidthM, cellInnerRightX - cellInnerLeftX);
   const cellInnerCenterX = (cellInnerLeftX + cellInnerRightX) / 2;
-  const cellShelfW = Math.max(0.05, cellInnerW - 0.005);
-  const cellD = Math.max(0.2, cell.depth);
+  const cellShelfW = Math.max(
+    CORNER_WING_DIMENSIONS.interior.minCellWidthM,
+    cellInnerW - CORNER_WING_DIMENSIONS.interior.shelfWidthClearanceM
+  );
+  const cellD = Math.max(CORNER_WING_DIMENSIONS.interior.minCellDepthM, cell.depth);
   const zShift = cellD - runtime.wingD;
   const __z = (z: number) => z + zShift;
   const __braceSet: Record<number, true> = Object.create(null);
@@ -85,10 +89,13 @@ export function createCornerWingInteriorCellRuntime(
     const v = parseInt(String(arr[i]), 10);
     if (Number.isFinite(v) && v > 0) __braceSet[v] = true;
   }
-  const __internalDepth = Math.max(0.05, cellD - 0.05);
-  const regularShelfDepth = 0.45;
+  const __internalDepth = Math.max(
+    CORNER_WING_DIMENSIONS.interior.minCellWidthM,
+    cellD - CORNER_WING_DIMENSIONS.interior.internalDepthBackClearanceM
+  );
+  const regularShelfDepth = CORNER_WING_DIMENSIONS.interior.regularShelfDepthM;
   const __regularDepth = Math.min(__internalDepth, regularShelfDepth);
-  const __fullDepthCenterZ = -runtime.wingD + cellD / 2 - 0.015;
+  const __fullDepthCenterZ = -runtime.wingD + cellD / 2 - CORNER_WING_DIMENSIONS.interior.fullDepthCenterBackInsetM;
   const __backFaceZ = __fullDepthCenterZ - __internalDepth / 2;
 
   return {

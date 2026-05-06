@@ -1,3 +1,4 @@
+import { DOOR_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
   createDoorVisualCacheKey,
   getCachedDoorVisualGeometry,
@@ -30,18 +31,39 @@ export function appendSubtleDoorAccentBorder(args: {
     targetW,
     targetH,
     faceZ,
-    inset = 0.01,
-    lineT = 0.0022,
-    opacity = 0.18,
+    inset = DOOR_VISUAL_DIMENSIONS.accent.defaultInsetM,
+    lineT = DOOR_VISUAL_DIMENSIONS.accent.defaultLineThicknessM,
+    opacity = DOOR_VISUAL_DIMENSIONS.accent.defaultOpacity,
   } = args;
-  if (!Number.isFinite(targetW) || !Number.isFinite(targetH) || !(targetW > 0.04) || !(targetH > 0.04))
+  if (
+    !Number.isFinite(targetW) ||
+    !Number.isFinite(targetH) ||
+    !(targetW > DOOR_VISUAL_DIMENSIONS.common.minDoorDimensionForAccentM) ||
+    !(targetH > DOOR_VISUAL_DIMENSIONS.common.minDoorDimensionForAccentM)
+  ) {
     return;
+  }
 
-  const safeInset = Math.max(0, Math.min(inset, targetW / 2 - 0.01, targetH / 2 - 0.01));
+  const safeInset = Math.max(
+    0,
+    Math.min(
+      inset,
+      targetW / 2 - DOOR_VISUAL_DIMENSIONS.accent.safeInsetEdgeM,
+      targetH / 2 - DOOR_VISUAL_DIMENSIONS.accent.safeInsetEdgeM
+    )
+  );
   const innerW = targetW - 2 * safeInset;
   const innerH = targetH - 2 * safeInset;
-  if (!(innerW > 0.02) || !(innerH > 0.02)) return;
-  const t = Math.max(0.0014, Math.min(lineT, innerW / 6, innerH / 6));
+  if (
+    !(innerW > DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM) ||
+    !(innerH > DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM)
+  ) {
+    return;
+  }
+  const t = Math.max(
+    DOOR_VISUAL_DIMENSIONS.accent.minLineThicknessM,
+    Math.min(lineT, innerW / 6, innerH / 6)
+  );
   if (!(innerW > 2 * t) || !(innerH > 2 * t)) return;
 
   const accentMat = getCachedDoorVisualMaterial(
@@ -51,7 +73,12 @@ export function appendSubtleDoorAccentBorder(args: {
       new THREE.MeshBasicMaterial({
         color: isSketch ? 0x000000 : 0x2b2b2b,
         transparent: true,
-        opacity: isSketch ? Math.min(0.35, opacity + 0.08) : opacity,
+        opacity: isSketch
+          ? Math.min(
+              DOOR_VISUAL_DIMENSIONS.accent.sketchOpacityMax,
+              opacity + DOOR_VISUAL_DIMENSIONS.accent.sketchOpacityExtra
+            )
+          : opacity,
         depthWrite: false,
       })
   );
@@ -62,22 +89,22 @@ export function appendSubtleDoorAccentBorder(args: {
     // ignore
   }
 
-  const z = faceZ + 0.0009 * zSign;
+  const z = faceZ + DOOR_VISUAL_DIMENSIONS.common.frontSurfaceNudgeM * zSign;
   const addStrip = (sw: number, sh: number, x: number, y: number, partId: string) => {
     if (!(sw > 0) || !(sh > 0)) return;
     const geometry = getCachedDoorVisualGeometry(
       App,
       createDoorVisualCacheKey('door_accent_strip', [sw, sh]),
-      () => new THREE.BoxGeometry(sw, sh, 0.001)
+      () => new THREE.BoxGeometry(sw, sh, DOOR_VISUAL_DIMENSIONS.accent.stripDepthM)
     );
     const strip = new THREE.Mesh(geometry, accentMat);
     strip.position.set(x, y, z);
-    strip.renderOrder = 3;
+    strip.renderOrder = DOOR_VISUAL_DIMENSIONS.accent.renderOrder;
     tagDoorVisualPart(strip, partId);
     visualGroup.add(strip);
   };
 
-  const sideH = Math.max(0.001, innerH - 2 * t);
+  const sideH = Math.max(DOOR_VISUAL_DIMENSIONS.common.minStripThicknessM, innerH - 2 * t);
   addStrip(innerW, t, 0, innerH / 2 - t / 2, 'door_accent_top');
   addStrip(innerW, t, 0, -(innerH / 2 - t / 2), 'door_accent_bottom');
   addStrip(t, sideH, -(innerW / 2 - t / 2), 0, 'door_accent_left');

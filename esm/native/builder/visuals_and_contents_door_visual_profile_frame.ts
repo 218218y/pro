@@ -1,3 +1,4 @@
+import { DOOR_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
   appendMiterFaceFrameCaps,
   appendRoundedMiterDoorFrame,
@@ -30,21 +31,44 @@ function resolveProfileDoorFrameLayout(args: {
   zSign: number;
 }): ProfileDoorFrameLayout {
   const { w, h, thickness, zSign } = args;
-  const rawOuterFrameW = 0.03;
-  const rawInnerFrameW = 0.027;
-  const outerFrameW = Math.max(0.015, Math.min(rawOuterFrameW, w / 2 - 0.03, h / 2 - 0.03));
-  const innerFrameW = Math.max(
-    0.012,
-    Math.min(rawInnerFrameW, w / 2 - outerFrameW - 0.015, h / 2 - outerFrameW - 0.015)
+  const rawOuterFrameW = DOOR_VISUAL_DIMENSIONS.profile.outerFrameWidthM;
+  const rawInnerFrameW = DOOR_VISUAL_DIMENSIONS.profile.innerFrameWidthM;
+  const outerFrameW = Math.max(
+    DOOR_VISUAL_DIMENSIONS.profile.outerFrameMinM,
+    Math.min(
+      rawOuterFrameW,
+      w / 2 - DOOR_VISUAL_DIMENSIONS.profile.frameEdgeClearanceM,
+      h / 2 - DOOR_VISUAL_DIMENSIONS.profile.frameEdgeClearanceM
+    )
   );
-  const centerDepth = Math.max(0.01, Math.min(0.02, thickness - 0.004));
-  const stepDepth = Math.max(0.002, Math.min(0.004, centerDepth - 0.004));
-  const roundBulgeScale = 0.94;
+  const innerFrameW = Math.max(
+    DOOR_VISUAL_DIMENSIONS.profile.innerFrameMinM,
+    Math.min(
+      rawInnerFrameW,
+      w / 2 - outerFrameW - DOOR_VISUAL_DIMENSIONS.profile.innerFrameEdgeClearanceM,
+      h / 2 - outerFrameW - DOOR_VISUAL_DIMENSIONS.profile.innerFrameEdgeClearanceM
+    )
+  );
+  const centerDepth = Math.max(
+    DOOR_VISUAL_DIMENSIONS.profile.centerDepthMinM,
+    Math.min(
+      DOOR_VISUAL_DIMENSIONS.profile.centerDepthMaxM,
+      thickness - DOOR_VISUAL_DIMENSIONS.profile.centerDepthThicknessClearanceM
+    )
+  );
+  const stepDepth = Math.max(
+    DOOR_VISUAL_DIMENSIONS.profile.stepDepthMinM,
+    Math.min(
+      DOOR_VISUAL_DIMENSIONS.profile.stepDepthMaxM,
+      centerDepth - DOOR_VISUAL_DIMENSIONS.profile.centerDepthThicknessClearanceM
+    )
+  );
+  const roundBulgeScale = DOOR_VISUAL_DIMENSIONS.profile.roundBulgeScale;
   const totalFrameW = outerFrameW + innerFrameW;
-  const centerW = Math.max(0.02, w - 2 * totalFrameW);
-  const centerH = Math.max(0.02, h - 2 * totalFrameW);
-  const stepSpanW = Math.max(0.02, w - 2 * outerFrameW);
-  const stepSpanH = Math.max(0.02, h - 2 * outerFrameW);
+  const centerW = Math.max(DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM, w - 2 * totalFrameW);
+  const centerH = Math.max(DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM, h - 2 * totalFrameW);
+  const stepSpanW = Math.max(DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM, w - 2 * outerFrameW);
+  const stepSpanH = Math.max(DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM, h - 2 * outerFrameW);
   const centerFaceZ = (thickness / 2 - centerDepth) * zSign;
   return {
     outerFrameW,
@@ -92,7 +116,7 @@ export function appendProfileDoorFrame(args: {
   outerBot.position.set(0, -(h / 2 - outerFrameW / 2), 0);
   visualGroup.add(outerBot);
 
-  const outerSideSpan = Math.max(0.02, h - 2 * outerFrameW);
+  const outerSideSpan = Math.max(DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM, h - 2 * outerFrameW);
   const outerVGeo = getCachedDoorVisualGeometry(
     App,
     createDoorVisualCacheKey('door_profile_outer_v', [outerFrameW, outerSideSpan, thickness]),
@@ -108,7 +132,7 @@ export function appendProfileDoorFrame(args: {
 
   const stepGroup = new THREE.Group();
   const stepZ = (-stepDepth / 2) * zSign;
-  const stepDepthValue = Math.max(0.002, thickness - stepDepth);
+  const stepDepthValue = Math.max(DOOR_VISUAL_DIMENSIONS.profile.stepDepthMinM, thickness - stepDepth);
   const stepGeoH = getCachedDoorVisualGeometry(
     App,
     createDoorVisualCacheKey('door_profile_step_h', [stepSpanW, innerFrameW, stepDepthValue]),
@@ -118,10 +142,10 @@ export function appendProfileDoorFrame(args: {
     App,
     createDoorVisualCacheKey('door_profile_step_v', [
       innerFrameW,
-      Math.max(0.02, h - 2 * totalFrameW),
+      Math.max(DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM, h - 2 * totalFrameW),
       stepDepthValue,
     ]),
-    () => new THREE.BoxGeometry(innerFrameW, Math.max(0.02, h - 2 * totalFrameW), stepDepthValue)
+    () => new THREE.BoxGeometry(innerFrameW, Math.max(DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM, h - 2 * totalFrameW), stepDepthValue)
   );
 
   const stepTop = new THREE.Mesh(stepGeoH, mat);
@@ -141,9 +165,15 @@ export function appendProfileDoorFrame(args: {
   stepGroup.add(stepRight);
   visualGroup.add(stepGroup);
 
-  const roundInset = Math.max(0.003, Math.min(outerFrameW * 0.24, 0.012));
-  const roundSpanW = Math.max(0.02, w - outerFrameW - 2 * roundInset);
-  const roundSpanH = Math.max(0.02, h - outerFrameW - 2 * roundInset);
+  const roundInset = Math.max(
+    DOOR_VISUAL_DIMENSIONS.profile.roundInsetMinM,
+    Math.min(
+      outerFrameW * DOOR_VISUAL_DIMENSIONS.profile.roundInsetOuterFrameRatio,
+      DOOR_VISUAL_DIMENSIONS.profile.roundInsetMaxM
+    )
+  );
+  const roundSpanW = Math.max(DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM, w - outerFrameW - 2 * roundInset);
+  const roundSpanH = Math.max(DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM, h - outerFrameW - 2 * roundInset);
   appendRoundedMiterDoorFrame({
     App,
     THREE,

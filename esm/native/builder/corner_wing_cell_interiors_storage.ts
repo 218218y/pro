@@ -1,4 +1,7 @@
-import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  CORNER_WING_DIMENSIONS,
+  INTERIOR_FITTINGS_DIMENSIONS,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { resolveEffectiveDoorStyle } from '../features/door_style_overrides.js';
 import { readCurtainType } from './render_door_ops_shared.js';
 import type { SlotMetaLike } from './corner_wing_cell_shared.js';
@@ -23,7 +26,12 @@ export function createCornerWingInteriorLayoutOps(
       cellRuntime.cellInnerW - CORNER_WING_DIMENSIONS.drawers.rodWidthClearanceM
     );
     const rod = new runtime.THREE.Mesh(
-      new runtime.THREE.CylinderGeometry(0.015, 0.015, rodLen, 12),
+      new runtime.THREE.CylinderGeometry(
+        INTERIOR_FITTINGS_DIMENSIONS.rods.radiusM,
+        INTERIOR_FITTINGS_DIMENSIONS.rods.radiusM,
+        rodLen,
+        12
+      ),
       runtime.getMaterial(null, 'metal')
     );
     rod.rotation.z = Math.PI / 2;

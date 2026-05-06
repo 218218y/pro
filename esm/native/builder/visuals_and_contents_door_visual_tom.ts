@@ -1,3 +1,4 @@
+import { DOOR_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { appendSubtleDoorAccentBorder } from './visuals_and_contents_door_visual_accent.js';
 import { appendGrooveStrips } from './visuals_and_contents_door_visual_grooves.js';
 import {
@@ -29,17 +30,39 @@ export function createTomDoorVisual(args: StyledDoorVisualArgs) {
     zSign,
   } = args;
 
-  const rawFrameW = 0.045;
-  const frameW = Math.max(0.02, Math.min(rawFrameW, w / 2 - 0.02, h / 2 - 0.02));
-  const recessDepth = Math.max(0.008, Math.min(0.014, thickness - 0.004));
-  const innerW = Math.max(0.02, w - 2 * frameW);
-  const innerH = Math.max(0.02, h - 2 * frameW);
+  const rawFrameW = DOOR_VISUAL_DIMENSIONS.tom.frameWidthM;
+  const frameW = Math.max(
+    DOOR_VISUAL_DIMENSIONS.tom.frameMinM,
+    Math.min(
+      rawFrameW,
+      w / 2 - DOOR_VISUAL_DIMENSIONS.tom.frameEdgeClearanceM,
+      h / 2 - DOOR_VISUAL_DIMENSIONS.tom.frameEdgeClearanceM
+    )
+  );
+  const recessDepth = Math.max(
+    DOOR_VISUAL_DIMENSIONS.tom.recessDepthMinM,
+    Math.min(
+      DOOR_VISUAL_DIMENSIONS.tom.recessDepthMaxM,
+      thickness - DOOR_VISUAL_DIMENSIONS.tom.recessDepthThicknessClearanceM
+    )
+  );
+  const innerW = Math.max(DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM, w - 2 * frameW);
+  const innerH = Math.max(DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM, h - 2 * frameW);
 
   const centerPanel = new THREE.Mesh(
     getCachedDoorVisualGeometry(
       App,
-      createDoorVisualCacheKey('door_tom_center', [innerW, innerH, Math.max(0.002, thickness - recessDepth)]),
-      () => new THREE.BoxGeometry(innerW, innerH, Math.max(0.002, thickness - recessDepth))
+      createDoorVisualCacheKey('door_tom_center', [
+        innerW,
+        innerH,
+        Math.max(DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM / 10, thickness - recessDepth),
+      ]),
+      () =>
+        new THREE.BoxGeometry(
+          innerW,
+          innerH,
+          Math.max(DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM / 10, thickness - recessDepth)
+        )
     ),
     mat
   );
@@ -59,7 +82,7 @@ export function createTomDoorVisual(args: StyledDoorVisualArgs) {
   bot.position.set(0, -(h / 2 - frameW / 2), 0);
   visualGroup.add(bot);
 
-  const sideSpan = Math.max(0.02, h - 2 * frameW);
+  const sideSpan = Math.max(DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM, h - 2 * frameW);
   const vGeo = getCachedDoorVisualGeometry(
     App,
     createDoorVisualCacheKey('door_tom_v', [frameW, sideSpan, thickness]),
@@ -89,17 +112,47 @@ export function createTomDoorVisual(args: StyledDoorVisualArgs) {
     addSeamLines: true,
   });
 
-  const innerRaisedInset = Math.max(0.006, Math.min(frameW * 0.22, 0.014));
-  const innerRaisedOuterW = Math.max(0.02, innerW - 2 * innerRaisedInset);
-  const innerRaisedOuterH = Math.max(0.02, innerH - 2 * innerRaisedInset);
-  const innerRaisedBandW = Math.max(
-    0.006,
-    Math.min(frameW * 0.24, innerRaisedOuterW / 2 - 0.012, innerRaisedOuterH / 2 - 0.012)
+  const innerRaisedInset = Math.max(
+    DOOR_VISUAL_DIMENSIONS.tom.innerRaisedInsetMinM,
+    Math.min(
+      frameW * DOOR_VISUAL_DIMENSIONS.tom.innerRaisedInsetFrameRatio,
+      DOOR_VISUAL_DIMENSIONS.tom.innerRaisedInsetMaxM
+    )
   );
-  const mirrorPlacementW = Math.max(0.02, innerRaisedOuterW - 2 * innerRaisedBandW);
-  const mirrorPlacementH = Math.max(0.02, innerRaisedOuterH - 2 * innerRaisedBandW);
+  const innerRaisedOuterW = Math.max(
+    DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM,
+    innerW - 2 * innerRaisedInset
+  );
+  const innerRaisedOuterH = Math.max(
+    DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM,
+    innerH - 2 * innerRaisedInset
+  );
+  const innerRaisedBandW = Math.max(
+    DOOR_VISUAL_DIMENSIONS.tom.innerRaisedBandMinM,
+    Math.min(
+      frameW * DOOR_VISUAL_DIMENSIONS.tom.innerRaisedBandFrameRatio,
+      innerRaisedOuterW / 2 - DOOR_VISUAL_DIMENSIONS.tom.innerRaisedBandEdgeClearanceM,
+      innerRaisedOuterH / 2 - DOOR_VISUAL_DIMENSIONS.tom.innerRaisedBandEdgeClearanceM
+    )
+  );
+  const mirrorPlacementW = Math.max(
+    DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM,
+    innerRaisedOuterW - 2 * innerRaisedBandW
+  );
+  const mirrorPlacementH = Math.max(
+    DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM,
+    innerRaisedOuterH - 2 * innerRaisedBandW
+  );
   applyMirrorPlacementRectMetadata(centerPanel, mirrorPlacementW, mirrorPlacementH);
-  const innerRaisedZ = Math.max(0.0022, Math.min(0.0042, thickness * 0.24, frameW * 0.08)) * zSign;
+  const innerRaisedZ =
+    Math.max(
+      DOOR_VISUAL_DIMENSIONS.tom.innerRaisedZMinM,
+      Math.min(
+        DOOR_VISUAL_DIMENSIONS.tom.innerRaisedZMaxM,
+        thickness * DOOR_VISUAL_DIMENSIONS.tom.innerRaisedZThicknessRatio,
+        frameW * DOOR_VISUAL_DIMENSIONS.tom.innerRaisedZFrameRatio
+      )
+    ) * zSign;
   appendRoundedMiterDoorFrame({
     App,
     THREE,
@@ -129,9 +182,12 @@ export function createTomDoorVisual(args: StyledDoorVisualArgs) {
     targetW: innerW,
     targetH: innerH,
     faceZ: centerFaceZ,
-    inset: Math.min(frameW * 0.18, 0.012),
-    lineT: 0.0022,
-    opacity: 0.16,
+    inset: Math.min(
+      frameW * DOOR_VISUAL_DIMENSIONS.tom.accentInsetFrameRatio,
+      DOOR_VISUAL_DIMENSIONS.tom.accentInsetMaxM
+    ),
+    lineT: DOOR_VISUAL_DIMENSIONS.tom.accentLineThicknessM,
+    opacity: DOOR_VISUAL_DIMENSIONS.tom.accentOpacity,
   });
   appendGrooveStrips({
     App,

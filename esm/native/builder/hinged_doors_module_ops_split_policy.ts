@@ -1,3 +1,4 @@
+import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { readSplitPosListSafe } from './hinged_doors_module_ops_shared.js';
 import type {
   HingedDoorIterationState,
@@ -7,7 +8,7 @@ import type {
 function normalizeSplitCuts(ctx: HingedDoorModuleOpsContext, values: readonly number[]): number[] {
   const topEdge = ctx.effectiveTopLimit;
   const height = topEdge - ctx.doorBottomY;
-  const minSegH = 0.12;
+  const minSegH = DOOR_SYSTEM_DIMENSIONS.hinged.split.minSegmentHeightM;
   const kept: number[] = [];
   let prevBottom = ctx.doorBottomY;
 
@@ -20,7 +21,13 @@ function normalizeSplitCuts(ctx: HingedDoorModuleOpsContext, values: readonly nu
   }
 
   const out: number[] = [];
-  const tol = Math.max(0.004, Math.min(0.02, height * 0.01));
+  const tol = Math.max(
+    DOOR_SYSTEM_DIMENSIONS.hinged.split.duplicateCutToleranceMinM,
+    Math.min(
+      DOOR_SYSTEM_DIMENSIONS.hinged.split.duplicateCutToleranceMaxM,
+      height * DOOR_SYSTEM_DIMENSIONS.hinged.split.duplicateCutToleranceHeightRatio
+    )
+  );
   for (let i = 0; i < kept.length; i++) {
     const y = kept[i];
     const prev = out.length ? out[out.length - 1] : NaN;
@@ -37,30 +44,30 @@ export function computeBottomSplitLineY(
   splitGap: number
 ): number {
   try {
-    let storageLift = 0.5;
+    let storageLift = DOOR_SYSTEM_DIMENSIONS.hinged.split.storageLiftM;
     if (
       ctx.configRecord &&
       (ctx.configRecord.layout === 'storage' || ctx.configRecord.layout === 'storage_shelf')
     ) {
-      storageLift = 0.5;
+      storageLift = DOOR_SYSTEM_DIMENSIONS.hinged.split.storageLiftM;
     }
     if (
       ctx.configRecord.customData &&
       typeof ctx.configRecord.customData === 'object' &&
       'storage' in ctx.configRecord.customData
     ) {
-      storageLift = 0.5;
+      storageLift = DOOR_SYSTEM_DIMENSIONS.hinged.split.storageLiftM;
     }
     let y = ctx.effectiveBottomY + storageLift;
     if (ctx.doorBottomY > ctx.effectiveBottomY) {
       y += ctx.doorBottomY - ctx.effectiveBottomY + splitGap / 2;
     }
-    y = Math.max(y, ctx.doorBottomY + 0.08);
-    y = Math.min(y, ctx.effectiveTopLimit - 0.12);
+    y = Math.max(y, ctx.doorBottomY + DOOR_SYSTEM_DIMENSIONS.hinged.split.bottomClampOffsetM);
+    y = Math.min(y, ctx.effectiveTopLimit - DOOR_SYSTEM_DIMENSIONS.hinged.split.topClampOffsetM);
     return y;
   } catch (error) {
     ctx.reportDoorSoftOnce('computeBottomSplitLineY', error, { doorId: state.currentDoorId });
-    return ctx.doorBottomY + 0.5;
+    return ctx.doorBottomY + DOOR_SYSTEM_DIMENSIONS.hinged.split.storageLiftM;
   }
 }
 
@@ -74,8 +81,8 @@ export function computeTopSplitLineY(
     if (!Number.isFinite(n0)) return ctx.splitLineY;
     const topEdge = ctx.effectiveTopLimit;
     const height = topEdge - ctx.doorBottomY;
-    if (!(height > 0.2)) return ctx.splitLineY;
-    const padAbs = 0.12;
+    if (!(height > DOOR_SYSTEM_DIMENSIONS.hinged.split.minHeightForSplitM)) return ctx.splitLineY;
+    const padAbs = DOOR_SYSTEM_DIMENSIONS.hinged.split.topClampOffsetM;
     const y0 = ctx.doorBottomY + Math.max(0, Math.min(1, n0)) * height;
     return Math.max(ctx.doorBottomY + padAbs, Math.min(topEdge - padAbs, y0));
   } catch {
@@ -93,9 +100,9 @@ export function computeCustomSplitCutsY(
 
     const topEdge = ctx.effectiveTopLimit;
     const height = topEdge - ctx.doorBottomY;
-    if (!(height > 0.2)) return [];
+    if (!(height > DOOR_SYSTEM_DIMENSIONS.hinged.split.minHeightForSplitM)) return [];
 
-    const padAbs = 0.12;
+    const padAbs = DOOR_SYSTEM_DIMENSIONS.hinged.split.topClampOffsetM;
     const abs: number[] = [];
     for (let i = 0; i < norms.length; i++) {
       const raw = norms[i];

@@ -1,4 +1,8 @@
-import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  CORNER_WING_DIMENSIONS,
+  INTERIOR_FITTINGS_DIMENSIONS,
+  MATERIAL_DIMENSIONS,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { CornerCellCfg } from './corner_geometry_plan.js';
 import type {
   CornerWingInteriorCellRuntime,
@@ -69,9 +73,9 @@ export function createCornerWingInteriorShelfRuntime(
     return 'regular';
   };
 
-  const pinRadius = 0.0025;
-  const pinLen = 0.012;
-  const pinEdgeOffsetDefault = 0.04;
+  const pinRadius = INTERIOR_FITTINGS_DIMENSIONS.pins.radiusM;
+  const pinLen = INTERIOR_FITTINGS_DIMENSIONS.pins.lengthM;
+  const pinEdgeOffsetDefault = INTERIOR_FITTINGS_DIMENSIONS.pins.edgeOffsetDefaultM;
   let pinGeo: unknown | null = null;
   let pinMat: ReturnType<CornerWingInteriorRuntime['asRecord']> | null = null;
 
@@ -103,11 +107,11 @@ export function createCornerWingInteriorShelfRuntime(
     if (!ensurePinResources()) return;
 
     const shelfBottom = shelfY - shelfH / 2;
-    const yPin = shelfBottom - pinRadius + 0.0005;
+    const yPin = shelfBottom - pinRadius + INTERIOR_FITTINGS_DIMENSIONS.pins.bottomYOffsetM;
     const backEdge = shelfZ - shelfDepth / 2;
     const frontEdge = shelfZ + shelfDepth / 2;
-    const maxOff = shelfDepth / 2 - 0.02;
-    const edgeOff = Math.max(0.015, Math.min(pinEdgeOffsetDefault, maxOff));
+    const maxOff = shelfDepth / 2 - INTERIOR_FITTINGS_DIMENSIONS.pins.maxDepthSideClearanceM;
+    const edgeOff = Math.max(INTERIOR_FITTINGS_DIMENSIONS.pins.minEdgeOffsetM, Math.min(pinEdgeOffsetDefault, maxOff));
     const zBack = backEdge + edgeOff;
     const zFront = frontEdge - edgeOff;
 
@@ -172,7 +176,7 @@ function resolveCornerShelfContentsMaxHeight(
     }
   }
 
-  return Math.max(0, topLimitY - shelfTopY - 0.006);
+  return Math.max(0, topLimitY - shelfTopY - CORNER_WING_DIMENSIONS.interior.shelfContentsTopClearanceM);
 }
 
 export function addCornerWingGridShelf(
@@ -182,7 +186,7 @@ export function addCornerWingGridShelf(
 ): void {
   const { runtime, cfgCell, cellKey, cellShelfW, cellInnerCenterX, cellInnerW, __braceSet } = cellRuntime;
   const y = cellRuntime.effectiveBottomY + gridIndex * cellRuntime.localGridStep;
-  if (!(y < cellRuntime.effectiveTopY - 0.01)) return;
+  if (!(y < cellRuntime.effectiveTopY - CORNER_WING_DIMENSIONS.interior.shelfTopPlacementGuardM)) return;
 
   const shelfVariant = shelfRuntime.readCornerShelfVariant(cfgCell, gridIndex);
   const isBraceShelf = !!__braceSet[gridIndex] || shelfVariant === 'brace';
@@ -225,7 +229,10 @@ export function addCornerWingGridShelf(
       cellInnerCenterX,
       y + shelfH / 2,
       shelfZ,
-      Math.max(0.05, cellInnerW - 0.06),
+      Math.max(
+        CORNER_WING_DIMENSIONS.interior.foldedContentsMinWidthM,
+        cellInnerW - CORNER_WING_DIMENSIONS.interior.foldedContentsWidthClearanceM
+      ),
       runtime.wingGroup,
       resolveCornerShelfContentsMaxHeight(cellRuntime, shelfRuntime, gridIndex, y, shelfH),
       shelfDepth

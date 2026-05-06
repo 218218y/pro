@@ -1,3 +1,4 @@
+import { INTERIOR_FITTINGS_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type {
   CornerCell,
   CornerCellCfg,
@@ -55,14 +56,25 @@ function addCornerStorageBarrier(params: StorageBarrierParams): void {
     woodThick,
     __z,
   } = params;
-  const barrierHeight = 0.5;
+  const barrierHeight = INTERIOR_FITTINGS_DIMENSIONS.storage.barrierHeightM;
   const partId = `corner_storage_barrier_c${cell.idx}`;
   const barrierMat = getCornerMat(partId, bodyMat);
   const barrier = new THREE.Mesh(
-    new THREE.BoxGeometry(Math.max(0.05, cellW - 0.025), barrierHeight, woodThick),
+    new THREE.BoxGeometry(
+      Math.max(
+        INTERIOR_FITTINGS_DIMENSIONS.storage.barrierWidthMinM,
+        cellW - INTERIOR_FITTINGS_DIMENSIONS.storage.barrierWidthClearanceM
+      ),
+      barrierHeight,
+      woodThick
+    ),
     barrierMat
   );
-  barrier.position.set(cellCenterX, effectiveBottomY + barrierHeight / 2, __z(-0.06));
+  barrier.position.set(
+    cellCenterX,
+    effectiveBottomY + barrierHeight / 2,
+    __z(INTERIOR_FITTINGS_DIMENSIONS.storage.barrierFrontZOffsetM)
+  );
   barrier.userData = { partId, moduleIndex: cellKey };
   wingGroup.add(barrier);
 }
@@ -99,7 +111,7 @@ function applyCornerWingCustomLayout(params: CornerWingCellLayoutParams): void {
     }
 
     if (cfgCell.customData.rods[i - 1]) {
-      const rodY = effectiveBottomY + i * localGridStep - 0.08;
+      const rodY = effectiveBottomY + i * localGridStep + INTERIOR_FITTINGS_DIMENSIONS.rods.defaultYOffsetM;
       let limitHeight = null;
 
       for (let k = i - 1; k >= 1; k--) {
@@ -113,14 +125,14 @@ function applyCornerWingCustomLayout(params: CornerWingCellLayoutParams): void {
           break;
         }
         if (cfgCell.customData.rods[k - 1]) {
-          const rodBelowY = gridLineY - 0.08;
+          const rodBelowY = gridLineY + INTERIOR_FITTINGS_DIMENSIONS.rods.defaultYOffsetM;
           limitHeight = rodY - rodBelowY;
           break;
         }
       }
 
       if (limitHeight === null && cfgCell.customData.storage) {
-        const storageHeight = 0.5;
+        const storageHeight = INTERIOR_FITTINGS_DIMENSIONS.storage.barrierHeightM;
         const storageTopY = effectiveBottomY + storageHeight;
         if (rodY > storageTopY) limitHeight = rodY - storageTopY;
       }

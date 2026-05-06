@@ -1,3 +1,4 @@
+import { DOOR_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { createProfileDoorVisual } from './visuals_and_contents_door_visual_profile.js';
 import { createTomDoorVisual } from './visuals_and_contents_door_visual_tom.js';
 import { createMirrorDoorVisual } from './visuals_and_contents_door_visual_mirror.js';
@@ -73,9 +74,21 @@ function readPanelGeometry(value: Object3DLike): unknown {
 }
 
 function resolveMirrorDepthLayout(thickness: number): MirrorDepthLayout {
-  const baseDoorThick = Math.max(0.002, thickness);
-  const mirrorThick = Math.max(0.002, Math.min(0.004, baseDoorThick * 0.35));
-  const adhesiveGap = Math.max(0.0006, Math.min(0.0012, mirrorThick * 0.3));
+  const baseDoorThick = Math.max(DOOR_VISUAL_DIMENSIONS.mirror.doorThicknessMinM, thickness);
+  const mirrorThick = Math.max(
+    DOOR_VISUAL_DIMENSIONS.mirror.mirrorThicknessMinM,
+    Math.min(
+      DOOR_VISUAL_DIMENSIONS.mirror.mirrorThicknessMaxM,
+      baseDoorThick * DOOR_VISUAL_DIMENSIONS.mirror.mirrorThicknessDoorRatio
+    )
+  );
+  const adhesiveGap = Math.max(
+    DOOR_VISUAL_DIMENSIONS.mirror.adhesiveGapMinM,
+    Math.min(
+      DOOR_VISUAL_DIMENSIONS.mirror.adhesiveGapMaxM,
+      mirrorThick * DOOR_VISUAL_DIMENSIONS.mirror.adhesiveGapMirrorRatio
+    )
+  );
   return { mirrorThick, adhesiveGap };
 }
 
@@ -211,8 +224,8 @@ export function createStyledFullMirrorDoorVisual(args: CreateStyledMirrorDoorVis
   const layoutList = Array.isArray(args.mirrorLayout) && args.mirrorLayout.length ? args.mirrorLayout : [];
   const fullInsideLayouts = layoutList.filter(layout => readMirrorLayoutFaceSign(layout, args.zSign) === -1);
   const depthLayout = resolveMirrorDepthLayout(args.thickness);
-  const mirrorWidth = Math.max(0.02, args.w - FULL_MIRROR_INSET_M);
-  const mirrorHeight = Math.max(0.02, args.h - FULL_MIRROR_INSET_M);
+  const mirrorWidth = Math.max(DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM, args.w - FULL_MIRROR_INSET_M);
+  const mirrorHeight = Math.max(DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM, args.h - FULL_MIRROR_INSET_M);
 
   for (let i = 0; i < fullInsideLayouts.length; i += 1) {
     const mirrorMesh = new args.THREE.Mesh(
@@ -226,7 +239,11 @@ export function createStyledFullMirrorDoorVisual(args: CreateStyledMirrorDoorVis
     mirrorMesh.position.set(
       0,
       0,
-      -(Math.max(0.002, args.thickness) / 2 + depthLayout.adhesiveGap + depthLayout.mirrorThick / 2)
+      -(
+        Math.max(DOOR_VISUAL_DIMENSIONS.mirror.doorThicknessMinM, args.thickness) / 2 +
+        depthLayout.adhesiveGap +
+        depthLayout.mirrorThick / 2
+      )
     );
     visualGroup.add(mirrorMesh);
   }
