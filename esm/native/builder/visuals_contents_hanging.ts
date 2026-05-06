@@ -1,3 +1,4 @@
+import { CONTENT_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
   addVisualsContentsOutlines,
   ensureVisualsContentsApp,
@@ -24,7 +25,8 @@ export const addHangingClothes: AppAwareAddHangingClothesFn = (
   App = ensureVisualsContentsApp(App);
   const THREE = ensureVisualsContentsTHREE(App);
   const addOutlines = (mesh: unknown) => addVisualsContentsOutlines(mesh, App);
-  if (maxHeight < 0.5) return;
+  const dims = CONTENT_VISUAL_DIMENSIONS.hangingClothes;
+  if (maxHeight < dims.minAvailableHeightM) return;
 
   const buildUI = getVisualsContentsBuildUI(App);
   if (!resolveShowContents(buildUI, showContentsOverride)) return;
@@ -32,7 +34,7 @@ export const addHangingClothes: AppAwareAddHangingClothesFn = (
   const seedVal = Math.floor(rodX * 1000 + rodY * 1000 + rodZ * 1000 + width * 1000);
   seededRandom.setSeed(Math.abs(seedVal) + 1);
 
-  const count = Math.floor(width / 0.04);
+  const count = Math.floor(width / dims.spacingM);
   const currentStyle =
     typeof doorStyleOverride !== 'undefined' && doorStyleOverride !== null
       ? String(doorStyleOverride)
@@ -40,32 +42,38 @@ export const addHangingClothes: AppAwareAddHangingClothesFn = (
         ? String(buildUI.doorStyle)
         : '';
 
-  let baseClothDepth = 0.45;
-  if (currentStyle === 'profile' || currentStyle === 'tom') baseClothDepth = 0.38;
+  let baseClothDepth: number = dims.defaultDepthM;
+  if (currentStyle === 'profile' || currentStyle === 'tom') baseClothDepth = dims.framedDoorDepthM;
   if (typeof isRestrictedDepth === 'number' && Number.isFinite(isRestrictedDepth) && isRestrictedDepth > 0) {
-    baseClothDepth = Math.min(baseClothDepth, Math.max(0.12, isRestrictedDepth));
+    baseClothDepth = Math.min(baseClothDepth, Math.max(dims.restrictedDepthMinM, isRestrictedDepth));
   } else if (isRestrictedDepth) {
-    baseClothDepth = Math.min(baseClothDepth, 0.3);
+    baseClothDepth = Math.min(baseClothDepth, dims.restrictedDepthDefaultM);
   }
 
   for (let i = 0; i < count; i++) {
-    const xPos = rodX - width / 2 + i * 0.04 + 0.02;
+    const xPos = rodX - width / 2 + i * dims.spacingM + dims.xOffsetM;
 
-    const hangerGeo = new THREE.TorusGeometry(0.015, 0.002, 4, 12, Math.PI);
+    const hangerGeo = new THREE.TorusGeometry(
+      dims.hangerRadiusM,
+      dims.hangerTubeRadiusM,
+      dims.hangerRadialSegments,
+      dims.hangerTubularSegments,
+      Math.PI
+    );
     const hanger = new THREE.Mesh(
       hangerGeo,
       new THREE.MeshStandardMaterial({ color: 0xbdc3c7, metalness: 0.8, roughness: 0.2 })
     );
-    hanger.position.set(xPos, rodY + 0.01, rodZ);
+    hanger.position.set(xPos, rodY + dims.hangerYOffsetM, rodZ);
     parentGroup.add(hanger);
 
-    const isCoat = seededRandom.random() > 0.7;
-    let clothHeight = isCoat ? 1.1 : 0.7;
+    const isCoat = seededRandom.random() > dims.coatProbabilityThreshold;
+    let clothHeight = isCoat ? dims.coatHeightM : dims.shirtHeightM;
 
-    if (clothHeight > maxHeight - 0.05) clothHeight = maxHeight - 0.05;
-    if (clothHeight <= 0.1) continue;
+    if (clothHeight > maxHeight - dims.bottomClearanceM) clothHeight = maxHeight - dims.bottomClearanceM;
+    if (clothHeight <= dims.minRenderableHeightM) continue;
 
-    const clothWidth = 0.03;
+    const clothWidth = dims.clothWidthM;
     const clothGeo = new THREE.BoxGeometry(clothWidth, clothHeight, baseClothDepth);
     const clothMat = new THREE.MeshStandardMaterial({
       color: getRandomClothColor(),
@@ -73,8 +81,8 @@ export const addHangingClothes: AppAwareAddHangingClothesFn = (
       metalness: 0.0,
     });
     const cloth = new THREE.Mesh(clothGeo, clothMat);
-    cloth.position.set(xPos, rodY - clothHeight / 2 - 0.02, rodZ);
-    cloth.rotation.y = (seededRandom.random() - 0.5) * 0.15;
+    cloth.position.set(xPos, rodY - clothHeight / 2 - dims.clothYOffsetM, rodZ);
+    cloth.rotation.y = (seededRandom.random() - 0.5) * dims.clothRotationYRangeRad;
     addOutlines(cloth);
     parentGroup.add(cloth);
   }

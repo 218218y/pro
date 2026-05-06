@@ -1,3 +1,4 @@
+import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 export function resolveSketchFreeBoxOutsideWardrobeSnapX(args: {
   planeX: number;
   previewW: number;
@@ -22,7 +23,11 @@ export function resolveSketchFreeBoxOutsideWardrobeSnapX(args: {
   const wardrobeMinX = wardrobeCenterX - wardrobeWidth / 2;
   const wardrobeMaxX = wardrobeCenterX + wardrobeWidth / 2;
   const halfW = previewW / 2;
-  const wallBand = Math.max(0.008, Math.min(0.03, previewW * 0.08));
+  const dims = SKETCH_BOX_DIMENSIONS.freePlacement;
+  const wallBand = Math.max(
+    dims.wallSnapBandMinM,
+    Math.min(dims.wallSnapBandMaxM, previewW * dims.wallSnapBandWidthRatio)
+  );
 
   if (planeX <= wardrobeMinX + wallBand) return wardrobeMinX - halfW;
   if (planeX >= wardrobeMaxX - wallBand) return wardrobeMaxX + halfW;
@@ -62,9 +67,16 @@ export function isWithinSketchFreeBoxRemoveZone(args: {
   const dy = Math.abs(pointY - boxCenterY);
   if (dx > halfW || dy > halfH) return false;
 
-  const insetX = Math.min(halfW * 0.45, Math.max(0.008, Math.min(0.025, boxW * 0.08)));
-  const insetY = Math.min(halfH * 0.45, Math.max(0.008, Math.min(0.025, boxH * 0.08)));
-  const removeHalfW = Math.max(0.012, halfW - insetX);
-  const removeHalfH = Math.max(0.012, halfH - insetY);
+  const dims = SKETCH_BOX_DIMENSIONS.freePlacement;
+  const insetX = Math.min(
+    halfW * dims.removeInsetHalfRatioMax,
+    Math.max(dims.removeInsetMinM, Math.min(dims.removeInsetMaxM, boxW * dims.removeInsetRatio))
+  );
+  const insetY = Math.min(
+    halfH * dims.removeInsetHalfRatioMax,
+    Math.max(dims.removeInsetMinM, Math.min(dims.removeInsetMaxM, boxH * dims.removeInsetRatio))
+  );
+  const removeHalfW = Math.max(dims.removeHalfMinM, halfW - insetX);
+  const removeHalfH = Math.max(dims.removeHalfMinM, halfH - insetY);
   return dx <= removeHalfW && dy <= removeHalfH;
 }

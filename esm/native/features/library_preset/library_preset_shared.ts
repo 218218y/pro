@@ -1,6 +1,7 @@
 import type {
   DoorSpecialMap,
   ModuleConfigLike,
+  ModuleCustomDataLike,
   ModulesConfigurationLike,
   UnknownRecord,
 } from '../../../../types';
@@ -313,7 +314,7 @@ export function normalizePreservedLibraryModuleCfg(
   const gridDivisions = hasManualCustomGrid ? srcGridDivisions : templateGridDivisions;
   const preserveCustomGridData =
     hasManualCustomGrid || (hasExplicitSrcGridDivisions && srcGridDivisions === templateGridDivisions);
-  const customData: UnknownRecord = {
+  const customData: ModuleCustomDataLike = {
     ...templateCustom,
     ...srcCustom,
     shelves: normalizeBoolArrayAgainstLength(

@@ -1,3 +1,7 @@
+import {
+  INTERIOR_FITTINGS_DIMENSIONS,
+  SKETCH_BOX_DIMENSIONS,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { RenderSketchBoxStaticContentsArgs } from './render_interior_sketch_boxes_contents_parts_types.js';
 import type { SketchRodExtra } from './render_interior_sketch_shared.js';
 
@@ -22,7 +26,7 @@ export function renderSketchBoxContentRods(args: RenderSketchBoxStaticContentsAr
   for (let ri = 0; ri < boxRods.length; ri++) {
     const rod = boxRods[ri] || null;
     if (!rod) continue;
-    const rodY = yFromBoxNorm(rod.yNorm, 0.015);
+    const rodY = yFromBoxNorm(rod.yNorm, INTERIOR_FITTINGS_DIMENSIONS.rods.radiusM);
     if (rodY == null) continue;
     const rodSegment = resolveSketchBoxSegmentForContent({
       dividers: boxDividers,
@@ -31,10 +35,22 @@ export function renderSketchBoxContentRods(args: RenderSketchBoxStaticContentsAr
       woodThick,
       xNorm: rod.xNorm,
     });
-    const rodLen = Math.max(0.05, (rodSegment ? rodSegment.width : geometry.innerW) - 0.06);
+    const previewDims = SKETCH_BOX_DIMENSIONS.preview;
+    const rodLen = Math.max(
+      previewDims.rodMinLengthM,
+      (rodSegment ? rodSegment.width : geometry.innerW) - previewDims.rodWidthClearanceM
+    );
     const rodCenterX = rodSegment ? rodSegment.centerX : geometry.centerX;
     const rodPid = `${boxPid}_rod_${String(rod.id ?? ri)}`;
-    const rodMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, rodLen, 12), rodMat);
+    const rodMesh = new THREE.Mesh(
+      new THREE.CylinderGeometry(
+        INTERIOR_FITTINGS_DIMENSIONS.rods.radiusM,
+        INTERIOR_FITTINGS_DIMENSIONS.rods.radiusM,
+        rodLen,
+        12
+      ),
+      rodMat
+    );
     if (rodMesh.rotation) rodMesh.rotation.z = Math.PI / 2;
     rodMesh.position?.set?.(rodCenterX, rodY, geometry.innerBackZ + geometry.innerD / 2);
     rodMesh.userData = rodMesh.userData || {};

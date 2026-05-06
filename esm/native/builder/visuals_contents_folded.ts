@@ -1,3 +1,4 @@
+import { CONTENT_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
   addVisualsContentsOutlines,
   ensureVisualsContentsApp,
@@ -27,16 +28,24 @@ function addShelfBooks(args: {
 }): void {
   const { THREE, shelfX, shelfY, shelfZ, width, parentGroup, maxHeight, maxDepth, addOutlines, isSketch } =
     args;
-  const depthMargin = 0.018;
-  const sideMargin = 0.035;
-  const topSafety = 0.014;
-  const minBookHeight = 0.07;
-  const minStackHeight = 0.012;
+  const dims = CONTENT_VISUAL_DIMENSIONS.books;
+  const depthMargin = dims.depthMarginM;
+  const sideMargin = dims.sideMarginM;
+  const topSafety = dims.topSafetyM;
+  const minBookHeight = dims.minHeightM;
+  const minStackHeight = dims.minStackHeightM;
   const resolvedMaxDepth =
-    typeof maxDepth === 'number' && Number.isFinite(maxDepth) && maxDepth > 0 ? Number(maxDepth) : 0.38;
-  const bookDepth = Math.min(0.2, Math.max(0.08, resolvedMaxDepth - depthMargin * 2));
+    typeof maxDepth === 'number' && Number.isFinite(maxDepth) && maxDepth > 0
+      ? Number(maxDepth)
+      : dims.defaultMaxDepthM;
+  const bookDepth = Math.min(dims.depthMaxM, Math.max(dims.depthMinM, resolvedMaxDepth - depthMargin * 2));
   const availableHeight = Math.max(0, Number(maxHeight) - topSafety);
-  if (!(width > sideMargin * 2) || !(availableHeight >= minBookHeight) || !(bookDepth > 0.06)) return;
+  if (
+    !(width > sideMargin * 2) ||
+    !(availableHeight >= minBookHeight) ||
+    !(bookDepth > dims.depthViabilityMinM)
+  )
+    return;
 
   const backEdgeZ = shelfZ - resolvedMaxDepth / 2;
   const minZ = backEdgeZ + depthMargin + bookDepth / 2;
@@ -46,18 +55,21 @@ function addShelfBooks(args: {
   let cursorX = minX;
   let bookIndex = 0;
 
-  while (cursorX < maxX - 0.018 && bookIndex < 96) {
-    const bookWidth = 0.022 + seededRandom.random() * 0.026;
-    const gap = 0.003 + seededRandom.random() * 0.006;
+  while (cursorX < maxX - dims.cursorEndGapM && bookIndex < dims.maxCount) {
+    const bookWidth = dims.widthBaseM + seededRandom.random() * dims.widthRandomRangeM;
+    const gap = dims.gapBaseM + seededRandom.random() * dims.gapRandomRangeM;
     const remaining = maxX - cursorX;
-    if (remaining < 0.018) break;
+    if (remaining < dims.cursorEndGapM) break;
     const actualW = Math.min(bookWidth, remaining);
-    const bookAngleZ = (seededRandom.random() - 0.5) * 0.045;
-    const angleCos = Math.max(0.001, Math.abs(Math.cos(bookAngleZ)));
+    const bookAngleZ = (seededRandom.random() - 0.5) * dims.tiltZRangeRad;
+    const angleCos = Math.max(dims.angleCosMin, Math.abs(Math.cos(bookAngleZ)));
     const angleSin = Math.abs(Math.sin(bookAngleZ));
     const maxRotatedBookHeight = Math.max(0, (availableHeight - actualW * angleSin) / angleCos);
-    const bookHeight = Math.min(maxRotatedBookHeight, 0.16 + seededRandom.random() * 0.18);
-    if (!(actualW > 0.01) || !(bookHeight >= minBookHeight)) break;
+    const bookHeight = Math.min(
+      maxRotatedBookHeight,
+      dims.heightBaseM + seededRandom.random() * dims.heightRandomRangeM
+    );
+    if (!(actualW > dims.widthMinM) || !(bookHeight >= minBookHeight)) break;
     const rotatedBookHeight = bookHeight * angleCos + actualW * angleSin;
 
     const geometry = new THREE.BoxGeometry(actualW, bookHeight, bookDepth);
@@ -74,18 +86,21 @@ function addShelfBooks(args: {
     if (isSketch) addOutlines(book);
     parentGroup.add?.(book);
 
-    if (seededRandom.random() > 0.78 && cursorX + actualW + 0.04 < maxX) {
+    if (seededRandom.random() > 0.78 && cursorX + actualW + dims.stackLookaheadM < maxX) {
       const maxStackTopY = shelfY + availableHeight;
       let stackY = shelfY;
-      for (let s = 0; s < 3; s += 1) {
-        const stackW = Math.min(0.07 + seededRandom.random() * 0.035, maxX - cursorX - actualW - 0.012);
-        if (!(stackW > 0.035)) break;
-        const stackH = 0.014 + seededRandom.random() * 0.008;
+      for (let s = 0; s < dims.stackMaxItems; s += 1) {
+        const stackW = Math.min(
+          dims.stackWidthBaseM + seededRandom.random() * dims.stackWidthRandomRangeM,
+          maxX - cursorX - actualW - dims.stackTrailingGapM
+        );
+        if (!(stackW > dims.stackWidthMinM)) break;
+        const stackH = dims.stackHeightBaseM + seededRandom.random() * dims.stackHeightRandomRangeM;
         if (stackY + stackH > maxStackTopY || stackH < minStackHeight) break;
         const stackGeo = new THREE.BoxGeometry(
           stackW,
           stackH,
-          bookDepth * (0.88 + seededRandom.random() * 0.12)
+          bookDepth * (dims.stackDepthScaleBase + seededRandom.random() * dims.stackDepthScaleRange)
         );
         const stackMat = new THREE.MeshStandardMaterial({
           color: getRandomBookColor(),
@@ -93,15 +108,19 @@ function addShelfBooks(args: {
           metalness: 0.0,
         });
         const stackedBook = new THREE.Mesh(stackGeo, stackMat);
-        stackedBook.position.set(cursorX + actualW + 0.014 + stackW / 2, stackY + stackH / 2, rowZ);
-        stackedBook.rotation.y = (seededRandom.random() - 0.5) * 0.04;
+        stackedBook.position.set(
+          cursorX + actualW + dims.stackXOffsetM + stackW / 2,
+          stackY + stackH / 2,
+          rowZ
+        );
+        stackedBook.rotation.y = (seededRandom.random() - 0.5) * dims.stackTiltYRangeRad;
         stackedBook.userData = stackedBook.userData || {};
         stackedBook.userData.__kind = 'library_book_stack';
         if (isSketch) addOutlines(stackedBook);
         parentGroup.add?.(stackedBook);
         stackY += stackH;
       }
-      cursorX += actualW + 0.035 + gap;
+      cursorX += actualW + dims.stackCursorAdvanceM + gap;
     } else {
       cursorX += actualW + gap;
     }
@@ -123,7 +142,9 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
   const THREE = ensureVisualsContentsTHREE(App);
   const addOutlines = (mesh: unknown) => addVisualsContentsOutlines(mesh, App);
   const isSketch = readVisualsContentsSketchMode(App);
-  if (typeof maxHeight === 'undefined' || maxHeight === null) maxHeight = 0.5;
+  if (typeof maxHeight === 'undefined' || maxHeight === null) {
+    maxHeight = CONTENT_VISUAL_DIMENSIONS.foldedClothes.defaultMaxHeightM;
+  }
 
   const buildUI = getVisualsContentsBuildUI(App);
   if (!resolveShowContents(buildUI)) return;
@@ -147,14 +168,15 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
     return;
   }
 
-  const baseItemDepth = 0.36;
-  const depthMargin = 0.015;
+  const dims = CONTENT_VISUAL_DIMENSIONS.foldedClothes;
+  const baseItemDepth = dims.baseItemDepthM;
+  const depthMargin = dims.depthMarginM;
   const resolvedMaxDepth =
     typeof maxDepth === 'number' && Number.isFinite(maxDepth) && maxDepth > 0 ? Number(maxDepth) : null;
   const maxItemDepth =
     resolvedMaxDepth != null ? Math.max(0, resolvedMaxDepth - depthMargin * 2) : baseItemDepth;
   const itemDepth = resolvedMaxDepth != null ? Math.min(baseItemDepth, maxItemDepth) : baseItemDepth;
-  if (resolvedMaxDepth != null && itemDepth < 0.12) return;
+  if (resolvedMaxDepth != null && itemDepth < dims.minItemDepthM) return;
 
   const backEdgeZ = resolvedMaxDepth != null ? shelfZ - resolvedMaxDepth / 2 : null;
   const frontEdgeZ = resolvedMaxDepth != null ? shelfZ + resolvedMaxDepth / 2 : null;
@@ -163,32 +185,33 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
     resolvedMaxDepth != null && frontEdgeZ != null ? frontEdgeZ - depthMargin - itemDepth / 2 : null;
   const clamp = (value: number, a: number, b: number) => (value < a ? a : value > b ? b : value);
   const zRoom = resolvedMaxDepth != null && maxZ != null && minZ != null ? Math.max(0, maxZ - minZ) : 0;
-  const zSpread = resolvedMaxDepth != null ? Math.min(0.015, zRoom * 0.35) : 0.015;
+  const zSpread =
+    resolvedMaxDepth != null ? Math.min(dims.zSpreadMaxM, zRoom * dims.zSpreadRatio) : dims.zSpreadMaxM;
 
-  const itemHeight = 0.025;
-  const maxItemsAllowed = Math.floor((maxHeight - 0.03) / itemHeight);
-  const stacks = Math.floor(width / 0.3);
+  const itemHeight = dims.itemHeightM;
+  const maxItemsAllowed = Math.floor((maxHeight - dims.heightHeadroomM) / itemHeight);
+  const stacks = Math.floor(width / dims.stackPitchM);
 
   for (let i = 0; i < stacks; i++) {
-    const xPos = shelfX - width / 2 + 0.15 + i * 0.3;
-    let itemsInStack = Math.floor(seededRandom.random() * 4) + 4;
+    const xPos = shelfX - width / 2 + dims.stackXInsetM + i * dims.stackPitchM;
+    let itemsInStack = Math.floor(seededRandom.random() * dims.randomItemsRange) + dims.stackBaseItems;
     if (itemsInStack > maxItemsAllowed) itemsInStack = maxItemsAllowed;
-    if (itemsInStack < 1 && maxHeight > 0.06) itemsInStack = 1;
+    if (itemsInStack < 1 && maxHeight > dims.minHeightForSingleItemM) itemsInStack = 1;
     if (itemsInStack < 0) itemsInStack = 0;
 
     let currentY = shelfY;
     for (let j = 0; j < itemsInStack; j++) {
-      const itemWidth = 0.26;
+      const itemWidth = dims.itemWidthM;
       const geometry =
         typeof THREE.RoundedBoxGeometry !== 'undefined'
-          ? new THREE.RoundedBoxGeometry(itemWidth, itemHeight, itemDepth, 4, 0.008)
+          ? new THREE.RoundedBoxGeometry(itemWidth, itemHeight, itemDepth, 4, dims.cornerRadiusM)
           : new THREE.BoxGeometry(itemWidth, itemHeight, itemDepth);
       const item = new THREE.Mesh(
         geometry,
         new THREE.MeshStandardMaterial({ color: getRandomClothColor(), roughness: 0.9, flatShading: false })
       );
 
-      const randomOffsetX = (seededRandom.random() - 0.5) * 0.015;
+      const randomOffsetX = (seededRandom.random() - 0.5) * dims.randomOffsetXM;
       const randomOffsetZ = (seededRandom.random() - 0.5) * zSpread;
       let zPos = shelfZ + randomOffsetZ;
       if (resolvedMaxDepth != null && minZ != null && maxZ != null) {
@@ -197,7 +220,7 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
       }
 
       item.position.set(xPos + randomOffsetX, currentY + itemHeight / 2, zPos);
-      item.rotation.y = (seededRandom.random() - 0.5) * 0.08;
+      item.rotation.y = (seededRandom.random() - 0.5) * dims.rotationYRangeRad;
       if (isSketch) addOutlines(item);
       parentGroup.add(item);
       currentY += itemHeight;

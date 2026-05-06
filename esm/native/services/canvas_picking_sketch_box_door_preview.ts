@@ -1,3 +1,4 @@
+import { MATERIAL_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { UnknownRecord } from '../../../types';
 import type {
   ResolveSketchBoxSegmentsArgs,
@@ -60,7 +61,7 @@ function isFiniteNumber(value: unknown): value is number {
 }
 
 function clampWoodThick(value: number): number {
-  return isFiniteNumber(value) && value > 0 ? value : 0.018;
+  return isFiniteNumber(value) && value > 0 ? value : MATERIAL_DIMENSIONS.wood.thicknessM;
 }
 
 function pickDoorPlacementByHinge(
@@ -142,6 +143,7 @@ export function resolveSketchBoxDoorPreview(
       : contentKind === 'door' && hasDoor
         ? 'remove'
         : 'add';
+  const previewDims = SKETCH_BOX_DIMENSIONS.preview;
   const contentXNorm = doorSegment ? doorSegment.xNorm : 0.5;
   const doorId = contentKind === 'double_door' ? '' : existingDoor ? String(existingDoor.door.id || '') : '';
 
@@ -149,18 +151,25 @@ export function resolveSketchBoxDoorPreview(
   const innerRight = targetGeo.centerX + targetGeo.innerW / 2;
   const segmentLeft = doorSegment ? doorSegment.leftX : innerLeft;
   const segmentRight = doorSegment ? doorSegment.rightX : innerRight;
-  const leftExt = Math.abs(segmentLeft - innerLeft) <= 0.001 ? safeWoodThick : safeWoodThick / 2;
-  const rightExt = Math.abs(segmentRight - innerRight) <= 0.001 ? safeWoodThick : safeWoodThick / 2;
+  const leftExt =
+    Math.abs(segmentLeft - innerLeft) <= previewDims.doorEdgeEpsilonM ? safeWoodThick : safeWoodThick / 2;
+  const rightExt =
+    Math.abs(segmentRight - innerRight) <= previewDims.doorEdgeEpsilonM ? safeWoodThick : safeWoodThick / 2;
   const doorLeft = segmentLeft - leftExt;
   const doorRight = segmentRight + rightExt;
-  const doorDepth = Math.max(0.0001, safeWoodThick);
+  const doorDepth = Math.max(previewDims.doorMinDepthM, safeWoodThick);
   const doorFrontZ = targetGeo.centerZ + targetGeo.outerD / 2;
-  const doorBackClearanceZ = Math.max(0.0008, Math.min(0.0015, doorDepth * 0.1));
+  const doorBackClearanceZ = Math.max(
+    previewDims.doorBackClearanceMinM,
+    Math.min(previewDims.doorBackClearanceMaxM, doorDepth * previewDims.doorBackClearanceDepthRatio)
+  );
   const renderedDoorCenterZ = doorFrontZ + doorDepth / 2 + doorBackClearanceZ;
   const renderedDoorFrontZ = renderedDoorCenterZ + doorDepth / 2;
   const previewDoorZ =
     op === 'remove' || contentKind === 'door_hinge'
-      ? renderedDoorFrontZ + doorDepth / 2 + Math.max(0.002, safeWoodThick * 0.12)
+      ? renderedDoorFrontZ +
+        doorDepth / 2 +
+        Math.max(previewDims.doorRemoveOffsetMinM, safeWoodThick * previewDims.doorRemoveOffsetWoodRatio)
       : renderedDoorCenterZ;
 
   return {
@@ -181,8 +190,8 @@ export function resolveSketchBoxDoorPreview(
       x: (doorLeft + doorRight) / 2,
       y: targetCenterY,
       z: previewDoorZ,
-      w: Math.max(0.05, doorRight - doorLeft - 0.004),
-      h: Math.max(0.05, targetHeight - 0.004),
+      w: Math.max(previewDims.doorMinDimensionM, doorRight - doorLeft - previewDims.doorPreviewClearanceM),
+      h: Math.max(previewDims.doorMinDimensionM, targetHeight - previewDims.doorPreviewClearanceM),
       d: doorDepth,
       woodThick: safeWoodThick,
       op,

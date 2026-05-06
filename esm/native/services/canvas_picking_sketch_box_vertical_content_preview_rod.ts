@@ -1,3 +1,7 @@
+import {
+  INTERIOR_FITTINGS_DIMENSIONS,
+  SKETCH_BOX_DIMENSIONS,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { createManualLayoutSketchBoxContentHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import type {
   ResolveSketchBoxVerticalContentPreviewArgs,
@@ -24,7 +28,7 @@ export function resolveSketchBoxRodPreview(
     targetBox,
     pointerY,
     woodThick,
-    removeEpsShelf = 0.02,
+    removeEpsShelf = SKETCH_BOX_DIMENSIONS.preview.removeEpsShelfM,
     pickSketchBoxSegment,
   } = args;
   const {
@@ -37,7 +41,9 @@ export function resolveSketchBoxRodPreview(
     targetHeight,
   } = state;
 
-  let previewY = clampBoxCenterY(pointerY, 0.015);
+  const previewDims = SKETCH_BOX_DIMENSIONS.preview;
+  const rodRadius = INTERIOR_FITTINGS_DIMENSIONS.rods.radiusM;
+  let previewY = clampBoxCenterY(pointerY, rodRadius);
   let previewSegment: SketchBoxSegmentLike | null = activeSegment;
   let op: 'add' | 'remove' = 'add';
   let removeId: string | null = null;
@@ -61,7 +67,7 @@ export function resolveSketchBoxRodPreview(
           })
         : null;
     if (activeSegment && itemSegment && itemSegment.index !== activeSegment.index) continue;
-    const yAbs = clampBoxCenterY(targetCenterY - targetHeight / 2 + clampUnit(n) * targetHeight, 0.015);
+    const yAbs = clampBoxCenterY(targetCenterY - targetHeight / 2 + clampUnit(n) * targetHeight, rodRadius);
     const dy = Math.abs(previewY - yAbs);
     if (dy < bestDy) {
       bestDy = dy;
@@ -99,9 +105,9 @@ export function resolveSketchBoxRodPreview(
       x: rodCenterX,
       y: previewY,
       z: targetGeo.innerBackZ + targetGeo.innerD / 2,
-      w: Math.max(0.05, rodWidth - 0.06),
-      h: 0.03,
-      d: 0.03,
+      w: Math.max(previewDims.rodMinLengthM, rodWidth - previewDims.rodWidthClearanceM),
+      h: previewDims.rodPreviewHeightM,
+      d: previewDims.rodPreviewDepthM,
       woodThick,
       op,
     },

@@ -1,3 +1,4 @@
+import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { asNumberOrNull } from './canvas_picking_sketch_free_box_contracts.js';
 
 export function clampSketchFreeBoxCenterY(args: {
@@ -28,12 +29,16 @@ export function clampSketchFreeBoxCenterY(args: {
 
 export function getSketchFreePlacementVerticalSlack(wardrobeHeight: number): number {
   const height = Number(wardrobeHeight);
-  if (!Number.isFinite(height) || !(height > 0)) return 0.45;
-  return Math.max(0.45, Math.min(1.35, height * 0.75));
+  const dims = SKETCH_BOX_DIMENSIONS.freePlacement;
+  if (!Number.isFinite(height) || !(height > 0)) return dims.verticalSlackDefaultM;
+  return Math.max(
+    dims.verticalSlackMinM,
+    Math.min(dims.verticalSlackMaxM, height * dims.verticalSlackHeightRatio)
+  );
 }
 
 export function getSketchFreePlacementRoomFloorY(): number {
-  return 0;
+  return SKETCH_BOX_DIMENSIONS.freePlacement.roomFloorY;
 }
 
 export function clampSketchFreeBoxCenterYToWorkspace(args: {

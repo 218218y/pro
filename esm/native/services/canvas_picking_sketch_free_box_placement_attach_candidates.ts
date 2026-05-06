@@ -1,3 +1,4 @@
+import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
   addSketchFreeAttachIntentBias,
   resolveSketchFreeAttachIntent,
@@ -52,10 +53,17 @@ export function resolveSketchFreeBoxAttachPlacementCandidates(args: {
   const dx = pointX - targetCenterX;
   const dy = pointY - targetCenterY;
 
-  const padX = Math.max(0.03, Math.min(0.14, Math.max(targetW, previewW) * 0.18));
-  const padY = Math.max(0.03, Math.min(0.14, Math.max(targetH, previewH) * 0.18));
-  const edgeX = Math.min(targetHalfW, Math.max(0.02, targetHalfW * 0.45));
-  const edgeY = Math.min(targetHalfH, Math.max(0.02, targetHalfH * 0.45));
+  const dims = SKETCH_BOX_DIMENSIONS.freePlacement;
+  const padX = Math.max(
+    dims.attachPadMinM,
+    Math.min(dims.attachPadMaxM, Math.max(targetW, previewW) * dims.attachPadSizeRatio)
+  );
+  const padY = Math.max(
+    dims.attachPadMinM,
+    Math.min(dims.attachPadMaxM, Math.max(targetH, previewH) * dims.attachPadSizeRatio)
+  );
+  const edgeX = Math.min(targetHalfW, Math.max(dims.attachEdgeMinM, targetHalfW * dims.attachEdgeHalfRatio));
+  const edgeY = Math.min(targetHalfH, Math.max(dims.attachEdgeMinM, targetHalfH * dims.attachEdgeHalfRatio));
 
   const horizontalAlign = resolveSketchFreeSoftAttachAxisCenter({
     rawCenter: pointY,

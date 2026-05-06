@@ -1,13 +1,36 @@
+import {
+  DEFAULT_CHEST_DRAWERS_COUNT,
+  DEFAULT_CORNER_DOORS,
+  DEFAULT_CORNER_WIDTH,
+  DEFAULT_HEIGHT,
+  DEFAULT_HINGED_DOORS,
+  HINGED_DEFAULT_DEPTH,
+  LIBRARY_PRESET_DIMENSIONS,
+  resolveAutoWidthForDoors,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
+
+const DEFAULT_HINGED_DOORS_TEXT = String(DEFAULT_HINGED_DOORS);
+const DEFAULT_WIDTH_TEXT = String(resolveAutoWidthForDoors('hinged', DEFAULT_HINGED_DOORS));
+const DEFAULT_HEIGHT_TEXT = String(DEFAULT_HEIGHT);
+const HINGED_DEPTH_TEXT = String(HINGED_DEFAULT_DEPTH);
+const DEFAULT_CORNER_WIDTH_TEXT = String(DEFAULT_CORNER_WIDTH);
+const DEFAULT_CORNER_DOORS_TEXT = String(DEFAULT_CORNER_DOORS);
+const DEFAULT_CHEST_DRAWERS_TEXT = String(DEFAULT_CHEST_DRAWERS_COUNT);
+const SIX_DOOR_PRESET_DOORS_TEXT = String(LIBRARY_PRESET_DIMENSIONS.defaultDoorsCount);
+const SIX_DOOR_PRESET_WIDTH_TEXT = String(
+  resolveAutoWidthForDoors('hinged', LIBRARY_PRESET_DIMENSIONS.defaultDoorsCount)
+);
+
 export const PRESET_MODELS_RAW = [
   {
     id: 'model_1765891752929',
     name: '⭐ 017)',
     isPreset: true,
     settings: {
-      doors: '4',
-      width: '160',
-      height: '240',
-      depth: '55',
+      doors: DEFAULT_HINGED_DOORS_TEXT,
+      width: DEFAULT_WIDTH_TEXT,
+      height: DEFAULT_HEIGHT_TEXT,
+      depth: HINGED_DEPTH_TEXT,
       baseType: 'plinth',
       doorStyle: 'flat',
       color: '#ffffff',
@@ -16,10 +39,10 @@ export const PRESET_MODELS_RAW = [
       isManualWidth: false,
       singleDoorPos: 'left',
       globalHandleType: 'edge',
-      cornerWidth: '120',
-      cornerDoors: '3',
-      cornerHeight: '240',
-      cornerDepth: '55',
+      cornerWidth: DEFAULT_CORNER_WIDTH_TEXT,
+      cornerDoors: DEFAULT_CORNER_DOORS_TEXT,
+      cornerHeight: DEFAULT_HEIGHT_TEXT,
+      cornerDepth: HINGED_DEPTH_TEXT,
     },
     toggles: {
       sketchMode: false,
@@ -33,14 +56,14 @@ export const PRESET_MODELS_RAW = [
       cornerMode: false,
       removeDoors: false,
     },
-    chestSettings: { drawersCount: '4', bodyColor: '#ffffff' },
+    chestSettings: { drawersCount: DEFAULT_CHEST_DRAWERS_TEXT, bodyColor: '#ffffff' },
     modulesConfiguration: [
       {
         layout: 'hanging_top2',
         extDrawersCount: 0,
         hasShoeDrawer: false,
         intDrawersSlot: 0,
-        doors: 2,
+        doors: LIBRARY_PRESET_DIMENSIONS.defaultModuleDoorsCount,
         isCustom: false,
         customData: {
           shelves: [false, false, false, false, false, false],
@@ -53,7 +76,7 @@ export const PRESET_MODELS_RAW = [
         extDrawersCount: 4,
         hasShoeDrawer: false,
         intDrawersSlot: 0,
-        doors: 2,
+        doors: LIBRARY_PRESET_DIMENSIONS.defaultModuleDoorsCount,
         isCustom: true,
         customData: {
           shelves: [true, true, false, true, false, false],
@@ -91,10 +114,10 @@ export const PRESET_MODELS_RAW = [
     name: '⭐ 08 שמאל',
     isPreset: true,
     settings: {
-      doors: '4',
-      width: '160',
-      height: '240',
-      depth: '55',
+      doors: DEFAULT_HINGED_DOORS_TEXT,
+      width: DEFAULT_WIDTH_TEXT,
+      height: DEFAULT_HEIGHT_TEXT,
+      depth: HINGED_DEPTH_TEXT,
       baseType: 'plinth',
       doorStyle: 'flat',
       color: '#ffffff',
@@ -103,10 +126,10 @@ export const PRESET_MODELS_RAW = [
       isManualWidth: false,
       singleDoorPos: 'left',
       globalHandleType: 'edge',
-      cornerWidth: '120',
-      cornerDoors: '3',
-      cornerHeight: '240',
-      cornerDepth: '55',
+      cornerWidth: DEFAULT_CORNER_WIDTH_TEXT,
+      cornerDoors: DEFAULT_CORNER_DOORS_TEXT,
+      cornerHeight: DEFAULT_HEIGHT_TEXT,
+      cornerDepth: HINGED_DEPTH_TEXT,
     },
     toggles: {
       sketchMode: false,
@@ -120,14 +143,14 @@ export const PRESET_MODELS_RAW = [
       cornerMode: false,
       removeDoors: false,
     },
-    chestSettings: { drawersCount: '4', bodyColor: '#ffffff' },
+    chestSettings: { drawersCount: DEFAULT_CHEST_DRAWERS_TEXT, bodyColor: '#ffffff' },
     modulesConfiguration: [
       {
         layout: 'shelves',
         extDrawersCount: 4,
         hasShoeDrawer: false,
         intDrawersSlot: 0,
-        doors: 2,
+        doors: LIBRARY_PRESET_DIMENSIONS.defaultModuleDoorsCount,
         isCustom: false,
         customData: {
           shelves: [false, false, true, true, false, false],
@@ -141,7 +164,7 @@ export const PRESET_MODELS_RAW = [
         extDrawersCount: 0,
         hasShoeDrawer: false,
         intDrawersSlot: 0,
-        doors: 2,
+        doors: LIBRARY_PRESET_DIMENSIONS.defaultModuleDoorsCount,
         isCustom: false,
         customData: {
           shelves: [true, true, false, true, false, false],
@@ -179,10 +202,10 @@ export const PRESET_MODELS_RAW = [
     name: '⭐ 017 שמאל',
     isPreset: true,
     settings: {
-      doors: '4',
-      width: '160',
-      height: '240',
-      depth: '55',
+      doors: DEFAULT_HINGED_DOORS_TEXT,
+      width: DEFAULT_WIDTH_TEXT,
+      height: DEFAULT_HEIGHT_TEXT,
+      depth: HINGED_DEPTH_TEXT,
       baseType: 'plinth',
       doorStyle: 'flat',
       color: '#ffffff',
@@ -191,10 +214,10 @@ export const PRESET_MODELS_RAW = [
       isManualWidth: false,
       singleDoorPos: 'left',
       globalHandleType: 'edge',
-      cornerWidth: '120',
-      cornerDoors: '3',
-      cornerHeight: '240',
-      cornerDepth: '55',
+      cornerWidth: DEFAULT_CORNER_WIDTH_TEXT,
+      cornerDoors: DEFAULT_CORNER_DOORS_TEXT,
+      cornerHeight: DEFAULT_HEIGHT_TEXT,
+      cornerDepth: HINGED_DEPTH_TEXT,
     },
     toggles: {
       sketchMode: false,
@@ -208,14 +231,14 @@ export const PRESET_MODELS_RAW = [
       cornerMode: false,
       removeDoors: false,
     },
-    chestSettings: { drawersCount: '4', bodyColor: '#ffffff' },
+    chestSettings: { drawersCount: DEFAULT_CHEST_DRAWERS_TEXT, bodyColor: '#ffffff' },
     modulesConfiguration: [
       {
         layout: 'hanging_top2',
         extDrawersCount: 4,
         hasShoeDrawer: false,
         intDrawersSlot: 0,
-        doors: 2,
+        doors: LIBRARY_PRESET_DIMENSIONS.defaultModuleDoorsCount,
         isCustom: false,
         customData: {
           shelves: [false, false, false, false, false, false],
@@ -228,7 +251,7 @@ export const PRESET_MODELS_RAW = [
         extDrawersCount: 0,
         hasShoeDrawer: false,
         intDrawersSlot: 0,
-        doors: 2,
+        doors: LIBRARY_PRESET_DIMENSIONS.defaultModuleDoorsCount,
         isCustom: true,
         customData: {
           shelves: [true, true, false, true, false, false],
@@ -265,10 +288,10 @@ export const PRESET_MODELS_RAW = [
     name: '⭐ 08 ימין',
     isPreset: true,
     settings: {
-      doors: '4',
-      width: '160',
-      height: '240',
-      depth: '55',
+      doors: DEFAULT_HINGED_DOORS_TEXT,
+      width: DEFAULT_WIDTH_TEXT,
+      height: DEFAULT_HEIGHT_TEXT,
+      depth: HINGED_DEPTH_TEXT,
       baseType: 'plinth',
       doorStyle: 'flat',
       color: '#ffffff',
@@ -277,10 +300,10 @@ export const PRESET_MODELS_RAW = [
       isManualWidth: false,
       singleDoorPos: 'left',
       globalHandleType: 'edge',
-      cornerWidth: '120',
-      cornerDoors: '3',
-      cornerHeight: '240',
-      cornerDepth: '55',
+      cornerWidth: DEFAULT_CORNER_WIDTH_TEXT,
+      cornerDoors: DEFAULT_CORNER_DOORS_TEXT,
+      cornerHeight: DEFAULT_HEIGHT_TEXT,
+      cornerDepth: HINGED_DEPTH_TEXT,
     },
     toggles: {
       sketchMode: false,
@@ -294,14 +317,14 @@ export const PRESET_MODELS_RAW = [
       cornerMode: false,
       removeDoors: false,
     },
-    chestSettings: { drawersCount: '4', bodyColor: '#ffffff' },
+    chestSettings: { drawersCount: DEFAULT_CHEST_DRAWERS_TEXT, bodyColor: '#ffffff' },
     modulesConfiguration: [
       {
         layout: 'hanging_top2',
         extDrawersCount: 0,
         hasShoeDrawer: false,
         intDrawersSlot: 0,
-        doors: 2,
+        doors: LIBRARY_PRESET_DIMENSIONS.defaultModuleDoorsCount,
         isCustom: false,
         customData: {
           shelves: [false, false, false, false, false, false],
@@ -314,7 +337,7 @@ export const PRESET_MODELS_RAW = [
         extDrawersCount: 4,
         hasShoeDrawer: false,
         intDrawersSlot: 0,
-        doors: 2,
+        doors: LIBRARY_PRESET_DIMENSIONS.defaultModuleDoorsCount,
         isCustom: true,
         customData: {
           shelves: [true, true, false, true, false, false],
@@ -351,10 +374,10 @@ export const PRESET_MODELS_RAW = [
     name: '⭐ 012 6 דלתות',
     isPreset: true,
     settings: {
-      doors: '6',
-      width: '240',
-      height: '240',
-      depth: '55',
+      doors: SIX_DOOR_PRESET_DOORS_TEXT,
+      width: SIX_DOOR_PRESET_WIDTH_TEXT,
+      height: DEFAULT_HEIGHT_TEXT,
+      depth: HINGED_DEPTH_TEXT,
       baseType: 'none',
       doorStyle: 'flat',
       color: '#ffffff',
@@ -363,10 +386,10 @@ export const PRESET_MODELS_RAW = [
       isManualWidth: false,
       singleDoorPos: 'left',
       globalHandleType: 'edge',
-      cornerWidth: '120',
-      cornerDoors: '3',
-      cornerHeight: '240',
-      cornerDepth: '55',
+      cornerWidth: DEFAULT_CORNER_WIDTH_TEXT,
+      cornerDoors: DEFAULT_CORNER_DOORS_TEXT,
+      cornerHeight: DEFAULT_HEIGHT_TEXT,
+      cornerDepth: HINGED_DEPTH_TEXT,
     },
     toggles: {
       sketchMode: false,
@@ -380,14 +403,14 @@ export const PRESET_MODELS_RAW = [
       cornerMode: false,
       removeDoors: false,
     },
-    chestSettings: { drawersCount: '4', bodyColor: '#ffffff' },
+    chestSettings: { drawersCount: DEFAULT_CHEST_DRAWERS_TEXT, bodyColor: '#ffffff' },
     modulesConfiguration: [
       {
         layout: 'hanging_top2',
         extDrawersCount: 0,
         hasShoeDrawer: true,
         intDrawersSlot: 0,
-        doors: 2,
+        doors: LIBRARY_PRESET_DIMENSIONS.defaultModuleDoorsCount,
         isCustom: false,
         customData: {
           shelves: [false, false, false, false, false, false],
@@ -400,7 +423,7 @@ export const PRESET_MODELS_RAW = [
         extDrawersCount: 0,
         hasShoeDrawer: true,
         intDrawersSlot: 0,
-        doors: 2,
+        doors: LIBRARY_PRESET_DIMENSIONS.defaultModuleDoorsCount,
         isCustom: false,
         customData: {
           shelves: [false, false, false, false, false, false],
@@ -413,7 +436,7 @@ export const PRESET_MODELS_RAW = [
         extDrawersCount: 0,
         hasShoeDrawer: true,
         intDrawersSlot: 0,
-        doors: 2,
+        doors: LIBRARY_PRESET_DIMENSIONS.defaultModuleDoorsCount,
         isCustom: false,
         customData: {
           shelves: [false, false, false, false, false, false],

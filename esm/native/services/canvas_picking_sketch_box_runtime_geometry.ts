@@ -1,3 +1,4 @@
+import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { readSketchBoxFiniteNumber } from './canvas_picking_sketch_box_runtime_shared.js';
 
 export function resolveSketchBoxGeometry(args: {
@@ -34,11 +35,12 @@ export function resolveSketchBoxGeometry(args: {
   const centerXHint = args.centerXHint;
   const enableCenterSnap = args.enableCenterSnap === true;
 
-  const t = Number.isFinite(woodThick) && woodThick > 0 ? woodThick : 0.018;
-  const maxW = Number.isFinite(innerW) && innerW > 0 ? innerW : 0.05;
-  const baseDepth = Number.isFinite(internalDepth) && internalDepth > 0 ? internalDepth : 0.05;
-  const minW = Math.min(maxW, Math.max(0.05, t * 2 + 0.02));
-  const minD = Math.max(0.05, t + 0.02);
+  const dims = SKETCH_BOX_DIMENSIONS.geometry;
+  const t = Number.isFinite(woodThick) && woodThick > 0 ? woodThick : dims.defaultWoodThicknessM;
+  const maxW = Number.isFinite(innerW) && innerW > 0 ? innerW : dims.minOuterWidthM;
+  const baseDepth = Number.isFinite(internalDepth) && internalDepth > 0 ? internalDepth : dims.minOuterDepthM;
+  const minW = Math.min(maxW, Math.max(dims.minOuterWidthM, t * 2 + dims.minInnerAdditiveClearanceM));
+  const minD = Math.max(dims.minOuterDepthM, t + dims.minInnerAdditiveClearanceM);
   const clampTo = (value: number, min: number, max: number) =>
     Math.max(Math.min(min, max), Math.min(max, value));
 
@@ -50,13 +52,16 @@ export function resolveSketchBoxGeometry(args: {
   const outerW = resolvedWidthM != null && resolvedWidthM > 0 ? clampTo(resolvedWidthM, minW, maxW) : maxW;
   const outerD = resolvedDepthM != null && resolvedDepthM > 0 ? Math.max(minD, resolvedDepthM) : baseDepth;
 
-  const innerWidth = Math.max(0.02, outerW - 2 * t);
+  const innerWidth = Math.max(dims.minInnerDimensionM, outerW - 2 * t);
   const leftX = internalCenterX - maxW / 2;
   const xNormBase = resolvedXNorm != null ? clampTo(resolvedXNorm, 0, 1) : 0.5;
   const rawCenterX = resolvedCenterXHint != null ? resolvedCenterXHint : leftX + xNormBase * maxW;
   const centerMinX = internalCenterX - maxW / 2 + outerW / 2;
   const centerMaxX = internalCenterX + maxW / 2 - outerW / 2;
-  const centerSnapEps = Math.min(0.04, Math.max(0.015, maxW * 0.06));
+  const centerSnapEps = Math.min(
+    dims.centerSnapMaxM,
+    Math.max(dims.centerSnapMinM, maxW * dims.centerSnapWidthRatio)
+  );
   const snapToCenter = enableCenterSnap && Math.abs(rawCenterX - internalCenterX) <= centerSnapEps;
   const centerX =
     centerMaxX > centerMinX
@@ -68,7 +73,7 @@ export function resolveSketchBoxGeometry(args: {
   const backZ = internalZ - baseDepth / 2;
   const centerZ = backZ + outerD / 2;
   const innerBackZ = backZ + Math.min(t, outerD);
-  const innerDepth = Math.max(0.02, outerD - Math.min(t, outerD));
+  const innerDepth = Math.max(dims.minInnerDimensionM, outerD - Math.min(t, outerD));
   const innerCenterZ = innerBackZ + innerDepth / 2;
 
   return {
@@ -76,7 +81,7 @@ export function resolveSketchBoxGeometry(args: {
     innerW: innerWidth,
     centerX: Number.isFinite(centerX) ? centerX : Number.isFinite(internalCenterX) ? internalCenterX : 0,
     xNorm,
-    centered: Math.abs(centerX - internalCenterX) <= 0.001,
+    centered: Math.abs(centerX - internalCenterX) <= dims.centeredEpsilonM,
     outerD,
     innerD: innerDepth,
     centerZ,

@@ -1,4 +1,4 @@
-import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { MATERIAL_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { RenderSketchBoxStaticContentsArgs } from './render_interior_sketch_boxes_contents_parts_types.js';
 import type { SketchShelfExtra } from './render_interior_sketch_shared.js';
 
@@ -64,7 +64,11 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
     });
     const shelfInnerW = shelfSegment ? shelfSegment.width : geometry.innerW;
     const shelfCenterX = shelfSegment ? shelfSegment.centerX : geometry.centerX;
-    const shelfW = Math.max(0.02, shelfInnerW - (isBrace ? 0.002 : 0.014));
+    const previewDims = SKETCH_BOX_DIMENSIONS.preview;
+    const shelfW = Math.max(
+      previewDims.shelfMinWidthM,
+      shelfInnerW - (isBrace ? previewDims.shelfBraceClearanceM : previewDims.shelfRegularClearanceM)
+    );
     const shelfZ = geometry.innerBackZ + shelfDepth / 2;
     const mesh = asMesh(
       createBoard(shelfW, shelfH, shelfDepth, shelfCenterX, shelfY, shelfZ, shelfMat, shelfPid)

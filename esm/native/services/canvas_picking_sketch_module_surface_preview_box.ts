@@ -1,3 +1,4 @@
+import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
   createManualLayoutSketchBlockedHoverRecord,
   createManualLayoutSketchBoxHoverRecord,
@@ -125,9 +126,12 @@ export function resolveSketchModuleBoxPreviewState(args: {
     }
   }
 
+  const previewDims = SKETCH_BOX_DIMENSIONS.preview;
   const boxCanSlideHorizontally =
     Number.isFinite(source.innerW) &&
-    Number(source.innerW) > Number(resolvedBoxAction.outerW) + Math.max(0.001, source.woodThick * 0.5);
+    Number(source.innerW) >
+      Number(resolvedBoxAction.outerW) +
+        Math.max(previewDims.slideClearanceMinM, source.woodThick * previewDims.slideClearanceWoodRatio);
 
   const clearanceMeasurements = buildRectClearanceMeasurementEntries({
     containerMinX: resolvedBoxAction.centerX - resolvedBoxAction.outerW / 2,
@@ -141,11 +145,14 @@ export function resolveSketchModuleBoxPreviewState(args: {
     z:
       resolvedBoxAction.centerZ +
       resolvedBoxAction.outerD / 2 +
-      Math.max(0.004, resolvedBoxAction.outerD * 0.08),
+      Math.max(
+        previewDims.measurementZOffsetMinM,
+        resolvedBoxAction.outerD * previewDims.measurementZOffsetDepthRatio
+      ),
     showTop: true,
     showBottom: true,
     styleKey: 'cell',
-    textScale: 0.82,
+    textScale: previewDims.measurementTextScale,
   });
 
   return {

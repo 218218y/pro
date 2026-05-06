@@ -27,6 +27,10 @@ import {
   normalizeLibraryStructureSelectForDoors,
   readLibraryPresetUiRawState,
 } from './library_preset_shared.js';
+import {
+  LIBRARY_PRESET_DIMENSIONS,
+  WARDROBE_DEFAULTS,
+} from '../../../shared/wardrobe_dimension_tokens_shared.js';
 import { calcLibraryPresetAutoWidth, LIBRARY_PRESET_DEFAULT_DOORS } from './module_defaults.js';
 
 type LibraryDoorMaps = {
@@ -155,7 +159,7 @@ export function seedBottomDimensions(
   bottomDoorsCount: number;
   topDoorsCount: number;
 } {
-  const minTopCm = 40;
+  const minTopCm = LIBRARY_PRESET_DIMENSIONS.minTopHeightCm;
   const maxBottom = Math.max(0, args.height - minTopCm);
   const libraryDefaultDoors = readLibraryPresetDefaultDoorCount(args.wardrobeType);
   const topDoorsCount = resumeRaw ? normDoorCount(resumeRaw.doors, args.wardrobeType) : libraryDefaultDoors;
@@ -167,25 +171,41 @@ export function seedBottomDimensions(
     !!args.stackSplitEnabled &&
     Number.isFinite(args.stackSplitLowerHeight) &&
     args.stackSplitLowerHeight > 0 &&
-    Math.abs(args.stackSplitLowerHeight - 60) > 0.01;
+    Math.abs(args.stackSplitLowerHeight - WARDROBE_DEFAULTS.stackSplit.lowerHeightCm) > 0.01;
 
+  const defaultBottomH = Math.min(
+    LIBRARY_PRESET_DIMENSIONS.defaultLowerHeightCm,
+    maxBottom || LIBRARY_PRESET_DIMENSIONS.defaultLowerHeightCm
+  );
   const seededBottomH = resumeRaw
-    ? readPositiveNumber(resumeRaw.stackSplitLowerHeight, Math.min(80, maxBottom || 80))
+    ? readPositiveNumber(resumeRaw.stackSplitLowerHeight, defaultBottomH)
     : preserveExistingLowerHeight
       ? args.stackSplitLowerHeight
-      : Math.min(80, maxBottom || 80);
-  const bottomH = Math.max(20, Math.min(seededBottomH, maxBottom || seededBottomH));
+      : defaultBottomH;
+  const bottomH = Math.max(
+    LIBRARY_PRESET_DIMENSIONS.minLowerHeightCm,
+    Math.min(seededBottomH, maxBottom || seededBottomH)
+  );
 
-  const defaultBottomD = Math.max(20, Math.min(args.depth - 5, args.depth));
+  const defaultBottomD = Math.max(
+    LIBRARY_PRESET_DIMENSIONS.minLowerDepthCm,
+    Math.min(args.depth - LIBRARY_PRESET_DIMENSIONS.lowerDepthInsetCm, args.depth)
+  );
   const seededBottomD = resumeRaw
     ? readPositiveNumber(resumeRaw.stackSplitLowerDepth, defaultBottomD)
     : Number.isFinite(args.stackSplitLowerDepth) && args.stackSplitLowerDepth > 0
       ? args.stackSplitLowerDepth
       : defaultBottomD;
-  const bottomD = Math.max(20, seededBottomD);
+  const bottomD = Math.max(LIBRARY_PRESET_DIMENSIONS.minLowerDepthCm, seededBottomD);
 
-  const topW = Math.max(20, readPositiveNumber(resumeRaw?.width, calcLibraryPresetAutoWidth(topDoorsCount)));
-  const bottomW = Math.max(20, readPositiveNumber(resumeRaw?.stackSplitLowerWidth, topW));
+  const topW = Math.max(
+    LIBRARY_PRESET_DIMENSIONS.minWidthCm,
+    readPositiveNumber(resumeRaw?.width, calcLibraryPresetAutoWidth(topDoorsCount))
+  );
+  const bottomW = Math.max(
+    LIBRARY_PRESET_DIMENSIONS.minWidthCm,
+    readPositiveNumber(resumeRaw?.stackSplitLowerWidth, topW)
+  );
 
   return {
     bottomH,
