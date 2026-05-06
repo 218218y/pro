@@ -14,7 +14,8 @@ test('doors/export/errors family stays consolidated behind dedicated owners', ()
 
   assert.match(doorsOwner, /doors_runtime_visuals_doors\.js/);
   assert.match(doorsOwner, /doors_runtime_visuals_drawers\.js/);
-  assert.match(doorsShared, /export const DOOR_OVERLAP = 0\.03;/);
+  assert.match(doorsShared, /DOOR_SYSTEM_DIMENSIONS/);
+  assert.match(doorsShared, /export const DOOR_OVERLAP = DOOR_SYSTEM_DIMENSIONS\.sliding\.overlapM;/);
   assert.match(doorsShared, /export function resolveSlidingDoorClosedState\(/);
   assert.match(doorsSeam, /export function forceUpdatePerState\(/);
   assert.match(doorsSeam, /export function syncVisualsNow\(/);

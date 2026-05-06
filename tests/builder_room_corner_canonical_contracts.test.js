@@ -54,9 +54,10 @@ test('corner special interior owner derives folded-clothes placement from canoni
 
   assert.match(types, /export type FoldedClothesSurfacePlan = \{/);
   assert.match(metrics, /function readCentimetersAsMeters\(/);
-  assert.match(metrics, /const postDepth = readCentimetersAsMeters\(postDepthCmRaw, 0\.55\);/);
-  assert.match(metrics, /const postH = readCentimetersAsMeters\(postHeightCmRaw, 1\.8\);/);
-  assert.match(metrics, /const cellH = readCentimetersAsMeters\(topCellHCmRaw, 0\.3\);/);
+  assert.match(metrics, /CORNER_CONNECTOR_INTERIOR_DIMENSIONS/);
+  assert.match(metrics, /specialPost\.depthDefaultCm \/ CM_PER_METER/);
+  assert.match(metrics, /specialPost\.heightDefaultCm \/ CM_PER_METER/);
+  assert.match(metrics, /specialPost\.topCellHeightDefaultCm \/ CM_PER_METER/);
 
   assert.match(contents, /function emitFoldedClothesPlan\(/);
   assert.match(contents, /export function createLeftShelvesContentsPlan\(/);

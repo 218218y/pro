@@ -12,7 +12,6 @@ import {
 } from '../actions/store_actions.js';
 import {
   CHEST_MODE_DIMENSIONS,
-  DEFAULT_CHEST_DRAWERS_COUNT,
   DEFAULT_HEIGHT,
   DEFAULT_HINGED_DOORS,
   DEFAULT_WIDTH,
