@@ -272,6 +272,10 @@ function hasFiniteSavedGridFrame(cfg: ModuleConfigLike): boolean {
   return Number.isFinite(top) && Number.isFinite(bottom) && top > bottom;
 }
 
+function hasManualLayoutGridProvenance(cfg: ModuleConfigLike): boolean {
+  return cfg.manualLayoutGridEdited === true;
+}
+
 function areLibraryModuleValuesEqual(prev: unknown, next: unknown): boolean {
   if (Object.is(prev, next)) return true;
 
@@ -310,7 +314,10 @@ export function normalizePreservedLibraryModuleCfg(
   const hasExplicitSrcGridDivisions =
     Object.prototype.hasOwnProperty.call(src, 'gridDivisions') && src.gridDivisions != null;
   const srcGridDivisions = readFiniteInt(src.gridDivisions, templateGridDivisions, 1);
-  const hasManualCustomGrid = !!src.isCustom && hasExplicitSrcGridDivisions && hasFiniteSavedGridFrame(src);
+  const hasManualCustomGrid =
+    !!src.isCustom &&
+    hasExplicitSrcGridDivisions &&
+    (hasFiniteSavedGridFrame(src) || hasManualLayoutGridProvenance(src));
   const gridDivisions = hasManualCustomGrid ? srcGridDivisions : templateGridDivisions;
   const preserveCustomGridData =
     hasManualCustomGrid || (hasExplicitSrcGridDivisions && srcGridDivisions === templateGridDivisions);

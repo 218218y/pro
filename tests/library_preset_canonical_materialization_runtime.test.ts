@@ -7,7 +7,11 @@ import {
   buildNextLibraryModuleCfgList,
   calcDoorsSignatureFromUi,
 } from '../esm/native/features/library_preset/library_preset_shared.ts';
-import { createLibraryTopModuleConfig } from '../esm/native/features/library_preset/module_defaults.ts';
+import {
+  createLibraryLowerModuleConfig,
+  createLibraryTopModuleConfig,
+} from '../esm/native/features/library_preset/module_defaults.ts';
+import { normalizeLowerModuleConfig } from '../esm/native/features/stack_split/module_config.ts';
 
 test('library preset door signatures follow the canonical module-structure calculator', () => {
   const ui = {
@@ -149,6 +153,66 @@ test('library preset invariants preserve manual custom library grids after a can
     { gridIndex: 2, yFactor: 2, enableHangingClothes: true },
   ]);
   assert.deepEqual(normalized?.braceShelves, [3]);
+});
+
+test('library preset invariants preserve lower manual custom grids after lower-stack normalization strips saved dims', () => {
+  const expected = createLibraryLowerModuleConfig(2);
+  const lowerPatchResult = {
+    ...expected,
+    isCustom: true,
+    gridDivisions: 6,
+    manualLayoutGridEdited: true,
+    savedDims: { top: 1.1, bottom: 0 },
+    customData: {
+      shelves: [true, false, true, false, true],
+      rods: [false, true, false, false, true, false],
+      storage: true,
+      shelfVariants: ['glass', '', 'brace', '', 'double'],
+      rodOps: [{ gridIndex: 2, yFactor: 2.3, enableHangingClothes: true }],
+    },
+    braceShelves: [3],
+    doors: 2,
+  };
+  const manuallyEdited = normalizeLowerModuleConfig(lowerPatchResult, 0);
+
+  const next = buildNextLibraryModuleCfgList([manuallyEdited], [expected]);
+  const normalized = next?.[0];
+
+  assert.equal(normalized?.gridDivisions, 6);
+  assert.equal(normalized?.isCustom, true);
+  assert.equal(normalized?.manualLayoutGridEdited, true);
+  assert.equal('savedDims' in (normalized || {}), false);
+  assert.deepEqual(normalized?.customData?.shelves, [true, false, true, false, true, false]);
+  assert.deepEqual(normalized?.customData?.rods, [false, true, false, false, true, false]);
+  assert.equal(normalized?.customData?.storage, true);
+  assert.deepEqual(normalized?.customData?.shelfVariants, ['glass', '', 'brace', '', 'double', '']);
+  assert.deepEqual(normalized?.customData?.rodOps, [
+    { gridIndex: 2, yFactor: 2.3, enableHangingClothes: true },
+  ]);
+  assert.deepEqual(normalized?.braceShelves, [3]);
+});
+
+test('library preset invariants still reset stale lower grids that were not produced by manual-layout clicks', () => {
+  const expected = createLibraryLowerModuleConfig(2);
+  const staleLowerGrid = {
+    ...expected,
+    isCustom: true,
+    gridDivisions: 6,
+    customData: {
+      shelves: [true, true, true, true, true, false],
+      rods: [false, false, false, false, false, false],
+      storage: false,
+    },
+    doors: 2,
+  };
+
+  const next = buildNextLibraryModuleCfgList([staleLowerGrid], [expected]);
+  const normalized = next?.[0];
+
+  assert.equal(normalized?.gridDivisions, 2);
+  assert.deepEqual(normalized?.customData?.shelves, [true, false]);
+  assert.deepEqual(normalized?.customData?.rods, [false, false]);
+  assert.equal(normalized?.customData?.storage, false);
 });
 
 test('library preset ignores stale regular structureSelect when it no longer matches library door count', () => {

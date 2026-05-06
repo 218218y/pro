@@ -67,6 +67,7 @@ function setManualLayoutFrame(
 ): void {
   cfg.isCustom = true;
   cfg.gridDivisions = divs;
+  cfg.manualLayoutGridEdited = true;
   if (typeof topY === 'number' && typeof bottomY === 'number') {
     cfg.savedDims = { top: topY, bottom: bottomY };
   }

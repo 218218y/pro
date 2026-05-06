@@ -39,6 +39,7 @@ test('manual-layout config ops fill all shelves seeds a clean brace layout grid'
 
   assert.equal(cfg.isCustom, true);
   assert.equal(cfg.gridDivisions, 6);
+  assert.equal(cfg.manualLayoutGridEdited, true);
   assert.deepEqual(cfg.savedDims, { top: 2.4, bottom: 0 });
   assert.deepEqual(customData.shelves, [true, true, true, true, true]);
   assert.deepEqual(customData.rods, []);
