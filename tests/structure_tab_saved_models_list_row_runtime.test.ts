@@ -1,7 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 
-import { buildSavedModelsListRowModel } from '../esm/native/ui/react/tabs/structure_tab_saved_models_list_row.tsx';
+import {
+  buildSavedModelsListRowModel,
+  StructureTabSavedModelsListRow,
+} from '../esm/native/ui/react/tabs/structure_tab_saved_models_list_row.tsx';
 
 test('saved-model row model keeps preset and locked drag/overwrite semantics stable', () => {
   const presetRow = buildSavedModelsListRowModel(
@@ -35,4 +40,34 @@ test('saved-model row model keeps preset and locked drag/overwrite semantics sta
 
   assert.equal(unlockedRow.canDrag, true);
   assert.equal(unlockedRow.canOverwrite, true);
+});
+
+test('saved-model preset row keeps RTL text pinned to the right after button cascade cleanup', () => {
+  const row = buildSavedModelsListRowModel(
+    { id: 'preset:1', name: '׳׳•׳‘׳ ׳”', isPreset: true, locked: false } as any,
+    { listType: 'preset', draggingModelId: '', dragOverModelId: '' }
+  );
+
+  const html = renderToStaticMarkup(
+    React.createElement(StructureTabSavedModelsListRow, {
+      row,
+      listType: 'preset',
+      selectedId: '',
+      dragOverPos: '',
+      onSetSelected: () => undefined,
+      onApplySelected: () => undefined,
+      onToggleLock: () => undefined,
+      onOverwriteById: () => undefined,
+      onDeleteById: () => undefined,
+      onRowDragStart: () => undefined,
+      onRowDragEnd: () => undefined,
+      onRowDragOver: () => undefined,
+      onRowDrop: () => undefined,
+    })
+  );
+
+  assert.match(html, /direction:rtl/);
+  assert.match(html, /text-align:right/);
+  assert.match(html, /justify-content:flex-start/);
+  assert.doesNotMatch(html, /justify-content:flex-end/);
 });

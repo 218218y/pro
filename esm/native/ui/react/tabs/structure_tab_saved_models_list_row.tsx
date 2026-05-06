@@ -189,7 +189,7 @@ export function StructureTabSavedModelsListRow(
             ? {
                 width: '100%',
                 textAlign: 'right',
-                justifyContent: 'flex-end',
+                justifyContent: 'flex-start',
                 direction: 'rtl',
               }
             : { textAlign: 'right', justifyContent: 'flex-start', direction: 'rtl' }
