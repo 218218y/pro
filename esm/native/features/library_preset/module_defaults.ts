@@ -1,3 +1,5 @@
+import { HINGED_DEFAULT_PER_DOOR_WIDTH } from '../../../shared/wardrobe_dimension_tokens_shared.js';
+
 import type {
   ModuleConfigLike,
   ModulesConfigurationLike,
@@ -5,7 +7,7 @@ import type {
 } from '../../../../types';
 
 export const LIBRARY_PRESET_DEFAULT_DOORS = 6;
-export const LIBRARY_PRESET_DOOR_WIDTH_CM = 40;
+export const LIBRARY_PRESET_DOOR_WIDTH_CM = HINGED_DEFAULT_PER_DOOR_WIDTH;
 
 export function calcLibraryPresetAutoWidth(doors: unknown): number {
   const n = Math.max(0, Math.round(Number(doors) || 0));

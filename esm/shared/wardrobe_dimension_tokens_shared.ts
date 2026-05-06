@@ -80,6 +80,24 @@ export const WARDROBE_LIMITS = Object.freeze({
     lowerDoorsMin: 0,
     lowerDoorsMax: 20,
   }),
+
+});
+
+export const WARDROBE_LAYOUT_DIMENSIONS = Object.freeze({
+  minSegmentWidthCm: 1,
+  boundaryFullThicknessMultiplier: 1,
+  boundarySharedThicknessMultiplier: 0.5,
+  autoWidthMatchToleranceCm: 0.51,
+  valueEqualityToleranceCm: 0.0001,
+});
+
+export const NO_MAIN_SKETCH_DIMENSIONS = Object.freeze({
+  defaultGridDivisions: 6,
+  workspacePaddingM: 0.12,
+  defaultWorkspaceWidthM: 1.6,
+  minHostHeightM: 0.05,
+  minInnerWidthM: 0.02,
+  minGridSpanM: 0.02,
 });
 
 export const DEFAULT_WIDTH: number = WARDROBE_DEFAULTS.widthCm;
@@ -291,6 +309,7 @@ export const DOOR_SYSTEM_DIMENSIONS = Object.freeze({
     sameModuleLeafGapSpanRatioMax: 0.1,
     split: Object.freeze({
       minSegmentHeightM: 0.12,
+      splitGapM: 0.006,
       duplicateCutToleranceMinM: 0.004,
       duplicateCutToleranceMaxM: 0.02,
       duplicateCutToleranceHeightRatio: 0.01,
@@ -392,6 +411,12 @@ export const DOOR_VISUAL_DIMENSIONS = Object.freeze({
     minLineThicknessM: 0.0014,
     stripDepthM: 0.001,
     renderOrder: 3,
+  }),
+  grooves: Object.freeze({
+    stripWidthM: 0.005,
+    heightClearanceM: 0.04,
+    stripDepthM: 0.002,
+    surfaceOffsetM: 0.001,
   }),
   glass: Object.freeze({
     paneDepthM: 0.005,
@@ -557,6 +582,7 @@ export const CORNER_WING_DIMENSIONS = Object.freeze({
     splitCutToleranceMaxM: 0.02,
     splitCutToleranceRatio: 0.01,
     minSegmentHeightM: 0.12,
+    minRenderableSegmentHeightM: 0.1,
     visualMinWidthM: 0.03,
     visualMinHeightM: 0.2,
     shellMinWallHeightM: CARCASS_SHELL_DIMENSIONS.bodyMinHeightM,
@@ -565,8 +591,14 @@ export const CORNER_WING_DIMENSIONS = Object.freeze({
     shellBackPanelOutsideInsetM: 0.0025,
     shellPanelMinLengthM: 0.01,
     shellNoOverlapInsetExtraM: 0.001,
+    shellPlateSideInsetExtraM: 0.0006,
+    shellBackInsetXM: CARCASS_SHELL_DIMENSIONS.sideDepthClearanceM,
+    shellBackInsetZM: CARCASS_SHELL_DIMENSIONS.sideDepthClearanceM,
+    shellFrontInsetM: CARCASS_SHELL_DIMENSIONS.frontInsetZM,
     shellBaseMinHeightM: CARCASS_SHELL_DIMENSIONS.boardMinDimensionM,
     shellCorniceHitMinM: CARCASS_SHELL_DIMENSIONS.bodyMinHeightM,
+    corniceHitMinWidthM: CARCASS_SHELL_DIMENSIONS.bodyMinHeightM,
+    corniceHitHeightClearanceM: CARCASS_SHELL_DIMENSIONS.bodyMinHeightM,
     fullDoorTopHandleClearanceM: 0.002,
     visualWidthClearanceM: 0.004,
     visualHeightClearanceM: 0.004,
@@ -593,6 +625,28 @@ export const CORNER_WING_DIMENSIONS = Object.freeze({
     shelfTopPlacementGuardM: 0.01,
     foldedContentsMinWidthM: 0.05,
     foldedContentsWidthClearanceM: INTERIOR_FITTINGS_DIMENSIONS.shelves.contentsWidthClearanceM,
+  }),
+  panels: Object.freeze({
+    fallbackSegmentWidthM: 0.2,
+    minPanelHeightM: 0.05,
+    minPanelWidthM: 0.05,
+    panelWidthClearanceM: 0.002,
+    minBlindWidthM: 0.001,
+    minCellDepthM: 0.2,
+    minWallDepthM: 0.05,
+    noZFightAttachInsetM: 0.0012,
+  }),
+  selector: Object.freeze({
+    minDepthM: 0.2,
+    minWidthM: 0.01,
+    widthClearanceM: 0.001,
+    fallbackMinWidthM: 0.01,
+  }),
+  ceiling: Object.freeze({
+    noZFightAttachInsetM: 0.0012,
+    minDepthM: 0.05,
+    minWidthM: 0.05,
+    widthClearanceM: 0.001,
   }),
   cells: Object.freeze({
     doorsPerCell: 2,
@@ -812,6 +866,18 @@ export function getDefaultDoorsForWardrobeType(value: unknown): number {
 
 export function getDefaultPerDoorWidthForWardrobeType(value: unknown): number {
   return resolveWardrobeTypeDefaults(value).perDoorWidthCm;
+}
+
+export function resolveAutoWidthForDoors(value: unknown, doors: unknown): number {
+  const n = Math.max(0, Math.round(finiteOr(doors, 0)));
+  return n * getDefaultPerDoorWidthForWardrobeType(value);
+}
+
+export function isAutoWidthForDoors(value: unknown, widthCm: unknown, doors: unknown): boolean {
+  const currentWidthCm = finiteOr(widthCm, 0);
+  if (!(currentWidthCm > 0)) return true;
+  const expectedWidthCm = resolveAutoWidthForDoors(value, doors);
+  return Math.abs(currentWidthCm - expectedWidthCm) < WARDROBE_LAYOUT_DIMENSIONS.autoWidthMatchToleranceCm;
 }
 
 export function getDefaultWidthForWardrobeType(value: unknown): number {

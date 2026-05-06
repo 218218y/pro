@@ -304,5 +304,7 @@ export {
   getDefaultHeightForWardrobeType,
   getDefaultChestDrawersCount,
   resolveDefaultWardrobeDimensions,
+  resolveAutoWidthForDoors,
+  isAutoWidthForDoors,
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
 export type { WardrobeDimensionDefaultType } from '../../shared/wardrobe_dimension_tokens_shared.js';

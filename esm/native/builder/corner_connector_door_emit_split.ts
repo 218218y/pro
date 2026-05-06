@@ -1,3 +1,4 @@
+import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
   clampCornerConnectorHandleAbsY,
   mergeCornerConnectorSplitCuts,
@@ -15,7 +16,7 @@ export function appendCornerConnectorSplitDoor(
   const topId = `${state.doorBaseId}_top`;
   const midId = `${state.doorBaseId}_mid`;
   const botId = `${state.doorBaseId}_bot`;
-  const topEdge = ctx.effectiveTopLimit - 0.002;
+  const topEdge = ctx.effectiveTopLimit - CORNER_WING_DIMENSIONS.connector.doorTopClearanceM;
   const customSplitCutsY = readCornerConnectorCustomSplitCutsY(ctx, state);
 
   if (state.topSplitEnabled && customSplitCutsY.length) {
@@ -27,7 +28,7 @@ export function appendCornerConnectorSplitDoor(
       const segBottomY = segmentIndex === 0 ? ctx.doorBottomY : cuts[segmentIndex - 1] + ctx.splitGap / 2;
       const segTopY = segmentIndex === segCount - 1 ? topEdge : cuts[segmentIndex] - ctx.splitGap / 2;
       const segH = segTopY - segBottomY;
-      if (!(segH > 0.1)) continue;
+      if (!(segH > CORNER_WING_DIMENSIONS.connector.minRenderableSegmentHeightM)) continue;
       const segY = segBottomY + segH / 2;
       const partId = partIdForCornerConnectorSegment(state, segCount, segmentIndex);
       pushCornerConnectorDoorSegment(
@@ -42,7 +43,7 @@ export function appendCornerConnectorSplitDoor(
     return;
   }
 
-  if (state.topSplitEnabled && state.bottomSplitEnabled && ctx.bottomLineY < ctx.splitLineY - 0.12) {
+  if (state.topSplitEnabled && state.bottomSplitEnabled && ctx.bottomLineY < ctx.splitLineY - CORNER_WING_DIMENSIONS.connector.minSegmentHeightM) {
     const topTopY = topEdge;
     const topBottomY = ctx.splitLineY + ctx.splitGap / 2;
     const topH = topTopY - topBottomY;

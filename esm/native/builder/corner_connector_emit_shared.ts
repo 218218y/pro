@@ -5,6 +5,7 @@
 // lives in dedicated helpers.
 
 import { getWardrobeGroup } from '../runtime/render_access.js';
+import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { asRecord, isRecord } from './corner_geometry_plan.js';
 
 import type { Object3DLike, ThreeLike, UnknownRecord } from '../../../types';
@@ -184,9 +185,10 @@ export function createCornerConnectorSetup(ctx: CornerOpsEmitContext): CornerCon
   const Dwing = wingD;
   const Dmain = mainD;
   const L = cornerWallL;
-  if (!Number.isFinite(Dwing) || Dwing <= 0.1) return null;
-  if (!Number.isFinite(Dmain) || Dmain <= 0.1) return null;
-  if (!Number.isFinite(L) || L <= 0.2) return null;
+  const connectorDimensions = CORNER_WING_DIMENSIONS.connector;
+  if (!Number.isFinite(Dwing) || Dwing <= connectorDimensions.minFrontLengthM) return null;
+  if (!Number.isFinite(Dmain) || Dmain <= connectorDimensions.minFrontLengthM) return null;
+  if (!Number.isFinite(L) || L <= connectorDimensions.minWallLengthM) return null;
 
   const showFrontPanel =
     typeof uiAny.cornerCabinetFrontPanel !== 'undefined' ? !!uiAny.cornerCabinetFrontPanel : true;
@@ -214,10 +216,10 @@ export function createCornerConnectorSetup(ctx: CornerOpsEmitContext): CornerCon
   const interiorX = pts.reduce((sum, point) => sum + point.x, 0) / pts.length;
   const interiorZ = pts.reduce((sum, point) => sum + point.z, 0) / pts.length;
 
-  const carcassBackInsetX = 0.0078;
-  const carcassBackInsetZ = 0.0078;
-  const carcassFrontInset = 0.005;
-  const plateSideInset = ctx.woodThick + 0.0006;
+  const carcassBackInsetX = connectorDimensions.shellBackInsetXM;
+  const carcassBackInsetZ = connectorDimensions.shellBackInsetZM;
+  const carcassFrontInset = connectorDimensions.shellFrontInsetM;
+  const plateSideInset = ctx.woodThick + connectorDimensions.shellPlateSideInsetExtraM;
   const plateEdgeInsets = [
     carcassBackInsetX,
     plateSideInset,

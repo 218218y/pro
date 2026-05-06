@@ -1,7 +1,7 @@
 import type { AppContainer, MetaActionsNamespaceLike } from '../../../../../types';
 
 import { setManualWidth } from '../actions/room_actions.js';
-import { runPerfAction } from '../../../services/api.js';
+import { isAutoWidthForDoors, resolveAutoWidthForDoors, runPerfAction } from '../../../services/api.js';
 import {
   applyUiRawScalarPatch,
   setUiCellDimsDepth,
@@ -155,16 +155,13 @@ export function commitStructureRawValue(args: {
 
   if (key === 'doors') {
     const doorsN = normalizeDoorsValue(wardrobeType, value);
-    const perDoor = wardrobeType === 'sliding' ? 80 : 40;
     const isNoMainWardrobe = wardrobeType !== 'sliding' && doorsN === 0;
 
     let treatManualWidth = !!isManualWidth;
     if (treatManualWidth) {
       try {
         const curDoors = normalizeDoorsValue(wardrobeType, doors);
-        const curWidth = Number(width) || 0;
-        const expectedAutoNow = curDoors * perDoor;
-        if (curWidth > 0 && Math.abs(curWidth - expectedAutoNow) < 0.51) {
+        if (isAutoWidthForDoors(wardrobeType, width, curDoors)) {
           treatManualWidth = false;
         }
       } catch (err) {
@@ -176,7 +173,7 @@ export function commitStructureRawValue(args: {
     if (!treatManualWidth) {
       const autoWidth = normalizeStructureRawValue({
         key: 'width',
-        value: doorsN * perDoor,
+        value: resolveAutoWidthForDoors(wardrobeType, doorsN),
         wardrobeType,
         isChestMode,
         width,
@@ -184,7 +181,7 @@ export function commitStructureRawValue(args: {
         depth,
         doors: doorsN,
       });
-      rawPatch.width = isNoMainWardrobe ? 0 : (autoWidth ?? doorsN * perDoor);
+      rawPatch.width = isNoMainWardrobe ? 0 : (autoWidth ?? resolveAutoWidthForDoors(wardrobeType, doorsN));
     }
 
     const uiPatch: StructureUiPatch = { raw: rawPatch };

@@ -45,6 +45,16 @@ function loadTsModule(relPath, calls, cache = new Map()) {
           calls.push(['runPerfAction', app, name, meta]);
           return fn();
         },
+        resolveAutoWidthForDoors: (wardrobeType, doors) => {
+          const n = Math.max(0, Math.round(Number(doors) || 0));
+          return n * (wardrobeType === 'sliding' ? 80 : 40);
+        },
+        isAutoWidthForDoors: (wardrobeType, width, doors) => {
+          const n = Math.max(0, Math.round(Number(doors) || 0));
+          const expected = n * (wardrobeType === 'sliding' ? 80 : 40);
+          const current = Number(width) || 0;
+          return !(current > 0) || Math.abs(current - expected) < 0.51;
+        },
         WARDROBE_WIDTH_MIN: 40,
         WARDROBE_CHEST_WIDTH_MIN: 20,
         WARDROBE_WIDTH_MAX: 560,

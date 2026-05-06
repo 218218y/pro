@@ -62,6 +62,9 @@ export {
   STACK_SPLIT_LOWER_DOORS_MAX,
   getDefaultDepthForWardrobeType,
   getDefaultDoorsForWardrobeType,
+  getDefaultPerDoorWidthForWardrobeType,
+  resolveAutoWidthForDoors,
+  isAutoWidthForDoors,
 } from './api_runtime_base_surface.js';
 
 export {

@@ -3,6 +3,7 @@
 // Keep the public connector cornice owner focused on orchestration while wave /
 // profile / hitbox details consume a shared typed contract.
 
+import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { BufferAttrLike } from './corner_geometry_plan.js';
 import type { UnknownRecord } from '../../../types';
 import type { ThrottleOpts } from '../runtime/throttled_errors.js';
@@ -124,8 +125,8 @@ export function appendCornerConnectorCorniceHitArea(args: {
   const { THREE, startY, wingH, __stackKey } = ctx;
   const { mx, L, cornerGroup } = locals;
 
-  const bbW = Math.max(0.05, L);
-  const bbD = Math.max(0.05, L);
+  const bbW = Math.max(CORNER_WING_DIMENSIONS.connector.corniceHitMinWidthM, L);
+  const bbD = Math.max(CORNER_WING_DIMENSIONS.connector.corniceHitMinWidthM, L);
   const hitMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.0, side: THREE.DoubleSide });
   // IMPORTANT: material.visible=false is ignored by the picking system.
   // Use a fully-transparent material so the hitbox remains clickable.
@@ -134,9 +135,17 @@ export function appendCornerConnectorCorniceHitArea(args: {
   hitMat.depthWrite = false;
   hitMat.colorWrite = false;
 
-  const hit = new THREE.Mesh(new THREE.BoxGeometry(bbW, Math.max(0.05, wingH - 0.05), bbD), hitMat);
+  const hitHeight = Math.max(
+    CORNER_WING_DIMENSIONS.connector.corniceHitMinWidthM,
+    wingH - CORNER_WING_DIMENSIONS.connector.corniceHitHeightClearanceM
+  );
+  const hit = new THREE.Mesh(new THREE.BoxGeometry(bbW, hitHeight, bbD), hitMat);
   hit.renderOrder = -1000;
-  hit.position.set(mx(-L / 2), startY + (wingH - 0.05) / 2, L / 2);
+  hit.position.set(
+    mx(-L / 2),
+    startY + (wingH - CORNER_WING_DIMENSIONS.connector.corniceHitHeightClearanceM) / 2,
+    L / 2
+  );
   hit.userData = {
     moduleIndex: 'corner_pentagon',
     isModuleSelector: true,

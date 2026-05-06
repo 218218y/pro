@@ -1,4 +1,5 @@
 import { getCacheBag } from '../runtime/cache_access.js';
+import { NO_MAIN_SKETCH_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { getWardrobeGroup } from '../runtime/render_access.js';
 import { makeRodCreator } from './contents_pipeline.js';
 import { makeInternalDrawerCreator } from './internal_drawers_pipeline.js';
@@ -58,7 +59,7 @@ export function createNoMainSketchModuleConfig(source: unknown): ModuleConfigLik
   return {
     layout: 'shelves',
     isCustom: true,
-    gridDivisions: 6,
+    gridDivisions: NO_MAIN_SKETCH_DIMENSIONS.defaultGridDivisions,
     extDrawersCount: 0,
     hasShoeDrawer: false,
     drawersPerCell: {},
@@ -130,7 +131,7 @@ function estimateNoMainWorkspaceWidthM(config: ModuleConfigLike | null | undefin
   }
 
   if (!hasFreeBox || !Number.isFinite(minX) || !Number.isFinite(maxX) || !(maxX > minX)) return null;
-  return Math.max(0, maxX - minX + 0.12);
+  return Math.max(0, maxX - minX + NO_MAIN_SKETCH_DIMENSIONS.workspacePaddingM);
 }
 
 export function syncNoMainSketchWorkspaceMetrics(args: {
@@ -156,9 +157,9 @@ export function syncNoMainSketchWorkspaceMetrics(args: {
     const workspaceWidthM = Math.max(
       Number(args.totalW) || 0,
       estimateNoMainWorkspaceWidthM(moduleCfg) || 0,
-      1.6
+      NO_MAIN_SKETCH_DIMENSIONS.defaultWorkspaceWidthM
     );
-    const outerH = Math.max(0.05, Number(args.H) || 0);
+    const outerH = Math.max(NO_MAIN_SKETCH_DIMENSIONS.minHostHeightM, Number(args.H) || 0);
     const depth = Math.max(Number(args.woodThick) || 0, Number(args.internalDepth) || 0);
     const centerZ = Number(args.internalZ) || 0;
     cache.noMainSketchWorkspaceMetrics = {
@@ -211,12 +212,18 @@ export function maybeRenderNoMainSketchHost(args: {
   const workspaceWidthM = Math.max(
     Number(args.totalW) || 0,
     estimateNoMainWorkspaceWidthM(moduleCfg) || 0,
-    1.6
+    NO_MAIN_SKETCH_DIMENSIONS.defaultWorkspaceWidthM
   );
-  const innerW = Math.max(0.02, workspaceWidthM - 2 * Number(args.woodThick));
+  const innerW = Math.max(NO_MAIN_SKETCH_DIMENSIONS.minInnerWidthM, workspaceWidthM - 2 * Number(args.woodThick));
   const effectiveBottomY = Number(args.woodThick);
-  const effectiveTopY = Math.max(effectiveBottomY + 0.02, Number(args.H) - Number(args.woodThick));
-  const localGridStep = Math.max(0.02, (effectiveTopY - effectiveBottomY) / 6);
+  const effectiveTopY = Math.max(
+    effectiveBottomY + NO_MAIN_SKETCH_DIMENSIONS.minGridSpanM,
+    Number(args.H) - Number(args.woodThick)
+  );
+  const localGridStep = Math.max(
+    NO_MAIN_SKETCH_DIMENSIONS.minGridSpanM,
+    (effectiveTopY - effectiveBottomY) / NO_MAIN_SKETCH_DIMENSIONS.defaultGridDivisions
+  );
   const wardrobeGroup = getWardrobeGroup(args.App);
   const three = readThreeLike(args.THREE);
   if (!three) return false;
@@ -280,7 +287,7 @@ export function maybeRenderNoMainSketchHost(args: {
     THREE: args.THREE,
     cfg: cfg || {},
     config: moduleCfg,
-    gridDivisions: 6,
+    gridDivisions: NO_MAIN_SKETCH_DIMENSIONS.defaultGridDivisions,
     wardrobeGroup,
     createBoard: args.createBoard,
     createRod,

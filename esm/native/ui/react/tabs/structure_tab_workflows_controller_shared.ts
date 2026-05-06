@@ -7,6 +7,7 @@ import {
   clearOverrideKeys,
   cloneSpecialDims,
 } from '../../../features/special_dims/special_dims.js';
+import { resolveAutoWidthForDoors } from '../../../services/api.js';
 import type {
   CreateStructureTabWorkflowControllerArgs,
   StructureWorkflowState,
@@ -98,6 +99,5 @@ export function buildStructureLibraryInvariantArgs(state: StructureWorkflowState
 }
 
 export function computeStructureAutoWidth(wardrobeType: string, doors: number): number {
-  const perDoor = wardrobeType === 'sliding' ? 80 : 40;
-  return Math.max(0, Math.round(Number(doors) || 0)) * perDoor;
+  return resolveAutoWidthForDoors(wardrobeType, doors);
 }

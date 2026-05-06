@@ -1,5 +1,9 @@
 // Builder core pure layout computations.
-import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  CM_PER_METER,
+  MATERIAL_DIMENSIONS,
+  WARDROBE_LAYOUT_DIMENSIONS,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 import { getActiveWidthCmFromConfig } from '../features/special_dims/index.js';
 import {
@@ -70,7 +74,7 @@ export function computeModuleLayout(input: unknown) {
   // - Modules with an ACTIVE per-cell width override are FIXED.
   // - Global width changes affect ONLY the remaining (non-fixed) modules.
   // - If everything is fixed, fall back to adjusting the rightmost module to keep tiling.
-  const totalWcm = totalW * 100;
+  const totalWcm = totalW * CM_PER_METER;
   const moduleSegWidthsCm: number[] = new Array(modules.length);
   const moduleInternalWidths: number[] = new Array(modules.length);
 
@@ -123,7 +127,7 @@ export function computeModuleLayout(input: unknown) {
   let deltaCm = totalWcm - sumSegCm;
 
   if (modules.length > 0 && Number.isFinite(deltaCm) && Math.abs(deltaCm) > 1e-6) {
-    const MIN_SEG_CM = 1; // tiny safety minimum (cm)
+    const MIN_SEG_CM = WARDROBE_LAYOUT_DIMENSIONS.minSegmentWidthCm;
     let rem = deltaCm;
 
     const _adjust = (indices: number[]) => {
@@ -164,11 +168,11 @@ export function computeModuleLayout(input: unknown) {
     const segCm = Number(moduleSegWidthsCm[i]) || 0;
 
     // Clear opening width: subtract boundary thickness (cm).
-    const leftBoundCm = i === 0 ? woodThick * 100 : woodThick * 50;
-    const rightBoundCm = i === modules.length - 1 ? woodThick * 100 : woodThick * 50;
+    const leftBoundCm = i === 0 ? woodThick * CM_PER_METER : woodThick * CM_PER_METER * WARDROBE_LAYOUT_DIMENSIONS.boundarySharedThicknessMultiplier;
+    const rightBoundCm = i === modules.length - 1 ? woodThick * CM_PER_METER : woodThick * CM_PER_METER * WARDROBE_LAYOUT_DIMENSIONS.boundarySharedThicknessMultiplier;
 
     const internalCm = Math.max(0, segCm - leftBoundCm - rightBoundCm);
-    moduleInternalWidths[i] = internalCm / 100;
+    moduleInternalWidths[i] = internalCm / CM_PER_METER;
   }
 
   return {

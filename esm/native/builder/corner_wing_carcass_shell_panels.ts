@@ -1,3 +1,4 @@
+import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
   cloneMaterialRecord,
   cloneMaterialWithSide,
@@ -64,10 +65,13 @@ export function applyCornerWingCarcassPanels(
     moduleIndex?: string
   ) => {
     const h = Number.isFinite(bodyH) && bodyH > 0 ? bodyH : cabinetBodyHeight;
-    const w = Number.isFinite(segW) && segW > 0 ? segW : 0.2;
+    const w = Number.isFinite(segW) && segW > 0 ? segW : CORNER_WING_DIMENSIONS.panels.fallbackSegmentWidthM;
 
-    const panelH = Math.max(0.05, h - __backPanelYPad * 2);
-    const panelW = Math.max(0.05, w - 0.002);
+    const panelH = Math.max(CORNER_WING_DIMENSIONS.panels.minPanelHeightM, h - __backPanelYPad * 2);
+    const panelW = Math.max(
+      CORNER_WING_DIMENSIONS.panels.minPanelWidthM,
+      w - CORNER_WING_DIMENSIONS.panels.panelWidthClearanceM
+    );
 
     const bp = new THREE.Mesh(
       new THREE.BoxGeometry(panelW, panelH, metrics.__wingBackPanelThick),
@@ -83,7 +87,7 @@ export function applyCornerWingCarcassPanels(
     wingGroup.add(bp);
   };
 
-  if (blindWidth > 0.001) {
+  if (blindWidth > CORNER_WING_DIMENSIONS.panels.minBlindWidthM) {
     __addBackSeg(blindWidth, cabinetBodyHeight, blindWidth / 2, 'corner_wing_back_blind', 'corner');
   }
 
@@ -102,14 +106,23 @@ export function applyCornerWingCarcassPanels(
         __addBackSeg(cell.width, cell.bodyHeight, cell.centerX, pid, cell.key);
       }
     }
-  } else if (activeWidth > 0.01) {
+  } else if (activeWidth > CORNER_WING_DIMENSIONS.wing.minActiveWidthM) {
     __addBackSeg(activeWidth, cabinetBodyHeight, blindWidth + activeWidth / 2, 'corner_wing_back', 'corner');
   }
 
   const __lastCell = cornerCells.length > 0 ? cornerCells[cornerCells.length - 1] : null;
-  const __rightH = __lastCell ? Math.max(0.05, __lastCell.bodyHeight) : cabinetBodyHeight;
-  const __rightCellD = __lastCell ? Math.max(0.2, __lastCell.depth) : wingD;
-  const __rt = resolveCornerWingWallPlacement(params, metrics, __rightCellD, 0.05);
+  const __rightH = __lastCell
+    ? Math.max(CORNER_WING_DIMENSIONS.panels.minPanelHeightM, __lastCell.bodyHeight)
+    : cabinetBodyHeight;
+  const __rightCellD = __lastCell
+    ? Math.max(CORNER_WING_DIMENSIONS.panels.minCellDepthM, __lastCell.depth)
+    : wingD;
+  const __rt = resolveCornerWingWallPlacement(
+    params,
+    metrics,
+    __rightCellD,
+    CORNER_WING_DIMENSIONS.panels.minWallDepthM
+  );
 
   const __rightId = 'corner_wing_side_right';
   let __rightMat = getCornerMat(__rightId, bodyMat);
@@ -127,9 +140,18 @@ export function applyCornerWingCarcassPanels(
   wingGroup.add(rightPanel);
 
   const __leftCell = cornerCells.length > 0 ? cornerCells[0] : null;
-  const __leftH = __leftCell ? Math.max(0.05, __leftCell.bodyHeight) : cabinetBodyHeight;
-  const __leftCellD = __leftCell ? Math.max(0.2, __leftCell.depth) : wingD;
-  const __lt = resolveCornerWingWallPlacement(params, metrics, __leftCellD, 0.05);
+  const __leftH = __leftCell
+    ? Math.max(CORNER_WING_DIMENSIONS.panels.minPanelHeightM, __leftCell.bodyHeight)
+    : cabinetBodyHeight;
+  const __leftCellD = __leftCell
+    ? Math.max(CORNER_WING_DIMENSIONS.panels.minCellDepthM, __leftCell.depth)
+    : wingD;
+  const __lt = resolveCornerWingWallPlacement(
+    params,
+    metrics,
+    __leftCellD,
+    CORNER_WING_DIMENSIONS.panels.minWallDepthM
+  );
 
   const __leftId = 'corner_wing_side_left';
   let __leftMat = getCornerMat(__leftId, bodyMat);
@@ -137,7 +159,9 @@ export function applyCornerWingCarcassPanels(
     __leftMat = cloneMaterialWithSide(__leftMat, THREE.DoubleSide, cloneMaybe);
   }
   const leftPanel = new THREE.Mesh(new THREE.BoxGeometry(woodThick, __leftH, __lt.depth), __leftMat);
-  const __wingAttachNoZFightingInsetX = cornerConnectorEnabled ? 0.0012 : 0;
+  const __wingAttachNoZFightingInsetX = cornerConnectorEnabled
+    ? CORNER_WING_DIMENSIONS.panels.noZFightAttachInsetM
+    : 0;
   leftPanel.position.set(
     blindWidth + woodThick / 2 + __wingAttachNoZFightingInsetX,
     startY + __leftH / 2,

@@ -127,6 +127,8 @@ export {
   getDefaultHeightForWardrobeType,
   getDefaultChestDrawersCount,
   resolveDefaultWardrobeDimensions,
+  resolveAutoWidthForDoors,
+  isAutoWidthForDoors,
 
   // Assertions
   assertApp,
