@@ -52,5 +52,6 @@ jobs:
             .artifacts/**
             test-results/**
             playwright-report/**
-          if-no-files-found: ignore
+          if-no-files-found: warn
+          include-hidden-files: true
           retention-days: 7

@@ -101,7 +101,8 @@ jobs:
             .artifacts/**
             test-results/**
             playwright-report/**
-          if-no-files-found: ignore
+          if-no-files-found: warn
+          include-hidden-files: true
           retention-days: 7
 
   lint:
@@ -133,7 +134,8 @@ jobs:
           name: lint-diagnostics
           path: |
             .artifacts/**
-          if-no-files-found: ignore
+          if-no-files-found: warn
+          include-hidden-files: true
           retention-days: 7
 
   typecheck:
@@ -165,7 +167,8 @@ jobs:
           name: typecheck-diagnostics
           path: |
             .artifacts/**
-          if-no-files-found: ignore
+          if-no-files-found: warn
+          include-hidden-files: true
           retention-days: 7
 
   strict-gate:
@@ -206,7 +209,8 @@ jobs:
             .artifacts/**
             test-results/**
             playwright-report/**
-          if-no-files-found: ignore
+          if-no-files-found: warn
+          include-hidden-files: true
           retention-days: 7
 
   audit:
@@ -264,7 +268,8 @@ jobs:
           path: |
             .artifacts/**
             dist/**
-          if-no-files-found: ignore
+          if-no-files-found: warn
+          include-hidden-files: true
           retention-days: 7
 
   e2e-smoke:
@@ -301,5 +306,6 @@ jobs:
             .artifacts/**
             test-results/**
             playwright-report/**
-          if-no-files-found: ignore
+          if-no-files-found: warn
+          include-hidden-files: true
           retention-days: 7

@@ -44,5 +44,6 @@ jobs:
             .artifacts/closeout-state.json
             .artifacts/closeout-logs/**
             .artifacts/test-report/**
-          if-no-files-found: ignore
+          if-no-files-found: warn
+          include-hidden-files: true
           retention-days: 14
