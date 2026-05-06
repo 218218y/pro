@@ -490,7 +490,7 @@ body.wp-ui-react #sidebar > :not(#reactSidebarRoot) {
 
 #reactSidebarRoot .wp-r-savedmodels-rowicon {
   min-width: 34px;
-  padding: 6px 8px !important;
+  padding: 6px 8px;
 }
 
 #reactSidebarRoot .wp-r-savedmodels-rowicon[aria-disabled='true'] {
@@ -565,9 +565,9 @@ body.wp-ui-react #sidebar > :not(#reactSidebarRoot) {
 }
 
 #reactSidebarRoot .wp-r-savedmodels-btn {
-  margin: 0 !important;
-  font-size: 0.8rem !important;
-  padding: 8px 10px !important;
+  margin: 0;
+  font-size: 0.8rem;
+  padding: 8px 10px;
   border-radius: 10px;
 }
 
@@ -577,9 +577,9 @@ body.wp-ui-react #sidebar > :not(#reactSidebarRoot) {
 }
 
 #reactSidebarRoot .wp-r-savedmodels-arrow {
-  margin: 0 !important;
+  margin: 0;
   flex: 1;
-  padding: 8px 0 !important;
+  padding: 8px 0;
   border-radius: 10px;
 }
 
@@ -1494,7 +1494,7 @@ body.wp-ui-react #sidebar > :not(#reactSidebarRoot) {
   .wp-tool-card--layout
   .wp-sketch-row
   .wp-r-type-selector.type-selector {
-  margin-bottom: 6px !important;
+  margin-bottom: 6px;
 }
 
 /* In the box grid we don't want any extra bottom margin inside the right column,
@@ -1505,7 +1505,7 @@ body.wp-ui-react #sidebar > :not(#reactSidebarRoot) {
   .wp-tool-card--layout
   .wp-sketch-box-col--btn
   .wp-r-type-selector.type-selector {
-  margin-bottom: 0 !important;
+  margin-bottom: 0;
 }
 
 /* Make sketch headers a bit tighter so sections don't look "floating" */
@@ -1617,7 +1617,7 @@ body.wp-ui-react #sidebar > :not(#reactSidebarRoot) {
 }
 
 #reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .wp-sketch-box-cell .wp-r-label {
-  margin-bottom: 4px !important;
+  margin-bottom: 4px;
 }
 
 #reactSidebarRoot
@@ -1721,10 +1721,10 @@ body.wp-ui-react #sidebar > :not(#reactSidebarRoot) {
 #reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--extdrawer .btn.btn-count {
   /* Some global .btn styles may set a fixed height/padding; force match to divider button */
   box-sizing: border-box;
-  padding: 10px 12px !important;
-  height: 35px !important;
-  min-height: 32px !important;
-  max-height: 42px !important;
+  padding: 10px 12px;
+  height: 35px;
+  min-height: 32px;
+  max-height: 42px;
   font-size: 0.9rem;
   line-height: 1;
 }
@@ -1791,9 +1791,9 @@ body.wp-ui-react #sidebar > :not(#reactSidebarRoot) {
 }
 
 #reactSidebarRoot .tab-content[data-tab='render'] .wp-r-floor-type-selector {
-  display: grid !important;
+  display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px !important;
+  gap: 10px;
 }
 
 #reactSidebarRoot .tab-content[data-tab='render'] .wp-r-floor-type-selector .type-option {
@@ -1809,8 +1809,8 @@ body.wp-ui-react #sidebar > :not(#reactSidebarRoot) {
   line-height: 1.1;
   white-space: nowrap;
   box-sizing: border-box;
-  margin: 0 !important;
-  transform: none !important;
+  margin: 0;
+  transform: none;
 }
 
 #reactSidebarRoot .tab-content[data-tab='render'] .wp-r-floor-type-selector .type-option.selected {
@@ -1852,10 +1852,10 @@ body.wp-ui-react #sidebar > :not(#reactSidebarRoot) {
 
 #reactSidebarRoot .tab-content[data-tab='render'] .color-picker-row .color-dot-swatch,
 #reactSidebarRoot .tab-content[data-tab='design'] .color-picker-row .color-dot-swatch {
-  width: 38px !important;
-  height: 38px !important;
-  border-radius: 999px !important;
-  border: 2px solid #e2e8f0 !important;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  border: 2px solid #e2e8f0;
   box-sizing: border-box;
   cursor: pointer;
   display: block;
@@ -1864,12 +1864,12 @@ body.wp-ui-react #sidebar > :not(#reactSidebarRoot) {
 
 #reactSidebarRoot .tab-content[data-tab='render'] .color-picker-row .color-dot-swatch:hover,
 #reactSidebarRoot .tab-content[data-tab='design'] .color-picker-row .color-dot-swatch:hover {
-  border-color: rgba(59, 130, 246, 0.45) !important;
+  border-color: rgba(59, 130, 246, 0.45);
 }
 
 #reactSidebarRoot .tab-content[data-tab='render'] .color-picker-row .color-dot-swatch.is-selected,
 #reactSidebarRoot .tab-content[data-tab='design'] .color-picker-row .color-dot-swatch.is-selected {
-  border-color: rgba(59, 130, 246, 0.85) !important;
+  border-color: rgba(59, 130, 246, 0.85);
   box-shadow: inset 0 0 0 2px rgba(59, 130, 246, 0.35);
 }
 
@@ -1940,26 +1940,26 @@ body.wp-ui-react #sidebar > :not(#reactSidebarRoot) {
 #reactSidebarRoot .tab-content[data-tab='render'] .wp-r-light-presets .type-option {
   margin: 0;
   border-width: 1px;
-  transform: none !important;
-  box-shadow: none !important;
-  box-sizing: border-box !important;
-  border: 1px solid #e2e8f0 !important;
+  transform: none;
+  box-shadow: none;
+  box-sizing: border-box;
+  border: 1px solid #e2e8f0;
   background-clip: padding-box;
   position: relative;
   z-index: var(--wp-z-local-base);
 }
 
 #reactSidebarRoot .tab-content[data-tab='render'] .wp-r-light-presets .type-option:hover {
-  transform: none !important;
-  border-color: #cbd5e1 !important;
-  box-shadow: none !important;
+  transform: none;
+  border-color: #cbd5e1;
+  box-shadow: none;
 }
 
 #reactSidebarRoot .tab-content[data-tab='render'] .wp-r-light-presets .type-option.selected {
-  box-shadow: inset 0 0 0 2px #3b82f6 !important;
-  border-color: transparent !important;
-  background: rgba(59, 130, 246, 0.05) !important;
-  color: #3b82f6 !important;
+  box-shadow: inset 0 0 0 2px #3b82f6;
+  border-color: transparent;
+  background: rgba(59, 130, 246, 0.05);
+  color: #3b82f6;
   z-index: var(--wp-z-local-raised);
 }
 
@@ -2024,9 +2024,9 @@ body.wp-ui-react #sidebar > :not(#reactSidebarRoot) {
 }
 
 #reactSidebarRoot .wp-r-btn-row.wp-r-split-between > .btn {
-  width: 100% !important;
+  width: 100%;
   min-width: 0;
-  margin-bottom: 0 !important;
+  margin-bottom: 0;
   height: 100%;
   /* Keep the row single-line by allowing the label INSIDE the button to wrap instead of pushing layout. */
   white-space: normal;
@@ -2034,14 +2034,14 @@ body.wp-ui-react #sidebar > :not(#reactSidebarRoot) {
 }
 
 #reactSidebarRoot .wp-r-btn-row > .btn {
-  margin-bottom: 0 !important;
+  margin-bottom: 0;
   flex: 1 1 120px;
 }
 
 #reactSidebarRoot .wp-r-project-panel .wp-r-project-io-btn {
   min-height: 40px;
-  padding-top: 9px !important;
-  padding-bottom: 9px !important;
+  padding-top: 9px;
+  padding-bottom: 9px;
 }
 
 #reactSidebarRoot .wp-r-project-panel .wp-r-project-restore {
@@ -2305,34 +2305,34 @@ body.wp-ui-react .btn:active {
 }
 
 body.wp-ui-react .btn-primary {
-  background: #eff6ff !important;
-  color: #3b82f6 !important;
-  border: 1px solid #3b82f6 !important;
-  box-shadow: none !important;
-  font-weight: 700 !important;
+  background: #eff6ff;
+  color: #3b82f6;
+  border: 1px solid #3b82f6;
+  box-shadow: none;
+  font-weight: 700;
   transition:
     background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
     border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1),
     color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 body.wp-ui-react .btn-primary:hover {
-  background: #dbeafe !important;
-  color: #1e40af !important;
-  border-color: #2563eb !important;
+  background: #dbeafe;
+  color: #1e40af;
+  border-color: #2563eb;
   transform: translateY(-2px);
-  box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2) !important;
+  box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2);
 }
 
 body.wp-ui-react .btn-primary:active {
-  background: #bfdbfe !important;
-  transform: translateY(0) !important;
+  background: #bfdbfe;
+  transform: translateY(0);
 }
 
 body.wp-ui-react .btn-primary i {
-  color: inherit !important;
+  color: inherit;
 }
 
 body.wp-ui-react .btn-accent {
@@ -2646,20 +2646,20 @@ body.wp-ui-react .btn-cancel:hover {
 }
 
 #reactSidebarRoot input[type='checkbox']:checked + .toggle-switch {
-  background: #4e637e !important;
-  border: 1px solid #3b82f6 !important;
-  opacity: 1 !important;
+  background: #4e637e;
+  border: 1px solid #3b82f6;
+  opacity: 1;
 }
 
 #reactSidebarRoot input[type='checkbox']:checked + .toggle-switch::after {
-  background-color: #ffffff !important;
-  box-shadow: none !important;
-  left: 2px !important;
-  transform: translateX(18px) !important;
+  background-color: #ffffff;
+  box-shadow: none;
+  left: 2px;
+  transform: translateX(18px);
 }
 
 #reactSidebarRoot input[type='checkbox']:focus + .toggle-switch {
-  box-shadow: 0 0 0 2px rgba(78, 99, 126, 0.4) !important;
+  box-shadow: 0 0 0 2px rgba(78, 99, 126, 0.4);
 }
 
 #reactSidebarRoot .groove-check-label {
@@ -2987,14 +2987,14 @@ body.wp-ui-react .btn-cancel:hover {
 }
 
 body.wp-ui-react .btn-inline {
-  width: auto !important;
-  margin-bottom: 0 !important;
+  width: auto;
+  margin-bottom: 0;
   white-space: nowrap;
 }
 
 body.wp-ui-react .btn-sm {
-  padding: 6px 10px !important;
-  font-size: 0.85rem !important;
+  padding: 6px 10px;
+  font-size: 0.85rem;
 }
 
 #reactSidebarRoot .wp-flex-1 {
@@ -3657,10 +3657,10 @@ body.wp-ui-react .toolbar-color-btn {
 }
 
 body.wp-ui-react .toolbar-size-select {
-  appearance: none !important;
-  -webkit-appearance: none !important;
-  -moz-appearance: none !important;
-  background-image: none !important;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: none;
   height: 36px;
   width: 36px;
   text-align: center;
@@ -3753,15 +3753,15 @@ body.wp-ui-react .size-swatch.is-selected {
 }
 
 body.wp-ui-react #btnDrawNote.active {
-  background-color: #eff6ff !important;
-  color: #3b82f6 !important;
-  border: 2px solid #3b82f6 !important;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
-  font-weight: 700 !important;
+  background-color: #eff6ff;
+  color: #3b82f6;
+  border: 2px solid #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  font-weight: 700;
 }
 
 body.wp-ui-react #btnDrawNote.active i {
-  color: #3b82f6 !important;
+  color: #3b82f6;
 }
 
 body.wp-ui-react #notes-overlay {
@@ -4184,16 +4184,16 @@ body.wp-ui-react .modal-actions {
 }
 
 body.wp-ui-react .btn-count {
-  background: #f1f5f9 !important;
-  border: 1px solid #cbd5e1 !important;
-  color: #334155 !important;
-  width: auto !important;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  width: auto;
 }
 
 body.wp-ui-react .btn-count.is-selected {
-  background: var(--primary) !important;
-  border-color: var(--primary) !important;
-  color: #fff !important;
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
 }
 
 /* ------------------------------------------------------------
@@ -4239,7 +4239,7 @@ body.wp-ui-react .wp-qa-toggle-pin {
     border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
     color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
     transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: visible !important;
+  overflow: visible;
 }
 
 body.wp-ui-react .wp-qa-toggle-pin i {
@@ -4275,7 +4275,7 @@ body.wp-ui-react .cam-btn.wp-qa-toggle {
 
 /* Keep hover subtle (never push the button down) */
 body.wp-ui-react .cam-btn.wp-qa-toggle:hover {
-  transform: translateY(-2px) !important;
+  transform: translateY(-2px);
 }
 
 /* Sync button docked under the toggle (shown when menu is open or sync is pinned) */
@@ -4404,7 +4404,7 @@ body.wp-ui-react .wp-qa-btn {
     transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   font-size: 0.95rem;
   position: relative;
-  overflow: visible !important;
+  overflow: visible;
 }
 
 body.wp-ui-react .wp-qa-btn:hover {
@@ -4435,7 +4435,7 @@ body.wp-ui-react .wp-qa-sync {
     transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   font-size: 1rem;
   position: relative;
-  overflow: visible !important;
+  overflow: visible;
 }
 
 body.wp-ui-react .wp-qa-sync:hover {
@@ -5107,8 +5107,8 @@ body.wp-ui-react .wp-pdf-inline-preview {
 
 #reactSidebarRoot .wp-door-trim-panel .btn.btn-count {
   min-height: 30px;
-  padding: 5px 8px !important;
-  font-size: 0.78rem !important;
+  padding: 5px 8px;
+  font-size: 0.78rem;
   line-height: 1.15;
 }
 

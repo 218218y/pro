@@ -7,7 +7,7 @@ CSS cascade debt ratchet. Counts may stay at or below these limits; z-index decl
 
 | Metric          | Current | Max | Status | Note                                                                                             |
 | --------------- | ------: | --: | ------ | ------------------------------------------------------------------------------------------------ |
-| important       |     128 | 128 | ok     | Locks the current !important count so cascade exceptions do not grow silently.                   |
+| important       |      41 |  41 | ok     | Locks the current !important count so cascade exceptions do not grow silently.                   |
 | transitionAll   |       0 |   0 | ok     | Locks transition: all usage; new transitions should name concrete properties.                    |
 | zIndex          |      52 |  52 | ok     | Locks the total z-index declaration count while layering is centralized through tokens.          |
 | boxShadow       |     116 | 116 | ok     | Locks one-off shadow count until shadows move to shared tokens.                                  |

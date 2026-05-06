@@ -18,6 +18,7 @@ function readJson(file) {
 }
 
 const GUARD_FILE = 'tests/refactor_stage80_measurement_perf_closeout_guard.test.js';
+const CSS_IMPORTANT_RATCHET_CEILING = 41;
 
 test('stage 80 measurement and performance closeout is anchored', () => {
   const pkg = readJson('package.json');
@@ -83,7 +84,10 @@ test('stage 80 measurement and performance closeout is anchored', () => {
   );
   assert.match(scripts['report:css-style'], /--budget=tools\/wp_css_style_budget\.json/);
   assert.equal(cssBudget.file, 'css/react_styles.css');
-  assert.equal(cssBudget.metrics.important.max, 128);
+  assert.ok(
+    cssBudget.metrics.important.max <= CSS_IMPORTANT_RATCHET_CEILING,
+    'CSS !important budget must not drift above the latest cleanup ratchet'
+  );
   assert.equal(cssBudget.metrics.transitionAll.max, 0);
   assert.equal(cssBudget.metrics.zIndex.max, 52);
   assert.equal(cssBudget.metrics.zIndexTokenless.max, 0);
