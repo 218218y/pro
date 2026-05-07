@@ -1,3 +1,4 @@
+import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type {
   SketchBoxDividerState,
   SketchBoxSegmentState,
@@ -14,19 +15,29 @@ export function resolveSketchBoxSegments(args: {
   innerW: number;
   woodThick: number;
 }): SketchBoxSegmentState[] {
-  const safeInnerW = Number.isFinite(Number(args.innerW)) ? Math.max(0.02, Number(args.innerW)) : 0.02;
+  const safeInnerW = Number.isFinite(Number(args.innerW))
+    ? Math.max(SKETCH_BOX_DIMENSIONS.dividers.minInnerWidthM, Number(args.innerW))
+    : SKETCH_BOX_DIMENSIONS.dividers.minInnerWidthM;
   const safeCenterX = Number.isFinite(Number(args.boxCenterX)) ? Number(args.boxCenterX) : 0;
   const safeWoodThick =
-    Number.isFinite(Number(args.woodThick)) && Number(args.woodThick) > 0 ? Number(args.woodThick) : 0.018;
+    Number.isFinite(Number(args.woodThick)) && Number(args.woodThick) > 0
+      ? Number(args.woodThick)
+      : SKETCH_BOX_DIMENSIONS.dividers.fallbackWoodThicknessM;
   const leftX = safeCenterX - safeInnerW / 2;
   const rightX = safeCenterX + safeInnerW / 2;
-  const dividerHalf = Math.min(safeInnerW / 2, Math.max(safeWoodThick / 2, 0.006));
+  const dividerHalf = Math.min(
+    safeInnerW / 2,
+    Math.max(safeWoodThick / 2, SKETCH_BOX_DIMENSIONS.dividers.dividerHalfMinM)
+  );
   const placements = resolveSketchBoxDividerPlacements(args);
   const segments: SketchBoxSegmentState[] = [];
   const pushSegment = (segLeft: number, segRight: number) => {
-    if (!(segRight > segLeft + 0.0001)) return;
+    if (!(segRight > segLeft + SKETCH_BOX_DIMENSIONS.dividers.segmentEdgeEpsilonM)) return;
     const centerX = (segLeft + segRight) / 2;
-    const xNorm = safeInnerW > 0 ? Math.max(0, Math.min(1, (centerX - leftX) / safeInnerW)) : 0.5;
+    const xNorm =
+      safeInnerW > 0
+        ? Math.max(0, Math.min(1, (centerX - leftX) / safeInnerW))
+        : SKETCH_BOX_DIMENSIONS.dividers.defaultCenterNorm;
     segments.push({
       index: segments.length,
       leftX: segLeft,
@@ -66,7 +77,9 @@ export function pickSketchBoxSegment(args: {
   } else {
     const norm = normalizeSketchBoxDividerXNorm(args.xNorm);
     if (norm != null) {
-      const safeInnerW = Number.isFinite(Number(args.innerW)) ? Math.max(0.02, Number(args.innerW)) : 0.02;
+      const safeInnerW = Number.isFinite(Number(args.innerW))
+        ? Math.max(SKETCH_BOX_DIMENSIONS.dividers.minInnerWidthM, Number(args.innerW))
+        : SKETCH_BOX_DIMENSIONS.dividers.minInnerWidthM;
       const safeCenterX = Number.isFinite(Number(args.boxCenterX)) ? Number(args.boxCenterX) : 0;
       targetX = safeCenterX - safeInnerW / 2 + norm * safeInnerW;
     }
@@ -74,7 +87,7 @@ export function pickSketchBoxSegment(args: {
 
   if (!Number.isFinite(targetX)) return segments[0] || null;
 
-  const edgeEps = 0.0005;
+  const edgeEps = SKETCH_BOX_DIMENSIONS.dividers.pickEdgeEpsilonM;
   for (let i = 0; i < segments.length; i++) {
     const segment = segments[i];
     if (targetX >= segment.leftX - edgeEps && targetX <= segment.rightX + edgeEps) return segment;

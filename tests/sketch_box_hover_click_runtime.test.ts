@@ -109,6 +109,7 @@ test('module sketch external drawers preview reads the selector front envelope i
     bundle,
     /const faceEnvelope = selectorFrontEnvelope \?\? readSelectorFrontEnvelope\(hitSelectorObj\);/
   );
-  assert.match(bundle, /const outerW = Math\.max\(0\.08, faceEnvelope\?\.outerW \?\? innerW\);/);
+  assert.match(bundle, /DRAWER_DIMENSIONS\.sketch\.externalPreviewMinWidthM/);
+  assert.match(bundle, /const outerW = Math\.max\([\s\S]*faceEnvelope\?\.outerW \?\? innerW\);/);
   assert.match(bundle, /const frontPlaneZ =[\s\S]*faceEnvelope\?\.centerZ[\s\S]*faceEnvelope\?\.outerD/);
 });

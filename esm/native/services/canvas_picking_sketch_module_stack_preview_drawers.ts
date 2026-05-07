@@ -1,3 +1,4 @@
+import { DRAWER_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
   buildManualLayoutSketchExternalDrawerBlockers,
   createManualLayoutSketchNormalizedCenterReader,
@@ -37,12 +38,35 @@ function resolveSketchStandardDrawerRemoval(args: {
   }
 
   const divsRaw = Number(readRecordValue(cfgRef, 'gridDivisions'));
-  const divs = Number.isFinite(divsRaw) && divsRaw >= 2 && divsRaw <= 12 ? Math.floor(divsRaw) : 6;
-  const localGridStep = divs > 0 ? totalHeight / divs : totalHeight / 6;
-  const targetSingleDrawerH = (Math.min(0.35, localGridStep - 0.02) - 0.02) / 2;
-  const hStd = Number.isFinite(targetSingleDrawerH) && targetSingleDrawerH > 0 ? targetSingleDrawerH : 0.11;
-  const halfStd = hStd + 0.01;
-  const tolStd = Math.max(0.045, Math.min(0.14, halfStd + 0.02));
+  const divs =
+    Number.isFinite(divsRaw) &&
+    divsRaw >= DRAWER_DIMENSIONS.sketch.internalPreviewGridDivisionsMin &&
+    divsRaw <= DRAWER_DIMENSIONS.sketch.internalPreviewGridDivisionsMax
+      ? Math.floor(divsRaw)
+      : DRAWER_DIMENSIONS.sketch.internalPreviewGridDivisionsFallback;
+  const localGridStep =
+    divs > 0
+      ? totalHeight / divs
+      : totalHeight / DRAWER_DIMENSIONS.sketch.internalPreviewGridDivisionsFallback;
+  const targetSingleDrawerH =
+    (Math.min(
+      DRAWER_DIMENSIONS.internal.maxSingleDrawerHeightM,
+      localGridStep - DRAWER_DIMENSIONS.sketch.internalPreviewGridHeadClearanceM
+    ) -
+      DRAWER_DIMENSIONS.sketch.internalPreviewSingleDrawerGapM) /
+    2;
+  const hStd =
+    Number.isFinite(targetSingleDrawerH) && targetSingleDrawerH > 0
+      ? targetSingleDrawerH
+      : DRAWER_DIMENSIONS.sketch.internalPreviewDefaultSingleHeightM;
+  const halfStd = hStd + DRAWER_DIMENSIONS.sketch.internalPreviewRemovalHalfExtraM;
+  const tolStd = Math.max(
+    DRAWER_DIMENSIONS.sketch.internalPreviewRemovalToleranceMinM,
+    Math.min(
+      DRAWER_DIMENSIONS.sketch.internalPreviewRemovalToleranceMaxM,
+      halfStd + DRAWER_DIMENSIONS.sketch.internalPreviewRemovalToleranceExtraM
+    )
+  );
 
   const slots: number[] = [];
   const lst = readRecordValue(cfgRef, 'intDrawersList');
@@ -66,7 +90,9 @@ function resolveSketchStandardDrawerRemoval(args: {
     seen.add(slot);
 
     const baseGridY = bottomY + (slot - 1) * localGridStep;
-    const centerAbs = clampCenter(baseGridY + hStd + 0.02);
+    const centerAbs = clampCenter(
+      baseGridY + hStd + DRAWER_DIMENSIONS.sketch.internalPreviewSingleDrawerGapM
+    );
     const dy = Math.abs(desiredCenterY - centerAbs);
     if (dy <= tolStd && dy < bestDy) {
       bestDy = dy;
@@ -158,8 +184,14 @@ export function resolveSketchModuleDrawersPreview(
       removeSlot = stdRemoval.removeSlot;
     }
   }
-  const previewW = Math.max(0.05, innerW - 0.03);
-  const previewD = Math.max(0.05, internalDepth - 0.02);
+  const previewW = Math.max(
+    DRAWER_DIMENSIONS.sketch.internalPreviewMinWidthM,
+    innerW - DRAWER_DIMENSIONS.sketch.internalPreviewWidthClearanceM
+  );
+  const previewD = Math.max(
+    DRAWER_DIMENSIONS.sketch.internalPreviewMinDepthM,
+    internalDepth - DRAWER_DIMENSIONS.sketch.internalPreviewDepthClearanceM
+  );
   const clearanceMeasurements = buildSketchModuleStackAwareMeasurementEntries({
     bottomY,
     topY,
@@ -175,9 +207,15 @@ export function resolveSketchModuleDrawersPreview(
     targetCenterY: yCenter,
     targetWidth: previewW,
     targetHeight: placement.stackH,
-    z: internalZ + previewD / 2 + Math.max(0.004, previewD * 0.08),
+    z:
+      internalZ +
+      previewD / 2 +
+      Math.max(
+        DRAWER_DIMENSIONS.sketch.internalPreviewMeasurementZOffsetMinM,
+        previewD * DRAWER_DIMENSIONS.sketch.internalPreviewMeasurementZOffsetDepthRatio
+      ),
     styleKey: 'cell',
-    textScale: 0.82,
+    textScale: SKETCH_BOX_DIMENSIONS.preview.measurementTextScale,
   });
   return {
     hoverRecord: createManualLayoutSketchStackHoverRecord({

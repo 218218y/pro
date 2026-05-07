@@ -1,3 +1,5 @@
+import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+
 import {
   normalizeSketchFreeBoxDimensionEntry,
   resolveSketchFreeBoxDimensionTolerance,
@@ -10,8 +12,16 @@ export function areSketchFreeBoxDimensionSegmentsAdjacent(
   left: SketchFreeBoxDimensionSegment,
   right: SketchFreeBoxDimensionSegment
 ): boolean {
-  const tolX = resolveSketchFreeBoxDimensionTolerance(Math.min(left.width, right.width), 0.012, 0.03);
-  const tolY = resolveSketchFreeBoxDimensionTolerance(Math.min(left.height, right.height), 0.015, 0.05);
+  const tolX = resolveSketchFreeBoxDimensionTolerance(
+    Math.min(left.width, right.width),
+    SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupAdjacentToleranceXMinM,
+    SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupAdjacentToleranceXMaxM
+  );
+  const tolY = resolveSketchFreeBoxDimensionTolerance(
+    Math.min(left.height, right.height),
+    SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupAdjacentToleranceYMinM,
+    SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupAdjacentToleranceYMaxM
+  );
   const gapX = Math.max(0, Math.max(left.minX, right.minX) - Math.min(left.maxX, right.maxX));
   const gapY = Math.max(0, Math.max(left.bottomY, right.bottomY) - Math.min(left.topY, right.topY));
   const overlapX = Math.min(left.maxX, right.maxX) - Math.max(left.minX, right.minX);
@@ -79,7 +89,11 @@ export function mergeSketchFreeBoxDimensionSpans(
     const span = sorted[i];
     if (!span) continue;
     const spanWidth = span.max - span.min;
-    const tol = resolveSketchFreeBoxDimensionTolerance(spanWidth, 0.012, 0.03);
+    const tol = resolveSketchFreeBoxDimensionTolerance(
+      spanWidth,
+      SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupSpanMergeToleranceMinM,
+      SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupSpanMergeToleranceMaxM
+    );
     let matched = false;
 
     for (let j = 0; j < merged.length; j++) {

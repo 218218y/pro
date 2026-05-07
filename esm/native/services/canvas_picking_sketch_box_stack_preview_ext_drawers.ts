@@ -1,3 +1,4 @@
+import { DRAWER_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
   buildManualLayoutSketchInternalDrawerBlockers,
   resolveManualLayoutSketchExternalDrawerPlacement,
@@ -34,12 +35,15 @@ export function resolveSketchBoxExternalDrawersPreview(
 
   const placement = resolveManualLayoutSketchExternalDrawerPlacement({
     desiredCenterY: pointerY,
-    selectedDrawerCount: selectedDrawerCount != null && selectedDrawerCount > 0 ? selectedDrawerCount : 3,
+    selectedDrawerCount:
+      selectedDrawerCount != null && selectedDrawerCount > 0
+        ? selectedDrawerCount
+        : DRAWER_DIMENSIONS.sketch.externalPreviewDefaultCount,
     drawerHeightM: args.drawerHeightM,
     bottomY: boxBottomY,
     topY: boxTopY,
     pad: woodThick,
-    gap: 0.008,
+    gap: DRAWER_DIMENSIONS.sketch.verticalStackCollisionGapM,
     extDrawers: localExtDrawers,
     readCenterY,
     blockers: buildManualLayoutSketchInternalDrawerBlockers({
@@ -59,10 +63,19 @@ export function resolveSketchBoxExternalDrawersPreview(
       : targetGeo.centerX;
   const faceWidth = frontOverlay
     ? frontOverlay.w
-    : Math.max(0.05, (activeSegment ? activeSegment.width : targetGeo.innerW) - 0.004);
-  const previewW = Math.max(0.05, faceWidth - 0.004);
-  const previewZ = frontOverlay ? frontOverlay.z : targetGeo.centerZ + targetGeo.outerD / 2 + 0.01;
-  const previewD = frontOverlay ? frontOverlay.d : 0.02;
+    : Math.max(
+        DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinWidthM,
+        (activeSegment ? activeSegment.width : targetGeo.innerW) -
+          DRAWER_DIMENSIONS.external.visualWidthClearanceM
+      );
+  const previewW = Math.max(
+    DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinWidthM,
+    faceWidth - DRAWER_DIMENSIONS.external.visualWidthClearanceM
+  );
+  const previewZ = frontOverlay
+    ? frontOverlay.z
+    : targetGeo.centerZ + targetGeo.outerD / 2 + DRAWER_DIMENSIONS.external.frontOffsetZM;
+  const previewD = frontOverlay ? frontOverlay.d : DRAWER_DIMENSIONS.external.visualThicknessM;
   const clearanceMeasurements = buildSketchBoxStackAwareMeasurementEntries({
     bottomY: boxBottomY + woodThick,
     topY: boxTopY - woodThick,
@@ -82,15 +95,24 @@ export function resolveSketchBoxExternalDrawersPreview(
     targetCenterY: placement.yCenter,
     targetWidth: previewW,
     targetHeight: placement.stackH,
-    z: previewZ + previewD / 2 + Math.max(0.004, previewD * 0.25),
+    z:
+      previewZ +
+      previewD / 2 +
+      Math.max(
+        DRAWER_DIMENSIONS.sketch.externalPreviewMeasurementZOffsetMinM,
+        previewD * DRAWER_DIMENSIONS.sketch.externalPreviewMeasurementZOffsetThicknessRatio
+      ),
     styleKey: 'cell',
-    textScale: 0.82,
+    textScale: SKETCH_BOX_DIMENSIONS.preview.measurementTextScale,
   });
   const drawersPreview: RecordMap[] = [];
   for (let i = 0; i < placement.drawerCount; i++) {
     drawersPreview.push({
       y: baseY + i * drawerH + drawerH / 2,
-      h: Math.max(0.05, drawerH - 0.008),
+      h: Math.max(
+        DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinHeightM,
+        drawerH - DRAWER_DIMENSIONS.external.visualHeightClearanceM
+      ),
     });
   }
 

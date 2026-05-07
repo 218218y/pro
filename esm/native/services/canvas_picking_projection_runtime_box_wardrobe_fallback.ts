@@ -1,4 +1,10 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
+import {
+  cmToM,
+  mToCm,
+  NO_MAIN_SKETCH_DIMENSIONS,
+  WARDROBE_DEFAULTS,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { getCacheBag } from '../runtime/cache_access.js';
 import { asRecord, getProp } from '../runtime/record.js';
 import { __wp_cfg, __wp_ui } from './canvas_picking_core_helpers.js';
@@ -88,7 +94,7 @@ function __readNoMainWorkspaceWidthCm(App: AppContainer): number | null {
 
     if (!hasFreeBox || !Number.isFinite(minX) || !Number.isFinite(maxX) || !(maxX > minX)) return null;
 
-    return Math.max(0, (maxX - minX + 0.12) * 100);
+    return Math.max(0, mToCm(maxX - minX + NO_MAIN_SKETCH_DIMENSIONS.workspacePaddingM));
   } catch {
     return null;
   }
@@ -119,17 +125,17 @@ export function __readNoMainWardrobeFallbackBox(App: AppContainer): __Projection
     const rawDepthCm = Math.max(0, __readRawNumber(raw, 'depth', __readUiNumber(ui, 'depth', 0)));
 
     const sketchWidthCm = __readNoMainWorkspaceWidthCm(App);
-    const widthCm = Math.max(rawWidthCm, sketchWidthCm ?? 0, 160);
-    const heightCm = Math.max(rawHeightCm, 240);
-    const depthCm = Math.max(rawDepthCm, 55);
+    const widthCm = Math.max(rawWidthCm, sketchWidthCm ?? 0, WARDROBE_DEFAULTS.widthCm);
+    const heightCm = Math.max(rawHeightCm, WARDROBE_DEFAULTS.heightCm);
+    const depthCm = Math.max(rawDepthCm, WARDROBE_DEFAULTS.byType.hinged.depthCm);
 
     return {
       centerX: 0,
-      centerY: heightCm / 200,
-      centerZ: -depthCm / 200,
-      width: widthCm / 100,
-      height: heightCm / 100,
-      depth: depthCm / 100,
+      centerY: cmToM(heightCm) / 2,
+      centerZ: -cmToM(depthCm) / 2,
+      width: cmToM(widthCm),
+      height: cmToM(heightCm),
+      depth: cmToM(depthCm),
     };
   } catch {
     return null;

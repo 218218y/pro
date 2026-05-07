@@ -1,3 +1,5 @@
+import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+
 export function resolveSketchFreeAttachIntent(args: {
   dx: number;
   dy: number;
@@ -27,21 +29,35 @@ export function resolveSketchFreeAttachIntent(args: {
     return null;
   }
 
+  const dims = SKETCH_BOX_DIMENSIONS.freePlacement;
   const previewHalfW = previewW / 2;
   const previewHalfH = previewH / 2;
   const minOverlap = Math.max(
-    0.012,
-    Math.min(0.04, Math.min(Math.min(targetHalfW * 2, targetHalfH * 2), Math.min(previewW, previewH)) * 0.18)
+    dims.attachIntentMinOverlapMinM,
+    Math.min(
+      dims.attachIntentMinOverlapMaxM,
+      Math.min(Math.min(targetHalfW * 2, targetHalfH * 2), Math.min(previewW, previewH)) *
+        dims.attachIntentMinOverlapRatio
+    )
   );
   const allowedDxForVertical = Math.max(0, targetHalfW + previewHalfW - minOverlap);
   const allowedDyForHorizontal = Math.max(0, targetHalfH + previewHalfH - minOverlap);
   const edgeDistX = Math.abs(dx - targetHalfW);
   const edgeDistY = Math.abs(dy - targetHalfH);
   const edgeBand = Math.max(
-    0.018,
-    Math.min(0.07, Math.min(targetHalfW, targetHalfH, previewHalfW, previewHalfH) * 0.55)
+    dims.attachIntentEdgeBandMinM,
+    Math.min(
+      dims.attachIntentEdgeBandMaxM,
+      Math.min(targetHalfW, targetHalfH, previewHalfW, previewHalfH) * dims.attachIntentEdgeBandRatio
+    )
   );
-  const edgeDominance = Math.max(0.01, Math.min(0.045, Math.min(previewW, previewH) * 0.18));
+  const edgeDominance = Math.max(
+    dims.attachIntentEdgeDominanceMinM,
+    Math.min(
+      dims.attachIntentEdgeDominanceMaxM,
+      Math.min(previewW, previewH) * dims.attachIntentEdgeDominanceRatio
+    )
+  );
   const withinVerticalCorridor = dx <= allowedDxForVertical + edgeBand;
   const withinHorizontalCorridor = dy <= allowedDyForHorizontal + edgeBand;
 
@@ -50,7 +66,13 @@ export function resolveSketchFreeAttachIntent(args: {
 
   const outsideX = Math.max(0, dx - targetHalfW);
   const outsideY = Math.max(0, dy - targetHalfH);
-  const outsideBias = Math.max(0.008, Math.min(0.03, Math.min(previewW, previewH) * 0.12));
+  const outsideBias = Math.max(
+    dims.attachIntentOutsideBiasMinM,
+    Math.min(
+      dims.attachIntentOutsideBiasMaxM,
+      Math.min(previewW, previewH) * dims.attachIntentOutsideBiasRatio
+    )
+  );
   if (outsideX > 0 && !(outsideY > 0)) return 'x';
   if (outsideY > 0 && !(outsideX > 0)) return 'y';
   if (outsideX > 0 && outsideY > 0) {
@@ -58,7 +80,13 @@ export function resolveSketchFreeAttachIntent(args: {
     return null;
   }
 
-  const edgeBias = Math.max(0.008, Math.min(0.03, Math.min(targetHalfW, targetHalfH) * 0.18));
+  const edgeBias = Math.max(
+    dims.attachIntentEdgeBiasMinM,
+    Math.min(
+      dims.attachIntentEdgeBiasMaxM,
+      Math.min(targetHalfW, targetHalfH) * dims.attachIntentEdgeBiasRatio
+    )
+  );
   if (Math.abs(edgeDistX - edgeDistY) > edgeBias) return edgeDistX < edgeDistY ? 'x' : 'y';
   return null;
 }
@@ -75,6 +103,10 @@ export function addSketchFreeAttachIntentBias(args: {
   if (!Number.isFinite(score) || !preferredFixedAxis || args.fixedAxis === preferredFixedAxis) return score;
   const previewW = Number(args.previewW);
   const previewH = Number(args.previewH);
-  const bias = Math.max(0.06, Math.min(0.24, Math.max(previewW, previewH) * 0.5));
+  const dims = SKETCH_BOX_DIMENSIONS.freePlacement;
+  const bias = Math.max(
+    dims.attachIntentScoreBiasMinM,
+    Math.min(dims.attachIntentScoreBiasMaxM, Math.max(previewW, previewH) * dims.attachIntentScoreBiasRatio)
+  );
   return score + bias;
 }

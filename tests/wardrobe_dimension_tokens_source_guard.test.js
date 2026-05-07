@@ -94,3 +94,37 @@ test('[dimension tokens] interior presets and sketch drawer sizing read canonica
   assert.doesNotMatch(drawerSizing, /\/ 100/);
   assert.doesNotMatch(drawerSizing, /HEIGHT_TOKEN_EPSILON = 0\.0001/);
 });
+
+test('[dimension tokens] sketch divider, attachment, and free-box measurement overlays are centralized', () => {
+  const tokens = read(productDimensionTokenSource);
+  assert.match(tokens, /dividers: Object\.freeze\(\{/);
+  assert.match(tokens, /dimensionOverlay: Object\.freeze\(\{/);
+  assert.match(tokens, /attachIntentMinOverlapMinM:/);
+  assert.match(tokens, /placementGapFallbackM:/);
+
+  for (const rel of [
+    'esm/native/builder/render_interior_sketch_layout_dividers.ts',
+    'esm/native/builder/render_interior_sketch_layout_dimensions_grouping.ts',
+    'esm/native/builder/render_interior_sketch_layout_dimensions_render.ts',
+    'esm/native/services/canvas_picking_sketch_box_divider_state_placement.ts',
+    'esm/native/services/canvas_picking_sketch_box_divider_state_match.ts',
+    'esm/native/services/canvas_picking_sketch_box_segments.ts',
+    'esm/native/services/canvas_picking_sketch_free_box_placement_intent.ts',
+    'esm/native/services/canvas_picking_sketch_free_box_gap.ts',
+  ]) {
+    assertUsesToken(rel, 'SKETCH_BOX_DIMENSIONS');
+  }
+
+  const freeBoxGap = read('esm/native/services/canvas_picking_sketch_free_box_gap.ts');
+  assert.doesNotMatch(freeBoxGap, /return 0\.002/);
+  assert.doesNotMatch(freeBoxGap, /Math\.max\(0\.0015, Math\.min\(0\.004/);
+
+  const projectionFallback = read(
+    'esm/native/services/canvas_picking_projection_runtime_box_wardrobe_fallback.ts'
+  );
+  assert.match(projectionFallback, /WARDROBE_DEFAULTS/);
+  assert.match(projectionFallback, /NO_MAIN_SKETCH_DIMENSIONS/);
+  assert.doesNotMatch(projectionFallback, /, 160\)/);
+  assert.doesNotMatch(projectionFallback, /, 240\)/);
+  assert.doesNotMatch(projectionFallback, /, 55\)/);
+});

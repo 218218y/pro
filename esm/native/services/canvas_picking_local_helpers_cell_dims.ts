@@ -1,4 +1,8 @@
 import type { AppContainer } from '../../../types';
+import {
+  WARDROBE_DEFAULTS,
+  WARDROBE_LAYOUT_DIMENSIONS,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { InteriorHoverTarget } from './canvas_picking_hover_targets.js';
 import { __wp_cfg, __wp_isCornerKey, __wp_ui } from './canvas_picking_core_helpers.js';
 import { __wp_readInteriorModuleConfigRef } from './canvas_picking_local_helpers_hover.js';
@@ -86,11 +90,11 @@ export function __wp_getCellDimsHoverOp(
     const cfg = __wp_cfg(App);
     const ui = __wp_ui(App);
     const raw = readUiRaw(ui);
-    const EPS_CM = 0.11;
+    const EPS_CM = WARDROBE_LAYOUT_DIMENSIONS.cellDimsMatchToleranceCm;
 
     let curW = __wp_readLinearSelectorWidthInputCm(App, target, selectorBox);
     let curH = readRawNumber(raw, 'height', Math.max(0, Number(selectorBox.height) * 100));
-    let curD = readRawNumber(raw, 'depth', 55);
+    let curD = readRawNumber(raw, 'depth', WARDROBE_DEFAULTS.byType.hinged.depthCm);
 
     let isCustomW = false;
     let isCustomH = false;

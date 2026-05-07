@@ -75,7 +75,7 @@ test('free-box sketch hover forwards front overlays for drawers, base, and remov
     .join('\n');
   assert.match(
     stackPreview,
-    /const frontOverlay = resolveSketchBoxVisibleFrontOverlay\([\s\S]*segment: activeSegment/
+    /const frontOverlay(?:[:\s\w|]+)? = resolveSketchBoxVisibleFrontOverlay\([\s\S]*segment: activeSegment/
   );
   assert.match(stackPreview, /kind: 'drawers',[\s\S]*\.\.\.buildSketchBoxFrontOverlayFields\(frontOverlay\)/);
   assert.match(

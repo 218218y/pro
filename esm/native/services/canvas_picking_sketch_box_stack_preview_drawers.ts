@@ -1,3 +1,4 @@
+import { DRAWER_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
   buildManualLayoutSketchExternalDrawerBlockers,
   resolveManualLayoutSketchInternalDrawerPlacement,
@@ -49,8 +50,15 @@ export function resolveSketchBoxDrawersPreview(
   });
   const baseY = placement.yCenter - placement.stackH / 2;
   const previewX = activeSegment ? activeSegment.centerX : targetGeo.centerX;
-  const previewW = Math.max(0.05, (activeSegment ? activeSegment.width : targetGeo.innerW) - 0.03);
-  const previewD = Math.max(0.05, targetGeo.innerD - 0.02);
+  const previewW = Math.max(
+    DRAWER_DIMENSIONS.sketch.internalPreviewMinWidthM,
+    (activeSegment ? activeSegment.width : targetGeo.innerW) -
+      DRAWER_DIMENSIONS.sketch.internalPreviewWidthClearanceM
+  );
+  const previewD = Math.max(
+    DRAWER_DIMENSIONS.sketch.internalPreviewMinDepthM,
+    targetGeo.innerD - DRAWER_DIMENSIONS.sketch.internalPreviewDepthClearanceM
+  );
   const previewZ = targetGeo.innerBackZ + targetGeo.innerD / 2;
   const clearanceMeasurements = buildSketchBoxStackAwareMeasurementEntries({
     bottomY: boxBottomY + woodThick,
@@ -71,9 +79,15 @@ export function resolveSketchBoxDrawersPreview(
     targetCenterY: placement.yCenter,
     targetWidth: previewW,
     targetHeight: placement.stackH,
-    z: previewZ + previewD / 2 + Math.max(0.004, previewD * 0.08),
+    z:
+      previewZ +
+      previewD / 2 +
+      Math.max(
+        DRAWER_DIMENSIONS.sketch.internalPreviewMeasurementZOffsetMinM,
+        previewD * DRAWER_DIMENSIONS.sketch.internalPreviewMeasurementZOffsetDepthRatio
+      ),
     styleKey: 'cell',
-    textScale: 0.82,
+    textScale: SKETCH_BOX_DIMENSIONS.preview.measurementTextScale,
   });
 
   return {

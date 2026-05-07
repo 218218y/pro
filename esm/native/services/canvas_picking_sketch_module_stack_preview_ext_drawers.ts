@@ -1,3 +1,4 @@
+import { DRAWER_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
   buildManualLayoutSketchInternalDrawerBlockers,
   createManualLayoutSketchNormalizedCenterReader,
@@ -64,12 +65,15 @@ export function resolveSketchModuleExternalDrawersPreview(
   const readCenterY = createManualLayoutSketchNormalizedCenterReader({ bottomY, totalHeight });
   const placement = resolveManualLayoutSketchExternalDrawerPlacement({
     desiredCenterY,
-    selectedDrawerCount: selectedDrawerCount != null && selectedDrawerCount > 0 ? selectedDrawerCount : 3,
+    selectedDrawerCount:
+      selectedDrawerCount != null && selectedDrawerCount > 0
+        ? selectedDrawerCount
+        : DRAWER_DIMENSIONS.sketch.externalPreviewDefaultCount,
     drawerHeightM: args.drawerHeightM,
     bottomY,
     topY,
     pad,
-    gap: 0.008,
+    gap: DRAWER_DIMENSIONS.sketch.verticalStackCollisionGapM,
     extDrawers,
     readCenterY,
     blockers: buildManualLayoutSketchInternalDrawerBlockers({
@@ -80,16 +84,25 @@ export function resolveSketchModuleExternalDrawersPreview(
       readCenterY,
     }),
   });
-  const visualT = 0.02;
+  const visualT = DRAWER_DIMENSIONS.external.visualThicknessM;
   const faceEnvelope = selectorFrontEnvelope ?? readSelectorFrontEnvelope(hitSelectorObj);
-  const outerW = Math.max(0.08, faceEnvelope?.outerW ?? innerW);
+  const outerW = Math.max(DRAWER_DIMENSIONS.sketch.externalPreviewMinWidthM, faceEnvelope?.outerW ?? innerW);
   const centerX = faceEnvelope?.centerX ?? internalCenterX;
   const frontPlaneZ =
-    (faceEnvelope?.centerZ ?? internalZ + internalDepth / 2 + 0.025) +
-    (faceEnvelope?.outerD ?? Math.max(0.1, internalDepth + 0.05)) / 2;
-  const frontZ = frontPlaneZ + visualT / 2 + 0.001;
+    (faceEnvelope?.centerZ ??
+      internalZ + internalDepth / 2 + DRAWER_DIMENSIONS.sketch.externalPreviewCenterZInsetM) +
+    (faceEnvelope?.outerD ??
+      Math.max(
+        DRAWER_DIMENSIONS.sketch.externalPreviewMinDepthM,
+        internalDepth + DRAWER_DIMENSIONS.sketch.externalPreviewDepthClearanceM
+      )) /
+      2;
+  const frontZ = frontPlaneZ + visualT / 2 + DRAWER_DIMENSIONS.sketch.externalPreviewFrontZOffsetM;
   const baseY = placement.yCenter - placement.stackH / 2;
-  const previewW = Math.max(0.05, outerW - 0.004);
+  const previewW = Math.max(
+    DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinWidthM,
+    outerW - DRAWER_DIMENSIONS.external.visualWidthClearanceM
+  );
   const clearanceMeasurements = buildSketchModuleStackAwareMeasurementEntries({
     bottomY,
     topY,
@@ -105,16 +118,25 @@ export function resolveSketchModuleExternalDrawersPreview(
     targetCenterY: placement.yCenter,
     targetWidth: previewW,
     targetHeight: placement.stackH,
-    z: frontZ + visualT / 2 + Math.max(0.004, visualT * 0.25),
+    z:
+      frontZ +
+      visualT / 2 +
+      Math.max(
+        DRAWER_DIMENSIONS.sketch.externalPreviewMeasurementZOffsetMinM,
+        visualT * DRAWER_DIMENSIONS.sketch.externalPreviewMeasurementZOffsetThicknessRatio
+      ),
     styleKey: 'cell',
-    textScale: 0.82,
+    textScale: SKETCH_BOX_DIMENSIONS.preview.measurementTextScale,
   });
   const drawersPreview: RecordMap[] = [];
   const drawerH = placement.drawerH;
   for (let i = 0; i < placement.drawerCount; i++) {
     drawersPreview.push({
       y: baseY + i * drawerH + drawerH / 2,
-      h: Math.max(0.05, drawerH - 0.008),
+      h: Math.max(
+        DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinHeightM,
+        drawerH - DRAWER_DIMENSIONS.external.visualHeightClearanceM
+      ),
     });
   }
 
