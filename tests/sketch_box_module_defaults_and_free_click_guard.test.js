@@ -48,18 +48,24 @@ test('module sketch boxes preserve optional width/depth overrides while keeping 
     hoverModule,
     /const depthCm = boxSpec \? Number\(readRecordValue\(boxSpec, 'depthCm'\)\) : NaN;/
   );
+  assert.match(hoverModule, /cmToM,/);
   assert.match(
     hoverModule,
-    /if \(Number\.isFinite\(widthCm\) && widthCm > 0\) boxWidthOverrideM = widthCm \/ 100;/
+    /if \(Number\.isFinite\(widthCm\) && widthCm > 0\) boxWidthOverrideM = cmToM\(widthCm\);/
   );
   assert.match(
     hoverModule,
-    /if \(Number\.isFinite\(depthCm\) && depthCm > 0\) boxDepthOverrideM = depthCm \/ 100;/
+    /if \(Number\.isFinite\(depthCm\) && depthCm > 0\) boxDepthOverrideM = cmToM\(depthCm\);/
   );
+  assert.doesNotMatch(hoverModule, /boxWidthOverrideM = widthCm \/ 100/);
+  assert.doesNotMatch(hoverModule, /boxDepthOverrideM = depthCm \/ 100/);
   assert.match(clickMode, /const widthCm = readNumber\(spec \? spec\.widthCm : null\);/);
   assert.match(clickMode, /const depthCm = readNumber\(spec \? spec\.depthCm : null\);/);
-  assert.match(clickMode, /boxWM: widthCm != null && widthCm > 0 \? widthCm \/ 100 : null,/);
-  assert.match(clickMode, /boxDM: depthCm != null && depthCm > 0 \? depthCm \/ 100 : null,/);
+  assert.match(clickMode, /cmToM,/);
+  assert.match(clickMode, /boxWM: widthCm != null && widthCm > 0 \? cmToM\(widthCm\) : null,/);
+  assert.match(clickMode, /boxDM: depthCm != null && depthCm > 0 \? cmToM\(depthCm\) : null,/);
+  assert.doesNotMatch(clickMode, /boxWM: widthCm != null && widthCm > 0 \? widthCm \/ 100 : null,/);
+  assert.doesNotMatch(clickMode, /boxDM: depthCm != null && depthCm > 0 \? depthCm \/ 100 : null,/);
 });
 
 test('free-box content commit stays centralized while preserving click safeguards', () => {

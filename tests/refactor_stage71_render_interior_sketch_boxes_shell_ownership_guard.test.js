@@ -40,7 +40,10 @@ test('stage 71 render interior sketch box shell ownership split is anchored', ()
   );
 
   assert.match(height, /export function resolveSketchBoxHeight\(/);
-  assert.match(height, /height < args\.woodThick \* 2 \+ 0\.02/);
+  assert.match(height, /SKETCH_BOX_DIMENSIONS\.geometry\.minInnerAdditiveClearanceM/);
+  assert.match(height, /const minHeight = args\.woodThick \* 2 \+ SKETCH_BOX_DIMENSIONS\.geometry\.minInnerAdditiveClearanceM;/);
+  assert.match(height, /height < minHeight/);
+  assert.doesNotMatch(height, /args\.woodThick \* 2 \+ 0\.02/);
   assert.match(height, /!args\.isFreePlacement && height > args\.spanH/);
   assert.doesNotMatch(height, /createBoard|resolveSketchBoxGeometry|renderSketchFreeBoxDimensions/);
 
