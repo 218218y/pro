@@ -4,16 +4,20 @@ import type {
   MirrorLayoutMap,
   UnknownRecord,
 } from '../../types/index.js';
+import { DOOR_VISUAL_DIMENSIONS } from './wardrobe_dimension_tokens_shared.js';
 
 export const DEFAULT_CENTER_NORM = 0.5;
 export const DEFAULT_FACE_SIGN = 1;
-export const FULL_MIRROR_INSET_M = 0.002;
-export const MIN_MIRROR_SIZE_M = 0.02;
-export const CENTER_EPSILON = 1e-4;
-export const SIZE_EPSILON_CM = 1e-3;
-export const MIRROR_CENTER_SNAP_NORM_THRESHOLD = 0.04;
-export const DEFAULT_REMOVE_TOLERANCE_M = 0.03;
-export const MAX_REMOVE_TOLERANCE_M = 0.06;
+export const FULL_MIRROR_INSET_M: number = DOOR_VISUAL_DIMENSIONS.mirror.layoutFullInsetM;
+export const MIN_MIRROR_SIZE_M: number = DOOR_VISUAL_DIMENSIONS.mirror.layoutMinSizeM;
+export const CENTER_EPSILON: number = DOOR_VISUAL_DIMENSIONS.mirror.layoutCenterEpsilon;
+export const SIZE_EPSILON_CM: number = DOOR_VISUAL_DIMENSIONS.mirror.layoutSizeEpsilonCm;
+export const MIRROR_CENTER_SNAP_NORM_THRESHOLD: number =
+  DOOR_VISUAL_DIMENSIONS.mirror.layoutCenterSnapNormThreshold;
+export const DEFAULT_REMOVE_TOLERANCE_M: number = DOOR_VISUAL_DIMENSIONS.mirror.layoutRemoveToleranceDefaultM;
+export const MAX_REMOVE_TOLERANCE_M: number = DOOR_VISUAL_DIMENSIONS.mirror.layoutRemoveToleranceMaxM;
+export const MIRROR_REMOVE_TOLERANCE_SIZE_RATIO: number =
+  DOOR_VISUAL_DIMENSIONS.mirror.layoutRemoveToleranceSizeRatio;
 
 export type MirrorDraftInput = {
   widthCm?: unknown;

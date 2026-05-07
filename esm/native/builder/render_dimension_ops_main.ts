@@ -1,3 +1,4 @@
+import { WARDROBE_DIMENSION_GUIDE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { RenderDimensionContext } from './render_dimension_ops_shared.js';
 
 export function applyMainWardrobeDimensionOps(ctx: RenderDimensionContext): void {
@@ -18,15 +19,17 @@ export function applyMainWardrobeDimensionOps(ctx: RenderDimensionContext): void
     CELL_DIM_TEXT_SCALE,
     vec,
   } = ctx;
+  const guide = WARDROBE_DIMENSION_GUIDE_DIMENSIONS.main;
+  const guideTextScale = WARDROBE_DIMENSION_GUIDE_DIMENSIONS.textScale;
 
   if (!noMainWardrobe) {
     // Total width (raised slightly above the per-cell lines).
     addDimensionLine(
       vec(-totalW / 2, yTotal, 0),
       vec(totalW / 2, yTotal, 0),
-      vec(0, 0.1, 0),
+      vec(0, guide.totalWidthTextYOffsetM, 0),
       (totalW * 100).toFixed(0),
-      1
+      guideTextScale.total
     );
   }
 
@@ -46,7 +49,7 @@ export function applyMainWardrobeDimensionOps(ctx: RenderDimensionContext): void
       addDimensionLine(
         vec(x0, yCells, 0),
         vec(x0 + wm, yCells, 0),
-        vec(0, 0.07, 0),
+        vec(0, guide.cellWidthTextYOffsetM, 0),
         wcm.toFixed(0),
         CELL_DIM_TEXT_SCALE
       );
@@ -55,9 +58,9 @@ export function applyMainWardrobeDimensionOps(ctx: RenderDimensionContext): void
     }
   }
 
-  const heightOffsetX = stackSplitActive ? 0.54 : 0.3;
+  const heightOffsetX = stackSplitActive ? guide.stackSplitHeightLineOffsetM : guide.heightLineOffsetM;
   const heightLineX = dimsOnLeft ? -totalW / 2 - heightOffsetX : totalW / 2 + heightOffsetX;
-  const textOffset = dimsOnLeft ? vec(-0.1, 0, 0) : vec(0.1, 0, 0);
+  const textOffset = dimsOnLeft ? vec(-guide.heightTextOffsetM, 0, 0) : vec(guide.heightTextOffsetM, 0, 0);
 
   if (!noMainWardrobe) {
     addDimensionLine(
@@ -82,9 +85,11 @@ export function applyMainWardrobeDimensionOps(ctx: RenderDimensionContext): void
     uniq.sort((a, b) => a - b);
 
     if (uniq.length >= 2) {
-      const cellHeightDeltaX = stackSplitActive ? 0.24 : 0.12;
+      const cellHeightDeltaX = stackSplitActive ? guide.stackSplitCellHeightLineDeltaM : guide.cellHeightLineDeltaM;
       const segX = dimsOnLeft ? heightLineX + cellHeightDeltaX : heightLineX - cellHeightDeltaX;
-      const segTextOffset = dimsOnLeft ? vec(-0.08, 0, 0) : vec(0.08, 0, 0);
+      const segTextOffset = dimsOnLeft
+        ? vec(-guide.cellHeightTextOffsetM, 0, 0)
+        : vec(guide.cellHeightTextOffsetM, 0, 0);
       let prev = 0;
       for (let i = 0; i < uniq.length; i++) {
         const cur = uniq[i];
@@ -96,19 +101,21 @@ export function applyMainWardrobeDimensionOps(ctx: RenderDimensionContext): void
           segTextOffset,
           label,
           CELL_DIM_TEXT_SCALE,
-          vec(0, -0.26, 0)
+          vec(0, guide.cellHeightLabelYOffsetM, 0)
         );
         prev = cur;
       }
     }
   }
 
-  const depthLineX = depthOnLeft ? -totalW / 2 - 0.24 : totalW / 2 + 0.24;
-  const depthTextOffset = depthOnLeft ? vec(-0.2, 0, 0) : vec(0.2, 0, 0);
+  const depthLineX = depthOnLeft ? -totalW / 2 - guide.depthLineOffsetXM : totalW / 2 + guide.depthLineOffsetXM;
+  const depthTextOffset = depthOnLeft
+    ? vec(-guide.depthTextOffsetXM, 0, 0)
+    : vec(guide.depthTextOffsetXM, 0, 0);
   if (!noMainWardrobe) {
     addDimensionLine(
-      vec(depthLineX, displayH - 0.35, displayD / 2),
-      vec(depthLineX, displayH - 0.15, -displayD / 2),
+      vec(depthLineX, displayH - guide.depthStartYOffsetM, displayD / 2),
+      vec(depthLineX, displayH - guide.depthEndYOffsetM, -displayD / 2),
       depthTextOffset,
       (displayD * 100).toFixed(0)
     );
@@ -129,14 +136,18 @@ export function applyMainWardrobeDimensionOps(ctx: RenderDimensionContext): void
       Number.isFinite(maxDcm) &&
       minDcm > 0 &&
       maxDcm > 0 &&
-      maxDcm - minDcm >= 1
+      maxDcm - minDcm >= guide.minDistinctDepthDeltaCm
     ) {
       const minDm = minDcm / 100;
-      const smallX = depthOnLeft ? -totalW / 2 - 0.16 : totalW / 2 + 0.16;
-      const smallTextOffset = depthOnLeft ? vec(-0.18, 0, 0) : vec(0.18, 0, 0);
+      const smallX = depthOnLeft
+        ? -totalW / 2 - guide.smallDepthLineOffsetXM
+        : totalW / 2 + guide.smallDepthLineOffsetXM;
+      const smallTextOffset = depthOnLeft
+        ? vec(-guide.smallDepthTextOffsetXM, 0, 0)
+        : vec(guide.smallDepthTextOffsetXM, 0, 0);
       addDimensionLine(
-        vec(smallX, displayH - 0.57, minDm / 2),
-        vec(smallX, displayH - 0.37, -minDm / 2),
+        vec(smallX, displayH - guide.smallDepthStartYOffsetM, minDm / 2),
+        vec(smallX, displayH - guide.smallDepthEndYOffsetM, -minDm / 2),
         smallTextOffset,
         minDcm.toFixed(0),
         CELL_DIM_TEXT_SCALE

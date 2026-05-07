@@ -1,4 +1,7 @@
-import { WARDROBE_DEFAULTS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  WARDROBE_DEFAULTS,
+  WARDROBE_DIMENSION_GUIDE_DIMENSIONS,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { AppContainer } from '../../../types';
 
 export type Vector3Like = { x: number; y: number; z: number };
@@ -196,11 +199,19 @@ export function createRenderDimensionContext(argsIn: unknown): RenderDimensionCo
     cornerWingDepthM,
     displayH,
     displayD,
-    yTotal: displayH + (hasCornice ? 0.28 : 0.23),
-    yCells: displayH + (hasCornice ? 0.2 : 0.15),
+    yTotal:
+      displayH +
+      (hasCornice
+        ? WARDROBE_DIMENSION_GUIDE_DIMENSIONS.verticalPlacement.totalYOffsetWithCorniceM
+        : WARDROBE_DIMENSION_GUIDE_DIMENSIONS.verticalPlacement.totalYOffsetWithoutCorniceM),
+    yCells:
+      displayH +
+      (hasCornice
+        ? WARDROBE_DIMENSION_GUIDE_DIMENSIONS.verticalPlacement.cellYOffsetWithCorniceM
+        : WARDROBE_DIMENSION_GUIDE_DIMENSIONS.verticalPlacement.cellYOffsetWithoutCorniceM),
     dimsOnLeft,
     depthOnLeft,
-    CELL_DIM_TEXT_SCALE: 0.78,
+    CELL_DIM_TEXT_SCALE: WARDROBE_DIMENSION_GUIDE_DIMENSIONS.textScale.cell,
     vec: (x: number, y: number, z: number) => new THREE.Vector3(x, y, z),
   };
 }

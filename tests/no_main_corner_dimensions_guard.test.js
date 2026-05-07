@@ -37,12 +37,13 @@ test('[no-main corner] standalone corner dimensions stay enabled and wing dimens
     /const\s+cornerDoorCount\s*=\s*Number\.isFinite\(cornerDoorCountRaw\)\s*\?\s*Math\.max\(0, Math\.round\(cornerDoorCountRaw\)\)\s*:\s*WARDROBE_DEFAULTS\.corner\.doorsCount;/
   );
   assert.match(renderDimsShared, /const\s+cornerWingVisible\s*=\s*isCornerMode && cornerDoorCount > 0;/);
+  assert.match(renderDimsCorner, /WARDROBE_DIMENSION_GUIDE_DIMENSIONS/);
   assert.match(
     renderDimsCorner,
-    /if \(noMainWardrobe && isCornerMode && cornerConnectorEnabled && cornerWallLenM > 0\.05\) \{/
+    /if \(noMainWardrobe && isCornerMode && cornerConnectorEnabled && cornerWallLenM > guide\.connectorWallMinLengthM\) \{/
   );
   assert.match(
     renderDimsCorner,
-    /if \(cornerWingVisible && Number\.isFinite\(cornerWingLenM\) && cornerWingLenM > 0\.01\) \{/
+    /if \(cornerWingVisible && Number\.isFinite\(cornerWingLenM\) && cornerWingLenM > guide\.wingMinLengthM\) \{/
   );
 });

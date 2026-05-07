@@ -128,3 +128,56 @@ test('[dimension tokens] sketch divider, attachment, and free-box measurement ov
   assert.doesNotMatch(projectionFallback, /, 240\)/);
   assert.doesNotMatch(projectionFallback, /, 55\)/);
 });
+
+test('[dimension tokens] wardrobe dimension guide offsets are centralized', () => {
+  const tokens = read(productDimensionTokenSource);
+  assert.match(tokens, /export const WARDROBE_DIMENSION_GUIDE_DIMENSIONS = Object\.freeze\(\{/);
+  assert.match(tokens, /verticalPlacement: Object\.freeze\(\{/);
+  assert.match(tokens, /expandedWidthYOffsetM:/);
+  assert.match(tokens, /smallDepthStartYOffsetM:/);
+
+  for (const rel of [
+    'esm/native/builder/render_dimension_ops_shared.ts',
+    'esm/native/builder/render_dimension_ops_main.ts',
+    'esm/native/builder/render_dimension_ops_corner.ts',
+  ]) {
+    assertUsesToken(rel, 'WARDROBE_DIMENSION_GUIDE_DIMENSIONS');
+  }
+
+  const main = read('esm/native/builder/render_dimension_ops_main.ts');
+  assert.doesNotMatch(main, /stackSplitActive \? 0\.54 : 0\.3/);
+  assert.doesNotMatch(main, /displayH - 0\.35/);
+  assert.doesNotMatch(main, /displayH - 0\.57/);
+
+  const corner = read('esm/native/builder/render_dimension_ops_corner.ts');
+  assert.doesNotMatch(corner, /cornerWallLenM > 0\.05/);
+  assert.doesNotMatch(corner, /cornerWallLenM \* 0\.55/);
+  assert.doesNotMatch(corner, /Math\.max\(0\.2, cornerWallLenM - 0\.08\)/);
+});
+
+test('[dimension tokens] mirror layout measurements read door visual dimension tokens', () => {
+  const tokens = read(productDimensionTokenSource);
+  assert.match(tokens, /layoutFullInsetM:/);
+  assert.match(tokens, /layoutRemoveToleranceSizeRatio:/);
+
+  for (const rel of [
+    'esm/shared/mirror_layout_contracts_shared.ts',
+    'esm/native/features/mirror_layout_geometry.ts',
+    'esm/native/builder/visuals_and_contents_door_visual_mirror_styled.ts',
+  ]) {
+    assertUsesToken(
+      rel,
+      rel.endsWith('mirror_layout_geometry.ts') ? 'MIRROR_REMOVE_TOLERANCE_SIZE_RATIO' : 'FULL_MIRROR_INSET_M'
+    );
+  }
+
+  const contracts = read('esm/shared/mirror_layout_contracts_shared.ts');
+  assert.match(contracts, /DOOR_VISUAL_DIMENSIONS/);
+  assert.doesNotMatch(contracts, /FULL_MIRROR_INSET_M\s*=\s*0\.002/);
+  assert.doesNotMatch(contracts, /MIN_MIRROR_SIZE_M\s*=\s*0\.02/);
+  assert.doesNotMatch(contracts, /DEFAULT_REMOVE_TOLERANCE_M\s*=\s*0\.03/);
+
+  const geometry = read('esm/native/features/mirror_layout_geometry.ts');
+  assert.doesNotMatch(geometry, /\* 0\.18/);
+});
+
