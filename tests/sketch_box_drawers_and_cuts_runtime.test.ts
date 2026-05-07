@@ -119,11 +119,16 @@ test('sketch box external drawers render with custom per-drawer height', () => {
 test('sketch external drawer cut envelope matches drawer front envelope', async () => {
   const src = await readSourceFiles([
     '../esm/native/builder/post_build_sketch_door_cuts.ts',
+    '../esm/native/builder/post_build_sketch_door_cuts_box.ts',
     '../esm/native/builder/post_build_sketch_door_cuts_modules.ts',
   ]);
+  const tokens = await readSourceFiles(['../esm/shared/wardrobe_dimension_tokens_shared.ts']);
   const mod = await import('../esm/native/builder/post_build_extras_pipeline.ts');
-  assert.match(src, /const frontInset = 0\.004;/);
-  assert.match(src, /const surroundingGap = 0\.006;/);
+  assert.match(tokens, /externalDoorCutFrontInsetM:\s*0\.004,/);
+  assert.match(tokens, /externalDoorCutSurroundingGapM:\s*0\.006,/);
+  assert.match(src, /const frontInset = DRAWER_DIMENSIONS\.sketch\.externalDoorCutFrontInsetM;/);
+  assert.match(src, /const surroundingGap = DRAWER_DIMENSIONS\.sketch\.externalDoorCutSurroundingGapM;/);
+  assert.doesNotMatch(src, /const surroundingGap = 0\.006;/);
   assert.match(src, /const faceMinY = baseY \+ frontInset - surroundingGap;/);
   assert.match(src, /const faceMaxY = baseY \+ stackH - frontInset \+ surroundingGap;/);
   assert.equal(typeof mod.applyPostBuildExtras, 'function');

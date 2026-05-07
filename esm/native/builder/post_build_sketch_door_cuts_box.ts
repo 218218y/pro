@@ -3,6 +3,7 @@
 // Owns sketch-box stack-bound collection and segmented door rebuild routing.
 
 import { getDrawersArray } from '../runtime/render_access.js';
+import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { AppContainer, BuildContextLike, ThreeLike } from '../../../types/index.js';
 import { getMirrorMaterial } from './render_ops.js';
 
@@ -91,7 +92,7 @@ export function applySketchBoxExternalDrawerDoorCuts(args: {
   const { App, THREE, ctx, cfg, bodyMat, globalFrontMat } = args;
   const stackBounds = collectSketchBoxExternalDrawerStackBounds(App);
   if (!stackBounds.length) return;
-  const surroundingGap = 0.006;
+  const surroundingGap = DRAWER_DIMENSIONS.sketch.externalDoorCutSurroundingGapM;
   const boxStacks = groupSketchDrawerStackBounds(
     stackBounds.map(item => ({ key: item.key, ...expandSketchDrawerCutBounds(item, surroundingGap) }))
   );
