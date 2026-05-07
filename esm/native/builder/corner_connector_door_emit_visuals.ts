@@ -86,7 +86,7 @@ export function pushCornerConnectorDoorSegmentVisual(
     ctx.outwardZSign,
     true,
     readCornerConnectorMirrorLayout(ctx, partId),
-    partId,
+    scopedPartId,
     special === 'glass' ? { glassFrameStyle: effectiveFrameStyle } : null
   );
   vis.position.set(state.meshOffset, 0, 0);

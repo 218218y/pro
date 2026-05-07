@@ -105,7 +105,8 @@ export function processCornerDoorVisual(
   const hasGroove = ctx.groovesEnabled && !isMirror && !!readScopedReaderAny(ctx, ctx.getGroove, id);
   const style = special === 'glass' ? 'glass' : null;
   const mirrorLayout = args.mirrorLayout ?? readMirrorLayout(ctx, id);
-  const groovePartId = args.groovePartId ?? id;
+  const rawVisualPartId = args.groovePartId ?? id;
+  const groovePartId = ctx.stackKey === 'bottom' ? ctx.stackScopePartKey(rawVisualPartId) : rawVisualPartId;
   const frontSign = Number.isFinite(args.frontSign) ? Number(args.frontSign) : 1;
 
   const cfgRecord = ctx.asRecord(ctx.getCfg(ctx.App));
