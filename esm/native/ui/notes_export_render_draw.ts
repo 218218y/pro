@@ -1,40 +1,82 @@
-import { asHTMLElement, queryHtmlElement, serializeDetachedHtmlNode } from './dom_helpers.js';
-import { getComputedStyleMaybe } from './notes_export_shared.js';
-import { type NoteImageDrawArgs, type NotePlainTextDrawArgs } from './notes_export_render_shared.js';
+import {
+  asHTMLElement,
+  queryHtmlElement,
+  serializeDetachedHtmlNode,
+} from "./dom_helpers.js";
+import { getComputedStyleMaybe } from "./notes_export_shared.js";
+import {
+  type NoteImageDrawArgs,
+  type NotePlainTextDrawArgs,
+} from "./notes_export_render_shared.js";
 
 const NOTE_EDITOR_EXPORT_STYLE_PROPS = [
-  'color',
-  'direction',
-  'font-family',
-  'font-size',
-  'font-style',
-  'font-variant',
-  'font-weight',
-  'letter-spacing',
-  'line-height',
-  'padding-top',
-  'padding-right',
-  'padding-bottom',
-  'padding-left',
-  'text-align',
-  'text-decoration',
-  'text-transform',
-  'unicode-bidi',
-  'white-space',
-  'word-break',
-  'overflow-wrap',
-  'word-wrap',
-  'box-sizing',
+  "background-color",
+  "border-bottom-color",
+  "border-bottom-style",
+  "border-bottom-width",
+  "border-left-color",
+  "border-left-style",
+  "border-left-width",
+  "border-right-color",
+  "border-right-style",
+  "border-right-width",
+  "border-top-color",
+  "border-top-style",
+  "border-top-width",
+  "box-sizing",
+  "color",
+  "direction",
+  "display",
+  "font-family",
+  "font-feature-settings",
+  "font-kerning",
+  "font-size",
+  "font-stretch",
+  "font-style",
+  "font-variant",
+  "font-variant-caps",
+  "font-weight",
+  "hyphens",
+  "letter-spacing",
+  "line-height",
+  "overflow-wrap",
+  "padding-bottom",
+  "padding-left",
+  "padding-right",
+  "padding-top",
+  "tab-size",
+  "text-align",
+  "text-decoration",
+  "text-decoration-color",
+  "text-decoration-line",
+  "text-decoration-style",
+  "text-decoration-thickness",
+  "text-indent",
+  "text-rendering",
+  "text-shadow",
+  "text-transform",
+  "unicode-bidi",
+  "vertical-align",
+  "white-space",
+  "word-break",
+  "word-spacing",
+  "word-wrap",
 ] as const;
 
 type StyleWritable = CSSStyleDeclaration & Record<string, unknown>;
 
-function readCssValue(style: CSSStyleDeclaration | null | undefined, prop: string): string {
+function readCssValue(
+  style: CSSStyleDeclaration | null | undefined,
+  prop: string,
+): string {
   try {
-    const value = style && typeof style.getPropertyValue === 'function' ? style.getPropertyValue(prop) : '';
-    return typeof value === 'string' ? value.trim() : '';
+    const value =
+      style && typeof style.getPropertyValue === "function"
+        ? style.getPropertyValue(prop)
+        : "";
+    return typeof value === "string" ? value.trim() : "";
   } catch {
-    return '';
+    return "";
   }
 }
 
@@ -42,7 +84,7 @@ function setStyleValue(el: HTMLElement, prop: string, value: string): void {
   if (!value) return;
   try {
     const style = el.style as StyleWritable;
-    if (style && typeof style.setProperty === 'function') {
+    if (style && typeof style.setProperty === "function") {
       style.setProperty(prop, value);
       return;
     }
@@ -53,10 +95,10 @@ function setStyleValue(el: HTMLElement, prop: string, value: string): void {
 }
 
 function parseCssPx(value: string): number | null {
-  const raw = String(value || '')
+  const raw = String(value || "")
     .trim()
     .toLowerCase();
-  if (!raw || raw === 'auto' || raw === 'normal') return null;
+  if (!raw || raw === "auto" || raw === "normal") return null;
   const n = parseFloat(raw);
   if (!Number.isFinite(n)) return null;
   return Math.max(0, n);
@@ -64,29 +106,36 @@ function parseCssPx(value: string): number | null {
 
 function readPaddingPx(
   style: CSSStyleDeclaration | null | undefined,
-  side: 'top' | 'right' | 'bottom' | 'left'
+  side: "top" | "right" | "bottom" | "left",
 ): number {
   return parseCssPx(readCssValue(style, `padding-${side}`)) ?? 0;
 }
 
 function readFontSizePx(style: CSSStyleDeclaration | null | undefined): number {
-  return parseCssPx(readCssValue(style, 'font-size')) ?? 14;
+  return parseCssPx(readCssValue(style, "font-size")) ?? 14;
 }
 
-function readLineHeightPx(style: CSSStyleDeclaration | null | undefined, fontSizePx: number): number {
-  const raw = readCssValue(style, 'line-height');
+function readLineHeightPx(
+  style: CSSStyleDeclaration | null | undefined,
+  fontSizePx: number,
+): number {
+  const raw = readCssValue(style, "line-height");
   const px = parseCssPx(raw);
   if (px !== null) return Math.max(1, px);
   const ratio = parseFloat(raw);
-  if (Number.isFinite(ratio) && ratio > 0 && !raw.toLowerCase().endsWith('px')) {
+  if (
+    Number.isFinite(ratio) &&
+    ratio > 0 &&
+    !raw.toLowerCase().endsWith("px")
+  ) {
     return Math.max(1, fontSizePx * ratio);
   }
   return Math.max(1, fontSizePx * 1.2);
 }
 
-function applyEditorComputedExportStyle(
+function copyEditorComputedExportStyleProps(
   source: HTMLElement,
-  cloned: HTMLElement
+  cloned: HTMLElement,
 ): CSSStyleDeclaration | null {
   const cs = getComputedStyleMaybe(source);
 
@@ -95,32 +144,100 @@ function applyEditorComputedExportStyle(
     if (value) setStyleValue(cloned, prop, value);
   }
 
-  const isRtl = String(cloned.dir || readCssValue(cs, 'direction') || 'rtl').toLowerCase() === 'rtl';
-  setStyleValue(cloned, 'display', 'block');
-  setStyleValue(cloned, 'margin', '0');
-  setStyleValue(cloned, 'background', readCssValue(cs, 'background-color') || 'transparent');
-  setStyleValue(cloned, 'box-sizing', readCssValue(cs, 'box-sizing') || 'border-box');
-  setStyleValue(cloned, 'white-space', readCssValue(cs, 'white-space') || 'pre-wrap');
-  setStyleValue(cloned, 'word-wrap', readCssValue(cs, 'word-wrap') || 'break-word');
-  setStyleValue(cloned, 'overflow-wrap', readCssValue(cs, 'overflow-wrap') || 'break-word');
-  setStyleValue(cloned, 'direction', isRtl ? 'rtl' : 'ltr');
-  setStyleValue(cloned, 'text-align', readCssValue(cs, 'text-align') || (isRtl ? 'right' : 'left'));
-  setStyleValue(cloned, 'color', readCssValue(cs, 'color') || '#000');
-  if (!readCssValue(cs, 'font-family')) setStyleValue(cloned, 'font-family', 'Heebo, sans-serif');
-  if (!readCssValue(cs, 'font-size')) setStyleValue(cloned, 'font-size', '14px');
+  return cs;
+}
+
+function applyEditorComputedExportStyle(
+  source: HTMLElement,
+  cloned: HTMLElement,
+): CSSStyleDeclaration | null {
+  const cs = copyEditorComputedExportStyleProps(source, cloned);
+
+  const isRtl =
+    String(
+      cloned.dir || readCssValue(cs, "direction") || "rtl",
+    ).toLowerCase() === "rtl";
+  setStyleValue(cloned, "display", "block");
+  setStyleValue(cloned, "margin", "0");
+  setStyleValue(
+    cloned,
+    "background",
+    readCssValue(cs, "background-color") || "transparent",
+  );
+  setStyleValue(
+    cloned,
+    "box-sizing",
+    readCssValue(cs, "box-sizing") || "border-box",
+  );
+  setStyleValue(
+    cloned,
+    "white-space",
+    readCssValue(cs, "white-space") || "pre-wrap",
+  );
+  setStyleValue(
+    cloned,
+    "word-wrap",
+    readCssValue(cs, "word-wrap") || "break-word",
+  );
+  setStyleValue(
+    cloned,
+    "overflow-wrap",
+    readCssValue(cs, "overflow-wrap") || "break-word",
+  );
+  setStyleValue(cloned, "direction", isRtl ? "rtl" : "ltr");
+  setStyleValue(
+    cloned,
+    "text-align",
+    readCssValue(cs, "text-align") || (isRtl ? "right" : "left"),
+  );
+  setStyleValue(cloned, "color", readCssValue(cs, "color") || "#000");
+  if (!readCssValue(cs, "font-family"))
+    setStyleValue(cloned, "font-family", "Heebo, sans-serif");
+  if (!readCssValue(cs, "font-size"))
+    setStyleValue(cloned, "font-size", "14px");
 
   return cs;
 }
 
-function wrapLineByCanvas(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
+function copyEditorChildrenComputedExportStyleTree(
+  source: HTMLElement,
+  cloned: HTMLElement,
+): void {
+  const sourceChildren = Array.from(source.children || []);
+  const clonedChildren = Array.from(cloned.children || []);
+  const childCount = Math.min(sourceChildren.length, clonedChildren.length);
+
+  for (let i = 0; i < childCount; i += 1) {
+    const sourceChild = asHTMLElement(sourceChildren[i]);
+    const clonedChild = asHTMLElement(clonedChildren[i]);
+    if (!sourceChild || !clonedChild) continue;
+    copyEditorComputedExportStyleProps(sourceChild, clonedChild);
+    copyEditorChildrenComputedExportStyleTree(sourceChild, clonedChild);
+  }
+}
+
+function applyEditorComputedExportStyleTree(
+  source: HTMLElement,
+  cloned: HTMLElement,
+): CSSStyleDeclaration | null {
+  const rootStyle = applyEditorComputedExportStyle(source, cloned);
+  copyEditorChildrenComputedExportStyleTree(source, cloned);
+  return rootStyle;
+}
+
+function wrapLineByCanvas(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  maxWidth: number,
+): string[] {
   const out: string[] = [];
-  const words = String(text || '')
+  const words = String(text || "")
     .split(/(\s+)/)
-    .filter(part => part.length > 0);
-  let line = '';
+    .filter((part) => part.length > 0);
+  let line = "";
 
   const pushLongToken = (token: string): void => {
-    let chunk = '';
+    let chunk = "";
     for (const ch of Array.from(token)) {
       const next = `${chunk}${ch}`;
       if (chunk && ctx.measureText(next).width > maxWidth) {
@@ -135,8 +252,8 @@ function wrapLineByCanvas(ctx: CanvasRenderingContext2D, text: string, maxWidth:
 
   for (const part of words) {
     const isSpace = /^\s+$/.test(part);
-    const normalized = isSpace ? ' ' : part;
-    const next = line ? `${line}${normalized}` : isSpace ? '' : normalized;
+    const normalized = isSpace ? " " : part;
+    const next = line ? `${line}${normalized}` : isSpace ? "" : normalized;
     if (!next) continue;
 
     if (ctx.measureText(next).width <= maxWidth || !line) {
@@ -146,7 +263,7 @@ function wrapLineByCanvas(ctx: CanvasRenderingContext2D, text: string, maxWidth:
     }
 
     out.push(line.trimEnd());
-    line = isSpace ? '' : normalized;
+    line = isSpace ? "" : normalized;
     if (line && ctx.measureText(line).width > maxWidth) pushLongToken(line);
   }
 
@@ -154,15 +271,19 @@ function wrapLineByCanvas(ctx: CanvasRenderingContext2D, text: string, maxWidth:
   return out;
 }
 
-function wrapPreWrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
-  const normalized = String(text || '')
-    .replace(/\r\n/g, '\n')
-    .replace(/\r/g, '\n');
-  const paragraphs = normalized.split('\n');
+function wrapPreWrapText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  maxWidth: number,
+): string[] {
+  const normalized = String(text || "")
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n");
+  const paragraphs = normalized.split("\n");
   const lines: string[] = [];
   for (const paragraph of paragraphs) {
     if (!paragraph) {
-      lines.push('');
+      lines.push("");
       continue;
     }
     lines.push(...wrapLineByCanvas(ctx, paragraph, maxWidth));
@@ -182,17 +303,23 @@ export function drawEditorAsPlainTextAxisAligned({
   titleOffset,
 }: NotePlainTextDrawArgs): void {
   try {
-    const editor = queryHtmlElement(boxEl, '.editor');
+    const editor = queryHtmlElement(boxEl, ".editor");
     if (!editor) return;
 
-    const text = String(editor.innerText || editor.textContent || '').trim();
+    const text = String(editor.innerText || editor.textContent || "").trim();
     if (!text) return;
 
     const ax = dstLeftCss * scaleX;
     const ay = dstTopCss * scaleY + titleOffset;
     const dw = Math.max(0, dstWCss * scaleX);
     const dh = Math.max(0, dstHCss * scaleY);
-    if (!Number.isFinite(ax) || !Number.isFinite(ay) || !Number.isFinite(dw) || !Number.isFinite(dh)) return;
+    if (
+      !Number.isFinite(ax) ||
+      !Number.isFinite(ay) ||
+      !Number.isFinite(dw) ||
+      !Number.isFinite(dh)
+    )
+      return;
     if (dw < 2 || dh < 2) return;
 
     ctx.save();
@@ -203,33 +330,35 @@ export function drawEditorAsPlainTextAxisAligned({
 
       const cs = getComputedStyleMaybe(editor);
       const fontSizeCss = readFontSizePx(cs);
-      const fontFamily = readCssValue(cs, 'font-family') || 'Heebo, sans-serif';
-      const fontWeight = readCssValue(cs, 'font-weight') || 'normal';
-      const fontStyle = readCssValue(cs, 'font-style') || 'normal';
+      const fontFamily = readCssValue(cs, "font-family") || "Heebo, sans-serif";
+      const fontWeight = readCssValue(cs, "font-weight") || "normal";
+      const fontStyle = readCssValue(cs, "font-style") || "normal";
 
       const fontSizePx = Math.max(10, fontSizeCss * Math.max(0.0001, scaleY));
       ctx.font = `${fontStyle} ${fontWeight} ${fontSizePx}px ${fontFamily}`;
-      ctx.textBaseline = 'top';
+      ctx.textBaseline = "top";
 
-      const dir = readCssValue(cs, 'direction') || 'rtl';
-      const canvasDir: CanvasDirection = dir === 'ltr' || dir === 'rtl' ? dir : 'inherit';
+      const dir = readCssValue(cs, "direction") || "rtl";
+      const canvasDir: CanvasDirection =
+        dir === "ltr" || dir === "rtl" ? dir : "inherit";
       ctx.direction = canvasDir;
 
       const isRtl =
-        String(dir || '')
+        String(dir || "")
           .trim()
-          .toLowerCase() === 'rtl';
-      ctx.textAlign = isRtl ? 'right' : 'left';
-      ctx.fillStyle = readCssValue(cs, 'color') || '#000';
+          .toLowerCase() === "rtl";
+      ctx.textAlign = isRtl ? "right" : "left";
+      ctx.fillStyle = readCssValue(cs, "color") || "#000";
 
-      const padTop = readPaddingPx(cs, 'top') * scaleY;
-      const padRight = readPaddingPx(cs, 'right') * scaleX;
-      const padBottom = readPaddingPx(cs, 'bottom') * scaleY;
-      const padLeft = readPaddingPx(cs, 'left') * scaleX;
+      const padTop = readPaddingPx(cs, "top") * scaleY;
+      const padRight = readPaddingPx(cs, "right") * scaleX;
+      const padBottom = readPaddingPx(cs, "bottom") * scaleY;
+      const padLeft = readPaddingPx(cs, "left") * scaleX;
       const maxW = Math.max(1, dw - padLeft - padRight);
       const maxH = Math.max(1, dh - padTop - padBottom);
       const x = isRtl ? dw - padRight : padLeft;
-      const lineH = readLineHeightPx(cs, fontSizeCss) * Math.max(0.0001, scaleY);
+      const lineH =
+        readLineHeightPx(cs, fontSizeCss) * Math.max(0.0001, scaleY);
       let y = padTop;
 
       for (const line of wrapPreWrapText(ctx, text, maxW)) {
@@ -259,7 +388,7 @@ export function drawEditorAsImageAxisAligned({
   scaleY,
   titleOffset,
 }: NoteImageDrawArgs): Promise<boolean> {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     try {
       const clonedNode = editor.cloneNode(true);
       const cloned = asHTMLElement(clonedNode);
@@ -268,34 +397,37 @@ export function drawEditorAsImageAxisAligned({
         return;
       }
 
-      const cs = applyEditorComputedExportStyle(editor, cloned);
-      const isRtl = String(cloned.dir || readCssValue(cs, 'direction') || 'rtl').toLowerCase() === 'rtl';
+      const cs = applyEditorComputedExportStyleTree(editor, cloned);
+      const isRtl =
+        String(
+          cloned.dir || readCssValue(cs, "direction") || "rtl",
+        ).toLowerCase() === "rtl";
       cloned.style.width = `${srcWCss}px`;
       cloned.style.height = `${srcHCss}px`;
-      cloned.style.overflow = 'hidden';
+      cloned.style.overflow = "hidden";
 
-      const wrapper = doc.createElement('div');
-      wrapper.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+      const wrapper = doc.createElement("div");
+      wrapper.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
       wrapper.style.width = `${srcWCss}px`;
       wrapper.style.height = `${srcHCss}px`;
-      wrapper.style.overflow = 'hidden';
-      wrapper.style.background = 'transparent';
-      wrapper.style.boxSizing = 'border-box';
-      wrapper.style.margin = '0';
-      wrapper.style.padding = '0';
+      wrapper.style.overflow = "hidden";
+      wrapper.style.background = "transparent";
+      wrapper.style.boxSizing = "border-box";
+      wrapper.style.margin = "0";
+      wrapper.style.padding = "0";
       wrapper.appendChild(cloned);
 
-      let xhtml = '';
+      let xhtml = "";
       try {
         xhtml = serializeDetachedHtmlNode(doc, wrapper);
       } catch {
-        xhtml = '';
+        xhtml = "";
       }
       if (!xhtml) {
         try {
           xhtml = serializeDetachedHtmlNode(doc, wrapper);
         } catch {
-          xhtml = '';
+          xhtml = "";
         }
       }
 
@@ -303,7 +435,12 @@ export function drawEditorAsImageAxisAligned({
       const ay = dstTopCss * scaleY + titleOffset;
       const dw = Math.max(0, dstWCss * scaleX);
       const dh = Math.max(0, dstHCss * scaleY);
-      if (!Number.isFinite(ax) || !Number.isFinite(ay) || !Number.isFinite(dw) || !Number.isFinite(dh)) {
+      if (
+        !Number.isFinite(ax) ||
+        !Number.isFinite(ay) ||
+        !Number.isFinite(dw) ||
+        !Number.isFinite(dh)
+      ) {
         resolve(false);
         return;
       }
@@ -311,13 +448,13 @@ export function drawEditorAsImageAxisAligned({
       const hiW = Math.max(1, Math.round(dw));
       const hiH = Math.max(1, Math.round(dh));
       const forceCss = isRtl
-        ? '<style><![CDATA[*{direction:rtl;unicode-bidi:plaintext;} .editor,div,p,span{direction:rtl;unicode-bidi:plaintext;text-align:right;}]]></style>'
-        : '<style><![CDATA[.editor,div,p,span{unicode-bidi:plaintext;}]]></style>';
+        ? "<style><![CDATA[*{direction:rtl;unicode-bidi:plaintext;} .editor,div,p,span{direction:rtl;unicode-bidi:plaintext;text-align:right;}]]></style>"
+        : "<style><![CDATA[.editor,div,p,span{unicode-bidi:plaintext;}]]></style>";
       const svg =
         `<svg xmlns="http://www.w3.org/2000/svg" width="${hiW}" height="${hiH}" viewBox="0 0 ${srcWCss} ${srcHCss}" preserveAspectRatio="none">` +
         forceCss +
         `<foreignObject width="${srcWCss}" height="${srcHCss}">${xhtml}</foreignObject>` +
-        '</svg>';
+        "</svg>";
 
       const img = new Image();
       img.onload = () => {
