@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-05-06T20:15:14.254Z",
+  "generatedAt": "2026-05-07T08:02:18.997Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 797,
+    "totalOccurrences": 796,
     "totalFiles": 285,
     "byCategory": {
       "runtime-default": 639,
       "browser-adapter": 18,
       "project-migration": 20,
       "test-fixture": 7,
-      "legacy-runtime-risk": 113,
+      "legacy-runtime-risk": 112,
       "unknown": 0
     },
     "byFile": {
@@ -159,9 +159,8 @@
         }
       },
       "esm/native/builder/external_drawers_pipeline.ts": {
-        "total": 5,
+        "total": 4,
         "categories": {
-          "legacy-runtime-risk": 1,
           "runtime-default": 4
         }
       },
@@ -2304,38 +2303,31 @@
     },
     {
       "file": "esm/native/builder/external_drawers_pipeline.ts",
-      "line": 71,
+      "line": 72,
       "term": "fallback",
       "category": "runtime-default",
       "text": "function readFiniteNumber(value: unknown, fallback: number): number {"
     },
     {
       "file": "esm/native/builder/external_drawers_pipeline.ts",
-      "line": 72,
+      "line": 73,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return typeof value === 'number' && Number.isFinite(value) ? value : fallback;"
     },
     {
       "file": "esm/native/builder/external_drawers_pipeline.ts",
-      "line": 79,
+      "line": 80,
       "term": "fallback",
       "category": "runtime-default",
       "text": "function readString(value: unknown, fallback = ''): string {"
     },
     {
       "file": "esm/native/builder/external_drawers_pipeline.ts",
-      "line": 80,
+      "line": 81,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return typeof value === 'string' ? value : fallback;"
-    },
-    {
-      "file": "esm/native/builder/external_drawers_pipeline.ts",
-      "line": 164,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Keep the legacy dimensions used in core.js for continuity."
     },
     {
       "file": "esm/native/builder/handles.ts",
@@ -2598,7 +2590,7 @@
     },
     {
       "file": "esm/native/builder/post_build_sketch_door_cuts_rebuild_handles.ts",
-      "line": 52,
+      "line": 59,
       "term": "fallback",
       "category": "runtime-default",
       "text": "// ignore handle fallback"
@@ -2647,14 +2639,14 @@
     },
     {
       "file": "esm/native/builder/render_dimension_ops_shared.ts",
-      "line": 92,
+      "line": 95,
       "term": "fallback",
       "category": "runtime-default",
       "text": "function asFiniteNumber(v: unknown, fallback = 0): number {"
     },
     {
       "file": "esm/native/builder/render_dimension_ops_shared.ts",
-      "line": 93,
+      "line": 96,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return typeof v === 'number' && Number.isFinite(v) ? v : fallback;"
@@ -2717,7 +2709,7 @@
     },
     {
       "file": "esm/native/builder/render_interior_custom_ops_layout.ts",
-      "line": 130,
+      "line": 134,
       "term": "legacy",
       "category": "legacy-runtime-risk",
       "text": "// ignore legacy color lookup errors and keep default body material"
@@ -2871,14 +2863,14 @@
     },
     {
       "file": "esm/native/builder/render_interior_sketch_support_rods.ts",
-      "line": 13,
+      "line": 14,
       "term": "fallback",
       "category": "runtime-default",
       "text": "assertTHREE(App, 'native/builder/render_interior_sketch_support.applySketchRods.fallback')"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_support_rods.ts",
-      "line": 48,
+      "line": 49,
       "term": "fallback",
       "category": "runtime-default",
       "text": "// fallback below"
@@ -3382,42 +3374,42 @@
     },
     {
       "file": "esm/native/features/sketch_drawer_sizing.ts",
-      "line": 76,
+      "line": 80,
       "term": "fallback",
       "category": "runtime-default",
       "text": "const fallback = readFiniteNumber(fallbackCm) ?? DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM;"
     },
     {
       "file": "esm/native/features/sketch_drawer_sizing.ts",
-      "line": 78,
+      "line": 82,
       "term": "fallback",
       "category": "runtime-default",
       "text": "const source = raw != null ? raw : fallback;"
     },
     {
       "file": "esm/native/features/sketch_drawer_sizing.ts",
-      "line": 84,
+      "line": 88,
       "term": "fallback",
       "category": "runtime-default",
       "text": "const fallback = readFiniteNumber(fallbackM) ?? DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M;"
     },
     {
       "file": "esm/native/features/sketch_drawer_sizing.ts",
-      "line": 86,
+      "line": 90,
       "term": "fallback",
       "category": "runtime-default",
       "text": "const source = raw != null ? raw : fallback;"
     },
     {
       "file": "esm/native/features/stack_split/module_config.ts",
-      "line": 24,
+      "line": 28,
       "term": "fallback",
       "category": "runtime-default",
       "text": "function toInt(v: unknown, fallback: number): number {"
     },
     {
       "file": "esm/native/features/stack_split/module_config.ts",
-      "line": 26,
+      "line": 30,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return Number.isFinite(n) ? n : fallback;"
@@ -7470,28 +7462,28 @@
     },
     {
       "file": "esm/shared/mirror_layout_contracts_shared.ts",
-      "line": 56,
+      "line": 60,
       "term": "fallback",
       "category": "runtime-default",
       "text": "export function normalizeMirrorFaceSign(value: unknown, fallback: number = DEFAULT_FACE_SIGN): number {"
     },
     {
       "file": "esm/shared/mirror_layout_contracts_shared.ts",
-      "line": 57,
+      "line": 61,
       "term": "fallback",
       "category": "runtime-default",
       "text": "const fallbackSign = fallback === -1 ? -1 : DEFAULT_FACE_SIGN;"
     },
     {
       "file": "esm/shared/mirror_layout_contracts_shared.ts",
-      "line": 63,
+      "line": 67,
       "term": "fallback",
       "category": "runtime-default",
       "text": "export function readMirrorLayoutFaceSign(layout: unknown, fallback: number = DEFAULT_FACE_SIGN): number {"
     },
     {
       "file": "esm/shared/mirror_layout_contracts_shared.ts",
-      "line": 65,
+      "line": 69,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return normalizeMirrorFaceSign(entry?.faceSign, fallback);"

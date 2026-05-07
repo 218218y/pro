@@ -149,9 +149,8 @@
       }
     },
     "esm/native/builder/external_drawers_pipeline.ts": {
-      "total": 5,
+      "total": 4,
       "categories": {
-        "legacy-runtime-risk": 1,
         "runtime-default": 4
       }
     },

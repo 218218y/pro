@@ -10,6 +10,7 @@
 // - Strict fail-fast behavior (no silent try/catch)
 
 import { computeExternalDrawersOpsForModule } from './pure_api.js';
+import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { requireBuilderRenderOps } from '../runtime/builder_service_access.js';
 import { reportErrorViaPlatform } from '../runtime/platform_access.js';
 import { asRecord } from '../runtime/record.js';
@@ -161,9 +162,9 @@ export function applyExternalDrawersForModule(
     throw new Error('[WardrobePro] external drawers pipeline missing: createBoard');
   }
 
-  // Keep the legacy dimensions used in core.js for continuity.
+  // Keep the separator board width clearance centralized with external drawer dimensions.
   createBoard(
-    innerW - 0.025,
+    innerW - DRAWER_DIMENSIONS.external.separatorBoardWidthClearanceM,
     woodThick,
     internalDepth,
     internalCenterX,

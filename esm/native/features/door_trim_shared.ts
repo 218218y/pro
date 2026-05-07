@@ -39,7 +39,7 @@ export const DOOR_TRIM_MIRROR_SNAP_ZONE_M: number = DOOR_TRIM_DIMENSIONS.snap.mi
 export const DOOR_TRIM_MIRROR_EDGE_GAP_M: number = DOOR_TRIM_DIMENSIONS.snap.mirrorEdgeGapM;
 
 export const DEFAULT_DOOR_TRIM_CENTER_NORM: number = DOOR_TRIM_DIMENSIONS.defaults.centerNorm;
-const CENTER_EPSILON = 1e-4;
+const CENTER_EPSILON = DOOR_TRIM_DIMENSIONS.normalize.centerEpsilonNorm;
 
 export type DoorTrimRect = {
   minX: number;

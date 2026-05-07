@@ -85,7 +85,9 @@ export function applyMainWardrobeDimensionOps(ctx: RenderDimensionContext): void
     uniq.sort((a, b) => a - b);
 
     if (uniq.length >= 2) {
-      const cellHeightDeltaX = stackSplitActive ? guide.stackSplitCellHeightLineDeltaM : guide.cellHeightLineDeltaM;
+      const cellHeightDeltaX = stackSplitActive
+        ? guide.stackSplitCellHeightLineDeltaM
+        : guide.cellHeightLineDeltaM;
       const segX = dimsOnLeft ? heightLineX + cellHeightDeltaX : heightLineX - cellHeightDeltaX;
       const segTextOffset = dimsOnLeft
         ? vec(-guide.cellHeightTextOffsetM, 0, 0)
@@ -108,7 +110,9 @@ export function applyMainWardrobeDimensionOps(ctx: RenderDimensionContext): void
     }
   }
 
-  const depthLineX = depthOnLeft ? -totalW / 2 - guide.depthLineOffsetXM : totalW / 2 + guide.depthLineOffsetXM;
+  const depthLineX = depthOnLeft
+    ? -totalW / 2 - guide.depthLineOffsetXM
+    : totalW / 2 + guide.depthLineOffsetXM;
   const depthTextOffset = depthOnLeft
     ? vec(-guide.depthTextOffsetXM, 0, 0)
     : vec(guide.depthTextOffsetXM, 0, 0);

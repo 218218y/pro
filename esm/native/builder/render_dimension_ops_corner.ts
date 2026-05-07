@@ -56,14 +56,10 @@ export function applyCornerDimensionOps(ctx: RenderDimensionContext): void {
     const xCenter = (xBack + xFront) / 2;
     const yWingTotal =
       wingH +
-      (hasCornice
-        ? guidePlacement.totalYOffsetWithCorniceM
-        : guidePlacement.totalYOffsetWithoutCorniceM);
+      (hasCornice ? guidePlacement.totalYOffsetWithCorniceM : guidePlacement.totalYOffsetWithoutCorniceM);
     const yWingCells =
       wingH +
-      (hasCornice
-        ? guidePlacement.cellYOffsetWithCorniceM
-        : guidePlacement.cellYOffsetWithoutCorniceM);
+      (hasCornice ? guidePlacement.cellYOffsetWithCorniceM : guidePlacement.cellYOffsetWithoutCorniceM);
 
     addDimensionLine(
       vec(xCenter, yWingTotal, zStart),
@@ -85,7 +81,12 @@ export function applyCornerDimensionOps(ctx: RenderDimensionContext): void {
     }
   }
 
-  if (noMainWardrobe && isCornerMode && cornerConnectorEnabled && cornerWallLenM > guide.connectorWallMinLengthM) {
+  if (
+    noMainWardrobe &&
+    isCornerMode &&
+    cornerConnectorEnabled &&
+    cornerWallLenM > guide.connectorWallMinLengthM
+  ) {
     const connectorH = displayH;
     const connectorD = D;
     const roomCornerX =
@@ -93,7 +94,8 @@ export function applyCornerDimensionOps(ctx: RenderDimensionContext): void {
     const roomCornerZ = -(D / 2) + cornerOffsetZM;
     const connectorFrontX = cornerSide === 'left' ? roomCornerX + connectorD : roomCornerX - connectorD;
     const connectorDepthMidZ =
-      roomCornerZ + Math.min(
+      roomCornerZ +
+      Math.min(
         cornerWallLenM * guide.connectorDepthMidRatio,
         Math.max(guide.connectorDepthMinM, cornerWallLenM - guide.connectorDepthInsetM)
       );

@@ -3,6 +3,7 @@
 // Owns per-segment material selection and visual creation for segmented sketch-door rebuild flows.
 
 import { resolveEffectiveDoorStyle } from '../features/door_style_overrides.js';
+import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 import { isObject3DLike } from './post_build_extras_shared.js';
 
@@ -98,8 +99,11 @@ export function createSegmentVisual(args: {
   if (createDoorVisual) {
     try {
       visual = createDoorVisual(
-        Math.max(0.02, width - 0.004),
-        Math.max(0.02, segHeight),
+        Math.max(
+          DRAWER_DIMENSIONS.sketch.rebuiltSegmentVisualMinDimensionM,
+          width - DRAWER_DIMENSIONS.sketch.rebuiltSegmentVisualWidthClearanceM
+        ),
+        Math.max(DRAWER_DIMENSIONS.sketch.rebuiltSegmentVisualMinDimensionM, segHeight),
         thickness,
         flags.segmentIsMirror ? segmentMirrorMat : segmentPartMat,
         flags.segmentIsGlass ? 'glass' : flags.effectiveDoorStyle,
@@ -120,7 +124,14 @@ export function createSegmentVisual(args: {
   return isObject3DLike(visual)
     ? visual
     : new THREE.Mesh(
-        new THREE.BoxGeometry(Math.max(0.02, width - 0.004), Math.max(0.02, segHeight), thickness),
+        new THREE.BoxGeometry(
+          Math.max(
+            DRAWER_DIMENSIONS.sketch.rebuiltSegmentVisualMinDimensionM,
+            width - DRAWER_DIMENSIONS.sketch.rebuiltSegmentVisualWidthClearanceM
+          ),
+          Math.max(DRAWER_DIMENSIONS.sketch.rebuiltSegmentVisualMinDimensionM, segHeight),
+          thickness
+        ),
         segmentPartMat
       );
 }

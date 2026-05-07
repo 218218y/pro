@@ -40,7 +40,7 @@ export function createCornerConnectorEdgePanelAdder(
     const dx0 = bx - ax;
     const dz0 = bz - az;
     const len0 = Math.sqrt(dx0 * dx0 + dz0 * dz0);
-    if (!Number.isFinite(len0) || len0 <= 0.01) return;
+    if (!Number.isFinite(len0) || len0 <= CORNER_WING_DIMENSIONS.connector.shellPanelMinLengthM) return;
     const ux0 = dx0 / len0;
     const uz0 = dz0 / len0;
     if (shrinkS > 0) {
@@ -55,7 +55,7 @@ export function createCornerConnectorEdgePanelAdder(
     const dx = bx - ax;
     const dz = bz - az;
     const len = Math.sqrt(dx * dx + dz * dz);
-    if (!Number.isFinite(len) || len <= 0.01) return;
+    if (!Number.isFinite(len) || len <= CORNER_WING_DIMENSIONS.connector.shellPanelMinLengthM) return;
 
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(len, wallH, panelThick), getCornerMat(partId, bodyMat));
     const midX = (ax + bx) / 2;
@@ -115,7 +115,7 @@ function appendCornerConnectorBackEdgePanel(
   const dx0 = bx - ax;
   const dz0 = bz - az;
   const len0 = Math.sqrt(dx0 * dx0 + dz0 * dz0);
-  if (!Number.isFinite(len0) || len0 <= 0.01) return;
+  if (!Number.isFinite(len0) || len0 <= CORNER_WING_DIMENSIONS.connector.shellPanelMinLengthM) return;
   const ux = dx0 / len0;
   const uz = dz0 / len0;
   if (startInset > 0) {
@@ -130,7 +130,7 @@ function appendCornerConnectorBackEdgePanel(
   const dx = bx - ax;
   const dz = bz - az;
   const len = Math.sqrt(dx * dx + dz * dz);
-  if (!Number.isFinite(len) || len <= 0.01) return;
+  if (!Number.isFinite(len) || len <= CORNER_WING_DIMENSIONS.connector.shellPanelMinLengthM) return;
 
   const mesh = new THREE.Mesh(
     new THREE.BoxGeometry(len, metrics.backWallH, metrics.backPanelThick),

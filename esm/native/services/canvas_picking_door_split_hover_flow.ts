@@ -78,7 +78,10 @@ export function tryHandleSplitDoorHover(args: SplitDoorHoverArgs): boolean {
 
   const groupRec = __asObject<TransformNodeLike>(hitDoorGroup);
   const userData = groupRec ? __asObject<UnknownRecord>(groupRec.userData) : null;
-  const w = userData && typeof userData.__doorWidth === 'number' ? userData.__doorWidth : splitHoverDims.hoverFallbackDoorWidthM;
+  const w =
+    userData && typeof userData.__doorWidth === 'number'
+      ? userData.__doorWidth
+      : splitHoverDims.hoverFallbackDoorWidthM;
   const hingeLeft = userData && typeof userData.__hingeLeft === 'boolean' ? !!userData.__hingeLeft : true;
   const anchorX = __getDoorHoverAnchorX(hitDoorGroup, userData, w, hingeLeft);
 
@@ -116,7 +119,10 @@ export function tryHandleSplitDoorHover(args: SplitDoorHoverArgs): boolean {
     const prevList = readSplitPosList(App, doorBaseKey);
     const tolAbs = Math.max(
       splitHoverDims.hoverCustomRemoveToleranceMinM,
-      Math.min(splitHoverDims.hoverCustomRemoveToleranceMaxM, H * splitHoverDims.hoverCustomRemoveToleranceRatio)
+      Math.min(
+        splitHoverDims.hoverCustomRemoveToleranceMaxM,
+        H * splitHoverDims.hoverCustomRemoveToleranceRatio
+      )
     );
 
     let nearestAbs = NaN;

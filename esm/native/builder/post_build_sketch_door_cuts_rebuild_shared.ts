@@ -2,6 +2,7 @@
 //
 // Owns Object3D-like helpers, subtree pick-meta tagging, segment part-id policy, and door-metric metadata writes.
 
+import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { asObject3D, asRecord, type ValueRecord } from './post_build_extras_shared.js';
 
 import type {
@@ -197,7 +198,11 @@ export function createRemovedDoorRestoreTarget(args: {
   const { THREE } = runtime;
   const target = asSketchDoorNode(
     new THREE.Mesh(
-      new THREE.BoxGeometry(Math.max(0.02, width), Math.max(0.02, height), Math.max(0.002, thickness)),
+      new THREE.BoxGeometry(
+        Math.max(DRAWER_DIMENSIONS.sketch.rebuiltSegmentRestoreTargetMinDimensionM, width),
+        Math.max(DRAWER_DIMENSIONS.sketch.rebuiltSegmentRestoreTargetMinDimensionM, height),
+        Math.max(DRAWER_DIMENSIONS.sketch.rebuiltSegmentRestoreTargetMinThicknessM, thickness)
+      ),
       new THREE.MeshBasicMaterial({
         color: 0xff0000,
         transparent: true,
@@ -269,7 +274,7 @@ export function resolveSegmentHandleAbsY(args: {
   handleAbsY: number | null;
   padding?: number;
 }): number | null {
-  const { seg, handleAbsY, padding = 0.01 } = args;
+  const { seg, handleAbsY, padding = DRAWER_DIMENSIONS.sketch.rebuiltSegmentDefaultHandlePaddingM } = args;
   if (handleAbsY == null) return null;
   return Math.max(seg.yMin + padding, Math.min(seg.yMax - padding, handleAbsY));
 }

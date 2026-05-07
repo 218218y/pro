@@ -1,4 +1,5 @@
 import { getDrawersArray, getWardrobeGroup } from '../runtime/render_access.js';
+import { HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { createHandleMeshV7 } from './handles_mesh.js';
 import type { HandlesApplyRuntime } from './handles_apply_shared.js';
 import { asNode, readBox3, readMatrix4, type NodeLike } from './handles_shared.js';
@@ -19,8 +20,8 @@ export function applyDrawerHandles(runtime: HandlesApplyRuntime): void {
     const hType = runtime.getHandleType(id);
     if (!hType || hType === 'none') continue;
 
-    const drawW = g.userData.__doorWidth || 0.4;
-    const drawH = g.userData.__doorHeight || 0.2;
+    const drawW = g.userData.__doorWidth || HANDLE_DIMENSIONS.placement.drawerDefaultWidthM;
+    const drawH = g.userData.__doorHeight || HANDLE_DIMENSIONS.placement.drawerDefaultHeightM;
     const handle = createHandleMeshV7(hType, drawW, drawH, true, true, {
       App: runtime.App,
       edgeHandleVariant: hType === 'edge' ? runtime.getEdgeHandleVariant(id) : undefined,
@@ -79,16 +80,16 @@ function hasDrawerAncestor(node: NodeLike | null | undefined): boolean {
 
 function createGroupMaxZLocalReader(runtime: HandlesApplyRuntime): (root: NodeLike) => number {
   const { THREE } = runtime;
-  if (!THREE || !THREE.Box3 || !THREE.Matrix4) return () => 0.02;
+  if (!THREE || !THREE.Box3 || !THREE.Matrix4) return () => HANDLE_DIMENSIONS.placement.frontZDefaultM;
 
   const __tmpBox3 = readBox3(new THREE.Box3());
   const __tmpInvM4 = readMatrix4(new THREE.Matrix4());
   const __tmpM4 = readMatrix4(new THREE.Matrix4());
-  if (!__tmpBox3 || !__tmpInvM4 || !__tmpM4) return () => 0.02;
+  if (!__tmpBox3 || !__tmpInvM4 || !__tmpM4) return () => HANDLE_DIMENSIONS.placement.frontZDefaultM;
 
   return (root: NodeLike): number => {
     try {
-      if (!root) return 0.02;
+      if (!root) return HANDLE_DIMENSIONS.placement.frontZDefaultM;
       if (typeof root.updateWorldMatrix === 'function') root.updateWorldMatrix(true, true);
       __tmpInvM4.copy(root.matrixWorld).invert();
 
@@ -108,10 +109,15 @@ function createGroupMaxZLocalReader(runtime: HandlesApplyRuntime): (root: NodeLi
         if (typeof boxMaxZ === 'number' && Number.isFinite(boxMaxZ)) maxZ = Math.max(maxZ, boxMaxZ);
       });
 
-      if (!Number.isFinite(maxZ) || maxZ === -Infinity || maxZ > 2.0) return 0.02;
+      if (
+        !Number.isFinite(maxZ) ||
+        maxZ === -Infinity ||
+        maxZ > HANDLE_DIMENSIONS.placement.maxTrustedLocalZM
+      )
+        return HANDLE_DIMENSIONS.placement.frontZDefaultM;
       return maxZ;
     } catch (_) {
-      return 0.02;
+      return HANDLE_DIMENSIONS.placement.frontZDefaultM;
     }
   };
 }
@@ -129,7 +135,7 @@ function positionDrawerHandleZ(
     maxZ = computeGroupMaxZLocal(group);
   }
 
-  const eps = 0.0005;
+  const eps = HANDLE_DIMENSIONS.placement.zPositionEpsilonM;
   let handleMinZ = Infinity;
   let handleMaxZ = -Infinity;
   handle.traverse?.((ch: NodeLike) => {
@@ -150,7 +156,7 @@ function positionDrawerHandleZ(
 
   if (hType === 'edge' && Number.isFinite(handleMaxZ)) {
     const handleDepthZ = handleMaxZ - handleMinZ;
-    const targetVisibleProtrusionZ = 0.0135;
+    const targetVisibleProtrusionZ = HANDLE_DIMENSIONS.placement.drawerEdgeVisibleProtrusionM;
     const seatInsetZ = Math.max(0, handleDepthZ - targetVisibleProtrusionZ);
     handle.position.z -= seatInsetZ;
   }
@@ -163,7 +169,7 @@ function positionDrawerHandleY(
   hType: string,
   drawH: number
 ): void {
-  const eps = 0.0005;
+  const eps = HANDLE_DIMENSIONS.placement.zPositionEpsilonM;
   if (hType === 'edge') {
     if (group.userData && Number.isFinite(group.userData.__doorHeight)) {
       handle.position.y = Number(group.userData.__doorHeight) / 2 + eps;
@@ -200,5 +206,8 @@ function positionDrawerHandleY(
     return;
   }
 
-  handle.position.y = drawH < 0.21 ? 0.02 : 0;
+  handle.position.y =
+    drawH < HANDLE_DIMENSIONS.placement.shortDrawerHeightThresholdM
+      ? HANDLE_DIMENSIONS.placement.shortDrawerStandardYOffsetM
+      : 0;
 }

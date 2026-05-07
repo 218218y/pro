@@ -3,6 +3,7 @@
 // Owns door-loop selection and interval application for segmented sketch-door rebuild flows.
 
 import { getDoorsArray } from '../runtime/render_access.js';
+import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 import { asRecord, getDoorEntryGroup, parseNum, readKey } from './post_build_extras_shared.js';
 import type {
@@ -56,7 +57,7 @@ export function applySketchDrawerDoorCuts(args: ApplySketchDrawerDoorCutsArgs): 
     for (let j = 0; j < selection.stacks.length; j++) {
       const stack = selection.stacks[j];
       const overlap = Math.min(doorXMax, stack.xMax) - Math.max(doorXMin, stack.xMin);
-      if (!(overlap > 0.005)) continue;
+      if (!(overlap > DRAWER_DIMENSIONS.sketch.doorCutHorizontalOverlapMinM)) continue;
       cuts.push({ yMin: stack.yMin, yMax: stack.yMax });
     }
     const normalizedCuts = normalizeSketchDrawerCutIntervals(cuts);
@@ -64,8 +65,8 @@ export function applySketchDrawerDoorCuts(args: ApplySketchDrawerDoorCutsArgs): 
     const visibleSegments = subtractSketchDrawerIntervals(doorMin, doorMax, normalizedCuts);
     if (
       visibleSegments.length === 1 &&
-      Math.abs(visibleSegments[0].yMin - doorMin) <= 0.002 &&
-      Math.abs(visibleSegments[0].yMax - doorMax) <= 0.002
+      Math.abs(visibleSegments[0].yMin - doorMin) <= DRAWER_DIMENSIONS.sketch.doorCutNoOpToleranceM &&
+      Math.abs(visibleSegments[0].yMax - doorMax) <= DRAWER_DIMENSIONS.sketch.doorCutNoOpToleranceM
     )
       continue;
     rebuildSketchSegmentedDoor({ runtime, g, ud, visibleSegments, fallbackPartId: selection.fallbackPartId });

@@ -101,7 +101,6 @@ export const WARDROBE_LAYOUT_DIMENSIONS = Object.freeze({
   }),
 });
 
-
 export const WARDROBE_DIMENSION_GUIDE_DIMENSIONS = Object.freeze({
   textScale: Object.freeze({
     total: 1,
@@ -471,6 +470,7 @@ export const INTERIOR_FITTINGS_DIMENSIONS = Object.freeze({
   rods: Object.freeze({
     radiusM: 0.015,
     widthClearanceM: 0.04,
+    radialSegments: 12,
     drawerVerticalGuardM: 0.05,
     minHangingHeightM: 0.75,
     depthBackClearanceM: 0.04,
@@ -488,6 +488,11 @@ export const INTERIOR_FITTINGS_DIMENSIONS = Object.freeze({
     barrierWidthMinM: 0.05,
     barrierWidthClearanceM: 0.025,
     previewThicknessMinM: 0.0001,
+    clampPadMinM: 0.001,
+    clampPadMaxM: 0.006,
+    clampPadWoodRatio: 0.2,
+    minHeightExtraM: 0.02,
+    minHeightWoodMultiplier: 2,
     defaultLowerShelfSlots: Object.freeze([false, true, false, true, false, false]),
   }),
   presets: Object.freeze({
@@ -760,8 +765,18 @@ export const DOOR_TRIM_DIMENSIONS = Object.freeze({
   }),
   snap: Object.freeze({
     centerNormThreshold: 0.04,
+    centerNormThresholdMax: 0.25,
     mirrorZoneM: 0.006,
     mirrorEdgeGapM: 0.0008,
+  }),
+  normalize: Object.freeze({
+    centerEpsilonNorm: 1e-4,
+    rectSpanMinM: 0.0001,
+  }),
+  removeTolerance: Object.freeze({
+    thicknessMultiplier: 1.15,
+    maxM: 0.09,
+    crossSpanRatio: 0.12,
   }),
 });
 
@@ -825,6 +840,21 @@ export const DRAWER_DIMENSIONS = Object.freeze({
     internalBottomLiftMaxM: 0.002,
     internalBottomLiftWoodRatio: 0.15,
     verticalStackCollisionGapM: 0.008,
+    doorCutHorizontalOverlapMinM: 0.005,
+    doorCutNoOpToleranceM: 0.002,
+    doorCutIntervalMinHeightM: 0.01,
+    doorCutIntervalMergeGapM: 0.002,
+    doorCutVisibleSegmentMinHeightM: 0.012,
+    rebuiltSegmentMinHeightForHandleM: 0.12,
+    rebuiltSegmentHandleMinHeightM: 0.02,
+    rebuiltSegmentHandlePaddingMinM: 0.02,
+    rebuiltSegmentHandlePaddingMaxM: 0.1,
+    rebuiltSegmentHandlePaddingHeightRatio: 0.2,
+    rebuiltSegmentRestoreTargetMinDimensionM: 0.02,
+    rebuiltSegmentRestoreTargetMinThicknessM: 0.002,
+    rebuiltSegmentDefaultHandlePaddingM: 0.01,
+    rebuiltSegmentVisualMinDimensionM: 0.02,
+    rebuiltSegmentVisualWidthClearanceM: 0.004,
   }),
   external: Object.freeze({
     shoeHeightM: 0.2,
@@ -844,6 +874,7 @@ export const DRAWER_DIMENSIONS = Object.freeze({
     connectorBackInsetM: 0.003,
     connectorWidthClearanceM: 0.09,
     connectorHeightClearanceM: 0.06,
+    separatorBoardWidthClearanceM: 0.025,
   }),
   internal: Object.freeze({
     defaultGridStepM: 0.25,
@@ -859,6 +890,18 @@ export const DRAWER_DIMENSIONS = Object.freeze({
     stackCount: 2,
     openOffsetZM: 0.25,
   }),
+});
+
+export const FRONT_REVEAL_FRAME_DIMENSIONS = Object.freeze({
+  zNudgeM: 0.0008,
+  localLineInsetM: 0.0015,
+  dualOuterZOffsetM: 0.00008,
+  dualInnerInsetM: 0.0011,
+  dualInnerZOffsetM: 0.00016,
+  frontZPresenceEpsilonM: 1e-6,
+  slidingFrontThicknessM: DOOR_SYSTEM_DIMENSIONS.sliding.visualThicknessM,
+  hingedFrontThicknessM: MATERIAL_DIMENSIONS.wood.thicknessM,
+  drawerFrontThicknessM: DRAWER_DIMENSIONS.external.visualThicknessM,
 });
 
 export const SKETCH_BOX_DIMENSIONS = Object.freeze({
@@ -1335,6 +1378,20 @@ export const HANDLE_DIMENSIONS = Object.freeze({
     doorDepthM: 0.02,
     doorOffsetM: 0.05,
     frontZM: 0.02,
+  }),
+  placement: Object.freeze({
+    drawerDefaultWidthM: 0.4,
+    drawerDefaultHeightM: DRAWER_DIMENSIONS.external.shoeHeightM,
+    frontZDefaultM: 0.02,
+    zPositionEpsilonM: 0.0005,
+    maxTrustedLocalZM: 2,
+    drawerEdgeVisibleProtrusionM: 0.0135,
+    shortDrawerStandardYOffsetM: 0.02,
+    shortDrawerHeightThresholdM: 0.21,
+    absYClampMinHeightM: 0.05,
+    absYClampPaddingMinM: 0.02,
+    absYClampPaddingMaxM: 0.1,
+    absYClampPaddingHeightRatio: 0.2,
   }),
 });
 

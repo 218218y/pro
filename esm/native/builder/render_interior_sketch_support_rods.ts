@@ -1,3 +1,4 @@
+import { INTERIOR_FITTINGS_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { InteriorTHREESurface } from './render_interior_ops_contracts.js';
 import type { ApplySketchRodsArgs } from './render_interior_sketch_support_contracts.js';
 
@@ -53,8 +54,17 @@ export function applySketchRods(args: ApplySketchRodsArgs): void {
       const resolvedTHREE = resolveSketchRodTHREE({ THREE, App, assertTHREE, asObject });
       if (!resolvedTHREE) continue;
 
-      const len = Math.max(0.05, innerW - 0.06);
-      const geo = new resolvedTHREE.CylinderGeometry(0.015, 0.015, len, 12);
+      const SKETCH_ROD_DIMENSIONS = INTERIOR_FITTINGS_DIMENSIONS.rods;
+      const len = Math.max(
+        SKETCH_ROD_DIMENSIONS.depthHintMinM,
+        innerW - SKETCH_ROD_DIMENSIONS.contentsWidthClearanceM
+      );
+      const geo = new resolvedTHREE.CylinderGeometry(
+        SKETCH_ROD_DIMENSIONS.radiusM,
+        SKETCH_ROD_DIMENSIONS.radiusM,
+        len,
+        SKETCH_ROD_DIMENSIONS.radialSegments
+      );
       const mat = new resolvedTHREE.MeshStandardMaterial({
         color: 0x8a8a8a,
         roughness: 0.35,

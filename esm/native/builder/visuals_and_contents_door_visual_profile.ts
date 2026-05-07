@@ -51,7 +51,12 @@ export function createProfileDoorVisual(args: StyledDoorVisualArgs) {
         centerH,
         Math.max(profileDims.centerPanelDepthMinM, thickness - centerDepth),
       ]),
-      () => new THREE.BoxGeometry(centerW, centerH, Math.max(profileDims.centerPanelDepthMinM, thickness - centerDepth))
+      () =>
+        new THREE.BoxGeometry(
+          centerW,
+          centerH,
+          Math.max(profileDims.centerPanelDepthMinM, thickness - centerDepth)
+        )
     ),
     mat
   );

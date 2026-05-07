@@ -216,7 +216,10 @@ test('[dimension tokens] door split and cell dimension hover preview measurement
   assert.match(tokens, /cellDimsPreview: Object\.freeze\(\{/);
 
   assertUsesToken('esm/native/services/canvas_picking_door_split_hover_flow.ts', 'DOOR_SYSTEM_DIMENSIONS');
-  assertUsesToken('esm/native/services/canvas_picking_hover_preview_modes_cell_dims.ts', 'WARDROBE_LAYOUT_DIMENSIONS');
+  assertUsesToken(
+    'esm/native/services/canvas_picking_hover_preview_modes_cell_dims.ts',
+    'WARDROBE_LAYOUT_DIMENSIONS'
+  );
 
   const splitHover = read('esm/native/services/canvas_picking_door_split_hover_flow.ts');
   assert.doesNotMatch(splitHover, /maxY - minY < 0\.05/);
@@ -228,3 +231,158 @@ test('[dimension tokens] door split and cell dimension hover preview measurement
   assert.doesNotMatch(cellDims, /woodThick: Math\.max\(0\.004, Math\.min\(0\.01/);
 });
 
+test('[dimension tokens] door trim placement and front reveal frame geometry are centralized', () => {
+  const tokens = read(productDimensionTokenSource);
+  assert.match(tokens, /removeTolerance: Object\.freeze\(\{/);
+  assert.match(tokens, /normalize: Object\.freeze\(\{/);
+  assert.match(tokens, /export const FRONT_REVEAL_FRAME_DIMENSIONS = Object\.freeze\(\{/);
+
+  for (const rel of [
+    'esm/native/features/door_trim_shared.ts',
+    'esm/native/features/door_trim_placement_geometry.ts',
+    'esm/native/features/door_trim_placement_match.ts',
+    'esm/native/features/door_trim_placement_mirror.ts',
+  ]) {
+    assertUsesToken(rel, 'DOOR_TRIM_DIMENSIONS');
+  }
+
+  for (const rel of [
+    'esm/native/builder/post_build_front_reveal_frames_runtime.ts',
+    'esm/native/builder/post_build_front_reveal_frames_geometry.ts',
+    'esm/native/builder/post_build_front_reveal_frames_doors.ts',
+    'esm/native/builder/post_build_front_reveal_frames_drawers.ts',
+  ]) {
+    assertUsesToken(rel, 'FRONT_REVEAL_FRAME_DIMENSIONS');
+  }
+
+  const trimShared = read('esm/native/features/door_trim_shared.ts');
+  assert.doesNotMatch(trimShared, /CENTER_EPSILON = 1e-4/);
+
+  const trimMatch = read('esm/native/features/door_trim_placement_match.ts');
+  assert.doesNotMatch(trimMatch, /DEFAULT_DOOR_TRIM_THICKNESS_M \* 1\.15/);
+  assert.doesNotMatch(trimMatch, /Math\.min\(0\.09, crossSpan \* 0\.12\)/);
+
+  const revealGeometry = read('esm/native/builder/post_build_front_reveal_frames_geometry.ts');
+  assert.doesNotMatch(revealGeometry, /const xyInset = 0\.0015/);
+  assert.doesNotMatch(revealGeometry, /sign \* 0\.00008/);
+  assert.doesNotMatch(revealGeometry, /makeRectGeom\(0\.0011, sign \* 0\.00016\)/);
+
+  const revealDoors = read('esm/native/builder/post_build_front_reveal_frames_doors.ts');
+  assert.doesNotMatch(revealDoors, /type === 'sliding' \? 0\.022 : 0\.018/);
+
+  const revealDrawers = read('esm/native/builder/post_build_front_reveal_frames_drawers.ts');
+  assert.doesNotMatch(revealDrawers, /Math\.abs\(explicitFrontMax\) > 1e-6/);
+  assert.doesNotMatch(revealDrawers, /const thickness = Number\.isFinite\(t\) && t > 0 \? t : 0\.02/);
+});
+
+test('[dimension tokens] corner wing and connector shell dimensions read canonical tokens', () => {
+  const tokens = read(productDimensionTokenSource);
+  assert.match(tokens, /shellMinWallHeightM:/);
+  assert.match(tokens, /shellPanelMinLengthM:/);
+  assert.match(tokens, /minBlindWidthM:/);
+
+  for (const rel of [
+    'esm/native/builder/corner_wing_carcass_shell_dividers.ts',
+    'esm/native/builder/corner_wing_carcass_shell_floor_base.ts',
+    'esm/native/builder/corner_connector_emit_shell_panels.ts',
+  ]) {
+    assertUsesToken(rel, 'CORNER_WING_DIMENSIONS');
+  }
+
+  const dividers = read('esm/native/builder/corner_wing_carcass_shell_dividers.ts');
+  assert.doesNotMatch(dividers, /Math\.max\(0\.001, woodThick\)/);
+  assert.doesNotMatch(dividers, /leftHRaw - 0\.002/);
+  assert.doesNotMatch(dividers, /Math\.max\(0\.2, leftCell\.depth\)/);
+  assert.doesNotMatch(dividers, /resolveCornerWingWallPlacement\(params, metrics, .*?, 0\.05\)/);
+
+  const floorBase = read('esm/native/builder/corner_wing_carcass_shell_floor_base.ts');
+  assert.doesNotMatch(floorBase, /woodThick \/ 2 \+ 0\.002/);
+  assert.doesNotMatch(floorBase, /blindWidth > 0\.001/);
+  assert.doesNotMatch(floorBase, /Math\.max\(0\.2, d0\)/);
+  assert.doesNotMatch(floorBase, /resolveCornerWingHorizPlacement\(params, metrics, .*?, 0\.05\)/);
+
+  const connectorPanels = read('esm/native/builder/corner_connector_emit_shell_panels.ts');
+  assert.doesNotMatch(connectorPanels, /len0 <= 0\.01/);
+  assert.doesNotMatch(connectorPanels, /len <= 0\.01/);
+});
+
+test('[dimension tokens] sketch drawer cut, handle placement, rods, and storage dimensions are centralized', () => {
+  const tokens = read(productDimensionTokenSource);
+  assert.match(tokens, /doorCutHorizontalOverlapMinM:/);
+  assert.match(tokens, /rebuiltSegmentHandlePaddingHeightRatio:/);
+  assert.match(tokens, /placement: Object\.freeze\(\{/);
+  assert.match(tokens, /separatorBoardWidthClearanceM:/);
+  assert.match(tokens, /clampPadWoodRatio:/);
+
+  for (const rel of [
+    'esm/native/builder/post_build_sketch_door_cuts_apply.ts',
+    'esm/native/builder/post_build_sketch_door_cuts_intervals.ts',
+    'esm/native/builder/post_build_sketch_door_cuts_rebuild_handles.ts',
+    'esm/native/builder/post_build_sketch_door_cuts_rebuild_shared.ts',
+    'esm/native/builder/post_build_sketch_door_cuts_rebuild_visual.ts',
+  ]) {
+    assertUsesToken(rel, 'DRAWER_DIMENSIONS');
+  }
+
+  for (const rel of [
+    'esm/native/builder/handles_apply_drawers.ts',
+    'esm/native/builder/handles_apply_shared.ts',
+  ]) {
+    assertUsesToken(rel, 'HANDLE_DIMENSIONS');
+  }
+
+  for (const rel of [
+    'esm/native/builder/render_interior_sketch_support_rods.ts',
+    'esm/native/builder/render_interior_sketch_support_storage.ts',
+  ]) {
+    assertUsesToken(rel, 'INTERIOR_FITTINGS_DIMENSIONS');
+  }
+
+  assertUsesToken('esm/native/builder/external_drawers_pipeline.ts', 'DRAWER_DIMENSIONS');
+
+  const cutsApply = read('esm/native/builder/post_build_sketch_door_cuts_apply.ts');
+  assert.doesNotMatch(cutsApply, /overlap > 0\.005/);
+  assert.doesNotMatch(cutsApply, /<= 0\.002/);
+
+  const intervals = read('esm/native/builder/post_build_sketch_door_cuts_intervals.ts');
+  assert.doesNotMatch(intervals, /> 0\.01/);
+  assert.doesNotMatch(intervals, /\+ 0\.002/);
+  assert.doesNotMatch(intervals, /0\.012/);
+
+  const rebuildHandles = read('esm/native/builder/post_build_sketch_door_cuts_rebuild_handles.ts');
+  assert.doesNotMatch(rebuildHandles, /segHeight < 0\.12/);
+  assert.doesNotMatch(rebuildHandles, /Math\.max\(0\.02, segHeight\)/);
+  assert.doesNotMatch(rebuildHandles, /Math\.min\(0\.1, Math\.max\(0\.02, segHeight \* 0\.2\)\)/);
+
+  const rebuildShared = read('esm/native/builder/post_build_sketch_door_cuts_rebuild_shared.ts');
+  assert.doesNotMatch(rebuildShared, /Math\.max\(0\.02, width\)/);
+  assert.doesNotMatch(rebuildShared, /Math\.max\(0\.002, thickness\)/);
+  assert.doesNotMatch(rebuildShared, /padding = 0\.01/);
+
+  const rebuildVisual = read('esm/native/builder/post_build_sketch_door_cuts_rebuild_visual.ts');
+  assert.doesNotMatch(rebuildVisual, /Math\.max\(0\.02, width - 0\.004\)/);
+  assert.doesNotMatch(rebuildVisual, /Math\.max\(0\.02, segHeight\)/);
+
+  const handleDrawers = read('esm/native/builder/handles_apply_drawers.ts');
+  assert.doesNotMatch(handleDrawers, /__doorWidth \|\| 0\.4/);
+  assert.doesNotMatch(handleDrawers, /__doorHeight \|\| 0\.2/);
+  assert.doesNotMatch(handleDrawers, /targetVisibleProtrusionZ = 0\.0135/);
+  assert.doesNotMatch(handleDrawers, /drawH < 0\.21 \? 0\.02 : 0/);
+
+  const handleShared = read('esm/native/builder/handles_apply_shared.ts');
+  assert.doesNotMatch(handleShared, /H > 0\.05/);
+  assert.doesNotMatch(handleShared, /Math\.min\(0\.1, Math\.max\(0\.02, H \* 0\.2\)\)/);
+
+  const rods = read('esm/native/builder/render_interior_sketch_support_rods.ts');
+  assert.doesNotMatch(rods, /Math\.max\(0\.05, innerW - 0\.06\)/);
+  assert.doesNotMatch(rods, /CylinderGeometry\(0\.015, 0\.015, len, 12\)/);
+
+  const storage = read('esm/native/builder/render_interior_sketch_support_storage.ts');
+  assert.doesNotMatch(storage, /Math\.min\(0\.006, Math\.max\(0\.001, woodThick \* 0\.2\)\)/);
+  assert.doesNotMatch(storage, /frontZ - 0\.06/);
+  assert.doesNotMatch(storage, /Math\.max\(0\.05, innerW - 0\.025\)/);
+  assert.doesNotMatch(storage, /woodThick \* 2 \+ 0\.02/);
+
+  const externalPipeline = read('esm/native/builder/external_drawers_pipeline.ts');
+  assert.doesNotMatch(externalPipeline, /innerW - 0\.025/);
+});

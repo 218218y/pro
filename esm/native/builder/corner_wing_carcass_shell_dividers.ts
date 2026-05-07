@@ -1,3 +1,4 @@
+import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { CornerWingCarcassFlowParams } from './corner_wing_carcass_shared.js';
 import {
   type CornerWingCarcassShellMetrics,
@@ -14,7 +15,7 @@ export function applyCornerWingCarcassDividers(
 
   if (cornerCells.length <= 1) return;
 
-  const fullT = Math.max(0.001, woodThick);
+  const fullT = Math.max(CORNER_WING_DIMENSIONS.connector.shellBaseMinHeightM, woodThick);
   for (let ci = 1; ci < cornerCells.length; ci++) {
     const x = cornerCells[ci].startX;
     const leftIdx = Math.max(0, ci - 1);
@@ -35,16 +36,30 @@ export function applyCornerWingCarcassDividers(
 
     const leftHRaw = leftCell.bodyHeight;
     const rightHRaw = rightCell.bodyHeight;
-    const leftH = Math.max(0.05, leftHRaw - 0.002);
-    const rightH = Math.max(0.05, rightHRaw - 0.002);
+    const leftH = Math.max(
+      CORNER_WING_DIMENSIONS.connector.shellMinWallHeightM,
+      leftHRaw - CORNER_WING_DIMENSIONS.connector.shellWallHeightClearanceM
+    );
+    const rightH = Math.max(
+      CORNER_WING_DIMENSIONS.connector.shellMinWallHeightM,
+      rightHRaw - CORNER_WING_DIMENSIONS.connector.shellWallHeightClearanceM
+    );
 
-    const leftDBase = Math.max(0.2, leftCell.depth);
-    const rightDBase = Math.max(0.2, rightCell.depth);
+    const leftDBase = Math.max(CORNER_WING_DIMENSIONS.panels.minCellDepthM, leftCell.depth);
+    const rightDBase = Math.max(CORNER_WING_DIMENSIONS.panels.minCellDepthM, rightCell.depth);
 
     if (!needsIndependentWalls) {
-      const divBaseD = Math.max(0.2, Math.min(leftDBase, rightDBase));
-      const __dt = resolveCornerWingWallPlacement(params, metrics, divBaseD, 0.05);
-      const divH = Math.max(0.05, Math.max(leftHRaw, rightHRaw) - 0.002);
+      const divBaseD = Math.max(CORNER_WING_DIMENSIONS.panels.minCellDepthM, Math.min(leftDBase, rightDBase));
+      const __dt = resolveCornerWingWallPlacement(
+        params,
+        metrics,
+        divBaseD,
+        CORNER_WING_DIMENSIONS.panels.minWallDepthM
+      );
+      const divH = Math.max(
+        CORNER_WING_DIMENSIONS.connector.shellMinWallHeightM,
+        Math.max(leftHRaw, rightHRaw) - CORNER_WING_DIMENSIONS.connector.shellWallHeightClearanceM
+      );
       const divId = `corner_divider_${ci}`;
       const div = new THREE.Mesh(
         new THREE.BoxGeometry(woodThick, divH, __dt.depth),
@@ -57,8 +72,18 @@ export function applyCornerWingCarcassDividers(
       continue;
     }
 
-    const __ldt = resolveCornerWingWallPlacement(params, metrics, leftDBase, 0.05);
-    const __rdt = resolveCornerWingWallPlacement(params, metrics, rightDBase, 0.05);
+    const __ldt = resolveCornerWingWallPlacement(
+      params,
+      metrics,
+      leftDBase,
+      CORNER_WING_DIMENSIONS.panels.minWallDepthM
+    );
+    const __rdt = resolveCornerWingWallPlacement(
+      params,
+      metrics,
+      rightDBase,
+      CORNER_WING_DIMENSIONS.panels.minWallDepthM
+    );
 
     const lId = `corner_divider_${ci}_L`;
     const lDiv = new THREE.Mesh(new THREE.BoxGeometry(fullT, leftH, __ldt.depth), getCornerMat(lId, bodyMat));

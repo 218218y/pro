@@ -42,8 +42,8 @@ test('[door-trim] mirror sized layouts are used to keep trim previews and commit
   assert.match(feature, /resolveDoorTrimPlacementAvoidingMirror/);
   assert.match(feature, /readMirrorLayoutList\(mirrorLayouts\)/);
   assert.match(feature, /resolveMirrorPlacementListInRect\(\{ rect, layouts \}\)/);
-  assert.match(feature, /DOOR_TRIM_MIRROR_SNAP_ZONE_M = 0\.006/);
-  assert.match(feature, /DOOR_TRIM_MIRROR_EDGE_GAP_M = 0\.0008/);
+  assert.match(feature, /DOOR_TRIM_MIRROR_SNAP_ZONE_M: number = DOOR_TRIM_DIMENSIONS\.snap\.mirrorZoneM/);
+  assert.match(feature, /DOOR_TRIM_MIRROR_EDGE_GAP_M: number = DOOR_TRIM_DIMENSIONS\.snap\.mirrorEdgeGapM/);
   assert.match(feature, /if \(!overlapsAnyMirror\(baseRect, mirrorRects, snapZone\)\) return base;/);
 
   assert.match(hover, /tryHandleDoorTrimHoverPreview/);

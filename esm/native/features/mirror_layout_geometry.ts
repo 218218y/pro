@@ -212,7 +212,8 @@ export function resolveRemoveToleranceM(
   requested: number | null
 ): number {
   if (typeof requested === 'number' && Number.isFinite(requested) && requested >= 0) return requested;
-  const sizeDriven = Math.min(placement.mirrorWidthM, placement.mirrorHeightM) * MIRROR_REMOVE_TOLERANCE_SIZE_RATIO;
+  const sizeDriven =
+    Math.min(placement.mirrorWidthM, placement.mirrorHeightM) * MIRROR_REMOVE_TOLERANCE_SIZE_RATIO;
   return Math.max(DEFAULT_REMOVE_TOLERANCE_M, Math.min(MAX_REMOVE_TOLERANCE_M, sizeDriven));
 }
 

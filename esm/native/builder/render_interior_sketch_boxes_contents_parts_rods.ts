@@ -47,7 +47,7 @@ export function renderSketchBoxContentRods(args: RenderSketchBoxStaticContentsAr
         INTERIOR_FITTINGS_DIMENSIONS.rods.radiusM,
         INTERIOR_FITTINGS_DIMENSIONS.rods.radiusM,
         rodLen,
-        12
+        INTERIOR_FITTINGS_DIMENSIONS.rods.radialSegments
       ),
       rodMat
     );

@@ -2,6 +2,7 @@
 //
 // Owns interval normalization/subtraction and grouped drawer-stack bounds helpers.
 
+import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type {
   SketchDrawerCutSegment,
   SketchDrawerStackBounds,
@@ -9,14 +10,19 @@ import type {
 
 export function normalizeSketchDrawerCutIntervals(list: SketchDrawerCutSegment[]): SketchDrawerCutSegment[] {
   const sorted = list
-    .filter(seg => Number.isFinite(seg.yMin) && Number.isFinite(seg.yMax) && seg.yMax - seg.yMin > 0.01)
+    .filter(
+      seg =>
+        Number.isFinite(seg.yMin) &&
+        Number.isFinite(seg.yMax) &&
+        seg.yMax - seg.yMin > DRAWER_DIMENSIONS.sketch.doorCutIntervalMinHeightM
+    )
     .sort((a, b) => a.yMin - b.yMin);
   if (!sorted.length) return [];
   const merged: SketchDrawerCutSegment[] = [sorted[0]];
   for (let i = 1; i < sorted.length; i++) {
     const prev = merged[merged.length - 1];
     const cur = sorted[i];
-    if (cur.yMin <= prev.yMax + 0.002) {
+    if (cur.yMin <= prev.yMax + DRAWER_DIMENSIONS.sketch.doorCutIntervalMergeGapM) {
       prev.yMax = Math.max(prev.yMax, cur.yMax);
       continue;
     }
@@ -36,13 +42,14 @@ export function subtractSketchDrawerIntervals(
     const cut = cuts[i];
     if (cut.yMax <= cursor) continue;
     if (cut.yMin >= doorMax) break;
-    if (cut.yMin > cursor + 0.012) {
+    if (cut.yMin > cursor + DRAWER_DIMENSIONS.sketch.doorCutVisibleSegmentMinHeightM) {
       visible.push({ yMin: cursor, yMax: Math.min(doorMax, cut.yMin) });
     }
     cursor = Math.max(cursor, cut.yMax);
     if (cursor >= doorMax) break;
   }
-  if (cursor < doorMax - 0.012) visible.push({ yMin: cursor, yMax: doorMax });
+  if (cursor < doorMax - DRAWER_DIMENSIONS.sketch.doorCutVisibleSegmentMinHeightM)
+    visible.push({ yMin: cursor, yMax: doorMax });
   return visible;
 }
 

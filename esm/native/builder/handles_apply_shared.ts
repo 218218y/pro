@@ -1,4 +1,5 @@
 import { getModeId } from '../runtime/api.js';
+import { HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { getThreeMaybe } from '../runtime/three_access.js';
 import { getDoorsArray } from '../runtime/render_access.js';
 import { readMapOrEmpty, isSplitBottomEnabledInMap } from '../runtime/maps_access.js';
@@ -171,8 +172,20 @@ function clampAbsYToGroup(absY: number, centerY: number, height: number): number
   let y = absY;
   const H = Number(height);
   const CY = Number(centerY);
-  if (!Number.isFinite(y) || !Number.isFinite(H) || !Number.isFinite(CY) || !(H > 0.05)) return absY;
-  const pad = Math.min(0.1, Math.max(0.02, H * 0.2));
+  if (
+    !Number.isFinite(y) ||
+    !Number.isFinite(H) ||
+    !Number.isFinite(CY) ||
+    !(H > HANDLE_DIMENSIONS.placement.absYClampMinHeightM)
+  )
+    return absY;
+  const pad = Math.min(
+    HANDLE_DIMENSIONS.placement.absYClampPaddingMaxM,
+    Math.max(
+      HANDLE_DIMENSIONS.placement.absYClampPaddingMinM,
+      H * HANDLE_DIMENSIONS.placement.absYClampPaddingHeightRatio
+    )
+  );
   const minY = CY - H / 2 + pad;
   const maxY = CY + H / 2 - pad;
   if (y < minY) y = minY;

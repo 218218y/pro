@@ -3,6 +3,7 @@
 // Owns drawer iteration, front-face bounds fallback, and drawer reveal placement.
 
 import { getDrawersArray } from '../runtime/render_access.js';
+import { FRONT_REVEAL_FRAME_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { Object3DLike } from '../../../types/index.js';
 
 import {
@@ -83,21 +84,27 @@ export function applyFrontRevealDrawerFrames(runtime: FrontRevealFramesRuntime):
 
     let z: number | null = null;
     const explicitFrontMax = Number(ud.__frontMaxZ);
-    if (Number.isFinite(explicitFrontMax) && Math.abs(explicitFrontMax) > 1e-6) {
+    if (
+      Number.isFinite(explicitFrontMax) &&
+      Math.abs(explicitFrontMax) > FRONT_REVEAL_FRAME_DIMENSIONS.frontZPresenceEpsilonM
+    ) {
       z = explicitFrontMax + (explicitFrontMax >= 0 ? runtime.zNudge : -runtime.zNudge);
     }
 
     if (z == null) {
       if (!localBounds) localBounds = runtime.getObjectLocalBounds(g);
       const localFrontMax = Number(localBounds?.max?.z ?? NaN);
-      if (Number.isFinite(localFrontMax) && Math.abs(localFrontMax) > 1e-6) {
+      if (
+        Number.isFinite(localFrontMax) &&
+        Math.abs(localFrontMax) > FRONT_REVEAL_FRAME_DIMENSIONS.frontZPresenceEpsilonM
+      ) {
         z = localFrontMax + (localFrontMax >= 0 ? runtime.zNudge : -runtime.zNudge);
       }
     }
 
     if (z == null) {
       const t = Number(ud.__wpFrontThickness);
-      const thickness = Number.isFinite(t) && t > 0 ? t : 0.02;
+      const thickness = Number.isFinite(t) && t > 0 ? t : FRONT_REVEAL_FRAME_DIMENSIONS.drawerFrontThicknessM;
       let sign = Number(g.position.z) >= 0 ? 1 : -1;
       const ov = runtime.getRevealZSignOverride(asRecord(ud));
       if (ov != null) sign = ov;

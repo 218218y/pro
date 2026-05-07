@@ -10,6 +10,7 @@ import {
   DEFAULT_DOOR_TRIM_THICKNESS_M,
   normalizeDoorTrimAxis,
 } from './door_trim_shared.js';
+import { DOOR_TRIM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { resolveDoorTrimPlacement } from './door_trim_placement_geometry.js';
 
 export function resolveDoorTrimRemoveToleranceM(args: { rect: DoorTrimRect; axis: DoorTrimAxis }): number {
@@ -17,7 +18,13 @@ export function resolveDoorTrimRemoveToleranceM(args: { rect: DoorTrimRect; axis
     args.axis === 'vertical'
       ? Math.max(0, args.rect.maxX - args.rect.minX)
       : Math.max(0, args.rect.maxY - args.rect.minY);
-  return Math.max(DEFAULT_DOOR_TRIM_THICKNESS_M * 1.15, Math.min(0.09, crossSpan * 0.12));
+  return Math.max(
+    DEFAULT_DOOR_TRIM_THICKNESS_M * DOOR_TRIM_DIMENSIONS.removeTolerance.thicknessMultiplier,
+    Math.min(
+      DOOR_TRIM_DIMENSIONS.removeTolerance.maxM,
+      crossSpan * DOOR_TRIM_DIMENSIONS.removeTolerance.crossSpanRatio
+    )
+  );
 }
 
 export function findDoorTrimMatchInRect(args: DoorTrimFindMatchArgs): DoorTrimMatch | null {

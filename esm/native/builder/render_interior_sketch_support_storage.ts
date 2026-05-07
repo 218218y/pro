@@ -1,3 +1,4 @@
+import { INTERIOR_FITTINGS_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { ApplySketchStorageBarriersArgs } from './render_interior_sketch_support_contracts.js';
 
 export function applySketchStorageBarriers(args: ApplySketchStorageBarriersArgs): void {
@@ -19,11 +20,15 @@ export function applySketchStorageBarriers(args: ApplySketchStorageBarriersArgs)
   } = args;
   if (!storageBarriers.length) return;
 
-  const padFront = Math.min(0.006, Math.max(0.001, woodThick * 0.2));
+  const storageDims = INTERIOR_FITTINGS_DIMENSIONS.storage;
+  const padFront = Math.min(
+    storageDims.clampPadMaxM,
+    Math.max(storageDims.clampPadMinM, woodThick * storageDims.clampPadWoodRatio)
+  );
   const frontZ = internalZ + internalDepth / 2;
-  const barrierZ = frontZ - 0.06;
-  const barrierW = Math.max(0.05, innerW - 0.025);
-  const barrierD = Math.max(0.0001, woodThick);
+  const barrierZ = frontZ + storageDims.barrierFrontZOffsetM;
+  const barrierW = Math.max(storageDims.barrierWidthMinM, innerW - storageDims.barrierWidthClearanceM);
+  const barrierD = Math.max(storageDims.previewThicknessMinM, woodThick);
 
   for (let i = 0; i < storageBarriers.length; i++) {
     const barrier = storageBarriers[i] || null;
@@ -32,7 +37,9 @@ export function applySketchStorageBarriers(args: ApplySketchStorageBarriersArgs)
     let heightM = Number(barrier.heightM);
     if (!Number.isFinite(heightM)) heightM = Number(barrier.hM);
     if (!Number.isFinite(heightM)) continue;
-    if (heightM < woodThick * 2 + 0.02) heightM = woodThick * 2 + 0.02;
+    if (heightM < woodThick * storageDims.minHeightWoodMultiplier + storageDims.minHeightExtraM) {
+      heightM = woodThick * storageDims.minHeightWoodMultiplier + storageDims.minHeightExtraM;
+    }
     if (heightM > spanH) heightM = spanH;
     const halfH = heightM / 2;
 
