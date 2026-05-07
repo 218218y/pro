@@ -1,3 +1,4 @@
+import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { AppContainer } from '../../../types';
 import type {
   ResolveSketchBoxSegmentsArgs,
@@ -100,7 +101,7 @@ export function resolveSketchFreePlacementBoxPreview(args: {
       z: previewZ,
       w: hoverPlacement.previewW,
       d: hoverPlacement.previewD,
-      woodThick: 0.018,
+      woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
       boxH: hoverPlacement.previewH,
       op: hoverPlacement.op,
       frontOverlayX: frontOverlay ? frontOverlay.x : undefined,

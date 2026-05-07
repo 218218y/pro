@@ -93,10 +93,10 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
         if (isRemoveDoorMode) {
           const box = new THREE.Mesh(
             new THREE.BoxGeometry(
-            (doorOp.width || 0) - hingedDims.visualWidthClearanceM,
-            (doorOp.height || 0) - hingedDims.visualHeightClearanceM,
-            hingedDims.visualThicknessM
-          ),
+              (doorOp.width || 0) - hingedDims.visualWidthClearanceM,
+              (doorOp.height || 0) - hingedDims.visualHeightClearanceM,
+              hingedDims.visualThicknessM
+            ),
             new THREE.MeshBasicMaterial({
               color: 0xff0000,
               transparent: true,

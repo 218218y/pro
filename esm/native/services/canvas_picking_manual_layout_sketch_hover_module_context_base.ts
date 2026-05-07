@@ -130,7 +130,8 @@ export function resolveManualLayoutSketchHoverModuleBaseContext(
     const heightCm = boxSpec ? Number(readRecordValue(boxSpec, 'heightCm')) : NaN;
     const widthCm = boxSpec ? Number(readRecordValue(boxSpec, 'widthCm')) : NaN;
     const depthCm = boxSpec ? Number(readRecordValue(boxSpec, 'depthCm')) : NaN;
-    if (Number.isFinite(heightCm)) boxH = Math.max(boxGeometryDims.minOuterHeightM, Math.min(spanH, cmToM(heightCm)));
+    if (Number.isFinite(heightCm))
+      boxH = Math.max(boxGeometryDims.minOuterHeightM, Math.min(spanH, cmToM(heightCm)));
     if (Number.isFinite(widthCm) && widthCm > 0) boxWidthOverrideM = cmToM(widthCm);
     if (Number.isFinite(depthCm) && depthCm > 0) boxDepthOverrideM = cmToM(depthCm);
   }

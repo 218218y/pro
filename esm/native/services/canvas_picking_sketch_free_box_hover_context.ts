@@ -1,3 +1,4 @@
+import { MATERIAL_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
   clampSketchFreeBoxCenterYToWorkspace,
   getSketchFreePlacementRoomFloorY,
@@ -49,7 +50,7 @@ export function createSketchFreeBoxHoverContext(
     wardrobeDepth: Number(wardrobeBox.depth) || 0,
     backZ: wardrobeBackZ,
     centerX: planeX,
-    woodThick: 0.018,
+    woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
     widthM: args.widthOverrideM,
     depthM: args.depthOverrideM,
   });
@@ -65,7 +66,11 @@ export function createSketchFreeBoxHoverContext(
     return null;
   }
 
-  const workspacePad = Math.min(0.006, Math.max(0.001, boxH * 0.02));
+  const freePlacementDims = SKETCH_BOX_DIMENSIONS.freePlacement;
+  const workspacePad = Math.min(
+    freePlacementDims.workspaceClampPadMaxM,
+    Math.max(freePlacementDims.workspaceClampPadMinM, boxH * freePlacementDims.workspaceClampPadHeightRatio)
+  );
   const previewX = planeX;
   const previewY = clampSketchFreeBoxCenterYToWorkspace({
     centerY: planeY,

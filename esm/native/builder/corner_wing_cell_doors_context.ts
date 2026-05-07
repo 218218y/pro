@@ -1,3 +1,4 @@
+import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 // Corner wing door context creation.
 //
 // Keep stack-scoped map access, hinge defaults, and trim readers out of the
@@ -68,6 +69,6 @@ export function createCornerWingDoorContext(params: CornerWingCellFlowParams): C
     splitMap0: helpers.readMapOrEmpty(ctx.App, 'splitDoorsMap'),
     splitBottomMap0: helpers.readMapOrEmpty(ctx.App, 'splitDoorsBottomMap'),
     fallbackDoorW: ctx.activeWidth / locals.doorCount,
-    splitGap: 0.006,
+    splitGap: CORNER_WING_DIMENSIONS.connector.splitGapM,
   };
 }

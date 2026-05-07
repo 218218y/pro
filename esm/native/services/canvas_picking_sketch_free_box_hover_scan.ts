@@ -1,3 +1,4 @@
+import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
   asNumberOrNull,
   asSketchFreePlacementBox,
@@ -55,7 +56,7 @@ export function scanSketchFreeBoxHoverPlacements(args: {
       wardrobeDepth: Number(context.wardrobeBox.depth) || 0,
       backZ: context.wardrobeBackZ,
       centerX: cx,
-      woodThick: 0.018,
+      woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
       widthM: wM != null && wM > 0 ? wM : null,
       depthM: dM != null && dM > 0 ? dM : null,
     });
@@ -133,7 +134,7 @@ export function scanSketchFreeBoxHoverPlacements(args: {
       wardrobeWidth: Number(context.wardrobeBox.width) || 0,
       wardrobeDepth: Number(context.wardrobeBox.depth) || 0,
       backZ: context.wardrobeBackZ,
-      woodThick: 0.018,
+      woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
     });
     if (attachedPlacement && (!attachPlacement || attachedPlacement.score < attachPlacement.score)) {
       attachPlacement = {

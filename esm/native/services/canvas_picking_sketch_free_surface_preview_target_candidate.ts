@@ -1,3 +1,4 @@
+import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { AppContainer } from '../../../types';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
 import type {
@@ -72,7 +73,7 @@ export function resolveSketchFreeHoverTargetCandidate(args: {
     wardrobeDepth: Number(wardrobeBox.depth) || 0,
     backZ: wardrobeBackZ,
     centerX,
-    woodThick: 0.018,
+    woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
     widthM: widthM != null && widthM > 0 ? widthM : null,
     depthM: depthM != null && depthM > 0 ? depthM : null,
   });

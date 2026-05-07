@@ -1,3 +1,4 @@
+import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
   clampSketchFreeBoxCenterY,
   resolveSketchBoxGeometry,
@@ -8,6 +9,14 @@ import type {
   ResolvedSketchBoxShellGeometry,
   ResolveSketchBoxShellGeometryArgs,
 } from './render_interior_sketch_boxes_shell_types.js';
+
+function resolveSketchBoxPlacementClampPad(woodThick: number): number {
+  const geometryDims = SKETCH_BOX_DIMENSIONS.geometry;
+  return Math.min(
+    geometryDims.placementClampPadMaxM,
+    Math.max(geometryDims.placementClampPadMinM, woodThick * geometryDims.placementClampPadWoodRatio)
+  );
+}
 
 export function resolveSketchBoxShellGeometry(
   args: ResolveSketchBoxShellGeometryArgs
@@ -45,7 +54,7 @@ export function resolveSketchBoxShellGeometry(
             boxH: height,
             wardrobeCenterY: Number(freeWardrobeBox.centerY),
             wardrobeHeight: Number(freeWardrobeBox.height),
-            pad: Math.min(0.006, Math.max(0.001, woodThick * 0.2)),
+            pad: resolveSketchBoxPlacementClampPad(woodThick),
           })
         : absY;
     const geometry = resolveSketchFreeBoxGeometry({
@@ -67,7 +76,7 @@ export function resolveSketchBoxShellGeometry(
   if (!Number.isFinite(yNorm)) return null;
 
   const centerYBase = effectiveBottomY + Math.max(0, Math.min(1, yNorm)) * spanH;
-  const padBox = Math.min(0.006, Math.max(0.001, woodThick * 0.2));
+  const padBox = resolveSketchBoxPlacementClampPad(woodThick);
   const lo = effectiveBottomY + padBox + halfH;
   const hi = effectiveTopY - padBox - halfH;
   const centerY = hi > lo ? Math.max(lo, Math.min(hi, centerYBase)) : clampY(centerYBase);

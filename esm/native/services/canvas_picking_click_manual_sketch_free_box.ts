@@ -9,6 +9,7 @@ import {
   createSketchFreePlacementBoxHoverRecord,
 } from './canvas_picking_sketch_free_commit.js';
 import { asRecord } from '../runtime/record.js';
+import { cmToM, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 type RecordMap = Record<string, unknown>;
 
@@ -123,9 +124,9 @@ export function tryHandleCanvasManualSketchFreeBoxClick(
     const heightCm = readFinitePositiveNumber(freeBoxSpec, 'heightCm');
     const widthCm = readFinitePositiveNumber(freeBoxSpec, 'widthCm');
     const depthCm = readFinitePositiveNumber(freeBoxSpec, 'depthCm');
-    const boxH = Math.max(0.05, (heightCm ?? 0) / 100);
-    const widthOverrideM = widthCm != null ? widthCm / 100 : null;
-    const depthOverrideM = depthCm != null ? depthCm / 100 : null;
+    const boxH = Math.max(SKETCH_BOX_DIMENSIONS.geometry.minOuterHeightM, cmToM(heightCm ?? 0));
+    const widthOverrideM = widthCm != null ? cmToM(widthCm) : null;
+    const depthOverrideM = depthCm != null ? cmToM(depthCm) : null;
 
     if (camera && wardrobeGroup && wardrobeBox && Number.isFinite(wardrobeBackZ) && raycaster && mouse) {
       const planeHit = __wp_intersectScreenWithLocalZPlane({

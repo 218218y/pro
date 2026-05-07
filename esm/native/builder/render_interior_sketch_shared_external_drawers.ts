@@ -1,3 +1,4 @@
+import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { InteriorValueRecord } from './render_interior_ops_contracts.js';
 import type { SketchExternalDrawerFaceVerticalAlignment } from './render_interior_sketch_shared_types.js';
 import { toFiniteNumber } from './render_interior_sketch_shared_numbers.js';
@@ -67,7 +68,7 @@ export function resolveSketchExternalDrawerFaceVerticalAlignment(args: {
   const epsilon =
     typeof args.epsilon === 'number' && Number.isFinite(args.epsilon) && args.epsilon >= 0
       ? args.epsilon
-      : 0.003;
+      : DRAWER_DIMENSIONS.sketch.faceVerticalAlignmentEpsilonM;
   const drawerIndex = Math.max(0, Math.floor(args.drawerIndex));
   const drawerCount = Math.max(1, Math.floor(args.drawerCount));
   const isBottomDrawer = drawerIndex === 0;
@@ -95,7 +96,7 @@ export function resolveSketchExternalDrawerFaceVerticalAlignment(args: {
   const minY = flushBottom ? targetMinY : currentMinY;
   const maxY = flushTop ? targetMaxY : currentMaxY;
   const height = maxY - minY;
-  if (!(height > 0.012)) {
+  if (!(height > DRAWER_DIMENSIONS.sketch.faceVerticalAlignmentMinHeightM)) {
     return {
       height: visualH,
       offsetY: 0,

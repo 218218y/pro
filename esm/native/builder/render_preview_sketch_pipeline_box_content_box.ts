@@ -30,7 +30,9 @@ export function applyBoxVolumeSketchPlacementPreview(ctx: SketchPlacementPreview
     boxH,
     Math.max(SKETCH_BOX_DIMENSIONS.preview.boxFillThicknessMinM, Math.min(ctx.d, thickness))
   );
-  const frontFillT = frontOverlay ? frontOverlay.t : Math.max(SKETCH_BOX_DIMENSIONS.preview.boxFillThicknessMinM, Math.min(ctx.d, thickness));
+  const frontFillT = frontOverlay
+    ? frontOverlay.t
+    : Math.max(SKETCH_BOX_DIMENSIONS.preview.boxFillThicknessMinM, Math.min(ctx.d, thickness));
   const frontZ = frontOverlay ? frontOverlay.z : ctx.z + ctx.d / 2 - frontFillT / 2;
   const frontX = frontOverlay ? frontOverlay.x : ctx.x;
   const frontY = frontOverlay ? frontOverlay.y : ctx.y;

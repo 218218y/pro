@@ -1,3 +1,4 @@
+import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { getCfg } from '../kernel/api.js';
 import { getCamera, getWardrobeGroup } from '../runtime/render_access.js';
 import { getThreeMaybe } from '../runtime/three_access.js';
@@ -65,7 +66,7 @@ export function tryHandleDrawerDividerHoverPreview(args: DrawerDividerHoverPrevi
       w: Math.max(0.03, box.width),
       h: Math.max(0.03, box.height),
       d: Math.max(0.03, box.depth),
-      woodThick: 0.018,
+      woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
       op: hasDivider ? 'remove' : 'add',
     });
     return true;

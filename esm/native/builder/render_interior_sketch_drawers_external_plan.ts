@@ -6,7 +6,10 @@ import {
   readSketchDrawerHeightMFromItem,
   resolveSketchExternalDrawerMetrics,
 } from '../features/sketch_drawer_sizing.js';
-import { DRAWER_DIMENSIONS, resolveExternalDrawerGeometry } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  DRAWER_DIMENSIONS,
+  resolveExternalDrawerGeometry,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 import type {
   SketchExternalDrawerOpPlan,
@@ -116,10 +119,16 @@ export function createSketchExternalDrawerOpPlan(
   const pz = toFiniteNumber(closed?.z) ?? fallbackGeom.zClosed;
   const partId = `${stack.keyPrefix}${opIndex + 1}`;
   const frontMat = context.resolvePartMaterial(partId);
-  const visualW = Math.max(drawerDims.externalPreviewVisualMinWidthM, toFiniteNumber(op.visualW) ?? fallbackGeom.visualW);
+  const visualW = Math.max(
+    drawerDims.externalPreviewVisualMinWidthM,
+    toFiniteNumber(op.visualW) ?? fallbackGeom.visualW
+  );
   const faceW = Math.max(drawerDims.externalPreviewVisualMinWidthM, toFiniteNumber(op.faceW) ?? visualW);
   const faceOffsetX = toFiniteNumber(op.faceOffsetX) ?? 0;
-  const visualHRaw = Math.max(drawerDims.externalPreviewVisualMinHeightM, toFiniteNumber(op.visualH) ?? fallbackGeom.visualH);
+  const visualHRaw = Math.max(
+    drawerDims.externalPreviewVisualMinHeightM,
+    toFiniteNumber(op.visualH) ?? fallbackGeom.visualH
+  );
   const faceVertical = resolveSketchExternalDrawerFaceVerticalAlignment({
     drawerIndex: opIndex,
     drawerCount: stack.drawerOps.length || stack.drawerCount,
@@ -149,7 +158,10 @@ export function createSketchExternalDrawerOpPlan(
     faceOffsetY: faceVertical.offsetY,
     faceMinY: faceVertical.minY,
     faceMaxY: faceVertical.maxY,
-    visualD: Math.max(drawerDims.externalPreviewVisualMinDepthM, toFiniteNumber(op.visualT) ?? context.visualT),
+    visualD: Math.max(
+      drawerDims.externalPreviewVisualMinDepthM,
+      toFiniteNumber(op.visualT) ?? context.visualT
+    ),
     boxW: Math.max(drawerDims.externalPreviewBoxMinDimensionM, toFiniteNumber(op.boxW) ?? fallbackGeom.boxW),
     boxH: Math.max(drawerDims.externalPreviewBoxMinDimensionM, toFiniteNumber(op.boxH) ?? fallbackGeom.boxH),
     boxD: Math.max(drawerDims.externalPreviewBoxMinDimensionM, toFiniteNumber(op.boxD) ?? fallbackGeom.boxD),

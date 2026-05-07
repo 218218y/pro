@@ -81,7 +81,10 @@ export function renderSketchBoxDrawerContents(args: RenderSketchBoxContentsArgs)
       if (!spanSource) continue;
       const span = resolveBoxDrawerSpan(spanSource);
       const width = Math.max(drawerDims.internalWidthMinM, span.innerW - drawerDims.internalWidthClearanceM);
-      const depth = Math.max(drawerDims.internalDepthMinM, geometry.innerD - drawerDims.internalDepthClearanceM);
+      const depth = Math.max(
+        drawerDims.internalDepthMinM,
+        geometry.innerD - drawerDims.internalDepthClearanceM
+      );
       const drawerBottomLift = Math.min(
         drawerDims.internalBottomLiftMaxM,
         woodThick * drawerDims.internalBottomLiftWoodRatio

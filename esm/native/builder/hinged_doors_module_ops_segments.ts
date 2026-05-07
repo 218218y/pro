@@ -1,3 +1,4 @@
+import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { readSplitPosListFromMap } from '../runtime/maps_access.js';
 import type {
   HingedDoorIterationState,
@@ -21,7 +22,7 @@ export function pushHingedDoorSegment(
   if (!ctx.opsList) {
     throw new Error('[WardrobePro] Hinged door ops list missing');
   }
-  if (!args.partId || !(args.segH > 0.1)) return;
+  if (!args.partId || !(args.segH > DOOR_SYSTEM_DIMENSIONS.hinged.split.renderMinSegmentHeightM)) return;
   const special = ctx.cfg.isMultiColorMode ? ctx.resolveSpecialForPart(args.partId, args.curtainVal) : null;
   const isMirror = special === 'mirror';
   const hasGroove = ctx.isGroovesEnabled && !!args.grooveFlag && !isMirror;
@@ -31,7 +32,7 @@ export function pushHingedDoorSegment(
     moduleIndex: ctx.index,
     pivotX: state.pivotX,
     y: args.segY,
-    z: ctx.doorFrontZ + 0.01,
+    z: ctx.doorFrontZ + DOOR_SYSTEM_DIMENSIONS.hinged.opFrontZOffsetM,
     width: state.doorWidth,
     height: args.segH,
     meshOffsetX: state.meshOffsetX,

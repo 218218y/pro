@@ -195,7 +195,8 @@ function buildStandardDrawerRanges(
 ): VerticalClearanceNeighborRange[] {
   if (!args.cfgRef) return [];
   const drawerDims = DRAWER_DIMENSIONS.sketch;
-  const divsRaw = readRecordNumber(args.cfgRef, 'gridDivisions') ?? drawerDims.internalPreviewGridDivisionsFallback;
+  const divsRaw =
+    readRecordNumber(args.cfgRef, 'gridDivisions') ?? drawerDims.internalPreviewGridDivisionsFallback;
   const divisions =
     Number.isFinite(divsRaw) &&
     divsRaw >= drawerDims.internalPreviewGridDivisionsMin &&

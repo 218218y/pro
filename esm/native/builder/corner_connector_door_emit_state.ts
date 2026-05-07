@@ -37,24 +37,35 @@ export function readCornerConnectorCustomSplitCutsYInternal(
 ): number[] {
   try {
     const partKey = ctx.stackKey === 'bottom' ? state.scopedDoorBaseId : state.doorBaseId;
-    const vals = ctx.readSplitPosListFromMap(ctx.splitMap0, partKey);
-    if (!Array.isArray(vals) || !vals.length) return [];
+    const norms = ctx.readSplitPosListFromMap(ctx.splitMap0, partKey);
+    if (!Array.isArray(norms) || !norms.length) return [];
+
     const topEdge = ctx.effectiveTopLimit - CORNER_WING_DIMENSIONS.connector.doorTopClearanceM;
+    const height = topEdge - ctx.doorBottomY;
+    if (!(height > CORNER_WING_DIMENSIONS.connector.visualMinHeightM)) return [];
+
+    const padAbs = CORNER_WING_DIMENSIONS.connector.splitCutMinGapM;
+    const abs: number[] = [];
+    for (let i = 0; i < norms.length; i++) {
+      const rawNorm = Number(norms[i]);
+      if (!Number.isFinite(rawNorm)) continue;
+      const normalized = Math.max(0, Math.min(1, rawNorm));
+      let y = ctx.doorBottomY + normalized * height;
+      y = Math.max(ctx.doorBottomY + padAbs, Math.min(topEdge - padAbs, y));
+      abs.push(y);
+    }
+    abs.sort((a, b) => a - b);
+
     const out: number[] = [];
     const tol = Math.max(
       CORNER_WING_DIMENSIONS.connector.splitCutToleranceMinM,
       Math.min(
         CORNER_WING_DIMENSIONS.connector.splitCutToleranceMaxM,
-        (topEdge - ctx.doorBottomY) * CORNER_WING_DIMENSIONS.connector.splitCutToleranceRatio
+        height * CORNER_WING_DIMENSIONS.connector.splitCutToleranceRatio
       )
     );
-    for (let i = 0; i < vals.length; i++) {
-      const raw = Number(vals[i]);
-      if (!Number.isFinite(raw)) continue;
-      const y = Math.max(
-        ctx.doorBottomY + CORNER_WING_DIMENSIONS.connector.splitCutMinGapM,
-        Math.min(topEdge - CORNER_WING_DIMENSIONS.connector.splitCutMinGapM, raw)
-      );
+    for (let i = 0; i < abs.length; i++) {
+      const y = abs[i];
       const prev = out.length ? out[out.length - 1] : NaN;
       if (Number.isFinite(prev) && Math.abs(prev - y) <= tol) continue;
       out.push(y);

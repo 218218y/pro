@@ -1,3 +1,4 @@
+import { MATERIAL_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { ManualLayoutSketchBoxContentHoverIntent } from './canvas_picking_manual_layout_sketch_hover_intent.js';
 import {
   readSketchBoxDividers,
@@ -13,12 +14,16 @@ import { readNumber } from './canvas_picking_sketch_box_content_commit_records.j
 
 function resolveSegmentContext(box: CommitSketchModuleBoxContentArgs['box']) {
   const boxCenterX = readNumber(box.absX) ?? 0;
-  const innerW = Math.max(0.02, (readNumber(box.widthM) ?? 0.6) - 0.036);
+  const woodThick = MATERIAL_DIMENSIONS.wood.thicknessM;
+  const innerW = Math.max(
+    SKETCH_BOX_DIMENSIONS.geometry.minInnerDimensionM,
+    (readNumber(box.widthM) ?? SKETCH_BOX_DIMENSIONS.geometry.defaultOuterWidthM) - woodThick * 2
+  );
   const segments = resolveSketchBoxSegments({
     dividers: readSketchBoxDividers(box),
     boxCenterX,
     innerW,
-    woodThick: 0.018,
+    woodThick,
   });
   return { boxCenterX, innerW, segments };
 }

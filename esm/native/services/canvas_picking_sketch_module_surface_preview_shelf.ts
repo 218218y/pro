@@ -80,7 +80,8 @@ export function resolveSketchModuleShelfRemovePreview(
       }
       if (op !== 'remove' && cfgRef && typeof cfgRef === 'object') {
         const divisions =
-          readRecordNumber(info, 'gridDivisions') ?? INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault;
+          readRecordNumber(info, 'gridDivisions') ??
+          INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault;
         if (divisions > 1) {
           const step = spanH / divisions;
           const rel = shelfHitY - bottomY;

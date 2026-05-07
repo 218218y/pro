@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { CORNER_WING_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.js';
+import { readSplitPosListFromMap } from '../esm/native/runtime/maps_access.js';
 import {
   clampCornerConnectorHandleAbsY,
   createCornerConnectorDoorContext,
@@ -53,7 +55,7 @@ function createFlowParams() {
     render: { marker: true },
     maps: {
       getMap(name: string) {
-        if (name === 'splitDoorsMap') return { lower_corner_pent_door_1: [0.4, 0.405, 0.68] };
+        if (name === 'splitDoorsMap') return { splitpos_lower_corner_pent_door_1: [0.25, 0.255, 0.75] };
         if (name === 'splitDoorsBottomMap') return {};
         return {};
       },
@@ -66,7 +68,7 @@ function createFlowParams() {
     isSplitEnabledInMap: () => true,
     isSplitExplicitInMap: (_map: unknown, key: string) => key.startsWith('lower_'),
     isSplitBottomEnabledInMap: () => false,
-    readSplitPosListFromMap: (map: any, key: string) => map[key] || [],
+    readSplitPosListFromMap,
     readModulesConfigurationListFromConfigSnapshot: () => [],
     getOrCreateCacheRecord: () => ({}),
     MODES: { REMOVE_DOOR: 'remove_door' },
@@ -145,15 +147,18 @@ test('corner connector door shared wrappers assemble context/state and normalize
   assert.equal(state.hingeSide, 'left');
   assert.equal(partIdForCornerConnectorSegment(state, 4, 2), 'corner_pent_door_1_mid2');
 
+  const topEdge = ctx!.effectiveTopLimit - CORNER_WING_DIMENSIONS.connector.doorTopClearanceM;
+  const doorHeight = topEdge - ctx!.doorBottomY;
+  const expectedCuts = [ctx!.doorBottomY + 0.25 * doorHeight, ctx!.doorBottomY + 0.75 * doorHeight];
   const cuts = readCornerConnectorCustomSplitCutsY(ctx!, state);
   assert.deepEqual(
     cuts.map(v => Number(v.toFixed(3))),
-    [0.4, 0.68]
+    expectedCuts.map(v => Number(v.toFixed(3)))
   );
   const merged = mergeCornerConnectorSplitCuts(ctx!, [ctx!.doorBottomY + 0.02, ...cuts, cuts[0] + 0.001]);
   assert.deepEqual(
     merged.map(v => Number(v.toFixed(3))),
-    [0.4, 0.68]
+    expectedCuts.map(v => Number(v.toFixed(3)))
   );
 
   const clamped = clampCornerConnectorHandleAbsY(ctx!, 'corner_pent_door_1_top', 5, 0.5, 0.8);

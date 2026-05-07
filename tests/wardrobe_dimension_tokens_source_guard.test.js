@@ -397,6 +397,14 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
     /barrierHeightMinM:/,
     /braceSeamDepthInsetM:/,
     /frontTrimZOffsetM:/,
+    /opFrontZOffsetM:/,
+    /renderMinSegmentHeightM:/,
+    /placementClampPadMinM:/,
+    /workspaceClampPadHeightRatio:/,
+    /faceVerticalAlignmentEpsilonM:/,
+    /panelMinLengthM:/,
+    /shelfPlanMinDimensionM:/,
+    /shelfCeilingClearanceM:/,
   ]) {
     assert.match(tokens, tokenPattern);
   }
@@ -405,26 +413,103 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
     ['esm/native/builder/corner_wing_cell_layouts.ts', ['INTERIOR_FITTINGS_DIMENSIONS', 'presetDims']],
     ['esm/native/builder/render_door_ops_hinged.ts', ['DOOR_SYSTEM_DIMENSIONS', 'hingedDims']],
     ['esm/native/builder/render_interior_preset_ops.ts', ['INTERIOR_FITTINGS_DIMENSIONS']],
-    ['esm/native/builder/render_interior_sketch_boxes_fronts_door_accents.ts', ['CONTENT_VISUAL_DIMENSIONS', 'sketchBoxClassic']],
+    [
+      'esm/native/builder/render_interior_sketch_boxes_fronts_door_accents.ts',
+      ['CONTENT_VISUAL_DIMENSIONS', 'sketchBoxClassic'],
+    ],
     ['esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts', ['DRAWER_DIMENSIONS']],
     ['esm/native/builder/render_interior_sketch_drawers_external_plan.ts', ['DRAWER_DIMENSIONS']],
-    ['esm/native/builder/render_interior_sketch_support_brace_seams.ts', ['INTERIOR_FITTINGS_DIMENSIONS', 'MM_PER_METER']],
+    [
+      'esm/native/builder/render_interior_sketch_support_brace_seams.ts',
+      ['INTERIOR_FITTINGS_DIMENSIONS', 'MM_PER_METER'],
+    ],
     ['esm/native/builder/render_interior_sketch_support_shelf_pins.ts', ['INTERIOR_FITTINGS_DIMENSIONS']],
-    ['esm/native/builder/render_preview_interior_hover_apply.ts', ['SKETCH_BOX_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS']],
+    ['esm/native/builder/render_interior_sketch_support_shelves.ts', ['INTERIOR_FITTINGS_DIMENSIONS']],
+    ['esm/native/builder/render_interior_sketch_boxes_shell_geometry.ts', ['SKETCH_BOX_DIMENSIONS']],
+    ['esm/native/builder/render_interior_sketch_support_placement.ts', ['SKETCH_BOX_DIMENSIONS']],
+    ['esm/native/builder/render_interior_sketch_shared_external_drawers.ts', ['DRAWER_DIMENSIONS']],
+    ['esm/native/builder/hinged_doors_module_ops_full.ts', ['DOOR_SYSTEM_DIMENSIONS']],
+    ['esm/native/builder/hinged_doors_module_ops_segments.ts', ['DOOR_SYSTEM_DIMENSIONS']],
+    ['esm/native/builder/hinged_doors_module_ops_split_routes.ts', ['DOOR_SYSTEM_DIMENSIONS']],
+    ['esm/native/builder/corner_wing_cell_doors_context.ts', ['CORNER_WING_DIMENSIONS']],
+    ['esm/native/builder/corner_wing_cell_doors_split.ts', ['CORNER_WING_DIMENSIONS']],
+    [
+      'esm/native/builder/corner_wing_cell_interiors_storage.ts',
+      ['CORNER_WING_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS'],
+    ],
+    [
+      'esm/native/builder/corner_connector_interior_special_apply.ts',
+      ['CORNER_CONNECTOR_INTERIOR_DIMENSIONS'],
+    ],
+    [
+      'esm/native/builder/render_preview_interior_hover_apply.ts',
+      ['SKETCH_BOX_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS'],
+    ],
     ['esm/native/builder/render_preview_sketch_measurements_apply.ts', ['SKETCH_BOX_DIMENSIONS']],
     ['esm/native/builder/render_preview_sketch_pipeline_box_content_box.ts', ['SKETCH_BOX_DIMENSIONS']],
     ['esm/native/builder/render_preview_sketch_pipeline_linear.ts', ['SKETCH_BOX_DIMENSIONS']],
     ['esm/native/builder/render_preview_sketch_pipeline_object_boxes.ts', ['SKETCH_BOX_DIMENSIONS']],
-    ['esm/native/services/canvas_picking_interior_hover_int_drawer.ts', ['DRAWER_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS']],
-    ['esm/native/services/canvas_picking_manual_layout_sketch_hover_module_context_base.ts', ['cmToM', 'SKETCH_BOX_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS']],
-    ['esm/native/services/canvas_picking_sketch_box_vertical_content_preview_storage.ts', ['SKETCH_BOX_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS']],
-    ['esm/native/services/canvas_picking_sketch_module_surface_commit_shared.ts', ['cmToM', 'SKETCH_BOX_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS']],
-    ['esm/native/services/canvas_picking_sketch_module_surface_commit_vertical.ts', ['SKETCH_BOX_DIMENSIONS']],
-    ['esm/native/services/canvas_picking_sketch_module_surface_preview_content.ts', ['SKETCH_BOX_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS']],
-    ['esm/native/services/canvas_picking_sketch_module_surface_preview_flow.ts', ['SKETCH_BOX_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS']],
-    ['esm/native/services/canvas_picking_sketch_module_surface_preview_rod.ts', ['SKETCH_BOX_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS']],
-    ['esm/native/services/canvas_picking_sketch_module_surface_preview_shelf.ts', ['SKETCH_BOX_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS']],
-    ['esm/native/services/canvas_picking_sketch_neighbor_measurements.ts', ['DRAWER_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS']],
+    [
+      'esm/native/services/canvas_picking_interior_hover_int_drawer.ts',
+      ['DRAWER_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS'],
+    ],
+    [
+      'esm/native/services/canvas_picking_manual_layout_sketch_hover_module_context_base.ts',
+      ['cmToM', 'SKETCH_BOX_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS'],
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_storage.ts',
+      ['SKETCH_BOX_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS'],
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_module_surface_commit_shared.ts',
+      ['cmToM', 'SKETCH_BOX_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS'],
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_module_surface_commit_vertical.ts',
+      ['SKETCH_BOX_DIMENSIONS'],
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_module_surface_preview_content.ts',
+      ['SKETCH_BOX_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS'],
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_module_surface_preview_flow.ts',
+      ['SKETCH_BOX_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS'],
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_module_surface_preview_rod.ts',
+      ['SKETCH_BOX_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS'],
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_module_surface_preview_shelf.ts',
+      ['SKETCH_BOX_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS'],
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_neighbor_measurements.ts',
+      ['DRAWER_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS'],
+    ],
+    [
+      'esm/native/services/canvas_picking_manual_layout_sketch_tools.ts',
+      ['MATERIAL_DIMENSIONS', 'SKETCH_BOX_DIMENSIONS'],
+    ],
+    [
+      'esm/native/services/canvas_picking_click_manual_sketch_free_box.ts',
+      ['SKETCH_BOX_DIMENSIONS', 'cmToM'],
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_module_vertical_content_preview.ts',
+      ['INTERIOR_FITTINGS_DIMENSIONS'],
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_box_content_commit_doors.ts',
+      ['MATERIAL_DIMENSIONS', 'SKETCH_BOX_DIMENSIONS'],
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_free_box_hover_context.ts',
+      ['MATERIAL_DIMENSIONS', 'SKETCH_BOX_DIMENSIONS'],
+    ],
+    ['esm/native/platform/render_loop_motion_doors.ts', ['DOOR_SYSTEM_DIMENSIONS', 'WARDROBE_DEFAULTS']],
   ]);
 
   for (const [rel, tokensToFind] of expectedTokenUse) {
@@ -446,4 +531,39 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
   const commitShared = read('esm/native/services/canvas_picking_sketch_module_surface_commit_shared.ts');
   assert.match(commitShared, /cmToM\(n\)/);
   assert.match(commitShared, /storageDims\.barrierHeightMaxM/);
+
+  const shellGeometry = read('esm/native/builder/render_interior_sketch_boxes_shell_geometry.ts');
+  assert.doesNotMatch(shellGeometry, /Math\.min\(0\.006, Math\.max\(0\.001, woodThick \* 0\.2\)\)/);
+
+  const sketchShelves = read('esm/native/builder/render_interior_sketch_support_shelves.ts');
+  assert.doesNotMatch(sketchShelves, /isBrace \? 0\.002 : 0\.014/);
+
+  const hingedSegments = read('esm/native/builder/hinged_doors_module_ops_segments.ts');
+  assert.doesNotMatch(hingedSegments, /segH > 0\.1/);
+  assert.doesNotMatch(hingedSegments, /doorFrontZ \+ 0\.01/);
+
+  const manualSketchTools = read('esm/native/services/canvas_picking_manual_layout_sketch_tools.ts');
+  assert.doesNotMatch(manualSketchTools, /\?\? 0\.018/);
+  assert.doesNotMatch(manualSketchTools, /woodThick \* 0\.2/);
+
+  const freeBoxHoverContext = read('esm/native/services/canvas_picking_sketch_free_box_hover_context.ts');
+  assert.doesNotMatch(freeBoxHoverContext, /boxH \* 0\.02/);
+
+  const clickFreeBox = read('esm/native/services/canvas_picking_click_manual_sketch_free_box.ts');
+  assert.doesNotMatch(clickFreeBox, /Math\.max\(0\.05, \(heightCm \?\? 0\) \/ 100\)/);
+
+  const cornerConnectorSpecial = read('esm/native/builder/corner_connector_interior_special_apply.ts');
+  assert.doesNotMatch(cornerConnectorSpecial, /len <= 0\.01/);
+  assert.doesNotMatch(cornerConnectorSpecial, /width <= 0\.05/);
+  assert.doesNotMatch(cornerConnectorSpecial, /ceilBottomY - 0\.005/);
+
+  const cornerWingSplit = read('esm/native/builder/corner_wing_cell_doors_split.ts');
+  assert.doesNotMatch(cornerWingSplit, /0\.01 \+ state\.doorZShift/);
+
+  const cornerWingStorage = read('esm/native/builder/corner_wing_cell_interiors_storage.ts');
+  assert.doesNotMatch(cornerWingStorage, /cellRuntime\.__z\(0\.01\)/);
+
+  const slidingMotion = read('esm/native/platform/render_loop_motion_doors.ts');
+  assert.doesNotMatch(slidingMotion, /const overlap = 0\.03/);
+  assert.doesNotMatch(slidingMotion, /d\.stackZStep, 0\.055/);
 });

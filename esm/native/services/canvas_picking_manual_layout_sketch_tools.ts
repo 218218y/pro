@@ -1,3 +1,4 @@
+import { MATERIAL_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { AppContainer, UnknownRecord } from '../../../types';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
 import type {
@@ -86,7 +87,7 @@ export function tryHandleManualLayoutSketchToolClick(args: ManualLayoutSketchToo
   const __gridInfoKey = mapKey != null ? String(mapKey) : '';
   const __gridMapRec = asRecord(__gridMap);
   const __gridInfo = __gridInfoKey && __gridMapRec ? asRecord(__gridMapRec[__gridInfoKey]) : null;
-  const woodThick = readFiniteNumber(__gridInfo, 'woodThick') ?? 0.018;
+  const woodThick = readFiniteNumber(__gridInfo, 'woodThick') ?? MATERIAL_DIMENSIONS.wood.thicknessM;
   const __resolveSketchBoxPlacementMetrics = createManualLayoutSketchPlacementMetricsResolver({
     App,
     intersects,
@@ -98,7 +99,11 @@ export function tryHandleManualLayoutSketchToolClick(args: ManualLayoutSketchToo
     measureObjectLocalBox: __wp_measureObjectLocalBox,
     projectWorldPointToLocal: __wp_projectWorldPointToLocal,
   });
-  const pad = Math.min(0.006, Math.max(0.001, woodThick * 0.2));
+  const geometryDims = SKETCH_BOX_DIMENSIONS.geometry;
+  const pad = Math.min(
+    geometryDims.placementClampPadMaxM,
+    Math.max(geometryDims.placementClampPadMinM, woodThick * geometryDims.placementClampPadWoodRatio)
+  );
   const {
     hoverRec: __hoverRec,
     hoverKind: __hoverKind,

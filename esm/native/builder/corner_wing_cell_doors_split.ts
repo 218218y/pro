@@ -177,7 +177,11 @@ function pushSegment(
 ): void {
   const isRemovedDoor = ctx.removeDoorsEnabled && ctx.isDoorRemoved(partId);
   const group = createCornerDoorGroup(ctx, state, partId, segH, handleAbsY, isRemovedDoor);
-  group.position.set(state.pivotX, segY, 0.01 + state.doorZShift);
+  group.position.set(
+    state.pivotX,
+    segY,
+    CORNER_WING_DIMENSIONS.drawers.externalFrontOffsetZM + state.doorZShift
+  );
 
   const added = processCornerDoorVisual(ctx, partId, {
     partId,

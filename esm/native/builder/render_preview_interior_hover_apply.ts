@@ -165,7 +165,8 @@ export function setInteriorLayoutHoverPreview(
   const shelfZ = backZ + shelfDepth / 2;
   const shelfW = Math.max(
     previewDims.shelfHoverMinWidthM,
-    innerW - (shelfVariant === 'brace' ? previewDims.shelfBraceClearanceM : previewDims.shelfRegularClearanceM)
+    innerW -
+      (shelfVariant === 'brace' ? previewDims.shelfBraceClearanceM : previewDims.shelfRegularClearanceM)
   );
   const shelfH =
     shelfVariant === 'glass'

@@ -41,7 +41,8 @@ function resolvePresetRodPreviewMatch(args: {
   pointerY: number;
 }): SketchModuleRodRemoveMatch | null {
   const presetDims = INTERIOR_FITTINGS_DIMENSIONS.presets;
-  const divs = readRecordNumber(args.info, 'gridDivisions') ?? INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault;
+  const divs =
+    readRecordNumber(args.info, 'gridDivisions') ?? INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault;
   if (!(divs > 0)) return null;
   const step = args.spanH / divs;
   if (!(step > 0)) return null;
@@ -201,7 +202,10 @@ export function resolveSketchModuleRodRemovePreview(args: {
       x: args.internalCenterX,
       y: previewY,
       z: args.internalZ,
-      w: Math.max(SKETCH_BOX_DIMENSIONS.preview.rodMinLengthM, args.innerW - SKETCH_BOX_DIMENSIONS.preview.rodWidthClearanceM),
+      w: Math.max(
+        SKETCH_BOX_DIMENSIONS.preview.rodMinLengthM,
+        args.innerW - SKETCH_BOX_DIMENSIONS.preview.rodWidthClearanceM
+      ),
       h: SKETCH_BOX_DIMENSIONS.preview.rodPreviewHeightM,
       d: SKETCH_BOX_DIMENSIONS.preview.rodPreviewDepthM,
       woodThick: args.woodThick,

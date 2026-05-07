@@ -1,3 +1,4 @@
+import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { SketchBoxDividerState, SketchBoxSegmentState } from './canvas_picking_sketch_box_dividers.js';
 import type {
   SketchFreeBoxTarget,
@@ -56,7 +57,7 @@ export function resolveSketchFreeSurfaceDividerPreview(args: {
     dividers: existingDividers,
     boxCenterX: targetGeo.centerX,
     innerW: targetGeo.innerW,
-    woodThick: 0.018,
+    woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
   });
   const activeSegment = pickSketchBoxSegment({
     segments,
@@ -68,13 +69,13 @@ export function resolveSketchFreeSurfaceDividerPreview(args: {
     dividers: existingDividers,
     boxCenterX: targetGeo.centerX,
     innerW: targetGeo.innerW,
-    woodThick: 0.018,
+    woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
     cursorX: pointerX,
   });
   const freePlacement = resolveSketchBoxDividerPlacement({
     boxCenterX: targetGeo.centerX,
     innerW: targetGeo.innerW,
-    woodThick: 0.018,
+    woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
     cursorX: pointerX,
     dividerXNorm: readSketchBoxDividerXNorm(targetBox),
     enableCenterSnap: true,
@@ -133,7 +134,7 @@ export function resolveSketchFreeSurfaceDividerPreview(args: {
       w: dividerPreviewW,
       h: Math.max(0.0001, targetHeight - 0.036),
       d: targetGeo.innerD,
-      woodThick: 0.018,
+      woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
       snapToCenter,
       op,
     },

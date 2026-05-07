@@ -1,3 +1,4 @@
+import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { resolveSketchBoxVerticalContentPreview } from './canvas_picking_sketch_box_vertical_content_preview.js';
 import type {
   SketchFreeBoxContentPreviewResult,
@@ -33,7 +34,7 @@ export function resolveSketchFreeVerticalContentPreview(
     targetHeight,
     pointerX,
     pointerY,
-    woodThick: 0.018,
+    woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
     shelfVariant: contentKind === 'shelf' ? resolveSketchShelfVariant(tool) : null,
     shelfDepthOverrideM: contentKind === 'shelf' ? resolveSketchShelfDepthOverrideM(tool) : null,
     storageHeight: contentKind === 'storage' ? resolveSketchStorageHeight(tool) : null,

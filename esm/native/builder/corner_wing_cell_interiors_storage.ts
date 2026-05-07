@@ -30,7 +30,7 @@ export function createCornerWingInteriorLayoutOps(
         INTERIOR_FITTINGS_DIMENSIONS.rods.radiusM,
         INTERIOR_FITTINGS_DIMENSIONS.rods.radiusM,
         rodLen,
-        12
+        INTERIOR_FITTINGS_DIMENSIONS.rods.radialSegments
       ),
       runtime.getMaterial(null, 'metal')
     );
@@ -251,7 +251,7 @@ export function emitCornerWingExternalDrawers(
     dGroup.userData.__doorHeight = height;
     dGroup.userData.__wpFaceOffsetX = 0;
     dGroup.userData.__wpFaceOffsetY = 0;
-    dGroup.userData.__wpFrontZ = cellRuntime.__z(0.01);
+    dGroup.userData.__wpFrontZ = cellRuntime.__z(CORNER_WING_DIMENSIONS.drawers.externalFrontOffsetZM);
     dGroup.userData.__wpFrontThickness = runtime.woodThick;
 
     const dVis = runtime.createDoorVisual(

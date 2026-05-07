@@ -1,3 +1,4 @@
+import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
   resolveSketchFreeBoxNonOverlappingPlacement,
   resolveSketchFreeBoxOutsideWardrobePlacement,
@@ -55,7 +56,7 @@ export function finalizeSketchFreeBoxHoverPlacement(args: {
     wardrobeWidth: Number(context.wardrobeBox.width) || 0,
     wardrobeDepth: Number(context.wardrobeBox.depth) || 0,
     backZ: context.wardrobeBackZ,
-    woodThick: 0.018,
+    woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
     freeBoxes: context.freeBoxes,
     pad: context.workspacePad,
     attachment: attachPlacement

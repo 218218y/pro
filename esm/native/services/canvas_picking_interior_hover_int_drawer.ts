@@ -197,7 +197,9 @@ export function tryHandleCanvasIntDrawerHover(args: CanvasInteriorHoverFlowArgs)
       z: internalZ,
       w: Math.max(
         drawerDims.internalPreviewMinWidthM,
-        (Number.isFinite(innerW) && innerW > 0 ? innerW : drawerDims.internalPreviewMinWidthM + drawerDims.internalPreviewWidthClearanceM) -
+        (Number.isFinite(innerW) && innerW > 0
+          ? innerW
+          : drawerDims.internalPreviewMinWidthM + drawerDims.internalPreviewWidthClearanceM) -
           drawerDims.internalPreviewWidthClearanceM
       ),
       d: Math.max(

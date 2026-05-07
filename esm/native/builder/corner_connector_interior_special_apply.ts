@@ -3,6 +3,7 @@
 // Keep this owner focused on scene mutation/orchestration. Metric policy,
 // polygon math, and folded-content planning live in sibling owners.
 
+import { CORNER_CONNECTOR_INTERIOR_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { P2 } from './corner_connector_interior_shared.js';
 import type { CornerConnectorSpecialInteriorFlowParams } from './corner_connector_interior_special_types.js';
 import {
@@ -50,6 +51,8 @@ export function applyCornerConnectorSpecialInterior(params: CornerConnectorSpeci
   const enabled = typeof ui.cornerPentSpecialInternal !== 'undefined' ? !!ui.cornerPentSpecialInternal : true;
   if (!enabled) return;
 
+  const specialPostDims = CORNER_CONNECTOR_INTERIOR_DIMENSIONS.specialPost;
+
   const metrics = resolveCornerConnectorSpecialMetrics({
     uiAny,
     mx,
@@ -83,7 +86,7 @@ export function applyCornerConnectorSpecialInterior(params: CornerConnectorSpeci
     const dx = b.x - a.x;
     const dz = b.z - a.z;
     const len = Math.sqrt(dx * dx + dz * dz);
-    if (!Number.isFinite(len) || len <= 0.01) return;
+    if (!Number.isFinite(len) || len <= specialPostDims.panelMinLengthM) return;
 
     const geo = new THREE.BoxGeometry(len, h, panelThick);
     const mat = getCornerMat(partId, bodyMat);
@@ -106,9 +109,9 @@ export function applyCornerConnectorSpecialInterior(params: CornerConnectorSpeci
 
   const addShelfRectMainSide = (partId: string, bottomY: number) => {
     const width = Math.abs(postX - wallX);
-    if (width <= 0.05) return;
+    if (width <= specialPostDims.shelfPlanMinDimensionM) return;
     const usableDepth = Math.max(0, depth - backInset);
-    if (usableDepth <= 0.05) return;
+    if (usableDepth <= specialPostDims.shelfPlanMinDimensionM) return;
 
     const geo = new THREE.BoxGeometry(width, woodThick, usableDepth);
     const mat = getCornerMat(partId, bodyMat);
@@ -177,10 +180,12 @@ export function applyCornerConnectorSpecialInterior(params: CornerConnectorSpeci
     emitFoldedClothesPlans(plans, cornerGroup, emitFoldedClothes, reportErrorThrottled, App);
   }
 
-  const shelf1Added = shelf1BottomY + woodThick <= ceilBottomY - 0.005;
+  const shelf1Added = shelf1BottomY + woodThick <= ceilBottomY - specialPostDims.shelfCeilingClearanceM;
   if (shelf1Added) addShelfPentagon('corner_pent_int_shelf_180', shelf1BottomY);
 
-  const shelf2Added = needH <= availH + 0.002 && shelf2BottomY + woodThick <= ceilBottomY - 0.005;
+  const shelf2Added =
+    needH <= availH + specialPostDims.shelfFitToleranceM &&
+    shelf2BottomY + woodThick <= ceilBottomY - specialPostDims.shelfCeilingClearanceM;
   if (shelf2Added) addShelfPentagon('corner_pent_int_shelf_210', shelf2BottomY);
 
   if (showContentsEnabled) {

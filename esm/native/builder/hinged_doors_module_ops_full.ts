@@ -1,3 +1,4 @@
+import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { clampHandleAbsY } from './hinged_doors_module_ops_shared.js';
 import type {
   HingedDoorIterationState,
@@ -44,7 +45,7 @@ export function appendFullHingedDoorOps(
     moduleIndex: ctx.index,
     pivotX: state.pivotX,
     y: doorCenterY,
-    z: ctx.doorFrontZ + 0.01,
+    z: ctx.doorFrontZ + DOOR_SYSTEM_DIMENSIONS.hinged.opFrontZOffsetM,
     width: state.doorWidth,
     height: doorHeight,
     meshOffsetX: state.meshOffsetX,

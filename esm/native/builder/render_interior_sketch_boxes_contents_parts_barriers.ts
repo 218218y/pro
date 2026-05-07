@@ -52,7 +52,10 @@ export function renderSketchBoxContentStorageBarriers(args: RenderSketchBoxStati
       frontZ -
         Math.min(
           previewDims.storageBarrierDepthClearanceMaxM,
-          Math.max(previewDims.storageBarrierDepthClearanceMinM, geometry.innerD * previewDims.storageBarrierDepthClearanceRatio)
+          Math.max(
+            previewDims.storageBarrierDepthClearanceMinM,
+            geometry.innerD * previewDims.storageBarrierDepthClearanceRatio
+          )
         )
     );
     createBoard(barrierW, barrierH, barrierD, barrierX, barrierY, barrierZ, barrierMat, barrierPid);

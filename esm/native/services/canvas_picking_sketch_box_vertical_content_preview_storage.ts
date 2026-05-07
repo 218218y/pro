@@ -100,7 +100,10 @@ export function resolveSketchBoxStoragePreview(
       targetGeo.innerD -
       Math.min(
         previewDims.storageBarrierDepthClearanceMaxM,
-        Math.max(previewDims.storageBarrierDepthClearanceMinM, targetGeo.innerD * previewDims.storageBarrierDepthClearanceRatio)
+        Math.max(
+          previewDims.storageBarrierDepthClearanceMinM,
+          targetGeo.innerD * previewDims.storageBarrierDepthClearanceRatio
+        )
       )
   );
 
@@ -122,7 +125,10 @@ export function resolveSketchBoxStoragePreview(
       x: barrierCenterX,
       y: previewY,
       z: barrierZ,
-      w: Math.max(SKETCH_BOX_DIMENSIONS.preview.shelfMinWidthM, barrierWidth - storageDims.barrierWidthClearanceM),
+      w: Math.max(
+        SKETCH_BOX_DIMENSIONS.preview.shelfMinWidthM,
+        barrierWidth - storageDims.barrierWidthClearanceM
+      ),
       h: barrierHeight,
       d: Math.max(storageDims.previewThicknessMinM, woodThick),
       woodThick,

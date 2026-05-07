@@ -1,3 +1,4 @@
+import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
   clampHandleAbsY,
   hasExplicitHandleOverride,
@@ -39,7 +40,7 @@ export function appendCustomSplitHingedDoorSegments(
     const segTopY =
       segmentIndex === segCount - 1 ? ctx.effectiveTopLimit : cuts[segmentIndex] - visual.splitGap / 2;
     const segH = segTopY - segBottomY;
-    if (!(segH > 0.1)) continue;
+    if (!(segH > DOOR_SYSTEM_DIMENSIONS.hinged.split.renderMinSegmentHeightM)) continue;
 
     const partId = partIdForSegment(state, segCount, segmentIndex);
     const curtainVal = ctx.cfg.isMultiColorMode
