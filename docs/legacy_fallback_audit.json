@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-05-07T08:02:18.997Z",
+  "generatedAt": "2026-05-07T19:19:09.437Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 796,
-    "totalFiles": 285,
+    "totalOccurrences": 758,
+    "totalFiles": 278,
     "byCategory": {
-      "runtime-default": 639,
+      "runtime-default": 602,
       "browser-adapter": 18,
       "project-migration": 20,
       "test-fixture": 7,
-      "legacy-runtime-risk": 112,
+      "legacy-runtime-risk": 111,
       "unknown": 0
     },
     "byFile": {
@@ -780,29 +780,10 @@
           "legacy-runtime-risk": 1
         }
       },
-      "esm/native/platform/storage.ts": {
-        "total": 5,
-        "categories": {
-          "legacy-runtime-risk": 1,
-          "runtime-default": 4
-        }
-      },
       "esm/native/platform/store.ts": {
         "total": 1,
         "categories": {
           "runtime-default": 1
-        }
-      },
-      "esm/native/platform/three_geometry_cache_patch_constructors.ts": {
-        "total": 4,
-        "categories": {
-          "runtime-default": 4
-        }
-      },
-      "esm/native/platform/three_geometry_cache_patch_contracts.ts": {
-        "total": 14,
-        "categories": {
-          "runtime-default": 14
         }
       },
       "esm/native/runtime/app_helpers.ts": {
@@ -1009,12 +990,6 @@
           "runtime-default": 1
         }
       },
-      "esm/native/runtime/storage_access.ts": {
-        "total": 8,
-        "categories": {
-          "runtime-default": 8
-        }
-      },
       "esm/native/runtime/store_boot_access.ts": {
         "total": 1,
         "categories": {
@@ -1076,12 +1051,6 @@
         "total": 2,
         "categories": {
           "legacy-runtime-risk": 2
-        }
-      },
-      "esm/native/services/boot_seeds_part02_shared.ts": {
-        "total": 5,
-        "categories": {
-          "runtime-default": 5
         }
       },
       "esm/native/services/camera_shared.ts": {
@@ -1228,12 +1197,6 @@
           "runtime-default": 6
         }
       },
-      "esm/native/services/cloud_sync_owner_context_runtime_shared.ts": {
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
       "esm/native/services/cloud_sync_panel_api_install_context_runtime.ts": {
         "total": 2,
         "categories": {
@@ -1244,12 +1207,6 @@
         "total": 2,
         "categories": {
           "runtime-default": 2
-        }
-      },
-      "esm/native/services/cloud_sync_support_storage_shared.ts": {
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
         }
       },
       "esm/native/services/cloud_sync_tabs_gate_snapshot_shared.ts": {
@@ -1769,13 +1726,6 @@
         }
       },
       {
-        "file": "esm/native/platform/three_geometry_cache_patch_contracts.ts",
-        "total": 14,
-        "categories": {
-          "runtime-default": 14
-        }
-      },
-      {
         "file": "esm/native/platform/platform_util.ts",
         "total": 12,
         "categories": {
@@ -1826,13 +1776,6 @@
       },
       {
         "file": "esm/native/builder/hinged_doors_module_ops_context.ts",
-        "total": 8,
-        "categories": {
-          "runtime-default": 8
-        }
-      },
-      {
-        "file": "esm/native/runtime/storage_access.ts",
         "total": 8,
         "categories": {
           "runtime-default": 8
@@ -1960,10 +1903,27 @@
         "categories": {
           "runtime-default": 6
         }
+      },
+      {
+        "file": "esm/test_no_side_effects_on_import.mjs",
+        "total": 6,
+        "categories": {
+          "test-fixture": 6
+        }
+      },
+      {
+        "file": "esm/native/builder/build_string_normalizer.ts",
+        "total": 5,
+        "categories": {
+          "runtime-default": 5
+        }
       }
     ]
   },
-  "allowlistComparison": null,
+  "allowlistComparison": {
+    "ok": true,
+    "failures": []
+  },
   "occurrences": [
     {
       "file": "esm/entry_pro_main_shared.ts",
@@ -2590,7 +2550,7 @@
     },
     {
       "file": "esm/native/builder/post_build_sketch_door_cuts_rebuild_handles.ts",
-      "line": 59,
+      "line": 65,
       "term": "fallback",
       "category": "runtime-default",
       "text": "// ignore handle fallback"
@@ -2758,7 +2718,7 @@
     },
     {
       "file": "esm/native/builder/render_interior_preset_ops.ts",
-      "line": 171,
+      "line": 184,
       "term": "legacy",
       "category": "legacy-runtime-risk",
       "text": "// ignore legacy color lookup errors and keep default body material"
@@ -2807,7 +2767,7 @@
     },
     {
       "file": "esm/native/builder/render_interior_sketch_boxes_shell_apply.ts",
-      "line": 54,
+      "line": 55,
       "term": "fallback",
       "category": "runtime-default",
       "text": "fallback: renderArgs.bodyMat,"
@@ -4137,14 +4097,14 @@
     },
     {
       "file": "esm/native/platform/render_loop_motion_shared.ts",
-      "line": 157,
+      "line": 185,
       "term": "fallback",
       "category": "runtime-default",
       "text": "export function readMotionNumber(value: unknown, fallback: number): number {"
     },
     {
       "file": "esm/native/platform/render_loop_motion_shared.ts",
-      "line": 158,
+      "line": 186,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return readFiniteNumber(value, fallback);"
@@ -4185,172 +4145,11 @@
       "text": "// - Expose smoke-check helpers on the provided App instance (no window/global fallbacks)."
     },
     {
-      "file": "esm/native/platform/storage.ts",
-      "line": 6,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// - We do NOT install/override any legacy `root storage slot`."
-    },
-    {
-      "file": "esm/native/platform/storage.ts",
-      "line": 24,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "getJSON: <T = unknown>(key: unknown, fallback: T) => T;"
-    },
-    {
-      "file": "esm/native/platform/storage.ts",
-      "line": 83,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "function getJSON<T = unknown>(key: unknown, fallback: T): T {"
-    },
-    {
-      "file": "esm/native/platform/storage.ts",
-      "line": 85,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "if (!s) return fallback;"
-    },
-    {
-      "file": "esm/native/platform/storage.ts",
-      "line": 89,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return fallback;"
-    },
-    {
       "file": "esm/native/platform/store.ts",
       "line": 7,
       "term": "fallback",
       "category": "runtime-default",
       "text": "// - Avoid hybrid fallback paths inside the store backend (single backend = Zustand)"
-    },
-    {
-      "file": "esm/native/platform/three_geometry_cache_patch_constructors.ts",
-      "line": 68,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "function normalizeAngle(value: unknown, fallback: number): number {"
-    },
-    {
-      "file": "esm/native/platform/three_geometry_cache_patch_constructors.ts",
-      "line": 69,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return round6(readNumber(value, fallback));"
-    },
-    {
-      "file": "esm/native/platform/three_geometry_cache_patch_constructors.ts",
-      "line": 72,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "function normalizeSegments(value: unknown, fallback: number, min: number = 1): number {"
-    },
-    {
-      "file": "esm/native/platform/three_geometry_cache_patch_constructors.ts",
-      "line": 73,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return normalizePositiveInt(value, fallback, min);"
-    },
-    {
-      "file": "esm/native/platform/three_geometry_cache_patch_contracts.ts",
-      "line": 96,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readNumber(value: unknown, fallback: number): number {"
-    },
-    {
-      "file": "esm/native/platform/three_geometry_cache_patch_contracts.ts",
-      "line": 97,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof value === 'number' && Number.isFinite(value) ? value : fallback;"
-    },
-    {
-      "file": "esm/native/platform/three_geometry_cache_patch_contracts.ts",
-      "line": 100,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function normalizeNonNegativeInt(value: unknown, fallback: number): number {"
-    },
-    {
-      "file": "esm/native/platform/three_geometry_cache_patch_contracts.ts",
-      "line": 101,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const num = readNumber(value, fallback);"
-    },
-    {
-      "file": "esm/native/platform/three_geometry_cache_patch_contracts.ts",
-      "line": 106,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function normalizePositiveInt(value: unknown, fallback: number, min: number = 1): number {"
-    },
-    {
-      "file": "esm/native/platform/three_geometry_cache_patch_contracts.ts",
-      "line": 107,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const num = normalizeNonNegativeInt(value, fallback);"
-    },
-    {
-      "file": "esm/native/platform/three_geometry_cache_patch_contracts.ts",
-      "line": 158,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const fallback = createGeometryCacheStats();"
-    },
-    {
-      "file": "esm/native/platform/three_geometry_cache_patch_contracts.ts",
-      "line": 159,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "Object.assign(stats, fallback);"
-    },
-    {
-      "file": "esm/native/platform/three_geometry_cache_patch_contracts.ts",
-      "line": 160,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return isGeometryCacheStats(stats) ? stats : fallback;"
-    },
-    {
-      "file": "esm/native/platform/three_geometry_cache_patch_contracts.ts",
-      "line": 174,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readCacheLimit(app: AppLike, key: 'geometries' | 'edges', fallback: number): number {"
-    },
-    {
-      "file": "esm/native/platform/three_geometry_cache_patch_contracts.ts",
-      "line": 177,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return normalizeNonNegativeInt(limits?.[key], fallback);"
-    },
-    {
-      "file": "esm/native/platform/three_geometry_cache_patch_contracts.ts",
-      "line": 225,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const fallback: CacheTouchFn = (meta, key) => {"
-    },
-    {
-      "file": "esm/native/platform/three_geometry_cache_patch_contracts.ts",
-      "line": 232,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "util.cacheTouch = fallback;"
-    },
-    {
-      "file": "esm/native/platform/three_geometry_cache_patch_contracts.ts",
-      "line": 233,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return fallback;"
     },
     {
       "file": "esm/native/runtime/app_helpers.ts",
@@ -4934,62 +4733,6 @@
       "text": "// - Keep root-level patch fallbacks explicit and opt-in, not hidden policy."
     },
     {
-      "file": "esm/native/runtime/storage_access.ts",
-      "line": 23,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function getStorageKey(App: unknown, keyName: string, fallback: string): string {"
-    },
-    {
-      "file": "esm/native/runtime/storage_access.ts",
-      "line": 28,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return raw || fallback;"
-    },
-    {
-      "file": "esm/native/runtime/storage_access.ts",
-      "line": 30,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return fallback;"
-    },
-    {
-      "file": "esm/native/runtime/storage_access.ts",
-      "line": 45,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function getStorageJSON<T>(App: unknown, key: string, fallback: T): T {"
-    },
-    {
-      "file": "esm/native/runtime/storage_access.ts",
-      "line": 50,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const out = fn ? fn(key, fallback) : fallback;"
-    },
-    {
-      "file": "esm/native/runtime/storage_access.ts",
-      "line": 50,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const out = fn ? fn(key, fallback) : fallback;"
-    },
-    {
-      "file": "esm/native/runtime/storage_access.ts",
-      "line": 51,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return out ?? fallback;"
-    },
-    {
-      "file": "esm/native/runtime/storage_access.ts",
-      "line": 53,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return fallback;"
-    },
-    {
       "file": "esm/native/runtime/store_boot_access.ts",
       "line": 91,
       "term": "legacy",
@@ -5226,41 +4969,6 @@
       "term": "legacy",
       "category": "legacy-runtime-risk",
       "text": "// - No legacy `js/**` imports on the ESM path."
-    },
-    {
-      "file": "esm/native/services/boot_seeds_part02_shared.ts",
-      "line": 11,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "getJSON?: (key: string, fallback: unknown[]) => unknown;"
-    },
-    {
-      "file": "esm/native/services/boot_seeds_part02_shared.ts",
-      "line": 43,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function cloneUnknownArray(value: unknown[], fallback: unknown[]): unknown[] {"
-    },
-    {
-      "file": "esm/native/services/boot_seeds_part02_shared.ts",
-      "line": 47,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return Array.isArray(cloned) ? cloned : fallback;"
-    },
-    {
-      "file": "esm/native/services/boot_seeds_part02_shared.ts",
-      "line": 54,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return Array.isArray(cloned) ? cloned : fallback;"
-    },
-    {
-      "file": "esm/native/services/boot_seeds_part02_shared.ts",
-      "line": 56,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return fallback;"
     },
     {
       "file": "esm/native/services/camera_shared.ts",
@@ -5704,13 +5412,6 @@
       "text": "return value === 'broadcast' ? 'broadcast' : fallback;"
     },
     {
-      "file": "esm/native/services/cloud_sync_owner_context_runtime_shared.ts",
-      "line": 15,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "getJSON?<T>(key: unknown, fallback: T): T;"
-    },
-    {
       "file": "esm/native/services/cloud_sync_panel_api_install_context_runtime.ts",
       "line": 97,
       "term": "fallback",
@@ -5737,13 +5438,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "const normalized = normalizeUnknownError(err, fallback || 'Cloud sync operation failed');"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_support_storage_shared.ts",
-      "line": 22,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "getJSON?<T>(key: unknown, fallback: T): T;"
     },
     {
       "file": "esm/native/services/cloud_sync_tabs_gate_snapshot_shared.ts",

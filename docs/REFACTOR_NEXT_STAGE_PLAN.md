@@ -57,6 +57,12 @@ The fixtures cover two important import cases:
 
 This keeps project compatibility at the project ingress layer and gives future import work behavior coverage without adding runtime fallback paths.
 
+## Legacy/default vocabulary burn-down
+
+The cache/storage runtime slice is complete: storage access, storage install, boot seed storage shape, Cloud Sync storage shape, and the Three.js geometry-cache contracts now use explicit default-value naming instead of `fallback` terminology for normal defaults.
+
+This did not remove compatibility behavior blindly. The canonical `App.services.storage` and render-cache seams remain unchanged, while the legacy/fallback audit now has fewer false-positive hot files. Stage 42 now asserts that these storage and geometry-cache files stay out of the categorized inventory.
+
 ## CSS cascade ratchet hardening
 
 The CSS cascade hardening slice is complete: `npm run check:css-style` now reads explicit limits from `tools/wp_css_style_budget.json` instead of embedding budget numbers inside the audit script.

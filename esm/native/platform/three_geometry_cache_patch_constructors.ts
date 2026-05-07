@@ -65,12 +65,12 @@ export function createCachedGeometryCtor(
   });
 }
 
-function normalizeAngle(value: unknown, fallback: number): number {
-  return round6(readNumber(value, fallback));
+function normalizeAngle(value: unknown, defaultValue: number): number {
+  return round6(readNumber(value, defaultValue));
 }
 
-function normalizeSegments(value: unknown, fallback: number, min: number = 1): number {
-  return normalizePositiveInt(value, fallback, min);
+function normalizeSegments(value: unknown, defaultValue: number, min: number = 1): number {
+  return normalizePositiveInt(value, defaultValue, min);
 }
 
 export type InstallGeometryCtorPatchesArgs = {

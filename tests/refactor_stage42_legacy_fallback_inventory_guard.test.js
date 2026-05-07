@@ -19,6 +19,17 @@ test('stage 42 legacy fallback inventory closeout is anchored', () => {
   assert.ok(allowlist.entries['esm/native/runtime/ui_raw_selectors_canonical.ts']);
   assert.ok(allowlist.entries['esm/native/runtime/ui_raw_selectors_store.ts']);
   assert.ok(allowlist.entries['esm/native/services/render_surface_runtime.ts']);
+  for (const file of [
+    'esm/native/runtime/storage_access.ts',
+    'esm/native/platform/storage.ts',
+    'esm/native/platform/three_geometry_cache_patch_contracts.ts',
+    'esm/native/platform/three_geometry_cache_patch_constructors.ts',
+    'esm/native/services/boot_seeds_part02_shared.ts',
+    'esm/native/services/cloud_sync_owner_context_runtime_shared.ts',
+    'esm/native/services/cloud_sync_support_storage_shared.ts',
+  ]) {
+    assert.equal(audit.summary.byFile[file]?.total || 0, 0, `${file} should stay out of the inventory`);
+  }
   const uiRawSelectorFallbackTotal = [
     'esm/native/runtime/ui_raw_selectors.ts',
     'esm/native/runtime/ui_raw_selectors_snapshot.ts',

@@ -1,18 +1,18 @@
 # Legacy / fallback audit
 
-Generated at: 2026-05-07T08:02:18.997Z
+Generated at: 2026-05-07T19:19:09.437Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **796**
-- Files with occurrences: **285**
+- Total categorized occurrences: **758**
+- Files with occurrences: **278**
 - Category counts:
-  - `runtime-default`: **639**
+  - `runtime-default`: **602**
   - `browser-adapter`: **18**
   - `project-migration`: **20**
   - `test-fixture`: **7**
-  - `legacy-runtime-risk`: **112**
+  - `legacy-runtime-risk`: **111**
   - `unknown`: **0**
 
 ## Policy
@@ -28,7 +28,6 @@ Generated at: 2026-05-07T08:02:18.997Z
 - `esm/native/ui/react/tabs/interior_tab_view_state_shared.ts` — **24** (runtime-default: 24)
 - `esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts` — **16** (runtime-default: 16)
 - `esm/native/ui/react/pdf/order_pdf_overlay_sketch_preview_session.ts` — **16** (runtime-default: 16)
-- `esm/native/platform/three_geometry_cache_patch_contracts.ts` — **14** (runtime-default: 14)
 - `esm/native/platform/platform_util.ts` — **12** (runtime-default: 12)
 - `esm/native/ui/pdf/order_pdf_document_fields_runtime.ts` — **11** (runtime-default: 11)
 - `esm/native/ui/react/actions/cloud_sync_actions.ts` — **11** (runtime-default: 11)
@@ -37,7 +36,6 @@ Generated at: 2026-05-07T08:02:18.997Z
 - `esm/native/ui/export/export_order_pdf_text_details.ts` — **9** (runtime-default: 9)
 - `esm/native/ui/react/tabs/design_tab_shared.ts` — **9** (runtime-default: 9)
 - `esm/native/builder/hinged_doors_module_ops_context.ts` — **8** (runtime-default: 8)
-- `esm/native/runtime/storage_access.ts` — **8** (runtime-default: 8)
 - `esm/native/runtime/ui_raw_selectors_canonical.ts` — **8** (legacy-runtime-risk: 1, project-migration: 3, runtime-default: 4)
 - `esm/native/runtime/ui_raw_selectors_store.ts` — **8** (runtime-default: 8)
 - `esm/native/features/modules_configuration/corner_cells_snapshot_shared.ts` — **7** (runtime-default: 7)
@@ -55,7 +53,9 @@ Generated at: 2026-05-07T08:02:18.997Z
 - `esm/native/runtime/perf_runtime_core.ts` — **6** (runtime-default: 6)
 - `esm/native/services/canvas_picking_hover_preview_modes_shared.ts` — **6** (runtime-default: 6)
 - `esm/native/services/cloud_sync_lifecycle_support_realtime.ts` — **6** (runtime-default: 6)
+- `esm/test_no_side_effects_on_import.mjs` — **6** (test-fixture: 6)
+- `esm/native/builder/build_string_normalizer.ts` — **5** (runtime-default: 5)
 
 ## Allowlist check
 
-- Not run.
+- Passed: current categorized inventory matches the allowlist.

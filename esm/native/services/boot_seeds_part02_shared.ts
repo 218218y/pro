@@ -8,7 +8,7 @@ export type AppLike = AppContainer | UnknownRecord | null | undefined;
 export type StorageLike = {
   KEYS?: { SAVED_COLORS?: unknown } & UnknownRecord;
   getString?: (key: string) => string | null | undefined;
-  getJSON?: (key: string, fallback: unknown[]) => unknown;
+  getJSON?: (key: string, defaultValue: unknown[]) => unknown;
 };
 export type ColorsActionsLike = { setMultiMode?: (next: boolean, meta?: ActionMetaLike) => void };
 export type RoomActionsLike = {
@@ -40,20 +40,20 @@ export function getCfgSafe(
   }
 }
 
-export function cloneUnknownArray(value: unknown[], fallback: unknown[]): unknown[] {
+export function cloneUnknownArray(value: unknown[], defaultValue: unknown[]): unknown[] {
   try {
     if (typeof structuredClone === 'function') {
       const cloned = structuredClone(value);
-      return Array.isArray(cloned) ? cloned : fallback;
+      return Array.isArray(cloned) ? cloned : defaultValue;
     }
   } catch {
     // ignore
   }
   try {
     const cloned = JSON.parse(JSON.stringify(value));
-    return Array.isArray(cloned) ? cloned : fallback;
+    return Array.isArray(cloned) ? cloned : defaultValue;
   } catch {
-    return fallback;
+    return defaultValue;
   }
 }
 

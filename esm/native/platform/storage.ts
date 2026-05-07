@@ -3,7 +3,7 @@
 //
 // Policy (delete-pass):
 // - Canonical storage adapter lives in `App.services.storage`.
-// - We do NOT install/override any legacy `root storage slot`.
+// - We do NOT install/override the obsolete root storage slot.
 // - All code must read storage through `App.services.storage` only.
 
 import { ensureServiceSlot } from '../runtime/services_root_access.js';
@@ -21,7 +21,7 @@ export type StorageApi = {
   getString: (key: unknown) => string | null;
   setString: (key: unknown, value: unknown) => boolean;
   remove: (key: unknown) => boolean;
-  getJSON: <T = unknown>(key: unknown, fallback: T) => T;
+  getJSON: <T = unknown>(key: unknown, defaultValue: T) => T;
   setJSON: (key: unknown, obj: unknown) => boolean;
 };
 
@@ -80,13 +80,13 @@ function remove(key: unknown): boolean {
   }
 }
 
-function getJSON<T = unknown>(key: unknown, fallback: T): T {
+function getJSON<T = unknown>(key: unknown, defaultValue: T): T {
   const s = getString(key);
-  if (!s) return fallback;
+  if (!s) return defaultValue;
   try {
     return JSON.parse(s);
   } catch (_) {
-    return fallback;
+    return defaultValue;
   }
 }
 

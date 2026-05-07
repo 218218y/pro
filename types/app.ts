@@ -224,7 +224,7 @@ export interface StorageNamespaceLike extends UnknownRecord {
   getString?: (key: string) => string | null | undefined;
   setString?: (key: string, value: string) => unknown;
   remove?: (key: string) => unknown;
-  getJSON?: <T>(key: string, fallback: T) => T;
+  getJSON?: <T>(key: string, defaultValue: T) => T;
   setJSON?: (key: string, value: unknown) => unknown;
   [k: string]: unknown;
 }

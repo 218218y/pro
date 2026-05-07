@@ -770,29 +770,10 @@
         "legacy-runtime-risk": 1
       }
     },
-    "esm/native/platform/storage.ts": {
-      "total": 5,
-      "categories": {
-        "legacy-runtime-risk": 1,
-        "runtime-default": 4
-      }
-    },
     "esm/native/platform/store.ts": {
       "total": 1,
       "categories": {
         "runtime-default": 1
-      }
-    },
-    "esm/native/platform/three_geometry_cache_patch_constructors.ts": {
-      "total": 4,
-      "categories": {
-        "runtime-default": 4
-      }
-    },
-    "esm/native/platform/three_geometry_cache_patch_contracts.ts": {
-      "total": 14,
-      "categories": {
-        "runtime-default": 14
       }
     },
     "esm/native/runtime/app_helpers.ts": {
@@ -999,12 +980,6 @@
         "runtime-default": 1
       }
     },
-    "esm/native/runtime/storage_access.ts": {
-      "total": 8,
-      "categories": {
-        "runtime-default": 8
-      }
-    },
     "esm/native/runtime/store_boot_access.ts": {
       "total": 1,
       "categories": {
@@ -1066,12 +1041,6 @@
       "total": 2,
       "categories": {
         "legacy-runtime-risk": 2
-      }
-    },
-    "esm/native/services/boot_seeds_part02_shared.ts": {
-      "total": 5,
-      "categories": {
-        "runtime-default": 5
       }
     },
     "esm/native/services/camera_shared.ts": {
@@ -1218,12 +1187,6 @@
         "runtime-default": 6
       }
     },
-    "esm/native/services/cloud_sync_owner_context_runtime_shared.ts": {
-      "total": 1,
-      "categories": {
-        "runtime-default": 1
-      }
-    },
     "esm/native/services/cloud_sync_panel_api_install_context_runtime.ts": {
       "total": 2,
       "categories": {
@@ -1234,12 +1197,6 @@
       "total": 2,
       "categories": {
         "runtime-default": 2
-      }
-    },
-    "esm/native/services/cloud_sync_support_storage_shared.ts": {
-      "total": 1,
-      "categories": {
-        "runtime-default": 1
       }
     },
     "esm/native/services/cloud_sync_tabs_gate_snapshot_shared.ts": {

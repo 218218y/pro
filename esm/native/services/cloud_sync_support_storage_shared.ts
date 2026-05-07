@@ -19,7 +19,7 @@ export type StorageLike = {
   KEYS?: { SAVED_MODELS?: string; SAVED_COLORS?: string };
   getString?(key: unknown): string | null;
   setString?(key: unknown, value: unknown): boolean;
-  getJSON?<T>(key: unknown, fallback: T): T;
+  getJSON?<T>(key: unknown, defaultValue: T): T;
   setJSON?(key: unknown, value: unknown): boolean;
   remove?(key: unknown): boolean;
 };

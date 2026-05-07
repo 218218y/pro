@@ -20,14 +20,14 @@ export function getStorageServiceMaybe(App: unknown): StorageNamespaceLike | nul
   }
 }
 
-export function getStorageKey(App: unknown, keyName: string, fallback: string): string {
+export function getStorageKey(App: unknown, keyName: string, defaultKey: string): string {
   try {
     const storage = getStorageServiceMaybe(App);
     const keys = storage ? readStorageKeys(storage.KEYS) : null;
     const raw = keys && typeof keys[keyName] === 'string' ? String(keys[keyName] || '') : '';
-    return raw || fallback;
+    return raw || defaultKey;
   } catch {
-    return fallback;
+    return defaultKey;
   }
 }
 
@@ -42,15 +42,15 @@ export function getStorageString(App: unknown, key: string): string | null {
   }
 }
 
-export function getStorageJSON<T>(App: unknown, key: string, fallback: T): T {
+export function getStorageJSON<T>(App: unknown, key: string, defaultValue: T): T {
   try {
     const storage = getStorageServiceMaybe(App);
-    const fn: (<TValue>(storageKey: string, storageFallback: TValue) => TValue) | null =
+    const fn: (<TValue>(storageKey: string, storageDefault: TValue) => TValue) | null =
       storage && typeof storage.getJSON === 'function' ? storage.getJSON : null;
-    const out = fn ? fn(key, fallback) : fallback;
-    return out ?? fallback;
+    const out = fn ? fn(key, defaultValue) : defaultValue;
+    return out ?? defaultValue;
   } catch {
-    return fallback;
+    return defaultValue;
   }
 }
 

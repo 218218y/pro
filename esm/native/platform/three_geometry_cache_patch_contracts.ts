@@ -93,18 +93,18 @@ export function readBoolean(value: unknown): boolean {
   return value === true;
 }
 
-export function readNumber(value: unknown, fallback: number): number {
-  return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+export function readNumber(value: unknown, defaultValue: number): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
 }
 
-export function normalizeNonNegativeInt(value: unknown, fallback: number): number {
-  const num = readNumber(value, fallback);
+export function normalizeNonNegativeInt(value: unknown, defaultValue: number): number {
+  const num = readNumber(value, defaultValue);
   if (!Number.isFinite(num) || num <= 0) return 0;
   return Math.max(0, Math.floor(num));
 }
 
-export function normalizePositiveInt(value: unknown, fallback: number, min: number = 1): number {
-  const num = normalizeNonNegativeInt(value, fallback);
+export function normalizePositiveInt(value: unknown, defaultValue: number, min: number = 1): number {
+  const num = normalizeNonNegativeInt(value, defaultValue);
   if (num <= 0) return Math.max(1, Math.floor(min));
   return Math.max(Math.floor(min), num);
 }
@@ -155,9 +155,9 @@ export function ensureGeometryCacheStats(app: unknown): GeometryCacheStats {
   if (!Number.isFinite(stats.edgesEvictionCount)) stats.edgesEvictionCount = 0;
   if (!Number.isFinite(stats.edgesSizeHighWater)) stats.edgesSizeHighWater = 0;
   if (isGeometryCacheStats(stats)) return stats;
-  const fallback = createGeometryCacheStats();
-  Object.assign(stats, fallback);
-  return isGeometryCacheStats(stats) ? stats : fallback;
+  const defaultStats = createGeometryCacheStats();
+  Object.assign(stats, defaultStats);
+  return isGeometryCacheStats(stats) ? stats : defaultStats;
 }
 
 export function resetGeometryCacheStats(stats: GeometryCacheStats): void {
@@ -171,10 +171,10 @@ export function resetGeometryCacheStats(stats: GeometryCacheStats): void {
   stats.edgesSizeHighWater = 0;
 }
 
-export function readCacheLimit(app: AppLike, key: 'geometries' | 'edges', fallback: number): number {
+export function readCacheLimit(app: AppLike, key: 'geometries' | 'edges', defaultLimit: number): number {
   const util = ensurePlatformUtil(app);
   const limits = readRecord(util.cacheLimits);
-  return normalizeNonNegativeInt(limits?.[key], fallback);
+  return normalizeNonNegativeInt(limits?.[key], defaultLimit);
 }
 
 export function recordCacheHit(stats: GeometryCacheStats, bucket: GeometryCacheBucket): void {
@@ -222,15 +222,15 @@ export function readGeometryInstance(value: unknown): GeometryInstance {
 export function ensureCacheTouch(util: UnknownRecord): CacheTouchFn {
   const existing = isCacheTouchFn(util.cacheTouch) ? util.cacheTouch : null;
   if (existing) return existing;
-  const fallback: CacheTouchFn = (meta, key) => {
+  const defaultTouch: CacheTouchFn = (meta, key) => {
     try {
       meta.set(key, Date.now());
     } catch {
       // ignore
     }
   };
-  util.cacheTouch = fallback;
-  return fallback;
+  util.cacheTouch = defaultTouch;
+  return defaultTouch;
 }
 
 export function touchMeta(touch: CacheTouchFn, meta: Map<string, number>, key: string): void {
