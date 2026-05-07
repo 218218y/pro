@@ -3,7 +3,7 @@
   "policy": "CSS cascade debt ratchet. Counts may stay at or below these limits; z-index declarations must use shared --wp-z-* layer tokens so stacking order stays reviewable.",
   "metrics": {
     "important": {
-      "max": 41,
+      "max": 26,
       "description": "Locks the current !important count so cascade exceptions do not grow silently."
     },
     "transitionAll": {

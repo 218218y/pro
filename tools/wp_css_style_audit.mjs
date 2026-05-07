@@ -52,6 +52,32 @@ function readBudget() {
   return budget;
 }
 
+function formatMarkdownText(value) {
+  return String(value).replace(/\|/g, '\\|').replace(/\*/g, '\\*');
+}
+
+function formatMarkdownTable(rows) {
+  const headers = ['Metric', 'Current', 'Max', 'Status', 'Note'];
+  const aligns = ['left', 'right', 'right', 'left', 'left'];
+  const widths = headers.map((header, index) =>
+    Math.max(3, header.length, ...rows.map(row => String(row[index]).length))
+  );
+
+  const formatCell = (value, index) => {
+    const text = String(value);
+    return aligns[index] === 'right' ? text.padStart(widths[index]) : text.padEnd(widths[index]);
+  };
+  const separator = widths.map((width, index) =>
+    aligns[index] === 'right' ? `${'-'.repeat(width - 1)}:` : '-'.repeat(width)
+  );
+
+  return [
+    `| ${headers.map(formatCell).join(' | ')} |`,
+    `| ${separator.join(' | ')} |`,
+    ...rows.map(row => `| ${row.map(formatCell).join(' | ')} |`),
+  ].join('\n');
+}
+
 const budget = readBudget();
 const rel = budget.file;
 const source = readFileSync(join(root, rel), 'utf8');
@@ -92,13 +118,15 @@ if (jsonOut) {
   writeFileSync(target, `${JSON.stringify(report, null, 2)}\n`);
 }
 if (mdOut) {
-  const rows = Object.keys(max)
-    .map(
-      key =>
-        `| ${key} | ${metrics[key]} | ${max[key]} | ${metrics[key] <= max[key] ? 'ok' : 'FAIL'} | ${notes[key]} |`
-    )
-    .join('\n');
-  const md = `# CSS Style Audit\n\nBudget: \`${budgetPath}\`  \nFile: \`${rel}\`\n\n${budget.policy || ''}\n\n| Metric | Current | Max | Status | Note |\n|---|---:|---:|---|---|\n${rows}\n`;
+  const rows = Object.keys(max).map(key => [
+    key,
+    metrics[key],
+    max[key],
+    metrics[key] <= max[key] ? 'ok' : 'FAIL',
+    formatMarkdownText(notes[key]),
+  ]);
+  const table = formatMarkdownTable(rows);
+  const md = `# CSS Style Audit\n\nBudget: \`${budgetPath}\`  \nFile: \`${rel}\`\n\n${formatMarkdownText(budget.policy || '')}\n\n${table}\n`;
   const target = join(root, mdOut);
   mkdirSync(dirname(target), { recursive: true });
   writeFileSync(target, md);

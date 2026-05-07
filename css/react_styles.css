@@ -3810,60 +3810,6 @@ body.wp-ui-react .wp-floating-sketchsync {
   z-index: var(--wp-z-floating-sketch-sync);
 }
 
-body.wp-ui-react .hint-bottom {
-  position: relative;
-  overflow: visible !important;
-}
-
-body.wp-ui-react .hint-bottom::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  top: 125% !important;
-  bottom: auto !important;
-  left: 0 !important;
-  transform: none !important;
-  display: inline-block !important;
-  width: auto !important;
-  min-width: max-content !important;
-  white-space: nowrap !important;
-  box-sizing: border-box !important;
-  background: #1e293b;
-  color: white;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  line-height: 1.2;
-  font-family: 'Heebo', sans-serif;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition: opacity 0.2s;
-  z-index: var(--wp-z-tooltip);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-body.wp-ui-react .hint-bottom::before {
-  content: '';
-  position: absolute;
-  top: 110% !important;
-  bottom: auto !important;
-  left: 14px !important;
-  transform: none !important;
-  border-width: 6px;
-  border-style: solid;
-  border-color: transparent transparent #1e293b transparent;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.2s;
-  z-index: var(--wp-z-tooltip);
-}
-
-body.wp-ui-react .hint-bottom:hover::after,
-body.wp-ui-react .hint-bottom:hover::before {
-  opacity: 1;
-  visibility: visible;
-}
-
 body.wp-ui-react .camera-controls {
   position: absolute;
   bottom: 20px;
@@ -3935,6 +3881,61 @@ body.wp-ui-react .cam-btn::after {
 
 body.wp-ui-react .cam-btn:hover::after {
   opacity: 1;
+}
+
+/* Bottom tooltip variant lives after .cam-btn tooltip so cascade order stays explicit. */
+body.wp-ui-react .hint-bottom {
+  position: relative;
+  overflow: visible;
+}
+
+body.wp-ui-react .hint-bottom::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: 125%;
+  bottom: auto;
+  left: 0;
+  transform: none;
+  display: inline-block;
+  width: auto;
+  min-width: max-content;
+  white-space: nowrap;
+  box-sizing: border-box;
+  background: #1e293b;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  font-family: 'Heebo', sans-serif;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  z-index: var(--wp-z-tooltip);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+body.wp-ui-react .hint-bottom::before {
+  content: '';
+  position: absolute;
+  top: 110%;
+  bottom: auto;
+  left: 14px;
+  transform: none;
+  border-width: 6px;
+  border-style: solid;
+  border-color: transparent transparent #1e293b transparent;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s;
+  z-index: var(--wp-z-tooltip);
+}
+
+body.wp-ui-react .hint-bottom:hover::after,
+body.wp-ui-react .hint-bottom:hover::before {
+  opacity: 1;
+  visibility: visible;
 }
 
 body.wp-ui-react .sticky-status-toast {
@@ -4331,7 +4332,7 @@ body.wp-ui-react .wp-qa-sync-pin {
     color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
     transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   color: #475569;
-  overflow: visible !important;
+  overflow: visible;
 }
 
 body.wp-ui-react .wp-qa-sync-pin i {
