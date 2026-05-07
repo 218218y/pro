@@ -11,10 +11,11 @@ test('pdf sketch text mode keeps empty layer click-through while note boxes stay
   );
   assert.match(
     css,
-    /body\.wp-ui-react \.wp-pdf-sketch-card-text-layer\.is-text-mode \.annotation-box \{[\s\S]*?pointer-events:\s*auto\s*!important;/
+    /body\.wp-ui-react \.wp-pdf-sketch-card-text-layer\.is-text-mode \.annotation-box \{[\s\S]*?pointer-events:\s*auto;/
   );
   assert.match(
     css,
-    /body\.wp-ui-react \.wp-pdf-sketch-card-text-layer\.is-text-mode \.annotation-box \.editor \{[\s\S]*?pointer-events:\s*auto\s*!important;/
+    /body\.wp-ui-react \.wp-pdf-sketch-card-text-layer\.is-text-mode \.annotation-box \.editor \{[\s\S]*?pointer-events:\s*auto;/
   );
+  assert.doesNotMatch(css, /\.wp-pdf-sketch-card-text-layer[\s\S]*?!important/);
 });

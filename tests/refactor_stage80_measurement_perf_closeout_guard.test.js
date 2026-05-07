@@ -18,7 +18,7 @@ function readJson(file) {
 }
 
 const GUARD_FILE = 'tests/refactor_stage80_measurement_perf_closeout_guard.test.js';
-const CSS_IMPORTANT_RATCHET_CEILING = 26;
+const CSS_IMPORTANT_RATCHET_CEILING = 1;
 
 test('stage 80 measurement and performance closeout is anchored', () => {
   const pkg = readJson('package.json');

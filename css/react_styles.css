@@ -2697,7 +2697,7 @@ body.wp-ui-react .btn-cancel:hover {
 }
 
 #reactSidebarRoot .wp-r-groove-lines-label {
-  margin-bottom: 8px !important;
+  margin-bottom: 8px;
 }
 
 #reactSidebarRoot .wp-r-groove-lines-row {
@@ -3410,20 +3410,20 @@ body.wp-ui-react .annotation-box {
   border: 1px solid transparent;
   background-color: transparent;
   box-shadow: none;
-  pointer-events: none !important;
-  touch-action: none !important;
+  pointer-events: none;
+  touch-action: none;
 }
 
 body.wp-ui-react .annotation-box.creating {
   border: 2px dashed #3b82f6;
   background-color: rgba(59, 130, 246, 0.1);
-  pointer-events: none !important;
+  pointer-events: none;
 }
 
 body.wp-ui-react .annotation-box .editor {
   width: 100%;
   height: 100%;
-  pointer-events: none !important;
+  pointer-events: none;
   outline: none;
   padding: 8px;
   direction: rtl;
@@ -3442,7 +3442,7 @@ body.wp-ui-react .annotation-box .note-hit-pad {
   right: 0;
   bottom: 0;
   padding: 8px;
-  pointer-events: none !important;
+  pointer-events: none;
 }
 
 body.wp-ui-react .annotation-box .note-hit {
@@ -3456,7 +3456,7 @@ body.wp-ui-react .annotation-box .note-hit {
   font-size: 14px;
   color: #1e293b;
   cursor: text;
-  pointer-events: auto !important;
+  pointer-events: auto;
   opacity: 0;
 }
 
@@ -3471,17 +3471,17 @@ body.wp-ui-react .annotation-box.active-edit {
   background-color: rgba(255, 255, 255, 0.1);
   box-shadow: none;
   z-index: var(--wp-z-note-box-interactive);
-  pointer-events: auto !important;
+  pointer-events: auto;
   cursor: move;
 }
 
 body.wp-ui-react .annotation-box.active-edit .editor {
-  pointer-events: auto !important;
+  pointer-events: auto;
   overflow-y: auto;
 }
 
 body.wp-ui-react .resize-handle {
-  display: none !important;
+  display: none;
   pointer-events: auto;
   position: absolute;
   width: 20px;
@@ -3493,11 +3493,11 @@ body.wp-ui-react .resize-handle {
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  touch-action: none !important;
+  touch-action: none;
 }
 
 body.wp-ui-react .annotation-box.active-edit .resize-handle {
-  display: flex !important;
+  display: flex;
 }
 
 body.wp-ui-react .resize-handle::after {
@@ -3584,15 +3584,15 @@ body.wp-ui-react .floating-toolbar {
 }
 
 body.wp-ui-react .annotation-box .floating-toolbar {
-  display: none !important;
+  display: none;
 }
 
 body.wp-ui-react .annotation-box.active-edit .floating-toolbar {
-  display: flex !important;
+  display: flex;
 }
 
 body.wp-ui-react #viewer-container.notes-hidden .annotation-box {
-  display: none !important;
+  display: none;
 }
 
 body.wp-ui-react .toolbar-btn {
@@ -3772,21 +3772,21 @@ body.wp-ui-react #notes-overlay {
   height: 100%;
   z-index: var(--wp-z-notes-overlay);
   pointer-events: none;
-  touch-action: none !important;
+  touch-action: none;
 }
 
 body.wp-ui-react.is-drawing #notes-overlay,
 body.wp-ui-react #notes-overlay[style*='pointer-events: auto'] {
-  pointer-events: auto !important;
+  pointer-events: auto;
   cursor: crosshair;
 }
 
 body.wp-ui-react[data-door-status='open'] .annotation-box[data-doors-open='false'] {
-  display: none !important;
+  display: none;
 }
 
 body.wp-ui-react[data-door-status='closed'] .annotation-box[data-doors-open='true'] {
-  display: none !important;
+  display: none;
 }
 
 body.wp-ui-react.wp-primary-mode-active {
@@ -5397,11 +5397,11 @@ body.wp-ui-react .wp-pdf-sketch-color-palette {
 }
 
 body.wp-ui-react .wp-pdf-sketch-floating-palette {
-  position: fixed !important;
+  position: fixed;
   top: 0;
   left: 0;
-  right: auto !important;
-  transform: none !important;
+  right: auto;
+  transform: none;
   margin: 0;
   z-index: var(--wp-z-pdf-sketch-floating-palette);
   overflow: auto;
@@ -5566,11 +5566,11 @@ body.wp-ui-react .wp-pdf-sketch-card-text-layer .annotation-box .note-hit {
 }
 
 body.wp-ui-react .wp-pdf-sketch-card-text-layer.is-text-mode .annotation-box {
-  pointer-events: auto !important;
+  pointer-events: auto;
 }
 
 body.wp-ui-react .wp-pdf-sketch-card-text-layer.is-text-mode .annotation-box .editor {
-  pointer-events: auto !important;
+  pointer-events: auto;
 }
 
 @media (max-width: 980px) {
@@ -5767,7 +5767,7 @@ body.wp-ui-react .wp-pdf-sketch-card-text-layer.is-text-mode .annotation-box .ed
   .wp-tool-card--layout
   .wp-r-sketch-box-leg-size-fields
   .wp-r-label {
-  margin-bottom: 4px !important;
+  margin-bottom: 4px;
   font-size: 0.82rem;
 }
 
