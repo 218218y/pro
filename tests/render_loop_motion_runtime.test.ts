@@ -453,3 +453,121 @@ test('render loop motion keeps sketch external drawers closed during sketch inte
     assert.equal(externalDrawerGroup.position.x, 0);
   });
 });
+
+test('render loop motion keeps local no-global hinged door animation alive after a stale global toggle timestamp', () => {
+  withRuntimeNow(5000, () => {
+    const doorGroup = {
+      position: { x: 0, y: 0, z: 0 },
+      rotation: { y: 0 },
+      userData: { partId: 'corner_pent_door_1_0', __wpCornerPentDoor: true },
+    };
+    const app: Record<string, unknown> = {
+      store: makeStore({
+        mode: { primary: 'none', opts: {} },
+        runtime: { globalClickMode: true },
+        ui: {},
+        config: {},
+        meta: {},
+      }),
+      services: {
+        doors: {
+          getOpen: () => false,
+          getLastToggleTime: () => 0,
+        },
+        platform: {
+          perf: { hasInternalDrawers: false, perfFlagsDirty: false },
+          activity: { lastActionTime: 5000 },
+        },
+      },
+      render: {
+        doorsArray: [
+          {
+            type: 'hinged',
+            group: doorGroup,
+            hingeSide: 'left',
+            noGlobalOpen: true,
+            isOpen: true,
+          },
+        ],
+        drawersArray: [],
+      },
+    };
+
+    const controller = createRenderLoopMotionController(app as never, {
+      report: () => undefined,
+      now: () => 5000,
+      debugLog: () => undefined,
+    });
+
+    const step = controller.stepFrame(5000);
+
+    assert.equal(step.isActiveState, true);
+    assert.equal(step.isAnimating, true);
+    assert.notEqual(doorGroup.rotation.y, 0);
+  });
+});
+
+test('render loop motion keeps local drawer animation alive after a stale global toggle timestamp', () => {
+  withRuntimeNow(5000, () => {
+    const drawerGroup = {
+      position: {
+        x: 0,
+        y: 0,
+        z: 0,
+        lerp(target: { x: number; y: number; z: number }, alpha: number) {
+          this.x += (target.x - this.x) * alpha;
+          this.y += (target.y - this.y) * alpha;
+          this.z += (target.z - this.z) * alpha;
+        },
+      },
+      userData: { __wpType: 'extDrawer' },
+    };
+    const app: Record<string, unknown> = {
+      store: makeStore({
+        mode: { primary: 'none', opts: {} },
+        runtime: { globalClickMode: false },
+        ui: {},
+        config: {},
+        meta: {},
+      }),
+      services: {
+        doors: {
+          getOpen: () => false,
+          getLastToggleTime: () => 0,
+        },
+        tools: { getDrawersOpenId: () => null },
+        platform: {
+          perf: { hasInternalDrawers: false, perfFlagsDirty: false },
+          activity: { lastActionTime: 5000 },
+        },
+        config: {},
+      },
+      render: {
+        doorsArray: [],
+        drawersArray: [
+          {
+            id: 'drawer-ext-local-1',
+            group: drawerGroup,
+            closed: { x: 0, y: 0, z: 0 },
+            open: { x: 5, y: 0, z: 0 },
+            isInternal: false,
+            isOpen: true,
+          },
+        ],
+      },
+    };
+
+    const controller = createRenderLoopMotionController(app as never, {
+      report: () => undefined,
+      now: () => 5000,
+      debugLog: () => undefined,
+    });
+
+    const step = controller.stepFrame(5000);
+
+    assert.equal(step.isActiveState, true);
+    assert.equal(step.isAnimating, true);
+    assert.ok(drawerGroup.position.x > 0);
+    assert.ok(drawerGroup.position.x < 5);
+  });
+});

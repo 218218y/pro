@@ -107,7 +107,7 @@ export function tryHandleGlobalCornerPentToggle(
       d.isOpen = next;
     });
 
-    runPlatformActivityRenderTouch(App, { updateShadows: true });
+    markLocalDoorMotion(App);
     return true;
   } catch (_e) {
     __wp_reportPickingIssue(App, _e, {
@@ -159,7 +159,7 @@ export function tryHandleDirectDoorOrDrawerToggle(args: CanvasDirectDoorToggleAr
     while (parent) {
       if (parent === dr.group) {
         dr.isOpen = !dr.isOpen;
-        runPlatformActivityRenderTouch(App, { updateShadows: true });
+        markLocalDoorMotion(App);
         return true;
       }
       parent = parent.parent || null;

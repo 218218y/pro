@@ -86,6 +86,33 @@ export type RenderLoopMotionStep = {
   isActiveState: boolean;
 };
 
+export const MOTION_SETTLED_EPSILON = 0.001;
+export const ROTATION_SETTLED_EPSILON = 0.001;
+
+export function hasNumberMotionRemaining(
+  current: unknown,
+  target: unknown,
+  epsilon = MOTION_SETTLED_EPSILON
+): boolean {
+  const currentNum = readFiniteNumberOrNull(current);
+  const targetNum = readFiniteNumberOrNull(target);
+  if (currentNum === null || targetNum === null) return false;
+  return Math.abs(targetNum - currentNum) > epsilon;
+}
+
+export function hasVec3MotionRemaining(
+  current: Vec3Like | null | undefined,
+  target: Vec3Like | null | undefined,
+  epsilon = MOTION_SETTLED_EPSILON
+): boolean {
+  if (!current || !target) return false;
+  return (
+    hasNumberMotionRemaining(current.x, target.x, epsilon) ||
+    hasNumberMotionRemaining(current.y, target.y, epsilon) ||
+    hasNumberMotionRemaining(current.z, target.z, epsilon)
+  );
+}
+
 export function isRecord(v: unknown): v is UnknownRecord {
   return !!readRecord(v);
 }
@@ -137,17 +164,18 @@ export function asDrawerMotion(v: unknown): DrawerMotionLike | undefined {
 export function moveDrawerGroupPosition(
   group: DrawerGroupLike | null | undefined,
   target: Vec3Like | null | undefined
-): void {
-  if (!group || !target) return;
+): boolean {
+  if (!group || !target) return false;
   const position = group.position;
-  if (!position) return;
+  if (!position) return false;
 
   if (typeof position.lerp === 'function') {
     position.lerp(target, 0.1);
-    return;
+    return hasVec3MotionRemaining(position, target);
   }
 
   vecCopy(position, target);
+  return hasVec3MotionRemaining(position, target);
 }
 
 export function readMotionUserData(group: { userData?: UnknownRecord } | null | undefined): UnknownRecord {

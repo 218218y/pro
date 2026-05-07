@@ -12,7 +12,8 @@ export function updateRenderLoopDrawerMotions(
   App: AppContainer,
   frame: MotionFrameState,
   deps: { now: () => number; debugLog: DebugLogFn }
-): void {
+): boolean {
+  let hasActiveDrawerMotion = false;
   const wardrobeType = readConfigScalarOrDefaultFromApp(App, 'wardrobeType');
 
   try {
@@ -89,7 +90,9 @@ export function updateRenderLoopDrawerMotions(
 
     if (!group) continue;
     const target = shouldOpen ? d.open : d.closed;
-    moveDrawerGroupPosition(group, target);
+    if (moveDrawerGroupPosition(group, target)) {
+      hasActiveDrawerMotion = true;
+    }
 
     if (frame.sketchEditActive && isInternal && target === d.closed) {
       try {
@@ -122,4 +125,5 @@ export function updateRenderLoopDrawerMotions(
       }
     }
   }
+  return hasActiveDrawerMotion;
 }

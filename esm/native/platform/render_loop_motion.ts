@@ -24,9 +24,15 @@ export function createRenderLoopMotionController(
     if (!frame.isActiveState) {
       return { isAnimating: frame.isAnimating, isActiveState: false };
     }
-    updateRenderLoopDoorMotions(A, frame);
-    updateRenderLoopDrawerMotions(A, frame, { now: __now, debugLog: __wpSketchDbgLog });
-    return { isAnimating: frame.isAnimating, isActiveState: true };
+    const hasActiveDoorMotion = updateRenderLoopDoorMotions(A, frame);
+    const hasActiveDrawerMotion = updateRenderLoopDrawerMotions(A, frame, {
+      now: __now,
+      debugLog: __wpSketchDbgLog,
+    });
+    return {
+      isAnimating: frame.isAnimating || hasActiveDoorMotion || hasActiveDrawerMotion,
+      isActiveState: true,
+    };
   }
 
   return {

@@ -1,7 +1,6 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
 
 import { getModulesActions } from '../runtime/actions_access_domains.js';
-import { __wp_triggerRender } from './canvas_picking_core_helpers.js';
 import type { SketchBoxDoorTarget } from './canvas_picking_toggle_flow_sketch_box_contracts.js';
 import { resolveSketchBoxPatchTargets } from './canvas_picking_toggle_flow_sketch_box_target.js';
 import {
@@ -9,7 +8,7 @@ import {
   seedSketchBoxDoorMotion,
   setPendingSketchBoxDoorState,
 } from './canvas_picking_toggle_flow_sketch_box_runtime.js';
-import { asRecord, ensureChildRecord } from './canvas_picking_toggle_flow_shared.js';
+import { asRecord, ensureChildRecord, markLocalDoorMotion } from './canvas_picking_toggle_flow_shared.js';
 
 export function toggleSketchBoxDoor(
   App: AppContainer,
@@ -94,7 +93,7 @@ export function toggleSketchBoxDoor(
       if (nextOpen != null && appliedCount < toggledDoorCount) {
         setPendingSketchBoxDoorState(App, runtimeTarget, nextOpen);
       }
-      __wp_triggerRender(App, true);
+      markLocalDoorMotion(App);
       return true;
     }
   }

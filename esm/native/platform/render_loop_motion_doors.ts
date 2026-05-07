@@ -11,9 +11,16 @@ import { readFiniteNumber, readFiniteNumberOrNull } from '../runtime/render_runt
 import { shouldForceSketchFreeBoxDoorsOpen } from '../runtime/doors_runtime_support.js';
 
 import type { MotionFrameState } from './render_loop_motion_shared.js';
-import { asDoorMotion, asRecordOrNull, readMotionUserData } from './render_loop_motion_shared.js';
+import {
+  ROTATION_SETTLED_EPSILON,
+  asDoorMotion,
+  asRecordOrNull,
+  hasNumberMotionRemaining,
+  readMotionUserData,
+} from './render_loop_motion_shared.js';
 
-export function updateRenderLoopDoorMotions(App: AppContainer, frame: MotionFrameState): void {
+export function updateRenderLoopDoorMotions(App: AppContainer, frame: MotionFrameState): boolean {
+  let hasActiveDoorMotion = false;
   const doors = getDoorsArray(App);
   for (let i = 0; i < doors.length; i++) {
     const d = asDoorMotion(doors[i]);
@@ -73,6 +80,9 @@ export function updateRenderLoopDoorMotions(App: AppContainer, frame: MotionFram
       if (inv) targetRot = -targetRot;
 
       g.rotation.y += (targetRot - g.rotation.y) * 0.1;
+      if (hasNumberMotionRemaining(g.rotation.y, targetRot, ROTATION_SETTLED_EPSILON)) {
+        hasActiveDoorMotion = true;
+      }
       continue;
     }
 
@@ -140,5 +150,9 @@ export function updateRenderLoopDoorMotions(App: AppContainer, frame: MotionFram
 
     g.position.x += (targetX - g.position.x) * 0.08;
     g.position.z += (targetZ - g.position.z) * 0.08;
+    if (hasNumberMotionRemaining(g.position.x, targetX) || hasNumberMotionRemaining(g.position.z, targetZ)) {
+      hasActiveDoorMotion = true;
+    }
   }
+  return hasActiveDoorMotion;
 }
