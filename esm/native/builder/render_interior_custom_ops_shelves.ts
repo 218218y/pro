@@ -26,7 +26,7 @@ const GLASS_THICK_M = MATERIAL_DIMENSIONS.glassShelf.thicknessM;
 
 function shelfHeightForVariant(variant: ShelfVariant | undefined, woodThick: number): number {
   if (variant === 'glass') return GLASS_THICK_M;
-  if (variant === 'double') return Math.max(woodThick, woodThick * 2);
+  if (variant === 'double') return Math.max(woodThick, woodThick * INTERIOR_FITTINGS_DIMENSIONS.shelves.doubleThicknessMultiplier);
   return woodThick;
 }
 

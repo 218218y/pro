@@ -1,4 +1,4 @@
-import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { INTERIOR_FITTINGS_DIMENSIONS, MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { RenderInteriorOpsDeps } from './render_interior_ops_contracts.js';
 
 import {
@@ -58,7 +58,7 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
     const group = input.wardrobeGroup || __wardrobeGroup(App);
     if (!group) return false;
 
-    const gridDivisions = readGridDivisions(input.gridDivisions, 6);
+    const gridDivisions = readGridDivisions(input.gridDivisions, INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault);
     const effectiveBottomY = Number(input.effectiveBottomY || 0);
     const effectiveTopY = Number(input.effectiveTopY || 0);
     const localGridStep = Number(input.localGridStep || 0);
@@ -77,12 +77,13 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
     const shelfSet = buildShelfIndexSet(ops);
     const shelfVariantByIndex = buildShelfVariantByIndex(ops);
 
-    const regularShelfDepthCap = 0.45;
+    const regularShelfDepthCap = INTERIOR_FITTINGS_DIMENSIONS.shelves.regularDepthM;
     const regularDepth =
       internalDepth > 0 ? Math.min(internalDepth, regularShelfDepthCap) : regularShelfDepthCap;
     const backZ = internalZ - internalDepth / 2;
     const regularZ = backZ + regularDepth / 2;
-    const regularShelfWidth = innerW > 0 ? Math.max(0, innerW - 0.014) : innerW;
+    const regularShelfWidth =
+      innerW > 0 ? Math.max(0, innerW - INTERIOR_FITTINGS_DIMENSIONS.shelves.regularWidthClearanceM) : innerW;
 
     const threeSurface = readCustomThreeSurface(__three(THREE));
     const moduleFaces = computeCustomModuleInnerFaces({
@@ -95,7 +96,7 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
     });
     const braceInnerWidth = moduleFaces ? Math.max(0, moduleFaces.rightX - moduleFaces.leftX) : innerW;
     const braceCenterX = moduleFaces ? (moduleFaces.leftX + moduleFaces.rightX) / 2 : internalCenterX;
-    const braceShelfWidth = braceInnerWidth > 0 ? Math.max(0, braceInnerWidth - 0.002) : innerW;
+    const braceShelfWidth = braceInnerWidth > 0 ? Math.max(0, braceInnerWidth - INTERIOR_FITTINGS_DIMENSIONS.shelves.braceWidthClearanceM) : innerW;
     const leftInnerX = moduleFaces ? moduleFaces.leftX : internalCenterX - innerW / 2;
     const rightInnerX = moduleFaces ? moduleFaces.rightX : internalCenterX + innerW / 2;
     const isInternalDrawersEnabled = !!input.isInternalDrawersEnabled;

@@ -1,4 +1,5 @@
 import type { InteriorPresetOpsLike, InteriorRodOpLike } from '../../../../types';
+import { INTERIOR_FITTINGS_DIMENSIONS } from '../../../shared/wardrobe_dimension_tokens_shared.js';
 
 // Feature-level pure helpers for canonical interior layout presets.
 //
@@ -14,9 +15,10 @@ import type { InteriorPresetOpsLike, InteriorRodOpLike } from '../../../../types
 export function computeInteriorPresetOps(layoutType: unknown): InteriorPresetOpsLike {
   const lt = layoutType != null ? String(layoutType) : 'shelves';
   const ops: InteriorPresetOpsLike = { shelves: [], rods: [] };
+  const preset = INTERIOR_FITTINGS_DIMENSIONS.presets;
 
-  const addShelves_1_to_5 = (): void => {
-    ops.shelves = [1, 2, 3, 4, 5];
+  const addFullShelfRows = (): void => {
+    ops.shelves = Array.from(preset.fullShelfRows);
   };
 
   const pushRod = (
@@ -38,28 +40,31 @@ export function computeInteriorPresetOps(layoutType: unknown): InteriorPresetOps
 
   switch (lt) {
     case 'shelves':
-      addShelves_1_to_5();
+      addFullShelfRows();
       break;
     case 'mixed':
-      addShelves_1_to_5();
-      pushRod(3.5, false, false);
+      addFullShelfRows();
+      pushRod(preset.mixedRodYFactor, false, false);
       break;
     case 'hanging':
     case 'hanging_top2':
-      ops.shelves = [5, 4];
-      pushRod(3.8, true, true);
+      ops.shelves = Array.from(preset.hangingShelfRows);
+      pushRod(preset.hangingRodYFactor, true, true);
       break;
     case 'hanging_split':
-      ops.shelves = [5, 1];
-      pushRod(4.6, true, true, 2.3, 0);
-      pushRod(2.3, true, true, 1.3, 0);
+      ops.shelves = Array.from(preset.splitShelfRows);
+      pushRod(preset.splitUpperRodYFactor, true, true, preset.splitUpperRodLimitFactor, 0);
+      pushRod(preset.splitLowerRodYFactor, true, true, preset.splitLowerRodLimitFactor, 0);
       break;
     case 'storage':
     case 'storage_shelf': {
-      ops.shelves = [5, 4];
-      const barrierH = 0.5;
-      pushRod(3.5, true, true, 3.5, -barrierH);
-      ops.storageBarrier = { barrierH, zFrontOffset: -0.06 };
+      ops.shelves = Array.from(preset.hangingShelfRows);
+      const barrierH = INTERIOR_FITTINGS_DIMENSIONS.storage.barrierHeightM;
+      pushRod(preset.storageRodYFactor, true, true, preset.storageRodLimitFactor, -barrierH);
+      ops.storageBarrier = {
+        barrierH,
+        zFrontOffset: INTERIOR_FITTINGS_DIMENSIONS.storage.barrierFrontZOffsetM,
+      };
       break;
     }
     default:

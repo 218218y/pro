@@ -1,5 +1,6 @@
 import type { SketchBoxDividerState, SketchBoxSegmentState } from './canvas_picking_sketch_box_dividers.js';
 import { readBaseLegOptions } from '../features/base_leg_support.js';
+import { MATERIAL_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { resolveSketchBoxVisibleFrontOverlay } from './canvas_picking_manual_layout_sketch_front_overlay.js';
 import {
   getSketchBoxAdornmentBaseHeight,
@@ -57,12 +58,15 @@ export function resolveSketchFreeSurfaceAdornmentPreview(args: {
       preview: {
         kind: 'storage',
         x: targetGeo.centerX,
-        y: targetCenterY + targetHeight / 2 + 0.035,
-        z: targetGeo.centerZ + targetGeo.outerD / 2 - 0.012,
-        w: Math.max(0.05, targetGeo.outerW + 0.02),
-        h: 0.07,
-        d: 0.03,
-        woodThick: 0.018,
+        y: targetCenterY + targetHeight / 2 + SKETCH_BOX_DIMENSIONS.preview.adornmentCorniceYOffsetM,
+        z: targetGeo.centerZ + targetGeo.outerD / 2 - SKETCH_BOX_DIMENSIONS.preview.adornmentCorniceZInsetM,
+        w: Math.max(
+          SKETCH_BOX_DIMENSIONS.preview.doorMinDimensionM,
+          targetGeo.outerW + SKETCH_BOX_DIMENSIONS.preview.adornmentCorniceWidthExtraM
+        ),
+        h: SKETCH_BOX_DIMENSIONS.preview.adornmentCorniceHeightM,
+        d: SKETCH_BOX_DIMENSIONS.preview.adornmentCorniceDepthM,
+        woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
         op,
       },
     };
@@ -95,7 +99,8 @@ export function resolveSketchFreeSurfaceAdornmentPreview(args: {
   const wardrobeFloorY = Number(wardrobeBox.centerY) - Number(wardrobeBox.height) / 2;
   const previewH =
     selectedBase === 'none'
-      ? getSketchBoxAdornmentBaseHeight(currentBase, readRecordValue(targetBox, 'baseLegHeightCm')) || 0.08
+      ? getSketchBoxAdornmentBaseHeight(currentBase, readRecordValue(targetBox, 'baseLegHeightCm')) ||
+        SKETCH_BOX_DIMENSIONS.preview.adornmentBaseDefaultHeightM
       : getSketchBoxAdornmentBaseHeight(selectedBase, selectedLegOptions.heightCm);
   const actualCenterY = targetCenterY - targetHeight / 2 - previewH / 2;
   const visibleCenterY =
@@ -106,13 +111,13 @@ export function resolveSketchFreeSurfaceAdornmentPreview(args: {
     dividers: readSketchBoxDividers(targetBox),
     boxCenterX: targetGeo.centerX,
     innerW: targetGeo.innerW,
-    woodThick: 0.018,
+    woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
   });
   const frontOverlay = resolveSketchBoxVisibleFrontOverlay({
     box: targetBox,
     boxCenterY: targetCenterY,
     boxHeight: targetHeight,
-    woodThick: 0.018,
+    woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
     geo: targetGeo,
     segments,
     fullWidth: true,
@@ -140,11 +145,26 @@ export function resolveSketchFreeSurfaceAdornmentPreview(args: {
       kind: 'storage',
       x: targetGeo.centerX,
       y: visibleCenterY,
-      z: targetGeo.centerZ + Math.min(0.02, targetGeo.outerD * 0.15),
-      w: Math.max(0.05, selectedBase === 'legs' ? targetGeo.outerW - 0.08 : targetGeo.outerW - 0.04),
+      z:
+        targetGeo.centerZ +
+        Math.min(
+          SKETCH_BOX_DIMENSIONS.preview.adornmentBaseZInsetMaxM,
+          targetGeo.outerD * SKETCH_BOX_DIMENSIONS.preview.adornmentBaseZInsetDepthRatio
+        ),
+      w: Math.max(
+        SKETCH_BOX_DIMENSIONS.preview.doorMinDimensionM,
+        selectedBase === 'legs'
+          ? targetGeo.outerW - SKETCH_BOX_DIMENSIONS.preview.adornmentBaseLegWidthClearanceM
+          : targetGeo.outerW - SKETCH_BOX_DIMENSIONS.preview.adornmentBaseWidthClearanceM
+      ),
       h: previewH,
-      d: Math.max(0.018, selectedBase === 'legs' ? 0.04 : targetGeo.outerD - 0.05),
-      woodThick: 0.018,
+      d: Math.max(
+        SKETCH_BOX_DIMENSIONS.preview.adornmentBaseDepthMinM,
+        selectedBase === 'legs'
+          ? SKETCH_BOX_DIMENSIONS.preview.adornmentBaseLegDepthM
+          : targetGeo.outerD - SKETCH_BOX_DIMENSIONS.preview.adornmentBaseDepthClearanceM
+      ),
+      woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
       op,
       frontOverlayX: frontOverlay ? frontOverlay.x : undefined,
       frontOverlayY: frontOverlay ? frontOverlay.y : undefined,

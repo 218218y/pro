@@ -5,6 +5,7 @@ import type {
 } from './render_interior_sketch_boxes_fronts_door_contracts.js';
 
 import { readSketchBoxDoorId } from './render_interior_sketch_shared.js';
+import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 export function resolveSketchBoxDoorLayout(args: {
   renderArgs: RenderSketchBoxDoorFrontsArgs;
@@ -26,7 +27,13 @@ export function resolveSketchBoxDoorLayout(args: {
     typeof boxDoor.hinge === 'string' && String(boxDoor.hinge).toLowerCase() === 'right' ? 'right' : 'left';
   const hingeLeft = hingeSide === 'left';
   const doorOpen = boxDoor.open === true;
-  const doorInset = Math.max(0.002, Math.min(0.006, Math.min(boxGeo.outerW, hM) * 0.012));
+  const doorInset = Math.max(
+    SKETCH_BOX_DIMENSIONS.preview.doorInsetMinM,
+    Math.min(
+      SKETCH_BOX_DIMENSIONS.preview.doorInsetMaxM,
+      Math.min(boxGeo.outerW, hM) * SKETCH_BOX_DIMENSIONS.preview.doorInsetSizeRatio
+    )
+  );
   const doorSegment = placement.segment || null;
   const segmentDoors = doorSegment ? placementsBySegment.get(doorSegment.index) || [] : [];
   const isCenterDoubleDoorPair =
@@ -37,16 +44,30 @@ export function resolveSketchBoxDoorLayout(args: {
   const innerRight = boxGeo.centerX + boxGeo.innerW / 2;
   const segmentLeft = doorSegment ? doorSegment.leftX : innerLeft;
   const segmentRight = doorSegment ? doorSegment.rightX : innerRight;
-  const leftExt = Math.abs(segmentLeft - innerLeft) <= 0.001 ? woodThick : woodThick / 2;
-  const rightExt = Math.abs(segmentRight - innerRight) <= 0.001 ? woodThick : woodThick / 2;
+  const leftExt = Math.abs(segmentLeft - innerLeft) <= SKETCH_BOX_DIMENSIONS.preview.doorEdgeEpsilonM ? woodThick : woodThick / 2;
+  const rightExt = Math.abs(segmentRight - innerRight) <= SKETCH_BOX_DIMENSIONS.preview.doorEdgeEpsilonM ? woodThick : woodThick / 2;
   const segmentFrameLeft = segmentLeft - leftExt;
   const segmentFrameRight = segmentRight + rightExt;
   const centerGap = isCenterDoubleDoorPair
-    ? Math.max(0.0008, Math.min(0.0018, Math.min(segmentFrameRight - segmentFrameLeft, hM) * 0.0045))
+    ? Math.max(
+        SKETCH_BOX_DIMENSIONS.preview.doorDoublePairGapMinM,
+        Math.min(
+          SKETCH_BOX_DIMENSIONS.preview.doorDoublePairGapMaxM,
+          Math.min(segmentFrameRight - segmentFrameLeft, hM) *
+            SKETCH_BOX_DIMENSIONS.preview.doorDoublePairGapSizeRatio
+        )
+      )
     : 0;
   const segmentCenterX = (segmentFrameLeft + segmentFrameRight) / 2;
   const pairOuterInset = isCenterDoubleDoorPair
-    ? Math.max(0.0012, Math.min(doorInset, Math.min(segmentFrameRight - segmentFrameLeft, hM) * 0.0075))
+    ? Math.max(
+        SKETCH_BOX_DIMENSIONS.preview.doorDoublePairOuterInsetMinM,
+        Math.min(
+          doorInset,
+          Math.min(segmentFrameRight - segmentFrameLeft, hM) *
+            SKETCH_BOX_DIMENSIONS.preview.doorDoublePairOuterInsetSizeRatio
+        )
+      )
     : doorInset;
   const doorFaceLeft = isCenterDoubleDoorPair
     ? hingeLeft
@@ -58,11 +79,23 @@ export function resolveSketchBoxDoorLayout(args: {
       ? segmentCenterX - centerGap / 2
       : segmentFrameRight - pairOuterInset
     : segmentFrameRight - doorInset;
-  const doorW = Math.max(0.05, doorFaceRight - doorFaceLeft);
-  const doorH = Math.max(0.05, hM - doorInset * 2);
-  const doorD = Math.max(0.016, Math.min(0.018, Math.max(woodThick, 0.016)));
+  const doorW = Math.max(SKETCH_BOX_DIMENSIONS.preview.doorMinDimensionM, doorFaceRight - doorFaceLeft);
+  const doorH = Math.max(SKETCH_BOX_DIMENSIONS.preview.doorMinDimensionM, hM - doorInset * 2);
+  const doorD = Math.max(
+    SKETCH_BOX_DIMENSIONS.preview.doorThicknessMinM,
+    Math.min(
+      SKETCH_BOX_DIMENSIONS.preview.doorThicknessMaxM,
+      Math.max(woodThick, SKETCH_BOX_DIMENSIONS.preview.doorThicknessMinM)
+    )
+  );
   const doorFrontZ = boxGeo.centerZ + boxGeo.outerD / 2;
-  const doorBackClearanceZ = Math.max(0.0008, Math.min(0.0015, doorD * 0.1));
+  const doorBackClearanceZ = Math.max(
+    SKETCH_BOX_DIMENSIONS.preview.doorBackClearanceMinM,
+    Math.min(
+      SKETCH_BOX_DIMENSIONS.preview.doorBackClearanceMaxM,
+      doorD * SKETCH_BOX_DIMENSIONS.preview.doorBackClearanceDepthRatio
+    )
+  );
   const doorZ = doorFrontZ + doorD / 2 + doorBackClearanceZ;
   const pivotX = hingeLeft ? doorFaceLeft : doorFaceRight;
   const slabLocalX = hingeLeft ? doorW / 2 : -doorW / 2;

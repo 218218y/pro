@@ -3,6 +3,7 @@
 // Owns segmented sketch-door rebuild orchestration while focused helpers own segment meta, visuals, and handles.
 
 import { parseNum, readKey } from './post_build_extras_shared.js';
+import { MATERIAL_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 import type { RebuildSketchSegmentedDoorArgs } from './post_build_sketch_door_cuts_contracts.js';
 import { maybeAttachSegmentHandle } from './post_build_sketch_door_cuts_rebuild_handles.js';
@@ -42,7 +43,10 @@ export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs)
   const handleAbsYRaw = parseNum(readKey(ud, '__handleAbsY'));
   const handleAbsY = Number.isFinite(handleAbsYRaw) ? handleAbsYRaw : null;
   const thicknessRaw = parseNum(readKey(ud, '__wpFrontThickness'));
-  const thickness = Number.isFinite(thicknessRaw) && thicknessRaw > 0 ? thicknessRaw : 0.018;
+  const thickness =
+    Number.isFinite(thicknessRaw) && thicknessRaw > 0
+      ? thicknessRaw
+      : MATERIAL_DIMENSIONS.wood.thicknessM;
 
   removeAllChildren(g);
   ud.__wpSketchCustomHandles = true;
@@ -50,8 +54,8 @@ export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs)
 
   for (let segIndex = 0; segIndex < visibleSegments.length; segIndex++) {
     const seg = visibleSegments[segIndex];
-    const segHeight = seg.yMax - seg.yMin - 0.004;
-    if (!(segHeight > 0.012)) continue;
+    const segHeight = seg.yMax - seg.yMin - SKETCH_BOX_DIMENSIONS.preview.segmentedDoorVisualClearanceM;
+    if (!(segHeight > SKETCH_BOX_DIMENSIONS.preview.segmentedDoorMinHeightM)) continue;
     const segCenterLocalY = (seg.yMin + seg.yMax) / 2 - centerY;
     const segmentPartId = resolveSketchDoorSegmentPartId(partId, visibleSegments.length, segIndex);
     const segmentHandleAbsY = resolveSegmentHandleAbsY({ seg, handleAbsY });
@@ -61,8 +65,11 @@ export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs)
     if (isSegmentRemoved) {
       const removedTarget = createRemovedDoorRestoreTarget({
         runtime,
-        width: Math.max(0.02, width - 0.004),
-        height: Math.max(0.02, segHeight),
+        width: Math.max(
+          SKETCH_BOX_DIMENSIONS.preview.segmentedDoorMinDimensionM,
+          width - SKETCH_BOX_DIMENSIONS.preview.segmentedDoorVisualClearanceM
+        ),
+        height: Math.max(SKETCH_BOX_DIMENSIONS.preview.segmentedDoorMinDimensionM, segHeight),
         thickness,
         partId: segmentPartId,
         hingeLeft: isLeftHinge,
@@ -72,8 +79,11 @@ export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs)
       buildSketchSegmentUserData({
         node: removedTarget,
         partId: segmentPartId,
-        width: Math.max(0.02, width - 0.004),
-        height: Math.max(0.02, segHeight),
+        width: Math.max(
+          SKETCH_BOX_DIMENSIONS.preview.segmentedDoorMinDimensionM,
+          width - SKETCH_BOX_DIMENSIONS.preview.segmentedDoorVisualClearanceM
+        ),
+        height: Math.max(SKETCH_BOX_DIMENSIONS.preview.segmentedDoorMinDimensionM, segHeight),
         hingeLeft: isLeftHinge,
         thickness,
         handleAbsY: segmentHandleAbsY,
@@ -106,8 +116,11 @@ export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs)
     buildSketchSegmentUserData({
       node: visualObj,
       partId: segmentPartId,
-      width: Math.max(0.02, width - 0.004),
-      height: Math.max(0.02, segHeight),
+      width: Math.max(
+          SKETCH_BOX_DIMENSIONS.preview.segmentedDoorMinDimensionM,
+          width - SKETCH_BOX_DIMENSIONS.preview.segmentedDoorVisualClearanceM
+        ),
+      height: Math.max(SKETCH_BOX_DIMENSIONS.preview.segmentedDoorMinDimensionM, segHeight),
       hingeLeft: isLeftHinge,
       thickness,
       handleAbsY: segmentHandleAbsY,

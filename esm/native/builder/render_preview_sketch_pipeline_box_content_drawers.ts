@@ -1,5 +1,6 @@
 import type { PreviewDrawerEntry, PreviewMaterialLike } from './render_preview_ops_contracts.js';
 import type { SketchPlacementPreviewContext } from './render_preview_sketch_pipeline_shared.js';
+import { DRAWER_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 function resolvePreviewBodyMaterials(ctx: SketchPlacementPreviewContext) {
   return {
@@ -39,21 +40,29 @@ function applyDrawersPreview(ctx: SketchPlacementPreviewContext): boolean {
   if (ctx.kind !== 'drawers') return false;
 
   const drawerH = Number(ctx.input.drawerH);
-  const gap = Number(ctx.input.drawerGap || 0.03);
+  const gap = Number(ctx.input.drawerGap || DRAWER_DIMENSIONS.sketch.internalGapM);
   if (!(drawerH > 0)) {
     ctx.g.visible = false;
     return true;
   }
 
   const { material, lineMaterial } = resolvePreviewBodyMaterials(ctx);
-  const y0 = ctx.y + drawerH / 2 + 0.01;
+  const y0 = ctx.y + drawerH / 2 + DRAWER_DIMENSIONS.sketch.previewDrawerBottomLiftM;
   const y1 = ctx.y + drawerH + gap + drawerH / 2;
   const frontOverlay = ctx.readFrontOverlay(
     ctx.x,
     ctx.y + drawerH + gap / 2 + drawerH / 2,
     ctx.w,
-    Math.max(drawerH * 2 + gap + 0.02, Number(ctx.input.frontOverlayH) || 0),
-    Math.max(0.004, Math.min(ctx.d, 0.02))
+    Math.max(
+      drawerH * DRAWER_DIMENSIONS.sketch.internalStackCount +
+        gap +
+        DRAWER_DIMENSIONS.sketch.previewStackExtraHeightM,
+      Number(ctx.input.frontOverlayH) || 0
+    ),
+    Math.max(
+      DRAWER_DIMENSIONS.sketch.previewOverlayThicknessMinM,
+      Math.min(ctx.d, DRAWER_DIMENSIONS.sketch.previewOverlayThicknessMaxM)
+    )
   );
 
   const setDrawer = (mesh: typeof ctx.boxTop, py: number) => {
@@ -89,14 +98,18 @@ function applyExternalDrawersPreview(ctx: SketchPlacementPreviewContext): boolea
     .map(entry => Number(ctx.asObject<PreviewDrawerEntry>(entry)?.h))
     .filter(entryH => Number.isFinite(entryH) && entryH > 0);
   const overlayH = drawerHeights.length
-    ? drawerHeights.reduce((sum, entryH) => sum + entryH, 0) + 0.02
-    : 0.08;
+    ? drawerHeights.reduce((sum, entryH) => sum + entryH, 0) +
+      DRAWER_DIMENSIONS.sketch.previewStackExtraHeightM
+    : DRAWER_DIMENSIONS.sketch.previewExternalFallbackHeightM;
   const frontOverlay = ctx.readFrontOverlay(
     ctx.x,
     ctx.y + overlayH / 2,
     ctx.w,
     overlayH,
-    Math.max(0.004, Math.min(ctx.d, 0.02))
+    Math.max(
+      DRAWER_DIMENSIONS.sketch.previewOverlayThicknessMinM,
+      Math.min(ctx.d, DRAWER_DIMENSIONS.sketch.previewOverlayThicknessMaxM)
+    )
   );
 
   placeFrontOverlay(ctx, { mesh: ctx.shelfA, material, lineMaterial, frontOverlay });
@@ -148,7 +161,13 @@ function applyDrawerDividerPreview(ctx: SketchPlacementPreviewContext): boolean 
     : snapToCenter
       ? ctx.ud.__lineBrace || ctx.ud.__lineBox || ctx.ud.__lineShelf
       : ctx.ud.__lineBox || ctx.ud.__lineShelf;
-  const dividerT = Math.max(0.003, Math.min(Math.max(0.0001, ctx.w * 0.04), 0.012));
+  const dividerT = Math.max(
+    DRAWER_DIMENSIONS.sketch.previewDividerMinM,
+    Math.min(
+      Math.max(SKETCH_BOX_DIMENSIONS.preview.doorMinDepthM, ctx.w * DRAWER_DIMENSIONS.sketch.previewDividerWidthRatio),
+      DRAWER_DIMENSIONS.sketch.previewDividerMaxM
+    )
+  );
 
   ctx.placePreviewBoxMesh({
     mesh: ctx.boxTop,
@@ -165,7 +184,7 @@ function applyDrawerDividerPreview(ctx: SketchPlacementPreviewContext): boolean 
     mesh: ctx.shelfA,
     sx: dividerT,
     sy: ctx.h,
-    sz: ctx.d + 0.002,
+    sz: ctx.d + DRAWER_DIMENSIONS.sketch.previewDividerDepthExtraM,
     px: ctx.x,
     py: ctx.y,
     pz: ctx.z,
@@ -188,7 +207,13 @@ function applyStoragePreview(ctx: SketchPlacementPreviewContext): boolean {
     ctx.y,
     ctx.w,
     ctx.h,
-    Math.max(0.004, Math.min(ctx.d, ctx.woodThick > 0 ? ctx.woodThick : 0.02))
+    Math.max(
+      DRAWER_DIMENSIONS.sketch.previewOverlayThicknessMinM,
+      Math.min(
+        ctx.d,
+        ctx.woodThick > 0 ? ctx.woodThick : DRAWER_DIMENSIONS.sketch.previewOverlayThicknessMaxM
+      )
+    )
   );
 
   ctx.placePreviewBoxMesh({

@@ -1,6 +1,7 @@
 import type { UnknownRecord } from '../../../types';
 
 import { asRecord } from '../runtime/record.js';
+import { MATERIAL_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 type RecordMap = UnknownRecord;
 
@@ -105,10 +106,10 @@ export function resolveSelectorInternalMetrics(args: {
   const {
     info,
     selectorEnvelope = null,
-    woodThickFallback = 0.018,
-    minInnerSize = 0.05,
-    depthClearance = 0.05,
-    centerZInset = 0.015,
+    woodThickFallback = MATERIAL_DIMENSIONS.wood.thicknessM,
+    minInnerSize = SKETCH_BOX_DIMENSIONS.geometry.selectorInnerMinM,
+    depthClearance = SKETCH_BOX_DIMENSIONS.geometry.selectorDepthClearanceM,
+    centerZInset = SKETCH_BOX_DIMENSIONS.geometry.selectorCenterZInsetM,
   } = args;
 
   let woodThick = readFiniteNumber(info, 'woodThick') ?? woodThickFallback;

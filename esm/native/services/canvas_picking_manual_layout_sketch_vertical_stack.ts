@@ -1,4 +1,5 @@
 import { asRecord } from '../runtime/record.js';
+import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
   DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M,
   DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_M,
@@ -39,7 +40,7 @@ function createVerticalOccupancyRange(args: VerticalOccupancyRange): VerticalOcc
 }
 
 export function parseSketchExtDrawerCount(tool: string): number {
-  return parseSketchExternalDrawersTool(tool)?.count ?? 1;
+  return parseSketchExternalDrawersTool(tool)?.count ?? DRAWER_DIMENSIONS.sketch.externalCountMin;
 }
 
 export function parseSketchExtDrawerHeightM(tool: string): number {
@@ -58,7 +59,10 @@ export function resolveSketchVerticalStackPlacement(args: {
   blockers?: VerticalOccupancyRange[];
   gap?: number;
 }): { op: 'add' | 'remove'; removeId: string | null; centerY: number; range: VerticalOccupancyRange | null } {
-  const gap = typeof args.gap === 'number' && Number.isFinite(args.gap) && args.gap >= 0 ? args.gap : 0.008;
+  const gap =
+    typeof args.gap === 'number' && Number.isFinite(args.gap) && args.gap >= 0
+      ? args.gap
+      : DRAWER_DIMENSIONS.sketch.verticalStackCollisionGapM;
   const desiredCenterY = args.clampCenter(args.desiredCenterY, args.selectedStackH);
   const sameStacks = Array.isArray(args.sameStacks) ? args.sameStacks.filter(Boolean) : [];
   const blockers = Array.isArray(args.blockers) ? args.blockers.filter(Boolean) : [];

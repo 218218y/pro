@@ -1,4 +1,5 @@
 import { resolveDoorVisualStyle } from './render_door_ops_shared.js';
+import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { BuilderRenderDrawerDeps } from './render_drawer_ops_shared.js';
 import {
   isRecord,
@@ -98,7 +99,7 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
         visual = createDoorVisual(
           faceW,
           drawerOp.visualH,
-          drawerOp.visualT || 0.02,
+          drawerOp.visualT || DRAWER_DIMENSIONS.external.visualThicknessM,
           drawerVisualState.isMirror ? drawerMirrorMat : drawerWoodMat,
           effectiveDrawerStyle,
           hasGroove && !drawerVisualState.isGlass,
@@ -113,7 +114,7 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
         );
       } else {
         visual = new THREE.Mesh(
-          new THREE.BoxGeometry(faceW, drawerOp.visualH, drawerOp.visualT || 0.02),
+          new THREE.BoxGeometry(faceW, drawerOp.visualH, drawerOp.visualT || DRAWER_DIMENSIONS.external.visualThicknessM),
           specificMat || bodyMat
         );
       }

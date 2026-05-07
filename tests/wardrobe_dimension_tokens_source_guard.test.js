@@ -38,6 +38,7 @@ test('[dimension tokens] sketch box geometry and preview dimensions are centrali
     'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_shelf.ts',
     'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_rod.ts',
     'esm/native/services/canvas_picking_sketch_module_surface_preview_box.ts',
+    'esm/native/services/canvas_picking_sketch_free_surface_preview_adornment_preview.ts',
     'esm/native/builder/render_interior_sketch_boxes_contents_parts_shelves.ts',
     'esm/native/builder/render_interior_sketch_boxes_contents_parts_rods.ts',
   ]) {
@@ -65,4 +66,31 @@ test('[dimension tokens] library presets and saved preset defaults read canonica
   assert.doesNotMatch(presetData, /cornerWidth: '120'/);
   assert.doesNotMatch(presetData, /cornerDoors: '3'/);
   assert.doesNotMatch(presetData, /drawersCount: '4'/);
+});
+
+test('[dimension tokens] interior presets and sketch drawer sizing read canonical dimensions', () => {
+  const tokens = read(productDimensionTokenSource);
+  assert.match(tokens, /presets: Object\.freeze\(\{/);
+  assert.match(tokens, /heightTokenEpsilonCm:/);
+
+  for (const rel of [
+    'esm/native/features/interior_layout_presets/ops.ts',
+    'esm/native/features/sketch_drawer_sizing.ts',
+    'esm/native/features/modules_configuration/module_defaults.ts',
+    'esm/native/features/stack_split/module_config.ts',
+  ]) {
+    assertUsesToken(
+      rel,
+      rel.includes('sketch_drawer_sizing') ? 'DRAWER_DIMENSIONS' : 'INTERIOR_FITTINGS_DIMENSIONS'
+    );
+  }
+
+  const presetOps = read('esm/native/features/interior_layout_presets/ops.ts');
+  assert.doesNotMatch(presetOps, /pushRod\((3\.5|3\.8|4\.6|2\.3|1\.3)/);
+  assert.doesNotMatch(presetOps, /barrierH = 0\.5/);
+  assert.doesNotMatch(presetOps, /zFrontOffset: -0\.06/);
+
+  const drawerSizing = read('esm/native/features/sketch_drawer_sizing.ts');
+  assert.doesNotMatch(drawerSizing, /\/ 100/);
+  assert.doesNotMatch(drawerSizing, /HEIGHT_TOKEN_EPSILON = 0\.0001/);
 });

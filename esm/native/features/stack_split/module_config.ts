@@ -11,6 +11,10 @@ import type {
   UnknownRecord,
 } from '../../../../types';
 import type { StackKey } from './stack_split.js';
+import {
+  INTERIOR_FITTINGS_DIMENSIONS,
+  LIBRARY_PRESET_DIMENSIONS,
+} from '../../../shared/wardrobe_dimension_tokens_shared.js';
 import { removeSpecialDimsInPlace } from '../special_dims/index.js';
 
 function isRecord(v: unknown): v is UnknownRecord {
@@ -52,7 +56,7 @@ export function createDefaultTopModuleConfig(i: number): NormalizedTopModuleConf
     intDrawersList: [],
     isCustom: false,
     customData: createDefaultModuleCustomData(),
-    doors: 2,
+    doors: LIBRARY_PRESET_DIMENSIONS.defaultModuleDoorsCount,
   };
 }
 
@@ -69,8 +73,11 @@ export function normalizeTopModuleConfig(src: unknown, i: number): NormalizedTop
     intDrawersSlot: toInt(base.intDrawersSlot, 0),
     intDrawersList: Array.isArray(base.intDrawersList) ? base.intDrawersList.slice() : [],
     isCustom: !!base.isCustom,
-    customData: cloneModuleCustomData(base.customData, 6),
-    doors: toInt(base.doors, 2),
+    customData: cloneModuleCustomData(
+      base.customData,
+      INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault
+    ),
+    doors: toInt(base.doors, LIBRARY_PRESET_DIMENSIONS.defaultModuleDoorsCount),
   };
 }
 
@@ -82,10 +89,10 @@ export function createDefaultLowerModuleConfig(_i: number): ModuleConfigLike {
     intDrawersSlot: 0,
     intDrawersList: [],
     isCustom: true,
-    gridDivisions: 6,
+    gridDivisions: INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault,
     customData: {
-      shelves: [false, true, false, true, false, false],
-      rods: [false, false, false, false, false, false],
+      shelves: Array.from(INTERIOR_FITTINGS_DIMENSIONS.storage.defaultLowerShelfSlots),
+      rods: new Array(INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault).fill(false),
       storage: false,
     },
   };
@@ -100,8 +107,14 @@ export function normalizeLowerModuleConfig(src: unknown, i: number): ModuleConfi
     hasShoeDrawer: !!base.hasShoeDrawer,
     intDrawersList: Array.isArray(base.intDrawersList) ? base.intDrawersList.slice() : [],
     isCustom: !!base.isCustom,
-    gridDivisions: Math.max(1, toInt(base.gridDivisions, 6)),
-    customData: cloneModuleCustomData(base.customData, 6),
+    gridDivisions: Math.max(
+      1,
+      toInt(base.gridDivisions, INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault)
+    ),
+    customData: cloneModuleCustomData(
+      base.customData,
+      INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault
+    ),
   };
 
   // Lower stack must NOT inherit per-cell special dims or saved manual dims.
@@ -113,8 +126,13 @@ export function normalizeLowerModuleConfig(src: unknown, i: number): ModuleConfi
   return cfg;
 }
 
-function createDefaultModuleCustomData(cellCount: number = 6): ModuleCustomDataLike {
-  const n = Number.isFinite(cellCount) && cellCount > 0 ? Math.floor(cellCount) : 6;
+function createDefaultModuleCustomData(
+  cellCount: number = INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault
+): ModuleCustomDataLike {
+  const n =
+    Number.isFinite(cellCount) && cellCount > 0
+      ? Math.floor(cellCount)
+      : INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault;
   const arr = new Array(n).fill(false);
   return {
     shelves: arr.slice(),

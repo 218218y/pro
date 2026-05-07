@@ -1,5 +1,6 @@
 import { findSketchBoxDoorsForSegment } from './canvas_picking_sketch_box_dividers.js';
 import { asRecord } from '../runtime/record.js';
+import { MATERIAL_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 export type SketchBoxSegmentLike = {
   index: number;
@@ -47,13 +48,13 @@ export function resolveSketchBoxSegmentFaceSpan(args: {
   const innerRight = args.boxCenterX + args.innerW / 2;
   const segmentLeft = args.segment ? args.segment.leftX : innerLeft;
   const segmentRight = args.segment ? args.segment.rightX : innerRight;
-  const sideThick = Number.isFinite(args.woodThick) && args.woodThick > 0 ? args.woodThick : 0.018;
-  const leftExt = Math.abs(segmentLeft - innerLeft) <= 0.001 ? sideThick : sideThick / 2;
-  const rightExt = Math.abs(segmentRight - innerRight) <= 0.001 ? sideThick : sideThick / 2;
+  const sideThick = Number.isFinite(args.woodThick) && args.woodThick > 0 ? args.woodThick : MATERIAL_DIMENSIONS.wood.thicknessM;
+  const leftExt = Math.abs(segmentLeft - innerLeft) <= SKETCH_BOX_DIMENSIONS.preview.doorEdgeEpsilonM ? sideThick : sideThick / 2;
+  const rightExt = Math.abs(segmentRight - innerRight) <= SKETCH_BOX_DIMENSIONS.preview.doorEdgeEpsilonM ? sideThick : sideThick / 2;
   return {
     centerX: (segmentLeft - leftExt + (segmentRight + rightExt)) / 2,
-    spanW: Math.max(0.05, segmentRight + rightExt - (segmentLeft - leftExt)),
-    innerSpanW: Math.max(0.02, segmentRight - segmentLeft),
+    spanW: Math.max(SKETCH_BOX_DIMENSIONS.preview.doorMinDimensionM, segmentRight + rightExt - (segmentLeft - leftExt)),
+    innerSpanW: Math.max(SKETCH_BOX_DIMENSIONS.geometry.minInnerDimensionM, segmentRight - segmentLeft),
   };
 }
 
@@ -67,15 +68,31 @@ export function resolveSketchBoxVisibleFrontOverlay(args: {
   segment?: SketchBoxSegmentLike | null;
   fullWidth?: boolean;
 }): SketchFrontOverlay | null {
-  const woodThick = Number.isFinite(args.woodThick) && args.woodThick > 0 ? args.woodThick : 0.018;
-  const doorDepth = Math.max(0.016, Math.min(0.018, Math.max(woodThick, 0.016)));
+  const woodThick = Number.isFinite(args.woodThick) && args.woodThick > 0 ? args.woodThick : MATERIAL_DIMENSIONS.wood.thicknessM;
+  const doorDepth = Math.max(
+    SKETCH_BOX_DIMENSIONS.preview.doorThicknessMinM,
+    Math.min(
+      SKETCH_BOX_DIMENSIONS.preview.doorThicknessMaxM,
+      Math.max(woodThick, SKETCH_BOX_DIMENSIONS.preview.doorThicknessMinM)
+    )
+  );
   const doorFrontZ = args.geo.centerZ + args.geo.outerD / 2;
-  const doorBackClearanceZ = Math.max(0.0008, Math.min(0.0015, doorDepth * 0.1));
+  const doorBackClearanceZ = Math.max(
+    SKETCH_BOX_DIMENSIONS.preview.doorBackClearanceMinM,
+    Math.min(
+      SKETCH_BOX_DIMENSIONS.preview.doorBackClearanceMaxM,
+      doorDepth * SKETCH_BOX_DIMENSIONS.preview.doorBackClearanceDepthRatio
+    )
+  );
   const renderedDoorCenterZ = doorFrontZ + doorDepth / 2 + doorBackClearanceZ;
   const renderedDoorFrontZ = renderedDoorCenterZ + doorDepth / 2;
-  const previewDoorZ = renderedDoorFrontZ + doorDepth / 2 + Math.max(0.002, woodThick * 0.12);
-  const drawerDepth = 0.02;
-  const drawerPreviewZ = args.geo.centerZ + args.geo.outerD / 2 + drawerDepth / 2 + 0.001;
+  const previewDoorZ = renderedDoorFrontZ + doorDepth / 2 + Math.max(
+    SKETCH_BOX_DIMENSIONS.preview.doorRemoveOffsetMinM,
+    woodThick * SKETCH_BOX_DIMENSIONS.preview.doorRemoveOffsetWoodRatio
+  );
+  const drawerDepth = SKETCH_BOX_DIMENSIONS.preview.drawerPreviewThicknessM;
+  const drawerPreviewZ =
+    args.geo.centerZ + args.geo.outerD / 2 + drawerDepth / 2 + SKETCH_BOX_DIMENSIONS.preview.drawerPreviewZOffsetM;
 
   const faceSpan =
     args.fullWidth === true
@@ -89,8 +106,14 @@ export function resolveSketchBoxVisibleFrontOverlay(args: {
   const overlayX = args.fullWidth === true ? args.geo.centerX : (faceSpan?.centerX ?? args.geo.centerX);
   const overlayW =
     args.fullWidth === true
-      ? Math.max(0.05, args.geo.outerW - 0.004)
-      : Math.max(0.05, (faceSpan?.spanW ?? 0) - 0.004);
+      ? Math.max(
+        SKETCH_BOX_DIMENSIONS.preview.doorMinDimensionM,
+        args.geo.outerW - SKETCH_BOX_DIMENSIONS.preview.frontOverlayWidthClearanceM
+      )
+      : Math.max(
+        SKETCH_BOX_DIMENSIONS.preview.doorMinDimensionM,
+        (faceSpan?.spanW ?? 0) - SKETCH_BOX_DIMENSIONS.preview.frontOverlayWidthClearanceM
+      );
 
   let bestOverlay: SketchFrontOverlay | null = null;
   const setBest = (z: number, d: number) => {
@@ -101,7 +124,10 @@ export function resolveSketchBoxVisibleFrontOverlay(args: {
         y: args.boxCenterY,
         z,
         w: overlayW,
-        h: Math.max(0.05, args.boxHeight - 0.004),
+        h: Math.max(
+          SKETCH_BOX_DIMENSIONS.preview.doorMinDimensionM,
+          args.boxHeight - SKETCH_BOX_DIMENSIONS.preview.frontOverlayHeightClearanceM
+        ),
         d,
       };
     }
@@ -123,7 +149,7 @@ export function resolveSketchBoxVisibleFrontOverlay(args: {
     const itemXNorm = readRecordNumber(item, 'xNorm');
     if (!Number.isFinite(itemXNorm) || !args.segments.length) return false;
     const itemSegment =
-      args.segments.find(segment => Math.abs(segment.xNorm - Number(itemXNorm)) <= 0.001) || null;
+      args.segments.find(segment => Math.abs(segment.xNorm - Number(itemXNorm)) <= SKETCH_BOX_DIMENSIONS.preview.doorEdgeEpsilonM) || null;
     return !!itemSegment && itemSegment.index === args.segment.index;
   });
   if (segmentExtDrawers.length) setBest(drawerPreviewZ, drawerDepth);

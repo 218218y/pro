@@ -1,4 +1,5 @@
 import type { InteriorValueRecord } from './render_interior_ops_contracts.js';
+import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type {
   ApplySketchInternalDrawersOwnerArgs,
   ApplySketchInternalDrawersRuntimeArgs,
@@ -117,12 +118,24 @@ export function buildSketchInternalDrawerOps(args: {
     internalZ,
   } = args;
 
-  const padDrawer = Math.min(0.006, Math.max(0.001, woodThick * 0.2));
+  const padDrawer = Math.min(
+    DRAWER_DIMENSIONS.sketch.internalClampPadMaxM,
+    Math.max(
+      DRAWER_DIMENSIONS.sketch.internalClampPadMinM,
+      woodThick * DRAWER_DIMENSIONS.sketch.internalClampPadWoodRatio
+    )
+  );
 
   const ops: SketchInternalDrawerOp[] = [];
   const moduleKeyForUd: string | number = input.moduleKey != null ? String(input.moduleKey) : moduleIndex;
-  const width = Math.max(0.05, innerW - 0.03);
-  const depth = Math.max(0.05, internalDepth - 0.02);
+  const width = Math.max(
+    DRAWER_DIMENSIONS.sketch.internalWidthMinM,
+    innerW - DRAWER_DIMENSIONS.sketch.internalWidthClearanceM
+  );
+  const depth = Math.max(
+    DRAWER_DIMENSIONS.sketch.internalDepthMinM,
+    internalDepth - DRAWER_DIMENSIONS.sketch.internalDepthClearanceM
+  );
 
   for (let i = 0; i < drawers.length; i++) {
     const item = drawers[i] || null;
@@ -163,7 +176,10 @@ export function buildSketchInternalDrawerOps(args: {
     const baseY = clampBaseY(baseY0);
     const drawerId = item.id != null ? String(item.id) : String(i);
     const partId = moduleKeyStr ? `div_int_sketch_${moduleKeyStr}_${drawerId}` : `div_int_sketch_${drawerId}`;
-    const drawerBottomLift = Math.min(0.002, woodThick * 0.15);
+    const drawerBottomLift = Math.min(
+      DRAWER_DIMENSIONS.sketch.internalBottomLiftMaxM,
+      woodThick * DRAWER_DIMENSIONS.sketch.internalBottomLiftWoodRatio
+    );
 
     for (let j = 0; j < 2; j++) {
       const yFinal =
@@ -182,7 +198,7 @@ export function buildSketchInternalDrawerOps(args: {
         x: internalCenterX,
         y: yFinal,
         z: internalZ,
-        openZ: internalZ + 0.25,
+        openZ: internalZ + DRAWER_DIMENSIONS.sketch.internalOpenOffsetZM,
         hasDivider: false,
         dividerKey: partId,
       });

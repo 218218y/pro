@@ -3,8 +3,12 @@
 // Centralize the default per-module shape so kernel/builder/UI don't duplicate it.
 
 import type { ModuleCustomDataLike, NormalizedTopModuleConfigLike } from '../../../../types';
+import {
+  INTERIOR_FITTINGS_DIMENSIONS,
+  LIBRARY_PRESET_DIMENSIONS,
+} from '../../../shared/wardrobe_dimension_tokens_shared.js';
 
-export const DEFAULT_MODULE_CELL_COUNT = 6;
+export const DEFAULT_MODULE_CELL_COUNT = INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault;
 
 export function createDefaultModuleCustomData(
   cellCount: number = DEFAULT_MODULE_CELL_COUNT
@@ -24,7 +28,10 @@ export function createDefaultModuleCustomData(
  * Note: First module uses hanging_top2 by convention.
  */
 export function createDefaultTopModuleConfig(index: number, doors: number): NormalizedTopModuleConfigLike {
-  const d = Number.isFinite(doors) && doors > 0 ? Math.floor(doors) : 2;
+  const d =
+    Number.isFinite(doors) && doors > 0
+      ? Math.floor(doors)
+      : LIBRARY_PRESET_DIMENSIONS.defaultModuleDoorsCount;
   const i = Number.isFinite(index) && index >= 0 ? Math.floor(index) : 0;
 
   return {

@@ -1,4 +1,4 @@
-import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { cmToM, DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 export const SKETCH_INTERNAL_DRAWERS_TOOL_ID = 'sketch_int_drawers';
 export const SKETCH_EXTERNAL_DRAWERS_TOOL_PREFIX = 'sketch_ext_drawers:';
@@ -13,13 +13,17 @@ export const DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM: number =
 export const DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_CM: number =
   DRAWER_DIMENSIONS.sketch.internalDefaultHeightCm;
 
-export const DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M: number = DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM / 100;
-export const DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_M: number = DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_CM / 100;
+export const DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M: number = cmToM(
+  DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM
+);
+export const DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_M: number = cmToM(
+  DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_CM
+);
 export const DEFAULT_SKETCH_INTERNAL_DRAWER_GAP_M: number = DRAWER_DIMENSIONS.sketch.internalGapM;
 export const SKETCH_INTERNAL_DRAWER_STACK_COUNT: number = DRAWER_DIMENSIONS.sketch.internalStackCount;
 
 const MIN_RENDER_DRAWER_HEIGHT_M = DRAWER_DIMENSIONS.sketch.minRenderHeightM;
-const HEIGHT_TOKEN_EPSILON = 0.0001;
+const HEIGHT_TOKEN_EPSILON = DRAWER_DIMENSIONS.sketch.heightTokenEpsilonCm;
 
 export type SketchExternalDrawersToolSpec = {
   count: number;
@@ -85,8 +89,8 @@ export function normalizeSketchDrawerHeightM(value: unknown, fallbackM: number):
   const raw = readFiniteNumber(value);
   const source = raw != null ? raw : fallback;
   const clamped = Math.max(
-    SKETCH_DRAWER_HEIGHT_MIN_CM / 100,
-    Math.min(SKETCH_DRAWER_HEIGHT_MAX_CM / 100, source)
+    cmToM(SKETCH_DRAWER_HEIGHT_MIN_CM),
+    Math.min(cmToM(SKETCH_DRAWER_HEIGHT_MAX_CM), source)
   );
   return clamped;
 }
@@ -116,7 +120,7 @@ export function parseSketchInternalDrawersTool(tool: unknown): SketchInternalDra
       : DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_CM;
   return {
     drawerHeightCm: heightCm,
-    drawerHeightM: heightCm / 100,
+    drawerHeightM: cmToM(heightCm),
   };
 }
 
@@ -136,7 +140,7 @@ export function parseSketchExternalDrawersTool(tool: unknown): SketchExternalDra
   return {
     count,
     drawerHeightCm: heightCm,
-    drawerHeightM: heightCm / 100,
+    drawerHeightM: cmToM(heightCm),
   };
 }
 
