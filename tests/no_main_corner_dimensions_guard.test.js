@@ -40,7 +40,7 @@ test('[no-main corner] standalone corner dimensions stay enabled and wing dimens
   assert.match(renderDimsCorner, /WARDROBE_DIMENSION_GUIDE_DIMENSIONS/);
   assert.match(
     renderDimsCorner,
-    /if \(noMainWardrobe && isCornerMode && cornerConnectorEnabled && cornerWallLenM > guide\.connectorWallMinLengthM\) \{/
+    /if \(\s*noMainWardrobe &&\s*isCornerMode &&\s*cornerConnectorEnabled &&\s*cornerWallLenM > guide\.connectorWallMinLengthM\s*\) \{/
   );
   assert.match(
     renderDimsCorner,

@@ -48,7 +48,11 @@ test('[sketch free box] dimension overlay is rendered from sketch box geometry a
   assert.match(layoutNorm, /const depthLineX = centerX - halfW - depthLineGap;/);
   assert.match(
     layoutNorm,
-    /const depthTextOffset = new THREE\.Vector3\(-Math\.max\(0\.12, Math\.min\(0\.18, width \* 0\.24\)\), 0, 0\);/
+    /const overlayRange = \(value: number, min: number, max: number, ratio: number\): number =>/
+  );
+  assert.match(
+    layoutNorm,
+    /const depthTextOffset = new THREE\.Vector3\(\s*-overlayRange\(\s*width,\s*SKETCH_BOX_DIMENSIONS\.dimensionOverlay\.singleDepthTextXOffsetMinM,\s*SKETCH_BOX_DIMENSIONS\.dimensionOverlay\.singleDepthTextXOffsetMaxM,\s*SKETCH_BOX_DIMENSIONS\.dimensionOverlay\.singleDepthTextXOffsetWidthRatio\s*\),\s*0,\s*0\s*\);/
   );
   assert.match(layoutNorm, /export const renderSketchFreeBoxDimensionOverlays = \(args:/);
   assert.match(layoutNorm, /function areSketchFreeBoxDimensionSegmentsAdjacent\(/);
