@@ -236,7 +236,7 @@
     "release:client": "npm run release",
     "check:runtime-selector-policy": "node tools/wp_runtime_selector_policy_audit.mjs",
     "check:html-sinks": "node tools/wp_html_sink_audit.mjs",
-    "check:css-style": "node tools/wp_css_style_audit.mjs --check --budget=tools/wp_css_style_budget.json",
+    "check:css-style": "node --test tests/css_shadow_tokens_contract.test.js && node tools/wp_css_style_audit.mjs --check --budget=tools/wp_css_style_budget.json",
     "report:css-style": "node tools/wp_css_style_audit.mjs --budget=tools/wp_css_style_budget.json --json-out docs/css_style_audit.json --md-out docs/CSS_STYLE_AUDIT.md",
     "check:builder-context-policy": "node tools/wp_builder_context_policy_audit.mjs",
     "check:refactor-guardrails": "npm run check:import-cycles && npm run check:private-owner-imports && npm run check:project-import-fixtures && npm run check:project-migration-boundary && npm run check:runtime-selector-policy && npm run check:html-sinks && npm run check:css-style && npm run check:builder-context-policy && npm run check:builder-pipeline-contract && npm run check:features-public-api && npm run check:type-hardening && npm run check:ui-option-buttons && npm run check:ui-design-system && npm run check:ui-effect-cleanup && npm run check:canvas-hit-identity && npm run check:canvas-hit-parity && npm run check:cloud-sync-timers && npm run check:cloud-sync-races && npm run check:cloud-sync-offline-reconnect && npm run check:perf-hotpaths && npm run check:refactor-closeout && npm run check:test-portfolio && npm run check:refactor-integration",

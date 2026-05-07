@@ -22,6 +22,79 @@
   /* Controls */
   --wp-r-input-h: 34px;
 
+  /* Shadows
+   * These preserve the current visual language while making elevation/ring choices reviewable.
+   * New React CSS should use these tokens instead of one-off box-shadow literals.
+   */
+  --wp-r-shadow-action-active: 0 1px 0 rgba(15, 23, 42, 0.03);
+  --wp-r-shadow-action-base: 0 1px 0 rgba(15, 23, 42, 0.06);
+  --wp-r-shadow-action-hover: 0 1px 0 rgba(15, 23, 42, 0.04), 0 6px 16px rgba(15, 23, 42, 0.06);
+  --wp-r-shadow-action-hover-ring:
+    0 1px 0 rgba(15, 23, 42, 0.04), 0 6px 16px rgba(15, 23, 42, 0.06), 0 0 0 3px rgba(59, 130, 246, 0.12);
+  --wp-r-shadow-control: 0 1px 2px rgba(15, 23, 42, 0.12);
+  --wp-r-shadow-control-danger: 0 1px 2px rgba(239, 68, 68, 0.15);
+  --wp-r-shadow-control-low: 0 1px 2px rgba(0, 0, 0, 0.08);
+  --wp-r-shadow-control-raised: 0 1px 3px rgba(15, 23, 42, 0.12);
+  --wp-r-shadow-chip: 0 1px 3px rgba(0, 0, 0, 0.18);
+  --wp-r-shadow-drop-line-after: inset 0 -3px 0 0 #0ea5e9;
+  --wp-r-shadow-drop-line-before: inset 0 3px 0 0 #0ea5e9;
+  --wp-r-shadow-drop-ring: 0 0 0 2px rgba(14, 165, 233, 0.65);
+  --wp-r-shadow-drop-target: inset 0 0 0 2px rgba(14, 165, 233, 0.25);
+  --wp-r-shadow-drop-target-strong: inset 0 0 0 2px rgba(14, 165, 233, 0.55);
+  --wp-r-shadow-drop-soft-card: inset 0 0 0 1px rgba(147, 197, 253, 0.65), var(--shadow-sm);
+  --wp-r-shadow-floating: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --wp-r-shadow-floating-hover: 0 6px 12px rgba(0, 0, 0, 0.15);
+  --wp-r-shadow-focus-muted: 0 0 0 2px rgba(78, 99, 126, 0.4);
+  --wp-r-shadow-handle: 0 2px 4px rgba(0, 0, 0, 0.2);
+  --wp-r-shadow-modal: 0 20px 40px rgba(0, 0, 0, 0.2);
+  --wp-r-shadow-page-strong: 0 20px 60px rgba(0, 0, 0, 0.35);
+  --wp-r-shadow-popover: 0 6px 18px rgba(15, 23, 42, 0.18);
+  --wp-r-shadow-primary-elevated: 0 4px 6px -1px rgba(59, 130, 246, 0.2);
+  --wp-r-shadow-primary-hover: 0 3px 10px rgba(59, 130, 246, 0.14), 0 10px 18px rgba(148, 163, 184, 0.14);
+  --wp-r-shadow-primary-selected: 0 4px 6px rgba(59, 130, 246, 0.2);
+  --wp-r-shadow-raised: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --wp-r-shadow-raised-soft: 0 2px 5px rgba(0, 0, 0, 0.1);
+  --wp-r-shadow-ring-brand-2: 0 0 0 2px rgba(37, 99, 235, 0.25);
+  --wp-r-shadow-ring-brand-2-soft: 0 0 0 2px rgba(37, 99, 235, 0.24);
+  --wp-r-shadow-ring-brand-3-faint: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  --wp-r-shadow-ring-primary-2: 0 0 0 2px rgba(59, 130, 246, 0.3);
+  --wp-r-shadow-ring-primary-2-faint: 0 0 0 2px rgba(59, 130, 246, 0.15);
+  --wp-r-shadow-ring-primary-2-soft: 0 0 0 2px rgba(59, 130, 246, 0.25);
+  --wp-r-shadow-ring-primary-2-solid: inset 0 0 0 2px #3b82f6;
+  --wp-r-shadow-ring-primary-2-strong: inset 0 0 0 2px rgba(59, 130, 246, 0.35);
+  --wp-r-shadow-ring-primary-3: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  --wp-r-shadow-ring-primary-3-faint: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  --wp-r-shadow-ring-primary-3-inset: 0 0 0 3px rgba(59, 130, 246, 0.6) inset;
+  --wp-r-shadow-ring-primary-3-intense: 0 0 0 3px rgba(59, 130, 246, 0.6);
+  --wp-r-shadow-ring-primary-3-medium: 0 0 0 3px rgba(59, 130, 246, 0.18);
+  --wp-r-shadow-ring-primary-3-soft: 0 0 0 3px rgba(59, 130, 246, 0.12);
+  --wp-r-shadow-ring-primary-3-strong: 0 0 0 3px rgba(59, 130, 246, 0.4);
+  --wp-r-shadow-ring-reset-focus: 0 0 0 3px rgba(59, 130, 246, 0.18), 0 8px 20px rgba(148, 163, 184, 0.14);
+  --wp-r-shadow-reset: 0 1px 2px rgba(15, 23, 42, 0.08), 0 8px 20px rgba(148, 163, 184, 0.12);
+  --wp-r-shadow-success-elevated: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+  --wp-r-shadow-toast: 0 10px 25px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  --wp-r-shadow-tooltip: 0 4px 10px rgba(0, 0, 0, 0.2);
+  --wp-r-shadow-pdf-button: 0 10px 24px rgba(15, 23, 42, 0.08), 0 1px 0 rgba(255, 255, 255, 0.8) inset;
+  --wp-r-shadow-pdf-button-active: 0 8px 18px rgba(15, 23, 42, 0.1), 0 1px 0 rgba(255, 255, 255, 0.8) inset;
+  --wp-r-shadow-pdf-button-focus:
+    0 0 0 4px rgba(59, 130, 246, 0.18), 0 10px 24px rgba(15, 23, 42, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.8) inset;
+  --wp-r-shadow-pdf-button-hover: 0 16px 32px rgba(15, 23, 42, 0.12), 0 1px 0 rgba(255, 255, 255, 0.9) inset;
+  --wp-r-shadow-pdf-sketch-card: 0 12px 28px rgba(15, 23, 42, 0.08);
+  --wp-r-shadow-pdf-sketch-cta: 0 18px 42px rgba(15, 23, 42, 0.24), 0 1px 0 rgba(255, 255, 255, 0.24) inset;
+  --wp-r-shadow-pdf-sketch-cta-hover:
+    0 22px 48px rgba(15, 23, 42, 0.28), 0 1px 0 rgba(255, 255, 255, 0.28) inset;
+  --wp-r-shadow-pdf-sketch-cta-on:
+    0 22px 48px rgba(29, 78, 216, 0.32), 0 1px 0 rgba(255, 255, 255, 0.22) inset;
+  --wp-r-shadow-pdf-sketch-palette: 0 10px 28px rgba(15, 23, 42, 0.18);
+  --wp-r-shadow-pdf-sketch-panel: 0 18px 40px rgba(15, 23, 42, 0.14);
+  --wp-r-shadow-pdf-sketch-toolbar: 0 18px 38px rgba(15, 23, 42, 0.16);
+  --wp-r-shadow-pdf-toolbar: 0 20px 48px rgba(15, 23, 42, 0.16), 0 1px 0 rgba(255, 255, 255, 0.72) inset;
+  --wp-r-shadow-pdf-toggle: 0 10px 22px rgba(15, 23, 42, 0.07), 0 1px 0 rgba(255, 255, 255, 0.8) inset;
+  --wp-r-shadow-pdf-toggle-focus: 0 0 0 4px rgba(59, 130, 246, 0.2), 0 10px 22px rgba(15, 23, 42, 0.08);
+  --wp-r-shadow-pdf-toggle-hover: 0 14px 28px rgba(15, 23, 42, 0.11), 0 1px 0 rgba(255, 255, 255, 0.88) inset;
+  --wp-r-shadow-pdf-toggle-on: 0 0 0 3px rgba(59, 130, 246, 0.12), 0 14px 30px rgba(59, 130, 246, 0.18);
+
   /* Aliases to the legacy palette (keep React styling consistent without copying colors) */
   --wp-r-border: var(--border-color);
   --wp-r-panel-bg: var(--panel-bg);

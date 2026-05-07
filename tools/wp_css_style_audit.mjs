@@ -30,12 +30,29 @@ function countZIndexWithoutToken(source) {
   return count;
 }
 
+function isShadowTokenValue(value) {
+  const normalized = String(value || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (normalized === 'none') return true;
+  return /^var\(--(?:wp-r-shadow|shadow)-[^)]+\)$/i.test(normalized);
+}
+
+function countBoxShadowWithoutToken(source) {
+  const declarations = source.matchAll(/box-shadow\s*:\s*([^;]+);/gi);
+  let count = 0;
+  for (const declaration of declarations) {
+    if (!isShadowTokenValue(declaration[1])) count += 1;
+  }
+  return count;
+}
+
 const metricReaders = Object.freeze({
   important: source => (source.match(/!important/g) || []).length,
   transitionAll: source => (source.match(/transition\s*:\s*all\b/gi) || []).length,
   zIndex: source => (source.match(/z-index\s*:/gi) || []).length,
   zIndexTokenless: countZIndexWithoutToken,
-  boxShadow: source => (source.match(/box-shadow\s*:/gi) || []).length,
+  boxShadow: countBoxShadowWithoutToken,
 });
 
 function readBudget() {

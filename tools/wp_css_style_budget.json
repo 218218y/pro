@@ -15,8 +15,8 @@
       "description": "Locks the total z-index declaration count while layering is centralized through tokens."
     },
     "boxShadow": {
-      "max": 116,
-      "description": "Locks one-off shadow count until shadows move to shared tokens."
+      "max": 0,
+      "description": "Requires every non-none box-shadow declaration to use a shared shadow token."
     },
     "zIndexTokenless": {
       "max": 0,

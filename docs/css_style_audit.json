@@ -6,14 +6,14 @@
     "important": 1,
     "transitionAll": 0,
     "zIndex": 52,
-    "boxShadow": 116,
+    "boxShadow": 0,
     "zIndexTokenless": 0
   },
   "max": {
     "important": 1,
     "transitionAll": 0,
     "zIndex": 52,
-    "boxShadow": 116,
+    "boxShadow": 0,
     "zIndexTokenless": 0
   },
   "ok": true,

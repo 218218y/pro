@@ -1,11 +1,11 @@
-import test from "node:test";
-import assert from "node:assert/strict";
+import test from 'node:test';
+import assert from 'node:assert/strict';
 
-import { shouldIncludeNotesInExport } from "../esm/native/ui/notes_export_visibility.ts";
-import { renderAllNotesToCanvas } from "../esm/native/ui/notes_export_render_runtime.ts";
-import { drawEditorAsImageAxisAligned } from "../esm/native/ui/notes_export_render_draw.ts";
-import { installNotesExport } from "../esm/native/ui/notes_export.ts";
-import { getUiNotesExportServiceMaybe } from "../esm/native/runtime/ui_notes_export_access.ts";
+import { shouldIncludeNotesInExport } from '../esm/native/ui/notes_export_visibility.ts';
+import { renderAllNotesToCanvas } from '../esm/native/ui/notes_export_render_runtime.ts';
+import { drawEditorAsImageAxisAligned } from '../esm/native/ui/notes_export_render_draw.ts';
+import { installNotesExport } from '../esm/native/ui/notes_export.ts';
+import { getUiNotesExportServiceMaybe } from '../esm/native/runtime/ui_notes_export_access.ts';
 
 type RectLike = { left: number; top: number; width: number; height: number };
 
@@ -68,75 +68,73 @@ type FakeDocument = {
   querySelectorAll: (selector: string) => FakeElement[];
 };
 
-function createComputedStyle(
-  overrides: Partial<Omit<FakeStyle, "getPropertyValue">> = {},
-): FakeStyle {
+function createComputedStyle(overrides: Partial<Omit<FakeStyle, 'getPropertyValue'>> = {}): FakeStyle {
   const state = {
-    display: "block",
-    direction: "rtl",
-    color: "#111",
-    fontSize: "14",
-    fontFamily: "sans-serif",
-    fontWeight: "400",
-    fontStyle: "normal",
-    paddingTop: "0px",
-    paddingRight: "0px",
-    paddingBottom: "0px",
-    paddingLeft: "0px",
-    lineHeight: "normal",
-    textAlign: "right",
-    whiteSpace: "pre-wrap",
-    overflowWrap: "break-word",
-    wordWrap: "break-word",
-    wordBreak: "normal",
-    boxSizing: "border-box",
-    backgroundColor: "transparent",
+    display: 'block',
+    direction: 'rtl',
+    color: '#111',
+    fontSize: '14',
+    fontFamily: 'sans-serif',
+    fontWeight: '400',
+    fontStyle: 'normal',
+    paddingTop: '0px',
+    paddingRight: '0px',
+    paddingBottom: '0px',
+    paddingLeft: '0px',
+    lineHeight: 'normal',
+    textAlign: 'right',
+    whiteSpace: 'pre-wrap',
+    overflowWrap: 'break-word',
+    wordWrap: 'break-word',
+    wordBreak: 'normal',
+    boxSizing: 'border-box',
+    backgroundColor: 'transparent',
     ...overrides,
   };
   return {
     ...state,
     getPropertyValue(key: string) {
       switch (key) {
-        case "display":
-          return state.display || "";
-        case "direction":
-          return state.direction || "";
-        case "color":
-          return state.color || "";
-        case "font-size":
-          return state.fontSize || "";
-        case "font-family":
-          return state.fontFamily || "";
-        case "font-weight":
-          return state.fontWeight || "";
-        case "font-style":
-          return state.fontStyle || "";
-        case "padding-top":
-          return state.paddingTop || "";
-        case "padding-right":
-          return state.paddingRight || "";
-        case "padding-bottom":
-          return state.paddingBottom || "";
-        case "padding-left":
-          return state.paddingLeft || "";
-        case "line-height":
-          return state.lineHeight || "";
-        case "text-align":
-          return state.textAlign || "";
-        case "white-space":
-          return state.whiteSpace || "";
-        case "overflow-wrap":
-          return state.overflowWrap || "";
-        case "word-wrap":
-          return state.wordWrap || "";
-        case "word-break":
-          return state.wordBreak || "";
-        case "box-sizing":
-          return state.boxSizing || "";
-        case "background-color":
-          return state.backgroundColor || "";
+        case 'display':
+          return state.display || '';
+        case 'direction':
+          return state.direction || '';
+        case 'color':
+          return state.color || '';
+        case 'font-size':
+          return state.fontSize || '';
+        case 'font-family':
+          return state.fontFamily || '';
+        case 'font-weight':
+          return state.fontWeight || '';
+        case 'font-style':
+          return state.fontStyle || '';
+        case 'padding-top':
+          return state.paddingTop || '';
+        case 'padding-right':
+          return state.paddingRight || '';
+        case 'padding-bottom':
+          return state.paddingBottom || '';
+        case 'padding-left':
+          return state.paddingLeft || '';
+        case 'line-height':
+          return state.lineHeight || '';
+        case 'text-align':
+          return state.textAlign || '';
+        case 'white-space':
+          return state.whiteSpace || '';
+        case 'overflow-wrap':
+          return state.overflowWrap || '';
+        case 'word-wrap':
+          return state.wordWrap || '';
+        case 'word-break':
+          return state.wordBreak || '';
+        case 'box-sizing':
+          return state.boxSizing || '';
+        case 'background-color':
+          return state.backgroundColor || '';
         default:
-          return "";
+          return '';
       }
     },
   };
@@ -145,38 +143,29 @@ function createComputedStyle(
 function createElement(tag: string, rect: Partial<RectLike> = {}): FakeElement {
   const children: FakeElement[] = [];
   const queries = new Map<string, FakeElement | null>();
-  const style: FakeElement["style"] = {};
+  const style: FakeElement['style'] = {};
   style.setProperty = (key: string, value: string) => {
     style[key] = value;
   };
   const serializeStyle = () =>
     Object.entries(style)
-      .filter(
-        ([key, value]) =>
-          key !== "setProperty" && typeof value === "string" && value,
-      )
-      .map(
-        ([key, value]) =>
-          `${key.replace(/[A-Z]/g, (ch) => `-${ch.toLowerCase()}`)}: ${value}`,
-      )
-      .join("; ");
+      .filter(([key, value]) => key !== 'setProperty' && typeof value === 'string' && value)
+      .map(([key, value]) => `${key.replace(/[A-Z]/g, ch => `-${ch.toLowerCase()}`)}: ${value}`)
+      .join('; ');
   const serializeOuter = () => {
-    const name = String(tag || "div").toLowerCase();
+    const name = String(tag || 'div').toLowerCase();
     const styleAttr = serializeStyle();
     const html =
-      children.map((child) => child.outerHTML || "").join("") ||
-      el.innerHTML ||
-      el.textContent ||
-      "";
-    return `<${name}${styleAttr ? ` style="${styleAttr}"` : ""}>${html}</${name}>`;
+      children.map(child => child.outerHTML || '').join('') || el.innerHTML || el.textContent || '';
+    return `<${name}${styleAttr ? ` style="${styleAttr}"` : ''}>${html}</${name}>`;
   };
   const el: FakeElement = {
     nodeType: 1,
-    tagName: String(tag || "div").toUpperCase(),
+    tagName: String(tag || 'div').toUpperCase(),
     style,
     children,
     rect: { left: 0, top: 0, width: 1, height: 1, ...rect },
-    innerHTML: "",
+    innerHTML: '',
     appendChild(child: FakeElement) {
       children.push(child);
       child.ownerDocument = this.ownerDocument;
@@ -203,7 +192,7 @@ function createElement(tag: string, rect: Partial<RectLike> = {}): FakeElement {
     },
     setAttribute() {},
   };
-  Object.defineProperty(el, "outerHTML", {
+  Object.defineProperty(el, 'outerHTML', {
     get: serializeOuter,
     configurable: true,
   });
@@ -211,16 +200,11 @@ function createElement(tag: string, rect: Partial<RectLike> = {}): FakeElement {
     el as FakeElement & {
       __setQuery: (selector: string, value: FakeElement | null) => void;
     }
-  ).__setQuery = (selector: string, value: FakeElement | null) =>
-    queries.set(selector, value);
+  ).__setQuery = (selector: string, value: FakeElement | null) => queries.set(selector, value);
   return el;
 }
 
-function setQuery(
-  root: FakeElement,
-  selector: string,
-  value: FakeElement | null,
-) {
+function setQuery(root: FakeElement, selector: string, value: FakeElement | null) {
   (
     root as FakeElement & {
       __setQuery?: (selector: string, value: FakeElement | null) => void;
@@ -234,16 +218,16 @@ function createNotesApp(options: {
   boxes?: FakeElement[];
   markers?: FakeElement[];
 }) {
-  const viewer = createElement("div", { width: 120, height: 60 });
-  viewer.id = "viewer-container";
+  const viewer = createElement('div', { width: 120, height: 60 });
+  viewer.id = 'viewer-container';
   viewer.classList = {
     contains(name: string) {
-      return name === "notes-hidden" ? !!options.hidden : false;
+      return name === 'notes-hidden' ? !!options.hidden : false;
     },
   };
 
-  const body = createElement("body");
-  const html = createElement("html");
+  const body = createElement('body');
+  const html = createElement('html');
   const notesBoxes = options.boxes || [];
   const notesMarkers = options.markers || [];
 
@@ -261,14 +245,14 @@ function createNotesApp(options: {
       return el;
     },
     getElementById(id: string) {
-      return id === "viewer-container" ? viewer : null;
+      return id === 'viewer-container' ? viewer : null;
     },
     querySelector() {
       return null;
     },
     querySelectorAll(selector: string) {
-      if (selector === ".annotation-box") return notesBoxes;
-      if (selector === ".annotation-marker") return notesMarkers;
+      if (selector === '.annotation-box') return notesBoxes;
+      if (selector === '.annotation-marker') return notesMarkers;
       return [];
     },
   };
@@ -285,7 +269,7 @@ function createNotesApp(options: {
       getState() {
         return {
           ui:
-            typeof options.notesEnabled === "boolean"
+            typeof options.notesEnabled === 'boolean'
               ? { notesEnabled: options.notesEnabled }
               : Object.create(null),
         };
@@ -308,10 +292,10 @@ function createCanvasContext() {
     clip() {},
     drawImage() {},
     measureText(text: string) {
-      return { width: String(text || "").length * 6 };
+      return { width: String(text || '').length * 6 };
     },
     fillText(text: string, x: number, y: number) {
-      fillTextCalls.push({ text: String(text || ""), x, y });
+      fillTextCalls.push({ text: String(text || ''), x, y });
     },
     set font(_value: string) {},
     set textBaseline(_value: string) {},
@@ -323,9 +307,9 @@ function createCanvasContext() {
   };
 }
 
-test("notes export visibility follows annotation presence and canonical notesEnabled hint semantics", () => {
-  const box = createElement("div");
-  const marker = createElement("div");
+test('notes export visibility follows annotation presence and canonical notesEnabled hint semantics', () => {
+  const box = createElement('div');
+  const marker = createElement('div');
 
   const hiddenDisabled = createNotesApp({
     hidden: true,
@@ -357,25 +341,25 @@ test("notes export visibility follows annotation presence and canonical notesEna
   assert.equal(shouldIncludeNotesInExport(empty.App), false);
 });
 
-test("notes export render falls back to plain text when image rasterization fails and install exposes canonical service methods", async () => {
-  const editor = createElement("div", {
+test('notes export render falls back to plain text when image rasterization fails and install exposes canonical service methods', async () => {
+  const editor = createElement('div', {
     left: 10,
     top: 12,
     width: 40,
     height: 18,
   });
-  editor.textContent = "שלום note export";
-  editor.innerText = "שלום note export";
-  editor.computedStyle = createComputedStyle({ direction: "rtl" });
+  editor.textContent = 'שלום note export';
+  editor.innerText = 'שלום note export';
+  editor.computedStyle = createComputedStyle({ direction: 'rtl' });
 
-  const box = createElement("div", {
+  const box = createElement('div', {
     left: 10,
     top: 12,
     width: 40,
     height: 18,
   });
-  box.computedStyle = createComputedStyle({ display: "block" });
-  setQuery(box, ".editor", editor);
+  box.computedStyle = createComputedStyle({ display: 'block' });
+  setQuery(box, '.editor', editor);
 
   const { App } = createNotesApp({
     hidden: false,
@@ -384,13 +368,12 @@ test("notes export render falls back to plain text when image rasterization fail
   });
   installNotesExport(App);
   const api = getUiNotesExportServiceMaybe(App);
-  assert.equal(typeof api?.shouldIncludeNotesInExport, "function");
-  assert.equal(typeof api?.renderAllNotesToCanvas, "function");
+  assert.equal(typeof api?.shouldIncludeNotesInExport, 'function');
+  assert.equal(typeof api?.renderAllNotesToCanvas, 'function');
   assert.equal(api?.shouldIncludeNotesInExport?.(), true);
 
   const ctx = createCanvasContext();
-  const originalImage = (globalThis as typeof globalThis & { Image?: unknown })
-    .Image;
+  const originalImage = (globalThis as typeof globalThis & { Image?: unknown }).Image;
 
   class FailingImage {
     onload: (() => void) | null = null;
@@ -406,46 +389,45 @@ test("notes export render falls back to plain text when image rasterization fail
     assert.equal(result, true);
     assert.equal(ctx.fillTextCalls.length > 0, true);
     assert.equal(
-      ctx.fillTextCalls.some((call) => /note|export/.test(call.text)),
-      true,
+      ctx.fillTextCalls.some(call => /note|export/.test(call.text)),
+      true
     );
 
     const viaService = await api?.renderAllNotesToCanvas?.(ctx, 240, 120);
     assert.equal(viaService, true);
     assert.equal(ctx.fillTextCalls.length >= 2, true);
   } finally {
-    (globalThis as typeof globalThis & { Image?: unknown }).Image =
-      originalImage;
+    (globalThis as typeof globalThis & { Image?: unknown }).Image = originalImage;
   }
 });
 
-test("notes export plain-text fallback uses the live editor padding and line metrics", async () => {
-  const editor = createElement("div", {
+test('notes export plain-text fallback uses the live editor padding and line metrics', async () => {
+  const editor = createElement('div', {
     left: 10,
     top: 12,
     width: 40,
     height: 30,
   });
-  editor.textContent = "שלום קצר";
-  editor.innerText = "שלום קצר";
+  editor.textContent = 'שלום קצר';
+  editor.innerText = 'שלום קצר';
   editor.computedStyle = createComputedStyle({
-    direction: "rtl",
-    fontSize: "10px",
-    paddingTop: "3px",
-    paddingRight: "4px",
-    paddingBottom: "2px",
-    paddingLeft: "5px",
-    lineHeight: "12px",
+    direction: 'rtl',
+    fontSize: '10px',
+    paddingTop: '3px',
+    paddingRight: '4px',
+    paddingBottom: '2px',
+    paddingLeft: '5px',
+    lineHeight: '12px',
   });
 
-  const box = createElement("div", {
+  const box = createElement('div', {
     left: 10,
     top: 12,
     width: 40,
     height: 30,
   });
-  box.computedStyle = createComputedStyle({ display: "block" });
-  setQuery(box, ".editor", editor);
+  box.computedStyle = createComputedStyle({ display: 'block' });
+  setQuery(box, '.editor', editor);
 
   const { App } = createNotesApp({
     hidden: false,
@@ -453,8 +435,7 @@ test("notes export plain-text fallback uses the live editor padding and line met
     boxes: [box],
   });
   const ctx = createCanvasContext();
-  const originalImage = (globalThis as typeof globalThis & { Image?: unknown })
-    .Image;
+  const originalImage = (globalThis as typeof globalThis & { Image?: unknown }).Image;
 
   class FailingImage {
     onload: (() => void) | null = null;
@@ -472,57 +453,51 @@ test("notes export plain-text fallback uses the live editor padding and line met
     assert.equal(ctx.fillTextCalls[0]?.x, 92);
     assert.equal(ctx.fillTextCalls[0]?.y, 37);
   } finally {
-    (globalThis as typeof globalThis & { Image?: unknown }).Image =
-      originalImage;
+    (globalThis as typeof globalThis & { Image?: unknown }).Image = originalImage;
   }
 });
 
-test("notes export image path serializes the computed editor box style used by the live note", async () => {
-  const editor = createElement("div", {
+test('notes export image path serializes the computed editor box style used by the live note', async () => {
+  const editor = createElement('div', {
     left: 0,
     top: 0,
     width: 120,
     height: 50,
   });
-  editor.innerHTML = "טקסט הערה ארוך";
-  editor.textContent = "טקסט הערה ארוך";
-  editor.innerText = "טקסט הערה ארוך";
+  editor.innerHTML = 'טקסט הערה ארוך';
+  editor.textContent = 'טקסט הערה ארוך';
+  editor.innerText = 'טקסט הערה ארוך';
   editor.computedStyle = createComputedStyle({
-    direction: "rtl",
-    fontSize: "18px",
-    fontFamily: "Heebo, sans-serif",
-    paddingTop: "8px",
-    paddingRight: "8px",
-    paddingBottom: "8px",
-    paddingLeft: "8px",
-    lineHeight: "normal",
-    whiteSpace: "pre-wrap",
-    overflowWrap: "break-word",
-    boxSizing: "border-box",
+    direction: 'rtl',
+    fontSize: '18px',
+    fontFamily: 'Heebo, sans-serif',
+    paddingTop: '8px',
+    paddingRight: '8px',
+    paddingBottom: '8px',
+    paddingLeft: '8px',
+    lineHeight: 'normal',
+    whiteSpace: 'pre-wrap',
+    overflowWrap: 'break-word',
+    boxSizing: 'border-box',
   });
 
-  const doc = createNotesApp({ hidden: false, notesEnabled: true, boxes: [] })
-    .App.deps as {
+  const doc = createNotesApp({ hidden: false, notesEnabled: true, boxes: [] }).App.deps as {
     browser: { document: FakeDocument };
   };
   const ctx = createCanvasContext();
-  const originalImage = (globalThis as typeof globalThis & { Image?: unknown })
-    .Image;
-  let decodedSvg = "";
+  const originalImage = (globalThis as typeof globalThis & { Image?: unknown }).Image;
+  let decodedSvg = '';
 
   class CapturingImage {
     onload: (() => void) | null = null;
     onerror: (() => void) | null = null;
     set src(value: string) {
-      decodedSvg = decodeURIComponent(
-        String(value).replace(/^data:image\/svg\+xml;charset=utf-8,/, ""),
-      );
+      decodedSvg = decodeURIComponent(String(value).replace(/^data:image\/svg\+xml;charset=utf-8,/, ''));
       this.onload?.();
     }
   }
 
-  (globalThis as typeof globalThis & { Image?: unknown }).Image =
-    CapturingImage;
+  (globalThis as typeof globalThis & { Image?: unknown }).Image = CapturingImage;
   try {
     const ok = await drawEditorAsImageAxisAligned({
       doc: doc.browser.document as unknown as Document,
@@ -545,67 +520,61 @@ test("notes export image path serializes the computed editor box style used by t
     assert.match(decodedSvg, /white-space:\s*pre-wrap/);
     assert.match(decodedSvg, /box-sizing:\s*border-box/);
   } finally {
-    (globalThis as typeof globalThis & { Image?: unknown }).Image =
-      originalImage;
+    (globalThis as typeof globalThis & { Image?: unknown }).Image = originalImage;
   }
 });
 
-test("notes export image path serializes computed styles for nested editor children", async () => {
-  const editor = createElement("div", {
+test('notes export image path serializes computed styles for nested editor children', async () => {
+  const editor = createElement('div', {
     left: 0,
     top: 0,
     width: 140,
     height: 60,
   });
   editor.computedStyle = createComputedStyle({
-    direction: "rtl",
-    fontSize: "18px",
-    fontFamily: "Heebo, sans-serif",
-    paddingTop: "8px",
-    paddingRight: "8px",
-    paddingBottom: "8px",
-    paddingLeft: "8px",
-    lineHeight: "22px",
-    whiteSpace: "pre-wrap",
-    overflowWrap: "break-word",
-    boxSizing: "border-box",
+    direction: 'rtl',
+    fontSize: '18px',
+    fontFamily: 'Heebo, sans-serif',
+    paddingTop: '8px',
+    paddingRight: '8px',
+    paddingBottom: '8px',
+    paddingLeft: '8px',
+    lineHeight: '22px',
+    whiteSpace: 'pre-wrap',
+    overflowWrap: 'break-word',
+    boxSizing: 'border-box',
   });
 
-  const child = createElement("span");
-  child.textContent = "טקסט פנימי";
-  child.innerText = "טקסט פנימי";
+  const child = createElement('span');
+  child.textContent = 'טקסט פנימי';
+  child.innerText = 'טקסט פנימי';
   child.computedStyle = createComputedStyle({
-    display: "inline",
-    color: "rgb(10, 20, 30)",
-    fontSize: "20px",
-    fontWeight: "700",
-    lineHeight: "24px",
-    whiteSpace: "nowrap",
+    display: 'inline',
+    color: 'rgb(10, 20, 30)',
+    fontSize: '20px',
+    fontWeight: '700',
+    lineHeight: '24px',
+    whiteSpace: 'nowrap',
   });
   editor.appendChild(child);
 
-  const doc = createNotesApp({ hidden: false, notesEnabled: true, boxes: [] })
-    .App.deps as {
+  const doc = createNotesApp({ hidden: false, notesEnabled: true, boxes: [] }).App.deps as {
     browser: { document: FakeDocument };
   };
   const ctx = createCanvasContext();
-  const originalImage = (globalThis as typeof globalThis & { Image?: unknown })
-    .Image;
-  let decodedSvg = "";
+  const originalImage = (globalThis as typeof globalThis & { Image?: unknown }).Image;
+  let decodedSvg = '';
 
   class CapturingImage {
     onload: (() => void) | null = null;
     onerror: (() => void) | null = null;
     set src(value: string) {
-      decodedSvg = decodeURIComponent(
-        String(value).replace(/^data:image\/svg\+xml;charset=utf-8,/, ""),
-      );
+      decodedSvg = decodeURIComponent(String(value).replace(/^data:image\/svg\+xml;charset=utf-8,/, ''));
       this.onload?.();
     }
   }
 
-  (globalThis as typeof globalThis & { Image?: unknown }).Image =
-    CapturingImage;
+  (globalThis as typeof globalThis & { Image?: unknown }).Image = CapturingImage;
   try {
     const ok = await drawEditorAsImageAxisAligned({
       doc: doc.browser.document as unknown as Document,
@@ -624,15 +593,11 @@ test("notes export image path serializes computed styles for nested editor child
 
     assert.equal(ok, true);
     assert.match(decodedSvg, /<span[^>]*style="[^"]*display:\s*inline/);
-    assert.match(
-      decodedSvg,
-      /<span[^>]*style="[^"]*color:\s*rgb\(10, 20, 30\)/,
-    );
+    assert.match(decodedSvg, /<span[^>]*style="[^"]*color:\s*rgb\(10, 20, 30\)/);
     assert.match(decodedSvg, /<span[^>]*style="[^"]*font-size:\s*20px/);
     assert.match(decodedSvg, /<span[^>]*style="[^"]*font-weight:\s*700/);
     assert.match(decodedSvg, /<span[^>]*style="[^"]*white-space:\s*nowrap/);
   } finally {
-    (globalThis as typeof globalThis & { Image?: unknown }).Image =
-      originalImage;
+    (globalThis as typeof globalThis & { Image?: unknown }).Image = originalImage;
   }
 });
