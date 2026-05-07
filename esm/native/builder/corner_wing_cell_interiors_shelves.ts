@@ -32,7 +32,10 @@ export function createCornerWingInteriorShelfRuntime(
 ): CornerWingInteriorShelfRuntime {
   const shelfMat = runtime.getCornerMat('corner_shelves', runtime.bodyMat);
   const GLASS_SHELF_THICK = MATERIAL_DIMENSIONS.glassShelf.thicknessM;
-  const DOUBLE_SHELF_THICK = Math.max(runtime.woodThick, runtime.woodThick * INTERIOR_FITTINGS_DIMENSIONS.shelves.doubleThicknessMultiplier);
+  const DOUBLE_SHELF_THICK = Math.max(
+    runtime.woodThick,
+    runtime.woodThick * INTERIOR_FITTINGS_DIMENSIONS.shelves.doubleThicknessMultiplier
+  );
   let glassShelfMat: unknown | null = null;
 
   try {
@@ -81,7 +84,8 @@ export function createCornerWingInteriorShelfRuntime(
 
   const ensurePinResources = (): boolean => {
     try {
-      if (!pinGeo) pinGeo = new runtime.THREE.CylinderGeometry(
+      if (!pinGeo)
+        pinGeo = new runtime.THREE.CylinderGeometry(
           pinRadius,
           pinRadius,
           pinLen,

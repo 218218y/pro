@@ -44,8 +44,14 @@ export function resolveSketchBoxDoorLayout(args: {
   const innerRight = boxGeo.centerX + boxGeo.innerW / 2;
   const segmentLeft = doorSegment ? doorSegment.leftX : innerLeft;
   const segmentRight = doorSegment ? doorSegment.rightX : innerRight;
-  const leftExt = Math.abs(segmentLeft - innerLeft) <= SKETCH_BOX_DIMENSIONS.preview.doorEdgeEpsilonM ? woodThick : woodThick / 2;
-  const rightExt = Math.abs(segmentRight - innerRight) <= SKETCH_BOX_DIMENSIONS.preview.doorEdgeEpsilonM ? woodThick : woodThick / 2;
+  const leftExt =
+    Math.abs(segmentLeft - innerLeft) <= SKETCH_BOX_DIMENSIONS.preview.doorEdgeEpsilonM
+      ? woodThick
+      : woodThick / 2;
+  const rightExt =
+    Math.abs(segmentRight - innerRight) <= SKETCH_BOX_DIMENSIONS.preview.doorEdgeEpsilonM
+      ? woodThick
+      : woodThick / 2;
   const segmentFrameLeft = segmentLeft - leftExt;
   const segmentFrameRight = segmentRight + rightExt;
   const centerGap = isCenterDoubleDoorPair

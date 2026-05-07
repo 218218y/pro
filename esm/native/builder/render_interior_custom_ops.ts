@@ -1,4 +1,7 @@
-import { INTERIOR_FITTINGS_DIMENSIONS, MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  INTERIOR_FITTINGS_DIMENSIONS,
+  MATERIAL_DIMENSIONS,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { RenderInteriorOpsDeps } from './render_interior_ops_contracts.js';
 
 import {
@@ -58,7 +61,10 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
     const group = input.wardrobeGroup || __wardrobeGroup(App);
     if (!group) return false;
 
-    const gridDivisions = readGridDivisions(input.gridDivisions, INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault);
+    const gridDivisions = readGridDivisions(
+      input.gridDivisions,
+      INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault
+    );
     const effectiveBottomY = Number(input.effectiveBottomY || 0);
     const effectiveTopY = Number(input.effectiveTopY || 0);
     const localGridStep = Number(input.localGridStep || 0);
@@ -96,7 +102,10 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
     });
     const braceInnerWidth = moduleFaces ? Math.max(0, moduleFaces.rightX - moduleFaces.leftX) : innerW;
     const braceCenterX = moduleFaces ? (moduleFaces.leftX + moduleFaces.rightX) / 2 : internalCenterX;
-    const braceShelfWidth = braceInnerWidth > 0 ? Math.max(0, braceInnerWidth - INTERIOR_FITTINGS_DIMENSIONS.shelves.braceWidthClearanceM) : innerW;
+    const braceShelfWidth =
+      braceInnerWidth > 0
+        ? Math.max(0, braceInnerWidth - INTERIOR_FITTINGS_DIMENSIONS.shelves.braceWidthClearanceM)
+        : innerW;
     const leftInnerX = moduleFaces ? moduleFaces.leftX : internalCenterX - innerW / 2;
     const rightInnerX = moduleFaces ? moduleFaces.rightX : internalCenterX + innerW / 2;
     const isInternalDrawersEnabled = !!input.isInternalDrawersEnabled;

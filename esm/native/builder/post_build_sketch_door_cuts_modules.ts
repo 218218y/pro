@@ -63,10 +63,11 @@ function readSketchExternalDrawerCutsForModule(cfg: unknown, gridEntry: unknown)
     const it = asRecord(list[i]);
     if (!it) continue;
     const countRaw = parseNum(readKey(it, 'count'));
-    const drawerCount = Number.isFinite(countRaw) ? Math.max(
-        DRAWER_DIMENSIONS.sketch.externalCountMin,
-        Math.min(DRAWER_DIMENSIONS.sketch.externalCountMax, Math.floor(countRaw))
-      )
+    const drawerCount = Number.isFinite(countRaw)
+      ? Math.max(
+          DRAWER_DIMENSIONS.sketch.externalCountMin,
+          Math.min(DRAWER_DIMENSIONS.sketch.externalCountMax, Math.floor(countRaw))
+        )
       : DRAWER_DIMENSIONS.sketch.externalCountMin;
     const metrics = resolveSketchExternalDrawerMetrics({
       drawerCount,

@@ -3,6 +3,13 @@ import { getInternalGridMap } from '../runtime/cache_access.js';
 import type { AppContainer, BuildContextLike } from '../../../types';
 import { readRecord, readUnknownArray } from './build_flow_readers.js';
 
+function isGlobalSketchFreePlacementObject(value: unknown): boolean {
+  const rec = readRecord(value);
+  const userData = readRecord(rec?.userData);
+  const partId = typeof userData?.partId === 'string' ? userData.partId : '';
+  return partId.startsWith('sketch_box_free_');
+}
+
 export function shiftWardrobeRange(args: {
   App: AppContainer;
   fromIdx: number;
@@ -29,6 +36,7 @@ export function shiftWardrobeRange(args: {
   const moved = new Set<unknown>();
   for (let i = from; i < to; i++) {
     const obj = arr[i];
+    if (isGlobalSketchFreePlacementObject(obj)) continue;
     const entry = readRecord(obj);
     if (!entry) continue;
     const pos = readRecord(entry.position);

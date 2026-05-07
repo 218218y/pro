@@ -74,7 +74,10 @@ export function tryHandleCanvasManualLayoutHover(args: CanvasInteriorHoverFlowAr
     const isNewLayout = !cfgRef?.isCustom || savedDivs !== currentToolDivs;
     const pad = Math.min(
       DRAWER_DIMENSIONS.sketch.internalClampPadMaxM,
-      Math.max(DRAWER_DIMENSIONS.sketch.internalClampPadMinM, target.woodThick * DRAWER_DIMENSIONS.sketch.internalClampPadWoodRatio)
+      Math.max(
+        DRAWER_DIMENSIONS.sketch.internalClampPadMinM,
+        target.woodThick * DRAWER_DIMENSIONS.sketch.internalClampPadWoodRatio
+      )
     );
     const step = target.spanH / currentToolDivs;
     const relY = target.hitY - target.bottomY;
@@ -107,7 +110,10 @@ export function tryHandleCanvasManualLayoutHover(args: CanvasInteriorHoverFlowAr
         kind: 'storage',
         x: target.internalCenterX,
         y: target.bottomY + INTERIOR_FITTINGS_DIMENSIONS.storage.barrierHeightM / 2,
-        z: target.internalZ + target.internalDepth / 2 + INTERIOR_FITTINGS_DIMENSIONS.storage.barrierFrontZOffsetM,
+        z:
+          target.internalZ +
+          target.internalDepth / 2 +
+          INTERIOR_FITTINGS_DIMENSIONS.storage.barrierFrontZOffsetM,
         w: Math.max(
           INTERIOR_FITTINGS_DIMENSIONS.storage.barrierWidthMinM,
           target.innerW - INTERIOR_FITTINGS_DIMENSIONS.storage.barrierWidthClearanceM
@@ -159,15 +165,24 @@ export function tryHandleCanvasManualLayoutHover(args: CanvasInteriorHoverFlowAr
     const isBrace = shelfVariant === 'brace';
     const depthM = isBrace ? target.internalDepth : target.regularDepth;
     const z = target.backZ + depthM / 2;
-    const w = target.innerW > 0 ? Math.max(0, target.innerW -
-            (isBrace
-              ? SKETCH_BOX_DIMENSIONS.preview.shelfBraceClearanceM
-              : SKETCH_BOX_DIMENSIONS.preview.shelfRegularClearanceM)) : target.innerW;
+    const w =
+      target.innerW > 0
+        ? Math.max(
+            0,
+            target.innerW -
+              (isBrace
+                ? SKETCH_BOX_DIMENSIONS.preview.shelfBraceClearanceM
+                : SKETCH_BOX_DIMENSIONS.preview.shelfRegularClearanceM)
+          )
+        : target.innerW;
     const h =
       shelfVariant === 'glass'
         ? MATERIAL_DIMENSIONS.glassShelf.thicknessM
         : shelfVariant === 'double'
-          ? Math.max(target.woodThick, target.woodThick * INTERIOR_FITTINGS_DIMENSIONS.shelves.doubleThicknessMultiplier)
+          ? Math.max(
+              target.woodThick,
+              target.woodThick * INTERIOR_FITTINGS_DIMENSIONS.shelves.doubleThicknessMultiplier
+            )
           : target.woodThick;
     return setPreview(setSketchPreview, {
       App,

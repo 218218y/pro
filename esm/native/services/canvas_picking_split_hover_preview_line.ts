@@ -96,7 +96,8 @@ function readSplitHoverPreviewMetrics(args: {
     if (cfgRef) {
       if (cfgRef.hasShoeDrawer) drawerHeightTotal += DRAWER_DIMENSIONS.external.shoeHeightM;
       const extCount = Number(cfgRef.extDrawersCount || 0);
-      if (Number.isFinite(extCount) && extCount > 0) drawerHeightTotal += extCount * DRAWER_DIMENSIONS.external.regularHeightM;
+      if (Number.isFinite(extCount) && extCount > 0)
+        drawerHeightTotal += extCount * DRAWER_DIMENSIONS.external.regularHeightM;
     }
   } catch {
     // Best-effort hover helper only.
@@ -109,7 +110,12 @@ function readSplitHoverPreviewMetrics(args: {
 
   if (!(woodThick != null && woodThick > 0)) {
     const est = 2 * (Number(bounds.maxY) - effectiveTopY);
-    woodThick = Number.isFinite(est) && est > CARCASS_SHELL_DIMENSIONS.boardMinDimensionM && est < CARCASS_BASE_DIMENSIONS.plinth.heightM ? est : MATERIAL_DIMENSIONS.wood.thicknessM;
+    woodThick =
+      Number.isFinite(est) &&
+      est > CARCASS_SHELL_DIMENSIONS.boardMinDimensionM &&
+      est < CARCASS_BASE_DIMENSIONS.plinth.heightM
+        ? est
+        : MATERIAL_DIMENSIONS.wood.thicknessM;
   }
 
   return { effectiveBottomY, effectiveTopY, woodThick, drawerHeightTotal };
@@ -149,10 +155,21 @@ export function __wp_getRegularSplitPreviewLineY(args: {
   }
 
   const fullInternalHeight = effectiveTopY - internalStartY;
-  if (Number.isFinite(fullInternalHeight) && fullInternalHeight > DOOR_SYSTEM_DIMENSIONS.hinged.split.minHeightForSplitM) {
-    const y = internalStartY + (CARCASS_SHELL_DIMENSIONS.drawerSplitGridLineIndex * fullInternalHeight) / CARCASS_SHELL_DIMENSIONS.drawerGridDivisions;
+  if (
+    Number.isFinite(fullInternalHeight) &&
+    fullInternalHeight > DOOR_SYSTEM_DIMENSIONS.hinged.split.minHeightForSplitM
+  ) {
+    const y =
+      internalStartY +
+      (CARCASS_SHELL_DIMENSIONS.drawerSplitGridLineIndex * fullInternalHeight) /
+        CARCASS_SHELL_DIMENSIONS.drawerGridDivisions;
     return clampSplitHoverLineY(bounds, y);
   }
 
-  return clampSplitHoverLineY(bounds, minY + (CARCASS_SHELL_DIMENSIONS.drawerSplitGridLineIndex * span) / CARCASS_SHELL_DIMENSIONS.drawerGridDivisions);
+  return clampSplitHoverLineY(
+    bounds,
+    minY +
+      (CARCASS_SHELL_DIMENSIONS.drawerSplitGridLineIndex * span) /
+        CARCASS_SHELL_DIMENSIONS.drawerGridDivisions
+  );
 }

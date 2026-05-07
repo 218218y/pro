@@ -68,7 +68,10 @@ export function createCornerConnectorEdgePanelAdder(
       const nuz = dx / len;
       const dot = nux * (interiorX - midX) + nuz * (interiorZ - midZ);
       const sign = dot >= 0 ? 1 : -1;
-      const eps = typeof opts.eps === 'number' && Number.isFinite(opts.eps) ? Math.max(0, opts.eps) : CORNER_WING_DIMENSIONS.connector.shellAttachFaceEpsilonM;
+      const eps =
+        typeof opts.eps === 'number' && Number.isFinite(opts.eps)
+          ? Math.max(0, opts.eps)
+          : CORNER_WING_DIMENSIONS.connector.shellAttachFaceEpsilonM;
       offX = nux * sign * (panelThick / 2 + eps);
       offZ = nuz * sign * (panelThick / 2 + eps);
     }
@@ -156,8 +159,14 @@ export function applyCornerConnectorShellPanels(
   const addEdgePanel = createCornerConnectorEdgePanelAdder(setup, metrics.panelThick, metrics.wallH);
   const { pts, cornerConnectorAsStandaloneCabinet, carcassBackInsetX, carcassBackInsetZ } = setup;
 
-  const cornerBackPanelNoOverlapInsetX = metrics.backPanelThick + metrics.backPanelOutsideInsetX + CORNER_WING_DIMENSIONS.connector.shellNoOverlapInsetExtraM;
-  const cornerBackPanelNoOverlapInsetZ = metrics.backPanelThick + metrics.backPanelOutsideInsetZ + CORNER_WING_DIMENSIONS.connector.shellNoOverlapInsetExtraM;
+  const cornerBackPanelNoOverlapInsetX =
+    metrics.backPanelThick +
+    metrics.backPanelOutsideInsetX +
+    CORNER_WING_DIMENSIONS.connector.shellNoOverlapInsetExtraM;
+  const cornerBackPanelNoOverlapInsetZ =
+    metrics.backPanelThick +
+    metrics.backPanelOutsideInsetZ +
+    CORNER_WING_DIMENSIONS.connector.shellNoOverlapInsetExtraM;
 
   appendCornerConnectorBackEdgePanel(
     setup,

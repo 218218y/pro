@@ -44,9 +44,7 @@ export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs)
   const handleAbsY = Number.isFinite(handleAbsYRaw) ? handleAbsYRaw : null;
   const thicknessRaw = parseNum(readKey(ud, '__wpFrontThickness'));
   const thickness =
-    Number.isFinite(thicknessRaw) && thicknessRaw > 0
-      ? thicknessRaw
-      : MATERIAL_DIMENSIONS.wood.thicknessM;
+    Number.isFinite(thicknessRaw) && thicknessRaw > 0 ? thicknessRaw : MATERIAL_DIMENSIONS.wood.thicknessM;
 
   removeAllChildren(g);
   ud.__wpSketchCustomHandles = true;
@@ -117,9 +115,9 @@ export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs)
       node: visualObj,
       partId: segmentPartId,
       width: Math.max(
-          SKETCH_BOX_DIMENSIONS.preview.segmentedDoorMinDimensionM,
-          width - SKETCH_BOX_DIMENSIONS.preview.segmentedDoorVisualClearanceM
-        ),
+        SKETCH_BOX_DIMENSIONS.preview.segmentedDoorMinDimensionM,
+        width - SKETCH_BOX_DIMENSIONS.preview.segmentedDoorVisualClearanceM
+      ),
       height: Math.max(SKETCH_BOX_DIMENSIONS.preview.segmentedDoorMinDimensionM, segHeight),
       hingeLeft: isLeftHinge,
       thickness,

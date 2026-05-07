@@ -164,7 +164,10 @@ function applyDrawerDividerPreview(ctx: SketchPlacementPreviewContext): boolean 
   const dividerT = Math.max(
     DRAWER_DIMENSIONS.sketch.previewDividerMinM,
     Math.min(
-      Math.max(SKETCH_BOX_DIMENSIONS.preview.doorMinDepthM, ctx.w * DRAWER_DIMENSIONS.sketch.previewDividerWidthRatio),
+      Math.max(
+        SKETCH_BOX_DIMENSIONS.preview.doorMinDepthM,
+        ctx.w * DRAWER_DIMENSIONS.sketch.previewDividerWidthRatio
+      ),
       DRAWER_DIMENSIONS.sketch.previewDividerMaxM
     )
   );

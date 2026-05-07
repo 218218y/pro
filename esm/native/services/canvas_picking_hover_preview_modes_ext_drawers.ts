@@ -64,7 +64,9 @@ export function tryHandleExtDrawersHoverPreview(args: ExtDrawersHoverPreviewArgs
             Number(target.internalDepth) + DRAWER_DIMENSIONS.sketch.externalPreviewDepthClearanceM
           );
     const centerX = selectorBox ? selectorBox.centerX : target.internalCenterX;
-    const centerZ = selectorBox ? selectorBox.centerZ : Number(target.internalZ) + DRAWER_DIMENSIONS.sketch.externalPreviewCenterZInsetM;
+    const centerZ = selectorBox
+      ? selectorBox.centerZ
+      : Number(target.internalZ) + DRAWER_DIMENSIONS.sketch.externalPreviewCenterZInsetM;
     const baseY = selectorBox
       ? selectorBox.centerY - selectorBox.height / 2
       : Number(target.bottomY) - Number(target.woodThick);
@@ -80,10 +82,13 @@ export function tryHandleExtDrawersHoverPreview(args: ExtDrawersHoverPreviewArgs
     const regH = DRAWER_DIMENSIONS.external.regularHeightM;
     const baseStackOffset = drawerType === 'shoe' ? 0 : hasShoe ? shoeH : 0;
     if (drawerType === 'shoe') {
-      drawers.push({ y: baseY + Number(target.woodThick) + shoeH / 2, h: Math.max(
+      drawers.push({
+        y: baseY + Number(target.woodThick) + shoeH / 2,
+        h: Math.max(
           DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinHeightM,
           shoeH - DRAWER_DIMENSIONS.external.visualHeightClearanceM
-        ) });
+        ),
+      });
     } else {
       for (let i = 0; i < drawerCount; i++) {
         drawers.push({

@@ -114,7 +114,11 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
         );
       } else {
         visual = new THREE.Mesh(
-          new THREE.BoxGeometry(faceW, drawerOp.visualH, drawerOp.visualT || DRAWER_DIMENSIONS.external.visualThicknessM),
+          new THREE.BoxGeometry(
+            faceW,
+            drawerOp.visualH,
+            drawerOp.visualT || DRAWER_DIMENSIONS.external.visualThicknessM
+          ),
           specificMat || bodyMat
         );
       }
