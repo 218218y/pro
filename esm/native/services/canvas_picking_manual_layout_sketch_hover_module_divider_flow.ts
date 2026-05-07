@@ -4,17 +4,19 @@ import {
   readFiniteNumber,
   readSketchDividerTargetBox,
 } from './canvas_picking_manual_layout_sketch_hover_module_shared.js';
+import { createManualLayoutSketchBoxContentHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
+import {
+  createManualLayoutSketchHoverHost,
+  writeManualLayoutSketchHoverPreview,
+} from './canvas_picking_manual_layout_sketch_hover_module_preview_shared.js';
 
 export function tryHandleManualLayoutSketchHoverModuleDividerFlow(
   ctx: ManualLayoutSketchHoverModuleContext
 ): boolean {
   const {
-    App,
     tool,
     boxes,
     setPreview,
-    hitModuleKey,
-    hitSelectorObj,
     hitLocalX,
     internalCenterX,
     woodThick,
@@ -24,7 +26,6 @@ export function tryHandleManualLayoutSketchHoverModuleDividerFlow(
     bottomY,
     spanH,
     yClamped,
-    isBottom,
     __wp_resolveSketchBoxGeometry,
     __wp_readSketchBoxDividers,
     __wp_resolveSketchBoxSegments,
@@ -32,7 +33,6 @@ export function tryHandleManualLayoutSketchHoverModuleDividerFlow(
     __wp_findNearestSketchBoxDivider,
     __wp_resolveSketchBoxDividerPlacement,
     __wp_readSketchBoxDividerXNorm,
-    __wp_writeSketchHover,
   } = ctx;
   if (tool === __SKETCH_BOX_DIVIDER_TOOL && boxes.length && setPreview) {
     let targetBox = null;
@@ -145,29 +145,42 @@ export function tryHandleManualLayoutSketchHoverModuleDividerFlow(
         dividerCentered = Math.abs(hoveredDivider.centerX - targetGeo.centerX) <= 0.001;
         dividerId = hoveredDivider.dividerId;
       }
-      __wp_writeSketchHover(App, {
-        kind: 'sketch_box_divider',
-        op,
-        moduleKey: hitModuleKey,
-        stack: isBottom ? 'bottom' : 'top',
-        boxId,
-        dividerId,
-        xNorm: dividerXNorm,
-        centered: dividerCentered,
+      const dividerHighlightX = hoveredDivider
+        ? targetGeo.centerX
+        : snapToSegment && activeSegment
+          ? activeSegment.centerX
+          : targetGeo.centerX;
+      const dividerPreviewW = hoveredDivider
+        ? targetGeo.innerW
+        : snapToSegment && activeSegment
+          ? activeSegment.width
+          : targetGeo.innerW;
+
+      return writeManualLayoutSketchHoverPreview(ctx, {
+        hoverRecord: createManualLayoutSketchBoxContentHoverRecord({
+          host: createManualLayoutSketchHoverHost(ctx),
+          contentKind: 'divider',
+          boxId,
+          freePlacement: false,
+          op,
+          dividerId,
+          dividerXNorm,
+          snapToCenter: dividerCentered,
+        }),
+        preview: {
+          kind: 'drawer_divider',
+          x: dividerCenterX,
+          highlightX: dividerHighlightX,
+          y: targetCenterY,
+          z: targetGeo.innerBackZ + targetGeo.innerD / 2,
+          w: Math.max(0.0001, dividerPreviewW),
+          h: Math.max(0.0001, targetHeight - woodThick * 2),
+          d: Math.max(0.0001, targetGeo.innerD),
+          woodThick,
+          snapToCenter: dividerCentered,
+          op,
+        },
       });
-      setPreview({
-        App,
-        moduleKey: hitModuleKey,
-        anchor: hitSelectorObj,
-        type: 'sketchBoxDivider',
-        centerX: dividerCenterX,
-        centerY: targetCenterY,
-        width: woodThick,
-        height: targetHeight,
-        depth: Math.max(0.001, targetGeo.outerD),
-        centerZ: targetGeo.centerZ,
-      });
-      return true;
     }
   }
   return false;

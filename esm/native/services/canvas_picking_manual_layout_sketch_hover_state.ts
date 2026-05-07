@@ -35,6 +35,9 @@ type ManualLayoutSketchBoxContentHoverArgs = {
   boxYNorm?: number | null;
   boxBaseYNorm?: number | null;
   contentXNorm?: number | null;
+  dividerXNorm?: number | null;
+  dividerId?: string | null;
+  snapToCenter?: boolean | null;
   variant?: string | null;
   depthM?: number | null;
   heightM?: number | null;
@@ -119,6 +122,9 @@ export function createManualLayoutSketchBoxContentHoverRecord(
       boxYNorm: args.boxYNorm ?? undefined,
       boxBaseYNorm: args.boxBaseYNorm ?? undefined,
       contentXNorm: args.contentXNorm ?? undefined,
+      dividerXNorm: args.dividerXNorm ?? undefined,
+      dividerId: args.dividerId ?? undefined,
+      snapToCenter: args.snapToCenter ?? undefined,
       variant: args.variant ?? undefined,
       depthM: args.depthM ?? undefined,
       heightM: args.heightM ?? undefined,

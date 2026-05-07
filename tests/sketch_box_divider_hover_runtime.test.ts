@@ -103,9 +103,12 @@ test('module sketch-box divider hover allows free placement away from center sna
   assert.equal(handled, true);
   assert.ok(hoverWrite);
   assert.ok(previewWrite);
-  approx(Number(hoverWrite?.xNorm), 0.7);
-  assert.equal(hoverWrite?.centered, false);
-  approx(Number(previewWrite?.centerX), 0.2);
+  approx(Number(hoverWrite?.dividerXNorm), 0.7);
+  assert.equal(hoverWrite?.snapToCenter, false);
+  assert.equal(hoverWrite?.kind, 'box_content');
+  assert.equal(hoverWrite?.contentKind, 'divider');
+  assert.equal(previewWrite?.kind, 'drawer_divider');
+  approx(Number(previewWrite?.x), 0.2);
 });
 
 test('free sketch-box divider preview snaps only when cursor is near a segment midpoint', () => {

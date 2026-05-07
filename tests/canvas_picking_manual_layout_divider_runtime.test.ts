@@ -58,20 +58,24 @@ test('manual-layout divider hover snaps to the active segment center when the cu
   assert.equal(hovers.length, 1);
   assert.equal(previews.length, 1);
 
-  assert.deepEqual(hovers[0], {
-    kind: 'sketch_box_divider',
-    op: 'add',
-    moduleKey: 3,
-    stack: 'top',
-    boxId: 'box-1',
-    dividerId: null,
-    xNorm: 0.5,
-    centered: true,
-  });
+  assert.equal(hovers[0].kind, 'box_content');
+  assert.equal(hovers[0].contentKind, 'divider');
+  assert.equal(hovers[0].op, 'add');
+  assert.equal(hovers[0].tool, 'sketch_box_divider');
+  assert.equal(hovers[0].moduleKey, 3);
+  assert.equal(hovers[0].isBottom, false);
+  assert.equal(hovers[0].hostModuleKey, 3);
+  assert.equal(hovers[0].hostIsBottom, false);
+  assert.equal(hovers[0].boxId, 'box-1');
+  assert.equal(hovers[0].dividerId ?? null, null);
+  assert.equal(hovers[0].dividerXNorm, 0.5);
+  assert.equal(hovers[0].snapToCenter, true);
+  assert.equal(Number.isFinite(hovers[0].ts), true);
 
-  assert.equal(previews[0].type, 'sketchBoxDivider');
-  assert.equal(previews[0].centerX, 0);
-  assert.equal(previews[0].height, 0.8);
+  assert.equal(previews[0].kind, 'drawer_divider');
+  assert.equal(previews[0].x, 0);
+  assert.equal(previews[0].y, 1);
+  assert.equal(previews[0].h, 0.76);
 });
 
 test('manual-layout divider hover switches into remove mode when an existing divider is nearest', () => {
@@ -85,15 +89,13 @@ test('manual-layout divider hover switches into remove mode when an existing div
   assert.equal(hovers.length, 1);
   assert.equal(previews.length, 1);
 
-  assert.deepEqual(hovers[0], {
-    kind: 'sketch_box_divider',
-    op: 'remove',
-    moduleKey: 3,
-    stack: 'top',
-    boxId: 'box-1',
-    dividerId: 'div-1',
-    xNorm: 0.22,
-    centered: false,
-  });
-  assert.equal(previews[0].centerX, -0.11);
+  assert.equal(hovers[0].kind, 'box_content');
+  assert.equal(hovers[0].contentKind, 'divider');
+  assert.equal(hovers[0].op, 'remove');
+  assert.equal(hovers[0].boxId, 'box-1');
+  assert.equal(hovers[0].dividerId, 'div-1');
+  assert.equal(hovers[0].dividerXNorm, 0.22);
+  assert.equal(hovers[0].snapToCenter, false);
+  assert.equal(previews[0].kind, 'drawer_divider');
+  assert.equal(previews[0].x, -0.11);
 });
