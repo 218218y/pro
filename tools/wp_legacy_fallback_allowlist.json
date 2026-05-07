@@ -472,12 +472,6 @@
         "runtime-default": 6
       }
     },
-    "esm/native/features/library_preset/library_preset_shared.ts": {
-      "total": 6,
-      "categories": {
-        "runtime-default": 6
-      }
-    },
     "esm/native/features/model_record/model_record_normalizer.ts": {
       "total": 4,
       "categories": {
