@@ -1,4 +1,5 @@
 import { getThreeMaybe } from '../runtime/three_access.js';
+import { WARDROBE_LAYOUT_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
   __callMaybe,
   __readPreviewSetSketchPlacementPreview,
@@ -50,6 +51,7 @@ export function tryHandleCellDimsHoverPreview(args: CellDimsHoverPreviewArgs): b
 
     const previewTargetBox = resolveCellDimsTargetBox(App, target, selectorBox, applyW, applyH, applyD);
     const op = getCellDimsHoverOp(App, target, selectorBox);
+    const previewDims = WARDROBE_LAYOUT_DIMENSIONS.cellDimsPreview;
 
     setPreview({
       App,
@@ -61,10 +63,13 @@ export function tryHandleCellDimsHoverPreview(args: CellDimsHoverPreviewArgs): b
       x: Number(previewTargetBox.centerX),
       y: Number(previewTargetBox.centerY),
       z: Number(previewTargetBox.centerZ),
-      w: Math.max(0.03, Number(previewTargetBox.width) - 0.006),
-      boxH: Math.max(0.03, Number(previewTargetBox.height) - 0.006),
-      d: Math.max(0.024, Number(previewTargetBox.depth)),
-      woodThick: Math.max(0.004, Math.min(0.01, Number(target.woodThick) * 0.5)),
+      w: Math.max(previewDims.minWidthM, Number(previewTargetBox.width) - previewDims.widthClearanceM),
+      boxH: Math.max(previewDims.minHeightM, Number(previewTargetBox.height) - previewDims.heightClearanceM),
+      d: Math.max(previewDims.minDepthM, Number(previewTargetBox.depth)),
+      woodThick: Math.max(
+        previewDims.woodThicknessMinM,
+        Math.min(previewDims.woodThicknessMaxM, Number(target.woodThick) * previewDims.woodThicknessScale)
+      ),
       op,
     });
     return true;

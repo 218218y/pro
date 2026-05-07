@@ -181,3 +181,50 @@ test('[dimension tokens] mirror layout measurements read door visual dimension t
   assert.doesNotMatch(geometry, /\* 0\.18/);
 });
 
+test('[dimension tokens] door visual miter/profile/trim preview geometry is centralized', () => {
+  const tokens = read(productDimensionTokenSource);
+  assert.match(tokens, /miter: Object\.freeze\(\{/);
+  assert.match(tokens, /roundedBeadThicknessRatio:/);
+  assert.match(tokens, /outerAccentLineThicknessM:/);
+  assert.match(tokens, /frontSurfaceNudgeM:/);
+
+  for (const rel of [
+    'esm/native/builder/visuals_and_contents_door_visual_miter_frame.ts',
+    'esm/native/builder/visuals_and_contents_door_visual_profile.ts',
+  ]) {
+    assertUsesToken(rel, 'DOOR_VISUAL_DIMENSIONS');
+  }
+  assertUsesToken('esm/native/builder/door_trim_visuals.ts', 'DOOR_TRIM_DIMENSIONS');
+
+  const miter = read('esm/native/builder/visuals_and_contents_door_visual_miter_frame.ts');
+  assert.doesNotMatch(miter, /Math\.max\(0\.001, Math\.min\(bandW/);
+  assert.doesNotMatch(miter, /faceZ \+ 0\.0008 \* zSign/);
+  assert.doesNotMatch(miter, /bevelOffset: -Math\.min\(0\.0006, bw \* 0\.03\)/);
+
+  const profile = read('esm/native/builder/visuals_and_contents_door_visual_profile.ts');
+  assert.doesNotMatch(profile, /lineT: 0\.0018/);
+  assert.doesNotMatch(profile, /densityOverride: 12/);
+
+  const trim = read('esm/native/builder/door_trim_visuals.ts');
+  assert.doesNotMatch(trim, /frontZ = 0\.011/);
+  assert.doesNotMatch(trim, /DEFAULT_DOOR_TRIM_DEPTH_M \* 0\.5 \+ 0\.0005/);
+});
+
+test('[dimension tokens] door split and cell dimension hover preview measurements are centralized', () => {
+  const tokens = read(productDimensionTokenSource);
+  assert.match(tokens, /hoverStandardLineHeightRatio:/);
+  assert.match(tokens, /cellDimsPreview: Object\.freeze\(\{/);
+
+  assertUsesToken('esm/native/services/canvas_picking_door_split_hover_flow.ts', 'DOOR_SYSTEM_DIMENSIONS');
+  assertUsesToken('esm/native/services/canvas_picking_hover_preview_modes_cell_dims.ts', 'WARDROBE_LAYOUT_DIMENSIONS');
+
+  const splitHover = read('esm/native/services/canvas_picking_door_split_hover_flow.ts');
+  assert.doesNotMatch(splitHover, /maxY - minY < 0\.05/);
+  assert.doesNotMatch(splitHover, /standardLineH = Math\.max\(0\.014, Math\.min\(0\.026/);
+  assert.doesNotMatch(splitHover, /const zOff = 0\.02 \* \(zSign === -1 \? -1 : 1\)/);
+
+  const cellDims = read('esm/native/services/canvas_picking_hover_preview_modes_cell_dims.ts');
+  assert.doesNotMatch(cellDims, /w: Math\.max\(0\.03, Number\(previewTargetBox\.width\) - 0\.006\)/);
+  assert.doesNotMatch(cellDims, /woodThick: Math\.max\(0\.004, Math\.min\(0\.01/);
+});
+

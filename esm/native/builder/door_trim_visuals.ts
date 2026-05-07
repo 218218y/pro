@@ -4,6 +4,7 @@ import {
   readDoorTrimList,
   resolveDoorTrimPlacement,
 } from '../features/door_trim.js';
+import { DOOR_TRIM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { ensureDoorTrimMaterialCache } from '../runtime/door_trim_visuals_access.js';
 
 type DoorTrimColorPalette = {
@@ -140,7 +141,7 @@ export function appendDoorTrimVisuals(args: DoorTrimVisualArgs): void {
     doorWidth,
     doorHeight,
     doorMeshOffsetX = 0,
-    frontZ = 0.011,
+    frontZ = DOOR_TRIM_DIMENSIONS.defaults.frontZM,
     faceSign = 1,
   } = args;
   const three = asMinimalThree(THREE);
@@ -156,7 +157,7 @@ export function appendDoorTrimVisuals(args: DoorTrimVisualArgs): void {
     maxY: doorHeight / 2,
   };
   const face = faceSign < 0 ? -1 : 1;
-  const z = (frontZ + DEFAULT_DOOR_TRIM_DEPTH_M * 0.5 + 0.0005) * face;
+  const z = (frontZ + DEFAULT_DOOR_TRIM_DEPTH_M * 0.5 + DOOR_TRIM_DIMENSIONS.defaults.frontSurfaceNudgeM) * face;
   const renderOrder = readRenderOrder(groupObj);
 
   for (let i = 0; i < trimList.length; i += 1) {

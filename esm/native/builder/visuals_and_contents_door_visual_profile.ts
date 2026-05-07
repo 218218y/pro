@@ -6,6 +6,7 @@ import {
   createDoorVisualCacheKey,
   getCachedDoorVisualGeometry,
 } from './visuals_and_contents_door_visual_cache.js';
+import { DOOR_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 import type { StyledDoorVisualArgs } from './visuals_and_contents_door_visual_style_contracts.js';
 
@@ -39,6 +40,7 @@ export function createProfileDoorVisual(args: StyledDoorVisualArgs) {
     mat,
     zSign,
   });
+  const profileDims = DOOR_VISUAL_DIMENSIONS.profile;
   const { centerW, centerH, centerDepth, innerFrameW, stepSpanW, stepSpanH, centerFaceZ } = layout;
 
   const centerPanel = new THREE.Mesh(
@@ -47,9 +49,9 @@ export function createProfileDoorVisual(args: StyledDoorVisualArgs) {
       createDoorVisualCacheKey('door_profile_center', [
         centerW,
         centerH,
-        Math.max(0.002, thickness - centerDepth),
+        Math.max(profileDims.centerPanelDepthMinM, thickness - centerDepth),
       ]),
-      () => new THREE.BoxGeometry(centerW, centerH, Math.max(0.002, thickness - centerDepth))
+      () => new THREE.BoxGeometry(centerW, centerH, Math.max(profileDims.centerPanelDepthMinM, thickness - centerDepth))
     ),
     mat
   );
@@ -68,8 +70,8 @@ export function createProfileDoorVisual(args: StyledDoorVisualArgs) {
     targetW: centerW,
     targetH: centerH,
     faceZ: centerFaceZ,
-    inset: Math.min(innerFrameW * 0.2, 0.01),
-    lineT: 0.0018,
+    inset: Math.min(innerFrameW * profileDims.outerAccentInsetFrameRatio, profileDims.outerAccentInsetMaxM),
+    lineT: profileDims.outerAccentLineThicknessM,
     opacity: 0.14,
   });
   appendSubtleDoorAccentBorder({
@@ -82,8 +84,8 @@ export function createProfileDoorVisual(args: StyledDoorVisualArgs) {
     targetW: stepSpanW,
     targetH: stepSpanH,
     faceZ: (thickness / 2 - layout.stepDepth) * zSign,
-    inset: Math.min(innerFrameW * 0.28, 0.012),
-    lineT: 0.0016,
+    inset: Math.min(innerFrameW * profileDims.innerAccentInsetFrameRatio, profileDims.innerAccentInsetMaxM),
+    lineT: profileDims.innerAccentLineThicknessM,
     opacity: 0.1,
   });
   appendGrooveStrips({
@@ -98,7 +100,7 @@ export function createProfileDoorVisual(args: StyledDoorVisualArgs) {
     targetW: centerW,
     targetH: centerH,
     zOffset: centerFaceZ,
-    densityOverride: 12,
+    densityOverride: profileDims.grooveDensityOverride,
   });
 
   return visualGroup;
