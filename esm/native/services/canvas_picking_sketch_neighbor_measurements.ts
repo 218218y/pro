@@ -1,4 +1,8 @@
-import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  DRAWER_DIMENSIONS,
+  INTERIOR_FITTINGS_DIMENSIONS,
+  MATERIAL_DIMENSIONS,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
   buildManualLayoutSketchExternalDrawerBlockers,
   buildManualLayoutSketchInternalDrawerBlockers,
@@ -77,8 +81,13 @@ function readLayoutShelfState(
 } | null {
   if (!cfgRef) return null;
   const divisionsRaw =
-    readRecordNumber(info, 'gridDivisions') ?? readRecordNumber(cfgRef, 'gridDivisions') ?? 6;
-  const divisions = Number.isFinite(divisionsRaw) && divisionsRaw > 1 ? Math.floor(divisionsRaw) : 6;
+    readRecordNumber(info, 'gridDivisions') ??
+    readRecordNumber(cfgRef, 'gridDivisions') ??
+    INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault;
+  const divisions =
+    Number.isFinite(divisionsRaw) && divisionsRaw > 1
+      ? Math.floor(divisionsRaw)
+      : INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault;
   if (!(divisions > 1)) return null;
 
   const isCustom = !!readValue(cfgRef, 'isCustom');
@@ -185,13 +194,27 @@ function buildStandardDrawerRanges(
   args: RangeBuildContext & { cfgRef: RecordMap | null }
 ): VerticalClearanceNeighborRange[] {
   if (!args.cfgRef) return [];
-  const divsRaw = readRecordNumber(args.cfgRef, 'gridDivisions') ?? 6;
-  const divisions = Number.isFinite(divsRaw) && divsRaw >= 2 && divsRaw <= 12 ? Math.floor(divsRaw) : 6;
+  const drawerDims = DRAWER_DIMENSIONS.sketch;
+  const divsRaw = readRecordNumber(args.cfgRef, 'gridDivisions') ?? drawerDims.internalPreviewGridDivisionsFallback;
+  const divisions =
+    Number.isFinite(divsRaw) &&
+    divsRaw >= drawerDims.internalPreviewGridDivisionsMin &&
+    divsRaw <= drawerDims.internalPreviewGridDivisionsMax
+      ? Math.floor(divsRaw)
+      : drawerDims.internalPreviewGridDivisionsFallback;
   const gridStep = args.totalHeight / divisions;
-  const targetSingleDrawerH = (Math.min(0.35, gridStep - 0.02) - 0.02) / 2;
+  const targetSingleDrawerH =
+    (Math.min(
+      DRAWER_DIMENSIONS.internal.maxSingleDrawerHeightM,
+      gridStep - drawerDims.internalPreviewSingleDrawerGapM
+    ) -
+      drawerDims.internalPreviewSingleDrawerGapM) /
+    drawerDims.internalStackCount;
   const drawerH =
-    Number.isFinite(targetSingleDrawerH) && targetSingleDrawerH > 0 ? targetSingleDrawerH : 0.11;
-  const stackH = drawerH * 2 + 0.02;
+    Number.isFinite(targetSingleDrawerH) && targetSingleDrawerH > 0
+      ? targetSingleDrawerH
+      : drawerDims.internalPreviewDefaultSingleHeightM;
+  const stackH = drawerH * drawerDims.internalStackCount + drawerDims.internalPreviewSingleDrawerGapM;
   const slots: number[] = [];
   const list = readValue(args.cfgRef, 'intDrawersList');
   if (Array.isArray(list)) {
@@ -211,7 +234,9 @@ function buildStandardDrawerRanges(
     const lo = args.bottomY + args.pad + stackH / 2;
     const hi = args.topY - args.pad - stackH / 2;
     const centerY =
-      hi > lo ? Math.max(lo, Math.min(hi, baseGridY + drawerH + 0.02)) : baseGridY + drawerH + 0.02;
+      hi > lo
+        ? Math.max(lo, Math.min(hi, baseGridY + drawerH + drawerDims.internalPreviewSingleDrawerGapM))
+        : baseGridY + drawerH + drawerDims.internalPreviewSingleDrawerGapM;
     pushRange(ranges, centerY - stackH / 2, centerY + stackH / 2, 'drawer');
   }
   return ranges;

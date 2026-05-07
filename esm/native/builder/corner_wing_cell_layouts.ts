@@ -179,26 +179,24 @@ function applyCornerWingPresetLayout(params: CornerWingCellLayoutParams): void {
     checkAndCreateInternalDrawer,
   } = params;
   const layoutType = cfgCell.layout;
+  const presetDims = INTERIOR_FITTINGS_DIMENSIONS.presets;
   const __presetShelfSet: Record<number, true> = Object.create(null);
+  const addPresetShelfRows = (rows: readonly number[]) => {
+    for (const row of rows) __presetShelfSet[row] = true;
+  };
   switch (layoutType) {
     case 'shelves':
     case 'mixed':
-      __presetShelfSet[1] = true;
-      __presetShelfSet[2] = true;
-      __presetShelfSet[3] = true;
-      __presetShelfSet[4] = true;
-      __presetShelfSet[5] = true;
+      addPresetShelfRows(presetDims.fullShelfRows);
       break;
     case 'hanging':
     case 'hanging_top2':
     case 'storage':
     case 'storage_shelf':
-      __presetShelfSet[4] = true;
-      __presetShelfSet[5] = true;
+      addPresetShelfRows(presetDims.hangingShelfRows);
       break;
     case 'hanging_split':
-      __presetShelfSet[1] = true;
-      __presetShelfSet[5] = true;
+      addPresetShelfRows(presetDims.splitShelfRows);
       break;
   }
 
@@ -220,29 +218,32 @@ function applyCornerWingPresetLayout(params: CornerWingCellLayoutParams): void {
 
   switch (layoutType) {
     case 'shelves':
-      for (let s = 1; s <= 5; s++) addGridShelf(s);
+      for (const row of presetDims.fullShelfRows) addGridShelf(row);
       break;
     case 'mixed':
-      for (let s = 1; s <= 5; s++) addGridShelf(s);
-      createRod(effectiveBottomY + 3.5 * localGridStep);
+      for (const row of presetDims.fullShelfRows) addGridShelf(row);
+      createRod(effectiveBottomY + presetDims.mixedRodYFactor * localGridStep);
       break;
     case 'hanging':
     case 'hanging_top2':
-      addGridShelf(5);
-      addGridShelf(4);
-      createRod(effectiveBottomY + 3.8 * localGridStep);
+      for (const row of presetDims.hangingShelfRows) addGridShelf(row);
+      createRod(effectiveBottomY + presetDims.hangingRodYFactor * localGridStep);
       break;
     case 'hanging_split':
-      addGridShelf(5);
-      addGridShelf(1);
-      createRod(effectiveBottomY + 4.6 * localGridStep, 2.3 * localGridStep);
-      createRod(effectiveBottomY + 2.3 * localGridStep);
+      for (const row of presetDims.splitShelfRows) addGridShelf(row);
+      createRod(
+        effectiveBottomY + presetDims.splitUpperRodYFactor * localGridStep,
+        presetDims.splitUpperRodLimitFactor * localGridStep
+      );
+      createRod(effectiveBottomY + presetDims.splitLowerRodYFactor * localGridStep);
       break;
     case 'storage':
     case 'storage_shelf':
-      addGridShelf(5);
-      addGridShelf(4);
-      createRod(effectiveBottomY + 3.5 * localGridStep, 3.5 * localGridStep - localGridStep);
+      for (const row of presetDims.hangingShelfRows) addGridShelf(row);
+      createRod(
+        effectiveBottomY + presetDims.storageRodYFactor * localGridStep,
+        presetDims.storageRodLimitFactor * localGridStep - localGridStep
+      );
       addCornerStorageBarrier({
         THREE: params.THREE,
         wingGroup: params.wingGroup,

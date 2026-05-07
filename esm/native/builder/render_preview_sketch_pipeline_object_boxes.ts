@@ -1,3 +1,4 @@
+import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { SketchPlacementPreviewContext } from './render_preview_sketch_pipeline_shared.js';
 
 export function applyObjectBoxesSketchPlacementPreview(ctx: SketchPlacementPreviewContext): boolean {
@@ -44,8 +45,23 @@ export function applyObjectBoxesSketchPlacementPreview(ctx: SketchPlacementPrevi
       ? ctx.ud.__lineRemove
       : ctx.ud.__lineBox;
 
-  const padXY = Math.max(0.0015, Math.min(0.004, ctx.woodThick * 0.12 || 0.002));
-  const padZ = Math.max(0.0005, Math.min(0.002, padXY * 0.5));
+  const padXY =
+    Number.isFinite(ctx.woodThick) && ctx.woodThick > 0
+      ? Math.min(
+          SKETCH_BOX_DIMENSIONS.preview.objectBoxPadXYMaxM,
+          Math.max(
+            SKETCH_BOX_DIMENSIONS.preview.objectBoxPadXYMinM,
+            ctx.woodThick * SKETCH_BOX_DIMENSIONS.preview.objectBoxPadXYWoodRatio
+          )
+        )
+      : SKETCH_BOX_DIMENSIONS.preview.objectBoxPadXYDefaultM;
+  const padZ = Math.max(
+    SKETCH_BOX_DIMENSIONS.preview.objectBoxPadZMinM,
+    Math.min(
+      SKETCH_BOX_DIMENSIONS.preview.objectBoxPadZMaxM,
+      padXY * SKETCH_BOX_DIMENSIONS.preview.objectBoxPadZRatio
+    )
+  );
   ctx.g.visible = true;
   ctx.hideAll();
 
@@ -138,9 +154,18 @@ export function applyObjectBoxesSketchPlacementPreview(ctx: SketchPlacementPrevi
     );
     if (typeof helper.position?.set === 'function') helper.position.set(center.x, center.y, center.z);
     if (typeof helperQuat?.copy === 'function') helperQuat.copy(quat);
-    const scaleX = Math.max(0.0001, Math.abs((Number(scale.x) || 1) * (width0 + padXY * 2)));
-    const scaleY = Math.max(0.0001, Math.abs((Number(scale.y) || 1) * (height0 + padXY * 2)));
-    const scaleZ = Math.max(0.0001, Math.abs((Number(scale.z) || 1) * (depth0 + padZ * 2)));
+    const scaleX = Math.max(
+      SKETCH_BOX_DIMENSIONS.preview.minScaleM,
+      Math.abs((Number(scale.x) || 1) * (width0 + padXY * 2))
+    );
+    const scaleY = Math.max(
+      SKETCH_BOX_DIMENSIONS.preview.minScaleM,
+      Math.abs((Number(scale.y) || 1) * (height0 + padXY * 2))
+    );
+    const scaleZ = Math.max(
+      SKETCH_BOX_DIMENSIONS.preview.minScaleM,
+      Math.abs((Number(scale.z) || 1) * (depth0 + padZ * 2))
+    );
     if (typeof helper.scale?.set === 'function') helper.scale.set(scaleX, scaleY, scaleZ);
   }
 

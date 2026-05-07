@@ -1,3 +1,7 @@
+import {
+  INTERIOR_FITTINGS_DIMENSIONS,
+  SKETCH_BOX_DIMENSIONS,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { createManualLayoutSketchBoxContentHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import type {
   ResolveSketchBoxVerticalContentPreviewArgs,
@@ -25,7 +29,7 @@ export function resolveSketchBoxStoragePreview(
     pointerY,
     woodThick,
     storageHeight,
-    removeEpsBox = 0.03,
+    removeEpsBox = SKETCH_BOX_DIMENSIONS.preview.removeEpsBoxM,
     pickSketchBoxSegment,
   } = args;
   const {
@@ -38,8 +42,12 @@ export function resolveSketchBoxStoragePreview(
     targetHeight,
   } = state;
 
+  const storageDims = INTERIOR_FITTINGS_DIMENSIONS.storage;
+  const previewDims = SKETCH_BOX_DIMENSIONS.preview;
   const barrierHeight =
-    storageHeight != null && Number.isFinite(storageHeight) && storageHeight > 0 ? storageHeight : 0.5;
+    storageHeight != null && Number.isFinite(storageHeight) && storageHeight > 0
+      ? storageHeight
+      : storageDims.barrierHeightM;
   let previewY = clampBoxCenterY(pointerY, barrierHeight / 2);
   let previewSegment: SketchBoxSegmentLike | null = activeSegment;
   let op: 'add' | 'remove' = 'add';
@@ -87,8 +95,13 @@ export function resolveSketchBoxStoragePreview(
   const barrierCenterX = readFiniteSegmentNumber(storageSegment, 'centerX') ?? targetGeo.centerX;
   const barrierWidth = readFiniteSegmentNumber(storageSegment, 'width') ?? targetGeo.innerW;
   const barrierZ = Math.max(
-    targetGeo.innerBackZ + 0.009,
-    targetGeo.innerBackZ + targetGeo.innerD - Math.min(0.06, Math.max(0.02, targetGeo.innerD * 0.35))
+    targetGeo.innerBackZ + previewDims.storageBarrierBackInsetM,
+    targetGeo.innerBackZ +
+      targetGeo.innerD -
+      Math.min(
+        previewDims.storageBarrierDepthClearanceMaxM,
+        Math.max(previewDims.storageBarrierDepthClearanceMinM, targetGeo.innerD * previewDims.storageBarrierDepthClearanceRatio)
+      )
   );
 
   return {
@@ -109,9 +122,9 @@ export function resolveSketchBoxStoragePreview(
       x: barrierCenterX,
       y: previewY,
       z: barrierZ,
-      w: Math.max(0.02, barrierWidth - 0.025),
+      w: Math.max(SKETCH_BOX_DIMENSIONS.preview.shelfMinWidthM, barrierWidth - storageDims.barrierWidthClearanceM),
       h: barrierHeight,
-      d: Math.max(0.0001, woodThick),
+      d: Math.max(storageDims.previewThicknessMinM, woodThick),
       woodThick,
       op,
     },

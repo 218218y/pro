@@ -1,3 +1,4 @@
+import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { PreviewMeshLike } from './render_preview_ops_contracts.js';
 import type { SketchPlacementPreviewContext } from './render_preview_sketch_pipeline_shared.js';
 
@@ -9,7 +10,7 @@ export function applyBoxVolumeSketchPlacementPreview(ctx: SketchPlacementPreview
   const fillBack = ctx.input.fillBack === true;
   const snapToCenter = ctx.input.snapToCenter === true;
   const overlayThroughScene = ctx.input.overlayThroughScene === true;
-  const thickness = Math.max(0.0001, ctx.woodThick);
+  const thickness = Math.max(SKETCH_BOX_DIMENSIONS.preview.minScaleM, ctx.woodThick);
 
   if (!(boxH > thickness * 2)) {
     ctx.g.visible = false;
@@ -27,15 +28,15 @@ export function applyBoxVolumeSketchPlacementPreview(ctx: SketchPlacementPreview
     ctx.y,
     ctx.w,
     boxH,
-    Math.max(0.004, Math.min(ctx.d, thickness))
+    Math.max(SKETCH_BOX_DIMENSIONS.preview.boxFillThicknessMinM, Math.min(ctx.d, thickness))
   );
-  const frontFillT = frontOverlay ? frontOverlay.t : Math.max(0.004, Math.min(ctx.d, thickness));
+  const frontFillT = frontOverlay ? frontOverlay.t : Math.max(SKETCH_BOX_DIMENSIONS.preview.boxFillThicknessMinM, Math.min(ctx.d, thickness));
   const frontZ = frontOverlay ? frontOverlay.z : ctx.z + ctx.d / 2 - frontFillT / 2;
   const frontX = frontOverlay ? frontOverlay.x : ctx.x;
   const frontY = frontOverlay ? frontOverlay.y : ctx.y;
   const frontW = frontOverlay ? frontOverlay.w : ctx.w;
   const frontH = frontOverlay ? frontOverlay.h : boxH;
-  const backFillT = Math.max(0.004, Math.min(ctx.d, thickness));
+  const backFillT = Math.max(SKETCH_BOX_DIMENSIONS.preview.boxFillThicknessMinM, Math.min(ctx.d, thickness));
   const backZ = ctx.z - ctx.d / 2 + backFillT / 2;
   const backW = Math.max(thickness, ctx.w - 2 * thickness);
   const backH = Math.max(thickness, boxH - 2 * thickness);
@@ -91,7 +92,10 @@ export function applyBoxVolumeSketchPlacementPreview(ctx: SketchPlacementPreview
 
   const setCenterMarker = () => {
     if (!ctx.shelfA) return;
-    const markerT = Math.max(0.004, Math.min(thickness, 0.012));
+    const markerT = Math.max(
+      SKETCH_BOX_DIMENSIONS.preview.boxCenterMarkerThicknessMinM,
+      Math.min(thickness, SKETCH_BOX_DIMENSIONS.preview.boxCenterMarkerThicknessMaxM)
+    );
     ctx.setVisible(ctx.shelfA, true);
     ctx.resetMeshOrientation(ctx.shelfA);
     ctx.applyPreviewStyle(
@@ -103,7 +107,7 @@ export function applyBoxVolumeSketchPlacementPreview(ctx: SketchPlacementPreview
     );
     if (typeof ctx.shelfA.position?.set === 'function') ctx.shelfA.position.set(ctx.x, ctx.y, frontZ);
     if (typeof ctx.shelfA.scale?.set === 'function') {
-      ctx.shelfA.scale.set(markerT, Math.max(0.0001, boxH), markerT);
+      ctx.shelfA.scale.set(markerT, Math.max(SKETCH_BOX_DIMENSIONS.preview.minScaleM, boxH), markerT);
     }
   };
 

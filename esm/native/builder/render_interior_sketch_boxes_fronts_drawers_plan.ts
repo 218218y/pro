@@ -6,7 +6,7 @@ import {
   readSketchDrawerHeightMFromItem,
   resolveSketchExternalDrawerMetrics,
 } from '../features/sketch_drawer_sizing.js';
-import { resolveExternalDrawerGeometry } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DRAWER_DIMENSIONS, resolveExternalDrawerGeometry } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 import type {
   SketchBoxExternalDrawerOpPlan,
@@ -54,7 +54,7 @@ export function createSketchBoxExternalDrawerStackPlan(
   const drawerId = item.id != null && String(item.id) ? String(item.id) : String(drawerIndex);
   const keyPrefix = `${boxPid}_ext_drawers_${drawerId}_`;
   const span = context.resolveBoxDrawerSpan(item);
-  const outerW = Math.max(0.08, span.outerW);
+  const outerW = Math.max(DRAWER_DIMENSIONS.sketch.externalPreviewMinWidthM, span.outerW);
   const drawerFaceW = span.faceW;
   const drawerFaceOffsetX = span.faceCenterX - span.outerCenterX;
   const opsRec = asValueRecord(
@@ -102,6 +102,7 @@ export function createSketchBoxExternalDrawerOpPlan(
 ): SketchBoxExternalDrawerOpPlan | null {
   const op = asValueRecord(opValue);
   if (!op) return null;
+  const drawerDims = DRAWER_DIMENSIONS.sketch;
 
   const { shell } = context;
   const { boxMat, geometry: boxGeo, innerBottomY, innerTopY } = shell;
@@ -119,10 +120,10 @@ export function createSketchBoxExternalDrawerOpPlan(
   const pz = toFiniteNumber(closed?.z) ?? fallbackGeom.zClosed;
   const partId = `${stack.keyPrefix}${opIndex + 1}`;
   const frontMat = context.resolvePartMaterial(partId, boxMat);
-  const visualW = Math.max(0.05, toFiniteNumber(op.visualW) ?? fallbackGeom.visualW);
-  const faceW = Math.max(0.05, toFiniteNumber(op.faceW) ?? visualW);
+  const visualW = Math.max(drawerDims.externalPreviewVisualMinWidthM, toFiniteNumber(op.visualW) ?? fallbackGeom.visualW);
+  const faceW = Math.max(drawerDims.externalPreviewVisualMinWidthM, toFiniteNumber(op.faceW) ?? visualW);
   const faceOffsetX = toFiniteNumber(op.faceOffsetX) ?? 0;
-  const visualHRaw = Math.max(0.05, toFiniteNumber(op.visualH) ?? fallbackGeom.visualH);
+  const visualHRaw = Math.max(drawerDims.externalPreviewVisualMinHeightM, toFiniteNumber(op.visualH) ?? fallbackGeom.visualH);
   const faceVertical = resolveSketchExternalDrawerFaceVerticalAlignment({
     drawerIndex: opIndex,
     drawerCount: stack.drawerOps.length || stack.drawerCount,
@@ -147,14 +148,14 @@ export function createSketchBoxExternalDrawerOpPlan(
     visualW,
     faceW,
     faceOffsetX,
-    visualH: Math.max(0.05, faceVertical.height),
+    visualH: Math.max(drawerDims.externalPreviewVisualMinHeightM, faceVertical.height),
     faceOffsetY: faceVertical.offsetY,
     faceMinY: faceVertical.minY,
     faceMaxY: faceVertical.maxY,
-    visualD: Math.max(0.005, toFiniteNumber(op.visualT) ?? context.visualT),
-    boxW: Math.max(0.05, toFiniteNumber(op.boxW) ?? fallbackGeom.boxW),
-    boxH: Math.max(0.05, toFiniteNumber(op.boxH) ?? fallbackGeom.boxH),
-    boxD: Math.max(0.05, toFiniteNumber(op.boxD) ?? fallbackGeom.boxD),
+    visualD: Math.max(drawerDims.externalPreviewVisualMinDepthM, toFiniteNumber(op.visualT) ?? context.visualT),
+    boxW: Math.max(drawerDims.externalPreviewBoxMinDimensionM, toFiniteNumber(op.boxW) ?? fallbackGeom.boxW),
+    boxH: Math.max(drawerDims.externalPreviewBoxMinDimensionM, toFiniteNumber(op.boxH) ?? fallbackGeom.boxH),
+    boxD: Math.max(drawerDims.externalPreviewBoxMinDimensionM, toFiniteNumber(op.boxD) ?? fallbackGeom.boxD),
     boxOffsetZ: toFiniteNumber(op.boxOffsetZ) ?? fallbackGeom.boxOffsetZ,
     connectorW: toFiniteNumber(op.connectW),
     connectorH: toFiniteNumber(op.connectH),

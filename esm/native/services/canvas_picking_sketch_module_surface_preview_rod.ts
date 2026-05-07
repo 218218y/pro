@@ -1,3 +1,7 @@
+import {
+  INTERIOR_FITTINGS_DIMENSIONS,
+  SKETCH_BOX_DIMENSIONS,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { findNearestSketchModuleRod } from './canvas_picking_sketch_module_vertical_content.js';
 import {
   createRodRemoveHoverRecord,
@@ -36,7 +40,8 @@ function resolvePresetRodPreviewMatch(args: {
   spanH: number;
   pointerY: number;
 }): SketchModuleRodRemoveMatch | null {
-  const divs = readRecordNumber(args.info, 'gridDivisions') ?? 6;
+  const presetDims = INTERIOR_FITTINGS_DIMENSIONS.presets;
+  const divs = readRecordNumber(args.info, 'gridDivisions') ?? INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault;
   if (!(divs > 0)) return null;
   const step = args.spanH / divs;
   if (!(step > 0)) return null;
@@ -73,14 +78,20 @@ function resolvePresetRodPreviewMatch(args: {
       const gridIndex =
         rawGridIndex != null
           ? Math.max(1, Math.min(divs, Math.round(rawGridIndex)))
-          : Math.max(1, Math.min(divs, Math.round((rawYFactor * divs) / 6)));
+          : Math.max(
+              1,
+              Math.min(
+                divs,
+                Math.round((rawYFactor * divs) / INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault)
+              )
+            );
       covered.add(gridIndex);
       const yAdd = readRecordNumber(rodOp, 'yAdd') ?? 0;
       consider(gridIndex, args.bottomY + rawYFactor * step + yAdd);
     }
     for (let i = 1; i <= divs; i += 1) {
       if (covered.has(i) || !rods[i - 1]) continue;
-      consider(i, args.bottomY + i * step - 0.08);
+      consider(i, args.bottomY + i * step + INTERIOR_FITTINGS_DIMENSIONS.rods.defaultYOffsetM);
     }
     return best;
   }
@@ -89,18 +100,18 @@ function resolvePresetRodPreviewMatch(args: {
   const yFactors: number[] = [];
   switch (layout) {
     case 'mixed':
-      yFactors.push(3.5);
+      yFactors.push(presetDims.mixedRodYFactor);
       break;
     case 'hanging':
     case 'hanging_top2':
-      yFactors.push(3.8);
+      yFactors.push(presetDims.hangingRodYFactor);
       break;
     case 'hanging_split':
-      yFactors.push(4.6, 2.3);
+      yFactors.push(presetDims.splitUpperRodYFactor, presetDims.splitLowerRodYFactor);
       break;
     case 'storage':
     case 'storage_shelf':
-      yFactors.push(3.5);
+      yFactors.push(presetDims.storageRodYFactor);
       break;
     default:
       break;
@@ -190,9 +201,9 @@ export function resolveSketchModuleRodRemovePreview(args: {
       x: args.internalCenterX,
       y: previewY,
       z: args.internalZ,
-      w: Math.max(0.05, args.innerW - 0.06),
-      h: 0.03,
-      d: 0.03,
+      w: Math.max(SKETCH_BOX_DIMENSIONS.preview.rodMinLengthM, args.innerW - SKETCH_BOX_DIMENSIONS.preview.rodWidthClearanceM),
+      h: SKETCH_BOX_DIMENSIONS.preview.rodPreviewHeightM,
+      d: SKETCH_BOX_DIMENSIONS.preview.rodPreviewDepthM,
       woodThick: args.woodThick,
       op: 'remove',
     },

@@ -1,3 +1,7 @@
+import {
+  INTERIOR_FITTINGS_DIMENSIONS,
+  SKETCH_BOX_DIMENSIONS,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { findNearestSketchModuleShelf } from './canvas_picking_sketch_module_vertical_content.js';
 import { resolveSketchModuleBoxPreviewState } from './canvas_picking_sketch_module_surface_preview_box.js';
 import { resolveSketchModuleShelfRemovePreview } from './canvas_picking_sketch_module_surface_preview_shelf.js';
@@ -47,11 +51,11 @@ export function resolveSketchModuleSurfacePreview(
   let storageHPreview = storageH;
   let contentOp: 'add' | 'remove' = 'add';
 
-  const regShelfDepth = 0.45;
+  const regShelfDepth = INTERIOR_FITTINGS_DIMENSIONS.shelves.regularDepthM;
   const regularDepth = internalDepth > 0 ? Math.min(internalDepth, regShelfDepth) : regShelfDepth;
   const backZ = internalZ - internalDepth / 2;
-  const removeEpsShelf = 0.02;
-  const removeEpsBox = 0.03;
+  const removeEpsShelf = SKETCH_BOX_DIMENSIONS.preview.removeEpsShelfM;
+  const removeEpsBox = SKETCH_BOX_DIMENSIONS.preview.removeEpsBoxM;
   const isDrawersTool = isSketchInternalDrawersTool(args.tool);
 
   const shelfRemovePreview = allowExistingShelfRemove

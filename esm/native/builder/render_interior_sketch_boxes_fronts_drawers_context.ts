@@ -1,3 +1,7 @@
+import {
+  DRAWER_DIMENSIONS,
+  SKETCH_BOX_DIMENSIONS,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { getDrawersArray } from '../runtime/render_access.js';
 import { resolveBuilderMirrorMaterial } from '../runtime/builder_service_access.js';
 
@@ -21,8 +25,9 @@ export function createSketchBoxExternalDrawersContext(
   const boxExtDrawers = asRecordArray<InteriorValueRecord>(box.extDrawers);
   if (!(boxExtDrawers.length && THREE)) return null;
 
-  const outerD = Math.max(0.1, boxGeo.outerD);
-  const visualT = 0.02;
+  const drawerDims = DRAWER_DIMENSIONS.sketch;
+  const outerD = Math.max(drawerDims.externalPreviewMinDepthM, boxGeo.outerD);
+  const visualT = SKETCH_BOX_DIMENSIONS.preview.drawerPreviewThicknessM;
   const frontZ = boxGeo.centerZ + boxGeo.outerD / 2;
   const drawersArray = getDrawersArray(App);
   const createInternalDrawerBox = input.createInternalDrawerBox;

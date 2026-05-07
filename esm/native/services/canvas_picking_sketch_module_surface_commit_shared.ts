@@ -1,3 +1,8 @@
+import {
+  cmToM,
+  INTERIOR_FITTINGS_DIMENSIONS,
+  SKETCH_BOX_DIMENSIONS,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type {
   SketchBoxGeometryArgs,
   SketchBoxGeometry,
@@ -91,15 +96,18 @@ export function parseSketchShelfTool(tool: string): { variant: string; shelfDept
   const n = Number(raw.slice(at + 1).trim());
   return {
     variant,
-    shelfDepthM: Number.isFinite(n) && n > 0 ? n / 100 : null,
+    shelfDepthM: Number.isFinite(n) && n > 0 ? cmToM(n) : null,
   };
 }
 
 export function parseSketchStorageHeight(tool: string): number {
-  if (!tool.startsWith('sketch_storage:')) return 0.5;
+  const storageDims = INTERIOR_FITTINGS_DIMENSIONS.storage;
+  if (!tool.startsWith('sketch_storage:')) return storageDims.barrierHeightM;
   const raw = tool.slice('sketch_storage:'.length).trim();
   const n = Number(raw);
-  return Number.isFinite(n) ? Math.max(0.05, Math.min(1.2, n / 100)) : 0.5;
+  return Number.isFinite(n)
+    ? Math.max(storageDims.barrierHeightMinM, Math.min(storageDims.barrierHeightMaxM, cmToM(n)))
+    : storageDims.barrierHeightM;
 }
 
 export function parseSketchModuleBoxTool(args: {
@@ -111,8 +119,14 @@ export function parseSketchModuleBoxTool(args: {
   const widthCm = readNumber(spec ? spec.widthCm : null);
   const depthCm = readNumber(spec ? spec.depthCm : null);
   return {
-    boxH: heightCm != null ? Math.max(0.05, Math.min(1.2, heightCm / 100)) : 0.4,
-    boxWM: widthCm != null && widthCm > 0 ? widthCm / 100 : null,
-    boxDM: depthCm != null && depthCm > 0 ? depthCm / 100 : null,
+    boxH:
+      heightCm != null
+        ? Math.max(
+            SKETCH_BOX_DIMENSIONS.geometry.minOuterHeightM,
+            Math.min(SKETCH_BOX_DIMENSIONS.geometry.maxOuterHeightM, cmToM(heightCm))
+          )
+        : SKETCH_BOX_DIMENSIONS.geometry.defaultOuterHeightM,
+    boxWM: widthCm != null && widthCm > 0 ? cmToM(widthCm) : null,
+    boxDM: depthCm != null && depthCm > 0 ? cmToM(depthCm) : null,
   };
 }

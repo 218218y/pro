@@ -1,3 +1,7 @@
+import {
+  INTERIOR_FITTINGS_DIMENSIONS,
+  SKETCH_BOX_DIMENSIONS,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { buildSketchModuleStackAwareMeasurementEntries } from './canvas_picking_sketch_neighbor_measurements.js';
 import {
   createSketchModuleShelfPreviewGeometry,
@@ -38,6 +42,8 @@ export function resolveSketchModuleContentPreview(args: {
   storageBarriers: ResolveSketchModuleSurfacePreviewArgs['storageBarriers'];
   rods: ResolveSketchModuleSurfacePreviewArgs['rods'];
 }): SketchModuleSurfacePreviewResult {
+  const previewDims = SKETCH_BOX_DIMENSIONS.preview;
+  const storageDims = INTERIOR_FITTINGS_DIMENSIONS.storage;
   const {
     source,
     bottomY,
@@ -117,10 +123,10 @@ export function resolveSketchModuleContentPreview(args: {
         kind: 'storage',
         x: internalCenterX,
         y: yClamped,
-        z: zFront - 0.06,
-        w: Math.max(0.05, innerW - 0.025),
+        z: zFront + storageDims.barrierFrontZOffsetM,
+        w: Math.max(storageDims.barrierWidthMinM, innerW - storageDims.barrierWidthClearanceM),
         h: storageHPreview,
-        d: Math.max(0.0001, woodThick),
+        d: Math.max(storageDims.previewThicknessMinM, woodThick),
         woodThick,
         op,
       },
@@ -135,9 +141,9 @@ export function resolveSketchModuleContentPreview(args: {
         x: internalCenterX,
         y: yClamped,
         z: internalZ,
-        w: Math.max(0.05, innerW - 0.06),
-        h: 0.03,
-        d: 0.03,
+        w: Math.max(previewDims.rodMinLengthM, innerW - previewDims.rodWidthClearanceM),
+        h: previewDims.rodPreviewHeightM,
+        d: previewDims.rodPreviewDepthM,
         woodThick,
         op,
       },
@@ -171,9 +177,12 @@ export function resolveSketchModuleContentPreview(args: {
     targetCenterY: yClamped,
     targetWidth: shelfPreview.w,
     targetHeight: shelfPreview.h,
-    z: shelfPreview.z + shelfPreview.d / 2 + Math.max(0.004, shelfPreview.d * 0.08),
+    z:
+      shelfPreview.z +
+      shelfPreview.d / 2 +
+      Math.max(previewDims.measurementZOffsetMinM, shelfPreview.d * previewDims.measurementZOffsetDepthRatio),
     styleKey: 'cell',
-    textScale: 0.82,
+    textScale: previewDims.measurementTextScale,
   });
   return {
     handled: true,

@@ -1,3 +1,4 @@
+import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
   commitSketchModuleRod,
   commitSketchModuleShelf,
@@ -21,7 +22,7 @@ export function tryCommitSketchModuleVerticalContentTool(args: CommitSketchModul
       yNorm: args.yNorm,
       variant,
       shelfDepthM,
-      removeEps: 0.02,
+      removeEps: SKETCH_BOX_DIMENSIONS.preview.removeEpsShelfM,
     });
     return true;
   }
@@ -33,7 +34,7 @@ export function tryCommitSketchModuleVerticalContentTool(args: CommitSketchModul
       totalHeight: args.totalHeight,
       pointerY: args.hitY0,
       yNorm: args.yNorm,
-      removeEps: 0.02,
+      removeEps: SKETCH_BOX_DIMENSIONS.preview.removeEpsShelfM,
     });
     return true;
   }
@@ -47,7 +48,7 @@ export function tryCommitSketchModuleVerticalContentTool(args: CommitSketchModul
       pad: args.pad,
       pointerY: args.hitYClamped,
       heightM: parseSketchStorageHeight(args.tool),
-      removeEps: 0.03,
+      removeEps: SKETCH_BOX_DIMENSIONS.preview.removeEpsBoxM,
       idFactory: () => createRandomId('ss'),
     });
     return true;

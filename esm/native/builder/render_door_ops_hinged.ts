@@ -1,5 +1,6 @@
 import { resolveConfiguredHandleColor } from './handle_finish_runtime.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
+import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { BuilderRenderDoorDeps } from './render_door_ops_shared.js';
 import {
   isFunction,
@@ -38,6 +39,7 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
     const ops = args && Array.isArray(args.ops) ? args.ops : null;
 
     if (!THREE || !ops) return false;
+    const hingedDims = DOOR_SYSTEM_DIMENSIONS.hinged;
     const wardrobeGroup = readObject3D(__wardrobeGroup(App));
     if (!wardrobeGroup) return false;
 
@@ -90,7 +92,11 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
       if (removeDoorsEnabled && removed) {
         if (isRemoveDoorMode) {
           const box = new THREE.Mesh(
-            new THREE.BoxGeometry((doorOp.width || 0) - 0.004, (doorOp.height || 0) - 0.004, 0.018),
+            new THREE.BoxGeometry(
+            (doorOp.width || 0) - hingedDims.visualWidthClearanceM,
+            (doorOp.height || 0) - hingedDims.visualHeightClearanceM,
+            hingedDims.visualThicknessM
+          ),
             new THREE.MeshBasicMaterial({
               color: 0xff0000,
               transparent: true,
@@ -130,9 +136,9 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
           doorOp.style === 'glass' ? resolveDoorVisualStyle(null, doorStyle, cfg.doorStyleMap, partId) : null;
         const glassFrameStyle = glassFrameStyleRaw === 'glass' ? null : glassFrameStyleRaw;
         visual = createDoorVisual(
-          (doorOp.width || 0) - 0.004,
-          (doorOp.height || 0) - 0.004,
-          0.018,
+          (doorOp.width || 0) - hingedDims.visualWidthClearanceM,
+          (doorOp.height || 0) - hingedDims.visualHeightClearanceM,
+          hingedDims.visualThicknessM,
           isMirrorDoor ? mirrorMat : woodMat,
           effectiveDoorStyle,
           doorOp.hasGroove,
@@ -147,7 +153,11 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
         );
       } else {
         visual = new THREE.Mesh(
-          new THREE.BoxGeometry((doorOp.width || 0) - 0.004, (doorOp.height || 0) - 0.004, 0.018),
+          new THREE.BoxGeometry(
+            (doorOp.width || 0) - hingedDims.visualWidthClearanceM,
+            (doorOp.height || 0) - hingedDims.visualHeightClearanceM,
+            hingedDims.visualThicknessM
+          ),
           isMirrorDoor ? mirrorMat : woodMat
         );
       }
@@ -163,7 +173,7 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
         doorWidth: doorOp.width,
         doorHeight: doorOp.height,
         doorMeshOffsetX: doorOp.meshOffsetX || 0,
-        frontZ: 0.011,
+        frontZ: hingedDims.frontTrimZOffsetM,
         faceSign: 1,
       });
       if (isMirrorDoor) __tagAndTrackMirrorSurfaces(App, visual, mirrorMat);

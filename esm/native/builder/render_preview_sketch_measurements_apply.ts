@@ -1,4 +1,5 @@
 import type { AppContainer } from '../../../types';
+import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { getDimLabelEntry } from './render_ops_extras_dimensions.js';
 import type { PreviewGroupLike, SketchPlacementPreviewArgs } from './render_preview_ops_contracts.js';
 import type { RenderPreviewSketchShared } from './render_preview_sketch_shared.js';
@@ -90,14 +91,37 @@ export function applySketchPlacementMeasurements(args: {
     const labelX = readFinite(entry.labelX) ?? (startX + endX) / 2;
     const labelY = readFinite(entry.labelY) ?? (startY + endY) / 2;
     const labelFaceSign = resolveMeasurementLabelFaceSign(entry, input, z);
-    const labelZ = z + (labelFaceSign >= 0 ? 0.0035 : -0.0035);
+    const labelZ =
+      z +
+      (labelFaceSign >= 0
+        ? SKETCH_BOX_DIMENSIONS.preview.measurementLabelZOffsetM
+        : -SKETCH_BOX_DIMENSIONS.preview.measurementLabelZOffsetM);
     slot.label.position?.set?.(labelX, labelY, labelZ);
     orientMeasurementLabelForFace(slot.label, labelFaceSign);
 
-    const textScale = Math.max(0.55, readFinite(entry.textScale) ?? 0.9);
-    if (styleKey === 'cell') slot.label.scale?.set?.(0.48 * textScale, 0.24 * textScale, 1);
-    else if (styleKey === 'neighbor') slot.label.scale?.set?.(0.45 * textScale, 0.225 * textScale, 1);
-    else slot.label.scale?.set?.(0.6 * textScale, 0.3 * textScale, 1);
+    const textScale = Math.max(
+      SKETCH_BOX_DIMENSIONS.preview.measurementTextScaleMin,
+      readFinite(entry.textScale) ?? SKETCH_BOX_DIMENSIONS.preview.measurementTextScaleDefault
+    );
+    if (styleKey === 'cell') {
+      slot.label.scale?.set?.(
+        SKETCH_BOX_DIMENSIONS.preview.measurementScaleCellX * textScale,
+        SKETCH_BOX_DIMENSIONS.preview.measurementScaleCellY * textScale,
+        1
+      );
+    } else if (styleKey === 'neighbor') {
+      slot.label.scale?.set?.(
+        SKETCH_BOX_DIMENSIONS.preview.measurementScaleNeighborX * textScale,
+        SKETCH_BOX_DIMENSIONS.preview.measurementScaleNeighborY * textScale,
+        1
+      );
+    } else {
+      slot.label.scale?.set?.(
+        SKETCH_BOX_DIMENSIONS.preview.measurementScaleDefaultX * textScale,
+        SKETCH_BOX_DIMENSIONS.preview.measurementScaleDefaultY * textScale,
+        1
+      );
+    }
   }
 
   for (let i = used; i < slots.length; i += 1) {

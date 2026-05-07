@@ -1,3 +1,4 @@
+import { CONTENT_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { normalizeGrooveLinesCount, resolveGrooveLinesCount } from './groove_lines_count.js';
 
 import type { AppContainer } from '../../../types/index.js';
@@ -61,14 +62,24 @@ export function appendClassicDoorAccentAndGrooves(args: {
     // ignore
   }
 
-  const accentInset = Math.max(0.0025, Math.min(0.0045, Math.min(doorW, doorH) * 0.015));
-  const accentT = Math.max(0.0013, Math.min(0.0019, Math.min(doorW, doorH) * 0.0045));
-  const accentInnerW = Math.max(0.02, doorW - accentInset * 2);
-  const accentInnerH = Math.max(0.02, doorH - accentInset * 2);
-  const accentZ = doorD / 2 + 0.0008;
+  const classicDims = CONTENT_VISUAL_DIMENSIONS.sketchBoxClassic;
+  const accentInset = Math.max(
+    classicDims.accentInsetMinM,
+    Math.min(classicDims.accentInsetMaxM, Math.min(doorW, doorH) * classicDims.accentInsetDoorRatio)
+  );
+  const accentT = Math.max(
+    classicDims.accentLineThicknessMinM,
+    Math.min(
+      classicDims.accentLineThicknessMaxM,
+      Math.min(doorW, doorH) * classicDims.accentLineThicknessDoorRatio
+    )
+  );
+  const accentInnerW = Math.max(classicDims.accentInnerMinM, doorW - accentInset * 2);
+  const accentInnerH = Math.max(classicDims.accentInnerMinM, doorH - accentInset * 2);
+  const accentZ = doorD / 2 + classicDims.accentSurfaceOffsetM;
   const addAccent = (partId: string, w: number, h: number, x: number, y: number) => {
     if (!(w > 0) || !(h > 0)) return;
-    const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, 0.001), accentMat);
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, classicDims.accentStripDepthM), accentMat);
     mesh.position?.set?.(slabLocalX + x, y, accentZ);
     mesh.renderOrder = 3;
     applySketchBoxPickMeta(mesh, partId, moduleKeyStr, bid, { door: true });
@@ -84,14 +95,14 @@ export function appendClassicDoorAccentAndGrooves(args: {
   addAccent(
     `${doorPid}_accent_left`,
     accentT,
-    Math.max(0.02, accentInnerH),
+    Math.max(classicDims.accentInnerMinM, accentInnerH),
     -(accentInnerW / 2 - accentT / 2),
     0
   );
   addAccent(
     `${doorPid}_accent_right`,
     accentT,
-    Math.max(0.02, accentInnerH),
+    Math.max(classicDims.accentInnerMinM, accentInnerH),
     accentInnerW / 2 - accentT / 2,
     0
   );
@@ -111,10 +122,10 @@ export function appendClassicDoorAccentAndGrooves(args: {
       normalizeGrooveLinesCount(boxDoor.grooveLinesCount) ??
       resolveGrooveLinesCount(App, doorW, undefined, doorPid);
     const grooveGap = doorW / (grooveCount + 1);
-    const grooveStripW = 0.005;
-    const grooveStripH = Math.max(0.01, doorH - 0.04);
-    const grooveDepth = 0.002;
-    const grooveZ = doorD / 2 + 0.001;
+    const grooveStripW = classicDims.grooveStripWidthM;
+    const grooveStripH = Math.max(classicDims.grooveHeightMinM, doorH - classicDims.grooveHeightClearanceM);
+    const grooveDepth = classicDims.grooveDepthM;
+    const grooveZ = doorD / 2 + classicDims.grooveSurfaceOffsetM;
     for (let grooveIndex = 1; grooveIndex <= grooveCount; grooveIndex++) {
       const grooveX = -doorW / 2 + grooveIndex * grooveGap;
       const mesh = new THREE.Mesh(

@@ -1,3 +1,7 @@
+import {
+  DRAWER_DIMENSIONS,
+  SKETCH_BOX_DIMENSIONS,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { getDrawersArray } from '../runtime/render_access.js';
 import { resolveBuilderMirrorMaterial } from '../runtime/builder_service_access.js';
 
@@ -33,9 +37,13 @@ export function createSketchExternalDrawerRenderContext(
 
   if (!extDrawers.length || !THREE) return null;
 
-  const outerW = Math.max(0.08, innerW);
-  const outerD = Math.max(0.1, moduleDepth > 0 ? moduleDepth : internalDepth + 0.05);
-  const visualT = 0.02;
+  const drawerDims = DRAWER_DIMENSIONS.sketch;
+  const outerW = Math.max(drawerDims.externalPreviewMinWidthM, innerW);
+  const outerD = Math.max(
+    drawerDims.externalPreviewMinDepthM,
+    moduleDepth > 0 ? moduleDepth : internalDepth + drawerDims.externalPreviewDepthClearanceM
+  );
+  const visualT = SKETCH_BOX_DIMENSIONS.preview.drawerPreviewThicknessM;
   const frontZ =
     toFiniteNumber(readObject<InteriorValueRecord>(input)?.externalFrontZ) ?? Math.max(0, outerD / 2);
   const outlineFn = isFn(input.addOutlines) ? input.addOutlines : null;

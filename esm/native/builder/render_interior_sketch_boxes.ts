@@ -1,3 +1,4 @@
+import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type {
   RenderInteriorSketchBoxesArgs,
   RenderSketchBoxAbsEntry,
@@ -43,17 +44,18 @@ function createSketchBoxDrawerSpanResolver(args: {
     const innerRight = shell.geometry.centerX + shell.geometry.innerW / 2;
     const segmentLeft = segment ? segment.leftX : innerLeft;
     const segmentRight = segment ? segment.rightX : innerRight;
-    const leftExt = Math.abs(segmentLeft - innerLeft) <= 0.001 ? woodThick : woodThick / 2;
-    const rightExt = Math.abs(segmentRight - innerRight) <= 0.001 ? woodThick : woodThick / 2;
+    const edgeEpsilon = SKETCH_BOX_DIMENSIONS.preview.doorEdgeEpsilonM;
+    const leftExt = Math.abs(segmentLeft - innerLeft) <= edgeEpsilon ? woodThick : woodThick / 2;
+    const rightExt = Math.abs(segmentRight - innerRight) <= edgeEpsilon ? woodThick : woodThick / 2;
     const outerLeft = segmentLeft - leftExt;
     const outerRight = segmentRight + rightExt;
     return {
       segment,
       innerW: segment ? segment.width : shell.geometry.innerW,
       innerCenterX: segment ? segment.centerX : shell.geometry.centerX,
-      outerW: Math.max(0.05, outerRight - outerLeft),
+      outerW: Math.max(SKETCH_BOX_DIMENSIONS.geometry.minOuterWidthM, outerRight - outerLeft),
       outerCenterX: (outerLeft + outerRight) / 2,
-      faceW: Math.max(0.05, outerRight - outerLeft),
+      faceW: Math.max(SKETCH_BOX_DIMENSIONS.geometry.minOuterWidthM, outerRight - outerLeft),
       faceCenterX: (outerLeft + outerRight) / 2,
     };
   };

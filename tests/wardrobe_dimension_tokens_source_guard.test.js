@@ -386,3 +386,64 @@ test('[dimension tokens] sketch drawer cut, handle placement, rods, and storage 
   const externalPipeline = read('esm/native/builder/external_drawers_pipeline.ts');
   assert.doesNotMatch(externalPipeline, /innerW - 0\.025/);
 });
+
+test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canonical dimensions', () => {
+  const tokens = read(productDimensionTokenSource);
+  for (const tokenPattern of [
+    /sketchBoxClassic: Object\.freeze\(\{/,
+    /externalPreviewBoxMinDimensionM:/,
+    /measurementLabelZOffsetM:/,
+    /objectBoxPadXYWoodRatio:/,
+    /barrierHeightMinM:/,
+    /braceSeamDepthInsetM:/,
+    /frontTrimZOffsetM:/,
+  ]) {
+    assert.match(tokens, tokenPattern);
+  }
+
+  const expectedTokenUse = new Map([
+    ['esm/native/builder/corner_wing_cell_layouts.ts', ['INTERIOR_FITTINGS_DIMENSIONS', 'presetDims']],
+    ['esm/native/builder/render_door_ops_hinged.ts', ['DOOR_SYSTEM_DIMENSIONS', 'hingedDims']],
+    ['esm/native/builder/render_interior_preset_ops.ts', ['INTERIOR_FITTINGS_DIMENSIONS']],
+    ['esm/native/builder/render_interior_sketch_boxes_fronts_door_accents.ts', ['CONTENT_VISUAL_DIMENSIONS', 'sketchBoxClassic']],
+    ['esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts', ['DRAWER_DIMENSIONS']],
+    ['esm/native/builder/render_interior_sketch_drawers_external_plan.ts', ['DRAWER_DIMENSIONS']],
+    ['esm/native/builder/render_interior_sketch_support_brace_seams.ts', ['INTERIOR_FITTINGS_DIMENSIONS', 'MM_PER_METER']],
+    ['esm/native/builder/render_interior_sketch_support_shelf_pins.ts', ['INTERIOR_FITTINGS_DIMENSIONS']],
+    ['esm/native/builder/render_preview_interior_hover_apply.ts', ['SKETCH_BOX_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS']],
+    ['esm/native/builder/render_preview_sketch_measurements_apply.ts', ['SKETCH_BOX_DIMENSIONS']],
+    ['esm/native/builder/render_preview_sketch_pipeline_box_content_box.ts', ['SKETCH_BOX_DIMENSIONS']],
+    ['esm/native/builder/render_preview_sketch_pipeline_linear.ts', ['SKETCH_BOX_DIMENSIONS']],
+    ['esm/native/builder/render_preview_sketch_pipeline_object_boxes.ts', ['SKETCH_BOX_DIMENSIONS']],
+    ['esm/native/services/canvas_picking_interior_hover_int_drawer.ts', ['DRAWER_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS']],
+    ['esm/native/services/canvas_picking_manual_layout_sketch_hover_module_context_base.ts', ['cmToM', 'SKETCH_BOX_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS']],
+    ['esm/native/services/canvas_picking_sketch_box_vertical_content_preview_storage.ts', ['SKETCH_BOX_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS']],
+    ['esm/native/services/canvas_picking_sketch_module_surface_commit_shared.ts', ['cmToM', 'SKETCH_BOX_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS']],
+    ['esm/native/services/canvas_picking_sketch_module_surface_commit_vertical.ts', ['SKETCH_BOX_DIMENSIONS']],
+    ['esm/native/services/canvas_picking_sketch_module_surface_preview_content.ts', ['SKETCH_BOX_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS']],
+    ['esm/native/services/canvas_picking_sketch_module_surface_preview_flow.ts', ['SKETCH_BOX_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS']],
+    ['esm/native/services/canvas_picking_sketch_module_surface_preview_rod.ts', ['SKETCH_BOX_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS']],
+    ['esm/native/services/canvas_picking_sketch_module_surface_preview_shelf.ts', ['SKETCH_BOX_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS']],
+    ['esm/native/services/canvas_picking_sketch_neighbor_measurements.ts', ['DRAWER_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS']],
+  ]);
+
+  for (const [rel, tokensToFind] of expectedTokenUse) {
+    for (const tokenName of tokensToFind) assertUsesToken(rel, tokenName);
+  }
+
+  const previewHover = read('esm/native/builder/render_preview_interior_hover_apply.ts');
+  assert.match(previewHover, /previewDims\.rodMinLengthM/);
+  assert.match(previewHover, /storageDims\.barrierWidthClearanceM/);
+
+  const measurements = read('esm/native/builder/render_preview_sketch_measurements_apply.ts');
+  assert.match(measurements, /measurementLabelZOffsetM/);
+  assert.match(measurements, /measurementScaleCellX/);
+
+  const moduleRodPreview = read('esm/native/services/canvas_picking_sketch_module_surface_preview_rod.ts');
+  assert.match(moduleRodPreview, /presetDims\.mixedRodYFactor/);
+  assert.match(moduleRodPreview, /presetDims\.storageRodYFactor/);
+
+  const commitShared = read('esm/native/services/canvas_picking_sketch_module_surface_commit_shared.ts');
+  assert.match(commitShared, /cmToM\(n\)/);
+  assert.match(commitShared, /storageDims\.barrierHeightMaxM/);
+});

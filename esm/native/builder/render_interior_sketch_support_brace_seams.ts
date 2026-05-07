@@ -1,3 +1,4 @@
+import { INTERIOR_FITTINGS_DIMENSIONS, MM_PER_METER } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type {
   InteriorGroupLike,
   InteriorMaterialLike,
@@ -7,8 +8,8 @@ import type {
 import type { SketchModuleInnerFaces } from './render_interior_sketch_module_geometry.js';
 import type { SketchPlacementSupport } from './render_interior_sketch_support_contracts.js';
 
-const BRACE_SIDE_GAP = 0.001;
-const BRACE_SEAM_PAD = 0.0001;
+const BRACE_SIDE_GAP = INTERIOR_FITTINGS_DIMENSIONS.shelves.braceSideGapM;
+const BRACE_SEAM_PAD = INTERIOR_FITTINGS_DIMENSIONS.shelves.braceSeamPadM;
 
 export function createBraceDarkSeamAdder(args: {
   group: InteriorGroupLike;
@@ -33,9 +34,16 @@ export function createBraceDarkSeamAdder(args: {
       seamMat.__keepMaterial = true;
       braceSeamMat = seamMat;
     }
-    const key = String(Math.round(depth * 1000));
+    const key = String(Math.round(depth * MM_PER_METER));
     if (!braceSeamGeoCache[key]) {
-      braceSeamGeoCache[key] = new T.BoxGeometry(BRACE_SEAM_W, woodThick, Math.max(0.0001, depth - 0.0005));
+      braceSeamGeoCache[key] = new T.BoxGeometry(
+        BRACE_SEAM_W,
+        woodThick,
+        Math.max(
+          INTERIOR_FITTINGS_DIMENSIONS.shelves.braceSeamDepthMinM,
+          depth - INTERIOR_FITTINGS_DIMENSIONS.shelves.braceSeamDepthInsetM
+        )
+      );
     }
     return { geo: braceSeamGeoCache[key], mat: braceSeamMat };
   };

@@ -1,4 +1,8 @@
 import {
+  INTERIOR_FITTINGS_DIMENSIONS,
+  SKETCH_BOX_DIMENSIONS,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
   createSketchModuleShelfPreviewGeometry,
   findNearestSketchModuleShelf,
 } from './canvas_picking_sketch_module_vertical_content.js';
@@ -75,7 +79,8 @@ export function resolveSketchModuleShelfRemovePreview(
         }
       }
       if (op !== 'remove' && cfgRef && typeof cfgRef === 'object') {
-        const divisions = readRecordNumber(info, 'gridDivisions') ?? 6;
+        const divisions =
+          readRecordNumber(info, 'gridDivisions') ?? INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault;
         if (divisions > 1) {
           const step = spanH / divisions;
           const rel = shelfHitY - bottomY;
@@ -83,11 +88,20 @@ export function resolveSketchModuleShelfRemovePreview(
           if (shelfIndex < 1) shelfIndex = 1;
           if (shelfIndex > divisions - 1) shelfIndex = divisions - 1;
           const targetY = bottomY + shelfIndex * step;
-          const epsNoBoard = Math.min(0.03, Math.max(0.018, step * 0.12));
+          const epsNoBoard = Math.min(
+            SKETCH_BOX_DIMENSIONS.preview.shelfRemoveNoBoardToleranceMaxM,
+            Math.max(
+              SKETCH_BOX_DIMENSIONS.preview.shelfRemoveNoBoardToleranceMinM,
+              step * SKETCH_BOX_DIMENSIONS.preview.shelfRemoveNoBoardToleranceStepRatio
+            )
+          );
           const eps = hitFromBoard
-            ? 0.035
+            ? SKETCH_BOX_DIMENSIONS.preview.shelfRemoveBoardToleranceM
             : isCornerMk && isDrawers
-              ? Math.min(0.03, epsNoBoard + 0.006)
+              ? Math.min(
+                  SKETCH_BOX_DIMENSIONS.preview.shelfRemoveNoBoardToleranceMaxM,
+                  epsNoBoard + SKETCH_BOX_DIMENSIONS.preview.shelfRemoveCornerDrawerToleranceExtraM
+                )
               : epsNoBoard;
           if (Math.abs(shelfHitY - targetY) <= eps) {
             let exists = false;
@@ -158,9 +172,15 @@ export function resolveSketchModuleShelfRemovePreview(
       targetCenterY: nextYClamped,
       targetWidth: shelfPreview.w,
       targetHeight: shelfPreview.h,
-      z: shelfPreview.z + shelfPreview.d / 2 + Math.max(0.004, shelfPreview.d * 0.08),
+      z:
+        shelfPreview.z +
+        shelfPreview.d / 2 +
+        Math.max(
+          SKETCH_BOX_DIMENSIONS.preview.measurementZOffsetMinM,
+          shelfPreview.d * SKETCH_BOX_DIMENSIONS.preview.measurementZOffsetDepthRatio
+        ),
       styleKey: 'cell',
-      textScale: 0.82,
+      textScale: SKETCH_BOX_DIMENSIONS.preview.measurementTextScale,
     });
     return {
       handled: true,

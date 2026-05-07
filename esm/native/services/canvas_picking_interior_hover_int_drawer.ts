@@ -1,3 +1,7 @@
+import {
+  DRAWER_DIMENSIONS,
+  INTERIOR_FITTINGS_DIMENSIONS,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { hasViewportPickingSurface } from '../runtime/render_access.js';
 import { getInternalGridMap } from '../runtime/cache_access.js';
 import { getModeId } from '../runtime/api.js';
@@ -116,7 +120,9 @@ export function tryHandleCanvasIntDrawerHover(args: CanvasInteriorHoverFlowArgs)
     const spanH = topY - bottomY;
     const divs = readGridDivisions(info.gridDivisions);
     const relY = hitY - bottomY;
-    const localGridStep = divs > 0 ? spanH / divs : spanH / 6;
+    const drawerDims = DRAWER_DIMENSIONS.sketch;
+    const storageDims = INTERIOR_FITTINGS_DIMENSIONS.storage;
+    const localGridStep = divs > 0 ? spanH / divs : spanH / drawerDims.internalPreviewGridDivisionsFallback;
     let slot = Math.ceil(relY / localGridStep);
     if (slot < 1) slot = 1;
     if (slot > divs) slot = divs;
@@ -140,13 +146,24 @@ export function tryHandleCanvasIntDrawerHover(args: CanvasInteriorHoverFlowArgs)
     }
 
     const op = hasSlot ? 'remove' : 'add';
-    const pad = Math.min(0.006, Math.max(0.001, woodThick * 0.2));
-    const drawerSizingGridStep = spanH / 6;
-    const targetSingleDrawerH = (Math.min(0.35, drawerSizingGridStep - 0.02) - 0.02) / 2;
+    const pad = Math.min(
+      storageDims.clampPadMaxM,
+      Math.max(storageDims.clampPadMinM, woodThick * storageDims.clampPadWoodRatio)
+    );
+    const drawerSizingGridStep = spanH / drawerDims.internalPreviewGridDivisionsFallback;
+    const targetSingleDrawerH =
+      (Math.min(
+        DRAWER_DIMENSIONS.internal.maxSingleDrawerHeightM,
+        drawerSizingGridStep - drawerDims.internalPreviewSingleDrawerGapM
+      ) -
+        drawerDims.internalPreviewSingleDrawerGapM) /
+      drawerDims.internalStackCount;
     const singleDrawerH =
-      Number.isFinite(targetSingleDrawerH) && targetSingleDrawerH > 0 ? targetSingleDrawerH : 0.11;
-    const drawerGap = 0.03;
-    const stackH = 2 * singleDrawerH + drawerGap;
+      Number.isFinite(targetSingleDrawerH) && targetSingleDrawerH > 0
+        ? targetSingleDrawerH
+        : drawerDims.internalPreviewDefaultSingleHeightM;
+    const drawerGap = drawerDims.internalGapM;
+    const stackH = drawerDims.internalStackCount * singleDrawerH + drawerGap;
 
     const clampCenter = (yCenter: number) => {
       const lo = bottomY + pad + stackH / 2;
@@ -155,11 +172,19 @@ export function tryHandleCanvasIntDrawerHover(args: CanvasInteriorHoverFlowArgs)
       return Math.max(lo, Math.min(hi, yCenter));
     };
 
-    const targetSingleDrawerHStd = (Math.min(0.35, localGridStep - 0.02) - 0.02) / 2;
+    const targetSingleDrawerHStd =
+      (Math.min(
+        DRAWER_DIMENSIONS.internal.maxSingleDrawerHeightM,
+        localGridStep - drawerDims.internalPreviewSingleDrawerGapM
+      ) -
+        drawerDims.internalPreviewSingleDrawerGapM) /
+      drawerDims.internalStackCount;
     const hStd =
-      Number.isFinite(targetSingleDrawerHStd) && targetSingleDrawerHStd > 0 ? targetSingleDrawerHStd : 0.11;
+      Number.isFinite(targetSingleDrawerHStd) && targetSingleDrawerHStd > 0
+        ? targetSingleDrawerHStd
+        : drawerDims.internalPreviewDefaultSingleHeightM;
     const baseGridY = bottomY + (slot - 1) * localGridStep;
-    const centerAbs = clampCenter(baseGridY + hStd + 0.02);
+    const centerAbs = clampCenter(baseGridY + hStd + drawerDims.internalPreviewSingleDrawerGapM);
     const baseY = centerAbs - stackH / 2;
 
     return setPreview(setSketchPreview, {
@@ -170,8 +195,18 @@ export function tryHandleCanvasIntDrawerHover(args: CanvasInteriorHoverFlowArgs)
       x: internalCenterX,
       y: baseY,
       z: internalZ,
-      w: Math.max(0.05, (Number.isFinite(innerW) && innerW > 0 ? innerW : 0.5) - 0.03),
-      d: Math.max(0.05, (Number.isFinite(internalDepth) && internalDepth > 0 ? internalDepth : 0.5) - 0.02),
+      w: Math.max(
+        drawerDims.internalPreviewMinWidthM,
+        (Number.isFinite(innerW) && innerW > 0 ? innerW : drawerDims.internalPreviewMinWidthM + drawerDims.internalPreviewWidthClearanceM) -
+          drawerDims.internalPreviewWidthClearanceM
+      ),
+      d: Math.max(
+        drawerDims.internalPreviewMinDepthM,
+        (Number.isFinite(internalDepth) && internalDepth > 0
+          ? internalDepth
+          : drawerDims.internalPreviewMinDepthM + drawerDims.internalPreviewDepthClearanceM) -
+          drawerDims.internalPreviewDepthClearanceM
+      ),
       drawerH: singleDrawerH,
       drawerGap,
       woodThick,

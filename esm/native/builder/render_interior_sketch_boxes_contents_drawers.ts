@@ -1,3 +1,4 @@
+import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { RenderSketchBoxContentsArgs } from './render_interior_sketch_boxes_shared.js';
 import type { SketchDrawerExtra, SketchInternalDrawerOp } from './render_interior_sketch_shared.js';
 
@@ -25,6 +26,7 @@ export function renderSketchBoxDrawerContents(args: RenderSketchBoxContentsArgs)
   } = args.args;
   const { box, boxPid, centerY, height, halfH, boxMat, geometry, innerBottomY, innerTopY } = shell;
   const boxDrawers = asRecordArray<SketchDrawerExtra>(box.drawers);
+  const drawerDims = DRAWER_DIMENSIONS.sketch;
   if (!boxDrawers.length) return;
 
   try {
@@ -78,9 +80,12 @@ export function renderSketchBoxDrawerContents(args: RenderSketchBoxContentsArgs)
       const spanSource = readRecord(drawer);
       if (!spanSource) continue;
       const span = resolveBoxDrawerSpan(spanSource);
-      const width = Math.max(0.05, span.innerW - 0.03);
-      const depth = Math.max(0.05, geometry.innerD - 0.02);
-      const drawerBottomLift = Math.min(0.002, woodThick * 0.15);
+      const width = Math.max(drawerDims.internalWidthMinM, span.innerW - drawerDims.internalWidthClearanceM);
+      const depth = Math.max(drawerDims.internalDepthMinM, geometry.innerD - drawerDims.internalDepthClearanceM);
+      const drawerBottomLift = Math.min(
+        drawerDims.internalBottomLiftMaxM,
+        woodThick * drawerDims.internalBottomLiftWoodRatio
+      );
       for (let stackIndex = 0; stackIndex < 2; stackIndex++) {
         const yFinal =
           stackIndex === 0
@@ -98,7 +103,7 @@ export function renderSketchBoxDrawerContents(args: RenderSketchBoxContentsArgs)
           x: span.innerCenterX,
           y: yFinal,
           z: geometry.innerBackZ + geometry.innerD / 2,
-          openZ: geometry.innerBackZ + geometry.innerD / 2 + 0.25,
+          openZ: geometry.innerBackZ + geometry.innerD / 2 + drawerDims.internalOpenOffsetZM,
           hasDivider: false,
           dividerKey: partId,
         });
