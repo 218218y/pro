@@ -9,6 +9,8 @@ const require = createRequire(import.meta.url);
 const ts = require('typescript');
 
 const serviceApiDimensionConstants = Object.freeze({
+  DEFAULT_CORNER_WIDTH: 120,
+  DEFAULT_CORNER_DOORS: 3,
   CHEST_MODE_DIMENSIONS: Object.freeze({
     activeDefaults: Object.freeze({
       doorsCount: 0,

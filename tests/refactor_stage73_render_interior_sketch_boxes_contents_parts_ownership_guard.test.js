@@ -64,7 +64,11 @@ test('stage 73 render interior sketch box static contents ownership split is anc
 
   assert.match(rods, /export function renderSketchBoxContentRods\(/);
   assert.match(rods, /asRecordArray<SketchRodExtra>\(box\.rods\)/);
-  assert.match(rods, /new THREE\.CylinderGeometry\(0\.015, 0\.015, rodLen, 12\)/);
+  assert.match(rods, /INTERIOR_FITTINGS_DIMENSIONS\.rods\.radiusM/);
+  assert.match(
+    rods,
+    /new THREE\.CylinderGeometry\(\s*INTERIOR_FITTINGS_DIMENSIONS\.rods\.radiusM,\s*INTERIOR_FITTINGS_DIMENSIONS\.rods\.radiusM,\s*rodLen,\s*12\s*\)/
+  );
   assert.match(rods, /__wpType = 'sketchRod'/);
   assert.doesNotMatch(rods, /createBoard\(|storageBarriers|normalizeSketchShelfVariant/);
 

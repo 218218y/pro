@@ -228,18 +228,22 @@ export function cloneExpectedLibraryModuleCfg(cfg: ModuleConfigLike): ModuleConf
   };
 }
 
-function readFiniteInt(raw: unknown, fallback: number, min = 0): number {
+function readFiniteInt(raw: unknown, defaultValue: number, min = 0): number {
   const n = Math.round(Number(raw));
-  if (!Number.isFinite(n)) return fallback;
-  return n >= min ? n : fallback;
+  if (!Number.isFinite(n)) return defaultValue;
+  return n >= min ? n : defaultValue;
 }
 
-function normalizeBoolArrayAgainstLength(value: unknown, fallback: unknown, targetLength: number): boolean[] {
-  const fallbackList = Array.isArray(fallback) ? fallback : [];
+function normalizeBoolArrayAgainstLength(
+  value: unknown,
+  defaultValue: unknown,
+  targetLength: number
+): boolean[] {
+  const defaultList = Array.isArray(defaultValue) ? defaultValue : [];
   const srcList = Array.isArray(value) ? value : [];
   const out = new Array(targetLength);
   for (let i = 0; i < targetLength; i += 1) {
-    const raw = i < srcList.length ? srcList[i] : fallbackList[i];
+    const raw = i < srcList.length ? srcList[i] : defaultList[i];
     out[i] = !!raw;
   }
   return out;
@@ -247,14 +251,14 @@ function normalizeBoolArrayAgainstLength(value: unknown, fallback: unknown, targ
 
 function normalizeStringArrayAgainstLength(
   value: unknown,
-  fallback: unknown,
+  defaultValue: unknown,
   targetLength: number
 ): string[] {
-  const fallbackList = Array.isArray(fallback) ? fallback : [];
+  const defaultList = Array.isArray(defaultValue) ? defaultValue : [];
   const srcList = Array.isArray(value) ? value : [];
   const out = new Array(targetLength);
   for (let i = 0; i < targetLength; i += 1) {
-    const raw = i < srcList.length ? srcList[i] : fallbackList[i];
+    const raw = i < srcList.length ? srcList[i] : defaultList[i];
     out[i] = typeof raw === 'string' ? raw : raw == null ? '' : String(raw);
   }
   return out;
@@ -341,9 +345,11 @@ export function normalizePreservedLibraryModuleCfg(
       : !!templateCustom.storage,
   };
 
-  if (preserveCustomGridData || Array.isArray(templateCustom.shelfVariants)) {
+  const hasSourceShelfVariants = preserveCustomGridData && Array.isArray(srcCustom.shelfVariants);
+  const hasTemplateShelfVariants = Array.isArray(templateCustom.shelfVariants);
+  if (hasSourceShelfVariants || hasTemplateShelfVariants) {
     customData.shelfVariants = normalizeStringArrayAgainstLength(
-      preserveCustomGridData ? srcCustom.shelfVariants : undefined,
+      hasSourceShelfVariants ? srcCustom.shelfVariants : undefined,
       templateCustom.shelfVariants,
       gridDivisions
     );
@@ -351,10 +357,10 @@ export function normalizePreservedLibraryModuleCfg(
     delete customData.shelfVariants;
   }
 
-  if (preserveCustomGridData || Array.isArray(templateCustom.rodOps)) {
-    customData.rodOps = preserveCustomGridData
-      ? cloneArray(srcCustom.rodOps)
-      : cloneArray(templateCustom.rodOps);
+  const hasSourceRodOps = preserveCustomGridData && Array.isArray(srcCustom.rodOps);
+  const hasTemplateRodOps = Array.isArray(templateCustom.rodOps);
+  if (hasSourceRodOps || hasTemplateRodOps) {
+    customData.rodOps = hasSourceRodOps ? cloneArray(srcCustom.rodOps) : cloneArray(templateCustom.rodOps);
   } else {
     delete customData.rodOps;
   }

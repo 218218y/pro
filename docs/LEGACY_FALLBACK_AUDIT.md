@@ -1,14 +1,14 @@
 # Legacy / fallback audit
 
-Generated at: 2026-05-05T20:21:30.779Z
+Generated at: 2026-05-06T20:15:14.254Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **803**
-- Files with occurrences: **286**
+- Total categorized occurrences: **797**
+- Files with occurrences: **285**
 - Category counts:
-  - `runtime-default`: **645**
+  - `runtime-default`: **639**
   - `browser-adapter`: **18**
   - `project-migration`: **20**
   - `test-fixture`: **7**
@@ -48,14 +48,14 @@ Generated at: 2026-05-05T20:21:30.779Z
 - `esm/native/builder/render_door_ops_shared_ops.ts` — **6** (runtime-default: 6)
 - `esm/native/features/door_style_overrides.ts` — **6** (legacy-runtime-risk: 3, runtime-default: 3)
 - `esm/native/features/door_trim_shared.ts` — **6** (runtime-default: 6)
-- `esm/native/features/library_preset/library_preset_shared.ts` — **6** (runtime-default: 6)
 - `esm/native/kernel/kernel_builder_request_policy_shared.ts` — **6** (runtime-default: 6)
 - `esm/native/kernel/kernel_builder_request_policy.ts` — **6** (runtime-default: 6)
 - `esm/native/runtime/doors_access_services.ts` — **6** (runtime-default: 6)
 - `esm/native/runtime/modules_recompute_request_policy.ts` — **6** (runtime-default: 6)
 - `esm/native/runtime/perf_runtime_core.ts` — **6** (runtime-default: 6)
 - `esm/native/services/canvas_picking_hover_preview_modes_shared.ts` — **6** (runtime-default: 6)
+- `esm/native/services/cloud_sync_lifecycle_support_realtime.ts` — **6** (runtime-default: 6)
 
 ## Allowlist check
 
-- Passed: current categorized inventory matches the allowlist.
+- Not run.
