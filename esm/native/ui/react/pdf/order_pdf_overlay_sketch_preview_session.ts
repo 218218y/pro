@@ -6,37 +6,37 @@ export type OrderPdfSketchPreviewSessionSnapshot<TCameraPose = unknown> = {
 
 export function readOrderPdfSketchPreviewSessionMode(args: {
   readSketchMode: () => boolean;
-  fallback?: boolean;
+  defaultValue?: boolean;
 }): boolean {
-  const fallback = !!args.fallback;
+  const defaultValue = !!args.defaultValue;
   try {
     return !!args.readSketchMode();
   } catch {
-    return fallback;
+    return defaultValue;
   }
 }
 
 export function readOrderPdfSketchPreviewSessionDoorsOpen(args: {
   readDoorsOpen: () => boolean;
-  fallback?: boolean;
+  defaultValue?: boolean;
 }): boolean {
-  const fallback = !!args.fallback;
+  const defaultValue = !!args.defaultValue;
   try {
     return !!args.readDoorsOpen();
   } catch {
-    return fallback;
+    return defaultValue;
   }
 }
 
 export function readOrderPdfSketchPreviewSessionCameraPose<TCameraPose>(args: {
   readCameraPose: () => TCameraPose | null;
-  fallback?: TCameraPose | null;
+  defaultValue?: TCameraPose | null;
 }): TCameraPose | null {
   try {
     const pose = args.readCameraPose();
-    return pose == null ? (args.fallback ?? null) : pose;
+    return pose == null ? (args.defaultValue ?? null) : pose;
   } catch {
-    return args.fallback ?? null;
+    return args.defaultValue ?? null;
   }
 }
 
@@ -50,18 +50,18 @@ export function captureOrderPdfSketchPreviewSessionSnapshot<TCameraPose = unknow
   return {
     sketchMode: readOrderPdfSketchPreviewSessionMode({
       readSketchMode: args.readSketchMode,
-      fallback: false,
+      defaultValue: false,
     }),
     doorsOpen: readDoorsOpen
       ? readOrderPdfSketchPreviewSessionDoorsOpen({
           readDoorsOpen,
-          fallback: false,
+          defaultValue: false,
         })
       : null,
     cameraPose: readCameraPose
       ? readOrderPdfSketchPreviewSessionCameraPose({
           readCameraPose,
-          fallback: null,
+          defaultValue: null,
         })
       : null,
   };
@@ -75,7 +75,7 @@ export function restoreOrderPdfSketchPreviewSessionMode(args: {
   const originalSketchMode = !!args.originalSketchMode;
   const currentSketchMode = readOrderPdfSketchPreviewSessionMode({
     readSketchMode: args.readSketchMode,
-    fallback: originalSketchMode,
+    defaultValue: originalSketchMode,
   });
   if (currentSketchMode === originalSketchMode) return;
   args.restoreSketchMode(originalSketchMode);
@@ -89,7 +89,7 @@ export function restoreOrderPdfSketchPreviewSessionDoorsOpen(args: {
   const originalDoorsOpen = !!args.originalDoorsOpen;
   const currentDoorsOpen = readOrderPdfSketchPreviewSessionDoorsOpen({
     readDoorsOpen: args.readDoorsOpen,
-    fallback: originalDoorsOpen,
+    defaultValue: originalDoorsOpen,
   });
   if (currentDoorsOpen === originalDoorsOpen) return;
   args.restoreDoorsOpen(originalDoorsOpen);

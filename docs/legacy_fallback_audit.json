@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-08T11:07:43.421Z",
+  "generatedAt": "2026-05-08T11:55:30.692Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 594,
-    "totalFiles": 197,
+    "totalOccurrences": 529,
+    "totalFiles": 193,
     "byCategory": {
-      "runtime-default": 573,
+      "runtime-default": 508,
       "browser-adapter": 9,
       "project-migration": 5,
       "test-fixture": 7,
@@ -955,12 +955,6 @@
           "runtime-default": 2
         }
       },
-      "esm/native/ui/export/export_order_pdf_text_details.ts": {
-        "total": 9,
-        "categories": {
-          "runtime-default": 9
-        }
-      },
       "esm/native/ui/export/export_order_pdf_types.ts": {
         "total": 1,
         "categories": {
@@ -1013,12 +1007,6 @@
         "total": 3,
         "categories": {
           "runtime-default": 3
-        }
-      },
-      "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts": {
-        "total": 16,
-        "categories": {
-          "runtime-default": 16
         }
       },
       "esm/native/ui/react/overlay_pdf_host.tsx": {
@@ -1075,12 +1063,6 @@
           "runtime-default": 2
         }
       },
-      "esm/native/ui/react/pdf/order_pdf_overlay_sketch_preview_session.ts": {
-        "total": 16,
-        "categories": {
-          "runtime-default": 16
-        }
-      },
       "esm/native/ui/react/selectors/root_selectors.ts": {
         "total": 1,
         "categories": {
@@ -1127,12 +1109,6 @@
         "total": 1,
         "categories": {
           "runtime-default": 1
-        }
-      },
-      "esm/native/ui/react/tabs/interior_tab_view_state_shared.ts": {
-        "total": 24,
-        "categories": {
-          "runtime-default": 24
         }
       },
       "esm/native/ui/react/tabs/render_tab_room_design_controller_runtime.ts": {
@@ -1198,27 +1174,6 @@
     },
     "hotFiles": [
       {
-        "file": "esm/native/ui/react/tabs/interior_tab_view_state_shared.ts",
-        "total": 24,
-        "categories": {
-          "runtime-default": 24
-        }
-      },
-      {
-        "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-        "total": 16,
-        "categories": {
-          "runtime-default": 16
-        }
-      },
-      {
-        "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_preview_session.ts",
-        "total": 16,
-        "categories": {
-          "runtime-default": 16
-        }
-      },
-      {
         "file": "esm/native/platform/platform_util.ts",
         "total": 12,
         "categories": {
@@ -1248,13 +1203,6 @@
       },
       {
         "file": "esm/native/kernel/kernel_state_kernel_config_shared.ts",
-        "total": 9,
-        "categories": {
-          "runtime-default": 9
-        }
-      },
-      {
-        "file": "esm/native/ui/export/export_order_pdf_text_details.ts",
         "total": 9,
         "categories": {
           "runtime-default": 9
@@ -1405,6 +1353,34 @@
         "total": 5,
         "categories": {
           "runtime-default": 5
+        }
+      },
+      {
+        "file": "esm/native/runtime/error_normalization.ts",
+        "total": 5,
+        "categories": {
+          "runtime-default": 5
+        }
+      },
+      {
+        "file": "esm/native/runtime/render_runtime_primitives.ts",
+        "total": 5,
+        "categories": {
+          "runtime-default": 5
+        }
+      },
+      {
+        "file": "esm/native/builder/corner_geometry_plan.ts",
+        "total": 4,
+        "categories": {
+          "runtime-default": 4
+        }
+      },
+      {
+        "file": "esm/native/builder/corner_state_normalize_shared.ts",
+        "total": 4,
+        "categories": {
+          "runtime-default": 4
         }
       }
     ]
@@ -4425,69 +4401,6 @@
       "text": "return coerceOrderPdfTextValue(value, fallback);"
     },
     {
-      "file": "esm/native/ui/export/export_order_pdf_text_details.ts",
-      "line": 26,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "function getCfgString(cfg: Record<string, unknown>, key: string, fallback: string): string {"
-    },
-    {
-      "file": "esm/native/ui/export/export_order_pdf_text_details.ts",
-      "line": 29,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof v === 'string' ? v : v == null ? fallback : String(v);"
-    },
-    {
-      "file": "esm/native/ui/export/export_order_pdf_text_details.ts",
-      "line": 32,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return fallback;"
-    },
-    {
-      "file": "esm/native/ui/export/export_order_pdf_text_details.ts",
-      "line": 36,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "function getUiRawNumber(ui: Record<string, unknown>, key: string, fallback: number): number {"
-    },
-    {
-      "file": "esm/native/ui/export/export_order_pdf_text_details.ts",
-      "line": 41,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return Number.isFinite(n) ? n : fallback;"
-    },
-    {
-      "file": "esm/native/ui/export/export_order_pdf_text_details.ts",
-      "line": 44,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return fallback;"
-    },
-    {
-      "file": "esm/native/ui/export/export_order_pdf_text_details.ts",
-      "line": 48,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "function getUiRawInt(ui: Record<string, unknown>, key: string, fallback: number): number {"
-    },
-    {
-      "file": "esm/native/ui/export/export_order_pdf_text_details.ts",
-      "line": 53,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return Number.isFinite(n) ? n : fallback;"
-    },
-    {
-      "file": "esm/native/ui/export/export_order_pdf_text_details.ts",
-      "line": 56,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return fallback;"
-    },
-    {
       "file": "esm/native/ui/export/export_order_pdf_types.ts",
       "line": 98,
       "term": "fallback",
@@ -4747,118 +4660,6 @@
       "text": "return Number.isFinite(n) ? n : fallback;"
     },
     {
-      "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 80,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function resolveNotesToolbarColor(value: unknown, fallback = DEFAULT_NOTES_TOOLBAR_COLOR): string {"
-    },
-    {
-      "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 84,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return raw || fallback;"
-    },
-    {
-      "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 89,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback = DEFAULT_NOTES_EDITOR_FONT_SIZE"
-    },
-    {
-      "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 92,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return normalized || fallback;"
-    },
-    {
-      "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 97,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback = DEFAULT_NOTES_TOOLBAR_FONT_SIZE"
-    },
-    {
-      "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 100,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return normalized ? editorFontSizeToToolbarFontSize(normalized) : fallback;"
-    },
-    {
-      "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 105,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback = DEFAULT_NOTES_EDITOR_FONT_SIZE"
-    },
-    {
-      "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 110,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return fallback;"
-    },
-    {
-      "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 115,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback = DEFAULT_NOTES_EDITOR_FONT_SIZE"
-    },
-    {
-      "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 137,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return resolveNotesEditorFontSize(value, fallback);"
-    },
-    {
-      "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 140,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function resolveNotesFontSizePx(value: unknown, fallback = DEFAULT_NOTES_FONT_SIZE_PX): number {"
-    },
-    {
-      "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 143,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return Number.isFinite(px) ? px : fallback;"
-    },
-    {
-      "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 148,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback = DEFAULT_NOTES_TOOLBAR_FONT_SIZE"
-    },
-    {
-      "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 154,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return resolveNotesToolbarFontSizeUi(value, fallback);"
-    },
-    {
-      "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 157,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function resolveNotesFontSizePxFromUi(value: unknown, fallback = DEFAULT_NOTES_FONT_SIZE_PX): number {"
-    },
-    {
-      "file": "esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts",
-      "line": 160,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return Number.isFinite(px) ? px : fallback;"
-    },
-    {
       "file": "esm/native/ui/react/overlay_pdf_host.tsx",
       "line": 55,
       "term": "fallback",
@@ -4955,118 +4756,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "return typeof value.createdAt === 'number' && Number.isFinite(value.createdAt) ? value.createdAt : fallback;"
-    },
-    {
-      "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_preview_session.ts",
-      "line": 9,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback?: boolean;"
-    },
-    {
-      "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_preview_session.ts",
-      "line": 11,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const fallback = !!args.fallback;"
-    },
-    {
-      "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_preview_session.ts",
-      "line": 11,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const fallback = !!args.fallback;"
-    },
-    {
-      "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_preview_session.ts",
-      "line": 15,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return fallback;"
-    },
-    {
-      "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_preview_session.ts",
-      "line": 21,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback?: boolean;"
-    },
-    {
-      "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_preview_session.ts",
-      "line": 23,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const fallback = !!args.fallback;"
-    },
-    {
-      "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_preview_session.ts",
-      "line": 23,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const fallback = !!args.fallback;"
-    },
-    {
-      "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_preview_session.ts",
-      "line": 27,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return fallback;"
-    },
-    {
-      "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_preview_session.ts",
-      "line": 33,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback?: TCameraPose | null;"
-    },
-    {
-      "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_preview_session.ts",
-      "line": 37,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return pose == null ? (args.fallback ?? null) : pose;"
-    },
-    {
-      "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_preview_session.ts",
-      "line": 39,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return args.fallback ?? null;"
-    },
-    {
-      "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_preview_session.ts",
-      "line": 53,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: false,"
-    },
-    {
-      "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_preview_session.ts",
-      "line": 58,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: false,"
-    },
-    {
-      "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_preview_session.ts",
-      "line": 64,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: null,"
-    },
-    {
-      "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_preview_session.ts",
-      "line": 78,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: originalSketchMode,"
-    },
-    {
-      "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_preview_session.ts",
-      "line": 92,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: originalDoorsOpen,"
     },
     {
       "file": "esm/native/ui/react/selectors/root_selectors.ts",
@@ -5214,174 +4903,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "// ignore and fallback to click"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/interior_tab_view_state_shared.ts",
-      "line": 25,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readLayoutTypeId(value: unknown, fallback: LayoutTypeId = 'shelves'): LayoutTypeId {"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/interior_tab_view_state_shared.ts",
-      "line": 26,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const raw = asStr(value, fallback).trim().toLowerCase();"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/interior_tab_view_state_shared.ts",
-      "line": 34,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": ": fallback;"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/interior_tab_view_state_shared.ts",
-      "line": 37,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readManualToolId(value: unknown, fallback: ManualToolId = 'shelf'): ManualToolId {"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/interior_tab_view_state_shared.ts",
-      "line": 38,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const raw = asStr(value, fallback).trim().toLowerCase();"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/interior_tab_view_state_shared.ts",
-      "line": 39,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return raw === 'rod' || raw === 'storage' || raw === 'shelf' ? raw : fallback;"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/interior_tab_view_state_shared.ts",
-      "line": 47,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readExtDrawerType(value: unknown, fallback: ExtDrawerType = 'regular'): ExtDrawerType {"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/interior_tab_view_state_shared.ts",
-      "line": 48,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const raw = asStr(value, fallback).trim().toLowerCase();"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/interior_tab_view_state_shared.ts",
-      "line": 49,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return raw === 'shoe' || raw === 'regular' ? raw : fallback;"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/interior_tab_view_state_shared.ts",
-      "line": 52,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readHandleType(value: unknown, fallback: HandleType = 'standard'): HandleType {"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/interior_tab_view_state_shared.ts",
-      "line": 53,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const raw = asStr(value, fallback).trim().toLowerCase();"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/interior_tab_view_state_shared.ts",
-      "line": 54,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return raw === 'edge' || raw === 'none' || raw === 'standard' ? raw : fallback;"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/interior_tab_view_state_shared.ts",
-      "line": 59,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: EdgeHandleVariant = 'short'"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/interior_tab_view_state_shared.ts",
-      "line": 61,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return asStr(value, fallback).trim().toLowerCase() === 'long' ? 'long' : 'short';"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/interior_tab_view_state_shared.ts",
-      "line": 64,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readDoorTrimColor(value: unknown, fallback: DoorTrimUiColor = 'nickel'): DoorTrimUiColor {"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/interior_tab_view_state_shared.ts",
-      "line": 65,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const raw = asStr(value, fallback).trim().toLowerCase();"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/interior_tab_view_state_shared.ts",
-      "line": 66,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return raw === 'silver' || raw === 'gold' || raw === 'black' || raw === 'nickel' ? raw : fallback;"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/interior_tab_view_state_shared.ts",
-      "line": 69,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readHandleUiColor(value: unknown, fallback: HandleUiColor = 'nickel'): HandleUiColor {"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/interior_tab_view_state_shared.ts",
-      "line": 70,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const normalizedFallback = normalizeHandleFinishColor(fallback);"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/interior_tab_view_state_shared.ts",
-      "line": 74,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readDoorTrimAxis(value: unknown, fallback: DoorTrimUiAxis = 'horizontal'): DoorTrimUiAxis {"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/interior_tab_view_state_shared.ts",
-      "line": 75,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return asStr(value, fallback).trim().toLowerCase() === 'vertical' ? 'vertical' : 'horizontal';"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/interior_tab_view_state_shared.ts",
-      "line": 78,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readDoorTrimSpan(value: unknown, fallback: DoorTrimUiSpan = 'full'): DoorTrimUiSpan {"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/interior_tab_view_state_shared.ts",
-      "line": 79,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const raw = asStr(value, fallback).trim().toLowerCase();"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/interior_tab_view_state_shared.ts",
-      "line": 87,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": ": fallback;"
     },
     {
       "file": "esm/native/ui/react/tabs/render_tab_room_design_controller_runtime.ts",

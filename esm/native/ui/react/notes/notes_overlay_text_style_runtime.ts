@@ -77,42 +77,42 @@ function readTrimmedString(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';
 }
 
-export function resolveNotesToolbarColor(value: unknown, fallback = DEFAULT_NOTES_TOOLBAR_COLOR): string {
+export function resolveNotesToolbarColor(value: unknown, defaultValue = DEFAULT_NOTES_TOOLBAR_COLOR): string {
   const normalized = normalizeCssColorToHex(value);
   if (normalized) return normalized;
   const raw = readTrimmedString(value);
-  return raw || fallback;
+  return raw || defaultValue;
 }
 
 export function resolveNotesEditorFontSize(
   value: unknown,
-  fallback = DEFAULT_NOTES_EDITOR_FONT_SIZE
+  defaultValue = DEFAULT_NOTES_EDITOR_FONT_SIZE
 ): string {
   const normalized = normalizeEditorFontSizeValue(value);
-  return normalized || fallback;
+  return normalized || defaultValue;
 }
 
 export function resolveNotesToolbarFontSizeUi(
   value: unknown,
-  fallback = DEFAULT_NOTES_TOOLBAR_FONT_SIZE
+  defaultValue = DEFAULT_NOTES_TOOLBAR_FONT_SIZE
 ): string {
   const normalized = normalizeEditorFontSizeValue(value);
-  return normalized ? editorFontSizeToToolbarFontSize(normalized) : fallback;
+  return normalized ? editorFontSizeToToolbarFontSize(normalized) : defaultValue;
 }
 
 export function resolveNotesEditorFontSizeFromUi(
   value: unknown,
-  fallback = DEFAULT_NOTES_EDITOR_FONT_SIZE
+  defaultValue = DEFAULT_NOTES_EDITOR_FONT_SIZE
 ): string {
   const raw = readTrimmedString(value);
   const size = parseInt(raw, 10);
   if (Number.isFinite(size) && size >= 1 && size <= 5) return toolbarFontSizeToEditorFontSize(String(size));
-  return fallback;
+  return defaultValue;
 }
 
 export function resolveNotesEditorFontSizeFromToolbarValue(
   value: unknown,
-  fallback = DEFAULT_NOTES_EDITOR_FONT_SIZE
+  defaultValue = DEFAULT_NOTES_EDITOR_FONT_SIZE
 ): string {
   const raw = readTrimmedString(value);
   const size =
@@ -134,30 +134,33 @@ export function resolveNotesEditorFontSizeFromToolbarValue(
     return toolbarFontSizeToEditorFontSize(findNearestNotesToolbarUiSizeForPx(value));
   }
 
-  return resolveNotesEditorFontSize(value, fallback);
+  return resolveNotesEditorFontSize(value, defaultValue);
 }
 
-export function resolveNotesFontSizePx(value: unknown, fallback = DEFAULT_NOTES_FONT_SIZE_PX): number {
+export function resolveNotesFontSizePx(value: unknown, defaultValue = DEFAULT_NOTES_FONT_SIZE_PX): number {
   const editorFontSize = resolveNotesEditorFontSize(value, DEFAULT_NOTES_EDITOR_FONT_SIZE);
   const px = parseFloat(editorFontSizeToPx(editorFontSize));
-  return Number.isFinite(px) ? px : fallback;
+  return Number.isFinite(px) ? px : defaultValue;
 }
 
 export function resolveNotesToolbarFontSizeUiFromPx(
   value: unknown,
-  fallback = DEFAULT_NOTES_TOOLBAR_FONT_SIZE
+  defaultValue = DEFAULT_NOTES_TOOLBAR_FONT_SIZE
 ): string {
   const pxValue = readPxNumber(value);
   if (pxValue != null) return findNearestNotesToolbarUiSizeForPx(pxValue);
   const numericValue = readFiniteNumber(value);
   if (numericValue != null && numericValue > 5) return findNearestNotesToolbarUiSizeForPx(numericValue);
-  return resolveNotesToolbarFontSizeUi(value, fallback);
+  return resolveNotesToolbarFontSizeUi(value, defaultValue);
 }
 
-export function resolveNotesFontSizePxFromUi(value: unknown, fallback = DEFAULT_NOTES_FONT_SIZE_PX): number {
+export function resolveNotesFontSizePxFromUi(
+  value: unknown,
+  defaultValue = DEFAULT_NOTES_FONT_SIZE_PX
+): number {
   const editorFontSize = resolveNotesEditorFontSizeFromUi(value, DEFAULT_NOTES_EDITOR_FONT_SIZE);
   const px = parseFloat(editorFontSizeToPx(editorFontSize));
-  return Number.isFinite(px) ? px : fallback;
+  return Number.isFinite(px) ? px : defaultValue;
 }
 
 export function readNotesToolbarFormatting(

@@ -1,14 +1,14 @@
 # Legacy / fallback audit
 
-Generated at: 2026-05-08T11:07:43.421Z
+Generated at: 2026-05-08T11:55:30.692Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **594**
-- Files with occurrences: **197**
+- Total categorized occurrences: **529**
+- Files with occurrences: **193**
 - Category counts:
-  - `runtime-default`: **573**
+  - `runtime-default`: **508**
   - `browser-adapter`: **9**
   - `project-migration`: **5**
   - `test-fixture`: **7**
@@ -25,15 +25,11 @@ Generated at: 2026-05-08T11:07:43.421Z
 
 ## Hot files
 
-- `esm/native/ui/react/tabs/interior_tab_view_state_shared.ts` — **24** (runtime-default: 24)
-- `esm/native/ui/react/notes/notes_overlay_text_style_runtime.ts` — **16** (runtime-default: 16)
-- `esm/native/ui/react/pdf/order_pdf_overlay_sketch_preview_session.ts` — **16** (runtime-default: 16)
 - `esm/native/platform/platform_util.ts` — **12** (runtime-default: 12)
 - `esm/native/ui/pdf/order_pdf_document_fields_runtime.ts` — **11** (runtime-default: 11)
 - `esm/native/ui/react/actions/cloud_sync_actions.ts` — **11** (runtime-default: 11)
 - `esm/native/features/base_leg_support.ts` — **10** (runtime-default: 10)
 - `esm/native/kernel/kernel_state_kernel_config_shared.ts` — **9** (runtime-default: 9)
-- `esm/native/ui/export/export_order_pdf_text_details.ts` — **9** (runtime-default: 9)
 - `esm/native/ui/react/tabs/design_tab_shared.ts` — **9** (runtime-default: 9)
 - `esm/native/builder/hinged_doors_module_ops_context.ts` — **8** (runtime-default: 8)
 - `esm/native/features/modules_configuration/corner_cells_snapshot_shared.ts` — **7** (runtime-default: 7)
@@ -55,6 +51,10 @@ Generated at: 2026-05-08T11:07:43.421Z
 - `esm/native/kernel/kernel_project_capture_shared.ts` — **5** (runtime-default: 5)
 - `esm/native/runtime/cfg_access_core.ts` — **5** (runtime-default: 5)
 - `esm/native/runtime/doors_runtime_support_shared.ts` — **5** (runtime-default: 5)
+- `esm/native/runtime/error_normalization.ts` — **5** (runtime-default: 5)
+- `esm/native/runtime/render_runtime_primitives.ts` — **5** (runtime-default: 5)
+- `esm/native/builder/corner_geometry_plan.ts` — **4** (runtime-default: 4)
+- `esm/native/builder/corner_state_normalize_shared.ts` — **4** (runtime-default: 4)
 
 ## Allowlist check
 

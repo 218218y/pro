@@ -26,7 +26,7 @@ test('readNotesToolbarFormatting normalizes saved-note text color and editor fon
   });
 });
 
-test('readNotesCardFormatting prefers base style values and preserves stable fallbacks', () => {
+test('readNotesCardFormatting prefers base style values and preserves stable defaults', () => {
   const formatting = readNotesCardFormatting({
     baseTextColor: '#ffffff',
     baseFontSize: '5',
@@ -50,7 +50,7 @@ test('resolveNotes font helpers normalize toolbar, editor, and px values through
   assert.equal(resolveNotesFontSizePxFromUi('5'), 24);
 });
 
-test('resolveNotesToolbarColor keeps normalized css colors stable but preserves explicit raw fallbacks', () => {
+test('resolveNotesToolbarColor keeps normalized css colors stable but preserves explicit raw defaults', () => {
   assert.equal(resolveNotesToolbarColor('rgb(250, 204, 21)'), '#facc15');
   assert.equal(resolveNotesToolbarColor('not-a-color', '#000000'), 'not-a-color');
   assert.equal(resolveNotesToolbarColor('', '#000000'), '#000000');

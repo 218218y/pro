@@ -23,37 +23,37 @@ export function createOrderPdfTextDetailsOps(deps: ExportOrderPdfDeps) {
     readModulesConfigurationListFromConfigSnapshot,
   } = deps;
 
-  function getCfgString(cfg: Record<string, unknown>, key: string, fallback: string): string {
+  function getCfgString(cfg: Record<string, unknown>, key: string, defaultValue: string): string {
     try {
       const v = cfg[key];
-      return typeof v === 'string' ? v : v == null ? fallback : String(v);
+      return typeof v === 'string' ? v : v == null ? defaultValue : String(v);
     } catch (e) {
       _exportReportNonFatalNoApp(`getCfgScalar:${key}`, e, 3000);
-      return fallback;
+      return defaultValue;
     }
   }
 
-  function getUiRawNumber(ui: Record<string, unknown>, key: string, fallback: number): number {
+  function getUiRawNumber(ui: Record<string, unknown>, key: string, defaultValue: number): number {
     try {
       const raw = asRecord(ui['raw']);
       const v = raw ? raw[key] : undefined;
       const n = typeof v === 'number' ? v : parseFloat(String(v ?? ''));
-      return Number.isFinite(n) ? n : fallback;
+      return Number.isFinite(n) ? n : defaultValue;
     } catch (e) {
       _exportReportNonFatalNoApp(`getUiRawNumber:${key}`, e, 3000);
-      return fallback;
+      return defaultValue;
     }
   }
 
-  function getUiRawInt(ui: Record<string, unknown>, key: string, fallback: number): number {
+  function getUiRawInt(ui: Record<string, unknown>, key: string, defaultValue: number): number {
     try {
       const raw = asRecord(ui['raw']);
       const v = raw ? raw[key] : undefined;
       const n = typeof v === 'number' ? v : parseInt(String(v ?? ''), 10);
-      return Number.isFinite(n) ? n : fallback;
+      return Number.isFinite(n) ? n : defaultValue;
     } catch (e) {
       _exportReportNonFatalNoApp(`getUiRawInt:${key}`, e, 3000);
-      return fallback;
+      return defaultValue;
     }
   }
 
