@@ -77,10 +77,29 @@ export function readMatrix16(value: unknown): number[] | null {
     : null;
 }
 
+type ComputedStyleCarrier = {
+  computedStyle?: unknown;
+};
+
+function isCssStyleDeclarationLike(value: unknown): value is CSSStyleDeclaration {
+  return (
+    !!value &&
+    typeof value === 'object' &&
+    typeof (value as { getPropertyValue?: unknown }).getPropertyValue === 'function'
+  );
+}
+
 export function getComputedStyleMaybe(el: Element): CSSStyleDeclaration | null {
   try {
     const win = el && el.ownerDocument && el.ownerDocument.defaultView;
-    return win && typeof win.getComputedStyle === 'function' ? win.getComputedStyle(el) : null;
+    if (win && typeof win.getComputedStyle === 'function') return win.getComputedStyle(el);
+  } catch {
+    // Continue to detached element style carriers below.
+  }
+
+  try {
+    const direct = (el as unknown as ComputedStyleCarrier).computedStyle;
+    return isCssStyleDeclarationLike(direct) ? direct : null;
   } catch {
     return null;
   }
