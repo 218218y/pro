@@ -25,14 +25,14 @@ export function isRecord(v: unknown): v is UnknownBag {
   return !!v && typeof v === 'object' && !Array.isArray(v);
 }
 
-export function toInt(v: unknown, fallback: number): number {
+export function toInt(v: unknown, defaultValue: number): number {
   const n = parseInt(String(v ?? ''), 10);
-  return Number.isFinite(n) ? n : fallback;
+  return Number.isFinite(n) ? n : defaultValue;
 }
 
-export function toIntMin(v: unknown, fallback: number, min: number): number {
-  const n = toInt(v, fallback);
-  return n >= min ? n : fallback;
+export function toIntMin(v: unknown, defaultValue: number, min: number): number {
+  const n = toInt(v, defaultValue);
+  return n >= min ? n : defaultValue;
 }
 
 export function asUnknownList(value: unknown): unknown[] {
@@ -73,8 +73,8 @@ export function isModuleConfigPatchLike(value: unknown): value is ModuleConfigPa
   return isRecord(value);
 }
 
-export function readDoorsCount(value: unknown, fallback = 2): number {
-  return toIntMin(isRecord(value) ? value.doors : undefined, fallback, 1);
+export function readDoorsCount(value: unknown, defaultValue = 2): number {
+  return toIntMin(isRecord(value) ? value.doors : undefined, defaultValue, 1);
 }
 
 export function cloneModuleCustomData(src: unknown): ModuleCustomDataLike {

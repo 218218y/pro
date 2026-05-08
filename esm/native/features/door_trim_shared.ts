@@ -93,21 +93,23 @@ export function clampDoorTrimNumber(value: number, min: number, max: number): nu
 
 export function normalizeDoorTrimAxis(
   value: unknown,
-  fallback: DoorTrimAxis = DEFAULT_DOOR_TRIM_AXIS
+  defaultAxis: DoorTrimAxis = DEFAULT_DOOR_TRIM_AXIS
 ): DoorTrimAxis {
-  return value === 'vertical' ? 'vertical' : value === 'horizontal' ? 'horizontal' : fallback;
+  return value === 'vertical' ? 'vertical' : value === 'horizontal' ? 'horizontal' : defaultAxis;
 }
 
 export function normalizeDoorTrimColor(
   value: unknown,
-  fallback: DoorTrimColor = DEFAULT_DOOR_TRIM_COLOR
+  defaultColor: DoorTrimColor = DEFAULT_DOOR_TRIM_COLOR
 ): DoorTrimColor {
-  return value === 'silver' || value === 'gold' || value === 'black' || value === 'nickel' ? value : fallback;
+  return value === 'silver' || value === 'gold' || value === 'black' || value === 'nickel'
+    ? value
+    : defaultColor;
 }
 
 export function normalizeDoorTrimSpan(
   value: unknown,
-  fallback: DoorTrimSpan = DEFAULT_DOOR_TRIM_SPAN
+  defaultSpan: DoorTrimSpan = DEFAULT_DOOR_TRIM_SPAN
 ): DoorTrimSpan {
   return value === 'full' ||
     value === 'three_quarters' ||
@@ -116,7 +118,7 @@ export function normalizeDoorTrimSpan(
     value === 'quarter' ||
     value === 'custom'
     ? value
-    : fallback;
+    : defaultSpan;
 }
 
 export function normalizeDoorTrimCenterNorm(value: unknown): number {

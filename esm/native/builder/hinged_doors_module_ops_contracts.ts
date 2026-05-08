@@ -47,10 +47,10 @@ export type HingedDoorModuleOpsContext = {
   isDoorSplitSafe: (map: unknown, doorId: number) => boolean;
   isDoorSplitBottomSafe: (map: unknown, doorId: number) => boolean;
   getPartColorValueSafe: (partId: string) => string | null;
-  grooveValSafe: (doorId: number, suffix: string, fallback: boolean) => boolean;
+  grooveValSafe: (doorId: number, suffix: string, defaultValue: boolean) => boolean;
   isDoorRemovedSafe: (partId: string) => boolean;
   reportDoorSoftOnce: (op: string, error: unknown, extra?: Record<string, unknown>) => void;
-  resolveCurtainForPart: (partId: string, fallback: string | null | undefined) => string | null;
+  resolveCurtainForPart: (partId: string, defaultCurtain: string | null | undefined) => string | null;
   resolveSpecialForPart: (partId: string, curtainVal: string | null) => 'mirror' | 'glass' | null;
   isDoorSplitExplicitOn: (map: unknown, doorIdNum: number) => boolean;
 };

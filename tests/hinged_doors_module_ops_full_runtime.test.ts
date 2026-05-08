@@ -19,8 +19,9 @@ function createCtx(overrides: Record<string, unknown> = {}) {
     isGroovesEnabled: true,
     removeDoorsEnabled: false,
     opsList: [] as any[],
-    grooveValSafe: (_doorId: number, _suffix: string, fallback: boolean) => fallback,
-    resolveCurtainForPart: (_partId: string, fallback: string | null | undefined) => fallback ?? null,
+    grooveValSafe: (_doorId: number, _suffix: string, defaultValue: boolean) => defaultValue,
+    resolveCurtainForPart: (_partId: string, defaultCurtain: string | null | undefined) =>
+      defaultCurtain ?? null,
     resolveSpecialForPart: (_partId: string, _curtain: string | null) => null,
     isDoorRemovedSafe: () => false,
   };
@@ -62,8 +63,8 @@ test('appendFullHingedDoorOps uses grooveValSafe for full doors and clamps long-
       handlesMap: { __wp_edge_handle_variant_global: 'long' },
     },
     globalHandleAbsY: 0.01,
-    grooveValSafe: (_doorId: number, suffix: string, fallback: boolean) =>
-      suffix === 'full' ? true : fallback,
+    grooveValSafe: (_doorId: number, suffix: string, defaultValue: boolean) =>
+      suffix === 'full' ? true : defaultValue,
   });
   const state = createState();
 
@@ -75,7 +76,7 @@ test('appendFullHingedDoorOps uses grooveValSafe for full doors and clamps long-
   assert.equal(ctx.opsList[0].handleAbsY, 0.22);
 });
 
-test('appendFullHingedDoorOps keeps mirrors groove-free even when full-door groove fallback resolves true', () => {
+test('appendFullHingedDoorOps keeps mirrors groove-free even when full-door groove default resolves true', () => {
   const ctx = createCtx({
     grooveValSafe: () => true,
     resolveSpecialForPart: () => 'mirror',

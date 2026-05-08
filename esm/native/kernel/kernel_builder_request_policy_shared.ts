@@ -28,35 +28,41 @@ function readKernelBuilderRequestBoolean(value: unknown): boolean | undefined {
   return typeof value === 'boolean' ? value : undefined;
 }
 
-export function readKernelBuilderRequestSource(meta: KernelBuilderRequestMeta, fallback = 'kernel'): string {
+export function readKernelBuilderRequestSource(
+  meta: KernelBuilderRequestMeta,
+  defaultSource = 'kernel'
+): string {
   const metaRecord = asRecord<UnknownRecord>(meta) || {};
   return (
     readKernelBuilderRequestString(metaRecord.source) ||
     readKernelBuilderRequestString(metaRecord.reason) ||
-    fallback
+    defaultSource
   );
 }
 
-export function readKernelBuilderRequestForce(meta: KernelBuilderRequestMeta, fallback = false): boolean {
+export function readKernelBuilderRequestForce(meta: KernelBuilderRequestMeta, defaultForce = false): boolean {
   const metaRecord = asRecord<UnknownRecord>(meta) || {};
   return (
     readKernelBuilderRequestBoolean(metaRecord.force) ??
     readKernelBuilderRequestBoolean(metaRecord.forceBuild) ??
-    fallback
+    defaultForce
   );
 }
 
-export function readKernelBuilderRequestImmediate(meta: KernelBuilderRequestMeta, fallback = false): boolean {
+export function readKernelBuilderRequestImmediate(
+  meta: KernelBuilderRequestMeta,
+  defaultImmediate = false
+): boolean {
   const metaRecord = asRecord<UnknownRecord>(meta) || {};
-  return readKernelBuilderRequestBoolean(metaRecord.immediate) ?? fallback;
+  return readKernelBuilderRequestBoolean(metaRecord.immediate) ?? defaultImmediate;
 }
 
 export function shouldRequestKernelBuilderBuild(
   meta: KernelBuilderRequestMeta,
-  forceFallback = false
+  defaultForce = false
 ): boolean {
   const metaRecord = asRecord<UnknownRecord>(meta) || {};
-  const force = readKernelBuilderRequestForce(metaRecord, forceFallback);
+  const force = readKernelBuilderRequestForce(metaRecord, defaultForce);
   if (force) return true;
   return !readKernelBuilderRequestBoolean(metaRecord.noBuild);
 }

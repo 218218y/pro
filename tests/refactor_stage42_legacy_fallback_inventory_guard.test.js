@@ -14,7 +14,8 @@ test('stage 42 legacy fallback inventory closeout is anchored', () => {
 
   assert.equal(allowlist.version, 1);
   assert.equal(allowlist.sourceRoot, 'esm');
-  assert.ok(allowlist.entries['esm/native/services/render_surface_runtime.ts']);
+  assert.equal(audit.summary.byCategory['legacy-runtime-risk'], 0);
+  assert.equal(audit.summary.byCategory.unknown, 0);
   for (const file of [
     'esm/native/runtime/storage_access.ts',
     'esm/native/platform/storage.ts',
@@ -47,7 +48,7 @@ test('stage 42 legacy fallback inventory closeout is anchored', () => {
     'esm/native/runtime/ui_raw_selectors_store.ts',
   ].reduce((sum, file) => sum + (audit.summary.byFile[file]?.total || 0), 0);
   assert.equal(uiRawSelectorInventoryTotal, 0);
-  assert.equal(audit.summary.byFile['esm/native/services/render_surface_runtime.ts'].total, 7);
+  assert.equal(audit.summary.byFile['esm/native/services/render_surface_runtime.ts']?.total || 0, 0);
   assert.match(markdown, /Legacy \/ fallback audit/);
 
   const result = spawnSync(

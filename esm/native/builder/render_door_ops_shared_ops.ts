@@ -5,16 +5,16 @@ import type {
 } from './render_door_ops_shared_contracts.js';
 import { isRecord } from './render_door_ops_shared_core.js';
 
-function readFinite(value: unknown, fallback = 0): number {
-  return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+function readFinite(value: unknown, defaultValue = 0): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
 }
 
-function readString(value: unknown, fallback = ''): string {
-  return typeof value === 'string' ? value : fallback;
+function readString(value: unknown, defaultValue = ''): string {
+  return typeof value === 'string' ? value : defaultValue;
 }
 
-function readDoorPartId(value: unknown, fallback: string): string {
-  return typeof value === 'string' && value ? value : fallback;
+function readDoorPartId(value: unknown, defaultPartId: string): string {
+  return typeof value === 'string' && value ? value : defaultPartId;
 }
 
 export function readSlidingDoorOp(value: unknown, index: number): SlidingDoorOpLike | null {

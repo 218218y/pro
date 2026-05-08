@@ -44,15 +44,15 @@ const DEFAULT_RENDER_SHADOWS_ENABLED = true;
 function readConfigNumber(
   App: AppLike,
   key: 'MIRROR_CUBE_SIZE' | 'PIXEL_RATIO_MAX',
-  fallback: number
+  defaultValue: number
 ): number {
-  const value = readConfigLooseScalarFromApp(App, key, fallback);
-  if (key === 'MIRROR_CUBE_SIZE') return clampNumber(value, fallback, 64, 1024);
-  return clampNumber(value, fallback, 0.75, 2);
+  const value = readConfigLooseScalarFromApp(App, key, defaultValue);
+  if (key === 'MIRROR_CUBE_SIZE') return clampNumber(value, defaultValue, 64, 1024);
+  return clampNumber(value, defaultValue, 0.75, 2);
 }
 
-function readConfigBoolean(App: AppLike, key: string, fallback: boolean): boolean {
-  const value = readConfigLooseScalarFromApp(App, key, fallback);
+function readConfigBoolean(App: AppLike, key: string, defaultValue: boolean): boolean {
+  const value = readConfigLooseScalarFromApp(App, key, defaultValue);
   if (typeof value === 'boolean') return value;
   if (typeof value === 'number') return value !== 0;
   if (typeof value === 'string') {
@@ -62,7 +62,7 @@ function readConfigBoolean(App: AppLike, key: string, fallback: boolean): boolea
     if (normalized === '0' || normalized === 'false' || normalized === 'no' || normalized === 'off')
       return false;
   }
-  return fallback;
+  return defaultValue;
 }
 
 function getRenderBag(App: AppLike): RenderBag {

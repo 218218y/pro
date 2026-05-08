@@ -14,23 +14,29 @@ import { requestKernelBuilderBuild as requestKernelBuilderBuildInternal } from '
 
 export type { KernelBuilderRequestMeta, KernelBuilderRequestPolicyOpts };
 
-export function readKernelBuilderRequestSource(meta: KernelBuilderRequestMeta, fallback = 'kernel'): string {
-  return readKernelBuilderRequestSourceInternal(meta, fallback);
+export function readKernelBuilderRequestSource(
+  meta: KernelBuilderRequestMeta,
+  defaultSource = 'kernel'
+): string {
+  return readKernelBuilderRequestSourceInternal(meta, defaultSource);
 }
 
-export function readKernelBuilderRequestForce(meta: KernelBuilderRequestMeta, fallback = false): boolean {
-  return readKernelBuilderRequestForceInternal(meta, fallback);
+export function readKernelBuilderRequestForce(meta: KernelBuilderRequestMeta, defaultForce = false): boolean {
+  return readKernelBuilderRequestForceInternal(meta, defaultForce);
 }
 
-export function readKernelBuilderRequestImmediate(meta: KernelBuilderRequestMeta, fallback = false): boolean {
-  return readKernelBuilderRequestImmediateInternal(meta, fallback);
+export function readKernelBuilderRequestImmediate(
+  meta: KernelBuilderRequestMeta,
+  defaultImmediate = false
+): boolean {
+  return readKernelBuilderRequestImmediateInternal(meta, defaultImmediate);
 }
 
 export function shouldRequestKernelBuilderBuild(
   meta: KernelBuilderRequestMeta,
-  forceFallback = false
+  defaultForce = false
 ): boolean {
-  return shouldRequestKernelBuilderBuildInternal(meta, forceFallback);
+  return shouldRequestKernelBuilderBuildInternal(meta, defaultForce);
 }
 
 export function requestKernelBuilderBuild(

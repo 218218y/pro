@@ -53,12 +53,12 @@ function createCtx(overrides: Record<string, unknown> = {}) {
     isDoorSplitSafe: () => true,
     isDoorSplitBottomSafe: () => false,
     getPartColorValueSafe: (partId: string) => `color:${partId}`,
-    grooveValSafe: (_doorId: number, suffix: string, fallback: boolean) =>
-      suffix === 'full' ? fallback : false,
+    grooveValSafe: (_doorId: number, suffix: string, defaultValue: boolean) =>
+      suffix === 'full' ? defaultValue : false,
     isDoorRemovedSafe: () => false,
     reportDoorSoftOnce: () => undefined,
-    resolveCurtainForPart: (partId: string, fallback: string | null | undefined) =>
-      fallback ?? `curtain:${partId}`,
+    resolveCurtainForPart: (partId: string, defaultCurtain: string | null | undefined) =>
+      defaultCurtain ?? `curtain:${partId}`,
     resolveSpecialForPart: () => null,
     isDoorSplitExplicitOn: () => false,
   };

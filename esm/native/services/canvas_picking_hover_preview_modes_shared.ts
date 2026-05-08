@@ -123,14 +123,14 @@ export function __readRecord(value: unknown): UnknownRecord | null {
   return asRecord<UnknownRecord>(value);
 }
 
-export function __readString(rec: UnknownRecord | null, key: string, fallback = ''): string {
+export function __readString(rec: UnknownRecord | null, key: string, defaultValue = ''): string {
   const value = rec ? rec[key] : null;
-  return typeof value === 'string' && value ? String(value) : fallback;
+  return typeof value === 'string' && value ? String(value) : defaultValue;
 }
 
-export function __readNumber(rec: UnknownRecord | null, key: string, fallback = 0): number {
+export function __readNumber(rec: UnknownRecord | null, key: string, defaultValue = 0): number {
   const value = rec ? rec[key] : null;
-  return typeof value === 'number' && Number.isFinite(value) ? Number(value) : fallback;
+  return typeof value === 'number' && Number.isFinite(value) ? Number(value) : defaultValue;
 }
 
 export function __readArray(rec: UnknownRecord | null, key: string): UnknownRecord[] {
@@ -148,9 +148,9 @@ export function __callMaybe(fn: HidePreviewFn, args: UnknownRecord): void {
   if (typeof fn === 'function') fn(args);
 }
 
-export function __asNum(v: unknown, fallback = NaN): number {
+export function __asNum(v: unknown, defaultValue = NaN): number {
   const n = Number(v);
-  return Number.isFinite(n) ? n : fallback;
+  return Number.isFinite(n) ? n : defaultValue;
 }
 
 export function __hasOwnFiniteValue(rec: UnknownRecord | null, key: string): boolean {

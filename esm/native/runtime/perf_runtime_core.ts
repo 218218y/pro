@@ -45,8 +45,8 @@ function normalizeLimit(value: unknown): number {
   return n;
 }
 
-function normalizeName(value: unknown, fallback = 'unknown'): string {
-  return typeof value === 'string' && value.trim() ? value.trim() : fallback;
+function normalizeName(value: unknown, defaultName = 'unknown'): string {
+  return typeof value === 'string' && value.trim() ? value.trim() : defaultName;
 }
 
 function normalizeStatus(value: unknown): 'ok' | 'error' | 'mark' {
@@ -83,12 +83,12 @@ export function isNonErrorPerfResultReason(reason: unknown): boolean {
   return typeof reason === 'string' && PERF_RESULT_MARK_REASONS.has(reason.trim());
 }
 
-function mergePerfDetail(primary: unknown, fallback: unknown): unknown {
-  if (typeof primary === 'undefined') return fallback;
-  if (typeof fallback === 'undefined') return primary;
+function mergePerfDetail(primary: unknown, baseDetail: unknown): unknown {
+  if (typeof primary === 'undefined') return baseDetail;
+  if (typeof baseDetail === 'undefined') return primary;
   const primaryRecord = asRecord<Record<string, unknown>>(primary);
-  const fallbackRecord = asRecord<Record<string, unknown>>(fallback);
-  if (primaryRecord && fallbackRecord) return { ...fallbackRecord, ...primaryRecord };
+  const baseRecord = asRecord<Record<string, unknown>>(baseDetail);
+  if (primaryRecord && baseRecord) return { ...baseRecord, ...primaryRecord };
   return primary;
 }
 

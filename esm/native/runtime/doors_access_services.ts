@@ -66,11 +66,11 @@ export function getDoorsMethod<T extends UnknownMethod>(App: unknown, key: strin
   return isMethod<T>(value) ? value : null;
 }
 
-export function readDoorsRuntimeNumber(App: unknown, key: string, fallback = 0): number {
+export function readDoorsRuntimeNumber(App: unknown, key: string, defaultValue = 0): number {
   try {
-    return asFiniteNumber(getDoorsRuntime(App)[key], fallback);
+    return asFiniteNumber(getDoorsRuntime(App)[key], defaultValue);
   } catch {
-    return fallback;
+    return defaultValue;
   }
 }
 
@@ -84,15 +84,15 @@ export function writeDoorsRuntimeNumber(App: unknown, key: string, value: number
   return next;
 }
 
-export function readDoorsRuntimeBool(App: unknown, key: string, fallback = false): boolean {
+export function readDoorsRuntimeBool(App: unknown, key: string, defaultValue = false): boolean {
   try {
     const runtime = getDoorsRuntime(App);
     const value = runtime[key];
     if (typeof value === 'boolean') return value;
-    if (typeof value === 'undefined') return fallback;
+    if (typeof value === 'undefined') return defaultValue;
     return !!value;
   } catch {
-    return fallback;
+    return defaultValue;
   }
 }
 

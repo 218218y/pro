@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-08T12:23:08.451Z",
+  "generatedAt": "2026-05-08T12:53:03.262Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 464,
-    "totalFiles": 185,
+    "totalOccurrences": 385,
+    "totalFiles": 172,
     "byCategory": {
-      "runtime-default": 443,
+      "runtime-default": 364,
       "browser-adapter": 9,
       "project-migration": 5,
       "test-fixture": 7,
@@ -133,18 +133,6 @@
           "runtime-default": 4
         }
       },
-      "esm/native/builder/hinged_doors_module_ops_context.ts": {
-        "total": 8,
-        "categories": {
-          "runtime-default": 8
-        }
-      },
-      "esm/native/builder/hinged_doors_module_ops_contracts.ts": {
-        "total": 2,
-        "categories": {
-          "runtime-default": 2
-        }
-      },
       "esm/native/builder/hinged_doors_module_ops_split_parts.ts": {
         "total": 4,
         "categories": {
@@ -215,12 +203,6 @@
         "total": 2,
         "categories": {
           "runtime-default": 2
-        }
-      },
-      "esm/native/builder/render_door_ops_shared_ops.ts": {
-        "total": 6,
-        "categories": {
-          "runtime-default": 6
         }
       },
       "esm/native/builder/render_drawer_ops_shared_guards.ts": {
@@ -355,12 +337,6 @@
           "runtime-default": 3
         }
       },
-      "esm/native/features/door_trim_shared.ts": {
-        "total": 6,
-        "categories": {
-          "runtime-default": 6
-        }
-      },
       "esm/native/features/model_record/model_record_normalizer.ts": {
         "total": 4,
         "categories": {
@@ -371,18 +347,6 @@
         "total": 2,
         "categories": {
           "runtime-default": 2
-        }
-      },
-      "esm/native/features/modules_configuration/corner_cells_snapshot_shared.ts": {
-        "total": 7,
-        "categories": {
-          "runtime-default": 7
-        }
-      },
-      "esm/native/features/modules_configuration/modules_config_contracts.ts": {
-        "total": 7,
-        "categories": {
-          "runtime-default": 7
         }
       },
       "esm/native/features/modules_configuration/modules_config_structure.ts": {
@@ -443,18 +407,6 @@
         "total": 2,
         "categories": {
           "runtime-default": 2
-        }
-      },
-      "esm/native/kernel/kernel_builder_request_policy_shared.ts": {
-        "total": 6,
-        "categories": {
-          "runtime-default": 6
-        }
-      },
-      "esm/native/kernel/kernel_builder_request_policy.ts": {
-        "total": 6,
-        "categories": {
-          "runtime-default": 6
         }
       },
       "esm/native/kernel/kernel_history_system_contracts.ts": {
@@ -601,12 +553,6 @@
           "runtime-default": 5
         }
       },
-      "esm/native/runtime/doors_access_services.ts": {
-        "total": 6,
-        "categories": {
-          "runtime-default": 6
-        }
-      },
       "esm/native/runtime/doors_access_shared.ts": {
         "total": 2,
         "categories": {
@@ -650,12 +596,6 @@
         }
       },
       "esm/native/runtime/modules_recompute_request_policy.ts": {
-        "total": 6,
-        "categories": {
-          "runtime-default": 6
-        }
-      },
-      "esm/native/runtime/perf_runtime_core.ts": {
         "total": 6,
         "categories": {
           "runtime-default": 6
@@ -739,12 +679,6 @@
           "runtime-default": 2
         }
       },
-      "esm/native/services/canvas_picking_hover_preview_modes_shared.ts": {
-        "total": 6,
-        "categories": {
-          "runtime-default": 6
-        }
-      },
       "esm/native/services/canvas_picking_interior_hover_layout_family_shared.ts": {
         "total": 2,
         "categories": {
@@ -817,12 +751,6 @@
           "runtime-default": 1
         }
       },
-      "esm/native/services/cloud_sync_lifecycle_support_realtime.ts": {
-        "total": 6,
-        "categories": {
-          "runtime-default": 6
-        }
-      },
       "esm/native/services/cloud_sync_panel_api_install_context_runtime.ts": {
         "total": 2,
         "categories": {
@@ -857,12 +785,6 @@
         "total": 4,
         "categories": {
           "runtime-default": 4
-        }
-      },
-      "esm/native/services/render_surface_runtime.ts": {
-        "total": 7,
-        "categories": {
-          "runtime-default": 7
         }
       },
       "esm/native/services/ui_ephemeral_defaults.ts": {
@@ -1126,34 +1048,6 @@
     },
     "hotFiles": [
       {
-        "file": "esm/native/builder/hinged_doors_module_ops_context.ts",
-        "total": 8,
-        "categories": {
-          "runtime-default": 8
-        }
-      },
-      {
-        "file": "esm/native/features/modules_configuration/corner_cells_snapshot_shared.ts",
-        "total": 7,
-        "categories": {
-          "runtime-default": 7
-        }
-      },
-      {
-        "file": "esm/native/features/modules_configuration/modules_config_contracts.ts",
-        "total": 7,
-        "categories": {
-          "runtime-default": 7
-        }
-      },
-      {
-        "file": "esm/native/services/render_surface_runtime.ts",
-        "total": 7,
-        "categories": {
-          "runtime-default": 7
-        }
-      },
-      {
         "file": "esm/native/ui/export/export_canvas_delivery_shared.ts",
         "total": 7,
         "categories": {
@@ -1161,63 +1055,7 @@
         }
       },
       {
-        "file": "esm/native/builder/render_door_ops_shared_ops.ts",
-        "total": 6,
-        "categories": {
-          "runtime-default": 6
-        }
-      },
-      {
-        "file": "esm/native/features/door_trim_shared.ts",
-        "total": 6,
-        "categories": {
-          "runtime-default": 6
-        }
-      },
-      {
-        "file": "esm/native/kernel/kernel_builder_request_policy_shared.ts",
-        "total": 6,
-        "categories": {
-          "runtime-default": 6
-        }
-      },
-      {
-        "file": "esm/native/kernel/kernel_builder_request_policy.ts",
-        "total": 6,
-        "categories": {
-          "runtime-default": 6
-        }
-      },
-      {
-        "file": "esm/native/runtime/doors_access_services.ts",
-        "total": 6,
-        "categories": {
-          "runtime-default": 6
-        }
-      },
-      {
         "file": "esm/native/runtime/modules_recompute_request_policy.ts",
-        "total": 6,
-        "categories": {
-          "runtime-default": 6
-        }
-      },
-      {
-        "file": "esm/native/runtime/perf_runtime_core.ts",
-        "total": 6,
-        "categories": {
-          "runtime-default": 6
-        }
-      },
-      {
-        "file": "esm/native/services/canvas_picking_hover_preview_modes_shared.ts",
-        "total": 6,
-        "categories": {
-          "runtime-default": 6
-        }
-      },
-      {
-        "file": "esm/native/services/cloud_sync_lifecycle_support_realtime.ts",
         "total": 6,
         "categories": {
           "runtime-default": 6
@@ -1330,6 +1168,90 @@
       },
       {
         "file": "esm/native/features/sketch_drawer_sizing.ts",
+        "total": 4,
+        "categories": {
+          "runtime-default": 4
+        }
+      },
+      {
+        "file": "esm/native/features/stack_split/stack_split.ts",
+        "total": 4,
+        "categories": {
+          "runtime-default": 4
+        }
+      },
+      {
+        "file": "esm/native/kernel/kernel_shared.ts",
+        "total": 4,
+        "categories": {
+          "runtime-default": 4
+        }
+      },
+      {
+        "file": "esm/native/platform/render_loop_impl_support.ts",
+        "total": 4,
+        "categories": {
+          "runtime-default": 4
+        }
+      },
+      {
+        "file": "esm/native/runtime/platform_access_ops.ts",
+        "total": 4,
+        "categories": {
+          "runtime-default": 4
+        }
+      },
+      {
+        "file": "esm/native/runtime/slice_write_access_dispatch_order.ts",
+        "total": 4,
+        "categories": {
+          "runtime-default": 4
+        }
+      },
+      {
+        "file": "esm/native/services/canvas_picking_interior_hover_state.ts",
+        "total": 4,
+        "categories": {
+          "runtime-default": 4
+        }
+      },
+      {
+        "file": "esm/native/services/canvas_picking_local_helpers_shared.ts",
+        "total": 4,
+        "categories": {
+          "runtime-default": 4
+        }
+      },
+      {
+        "file": "esm/native/services/canvas_picking_module_selector_hits_candidates.ts",
+        "total": 4,
+        "categories": {
+          "runtime-default": 4
+        }
+      },
+      {
+        "file": "esm/native/services/canvas_picking_projection_runtime_box_shared.ts",
+        "total": 4,
+        "categories": {
+          "runtime-default": 4
+        }
+      },
+      {
+        "file": "esm/native/services/cloud_sync_command_shared.ts",
+        "total": 4,
+        "categories": {
+          "runtime-default": 4
+        }
+      },
+      {
+        "file": "esm/native/services/render_surface_runtime_support_shared.ts",
+        "total": 4,
+        "categories": {
+          "runtime-default": 4
+        }
+      },
+      {
+        "file": "esm/native/ui/export/export_canvas_core_shared.ts",
         "total": 4,
         "categories": {
           "runtime-default": 4
@@ -1637,76 +1559,6 @@
       "text": "return typeof value === 'string' ? value : fallback;"
     },
     {
-      "file": "esm/native/builder/hinged_doors_module_ops_context.ts",
-      "line": 133,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const grooveValSafe = (doorId: number, suffix: string, fallback: boolean): boolean =>"
-    },
-    {
-      "file": "esm/native/builder/hinged_doors_module_ops_context.ts",
-      "line": 134,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "typeof grooveVal === 'function' ? !!grooveVal(doorId, suffix, fallback) : fallback;"
-    },
-    {
-      "file": "esm/native/builder/hinged_doors_module_ops_context.ts",
-      "line": 134,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "typeof grooveVal === 'function' ? !!grooveVal(doorId, suffix, fallback) : fallback;"
-    },
-    {
-      "file": "esm/native/builder/hinged_doors_module_ops_context.ts",
-      "line": 138,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const resolveCurtainForPart = (partId: string, fallback: string | null | undefined): string | null => {"
-    },
-    {
-      "file": "esm/native/builder/hinged_doors_module_ops_context.ts",
-      "line": 157,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const v = curtainVal(n, suf, fallback);"
-    },
-    {
-      "file": "esm/native/builder/hinged_doors_module_ops_context.ts",
-      "line": 160,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const v2 = curtainVal(partId, fallback);"
-    },
-    {
-      "file": "esm/native/builder/hinged_doors_module_ops_context.ts",
-      "line": 166,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return fallback == null ? null : String(fallback);"
-    },
-    {
-      "file": "esm/native/builder/hinged_doors_module_ops_context.ts",
-      "line": 166,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return fallback == null ? null : String(fallback);"
-    },
-    {
-      "file": "esm/native/builder/hinged_doors_module_ops_contracts.ts",
-      "line": 50,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "grooveValSafe: (doorId: number, suffix: string, fallback: boolean) => boolean;"
-    },
-    {
-      "file": "esm/native/builder/hinged_doors_module_ops_contracts.ts",
-      "line": 53,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "resolveCurtainForPart: (partId: string, fallback: string | null | undefined) => string | null;"
-    },
-    {
       "file": "esm/native/builder/hinged_doors_module_ops_split_parts.ts",
       "line": 21,
       "term": "fallback",
@@ -1880,48 +1732,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "return typeof v === 'number' && Number.isFinite(v) ? v : fallback;"
-    },
-    {
-      "file": "esm/native/builder/render_door_ops_shared_ops.ts",
-      "line": 8,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "function readFinite(value: unknown, fallback = 0): number {"
-    },
-    {
-      "file": "esm/native/builder/render_door_ops_shared_ops.ts",
-      "line": 9,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof value === 'number' && Number.isFinite(value) ? value : fallback;"
-    },
-    {
-      "file": "esm/native/builder/render_door_ops_shared_ops.ts",
-      "line": 12,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "function readString(value: unknown, fallback = ''): string {"
-    },
-    {
-      "file": "esm/native/builder/render_door_ops_shared_ops.ts",
-      "line": 13,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof value === 'string' ? value : fallback;"
-    },
-    {
-      "file": "esm/native/builder/render_door_ops_shared_ops.ts",
-      "line": 16,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "function readDoorPartId(value: unknown, fallback: string): string {"
-    },
-    {
-      "file": "esm/native/builder/render_door_ops_shared_ops.ts",
-      "line": 17,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof value === 'string' && value ? value : fallback;"
     },
     {
       "file": "esm/native/builder/render_drawer_ops_shared_guards.ts",
@@ -2190,48 +2000,6 @@
       "text": "const fn = typeof primary === 'function' ? primary : typeof fallback === 'function' ? fallback : null;"
     },
     {
-      "file": "esm/native/features/door_trim_shared.ts",
-      "line": 96,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: DoorTrimAxis = DEFAULT_DOOR_TRIM_AXIS"
-    },
-    {
-      "file": "esm/native/features/door_trim_shared.ts",
-      "line": 98,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return value === 'vertical' ? 'vertical' : value === 'horizontal' ? 'horizontal' : fallback;"
-    },
-    {
-      "file": "esm/native/features/door_trim_shared.ts",
-      "line": 103,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: DoorTrimColor = DEFAULT_DOOR_TRIM_COLOR"
-    },
-    {
-      "file": "esm/native/features/door_trim_shared.ts",
-      "line": 105,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return value === 'silver' || value === 'gold' || value === 'black' || value === 'nickel' ? value : fallback;"
-    },
-    {
-      "file": "esm/native/features/door_trim_shared.ts",
-      "line": 110,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: DoorTrimSpan = DEFAULT_DOOR_TRIM_SPAN"
-    },
-    {
-      "file": "esm/native/features/door_trim_shared.ts",
-      "line": 119,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": ": fallback;"
-    },
-    {
       "file": "esm/native/features/model_record/model_record_normalizer.ts",
       "line": 28,
       "term": "fallback",
@@ -2272,104 +2040,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "return Number.isFinite(doors) && doors > 0 ? doors : fallback;"
-    },
-    {
-      "file": "esm/native/features/modules_configuration/corner_cells_snapshot_shared.ts",
-      "line": 15,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "function toBoolArray(v: unknown, fallback: boolean[]): boolean[] {"
-    },
-    {
-      "file": "esm/native/features/modules_configuration/corner_cells_snapshot_shared.ts",
-      "line": 17,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return fallback.slice();"
-    },
-    {
-      "file": "esm/native/features/modules_configuration/corner_cells_snapshot_shared.ts",
-      "line": 66,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function toInt(v: unknown, fallback: number): number {"
-    },
-    {
-      "file": "esm/native/features/modules_configuration/corner_cells_snapshot_shared.ts",
-      "line": 68,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return Number.isFinite(n) ? n : fallback;"
-    },
-    {
-      "file": "esm/native/features/modules_configuration/corner_cells_snapshot_shared.ts",
-      "line": 71,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function toIntMin(v: unknown, fallback: number, min: number): number {"
-    },
-    {
-      "file": "esm/native/features/modules_configuration/corner_cells_snapshot_shared.ts",
-      "line": 72,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const n = toInt(v, fallback);"
-    },
-    {
-      "file": "esm/native/features/modules_configuration/corner_cells_snapshot_shared.ts",
-      "line": 73,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return n >= min ? n : fallback;"
-    },
-    {
-      "file": "esm/native/features/modules_configuration/modules_config_contracts.ts",
-      "line": 28,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function toInt(v: unknown, fallback: number): number {"
-    },
-    {
-      "file": "esm/native/features/modules_configuration/modules_config_contracts.ts",
-      "line": 30,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return Number.isFinite(n) ? n : fallback;"
-    },
-    {
-      "file": "esm/native/features/modules_configuration/modules_config_contracts.ts",
-      "line": 33,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function toIntMin(v: unknown, fallback: number, min: number): number {"
-    },
-    {
-      "file": "esm/native/features/modules_configuration/modules_config_contracts.ts",
-      "line": 34,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const n = toInt(v, fallback);"
-    },
-    {
-      "file": "esm/native/features/modules_configuration/modules_config_contracts.ts",
-      "line": 35,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return n >= min ? n : fallback;"
-    },
-    {
-      "file": "esm/native/features/modules_configuration/modules_config_contracts.ts",
-      "line": 76,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readDoorsCount(value: unknown, fallback = 2): number {"
-    },
-    {
-      "file": "esm/native/features/modules_configuration/modules_config_contracts.ts",
-      "line": 77,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return toIntMin(isRecord(value) ? value.doors : undefined, fallback, 1);"
     },
     {
       "file": "esm/native/features/modules_configuration/modules_config_structure.ts",
@@ -2538,90 +2208,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "return globalHandleType != null ? globalHandleType : fallback || 'standard';"
-    },
-    {
-      "file": "esm/native/kernel/kernel_builder_request_policy_shared.ts",
-      "line": 31,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readKernelBuilderRequestSource(meta: KernelBuilderRequestMeta, fallback = 'kernel'): string {"
-    },
-    {
-      "file": "esm/native/kernel/kernel_builder_request_policy_shared.ts",
-      "line": 36,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback"
-    },
-    {
-      "file": "esm/native/kernel/kernel_builder_request_policy_shared.ts",
-      "line": 40,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readKernelBuilderRequestForce(meta: KernelBuilderRequestMeta, fallback = false): boolean {"
-    },
-    {
-      "file": "esm/native/kernel/kernel_builder_request_policy_shared.ts",
-      "line": 45,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback"
-    },
-    {
-      "file": "esm/native/kernel/kernel_builder_request_policy_shared.ts",
-      "line": 49,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readKernelBuilderRequestImmediate(meta: KernelBuilderRequestMeta, fallback = false): boolean {"
-    },
-    {
-      "file": "esm/native/kernel/kernel_builder_request_policy_shared.ts",
-      "line": 51,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return readKernelBuilderRequestBoolean(metaRecord.immediate) ?? fallback;"
-    },
-    {
-      "file": "esm/native/kernel/kernel_builder_request_policy.ts",
-      "line": 17,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readKernelBuilderRequestSource(meta: KernelBuilderRequestMeta, fallback = 'kernel'): string {"
-    },
-    {
-      "file": "esm/native/kernel/kernel_builder_request_policy.ts",
-      "line": 18,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return readKernelBuilderRequestSourceInternal(meta, fallback);"
-    },
-    {
-      "file": "esm/native/kernel/kernel_builder_request_policy.ts",
-      "line": 21,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readKernelBuilderRequestForce(meta: KernelBuilderRequestMeta, fallback = false): boolean {"
-    },
-    {
-      "file": "esm/native/kernel/kernel_builder_request_policy.ts",
-      "line": 22,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return readKernelBuilderRequestForceInternal(meta, fallback);"
-    },
-    {
-      "file": "esm/native/kernel/kernel_builder_request_policy.ts",
-      "line": 25,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readKernelBuilderRequestImmediate(meta: KernelBuilderRequestMeta, fallback = false): boolean {"
-    },
-    {
-      "file": "esm/native/kernel/kernel_builder_request_policy.ts",
-      "line": 26,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return readKernelBuilderRequestImmediateInternal(meta, fallback);"
     },
     {
       "file": "esm/native/kernel/kernel_history_system_contracts.ts",
@@ -2995,48 +2581,6 @@
       "text": "return value === undefined ? fallback : value;"
     },
     {
-      "file": "esm/native/runtime/doors_access_services.ts",
-      "line": 69,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readDoorsRuntimeNumber(App: unknown, key: string, fallback = 0): number {"
-    },
-    {
-      "file": "esm/native/runtime/doors_access_services.ts",
-      "line": 71,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return asFiniteNumber(getDoorsRuntime(App)[key], fallback);"
-    },
-    {
-      "file": "esm/native/runtime/doors_access_services.ts",
-      "line": 73,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return fallback;"
-    },
-    {
-      "file": "esm/native/runtime/doors_access_services.ts",
-      "line": 87,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readDoorsRuntimeBool(App: unknown, key: string, fallback = false): boolean {"
-    },
-    {
-      "file": "esm/native/runtime/doors_access_services.ts",
-      "line": 92,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "if (typeof value === 'undefined') return fallback;"
-    },
-    {
-      "file": "esm/native/runtime/doors_access_services.ts",
-      "line": 95,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return fallback;"
-    },
-    {
       "file": "esm/native/runtime/doors_access_shared.ts",
       "line": 18,
       "term": "fallback",
@@ -3196,48 +2740,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "return requestBuilderForcedBuild(App, createStructuralModulesFallbackBuildMeta(meta, defaults, fallback));"
-    },
-    {
-      "file": "esm/native/runtime/perf_runtime_core.ts",
-      "line": 48,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "function normalizeName(value: unknown, fallback = 'unknown'): string {"
-    },
-    {
-      "file": "esm/native/runtime/perf_runtime_core.ts",
-      "line": 49,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof value === 'string' && value.trim() ? value.trim() : fallback;"
-    },
-    {
-      "file": "esm/native/runtime/perf_runtime_core.ts",
-      "line": 86,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "function mergePerfDetail(primary: unknown, fallback: unknown): unknown {"
-    },
-    {
-      "file": "esm/native/runtime/perf_runtime_core.ts",
-      "line": 87,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "if (typeof primary === 'undefined') return fallback;"
-    },
-    {
-      "file": "esm/native/runtime/perf_runtime_core.ts",
-      "line": 88,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "if (typeof fallback === 'undefined') return primary;"
-    },
-    {
-      "file": "esm/native/runtime/perf_runtime_core.ts",
-      "line": 90,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const fallbackRecord = asRecord<Record<string, unknown>>(fallback);"
     },
     {
       "file": "esm/native/runtime/platform_access_ops.ts",
@@ -3452,48 +2954,6 @@
     {
       "file": "esm/native/services/canvas_picking_hover_clearance_measurements.ts",
       "line": 20,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return Number.isFinite(n) ? n : fallback;"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_hover_preview_modes_shared.ts",
-      "line": 126,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function __readString(rec: UnknownRecord | null, key: string, fallback = ''): string {"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_hover_preview_modes_shared.ts",
-      "line": 128,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof value === 'string' && value ? String(value) : fallback;"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_hover_preview_modes_shared.ts",
-      "line": 131,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function __readNumber(rec: UnknownRecord | null, key: string, fallback = 0): number {"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_hover_preview_modes_shared.ts",
-      "line": 133,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof value === 'number' && Number.isFinite(value) ? Number(value) : fallback;"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_hover_preview_modes_shared.ts",
-      "line": 151,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function __asNum(v: unknown, fallback = NaN): number {"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_hover_preview_modes_shared.ts",
-      "line": 153,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return Number.isFinite(n) ? n : fallback;"
@@ -3723,48 +3183,6 @@
       "text": "_cloudSyncReportNonFatal(App, `${op}.fallback`, fallbackErr, { throttleMs: 6000 });"
     },
     {
-      "file": "esm/native/services/cloud_sync_lifecycle_support_realtime.ts",
-      "line": 7,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "function readRealtimeBoolean(value: unknown, fallback: boolean): boolean {"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_lifecycle_support_realtime.ts",
-      "line": 8,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof value === 'boolean' ? value : fallback;"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_lifecycle_support_realtime.ts",
-      "line": 11,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "function readRealtimeString(value: unknown, fallback: string): string {"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_lifecycle_support_realtime.ts",
-      "line": 12,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof value === 'string' ? value : fallback;"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_lifecycle_support_realtime.ts",
-      "line": 15,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "function readRealtimeMode(value: unknown, fallback: 'broadcast'): 'broadcast' {"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_lifecycle_support_realtime.ts",
-      "line": 16,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return value === 'broadcast' ? 'broadcast' : fallback;"
-    },
-    {
       "file": "esm/native/services/cloud_sync_panel_api_install_context_runtime.ts",
       "line": 97,
       "term": "fallback",
@@ -3875,55 +3293,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "const num = readFiniteNumber(value, fallback);"
-    },
-    {
-      "file": "esm/native/services/render_surface_runtime.ts",
-      "line": 47,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: number"
-    },
-    {
-      "file": "esm/native/services/render_surface_runtime.ts",
-      "line": 49,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const value = readConfigLooseScalarFromApp(App, key, fallback);"
-    },
-    {
-      "file": "esm/native/services/render_surface_runtime.ts",
-      "line": 50,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "if (key === 'MIRROR_CUBE_SIZE') return clampNumber(value, fallback, 64, 1024);"
-    },
-    {
-      "file": "esm/native/services/render_surface_runtime.ts",
-      "line": 51,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return clampNumber(value, fallback, 0.75, 2);"
-    },
-    {
-      "file": "esm/native/services/render_surface_runtime.ts",
-      "line": 54,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "function readConfigBoolean(App: AppLike, key: string, fallback: boolean): boolean {"
-    },
-    {
-      "file": "esm/native/services/render_surface_runtime.ts",
-      "line": 55,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const value = readConfigLooseScalarFromApp(App, key, fallback);"
-    },
-    {
-      "file": "esm/native/services/render_surface_runtime.ts",
-      "line": 65,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return fallback;"
     },
     {
       "file": "esm/native/services/ui_ephemeral_defaults.ts",

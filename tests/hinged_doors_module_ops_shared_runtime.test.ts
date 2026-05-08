@@ -9,7 +9,7 @@ import {
   pushHingedDoorSegment,
 } from '../esm/native/builder/hinged_doors_module_ops_shared.ts';
 
-test('hinged_doors_module_ops_shared builds canonical context and resolves split/full curtain fallback', () => {
+test('hinged_doors_module_ops_shared builds canonical context and resolves split/full curtain defaults', () => {
   const ctx = createHingedDoorModuleOpsContext({
     cfg: {
       wardrobeType: 'hinged',

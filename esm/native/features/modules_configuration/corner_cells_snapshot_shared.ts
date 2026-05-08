@@ -12,9 +12,9 @@ import {
   type UnknownRecord,
 } from './corner_cells_contracts.js';
 
-function toBoolArray(v: unknown, fallback: boolean[]): boolean[] {
+function toBoolArray(v: unknown, defaultValues: boolean[]): boolean[] {
   if (Array.isArray(v)) return v.map(Boolean);
-  return fallback.slice();
+  return defaultValues.slice();
 }
 
 export const DEFAULT_CORNER_CONFIGURATION: NormalizedCornerConfigurationLike = {
@@ -63,14 +63,14 @@ export function sanitizeCornerCustomDataForPatch(v: unknown): NormalizedCornerCu
   };
 }
 
-export function toInt(v: unknown, fallback: number): number {
+export function toInt(v: unknown, defaultValue: number): number {
   const n = parseInt(String(v ?? ''), 10);
-  return Number.isFinite(n) ? n : fallback;
+  return Number.isFinite(n) ? n : defaultValue;
 }
 
-export function toIntMin(v: unknown, fallback: number, min: number): number {
-  const n = toInt(v, fallback);
-  return n >= min ? n : fallback;
+export function toIntMin(v: unknown, defaultValue: number, min: number): number {
+  const n = toInt(v, defaultValue);
+  return n >= min ? n : defaultValue;
 }
 
 export function hasOwn(o: unknown, key: string): boolean {

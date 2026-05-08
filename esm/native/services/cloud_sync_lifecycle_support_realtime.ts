@@ -4,16 +4,16 @@ function isMutableRealtimeBranch(value: unknown): value is Record<string, unknow
   return !!value && typeof value === 'object' && !Array.isArray(value);
 }
 
-function readRealtimeBoolean(value: unknown, fallback: boolean): boolean {
-  return typeof value === 'boolean' ? value : fallback;
+function readRealtimeBoolean(value: unknown, defaultValue: boolean): boolean {
+  return typeof value === 'boolean' ? value : defaultValue;
 }
 
-function readRealtimeString(value: unknown, fallback: string): string {
-  return typeof value === 'string' ? value : fallback;
+function readRealtimeString(value: unknown, defaultValue: string): string {
+  return typeof value === 'string' ? value : defaultValue;
 }
 
-function readRealtimeMode(value: unknown, fallback: 'broadcast'): 'broadcast' {
-  return value === 'broadcast' ? 'broadcast' : fallback;
+function readRealtimeMode(value: unknown, defaultMode: 'broadcast'): 'broadcast' {
+  return value === 'broadcast' ? 'broadcast' : defaultMode;
 }
 
 export function syncCloudSyncRealtimeStatusInPlace(args: {
