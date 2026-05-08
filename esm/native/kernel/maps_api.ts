@@ -1,9 +1,8 @@
 // Native ESM conversion (TypeScript)
-// Converted from legacy: js/kernel/pro_maps_api.js
 // Stage 117 - kernel native
 //
 // Stage 2+ cleanup:
-// - Removed legacy model-maps surface.
+// - Removed the old model-maps surface.
 // - All reads come from the store-backed config snapshot.
 // - All writes route through runtime/cfg_access helpers (patchConfigMap / cfgSetScalar).
 

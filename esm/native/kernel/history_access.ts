@@ -2,7 +2,7 @@
 //
 // Why this exists:
 // - The HistorySystem implementation is owned by the kernel (installKernel).
-// - Other layers should NOT depend on legacy globals (historical HistorySystem aliases).
+// - Other layers should not depend on historical HistorySystem aliases.
 // - The single canonical access point is via app.services.history.system.
 //
 // This module is intentionally dependency-free to avoid import cycles.

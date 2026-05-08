@@ -126,7 +126,7 @@ export function reportError(App: unknown, err: unknown, ctx?: unknown): void {
 /**
  * Return whether the app requests "fail fast" behavior.
  *
- * Canonical: store.runtime.failFast (Zustand store). No legacy flags root-slot.
+ * Canonical: store.runtime.failFast (Zustand store). No root-slot flags.
  */
 export function shouldFailFast(App: unknown): boolean {
   try {

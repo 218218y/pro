@@ -37,8 +37,8 @@ type SavedColorsInput = Array<SavedColorLike | string>;
 
 function normalizeSavedColor(value: unknown): SavedColorLike | string | null {
   if (typeof value === 'string') {
-    const legacy = value.trim();
-    return legacy || null;
+    const trimmed = value.trim();
+    return trimmed || null;
   }
   const rec = asRecord(value);
   if (!rec) return null;

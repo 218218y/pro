@@ -3,7 +3,7 @@
 // Purpose:
 // - Lazy-load export_canvas only when an export action is used.
 // - Keep React call sites small and stable.
-// - Call export_canvas named exports directly (no legacy installer surface dependency).
+// - Call export_canvas named exports directly (no installer surface dependency).
 // - Return canonical command results so UI owners do not need ad-hoc toast guesses.
 
 import type { AppContainer, UnknownRecord } from '../../../../types';

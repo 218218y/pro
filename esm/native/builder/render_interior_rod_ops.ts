@@ -128,8 +128,7 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
   const __matCache = deps.matCache;
   const __renderOpsHandleCatch = deps.renderOpsHandleCatch;
 
-  // Stage 3G-6: Centralized rod + hanger + hanging-clothes rendering.
-  // Moves the legacy createRod closure out of BuilderCore.
+  // Centralized rod, hanger, and hanging-clothes rendering.
 
   function createRodWithContents(args: RenderInteriorRodArgs | unknown) {
     const safeArgs = isRodArgs(args) ? args : {};

@@ -1,9 +1,9 @@
 // Native ESM implementation of Saved Models service.
 //
 // Goals:
-// - No legacy `js/**` imports on the ESM path.
+// - No `js/**` imports on the ESM path.
 // - No IIFE / implicit globals.
-// - Keep behavior identical to `js/services/pro_services_models.js`.
+// - Keep saved-model service behavior stable.
 //
 // This service persists user models via `App.services.storage` and applies models via `App.services.projectIO`.
 // Canonical API surface is `App.services.models`.

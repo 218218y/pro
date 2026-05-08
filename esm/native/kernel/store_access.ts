@@ -1,6 +1,6 @@
 // Kernel store access helpers (TypeScript)
 //
-// Goal: remove scattered legacy selector checks inside kernel internals.
+// Goal: keep kernel internals on the canonical store selector surface.
 // This module is side-effect free on import.
 // It is intentionally fail-fast: kernel should run only after platform installed the store.
 

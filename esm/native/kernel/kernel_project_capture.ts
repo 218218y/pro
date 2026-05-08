@@ -23,7 +23,7 @@ export function createKernelProjectCapture(
     if (!hasEssentialUiDimsFromSnapshot(ui)) {
       const err = new Error(
         '[WardrobePro] Project capture requires essential UI fields in store.ui (width/height/depth/doors). ' +
-          'DOM fallback (legacy UI reader) has been removed; ensure store.ui is seeded before capture.'
+          'DOM readback is not a supported project-capture input; ensure store.ui is seeded before capture.'
       );
       args.reportKernelError(args.App, err, 'project.capture');
       throw err;

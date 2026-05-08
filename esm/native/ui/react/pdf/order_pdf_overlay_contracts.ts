@@ -66,7 +66,7 @@ export type OrderPdfDraft = {
   manualDetailsHtml?: string;
 
   // When true, manualDetails contains the full details text (not just additions).
-  // Legacy drafts without this flag are treated as the old "auto + additions" mode.
+  // Older drafts without this flag are treated as the previous "auto + additions" mode.
   detailsFull?: boolean;
 
   // Used to avoid overwriting the user's edits when refreshing auto data.

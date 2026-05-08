@@ -1,7 +1,7 @@
 // Canonical mode ids (Pure ESM)
 //
 // Single source of truth for primary mode string IDs.
-// Post-migration policy: callers should NOT read mode IDs from legacy surfaces.
+// Post-migration policy: callers should not read mode IDs from removed surfaces.
 
 export type ModeMap = Record<string, string>;
 
@@ -43,7 +43,7 @@ export function getModeId(_App: unknown, key: string): string | undefined {
  * Return the canonical modes map.
  *
  * NOTE: The `App` parameter is kept for backwards compatibility with older call sites,
- * but is intentionally ignored (no legacy fallback).
+ * but is intentionally ignored.
  */
 export function getModes(_App: unknown): ModeMap {
   return MODES;

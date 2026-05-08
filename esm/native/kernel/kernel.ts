@@ -1,5 +1,4 @@
 // Native ESM: Kernel (stateKernel + HistorySystem + cfg surface)
-// Converted from legacy: js/kernel/pro_kernel.js
 // Stage: kernel native conversion
 
 import type { AppContainer, StateKernelLike, UnknownRecord } from '../../../types';

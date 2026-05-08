@@ -27,5 +27,5 @@ export {
 
 export type { BrowserTimersLike } from './browser_env_timers.js';
 
-// Keep a named export for legacy call sites that might reach into this module.
+// Keep AppContainer available for direct browser-env consumers.
 export type { AppContainer } from '../../../types';

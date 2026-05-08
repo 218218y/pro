@@ -1,10 +1,10 @@
 // DOM access helpers (Runtime)
 //
 // Goal: provide a single, safe, DOM-first helper layer so UI modules don't re-implement
-// `$`, `qs`, `qsa` fallbacks across files.
+// `$`, `qs`, `qsa` null-safe reads across files.
 //
 // Notes:
-// - Pure ESM code should not depend on legacy App.dom helpers.
+// - Pure ESM code should use injected browser deps instead of App.dom helper bags.
 // - We use only the injected browser document (via deps.browser) when available.
 // - Never throw for missing DOM; callers get null/[] and can decide.
 

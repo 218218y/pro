@@ -75,7 +75,7 @@ function resolveMirrorLayoutsAfterAdd(args: {
   if (existingMirrorLayouts.length)
     return existingMirrorLayouts.concat([createFullDoorMirrorLayout(faceSign)]);
 
-  // Legacy/canonical full mirror without a layout means “outside face”.
+  // Full-face mirror without a layout means "outside face".
   // When the user clicks the inside face, preserve that existing outside mirror and add an explicit inside one.
   return faceSign === -1 ? [createFullDoorMirrorLayout(1), createFullDoorMirrorLayout(-1)] : null;
 }

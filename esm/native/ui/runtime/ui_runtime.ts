@@ -1,7 +1,7 @@
 // UI runtime state (Pure ESM)
 //
 // Purpose:
-// - Hold transient UI installation state (disposers / guards) outside legacy wiring.
+// - Hold transient UI installation state (disposers / guards) outside boot wiring.
 // - Keep installers idempotent and safe under repeated boot/HMR.
 //
 // NOTE: This file must not import DOM-specific helpers.

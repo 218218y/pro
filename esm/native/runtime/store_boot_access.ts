@@ -88,7 +88,7 @@ function requireCommitUiSnapshotFn(
  * Canonical boot-only seam helpers for store installation / seed commit.
  *
  * Policy:
- * - UI/boot code should not probe legacy kernel internals directly.
+ * - UI/boot code should not probe kernel internals directly.
  * - Delete-pass: this helper now requires canonical actions surfaces installed by boot manifest
  *   (canonical action surfaces are expected before UI boot).
  */

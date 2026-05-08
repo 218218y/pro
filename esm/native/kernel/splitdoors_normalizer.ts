@@ -1,5 +1,4 @@
 // Native ESM conversion (TypeScript)
-// Converted from legacy: js/kernel/pro_splitdoors_normalizer.js
 // Stage 117 - kernel native
 
 import type { AppContainer, UnknownRecord } from '../../../types';

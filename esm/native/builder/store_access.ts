@@ -1,6 +1,6 @@
 // Builder store access helpers (ESM)
 //
-// Goal: remove scattered legacy selector usage in builder internals.
+// Goal: keep builder internals on the canonical store selector surface.
 // This module is side-effect free on import and intentionally fail-fast.
 
 import type {

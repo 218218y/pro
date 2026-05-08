@@ -82,7 +82,7 @@ export function provideBuilder(App: AppContainer): BuilderServiceLike {
 
   // Canonical namespace:
   // - Builder is a service: `App.services.builder`.
-  // - We avoid writing to `App.builder` (legacy compatibility should migrate off it).
+  // - We avoid writing to `App.builder`; consumers should use App.services.builder.
   const B: BuilderServiceRecord = ensureBuilderService(A, 'native/builder/provide');
 
   // Idempotency marker lives on the canonical namespace.

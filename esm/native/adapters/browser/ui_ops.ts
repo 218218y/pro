@@ -8,7 +8,7 @@
 // Notes:
 // - This adapter intentionally exposes *operations* (scroll, selection, cursor, etc),
 //   not raw window/document objects.
-// - For rare legacy interop, we provide App.browser.getWindow() as an escape hatch.
+// - For rare browser interop, we provide App.browser.getWindow() as an escape hatch.
 
 import type {
   AppContainer,

@@ -2,7 +2,7 @@ import { getStoreActionFn } from './actions_access_domains.js';
 
 /**
  * Canonical read-only seam for boot-installed store reactivity status.
- * UI/runtime code should not probe legacy kernel internals directly.
+ * UI/runtime code should not probe kernel internals directly.
  * Delete-pass: runtime helper reads actions.store.hasReactivityInstalled surface only.
  */
 export function hasStoreReactivityInstalled(App: unknown): boolean {

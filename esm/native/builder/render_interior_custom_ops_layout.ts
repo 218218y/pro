@@ -131,7 +131,7 @@ export function applyCustomStorageBarrier(args: {
       }
     }
   } catch {
-    // ignore legacy color lookup errors and keep default body material
+    // Keep the default body material if per-part color lookup fails.
   }
 
   createBoard(

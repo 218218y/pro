@@ -1,10 +1,8 @@
 // Native Builder Handles V7 (ESM)
 //
-// Legacy source: `js/builder/pro_builder_handles.js`
-//
 // Goals:
 // - Real ESM (no IIFE, no implicit side-effects on import)
-// - No legacy `js/**` imports on the ESM path
+// - No `js/**` imports on the ESM path
 // - Provide a canonical builder service surface (App.services.builder.handles)
 // - Keep handle materials cached on the builder service (no global shims)
 

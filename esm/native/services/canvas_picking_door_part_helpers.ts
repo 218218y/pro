@@ -60,7 +60,7 @@ function __wp_isDoorOrDrawerLikePartId(partId: unknown): boolean {
 }
 
 // Segmented doors (hinged + corner doors) persist per-door maps using *_full/_top/_bot keys.
-// Legacy payloads may have stored base keys (no suffix). Those are migrated at load-time.
+// Older payloads may have stored base keys (no suffix). Those are migrated at load-time.
 function __wp_isSegmentedDoorBaseId(partId: unknown): boolean {
   const pid = typeof partId === 'string' ? partId : String(partId ?? '');
   if (!pid) return false;

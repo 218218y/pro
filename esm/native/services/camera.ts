@@ -1,9 +1,7 @@
 // Native ESM implementation of the camera service.
 //
-// Legacy source: `js/services/pro_services_camera.js`
-//
 // Goals:
-// - No legacy `js/**` imports on the ESM path.
+// - No `js/**` imports on the ESM path.
 // - No IIFE / implicit globals.
 // - Canonical camera API lives only on `App.services.camera` (delete-pass: no actions.moveCamera shim).
 //

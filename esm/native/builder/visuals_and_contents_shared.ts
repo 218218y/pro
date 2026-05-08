@@ -149,8 +149,7 @@ function __ensureBuilderContentsSlot(builder: UnknownRecord): BuilderContentsSur
   return next;
 }
 
-// NOTE: module-structure calculator is now a direct import (pure ESM).
-// In pure-ESM builds we do not provide legacy window.* globals.
+// NOTE: module-structure calculator is a direct import; pure ESM builds do not provide window.* globals.
 
 export {
   __asBufferAttribute,

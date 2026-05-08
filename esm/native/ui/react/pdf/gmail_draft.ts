@@ -242,8 +242,8 @@ function _buildMimeWithPdfAttachment(opts: {
   const fileNameUtf8 = _ensurePdfExt(opts.fileName);
   // Attachment filename encoding:
   // - Standard: RFC 5987 (filename* / name*) with percent-encoded UTF-8.
-  // - Some clients (incl. Gmail UI) prefer the legacy filename= over filename* when both exist.
-  //   To make sure Hebrew survives, we OMIT the legacy filename/name when the filename isn't ASCII.
+  // - Some clients (incl. Gmail UI) prefer filename= over filename* when both exist.
+  //   To make sure Hebrew survives, we omit filename/name when the filename isn't ASCII.
   const fileName5987 = _encodeRfc5987Utf8(fileNameUtf8);
   const pdfBase64 = _b64FromBytes(opts.pdfBytes);
 

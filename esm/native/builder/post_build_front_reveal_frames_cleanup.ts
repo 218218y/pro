@@ -1,6 +1,6 @@
 // Front reveal frame cleanup helpers (Pure ESM)
 //
-// Owns stale/legacy reveal-frame cleanup and local-frame disposal helpers.
+// Owns stale reveal-frame cleanup and local-frame disposal helpers.
 
 import type { Object3DLike } from '../../../types/index.js';
 

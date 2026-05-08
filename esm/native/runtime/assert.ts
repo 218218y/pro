@@ -74,7 +74,7 @@ function isStateKernelSurface(value: unknown): value is StateKernelLike {
 }
 
 export function asObject<T extends object = Record<string, unknown>>(x: unknown): T | null {
-  // Keep legacy semantics: treat arrays as objects too (some callsites still rely on this).
+  // Preserve the established contract: arrays are accepted by this broad object helper.
   return x && typeof x === 'object' ? asRecord<T>(x) : null;
 }
 

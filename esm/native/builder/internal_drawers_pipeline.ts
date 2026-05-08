@@ -1,7 +1,7 @@
 // Native Builder: internal drawers pipeline (ESM)
 //
-// Extracted from `builder/core.js` to keep the core loop focused and to prevent
-// re-introducing any legacy UI/DOM fallbacks.
+// Extracted from `builder/core.js` to keep the core loop focused and avoid
+// adding UI/DOM readback paths.
 //
 // Responsibilities:
 // - Decide whether a slot has internal drawers

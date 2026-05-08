@@ -5,13 +5,13 @@
 //
 // It exports the NDC handlers so modern code can import them directly,
 // while `esm/native/services/canvas_picking.js` provides the explicit installer
-// for legacy compatibility (App.core.canvas.*).
+// for the App.core.canvas public surface.
 
 import { __wp_getApp, __wp_reportPickingIssue } from './canvas_picking_core_helpers.js';
 import { __coreHandleCanvasClickNDC } from './canvas_picking_click_flow.js';
 import { __coreHandleCanvasHoverNDC } from './canvas_picking_hover_flow.js';
 
-// NOTE: legacy auto-registration removed in ESM core; use installCanvasPickingService().
+// NOTE: auto-registration is intentionally absent; use installCanvasPickingService().
 
 export function handleCanvasClickNDC(ndcX: number, ndcY: number, app: unknown): void {
   const App = __wp_getApp(app);

@@ -3,7 +3,7 @@
 import type { UnknownRecord } from '../../../types';
 
 import { ensureConfigRoot, getConfigRootMaybe } from '../runtime/app_roots_access.js';
-// Used by the ESM route to avoid relying on legacy IIFEs.
+// Used by the ESM route to keep config defaults explicit during boot.
 
 function isRecord(v: unknown): v is UnknownRecord {
   return !!v && typeof v === 'object' && !Array.isArray(v);

@@ -1,7 +1,5 @@
 // Native ESM implementation of the render loop.
 //
-// Legacy implementation: js/platform/pro_render_loop_impl.js
-//
 // Behavior:
 // - Installs render.animate (and loop state) on the provided App surface.
 // - Idempotency is structural: once render.animate exists on the canonical render seam, install is complete.
@@ -45,7 +43,7 @@ export function installRenderLoopImpl(App: unknown): AppContainer['render'] {
   const render = ensureRenderInstallHost(root);
   ensureRenderRuntimeState(root);
 
-  // Preserve legacy naming inside the function body to minimize diff risk.
+  // Keep the local App alias short because it is threaded through every render-loop callback.
   const A = root;
   const report = (op: string, err: unknown, opts?: { throttleMs?: number; failFast?: boolean }) => {
     reportRenderLoop(A, op, err, opts);

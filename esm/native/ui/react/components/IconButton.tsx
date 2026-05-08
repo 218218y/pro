@@ -16,7 +16,7 @@ function variantToClass(v: IconButtonVariant | undefined): string {
       // Used for +/- steppers (size handled by wp-r-step-btn styles)
       return 'wp-r-step-btn';
     case 'light':
-      // Legacy button styling, but icon-sized
+      // Existing light button styling, but icon-sized.
       return 'btn btn-light btn-inline btn-sm wp-r-icon-btn';
     case 'header':
       return 'header-btn-small wp-r-btn-small wp-r-icon-btn';

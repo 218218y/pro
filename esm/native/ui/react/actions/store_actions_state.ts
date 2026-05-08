@@ -36,8 +36,8 @@ function readSavedNotes(value: unknown): ProjectSavedNotesLike | null {
 
 function readSavedColor(value: unknown): SavedColorLike | string | null {
   if (typeof value === 'string') {
-    const legacy = value.trim();
-    return legacy || null;
+    const trimmed = value.trim();
+    return trimmed || null;
   }
   const rec = readRecord(value);
   if (!rec) return null;

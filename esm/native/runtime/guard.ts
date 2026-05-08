@@ -1,7 +1,6 @@
 // Guard helpers (Pure ESM)
 //
-// Stage 3: remove legacy try/catch wrappers and replace them with explicit,
-// intention-revealing helpers.
+// Explicit, intention-revealing wrappers for secondary side effects.
 //
 // Policy:
 // - Use `guardVoid()` only for *secondary* side effects (logging, toast, cleanup)

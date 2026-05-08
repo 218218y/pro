@@ -164,7 +164,7 @@ export function buildShelfVariantByIndex(ops: InteriorValueRecord): Record<numbe
       }
     }
   } catch {
-    // keep legacy runtime permissive here; invalid shelfVariants should not block custom op rendering
+    // Invalid shelfVariants should not block custom op rendering.
   }
   return shelfVariantByIndex;
 }

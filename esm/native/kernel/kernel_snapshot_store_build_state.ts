@@ -131,7 +131,7 @@ export function readKernelSnapshotBuildState(
     if (!hasEssentialUi(ui)) {
       throw new Error(
         '[WardrobePro] Missing essential UI fields in store.ui (width/height/depth/doors). ' +
-          'DOM fallback (legacy UI reader) has been removed; ensure store.ui is seeded before building.'
+          'DOM readback is not a supported build-state input; ensure store.ui is seeded before building.'
       );
     }
 

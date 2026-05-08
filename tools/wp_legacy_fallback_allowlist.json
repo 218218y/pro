@@ -3,12 +3,6 @@
   "sourceRoot": "esm",
   "policy": "Every existing legacy/fallback occurrence is categorized and count-locked by file. New or moved occurrences must be reviewed and the allowlist regenerated deliberately.",
   "entries": {
-    "esm/entry_pro_main_shared.ts": {
-      "total": 1,
-      "categories": {
-        "browser-adapter": 1
-      }
-    },
     "esm/entry_pro_overlay.ts": {
       "total": 1,
       "categories": {
@@ -33,34 +27,16 @@
         "browser-adapter": 1
       }
     },
-    "esm/native/adapters/browser/dom.ts": {
-      "total": 2,
-      "categories": {
-        "browser-adapter": 2
-      }
-    },
     "esm/native/adapters/browser/ui_ops.ts": {
-      "total": 4,
+      "total": 3,
       "categories": {
-        "browser-adapter": 4
-      }
-    },
-    "esm/native/builder/bootstrap.ts": {
-      "total": 1,
-      "categories": {
-        "legacy-runtime-risk": 1
+        "browser-adapter": 3
       }
     },
     "esm/native/builder/build_flow_plan_contracts.ts": {
       "total": 1,
       "categories": {
         "runtime-default": 1
-      }
-    },
-    "esm/native/builder/build_state_resolver.ts": {
-      "total": 2,
-      "categories": {
-        "legacy-runtime-risk": 2
       }
     },
     "esm/native/builder/build_string_normalizer.ts": {
@@ -91,13 +67,6 @@
       "total": 4,
       "categories": {
         "runtime-default": 4
-      }
-    },
-    "esm/native/builder/corner_wing_carcass_selectors.ts": {
-      "total": 3,
-      "categories": {
-        "legacy-runtime-risk": 2,
-        "runtime-default": 1
       }
     },
     "esm/native/builder/corner_wing_carcass_shared.ts": {
@@ -154,12 +123,6 @@
         "runtime-default": 4
       }
     },
-    "esm/native/builder/handles.ts": {
-      "total": 2,
-      "categories": {
-        "legacy-runtime-risk": 2
-      }
-    },
     "esm/native/builder/hinged_doors_module_ops_context.ts": {
       "total": 8,
       "categories": {
@@ -190,28 +153,10 @@
         "runtime-default": 2
       }
     },
-    "esm/native/builder/internal_drawers_pipeline.ts": {
-      "total": 2,
-      "categories": {
-        "legacy-runtime-risk": 2
-      }
-    },
     "esm/native/builder/materials_apply_shared.ts": {
       "total": 2,
       "categories": {
         "runtime-default": 2
-      }
-    },
-    "esm/native/builder/materials_apply.ts": {
-      "total": 2,
-      "categories": {
-        "legacy-runtime-risk": 2
-      }
-    },
-    "esm/native/builder/materials_factory.ts": {
-      "total": 2,
-      "categories": {
-        "legacy-runtime-risk": 2
       }
     },
     "esm/native/builder/module_layout_pipeline.ts": {
@@ -232,12 +177,6 @@
         "runtime-default": 1
       }
     },
-    "esm/native/builder/post_build_front_reveal_frames_cleanup.ts": {
-      "total": 1,
-      "categories": {
-        "legacy-runtime-risk": 1
-      }
-    },
     "esm/native/builder/post_build_front_reveal_frames_drawers.ts": {
       "total": 1,
       "categories": {
@@ -254,18 +193,6 @@
       "total": 1,
       "categories": {
         "runtime-default": 1
-      }
-    },
-    "esm/native/builder/pre_build_reset.ts": {
-      "total": 1,
-      "categories": {
-        "legacy-runtime-risk": 1
-      }
-    },
-    "esm/native/builder/provide.ts": {
-      "total": 1,
-      "categories": {
-        "project-migration": 1
       }
     },
     "esm/native/builder/render_carcass_ops_shared_readers.ts": {
@@ -292,16 +219,9 @@
         "runtime-default": 2
       }
     },
-    "esm/native/builder/render_interior_custom_ops_layout.ts": {
-      "total": 1,
-      "categories": {
-        "legacy-runtime-risk": 1
-      }
-    },
     "esm/native/builder/render_interior_custom_ops_shared.ts": {
-      "total": 3,
+      "total": 2,
       "categories": {
-        "legacy-runtime-risk": 1,
         "runtime-default": 2
       }
     },
@@ -317,16 +237,9 @@
         "runtime-default": 1
       }
     },
-    "esm/native/builder/render_interior_preset_ops.ts": {
-      "total": 1,
-      "categories": {
-        "legacy-runtime-risk": 1
-      }
-    },
     "esm/native/builder/render_interior_rod_ops.ts": {
-      "total": 3,
+      "total": 2,
       "categories": {
-        "legacy-runtime-risk": 1,
         "runtime-default": 2
       }
     },
@@ -378,12 +291,6 @@
         "runtime-default": 2
       }
     },
-    "esm/native/builder/render_ops_extras.ts": {
-      "total": 1,
-      "categories": {
-        "legacy-runtime-risk": 1
-      }
-    },
     "esm/native/builder/render_ops_primitives.ts": {
       "total": 1,
       "categories": {
@@ -408,12 +315,6 @@
         "runtime-default": 2
       }
     },
-    "esm/native/builder/room_shared_types.ts": {
-      "total": 1,
-      "categories": {
-        "legacy-runtime-risk": 1
-      }
-    },
     "esm/native/builder/scheduler_runtime.ts": {
       "total": 1,
       "categories": {
@@ -427,16 +328,9 @@
       }
     },
     "esm/native/builder/sliding_doors_pipeline.ts": {
-      "total": 2,
-      "categories": {
-        "legacy-runtime-risk": 1,
-        "runtime-default": 1
-      }
-    },
-    "esm/native/builder/store_access.ts": {
       "total": 1,
       "categories": {
-        "legacy-runtime-risk": 1
+        "runtime-default": 1
       }
     },
     "esm/native/builder/visuals_and_contents_door_visual.ts": {
@@ -446,9 +340,8 @@
       }
     },
     "esm/native/builder/visuals_and_contents_shared.ts": {
-      "total": 4,
+      "total": 3,
       "categories": {
-        "legacy-runtime-risk": 1,
         "runtime-default": 3
       }
     },
@@ -513,9 +406,8 @@
       }
     },
     "esm/native/features/stack_split/stack_split.ts": {
-      "total": 5,
+      "total": 4,
       "categories": {
-        "legacy-runtime-risk": 1,
         "runtime-default": 4
       }
     },
@@ -531,28 +423,10 @@
         "project-migration": 1
       }
     },
-    "esm/native/kernel/cfg_meta.ts": {
-      "total": 1,
-      "categories": {
-        "legacy-runtime-risk": 1
-      }
-    },
-    "esm/native/kernel/domain_api_colors_section.ts": {
-      "total": 2,
-      "categories": {
-        "legacy-runtime-risk": 2
-      }
-    },
     "esm/native/kernel/domain_api_modules_corner_shared.ts": {
       "total": 2,
       "categories": {
         "runtime-default": 2
-      }
-    },
-    "esm/native/kernel/domain_api_modules_corner.ts": {
-      "total": 1,
-      "categories": {
-        "legacy-runtime-risk": 1
       }
     },
     "esm/native/kernel/domain_api_shared.ts": {
@@ -565,12 +439,6 @@
       "total": 2,
       "categories": {
         "runtime-default": 2
-      }
-    },
-    "esm/native/kernel/history_access.ts": {
-      "total": 1,
-      "categories": {
-        "legacy-runtime-risk": 1
       }
     },
     "esm/native/kernel/kernel_builder_request_policy_shared.ts": {
@@ -603,22 +471,10 @@
         "runtime-default": 5
       }
     },
-    "esm/native/kernel/kernel_project_capture.ts": {
-      "total": 2,
-      "categories": {
-        "legacy-runtime-risk": 2
-      }
-    },
     "esm/native/kernel/kernel_shared.ts": {
       "total": 4,
       "categories": {
         "runtime-default": 4
-      }
-    },
-    "esm/native/kernel/kernel_snapshot_store_build_state.ts": {
-      "total": 2,
-      "categories": {
-        "legacy-runtime-risk": 2
       }
     },
     "esm/native/kernel/kernel_snapshot_store_contracts.ts": {
@@ -639,46 +495,16 @@
         "runtime-default": 9
       }
     },
-    "esm/native/kernel/kernel.ts": {
-      "total": 1,
-      "categories": {
-        "legacy-runtime-risk": 1
-      }
-    },
-    "esm/native/kernel/maps_api.ts": {
-      "total": 2,
-      "categories": {
-        "legacy-runtime-risk": 2
-      }
-    },
-    "esm/native/kernel/splitdoors_normalizer.ts": {
-      "total": 1,
-      "categories": {
-        "legacy-runtime-risk": 1
-      }
-    },
     "esm/native/kernel/state_api_history_store_reactivity_build_meta.ts": {
       "total": 2,
       "categories": {
         "runtime-default": 2
       }
     },
-    "esm/native/kernel/store_access.ts": {
-      "total": 1,
-      "categories": {
-        "legacy-runtime-risk": 1
-      }
-    },
     "esm/native/platform/boot_main.ts": {
       "total": 1,
       "categories": {
         "browser-adapter": 1
-      }
-    },
-    "esm/native/platform/config_defaults.ts": {
-      "total": 1,
-      "categories": {
-        "legacy-runtime-risk": 1
       }
     },
     "esm/native/platform/dirty_flag.ts": {
@@ -711,12 +537,6 @@
         "runtime-default": 4
       }
     },
-    "esm/native/platform/render_loop_impl.ts": {
-      "total": 2,
-      "categories": {
-        "legacy-runtime-risk": 2
-      }
-    },
     "esm/native/platform/render_loop_mirror_driver.ts": {
       "total": 2,
       "categories": {
@@ -742,28 +562,15 @@
       }
     },
     "esm/native/platform/smoke_checks.ts": {
-      "total": 2,
+      "total": 1,
       "categories": {
-        "browser-adapter": 1,
-        "legacy-runtime-risk": 1
+        "browser-adapter": 1
       }
     },
     "esm/native/platform/store.ts": {
       "total": 1,
       "categories": {
         "runtime-default": 1
-      }
-    },
-    "esm/native/runtime/app_helpers.ts": {
-      "total": 1,
-      "categories": {
-        "project-migration": 1
-      }
-    },
-    "esm/native/runtime/assert.ts": {
-      "total": 1,
-      "categories": {
-        "legacy-runtime-risk": 1
       }
     },
     "esm/native/runtime/browser_clipboard.ts": {
@@ -785,9 +592,8 @@
       }
     },
     "esm/native/runtime/browser_env.ts": {
-      "total": 2,
+      "total": 1,
       "categories": {
-        "legacy-runtime-risk": 1,
         "runtime-default": 1
       }
     },
@@ -801,25 +607,6 @@
       "total": 5,
       "categories": {
         "runtime-default": 5
-      }
-    },
-    "esm/native/runtime/config_selectors.ts": {
-      "total": 1,
-      "categories": {
-        "project-migration": 1
-      }
-    },
-    "esm/native/runtime/dom_access.ts": {
-      "total": 2,
-      "categories": {
-        "legacy-runtime-risk": 1,
-        "runtime-default": 1
-      }
-    },
-    "esm/native/runtime/dom_ops.ts": {
-      "total": 1,
-      "categories": {
-        "legacy-runtime-risk": 1
       }
     },
     "esm/native/runtime/doors_access_services.ts": {
@@ -846,24 +633,6 @@
         "runtime-default": 5
       }
     },
-    "esm/native/runtime/errors.ts": {
-      "total": 1,
-      "categories": {
-        "project-migration": 1
-      }
-    },
-    "esm/native/runtime/guard.ts": {
-      "total": 1,
-      "categories": {
-        "legacy-runtime-risk": 1
-      }
-    },
-    "esm/native/runtime/internal_state.ts": {
-      "total": 1,
-      "categories": {
-        "legacy-runtime-risk": 1
-      }
-    },
     "esm/native/runtime/meta_profiles_access.ts": {
       "total": 1,
       "categories": {
@@ -888,24 +657,10 @@
         "runtime-default": 2
       }
     },
-    "esm/native/runtime/modes_constants.ts": {
-      "total": 3,
-      "categories": {
-        "legacy-runtime-risk": 1,
-        "project-migration": 1,
-        "runtime-default": 1
-      }
-    },
     "esm/native/runtime/modules_recompute_request_policy.ts": {
       "total": 6,
       "categories": {
         "runtime-default": 6
-      }
-    },
-    "esm/native/runtime/num_coerce.ts": {
-      "total": 1,
-      "categories": {
-        "project-migration": 1
       }
     },
     "esm/native/runtime/perf_runtime_core.ts": {
@@ -950,46 +705,16 @@
         "runtime-default": 1
       }
     },
-    "esm/native/runtime/store_boot_access.ts": {
-      "total": 1,
-      "categories": {
-        "legacy-runtime-risk": 1
-      }
-    },
-    "esm/native/runtime/store_reactivity_access.ts": {
-      "total": 1,
-      "categories": {
-        "legacy-runtime-risk": 1
-      }
-    },
-    "esm/native/runtime/tools_runtime_state.ts": {
-      "total": 1,
-      "categories": {
-        "project-migration": 1
-      }
-    },
     "esm/native/runtime/ui_write_access.ts": {
       "total": 2,
       "categories": {
         "runtime-default": 2
       }
     },
-    "esm/native/services/boot_finalizers.ts": {
-      "total": 2,
-      "categories": {
-        "legacy-runtime-risk": 2
-      }
-    },
     "esm/native/services/camera_shared.ts": {
       "total": 2,
       "categories": {
         "runtime-default": 2
-      }
-    },
-    "esm/native/services/camera.ts": {
-      "total": 2,
-      "categories": {
-        "legacy-runtime-risk": 2
       }
     },
     "esm/native/services/canvas_picking_cell_dims_linear_shared.ts": {
@@ -1014,18 +739,6 @@
       "total": 3,
       "categories": {
         "runtime-default": 3
-      }
-    },
-    "esm/native/services/canvas_picking_core.ts": {
-      "total": 2,
-      "categories": {
-        "legacy-runtime-risk": 2
-      }
-    },
-    "esm/native/services/canvas_picking_door_part_helpers.ts": {
-      "total": 1,
-      "categories": {
-        "legacy-runtime-risk": 1
       }
     },
     "esm/native/services/canvas_picking_hover_clearance_measurements.ts": {
@@ -1062,12 +775,6 @@
       "total": 4,
       "categories": {
         "runtime-default": 4
-      }
-    },
-    "esm/native/services/canvas_picking_paint_flow_apply_special.ts": {
-      "total": 1,
-      "categories": {
-        "project-migration": 1
       }
     },
     "esm/native/services/canvas_picking_projection_runtime_box_shared.ts": {
@@ -1154,24 +861,6 @@
         "runtime-default": 3
       }
     },
-    "esm/native/services/doors_runtime.ts": {
-      "total": 2,
-      "categories": {
-        "legacy-runtime-risk": 2
-      }
-    },
-    "esm/native/services/history.ts": {
-      "total": 1,
-      "categories": {
-        "legacy-runtime-risk": 1
-      }
-    },
-    "esm/native/services/models.ts": {
-      "total": 1,
-      "categories": {
-        "legacy-runtime-risk": 1
-      }
-    },
     "esm/native/services/render_surface_runtime_support_shared.ts": {
       "total": 4,
       "categories": {
@@ -1200,12 +889,6 @@
       "total": 1,
       "categories": {
         "runtime-default": 1
-      }
-    },
-    "esm/native/ui/error_overlay.ts": {
-      "total": 1,
-      "categories": {
-        "legacy-runtime-risk": 1
       }
     },
     "esm/native/ui/export/export_canvas_core_canvas.ts": {
@@ -1280,35 +963,10 @@
         "runtime-default": 2
       }
     },
-    "esm/native/ui/interactions/accessibility_shortcuts.ts": {
-      "total": 1,
-      "categories": {
-        "browser-adapter": 1
-      }
-    },
-    "esm/native/ui/interactions/history_ui.ts": {
-      "total": 2,
-      "categories": {
-        "browser-adapter": 2
-      }
-    },
     "esm/native/ui/interactions/project_save_load.ts": {
       "total": 1,
       "categories": {
         "runtime-default": 1
-      }
-    },
-    "esm/native/ui/modes.ts": {
-      "total": 1,
-      "categories": {
-        "legacy-runtime-risk": 1
-      }
-    },
-    "esm/native/ui/multicolor_service.ts": {
-      "total": 2,
-      "categories": {
-        "browser-adapter": 1,
-        "legacy-runtime-risk": 1
       }
     },
     "esm/native/ui/notes_service_sanitize.ts": {
@@ -1329,46 +987,16 @@
         "runtime-default": 11
       }
     },
-    "esm/native/ui/primary_mode.ts": {
-      "total": 2,
-      "categories": {
-        "legacy-runtime-risk": 2
-      }
-    },
     "esm/native/ui/react/actions/cloud_sync_actions.ts": {
       "total": 11,
       "categories": {
         "runtime-default": 11
       }
     },
-    "esm/native/ui/react/actions/store_actions_state.ts": {
-      "total": 2,
-      "categories": {
-        "legacy-runtime-risk": 2
-      }
-    },
     "esm/native/ui/react/cloud_sync_ui_action_controller_shared.ts": {
       "total": 2,
       "categories": {
         "runtime-default": 2
-      }
-    },
-    "esm/native/ui/react/components/IconButton.tsx": {
-      "total": 1,
-      "categories": {
-        "legacy-runtime-risk": 1
-      }
-    },
-    "esm/native/ui/react/components/Tabs.tsx": {
-      "total": 1,
-      "categories": {
-        "legacy-runtime-risk": 1
-      }
-    },
-    "esm/native/ui/react/export_actions.ts": {
-      "total": 1,
-      "categories": {
-        "legacy-runtime-risk": 1
       }
     },
     "esm/native/ui/react/notes/notes_overlay_helpers_shared.ts": {
@@ -1387,18 +1015,6 @@
       "total": 1,
       "categories": {
         "runtime-default": 1
-      }
-    },
-    "esm/native/ui/react/pdf/gmail_draft.ts": {
-      "total": 2,
-      "categories": {
-        "legacy-runtime-risk": 2
-      }
-    },
-    "esm/native/ui/react/pdf/order_pdf_overlay_contracts.ts": {
-      "total": 1,
-      "categories": {
-        "legacy-runtime-risk": 1
       }
     },
     "esm/native/ui/react/pdf/order_pdf_overlay_draft_support_runtime.ts": {
@@ -1549,36 +1165,6 @@
       "total": 2,
       "categories": {
         "runtime-default": 2
-      }
-    },
-    "esm/native/ui/runtime/ui_runtime.ts": {
-      "total": 1,
-      "categories": {
-        "legacy-runtime-risk": 1
-      }
-    },
-    "esm/native/ui/settings_backup_shared_collections.ts": {
-      "total": 2,
-      "categories": {
-        "legacy-runtime-risk": 2
-      }
-    },
-    "esm/native/ui/ui_boot_controller_store.ts": {
-      "total": 1,
-      "categories": {
-        "browser-adapter": 1
-      }
-    },
-    "esm/release_main.ts": {
-      "total": 1,
-      "categories": {
-        "legacy-runtime-risk": 1
-      }
-    },
-    "esm/shared/maps_access_collections_shared.ts": {
-      "total": 2,
-      "categories": {
-        "legacy-runtime-risk": 2
       }
     },
     "esm/shared/mirror_layout_contracts_shared.ts": {

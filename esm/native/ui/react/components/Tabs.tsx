@@ -17,7 +17,7 @@ function cx(...parts: Array<string | false | null | undefined>): string {
 export function TabsBar<T extends string>(props: TabsProps<T>) {
   const { items, active, onSetActive, onHoverTab, className } = props;
 
-  // Keep the existing tab width and enable horizontal scroll once we exceed the legacy 5 tabs.
+  // Keep the existing tab width and enable horizontal scroll once we exceed five tabs.
   // (E.g. the new "סקיצה" tab.)
   const scroll = items.length > 5;
 

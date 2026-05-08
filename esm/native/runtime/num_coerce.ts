@@ -5,7 +5,7 @@
 // - builder sanitize pipeline (canonical dimension bounds)
 //
 // Goals:
-// - Accept legacy persisted values (string, '', null, boolean)
+// - Accept older persisted values (string, '', null, boolean)
 // - Fail-soft: never throw
 // - Keep rules consistent across the codebase
 

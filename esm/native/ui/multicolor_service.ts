@@ -1,11 +1,11 @@
 // WardrobePro Multi-color Paint Mode (React-safe service)
 //
 // Stage 12: The React UI uses multi-color paint mode, but it must not depend on
-// the legacy DOM widget module. This file contains ONLY logic and App actions.
+// the old DOM widget module. This file contains ONLY logic and App actions.
 //
 // Notes:
 // - No DOM lookups here.
-// - No legacy widget rendering.
+// - No widget rendering.
 // - Safe to import from React components.
 
 import type { ActionMetaLike, AppContainer } from '../../../types';

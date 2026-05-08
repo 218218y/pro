@@ -2,7 +2,7 @@
 //
 // Goal:
 // - Provide a small, stable set of DOM *operations* (not queries) so UI modules
-//   don't need to poke at legacy helpers or globals.
+//   don't need to poke at helper bags or globals.
 // - Work in Pure ESM: rely only on the injected document (deps.browser) and
 //   element.ownerDocument.
 //

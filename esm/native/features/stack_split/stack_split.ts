@@ -65,7 +65,7 @@ export function normalizeStackSplit(args: {
 
   // Linking policy:
   // When manual flag is FALSE, the lower dimension is *linked* to the overall unit and
-  // ignores the rawLower* value (raw is kept only as a cached/legacy value).
+  // ignores the rawLower* value (raw is retained only as the user-entered cached value).
   // When manual flag is TRUE, rawLower* is respected.
   rawLowerDepthManual?: unknown;
   rawLowerWidthManual?: unknown;

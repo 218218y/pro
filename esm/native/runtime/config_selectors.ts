@@ -2,7 +2,7 @@
 //
 // Purpose:
 // - Keep all store.config scalar parsing rules in one place.
-// - Allow legacy persisted values (string, '', null) without spreading checks everywhere.
+// - Allow older persisted values (string, '', null) without spreading checks everywhere.
 // - Provide both snapshot-based and App/store-based readers.
 //
 // Notes:

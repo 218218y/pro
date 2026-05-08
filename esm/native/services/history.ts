@@ -1,7 +1,7 @@
 // Native ESM implementation of the History push scheduling service.
 //
 // Goals:
-// - No legacy `js/**` imports on the ESM path.
+// - No `js/**` imports on the ESM path.
 // - No IIFE / implicit globals.
 // - Installs stable service APIs on `App.services.history` (no top-level `App.history` shim).
 // - Debounce state is owned per-App/per-service (no module-global timer bleed across app instances).

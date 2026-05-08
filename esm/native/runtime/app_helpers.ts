@@ -42,7 +42,7 @@ export function historyTouch(App: AppContainer, source: string): void {
   const src = source || 'history:touch';
   const base: ActionMetaLike = { source: src, immediate: true };
 
-  // Preserve legacy behavior: only apply the noBuild profile when the canonical surface exists.
+  // Preserve established behavior: only apply the noBuild profile when the canonical surface exists.
   // (Some harnesses rely on a very small meta payload.)
   const meta: ActionMetaLike = hasMetaAction(App, 'noBuild') ? metaNoBuild(App, base, src) : base;
 

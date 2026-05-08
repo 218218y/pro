@@ -3,7 +3,7 @@
 // Responsibilities:
 // - preserving notes before scene cleanup
 // - clearing wardrobeGroup meshes
-// - resetting builderRegistry (or legacy arrays)
+// - resetting builderRegistry-backed build metadata
 //
 // This module intentionally does NOT read UI from DOM. It only uses state/config.
 

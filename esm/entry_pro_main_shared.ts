@@ -120,7 +120,7 @@ export function parseRuntimeConfigModule(raw: unknown): RuntimeConfigModuleResul
 
   // Canonical runtime module shape:
   //   export default { flags?: {...}, config?: {...} }
-  // We intentionally ignore legacy flat config exports so runtime config stays explicit
+  // We intentionally ignore flat config exports so runtime config stays explicit.
   // and never re-mixes flags/config payloads at the module root.
   if (!isRecord(cfgRaw)) return { config: null, flags };
   return { config: coerceRuntimeConfig(cfgRaw), flags };

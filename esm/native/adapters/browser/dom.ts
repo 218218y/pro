@@ -6,8 +6,8 @@
 //   - App.platform.createCanvas
 //
 // NOTE (Migration):
-// - Older versions installed a larger legacy App.dom helper surface (cached `$`, `qs`, ...).
-// - The current UI/runtime no longer depends on App.dom. To avoid keeping dead legacy code
+// - Older versions installed a larger App.dom helper surface (cached `$`, `qs`, ...).
+// - The current UI/runtime no longer depends on App.dom. To avoid keeping dead code
 //   around, we only install the minimal adapter pieces that are still used.
 
 import type { AppContainer, BrowserNamespaceLike, PlatformNamespace } from '../../../../types';

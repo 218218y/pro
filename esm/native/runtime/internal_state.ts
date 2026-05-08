@@ -2,7 +2,7 @@
 //
 // Purpose:
 // - Hold non-functional, boot-time idempotency flags without polluting public App surface.
-// - Replace legacy "stage" buckets like App.__stage4.*
+// - Replace old "stage" buckets like App.__stage4.*
 //
 // Notes:
 // - Intentionally shallow plain objects.

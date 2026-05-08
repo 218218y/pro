@@ -27,8 +27,8 @@ export function getSavedColorId(value: unknown): string | null {
 
 export function readSavedColorEntry(value: unknown): SettingsBackupSavedColorEntry | null {
   if (typeof value === 'string') {
-    const legacy = normalizeSettingsBackupId(value);
-    return legacy ?? null;
+    const id = normalizeSettingsBackupId(value);
+    return id ?? null;
   }
   if (!isRecord(value)) return null;
   const id = normalizeSettingsBackupId(value.id);

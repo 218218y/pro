@@ -1,5 +1,4 @@
 // Native ESM conversion (TypeScript)
-// Converted from legacy: js/kernel/pro_cfg_meta.js
 // Stage 117 - kernel native
 
 import type { AppContainer, ActionMetaLike, MetaActionsNamespaceLike, UnknownRecord } from '../../../types';

@@ -1,7 +1,5 @@
 // Native Builder RenderOps Extras (ESM)
 //
-// Legacy source: `js/builder/pro_builder_render_ops_extras.js`
-//
 // Responsibilities:
 // - Install canonical render-ops extra seams onto App.services.builder.renderOps
 // - Keep dimension-label, dimension-line, and outline helpers on focused owners

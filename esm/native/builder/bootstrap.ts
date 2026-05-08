@@ -33,8 +33,7 @@ export { getBuilderDeps };
 export function installBuilderBootstrap(App: AppContainer): BuilderDepsRootLike {
   App = pickBuilderApp(App, 'native/builder/bootstrap.install');
 
-  // Keep the legacy behavior: in non-browser contexts do nothing (but still be safe).
-  // We still allow seeding builder deps on the provided App object.
+  // In non-browser contexts, still allow seeding builder deps on the provided App object.
 
   // Canonical surface for builder deps.
   ensureDepsRoot(App);

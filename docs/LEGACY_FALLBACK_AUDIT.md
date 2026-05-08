@@ -1,18 +1,18 @@
 # Legacy / fallback audit
 
-Generated at: 2026-05-08T03:58:26.354Z
+Generated at: 2026-05-08T11:07:43.421Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **696**
-- Files with occurrences: **264**
+- Total categorized occurrences: **594**
+- Files with occurrences: **197**
 - Category counts:
-  - `runtime-default`: **576**
-  - `browser-adapter`: **18**
-  - `project-migration`: **13**
+  - `runtime-default`: **573**
+  - `browser-adapter`: **9**
+  - `project-migration`: **5**
   - `test-fixture`: **7**
-  - `legacy-runtime-risk`: **82**
+  - `legacy-runtime-risk`: **0**
   - `unknown`: **0**
 
 ## Policy
@@ -51,10 +51,10 @@ Generated at: 2026-05-08T03:58:26.354Z
 - `esm/native/services/cloud_sync_lifecycle_support_realtime.ts` — **6** (runtime-default: 6)
 - `esm/test_no_side_effects_on_import.mjs` — **6** (test-fixture: 6)
 - `esm/native/builder/build_string_normalizer.ts` — **5** (runtime-default: 5)
-- `esm/native/features/stack_split/stack_split.ts` — **5** (legacy-runtime-risk: 1, runtime-default: 4)
 - `esm/native/kernel/kernel_install_support.ts` — **5** (runtime-default: 5)
 - `esm/native/kernel/kernel_project_capture_shared.ts` — **5** (runtime-default: 5)
 - `esm/native/runtime/cfg_access_core.ts` — **5** (runtime-default: 5)
+- `esm/native/runtime/doors_runtime_support_shared.ts` — **5** (runtime-default: 5)
 
 ## Allowlist check
 

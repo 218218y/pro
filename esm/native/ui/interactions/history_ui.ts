@@ -5,7 +5,7 @@
 // - Provide a single installer that binds keyboard shortcuts (React-only UI):
 //   - Undo/Redo (Ctrl/Cmd+Z/Y, Ctrl/Cmd+Shift+Z)
 //   - Copy-to-clipboard (Ctrl/Cmd+C) when not typing and there's no text selection
-// - Avoid dependency on legacy DOM ids / legacy UI buttons.
+// - Avoid dependency on old DOM ids or UI buttons.
 // - Installer is pure; idempotency is handled by UiRuntime (uiRt.install).
 
 import type { AppContainer } from '../../../../types';

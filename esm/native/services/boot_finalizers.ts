@@ -1,9 +1,7 @@
 // Native ESM implementation of final boot-time shims.
 //
-// Legacy source: `js/services/pro_services_boot_finalizers.js`
-//
 // Goals:
-// - No legacy `js/**` imports on the ESM path.
+// - No `js/**` imports on the ESM path.
 // - No IIFE / implicit globals.
 // - Installs boot conveniences on `App.services.commands` and hydrates
 //   primary mode UI once on boot.

@@ -4,7 +4,7 @@
 // - Keyboard activation (Enter/Space) for clickable rows
 // - Toggle-row click => click checkbox
 //
-// Kept DOM-generic (no hard-coded ids), safe for both legacy and React UI.
+// Kept DOM-generic (no hard-coded ids), safe for both classic and React UI.
 
 import type { AppContainer } from '../../../../types';
 

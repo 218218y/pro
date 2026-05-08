@@ -6,8 +6,8 @@ function isRecord(value: unknown): value is UnknownRecord {
 
 export function normalizeSavedColor(value: unknown): SavedColorLike | string | null {
   if (typeof value === 'string') {
-    const legacy = value.trim();
-    return legacy || null;
+    const trimmed = value.trim();
+    return trimmed || null;
   }
   const rec = isRecord(value) ? value : null;
   if (!rec) return null;
@@ -26,13 +26,13 @@ export function normalizeSavedColorsList(value: unknown): Array<SavedColorLike |
   if (!Array.isArray(value)) return [];
   const out: Array<SavedColorLike | string> = [];
   const seenObjectIds = new Set<string>();
-  const seenLegacyIds = new Set<string>();
+  const seenStringIds = new Set<string>();
   for (const entry of value) {
     const next = normalizeSavedColor(entry);
     if (!next) continue;
     if (typeof next === 'string') {
-      if (seenLegacyIds.has(next)) continue;
-      seenLegacyIds.add(next);
+      if (seenStringIds.has(next)) continue;
+      seenStringIds.add(next);
       out.push(next);
       continue;
     }

@@ -1,7 +1,5 @@
 // Native ESM implementation of smoke checks.
 //
-// Legacy implementation: js/platform/pro_smoke_checks.js
-//
 // Goals:
 // - Provide a real ESM module that can be imported.
 // - Expose smoke-check helpers on the provided App instance (no window/global fallbacks).

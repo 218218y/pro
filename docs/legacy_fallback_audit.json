@@ -1,24 +1,18 @@
 {
-  "generatedAt": "2026-05-08T03:58:26.354Z",
+  "generatedAt": "2026-05-08T11:07:43.421Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 696,
-    "totalFiles": 264,
+    "totalOccurrences": 594,
+    "totalFiles": 197,
     "byCategory": {
-      "runtime-default": 576,
-      "browser-adapter": 18,
-      "project-migration": 13,
+      "runtime-default": 573,
+      "browser-adapter": 9,
+      "project-migration": 5,
       "test-fixture": 7,
-      "legacy-runtime-risk": 82,
+      "legacy-runtime-risk": 0,
       "unknown": 0
     },
     "byFile": {
-      "esm/entry_pro_main_shared.ts": {
-        "total": 1,
-        "categories": {
-          "browser-adapter": 1
-        }
-      },
       "esm/entry_pro_overlay.ts": {
         "total": 1,
         "categories": {
@@ -43,34 +37,16 @@
           "browser-adapter": 1
         }
       },
-      "esm/native/adapters/browser/dom.ts": {
-        "total": 2,
-        "categories": {
-          "browser-adapter": 2
-        }
-      },
       "esm/native/adapters/browser/ui_ops.ts": {
-        "total": 4,
+        "total": 3,
         "categories": {
-          "browser-adapter": 4
-        }
-      },
-      "esm/native/builder/bootstrap.ts": {
-        "total": 1,
-        "categories": {
-          "legacy-runtime-risk": 1
+          "browser-adapter": 3
         }
       },
       "esm/native/builder/build_flow_plan_contracts.ts": {
         "total": 1,
         "categories": {
           "runtime-default": 1
-        }
-      },
-      "esm/native/builder/build_state_resolver.ts": {
-        "total": 2,
-        "categories": {
-          "legacy-runtime-risk": 2
         }
       },
       "esm/native/builder/build_string_normalizer.ts": {
@@ -101,13 +77,6 @@
         "total": 4,
         "categories": {
           "runtime-default": 4
-        }
-      },
-      "esm/native/builder/corner_wing_carcass_selectors.ts": {
-        "total": 3,
-        "categories": {
-          "legacy-runtime-risk": 2,
-          "runtime-default": 1
         }
       },
       "esm/native/builder/corner_wing_carcass_shared.ts": {
@@ -164,12 +133,6 @@
           "runtime-default": 4
         }
       },
-      "esm/native/builder/handles.ts": {
-        "total": 2,
-        "categories": {
-          "legacy-runtime-risk": 2
-        }
-      },
       "esm/native/builder/hinged_doors_module_ops_context.ts": {
         "total": 8,
         "categories": {
@@ -200,28 +163,10 @@
           "runtime-default": 2
         }
       },
-      "esm/native/builder/internal_drawers_pipeline.ts": {
-        "total": 2,
-        "categories": {
-          "legacy-runtime-risk": 2
-        }
-      },
       "esm/native/builder/materials_apply_shared.ts": {
         "total": 2,
         "categories": {
           "runtime-default": 2
-        }
-      },
-      "esm/native/builder/materials_apply.ts": {
-        "total": 2,
-        "categories": {
-          "legacy-runtime-risk": 2
-        }
-      },
-      "esm/native/builder/materials_factory.ts": {
-        "total": 2,
-        "categories": {
-          "legacy-runtime-risk": 2
         }
       },
       "esm/native/builder/module_layout_pipeline.ts": {
@@ -242,12 +187,6 @@
           "runtime-default": 1
         }
       },
-      "esm/native/builder/post_build_front_reveal_frames_cleanup.ts": {
-        "total": 1,
-        "categories": {
-          "legacy-runtime-risk": 1
-        }
-      },
       "esm/native/builder/post_build_front_reveal_frames_drawers.ts": {
         "total": 1,
         "categories": {
@@ -264,18 +203,6 @@
         "total": 1,
         "categories": {
           "runtime-default": 1
-        }
-      },
-      "esm/native/builder/pre_build_reset.ts": {
-        "total": 1,
-        "categories": {
-          "legacy-runtime-risk": 1
-        }
-      },
-      "esm/native/builder/provide.ts": {
-        "total": 1,
-        "categories": {
-          "project-migration": 1
         }
       },
       "esm/native/builder/render_carcass_ops_shared_readers.ts": {
@@ -302,16 +229,9 @@
           "runtime-default": 2
         }
       },
-      "esm/native/builder/render_interior_custom_ops_layout.ts": {
-        "total": 1,
-        "categories": {
-          "legacy-runtime-risk": 1
-        }
-      },
       "esm/native/builder/render_interior_custom_ops_shared.ts": {
-        "total": 3,
+        "total": 2,
         "categories": {
-          "legacy-runtime-risk": 1,
           "runtime-default": 2
         }
       },
@@ -327,16 +247,9 @@
           "runtime-default": 1
         }
       },
-      "esm/native/builder/render_interior_preset_ops.ts": {
-        "total": 1,
-        "categories": {
-          "legacy-runtime-risk": 1
-        }
-      },
       "esm/native/builder/render_interior_rod_ops.ts": {
-        "total": 3,
+        "total": 2,
         "categories": {
-          "legacy-runtime-risk": 1,
           "runtime-default": 2
         }
       },
@@ -388,12 +301,6 @@
           "runtime-default": 2
         }
       },
-      "esm/native/builder/render_ops_extras.ts": {
-        "total": 1,
-        "categories": {
-          "legacy-runtime-risk": 1
-        }
-      },
       "esm/native/builder/render_ops_primitives.ts": {
         "total": 1,
         "categories": {
@@ -418,12 +325,6 @@
           "runtime-default": 2
         }
       },
-      "esm/native/builder/room_shared_types.ts": {
-        "total": 1,
-        "categories": {
-          "legacy-runtime-risk": 1
-        }
-      },
       "esm/native/builder/scheduler_runtime.ts": {
         "total": 1,
         "categories": {
@@ -437,16 +338,9 @@
         }
       },
       "esm/native/builder/sliding_doors_pipeline.ts": {
-        "total": 2,
-        "categories": {
-          "legacy-runtime-risk": 1,
-          "runtime-default": 1
-        }
-      },
-      "esm/native/builder/store_access.ts": {
         "total": 1,
         "categories": {
-          "legacy-runtime-risk": 1
+          "runtime-default": 1
         }
       },
       "esm/native/builder/visuals_and_contents_door_visual.ts": {
@@ -456,9 +350,8 @@
         }
       },
       "esm/native/builder/visuals_and_contents_shared.ts": {
-        "total": 4,
+        "total": 3,
         "categories": {
-          "legacy-runtime-risk": 1,
           "runtime-default": 3
         }
       },
@@ -523,9 +416,8 @@
         }
       },
       "esm/native/features/stack_split/stack_split.ts": {
-        "total": 5,
+        "total": 4,
         "categories": {
-          "legacy-runtime-risk": 1,
           "runtime-default": 4
         }
       },
@@ -541,28 +433,10 @@
           "project-migration": 1
         }
       },
-      "esm/native/kernel/cfg_meta.ts": {
-        "total": 1,
-        "categories": {
-          "legacy-runtime-risk": 1
-        }
-      },
-      "esm/native/kernel/domain_api_colors_section.ts": {
-        "total": 2,
-        "categories": {
-          "legacy-runtime-risk": 2
-        }
-      },
       "esm/native/kernel/domain_api_modules_corner_shared.ts": {
         "total": 2,
         "categories": {
           "runtime-default": 2
-        }
-      },
-      "esm/native/kernel/domain_api_modules_corner.ts": {
-        "total": 1,
-        "categories": {
-          "legacy-runtime-risk": 1
         }
       },
       "esm/native/kernel/domain_api_shared.ts": {
@@ -575,12 +449,6 @@
         "total": 2,
         "categories": {
           "runtime-default": 2
-        }
-      },
-      "esm/native/kernel/history_access.ts": {
-        "total": 1,
-        "categories": {
-          "legacy-runtime-risk": 1
         }
       },
       "esm/native/kernel/kernel_builder_request_policy_shared.ts": {
@@ -613,22 +481,10 @@
           "runtime-default": 5
         }
       },
-      "esm/native/kernel/kernel_project_capture.ts": {
-        "total": 2,
-        "categories": {
-          "legacy-runtime-risk": 2
-        }
-      },
       "esm/native/kernel/kernel_shared.ts": {
         "total": 4,
         "categories": {
           "runtime-default": 4
-        }
-      },
-      "esm/native/kernel/kernel_snapshot_store_build_state.ts": {
-        "total": 2,
-        "categories": {
-          "legacy-runtime-risk": 2
         }
       },
       "esm/native/kernel/kernel_snapshot_store_contracts.ts": {
@@ -649,46 +505,16 @@
           "runtime-default": 9
         }
       },
-      "esm/native/kernel/kernel.ts": {
-        "total": 1,
-        "categories": {
-          "legacy-runtime-risk": 1
-        }
-      },
-      "esm/native/kernel/maps_api.ts": {
-        "total": 2,
-        "categories": {
-          "legacy-runtime-risk": 2
-        }
-      },
-      "esm/native/kernel/splitdoors_normalizer.ts": {
-        "total": 1,
-        "categories": {
-          "legacy-runtime-risk": 1
-        }
-      },
       "esm/native/kernel/state_api_history_store_reactivity_build_meta.ts": {
         "total": 2,
         "categories": {
           "runtime-default": 2
         }
       },
-      "esm/native/kernel/store_access.ts": {
-        "total": 1,
-        "categories": {
-          "legacy-runtime-risk": 1
-        }
-      },
       "esm/native/platform/boot_main.ts": {
         "total": 1,
         "categories": {
           "browser-adapter": 1
-        }
-      },
-      "esm/native/platform/config_defaults.ts": {
-        "total": 1,
-        "categories": {
-          "legacy-runtime-risk": 1
         }
       },
       "esm/native/platform/dirty_flag.ts": {
@@ -721,12 +547,6 @@
           "runtime-default": 4
         }
       },
-      "esm/native/platform/render_loop_impl.ts": {
-        "total": 2,
-        "categories": {
-          "legacy-runtime-risk": 2
-        }
-      },
       "esm/native/platform/render_loop_mirror_driver.ts": {
         "total": 2,
         "categories": {
@@ -752,28 +572,15 @@
         }
       },
       "esm/native/platform/smoke_checks.ts": {
-        "total": 2,
+        "total": 1,
         "categories": {
-          "browser-adapter": 1,
-          "legacy-runtime-risk": 1
+          "browser-adapter": 1
         }
       },
       "esm/native/platform/store.ts": {
         "total": 1,
         "categories": {
           "runtime-default": 1
-        }
-      },
-      "esm/native/runtime/app_helpers.ts": {
-        "total": 1,
-        "categories": {
-          "project-migration": 1
-        }
-      },
-      "esm/native/runtime/assert.ts": {
-        "total": 1,
-        "categories": {
-          "legacy-runtime-risk": 1
         }
       },
       "esm/native/runtime/browser_clipboard.ts": {
@@ -795,9 +602,8 @@
         }
       },
       "esm/native/runtime/browser_env.ts": {
-        "total": 2,
+        "total": 1,
         "categories": {
-          "legacy-runtime-risk": 1,
           "runtime-default": 1
         }
       },
@@ -811,25 +617,6 @@
         "total": 5,
         "categories": {
           "runtime-default": 5
-        }
-      },
-      "esm/native/runtime/config_selectors.ts": {
-        "total": 1,
-        "categories": {
-          "project-migration": 1
-        }
-      },
-      "esm/native/runtime/dom_access.ts": {
-        "total": 2,
-        "categories": {
-          "legacy-runtime-risk": 1,
-          "runtime-default": 1
-        }
-      },
-      "esm/native/runtime/dom_ops.ts": {
-        "total": 1,
-        "categories": {
-          "legacy-runtime-risk": 1
         }
       },
       "esm/native/runtime/doors_access_services.ts": {
@@ -856,24 +643,6 @@
           "runtime-default": 5
         }
       },
-      "esm/native/runtime/errors.ts": {
-        "total": 1,
-        "categories": {
-          "project-migration": 1
-        }
-      },
-      "esm/native/runtime/guard.ts": {
-        "total": 1,
-        "categories": {
-          "legacy-runtime-risk": 1
-        }
-      },
-      "esm/native/runtime/internal_state.ts": {
-        "total": 1,
-        "categories": {
-          "legacy-runtime-risk": 1
-        }
-      },
       "esm/native/runtime/meta_profiles_access.ts": {
         "total": 1,
         "categories": {
@@ -898,24 +667,10 @@
           "runtime-default": 2
         }
       },
-      "esm/native/runtime/modes_constants.ts": {
-        "total": 3,
-        "categories": {
-          "legacy-runtime-risk": 1,
-          "project-migration": 1,
-          "runtime-default": 1
-        }
-      },
       "esm/native/runtime/modules_recompute_request_policy.ts": {
         "total": 6,
         "categories": {
           "runtime-default": 6
-        }
-      },
-      "esm/native/runtime/num_coerce.ts": {
-        "total": 1,
-        "categories": {
-          "project-migration": 1
         }
       },
       "esm/native/runtime/perf_runtime_core.ts": {
@@ -960,46 +715,16 @@
           "runtime-default": 1
         }
       },
-      "esm/native/runtime/store_boot_access.ts": {
-        "total": 1,
-        "categories": {
-          "legacy-runtime-risk": 1
-        }
-      },
-      "esm/native/runtime/store_reactivity_access.ts": {
-        "total": 1,
-        "categories": {
-          "legacy-runtime-risk": 1
-        }
-      },
-      "esm/native/runtime/tools_runtime_state.ts": {
-        "total": 1,
-        "categories": {
-          "project-migration": 1
-        }
-      },
       "esm/native/runtime/ui_write_access.ts": {
         "total": 2,
         "categories": {
           "runtime-default": 2
         }
       },
-      "esm/native/services/boot_finalizers.ts": {
-        "total": 2,
-        "categories": {
-          "legacy-runtime-risk": 2
-        }
-      },
       "esm/native/services/camera_shared.ts": {
         "total": 2,
         "categories": {
           "runtime-default": 2
-        }
-      },
-      "esm/native/services/camera.ts": {
-        "total": 2,
-        "categories": {
-          "legacy-runtime-risk": 2
         }
       },
       "esm/native/services/canvas_picking_cell_dims_linear_shared.ts": {
@@ -1024,18 +749,6 @@
         "total": 3,
         "categories": {
           "runtime-default": 3
-        }
-      },
-      "esm/native/services/canvas_picking_core.ts": {
-        "total": 2,
-        "categories": {
-          "legacy-runtime-risk": 2
-        }
-      },
-      "esm/native/services/canvas_picking_door_part_helpers.ts": {
-        "total": 1,
-        "categories": {
-          "legacy-runtime-risk": 1
         }
       },
       "esm/native/services/canvas_picking_hover_clearance_measurements.ts": {
@@ -1072,12 +785,6 @@
         "total": 4,
         "categories": {
           "runtime-default": 4
-        }
-      },
-      "esm/native/services/canvas_picking_paint_flow_apply_special.ts": {
-        "total": 1,
-        "categories": {
-          "project-migration": 1
         }
       },
       "esm/native/services/canvas_picking_projection_runtime_box_shared.ts": {
@@ -1164,24 +871,6 @@
           "runtime-default": 3
         }
       },
-      "esm/native/services/doors_runtime.ts": {
-        "total": 2,
-        "categories": {
-          "legacy-runtime-risk": 2
-        }
-      },
-      "esm/native/services/history.ts": {
-        "total": 1,
-        "categories": {
-          "legacy-runtime-risk": 1
-        }
-      },
-      "esm/native/services/models.ts": {
-        "total": 1,
-        "categories": {
-          "legacy-runtime-risk": 1
-        }
-      },
       "esm/native/services/render_surface_runtime_support_shared.ts": {
         "total": 4,
         "categories": {
@@ -1210,12 +899,6 @@
         "total": 1,
         "categories": {
           "runtime-default": 1
-        }
-      },
-      "esm/native/ui/error_overlay.ts": {
-        "total": 1,
-        "categories": {
-          "legacy-runtime-risk": 1
         }
       },
       "esm/native/ui/export/export_canvas_core_canvas.ts": {
@@ -1290,35 +973,10 @@
           "runtime-default": 2
         }
       },
-      "esm/native/ui/interactions/accessibility_shortcuts.ts": {
-        "total": 1,
-        "categories": {
-          "browser-adapter": 1
-        }
-      },
-      "esm/native/ui/interactions/history_ui.ts": {
-        "total": 2,
-        "categories": {
-          "browser-adapter": 2
-        }
-      },
       "esm/native/ui/interactions/project_save_load.ts": {
         "total": 1,
         "categories": {
           "runtime-default": 1
-        }
-      },
-      "esm/native/ui/modes.ts": {
-        "total": 1,
-        "categories": {
-          "legacy-runtime-risk": 1
-        }
-      },
-      "esm/native/ui/multicolor_service.ts": {
-        "total": 2,
-        "categories": {
-          "browser-adapter": 1,
-          "legacy-runtime-risk": 1
         }
       },
       "esm/native/ui/notes_service_sanitize.ts": {
@@ -1339,46 +997,16 @@
           "runtime-default": 11
         }
       },
-      "esm/native/ui/primary_mode.ts": {
-        "total": 2,
-        "categories": {
-          "legacy-runtime-risk": 2
-        }
-      },
       "esm/native/ui/react/actions/cloud_sync_actions.ts": {
         "total": 11,
         "categories": {
           "runtime-default": 11
         }
       },
-      "esm/native/ui/react/actions/store_actions_state.ts": {
-        "total": 2,
-        "categories": {
-          "legacy-runtime-risk": 2
-        }
-      },
       "esm/native/ui/react/cloud_sync_ui_action_controller_shared.ts": {
         "total": 2,
         "categories": {
           "runtime-default": 2
-        }
-      },
-      "esm/native/ui/react/components/IconButton.tsx": {
-        "total": 1,
-        "categories": {
-          "legacy-runtime-risk": 1
-        }
-      },
-      "esm/native/ui/react/components/Tabs.tsx": {
-        "total": 1,
-        "categories": {
-          "legacy-runtime-risk": 1
-        }
-      },
-      "esm/native/ui/react/export_actions.ts": {
-        "total": 1,
-        "categories": {
-          "legacy-runtime-risk": 1
         }
       },
       "esm/native/ui/react/notes/notes_overlay_helpers_shared.ts": {
@@ -1397,18 +1025,6 @@
         "total": 1,
         "categories": {
           "runtime-default": 1
-        }
-      },
-      "esm/native/ui/react/pdf/gmail_draft.ts": {
-        "total": 2,
-        "categories": {
-          "legacy-runtime-risk": 2
-        }
-      },
-      "esm/native/ui/react/pdf/order_pdf_overlay_contracts.ts": {
-        "total": 1,
-        "categories": {
-          "legacy-runtime-risk": 1
         }
       },
       "esm/native/ui/react/pdf/order_pdf_overlay_draft_support_runtime.ts": {
@@ -1559,36 +1175,6 @@
         "total": 2,
         "categories": {
           "runtime-default": 2
-        }
-      },
-      "esm/native/ui/runtime/ui_runtime.ts": {
-        "total": 1,
-        "categories": {
-          "legacy-runtime-risk": 1
-        }
-      },
-      "esm/native/ui/settings_backup_shared_collections.ts": {
-        "total": 2,
-        "categories": {
-          "legacy-runtime-risk": 2
-        }
-      },
-      "esm/native/ui/ui_boot_controller_store.ts": {
-        "total": 1,
-        "categories": {
-          "browser-adapter": 1
-        }
-      },
-      "esm/release_main.ts": {
-        "total": 1,
-        "categories": {
-          "legacy-runtime-risk": 1
-        }
-      },
-      "esm/shared/maps_access_collections_shared.ts": {
-        "total": 2,
-        "categories": {
-          "legacy-runtime-risk": 2
         }
       },
       "esm/shared/mirror_layout_contracts_shared.ts": {
@@ -1794,14 +1380,6 @@
         }
       },
       {
-        "file": "esm/native/features/stack_split/stack_split.ts",
-        "total": 5,
-        "categories": {
-          "legacy-runtime-risk": 1,
-          "runtime-default": 4
-        }
-      },
-      {
         "file": "esm/native/kernel/kernel_install_support.ts",
         "total": 5,
         "categories": {
@@ -1821,6 +1399,13 @@
         "categories": {
           "runtime-default": 5
         }
+      },
+      {
+        "file": "esm/native/runtime/doors_runtime_support_shared.ts",
+        "total": 5,
+        "categories": {
+          "runtime-default": 5
+        }
       }
     ]
   },
@@ -1829,13 +1414,6 @@
     "failures": []
   },
   "occurrences": [
-    {
-      "file": "esm/entry_pro_main_shared.ts",
-      "line": 123,
-      "term": "legacy",
-      "category": "browser-adapter",
-      "text": "// We intentionally ignore legacy flat config exports so runtime config stays explicit"
-    },
     {
       "file": "esm/entry_pro_overlay.ts",
       "line": 266,
@@ -1865,27 +1443,6 @@
       "text": "- `App.browser.userAgent?: string` (legacy; prefer `getUserAgent()`)"
     },
     {
-      "file": "esm/native/adapters/browser/dom.ts",
-      "line": 9,
-      "term": "legacy",
-      "category": "browser-adapter",
-      "text": "// - Older versions installed a larger legacy App.dom helper surface (cached `$`, `qs`, ...)."
-    },
-    {
-      "file": "esm/native/adapters/browser/dom.ts",
-      "line": 10,
-      "term": "legacy",
-      "category": "browser-adapter",
-      "text": "// - The current UI/runtime no longer depends on App.dom. To avoid keeping dead legacy code"
-    },
-    {
-      "file": "esm/native/adapters/browser/ui_ops.ts",
-      "line": 11,
-      "term": "legacy",
-      "category": "browser-adapter",
-      "text": "// - For rare legacy interop, we provide App.browser.getWindow() as an escape hatch."
-    },
-    {
       "file": "esm/native/adapters/browser/ui_ops.ts",
       "line": 38,
       "term": "fallback",
@@ -1907,32 +1464,11 @@
       "text": "return fallback;"
     },
     {
-      "file": "esm/native/builder/bootstrap.ts",
-      "line": 36,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Keep the legacy behavior: in non-browser contexts do nothing (but still be safe)."
-    },
-    {
       "file": "esm/native/builder/build_flow_plan_contracts.ts",
       "line": 22,
       "term": "fallback",
       "category": "runtime-default",
       "text": "export type Stringifier = (value: unknown, fallback?: string) => string;"
-    },
-    {
-      "file": "esm/native/builder/build_state_resolver.ts",
-      "line": 146,
-      "term": "Legacy",
-      "category": "legacy-runtime-risk",
-      "text": "'Legacy DOM snapshot fallback has been removed.'"
-    },
-    {
-      "file": "esm/native/builder/build_state_resolver.ts",
-      "line": 146,
-      "term": "fallback",
-      "category": "legacy-runtime-risk",
-      "text": "'Legacy DOM snapshot fallback has been removed.'"
     },
     {
       "file": "esm/native/builder/build_string_normalizer.ts",
@@ -2045,27 +1581,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "return typeof v === 'string' && v ? v : fallback;"
-    },
-    {
-      "file": "esm/native/builder/corner_wing_carcass_selectors.ts",
-      "line": 41,
-      "term": "Fallback",
-      "category": "runtime-default",
-      "text": "// Fallback: no doors => keep legacy selector for the whole wing"
-    },
-    {
-      "file": "esm/native/builder/corner_wing_carcass_selectors.ts",
-      "line": 41,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Fallback: no doors => keep legacy selector for the whole wing"
-    },
-    {
-      "file": "esm/native/builder/corner_wing_carcass_selectors.ts",
-      "line": 75,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Keep a legacy alias so picking on the connector (moduleIndex:'corner') still has a grid."
     },
     {
       "file": "esm/native/builder/corner_wing_carcass_shared.ts",
@@ -2194,20 +1709,6 @@
       "text": "return typeof value === 'string' ? value : fallback;"
     },
     {
-      "file": "esm/native/builder/handles.ts",
-      "line": 3,
-      "term": "Legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Legacy source: `js/builder/pro_builder_handles.js`"
-    },
-    {
-      "file": "esm/native/builder/handles.ts",
-      "line": 7,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// - No legacy `js/**` imports on the ESM path"
-    },
-    {
       "file": "esm/native/builder/hinged_doors_module_ops_context.ts",
       "line": 133,
       "term": "fallback",
@@ -2334,20 +1835,6 @@
       "text": "return typeof value === 'number' && Number.isFinite(value) ? value : fallback;"
     },
     {
-      "file": "esm/native/builder/internal_drawers_pipeline.ts",
-      "line": 4,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// re-introducing any legacy UI/DOM fallbacks."
-    },
-    {
-      "file": "esm/native/builder/internal_drawers_pipeline.ts",
-      "line": 4,
-      "term": "fallbacks",
-      "category": "legacy-runtime-risk",
-      "text": "// re-introducing any legacy UI/DOM fallbacks."
-    },
-    {
       "file": "esm/native/builder/materials_apply_shared.ts",
       "line": 101,
       "term": "fallback",
@@ -2360,34 +1847,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "return fallback;"
-    },
-    {
-      "file": "esm/native/builder/materials_apply.ts",
-      "line": 3,
-      "term": "Legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Legacy source: `js/builder/pro_builder_materials_apply.js`"
-    },
-    {
-      "file": "esm/native/builder/materials_apply.ts",
-      "line": 7,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// - No legacy `js/**` imports on the ESM path"
-    },
-    {
-      "file": "esm/native/builder/materials_factory.ts",
-      "line": 3,
-      "term": "Legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Legacy source: `js/builder/pro_builder_materials_factory.js`"
-    },
-    {
-      "file": "esm/native/builder/materials_factory.ts",
-      "line": 7,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// - No legacy `js/**` imports on the ESM path"
     },
     {
       "file": "esm/native/builder/module_layout_pipeline.ts",
@@ -2432,13 +1891,6 @@
       "text": "// Minimal fallback: keep drawers consistent if visuals sync is unavailable."
     },
     {
-      "file": "esm/native/builder/post_build_front_reveal_frames_cleanup.ts",
-      "line": 3,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Owns stale/legacy reveal-frame cleanup and local-frame disposal helpers."
-    },
-    {
       "file": "esm/native/builder/post_build_front_reveal_frames_drawers.ts",
       "line": 3,
       "term": "fallback",
@@ -2458,20 +1910,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "// ignore handle fallback"
-    },
-    {
-      "file": "esm/native/builder/pre_build_reset.ts",
-      "line": 6,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// - resetting builderRegistry (or legacy arrays)"
-    },
-    {
-      "file": "esm/native/builder/provide.ts",
-      "line": 85,
-      "term": "legacy",
-      "category": "project-migration",
-      "text": "// - We avoid writing to `App.builder` (legacy compatibility should migrate off it)."
     },
     {
       "file": "esm/native/builder/render_carcass_ops_shared_readers.ts",
@@ -2572,13 +2010,6 @@
       "text": "return typeof value === 'number' && Number.isFinite(value) ? value : fallback;"
     },
     {
-      "file": "esm/native/builder/render_interior_custom_ops_layout.ts",
-      "line": 134,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// ignore legacy color lookup errors and keep default body material"
-    },
-    {
       "file": "esm/native/builder/render_interior_custom_ops_shared.ts",
       "line": 126,
       "term": "fallback",
@@ -2591,13 +2022,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "return Number.isFinite(gridDivisions) && gridDivisions >= 1 ? gridDivisions : fallback;"
-    },
-    {
-      "file": "esm/native/builder/render_interior_custom_ops_shared.ts",
-      "line": 167,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// keep legacy runtime permissive here; invalid shelfVariants should not block custom op rendering"
     },
     {
       "file": "esm/native/builder/render_interior_preset_ops_shared.ts",
@@ -2621,13 +2045,6 @@
       "text": "console.warn('[WardrobePro] brace shelf wall-face fallback used (large mismatch)', {"
     },
     {
-      "file": "esm/native/builder/render_interior_preset_ops.ts",
-      "line": 184,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// ignore legacy color lookup errors and keep default body material"
-    },
-    {
       "file": "esm/native/builder/render_interior_rod_ops.ts",
       "line": 83,
       "term": "fallback",
@@ -2640,13 +2057,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "return Number.isFinite(next) ? next : fallback;"
-    },
-    {
-      "file": "esm/native/builder/render_interior_rod_ops.ts",
-      "line": 132,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Moves the legacy createRod closure out of BuilderCore."
     },
     {
       "file": "esm/native/builder/render_interior_sketch_boxes_fronts_support.ts",
@@ -2754,13 +2164,6 @@
       "text": "return typeof value === 'number' && Number.isFinite(value) ? value : fallback;"
     },
     {
-      "file": "esm/native/builder/render_ops_extras.ts",
-      "line": 3,
-      "term": "Legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Legacy source: `js/builder/pro_builder_render_ops_extras.js`"
-    },
-    {
       "file": "esm/native/builder/render_ops_primitives.ts",
       "line": 57,
       "term": "fallback",
@@ -2803,13 +2206,6 @@
       "text": ": fallback;"
     },
     {
-      "file": "esm/native/builder/room_shared_types.ts",
-      "line": 84,
-      "term": "Legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Legacy fields some callers still read."
-    },
-    {
       "file": "esm/native/builder/scheduler_runtime.ts",
       "line": 276,
       "term": "fallback",
@@ -2838,20 +2234,6 @@
       "text": "// - No silent fallback: if ops are missing, throw with context"
     },
     {
-      "file": "esm/native/builder/sliding_doors_pipeline.ts",
-      "line": 6,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// - BuildContext-only API (no legacy arg objects)"
-    },
-    {
-      "file": "esm/native/builder/store_access.ts",
-      "line": 3,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Goal: remove scattered legacy selector usage in builder internals."
-    },
-    {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
       "line": 91,
       "term": "fallbacks",
@@ -2878,13 +2260,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "const fn = typeof primary === 'function' ? primary : typeof fallback === 'function' ? fallback : null;"
-    },
-    {
-      "file": "esm/native/builder/visuals_and_contents_shared.ts",
-      "line": 153,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// In pure-ESM builds we do not provide legacy window.* globals."
     },
     {
       "file": "esm/native/features/base_leg_support.ts",
@@ -3237,13 +2612,6 @@
       "text": "return Number.isFinite(n) ? n : fallback;"
     },
     {
-      "file": "esm/native/features/stack_split/stack_split.ts",
-      "line": 68,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// ignores the rawLower* value (raw is kept only as a cached/legacy value)."
-    },
-    {
       "file": "esm/native/io/project_io_feedback_bridge.ts",
       "line": 81,
       "term": "fallback",
@@ -3265,27 +2633,6 @@
       "text": "// ignore malformed legacy payloads"
     },
     {
-      "file": "esm/native/kernel/cfg_meta.ts",
-      "line": 2,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Converted from legacy: js/kernel/pro_cfg_meta.js"
-    },
-    {
-      "file": "esm/native/kernel/domain_api_colors_section.ts",
-      "line": 40,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "const legacy = value.trim();"
-    },
-    {
-      "file": "esm/native/kernel/domain_api_colors_section.ts",
-      "line": 41,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "return legacy || null;"
-    },
-    {
       "file": "esm/native/kernel/domain_api_modules_corner_shared.ts",
       "line": 59,
       "term": "fallback",
@@ -3298,13 +2645,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "return Number.isFinite(parsed) ? parsed : fallback;"
-    },
-    {
-      "file": "esm/native/kernel/domain_api_modules_corner.ts",
-      "line": 6,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// - this isolates the stack/module/corner policy without reintroducing legacy write paths"
     },
     {
       "file": "esm/native/kernel/domain_api_shared.ts",
@@ -3340,13 +2680,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "return globalHandleType != null ? globalHandleType : fallback || 'standard';"
-    },
-    {
-      "file": "esm/native/kernel/history_access.ts",
-      "line": 5,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// - Other layers should NOT depend on legacy globals (historical HistorySystem aliases)."
     },
     {
       "file": "esm/native/kernel/kernel_builder_request_policy_shared.ts",
@@ -3510,20 +2843,6 @@
       "text": "return (typeof cloned === 'undefined' ? fallback : cloned) as T;"
     },
     {
-      "file": "esm/native/kernel/kernel_project_capture.ts",
-      "line": 26,
-      "term": "fallback",
-      "category": "legacy-runtime-risk",
-      "text": "'DOM fallback (legacy UI reader) has been removed; ensure store.ui is seeded before capture.'"
-    },
-    {
-      "file": "esm/native/kernel/kernel_project_capture.ts",
-      "line": 26,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "'DOM fallback (legacy UI reader) has been removed; ensure store.ui is seeded before capture.'"
-    },
-    {
       "file": "esm/native/kernel/kernel_shared.ts",
       "line": 7,
       "term": "fallback",
@@ -3550,20 +2869,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": ": fallback;"
-    },
-    {
-      "file": "esm/native/kernel/kernel_snapshot_store_build_state.ts",
-      "line": 134,
-      "term": "fallback",
-      "category": "legacy-runtime-risk",
-      "text": "'DOM fallback (legacy UI reader) has been removed; ensure store.ui is seeded before building.'"
-    },
-    {
-      "file": "esm/native/kernel/kernel_snapshot_store_build_state.ts",
-      "line": 134,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "'DOM fallback (legacy UI reader) has been removed; ensure store.ui is seeded before building.'"
     },
     {
       "file": "esm/native/kernel/kernel_snapshot_store_contracts.ts",
@@ -3650,34 +2955,6 @@
       "text": "asRecord(clone(v, fallback || {}), fallback || {});"
     },
     {
-      "file": "esm/native/kernel/kernel.ts",
-      "line": 2,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Converted from legacy: js/kernel/pro_kernel.js"
-    },
-    {
-      "file": "esm/native/kernel/maps_api.ts",
-      "line": 2,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Converted from legacy: js/kernel/pro_maps_api.js"
-    },
-    {
-      "file": "esm/native/kernel/maps_api.ts",
-      "line": 6,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// - Removed legacy model-maps surface."
-    },
-    {
-      "file": "esm/native/kernel/splitdoors_normalizer.ts",
-      "line": 2,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Converted from legacy: js/kernel/pro_splitdoors_normalizer.js"
-    },
-    {
       "file": "esm/native/kernel/state_api_history_store_reactivity_build_meta.ts",
       "line": 19,
       "term": "fallback",
@@ -3692,25 +2969,11 @@
       "text": "return readString(value?.source) || readString(value?.reason) || fallback;"
     },
     {
-      "file": "esm/native/kernel/store_access.ts",
-      "line": 3,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Goal: remove scattered legacy selector checks inside kernel internals."
-    },
-    {
       "file": "esm/native/platform/boot_main.ts",
       "line": 5,
       "term": "fallbacks",
       "category": "browser-adapter",
       "text": "// - Pure ESM: attach boot API only to the provided App instance (no window/global fallbacks)."
-    },
-    {
-      "file": "esm/native/platform/config_defaults.ts",
-      "line": 6,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Used by the ESM route to avoid relying on legacy IIFEs."
     },
     {
       "file": "esm/native/platform/dirty_flag.ts",
@@ -3860,20 +3123,6 @@
       "text": "if (typeof v !== 'function') return fallback;"
     },
     {
-      "file": "esm/native/platform/render_loop_impl.ts",
-      "line": 3,
-      "term": "Legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Legacy implementation: js/platform/pro_render_loop_impl.js"
-    },
-    {
-      "file": "esm/native/platform/render_loop_impl.ts",
-      "line": 48,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Preserve legacy naming inside the function body to minimize diff risk."
-    },
-    {
       "file": "esm/native/platform/render_loop_mirror_driver.ts",
       "line": 43,
       "term": "fallback",
@@ -3924,14 +3173,7 @@
     },
     {
       "file": "esm/native/platform/smoke_checks.ts",
-      "line": 3,
-      "term": "Legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Legacy implementation: js/platform/pro_smoke_checks.js"
-    },
-    {
-      "file": "esm/native/platform/smoke_checks.ts",
-      "line": 7,
+      "line": 5,
       "term": "fallbacks",
       "category": "browser-adapter",
       "text": "// - Expose smoke-check helpers on the provided App instance (no window/global fallbacks)."
@@ -3942,20 +3184,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "// - Avoid hybrid fallback paths inside the store backend (single backend = Zustand)"
-    },
-    {
-      "file": "esm/native/runtime/app_helpers.ts",
-      "line": 45,
-      "term": "legacy",
-      "category": "project-migration",
-      "text": "// Preserve legacy behavior: only apply the noBuild profile when the canonical surface exists."
-    },
-    {
-      "file": "esm/native/runtime/assert.ts",
-      "line": 77,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Keep legacy semantics: treat arrays as objects too (some callsites still rely on this)."
     },
     {
       "file": "esm/native/runtime/browser_clipboard.ts",
@@ -4007,13 +3235,6 @@
       "text": "// navigator readers and timer/fetch fallbacks to focused same-layer modules."
     },
     {
-      "file": "esm/native/runtime/browser_env.ts",
-      "line": 30,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Keep a named export for legacy call sites that might reach into this module."
-    },
-    {
       "file": "esm/native/runtime/browser_file_read.ts",
       "line": 62,
       "term": "fallback",
@@ -4061,34 +3282,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "return value === undefined ? fallback : value;"
-    },
-    {
-      "file": "esm/native/runtime/config_selectors.ts",
-      "line": 5,
-      "term": "legacy",
-      "category": "project-migration",
-      "text": "// - Allow legacy persisted values (string, '', null) without spreading checks everywhere."
-    },
-    {
-      "file": "esm/native/runtime/dom_access.ts",
-      "line": 4,
-      "term": "fallbacks",
-      "category": "runtime-default",
-      "text": "// `$`, `qs`, `qsa` fallbacks across files."
-    },
-    {
-      "file": "esm/native/runtime/dom_access.ts",
-      "line": 7,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// - Pure ESM code should not depend on legacy App.dom helpers."
-    },
-    {
-      "file": "esm/native/runtime/dom_ops.ts",
-      "line": 5,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "//   don't need to poke at legacy helpers or globals."
     },
     {
       "file": "esm/native/runtime/doors_access_services.ts",
@@ -4217,27 +3410,6 @@
       "text": "const message = stringifyUnknown(err).trim() || fallback || 'Unexpected error';"
     },
     {
-      "file": "esm/native/runtime/errors.ts",
-      "line": 129,
-      "term": "legacy",
-      "category": "project-migration",
-      "text": "* Canonical: store.runtime.failFast (Zustand store). No legacy flags root-slot."
-    },
-    {
-      "file": "esm/native/runtime/guard.ts",
-      "line": 3,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Stage 3: remove legacy try/catch wrappers and replace them with explicit,"
-    },
-    {
-      "file": "esm/native/runtime/internal_state.ts",
-      "line": 5,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// - Replace legacy \"stage\" buckets like App.__stage4.*"
-    },
-    {
       "file": "esm/native/runtime/meta_profiles_access.ts",
       "line": 6,
       "term": "fallback",
@@ -4271,27 +3443,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "return typeof value === 'string' && isModelsCommandReason(value) ? value : fallback;"
-    },
-    {
-      "file": "esm/native/runtime/modes_constants.ts",
-      "line": 4,
-      "term": "legacy",
-      "category": "project-migration",
-      "text": "// Post-migration policy: callers should NOT read mode IDs from legacy surfaces."
-    },
-    {
-      "file": "esm/native/runtime/modes_constants.ts",
-      "line": 46,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "* but is intentionally ignored (no legacy fallback)."
-    },
-    {
-      "file": "esm/native/runtime/modes_constants.ts",
-      "line": 46,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "* but is intentionally ignored (no legacy fallback)."
     },
     {
       "file": "esm/native/runtime/modules_recompute_request_policy.ts",
@@ -4334,13 +3485,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "return requestBuilderForcedBuild(App, createStructuralModulesFallbackBuildMeta(meta, defaults, fallback));"
-    },
-    {
-      "file": "esm/native/runtime/num_coerce.ts",
-      "line": 8,
-      "term": "legacy",
-      "category": "project-migration",
-      "text": "// - Accept legacy persisted values (string, '', null, boolean)"
     },
     {
       "file": "esm/native/runtime/perf_runtime_core.ts",
@@ -4497,27 +3641,6 @@
       "text": "// - Keep root-level patch fallbacks explicit and opt-in, not hidden policy."
     },
     {
-      "file": "esm/native/runtime/store_boot_access.ts",
-      "line": 91,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "* - UI/boot code should not probe legacy kernel internals directly."
-    },
-    {
-      "file": "esm/native/runtime/store_reactivity_access.ts",
-      "line": 5,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "* UI/runtime code should not probe legacy kernel internals directly."
-    },
-    {
-      "file": "esm/native/runtime/tools_runtime_state.ts",
-      "line": 14,
-      "term": "legacy",
-      "category": "project-migration",
-      "text": "// This is NOT a legacy compatibility shim: it is the canonical home for these helpers"
-    },
-    {
       "file": "esm/native/runtime/ui_write_access.ts",
       "line": 6,
       "term": "fallback",
@@ -4532,20 +3655,6 @@
       "text": "// Fallback: patch raw object (UI-only by convention)."
     },
     {
-      "file": "esm/native/services/boot_finalizers.ts",
-      "line": 3,
-      "term": "Legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Legacy source: `js/services/pro_services_boot_finalizers.js`"
-    },
-    {
-      "file": "esm/native/services/boot_finalizers.ts",
-      "line": 6,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// - No legacy `js/**` imports on the ESM path."
-    },
-    {
       "file": "esm/native/services/camera_shared.ts",
       "line": 122,
       "term": "fallback",
@@ -4558,20 +3667,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "return Number.isFinite(n) && n > 0 ? n : fallback;"
-    },
-    {
-      "file": "esm/native/services/camera.ts",
-      "line": 3,
-      "term": "Legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Legacy source: `js/services/pro_services_camera.js`"
-    },
-    {
-      "file": "esm/native/services/camera.ts",
-      "line": 6,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// - No legacy `js/**` imports on the ESM path."
     },
     {
       "file": "esm/native/services/canvas_picking_cell_dims_linear_shared.ts",
@@ -4635,27 +3730,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "return new Error(fallback);"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_core.ts",
-      "line": 8,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// for legacy compatibility (App.core.canvas.*)."
-    },
-    {
-      "file": "esm/native/services/canvas_picking_core.ts",
-      "line": 14,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// NOTE: legacy auto-registration removed in ESM core; use installCanvasPickingService()."
-    },
-    {
-      "file": "esm/native/services/canvas_picking_door_part_helpers.ts",
-      "line": 63,
-      "term": "Legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Legacy payloads may have stored base keys (no suffix). Those are migrated at load-time."
     },
     {
       "file": "esm/native/services/canvas_picking_hover_clearance_measurements.ts",
@@ -4810,13 +3884,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "return fallback;"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_paint_flow_apply_special.ts",
-      "line": 78,
-      "term": "Legacy",
-      "category": "project-migration",
-      "text": "// Legacy/canonical full mirror without a layout means “outside face”."
     },
     {
       "file": "esm/native/services/canvas_picking_projection_runtime_box_shared.ts",
@@ -5071,34 +4138,6 @@
       "text": "return isDoorsRuntimeState(runtime) ? runtime : fallback;"
     },
     {
-      "file": "esm/native/services/doors_runtime.ts",
-      "line": 4,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// - No legacy `js/**` imports on the ESM path."
-    },
-    {
-      "file": "esm/native/services/doors_runtime.ts",
-      "line": 9,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// - Keeps behavior identical to legacy `js/services/pro_services_doors_runtime.js`."
-    },
-    {
-      "file": "esm/native/services/history.ts",
-      "line": 4,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// - No legacy `js/**` imports on the ESM path."
-    },
-    {
-      "file": "esm/native/services/models.ts",
-      "line": 4,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// - No legacy `js/**` imports on the ESM path."
-    },
-    {
       "file": "esm/native/services/render_surface_runtime_support_shared.ts",
       "line": 106,
       "term": "fallback",
@@ -5202,13 +4241,6 @@
       "term": "fallbacks",
       "category": "runtime-default",
       "text": "// fall through to HTML fallbacks"
-    },
-    {
-      "file": "esm/native/ui/error_overlay.ts",
-      "line": 36,
-      "term": "Legacy",
-      "category": "legacy-runtime-risk",
-      "text": "* Legacy note: some callers still pass `opts.doc` / `opts.win`."
     },
     {
       "file": "esm/native/ui/export/export_canvas_core_canvas.ts",
@@ -5352,28 +4384,28 @@
     },
     {
       "file": "esm/native/ui/export/export_canvas_workflow_dual.ts",
-      "line": 123,
+      "line": 125,
       "term": "fallback",
       "category": "runtime-default",
       "text": "fallback: 'none',"
     },
     {
       "file": "esm/native/ui/export/export_canvas_workflow_dual.ts",
-      "line": 133,
+      "line": 135,
       "term": "fallback",
       "category": "runtime-default",
       "text": "fallback: 'none',"
     },
     {
       "file": "esm/native/ui/export/export_canvas_workflow_render_sketch.ts",
-      "line": 143,
+      "line": 150,
       "term": "fallback",
       "category": "runtime-default",
       "text": "fallback: 'none',"
     },
     {
       "file": "esm/native/ui/export/export_canvas_workflow_render_sketch.ts",
-      "line": 153,
+      "line": 160,
       "term": "fallback",
       "category": "runtime-default",
       "text": "fallback: 'none',"
@@ -5477,53 +4509,11 @@
       "text": "return fallback;"
     },
     {
-      "file": "esm/native/ui/interactions/accessibility_shortcuts.ts",
-      "line": 7,
-      "term": "legacy",
-      "category": "browser-adapter",
-      "text": "// Kept DOM-generic (no hard-coded ids), safe for both legacy and React UI."
-    },
-    {
-      "file": "esm/native/ui/interactions/history_ui.ts",
-      "line": 8,
-      "term": "legacy",
-      "category": "browser-adapter",
-      "text": "// - Avoid dependency on legacy DOM ids / legacy UI buttons."
-    },
-    {
-      "file": "esm/native/ui/interactions/history_ui.ts",
-      "line": 8,
-      "term": "legacy",
-      "category": "browser-adapter",
-      "text": "// - Avoid dependency on legacy DOM ids / legacy UI buttons."
-    },
-    {
       "file": "esm/native/ui/interactions/project_save_load.ts",
       "line": 68,
       "term": "fallback",
       "category": "runtime-default",
       "text": "// ignore debug fallback failures"
-    },
-    {
-      "file": "esm/native/ui/modes.ts",
-      "line": 229,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// - No legacy UI installs, no global aliases, no ready-registry."
-    },
-    {
-      "file": "esm/native/ui/multicolor_service.ts",
-      "line": 4,
-      "term": "legacy",
-      "category": "browser-adapter",
-      "text": "// the legacy DOM widget module. This file contains ONLY logic and App actions."
-    },
-    {
-      "file": "esm/native/ui/multicolor_service.ts",
-      "line": 8,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// - No legacy widget rendering."
     },
     {
       "file": "esm/native/ui/notes_service_sanitize.ts",
@@ -5645,20 +4635,6 @@
       "text": "mobile: firstDefinedTextValue([preferred.mobile, fallback.mobile]),"
     },
     {
-      "file": "esm/native/ui/primary_mode.ts",
-      "line": 7,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// - Store-driven effects (no legacy UI shims)."
-    },
-    {
-      "file": "esm/native/ui/primary_mode.ts",
-      "line": 107,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// No legacy UI installs: this is not a compatibility layer."
-    },
-    {
       "file": "esm/native/ui/react/actions/cloud_sync_actions.ts",
       "line": 18,
       "term": "fallback",
@@ -5736,20 +4712,6 @@
       "text": "fallback: () => buildRoomModeFallbackResult('private'),"
     },
     {
-      "file": "esm/native/ui/react/actions/store_actions_state.ts",
-      "line": 39,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "const legacy = value.trim();"
-    },
-    {
-      "file": "esm/native/ui/react/actions/store_actions_state.ts",
-      "line": 40,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "return legacy || null;"
-    },
-    {
       "file": "esm/native/ui/react/cloud_sync_ui_action_controller_shared.ts",
       "line": 57,
       "term": "fallback",
@@ -5762,27 +4724,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "return normalizeUnknownError(err, fallback).message;"
-    },
-    {
-      "file": "esm/native/ui/react/components/IconButton.tsx",
-      "line": 19,
-      "term": "Legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Legacy button styling, but icon-sized"
-    },
-    {
-      "file": "esm/native/ui/react/components/Tabs.tsx",
-      "line": 20,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Keep the existing tab width and enable horizontal scroll once we exceed the legacy 5 tabs."
-    },
-    {
-      "file": "esm/native/ui/react/export_actions.ts",
-      "line": 6,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// - Call export_canvas named exports directly (no legacy installer surface dependency)."
     },
     {
       "file": "esm/native/ui/react/notes/notes_overlay_helpers_shared.ts",
@@ -5923,27 +4864,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "<Suspense fallback={<PdfEditorLoadingOverlay />}>"
-    },
-    {
-      "file": "esm/native/ui/react/pdf/gmail_draft.ts",
-      "line": 245,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// - Some clients (incl. Gmail UI) prefer the legacy filename= over filename* when both exist."
-    },
-    {
-      "file": "esm/native/ui/react/pdf/gmail_draft.ts",
-      "line": 246,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "//   To make sure Hebrew survives, we OMIT the legacy filename/name when the filename isn't ASCII."
-    },
-    {
-      "file": "esm/native/ui/react/pdf/order_pdf_overlay_contracts.ts",
-      "line": 69,
-      "term": "Legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Legacy drafts without this flag are treated as the old \"auto + additions\" mode."
     },
     {
       "file": "esm/native/ui/react/pdf/order_pdf_overlay_draft_support_runtime.ts",
@@ -6574,55 +5494,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": ": fallback;"
-    },
-    {
-      "file": "esm/native/ui/runtime/ui_runtime.ts",
-      "line": 4,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// - Hold transient UI installation state (disposers / guards) outside legacy wiring."
-    },
-    {
-      "file": "esm/native/ui/settings_backup_shared_collections.ts",
-      "line": 30,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "const legacy = normalizeSettingsBackupId(value);"
-    },
-    {
-      "file": "esm/native/ui/settings_backup_shared_collections.ts",
-      "line": 31,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "return legacy ?? null;"
-    },
-    {
-      "file": "esm/native/ui/ui_boot_controller_store.ts",
-      "line": 42,
-      "term": "legacy",
-      "category": "browser-adapter",
-      "text": "'[WardrobePro] Boot seed requires essential UI fields in store.ui (width/height/depth/doors). DOM seeding (legacy UI readers) has been removed; fix the default store state or early UI init.'"
-    },
-    {
-      "file": "esm/release_main.ts",
-      "line": 7,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// - IMPORTANT: explicitly call app.boot.start() (release HTML doesn't run legacy wiring)."
-    },
-    {
-      "file": "esm/shared/maps_access_collections_shared.ts",
-      "line": 9,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "const legacy = value.trim();"
-    },
-    {
-      "file": "esm/shared/maps_access_collections_shared.ts",
-      "line": 10,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "return legacy || null;"
     },
     {
       "file": "esm/shared/mirror_layout_contracts_shared.ts",

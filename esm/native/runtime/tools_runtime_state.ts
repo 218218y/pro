@@ -11,7 +11,7 @@
 // - interiorManualTool
 // - drawersOpenId (typed runtime scalar key)
 //
-// This is NOT a legacy compatibility shim: it is the canonical home for these helpers
+// This is the canonical home for these helpers
 // in the new Zustand-first architecture.
 
 import type {

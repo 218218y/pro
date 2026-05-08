@@ -1,10 +1,8 @@
 // Native Builder materials application (ESM)
 //
-// Legacy source: `js/builder/pro_builder_materials_apply.js`
-//
 // Goals:
 // - Real ESM (no IIFE, no implicit side-effects on import)
-// - No legacy `js/**` imports on the ESM path
+// - No `js/**` imports on the ESM path
 // - Installer binds onto App.services.builder.materials + renderOps (no App.builder* globals).
 
 import { installStableSurfaceMethod } from '../runtime/stable_surface_methods.js';

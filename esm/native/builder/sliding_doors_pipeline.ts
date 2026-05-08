@@ -3,7 +3,7 @@
 // Goals:
 // - Keep builder/core small
 // - No silent fallback: if ops are missing, throw with context
-// - BuildContext-only API (no legacy arg objects)
+// - BuildContext-only API
 
 import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { isBuildContext } from './build_context.js';

@@ -3,7 +3,7 @@
 // Why this exists:
 // - domain_api.ts keeps the public domain owner surface
 // - modules/corner domain behavior is still central, but too dense inline
-// - this isolates the stack/module/corner policy without reintroducing legacy write paths
+// - this isolates the stack/module/corner policy behind the canonical write paths
 
 import { sanitizeCornerCfg } from './domain_api_modules_corner_shared.js';
 import { installDomainApiModulesCornerRecompute } from './domain_api_modules_corner_recompute.js';

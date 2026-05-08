@@ -4,7 +4,7 @@
 //
 // Responsibilities:
 // - Keep DOM/UI-only side effects out of kernel/core.
-// - Store-driven effects (no legacy UI shims).
+// - Store-driven effects.
 import {
   getDocumentMaybe,
   setDataAttr,
@@ -104,7 +104,7 @@ export function installUiPrimaryMode(
   // - Keep body dataset/class markers in sync with the store mode slice.
   // - Kick best-effort non-React hooks (interior/tools buttons) when mode changes.
   //
-  // No legacy UI installs: this is not a compatibility layer.
+  // No UI install shims: this is not a compatibility layer.
   try {
     const effects = ensurePrimaryModeEffectsSlot(App);
     const NONE = getNoneModeId();

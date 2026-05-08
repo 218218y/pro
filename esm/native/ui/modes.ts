@@ -226,7 +226,7 @@ export function installModesController(App: AppLike): ModesControllerApi | null 
 
   // Store-driven mode effects:
   // - When mode slice changes, applyModeOpts for the active mode.
-  // - No legacy UI installs, no global aliases, no ready-registry.
+  // - No UI install shims, global aliases, or ready-registry.
   try {
     const api = ensureModesControllerSurface(App);
     return isModesControllerApi(api) ? api : null;

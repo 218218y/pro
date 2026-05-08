@@ -143,7 +143,7 @@ export function resolveBuildStateOrThrow(args: {
     } else {
       const err = new Error(
         '[WardrobePro] Builder requires the canonical build-state seam (actions.builder/store access). ' +
-          'Legacy DOM snapshot fallback has been removed.'
+          'DOM snapshot readback is not a supported build input.'
       );
       // Best-effort reporting; if reportError throws, let it surface (dev should know).
       reportErrorViaPlatform(App, err, 'builder.buildWardrobe');

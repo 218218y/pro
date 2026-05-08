@@ -81,7 +81,7 @@ export type RoomUiLike = AnyObj & {
   lastSelectedFloorStyleId?: string | null;
   lastSelectedWallColor?: string | null;
 
-  // Legacy fields some callers still read.
+  // Compatibility field still read by room selection callers.
   sketchMode?: boolean;
 };
 

@@ -38,7 +38,7 @@ export function applyCornerWingCarcassSelectors(params: CornerWingCarcassFlowPar
       wingGroup.add(hitBox);
     }
   } else {
-    // Fallback: no doors => keep legacy selector for the whole wing
+    // No cell list means the whole wing remains the selectable/editable target.
     const hitMat = new THREE.MeshBasicMaterial({
       transparent: true,
       opacity: 0.0,
@@ -72,7 +72,7 @@ export function applyCornerWingCarcassSelectors(params: CornerWingCarcassFlowPar
         gridDivisions: cell.gridDivisions,
       };
     }
-    // Keep a legacy alias so picking on the connector (moduleIndex:'corner') still has a grid.
+    // Keep the connector module id mapped so picking on moduleIndex:'corner' still has a grid.
     if (!m['corner']) {
       const c0 = cornerCells[0];
       m['corner'] = {

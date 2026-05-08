@@ -4,7 +4,7 @@
 // - Keep release HTML simple: it loads THREE + this single bundle, then calls boot({ deps }).
 // - Enforce React UI mode (uiFramework='react') for a React-only build.
 // - Mount the React UI roots (#reactSidebarRoot + #reactOverlayRoot) after the core boot sequence.
-// - IMPORTANT: explicitly call app.boot.start() (release HTML doesn't run legacy wiring).
+// - IMPORTANT: explicitly call app.boot.start() (release HTML does not run entry-page wiring).
 //
 // NOTE:
 // This file is used by tools/wp_bundle.js as the bundling entry.
