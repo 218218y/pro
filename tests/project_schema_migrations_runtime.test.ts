@@ -30,6 +30,7 @@ test('project schema migrations canonicalize segmented door maps and infer drawe
     removedDoorsMap: { removed_d1: true },
     individualColors: { d1: 'oak' },
     doorSpecialMap: { d1: 'mirror' },
+    doorStyleMap: { d1: 'profile' },
     curtainMap: { d1: 'linen' },
     mirrorLayoutMap: { d1: [{ x: 1, y: 2, width: 3, height: 4 }] },
     modulesConfiguration: [{ intDrawersSlot: '2' }],
@@ -56,6 +57,8 @@ test('project schema migrations canonicalize segmented door maps and infer drawe
   assert.equal(data.individualColors.d1_full, 'oak');
   assert.equal(data.doorSpecialMap.d1_full, 'mirror');
   assert.equal(data.doorSpecialMap.d1_top, 'mirror');
+  assert.equal(data.doorStyleMap.d1, undefined);
+  assert.equal(data.doorStyleMap.d1_full, 'profile');
   assert.equal(data.curtainMap.d1_full, 'linen');
   assert.notEqual(data.mirrorLayoutMap.d1_top, data.mirrorLayoutMap.d1_full);
   assert.deepEqual(data.cornerConfiguration.modulesConfiguration, []);

@@ -180,10 +180,29 @@ export function normalizeDoorStyleMap(value: unknown): MapsByName['doorStyleMap'
   const out: MapsByName['doorStyleMap'] = Object.create(null);
   if (!rec) return out;
   for (const key of Object.keys(rec)) {
-    const entry = rec[key];
-    if (entry === 'flat' || entry === 'profile' || entry === 'tom') out[key] = entry;
+    const entry = typeof rec[key] === 'string' ? String(rec[key]).trim().toLowerCase() : '';
+    const mapKey = toDoorStyleMapKey(key);
+    if (!mapKey) continue;
+    if (entry === 'flat' || entry === 'profile' || entry === 'tom') {
+      if (mapKey === key || typeof out[mapKey] === 'undefined') out[mapKey] = entry;
+    }
   }
   return out;
+}
+
+function isSegmentedDoorStyleBaseKey(value: string): boolean {
+  return (
+    /^(?:lower_)?d\d+$/.test(value) ||
+    /^(?:lower_)?corner_door_\d+$/.test(value) ||
+    /^(?:lower_)?corner_pent_door_\d+$/.test(value)
+  );
+}
+
+function toDoorStyleMapKey(value: unknown): string {
+  const key = typeof value === 'string' ? value.trim() : String(value ?? '').trim();
+  if (!key) return '';
+  if (/(?:_(?:full|top|bot|mid\d*))$/i.test(key)) return key;
+  return isSegmentedDoorStyleBaseKey(key) ? `${key}_full` : key;
 }
 
 export function normalizeDoorTrimCenterNorm(value: unknown): number {

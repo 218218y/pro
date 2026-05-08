@@ -1,7 +1,5 @@
 // Native ESM implementation of platform boot orchestration.
 //
-// Legacy implementation: js/platform/pro_boot_main.js
-//
 // Goals:
 // - Provide a real ESM module that can be imported.
 // - Pure ESM: attach boot API only to the provided App instance (no window/global fallbacks).

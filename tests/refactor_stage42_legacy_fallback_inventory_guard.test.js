@@ -27,6 +27,12 @@ test('stage 42 legacy fallback inventory closeout is anchored', () => {
     'esm/native/services/boot_seeds_part02_shared.ts',
     'esm/native/services/cloud_sync_owner_context_runtime_shared.ts',
     'esm/native/services/cloud_sync_support_storage_shared.ts',
+    'esm/native/features/door_style_overrides.ts',
+    'esm/native/platform/platform.ts',
+    'esm/native/services/scene_view.ts',
+    'esm/native/services/textures_cache.ts',
+    'esm/native/services/config_compounds.ts',
+    'esm/native/ui/react/boot_react_ui.tsx',
   ]) {
     assert.equal(audit.summary.byFile[file]?.total || 0, 0, `${file} should stay out of the inventory`);
   }

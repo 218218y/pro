@@ -60,7 +60,8 @@ test('sketch door cuts runtime resolves canonical style, curtain, mirror layout,
   assert.equal(runtime.isDoorRemoved('d7_top'), true);
   assert.equal(runtime.isDoorRemoved('drawer_1'), false);
   assert.equal(runtime.doorStyle, 'flat');
-  assert.equal(runtime.doorStyleMap.d7, 'tom');
+  assert.equal(runtime.doorStyleMap.d7, undefined);
+  assert.equal(runtime.doorStyleMap.d7_full, 'tom');
   assert.equal(runtime.doorStyleMap.drawer_1, 'profile');
   assert.deepEqual(runtime.resolveMirrorLayout('d7'), [
     {

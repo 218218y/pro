@@ -1,9 +1,7 @@
 // Native ESM implementation of textures cache helpers.
 //
-// Legacy source: `js/services/pro_services_textures_cache.js`
-//
 // Goals:
-// - No legacy `js/**` imports on the ESM path.
+// - No retired script imports on the ESM path.
 // - No IIFE / implicit globals.
 // - Canonical cache lives in `App.services.texturesCache` (no root-slot shim).
 //

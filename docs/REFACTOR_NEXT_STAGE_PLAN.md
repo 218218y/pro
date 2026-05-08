@@ -63,6 +63,8 @@ The cache/storage runtime slice is complete: storage access, storage install, bo
 
 This did not remove compatibility behavior blindly. The canonical `App.services.storage` and render-cache seams remain unchanged, while the legacy/fallback audit now has fewer false-positive hot files. Stage 42 now asserts that these storage and geometry-cache files stay out of the categorized inventory.
 
+The next legacy-risk slice is also complete: old base-key `doorStyleMap` payloads are canonicalized to the `_full` key shape at map ingress, project/config snapshot normalization, and runtime map normalization. Door-style resolution no longer performs a live base-key compatibility lookup during render/hover. Stale historical `legacy` provenance comments were also removed from platform/boot/service shell files so the audit queue now points at real runtime-risk candidates instead of retired-script history.
+
 ## CSS cascade ratchet hardening
 
 The CSS cascade hardening slice is complete: `npm run check:css-style` now reads explicit limits from `tools/wp_css_style_budget.json` instead of embedding budget numbers inside the audit script.

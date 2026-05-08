@@ -26,6 +26,7 @@ export function canonicalizeSegmentedDoorMaps(data: ProjectDataLike): void {
 
   migrateBaseKeysToFull(ensureMapRecord(data.individualColors));
   migrateBaseKeysToFull(ensureMapRecord(data.doorSpecialMap));
+  migrateBaseKeysToFull(ensureMapRecord(data.doorStyleMap));
   migrateBaseKeysToFull(ensureMapRecord(data.curtainMap));
   migrateBaseKeysToFull(ensureMapRecord(data.mirrorLayoutMap));
 }

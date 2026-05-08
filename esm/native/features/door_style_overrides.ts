@@ -14,12 +14,12 @@ function asRecord(value: unknown): UnknownRecord | null {
 
 export function normalizeDoorStyleOverrideValue(
   value: unknown,
-  fallback: DoorStyleOverrideValue = 'flat'
+  defaultValue: DoorStyleOverrideValue = 'flat'
 ): DoorStyleOverrideValue {
-  const raw = String(value == null ? fallback : value)
+  const raw = String(value == null ? defaultValue : value)
     .trim()
     .toLowerCase();
-  return raw === 'profile' || raw === 'tom' || raw === 'flat' ? raw : fallback;
+  return raw === 'profile' || raw === 'tom' || raw === 'flat' ? raw : defaultValue;
 }
 
 export function isDoorStyleOverrideValue(value: unknown): value is DoorStyleOverrideValue {
@@ -87,7 +87,9 @@ export function readDoorStyleMap(value: unknown): DoorStyleMap {
   if (!rec) return out;
   for (const key of Object.keys(rec)) {
     const normalized = typeof rec[key] === 'string' ? String(rec[key]).trim().toLowerCase() : '';
-    if (isDoorStyleOverrideValue(normalized)) out[key] = normalized;
+    const canonicalKey = toDoorStyleOverrideMapKey(key);
+    if (!canonicalKey || !isDoorStyleOverrideValue(normalized)) continue;
+    if (canonicalKey === key || typeof out[canonicalKey] === 'undefined') out[canonicalKey] = normalized;
   }
   return out;
 }
@@ -121,11 +123,6 @@ export function resolveDoorStyleOverrideValue(
     if (scoped) return scoped;
   }
 
-  const legacyMatch = (scopedKey || directKey).match(/^(.*)_(?:full|top|bot|mid\d*)$/i);
-  if (legacyMatch && legacyMatch[1]) {
-    const legacy = readDoorStyleOverrideFromMap(map, legacyMatch[1]);
-    if (legacy) return legacy;
-  }
   return null;
 }
 

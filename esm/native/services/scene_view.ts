@@ -1,13 +1,10 @@
 // Native ESM implementation of the scene view service (lights + sketch mode visibility).
 //
-// Legacy source: `js/services/pro_services_scene_view.js`
-//
 // Goals:
-// - No legacy `js/**` imports on the ESM path.
+// - No retired script imports on the ESM path.
 // - No IIFE / implicit globals.
 // - Canonical API is attached to `App.services.sceneView` (no root-slot shim).
 //
-// Note: legacy globals (window.updateLightsState, window.updateSceneMode, window.initLights)
 // This module owns the scene view APIs under App.services.sceneView.
 
 import type { AppContainer, SceneNamespaceLike, SceneViewSyncOptsLike } from '../../../types';

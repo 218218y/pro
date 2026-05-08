@@ -1,5 +1,6 @@
 import { readMirrorLayoutMap } from '../mirror_layout.js';
 import { readDoorTrimMap } from '../door_trim.js';
+import { readDoorStyleMap as normalizeDoorStyleMap } from '../door_style_overrides.js';
 import {
   cloneComparableProjectConfigValue,
   isComparableRecord,
@@ -130,17 +131,6 @@ function normalizeSplitDoorsMap(value: unknown): Record<string, unknown> {
       }
       out[key] = nums;
     }
-  }
-  return out;
-}
-
-function normalizeDoorStyleMap(value: unknown): Record<string, 'flat' | 'profile' | 'tom'> {
-  const rec = asMapRecord(value);
-  const out: Record<string, 'flat' | 'profile' | 'tom'> = Object.create(null);
-  if (!rec) return out;
-  for (const key of Object.keys(rec)) {
-    const entry = rec[key];
-    if (entry === 'flat' || entry === 'profile' || entry === 'tom') out[key] = entry;
   }
   return out;
 }

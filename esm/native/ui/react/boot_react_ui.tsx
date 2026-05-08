@@ -90,13 +90,12 @@ export function bootReactUi(opts: BootReactUiOpts): void {
   const exportActions = createExportActions(app, toast);
 
   // ---------------------------------------------------------------------------
-  // React-only runtime interactions (no legacy ui/bootstrap bindings)
+  // React-only runtime interactions
   // ---------------------------------------------------------------------------
-  // These were historically installed by legacy UI wiring. We keep them here
-  // (React shell boundary) so the app stays "one system" without hybrid DOM layers.
+  // Keep them at the React shell boundary so the app stays one system without hybrid DOM layers.
   const uiRt = getUiRuntime(app);
 
-  // Lightweight accessibility helpers (Enter/Space activation for legacy-like rows).
+  // Lightweight accessibility helpers (Enter/Space activation for row controls).
   try {
     uiRt.install('ui:accessibilityShortcuts', () => installAccessibilityShortcuts(app, { doc }));
   } catch (e) {

@@ -1,8 +1,5 @@
 // Native ESM platform installer.
 //
-// This replaces the legacy side-effect script: js/platform/pro_platform.js
-// for the ESM entry path.
-//
 // Design goals:
 // - Keep a single canonical platform surface on App.platform (no global aliases)
 // - Avoid relying on free global identifiers (especially THREE) in ESM contexts
@@ -53,14 +50,14 @@ export function installPlatform(rootApp: AppContainer): AppContainer['platform']
   const App = rootApp && typeof rootApp === 'object' ? rootApp : null;
   if (!App) {
     throw new Error(
-      '[WardrobePro][ESM] installPlatform(rootApp) requires an app object (no legacy global App fallback)'
+      '[WardrobePro][ESM] installPlatform(rootApp) requires an app object; global App is not supported'
     );
   }
 
   const platform = ensurePlatformRoot(App);
 
   // ---------------------------------------------------------------------------
-  // Debug/QA flags (no legacy flags root-slot)
+  // Debug/QA flags (no root flags slot)
   //
   // Canonical: store.runtime.* (after store is created).
   // Early boot (before store exists): fall back to injected deps.flags or file defaults.
@@ -185,7 +182,7 @@ export function installPlatform(rootApp: AppContainer): AppContainer['platform']
   // NOTE: In Pure ESM mode, UI binds DOM events directly with
   // addEventListener/removeEventListener (via deps.browser.window/document) and explicit disposers.
   // The platform no longer installs App.events/App.bind.
-  // (This reduces legacy surface area and avoids cross-layer coupling.)
+  // This keeps platform wiring focused and avoids cross-layer coupling.
 
   // ---------------------------------------------------------------------------
   // Store (Phase B): single place to keep snapshots of {ui, config, mode, runtime, meta}

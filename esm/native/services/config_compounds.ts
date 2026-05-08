@@ -1,12 +1,10 @@
 // Native ESM implementation of the config compound seed service.
 //
-// Legacy source: `js/services/pro_services_config_compounds.js`
-//
 // Purpose: seed store.config compound objects (modulesConfiguration, cornerConfiguration)
-//          outside of legacy boot compat.
+//          through the canonical config service path.
 //
 // Goals:
-// - No legacy `js/**` imports on the ESM path.
+// - No retired script imports on the ESM path.
 // - No IIFE / implicit globals.
 // - Idempotency marker is stored in internal boot flags (see runtime/internal_state).
 

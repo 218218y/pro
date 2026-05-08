@@ -18,6 +18,7 @@ import type {
   UnknownRecord,
 } from '../../../../types/index.js';
 
+import { readDoorStyleMap as readCanonicalDoorStyleMap } from '../door_style_overrides.js';
 import { readDoorTrimMap } from '../door_trim.js';
 import { readMirrorLayoutMap } from '../mirror_layout.js';
 
@@ -168,14 +169,7 @@ export function readDoorSpecialMap(value: unknown): DoorSpecialMap {
 }
 
 export function readDoorStyleMap(value: unknown): DoorStyleMap {
-  const src = asObjectRecord(value);
-  const out: DoorStyleMap = {};
-  if (!src) return out;
-  for (const [key, entry] of Object.entries(src)) {
-    const raw = typeof entry === 'string' ? String(entry).trim().toLowerCase() : '';
-    if (raw === 'flat' || raw === 'profile' || raw === 'tom') out[key] = raw;
-  }
-  return out;
+  return readCanonicalDoorStyleMap(value);
 }
 
 export function isHingeMapEntry(value: unknown): value is HingeMap[string] {

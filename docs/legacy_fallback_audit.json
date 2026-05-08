@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-05-07T19:19:09.437Z",
+  "generatedAt": "2026-05-08T03:35:55.315Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 758,
-    "totalFiles": 278,
+    "totalOccurrences": 735,
+    "totalFiles": 272,
     "byCategory": {
-      "runtime-default": 602,
+      "runtime-default": 598,
       "browser-adapter": 18,
       "project-migration": 20,
       "test-fixture": 7,
-      "legacy-runtime-risk": 111,
+      "legacy-runtime-risk": 92,
       "unknown": 0
     },
     "byFile": {
@@ -468,13 +468,6 @@
           "runtime-default": 10
         }
       },
-      "esm/native/features/door_style_overrides.ts": {
-        "total": 6,
-        "categories": {
-          "legacy-runtime-risk": 3,
-          "runtime-default": 3
-        }
-      },
       "esm/native/features/door_trim_shared.ts": {
         "total": 6,
         "categories": {
@@ -694,10 +687,9 @@
         }
       },
       "esm/native/platform/boot_main.ts": {
-        "total": 2,
+        "total": 1,
         "categories": {
-          "browser-adapter": 1,
-          "legacy-runtime-risk": 1
+          "browser-adapter": 1
         }
       },
       "esm/native/platform/config_defaults.ts": {
@@ -728,13 +720,6 @@
         "total": 12,
         "categories": {
           "runtime-default": 12
-        }
-      },
-      "esm/native/platform/platform.ts": {
-        "total": 5,
-        "categories": {
-          "legacy-runtime-risk": 4,
-          "runtime-default": 1
         }
       },
       "esm/native/platform/render_loop_impl_support.ts": {
@@ -1221,12 +1206,6 @@
           "runtime-default": 3
         }
       },
-      "esm/native/services/config_compounds.ts": {
-        "total": 3,
-        "categories": {
-          "legacy-runtime-risk": 3
-        }
-      },
       "esm/native/services/doors_runtime_state.ts": {
         "total": 3,
         "categories": {
@@ -1261,18 +1240,6 @@
         "total": 7,
         "categories": {
           "runtime-default": 7
-        }
-      },
-      "esm/native/services/scene_view.ts": {
-        "total": 3,
-        "categories": {
-          "legacy-runtime-risk": 3
-        }
-      },
-      "esm/native/services/textures_cache.ts": {
-        "total": 2,
-        "categories": {
-          "legacy-runtime-risk": 2
         }
       },
       "esm/native/services/ui_ephemeral_defaults.ts": {
@@ -1436,12 +1403,6 @@
         "total": 2,
         "categories": {
           "legacy-runtime-risk": 2
-        }
-      },
-      "esm/native/ui/react/boot_react_ui.tsx": {
-        "total": 3,
-        "categories": {
-          "legacy-runtime-risk": 3
         }
       },
       "esm/native/ui/react/cloud_sync_ui_action_controller_shared.ts": {
@@ -1841,14 +1802,6 @@
         }
       },
       {
-        "file": "esm/native/features/door_style_overrides.ts",
-        "total": 6,
-        "categories": {
-          "legacy-runtime-risk": 3,
-          "runtime-default": 3
-        }
-      },
-      {
         "file": "esm/native/features/door_trim_shared.ts",
         "total": 6,
         "categories": {
@@ -1916,6 +1869,14 @@
         "total": 5,
         "categories": {
           "runtime-default": 5
+        }
+      },
+      {
+        "file": "esm/native/features/stack_split/stack_split.ts",
+        "total": 5,
+        "categories": {
+          "legacy-runtime-risk": 1,
+          "runtime-default": 4
         }
       }
     ]
@@ -3053,48 +3014,6 @@
       "text": "return normalizeBaseLegWidthCm(value, fallback) / 100;"
     },
     {
-      "file": "esm/native/features/door_style_overrides.ts",
-      "line": 17,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: DoorStyleOverrideValue = 'flat'"
-    },
-    {
-      "file": "esm/native/features/door_style_overrides.ts",
-      "line": 19,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const raw = String(value == null ? fallback : value)"
-    },
-    {
-      "file": "esm/native/features/door_style_overrides.ts",
-      "line": 22,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return raw === 'profile' || raw === 'tom' || raw === 'flat' ? raw : fallback;"
-    },
-    {
-      "file": "esm/native/features/door_style_overrides.ts",
-      "line": 126,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "const legacy = readDoorStyleOverrideFromMap(map, legacyMatch[1]);"
-    },
-    {
-      "file": "esm/native/features/door_style_overrides.ts",
-      "line": 127,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "if (legacy) return legacy;"
-    },
-    {
-      "file": "esm/native/features/door_style_overrides.ts",
-      "line": 127,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "if (legacy) return legacy;"
-    },
-    {
       "file": "esm/native/features/door_trim_shared.ts",
       "line": 96,
       "term": "fallback",
@@ -3327,7 +3246,7 @@
     },
     {
       "file": "esm/native/features/project_config/project_config_persisted_payload_shared.ts",
-      "line": 254,
+      "line": 248,
       "term": "legacy",
       "category": "project-migration",
       "text": "// ignore malformed legacy payloads"
@@ -3866,14 +3785,7 @@
     },
     {
       "file": "esm/native/platform/boot_main.ts",
-      "line": 3,
-      "term": "Legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Legacy implementation: js/platform/pro_boot_main.js"
-    },
-    {
-      "file": "esm/native/platform/boot_main.ts",
-      "line": 7,
+      "line": 5,
       "term": "fallbacks",
       "category": "browser-adapter",
       "text": "// - Pure ESM: attach boot API only to the provided App instance (no window/global fallbacks)."
@@ -4003,41 +3915,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "if (typeof fallback !== 'undefined') return fallback;"
-    },
-    {
-      "file": "esm/native/platform/platform.ts",
-      "line": 3,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// This replaces the legacy side-effect script: js/platform/pro_platform.js"
-    },
-    {
-      "file": "esm/native/platform/platform.ts",
-      "line": 56,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "'[WardrobePro][ESM] installPlatform(rootApp) requires an app object (no legacy global App fallback)'"
-    },
-    {
-      "file": "esm/native/platform/platform.ts",
-      "line": 56,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "'[WardrobePro][ESM] installPlatform(rootApp) requires an app object (no legacy global App fallback)'"
-    },
-    {
-      "file": "esm/native/platform/platform.ts",
-      "line": 63,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Debug/QA flags (no legacy flags root-slot)"
-    },
-    {
-      "file": "esm/native/platform/platform.ts",
-      "line": 188,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// (This reduces legacy surface area and avoids cross-layer coupling.)"
     },
     {
       "file": "esm/native/platform/render_loop_impl_support.ts",
@@ -5475,27 +5352,6 @@
       "text": "return fallback;"
     },
     {
-      "file": "esm/native/services/config_compounds.ts",
-      "line": 3,
-      "term": "Legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Legacy source: `js/services/pro_services_config_compounds.js`"
-    },
-    {
-      "file": "esm/native/services/config_compounds.ts",
-      "line": 6,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "//          outside of legacy boot compat."
-    },
-    {
-      "file": "esm/native/services/config_compounds.ts",
-      "line": 9,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// - No legacy `js/**` imports on the ESM path."
-    },
-    {
       "file": "esm/native/services/doors_runtime_state.ts",
       "line": 144,
       "term": "fallback",
@@ -5620,41 +5476,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "return fallback;"
-    },
-    {
-      "file": "esm/native/services/scene_view.ts",
-      "line": 3,
-      "term": "Legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Legacy source: `js/services/pro_services_scene_view.js`"
-    },
-    {
-      "file": "esm/native/services/scene_view.ts",
-      "line": 6,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// - No legacy `js/**` imports on the ESM path."
-    },
-    {
-      "file": "esm/native/services/scene_view.ts",
-      "line": 10,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Note: legacy globals (window.updateLightsState, window.updateSceneMode, window.initLights)"
-    },
-    {
-      "file": "esm/native/services/textures_cache.ts",
-      "line": 3,
-      "term": "Legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Legacy source: `js/services/pro_services_textures_cache.js`"
-    },
-    {
-      "file": "esm/native/services/textures_cache.ts",
-      "line": 6,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// - No legacy `js/**` imports on the ESM path."
     },
     {
       "file": "esm/native/services/ui_ephemeral_defaults.ts",
@@ -6229,27 +6050,6 @@
       "term": "legacy",
       "category": "legacy-runtime-risk",
       "text": "return legacy || null;"
-    },
-    {
-      "file": "esm/native/ui/react/boot_react_ui.tsx",
-      "line": 93,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// React-only runtime interactions (no legacy ui/bootstrap bindings)"
-    },
-    {
-      "file": "esm/native/ui/react/boot_react_ui.tsx",
-      "line": 95,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// These were historically installed by legacy UI wiring. We keep them here"
-    },
-    {
-      "file": "esm/native/ui/react/boot_react_ui.tsx",
-      "line": 99,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// Lightweight accessibility helpers (Enter/Space activation for legacy-like rows)."
     },
     {
       "file": "esm/native/ui/react/cloud_sync_ui_action_controller_shared.ts",

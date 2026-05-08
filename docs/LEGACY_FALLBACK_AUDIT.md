@@ -1,18 +1,18 @@
 # Legacy / fallback audit
 
-Generated at: 2026-05-07T19:19:09.437Z
+Generated at: 2026-05-08T03:35:55.315Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **758**
-- Files with occurrences: **278**
+- Total categorized occurrences: **735**
+- Files with occurrences: **272**
 - Category counts:
-  - `runtime-default`: **602**
+  - `runtime-default`: **598**
   - `browser-adapter`: **18**
   - `project-migration`: **20**
   - `test-fixture`: **7**
-  - `legacy-runtime-risk`: **111**
+  - `legacy-runtime-risk`: **92**
   - `unknown`: **0**
 
 ## Policy
@@ -44,7 +44,6 @@ Generated at: 2026-05-07T19:19:09.437Z
 - `esm/native/services/render_surface_runtime.ts` — **7** (runtime-default: 7)
 - `esm/native/ui/export/export_canvas_delivery_shared.ts` — **7** (runtime-default: 7)
 - `esm/native/builder/render_door_ops_shared_ops.ts` — **6** (runtime-default: 6)
-- `esm/native/features/door_style_overrides.ts` — **6** (legacy-runtime-risk: 3, runtime-default: 3)
 - `esm/native/features/door_trim_shared.ts` — **6** (runtime-default: 6)
 - `esm/native/kernel/kernel_builder_request_policy_shared.ts` — **6** (runtime-default: 6)
 - `esm/native/kernel/kernel_builder_request_policy.ts` — **6** (runtime-default: 6)
@@ -55,6 +54,7 @@ Generated at: 2026-05-07T19:19:09.437Z
 - `esm/native/services/cloud_sync_lifecycle_support_realtime.ts` — **6** (runtime-default: 6)
 - `esm/test_no_side_effects_on_import.mjs` — **6** (test-fixture: 6)
 - `esm/native/builder/build_string_normalizer.ts` — **5** (runtime-default: 5)
+- `esm/native/features/stack_split/stack_split.ts` — **5** (legacy-runtime-risk: 1, runtime-default: 4)
 
 ## Allowlist check
 

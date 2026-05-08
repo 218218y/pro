@@ -42,6 +42,7 @@ test('[door-style-overrides] tokens, map normalization, and effective style reso
   assert.equal(mod.parseDoorStyleOverridePaintToken('mirror'), null);
 
   const map = mod.readDoorStyleMap({
+    d1: 'tom',
     d1_full: 'profile',
     drawer_1: 'tom',
     bad: 'glass',
@@ -54,7 +55,11 @@ test('[door-style-overrides] tokens, map normalization, and effective style reso
   assert.equal(mod.toDoorStyleOverrideMapKey('d7'), 'd7_full');
   assert.equal(mod.toDoorStyleOverrideMapKey('drawer_9'), 'drawer_9');
   assert.equal(mod.resolveDoorStyleOverrideValue({ d7_full: 'tom' }, 'd7'), 'tom');
-  assert.equal(mod.resolveDoorStyleOverrideValue({ d7: 'profile' }, 'd7_top'), 'profile');
+  assert.equal(mod.resolveDoorStyleOverrideValue({ d7: 'profile' }, 'd7_top'), null);
+  assert.equal(
+    mod.resolveDoorStyleOverrideValue(mod.readDoorStyleMap({ d7: 'profile' }), 'd7_top'),
+    'profile'
+  );
   assert.equal(mod.resolveDoorStyleOverrideValue({ d7_full: 'profile' }, 'd7_top'), 'profile');
   assert.equal(mod.resolveDoorStyleOverrideValue({ d7_full: 'tom' }, 'd7_mid1'), 'tom');
   assert.equal(mod.resolveEffectiveDoorStyle('flat', { d7_full: 'profile' }, 'd7_bot'), 'profile');

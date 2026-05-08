@@ -52,4 +52,13 @@ test('maps access normalizers keep hinge entries detached and door trim ids stab
       d2: [{ faceSign: -1 }],
     }
   );
+
+  const doorStyleMap = normalizeKnownMapSnapshot('doorStyleMap', {
+    d1: 'PROFILE',
+    d1_full: 'tom',
+    d2: 'flat',
+    drawer_1: 'profile',
+    bad: 'glass',
+  });
+  assert.deepEqual({ ...doorStyleMap }, { d1_full: 'tom', d2_full: 'flat', drawer_1: 'profile' });
 });

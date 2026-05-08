@@ -458,13 +458,6 @@
         "runtime-default": 10
       }
     },
-    "esm/native/features/door_style_overrides.ts": {
-      "total": 6,
-      "categories": {
-        "legacy-runtime-risk": 3,
-        "runtime-default": 3
-      }
-    },
     "esm/native/features/door_trim_shared.ts": {
       "total": 6,
       "categories": {
@@ -684,10 +677,9 @@
       }
     },
     "esm/native/platform/boot_main.ts": {
-      "total": 2,
+      "total": 1,
       "categories": {
-        "browser-adapter": 1,
-        "legacy-runtime-risk": 1
+        "browser-adapter": 1
       }
     },
     "esm/native/platform/config_defaults.ts": {
@@ -718,13 +710,6 @@
       "total": 12,
       "categories": {
         "runtime-default": 12
-      }
-    },
-    "esm/native/platform/platform.ts": {
-      "total": 5,
-      "categories": {
-        "legacy-runtime-risk": 4,
-        "runtime-default": 1
       }
     },
     "esm/native/platform/render_loop_impl_support.ts": {
@@ -1211,12 +1196,6 @@
         "runtime-default": 3
       }
     },
-    "esm/native/services/config_compounds.ts": {
-      "total": 3,
-      "categories": {
-        "legacy-runtime-risk": 3
-      }
-    },
     "esm/native/services/doors_runtime_state.ts": {
       "total": 3,
       "categories": {
@@ -1251,18 +1230,6 @@
       "total": 7,
       "categories": {
         "runtime-default": 7
-      }
-    },
-    "esm/native/services/scene_view.ts": {
-      "total": 3,
-      "categories": {
-        "legacy-runtime-risk": 3
-      }
-    },
-    "esm/native/services/textures_cache.ts": {
-      "total": 2,
-      "categories": {
-        "legacy-runtime-risk": 2
       }
     },
     "esm/native/services/ui_ephemeral_defaults.ts": {
@@ -1426,12 +1393,6 @@
       "total": 2,
       "categories": {
         "legacy-runtime-risk": 2
-      }
-    },
-    "esm/native/ui/react/boot_react_ui.tsx": {
-      "total": 3,
-      "categories": {
-        "legacy-runtime-risk": 3
       }
     },
     "esm/native/ui/react/cloud_sync_ui_action_controller_shared.ts": {

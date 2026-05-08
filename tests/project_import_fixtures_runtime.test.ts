@@ -100,7 +100,8 @@ test('project import fixtures canonicalize an enveloped legacy project through s
   assert.equal(Object.prototype.hasOwnProperty.call(removedDoorsMap, 'junk'), false);
 
   const doorStyleMap = asRecord(configRecord.doorStyleMap, 'legacy doorStyleMap');
-  assert.equal(doorStyleMap.d1, 'profile');
+  assert.equal(doorStyleMap.d1_full, 'profile');
+  assert.equal(Object.prototype.hasOwnProperty.call(doorStyleMap, 'd1'), false);
   assert.equal(Object.prototype.hasOwnProperty.call(doorStyleMap, 'd2'), false);
 
   const savedColors = asArray(configRecord.savedColors, 'legacy savedColors');
