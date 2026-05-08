@@ -15,6 +15,10 @@ npm run perf:browser
 
 `npm run e2e:smoke:preflight` checks the Playwright/browser environment before running the suite.
 
+The Playwright config runs a small app-shell warmup setup project before the parallel smoke workers.
+Keep that setup focused on booting `index_pro.html` and waiting for the canonical shell/canvas readiness;
+do not add product scenarios there.
+
 ## What belongs in E2E
 
 Keep E2E focused on critical journeys:

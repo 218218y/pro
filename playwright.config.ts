@@ -12,6 +12,17 @@ export default defineConfig({
   fullyParallel: false,
   retries: 0,
   reporter: [['list']],
+  projects: [
+    {
+      name: 'setup',
+      testMatch: /.*\.setup\.ts/,
+    },
+    {
+      name: 'chromium',
+      dependencies: ['setup'],
+      testIgnore: /.*\.setup\.ts/,
+    },
+  ],
   use: {
     baseURL: 'http://127.0.0.1:5174',
     headless: true,
