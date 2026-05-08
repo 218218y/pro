@@ -69,7 +69,7 @@ export function createExportRenderAndSketchWorkflow(
       _renderSceneForExport(App, renderer, scene, camera);
     };
 
-    const runExport = async () => {
+    const captureNotesTransformForCurrentFrame = () => {
       const { preRef, postRef, notesTransform } = captureFrontNotesTransform(App, deps, {
         camera,
         controls,
@@ -92,6 +92,20 @@ export function createExportRenderAndSketchWorkflow(
         }
       }
 
+      return notesTransform;
+    };
+
+    const setSketchModeForExport = (next: boolean, reason: string) => {
+      if (readSketchModeForWorkflow(deps, App) === next) return;
+      applyViewportSketchMode(App, next, {
+        source: 'export',
+        rebuild: true,
+        updateShadows: false,
+        reason,
+      });
+    };
+
+    const runExport = async () => {
       const createComposite = async (includeLogo: boolean): Promise<HTMLCanvasElement> => {
         const compositeCanvas = _createDomCanvas(App, width, height * 2 + gap + titleHeight);
         const ctx = compositeCanvas.getContext('2d');
@@ -103,34 +117,27 @@ export function createExportRenderAndSketchWorkflow(
           source: 'export.renderAndSketch',
         });
 
-        if (readSketchModeForWorkflow(deps, App)) {
-          applyViewportSketchMode(App, false, {
-            source: 'export',
-            rebuild: true,
-            updateShadows: false,
-            reason: 'export:renderMode',
+        const restoreOriginalCameraForPanel = () => {
+          restoreViewportCameraPose(App, {
+            position: { x: originalCamPos.x, y: originalCamPos.y, z: originalCamPos.z },
+            target: { x: originalTarget.x, y: originalTarget.y, z: originalTarget.z },
           });
-        }
-        _renderSceneForExport(App, renderer, scene, camera);
-        ctx.drawImage(_getRendererCanvasSource(renderer), 0, titleHeight);
+        };
 
-        if (notesEnabled) {
-          await _renderAllNotesToCanvas(App, ctx, width, height, titleHeight, notesTransform);
-        }
+        const renderPanel = async (sketchMode: boolean, imageY: number, reason: string) => {
+          setSketchModeForExport(sketchMode, reason);
+          restoreOriginalCameraForPanel();
+          const notesTransform = captureNotesTransformForCurrentFrame();
+          _renderSceneForExport(App, renderer, scene, camera);
+          ctx.drawImage(_getRendererCanvasSource(renderer), 0, imageY);
 
-        applyViewportSketchMode(App, true, {
-          source: 'export',
-          rebuild: true,
-          updateShadows: false,
-          reason: 'export:sketchMode',
-        });
-        _renderSceneForExport(App, renderer, scene, camera);
-        const secondImageY = titleHeight + height + gap;
-        ctx.drawImage(_getRendererCanvasSource(renderer), 0, secondImageY);
+          if (notesEnabled) {
+            await _renderAllNotesToCanvas(App, ctx, width, height, imageY, notesTransform);
+          }
+        };
 
-        if (notesEnabled) {
-          await _renderAllNotesToCanvas(App, ctx, width, height, secondImageY, notesTransform);
-        }
+        await renderPanel(false, titleHeight, 'export:renderMode');
+        await renderPanel(true, titleHeight + height + gap, 'export:sketchMode');
 
         return compositeCanvas;
       };

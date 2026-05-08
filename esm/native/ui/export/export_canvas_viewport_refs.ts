@@ -111,12 +111,14 @@ export function computeNotesRefZ(
   camera: unknown,
   refTarget: RefTargetLike | null
 ): number {
-  let refZ = 0;
+  const camZ = getCameraZ(camera);
+  const tgtZ = getTargetZ(refTarget);
+  const frontSide = camZ >= tgtZ;
 
   try {
     const dims = getDimsMFromPlatform(App);
     const d = dims && typeof getProp(dims, 'd') !== 'undefined' ? getNumberProp(dims, 'd', NaN) : NaN;
-    if (Number.isFinite(d)) refZ = d / 2;
+    if (Number.isFinite(d) && d > 0) return (frontSide ? 1 : -1) * (d / 2);
   } catch (e) {
     _exportReportThrottled(App, 'computeNotesRefZ.getPlatformDims', e, { throttleMs: 2000 });
   }
@@ -125,16 +127,12 @@ export function computeNotesRefZ(
     const THREE = resolveThree(App);
     const wg = getViewportWardrobeGroup(App);
     const bounds = computeWardrobeBoundsZ(App, THREE, wg);
-    if (bounds) {
-      const camZ = getCameraZ(camera);
-      const tgtZ = getTargetZ(refTarget);
-      refZ = camZ >= tgtZ ? bounds.maxZ : bounds.minZ;
-    }
+    if (bounds) return frontSide ? bounds.maxZ : bounds.minZ;
   } catch (e) {
     _exportReportThrottled(App, 'computeNotesRefZ.bounds', e, { throttleMs: 2000 });
   }
 
-  return refZ;
+  return 0;
 }
 
 export function captureExportRefPoints(

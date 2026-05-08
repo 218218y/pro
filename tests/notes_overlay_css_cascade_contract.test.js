@@ -51,15 +51,24 @@ test('notes overlay interaction states are expressed through cascade order witho
 
   assertDeclaration(passiveBox, 'pointer-events', 'none');
   assertDeclaration(passiveBox, 'touch-action', 'none');
+  assertDeclaration(passiveBox, 'border', '0');
+  assertDeclaration(passiveBox, 'outline', '2px solid transparent');
+  assertDeclaration(passiveBox, 'outline-offset', '-2px');
+  assertDeclaration(passiveBox, 'box-sizing', 'border-box');
   assertDeclaration(activeBox, 'pointer-events', 'auto');
+  assertDeclaration(activeBox, 'outline', '2px solid #3b82f6');
+  assertDeclaration(activeBox, 'outline-offset', '-2px');
+  assert.doesNotMatch(readRule(activeBox), /border\s*:/, 'active note chrome must not change layout');
   assertRuleOrder(passiveBox, activeBox);
 
   assertDeclaration(passiveEditor, 'pointer-events', 'none');
+  assertDeclaration(passiveEditor, 'line-height', '1.2');
   assertDeclaration(activeEditor, 'pointer-events', 'auto');
   assertRuleOrder(passiveEditor, activeEditor);
 
   assertDeclaration(hitPad, 'pointer-events', 'none');
   assertDeclaration(hitTarget, 'pointer-events', 'auto');
+  assertDeclaration(hitTarget, 'line-height', '1.2');
   assertRuleOrder(hitPad, hitTarget);
 
   assertDeclaration(resizeHandle, 'display', 'none');

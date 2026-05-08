@@ -4,6 +4,7 @@ import {
   type ExportNotesTransform,
   getComputedStyleMaybe,
   queryAll,
+  readExportSourceRect,
   readExportTransform,
   requireNotesExportApp,
 } from './notes_export_shared.js';
@@ -36,12 +37,15 @@ export async function renderAllNotesToCanvas(
   const containerRect = container.getBoundingClientRect();
   if (!containerRect || !containerRect.width || !containerRect.height) return null;
 
-  const scaleX =
-    Number.isFinite(originalWidth) && originalWidth > 0 ? originalWidth / containerRect.width : 1;
+  const transformSeed = exportTransform || readExportTransform(A) || null;
+  const sourceRect = readExportSourceRect(transformSeed) || containerRect;
+  if (!sourceRect.width || !sourceRect.height) return null;
+
+  const scaleX = Number.isFinite(originalWidth) && originalWidth > 0 ? originalWidth / sourceRect.width : 1;
   const scaleY =
-    Number.isFinite(originalHeight) && originalHeight > 0 ? originalHeight / containerRect.height : 1;
-  const transform = createTransformRuntime(exportTransform || readExportTransform(A) || null);
-  const mapPoint = createMapPoint(transform, containerRect, originalWidth, originalHeight);
+    Number.isFinite(originalHeight) && originalHeight > 0 ? originalHeight / sourceRect.height : 1;
+  const transform = createTransformRuntime(transformSeed);
+  const mapPoint = createMapPoint(transform, sourceRect, originalWidth, originalHeight);
   const boxes = queryAll(A, '.annotation-box')
     .map(value => asHTMLElement(value))
     .filter((value): value is HTMLElement => !!value);
@@ -60,8 +64,8 @@ export async function renderAllNotesToCanvas(
       // ignore hidden-box CSS lookup errors
     }
 
-    const preLeft = editorRect.left - containerRect.left;
-    const preTop = editorRect.top - containerRect.top;
+    const preLeft = editorRect.left - sourceRect.left;
+    const preTop = editorRect.top - sourceRect.top;
     const preW = Math.max(1, editorRect.width);
     const preH = Math.max(1, editorRect.height);
 

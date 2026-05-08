@@ -6,6 +6,11 @@ import {
   type Vec3,
 } from './notes_export_render_shared.js';
 
+type RectSizeLike = {
+  width: number;
+  height: number;
+};
+
 export function createTransformRuntime(transform: ExportNotesTransform | null): NoteTransformRuntime {
   const a = typeof transform?.a === 'number' && Number.isFinite(transform.a) ? transform.a : null;
   const b = typeof transform?.b === 'number' && Number.isFinite(transform.b) ? transform.b : null;
@@ -79,14 +84,13 @@ function norm3(v: Vec3): Vec3 {
 
 export function createMapPoint(
   runtime: NoteTransformRuntime,
-  containerRect: DOMRect,
+  sourceRect: RectSizeLike,
   originalWidth: number,
   originalHeight: number
 ): (xCss: number, yCss: number) => Point2 {
-  const scaleX =
-    Number.isFinite(originalWidth) && originalWidth > 0 ? originalWidth / containerRect.width : 1;
+  const scaleX = Number.isFinite(originalWidth) && originalWidth > 0 ? originalWidth / sourceRect.width : 1;
   const scaleY =
-    Number.isFinite(originalHeight) && originalHeight > 0 ? originalHeight / containerRect.height : 1;
+    Number.isFinite(originalHeight) && originalHeight > 0 ? originalHeight / sourceRect.height : 1;
 
   const applyAffine = (xCss: number, yCss: number): Point2 => {
     if (runtime.hasAffine) {
@@ -113,8 +117,8 @@ export function createMapPoint(
       return null;
     }
 
-    const ndcX = (xCss / containerRect.width) * 2 - 1;
-    const ndcY = -(yCss / containerRect.height) * 2 + 1;
+    const ndcX = (xCss / sourceRect.width) * 2 - 1;
+    const ndcY = -(yCss / sourceRect.height) * 2 + 1;
     const near = mulMat4Vec4(runtime.prePVInv, ndcX, ndcY, -1, 1);
     const far = mulMat4Vec4(runtime.prePVInv, ndcX, ndcY, 1, 1);
     if (Math.abs(near.w) < 1e-9 || Math.abs(far.w) < 1e-9) return null;

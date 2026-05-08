@@ -3392,7 +3392,10 @@ body.wp-ui-react .color-swatch:hover {
 body.wp-ui-react .annotation-box {
   position: absolute;
   z-index: var(--wp-z-note-box);
-  border: 1px solid transparent;
+  border: 0;
+  outline: 2px solid transparent;
+  outline-offset: -2px;
+  box-sizing: border-box;
   background-color: transparent;
   box-shadow: none;
   pointer-events: none;
@@ -3400,7 +3403,8 @@ body.wp-ui-react .annotation-box {
 }
 
 body.wp-ui-react .annotation-box.creating {
-  border: 2px dashed #3b82f6;
+  outline: 2px dashed #3b82f6;
+  outline-offset: -2px;
   background-color: rgba(59, 130, 246, 0.1);
   pointer-events: none;
 }
@@ -3414,6 +3418,7 @@ body.wp-ui-react .annotation-box .editor {
   direction: rtl;
   font-family: 'Heebo', sans-serif;
   font-size: 14px;
+  line-height: 1.2;
   color: #1e293b;
   word-wrap: break-word;
   white-space: pre-wrap;
@@ -3439,6 +3444,7 @@ body.wp-ui-react .annotation-box .note-hit {
   direction: rtl;
   font-family: 'Heebo', sans-serif;
   font-size: 14px;
+  line-height: 1.2;
   color: #1e293b;
   cursor: text;
   pointer-events: auto;
@@ -3452,7 +3458,8 @@ body.wp-ui-react .editor strong {
 }
 
 body.wp-ui-react .annotation-box.active-edit {
-  border: 2px solid #3b82f6;
+  outline: 2px solid #3b82f6;
+  outline-offset: -2px;
   background-color: rgba(255, 255, 255, 0.1);
   box-shadow: none;
   z-index: var(--wp-z-note-box-interactive);

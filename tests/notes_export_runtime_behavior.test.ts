@@ -215,10 +215,11 @@ function setQuery(root: FakeElement, selector: string, value: FakeElement | null
 function createNotesApp(options: {
   hidden?: boolean;
   notesEnabled?: boolean | null;
+  viewerRect?: Partial<RectLike>;
   boxes?: FakeElement[];
   markers?: FakeElement[];
 }) {
-  const viewer = createElement('div', { width: 120, height: 60 });
+  const viewer = createElement('div', { width: 120, height: 60, ...options.viewerRect });
   viewer.id = 'viewer-container';
   viewer.classList = {
     contains(name: string) {
@@ -452,6 +453,70 @@ test('notes export plain-text fallback uses the live editor padding and line met
     assert.equal(ctx.fillTextCalls.length, 1);
     assert.equal(ctx.fillTextCalls[0]?.x, 92);
     assert.equal(ctx.fillTextCalls[0]?.y, 37);
+  } finally {
+    (globalThis as typeof globalThis & { Image?: unknown }).Image = originalImage;
+  }
+});
+
+test('notes export maps exact-copy coordinates from the renderer canvas source rect', async () => {
+  const editor = createElement('div', {
+    left: 37,
+    top: 53,
+    width: 40,
+    height: 18,
+  });
+  editor.textContent = 'note';
+  editor.innerText = 'note';
+  editor.computedStyle = createComputedStyle({
+    direction: 'ltr',
+    textAlign: 'left',
+    fontSize: '10px',
+    paddingTop: '0px',
+    paddingRight: '0px',
+    paddingBottom: '0px',
+    paddingLeft: '0px',
+    lineHeight: '12px',
+  });
+
+  const box = createElement('div', {
+    left: 37,
+    top: 53,
+    width: 40,
+    height: 18,
+  });
+  box.computedStyle = createComputedStyle({ display: 'block' });
+  setQuery(box, '.editor', editor);
+
+  const { App } = createNotesApp({
+    hidden: false,
+    notesEnabled: true,
+    viewerRect: { left: 20, top: 30, width: 120, height: 60 },
+    boxes: [box],
+  });
+  const ctx = createCanvasContext();
+  const originalImage = (globalThis as typeof globalThis & { Image?: unknown }).Image;
+
+  class FailingImage {
+    onload: (() => void) | null = null;
+    onerror: (() => void) | null = null;
+    set src(_value: string) {
+      this.onerror?.();
+    }
+  }
+
+  (globalThis as typeof globalThis & { Image?: unknown }).Image = FailingImage;
+  try {
+    const result = await renderAllNotesToCanvas(App, ctx, 200, 100, 5, {
+      sx: 1,
+      sy: 1,
+      dx: 0,
+      dy: 0,
+      sourceRect: { left: 30, top: 50, width: 100, height: 50 },
+    });
+    assert.equal(result, true);
+    assert.equal(ctx.fillTextCalls.length, 1);
+    assert.equal(ctx.fillTextCalls[0]?.x, 14);
+    assert.equal(ctx.fillTextCalls[0]?.y, 11);
   } finally {
     (globalThis as typeof globalThis & { Image?: unknown }).Image = originalImage;
   }

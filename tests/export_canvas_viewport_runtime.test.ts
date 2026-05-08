@@ -128,6 +128,15 @@ test('export canvas viewport surface exposes stable camera/render seams and capt
   const notesRefZ = _computeNotesRefZ(App, App.render.camera, { x: 0, y: 0, z: 0 });
   assert.equal(notesRefZ, 2);
 
+  App.render.wardrobeGroup.traverse = (fn: (node: unknown) => void) => {
+    fn({ geometry: { boundingBox: { min: { z: -10 }, max: { z: 9 } } }, matrixWorld: {}, userData: {} });
+  };
+  assert.equal(_computeNotesRefZ(App, App.render.camera, { x: 0, y: 0, z: 0 }), 2);
+  assert.equal(
+    _computeNotesRefZ(App, { ...App.render.camera, position: { x: 0, y: 2, z: -6 } }, { x: 0, y: 0, z: 0 }),
+    -2
+  );
+
   const refPoints = _captureExportRefPoints(
     App,
     { left: 0, top: 0, width: 200, height: 100 } as DOMRectReadOnly,
