@@ -1,6 +1,6 @@
 // Tolerant ui.raw snapshot readers (ESM)
 //
-// These helpers intentionally allow legacy `ui.*` fallback. Canonical live/build
+// These helpers intentionally allow pre-migration direct `ui.*` scalar reads. Canonical live/build
 // paths must use the canonical owner instead.
 
 import type { UiRawInputsLike, UiRawScalarKey, UiRawScalarValueMap } from '../../../types/index.js';
@@ -27,7 +27,7 @@ import {
  *
  * Rules:
  * - Prefer ui.raw[key] when it exists (even if null).
- * - Otherwise fall back to ui[key].
+ * - Otherwise read ui[key] for tolerant snapshot/project-ingress callers.
  */
 export function readUiRawScalarFromSnapshot<K extends UiRawScalarKey>(
   ui: unknown,
@@ -62,7 +62,7 @@ export function ensureUiRawDimsFromSnapshot(ui: unknown): UiRawInputsLike {
     if (!isUiSnapshot(ui)) return {};
     const raw = ensureMutableRawInputs(ui);
 
-    // Fill raw.* from ui.* if missing (legacy snapshots sometimes persisted only normalized fields).
+    // Fill raw.* from ui.* if missing (older snapshots sometimes persisted only normalized fields).
     const keys: EssentialUiDimKey[] = ['doors', 'width', 'height', 'depth', 'chestDrawersCount'];
     for (const key of keys) {
       if (!Object.prototype.hasOwnProperty.call(raw, key) || raw[key] === undefined) {
@@ -78,16 +78,16 @@ export function ensureUiRawDimsFromSnapshot(ui: unknown): UiRawInputsLike {
   }
 }
 
-export function readUiRawNumberFromSnapshot(ui: unknown, key: UiRawScalarKey, fallback: number): number {
+export function readUiRawNumberFromSnapshot(ui: unknown, key: UiRawScalarKey, defaultValue: number): number {
   const v = readUiRawScalarFromSnapshot(ui, key);
   const n = coerceFiniteNumber(v);
-  return typeof n === 'number' ? n : fallback;
+  return typeof n === 'number' ? n : defaultValue;
 }
 
-export function readUiRawIntFromSnapshot(ui: unknown, key: UiRawScalarKey, fallback: number): number {
+export function readUiRawIntFromSnapshot(ui: unknown, key: UiRawScalarKey, defaultValue: number): number {
   const v = readUiRawScalarFromSnapshot(ui, key);
   const n = coerceFiniteInt(v);
-  return typeof n === 'number' ? n : fallback;
+  return typeof n === 'number' ? n : defaultValue;
 }
 
 // Batch helper (handy for chest/door flows)

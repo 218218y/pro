@@ -1,18 +1,18 @@
 # Legacy / fallback audit
 
-Generated at: 2026-05-08T03:35:55.315Z
+Generated at: 2026-05-08T03:58:26.354Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **735**
-- Files with occurrences: **272**
+- Total categorized occurrences: **696**
+- Files with occurrences: **264**
 - Category counts:
-  - `runtime-default`: **598**
+  - `runtime-default`: **576**
   - `browser-adapter`: **18**
-  - `project-migration`: **20**
+  - `project-migration`: **13**
   - `test-fixture`: **7**
-  - `legacy-runtime-risk`: **92**
+  - `legacy-runtime-risk`: **82**
   - `unknown`: **0**
 
 ## Policy
@@ -36,11 +36,8 @@ Generated at: 2026-05-08T03:35:55.315Z
 - `esm/native/ui/export/export_order_pdf_text_details.ts` — **9** (runtime-default: 9)
 - `esm/native/ui/react/tabs/design_tab_shared.ts` — **9** (runtime-default: 9)
 - `esm/native/builder/hinged_doors_module_ops_context.ts` — **8** (runtime-default: 8)
-- `esm/native/runtime/ui_raw_selectors_canonical.ts` — **8** (legacy-runtime-risk: 1, project-migration: 3, runtime-default: 4)
-- `esm/native/runtime/ui_raw_selectors_store.ts` — **8** (runtime-default: 8)
 - `esm/native/features/modules_configuration/corner_cells_snapshot_shared.ts` — **7** (runtime-default: 7)
 - `esm/native/features/modules_configuration/modules_config_contracts.ts` — **7** (runtime-default: 7)
-- `esm/native/runtime/ui_raw_selectors_snapshot.ts` — **7** (project-migration: 3, runtime-default: 4)
 - `esm/native/services/render_surface_runtime.ts` — **7** (runtime-default: 7)
 - `esm/native/ui/export/export_canvas_delivery_shared.ts` — **7** (runtime-default: 7)
 - `esm/native/builder/render_door_ops_shared_ops.ts` — **6** (runtime-default: 6)
@@ -55,6 +52,9 @@ Generated at: 2026-05-08T03:35:55.315Z
 - `esm/test_no_side_effects_on_import.mjs` — **6** (test-fixture: 6)
 - `esm/native/builder/build_string_normalizer.ts` — **5** (runtime-default: 5)
 - `esm/native/features/stack_split/stack_split.ts` — **5** (legacy-runtime-risk: 1, runtime-default: 4)
+- `esm/native/kernel/kernel_install_support.ts` — **5** (runtime-default: 5)
+- `esm/native/kernel/kernel_project_capture_shared.ts` — **5** (runtime-default: 5)
+- `esm/native/runtime/cfg_access_core.ts` — **5** (runtime-default: 5)
 
 ## Allowlist check
 

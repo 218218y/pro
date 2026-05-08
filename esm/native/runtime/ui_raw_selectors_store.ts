@@ -12,27 +12,31 @@ import {
   readUiRawNumberFromSnapshot,
 } from './ui_raw_selectors_snapshot.js';
 
-export function readUiRawNumberFromStore(store: unknown, key: UiRawScalarKey, fallback: number): number {
+export function readUiRawNumberFromStore(store: unknown, key: UiRawScalarKey, defaultValue: number): number {
   const v = readUiRawScalarFromStore(store, key);
   const n = coerceFiniteNumber(v);
-  return typeof n === 'number' ? n : fallback;
+  return typeof n === 'number' ? n : defaultValue;
 }
 
-export function readUiRawIntFromStore(store: unknown, key: UiRawScalarKey, fallback: number): number {
+export function readUiRawIntFromStore(store: unknown, key: UiRawScalarKey, defaultValue: number): number {
   const v = readUiRawScalarFromStore(store, key);
   const n = coerceFiniteInt(v);
-  return typeof n === 'number' ? n : fallback;
+  return typeof n === 'number' ? n : defaultValue;
 }
 
 // Convenience: read from store.ui snapshot (not just ui.raw)
-export function readUiRawNumberFromStoreUi(store: unknown, key: UiRawScalarKey, fallback: number): number {
+export function readUiRawNumberFromStoreUi(
+  store: unknown,
+  key: UiRawScalarKey,
+  defaultValue: number
+): number {
   const ui = readUiStateFromStore(store);
-  return readUiRawNumberFromSnapshot(ui, key, fallback);
+  return readUiRawNumberFromSnapshot(ui, key, defaultValue);
 }
 
-export function readUiRawIntFromStoreUi(store: unknown, key: UiRawScalarKey, fallback: number): number {
+export function readUiRawIntFromStoreUi(store: unknown, key: UiRawScalarKey, defaultValue: number): number {
   const ui = readUiStateFromStore(store);
-  return readUiRawIntFromSnapshot(ui, key, fallback);
+  return readUiRawIntFromSnapshot(ui, key, defaultValue);
 }
 
 export function readCanonicalUiRawDimsCmFromStore(store: unknown) {

@@ -1,7 +1,7 @@
 // Canonical-only ui.raw readers (ESM)
 //
 // Live runtime/build paths should use this owner after project ingress migration.
-// It never falls back to legacy `ui.*` fields.
+// It reads only `ui.raw`, never direct `ui.*` scalar fields.
 
 import type { UiRawInputsLike, UiRawScalarKey, UiRawScalarValueMap } from '../../../types/index.js';
 import {
@@ -21,7 +21,7 @@ import {
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 /**
- * Read a canonical `ui.raw` scalar without falling back to old `ui.*` fields.
+ * Read a canonical `ui.raw` scalar without direct `ui.*` scalar reads.
  * Use this on live runtime/build paths after project load has migrated persisted shapes.
  */
 export function readUiRawScalarFromCanonicalSnapshot<K extends UiRawScalarKey>(
@@ -56,35 +56,35 @@ export function assertCanonicalUiRawDims(ui: unknown, context = 'ui.raw'): UiRaw
 
 /**
  * Canonical-only numeric reader for runtime/build paths.
- * This never falls back to legacy `ui.*`; project ingress must migrate those shapes first.
+ * Direct `ui.*` scalar reads belong at project ingress before this helper runs.
  */
 export function readCanonicalUiRawNumberFromSnapshot(
   ui: unknown,
   key: UiRawScalarKey,
-  fallback: number
+  defaultValue: number
 ): number {
   const v = readUiRawScalarFromCanonicalSnapshot(ui, key);
   const n = coerceFiniteNumber(v);
-  return typeof n === 'number' ? n : fallback;
+  return typeof n === 'number' ? n : defaultValue;
 }
 
 /**
  * Canonical-only integer reader for runtime/build paths.
- * This never falls back to legacy `ui.*`; project ingress must migrate those shapes first.
+ * Direct `ui.*` scalar reads belong at project ingress before this helper runs.
  */
 export function readCanonicalUiRawIntFromSnapshot(
   ui: unknown,
   key: UiRawScalarKey,
-  fallback: number
+  defaultValue: number
 ): number {
   const v = readUiRawScalarFromCanonicalSnapshot(ui, key);
   const n = coerceFiniteInt(v);
-  return typeof n === 'number' ? n : fallback;
+  return typeof n === 'number' ? n : defaultValue;
 }
 
 /**
  * Canonical-only batch dimensions reader for runtime/build paths.
- * It fails fast when essential ui.raw dimensions are absent, keeping legacy migration at project ingress.
+ * It fails fast when essential ui.raw dimensions are absent, keeping migration at project ingress.
  */
 export function readCanonicalUiRawDimsCmFromSnapshot(
   ui: unknown,

@@ -3,7 +3,7 @@
 // Purpose:
 // - Keep the public `ui.raw` selector contract stable.
 // - Route tolerant snapshot reads, canonical-only reads, and store adapters to
-//   focused owners so legacy fallback policy cannot leak into live/build paths.
+//   focused owners so tolerant snapshot policy cannot leak into live/build paths.
 //
 // Notes:
 // - No DOM access.

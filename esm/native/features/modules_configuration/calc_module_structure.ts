@@ -1,54 +1,88 @@
 // Pure module-structure calculator (ESM)
 //
-// Previously exposed through a legacy surface; now a direct import (pure ESM).
-// In the post-migration architecture, it is a plain, dependency-free function that
-// callers can import directly (builder/kernel/canvas-picking).
+// Plain, dependency-free owner that callers import directly
+// (builder/kernel/canvas-picking).
 //
 // Design goals:
 // - No App/store/DOM access.
 // - Deterministic output.
-// - Defensive parsing: invalid inputs fall back to a sensible default.
+// - Defensive parsing: invalid inputs resolve through the canonical default layout.
 
 import type { ModulesStructureItemLike } from '../../../../types/index.js';
 
 export type ModulesStructureItem = ModulesStructureItemLike;
+export type ModuleStructureWardrobeType = 'hinged' | 'sliding';
 
-function _clampDoors(n: unknown, wardrobeType: unknown): number {
-  const v = parseInt(String(n ?? ''), 10);
-  const type = _normWardrobeType(wardrobeType);
-  const minDoors = type === 'sliding' ? 2 : 0;
-  if (!Number.isFinite(v) || v < minDoors) return minDoors;
-  return v;
-}
-
-function _normWardrobeType(v: unknown): 'hinged' | 'sliding' {
+export function normalizeModuleStructureWardrobeType(v: unknown): ModuleStructureWardrobeType {
   const s = String(v ?? '')
     .trim()
     .toLowerCase();
   return s === 'sliding' ? 'sliding' : 'hinged';
 }
 
-function _safeParseStructureSelect(v: unknown): unknown {
-  const s = String(v ?? '').trim();
-  if (!s) return null;
-  try {
-    return JSON.parse(s);
-  } catch {
-    // Treat as legacy keyword or garbage; caller will fall back to default.
-    return 'default';
+export function normalizeModuleStructureDoorCount(n: unknown, wardrobeType: unknown): number {
+  const v = parseInt(String(n ?? ''), 10);
+  const type = normalizeModuleStructureWardrobeType(wardrobeType);
+  const minDoors = type === 'sliding' ? 2 : 0;
+  if (!Number.isFinite(v) || v < minDoors) return minDoors;
+  return v;
+}
+
+function readPositiveDoorCountList(value: unknown[]): number[] | null {
+  if (!value.length) return null;
+  const out: number[] = [];
+  for (const item of value) {
+    const n = parseInt(String(item ?? ''), 10);
+    if (!Number.isFinite(n) || n <= 0) return null;
+    out.push(n);
   }
+  return out;
+}
+
+export function readModuleStructureSelectSignature(value: unknown): number[] | null {
+  if (Array.isArray(value)) return readPositiveDoorCountList(value);
+
+  const raw = String(value ?? '').trim();
+  if (!raw) return null;
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return null;
+  }
+
+  return Array.isArray(parsed) ? readPositiveDoorCountList(parsed) : null;
+}
+
+function sumDoorSignature(signature: number[]): number {
+  let sum = 0;
+  for (let i = 0; i < signature.length; i += 1) sum += signature[i];
+  return sum;
+}
+
+export function normalizeModuleStructureSelectForDoors(
+  doorsCount: unknown,
+  wardrobeType: unknown,
+  structureSelectValue: unknown
+): unknown {
+  const signature = readModuleStructureSelectSignature(structureSelectValue);
+  if (!signature) return structureSelectValue;
+
+  const doors = normalizeModuleStructureDoorCount(doorsCount, wardrobeType);
+  return sumDoorSignature(signature) === doors ? structureSelectValue : '';
 }
 
 /**
  * Returns an array of `{ doors: number }` entries describing the module structure.
  *
- * Legacy behavior preserved:
+ * Canonical layout policy:
  * - Sliding wardrobes: one door per module.
  * - Hinged wardrobes:
  *   - Even door count: pairs.
  *   - Odd door count: depends on `singlePos` (left/right/center/center-left/center-right).
  *
- * `structureSelectValue` may contain a JSON array (e.g. "[2,1,2]") or be empty.
+ * `structureSelectValue` may contain an exact door-count signature (e.g. "[2,1,2]") or be empty.
  */
 export function calculateModuleStructure(
   doorsCount: unknown,
@@ -56,8 +90,8 @@ export function calculateModuleStructure(
   structureSelectValue: unknown,
   wardrobeType: unknown
 ): ModulesStructureItem[] {
-  const type = _normWardrobeType(wardrobeType);
-  const doors = _clampDoors(doorsCount, type);
+  const type = normalizeModuleStructureWardrobeType(wardrobeType);
+  const doors = normalizeModuleStructureDoorCount(doorsCount, type);
 
   if (doors <= 0) return [];
 
@@ -68,12 +102,9 @@ export function calculateModuleStructure(
     return out;
   }
 
-  const parsed = _safeParseStructureSelect(structureSelectValue);
-  if (Array.isArray(parsed)) {
-    return parsed.map((x: unknown): ModulesStructureItem => {
-      const d = parseInt(String(x ?? ''), 10);
-      return { doors: Number.isFinite(d) && d > 0 ? d : 1 };
-    });
+  const signature = readModuleStructureSelectSignature(structureSelectValue);
+  if (signature && sumDoorSignature(signature) === doors) {
+    return signature.map((d: number): ModulesStructureItem => ({ doors: d }));
   }
 
   // Default behavior.
@@ -138,7 +169,7 @@ export function calculateModuleStructure(
     return out;
   }
 
-  // Unknown singlePos: safest fallback is "left".
+  // Unknown singlePos: use the left-side single-door layout.
   pushSingle();
   pushPairs(pairs);
   return out;

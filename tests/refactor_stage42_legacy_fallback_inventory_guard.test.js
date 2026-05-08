@@ -14,10 +14,6 @@ test('stage 42 legacy fallback inventory closeout is anchored', () => {
 
   assert.equal(allowlist.version, 1);
   assert.equal(allowlist.sourceRoot, 'esm');
-  assert.ok(allowlist.entries['esm/native/runtime/ui_raw_selectors.ts']);
-  assert.ok(allowlist.entries['esm/native/runtime/ui_raw_selectors_snapshot.ts']);
-  assert.ok(allowlist.entries['esm/native/runtime/ui_raw_selectors_canonical.ts']);
-  assert.ok(allowlist.entries['esm/native/runtime/ui_raw_selectors_store.ts']);
   assert.ok(allowlist.entries['esm/native/services/render_surface_runtime.ts']);
   for (const file of [
     'esm/native/runtime/storage_access.ts',
@@ -33,16 +29,24 @@ test('stage 42 legacy fallback inventory closeout is anchored', () => {
     'esm/native/services/textures_cache.ts',
     'esm/native/services/config_compounds.ts',
     'esm/native/ui/react/boot_react_ui.tsx',
+    'esm/native/features/modules_configuration/calc_module_structure.ts',
+    'esm/native/runtime/default_state.ts',
+    'esm/native/runtime/ui_raw_selectors.ts',
+    'esm/native/runtime/ui_raw_selectors_shared.ts',
+    'esm/native/runtime/ui_raw_selectors_snapshot.ts',
+    'esm/native/runtime/ui_raw_selectors_canonical.ts',
+    'esm/native/runtime/ui_raw_selectors_store.ts',
+    'esm/native/ui/react/selectors/ui_raw_selectors.ts',
   ]) {
     assert.equal(audit.summary.byFile[file]?.total || 0, 0, `${file} should stay out of the inventory`);
   }
-  const uiRawSelectorFallbackTotal = [
+  const uiRawSelectorInventoryTotal = [
     'esm/native/runtime/ui_raw_selectors.ts',
     'esm/native/runtime/ui_raw_selectors_snapshot.ts',
     'esm/native/runtime/ui_raw_selectors_canonical.ts',
     'esm/native/runtime/ui_raw_selectors_store.ts',
   ].reduce((sum, file) => sum + (audit.summary.byFile[file]?.total || 0), 0);
-  assert.equal(uiRawSelectorFallbackTotal, 25);
+  assert.equal(uiRawSelectorInventoryTotal, 0);
   assert.equal(audit.summary.byFile['esm/native/services/render_surface_runtime.ts'].total, 7);
   assert.match(markdown, /Legacy \/ fallback audit/);
 

@@ -124,14 +124,14 @@ export function readUiRawScalarFromSnapshot<K extends UiRawScalarKey>(
   }
 }
 
-export function readUiRawNumberFromSnapshot(ui: unknown, key: UiRawScalarKey, fallback: number): number {
+export function readUiRawNumberFromSnapshot(ui: unknown, key: UiRawScalarKey, defaultValue: number): number {
   const v = readUiRawScalarFromSnapshot(ui, key);
   const n = coerceFiniteNumber(v);
-  return typeof n === 'number' ? n : fallback;
+  return typeof n === 'number' ? n : defaultValue;
 }
 
-export function readUiRawIntFromSnapshot(ui: unknown, key: UiRawScalarKey, fallback: number): number {
+export function readUiRawIntFromSnapshot(ui: unknown, key: UiRawScalarKey, defaultValue: number): number {
   const v = readUiRawScalarFromSnapshot(ui, key);
   const n = coerceFiniteInt(v);
-  return typeof n === 'number' ? n : fallback;
+  return typeof n === 'number' ? n : defaultValue;
 }

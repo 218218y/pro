@@ -65,6 +65,8 @@ This did not remove compatibility behavior blindly. The canonical `App.services.
 
 The next legacy-risk slice is also complete: old base-key `doorStyleMap` payloads are canonicalized to the `_full` key shape at map ingress, project/config snapshot normalization, and runtime map normalization. Door-style resolution no longer performs a live base-key compatibility lookup during render/hover. Stale historical `legacy` provenance comments were also removed from platform/boot/service shell files so the audit queue now points at real runtime-risk candidates instead of retired-script history.
 
+The module-structure/runtime-selector slice is complete as well: `calculateModuleStructure` now rejects stale explicit structure signatures whose door-count sum no longer matches the current wardrobe door count, so builder/kernel/canvas-picking callers share one canonical rule instead of relying on local cleanup. The library-preset signature path reuses that same feature helper, and the `ui.raw` selector owners now use precise tolerant/canonical wording plus `defaultValue` parameter names so the legacy audit no longer misclassifies normal scalar defaults as live compatibility paths.
+
 ## CSS cascade ratchet hardening
 
 The CSS cascade hardening slice is complete: `npm run check:css-style` now reads explicit limits from `tools/wp_css_style_budget.json` instead of embedding budget numbers inside the audit script.

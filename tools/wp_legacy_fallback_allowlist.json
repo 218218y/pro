@@ -470,13 +470,6 @@
         "runtime-default": 4
       }
     },
-    "esm/native/features/modules_configuration/calc_module_structure.ts": {
-      "total": 4,
-      "categories": {
-        "legacy-runtime-risk": 3,
-        "runtime-default": 1
-      }
-    },
     "esm/native/features/modules_configuration/corner_cells_patch.ts": {
       "total": 2,
       "categories": {
@@ -816,14 +809,6 @@
         "project-migration": 1
       }
     },
-    "esm/native/runtime/default_state.ts": {
-      "total": 4,
-      "categories": {
-        "legacy-runtime-risk": 2,
-        "project-migration": 1,
-        "runtime-default": 1
-      }
-    },
     "esm/native/runtime/dom_access.ts": {
       "total": 2,
       "categories": {
@@ -981,39 +966,6 @@
       "total": 1,
       "categories": {
         "project-migration": 1
-      }
-    },
-    "esm/native/runtime/ui_raw_selectors_canonical.ts": {
-      "total": 8,
-      "categories": {
-        "legacy-runtime-risk": 1,
-        "project-migration": 3,
-        "runtime-default": 4
-      }
-    },
-    "esm/native/runtime/ui_raw_selectors_shared.ts": {
-      "total": 2,
-      "categories": {
-        "legacy-runtime-risk": 2
-      }
-    },
-    "esm/native/runtime/ui_raw_selectors_snapshot.ts": {
-      "total": 7,
-      "categories": {
-        "project-migration": 3,
-        "runtime-default": 4
-      }
-    },
-    "esm/native/runtime/ui_raw_selectors_store.ts": {
-      "total": 8,
-      "categories": {
-        "runtime-default": 8
-      }
-    },
-    "esm/native/runtime/ui_raw_selectors.ts": {
-      "total": 2,
-      "categories": {
-        "legacy-runtime-risk": 2
       }
     },
     "esm/native/runtime/ui_write_access.ts": {
@@ -1507,12 +1459,6 @@
       "total": 1,
       "categories": {
         "runtime-default": 1
-      }
-    },
-    "esm/native/ui/react/selectors/ui_raw_selectors.ts": {
-      "total": 4,
-      "categories": {
-        "runtime-default": 4
       }
     },
     "esm/native/ui/react/sidebar_app.tsx": {

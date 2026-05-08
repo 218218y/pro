@@ -12,7 +12,11 @@ import type {
 } from './library_preset_types.js';
 
 import { cloneLightModulesConfigurationSnapshot } from '../modules_configuration/modules_config_api.js';
-import { calculateModuleStructure } from '../modules_configuration/calc_module_structure.js';
+import {
+  calculateModuleStructure,
+  normalizeModuleStructureDoorCount,
+  normalizeModuleStructureSelectForDoors,
+} from '../modules_configuration/calc_module_structure.js';
 import { buildLibraryModuleCfgs } from './module_defaults.js';
 
 type LibraryPresetRawKey =
@@ -118,36 +122,7 @@ export function doorPartKeys(doorId: number): string[] {
 }
 
 export function normDoorCount(raw: unknown, wardrobeType: 'hinged' | 'sliding'): number {
-  const minDoorsAllowed = wardrobeType === 'sliding' ? 2 : 0;
-  const n = Math.round(Number(raw) || 0);
-  return Math.max(minDoorsAllowed, Number.isFinite(n) ? n : minDoorsAllowed);
-}
-
-function readStructureSelectDoorSignature(value: unknown): number[] | null {
-  const s = String(value ?? '').trim();
-  if (!s) return null;
-
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(s);
-  } catch {
-    return null;
-  }
-
-  if (!Array.isArray(parsed)) return null;
-  const out: number[] = [];
-  for (const item of parsed) {
-    const n = parseInt(String(item ?? ''), 10);
-    if (!Number.isFinite(n) || n <= 0) return null;
-    out.push(Math.round(n));
-  }
-  return out.length ? out : null;
-}
-
-function sumDoorSignature(signature: number[]): number {
-  let sum = 0;
-  for (let i = 0; i < signature.length; i++) sum += Math.max(0, Math.round(signature[i] || 0));
-  return sum;
+  return normalizeModuleStructureDoorCount(raw, wardrobeType);
 }
 
 export function normalizeLibraryStructureSelectForDoors(
@@ -155,9 +130,7 @@ export function normalizeLibraryStructureSelectForDoors(
   wardrobeType: 'hinged' | 'sliding',
   structureSelect: unknown
 ): unknown {
-  const signature = readStructureSelectDoorSignature(structureSelect);
-  if (!signature) return structureSelect;
-  return sumDoorSignature(signature) === normDoorCount(doorsCount, wardrobeType) ? structureSelect : '';
+  return normalizeModuleStructureSelectForDoors(doorsCount, wardrobeType, structureSelect);
 }
 
 function readDoorCountFromStructureItem(value: unknown): number {

@@ -45,10 +45,10 @@ export function createDefaultState(opts?: { noneMode?: string }): RootStateLike 
         stackSplitLowerDoorsManual: false,
       },
 
-      // Sidebar tab state (React + legacy DOM share this, store-first).
+      // Sidebar tab state (React shell and boot flows share this, store-first).
       activeTab: 'structure',
 
-      // Builder UI defaults (must exist for first render; no DOM fallbacks).
+      // Builder UI defaults (must exist for first render; no DOM reads).
       doorStyle: 'flat',
       singleDoorPos: 'left',
       structureSelect: '',
@@ -90,7 +90,7 @@ export function createDefaultState(opts?: { noneMode?: string }): RootStateLike 
       isChestMode: false,
       lightingControl: false,
 
-      // UI-only state (ephemeral, not persisted). Kept here to avoid legacy uiState globals.
+      // UI-only state (ephemeral, not persisted). Kept here to avoid detached uiState globals.
       currentLayoutType: 'shelves',
       currentGridDivisions: 6,
       currentGridShelfVariant: 'regular',
@@ -204,7 +204,7 @@ export function createDefaultState(opts?: { noneMode?: string }): RootStateLike 
       restoring: false,
       systemReady: false,
 
-      // QA/debug flags (store.runtime-only; no legacy flags root-slot)
+      // QA/debug flags (store.runtime-only; no root flags slot)
       failFast: false,
       verboseConsoleErrors: true,
       verboseConsoleErrorsDedupeMs: 4000,

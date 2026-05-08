@@ -8,6 +8,11 @@ import {
   patchModulesConfigurationListAtForPatch,
   resolveTopModuleDoorsFromUiConfigAt,
 } from '../esm/native/features/modules_configuration/modules_config_api.ts';
+import {
+  calculateModuleStructure,
+  normalizeModuleStructureSelectForDoors,
+  readModuleStructureSelectSignature,
+} from '../esm/native/features/modules_configuration/calc_module_structure.ts';
 
 function createNormalizedModuleList() {
   return [
@@ -196,4 +201,19 @@ test('module-config materialize from UI/config context uses canonical structure 
   assert.equal(next[0].customData.storage, true);
   assert.equal(next[1].doors, 2);
   assert.equal(next[2].doors, 1);
+});
+
+test('module-structure calculator ignores stale explicit signatures that no longer match door count', () => {
+  assert.deepEqual(readModuleStructureSelectSignature('[2,2,1]'), [2, 2, 1]);
+  assert.equal(normalizeModuleStructureSelectForDoors(5, 'hinged', '[2,2,1]'), '[2,2,1]');
+  assert.equal(normalizeModuleStructureSelectForDoors(6, 'hinged', '[2,2,1]'), '');
+
+  assert.deepEqual(
+    calculateModuleStructure(6, 'left', '[2,2,1]', 'hinged').map(item => item.doors),
+    [2, 2, 2]
+  );
+  assert.deepEqual(
+    calculateModuleStructure(5, 'right', '[2,2,1]', 'hinged').map(item => item.doors),
+    [2, 2, 1]
+  );
 });
