@@ -14,7 +14,7 @@ import {
   resolveOrderPdfScalarFieldValues,
 } from '../esm/native/ui/pdf/order_pdf_document_fields_runtime.ts';
 
-test('order pdf document fields runtime reads scalar values and resolves project/date fallbacks canonically', () => {
+test('order pdf document fields runtime reads scalar values and resolves project/date defaults canonically', () => {
   assert.deepEqual(readOrderPdfScalarFieldValues({ projectName: 'פרויקט', phone: 12345 }), {
     projectName: 'פרויקט',
     orderNumber: '',
@@ -27,8 +27,8 @@ test('order pdf document fields runtime reads scalar values and resolves project
   assert.deepEqual(
     resolveOrderPdfScalarFieldValues({
       source: { orderNumber: '17' },
-      fallbackProjectName: 'פרויקט ברירת מחדל',
-      fallbackOrderDate: '12/04/2026',
+      defaultProjectName: 'פרויקט ברירת מחדל',
+      defaultOrderDate: '12/04/2026',
     }),
     {
       projectName: 'פרויקט ברירת מחדל',
@@ -41,17 +41,17 @@ test('order pdf document fields runtime reads scalar values and resolves project
   );
 });
 
-test('order pdf document fields runtime merges preferred scalar values over fallback and applies only non-empty extracted values', () => {
+test('order pdf document fields runtime merges preferred scalar values over secondary source and applies only non-empty extracted values', () => {
   assert.deepEqual(
     mergeOrderPdfScalarFieldValues({
       preferred: { projectName: '', orderNumber: 'A-1', phone: '' },
-      fallback: {
+      secondary: {
         projectName: 'פרויקט מקור',
         orderNumber: 'B-2',
         phone: '03-5555555',
         mobile: '050-1234567',
       },
-      fallbackProjectName: 'פרויקט ברירת מחדל',
+      defaultProjectName: 'פרויקט ברירת מחדל',
     }),
     {
       projectName: 'פרויקט מקור',

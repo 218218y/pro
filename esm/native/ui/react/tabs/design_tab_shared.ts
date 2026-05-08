@@ -75,22 +75,22 @@ function asConfirmFn(value: unknown): DesignTabConfirmFn | null {
 
 export function readDesignTabDoorStyle(
   value: unknown,
-  fallback: DesignTabDoorStyle = 'flat'
+  defaultValue: DesignTabDoorStyle = 'flat'
 ): DesignTabDoorStyle {
-  const raw = String(value == null ? fallback : value)
+  const raw = String(value == null ? defaultValue : value)
     .trim()
     .toLowerCase();
-  return raw === 'profile' || raw === 'tom' || raw === 'flat' ? raw : fallback;
+  return raw === 'profile' || raw === 'tom' || raw === 'flat' ? raw : defaultValue;
 }
 
 export function readDesignTabCorniceType(
   value: unknown,
-  fallback: DesignTabCorniceType = 'classic'
+  defaultValue: DesignTabCorniceType = 'classic'
 ): DesignTabCorniceType {
-  const raw = String(value == null ? fallback : value)
+  const raw = String(value == null ? defaultValue : value)
     .trim()
     .toLowerCase();
-  return raw === 'wave' || raw === 'classic' ? raw : fallback;
+  return raw === 'wave' || raw === 'classic' ? raw : defaultValue;
 }
 
 export function readSplitModeVariant(value: unknown): string {
@@ -146,13 +146,13 @@ export function getSwatchStyle(color: SavedColor): CSSProperties {
     : { backgroundColor: readSavedColorValue(color) };
 }
 
-export function getModeConst(key: keyof DesignTabModeConstants, fallback: string): string {
+export function getModeConst(key: keyof DesignTabModeConstants, defaultValue: string): string {
   try {
     const modes = isRecord(MODES) ? MODES : null;
     const value = modes?.[key];
-    return typeof value === 'string' && value.trim() ? value : fallback;
+    return typeof value === 'string' && value.trim() ? value : defaultValue;
   } catch {
-    return fallback;
+    return defaultValue;
   }
 }
 

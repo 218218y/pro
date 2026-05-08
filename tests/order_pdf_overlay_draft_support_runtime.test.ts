@@ -30,7 +30,7 @@ test('order pdf draft support runtime builds initial support fields from seed wi
       notesHtml: '',
     },
     textApi,
-    fallbackProjectName: 'פרויקט ברירת מחדל',
+    defaultProjectName: 'פרויקט ברירת מחדל',
   });
 
   assert.deepEqual(support, {
@@ -81,7 +81,7 @@ test('order pdf draft support runtime carries previous notes, flags, and sketch 
       notesHtml: '<div>הערה מהמקור</div>',
     },
     textApi,
-    fallbackProjectName: 'פרויקט',
+    defaultProjectName: 'פרויקט',
   });
 
   assert.equal(support.projectName, 'קיים');

@@ -10,8 +10,8 @@ import {
 } from '../pdf/order_pdf_details_runtime.js';
 import { resolveOrderPdfExportDraft } from './export_order_pdf_draft_runtime.js';
 
-export function resolveOrderPdfString(value: unknown, fallback = ''): string {
-  return coerceOrderPdfTextValue(value, fallback);
+export function resolveOrderPdfString(value: unknown, defaultValue = ''): string {
+  return coerceOrderPdfTextValue(value, defaultValue);
 }
 
 export function resolveOrderPdfOrderDetails(args: {
@@ -34,8 +34,8 @@ export function resolveOrderPdfDraft(
 ): OrderPdfResolvedDraftLike {
   return resolveOrderPdfExportDraft({
     draft,
-    fallbackProjectName: deps._getProjectName(App) || 'פרויקט',
-    fallbackOrderDate: textOps.formatOrderDateDdMmYyyy(new Date()),
-    autoDetailsFallback: resolveOrderPdfString(textOps.buildOrderDetailsText(App)),
+    defaultProjectName: deps._getProjectName(App) || 'פרויקט',
+    defaultOrderDate: textOps.formatOrderDateDdMmYyyy(new Date()),
+    defaultAutoDetails: resolveOrderPdfString(textOps.buildOrderDetailsText(App)),
   });
 }

@@ -22,12 +22,12 @@ export const ORDER_PDF_SCALAR_FIELD_KEYS = Object.freeze(
 
 export const ORDER_PDF_DETAILS_CONTINUATION_FIELD_NAMES = Object.freeze(['wp_order_details_cont']);
 
-function firstDefinedTextValue(values: readonly unknown[], fallback = ''): string {
+function firstDefinedTextValue(values: readonly unknown[], defaultValue = ''): string {
   for (const value of values) {
     const text = coerceOrderPdfTextValue(value, '');
     if (hasOrderPdfTextValue(text)) return text;
   }
-  return coerceOrderPdfTextValue(fallback, '');
+  return coerceOrderPdfTextValue(defaultValue, '');
 }
 
 function buildOrderPdfScalarFieldValues(
@@ -61,33 +61,33 @@ export function readOrderPdfScalarFieldValues(
 
 export function resolveOrderPdfScalarFieldValues(args: {
   source: Partial<Record<OrderPdfScalarFieldKey, unknown>> | null | undefined;
-  fallbackProjectName?: unknown;
-  fallbackOrderDate?: unknown;
+  defaultProjectName?: unknown;
+  defaultOrderDate?: unknown;
 }): OrderPdfScalarFieldValues {
   const resolved = readOrderPdfScalarFieldValues(args.source);
-  resolved.projectName = firstDefinedTextValue([resolved.projectName, args.fallbackProjectName]);
-  resolved.orderDate = firstDefinedTextValue([resolved.orderDate, args.fallbackOrderDate]);
+  resolved.projectName = firstDefinedTextValue([resolved.projectName, args.defaultProjectName]);
+  resolved.orderDate = firstDefinedTextValue([resolved.orderDate, args.defaultOrderDate]);
   return resolved;
 }
 
 export function mergeOrderPdfScalarFieldValues(args: {
   preferred?: Partial<Record<OrderPdfScalarFieldKey, unknown>> | null;
-  fallback?: Partial<Record<OrderPdfScalarFieldKey, unknown>> | null;
-  fallbackProjectName?: unknown;
+  secondary?: Partial<Record<OrderPdfScalarFieldKey, unknown>> | null;
+  defaultProjectName?: unknown;
 }): OrderPdfScalarFieldValues {
   const preferred = readOrderPdfScalarFieldValues(args.preferred);
-  const fallback = readOrderPdfScalarFieldValues(args.fallback);
+  const secondary = readOrderPdfScalarFieldValues(args.secondary);
   return {
     projectName: firstDefinedTextValue([
       preferred.projectName,
-      fallback.projectName,
-      args.fallbackProjectName,
+      secondary.projectName,
+      args.defaultProjectName,
     ]),
-    orderNumber: firstDefinedTextValue([preferred.orderNumber, fallback.orderNumber]),
-    orderDate: firstDefinedTextValue([preferred.orderDate, fallback.orderDate]),
-    deliveryAddress: firstDefinedTextValue([preferred.deliveryAddress, fallback.deliveryAddress]),
-    phone: firstDefinedTextValue([preferred.phone, fallback.phone]),
-    mobile: firstDefinedTextValue([preferred.mobile, fallback.mobile]),
+    orderNumber: firstDefinedTextValue([preferred.orderNumber, secondary.orderNumber]),
+    orderDate: firstDefinedTextValue([preferred.orderDate, secondary.orderDate]),
+    deliveryAddress: firstDefinedTextValue([preferred.deliveryAddress, secondary.deliveryAddress]),
+    phone: firstDefinedTextValue([preferred.phone, secondary.phone]),
+    mobile: firstDefinedTextValue([preferred.mobile, secondary.mobile]),
   };
 }
 

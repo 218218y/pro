@@ -58,10 +58,11 @@ export function installPlatformUtilSurface(App: AppContainer, deps: PlatformUtil
   }
 
   installStableSurfaceMethod(platform.util, 'str', '__wpStr', () => {
-    return function (v: unknown, fallback?: unknown) {
+    return function (v: unknown, defaultValue?: unknown) {
       if (v === null || typeof v === 'undefined')
-        return typeof fallback === 'undefined' ? '' : String(fallback);
-      if (typeof v === 'number' && v !== v) return typeof fallback === 'undefined' ? '' : String(fallback);
+        return typeof defaultValue === 'undefined' ? '' : String(defaultValue);
+      if (typeof v === 'number' && v !== v)
+        return typeof defaultValue === 'undefined' ? '' : String(defaultValue);
       return String(v);
     };
   });
@@ -189,16 +190,16 @@ export function installPlatformUtilSurface(App: AppContainer, deps: PlatformUtil
   });
 
   installStableSurfaceMethod(platform.util, 'toFloat', '__wpToFloat', () => {
-    return function (x: unknown, fallback?: number) {
+    return function (x: unknown, defaultValue?: number) {
       const n = parseFloat(String(x));
-      return typeof n === 'number' && isFinite(n) ? n : fallback;
+      return typeof n === 'number' && isFinite(n) ? n : defaultValue;
     };
   });
 
   installStableSurfaceMethod(platform.util, 'toInt', '__wpToInt', () => {
-    return function (x: unknown, fallback?: number) {
+    return function (x: unknown, defaultValue?: number) {
       const n = parseInt(String(x), 10);
-      return typeof n === 'number' && isFinite(n) ? n : fallback;
+      return typeof n === 'number' && isFinite(n) ? n : defaultValue;
     };
   });
 
@@ -217,7 +218,7 @@ export function installPlatformUtilSurface(App: AppContainer, deps: PlatformUtil
   });
 
   installStableSurfaceMethod(platform.util, 'clone', '__wpClone', () => {
-    return function (v: unknown, fallback?: unknown) {
+    return function (v: unknown, defaultValue?: unknown) {
       try {
         if (typeof structuredClone === 'function') return structuredClone(v);
       } catch {
@@ -226,7 +227,7 @@ export function installPlatformUtilSurface(App: AppContainer, deps: PlatformUtil
       try {
         return JSON.parse(JSON.stringify(v));
       } catch {
-        if (typeof fallback !== 'undefined') return fallback;
+        if (typeof defaultValue !== 'undefined') return defaultValue;
         return Array.isArray(v) ? [] : v && typeof v === 'object' ? {} : v;
       }
     };

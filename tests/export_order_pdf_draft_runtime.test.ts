@@ -52,7 +52,7 @@ test('export order pdf draft runtime collapses stale full-details manualEnabled 
   assert.equal(normalized.manualEnabled, false);
 });
 
-test('export order pdf draft runtime resolves fallbacks, recovered notes, and sketch flags together', () => {
+test('export order pdf draft runtime resolves defaults, recovered notes, and sketch flags together', () => {
   const resolved = resolveOrderPdfExportDraft({
     draft: {
       projectName: '',
@@ -67,13 +67,13 @@ test('export order pdf draft runtime resolves fallbacks, recovered notes, and sk
       notesHtml: '<div>רק HTML</div>',
       includeOpenClosed: false,
     } as any,
-    fallbackProjectName: 'Project Fallback',
-    fallbackOrderDate: '12/04/2026',
-    autoDetailsFallback: 'Built auto details',
+    defaultProjectName: 'Project Default',
+    defaultOrderDate: '12/04/2026',
+    defaultAutoDetails: 'Built auto details',
   });
 
   assert.deepEqual(resolved, {
-    projectName: 'Project Fallback',
+    projectName: 'Project Default',
     orderNumber: '',
     orderDate: '12/04/2026',
     deliveryAddress: '',

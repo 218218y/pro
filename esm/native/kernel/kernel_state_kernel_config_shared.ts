@@ -24,10 +24,10 @@ export interface KernelStateKernelConfigContext {
   App: AppContainer;
   __sk: StateKernelLike & UnknownRecord;
   asMeta: (meta: unknown) => ActionMetaLike;
-  asRecord: (x: unknown, fallback?: UnknownRecord) => UnknownRecord;
+  asRecord: (x: unknown, defaultValue?: UnknownRecord) => UnknownRecord;
   isRecord: (x: unknown) => x is UnknownRecord;
   isFn: (x: unknown) => x is UnknownCallable;
-  cloneKernelValue: (App: AppContainer, v: unknown, fallback?: unknown) => unknown;
+  cloneKernelValue: (App: AppContainer, v: unknown, defaultValue?: unknown) => unknown;
   setStoreConfigPatch: (App: AppContainer, patch: ConfigSlicePatch, meta: ActionMetaLike) => boolean;
   asString: (x: unknown) => string;
   readCornerCfgFromStoreConfig: (cfg: unknown) => UnknownRecord;
@@ -37,8 +37,8 @@ export interface KernelStateKernelConfigContext {
 export interface KernelStateKernelConfigHelpers extends KernelStateKernelConfigContext {
   emptyRecord: () => UnknownRecord;
   emptyCornerLowerConfig: () => UnknownRecord;
-  clone: (v: unknown, fallback?: unknown) => unknown;
-  cloneRecord: (v: unknown, fallback?: UnknownRecord) => UnknownRecord;
+  clone: (v: unknown, defaultValue?: unknown) => unknown;
+  cloneRecord: (v: unknown, defaultValue?: UnknownRecord) => UnknownRecord;
   cloneArray: (v: unknown) => unknown[];
   asBucketKey: (name: string) => ModulesConfigBucketKey;
   sanitizeCornerRecord: (value: unknown, prev: UnknownRecord) => UnknownRecord;
@@ -70,9 +70,9 @@ export function createKernelStateKernelConfigHelpers(
 
   const emptyRecord = (): UnknownRecord => ({});
   const emptyCornerLowerConfig = (): UnknownRecord => asRecord(createDefaultLowerCornerConfiguration(), {});
-  const clone = (v: unknown, fallback?: unknown) => cloneKernelValue(App, v, fallback);
-  const cloneRecord = (v: unknown, fallback?: UnknownRecord): UnknownRecord =>
-    asRecord(clone(v, fallback || {}), fallback || {});
+  const clone = (v: unknown, defaultValue?: unknown) => cloneKernelValue(App, v, defaultValue);
+  const cloneRecord = (v: unknown, defaultValue?: UnknownRecord): UnknownRecord =>
+    asRecord(clone(v, defaultValue || {}), defaultValue || {});
   const cloneArray = (v: unknown): unknown[] => (Array.isArray(v) ? v.slice() : []);
   const asBucketKey = (name: string): ModulesConfigBucketKey =>
     name === 'stackSplitLowerModulesConfiguration'

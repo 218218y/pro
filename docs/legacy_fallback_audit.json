@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-08T11:55:30.692Z",
+  "generatedAt": "2026-05-08T12:23:08.451Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 529,
-    "totalFiles": 193,
+    "totalOccurrences": 464,
+    "totalFiles": 185,
     "byCategory": {
-      "runtime-default": 508,
+      "runtime-default": 443,
       "browser-adapter": 9,
       "project-migration": 5,
       "test-fixture": 7,
@@ -355,12 +355,6 @@
           "runtime-default": 3
         }
       },
-      "esm/native/features/base_leg_support.ts": {
-        "total": 10,
-        "categories": {
-          "runtime-default": 10
-        }
-      },
       "esm/native/features/door_trim_shared.ts": {
         "total": 6,
         "categories": {
@@ -499,12 +493,6 @@
           "runtime-default": 2
         }
       },
-      "esm/native/kernel/kernel_state_kernel_config_shared.ts": {
-        "total": 9,
-        "categories": {
-          "runtime-default": 9
-        }
-      },
       "esm/native/kernel/state_api_history_store_reactivity_build_meta.ts": {
         "total": 2,
         "categories": {
@@ -533,12 +521,6 @@
         "total": 3,
         "categories": {
           "runtime-default": 3
-        }
-      },
-      "esm/native/platform/platform_util.ts": {
-        "total": 12,
-        "categories": {
-          "runtime-default": 12
         }
       },
       "esm/native/platform/render_loop_impl_support.ts": {
@@ -949,12 +931,6 @@
           "runtime-default": 2
         }
       },
-      "esm/native/ui/export/export_order_pdf_builder_draft.ts": {
-        "total": 2,
-        "categories": {
-          "runtime-default": 2
-        }
-      },
       "esm/native/ui/export/export_order_pdf_types.ts": {
         "total": 1,
         "categories": {
@@ -985,18 +961,6 @@
           "runtime-default": 2
         }
       },
-      "esm/native/ui/pdf/order_pdf_document_fields_runtime.ts": {
-        "total": 11,
-        "categories": {
-          "runtime-default": 11
-        }
-      },
-      "esm/native/ui/react/actions/cloud_sync_actions.ts": {
-        "total": 11,
-        "categories": {
-          "runtime-default": 11
-        }
-      },
       "esm/native/ui/react/cloud_sync_ui_action_controller_shared.ts": {
         "total": 2,
         "categories": {
@@ -1010,12 +974,6 @@
         }
       },
       "esm/native/ui/react/overlay_pdf_host.tsx": {
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      "esm/native/ui/react/pdf/order_pdf_overlay_draft_support_runtime.ts": {
         "total": 1,
         "categories": {
           "runtime-default": 1
@@ -1085,12 +1043,6 @@
         "total": 2,
         "categories": {
           "runtime-default": 2
-        }
-      },
-      "esm/native/ui/react/tabs/design_tab_shared.ts": {
-        "total": 9,
-        "categories": {
-          "runtime-default": 9
         }
       },
       "esm/native/ui/react/tabs/interior_layout_door_trim_axis_panel.tsx": {
@@ -1173,48 +1125,6 @@
       }
     },
     "hotFiles": [
-      {
-        "file": "esm/native/platform/platform_util.ts",
-        "total": 12,
-        "categories": {
-          "runtime-default": 12
-        }
-      },
-      {
-        "file": "esm/native/ui/pdf/order_pdf_document_fields_runtime.ts",
-        "total": 11,
-        "categories": {
-          "runtime-default": 11
-        }
-      },
-      {
-        "file": "esm/native/ui/react/actions/cloud_sync_actions.ts",
-        "total": 11,
-        "categories": {
-          "runtime-default": 11
-        }
-      },
-      {
-        "file": "esm/native/features/base_leg_support.ts",
-        "total": 10,
-        "categories": {
-          "runtime-default": 10
-        }
-      },
-      {
-        "file": "esm/native/kernel/kernel_state_kernel_config_shared.ts",
-        "total": 9,
-        "categories": {
-          "runtime-default": 9
-        }
-      },
-      {
-        "file": "esm/native/ui/react/tabs/design_tab_shared.ts",
-        "total": 9,
-        "categories": {
-          "runtime-default": 9
-        }
-      },
       {
         "file": "esm/native/builder/hinged_doors_module_ops_context.ts",
         "total": 8,
@@ -1378,6 +1288,48 @@
       },
       {
         "file": "esm/native/builder/corner_state_normalize_shared.ts",
+        "total": 4,
+        "categories": {
+          "runtime-default": 4
+        }
+      },
+      {
+        "file": "esm/native/builder/external_drawers_pipeline.ts",
+        "total": 4,
+        "categories": {
+          "runtime-default": 4
+        }
+      },
+      {
+        "file": "esm/native/builder/hinged_doors_module_ops_split_parts.ts",
+        "total": 4,
+        "categories": {
+          "runtime-default": 4
+        }
+      },
+      {
+        "file": "esm/native/builder/module_loop_pipeline_shared.ts",
+        "total": 4,
+        "categories": {
+          "runtime-default": 4
+        }
+      },
+      {
+        "file": "esm/native/builder/render_carcass_ops_shared_readers.ts",
+        "total": 4,
+        "categories": {
+          "runtime-default": 4
+        }
+      },
+      {
+        "file": "esm/native/features/model_record/model_record_normalizer.ts",
+        "total": 4,
+        "categories": {
+          "runtime-default": 4
+        }
+      },
+      {
+        "file": "esm/native/features/sketch_drawer_sizing.ts",
         "total": 4,
         "categories": {
           "runtime-default": 4
@@ -2238,76 +2190,6 @@
       "text": "const fn = typeof primary === 'function' ? primary : typeof fallback === 'function' ? fallback : null;"
     },
     {
-      "file": "esm/native/features/base_leg_support.ts",
-      "line": 86,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function normalizeBaseLegHeightCm(value: unknown, fallback = DEFAULT_BASE_LEG_HEIGHT_CM): number {"
-    },
-    {
-      "file": "esm/native/features/base_leg_support.ts",
-      "line": 88,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const fallbackParsed = Number.isFinite(fallback) ? Number(fallback) : DEFAULT_BASE_LEG_HEIGHT_CM;"
-    },
-    {
-      "file": "esm/native/features/base_leg_support.ts",
-      "line": 88,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const fallbackParsed = Number.isFinite(fallback) ? Number(fallback) : DEFAULT_BASE_LEG_HEIGHT_CM;"
-    },
-    {
-      "file": "esm/native/features/base_leg_support.ts",
-      "line": 94,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function normalizeBaseLegWidthCm(value: unknown, fallback = DEFAULT_BASE_LEG_WIDTH_CM): number {"
-    },
-    {
-      "file": "esm/native/features/base_leg_support.ts",
-      "line": 96,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const fallbackParsed = Number.isFinite(fallback) ? Number(fallback) : DEFAULT_BASE_LEG_WIDTH_CM;"
-    },
-    {
-      "file": "esm/native/features/base_leg_support.ts",
-      "line": 96,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const fallbackParsed = Number.isFinite(fallback) ? Number(fallback) : DEFAULT_BASE_LEG_WIDTH_CM;"
-    },
-    {
-      "file": "esm/native/features/base_leg_support.ts",
-      "line": 102,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function getBaseLegHeightM(value: unknown, fallback?: number): number {"
-    },
-    {
-      "file": "esm/native/features/base_leg_support.ts",
-      "line": 103,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return normalizeBaseLegHeightCm(value, fallback) / 100;"
-    },
-    {
-      "file": "esm/native/features/base_leg_support.ts",
-      "line": 106,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function getBaseLegWidthM(value: unknown, fallback?: number): number {"
-    },
-    {
-      "file": "esm/native/features/base_leg_support.ts",
-      "line": 107,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return normalizeBaseLegWidthCm(value, fallback) / 100;"
-    },
-    {
       "file": "esm/native/features/door_trim_shared.ts",
       "line": 96,
       "term": "fallback",
@@ -2868,69 +2750,6 @@
       "text": "return meta.source != null ? String(meta.source) : fallback;"
     },
     {
-      "file": "esm/native/kernel/kernel_state_kernel_config_shared.ts",
-      "line": 27,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "asRecord: (x: unknown, fallback?: UnknownRecord) => UnknownRecord;"
-    },
-    {
-      "file": "esm/native/kernel/kernel_state_kernel_config_shared.ts",
-      "line": 30,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "cloneKernelValue: (App: AppContainer, v: unknown, fallback?: unknown) => unknown;"
-    },
-    {
-      "file": "esm/native/kernel/kernel_state_kernel_config_shared.ts",
-      "line": 40,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "clone: (v: unknown, fallback?: unknown) => unknown;"
-    },
-    {
-      "file": "esm/native/kernel/kernel_state_kernel_config_shared.ts",
-      "line": 41,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "cloneRecord: (v: unknown, fallback?: UnknownRecord) => UnknownRecord;"
-    },
-    {
-      "file": "esm/native/kernel/kernel_state_kernel_config_shared.ts",
-      "line": 73,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const clone = (v: unknown, fallback?: unknown) => cloneKernelValue(App, v, fallback);"
-    },
-    {
-      "file": "esm/native/kernel/kernel_state_kernel_config_shared.ts",
-      "line": 73,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const clone = (v: unknown, fallback?: unknown) => cloneKernelValue(App, v, fallback);"
-    },
-    {
-      "file": "esm/native/kernel/kernel_state_kernel_config_shared.ts",
-      "line": 74,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const cloneRecord = (v: unknown, fallback?: UnknownRecord): UnknownRecord =>"
-    },
-    {
-      "file": "esm/native/kernel/kernel_state_kernel_config_shared.ts",
-      "line": 75,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "asRecord(clone(v, fallback || {}), fallback || {});"
-    },
-    {
-      "file": "esm/native/kernel/kernel_state_kernel_config_shared.ts",
-      "line": 75,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "asRecord(clone(v, fallback || {}), fallback || {});"
-    },
-    {
       "file": "esm/native/kernel/state_api_history_store_reactivity_build_meta.ts",
       "line": 19,
       "term": "fallback",
@@ -2985,90 +2804,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "return typeof value === 'string' && value ? value : fallback;"
-    },
-    {
-      "file": "esm/native/platform/platform_util.ts",
-      "line": 61,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return function (v: unknown, fallback?: unknown) {"
-    },
-    {
-      "file": "esm/native/platform/platform_util.ts",
-      "line": 63,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof fallback === 'undefined' ? '' : String(fallback);"
-    },
-    {
-      "file": "esm/native/platform/platform_util.ts",
-      "line": 63,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof fallback === 'undefined' ? '' : String(fallback);"
-    },
-    {
-      "file": "esm/native/platform/platform_util.ts",
-      "line": 64,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "if (typeof v === 'number' && v !== v) return typeof fallback === 'undefined' ? '' : String(fallback);"
-    },
-    {
-      "file": "esm/native/platform/platform_util.ts",
-      "line": 64,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "if (typeof v === 'number' && v !== v) return typeof fallback === 'undefined' ? '' : String(fallback);"
-    },
-    {
-      "file": "esm/native/platform/platform_util.ts",
-      "line": 192,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return function (x: unknown, fallback?: number) {"
-    },
-    {
-      "file": "esm/native/platform/platform_util.ts",
-      "line": 194,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof n === 'number' && isFinite(n) ? n : fallback;"
-    },
-    {
-      "file": "esm/native/platform/platform_util.ts",
-      "line": 199,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return function (x: unknown, fallback?: number) {"
-    },
-    {
-      "file": "esm/native/platform/platform_util.ts",
-      "line": 201,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof n === 'number' && isFinite(n) ? n : fallback;"
-    },
-    {
-      "file": "esm/native/platform/platform_util.ts",
-      "line": 220,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return function (v: unknown, fallback?: unknown) {"
-    },
-    {
-      "file": "esm/native/platform/platform_util.ts",
-      "line": 229,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "if (typeof fallback !== 'undefined') return fallback;"
-    },
-    {
-      "file": "esm/native/platform/platform_util.ts",
-      "line": 229,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "if (typeof fallback !== 'undefined') return fallback;"
     },
     {
       "file": "esm/native/platform/render_loop_impl_support.ts",
@@ -4387,20 +4122,6 @@
       "text": "fallback: 'none',"
     },
     {
-      "file": "esm/native/ui/export/export_order_pdf_builder_draft.ts",
-      "line": 13,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function resolveOrderPdfString(value: unknown, fallback = ''): string {"
-    },
-    {
-      "file": "esm/native/ui/export/export_order_pdf_builder_draft.ts",
-      "line": 14,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return coerceOrderPdfTextValue(value, fallback);"
-    },
-    {
       "file": "esm/native/ui/export/export_order_pdf_types.ts",
       "line": 98,
       "term": "fallback",
@@ -4471,160 +4192,6 @@
       "text": "return value == null ? fallback : String(value);"
     },
     {
-      "file": "esm/native/ui/pdf/order_pdf_document_fields_runtime.ts",
-      "line": 25,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "function firstDefinedTextValue(values: readonly unknown[], fallback = ''): string {"
-    },
-    {
-      "file": "esm/native/ui/pdf/order_pdf_document_fields_runtime.ts",
-      "line": 30,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return coerceOrderPdfTextValue(fallback, '');"
-    },
-    {
-      "file": "esm/native/ui/pdf/order_pdf_document_fields_runtime.ts",
-      "line": 75,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback?: Partial<Record<OrderPdfScalarFieldKey, unknown>> | null;"
-    },
-    {
-      "file": "esm/native/ui/pdf/order_pdf_document_fields_runtime.ts",
-      "line": 79,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const fallback = readOrderPdfScalarFieldValues(args.fallback);"
-    },
-    {
-      "file": "esm/native/ui/pdf/order_pdf_document_fields_runtime.ts",
-      "line": 79,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const fallback = readOrderPdfScalarFieldValues(args.fallback);"
-    },
-    {
-      "file": "esm/native/ui/pdf/order_pdf_document_fields_runtime.ts",
-      "line": 83,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback.projectName,"
-    },
-    {
-      "file": "esm/native/ui/pdf/order_pdf_document_fields_runtime.ts",
-      "line": 86,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "orderNumber: firstDefinedTextValue([preferred.orderNumber, fallback.orderNumber]),"
-    },
-    {
-      "file": "esm/native/ui/pdf/order_pdf_document_fields_runtime.ts",
-      "line": 87,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "orderDate: firstDefinedTextValue([preferred.orderDate, fallback.orderDate]),"
-    },
-    {
-      "file": "esm/native/ui/pdf/order_pdf_document_fields_runtime.ts",
-      "line": 88,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "deliveryAddress: firstDefinedTextValue([preferred.deliveryAddress, fallback.deliveryAddress]),"
-    },
-    {
-      "file": "esm/native/ui/pdf/order_pdf_document_fields_runtime.ts",
-      "line": 89,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "phone: firstDefinedTextValue([preferred.phone, fallback.phone]),"
-    },
-    {
-      "file": "esm/native/ui/pdf/order_pdf_document_fields_runtime.ts",
-      "line": 90,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "mobile: firstDefinedTextValue([preferred.mobile, fallback.mobile]),"
-    },
-    {
-      "file": "esm/native/ui/react/actions/cloud_sync_actions.ts",
-      "line": 18,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: (...args: Args) => Result;"
-    },
-    {
-      "file": "esm/native/ui/react/actions/cloud_sync_actions.ts",
-      "line": 23,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: (...args: Args) => Result;"
-    },
-    {
-      "file": "esm/native/ui/react/actions/cloud_sync_actions.ts",
-      "line": 59,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return spec.call(readCloudSyncService(app), ...args) ?? spec.fallback(...args);"
-    },
-    {
-      "file": "esm/native/ui/react/actions/cloud_sync_actions.ts",
-      "line": 68,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return result ? await result : spec.fallback(...args);"
-    },
-    {
-      "file": "esm/native/ui/react/actions/cloud_sync_actions.ts",
-      "line": 75,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: () => buildSketchSyncFallbackResult(),"
-    },
-    {
-      "file": "esm/native/ui/react/actions/cloud_sync_actions.ts",
-      "line": 80,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: () => buildDeleteTempFallbackResult(),"
-    },
-    {
-      "file": "esm/native/ui/react/actions/cloud_sync_actions.ts",
-      "line": 85,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: () => buildDeleteTempFallbackResult(),"
-    },
-    {
-      "file": "esm/native/ui/react/actions/cloud_sync_actions.ts",
-      "line": 92,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: () => buildFloatingSyncFallbackResult(),"
-    },
-    {
-      "file": "esm/native/ui/react/actions/cloud_sync_actions.ts",
-      "line": 97,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: () => buildShareLinkFallbackResult(),"
-    },
-    {
-      "file": "esm/native/ui/react/actions/cloud_sync_actions.ts",
-      "line": 111,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: () => buildRoomModeFallbackResult('public'),"
-    },
-    {
-      "file": "esm/native/ui/react/actions/cloud_sync_actions.ts",
-      "line": 116,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: () => buildRoomModeFallbackResult('private'),"
-    },
-    {
       "file": "esm/native/ui/react/cloud_sync_ui_action_controller_shared.ts",
       "line": 57,
       "term": "fallback",
@@ -4665,13 +4232,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "<Suspense fallback={<PdfEditorLoadingOverlay />}>"
-    },
-    {
-      "file": "esm/native/ui/react/pdf/order_pdf_overlay_draft_support_runtime.ts",
-      "line": 59,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: source,"
     },
     {
       "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_text_layer_active_hooks.ts",
@@ -4791,69 +4351,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "if (!applied) fallback();"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/design_tab_shared.ts",
-      "line": 78,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: DesignTabDoorStyle = 'flat'"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/design_tab_shared.ts",
-      "line": 80,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const raw = String(value == null ? fallback : value)"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/design_tab_shared.ts",
-      "line": 83,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return raw === 'profile' || raw === 'tom' || raw === 'flat' ? raw : fallback;"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/design_tab_shared.ts",
-      "line": 88,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: DesignTabCorniceType = 'classic'"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/design_tab_shared.ts",
-      "line": 90,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const raw = String(value == null ? fallback : value)"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/design_tab_shared.ts",
-      "line": 93,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return raw === 'wave' || raw === 'classic' ? raw : fallback;"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/design_tab_shared.ts",
-      "line": 149,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function getModeConst(key: keyof DesignTabModeConstants, fallback: string): string {"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/design_tab_shared.ts",
-      "line": 153,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof value === 'string' && value.trim() ? value : fallback;"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/design_tab_shared.ts",
-      "line": 155,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return fallback;"
     },
     {
       "file": "esm/native/ui/react/tabs/interior_layout_door_trim_axis_panel.tsx",

@@ -32,11 +32,11 @@ export type OrderPdfRefreshCarryFields = Pick<
 export function buildOrderPdfInitialDraftSupportFields(args: {
   seed: OrderPdfDraftSupportSeedLike | null | undefined;
   textApi: OrderPdfNotesTextApi;
-  fallbackProjectName?: unknown;
+  defaultProjectName?: unknown;
 }): OrderPdfInitialDraftSupportFields {
   const { seed, textApi } = args;
   return {
-    ...mergeOrderPdfScalarFieldValues({ preferred: seed, fallbackProjectName: args.fallbackProjectName }),
+    ...mergeOrderPdfScalarFieldValues({ preferred: seed, defaultProjectName: args.defaultProjectName }),
     ...createOrderPdfNotesFields({
       notes: seed?.notes,
       notesHtml: seed?.notesHtml,
@@ -49,15 +49,15 @@ export function buildOrderPdfRefreshCarryFields(args: {
   currentDraft: OrderPdfDraft | null | undefined;
   source: OrderPdfDraftSupportSeedLike | null | undefined;
   textApi: OrderPdfNotesTextApi;
-  fallbackProjectName?: unknown;
+  defaultProjectName?: unknown;
 }): OrderPdfRefreshCarryFields {
   const { currentDraft, source, textApi } = args;
   const prev = currentDraft || null;
   return {
     ...mergeOrderPdfScalarFieldValues({
       preferred: prev,
-      fallback: source,
-      fallbackProjectName: args.fallbackProjectName,
+      secondary: source,
+      defaultProjectName: args.defaultProjectName,
     }),
     ...createOrderPdfNotesFields({
       notes: prev ? prev.notes : source?.notes,

@@ -345,12 +345,6 @@
         "runtime-default": 3
       }
     },
-    "esm/native/features/base_leg_support.ts": {
-      "total": 10,
-      "categories": {
-        "runtime-default": 10
-      }
-    },
     "esm/native/features/door_trim_shared.ts": {
       "total": 6,
       "categories": {
@@ -489,12 +483,6 @@
         "runtime-default": 2
       }
     },
-    "esm/native/kernel/kernel_state_kernel_config_shared.ts": {
-      "total": 9,
-      "categories": {
-        "runtime-default": 9
-      }
-    },
     "esm/native/kernel/state_api_history_store_reactivity_build_meta.ts": {
       "total": 2,
       "categories": {
@@ -523,12 +511,6 @@
       "total": 3,
       "categories": {
         "runtime-default": 3
-      }
-    },
-    "esm/native/platform/platform_util.ts": {
-      "total": 12,
-      "categories": {
-        "runtime-default": 12
       }
     },
     "esm/native/platform/render_loop_impl_support.ts": {
@@ -939,12 +921,6 @@
         "runtime-default": 2
       }
     },
-    "esm/native/ui/export/export_order_pdf_builder_draft.ts": {
-      "total": 2,
-      "categories": {
-        "runtime-default": 2
-      }
-    },
     "esm/native/ui/export/export_order_pdf_types.ts": {
       "total": 1,
       "categories": {
@@ -975,18 +951,6 @@
         "runtime-default": 2
       }
     },
-    "esm/native/ui/pdf/order_pdf_document_fields_runtime.ts": {
-      "total": 11,
-      "categories": {
-        "runtime-default": 11
-      }
-    },
-    "esm/native/ui/react/actions/cloud_sync_actions.ts": {
-      "total": 11,
-      "categories": {
-        "runtime-default": 11
-      }
-    },
     "esm/native/ui/react/cloud_sync_ui_action_controller_shared.ts": {
       "total": 2,
       "categories": {
@@ -1000,12 +964,6 @@
       }
     },
     "esm/native/ui/react/overlay_pdf_host.tsx": {
-      "total": 1,
-      "categories": {
-        "runtime-default": 1
-      }
-    },
-    "esm/native/ui/react/pdf/order_pdf_overlay_draft_support_runtime.ts": {
       "total": 1,
       "categories": {
         "runtime-default": 1
@@ -1075,12 +1033,6 @@
       "total": 2,
       "categories": {
         "runtime-default": 2
-      }
-    },
-    "esm/native/ui/react/tabs/design_tab_shared.ts": {
-      "total": 9,
-      "categories": {
-        "runtime-default": 9
       }
     },
     "esm/native/ui/react/tabs/interior_layout_door_trim_axis_panel.tsx": {

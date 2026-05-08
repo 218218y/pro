@@ -44,15 +44,15 @@ export function normalizeOrderPdfExportDraft(asRecordFn: AsRecordLike, value: un
 
 export function resolveOrderPdfExportDraft(args: {
   draft: OrderPdfDraftLike | null | undefined;
-  fallbackProjectName?: unknown;
-  fallbackOrderDate?: unknown;
-  autoDetailsFallback?: unknown;
+  defaultProjectName?: unknown;
+  defaultOrderDate?: unknown;
+  defaultAutoDetails?: unknown;
 }): OrderPdfResolvedDraftLike {
   const normalizedDraft = normalizeOrderPdfExportDraft(asUnknownRecord, args.draft);
   const scalarFields = resolveOrderPdfScalarFieldValues({
     source: normalizedDraft,
-    fallbackProjectName: args.fallbackProjectName,
-    fallbackOrderDate: args.fallbackOrderDate,
+    defaultProjectName: args.defaultProjectName,
+    defaultOrderDate: args.defaultOrderDate,
   });
 
   const imageFlags = resolveOrderPdfSketchImageDraftFlags(normalizedDraft);
@@ -60,7 +60,7 @@ export function resolveOrderPdfExportDraft(args: {
   return {
     ...scalarFields,
     notes: safeStr(normalizedDraft.notes),
-    orderDetails: resolveOrderPdfDetailsTextFromDraft(normalizedDraft, args.autoDetailsFallback),
+    orderDetails: resolveOrderPdfDetailsTextFromDraft(normalizedDraft, args.defaultAutoDetails),
     includeRenderSketch: imageFlags.includeRenderSketch,
     includeOpenClosed: imageFlags.includeOpenClosed,
   };

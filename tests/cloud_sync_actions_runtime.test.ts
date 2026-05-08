@@ -131,7 +131,7 @@ test('cloud sync actions return canonical room/share, site2 tabs gate, sketch sy
   });
 });
 
-test('cloud sync actions keep local site2 fallback and report missing cloud mutation services explicitly', async () => {
+test('cloud sync actions keep local site2 handling and report missing cloud mutation services explicitly', async () => {
   const App = {} as any;
   const gateResult = await toggleSite2TabsGate(App, true, { source: 'react:site2:tabsGate', noBuild: true });
   assert.deepEqual(gateResult, { ok: true, changed: true, open: true, until: 0 });

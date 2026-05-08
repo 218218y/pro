@@ -15,35 +15,35 @@ import { setUiSite2TabsGateOpen } from './store_actions.js';
 
 type CloudSyncAsyncCommandSpec<Args extends unknown[], Result> = {
   call: (service: CloudSyncServiceLike | null, ...args: Args) => Promise<Result> | null;
-  fallback: (...args: Args) => Result;
+  whenUnavailable: (...args: Args) => Result;
 };
 
 type CloudSyncSyncCommandSpec<Args extends unknown[], Result> = {
   call: (service: CloudSyncServiceLike | null, ...args: Args) => Result | null;
-  fallback: (...args: Args) => Result;
+  whenUnavailable: (...args: Args) => Result;
 };
 
-function buildTabsGateFallbackResult(open: boolean): CloudSyncTabsGateCommandResult {
+function buildLocalTabsGateResult(open: boolean): CloudSyncTabsGateCommandResult {
   return { ok: true, changed: true, open: !!open, until: 0 };
 }
 
-function buildFloatingSyncFallbackResult(): CloudSyncSyncPinCommandResult {
+function buildFloatingSyncUnavailableResult(): CloudSyncSyncPinCommandResult {
   return { ok: false, reason: 'not-installed' };
 }
 
-function buildSketchSyncFallbackResult(): CloudSyncSketchCommandResult {
+function buildSketchSyncUnavailableResult(): CloudSyncSketchCommandResult {
   return { ok: false, reason: 'not-installed' };
 }
 
-function buildDeleteTempFallbackResult(): CloudSyncDeleteTempResult {
+function buildDeleteTempUnavailableResult(): CloudSyncDeleteTempResult {
   return { ok: false, removed: 0, reason: 'not-installed' };
 }
 
-function buildShareLinkFallbackResult(): CloudSyncShareLinkCommandResult {
+function buildShareLinkUnavailableResult(): CloudSyncShareLinkCommandResult {
   return { ok: false, reason: 'not-installed' };
 }
 
-function buildRoomModeFallbackResult(mode: 'public' | 'private'): CloudSyncRoomModeCommandResult {
+function buildRoomModeUnavailableResult(mode: 'public' | 'private'): CloudSyncRoomModeCommandResult {
   return { ok: false, mode, reason: 'not-installed' };
 }
 
@@ -56,7 +56,7 @@ function runCloudSyncSyncCommand<Args extends unknown[], Result>(
   spec: CloudSyncSyncCommandSpec<Args, Result>,
   ...args: Args
 ): Result {
-  return spec.call(readCloudSyncService(app), ...args) ?? spec.fallback(...args);
+  return spec.call(readCloudSyncService(app), ...args) ?? spec.whenUnavailable(...args);
 }
 
 async function runCloudSyncAsyncCommand<Args extends unknown[], Result>(
@@ -65,36 +65,36 @@ async function runCloudSyncAsyncCommand<Args extends unknown[], Result>(
   ...args: Args
 ): Promise<Result> {
   const result = spec.call(readCloudSyncService(app), ...args);
-  return result ? await result : spec.fallback(...args);
+  return result ? await result : spec.whenUnavailable(...args);
 }
 
 const CLOUD_SYNC_ASYNC_COMMANDS = {
   syncSketchNow: {
     call: (service: CloudSyncServiceLike | null) =>
       typeof service?.syncSketchNow === 'function' ? service.syncSketchNow() : null,
-    fallback: () => buildSketchSyncFallbackResult(),
+    whenUnavailable: () => buildSketchSyncUnavailableResult(),
   },
   deleteTemporaryModels: {
     call: (service: CloudSyncServiceLike | null) =>
       typeof service?.deleteTemporaryModels === 'function' ? service.deleteTemporaryModels() : null,
-    fallback: () => buildDeleteTempFallbackResult(),
+    whenUnavailable: () => buildDeleteTempUnavailableResult(),
   },
   deleteTemporaryColors: {
     call: (service: CloudSyncServiceLike | null) =>
       typeof service?.deleteTemporaryColors === 'function' ? service.deleteTemporaryColors() : null,
-    fallback: () => buildDeleteTempFallbackResult(),
+    whenUnavailable: () => buildDeleteTempUnavailableResult(),
   },
   setFloatingSketchSyncEnabled: {
     call: (service: CloudSyncServiceLike | null, enabled: boolean) =>
       typeof service?.setFloatingSketchSyncEnabled === 'function'
         ? service.setFloatingSketchSyncEnabled(!!enabled)
         : null,
-    fallback: () => buildFloatingSyncFallbackResult(),
+    whenUnavailable: () => buildFloatingSyncUnavailableResult(),
   },
   copyShareLink: {
     call: (service: CloudSyncServiceLike | null) =>
       typeof service?.copyShareLink === 'function' ? service.copyShareLink() : null,
-    fallback: () => buildShareLinkFallbackResult(),
+    whenUnavailable: () => buildShareLinkUnavailableResult(),
   },
 } satisfies {
   syncSketchNow: CloudSyncAsyncCommandSpec<[], CloudSyncSketchCommandResult>;
@@ -108,12 +108,12 @@ const CLOUD_SYNC_SYNC_COMMANDS = {
   goPublic: {
     call: (service: CloudSyncServiceLike | null) =>
       typeof service?.goPublic === 'function' ? service.goPublic() : null,
-    fallback: () => buildRoomModeFallbackResult('public'),
+    whenUnavailable: () => buildRoomModeUnavailableResult('public'),
   },
   goPrivate: {
     call: (service: CloudSyncServiceLike | null) =>
       typeof service?.goPrivate === 'function' ? service.goPrivate() : null,
-    fallback: () => buildRoomModeFallbackResult('private'),
+    whenUnavailable: () => buildRoomModeUnavailableResult('private'),
   },
 } satisfies {
   goPublic: CloudSyncSyncCommandSpec<[], CloudSyncRoomModeCommandResult>;
@@ -130,7 +130,7 @@ export async function toggleSite2TabsGate(
     return await service.setSite2TabsGateOpen(!!nextOpen);
   }
   setUiSite2TabsGateOpen(app, !!nextOpen, meta);
-  return buildTabsGateFallbackResult(!!nextOpen);
+  return buildLocalTabsGateResult(!!nextOpen);
 }
 
 export async function syncSketchNow(app: AppContainer): Promise<CloudSyncSketchCommandResult> {

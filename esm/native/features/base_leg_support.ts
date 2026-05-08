@@ -83,28 +83,28 @@ export function getDefaultBaseLegWidthCm(style: unknown = DEFAULT_BASE_LEG_STYLE
     : DEFAULT_BASE_LEG_WIDTH_CM;
 }
 
-export function normalizeBaseLegHeightCm(value: unknown, fallback = DEFAULT_BASE_LEG_HEIGHT_CM): number {
+export function normalizeBaseLegHeightCm(value: unknown, defaultValue = DEFAULT_BASE_LEG_HEIGHT_CM): number {
   const parsed = parseFiniteNumber(value);
-  const fallbackParsed = Number.isFinite(fallback) ? Number(fallback) : DEFAULT_BASE_LEG_HEIGHT_CM;
-  const raw = Number.isFinite(parsed) ? parsed : fallbackParsed;
+  const defaultParsed = Number.isFinite(defaultValue) ? Number(defaultValue) : DEFAULT_BASE_LEG_HEIGHT_CM;
+  const raw = Number.isFinite(parsed) ? parsed : defaultParsed;
   const clamped = Math.max(BASE_LEG_HEIGHT_MIN_CM, Math.min(BASE_LEG_HEIGHT_MAX_CM, raw));
   return Math.round(clamped);
 }
 
-export function normalizeBaseLegWidthCm(value: unknown, fallback = DEFAULT_BASE_LEG_WIDTH_CM): number {
+export function normalizeBaseLegWidthCm(value: unknown, defaultValue = DEFAULT_BASE_LEG_WIDTH_CM): number {
   const parsed = parseFiniteNumber(value);
-  const fallbackParsed = Number.isFinite(fallback) ? Number(fallback) : DEFAULT_BASE_LEG_WIDTH_CM;
-  const raw = Number.isFinite(parsed) ? parsed : fallbackParsed;
+  const defaultParsed = Number.isFinite(defaultValue) ? Number(defaultValue) : DEFAULT_BASE_LEG_WIDTH_CM;
+  const raw = Number.isFinite(parsed) ? parsed : defaultParsed;
   const clamped = Math.max(BASE_LEG_WIDTH_MIN_CM, Math.min(BASE_LEG_WIDTH_MAX_CM, raw));
   return Math.round(clamped * 10) / 10;
 }
 
-export function getBaseLegHeightM(value: unknown, fallback?: number): number {
-  return normalizeBaseLegHeightCm(value, fallback) / 100;
+export function getBaseLegHeightM(value: unknown, defaultValue?: number): number {
+  return normalizeBaseLegHeightCm(value, defaultValue) / 100;
 }
 
-export function getBaseLegWidthM(value: unknown, fallback?: number): number {
-  return normalizeBaseLegWidthCm(value, fallback) / 100;
+export function getBaseLegWidthM(value: unknown, defaultValue?: number): number {
+  return normalizeBaseLegWidthCm(value, defaultValue) / 100;
 }
 
 export function getBaseLegColorHex(value: unknown): string {

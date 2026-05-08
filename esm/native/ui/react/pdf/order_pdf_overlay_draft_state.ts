@@ -74,7 +74,7 @@ export function createOrderPdfInitialDraft(seed: OrderPdfDraftSeed): {
   const initialSupportFields = buildOrderPdfInitialDraftSupportFields({
     seed,
     textApi: { safeStr, textToHtml, htmlToTextPreserveNewlines },
-    fallbackProjectName: 'פרויקט',
+    defaultProjectName: 'פרויקט',
   });
 
   return {
@@ -189,7 +189,7 @@ export function resolveOrderPdfRefreshAuto(args: {
         currentDraft: prev,
         source,
         textApi: { safeStr, textToHtml, htmlToTextPreserveNewlines },
-        fallbackProjectName: 'פרויקט',
+        defaultProjectName: 'פרויקט',
       }),
       ...createOrderPdfDetailsFields({
         autoDetails: newAutoDetails,

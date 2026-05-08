@@ -1,14 +1,14 @@
 # Legacy / fallback audit
 
-Generated at: 2026-05-08T11:55:30.692Z
+Generated at: 2026-05-08T12:23:08.451Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **529**
-- Files with occurrences: **193**
+- Total categorized occurrences: **464**
+- Files with occurrences: **185**
 - Category counts:
-  - `runtime-default`: **508**
+  - `runtime-default`: **443**
   - `browser-adapter`: **9**
   - `project-migration`: **5**
   - `test-fixture`: **7**
@@ -25,12 +25,6 @@ Generated at: 2026-05-08T11:55:30.692Z
 
 ## Hot files
 
-- `esm/native/platform/platform_util.ts` — **12** (runtime-default: 12)
-- `esm/native/ui/pdf/order_pdf_document_fields_runtime.ts` — **11** (runtime-default: 11)
-- `esm/native/ui/react/actions/cloud_sync_actions.ts` — **11** (runtime-default: 11)
-- `esm/native/features/base_leg_support.ts` — **10** (runtime-default: 10)
-- `esm/native/kernel/kernel_state_kernel_config_shared.ts` — **9** (runtime-default: 9)
-- `esm/native/ui/react/tabs/design_tab_shared.ts` — **9** (runtime-default: 9)
 - `esm/native/builder/hinged_doors_module_ops_context.ts` — **8** (runtime-default: 8)
 - `esm/native/features/modules_configuration/corner_cells_snapshot_shared.ts` — **7** (runtime-default: 7)
 - `esm/native/features/modules_configuration/modules_config_contracts.ts` — **7** (runtime-default: 7)
@@ -55,6 +49,12 @@ Generated at: 2026-05-08T11:55:30.692Z
 - `esm/native/runtime/render_runtime_primitives.ts` — **5** (runtime-default: 5)
 - `esm/native/builder/corner_geometry_plan.ts` — **4** (runtime-default: 4)
 - `esm/native/builder/corner_state_normalize_shared.ts` — **4** (runtime-default: 4)
+- `esm/native/builder/external_drawers_pipeline.ts` — **4** (runtime-default: 4)
+- `esm/native/builder/hinged_doors_module_ops_split_parts.ts` — **4** (runtime-default: 4)
+- `esm/native/builder/module_loop_pipeline_shared.ts` — **4** (runtime-default: 4)
+- `esm/native/builder/render_carcass_ops_shared_readers.ts` — **4** (runtime-default: 4)
+- `esm/native/features/model_record/model_record_normalizer.ts` — **4** (runtime-default: 4)
+- `esm/native/features/sketch_drawer_sizing.ts` — **4** (runtime-default: 4)
 
 ## Allowlist check
 
