@@ -3904,7 +3904,6 @@ body.wp-ui-react .hint-bottom::after {
   visibility: hidden;
   pointer-events: none;
   transition: opacity 0.2s;
-  z-index: var(--wp-z-tooltip);
   box-shadow: var(--wp-r-shadow-tooltip);
 }
 
@@ -3921,6 +3920,10 @@ body.wp-ui-react .hint-bottom::before {
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.2s;
+}
+
+body.wp-ui-react .hint-bottom::after,
+body.wp-ui-react .hint-bottom::before {
   z-index: var(--wp-z-tooltip);
 }
 
@@ -4212,8 +4215,6 @@ body.wp-ui-react .wp-qa-toggle-pin {
   justify-content: center;
   pointer-events: auto;
   cursor: pointer;
-  /* Keep the pin clickable/visible even when the main toggle is hovered */
-  z-index: var(--wp-z-quick-actions-pin);
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid rgba(203, 213, 225, 0.95);
   box-shadow: var(--wp-r-shadow-chip);
@@ -4240,7 +4241,6 @@ body.wp-ui-react .wp-qa-toggle-pin:hover {
   border-color: rgba(59, 130, 246, 0.55);
   background: rgba(255, 255, 255, 0.98);
   transform: translateY(-1px);
-  z-index: var(--wp-z-quick-actions-pin-hover);
 }
 
 body.wp-ui-react .wp-qa-toggle-pin:active {
@@ -4275,7 +4275,6 @@ body.wp-ui-react .wp-qa-sync-dock {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: var(--wp-z-quick-actions-dock);
   overflow: visible;
 }
 
@@ -4304,8 +4303,6 @@ body.wp-ui-react .wp-qa-sync-pin {
   justify-content: center;
   pointer-events: auto;
   cursor: pointer;
-  /* Keep the pin clickable/visible even when the big sync button is hovered */
-  z-index: var(--wp-z-quick-actions-pin);
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid rgba(203, 213, 225, 0.95);
   box-shadow: var(--wp-r-shadow-chip);
@@ -4333,7 +4330,6 @@ body.wp-ui-react .wp-qa-sync-pin:hover {
   background: rgba(255, 255, 255, 0.98);
   transform: translateY(-2px);
   color: #3b82f6;
-  z-index: var(--wp-z-quick-actions-pin-hover);
 }
 
 body.wp-ui-react .wp-qa-sync-pin:active {
@@ -4361,7 +4357,6 @@ body.wp-ui-react .wp-qa-menu {
   background: transparent;
   border: none;
   box-shadow: none;
-  z-index: var(--wp-z-quick-actions-dock);
   overflow: visible;
 }
 
@@ -4401,7 +4396,6 @@ body.wp-ui-react .wp-qa-btn:hover {
   transform: translateY(-2px);
   color: #3b82f6;
   box-shadow: var(--wp-r-shadow-floating-hover);
-  z-index: var(--wp-z-quick-actions-hover);
 }
 
 /* The bottom sketch-sync button inside the menu */
@@ -4432,15 +4426,31 @@ body.wp-ui-react .wp-qa-sync:hover {
   transform: translateY(-2px);
   color: #3b82f6;
   box-shadow: var(--wp-r-shadow-floating-hover);
+}
+
+/* Keep quick-action pins, docks, and hover states in one explicit layer map. */
+body.wp-ui-react .wp-qa-toggle-pin,
+body.wp-ui-react .wp-qa-sync-pin {
+  z-index: var(--wp-z-quick-actions-pin);
+}
+
+body.wp-ui-react .wp-qa-toggle-pin:hover,
+body.wp-ui-react .wp-qa-sync-pin:hover {
+  z-index: var(--wp-z-quick-actions-pin-hover);
+}
+
+body.wp-ui-react .wp-qa-sync-dock,
+body.wp-ui-react .wp-qa-menu {
+  z-index: var(--wp-z-quick-actions-dock);
+}
+
+body.wp-ui-react .wp-qa-btn:hover,
+body.wp-ui-react .wp-qa-sync:hover {
   z-index: var(--wp-z-quick-actions-hover);
 }
 
-/* Ensure tooltips never hide behind sibling buttons */
-body.wp-ui-react .wp-qa-menu .hint-bottom:hover {
-  z-index: var(--wp-z-quick-actions-tooltip);
-}
-
-/* Also applies to the toggle and its pins */
+/* Ensure tooltips never hide behind sibling buttons. */
+body.wp-ui-react .wp-qa-menu .hint-bottom:hover,
 body.wp-ui-react .wp-qa-anchor .hint-bottom:hover {
   z-index: var(--wp-z-quick-actions-tooltip);
 }
@@ -4539,7 +4549,6 @@ body.wp-ui-react .wp-pdf-editor-btn {
   cursor: pointer;
   user-select: none;
   position: relative;
-  z-index: var(--wp-z-local-raised);
   box-shadow: var(--wp-r-shadow-pdf-button);
   transition:
     transform 0.14s ease,
@@ -4559,7 +4568,6 @@ body.wp-ui-react .wp-pdf-editor-btn i {
 
 body.wp-ui-react .wp-pdf-editor-btn:focus-visible {
   outline: none;
-  z-index: var(--wp-z-local-focus);
   box-shadow: var(--wp-r-shadow-pdf-button-focus);
 }
 
@@ -4572,7 +4580,6 @@ body.wp-ui-react .wp-pdf-editor-btn:disabled {
 
 body.wp-ui-react .wp-pdf-editor-btn:hover:not(:disabled) {
   transform: translateY(-1px);
-  z-index: var(--wp-z-local-focus);
   border-color: rgba(59, 130, 246, 0.28);
   box-shadow: var(--wp-r-shadow-pdf-button-hover);
   background: linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(241, 245, 249, 0.96));
@@ -4728,7 +4735,6 @@ body.wp-ui-react .wp-pdf-editor-toggle {
   cursor: pointer;
   user-select: none;
   position: relative;
-  z-index: var(--wp-z-local-raised);
   box-shadow: var(--wp-r-shadow-pdf-toggle);
   font-size: 13px;
   font-weight: 700;
@@ -4751,7 +4757,6 @@ body.wp-ui-react .wp-pdf-editor-toggle:hover {
   border-color: rgba(59, 130, 246, 0.24);
   box-shadow: var(--wp-r-shadow-pdf-toggle-hover);
   transform: translateY(-1px);
-  z-index: var(--wp-z-local-focus);
 }
 
 body.wp-ui-react .wp-pdf-editor-toggle:active {
@@ -4767,8 +4772,19 @@ body.wp-ui-react .wp-pdf-editor-toggle.is-on {
 
 body.wp-ui-react .wp-pdf-editor-toggle:focus-visible {
   outline: none;
-  z-index: var(--wp-z-local-focus);
   box-shadow: var(--wp-r-shadow-pdf-toggle-focus);
+}
+
+body.wp-ui-react .wp-pdf-editor-btn,
+body.wp-ui-react .wp-pdf-editor-toggle {
+  z-index: var(--wp-z-local-raised);
+}
+
+body.wp-ui-react .wp-pdf-editor-btn:focus-visible,
+body.wp-ui-react .wp-pdf-editor-btn:hover:not(:disabled),
+body.wp-ui-react .wp-pdf-editor-toggle:hover,
+body.wp-ui-react .wp-pdf-editor-toggle:focus-visible {
+  z-index: var(--wp-z-local-focus);
 }
 
 @media (max-width: 1480px) {
@@ -5500,7 +5516,6 @@ body.wp-ui-react .wp-pdf-sketch-card-canvas.is-eraser {
 body.wp-ui-react .wp-pdf-sketch-card-text-layer {
   position: absolute;
   inset: 0;
-  z-index: var(--wp-z-local-active);
   pointer-events: none;
 }
 
@@ -5513,6 +5528,7 @@ body.wp-ui-react .wp-pdf-sketch-card-text-layer.is-text-mode {
   pointer-events: none;
 }
 
+body.wp-ui-react .wp-pdf-sketch-card-text-layer,
 body.wp-ui-react .wp-pdf-sketch-card-text-layer .annotation-box {
   z-index: var(--wp-z-local-active);
 }

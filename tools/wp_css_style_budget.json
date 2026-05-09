@@ -11,7 +11,7 @@
       "description": "Locks transition: all usage; new transitions should name concrete properties."
     },
     "zIndex": {
-      "max": 52,
+      "max": 41,
       "description": "Locks the total z-index declaration count while layering is centralized through tokens."
     },
     "boxShadow": {

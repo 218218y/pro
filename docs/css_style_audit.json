@@ -5,14 +5,14 @@
   "metrics": {
     "important": 1,
     "transitionAll": 0,
-    "zIndex": 52,
+    "zIndex": 41,
     "boxShadow": 0,
     "zIndexTokenless": 0
   },
   "max": {
     "important": 1,
     "transitionAll": 0,
-    "zIndex": 52,
+    "zIndex": 41,
     "boxShadow": 0,
     "zIndexTokenless": 0
   },

@@ -19,6 +19,7 @@ function readJson(file) {
 
 const GUARD_FILE = 'tests/refactor_stage80_measurement_perf_closeout_guard.test.js';
 const CSS_IMPORTANT_RATCHET_CEILING = 1;
+const CSS_Z_INDEX_RATCHET_CEILING = 41;
 
 test('stage 80 measurement and performance closeout is anchored', () => {
   const pkg = readJson('package.json');
@@ -89,7 +90,10 @@ test('stage 80 measurement and performance closeout is anchored', () => {
     'CSS !important budget must not drift above the latest cleanup ratchet'
   );
   assert.equal(cssBudget.metrics.transitionAll.max, 0);
-  assert.equal(cssBudget.metrics.zIndex.max, 52);
+  assert.ok(
+    cssBudget.metrics.zIndex.max <= CSS_Z_INDEX_RATCHET_CEILING,
+    'CSS z-index budget must not drift above the latest cleanup ratchet'
+  );
   assert.equal(cssBudget.metrics.zIndexTokenless.max, 0);
   assert.equal(cssBudget.metrics.boxShadow.max, 0);
   assert.match(cssAudit, /budgetPath/);
