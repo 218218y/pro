@@ -15,7 +15,7 @@ export type StructuralModulesRecomputeMetaDefaults = {
   force?: boolean;
 };
 
-export type StructuralModulesRecomputeFallbackBuildOpts = {
+export type StructuralModulesRecomputeRecoveryBuildOpts = {
   source?: string;
   reason?: string;
 };
@@ -94,30 +94,30 @@ export function readStructuralModulesRecomputeResult(
     : null;
 }
 
-function createStructuralModulesFallbackBuildMeta(
+function createStructuralModulesRecoveryBuildMeta(
   meta?: ActionMetaLike | null,
   defaults?: StructuralModulesRecomputeMetaDefaults | null,
-  fallback?: StructuralModulesRecomputeFallbackBuildOpts | null
+  recovery?: StructuralModulesRecomputeRecoveryBuildOpts | null
 ): ActionMetaLike {
   const recomputeMeta = createStructuralModulesRecomputeMeta(meta, defaults);
   const defaultSource = readStructuralMetaString(recomputeMeta.source) || 'actions:modules:recomputeFromUi';
-  const explicitSource = readStructuralMetaString(fallback?.source);
-  const source = explicitSource || `${defaultSource}:fallbackBuild`;
+  const explicitSource = readStructuralMetaString(recovery?.source);
+  const source = explicitSource || `${defaultSource}:recoveryBuild`;
   const reason =
-    readStructuralMetaString(fallback?.reason) ||
+    readStructuralMetaString(recovery?.reason) ||
     readStructuralMetaString((meta as ActionMetaLike | null | undefined)?.reason) ||
     defaultSource;
   return { source, reason };
 }
 
-function maybeRequestStructuralModulesFallbackBuild(
+function maybeRequestStructuralModulesRecoveryBuild(
   App: AppContainer,
   meta?: ActionMetaLike | null,
   defaults?: StructuralModulesRecomputeMetaDefaults | null,
-  fallback?: StructuralModulesRecomputeFallbackBuildOpts | null
+  recovery?: StructuralModulesRecomputeRecoveryBuildOpts | null
 ): boolean {
-  if (!fallback) return false;
-  return requestBuilderForcedBuild(App, createStructuralModulesFallbackBuildMeta(meta, defaults, fallback));
+  if (!recovery) return false;
+  return requestBuilderForcedBuild(App, createStructuralModulesRecoveryBuildMeta(meta, defaults, recovery));
 }
 
 export function didStructuralModulesRecomputeFail(result: unknown): boolean {
@@ -147,16 +147,16 @@ export function runAppStructuralModulesRecompute(
   meta?: ActionMetaLike | null,
   defaults?: StructuralModulesRecomputeMetaDefaults | null,
   opts?: ModulesRecomputeFromUiOptionsLike | null,
-  fallbackBuild?: StructuralModulesRecomputeFallbackBuildOpts | null
+  recoveryBuild?: StructuralModulesRecomputeRecoveryBuildOpts | null
 ): unknown {
   const recomputeFromUi = getAppStructuralModulesRecompute(App);
   if (typeof recomputeFromUi !== 'function') {
-    maybeRequestStructuralModulesFallbackBuild(App, meta, defaults, fallbackBuild);
+    maybeRequestStructuralModulesRecoveryBuild(App, meta, defaults, recoveryBuild);
     return undefined;
   }
   const result = runStructuralModulesRecompute(recomputeFromUi, uiOverride, meta, defaults, opts);
   if (didStructuralModulesRecomputeFail(result)) {
-    maybeRequestStructuralModulesFallbackBuild(App, meta, defaults, fallbackBuild);
+    maybeRequestStructuralModulesRecoveryBuild(App, meta, defaults, recoveryBuild);
   }
   return result;
 }

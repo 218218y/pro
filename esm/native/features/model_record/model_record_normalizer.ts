@@ -25,7 +25,7 @@ function cloneRecord(value: unknown): UnknownRecord | null {
   return isRecord(value) ? { ...value } : null;
 }
 
-function cloneJsonValue<T>(value: T, fallback: T): T {
+function cloneJsonValue<T>(value: T, defaultValue: T): T {
   try {
     if (typeof structuredClone === 'function') return structuredClone(value);
   } catch {
@@ -34,7 +34,7 @@ function cloneJsonValue<T>(value: T, fallback: T): T {
   try {
     return JSON.parse(JSON.stringify(value)) as T;
   } catch {
-    return fallback;
+    return defaultValue;
   }
 }
 
@@ -54,9 +54,9 @@ function normalizeWardrobeType(value: unknown): 'hinged' | 'sliding' {
   return value === 'sliding' ? 'sliding' : 'hinged';
 }
 
-function toIntMin(v: unknown, fallback: number, min: number): number {
+function toIntMin(v: unknown, defaultValue: number, min: number): number {
   const n = parseInt(String(v ?? ''), 10);
-  return Number.isFinite(n) && n >= min ? n : fallback;
+  return Number.isFinite(n) && n >= min ? n : defaultValue;
 }
 
 function buildTopModulesStructure(settings: unknown): unknown[] {

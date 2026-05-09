@@ -175,7 +175,7 @@ test('room wardrobe type runtime: first switch to sliding uses sliding defaults 
   assert.equal(h.builderCalls.length, 0);
 });
 
-test('room wardrobe type runtime: legacy undefined recompute results stay handled and do not force a fallback build', () => {
+test('room wardrobe type runtime: undefined recompute results stay handled and do not force a recovery build', () => {
   const h = createHarness({
     ui: { raw: { width: 160, height: 240, depth: 55, doors: 4 } },
     config: { wardrobeType: 'hinged' },
@@ -188,7 +188,7 @@ test('room wardrobe type runtime: legacy undefined recompute results stay handle
   assert.equal(h.builderCalls.length, 0);
 });
 
-test('room wardrobe type runtime: explicit recompute rejection falls back to a forced builder rebuild', () => {
+test('room wardrobe type runtime: explicit recompute rejection requests a forced recovery rebuild', () => {
   const h = createHarness({
     ui: { raw: { width: 160, height: 240, depth: 55, doors: 4 } },
     config: { wardrobeType: 'hinged' },
@@ -202,7 +202,7 @@ test('room wardrobe type runtime: explicit recompute rejection falls back to a f
     [
       null,
       {
-        source: 'actions:room:setWardrobeType:recomputeFallback',
+        source: 'actions:room:setWardrobeType:recomputeRecovery',
         reason: 'wardrobeType:init',
         immediate: true,
         force: true,
@@ -211,7 +211,7 @@ test('room wardrobe type runtime: explicit recompute rejection falls back to a f
   ]);
 });
 
-test('room wardrobe type runtime: explicit recompute failure result falls back to a forced builder rebuild', () => {
+test('room wardrobe type runtime: explicit recompute failure result requests a forced recovery rebuild', () => {
   const h = createHarness({
     runtime: {
       wardrobeTypeProfiles: {
@@ -231,7 +231,7 @@ test('room wardrobe type runtime: explicit recompute failure result falls back t
     [
       null,
       {
-        source: 'actions:room:setWardrobeType:recomputeFallback',
+        source: 'actions:room:setWardrobeType:recomputeRecovery',
         reason: 'wardrobeType:restore',
         immediate: true,
         force: true,

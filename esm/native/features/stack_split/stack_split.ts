@@ -38,14 +38,14 @@ function clamp(n: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, n));
 }
 
-function asFinitePositiveNumber(v: unknown, fallback: number): number {
+function asFinitePositiveNumber(v: unknown, defaultValue: number): number {
   const n = Number(v);
-  return Number.isFinite(n) && n > 0 ? n : fallback;
+  return Number.isFinite(n) && n > 0 ? n : defaultValue;
 }
 
-function asFiniteInt(v: unknown, fallback: number): number {
+function asFiniteInt(v: unknown, defaultValue: number): number {
   const n = Math.round(Number(v));
-  return Number.isFinite(n) ? n : fallback;
+  return Number.isFinite(n) ? n : defaultValue;
 }
 
 export function normalizeStackSplit(args: {
@@ -113,11 +113,11 @@ export function normalizeStackSplit(args: {
     : asFinitePositiveNumber(overallDepthCm, overallDepthCm);
 
   // Lower width/doors may be independent (manual) or linked (default).
-  const overallWidthFallback =
+  const defaultOverallWidth =
     typeof args.overallWidthCm === 'number' && Number.isFinite(args.overallWidthCm) && args.overallWidthCm > 0
       ? args.overallWidthCm
       : 0;
-  const overallDoorsFallback =
+  const defaultOverallDoors =
     typeof args.overallDoorsCount === 'number' &&
     Number.isFinite(args.overallDoorsCount) &&
     args.overallDoorsCount >= 0
@@ -127,16 +127,16 @@ export function normalizeStackSplit(args: {
   let lowerWidthCm = lowerWidthManual
     ? asFinitePositiveNumber(
         args.rawLowerWidthCm,
-        overallWidthFallback || WARDROBE_DEFAULTS.stackSplit.lowerWidthFallbackCm
+        defaultOverallWidth || WARDROBE_DEFAULTS.stackSplit.lowerWidthFallbackCm
       )
     : asFinitePositiveNumber(
-        overallWidthFallback || WARDROBE_DEFAULTS.stackSplit.lowerWidthFallbackCm,
-        overallWidthFallback || WARDROBE_DEFAULTS.stackSplit.lowerWidthFallbackCm
+        defaultOverallWidth || WARDROBE_DEFAULTS.stackSplit.lowerWidthFallbackCm,
+        defaultOverallWidth || WARDROBE_DEFAULTS.stackSplit.lowerWidthFallbackCm
       );
 
   let lowerDoorsCount = lowerDoorsManual
-    ? asFiniteInt(args.rawLowerDoorsCount, overallDoorsFallback)
-    : asFiniteInt(overallDoorsFallback, overallDoorsFallback);
+    ? asFiniteInt(args.rawLowerDoorsCount, defaultOverallDoors)
+    : asFiniteInt(defaultOverallDoors, defaultOverallDoors);
 
   let active = enabled;
 

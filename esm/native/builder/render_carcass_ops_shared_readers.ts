@@ -97,12 +97,12 @@ export function __asOps(v: unknown) {
     : null;
 }
 
-export function __asFinite(v: unknown, fallback = NaN): number {
-  return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
+export function __asFinite(v: unknown, defaultValue = NaN): number {
+  return typeof v === 'number' && Number.isFinite(v) ? v : defaultValue;
 }
 
-export function __asString(v: unknown, fallback = ''): string {
-  return typeof v === 'string' ? v : v == null ? fallback : String(v);
+export function __asString(v: unknown, defaultValue = ''): string {
+  return typeof v === 'string' ? v : v == null ? defaultValue : String(v);
 }
 
 export function __asBool(v: unknown): boolean {

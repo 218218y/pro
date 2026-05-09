@@ -110,7 +110,7 @@ function loadStructureActionsControllerModule(calls, overrides = {}) {
             return false;
           }),
         resetCameraPreset: (...args) => calls.push(['resetCameraPreset', ...args]),
-        runAppStructuralModulesRecompute: (app, uiOverride, meta, defaults, opts, fallbackBuild) => {
+        runAppStructuralModulesRecompute: (app, uiOverride, meta, defaults, opts, recoveryBuild) => {
           calls.push([
             'runAppStructuralModulesRecompute',
             app,
@@ -118,9 +118,9 @@ function loadStructureActionsControllerModule(calls, overrides = {}) {
             meta,
             defaults,
             opts,
-            fallbackBuild,
+            recoveryBuild,
           ]);
-          return calls.push(['recomputeFromUi:viaApp', app, uiOverride, meta, opts, fallbackBuild || null]);
+          return calls.push(['recomputeFromUi:viaApp', app, uiOverride, meta, opts, recoveryBuild || null]);
         },
       };
     }

@@ -262,13 +262,13 @@ export function readCurtainResolver(value: unknown): BuilderCurtainResolver | un
 
   const resolver: BuilderCurtainResolver = (
     doorOrPartId: number | string,
-    suffixOrFallback: string | null | undefined,
-    fallback?: string | null | undefined
+    suffixOrDefault: string | null | undefined,
+    defaultCurtain?: string | null | undefined
   ): string | null | undefined => {
     const args =
       typeof doorOrPartId === 'number'
-        ? [doorOrPartId, suffixOrFallback, fallback]
-        : [doorOrPartId, suffixOrFallback];
+        ? [doorOrPartId, suffixOrDefault, defaultCurtain]
+        : [doorOrPartId, suffixOrDefault];
     const out = Reflect.apply(value, undefined, args);
     return typeof out === 'string' || out == null ? out : String(out);
   };
@@ -278,8 +278,8 @@ export function readCurtainResolver(value: unknown): BuilderCurtainResolver | un
 
 export function readHingeDirResolver(value: unknown): BuilderHingeDirResolver | undefined {
   if (typeof value !== 'function') return undefined;
-  return (hingeKey: string, fallback: HingeDir) => {
-    const out = Reflect.apply(value, undefined, [hingeKey, fallback]);
+  return (hingeKey: string, defaultDirection: HingeDir) => {
+    const out = Reflect.apply(value, undefined, [hingeKey, defaultDirection]);
     return out === 'right' ? 'right' : 'left';
   };
 }

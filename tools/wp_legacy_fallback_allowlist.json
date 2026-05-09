@@ -39,12 +39,6 @@
         "runtime-default": 1
       }
     },
-    "esm/native/builder/build_string_normalizer.ts": {
-      "total": 5,
-      "categories": {
-        "runtime-default": 5
-      }
-    },
     "esm/native/builder/corner_connector_cornice_shared.ts": {
       "total": 2,
       "categories": {
@@ -55,18 +49,6 @@
       "total": 1,
       "categories": {
         "runtime-default": 1
-      }
-    },
-    "esm/native/builder/corner_geometry_plan.ts": {
-      "total": 4,
-      "categories": {
-        "runtime-default": 4
-      }
-    },
-    "esm/native/builder/corner_state_normalize_shared.ts": {
-      "total": 4,
-      "categories": {
-        "runtime-default": 4
       }
     },
     "esm/native/builder/corner_wing_carcass_shared.ts": {
@@ -117,18 +99,6 @@
         "runtime-default": 2
       }
     },
-    "esm/native/builder/external_drawers_pipeline.ts": {
-      "total": 4,
-      "categories": {
-        "runtime-default": 4
-      }
-    },
-    "esm/native/builder/hinged_doors_module_ops_split_parts.ts": {
-      "total": 4,
-      "categories": {
-        "runtime-default": 4
-      }
-    },
     "esm/native/builder/hinged_doors_shared.ts": {
       "total": 2,
       "categories": {
@@ -153,12 +123,6 @@
         "runtime-default": 1
       }
     },
-    "esm/native/builder/module_loop_pipeline_shared.ts": {
-      "total": 4,
-      "categories": {
-        "runtime-default": 4
-      }
-    },
     "esm/native/builder/post_build_extras_pipeline.ts": {
       "total": 1,
       "categories": {
@@ -181,12 +145,6 @@
       "total": 1,
       "categories": {
         "runtime-default": 1
-      }
-    },
-    "esm/native/builder/render_carcass_ops_shared_readers.ts": {
-      "total": 4,
-      "categories": {
-        "runtime-default": 4
       }
     },
     "esm/native/builder/render_dimension_ops_shared.ts": {
@@ -327,12 +285,6 @@
         "runtime-default": 3
       }
     },
-    "esm/native/features/model_record/model_record_normalizer.ts": {
-      "total": 4,
-      "categories": {
-        "runtime-default": 4
-      }
-    },
     "esm/native/features/modules_configuration/corner_cells_patch.ts": {
       "total": 2,
       "categories": {
@@ -351,22 +303,10 @@
         "project-migration": 1
       }
     },
-    "esm/native/features/sketch_drawer_sizing.ts": {
-      "total": 4,
-      "categories": {
-        "runtime-default": 4
-      }
-    },
     "esm/native/features/stack_split/module_config.ts": {
       "total": 2,
       "categories": {
         "runtime-default": 2
-      }
-    },
-    "esm/native/features/stack_split/stack_split.ts": {
-      "total": 4,
-      "categories": {
-        "runtime-default": 4
       }
     },
     "esm/native/io/project_io_feedback_bridge.ts": {
@@ -403,24 +343,6 @@
       "total": 1,
       "categories": {
         "runtime-default": 1
-      }
-    },
-    "esm/native/kernel/kernel_install_support.ts": {
-      "total": 5,
-      "categories": {
-        "runtime-default": 5
-      }
-    },
-    "esm/native/kernel/kernel_project_capture_shared.ts": {
-      "total": 5,
-      "categories": {
-        "runtime-default": 5
-      }
-    },
-    "esm/native/kernel/kernel_shared.ts": {
-      "total": 4,
-      "categories": {
-        "runtime-default": 4
       }
     },
     "esm/native/kernel/kernel_snapshot_store_contracts.ts": {
@@ -537,28 +459,10 @@
         "runtime-default": 2
       }
     },
-    "esm/native/runtime/cfg_access_core.ts": {
-      "total": 5,
-      "categories": {
-        "runtime-default": 5
-      }
-    },
     "esm/native/runtime/doors_access_shared.ts": {
       "total": 2,
       "categories": {
         "runtime-default": 2
-      }
-    },
-    "esm/native/runtime/doors_runtime_support_shared.ts": {
-      "total": 5,
-      "categories": {
-        "runtime-default": 5
-      }
-    },
-    "esm/native/runtime/error_normalization.ts": {
-      "total": 5,
-      "categories": {
-        "runtime-default": 5
       }
     },
     "esm/native/runtime/meta_profiles_access.ts": {
@@ -585,22 +489,10 @@
         "runtime-default": 2
       }
     },
-    "esm/native/runtime/modules_recompute_request_policy.ts": {
-      "total": 6,
-      "categories": {
-        "runtime-default": 6
-      }
-    },
     "esm/native/runtime/platform_access_ops.ts": {
       "total": 4,
       "categories": {
         "runtime-default": 4
-      }
-    },
-    "esm/native/runtime/render_runtime_primitives.ts": {
-      "total": 5,
-      "categories": {
-        "runtime-default": 5
       }
     },
     "esm/native/runtime/runtime_write_access.ts": {

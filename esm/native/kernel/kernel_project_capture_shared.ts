@@ -60,17 +60,17 @@ function cloneProjectCaptureJsonValue(
   }
 }
 
-export function cloneProjectCaptureValue<T>(value: T | undefined, fallback: T): T {
-  if (typeof value === 'undefined') return fallback;
+export function cloneProjectCaptureValue<T>(value: T | undefined, defaultValue: T): T {
+  if (typeof value === 'undefined') return defaultValue;
   try {
     const serialized = JSON.stringify(value);
-    if (typeof serialized !== 'string') return fallback;
+    if (typeof serialized !== 'string') return defaultValue;
     const parsed: unknown = JSON.parse(serialized);
     const cloned = cloneProjectCaptureJsonValue(parsed);
-    return (typeof cloned === 'undefined' ? fallback : cloned) as T;
+    return (typeof cloned === 'undefined' ? defaultValue : cloned) as T;
   } catch {
     const cloned = cloneProjectCaptureJsonValue(value);
-    return (typeof cloned === 'undefined' ? fallback : cloned) as T;
+    return (typeof cloned === 'undefined' ? defaultValue : cloned) as T;
   }
 }
 

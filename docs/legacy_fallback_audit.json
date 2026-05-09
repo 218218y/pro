@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-08T12:53:03.262Z",
+  "generatedAt": "2026-05-09T18:19:49.419Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 385,
-    "totalFiles": 172,
+    "totalOccurrences": 304,
+    "totalFiles": 154,
     "byCategory": {
-      "runtime-default": 364,
+      "runtime-default": 283,
       "browser-adapter": 9,
       "project-migration": 5,
       "test-fixture": 7,
@@ -49,12 +49,6 @@
           "runtime-default": 1
         }
       },
-      "esm/native/builder/build_string_normalizer.ts": {
-        "total": 5,
-        "categories": {
-          "runtime-default": 5
-        }
-      },
       "esm/native/builder/corner_connector_cornice_shared.ts": {
         "total": 2,
         "categories": {
@@ -65,18 +59,6 @@
         "total": 1,
         "categories": {
           "runtime-default": 1
-        }
-      },
-      "esm/native/builder/corner_geometry_plan.ts": {
-        "total": 4,
-        "categories": {
-          "runtime-default": 4
-        }
-      },
-      "esm/native/builder/corner_state_normalize_shared.ts": {
-        "total": 4,
-        "categories": {
-          "runtime-default": 4
         }
       },
       "esm/native/builder/corner_wing_carcass_shared.ts": {
@@ -127,18 +109,6 @@
           "runtime-default": 2
         }
       },
-      "esm/native/builder/external_drawers_pipeline.ts": {
-        "total": 4,
-        "categories": {
-          "runtime-default": 4
-        }
-      },
-      "esm/native/builder/hinged_doors_module_ops_split_parts.ts": {
-        "total": 4,
-        "categories": {
-          "runtime-default": 4
-        }
-      },
       "esm/native/builder/hinged_doors_shared.ts": {
         "total": 2,
         "categories": {
@@ -163,12 +133,6 @@
           "runtime-default": 1
         }
       },
-      "esm/native/builder/module_loop_pipeline_shared.ts": {
-        "total": 4,
-        "categories": {
-          "runtime-default": 4
-        }
-      },
       "esm/native/builder/post_build_extras_pipeline.ts": {
         "total": 1,
         "categories": {
@@ -191,12 +155,6 @@
         "total": 1,
         "categories": {
           "runtime-default": 1
-        }
-      },
-      "esm/native/builder/render_carcass_ops_shared_readers.ts": {
-        "total": 4,
-        "categories": {
-          "runtime-default": 4
         }
       },
       "esm/native/builder/render_dimension_ops_shared.ts": {
@@ -337,12 +295,6 @@
           "runtime-default": 3
         }
       },
-      "esm/native/features/model_record/model_record_normalizer.ts": {
-        "total": 4,
-        "categories": {
-          "runtime-default": 4
-        }
-      },
       "esm/native/features/modules_configuration/corner_cells_patch.ts": {
         "total": 2,
         "categories": {
@@ -361,22 +313,10 @@
           "project-migration": 1
         }
       },
-      "esm/native/features/sketch_drawer_sizing.ts": {
-        "total": 4,
-        "categories": {
-          "runtime-default": 4
-        }
-      },
       "esm/native/features/stack_split/module_config.ts": {
         "total": 2,
         "categories": {
           "runtime-default": 2
-        }
-      },
-      "esm/native/features/stack_split/stack_split.ts": {
-        "total": 4,
-        "categories": {
-          "runtime-default": 4
         }
       },
       "esm/native/io/project_io_feedback_bridge.ts": {
@@ -413,24 +353,6 @@
         "total": 1,
         "categories": {
           "runtime-default": 1
-        }
-      },
-      "esm/native/kernel/kernel_install_support.ts": {
-        "total": 5,
-        "categories": {
-          "runtime-default": 5
-        }
-      },
-      "esm/native/kernel/kernel_project_capture_shared.ts": {
-        "total": 5,
-        "categories": {
-          "runtime-default": 5
-        }
-      },
-      "esm/native/kernel/kernel_shared.ts": {
-        "total": 4,
-        "categories": {
-          "runtime-default": 4
         }
       },
       "esm/native/kernel/kernel_snapshot_store_contracts.ts": {
@@ -547,28 +469,10 @@
           "runtime-default": 2
         }
       },
-      "esm/native/runtime/cfg_access_core.ts": {
-        "total": 5,
-        "categories": {
-          "runtime-default": 5
-        }
-      },
       "esm/native/runtime/doors_access_shared.ts": {
         "total": 2,
         "categories": {
           "runtime-default": 2
-        }
-      },
-      "esm/native/runtime/doors_runtime_support_shared.ts": {
-        "total": 5,
-        "categories": {
-          "runtime-default": 5
-        }
-      },
-      "esm/native/runtime/error_normalization.ts": {
-        "total": 5,
-        "categories": {
-          "runtime-default": 5
         }
       },
       "esm/native/runtime/meta_profiles_access.ts": {
@@ -595,22 +499,10 @@
           "runtime-default": 2
         }
       },
-      "esm/native/runtime/modules_recompute_request_policy.ts": {
-        "total": 6,
-        "categories": {
-          "runtime-default": 6
-        }
-      },
       "esm/native/runtime/platform_access_ops.ts": {
         "total": 4,
         "categories": {
           "runtime-default": 4
-        }
-      },
-      "esm/native/runtime/render_runtime_primitives.ts": {
-        "total": 5,
-        "categories": {
-          "runtime-default": 5
         }
       },
       "esm/native/runtime/runtime_write_access.ts": {
@@ -1055,136 +947,10 @@
         }
       },
       {
-        "file": "esm/native/runtime/modules_recompute_request_policy.ts",
-        "total": 6,
-        "categories": {
-          "runtime-default": 6
-        }
-      },
-      {
         "file": "esm/test_no_side_effects_on_import.mjs",
         "total": 6,
         "categories": {
           "test-fixture": 6
-        }
-      },
-      {
-        "file": "esm/native/builder/build_string_normalizer.ts",
-        "total": 5,
-        "categories": {
-          "runtime-default": 5
-        }
-      },
-      {
-        "file": "esm/native/kernel/kernel_install_support.ts",
-        "total": 5,
-        "categories": {
-          "runtime-default": 5
-        }
-      },
-      {
-        "file": "esm/native/kernel/kernel_project_capture_shared.ts",
-        "total": 5,
-        "categories": {
-          "runtime-default": 5
-        }
-      },
-      {
-        "file": "esm/native/runtime/cfg_access_core.ts",
-        "total": 5,
-        "categories": {
-          "runtime-default": 5
-        }
-      },
-      {
-        "file": "esm/native/runtime/doors_runtime_support_shared.ts",
-        "total": 5,
-        "categories": {
-          "runtime-default": 5
-        }
-      },
-      {
-        "file": "esm/native/runtime/error_normalization.ts",
-        "total": 5,
-        "categories": {
-          "runtime-default": 5
-        }
-      },
-      {
-        "file": "esm/native/runtime/render_runtime_primitives.ts",
-        "total": 5,
-        "categories": {
-          "runtime-default": 5
-        }
-      },
-      {
-        "file": "esm/native/builder/corner_geometry_plan.ts",
-        "total": 4,
-        "categories": {
-          "runtime-default": 4
-        }
-      },
-      {
-        "file": "esm/native/builder/corner_state_normalize_shared.ts",
-        "total": 4,
-        "categories": {
-          "runtime-default": 4
-        }
-      },
-      {
-        "file": "esm/native/builder/external_drawers_pipeline.ts",
-        "total": 4,
-        "categories": {
-          "runtime-default": 4
-        }
-      },
-      {
-        "file": "esm/native/builder/hinged_doors_module_ops_split_parts.ts",
-        "total": 4,
-        "categories": {
-          "runtime-default": 4
-        }
-      },
-      {
-        "file": "esm/native/builder/module_loop_pipeline_shared.ts",
-        "total": 4,
-        "categories": {
-          "runtime-default": 4
-        }
-      },
-      {
-        "file": "esm/native/builder/render_carcass_ops_shared_readers.ts",
-        "total": 4,
-        "categories": {
-          "runtime-default": 4
-        }
-      },
-      {
-        "file": "esm/native/features/model_record/model_record_normalizer.ts",
-        "total": 4,
-        "categories": {
-          "runtime-default": 4
-        }
-      },
-      {
-        "file": "esm/native/features/sketch_drawer_sizing.ts",
-        "total": 4,
-        "categories": {
-          "runtime-default": 4
-        }
-      },
-      {
-        "file": "esm/native/features/stack_split/stack_split.ts",
-        "total": 4,
-        "categories": {
-          "runtime-default": 4
-        }
-      },
-      {
-        "file": "esm/native/kernel/kernel_shared.ts",
-        "total": 4,
-        "categories": {
-          "runtime-default": 4
         }
       },
       {
@@ -1256,6 +1022,132 @@
         "categories": {
           "runtime-default": 4
         }
+      },
+      {
+        "file": "esm/native/ui/export/export_canvas_delivery_clipboard.ts",
+        "total": 4,
+        "categories": {
+          "runtime-default": 4
+        }
+      },
+      {
+        "file": "esm/native/ui/notes_service_sanitize.ts",
+        "total": 4,
+        "categories": {
+          "runtime-default": 4
+        }
+      },
+      {
+        "file": "esm/native/ui/react/tabs/interior_tab_helpers_core.ts",
+        "total": 4,
+        "categories": {
+          "runtime-default": 4
+        }
+      },
+      {
+        "file": "esm/native/ui/react/tabs/structure_tab_core_numbers.ts",
+        "total": 4,
+        "categories": {
+          "runtime-default": 4
+        }
+      },
+      {
+        "file": "esm/shared/mirror_layout_contracts_shared.ts",
+        "total": 4,
+        "categories": {
+          "runtime-default": 4
+        }
+      },
+      {
+        "file": "esm/native/adapters/browser/ui_ops.ts",
+        "total": 3,
+        "categories": {
+          "browser-adapter": 3
+        }
+      },
+      {
+        "file": "esm/native/builder/corner_wing_carcass_shared.ts",
+        "total": 3,
+        "categories": {
+          "runtime-default": 3
+        }
+      },
+      {
+        "file": "esm/native/builder/render_interior_sketch_boxes_fronts_support.ts",
+        "total": 3,
+        "categories": {
+          "runtime-default": 3
+        }
+      },
+      {
+        "file": "esm/native/builder/visuals_and_contents_shared.ts",
+        "total": 3,
+        "categories": {
+          "runtime-default": 3
+        }
+      },
+      {
+        "file": "esm/native/features/modules_configuration/modules_config_structure.ts",
+        "total": 3,
+        "categories": {
+          "runtime-default": 3
+        }
+      },
+      {
+        "file": "esm/native/kernel/domain_api_shared.ts",
+        "total": 3,
+        "categories": {
+          "runtime-default": 3
+        }
+      },
+      {
+        "file": "esm/native/platform/platform_shared.ts",
+        "total": 3,
+        "categories": {
+          "runtime-default": 3
+        }
+      },
+      {
+        "file": "esm/native/runtime/browser_clipboard.ts",
+        "total": 3,
+        "categories": {
+          "runtime-default": 3
+        }
+      },
+      {
+        "file": "esm/native/services/canvas_picking_core_support_errors.ts",
+        "total": 3,
+        "categories": {
+          "runtime-default": 3
+        }
+      },
+      {
+        "file": "esm/native/services/config_compounds_shared.ts",
+        "total": 3,
+        "categories": {
+          "runtime-default": 3
+        }
+      },
+      {
+        "file": "esm/native/services/doors_runtime_state.ts",
+        "total": 3,
+        "categories": {
+          "runtime-default": 3
+        }
+      },
+      {
+        "file": "esm/native/ui/export/export_canvas_core_canvas.ts",
+        "total": 3,
+        "categories": {
+          "runtime-default": 3
+        }
+      },
+      {
+        "file": "esm/native/ui/react/notes/notes_overlay_helpers_shared.ts",
+        "total": 3,
+        "categories": {
+          "runtime-default": 3
+        }
       }
     ]
   },
@@ -1321,41 +1213,6 @@
       "text": "export type Stringifier = (value: unknown, fallback?: string) => string;"
     },
     {
-      "file": "esm/native/builder/build_string_normalizer.ts",
-      "line": 3,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export type BuildStringNormalizer = (value: unknown, fallback?: string) => string;"
-    },
-    {
-      "file": "esm/native/builder/build_string_normalizer.ts",
-      "line": 5,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function normalizeBuildStringDefault(value: unknown, fallback = ''): string {"
-    },
-    {
-      "file": "esm/native/builder/build_string_normalizer.ts",
-      "line": 6,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "if (value == null) return fallback;"
-    },
-    {
-      "file": "esm/native/builder/build_string_normalizer.ts",
-      "line": 13,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return (value: unknown, fallback = ''): string => platformStringify(value, fallback);"
-    },
-    {
-      "file": "esm/native/builder/build_string_normalizer.ts",
-      "line": 13,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return (value: unknown, fallback = ''): string => platformStringify(value, fallback);"
-    },
-    {
       "file": "esm/native/builder/corner_connector_cornice_shared.ts",
       "line": 66,
       "term": "fallback",
@@ -1375,62 +1232,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "getCornerMat: (partId: string, fallback: unknown) => unknown;"
-    },
-    {
-      "file": "esm/native/builder/corner_geometry_plan.ts",
-      "line": 254,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readNumFrom(obj: unknown, key: string, fallback: number): number {"
-    },
-    {
-      "file": "esm/native/builder/corner_geometry_plan.ts",
-      "line": 257,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return n != null ? n : fallback;"
-    },
-    {
-      "file": "esm/native/builder/corner_geometry_plan.ts",
-      "line": 260,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readStrFrom(obj: unknown, key: string, fallback = ''): string {"
-    },
-    {
-      "file": "esm/native/builder/corner_geometry_plan.ts",
-      "line": 262,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof v === 'string' ? v : v == null ? fallback : String(v);"
-    },
-    {
-      "file": "esm/native/builder/corner_state_normalize_shared.ts",
-      "line": 51,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readStringValue(obj: UnknownRecord, key: string, fallback = ''): string {"
-    },
-    {
-      "file": "esm/native/builder/corner_state_normalize_shared.ts",
-      "line": 53,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return v == null ? fallback : String(v);"
-    },
-    {
-      "file": "esm/native/builder/corner_state_normalize_shared.ts",
-      "line": 56,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readModeConstant(name: string, fallback: string): string {"
-    },
-    {
-      "file": "esm/native/builder/corner_state_normalize_shared.ts",
-      "line": 59,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof v === 'string' && v ? v : fallback;"
     },
     {
       "file": "esm/native/builder/corner_wing_carcass_shared.ts",
@@ -1531,62 +1332,6 @@
       "text": "return readPartColorValue(fallback);"
     },
     {
-      "file": "esm/native/builder/external_drawers_pipeline.ts",
-      "line": 72,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "function readFiniteNumber(value: unknown, fallback: number): number {"
-    },
-    {
-      "file": "esm/native/builder/external_drawers_pipeline.ts",
-      "line": 73,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof value === 'number' && Number.isFinite(value) ? value : fallback;"
-    },
-    {
-      "file": "esm/native/builder/external_drawers_pipeline.ts",
-      "line": 80,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "function readString(value: unknown, fallback = ''): string {"
-    },
-    {
-      "file": "esm/native/builder/external_drawers_pipeline.ts",
-      "line": 81,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof value === 'string' ? value : fallback;"
-    },
-    {
-      "file": "esm/native/builder/hinged_doors_module_ops_split_parts.ts",
-      "line": 21,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function grooveForPart(ctx: HingedDoorModuleOpsContext, partId: string, fallback = false): boolean {"
-    },
-    {
-      "file": "esm/native/builder/hinged_doors_module_ops_split_parts.ts",
-      "line": 24,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "if (!grooveMap) return !!fallback;"
-    },
-    {
-      "file": "esm/native/builder/hinged_doors_module_ops_split_parts.ts",
-      "line": 26,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return !!(grooveMap[`groove_${key}`] || grooveMap[key] || fallback);"
-    },
-    {
-      "file": "esm/native/builder/hinged_doors_module_ops_split_parts.ts",
-      "line": 28,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return !!fallback;"
-    },
-    {
       "file": "esm/native/builder/hinged_doors_shared.ts",
       "line": 113,
       "term": "fallback",
@@ -1636,34 +1381,6 @@
       "text": "// Optional pure-core normalization (preferred). If it fails, keep the local math fallback."
     },
     {
-      "file": "esm/native/builder/module_loop_pipeline_shared.ts",
-      "line": 266,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback?: string | null | undefined"
-    },
-    {
-      "file": "esm/native/builder/module_loop_pipeline_shared.ts",
-      "line": 270,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "? [doorOrPartId, suffixOrFallback, fallback]"
-    },
-    {
-      "file": "esm/native/builder/module_loop_pipeline_shared.ts",
-      "line": 281,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return (hingeKey: string, fallback: HingeDir) => {"
-    },
-    {
-      "file": "esm/native/builder/module_loop_pipeline_shared.ts",
-      "line": 282,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const out = Reflect.apply(value, undefined, [hingeKey, fallback]);"
-    },
-    {
       "file": "esm/native/builder/post_build_extras_pipeline.ts",
       "line": 183,
       "term": "fallback",
@@ -1690,34 +1407,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "// ignore handle fallback"
-    },
-    {
-      "file": "esm/native/builder/render_carcass_ops_shared_readers.ts",
-      "line": 100,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function __asFinite(v: unknown, fallback = NaN): number {"
-    },
-    {
-      "file": "esm/native/builder/render_carcass_ops_shared_readers.ts",
-      "line": 101,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof v === 'number' && Number.isFinite(v) ? v : fallback;"
-    },
-    {
-      "file": "esm/native/builder/render_carcass_ops_shared_readers.ts",
-      "line": 104,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function __asString(v: unknown, fallback = ''): string {"
-    },
-    {
-      "file": "esm/native/builder/render_carcass_ops_shared_readers.ts",
-      "line": 105,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof v === 'string' ? v : v == null ? fallback : String(v);"
     },
     {
       "file": "esm/native/builder/render_dimension_ops_shared.ts",
@@ -2000,34 +1689,6 @@
       "text": "const fn = typeof primary === 'function' ? primary : typeof fallback === 'function' ? fallback : null;"
     },
     {
-      "file": "esm/native/features/model_record/model_record_normalizer.ts",
-      "line": 28,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "function cloneJsonValue<T>(value: T, fallback: T): T {"
-    },
-    {
-      "file": "esm/native/features/model_record/model_record_normalizer.ts",
-      "line": 37,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return fallback;"
-    },
-    {
-      "file": "esm/native/features/model_record/model_record_normalizer.ts",
-      "line": 57,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "function toIntMin(v: unknown, fallback: number, min: number): number {"
-    },
-    {
-      "file": "esm/native/features/model_record/model_record_normalizer.ts",
-      "line": 59,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return Number.isFinite(n) && n >= min ? n : fallback;"
-    },
-    {
       "file": "esm/native/features/modules_configuration/corner_cells_patch.ts",
       "line": 145,
       "term": "fallback",
@@ -2070,34 +1731,6 @@
       "text": "// ignore malformed legacy payloads"
     },
     {
-      "file": "esm/native/features/sketch_drawer_sizing.ts",
-      "line": 80,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const fallback = readFiniteNumber(fallbackCm) ?? DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM;"
-    },
-    {
-      "file": "esm/native/features/sketch_drawer_sizing.ts",
-      "line": 82,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const source = raw != null ? raw : fallback;"
-    },
-    {
-      "file": "esm/native/features/sketch_drawer_sizing.ts",
-      "line": 88,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const fallback = readFiniteNumber(fallbackM) ?? DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M;"
-    },
-    {
-      "file": "esm/native/features/sketch_drawer_sizing.ts",
-      "line": 90,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const source = raw != null ? raw : fallback;"
-    },
-    {
       "file": "esm/native/features/stack_split/module_config.ts",
       "line": 28,
       "term": "fallback",
@@ -2107,34 +1740,6 @@
     {
       "file": "esm/native/features/stack_split/module_config.ts",
       "line": 30,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return Number.isFinite(n) ? n : fallback;"
-    },
-    {
-      "file": "esm/native/features/stack_split/stack_split.ts",
-      "line": 41,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "function asFinitePositiveNumber(v: unknown, fallback: number): number {"
-    },
-    {
-      "file": "esm/native/features/stack_split/stack_split.ts",
-      "line": 43,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return Number.isFinite(n) && n > 0 ? n : fallback;"
-    },
-    {
-      "file": "esm/native/features/stack_split/stack_split.ts",
-      "line": 46,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "function asFiniteInt(v: unknown, fallback: number): number {"
-    },
-    {
-      "file": "esm/native/features/stack_split/stack_split.ts",
-      "line": 48,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return Number.isFinite(n) ? n : fallback;"
@@ -2215,104 +1820,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "asRecord: (value: unknown, fallback?: UnknownRecord) => UnknownRecord;"
-    },
-    {
-      "file": "esm/native/kernel/kernel_install_support.ts",
-      "line": 99,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "cloneKernelValue: (value: unknown, fallback?: unknown) => unknown;"
-    },
-    {
-      "file": "esm/native/kernel/kernel_install_support.ts",
-      "line": 135,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const cloneKernelValue = (value: unknown, fallback?: unknown): unknown => {"
-    },
-    {
-      "file": "esm/native/kernel/kernel_install_support.ts",
-      "line": 137,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const cloned = cloneViaPlatform(App, value, fallback);"
-    },
-    {
-      "file": "esm/native/kernel/kernel_install_support.ts",
-      "line": 151,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return fallback !== undefined ? fallback : Array.isArray(value) ? [] : {};"
-    },
-    {
-      "file": "esm/native/kernel/kernel_install_support.ts",
-      "line": 151,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return fallback !== undefined ? fallback : Array.isArray(value) ? [] : {};"
-    },
-    {
-      "file": "esm/native/kernel/kernel_project_capture_shared.ts",
-      "line": 63,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function cloneProjectCaptureValue<T>(value: T | undefined, fallback: T): T {"
-    },
-    {
-      "file": "esm/native/kernel/kernel_project_capture_shared.ts",
-      "line": 64,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "if (typeof value === 'undefined') return fallback;"
-    },
-    {
-      "file": "esm/native/kernel/kernel_project_capture_shared.ts",
-      "line": 67,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "if (typeof serialized !== 'string') return fallback;"
-    },
-    {
-      "file": "esm/native/kernel/kernel_project_capture_shared.ts",
-      "line": 70,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return (typeof cloned === 'undefined' ? fallback : cloned) as T;"
-    },
-    {
-      "file": "esm/native/kernel/kernel_project_capture_shared.ts",
-      "line": 73,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return (typeof cloned === 'undefined' ? fallback : cloned) as T;"
-    },
-    {
-      "file": "esm/native/kernel/kernel_shared.ts",
-      "line": 7,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function asRecord(value: unknown, fallback: UnknownRecord = {}): UnknownRecord {"
-    },
-    {
-      "file": "esm/native/kernel/kernel_shared.ts",
-      "line": 8,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return isRecord(value) ? value : fallback;"
-    },
-    {
-      "file": "esm/native/kernel/kernel_shared.ts",
-      "line": 15,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function asString(value: unknown, fallback = ''): string {"
-    },
-    {
-      "file": "esm/native/kernel/kernel_shared.ts",
-      "line": 20,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": ": fallback;"
     },
     {
       "file": "esm/native/kernel/kernel_snapshot_store_contracts.ts",
@@ -2546,41 +2053,6 @@
       "text": "return buildNormalizedErrorResult('error', error, fallback);"
     },
     {
-      "file": "esm/native/runtime/cfg_access_core.ts",
-      "line": 35,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback?: ConfigScalarValueMap[K]"
-    },
-    {
-      "file": "esm/native/runtime/cfg_access_core.ts",
-      "line": 37,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "<T>(App: unknown, key: string, fallback?: T): T;"
-    },
-    {
-      "file": "esm/native/runtime/cfg_access_core.ts",
-      "line": 40,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export const cfgRead: CfgRead = (App: unknown, key: unknown, fallback?: unknown): unknown => {"
-    },
-    {
-      "file": "esm/native/runtime/cfg_access_core.ts",
-      "line": 42,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "if (!k) return fallback;"
-    },
-    {
-      "file": "esm/native/runtime/cfg_access_core.ts",
-      "line": 45,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return value === undefined ? fallback : value;"
-    },
-    {
       "file": "esm/native/runtime/doors_access_shared.ts",
       "line": 18,
       "term": "fallback",
@@ -2593,76 +2065,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "return Number.isFinite(n) ? n : fallback;"
-    },
-    {
-      "file": "esm/native/runtime/doors_runtime_support_shared.ts",
-      "line": 55,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readNumber(obj: ValueRecord | null, key: string, fallback = 0): number {"
-    },
-    {
-      "file": "esm/native/runtime/doors_runtime_support_shared.ts",
-      "line": 57,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof value === 'number' && Number.isFinite(value) ? value : fallback;"
-    },
-    {
-      "file": "esm/native/runtime/doors_runtime_support_shared.ts",
-      "line": 77,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function getModeConst(key: 'NONE' | 'MANUAL_LAYOUT', fallback: string): string {"
-    },
-    {
-      "file": "esm/native/runtime/doors_runtime_support_shared.ts",
-      "line": 79,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "if (!modes) return fallback;"
-    },
-    {
-      "file": "esm/native/runtime/doors_runtime_support_shared.ts",
-      "line": 81,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof value === 'string' && value ? value : fallback;"
-    },
-    {
-      "file": "esm/native/runtime/error_normalization.ts",
-      "line": 57,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const fallback = readTrimmedString(fallbackMessage);"
-    },
-    {
-      "file": "esm/native/runtime/error_normalization.ts",
-      "line": 61,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "readTrimmedString(err.message) || fallback || readTrimmedString(err.name) || 'Unexpected error';"
-    },
-    {
-      "file": "esm/native/runtime/error_normalization.ts",
-      "line": 75,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const message = stringifyUnknown(err).trim() || fallback || 'Unexpected error';"
-    },
-    {
-      "file": "esm/native/runtime/error_normalization.ts",
-      "line": 83,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "readTrimmedString(rec.message) || stringifyRecord(rec) || fallback || name || 'Unexpected error';"
-    },
-    {
-      "file": "esm/native/runtime/error_normalization.ts",
-      "line": 87,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const message = stringifyUnknown(err).trim() || fallback || 'Unexpected error';"
     },
     {
       "file": "esm/native/runtime/meta_profiles_access.ts",
@@ -2700,48 +2102,6 @@
       "text": "return typeof value === 'string' && isModelsCommandReason(value) ? value : fallback;"
     },
     {
-      "file": "esm/native/runtime/modules_recompute_request_policy.ts",
-      "line": 100,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback?: StructuralModulesRecomputeFallbackBuildOpts | null"
-    },
-    {
-      "file": "esm/native/runtime/modules_recompute_request_policy.ts",
-      "line": 104,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const explicitSource = readStructuralMetaString(fallback?.source);"
-    },
-    {
-      "file": "esm/native/runtime/modules_recompute_request_policy.ts",
-      "line": 107,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "readStructuralMetaString(fallback?.reason) ||"
-    },
-    {
-      "file": "esm/native/runtime/modules_recompute_request_policy.ts",
-      "line": 117,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback?: StructuralModulesRecomputeFallbackBuildOpts | null"
-    },
-    {
-      "file": "esm/native/runtime/modules_recompute_request_policy.ts",
-      "line": 119,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "if (!fallback) return false;"
-    },
-    {
-      "file": "esm/native/runtime/modules_recompute_request_policy.ts",
-      "line": 120,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return requestBuilderForcedBuild(App, createStructuralModulesFallbackBuildMeta(meta, defaults, fallback));"
-    },
-    {
       "file": "esm/native/runtime/platform_access_ops.ts",
       "line": 224,
       "term": "fallback",
@@ -2768,41 +2128,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "return value == null ? String(fallback || '') : String(value);"
-    },
-    {
-      "file": "esm/native/runtime/render_runtime_primitives.ts",
-      "line": 31,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function asRecord<T extends UnknownRecord = UnknownRecord>(value: unknown, fallback?: T): T {"
-    },
-    {
-      "file": "esm/native/runtime/render_runtime_primitives.ts",
-      "line": 32,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const seed = typeof fallback === 'undefined' ? createRecord<T>() : fallback;"
-    },
-    {
-      "file": "esm/native/runtime/render_runtime_primitives.ts",
-      "line": 32,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const seed = typeof fallback === 'undefined' ? createRecord<T>() : fallback;"
-    },
-    {
-      "file": "esm/native/runtime/render_runtime_primitives.ts",
-      "line": 40,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function readFiniteNumber(value: unknown, fallback: number): number {"
-    },
-    {
-      "file": "esm/native/runtime/render_runtime_primitives.ts",
-      "line": 41,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof value === 'number' && Number.isFinite(value) ? value : fallback;"
     },
     {
       "file": "esm/native/runtime/runtime_write_access.ts",

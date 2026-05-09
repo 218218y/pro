@@ -118,14 +118,14 @@ test('modules recompute request policy: app-bound access resolves modules.recomp
   assert.equal(runAppStructuralModulesRecompute({ actions: {} } as any, null), undefined);
 });
 
-test('modules recompute request policy: explicit failure results stay distinguishable from handled legacy results', () => {
+test('modules recompute request policy: explicit failure results stay distinguishable from handled undefined results', () => {
   assert.equal(didStructuralModulesRecomputeFail(undefined), false);
   assert.equal(didStructuralModulesRecomputeFail({ ok: true, updated: false }), false);
   assert.equal(didStructuralModulesRecomputeFail(false), true);
   assert.equal(didStructuralModulesRecomputeFail({ ok: false, reason: 'writeFailed' }), true);
 });
 
-test('modules recompute request policy: app-bound fallback build triggers on missing or explicit failure but not handled undefined', () => {
+test('modules recompute request policy: app-bound recovery build triggers on missing or explicit failure but not handled undefined', () => {
   const builderCalls: unknown[] = [];
   const missingApp = {
     actions: {},
@@ -216,7 +216,7 @@ test('modules recompute request policy: app-bound fallback build triggers on mis
       'missing',
       null,
       {
-        source: 'react:structure:test:fallbackBuild',
+        source: 'react:structure:test:recoveryBuild',
         reason: 'react:structure:test',
         immediate: true,
         force: true,
@@ -226,7 +226,7 @@ test('modules recompute request policy: app-bound fallback build triggers on mis
       'failure',
       null,
       {
-        source: 'react:structure:test:fallbackBuild',
+        source: 'react:structure:test:recoveryBuild',
         reason: 'react:structure:test',
         immediate: true,
         force: true,

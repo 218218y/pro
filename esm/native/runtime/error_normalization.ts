@@ -53,12 +53,12 @@ function readReasonToken(source: unknown): string {
   return fromName;
 }
 
-export function normalizeUnknownError(err: unknown, fallbackMessage = ''): NormalizedUnknownError {
-  const fallback = readTrimmedString(fallbackMessage);
+export function normalizeUnknownError(err: unknown, defaultMessage = ''): NormalizedUnknownError {
+  const defaultText = readTrimmedString(defaultMessage);
 
   if (err instanceof Error) {
     const message =
-      readTrimmedString(err.message) || fallback || readTrimmedString(err.name) || 'Unexpected error';
+      readTrimmedString(err.message) || defaultText || readTrimmedString(err.name) || 'Unexpected error';
     const name = readTrimmedString(err.name);
     return name ? { message, name } : { message };
   }
@@ -72,7 +72,7 @@ export function normalizeUnknownError(err: unknown, fallbackMessage = ''): Norma
     typeof err === 'bigint' ||
     typeof err === 'symbol'
   ) {
-    const message = stringifyUnknown(err).trim() || fallback || 'Unexpected error';
+    const message = stringifyUnknown(err).trim() || defaultText || 'Unexpected error';
     return { message };
   }
 
@@ -80,32 +80,32 @@ export function normalizeUnknownError(err: unknown, fallbackMessage = ''): Norma
   if (rec) {
     const name = readTrimmedString(rec.name);
     const message =
-      readTrimmedString(rec.message) || stringifyRecord(rec) || fallback || name || 'Unexpected error';
+      readTrimmedString(rec.message) || stringifyRecord(rec) || defaultText || name || 'Unexpected error';
     return name ? { message, name } : { message };
   }
 
-  const message = stringifyUnknown(err).trim() || fallback || 'Unexpected error';
+  const message = stringifyUnknown(err).trim() || defaultText || 'Unexpected error';
   return { message };
 }
 
-export function normalizeUnknownErrorInfo(err: unknown, fallbackMessage = ''): NormalizedUnknownErrorInfo {
-  const normalized = normalizeUnknownError(err, fallbackMessage);
+export function normalizeUnknownErrorInfo(err: unknown, defaultMessage = ''): NormalizedUnknownErrorInfo {
+  const normalized = normalizeUnknownError(err, defaultMessage);
   const stack = readErrorStack(err);
   return stack ? { ...normalized, stack } : normalized;
 }
 
-export function getNormalizedErrorHead(err: unknown, fallbackMessage = ''): string {
+export function getNormalizedErrorHead(err: unknown, defaultMessage = ''): string {
   const stack = readErrorStack(err);
   if (stack) return stack.split('\n')[0] || stack;
-  return normalizeUnknownError(err, fallbackMessage).message;
+  return normalizeUnknownError(err, defaultMessage).message;
 }
 
 export function normalizeErrorReason(
   value: unknown,
-  fallbackReason: CanonicalErrorReason = 'error'
+  defaultReason: CanonicalErrorReason = 'error'
 ): CanonicalErrorReason {
   const token = readReasonToken(value);
-  if (!token) return fallbackReason;
+  if (!token) return defaultReason;
 
   if (
     token === 'cancelled' ||
@@ -149,13 +149,13 @@ type BuildErrorResult = {
   <TExtras extends Record<string, unknown> = Record<never, never>>(
     reason: string,
     err: unknown,
-    fallbackMessage?: string,
+    defaultMessage?: string,
     extras?: TExtras | null
   ): { ok: false; reason: string; message: string } & TExtras;
   (
     reason: string,
     err: unknown,
-    fallbackMessage?: string,
+    defaultMessage?: string,
     extras?: Record<string, unknown> | null
   ): { ok: false; reason: string; message: string } & Record<string, unknown>;
 };
@@ -163,10 +163,10 @@ type BuildErrorResult = {
 export const buildErrorResult: BuildErrorResult = (
   reason: string,
   err: unknown,
-  fallbackMessage = '',
+  defaultMessage = '',
   extras?: Record<string, unknown> | null
 ) => {
-  const normalized = normalizeUnknownError(err, fallbackMessage);
+  const normalized = normalizeUnknownError(err, defaultMessage);
   const base: { ok: false; reason: string; message: string } = {
     ok: false,
     reason,
@@ -178,9 +178,9 @@ export const buildErrorResult: BuildErrorResult = (
 export function attachErrorMessage<T extends { ok: false; message?: string }>(
   res: T,
   err: unknown,
-  fallbackMessage?: string
+  defaultMessage?: string
 ): T & { message: string } {
   const current = readTrimmedString(res.message);
-  const normalized = normalizeUnknownError(err, current || fallbackMessage || 'Unexpected error');
+  const normalized = normalizeUnknownError(err, current || defaultMessage || 'Unexpected error');
   return { ...res, message: normalized.message };
 }

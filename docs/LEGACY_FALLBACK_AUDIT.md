@@ -1,14 +1,14 @@
 # Legacy / fallback audit
 
-Generated at: 2026-05-08T12:53:03.262Z
+Generated at: 2026-05-09T18:19:49.419Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **385**
-- Files with occurrences: **172**
+- Total categorized occurrences: **304**
+- Files with occurrences: **154**
 - Category counts:
-  - `runtime-default`: **364**
+  - `runtime-default`: **283**
   - `browser-adapter`: **9**
   - `project-migration`: **5**
   - `test-fixture`: **7**
@@ -26,25 +26,7 @@ Generated at: 2026-05-08T12:53:03.262Z
 ## Hot files
 
 - `esm/native/ui/export/export_canvas_delivery_shared.ts` — **7** (runtime-default: 7)
-- `esm/native/runtime/modules_recompute_request_policy.ts` — **6** (runtime-default: 6)
 - `esm/test_no_side_effects_on_import.mjs` — **6** (test-fixture: 6)
-- `esm/native/builder/build_string_normalizer.ts` — **5** (runtime-default: 5)
-- `esm/native/kernel/kernel_install_support.ts` — **5** (runtime-default: 5)
-- `esm/native/kernel/kernel_project_capture_shared.ts` — **5** (runtime-default: 5)
-- `esm/native/runtime/cfg_access_core.ts` — **5** (runtime-default: 5)
-- `esm/native/runtime/doors_runtime_support_shared.ts` — **5** (runtime-default: 5)
-- `esm/native/runtime/error_normalization.ts` — **5** (runtime-default: 5)
-- `esm/native/runtime/render_runtime_primitives.ts` — **5** (runtime-default: 5)
-- `esm/native/builder/corner_geometry_plan.ts` — **4** (runtime-default: 4)
-- `esm/native/builder/corner_state_normalize_shared.ts` — **4** (runtime-default: 4)
-- `esm/native/builder/external_drawers_pipeline.ts` — **4** (runtime-default: 4)
-- `esm/native/builder/hinged_doors_module_ops_split_parts.ts` — **4** (runtime-default: 4)
-- `esm/native/builder/module_loop_pipeline_shared.ts` — **4** (runtime-default: 4)
-- `esm/native/builder/render_carcass_ops_shared_readers.ts` — **4** (runtime-default: 4)
-- `esm/native/features/model_record/model_record_normalizer.ts` — **4** (runtime-default: 4)
-- `esm/native/features/sketch_drawer_sizing.ts` — **4** (runtime-default: 4)
-- `esm/native/features/stack_split/stack_split.ts` — **4** (runtime-default: 4)
-- `esm/native/kernel/kernel_shared.ts` — **4** (runtime-default: 4)
 - `esm/native/platform/render_loop_impl_support.ts` — **4** (runtime-default: 4)
 - `esm/native/runtime/platform_access_ops.ts` — **4** (runtime-default: 4)
 - `esm/native/runtime/slice_write_access_dispatch_order.ts` — **4** (runtime-default: 4)
@@ -55,6 +37,24 @@ Generated at: 2026-05-08T12:53:03.262Z
 - `esm/native/services/cloud_sync_command_shared.ts` — **4** (runtime-default: 4)
 - `esm/native/services/render_surface_runtime_support_shared.ts` — **4** (runtime-default: 4)
 - `esm/native/ui/export/export_canvas_core_shared.ts` — **4** (runtime-default: 4)
+- `esm/native/ui/export/export_canvas_delivery_clipboard.ts` — **4** (runtime-default: 4)
+- `esm/native/ui/notes_service_sanitize.ts` — **4** (runtime-default: 4)
+- `esm/native/ui/react/tabs/interior_tab_helpers_core.ts` — **4** (runtime-default: 4)
+- `esm/native/ui/react/tabs/structure_tab_core_numbers.ts` — **4** (runtime-default: 4)
+- `esm/shared/mirror_layout_contracts_shared.ts` — **4** (runtime-default: 4)
+- `esm/native/adapters/browser/ui_ops.ts` — **3** (browser-adapter: 3)
+- `esm/native/builder/corner_wing_carcass_shared.ts` — **3** (runtime-default: 3)
+- `esm/native/builder/render_interior_sketch_boxes_fronts_support.ts` — **3** (runtime-default: 3)
+- `esm/native/builder/visuals_and_contents_shared.ts` — **3** (runtime-default: 3)
+- `esm/native/features/modules_configuration/modules_config_structure.ts` — **3** (runtime-default: 3)
+- `esm/native/kernel/domain_api_shared.ts` — **3** (runtime-default: 3)
+- `esm/native/platform/platform_shared.ts` — **3** (runtime-default: 3)
+- `esm/native/runtime/browser_clipboard.ts` — **3** (runtime-default: 3)
+- `esm/native/services/canvas_picking_core_support_errors.ts` — **3** (runtime-default: 3)
+- `esm/native/services/config_compounds_shared.ts` — **3** (runtime-default: 3)
+- `esm/native/services/doors_runtime_state.ts` — **3** (runtime-default: 3)
+- `esm/native/ui/export/export_canvas_core_canvas.ts` — **3** (runtime-default: 3)
+- `esm/native/ui/react/notes/notes_overlay_helpers_shared.ts` — **3** (runtime-default: 3)
 
 ## Allowlist check
 

@@ -18,13 +18,17 @@ export function partIdForSegment(
   return `d${state.currentDoorId}_mid${segIndexFromBottom}`;
 }
 
-export function grooveForPart(ctx: HingedDoorModuleOpsContext, partId: string, fallback = false): boolean {
+export function grooveForPart(
+  ctx: HingedDoorModuleOpsContext,
+  partId: string,
+  defaultValue = false
+): boolean {
   try {
     const grooveMap = readTextMap(ctx.cfg && ctx.cfg.groovesMap);
-    if (!grooveMap) return !!fallback;
+    if (!grooveMap) return !!defaultValue;
     const key = String(partId || '');
-    return !!(grooveMap[`groove_${key}`] || grooveMap[key] || fallback);
+    return !!(grooveMap[`groove_${key}`] || grooveMap[key] || defaultValue);
   } catch {
-    return !!fallback;
+    return !!defaultValue;
   }
 }

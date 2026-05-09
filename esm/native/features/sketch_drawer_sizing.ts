@@ -76,18 +76,18 @@ function isSameHeightCm(a: number, b: number): boolean {
   return Math.abs(a - b) <= HEIGHT_TOKEN_EPSILON;
 }
 
-export function normalizeSketchDrawerHeightCm(value: unknown, fallbackCm: number): number {
-  const fallback = readFiniteNumber(fallbackCm) ?? DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM;
+export function normalizeSketchDrawerHeightCm(value: unknown, defaultCm: number): number {
+  const defaultHeight = readFiniteNumber(defaultCm) ?? DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM;
   const raw = readFiniteNumber(value);
-  const source = raw != null ? raw : fallback;
+  const source = raw != null ? raw : defaultHeight;
   const clamped = Math.max(SKETCH_DRAWER_HEIGHT_MIN_CM, Math.min(SKETCH_DRAWER_HEIGHT_MAX_CM, source));
   return roundHeightCm(clamped);
 }
 
-export function normalizeSketchDrawerHeightM(value: unknown, fallbackM: number): number {
-  const fallback = readFiniteNumber(fallbackM) ?? DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M;
+export function normalizeSketchDrawerHeightM(value: unknown, defaultM: number): number {
+  const defaultHeight = readFiniteNumber(defaultM) ?? DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M;
   const raw = readFiniteNumber(value);
-  const source = raw != null ? raw : fallback;
+  const source = raw != null ? raw : defaultHeight;
   const clamped = Math.max(
     cmToM(SKETCH_DRAWER_HEIGHT_MIN_CM),
     Math.min(cmToM(SKETCH_DRAWER_HEIGHT_MAX_CM), source)
@@ -167,9 +167,9 @@ export function createSketchExternalDrawersTool(count: unknown, heightCm: unknow
   return `${base}${SKETCH_DRAWER_HEIGHT_TOOL_SEPARATOR}${formatHeightToken(normalized)}`;
 }
 
-export function readSketchDrawerHeightMFromItem(value: unknown, fallbackM: number): number {
+export function readSketchDrawerHeightMFromItem(value: unknown, defaultM: number): number {
   const rec = readRecord(value);
-  return normalizeSketchDrawerHeightM(rec?.drawerHeightM, fallbackM);
+  return normalizeSketchDrawerHeightM(rec?.drawerHeightM, defaultM);
 }
 
 export function resolveSketchInternalDrawerMetrics(args?: {

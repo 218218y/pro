@@ -251,15 +251,15 @@ export function readFiniteNumber(v: unknown): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-export function readNumFrom(obj: unknown, key: string, fallback: number): number {
+export function readNumFrom(obj: unknown, key: string, defaultValue: number): number {
   const v = asRecord(obj)[key];
   const n = readFiniteNumber(v);
-  return n != null ? n : fallback;
+  return n != null ? n : defaultValue;
 }
 
-export function readStrFrom(obj: unknown, key: string, fallback = ''): string {
+export function readStrFrom(obj: unknown, key: string, defaultValue = ''): string {
   const v = asRecord(obj)[key];
-  return typeof v === 'string' ? v : v == null ? fallback : String(v);
+  return typeof v === 'string' ? v : v == null ? defaultValue : String(v);
 }
 
 type CloneMaybeFn = {

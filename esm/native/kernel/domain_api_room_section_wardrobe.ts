@@ -269,7 +269,7 @@ function triggerRoomTypeRecompute(App: AppContainer, reason: string): void {
     null,
     { source: 'actions:room:setWardrobeType:recompute', force: true },
     { structureChanged: true },
-    { source: 'actions:room:setWardrobeType:recomputeFallback', reason }
+    { source: 'actions:room:setWardrobeType:recomputeRecovery', reason }
   );
 }
 

@@ -96,7 +96,7 @@ export type KernelInstallSupport = {
   setStoreConfigPatch: (patch: ConfigSlicePatch, meta: ActionMetaLike) => boolean;
   setStoreUiSnapshot: (ui: UnknownRecord, meta: ActionMetaLike, config?: UnknownRecord) => boolean;
   touchStore: (meta: ActionMetaLike) => boolean;
-  cloneKernelValue: (value: unknown, fallback?: unknown) => unknown;
+  cloneKernelValue: (value: unknown, defaultValue?: unknown) => unknown;
   reportKernelError: (error: unknown, ctx: unknown) => boolean;
   reportNonFatal: (op: string, error: unknown, opts?: { throttleMs?: number; failFast?: boolean }) => void;
   readCornerCfgFromStoreConfig: (cfg: unknown) => UnknownRecord;
@@ -132,9 +132,9 @@ export function createKernelInstallSupport(App: AppContainer): KernelInstallSupp
     return true;
   };
 
-  const cloneKernelValue = (value: unknown, fallback?: unknown): unknown => {
+  const cloneKernelValue = (value: unknown, defaultValue?: unknown): unknown => {
     if (value == null || typeof value !== 'object') return value;
-    const cloned = cloneViaPlatform(App, value, fallback);
+    const cloned = cloneViaPlatform(App, value, defaultValue);
     if (cloned !== value) return cloned;
     try {
       const serialized = JSON.stringify(value);
@@ -148,7 +148,7 @@ export function createKernelInstallSupport(App: AppContainer): KernelInstallSupp
     }
     const sanitized = cloneKernelJsonValue(value);
     if (typeof sanitized !== 'undefined') return sanitized;
-    return fallback !== undefined ? fallback : Array.isArray(value) ? [] : {};
+    return defaultValue !== undefined ? defaultValue : Array.isArray(value) ? [] : {};
   };
 
   const reportKernelError = (error: unknown, ctx: unknown): boolean => {

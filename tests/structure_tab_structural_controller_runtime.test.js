@@ -55,7 +55,7 @@ function loadTsModule(relPath, calls, stubs = {}, cache = new Map()) {
             calls.push(['patchViaActions', ...args]);
             return false;
           }),
-        runAppStructuralModulesRecompute: (app, uiOverride, meta, defaults, opts, fallbackBuild) => {
+        runAppStructuralModulesRecompute: (app, uiOverride, meta, defaults, opts, recoveryBuild) => {
           calls.push([
             'runAppStructuralModulesRecompute',
             app,
@@ -63,7 +63,7 @@ function loadTsModule(relPath, calls, stubs = {}, cache = new Map()) {
             meta,
             defaults,
             opts,
-            fallbackBuild,
+            recoveryBuild,
           ]);
           return calls.push([
             'recomputeFromUi:viaApp',
@@ -71,7 +71,7 @@ function loadTsModule(relPath, calls, stubs = {}, cache = new Map()) {
             uiOverride == null ? null : uiOverride,
             { ...(meta || {}), ...(defaults || {}) },
             { structureChanged: true, preserveTemplate: true, ...(opts || {}) },
-            fallbackBuild || null,
+            recoveryBuild || null,
           ]);
         },
       };

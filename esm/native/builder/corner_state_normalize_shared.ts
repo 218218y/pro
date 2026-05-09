@@ -48,15 +48,15 @@ export function readBool(obj: CornerBuildUI, key: keyof CornerBuildUI): boolean 
   return typeof obj[key] !== 'undefined' ? !!obj[key] : false;
 }
 
-export function readStringValue(obj: UnknownRecord, key: string, fallback = ''): string {
+export function readStringValue(obj: UnknownRecord, key: string, defaultValue = ''): string {
   const v = obj[key];
-  return v == null ? fallback : String(v);
+  return v == null ? defaultValue : String(v);
 }
 
-export function readModeConstant(name: string, fallback: string): string {
+export function readModeConstant(name: string, defaultMode: string): string {
   const rec = asRecord(MODES);
   const v = rec[name];
-  return typeof v === 'string' && v ? v : fallback;
+  return typeof v === 'string' && v ? v : defaultMode;
 }
 
 export function ensureCornerConfigRecord(src: unknown): CornerConfigRecord {

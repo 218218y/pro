@@ -52,9 +52,9 @@ export function readString(obj: ValueRecord | null, key: string): string | null 
   return typeof value === 'string' && value ? value : null;
 }
 
-export function readNumber(obj: ValueRecord | null, key: string, fallback = 0): number {
+export function readNumber(obj: ValueRecord | null, key: string, defaultValue = 0): number {
   const value = obj ? obj[key] : null;
-  return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+  return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
 }
 
 export function isInvalidNumber(value: unknown): boolean {
@@ -74,11 +74,11 @@ export function getActionsNamespace(App: AppLike): ActionsNamespaceLike | null {
   return isRecord(actions) ? actions : null;
 }
 
-export function getModeConst(key: 'NONE' | 'MANUAL_LAYOUT', fallback: string): string {
+export function getModeConst(key: 'NONE' | 'MANUAL_LAYOUT', defaultMode: string): string {
   const modes = readRecord(MODES);
-  if (!modes) return fallback;
+  if (!modes) return defaultMode;
   const value = modes[key];
-  return typeof value === 'string' && value ? value : fallback;
+  return typeof value === 'string' && value ? value : defaultMode;
 }
 
 export function normalizeModuleKey(value: unknown): string | null {

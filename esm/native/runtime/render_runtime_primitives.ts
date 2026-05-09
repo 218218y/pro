@@ -28,8 +28,8 @@ function createRecord<T extends UnknownRecord>(): T {
   return createNullRecord<T>();
 }
 
-export function asRecord<T extends UnknownRecord = UnknownRecord>(value: unknown, fallback?: T): T {
-  const seed = typeof fallback === 'undefined' ? createRecord<T>() : fallback;
+export function asRecord<T extends UnknownRecord = UnknownRecord>(value: unknown, defaultValue?: T): T {
+  const seed = typeof defaultValue === 'undefined' ? createRecord<T>() : defaultValue;
   return isRecordOf<T>(value) ? value : seed;
 }
 
@@ -37,8 +37,8 @@ export function readRecord<T extends UnknownRecord = UnknownRecord>(value: unkno
   return isRecordOf<T>(value) ? value : null;
 }
 
-export function readFiniteNumber(value: unknown, fallback: number): number {
-  return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+export function readFiniteNumber(value: unknown, defaultValue: number): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
 }
 
 export function readFiniteNumberOrNull(value: unknown): number | null {

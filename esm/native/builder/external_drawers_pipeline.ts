@@ -69,16 +69,16 @@ type ApplyExternalDrawersForModuleParams = {
   effectiveBottomY?: number;
 };
 
-function readFiniteNumber(value: unknown, fallback: number): number {
-  return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+function readFiniteNumber(value: unknown, defaultValue: number): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
 }
 
 function readOptionalFiniteNumber(value: unknown): number | undefined {
   return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
 }
 
-function readString(value: unknown, fallback = ''): string {
-  return typeof value === 'string' ? value : fallback;
+function readString(value: unknown, defaultValue = ''): string {
+  return typeof value === 'string' ? value : defaultValue;
 }
 
 function isObjectRecord(value: unknown): value is UnknownRecord {

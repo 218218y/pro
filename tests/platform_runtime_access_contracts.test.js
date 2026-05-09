@@ -534,7 +534,7 @@ test('[platform-runtime] app start and major callsites prefer canonical boot ent
   assert.match(threeTargets.kernel, /createKernelInstallSupport\(App\)/);
   assert.match(
     threeTargets.kernel,
-    /const cloneKernelValue = \(value: unknown, fallback\?: unknown\): unknown => \{/
+    /const cloneKernelValue = \(value: unknown, defaultValue\?: unknown\): unknown => \{/
   );
   assert.match(threeTargets.kernel, /const snapshotStore = createKernelSnapshotStoreSystem\(\{/);
   assert.match(

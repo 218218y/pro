@@ -4,20 +4,20 @@ export function isRecord(value: unknown): value is UnknownRecord {
   return !!value && typeof value === 'object' && !Array.isArray(value);
 }
 
-export function asRecord(value: unknown, fallback: UnknownRecord = {}): UnknownRecord {
-  return isRecord(value) ? value : fallback;
+export function asRecord(value: unknown, defaultValue: UnknownRecord = {}): UnknownRecord {
+  return isRecord(value) ? value : defaultValue;
 }
 
 export function asRecordOrNull(value: unknown): UnknownRecord | null {
   return isRecord(value) ? value : null;
 }
 
-export function asString(value: unknown, fallback = ''): string {
+export function asString(value: unknown, defaultValue = ''): string {
   return typeof value === 'string'
     ? value
     : typeof value === 'number' || typeof value === 'boolean'
       ? String(value)
-      : fallback;
+      : defaultValue;
 }
 
 export function isFn(value: unknown): value is UnknownCallable {
