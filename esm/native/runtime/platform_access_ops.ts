@@ -22,13 +22,11 @@ import type { CloneFn, Hash32Fn, StringifierFn } from './platform_access_shared.
 
 export type PlatformRenderFollowThroughOpts = {
   updateShadows?: boolean;
-  fallbackTrigger?: ((updateShadows?: boolean) => unknown) | null;
   ensureRenderLoop?: boolean;
 };
 
 export type PlatformRenderFollowThroughResult = {
   triggeredRender: boolean;
-  usedFallbackTrigger: boolean;
   ensuredRenderLoop: boolean;
 };
 
@@ -107,22 +105,10 @@ export function runPlatformRenderFollowThrough(
   opts?: PlatformRenderFollowThroughOpts | null
 ): PlatformRenderFollowThroughResult {
   const updateShadows = !!opts?.updateShadows;
-  let triggeredRender = triggerRenderViaPlatform(App, updateShadows);
-  let usedFallbackTrigger = false;
-
-  if (!triggeredRender && typeof opts?.fallbackTrigger === 'function') {
-    try {
-      opts.fallbackTrigger(updateShadows);
-      triggeredRender = true;
-      usedFallbackTrigger = true;
-    } catch {
-      usedFallbackTrigger = false;
-    }
-  }
-
+  const triggeredRender = triggerRenderViaPlatform(App, updateShadows);
   const shouldEnsureRenderLoop = opts?.ensureRenderLoop !== false;
   const ensuredRenderLoop = !triggeredRender && shouldEnsureRenderLoop && ensureRenderLoopViaPlatform(App);
-  const result = { triggeredRender, usedFallbackTrigger, ensuredRenderLoop };
+  const result = { triggeredRender, ensuredRenderLoop };
   recordPlatformRenderFollowThroughStats(getPlatformService(App), result);
   return result;
 }
@@ -166,7 +152,6 @@ export function runPlatformActivityRenderTouch(
   return {
     touchedActivity,
     triggeredRender: renderResult.triggeredRender,
-    usedFallbackTrigger: renderResult.usedFallbackTrigger,
     ensuredRenderLoop,
   };
 }

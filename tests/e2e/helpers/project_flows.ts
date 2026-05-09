@@ -79,7 +79,6 @@ export type BuildDebugStats = {
 export type RenderDebugStats = {
   renderRequestCount: number;
   triggerRenderCount: number;
-  fallbackTriggerCount: number;
   ensureRenderLoopCount: number;
   noOpRenderRequestCount: number;
   wakeupRequestCount: number;
@@ -2107,7 +2106,6 @@ function normalizeRenderDebugStats(value: unknown): RenderDebugStats {
   return {
     renderRequestCount: normalizeDebugCount(rec.renderRequestCount),
     triggerRenderCount: normalizeDebugCount(rec.triggerRenderCount),
-    fallbackTriggerCount: normalizeDebugCount(rec.fallbackTriggerCount),
     ensureRenderLoopCount: normalizeDebugCount(rec.ensureRenderLoopCount),
     noOpRenderRequestCount: normalizeDebugCount(rec.noOpRenderRequestCount),
     wakeupRequestCount: normalizeDebugCount(rec.wakeupRequestCount),
@@ -2201,7 +2199,6 @@ export function subtractRenderDebugStats(
   return {
     renderRequestCount: Math.max(0, after.renderRequestCount - before.renderRequestCount),
     triggerRenderCount: Math.max(0, after.triggerRenderCount - before.triggerRenderCount),
-    fallbackTriggerCount: Math.max(0, after.fallbackTriggerCount - before.fallbackTriggerCount),
     ensureRenderLoopCount: Math.max(0, after.ensureRenderLoopCount - before.ensureRenderLoopCount),
     noOpRenderRequestCount: Math.max(0, after.noOpRenderRequestCount - before.noOpRenderRequestCount),
     wakeupRequestCount: Math.max(0, after.wakeupRequestCount - before.wakeupRequestCount),

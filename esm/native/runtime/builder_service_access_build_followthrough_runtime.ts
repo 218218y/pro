@@ -44,7 +44,6 @@ export function runBuilderPostBuildFollowThroughRuntime(
   const renderResult = shouldTriggerPlatformRender(opts)
     ? runBuilderRenderFollowThroughRuntime(App, {
         updateShadows: readPostBuildUpdateShadows(opts),
-        fallbackTrigger: typeof opts?.triggerRender === 'function' ? opts.triggerRender : null,
       })
     : { triggeredRender: false, ensuredRenderLoop: false };
 

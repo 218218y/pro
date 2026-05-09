@@ -43,7 +43,6 @@ export type BuilderStructuralRefreshResult = {
 
 export type BuilderRenderFollowThroughOpts = {
   updateShadows?: boolean;
-  fallbackTrigger?: ((updateShadows?: boolean) => void) | null;
 };
 
 export type BuilderRenderFollowThroughResult = {
@@ -57,7 +56,6 @@ export type BuilderPostBuildFollowThroughOpts = {
   applyHandles?: boolean;
   rebuildDrawerMeta?: (() => void) | null;
   pruneCachesSafe?: ((scene: unknown) => void) | null;
-  triggerRender?: ((updateShadows?: boolean) => void) | null;
   triggerPlatformRender?: boolean;
   updateShadows?: boolean;
 };

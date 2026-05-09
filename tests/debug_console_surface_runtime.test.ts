@@ -20,7 +20,6 @@ test('debug console surface runtime: render debug helpers expose canonical rende
   assert.deepEqual(surface.render.getStats(), {
     renderRequestCount: 2,
     triggerRenderCount: 0,
-    fallbackTriggerCount: 0,
     ensureRenderLoopCount: 1,
     noOpRenderRequestCount: 1,
     wakeupRequestCount: 0,
@@ -33,7 +32,6 @@ test('debug console surface runtime: render debug helpers expose canonical rende
   assert.deepEqual(surface.render.getBudget(), {
     renderRequestCount: 2,
     triggerRenderCount: 0,
-    fallbackTriggerCount: 0,
     ensureRenderLoopCount: 1,
     noOpRenderRequestCount: 1,
     wakeupRequestCount: 0,
@@ -45,13 +43,11 @@ test('debug console surface runtime: render debug helpers expose canonical rende
     renderNoOpRate: 0.5,
     wakeupNoOpRate: 0,
     renderEnsureFallbackRate: 0.5,
-    renderFallbackTriggerRate: 0,
   });
 
   assert.deepEqual(surface.render.resetStats(), {
     renderRequestCount: 2,
     triggerRenderCount: 0,
-    fallbackTriggerCount: 0,
     ensureRenderLoopCount: 1,
     noOpRenderRequestCount: 1,
     wakeupRequestCount: 0,
@@ -64,7 +60,6 @@ test('debug console surface runtime: render debug helpers expose canonical rende
   assert.deepEqual(surface.render.getStats(), {
     renderRequestCount: 0,
     triggerRenderCount: 0,
-    fallbackTriggerCount: 0,
     ensureRenderLoopCount: 0,
     noOpRenderRequestCount: 0,
     wakeupRequestCount: 0,

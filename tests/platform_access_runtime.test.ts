@@ -181,7 +181,6 @@ test('platform access runtime: activity-backed render touch canonically owns tou
   assert.deepEqual(result, {
     touchedActivity: true,
     triggeredRender: true,
-    usedFallbackTrigger: false,
     ensuredRenderLoop: true,
   });
   assert.equal(typeof App.services.platform.activity.touch, 'function');
@@ -189,7 +188,7 @@ test('platform access runtime: activity-backed render touch canonically owns tou
   assert.deepEqual(calls, [['render', true], ['ensure']]);
 });
 
-test('platform access runtime: render follow-through canonically falls back to fallback trigger or ensureRenderLoop', () => {
+test('platform access runtime: render follow-through uses platform trigger or ensureRenderLoop only', () => {
   const calls: any[] = [];
   const App: any = {
     services: {
@@ -201,31 +200,15 @@ test('platform access runtime: render follow-through canonically falls back to f
     },
   };
 
-  const fallbackResult = runPlatformRenderFollowThrough(App, {
-    updateShadows: true,
-    fallbackTrigger(updateShadows?: boolean) {
-      calls.push(['fallback', !!updateShadows]);
-    },
-  });
-
-  assert.deepEqual(fallbackResult, {
-    triggeredRender: true,
-    usedFallbackTrigger: true,
-    ensuredRenderLoop: false,
-  });
-  assert.deepEqual(calls, [['fallback', true]]);
-
-  calls.length = 0;
   const ensureResult = runPlatformRenderFollowThrough(App, { updateShadows: false });
   assert.deepEqual(ensureResult, {
     triggeredRender: false,
-    usedFallbackTrigger: false,
     ensuredRenderLoop: true,
   });
   assert.deepEqual(calls, [['ensure']]);
 });
 
-test('platform access runtime: render follow-through telemetry tracks trigger, fallback, ensure, no-op, and wakeup churn canonically', () => {
+test('platform access runtime: render follow-through telemetry tracks trigger, ensure, no-op, and wakeup churn canonically', () => {
   const calls: any[] = [];
   const App: any = {
     services: {
@@ -245,35 +228,18 @@ test('platform access runtime: render follow-through telemetry tracks trigger, f
 
   assert.deepEqual(runPlatformRenderFollowThrough(App, { updateShadows: true }), {
     triggeredRender: true,
-    usedFallbackTrigger: false,
     ensuredRenderLoop: false,
   });
 
   delete App.services.platform.triggerRender;
-  assert.deepEqual(
-    runPlatformRenderFollowThrough(App, {
-      updateShadows: false,
-      fallbackTrigger(updateShadows?: boolean) {
-        calls.push(['fallback', !!updateShadows]);
-      },
-    }),
-    {
-      triggeredRender: true,
-      usedFallbackTrigger: true,
-      ensuredRenderLoop: false,
-    }
-  );
-
   assert.deepEqual(runPlatformRenderFollowThrough(App, { updateShadows: false }), {
     triggeredRender: false,
-    usedFallbackTrigger: false,
     ensuredRenderLoop: true,
   });
 
   delete App.services.platform.ensureRenderLoop;
   assert.deepEqual(runPlatformRenderFollowThrough(App, { updateShadows: false }), {
     triggeredRender: false,
-    usedFallbackTrigger: false,
     ensuredRenderLoop: false,
   });
 
@@ -297,65 +263,56 @@ test('platform access runtime: render follow-through telemetry tracks trigger, f
       updateShadows: false,
       ensureRenderLoopAfterTrigger: true,
       touchActivity: true,
-      fallbackTrigger(updateShadows?: boolean) {
-        calls.push(['activity-fallback', !!updateShadows]);
-      },
     }),
     {
       touchedActivity: true,
-      triggeredRender: true,
-      usedFallbackTrigger: true,
+      triggeredRender: false,
       ensuredRenderLoop: true,
     }
   );
 
   assert.deepEqual(getPlatformRenderDebugStats(App), {
-    renderRequestCount: 5,
-    triggerRenderCount: 3,
-    fallbackTriggerCount: 2,
-    ensureRenderLoopCount: 1,
+    renderRequestCount: 4,
+    triggerRenderCount: 1,
+    ensureRenderLoopCount: 2,
     noOpRenderRequestCount: 1,
     wakeupRequestCount: 1,
     wakeupEnsureRenderLoopCount: 0,
     noOpWakeupCount: 1,
     activityTouchCount: 1,
     afterTouchCount: 0,
-    ensureRenderLoopAfterTriggerCount: 1,
+    ensureRenderLoopAfterTriggerCount: 0,
   });
   assert.deepEqual(getPlatformRenderDebugBudget(App), {
-    renderRequestCount: 5,
-    triggerRenderCount: 3,
-    fallbackTriggerCount: 2,
-    ensureRenderLoopCount: 1,
+    renderRequestCount: 4,
+    triggerRenderCount: 1,
+    ensureRenderLoopCount: 2,
     noOpRenderRequestCount: 1,
     wakeupRequestCount: 1,
     wakeupEnsureRenderLoopCount: 0,
     noOpWakeupCount: 1,
     activityTouchCount: 1,
     afterTouchCount: 0,
-    ensureRenderLoopAfterTriggerCount: 1,
-    renderNoOpRate: 0.2,
+    ensureRenderLoopAfterTriggerCount: 0,
+    renderNoOpRate: 0.25,
     wakeupNoOpRate: 1,
-    renderEnsureFallbackRate: 0.2,
-    renderFallbackTriggerRate: 0.4,
+    renderEnsureFallbackRate: 0.5,
   });
   assert.deepEqual(resetPlatformRenderDebugStats(App), {
-    renderRequestCount: 5,
-    triggerRenderCount: 3,
-    fallbackTriggerCount: 2,
-    ensureRenderLoopCount: 1,
+    renderRequestCount: 4,
+    triggerRenderCount: 1,
+    ensureRenderLoopCount: 2,
     noOpRenderRequestCount: 1,
     wakeupRequestCount: 1,
     wakeupEnsureRenderLoopCount: 0,
     noOpWakeupCount: 1,
     activityTouchCount: 1,
     afterTouchCount: 0,
-    ensureRenderLoopAfterTriggerCount: 1,
+    ensureRenderLoopAfterTriggerCount: 0,
   });
   assert.deepEqual(getPlatformRenderDebugStats(App), {
     renderRequestCount: 0,
     triggerRenderCount: 0,
-    fallbackTriggerCount: 0,
     ensureRenderLoopCount: 0,
     noOpRenderRequestCount: 0,
     wakeupRequestCount: 0,

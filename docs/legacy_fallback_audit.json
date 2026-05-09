@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-09T19:39:10.801Z",
+  "generatedAt": "2026-05-09T20:49:48.901Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 283,
@@ -2061,28 +2061,28 @@
     },
     {
       "file": "esm/native/runtime/platform_access_ops.ts",
-      "line": 224,
+      "line": 209,
       "term": "fallback",
       "category": "runtime-default",
       "text": "export function stringifyViaPlatform(App: unknown, value: unknown, fallback = ''): string {"
     },
     {
       "file": "esm/native/runtime/platform_access_ops.ts",
-      "line": 227,
+      "line": 212,
       "term": "fallback",
       "category": "runtime-default",
       "text": "if (!fn) return value == null ? String(fallback || '') : String(value);"
     },
     {
       "file": "esm/native/runtime/platform_access_ops.ts",
-      "line": 228,
+      "line": 213,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return fn(value, fallback);"
     },
     {
       "file": "esm/native/runtime/platform_access_ops.ts",
-      "line": 230,
+      "line": 215,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return value == null ? String(fallback || '') : String(value);"

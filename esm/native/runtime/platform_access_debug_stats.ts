@@ -19,7 +19,6 @@ export function createRenderFollowThroughDebugStats(): RenderFollowThroughDebugS
   return {
     renderRequestCount: 0,
     triggerRenderCount: 0,
-    fallbackTriggerCount: 0,
     ensureRenderLoopCount: 0,
     noOpRenderRequestCount: 0,
     wakeupRequestCount: 0,
@@ -74,8 +73,6 @@ export function summarizeRenderFollowThroughBudget(
     typeof stats?.renderRequestCount === 'number' ? Math.max(0, stats.renderRequestCount) : 0;
   const triggerRenderCount =
     typeof stats?.triggerRenderCount === 'number' ? Math.max(0, stats.triggerRenderCount) : 0;
-  const fallbackTriggerCount =
-    typeof stats?.fallbackTriggerCount === 'number' ? Math.max(0, stats.fallbackTriggerCount) : 0;
   const ensureRenderLoopCount =
     typeof stats?.ensureRenderLoopCount === 'number' ? Math.max(0, stats.ensureRenderLoopCount) : 0;
   const noOpRenderRequestCount =
@@ -98,7 +95,6 @@ export function summarizeRenderFollowThroughBudget(
   return {
     renderRequestCount,
     triggerRenderCount,
-    fallbackTriggerCount,
     ensureRenderLoopCount,
     noOpRenderRequestCount,
     wakeupRequestCount,
@@ -110,7 +106,6 @@ export function summarizeRenderFollowThroughBudget(
     renderNoOpRate: ratio(noOpRenderRequestCount, renderRequestCount),
     wakeupNoOpRate: ratio(noOpWakeupCount, wakeupRequestCount),
     renderEnsureFallbackRate: ratio(ensureRenderLoopCount, renderRequestCount),
-    renderFallbackTriggerRate: ratio(fallbackTriggerCount, renderRequestCount),
   };
 }
 
@@ -118,14 +113,12 @@ export function recordPlatformRenderFollowThroughStats(
   host: PlatformServiceNamespaceLike | UnknownRecord | null | undefined,
   result: {
     triggeredRender: boolean;
-    usedFallbackTrigger: boolean;
     ensuredRenderLoop: boolean;
   }
 ): RenderFollowThroughDebugStatsLike {
   const stats = ensureRenderFollowThroughDebugStats(host);
   stats.renderRequestCount += 1;
   if (result.triggeredRender) stats.triggerRenderCount += 1;
-  if (result.usedFallbackTrigger) stats.fallbackTriggerCount += 1;
   if (result.ensuredRenderLoop) stats.ensureRenderLoopCount += 1;
   if (!result.triggeredRender && !result.ensuredRenderLoop) stats.noOpRenderRequestCount += 1;
   return stats;

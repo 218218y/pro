@@ -11,7 +11,6 @@ function createPrepared() {
     label: 'native/builder/test',
     deps: {
       pruneCachesSafe() {},
-      triggerRender() {},
       rebuildDrawerMeta() {},
       showToast() {},
     },

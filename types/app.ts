@@ -47,7 +47,6 @@ export interface PlatformActivityLike extends UnknownRecord {
 export interface RenderFollowThroughDebugStatsLike extends UnknownRecord {
   renderRequestCount: number;
   triggerRenderCount: number;
-  fallbackTriggerCount: number;
   ensureRenderLoopCount: number;
   noOpRenderRequestCount: number;
   wakeupRequestCount: number;
@@ -61,7 +60,6 @@ export interface RenderFollowThroughDebugStatsLike extends UnknownRecord {
 export interface RenderFollowThroughBudgetSummaryLike extends UnknownRecord {
   renderRequestCount: number;
   triggerRenderCount: number;
-  fallbackTriggerCount: number;
   ensureRenderLoopCount: number;
   noOpRenderRequestCount: number;
   wakeupRequestCount: number;
@@ -73,7 +71,6 @@ export interface RenderFollowThroughBudgetSummaryLike extends UnknownRecord {
   renderNoOpRate: number;
   wakeupNoOpRate: number;
   renderEnsureFallbackRate: number;
-  renderFallbackTriggerRate: number;
 }
 
 export interface PlatformUtilNamespaceLike extends UnknownRecord {

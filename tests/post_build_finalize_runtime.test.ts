@@ -9,18 +9,16 @@ import {
 
 test('post-build finalize runtime: resolves BuildContext follow-through functions canonically', () => {
   const pruneCachesSafe = () => void 0;
-  const triggerRender = () => void 0;
   const rebuildDrawerMeta = () => void 0;
 
   assert.deepEqual(
     resolveFinalizeBuildContextArgs({
       App: { id: 'app' },
-      fns: { pruneCachesSafe, triggerRender, rebuildDrawerMeta },
+      fns: { pruneCachesSafe, rebuildDrawerMeta },
     } as any),
     {
       App: { id: 'app' },
       pruneCachesSafe,
-      triggerRender,
       rebuildDrawerMeta,
     }
   );
@@ -31,13 +29,11 @@ test('post-build finalize runtime: best-effort normalization strips non-function
   const normalized = resolveFinalizeBuildBestEffortArgs({
     App,
     pruneCachesSafe: 'nope' as any,
-    triggerRender: null,
     rebuildDrawerMeta: 12 as any,
   });
 
   assert.equal(normalized.App, App);
   assert.equal(normalized.pruneCachesSafe, null);
-  assert.equal(normalized.triggerRender, null);
   assert.equal(normalized.rebuildDrawerMeta, null);
 });
 

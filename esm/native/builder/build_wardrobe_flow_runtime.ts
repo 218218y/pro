@@ -14,7 +14,6 @@ type BuildWardrobeRuntimeOptions = {
   finalizeBuildBestEffort?: (args: {
     App: unknown;
     pruneCachesSafe?: ((scene: unknown) => void) | null;
-    triggerRender?: ((updateShadows?: boolean) => void) | null;
     rebuildDrawerMeta?: (() => void) | null;
   }) => void;
   reportBuildFailure?: (prepared: PreparedBuildWardrobeFlow, error: unknown) => void;
@@ -45,7 +44,7 @@ function finalizePreparedBuildWardrobeFlow(
   options: BuildWardrobeRuntimeOptions
 ): void {
   const { App, deps } = prepared;
-  const { pruneCachesSafe, triggerRender, rebuildDrawerMeta } = deps;
+  const { pruneCachesSafe, rebuildDrawerMeta } = deps;
 
   if (buildCtx) {
     (options.finalizeBuild || finalizeBuild)(buildCtx);
@@ -55,7 +54,6 @@ function finalizePreparedBuildWardrobeFlow(
   (options.finalizeBuildBestEffort || finalizeBuildBestEffort)({
     App,
     pruneCachesSafe: readFunction<(scene: unknown) => void>(pruneCachesSafe),
-    triggerRender: readFunction<(updateShadows?: boolean) => void>(triggerRender),
     rebuildDrawerMeta: readFunction<() => void>(rebuildDrawerMeta),
   });
 }

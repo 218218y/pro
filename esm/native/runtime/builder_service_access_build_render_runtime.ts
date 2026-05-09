@@ -15,7 +15,6 @@ export function runBuilderRenderFollowThroughRuntime(
 ): BuilderRenderFollowThroughResult {
   const result = runPlatformRenderFollowThrough(App, {
     updateShadows: !!opts?.updateShadows,
-    fallbackTrigger: typeof opts?.fallbackTrigger === 'function' ? opts.fallbackTrigger : null,
   });
   return {
     triggeredRender: result.triggeredRender,
