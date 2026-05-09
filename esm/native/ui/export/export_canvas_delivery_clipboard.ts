@@ -37,7 +37,7 @@ export function _handleCanvasExport(
     const ClipboardItemCtor = readClipboardItemCtor(browser);
 
     if (!ClipboardItemCtor || typeof ClipboardItemCtor !== 'function') {
-      if (options.allowDownloadFallback) {
+      if (options.allowDownloadOnClipboardFailure) {
         _downloadCanvasDataUrl(App, canvas, filename);
         _toast(App, `${options.toastClipboardNotSupported} — ירד קובץ במקום`, 'info');
       } else {
@@ -72,13 +72,13 @@ export function _handleCanvasExport(
           App,
           'handleCanvasExport.clipboardWrite',
           new Error(result.message || 'clipboard write failed'),
-          { mode: options.mode, fallback: options.fallback, filename }
+          { mode: options.mode, clipboardFailureMode: options.clipboardFailureMode, filename }
         );
         if (shouldFailFast(App)) throw new Error(result.message || 'clipboard write failed');
       }
 
       if (result.reason === 'unavailable') {
-        if (options.allowDownloadFallback) {
+        if (options.allowDownloadOnClipboardFailure) {
           _downloadCanvasDataUrl(App, canvas, filename);
           _toast(App, `${options.toastClipboardNotSupported} — ירד קובץ במקום`, 'info');
         } else {
@@ -87,7 +87,7 @@ export function _handleCanvasExport(
         return;
       }
 
-      if (!options.allowDownloadFallback) {
+      if (!options.allowDownloadOnClipboardFailure) {
         const detail =
           typeof result.message === 'string' && result.message.trim() ? `: ${result.message.trim()}` : '';
         _toast(App, `${options.toastClipboardBlocked}${detail}`, 'error');
@@ -102,11 +102,11 @@ export function _handleCanvasExport(
   } catch (e) {
     _reportExportError(App, 'handleCanvasExport', e, {
       mode: options.mode,
-      fallback: options.fallback,
+      clipboardFailureMode: options.clipboardFailureMode,
       filename,
     });
     if (shouldFailFast(App)) throw e;
-    if (!options.allowDownloadFallback) {
+    if (!options.allowDownloadOnClipboardFailure) {
       _toast(App, options.toastClipboardBlocked, 'error');
       return;
     }

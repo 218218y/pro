@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-09T18:19:49.419Z",
+  "generatedAt": "2026-05-09T19:39:10.801Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 304,
-    "totalFiles": 154,
+    "totalOccurrences": 283,
+    "totalFiles": 147,
     "byCategory": {
-      "runtime-default": 283,
+      "runtime-default": 262,
       "browser-adapter": 9,
       "project-migration": 5,
       "test-fixture": 7,
@@ -697,52 +697,10 @@
           "runtime-default": 1
         }
       },
-      "esm/native/ui/export/export_canvas_core_canvas.ts": {
+      "esm/native/ui/export/export_canvas_delivery_shared.ts": {
         "total": 3,
         "categories": {
           "runtime-default": 3
-        }
-      },
-      "esm/native/ui/export/export_canvas_core_feedback.ts": {
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      "esm/native/ui/export/export_canvas_core_shared.ts": {
-        "total": 4,
-        "categories": {
-          "runtime-default": 4
-        }
-      },
-      "esm/native/ui/export/export_canvas_delivery_clipboard.ts": {
-        "total": 4,
-        "categories": {
-          "runtime-default": 4
-        }
-      },
-      "esm/native/ui/export/export_canvas_delivery_shared.ts": {
-        "total": 7,
-        "categories": {
-          "runtime-default": 7
-        }
-      },
-      "esm/native/ui/export/export_canvas_workflow_contracts.ts": {
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      "esm/native/ui/export/export_canvas_workflow_dual.ts": {
-        "total": 2,
-        "categories": {
-          "runtime-default": 2
-        }
-      },
-      "esm/native/ui/export/export_canvas_workflow_render_sketch.ts": {
-        "total": 2,
-        "categories": {
-          "runtime-default": 2
         }
       },
       "esm/native/ui/export/export_order_pdf_types.ts": {
@@ -940,13 +898,6 @@
     },
     "hotFiles": [
       {
-        "file": "esm/native/ui/export/export_canvas_delivery_shared.ts",
-        "total": 7,
-        "categories": {
-          "runtime-default": 7
-        }
-      },
-      {
         "file": "esm/test_no_side_effects_on_import.mjs",
         "total": 6,
         "categories": {
@@ -1011,20 +962,6 @@
       },
       {
         "file": "esm/native/services/render_surface_runtime_support_shared.ts",
-        "total": 4,
-        "categories": {
-          "runtime-default": 4
-        }
-      },
-      {
-        "file": "esm/native/ui/export/export_canvas_core_shared.ts",
-        "total": 4,
-        "categories": {
-          "runtime-default": 4
-        }
-      },
-      {
-        "file": "esm/native/ui/export/export_canvas_delivery_clipboard.ts",
         "total": 4,
         "categories": {
           "runtime-default": 4
@@ -1136,7 +1073,7 @@
         }
       },
       {
-        "file": "esm/native/ui/export/export_canvas_core_canvas.ts",
+        "file": "esm/native/ui/export/export_canvas_delivery_shared.ts",
         "total": 3,
         "categories": {
           "runtime-default": 3
@@ -1147,6 +1084,27 @@
         "total": 3,
         "categories": {
           "runtime-default": 3
+        }
+      },
+      {
+        "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_text_layer_editor_hooks.ts",
+        "total": 3,
+        "categories": {
+          "runtime-default": 3
+        }
+      },
+      {
+        "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_note_box_runtime.ts",
+        "total": 3,
+        "categories": {
+          "runtime-default": 3
+        }
+      },
+      {
+        "file": "esm/native/builder/corner_connector_cornice_shared.ts",
+        "total": 2,
+        "categories": {
+          "runtime-default": 2
         }
       }
     ]
@@ -2648,90 +2606,6 @@
       "text": "// fall through to HTML fallbacks"
     },
     {
-      "file": "esm/native/ui/export/export_canvas_core_canvas.ts",
-      "line": 93,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const fallback = { width: 1, height: 1 };"
-    },
-    {
-      "file": "esm/native/ui/export/export_canvas_core_canvas.ts",
-      "line": 95,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "if (!sizeEl) return fallback;"
-    },
-    {
-      "file": "esm/native/ui/export/export_canvas_core_canvas.ts",
-      "line": 116,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return fallback;"
-    },
-    {
-      "file": "esm/native/ui/export/export_canvas_core_feedback.ts",
-      "line": 83,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "// ignore console/clock failures in low-level helper fallback reporting"
-    },
-    {
-      "file": "esm/native/ui/export/export_canvas_core_shared.ts",
-      "line": 101,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function getNumberProp(v: unknown, key: string, fallback: number): number {"
-    },
-    {
-      "file": "esm/native/ui/export/export_canvas_core_shared.ts",
-      "line": 104,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return Number.isFinite(n) ? n : fallback;"
-    },
-    {
-      "file": "esm/native/ui/export/export_canvas_core_shared.ts",
-      "line": 116,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "export function _toNumber(v: unknown, fallback: number): number {"
-    },
-    {
-      "file": "esm/native/ui/export/export_canvas_core_shared.ts",
-      "line": 117,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return typeof v === 'number' && Number.isFinite(v) ? v : fallback;"
-    },
-    {
-      "file": "esm/native/ui/export/export_canvas_delivery_clipboard.ts",
-      "line": 75,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "{ mode: options.mode, fallback: options.fallback, filename }"
-    },
-    {
-      "file": "esm/native/ui/export/export_canvas_delivery_clipboard.ts",
-      "line": 75,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "{ mode: options.mode, fallback: options.fallback, filename }"
-    },
-    {
-      "file": "esm/native/ui/export/export_canvas_delivery_clipboard.ts",
-      "line": 105,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: options.fallback,"
-    },
-    {
-      "file": "esm/native/ui/export/export_canvas_delivery_clipboard.ts",
-      "line": 105,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: options.fallback,"
-    },
-    {
       "file": "esm/native/ui/export/export_canvas_delivery_shared.ts",
       "line": 5,
       "term": "fallback",
@@ -2740,80 +2614,17 @@
     },
     {
       "file": "esm/native/ui/export/export_canvas_delivery_shared.ts",
-      "line": 27,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: string;"
-    },
-    {
-      "file": "esm/native/ui/export/export_canvas_delivery_shared.ts",
-      "line": 42,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const fallback = o.fallback ? String(o.fallback) : 'download';"
-    },
-    {
-      "file": "esm/native/ui/export/export_canvas_delivery_shared.ts",
-      "line": 42,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const fallback = o.fallback ? String(o.fallback) : 'download';"
-    },
-    {
-      "file": "esm/native/ui/export/export_canvas_delivery_shared.ts",
-      "line": 42,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "const fallback = o.fallback ? String(o.fallback) : 'download';"
-    },
-    {
-      "file": "esm/native/ui/export/export_canvas_delivery_shared.ts",
       "line": 45,
       "term": "fallback",
       "category": "runtime-default",
-      "text": "fallback,"
+      "text": ": o.fallback"
     },
     {
       "file": "esm/native/ui/export/export_canvas_delivery_shared.ts",
       "line": 46,
       "term": "fallback",
       "category": "runtime-default",
-      "text": "allowDownloadFallback: fallback !== 'none',"
-    },
-    {
-      "file": "esm/native/ui/export/export_canvas_workflow_contracts.ts",
-      "line": 110,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "readRuntimeScalarOrDefaultFromApp: (app: AppContainer, key: 'sketchMode', fallback?: boolean) => boolean;"
-    },
-    {
-      "file": "esm/native/ui/export/export_canvas_workflow_dual.ts",
-      "line": 125,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: 'none',"
-    },
-    {
-      "file": "esm/native/ui/export/export_canvas_workflow_dual.ts",
-      "line": 135,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: 'none',"
-    },
-    {
-      "file": "esm/native/ui/export/export_canvas_workflow_render_sketch.ts",
-      "line": 150,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: 'none',"
-    },
-    {
-      "file": "esm/native/ui/export/export_canvas_workflow_render_sketch.ts",
-      "line": 160,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "fallback: 'none',"
+      "text": "? String(o.fallback)"
     },
     {
       "file": "esm/native/ui/export/export_order_pdf_types.ts",

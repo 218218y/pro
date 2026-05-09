@@ -98,10 +98,10 @@ export function isPromiseLike<T = unknown>(v: unknown): v is PromiseLike<T> {
   );
 }
 
-export function getNumberProp(v: unknown, key: string, fallback: number): number {
+export function getNumberProp(v: unknown, key: string, defaultValue: number): number {
   const x = getProp(v, key);
   const n = typeof x === 'number' ? x : Number(x);
-  return Number.isFinite(n) ? n : fallback;
+  return Number.isFinite(n) ? n : defaultValue;
 }
 
 export function getBooleanProp(v: unknown, key: string): boolean | undefined {
@@ -113,6 +113,6 @@ export function asArray(v: unknown): unknown[] {
   return Array.isArray(v) ? v : [];
 }
 
-export function _toNumber(v: unknown, fallback: number): number {
-  return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
+export function _toNumber(v: unknown, defaultValue: number): number {
+  return typeof v === 'number' && Number.isFinite(v) ? v : defaultValue;
 }

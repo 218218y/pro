@@ -147,7 +147,7 @@ export function createExportRenderAndSketchWorkflow(
         finalCanvas.toDataURL();
         _handleCanvasExport(App, finalCanvas, 'wardrobe-render-sketch.png', {
           mode: 'clipboard',
-          fallback: 'none',
+          clipboardFailureMode: 'none',
           toastClipboardSuccess: 'ייצוא סקיצה/הדמיה הועתק ללוח בהצלחה!',
         });
       } catch (err) {
@@ -157,7 +157,7 @@ export function createExportRenderAndSketchWorkflow(
         const finalCanvasWithoutLogo = await createComposite(false);
         _handleCanvasExport(App, finalCanvasWithoutLogo, 'wardrobe-render-sketch.png', {
           mode: 'clipboard',
-          fallback: 'none',
+          clipboardFailureMode: 'none',
           toastClipboardSuccess: 'ייצוא סקיצה/הדמיה הועתק ללוח בהצלחה!',
         });
       }

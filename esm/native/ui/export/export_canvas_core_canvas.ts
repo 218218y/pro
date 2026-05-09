@@ -90,9 +90,9 @@ function readPositiveSize(width: unknown, height: unknown): { width: number; hei
 }
 
 function _getDomElementSize(el: unknown): { width: number; height: number } {
-  const fallback = { width: 1, height: 1 };
+  const defaultSize = { width: 1, height: 1 };
   const sizeEl = readDomElementSizeCandidate(el);
-  if (!sizeEl) return fallback;
+  if (!sizeEl) return defaultSize;
 
   const rawSize = readPositiveSize(sizeEl.width, sizeEl.height);
   if (rawSize) return rawSize;
@@ -113,7 +113,7 @@ function _getDomElementSize(el: unknown): { width: number; height: number } {
     }
   }
 
-  return fallback;
+  return defaultSize;
 }
 
 export function _getRendererSize(renderer: { domElement: unknown }): { width: number; height: number } {

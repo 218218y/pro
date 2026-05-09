@@ -687,52 +687,10 @@
         "runtime-default": 1
       }
     },
-    "esm/native/ui/export/export_canvas_core_canvas.ts": {
+    "esm/native/ui/export/export_canvas_delivery_shared.ts": {
       "total": 3,
       "categories": {
         "runtime-default": 3
-      }
-    },
-    "esm/native/ui/export/export_canvas_core_feedback.ts": {
-      "total": 1,
-      "categories": {
-        "runtime-default": 1
-      }
-    },
-    "esm/native/ui/export/export_canvas_core_shared.ts": {
-      "total": 4,
-      "categories": {
-        "runtime-default": 4
-      }
-    },
-    "esm/native/ui/export/export_canvas_delivery_clipboard.ts": {
-      "total": 4,
-      "categories": {
-        "runtime-default": 4
-      }
-    },
-    "esm/native/ui/export/export_canvas_delivery_shared.ts": {
-      "total": 7,
-      "categories": {
-        "runtime-default": 7
-      }
-    },
-    "esm/native/ui/export/export_canvas_workflow_contracts.ts": {
-      "total": 1,
-      "categories": {
-        "runtime-default": 1
-      }
-    },
-    "esm/native/ui/export/export_canvas_workflow_dual.ts": {
-      "total": 2,
-      "categories": {
-        "runtime-default": 2
-      }
-    },
-    "esm/native/ui/export/export_canvas_workflow_render_sketch.ts": {
-      "total": 2,
-      "categories": {
-        "runtime-default": 2
       }
     },
     "esm/native/ui/export/export_order_pdf_types.ts": {

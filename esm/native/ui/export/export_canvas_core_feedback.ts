@@ -80,7 +80,7 @@ export function _exportReportNonFatalNoApp(op: string, error: unknown, throttleM
       console.warn(`[WardrobePro][export][soft-noapp] ${op}`, error);
     }
   } catch {
-    // ignore console/clock failures in low-level helper fallback reporting
+    // ignore console/clock failures in low-level soft reporting
   }
 }
 

@@ -3,6 +3,7 @@
 export interface CanvasExportOptions {
   mode?: string;
   fallback?: string;
+  clipboardFailureMode?: string;
   toastDownload?: string;
   toastClipboardSuccess?: string;
   toastClipboardNotSupported?: string;
@@ -24,8 +25,8 @@ export function isFailedClipboardResult(value: { ok: boolean }): value is Failed
 
 export type NormalizedCanvasExportOptions = {
   mode: string;
-  fallback: string;
-  allowDownloadFallback: boolean;
+  clipboardFailureMode: string;
+  allowDownloadOnClipboardFailure: boolean;
   toastDownload: string;
   toastClipboardSuccess: string;
   toastClipboardNotSupported: string;
@@ -39,11 +40,15 @@ export function normalizeCanvasExportOptions(
 ): NormalizedCanvasExportOptions {
   const o = opts && typeof opts === 'object' ? opts : {};
   const mode = o.mode ? String(o.mode) : 'download';
-  const fallback = o.fallback ? String(o.fallback) : 'download';
+  const clipboardFailureMode = o.clipboardFailureMode
+    ? String(o.clipboardFailureMode)
+    : o.fallback
+      ? String(o.fallback)
+      : 'download';
   return {
     mode,
-    fallback,
-    allowDownloadFallback: fallback !== 'none',
+    clipboardFailureMode,
+    allowDownloadOnClipboardFailure: clipboardFailureMode !== 'none',
     toastDownload:
       typeof o.toastDownload === 'string' && o.toastDownload.trim() ? o.toastDownload : 'התמונה ירדה למחשב',
     toastClipboardSuccess:

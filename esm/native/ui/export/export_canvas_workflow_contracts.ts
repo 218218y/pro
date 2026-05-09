@@ -107,7 +107,11 @@ export type ExportCanvasWorkflowDeps = {
     opts?: Record<string, unknown>
   ) => void;
   _guard: (app: AppContainer, label: string, fn: () => void) => void;
-  readRuntimeScalarOrDefaultFromApp: (app: AppContainer, key: 'sketchMode', fallback?: boolean) => boolean;
+  readRuntimeScalarOrDefaultFromApp: (
+    app: AppContainer,
+    key: 'sketchMode',
+    defaultValue?: boolean
+  ) => boolean;
   applyViewportSketchMode: (
     app: AppContainer,
     next: boolean,

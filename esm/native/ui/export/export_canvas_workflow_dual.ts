@@ -122,7 +122,7 @@ export function createExportDualImageWorkflow(
       finalCanvas.toDataURL();
       _handleCanvasExport(App, finalCanvas, 'wardrobe-design-open-closed.png', {
         mode: 'clipboard',
-        fallback: 'none',
+        clipboardFailureMode: 'none',
         toastClipboardSuccess: 'ייצוא פתוח/סגור הועתק ללוח בהצלחה!',
       });
     } catch (err) {
@@ -132,7 +132,7 @@ export function createExportDualImageWorkflow(
       const finalCanvasWithoutLogo = await createComposite(false);
       _handleCanvasExport(App, finalCanvasWithoutLogo, 'wardrobe-design-open-closed.png', {
         mode: 'clipboard',
-        fallback: 'none',
+        clipboardFailureMode: 'none',
         toastClipboardSuccess: 'ייצוא פתוח/סגור הועתק ללוח בהצלחה!',
       });
     } finally {

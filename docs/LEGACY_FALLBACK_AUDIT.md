@@ -1,14 +1,14 @@
 # Legacy / fallback audit
 
-Generated at: 2026-05-09T18:19:49.419Z
+Generated at: 2026-05-09T19:39:10.801Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **304**
-- Files with occurrences: **154**
+- Total categorized occurrences: **283**
+- Files with occurrences: **147**
 - Category counts:
-  - `runtime-default`: **283**
+  - `runtime-default`: **262**
   - `browser-adapter`: **9**
   - `project-migration`: **5**
   - `test-fixture`: **7**
@@ -25,7 +25,6 @@ Generated at: 2026-05-09T18:19:49.419Z
 
 ## Hot files
 
-- `esm/native/ui/export/export_canvas_delivery_shared.ts` — **7** (runtime-default: 7)
 - `esm/test_no_side_effects_on_import.mjs` — **6** (test-fixture: 6)
 - `esm/native/platform/render_loop_impl_support.ts` — **4** (runtime-default: 4)
 - `esm/native/runtime/platform_access_ops.ts` — **4** (runtime-default: 4)
@@ -36,8 +35,6 @@ Generated at: 2026-05-09T18:19:49.419Z
 - `esm/native/services/canvas_picking_projection_runtime_box_shared.ts` — **4** (runtime-default: 4)
 - `esm/native/services/cloud_sync_command_shared.ts` — **4** (runtime-default: 4)
 - `esm/native/services/render_surface_runtime_support_shared.ts` — **4** (runtime-default: 4)
-- `esm/native/ui/export/export_canvas_core_shared.ts` — **4** (runtime-default: 4)
-- `esm/native/ui/export/export_canvas_delivery_clipboard.ts` — **4** (runtime-default: 4)
 - `esm/native/ui/notes_service_sanitize.ts` — **4** (runtime-default: 4)
 - `esm/native/ui/react/tabs/interior_tab_helpers_core.ts` — **4** (runtime-default: 4)
 - `esm/native/ui/react/tabs/structure_tab_core_numbers.ts` — **4** (runtime-default: 4)
@@ -53,8 +50,11 @@ Generated at: 2026-05-09T18:19:49.419Z
 - `esm/native/services/canvas_picking_core_support_errors.ts` — **3** (runtime-default: 3)
 - `esm/native/services/config_compounds_shared.ts` — **3** (runtime-default: 3)
 - `esm/native/services/doors_runtime_state.ts` — **3** (runtime-default: 3)
-- `esm/native/ui/export/export_canvas_core_canvas.ts` — **3** (runtime-default: 3)
+- `esm/native/ui/export/export_canvas_delivery_shared.ts` — **3** (runtime-default: 3)
 - `esm/native/ui/react/notes/notes_overlay_helpers_shared.ts` — **3** (runtime-default: 3)
+- `esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_text_layer_editor_hooks.ts` — **3** (runtime-default: 3)
+- `esm/native/ui/react/pdf/order_pdf_overlay_sketch_note_box_runtime.ts` — **3** (runtime-default: 3)
+- `esm/native/builder/corner_connector_cornice_shared.ts` — **2** (runtime-default: 2)
 
 ## Allowlist check
 
