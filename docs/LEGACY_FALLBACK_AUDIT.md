@@ -1,14 +1,14 @@
 # Legacy / fallback audit
 
-Generated at: 2026-05-10T09:35:01.255Z
+Generated at: 2026-05-10T10:35:30.073Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **52**
-- Files with occurrences: **40**
+- Total categorized occurrences: **49**
+- Files with occurrences: **37**
 - Category counts:
-  - `runtime-default`: **31**
+  - `runtime-default`: **28**
   - `browser-adapter`: **9**
   - `project-migration`: **5**
   - `test-fixture`: **7**
@@ -34,14 +34,11 @@ Generated at: 2026-05-10T09:35:01.255Z
 - `esm/entry_pro.ts` — **1** (browser-adapter: 1)
 - `esm/native/adapters/browser/active_element.ts` — **1** (browser-adapter: 1)
 - `esm/native/adapters/browser/CONTRACT.md` — **1** (browser-adapter: 1)
-- `esm/native/builder/module_layout_pipeline.ts` — **1** (runtime-default: 1)
-- `esm/native/builder/post_build_extras_pipeline.ts` — **1** (runtime-default: 1)
 - `esm/native/builder/post_build_front_reveal_frames_drawers.ts` — **1** (runtime-default: 1)
 - `esm/native/builder/post_build_sketch_door_cuts_modules.ts` — **1** (runtime-default: 1)
 - `esm/native/builder/render_interior_preset_ops_wall_faces.ts` — **1** (runtime-default: 1)
 - `esm/native/builder/render_interior_sketch_support_rods.ts` — **1** (runtime-default: 1)
 - `esm/native/builder/room_floor_texture.ts` — **1** (runtime-default: 1)
-- `esm/native/builder/scheduler_runtime.ts` — **1** (runtime-default: 1)
 - `esm/native/features/project_config/project_config_persisted_payload_shared.ts` — **1** (project-migration: 1)
 - `esm/native/io/project_schema_door_maps.ts` — **1** (project-migration: 1)
 - `esm/native/platform/boot_main.ts` — **1** (browser-adapter: 1)
@@ -55,6 +52,9 @@ Generated at: 2026-05-10T09:35:01.255Z
 - `esm/native/runtime/mode_write_access.ts` — **1** (runtime-default: 1)
 - `esm/native/runtime/runtime_write_access.ts` — **1** (runtime-default: 1)
 - `esm/native/runtime/slice_write_access_dispatch.ts` — **1** (project-migration: 1)
+- `esm/native/runtime/slice_write_access.ts` — **1** (runtime-default: 1)
+- `esm/native/services/cloud_sync_config_shared.ts` — **1** (runtime-default: 1)
+- `esm/native/services/cloud_sync_lifecycle_runtime_realtime_start.ts` — **1** (runtime-default: 1)
 
 ## Allowlist check
 

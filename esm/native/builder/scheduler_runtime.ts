@@ -97,6 +97,30 @@ function stagePendingBuildState(
       : ensurePendingScheduleVersion(state);
 }
 
+function hasRecoverablePendingPlan(state: BuilderSchedulerStateInternalLike): boolean {
+  return !!readPlanState(state.pendingPlan);
+}
+
+function runRecoverablePendingBuildAfterRequestFailure(
+  App: AppContainer,
+  state: BuilderSchedulerStateInternalLike,
+  reason: string,
+  forceBuild: boolean
+): unknown {
+  if (!hasRecoverablePendingPlan(state)) return undefined;
+
+  try {
+    return runPendingBuildRuntime(App, reason, forceBuild);
+  } catch (e) {
+    reportError(App, e, {
+      where: 'builder/scheduler.requestBuild.recovery',
+      reason,
+      forceBuild,
+    });
+    return undefined;
+  }
+}
+
 export function ensureSchedulerDebouncedRunner(
   App: AppContainer,
   state: BuilderSchedulerStateInternalLike,
@@ -273,7 +297,12 @@ export function requestBuildRuntime(
       console.error(e);
     });
 
-    return runPendingBuildRuntime(A, opts?.reason || 'fallback', forceBuild);
+    return runRecoverablePendingBuildAfterRequestFailure(
+      A,
+      s,
+      opts?.reason || 'requestBuild:recovery',
+      forceBuild
+    );
   }
 }
 

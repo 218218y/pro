@@ -978,3 +978,119 @@ test('builder scheduler runtime: stale builder-wait wakeups are ignored after an
   const budget = getBuildDebugBudget(App);
   assert.equal(budget.staleWakeupCount, 1);
 });
+
+test('builder scheduler runtime: request planning failures do not retry the same missing state seam when no pending plan exists', () => {
+  const reports: any[] = [];
+  const buildCalls: any[] = [];
+  const App: any = {
+    store: {
+      getState() {
+        throw new Error('root store state unavailable');
+      },
+    },
+    services: {
+      platform: {
+        reportError(err: unknown, ctx?: unknown) {
+          reports.push({ err, ctx });
+        },
+      },
+      builder: {
+        buildWardrobe(state: unknown) {
+          buildCalls.push(state);
+          return state;
+        },
+      },
+    },
+    boot: {
+      isReady() {
+        return true;
+      },
+    },
+  };
+
+  installBuilderScheduler(App, {
+    getBuildState() {
+      throw new Error('planned build state seam missing');
+    },
+  });
+
+  const originalConsoleError = console.error;
+  console.error = () => undefined;
+  try {
+    assert.doesNotThrow(() => requestBuild(App, null, { reason: 'broken:state', immediate: true }));
+  } finally {
+    console.error = originalConsoleError;
+  }
+  assert.equal(buildCalls.length, 0);
+  assert.equal(reports.length, 1);
+  assert.equal(reports[0]?.ctx?.where, 'builder/scheduler.requestBuild');
+});
+
+test('builder scheduler runtime: request planning failure may recover only from an already staged pending plan', () => {
+  const reports: any[] = [];
+  const buildCalls: any[] = [];
+  const debounceHarness = createDebounceHarness();
+  let getBuildStateImpl = () => ({
+    ui: { panel: 'demo' },
+    config: {},
+    runtime: {},
+    mode: {},
+    meta: {},
+    build: { signature: 'sig:queued-before-planning-error' },
+  });
+  const App: any = {
+    store: {
+      getState() {
+        throw new Error('root store state unavailable');
+      },
+    },
+    services: {
+      platform: {
+        reportError(err: unknown, ctx?: unknown) {
+          reports.push({ err, ctx });
+        },
+      },
+      builder: {
+        buildWardrobe(state: unknown) {
+          buildCalls.push(state);
+          return state;
+        },
+      },
+    },
+    boot: {
+      isReady() {
+        return true;
+      },
+    },
+  };
+
+  installBuilderScheduler(App, {
+    debounce(fn: () => void) {
+      return debounceHarness.debounce(fn);
+    },
+    getBuildState() {
+      return getBuildStateImpl() as any;
+    },
+  });
+
+  requestBuild(App, null, { reason: 'queued:before-error' });
+  assert.equal(buildCalls.length, 0);
+  assert.equal(debounceHarness.getScheduleCount(), 1);
+
+  getBuildStateImpl = () => {
+    throw new Error('new build state seam failed');
+  };
+
+  const originalConsoleError = console.error;
+  console.error = () => undefined;
+  try {
+    assert.doesNotThrow(() => requestBuild(App, null, { reason: 'broken:state', immediate: true }));
+  } finally {
+    console.error = originalConsoleError;
+  }
+
+  assert.equal(buildCalls.length, 1);
+  assert.equal(buildCalls[0]?.build?.signature, 'sig:queued-before-planning-error');
+  assert.equal(reports.length, 1);
+  assert.equal(reports[0]?.ctx?.where, 'builder/scheduler.requestBuild');
+});

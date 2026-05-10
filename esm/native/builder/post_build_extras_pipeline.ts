@@ -30,6 +30,32 @@ function readAppRecord(value: unknown): Record<string, unknown> | null {
   return isUnknownRecord(value) ? value : null;
 }
 
+function syncGlobalClickVisualStateAfterBuild(
+  App: unknown,
+  runtime: unknown,
+  skipDoorVisualSync: boolean
+): void {
+  if (skipDoorVisualSync) return;
+
+  const doorsOpen = !!readRuntimeScalarOrDefault(runtime, 'doorsOpen', false);
+  const syncedDoorVisuals = syncDoorsVisualsNow(App, { open: doorsOpen });
+  if (syncedDoorVisuals) return;
+
+  // When the global door-visual owner is not installed, drawer snapping is still a
+  // valid, narrower post-build operation. Keep it explicit so missing door sync is
+  // visible instead of pretending a partial drawer update handled the whole route.
+  snapDrawersToTargetsViaService(App);
+}
+
+function syncLocalClickVisualStateAfterBuild(
+  App: unknown,
+  skipLocalDoorSync: boolean,
+  skipDoorVisualSync: boolean
+): void {
+  applyLocalOpenStateAfterBuild(App);
+  if (!skipLocalDoorSync && !skipDoorVisualSync) syncDoorsVisualsNow(App);
+}
+
 export function applyPostBuildExtras(input: BuildContextLike) {
   if (!isBuildContext(input)) {
     throw new Error('[builder/post_build_extras] BuildContext required');
@@ -177,21 +203,14 @@ export function applyPostBuildExtras(input: BuildContextLike) {
   if (skipNextDoorVisualSync && appRec) delete appRec.__wpSkipNextDoorVisualSync;
 
   if (globalClickMode) {
-    if (!skipNextDoorVisualSync) {
-      const __doorsOpen = !!readRuntimeScalarOrDefault(runtime, 'doorsOpen', false);
-      if (!syncDoorsVisualsNow(App, { open: __doorsOpen })) {
-        // Minimal fallback: keep drawers consistent if visuals sync is unavailable.
-        snapDrawersToTargetsViaService(App);
-      }
-    }
+    syncGlobalClickVisualStateAfterBuild(App, runtime, skipNextDoorVisualSync);
   }
 
   if (!globalClickMode) {
-    applyLocalOpenStateAfterBuild(App);
+    syncLocalClickVisualStateAfterBuild(App, skipNextLocalDoorSync, skipNextDoorVisualSync);
     if (hadEditHold) {
       applyEditHoldAfterBuild(App);
     }
-    if (!skipNextLocalDoorSync && !skipNextDoorVisualSync) syncDoorsVisualsNow(App);
   }
 
   applyPendingSketchBoxDoorStateAfterBuild(App);

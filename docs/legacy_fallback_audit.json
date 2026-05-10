@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-10T09:35:01.255Z",
+  "generatedAt": "2026-05-10T10:35:30.073Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 52,
-    "totalFiles": 40,
+    "totalOccurrences": 49,
+    "totalFiles": 37,
     "byCategory": {
-      "runtime-default": 31,
+      "runtime-default": 28,
       "browser-adapter": 9,
       "project-migration": 5,
       "test-fixture": 7,
@@ -43,18 +43,6 @@
           "browser-adapter": 3
         }
       },
-      "esm/native/builder/module_layout_pipeline.ts": {
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      "esm/native/builder/post_build_extras_pipeline.ts": {
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
       "esm/native/builder/post_build_front_reveal_frames_drawers.ts": {
         "total": 1,
         "categories": {
@@ -80,12 +68,6 @@
         }
       },
       "esm/native/builder/room_floor_texture.ts": {
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      "esm/native/builder/scheduler_runtime.ts": {
         "total": 1,
         "categories": {
           "runtime-default": 1
@@ -319,20 +301,6 @@
         }
       },
       {
-        "file": "esm/native/builder/module_layout_pipeline.ts",
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      {
-        "file": "esm/native/builder/post_build_extras_pipeline.ts",
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      {
         "file": "esm/native/builder/post_build_front_reveal_frames_drawers.ts",
         "total": 1,
         "categories": {
@@ -362,13 +330,6 @@
       },
       {
         "file": "esm/native/builder/room_floor_texture.ts",
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      {
-        "file": "esm/native/builder/scheduler_runtime.ts",
         "total": 1,
         "categories": {
           "runtime-default": 1
@@ -464,6 +425,27 @@
         "categories": {
           "project-migration": 1
         }
+      },
+      {
+        "file": "esm/native/runtime/slice_write_access.ts",
+        "total": 1,
+        "categories": {
+          "runtime-default": 1
+        }
+      },
+      {
+        "file": "esm/native/services/cloud_sync_config_shared.ts",
+        "total": 1,
+        "categories": {
+          "runtime-default": 1
+        }
+      },
+      {
+        "file": "esm/native/services/cloud_sync_lifecycle_runtime_realtime_start.ts",
+        "total": 1,
+        "categories": {
+          "runtime-default": 1
+        }
       }
     ]
   },
@@ -522,20 +504,6 @@
       "text": "return fallback;"
     },
     {
-      "file": "esm/native/builder/module_layout_pipeline.ts",
-      "line": 237,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "// Optional pure-core normalization (preferred). If it fails, keep the local math fallback."
-    },
-    {
-      "file": "esm/native/builder/post_build_extras_pipeline.ts",
-      "line": 183,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "// Minimal fallback: keep drawers consistent if visuals sync is unavailable."
-    },
-    {
       "file": "esm/native/builder/post_build_front_reveal_frames_drawers.ts",
       "line": 3,
       "term": "fallback",
@@ -569,13 +537,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "// ignore fallback canvas creation errors; room design can operate without a procedural texture"
-    },
-    {
-      "file": "esm/native/builder/scheduler_runtime.ts",
-      "line": 276,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "return runPendingBuildRuntime(A, opts?.reason || 'fallback', forceBuild);"
     },
     {
       "file": "esm/native/features/project_config/project_config_persisted_payload_shared.ts",
@@ -726,7 +687,7 @@
     },
     {
       "file": "esm/native/runtime/ui_write_access.ts",
-      "line": 222,
+      "line": 225,
       "term": "Fallback",
       "category": "runtime-default",
       "text": "// Fallback: patch raw object (UI-only by convention)."

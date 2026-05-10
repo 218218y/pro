@@ -33,18 +33,6 @@
         "browser-adapter": 3
       }
     },
-    "esm/native/builder/module_layout_pipeline.ts": {
-      "total": 1,
-      "categories": {
-        "runtime-default": 1
-      }
-    },
-    "esm/native/builder/post_build_extras_pipeline.ts": {
-      "total": 1,
-      "categories": {
-        "runtime-default": 1
-      }
-    },
     "esm/native/builder/post_build_front_reveal_frames_drawers.ts": {
       "total": 1,
       "categories": {
@@ -70,12 +58,6 @@
       }
     },
     "esm/native/builder/room_floor_texture.ts": {
-      "total": 1,
-      "categories": {
-        "runtime-default": 1
-      }
-    },
-    "esm/native/builder/scheduler_runtime.ts": {
       "total": 1,
       "categories": {
         "runtime-default": 1

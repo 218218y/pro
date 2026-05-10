@@ -150,6 +150,20 @@ function readFiniteNumberList(value: unknown): number[] | null {
   return out;
 }
 
+function readFiniteNumberOrDefault(value: unknown, defaultValue: number): number {
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? n : defaultValue;
+}
+
+function readRequiredCoreLayout(
+  value: unknown
+): CoreLayoutLike & { modules: ModuleLike[]; moduleConfigs: ModulesConfigurationLike } {
+  if (!isCoreLayoutLike(value) || !Array.isArray(value.modules) || !Array.isArray(value.moduleConfigs)) {
+    throw new Error('[WardrobePro] Invalid core module layout result');
+  }
+  return value as CoreLayoutLike & { modules: ModuleLike[]; moduleConfigs: ModulesConfigurationLike };
+}
+
 function readHingedDoorPivotMap(value: unknown): HingedDoorPivotMapLike | null {
   const rec = asRecord<UnknownRecord>(value);
   if (!rec) return null;
@@ -234,28 +248,19 @@ export function computeModulesAndLayout(args: ComputeModulesAndLayoutArgs): Comp
   let netInternalWidth = totalW - 2 * woodThick - totalDividersWidth;
   let singleUnitWidth = sumDoors > 0 ? netInternalWidth / sumDoors : 0;
 
-  // Optional pure-core normalization (preferred). If it fails, keep the local math fallback.
-  let coreLayout: CoreLayoutLike | null = null;
-  try {
-    const computedLayout = computeModuleLayout({
-      totalW,
-      woodThick,
-      modulesStructure: modules,
-      modulesConfiguration: moduleCfgList,
-    });
-    coreLayout = isCoreLayoutLike(computedLayout) ? computedLayout : null;
+  const computedLayout = computeModuleLayout({
+    totalW,
+    woodThick,
+    modulesStructure: modules,
+    modulesConfiguration: moduleCfgList,
+  });
+  const coreLayout = readRequiredCoreLayout(computedLayout);
 
-    if (coreLayout && Array.isArray(coreLayout.modules) && Array.isArray(coreLayout.moduleConfigs)) {
-      modules = coreLayout.modules;
-      moduleCfgList = coreLayout.moduleConfigs;
-      totalDividersWidth = Number(coreLayout.totalDividersWidth) || totalDividersWidth;
-      netInternalWidth = Number(coreLayout.netInternalWidth) || netInternalWidth;
-      singleUnitWidth = Number(coreLayout.singleUnitWidth) || singleUnitWidth;
-    }
-  } catch (e) {
-    reportError(App, e, 'native/builder/module_layout_pipeline.computeModuleLayout');
-    coreLayout = null;
-  }
+  modules = coreLayout.modules;
+  moduleCfgList = coreLayout.moduleConfigs;
+  totalDividersWidth = readFiniteNumberOrDefault(coreLayout.totalDividersWidth, totalDividersWidth);
+  netInternalWidth = readFiniteNumberOrDefault(coreLayout.netInternalWidth, netInternalWidth);
+  singleUnitWidth = readFiniteNumberOrDefault(coreLayout.singleUnitWidth, singleUnitWidth);
 
   moduleCfgList = ensureLibraryMissingTopModuleConfigs(cfg, modules, moduleCfgList, sourceModuleCfgList);
 
