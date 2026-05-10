@@ -10,7 +10,7 @@
 
 import { assertApp, assertBrowserWindow } from '../runtime/api.js';
 import { requireBuilderDepsReady } from '../runtime/builder_deps_access.js';
-import { reportErrorViaPlatform } from '../runtime/platform_access.js';
+import { reportError } from '../runtime/errors.js';
 import { runCoalescedBuild } from './build_runner.js';
 import { buildWardrobeFlow } from './build_wardrobe_flow.js';
 import { ensureBuilderService, getBuilderService } from '../runtime/builder_service_access.js';
@@ -69,7 +69,7 @@ export function installBuilderCore(AppIn: unknown) {
     } catch (err) {
       // Optional diagnostics hook (should not prevent the error from surfacing).
       try {
-        reportErrorViaPlatform(App, err, { where: 'native/builder/core.buildWardrobe', fatal: true });
+        reportError(App, err, { where: 'native/builder/core.buildWardrobe', fatal: true });
       } catch (e) {
         try {
           console.warn('[WardrobePro][builder] reportError hook failed:', e);

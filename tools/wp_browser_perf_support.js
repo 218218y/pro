@@ -349,6 +349,35 @@ export function createRuntimeDriftBudgetPct(pressureSummary) {
   return budget;
 }
 
+function normalizeRuntimeDiagnosticEntry(value) {
+  if (!value || typeof value !== 'object') return null;
+  const ctx = value.ctx && typeof value.ctx === 'object' ? value.ctx : {};
+  const error =
+    value.err && typeof value.err === 'object'
+      ? value.err
+      : value.error && typeof value.error === 'object'
+        ? value.error
+        : {};
+  const where = typeof ctx.where === 'string' && ctx.where.trim() ? ctx.where.trim() : '';
+  const op = typeof ctx.op === 'string' && ctx.op.trim() ? ctx.op.trim() : '';
+  const fatal = !!ctx.fatal;
+  const message =
+    typeof error.message === 'string' && error.message.trim()
+      ? error.message.trim()
+      : typeof value.message === 'string' && value.message.trim()
+        ? value.message.trim()
+        : '';
+  const level =
+    typeof value.kind === 'string' && value.kind.trim()
+      ? value.kind.trim()
+      : typeof value.level === 'string' && value.level.trim()
+        ? value.level.trim()
+        : 'report';
+  const ts = typeof value.ts === 'string' && value.ts.trim() ? value.ts.trim() : '';
+  const label = [where, op].filter(Boolean).join(':') || 'unknown';
+  return { ts, level, fatal, where, op, message, label };
+}
+
 export function createRuntimeIssueSummary(runtimeIssues) {
   const pageErrors = Array.isArray(runtimeIssues?.pageErrors)
     ? runtimeIssues.pageErrors.map(value => String(value || '')).filter(Boolean)
@@ -356,9 +385,14 @@ export function createRuntimeIssueSummary(runtimeIssues) {
   const consoleErrors = Array.isArray(runtimeIssues?.consoleErrors)
     ? runtimeIssues.consoleErrors.map(value => String(value || '')).filter(Boolean)
     : [];
+  const diagnostics = Array.isArray(runtimeIssues?.diagnostics)
+    ? runtimeIssues.diagnostics.map(normalizeRuntimeDiagnosticEntry).filter(Boolean)
+    : [];
   return {
     pageErrors,
     consoleErrors,
+    diagnostics,
+    diagnosticsCount: diagnostics.length,
     totalCount: pageErrors.length + consoleErrors.length,
   };
 }
@@ -2191,6 +2225,7 @@ export function summarizeBrowserPerfResult(result, contracts = {}) {
   lines.push('', '## Runtime health', '');
   lines.push(`Page errors: ${issueSummary.pageErrors.length}`);
   lines.push(`Console errors: ${issueSummary.consoleErrors.length}`);
+  lines.push(`Diagnostics reports: ${issueSummary.diagnosticsCount || 0}`);
   if (Number.isFinite(result.clipboardWrites)) {
     lines.push(`Clipboard writes: ${Math.max(0, Math.round(result.clipboardWrites))}`);
   }
@@ -2201,6 +2236,14 @@ export function summarizeBrowserPerfResult(result, contracts = {}) {
   if (issueSummary.consoleErrors.length) {
     lines.push('', '### Console errors', '');
     for (const item of issueSummary.consoleErrors) lines.push(`- ${item}`);
+  }
+  if (issueSummary.diagnostics.length) {
+    lines.push('', '### Diagnostics reports', '');
+    for (const item of issueSummary.diagnostics.slice(-20)) {
+      lines.push(
+        `- ${item.label}: ${item.message || 'reported'}${item.fatal ? ' [fatal]' : ''}${item.ts ? ` (${item.ts})` : ''}`
+      );
+    }
   }
   lines.push('', '## Project action events', '');
   if (!actionNames.length) {

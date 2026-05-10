@@ -13,6 +13,7 @@ import {
   getPerfStateFingerprint,
   getRenderRuntimeDebugBudget,
   getRenderRuntimeDebugStats,
+  getRuntimeErrorHistory,
   getStoreDebugStats,
   isNonErrorPerfResultReason,
   markPerfPoint,
@@ -32,7 +33,18 @@ test('perf runtime surface records marks, spans, summaries, and errors', async (
   } as typeof CustomEvent;
   const app = {
     deps: { config: {} },
-    services: {},
+    services: {
+      errors: {
+        getHistory: () => [
+          {
+            ts: '2026-05-10T00:00:00.000Z',
+            kind: 'report',
+            ctx: { where: 'unit/perf', op: 'ownerRejected', fatal: false },
+            err: { name: 'Error', message: 'owner rejected', stack: '' },
+          },
+        ],
+      },
+    },
     store: {
       getState() {
         return {
@@ -155,6 +167,7 @@ test('perf runtime surface records marks, spans, summaries, and errors', async (
   assert.equal(typeof surface.getSummary, 'function');
   assert.equal(typeof surface.getStateFingerprint, 'function');
   assert.equal(typeof surface.getStoreDebugStats, 'function');
+  assert.equal(typeof surface.getErrorHistory, 'function');
   assert.equal(typeof surface.getBuildDebugStats, 'function');
   assert.equal(typeof surface.getBuildDebugBudget, 'function');
   assert.equal(typeof surface.getRenderDebugStats, 'function');
@@ -185,6 +198,8 @@ test('perf runtime surface records marks, spans, summaries, and errors', async (
     externalDrawerSelectionCount: 4,
   });
   assert.deepEqual(surface.getStateFingerprint?.(), getPerfStateFingerprint(app));
+  assert.equal(getRuntimeErrorHistory(app).length, 1);
+  assert.deepEqual(surface.getErrorHistory?.(), getRuntimeErrorHistory(app));
   const buildDebug = getBuildRuntimeDebugStats(app);
   const buildBudget = getBuildRuntimeDebugBudget(app);
   assert.ok(buildDebug && typeof buildDebug === 'object');

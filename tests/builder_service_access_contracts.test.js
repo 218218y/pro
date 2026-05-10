@@ -377,7 +377,7 @@ test('[builder-access] migrated builder and cross-layer callsites use runtime he
       /(?:const container = asViewportRuntimeAppContainer\(App\);[\s\S]*runBuilderBuildWardrobe\(container\)|runBuilderBuildWardrobe\(asAppContainer\(App\)\))/,
       /getRoomDesignServiceMaybe\((?:App|app)\)/,
       /runPlatformRenderFollowThrough\b/,
-      /reportErrorViaPlatform\b/,
+      /reportError\b/,
       /stringifyViaPlatform\(/,
       /logViaPlatform\(/,
       /idleViaPlatform\(/,

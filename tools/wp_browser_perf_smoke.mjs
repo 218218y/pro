@@ -354,13 +354,37 @@ async function waitForProjectAction(page, action) {
   );
 }
 
+function runtimeDiagnosticKey(item) {
+  if (!item || typeof item !== 'object') return JSON.stringify(item);
+  const ctx = item.ctx && typeof item.ctx === 'object' ? item.ctx : {};
+  const err = item.err && typeof item.err === 'object' ? item.err : {};
+  return [item.ts || '', item.kind || '', ctx.where || '', ctx.op || '', err.message || ''].join('|');
+}
+
+function mergeRuntimeDiagnostics(existing, incoming, limit = 60) {
+  const merged = [];
+  const seen = new Set();
+  for (const item of [...(Array.isArray(existing) ? existing : []), ...(Array.isArray(incoming) ? incoming : [])]) {
+    const key = runtimeDiagnosticKey(item);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    merged.push(item);
+  }
+  return merged.slice(-Math.max(1, limit));
+}
+
 async function captureSessionArtifacts(page, result) {
-  const [entries, events] = await Promise.all([
+  const [entries, events, diagnostics] = await Promise.all([
     page.evaluate(() => window.__WP_PERF__?.getEntries?.() || []),
     page.evaluate(() => window.__WP_PROJECT_ACTION_EVENTS__ || []),
+    page.evaluate(() => window.__WP_PERF__?.getErrorHistory?.() || []),
   ]);
   result.windowPerfEntries.push(...entries);
   result.projectActionEvents.push(...events);
+  if (Array.isArray(diagnostics)) {
+    const bucket = result.runtimeIssues || (result.runtimeIssues = {});
+    bucket.diagnostics = mergeRuntimeDiagnostics(bucket.diagnostics, diagnostics, 60);
+  }
 }
 
 async function readPerfSummary(page) {
@@ -1829,7 +1853,7 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
     journeyBuildPressureSummary: {},
     stateIntegrityChecks: [],
     stateIntegritySummary: {},
-    runtimeIssues: { pageErrors: [], consoleErrors: [] },
+    runtimeIssues: { pageErrors: [], consoleErrors: [], diagnostics: [] },
     projectActionEvents: [],
     browserSource: browserSupport.browserSource,
     clipboardWrites: 0,

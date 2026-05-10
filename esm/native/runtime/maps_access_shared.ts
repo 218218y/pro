@@ -8,7 +8,7 @@ import type {
   UnknownRecord,
 } from '../../../types';
 
-import { reportErrorViaPlatform } from './platform_access.js';
+import { reportError } from './errors.js';
 
 export {
   normalizeColorSwatchesOrder,
@@ -91,12 +91,11 @@ export function mapsAccessReportNonFatal(
     }
   }
 
-  const reported = reportErrorViaPlatform(app, err, {
+  reportError(app, err, {
     where: 'native/runtime/maps_access',
     op,
     fatal: false,
   });
-  if (!reported) console.error(`[WardrobePro][maps_access] ${op}`, err);
 }
 
 export function asRecord(value: unknown): UnknownRecord | null {

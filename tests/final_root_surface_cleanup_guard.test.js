@@ -25,9 +25,8 @@ test('final root-surface cleanup routes residual runtime/build/service hotspots 
     read('esm/native/kernel/kernel.ts'),
     read('esm/native/kernel/kernel_install_support.ts'),
   ].join('\n');
-  assert.match(kernel, /getPlatformReportError,/);
-  assert.match(kernel, /reportErrorViaPlatform,/);
-  assert.match(kernel, /const reportError = getPlatformReportError\(App\);/);
+  assert.match(kernel, /from '\.\.\/runtime\/errors\.js';/);
+  assert.match(kernel, /reportError\(App, error, \{ where: 'kernel\/kernel', op, nonFatal: true \}\);/);
   assert.doesNotMatch(kernel, /App\?\.platform/);
 
   const storeReactivity = read('esm/native/runtime/store_reactivity_access.ts');

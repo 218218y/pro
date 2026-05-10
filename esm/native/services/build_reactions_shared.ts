@@ -1,7 +1,7 @@
 import type { AppContainer } from '../../../types';
 
 import { readUiStateFromApp } from '../runtime/root_state_access.js';
-import { reportErrorViaPlatform } from '../runtime/platform_access.js';
+import { reportError } from '../runtime/errors.js';
 
 export type BuildReactionsRecord = Record<string, unknown>;
 
@@ -78,10 +78,5 @@ export function reportBuildReactionsSoftError(
   where: string,
   error: unknown
 ): void {
-  try {
-    if (reportErrorViaPlatform(App, error, { where, fatal: false })) return;
-  } catch {}
-  try {
-    console.warn(`[WardrobePro][build_reactions] ${where} failed:`, error);
-  } catch {}
+  reportError(App, error, { where, fatal: false });
 }

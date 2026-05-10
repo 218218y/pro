@@ -1,6 +1,6 @@
 import { getBuilderRenderOps } from '../runtime/builder_service_access.js';
 import { asRecord } from '../runtime/record.js';
-import { reportErrorViaPlatform } from '../runtime/platform_access.js';
+import { reportError } from '../runtime/errors.js';
 import type {
   AppContainer,
   BuilderAddFoldedClothesFn,
@@ -160,7 +160,7 @@ export function reportInteriorLayoutError(
 ): void {
   try {
     if (App) {
-      reportErrorViaPlatform(App, error, ctx);
+      reportError(App, error, ctx);
     }
   } catch {
     // ignore

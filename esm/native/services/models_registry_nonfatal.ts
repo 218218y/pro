@@ -1,7 +1,7 @@
 import type { AppContainer } from '../../../types';
 
 import { isObject } from './models_registry_contracts.js';
-import { reportErrorViaPlatform } from '../runtime/platform_access.js';
+import { reportError } from '../runtime/errors.js';
 
 const __modelsSoftSeen = new Map<string, number>();
 
@@ -34,14 +34,5 @@ export function _modelsReportNonFatal(
       console.warn('[WardrobePro][models]', 'reportNonFatal.throttle', _err);
     } catch {}
   }
-  try {
-    if (reportErrorViaPlatform(App, err, 'models.' + String(op || 'unknown'))) return;
-  } catch (_err) {
-    try {
-      console.warn('[WardrobePro][models]', 'reportNonFatal.platform', _err);
-    } catch {}
-  }
-  try {
-    console.warn('[WardrobePro][models]', op, err);
-  } catch {}
+  reportError(App, err, 'models.' + String(op || 'unknown'));
 }

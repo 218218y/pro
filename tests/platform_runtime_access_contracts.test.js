@@ -427,7 +427,7 @@ test('[platform-runtime] canonical runtime access helpers stay centralized and r
     assert,
     api,
     [
-      /reportErrorViaPlatform/,
+      /reportError/,
       /triggerRenderViaPlatform/,
       /runPlatformRenderFollowThrough/,
       /runPlatformWakeupFollowThrough/,
@@ -455,7 +455,7 @@ test('[platform-runtime] bundles route through canonical platform, notes, comman
       /runPlatformRenderFollowThrough\((?:App|app),\s*\{[\s\S]*ensureRenderLoop:\s*false[\s\S]*\}\)/,
       /exitNotesDrawModeViaService\(App\)/,
       /isNotesScreenDrawMode\(App\)/,
-      /reportErrorViaPlatform\(App,\s*(?:e|err|error),\s*(?:''|'ui\\.(?:togglePrimaryMode|enterPrimaryMode)'|'builder\.buildWardrobe')\)/,
+      /reportError\(App,\s*(?:e|err|error),\s*(?:''|'ui\\.(?:togglePrimaryMode|enterPrimaryMode)'|'builder\.buildWardrobe')\)/,
       /readAutosaveInfoFromStorage\(app\)/,
       /ensurePlatformHash32\(App\)/,
       /createCanvasViaPlatform\(App, (?:128|width), (?:128|height)\)/,
@@ -495,29 +495,29 @@ test('[platform-runtime] app start and major callsites prefer canonical boot ent
 
   assert.match(
     threeTargets.buildStateResolver,
-    /reportErrorViaPlatform\(App, err, 'builder\.buildWardrobe'\)/
+    /reportError\(App, err, 'builder\.buildWardrobe'\)/
   );
   assert.match(threeTargets.builderDepsResolver, /getPlatformPruneCachesSafe\(App\)/);
-  assert.match(threeTargets.moduleLayout, /reportErrorViaPlatform\(App, err, \{ where, fatal: true \}\)/);
+  assert.match(threeTargets.moduleLayout, /reportError\(App, err, \{ where, fatal: true \}\)/);
   assert.match(threeTargets.preBuildReset, /cleanGroupViaPlatform\(App, wardrobeGroup\)/);
-  assert.match(threeTargets.preBuildReset, /reportErrorViaPlatform\(App, err, 'builder\.preBuildReset'\)/);
+  assert.match(threeTargets.preBuildReset, /reportError\(App, err, 'builder\.preBuildReset'\)/);
   assert.match(
     bootFinalizers,
     /export function wardrobeClean\(App: AppContainer, group: unknown\): unknown \{/
   );
   assert.match(bootFinalizers, /cleanGroupViaPlatform\(App, group\)/);
   assert.match(bootFinalizers, /return \(group: unknown\) => wardrobeClean\((?:App|context\.App), group\);/);
-  assert.match(threeTargets.externalDrawers, /reportErrorViaPlatform\(App, error, meta\)/);
-  assert.match(threeTargets.interior, /reportErrorViaPlatform\(App,/);
-  assert.match(threeTargets.internalDrawers, /reportErrorViaPlatform\(App,/);
+  assert.match(threeTargets.externalDrawers, /reportError\(App, error, meta\)/);
+  assert.match(threeTargets.interior, /reportError\(App,/);
+  assert.match(threeTargets.internalDrawers, /reportError\(App,/);
   assert.match(threeTargets.stackSplitPipeline, /cloneViaPlatform\(args\.App, lower0, seed\)/);
   assert.match(
     threeTargets.buildWardrobeFlow,
-    /reportErrorViaPlatform\(App, error, \{ where: label, fatal: true \}\)/
+    /reportError\(App, error, \{ where: label, fatal: true \}\)/
   );
   assert.match(
     threeTargets.core,
-    /reportErrorViaPlatform\(App, err, \{ where: 'native\/builder\/core\.buildWardrobe', fatal: true \}\)/
+    /reportError\(App, err, \{ where: 'native\/builder\/core\.buildWardrobe', fatal: true \}\)/
   );
   assert.match(threeTargets.bootstrap, /getPlatformTriggerRender\((?:App|context\.App)\)/);
   assert.match(threeTargets.bootstrap, /getPlatformCleanGroup\((?:App|context\.App)\)/);
@@ -541,7 +541,7 @@ test('[platform-runtime] app start and major callsites prefer canonical boot ent
     threeTargets.kernel,
     /const reportKernelError = \(error: unknown, ctx: unknown\): boolean => \{/
   );
-  assert.match(threeTargets.kernel, /reportErrorViaPlatform\(App, error, ctx\)/);
+  assert.match(threeTargets.kernel, /reportError\(App, error, ctx\)/);
   assert.match(
     threeTargets.kernelSnapshotStore,
     /args\.reportKernelError\(err, 'kernel\.getBuildState\.override'\)/

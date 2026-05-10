@@ -28,7 +28,7 @@ import { asRecord } from '../runtime/record.js';
 import { captureConfigSnapshotMaybe, getBuildStateMaybe } from './store_access.js';
 import { getDoorEditHoldActive } from '../runtime/doors_access.js';
 import { readRuntimeScalarOrDefault } from '../runtime/runtime_selectors.js';
-import { reportErrorViaPlatform } from '../runtime/platform_access.js';
+import { reportError } from '../runtime/errors.js';
 
 function isUiState(value: unknown): value is UiStateLike {
   return !!asRecord(value);
@@ -146,7 +146,7 @@ export function resolveBuildStateOrThrow(args: {
           'DOM snapshot readback is not a supported build input.'
       );
       // Best-effort reporting; if reportError throws, let it surface (dev should know).
-      reportErrorViaPlatform(App, err, 'builder.buildWardrobe');
+      reportError(App, err, 'builder.buildWardrobe');
       throw err;
     }
   }

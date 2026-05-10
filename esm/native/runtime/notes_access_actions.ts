@@ -1,6 +1,6 @@
 import type { ActionMetaLike } from '../../../types';
 
-import { reportErrorViaPlatform } from './platform_access.js';
+import { reportError } from './errors.js';
 import {
   readNotesGetForSave,
   readNotesPersist,
@@ -16,7 +16,7 @@ import {
 } from './notes_access_services.js';
 
 function reportNotesOwnerRejection(App: unknown, op: string, error: unknown): void {
-  reportErrorViaPlatform(App, error, {
+  reportError(App, error, {
     where: 'native/runtime/notes_access',
     op,
     fatal: false,

@@ -6,7 +6,7 @@ import type {
   RenderFollowThroughDebugStatsLike,
 } from '../../../types';
 
-import { getErrorsServiceMaybe } from './errors_access.js';
+import { getReportError } from './errors.js';
 import { bindMethod, getPlatformRoot, getPlatformService, readUtil } from './platform_access_shared.js';
 import {
   cloneRenderFollowThroughDebugStats,
@@ -53,23 +53,9 @@ export type PlatformActivityRenderTouchResult = PlatformRenderFollowThroughResul
 };
 
 export function getPlatformReportError(App: unknown): ((error: unknown, ctx?: unknown) => unknown) | null {
-  return (
-    bindMethod<[unknown, unknown?], unknown>(getPlatformService(App), 'reportError') ??
-    bindMethod<[unknown, unknown?], unknown>(getPlatformRoot(App), 'reportError') ??
-    bindMethod<[unknown, unknown?], unknown>(getErrorsServiceMaybe(App), 'report')
-  );
+  return getReportError(App);
 }
 
-export function reportErrorViaPlatform(App: unknown, error: unknown, ctx?: unknown): boolean {
-  try {
-    const fn = getPlatformReportError(App);
-    if (!fn) return false;
-    fn(error, ctx);
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 export function getPlatformTriggerRender(App: unknown): ((updateShadows?: boolean) => unknown) | null {
   return (

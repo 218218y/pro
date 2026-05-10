@@ -2,6 +2,7 @@ import type {
   AppContainer,
   BuildDebugBudgetSummaryLike,
   BuilderDebugStatsLike,
+  ErrorsHistoryEntryLike,
   RenderFollowThroughBudgetSummaryLike,
   RenderFollowThroughDebugStatsLike,
   StoreDebugStats,
@@ -151,6 +152,10 @@ export function getPerfStateFingerprint(_App: AppContainer): WardrobeProPerfStat
   return null;
 }
 
+export function getRuntimeErrorHistory(_App: AppContainer): ErrorsHistoryEntryLike[] {
+  return [];
+}
+
 export function getStoreDebugStats(_App: AppContainer): StoreDebugStats | null {
   return null;
 }
@@ -203,6 +208,9 @@ export function createPerfConsoleSurface(App: AppContainer): WardrobeProPerfCons
     },
     getStateFingerprint(): WardrobeProPerfStateFingerprint | null {
       return null;
+    },
+    getErrorHistory(): ErrorsHistoryEntryLike[] {
+      return [];
     },
     getStoreDebugStats(): StoreDebugStats | null {
       return null;

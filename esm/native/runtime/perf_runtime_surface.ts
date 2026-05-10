@@ -2,6 +2,7 @@ import type {
   AppContainer,
   BuildDebugBudgetSummaryLike,
   BuilderDebugStatsLike,
+  ErrorsHistoryEntryLike,
   RenderFollowThroughBudgetSummaryLike,
   RenderFollowThroughDebugStatsLike,
   StoreDebugStats,
@@ -23,6 +24,7 @@ import {
   runWithPerfSpan,
   startPerfSpan,
 } from './perf_runtime_core.js';
+import { getErrorsServiceMaybe } from './errors_access.js';
 import {
   getBuildRuntimeDebugBudget,
   getBuildRuntimeDebugStats,
@@ -58,6 +60,15 @@ export {
   startPerfSpan,
 };
 
+export function getRuntimeErrorHistory(App: AppContainer): ErrorsHistoryEntryLike[] {
+  try {
+    const history = getErrorsServiceMaybe(App)?.getHistory?.();
+    return Array.isArray(history) ? history.slice() : [];
+  } catch {
+    return [];
+  }
+}
+
 export function createPerfConsoleSurface(App: AppContainer): WardrobeProPerfConsoleSurface {
   return {
     mark(name: string, detail?: unknown): WardrobeProPerfEntry {
@@ -80,6 +91,9 @@ export function createPerfConsoleSurface(App: AppContainer): WardrobeProPerfCons
     },
     getStateFingerprint(): WardrobeProPerfStateFingerprint | null {
       return getPerfStateFingerprint(App);
+    },
+    getErrorHistory(): ErrorsHistoryEntryLike[] {
+      return getRuntimeErrorHistory(App);
     },
     getStoreDebugStats(): StoreDebugStats | null {
       return getStoreDebugStats(App);

@@ -11,6 +11,7 @@ import {
   getPerfEntries,
   getPerfSummary,
   getPerfStateFingerprint,
+  getRuntimeErrorHistory,
   getRenderRuntimeDebugBudget,
   getRenderRuntimeDebugStats,
   installDebugConsoleSurface,
@@ -52,6 +53,7 @@ test('prod observability surface stays no-op and preserves app actions', async (
   assert.deepEqual(surface.getSummary(), {});
   assert.equal(surface.end('noop-span'), null);
   assert.equal(surface.getStateFingerprint?.(), null);
+  assert.deepEqual(surface.getErrorHistory?.(), []);
   assert.equal(surface.getBuildDebugStats?.(), null);
   assert.equal(surface.getBuildDebugBudget?.(), null);
   assert.equal(surface.getRenderDebugStats?.(), null);
@@ -60,6 +62,7 @@ test('prod observability surface stays no-op and preserves app actions', async (
   assert.deepEqual(getPerfEntries(app), []);
   assert.deepEqual(getPerfSummary(app), {});
   assert.equal(getPerfStateFingerprint(app), null);
+  assert.deepEqual(getRuntimeErrorHistory(app), []);
   assert.equal(getBuildRuntimeDebugStats(app), null);
   assert.equal(getBuildRuntimeDebugBudget(app), null);
   assert.equal(getRenderRuntimeDebugStats(app), null);

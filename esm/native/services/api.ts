@@ -107,7 +107,7 @@ export {
   getUiFeedbackServiceMaybe,
   ensureUiFeedbackService,
   installStableSurfaceMethod,
-  reportErrorViaPlatform,
+  reportError,
   triggerRenderViaPlatform,
   runPlatformRenderFollowThrough,
   runPlatformWakeupFollowThrough,

@@ -7,7 +7,7 @@ import type {
 } from '../../../types';
 
 import { getNormalizedErrorHead } from '../runtime/error_normalization.js';
-import { reportErrorViaPlatform } from '../runtime/platform_access.js';
+import { reportError } from '../runtime/errors.js';
 
 const __sceneViewReportNonFatalSeen = new Map<string, number>();
 
@@ -97,8 +97,7 @@ export function reportSceneViewNonFatal(
       if (now - ts > pruneOlderThan) __sceneViewReportNonFatalSeen.delete(k);
     }
   }
-  if (reportErrorViaPlatform(App, err, { where: 'native/services/scene_view', op, fatal: false })) return;
-  console.error(`[WardrobePro][scene_view] ${op}`, err);
+  reportError(App, err, { where: 'native/services/scene_view', op, fatal: false });
 }
 
 export function isRecord(v: unknown): v is UnknownRecord {

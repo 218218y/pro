@@ -1,6 +1,6 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
 import { getUiRuntime } from './runtime/ui_runtime.js';
-import { getWindowMaybe, reportErrorViaPlatform, runPlatformRenderFollowThrough } from '../services/api.js';
+import { getWindowMaybe, reportError, runPlatformRenderFollowThrough } from '../services/api.js';
 
 export type ViewportContainerLike = {
   clientWidth: number;
@@ -64,7 +64,7 @@ export function reportUiBootPlatformError(
   err: Error
 ): void {
   try {
-    reportErrorViaPlatform(App, err, op);
+    reportError(App, err, op);
   } catch (reportErr) {
     reporter.soft(`${op}.reportError`, reportErr);
   }

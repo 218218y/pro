@@ -21,7 +21,7 @@ import {
   mergeMetaProfileDefaults,
 } from './meta_profiles_contract.js';
 import { getMetaActions } from './actions_access_domains.js';
-import { reportErrorViaPlatform } from './platform_access.js';
+import { reportError } from './errors.js';
 
 type MetaProfileDefaults = ActionMetaLike;
 type MetaProfileCall = (meta?: ActionMetaLike, source?: string) => ActionMetaLike;
@@ -54,7 +54,7 @@ function metaNsFromApp(App: unknown): MetaActionsNamespaceLike | null {
 
 function reportMetaProfileOwnerRejection(App: unknown, op: string, error: unknown): void {
   try {
-    reportErrorViaPlatform(App, error, {
+    reportError(App, error, {
       where: 'native/runtime/meta_profiles_access',
       op,
       fatal: false,

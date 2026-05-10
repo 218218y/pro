@@ -2,20 +2,14 @@ import type { ModelsLoadOptions, ModelsMergeResult, ModelsNormalizer, SavedModel
 
 import { readMergeResult, readOneArgUnknownFn, readSavedModelList } from './models_access_shared.js';
 import { getModelsServiceMaybe, getModelsServiceSourceMaybe } from './models_access_service.js';
-import { reportErrorViaPlatform } from './platform_access_ops.js';
+import { reportError } from './errors.js';
 
 function reportModelsAccessNonFatal(App: unknown, op: string, error: unknown): void {
-  const reported = reportErrorViaPlatform(App, error, {
+  reportError(App, error, {
     where: 'native/runtime/models_access',
     op,
     fatal: false,
   });
-  if (reported) return;
-  try {
-    console.error(`[WardrobePro][models_access] ${op}`, error);
-  } catch {
-    // Diagnostics must never become the failure path.
-  }
 }
 
 export function ensureModelsLoadedViaService(App: unknown, opts?: ModelsLoadOptions): boolean {

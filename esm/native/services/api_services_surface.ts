@@ -45,7 +45,7 @@ export {
 } from './api_services_project_surface.js';
 
 export {
-  reportErrorViaPlatform,
+  reportError,
   triggerRenderViaPlatform,
   runPlatformRenderFollowThrough,
   runPlatformWakeupFollowThrough,

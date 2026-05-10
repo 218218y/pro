@@ -11,11 +11,8 @@ import type {
   DedicatedSliceWriteOptions,
 } from '../runtime/slice_write_access_shared.js';
 import { shouldFailFast } from '../runtime/api.js';
-import {
-  cloneViaPlatform,
-  getPlatformReportError,
-  reportErrorViaPlatform,
-} from '../runtime/platform_access.js';
+import { cloneViaPlatform } from '../runtime/platform_access.js';
+import { reportError } from '../runtime/errors.js';
 import { readCornerConfigurationFromConfigSnapshot } from '../features/modules_configuration/corner_cells_api.js';
 import { asRecord, asRecordOrNull, isRecord } from './kernel_shared.js';
 
@@ -153,7 +150,8 @@ export function createKernelInstallSupport(App: AppContainer): KernelInstallSupp
 
   const reportKernelError = (error: unknown, ctx: unknown): boolean => {
     try {
-      return reportErrorViaPlatform(App, error, ctx);
+      reportError(App, error, ctx);
+      return true;
     } catch {
       return false;
     }
@@ -176,17 +174,7 @@ export function createKernelInstallSupport(App: AppContainer): KernelInstallSupp
     } catch {
       // ignore throttle bookkeeping
     }
-    try {
-      const reportError = getPlatformReportError(App);
-      if (reportError) reportError(error, { where: 'kernel/kernel', op, nonFatal: true });
-    } catch {
-      // ignore report surface failures
-    }
-    try {
-      console.warn('[WardrobePro][kernel][' + op + ']', error);
-    } catch {
-      // ignore console failures
-    }
+    reportError(App, error, { where: 'kernel/kernel', op, nonFatal: true });
     if (opts && opts.failFast && kernelShouldFailFast(App)) throw error;
   };
 

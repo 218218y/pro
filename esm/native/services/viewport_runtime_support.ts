@@ -3,7 +3,7 @@ import type { AppContainer, ControlsLike, ViewportRuntimeApplySketchModeOptions 
 import { getControls } from '../runtime/render_access.js';
 import { assertApp } from '../runtime/api.js';
 import { getNormalizedErrorHead } from '../runtime/error_normalization.js';
-import { reportErrorViaPlatform } from '../runtime/platform_access.js';
+import { reportError } from '../runtime/errors.js';
 import { resetCameraPreset } from './camera_presets.js';
 import { setViewportCameraPose } from './render_surface_runtime.js';
 import { setRuntimeSketchMode } from '../runtime/runtime_write_access.js';
@@ -49,9 +49,7 @@ export function reportViewportRuntimeNonFatal(
       if (now - ts > pruneOlderThan) viewportRuntimeReportSeen.delete(k);
     }
   }
-  if (reportErrorViaPlatform(App, err, { where: 'native/services/viewport_runtime', op, fatal: false }))
-    return;
-  console.error(`[WardrobePro][viewport_runtime] ${op}`, err);
+  reportError(App, err, { where: 'native/services/viewport_runtime', op, fatal: false });
 }
 
 export function createViewportRuntimeError(op: string, message: string, cause?: unknown): Error {

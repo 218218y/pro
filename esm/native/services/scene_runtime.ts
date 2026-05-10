@@ -6,7 +6,7 @@
 
 import type { AppContainer, SceneViewSyncOptsLike } from '../../../types';
 
-import { reportErrorViaPlatform } from '../runtime/platform_access.js';
+import { reportError } from '../runtime/errors.js';
 import {
   initSceneLightsViaService,
   installSceneViewStoreSyncViaService,
@@ -16,13 +16,7 @@ import {
 } from './scene_view_access.js';
 
 function reportSceneRuntime(App: AppContainer, op: string, err: unknown): void {
-  if (reportErrorViaPlatform(App, err, { where: 'native/services/scene_runtime', op, fatal: false }))
-    return;
-  try {
-    console.error(`[WardrobePro][scene_runtime] ${op}`, err);
-  } catch {
-    // ignore
-  }
+  reportError(App, err, { where: 'native/services/scene_runtime', op, fatal: false });
 }
 
 export function initializeSceneRuntime(App: AppContainer): boolean {

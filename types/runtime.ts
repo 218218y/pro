@@ -3,7 +3,12 @@ import type { ActionMetaLike } from './kernel';
 import type { StoreDebugStats, StoreSourceDebugStat } from './state';
 import type { TabId } from './ui_tabs';
 import type { RenderFollowThroughBudgetSummaryLike, RenderFollowThroughDebugStatsLike } from './app';
-import type { BuilderDebugStatsLike, BuildReasonDebugStatLike, BuildDebugBudgetSummaryLike } from './build';
+import type {
+  BuilderDebugStatsLike,
+  BuildReasonDebugStatLike,
+  BuildDebugBudgetSummaryLike,
+  ErrorsHistoryEntryLike,
+} from './build';
 
 // Runtime-configurable globals and injected flag/config surfaces.
 //
@@ -291,4 +296,5 @@ export interface WardrobeProPerfConsoleSurface {
   getRenderDebugStats?: () => RenderFollowThroughDebugStatsLike | null;
   resetRenderDebugStats?: () => RenderFollowThroughDebugStatsLike | null;
   getRenderDebugBudget?: () => RenderFollowThroughBudgetSummaryLike | null;
+  getErrorHistory?: () => ErrorsHistoryEntryLike[];
 }

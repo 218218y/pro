@@ -25,7 +25,7 @@ import type { HingeMap } from '../../../types/maps.js';
 
 import { readModulesConfigurationListFromConfigSnapshot } from '../features/modules_configuration/modules_config_api.js';
 import { createLibraryTopModuleConfig } from '../features/library_preset/module_defaults.js';
-import { reportErrorViaPlatform } from '../runtime/platform_access.js';
+import { reportError } from '../runtime/errors.js';
 
 type ModuleLike = BuildModuleStructureItemLike;
 type HingedDoorPivotMapLike = Record<number, BuildHingedDoorPivotEntryLike>;
@@ -72,10 +72,8 @@ function toDoorCount(m: ModuleLike | null | undefined): number {
   return typeof raw === 'number' ? raw : Number(raw) || 0;
 }
 
-function reportError(App: AppContainer | null | undefined, err: unknown, where: string): void {
-  try {
-    reportErrorViaPlatform(App, err, { where, fatal: true });
-  } catch (_) {}
+function reportModuleLayoutError(App: AppContainer | null | undefined, err: unknown, where: string): void {
+  reportError(App, err, { where, fatal: true });
 }
 
 function isCoreLayoutLike(value: unknown): value is CoreLayoutLike {

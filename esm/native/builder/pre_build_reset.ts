@@ -10,11 +10,8 @@
 import type { AppContainer, ProjectSavedNotesLike, SavedNote } from '../../../types';
 
 import { getWardrobeGroup, invalidateMirrorTracking } from '../runtime/render_access.js';
-import {
-  cleanGroupViaPlatform,
-  markPlatformPerfFlagsDirty,
-  reportErrorViaPlatform,
-} from '../runtime/platform_access.js';
+import { cleanGroupViaPlatform, markPlatformPerfFlagsDirty } from '../runtime/platform_access.js';
+import { reportError } from '../runtime/errors.js';
 import { requireBuilderRegistry } from '../runtime/builder_service_access.js';
 import { asRecord } from '../runtime/record.js';
 
@@ -96,7 +93,7 @@ export function prepareBuildScene(args: PrepareBuildSceneArgs): PrepareBuildScen
       '[WardrobePro] builder registry reset is missing (expected App.services.builder.registry.reset)'
     );
     try {
-      reportErrorViaPlatform(App, err, 'builder.preBuildReset');
+      reportError(App, err, 'builder.preBuildReset');
     } catch (_e) {}
     throw err;
   }

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { reportError } from '../esm/native/runtime/errors.ts';
 import {
   ensurePlatformService,
   getPlatformService,
@@ -16,7 +17,6 @@ import {
   ensurePlatformPerf,
   markPlatformPerfFlagsDirty,
   setPlatformHasInternalDrawers,
-  reportErrorViaPlatform,
   triggerRenderViaPlatform,
   runPlatformRenderFollowThrough,
   runPlatformWakeupFollowThrough,
@@ -81,7 +81,7 @@ test('platform access runtime: activity/report/render/canvas fall back to canoni
   assert.equal(touchPlatformActivity(App), true);
   assert.equal(typeof App.services.platform.activity.touch, 'function');
   assert.equal(typeof App.services.platform.activity.lastActionTime, 'number');
-  assert.equal(reportErrorViaPlatform(App, 'boom', { where: 'test' }), true);
+  reportError(App, 'boom', { where: 'test' });
   assert.equal(triggerRenderViaPlatform(App, true), true);
   assert.deepEqual(createCanvasViaPlatform(App, 10, 20), { w: 10, h: 20, via: 'service' });
   assert.deepEqual(calls, [
@@ -100,7 +100,7 @@ test('platform access runtime: reportError falls back to installed errors surfac
     },
   };
 
-  assert.equal(reportErrorViaPlatform(App, new Error('owner rejected'), { where: 'unit', fatal: false }), true);
+  reportError(App, new Error('owner rejected'), { where: 'unit', fatal: false });
   assert.equal(calls.length, 1);
   assert.equal(calls[0][0], 'errorsReport');
   assert.equal((calls[0][1] as Error).message, 'owner rejected');

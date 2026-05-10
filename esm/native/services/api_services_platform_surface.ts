@@ -26,7 +26,6 @@ export {
   touchPlatformActivity,
   getPlatformPerf,
   getPlatformReportError,
-  reportErrorViaPlatform,
   getPlatformTriggerRender,
   triggerRenderViaPlatform,
   runPlatformRenderFollowThrough,
@@ -50,6 +49,7 @@ export {
   afterPaintViaPlatform,
   ensurePlatformHash32,
 } from '../runtime/platform_access.js';
+export { reportError, getReportError } from '../runtime/errors.js';
 export {
   getBuilderService,
   requireBuilderService,

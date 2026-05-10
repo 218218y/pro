@@ -226,7 +226,7 @@
     "three:sync-libs": "node tools/wp_sync_three_libs.mjs",
     "perf:browser": "node tools/wp_browser_perf_smoke.mjs --enforce",
     "perf:browser:update-baseline": "node tools/wp_browser_perf_smoke.mjs --update-baseline",
-    "test:perf-e2e-runtime-core": "node tools/wp_run_tsx_tests.mjs tests/perf_runtime_surface_runtime.test.ts tests/project_ui_action_events_runtime.test.ts tests/wp_browser_perf_support_runtime.test.js tests/export_actions_runtime.test.ts tests/cloud_sync_panel_actions_runtime.test.js tests/project_save_load_controller_singleflight_runtime.test.js",
+    "test:perf-e2e-runtime-core": "node tools/wp_run_tsx_tests.mjs tests/perf_runtime_surface_runtime.test.ts tests/observability_surface_prod_runtime.test.ts tests/project_ui_action_events_runtime.test.ts tests/wp_browser_perf_support_runtime.test.js tests/export_actions_runtime.test.ts tests/cloud_sync_panel_actions_runtime.test.js tests/project_save_load_controller_singleflight_runtime.test.js",
     "verify:perf-e2e:core": "npm run test:perf-e2e-runtime-core && npm run e2e:smoke:list",
     "verify:perf-e2e:browser": "npm run e2e:smoke:preflight && npm run e2e:smoke && npm run perf:browser",
     "bundle:client": "node tools/wp_bundle.js --build-mode client",

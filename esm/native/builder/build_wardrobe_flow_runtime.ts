@@ -1,5 +1,4 @@
 import { guardVoid, reportError } from '../runtime/api.js';
-import { reportErrorViaPlatform } from '../runtime/platform_access.js';
 import { finalizeBuild, finalizeBuildBestEffort } from './post_build_finalize.js';
 import { readFunction } from './build_flow_readers.js';
 
@@ -28,7 +27,7 @@ function reportBuildWardrobeFailure(prepared: PreparedBuildWardrobeFlow, error: 
   });
 
   guardVoid(App, { where: label, op: 'platform.reportError', fatal: true, failFast: true }, () => {
-    reportErrorViaPlatform(App, error, { where: label, fatal: true });
+    reportError(App, error, { where: label, fatal: true });
   });
 
   guardVoid(App, { where: label, op: 'showToast', fatal: true, failFast: true }, () => {

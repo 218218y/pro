@@ -11,7 +11,7 @@ import {
   closeDrawerById,
   refreshBuilderAfterDoorOps,
   resetAllEditModesViaService,
-  reportErrorViaPlatform,
+  reportError,
   patchViaActions,
   setHardCloseForMs,
   setHardCloseUntil,
@@ -238,7 +238,7 @@ export function togglePrimaryModeImpl(App: AppLike, mode: string, opts: ModeActi
     applyModeOptsImpl(App, next, opts);
   } catch (err) {
     try {
-      if (!reportErrorViaPlatform(App, err, 'ui.togglePrimaryMode')) console.error(err);
+      reportError(App, err, 'ui.togglePrimaryMode');
     } catch (reportErr) {
       modesReportNonFatal('esm/native/ui/modes_transition_policy.ts:togglePrimaryMode', reportErr);
     }
@@ -261,7 +261,7 @@ export function enterPrimaryModeImpl(
     applyModeOptsImpl(App, nextMode, modeOpts);
   } catch (err) {
     try {
-      reportErrorViaPlatform(App, err, 'ui.enterPrimaryMode');
+      reportError(App, err, 'ui.enterPrimaryMode');
     } catch (reportErr) {
       modesReportNonFatal('esm/native/ui/modes_transition_policy.ts:enterPrimaryMode', reportErr);
     }
