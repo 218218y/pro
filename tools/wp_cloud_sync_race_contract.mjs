@@ -214,7 +214,7 @@ requireNeedle(
 requireNeedle(
   'cloud_sync_lifecycle_runtime_realtime_start.ts',
   lifecycleRealtimeStartGuard,
-  '`${op}.fallback`'
+  '`${op}.recovery`'
 );
 requireNeedle(
   'cloud_sync_lifecycle_runtime_realtime_start.ts',
@@ -308,12 +308,12 @@ requireNeedle(
 requireNeedle(
   'tests/cloud_sync_lifecycle_owner_realtime_start_runtime.test.ts',
   read('tests/cloud_sync_lifecycle_owner_realtime_start_runtime.test.ts'),
-  'reports fallback failures without rejecting'
+  'reports recovery transition failures without rejecting'
 );
 requireNeedle(
   'tests/refactor_stage22_cloud_sync_lifecycle_owner_recovery_runtime.test.js',
   read('tests/refactor_stage22_cloud_sync_lifecycle_owner_recovery_runtime.test.js'),
-  'stage 24 polling fallback publishes active state only after timer installation succeeds'
+  'stage 24 polling recovery publishes active state only after timer installation succeeds'
 );
 requireNeedle(
   'tests/refactor_stage22_cloud_sync_lifecycle_owner_recovery_runtime.test.js',
