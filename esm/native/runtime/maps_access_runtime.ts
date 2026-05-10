@@ -9,6 +9,7 @@ export function readMapsBagOrNull(App: unknown) {
 }
 
 export function trySetKey(
+  App: unknown,
   maps: RuntimeMapsNamespace,
   mapName: string,
   key: string,
@@ -23,7 +24,7 @@ export function trySetKey(
       return true;
     }
   } catch (err) {
-    mapsAccessReportNonFatal(reportOp, err);
+    mapsAccessReportNonFatal(reportOp, err, App);
   }
   return false;
 }

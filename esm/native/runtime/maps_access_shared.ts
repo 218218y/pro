@@ -7,6 +7,9 @@ import type {
   MapsNamespaceLike,
   UnknownRecord,
 } from '../../../types';
+
+import { reportErrorViaPlatform } from './platform_access.js';
+
 export {
   normalizeColorSwatchesOrder,
   normalizeSavedColor,
@@ -46,16 +49,37 @@ export function writeOwn(record: UnknownRecord | MapRecord, key: string, value: 
 
 const mapsAccessReportNonFatalSeen = new Map<string, number>();
 
-export function mapsAccessReportNonFatal(op: string, err: unknown, throttleMs = 4000): void {
-  const now = Date.now();
-  let msg = 'unknown';
-  if (typeof err === 'string') msg = err;
-  else if (typeof err === 'number' || typeof err === 'boolean') msg = String(err);
-  else if (isRecord(err)) {
+function readErrorFingerprint(err: unknown): string {
+  if (typeof err === 'string') return err;
+  if (typeof err === 'number' || typeof err === 'boolean') return String(err);
+  if (isRecord(err)) {
     const e: ErrorMetaLike = err;
-    if (typeof e.stack === 'string' && e.stack) msg = e.stack.split('\n')[0] || e.stack;
-    else if (typeof e.message === 'string' && e.message) msg = e.message;
+    if (typeof e.stack === 'string' && e.stack) return e.stack.split('\n')[0] || e.stack;
+    if (typeof e.message === 'string' && e.message) return e.message;
   }
+  return 'unknown';
+}
+
+function readMapsReportArgs(
+  contextOrThrottle?: unknown,
+  throttleMsArg?: number
+): { app: unknown; throttleMs: number } {
+  if (typeof contextOrThrottle === 'number') return { app: null, throttleMs: contextOrThrottle };
+  return {
+    app: contextOrThrottle ?? null,
+    throttleMs: typeof throttleMsArg === 'number' ? throttleMsArg : 4000,
+  };
+}
+
+export function mapsAccessReportNonFatal(
+  op: string,
+  err: unknown,
+  contextOrThrottle?: unknown,
+  throttleMsArg?: number
+): void {
+  const { app, throttleMs } = readMapsReportArgs(contextOrThrottle, throttleMsArg);
+  const now = Date.now();
+  const msg = readErrorFingerprint(err);
   const key = `${op}::${msg}`;
   const prev = mapsAccessReportNonFatalSeen.get(key) || 0;
   if (throttleMs > 0 && prev && now - prev < throttleMs) return;
@@ -66,7 +90,13 @@ export function mapsAccessReportNonFatal(op: string, err: unknown, throttleMs = 
       if (now - ts > pruneOlderThan) mapsAccessReportNonFatalSeen.delete(k);
     }
   }
-  console.error(`[WardrobePro][maps_access] ${op}`, err);
+
+  const reported = reportErrorViaPlatform(app, err, {
+    where: 'native/runtime/maps_access',
+    op,
+    fatal: false,
+  });
+  if (!reported) console.error(`[WardrobePro][maps_access] ${op}`, err);
 }
 
 export function asRecord(value: unknown): UnknownRecord | null {
@@ -90,7 +120,11 @@ export function bindMapReader<T>(
   return typeof fn === 'function' ? (doorId: string) => fn.call(maps, doorId) : null;
 }
 
-export function readMapFromBag(maps: MapsBagLike, mapName: string): MapRecord | null {
+export function readMapFromBag(
+  maps: MapsBagLike,
+  mapName: string,
+  reportContext?: unknown
+): MapRecord | null {
   try {
     const getMap = maps.getMap;
     if (typeof getMap === 'function') {
@@ -98,7 +132,7 @@ export function readMapFromBag(maps: MapsBagLike, mapName: string): MapRecord | 
       return asMapRecord(v);
     }
   } catch (err) {
-    mapsAccessReportNonFatal('L58', err);
+    mapsAccessReportNonFatal('maps_access.readMapFromBag.getMap', err, reportContext);
   }
   return asMapRecord(readOwn(maps, mapName));
 }

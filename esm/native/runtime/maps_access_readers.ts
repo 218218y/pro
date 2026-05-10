@@ -34,7 +34,7 @@ export function getGrooveReader(App: unknown): ((doorId: string) => boolean) | n
     const bound = bindMapReader<boolean>(maps.getGroove, maps);
     if (bound) return bound;
   } catch (err) {
-    mapsAccessReportNonFatal('maps_access.getGrooveReader', err);
+    mapsAccessReportNonFatal('maps_access.getGrooveReader.ownerRejected', err, App);
   }
   return null;
 }
@@ -46,7 +46,7 @@ export function getCurtainReader(App: unknown): ((doorId: string) => string | nu
     const bound = bindMapReader<string | null>(maps.getCurtain, maps);
     if (bound) return bound;
   } catch (err) {
-    mapsAccessReportNonFatal('maps_access.getCurtainReader', err);
+    mapsAccessReportNonFatal('maps_access.getCurtainReader.ownerRejected', err, App);
   }
   return null;
 }
@@ -56,7 +56,7 @@ export const readMap: ReadMapFn = (App: unknown, mapName: string) => {
   if (!name) return null;
   const maps = readMapsBagOrNull(App);
   if (!maps) return null;
-  const raw = readMapFromBag(maps, name);
+  const raw = readMapFromBag(maps, name, App);
   if (!raw) return null;
   if (isKnownMapName(name)) return normalizeKnownMapSnapshot(name, raw);
   return cloneMapRecord(raw);
@@ -79,8 +79,8 @@ export function readHandle(App: unknown, partId: unknown): HandleValue {
     const getHandle = maps.getHandle;
     if (typeof getHandle === 'function') return normalizeHandleValue(getHandle.call(maps, id));
   } catch (err) {
-    mapsAccessReportNonFatal('maps_access.readHandle', err);
+    mapsAccessReportNonFatal('maps_access.readHandle.ownerRejected', err, App);
   }
-  const handles = readMapFromBag(maps, 'handlesMap');
+  const handles = readMapFromBag(maps, 'handlesMap', App);
   return handles ? normalizeHandleValue(readOwn(handles, id)) : undefined;
 }

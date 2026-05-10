@@ -16,7 +16,7 @@ export function readSavedColors(App: unknown): Array<SavedColorLike | string> | 
     const fn = maps.getSavedColors;
     if (typeof fn === 'function') return normalizeSavedColorsSnapshot(fn.call(maps));
   } catch (err) {
-    mapsAccessReportNonFatal('maps_access.readSavedColors', err);
+    mapsAccessReportNonFatal('maps_access.readSavedColors.ownerRejected', err, App);
   }
   return null;
 }
@@ -31,7 +31,7 @@ export function writeSavedColors(App: unknown, colors: SavedColorsList, meta?: A
       return true;
     }
   } catch (err) {
-    mapsAccessReportNonFatal('maps_access.writeSavedColors', err);
+    mapsAccessReportNonFatal('maps_access.writeSavedColors.ownerRejected', err, App);
   }
   return false;
 }
@@ -50,7 +50,7 @@ export function writeColorSwatchesOrder(
       return true;
     }
   } catch (err) {
-    mapsAccessReportNonFatal('maps_access.writeColorSwatchesOrder', err);
+    mapsAccessReportNonFatal('maps_access.writeColorSwatchesOrder.ownerRejected', err, App);
   }
   return false;
 }
