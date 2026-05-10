@@ -41,9 +41,9 @@ function resolveSeparatorMaterial(args: BuildStackSplitLowerUnitArgs): unknown {
   return args.bodyMat;
 }
 
-function readPositive(value: unknown, fallback: number): number {
+function readPositive(value: unknown, defaultValue: number): number {
   const n = Number(value);
-  return Number.isFinite(n) && n > 0 ? n : fallback;
+  return Number.isFinite(n) && n > 0 ? n : defaultValue;
 }
 
 type AddChildObject = UnknownRecord & { add?: (child: unknown) => unknown };
