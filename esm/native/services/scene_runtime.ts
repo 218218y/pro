@@ -6,6 +6,7 @@
 
 import type { AppContainer, SceneViewSyncOptsLike } from '../../../types';
 
+import { reportErrorViaPlatform } from '../runtime/platform_access.js';
 import {
   initSceneLightsViaService,
   installSceneViewStoreSyncViaService,
@@ -14,7 +15,9 @@ import {
   updateSceneModeViaService,
 } from './scene_view_access.js';
 
-function reportSceneRuntime(op: string, err: unknown): void {
+function reportSceneRuntime(App: AppContainer, op: string, err: unknown): void {
+  if (reportErrorViaPlatform(App, err, { where: 'native/services/scene_runtime', op, fatal: false }))
+    return;
   try {
     console.error(`[WardrobePro][scene_runtime] ${op}`, err);
   } catch {
@@ -26,19 +29,19 @@ export function initializeSceneRuntime(App: AppContainer): boolean {
   try {
     initSceneLightsViaService(App);
   } catch (err) {
-    reportSceneRuntime('initializeSceneRuntime.initLights', err);
+    reportSceneRuntime(App, 'initializeSceneRuntime.initLights', err);
   }
 
   try {
     if (installSceneViewStoreSyncViaService(App)) return true;
   } catch (err) {
-    reportSceneRuntime('initializeSceneRuntime.installStoreSync', err);
+    reportSceneRuntime(App, 'initializeSceneRuntime.installStoreSync', err);
   }
 
   try {
     return syncSceneViewViaService(App, { force: true, updateShadows: true, reason: 'sceneRuntime:init' });
   } catch (err) {
-    reportSceneRuntime('initializeSceneRuntime.sync', err);
+    reportSceneRuntime(App, 'initializeSceneRuntime.sync', err);
     return false;
   }
 }
@@ -47,7 +50,7 @@ export function syncSceneRuntimeFromStore(App: AppContainer, opts?: SceneViewSyn
   try {
     return syncSceneViewViaService(App, opts);
   } catch (err) {
-    reportSceneRuntime('syncSceneRuntimeFromStore', err);
+    reportSceneRuntime(App, 'syncSceneRuntimeFromStore', err);
     return false;
   }
 }
@@ -56,7 +59,7 @@ export function refreshSceneRuntimeLights(App: AppContainer, updateShadows?: boo
   try {
     return updateSceneLightsViaService(App, !!updateShadows);
   } catch (err) {
-    reportSceneRuntime('refreshSceneRuntimeLights', err);
+    reportSceneRuntime(App, 'refreshSceneRuntimeLights', err);
     return false;
   }
 }
@@ -65,7 +68,7 @@ export function refreshSceneRuntimeMode(App: AppContainer): boolean {
   try {
     return updateSceneModeViaService(App);
   } catch (err) {
-    reportSceneRuntime('refreshSceneRuntimeMode', err);
+    reportSceneRuntime(App, 'refreshSceneRuntimeMode', err);
     return false;
   }
 }

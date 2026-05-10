@@ -25,7 +25,7 @@ export function getUiSnapshot(App: AppContainer): UiSnapshotLike {
     const ui = st?.ui ?? st?.storeUi;
     return asUiSnapshot(ui);
   } catch (err) {
-    reportSceneViewNonFatal('getUiSnapshot', err);
+    reportSceneViewNonFatal(App, 'sceneView.shared.getUiSnapshot', err);
   }
   return {};
 }
@@ -34,7 +34,7 @@ export function getSketchMode(App: AppContainer, _ui: UiSnapshotLike): boolean {
   try {
     return !!readRuntimeScalarOrDefaultFromStore(getStoreMaybe(App), 'sketchMode', false);
   } catch (err) {
-    reportSceneViewNonFatal('getSketchMode', err);
+    reportSceneViewNonFatal(App, 'sceneView.shared.getSketchMode', err);
     return false;
   }
 }
@@ -50,7 +50,7 @@ export function triggerSceneViewRender(App: AppContainer): void {
       touchActivity: false,
     });
   } catch (err) {
-    reportSceneViewNonFatal('sceneView.triggerRender', err);
+    reportSceneViewNonFatal(App, 'sceneView.triggerRender', err);
   }
 }
 

@@ -8,6 +8,7 @@ import {
   updateLights,
   updateSceneMode,
 } from './scene_view.js';
+import { reportSceneViewNonFatal } from './scene_view_shared.js';
 import { getServiceSlotMaybe } from '../runtime/services_root_access.js';
 
 type SceneViewMethodMap = {
@@ -32,6 +33,10 @@ function readSceneViewService(value: unknown): SceneNamespaceLike | null {
   return isSceneViewService(value) ? value : null;
 }
 
+function reportSceneViewAccessNonFatal(App: AppContainer, op: string, err: unknown): void {
+  reportSceneViewNonFatal(App, `sceneView.access.${op}`, err);
+}
+
 function getSceneViewMethod<K extends SceneViewMethodKey>(
   App: AppContainer,
   key: K
@@ -40,16 +45,16 @@ function getSceneViewMethod<K extends SceneViewMethodKey>(
     const ensured = ensureSceneViewService(App);
     const method = ensured[key];
     if (isSceneViewMethod<K>(method)) return method;
-  } catch {
-    // fall through to best-effort existing slot read
+  } catch (err) {
+    reportSceneViewAccessNonFatal(App, `${String(key)}.ensureService`, err);
   }
 
   try {
     const existing = getSceneViewServiceMaybe(App);
     const method = existing?.[key];
     if (isSceneViewMethod<K>(method)) return method;
-  } catch {
-    // ignore
+  } catch (err) {
+    reportSceneViewAccessNonFatal(App, `${String(key)}.readExistingService`, err);
   }
 
   return null;
@@ -76,7 +81,8 @@ export function initSceneLightsViaService(App: AppContainer): boolean {
     }
     initLights(App);
     return true;
-  } catch {
+  } catch (err) {
+    reportSceneViewAccessNonFatal(App, 'initLights.ownerRejected', err);
     return false;
   }
 }
@@ -86,7 +92,8 @@ export function installSceneViewStoreSyncViaService(App: AppContainer): boolean 
     const install = getSceneViewMethod(App, 'installStoreSync');
     if (typeof install === 'function' && install()) return true;
     return !!installSceneViewStoreSync(App);
-  } catch {
+  } catch (err) {
+    reportSceneViewAccessNonFatal(App, 'installStoreSync.ownerRejected', err);
     return false;
   }
 }
@@ -100,7 +107,8 @@ export function syncSceneViewViaService(App: AppContainer, opts?: SceneViewSyncO
     }
     syncSceneViewFromStore(App, opts);
     return true;
-  } catch {
+  } catch (err) {
+    reportSceneViewAccessNonFatal(App, 'syncFromStore.ownerRejected', err);
     return false;
   }
 }
@@ -114,7 +122,8 @@ export function updateSceneLightsViaService(App: AppContainer, updateShadows?: b
     }
     updateLights(App, !!updateShadows);
     return true;
-  } catch {
+  } catch (err) {
+    reportSceneViewAccessNonFatal(App, 'updateLights.ownerRejected', err);
     return false;
   }
 }
@@ -128,7 +137,8 @@ export function updateSceneModeViaService(App: AppContainer): boolean {
     }
     updateSceneMode(App);
     return true;
-  } catch {
+  } catch (err) {
+    reportSceneViewAccessNonFatal(App, 'updateSceneMode.ownerRejected', err);
     return false;
   }
 }

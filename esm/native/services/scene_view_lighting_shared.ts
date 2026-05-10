@@ -30,6 +30,6 @@ export function updateCornerAutoLightShadowRefresh(
       if (shadowMap && shadowMap.autoUpdate === false) shadowMap.needsUpdate = true;
     }
   } catch (err) {
-    reportSceneViewNonFatal('sceneView.lighting.updateCornerAutoLightShadowRefresh', err);
+    reportSceneViewNonFatal(App, 'sceneView.lighting.updateCornerAutoLightShadowRefresh', err);
   }
 }

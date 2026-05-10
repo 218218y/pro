@@ -20,12 +20,12 @@ export function applyViewMode(App: AppContainer, updateShadows?: boolean): void 
   try {
     updatedSceneMode = updateSceneModeInternal(App, { triggerRender: false });
   } catch (err) {
-    reportSceneViewNonFatal('sceneView.lighting.applyViewMode', err);
+    reportSceneViewNonFatal(App, 'sceneView.lighting.applyViewMode', err);
   }
   try {
     updatedLights = updateLightsInternal(App, { updateShadows: !!updateShadows, triggerRender: false });
   } catch (err) {
-    reportSceneViewNonFatal('sceneView.lighting.applyViewMode.triggerRender', err);
+    reportSceneViewNonFatal(App, 'sceneView.lighting.applyViewMode.triggerRender', err);
   }
 
   if (updatedSceneMode || updatedLights) triggerSceneViewRender(App);
