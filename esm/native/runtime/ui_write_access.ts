@@ -116,7 +116,10 @@ function getUiNamespace(App: unknown): UiActionsNamespaceLike | null {
 export function patchUi(App: unknown, patch: unknown, meta?: ActionMetaLike): unknown {
   const uiPatch = filterUiPatchAgainstCurrentState(App, asUiPatch(patch));
   if (!hasOwnKeys(uiPatch)) return undefined;
-  return patchSliceWithStoreFallback(App, 'ui', uiPatch, meta, { storeWriter: 'setUi' });
+  return patchSliceWithStoreFallback(App, 'ui', uiPatch, meta, {
+    storeWriter: 'setUi',
+    allowRootStorePatchFallback: true,
+  });
 }
 
 /** Patch UI slice with UI-only semantics by default (when the surface supports it). */

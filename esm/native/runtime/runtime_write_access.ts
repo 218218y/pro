@@ -31,7 +31,10 @@ function getRuntimeNamespace(App: unknown): RuntimeActionsNamespaceLike | null {
 export function patchRuntime(App: unknown, patch: unknown, meta?: ActionMetaLike): unknown {
   const rtPatch = asRuntimePatch(patch);
   const m = metaTransient(App, meta, 'runtime:patch');
-  return patchSliceWithStoreFallback(App, 'runtime', rtPatch, m, { storeWriter: 'setRuntime' });
+  return patchSliceWithStoreFallback(App, 'runtime', rtPatch, m, {
+    storeWriter: 'setRuntime',
+    allowRootStorePatchFallback: true,
+  });
 }
 
 type SetRuntimeScalar = {

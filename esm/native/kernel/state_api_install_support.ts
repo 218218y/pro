@@ -22,7 +22,7 @@ import type {
 import { getAllSliceNamespaces, readSlicePatchValue } from '../runtime/slice_write_access_shared.js';
 import { asRecord as asObj } from '../runtime/record.js';
 import { snapshotStoreValueEqual, uiSnapshotValueEqual } from './kernel_snapshot_store_shared.js';
-import { asPatchPayload, hasMultipleDefinedRootSlices, hasOnlyUiSlice } from './state_api_shared.js';
+import { asPatchPayload } from './state_api_shared.js';
 
 const CONFIG_REPLACE_KEY = `${'__'}replace`;
 
@@ -290,11 +290,11 @@ export function createStateApiInstallSupport(App: AppContainer, storeInput: unkn
       if (filtered) filteredPayload[namespace] = filtered;
     }
 
-    if (!Object.keys(filteredPayload).length) return undefined;
+    const filteredKeys = Object.keys(filteredPayload);
+    if (!filteredKeys.length) return undefined;
 
-    const onlyUi = hasOnlyUiSlice(filteredPayload);
-    const hasManySlices = hasMultipleDefinedRootSlices(filteredPayload);
-    if ((onlyUi || hasManySlices) && typeof store.patch === 'function') {
+    const onlyMeta = filteredKeys.length === 1 && typeof filteredPayload.meta !== 'undefined';
+    if (!onlyMeta && typeof store.patch === 'function') {
       return store.patch(filteredPayload, meta);
     }
 
