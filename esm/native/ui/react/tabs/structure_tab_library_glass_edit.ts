@@ -9,6 +9,7 @@ import type {
 import { MODES, getTools } from '../../../services/api.js';
 import { enterPrimaryMode } from '../actions/modes_actions.js';
 import { setCurtainChoice, setMultiEnabled } from '../../multicolor_service.js';
+import { structureTabReportNonFatal } from './structure_tab_shared.js';
 
 export const STRUCTURE_LIBRARY_GLASS_EDIT_TOAST = 'מצב זכוכית לספריות פעיל — לחץ על דלתות לבחירה';
 export const STRUCTURE_LIBRARY_GLASS_EDIT_CURSOR = 'crosshair';
@@ -18,6 +19,7 @@ type EnterPrimaryModeFn = (app: AppContainer, modeId: unknown, opts?: UnknownRec
 type GetToolsFn = (app: AppContainer) => ToolsNamespaceLike;
 type SetCurtainChoiceFn = (app: AppContainer, id: unknown) => void;
 type SetMultiEnabledFn = (app: AppContainer, next: boolean, meta?: ActionMetaLike) => void;
+type ReportNonFatalFn = (op: string, err: unknown, dedupeMs?: number) => void;
 
 export type StructureLibraryGlassEditDeps = {
   modes?: unknown;
@@ -25,6 +27,7 @@ export type StructureLibraryGlassEditDeps = {
   getTools?: GetToolsFn;
   setCurtainChoice?: SetCurtainChoiceFn;
   setMultiEnabled?: SetMultiEnabledFn;
+  reportNonFatal?: ReportNonFatalFn;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -41,19 +44,12 @@ function normalizePaintId(value: unknown): string {
   return String(value == null ? '' : value).trim();
 }
 
-function safeCall(fn: () => void): void {
+function runGlassEditStep(op: string, reportNonFatal: ReportNonFatalFn, fn: () => void): void {
   try {
     fn();
-  } catch {
-    // Editing-mode wiring is best effort: each side effect below has its own fallback.
+  } catch (err) {
+    reportNonFatal(op, err);
   }
-}
-
-function toast(fb: UiFeedbackNamespaceLike | null | undefined, message: string, type: string): void {
-  safeCall(() => {
-    const fn = typeof fb?.toast === 'function' ? fb.toast : null;
-    if (fn) fn(message, type);
-  });
 }
 
 export function enterStructureLibraryGlassEditMode(args: {
@@ -71,21 +67,27 @@ export function enterStructureLibraryGlassEditMode(args: {
   const setCurtainChoiceImpl = deps.setCurtainChoice || setCurtainChoice;
   const enterPrimaryModeImpl = deps.enterPrimaryMode || enterPrimaryMode;
   const getToolsImpl = deps.getTools || getTools;
+  const reportNonFatal = deps.reportNonFatal || structureTabReportNonFatal;
   const paintModeId = resolveStructureLibraryPaintModeId(deps.modes || MODES);
 
-  safeCall(() => setMultiEnabledImpl(args.app, true, meta));
-  safeCall(() => setCurtainChoiceImpl(args.app, 'none'));
-  safeCall(() =>
+  runGlassEditStep('structureLibraryGlassEdit.setMultiEnabled', reportNonFatal, () =>
+    setMultiEnabledImpl(args.app, true, meta)
+  );
+  runGlassEditStep('structureLibraryGlassEdit.setCurtainChoice', reportNonFatal, () =>
+    setCurtainChoiceImpl(args.app, 'none')
+  );
+  runGlassEditStep('structureLibraryGlassEdit.enterPrimaryMode', reportNonFatal, () =>
     enterPrimaryModeImpl(args.app, paintModeId, {
       cursor: STRUCTURE_LIBRARY_GLASS_EDIT_CURSOR,
       toast: STRUCTURE_LIBRARY_GLASS_EDIT_TOAST,
     })
   );
-  safeCall(() => {
+  runGlassEditStep('structureLibraryGlassEdit.setPaintColor', reportNonFatal, () => {
     const tools = getToolsImpl(args.app);
-    if (typeof tools.setPaintColor === 'function') tools.setPaintColor(paintId, meta);
+    if (typeof tools.setPaintColor !== 'function')
+      throw new TypeError('tools.setPaintColor is not available');
+    tools.setPaintColor(paintId, meta);
   });
 
-  toast(args.fb, STRUCTURE_LIBRARY_GLASS_EDIT_TOAST, 'info');
   return true;
 }

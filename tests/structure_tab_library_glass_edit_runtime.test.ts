@@ -61,5 +61,46 @@ test('structure library glass edit mode enters paint mode with no curtain and se
     '__wp_glass_style__:tom',
     { source: STRUCTURE_LIBRARY_GLASS_EDIT_SOURCE, immediate: true },
   ]);
-  assert.deepEqual(calls[4], ['toast', STRUCTURE_LIBRARY_GLASS_EDIT_TOAST, 'info']);
+  assert.equal(calls.length, 4);
+  assert.equal(
+    calls.some(call => call[0] === 'toast'),
+    false,
+    'library glass edit should rely on the persistent mode banner and not emit a duplicate temporary toast'
+  );
+});
+
+test('structure library glass edit mode reports side-effect failures through the structure tab reporter', () => {
+  const reports: unknown[][] = [];
+  const app = {} as never;
+
+  const ok = enterStructureLibraryGlassEditMode({
+    app,
+    paintId: 'glass',
+    fb: {
+      toast: () => {
+        throw new Error('temporary toast should not be called');
+      },
+    },
+    deps: {
+      setMultiEnabled: () => {
+        throw new Error('multi failed');
+      },
+      setCurtainChoice: () => {
+        throw new Error('curtain failed');
+      },
+      enterPrimaryMode: () => {
+        throw new Error('mode failed');
+      },
+      getTools: () => ({}),
+      reportNonFatal: (op, err) => reports.push([op, err instanceof Error ? err.message : String(err)]),
+    },
+  });
+
+  assert.equal(ok, true);
+  assert.deepEqual(reports, [
+    ['structureLibraryGlassEdit.setMultiEnabled', 'multi failed'],
+    ['structureLibraryGlassEdit.setCurtainChoice', 'curtain failed'],
+    ['structureLibraryGlassEdit.enterPrimaryMode', 'mode failed'],
+    ['structureLibraryGlassEdit.setPaintColor', 'tools.setPaintColor is not available'],
+  ]);
 });

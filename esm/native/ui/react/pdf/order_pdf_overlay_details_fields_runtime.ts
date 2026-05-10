@@ -24,6 +24,14 @@ export type OrderPdfDetailsTextApi = Pick<
 
 type ReportNonFatal = (op: string, err: unknown, dedupeMs?: number) => void;
 
+type StoredOrderPdfDetailsFields = {
+  detailsText: string;
+  detailsHtml: string;
+  hasDetailsValue: boolean;
+  detailsFull: boolean;
+  manualEnabled: boolean;
+};
+
 function trimTextValue(value: string): string {
   return String(value || '').trim();
 }
@@ -73,6 +81,36 @@ function resolveOrderPdfDetailsMarkerHtml(args: {
     reportNonFatal?.(reportOp || 'orderPdfDetails:textToHtml', err);
     return '';
   }
+}
+
+function readStoredOrderPdfDetailsFields(
+  rec: Record<string, unknown>,
+  textApi: Pick<OrderPdfDetailsTextApi, 'safeStr' | 'htmlToTextPreserveNewlines'>
+): StoredOrderPdfDetailsFields {
+  const manualText = textApi.safeStr(rec.manualDetails);
+  const manualHtml = textApi.safeStr(rec.manualDetailsHtml);
+  const textFromHtml = manualText
+    ? ''
+    : manualHtml
+      ? textApi.htmlToTextPreserveNewlines(null, manualHtml)
+      : '';
+  const detailsText = manualText || textFromHtml;
+
+  return {
+    detailsText,
+    detailsHtml: manualHtml,
+    hasDetailsValue: hasOrderPdfTextValue(detailsText) || hasOrderPdfTextValue(manualHtml),
+    detailsFull: !!rec.detailsFull,
+    manualEnabled: !!rec.manualEnabled,
+  };
+}
+
+function mergeOrderPdfStoredInlineDetails(autoDetails: string, manualText: string): string {
+  if (!autoDetails) return manualText;
+  let out = autoDetails;
+  if (!out.endsWith('\n')) out += '\n';
+  if (!out.endsWith('\n\n')) out += '\n';
+  return `${out}${manualText}`;
 }
 
 export function createOrderPdfDetailsFields(args: {
@@ -173,28 +211,19 @@ export function buildOrderPdfDetailsFieldsFromUiRecord(args: {
 }): OrderPdfDetailsFields {
   const { rec, detailsDirtyRef, textApi, reportNonFatal } = args;
   const autoDetails = textApi.safeStr(rec.autoDetails);
-  const legacyManual = textApi.safeStr(rec.manualDetails);
-  const legacyManualHtml = textApi.safeStr(rec.manualDetailsHtml);
-  const legacyManualText =
-    legacyManual || (legacyManualHtml ? textApi.htmlToTextPreserveNewlines(null, legacyManualHtml) : '');
-  const detailsFullRaw = !!rec.detailsFull;
+  const storedDetails = readStoredOrderPdfDetailsFields(rec, textApi);
+  const detailsFullRaw = storedDetails.detailsFull;
 
-  let detailsText = legacyManualText;
-  let detailsHtml = legacyManualHtml;
+  let detailsText = storedDetails.detailsText;
+  let detailsHtml = storedDetails.detailsHtml;
   let detailsSeed = textApi.safeStr(rec.detailsSeed);
   let detailsTouched = !!rec.detailsTouched;
   let markerAutoRegionText: string | null = null;
 
   if (!detailsFullRaw) {
-    const hasManual =
-      trimTextValue(legacyManual).length > 0 ||
-      trimTextValue(legacyManualHtml).length > 0 ||
-      !!rec.manualEnabled;
+    const hasManual = storedDetails.hasDetailsValue || storedDetails.manualEnabled;
     if (hasManual) {
-      let out = autoDetails || '';
-      if (out && !out.endsWith('\n')) out += '\n';
-      if (out && !out.endsWith('\n\n')) out += '\n';
-      detailsText = `${out}${legacyManualText}`;
+      detailsText = mergeOrderPdfStoredInlineDetails(autoDetails, storedDetails.detailsText);
     } else {
       detailsText = autoDetails || '';
     }
@@ -215,6 +244,16 @@ export function buildOrderPdfDetailsFieldsFromUiRecord(args: {
   try {
     const autoCmp = textApi.normalizeForCompare(autoDetails || '');
     const curCmp = textApi.normalizeForCompare(detailsText || '');
+
+    if (
+      !detailsTouched &&
+      detailsFullRaw &&
+      storedDetails.manualEnabled &&
+      storedDetails.hasDetailsValue &&
+      autoCmp !== curCmp
+    ) {
+      detailsTouched = true;
+    }
 
     if (detailsTouched && autoCmp === curCmp) {
       detailsTouched = false;
@@ -241,8 +280,7 @@ export function buildOrderPdfDetailsFieldsFromUiRecord(args: {
     detailsHtml,
     detailsSeed,
     detailsTouched,
-    manualEnabled:
-      !!rec.manualEnabled || hasOrderPdfTextValue(legacyManualText) || hasOrderPdfTextValue(legacyManualHtml),
+    manualEnabled: storedDetails.manualEnabled || storedDetails.hasDetailsValue,
     autoRegionTextForMarkers: markerAutoRegionText,
     textApi,
     reportNonFatal,

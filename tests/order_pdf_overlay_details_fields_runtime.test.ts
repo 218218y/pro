@@ -63,6 +63,32 @@ test('order pdf details fields runtime collapses stale manualEnabled/manual html
   assert.deepEqual(reports, []);
 });
 
+test('order pdf details fields runtime preserves enabled stored rich details even when touched flag is missing', () => {
+  const detailsDirtyRef = { current: false };
+  const reports: string[] = [];
+
+  const fields = buildOrderPdfDetailsFieldsFromUiRecord({
+    rec: {
+      autoDetails: 'Auto line',
+      manualDetails: '',
+      manualDetailsHtml: '<div>Manual line</div><div>Second line</div>',
+      detailsFull: true,
+      detailsTouched: false,
+      manualEnabled: true,
+    },
+    detailsDirtyRef,
+    textApi,
+    reportNonFatal: op => reports.push(op),
+  });
+
+  assert.equal(fields.manualDetails, 'Manual line\nSecond line\n');
+  assert.equal(fields.manualDetailsHtml, '<div>Manual line</div><div>Second line</div>');
+  assert.equal(fields.detailsTouched, true);
+  assert.equal(fields.manualEnabled, true);
+  assert.equal(detailsDirtyRef.current, true);
+  assert.deepEqual(reports, []);
+});
+
 test('order pdf details fields runtime reuses explicit rich html and falls back to text html only when needed', () => {
   assert.equal(
     resolveOrderPdfRichTextHtml({
