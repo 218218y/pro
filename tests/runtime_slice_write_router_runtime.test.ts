@@ -520,6 +520,57 @@ test('[slice-write-access] dispatchCanonicalPatchPayload falls through from root
   ]);
 });
 
+test('[slice-write-access] root patch fallbacks are opt-in instead of default write paths', () => {
+  const calls: AnyRecord[] = [];
+  const App = {
+    actions: {
+      meta: ensureMetaActionsNamespace({}),
+    },
+    store: {
+      patch(patch: AnyRecord, meta?: AnyRecord) {
+        calls.push({ op: 'store.patch', patch, meta });
+        return { via: 'store.patch' };
+      },
+    },
+  } satisfies AnyRecord;
+
+  assert.equal(
+    patchSliceWithStoreFallback(
+      App,
+      'config',
+      { width: 120 },
+      { source: 'config:missing-writer' },
+      { storeWriter: 'setConfig' }
+    ),
+    undefined
+  );
+  assert.equal(
+    dispatchCanonicalPatchPayload(
+      App,
+      { ui: { activeTab: 'design' }, config: { width: 120 } },
+      { source: 'root:missing-opt-in' }
+    ),
+    undefined
+  );
+  assert.equal(touchMetaWithStoreFallback(App, { source: 'meta:missing-writer' }), undefined);
+  assert.deepEqual(calls, []);
+
+  const explicitRoot = dispatchCanonicalPatchPayload(
+    App,
+    { ui: { activeTab: 'design' }, config: { width: 120 } },
+    { source: 'root:explicit' },
+    { allowRootStorePatchFallback: true }
+  );
+  assert.deepEqual(explicitRoot, { via: 'store.patch' });
+  assert.deepEqual(calls, [
+    {
+      op: 'store.patch',
+      patch: { ui: { activeTab: 'design' }, config: { width: 120 } },
+      meta: { source: 'root:explicit' },
+    },
+  ]);
+});
+
 test('[slice-write-access] hasCanonicalPatchDispatch distinguishes leaf seams from missing writers', () => {
   const App = {
     store: {

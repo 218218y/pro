@@ -31,7 +31,7 @@ const metaTouchDispatchTargetsCache = new Map<number, readonly MetaTouchDispatch
 
 function createRootFallbackDispatchTargetSet(opts?: RootFallbackOptions): readonly RootPatchDispatchTarget[] {
   const allowRootActionPatchFallback = !!opts?.allowRootActionPatchFallback;
-  const allowRootStorePatchFallback = opts?.allowRootStorePatchFallback !== false;
+  const allowRootStorePatchFallback = opts?.allowRootStorePatchFallback === true;
   if (!allowRootStorePatchFallback) {
     return allowRootActionPatchFallback
       ? ROOT_FALLBACK_ACTION_ONLY_DISPATCH_TARGETS
@@ -47,7 +47,7 @@ function createSliceDispatchTargetCacheKey(opts: SliceWriteOptions): number {
     (opts.preferStoreWriter ? 1 : 0) |
     (opts.skipNamespacePatch ? 2 : 0) |
     (opts.allowRootActionPatchFallback ? 4 : 0) |
-    (opts.allowRootStorePatchFallback === false ? 0 : 8)
+    (opts.allowRootStorePatchFallback ? 8 : 0)
   );
 }
 
@@ -56,7 +56,7 @@ function createMetaTouchDispatchTargetCacheKey(opts?: MetaTouchOptions): number 
     (opts?.preferStoreWriter ? 1 : 0) |
     (opts?.skipNamespaceTouch ? 2 : 0) |
     (opts?.allowRootActionPatchFallback ? 4 : 0) |
-    (opts?.allowRootStorePatchFallback === false ? 0 : 8)
+    (opts?.allowRootStorePatchFallback ? 8 : 0)
   );
 }
 
