@@ -128,7 +128,14 @@ export function metaTransient(
   source?: string
 ): ActionMetaLike {
   const metaNs = metaNsFromApp(App);
-  return callMetaProfile(App, metaNs, metaNs?.transient, meta, source || 'meta:transient', DEFAULTS_TRANSIENT);
+  return callMetaProfile(
+    App,
+    metaNs,
+    metaNs?.transient,
+    meta,
+    source || 'meta:transient',
+    DEFAULTS_TRANSIENT
+  );
 }
 
 export function metaNoHistory(

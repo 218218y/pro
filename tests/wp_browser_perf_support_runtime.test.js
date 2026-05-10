@@ -63,7 +63,11 @@ test('browser perf support summarizes runtime issues and perf metrics canonicall
         {
           ts: '2026-05-10T00:00:00.000Z',
           kind: 'report',
-          ctx: { where: 'native/runtime/project_io_access', op: 'projectIO.loadProjectData.ownerRejected', fatal: false },
+          ctx: {
+            where: 'native/runtime/project_io_access',
+            op: 'projectIO.loadProjectData.ownerRejected',
+            fatal: false,
+          },
           err: { name: 'Error', message: 'load owner exploded', stack: '' },
         },
       ],
@@ -297,7 +301,10 @@ test('browser perf support summarizes runtime issues and perf metrics canonicall
   assert.match(md, /Page errors: 1/);
   assert.match(md, /Console errors: 1/);
   assert.match(md, /Diagnostics reports: 1/);
-  assert.match(md, /native\/runtime\/project_io_access:projectIO\.loadProjectData\.ownerRejected: load owner exploded/);
+  assert.match(
+    md,
+    /native\/runtime\/project_io_access:projectIO\.loadProjectData\.ownerRejected: load owner exploded/
+  );
   assert.match(md, /Clipboard writes: 3/);
   assert.match(md, /save: count=1, ok=1, failure=0, pending=0/);
   assert.match(md, /Store write pressure/);

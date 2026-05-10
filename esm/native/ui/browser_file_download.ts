@@ -22,7 +22,6 @@ export function normalizeDownloadFilename(
   return safeBase.toLowerCase().endsWith(ext.toLowerCase()) ? safeBase : `${safeBase}${ext}`;
 }
 
-
 function reportBrowserFileDownloadError(appOrCtx: unknown, op: string, error: unknown): void {
   reportError(
     appOrCtx,

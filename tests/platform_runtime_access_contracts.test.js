@@ -493,10 +493,7 @@ test('[platform-runtime] app start and major callsites prefer canonical boot ent
   assert.match(bootEntry, /if \(uiBoot && typeof uiBoot\.bootMain === 'function'\)/);
   assert.match(bootEntry, /return uiBoot\.bootMain\.bind\(uiBoot\);/);
 
-  assert.match(
-    threeTargets.buildStateResolver,
-    /reportError\(App, err, 'builder\.buildWardrobe'\)/
-  );
+  assert.match(threeTargets.buildStateResolver, /reportError\(App, err, 'builder\.buildWardrobe'\)/);
   assert.match(threeTargets.builderDepsResolver, /getPlatformPruneCachesSafe\(App\)/);
   assert.match(threeTargets.moduleLayout, /reportError\(App, err, \{ where, fatal: true \}\)/);
   assert.match(threeTargets.preBuildReset, /cleanGroupViaPlatform\(App, wardrobeGroup\)/);
@@ -511,10 +508,7 @@ test('[platform-runtime] app start and major callsites prefer canonical boot ent
   assert.match(threeTargets.interior, /reportError\(App,/);
   assert.match(threeTargets.internalDrawers, /reportError\(App,/);
   assert.match(threeTargets.stackSplitPipeline, /cloneViaPlatform\(args\.App, lower0, seed\)/);
-  assert.match(
-    threeTargets.buildWardrobeFlow,
-    /reportError\(App, error, \{ where: label, fatal: true \}\)/
-  );
+  assert.match(threeTargets.buildWardrobeFlow, /reportError\(App, error, \{ where: label, fatal: true \}\)/);
   assert.match(
     threeTargets.core,
     /reportError\(App, err, \{ where: 'native\/builder\/core\.buildWardrobe', fatal: true \}\)/

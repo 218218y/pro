@@ -1,3 +1,4 @@
+import { reportError } from './errors.js';
 import { getBuilderHandlesService } from './builder_service_access_slots.js';
 import type {
   ApplyBuilderHandlesOpts,
@@ -20,7 +21,12 @@ export function applyBuilderHandles(App: unknown, opts?: ApplyBuilderHandlesOpts
     if (opts && Object.keys(opts).length > 0) fn.call(handles, opts);
     else fn.call(handles);
     return true;
-  } catch {
+  } catch (error) {
+    reportError(App, error, {
+      where: 'native/runtime/builder_service_access',
+      op: 'builder.handles.applyHandles.ownerRejected',
+      fatal: false,
+    });
     return false;
   }
 }
@@ -35,7 +41,12 @@ export function purgeBuilderHandlesForRemovedDoors(App: unknown, forceEnabled = 
     if (!fn) return false;
     fn.call(handles, !!forceEnabled);
     return true;
-  } catch {
+  } catch (error) {
+    reportError(App, error, {
+      where: 'native/runtime/builder_service_access',
+      op: 'builder.handles.purgeRemovedDoors.ownerRejected',
+      fatal: false,
+    });
     return false;
   }
 }

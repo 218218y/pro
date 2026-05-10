@@ -1,6 +1,7 @@
 import type { UiSnapshotLike, UnknownRecord } from '../../../types';
 
 import { asRecord } from './record.js';
+import { reportError } from './errors.js';
 import type { BuilderCallable } from './builder_service_access_shared.js';
 import { getBuilderService } from './builder_service_access_shared.js';
 import { resolveBuilderBuildProfileMeta } from './builder_service_access_build_shared.js';
@@ -71,7 +72,12 @@ export function runBuilderBuildWardrobe(App: unknown, state?: unknown): boolean 
     if (!buildWardrobe) return false;
     buildWardrobe(state);
     return true;
-  } catch {
+  } catch (error) {
+    reportError(App, error, {
+      where: 'native/runtime/builder_service_access',
+      op: 'builder.buildWardrobe.ownerRejected',
+      fatal: false,
+    });
     return false;
   }
 }

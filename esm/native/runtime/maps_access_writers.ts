@@ -259,7 +259,15 @@ function toggleCanonicalPrefixedKeyInMap(
   const next = readPrefixedToggleState(m, canonicalKey, aliasKey) ? null : true;
 
   if (
-    trySetKey(App, maps, mapName, canonicalKey, next, meta, 'maps_access.toggleCanonicalPrefixedKeyInMap.setKey')
+    trySetKey(
+      App,
+      maps,
+      mapName,
+      canonicalKey,
+      next,
+      meta,
+      'maps_access.toggleCanonicalPrefixedKeyInMap.setKey'
+    )
   ) {
     clearLegacyPrefixedAlias(
       App,

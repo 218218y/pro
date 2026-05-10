@@ -94,7 +94,6 @@ test('downloadJsonObjectResultViaBrowser preserves browser download errors as ac
   assert.deepEqual(result, { ok: false, reason: 'error', message: 'download exploded' });
 });
 
-
 test('downloadJsonObjectResultViaBrowser reports stringify failures through diagnostics when available', () => {
   const reports: Array<{ error: unknown; ctx: unknown }> = [];
   const result = downloadJsonObjectResultViaBrowser(

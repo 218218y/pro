@@ -19,7 +19,6 @@ type ProjectIoLoadFailureLike = ProjectLoadFailureReason | string;
 
 export type { ProjectIoLoadFailureLike };
 
-
 export function reportProjectIoAccessNonFatal(App: unknown, op: string, error: unknown): void {
   reportError(App, error, {
     where: 'native/runtime/project_io_access',

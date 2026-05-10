@@ -1,4 +1,5 @@
 import { buildErrorResult as buildNormalizedErrorResult } from './error_normalization.js';
+import { reportError } from './errors.js';
 
 export type BrowserFileReadResult<T> =
   | { ok: true; value: T }
@@ -14,12 +15,16 @@ export type FileReaderLike = {
 };
 
 export type ReadFileTextOptions = {
+  /** Optional app container used only for diagnostics; result semantics do not depend on it. */
+  app?: unknown;
   createReader?: (() => FileReaderLike) | null;
   unavailableMessage?: string;
   readFailureMessage?: string;
 };
 
 export type ReadFileDataUrlOptions = {
+  /** Optional app container used only for diagnostics; result semantics do not depend on it. */
+  app?: unknown;
   createReader?: (() => FileReaderLike) | null;
   unavailableMessage?: string;
   readFailureMessage?: string;
@@ -55,6 +60,17 @@ function resolveFileReaderFactory(
   return ReaderCtor ? () => new ReaderCtor() : null;
 }
 
+function reportBrowserFileReadFailure(App: unknown, error: unknown, op: string): void {
+  reportError(
+    App,
+    error,
+    { where: 'native/runtime/browser_file_read', op, fatal: false },
+    {
+      consoleFallback: false,
+    }
+  );
+}
+
 function buildUnavailableResult<T>(message: string): BrowserFileReadResult<T> {
   return { ok: false, reason: 'unavailable', message };
 }
@@ -71,6 +87,7 @@ export async function readFileTextResultViaBrowser(
     try {
       return { ok: true, value: await file.text() };
     } catch (error) {
+      reportBrowserFileReadFailure(options?.app, error, 'readFileText.blobTextRejected');
       return buildErrorResult(error, options?.readFailureMessage || 'browser file text read failed');
     }
   }
@@ -88,12 +105,14 @@ export async function readFileTextResultViaBrowser(
         resolve({ ok: true, value: typeof raw === 'string' ? raw : '' });
       };
       reader.onerror = () => {
+        reportBrowserFileReadFailure(options?.app, reader.error, 'readFileText.readerRejected');
         resolve(
           buildErrorResult(reader.error, options?.readFailureMessage || 'browser file text read failed')
         );
       };
       reader.readAsText(file);
     } catch (error) {
+      reportBrowserFileReadFailure(options?.app, error, 'readFileText.readAsTextRejected');
       resolve(buildErrorResult(error, options?.readFailureMessage || 'browser file text read failed'));
     }
   });
@@ -117,15 +136,18 @@ export async function readFileDataUrlResultViaBrowser(
           resolve({ ok: true, value: raw });
           return;
         }
+        reportBrowserFileReadFailure(options?.app, null, 'readFileDataUrl.emptyResult');
         resolve(buildErrorResult(null, options?.readFailureMessage || 'browser file data url read failed'));
       };
       reader.onerror = () => {
+        reportBrowserFileReadFailure(options?.app, reader.error, 'readFileDataUrl.readerRejected');
         resolve(
           buildErrorResult(reader.error, options?.readFailureMessage || 'browser file data url read failed')
         );
       };
       reader.readAsDataURL(file);
     } catch (error) {
+      reportBrowserFileReadFailure(options?.app, error, 'readFileDataUrl.readAsDataUrlRejected');
       resolve(buildErrorResult(error, options?.readFailureMessage || 'browser file data url read failed'));
     }
   });

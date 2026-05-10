@@ -18,8 +18,9 @@ function clearFileInputValue(target: { value?: string } | null): void {
   }
 }
 
-export async function readProjectFileText(file: ProjectFileLike): Promise<string> {
+export async function readProjectFileText(file: ProjectFileLike, App?: AppContainer | null): Promise<string> {
   const result = await readFileTextResultViaBrowser(file, {
+    app: App,
     unavailableMessage: 'FileReader unavailable',
     readFailureMessage: 'FileReader failed',
   });
@@ -39,7 +40,7 @@ export async function loadProjectFileInput(
 
     let text = '';
     try {
-      text = await readProjectFileText(file);
+      text = await readProjectFileText(file, App);
     } catch (error) {
       return buildProjectLoadActionErrorResult(error, '[WardrobePro] Failed reading project file.');
     }

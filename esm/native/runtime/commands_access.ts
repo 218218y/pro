@@ -3,6 +3,7 @@ import type { CommandsServiceLike } from '../../../types';
 import { asRecord } from './record.js';
 import { healStableSurfaceMethod } from './stable_surface_methods.js';
 import { ensureServiceSlot, getServiceSlotMaybe } from './services_root_access.js';
+import { reportError } from './errors.js';
 
 const COMMANDS_REBUILD_CANONICAL_KEY = '__wpCanonicalRebuildWardrobe';
 const COMMANDS_REBUILD_DEBOUNCED_CANONICAL_KEY = '__wpCanonicalRebuildWardrobeDebounced';
@@ -10,6 +11,12 @@ const COMMANDS_CLEAN_GROUP_CANONICAL_KEY = '__wpCanonicalCleanGroup';
 
 function asCommandsService(value: unknown): CommandsServiceLike | null {
   return asRecord<CommandsServiceLike>(value);
+}
+
+function reportCommandsAccessIssue(App: unknown, op: string, error: unknown): void {
+  reportError(App, error, { where: 'native/runtime/commands_access', op, fatal: false }, {
+    consoleFallback: false,
+  });
 }
 
 function healCommandsSurface(service: CommandsServiceLike | null): CommandsServiceLike | null {
@@ -24,7 +31,8 @@ function healCommandsSurface(service: CommandsServiceLike | null): CommandsServi
 export function getCommandsServiceMaybe(App: unknown): CommandsServiceLike | null {
   try {
     return healCommandsSurface(asCommandsService(getServiceSlotMaybe(App, 'commands')));
-  } catch {
+  } catch (error) {
+    reportCommandsAccessIssue(App, 'getCommandsServiceMaybe', error);
     return null;
   }
 }

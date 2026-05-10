@@ -6,7 +6,7 @@ import type {
   RenderFollowThroughDebugStatsLike,
 } from '../../../types';
 
-import { getReportError } from './errors.js';
+import { getReportError, reportError } from './errors.js';
 import { bindMethod, getPlatformRoot, getPlatformService, readUtil } from './platform_access_shared.js';
 import {
   cloneRenderFollowThroughDebugStats,
@@ -48,6 +48,15 @@ export type PlatformActivityRenderTouchOpts = PlatformRenderFollowThroughOpts & 
   ensureRenderLoopAfterTrigger?: boolean;
 };
 
+function reportPlatformOpRejected(App: unknown, error: unknown, op: string, consoleFallback = true): void {
+  reportError(
+    App,
+    error,
+    { where: 'native/runtime/platform_access', op, fatal: false },
+    consoleFallback ? undefined : { consoleFallback: false }
+  );
+}
+
 export type PlatformActivityRenderTouchResult = PlatformRenderFollowThroughResult & {
   touchedActivity: boolean;
 };
@@ -55,7 +64,6 @@ export type PlatformActivityRenderTouchResult = PlatformRenderFollowThroughResul
 export function getPlatformReportError(App: unknown): ((error: unknown, ctx?: unknown) => unknown) | null {
   return getReportError(App);
 }
-
 
 export function getPlatformTriggerRender(App: unknown): ((updateShadows?: boolean) => unknown) | null {
   return (
@@ -70,7 +78,8 @@ export function triggerRenderViaPlatform(App: unknown, updateShadows?: boolean):
     if (!fn) return false;
     fn(!!updateShadows);
     return true;
-  } catch {
+  } catch (error) {
+    reportPlatformOpRejected(App, error, 'triggerRender.ownerRejected');
     return false;
   }
 }
@@ -112,7 +121,8 @@ export function runPlatformWakeupFollowThrough(
     try {
       opts.afterTouch();
       ranAfterTouch = true;
-    } catch {
+    } catch (error) {
+      reportPlatformOpRejected(App, error, 'runPlatformWakeupFollowThrough.afterTouchRejected', false);
       ranAfterTouch = false;
     }
   }
@@ -185,7 +195,8 @@ export function logViaPlatform(App: unknown, ...args: PlatformLogArgs): boolean 
     if (!fn) return false;
     fn(...args);
     return true;
-  } catch {
+  } catch (error) {
+    reportPlatformOpRejected(App, error, 'log.ownerRejected');
     return false;
   }
 }
@@ -199,7 +210,8 @@ export function stringifyViaPlatform(App: unknown, value: unknown, defaultText =
     const fn = getPlatformStringifier(App);
     if (!fn) return value == null ? String(defaultText || '') : String(value);
     return fn(value, defaultText);
-  } catch {
+  } catch (error) {
+    reportPlatformOpRejected(App, error, 'stringify.ownerRejected');
     return value == null ? String(defaultText || '') : String(value);
   }
 }
@@ -230,7 +242,8 @@ export function cloneViaPlatform<T>(App: unknown, value: T, seed?: unknown): T {
   try {
     const fn = getPlatformClone(App);
     return fn ? fn(value, seed) : value;
-  } catch {
+  } catch (error) {
+    reportPlatformOpRejected(App, error, 'clone.ownerRejected');
     return value;
   }
 }
@@ -245,7 +258,8 @@ export function cleanGroupViaPlatform(App: unknown, group: unknown): boolean {
     if (!fn) return false;
     fn(group);
     return true;
-  } catch {
+  } catch (error) {
+    reportPlatformOpRejected(App, error, 'cleanGroup.ownerRejected');
     return false;
   }
 }
@@ -260,7 +274,8 @@ export function pruneCachesSafeViaPlatform(App: unknown, rootNode?: unknown): bo
     if (!fn) return false;
     fn(rootNode);
     return true;
-  } catch {
+  } catch (error) {
+    reportPlatformOpRejected(App, error, 'pruneCachesSafe.ownerRejected');
     return false;
   }
 }
@@ -275,7 +290,8 @@ export function afterPaintViaPlatform(App: unknown, cb: () => void): boolean {
     if (!fn) return false;
     fn(cb);
     return true;
-  } catch {
+  } catch (error) {
+    reportPlatformOpRejected(App, error, 'afterPaint.ownerRejected');
     return false;
   }
 }
@@ -288,7 +304,8 @@ export function hash32ViaPlatform(App: unknown, value: unknown): string | null {
   try {
     const fn = getPlatformHash32(App);
     return fn ? fn(value) : null;
-  } catch {
+  } catch (error) {
+    reportPlatformOpRejected(App, error, 'hash32.ownerRejected');
     return null;
   }
 }

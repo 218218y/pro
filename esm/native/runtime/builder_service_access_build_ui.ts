@@ -1,6 +1,7 @@
 import type { AppContainer, UiSnapshotLike, UnknownRecord } from '../../../types';
 
 import { asRecord } from './record.js';
+import { reportError } from './errors.js';
 import { ensureBuilderService, getBuilderService } from './builder_service_access_shared.js';
 
 export function getBuilderBuildUi(App: unknown): UiSnapshotLike | null {
@@ -28,7 +29,12 @@ export function clearBuilderBuildUi(App: unknown): boolean {
     if (!builder || !Object.prototype.hasOwnProperty.call(builder, 'buildUi')) return false;
     builder.buildUi = null;
     return true;
-  } catch {
+  } catch (error) {
+    reportError(App, error, {
+      where: 'native/runtime/builder_service_access',
+      op: 'builder.buildUi.clear.ownerRejected',
+      fatal: false,
+    });
     return false;
   }
 }

@@ -43,7 +43,7 @@ export async function importSystemSettings(
           onRequestError: message =>
             buildSettingsBackupActionErrorResult('import', message, 'ייבוא הגדרות נכשל'),
           runConfirmed: async () => {
-            const readResult = await readBackupFileTextSafe(file);
+            const readResult = await readBackupFileTextSafe(App, file);
             if (readResult.ok === false) {
               return buildSettingsBackupImportFailureResult(readResult.reason, readResult.message);
             }

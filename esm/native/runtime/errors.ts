@@ -106,7 +106,12 @@ export function toErrorMessage(err: unknown): string {
   }
 }
 
-export function reportError(App: unknown, err: unknown, ctx?: unknown, opts?: ReportErrorOptions | null): void {
+export function reportError(
+  App: unknown,
+  err: unknown,
+  ctx?: unknown,
+  opts?: ReportErrorOptions | null
+): void {
   try {
     const rep = getReportError(App);
     if (rep) {

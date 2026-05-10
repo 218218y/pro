@@ -48,7 +48,11 @@ test('project io access reports loadProjectData owner rejection while preserving
 
   assert.deepEqual(result, { ok: false, reason: 'error', message: 'installed project loader rejected' });
   assert.equal(reports.length, 1);
-  assertProjectIoReport(reports[0], /installed project loader rejected/, 'projectIO.loadProjectData.resultOwnerRejected');
+  assertProjectIoReport(
+    reports[0],
+    /installed project loader rejected/,
+    'projectIO.loadProjectData.resultOwnerRejected'
+  );
 });
 
 test('project io access reports handleFileLoad owner rejection while preserving async error-result recovery', async () => {
@@ -62,7 +66,11 @@ test('project io access reports handleFileLoad owner rejection while preserving 
 
   assert.deepEqual(result, { ok: false, reason: 'error', message: 'installed file loader rejected' });
   assert.equal(reports.length, 1);
-  assertProjectIoReport(reports[0], /installed file loader rejected/, 'projectIO.handleFileLoad.resultOwnerRejected');
+  assertProjectIoReport(
+    reports[0],
+    /installed file loader rejected/,
+    'projectIO.handleFileLoad.resultOwnerRejected'
+  );
 });
 
 test('project io access reports nullable recovery seams instead of swallowing owner rejection', () => {
@@ -83,11 +91,19 @@ test('project io access reports nullable recovery seams instead of swallowing ow
   assert.equal(restoreProjectSessionViaService(App), undefined);
 
   assert.equal(reports.length, 3);
-  assertProjectIoReport(reports[0], /installed export rejected/, 'projectIO.exportCurrentProject.ownerRejected');
+  assertProjectIoReport(
+    reports[0],
+    /installed export rejected/,
+    'projectIO.exportCurrentProject.ownerRejected'
+  );
   assertProjectIoReport(
     reports[1],
     /installed default project rejected/,
     'projectIO.buildDefaultProjectData.ownerRejected'
   );
-  assertProjectIoReport(reports[2], /installed restore rejected/, 'projectIO.restoreLastSession.ownerRejected');
+  assertProjectIoReport(
+    reports[2],
+    /installed restore rejected/,
+    'projectIO.restoreLastSession.ownerRejected'
+  );
 });

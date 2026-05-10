@@ -212,7 +212,10 @@ test('render interior sketch rods use the installed rod owner when it succeeds a
 
   assert.equal(reports.length, 1);
   assert.equal(reports[0].op, 'applyInteriorSketchExtras.rods.installedOwnerRejected');
-  assert.match(String(reports[0].error?.message || reports[0].error), /installed rod owner rejected sketch rod/);
+  assert.match(
+    String(reports[0].error?.message || reports[0].error),
+    /installed rod owner rejected sketch rod/
+  );
   assert.equal(added.length, 1);
   assert.equal(added[0]?.userData?.partId, 'all_rods');
   assert.equal(added[0]?.userData?.__wpType, 'sketchRod');

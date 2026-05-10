@@ -1,7 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ensureMetaActions, getActionFn, saveProjectResultViaActions } from '../esm/native/runtime/actions_access.ts';
+import {
+  ensureMetaActions,
+  getActionFn,
+  saveProjectResultViaActions,
+} from '../esm/native/runtime/actions_access.ts';
 
 test('actions_access hydrates missing meta stubs without replacing real handlers and keeps owner binding intact', () => {
   const calls: Array<{ source?: string }> = [];

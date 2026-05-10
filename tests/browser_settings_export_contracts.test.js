@@ -127,7 +127,7 @@ test('settings and browser surfaces keep typed readers instead of loose bag cast
       /from ['\"]\.\/settings_backup_import_support\.js['\"]/,
       /from ['\"]\.\/settings_backup_runtime\.js['\"]/,
       /const file = getImportFile\(event\);/,
-      /readBackupFileTextSafe\(file\)/,
+      /readBackupFileTextSafe\(App, file\)/,
     ],
     'settingsBackupImport'
   );
@@ -202,7 +202,7 @@ test('settings and browser surfaces keep typed readers instead of loose bag cast
     assert,
     settingsBackupImportSupport,
     [
-      /export async function readBackupFileTextSafe\(file: File\): Promise<ReadBackupFileTextResult> \{/,
+      /export async function readBackupFileTextSafe\([\s\S]*App: AppContainer,[\s\S]*file: File[\s\S]*\): Promise<ReadBackupFileTextResult> \{/,
       /readFileTextResultViaBrowser\(file, \{/,
       /export function mergeImportedSavedColors\(/,
       /export function applyImportedStorageSettings\(/,

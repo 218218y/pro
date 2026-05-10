@@ -12,6 +12,7 @@ import type {
   RenderOpsLike,
 } from '../../../types';
 
+import { reportError } from './errors.js';
 import { getBuilderService, readBuilderRecord } from './builder_service_access_shared.js';
 
 export function getBuilderHandlesService(App: unknown): BuilderHandlesServiceLike | null {
@@ -59,7 +60,12 @@ export function finalizeBuilderRegistry(App: unknown): boolean {
     if (!fn) return false;
     fn.call(registry);
     return true;
-  } catch {
+  } catch (error) {
+    reportError(App, error, {
+      where: 'native/runtime/builder_service_access',
+      op: 'builder.registry.finalize.ownerRejected',
+      fatal: false,
+    });
     return false;
   }
 }

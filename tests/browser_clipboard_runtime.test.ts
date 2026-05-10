@@ -86,7 +86,6 @@ test('writeClipboardItemsResultViaBrowser preserves thrown clipboard messages', 
   assert.deepEqual(result, { ok: false, reason: 'error', message: 'clipboard write exploded' });
 });
 
-
 test('writeClipboardTextResultViaBrowser reports clipboard owner failures through diagnostics without changing result', async () => {
   const reports: Array<{ error: unknown; ctx: unknown }> = [];
   const result = await writeClipboardTextResultViaBrowser(

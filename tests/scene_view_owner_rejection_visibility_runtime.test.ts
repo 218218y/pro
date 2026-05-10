@@ -1,7 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { updateSceneLightsViaService, updateSceneModeViaService } from '../esm/native/services/scene_view_access.ts';
+import {
+  updateSceneLightsViaService,
+  updateSceneModeViaService,
+} from '../esm/native/services/scene_view_access.ts';
 import { reportSceneViewNonFatal } from '../esm/native/services/scene_view_shared.ts';
 
 function makeApp(sceneView: Record<string, unknown> = {}) {

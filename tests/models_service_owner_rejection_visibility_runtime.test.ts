@@ -60,7 +60,11 @@ test('models service access reports owner rejection for read/load seams while pr
   assert.equal(reports.length, 3);
   assertModelsReport(reports[0], /installed models load rejected/, 'models.ensureLoaded.ownerRejected');
   assertModelsReport(reports[1], /installed models export rejected/, 'models.exportUserModels.ownerRejected');
-  assertModelsReport(reports[2], /installed models merge rejected/, 'models.mergeImportedModels.ownerRejected');
+  assertModelsReport(
+    reports[2],
+    /installed models merge rejected/,
+    'models.mergeImportedModels.ownerRejected'
+  );
 });
 
 test('models service access reports owner rejection for mutation seams while preserving false recovery', () => {
@@ -73,7 +77,10 @@ test('models service access reports owner rejection for mutation seams while pre
     },
   });
 
-  assert.equal(setModelNormalizerViaService(App, () => null), false);
+  assert.equal(
+    setModelNormalizerViaService(App, () => null),
+    false
+  );
   assert.equal(setPresetModelsViaService(App, [{ id: 'preset-a', name: 'Preset A' }] as any), false);
 
   assert.equal(reports.length, 2);

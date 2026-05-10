@@ -364,7 +364,10 @@ function runtimeDiagnosticKey(item) {
 function mergeRuntimeDiagnostics(existing, incoming, limit = 60) {
   const merged = [];
   const seen = new Set();
-  for (const item of [...(Array.isArray(existing) ? existing : []), ...(Array.isArray(incoming) ? incoming : [])]) {
+  for (const item of [
+    ...(Array.isArray(existing) ? existing : []),
+    ...(Array.isArray(incoming) ? incoming : []),
+  ]) {
     const key = runtimeDiagnosticKey(item);
     if (seen.has(key)) continue;
     seen.add(key);

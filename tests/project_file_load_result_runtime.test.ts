@@ -57,6 +57,11 @@ test('project file ingress preserves read/load failure causes instead of flatten
   const target = { files: [file], value: 'C:/fake/project.json' };
   const App = {
     services: {
+      errors: {
+        report() {
+          return undefined;
+        },
+      },
       projectIO: {
         loadProjectData() {
           throw new Error('project loader exploded');
@@ -68,4 +73,28 @@ test('project file ingress preserves read/load failure causes instead of flatten
   const result = await loadProjectFileInput(App, { target } as never);
   assert.deepEqual(result, { ok: false, reason: 'error', message: 'project loader exploded' });
   assert.equal(target.value, '');
+});
+
+test('project file ingress reports browser read failures through app diagnostics', async () => {
+  const reports: Array<{ error: unknown; ctx: any }> = [];
+  const unreadableFile = createNamedBlob('broken.json', '{"settings":{}}');
+  (unreadableFile as any).text = async () => {
+    throw new Error('project blob read rejected');
+  };
+  const App: any = {
+    services: {
+      errors: {
+        report(error: unknown, ctx?: unknown) {
+          reports.push({ error, ctx });
+        },
+      },
+    },
+  };
+
+  const result = await loadProjectFileInput(App, unreadableFile);
+  assert.deepEqual(result, { ok: false, reason: 'error', message: 'project blob read rejected' });
+  assert.equal(reports.length, 1);
+  assert.equal(reports[0].ctx.where, 'native/runtime/browser_file_read');
+  assert.equal(reports[0].ctx.op, 'readFileText.blobTextRejected');
+  assert.equal(reports[0].ctx.fatal, false);
 });

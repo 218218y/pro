@@ -1,6 +1,7 @@
 import type { UiSnapshotLike, UnknownRecord } from '../../../types';
 
 import { asRecord } from './record.js';
+import { reportError } from './errors.js';
 import {
   cloneBuilderRequestMeta,
   didBuilderRequestAccept,
@@ -58,7 +59,12 @@ export function requestBuilderBuildRuntime(
     if (!fn) return false;
     const result = Reflect.apply(fn, builder, [uiOverride, cloneBuilderRequestMeta(meta)]);
     return didBuilderRequestAccept(result);
-  } catch {
+  } catch (error) {
+    reportError(App, error, {
+      where: 'native/runtime/builder_service_access',
+      op: 'builder.requestBuild.ownerRejected',
+      fatal: false,
+    });
     return false;
   }
 }

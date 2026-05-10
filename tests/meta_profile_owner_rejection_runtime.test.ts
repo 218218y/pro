@@ -32,7 +32,10 @@ test('meta profile access reports installed owner rejection before using local c
   assert.equal(meta.uiOnly, true);
   assert.equal(meta.source, 'caller');
   assert.equal(reports.length, 1);
-  assert.match(String((reports[0].error as Error)?.message || reports[0].error), /installed meta uiOnly rejected/);
+  assert.match(
+    String((reports[0].error as Error)?.message || reports[0].error),
+    /installed meta uiOnly rejected/
+  );
   assert.equal(reports[0].ctx.where, 'native/runtime/meta_profiles_access');
   assert.equal(reports[0].ctx.op, 'meta.react:ui.ownerRejected');
   assert.equal(reports[0].ctx.fatal, false);
@@ -61,7 +64,10 @@ test('meta merge reports installed owner rejection and preserves caller defaults
   assert.equal(meta.noHistory, true);
   assert.equal(meta.source, 'save:commit');
   assert.equal(reports.length, 1);
-  assert.match(String((reports[0].error as Error)?.message || reports[0].error), /installed meta merge rejected/);
+  assert.match(
+    String((reports[0].error as Error)?.message || reports[0].error),
+    /installed meta merge rejected/
+  );
   assert.equal(reports[0].ctx.where, 'native/runtime/meta_profiles_access');
   assert.equal(reports[0].ctx.op, 'meta.save:commit.ownerRejected');
   assert.equal(reports[0].ctx.fatal, false);

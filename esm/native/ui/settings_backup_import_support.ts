@@ -37,8 +37,9 @@ import {
   writeStorageArray,
 } from './settings_backup_support.js';
 
-async function readBackupFileText(file: File): Promise<string> {
+async function readBackupFileText(App: AppContainer, file: File): Promise<string> {
   const result = await readFileTextResultViaBrowser(file, {
+    app: App,
     unavailableMessage: '[WardrobePro] Failed reading settings backup file.',
     readFailureMessage: '[WardrobePro] Failed reading settings backup file.',
   });
@@ -48,9 +49,12 @@ async function readBackupFileText(file: File): Promise<string> {
   return result.value;
 }
 
-export async function readBackupFileTextSafe(file: File): Promise<ReadBackupFileTextResult> {
+export async function readBackupFileTextSafe(
+  App: AppContainer,
+  file: File
+): Promise<ReadBackupFileTextResult> {
   try {
-    const text = await readBackupFileText(file);
+    const text = await readBackupFileText(App, file);
     return { ok: true, text };
   } catch (error) {
     const message = normalizeUnknownError(

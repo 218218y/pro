@@ -114,9 +114,14 @@ test('platform access runtime: reportError can suppress console fallback for exp
     calls.push(args);
   };
   try {
-    reportError({}, new Error('expected adapter failure'), { where: 'unit/browser', fatal: false }, {
-      consoleFallback: false,
-    });
+    reportError(
+      {},
+      new Error('expected adapter failure'),
+      { where: 'unit/browser', fatal: false },
+      {
+        consoleFallback: false,
+      }
+    );
   } finally {
     console.warn = originalWarn;
   }

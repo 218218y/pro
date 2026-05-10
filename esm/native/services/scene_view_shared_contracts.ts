@@ -79,12 +79,7 @@ export type SceneViewCompatDefaults = {
 
 export type RootStateWithStoreUi = RootStateLike & { storeUi?: unknown };
 
-export function reportSceneViewNonFatal(
-  App: unknown,
-  op: string,
-  err: unknown,
-  throttleMs = 4000
-): void {
+export function reportSceneViewNonFatal(App: unknown, op: string, err: unknown, throttleMs = 4000): void {
   const now = Date.now();
   const msg = getNormalizedErrorHead(err, 'Unexpected error');
   const key = `${op}::${msg}`;
