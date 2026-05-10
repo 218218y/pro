@@ -12,7 +12,11 @@ class FakeMeshBasicMaterial {
 
 class FakeBoxGeometry {
   userData: Record<string, unknown> = {};
-  constructor(public width: number, public height: number, public depth: number) {}
+  constructor(
+    public width: number,
+    public height: number,
+    public depth: number
+  ) {}
 }
 
 class FakeMesh {
@@ -30,7 +34,10 @@ class FakeMesh {
     },
   };
 
-  constructor(public geometry: unknown, public material: unknown) {}
+  constructor(
+    public geometry: unknown,
+    public material: unknown
+  ) {}
 
   add(child: unknown) {
     this.children.push(child);
@@ -93,11 +100,7 @@ test('stack split decorative separator renders an overhanging slab plus front li
   assert.ok(Number(calls[1][1]) > 0.04, 'front lip should be tall enough to make the separator visible');
 
   const apronMesh = calls[1][8] as FakeMesh;
-  assert.equal(
-    apronMesh.children.length,
-    4,
-    'front lip should get a subtle edge accent border'
-  );
+  assert.equal(apronMesh.children.length, 4, 'front lip should get a subtle edge accent border');
   for (const child of apronMesh.children as FakeMesh[]) {
     assert.equal(child.userData.partId, 'stack_split_separator');
     assert.equal(child.userData.__wpStackSplitSeparatorAccent, true);

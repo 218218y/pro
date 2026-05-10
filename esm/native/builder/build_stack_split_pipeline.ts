@@ -41,7 +41,8 @@ export function buildStackSplitLowerUnit(args: BuildStackSplitLowerUnitArgs): Bu
   });
   addStackSplitDecorativeSeparatorIfNeeded({ buildArgs: args, prepared });
 
-  const groupChildren = prepared.group && Array.isArray(prepared.group.children) ? prepared.group.children : null;
+  const groupChildren =
+    prepared.group && Array.isArray(prepared.group.children) ? prepared.group.children : null;
   const upperStartIndex = groupChildren ? groupChildren.length : -1;
 
   return {
