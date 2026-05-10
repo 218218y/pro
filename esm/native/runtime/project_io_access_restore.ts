@@ -11,6 +11,7 @@ import {
   buildAutosaveRestoreLoadOpts,
   buildProjectIoLoadFailureMessage,
   getProjectIoServiceMaybe,
+  reportProjectIoAccessNonFatal,
 } from './project_io_access_shared.js';
 import { loadProjectDataActionResultViaService } from './project_io_access_load.js';
 
@@ -105,7 +106,8 @@ export function restoreProjectSessionViaService(App: unknown): unknown {
     const svc = getProjectIoServiceMaybe(App);
     if (svc && typeof svc.restoreLastSession === 'function') return svc.restoreLastSession();
     return restoreProjectSessionActionResultViaService(App);
-  } catch {
+  } catch (error) {
+    reportProjectIoAccessNonFatal(App, 'projectIO.restoreLastSession.ownerRejected', error);
     return undefined;
   }
 }

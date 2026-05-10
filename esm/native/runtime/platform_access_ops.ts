@@ -6,6 +6,7 @@ import type {
   RenderFollowThroughDebugStatsLike,
 } from '../../../types';
 
+import { getErrorsServiceMaybe } from './errors_access.js';
 import { bindMethod, getPlatformRoot, getPlatformService, readUtil } from './platform_access_shared.js';
 import {
   cloneRenderFollowThroughDebugStats,
@@ -54,7 +55,8 @@ export type PlatformActivityRenderTouchResult = PlatformRenderFollowThroughResul
 export function getPlatformReportError(App: unknown): ((error: unknown, ctx?: unknown) => unknown) | null {
   return (
     bindMethod<[unknown, unknown?], unknown>(getPlatformService(App), 'reportError') ??
-    bindMethod<[unknown, unknown?], unknown>(getPlatformRoot(App), 'reportError')
+    bindMethod<[unknown, unknown?], unknown>(getPlatformRoot(App), 'reportError') ??
+    bindMethod<[unknown, unknown?], unknown>(getErrorsServiceMaybe(App), 'report')
   );
 }
 

@@ -6,6 +6,7 @@ import type {
 } from '../../../types';
 
 import { asRecord, createNullRecord } from './record.js';
+import { reportErrorViaPlatform } from './platform_access_ops.js';
 import { ensureServiceSlot, getServiceSlotMaybe } from './services_root_access.js';
 import {
   normalizeProjectLoadActionResult,
@@ -17,6 +18,21 @@ import type { ProjectRestoreActionResult } from './project_recovery_action_resul
 type ProjectIoLoadFailureLike = ProjectLoadFailureReason | string;
 
 export type { ProjectIoLoadFailureLike };
+
+
+export function reportProjectIoAccessNonFatal(App: unknown, op: string, error: unknown): void {
+  const reported = reportErrorViaPlatform(App, error, {
+    where: 'native/runtime/project_io_access',
+    op,
+    fatal: false,
+  });
+  if (reported) return;
+  try {
+    console.error(`[WardrobePro][project_io_access] ${op}`, error);
+  } catch {
+    // Diagnostics must never become the failure path.
+  }
+}
 
 export function getProjectIoServiceMaybe(App: unknown): ProjectIoServiceLike | null {
   try {

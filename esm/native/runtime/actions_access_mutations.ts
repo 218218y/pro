@@ -10,6 +10,7 @@ import type {
   UnknownRecord,
 } from '../../../types';
 
+import { reportErrorViaPlatform } from './platform_access.js';
 import { getSingleSlicePatchRoute } from './slice_write_access.js';
 import { readPatchPayload } from './slice_write_access_shared.js';
 import { ensureActionsRoot, getActionFn, getNamespacedActionFn } from './actions_access_core.js';
@@ -290,6 +291,11 @@ export function saveProjectResultViaActions(
   try {
     return normalizeProjectSaveActionResult(fn(), fallbackReason);
   } catch (error) {
+    reportErrorViaPlatform(App, error, {
+      where: 'native/runtime/actions_access',
+      op: 'actions.saveProject.ownerRejected',
+      fatal: false,
+    });
     return buildProjectSaveActionErrorResult(error, errorFallback);
   }
 }

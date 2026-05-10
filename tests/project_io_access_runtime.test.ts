@@ -42,6 +42,7 @@ test('project io access preserves concrete load failures through the shared load
 
   const App = {} as any;
   const svc = ensureProjectIoService(App) as any;
+  App.services.platform = { reportError() {} };
   svc.loadProjectData = () => ({ ok: false, reason: 'invalid', message: 'bad snapshot' });
   assert.deepEqual(loadProjectDataResultViaService(App, { settings: {} }, undefined, 'load'), {
     ok: false,
@@ -77,6 +78,7 @@ test('project io access preserves concrete legacy handleFileLoad failures throug
 
   const App = {} as any;
   const svc = ensureProjectIoService(App) as any;
+  App.services.platform = { reportError() {} };
   svc.handleFileLoad = async () => ({ ok: false, reason: 'invalid', message: 'bad file payload' });
   assert.deepEqual(await handleProjectFileLoadResultViaService(App, { name: 'demo.json' }, 'load'), {
     ok: false,
@@ -223,6 +225,7 @@ test('project io access centralizes autosave restore action results for runtime/
 test('project io access preserves concrete restore-load failures through the autosave restore seam', () => {
   const App = {} as any;
   const svc = ensureProjectIoService(App) as any;
+  App.services.platform = { reportError() {} };
   const autosavePayload = {
     ok: true,
     data: { settings: { width: 120 } },

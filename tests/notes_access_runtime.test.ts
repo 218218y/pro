@@ -77,3 +77,52 @@ test('notes draw mode subscriptions publish canonical transitions without duplic
   assert.equal(setNotesScreenDrawMode(App, true), true);
   assert.deepEqual(seen, [true, false]);
 });
+
+test('notes access reports owner rejections while preserving local recovery values', () => {
+  const reports: Array<{ error: unknown; ctx: any }> = [];
+  const App = {
+    services: {
+      errors: {
+        report: (error: unknown, ctx?: unknown) => reports.push({ error, ctx }),
+      },
+      notes: {
+        getForSave: () => {
+          throw new Error('capture failed');
+        },
+        restoreFromSave: () => {
+          throw new Error('restore failed');
+        },
+        persist: () => {
+          throw new Error('persist failed');
+        },
+        sanitize: () => {
+          throw new Error('sanitize failed');
+        },
+      },
+      uiNotes: {
+        exitScreenDrawMode: () => {
+          throw new Error('ui exit failed');
+        },
+      },
+    },
+  } as any;
+
+  assert.deepEqual(captureSavedNotesViaService(App), []);
+  assert.equal(restoreNotesFromSaveViaService(App, [{ id: 'x' }]), false);
+  assert.equal(persistNotesViaService(App, { source: 'test' } as any), false);
+  assert.equal(sanitizeNotesHtmlViaService(App, '<b>x</b>'), '<b>x</b>');
+  assert.equal(exitNotesDrawModeViaService(App), true);
+
+  assert.deepEqual(
+    reports.map(report => report.ctx?.op),
+    [
+      'notes.getForSave.ownerRejected',
+      'notes.restoreFromSave.ownerRejected',
+      'notes.persist.ownerRejected',
+      'notes.sanitize.ownerRejected',
+      'notes.ui.exitScreenDrawMode.ownerRejected',
+    ]
+  );
+  assert.ok(reports.every(report => report.ctx?.where === 'native/runtime/notes_access'));
+  assert.ok(reports.every(report => report.ctx?.fatal === false));
+});

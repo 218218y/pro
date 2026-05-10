@@ -17,6 +17,7 @@ import { asRecord } from './record.js';
 import {
   buildProjectIoLoadFailureMessage,
   getProjectIoServiceMaybe,
+  reportProjectIoAccessNonFatal,
   normalizeProjectIoLoadResult,
   normalizeProjectLoadActionResultViaProjectIo,
   type ProjectIoLoadFailureLike,
@@ -45,7 +46,8 @@ export function exportProjectViaService(
     return svc && typeof svc.exportCurrentProject === 'function'
       ? svc.exportCurrentProject(meta ?? undefined)
       : undefined;
-  } catch {
+  } catch (error) {
+    reportProjectIoAccessNonFatal(App, 'projectIO.exportCurrentProject.ownerRejected', error);
     return undefined;
   }
 }
@@ -64,6 +66,7 @@ export function exportProjectResultViaService(
     const exported = normalizeProjectExportResult(exportCurrentProject(meta ?? undefined));
     return exported ? { ok: true, exported } : { ok: false, reason: 'invalid' };
   } catch (error) {
+    reportProjectIoAccessNonFatal(App, 'projectIO.exportCurrentProject.resultOwnerRejected', error);
     return buildNormalizedErrorResult('error', error, errorFallback);
   }
 }
@@ -77,7 +80,8 @@ export function handleProjectFileLoadViaService(App: unknown, eventOrFile: unkno
   try {
     const handleFileLoad = getProjectIoHandleFileLoadFn(App);
     return handleFileLoad ? handleFileLoad(eventOrFile) : undefined;
-  } catch {
+  } catch (error) {
+    reportProjectIoAccessNonFatal(App, 'projectIO.handleFileLoad.ownerRejected', error);
     return undefined;
   }
 }
@@ -96,6 +100,7 @@ export async function handleProjectFileLoadResultViaService(
   try {
     return normalizeProjectIoLoadResult(await handleFileLoad(eventOrFile), fallbackReason);
   } catch (error) {
+    reportProjectIoAccessNonFatal(App, 'projectIO.handleFileLoad.resultOwnerRejected', error);
     return buildNormalizedErrorResult('error', error, errorFallback);
   }
 }
@@ -114,6 +119,7 @@ export async function handleProjectFileLoadActionResultViaService(
   try {
     return normalizeProjectLoadActionResultViaProjectIo(await handleFileLoad(eventOrFile), fallbackReason);
   } catch (error) {
+    reportProjectIoAccessNonFatal(App, 'projectIO.handleFileLoad.actionOwnerRejected', error);
     return buildProjectLoadActionErrorResult(error, errorFallback);
   }
 }
@@ -131,7 +137,8 @@ export function loadProjectDataViaService(
   try {
     const loadProjectData = getProjectIoLoadProjectDataFn(App);
     return loadProjectData ? loadProjectData(data, opts) : undefined;
-  } catch {
+  } catch (error) {
+    reportProjectIoAccessNonFatal(App, 'projectIO.loadProjectData.ownerRejected', error);
     return undefined;
   }
 }
@@ -151,6 +158,7 @@ export function loadProjectDataResultViaService(
   try {
     return normalizeProjectIoLoadResult(loadProjectData(data, opts), fallbackReason);
   } catch (error) {
+    reportProjectIoAccessNonFatal(App, 'projectIO.loadProjectData.resultOwnerRejected', error);
     return buildNormalizedErrorResult('error', error, errorFallback);
   }
 }
@@ -170,6 +178,7 @@ export function loadProjectDataActionResultViaService(
   try {
     return normalizeProjectLoadActionResultViaProjectIo(loadProjectData(data, opts), fallbackReason);
   } catch (error) {
+    reportProjectIoAccessNonFatal(App, 'projectIO.loadProjectData.actionOwnerRejected', error);
     return buildProjectLoadActionErrorResult(error, errorFallback);
   }
 }
@@ -222,7 +231,8 @@ export function buildDefaultProjectDataViaService(App: unknown): ProjectDataLike
   try {
     const buildDefaultProjectData = getProjectIoBuildDefaultProjectDataFn(App);
     return buildDefaultProjectData ? buildDefaultProjectData() || null : null;
-  } catch {
+  } catch (error) {
+    reportProjectIoAccessNonFatal(App, 'projectIO.buildDefaultProjectData.ownerRejected', error);
     return null;
   }
 }

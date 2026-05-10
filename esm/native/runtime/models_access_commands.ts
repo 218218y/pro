@@ -2,6 +2,21 @@ import type { ModelsLoadOptions, ModelsMergeResult, ModelsNormalizer, SavedModel
 
 import { readMergeResult, readOneArgUnknownFn, readSavedModelList } from './models_access_shared.js';
 import { getModelsServiceMaybe, getModelsServiceSourceMaybe } from './models_access_service.js';
+import { reportErrorViaPlatform } from './platform_access_ops.js';
+
+function reportModelsAccessNonFatal(App: unknown, op: string, error: unknown): void {
+  const reported = reportErrorViaPlatform(App, error, {
+    where: 'native/runtime/models_access',
+    op,
+    fatal: false,
+  });
+  if (reported) return;
+  try {
+    console.error(`[WardrobePro][models_access] ${op}`, error);
+  } catch {
+    // Diagnostics must never become the failure path.
+  }
+}
 
 export function ensureModelsLoadedViaService(App: unknown, opts?: ModelsLoadOptions): boolean {
   try {
@@ -10,8 +25,8 @@ export function ensureModelsLoadedViaService(App: unknown, opts?: ModelsLoadOpti
       svc.ensureLoaded(opts);
       return true;
     }
-  } catch {
-    // ignore
+  } catch (error) {
+    reportModelsAccessNonFatal(App, 'models.ensureLoaded.ownerRejected', error);
   }
   return false;
 }
@@ -37,8 +52,8 @@ export function exportUserModelsViaService(App: unknown): SavedModelLike[] {
     if (svc && typeof svc.exportUserModels === 'function') {
       return readSavedModelList(svc.exportUserModels());
     }
-  } catch {
-    // ignore
+  } catch (error) {
+    reportModelsAccessNonFatal(App, 'models.exportUserModels.ownerRejected', error);
   }
   return [];
 }
@@ -49,8 +64,8 @@ export function mergeImportedModelsViaService(App: unknown, list: SavedModelLike
     if (svc && typeof svc.mergeImportedModels === 'function') {
       return readMergeResult(svc.mergeImportedModels(readSavedModelList(list)));
     }
-  } catch {
-    // ignore
+  } catch (error) {
+    reportModelsAccessNonFatal(App, 'models.mergeImportedModels.ownerRejected', error);
   }
   return { added: 0, updated: 0 };
 }
@@ -77,8 +92,8 @@ export function setModelNormalizerViaService(App: unknown, normalizer: ModelsNor
       svc.setNormalizer(normalizer);
       return true;
     }
-  } catch {
-    // ignore
+  } catch (error) {
+    reportModelsAccessNonFatal(App, 'models.setNormalizer.ownerRejected', error);
   }
   return false;
 }
@@ -90,8 +105,8 @@ export function setPresetModelsViaService(App: unknown, presets: SavedModelLike[
       svc.setPresets(readSavedModelList(presets));
       return true;
     }
-  } catch {
-    // ignore
+  } catch (error) {
+    reportModelsAccessNonFatal(App, 'models.setPresets.ownerRejected', error);
   }
   return false;
 }

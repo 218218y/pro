@@ -1,5 +1,6 @@
 import type { ActionMetaLike } from '../../../types';
 
+import { reportErrorViaPlatform } from './platform_access.js';
 import {
   readNotesGetForSave,
   readNotesPersist,
@@ -14,6 +15,14 @@ import {
   setNotesScreenDrawMode,
 } from './notes_access_services.js';
 
+function reportNotesOwnerRejection(App: unknown, op: string, error: unknown): void {
+  reportErrorViaPlatform(App, error, {
+    where: 'native/runtime/notes_access',
+    op,
+    fatal: false,
+  });
+}
+
 export function getNotesForSaveFn(App: unknown): (() => unknown[]) | null {
   try {
     const svc = getNotesServiceMaybe(App);
@@ -27,7 +36,8 @@ export function captureSavedNotesViaService(App: unknown): unknown[] {
   try {
     const getForSave = getNotesForSaveFn(App);
     return getForSave ? getForSave() : [];
-  } catch {
+  } catch (error) {
+    reportNotesOwnerRejection(App, 'notes.getForSave.ownerRejected', error);
     return [];
   }
 }
@@ -47,7 +57,8 @@ export function restoreNotesFromSaveViaService(App: unknown, savedNotes: unknown
     if (!restore) return false;
     restore(savedNotes);
     return true;
-  } catch {
+  } catch (error) {
+    reportNotesOwnerRejection(App, 'notes.restoreFromSave.ownerRejected', error);
     return false;
   }
 }
@@ -60,8 +71,8 @@ export function exitNotesDrawModeViaService(App: unknown): boolean {
       exitScreenDrawMode();
       return true;
     }
-  } catch {
-    // ignore
+  } catch (error) {
+    reportNotesOwnerRejection(App, 'notes.ui.exitScreenDrawMode.ownerRejected', error);
   }
 
   try {
@@ -71,8 +82,8 @@ export function exitNotesDrawModeViaService(App: unknown): boolean {
       onExitDrawMode();
       return true;
     }
-  } catch {
-    // ignore
+  } catch (error) {
+    reportNotesOwnerRejection(App, 'notes.runtime.onExitDrawMode.ownerRejected', error);
   }
 
   return setNotesScreenDrawMode(App, false);
@@ -93,7 +104,8 @@ export function persistNotesViaService(App: unknown, meta?: ActionMetaLike): boo
     if (!persist) return false;
     persist(meta);
     return true;
-  } catch {
+  } catch (error) {
+    reportNotesOwnerRejection(App, 'notes.persist.ownerRejected', error);
     return false;
   }
 }
@@ -112,7 +124,8 @@ export function sanitizeNotesHtmlViaService(App: unknown, html: unknown): string
     const text = typeof html === 'string' ? html : html == null ? '' : String(html);
     const sanitize = getNotesSanitizeFn(App);
     return sanitize ? sanitize(text) : text;
-  } catch {
+  } catch (error) {
+    reportNotesOwnerRejection(App, 'notes.sanitize.ownerRejected', error);
     return typeof html === 'string' ? html : html == null ? '' : String(html);
   }
 }

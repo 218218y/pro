@@ -90,6 +90,23 @@ test('platform access runtime: activity/report/render/canvas fall back to canoni
   ]);
 });
 
+test('platform access runtime: reportError falls back to installed errors surface before console-only fallback', () => {
+  const calls: any[] = [];
+  const App: any = {
+    services: {
+      errors: {
+        report: (err: unknown, ctx?: unknown) => calls.push(['errorsReport', err, ctx]),
+      },
+    },
+  };
+
+  assert.equal(reportErrorViaPlatform(App, new Error('owner rejected'), { where: 'unit', fatal: false }), true);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0][0], 'errorsReport');
+  assert.equal((calls[0][1] as Error).message, 'owner rejected');
+  assert.deepEqual(calls[0][2], { where: 'unit', fatal: false });
+});
+
 test('platform access runtime: perf helpers canonically own service perf flags', () => {
   const App: any = { services: { platform: {} } };
 
