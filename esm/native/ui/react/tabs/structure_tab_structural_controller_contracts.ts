@@ -15,6 +15,7 @@ export type StructureTabStructuralController = {
   setRaw: (key: StructureTabNumericKey, nextValue: number) => void;
   setStackSplitLowerLinkMode: (field: 'depth' | 'width' | 'doors', nextManual: boolean) => void;
   toggleStackSplit: () => void;
+  toggleStackSplitDecorativeSeparator: () => void;
   setBaseType: (next: 'plinth' | 'legs' | 'none') => void;
   setBaseLegStyle: (next: BaseLegStyle) => void;
   setBaseLegColor: (next: BaseLegColor) => void;
@@ -39,6 +40,7 @@ export type CreateStructureTabStructuralControllerArgs = {
   shouldShowHingeBtn: boolean;
   hingeDirection: boolean;
   stackSplitEnabled: boolean;
+  stackSplitDecorativeSeparatorEnabled: boolean;
   stackSplitLowerHeight: number;
   stackSplitLowerDepth: number;
   stackSplitLowerWidth: number;

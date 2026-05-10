@@ -156,6 +156,7 @@ export function buildDefaultProjectDataSnapshot(
       cornerDepth: ui.cornerDepth,
 
       stackSplitEnabled: !!ui.stackSplitEnabled,
+      stackSplitDecorativeSeparatorEnabled: !!ui.stackSplitEnabled && !!ui.stackSplitDecorativeSeparatorEnabled,
       stackSplitLowerHeight: readFiniteNumber(raw.stackSplitLowerHeight),
       stackSplitLowerDepth: readFiniteNumber(raw.stackSplitLowerDepth),
       stackSplitLowerWidth: readFiniteNumber(raw.stackSplitLowerWidth),

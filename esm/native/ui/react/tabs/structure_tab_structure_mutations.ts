@@ -13,5 +13,6 @@ export {
 export { commitStructureRawValue } from './structure_tab_structure_raw_mutations.js';
 export {
   setStackSplitLowerLinkModeValue,
+  toggleStackSplitDecorativeSeparatorState,
   toggleStackSplitState,
 } from './structure_tab_structure_stack_split_mutations.js';

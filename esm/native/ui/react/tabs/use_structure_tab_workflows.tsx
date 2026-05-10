@@ -166,6 +166,7 @@ export function useStructureTabWorkflows(args: UseStructureTabWorkflowsArgs): Us
     exitCellDimsMode,
     renderStackLinkBadge,
     toggleStackSplit: structuralController.toggleStackSplit,
+    toggleStackSplitDecorativeSeparator: structuralController.toggleStackSplitDecorativeSeparator,
     toggleLibraryMode,
     toggleLibraryUpperDoors,
     pickLibraryGlass,

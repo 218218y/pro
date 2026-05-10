@@ -32,6 +32,7 @@ export type StructureUiPatch = {
   structureSelect?: string;
   singleDoorPos?: SingleDoorPos | 'left';
   stackSplitEnabled?: boolean;
+  stackSplitDecorativeSeparatorEnabled?: boolean;
 };
 
 export function isRecord(value: unknown): value is UnknownRecord {

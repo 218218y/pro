@@ -36,6 +36,7 @@ export function createStackSplitLowerBuildContext(args: {
       isInternalDrawersEnabled: !!buildArgs.isInternalDrawersEnabled,
 
       stackSplitEnabled: !!buildArgs.stackSplitEnabled,
+      stackSplitDecorativeSeparatorEnabled: !!buildArgs.stackSplitDecorativeSeparatorEnabled,
       stackSplitActive: true,
       stackSplitLowerHeightCm: buildArgs.lowerHeightCm,
       stackSplitLowerDepthCm: buildArgs.lowerDepthCm,

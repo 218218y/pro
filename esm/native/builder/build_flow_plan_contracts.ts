@@ -29,6 +29,7 @@ export type BuildFlowPlan = {
   showHangerEnabled: boolean;
   showContentsEnabled: boolean;
   stackSplitEnabled: boolean;
+  stackSplitDecorativeSeparatorEnabled: boolean;
   splitActiveForBuild: boolean;
   lowerHeightCm: number;
   lowerDepthCm: number;
@@ -88,6 +89,7 @@ export type BuildFlowPlanInputs = Pick<
   | 'showHangerEnabled'
   | 'showContentsEnabled'
   | 'stackSplitEnabled'
+  | 'stackSplitDecorativeSeparatorEnabled'
   | 'splitActiveForBuild'
   | 'lowerHeightCm'
   | 'lowerDepthCm'

@@ -28,6 +28,7 @@ export type StructureTabBaseUiState = {
 
 export type StructureTabStackSplitUiState = {
   stackSplitEnabled: boolean;
+  stackSplitDecorativeSeparatorEnabled: boolean;
   stackSplitLowerHeight: number;
   stackSplitLowerDepthRaw: number;
   stackSplitLowerWidthRaw: number;

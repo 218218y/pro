@@ -135,6 +135,7 @@ export function createBuildFlowContext(args: BuildFlowContextFactoryArgs): Build
       isGroovesEnabled: !!plan.isGroovesEnabled,
       isInternalDrawersEnabled: !!plan.isInternalDrawersEnabled,
       stackSplitEnabled: !!plan.stackSplitEnabled,
+      stackSplitDecorativeSeparatorEnabled: !!plan.stackSplitDecorativeSeparatorEnabled,
       stackSplitActive: !!plan.splitActiveForBuild,
       stackSplitLowerHeightCm: plan.lowerHeightCm,
       stackSplitLowerDepthCm: plan.lowerDepthCm,

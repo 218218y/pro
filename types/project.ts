@@ -71,6 +71,7 @@ export interface ProjectSettingsLike extends UnknownRecord {
   boardMaterial?: BoardMaterial;
 
   stackSplitEnabled?: boolean;
+  stackSplitDecorativeSeparatorEnabled?: boolean;
   stackSplitLowerHeight?: number;
   stackSplitLowerWidth?: number;
   stackSplitLowerDepth?: number;

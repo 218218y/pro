@@ -82,6 +82,7 @@ export function useStructureTabViewStateState(app: AppContainer): StructureTabVi
 
   const {
     stackSplitEnabled,
+    stackSplitDecorativeSeparatorEnabled,
     stackSplitLowerHeight,
     stackSplitLowerDepthRaw,
     stackSplitLowerWidthRaw,
@@ -200,6 +201,7 @@ export function useStructureTabViewStateState(app: AppContainer): StructureTabVi
     cellDimsModeId,
     cellDimsEditActive,
     stackSplitEnabled,
+    stackSplitDecorativeSeparatorEnabled,
     stackSplitLowerHeight,
     stackSplitLowerDepthManual,
     stackSplitLowerWidthManual,

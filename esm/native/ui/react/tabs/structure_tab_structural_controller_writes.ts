@@ -9,6 +9,7 @@ import {
 import {
   commitStructureRawValue,
   setStackSplitLowerLinkModeValue,
+  toggleStackSplitDecorativeSeparatorState,
   toggleStackSplitState,
 } from './structure_tab_shared.js';
 import type {
@@ -25,6 +26,7 @@ export function createStructureTabStructuralWriteController(
   | 'setRaw'
   | 'setStackSplitLowerLinkMode'
   | 'toggleStackSplit'
+  | 'toggleStackSplitDecorativeSeparator'
   | 'setBaseType'
   | 'setBaseLegStyle'
   | 'setBaseLegColor'
@@ -112,6 +114,15 @@ export function createStructureTabStructuralWriteController(
         stackSplitLowerDepthManual: args.stackSplitLowerDepthManual,
         stackSplitLowerWidthManual: args.stackSplitLowerWidthManual,
         stackSplitLowerDoorsManual: args.stackSplitLowerDoorsManual,
+      });
+    },
+
+    toggleStackSplitDecorativeSeparator() {
+      toggleStackSplitDecorativeSeparatorState({
+        app: args.app,
+        meta: args.meta,
+        enabled: args.stackSplitDecorativeSeparatorEnabled,
+        stackSplitEnabled: args.stackSplitEnabled,
       });
     },
 

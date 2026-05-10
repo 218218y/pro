@@ -72,6 +72,7 @@ export function createDefaultState(opts?: { noneMode?: string }): RootStateLike 
       hasCornice: false,
       // Split wardrobe into 2 stacked units (lower has base + custom depth, upper has no base).
       stackSplitEnabled: false,
+      stackSplitDecorativeSeparatorEnabled: false,
       showContents: false,
 
       // View/UI toggles (defaults must match index_pro.html "checked" states)

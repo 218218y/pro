@@ -22,6 +22,8 @@ export function resolveBuildFlowPlanInputs(args: BuildFlowPlanInputsArgs): Build
   const uiState = readUiState(ui);
   const rawUi: UiRawInputsLike = uiState?.raw || {};
   const stackSplitEnabled = !!uiState?.stackSplitEnabled;
+  const stackSplitDecorativeSeparatorEnabled =
+    stackSplitEnabled && !!uiState?.stackSplitDecorativeSeparatorEnabled;
 
   const split = normalizeStackSplit({
     stackSplitEnabled,
@@ -68,6 +70,7 @@ export function resolveBuildFlowPlanInputs(args: BuildFlowPlanInputsArgs): Build
     showHangerEnabled: !!ui.showHanger,
     showContentsEnabled: !!ui.showContents,
     stackSplitEnabled,
+    stackSplitDecorativeSeparatorEnabled,
     splitActiveForBuild,
     lowerHeightCm,
     lowerDepthCm,

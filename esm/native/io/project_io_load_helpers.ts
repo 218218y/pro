@@ -172,6 +172,7 @@ export function buildProjectUiSnapshot(
     removeDoorsEnabled: !!toggles.removeDoors,
     hasCornice: !!toggles.addCornice,
     stackSplitEnabled: stackEnabled,
+    stackSplitDecorativeSeparatorEnabled: stackEnabled && !!settings.stackSplitDecorativeSeparatorEnabled,
     sketchMode: !!toggles.sketchMode,
     multiColorEnabled: !!toggles.multiColor,
     hingeDirection: !!toggles.hingeDirection,

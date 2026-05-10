@@ -10,6 +10,8 @@ export const STRUCTURE_LIBRARY_UPPER_DOORS_BUTTON_TEST_ID = 'structure-library-u
 export const STRUCTURE_LIBRARY_GLASS_BUTTON_GROUP_TEST_ID = 'structure-library-glass-buttons';
 export const STRUCTURE_STACK_SPLIT_SECTION_TEST_ID = 'structure-stack-split-section';
 export const STRUCTURE_STACK_SPLIT_MODE_BUTTON_TEST_ID = 'structure-stack-split-mode-button';
+export const STRUCTURE_STACK_SPLIT_DECORATIVE_SEPARATOR_BUTTON_TEST_ID =
+  'structure-stack-split-decorative-separator-button';
 
 export type StructureSetRaw = (key: StructureTabNumericKey, value: number) => void;
 export type StructureStackLinkField = 'depth' | 'width' | 'doors';
@@ -59,6 +61,7 @@ export type StructureDimensionsContentProps = {
   cellDimsHeight: number | '';
   cellDimsDepth: number | '';
   stackSplitEnabled: boolean;
+  stackSplitDecorativeSeparatorEnabled: boolean;
   stackSplitLowerHeight: number;
   stackSplitLowerDepth: number;
   stackSplitLowerWidth: number;
@@ -74,6 +77,7 @@ export type StructureDimensionsContentProps = {
   onClearCellDimsHeight: () => void;
   onClearCellDimsDepth: () => void;
   onToggleStackSplit: () => void;
+  onToggleStackSplitDecorativeSeparator: () => void;
   onToggleLibraryUpperDoors: () => void;
   onPickLibraryGlass: (paintId: string) => void;
   renderStackLinkBadge: (field: StructureStackLinkField, isManual: boolean) => ReactNode;

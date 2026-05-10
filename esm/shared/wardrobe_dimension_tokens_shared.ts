@@ -55,6 +55,17 @@ export const WARDROBE_DEFAULTS = Object.freeze({
     minLowerHeightCm: 20,
     seamGapM: 0.002,
     lowerWidthFallbackCm: 50,
+    decorativeSeparator: Object.freeze({
+      slabHeightM: 0.032,
+      frontApronHeightM: 0.046,
+      apronDepthM: 0.014,
+      frontOverhangM: 0.035,
+      sideOverhangM: 0.025,
+      minWidthM: 0.2,
+      minDepthM: 0.12,
+      seamCoverDropM: 0.012,
+      zFightLiftM: 0.001,
+    }),
   }),
 });
 

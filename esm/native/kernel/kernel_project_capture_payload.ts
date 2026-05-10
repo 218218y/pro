@@ -102,6 +102,8 @@ function buildProjectCaptureSettings(
           : uiRec.depth,
     chestDrawersCount,
     stackSplitEnabled: typeof uiRec.stackSplitEnabled !== 'undefined' ? !!uiRec.stackSplitEnabled : false,
+    stackSplitDecorativeSeparatorEnabled:
+      !!uiRec.stackSplitEnabled && !!uiRec.stackSplitDecorativeSeparatorEnabled,
     stackSplitLowerHeight,
     stackSplitLowerDepthManual: lowerDepthManual,
     stackSplitLowerWidthManual: lowerWidthManual,

@@ -36,6 +36,7 @@ export type StructureTabViewState = {
   cellDimsModeId: string;
   cellDimsEditActive: boolean;
   stackSplitEnabled: boolean;
+  stackSplitDecorativeSeparatorEnabled: boolean;
   stackSplitLowerHeight: number;
   stackSplitLowerDepthManual: boolean;
   stackSplitLowerWidthManual: boolean;

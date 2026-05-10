@@ -23,6 +23,7 @@ export type UseStructureTabWorkflowsResult = {
   exitCellDimsMode: (source: string) => void;
   renderStackLinkBadge: (field: StructureStackLinkField, isManual: boolean) => ReactElement;
   toggleStackSplit: () => void;
+  toggleStackSplitDecorativeSeparator: () => void;
   toggleLibraryMode: () => void;
   toggleLibraryUpperDoors: () => void;
   pickLibraryGlass: (paintId: string) => void;

@@ -106,6 +106,7 @@ export function resolveBuildWardrobeSplitMetrics(args: {
     baseLegWidthCm: plan.baseLegWidthCm,
     doorStyle: plan.doorStyle,
     stackSplitEnabled: !!plan.stackSplitEnabled,
+    stackSplitDecorativeSeparatorEnabled: !!plan.stackSplitDecorativeSeparatorEnabled,
     handleControlEnabled: !!plan.handleControlEnabled,
     showHangerEnabled: !!plan.showHangerEnabled,
     showContentsEnabled: !!plan.showContentsEnabled,

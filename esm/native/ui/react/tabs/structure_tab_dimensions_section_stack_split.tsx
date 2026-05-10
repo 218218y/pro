@@ -4,6 +4,7 @@ import { InlineNotice, ModeToggleButton } from '../components/index.js';
 import { DimField } from './structure_tab_controls.js';
 import { readStructureDimensionBounds } from './structure_tab_dimension_constraints.js';
 import {
+  STRUCTURE_STACK_SPLIT_DECORATIVE_SEPARATOR_BUTTON_TEST_ID,
   STRUCTURE_STACK_SPLIT_MODE_BUTTON_TEST_ID,
   STRUCTURE_STACK_SPLIT_SECTION_TEST_ID,
   type StructureDimensionsContentProps,
@@ -12,6 +13,7 @@ import {
 export function StructureStackSplitControls(props: {
   isSliding: StructureDimensionsContentProps['isSliding'];
   stackSplitEnabled: StructureDimensionsContentProps['stackSplitEnabled'];
+  stackSplitDecorativeSeparatorEnabled: StructureDimensionsContentProps['stackSplitDecorativeSeparatorEnabled'];
   stackSplitLowerHeight: StructureDimensionsContentProps['stackSplitLowerHeight'];
   stackSplitLowerDepth: StructureDimensionsContentProps['stackSplitLowerDepth'];
   stackSplitLowerWidth: StructureDimensionsContentProps['stackSplitLowerWidth'];
@@ -22,6 +24,7 @@ export function StructureStackSplitControls(props: {
   height: StructureDimensionsContentProps['height'];
   onSetRaw: StructureDimensionsContentProps['onSetRaw'];
   onToggleStackSplit: StructureDimensionsContentProps['onToggleStackSplit'];
+  onToggleStackSplitDecorativeSeparator: StructureDimensionsContentProps['onToggleStackSplitDecorativeSeparator'];
   renderStackLinkBadge: StructureDimensionsContentProps['renderStackLinkBadge'];
 }): ReactElement | null {
   if (props.isSliding) return null;
@@ -39,7 +42,16 @@ export function StructureStackSplitControls(props: {
 
       {props.stackSplitEnabled ? (
         <div style={{ marginTop: 10 }}>
-          <div className="wp-r-cell-dims-row">
+          <ModeToggleButton
+            active={props.stackSplitDecorativeSeparatorEnabled}
+            onClick={props.onToggleStackSplitDecorativeSeparator}
+            className="wp-r-mode-btn"
+            data-testid={STRUCTURE_STACK_SPLIT_DECORATIVE_SEPARATOR_BUTTON_TEST_ID}
+          >
+            הפרדה מעוצבת בין ארון עליון לארון תחתון
+          </ModeToggleButton>
+
+          <div className="wp-r-cell-dims-row" style={{ marginTop: 10 }}>
             <div className="wp-r-dims-height">
               <DimField
                 label={'גובה חלק תחתון (ס"מ)'}

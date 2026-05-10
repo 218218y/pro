@@ -12,6 +12,7 @@ import {
   finalizeBuiltStackSplitLowerRange,
   prepareStackSplitLowerSetup,
 } from './build_stack_split_shared.js';
+import { addStackSplitDecorativeSeparatorIfNeeded } from './build_stack_split_decorative_separator.js';
 import {
   applyStackSplitLowerCornerWingIfNeeded,
   createStackSplitLowerBuildContext,
@@ -32,12 +33,16 @@ export function buildStackSplitLowerUnit(args: BuildStackSplitLowerUnitArgs): Bu
   applySlidingDoorsIfNeeded(lowerCtx);
   applyStackSplitLowerCornerWingIfNeeded({ buildArgs: args, lowerCtx });
 
-  const upperStartIndex = finalizeBuiltStackSplitLowerRange({
+  finalizeBuiltStackSplitLowerRange({
     App: args.App,
     group: prepared.group,
     splitBottomStartIndex: prepared.splitBottomStartIndex,
     splitDzBottom: prepared.splitDzBottom,
   });
+  addStackSplitDecorativeSeparatorIfNeeded({ buildArgs: args, prepared });
+
+  const groupChildren = prepared.group && Array.isArray(prepared.group.children) ? prepared.group.children : null;
+  const upperStartIndex = groupChildren ? groupChildren.length : -1;
 
   return {
     splitY: prepared.splitY,

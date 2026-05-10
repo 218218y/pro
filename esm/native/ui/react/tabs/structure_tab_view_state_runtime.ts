@@ -118,6 +118,7 @@ export function readStructureTabStackSplitUiState(
 ): StructureTabStackSplitUiState {
   return {
     stackSplitEnabled: !!ui.stackSplitEnabled,
+    stackSplitDecorativeSeparatorEnabled: !!ui.stackSplitEnabled && !!ui.stackSplitDecorativeSeparatorEnabled,
     stackSplitLowerHeight: readUiRawNumberFromSnapshot(
       ui,
       'stackSplitLowerHeight',

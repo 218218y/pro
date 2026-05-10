@@ -44,6 +44,7 @@ export type BuildStackSplitLowerUnitArgs = {
   baseLegWidthCm?: number | string;
   doorStyle: string;
   stackSplitEnabled: boolean;
+  stackSplitDecorativeSeparatorEnabled: boolean;
   handleControlEnabled: boolean;
   showHangerEnabled: boolean;
   showContentsEnabled: boolean;

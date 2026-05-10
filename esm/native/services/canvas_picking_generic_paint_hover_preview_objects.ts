@@ -3,7 +3,6 @@ import type { AppContainer, UnknownRecord } from '../../../types';
 import { getBuilderRegistry } from '../runtime/builder_service_access.js';
 import {
   __readObjectLocalGeometryBox,
-  __isScopedCornerCornicePreviewKeyList,
   asObject3DRecord,
   asRecordMap,
 } from './canvas_picking_generic_paint_hover_shared.js';
@@ -46,7 +45,7 @@ export function appendFallbackPartObjectsFromScene(
   wardrobeGroup: UnknownRecord,
   partKeys: string[]
 ): void {
-  if (!__isScopedCornerCornicePreviewKeyList(partKeys) || !partKeys.length) return;
+  if (!partKeys.length) return;
   const partKeySet = new Set<string>();
   for (let i = 0; i < partKeys.length; i += 1) {
     const key = typeof partKeys[i] === 'string' ? String(partKeys[i]) : '';

@@ -11,6 +11,10 @@ import {
   resolvePaintPreviewGroupBoxFromObjects,
 } from './canvas_picking_generic_paint_hover_preview_bounds.js';
 
+function isStackSplitDecorativeSeparatorPreview(partKeys: string[]): boolean {
+  return partKeys.some(key => key === 'stack_split_separator');
+}
+
 export function resolvePaintPreviewGroupBox(args: {
   App: AppContainer;
   wardrobeGroup: UnknownRecord;
@@ -47,9 +51,19 @@ export function resolvePaintPreviewGroupBox(args: {
     });
   }
 
-  return resolvePaintPreviewGroupBoxFromObjects({
+  const objectGroupPreview = resolvePaintPreviewGroupBoxFromObjects({
     App,
     wardrobeGroup,
     objects,
   });
+
+  if (objectGroupPreview && isStackSplitDecorativeSeparatorPreview(partKeys)) {
+    return {
+      ...objectGroupPreview,
+      kind: 'object_boxes',
+      previewObjects: objects,
+    };
+  }
+
+  return objectGroupPreview;
 }

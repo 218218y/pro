@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { resolvePaintPreviewGroupBox } from '../esm/native/services/canvas_picking_generic_paint_hover_preview.ts';
 import { collectPaintPreviewPartObjects } from '../esm/native/services/canvas_picking_generic_paint_hover_preview_objects.ts';
 import {
   resolveCornerCorniceFrontObjectLocalPreview,
@@ -76,6 +77,50 @@ test('paint preview object collection flattens registry arrays and deduplicates 
   assert.equal(objects.length, 2);
   assert.equal(objects[0], front);
   assert.equal(objects[1], left);
+});
+
+test('stack split decorative separator hover falls back to scene objects and previews slab plus lip as one target', () => {
+  const slab = makeBoxObject('stack_split_separator', {
+    width: 1.85,
+    height: 0.032,
+    depth: 0.63,
+    y: 0.72,
+  });
+  const lip = makeBoxObject('stack_split_separator', {
+    width: 1.85,
+    height: 0.038,
+    depth: 0.014,
+    y: 0.7,
+    z: 0.31,
+  });
+  const wardrobeGroup = {
+    userData: { partId: 'root' },
+    children: [slab, lip],
+  };
+  const App = createAppWithRegistry({});
+
+  const objects = collectPaintPreviewPartObjects({
+    App: App as never,
+    wardrobeGroup: wardrobeGroup as never,
+    partKeys: ['stack_split_separator'],
+  });
+
+  assert.equal(objects.length, 2);
+  assert.equal(objects[0], slab);
+  assert.equal(objects[1], lip);
+
+  const preview = resolvePaintPreviewGroupBox({
+    App: App as never,
+    wardrobeGroup: wardrobeGroup as never,
+    partKeys: ['stack_split_separator'],
+    fallbackObject: slab as never,
+    fallbackParent: wardrobeGroup as never,
+  });
+
+  assert.equal(preview?.kind, 'object_boxes');
+  assert.equal(preview?.previewObjects?.length, 2);
+  assert.ok((preview?.width || 0) >= 1.85);
+  assert.ok((preview?.depth || 0) >= 0.63);
 });
 
 test('corner cornice front preview picks the nearest registered object to the clicked fallback object', () => {

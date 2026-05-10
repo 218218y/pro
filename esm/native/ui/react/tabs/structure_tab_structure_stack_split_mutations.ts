@@ -103,6 +103,37 @@ export function setStackSplitLowerLinkModeValue(args: {
   }
 }
 
+export function toggleStackSplitDecorativeSeparatorState(args: {
+  app: AppContainer;
+  meta: MetaActionsNamespaceLike;
+  enabled: boolean;
+  stackSplitEnabled: boolean;
+}): void {
+  const source = `react:structure:stackSplit:decorativeSeparator:${args.enabled ? 'off' : 'on'}`;
+  const m = args.meta.noBuildImmediate(source);
+  const next = !args.enabled;
+  const uiPatch: StructureUiPatch = {
+    stackSplitEnabled: args.stackSplitEnabled || next,
+    stackSplitDecorativeSeparatorEnabled: next,
+  };
+
+  try {
+    applyStructureTemplateRecomputeBatch({
+      app: args.app,
+      source,
+      meta: m,
+      uiPatch,
+      statePatch: { ui: uiPatch },
+      mutate: () => {
+        if (next && !args.stackSplitEnabled) setUiFlag(args.app, 'stackSplitEnabled', true, m);
+        setUiFlag(args.app, 'stackSplitDecorativeSeparatorEnabled', next, m);
+      },
+    });
+  } catch (err) {
+    structureTabReportNonFatal('toggleStackSplitDecorativeSeparatorState', err);
+  }
+}
+
 export function toggleStackSplitState(args: {
   app: AppContainer;
   meta: MetaActionsNamespaceLike;
@@ -147,10 +178,11 @@ export function toggleStackSplitState(args: {
         app,
         source: source + ':off',
         meta: m,
-        uiPatch: { stackSplitEnabled: false },
-        statePatch: { ui: { stackSplitEnabled: false } },
+        uiPatch: { stackSplitEnabled: false, stackSplitDecorativeSeparatorEnabled: false },
+        statePatch: { ui: { stackSplitEnabled: false, stackSplitDecorativeSeparatorEnabled: false } },
         mutate: () => {
           setUiFlag(app, 'stackSplitEnabled', false, m);
+          setUiFlag(app, 'stackSplitDecorativeSeparatorEnabled', false, m);
         },
       });
     } catch (err) {
