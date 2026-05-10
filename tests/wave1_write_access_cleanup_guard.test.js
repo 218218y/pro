@@ -88,10 +88,10 @@ test('[wave1] runtime + mode write seams use canonical store-backed routes witho
     },
   };
 
-  assert.deepEqual(setRuntimeSketchMode(App, 1, { source: 'runtime:sketch' }), { via: 'store.patch' });
+  assert.deepEqual(setRuntimeSketchMode(App, 1, { source: 'runtime:sketch' }), { via: 'store.setRuntime' });
   assert.deepEqual(calls[0], {
-    op: 'store.patch',
-    patch: { runtime: { sketchMode: true } },
+    op: 'store.setRuntime',
+    patch: { sketchMode: true },
     meta: {
       source: 'runtime:sketch',
       noBuild: true,
@@ -126,7 +126,7 @@ test('[wave1] runtime + mode write seams use canonical store-backed routes witho
   ]);
 });
 
-test('[wave1] slice write router no-ops on empty patches and uses the canonical root patch seam for UI/runtime store fallbacks', () => {
+test('[wave1] slice write router no-ops on empty patches and uses dedicated UI/runtime store writers before root patch fallbacks', () => {
   const calls = createCallLog();
   const App = {
     actions: {
@@ -183,9 +183,9 @@ test('[wave1] slice write router no-ops on empty patches and uses the canonical 
         allowRootStorePatchFallback: true,
       }
     ),
-    { via: 'store.patch' }
+    { via: 'store.setUi' }
   );
   assert.deepEqual(calls, [
-    { op: 'store.patch', patch: { ui: { activeTab: 'notes' } }, meta: { source: 'writer:first' } },
+    { op: 'store.setUi', patch: { activeTab: 'notes' }, meta: { source: 'writer:first' } },
   ]);
 });

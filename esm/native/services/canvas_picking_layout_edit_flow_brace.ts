@@ -48,12 +48,12 @@ export function tryHandleCanvasBraceShelvesClick(args: CanvasLayoutEditClickArgs
 
     const shelfPick = resolveShelfBoardPick({
       intersects,
-      fallbackHitY: moduleHitY !== null ? moduleHitY : firstHitY,
+      selectorHitY: moduleHitY !== null ? moduleHitY : firstHitY,
       bottomY,
       topY,
       divisions,
       boardToleranceM: Math.min(0.05, Math.max(0.035, safeStep * 0.12)),
-      fallbackToleranceM: safeStep * 0.3,
+      selectorHitToleranceM: safeStep * 0.3,
     });
     if (!shelfPick) return;
 

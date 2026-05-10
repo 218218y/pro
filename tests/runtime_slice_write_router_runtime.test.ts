@@ -103,6 +103,10 @@ test('[slice-write-access] patchSliceWithStoreFallback avoids namespace lookup w
   const App = {
     actions,
     store: {
+      setRuntime(patch: AnyRecord, meta?: AnyRecord) {
+        calls.push({ op: 'store.setRuntime', patch, meta });
+        return { via: 'store.setRuntime' };
+      },
       patch(patch: AnyRecord, meta?: AnyRecord) {
         calls.push({ op: 'store.patch', patch, meta });
         return { via: 'store.patch' };
@@ -122,18 +126,18 @@ test('[slice-write-access] patchSliceWithStoreFallback avoids namespace lookup w
     }
   );
 
-  assert.deepEqual(out, { via: 'store.patch' });
+  assert.deepEqual(out, { via: 'store.setRuntime' });
   assert.equal(runtimeReads, 0);
   assert.deepEqual(calls, [
     {
-      op: 'store.patch',
-      patch: { runtime: { sketchMode: true } },
+      op: 'store.setRuntime',
+      patch: { sketchMode: true },
       meta: { source: 'rt:prefer-store' },
     },
   ]);
 });
 
-test('[slice-write-access] patchSliceWithStoreFallback keeps canonical fallback order when preferred store writer returns undefined', () => {
+test('[slice-write-access] patchSliceWithStoreFallback treats dedicated store writers as terminal even when they return undefined', () => {
   const calls: AnyRecord[] = [];
   const App = {
     actions: {
@@ -173,11 +177,8 @@ test('[slice-write-access] patchSliceWithStoreFallback keeps canonical fallback 
     }
   );
 
-  assert.deepEqual(out, { via: 'config.patch' });
-  assert.deepEqual(calls, [
-    { op: 'store.setConfig', patch: { width: 120 }, meta: { source: 'cfg' } },
-    { op: 'config.patch', patch: { width: 120 }, meta: { source: 'cfg' } },
-  ]);
+  assert.equal(out, undefined);
+  assert.deepEqual(calls, [{ op: 'store.setConfig', patch: { width: 120 }, meta: { source: 'cfg' } }]);
 });
 
 test('[slice-write-access] patchSliceWithStoreFallback resolves write roots once per dispatch attempt', () => {
@@ -230,13 +231,10 @@ test('[slice-write-access] patchSliceWithStoreFallback resolves write roots once
     }
   );
 
-  assert.deepEqual(out, { via: 'config.patch' });
+  assert.equal(out, undefined);
   assert.equal(actionsReads, 1);
   assert.equal(storeReads, 1);
-  assert.deepEqual(calls, [
-    { op: 'store.setConfig', patch: { width: 144 }, meta: { source: 'cfg:cached' } },
-    { op: 'config.patch', patch: { width: 144 }, meta: { source: 'cfg:cached' } },
-  ]);
+  assert.deepEqual(calls, [{ op: 'store.setConfig', patch: { width: 144 }, meta: { source: 'cfg:cached' } }]);
 });
 
 test('[slice-write-access] patchSliceWithStoreFallback skips write root resolution for empty slice payloads', () => {
@@ -613,6 +611,9 @@ test('[slice-write-access] hasCanonicalPatchDispatch avoids namespace lookup whe
   const App = {
     actions,
     store: {
+      setRuntime() {
+        return undefined;
+      },
       patch() {
         return undefined;
       },
@@ -1103,7 +1104,7 @@ test('[slice-write-access] touchMetaWithStoreFallback reuses the canonical root 
   ]);
 });
 
-test('[slice-write-access] meta-touch and slice dispatch keep the same prefer-primary ordering policy', () => {
+test('[slice-write-access] meta-touch and slice dispatch treat dedicated store writers as terminal primary routes', () => {
   const calls: AnyRecord[] = [];
   const App = {
     actions: {
@@ -1162,14 +1163,10 @@ test('[slice-write-access] meta-touch and slice dispatch keep the same prefer-pr
     }
   );
 
-  assert.deepEqual(metaOut, { via: 'actions.patch' });
-  assert.deepEqual(patchOut, { via: 'actions.patch' });
+  assert.equal(metaOut, undefined);
+  assert.equal(patchOut, undefined);
   assert.deepEqual(calls, [
     { op: 'store.setMeta', meta: { source: 'meta:prefer' } },
-    { op: 'meta.touch', meta: { source: 'meta:prefer' } },
-    { op: 'actions.patch', patch: {}, meta: { source: 'meta:prefer' } },
     { op: 'store.setConfig', patch: { width: 180 }, meta: { source: 'cfg:prefer' } },
-    { op: 'config.patch', patch: { width: 180 }, meta: { source: 'cfg:prefer' } },
-    { op: 'actions.patch', patch: { config: { width: 180 } }, meta: { source: 'cfg:prefer' } },
   ]);
 });

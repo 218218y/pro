@@ -53,12 +53,12 @@ export function tryHandleCanvasBraceShelvesHover(args: CanvasInteriorHoverFlowAr
     const step = target.spanH / divisions;
     const shelfPick = resolveShelfBoardPick({
       intersects: target.intersects,
-      fallbackHitY: target.hitY,
+      selectorHitY: target.hitY,
       bottomY: target.bottomY,
       topY: target.topY,
       divisions,
       boardToleranceM: Math.max(0.035, target.woodThick * 2),
-      fallbackToleranceM: Math.min(0.03, Math.max(0.018, step * 0.12)),
+      selectorHitToleranceM: Math.min(0.03, Math.max(0.018, step * 0.12)),
     });
     if (!shelfPick) {
       hideSketchPreview({ App, hideSketchPreview: hideSketchPreviewFn });

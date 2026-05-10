@@ -260,10 +260,6 @@ export function readSingleSlicePatchRoute(patchObj: unknown): SlicePatchRoute | 
   return readSingleSlicePatchRouteFromRecord(readPatchPayload(patch));
 }
 
-export function shouldUseRootPatchStoreWriter(storeWriter: SliceStoreWriter): boolean {
-  return storeWriter === 'setUi' || storeWriter === 'setRuntime';
-}
-
 export function callDedicatedMetaStoreWriter(
   setMeta: ((patch: MetaSlicePatch, meta?: ActionMetaLike) => unknown) | undefined,
   meta?: ActionMetaLike

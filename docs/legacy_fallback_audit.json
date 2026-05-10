@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-10T08:29:42.137Z",
+  "generatedAt": "2026-05-10T09:35:01.255Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 53,
+    "totalOccurrences": 52,
     "totalFiles": 40,
     "byCategory": {
-      "runtime-default": 32,
+      "runtime-default": 31,
       "browser-adapter": 9,
       "project-migration": 5,
       "test-fixture": 7,
@@ -74,9 +74,9 @@
         }
       },
       "esm/native/builder/render_interior_sketch_support_rods.ts": {
-        "total": 2,
+        "total": 1,
         "categories": {
-          "runtime-default": 2
+          "runtime-default": 1
         }
       },
       "esm/native/builder/room_floor_texture.ts": {
@@ -277,13 +277,6 @@
         }
       },
       {
-        "file": "esm/native/builder/render_interior_sketch_support_rods.ts",
-        "total": 2,
-        "categories": {
-          "runtime-default": 2
-        }
-      },
-      {
         "file": "esm/native/io/project_io_feedback_bridge.ts",
         "total": 2,
         "categories": {
@@ -355,6 +348,13 @@
       },
       {
         "file": "esm/native/builder/render_interior_preset_ops_wall_faces.ts",
+        "total": 1,
+        "categories": {
+          "runtime-default": 1
+        }
+      },
+      {
+        "file": "esm/native/builder/render_interior_sketch_support_rods.ts",
         "total": 1,
         "categories": {
           "runtime-default": 1
@@ -562,13 +562,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "assertTHREE(App, 'native/builder/render_interior_sketch_support.applySketchRods.fallback')"
-    },
-    {
-      "file": "esm/native/builder/render_interior_sketch_support_rods.ts",
-      "line": 49,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "// fallback below"
     },
     {
       "file": "esm/native/builder/room_floor_texture.ts",

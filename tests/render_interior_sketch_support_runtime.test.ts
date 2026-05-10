@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  applySketchRods,
   createInteriorSketchPlacementSupport,
   createSketchBoxLocator,
 } from '../esm/native/builder/render_interior_sketch_support.ts';
@@ -138,4 +139,77 @@ test('render interior sketch support locator resolves the matching box by center
     innerBackZ: -0.25,
   });
   assert.equal(locate(2.2), null);
+});
+
+test('render interior sketch rods use the installed rod owner when it succeeds and local visual rod when it rejects', () => {
+  const created: any[] = [];
+  const added: any[] = [];
+  const THREE = {
+    Mesh: FakeMesh,
+    MeshStandardMaterial: FakeMeshStandardMaterial,
+    CylinderGeometry: FakeCylinderGeometry,
+  } as any;
+
+  applySketchRods({
+    rods: [{ yNorm: 0.25 } as any],
+    yFromNorm: () => 0.7,
+    createRod(y: unknown, hangClothes: unknown, singleHanger: unknown, limit: unknown) {
+      created.push({ y, hangClothes, singleHanger, limit });
+    },
+    isFn: (value: unknown): value is (...args: unknown[]) => unknown => typeof value === 'function',
+    THREE,
+    App: {} as any,
+    assertTHREE() {
+      throw new Error('THREE should already be provided');
+    },
+    asObject<T extends object>(value: unknown): T | null {
+      return value && typeof value === 'object' ? (value as T) : null;
+    },
+    innerW: 0.8,
+    internalCenterX: 0.1,
+    internalZ: -0.3,
+    group: {
+      add(obj: unknown) {
+        added.push(obj);
+        return obj;
+      },
+    },
+  });
+
+  assert.deepEqual(created, [{ y: 0.7, hangClothes: false, singleHanger: true, limit: null }]);
+  assert.equal(added.length, 0);
+
+  applySketchRods({
+    rods: [{ yNorm: 0.5 } as any],
+    yFromNorm: () => 1.1,
+    createRod() {
+      throw new Error('installed rod owner rejected sketch rod');
+    },
+    isFn: (value: unknown): value is (...args: unknown[]) => unknown => typeof value === 'function',
+    THREE,
+    App: {} as any,
+    assertTHREE() {
+      throw new Error('THREE should already be provided');
+    },
+    asObject<T extends object>(value: unknown): T | null {
+      return value && typeof value === 'object' ? (value as T) : null;
+    },
+    innerW: 0.8,
+    internalCenterX: 0.1,
+    internalZ: -0.3,
+    group: {
+      add(obj: unknown) {
+        added.push(obj);
+        return obj;
+      },
+    },
+  });
+
+  assert.equal(added.length, 1);
+  assert.equal(added[0]?.userData?.partId, 'all_rods');
+  assert.equal(added[0]?.userData?.__wpType, 'sketchRod');
+  assert.equal(added[0]?.position?.x, 0.1);
+  assert.equal(added[0]?.position?.y, 1.1);
+  assert.equal(added[0]?.position?.z, -0.3);
+  assert.equal(added[0]?.material?.__keepMaterial, true);
 });

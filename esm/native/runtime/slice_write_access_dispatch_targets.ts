@@ -1,10 +1,6 @@
 import type { ActionMetaLike, PatchPayload } from '../../../types';
 
-import {
-  callDedicatedMetaStoreWriter,
-  readSlicePatchValue,
-  toRootPatchPayload,
-} from './slice_write_access_shared.js';
+import { callDedicatedMetaStoreWriter, readSlicePatchValue } from './slice_write_access_shared.js';
 import type {
   MetaTouchDispatchTarget,
   RootPatchDispatchTarget,
@@ -94,23 +90,15 @@ export const META_TOUCH_TARGET_HANDLERS: Record<MetaTouchDispatchTarget, MetaTou
   },
 };
 
-function dispatchRootPatchStoreWriter<N extends SlicePatchNamespace>(
-  store: SliceWriteStoreLike,
-  namespace: N,
-  payload: SlicePatchValue<N>,
-  meta?: ActionMetaLike
-): unknown {
-  return store.patch?.(toRootPatchPayload(namespace, payload), meta);
-}
-
 export const SLICE_STORE_WRITER_HANDLERS: Record<SliceStoreWriter, SliceStoreWriterHandler> = {
   setUi: {
-    hasSeam: store => typeof store?.patch === 'function',
-    dispatch: dispatchRootPatchStoreWriter,
+    hasSeam: store => typeof store?.setUi === 'function',
+    dispatch: (store, _namespace, payload, meta) => store.setUi?.(readSlicePatchValue('ui', payload), meta),
   },
   setRuntime: {
-    hasSeam: store => typeof store?.patch === 'function',
-    dispatch: dispatchRootPatchStoreWriter,
+    hasSeam: store => typeof store?.setRuntime === 'function',
+    dispatch: (store, _namespace, payload, meta) =>
+      store.setRuntime?.(readSlicePatchValue('runtime', payload), meta),
   },
   setModePatch: {
     hasSeam: store => typeof store?.setModePatch === 'function',

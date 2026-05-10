@@ -116,7 +116,9 @@ export function patchSliceWithResolvedContext<N extends SlicePatchNamespace>(
     : READ_ROOT_PAYLOAD_UNSUPPORTED;
 
   for (const target of targets) {
+    if (!hasSliceDispatchTargetSeam(context, namespace, opts, target)) continue;
     const out = dispatchSliceTarget({ context, namespace, payload, meta, opts, target, readRootPayload });
+    if (target === 'storeWriter') return out;
     if (out !== undefined) return out;
   }
 
@@ -130,7 +132,9 @@ export function touchMetaWithResolvedContext(
   targets: readonly MetaTouchDispatchTarget[] = resolveMetaTouchDispatchTargets(opts)
 ): unknown {
   for (const target of targets) {
+    if (!hasMetaTouchDispatchTargetSeam(context, target)) continue;
     const out = dispatchMetaTouchTarget(context, target, meta);
+    if (target === 'metaStoreWriter') return out;
     if (out !== undefined) return out;
   }
 

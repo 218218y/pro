@@ -45,10 +45,10 @@ export function applySketchRods(args: ApplySketchRodsArgs): void {
       if (isFn(createRod)) {
         try {
           createRod(y, false, true, null);
+          continue;
         } catch {
-          // fallback below
+          // If the installed rod owner rejects this sketch rod, render the local visual rod below.
         }
-        continue;
       }
 
       const resolvedTHREE = resolveSketchRodTHREE({ THREE, App, assertTHREE, asObject });

@@ -1,6 +1,6 @@
 import type { RaycastHitLike } from './canvas_picking_engine.js';
 
-type ShelfBoardPickSource = 'board' | 'fallback';
+type ShelfBoardPickSource = 'board' | 'selector-hit';
 
 export type ShelfBoardPick = {
   source: ShelfBoardPickSource;
@@ -82,14 +82,14 @@ export function resolveShelfBoardPickFromIntersects(args: {
 
 export function resolveShelfBoardPick(args: {
   intersects: readonly RaycastHitLike[] | null | undefined;
-  fallbackHitY: number | null;
+  selectorHitY: number | null;
   bottomY: number;
   topY: number;
   divisions: number;
   boardToleranceM: number;
-  fallbackToleranceM: number;
+  selectorHitToleranceM: number;
 }): ShelfBoardPick | null {
-  const { intersects, fallbackHitY, bottomY, topY, divisions, boardToleranceM, fallbackToleranceM } = args;
+  const { intersects, selectorHitY, bottomY, topY, divisions, boardToleranceM, selectorHitToleranceM } = args;
   const totalHeight = topY - bottomY;
   const step = totalHeight / divisions;
   if (!Number.isFinite(step) || step <= 0) return null;
@@ -103,15 +103,16 @@ export function resolveShelfBoardPick(args: {
   });
   if (boardPick) return boardPick;
 
-  if (typeof fallbackHitY !== 'number' || !Number.isFinite(fallbackHitY)) return null;
-  const fallback = resolveShelfIndexFromHitY({ hitY: fallbackHitY, bottomY, step, divisions });
-  const tolerance = Number.isFinite(fallbackToleranceM) && fallbackToleranceM >= 0 ? fallbackToleranceM : 0;
-  if (!fallback || Math.abs(fallbackHitY - fallback.shelfY) > tolerance) return null;
+  if (typeof selectorHitY !== 'number' || !Number.isFinite(selectorHitY)) return null;
+  const selectorPick = resolveShelfIndexFromHitY({ hitY: selectorHitY, bottomY, step, divisions });
+  const tolerance =
+    Number.isFinite(selectorHitToleranceM) && selectorHitToleranceM >= 0 ? selectorHitToleranceM : 0;
+  if (!selectorPick || Math.abs(selectorHitY - selectorPick.shelfY) > tolerance) return null;
 
   return {
-    source: 'fallback',
-    shelfIndex: fallback.shelfIndex,
-    shelfY: fallback.shelfY,
-    hitY: fallbackHitY,
+    source: 'selector-hit',
+    shelfIndex: selectorPick.shelfIndex,
+    shelfY: selectorPick.shelfY,
+    hitY: selectorHitY,
   };
 }

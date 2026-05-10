@@ -1,14 +1,14 @@
 # Legacy / fallback audit
 
-Generated at: 2026-05-10T08:29:42.137Z
+Generated at: 2026-05-10T09:35:01.255Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **53**
+- Total categorized occurrences: **52**
 - Files with occurrences: **40**
 - Category counts:
-  - `runtime-default`: **32**
+  - `runtime-default`: **31**
   - `browser-adapter`: **9**
   - `project-migration`: **5**
   - `test-fixture`: **7**
@@ -28,7 +28,6 @@ Generated at: 2026-05-10T08:29:42.137Z
 - `esm/test_no_side_effects_on_import.mjs` — **6** (test-fixture: 6)
 - `esm/native/runtime/slice_write_access_dispatch_order.ts` — **4** (runtime-default: 4)
 - `esm/native/adapters/browser/ui_ops.ts` — **3** (browser-adapter: 3)
-- `esm/native/builder/render_interior_sketch_support_rods.ts` — **2** (runtime-default: 2)
 - `esm/native/io/project_io_feedback_bridge.ts` — **2** (project-migration: 2)
 - `esm/native/runtime/ui_write_access.ts` — **2** (runtime-default: 2)
 - `esm/entry_pro_overlay.ts` — **1** (browser-adapter: 1)
@@ -40,6 +39,7 @@ Generated at: 2026-05-10T08:29:42.137Z
 - `esm/native/builder/post_build_front_reveal_frames_drawers.ts` — **1** (runtime-default: 1)
 - `esm/native/builder/post_build_sketch_door_cuts_modules.ts` — **1** (runtime-default: 1)
 - `esm/native/builder/render_interior_preset_ops_wall_faces.ts` — **1** (runtime-default: 1)
+- `esm/native/builder/render_interior_sketch_support_rods.ts` — **1** (runtime-default: 1)
 - `esm/native/builder/room_floor_texture.ts` — **1** (runtime-default: 1)
 - `esm/native/builder/scheduler_runtime.ts` — **1** (runtime-default: 1)
 - `esm/native/features/project_config/project_config_persisted_payload_shared.ts` — **1** (project-migration: 1)

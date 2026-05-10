@@ -64,9 +64,9 @@
       }
     },
     "esm/native/builder/render_interior_sketch_support_rods.ts": {
-      "total": 2,
+      "total": 1,
       "categories": {
-        "runtime-default": 2
+        "runtime-default": 1
       }
     },
     "esm/native/builder/room_floor_texture.ts": {
