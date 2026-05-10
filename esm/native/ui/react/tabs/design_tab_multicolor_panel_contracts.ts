@@ -30,10 +30,12 @@ export const MULTI_MIRROR_AUTO = 'אוטומטי';
 export const MULTI_SECTION_TITLE = 'צביעה מתקדמת ותוספות';
 
 export const MULTI_GLASS_STYLE_OPTIONS: ReadonlyArray<{
-  id: Exclude<DoorStyleOverrideValue, 'profile'>;
+  id: DoorStyleOverrideValue;
   paintId: string;
   label: string;
+  curtainPreset?: CurtainPreset;
 }> = [
+  { id: 'profile', paintId: 'glass', label: MULTI_LABEL_GLASS, curtainPreset: 'none' },
   { id: 'flat', paintId: encodeGlassFrameStylePaintToken('flat'), label: MULTI_LABEL_GLASS_FULL },
   { id: 'tom', paintId: encodeGlassFrameStylePaintToken('tom'), label: MULTI_LABEL_GLASS_TOM },
 ];

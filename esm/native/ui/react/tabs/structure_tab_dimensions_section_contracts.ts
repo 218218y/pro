@@ -1,16 +1,47 @@
 import type { ReactNode } from 'react';
 
+import { encodeGlassFrameStylePaintToken } from '../../../features/door_style_overrides.js';
 import type { StructureTabNumericKey } from './structure_tab_shared.js';
 
 export const STRUCTURE_CELL_DIMS_SECTION_TEST_ID = 'structure-cell-dims-section';
 export const STRUCTURE_CELL_DIMS_MODE_BUTTON_TEST_ID = 'structure-cell-dims-mode-button';
 export const STRUCTURE_CELL_DIMS_RESET_BUTTON_TEST_ID = 'structure-cell-dims-reset-button';
 export const STRUCTURE_LIBRARY_UPPER_DOORS_BUTTON_TEST_ID = 'structure-library-upper-doors-button';
+export const STRUCTURE_LIBRARY_GLASS_BUTTON_GROUP_TEST_ID = 'structure-library-glass-buttons';
 export const STRUCTURE_STACK_SPLIT_SECTION_TEST_ID = 'structure-stack-split-section';
 export const STRUCTURE_STACK_SPLIT_MODE_BUTTON_TEST_ID = 'structure-stack-split-mode-button';
 
 export type StructureSetRaw = (key: StructureTabNumericKey, value: number) => void;
 export type StructureStackLinkField = 'depth' | 'width' | 'doors';
+export type StructureLibraryGlassOptionId = 'glass' | 'full' | 'profile';
+
+export type StructureLibraryGlassOption = {
+  id: StructureLibraryGlassOptionId;
+  paintId: string;
+  label: string;
+  testId: string;
+};
+
+export const STRUCTURE_LIBRARY_GLASS_OPTIONS: ReadonlyArray<StructureLibraryGlassOption> = [
+  {
+    id: 'glass',
+    paintId: 'glass',
+    label: 'זכוכית',
+    testId: 'structure-library-glass-button-glass',
+  },
+  {
+    id: 'full',
+    paintId: encodeGlassFrameStylePaintToken('flat'),
+    label: 'זכוכית מלאה',
+    testId: 'structure-library-glass-button-full',
+  },
+  {
+    id: 'profile',
+    paintId: encodeGlassFrameStylePaintToken('tom'),
+    label: 'זכוכית פרופיל תום',
+    testId: 'structure-library-glass-button-profile',
+  },
+];
 
 export type StructureDimensionsContentProps = {
   isSliding: boolean;
@@ -44,6 +75,7 @@ export type StructureDimensionsContentProps = {
   onClearCellDimsDepth: () => void;
   onToggleStackSplit: () => void;
   onToggleLibraryUpperDoors: () => void;
+  onPickLibraryGlass: (paintId: string) => void;
   renderStackLinkBadge: (field: StructureStackLinkField, isManual: boolean) => ReactNode;
   onResetAutoWidth: () => void;
 };

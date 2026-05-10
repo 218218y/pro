@@ -1,10 +1,23 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { MULTI_GLASS_STYLE_OPTIONS } from '../esm/native/ui/react/tabs/design_tab_multicolor_panel_contracts.js';
 import {
   createDesignTabMulticolorViewState,
   resolveDesignTabCurtainChoice,
 } from '../esm/native/ui/react/tabs/design_tab_multicolor_panel_state.js';
+
+test('[design-tab-multicolor-state] exposes all three glass style buttons in the requested RTL order', () => {
+  assert.deepEqual(
+    MULTI_GLASS_STYLE_OPTIONS.map(option => option.label),
+    ['זכוכית', 'זכוכית מלאה', 'זכוכית פרופיל תום']
+  );
+  assert.deepEqual(
+    MULTI_GLASS_STYLE_OPTIONS.map(option => option.paintId),
+    ['glass', '__wp_glass_style__:flat', '__wp_glass_style__:tom']
+  );
+  assert.equal(MULTI_GLASS_STYLE_OPTIONS[0]?.curtainPreset, 'none');
+});
 
 test('[design-tab-multicolor-state] derives curtain choice, swatch selection, and hints from one canonical state seam', () => {
   const viewState = createDesignTabMulticolorViewState({

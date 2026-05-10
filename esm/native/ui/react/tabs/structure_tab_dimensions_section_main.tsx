@@ -1,9 +1,11 @@
 import type { ReactElement } from 'react';
 
-import { InlineNotice, ModeToggleButton } from '../components/index.js';
+import { InlineNotice, ModeToggleButton, OptionButton, OptionButtonGroup } from '../components/index.js';
 import { DimField } from './structure_tab_controls.js';
 import { readStructureDimensionBounds } from './structure_tab_dimension_constraints.js';
 import {
+  STRUCTURE_LIBRARY_GLASS_BUTTON_GROUP_TEST_ID,
+  STRUCTURE_LIBRARY_GLASS_OPTIONS,
   STRUCTURE_LIBRARY_UPPER_DOORS_BUTTON_TEST_ID,
   type StructureDimensionsContentProps,
 } from './structure_tab_dimensions_section_contracts.js';
@@ -20,6 +22,7 @@ export function StructureDimensionsMainFields(props: {
   onSetRaw: StructureDimensionsContentProps['onSetRaw'];
   onResetAutoWidth: StructureDimensionsContentProps['onResetAutoWidth'];
   onToggleLibraryUpperDoors: StructureDimensionsContentProps['onToggleLibraryUpperDoors'];
+  onPickLibraryGlass: StructureDimensionsContentProps['onPickLibraryGlass'];
 }): ReactElement {
   return (
     <>
@@ -96,6 +99,29 @@ export function StructureDimensionsMainFields(props: {
           >
             {props.libraryUpperDoorsHidden ? 'החזר דלתות עליונות' : 'הסר דלתות עליונות'}
           </ModeToggleButton>
+
+          <div data-testid={STRUCTURE_LIBRARY_GLASS_BUTTON_GROUP_TEST_ID} style={{ marginTop: 8 }}>
+            <OptionButtonGroup
+              columns={3}
+              density="compact"
+              className="wp-r-library-glass-options"
+              label="בחירת זכוכית לדלתות ספריה"
+            >
+              {STRUCTURE_LIBRARY_GLASS_OPTIONS.map(option => (
+                <OptionButton
+                  key={option.id}
+                  density="compact"
+                  className="wp-flex-1"
+                  data-testid={option.testId}
+                  data-glass-style={option.id}
+                  onClick={() => props.onPickLibraryGlass(option.paintId)}
+                  title={option.label}
+                >
+                  {option.label}
+                </OptionButton>
+              ))}
+            </OptionButtonGroup>
+          </div>
         </div>
       ) : null}
 

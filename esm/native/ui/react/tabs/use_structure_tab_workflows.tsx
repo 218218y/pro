@@ -14,6 +14,7 @@ import {
 import { useStructureTabWorkflowControllers } from './use_structure_tab_workflows_controllers.js';
 import { useStructureTabWorkflowControllerEffects } from './use_structure_tab_workflows_effects.js';
 import { useStructureTabRenderStackLinkBadge } from './use_structure_tab_workflows_render.js';
+import { enterStructureLibraryGlassEditMode } from './structure_tab_library_glass_edit.js';
 
 export type {
   StructureStackLinkField,
@@ -131,6 +132,13 @@ export function useStructureTabWorkflows(args: UseStructureTabWorkflowsArgs): Us
     }
   }, [app, fb, getUpperDoorsCount, setLibraryUpperDoorsRemoved, state.libraryUpperDoorsHidden]);
 
+  const pickLibraryGlass = useCallback(
+    (paintId: string) => {
+      enterStructureLibraryGlassEditMode({ app, fb, paintId });
+    },
+    [app, fb]
+  );
+
   const resetAllCellDimsOverrides = useCallback(() => {
     workflowController.resetAllCellDimsOverrides();
   }, [workflowController]);
@@ -160,6 +168,7 @@ export function useStructureTabWorkflows(args: UseStructureTabWorkflowsArgs): Us
     toggleStackSplit: structuralController.toggleStackSplit,
     toggleLibraryMode,
     toggleLibraryUpperDoors,
+    pickLibraryGlass,
     resetAllCellDimsOverrides,
     clearCellDimsWidth,
     clearCellDimsHeight,

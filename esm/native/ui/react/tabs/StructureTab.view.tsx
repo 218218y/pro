@@ -107,6 +107,7 @@ function StructureTabInner(props: { active: boolean }) {
     onClearCellDimsDepth: workflows.clearCellDimsDepth,
     onToggleStackSplit: workflows.toggleStackSplit,
     onToggleLibraryUpperDoors: workflows.toggleLibraryUpperDoors,
+    onPickLibraryGlass: workflows.pickLibraryGlass,
     renderStackLinkBadge: workflows.renderStackLinkBadge,
     onResetAutoWidth: workflows.resetAutoWidth,
   };

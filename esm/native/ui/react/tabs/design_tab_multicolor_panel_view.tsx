@@ -160,7 +160,7 @@ function MultiColorGlassStyleSection(props: {
             className="wp-flex-1"
             selected={props.activeGlassFrameStyle === option.id}
             data-glass-style={option.id}
-            onClick={() => props.onPickBrush(option.paintId)}
+            onClick={() => props.onPickBrush(option.paintId, option.curtainPreset)}
             title={option.label}
           >
             {option.label}

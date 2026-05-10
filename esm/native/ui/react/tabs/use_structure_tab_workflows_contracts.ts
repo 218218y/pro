@@ -25,6 +25,7 @@ export type UseStructureTabWorkflowsResult = {
   toggleStackSplit: () => void;
   toggleLibraryMode: () => void;
   toggleLibraryUpperDoors: () => void;
+  pickLibraryGlass: (paintId: string) => void;
   resetAllCellDimsOverrides: () => void;
   clearCellDimsWidth: () => void;
   clearCellDimsHeight: () => void;
