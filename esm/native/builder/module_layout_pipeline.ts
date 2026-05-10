@@ -72,10 +72,6 @@ function toDoorCount(m: ModuleLike | null | undefined): number {
   return typeof raw === 'number' ? raw : Number(raw) || 0;
 }
 
-function reportModuleLayoutError(App: AppContainer | null | undefined, err: unknown, where: string): void {
-  reportError(App, err, { where, fatal: true });
-}
-
 function isCoreLayoutLike(value: unknown): value is CoreLayoutLike {
   const rec = asRecord<CoreLayoutLike>(value);
   if (!rec) return false;
