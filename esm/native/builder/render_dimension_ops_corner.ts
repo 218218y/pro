@@ -1,24 +1,112 @@
 import { WARDROBE_DIMENSION_GUIDE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { RenderDimensionContext } from './render_dimension_ops_shared.js';
 
-export function applyCornerDimensionOps(ctx: RenderDimensionContext): void {
+type CornerDimensionGuide = typeof WARDROBE_DIMENSION_GUIDE_DIMENSIONS.corner;
+type CornerVerticalPlacement = typeof WARDROBE_DIMENSION_GUIDE_DIMENSIONS.verticalPlacement;
+
+type CornerWingDimensionGeometry = {
+  roomCornerZ: number;
+  sideGuideLengthM: number;
+  wingW: number;
+  wingH: number;
+  wingD: number;
+  zStart: number;
+  zEnd: number;
+  xBack: number;
+  xFront: number;
+  xCenter: number;
+  xHeight: number;
+  yWingTotal: number;
+  yWingCells: number;
+};
+
+function hasActiveCornerConnector(ctx: RenderDimensionContext, guide: CornerDimensionGuide): boolean {
+  return (
+    ctx.isCornerMode &&
+    ctx.cornerConnectorEnabled &&
+    Number.isFinite(ctx.cornerWallLenM) &&
+    ctx.cornerWallLenM > guide.connectorWallMinLengthM
+  );
+}
+
+function resolveCornerWingDimensionGeometry(
+  ctx: RenderDimensionContext,
+  guide: CornerDimensionGuide,
+  guidePlacement: CornerVerticalPlacement
+): CornerWingDimensionGeometry | null {
   const {
-    addDimensionLine,
     totalW,
     D,
     hasCornice,
     isCornerMode,
-    noMainWardrobe,
+    cornerSide,
+    cornerWallLenM,
+    cornerOffsetXM,
+    cornerOffsetZM,
+    cornerDoorCount,
+    cornerWingLenM,
+    cornerWingHeightM,
+    cornerWingDepthM,
+    displayH,
+  } = ctx;
+
+  if (!isCornerMode) return null;
+
+  const connectorActive = hasActiveCornerConnector(ctx, guide);
+  const showPentagonOnlySideGuide = connectorActive && cornerDoorCount === 0;
+  const dimensionWingLenM =
+    Number.isFinite(cornerWingLenM) && cornerWingLenM > guide.wingMinLengthM ? cornerWingLenM : 0;
+
+  if (!showPentagonOnlySideGuide && !(dimensionWingLenM > guide.wingMinLengthM)) {
+    return null;
+  }
+
+  const roomCornerX =
+    (cornerSide === 'left' ? -totalW / 2 - cornerWallLenM : totalW / 2 + cornerWallLenM) + cornerOffsetXM;
+  const roomCornerZ = -(D / 2) + cornerOffsetZM;
+  const wingW = showPentagonOnlySideGuide ? 0 : dimensionWingLenM;
+  const sideGuideLengthM = showPentagonOnlySideGuide ? cornerWallLenM : cornerWallLenM + wingW;
+  const wingH = Number.isFinite(cornerWingHeightM) && cornerWingHeightM > 0 ? cornerWingHeightM : displayH;
+  const wingD = Number.isFinite(cornerWingDepthM) && cornerWingDepthM > 0 ? cornerWingDepthM : D;
+  const zStart = roomCornerZ + cornerWallLenM;
+  const zEnd = zStart + wingW;
+  const xBack = roomCornerX;
+  const xFront = cornerSide === 'left' ? roomCornerX + wingD : roomCornerX - wingD;
+  const xCenter = (xBack + xFront) / 2;
+  const xHeight = xBack + (xFront - xBack) * guide.wingHeightLineRatio;
+  const yWingTotal =
+    wingH +
+    (hasCornice ? guidePlacement.totalYOffsetWithCorniceM : guidePlacement.totalYOffsetWithoutCorniceM);
+  const yWingCells =
+    wingH + (hasCornice ? guidePlacement.cellYOffsetWithCorniceM : guidePlacement.cellYOffsetWithoutCorniceM);
+
+  return {
+    roomCornerZ,
+    sideGuideLengthM,
+    wingW,
+    wingH,
+    wingD,
+    zStart,
+    zEnd,
+    xBack,
+    xFront,
+    xCenter,
+    xHeight,
+    yWingTotal,
+    yWingCells,
+  };
+}
+
+export function applyCornerDimensionOps(ctx: RenderDimensionContext): void {
+  const {
+    addDimensionLine,
+    totalW,
+    isCornerMode,
     cornerSide,
     cornerConnectorEnabled,
     cornerWingVisible,
     cornerWallLenM,
     cornerOffsetXM,
-    cornerOffsetZM,
-    cornerWingLenM,
-    cornerWingHeightM,
-    cornerWingDepthM,
-    displayH,
     yTotal,
     CELL_DIM_TEXT_SCALE,
     vec,
@@ -26,6 +114,8 @@ export function applyCornerDimensionOps(ctx: RenderDimensionContext): void {
   const guide = WARDROBE_DIMENSION_GUIDE_DIMENSIONS.corner;
   const guidePlacement = WARDROBE_DIMENSION_GUIDE_DIMENSIONS.verticalPlacement;
   const guideTextScale = WARDROBE_DIMENSION_GUIDE_DIMENSIONS.textScale;
+  const wingGeometry = resolveCornerWingDimensionGeometry(ctx, guide, guidePlacement);
+  const showCornerWingCabinetWidth = cornerWingVisible && !!wingGeometry && wingGeometry.wingW > guide.wingMinLengthM;
 
   if (isCornerMode && cornerConnectorEnabled && cornerWallLenM > guide.connectorWallMinLengthM) {
     const minX = cornerSide === 'left' ? -totalW / 2 - cornerWallLenM + cornerOffsetXM : -totalW / 2;
@@ -42,91 +132,42 @@ export function applyCornerDimensionOps(ctx: RenderDimensionContext): void {
     }
   }
 
-  if (cornerWingVisible && Number.isFinite(cornerWingLenM) && cornerWingLenM > guide.wingMinLengthM) {
-    const roomCornerX =
-      (cornerSide === 'left' ? -totalW / 2 - cornerWallLenM : totalW / 2 + cornerWallLenM) + cornerOffsetXM;
-    const roomCornerZ = -(D / 2) + cornerOffsetZM;
-    const wingW = cornerWingLenM;
-    const wingH = Number.isFinite(cornerWingHeightM) && cornerWingHeightM > 0 ? cornerWingHeightM : displayH;
-    const wingD = Number.isFinite(cornerWingDepthM) && cornerWingDepthM > 0 ? cornerWingDepthM : D;
-    const zStart = roomCornerZ + cornerWallLenM;
-    const zEnd = zStart + wingW;
-    const xBack = roomCornerX;
-    const xFront = cornerSide === 'left' ? roomCornerX + wingD : roomCornerX - wingD;
-    const xCenter = (xBack + xFront) / 2;
-    const yWingTotal =
-      wingH +
-      (hasCornice ? guidePlacement.totalYOffsetWithCorniceM : guidePlacement.totalYOffsetWithoutCorniceM);
-    const yWingCells =
-      wingH +
-      (hasCornice ? guidePlacement.cellYOffsetWithCorniceM : guidePlacement.cellYOffsetWithoutCorniceM);
+  if (wingGeometry) {
+    const {
+      roomCornerZ,
+      sideGuideLengthM,
+      wingW,
+      wingH,
+      wingD,
+      zStart,
+      zEnd,
+      xBack,
+      xFront,
+      xCenter,
+      xHeight,
+      yWingTotal,
+      yWingCells,
+    } = wingGeometry;
 
-    addDimensionLine(
-      vec(xCenter, yWingTotal, zStart),
-      vec(xCenter, yWingTotal, zEnd),
-      vec(0, guide.wingTotalTextYOffsetM, 0),
-      (wingW * 100).toFixed(0),
-      guideTextScale.total
-    );
+    if (showCornerWingCabinetWidth) {
+      addDimensionLine(
+        vec(xCenter, yWingTotal, zStart),
+        vec(xCenter, yWingTotal, zEnd),
+        vec(0, guide.wingTotalTextYOffsetM, 0),
+        (wingW * 100).toFixed(0),
+        guideTextScale.total
+      );
+    }
 
     if (cornerConnectorEnabled && cornerWallLenM > guide.connectorWallMinLengthM) {
-      const fullWingW = wingW + cornerWallLenM;
       addDimensionLine(
         vec(xCenter, yWingCells, roomCornerZ),
         vec(xCenter, yWingCells, zEnd),
         vec(0, guide.wingCellTextYOffsetM, 0),
-        (fullWingW * 100).toFixed(0),
+        (sideGuideLengthM * 100).toFixed(0),
         CELL_DIM_TEXT_SCALE
       );
     }
-  }
-
-  if (
-    noMainWardrobe &&
-    isCornerMode &&
-    cornerConnectorEnabled &&
-    cornerWallLenM > guide.connectorWallMinLengthM
-  ) {
-    const connectorH = displayH;
-    const connectorD = D;
-    const roomCornerX =
-      (cornerSide === 'left' ? -totalW / 2 - cornerWallLenM : totalW / 2 + cornerWallLenM) + cornerOffsetXM;
-    const roomCornerZ = -(D / 2) + cornerOffsetZM;
-    const connectorFrontX = cornerSide === 'left' ? roomCornerX + connectorD : roomCornerX - connectorD;
-    const connectorDepthMidZ =
-      roomCornerZ +
-      Math.min(
-        cornerWallLenM * guide.connectorDepthMidRatio,
-        Math.max(guide.connectorDepthMinM, cornerWallLenM - guide.connectorDepthInsetM)
-      );
-    const connectorHeightX = roomCornerX + (connectorFrontX - roomCornerX) * guide.connectorHeightLineRatio;
-
-    addDimensionLine(
-      vec(connectorFrontX, connectorH - guide.depthStartYOffsetM, connectorDepthMidZ),
-      vec(roomCornerX, connectorH - guide.depthEndYOffsetM, connectorDepthMidZ),
-      vec(0, 0, guide.depthTextOffsetZM),
-      (connectorD * 100).toFixed(0)
-    );
-    addDimensionLine(
-      vec(connectorHeightX, 0, connectorDepthMidZ),
-      vec(connectorHeightX, connectorH, connectorDepthMidZ),
-      vec(0, 0, guide.heightTextOffsetZM),
-      (connectorH * 100).toFixed(0),
-      guideTextScale.total
-    );
-  }
-
-  if (cornerWingVisible && Number.isFinite(cornerWingLenM) && cornerWingLenM > guide.wingMinLengthM) {
-    const roomCornerX =
-      (cornerSide === 'left' ? -totalW / 2 - cornerWallLenM : totalW / 2 + cornerWallLenM) + cornerOffsetXM;
-    const roomCornerZ = -(D / 2) + cornerOffsetZM;
-    const wingW = cornerWingLenM;
-    const wingH = Number.isFinite(cornerWingHeightM) && cornerWingHeightM > 0 ? cornerWingHeightM : displayH;
-    const wingD = Number.isFinite(cornerWingDepthM) && cornerWingDepthM > 0 ? cornerWingDepthM : D;
-    const zEnd = roomCornerZ + cornerWallLenM + wingW;
-    const xBack = roomCornerX;
-    const xFront = cornerSide === 'left' ? roomCornerX + wingD : roomCornerX - wingD;
-    const xHeight = xBack + (xFront - xBack) * guide.wingHeightLineRatio;
 
     addDimensionLine(
       vec(xFront, wingH - guide.depthStartYOffsetM, zEnd),
