@@ -1,16 +1,21 @@
 import { getThreeMaybe } from '../runtime/three_access.js';
 import { __wp_resolveInteriorHoverTarget } from './canvas_picking_local_helpers.js';
+import { resolveShelfBoardPick } from './canvas_picking_shelf_hit_targets.js';
 import type { CanvasInteriorHoverFlowArgs } from './canvas_picking_interior_hover_shared.js';
 import {
   getSketchPreviewFns,
   hideLayoutPreview,
   hideSketchPreview,
   readBraceShelves,
+  readCustomData,
   readGridDivisions,
   readHoverModuleConfig,
   setPreview,
 } from './canvas_picking_interior_hover_shared.js';
-import { hasShelfAtIndex } from './canvas_picking_interior_hover_layout_family_shared.js';
+import {
+  hasShelfAtIndex,
+  readExistingShelfVariant,
+} from './canvas_picking_interior_hover_layout_family_shared.js';
 
 export function tryHandleCanvasBraceShelvesHover(args: CanvasInteriorHoverFlowArgs): boolean {
   const {
@@ -46,23 +51,30 @@ export function tryHandleCanvasBraceShelvesHover(args: CanvasInteriorHoverFlowAr
     }
 
     const step = target.spanH / divisions;
-    let shelfIndex = Math.round((target.hitY - target.bottomY) / step);
-    if (shelfIndex < 1) shelfIndex = 1;
-    if (shelfIndex > divisions - 1) shelfIndex = divisions - 1;
-    const shelfY = target.bottomY + shelfIndex * step;
-    const maxDelta = Math.min(0.03, Math.max(0.018, step * 0.12));
-    if (Math.abs(target.hitY - shelfY) > maxDelta) {
+    const shelfPick = resolveShelfBoardPick({
+      intersects: target.intersects,
+      fallbackHitY: target.hitY,
+      bottomY: target.bottomY,
+      topY: target.topY,
+      divisions,
+      boardToleranceM: Math.max(0.035, target.woodThick * 2),
+      fallbackToleranceM: Math.min(0.03, Math.max(0.018, step * 0.12)),
+    });
+    if (!shelfPick) {
       hideSketchPreview({ App, hideSketchPreview: hideSketchPreviewFn });
       return false;
     }
 
+    const { shelfIndex, shelfY } = shelfPick;
     if (!hasShelfAtIndex(cfgRef, shelfIndex)) {
       hideSketchPreview({ App, hideSketchPreview: hideSketchPreviewFn });
       return false;
     }
 
     const braceList = readBraceShelves(cfgRef);
-    const isBrace = braceList.some(v => Number(v) === shelfIndex);
+    const customData = readCustomData(cfgRef);
+    const shelfVariants = Array.isArray(customData?.shelfVariants) ? customData.shelfVariants : [];
+    const isBrace = readExistingShelfVariant({ braceList, shelfIndex, shelfVariants }) === 'brace';
     return setPreview(setSketchPreview, {
       App,
       THREE: getThreeMaybe(App),

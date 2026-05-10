@@ -1,4 +1,5 @@
 import { getInternalGridMap } from '../runtime/cache_access.js';
+import { resolveShelfBoardPick } from './canvas_picking_shelf_hit_targets.js';
 import { __wp_reportPickingIssue } from './canvas_picking_core_helpers.js';
 import {
   type CanvasLayoutEditClickArgs,
@@ -6,8 +7,11 @@ import {
   asRecord,
   readGridInfo,
   readHitPointY,
-  readSelectorUserData,
 } from './canvas_picking_layout_edit_flow_shared.js';
+import {
+  addBraceShelfIndex,
+  removeBraceShelfIndex,
+} from './canvas_picking_manual_layout_config_ops_shared.js';
 
 export function tryHandleCanvasBraceShelvesClick(args: CanvasLayoutEditClickArgs): boolean {
   const {
@@ -37,33 +41,23 @@ export function tryHandleCanvasBraceShelvesClick(args: CanvasLayoutEditClickArgs
     const divisions = typeof info.gridDivisions === 'number' ? info.gridDivisions : 6;
     if (typeof topY !== 'number' || typeof bottomY !== 'number' || divisions <= 1) return;
 
-    const shelfBoardHit = intersects.find(h => {
-      const o = h && h.object ? h.object : null;
-      const obj = asRecord(o);
-      const ud = readSelectorUserData(obj?.userData);
-      if (!ud) return false;
-      if (ud.__kind === 'shelf_pin' || ud.__kind === 'brace_seam') return false;
-      return ud.partId === 'all_shelves' || ud.partId === 'corner_shelves';
-    });
-    const shelfHitY =
-      shelfBoardHit && typeof shelfBoardHit.point?.y === 'number' ? shelfBoardHit.point.y : null;
     const firstHitY = readHitPointY(intersects[0]);
-    const hitY = typeof shelfHitY === 'number' ? shelfHitY : moduleHitY !== null ? moduleHitY : firstHitY;
-    const clickedOnShelf = typeof shelfHitY === 'number';
-    if (typeof hitY !== 'number') return;
-
     const totalHeight = topY - bottomY;
     const safeStep = totalHeight / divisions;
     if (!Number.isFinite(safeStep) || safeStep <= 0) return;
 
-    const relativeY = hitY - bottomY;
-    let shelfIndex = Math.round(relativeY / safeStep);
-    if (shelfIndex < 1) shelfIndex = 1;
-    if (shelfIndex > divisions - 1) shelfIndex = divisions - 1;
+    const shelfPick = resolveShelfBoardPick({
+      intersects,
+      fallbackHitY: moduleHitY !== null ? moduleHitY : firstHitY,
+      bottomY,
+      topY,
+      divisions,
+      boardToleranceM: Math.min(0.05, Math.max(0.035, safeStep * 0.12)),
+      fallbackToleranceM: safeStep * 0.3,
+    });
+    if (!shelfPick) return;
 
-    const shelfY = bottomY + shelfIndex * safeStep;
-    const maxDelta = clickedOnShelf ? 0.03 : safeStep * 0.3;
-    if (Math.abs(hitY - shelfY) > maxDelta) return;
+    const { shelfIndex } = shelfPick;
 
     const isCustom = !!(configRef && configRef.isCustom);
     let shelfExists = false;
@@ -98,9 +92,19 @@ export function tryHandleCanvasBraceShelvesClick(args: CanvasLayoutEditClickArgs
       mapKey,
       cfg => {
         const list = ensureBraceShelves(cfg);
-        const idx = list.indexOf(shelfIndex);
-        if (idx >= 0) list.splice(idx, 1);
-        else list.push(shelfIndex);
+        const customData = asRecord(cfg.customData);
+        const shelfVariants = Array.isArray(customData?.shelfVariants) ? customData.shelfVariants : null;
+        const arrayIdx = shelfIndex - 1;
+        const savedVariant =
+          shelfVariants && typeof shelfVariants[arrayIdx] === 'string' ? String(shelfVariants[arrayIdx]) : '';
+        const isBrace = list.some(value => Number(value) === shelfIndex) || savedVariant === 'brace';
+
+        if (isBrace) {
+          removeBraceShelfIndex(list, shelfIndex);
+          if (shelfVariants && savedVariant === 'brace') shelfVariants[arrayIdx] = '';
+        } else {
+          addBraceShelfIndex(list, shelfIndex);
+        }
         try {
           list.sort((a, b) => Number(a) - Number(b));
         } catch (err) {
