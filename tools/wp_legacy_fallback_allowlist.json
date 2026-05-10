@@ -105,49 +105,7 @@
         "runtime-default": 1
       }
     },
-    "esm/native/runtime/mode_write_access.ts": {
-      "total": 1,
-      "categories": {
-        "runtime-default": 1
-      }
-    },
-    "esm/native/runtime/runtime_write_access.ts": {
-      "total": 1,
-      "categories": {
-        "runtime-default": 1
-      }
-    },
-    "esm/native/runtime/slice_write_access_dispatch_order.ts": {
-      "total": 4,
-      "categories": {
-        "runtime-default": 4
-      }
-    },
-    "esm/native/runtime/slice_write_access_dispatch.ts": {
-      "total": 1,
-      "categories": {
-        "project-migration": 1
-      }
-    },
-    "esm/native/runtime/slice_write_access.ts": {
-      "total": 1,
-      "categories": {
-        "runtime-default": 1
-      }
-    },
-    "esm/native/runtime/ui_write_access.ts": {
-      "total": 2,
-      "categories": {
-        "runtime-default": 2
-      }
-    },
     "esm/native/services/cloud_sync_config_shared.ts": {
-      "total": 1,
-      "categories": {
-        "runtime-default": 1
-      }
-    },
-    "esm/native/services/cloud_sync_lifecycle_runtime_realtime_start.ts": {
       "total": 1,
       "categories": {
         "runtime-default": 1

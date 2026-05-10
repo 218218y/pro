@@ -7,7 +7,7 @@ import type {
   SliceWriteOptions,
 } from './slice_write_access_shared.js';
 
-export type RootFallbackOptions = Pick<
+export type RootPatchDispatchOptions = Pick<
   CanonicalPatchDispatchOptions,
   'allowRootActionPatchFallback' | 'allowRootStorePatchFallback'
 >;
@@ -18,28 +18,28 @@ function freezeRootPatchDispatchTargets(
   return Object.freeze(targets.slice());
 }
 
-const DEFAULT_ROOT_FALLBACK_DISPATCH_TARGETS = freezeRootPatchDispatchTargets('rootStorePatch');
-const ROOT_FALLBACK_DISPATCH_TARGETS_WITH_ACTION = freezeRootPatchDispatchTargets(
+const DEFAULT_ROOT_PATCH_DISPATCH_TARGETS = freezeRootPatchDispatchTargets('rootStorePatch');
+const ROOT_PATCH_DISPATCH_TARGETS_WITH_ACTION = freezeRootPatchDispatchTargets(
   'rootActionPatch',
   'rootStorePatch'
 );
-const ROOT_FALLBACK_ACTION_ONLY_DISPATCH_TARGETS = freezeRootPatchDispatchTargets('rootActionPatch');
-const EMPTY_ROOT_FALLBACK_DISPATCH_TARGETS = freezeRootPatchDispatchTargets();
+const ROOT_PATCH_ACTION_ONLY_DISPATCH_TARGETS = freezeRootPatchDispatchTargets('rootActionPatch');
+const EMPTY_ROOT_PATCH_DISPATCH_TARGETS = freezeRootPatchDispatchTargets();
 
 const sliceDispatchTargetsCache = new Map<number, readonly SliceDispatchTarget[]>();
 const metaTouchDispatchTargetsCache = new Map<number, readonly MetaTouchDispatchTarget[]>();
 
-function createRootFallbackDispatchTargetSet(opts?: RootFallbackOptions): readonly RootPatchDispatchTarget[] {
+function createRootPatchDispatchTargetSet(opts?: RootPatchDispatchOptions): readonly RootPatchDispatchTarget[] {
   const allowRootActionPatchFallback = !!opts?.allowRootActionPatchFallback;
   const allowRootStorePatchFallback = opts?.allowRootStorePatchFallback === true;
   if (!allowRootStorePatchFallback) {
     return allowRootActionPatchFallback
-      ? ROOT_FALLBACK_ACTION_ONLY_DISPATCH_TARGETS
-      : EMPTY_ROOT_FALLBACK_DISPATCH_TARGETS;
+      ? ROOT_PATCH_ACTION_ONLY_DISPATCH_TARGETS
+      : EMPTY_ROOT_PATCH_DISPATCH_TARGETS;
   }
   return allowRootActionPatchFallback
-    ? ROOT_FALLBACK_DISPATCH_TARGETS_WITH_ACTION
-    : DEFAULT_ROOT_FALLBACK_DISPATCH_TARGETS;
+    ? ROOT_PATCH_DISPATCH_TARGETS_WITH_ACTION
+    : DEFAULT_ROOT_PATCH_DISPATCH_TARGETS;
 }
 
 function createSliceDispatchTargetCacheKey(opts: SliceWriteOptions): number {
@@ -65,20 +65,20 @@ function buildCanonicalDispatchTargetOrder<T>(args: {
   skipSecondary?: boolean;
   primary: T;
   secondary: T;
-  fallbacks: readonly T[];
+  tailTargets: readonly T[];
 }): readonly T[] {
   const out: T[] = [];
   if (args.preferPrimary) out.push(args.primary);
   if (!args.skipSecondary) out.push(args.secondary);
   if (!args.preferPrimary) out.push(args.primary);
-  out.push(...args.fallbacks);
+  out.push(...args.tailTargets);
   return Object.freeze(out.slice());
 }
 
-export function resolveRootFallbackDispatchTargets(
-  opts?: RootFallbackOptions
+export function resolveRootPatchDispatchTargets(
+  opts?: RootPatchDispatchOptions
 ): readonly RootPatchDispatchTarget[] {
-  return createRootFallbackDispatchTargetSet(opts);
+  return createRootPatchDispatchTargetSet(opts);
 }
 
 export function resolveCanonicalMetaTouchOptions(opts?: CanonicalPatchDispatchOptions): MetaTouchOptions {
@@ -103,7 +103,7 @@ export function resolveSliceDispatchTargets(opts: SliceWriteOptions): readonly S
     skipSecondary: opts.skipNamespacePatch,
     primary: 'storeWriter',
     secondary: 'namespacePatch',
-    fallbacks: resolveRootFallbackDispatchTargets(opts),
+    tailTargets: resolveRootPatchDispatchTargets(opts),
   });
   sliceDispatchTargetsCache.set(key, out);
   return out;
@@ -119,7 +119,7 @@ export function resolveMetaTouchDispatchTargets(opts?: MetaTouchOptions): readon
     skipSecondary: opts?.skipNamespaceTouch,
     primary: 'metaStoreWriter',
     secondary: 'metaTouch',
-    fallbacks: resolveRootFallbackDispatchTargets(opts),
+    tailTargets: resolveRootPatchDispatchTargets(opts),
   });
   metaTouchDispatchTargetsCache.set(key, out);
   return out;

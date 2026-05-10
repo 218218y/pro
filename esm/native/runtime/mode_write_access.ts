@@ -3,7 +3,7 @@
 // Goal:
 // - Centralize the mode write seams.
 // - Prefer App.actions.mode.* surfaces when installed (state_api/kernel install).
-// - Keep store-backed fallbacks for minimal harnesses.
+// - Keep store-backed compatibility routes for minimal harnesses.
 //
 // Policy:
 // - Mode transitions are transient UI flow control (no history/autosave/persist/build by default).

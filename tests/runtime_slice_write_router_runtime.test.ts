@@ -39,7 +39,7 @@ test('[slice-write-access] getSingleSlicePatchRoute canonicalizes noisy one-slic
   assert.equal(getSingleSlicePatchRoute({ ui: {} }), null);
 });
 
-test('[slice-write-access] patchSliceWithStoreFallback prefers namespaced patch over store/root fallbacks', () => {
+test('[slice-write-access] patchSliceWithStoreFallback prefers namespaced patch over store/root patch routes', () => {
   const calls: AnyRecord[] = [];
   const App = {
     actions: {
@@ -518,7 +518,7 @@ test('[slice-write-access] dispatchCanonicalPatchPayload falls through from root
   ]);
 });
 
-test('[slice-write-access] root patch fallbacks are opt-in instead of default write paths', () => {
+test('[slice-write-access] root patch routes are opt-in instead of default write paths', () => {
   const calls: AnyRecord[] = [];
   const App = {
     actions: {
@@ -861,7 +861,7 @@ test('[slice-write-access] canonical root patch strips empty known slices before
   ]);
 });
 
-test('[slice-write-access] canonical dispatch converges noisy one-slice root payloads onto the slice route instead of synthetic root patch fallback', () => {
+test('[slice-write-access] canonical dispatch converges noisy one-slice root payloads onto the slice route instead of synthetic root patch route', () => {
   const calls: AnyRecord[] = [];
   const App = {
     actions: {
@@ -1064,7 +1064,7 @@ test('[slice-write-access] getWriteAppLike/getWriteActions/getWriteStore stay al
   assert.equal(getWriteAppLike(App)?.store, nextStore);
 });
 
-test('[slice-write-access] touchMetaWithStoreFallback reuses the canonical root fallback dispatch order when namespace and store-meta seams are skipped', () => {
+test('[slice-write-access] touchMetaWithStoreFallback reuses the canonical root patch dispatch order when namespace and store-meta seams are skipped', () => {
   const calls: AnyRecord[] = [];
   const App = {
     actions: {

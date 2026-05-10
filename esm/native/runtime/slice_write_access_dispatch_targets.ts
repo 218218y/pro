@@ -18,7 +18,7 @@ import {
 
 export type RootPayloadReader = () => PatchPayload;
 
-type RootFallbackTargetHandler = {
+type RootPatchTargetHandler = {
   hasSeam: (context: ResolvedWriteContext) => boolean;
   dispatch: (
     context: ResolvedWriteContext,
@@ -58,7 +58,7 @@ type SliceDispatchTargetHandler = {
   }) => unknown;
 };
 
-export const ROOT_FALLBACK_TARGET_HANDLERS: Record<RootPatchDispatchTarget, RootFallbackTargetHandler> = {
+export const ROOT_PATCH_TARGET_HANDLERS: Record<RootPatchDispatchTarget, RootPatchTargetHandler> = {
   rootActionPatch: {
     hasSeam: context => !!context.rootPatchAction,
     dispatch: (context, readRootPayload, meta) => context.rootPatchAction?.(readRootPayload(), meta),
@@ -79,14 +79,14 @@ export const META_TOUCH_TARGET_HANDLERS: Record<MetaTouchDispatchTarget, MetaTou
     dispatch: (context, meta) => callDedicatedMetaStoreWriter(context.store?.setMeta, meta),
   },
   rootActionPatch: {
-    hasSeam: context => ROOT_FALLBACK_TARGET_HANDLERS.rootActionPatch.hasSeam(context),
+    hasSeam: context => ROOT_PATCH_TARGET_HANDLERS.rootActionPatch.hasSeam(context),
     dispatch: (context, meta) =>
-      ROOT_FALLBACK_TARGET_HANDLERS.rootActionPatch.dispatch(context, () => ({}), meta),
+      ROOT_PATCH_TARGET_HANDLERS.rootActionPatch.dispatch(context, () => ({}), meta),
   },
   rootStorePatch: {
-    hasSeam: context => ROOT_FALLBACK_TARGET_HANDLERS.rootStorePatch.hasSeam(context),
+    hasSeam: context => ROOT_PATCH_TARGET_HANDLERS.rootStorePatch.hasSeam(context),
     dispatch: (context, meta) =>
-      ROOT_FALLBACK_TARGET_HANDLERS.rootStorePatch.dispatch(context, () => ({}), meta),
+      ROOT_PATCH_TARGET_HANDLERS.rootStorePatch.dispatch(context, () => ({}), meta),
   },
 };
 
@@ -139,14 +139,14 @@ export const SLICE_DISPATCH_TARGET_HANDLERS: Record<SliceDispatchTarget, SliceDi
     },
   },
   rootActionPatch: {
-    hasSeam: context => ROOT_FALLBACK_TARGET_HANDLERS.rootActionPatch.hasSeam(context),
+    hasSeam: context => ROOT_PATCH_TARGET_HANDLERS.rootActionPatch.hasSeam(context),
     dispatch: ({ context, meta, readRootPayload }) =>
-      ROOT_FALLBACK_TARGET_HANDLERS.rootActionPatch.dispatch(context, readRootPayload, meta),
+      ROOT_PATCH_TARGET_HANDLERS.rootActionPatch.dispatch(context, readRootPayload, meta),
   },
   rootStorePatch: {
-    hasSeam: context => ROOT_FALLBACK_TARGET_HANDLERS.rootStorePatch.hasSeam(context),
+    hasSeam: context => ROOT_PATCH_TARGET_HANDLERS.rootStorePatch.hasSeam(context),
     dispatch: ({ context, meta, readRootPayload }) =>
-      ROOT_FALLBACK_TARGET_HANDLERS.rootStorePatch.dispatch(context, readRootPayload, meta),
+      ROOT_PATCH_TARGET_HANDLERS.rootStorePatch.dispatch(context, readRootPayload, meta),
   },
 };
 
@@ -154,7 +154,7 @@ export function hasRootPatchDispatchSeamForTarget(
   context: ResolvedWriteContext,
   target: RootPatchDispatchTarget
 ): boolean {
-  return ROOT_FALLBACK_TARGET_HANDLERS[target].hasSeam(context);
+  return ROOT_PATCH_TARGET_HANDLERS[target].hasSeam(context);
 }
 
 export function hasSliceDispatchTargetSeam<N extends SlicePatchNamespace>(
@@ -173,13 +173,13 @@ export function hasMetaTouchDispatchTargetSeam(
   return META_TOUCH_TARGET_HANDLERS[target].hasSeam(context);
 }
 
-export function dispatchRootFallbackTarget(
+export function dispatchRootPatchTarget(
   context: ResolvedWriteContext,
   target: RootPatchDispatchTarget,
   readRootPayload: RootPayloadReader,
   meta?: ActionMetaLike
 ): unknown {
-  return ROOT_FALLBACK_TARGET_HANDLERS[target].dispatch(context, readRootPayload, meta);
+  return ROOT_PATCH_TARGET_HANDLERS[target].dispatch(context, readRootPayload, meta);
 }
 
 export function dispatchSliceTarget<N extends SlicePatchNamespace>(args: {

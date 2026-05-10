@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-05-10T11:18:23.685Z",
+  "generatedAt": "2026-05-10T13:25:39.008Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 45,
-    "totalFiles": 33,
+    "totalOccurrences": 34,
+    "totalFiles": 26,
     "byCategory": {
-      "runtime-default": 24,
+      "runtime-default": 14,
       "browser-adapter": 9,
-      "project-migration": 5,
+      "project-migration": 4,
       "test-fixture": 7,
       "legacy-runtime-risk": 0,
       "unknown": 0
@@ -115,49 +115,7 @@
           "runtime-default": 1
         }
       },
-      "esm/native/runtime/mode_write_access.ts": {
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      "esm/native/runtime/runtime_write_access.ts": {
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      "esm/native/runtime/slice_write_access_dispatch_order.ts": {
-        "total": 4,
-        "categories": {
-          "runtime-default": 4
-        }
-      },
-      "esm/native/runtime/slice_write_access_dispatch.ts": {
-        "total": 1,
-        "categories": {
-          "project-migration": 1
-        }
-      },
-      "esm/native/runtime/slice_write_access.ts": {
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      "esm/native/runtime/ui_write_access.ts": {
-        "total": 2,
-        "categories": {
-          "runtime-default": 2
-        }
-      },
       "esm/native/services/cloud_sync_config_shared.ts": {
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      "esm/native/services/cloud_sync_lifecycle_runtime_realtime_start.ts": {
         "total": 1,
         "categories": {
           "runtime-default": 1
@@ -221,13 +179,6 @@
         }
       },
       {
-        "file": "esm/native/runtime/slice_write_access_dispatch_order.ts",
-        "total": 4,
-        "categories": {
-          "runtime-default": 4
-        }
-      },
-      {
         "file": "esm/native/adapters/browser/ui_ops.ts",
         "total": 3,
         "categories": {
@@ -239,13 +190,6 @@
         "total": 2,
         "categories": {
           "project-migration": 2
-        }
-      },
-      {
-        "file": "esm/native/runtime/ui_write_access.ts",
-        "total": 2,
-        "categories": {
-          "runtime-default": 2
         }
       },
       {
@@ -354,42 +298,7 @@
         }
       },
       {
-        "file": "esm/native/runtime/mode_write_access.ts",
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      {
-        "file": "esm/native/runtime/runtime_write_access.ts",
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      {
-        "file": "esm/native/runtime/slice_write_access_dispatch.ts",
-        "total": 1,
-        "categories": {
-          "project-migration": 1
-        }
-      },
-      {
-        "file": "esm/native/runtime/slice_write_access.ts",
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      {
         "file": "esm/native/services/cloud_sync_config_shared.ts",
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      {
-        "file": "esm/native/services/cloud_sync_lifecycle_runtime_realtime_start.ts",
         "total": 1,
         "categories": {
           "runtime-default": 1
@@ -421,6 +330,27 @@
         "total": 1,
         "categories": {
           "runtime-default": 1
+        }
+      },
+      {
+        "file": "esm/native/ui/react/sidebar_header_actions.ts",
+        "total": 1,
+        "categories": {
+          "runtime-default": 1
+        }
+      },
+      {
+        "file": "esm/native/ui/react/tabs/interior_tab_sections_handles.tsx",
+        "total": 1,
+        "categories": {
+          "runtime-default": 1
+        }
+      },
+      {
+        "file": "esm/test_imports.mjs",
+        "total": 1,
+        "categories": {
+          "test-fixture": 1
         }
       }
     ]
@@ -571,88 +501,11 @@
       "text": "// - Keep fallback meta semantics aligned with kernel-installed helpers."
     },
     {
-      "file": "esm/native/runtime/mode_write_access.ts",
-      "line": 6,
-      "term": "fallbacks",
-      "category": "runtime-default",
-      "text": "// - Keep store-backed fallbacks for minimal harnesses."
-    },
-    {
-      "file": "esm/native/runtime/runtime_write_access.ts",
-      "line": 6,
-      "term": "fallbacks",
-      "category": "runtime-default",
-      "text": "// - Keep store-backed fallbacks for minimal harnesses."
-    },
-    {
-      "file": "esm/native/runtime/slice_write_access_dispatch_order.ts",
-      "line": 68,
-      "term": "fallbacks",
-      "category": "runtime-default",
-      "text": "fallbacks: readonly T[];"
-    },
-    {
-      "file": "esm/native/runtime/slice_write_access_dispatch_order.ts",
-      "line": 74,
-      "term": "fallbacks",
-      "category": "runtime-default",
-      "text": "out.push(...args.fallbacks);"
-    },
-    {
-      "file": "esm/native/runtime/slice_write_access_dispatch_order.ts",
-      "line": 106,
-      "term": "fallbacks",
-      "category": "runtime-default",
-      "text": "fallbacks: resolveRootFallbackDispatchTargets(opts),"
-    },
-    {
-      "file": "esm/native/runtime/slice_write_access_dispatch_order.ts",
-      "line": 122,
-      "term": "fallbacks",
-      "category": "runtime-default",
-      "text": "fallbacks: resolveRootFallbackDispatchTargets(opts),"
-    },
-    {
-      "file": "esm/native/runtime/slice_write_access_dispatch.ts",
-      "line": 40,
-      "term": "fallbacks",
-      "category": "project-migration",
-      "text": "'[WardrobePro] Unexpected root payload read: dispatch targets do not require root fallbacks'"
-    },
-    {
-      "file": "esm/native/runtime/slice_write_access.ts",
-      "line": 6,
-      "term": "fallbacks",
-      "category": "runtime-default",
-      "text": "// - Keep root-level patch fallbacks explicit and opt-in, not hidden policy."
-    },
-    {
-      "file": "esm/native/runtime/ui_write_access.ts",
-      "line": 6,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "// - Keep a small store-backed fallback for lightweight harnesses/tools."
-    },
-    {
-      "file": "esm/native/runtime/ui_write_access.ts",
-      "line": 225,
-      "term": "Fallback",
-      "category": "runtime-default",
-      "text": "// Fallback: patch raw object (UI-only by convention)."
-    },
-    {
       "file": "esm/native/services/cloud_sync_config_shared.ts",
       "line": 147,
       "term": "Fallback",
       "category": "runtime-default",
       "text": "// Fallback for constrained/non-browser test runtimes only. Runtime private-room mode"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_lifecycle_runtime_realtime_start.ts",
-      "line": 52,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "_cloudSyncReportNonFatal(App, `${op}.fallback`, fallbackErr, { throttleMs: 6000 });"
     },
     {
       "file": "esm/native/services/ui_ephemeral_defaults.ts",

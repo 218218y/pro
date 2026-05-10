@@ -3,7 +3,7 @@
 // Goal:
 // - Centralize runtime write seams.
 // - Prefer App.actions.runtime.* surfaces when installed.
-// - Keep store-backed fallbacks for minimal harnesses.
+// - Keep store-backed compatibility routes for minimal harnesses.
 // - Delete-pass: avoid generic root actions.patch routing for runtime updates.
 
 import type { ActionMetaLike, RuntimeActionsNamespaceLike, RuntimeSlicePatch } from '../../../types';

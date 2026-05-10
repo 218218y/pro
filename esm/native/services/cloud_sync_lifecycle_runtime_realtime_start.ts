@@ -20,7 +20,7 @@ export type CloudSyncLifecycleRealtimeStartGuardArgs = {
   pollingReason: string;
 };
 
-export function startCloudSyncRealtimeWithLifecycleFallback(
+export function startCloudSyncRealtimeWithLifecycleRecovery(
   args: CloudSyncLifecycleRealtimeStartGuardArgs
 ): void {
   const {
@@ -48,8 +48,8 @@ export function startCloudSyncRealtimeWithLifecycleFallback(
         diagEvent,
         pollingReason,
       });
-    } catch (fallbackErr) {
-      _cloudSyncReportNonFatal(App, `${op}.fallback`, fallbackErr, { throttleMs: 6000 });
+    } catch (recoveryErr) {
+      _cloudSyncReportNonFatal(App, `${op}.recovery`, recoveryErr, { throttleMs: 6000 });
     }
   };
 

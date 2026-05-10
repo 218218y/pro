@@ -33,12 +33,12 @@ test('stage 49 slice write dispatch ownership split is anchored', () => {
   );
   assert.match(
     facade,
-    /export \{[\s\S]*resolveSliceDispatchTargets[\s\S]*type RootFallbackOptions[\s\S]*\} from '\.\/slice_write_access_dispatch_order\.js';/,
+    /export \{[\s\S]*resolveSliceDispatchTargets[\s\S]*type RootPatchDispatchOptions[\s\S]*\} from '\.\/slice_write_access_dispatch_order\.js';/,
     'dispatch facade must preserve the existing public ordering exports through the facade'
   );
   assert.doesNotMatch(
     facade,
-    /SLICE_STORE_WRITER_HANDLERS|ROOT_FALLBACK_TARGET_HANDLERS|META_TOUCH_TARGET_HANDLERS/,
+    /SLICE_STORE_WRITER_HANDLERS|ROOT_PATCH_TARGET_HANDLERS|META_TOUCH_TARGET_HANDLERS/,
     'dispatch facade must not own concrete target handler tables'
   );
   assert.doesNotMatch(
@@ -49,8 +49,8 @@ test('stage 49 slice write dispatch ownership split is anchored', () => {
 
   assert.match(
     orderOwner,
-    /export function resolveRootFallbackDispatchTargets/,
-    'dispatch order owner must own root fallback target resolution'
+    /export function resolveRootPatchDispatchTargets/,
+    'dispatch order owner must own root patch target resolution'
   );
   assert.match(
     orderOwner,
@@ -71,8 +71,8 @@ test('stage 49 slice write dispatch ownership split is anchored', () => {
 
   assert.match(
     targetsOwner,
-    /export const ROOT_FALLBACK_TARGET_HANDLERS/,
-    'dispatch target owner must own root fallback handlers'
+    /export const ROOT_PATCH_TARGET_HANDLERS/,
+    'dispatch target owner must own root patch handlers'
   );
   assert.match(
     targetsOwner,

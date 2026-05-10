@@ -20,7 +20,7 @@ test('stage 22 cloud sync lifecycle owner recovery guard is wired into refactor 
   );
 });
 
-test('stage 22 owner-level realtime start/restart failures stay non-fatal and use polling fallback', () => {
+test('stage 22 owner-level realtime start/restart failures stay non-fatal and use polling recovery', () => {
   const ownerStart = read('esm/native/services/cloud_sync_lifecycle_runtime_start.ts');
   const runtimeSetup = read('esm/native/services/cloud_sync_lifecycle_runtime_setup.ts');
   const guardSource = read('esm/native/services/cloud_sync_lifecycle_runtime_realtime_start.ts');
@@ -28,21 +28,21 @@ test('stage 22 owner-level realtime start/restart failures stay non-fatal and us
   const raceContract = read('tools/wp_cloud_sync_race_contract.mjs');
   const progressDoc = read('docs/REFACTOR_WORKMAP_PROGRESS.md');
 
-  assert.match(ownerStart, /startCloudSyncRealtimeWithLifecycleFallback\(/);
+  assert.match(ownerStart, /startCloudSyncRealtimeWithLifecycleRecovery\(/);
   assert.match(ownerStart, /cloudSyncLifecycle\.realtimeInitialStart/);
   assert.match(ownerStart, /realtime-owner-start-error/);
   assert.match(runtimeSetup, /cloudSyncLifecycle\.realtimeRestart/);
   assert.match(runtimeSetup, /realtime-owner-restart-error/);
   assert.match(guardSource, /markCloudSyncRealtimeFailure\(/);
-  assert.match(guardSource, /`\$\{op\}\.fallback`/);
+  assert.match(guardSource, /`\$\{op\}\.recovery`/);
   assert.match(ownerTest, /still binds browser recovery listeners/);
-  assert.match(ownerTest, /reports fallback failures without rejecting/);
+  assert.match(ownerTest, /reports recovery transition failures without rejecting/);
   assert.match(raceContract, /cloudSyncLifecycle\.realtimeInitialStart/);
   assert.match(raceContract, /cloudSyncLifecycle\.realtimeRestart/);
   assert.match(progressDoc, /Stage 22/);
 });
 
-test('stage 24 polling fallback publishes active state only after timer installation succeeds', () => {
+test('stage 24 polling recovery publishes active state only after timer installation succeeds', () => {
   const pollingStart = read('esm/native/services/cloud_sync_lifecycle_support_polling_start_runtime.ts');
   const raceContract = read('tools/wp_cloud_sync_race_contract.mjs');
   const progressDoc = read('docs/REFACTOR_WORKMAP_PROGRESS.md');

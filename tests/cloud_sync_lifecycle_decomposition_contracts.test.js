@@ -129,7 +129,7 @@ test('cloud sync lifecycle keeps a thin public facade over shared/runtime seams'
       /syncCloudSyncRealtimeStatusInPlace\(/,
       /mutateCloudSyncLifecycleSnapshot\(/,
       /cloud_sync_lifecycle_runtime_realtime_start\.js/,
-      /startCloudSyncRealtimeWithLifecycleFallback\(/,
+      /startCloudSyncRealtimeWithLifecycleRecovery\(/,
     ],
     'cloud sync lifecycle runtime start'
   );

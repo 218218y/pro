@@ -10,7 +10,7 @@ import {
   patchSliceWithResolvedContext,
   resolveCanonicalMetaTouchOptions,
   resolveMetaTouchDispatchTargets,
-  resolveRootFallbackDispatchTargets,
+  resolveRootPatchDispatchTargets,
   resolveSliceDispatchTargets,
   touchMetaWithResolvedContext,
 } from './slice_write_access_dispatch.js';
@@ -99,7 +99,7 @@ export function resolveCanonicalDispatchRoute(
   return {
     kind: 'rootPatch',
     payload,
-    targets: resolveRootFallbackDispatchTargets(opts),
+    targets: resolveRootPatchDispatchTargets(opts),
   };
 }
 

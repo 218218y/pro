@@ -3,7 +3,7 @@
 // Goal:
 // - Centralize the UI write seams in one place.
 // - Prefer App.actions.ui.* surfaces when installed.
-// - Keep a small store-backed fallback for lightweight harnesses/tools.
+// - Keep a small store-backed compatibility route for lightweight harnesses/tools.
 // - Delete-pass: avoid bouncing through generic root actions.patch when a UI seam exists.
 //
 // Notes:
@@ -222,7 +222,7 @@ export const setUiRawScalar: SetUiRawScalar = (
     return uiNs.setRawScalar(k, value, m);
   }
 
-  // Fallback: patch raw object (UI-only by convention).
+  // Raw scalar compatibility route: patch the raw object with UI-only meta.
   return patchUiSoft(App, { raw: buildUiRawScalarPatch(k, value) }, m);
 };
 

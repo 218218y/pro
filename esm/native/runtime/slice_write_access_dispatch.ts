@@ -13,13 +13,13 @@ import type {
 import type { ResolvedWriteContext } from './slice_write_access_context.js';
 import {
   resolveMetaTouchDispatchTargets,
-  resolveRootFallbackDispatchTargets,
+  resolveRootPatchDispatchTargets,
   resolveSliceDispatchTargets,
 } from './slice_write_access_dispatch_order.js';
-import type { RootFallbackOptions } from './slice_write_access_dispatch_order.js';
+import type { RootPatchDispatchOptions } from './slice_write_access_dispatch_order.js';
 import {
   dispatchMetaTouchTarget,
-  dispatchRootFallbackTarget,
+  dispatchRootPatchTarget,
   dispatchSliceTarget,
   hasMetaTouchDispatchTargetSeam,
   hasRootPatchDispatchSeamForTarget,
@@ -30,14 +30,14 @@ import {
 export {
   resolveCanonicalMetaTouchOptions,
   resolveMetaTouchDispatchTargets,
-  resolveRootFallbackDispatchTargets,
+  resolveRootPatchDispatchTargets,
   resolveSliceDispatchTargets,
-  type RootFallbackOptions,
+  type RootPatchDispatchOptions,
 } from './slice_write_access_dispatch_order.js';
 
 const READ_ROOT_PAYLOAD_UNSUPPORTED: RootPayloadReader = () => {
   throw new Error(
-    '[WardrobePro] Unexpected root payload read: dispatch targets do not require root fallbacks'
+    '[WardrobePro] Unexpected root payload read: dispatch targets do not require root patch targets'
   );
 };
 
@@ -67,12 +67,12 @@ export function hasMetaTouchDispatchSeam(
 
 export function hasRootPatchDispatchSeam(
   context: ResolvedWriteContext,
-  targets: readonly RootPatchDispatchTarget[] = resolveRootFallbackDispatchTargets()
+  targets: readonly RootPatchDispatchTarget[] = resolveRootPatchDispatchTargets()
 ): boolean {
   return targets.some(target => hasRootPatchDispatchSeamForTarget(context, target));
 }
 
-function dispatchRootFallbackWithResolvedContext(
+function dispatchRootPatchWithResolvedContext(
   context: ResolvedWriteContext,
   createPayload: () => PatchPayload,
   meta: ActionMetaLike | undefined,
@@ -87,7 +87,7 @@ function dispatchRootFallbackWithResolvedContext(
   };
 
   for (const target of targets) {
-    const out = dispatchRootFallbackTarget(context, target, readRootPayload, meta);
+    const out = dispatchRootPatchTarget(context, target, readRootPayload, meta);
     if (out !== undefined) return out;
   }
 
@@ -145,14 +145,14 @@ export function patchRootWithResolvedContext(
   context: ResolvedWriteContext,
   payload: PatchPayload,
   meta?: ActionMetaLike,
-  targets: readonly RootPatchDispatchTarget[] = resolveRootFallbackDispatchTargets()
+  targets: readonly RootPatchDispatchTarget[] = resolveRootPatchDispatchTargets()
 ): unknown {
-  return dispatchRootFallbackWithResolvedContext(context, () => payload, meta, targets);
+  return dispatchRootPatchWithResolvedContext(context, () => payload, meta, targets);
 }
 
 export function createDefaultSliceWriteOptions(
   namespace: SlicePatchNamespace,
-  opts?: RootFallbackOptions
+  opts?: RootPatchDispatchOptions
 ): SliceWriteOptions {
   return createSliceWriteOptions(namespace, opts);
 }

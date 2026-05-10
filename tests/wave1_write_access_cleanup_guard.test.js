@@ -126,7 +126,7 @@ test('[wave1] runtime + mode write seams use canonical store-backed routes witho
   ]);
 });
 
-test('[wave1] slice write router no-ops on empty patches and uses dedicated UI/runtime store writers before root patch fallbacks', () => {
+test('[wave1] slice write router no-ops on empty patches and uses dedicated UI/runtime store writers before root patch routes', () => {
   const calls = createCallLog();
   const App = {
     actions: {

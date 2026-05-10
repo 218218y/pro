@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { startCloudSyncLifecycleOwner } from '../esm/native/services/cloud_sync_lifecycle_runtime_start.ts';
 import { createCloudSyncLifecycleMutableState } from '../esm/native/services/cloud_sync_lifecycle_state.ts';
-import { startCloudSyncRealtimeWithLifecycleFallback } from '../esm/native/services/cloud_sync_lifecycle_runtime_realtime_start.ts';
+import { startCloudSyncRealtimeWithLifecycleRecovery } from '../esm/native/services/cloud_sync_lifecycle_runtime_realtime_start.ts';
 import { makeApp } from './cloud_sync_lifecycle_runtime_helpers.js';
 
 async function flushRealtimeStartGuard(): Promise<void> {
@@ -105,7 +105,7 @@ test('cloud sync lifecycle owner reports realtime start failures and still binds
   assert.equal(reported[0]?.ctx?.op, 'cloudSyncLifecycle.realtimeInitialStart');
 });
 
-test('cloud sync lifecycle realtime start guard reports fallback failures without rejecting', async () => {
+test('cloud sync lifecycle realtime start guard reports recovery transition failures without rejecting', async () => {
   const { app } = makeApp({ realtime: true, pollMs: 25 });
   const runtimeStatus = createRuntimeStatus();
   const reported: Array<{ error: unknown; ctx: any }> = [];
@@ -117,7 +117,7 @@ test('cloud sync lifecycle realtime start guard reports fallback failures withou
   };
 
   assert.doesNotThrow(() => {
-    startCloudSyncRealtimeWithLifecycleFallback({
+    startCloudSyncRealtimeWithLifecycleRecovery({
       App: app as any,
       runtimeStatus,
       publishStatus: () => {
@@ -127,7 +127,7 @@ test('cloud sync lifecycle realtime start guard reports fallback failures withou
         diagEvents.push({ event, payload });
       },
       startPolling: () => {
-        throw new Error('owner fallback failed');
+        throw new Error('owner recovery failed');
       },
       cloudSyncRealtime: {
         async startRealtime() {
@@ -149,6 +149,6 @@ test('cloud sync lifecycle realtime start guard reports fallback failures withou
   assert.equal(reported.length, 2);
   assert.equal((reported[0]?.error as Error).message, 'owner rejected');
   assert.equal(reported[0]?.ctx?.op, 'cloudSyncLifecycle.realtimeRestart');
-  assert.equal((reported[1]?.error as Error).message, 'owner fallback failed');
-  assert.equal(reported[1]?.ctx?.op, 'cloudSyncLifecycle.realtimeRestart.fallback');
+  assert.equal((reported[1]?.error as Error).message, 'owner recovery failed');
+  assert.equal(reported[1]?.ctx?.op, 'cloudSyncLifecycle.realtimeRestart.recovery');
 });
