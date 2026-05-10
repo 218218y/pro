@@ -179,6 +179,8 @@ test('render interior sketch rods use the installed rod owner when it succeeds a
   assert.deepEqual(created, [{ y: 0.7, hangClothes: false, singleHanger: true, limit: null }]);
   assert.equal(added.length, 0);
 
+  const reports: any[] = [];
+
   applySketchRods({
     rods: [{ yNorm: 0.5 } as any],
     yFromNorm: () => 1.1,
@@ -203,8 +205,14 @@ test('render interior sketch rods use the installed rod owner when it succeeds a
         return obj;
       },
     },
+    reportSoft(op, error) {
+      reports.push({ op, error });
+    },
   });
 
+  assert.equal(reports.length, 1);
+  assert.equal(reports[0].op, 'applyInteriorSketchExtras.rods.installedOwnerRejected');
+  assert.match(String(reports[0].error?.message || reports[0].error), /installed rod owner rejected sketch rod/);
   assert.equal(added.length, 1);
   assert.equal(added[0]?.userData?.partId, 'all_rods');
   assert.equal(added[0]?.userData?.__wpType, 'sketchRod');

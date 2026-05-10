@@ -178,6 +178,16 @@ function readHingedDoorPivotMap(value: unknown): HingedDoorPivotMapLike | null {
   return out;
 }
 
+function sumModuleDoors(modules: ModuleLike[]): number {
+  return modules.reduce((sum, moduleShape) => sum + toDoorCount(moduleShape), 0);
+}
+
+function isModuleStructureCurrentForDoorCount(modules: ModuleLike[], doorsCount: number): boolean {
+  if (!Array.isArray(modules)) return false;
+  const expectedDoors = Math.max(0, Math.round(Number.isFinite(doorsCount) ? doorsCount : 0));
+  return sumModuleDoors(modules) === expectedDoors;
+}
+
 /**
  * Resolve module structure + normalized layout values.
  */
@@ -195,16 +205,21 @@ export function computeModulesAndLayout(args: ComputeModulesAndLayoutArgs): Comp
 
   let modules: ModuleLike[] = [];
 
-  // Prefer store-derived, precomputed structure.
+  // Prefer store-derived, precomputed structure only when it still matches
+  // the active door count. A stale build cache must not outrank the canonical
+  // module calculator after door-count or wardrobe-type changes.
   try {
     const stBuild = state?.build;
     if (stBuild && Array.isArray(stBuild.modulesStructure)) {
-      modules = stBuild.modulesStructure;
+      const storedModules = stBuild.modulesStructure;
+      if (isModuleStructureCurrentForDoorCount(storedModules, doorsCount)) {
+        modules = storedModules;
+      }
     }
   } catch (_) {}
 
   // Compute structure using builder module helper when needed.
-  if (!Array.isArray(modules) || modules.length === 0) {
+  if (!Array.isArray(modules) || !isModuleStructureCurrentForDoorCount(modules, doorsCount)) {
     if (typeof calculateModuleStructure !== 'function') {
       throw new Error('Builder tools missing: modules.calculateModuleStructure');
     }

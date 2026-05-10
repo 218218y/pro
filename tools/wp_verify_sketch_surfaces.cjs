@@ -56,6 +56,7 @@ const GROUPS = [
       'tests/render_interior_sketch_fronts_runtime.test.ts',
       'tests/render_interior_sketch_layout_dimensions_runtime.test.ts',
       'tests/render_interior_sketch_layout_geometry_runtime.test.ts',
+      'tests/render_interior_sketch_support_runtime.test.ts',
       'tests/sketch_front_visual_state_runtime.test.ts',
     ],
   },

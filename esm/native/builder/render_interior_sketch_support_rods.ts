@@ -41,7 +41,8 @@ function applySketchRod(args: ApplySketchRodsArgs, y: number): void {
     try {
       createRod(y, false, true, null);
       return;
-    } catch {
+    } catch (error) {
+      reportSketchRodSoft(args, 'applyInteriorSketchExtras.rods.installedOwnerRejected', error);
       // If the installed rod owner rejects this sketch rod, render the local visual rod below.
     }
   }
