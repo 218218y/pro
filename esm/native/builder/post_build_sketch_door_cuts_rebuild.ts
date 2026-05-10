@@ -23,7 +23,7 @@ import {
 } from './post_build_sketch_door_cuts_rebuild_visual.js';
 
 export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs): void {
-  const { runtime, g, ud, visibleSegments, fallbackPartId } = args;
+  const { runtime, g, ud, visibleSegments, basePartId } = args;
   const width = parseNum(readKey(ud, '__doorWidth'));
   const height = parseNum(readKey(ud, '__doorHeight'));
   const centerY = parseNum(g.position?.y);
@@ -36,7 +36,7 @@ export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs)
   )
     return;
 
-  const partId = typeof ud.partId === 'string' ? String(ud.partId) : fallbackPartId;
+  const partId = typeof ud.partId === 'string' ? String(ud.partId) : basePartId;
   const meshOffsetX = parseNum(readKey(ud, '__doorMeshOffsetX'));
   const doorMeshOffsetX = Number.isFinite(meshOffsetX) ? meshOffsetX : 0;
   const isLeftHinge = !!readKey(ud, '__hingeLeft');

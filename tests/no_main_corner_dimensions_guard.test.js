@@ -39,11 +39,16 @@ test('[no-main corner] standalone corner dimensions stay enabled and wing dimens
   );
   assert.match(renderDimsShared, /const\s+cornerWingVisible\s*=\s*isCornerMode && cornerDoorCount > 0;/);
   assert.match(renderDimsMain, /const\s+cornerConnectorActive\s*=/);
-  assert.match(renderDimsMain, /const\s+showMainHeightDepth\s*=\s*!noMainWardrobe \|\| cornerConnectorActive;/);
-  assert.match(renderDimsMain, /if \(showMainHeightDepth\) \{/);
+  assert.match(renderDimsMain, /const\s+showMainHeight\s*=\s*!noMainWardrobe;/);
+  assert.match(renderDimsMain, /const\s+showMainDepth\s*=\s*!noMainWardrobe \|\| cornerConnectorActive;/);
+  assert.match(renderDimsMain, /if \(showMainHeight\) \{/);
+  assert.match(renderDimsMain, /if \(showMainDepth\) \{/);
   assert.match(renderDimsCorner, /WARDROBE_DIMENSION_GUIDE_DIMENSIONS/);
   assert.match(renderDimsCorner, /function\s+resolveCornerWingDimensionGeometry\(/);
-  assert.match(renderDimsCorner, /const\s+showCornerWingCabinetWidth\s*=\s*cornerWingVisible && !!wingGeometry && wingGeometry\.wingW > guide\.wingMinLengthM;/);
+  assert.match(
+    renderDimsCorner,
+    /const\s+showCornerWingCabinetWidth\s*=\s*cornerWingVisible && !!wingGeometry && wingGeometry\.wingW > guide\.wingMinLengthM;/
+  );
   assert.match(renderDimsCorner, /if \(showCornerWingCabinetWidth\) \{/);
   assert.match(renderDimsCorner, /if \(wingGeometry\) \{/);
 });

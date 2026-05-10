@@ -301,11 +301,11 @@ test('module sketch external drawer cuts use runtime drawer bounds so corner cel
   const bundle = `${src}\n${applySrc}`;
   assert.match(
     src,
-    /function collectSketchModuleExternalDrawerStackBounds\(App: AppContainer\): SketchModuleDrawerStackBounds\[]/
+    /function collectSketchModuleExternalDrawerStackBounds\(App: AppContainer\): SketchModuleDrawerStackCollection/
   );
   assert.match(
     src,
-    /const runtimeBounds = collectSketchModuleExternalDrawerStackBounds\(App\)[\s\S]*item => item\.stackKey === stackKey[\s\S]*\);/
+    /const runtimeStackCollection = collectSketchModuleExternalDrawerStackBounds\(App\);[\s\S]*const runtimeBounds = runtimeStackCollection\.bounds[\s\S]*item => item\.stackKey === stackKey[\s\S]*\);/
   );
   assert.match(
     src,
@@ -324,7 +324,7 @@ test('stack-split upper sketch external drawer face bounds are shifted with move
   assert.match(src, /userData\.__wpFaceMaxY \+= dy;/);
 });
 
-test('stack-split lower module sketch external drawer cuts run bottom pass and keep fallback stack-local', async () => {
+test('stack-split lower module sketch external drawer cuts run bottom pass and keep config-derived cuts stack-local', async () => {
   const overlaySrc = await readSourceFiles(['../esm/native/builder/post_build_visual_overlays.ts']);
   const cutsSrc = await readSourceFiles([
     '../esm/native/builder/post_build_sketch_door_cuts_modules.ts',
@@ -334,7 +334,7 @@ test('stack-split lower module sketch external drawer cuts run bottom pass and k
 
   assert.match(overlaySrc, /const moduleCutStackKeys: Array<'top' \| 'bottom'> =[\s\S]*\['top', 'bottom'\]/);
   assert.match(overlaySrc, /stackKey: moduleCutStackKeys\[i\]/);
-  assert.match(overlaySrc, /allowConfigFallback: moduleCutStackKeys\[i\] === stackKey/);
+  assert.match(overlaySrc, /allowConfigDerivedCuts: moduleCutStackKeys\[i\] === stackKey/);
   assert.match(cutsSrc, /function normalizeSketchModuleCutKey\(/);
   assert.match(
     cutsSrc,
@@ -346,9 +346,9 @@ test('stack-split lower module sketch external drawer cuts run bottom pass and k
   );
   assert.match(cutsSrc, /getHandleType \? getHandleType\(partId, stackKey\) : null/);
   assert.match(cutsSrc, /stackKey\?: 'top' \| 'bottom';/);
-  assert.match(cutsSrc, /allowConfigFallback\?: boolean;/);
-  assert.match(cutsSrc, /const allowConfigFallback = args\.allowConfigFallback !== false;/);
-  assert.match(cutsSrc, /if \(!stacksByModule\.size && allowConfigFallback\) \{/);
+  assert.match(cutsSrc, /allowConfigDerivedCuts\?: boolean;/);
+  assert.match(cutsSrc, /const allowConfigDerivedCuts = args\.allowConfigDerivedCuts !== false;/);
+  assert.match(cutsSrc, /if \(!stacksByModule\.size && allowConfigDerivedCuts\) \{/);
   assert.match(
     cutsSrc,
     /if \(!stacksByModule\.size\) return;[\s\S]*const runtime = createSketchDoorCutsRuntime\(\{/

@@ -6,6 +6,9 @@ export function applyMainWardrobeDimensionOps(ctx: RenderDimensionContext): void
     addDimensionLine,
     totalW,
     noMainWardrobe,
+    isCornerMode,
+    cornerConnectorEnabled,
+    cornerWallLenM,
     yTotal,
     yCells,
     moduleWidthsCm,
@@ -20,7 +23,15 @@ export function applyMainWardrobeDimensionOps(ctx: RenderDimensionContext): void
     vec,
   } = ctx;
   const guide = WARDROBE_DIMENSION_GUIDE_DIMENSIONS.main;
+  const cornerGuide = WARDROBE_DIMENSION_GUIDE_DIMENSIONS.corner;
   const guideTextScale = WARDROBE_DIMENSION_GUIDE_DIMENSIONS.textScale;
+  const cornerConnectorActive =
+    isCornerMode &&
+    cornerConnectorEnabled &&
+    Number.isFinite(cornerWallLenM) &&
+    cornerWallLenM > cornerGuide.connectorWallMinLengthM;
+  const showMainHeight = !noMainWardrobe;
+  const showMainDepth = !noMainWardrobe || cornerConnectorActive;
 
   if (!noMainWardrobe) {
     // Total width (raised slightly above the per-cell lines).
@@ -62,7 +73,7 @@ export function applyMainWardrobeDimensionOps(ctx: RenderDimensionContext): void
   const heightLineX = dimsOnLeft ? -totalW / 2 - heightOffsetX : totalW / 2 + heightOffsetX;
   const textOffset = dimsOnLeft ? vec(-guide.heightTextOffsetM, 0, 0) : vec(guide.heightTextOffsetM, 0, 0);
 
-  if (!noMainWardrobe) {
+  if (showMainHeight) {
     addDimensionLine(
       vec(heightLineX, 0, 0),
       vec(heightLineX, displayH, 0),
@@ -116,7 +127,7 @@ export function applyMainWardrobeDimensionOps(ctx: RenderDimensionContext): void
   const depthTextOffset = depthOnLeft
     ? vec(-guide.depthTextOffsetXM, 0, 0)
     : vec(guide.depthTextOffsetXM, 0, 0);
-  if (!noMainWardrobe) {
+  if (showMainDepth) {
     addDimensionLine(
       vec(depthLineX, displayH - guide.depthStartYOffsetM, displayD / 2),
       vec(depthLineX, displayH - guide.depthEndYOffsetM, -displayD / 2),

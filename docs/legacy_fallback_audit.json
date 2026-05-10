@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-10T10:35:30.073Z",
+  "generatedAt": "2026-05-10T11:18:23.685Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 49,
-    "totalFiles": 37,
+    "totalOccurrences": 45,
+    "totalFiles": 33,
     "byCategory": {
-      "runtime-default": 28,
+      "runtime-default": 24,
       "browser-adapter": 9,
       "project-migration": 5,
       "test-fixture": 7,
@@ -41,30 +41,6 @@
         "total": 3,
         "categories": {
           "browser-adapter": 3
-        }
-      },
-      "esm/native/builder/post_build_front_reveal_frames_drawers.ts": {
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      "esm/native/builder/post_build_sketch_door_cuts_modules.ts": {
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      "esm/native/builder/render_interior_preset_ops_wall_faces.ts": {
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      "esm/native/builder/render_interior_sketch_support_rods.ts": {
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
         }
       },
       "esm/native/builder/room_floor_texture.ts": {
@@ -301,34 +277,6 @@
         }
       },
       {
-        "file": "esm/native/builder/post_build_front_reveal_frames_drawers.ts",
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      {
-        "file": "esm/native/builder/post_build_sketch_door_cuts_modules.ts",
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      {
-        "file": "esm/native/builder/render_interior_preset_ops_wall_faces.ts",
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      {
-        "file": "esm/native/builder/render_interior_sketch_support_rods.ts",
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      {
         "file": "esm/native/builder/room_floor_texture.ts",
         "total": 1,
         "categories": {
@@ -446,6 +394,34 @@
         "categories": {
           "runtime-default": 1
         }
+      },
+      {
+        "file": "esm/native/services/ui_ephemeral_defaults.ts",
+        "total": 1,
+        "categories": {
+          "runtime-default": 1
+        }
+      },
+      {
+        "file": "esm/native/ui/interactions/project_save_load.ts",
+        "total": 1,
+        "categories": {
+          "runtime-default": 1
+        }
+      },
+      {
+        "file": "esm/native/ui/react/overlay_pdf_host.tsx",
+        "total": 1,
+        "categories": {
+          "runtime-default": 1
+        }
+      },
+      {
+        "file": "esm/native/ui/react/sidebar_app.tsx",
+        "total": 1,
+        "categories": {
+          "runtime-default": 1
+        }
       }
     ]
   },
@@ -502,34 +478,6 @@
       "term": "fallback",
       "category": "browser-adapter",
       "text": "return fallback;"
-    },
-    {
-      "file": "esm/native/builder/post_build_front_reveal_frames_drawers.ts",
-      "line": 3,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "// Owns drawer iteration, front-face bounds fallback, and drawer reveal placement."
-    },
-    {
-      "file": "esm/native/builder/post_build_sketch_door_cuts_modules.ts",
-      "line": 3,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "// Owns runtime/fallback stack-bound collection and segmented module-door rebuild routing."
-    },
-    {
-      "file": "esm/native/builder/render_interior_preset_ops_wall_faces.ts",
-      "line": 211,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "console.warn('[WardrobePro] brace shelf wall-face fallback used (large mismatch)', {"
-    },
-    {
-      "file": "esm/native/builder/render_interior_sketch_support_rods.ts",
-      "line": 14,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "assertTHREE(App, 'native/builder/render_interior_sketch_support.applySketchRods.fallback')"
     },
     {
       "file": "esm/native/builder/room_floor_texture.ts",

@@ -33,30 +33,6 @@
         "browser-adapter": 3
       }
     },
-    "esm/native/builder/post_build_front_reveal_frames_drawers.ts": {
-      "total": 1,
-      "categories": {
-        "runtime-default": 1
-      }
-    },
-    "esm/native/builder/post_build_sketch_door_cuts_modules.ts": {
-      "total": 1,
-      "categories": {
-        "runtime-default": 1
-      }
-    },
-    "esm/native/builder/render_interior_preset_ops_wall_faces.ts": {
-      "total": 1,
-      "categories": {
-        "runtime-default": 1
-      }
-    },
-    "esm/native/builder/render_interior_sketch_support_rods.ts": {
-      "total": 1,
-      "categories": {
-        "runtime-default": 1
-      }
-    },
     "esm/native/builder/room_floor_texture.ts": {
       "total": 1,
       "categories": {

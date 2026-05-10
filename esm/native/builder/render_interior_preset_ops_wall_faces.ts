@@ -32,6 +32,7 @@ export function computePresetModuleInnerFaces(args: {
   } = args;
 
   const BRACE_SIDE_EPS = 0.00005;
+  const WALL_FACE_MATCH_TOLERANCE_M = 0.004;
 
   const findParts = (partId: string): InteriorWallMesh[] => {
     const out: InteriorWallMesh[] = [];
@@ -205,22 +206,14 @@ export function computePresetModuleInnerFaces(args: {
   }
 
   if (Number.isFinite(bestLeft) && Number.isFinite(bestRight) && bestRight > bestLeft) {
-    try {
-      if (typeof console !== 'undefined' && console && typeof console.warn === 'function') {
-        if (bestLeftDistance > 0.004 || bestRightDistance > 0.004) {
-          console.warn('[WardrobePro] brace shelf wall-face fallback used (large mismatch)', {
-            moduleIndex,
-            expLeft: expectedLeft,
-            expRight: expectedRight,
-            bestLeftX: bestLeft,
-            bestRightX: bestRight,
-            bestLeftD: bestLeftDistance,
-            bestRightD: bestRightDistance,
-          });
-        }
-      }
-    } catch (err) {
-      reportInteriorPresetSoft(App, renderOpsHandleCatch, 'applyInteriorPresetOps.facesFallbackWarn', err);
+    if (bestLeftDistance > WALL_FACE_MATCH_TOLERANCE_M || bestRightDistance > WALL_FACE_MATCH_TOLERANCE_M) {
+      reportInteriorPresetSoft(
+        App,
+        renderOpsHandleCatch,
+        'applyInteriorPresetOps.wallFaceApproximationRejected',
+        new Error('Preset brace shelf wall-face approximation exceeded tolerance')
+      );
+      return null;
     }
     return { leftX: bestLeft, rightX: bestRight };
   }

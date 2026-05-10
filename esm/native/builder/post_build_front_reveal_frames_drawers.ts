@@ -1,6 +1,6 @@
 // Front reveal frame drawer flow (Pure ESM)
 //
-// Owns drawer iteration, front-face bounds fallback, and drawer reveal placement.
+// Owns drawer iteration, scene-derived drawer discovery, and drawer reveal placement.
 
 import { getDrawersArray } from '../runtime/render_access.js';
 import { FRONT_REVEAL_FRAME_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
@@ -19,7 +19,7 @@ export function applyFrontRevealDrawerFrames(runtime: FrontRevealFramesRuntime):
   const { App, wardrobeGroup } = runtime;
   const drawersArr = getDrawersArray(App);
 
-  const fallbackDrawerGroups: Object3DLike[] = [];
+  const sceneDrawerGroups: Object3DLike[] = [];
   if (drawersArr.length === 0) {
     try {
       if (wardrobeGroup.traverse) {
@@ -28,17 +28,17 @@ export function applyFrontRevealDrawerFrames(runtime: FrontRevealFramesRuntime):
           if (!ud) return;
           const pid = ud.partId ? String(ud.partId) : '';
           if (!pid) return;
-          const drawerLikeFallback = pid.indexOf('drawer') !== -1 || pid.startsWith('div_int_');
-          if (!drawerLikeFallback) return;
-          fallbackDrawerGroups.push(obj);
+          const drawerLike = pid.indexOf('drawer') !== -1 || pid.startsWith('div_int_');
+          if (!drawerLike) return;
+          sceneDrawerGroups.push(obj);
         });
       }
     } catch (error) {
-      runtime.reportSoft('applyFrontRevealFrames.collectFallbackDrawers', error);
+      runtime.reportSoft('applyFrontRevealFrames.collectSceneDrawers', error);
     }
   }
 
-  const drawerEntries: DrawerRuntimeEntryLike[] = drawersArr.length > 0 ? drawersArr : fallbackDrawerGroups;
+  const drawerEntries: DrawerRuntimeEntryLike[] = drawersArr.length > 0 ? drawersArr : sceneDrawerGroups;
 
   for (let i = 0; i < drawerEntries.length; i++) {
     const entry = drawerEntries[i];

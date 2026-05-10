@@ -118,4 +118,5 @@ export type ApplySketchRodsArgs = {
   internalCenterX: number;
   internalZ: number;
   group: InteriorGroupLike;
+  reportSoft?: (op: string, error: unknown) => void;
 };

@@ -109,7 +109,7 @@ test('segmented sketch door rebuild clamps handle placement per segment and tags
       { yMin: 0, yMax: 0.5 },
       { yMin: 0.7, yMax: 1.2 },
     ],
-    fallbackPartId: 'd12_full',
+    basePartId: 'd12_full',
   });
 
   assert.equal(doorGroup.children.length, 4);
@@ -141,7 +141,7 @@ test('segmented sketch door rebuild keeps canonical segment ids for 4-way splits
       { yMin: 1.2, yMax: 1.6 },
       { yMin: 1.8, yMax: 2.2 },
     ],
-    fallbackPartId: 'd15_full',
+    basePartId: 'd15_full',
   });
 
   assert.equal(doorGroup.children.length, 7);
@@ -200,7 +200,7 @@ test('segmented sketch door rebuild disposes detached non-cached subtree resourc
     g: doorGroup,
     ud: doorGroup.userData,
     visibleSegments: [{ yMin: 0, yMax: 1.4 }],
-    fallbackPartId: 'd31_full',
+    basePartId: 'd31_full',
   });
   assert.equal(doorGroup.children.length, 1);
 
@@ -209,7 +209,7 @@ test('segmented sketch door rebuild disposes detached non-cached subtree resourc
     g: doorGroup,
     ud: doorGroup.userData,
     visibleSegments: [{ yMin: 0, yMax: 1.4 }],
-    fallbackPartId: 'd31_full',
+    basePartId: 'd31_full',
   });
 
   assert.equal(disposed.geometry, 1);

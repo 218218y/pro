@@ -115,7 +115,7 @@ export function applySketchBoxExternalDrawerDoorCuts(args: {
       const boxKey = getSketchBoxDoorPendingStateKey(moduleKey, boxId);
       const stacks = boxStacks.get(boxKey);
       if (!stacks || !stacks.length) return null;
-      return { stacks, fallbackPartId: typeof ud.partId === 'string' ? String(ud.partId) : `${boxKey}_door` };
+      return { stacks, basePartId: typeof ud.partId === 'string' ? String(ud.partId) : `${boxKey}_door` };
     },
   });
 }

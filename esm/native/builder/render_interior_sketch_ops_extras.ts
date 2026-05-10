@@ -89,6 +89,9 @@ export function applyInteriorSketchOwnedRods(args: {
     internalCenterX: resolved.internalCenterX,
     internalZ: resolved.internalZ,
     group: resolved.group,
+    reportSoft(op, error) {
+      owner.renderOpsHandleCatch(resolved.App, op, error, undefined, { failFast: false, throttleMs: 5000 });
+    },
   });
 }
 

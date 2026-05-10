@@ -115,7 +115,7 @@ test('segmented sketch door rebuild retags the full visual subtree with the cano
       { yMin: 0.45, yMax: 0.8 },
       { yMin: 1.0, yMax: 1.55 },
     ],
-    fallbackPartId: 'd3_full',
+    basePartId: 'd3_full',
   });
 
   assert.equal(doorGroup.userData.__wpSketchSegmentedDoor, true);
@@ -177,7 +177,7 @@ test('segmented sketch mirror rebuild reuses canonical mirror material path and 
     g: doorGroup,
     ud: doorGroup.userData,
     visibleSegments: [{ yMin: 0, yMax: 0.8 }],
-    fallbackPartId: 'd9_full',
+    basePartId: 'd9_full',
   });
 
   assert.equal(visualCalls.length, 1);
@@ -235,7 +235,7 @@ test('segmented sketch door rebuild resolves per-segment style/material/removal 
       { yMin: 0, yMax: 0.7 },
       { yMin: 1.1, yMax: 1.8 },
     ],
-    fallbackPartId: 'd7_full',
+    basePartId: 'd7_full',
   });
 
   assert.equal(visualCalls.length, 1);

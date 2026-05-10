@@ -34,7 +34,7 @@ test('render_dimension_ops emits main-run width/height/depth overlays from the f
   assert.deepEqual(labels, ['200', '60', '70', '70', '240', '220', '20', '60', '55']);
 });
 
-test('render_dimension_ops keeps no-main corner height/depth outside the pentagon on the main side', () => {
+test('render_dimension_ops keeps only no-main corner depth outside the pentagon on the main side', () => {
   const calls: any[] = [];
   const ops = createBuilderRenderDimensionOps({ app: () => ({}) as any, ops: () => null });
   const ok = ops.applyDimensions({
@@ -56,13 +56,16 @@ test('render_dimension_ops keeps no-main corner height/depth outside the pentago
 
   assert.equal(ok, true);
   const labels = calls.map(call => call[3]);
-  assert.deepEqual(labels, ['240', '60', '270', '120', '210', '40', '210']);
+  assert.deepEqual(labels, ['60', '270', '120', '210', '40', '210']);
 
   const mainHeight = calls.find(call => call[3] === '240');
   const mainDepth = calls.find(call => call[3] === '60');
-  assert.ok(mainHeight, 'expected main-side height dimension to remain visible');
+  assert.equal(
+    mainHeight,
+    undefined,
+    'main-side height should stay hidden when the main wardrobe has 0 doors'
+  );
   assert.ok(mainDepth, 'expected main-side depth dimension to remain visible');
-  assert.equal(mainHeight[0].x, -1.2);
   assert.ok(Math.abs(mainDepth[0].x + 1.14) < 0.000001);
 });
 
@@ -104,7 +107,7 @@ test('render_dimension_ops uses the pentagon-only side guide when the corner win
 
   assert.equal(ok, true);
   const labels = calls.map(call => call[3]);
-  assert.deepEqual(labels, ['240', '60', '270', '90', '40', '210']);
+  assert.deepEqual(labels, ['60', '270', '90', '40', '210']);
   assert.equal(
     calls.filter(call => call[3] === '120').length,
     0,
@@ -124,7 +127,6 @@ test('render_dimension_ops uses the pentagon-only side guide when the corner win
   assert.ok(Math.abs(height[0].z - 0.6) < 0.000001);
   assert.ok(Math.abs(height[1].z - 0.6) < 0.000001);
 });
-
 
 test('render_dimension_ops keeps the pentagon-only side guide when zero corner doors have zero width', () => {
   const calls: any[] = [];
@@ -148,7 +150,7 @@ test('render_dimension_ops keeps the pentagon-only side guide when zero corner d
 
   assert.equal(ok, true);
   const labels = calls.map(call => call[3]);
-  assert.deepEqual(labels, ['240', '60', '270', '90', '40', '210']);
+  assert.deepEqual(labels, ['60', '270', '90', '40', '210']);
   assert.equal(
     calls.filter(call => call[3] === '120' && call[4] === 1).length,
     0,

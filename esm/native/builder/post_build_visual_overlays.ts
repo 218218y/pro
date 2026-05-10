@@ -63,7 +63,7 @@ export function applyPostBuildSketchVisualOverlays(args: {
       bodyMat,
       globalFrontMat,
       stackKey: moduleCutStackKeys[i],
-      allowConfigFallback: moduleCutStackKeys[i] === stackKey,
+      allowConfigDerivedCuts: moduleCutStackKeys[i] === stackKey,
     });
   }
   applySketchBoxExternalDrawerDoorCuts({

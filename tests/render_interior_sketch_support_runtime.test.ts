@@ -213,3 +213,48 @@ test('render interior sketch rods use the installed rod owner when it succeeds a
   assert.equal(added[0]?.position?.z, -0.3);
   assert.equal(added[0]?.material?.__keepMaterial, true);
 });
+
+test('render interior sketch rods report per-item failures and continue rendering later rods', () => {
+  const added: any[] = [];
+  const reports: any[] = [];
+  const THREE = {
+    Mesh: FakeMesh,
+    MeshStandardMaterial: FakeMeshStandardMaterial,
+    CylinderGeometry: FakeCylinderGeometry,
+  } as any;
+
+  applySketchRods({
+    rods: [{ yNorm: 'bad' } as any, { yNorm: 0.75 } as any],
+    yFromNorm(value: unknown) {
+      if (value === 'bad') throw new Error('bad rod placement');
+      return 1.35;
+    },
+    createRod: null as any,
+    isFn: (value: unknown): value is (...args: unknown[]) => unknown => typeof value === 'function',
+    THREE,
+    App: {} as any,
+    assertTHREE() {
+      throw new Error('THREE should already be provided');
+    },
+    asObject<T extends object>(value: unknown): T | null {
+      return value && typeof value === 'object' ? (value as T) : null;
+    },
+    innerW: 0.8,
+    internalCenterX: 0.1,
+    internalZ: -0.3,
+    group: {
+      add(obj: unknown) {
+        added.push(obj);
+        return obj;
+      },
+    },
+    reportSoft(op, error) {
+      reports.push({ op, error });
+    },
+  });
+
+  assert.equal(added.length, 1);
+  assert.equal(added[0]?.position?.y, 1.35);
+  assert.equal(reports.length, 1);
+  assert.equal(reports[0].op, 'applyInteriorSketchExtras.rods.item');
+});

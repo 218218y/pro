@@ -43,7 +43,7 @@ export type SketchDoorCutsRuntime = {
 };
 
 export type SketchDoorCutSelection = {
-  fallbackPartId: string;
+  basePartId: string;
   stacks: SketchDrawerStackBounds[];
 };
 
@@ -68,5 +68,5 @@ export type RebuildSketchSegmentedDoorArgs = {
   g: Object3DLike;
   ud: ValueRecord;
   visibleSegments: SketchDrawerCutSegment[];
-  fallbackPartId: string;
+  basePartId: string;
 };

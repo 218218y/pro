@@ -115,7 +115,8 @@ export function applyCornerDimensionOps(ctx: RenderDimensionContext): void {
   const guidePlacement = WARDROBE_DIMENSION_GUIDE_DIMENSIONS.verticalPlacement;
   const guideTextScale = WARDROBE_DIMENSION_GUIDE_DIMENSIONS.textScale;
   const wingGeometry = resolveCornerWingDimensionGeometry(ctx, guide, guidePlacement);
-  const showCornerWingCabinetWidth = cornerWingVisible && !!wingGeometry && wingGeometry.wingW > guide.wingMinLengthM;
+  const showCornerWingCabinetWidth =
+    cornerWingVisible && !!wingGeometry && wingGeometry.wingW > guide.wingMinLengthM;
 
   if (isCornerMode && cornerConnectorEnabled && cornerWallLenM > guide.connectorWallMinLengthM) {
     const minX = cornerSide === 'left' ? -totalW / 2 - cornerWallLenM + cornerOffsetXM : -totalW / 2;

@@ -69,6 +69,6 @@ export function applySketchDrawerDoorCuts(args: ApplySketchDrawerDoorCutsArgs): 
       Math.abs(visibleSegments[0].yMax - doorMax) <= DRAWER_DIMENSIONS.sketch.doorCutNoOpToleranceM
     )
       continue;
-    rebuildSketchSegmentedDoor({ runtime, g, ud, visibleSegments, fallbackPartId: selection.fallbackPartId });
+    rebuildSketchSegmentedDoor({ runtime, g, ud, visibleSegments, basePartId: selection.basePartId });
   }
 }
