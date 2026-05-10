@@ -14,7 +14,7 @@ import type { UiRawScalarKey, UiRawScalarValueMap } from '../../../types/ui_raw'
 import { buildUiRawScalarPatch } from '../../../types/ui_raw.js';
 import { metaUiOnly } from './meta_profiles_access.js';
 import { readUiStateFromApp } from './root_state_access.js';
-import { asRecord, getSliceNamespace, patchSliceWithStoreFallback } from './slice_write_access.js';
+import { asRecord, getSliceNamespace, patchSliceCanonical } from './slice_write_access.js';
 
 function asUiPatch(v: unknown): UiSlicePatch {
   const rec = asRecord(v);
@@ -116,9 +116,9 @@ function getUiNamespace(App: unknown): UiActionsNamespaceLike | null {
 export function patchUi(App: unknown, patch: unknown, meta?: ActionMetaLike): unknown {
   const uiPatch = filterUiPatchAgainstCurrentState(App, asUiPatch(patch));
   if (!hasOwnKeys(uiPatch)) return undefined;
-  return patchSliceWithStoreFallback(App, 'ui', uiPatch, meta, {
+  return patchSliceCanonical(App, 'ui', uiPatch, meta, {
     storeWriter: 'setUi',
-    allowRootStorePatchFallback: true,
+    allowRootStorePatch: true,
   });
 }
 

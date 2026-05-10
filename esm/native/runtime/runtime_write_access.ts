@@ -9,7 +9,7 @@
 import type { ActionMetaLike, RuntimeActionsNamespaceLike, RuntimeSlicePatch } from '../../../types';
 import type { RuntimeScalarKey, RuntimeScalarValue } from '../../../types/runtime_scalar';
 import { metaTransient } from './meta_profiles_access.js';
-import { asRecord, getSliceNamespace, patchSliceWithStoreFallback } from './slice_write_access.js';
+import { asRecord, getSliceNamespace, patchSliceCanonical } from './slice_write_access.js';
 
 function isRuntimeSlicePatch(value: unknown): value is RuntimeSlicePatch {
   return !!asRecord(value);
@@ -31,9 +31,9 @@ function getRuntimeNamespace(App: unknown): RuntimeActionsNamespaceLike | null {
 export function patchRuntime(App: unknown, patch: unknown, meta?: ActionMetaLike): unknown {
   const rtPatch = asRuntimePatch(patch);
   const m = metaTransient(App, meta, 'runtime:patch');
-  return patchSliceWithStoreFallback(App, 'runtime', rtPatch, m, {
+  return patchSliceCanonical(App, 'runtime', rtPatch, m, {
     storeWriter: 'setRuntime',
-    allowRootStorePatchFallback: true,
+    allowRootStorePatch: true,
   });
 }
 

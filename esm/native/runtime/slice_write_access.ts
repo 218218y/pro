@@ -14,8 +14,8 @@ export {
   getSliceNamespace,
   getSingleSlicePatchRoute,
   hasSliceWriterSeam,
-  patchSliceWithStoreFallback,
-  touchMetaWithStoreFallback,
+  patchSliceCanonical,
+  touchMetaCanonical,
   hasCanonicalPatchDispatch,
   dispatchCanonicalPatchPayload,
 } from './slice_write_access_core.js';

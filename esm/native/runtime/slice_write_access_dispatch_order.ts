@@ -9,7 +9,7 @@ import type {
 
 export type RootPatchDispatchOptions = Pick<
   CanonicalPatchDispatchOptions,
-  'allowRootActionPatchFallback' | 'allowRootStorePatchFallback'
+  'allowRootActionPatch' | 'allowRootStorePatch'
 >;
 
 function freezeRootPatchDispatchTargets(
@@ -30,14 +30,14 @@ const sliceDispatchTargetsCache = new Map<number, readonly SliceDispatchTarget[]
 const metaTouchDispatchTargetsCache = new Map<number, readonly MetaTouchDispatchTarget[]>();
 
 function createRootPatchDispatchTargetSet(opts?: RootPatchDispatchOptions): readonly RootPatchDispatchTarget[] {
-  const allowRootActionPatchFallback = !!opts?.allowRootActionPatchFallback;
-  const allowRootStorePatchFallback = opts?.allowRootStorePatchFallback === true;
-  if (!allowRootStorePatchFallback) {
-    return allowRootActionPatchFallback
+  const allowRootActionPatch = !!opts?.allowRootActionPatch;
+  const allowRootStorePatch = opts?.allowRootStorePatch === true;
+  if (!allowRootStorePatch) {
+    return allowRootActionPatch
       ? ROOT_PATCH_ACTION_ONLY_DISPATCH_TARGETS
       : EMPTY_ROOT_PATCH_DISPATCH_TARGETS;
   }
-  return allowRootActionPatchFallback
+  return allowRootActionPatch
     ? ROOT_PATCH_DISPATCH_TARGETS_WITH_ACTION
     : DEFAULT_ROOT_PATCH_DISPATCH_TARGETS;
 }
@@ -46,8 +46,8 @@ function createSliceDispatchTargetCacheKey(opts: SliceWriteOptions): number {
   return (
     (opts.preferStoreWriter ? 1 : 0) |
     (opts.skipNamespacePatch ? 2 : 0) |
-    (opts.allowRootActionPatchFallback ? 4 : 0) |
-    (opts.allowRootStorePatchFallback ? 8 : 0)
+    (opts.allowRootActionPatch ? 4 : 0) |
+    (opts.allowRootStorePatch ? 8 : 0)
   );
 }
 
@@ -55,8 +55,8 @@ function createMetaTouchDispatchTargetCacheKey(opts?: MetaTouchOptions): number 
   return (
     (opts?.preferStoreWriter ? 1 : 0) |
     (opts?.skipNamespaceTouch ? 2 : 0) |
-    (opts?.allowRootActionPatchFallback ? 4 : 0) |
-    (opts?.allowRootStorePatchFallback ? 8 : 0)
+    (opts?.allowRootActionPatch ? 4 : 0) |
+    (opts?.allowRootStorePatch ? 8 : 0)
   );
 }
 
@@ -84,10 +84,10 @@ export function resolveRootPatchDispatchTargets(
 export function resolveCanonicalMetaTouchOptions(opts?: CanonicalPatchDispatchOptions): MetaTouchOptions {
   const metaTouchOptions = opts?.metaTouchOptions;
   return {
-    allowRootActionPatchFallback:
-      metaTouchOptions?.allowRootActionPatchFallback ?? opts?.allowRootActionPatchFallback,
-    allowRootStorePatchFallback:
-      metaTouchOptions?.allowRootStorePatchFallback ?? opts?.allowRootStorePatchFallback,
+    allowRootActionPatch:
+      metaTouchOptions?.allowRootActionPatch ?? opts?.allowRootActionPatch,
+    allowRootStorePatch:
+      metaTouchOptions?.allowRootStorePatch ?? opts?.allowRootStorePatch,
     preferStoreWriter: metaTouchOptions?.preferStoreWriter,
     skipNamespaceTouch: metaTouchOptions?.skipNamespaceTouch,
   };

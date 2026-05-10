@@ -32,22 +32,22 @@ export type SlicePatchRoute<N extends SlicePatchNamespace = SlicePatchNamespace>
 
 export type SliceWriteOptions = {
   storeWriter: SliceStoreWriter;
-  allowRootActionPatchFallback?: boolean;
-  allowRootStorePatchFallback?: boolean;
+  allowRootActionPatch?: boolean;
+  allowRootStorePatch?: boolean;
   preferStoreWriter?: boolean;
   skipNamespacePatch?: boolean;
 };
 
 export type MetaTouchOptions = {
-  allowRootActionPatchFallback?: boolean;
-  allowRootStorePatchFallback?: boolean;
+  allowRootActionPatch?: boolean;
+  allowRootStorePatch?: boolean;
   preferStoreWriter?: boolean;
   skipNamespaceTouch?: boolean;
 };
 
 export type CanonicalPatchDispatchOptions = {
-  allowRootActionPatchFallback?: boolean;
-  allowRootStorePatchFallback?: boolean;
+  allowRootActionPatch?: boolean;
+  allowRootStorePatch?: boolean;
   sliceOptions?: Partial<Record<SlicePatchNamespace, SliceWriteOptions>>;
   metaTouchOptions?: MetaTouchOptions;
 };
@@ -153,8 +153,8 @@ export function createSliceWriteOptions(
 ): SliceWriteOptions {
   return {
     storeWriter: opts?.storeWriter ?? getDefaultStoreWriter(namespace),
-    allowRootActionPatchFallback: opts?.allowRootActionPatchFallback,
-    allowRootStorePatchFallback: opts?.allowRootStorePatchFallback,
+    allowRootActionPatch: opts?.allowRootActionPatch,
+    allowRootStorePatch: opts?.allowRootStorePatch,
     preferStoreWriter: opts?.preferStoreWriter,
     skipNamespacePatch: opts?.skipNamespacePatch,
   };
@@ -166,8 +166,8 @@ export function toDedicatedSliceWriteOptions(
 ): SliceWriteOptions {
   return {
     storeWriter: opts?.storeWriter || getDefaultStoreWriter(namespace),
-    allowRootActionPatchFallback: false,
-    allowRootStorePatchFallback: false,
+    allowRootActionPatch: false,
+    allowRootStorePatch: false,
     preferStoreWriter: opts?.preferStoreWriter !== false,
     skipNamespacePatch: opts?.skipNamespacePatch === true,
   };
@@ -175,8 +175,8 @@ export function toDedicatedSliceWriteOptions(
 
 export function toDedicatedMetaTouchOptions(opts?: DedicatedMetaTouchOptions): MetaTouchOptions {
   return {
-    allowRootActionPatchFallback: false,
-    allowRootStorePatchFallback: false,
+    allowRootActionPatch: false,
+    allowRootStorePatch: false,
     preferStoreWriter: opts?.preferStoreWriter !== false,
     skipNamespaceTouch: opts?.skipNamespaceTouch === true,
   };
@@ -199,8 +199,8 @@ export function toDedicatedCanonicalPatchDispatchOptions(
   }
 
   return {
-    allowRootActionPatchFallback: false,
-    allowRootStorePatchFallback: false,
+    allowRootActionPatch: false,
+    allowRootStorePatch: false,
     sliceOptions,
     metaTouchOptions: opts?.metaTouchOptions ? toDedicatedMetaTouchOptions(opts.metaTouchOptions) : undefined,
   };

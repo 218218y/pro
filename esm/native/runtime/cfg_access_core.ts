@@ -6,7 +6,7 @@ import type {
   ConfigSnapshotLike,
   UnknownRecord,
 } from '../../../types';
-import { patchSliceWithStoreFallback } from './slice_write_access.js';
+import { patchSliceCanonical } from './slice_write_access.js';
 import {
   asRecord,
   getHistoryNamespace,
@@ -50,9 +50,9 @@ export function applyConfigPatch(App: unknown, patchObj: unknown, meta?: ActionM
   if (!Object.keys(patch).length) return patch;
   const resolvedMeta = normMeta(App, meta, { source: 'config' });
 
-  const out = patchSliceWithStoreFallback(App, 'config', patch, resolvedMeta, {
+  const out = patchSliceCanonical(App, 'config', patch, resolvedMeta, {
     storeWriter: 'setConfig',
-    allowRootStorePatchFallback: false,
+    allowRootStorePatch: false,
   });
   if (out !== undefined) return out;
 

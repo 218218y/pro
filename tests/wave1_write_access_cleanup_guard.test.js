@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { patchUi, setUiScalarSoft } from '../esm/native/runtime/ui_write_access.ts';
 import { setRuntimeSketchMode } from '../esm/native/runtime/runtime_write_access.ts';
 import { setModePrimary } from '../esm/native/runtime/mode_write_access.ts';
-import { patchSliceWithStoreFallback } from '../esm/native/runtime/slice_write_access.ts';
+import { patchSliceCanonical } from '../esm/native/runtime/slice_write_access.ts';
 
 function createCallLog() {
   /** @type {Array<Record<string, unknown>>} */
@@ -154,7 +154,7 @@ test('[wave1] slice write router no-ops on empty patches and uses dedicated UI/r
   };
 
   assert.equal(
-    patchSliceWithStoreFallback(
+    patchSliceCanonical(
       App,
       'ui',
       {},
@@ -162,8 +162,8 @@ test('[wave1] slice write router no-ops on empty patches and uses dedicated UI/r
       {
         storeWriter: 'setUi',
         preferStoreWriter: true,
-        allowRootActionPatchFallback: true,
-        allowRootStorePatchFallback: true,
+        allowRootActionPatch: true,
+        allowRootStorePatch: true,
       }
     ),
     undefined
@@ -171,7 +171,7 @@ test('[wave1] slice write router no-ops on empty patches and uses dedicated UI/r
   assert.deepEqual(calls, []);
 
   assert.deepEqual(
-    patchSliceWithStoreFallback(
+    patchSliceCanonical(
       App,
       'ui',
       { activeTab: 'notes' },
@@ -179,8 +179,8 @@ test('[wave1] slice write router no-ops on empty patches and uses dedicated UI/r
       {
         storeWriter: 'setUi',
         preferStoreWriter: true,
-        allowRootActionPatchFallback: true,
-        allowRootStorePatchFallback: true,
+        allowRootActionPatch: true,
+        allowRootStorePatch: true,
       }
     ),
     { via: 'store.setUi' }

@@ -128,7 +128,7 @@ test('[stageB] tools/meta/config/cloud surfaces use explicit typed boundaries', 
 
   assert.match(
     runtimeWriteAccess,
-    /import \{ asRecord, getSliceNamespace, patchSliceWithStoreFallback \} from '\.\/slice_write_access\.js';/
+    /import \{ asRecord, getSliceNamespace, patchSliceCanonical \} from '\.\/slice_write_access\.js';/
   );
   assert.match(
     runtimeWriteAccess,

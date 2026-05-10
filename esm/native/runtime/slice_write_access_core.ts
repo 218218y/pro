@@ -60,7 +60,7 @@ export function hasSliceWriterSeam(
   return hasSliceDispatchSeam(createResolvedWriteContext(App), namespace, opts);
 }
 
-export function patchSliceWithStoreFallback<N extends SlicePatchNamespace>(
+export function patchSliceCanonical<N extends SlicePatchNamespace>(
   App: unknown,
   namespace: N,
   patchObj: unknown,
@@ -72,7 +72,7 @@ export function patchSliceWithStoreFallback<N extends SlicePatchNamespace>(
   return patchSliceWithResolvedContext(createResolvedWriteContext(App), namespace, payload, meta, opts);
 }
 
-export function touchMetaWithStoreFallback(
+export function touchMetaCanonical(
   App: unknown,
   meta?: ActionMetaLike,
   opts?: MetaTouchOptions

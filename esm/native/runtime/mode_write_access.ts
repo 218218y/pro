@@ -20,7 +20,7 @@ import {
   asRecord,
   getSliceNamespace,
   getWriteStore,
-  patchSliceWithStoreFallback,
+  patchSliceCanonical,
 } from './slice_write_access.js';
 
 type ModeWriteAppLike = {
@@ -70,7 +70,7 @@ function normalizeOpts(opts: unknown): ModeActionOptsLike {
 export function patchMode(App: unknown, patch: unknown, meta?: ActionMetaLike): unknown {
   const mdPatch = asModePatch(patch);
   const m = metaTransient(App, meta, 'mode:patch');
-  return patchSliceWithStoreFallback(App, 'mode', mdPatch, m, { storeWriter: 'setModePatch' });
+  return patchSliceCanonical(App, 'mode', mdPatch, m, { storeWriter: 'setModePatch' });
 }
 
 export function setModePrimary(
