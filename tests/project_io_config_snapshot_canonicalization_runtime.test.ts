@@ -104,7 +104,7 @@ test('project io default snapshot canonicalizes persisted config maps while pres
   } as never);
 
   assert.deepEqual(snap.savedColors, ['oak', { id: 'c2', value: '#222' }]);
-  assert.deepEqual({ ...snap.splitDoorsBottomMap }, { d1: 1, drop: 0 });
+  assert.deepEqual({ ...snap.splitDoorsBottomMap }, { splitb_d1: true, drop: false });
   assert.deepEqual({ ...snap.mirrorLayoutMap }, { d1: [{ widthCm: 55, heightCm: 88 }] });
   assert.equal(Array.isArray(snap.doorTrimMap.d1), true);
   assert.equal(snap.doorTrimMap.d1.length, 2);
@@ -142,7 +142,7 @@ test('project save finalizer detaches persisted notes and canonicalizes config m
   });
 
   assert.deepEqual(finalized.savedColors, ['oak', { id: 'c2', value: '#222' }]);
-  assert.deepEqual({ ...finalized.splitDoorsBottomMap }, { d1: 1, drop: 0 });
+  assert.deepEqual({ ...finalized.splitDoorsBottomMap }, { splitb_d1: true, drop: false });
   assert.deepEqual({ ...finalized.mirrorLayoutMap }, { d1: [{ widthCm: 55, heightCm: 88 }] });
   assert.equal(Array.isArray(finalized.doorTrimMap.d1), true);
   assert.equal(finalized.doorTrimMap.d1.length, 2);

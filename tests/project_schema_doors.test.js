@@ -71,12 +71,18 @@ test('project_schema: normalizeSplitDoorsBottomMap normalizes splitBottom_* and 
     splitBottom_d7_full: 1,
     splitb_d8_mid: true,
     splitb_d9: false,
+    splitBottom_d10_top: 'bad',
+    arbitrary: 'bad',
+    explicitNull: null,
   };
 
   const out = normalizeSplitDoorsBottomMap(input);
   assert.deepEqual(out.splitb_d7, true);
   assert.deepEqual(out.splitb_d8, true);
   assert.deepEqual(out.splitb_d9, false);
+  assert.equal(Object.prototype.hasOwnProperty.call(out, 'splitb_d10'), false);
+  assert.equal(Object.prototype.hasOwnProperty.call(out, 'arbitrary'), false);
+  assert.deepEqual(out.explicitNull, null);
 
   assert.equal(Object.prototype.hasOwnProperty.call(out, 'splitBottom_d7_full'), false);
 });

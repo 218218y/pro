@@ -350,28 +350,16 @@ test('[slice-write-access] repeated meta touch refreshes cached meta namespace a
     },
   } satisfies AnyRecord;
 
-  const first = touchMetaCanonical(
-    App,
-    { source: 'first-touch' },
-    { allowRootStorePatch: true }
-  );
+  const first = touchMetaCanonical(App, { source: 'first-touch' }, { allowRootStorePatch: true });
 
   metaNamespace.touch = ensureMetaActionsNamespace({ meta: {} }).touch;
-  const second = touchMetaCanonical(
-    App,
-    { source: 'second-touch' },
-    { allowRootStorePatch: true }
-  );
+  const second = touchMetaCanonical(App, { source: 'second-touch' }, { allowRootStorePatch: true });
 
   metaNamespace.touch = (meta?: AnyRecord) => {
     calls.push({ op: 'meta.touch:third', meta });
     return { via: 'meta.touch:third' };
   };
-  const third = touchMetaCanonical(
-    App,
-    { source: 'third-touch' },
-    { allowRootStorePatch: true }
-  );
+  const third = touchMetaCanonical(App, { source: 'third-touch' }, { allowRootStorePatch: true });
 
   assert.deepEqual(first, { via: 'meta.touch:first' });
   assert.deepEqual(second, { via: 'store.patch' });
@@ -746,12 +734,7 @@ test('[slice-write-access] dispatchCanonicalPatchPayload skips stub meta.touch a
     },
   } satisfies AnyRecord;
 
-  const out = dispatchCanonicalPatchPayload(
-    App,
-    {},
-    { source: 'touch-stub' },
-    { allowRootStorePatch: true }
-  );
+  const out = dispatchCanonicalPatchPayload(App, {}, { source: 'touch-stub' }, { allowRootStorePatch: true });
   assert.deepEqual(out, { via: 'store.patch' });
   assert.deepEqual(calls, [{ op: 'store.patch', patch: {}, meta: { source: 'touch-stub' } }]);
 });
@@ -934,11 +917,7 @@ test('[slice-write-access] canonical dispatch fails closed on empty single-slice
   } satisfies AnyRecord;
 
   assert.equal(
-    hasCanonicalPatchDispatch(
-      App,
-      { ui: {} },
-      { allowRootActionPatch: true, allowRootStorePatch: true }
-    ),
+    hasCanonicalPatchDispatch(App, { ui: {} }, { allowRootActionPatch: true, allowRootStorePatch: true }),
     false
   );
   assert.equal(

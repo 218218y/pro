@@ -72,11 +72,7 @@ export function patchSliceCanonical<N extends SlicePatchNamespace>(
   return patchSliceWithResolvedContext(createResolvedWriteContext(App), namespace, payload, meta, opts);
 }
 
-export function touchMetaCanonical(
-  App: unknown,
-  meta?: ActionMetaLike,
-  opts?: MetaTouchOptions
-): unknown {
+export function touchMetaCanonical(App: unknown, meta?: ActionMetaLike, opts?: MetaTouchOptions): unknown {
   return touchMetaWithResolvedContext(createResolvedWriteContext(App), meta, opts);
 }
 

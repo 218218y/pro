@@ -16,12 +16,7 @@ import type {
   ModeSlicePatch,
 } from '../../../types';
 import { metaTransient } from './meta_profiles_access.js';
-import {
-  asRecord,
-  getSliceNamespace,
-  getWriteStore,
-  patchSliceCanonical,
-} from './slice_write_access.js';
+import { asRecord, getSliceNamespace, getWriteStore, patchSliceCanonical } from './slice_write_access.js';
 
 type ModeWriteAppLike = {
   modes?: Record<string, unknown>;

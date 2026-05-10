@@ -68,7 +68,7 @@ test('kernel project capture canonicalizes config lists and detaches mutable sna
   assert.equal(snapshot.modulesConfiguration[0].layout, 'drawers');
   assert.equal(snapshot.stackSplitLowerModulesConfiguration[0].extDrawersCount, 3);
   assert.deepEqual({ ...snapshot.groovesMap }, { g1: true });
-  assert.deepEqual({ ...snapshot.splitDoorsBottomMap }, { d1: 1, drop: 0 });
+  assert.deepEqual({ ...snapshot.splitDoorsBottomMap }, { splitb_d1: true, drop: false });
   assert.deepEqual(
     { ...snapshot.mirrorLayoutMap },
     { d1: [{ widthCm: 55, heightCm: 88 }], d2: [{ widthCm: 33 }] }

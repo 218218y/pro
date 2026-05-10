@@ -1,16 +1,16 @@
 # Legacy / fallback audit
 
-Generated at: 2026-05-10T13:25:39.008Z
+Generated at: 2026-05-10T15:18:16.409Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **34**
-- Files with occurrences: **26**
+- Total categorized occurrences: **31**
+- Files with occurrences: **24**
 - Category counts:
   - `runtime-default`: **14**
   - `browser-adapter`: **9**
-  - `project-migration`: **4**
+  - `project-migration`: **1**
   - `test-fixture`: **7**
   - `legacy-runtime-risk`: **0**
   - `unknown`: **0**
@@ -27,14 +27,12 @@ Generated at: 2026-05-10T13:25:39.008Z
 
 - `esm/test_no_side_effects_on_import.mjs` — **6** (test-fixture: 6)
 - `esm/native/adapters/browser/ui_ops.ts` — **3** (browser-adapter: 3)
-- `esm/native/io/project_io_feedback_bridge.ts` — **2** (project-migration: 2)
 - `esm/entry_pro_overlay.ts` — **1** (browser-adapter: 1)
 - `esm/entry_pro.ts` — **1** (browser-adapter: 1)
 - `esm/native/adapters/browser/active_element.ts` — **1** (browser-adapter: 1)
 - `esm/native/adapters/browser/CONTRACT.md` — **1** (browser-adapter: 1)
 - `esm/native/builder/room_floor_texture.ts` — **1** (runtime-default: 1)
 - `esm/native/features/project_config/project_config_persisted_payload_shared.ts` — **1** (project-migration: 1)
-- `esm/native/io/project_schema_door_maps.ts` — **1** (project-migration: 1)
 - `esm/native/platform/boot_main.ts` — **1** (browser-adapter: 1)
 - `esm/native/platform/dirty_flag.ts` — **1** (runtime-default: 1)
 - `esm/native/platform/smoke_checks_shared.ts` — **1** (runtime-default: 1)

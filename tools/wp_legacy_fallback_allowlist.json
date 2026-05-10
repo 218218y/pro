@@ -45,18 +45,6 @@
         "project-migration": 1
       }
     },
-    "esm/native/io/project_io_feedback_bridge.ts": {
-      "total": 2,
-      "categories": {
-        "project-migration": 2
-      }
-    },
-    "esm/native/io/project_schema_door_maps.ts": {
-      "total": 1,
-      "categories": {
-        "project-migration": 1
-      }
-    },
     "esm/native/platform/boot_main.ts": {
       "total": 1,
       "categories": {

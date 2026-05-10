@@ -23,7 +23,7 @@ test('normalizeModelRecord canonicalizes persisted model config maps and detache
 
   const normalized = normalizeModelRecord(sourceModel as never);
 
-  assert.deepEqual({ ...normalized.splitDoorsBottomMap }, { lower: 1, off: 0 });
+  assert.deepEqual({ ...normalized.splitDoorsBottomMap }, { lower: true, off: false });
   assert.deepEqual({ ...normalized.mirrorLayoutMap }, { d1_full: [{ widthCm: 55, heightCm: 88 }] });
   assert.equal(Array.isArray(normalized.doorTrimMap?.d1_full), true);
   assert.equal(normalized.doorTrimMap?.d1_full?.length, 2);
@@ -92,7 +92,7 @@ test('buildProjectStructureFromModel keeps canonical mirror/layout payloads and 
 
   assert.deepEqual(built.savedColors, [{ id: 'keep-color', value: '#fff' }]);
   assert.deepEqual(built.splitDoorsMap, { main: [1, 2] });
-  assert.deepEqual({ ...built.splitDoorsBottomMap }, { lower: 1, off: 0 });
+  assert.deepEqual({ ...built.splitDoorsBottomMap }, { lower: true, off: false });
   assert.deepEqual({ ...built.mirrorLayoutMap }, { d1_full: [{ widthCm: 55, heightCm: 88 }] });
   assert.equal(Array.isArray(built.doorTrimMap?.d1_full), true);
   assert.equal(built.doorTrimMap?.d1_full?.[0]?.color, 'gold');

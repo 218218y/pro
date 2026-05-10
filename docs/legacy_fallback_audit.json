@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-05-10T13:25:39.008Z",
+  "generatedAt": "2026-05-10T15:18:16.409Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 34,
-    "totalFiles": 26,
+    "totalOccurrences": 31,
+    "totalFiles": 24,
     "byCategory": {
       "runtime-default": 14,
       "browser-adapter": 9,
-      "project-migration": 4,
+      "project-migration": 1,
       "test-fixture": 7,
       "legacy-runtime-risk": 0,
       "unknown": 0
@@ -50,18 +50,6 @@
         }
       },
       "esm/native/features/project_config/project_config_persisted_payload_shared.ts": {
-        "total": 1,
-        "categories": {
-          "project-migration": 1
-        }
-      },
-      "esm/native/io/project_io_feedback_bridge.ts": {
-        "total": 2,
-        "categories": {
-          "project-migration": 2
-        }
-      },
-      "esm/native/io/project_schema_door_maps.ts": {
         "total": 1,
         "categories": {
           "project-migration": 1
@@ -186,13 +174,6 @@
         }
       },
       {
-        "file": "esm/native/io/project_io_feedback_bridge.ts",
-        "total": 2,
-        "categories": {
-          "project-migration": 2
-        }
-      },
-      {
         "file": "esm/entry_pro_overlay.ts",
         "total": 1,
         "categories": {
@@ -229,13 +210,6 @@
       },
       {
         "file": "esm/native/features/project_config/project_config_persisted_payload_shared.ts",
-        "total": 1,
-        "categories": {
-          "project-migration": 1
-        }
-      },
-      {
-        "file": "esm/native/io/project_schema_door_maps.ts",
         "total": 1,
         "categories": {
           "project-migration": 1
@@ -418,28 +392,7 @@
     },
     {
       "file": "esm/native/features/project_config/project_config_persisted_payload_shared.ts",
-      "line": 248,
-      "term": "legacy",
-      "category": "project-migration",
-      "text": "// ignore malformed legacy payloads"
-    },
-    {
-      "file": "esm/native/io/project_io_feedback_bridge.ts",
-      "line": 81,
-      "term": "fallback",
-      "category": "project-migration",
-      "text": "reportNonFatal('ui.toast.fallback', err, 6000);"
-    },
-    {
-      "file": "esm/native/io/project_io_feedback_bridge.ts",
-      "line": 115,
-      "term": "fallback",
-      "category": "project-migration",
-      "text": "reportNonFatal('ui.confirm.fallback', err, 6000);"
-    },
-    {
-      "file": "esm/native/io/project_schema_door_maps.ts",
-      "line": 64,
+      "line": 256,
       "term": "legacy",
       "category": "project-migration",
       "text": "// ignore malformed legacy payloads"

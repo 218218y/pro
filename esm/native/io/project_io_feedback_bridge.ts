@@ -78,7 +78,7 @@ export function createProjectIoFeedbackBridge(
     try {
       console.log('[toast]', type || 'info', message);
     } catch (err) {
-      reportNonFatal('ui.toast.fallback', err, 6000);
+      reportNonFatal('ui.toast.console', err, 6000);
     }
   };
 
@@ -112,7 +112,7 @@ export function createProjectIoFeedbackBridge(
       if (ok) onConfirmCb();
       if (!ok && onCancelCb) onCancelCb();
     } catch (err) {
-      reportNonFatal('ui.confirm.fallback', err, 6000);
+      reportNonFatal('ui.confirm.browser', err, 6000);
       if (onCancelCb) onCancelCb();
     }
   };

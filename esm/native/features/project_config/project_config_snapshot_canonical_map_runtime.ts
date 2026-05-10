@@ -1,4 +1,8 @@
 import { readMirrorLayoutMap } from '../mirror_layout.js';
+import {
+  readSplitDoorsBottomMapValue,
+  readSplitDoorsMapValue,
+} from './project_config_persisted_payload_shared.js';
 import { readDoorTrimMap } from '../door_trim.js';
 import { readDoorStyleMap as normalizeDoorStyleMap } from '../door_style_overrides.js';
 import {
@@ -105,43 +109,13 @@ function normalizeHingeMap(value: unknown): Record<string, unknown> {
   return out;
 }
 
-function normalizeSplitDoorsMap(value: unknown): Record<string, unknown> {
-  const rec = asMapRecord(value);
-  const out: Record<string, unknown> = Object.create(null);
-  if (!rec) return out;
-  for (const key of Object.keys(rec)) {
-    const entry = rec[key];
-    if (entry === null) {
-      out[key] = null;
-      continue;
-    }
-    if (typeof entry === 'boolean' || typeof entry === 'string') {
-      out[key] = entry;
-      continue;
-    }
-    if (typeof entry === 'number' && Number.isFinite(entry)) {
-      out[key] = entry;
-      continue;
-    }
-    if (Array.isArray(entry)) {
-      const nums: number[] = [];
-      for (const item of entry) {
-        const num = typeof item === 'number' ? item : typeof item === 'string' ? Number(item) : NaN;
-        if (Number.isFinite(num)) nums.push(num);
-      }
-      out[key] = nums;
-    }
-  }
-  return out;
-}
-
 type ProjectConfigMapNormalizer = (value: unknown) => unknown;
 
 const PROJECT_CONFIG_MAP_NORMALIZERS: Record<string, ProjectConfigMapNormalizer> = {
   handlesMap: normalizeHandlesMap,
   hingeMap: normalizeHingeMap,
-  splitDoorsMap: normalizeSplitDoorsMap,
-  splitDoorsBottomMap: normalizeToggleMap,
+  splitDoorsMap: readSplitDoorsMapValue,
+  splitDoorsBottomMap: readSplitDoorsBottomMapValue,
   drawerDividersMap: normalizeToggleMap,
   groovesMap: normalizeToggleMap,
   removedDoorsMap: normalizeToggleMap,

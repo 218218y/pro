@@ -33,13 +33,7 @@ export function patchSliceWithDedicatedWriter<N extends SlicePatchNamespace>(
   meta?: ActionMetaLike,
   opts?: DedicatedSliceWriteOptions
 ): unknown {
-  return patchSliceCanonical(
-    App,
-    namespace,
-    patchObj,
-    meta,
-    toDedicatedSliceWriteOptions(namespace, opts)
-  );
+  return patchSliceCanonical(App, namespace, patchObj, meta, toDedicatedSliceWriteOptions(namespace, opts));
 }
 
 export function touchMetaWithDedicatedWriter(

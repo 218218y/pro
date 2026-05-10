@@ -29,17 +29,15 @@ const EMPTY_ROOT_PATCH_DISPATCH_TARGETS = freezeRootPatchDispatchTargets();
 const sliceDispatchTargetsCache = new Map<number, readonly SliceDispatchTarget[]>();
 const metaTouchDispatchTargetsCache = new Map<number, readonly MetaTouchDispatchTarget[]>();
 
-function createRootPatchDispatchTargetSet(opts?: RootPatchDispatchOptions): readonly RootPatchDispatchTarget[] {
+function createRootPatchDispatchTargetSet(
+  opts?: RootPatchDispatchOptions
+): readonly RootPatchDispatchTarget[] {
   const allowRootActionPatch = !!opts?.allowRootActionPatch;
   const allowRootStorePatch = opts?.allowRootStorePatch === true;
   if (!allowRootStorePatch) {
-    return allowRootActionPatch
-      ? ROOT_PATCH_ACTION_ONLY_DISPATCH_TARGETS
-      : EMPTY_ROOT_PATCH_DISPATCH_TARGETS;
+    return allowRootActionPatch ? ROOT_PATCH_ACTION_ONLY_DISPATCH_TARGETS : EMPTY_ROOT_PATCH_DISPATCH_TARGETS;
   }
-  return allowRootActionPatch
-    ? ROOT_PATCH_DISPATCH_TARGETS_WITH_ACTION
-    : DEFAULT_ROOT_PATCH_DISPATCH_TARGETS;
+  return allowRootActionPatch ? ROOT_PATCH_DISPATCH_TARGETS_WITH_ACTION : DEFAULT_ROOT_PATCH_DISPATCH_TARGETS;
 }
 
 function createSliceDispatchTargetCacheKey(opts: SliceWriteOptions): number {
@@ -84,10 +82,8 @@ export function resolveRootPatchDispatchTargets(
 export function resolveCanonicalMetaTouchOptions(opts?: CanonicalPatchDispatchOptions): MetaTouchOptions {
   const metaTouchOptions = opts?.metaTouchOptions;
   return {
-    allowRootActionPatch:
-      metaTouchOptions?.allowRootActionPatch ?? opts?.allowRootActionPatch,
-    allowRootStorePatch:
-      metaTouchOptions?.allowRootStorePatch ?? opts?.allowRootStorePatch,
+    allowRootActionPatch: metaTouchOptions?.allowRootActionPatch ?? opts?.allowRootActionPatch,
+    allowRootStorePatch: metaTouchOptions?.allowRootStorePatch ?? opts?.allowRootStorePatch,
     preferStoreWriter: metaTouchOptions?.preferStoreWriter,
     skipNamespaceTouch: metaTouchOptions?.skipNamespaceTouch,
   };
