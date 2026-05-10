@@ -245,7 +245,7 @@ test('corner builders keep typed flow params, explicit nullish-string narrowing,
   assert.match(cornerCommon, /__readScopedReader: CornerWingMaterialsResult\['readScopedReader'\];/);
   assert.match(
     visuals,
-    /function __wp_resolveFn<TArgs extends unknown\[\], TResult>\(primary: unknown, fallback: unknown\): \(\(\.\.\.args: TArgs\) => TResult\) \| null/
+    /function __wp_resolveFn<TArgs extends unknown\[\], TResult>\(primary: unknown, secondary: unknown\): \(\(\.\.\.args: TArgs\) => TResult\) \| null/
   );
   assert.doesNotMatch(
     cornerWingCellShared,
