@@ -93,3 +93,63 @@ test('downloadJsonObjectResultViaBrowser preserves browser download errors as ac
   const result = downloadJsonObjectResultViaBrowser(env.ctx, 'demo.json', { a: 1 });
   assert.deepEqual(result, { ok: false, reason: 'error', message: 'download exploded' });
 });
+
+
+test('downloadJsonObjectResultViaBrowser reports stringify failures through diagnostics when available', () => {
+  const reports: Array<{ error: unknown; ctx: unknown }> = [];
+  const result = downloadJsonObjectResultViaBrowser(
+    {
+      services: {
+        errors: {
+          report(error: unknown, ctx: unknown) {
+            reports.push({ error, ctx });
+          },
+        },
+      },
+    },
+    'demo.json',
+    { a: 1 },
+    {
+      stringify() {
+        throw new Error('stringify diagnostic exploded');
+      },
+    }
+  );
+
+  assert.deepEqual(result, { ok: false, reason: 'error', message: 'stringify diagnostic exploded' });
+  assert.equal(reports.length, 1);
+  assert.equal((reports[0]!.error as Error).message, 'stringify diagnostic exploded');
+  assert.deepEqual(reports[0]!.ctx, {
+    where: 'native/ui/browser_file_download',
+    op: 'downloadJsonObject.stringify',
+    fatal: false,
+  });
+});
+
+test('downloadJsonObjectResultViaBrowser reports browser download failures through diagnostics when available', () => {
+  const env = createDownloadContext({ throwCreateObjectUrl: true });
+  const reports: Array<{ error: unknown; ctx: unknown }> = [];
+  const result = downloadJsonObjectResultViaBrowser(
+    {
+      ...env.ctx,
+      services: {
+        errors: {
+          report(error: unknown, ctx: unknown) {
+            reports.push({ error, ctx });
+          },
+        },
+      },
+    },
+    'demo.json',
+    { a: 1 }
+  );
+
+  assert.deepEqual(result, { ok: false, reason: 'error', message: 'download exploded' });
+  assert.equal(reports.length, 1);
+  assert.equal((reports[0]!.error as Error).message, 'download exploded');
+  assert.deepEqual(reports[0]!.ctx, {
+    where: 'native/runtime/browser_download',
+    op: 'triggerBlobDownload',
+    fatal: false,
+  });
+});

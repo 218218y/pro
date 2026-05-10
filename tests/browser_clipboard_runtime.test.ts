@@ -85,3 +85,35 @@ test('writeClipboardItemsResultViaBrowser preserves thrown clipboard messages', 
 
   assert.deepEqual(result, { ok: false, reason: 'error', message: 'clipboard write exploded' });
 });
+
+
+test('writeClipboardTextResultViaBrowser reports clipboard owner failures through diagnostics without changing result', async () => {
+  const reports: Array<{ error: unknown; ctx: unknown }> = [];
+  const result = await writeClipboardTextResultViaBrowser(
+    {
+      services: {
+        errors: {
+          report(error: unknown, ctx: unknown) {
+            reports.push({ error, ctx });
+          },
+        },
+      },
+      clipboardMaybe: {
+        async writeText() {
+          throw new Error('clipboard diagnostic exploded');
+        },
+      },
+    },
+    'hello',
+    { allowExecCommand: false }
+  );
+
+  assert.deepEqual(result, { ok: false, reason: 'error', message: 'clipboard diagnostic exploded' });
+  assert.equal(reports.length, 1);
+  assert.equal((reports[0]!.error as Error).message, 'clipboard diagnostic exploded');
+  assert.deepEqual(reports[0]!.ctx, {
+    where: 'native/runtime/browser_clipboard',
+    op: 'writeClipboardText',
+    fatal: false,
+  });
+});

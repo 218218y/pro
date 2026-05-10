@@ -10,6 +10,14 @@ import { asRecord } from './record.js';
 
 export type ReportErrorFn = (err: unknown, ctx?: unknown) => void;
 
+export type ReportErrorOptions = {
+  /**
+   * Keep true for unexpected internal failures. Set false for expected browser/user-operation
+   * failures where diagnostics should be captured when a reporter exists, without noisy console output.
+   */
+  consoleFallback?: boolean;
+};
+
 const DEFAULT_VERBOSE_CONSOLE_ERRORS = true;
 const DEFAULT_VERBOSE_CONSOLE_ERRORS_DEDUPE_MS = 4000;
 
@@ -98,7 +106,7 @@ export function toErrorMessage(err: unknown): string {
   }
 }
 
-export function reportError(App: unknown, err: unknown, ctx?: unknown): void {
+export function reportError(App: unknown, err: unknown, ctx?: unknown, opts?: ReportErrorOptions | null): void {
   try {
     const rep = getReportError(App);
     if (rep) {
@@ -109,6 +117,8 @@ export function reportError(App: unknown, err: unknown, ctx?: unknown): void {
         // Fall through to console logging.
       }
     }
+
+    if (opts?.consoleFallback === false) return;
 
     const verbose = !!readRuntimeScalarOrDefaultFromApp(
       App,

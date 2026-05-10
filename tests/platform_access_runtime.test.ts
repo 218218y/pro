@@ -107,6 +107,22 @@ test('platform access runtime: reportError falls back to installed errors surfac
   assert.deepEqual(calls[0][2], { where: 'unit', fatal: false });
 });
 
+test('platform access runtime: reportError can suppress console fallback for expected adapter failures', () => {
+  const originalWarn = console.warn;
+  const calls: unknown[] = [];
+  console.warn = (...args: unknown[]) => {
+    calls.push(args);
+  };
+  try {
+    reportError({}, new Error('expected adapter failure'), { where: 'unit/browser', fatal: false }, {
+      consoleFallback: false,
+    });
+  } finally {
+    console.warn = originalWarn;
+  }
+  assert.deepEqual(calls, []);
+});
+
 test('platform access runtime: perf helpers canonically own service perf flags', () => {
   const App: any = { services: { platform: {} } };
 

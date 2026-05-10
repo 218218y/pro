@@ -6,6 +6,7 @@ export type BrowserDownloadResult =
 
 import { getDocumentMaybe, getWindowMaybe } from './browser_env.js';
 import { buildErrorResult as buildNormalizedErrorResult } from './error_normalization.js';
+import { reportError } from './errors.js';
 
 type WindowDownloadLike = Window & {
   URL?: {
@@ -34,6 +35,15 @@ function buildUnavailableResult(message?: string): BrowserDownloadResult {
 
 function buildErrorResult(error: unknown, defaultMessage: string): BrowserDownloadResult {
   return buildNormalizedErrorResult('error', error, defaultMessage);
+}
+
+function reportBrowserDownloadError(appOrCtx: unknown, op: string, error: unknown): void {
+  reportError(
+    appOrCtx,
+    error,
+    { where: 'native/runtime/browser_download', op, fatal: false },
+    { consoleFallback: false }
+  );
 }
 
 function readContextDocument(rec: UnknownRecord | null): Document | null {
@@ -82,6 +92,7 @@ export function triggerHrefDownloadResultViaBrowser(
     a.remove();
     return { ok: true };
   } catch (error) {
+    reportBrowserDownloadError(appOrCtx, 'triggerHrefDownload', error);
     return buildErrorResult(error, 'browser href download failed');
   }
 }
@@ -138,6 +149,7 @@ export function triggerBlobDownloadResultViaBrowser(
 
     return result;
   } catch (error) {
+    reportBrowserDownloadError(appOrCtx, 'triggerBlobDownload', error);
     return buildErrorResult(error, 'browser blob download failed');
   }
 }
@@ -163,6 +175,7 @@ export function triggerCanvasDownloadResultViaBrowser(
     const href = canvas.toDataURL(mimeType);
     return triggerHrefDownloadResultViaBrowser(appOrCtx, href, fileName, { hidden: true });
   } catch (error) {
+    reportBrowserDownloadError(appOrCtx, 'triggerCanvasDownload', error);
     return buildErrorResult(error, 'browser canvas download failed');
   }
 }
