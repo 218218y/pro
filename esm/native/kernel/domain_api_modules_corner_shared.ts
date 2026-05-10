@@ -56,11 +56,11 @@ export function asRecordOrEmpty(value: unknown): UnknownRecord {
   return asRecord(value) || {};
 }
 
-export function readDoorsCount(value: unknown, fallback = 2): number {
+export function readDoorsCount(value: unknown, defaultValue = 2): number {
   const rec = asRecord(value);
   const raw = rec ? rec.doors : undefined;
   const parsed = parseInt(String(raw ?? ''), 10);
-  return Number.isFinite(parsed) ? parsed : fallback;
+  return Number.isFinite(parsed) ? parsed : defaultValue;
 }
 
 export function asModulesStructureList(value: unknown): ModulesStructureItem[] {

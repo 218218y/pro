@@ -7,8 +7,8 @@ import {
 import type { CommitSketchModuleBoxContentArgs } from './canvas_picking_sketch_box_content_commit_contracts.js';
 import { buildToggleHoverRecord } from './canvas_picking_sketch_box_content_commit_toggle.js';
 
-function clampNorm(value: number | null, fallback: number): number {
-  return value != null ? Math.max(0, Math.min(1, value)) : fallback;
+function clampNorm(value: number | null, defaultValue: number): number {
+  return value != null ? Math.max(0, Math.min(1, value)) : defaultValue;
 }
 
 function removeBoxContentById(list: SketchModuleBoxContentLike[], removeId: string): boolean {

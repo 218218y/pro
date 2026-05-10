@@ -104,7 +104,7 @@ export function serializeDetachedHtmlNode(
     const XMLSerializerCtor = readSerializerCtor(doc);
     if (typeof XMLSerializerCtor === 'function') return new XMLSerializerCtor().serializeToString(node);
   } catch {
-    // fall through to HTML fallbacks
+    // fall through to HTML serialization branches
   }
 
   try {

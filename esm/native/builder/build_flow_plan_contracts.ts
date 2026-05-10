@@ -19,7 +19,7 @@ type BoardCreator = ReturnType<typeof import('./board_factory.js').makeBoardCrea
 
 export type PartMaterialResolver = MaterialResolverResult['getPartMaterial'];
 export type PartColorValueResolver = MaterialResolverResult['getPartColorValue'];
-export type Stringifier = (value: unknown, fallback?: string) => string;
+export type Stringifier = (value: unknown, defaultValue?: string) => string;
 
 export type BuildFlowPlan = {
   uiState: UiStateLike | null;

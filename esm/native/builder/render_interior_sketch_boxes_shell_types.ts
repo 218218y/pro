@@ -6,7 +6,7 @@ import type {
 
 export type ResolveSketchBoxHeightArgs = {
   rawHeight: unknown;
-  fallbackHeight: unknown;
+  defaultHeight: unknown;
   woodThick: number;
   spanH: number;
   isFreePlacement: boolean;
@@ -30,5 +30,5 @@ export type ResolveSketchBoxMaterialArgs = {
   getPartMaterial?: RenderInteriorSketchBoxesArgs['getPartMaterial'];
   isFn: RenderInteriorSketchBoxesArgs['isFn'];
   boxPid: string;
-  fallback: unknown;
+  defaultMaterial: unknown;
 };

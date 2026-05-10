@@ -97,8 +97,8 @@ export function isRecord(v: unknown): v is UnknownRecord {
   return !!v && typeof v === 'object' && !Array.isArray(v);
 }
 
-export function asRecord(v: unknown, fallback: UnknownRecord = {}): UnknownRecord {
-  return isRecord(v) ? v : fallback;
+export function asRecord(v: unknown, defaultRecord: UnknownRecord = {}): UnknownRecord {
+  return isRecord(v) ? v : defaultRecord;
 }
 
 export function asRecordOrNull(v: unknown): UnknownRecord | null {
@@ -150,8 +150,11 @@ export function toAppContainer(v: AppLike): AppContainer {
   };
 }
 
-export function asFrameRequestCallback(v: unknown, fallback: FrameRequestCallback): FrameRequestCallback {
-  if (typeof v !== 'function') return fallback;
+export function asFrameRequestCallback(
+  v: unknown,
+  defaultCallback: FrameRequestCallback
+): FrameRequestCallback {
+  if (typeof v !== 'function') return defaultCallback;
   return (time: number) => Reflect.apply(v, undefined, [time]);
 }
 

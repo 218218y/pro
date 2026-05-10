@@ -39,8 +39,8 @@ export function buildLayoutPreviewPayload(args: {
   };
 }
 
-export function readSavedGridDivisions(cfgRef: HoverModuleConfigLike | null, fallback: number): number {
-  return readNumber(cfgRef?.gridDivisions) ?? fallback;
+export function readSavedGridDivisions(cfgRef: HoverModuleConfigLike | null, defaultValue: number): number {
+  return readNumber(cfgRef?.gridDivisions) ?? defaultValue;
 }
 
 export function readExistingShelfVariant(args: {

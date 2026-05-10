@@ -37,7 +37,7 @@ export type CornerWingCarcassCtx = {
   baseH: number;
   cabinetBodyHeight: number;
   __individualColors: UnknownRecord;
-  getCornerMat: (partId: string, fallback: unknown) => unknown;
+  getCornerMat: (partId: string, defaultMaterial: unknown) => unknown;
   bodyMat: unknown;
   backPanelMaterialArray: unknown[];
   addOutlines: (mesh: unknown) => void;
@@ -53,8 +53,8 @@ export type CornerWingCarcassHelpers = {
   getCfg: (app: AppContainer) => UnknownRecord;
   getInternalGridMap: (app: unknown, isBottomStack?: boolean) => UnknownRecord;
   asRecord: (value: unknown) => UnknownRecord;
-  readNumFrom: (obj: unknown, key: string, fallback: number) => number;
-  readStrFrom: (obj: unknown, key: string, fallback?: string) => string;
+  readNumFrom: (obj: unknown, key: string, defaultValue: number) => number;
+  readStrFrom: (obj: unknown, key: string, defaultValue?: string) => string;
   cloneMaybe: <T>(value: T) => T;
 };
 export type CornerWingCarcassFlowParams = {

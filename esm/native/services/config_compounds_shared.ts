@@ -112,7 +112,7 @@ export function defaultCornerConfiguration(): NormalizedCornerConfigurationLike 
   };
 }
 
-export function safeClone<T>(v: T, fallback: T): T {
+export function safeClone<T>(v: T, defaultValue: T): T {
   try {
     if (typeof structuredClone === 'function') return structuredClone(v);
   } catch {
@@ -121,9 +121,9 @@ export function safeClone<T>(v: T, fallback: T): T {
 
   try {
     const cloned = JSON.parse(JSON.stringify(v));
-    return cloned === undefined ? fallback : cloned;
+    return cloned === undefined ? defaultValue : cloned;
   } catch {
-    return fallback;
+    return defaultValue;
   }
 }
 

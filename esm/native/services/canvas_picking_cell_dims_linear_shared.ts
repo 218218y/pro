@@ -16,7 +16,7 @@ export interface LinearCellDimsContext extends CanvasLinearCellDimsArgs {
   totalH: number;
   totalD: number;
   doorsPerModule: number[];
-  fallbackW: number[];
+  defaultWidths: number[];
   prevModsCfg: unknown[];
   widthsCurr: number[];
   heightsCurr: number[];
@@ -51,10 +51,10 @@ export function readArray(value: unknown): unknown[] | null {
   return Array.isArray(value) ? value : null;
 }
 
-export function readString(rec: unknown, key: string, fallback = ''): string {
+export function readString(rec: unknown, key: string, defaultValue = ''): string {
   const obj = asRecord(rec);
   const value = obj ? obj[key] : undefined;
-  return typeof value === 'string' && value ? value : fallback;
+  return typeof value === 'string' && value ? value : defaultValue;
 }
 
 export function readBool(rec: unknown, key: string): boolean {

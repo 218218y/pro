@@ -59,8 +59,8 @@ function buildUnavailableResult<T>(message: string): BrowserFileReadResult<T> {
   return { ok: false, reason: 'unavailable', message };
 }
 
-function buildErrorResult<T>(error: unknown, fallback: string): BrowserFileReadResult<T> {
-  return buildNormalizedErrorResult('error', error, fallback);
+function buildErrorResult<T>(error: unknown, defaultMessage: string): BrowserFileReadResult<T> {
+  return buildNormalizedErrorResult('error', error, defaultMessage);
 }
 
 export async function readFileTextResultViaBrowser(

@@ -206,13 +206,13 @@ export function getPlatformStringifier(App: unknown): StringifierFn | null {
   return bindMethod<[unknown, string?], string>(readUtil(App), 'str');
 }
 
-export function stringifyViaPlatform(App: unknown, value: unknown, fallback = ''): string {
+export function stringifyViaPlatform(App: unknown, value: unknown, defaultText = ''): string {
   try {
     const fn = getPlatformStringifier(App);
-    if (!fn) return value == null ? String(fallback || '') : String(value);
-    return fn(value, fallback);
+    if (!fn) return value == null ? String(defaultText || '') : String(value);
+    return fn(value, defaultText);
   } catch {
-    return value == null ? String(fallback || '') : String(value);
+    return value == null ? String(defaultText || '') : String(value);
   }
 }
 

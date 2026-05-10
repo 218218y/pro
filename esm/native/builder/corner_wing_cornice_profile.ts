@@ -125,7 +125,7 @@ export function applyCornerWingProfileCornice(args: {
   const profileFront = makeCorniceProfile(overhangZ);
   const profileSide = makeCorniceProfile(overhangX);
 
-  // Material – classic corner cornice uses the same grouped fallback as the wave variant,
+  // Material - classic corner cornice uses the same grouped base material as the wave variant,
   // while still allowing the visible front/side segments to advertise their own part ids.
   const baseCorniceMat = getCornerMat('corner_cornice', bodyMat);
   const corniceMatFor = (pid: CornicePartId) => getCornerMat(pid, baseCorniceMat);

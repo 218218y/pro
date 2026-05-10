@@ -49,11 +49,11 @@ function applyImmediateStructuralUiMutation(
   app: AppContainer,
   source: string,
   uiPatch: Record<string, unknown>,
-  fallback: () => void
+  applyDirectMutation: () => void
 ): void {
   const meta = { source, immediate: true, noBuild: true };
   const applied = typeof patchViaActions === 'function' ? patchViaActions(app, { ui: uiPatch }, meta) : false;
-  if (!applied) fallback();
+  if (!applied) applyDirectMutation();
   if (typeof requestBuilderStructuralRefresh === 'function') {
     requestBuilderStructuralRefresh(app, { source, immediate: false, force: false, triggerRender: false });
   }

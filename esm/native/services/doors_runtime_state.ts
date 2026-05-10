@@ -141,7 +141,7 @@ export function ensureDoorsRuntimeDefaults(App: AppLike): DoorsRuntimeState {
 
   if (isDoorsRuntimeState(runtime)) return runtime;
 
-  const fallback: DoorsRuntimeState = {
+  const defaultState: DoorsRuntimeState = {
     open: false,
     lastToggleTime: 0,
     closeDelayUntil: 0,
@@ -151,8 +151,8 @@ export function ensureDoorsRuntimeDefaults(App: AppLike): DoorsRuntimeState {
     editHold: { active: false, snapshot: null, includeDrawers: false },
     localOpenSnapshot: null,
   };
-  Object.assign(runtime, fallback);
-  return isDoorsRuntimeState(runtime) ? runtime : fallback;
+  Object.assign(runtime, defaultState);
+  return isDoorsRuntimeState(runtime) ? runtime : defaultState;
 }
 
 export function getDoorsOpen(App: AppLike): boolean {

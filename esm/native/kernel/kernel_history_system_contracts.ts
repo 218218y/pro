@@ -47,7 +47,7 @@ export interface KernelHistorySystem {
 export interface CreateKernelHistorySystemArgs {
   App: AppContainer;
   existing: unknown;
-  asRecord: (value: unknown, fallback?: UnknownRecord) => UnknownRecord;
+  asRecord: (value: unknown, defaultRecord?: UnknownRecord) => UnknownRecord;
   isRecord: (value: unknown) => value is UnknownRecord;
   isRestoring: () => boolean;
   getTimers: () => BrowserTimersLike;

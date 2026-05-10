@@ -34,12 +34,12 @@ function applyImmediateStructuralConfigMutation(
   app: unknown,
   source: string,
   configPatch: Record<string, unknown>,
-  fallback: () => void
+  applyDirectMutation: () => void
 ): void {
   const meta = { source, immediate: true, noBuild: true };
   const applied =
     typeof patchViaActions === 'function' ? patchViaActions(app, { config: configPatch }, meta) : false;
-  if (!applied) fallback();
+  if (!applied) applyDirectMutation();
   if (typeof requestBuilderStructuralRefresh === 'function') {
     requestBuilderStructuralRefresh(app, { source, immediate: false, force: false, triggerRender: false });
   }

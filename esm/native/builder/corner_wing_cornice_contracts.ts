@@ -67,7 +67,7 @@ export type CorniceCtxLike = {
   hasCorniceEnabled: boolean;
   __corniceAllowedForThisStack: boolean;
   __corniceTypeNorm: string;
-  getCornerMat: (partId: string, fallback: unknown) => unknown;
+  getCornerMat: (partId: string, defaultMaterial: unknown) => unknown;
   bodyMat: unknown;
   addOutlines: (mesh: unknown) => void;
   __sketchMode: boolean;
@@ -84,7 +84,7 @@ export type CorniceHelpersLike = {
   readMap: (app: unknown, key: string) => unknown;
   isRecord: (value: unknown) => value is UnknownRecord;
   asRecord: (value: unknown) => UnknownRecord;
-  readNumFrom: (obj: unknown, key: string, fallback: number) => number;
+  readNumFrom: (obj: unknown, key: string, defaultValue: number) => number;
 };
 
 export type CorniceParamsLike = {

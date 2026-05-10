@@ -103,12 +103,12 @@ export type ThreeRuntime = UnknownRecord & {
   PCFShadowMap?: unknown;
 };
 
-export function readFiniteNumber(value: unknown, fallback: number): number {
-  return readFiniteNumberShared(value, fallback);
+export function readFiniteNumber(value: unknown, defaultValue: number): number {
+  return readFiniteNumberShared(value, defaultValue);
 }
 
-export function clampNumber(value: unknown, fallback: number, min: number, max: number): number {
-  const num = readFiniteNumber(value, fallback);
+export function clampNumber(value: unknown, defaultValue: number, min: number, max: number): number {
+  const num = readFiniteNumber(value, defaultValue);
   return Math.max(min, Math.min(max, num));
 }
 

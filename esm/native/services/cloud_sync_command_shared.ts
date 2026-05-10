@@ -1,10 +1,10 @@
-export function readCloudSyncCommandBoolean(value: unknown, fallback = false): boolean {
-  return typeof value === 'boolean' ? value : fallback;
+export function readCloudSyncCommandBoolean(value: unknown, defaultValue = false): boolean {
+  return typeof value === 'boolean' ? value : defaultValue;
 }
 
-export function readCloudSyncCommandFiniteNumber(value: unknown, fallback = 0): number {
+export function readCloudSyncCommandFiniteNumber(value: unknown, defaultValue = 0): number {
   const num = Number(value);
-  return Number.isFinite(num) ? num : fallback;
+  return Number.isFinite(num) ? num : defaultValue;
 }
 
 export function readCloudSyncCommandMessage(value: unknown): string {

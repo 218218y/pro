@@ -1,14 +1,14 @@
 # Legacy / fallback audit
 
-Generated at: 2026-05-10T01:47:39.022Z
+Generated at: 2026-05-10T08:29:42.137Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **283**
-- Files with occurrences: **147**
+- Total categorized occurrences: **53**
+- Files with occurrences: **40**
 - Category counts:
-  - `runtime-default`: **262**
+  - `runtime-default`: **32**
   - `browser-adapter`: **9**
   - `project-migration`: **5**
   - `test-fixture`: **7**
@@ -26,35 +26,35 @@ Generated at: 2026-05-10T01:47:39.022Z
 ## Hot files
 
 - `esm/test_no_side_effects_on_import.mjs` — **6** (test-fixture: 6)
-- `esm/native/platform/render_loop_impl_support.ts` — **4** (runtime-default: 4)
-- `esm/native/runtime/platform_access_ops.ts` — **4** (runtime-default: 4)
 - `esm/native/runtime/slice_write_access_dispatch_order.ts` — **4** (runtime-default: 4)
-- `esm/native/services/canvas_picking_interior_hover_state.ts` — **4** (runtime-default: 4)
-- `esm/native/services/canvas_picking_local_helpers_shared.ts` — **4** (runtime-default: 4)
-- `esm/native/services/canvas_picking_module_selector_hits_candidates.ts` — **4** (runtime-default: 4)
-- `esm/native/services/canvas_picking_projection_runtime_box_shared.ts` — **4** (runtime-default: 4)
-- `esm/native/services/cloud_sync_command_shared.ts` — **4** (runtime-default: 4)
-- `esm/native/services/render_surface_runtime_support_shared.ts` — **4** (runtime-default: 4)
-- `esm/native/ui/notes_service_sanitize.ts` — **4** (runtime-default: 4)
-- `esm/native/ui/react/tabs/interior_tab_helpers_core.ts` — **4** (runtime-default: 4)
-- `esm/native/ui/react/tabs/structure_tab_core_numbers.ts` — **4** (runtime-default: 4)
-- `esm/shared/mirror_layout_contracts_shared.ts` — **4** (runtime-default: 4)
 - `esm/native/adapters/browser/ui_ops.ts` — **3** (browser-adapter: 3)
-- `esm/native/builder/corner_wing_carcass_shared.ts` — **3** (runtime-default: 3)
-- `esm/native/builder/render_interior_sketch_boxes_fronts_support.ts` — **3** (runtime-default: 3)
-- `esm/native/builder/visuals_and_contents_shared.ts` — **3** (runtime-default: 3)
-- `esm/native/features/modules_configuration/modules_config_structure.ts` — **3** (runtime-default: 3)
-- `esm/native/kernel/domain_api_shared.ts` — **3** (runtime-default: 3)
-- `esm/native/platform/platform_shared.ts` — **3** (runtime-default: 3)
-- `esm/native/runtime/browser_clipboard.ts` — **3** (runtime-default: 3)
-- `esm/native/services/canvas_picking_core_support_errors.ts` — **3** (runtime-default: 3)
-- `esm/native/services/config_compounds_shared.ts` — **3** (runtime-default: 3)
-- `esm/native/services/doors_runtime_state.ts` — **3** (runtime-default: 3)
-- `esm/native/ui/export/export_canvas_delivery_shared.ts` — **3** (runtime-default: 3)
-- `esm/native/ui/react/notes/notes_overlay_helpers_shared.ts` — **3** (runtime-default: 3)
-- `esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_text_layer_editor_hooks.ts` — **3** (runtime-default: 3)
-- `esm/native/ui/react/pdf/order_pdf_overlay_sketch_note_box_runtime.ts` — **3** (runtime-default: 3)
-- `esm/native/builder/corner_connector_cornice_shared.ts` — **2** (runtime-default: 2)
+- `esm/native/builder/render_interior_sketch_support_rods.ts` — **2** (runtime-default: 2)
+- `esm/native/io/project_io_feedback_bridge.ts` — **2** (project-migration: 2)
+- `esm/native/runtime/ui_write_access.ts` — **2** (runtime-default: 2)
+- `esm/entry_pro_overlay.ts` — **1** (browser-adapter: 1)
+- `esm/entry_pro.ts` — **1** (browser-adapter: 1)
+- `esm/native/adapters/browser/active_element.ts` — **1** (browser-adapter: 1)
+- `esm/native/adapters/browser/CONTRACT.md` — **1** (browser-adapter: 1)
+- `esm/native/builder/module_layout_pipeline.ts` — **1** (runtime-default: 1)
+- `esm/native/builder/post_build_extras_pipeline.ts` — **1** (runtime-default: 1)
+- `esm/native/builder/post_build_front_reveal_frames_drawers.ts` — **1** (runtime-default: 1)
+- `esm/native/builder/post_build_sketch_door_cuts_modules.ts` — **1** (runtime-default: 1)
+- `esm/native/builder/render_interior_preset_ops_wall_faces.ts` — **1** (runtime-default: 1)
+- `esm/native/builder/room_floor_texture.ts` — **1** (runtime-default: 1)
+- `esm/native/builder/scheduler_runtime.ts` — **1** (runtime-default: 1)
+- `esm/native/features/project_config/project_config_persisted_payload_shared.ts` — **1** (project-migration: 1)
+- `esm/native/io/project_schema_door_maps.ts` — **1** (project-migration: 1)
+- `esm/native/platform/boot_main.ts` — **1** (browser-adapter: 1)
+- `esm/native/platform/dirty_flag.ts` — **1** (runtime-default: 1)
+- `esm/native/platform/smoke_checks_shared.ts` — **1** (runtime-default: 1)
+- `esm/native/platform/smoke_checks.ts` — **1** (browser-adapter: 1)
+- `esm/native/runtime/browser_clipboard.ts` — **1** (runtime-default: 1)
+- `esm/native/runtime/browser_env_timers.ts` — **1** (runtime-default: 1)
+- `esm/native/runtime/meta_profiles_access.ts` — **1** (runtime-default: 1)
+- `esm/native/runtime/meta_profiles_contract.ts` — **1** (runtime-default: 1)
+- `esm/native/runtime/mode_write_access.ts` — **1** (runtime-default: 1)
+- `esm/native/runtime/runtime_write_access.ts` — **1** (runtime-default: 1)
+- `esm/native/runtime/slice_write_access_dispatch.ts` — **1** (project-migration: 1)
 
 ## Allowlist check
 

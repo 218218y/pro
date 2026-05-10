@@ -4,7 +4,7 @@
 // Design goals:
 // - Keep the existing StoreLike surface (getState/patch/subscribe + helpers)
 // - Canonical write path: store.patch(payload, meta) (no dispatch envelopes)
-// - Avoid hybrid fallback paths inside the store backend (single backend = Zustand)
+// - Avoid hybrid write paths inside the store backend (single backend = Zustand)
 // - Preserve actionMeta-aware subscriptions used by platform/slice wrappers
 
 import { createStore as createZustandVanillaStore } from 'zustand/vanilla';

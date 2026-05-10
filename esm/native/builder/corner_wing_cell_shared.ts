@@ -142,7 +142,7 @@ export type CornerWingCellHelpersLike = ValueRecord & {
   ) => number;
   isRecord: (value: unknown) => value is ValueRecord;
   asRecord: (value: unknown) => ValueRecord;
-  readNumFrom: (obj: unknown, key: string, fallback: number) => number;
+  readNumFrom: (obj: unknown, key: string, defaultValue: number) => number;
 };
 
 export type CornerWingCellFlowParams = {

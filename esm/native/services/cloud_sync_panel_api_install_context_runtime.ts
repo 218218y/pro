@@ -94,11 +94,11 @@ export function readCloudSyncPanelApiImpl(
 export function invokeCloudSyncPanelApi<K extends CloudSyncServiceMethodKey>(
   context: CloudSyncPanelApiInstallContext,
   key: K,
-  fallback: CloudSyncServiceMethodResult<K>,
+  defaultResult: CloudSyncServiceMethodResult<K>,
   ...args: CloudSyncServiceMethodArgs<K>
 ): CloudSyncServiceMethodResult<K> {
   const impl = readCloudSyncPanelApiImpl(context);
   const candidate = impl?.[key];
-  if (typeof candidate !== 'function') return fallback;
+  if (typeof candidate !== 'function') return defaultResult;
   return (candidate as CloudSyncServiceCallable<K>)(...args);
 }

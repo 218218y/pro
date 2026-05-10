@@ -79,7 +79,7 @@ export function findModuleCandidateForStack(args: FindModuleCandidateForStackArg
     stopAt = null,
     includeSketchModuleKey = false,
   } = args;
-  let fallback: { moduleKey: ModuleKey; hitY: number | null } | null = null;
+  let stackAgnosticCandidate: { moduleKey: ModuleKey; hitY: number | null } | null = null;
 
   for (let i = 0; i < intersects.length; i++) {
     const candidate = readModuleHitCandidateFromIntersection({
@@ -92,12 +92,12 @@ export function findModuleCandidateForStack(args: FindModuleCandidateForStackArg
 
     const effectiveStack = inferModuleStackFromHint(candidate.stackHint, boundaryY, candidate.hitY);
     if (effectiveStack === desiredStack) return toModuleCandidateValue(candidate);
-    if (!fallback && effectiveStack == null) {
-      fallback = toModuleCandidateValue(candidate);
+    if (!stackAgnosticCandidate && effectiveStack == null) {
+      stackAgnosticCandidate = toModuleCandidateValue(candidate);
     }
   }
 
-  return fallback;
+  return stackAgnosticCandidate;
 }
 
 export function findPreferredCornerCellCandidate(args: FindPreferredCornerCellCandidateArgs): {
@@ -112,8 +112,8 @@ export function findPreferredCornerCellCandidate(args: FindPreferredCornerCellCa
     stopAt = null,
     includeSketchModuleKey = false,
   } = args;
-  let genericCornerFallback: { moduleKey: ModuleKey; hitY: number | null } | null = null;
-  let unknownStackCornerFallback: { moduleKey: ModuleKey; hitY: number | null } | null = null;
+  let genericCornerCandidate: { moduleKey: ModuleKey; hitY: number | null } | null = null;
+  let unknownStackCornerCandidate: { moduleKey: ModuleKey; hitY: number | null } | null = null;
 
   for (let i = 0; i < intersects.length; i++) {
     const candidate = readModuleHitCandidateFromIntersection({
@@ -127,17 +127,17 @@ export function findPreferredCornerCellCandidate(args: FindPreferredCornerCellCa
     const effectiveStack = inferModuleStackFromHint(candidate.stackHint, boundaryY, candidate.hitY);
     const value = toModuleCandidateValue(candidate);
     if (effectiveStack === desiredStack && isSpecificCornerCellKey(candidate.moduleKey)) return value;
-    if (effectiveStack === desiredStack && candidate.moduleKey === 'corner' && !genericCornerFallback) {
-      genericCornerFallback = value;
+    if (effectiveStack === desiredStack && candidate.moduleKey === 'corner' && !genericCornerCandidate) {
+      genericCornerCandidate = value;
     }
     if (
       effectiveStack == null &&
       isSpecificCornerCellKey(candidate.moduleKey) &&
-      !unknownStackCornerFallback
+      !unknownStackCornerCandidate
     ) {
-      unknownStackCornerFallback = value;
+      unknownStackCornerCandidate = value;
     }
   }
 
-  return genericCornerFallback || unknownStackCornerFallback;
+  return genericCornerCandidate || unknownStackCornerCandidate;
 }

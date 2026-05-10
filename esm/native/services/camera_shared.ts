@@ -119,9 +119,9 @@ export function readDimsState(value: unknown): DimsStateLike | null {
   return isDimsStateLike(value) ? value : null;
 }
 
-export function readFiniteDimension(value: unknown, fallback: number): number {
+export function readFiniteDimension(value: unknown, defaultValue: number): number {
   const n = typeof value === 'number' ? value : Number(value);
-  return Number.isFinite(n) && n > 0 ? n : fallback;
+  return Number.isFinite(n) && n > 0 ? n : defaultValue;
 }
 
 export function readDimsLike(value: unknown): DimsLike | null {

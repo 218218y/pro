@@ -10,9 +10,13 @@ type DownloadContextLike = {
   winMaybe?: Window | null;
 };
 
-export function normalizeDownloadFilename(fileName: unknown, fallback: string, extension?: string): string {
+export function normalizeDownloadFilename(
+  fileName: unknown,
+  defaultName: string,
+  extension?: string
+): string {
   const raw = typeof fileName === 'string' ? fileName.trim() : '';
-  const safeBase = raw || String(fallback || 'download');
+  const safeBase = raw || String(defaultName || 'download');
   const ext = typeof extension === 'string' && extension.trim() ? extension.trim() : '';
   if (!ext) return safeBase;
   return safeBase.toLowerCase().endsWith(ext.toLowerCase()) ? safeBase : `${safeBase}${ext}`;

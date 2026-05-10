@@ -57,10 +57,10 @@ export function px(n: number): string {
   return `${Math.round(n)}px`;
 }
 
-export function parsePx(v: unknown, fallback: number): number {
-  if (typeof v !== 'string') return fallback;
+export function parsePx(v: unknown, defaultValue: number): number {
+  if (typeof v !== 'string') return defaultValue;
   const n = parseFloat(v);
-  return Number.isFinite(n) ? n : fallback;
+  return Number.isFinite(n) ? n : defaultValue;
 }
 
 export function isEmptyHtml(html: string): boolean {

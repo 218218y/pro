@@ -51,11 +51,11 @@ export function getErrorStack(err: unknown): string | null {
   return typeof stack === 'string' && stack ? stack : null;
 }
 
-export function getModeConst(key: ModeConstKey, fallback: string): string {
+export function getModeConst(key: ModeConstKey, defaultValue: string): string {
   const modes: unknown = MODES;
-  if (!isRecord(modes)) return fallback;
+  if (!isRecord(modes)) return defaultValue;
   const value = modes[key];
-  return typeof value === 'string' && value ? value : fallback;
+  return typeof value === 'string' && value ? value : defaultValue;
 }
 
 export function readPlatformReportError(value: unknown): PlatformReportErrorLike | null {

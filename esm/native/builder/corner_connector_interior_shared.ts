@@ -72,7 +72,7 @@ export type CornerConnectorInteriorCtx = {
   showContentsEnabled?: boolean;
   addOutlines: (mesh: unknown) => void;
   getMaterial: (name: unknown, kind: string) => unknown;
-  getCornerMat: (partId: string, fallback: unknown) => unknown;
+  getCornerMat: (partId: string, defaultMaterial: unknown) => unknown;
   bodyMat: unknown;
   addRealisticHanger?: AddRealisticHangerLike;
   addHangingClothes?: AddHangingClothesLike;

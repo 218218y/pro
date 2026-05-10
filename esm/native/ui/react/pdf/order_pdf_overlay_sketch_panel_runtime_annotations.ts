@@ -18,8 +18,13 @@ export type OrderPdfSketchStrokeCounts = Record<OrderPdfSketchAnnotationPageKey,
 
 const ORDER_PDF_SKETCH_PAGE_KEYS: readonly OrderPdfSketchAnnotationPageKey[] = ['renderSketch', 'openClosed'];
 
-export function readOrderPdfSketchAnnotationSortKey(value: { createdAt?: number }, fallback: number): number {
-  return typeof value.createdAt === 'number' && Number.isFinite(value.createdAt) ? value.createdAt : fallback;
+export function readOrderPdfSketchAnnotationSortKey(
+  value: { createdAt?: number },
+  defaultValue: number
+): number {
+  return typeof value.createdAt === 'number' && Number.isFinite(value.createdAt)
+    ? value.createdAt
+    : defaultValue;
 }
 
 export function buildOrderPdfSketchPreviewEntryMap(

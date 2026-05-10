@@ -35,7 +35,7 @@ type CornerWingCellSketchExtrasParams = {
   cellInnerCenterX: number;
   __fullDepthCenterZ: number;
   __z: (z: number) => number;
-  getCornerMat: (partId: string, fallback: unknown) => unknown;
+  getCornerMat: (partId: string, defaultMaterial: unknown) => unknown;
   getPartColorValue?: (partId: string) => unknown;
   createDoorVisual: BuilderCreateDoorVisualFn;
   createInternalDrawerBox: BuilderCreateInternalDrawerBoxFn;

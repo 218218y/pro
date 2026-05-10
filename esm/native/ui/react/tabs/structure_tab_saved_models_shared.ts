@@ -35,8 +35,8 @@ export function getModelId(model: SavedModelLike | null | undefined): SavedModel
   return String(model?.id || '').trim();
 }
 
-export function getModelName(model: SavedModelLike | null | undefined, fallback = ''): string {
-  return String(model?.name || fallback).trim();
+export function getModelName(model: SavedModelLike | null | undefined, defaultName = ''): string {
+  return String(model?.name || defaultName).trim();
 }
 
 export function isPresetModel(model: SavedModelLike | null | undefined): boolean {

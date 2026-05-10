@@ -227,8 +227,8 @@ export function touchRenderOpsMeta(App: AppLike, meta: CacheTouchMetaLike, key: 
   }
 }
 
-export function toFiniteNumber(value: unknown, fallback = 0): number {
-  return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+export function toFiniteNumber(value: unknown, defaultValue = 0): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
 }
 
 export function isCanvasLike(value: unknown): value is CanvasLike {

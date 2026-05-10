@@ -92,8 +92,8 @@ export function makeDoorStateAccessors(
 
   const curtainVal: BuilderDoorStateAccessorsLike['curtainVal'] = (
     doorIdNumOrPartId,
-    suffixOrFallback,
-    fallback
+    suffixOrDefaultValue,
+    defaultValue
   ): BuilderPartColorValue => {
     const cm = asRecord(c['curtainMap']);
     if (typeof doorIdNumOrPartId === 'string') {
@@ -103,18 +103,18 @@ export function makeDoorStateAccessors(
         const full = partId.replace(/_(top|mid|bot)$/i, '_full');
         if (__hasOwn.call(cm, full)) return readPartColorValue(cm[full]);
       }
-      return readPartColorValue(suffixOrFallback);
+      return readPartColorValue(suffixOrDefaultValue);
     }
 
     const doorIdNum = doorIdNumOrPartId;
-    const suffix = typeof suffixOrFallback === 'string' ? suffixOrFallback : 'full';
+    const suffix = typeof suffixOrDefaultValue === 'string' ? suffixOrDefaultValue : 'full';
     const key = `d${doorIdNum}_${suffix}`;
     if (__hasOwn.call(cm, key)) return readPartColorValue(cm[key]);
     if (suffix === 'top' || suffix === 'mid' || suffix === 'bot') {
       const full = `d${doorIdNum}_full`;
       if (__hasOwn.call(cm, full)) return readPartColorValue(cm[full]);
     }
-    return readPartColorValue(fallback);
+    return readPartColorValue(defaultValue);
   };
 
   function grooveVal(doorIdNum: number, suffix: string, fullDefault: boolean): boolean {

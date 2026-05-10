@@ -57,16 +57,19 @@ export function normalizePositiveCm(value: unknown): number | null {
   return n;
 }
 
-export function normalizeMirrorFaceSign(value: unknown, fallback: number = DEFAULT_FACE_SIGN): number {
-  const fallbackSign = fallback === -1 ? -1 : DEFAULT_FACE_SIGN;
+export function normalizeMirrorFaceSign(value: unknown, defaultFaceSign: number = DEFAULT_FACE_SIGN): number {
+  const normalizedDefaultSign = defaultFaceSign === -1 ? -1 : DEFAULT_FACE_SIGN;
   const n = readFinite(value);
-  if (!Number.isFinite(n)) return fallbackSign;
+  if (!Number.isFinite(n)) return normalizedDefaultSign;
   return Number(n) < 0 ? -1 : DEFAULT_FACE_SIGN;
 }
 
-export function readMirrorLayoutFaceSign(layout: unknown, fallback: number = DEFAULT_FACE_SIGN): number {
+export function readMirrorLayoutFaceSign(
+  layout: unknown,
+  defaultFaceSign: number = DEFAULT_FACE_SIGN
+): number {
   const entry = isRecord(layout) ? layout : null;
-  return normalizeMirrorFaceSign(entry?.faceSign, fallback);
+  return normalizeMirrorFaceSign(entry?.faceSign, defaultFaceSign);
 }
 
 export function normalizeCenterNorm(value: unknown): number {

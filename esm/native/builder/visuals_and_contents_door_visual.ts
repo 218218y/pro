@@ -88,7 +88,7 @@ export function createDoorVisual(
 
   const visualGroup = new THREE.Group();
 
-  // Fail-fast: door style must be resolved from store.ui (no DOM fallbacks).
+  // Fail-fast: door style must be resolved from store.ui, without DOM readback.
   if (style == null || String(style).trim() === '') {
     throw new Error(
       '[WardrobePro] Door style is missing (expected ui.doorStyle to be "flat", "profile", or "tom").'

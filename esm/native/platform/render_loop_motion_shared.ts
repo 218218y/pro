@@ -182,6 +182,6 @@ export function readMotionUserData(group: { userData?: UnknownRecord } | null | 
   return asRecord<UnknownRecord>(asRecordOrNull(group)?.userData, {});
 }
 
-export function readMotionNumber(value: unknown, fallback: number): number {
-  return readFiniteNumber(value, fallback);
+export function readMotionNumber(value: unknown, defaultValue: number): number {
+  return readFiniteNumber(value, defaultValue);
 }

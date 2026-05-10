@@ -32,8 +32,8 @@ function buildUnavailableResult(message?: string): BrowserDownloadResult {
   return msg ? { ok: false, reason: 'unavailable', message: msg } : { ok: false, reason: 'unavailable' };
 }
 
-function buildErrorResult(error: unknown, fallback: string): BrowserDownloadResult {
-  return buildNormalizedErrorResult('error', error, fallback);
+function buildErrorResult(error: unknown, defaultMessage: string): BrowserDownloadResult {
+  return buildNormalizedErrorResult('error', error, defaultMessage);
 }
 
 function readContextDocument(rec: UnknownRecord | null): Document | null {

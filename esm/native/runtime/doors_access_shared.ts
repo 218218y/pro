@@ -15,10 +15,10 @@ export type DrawerRuntimeLike = DrawerRuntimeAccessLike & MutableRecord;
 export type DoorsRuntimeLike = DoorsRuntimeAccessLike & MutableRecord;
 export type UnknownMethod = (...args: never[]) => unknown;
 
-export function asFiniteNumber(v: unknown, fallback = 0): number {
+export function asFiniteNumber(v: unknown, defaultValue = 0): number {
   if (typeof v === 'number' && Number.isFinite(v)) return v;
   const n = Number(v);
-  return Number.isFinite(n) ? n : fallback;
+  return Number.isFinite(n) ? n : defaultValue;
 }
 
 export function asKey(value: unknown): string | null {

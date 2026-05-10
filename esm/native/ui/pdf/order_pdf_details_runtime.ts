@@ -5,8 +5,8 @@ export type OrderPdfDetailsDraftLike = Pick<
   'autoDetails' | 'manualDetails' | 'detailsFull' | 'detailsTouched' | 'manualEnabled'
 >;
 
-export function coerceOrderPdfTextValue(value: unknown, fallback = ''): string {
-  return value == null ? fallback : String(value);
+export function coerceOrderPdfTextValue(value: unknown, defaultValue = ''): string {
+  return value == null ? defaultValue : String(value);
 }
 
 export function hasOrderPdfTextValue(value: unknown): boolean {

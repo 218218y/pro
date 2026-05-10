@@ -31,8 +31,8 @@ function buildUnavailableResult(message?: string): BrowserClipboardResult {
     : { ok: false, reason: 'unavailable' };
 }
 
-function buildErrorResult(error: unknown, fallback: string): BrowserClipboardResult {
-  return buildNormalizedErrorResult('error', error, fallback);
+function buildErrorResult(error: unknown, defaultMessage: string): BrowserClipboardResult {
+  return buildNormalizedErrorResult('error', error, defaultMessage);
 }
 
 function isClipboardDocumentLike(value: unknown): value is ClipboardDocumentLike {

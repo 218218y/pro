@@ -3,7 +3,7 @@ import type { ResolveSketchBoxHeightArgs } from './render_interior_sketch_boxes_
 
 export function resolveSketchBoxHeight(args: ResolveSketchBoxHeightArgs): number | null {
   let height = Number(args.rawHeight);
-  if (!Number.isFinite(height)) height = Number(args.fallbackHeight);
+  if (!Number.isFinite(height)) height = Number(args.defaultHeight);
   if (!Number.isFinite(height)) return null;
   const minHeight = args.woodThick * 2 + SKETCH_BOX_DIMENSIONS.geometry.minInnerAdditiveClearanceM;
   if (height < minHeight) height = minHeight;

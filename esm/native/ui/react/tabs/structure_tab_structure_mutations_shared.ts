@@ -56,14 +56,14 @@ export function normalizeDoorsValue(wardrobeType: string, value: number): number
   return Math.max(minDoorsAllowed(wardrobeType), Math.min(WARDROBE_DOORS_MAX, rounded));
 }
 
-export function readSingleDoorPosOr(value: unknown, fallback: SingleDoorPos): SingleDoorPos {
+export function readSingleDoorPosOr(value: unknown, defaultValue: SingleDoorPos): SingleDoorPos {
   return value === 'left' ||
     value === 'right' ||
     value === 'center' ||
     value === 'center-left' ||
     value === 'center-right'
     ? value
-    : fallback;
+    : defaultValue;
 }
 
 export function buildRawUiPatch(raw: StructureRawPatch): StructureUiPatch {

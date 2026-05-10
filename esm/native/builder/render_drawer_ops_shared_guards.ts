@@ -9,8 +9,8 @@ export function isFunction(value: unknown): value is FnLike {
   return typeof value === 'function';
 }
 
-export function readFinite(value: unknown, fallback = 0): number {
-  return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+export function readFinite(value: unknown, defaultValue = 0): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
 }
 
 function isObject3DLike(value: unknown): value is Object3DLike {

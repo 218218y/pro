@@ -43,9 +43,9 @@ export function isModelsCommandReason(value: string): value is ModelsCommandReas
 
 export function normalizeModelsCommandReason(
   value: unknown,
-  fallback: ModelsCommandReason = 'not-installed'
+  defaultReason: ModelsCommandReason = 'not-installed'
 ): ModelsCommandReason {
-  return typeof value === 'string' && isModelsCommandReason(value) ? value : fallback;
+  return typeof value === 'string' && isModelsCommandReason(value) ? value : defaultReason;
 }
 
 export function normalizeSavedModelId(value: unknown): SavedModelId | null {

@@ -112,9 +112,9 @@ function _asObject(x: unknown): UnknownRecord | null {
 }
 function __wp_resolveFn<TArgs extends unknown[], TResult>(
   primary: unknown,
-  fallback: unknown
+  secondary: unknown
 ): ((...args: TArgs) => TResult) | null {
-  const fn = typeof primary === 'function' ? primary : typeof fallback === 'function' ? fallback : null;
+  const fn = typeof primary === 'function' ? primary : typeof secondary === 'function' ? secondary : null;
   if (!fn) return null;
   return (...args: TArgs): TResult => Reflect.apply(fn, null, args);
 }

@@ -1,7 +1,7 @@
 // Native ESM implementation of picking primitives.
 //
 // Installs app.picking.{raycaster,mouse} using the canonical THREE dep seam.
-// Pure ESM: no global app fallbacks.
+// Pure ESM: no global app access.
 
 import type { RaycasterRuntimeLike, ThreeLike, UnknownRecord, Vector2Like } from '../../../types';
 import { installStableSurfaceSlot } from '../runtime/stable_surface_slots.js';

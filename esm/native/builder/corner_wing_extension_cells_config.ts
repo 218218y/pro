@@ -127,9 +127,9 @@ function createCornerWingModuleCfgNormalizer(args: CornerWingCellDerivationArgs,
 function createDefaultCornerCfgDetector() {
   return (cfg0: unknown): boolean => {
     const cfg = isValueRecord(cfg0) ? cfg0 : {};
-    const parseIntSafe = (value: unknown, fallback: number): number => {
+    const parseIntSafe = (value: unknown, defaultValue: number): number => {
       const parsed = parseInt(String(value ?? ''), 10);
-      return Number.isFinite(parsed) ? parsed : fallback;
+      return Number.isFinite(parsed) ? parsed : defaultValue;
     };
     const layout = typeof cfg.layout === 'string' ? cfg.layout : 'shelves';
     const ext = parseIntSafe(cfg.extDrawersCount, 0);

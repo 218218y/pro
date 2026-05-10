@@ -80,8 +80,8 @@ export function resolveRenderTabFloorStyle(
       ? runtime.__wp_room_resolveStyle(type, lastId)
       : null;
   const resolved = normalizeFloorStyle(resolvedRaw);
-  const fallback = (args.roomData.floorStyles[type] || FALLBACK_FLOOR_STYLES[type] || [])[0] || null;
-  return resolved || fallback;
+  const defaultStyle = (args.roomData.floorStyles[type] || FALLBACK_FLOOR_STYLES[type] || [])[0] || null;
+  return resolved || defaultStyle;
 }
 
 export function createRenderTabRoomDesignController(

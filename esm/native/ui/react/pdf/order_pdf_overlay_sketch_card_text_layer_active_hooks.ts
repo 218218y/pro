@@ -23,7 +23,7 @@ type OrderPdfSketchActiveTextLayerControlsArgs = {
   onEnterTextMode: () => void;
   onSelect: (key: OrderPdfSketchAnnotationPageKey) => void;
   persistLiveTextBox: (textBox: OrderPdfSketchTextBox, allowDelete: boolean) => boolean;
-  readEditorText: (id: string, fallback: string) => string;
+  readEditorText: (id: string, defaultText: string) => string;
   setActiveTextBoxId: (id: string | null) => void;
 };
 

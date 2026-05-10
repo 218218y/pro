@@ -2,8 +2,8 @@ import type { CloudSyncSite2TabsGateSnapshot } from '../../../types';
 
 import { readCloudSyncErrorMessage } from './cloud_sync_support.js';
 
-export function readCloudSyncTabsGateErrorMessage(err: unknown, fallback = ''): string {
-  return readCloudSyncErrorMessage(err, fallback || 'Unexpected cloud sync tabs gate error');
+export function readCloudSyncTabsGateErrorMessage(err: unknown, defaultMessage = ''): string {
+  return readCloudSyncErrorMessage(err, defaultMessage || 'Unexpected cloud sync tabs gate error');
 }
 
 export function cloneCloudSyncSite2TabsGateSnapshot(

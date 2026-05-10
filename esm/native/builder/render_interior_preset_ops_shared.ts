@@ -112,9 +112,9 @@ export function buildBraceShelfIndexSet(input: InteriorPresetInput): Record<numb
   return braceSet;
 }
 
-export function readPresetNumber(value: unknown, fallback: number): number {
+export function readPresetNumber(value: unknown, defaultValue: number): number {
   const num = Number(value);
-  return Number.isFinite(num) ? num : fallback;
+  return Number.isFinite(num) ? num : defaultValue;
 }
 
 export function reportInteriorPresetSoft(

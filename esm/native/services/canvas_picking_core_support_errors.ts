@@ -6,12 +6,12 @@ import { reportError, shouldFailFast } from '../runtime/api_assert_surface.js';
 
 const __wpPickingWarnThrottle = new Map<string, number>();
 
-export function __wp_toError(err: unknown, fallback: string): Error {
+export function __wp_toError(err: unknown, defaultMessage: string): Error {
   if (err instanceof Error) return err;
   try {
-    return new Error(typeof err === 'string' ? err : String(err ?? fallback));
+    return new Error(typeof err === 'string' ? err : String(err ?? defaultMessage));
   } catch {
-    return new Error(fallback);
+    return new Error(defaultMessage);
   }
 }
 

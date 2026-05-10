@@ -105,8 +105,8 @@ export function __drawerShadowPlaneArgs(x: unknown): DrawerShadowPlaneArgs {
   return next;
 }
 
-export function __number(x: unknown, fallback = 0): number {
-  return typeof x === 'number' && Number.isFinite(x) ? x : fallback;
+export function __number(x: unknown, defaultValue = 0): number {
+  return typeof x === 'number' && Number.isFinite(x) ? x : defaultValue;
 }
 
 export function __isBackPanelSeg(v: unknown): v is BackPanelSeg {

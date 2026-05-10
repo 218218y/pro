@@ -142,9 +142,9 @@ export type NormalizeCornerCellForPatchOptions<T extends CornerCellConfigLike = 
   normalizeCell?: (cell: CornerCellConfigLike, index: number, doors: number) => T;
 };
 
-function readCornerCellDoorsCount(value: unknown, fallback = 2): number {
+function readCornerCellDoorsCount(value: unknown, defaultValue = 2): number {
   const doors = parseInt(String((isRecord(value) ? value.doors : undefined) ?? ''), 10);
-  return Number.isFinite(doors) && doors > 0 ? doors : fallback;
+  return Number.isFinite(doors) && doors > 0 ? doors : defaultValue;
 }
 
 function resolveCornerCellDefaultLayout(
@@ -175,8 +175,8 @@ export const normalizeCornerCellForPatch: NormalizeCornerCellForPatchFn = ((
 ): CornerCellConfigLike => {
   const base = isRecord(value) ? cloneRecord(value) : {};
   if (!base.layout) {
-    const fallbackLayout = resolveCornerCellDefaultLayout(options, index);
-    if (fallbackLayout) base.layout = fallbackLayout;
+    const defaultLayout = resolveCornerCellDefaultLayout(options, index);
+    if (defaultLayout) base.layout = defaultLayout;
   }
 
   const doors = readCornerCellDoorsCount(base, 2);

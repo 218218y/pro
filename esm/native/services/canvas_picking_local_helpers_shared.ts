@@ -34,10 +34,10 @@ export function readUiRaw(ui: unknown): UnknownRecord {
   return getRecordProp(ui, 'raw') ?? {};
 }
 
-export function readUiNumber(ui: unknown, key: string, fallback: number): number {
-  return __asNum(getProp(ui, key), fallback);
+export function readUiNumber(ui: unknown, key: string, defaultValue: number): number {
+  return __asNum(getProp(ui, key), defaultValue);
 }
 
-export function readRawNumber(raw: unknown, key: string, fallback: number): number {
-  return __asNum(getProp(raw, key), fallback);
+export function readRawNumber(raw: unknown, key: string, defaultValue: number): number {
+  return __asNum(getProp(raw, key), defaultValue);
 }

@@ -43,7 +43,7 @@ export interface KernelSnapshotStoreSystem {
 export interface CreateKernelSnapshotStoreSystemArgs {
   App: AppContainer;
   stateKernel: StateKernelLike & UnknownRecord;
-  asRecord: (value: unknown, fallback?: UnknownRecord) => UnknownRecord;
+  asRecord: (value: unknown, defaultRecord?: UnknownRecord) => UnknownRecord;
   asRecordOrNull: (value: unknown) => UnknownRecord | null;
   isRecord: (value: unknown) => value is UnknownRecord;
   reportKernelError: (error: unknown, ctx: unknown) => boolean;

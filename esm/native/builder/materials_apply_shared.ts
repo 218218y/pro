@@ -98,7 +98,7 @@ export function getBuildUi(App: AppContainer): BuildUiLike {
   return {};
 }
 
-export function getUiVal<T>(ui: BuildUiLike, id: string, fallback: T): unknown {
+export function getUiVal<T>(ui: BuildUiLike, id: string, defaultValue: T): unknown {
   const raw = asObject<ValueRecord>(ui.raw) || {};
   if (Object.prototype.hasOwnProperty.call(raw, id)) return raw[id];
 
@@ -106,7 +106,7 @@ export function getUiVal<T>(ui: BuildUiLike, id: string, fallback: T): unknown {
   const mapped = valMap[id];
   if (mapped && Object.prototype.hasOwnProperty.call(ui, mapped)) return ui[mapped];
   if (Object.prototype.hasOwnProperty.call(ui, id)) return ui[id];
-  return fallback;
+  return defaultValue;
 }
 
 export function getMaterialsCfg(App: AppContainer): MaterialsCfgLike {

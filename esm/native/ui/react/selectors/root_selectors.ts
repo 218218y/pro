@@ -2,7 +2,7 @@
 //
 // Purpose:
 // - Centralize high-value reads that legitimately span more than one slice.
-// - Keep expensive fallback logic out of React owner components.
+// - Keep expensive derived-count logic out of React owner components.
 
 import type { ConfigStateLike, RootStateLike, UnknownRecord } from '../../../../../types';
 import { readModulesConfigurationListFromConfigSnapshot } from '../../../features/modules_configuration/modules_config_api.js';

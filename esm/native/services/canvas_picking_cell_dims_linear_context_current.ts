@@ -4,7 +4,7 @@ import { __asInt, __asNum } from './canvas_picking_core_helpers.js';
 import { asModuleShape, readSpecialDimsRecord } from './canvas_picking_cell_dims_linear_shared.js';
 
 export interface LinearCurrentDimsState {
-  fallbackW: number[];
+  defaultWidths: number[];
   widthsCurr: number[];
   heightsCurr: number[];
   depthsCurr: number[];
@@ -23,7 +23,7 @@ export function computeCurrentLinearDims(
   sumDoors: number,
   prevModsCfg: unknown[]
 ): LinearCurrentDimsState {
-  const fallbackW: number[] = doorsPerModule.map(d => (totalW > 0 ? (totalW * d) / sumDoors : 0));
+  const defaultWidths: number[] = doorsPerModule.map(d => (totalW > 0 ? (totalW * d) / sumDoors : 0));
   const widthsCurr: number[] = [];
   const heightsCurr: number[] = [];
   const depthsCurr: number[] = [];
@@ -60,7 +60,7 @@ export function computeCurrentLinearDims(
       const doorsU = Math.max(1, doorsPerModule[i]);
       let seg = (remainingW * doorsU) / denomW;
       if (!Number.isFinite(seg) || seg <= 0) seg = (totalW * doorsU) / fallbackDenomW;
-      if (!Number.isFinite(seg) || seg <= 0) seg = fallbackW[i];
+      if (!Number.isFinite(seg) || seg <= 0) seg = defaultWidths[i];
       wcm = seg;
     }
 
@@ -73,7 +73,7 @@ export function computeCurrentLinearDims(
     let bhcm = __asNum(prevSD.baseHeightCm, NaN);
     let bdcm = __asNum(prevSD.baseDepthCm, NaN);
 
-    if (!Number.isFinite(bwcm) || bwcm <= 0) bwcm = Number(wcm) || fallbackW[i];
+    if (!Number.isFinite(bwcm) || bwcm <= 0) bwcm = Number(wcm) || defaultWidths[i];
     if (!Number.isFinite(bhcm) || bhcm <= 0) bhcm = totalH;
     if (!Number.isFinite(bdcm) || bdcm <= 0) bdcm = totalD;
 
@@ -85,5 +85,5 @@ export function computeCurrentLinearDims(
     baseD.push(bdcm);
   }
 
-  return { fallbackW, widthsCurr, heightsCurr, depthsCurr, baseW, baseH, baseD };
+  return { defaultWidths, widthsCurr, heightsCurr, depthsCurr, baseW, baseH, baseD };
 }

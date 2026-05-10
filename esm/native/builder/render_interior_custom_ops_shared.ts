@@ -123,9 +123,9 @@ export function readModuleKeyString(input: InteriorCustomInput, moduleIndex: num
   return input.moduleKey != null ? String(input.moduleKey) : moduleIndex >= 0 ? String(moduleIndex) : '';
 }
 
-export function readGridDivisions(value: unknown, fallback = 6): number {
+export function readGridDivisions(value: unknown, defaultValue = 6): number {
   const gridDivisions = parseInt(String(value ?? ''), 10);
-  return Number.isFinite(gridDivisions) && gridDivisions >= 1 ? gridDivisions : fallback;
+  return Number.isFinite(gridDivisions) && gridDivisions >= 1 ? gridDivisions : defaultValue;
 }
 
 export function buildBraceShelfIndexSet(input: InteriorCustomInput): Record<number, true> {

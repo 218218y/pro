@@ -8,8 +8,8 @@ export function toPositiveNumber(value: unknown): number | null {
   return num != null && num > 0 ? num : null;
 }
 
-export function toNormalizedUnit(value: unknown, fallback = 0.5): number {
+export function toNormalizedUnit(value: unknown, defaultValue = 0.5): number {
   const num = toFiniteNumber(value);
-  if (num == null) return fallback;
+  if (num == null) return defaultValue;
   return Math.max(0, Math.min(1, num));
 }

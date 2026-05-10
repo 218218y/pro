@@ -18,9 +18,9 @@ export function getBool(value: unknown): boolean | null {
   return typeof value === 'boolean' ? value : null;
 }
 
-export function asFiniteNumber(value: unknown, fallback: number): number {
+export function asFiniteNumber(value: unknown, defaultValue: number): number {
   const next = typeof value === 'number' ? value : typeof value === 'string' ? parseFloat(value) : NaN;
-  return Number.isFinite(next) ? next : fallback;
+  return Number.isFinite(next) ? next : defaultValue;
 }
 
 export function normalizeFloorStyle(value: unknown): FloorStyle | null {

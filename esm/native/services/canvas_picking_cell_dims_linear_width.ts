@@ -31,7 +31,7 @@ export function applyLinearCellDimsWidthPolicy(
     moduleCount,
     wardrobeType,
     doorsPerModule,
-    fallbackW,
+    defaultWidths,
     prevModsCfg,
     widthsCurr,
     baseW,
@@ -54,7 +54,7 @@ export function applyLinearCellDimsWidthPolicy(
     if (Number.isFinite(tgtW) && tgtW > 0) newWidths[idx] = tgtW;
 
     for (let i = 0; i < newWidths.length; i++) {
-      if (!Number.isFinite(newWidths[i]) || newWidths[i] <= 0) newWidths[i] = fallbackW[i];
+      if (!Number.isFinite(newWidths[i]) || newWidths[i] <= 0) newWidths[i] = defaultWidths[i];
       if (!Number.isFinite(newWidths[i]) || newWidths[i] <= 0) newWidths[i] = minW[i];
       if (newWidths[i] < minW[i]) newWidths[i] = minW[i];
     }
@@ -117,7 +117,7 @@ export function applyLinearCellDimsWidthPolicy(
         looksAuto = false;
         break;
       }
-      if (Math.abs(wcm - fallbackW[i]) > 0.51 || Math.abs(bwcm - fallbackW[i]) > 0.51) {
+      if (Math.abs(wcm - defaultWidths[i]) > 0.51 || Math.abs(bwcm - defaultWidths[i]) > 0.51) {
         looksAuto = false;
         break;
       }

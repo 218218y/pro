@@ -55,7 +55,7 @@ export function buildCanvasLinearCellDimsContext(
     totalH,
     totalD,
     doorsPerModule,
-    fallbackW: current.fallbackW,
+    defaultWidths: current.defaultWidths,
     prevModsCfg,
     widthsCurr: current.widthsCurr,
     heightsCurr: current.heightsCurr,

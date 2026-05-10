@@ -41,15 +41,15 @@ export function readUiState(App: AppContainer): UiStateLike {
   return readUiStateFromApp(App);
 }
 
-export function readString(value: unknown, fallback = ''): string {
-  return typeof value === 'string' && value.trim() ? String(value) : fallback;
+export function readString(value: unknown, defaultValue = ''): string {
+  return typeof value === 'string' && value.trim() ? String(value) : defaultValue;
 }
 
-export function readGridDivisions(value: unknown, fallback = 6, max = 12): number {
+export function readGridDivisions(value: unknown, defaultValue = 6, max = 12): number {
   const divsRaw = readNumber(value);
   return Number.isFinite(divsRaw) && Number(divsRaw) >= 2 && Number(divsRaw) <= max
     ? Math.floor(Number(divsRaw))
-    : fallback;
+    : defaultValue;
 }
 
 export function readShelfVariant(value: unknown): ShelfVariant {

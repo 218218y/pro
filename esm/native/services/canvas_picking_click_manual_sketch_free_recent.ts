@@ -7,9 +7,9 @@ function isRecord(value: unknown): value is RecordMap {
   return !!value && typeof value === 'object' && !Array.isArray(value);
 }
 
-export function getModeConst(key: 'NONE' | 'SCREEN_NOTE', fallback: string): string {
+export function getModeConst(key: 'NONE' | 'SCREEN_NOTE', defaultValue: string): string {
   const value = isRecord(MODES) ? MODES[key] : null;
-  return typeof value === 'string' && value ? value : fallback;
+  return typeof value === 'string' && value ? value : defaultValue;
 }
 
 export function isRecentModuleScopedSketchHover(hover: unknown, tool: string): boolean {

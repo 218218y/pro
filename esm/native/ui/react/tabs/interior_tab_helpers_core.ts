@@ -6,15 +6,15 @@ export function cx(...parts: Array<string | false | null | undefined>): string {
   return parts.filter(Boolean).join(' ');
 }
 
-export function asStr(v: unknown, fallback = ''): string {
+export function asStr(v: unknown, defaultValue = ''): string {
   if (typeof v === 'string') return v;
-  if (v === null || v === undefined) return fallback;
+  if (v === null || v === undefined) return defaultValue;
   return String(v);
 }
 
-export function asNum(v: unknown, fallback = 0): number {
+export function asNum(v: unknown, defaultValue = 0): number {
   const n = typeof v === 'number' ? v : Number(v);
-  return Number.isFinite(n) ? n : fallback;
+  return Number.isFinite(n) ? n : defaultValue;
 }
 
 export function hasInternalDrawersDataInCfg(cfg: unknown): boolean {

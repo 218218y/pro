@@ -69,7 +69,7 @@ function createDoorsSelectBindings(state: DomainApiSurfaceSectionsState): Unknow
       const value = key ? map[key] : null;
       return value === 'right' || value === 'left' ? value : def || 'left';
     },
-    handleType(doorId: unknown, fallback: unknown) {
+    handleType(doorId: unknown, defaultHandleType: unknown) {
       const handlesMap = state.readDoorsHandlesMap();
       const id = String(doorId || '');
       const value =
@@ -79,7 +79,7 @@ function createDoorsSelectBindings(state: DomainApiSurfaceSectionsState): Unknow
         typeof state.doorsSelect.globalHandleType === 'function'
           ? state.doorsSelect.globalHandleType()
           : null;
-      return globalHandleType != null ? globalHandleType : fallback || 'standard';
+      return globalHandleType != null ? globalHandleType : defaultHandleType || 'standard';
     },
     globalHandleType() {
       const cfg = state._cfg();

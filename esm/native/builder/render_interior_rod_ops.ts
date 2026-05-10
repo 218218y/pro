@@ -80,9 +80,9 @@ function isRodArgs(value: unknown): value is RenderInteriorRodArgs {
   return isRecord(value);
 }
 
-function readFiniteNumber(value: unknown, fallback = 0): number {
+function readFiniteNumber(value: unknown, defaultValue = 0): number {
   const next = Number(value);
-  return Number.isFinite(next) ? next : fallback;
+  return Number.isFinite(next) ? next : defaultValue;
 }
 
 function readOptionalFiniteNumber(value: unknown): number | null {

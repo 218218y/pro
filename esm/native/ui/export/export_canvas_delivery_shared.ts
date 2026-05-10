@@ -2,7 +2,6 @@
 
 export interface CanvasExportOptions {
   mode?: string;
-  fallback?: string;
   clipboardFailureMode?: string;
   toastDownload?: string;
   toastClipboardSuccess?: string;
@@ -40,11 +39,7 @@ export function normalizeCanvasExportOptions(
 ): NormalizedCanvasExportOptions {
   const o = opts && typeof opts === 'object' ? opts : {};
   const mode = o.mode ? String(o.mode) : 'download';
-  const clipboardFailureMode = o.clipboardFailureMode
-    ? String(o.clipboardFailureMode)
-    : o.fallback
-      ? String(o.fallback)
-      : 'download';
+  const clipboardFailureMode = o.clipboardFailureMode ? String(o.clipboardFailureMode) : 'download';
   return {
     mode,
     clipboardFailureMode,

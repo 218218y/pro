@@ -14,8 +14,8 @@ export function readSketchBoxDoors(value: unknown): SketchBoxDoorExtra[] {
   return out;
 }
 
-export function readSketchBoxDoorId(value: unknown, fallback: string): string {
+export function readSketchBoxDoorId(value: unknown, defaultValue: string): string {
   const rec = readObject<InteriorValueRecord>(value);
   const raw = rec ? rec.id : null;
-  return raw != null && String(raw) ? String(raw) : fallback;
+  return raw != null && String(raw) ? String(raw) : defaultValue;
 }

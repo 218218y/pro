@@ -15,9 +15,9 @@ export type HoverClearanceMeasurementEntry = {
   role?: 'cell' | 'neighbor';
 };
 
-function clampFinite(value: unknown, fallback: number): number {
+function clampFinite(value: unknown, defaultValue: number): number {
   const n = typeof value === 'number' ? value : Number(value);
-  return Number.isFinite(n) ? n : fallback;
+  return Number.isFinite(n) ? n : defaultValue;
 }
 
 function normalizeFaceSign(value: unknown): number | undefined {

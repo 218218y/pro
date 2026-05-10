@@ -11,7 +11,7 @@ type OrderPdfSketchCardTextLayerEditorArgs = {
 
 type OrderPdfSketchCardTextLayerEditorResult = {
   registerEditorRef: (id: string, element: HTMLDivElement | null) => void;
-  readEditorText: (id: string, fallback: string) => string;
+  readEditorText: (id: string, defaultText: string) => string;
   focusTextBoxEditor: (id: string) => void;
 };
 
@@ -27,8 +27,8 @@ export function useOrderPdfSketchCardTextLayerEditor(
   }, []);
 
   const readEditorText = useCallback(
-    (id: string, fallback: string) =>
-      readOrderPdfSketchEditorTextValue(editorRefs.current[id] || null, fallback),
+    (id: string, defaultText: string) =>
+      readOrderPdfSketchEditorTextValue(editorRefs.current[id] || null, defaultText),
     []
   );
 

@@ -48,16 +48,16 @@ export function resolveTopModuleDoorsFromUiConfigAt(
   uiSnapshot: unknown,
   cfgSnapshot: unknown,
   index: number,
-  fallback = 2
+  defaultDoors = 2
 ): number {
   const parsedIndex = Number.isFinite(index) && index >= 0 ? Math.floor(index) : -1;
-  if (parsedIndex < 0) return toIntMin(fallback, 2, 1);
+  if (parsedIndex < 0) return toIntMin(defaultDoors, 2, 1);
 
   const structureDoors = readTopModulesStructureDoorCount(
     resolveTopModulesStructureFromUiConfig(uiSnapshot, cfgSnapshot),
     parsedIndex
   );
-  return structureDoors == null ? readDoorsCount(undefined, fallback) : structureDoors;
+  return structureDoors == null ? readDoorsCount(undefined, defaultDoors) : structureDoors;
 }
 
 export function resolveTopModuleDoorsForIndex(

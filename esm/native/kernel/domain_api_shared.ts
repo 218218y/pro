@@ -23,7 +23,7 @@ export type DomainDoorsSelect = UnknownRecord & {
   isSplit?: (doorBaseId: unknown) => boolean;
   isSplitBottom?: (doorBaseId: unknown) => boolean;
   hingeDir?: (hingeKey: unknown, def: unknown) => unknown;
-  handleType?: (doorId: unknown, fallback: unknown) => unknown;
+  handleType?: (doorId: unknown, defaultHandleType: unknown) => unknown;
   globalHandleType?: () => HandleType | string | null;
 };
 export type DomainDrawersSelect = UnknownRecord & { openId?: () => DrawersOpenIdLike };
@@ -114,8 +114,8 @@ export function metaNoBuildNoHistory(
     return ns.noBuild(ns.noHistory(asActionMeta(meta), source), source);
   return Object.assign({ source }, asActionMeta(meta) || {});
 }
-export function readRuntimeFlag(rt: unknown, key: RuntimeFlagKey, fallback: boolean): boolean {
-  return !!readRuntimeScalarOrDefault(rt, key, fallback);
+export function readRuntimeFlag(rt: unknown, key: RuntimeFlagKey, defaultValue: boolean): boolean {
+  return !!readRuntimeScalarOrDefault(rt, key, defaultValue);
 }
 export function domainApiReportNonFatal(
   app: AppContainer,

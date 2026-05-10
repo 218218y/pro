@@ -54,8 +54,8 @@ export function isCloudSyncUiActionFn<T extends (...args: never[]) => unknown>(
   return typeof value === 'function';
 }
 
-export function readCloudSyncUiErrorMessage(err: unknown, fallback: string): string {
-  return normalizeUnknownError(err, fallback).message;
+export function readCloudSyncUiErrorMessage(err: unknown, defaultMessage: string): string {
+  return normalizeUnknownError(err, defaultMessage).message;
 }
 
 export function buildDeleteTempErrorResult(err?: unknown): CloudSyncDeleteTempResult {

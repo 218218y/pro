@@ -37,9 +37,12 @@ export function normalizeOrderPdfSketchEditorText(value: string): string {
     .replace(/\n{3,}/g, '\n\n');
 }
 
-export function readOrderPdfSketchEditorTextValue(element: HTMLDivElement | null, fallback: string): string {
-  if (!element) return normalizeOrderPdfSketchEditorText(fallback);
-  const raw = typeof element.innerText === 'string' ? element.innerText : element.textContent || fallback;
+export function readOrderPdfSketchEditorTextValue(
+  element: HTMLDivElement | null,
+  defaultText: string
+): string {
+  if (!element) return normalizeOrderPdfSketchEditorText(defaultText);
+  const raw = typeof element.innerText === 'string' ? element.innerText : element.textContent || defaultText;
   return normalizeOrderPdfSketchEditorText(raw);
 }
 

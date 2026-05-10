@@ -56,8 +56,8 @@ export function normalizeSavedColorsList(v: unknown): SavedColorLike[] {
   return Array.isArray(v) ? v.filter(isSavedColorLike) : [];
 }
 
-export function readCloudSyncErrorMessage(err: unknown, fallback = ''): string {
-  const normalized = normalizeUnknownError(err, fallback || 'Cloud sync operation failed');
+export function readCloudSyncErrorMessage(err: unknown, defaultMessage = ''): string {
+  const normalized = normalizeUnknownError(err, defaultMessage || 'Cloud sync operation failed');
   return typeof normalized.message === 'string' ? normalized.message.trim() : '';
 }
 

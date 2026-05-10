@@ -11,7 +11,7 @@ type StorageBarrierParams = {
   THREE: ThreeCornerCellLike;
   wingGroup: GroupLike;
   bodyMat: unknown;
-  getCornerMat: (partId: string, fallback: unknown) => unknown;
+  getCornerMat: (partId: string, defaultMaterial: unknown) => unknown;
   cell: CornerCell;
   cellW: number;
   cellCenterX: number;
@@ -35,7 +35,7 @@ type CornerWingCellLayoutParams = {
   bodyMat: unknown;
   wingGroup: GroupLike;
   THREE: ThreeCornerCellLike;
-  getCornerMat: (partId: string, fallback: unknown) => unknown;
+  getCornerMat: (partId: string, defaultMaterial: unknown) => unknown;
   addGridShelf: (gridIndex: number) => void;
   createRod: (yPos: number, limitHeight?: number | null) => void;
   checkAndCreateInternalDrawer: (slotIndex: number, slotMeta?: SlotMetaLike) => boolean;

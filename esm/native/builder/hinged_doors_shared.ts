@@ -110,8 +110,8 @@ export function readTextMap(value: unknown): UnknownRecord | null {
   return readRecord(value);
 }
 
-export function readFiniteNumber(value: unknown, fallback: number): number {
-  return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+export function readFiniteNumber(value: unknown, defaultValue: number): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
 }
 
 export function isThreeLike(value: unknown): value is ThreeLike {

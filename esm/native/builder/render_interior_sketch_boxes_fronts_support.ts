@@ -13,7 +13,7 @@ import { resolveSketchBoxSegmentForContent } from './render_interior_sketch_layo
 export type SketchDoorStyle = 'flat' | 'profile' | 'tom';
 export type SketchDoorStyleMap = ReturnType<typeof readDoorStyleMap>;
 
-export type SketchBoxPartMaterialResolver = (partId: string, fallback: unknown) => unknown;
+export type SketchBoxPartMaterialResolver = (partId: string, defaultMaterial: unknown) => unknown;
 
 export type SketchBoxDoorPlacement = {
   door: SketchBoxDoorExtra;
@@ -26,7 +26,7 @@ export function createSketchBoxPartMaterialResolver(args: {
   isFn: RenderSketchBoxFrontsArgs['args']['isFn'];
 }): SketchBoxPartMaterialResolver {
   const { getPartMaterial, isFn } = args;
-  return (partId: string, fallback: unknown) => {
+  return (partId: string, defaultMaterial: unknown) => {
     try {
       if (isFn(getPartMaterial)) {
         const resolved = getPartMaterial(partId);
@@ -35,7 +35,7 @@ export function createSketchBoxPartMaterialResolver(args: {
     } catch {
       // ignore
     }
-    return fallback;
+    return defaultMaterial;
   };
 }
 

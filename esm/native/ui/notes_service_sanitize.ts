@@ -33,23 +33,23 @@ export function sanitizeRichTextHTML(App: NotesServiceApp, html: string): Saniti
   return sanitizeRichTextHTMLWithDocument(getNotesDocument(App), html);
 }
 
-function normPx(v: unknown, fallbackPx: string): string {
+function normPx(v: unknown, defaultPx: string): string {
   const s = typeof v === 'string' ? v.trim() : '';
-  if (!s) return fallbackPx;
-  if (!/^[0-9.]+(px|%|vh|vw)?$/i.test(s)) return fallbackPx;
+  if (!s) return defaultPx;
+  if (!/^[0-9.]+(px|%|vh|vw)?$/i.test(s)) return defaultPx;
   return s;
 }
 
-function normFontSize(v: unknown, fallback: string): string {
+function normFontSize(v: unknown, defaultValue: string): string {
   const s = typeof v === 'string' ? v.trim() : typeof v === 'number' ? String(v) : '';
   return s === '1' || s === '2' || s === '3' || s === '4' || s === '5' || s === '6' || s === '7'
     ? s
-    : fallback;
+    : defaultValue;
 }
 
-function normColor(v: unknown, fallback: string): string {
+function normColor(v: unknown, defaultValue: string): string {
   const s = typeof v === 'string' ? v.trim() : '';
-  return s ? s : fallback;
+  return s ? s : defaultValue;
 }
 
 export function normalizeSavedNoteStyle(v: unknown): SavedNoteStyle {

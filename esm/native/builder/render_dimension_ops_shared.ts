@@ -92,8 +92,8 @@ function asArgs(v: unknown): DimensionArgs {
   return v && typeof v === 'object' ? { ...v } : {};
 }
 
-function asFiniteNumber(v: unknown, fallback = 0): number {
-  return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
+function asFiniteNumber(v: unknown, defaultValue = 0): number {
+  return typeof v === 'number' && Number.isFinite(v) ? v : defaultValue;
 }
 
 function asFiniteNumberArray(v: unknown): number[] | null {

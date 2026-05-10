@@ -62,6 +62,6 @@ export function maybeAttachSegmentHandle(args: {
     handleObj.userData = handleUd;
     g.add(handleObj);
   } catch {
-    // ignore handle fallback
+    // ignore optional handle rebuild failures
   }
 }

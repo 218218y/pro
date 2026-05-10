@@ -103,11 +103,11 @@ export function __readRoomFloorStyleId(ui: RoomUiLike | null | undefined, type: 
 
 export function __readRoomWallColor(
   ui: RoomUiLike | null | undefined,
-  fallback: string | null = DEFAULT_WALL_COLOR
+  defaultColor: string | null = DEFAULT_WALL_COLOR
 ): string | null {
   return ui && typeof ui.lastSelectedWallColor === 'string' && ui.lastSelectedWallColor
     ? ui.lastSelectedWallColor
-    : fallback;
+    : defaultColor;
 }
 
 export function __readRoomUiSelectionState(

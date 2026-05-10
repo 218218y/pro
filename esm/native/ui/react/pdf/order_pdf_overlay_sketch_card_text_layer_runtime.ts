@@ -33,7 +33,7 @@ export function resolveOrderPdfSketchPersistLiveTextBox(args: {
   textBox: OrderPdfSketchTextBox;
   allowDelete: boolean;
   persistedTextBoxes: OrderPdfSketchPersistedTextBoxMap;
-  readEditorText: (id: string, fallback: string) => string;
+  readEditorText: (id: string, defaultText: string) => string;
 }): {
   kept: boolean;
   action: OrderPdfSketchPersistLiveTextBoxAction;

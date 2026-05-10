@@ -22,7 +22,7 @@ export function renderSketchBoxShell(args: {
   const isFreePlacement = box.freePlacement === true;
   const height = resolveSketchBoxHeight({
     rawHeight: box.heightM,
-    fallbackHeight: box.hM,
+    defaultHeight: box.hM,
     woodThick: renderArgs.woodThick,
     spanH: renderArgs.spanH,
     isFreePlacement,
@@ -52,7 +52,7 @@ export function renderSketchBoxShell(args: {
     getPartMaterial: renderArgs.getPartMaterial,
     isFn: renderArgs.isFn,
     boxPid,
-    fallback: renderArgs.bodyMat,
+    defaultMaterial: renderArgs.bodyMat,
   });
 
   const halfH = height / 2;

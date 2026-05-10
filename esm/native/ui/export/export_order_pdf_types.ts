@@ -95,7 +95,7 @@ export type ExportOrderPdfDeps = {
   get$: (app: AppContainer) => (id: string) => HTMLElement | null;
   getDoorsOpen: (app: AppContainer) => boolean;
   setDoorsOpen: (app: AppContainer, open: boolean, opts?: DoorsSetOpenOptionsLike) => unknown;
-  readRuntimeScalarOrDefaultFromApp: (app: AppContainer, key: 'sketchMode', fallback: boolean) => boolean;
+  readRuntimeScalarOrDefaultFromApp: (app: AppContainer, key: 'sketchMode', defaultValue: boolean) => boolean;
   applyViewportSketchMode: (
     app: AppContainer,
     next: boolean,

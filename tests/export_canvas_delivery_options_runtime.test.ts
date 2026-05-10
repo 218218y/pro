@@ -17,12 +17,13 @@ test('canvas export normalizes clipboard failure policy through the canonical op
   assert.equal(noDownload.allowDownloadOnClipboardFailure, false);
 });
 
-test('canvas export still accepts the existing download-fallback option name', () => {
+test('canvas export ignores non-canonical clipboard failure option names', () => {
   const normalized = normalizeCanvasExportOptions({
     mode: 'clipboard',
+    // @ts-expect-error verifies unknown legacy-shaped input is not part of the contract.
     fallback: 'none',
   });
 
-  assert.equal(normalized.clipboardFailureMode, 'none');
-  assert.equal(normalized.allowDownloadOnClipboardFailure, false);
+  assert.equal(normalized.clipboardFailureMode, 'download');
+  assert.equal(normalized.allowDownloadOnClipboardFailure, true);
 });

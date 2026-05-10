@@ -154,13 +154,13 @@ export function buildDeleteTempErrorResult(
   args: DeleteTempArgs,
   kind: DeleteTempKind,
   err: unknown,
-  fallback: string
+  defaultMessage: string
 ): CloudSyncDeleteTempResult {
   args.reportNonFatal(args.App, buildDeleteTempOp(kind), err, { throttleMs: 4000 });
   return {
     ok: false,
     removed: 0,
     reason: 'error',
-    message: normalizeUnknownError(err, fallback).message,
+    message: normalizeUnknownError(err, defaultMessage).message,
   };
 }

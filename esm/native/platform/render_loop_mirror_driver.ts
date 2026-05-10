@@ -40,10 +40,10 @@ function readFiniteSlotNumber(
   getRenderSlot: RenderSlotReader,
   app: AppContainer,
   key: string,
-  fallback = 0
+  defaultValue = 0
 ): number {
   const value = getRenderSlot<number>(app, key);
-  return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+  return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
 }
 
 function incrementRenderSlotCounter(

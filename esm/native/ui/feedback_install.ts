@@ -42,11 +42,11 @@ function isInstalledCallable<T extends InstalledCallable>(value: unknown): value
 function chooseInstalledCallable<T extends InstalledCallable>(
   primary: unknown,
   secondary: unknown,
-  fallback: T
+  defaultCallable: T
 ): T {
   if (isInstalledCallable<T>(primary)) return primary;
   if (isInstalledCallable<T>(secondary)) return secondary;
-  return fallback;
+  return defaultCallable;
 }
 
 function hasStableUiFeedbackSurface(value: UiFeedbackNamespaceLike): value is UiFeedbackStableLike {

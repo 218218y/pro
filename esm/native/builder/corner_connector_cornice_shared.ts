@@ -63,7 +63,7 @@ export type CornerConnectorCorniceCtx = {
   __corniceTypeNorm: string;
   bodyMat: unknown;
   addOutlines: (mesh: unknown) => void;
-  getCornerMat: (partId: string, fallback: unknown) => unknown;
+  getCornerMat: (partId: string, defaultMaterial: unknown) => unknown;
   __sketchMode: boolean;
 };
 export type CornerConnectorCorniceLocals = {
@@ -78,7 +78,7 @@ export type CornerConnectorCorniceLocals = {
   showFrontPanel?: boolean;
 };
 export type CornerConnectorCorniceHelpers = {
-  readNumFrom: (obj: unknown, key: string, fallback: number) => number;
+  readNumFrom: (obj: unknown, key: string, defaultValue: number) => number;
   asRecord: (value: unknown) => UnknownRecord;
   reportErrorThrottled: (app: unknown, error: unknown, meta: ThrottleOpts) => void;
 };

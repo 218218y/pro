@@ -25,14 +25,14 @@ function cloneRecord<T extends UnknownRecord>(src: T): T {
   return Object.assign({}, src);
 }
 
-function toInt(v: unknown, fallback: number): number {
+function toInt(v: unknown, defaultValue: number): number {
   const n = parseInt(String(v ?? ''), 10);
-  return Number.isFinite(n) ? n : fallback;
+  return Number.isFinite(n) ? n : defaultValue;
 }
 
-function cloneModuleCustomData(src: unknown, fallbackCellCount: number): ModuleCustomDataLike {
+function cloneModuleCustomData(src: unknown, defaultCellCount: number): ModuleCustomDataLike {
   const base = isRecord(src) ? cloneRecord(src) : {};
-  const defaults = createDefaultModuleCustomData(fallbackCellCount);
+  const defaults = createDefaultModuleCustomData(defaultCellCount);
   return {
     ...base,
     shelves: Array.isArray(base.shelves) ? base.shelves.slice() : defaults.shelves.slice(),

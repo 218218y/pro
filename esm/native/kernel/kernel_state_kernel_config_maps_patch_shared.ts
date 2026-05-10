@@ -23,8 +23,8 @@ export function createKernelStateKernelConfigBatchFlags(): KernelStateKernelConf
   };
 }
 
-export function readKernelConfigPatchSource(meta: UnknownRecord, fallback = 'config'): string {
-  return meta.source != null ? String(meta.source) : fallback;
+export function readKernelConfigPatchSource(meta: UnknownRecord, defaultSource = 'config'): string {
+  return meta.source != null ? String(meta.source) : defaultSource;
 }
 
 export function readKernelConfigPatchForce(meta: UnknownRecord): boolean {

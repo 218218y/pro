@@ -42,12 +42,12 @@ type DoorTrimAxisPanelProps = {
 function clampDoorTrimInput(
   raw: string,
   current: number | '',
-  fallback: number,
+  defaultValue: number,
   min: number,
   max: number
 ): number {
   const parsed = Number(raw);
-  const base = Number.isFinite(parsed) ? parsed : typeof current === 'number' ? current : fallback;
+  const base = Number.isFinite(parsed) ? parsed : typeof current === 'number' ? current : defaultValue;
   return Math.max(min, Math.min(max, base));
 }
 

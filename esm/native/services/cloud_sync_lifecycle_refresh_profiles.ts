@@ -10,9 +10,9 @@ const ATTENTION_RECENT_PULL_MS = 8000;
 const REALTIME_GAP_RECENT_PULL_MS = 4000;
 const REALTIME_BROADCAST_RECENT_PULL_MS = 1500;
 
-function normalizeRefreshReason(value: unknown, fallback: string): string {
+function normalizeRefreshReason(value: unknown, defaultReason: string): string {
   const trimmed = typeof value === 'string' ? value.trim() : '';
-  return trimmed || fallback;
+  return trimmed || defaultReason;
 }
 
 function createCloudSyncLifecycleRefreshProfile(

@@ -59,9 +59,9 @@ export function structureTabReportNonFatal(op: string, err: unknown, dedupeMs = 
   console.error(`[WardrobePro][StructureTab] ${op}`, err);
 }
 
-export function getModeConst(app: unknown, key: string, fallback: string): string {
+export function getModeConst(app: unknown, key: string, defaultValue: string): string {
   const value = readModeMap(app)?.[key];
-  return typeof value === 'string' && value.trim() ? value : fallback;
+  return typeof value === 'string' && value.trim() ? value : defaultValue;
 }
 
 export function updateEditStateToast(app: unknown, msg: string | null, sticky: boolean): boolean {

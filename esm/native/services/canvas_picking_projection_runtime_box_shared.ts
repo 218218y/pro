@@ -28,12 +28,12 @@ export function __readUiRaw(ui: unknown): UnknownRecord {
   return getRecordProp(ui, 'raw') ?? {};
 }
 
-export function __readUiNumber(ui: unknown, key: string, fallback: number): number {
-  return __asNum(getProp(ui, key), fallback);
+export function __readUiNumber(ui: unknown, key: string, defaultValue: number): number {
+  return __asNum(getProp(ui, key), defaultValue);
 }
 
-export function __readRawNumber(raw: unknown, key: string, fallback: number): number {
-  return __asNum(getProp(raw, key), fallback);
+export function __readRawNumber(raw: unknown, key: string, defaultValue: number): number {
+  return __asNum(getProp(raw, key), defaultValue);
 }
 
 export function __readArrayRecordEntry(value: unknown, index: number): UnknownRecord | null {

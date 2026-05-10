@@ -27,10 +27,10 @@ function bindBuilderCallable(fn: BuilderCallable): BuilderCallable {
   return (...args) => Reflect.apply(fn, undefined, args);
 }
 
-function wrapBuilderCallable(value: unknown, fallback: BuilderCallable): BuilderCallable {
+function wrapBuilderCallable(value: unknown, defaultCallable: BuilderCallable): BuilderCallable {
   return typeof value === 'function'
     ? (...args) => Reflect.apply(value, undefined, args)
-    : bindBuilderCallable(fallback);
+    : bindBuilderCallable(defaultCallable);
 }
 
 export function readDebounceDep(App: AppContainer, deps: BuilderSchedulerDepsLike): DebounceDep | null {

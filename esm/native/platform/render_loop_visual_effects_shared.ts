@@ -9,7 +9,7 @@ import {
 } from '../runtime/render_runtime_primitives.js';
 
 export type ReportFn = (app: AppContainer, op: string, err: unknown, opts?: UnknownRecord) => void;
-export type RecordFn = (v: unknown, fallback?: UnknownRecord) => UnknownRecord;
+export type RecordFn = (v: unknown, defaultRecord?: UnknownRecord) => UnknownRecord;
 export type OverlayStateFn = (app: AppContainer) => UnknownRecord;
 export type TraversableLike = UnknownRecord & {
   visible?: boolean;
@@ -74,7 +74,7 @@ export type VisualDeps = {
   readRuntimeScalarOrDefaultFromApp: <K extends RuntimeScalarKey>(
     app: AppContainer,
     key: K,
-    fallback: RuntimeScalarValueMap[K]
+    defaultValue: RuntimeScalarValueMap[K]
   ) => RuntimeScalarValueMap[K];
 };
 
