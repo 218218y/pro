@@ -97,27 +97,35 @@ test('stack split decorative separator renders an overhanging slab plus front li
   assert.ok(Number(calls[0][0]) > 1.8, 'separator slab should overhang the wider unit');
   assert.ok(Number(calls[0][2]) > 0.6, 'separator slab should protrude beyond the front depth');
   assert.ok(Number(calls[1][5]) > Number(calls[0][5]), 'front lip should sit on the visible/front side');
-  assert.ok(Number(calls[1][1]) > 0.04, 'front lip should be tall enough to make the separator visible');
+  assert.ok(Number(calls[1][1]) > 0.038, 'front lip should be tall enough to make the separator visible');
+  assert.equal(
+    Number(calls[0][1]),
+    Number(calls[1][1]),
+    'separator slab and front lip should share one uniform visible height'
+  );
+  const slabBottomY = Number(calls[0][4]) - Number(calls[0][1]) / 2;
+  const apronBottomY = Number(calls[1][4]) - Number(calls[1][1]) / 2;
+  assert.equal(apronBottomY, slabBottomY, 'front lip should not hang lower than the separator sides');
 
+  const slabMesh = calls[0][8] as FakeMesh;
   const apronMesh = calls[1][8] as FakeMesh;
-  assert.equal(apronMesh.children.length, 4, 'front lip should get a subtle edge accent border');
-  for (const child of apronMesh.children as FakeMesh[]) {
+  assert.equal(slabMesh.children.length, 4, 'separator front face should get a subtle edge accent border');
+  assert.equal(apronMesh.children.length, 0, 'front lip itself should not carry a duplicate accent border');
+  for (const child of slabMesh.children as FakeMesh[]) {
     assert.equal(child.userData.partId, 'stack_split_separator');
     assert.equal(child.userData.__wpStackSplitSeparatorAccent, true);
     assert.equal(child.userData.__keepMaterial, true);
   }
 
-  const apronWidth = Number(calls[1][0]);
-  const apronHeight = Number(calls[1][1]);
-  for (const child of apronMesh.children as FakeMesh[]) {
+  const slabWidth = Number(calls[0][0]);
+  const slabHeight = Number(calls[0][1]);
+  for (const child of slabMesh.children as FakeMesh[]) {
     const geometry = child.geometry as FakeBoxGeometry;
-    const reachesHorizontalEdge =
-      Math.abs(child.position.x) + geometry.width / 2 >= apronWidth / 2 - 0.000001;
-    const reachesVerticalEdge =
-      Math.abs(child.position.y) + geometry.height / 2 >= apronHeight / 2 - 0.000001;
+    const reachesHorizontalEdge = Math.abs(child.position.x) + geometry.width / 2 >= slabWidth / 2 - 0.000001;
+    const reachesVerticalEdge = Math.abs(child.position.y) + geometry.height / 2 >= slabHeight / 2 - 0.000001;
     assert.ok(
       reachesHorizontalEdge || reachesVerticalEdge,
-      'separator accent strips should sit on the outer lip edges, not as an inset inner rectangle'
+      'separator accent strips should sit on the outer separator face edges, not as an inset inner rectangle'
     );
   }
 });

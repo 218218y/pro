@@ -56,8 +56,7 @@ export const WARDROBE_DEFAULTS = Object.freeze({
     seamGapM: 0.002,
     lowerWidthFallbackCm: 50,
     decorativeSeparator: Object.freeze({
-      slabHeightM: 0.032,
-      frontApronHeightM: 0.046,
+      visibleHeightM: 0.039,
       apronDepthM: 0.014,
       frontOverhangM: 0.035,
       sideOverhangM: 0.025,

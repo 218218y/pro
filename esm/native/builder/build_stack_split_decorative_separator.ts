@@ -1,5 +1,4 @@
 import { WARDROBE_DEFAULTS } from '../../shared/wardrobe_dimension_tokens_shared.js';
-import { appendSubtleDoorAccentBorder } from './visuals_and_contents_door_visual_accent.js';
 
 import type {
   BuildStackSplitLowerUnitArgs,
@@ -67,31 +66,51 @@ function tagSeparatorAccentPart(value: unknown): void {
 
 function appendSeparatorFrontAccent(args: {
   buildArgs: BuildStackSplitLowerUnitArgs;
-  apronObject: unknown;
+  carrierObject: unknown;
   width: number;
-  apronHeight: number;
-  apronDepth: number;
+  visibleHeight: number;
+  faceDepth: number;
 }): void {
-  const { buildArgs, apronObject, width, apronHeight, apronDepth } = args;
-  const apron = asAddChildObject(apronObject);
-  if (!apron) return;
+  const { buildArgs, carrierObject, width, visibleHeight, faceDepth } = args;
+  const carrier = asAddChildObject(carrierObject);
+  if (!carrier || typeof carrier.add !== 'function') return;
+  const addChild = carrier.add.bind(carrier);
 
-  const lineT = Math.max(0.0014, Math.min(0.0022, apronHeight * 0.08));
+  const THREE = buildArgs.THREE;
+  if (!THREE?.MeshBasicMaterial || !THREE?.BoxGeometry || !THREE?.Mesh) return;
+  if (!(width > 0) || !(visibleHeight > 0)) return;
 
-  appendSubtleDoorAccentBorder({
-    App: buildArgs.App,
-    THREE: buildArgs.THREE,
-    visualGroup: apron as never,
-    tagDoorVisualPart: tagSeparatorAccentPart as never,
-    isSketch: !!buildArgs.sketchMode,
-    zSign: 1,
-    targetW: width,
-    targetH: apronHeight,
-    faceZ: apronDepth / 2,
-    inset: 0,
-    lineT,
-    opacity: 0.2,
+  const lineT = Math.max(0.0018, Math.min(0.0028, visibleHeight * 0.085));
+  const sideH = Math.max(0.001, visibleHeight - lineT * 2);
+  if (!(width > lineT * 2) || !(visibleHeight > lineT * 2)) return;
+
+  const accentMat = new THREE.MeshBasicMaterial({
+    color: buildArgs.sketchMode ? 0x000000 : 0x2b2b2b,
+    transparent: true,
+    opacity: buildArgs.sketchMode ? 0.35 : 0.28,
+    depthWrite: false,
   });
+  try {
+    accentMat.userData = accentMat.userData || {};
+    accentMat.userData.__keepMaterial = true;
+  } catch {
+    // ignore material userData failures
+  }
+
+  const z = faceDepth / 2 + 0.001;
+  const addStrip = (sw: number, sh: number, x: number, y: number) => {
+    if (!(sw > 0) || !(sh > 0)) return;
+    const strip = new THREE.Mesh(new THREE.BoxGeometry(sw, sh, 0.001), accentMat);
+    strip.position.set(x, y, z);
+    strip.renderOrder = 3;
+    tagSeparatorAccentPart(strip);
+    addChild(strip);
+  };
+
+  addStrip(width, lineT, 0, visibleHeight / 2 - lineT / 2);
+  addStrip(width, lineT, 0, -(visibleHeight / 2 - lineT / 2));
+  addStrip(lineT, sideH, -(width / 2 - lineT / 2), 0);
+  addStrip(lineT, sideH, width / 2 - lineT / 2, 0);
 }
 
 export function addStackSplitDecorativeSeparatorIfNeeded(args: {
@@ -115,8 +134,9 @@ export function addStackSplitDecorativeSeparatorIfNeeded(args: {
   const bottomD = readPositive(prepared.bottomD, readPositive(buildArgs.lowerDepthCm, 0) / 100);
   const totalD = Math.max(topD, bottomD, dims.minDepthM);
 
-  const slabHeight = Math.max(dims.zFightLiftM, dims.slabHeightM);
-  const apronHeight = Math.max(dims.zFightLiftM, dims.frontApronHeightM);
+  const visibleHeight = Math.max(dims.zFightLiftM, dims.visibleHeightM);
+  const slabHeight = visibleHeight;
+  const apronHeight = visibleHeight;
   const apronDepth = Math.max(dims.zFightLiftM, dims.apronDepthM);
   const frontOverhang = Math.max(0, dims.frontOverhangM);
   const sideOverhang = Math.max(0, dims.sideOverhangM);
@@ -127,7 +147,7 @@ export function addStackSplitDecorativeSeparatorIfNeeded(args: {
   const slabY = seamY + slabHeight / 2 - Math.max(0, dims.seamCoverDropM);
   const slabZ = frontOverhang / 2;
 
-  createBoard(
+  const slabObject = createBoard(
     width,
     slabHeight,
     depth,
@@ -141,7 +161,7 @@ export function addStackSplitDecorativeSeparatorIfNeeded(args: {
   const frontZ = -totalD / 2 + depth - apronDepth / 2 + dims.zFightLiftM;
   const apronY = slabY + slabHeight / 2 - apronHeight / 2;
 
-  const apronObject = createBoard(
+  createBoard(
     width,
     apronHeight,
     apronDepth,
@@ -154,9 +174,9 @@ export function addStackSplitDecorativeSeparatorIfNeeded(args: {
 
   appendSeparatorFrontAccent({
     buildArgs,
-    apronObject,
+    carrierObject: slabObject,
     width,
-    apronHeight,
-    apronDepth,
+    visibleHeight,
+    faceDepth: depth,
   });
 }
