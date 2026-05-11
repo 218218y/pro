@@ -29,7 +29,7 @@ import {
   type SceneViewUpdateModeOpts,
   updateCornerAutoLightShadowRefresh,
 } from './scene_view_lighting_shared.js';
-import { applyRendererCompatibility } from './scene_view_lighting_renderer.js';
+import { applyRendererLightingMode } from './scene_view_lighting_renderer.js';
 
 function applyLightingControlUi(App: AppContainer, ui: UiSnapshotLike): void {
   const ambient = asAmbientLight(getAmbientLight(App));
@@ -136,7 +136,7 @@ export function updateLightsInternal(App: AppContainer, opts?: SceneViewUpdateLi
 
     const ui = getUiSnapshot(App);
     const sketchMode = getSketchMode(App, ui);
-    applyRendererCompatibility(App, sketchMode);
+    applyRendererLightingMode(App, sketchMode);
 
     if (sketchMode) {
       ambient.intensity = 0.95;

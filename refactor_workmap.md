@@ -16,6 +16,7 @@ This is the root workmap pointer for future work. Older long-form workmaps were 
 - Stage 80 - Measurement and performance guard closeout retained: the refactor track is closed unless a real bug, measured performance regression, missing behavior coverage, or newly proven ownership seam justifies new work.
 - Import cycles are a guardrail, not an active decomposition target: `check:import-cycles` currently covers `esm` and `types`.
 - Private facade/owner splits are guarded by `check:private-owner-imports`.
+- Legacy/fallback inventory is camelCase/PascalCase-aware, category-locked, and now excludes the cleaned prefixed-map alias helper names and cornice envelope helper names, and renderer-lighting local helper names.
 - Project import behavior is guarded by `check:project-import-fixtures` with real JSON fixtures.
 - CSS cascade debt is ratcheted by `check:css-style` using `tools/wp_css_style_budget.json`.
 - CSS `transition: all` debt has been cleared; the active CSS budget now locks `transitionAll` at 0.

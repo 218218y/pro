@@ -46,9 +46,8 @@
       }
     },
     "esm/native/builder/core_carcass_cornice.ts": {
-      "total": 5,
+      "total": 1,
       "categories": {
-        "compat-boundary": 4,
         "domain-default": 1
       }
     },
@@ -312,16 +311,10 @@
         "domain-default": 3
       }
     },
-    "esm/native/kernel/domain_api_surface_sections_prefixed_maps.ts": {
-      "total": 2,
-      "categories": {
-        "compat-boundary": 2
-      }
-    },
     "esm/native/kernel/domain_api_surface_sections_shared.ts": {
-      "total": 4,
+      "total": 3,
       "categories": {
-        "compat-boundary": 2,
+        "compat-boundary": 1,
         "domain-default": 2
       }
     },
@@ -336,12 +329,6 @@
       "categories": {
         "compat-boundary": 5,
         "project-migration": 1
-      }
-    },
-    "esm/native/kernel/maps_api_named_maps.ts": {
-      "total": 3,
-      "categories": {
-        "compat-boundary": 3
       }
     },
     "esm/native/kernel/state_api_history_meta_reactivity_contracts.ts": {
@@ -444,12 +431,6 @@
       "total": 1,
       "categories": {
         "domain-default": 1
-      }
-    },
-    "esm/native/runtime/maps_access_writers.ts": {
-      "total": 17,
-      "categories": {
-        "compat-boundary": 17
       }
     },
     "esm/native/runtime/meta_actions_namespace.ts": {
@@ -791,16 +772,10 @@
       }
     },
     "esm/native/services/scene_view_lighting_renderer.ts": {
-      "total": 67,
+      "total": 21,
       "categories": {
-        "compat-boundary": 22,
-        "external-api-compat": 45
-      }
-    },
-    "esm/native/services/scene_view_lighting_runtime.ts": {
-      "total": 2,
-      "categories": {
-        "compat-boundary": 2
+        "compat-boundary": 13,
+        "external-api-compat": 8
       }
     },
     "esm/native/services/scene_view_shared_contracts.ts": {

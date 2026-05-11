@@ -13,7 +13,7 @@ export {
   grooveMapSemantics,
   listPrefixedMapCleanupKeys,
   normalizePrefixedMapKey,
-  readLegacyPrefixedAliasKey,
+  readUnprefixedAliasKey,
   readMapKey,
   readPrefixedMapLookupKeys,
   readPrefixedToggleMapFlag,

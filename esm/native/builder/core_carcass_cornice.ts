@@ -122,13 +122,13 @@ function buildSegmentedCornice(
   );
   const maxDepth = runs.reduce((max, run) => Math.max(max, run.depth), prepared.D);
   const isWave = corniceTypeNorm === 'wave';
-  return buildLegacyCorniceEnvelope({
+  return buildCorniceEnvelope({
     totalW: prepared.totalW,
     D: maxDepth,
     topY: maxTopY,
     height: isWave ? WAVE_MAX_HEIGHT : PROFILE_HEIGHT,
     mode: isWave ? 'wave_frame_segmented' : 'profile_open_back_segmented',
-    z: isWave ? 0 : CORNICE_PROFILE.legacyEnvelopeProfileZM,
+    z: isWave ? 0 : CORNICE_PROFILE.envelopeProfileZM,
     segments,
   });
 }
@@ -224,7 +224,7 @@ function buildWaveCornice(params: CorniceParams): MutableRecord {
     rightSide: { startDepth: CARCASS_BACK_INSET_Z, internal: false },
   });
 
-  return buildLegacyCorniceEnvelope({
+  return buildCorniceEnvelope({
     totalW,
     D,
     topY,
@@ -315,13 +315,13 @@ function buildProfileCornice(params: CorniceParams): MutableRecord {
     rightSide: { startDepth: CARCASS_BACK_INSET_Z, internal: false },
   });
 
-  return buildLegacyCorniceEnvelope({
+  return buildCorniceEnvelope({
     totalW,
     D,
     topY,
     height: PROFILE_HEIGHT,
     mode: 'profile_open_back',
-    z: CORNICE_PROFILE.legacyEnvelopeProfileZM,
+    z: CORNICE_PROFILE.envelopeProfileZM,
     segments,
   });
 }
@@ -439,7 +439,7 @@ function makeCorniceProfile(overhang: number): MutableRecord[] {
   ];
 }
 
-type LegacyCorniceEnvelopeParams = {
+type CorniceEnvelopeParams = {
   totalW: number;
   D: number;
   topY: number;
@@ -449,16 +449,16 @@ type LegacyCorniceEnvelopeParams = {
   segments: MutableRecord[];
 };
 
-function buildLegacyCorniceEnvelope(params: LegacyCorniceEnvelopeParams): MutableRecord {
+function buildCorniceEnvelope(params: CorniceEnvelopeParams): MutableRecord {
   const { totalW, D, topY, height, mode, z, segments } = params;
   const baseSize = Math.max(totalW, D);
-  const topRadius = (baseSize + CORNICE_PROFILE.legacyEnvelopeTopRadiusPadM) / Math.sqrt(2);
+  const topRadius = (baseSize + CORNICE_PROFILE.envelopeTopRadiusPadM) / Math.sqrt(2);
   const bottomRadius = baseSize / Math.sqrt(2);
   const scaleX =
-    (totalW + CORNICE_PROFILE.legacyEnvelopeTopRadiusPadM) /
-    (baseSize + CORNICE_PROFILE.legacyEnvelopeTopRadiusPadM);
+    (totalW + CORNICE_PROFILE.envelopeTopRadiusPadM) /
+    (baseSize + CORNICE_PROFILE.envelopeTopRadiusPadM);
   const scaleZ =
-    (D + CORNICE_PROFILE.legacyEnvelopeDepthPadM) / (baseSize + CORNICE_PROFILE.legacyEnvelopeTopRadiusPadM);
+    (D + CORNICE_PROFILE.envelopeDepthPadM) / (baseSize + CORNICE_PROFILE.envelopeTopRadiusPadM);
 
   return {
     kind: 'cornice',

@@ -15,106 +15,108 @@ import {
 } from './scene_view_shared.js';
 import { NORMAL_EXPOSURE } from './scene_view_lighting_shared.js';
 
-function restoreRendererCompatDefaults(
+type RendererLightingSurface = NonNullable<ReturnType<typeof asSceneRendererCompat>>;
+
+function restoreRendererLightingDefaults(
   App: AppContainer,
-  rendererCompat: ReturnType<typeof asSceneRendererCompat>
+  rendererSurface: RendererLightingSurface
 ): void {
   const defaults = asCompatDefaults(readRendererCompatDefaults(App));
-  if (!rendererCompat || !defaults) return;
+  if (!rendererSurface || !defaults) return;
 
   if (typeof defaults.outputColorSpace !== 'undefined') {
     try {
-      rendererCompat.outputColorSpace = defaults.outputColorSpace;
+      rendererSurface.outputColorSpace = defaults.outputColorSpace;
     } catch (err) {
-      reportSceneViewNonFatal(App, 'sceneView.lighting.restoreRendererCompat.outputColorSpace', err);
+      reportSceneViewNonFatal(App, 'sceneView.lighting.restoreRendererLightingDefaults.outputColorSpace', err);
     }
   }
   if (typeof defaults.toneMapping !== 'undefined') {
     try {
-      rendererCompat.toneMapping = defaults.toneMapping;
+      rendererSurface.toneMapping = defaults.toneMapping;
     } catch (err) {
-      reportSceneViewNonFatal(App, 'sceneView.lighting.restoreRendererCompat.toneMapping', err);
+      reportSceneViewNonFatal(App, 'sceneView.lighting.restoreRendererLightingDefaults.toneMapping', err);
     }
   }
   if (typeof defaults.toneMappingExposure === 'number') {
     try {
-      rendererCompat.toneMappingExposure = defaults.toneMappingExposure;
+      rendererSurface.toneMappingExposure = defaults.toneMappingExposure;
     } catch (err) {
-      reportSceneViewNonFatal(App, 'sceneView.lighting.restoreRendererCompat.toneMappingExposure', err);
+      reportSceneViewNonFatal(App, 'sceneView.lighting.restoreRendererLightingDefaults.toneMappingExposure', err);
     }
   }
-  if (typeof defaults.useLegacyLights === 'boolean' && typeof rendererCompat.useLegacyLights === 'boolean') {
+  if (typeof defaults.useLegacyLights === 'boolean' && typeof rendererSurface.useLegacyLights === 'boolean') {
     try {
-      rendererCompat.useLegacyLights = defaults.useLegacyLights;
+      rendererSurface.useLegacyLights = defaults.useLegacyLights;
     } catch (err) {
-      reportSceneViewNonFatal(App, 'sceneView.lighting.restoreRendererCompat.useLegacyLights', err);
+      reportSceneViewNonFatal(App, 'sceneView.lighting.restoreRendererLightingDefaults.useLegacyLights', err);
     }
   }
 }
 
-export function ensureRendererCompatDefaults(
+export function ensureRendererLightingDefaults(
   App: AppContainer,
-  rendererCompat: ReturnType<typeof asSceneRendererCompat>
+  rendererSurface: RendererLightingSurface
 ): SceneViewCompatDefaults | undefined {
-  if (!rendererCompat) return undefined;
-  let compatDefaults = readRendererCompatDefaults(App);
-  if (!compatDefaults) {
-    compatDefaults = {
-      outputColorSpace: rendererCompat.outputColorSpace,
-      toneMapping: rendererCompat.toneMapping,
-      toneMappingExposure: rendererCompat.toneMappingExposure,
+  if (!rendererSurface) return undefined;
+  let rendererDefaults = readRendererCompatDefaults(App);
+  if (!rendererDefaults) {
+    rendererDefaults = {
+      outputColorSpace: rendererSurface.outputColorSpace,
+      toneMapping: rendererSurface.toneMapping,
+      toneMappingExposure: rendererSurface.toneMappingExposure,
       useLegacyLights:
-        typeof rendererCompat.useLegacyLights === 'boolean' ? rendererCompat.useLegacyLights : undefined,
+        typeof rendererSurface.useLegacyLights === 'boolean' ? rendererSurface.useLegacyLights : undefined,
     } satisfies SceneViewCompatDefaults;
-    writeRendererCompatDefaults(App, compatDefaults);
+    writeRendererCompatDefaults(App, rendererDefaults);
   }
-  return compatDefaults;
+  return rendererDefaults;
 }
 
-function applyNormalModeRendererCompat(
+function applyNormalModeRendererLighting(
   App: AppContainer,
-  rendererCompat: ReturnType<typeof asSceneRendererCompat>
+  rendererSurface: RendererLightingSurface
 ): void {
-  if (!rendererCompat) return;
+  if (!rendererSurface) return;
   const THREE = asSceneThreeLighting(getTHREE(App));
-  if (THREE && 'outputColorSpace' in rendererCompat) {
+  if (THREE && 'outputColorSpace' in rendererSurface) {
     try {
-      rendererCompat.outputColorSpace = THREE.SRGBColorSpace;
+      rendererSurface.outputColorSpace = THREE.SRGBColorSpace;
     } catch (err) {
-      reportSceneViewNonFatal(App, 'sceneView.lighting.applyNormalRendererCompat.outputColorSpace', err);
+      reportSceneViewNonFatal(App, 'sceneView.lighting.applyNormalRendererLighting.outputColorSpace', err);
     }
   }
-  if (THREE && 'toneMapping' in rendererCompat) {
+  if (THREE && 'toneMapping' in rendererSurface) {
     try {
-      rendererCompat.toneMapping = THREE.NeutralToneMapping;
+      rendererSurface.toneMapping = THREE.NeutralToneMapping;
     } catch (err) {
-      reportSceneViewNonFatal(App, 'sceneView.lighting.applyNormalRendererCompat.toneMapping', err);
+      reportSceneViewNonFatal(App, 'sceneView.lighting.applyNormalRendererLighting.toneMapping', err);
     }
   }
-  if ('toneMappingExposure' in rendererCompat) {
+  if ('toneMappingExposure' in rendererSurface) {
     try {
-      rendererCompat.toneMappingExposure = NORMAL_EXPOSURE;
+      rendererSurface.toneMappingExposure = NORMAL_EXPOSURE;
     } catch (err) {
-      reportSceneViewNonFatal(App, 'sceneView.lighting.applyNormalRendererCompat.toneMappingExposure', err);
+      reportSceneViewNonFatal(App, 'sceneView.lighting.applyNormalRendererLighting.toneMappingExposure', err);
     }
   }
-  if (typeof rendererCompat.useLegacyLights === 'boolean') {
+  if (typeof rendererSurface.useLegacyLights === 'boolean') {
     try {
-      rendererCompat.useLegacyLights = true;
+      rendererSurface.useLegacyLights = true;
     } catch (err) {
-      reportSceneViewNonFatal(App, 'sceneView.lighting.applyNormalRendererCompat.useLegacyLights', err);
+      reportSceneViewNonFatal(App, 'sceneView.lighting.applyNormalRendererLighting.useLegacyLights', err);
     }
   }
 }
 
-export function applyRendererCompatibility(App: AppContainer, sketchMode: boolean): void {
+export function applyRendererLightingMode(App: AppContainer, sketchMode: boolean): void {
   try {
-    const rendererCompat = asSceneRendererCompat(getRenderer(App));
-    if (!rendererCompat) return;
-    ensureRendererCompatDefaults(App, rendererCompat);
-    if (sketchMode) restoreRendererCompatDefaults(App, rendererCompat);
-    else applyNormalModeRendererCompat(App, rendererCompat);
+    const rendererSurface = asSceneRendererCompat(getRenderer(App));
+    if (!rendererSurface) return;
+    ensureRendererLightingDefaults(App, rendererSurface);
+    if (sketchMode) restoreRendererLightingDefaults(App, rendererSurface);
+    else applyNormalModeRendererLighting(App, rendererSurface);
   } catch (err) {
-    reportSceneViewNonFatal(App, 'sceneView.lighting.applyRendererCompatibility', err);
+    reportSceneViewNonFatal(App, 'sceneView.lighting.applyRendererLightingMode', err);
   }
 }

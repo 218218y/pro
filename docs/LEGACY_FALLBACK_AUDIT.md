@@ -1,12 +1,12 @@
 # Legacy / fallback audit
 
-Generated at: 2026-05-11T03:37:48.241Z
+Generated at: 2026-05-11T04:28:41.597Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **590**
-- Files with occurrences: **171**
+- Total categorized occurrences: **515**
+- Files with occurrences: **167**
 - Category counts:
   - `runtime-default`: **0**
   - `domain-default`: **184**
@@ -14,8 +14,8 @@ Generated at: 2026-05-11T03:37:48.241Z
   - `framework-default`: **2**
   - `browser-adapter`: **40**
   - `project-migration`: **49**
-  - `external-api-compat`: **49**
-  - `compat-boundary`: **231**
+  - `external-api-compat`: **12**
+  - `compat-boundary`: **193**
   - `test-fixture`: **6**
   - `legacy-runtime-risk`: **0**
   - `unknown`: **0**
@@ -35,10 +35,9 @@ Generated at: 2026-05-11T03:37:48.241Z
 
 ## Hot files
 
-- `esm/native/services/scene_view_lighting_renderer.ts` - **67** (compat-boundary: 22, external-api-compat: 45)
 - `esm/native/services/cloud_sync_panel_api_snapshots_sources.ts` - **21** (compat-boundary: 6, domain-default: 15)
+- `esm/native/services/scene_view_lighting_renderer.ts` - **21** (compat-boundary: 13, external-api-compat: 8)
 - `esm/entry_pro_overlay.ts` - **19** (browser-adapter: 19)
-- `esm/native/runtime/maps_access_writers.ts` - **17** (compat-boundary: 17)
 - `esm/native/runtime/project_io_access_load.ts` - **16** (project-migration: 16)
 - `esm/native/runtime/render_access_state_runtime.ts` - **14** (compat-boundary: 14)
 - `esm/native/runtime/project_io_access_restore.ts` - **13** (project-migration: 13)
@@ -57,7 +56,6 @@ Generated at: 2026-05-11T03:37:48.241Z
 - `esm/native/kernel/domain_module_stack_patch.ts` - **6** (compat-boundary: 5, project-migration: 1)
 - `esm/native/ui/react/tabs/render_tab_shared_room.ts` - **6** (domain-default: 6)
 - `esm/shared/wardrobe_dimension_tokens_shared.ts` - **6** (compat-boundary: 3, domain-default: 3)
-- `esm/native/builder/core_carcass_cornice.ts` - **5** (compat-boundary: 4, domain-default: 1)
 - `esm/native/io/project_schema_migrations_settings.ts` - **5** (project-migration: 5)
 - `esm/native/kernel/cfg_meta.ts` - **5** (domain-default: 5)
 - `esm/native/services/canvas_picking_hover_targets_interior_scan.ts` - **5** (domain-default: 5)
@@ -65,6 +63,8 @@ Generated at: 2026-05-11T03:37:48.241Z
 - `esm/native/services/cloud_sync_panel_api_snapshots_shared.ts` - **5** (domain-default: 5)
 - `esm/native/ui/export/export_order_pdf_composite_image_slots_runtime.ts` - **5** (compat-boundary: 5)
 - `esm/test_no_side_effects_on_import.mjs` - **5** (test-fixture: 5)
+- `esm/native/builder/visuals_and_contents.ts` - **4** (compat-boundary: 4)
+- `esm/native/features/door_trim_map.ts` - **4** (domain-default: 4)
 
 ## Allowlist check
 

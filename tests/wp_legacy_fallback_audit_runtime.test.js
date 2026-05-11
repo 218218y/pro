@@ -103,8 +103,8 @@ test('legacy fallback audit classifies boundary occurrences before runtime risk'
   assert.equal(
     classifyLegacyFallbackOccurrence({
       relPath: 'esm/native/builder/core_carcass_cornice.ts',
-      lineText: 'return buildLegacyCorniceEnvelope({});',
-      term: 'buildLegacyCorniceEnvelope',
+      lineText: 'return buildCompatCorniceEnvelope({});',
+      term: 'buildCompatCorniceEnvelope',
     }),
     'compat-boundary'
   );

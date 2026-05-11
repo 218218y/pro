@@ -14,13 +14,13 @@ function normalizePrefixedMapKey(value: unknown, prefix: string): string {
   return key.indexOf(prefix) === 0 ? key : prefix + key;
 }
 
-function readLegacyPrefixedAliasKey(value: unknown, prefix: string): string {
+function readUnprefixedAliasKey(value: unknown, prefix: string): string {
   const key = readMapKey(value);
   if (!key) return '';
   return key.indexOf(prefix) === 0 ? key.slice(prefix.length) : key;
 }
 
-function clearLegacyPrefixedAlias(
+function clearUnprefixedAlias(
   App: unknown,
   maps: MapsBagLike,
   mapName: KnownMapName,
@@ -128,20 +128,20 @@ export function writeSplit(App: unknown, doorId: unknown, isSplit: boolean, meta
   if (!maps) return false;
 
   const canonicalKey = normalizePrefixedMapKey(id0, 'split_');
-  const aliasKey = readLegacyPrefixedAliasKey(id0, 'split_');
+  const aliasKey = readUnprefixedAliasKey(id0, 'split_');
 
   try {
     const fn = maps.setSplit;
     if (typeof fn === 'function') {
       fn.call(maps, canonicalKey, !!isSplit, meta);
-      clearLegacyPrefixedAlias(
+      clearUnprefixedAlias(
         App,
         maps,
         'splitDoorsMap',
         canonicalKey,
         aliasKey,
         meta,
-        'maps_access.writeSplit.clearLegacyAlias'
+        'maps_access.writeSplit.clearUnprefixedAlias'
       );
       return true;
     }
@@ -151,14 +151,14 @@ export function writeSplit(App: unknown, doorId: unknown, isSplit: boolean, meta
 
   const ok = writeMapKey(App, 'splitDoorsMap', canonicalKey, !!isSplit ? true : false, meta);
   if (ok) {
-    clearLegacyPrefixedAlias(
+    clearUnprefixedAlias(
       App,
       maps,
       'splitDoorsMap',
       canonicalKey,
       aliasKey,
       meta,
-      'maps_access.writeSplit.clearLegacyAlias'
+      'maps_access.writeSplit.clearUnprefixedAlias'
     );
   }
   return ok;
@@ -176,20 +176,20 @@ export function writeSplitBottom(
   if (!maps) return false;
 
   const canonicalKey = normalizePrefixedMapKey(id0, 'splitb_');
-  const aliasKey = readLegacyPrefixedAliasKey(id0, 'splitb_');
+  const aliasKey = readUnprefixedAliasKey(id0, 'splitb_');
 
   try {
     const fn = maps.setSplitBottom;
     if (typeof fn === 'function') {
       fn.call(maps, canonicalKey, !!isOn, meta);
-      clearLegacyPrefixedAlias(
+      clearUnprefixedAlias(
         App,
         maps,
         'splitDoorsBottomMap',
         canonicalKey,
         aliasKey,
         meta,
-        'maps_access.writeSplitBottom.clearLegacyAlias'
+        'maps_access.writeSplitBottom.clearUnprefixedAlias'
       );
       return true;
     }
@@ -199,14 +199,14 @@ export function writeSplitBottom(
 
   const ok = writeMapKey(App, 'splitDoorsBottomMap', canonicalKey, !!isOn ? true : null, meta);
   if (ok) {
-    clearLegacyPrefixedAlias(
+    clearUnprefixedAlias(
       App,
       maps,
       'splitDoorsBottomMap',
       canonicalKey,
       aliasKey,
       meta,
-      'maps_access.writeSplitBottom.clearLegacyAlias'
+      'maps_access.writeSplitBottom.clearUnprefixedAlias'
     );
   }
   return ok;
@@ -254,7 +254,7 @@ function toggleCanonicalPrefixedKeyInMap(
   const maps = readMapsBagOrNull(App);
   if (!maps) return false;
 
-  const aliasKey = readLegacyPrefixedAliasKey(key, prefix);
+  const aliasKey = readUnprefixedAliasKey(key, prefix);
   const m = ensureMapRecord(maps, mapName);
   const next = readPrefixedToggleState(m, canonicalKey, aliasKey) ? null : true;
 
@@ -269,27 +269,27 @@ function toggleCanonicalPrefixedKeyInMap(
       'maps_access.toggleCanonicalPrefixedKeyInMap.setKey'
     )
   ) {
-    clearLegacyPrefixedAlias(
+    clearUnprefixedAlias(
       App,
       maps,
       mapName,
       canonicalKey,
       aliasKey,
       meta,
-      'maps_access.toggleCanonicalPrefixedKeyInMap.clearLegacyAlias'
+      'maps_access.toggleCanonicalPrefixedKeyInMap.clearUnprefixedAlias'
     );
     return true;
   }
 
   writeOwn(m, canonicalKey, next);
-  clearLegacyPrefixedAlias(
+  clearUnprefixedAlias(
     App,
     maps,
     mapName,
     canonicalKey,
     aliasKey,
     meta,
-    'maps_access.toggleCanonicalPrefixedKeyInMap.clearLegacyAlias'
+    'maps_access.toggleCanonicalPrefixedKeyInMap.clearUnprefixedAlias'
   );
   return true;
 }

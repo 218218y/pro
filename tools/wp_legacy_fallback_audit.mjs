@@ -20,7 +20,7 @@ export const LEGACY_FALLBACK_CATEGORIES = [
 // Keep this intentionally broader than a simple word-boundary search. The old
 // audit only saw standalone words such as `fallback` and missed camelCase /
 // PascalCase identifiers like `fallbackReason`, `BootFatalFallbackOpts`,
-// `buildLegacyCorniceEnvelope`, and `coreBrowserCompat`. Those names are still
+// `buildCompatCorniceEnvelope`, and `coreBrowserCompat`. Those names are still
 // compatibility/default vocabulary and must stay visible to the closeout guard.
 const NEEDLE_RE =
   /\b(?:legacy|fallbacks?|compat)\b|\b[$A-Z_a-z][$\w]*(?:Legacy|legacy|Fallback|fallback|Compat)[$\w]*\b/g;

@@ -154,6 +154,7 @@ When docs are cleaned again, keep this file as the single compact integration ma
 ## Post-Stage-80 closeout maintenance — 11 May 2026
 
 - Historical root plan/update files were removed from the active source tree. `refactor_workmap.md`, this compact progress marker, `docs/REFACTOR_NEXT_STAGE_PLAN.md`, and `docs/QUALITY_GUARDRAILS.md` remain the planning/control-plane sources of truth.
-- The legacy/fallback audit now scans camelCase and PascalCase names as well as standalone words, so compatibility/default vocabulary such as `fallbackReason`, `BootFatalFallbackOpts`, `buildLegacyCorniceEnvelope`, and `coreBrowserCompat` is visible and category-locked.
+- The legacy/fallback audit now scans camelCase and PascalCase names as well as standalone words, so compatibility/default vocabulary such as `fallbackReason`, `BootFatalFallbackOpts`, `buildCompatCorniceEnvelope`, and `coreBrowserCompat` is visible and category-locked.
 - UI full and strict typecheck configs now explicitly include `.tsx` UI surfaces; the lean lane stays TS-only and keeps its React/PDF shims isolated in `lean_types`.
 - Type hardening now also checks that every non-declaration `types/*.ts` source module has a matching `types/*.js` runtime stub and that no extra JS stub drifts without a typed source module.
+- The second closeout slice removed avoidable legacy naming from prefixed-map alias helpers, cornice-envelope token/helpers, and renderer-lighting helper names. Alias compatibility remains behaviorally intact at canonical map boundaries, but those files no longer appear in the legacy/fallback inventory just because their old helper names contained `legacy`.
