@@ -1,8 +1,38 @@
 import type { AppContainer, UnknownRecord } from '../../../../../types';
 
+import { reportError } from '../../../services/api.js';
+
 const __designTabReportNonFatalSeen = new Map<string, number>();
 
-export function __designTabReportNonFatal(op: string, err: unknown, throttleMs = 4000): void {
+function readDesignTabReportArgs(args: ArrayLike<unknown>): {
+  app: AppContainer | null;
+  op: string;
+  err: unknown;
+  throttleMs: number;
+} {
+  if (args.length >= 3 && typeof args[0] !== 'string' && typeof args[1] === 'string') {
+    return {
+      app: args[0] && typeof args[0] === 'object' ? (args[0] as AppContainer) : null,
+      op: String(args[1] || 'unknown'),
+      err: args[2],
+      throttleMs: typeof args[3] === 'number' && Number.isFinite(args[3]) ? Math.max(0, args[3]) : 4000,
+    };
+  }
+
+  return {
+    app: null,
+    op: String(args[0] || 'unknown'),
+    err: args[1],
+    throttleMs: typeof args[2] === 'number' && Number.isFinite(args[2]) ? Math.max(0, args[2]) : 4000,
+  };
+}
+
+type DesignTabReportNonFatalArgs =
+  | [op: string, err: unknown, throttleMs?: number]
+  | [app: AppContainer | null | undefined, op: string, err: unknown, throttleMs?: number];
+
+export function __designTabReportNonFatal(...args: DesignTabReportNonFatalArgs): void {
+  const { app, op, err, throttleMs } = readDesignTabReportArgs(args);
   const now = Date.now();
   let msg = 'unknown';
   if (typeof err === 'string') msg = err;
@@ -21,7 +51,20 @@ export function __designTabReportNonFatal(op: string, err: unknown, throttleMs =
       if (now - ts > pruneOlderThan) __designTabReportNonFatalSeen.delete(k);
     }
   }
-  console.error(`[WardrobePro][DesignTab] ${op}`, err);
+  if (app) {
+    reportError(
+      app,
+      err,
+      { where: 'native/ui/react/design_tab', op, fatal: false },
+      { consoleFallback: false }
+    );
+    return;
+  }
+  try {
+    console.error(`[WardrobePro][DesignTab] ${op}`, err);
+  } catch {
+    // ignore no-app console failures
+  }
 }
 
 export type SavedColor = {

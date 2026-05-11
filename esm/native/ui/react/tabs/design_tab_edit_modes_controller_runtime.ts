@@ -71,7 +71,10 @@ export function readDesignTabEditModesState(args: ReadDesignTabEditModesStateArg
 export function createDesignTabEditModesController(
   args: DesignTabEditModesControllerArgs
 ): DesignTabEditModesController {
-  const reportNonFatal = args.reportNonFatal || __designTabReportNonFatal;
+  const reportNonFatal =
+    args.reportNonFatal ||
+    ((op: string, err: unknown, throttleMs?: number) =>
+      __designTabReportNonFatal(args.app, op, err, throttleMs));
   const feedback = args.feedback;
   let activeFeatureToggleTransaction: {
     uiPatch: UnknownRecord;
@@ -85,11 +88,7 @@ export function createDesignTabEditModesController(
     } catch (toastErr) {
       reportNonFatal(`${op}:toastWarn`, toastErr);
     }
-    try {
-      console.warn('[ReactUI] design edit mode failed', err);
-    } catch (warnErr) {
-      reportNonFatal(`${op}:enterWarn`, warnErr);
-    }
+    reportNonFatal(`${op}:enterPrimaryMode`, err);
   };
 
   const withFeatureToggleTransaction = (
@@ -179,11 +178,7 @@ export function createDesignTabEditModesController(
       }
       exitPrimaryMode(args.app, String(expectedMode));
     } catch (err) {
-      try {
-        console.warn('[ReactUI] exitEditMode failed', err);
-      } catch (warnErr) {
-        reportNonFatal('editModes:exitWarn', warnErr);
-      }
+      reportNonFatal('editModes:exitPrimaryMode', err);
     }
   };
 

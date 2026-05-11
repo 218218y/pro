@@ -74,7 +74,7 @@ export function createStructureTabStructuralSyncController(
         },
       });
     } catch (err) {
-      structureTabReportNonFatal('structureTabStructuralController.commitStructural', err);
+      structureTabReportNonFatal(args.app, 'structureTabStructuralController.commitStructural', err);
     }
   };
 

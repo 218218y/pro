@@ -45,7 +45,7 @@ function ToastView(props: {
       itemId: item.id,
       setShown,
       onRemove,
-      report: reportOverlayAppNonFatal,
+      report: (op, err) => reportOverlayAppNonFatal(app, op, err),
     });
     return () => {
       clearOverlayFeedbackToastTimers(app, timerStateRef.current);
@@ -116,22 +116,22 @@ export function ReactFeedbackHost(props: { bridge: OverlayFeedbackHostBridge }) 
         try {
           input.select();
         } catch (err) {
-          reportOverlayAppNonFatal('feedback-host:prompt-select', err);
+          reportOverlayAppNonFatal(app, 'feedback-host:prompt-select', err);
         }
         try {
           input.setSelectionRange(0, input.value.length);
         } catch (err) {
-          reportOverlayAppNonFatal('feedback-host:prompt-range', err);
+          reportOverlayAppNonFatal(app, 'feedback-host:prompt-range', err);
         }
       } catch (err) {
-        reportOverlayAppNonFatal('feedback-host:prompt-focus', err);
+        reportOverlayAppNonFatal(app, 'feedback-host:prompt-focus', err);
       }
     };
 
     scheduleOverlayFeedbackPromptFocusTimers({
       App: app,
       state: promptFocusTimerStateRef.current,
-      report: reportOverlayAppNonFatal,
+      report: (op, err) => reportOverlayAppNonFatal(app, op, err),
       scheduleAnimationFrame: focusAndSelect => requestAnimationFrame(focusAndSelect),
       runFocusAndSelect: focusAndSelect,
     });
@@ -163,7 +163,7 @@ export function ReactFeedbackHost(props: { bridge: OverlayFeedbackHostBridge }) 
       try {
         restoreReactFeedbackHost(app, host, previous);
       } catch (err) {
-        reportOverlayAppNonFatal('feedback-host:unregister', err);
+        reportOverlayAppNonFatal(app, 'feedback-host:unregister', err);
       }
     };
   }, [app, confirm, prompt, toast]);
@@ -180,12 +180,12 @@ export function ReactFeedbackHost(props: { bridge: OverlayFeedbackHostBridge }) 
       try {
         if (promptCancelCb) promptCancelCb(null);
       } catch (err) {
-        reportOverlayAppNonFatal('feedback-host:prompt-cancel', err);
+        reportOverlayAppNonFatal(app, 'feedback-host:prompt-cancel', err);
       }
       try {
         if (confirmCancelCb) confirmCancelCb();
       } catch (err) {
-        reportOverlayAppNonFatal('feedback-host:confirm-cancel', err);
+        reportOverlayAppNonFatal(app, 'feedback-host:confirm-cancel', err);
       }
     },
     [modal.mode, modal.open]
@@ -199,7 +199,7 @@ export function ReactFeedbackHost(props: { bridge: OverlayFeedbackHostBridge }) 
       try {
         if (callback) callback(String(modal.value || ''));
       } catch (err) {
-        reportOverlayAppNonFatal('feedback-host:prompt-confirm', err);
+        reportOverlayAppNonFatal(app, 'feedback-host:prompt-confirm', err);
       }
       return;
     }
@@ -209,7 +209,7 @@ export function ReactFeedbackHost(props: { bridge: OverlayFeedbackHostBridge }) 
     try {
       if (callback) callback();
     } catch (err) {
-      reportOverlayAppNonFatal('feedback-host:confirm-ok', err);
+      reportOverlayAppNonFatal(app, 'feedback-host:confirm-ok', err);
     }
   }, [close, modal]);
 
@@ -234,21 +234,21 @@ export function ReactFeedbackHost(props: { bridge: OverlayFeedbackHostBridge }) 
         event.preventDefault();
         confirmOk();
       } catch (err) {
-        reportOverlayAppNonFatal('feedback-host:modal-keydown', err);
+        reportOverlayAppNonFatal(app, 'feedback-host:modal-keydown', err);
       }
     };
 
     try {
       win.addEventListener('keydown', onKeyDown, captureOpts);
     } catch (err) {
-      reportOverlayAppNonFatal('feedback-host:add-keydown', err);
+      reportOverlayAppNonFatal(app, 'feedback-host:add-keydown', err);
     }
 
     return () => {
       try {
         win.removeEventListener('keydown', onKeyDown, captureOpts);
       } catch (err) {
-        reportOverlayAppNonFatal('feedback-host:remove-keydown', err);
+        reportOverlayAppNonFatal(app, 'feedback-host:remove-keydown', err);
       }
     };
   }, [close, confirmOk, doc, modal.message, modal.mode, modal.open, modal.title, modal.value]);

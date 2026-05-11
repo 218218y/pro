@@ -124,7 +124,7 @@ export function commitStructureRawValue(args: {
         setUiCellDimsDepth(app, value, meta.uiOnlyImmediate('react:structure:cellDimsDepth'));
       }
     } catch (err) {
-      structureTabReportNonFatal('commitStructureRawValue.cellDims', err);
+      structureTabReportNonFatal(app, 'commitStructureRawValue.cellDims', err);
     }
     return;
   }
@@ -148,7 +148,7 @@ export function commitStructureRawValue(args: {
         },
       });
     } catch (err) {
-      structureTabReportNonFatal('commitStructureRawValue.stackSplitLowerDoors', err);
+      structureTabReportNonFatal(app, 'commitStructureRawValue.stackSplitLowerDoors', err);
     }
     return;
   }
@@ -165,7 +165,7 @@ export function commitStructureRawValue(args: {
           treatManualWidth = false;
         }
       } catch (err) {
-        structureTabReportNonFatal('commitStructureRawValue.autoFixManualWidth', err);
+        structureTabReportNonFatal(app, 'commitStructureRawValue.autoFixManualWidth', err);
       }
     }
 
@@ -248,7 +248,7 @@ export function commitStructureRawValue(args: {
         },
       });
     } catch (err) {
-      structureTabReportNonFatal('commitStructureRawValue.doors', err);
+      structureTabReportNonFatal(app, 'commitStructureRawValue.doors', err);
     }
     return;
   }
@@ -292,6 +292,6 @@ export function commitStructureRawValue(args: {
       });
     });
   } catch (err) {
-    structureTabReportNonFatal('commitStructureRawValue.scalar', err);
+    structureTabReportNonFatal(app, 'commitStructureRawValue.scalar', err);
   }
 }

@@ -1,3 +1,5 @@
+import { reportError } from '../../services/api.js';
+
 export type ToastKind = 'success' | 'error' | 'info';
 
 export type ToastItem = {
@@ -38,6 +40,29 @@ export type AppUiFeedbackSlot = {
 
 const overlayAppReportNonFatalSeen = new Map<string, number>();
 
+function readOverlayReportArgs(args: ArrayLike<unknown>): {
+  app: unknown | null;
+  op: string;
+  err: unknown;
+  throttleMs: number;
+} {
+  if (args.length >= 3 && typeof args[0] !== 'string' && typeof args[1] === 'string') {
+    return {
+      app: args[0] && typeof args[0] === 'object' ? (args[0] as AppUiFeedbackSlot) : null,
+      op: String(args[1] || 'unknown'),
+      err: args[2],
+      throttleMs: typeof args[3] === 'number' && Number.isFinite(args[3]) ? Math.max(0, args[3]) : 4000,
+    };
+  }
+
+  return {
+    app: null,
+    op: String(args[0] || 'unknown'),
+    err: args[1],
+    throttleMs: typeof args[2] === 'number' && Number.isFinite(args[2]) ? Math.max(0, args[2]) : 4000,
+  };
+}
+
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object';
 }
@@ -58,7 +83,12 @@ export function hasClosestElement(
   return !!value && typeof value === 'object' && typeof Reflect.get(value, 'closest') === 'function';
 }
 
-export function reportOverlayAppNonFatal(op: string, err: unknown, throttleMs = 4000): void {
+type OverlayAppReportNonFatalArgs =
+  | [op: string, err: unknown, throttleMs?: number]
+  | [app: unknown | null | undefined, op: string, err: unknown, throttleMs?: number];
+
+export function reportOverlayAppNonFatal(...args: OverlayAppReportNonFatalArgs): void {
+  const { app, op, err, throttleMs } = readOverlayReportArgs(args);
   const now = Date.now();
   let msg = 'unknown';
   if (typeof err === 'string') msg = err;
@@ -78,7 +108,20 @@ export function reportOverlayAppNonFatal(op: string, err: unknown, throttleMs = 
       if (now - ts > pruneOlderThan) overlayAppReportNonFatalSeen.delete(seenKey);
     }
   }
-  console.error(`[WardrobePro][overlay_app] ${op}`, err);
+  if (app) {
+    reportError(
+      app,
+      err,
+      { where: 'native/ui/react/overlay_app', op, fatal: false },
+      { consoleFallback: false }
+    );
+    return;
+  }
+  try {
+    console.error(`[WardrobePro][overlay_app] ${op}`, err);
+  } catch {
+    // ignore no-app console failures
+  }
 }
 
 export function isPromiseLike<T = unknown>(value: unknown): value is PromiseLike<T> {

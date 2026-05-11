@@ -49,7 +49,7 @@ export function MultiColorPanel(props: { embedded?: boolean } = {}) {
         app,
         getPaintActive: () => String(primaryMode || 'none').toLowerCase() === 'paint',
         setPaintColor,
-        reportNonFatal: __designTabReportNonFatal,
+        reportNonFatal: (op, err, throttleMs) => __designTabReportNonFatal(app, op, err, throttleMs),
       }),
     [app, primaryMode]
   );

@@ -70,13 +70,13 @@ export function QuickActionsDock(): ReactElement {
     try {
       doc.addEventListener('pointerdown', onPointerDown, true);
     } catch (err) {
-      reportOverlayAppNonFatal('quick-actions:add-pointerdown', err);
+      reportOverlayAppNonFatal(app, 'quick-actions:add-pointerdown', err);
     }
     return () => {
       try {
         doc.removeEventListener('pointerdown', onPointerDown, true);
       } catch (err) {
-        reportOverlayAppNonFatal('quick-actions:remove-pointerdown', err);
+        reportOverlayAppNonFatal(app, 'quick-actions:remove-pointerdown', err);
       }
     };
   }, [app, menuOpen, quickActionsController]);

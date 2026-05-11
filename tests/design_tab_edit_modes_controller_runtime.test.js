@@ -271,10 +271,11 @@ test('[design-tab-edit-modes-controller] failures stay reported without throwing
   hardFail.toggleRemoveDoorEdit();
 
   assert.ok(calls.some(entry => entry[0] === 'reportNonFatal' && entry[1] === 'editModes:toastWarn'));
-  assert.ok(
-    calls.some(
-      entry => entry[0] === 'console.warn' && String(entry[1]).includes('[ReactUI] exitEditMode failed')
-    )
+  assert.ok(calls.some(entry => entry[0] === 'reportNonFatal' && entry[1] === 'editModes:enterPrimaryMode'));
+  assert.ok(calls.some(entry => entry[0] === 'reportNonFatal' && entry[1] === 'editModes:exitPrimaryMode'));
+  assert.equal(
+    calls.some(entry => entry[0] === 'console.warn'),
+    false
   );
 });
 

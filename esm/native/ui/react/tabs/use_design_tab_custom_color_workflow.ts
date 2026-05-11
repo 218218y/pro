@@ -50,7 +50,7 @@ export function useDesignTabCustomColorWorkflow(
         setDraftColor,
         setDraftTextureName,
         setDraftTextureData,
-        reportNonFatal: __designTabReportNonFatal,
+        reportNonFatal: (op, err) => __designTabReportNonFatal(app, op, err),
       }),
     [
       app,

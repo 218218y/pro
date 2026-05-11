@@ -99,7 +99,7 @@ export function setStackSplitLowerLinkModeValue(args: {
       },
     });
   } catch (err) {
-    structureTabReportNonFatal('setStackSplitLowerLinkModeValue', err);
+    structureTabReportNonFatal(app, 'setStackSplitLowerLinkModeValue', err);
   }
 }
 
@@ -130,7 +130,7 @@ export function toggleStackSplitDecorativeSeparatorState(args: {
       },
     });
   } catch (err) {
-    structureTabReportNonFatal('toggleStackSplitDecorativeSeparatorState', err);
+    structureTabReportNonFatal(args.app, 'toggleStackSplitDecorativeSeparatorState', err);
   }
 }
 
@@ -186,7 +186,7 @@ export function toggleStackSplitState(args: {
         },
       });
     } catch (err) {
-      structureTabReportNonFatal('toggleStackSplitState.disable', err);
+      structureTabReportNonFatal(app, 'toggleStackSplitState.disable', err);
     }
     return;
   }
@@ -274,6 +274,6 @@ export function toggleStackSplitState(args: {
       },
     });
   } catch (err) {
-    structureTabReportNonFatal('toggleStackSplitState.enable', err);
+    structureTabReportNonFatal(app, 'toggleStackSplitState.enable', err);
   }
 }

@@ -72,7 +72,10 @@ function setPaintToolColor(
 export function createDesignTabMulticolorController(
   args: DesignTabMulticolorControllerArgs
 ): DesignTabMulticolorController {
-  const reportNonFatal = args.reportNonFatal || __designTabReportNonFatal;
+  const reportNonFatal =
+    args.reportNonFatal ||
+    ((op: string, err: unknown, throttleMs?: number) =>
+      __designTabReportNonFatal(args.app, op, err, throttleMs));
   const setCurtainChoiceImpl = args.setCurtainChoice || setCurtainChoice;
   const setMultiEnabledImpl = args.setMultiEnabled || setMultiEnabled;
   const exitPaintModeImpl = args.exitPaintMode || exitPaintMode;

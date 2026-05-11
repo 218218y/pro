@@ -1,6 +1,11 @@
 import type { AppContainer, UiFeedbackNamespaceLike, UnknownRecord } from '../../../../../types';
 
-import { getDocumentMaybe, getUiFeedback, normalizeUnknownError } from '../../../services/api.js';
+import {
+  getDocumentMaybe,
+  getUiFeedback,
+  normalizeUnknownError,
+  reportError,
+} from '../../../services/api.js';
 import { enterPrimaryMode, exitPrimaryMode } from '../actions/modes_actions.js';
 import { setRoomOpen } from '../actions/room_actions.js';
 import type { EditStateToastFn } from './structure_tab_core_contracts.js';
@@ -43,7 +48,36 @@ export function setBodyCursor(app: unknown, cursor: string): void {
 }
 
 const __structureTabReportNonFatalSeen = new Map<string, number>();
-export function structureTabReportNonFatal(op: string, err: unknown, dedupeMs = 4000): void {
+
+function readStructureTabReportArgs(args: ArrayLike<unknown>): {
+  app: AppContainer | null;
+  op: string;
+  err: unknown;
+  dedupeMs: number;
+} {
+  if (args.length >= 3 && typeof args[0] !== 'string' && typeof args[1] === 'string') {
+    return {
+      app: args[0] && typeof args[0] === 'object' ? (args[0] as AppContainer) : null,
+      op: String(args[1] || 'unknown'),
+      err: args[2],
+      dedupeMs: typeof args[3] === 'number' && Number.isFinite(args[3]) ? Math.max(0, args[3]) : 4000,
+    };
+  }
+
+  return {
+    app: null,
+    op: String(args[0] || 'unknown'),
+    err: args[1],
+    dedupeMs: typeof args[2] === 'number' && Number.isFinite(args[2]) ? Math.max(0, args[2]) : 4000,
+  };
+}
+
+type StructureTabReportNonFatalArgs =
+  | [op: string, err: unknown, dedupeMs?: number]
+  | [app: AppContainer | null | undefined, op: string, err: unknown, dedupeMs?: number];
+
+export function structureTabReportNonFatal(...args: StructureTabReportNonFatalArgs): void {
+  const { app, op, err, dedupeMs } = readStructureTabReportArgs(args);
   const now = Date.now();
   const normalized = normalizeUnknownError(err, '[WardrobePro][StructureTab] non-fatal error');
   const name =
@@ -56,7 +90,20 @@ export function structureTabReportNonFatal(op: string, err: unknown, dedupeMs = 
   const last = __structureTabReportNonFatalSeen.get(key) ?? 0;
   if (dedupeMs > 0 && now - last < dedupeMs) return;
   __structureTabReportNonFatalSeen.set(key, now);
-  console.error(`[WardrobePro][StructureTab] ${op}`, err);
+  if (app) {
+    reportError(
+      app,
+      err,
+      { where: 'native/ui/react/structure_tab', op, fatal: false },
+      { consoleFallback: false }
+    );
+    return;
+  }
+  try {
+    console.error(`[WardrobePro][StructureTab] ${op}`, err);
+  } catch {
+    // ignore no-app console failures
+  }
 }
 
 export function getModeConst(app: unknown, key: string, defaultValue: string): string {
@@ -91,25 +138,25 @@ export function enterStructureEditMode(args: {
       cursor: 'alias',
     });
   } catch (err) {
-    structureTabReportNonFatal('enterStructureEditMode.enterPrimaryMode', err);
+    structureTabReportNonFatal(app, 'enterStructureEditMode.enterPrimaryMode', err);
   }
 
   try {
     setRoomOpen(app, false, { forceUpdate: true });
   } catch (err) {
-    structureTabReportNonFatal('enterStructureEditMode.setRoomOpen', err);
+    structureTabReportNonFatal(app, 'enterStructureEditMode.setRoomOpen', err);
   }
 
   try {
     setBodyCursor(app, 'alias');
   } catch (err) {
-    structureTabReportNonFatal('enterStructureEditMode.setBodyCursor', err);
+    structureTabReportNonFatal(app, 'enterStructureEditMode.setBodyCursor', err);
   }
 
   try {
     if (!updateEditStateToast(app, message, true)) showToast(fb, message, 'info');
   } catch (err) {
-    structureTabReportNonFatal('enterStructureEditMode.toast', err);
+    structureTabReportNonFatal(app, 'enterStructureEditMode.toast', err);
   }
 }
 
@@ -119,18 +166,18 @@ export function exitStructureEditMode(args: { app: AppContainer; modeId: string;
   try {
     exitPrimaryMode(app, modeId, { closeDoors: true, source });
   } catch (err) {
-    structureTabReportNonFatal('exitStructureEditMode.exitPrimaryMode', err);
+    structureTabReportNonFatal(app, 'exitStructureEditMode.exitPrimaryMode', err);
   }
 
   try {
     setBodyCursor(app, 'default');
   } catch (err) {
-    structureTabReportNonFatal('exitStructureEditMode.setBodyCursor', err);
+    structureTabReportNonFatal(app, 'exitStructureEditMode.setBodyCursor', err);
   }
 
   try {
     updateEditStateToast(app, null, false);
   } catch (err) {
-    structureTabReportNonFatal('exitStructureEditMode.toast', err);
+    structureTabReportNonFatal(app, 'exitStructureEditMode.toast', err);
   }
 }

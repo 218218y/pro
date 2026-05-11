@@ -66,11 +66,6 @@ export class LazyErrorBoundary extends Component<Props, State> {
     } catch {
       // ignore
     }
-    try {
-      console.error('[WardrobePro] Lazy chunk load failed', error);
-    } catch {
-      // ignore
-    }
   }
 
   render() {

@@ -30,14 +30,14 @@ function useHistoryStatus(): {
     try {
       applyStatus(getHistoryStatusMaybe(app));
     } catch (err) {
-      reportOverlayAppNonFatal('overlay-history:init-status', err);
+      reportOverlayAppNonFatal(app, 'overlay-history:init-status', err);
     }
 
     return subscribeHistoryStatusMaybe(app, (next: HistoryStatusLike) => {
       try {
         applyStatus(next);
       } catch (err) {
-        reportOverlayAppNonFatal('overlay-history:apply-status', err);
+        reportOverlayAppNonFatal(app, 'overlay-history:apply-status', err);
       }
     });
   }, [app, applyStatus]);
@@ -46,7 +46,7 @@ function useHistoryStatus(): {
     try {
       runHistoryUndoMaybe(app);
     } catch (err) {
-      reportOverlayAppNonFatal('overlay-history:undo', err);
+      reportOverlayAppNonFatal(app, 'overlay-history:undo', err);
     }
   }, [app]);
 
@@ -54,7 +54,7 @@ function useHistoryStatus(): {
     try {
       runHistoryRedoMaybe(app);
     } catch (err) {
-      reportOverlayAppNonFatal('overlay-history:redo', err);
+      reportOverlayAppNonFatal(app, 'overlay-history:redo', err);
     }
   }, [app]);
 
@@ -112,7 +112,7 @@ function CameraControls() {
       try {
         if (moveCameraViaService(app, view)) return;
       } catch (err) {
-        reportOverlayAppNonFatal('overlay-camera:move', err);
+        reportOverlayAppNonFatal(app, 'overlay-camera:move', err);
       }
 
       fb.toast('שליטת מצלמה לא זמינה כרגע', 'error');

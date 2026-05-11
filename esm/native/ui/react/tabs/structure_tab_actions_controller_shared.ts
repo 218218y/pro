@@ -91,7 +91,7 @@ export function commitStructureStatePatchWithRecompute(args: {
       actionMeta
     );
   } catch (__wpErr) {
-    structureTabReportNonFatal(errorLine, __wpErr);
+    structureTabReportNonFatal(app, errorLine, __wpErr);
   }
 }
 
@@ -104,7 +104,7 @@ export function recomputeStructureFromUi(
   try {
     runAppStructuralModulesRecompute(app, rawPatch, meta, null, STRUCTURE_RECOMPUTE_OPTS, {});
   } catch (__wpErr) {
-    structureTabReportNonFatal(errorLine, __wpErr);
+    structureTabReportNonFatal(app, errorLine, __wpErr);
   }
 }
 
