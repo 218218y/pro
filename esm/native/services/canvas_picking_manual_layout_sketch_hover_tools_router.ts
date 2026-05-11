@@ -1,5 +1,6 @@
 import { tryHandleManualLayoutSketchHoverFreeFlow } from './canvas_picking_manual_layout_sketch_hover_free_flow.js';
 import { tryHandleManualLayoutSketchHoverModuleFlow } from './canvas_picking_manual_layout_sketch_hover_module_flow.js';
+import { tryHandleSketchHoverOverStandardDrawer } from './canvas_picking_manual_layout_sketch_hover_standard_drawer.js';
 import { readManualLayoutSketchHoverRuntime } from './canvas_picking_manual_layout_sketch_hover_tools_shared.js';
 import type { ManualLayoutSketchHoverPreviewArgs } from './canvas_picking_manual_layout_sketch_hover_tools_shared.js';
 import { resolvePreferredManualLayoutSketchSelectorHit } from './canvas_picking_manual_layout_sketch_hover_tools_selector.js';
@@ -50,6 +51,16 @@ export function tryHandleManualLayoutSketchHoverPreviewImpl(
       setPreview,
       hideSketchPreviewAndClearHover,
     } = runtime;
+
+    if (
+      tryHandleSketchHoverOverStandardDrawer({
+        ...args,
+        tool,
+        setPreview: setPreview as ((previewArgs: Record<string, unknown>) => unknown) | null,
+      })
+    ) {
+      return true;
+    }
 
     const preferredSelector = resolvePreferredManualLayoutSketchSelectorHit({
       App,

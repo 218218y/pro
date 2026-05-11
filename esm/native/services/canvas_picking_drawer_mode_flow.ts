@@ -45,6 +45,7 @@ export function tryHandleCanvasDrawerModeClick(args: CanvasDrawerModeClickArgs):
       activeModuleKey: args.__activeModuleKey,
       isExtDrawerEditMode: args.__isExtDrawerEditMode,
       patchConfigForKey: args.__patchConfigForKey,
+      intersects: args.intersects,
     })
   ) {
     return true;

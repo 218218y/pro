@@ -216,3 +216,48 @@ test('manual-layout direct hit removes an internal drawer slot when the hit stay
   assert.deepEqual(cfg.intDrawersList, [1, 5]);
   assert.equal('intDrawersSlot' in cfg, false);
 });
+
+test('manual-layout direct hit removes standard external drawers while sketch external drawer tool is active', () => {
+  const cfg: Record<string, unknown> = {
+    extDrawersCount: 3,
+    hasShoeDrawer: true,
+  };
+  let patchMeta: Record<string, unknown> | null = null;
+
+  const drawerGroup = {
+    userData: {
+      partId: 'd1_draw_2',
+      moduleIndex: '2',
+    },
+    parent: null,
+  };
+
+  const applied = tryApplyManualLayoutSketchDirectHitActions({
+    App: {} as never,
+    __mt: 'sketch_ext_drawers:3',
+    __activeModuleKey: 2,
+    topY: 2.4,
+    bottomY: 0,
+    mapKey: 2,
+    __gridMap: { '2': { gridDivisions: 6 } },
+    totalHeight: 2.4,
+    hitY0: 1.0,
+    pad: 0,
+    intersects: [{ object: drawerGroup, point: { y: 1.0 } }] as any,
+    __patchConfigForKey: (_mk, patchFn, meta) => {
+      patchMeta = { ...meta };
+      patchFn(cfg);
+      return null;
+    },
+    __wp_isViewportRoot: () => false,
+    __hoverOk: false,
+    __hoverKind: '',
+    __hoverOp: '',
+    __hoverRec: null,
+  });
+
+  assert.equal(applied, true);
+  assert.deepEqual(patchMeta, { source: 'sketch.removeStandardExternalDrawerByHit', immediate: true });
+  assert.equal(cfg.extDrawersCount, 0);
+  assert.equal(cfg.hasShoeDrawer, true);
+});

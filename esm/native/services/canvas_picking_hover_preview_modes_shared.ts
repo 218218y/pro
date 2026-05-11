@@ -102,6 +102,7 @@ export type ExtDrawersHoverPreviewArgs = HoverPreviewModeBaseArgs & {
   resolveInteriorHoverTarget: InteriorHoverResolverFn;
   measureObjectLocalBox: MeasureObjectLocalBoxFn;
   readInteriorModuleConfigRef: ReadInteriorModuleConfigRefFn;
+  resolveDrawerHoverPreviewTarget?: ResolveDrawerHoverPreviewTargetFn;
 };
 
 export type DrawerDividerHoverPreviewArgs = HoverPreviewModeBaseArgs & {

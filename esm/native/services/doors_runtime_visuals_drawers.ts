@@ -135,7 +135,6 @@ export function snapDrawersToTargets(App: AppLike): void {
 
     const userData = getGroupUserData(drawer.group);
     const isExtDrawer = !!(userData && userData.__wpType === 'extDrawer');
-    const isSketchExtDrawer = !!(userData && userData.__wpSketchExtDrawer === true);
 
     const type = wardrobeType(App);
     let isInternal = !isExtDrawer;
@@ -152,7 +151,14 @@ export function snapDrawersToTargets(App: AppLike): void {
 
     let shouldOpen = false;
 
-    if (sketchIntDrawersEditActive || intDrawerEditActive) {
+    if (sketchExtDrawersEditActive && !isInternal) {
+      shouldOpen = false;
+      try {
+        drawer.isOpen = false;
+      } catch (_) {
+        // ignore
+      }
+    } else if (sketchIntDrawersEditActive || intDrawerEditActive) {
       shouldOpen = false;
       try {
         drawer.isOpen = false;
@@ -168,7 +174,6 @@ export function snapDrawersToTargets(App: AppLike): void {
       }
     } else if (globalClickMode) {
       shouldOpen = isInternal ? internalDrawersShouldBeOpen : externalDrawersShouldBeOpen;
-      if (sketchExtDrawersEditActive && isSketchExtDrawer) shouldOpen = false;
     } else if (isInternal) {
       const moduleKey = getDrawerModuleKey(drawer);
       const matchesOpenModule = moduleKey ? localOpenDoorModules.has(moduleKey) : hasAnyLocalOpenDoor;
@@ -179,6 +184,7 @@ export function snapDrawersToTargets(App: AppLike): void {
 
     if (
       !sketchEditActive &&
+      !sketchExtDrawersEditActive &&
       !sketchIntDrawersEditActive &&
       !intDrawerEditActive &&
       openId &&

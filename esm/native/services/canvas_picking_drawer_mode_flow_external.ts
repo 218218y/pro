@@ -1,6 +1,12 @@
 import type { AppContainer, ModuleConfigLike } from '../../../types';
 import { __wp_ui } from './canvas_picking_core_helpers.js';
+import {
+  findCrossDrawerHitInIntersects,
+  removeSketchExternalDrawerFromConfig,
+  sameModuleKey,
+} from './canvas_picking_drawer_cross_family.js';
 import type { ModuleKey, PatchConfigForKeyFn } from './canvas_picking_drawer_mode_flow_shared.js';
+import type { RaycastHitLike } from './canvas_picking_engine.js';
 
 export function tryHandleExternalDrawerModeClick(args: {
   App: AppContainer;
@@ -8,9 +14,27 @@ export function tryHandleExternalDrawerModeClick(args: {
   activeModuleKey: ModuleKey | 'corner' | null;
   isExtDrawerEditMode: boolean;
   patchConfigForKey: PatchConfigForKeyFn;
+  intersects?: RaycastHitLike[];
 }): boolean {
   const { App, foundModuleIndex, activeModuleKey, isExtDrawerEditMode, patchConfigForKey } = args;
   if (!isExtDrawerEditMode || foundModuleIndex === null) return false;
+
+  const sketchHit = findCrossDrawerHitInIntersects(App, args.intersects || [], 'sketch_external');
+  if (sketchHit && (!sketchHit.moduleIndex || sameModuleKey(sketchHit.moduleIndex, activeModuleKey))) {
+    patchConfigForKey(
+      activeModuleKey,
+      (cfg: ModuleConfigLike) => {
+        removeSketchExternalDrawerFromConfig(
+          cfg,
+          sketchHit.sketchExtDrawerId,
+          sketchHit.sketchBoxId || undefined,
+          sketchHit.partId
+        );
+      },
+      { source: 'extDrawers.removeSketchExternalByHit', immediate: true }
+    );
+    return true;
+  }
 
   patchConfigForKey(
     activeModuleKey,

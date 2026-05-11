@@ -9,6 +9,7 @@ import {
   readSketchDrawerHeightMFromItem,
   resolveSketchInternalDrawerMetrics,
 } from '../features/sketch_drawer_sizing.js';
+import { hasSketchDrawerDivider } from './render_interior_sketch_drawer_dividers.js';
 
 export function renderSketchBoxDrawerContents(args: RenderSketchBoxContentsArgs): void {
   const { shell, resolveBoxDrawerSpan } = args;
@@ -77,6 +78,7 @@ export function renderSketchBoxDrawerContents(args: RenderSketchBoxContentsArgs)
       const drawerIdRaw = drawer.id;
       const drawerId = drawerIdRaw != null ? String(drawerIdRaw) : String(drawerIndex);
       const partId = `${boxPid}_int_drawers_${drawerId}`;
+      const hasDivider = hasSketchDrawerDivider({ App, input, partId });
       const spanSource = readRecord(drawer);
       if (!spanSource) continue;
       const span = resolveBoxDrawerSpan(spanSource);
@@ -107,7 +109,7 @@ export function renderSketchBoxDrawerContents(args: RenderSketchBoxContentsArgs)
           y: yFinal,
           z: geometry.innerBackZ + geometry.innerD / 2,
           openZ: geometry.innerBackZ + geometry.innerD / 2 + drawerDims.internalOpenOffsetZM,
-          hasDivider: false,
+          hasDivider,
           dividerKey: partId,
         });
       }

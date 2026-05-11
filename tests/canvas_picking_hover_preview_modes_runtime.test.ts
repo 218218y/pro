@@ -100,6 +100,79 @@ test('ext-drawers hover preview uses canonical preview wiring and toggles remove
   assert.equal(previews[0].anchor.id, 'selector-1');
 });
 
+test('regular external drawer hover removal previews the entire sketch external drawer stack', () => {
+  const previews: any[] = [];
+  const parent = { id: 'wardrobe-parent' };
+  const makeGroup = (id: string, y: number) => ({
+    id,
+    parent,
+    userData: {
+      partId: `sketch_ext_drawers_1_sed123_${id}`,
+      moduleIndex: 1,
+      __wpSketchExtDrawer: true,
+      __wpSketchExtDrawerId: 'sed123',
+    },
+    geometry: { parameters: { width: 0.8, height: 0.18, depth: 0.08 } },
+    position: { x: 0, y, z: 0.25 },
+    scale: { x: 1, y: 1, z: 1 },
+  });
+  const g1 = makeGroup('1', 0.3);
+  const g2 = makeGroup('2', 0.55);
+  const g3 = makeGroup('3', 0.8);
+  const App = createApp({
+    render: {
+      drawersArray: [
+        { id: 'sketch_ext_drawers_1_sed123_1', group: g1 },
+        { id: 'sketch_ext_drawers_1_sed123_2', group: g2 },
+        { id: 'sketch_ext_drawers_1_sed123_3', group: g3 },
+      ],
+    },
+    renderOps: {
+      setSketchPlacementPreview(args: unknown) {
+        previews.push(args);
+      },
+    },
+  });
+
+  const handled = tryHandleExtDrawersHoverPreview({
+    App,
+    ndcX: 0,
+    ndcY: 0,
+    raycaster: {},
+    mouse: {},
+    isExtDrawerEditMode: true,
+    readUi: () => ({ currentExtDrawerType: 'regular', currentExtDrawerCount: 3 }),
+    resolveDrawerHoverPreviewTarget: () => ({
+      drawer: { id: 'sketch_ext_drawers_1_sed123_2', group: g2 },
+      parent,
+      box: { centerX: 0, centerY: 0.55, centerZ: 0.25, width: 0.8, height: 0.18, depth: 0.08 },
+    }),
+    resolveInteriorHoverTarget: () => null,
+    measureObjectLocalBox: (_App, obj) => {
+      const rec = obj as any;
+      return {
+        centerX: rec.position.x,
+        centerY: rec.position.y,
+        centerZ: rec.position.z,
+        width: rec.geometry.parameters.width,
+        height: rec.geometry.parameters.height,
+        depth: rec.geometry.parameters.depth,
+      };
+    },
+    readInteriorModuleConfigRef: () => ({}),
+  });
+
+  assert.equal(handled, true);
+  assert.equal(previews.length, 1);
+  assert.equal(previews[0].kind, 'ext_drawers');
+  assert.equal(previews[0].op, 'remove');
+  assert.equal(previews[0].drawers.length, 3);
+  assert.deepEqual(
+    previews[0].drawers.map((drawer: any) => drawer.y),
+    [0.3, 0.55, 0.8]
+  );
+});
+
 test('drawer-divider hover preview resolves add/remove directly from canonical config state', () => {
   const previews: any[] = [];
   const hidden: any[] = [];

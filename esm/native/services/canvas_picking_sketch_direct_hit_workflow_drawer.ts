@@ -14,6 +14,11 @@ import {
 } from './canvas_picking_sketch_direct_hit_workflow_objects.js';
 import { readRecordNumber, readRecordString } from './canvas_picking_sketch_direct_hit_workflow_records.js';
 import {
+  findCrossDrawerHitInIntersects,
+  removeStandardExternalDrawerFromConfig,
+  sameModuleKey,
+} from './canvas_picking_drawer_cross_family.js';
+import {
   removeInternalDrawerSlot,
   removeSketchDrawerById,
   removeSketchExternalDrawerById,
@@ -106,6 +111,22 @@ export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDir
   }
 
   if (__mt.startsWith('sketch_ext_drawers:')) {
+    const standardExternalHit = findCrossDrawerHitInIntersects(App, intersects, 'standard_external');
+    if (
+      standardExternalHit &&
+      (!standardExternalHit.moduleIndex || sameModuleKey(standardExternalHit.moduleIndex, __activeModuleKey))
+    ) {
+      __patchConfigForKey(
+        __activeModuleKey,
+        cfg0 => {
+          const cfg = asConfig(cfg0);
+          removeStandardExternalDrawerFromConfig(cfg, standardExternalHit.partId);
+        },
+        { source: 'sketch.removeStandardExternalDrawerByHit', immediate: true }
+      );
+      return true;
+    }
+
     try {
       const drawerGroup = findPartAncestor(App, intersects, 'sketch_ext_drawers_', __wp_isViewportRoot);
       const pid = readPartId(drawerGroup);

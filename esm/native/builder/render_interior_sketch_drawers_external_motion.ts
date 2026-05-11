@@ -27,6 +27,7 @@ export function registerSketchExternalDrawerMotionEntry(
     closed: closedPos,
     open: openPos,
     id: opPlan.partId,
+    dividerKey: opPlan.partId,
   };
   context.drawersArray.push(drawerEntry);
 }

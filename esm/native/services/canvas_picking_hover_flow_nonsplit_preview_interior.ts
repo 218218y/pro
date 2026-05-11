@@ -84,6 +84,7 @@ export function tryHandleCanvasNonSplitInteriorPreviewRoutes(
       resolveInteriorHoverTarget: __wp_resolveInteriorHoverTarget,
       measureObjectLocalBox: __wp_measureObjectLocalBox,
       readInteriorModuleConfigRef: __wp_readInteriorModuleConfigRef,
+      resolveDrawerHoverPreviewTarget: __wp_resolveDrawerHoverPreviewTarget,
     })
   ) {
     return true;

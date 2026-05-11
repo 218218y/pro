@@ -264,3 +264,43 @@ test('render sketch internal drawers keeps the default sketch height independent
   assert.ok(Math.abs(ops[0]!.height - 0.165) < 1e-9);
   assert.ok(Math.abs(ops[1]!.height - 0.165) < 1e-9);
 });
+
+test('render sketch external drawers applies drawer divider state from canonical divider map', () => {
+  const { args, drawerBoxCalls, App } = createExternalDrawerArgs();
+  args.input.cfg.drawerDividersMap = {
+    sketch_ext_drawers_module_2_left_1: true,
+  };
+  args.extDrawers = [{ id: 'left', count: 1, yNormC: 0.5 }];
+
+  applySketchExternalDrawers(args);
+
+  assert.equal(drawerBoxCalls.length, 1);
+  assert.equal(drawerBoxCalls[0]?.[6], true);
+  const drawers = App.render?.drawersArray || [];
+  assert.equal(drawers[0]?.dividerKey, 'sketch_ext_drawers_module_2_left_1');
+});
+
+test('render sketch internal drawer ops apply drawer divider state from sketch drawer part id', () => {
+  const ops = buildSketchInternalDrawerOps({
+    drawers: [{ id: 'default', yNormC: 0.5 }],
+    input: {
+      cfg: {
+        drawerDividersMap: { div_int_sketch_module_1_default: true },
+      },
+    },
+    moduleIndex: 1,
+    moduleKeyStr: 'module_1',
+    effectiveBottomY: 0,
+    effectiveTopY: 2.4,
+    spanH: 1,
+    woodThick: 0.02,
+    innerW: 0.8,
+    internalDepth: 0.5,
+    internalCenterX: 0,
+    internalZ: -0.1,
+  });
+
+  assert.equal(ops.length, 2);
+  assert.equal(ops[0]!.hasDivider, true);
+  assert.equal(ops[1]!.hasDivider, true);
+});

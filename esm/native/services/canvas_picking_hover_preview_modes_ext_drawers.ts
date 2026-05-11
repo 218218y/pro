@@ -1,4 +1,8 @@
 import { getThreeMaybe } from '../runtime/three_access.js';
+import {
+  classifyCrossDrawerPart,
+  resolveExternalCrossDrawerStackPreview,
+} from './canvas_picking_drawer_cross_family.js';
 import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
   __callMaybe,
@@ -24,12 +28,63 @@ export function tryHandleExtDrawersHoverPreview(args: ExtDrawersHoverPreviewArgs
       measureObjectLocalBox,
       readInteriorModuleConfigRef,
       readUi,
+      resolveDrawerHoverPreviewTarget,
     } = args;
     const THREE = getThreeMaybe(App);
     __callMaybe(hideLayoutPreview, __withAppThree(App, THREE));
     const { hidePreview, setPreview } = __getSketchPlacementPreviewFns(App);
+    if (!setPreview) {
+      __callMaybe(hidePreview, __withAppThree(App, THREE));
+      return false;
+    }
+
+    const drawerTarget = resolveDrawerHoverPreviewTarget
+      ? resolveDrawerHoverPreviewTarget(App, raycaster, mouse, ndcX, ndcY)
+      : null;
+    const drawerGroup = __readRecord(drawerTarget?.drawer)?.group;
+    const drawerUserData = __readRecord(__readRecord(drawerGroup)?.userData);
+    const drawerPartId = __readString(drawerUserData, 'partId', '');
+    if (drawerTarget && classifyCrossDrawerPart(drawerPartId, drawerUserData) === 'sketch_external') {
+      const visualT = DRAWER_DIMENSIONS.external.visualThicknessM;
+      const stackPreview = resolveExternalCrossDrawerStackPreview({
+        App,
+        target: drawerTarget,
+        measureObjectLocalBox,
+        family: 'sketch_external',
+        minWidth: DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinWidthM,
+        minHeight: DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinHeightM,
+        minDepth: DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinDepthM,
+        visualThickness: visualT,
+        frontZOffset: DRAWER_DIMENSIONS.sketch.externalPreviewFrontZOffsetM,
+      });
+      const box = drawerTarget.box;
+      setPreview({
+        App,
+        THREE,
+        anchor: stackPreview?.anchor || drawerGroup || null,
+        anchorParent: stackPreview?.anchorParent,
+        kind: 'ext_drawers',
+        x: stackPreview?.x ?? box.centerX,
+        y: stackPreview?.y ?? box.centerY - box.height / 2,
+        z:
+          stackPreview?.z ??
+          box.centerZ + box.depth / 2 + visualT / 2 + DRAWER_DIMENSIONS.sketch.externalPreviewFrontZOffsetM,
+        w: stackPreview?.w ?? Math.max(DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinWidthM, box.width),
+        d: stackPreview?.d ?? visualT,
+        woodThick: DRAWER_DIMENSIONS.external.visualThicknessM,
+        drawers: stackPreview?.drawers ?? [
+          {
+            y: box.centerY,
+            h: Math.max(DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinHeightM, box.height),
+          },
+        ],
+        op: 'remove',
+      });
+      return true;
+    }
+
     const target = resolveInteriorHoverTarget(App, raycaster, mouse, ndcX, ndcY);
-    if (!target || !setPreview) {
+    if (!target) {
       __callMaybe(hidePreview, __withAppThree(App, THREE));
       return false;
     }

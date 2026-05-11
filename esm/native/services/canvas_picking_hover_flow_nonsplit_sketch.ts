@@ -14,6 +14,7 @@ import {
   __wp_readInteriorModuleConfigRef,
   __wp_readSketchBoxDividerXNorm,
   __wp_readSketchBoxDividers,
+  __wp_resolveDrawerHoverPreviewTarget,
   __wp_resolveSketchBoxDividerPlacement,
   __wp_resolveSketchBoxGeometry,
   __wp_resolveSketchBoxSegments,
@@ -75,6 +76,7 @@ export function tryHandleCanvasNonSplitSketchHover(args: HandleCanvasNonSplitHov
     __wp_isDefaultCornerCellCfgLike,
     __wp_resolveSketchBoxGeometry,
     __wp_resolveSketchFreeBoxHoverPlacement,
+    __wp_resolveDrawerHoverPreviewTarget,
     __wp_writeSketchHover,
     __wp_clearSketchHover,
   });

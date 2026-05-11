@@ -3,6 +3,7 @@ import {
   INTERIOR_FITTINGS_DIMENSIONS,
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { hasViewportPickingSurface } from '../runtime/render_access.js';
+import { classifyCrossDrawerPart } from './canvas_picking_drawer_cross_family.js';
 import { getInternalGridMap } from '../runtime/cache_access.js';
 import { getModeId } from '../runtime/api.js';
 import { asRecord } from '../runtime/record.js';
@@ -12,7 +13,10 @@ import {
   readSelectorEnvelopeFromObject,
   resolveSelectorInternalMetrics,
 } from './canvas_picking_selector_internal_metrics.js';
-import { __wp_getViewportRoots } from './canvas_picking_local_helpers.js';
+import {
+  __wp_getViewportRoots,
+  __wp_resolveDrawerHoverPreviewTarget,
+} from './canvas_picking_local_helpers.js';
 import { readModuleSelectorHit } from './canvas_picking_module_selector_hits.js';
 import type { CanvasInteriorHoverFlowArgs, ModuleKey } from './canvas_picking_interior_hover_shared.js';
 import {
@@ -46,6 +50,29 @@ export function tryHandleCanvasIntDrawerHover(args: CanvasInteriorHoverFlowArgs)
     if (!setSketchPreview) {
       if (hidePreview) hidePreview(previewArgs(App));
       return false;
+    }
+
+    const drawerTarget = __wp_resolveDrawerHoverPreviewTarget(App, raycaster, mouse, ndcX, ndcY);
+    const drawerGroup = asRecord(drawerTarget?.drawer)?.group;
+    const drawerUserData = asRecord(asRecord(drawerGroup)?.userData);
+    const drawerPartId = typeof drawerUserData?.partId === 'string' ? drawerUserData.partId : '';
+    if (drawerTarget && classifyCrossDrawerPart(drawerPartId, drawerUserData) === 'sketch_internal') {
+      const box = drawerTarget.box;
+      return setPreview(setSketchPreview, {
+        App,
+        THREE: getThreeMaybe(App),
+        anchor: drawerGroup || null,
+        kind: 'drawers',
+        x: box.centerX,
+        y: box.centerY - box.height / 2,
+        z: box.centerZ,
+        w: Math.max(DRAWER_DIMENSIONS.sketch.internalPreviewMinWidthM, box.width),
+        d: Math.max(DRAWER_DIMENSIONS.sketch.internalPreviewMinDepthM, box.depth),
+        drawerH: Math.max(DRAWER_DIMENSIONS.sketch.internalPreviewDefaultSingleHeightM, box.height),
+        drawerGap: DRAWER_DIMENSIONS.sketch.internalGapM,
+        woodThick: DRAWER_DIMENSIONS.external.visualThicknessM,
+        op: 'remove',
+      });
     }
 
     if (!hasViewportPickingSurface(App)) {
@@ -161,8 +188,8 @@ export function tryHandleCanvasIntDrawerHover(args: CanvasInteriorHoverFlowArgs)
     const singleDrawerH =
       Number.isFinite(targetSingleDrawerH) && targetSingleDrawerH > 0
         ? targetSingleDrawerH
-        : drawerDims.internalPreviewDefaultSingleHeightM;
-    const drawerGap = drawerDims.internalGapM;
+        : DRAWER_DIMENSIONS.sketch.internalPreviewDefaultSingleHeightM;
+    const drawerGap = DRAWER_DIMENSIONS.sketch.internalGapM;
     const stackH = drawerDims.internalStackCount * singleDrawerH + drawerGap;
 
     const clampCenter = (yCenter: number) => {
@@ -182,7 +209,7 @@ export function tryHandleCanvasIntDrawerHover(args: CanvasInteriorHoverFlowArgs)
     const hStd =
       Number.isFinite(targetSingleDrawerHStd) && targetSingleDrawerHStd > 0
         ? targetSingleDrawerHStd
-        : drawerDims.internalPreviewDefaultSingleHeightM;
+        : DRAWER_DIMENSIONS.sketch.internalPreviewDefaultSingleHeightM;
     const baseGridY = bottomY + (slot - 1) * localGridStep;
     const centerAbs = clampCenter(baseGridY + hStd + drawerDims.internalPreviewSingleDrawerGapM);
     const baseY = centerAbs - stackH / 2;
@@ -196,17 +223,17 @@ export function tryHandleCanvasIntDrawerHover(args: CanvasInteriorHoverFlowArgs)
       y: baseY,
       z: internalZ,
       w: Math.max(
-        drawerDims.internalPreviewMinWidthM,
+        DRAWER_DIMENSIONS.sketch.internalPreviewMinWidthM,
         (Number.isFinite(innerW) && innerW > 0
           ? innerW
-          : drawerDims.internalPreviewMinWidthM + drawerDims.internalPreviewWidthClearanceM) -
+          : DRAWER_DIMENSIONS.sketch.internalPreviewMinWidthM + drawerDims.internalPreviewWidthClearanceM) -
           drawerDims.internalPreviewWidthClearanceM
       ),
       d: Math.max(
-        drawerDims.internalPreviewMinDepthM,
+        DRAWER_DIMENSIONS.sketch.internalPreviewMinDepthM,
         (Number.isFinite(internalDepth) && internalDepth > 0
           ? internalDepth
-          : drawerDims.internalPreviewMinDepthM + drawerDims.internalPreviewDepthClearanceM) -
+          : DRAWER_DIMENSIONS.sketch.internalPreviewMinDepthM + drawerDims.internalPreviewDepthClearanceM) -
           drawerDims.internalPreviewDepthClearanceM
       ),
       drawerH: singleDrawerH,

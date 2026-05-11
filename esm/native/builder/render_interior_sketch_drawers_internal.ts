@@ -13,6 +13,7 @@ import {
   readSketchDrawerHeightMFromItem,
   resolveSketchInternalDrawerMetrics,
 } from '../features/sketch_drawer_sizing.js';
+import { hasSketchDrawerDivider } from './render_interior_sketch_drawer_dividers.js';
 
 export function buildSketchInternalDrawerRuntimeArgs(
   args: ApplySketchInternalDrawersOwnerArgs
@@ -44,6 +45,7 @@ export function buildSketchInternalDrawerRuntimeArgs(
   if (!THREE || !createInternalDrawerBox || !drawers.length) return null;
 
   const ops = buildSketchInternalDrawerOps({
+    App,
     drawers,
     input,
     moduleIndex,
@@ -90,6 +92,7 @@ export function buildSketchInternalDrawerRuntimeArgs(
 }
 
 export function buildSketchInternalDrawerOps(args: {
+  App?: ApplySketchInternalDrawersOwnerArgs['App'] | null;
   drawers: ApplySketchInternalDrawersOwnerArgs['drawers'];
   input: ApplySketchInternalDrawersOwnerArgs['input'];
   moduleIndex: number;
@@ -176,6 +179,7 @@ export function buildSketchInternalDrawerOps(args: {
     const baseY = clampBaseY(baseY0);
     const drawerId = item.id != null ? String(item.id) : String(i);
     const partId = moduleKeyStr ? `div_int_sketch_${moduleKeyStr}_${drawerId}` : `div_int_sketch_${drawerId}`;
+    const hasDivider = hasSketchDrawerDivider({ App: args.App || null, input, partId });
     const drawerBottomLift = Math.min(
       DRAWER_DIMENSIONS.sketch.internalBottomLiftMaxM,
       woodThick * DRAWER_DIMENSIONS.sketch.internalBottomLiftWoodRatio
@@ -199,7 +203,7 @@ export function buildSketchInternalDrawerOps(args: {
         y: yFinal,
         z: internalZ,
         openZ: internalZ + DRAWER_DIMENSIONS.sketch.internalOpenOffsetZM,
-        hasDivider: false,
+        hasDivider,
         dividerKey: partId,
       });
     }

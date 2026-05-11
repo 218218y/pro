@@ -77,6 +77,7 @@ function createBaseArgs(overrides: Record<string, unknown> = {}) {
       innerBackZ: -0.25,
     }),
     __wp_resolveSketchFreeBoxHoverPlacement: () => null,
+    __wp_resolveDrawerHoverPreviewTarget: () => null,
     __wp_writeSketchHover: () => undefined,
     __wp_clearSketchHover: () => undefined,
     ...overrides,
@@ -226,4 +227,82 @@ test('manual-layout sketch hover falls back to standalone free placement when no
   assert.equal(calls.previews[0].anchorParent, App.render.wardrobeGroup);
   assert.equal(calls.previews[0].w, 0.45);
   assert.equal(calls.previews[0].boxH, 0.8);
+});
+
+test('manual-layout sketch external drawer hover marks standard external drawers for removal only', () => {
+  const calls = { previews: [] as any[], hover: [] as any[] };
+  const drawerGroup = { userData: { partId: 'd1_draw_2', moduleIndex: 1 } };
+  const parent = { id: 'module-parent' };
+  const App = createApp({
+    state: { mode: { opts: { manualTool: 'sketch_ext_drawers:3' } } },
+    services: {
+      builder: {
+        renderOps: {
+          setSketchPlacementPreview(args: unknown) {
+            calls.previews.push(args);
+          },
+        },
+      },
+    },
+  });
+
+  const handled = tryHandleManualLayoutSketchHoverPreviewImpl(
+    createBaseArgs({
+      App,
+      __wp_resolveDrawerHoverPreviewTarget: () => ({
+        drawer: { id: 'd1_draw_2', group: drawerGroup },
+        parent,
+        box: { centerX: 0.1, centerY: 0.4, centerZ: 0.2, width: 0.6, height: 0.18, depth: 0.03 },
+      }),
+      __wp_writeSketchHover: (_App: unknown, hover: unknown) => {
+        calls.hover.push(hover);
+      },
+    })
+  );
+
+  assert.equal(handled, true);
+  assert.equal(calls.hover.length, 1);
+  assert.equal(calls.hover[0].kind, 'ext_drawers');
+  assert.equal(calls.hover[0].op, 'remove');
+  assert.equal(calls.hover[0].removeKind, 'std');
+  assert.equal(calls.hover[0].removePid, 'd1_draw_2');
+  assert.equal(calls.previews.length, 1);
+  assert.equal(calls.previews[0].kind, 'ext_drawers');
+  assert.equal(calls.previews[0].op, 'remove');
+  assert.equal(calls.previews[0].anchor, drawerGroup);
+});
+
+test('manual-layout sketch internal drawer hover ignores standard external drawers', () => {
+  const calls = { previews: [] as any[], hover: [] as any[] };
+  const drawerGroup = { userData: { partId: 'd1_draw_2', moduleIndex: 1 } };
+  const App = createApp({
+    state: { mode: { opts: { manualTool: 'sketch_drawers' } } },
+    services: {
+      builder: {
+        renderOps: {
+          setSketchPlacementPreview(args: unknown) {
+            calls.previews.push(args);
+          },
+        },
+      },
+    },
+  });
+
+  const handled = tryHandleManualLayoutSketchHoverPreviewImpl(
+    createBaseArgs({
+      App,
+      __wp_resolveDrawerHoverPreviewTarget: () => ({
+        drawer: { id: 'd1_draw_2', group: drawerGroup },
+        parent: { id: 'module-parent' },
+        box: { centerX: 0.1, centerY: 0.4, centerZ: 0.2, width: 0.6, height: 0.18, depth: 0.03 },
+      }),
+      __wp_writeSketchHover: (_App: unknown, hover: unknown) => {
+        calls.hover.push(hover);
+      },
+    })
+  );
+
+  assert.equal(handled, false);
+  assert.equal(calls.hover.length, 0);
+  assert.equal(calls.previews.length, 0);
 });

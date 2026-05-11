@@ -1,5 +1,6 @@
 import type { AppContainer, SketchPlacementPreviewArgsLike, UnknownRecord } from '../../../types';
 import type { MouseVectorLike, RaycastHitLike, RaycasterLike } from './canvas_picking_engine.js';
+import type { ResolveDrawerHoverPreviewTargetFn } from './canvas_picking_hover_preview_modes_shared.js';
 import { getModeId } from '../runtime/api.js';
 import { asRecord } from '../runtime/record.js';
 import { getThreeMaybe } from '../runtime/three_access.js';
@@ -94,6 +95,7 @@ export type ManualLayoutSketchHoverPreviewArgs = {
   __wp_resolveSketchFreeBoxHoverPlacement: (
     args: ResolveSketchFreeBoxHoverPlacementArgs
   ) => ResolveSketchFreeBoxHoverPlacementResult | null;
+  __wp_resolveDrawerHoverPreviewTarget: ResolveDrawerHoverPreviewTargetFn;
   __wp_writeSketchHover: (App: AppContainer, snap: UnknownRecord) => void;
   __wp_clearSketchHover: (App: AppContainer) => void;
 };

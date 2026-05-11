@@ -10,6 +10,7 @@ import {
   applySketchModulePickMeta,
   applySketchModulePickMetaDeep,
 } from './render_interior_sketch_pick_meta.js';
+import { hasSketchDrawerDivider } from './render_interior_sketch_drawer_dividers.js';
 
 export function addSketchExternalDrawerBoxAndConnector(
   context: SketchExternalDrawerRenderContext,
@@ -27,6 +28,11 @@ function addSketchExternalDrawerBox(
   opPlan: SketchExternalDrawerOpPlan,
   groupNode: InteriorGroupLike
 ): void {
+  const hasDivider = hasSketchDrawerDivider({
+    App: context.App,
+    input: context.input,
+    partId: opPlan.partId,
+  });
   const drawerBox = context.isFn(context.input.createInternalDrawerBox)
     ? context.input.createInternalDrawerBox(
         opPlan.boxW,
@@ -35,7 +41,7 @@ function addSketchExternalDrawerBox(
         context.bodyMat,
         context.bodyMat,
         context.input.addOutlines,
-        false,
+        hasDivider,
         false,
         opPlan.omitBoxFrontPanel === true ? { omitFrontPanel: true } : null
       )

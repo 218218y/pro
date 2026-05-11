@@ -3,6 +3,11 @@ import type { RaycastHitLike } from './canvas_picking_engine.js';
 import { getTools } from '../runtime/service_access.js';
 import { getInternalGridMap } from '../runtime/cache_access.js';
 import { __wp_ui } from './canvas_picking_core_helpers.js';
+import {
+  findCrossDrawerHitInIntersects,
+  removeSketchInternalDrawerFromConfig,
+  sameModuleKey,
+} from './canvas_picking_drawer_cross_family.js';
 import type { ModuleKey, PatchConfigForKeyFn } from './canvas_picking_drawer_mode_flow_shared.js';
 import { asInternalGridInfo } from './canvas_picking_drawer_mode_flow_shared.js';
 
@@ -29,6 +34,18 @@ export function tryHandleInternalDrawerModeClick(args: {
     patchConfigForKey,
   } = args;
   if (!isIntDrawerEditMode || foundModuleIndex === null) return false;
+
+  const sketchHit = findCrossDrawerHitInIntersects(App, intersects, 'sketch_internal');
+  if (sketchHit && (!sketchHit.moduleIndex || sameModuleKey(sketchHit.moduleIndex, activeModuleKey))) {
+    patchConfigForKey(
+      activeModuleKey,
+      (cfg: ModuleConfigLike) => {
+        removeSketchInternalDrawerFromConfig(cfg, sketchHit.partId);
+      },
+      { source: 'intDrawers.removeSketchInternalByHit', immediate: true }
+    );
+    return true;
+  }
 
   const internalGridMap = getInternalGridMap(App, isBottomStack);
   const info = asInternalGridInfo(internalGridMap[foundModuleIndex]);
