@@ -12,7 +12,7 @@ const DEFAULT_CAM = {
 // To see the dresser from slightly more above, increase CHEST_CAM.pos.y and/or CHEST_CAM.target.y.
 // To move closer/farther, decrease/increase CHEST_CAM.pos.z.
 const CHEST_CAM = {
-  pos: { x: 0, y: 0.70, z: 2.5 },
+  pos: { x: 0, y: 0.7, z: 2.5 },
   target: { x: 0, y: 0.55, z: 0 },
 };
 

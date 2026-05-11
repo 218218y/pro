@@ -91,9 +91,11 @@ function loadStructureActionsControllerModule(calls, overrides = {}) {
         setUiBaseType: (...args) => calls.push(['setUiBaseType', ...args]),
         setUiChestDrawersCount: (...args) => calls.push(['setUiChestDrawersCount', ...args]),
         setUiChestCommodeEnabled: (...args) => calls.push(['setUiChestCommodeEnabled', ...args]),
-        setUiChestCommodeMirrorHeightCm: (...args) => calls.push(['setUiChestCommodeMirrorHeightCm', ...args]),
+        setUiChestCommodeMirrorHeightCm: (...args) =>
+          calls.push(['setUiChestCommodeMirrorHeightCm', ...args]),
         setUiChestCommodeMirrorWidthCm: (...args) => calls.push(['setUiChestCommodeMirrorWidthCm', ...args]),
-        setUiChestCommodeMirrorWidthManual: (...args) => calls.push(['setUiChestCommodeMirrorWidthManual', ...args]),
+        setUiChestCommodeMirrorWidthManual: (...args) =>
+          calls.push(['setUiChestCommodeMirrorWidthManual', ...args]),
         setUiChestMode: (...args) => calls.push(['setUiChestMode', ...args]),
         setUiCornerDepth: (...args) => calls.push(['setUiCornerDepth', ...args]),
         setUiCornerDoors: (...args) => calls.push(['setUiCornerDoors', ...args]),

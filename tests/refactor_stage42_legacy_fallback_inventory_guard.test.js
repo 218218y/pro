@@ -63,10 +63,16 @@ test('stage 42 legacy fallback inventory closeout is anchored', () => {
   }
 
   for (const [file, forbidden] of [
-    ['esm/native/runtime/maps_access_writers.ts', /readLegacyPrefixedAliasKey|clearLegacyPrefixedAlias|clearLegacyAlias/],
+    [
+      'esm/native/runtime/maps_access_writers.ts',
+      /readLegacyPrefixedAliasKey|clearLegacyPrefixedAlias|clearLegacyAlias/,
+    ],
     ['esm/native/kernel/maps_api_named_maps.ts', /readLegacyPrefixedAliasKey/],
     ['esm/native/kernel/domain_api_surface_sections_prefixed_maps.ts', /readLegacyPrefixedAliasKey/],
-    ['esm/native/builder/core_carcass_cornice.ts', /buildLegacyCorniceEnvelope|LegacyCorniceEnvelopeParams|legacyEnvelope/],
+    [
+      'esm/native/builder/core_carcass_cornice.ts',
+      /buildLegacyCorniceEnvelope|LegacyCorniceEnvelopeParams|legacyEnvelope/,
+    ],
     ['esm/shared/wardrobe_dimension_tokens_shared.ts', /legacyEnvelope/],
     [
       'esm/native/services/scene_view_lighting_renderer.ts',

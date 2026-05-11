@@ -74,3 +74,42 @@ test('front reveal drawer frames honor the face vertical offset when external dr
   assert.equal(rectCall!.z, 0.012 + 0.001);
   assert.deepEqual((drawerGroup as any).__added, [fakeLines]);
 });
+
+test('front reveal drawer frames apply to chest-mode drawer groups', () => {
+  const App: Record<string, unknown> = {};
+  const drawerGroup = createDrawerGroup();
+  drawerGroup.userData.partId = 'chest_drawer_0';
+  getDrawersArray(App).push({ group: drawerGroup } as any);
+
+  let rectCall: { xL: number; xR: number; yB: number; yT: number; z: number } | null = null;
+  const fakeLines = { kind: 'chest-drawer-lines' };
+
+  applyFrontRevealDrawerFrames({
+    App: App as any,
+    THREE: {} as any,
+    wardrobeGroup: { traverse() {} } as any,
+    zNudge: 0.001,
+    localName: 'frontRevealFrames',
+    reportSoft() {},
+    cleanupLegacyFrames() {},
+    cleanupStaleLocalFrames() {},
+    cleanupLegacySeamHelpers() {},
+    getRevealZSignOverride() {
+      return null;
+    },
+    getObjectLocalBounds() {
+      return null;
+    },
+    pickRevealLineMaterial() {
+      return { kind: 'lineMat' } as any;
+    },
+    buildRectLines(xL, xR, yB, yT, z) {
+      rectCall = { xL, xR, yB, yT, z };
+      return fakeLines as any;
+    },
+    removeLocalFrames() {},
+  });
+
+  assert.ok(rectCall);
+  assert.deepEqual((drawerGroup as any).__added, [fakeLines]);
+});

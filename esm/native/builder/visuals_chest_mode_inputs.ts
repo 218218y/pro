@@ -32,6 +32,8 @@ export type ChestModeBuildInputs = {
   chestCommodeMirrorWidthCm: number;
   chestCommodeMirrorHeightM: number;
   chestCommodeMirrorWidthM: number;
+  doorStyle: string;
+  isGroovesEnabled: boolean;
 };
 
 function normalizeChestCommodeDimensionCm(
@@ -60,6 +62,8 @@ export function resolveChestModeBuildInputs(
   let chestCommodeEnabled: boolean;
   let chestCommodeMirrorHeightSource: unknown;
   let chestCommodeMirrorWidthSource: unknown;
+  let doorStyle: unknown;
+  let isGroovesEnabled: boolean;
 
   const ui = getChestModeBuildUI(App);
   if (opts && typeof opts === 'object') {
@@ -75,6 +79,8 @@ export function resolveChestModeBuildInputs(
     chestCommodeEnabled = !!opts.chestCommodeEnabled;
     chestCommodeMirrorHeightSource = opts.chestCommodeMirrorHeightCm;
     chestCommodeMirrorWidthSource = opts.chestCommodeMirrorWidthCm;
+    doorStyle = opts.doorStyle;
+    isGroovesEnabled = opts.isGroovesEnabled === true;
   } else {
     const dims = ui ? readUiRawDimsCmFromSnapshot(ui) : null;
     const widthCm = dims ? dims.widthCm : WARDROBE_DEFAULTS.widthCm;
@@ -102,6 +108,8 @@ export function resolveChestModeBuildInputs(
     chestCommodeMirrorWidthSource = ui
       ? readUiRawNumberFromSnapshot(ui, 'chestCommodeMirrorWidthCm', widthCm)
       : widthCm;
+    doorStyle = ui ? ui.doorStyle : 'flat';
+    isGroovesEnabled = !!(ui && ui.groovesEnabled);
   }
 
   const legOptions = readBaseLegOptions(legSource);
@@ -142,5 +150,7 @@ export function resolveChestModeBuildInputs(
     chestCommodeMirrorWidthCm,
     chestCommodeMirrorHeightM: cmToM(chestCommodeMirrorHeightCm),
     chestCommodeMirrorWidthM: cmToM(chestCommodeMirrorWidthCm),
+    doorStyle: String(doorStyle || 'flat'),
+    isGroovesEnabled,
   };
 }

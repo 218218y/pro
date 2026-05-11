@@ -72,7 +72,7 @@ class FakeMaterial {
 class FakeMeshStandardMaterial extends FakeMaterial {}
 class FakeMeshBasicMaterial extends FakeMaterial {}
 
-function createChestApp() {
+function createChestApp(opts: { createDoorVisual?: (...args: any[]) => unknown } = {}) {
   const dimensionCalls: any[] = [];
   const outlined: unknown[] = [];
   let renderCalls = 0;
@@ -81,7 +81,7 @@ function createChestApp() {
   const App: any = {
     services: {
       builder: {
-        modules: {},
+        modules: opts.createDoorVisual ? { createDoorVisual: opts.createDoorVisual } : {},
         contents: {},
         materials: {
           getMaterial(color: unknown, part: unknown, useTexture?: unknown) {
@@ -198,6 +198,8 @@ test('visuals chest mode input/material helpers normalize chest-only UI and text
     chestCommodeMirrorWidthCm: 160,
     chestCommodeMirrorHeightM: 1,
     chestCommodeMirrorWidthM: 1.6,
+    doorStyle: 'flat',
+    isGroovesEnabled: false,
   });
 
   assert.deepEqual(
@@ -255,7 +257,6 @@ test('visuals chest mode build creates wide-leg chest drawers, mirror override, 
   assert.ok(outlined.length >= 10);
 });
 
-
 test('visuals chest mode build adds commode back panel with tracked mirror surface when enabled', () => {
   const { App, wardrobeGroup } = createChestApp();
   buildChestOnly(App, {
@@ -282,7 +283,97 @@ test('visuals chest mode build adds commode back panel with tracked mirror surfa
   assert.ok(back);
   assert.ok(mirror);
   assert.deepEqual(back.geometry.args, [1.5, 1.1, 0.018]);
+  assert.equal(Math.round(back.position.z * 1000), -214);
+  assert.equal(Math.round(mirror.position.z * 1000), -202);
   assert.equal(mirror.material.mirror, true);
   assert.equal(mirror.userData.__wpMirrorSurface, true);
   assert.equal(App.render.meta.mirrors.includes(mirror), true);
+});
+
+test('visuals chest mode build routes chest drawer fronts through regular door visual style and groove pipeline', () => {
+  const calls: any[] = [];
+  const { App, wardrobeGroup } = createChestApp({
+    createDoorVisual(
+      w: number,
+      h: number,
+      thickness: number,
+      mat: unknown,
+      style: unknown,
+      hasGrooves: unknown,
+      isMirror: unknown,
+      curtainType: unknown,
+      baseMaterial: unknown,
+      frontFaceSign: unknown,
+      forceCurtainFix: unknown,
+      mirrorLayout: unknown,
+      groovePartId: unknown
+    ) {
+      calls.push({
+        w,
+        h,
+        thickness,
+        mat,
+        style,
+        hasGrooves,
+        isMirror,
+        curtainType,
+        baseMaterial,
+        frontFaceSign,
+        forceCurtainFix,
+        mirrorLayout,
+        groovePartId,
+      });
+      const group = new FakeGroup();
+      group.userData = { fromDoorVisualFactory: true };
+      const leaf = new FakeMesh(new FakeBoxGeometry(w, h, thickness), mat);
+      leaf.userData = { partId: String(groovePartId || '') };
+      group.add(leaf);
+      return group;
+    },
+  });
+  App.store.getState = () => ({
+    config: {
+      showDimensions: false,
+      isMultiColorMode: true,
+      individualColors: {},
+      groovesMap: { groove_chest_drawer_0: true },
+      doorStyleMap: { chest_drawer_1: 'tom' },
+    },
+    ui: {},
+    runtime: {},
+    mode: {},
+    meta: {},
+  });
+
+  buildChestOnly(App, {
+    H: 0.9,
+    totalW: 1.6,
+    D: 0.45,
+    drawersCount: 2,
+    baseType: 'legs',
+    baseLegStyle: 'square',
+    baseLegColor: 'nickel',
+    baseLegHeightCm: 15,
+    baseLegWidthCm: 5,
+    colorChoice: '#ffffff',
+    doorStyle: 'profile',
+    isGroovesEnabled: true,
+  });
+
+  assert.equal(calls.length, 2);
+  assert.equal(calls[0].style, 'profile');
+  assert.equal(calls[0].hasGrooves, true);
+  assert.equal(calls[0].groovePartId, 'chest_drawer_0');
+  assert.equal(calls[1].style, 'tom');
+  assert.equal(calls[1].hasGrooves, false);
+  assert.equal(calls[1].groovePartId, 'chest_drawer_1');
+
+  const firstDrawer = wardrobeGroup.children.find(
+    (child: any) => child?.userData?.partId === 'chest_drawer_0'
+  );
+  assert.ok(firstDrawer);
+  const frontVisual = firstDrawer.children[0];
+  assert.equal(frontVisual.userData.partId, 'chest_drawer_0');
+  assert.equal(typeof frontVisual.userData.__doorWidth, 'number');
+  assert.equal(typeof frontVisual.userData.__doorHeight, 'number');
 });

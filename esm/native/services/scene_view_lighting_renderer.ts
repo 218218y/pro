@@ -17,10 +17,7 @@ import { NORMAL_EXPOSURE } from './scene_view_lighting_shared.js';
 
 type RendererLightingSurface = NonNullable<ReturnType<typeof asSceneRendererCompat>>;
 
-function restoreRendererLightingDefaults(
-  App: AppContainer,
-  rendererSurface: RendererLightingSurface
-): void {
+function restoreRendererLightingDefaults(App: AppContainer, rendererSurface: RendererLightingSurface): void {
   const defaults = asCompatDefaults(readRendererCompatDefaults(App));
   if (!rendererSurface || !defaults) return;
 
@@ -28,7 +25,11 @@ function restoreRendererLightingDefaults(
     try {
       rendererSurface.outputColorSpace = defaults.outputColorSpace;
     } catch (err) {
-      reportSceneViewNonFatal(App, 'sceneView.lighting.restoreRendererLightingDefaults.outputColorSpace', err);
+      reportSceneViewNonFatal(
+        App,
+        'sceneView.lighting.restoreRendererLightingDefaults.outputColorSpace',
+        err
+      );
     }
   }
   if (typeof defaults.toneMapping !== 'undefined') {
@@ -42,7 +43,11 @@ function restoreRendererLightingDefaults(
     try {
       rendererSurface.toneMappingExposure = defaults.toneMappingExposure;
     } catch (err) {
-      reportSceneViewNonFatal(App, 'sceneView.lighting.restoreRendererLightingDefaults.toneMappingExposure', err);
+      reportSceneViewNonFatal(
+        App,
+        'sceneView.lighting.restoreRendererLightingDefaults.toneMappingExposure',
+        err
+      );
     }
   }
   if (typeof defaults.useLegacyLights === 'boolean' && typeof rendererSurface.useLegacyLights === 'boolean') {
@@ -73,10 +78,7 @@ export function ensureRendererLightingDefaults(
   return rendererDefaults;
 }
 
-function applyNormalModeRendererLighting(
-  App: AppContainer,
-  rendererSurface: RendererLightingSurface
-): void {
+function applyNormalModeRendererLighting(App: AppContainer, rendererSurface: RendererLightingSurface): void {
   if (!rendererSurface) return;
   const THREE = asSceneThreeLighting(getTHREE(App));
   if (THREE && 'outputColorSpace' in rendererSurface) {

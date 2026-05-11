@@ -28,6 +28,8 @@ type BuildChestModeIfNeededParams = {
     baseLegWidthCm?: number | string;
     colorChoice?: string;
     customColor?: string;
+    doorStyle?: string;
+    groovesEnabled?: boolean;
     chestCommodeEnabled?: boolean;
     chestCommodeMirrorHeightCm?: number | string;
     chestCommodeMirrorWidthCm?: number | string;
@@ -49,6 +51,8 @@ type BuildChestModeIfNeededParams = {
     baseLegWidthCm: number | string;
     colorChoice: string;
     customColor: string;
+    doorStyle: string;
+    isGroovesEnabled: boolean;
     chestCommodeEnabled: boolean;
     chestCommodeMirrorHeightCm: number | string;
     chestCommodeMirrorWidthCm: number | string;
@@ -86,6 +90,8 @@ export function buildChestModeIfNeeded(params: BuildChestModeIfNeededParams | nu
     baseLegWidthCm: ui.baseLegWidthCm ?? '',
     colorChoice: typeof ui.colorChoice === 'string' ? ui.colorChoice : '',
     customColor: typeof ui.customColor === 'string' ? ui.customColor : '',
+    doorStyle: typeof ui.doorStyle === 'string' ? ui.doorStyle : 'flat',
+    isGroovesEnabled: !!ui.groovesEnabled,
     chestCommodeEnabled: !!ui.chestCommodeEnabled,
     chestCommodeMirrorHeightCm:
       ui.chestCommodeMirrorHeightCm ?? CHEST_MODE_DIMENSIONS.commode.defaultMirrorHeightCm,

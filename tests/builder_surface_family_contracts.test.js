@@ -897,6 +897,9 @@ test('[builder-surface-family] visuals/module seams stay consolidated behind can
   assert.match(chestMaterials, /export function resolveChestModeBodyMaterialState\(/);
   assert.match(chestDrawerBox, /export const createInternalDrawerBox/);
   assert.match(chestBuild, /export function buildChestOnly\(/);
+  assert.match(chestBuild, /applyFrontRevealFrames\(\{/);
+  assert.doesNotMatch(chestBuild, /shadowLine/);
+  assert.doesNotMatch(chestBuild, /MeshBasicMaterial\(\{ color: 0x000000 \}\)/);
 
   const contentsSeam = read('esm/native/builder/visuals_contents.ts');
   const contentsShared = read('esm/native/builder/visuals_contents_shared.ts');

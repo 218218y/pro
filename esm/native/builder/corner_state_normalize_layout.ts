@@ -259,7 +259,11 @@ export function resolveCornerWingPlacement(args: {
   });
 
   let baseH =
-    baseType === 'plinth' ? getBasePlinthHeightM(basePlinthHeightCm) : baseType === 'legs' ? legOptions.heightM : 0;
+    baseType === 'plinth'
+      ? getBasePlinthHeightM(basePlinthHeightCm)
+      : baseType === 'legs'
+        ? legOptions.heightM
+        : 0;
   if (startY < CORNER_CONNECTOR.doorMinHeightM && baseH > startY) baseH = Math.max(0, startY);
 
   const stackOffsetY = Math.max(0, startY - baseH);

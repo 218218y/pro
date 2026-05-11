@@ -153,9 +153,7 @@ export function readStructureChestDrawersBounds(): StructureDimInputBounds {
   };
 }
 
-export function readStructureChestCommodeMirrorBounds(
-  key: 'height' | 'width'
-): StructureDimInputBounds {
+export function readStructureChestCommodeMirrorBounds(key: 'height' | 'width'): StructureDimInputBounds {
   const commode = CHEST_MODE_DIMENSIONS.commode;
   if (key === 'height') {
     return {

@@ -455,10 +455,8 @@ function buildCorniceEnvelope(params: CorniceEnvelopeParams): MutableRecord {
   const topRadius = (baseSize + CORNICE_PROFILE.envelopeTopRadiusPadM) / Math.sqrt(2);
   const bottomRadius = baseSize / Math.sqrt(2);
   const scaleX =
-    (totalW + CORNICE_PROFILE.envelopeTopRadiusPadM) /
-    (baseSize + CORNICE_PROFILE.envelopeTopRadiusPadM);
-  const scaleZ =
-    (D + CORNICE_PROFILE.envelopeDepthPadM) / (baseSize + CORNICE_PROFILE.envelopeTopRadiusPadM);
+    (totalW + CORNICE_PROFILE.envelopeTopRadiusPadM) / (baseSize + CORNICE_PROFILE.envelopeTopRadiusPadM);
+  const scaleZ = (D + CORNICE_PROFILE.envelopeDepthPadM) / (baseSize + CORNICE_PROFILE.envelopeTopRadiusPadM);
 
   return {
     kind: 'cornice',

@@ -195,9 +195,7 @@ export function buildProjectUiSnapshot(
       typeof toggles.internalDrawers !== 'undefined' ? !!toggles.internalDrawers : false,
     isChestMode: !!toggles.chestMode,
     chestCommodeEnabled:
-      typeof toggles.chestCommode !== 'undefined'
-        ? !!toggles.chestCommode
-        : !!chestSettings.commodeEnabled,
+      typeof toggles.chestCommode !== 'undefined' ? !!toggles.chestCommode : !!chestSettings.commodeEnabled,
 
     splitDoors: !!toggles.splitDoors,
     handleControl: !!toggles.handleControl,

@@ -40,9 +40,7 @@ function isEmbeddedSketchExternalDrawersActive(
 function isEmbeddedSketchInternalDrawersActive(
   sketchControls: EmbeddedSketchInternalDrawersControlsProps | undefined
 ): boolean {
-  return !!(
-    sketchControls?.isSketchToolActive && isSketchInternalDrawersTool(sketchControls.manualToolRaw)
-  );
+  return !!(sketchControls?.isSketchToolActive && isSketchInternalDrawersTool(sketchControls.manualToolRaw));
 }
 
 function createEmbeddedExternalDrawerHeightController(

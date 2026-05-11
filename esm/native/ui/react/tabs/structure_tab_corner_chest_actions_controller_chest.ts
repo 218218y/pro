@@ -36,7 +36,6 @@ import {
   readStructureChestDrawersBounds,
 } from './structure_tab_dimension_constraints.js';
 
-
 function readDefaultCommodeMirrorWidthCm(width: unknown): number {
   return (
     normalizeStructureDimensionValue(width, readStructureChestCommodeMirrorBounds('width')) ??
@@ -271,7 +270,9 @@ export function createStructureTabChestActionsController(args: StructureTabCorne
       immediate: true,
       noBuild: true,
     };
-    const uiPatch: UnknownRecord = { raw: { chestCommodeMirrorWidthCm: next, chestCommodeMirrorWidthManual: true } };
+    const uiPatch: UnknownRecord = {
+      raw: { chestCommodeMirrorWidthCm: next, chestCommodeMirrorWidthManual: true },
+    };
     commitStructureStatePatchWithRecompute({
       app: args.app,
       source: 'react:structure:chest:commode:mirror-width',

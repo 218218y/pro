@@ -53,10 +53,7 @@ export function uniqueNonEmptyKeys(keys: Array<string | null | undefined>): stri
 }
 
 export function readPrefixedMapLookupKeys(value: unknown, prefix: string): string[] {
-  return uniqueNonEmptyKeys([
-    normalizePrefixedMapKey(value, prefix),
-    readUnprefixedAliasKey(value, prefix),
-  ]);
+  return uniqueNonEmptyKeys([normalizePrefixedMapKey(value, prefix), readUnprefixedAliasKey(value, prefix)]);
 }
 
 export function listPrefixedMapCleanupKeys(value: unknown, prefix: string): string[] {

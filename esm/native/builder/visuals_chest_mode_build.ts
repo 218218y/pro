@@ -30,6 +30,10 @@ import {
   resolveChestModeMaterialPalette,
 } from './visuals_chest_mode_materials.js';
 import { createInternalDrawerBox } from './visuals_chest_mode_drawer_box.js';
+import { createChestDrawerFrontVisual } from './visuals_chest_mode_drawer_front.js';
+import { applyFrontRevealFrames } from './post_build_front_reveal_frames.js';
+
+import type { BuildContextLike } from '../../../types/index.js';
 
 const PLINTH_DIMENSIONS = CARCASS_BASE_DIMENSIONS.plinth;
 const BASE_LEG_LAYOUT_DIMENSIONS = CARCASS_BASE_DIMENSIONS.legs;
@@ -42,6 +46,7 @@ export function buildChestOnly(App: AppContainer, opts?: UnknownRecord | null) {
   if (!wardrobeGroup) return;
 
   const inputs = resolveChestModeBuildInputs(App, opts || null);
+  const cfg = getCfg(App);
   const bodyState = resolveChestModeBodyMaterialState({
     App,
     colorChoice: inputs.colorChoice,
@@ -65,6 +70,11 @@ export function buildChestOnly(App: AppContainer, opts?: UnknownRecord | null) {
   const drawersCount = inputs.drawersCount;
   const thick = MATERIAL_DIMENSIONS.wood.thicknessM;
   const baseH = effectiveBaseType === 'plinth' ? inputs.basePlinthHeightM : inputs.baseLegHeightM;
+  const getPartColorValue = (partId: string): unknown => {
+    const colors = cfg && typeof cfg.individualColors === 'object' ? cfg.individualColors : null;
+    if (!colors || !Object.prototype.hasOwnProperty.call(colors, partId)) return null;
+    return colors[partId];
+  };
 
   const createChestBoard = (
     w: number,
@@ -160,27 +170,25 @@ export function buildChestOnly(App: AppContainer, opts?: UnknownRecord | null) {
     drawerGroup.userData = { partId: drawerId, __doorWidth: drawerWidth, __doorHeight: drawerFrontH };
 
     const frontThickness = CHEST_DIMENSIONS.drawerFrontThicknessM;
-    const frontMesh = new THREE.Mesh(
-      new THREE.BoxGeometry(drawerWidth, drawerFrontH, frontThickness),
-      frontMat
-    );
+    const frontMesh = createChestDrawerFrontVisual({
+      App,
+      THREE,
+      cfg,
+      drawerId,
+      drawerWidth,
+      drawerHeight: drawerFrontH,
+      drawerThickness: frontThickness,
+      frontMaterial: frontMat,
+      bodyMaterial: palette.drawerBoxMat,
+      globalFrontMaterial: palette.globalBodyMat,
+      doorStyle: inputs.doorStyle,
+      isGroovesEnabled: inputs.isGroovesEnabled,
+      getPartColorValue,
+      addOutlines,
+    });
     frontMesh.position.set(0, 0, D / 2 + frontThickness / 2);
     drawerGroup.userData.__frontMaxZ = D / 2 + frontThickness;
-    if (addOutlines) addOutlines(frontMesh);
     drawerGroup.add(frontMesh);
-
-    if (i > 0) {
-      const shadowLine = new THREE.Mesh(
-        new THREE.BoxGeometry(drawerWidth, gap, CHEST_DIMENSIONS.drawerShadowLineThicknessM),
-        new THREE.MeshBasicMaterial({ color: 0x000000 })
-      );
-      shadowLine.position.set(
-        0,
-        -drawerFrontH / 2 - gap / 2,
-        D / 2 + frontThickness / 2 + CHEST_DIMENSIONS.drawerShadowLineThicknessM
-      );
-      drawerGroup.add(shadowLine);
-    }
 
     const boxH = drawerFrontH - CHEST_DIMENSIONS.drawerBoxHeightClearanceM;
     const boxD = D - CHEST_DIMENSIONS.drawerBoxDepthClearanceM;
@@ -229,7 +237,7 @@ export function buildChestOnly(App: AppContainer, opts?: UnknownRecord | null) {
     const panelH = Math.max(commode.minMirrorHeightCm / 100, inputs.chestCommodeMirrorHeightM);
     const panelThickness = commode.backPanelThicknessM;
     const panelCenterY = H + panelH / 2;
-    const panelCenterZ = -D / 2 - commode.backPanelYOffsetM - panelThickness / 2;
+    const panelCenterZ = -D / 2 + panelThickness / 2 + commode.backPanelYOffsetM;
 
     const commodeBack = new THREE.Mesh(
       new THREE.BoxGeometry(panelW, panelH, panelThickness),
@@ -264,7 +272,13 @@ export function buildChestOnly(App: AppContainer, opts?: UnknownRecord | null) {
     wardrobeGroup.add(mirror);
   }
 
-  if (getCfg(App).showDimensions && addDimensionLine) {
+  applyFrontRevealFrames({
+    __kind: 'chestModeBuildContext',
+    App,
+    THREE,
+  } as BuildContextLike);
+
+  if (cfg.showDimensions && addDimensionLine) {
     addDimensionLine(
       new THREE.Vector3(-totalW / 2, H + CHEST_MODE_DIMENSIONS.dimensionGuideTopOffsetM, 0),
       new THREE.Vector3(totalW / 2, H + CHEST_MODE_DIMENSIONS.dimensionGuideTopOffsetM, 0),

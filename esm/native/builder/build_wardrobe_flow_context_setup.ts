@@ -67,6 +67,8 @@ export function prepareBuildWardrobeContextSetup(
             baseLegWidthCm?: number | string;
             colorChoice: string;
             customColor: string;
+            doorStyle: string;
+            isGroovesEnabled: boolean;
             chestCommodeEnabled: boolean;
             chestCommodeMirrorHeightCm: number | string;
             chestCommodeMirrorWidthCm: number | string;

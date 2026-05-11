@@ -82,7 +82,6 @@ test('sketch box base tool parser keeps old legs syntax and reads explicit leg o
   });
 });
 
-
 test('carcass plinth support uses explicit plinth height and keeps the default at 8cm', () => {
   const defaultOps = computeCarcassOps({
     totalW: 1.6,
