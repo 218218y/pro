@@ -26,8 +26,15 @@ test('ui full typecheck stays wired to shared types without importing lean_types
   const config = JSON.parse(read('tsconfig.checkjs.ui.json'));
   const include = Array.isArray(config.include) ? config.include : [];
 
+  assert.ok(include.includes('esm/native/ui/**/*.ts'));
+  assert.ok(include.includes('esm/native/ui/**/*.tsx'));
   assert.ok(include.includes('types/**/*.d.ts'));
   assert.ok(!include.includes('lean_types/**/*.d.ts'));
+
+  const strictConfig = JSON.parse(read('tsconfig.checkjs.strict-ui.json'));
+  const strictInclude = Array.isArray(strictConfig.include) ? strictConfig.include : [];
+  assert.ok(strictInclude.includes('esm/native/ui/**/*.ts'));
+  assert.ok(strictInclude.includes('esm/native/ui/**/*.tsx'));
 
   const distConfig = JSON.parse(read('tsconfig.dist.json'));
   const distInclude = Array.isArray(distConfig.include) ? distConfig.include : [];

@@ -3,10 +3,215 @@
   "sourceRoot": "esm",
   "policy": "Every existing legacy/fallback occurrence is categorized and count-locked by file. New or moved occurrences must be reviewed and the allowlist regenerated deliberately.",
   "entries": {
+    "esm/boot/boot_manifest_steps.ts": {
+      "total": 2,
+      "categories": {
+        "external-api-compat": 2
+      }
+    },
+    "esm/entry_pro_overlay.ts": {
+      "total": 19,
+      "categories": {
+        "browser-adapter": 19
+      }
+    },
+    "esm/entry_pro_shared.ts": {
+      "total": 8,
+      "categories": {
+        "browser-adapter": 8
+      }
+    },
+    "esm/entry_pro_start_runtime.ts": {
+      "total": 7,
+      "categories": {
+        "browser-adapter": 7
+      }
+    },
+    "esm/entry_pro.ts": {
+      "total": 3,
+      "categories": {
+        "browser-adapter": 3
+      }
+    },
     "esm/native/adapters/browser/CONTRACT.md": {
       "total": 1,
       "categories": {
         "browser-adapter": 1
+      }
+    },
+    "esm/native/builder/build_state_resolver.ts": {
+      "total": 1,
+      "categories": {
+        "compat-boundary": 1
+      }
+    },
+    "esm/native/builder/core_carcass_cornice.ts": {
+      "total": 5,
+      "categories": {
+        "compat-boundary": 4,
+        "domain-default": 1
+      }
+    },
+    "esm/native/builder/corner_connector_cornice_profile.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/builder/corner_wing_cornice_profile.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/builder/corner_wing_install.ts": {
+      "total": 2,
+      "categories": {
+        "compat-boundary": 2
+      }
+    },
+    "esm/native/builder/materials_factory.ts": {
+      "total": 2,
+      "categories": {
+        "compat-boundary": 2
+      }
+    },
+    "esm/native/builder/module_loop_pipeline_runtime_shared.ts": {
+      "total": 2,
+      "categories": {
+        "compat-boundary": 2
+      }
+    },
+    "esm/native/builder/plan.ts": {
+      "total": 2,
+      "categories": {
+        "compat-boundary": 2
+      }
+    },
+    "esm/native/builder/post_build_front_reveal_frames_cleanup.ts": {
+      "total": 8,
+      "categories": {
+        "compat-boundary": 8
+      }
+    },
+    "esm/native/builder/post_build_front_reveal_frames_contracts.ts": {
+      "total": 2,
+      "categories": {
+        "compat-boundary": 2
+      }
+    },
+    "esm/native/builder/post_build_front_reveal_frames_doors.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/builder/post_build_front_reveal_frames.ts": {
+      "total": 2,
+      "categories": {
+        "compat-boundary": 2
+      }
+    },
+    "esm/native/builder/provide.ts": {
+      "total": 1,
+      "categories": {
+        "compat-boundary": 1
+      }
+    },
+    "esm/native/builder/render_carcass_ops_cornice_apply.ts": {
+      "total": 3,
+      "categories": {
+        "compat-boundary": 3
+      }
+    },
+    "esm/native/builder/render_carcass_ops_cornice_legacy.ts": {
+      "total": 1,
+      "categories": {
+        "compat-boundary": 1
+      }
+    },
+    "esm/native/builder/render_ops_extras_shared.ts": {
+      "total": 2,
+      "categories": {
+        "compat-boundary": 2
+      }
+    },
+    "esm/native/builder/render_ops_extras.ts": {
+      "total": 2,
+      "categories": {
+        "compat-boundary": 2
+      }
+    },
+    "esm/native/builder/render_ops_install.ts": {
+      "total": 2,
+      "categories": {
+        "compat-boundary": 2
+      }
+    },
+    "esm/native/builder/render_preview_sketch_pipeline_box_content_drawers.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/builder/scheduler_install.ts": {
+      "total": 10,
+      "categories": {
+        "compat-boundary": 10
+      }
+    },
+    "esm/native/builder/scheduler_runtime.ts": {
+      "total": 3,
+      "categories": {
+        "domain-default": 3
+      }
+    },
+    "esm/native/builder/scheduler_shared_build_plan.ts": {
+      "total": 2,
+      "categories": {
+        "domain-default": 2
+      }
+    },
+    "esm/native/builder/scheduler_shared_deps.ts": {
+      "total": 2,
+      "categories": {
+        "domain-default": 2
+      }
+    },
+    "esm/native/builder/scheduler_shared_records.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/builder/scheduler_shared_state.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/builder/scheduler_shared_timers.ts": {
+      "total": 2,
+      "categories": {
+        "domain-default": 2
+      }
+    },
+    "esm/native/builder/scheduler_shared.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/builder/visuals_and_contents.ts": {
+      "total": 4,
+      "categories": {
+        "compat-boundary": 4
+      }
+    },
+    "esm/native/features/door_trim_map.ts": {
+      "total": 4,
+      "categories": {
+        "domain-default": 4
       }
     },
     "esm/native/features/project_config/project_config_persisted_payload_shared.ts": {
@@ -15,16 +220,813 @@
         "project-migration": 1
       }
     },
+    "esm/native/features/stack_split/stack_split.ts": {
+      "total": 3,
+      "categories": {
+        "compat-boundary": 3
+      }
+    },
+    "esm/native/io/project_schema_migrate.ts": {
+      "total": 2,
+      "categories": {
+        "project-migration": 2
+      }
+    },
+    "esm/native/io/project_schema_migrations_settings.ts": {
+      "total": 5,
+      "categories": {
+        "project-migration": 5
+      }
+    },
+    "esm/native/io/project_schema_migrations.ts": {
+      "total": 1,
+      "categories": {
+        "project-migration": 1
+      }
+    },
+    "esm/native/io/project_schema_shared.ts": {
+      "total": 8,
+      "categories": {
+        "project-migration": 8
+      }
+    },
+    "esm/native/kernel/cfg_meta.ts": {
+      "total": 5,
+      "categories": {
+        "domain-default": 5
+      }
+    },
+    "esm/native/kernel/domain_api_modules_corner_module_patch.ts": {
+      "total": 2,
+      "categories": {
+        "compat-boundary": 2
+      }
+    },
+    "esm/native/kernel/domain_api_modules_corner_recompute_policy.ts": {
+      "total": 3,
+      "categories": {
+        "domain-default": 3
+      }
+    },
+    "esm/native/kernel/domain_api_modules_corner_shared.ts": {
+      "total": 7,
+      "categories": {
+        "compat-boundary": 7
+      }
+    },
+    "esm/native/kernel/domain_api_surface_sections_bindings_doors.ts": {
+      "total": 6,
+      "categories": {
+        "compat-boundary": 3,
+        "domain-default": 3
+      }
+    },
+    "esm/native/kernel/domain_api_surface_sections_bindings_drawers_dividers.ts": {
+      "total": 4,
+      "categories": {
+        "domain-default": 4
+      }
+    },
+    "esm/native/kernel/domain_api_surface_sections_bindings_grooves_curtains.ts": {
+      "total": 2,
+      "categories": {
+        "domain-default": 2
+      }
+    },
+    "esm/native/kernel/domain_api_surface_sections_bindings_root_map.ts": {
+      "total": 2,
+      "categories": {
+        "domain-default": 2
+      }
+    },
+    "esm/native/kernel/domain_api_surface_sections_contracts.ts": {
+      "total": 1,
+      "categories": {
+        "compat-boundary": 1
+      }
+    },
+    "esm/native/kernel/domain_api_surface_sections_map_writes.ts": {
+      "total": 6,
+      "categories": {
+        "compat-boundary": 3,
+        "domain-default": 3
+      }
+    },
+    "esm/native/kernel/domain_api_surface_sections_prefixed_maps.ts": {
+      "total": 2,
+      "categories": {
+        "compat-boundary": 2
+      }
+    },
+    "esm/native/kernel/domain_api_surface_sections_shared.ts": {
+      "total": 4,
+      "categories": {
+        "compat-boundary": 2,
+        "domain-default": 2
+      }
+    },
+    "esm/native/kernel/domain_api_surface_sections_state.ts": {
+      "total": 2,
+      "categories": {
+        "compat-boundary": 2
+      }
+    },
+    "esm/native/kernel/domain_module_stack_patch.ts": {
+      "total": 6,
+      "categories": {
+        "compat-boundary": 5,
+        "project-migration": 1
+      }
+    },
+    "esm/native/kernel/maps_api_named_maps.ts": {
+      "total": 3,
+      "categories": {
+        "compat-boundary": 3
+      }
+    },
+    "esm/native/kernel/state_api_history_meta_reactivity_contracts.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/kernel/state_api_meta_namespace.ts": {
+      "total": 3,
+      "categories": {
+        "domain-default": 3
+      }
+    },
+    "esm/native/kernel/state_api_shared.ts": {
+      "total": 2,
+      "categories": {
+        "domain-default": 2
+      }
+    },
+    "esm/native/kernel/state_api_stack_router_shared.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/kernel/state_api.ts": {
+      "total": 2,
+      "categories": {
+        "domain-default": 2
+      }
+    },
+    "esm/native/platform/dirty_flag.ts": {
+      "total": 4,
+      "categories": {
+        "domain-default": 4
+      }
+    },
+    "esm/native/platform/render_loop_impl_front_overlay.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/runtime/actions_access_mutations.ts": {
+      "total": 2,
+      "categories": {
+        "error-message-default": 2
+      }
+    },
+    "esm/native/runtime/api_boot_render_surface.ts": {
+      "total": 3,
+      "categories": {
+        "compat-boundary": 3
+      }
+    },
+    "esm/native/runtime/api.ts": {
+      "total": 3,
+      "categories": {
+        "compat-boundary": 3
+      }
+    },
+    "esm/native/runtime/browser_clipboard.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/runtime/browser_download.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/runtime/browser_file_read.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/runtime/cfg_access_shared.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/runtime/commands_access.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/runtime/errors.ts": {
+      "total": 2,
+      "categories": {
+        "domain-default": 2
+      }
+    },
+    "esm/native/runtime/history_system_access_shared.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/runtime/maps_access_writers.ts": {
+      "total": 17,
+      "categories": {
+        "compat-boundary": 17
+      }
+    },
+    "esm/native/runtime/meta_actions_namespace.ts": {
+      "total": 4,
+      "categories": {
+        "domain-default": 4
+      }
+    },
+    "esm/native/runtime/platform_access_debug_stats.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/runtime/platform_access_ops.ts": {
+      "total": 2,
+      "categories": {
+        "domain-default": 2
+      }
+    },
+    "esm/native/runtime/project_io_access_load.ts": {
+      "total": 16,
+      "categories": {
+        "project-migration": 16
+      }
+    },
+    "esm/native/runtime/project_io_access_restore.ts": {
+      "total": 13,
+      "categories": {
+        "project-migration": 13
+      }
+    },
+    "esm/native/runtime/project_io_access_shared.ts": {
+      "total": 2,
+      "categories": {
+        "project-migration": 2
+      }
+    },
+    "esm/native/runtime/render_access_shared.ts": {
+      "total": 2,
+      "categories": {
+        "compat-boundary": 2
+      }
+    },
+    "esm/native/runtime/render_access_state_bags.ts": {
+      "total": 1,
+      "categories": {
+        "compat-boundary": 1
+      }
+    },
+    "esm/native/runtime/render_access_state_runtime.ts": {
+      "total": 14,
+      "categories": {
+        "compat-boundary": 14
+      }
+    },
+    "esm/native/runtime/render_access_state.ts": {
+      "total": 3,
+      "categories": {
+        "compat-boundary": 3
+      }
+    },
+    "esm/native/runtime/render_access.ts": {
+      "total": 3,
+      "categories": {
+        "compat-boundary": 3
+      }
+    },
+    "esm/native/runtime/storage_access.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/services/api_runtime_base_surface.ts": {
+      "total": 3,
+      "categories": {
+        "compat-boundary": 3
+      }
+    },
+    "esm/native/services/app_start.ts": {
+      "total": 2,
+      "categories": {
+        "compat-boundary": 2
+      }
+    },
+    "esm/native/services/autosave_runtime.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/services/autosave_schedule.ts": {
+      "total": 4,
+      "categories": {
+        "compat-boundary": 4
+      }
+    },
+    "esm/native/services/autosave_shared.ts": {
+      "total": 10,
+      "categories": {
+        "compat-boundary": 10
+      }
+    },
+    "esm/native/services/camera_shared.ts": {
+      "total": 2,
+      "categories": {
+        "domain-default": 2
+      }
+    },
+    "esm/native/services/canvas_picking_click_hit_flow_shared.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/services/canvas_picking_click_hit_flow_stack_runtime.ts": {
+      "total": 2,
+      "categories": {
+        "domain-default": 2
+      }
+    },
+    "esm/native/services/canvas_picking_click_hit_flow_state.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/services/canvas_picking_door_split_hover_flow.ts": {
+      "total": 1,
+      "categories": {
+        "compat-boundary": 1
+      }
+    },
+    "esm/native/services/canvas_picking_generic_paint_hover_preview_bounds.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/services/canvas_picking_generic_paint_hover_preview_objects.ts": {
+      "total": 2,
+      "categories": {
+        "domain-default": 2
+      }
+    },
+    "esm/native/services/canvas_picking_generic_paint_hover_preview.ts": {
+      "total": 2,
+      "categories": {
+        "domain-default": 2
+      }
+    },
+    "esm/native/services/canvas_picking_generic_paint_hover_shared.ts": {
+      "total": 2,
+      "categories": {
+        "compat-boundary": 2
+      }
+    },
+    "esm/native/services/canvas_picking_hover_targets_interior_scan.ts": {
+      "total": 5,
+      "categories": {
+        "domain-default": 5
+      }
+    },
+    "esm/native/services/canvas_picking_hover_targets_interior_target.ts": {
+      "total": 4,
+      "categories": {
+        "domain-default": 4
+      }
+    },
+    "esm/native/services/canvas_picking_interior_hover_int_drawer.ts": {
+      "total": 2,
+      "categories": {
+        "compat-boundary": 2
+      }
+    },
+    "esm/native/services/canvas_picking_manual_layout_sketch_click_box_metrics.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/services/canvas_picking_projection_runtime_box_wardrobe_fallback.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/services/canvas_picking_projection_runtime_box.ts": {
+      "total": 3,
+      "categories": {
+        "domain-default": 3
+      }
+    },
+    "esm/native/services/canvas_picking_selector_internal_metrics.ts": {
+      "total": 5,
+      "categories": {
+        "domain-default": 5
+      }
+    },
+    "esm/native/services/canvas_picking_sketch_free_box_gap.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/services/canvas_picking_sketch_module_stack_preview_drawers.ts": {
+      "total": 2,
+      "categories": {
+        "compat-boundary": 2
+      }
+    },
+    "esm/native/services/canvas_picking_sketch_neighbor_measurements.ts": {
+      "total": 2,
+      "categories": {
+        "compat-boundary": 2
+      }
+    },
+    "esm/native/services/cloud_sync_delete_temp_runtime.ts": {
+      "total": 3,
+      "categories": {
+        "error-message-default": 3
+      }
+    },
+    "esm/native/services/cloud_sync_lifecycle_realtime_runtime_start.ts": {
+      "total": 1,
+      "categories": {
+        "error-message-default": 1
+      }
+    },
+    "esm/native/services/cloud_sync_panel_api_install_shared.ts": {
+      "total": 1,
+      "categories": {
+        "compat-boundary": 1
+      }
+    },
+    "esm/native/services/cloud_sync_panel_api_install_surface_contracts.ts": {
+      "total": 3,
+      "categories": {
+        "compat-boundary": 3
+      }
+    },
+    "esm/native/services/cloud_sync_panel_api_install_surface_runtime.ts": {
+      "total": 2,
+      "categories": {
+        "compat-boundary": 2
+      }
+    },
+    "esm/native/services/cloud_sync_panel_api_install.ts": {
+      "total": 1,
+      "categories": {
+        "compat-boundary": 1
+      }
+    },
+    "esm/native/services/cloud_sync_panel_api_snapshots_publish_runtime.ts": {
+      "total": 2,
+      "categories": {
+        "domain-default": 2
+      }
+    },
+    "esm/native/services/cloud_sync_panel_api_snapshots_reads.ts": {
+      "total": 4,
+      "categories": {
+        "domain-default": 4
+      }
+    },
+    "esm/native/services/cloud_sync_panel_api_snapshots_shared.ts": {
+      "total": 5,
+      "categories": {
+        "domain-default": 5
+      }
+    },
+    "esm/native/services/cloud_sync_panel_api_snapshots_sources.ts": {
+      "total": 21,
+      "categories": {
+        "compat-boundary": 6,
+        "domain-default": 15
+      }
+    },
+    "esm/native/services/cloud_sync_panel_api_snapshots_subscription_runtime.ts": {
+      "total": 4,
+      "categories": {
+        "compat-boundary": 2,
+        "domain-default": 2
+      }
+    },
+    "esm/native/services/cloud_sync_status_install_runtime.ts": {
+      "total": 2,
+      "categories": {
+        "domain-default": 2
+      }
+    },
+    "esm/native/services/cloud_sync_status_install_shared.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/services/cloud_sync_support_feedback.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/services/models_registry_contracts.ts": {
+      "total": 1,
+      "categories": {
+        "compat-boundary": 1
+      }
+    },
+    "esm/native/services/models_registry_state.ts": {
+      "total": 2,
+      "categories": {
+        "compat-boundary": 2
+      }
+    },
+    "esm/native/services/models_registry_storage_state.ts": {
+      "total": 4,
+      "categories": {
+        "compat-boundary": 4
+      }
+    },
+    "esm/native/services/render_surface_runtime_support_readers.ts": {
+      "total": 4,
+      "categories": {
+        "compat-boundary": 4
+      }
+    },
+    "esm/native/services/render_surface_runtime_support_shared.ts": {
+      "total": 1,
+      "categories": {
+        "compat-boundary": 1
+      }
+    },
+    "esm/native/services/render_surface_runtime_support.ts": {
+      "total": 1,
+      "categories": {
+        "compat-boundary": 1
+      }
+    },
+    "esm/native/services/scene_view_lighting_renderer.ts": {
+      "total": 67,
+      "categories": {
+        "compat-boundary": 22,
+        "external-api-compat": 45
+      }
+    },
+    "esm/native/services/scene_view_lighting_runtime.ts": {
+      "total": 2,
+      "categories": {
+        "compat-boundary": 2
+      }
+    },
+    "esm/native/services/scene_view_shared_contracts.ts": {
+      "total": 8,
+      "categories": {
+        "compat-boundary": 6,
+        "external-api-compat": 2
+      }
+    },
+    "esm/native/services/ui_ephemeral_defaults.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/ui/browser_file_download.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/ui/errors_install_platform.ts": {
+      "total": 1,
+      "categories": {
+        "error-message-default": 1
+      }
+    },
+    "esm/native/ui/errors_install_shared.ts": {
+      "total": 1,
+      "categories": {
+        "error-message-default": 1
+      }
+    },
+    "esm/native/ui/errors_install_surface.ts": {
+      "total": 2,
+      "categories": {
+        "error-message-default": 2
+      }
+    },
+    "esm/native/ui/export/export_canvas_core_feedback.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/ui/export/export_order_pdf_builder_fields_text.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/ui/export/export_order_pdf_builder_layout.ts": {
+      "total": 4,
+      "categories": {
+        "compat-boundary": 4
+      }
+    },
+    "esm/native/ui/export/export_order_pdf_builder_template.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/ui/export/export_order_pdf_capture_composite_shared.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/ui/export/export_order_pdf_capture_open_closed.ts": {
+      "total": 2,
+      "categories": {
+        "domain-default": 2
+      }
+    },
+    "esm/native/ui/export/export_order_pdf_capture_render_sketch.ts": {
+      "total": 2,
+      "categories": {
+        "domain-default": 2
+      }
+    },
+    "esm/native/ui/export/export_order_pdf_composite_image_slots_runtime.ts": {
+      "total": 5,
+      "categories": {
+        "compat-boundary": 5
+      }
+    },
+    "esm/native/ui/html_sanitize_runtime.ts": {
+      "total": 4,
+      "categories": {
+        "domain-default": 4
+      }
+    },
+    "esm/native/ui/modes_shared.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/ui/modes_transition_policy.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/ui/notes_service_shared.ts": {
+      "total": 4,
+      "categories": {
+        "domain-default": 4
+      }
+    },
+    "esm/native/ui/project_load_runtime_action.ts": {
+      "total": 2,
+      "categories": {
+        "error-message-default": 2
+      }
+    },
+    "esm/native/ui/project_load_runtime_shared.ts": {
+      "total": 1,
+      "categories": {
+        "error-message-default": 1
+      }
+    },
+    "esm/native/ui/project_save_runtime_action.ts": {
+      "total": 3,
+      "categories": {
+        "domain-default": 3
+      }
+    },
+    "esm/native/ui/project_save_runtime_prompt.ts": {
+      "total": 1,
+      "categories": {
+        "browser-adapter": 1
+      }
+    },
+    "esm/native/ui/project_save_runtime.ts": {
+      "total": 4,
+      "categories": {
+        "browser-adapter": 1,
+        "domain-default": 3
+      }
+    },
+    "esm/native/ui/react/boot_react_ui.tsx": {
+      "total": 2,
+      "categories": {
+        "domain-default": 2
+      }
+    },
+    "esm/native/ui/react/overlay_app_shared.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
     "esm/native/ui/react/overlay_pdf_host.tsx": {
       "total": 1,
       "categories": {
         "framework-default": 1
       }
     },
+    "esm/native/ui/react/pdf/order_pdf_overlay_runtime_export_loader.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/ui/react/pdf/order_pdf_overlay_shell_interactions_runtime.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
     "esm/native/ui/react/sidebar_app.tsx": {
       "total": 1,
       "categories": {
         "framework-default": 1
+      }
+    },
+    "esm/native/ui/react/tabs/design_tab_color_action_result_builders.ts": {
+      "total": 8,
+      "categories": {
+        "error-message-default": 8
+      }
+    },
+    "esm/native/ui/react/tabs/design_tab_color_action_result_helpers.ts": {
+      "total": 4,
+      "categories": {
+        "error-message-default": 4
+      }
+    },
+    "esm/native/ui/react/tabs/design_tab_color_action_result_reason.ts": {
+      "total": 4,
+      "categories": {
+        "error-message-default": 4
+      }
+    },
+    "esm/native/ui/react/tabs/design_tab_multicolor_shared.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/ui/react/tabs/render_tab_shared_room.ts": {
+      "total": 6,
+      "categories": {
+        "domain-default": 6
+      }
+    },
+    "esm/native/ui/react/tabs/structure_tab_core_edit_mode.ts": {
+      "total": 1,
+      "categories": {
+        "domain-default": 1
+      }
+    },
+    "esm/native/ui/settings_backup_shared_collections.ts": {
+      "total": 7,
+      "categories": {
+        "compat-boundary": 4,
+        "domain-default": 3
+      }
+    },
+    "esm/shared/wardrobe_dimension_tokens_shared.ts": {
+      "total": 6,
+      "categories": {
+        "compat-boundary": 3,
+        "domain-default": 3
       }
     },
     "esm/test_imports.mjs": {
@@ -34,9 +1036,9 @@
       }
     },
     "esm/test_no_side_effects_on_import.mjs": {
-      "total": 6,
+      "total": 5,
       "categories": {
-        "test-fixture": 6
+        "test-fixture": 5
       }
     }
   }

@@ -5,15 +5,31 @@ import { fileURLToPath } from 'node:url';
 
 export const LEGACY_FALLBACK_CATEGORIES = [
   'runtime-default',
+  'domain-default',
+  'error-message-default',
   'framework-default',
   'browser-adapter',
   'project-migration',
+  'external-api-compat',
+  'compat-boundary',
   'test-fixture',
   'legacy-runtime-risk',
   'unknown',
 ];
 
-const NEEDLE_RE = /\b(?:legacy|fallbacks?|legacyRuntimeRisk)\b/gi;
+// Keep this intentionally broader than a simple word-boundary search. The old
+// audit only saw standalone words such as `fallback` and missed camelCase /
+// PascalCase identifiers like `fallbackReason`, `BootFatalFallbackOpts`,
+// `buildLegacyCorniceEnvelope`, and `coreBrowserCompat`. Those names are still
+// compatibility/default vocabulary and must stay visible to the closeout guard.
+const NEEDLE_RE =
+  /\b(?:legacy|fallbacks?|compat)\b|\b[$A-Z_a-z][$\w]*(?:Legacy|legacy|Fallback|fallback|Compat)[$\w]*\b/g;
+const EXTERNAL_API_COMPAT_RE =
+  /(THREE|Three|three|React|browser|Browser|adapter|polyfill|vendor|rendererCompat|useLegacyLights|import-compatible|compatible seam)/;
+const REVIEWED_COMPAT_BOUNDARY_TERM_RE =
+  /(alias|bytes|canonical|cleanup|clear|compat|cornice|dispose|drift|envelope|frames|id|invalidate|lights|mirror|normalize|payload|persisted|profile|remove|schema|seam|stored|saved|surface)/i;
+const REVIEWED_COMPAT_BOUNDARY_TEXT_RE =
+  /\b(alias|bytes|canonical|cleanup|clear|compat|compatible|cornice|dispose|drift|envelope|frames|id|invalidate|lights|mirror|normalize|normalized|payload|persisted|profile|remove|schema|seam|stored|saved|surface)\b/i;
 const SOURCE_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.md']);
 const DEFAULT_SOURCE_ROOT = 'esm';
 const DEFAULT_JSON_OUT = 'docs/legacy_fallback_audit.json';
@@ -113,29 +129,76 @@ function isTestFixturePath(relPath, lineText) {
 }
 
 function isRuntimeDefaultLine(lineText) {
-  return /\bfallback\b\s*(=|:|\?|\)|,|\|\||&&)|\bfallback\b.*\breturn\b|\breturn\b.*\bfallback\b|\bdefault\b/i.test(
+  return /\bfallback\w*\b\s*(=|:|\?|\)|,|\|\||&&)|\bfallback\w*\b.*\breturn\b|\breturn\b.*\bfallback\w*\b|\bdefault(?:Value)?\b/i.test(
     lineText
   );
 }
 
 function isFrameworkDefaultLine(relPath, lineText) {
-  return /(^|\/)native\/ui\/react\/.*\.tsx?$/.test(relPath) && /\bfallback\s*=/.test(lineText);
+  return (
+    /(^|\/)native\/ui\/react\/.*\.tsx?$/.test(relPath) &&
+    /\bfallback\b\s*=|<Suspense\b|React\.Suspense/.test(lineText)
+  );
+}
+
+function hasFallbackTerm(term) {
+  return /fallback/i.test(String(term || ''));
+}
+
+function hasLegacyTerm(term) {
+  return /legacy/i.test(String(term || ''));
+}
+
+function hasCompatTerm(term) {
+  return /compat/i.test(String(term || ''));
+}
+
+function isErrorMessageDefaultLine(lineText) {
+  return /(fallback\w*(Message|Reason|Error|Err)|\w+fallback\w*(Message|Reason|Error|Err)|(?:Message|Reason|Error|Err)\w*fallback\w*)/i.test(
+    lineText
+  );
+}
+
+function isDomainDefaultPath(relPath, lineText) {
+  return (
+    /(^|\/)(shared\/wardrobe_dimension_tokens_shared|native\/(builder|features|services|ui))/.test(relPath) &&
+    /\b(fallback\w*|FALLBACK_[A-Z0-9_]+|buildFallback\w*)\b/.test(lineText)
+  );
+}
+
+function isExternalApiCompatLine(relPath, lineText, term) {
+  return (
+    (hasCompatTerm(term) || hasLegacyTerm(term)) &&
+    EXTERNAL_API_COMPAT_RE.test(`${term} ${relPath} ${lineText}`)
+  );
+}
+
+function isCompatBoundaryLine(relPath, lineText, term) {
+  const termText = String(term || '');
+  const haystack = `${relPath} ${lineText}`;
+  return (
+    hasCompatTerm(termText) ||
+    REVIEWED_COMPAT_BOUNDARY_TERM_RE.test(termText) ||
+    (hasLegacyTerm(termText) && REVIEWED_COMPAT_BOUNDARY_TEXT_RE.test(haystack))
+  );
 }
 
 export function classifyLegacyFallbackOccurrence({ relPath, lineText, term }) {
   const normalizedPath = normalizePath(relPath);
   const normalizedLine = String(lineText || '');
-  const normalizedTerm = String(term || '').toLowerCase();
-
   if (isTestFixturePath(normalizedPath, normalizedLine)) return 'test-fixture';
-  if (normalizedTerm.startsWith('fallback') && isFrameworkDefaultLine(normalizedPath, normalizedLine)) {
+  if (hasFallbackTerm(term) && isFrameworkDefaultLine(normalizedPath, normalizedLine)) {
     return 'framework-default';
   }
   if (isBrowserAdapterPath(normalizedPath, normalizedLine)) return 'browser-adapter';
   if (isProjectMigrationPath(normalizedPath, normalizedLine)) return 'project-migration';
-  if (normalizedTerm.startsWith('fallback') && isRuntimeDefaultLine(normalizedLine)) return 'runtime-default';
-  if (/\blegacy\b/i.test(normalizedLine)) return 'legacy-runtime-risk';
-  if (normalizedTerm.startsWith('fallback')) return 'runtime-default';
+  if (isExternalApiCompatLine(normalizedPath, normalizedLine, term)) return 'external-api-compat';
+  if (isCompatBoundaryLine(normalizedPath, normalizedLine, term)) return 'compat-boundary';
+  if (hasFallbackTerm(term) && isErrorMessageDefaultLine(normalizedLine)) return 'error-message-default';
+  if (hasFallbackTerm(term) && isDomainDefaultPath(normalizedPath, normalizedLine)) return 'domain-default';
+  if (hasFallbackTerm(term) && isRuntimeDefaultLine(normalizedLine)) return 'runtime-default';
+  if (hasFallbackTerm(term)) return 'domain-default';
+  if (hasLegacyTerm(term)) return 'legacy-runtime-risk';
   return 'unknown';
 }
 
@@ -153,8 +216,11 @@ export function collectLegacyFallbackOccurrences({
     for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
       const lineText = lines[lineIndex];
       NEEDLE_RE.lastIndex = 0;
+      const seenTermsOnLine = new Set();
       for (const match of lineText.matchAll(NEEDLE_RE)) {
         const term = match[0];
+        if (seenTermsOnLine.has(term)) continue;
+        seenTermsOnLine.add(term);
         const category = classifyLegacyFallbackOccurrence({ relPath, lineText, term });
         occurrences.push({
           file: relPath,
@@ -287,11 +353,21 @@ export function toLegacyFallbackMarkdown(payload) {
   lines.push('## Policy');
   lines.push('');
   lines.push(
-    '- Runtime compatibility must not grow silently. New `legacy`/`fallback` mentions require an intentional category and allowlist update.'
+    '- Runtime compatibility must not grow silently. New `legacy`/`fallback`/`compat` mentions require an intentional category and allowlist update.'
   );
-  lines.push('- `framework-default` is reserved for framework-owned API names such as React `Suspense` fallback props.');
+  lines.push('- The scanner includes camelCase and PascalCase identifiers, not only standalone words.');
+  lines.push(
+    '- `framework-default` is reserved for framework-owned API names such as React `Suspense` fallback props.'
+  );
   lines.push('- `project-migration` belongs at import/load/persisted-payload boundaries.');
   lines.push('- `browser-adapter` belongs at browser/DOM/environment adapter boundaries.');
+  lines.push(
+    '- `domain-default` and `error-message-default` are ordinary default-value names, kept visible so they do not hide runtime compatibility work.'
+  );
+  lines.push('- `external-api-compat` is reserved for third-party/framework compatibility seams.');
+  lines.push(
+    '- `compat-boundary` is a reviewed canonicalization or persisted-shape compatibility seam, not an unowned live fallback.'
+  );
   lines.push('- `legacy-runtime-risk` is the review queue for possible old live-path compatibility.');
   lines.push('- `unknown` should stay at zero.');
   lines.push('');

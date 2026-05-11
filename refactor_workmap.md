@@ -1,7 +1,7 @@
 # Refactor Workmap
 
 This is the root workmap pointer for future work. Older long-form workmaps were consolidated on
-2026-05-04 so there is one clear plan instead of several historical drafts.
+2026-05-04, and the remaining stage-update root notes were removed during the 2026-05-11 closeout so there is one clear plan instead of several historical drafts.
 
 ## Canonical Planning Files
 
@@ -9,7 +9,6 @@ This is the root workmap pointer for future work. Older long-form workmaps were 
 - `docs/REFACTOR_WORKMAP_PROGRESS.md` is the compact progress marker guarded by integration tests.
 - `docs/QUALITY_GUARDRAILS.md` is the living engineering policy.
 - `docs/FACADE_AND_PUBLIC_API_POLICY.md` owns facade/public API decisions.
-- `README_UPDATED_PLAN_FILES.md` explains which plan files are still active.
 
 ## Current Baseline
 
@@ -35,12 +34,16 @@ These are the useful remaining upgrade lanes, ordered by value:
 
 ## Historical Cleanup
 
-The removed root workmaps were historical inputs, not active source of truth:
+The removed root workmaps and stage-update notes were historical inputs, not active source of truth:
 
 - `wardrobepro_refactor_workmap_2026-04-26.md`
 - `wardrobepro_refactor_workmap_2026-04-28.md`
 - `refactor_workmap_next_phase_2026-05-03.md`
 - the root `new refactor_workmap` draft
+- `README_UPDATED_PLAN_FILES.md`
+- `UPGRADE_COMPLETION_WORKPLAN_STAGE7_UPDATED.md`
+- `UPGRADE_COMPLETION_WORKPLAN_STAGE8_UPDATED.md`
+- `UPGRADE_COMPLETION_WORKPLAN_STAGE9_UPDATED.md`
 
 Their live decisions are now represented in the canonical planning files listed above.
 

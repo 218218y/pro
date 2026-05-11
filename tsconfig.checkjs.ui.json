@@ -5,6 +5,6 @@
     "strict": false,
     "noImplicitAny": false
   },
-  "include": ["esm/native/ui/**/*.ts", "types/**/*.d.ts", "types/**/*.ts"],
+  "include": ["esm/native/ui/**/*.ts", "esm/native/ui/**/*.tsx", "types/**/*.d.ts", "types/**/*.ts"],
   "exclude": ["node_modules", "libs/**", "dist", "release"]
 }

@@ -1,6 +1,6 @@
 # Docs control plane
 
-This folder is intentionally compact. Keep only living architecture guidance, setup notes, and tool-owned report targets that future code work actually needs.
+This folder is intentionally compact. Keep only living architecture guidance, setup notes, and tool-owned report targets that future code work actually needs. Root-level stage-update notes are not active planning files; useful decisions belong here or in `refactor_workmap.md`.
 
 ## Read first
 

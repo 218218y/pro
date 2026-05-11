@@ -92,6 +92,30 @@ test('legacy fallback audit classifies boundary occurrences before runtime risk'
     }),
     'legacy-runtime-risk'
   );
+  assert.equal(
+    classifyLegacyFallbackOccurrence({
+      relPath: 'esm/native/ui/react/tabs/design_tab_color_action_result_reason.ts',
+      lineText: 'return normalizeReason(value, fallbackReason);',
+      term: 'fallbackReason',
+    }),
+    'error-message-default'
+  );
+  assert.equal(
+    classifyLegacyFallbackOccurrence({
+      relPath: 'esm/native/builder/core_carcass_cornice.ts',
+      lineText: 'return buildLegacyCorniceEnvelope({});',
+      term: 'buildLegacyCorniceEnvelope',
+    }),
+    'compat-boundary'
+  );
+  assert.equal(
+    classifyLegacyFallbackOccurrence({
+      relPath: 'esm/boot/boot_manifest_steps.ts',
+      lineText: "id: 'builder.coreBrowserCompat',",
+      term: 'coreBrowserCompat',
+    }),
+    'external-api-compat'
+  );
 });
 
 test('legacy fallback audit summarizes and lock-checks the categorized inventory', () => {
@@ -108,8 +132,8 @@ test('legacy fallback audit summarizes and lock-checks the categorized inventory
 
   const occurrences = collectLegacyFallbackOccurrences({ projectRoot, sourceRoot: 'esm' });
   const summary = summarizeLegacyFallbackOccurrences(occurrences);
-  assert.equal(summary.totalOccurrences, 5);
-  assert.equal(summary.byCategory['runtime-default'], 2);
+  assert.equal(summary.totalOccurrences, 4);
+  assert.equal(summary.byCategory['runtime-default'], 1);
   assert.equal(summary.byCategory['framework-default'], 1);
   assert.equal(summary.byCategory['browser-adapter'], 1);
   assert.equal(summary.byCategory.unknown, 0);

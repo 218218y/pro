@@ -150,3 +150,10 @@ When docs are cleaned again, keep this file as the single compact integration ma
 
 > עדכון Stage 80 — 3 במאי 2026:
 > בוצעה סגירת מסלול refactor מקצועית סביב מדידה וביצועים, לא עוד פירוק קוד. `docs/REFACTOR_NEXT_STAGE_PLAN.md` עודכן כך ש־Stage 80 מסומן כ־completed ומגדיר ש־Stage 81 אינו ברירת מחדל; המשך עבודה צריך להיות באגים, ביצועים מדידים או פיצ'רים, אלא אם מוכח seam חדש לפי שער Stage 74. `docs/QUALITY_GUARDRAILS.md` קיבל סעיף closeout שמחבר בין `check:perf-hotpaths`, `perf:smoke`, `perf:browser`, baseline docs ו־stop conditions. השלב מעוגן ב־`tests/refactor_stage80_measurement_perf_closeout_guard.test.js` וב־`check:refactor-closeout` כדי לשמור את הקטלוג, הבדיקות, התיעוד ומדיניות הסגירה מסונכרנים.
+
+## Post-Stage-80 closeout maintenance — 11 May 2026
+
+- Historical root plan/update files were removed from the active source tree. `refactor_workmap.md`, this compact progress marker, `docs/REFACTOR_NEXT_STAGE_PLAN.md`, and `docs/QUALITY_GUARDRAILS.md` remain the planning/control-plane sources of truth.
+- The legacy/fallback audit now scans camelCase and PascalCase names as well as standalone words, so compatibility/default vocabulary such as `fallbackReason`, `BootFatalFallbackOpts`, `buildLegacyCorniceEnvelope`, and `coreBrowserCompat` is visible and category-locked.
+- UI full and strict typecheck configs now explicitly include `.tsx` UI surfaces; the lean lane stays TS-only and keeps its React/PDF shims isolated in `lean_types`.
+- Type hardening now also checks that every non-declaration `types/*.ts` source module has a matching `types/*.js` runtime stub and that no extra JS stub drifts without a typed source module.

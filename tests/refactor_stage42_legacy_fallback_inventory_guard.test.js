@@ -16,40 +16,42 @@ test('stage 42 legacy fallback inventory closeout is anchored', () => {
   assert.equal(allowlist.sourceRoot, 'esm');
   assert.equal(audit.summary.byCategory['legacy-runtime-risk'], 0);
   assert.equal(audit.summary.byCategory.unknown, 0);
-  for (const file of [
-    'esm/native/runtime/storage_access.ts',
-    'esm/native/platform/storage.ts',
-    'esm/native/platform/three_geometry_cache_patch_contracts.ts',
-    'esm/native/platform/three_geometry_cache_patch_constructors.ts',
-    'esm/native/services/boot_seeds_part02_shared.ts',
-    'esm/native/services/cloud_sync_owner_context_runtime_shared.ts',
-    'esm/native/services/cloud_sync_support_storage_shared.ts',
-    'esm/native/features/door_style_overrides.ts',
-    'esm/native/platform/platform.ts',
-    'esm/native/services/scene_view.ts',
-    'esm/native/services/textures_cache.ts',
-    'esm/native/services/config_compounds.ts',
-    'esm/native/ui/react/boot_react_ui.tsx',
-    'esm/native/features/modules_configuration/calc_module_structure.ts',
-    'esm/native/runtime/default_state.ts',
-    'esm/native/runtime/ui_raw_selectors.ts',
-    'esm/native/runtime/ui_raw_selectors_shared.ts',
-    'esm/native/runtime/ui_raw_selectors_snapshot.ts',
-    'esm/native/runtime/ui_raw_selectors_canonical.ts',
-    'esm/native/runtime/ui_raw_selectors_store.ts',
-    'esm/native/ui/react/selectors/ui_raw_selectors.ts',
+
+  for (const category of [
+    'domain-default',
+    'error-message-default',
+    'external-api-compat',
+    'compat-boundary',
   ]) {
-    assert.equal(audit.summary.byFile[file]?.total || 0, 0, `${file} should stay out of the inventory`);
+    assert.ok(
+      Object.hasOwn(audit.summary.byCategory, category),
+      `audit must expose reviewed ${category} category`
+    );
   }
-  const uiRawSelectorInventoryTotal = [
-    'esm/native/runtime/ui_raw_selectors.ts',
-    'esm/native/runtime/ui_raw_selectors_snapshot.ts',
-    'esm/native/runtime/ui_raw_selectors_canonical.ts',
-    'esm/native/runtime/ui_raw_selectors_store.ts',
-  ].reduce((sum, file) => sum + (audit.summary.byFile[file]?.total || 0), 0);
-  assert.equal(uiRawSelectorInventoryTotal, 0);
+
+  for (const entry of [
+    ['esm/entry_pro_overlay.ts', 'browser-adapter'],
+    ['esm/native/builder/core_carcass_cornice.ts', 'compat-boundary'],
+    ['esm/native/services/scene_view_lighting_renderer.ts', 'external-api-compat'],
+    ['esm/native/ui/export/export_order_pdf_composite_image_slots_runtime.ts', 'compat-boundary'],
+    ['esm/native/ui/react/tabs/design_tab_color_action_result_reason.ts', 'error-message-default'],
+    ['esm/shared/wardrobe_dimension_tokens_shared.ts', 'domain-default'],
+  ]) {
+    const [file, category] = entry;
+    assert.ok(
+      audit.summary.byFile[file]?.categories?.[category] > 0,
+      `${file} must be categorized as ${category}`
+    );
+  }
+
+  assert.equal(audit.summary.byFile['esm/native/runtime/ui_raw_selectors.ts']?.total || 0, 0);
+  assert.equal(audit.summary.byFile['esm/native/runtime/ui_raw_selectors_snapshot.ts']?.total || 0, 0);
+  assert.equal(audit.summary.byFile['esm/native/runtime/ui_raw_selectors_canonical.ts']?.total || 0, 0);
+  assert.equal(audit.summary.byFile['esm/native/runtime/ui_raw_selectors_store.ts']?.total || 0, 0);
   assert.equal(audit.summary.byFile['esm/native/services/render_surface_runtime.ts']?.total || 0, 0);
   assert.match(markdown, /Legacy \/ fallback audit/);
+  assert.match(markdown, /camelCase/);
+  assert.match(markdown, /compat-boundary/);
 
   const result = spawnSync(
     process.execPath,

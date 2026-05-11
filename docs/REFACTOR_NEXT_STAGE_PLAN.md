@@ -121,6 +121,17 @@ Stage 74 is a planning and control-plane stage, not another automatic file split
 
 The codebase has already completed many ownership splits. At this point, continuing by line count alone would make the project worse: more files, more imports, and more guard noise without better ownership. Future stages must prove that they remove a real ownership mix or improve a guard that protects behavior.
 
+## Post-closeout maintenance lanes
+
+The 2026-05-11 closeout keeps Stage 80 as the end of the numbered refactor track and treats the remaining work as maintenance lanes instead of new wrapper-heavy stages. The active lanes are:
+
+1. keep `check:legacy-fallbacks` broad enough to see camelCase/PascalCase compatibility/default vocabulary, then classify every occurrence instead of hiding it;
+2. keep UI typecheck coverage explicit for both `.ts` and `.tsx` surfaces while the lean lane remains TS-only by design;
+3. keep `types/*.ts` and `types/*.js` paired so runtime stub files cannot silently drift from the typed source surface;
+4. keep root documentation limited to active pointers and move useful policy into living docs, not historical stage logs.
+
+These lanes do not justify Stage 81 by themselves. They are control-plane hardening work that should reduce future confusion without adding runtime indirection.
+
 ## Professional split gate
 
 A future split is allowed only when all of these are true:
