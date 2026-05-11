@@ -668,6 +668,34 @@ test('builder public surface runtime: chest-mode follow-through keeps viewport r
   assert.equal(calls.triggerRender.length, 0);
 });
 
+test('builder public surface runtime: chest-mode follow-through wakes the render loop for dirty tracked mirrors', () => {
+  const { App, calls } = createHarness();
+  App.render.__mirrorDirty = true;
+  App.render.meta = { mirrors: [{ isMesh: true, userData: { __wpMirrorSurface: true } }] };
+
+  assert.deepEqual(
+    runBuilderChestModeFollowThrough(App, {
+      applyHandles: false,
+      renderViewport: true,
+      finalizeRegistry: false,
+    }),
+    {
+      finalizedRegistry: false,
+      rebuiltDrawerMeta: false,
+      appliedHandles: false,
+      prunedCaches: false,
+      clearedBuildUi: false,
+      triggeredRender: false,
+      ensuredRenderLoop: true,
+      renderedViewport: true,
+      updatedControls: true,
+    }
+  );
+
+  assert.equal(calls.ensureRenderLoop.length, 1);
+  assert.equal(calls.triggerRender.length, 0);
+});
+
 test('builder public surface runtime: bootstrap seeds canonical builder deps namespaces and heals missing slots on reinstall', () => {
   const { App, calls } = createHarness();
   const customCalc = () => ({ kept: true });

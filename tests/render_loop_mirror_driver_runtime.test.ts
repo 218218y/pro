@@ -255,3 +255,52 @@ test('render loop mirror driver defers cube updates during camera/door motion by
   assert.equal(slots.__mirrorMotionDeferredAtMs, 105);
   assert.equal(slots.__mirrorMotionDeferredCount, 1);
 });
+
+test('render loop mirror driver syncs tracked mirror material envMap before cube update', () => {
+  const material = { envMap: null as unknown, needsUpdate: false };
+  const trackedMirror = { isMesh: true, __taggedMirror: true, parent: {}, visible: true, material };
+  const app = makeApp([trackedMirror]);
+  const texture = ((app.render as AnyRecord).mirrorRenderTarget as AnyRecord).texture;
+  const slots = makeSlots({
+    __mirrorLastUpdateMs: -1,
+    __mirrorMotionActive: false,
+    __frameStartMs: 100,
+    __mirrorDirty: true,
+    __mirrorPresenceKnown: true,
+    __mirrorPresenceHasMirror: true,
+    __mirrorPresenceCheckedAtMs: 80,
+    __mirrorTrackedPruneAtMs: 0,
+  });
+
+  const driver = createDriver(app, slots, { now: 105 });
+
+  driver.updateMirrorCube();
+
+  assert.equal(material.envMap, texture);
+  assert.equal(material.needsUpdate, true);
+  assert.equal(((app.render as AnyRecord).mirrorCubeCamera as AnyRecord).updateCalls, 1);
+  assert.equal(slots.__mirrorDirty, false);
+});
+
+test('render loop mirror driver updates dirty newly tracked mirrors without waiting for the throttle interval', () => {
+  const trackedMirror = { isMesh: true, __taggedMirror: true, parent: {}, visible: true };
+  const app = makeApp([trackedMirror]);
+  const slots = makeSlots({
+    __mirrorLastUpdateMs: 1000,
+    __mirrorMotionActive: false,
+    __frameStartMs: 1100,
+    __mirrorDirty: true,
+    __mirrorPresenceKnown: true,
+    __mirrorPresenceHasMirror: true,
+    __mirrorPresenceCheckedAtMs: 1000,
+    __mirrorTrackedPruneAtMs: 1000,
+  });
+
+  const driver = createDriver(app, slots, { now: 1105 });
+
+  driver.updateMirrorCube();
+
+  assert.equal(((app.render as AnyRecord).mirrorCubeCamera as AnyRecord).updateCalls, 1);
+  assert.equal(slots.__mirrorDirty, false);
+  assert.equal(slots.__mirrorLastUpdateMs, 1105);
+});

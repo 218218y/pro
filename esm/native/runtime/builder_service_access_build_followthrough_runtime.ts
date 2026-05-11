@@ -1,4 +1,4 @@
-import { getScene } from './render_access.js';
+import { ensureRenderMetaArray, getRenderSlot, getScene } from './render_access.js';
 import { finalizeBuilderRegistry } from './builder_service_access_slots.js';
 import { applyBuilderHandles } from './builder_service_access_build_handles.js';
 import {
@@ -15,10 +15,21 @@ import type {
   BuilderPostBuildFollowThroughResult,
 } from './builder_service_access_build_shared.js';
 import { clearBuilderBuildUi } from './builder_service_access_build_ui.js';
+import { ensureRenderLoopViaPlatform } from './platform_access.js';
 import {
   renderBuilderViewportNowRuntime,
   runBuilderRenderFollowThroughRuntime,
 } from './builder_service_access_build_render_runtime.js';
+
+function hasDirtyTrackedMirrorSurfaces(App: unknown): boolean {
+  try {
+    if (getRenderSlot<boolean>(App, '__mirrorDirty') !== true) return false;
+    const mirrors = ensureRenderMetaArray<unknown>(App, 'mirrors');
+    return mirrors.length > 0;
+  } catch {
+    return false;
+  }
+}
 
 export function runBuilderPostBuildFollowThroughRuntime(
   App: unknown,
@@ -70,6 +81,7 @@ export function runBuilderChestModeFollowThroughRuntime(
       ? { renderedViewport: false, updatedControls: false }
       : renderBuilderViewportNowRuntime(App);
   const finalizedRegistry = shouldFinalizeBuilderRegistry(opts) ? finalizeBuilderRegistry(App) : false;
+  const ensuredRenderLoop = hasDirtyTrackedMirrorSurfaces(App) ? ensureRenderLoopViaPlatform(App) : false;
 
   return {
     finalizedRegistry,
@@ -78,7 +90,7 @@ export function runBuilderChestModeFollowThroughRuntime(
     prunedCaches: false,
     clearedBuildUi: false,
     triggeredRender: false,
-    ensuredRenderLoop: false,
+    ensuredRenderLoop,
     ...viewport,
   };
 }
