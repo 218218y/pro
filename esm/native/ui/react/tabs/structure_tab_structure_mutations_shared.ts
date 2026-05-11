@@ -12,6 +12,8 @@ export type StructureTabNumericKey =
   | 'cellDimsWidth'
   | 'cellDimsHeight'
   | 'cellDimsDepth'
+  | 'chestCommodeMirrorHeightCm'
+  | 'chestCommodeMirrorWidthCm'
   | 'stackSplitLowerHeight'
   | 'stackSplitLowerDepth'
   | 'stackSplitLowerWidth'
@@ -26,7 +28,7 @@ export type StructureRawBooleanKey =
   | 'stackSplitLowerWidthManual'
   | 'stackSplitLowerDoorsManual';
 export type StructureRawPatch = Partial<
-  Record<StructureTabNumericKey | 'chestCommodeMirrorWidthCm' | StructureRawBooleanKey, number | boolean>
+  Record<StructureTabNumericKey | StructureRawBooleanKey, number | boolean>
 >;
 export type StructureUiPatch = {
   raw?: StructureRawPatch;

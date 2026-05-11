@@ -49,7 +49,7 @@ function tagChestDrawerFrontLeaf(args: {
   userData.__doorHeight = args.drawerHeight;
 }
 
-function createFallbackChestDrawerFront(args: ChestDrawerFrontVisualArgs): Object3DLike {
+function createPlainChestDrawerFront(args: ChestDrawerFrontVisualArgs): Object3DLike {
   const mesh = new args.THREE.Mesh(
     new args.THREE.BoxGeometry(args.drawerWidth, args.drawerHeight, args.drawerThickness),
     args.frontMaterial
@@ -74,7 +74,7 @@ function readChestDrawerCreateDoorVisual(App: AppContainer): BuilderCreateDoorVi
 
 export function createChestDrawerFrontVisual(args: ChestDrawerFrontVisualArgs): Object3DLike {
   const createDoorVisual = readChestDrawerCreateDoorVisual(args.App);
-  if (!createDoorVisual) return createFallbackChestDrawerFront(args);
+  if (!createDoorVisual) return createPlainChestDrawerFront(args);
 
   const cfg = readDrawerConfig(args.cfg);
   const drawerVisualState = resolveDrawerVisualState(cfg, args.drawerId, args.getPartColorValue);

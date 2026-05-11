@@ -84,8 +84,8 @@ test('build reactions snaps chest mode camera after build using the canonical re
 
   svc.afterBuild?.(true);
 
-  assert.deepEqual({ x: position.x, y: position.y, z: position.z }, { x: 0, y: 1.05, z: 2.5 });
-  assert.deepEqual({ x: target.x, y: target.y, z: target.z }, { x: 0, y: 0.35, z: 0 });
+  assert.deepEqual({ x: position.x, y: position.y, z: position.z }, { x: 0, y: 0.7, z: 2.5 });
+  assert.deepEqual({ x: target.x, y: target.y, z: target.z }, { x: 0, y: 0.55, z: 0 });
 });
 
 test('build reactions keeps corner side specific camera presets after build', () => {

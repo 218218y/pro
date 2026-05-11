@@ -43,6 +43,8 @@ export type StructureDimensionKey =
   | 'cellDimsWidth'
   | 'cellDimsHeight'
   | 'cellDimsDepth'
+  | 'chestCommodeMirrorHeightCm'
+  | 'chestCommodeMirrorWidthCm'
   | 'stackSplitLowerHeight'
   | 'stackSplitLowerDepth'
   | 'stackSplitLowerWidth'
@@ -105,6 +107,10 @@ export function readStructureDimensionBounds(args: StructureDimensionContext): S
       return { min: WARDROBE_CELL_HEIGHT_MIN, max: WARDROBE_CELL_HEIGHT_MAX };
     case 'cellDimsDepth':
       return { min: WARDROBE_CELL_DEPTH_MIN, max: WARDROBE_CELL_DEPTH_MAX };
+    case 'chestCommodeMirrorHeightCm':
+      return readStructureChestCommodeMirrorBounds('height');
+    case 'chestCommodeMirrorWidthCm':
+      return readStructureChestCommodeMirrorBounds('width');
     case 'stackSplitLowerHeight': {
       const overallHeight = finitePositiveOr(args.height, WARDROBE_HEIGHT_MAX);
       return {
