@@ -128,6 +128,40 @@ function createLayoutProps(overrides = {}) {
     ...overrides,
   };
 }
+function createSketchExternalDrawerControls(overrides = {}) {
+  return {
+    isSketchToolActive: false,
+    manualToolRaw: '',
+    sketchExtDrawersPanelOpen: false,
+    sketchExtDrawerCount: 3,
+    sketchExtDrawerHeightCm: 22,
+    sketchExtDrawerHeightDraft: '22',
+    setSketchShelvesOpen: setStateNoop,
+    setSketchRowOpen: setStateNoop,
+    setSketchExtDrawersPanelOpen: setStateNoop,
+    setSketchExtDrawerCount: setStateNoop,
+    setSketchExtDrawerHeightCm: setStateNoop,
+    setSketchExtDrawerHeightDraft: setStateNoop,
+    enterSketchExtDrawersTool: noop,
+    exitManual: noop,
+    ...overrides,
+  };
+}
+function createSketchInternalDrawerControls(overrides = {}) {
+  return {
+    isSketchToolActive: false,
+    manualToolRaw: '',
+    sketchIntDrawerHeightCm: 16.5,
+    sketchIntDrawerHeightDraft: '16.5',
+    setSketchShelvesOpen: setStateNoop,
+    setSketchRowOpen: setStateNoop,
+    setSketchIntDrawerHeightCm: setStateNoop,
+    setSketchIntDrawerHeightDraft: setStateNoop,
+    enterSketchIntDrawersTool: noop,
+    exitManual: noop,
+    ...overrides,
+  };
+}
 test('[interior-tab-sections-runtime] layout section renders canonical layout/manual/sketch controls', () => {
   const html = renderToStaticMarkup(React.createElement(InteriorLayoutSection, createLayoutProps()));
   assert.match(html, /חלוקות פנים/);
@@ -155,23 +189,37 @@ test('[interior-tab-sections-runtime] drawers and handles sections keep canonica
       extCounts: [2, 3, 4],
       enterExtDrawer: noop,
       exitExtDrawer: noop,
+      sketchControls: createSketchExternalDrawerControls({
+        isSketchToolActive: true,
+        manualToolRaw: 'sketch_ext_drawers:3@22',
+        sketchExtDrawersPanelOpen: true,
+      }),
     })
   );
   assert.match(externalHtml, /מגירות חיצוניות/);
   assert.match(externalHtml, /נעליים/);
   assert.match(externalHtml, /רגילות/);
-  assert.match(externalHtml, /בחר סוג מגירות ואז לחץ על תא כדי ליישם/);
+  assert.match(externalHtml, /מגירות חיצוניות לפי סקיצה/);
+  assert.match(externalHtml, /גובה מגירה חיצונית/);
+  assert.match(externalHtml, /wp-r-sketch-drawer-height-reset-btn/);
+  assert.doesNotMatch(externalHtml, /בחר סוג מגירות ואז לחץ על תא כדי ליישם/);
   const internalHtml = renderToStaticMarkup(
     React.createElement(InteriorInternalDrawersSection, {
       internalDrawersEnabled: true,
       isIntDrawerMode: true,
       setInternalDrawersEnabled: noop,
       toggleIntDrawerMode: noop,
+      sketchControls: createSketchInternalDrawerControls({
+        isSketchToolActive: true,
+        manualToolRaw: 'sketch_int_drawers@16.5',
+      }),
     })
   );
   assert.match(internalHtml, /מגירות פנימיות/);
   assert.match(internalHtml, /מיקום מגירות פנימיות/);
   assert.match(internalHtml, /סיום עריכה/);
+  assert.match(internalHtml, /מגירות פנימיות לפי סקיצה/);
+  assert.match(internalHtml, /גובה מגירה פנימית/);
   const dividerHtml = renderToStaticMarkup(
     React.createElement(InteriorDividerSection, { isDividerMode: false, toggleDividerMode: noop })
   );

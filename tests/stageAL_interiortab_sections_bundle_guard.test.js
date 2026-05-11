@@ -39,6 +39,7 @@ const interiorBundle = bundleSources(
     '../esm/native/ui/react/tabs/interior_tab_sections_controls.tsx',
     '../esm/native/ui/react/tabs/interior_tab_sections_layout.tsx',
     '../esm/native/ui/react/tabs/interior_tab_sections_drawers.tsx',
+    '../esm/native/ui/react/tabs/interior_tab_sketch_drawer_height_field.tsx',
     '../esm/native/ui/react/tabs/interior_tab_sections_handles.tsx',
     '../esm/native/ui/react/tabs/interior_layout_manual_controls.tsx',
     '../esm/native/ui/react/tabs/interior_layout_sketch_controls.tsx',
@@ -80,6 +81,7 @@ test('[stageAL-interiortab] InteriorTab owner keeps heavy layout/drawers/handles
       /export function InteriorToolCardHeader\(/,
       /export function InteriorEdgeHandleVariantRow\(/,
       /export function parseSketchBoxTool\(/,
+      /export function SketchDrawerHeightField\(/,
     ],
     'interior bundle'
   );

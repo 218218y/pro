@@ -1,6 +1,12 @@
 import type { ReactElement } from 'react';
 
-import { OptionBtn, SKETCH_TOOL_EXT_DRAWERS_PREFIX, isSketchBoxTool, cx } from './interior_tab_helpers.js';
+import {
+  OptionBtn,
+  SKETCH_TOOL_EXT_DRAWERS_PREFIX,
+  cx,
+  isSketchBoxTool,
+  isSketchInternalDrawersTool,
+} from './interior_tab_helpers.js';
 import type { InteriorLayoutSectionProps } from './interior_tab_sections_shared.js';
 import {
   InteriorDoorTrimSection,
@@ -13,20 +19,25 @@ export function InteriorLayoutSketchControls(props: InteriorLayoutSectionProps):
   const isSketchBoxToolActive = props.isSketchToolActive && isSketchBoxTool(props.manualToolRaw);
   const isSketchBoxControlsOpen = props.sketchBoxPanelOpen || isSketchBoxToolActive;
   const isDoorTrimControlsOpen = props.doorTrimPanelOpen || props.isDoorTrimMode;
-  const isSketchExtDrawersControlsOpen =
-    props.sketchExtDrawersPanelOpen ||
-    (props.isSketchToolActive && props.manualToolRaw.startsWith(SKETCH_TOOL_EXT_DRAWERS_PREFIX));
+  const isSketchExtDrawersToolActive =
+    props.isSketchToolActive && props.manualToolRaw.startsWith(SKETCH_TOOL_EXT_DRAWERS_PREFIX);
+  const isSketchIntDrawersToolActive =
+    props.isSketchToolActive && isSketchInternalDrawersTool(props.manualToolRaw);
+  const isEmbeddedSketchDrawersToolActive = isSketchExtDrawersToolActive || isSketchIntDrawersToolActive;
+  const shouldShowSketchRow =
+    props.sketchRowOpen || (props.isSketchToolActive && !isEmbeddedSketchDrawersToolActive);
+  const isSketchExtDrawersControlsOpen = props.sketchExtDrawersPanelOpen || isSketchExtDrawersToolActive;
 
   return (
     <>
       <OptionBtn
         className="wp-manual-toggle wp-sketch-toggle"
-        selected={props.sketchRowOpen || props.isSketchToolActive}
+        selected={shouldShowSketchRow || isEmbeddedSketchDrawersToolActive}
         onClick={() => {
-          if (props.sketchRowOpen || props.isSketchToolActive) {
+          if (props.sketchRowOpen) {
             props.setSketchRowOpen(false);
             props.setSketchShelvesOpen(false);
-            if (props.isSketchToolActive) props.exitManual();
+            if (props.isSketchToolActive && !isEmbeddedSketchDrawersToolActive) props.exitManual();
             return;
           }
           props.setSketchRowOpen(true);
@@ -35,16 +46,12 @@ export function InteriorLayoutSketchControls(props: InteriorLayoutSectionProps):
       >
         <strong>✏️ חלוקה ידנית לפי סקיצה</strong>
         <i
-          className={cx(
-            'fas',
-            props.sketchRowOpen || props.isSketchToolActive ? 'fa-chevron-up' : 'fa-chevron-down',
-            'wp-chevron'
-          )}
+          className={cx('fas', shouldShowSketchRow ? 'fa-chevron-up' : 'fa-chevron-down', 'wp-chevron')}
           aria-hidden="true"
         />
       </OptionBtn>
 
-      <div className={cx('wp-sketch-row', props.sketchRowOpen || props.isSketchToolActive ? '' : 'hidden')}>
+      <div className={cx('wp-sketch-row', shouldShowSketchRow ? '' : 'hidden')}>
         <InteriorSketchShelvesSection {...props} />
         <InteriorSketchBoxControlsSection {...props} isSketchBoxControlsOpen={isSketchBoxControlsOpen} />
         <InteriorDoorTrimSection {...props} isDoorTrimControlsOpen={isDoorTrimControlsOpen} />

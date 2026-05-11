@@ -155,6 +155,22 @@ function InteriorTabInner(props: { active: boolean }) {
             extCounts={state.extCounts}
             enterExtDrawer={workflows.enterExtDrawer}
             exitExtDrawer={workflows.exitExtDrawer}
+            sketchControls={{
+              isSketchToolActive: state.isSketchToolActive,
+              manualToolRaw: state.manualToolRaw,
+              sketchExtDrawersPanelOpen: state.sketchExtDrawersPanelOpen,
+              sketchExtDrawerCount: state.sketchExtDrawerCount,
+              sketchExtDrawerHeightCm: state.sketchExtDrawerHeightCm,
+              sketchExtDrawerHeightDraft: state.sketchExtDrawerHeightDraft,
+              setSketchShelvesOpen: state.setSketchShelvesOpen,
+              setSketchRowOpen: state.setSketchRowOpen,
+              setSketchExtDrawersPanelOpen: state.setSketchExtDrawersPanelOpen,
+              setSketchExtDrawerCount: state.setSketchExtDrawerCount,
+              setSketchExtDrawerHeightCm: state.setSketchExtDrawerHeightCm,
+              setSketchExtDrawerHeightDraft: state.setSketchExtDrawerHeightDraft,
+              enterSketchExtDrawersTool: workflows.enterSketchExtDrawersTool,
+              exitManual: workflows.exitManual,
+            }}
           />
 
           <InteriorInternalDrawersSection
@@ -162,6 +178,18 @@ function InteriorTabInner(props: { active: boolean }) {
             isIntDrawerMode={state.isIntDrawerMode}
             setInternalDrawersEnabled={workflows.setInternalDrawersEnabled}
             toggleIntDrawerMode={workflows.toggleIntDrawerMode}
+            sketchControls={{
+              isSketchToolActive: state.isSketchToolActive,
+              manualToolRaw: state.manualToolRaw,
+              sketchIntDrawerHeightCm: state.sketchIntDrawerHeightCm,
+              sketchIntDrawerHeightDraft: state.sketchIntDrawerHeightDraft,
+              setSketchShelvesOpen: state.setSketchShelvesOpen,
+              setSketchRowOpen: state.setSketchRowOpen,
+              setSketchIntDrawerHeightCm: state.setSketchIntDrawerHeightCm,
+              setSketchIntDrawerHeightDraft: state.setSketchIntDrawerHeightDraft,
+              enterSketchIntDrawersTool: workflows.enterSketchIntDrawersTool,
+              exitManual: workflows.exitManual,
+            }}
           />
 
           <InteriorDividerSection

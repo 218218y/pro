@@ -5,119 +5,18 @@ import {
   CountBtn,
   DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM,
   DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_CM,
-  SKETCH_DRAWER_HEIGHT_MAX_CM,
-  SKETCH_DRAWER_HEIGHT_MIN_CM,
   SKETCH_TOOL_EXT_DRAWERS_PREFIX,
   cx,
   isSketchInternalDrawersTool,
-  normalizeSketchDrawerHeightCm,
 } from './interior_tab_helpers.js';
+import {
+  SketchDrawerHeightField,
+  commitSketchDrawerHeightDraft,
+  resetSketchDrawerHeightDraft,
+  updateSketchDrawerHeightDraft,
+  type SketchDrawerHeightDraftController,
+} from './interior_tab_sketch_drawer_height_field.js';
 import type { InteriorSketchDrawersSectionProps } from './interior_layout_sketch_section_types.js';
-
-type SketchDrawerHeightFieldProps = {
-  label: string;
-  value: string;
-  onChange: (raw: string) => void;
-  onBlur: () => void;
-  onReset: () => void;
-};
-
-function SketchDrawerHeightField(props: SketchDrawerHeightFieldProps): ReactElement {
-  return (
-    <div className="wp-field wp-r-sketch-drawer-height-field">
-      <div className="wp-r-sketch-drawer-height-row">
-        <button
-          type="button"
-          className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-sketch-drawer-height-reset-btn"
-          onClick={props.onReset}
-        >
-          <i className="fas fa-undo-alt" aria-hidden="true" />
-          <span>ברירת מחדל</span>
-        </button>
-        <div className="wp-r-sketch-drawer-height-control">
-          <label className="wp-r-label wp-r-label--center wp-r-sketch-drawer-height-label">
-            {props.label}
-          </label>
-          <input
-            type="number"
-            className="wp-r-input wp-r-sketch-drawer-height-input"
-            value={props.value}
-            min={SKETCH_DRAWER_HEIGHT_MIN_CM}
-            max={SKETCH_DRAWER_HEIGHT_MAX_CM}
-            step={0.5}
-            onFocus={(event: import('react').FocusEvent<HTMLInputElement>) => {
-              event.target.select();
-            }}
-            onChange={(event: import('react').ChangeEvent<HTMLInputElement>) => {
-              props.onChange(event.target.value);
-            }}
-            onBlur={props.onBlur}
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function updateSketchExtDrawerHeightDraft(props: InteriorSketchDrawersSectionProps, raw: string): void {
-  props.setSketchExtDrawerHeightDraft(raw);
-  if (raw.trim() === '') return;
-  const next = Number(raw);
-  if (!Number.isFinite(next)) return;
-  if (next < SKETCH_DRAWER_HEIGHT_MIN_CM || next > SKETCH_DRAWER_HEIGHT_MAX_CM) return;
-  props.setSketchExtDrawerHeightCm(next);
-  if (props.isSketchToolActive && props.manualToolRaw.startsWith(SKETCH_TOOL_EXT_DRAWERS_PREFIX)) {
-    props.enterSketchExtDrawersTool(props.sketchExtDrawerCount, next);
-  }
-}
-
-function commitSketchExtDrawerHeightDraft(props: InteriorSketchDrawersSectionProps): void {
-  const next = normalizeSketchDrawerHeightCm(props.sketchExtDrawerHeightDraft, props.sketchExtDrawerHeightCm);
-  props.setSketchExtDrawerHeightCm(next);
-  props.setSketchExtDrawerHeightDraft(String(next));
-  if (props.isSketchToolActive && props.manualToolRaw.startsWith(SKETCH_TOOL_EXT_DRAWERS_PREFIX)) {
-    props.enterSketchExtDrawersTool(props.sketchExtDrawerCount, next);
-  }
-}
-
-function resetSketchExtDrawerHeightDraft(props: InteriorSketchDrawersSectionProps): void {
-  const next = DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM;
-  props.setSketchExtDrawerHeightCm(next);
-  props.setSketchExtDrawerHeightDraft(String(next));
-  if (props.isSketchToolActive && props.manualToolRaw.startsWith(SKETCH_TOOL_EXT_DRAWERS_PREFIX)) {
-    props.enterSketchExtDrawersTool(props.sketchExtDrawerCount, next);
-  }
-}
-
-function updateSketchIntDrawerHeightDraft(props: InteriorSketchDrawersSectionProps, raw: string): void {
-  props.setSketchIntDrawerHeightDraft(raw);
-  if (raw.trim() === '') return;
-  const next = Number(raw);
-  if (!Number.isFinite(next)) return;
-  if (next < SKETCH_DRAWER_HEIGHT_MIN_CM || next > SKETCH_DRAWER_HEIGHT_MAX_CM) return;
-  props.setSketchIntDrawerHeightCm(next);
-  if (props.isSketchToolActive && isSketchInternalDrawersTool(props.manualToolRaw)) {
-    props.enterSketchIntDrawersTool(next);
-  }
-}
-
-function commitSketchIntDrawerHeightDraft(props: InteriorSketchDrawersSectionProps): void {
-  const next = normalizeSketchDrawerHeightCm(props.sketchIntDrawerHeightDraft, props.sketchIntDrawerHeightCm);
-  props.setSketchIntDrawerHeightCm(next);
-  props.setSketchIntDrawerHeightDraft(String(next));
-  if (props.isSketchToolActive && isSketchInternalDrawersTool(props.manualToolRaw)) {
-    props.enterSketchIntDrawersTool(next);
-  }
-}
-
-function resetSketchIntDrawerHeightDraft(props: InteriorSketchDrawersSectionProps): void {
-  const next = DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_CM;
-  props.setSketchIntDrawerHeightCm(next);
-  props.setSketchIntDrawerHeightDraft(String(next));
-  if (props.isSketchToolActive && isSketchInternalDrawersTool(props.manualToolRaw)) {
-    props.enterSketchIntDrawersTool(next);
-  }
-}
 
 export function InteriorSketchDrawersSection(props: InteriorSketchDrawersSectionProps): ReactElement {
   const { isSketchExtDrawersControlsOpen } = props;
@@ -125,6 +24,28 @@ export function InteriorSketchDrawersSection(props: InteriorSketchDrawersSection
     props.isSketchToolActive && props.manualToolRaw.startsWith(SKETCH_TOOL_EXT_DRAWERS_PREFIX);
   const isSketchInternalDrawersToolActive =
     props.isSketchToolActive && isSketchInternalDrawersTool(props.manualToolRaw);
+  const externalHeightController: SketchDrawerHeightDraftController = {
+    heightCm: props.sketchExtDrawerHeightCm,
+    heightDraft: props.sketchExtDrawerHeightDraft,
+    defaultHeightCm: DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM,
+    isToolActive: isSketchExternalDrawersToolActive,
+    setHeightCm: props.setSketchExtDrawerHeightCm,
+    setHeightDraft: props.setSketchExtDrawerHeightDraft,
+    onActiveHeightChange: next => {
+      props.enterSketchExtDrawersTool(props.sketchExtDrawerCount, next);
+    },
+  };
+  const internalHeightController: SketchDrawerHeightDraftController = {
+    heightCm: props.sketchIntDrawerHeightCm,
+    heightDraft: props.sketchIntDrawerHeightDraft,
+    defaultHeightCm: DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_CM,
+    isToolActive: isSketchInternalDrawersToolActive,
+    setHeightCm: props.setSketchIntDrawerHeightCm,
+    setHeightDraft: props.setSketchIntDrawerHeightDraft,
+    onActiveHeightChange: next => {
+      props.enterSketchIntDrawersTool(next);
+    },
+  };
 
   return (
     <>
@@ -185,13 +106,13 @@ export function InteriorSketchDrawersSection(props: InteriorSketchDrawersSection
             label={'גובה מגירה חיצונית (ס"מ)'}
             value={props.sketchExtDrawerHeightDraft}
             onChange={raw => {
-              updateSketchExtDrawerHeightDraft(props, raw);
+              updateSketchDrawerHeightDraft(externalHeightController, raw);
             }}
             onBlur={() => {
-              commitSketchExtDrawerHeightDraft(props);
+              commitSketchDrawerHeightDraft(externalHeightController);
             }}
             onReset={() => {
-              resetSketchExtDrawerHeightDraft(props);
+              resetSketchDrawerHeightDraft(externalHeightController);
             }}
           />
         </div>
@@ -221,13 +142,13 @@ export function InteriorSketchDrawersSection(props: InteriorSketchDrawersSection
           label={'גובה מגירה פנימית (ס"מ)'}
           value={props.sketchIntDrawerHeightDraft}
           onChange={raw => {
-            updateSketchIntDrawerHeightDraft(props, raw);
+            updateSketchDrawerHeightDraft(internalHeightController, raw);
           }}
           onBlur={() => {
-            commitSketchIntDrawerHeightDraft(props);
+            commitSketchDrawerHeightDraft(internalHeightController);
           }}
           onReset={() => {
-            resetSketchIntDrawerHeightDraft(props);
+            resetSketchDrawerHeightDraft(internalHeightController);
           }}
         />
       </div>

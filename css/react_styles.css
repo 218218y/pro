@@ -2815,6 +2815,20 @@ body.wp-ui-react .btn-cancel:hover {
   font-size: 0.72rem;
 }
 
+#reactSidebarRoot .wp-r-embedded-sketch-drawers {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(148, 163, 184, 0.28);
+}
+
+#reactSidebarRoot .wp-r-embedded-sketch-drawers .wp-r-editmode-toggle--fullrow {
+  width: 100%;
+}
+
+#reactSidebarRoot .wp-r-embedded-sketch-drawers .wp-r-sketch-drawer-height-field {
+  margin-bottom: 0;
+}
+
 #reactSidebarRoot .wp-tool-card {
   background: #f8fafc;
   padding: 10px;
