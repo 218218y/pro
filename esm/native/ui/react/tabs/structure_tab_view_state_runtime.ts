@@ -6,6 +6,7 @@ import {
   normalizeBaseLegStyle,
   normalizeBaseLegWidthCm,
 } from '../../../features/base_leg_support.js';
+import { normalizeBasePlinthHeightCm } from '../../../features/base_plinth_support.js';
 import {
   DEFAULT_CHEST_DRAWERS_COUNT,
   DEFAULT_CORNER_DOORS,
@@ -96,6 +97,7 @@ export function readStructureTabBaseUiState(ui: StructureTabUiSnapshot): Structu
     baseType: normalizeStructureTabBaseType(ui.baseType),
     baseLegStyle: normalizeBaseLegStyle(ui.baseLegStyle),
     baseLegColor: normalizeBaseLegColor(ui.baseLegColor),
+    basePlinthHeightCm: normalizeBasePlinthHeightCm(ui.basePlinthHeightCm),
     baseLegHeightCm: normalizeBaseLegHeightCm(ui.baseLegHeightCm),
     baseLegWidthCm: normalizeBaseLegWidthCm(ui.baseLegWidthCm, getDefaultBaseLegWidthCm(ui.baseLegStyle)),
     slidingTracksColor: normalizeStructureTabSlidingTracksColor(ui.slidingTracksColor),

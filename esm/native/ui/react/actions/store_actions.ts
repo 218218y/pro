@@ -37,6 +37,7 @@ export {
   setUiBaseLegHeightCm,
   setUiBaseLegWidthCm,
   setUiBaseLegStyle,
+  setUiBasePlinthHeightCm,
   setUiBaseType,
   setUiCellDimsDepth,
   setUiCellDimsHeight,

@@ -18,6 +18,7 @@ import {
   DEFAULT_WIDTH,
   HINGED_DEFAULT_DEPTH,
   BASE_LEG_DIMENSIONS,
+  CARCASS_BASE_DIMENSIONS,
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 export function createDefaultState(opts?: { noneMode?: string }): RootStateLike {
@@ -60,6 +61,7 @@ export function createDefaultState(opts?: { noneMode?: string }): RootStateLike 
       baseType: 'plinth',
       baseLegStyle: 'tapered',
       baseLegColor: 'black',
+      basePlinthHeightCm: CARCASS_BASE_DIMENSIONS.plinth.heightM * 100,
       baseLegHeightCm: BASE_LEG_DIMENSIONS.defaults.heightCm,
       baseLegWidthCm: BASE_LEG_DIMENSIONS.defaults.taperedWidthCm,
       // Sliding wardrobes: top/bottom rails finish (default requested: nickel).

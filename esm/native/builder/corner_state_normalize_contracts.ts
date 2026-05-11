@@ -6,6 +6,7 @@ export type CornerBuildMeta = {
   baseType?: unknown;
   baseLegStyle?: unknown;
   baseLegColor?: unknown;
+  basePlinthHeightCm?: unknown;
   baseLegHeightCm?: unknown;
   baseLegWidthCm?: unknown;
   stackSplitEnabled?: boolean;
@@ -37,6 +38,7 @@ export type CornerBuildUI = UnknownRecord & {
   baseType?: unknown;
   baseLegStyle?: unknown;
   baseLegColor?: unknown;
+  basePlinthHeightCm?: unknown;
   baseLegHeightCm?: unknown;
   baseLegWidthCm?: unknown;
   layout?: unknown;
@@ -93,6 +95,7 @@ export type NormalizedCornerWingState = {
   baseType: string;
   baseLegStyle: BaseLegStyle;
   baseLegColor: BaseLegColor;
+  basePlinthHeightCm: number;
   baseLegHeightCm: number;
   baseLegWidthCm: number;
   baseH: number;

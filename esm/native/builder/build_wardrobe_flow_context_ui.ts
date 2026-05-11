@@ -5,6 +5,7 @@ export type ChestModeUiLike = {
   baseType?: string;
   baseLegStyle?: string;
   baseLegColor?: string;
+  basePlinthHeightCm?: number | string;
   baseLegHeightCm?: number | string;
   baseLegWidthCm?: number | string;
   colorChoice?: string;
@@ -20,6 +21,9 @@ export function pickChestModeUi(ui: unknown): ChestModeUiLike | null {
   if (typeof u.baseType === 'string') out.baseType = u.baseType;
   if (typeof u.baseLegStyle === 'string') out.baseLegStyle = u.baseLegStyle;
   if (typeof u.baseLegColor === 'string') out.baseLegColor = u.baseLegColor;
+  if (typeof u.basePlinthHeightCm === 'number' || typeof u.basePlinthHeightCm === 'string') {
+    out.basePlinthHeightCm = u.basePlinthHeightCm;
+  }
   if (typeof u.baseLegHeightCm === 'number' || typeof u.baseLegHeightCm === 'string') {
     out.baseLegHeightCm = u.baseLegHeightCm;
   }

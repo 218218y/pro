@@ -269,6 +269,8 @@ export const CARCASS_INTERIOR_DIMENSIONS = Object.freeze({
 export const CARCASS_BASE_DIMENSIONS = Object.freeze({
   plinth: Object.freeze({
     heightM: 0.08,
+    heightMinCm: 1,
+    heightMaxCm: 60,
     widthClearanceM: 0.04,
     fallbackWidthClearanceM: 0.02,
     depthClearanceM: 0.05,

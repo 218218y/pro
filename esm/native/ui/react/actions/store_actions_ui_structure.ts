@@ -6,6 +6,7 @@ import {
   normalizeBaseLegWidthCm,
   normalizeBaseLegStyle,
 } from '../../../features/base_leg_support.js';
+import { normalizeBasePlinthHeightCm } from '../../../features/base_plinth_support.js';
 import { asStringValue, getUiNamespace } from './store_actions_state.js';
 import { setUiFlag, setUiRawScalar, setUiScalar, setUiScalarSoft } from './store_actions_ui_writes.js';
 
@@ -16,6 +17,10 @@ function setUiBaseType(app: AppContainer, value: unknown, meta?: ActionMetaLike)
     return;
   }
   setUiScalar(app, 'baseType', value == null ? '' : String(value), meta);
+}
+
+function setUiBasePlinthHeightCm(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
+  setUiScalar(app, 'basePlinthHeightCm', normalizeBasePlinthHeightCm(value), meta);
 }
 
 function setUiBaseLegStyle(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
@@ -193,6 +198,7 @@ export {
   setUiBaseLegHeightCm,
   setUiBaseLegWidthCm,
   setUiBaseLegStyle,
+  setUiBasePlinthHeightCm,
   setUiBaseType,
   setUiCellDimsDepth,
   setUiCellDimsHeight,

@@ -147,6 +147,7 @@ export function buildProjectUiSnapshot(
     baseType: settings.baseType,
     baseLegStyle: settings.baseLegStyle,
     baseLegColor: settings.baseLegColor,
+    basePlinthHeightCm: settings.basePlinthHeightCm,
     baseLegHeightCm: settings.baseLegHeightCm,
     baseLegWidthCm: settings.baseLegWidthCm,
     slidingTracksColor: settings.slidingTracksColor === 'black' ? 'black' : 'nickel',

@@ -41,6 +41,7 @@ export interface CornerOpsEmitContext extends UnknownRecord {
   baseType: string;
   baseLegStyle: string;
   baseLegColor: string;
+  basePlinthHeightCm: number;
   baseLegHeightCm: number;
   baseLegWidthCm: number;
   baseH: number;

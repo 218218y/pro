@@ -58,7 +58,7 @@ export function buildChestOnly(App: AppContainer, opts?: UnknownRecord | null) {
   const effectiveBaseType = inputs.effectiveBaseType;
   const drawersCount = inputs.drawersCount;
   const thick = MATERIAL_DIMENSIONS.wood.thicknessM;
-  const baseH = effectiveBaseType === 'plinth' ? PLINTH_DIMENSIONS.heightM : inputs.baseLegHeightM;
+  const baseH = effectiveBaseType === 'plinth' ? inputs.basePlinthHeightM : inputs.baseLegHeightM;
 
   const createChestBoard = (
     w: number,

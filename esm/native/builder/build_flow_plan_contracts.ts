@@ -47,6 +47,7 @@ export type BuildFlowPlan = {
   doorStyle: string;
   baseLegStyle: string;
   baseLegColor: string;
+  basePlinthHeightCm: number;
   baseLegHeightCm: number;
   baseLegWidthCm: number;
   baseTypeBottom: string;
@@ -105,6 +106,7 @@ export type BuildFlowPlanInputs = Pick<
   | 'doorStyle'
   | 'baseLegStyle'
   | 'baseLegColor'
+  | 'basePlinthHeightCm'
   | 'baseLegHeightCm'
   | 'baseLegWidthCm'
   | 'baseTypeBottom'

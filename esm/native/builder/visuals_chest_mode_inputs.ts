@@ -1,6 +1,7 @@
 import { WARDROBE_DEFAULTS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { readUiRawDimsCmFromSnapshot } from '../runtime/ui_raw_selectors.js';
 import { readBaseLegOptions, type BaseLegColor, type BaseLegStyle } from '../features/base_leg_support.js';
+import { getBasePlinthHeightM, normalizeBasePlinthHeightCm } from '../features/base_plinth_support.js';
 
 import type { AppContainer, UnknownRecord } from '../../../types/index.js';
 
@@ -14,6 +15,8 @@ export type ChestModeBuildInputs = {
   effectiveBaseType: 'plinth' | 'legs';
   baseLegStyle: BaseLegStyle;
   baseLegColor: BaseLegColor;
+  basePlinthHeightCm: number;
+  basePlinthHeightM: number;
   baseLegHeightCm: number;
   baseLegWidthCm: number;
   baseLegHeightM: number;
@@ -31,6 +34,7 @@ export function resolveChestModeBuildInputs(
   let drawersCount: number;
   let rawBaseType: unknown;
   let legSource: unknown;
+  let plinthHeightSource: unknown;
   let colorChoice: unknown;
   let customColor: unknown;
 
@@ -42,6 +46,7 @@ export function resolveChestModeBuildInputs(
     drawersCount = parseInt(String(opts.drawersCount ?? ''), 10);
     rawBaseType = opts.baseType;
     legSource = opts;
+    plinthHeightSource = opts.basePlinthHeightCm;
     colorChoice = opts.colorChoice;
     customColor = opts.customColor;
   } else {
@@ -57,11 +62,13 @@ export function resolveChestModeBuildInputs(
     drawersCount = dims ? dims.chestDrawersCount : WARDROBE_DEFAULTS.chestDrawersCount;
     rawBaseType = ui ? ui.baseType : '';
     legSource = ui;
+    plinthHeightSource = ui ? ui.basePlinthHeightCm : undefined;
     colorChoice = ui ? ui.colorChoice : '';
     customColor = ui ? ui.customColor : '';
   }
 
   const legOptions = readBaseLegOptions(legSource);
+  const basePlinthHeightCm = normalizeBasePlinthHeightCm(plinthHeightSource);
   return {
     H,
     totalW,
@@ -70,6 +77,8 @@ export function resolveChestModeBuildInputs(
     effectiveBaseType: String(rawBaseType || '') === 'plinth' ? 'plinth' : 'legs',
     baseLegStyle: legOptions.style,
     baseLegColor: legOptions.color,
+    basePlinthHeightCm,
+    basePlinthHeightM: getBasePlinthHeightM(basePlinthHeightCm),
     baseLegHeightCm: legOptions.heightCm,
     baseLegWidthCm: legOptions.widthCm,
     baseLegHeightM: legOptions.heightM,

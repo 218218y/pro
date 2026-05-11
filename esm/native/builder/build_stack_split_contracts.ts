@@ -40,6 +40,7 @@ export type BuildStackSplitLowerUnitArgs = {
   baseTypeBottom: string;
   baseLegStyle?: string;
   baseLegColor?: string;
+  basePlinthHeightCm?: number | string;
   baseLegHeightCm?: number | string;
   baseLegWidthCm?: number | string;
   doorStyle: string;

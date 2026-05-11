@@ -51,6 +51,7 @@ export function resolveBuildWardrobeCarcassMetrics(args: {
     woodThick: plan.woodThick,
     baseType: plan.baseTypeTop,
     baseLegStyle: plan.baseLegStyle,
+    basePlinthHeightCm: plan.basePlinthHeightCm,
     baseLegHeightCm: plan.baseLegHeightCm,
     baseLegWidthCm: plan.baseLegWidthCm,
     doorsCount: plan.doorsCount,

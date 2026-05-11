@@ -235,6 +235,7 @@ export interface BuilderSketchBoxLike extends UnknownRecord {
   baseType?: BuilderSketchAdornmentBaseTypeLike;
   baseLegStyle?: string | null;
   baseLegColor?: string | null;
+  basePlinthHeightCm?: BuilderSketchScalar;
   baseLegHeightCm?: BuilderSketchScalar;
   dividerXNorm?: BuilderSketchScalar;
   centerDivider?: boolean | null;
@@ -264,6 +265,7 @@ export interface BuilderBuildChestOnlyOptsLike extends UnknownRecord {
   baseType?: unknown;
   baseLegStyle?: unknown;
   baseLegColor?: unknown;
+  basePlinthHeightCm?: unknown;
   baseLegHeightCm?: unknown;
   colorChoice?: unknown;
   customColor?: unknown;
@@ -278,6 +280,7 @@ export interface BuilderCornerBuildMetaLike extends UnknownRecord {
   baseType?: string;
   baseLegStyle?: string;
   baseLegColor?: string;
+  basePlinthHeightCm?: number | string;
   baseLegHeightCm?: number | string;
   stackSplitEnabled?: boolean;
   stackOffsetZ?: number;

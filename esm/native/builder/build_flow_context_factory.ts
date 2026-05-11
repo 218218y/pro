@@ -168,6 +168,7 @@ export function createBuildFlowContext(args: BuildFlowContextFactoryArgs): Build
       baseType: plan.baseTypeTop,
       baseLegStyle: plan.baseLegStyle,
       baseLegColor: plan.baseLegColor,
+      basePlinthHeightCm: plan.basePlinthHeightCm,
       baseLegHeightCm: plan.baseLegHeightCm,
       baseLegWidthCm: plan.baseLegWidthCm,
     },

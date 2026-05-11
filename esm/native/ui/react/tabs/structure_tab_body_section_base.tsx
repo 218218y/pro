@@ -18,6 +18,11 @@ import {
   BASE_LEG_WIDTH_MAX_CM,
   BASE_LEG_WIDTH_MIN_CM,
 } from '../../../features/base_leg_support.js';
+import {
+  BASE_PLINTH_HEIGHT_MAX_CM,
+  BASE_PLINTH_HEIGHT_MIN_CM,
+  DEFAULT_BASE_PLINTH_HEIGHT_CM,
+} from '../../../features/base_plinth_support.js';
 
 const LEG_COLOR_SWATCH_BY_COLOR: Record<StructureBaseLegColor, string> = {
   black: '#111111',
@@ -29,6 +34,7 @@ export function StructureBodyBaseControls(props: {
   baseType: BaseType;
   baseLegStyle: StructureBaseLegStyle;
   baseLegColor: StructureBaseLegColor;
+  basePlinthHeightCm: number;
   baseLegHeightCm: number;
   baseLegWidthCm: number;
   isChestMode: boolean;
@@ -37,6 +43,7 @@ export function StructureBodyBaseControls(props: {
   onSetBaseType: (value: BaseType) => void;
   onSetBaseLegStyle: (value: StructureBaseLegStyle) => void;
   onSetBaseLegColor: (value: StructureBaseLegColor) => void;
+  onSetBasePlinthHeightCm: (value: number) => void;
   onSetBaseLegHeightCm: (value: number) => void;
   onSetBaseLegWidthCm: (value: number) => void;
   onSetSlidingTracksColor: (value: SlidingTracksColor) => void;
@@ -59,6 +66,41 @@ export function StructureBodyBaseControls(props: {
           ))}
         </OptionButtonGroup>
       </div>
+
+      {props.baseType === 'plinth' ? (
+        <div className="wp-field wp-r-base-plinth-height-field">
+          <div className="wp-r-sketch-drawer-height-row wp-r-base-plinth-height-row">
+            <button
+              type="button"
+              className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-sketch-drawer-height-reset-btn"
+              onClick={() => props.onSetBasePlinthHeightCm(DEFAULT_BASE_PLINTH_HEIGHT_CM)}
+            >
+              <i className="fas fa-undo-alt" aria-hidden="true" />
+              <span>ברירת מחדל</span>
+            </button>
+            <div className="wp-r-sketch-drawer-height-control">
+              <label className="wp-r-label wp-r-label--center wp-r-sketch-drawer-height-label">
+                גובה צוקל (ס"מ)
+              </label>
+              <input
+                type="number"
+                className="wp-r-input wp-r-sketch-drawer-height-input"
+                min={BASE_PLINTH_HEIGHT_MIN_CM}
+                max={BASE_PLINTH_HEIGHT_MAX_CM}
+                step={0.5}
+                value={props.basePlinthHeightCm}
+                onFocus={(event: import('react').FocusEvent<HTMLInputElement>) => {
+                  event.target.select();
+                }}
+                onChange={(event: import('react').ChangeEvent<HTMLInputElement>) => {
+                  const next = Number(event.target.value);
+                  if (Number.isFinite(next)) props.onSetBasePlinthHeightCm(next);
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {props.baseType === 'legs' ? (
         <>

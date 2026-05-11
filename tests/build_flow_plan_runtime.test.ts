@@ -54,6 +54,7 @@ test('build_flow_plan inputs clear top base when stack split is active and slidi
       baseType: 'toeKick',
       baseLegStyle: 'round',
       baseLegColor: 'gold',
+      basePlinthHeightCm: 14.5,
       baseLegHeightCm: 18,
       baseLegWidthCm: 7,
       raw: {
@@ -78,6 +79,7 @@ test('build_flow_plan inputs clear top base when stack split is active and slidi
   assert.equal(plan.baseTypeTop, '');
   assert.equal(plan.baseLegStyle, 'round');
   assert.equal(plan.baseLegColor, 'gold');
+  assert.equal(plan.basePlinthHeightCm, 14.5);
   assert.equal(plan.baseLegHeightCm, 18);
   assert.equal(plan.baseLegWidthCm, 7);
   assert.equal(plan.noMainWardrobe, false);

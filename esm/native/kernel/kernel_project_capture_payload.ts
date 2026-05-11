@@ -68,6 +68,7 @@ function buildProjectCaptureSettings(
     baseType: asString(uiRec.baseType, ''),
     baseLegStyle: asString(uiRec.baseLegStyle, 'tapered'),
     baseLegColor: asString(uiRec.baseLegColor, 'black'),
+    basePlinthHeightCm: uiRec.basePlinthHeightCm !== undefined ? uiRec.basePlinthHeightCm : 8,
     baseLegHeightCm: uiRec.baseLegHeightCm !== undefined ? uiRec.baseLegHeightCm : 12,
     baseLegWidthCm: uiRec.baseLegWidthCm !== undefined ? uiRec.baseLegWidthCm : 4,
     slidingTracksColor: asString(uiRec.slidingTracksColor, 'nickel'),

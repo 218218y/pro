@@ -6,6 +6,7 @@ import {
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 import { readBaseLegOptions } from '../features/base_leg_support.js';
+import { getBasePlinthHeightM } from '../features/base_plinth_support.js';
 import { _asObject, __asArray, __asInt, __asNum } from './core_pure_shared.js';
 import type { MutableRecord } from './core_pure_shared.js';
 
@@ -53,7 +54,7 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
   let base: MutableRecord | null = null;
 
   if (baseType === 'plinth') {
-    baseHeight = PLINTH_DIMENSIONS.heightM;
+    baseHeight = getBasePlinthHeightM(inp.basePlinthHeightCm);
     startY = baseHeight;
     base = {
       kind: 'plinth',

@@ -1,9 +1,7 @@
 import type { CornerBuildMeta, CornerBuildUI } from './corner_state_normalize_contracts.js';
-import {
-  CARCASS_BASE_DIMENSIONS,
-  CORNER_WING_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { readBaseLegOptions, type BaseLegColor, type BaseLegStyle } from '../features/base_leg_support.js';
+import { getBasePlinthHeightM, normalizeBasePlinthHeightCm } from '../features/base_plinth_support.js';
 import {
   readBool,
   readFiniteNumber,
@@ -13,7 +11,6 @@ import {
   resolveCornerPrimaryMode,
 } from './corner_state_normalize_shared.js';
 
-const PLINTH_DIMENSIONS = CARCASS_BASE_DIMENSIONS.plinth;
 const CORNER_WING = CORNER_WING_DIMENSIONS.wing;
 const CORNER_CONNECTOR = CORNER_WING_DIMENSIONS.connector;
 
@@ -24,6 +21,7 @@ export type CornerWingStackMetaState = {
   __baseTypeOverride: unknown;
   __baseLegStyleOverride: unknown;
   __baseLegColorOverride: unknown;
+  __basePlinthHeightCmOverride: unknown;
   __baseLegHeightCmOverride: unknown;
   __baseLegWidthCmOverride: unknown;
 };
@@ -58,6 +56,7 @@ export type CornerWingPlacementState = {
   baseType: string;
   baseLegStyle: BaseLegStyle;
   baseLegColor: BaseLegColor;
+  basePlinthHeightCm: number;
   baseLegHeightCm: number;
   baseLegWidthCm: number;
   baseH: number;
@@ -88,6 +87,7 @@ export function resolveCornerWingStackMeta(
     __baseTypeOverride: metaRec ? metaRec.baseType : undefined,
     __baseLegStyleOverride: metaRec ? metaRec.baseLegStyle : undefined,
     __baseLegColorOverride: metaRec ? metaRec.baseLegColor : undefined,
+    __basePlinthHeightCmOverride: metaRec ? metaRec.basePlinthHeightCm : undefined,
     __baseLegHeightCmOverride: metaRec ? metaRec.baseLegHeightCm : undefined,
     __baseLegWidthCmOverride: metaRec ? metaRec.baseLegWidthCm : undefined,
   };
@@ -196,6 +196,7 @@ export function resolveCornerWingPlacement(args: {
   __baseTypeOverride: unknown;
   __baseLegStyleOverride: unknown;
   __baseLegColorOverride: unknown;
+  __basePlinthHeightCmOverride: unknown;
   __baseLegHeightCmOverride: unknown;
   __baseLegWidthCmOverride: unknown;
   __stackKey: 'top' | 'bottom';
@@ -212,6 +213,7 @@ export function resolveCornerWingPlacement(args: {
     __baseTypeOverride,
     __baseLegStyleOverride,
     __baseLegColorOverride,
+    __basePlinthHeightCmOverride,
     __baseLegHeightCmOverride,
     __baseLegWidthCmOverride,
     __stackKey,
@@ -230,6 +232,12 @@ export function resolveCornerWingPlacement(args: {
       : __baseTypeRaw;
 
   if (__stackSplitEnabled && __stackKey === 'top') baseType = 'none';
+
+  const basePlinthHeightSource =
+    __basePlinthHeightCmOverride != null && String(__basePlinthHeightCmOverride).trim() !== ''
+      ? __basePlinthHeightCmOverride
+      : uiAny.basePlinthHeightCm;
+  const basePlinthHeightCm = normalizeBasePlinthHeightCm(basePlinthHeightSource);
 
   const legOptions = readBaseLegOptions({
     baseLegStyle:
@@ -251,7 +259,7 @@ export function resolveCornerWingPlacement(args: {
   });
 
   let baseH =
-    baseType === 'plinth' ? PLINTH_DIMENSIONS.heightM : baseType === 'legs' ? legOptions.heightM : 0;
+    baseType === 'plinth' ? getBasePlinthHeightM(basePlinthHeightCm) : baseType === 'legs' ? legOptions.heightM : 0;
   if (startY < CORNER_CONNECTOR.doorMinHeightM && baseH > startY) baseH = Math.max(0, startY);
 
   const stackOffsetY = Math.max(0, startY - baseH);
@@ -284,6 +292,7 @@ export function resolveCornerWingPlacement(args: {
     baseType,
     baseLegStyle: legOptions.style,
     baseLegColor: legOptions.color,
+    basePlinthHeightCm,
     baseLegHeightCm: legOptions.heightCm,
     baseLegWidthCm: legOptions.widthCm,
     baseH,

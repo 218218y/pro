@@ -37,6 +37,7 @@ type ApplyCarcassAndGetCabinetMetricsArgs = {
   woodThick?: number;
   baseType?: string;
   baseLegStyle?: string;
+  basePlinthHeightCm?: number | string;
   baseLegHeightCm?: number | string;
   baseLegWidthCm?: number | string;
   doorsCount?: number;
@@ -187,6 +188,7 @@ export function applyCarcassAndGetCabinetMetrics(
     woodThick: woodThickN,
     baseType: baseTypeStr,
     baseLegStyle: safeArgs.baseLegStyle,
+    basePlinthHeightCm: safeArgs.basePlinthHeightCm,
     baseLegHeightCm: safeArgs.baseLegHeightCm,
     baseLegWidthCm: safeArgs.baseLegWidthCm,
     doorsCount: safeDoorsCount,

@@ -11,6 +11,7 @@ export type StructureTabViewState = {
   baseType: 'plinth' | 'legs' | 'none';
   baseLegStyle: BaseLegStyle;
   baseLegColor: BaseLegColor;
+  basePlinthHeightCm: number;
   baseLegHeightCm: number;
   baseLegWidthCm: number;
   slidingTracksColor: 'nickel' | 'black';

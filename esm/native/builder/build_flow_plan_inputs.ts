@@ -6,6 +6,7 @@ import {
   normalizeBaseLegStyle,
   normalizeBaseLegWidthCm,
 } from '../features/base_leg_support.js';
+import { normalizeBasePlinthHeightCm } from '../features/base_plinth_support.js';
 import { readUiState } from './build_flow_readers.js';
 import {
   CARCASS_INTERIOR_DIMENSIONS,
@@ -59,6 +60,7 @@ export function resolveBuildFlowPlanInputs(args: BuildFlowPlanInputsArgs): Build
   const baseType = toStr(ui.baseType, '');
   const baseLegStyle = normalizeBaseLegStyle(ui.baseLegStyle);
   const baseLegColor = normalizeBaseLegColor(ui.baseLegColor);
+  const basePlinthHeightCm = normalizeBasePlinthHeightCm(ui.basePlinthHeightCm);
   const baseLegHeightCm = normalizeBaseLegHeightCm(ui.baseLegHeightCm);
   const baseLegWidthCm = normalizeBaseLegWidthCm(ui.baseLegWidthCm, getDefaultBaseLegWidthCm(baseLegStyle));
 
@@ -86,6 +88,7 @@ export function resolveBuildFlowPlanInputs(args: BuildFlowPlanInputsArgs): Build
     doorStyle: toStr(ui.doorStyle, ''),
     baseLegStyle,
     baseLegColor,
+    basePlinthHeightCm,
     baseLegHeightCm,
     baseLegWidthCm,
     baseTypeBottom: baseType,

@@ -19,6 +19,7 @@ export type StructureTabStructuralController = {
   setBaseType: (next: 'plinth' | 'legs' | 'none') => void;
   setBaseLegStyle: (next: BaseLegStyle) => void;
   setBaseLegColor: (next: BaseLegColor) => void;
+  setBasePlinthHeightCm: (next: number) => void;
   setBaseLegHeightCm: (next: number) => void;
   setBaseLegWidthCm: (next: number) => void;
   setSlidingTracksColor: (next: 'nickel' | 'black') => void;

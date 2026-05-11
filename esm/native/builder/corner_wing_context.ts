@@ -68,6 +68,7 @@ export function createCornerWingEmitContext(args: {
     baseType: state.baseType,
     baseLegStyle: state.baseLegStyle,
     baseLegColor: state.baseLegColor,
+    basePlinthHeightCm: state.basePlinthHeightCm,
     baseLegHeightCm: state.baseLegHeightCm,
     baseLegWidthCm: state.baseLegWidthCm,
     baseH: state.baseH,

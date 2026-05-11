@@ -64,6 +64,14 @@ const sandbox = {
         },
       };
     }
+    if (spec === '../../../features/base_plinth_support.js') {
+      return {
+        normalizeBasePlinthHeightCm: value => {
+          const n = Number(value);
+          return Number.isFinite(n) ? Math.round(n * 10) / 10 : 8;
+        },
+      };
+    }
     if (spec === '../../../services/api.js') {
       return {
         DEFAULT_CHEST_DRAWERS_COUNT: 4,
@@ -131,6 +139,7 @@ test('structure tab view-state runtime normalizes base ui state', () => {
     baseType: 'legs',
     baseLegStyle: 'square',
     baseLegColor: 'gold',
+    basePlinthHeightCm: '14.5',
     baseLegHeightCm: '18',
     baseLegWidthCm: '5.5',
     slidingTracksColor: 'black',
@@ -150,6 +159,7 @@ test('structure tab view-state runtime normalizes base ui state', () => {
   assert.equal(state.baseType, 'legs');
   assert.equal(state.baseLegStyle, 'square');
   assert.equal(state.baseLegColor, 'gold');
+  assert.equal(state.basePlinthHeightCm, 14.5);
   assert.equal(state.baseLegHeightCm, 18);
   assert.equal(state.baseLegWidthCm, 5.5);
   assert.equal(state.slidingTracksColor, 'black');

@@ -17,6 +17,7 @@ export type StructureBodySectionProps = {
   baseType: BaseType;
   baseLegStyle: StructureBaseLegStyle;
   baseLegColor: StructureBaseLegColor;
+  basePlinthHeightCm: number;
   baseLegHeightCm: number;
   baseLegWidthCm: number;
   isChestMode: boolean;
@@ -34,6 +35,7 @@ export type StructureBodySectionProps = {
   onSetBaseType: (value: BaseType) => void;
   onSetBaseLegStyle: (value: StructureBaseLegStyle) => void;
   onSetBaseLegColor: (value: StructureBaseLegColor) => void;
+  onSetBasePlinthHeightCm: (value: number) => void;
   onSetBaseLegHeightCm: (value: number) => void;
   onSetBaseLegWidthCm: (value: number) => void;
   onSetSlidingTracksColor: (value: SlidingTracksColor) => void;

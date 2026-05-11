@@ -174,6 +174,7 @@ export function applyPostBuildExtras(input: BuildContextLike) {
             stackOffsetZ: 0,
             baseLegStyle: ctx.strings?.baseLegStyle,
             baseLegColor: ctx.strings?.baseLegColor,
+            basePlinthHeightCm: ctx.strings?.basePlinthHeightCm,
             baseLegHeightCm: ctx.strings?.baseLegHeightCm,
             baseLegWidthCm: ctx.strings?.baseLegWidthCm,
           }
