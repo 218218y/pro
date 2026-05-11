@@ -22,7 +22,7 @@ function openNativeColorPicker(input: HTMLInputElement | null): void {
       return;
     }
   } catch {
-    // ignore and fallback to click
+    // ignore and use the click path
   }
   try {
     input.click();

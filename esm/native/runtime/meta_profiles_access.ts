@@ -3,7 +3,7 @@
 // Goal:
 // - Provide a single, stable way to build ActionMetaLike objects across layers.
 // - Prefer App.actions.meta.* surfaces when installed.
-// - Keep a small local fallback so low-level tests/tools remain usable.
+// - Keep a small local defaults path so low-level tests/tools remain usable.
 //
 // Notes:
 // - Always returns a NEW object (never mutates input).
@@ -26,8 +26,8 @@ import { reportError } from './errors.js';
 type MetaProfileDefaults = ActionMetaLike;
 type MetaProfileCall = (meta?: ActionMetaLike, source?: string) => ActionMetaLike;
 
-function mergeLocal(meta: unknown, defaults: MetaProfileDefaults, sourceFallback?: string): ActionMetaLike {
-  return mergeMetaProfileDefaults(meta, defaults, sourceFallback);
+function mergeLocal(meta: unknown, defaults: MetaProfileDefaults, defaultSource?: string): ActionMetaLike {
+  return mergeMetaProfileDefaults(meta, defaults, defaultSource);
 }
 
 function toMetaArg(meta: ActionMetaLike | UnknownRecord | undefined): ActionMetaLike | undefined {
@@ -70,7 +70,7 @@ function callMetaProfile(
   fn: MetaProfileCall | undefined,
   meta: ActionMetaLike | UnknownRecord | undefined,
   source: string,
-  fallbackDefaults: MetaProfileDefaults
+  localDefaults: MetaProfileDefaults
 ): ActionMetaLike {
   if (metaNs && typeof fn === 'function') {
     try {
@@ -80,7 +80,7 @@ function callMetaProfile(
     }
   }
 
-  return mergeLocal(meta, fallbackDefaults, source);
+  return mergeLocal(meta, localDefaults, source);
 }
 
 export function metaMerge(
@@ -91,7 +91,7 @@ export function metaMerge(
 ): ActionMetaLike {
   const metaNs = metaNsFromApp(App);
   const src = source || 'meta:merge';
-  const fallbackDefaults: MetaProfileDefaults = defaults ? { ...cloneRecord(defaults) } : {};
+  const localDefaults: MetaProfileDefaults = defaults ? { ...cloneRecord(defaults) } : {};
 
   if (metaNs && typeof metaNs.merge === 'function') {
     try {
@@ -101,7 +101,7 @@ export function metaMerge(
     }
   }
 
-  return mergeLocal(meta, fallbackDefaults, src);
+  return mergeLocal(meta, localDefaults, src);
 }
 
 export function metaUiOnly(

@@ -161,7 +161,7 @@ export function getBrowserTimers(app: unknown): BrowserTimersLike {
   const caf: CancelAnimationFrameLike =
     cancelAnimationFrameMaybe(app) ||
     function (_handle: number) {
-      // no-op fallback
+      // Intentionally no-op when animation-frame cancellation is unavailable.
     };
 
   const qm: QueueMicrotaskLike | undefined =

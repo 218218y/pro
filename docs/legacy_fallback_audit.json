@@ -1,11 +1,12 @@
 {
-  "generatedAt": "2026-05-10T20:53:57.480Z",
+  "generatedAt": "2026-05-11T02:58:04.833Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 30,
-    "totalFiles": 23,
+    "totalOccurrences": 19,
+    "totalFiles": 12,
     "byCategory": {
-      "runtime-default": 13,
+      "runtime-default": 0,
+      "framework-default": 2,
       "browser-adapter": 9,
       "project-migration": 1,
       "test-fixture": 7,
@@ -43,12 +44,6 @@
           "browser-adapter": 3
         }
       },
-      "esm/native/builder/room_floor_texture.ts": {
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
       "esm/native/features/project_config/project_config_persisted_payload_shared.ts": {
         "total": 1,
         "categories": {
@@ -61,82 +56,22 @@
           "browser-adapter": 1
         }
       },
-      "esm/native/platform/dirty_flag.ts": {
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      "esm/native/platform/smoke_checks_shared.ts": {
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
       "esm/native/platform/smoke_checks.ts": {
         "total": 1,
         "categories": {
           "browser-adapter": 1
         }
       },
-      "esm/native/runtime/browser_clipboard.ts": {
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      "esm/native/runtime/browser_env_timers.ts": {
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      "esm/native/runtime/meta_profiles_access.ts": {
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      "esm/native/runtime/meta_profiles_contract.ts": {
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      "esm/native/services/cloud_sync_config_shared.ts": {
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      "esm/native/ui/interactions/project_save_load.ts": {
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
       "esm/native/ui/react/overlay_pdf_host.tsx": {
         "total": 1,
         "categories": {
-          "runtime-default": 1
+          "framework-default": 1
         }
       },
       "esm/native/ui/react/sidebar_app.tsx": {
         "total": 1,
         "categories": {
-          "runtime-default": 1
-        }
-      },
-      "esm/native/ui/react/sidebar_header_actions.ts": {
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      "esm/native/ui/react/tabs/interior_tab_sections_handles.tsx": {
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
+          "framework-default": 1
         }
       },
       "esm/test_imports.mjs": {
@@ -196,13 +131,6 @@
         }
       },
       {
-        "file": "esm/native/builder/room_floor_texture.ts",
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      {
         "file": "esm/native/features/project_config/project_config_persisted_payload_shared.ts",
         "total": 1,
         "categories": {
@@ -217,20 +145,6 @@
         }
       },
       {
-        "file": "esm/native/platform/dirty_flag.ts",
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      {
-        "file": "esm/native/platform/smoke_checks_shared.ts",
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      {
         "file": "esm/native/platform/smoke_checks.ts",
         "total": 1,
         "categories": {
@@ -238,73 +152,17 @@
         }
       },
       {
-        "file": "esm/native/runtime/browser_clipboard.ts",
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      {
-        "file": "esm/native/runtime/browser_env_timers.ts",
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      {
-        "file": "esm/native/runtime/meta_profiles_access.ts",
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      {
-        "file": "esm/native/runtime/meta_profiles_contract.ts",
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      {
-        "file": "esm/native/services/cloud_sync_config_shared.ts",
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      {
-        "file": "esm/native/ui/interactions/project_save_load.ts",
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      {
         "file": "esm/native/ui/react/overlay_pdf_host.tsx",
         "total": 1,
         "categories": {
-          "runtime-default": 1
+          "framework-default": 1
         }
       },
       {
         "file": "esm/native/ui/react/sidebar_app.tsx",
         "total": 1,
         "categories": {
-          "runtime-default": 1
-        }
-      },
-      {
-        "file": "esm/native/ui/react/sidebar_header_actions.ts",
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      {
-        "file": "esm/native/ui/react/tabs/interior_tab_sections_handles.tsx",
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
+          "framework-default": 1
         }
       },
       {
@@ -316,7 +174,10 @@
       }
     ]
   },
-  "allowlistComparison": null,
+  "allowlistComparison": {
+    "ok": true,
+    "failures": []
+  },
   "occurrences": [
     {
       "file": "esm/entry_pro_overlay.ts",
@@ -368,13 +229,6 @@
       "text": "return fallback;"
     },
     {
-      "file": "esm/native/builder/room_floor_texture.ts",
-      "line": 26,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "// ignore fallback canvas creation errors; room design can operate without a procedural texture"
-    },
-    {
       "file": "esm/native/features/project_config/project_config_persisted_payload_shared.ts",
       "line": 255,
       "term": "legacy",
@@ -389,20 +243,6 @@
       "text": "// - Pure ESM: attach boot API only to the provided App instance (no window/global fallbacks)."
     },
     {
-      "file": "esm/native/platform/dirty_flag.ts",
-      "line": 9,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "// A per-app in-memory fallback is used for extremely early boot writes."
-    },
-    {
-      "file": "esm/native/platform/smoke_checks_shared.ts",
-      "line": 206,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "reportNonFatal('report.fallback', consoleErr);"
-    },
-    {
       "file": "esm/native/platform/smoke_checks.ts",
       "line": 5,
       "term": "fallbacks",
@@ -410,74 +250,18 @@
       "text": "// - Expose smoke-check helpers on the provided App instance (no window/global fallbacks)."
     },
     {
-      "file": "esm/native/runtime/browser_clipboard.ts",
-      "line": 98,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "// ignore cleanup failure in clipboard fallback"
-    },
-    {
-      "file": "esm/native/runtime/browser_env_timers.ts",
-      "line": 164,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "// no-op fallback"
-    },
-    {
-      "file": "esm/native/runtime/meta_profiles_access.ts",
-      "line": 6,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "// - Keep a small local fallback so low-level tests/tools remain usable."
-    },
-    {
-      "file": "esm/native/runtime/meta_profiles_contract.ts",
-      "line": 4,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "// - Keep fallback meta semantics aligned with kernel-installed helpers."
-    },
-    {
-      "file": "esm/native/services/cloud_sync_config_shared.ts",
-      "line": 147,
-      "term": "Fallback",
-      "category": "runtime-default",
-      "text": "// Fallback for constrained/non-browser test runtimes only. Runtime private-room mode"
-    },
-    {
-      "file": "esm/native/ui/interactions/project_save_load.ts",
-      "line": 68,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "// ignore debug fallback failures"
-    },
-    {
       "file": "esm/native/ui/react/overlay_pdf_host.tsx",
       "line": 55,
       "term": "fallback",
-      "category": "runtime-default",
+      "category": "framework-default",
       "text": "<Suspense fallback={<PdfEditorLoadingOverlay />}>"
     },
     {
       "file": "esm/native/ui/react/sidebar_app.tsx",
       "line": 87,
       "term": "fallback",
-      "category": "runtime-default",
+      "category": "framework-default",
       "text": "fallback={"
-    },
-    {
-      "file": "esm/native/ui/react/sidebar_header_actions.ts",
-      "line": 61,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "// fall through to fallback snapshot"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/interior_tab_sections_handles.tsx",
-      "line": 25,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "// ignore and fallback to click"
     },
     {
       "file": "esm/test_imports.mjs",

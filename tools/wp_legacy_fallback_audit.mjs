@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 export const LEGACY_FALLBACK_CATEGORIES = [
   'runtime-default',
+  'framework-default',
   'browser-adapter',
   'project-migration',
   'test-fixture',
@@ -117,12 +118,19 @@ function isRuntimeDefaultLine(lineText) {
   );
 }
 
+function isFrameworkDefaultLine(relPath, lineText) {
+  return /(^|\/)native\/ui\/react\/.*\.tsx?$/.test(relPath) && /\bfallback\s*=/.test(lineText);
+}
+
 export function classifyLegacyFallbackOccurrence({ relPath, lineText, term }) {
   const normalizedPath = normalizePath(relPath);
   const normalizedLine = String(lineText || '');
   const normalizedTerm = String(term || '').toLowerCase();
 
   if (isTestFixturePath(normalizedPath, normalizedLine)) return 'test-fixture';
+  if (normalizedTerm.startsWith('fallback') && isFrameworkDefaultLine(normalizedPath, normalizedLine)) {
+    return 'framework-default';
+  }
   if (isBrowserAdapterPath(normalizedPath, normalizedLine)) return 'browser-adapter';
   if (isProjectMigrationPath(normalizedPath, normalizedLine)) return 'project-migration';
   if (normalizedTerm.startsWith('fallback') && isRuntimeDefaultLine(normalizedLine)) return 'runtime-default';
@@ -281,6 +289,7 @@ export function toLegacyFallbackMarkdown(payload) {
   lines.push(
     '- Runtime compatibility must not grow silently. New `legacy`/`fallback` mentions require an intentional category and allowlist update.'
   );
+  lines.push('- `framework-default` is reserved for framework-owned API names such as React `Suspense` fallback props.');
   lines.push('- `project-migration` belongs at import/load/persisted-payload boundaries.');
   lines.push('- `browser-adapter` belongs at browser/DOM/environment adapter boundaries.');
   lines.push('- `legacy-runtime-risk` is the review queue for possible old live-path compatibility.');
@@ -295,7 +304,7 @@ export function toLegacyFallbackMarkdown(payload) {
       const categoryText = Object.entries(hot.categories)
         .map(([category, count]) => `${category}: ${count}`)
         .join(', ');
-      lines.push(`- \`${hot.file}\` — **${hot.total}** (${categoryText})`);
+      lines.push(`- \`${hot.file}\` - **${hot.total}** (${categoryText})`);
     }
   }
   lines.push('');

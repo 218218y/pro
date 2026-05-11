@@ -78,6 +78,14 @@ test('legacy fallback audit classifies boundary occurrences before runtime risk'
   );
   assert.equal(
     classifyLegacyFallbackOccurrence({
+      relPath: 'esm/native/ui/react/sidebar_app.tsx',
+      lineText: 'fallback={null}',
+      term: 'fallback',
+    }),
+    'framework-default'
+  );
+  assert.equal(
+    classifyLegacyFallbackOccurrence({
       relPath: 'esm/native/runtime/cache_access.ts',
       lineText: '// legacy root cache bag must not be restored',
       term: 'legacy',
@@ -96,11 +104,13 @@ test('legacy fallback audit summarizes and lock-checks the categorized inventory
     path.join(projectRoot, 'esm/native/adapters/browser/env.ts'),
     'export const message = "browser fallback";\n'
   );
+  writeFile(path.join(projectRoot, 'esm/native/ui/react/sidebar_app.tsx'), 'fallback={null}\n');
 
   const occurrences = collectLegacyFallbackOccurrences({ projectRoot, sourceRoot: 'esm' });
   const summary = summarizeLegacyFallbackOccurrences(occurrences);
-  assert.equal(summary.totalOccurrences, 4);
+  assert.equal(summary.totalOccurrences, 5);
   assert.equal(summary.byCategory['runtime-default'], 2);
+  assert.equal(summary.byCategory['framework-default'], 1);
   assert.equal(summary.byCategory['browser-adapter'], 1);
   assert.equal(summary.byCategory.unknown, 0);
 

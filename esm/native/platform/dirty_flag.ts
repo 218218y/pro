@@ -6,7 +6,7 @@
 //
 // Notes:
 // The authoritative source is App.store.meta.dirty when available.
-// A per-app in-memory fallback is used for extremely early boot writes.
+// A per-app in-memory dirty mirror covers extremely early boot writes.
 
 import type { ActionMetaLike, UnknownRecord } from '../../../types';
 

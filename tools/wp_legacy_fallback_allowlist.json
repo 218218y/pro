@@ -33,12 +33,6 @@
         "browser-adapter": 3
       }
     },
-    "esm/native/builder/room_floor_texture.ts": {
-      "total": 1,
-      "categories": {
-        "runtime-default": 1
-      }
-    },
     "esm/native/features/project_config/project_config_persisted_payload_shared.ts": {
       "total": 1,
       "categories": {
@@ -51,82 +45,22 @@
         "browser-adapter": 1
       }
     },
-    "esm/native/platform/dirty_flag.ts": {
-      "total": 1,
-      "categories": {
-        "runtime-default": 1
-      }
-    },
-    "esm/native/platform/smoke_checks_shared.ts": {
-      "total": 1,
-      "categories": {
-        "runtime-default": 1
-      }
-    },
     "esm/native/platform/smoke_checks.ts": {
       "total": 1,
       "categories": {
         "browser-adapter": 1
       }
     },
-    "esm/native/runtime/browser_clipboard.ts": {
-      "total": 1,
-      "categories": {
-        "runtime-default": 1
-      }
-    },
-    "esm/native/runtime/browser_env_timers.ts": {
-      "total": 1,
-      "categories": {
-        "runtime-default": 1
-      }
-    },
-    "esm/native/runtime/meta_profiles_access.ts": {
-      "total": 1,
-      "categories": {
-        "runtime-default": 1
-      }
-    },
-    "esm/native/runtime/meta_profiles_contract.ts": {
-      "total": 1,
-      "categories": {
-        "runtime-default": 1
-      }
-    },
-    "esm/native/services/cloud_sync_config_shared.ts": {
-      "total": 1,
-      "categories": {
-        "runtime-default": 1
-      }
-    },
-    "esm/native/ui/interactions/project_save_load.ts": {
-      "total": 1,
-      "categories": {
-        "runtime-default": 1
-      }
-    },
     "esm/native/ui/react/overlay_pdf_host.tsx": {
       "total": 1,
       "categories": {
-        "runtime-default": 1
+        "framework-default": 1
       }
     },
     "esm/native/ui/react/sidebar_app.tsx": {
       "total": 1,
       "categories": {
-        "runtime-default": 1
-      }
-    },
-    "esm/native/ui/react/sidebar_header_actions.ts": {
-      "total": 1,
-      "categories": {
-        "runtime-default": 1
-      }
-    },
-    "esm/native/ui/react/tabs/interior_tab_sections_handles.tsx": {
-      "total": 1,
-      "categories": {
-        "runtime-default": 1
+        "framework-default": 1
       }
     },
     "esm/test_imports.mjs": {

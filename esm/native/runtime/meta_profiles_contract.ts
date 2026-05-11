@@ -1,7 +1,7 @@
 // Canonical meta profile defaults/helpers shared across runtime accessors.
 //
 // Goal:
-// - Keep fallback meta semantics aligned with kernel-installed helpers.
+// - Keep default-source meta semantics aligned with kernel-installed helpers.
 // - Avoid duplicating profile literals in multiple runtime helper modules.
 // - Provide tiny pure helpers that never touch App/store/actions directly.
 
@@ -41,14 +41,14 @@ export const META_PROFILE_DEFAULTS_TRANSIENT: ActionMetaLike = {
 export function mergeMetaProfileDefaults(
   meta: unknown,
   defaults?: ActionMetaLike,
-  sourceFallback?: string
+  defaultSource?: string
 ): ActionMetaLike {
   const out: ActionMetaLike = { ...cloneRecord(meta) };
   const defaultsRecord = cloneRecord(defaults);
   for (const key of Object.keys(defaultsRecord)) {
     if (typeof out[key] === 'undefined') out[key] = defaultsRecord[key];
   }
-  if (sourceFallback && typeof out.source !== 'string') out.source = sourceFallback;
+  if (defaultSource && typeof out.source !== 'string') out.source = defaultSource;
   return out;
 }
 

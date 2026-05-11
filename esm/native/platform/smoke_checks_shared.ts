@@ -203,7 +203,7 @@ export function reportSmoke(App: UnknownRecord, err: unknown, ctx?: string): unk
   try {
     console.error(err);
   } catch (consoleErr) {
-    reportNonFatal('report.fallback', consoleErr);
+    reportNonFatal('report.consoleLastResort', consoleErr);
   }
   return undefined;
 }

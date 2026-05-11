@@ -65,7 +65,7 @@ export function ensureSaveProjectAction(App: AppContainer, deps: Partial<Project
             try {
               console.log('[toast]', type || 'info', msg);
             } catch {
-              // ignore debug fallback failures
+              // ignore debug toast logging failures
             }
           },
   };

@@ -23,7 +23,7 @@ function __createRoomCanvas(passedApp: unknown): unknown {
     const OffscreenCanvasCtor = typeof OffscreenCanvas === 'function' ? OffscreenCanvas : undefined;
     if (typeof OffscreenCanvasCtor === 'function') return new OffscreenCanvasCtor(512, 512);
   } catch {
-    // ignore fallback canvas creation errors; room design can operate without a procedural texture
+    // Optional canvas creation can fail in constrained runtimes; the texture is not required.
   }
   return null;
 }

@@ -144,8 +144,8 @@ export function randomRoomId(): string {
   const bytes = readCryptoRandomBytes(16);
   if (bytes) return `room_${encodeRoomBytes(bytes)}`;
 
-  // Fallback for constrained/non-browser test runtimes only. Runtime private-room mode
-  // will still persist the first generated room, so this does not rotate unexpectedly.
+  // Non-browser test runtime path only. Runtime private-room mode persists the first
+  // generated room, so this does not rotate unexpectedly.
   const a = Math.random().toString(36).slice(2, 10);
   const b = Math.random().toString(36).slice(2, 10);
   return `room_${a}${b}`;

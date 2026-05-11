@@ -55,7 +55,7 @@ const libraryPresetIndexUrl = '../esm/native/features/library_preset/index.ts';
 
 test('[react-hotspots] grouped shallow selectors remain the canonical pattern in sidebar/interior/order-pdf', () => {
   assert.match(sidebarApp, /useUiSelectorShallow\(/);
-  assert.match(sidebarApp, /const fallbackSite2GateState = useUiSelectorShallow\(selectSite2GateState\)/);
+  assert.match(sidebarApp, /const localSite2GateState = useUiSelectorShallow\(selectSite2GateState\)/);
   assert.match(
     sidebarApp,
     /useUiSelectorShallow\(ui => \(\{[\s\S]*open:\s*selectSite2GateState\(ui\)\.open,[\s\S]*storeActive:\s*selectActiveTabId\(ui\)[\s\S]*\}\)\)/

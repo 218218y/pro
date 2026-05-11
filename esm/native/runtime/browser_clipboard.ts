@@ -95,7 +95,7 @@ function execCommandCopyText(
     try {
       ta.remove?.();
     } catch {
-      // ignore cleanup failure in clipboard fallback
+      // ignore textarea cleanup failure
     }
   }
 }

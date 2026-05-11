@@ -36,7 +36,7 @@ export type SidebarHeaderActionsState = {
   handleSaveProject: () => void;
 };
 
-const FALLBACK_SITE2_GATE_SNAPSHOT: CloudSyncSite2TabsGateSnapshot = {
+const DEFAULT_SITE2_GATE_SNAPSHOT: CloudSyncSite2TabsGateSnapshot = {
   open: false,
   until: 0,
   minutesLeft: 0,
@@ -44,7 +44,7 @@ const FALLBACK_SITE2_GATE_SNAPSHOT: CloudSyncSite2TabsGateSnapshot = {
 
 function readSite2TabsGateSnapshot(
   api: CloudSyncServiceLike | undefined,
-  fallbackState: { open: boolean; untilMs: number }
+  localState: { open: boolean; untilMs: number }
 ): CloudSyncSite2TabsGateSnapshot {
   try {
     if (api?.getSite2TabsGateSnapshot) {
@@ -58,26 +58,26 @@ function readSite2TabsGateSnapshot(
       }
     }
   } catch {
-    // fall through to fallback snapshot
+    // Use the local store snapshot when the service snapshot is unavailable.
   }
   return {
-    open: !!fallbackState.open,
-    until: Number(fallbackState.untilMs) || 0,
+    open: !!localState.open,
+    until: Number(localState.untilMs) || 0,
     minutesLeft:
-      fallbackState.open && fallbackState.untilMs > Date.now()
-        ? Math.ceil((fallbackState.untilMs - Date.now()) / 60000)
+      localState.open && localState.untilMs > Date.now()
+        ? Math.ceil((localState.untilMs - Date.now()) / 60000)
         : 0,
   };
 }
 
 function useSite2TabsGateSnapshot(
   api: CloudSyncServiceLike | undefined,
-  fallbackState: { open: boolean; untilMs: number }
+  localState: { open: boolean; untilMs: number }
 ): CloudSyncSite2TabsGateSnapshot {
   const cachedSnapshotRef = useRef<CloudSyncSite2TabsGateSnapshot | null>(null);
 
   const getSnapshot = useCallback((): CloudSyncSite2TabsGateSnapshot => {
-    const next = readSite2TabsGateSnapshot(api, fallbackState);
+    const next = readSite2TabsGateSnapshot(api, localState);
     const prev = cachedSnapshotRef.current;
     if (
       prev &&
@@ -89,7 +89,7 @@ function useSite2TabsGateSnapshot(
     }
     cachedSnapshotRef.current = next;
     return next;
-  }, [api, fallbackState]);
+  }, [api, localState]);
 
   const subscribe = useCallback(
     (cb: () => void) => {
@@ -107,7 +107,7 @@ function useSite2TabsGateSnapshot(
   );
 
   const snapshot = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
-  return snapshot || FALLBACK_SITE2_GATE_SNAPSHOT;
+  return snapshot || DEFAULT_SITE2_GATE_SNAPSHOT;
 }
 
 export function useSidebarHeaderActions(): SidebarHeaderActionsState {
@@ -117,12 +117,12 @@ export function useSidebarHeaderActions(): SidebarHeaderActionsState {
   const isSite2 = useMemo(() => isSite2Variant(app), [app]);
   const cloudSync = useMemo(() => readCloudSyncService(app) || undefined, [app]);
 
-  const fallbackSite2GateState = useUiSelectorShallow(selectSite2GateState);
+  const localSite2GateState = useUiSelectorShallow(selectSite2GateState);
   const {
     open: site2GateOpen,
     until: site2GateUntil,
     minutesLeft: site2GateMinutesLeft,
-  } = useSite2TabsGateSnapshot(cloudSync, fallbackSite2GateState);
+  } = useSite2TabsGateSnapshot(cloudSync, localSite2GateState);
 
   const enabledTabs = useMemo(() => getSite2EnabledTabs(app), [app]);
   const hasAnyTabsConfigured = enabledTabs.length > 0;
