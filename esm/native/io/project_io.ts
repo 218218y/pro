@@ -64,13 +64,7 @@ function __projectIoReportNonFatal(
       throttleMs,
     });
   } catch {
-    // ignore
-  }
-
-  try {
-    console.warn('[WardrobePro][project_io]', op, err);
-  } catch {
-    // ignore
+    // Reporting must never make Project I/O recovery fail.
   }
 }
 

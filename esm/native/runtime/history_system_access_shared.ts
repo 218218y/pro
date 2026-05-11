@@ -6,6 +6,7 @@ import type {
   HistorySystemLike,
 } from '../../../types';
 import { asRecord } from './record.js';
+import { reportError } from './errors.js';
 
 export type { HistoryStatusLike, HistoryStatusListener };
 
@@ -57,14 +58,32 @@ export function isHistorySystemPaused(hs: HistorySystemLike | null): boolean {
   return hs?.isPaused === true;
 }
 
-export function callHistorySystemMethod(hs: HistorySystemLike | null, methodName: 'undo' | 'redo'): boolean {
+export function reportHistoryAccessOwnerRejection(App: unknown, op: string, error: unknown): void {
+  try {
+    reportError(
+      App,
+      error,
+      { where: 'native/runtime/history_system_access', op, fatal: false },
+      { consoleFallback: false }
+    );
+  } catch {
+    // Diagnostics must never make fail-soft history access fail.
+  }
+}
+
+export function callHistorySystemMethod(
+  App: unknown,
+  hs: HistorySystemLike | null,
+  methodName: 'undo' | 'redo'
+): boolean {
   try {
     if (!hs) return false;
     const fn = readHistorySystemMethod<HistoryVoidInvoker>(hs, methodName);
     if (!fn) return false;
     Reflect.apply(fn, hs, []);
     return true;
-  } catch {
+  } catch (error) {
+    reportHistoryAccessOwnerRejection(App, `history.${methodName}.ownerRejected`, error);
     return false;
   }
 }

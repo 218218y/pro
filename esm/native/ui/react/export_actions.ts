@@ -11,7 +11,11 @@ import type { AppContainer, UnknownRecord } from '../../../../types';
 import type { ExportUiActionKind, ExportUiActionResult } from '../export_action_contracts.js';
 import { getExportActionFailureToast } from '../export_action_feedback.js';
 import { beginAppActionFamilyFlight, type AppActionFamilyFlight } from '../action_family_singleflight.js';
-import { buildPerfEntryOptionsFromActionResult, runPerfAction } from '../../services/api.js';
+import {
+  buildPerfEntryOptionsFromActionResult,
+  reportError as reportAppError,
+  runPerfAction,
+} from '../../services/api.js';
 
 type ExportCanvasModuleLike = {
   takeSnapshot?: (app: AppContainer) => unknown;
@@ -160,7 +164,6 @@ async function ensureExportModule(): Promise<ExportCanvasModuleLike> {
     }
     return await exportCanvasModulePromise;
   } catch (e) {
-    console.error('[WardrobePro] ensureExportModule lazy-load failed', e);
     throw e;
   }
 }
@@ -176,7 +179,7 @@ export async function runExportUiActionWithDeps(args: RunExportUiActionDeps): Pr
     typeof args.reportError === 'function'
       ? args.reportError
       : (scope: string, error: unknown) => {
-          console.error(`[WardrobePro] ${scope}`, error);
+          reportAppError(app, error, { where: 'native/ui/react/export_actions', op: scope, fatal: false });
         };
 
   return await runPerfAction(

@@ -22,7 +22,7 @@ export function resolveStickyStatusToastHost(App: AppContainer, doc: Document): 
       asHTMLElement($('viewer-container')) || asHTMLElement(doc.getElementById('viewer-container'));
     if (viewer) return viewer;
   } catch (err) {
-    __uiFeedbackReportNonFatal('stickyToast.resolveHost', err);
+    __uiFeedbackReportNonFatal(App, 'stickyToast.resolveHost', err);
   }
   return doc.body;
 }
@@ -40,14 +40,14 @@ function ensureStickyStatusToastShell(App: AppContainer, doc: Document): HTMLEle
       host.appendChild(el);
       toast = el;
     } catch (err) {
-      __uiFeedbackReportNonFatal('stickyToast.create', err);
+      __uiFeedbackReportNonFatal(App, 'stickyToast.create', err);
       return null;
     }
   } else if (toast.parentElement !== host) {
     try {
       host.appendChild(toast);
     } catch (err) {
-      __uiFeedbackReportNonFatal('stickyToast.moveHost', err);
+      __uiFeedbackReportNonFatal(App, 'stickyToast.moveHost', err);
     }
   }
 
@@ -65,12 +65,12 @@ function installStickyToastDismissBinding(App: AppContainer, toast: HTMLElement)
         try {
           runtime.clearDisposer(key);
         } catch (err) {
-          __uiFeedbackReportNonFatal('stickyToast.clearDisposer', err);
+          __uiFeedbackReportNonFatal(App, 'stickyToast.clearDisposer', err);
         }
         setStickyStatusToastElement(App, toast);
       }
     } catch (err) {
-      __uiFeedbackReportNonFatal('stickyToast.updateOwnerEl', err);
+      __uiFeedbackReportNonFatal(App, 'stickyToast.updateOwnerEl', err);
     }
 
     if (runtime.getDisposer(key)) return;
@@ -79,7 +79,7 @@ function installStickyToastDismissBinding(App: AppContainer, toast: HTMLElement)
       try {
         toast.style.cursor = 'pointer';
       } catch (err) {
-        __uiFeedbackReportNonFatal('stickyToast.cursor', err);
+        __uiFeedbackReportNonFatal(App, 'stickyToast.cursor', err);
       }
 
       const onToastPointerDownDismiss = (e: Event) => {
@@ -96,7 +96,7 @@ function installStickyToastDismissBinding(App: AppContainer, toast: HTMLElement)
               return;
             }
           } catch (err) {
-            __uiFeedbackReportNonFatal('stickyToast.exitNotesMode', err);
+            __uiFeedbackReportNonFatal(App, 'stickyToast.exitNotesMode', err);
           }
 
           let primary = 'none';
@@ -115,35 +115,35 @@ function installStickyToastDismissBinding(App: AppContainer, toast: HTMLElement)
               return;
             }
           } catch (err) {
-            __uiFeedbackReportNonFatal('stickyToast.exitPrimaryMode', err);
+            __uiFeedbackReportNonFatal(App, 'stickyToast.exitPrimaryMode', err);
           }
 
           try {
             setModePrimary(App, MODES.NONE, {}, { source: 'ui:feedback:toastDismiss' });
           } catch (err) {
-            __uiFeedbackReportNonFatal('stickyToast.setModePrimary', err);
+            __uiFeedbackReportNonFatal(App, 'stickyToast.setModePrimary', err);
           }
         } catch (err) {
-          __uiFeedbackReportNonFatal('stickyToast.pointerdown', err);
+          __uiFeedbackReportNonFatal(App, 'stickyToast.pointerdown', err);
         }
       };
 
       try {
         toast.addEventListener('pointerdown', onToastPointerDownDismiss, { passive: false });
       } catch (err) {
-        __uiFeedbackReportNonFatal('stickyToast.bindPointerdown', err);
+        __uiFeedbackReportNonFatal(App, 'stickyToast.bindPointerdown', err);
       }
 
       return () => {
         try {
           toast.removeEventListener('pointerdown', onToastPointerDownDismiss, false);
         } catch (err) {
-          __uiFeedbackReportNonFatal('stickyToast.unbindPointerdown', err);
+          __uiFeedbackReportNonFatal(App, 'stickyToast.unbindPointerdown', err);
         }
       };
     });
   } catch (err) {
-    __uiFeedbackReportNonFatal('stickyToast.installDisposer', err);
+    __uiFeedbackReportNonFatal(App, 'stickyToast.installDisposer', err);
   }
 }
 
@@ -197,7 +197,7 @@ function ensureStickyChild(
   }
 }
 
-function syncStickyToastContent(doc: Document, toast: HTMLElement, text: string): void {
+function syncStickyToastContent(App: AppContainer, doc: Document, toast: HTMLElement, text: string): void {
   const dot = ensureStickyChild(doc, toast, '.status-dot', 'div', 'status-dot');
   const dotColor = resolveStickyDotColor(text);
   try {
@@ -206,7 +206,7 @@ function syncStickyToastContent(doc: Document, toast: HTMLElement, text: string)
       dot.style.boxShadow = `0 0 5px ${dotColor}`;
     }
   } catch (err) {
-    __uiFeedbackReportNonFatal('stickyToast.dotStyle', err);
+    __uiFeedbackReportNonFatal(App, 'stickyToast.dotStyle', err);
   }
 
   const textWrap = ensureStickyTextWrap(doc, toast);
@@ -218,12 +218,12 @@ function syncStickyToastContent(doc: Document, toast: HTMLElement, text: string)
   try {
     if (label) label.textContent = text;
   } catch (err) {
-    __uiFeedbackReportNonFatal('stickyToast.label', err);
+    __uiFeedbackReportNonFatal(App, 'stickyToast.label', err);
   }
   try {
     if (hint) hint.textContent = 'לחץ על ההודעה כדי לצאת ממצב העריכה';
   } catch (err) {
-    __uiFeedbackReportNonFatal('stickyToast.hint', err);
+    __uiFeedbackReportNonFatal(App, 'stickyToast.hint', err);
   }
 }
 
@@ -248,15 +248,15 @@ export function updateEditStateToast(
     try {
       toast.classList.remove('active');
     } catch (err) {
-      __uiFeedbackReportNonFatal('stickyToast.deactivate', err);
+      __uiFeedbackReportNonFatal(App, 'stickyToast.deactivate', err);
     }
     return;
   }
 
-  syncStickyToastContent(doc, toast, message);
+  syncStickyToastContent(App, doc, toast, message);
   try {
     toast.classList.add('active');
   } catch (err) {
-    __uiFeedbackReportNonFatal('stickyToast.activate', err);
+    __uiFeedbackReportNonFatal(App, 'stickyToast.activate', err);
   }
 }

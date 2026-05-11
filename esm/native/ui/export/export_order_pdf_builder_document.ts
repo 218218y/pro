@@ -99,7 +99,15 @@ export function validateOrderPdfTemplateOrToast(input: {
   const sanity = input.validateTemplate(ORDER_PDF_REQUIRED_TEMPLATE_FIELDS);
   if (sanity.ok) return true;
 
-  console.warn('[WardrobePro][PDF] order_template.pdf failed sanity:', sanity.problems);
+  input.deps._reportExportError(
+    input.App,
+    'orderPdfTemplate.sanity',
+    new Error('order_template.pdf failed sanity validation'),
+    {
+      interactivePdf: true,
+      problems: sanity.problems.slice(0, 5),
+    }
+  );
   input.deps._toast(
     input.App,
     `תבנית PDF לא תקינה ולכן ה-PDF יוצא ריק באקרובט.\n${sanity.problems[0] || ''}\nהפתרון: לערוך ב-Acrobat Prepare Form ולשמור (לא Print-to-PDF).`,

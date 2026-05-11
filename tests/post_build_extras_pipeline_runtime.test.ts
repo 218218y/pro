@@ -85,3 +85,61 @@ test('post-build extras: local click mode applies local state before edit-hold r
     { op: 'applyEditHoldAfterBuild' },
   ]);
 });
+
+test('post-build extras: missing required corner-wing builder is reported before throwing', () => {
+  const reports: Array<{ error: unknown; ctx: any }> = [];
+  const App: any = {
+    services: {
+      platform: {
+        reportError(error: unknown, ctx: any) {
+          reports.push({ error, ctx });
+        },
+      },
+    },
+  };
+
+  assert.throws(() => {
+    applyPostBuildExtras(
+      createPostBuildContext(App, {
+        cfg: { showDimensions: false },
+        flags: { isCornerMode: true, globalClickMode: false },
+        dims: { doorsCount: 2, totalW: 100, cabinetBodyHeight: 200, D: 60, woodThick: 1.7, startY: 0 },
+        materials: {},
+        fns: {},
+      })
+    );
+  }, /buildCornerWing is missing/);
+
+  assert.equal(reports.length, 1);
+  assert.equal(reports[0].ctx?.where, 'builder/post_build_extras');
+  assert.equal(reports[0].ctx?.op, 'cornerWing.missingBuilder');
+  assert.equal(reports[0].ctx?.fatal, true);
+});
+
+test('post-build extras: missing required notes restore owner is reported before throwing', () => {
+  const reports: Array<{ error: unknown; ctx: any }> = [];
+  const App: any = {
+    services: {
+      platform: {
+        reportError(error: unknown, ctx: any) {
+          reports.push({ error, ctx });
+        },
+      },
+    },
+  };
+
+  assert.throws(() => {
+    applyPostBuildExtras(
+      createPostBuildContext(App, {
+        flags: { globalClickMode: false },
+        notesToPreserve: [{ text: 'note' }],
+        fns: {},
+      })
+    );
+  }, /restoreNotesFromSave is missing/);
+
+  assert.equal(reports.length, 1);
+  assert.equal(reports[0].ctx?.where, 'builder/post_build_extras');
+  assert.equal(reports[0].ctx?.op, 'notesRestore.missingRestoreFn');
+  assert.equal(reports[0].ctx?.fatal, true);
+});

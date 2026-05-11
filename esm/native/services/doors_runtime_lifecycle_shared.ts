@@ -8,24 +8,24 @@ import {
   reportDoorsRuntimeNonFatal,
 } from './doors_runtime_shared.js';
 
-export function doorKey(d: DoorVisualEntryLike, idx: number): string {
+export function doorKey(d: DoorVisualEntryLike, idx: number, App?: AppLike): string {
   try {
     if (d && (d.id || d.doorId)) return String(d.id || d.doorId);
     if (d && d.group && d.group.userData && d.group.userData.partId) return String(d.group.userData.partId);
     if (d && d.group && typeof d.group.name === 'string' && d.group.name) return String(d.group.name);
   } catch (_) {
-    reportDoorsRuntimeNonFatal('L339', _);
+    reportDoorsRuntimeNonFatal(App, 'L339', _);
   }
   return `idx:${idx}`;
 }
 
-export function drawerKey(d: DrawerVisualEntryLike, idx: number): string {
+export function drawerKey(d: DrawerVisualEntryLike, idx: number, App?: AppLike): string {
   try {
     if (d && (d.id || d.drawerId)) return String(d.id || d.drawerId);
     if (d && d.group && d.group.userData && d.group.userData.partId) return String(d.group.userData.partId);
     if (d && d.group && typeof d.group.name === 'string' && d.group.name) return String(d.group.name);
   } catch (_) {
-    reportDoorsRuntimeNonFatal('L348', _);
+    reportDoorsRuntimeNonFatal(App, 'L348', _);
   }
   return `idx:${idx}`;
 }
@@ -40,7 +40,7 @@ export function captureSnapshot(App: AppLike, includeDrawers: boolean): DoorsSna
   for (let i = 0; i < doors.length; i++) {
     const d = doors[i];
     if (!d) continue;
-    snap.doors[doorKey(d, i)] = !!d.isOpen;
+    snap.doors[doorKey(d, i, App)] = !!d.isOpen;
   }
 
   if (includeDrawers) {
@@ -50,7 +50,7 @@ export function captureSnapshot(App: AppLike, includeDrawers: boolean): DoorsSna
       for (let i = 0; i < entries.length; i++) {
         const drawer = entries[i];
         if (!drawer) continue;
-        drawers[drawerKey(drawer, i)] = !!drawer.isOpen;
+        drawers[drawerKey(drawer, i, App)] = !!drawer.isOpen;
       }
     }
   }
@@ -83,7 +83,7 @@ export function applySnapshot(App: AppLike, snap: DoorsSnapshot | null): void {
   for (let i = 0; i < arr.length; i++) {
     const d = arr[i];
     if (!d) continue;
-    const key = doorKey(d, i);
+    const key = doorKey(d, i, App);
     if (key in snap.doors) d.isOpen = !!snap.doors[key];
   }
 
@@ -92,7 +92,7 @@ export function applySnapshot(App: AppLike, snap: DoorsSnapshot | null): void {
     for (let i = 0; i < arr2.length; i++) {
       const drawer = arr2[i];
       if (!drawer) continue;
-      const key = drawerKey(drawer, i);
+      const key = drawerKey(drawer, i, App);
       if (key in snap.drawers) drawer.isOpen = !!snap.drawers[key];
     }
   }

@@ -15,6 +15,7 @@ import { getDoorsRuntime } from '../runtime/doors_access.js';
 import { readRuntimeScalarOrDefaultFromApp } from '../runtime/runtime_selectors.js';
 import { runPlatformActivityRenderTouch } from '../runtime/platform_access.js';
 import { getBrowserMethodMaybe } from '../runtime/browser_surface_access.js';
+import { reportError } from '../runtime/errors.js';
 import { type AppLike, type ValueRecord, isRecord, readRecord } from '../runtime/doors_runtime_support.js';
 
 const __doorsRuntimeReportNonFatalSeen = new Map<string, number>();
@@ -48,7 +49,12 @@ export type ReleaseEditHoldOptions = DoorsReleaseEditHoldOptionsLike;
 export type CaptureLocalOpenOptions = DoorsCaptureLocalOpenOptionsLike;
 export type DrawerId = string | number;
 
-export function reportDoorsRuntimeNonFatal(op: string, err: unknown, throttleMs = 4000): void {
+export function reportDoorsRuntimeNonFatal(
+  App: AppLike | null | undefined,
+  op: string,
+  err: unknown,
+  throttleMs = 4000
+): void {
   const now = Date.now();
   let msg = 'unknown';
   if (typeof err === 'string') msg = err;
@@ -70,7 +76,7 @@ export function reportDoorsRuntimeNonFatal(op: string, err: unknown, throttleMs 
       if (now - ts > pruneOlderThan) __doorsRuntimeReportNonFatalSeen.delete(k);
     }
   }
-  console.error(`[WardrobePro][doors_runtime] ${op}`, err);
+  reportError(App, err, { where: 'native/services/doors_runtime', op, fatal: false });
 }
 
 export function ensureRecordSlot(host: ValueRecord, key: string): ValueRecord {
@@ -115,7 +121,7 @@ export function setDoorStatusCss(App: AppLike, isOpen: boolean): void {
     const fn = getBrowserMethodMaybe<[boolean], void>(App, 'setDoorStatusCss');
     if (typeof fn === 'function') fn(!!isOpen);
   } catch (_e) {
-    reportDoorsRuntimeNonFatal('setDoorStatusCss', _e);
+    reportDoorsRuntimeNonFatal(App, 'setDoorStatusCss', _e);
   }
 }
 
@@ -159,7 +165,7 @@ export function getDoorsOpen(App: AppLike): boolean {
   try {
     return !!readRuntimeScalarOrDefaultFromApp(App, 'doorsOpen', false);
   } catch (_e) {
-    reportDoorsRuntimeNonFatal('getDoorsOpen.readRuntime', _e);
+    reportDoorsRuntimeNonFatal(App, 'getDoorsOpen.readRuntime', _e);
   }
   try {
     return !!ensureDoorsRuntimeDefaults(App).open;
@@ -173,7 +179,7 @@ export function getDoorsLastToggleTime(App: AppLike): number {
     const t = readRuntimeScalarOrDefaultFromApp(App, 'doorsLastToggleTime', 0);
     return typeof t === 'number' && Number.isFinite(t) ? t : 0;
   } catch (_e) {
-    reportDoorsRuntimeNonFatal('getDoorsLastToggleTime.readRuntime', _e);
+    reportDoorsRuntimeNonFatal(App, 'getDoorsLastToggleTime.readRuntime', _e);
   }
   try {
     const t2 = ensureDoorsRuntimeDefaults(App).lastToggleTime;
@@ -190,7 +196,7 @@ export function touchDoorsRuntimeRender(App: AppLike): void {
       ensureRenderLoopAfterTrigger: true,
     });
   } catch (_e) {
-    reportDoorsRuntimeNonFatal('touchDoorsRuntimeRender', _e);
+    reportDoorsRuntimeNonFatal(App, 'touchDoorsRuntimeRender', _e);
   }
 }
 

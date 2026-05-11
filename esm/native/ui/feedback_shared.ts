@@ -13,20 +13,21 @@ import {
   ensureUiFeedbackService,
   getReactFeedbackHost,
   getUiFeedbackServiceMaybe,
+  reportError,
   restoreReactFeedbackHost as restoreReactFeedbackHostRuntime,
   setReactFeedbackHost as setReactFeedbackHostRuntime,
 } from '../services/api.js';
 
 const __uiFeedbackReportNonFatalSeen = new Map<string, number>();
 
-export function __uiFeedbackReportNonFatal(op: string, err: unknown, dedupeMs = 4000): void {
+export function __uiFeedbackReportNonFatal(App: unknown, op: string, err: unknown, dedupeMs = 4000): void {
   const now = Date.now();
   const e = err instanceof Error ? err : new Error(String(err));
   const key = `${op}|${e.name}|${e.message}`;
   const last = __uiFeedbackReportNonFatalSeen.get(key) ?? 0;
   if (dedupeMs > 0 && now - last < dedupeMs) return;
   __uiFeedbackReportNonFatalSeen.set(key, now);
-  console.error(`[WardrobePro][ui/feedback] ${op}`, err);
+  reportError(App, err, { where: 'native/ui/feedback', op, fatal: false });
 }
 
 export type ToastType = UiFeedbackToastKind;

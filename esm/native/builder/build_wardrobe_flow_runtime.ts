@@ -22,13 +22,7 @@ function reportBuildWardrobeFailure(prepared: PreparedBuildWardrobeFlow, error: 
   const { App, label, deps } = prepared;
   const { showToast } = deps;
 
-  guardVoid(App, { where: label, op: 'console.error', fatal: true, failFast: true }, () => {
-    console.error('[WardrobePro][builder] buildWardrobe failed:', error);
-  });
-
-  guardVoid(App, { where: label, op: 'platform.reportError', fatal: true, failFast: true }, () => {
-    reportError(App, error, { where: label, fatal: true });
-  });
+  reportError(App, error, { where: label, fatal: true });
 
   guardVoid(App, { where: label, op: 'showToast', fatal: true, failFast: true }, () => {
     if (typeof showToast === 'function') {
@@ -79,9 +73,6 @@ export function runPreparedBuildWardrobeFlow(
     } catch (error) {
       finalizeError = error;
       reportError(App, error, { where: label, op: 'finalizeBuild', fatal: true });
-      guardVoid(App, { where: label, op: 'console.error.finalize', failFast: true }, () => {
-        console.error('[WardrobePro][builder] finalize failed:', error);
-      });
     }
   }
 

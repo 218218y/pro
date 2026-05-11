@@ -18,7 +18,6 @@ export function createCopyToClipboardWorkflow(
     _renderAllNotesToCanvas,
     _renderSceneForExport,
     _getRendererCanvasSource,
-    _reportExportError,
     _handleCanvasExport,
     _createDomCanvas,
   } = deps;
@@ -86,8 +85,7 @@ export function createCopyToClipboardWorkflow(
         mode: 'clipboard',
       });
     } catch (err) {
-      _reportExportError(App, 'copyToClipboard.logoPass', err);
-      console.warn('Security Error with Logo. Retrying without logo...', err);
+      deps._reportExportRecovery(App, 'copyToClipboard.retryWithoutLogo', err, { pass: 'logo' });
       if (deps.shouldFailFast(App)) throw err;
       const canvasWithoutLogo = await createSingleCanvas(false);
       _handleCanvasExport(App, canvasWithoutLogo, 'wardrobe-design.png', { mode: 'clipboard' });

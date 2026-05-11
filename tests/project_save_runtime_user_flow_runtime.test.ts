@@ -303,3 +303,58 @@ test('project save runtime: failed export releases project-action family so the 
   assert.deepEqual(saveProject?.(), { ok: true, pending: true });
   assert.equal(promptCallbacks.length, 1);
 });
+
+test('project save runtime: dirty reset owner rejection is reported without failing a delivered save', async () => {
+  const reported: Array<{ err: unknown; ctx: any }> = [];
+  const toasts: Array<{ message: string; type?: string }> = [];
+  const { win, doc, clicked } = createDownloadHarness();
+
+  const App = {
+    services: {
+      platform: {
+        reportError(err: unknown, ctx: unknown) {
+          reported.push({ err, ctx });
+        },
+      },
+      projectIO: {
+        exportCurrentProject() {
+          return { jsonStr: '{"version":7}', defaultBaseName: 'demo_project' };
+        },
+      },
+      uiFeedback: {
+        openCustomPrompt(_title: string, _defaultValue: string, cb: (value: string | null) => void) {
+          cb('saved_with_dirty_reject');
+        },
+      },
+    },
+    actions: {
+      meta: {
+        setDirty() {
+          throw new Error('dirty owner rejected');
+        },
+      },
+    },
+  } as any;
+
+  const saveProject = runEnsureSaveProjectAction(App, {
+    win,
+    doc,
+    toast(message: string, type?: string) {
+      toasts.push({ message, type });
+    },
+  });
+
+  assert.equal(typeof saveProject, 'function');
+  assert.deepEqual(saveProject?.(), { ok: true, pending: true });
+  await new Promise(resolve => setTimeout(resolve, 0));
+
+  assert.deepEqual(clicked, [
+    { href: 'blob://download-1', download: 'saved_with_dirty_reject.json', rel: 'noopener' },
+  ]);
+  assert.deepEqual(toasts, [{ message: 'הפרויקט נשמר בהצלחה!', type: 'success' }]);
+  assert.equal(reported.length, 1);
+  assert.match(String((reported[0].err as Error).message), /dirty owner rejected/);
+  assert.equal(reported[0].ctx?.where, 'native/ui/project_save_runtime_action');
+  assert.equal(reported[0].ctx?.op, 'saveProject.clearDirty');
+  assert.equal(reported[0].ctx?.fatal, false);
+});

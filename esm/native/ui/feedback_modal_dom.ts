@@ -36,7 +36,7 @@ export function getCustomModalEls(App: AppContainer): CustomModalEls {
       msgEl = p;
       if (titleEl?.parentNode) titleEl.parentNode.insertBefore(p, titleEl.nextSibling);
     } catch (err) {
-      __uiFeedbackReportNonFatal('modal.ensureMessage', err);
+      __uiFeedbackReportNonFatal(App, 'modal.ensureMessage', err);
     }
   }
 
@@ -53,24 +53,24 @@ export function closeCustomModal(App: AppContainer, opts?: { cancelled?: boolean
   try {
     els.modal.classList.remove('open');
   } catch (err) {
-    __uiFeedbackReportNonFatal('modal.close', err);
+    __uiFeedbackReportNonFatal(App, 'modal.close', err);
   }
 
   getBrowserTimers(App).setTimeout(() => {
     try {
       if (els.msgEl) els.msgEl.classList.add('hidden');
     } catch (err) {
-      __uiFeedbackReportNonFatal('modal.hideMessage', err);
+      __uiFeedbackReportNonFatal(App, 'modal.hideMessage', err);
     }
     try {
       if (els.input) els.input.classList.remove('hidden');
     } catch (err) {
-      __uiFeedbackReportNonFatal('modal.showInput', err);
+      __uiFeedbackReportNonFatal(App, 'modal.showInput', err);
     }
     try {
       if (els.confirmBtn) els.confirmBtn.className = 'btn btn-save';
     } catch (err) {
-      __uiFeedbackReportNonFatal('modal.resetConfirmClass', err);
+      __uiFeedbackReportNonFatal(App, 'modal.resetConfirmClass', err);
     }
   }, 300);
 
@@ -82,13 +82,13 @@ export function closeCustomModal(App: AppContainer, opts?: { cancelled?: boolean
   try {
     if (typeof promptCancelCb === 'function') promptCancelCb(null);
   } catch (err) {
-    __uiFeedbackReportNonFatal('modal.promptCancelCallback', err);
+    __uiFeedbackReportNonFatal(App, 'modal.promptCancelCallback', err);
   }
 
   try {
     if (typeof confirmCancelCb === 'function') confirmCancelCb();
   } catch (err) {
-    __uiFeedbackReportNonFatal('modal.confirmCancelCallback', err);
+    __uiFeedbackReportNonFatal(App, 'modal.confirmCancelCallback', err);
   }
 }
 
@@ -108,7 +108,7 @@ export function openPromptViaWindow(
         : null;
     if (typeof callback === 'function' && value !== null) callback(String(value));
   } catch (err) {
-    __uiFeedbackReportNonFatal('prompt.window', err);
+    __uiFeedbackReportNonFatal(App, 'prompt.window', err);
   }
 }
 
@@ -126,11 +126,11 @@ export function openConfirmViaWindow(
     if (ok && typeof onConfirm === 'function') onConfirm();
     if (!ok && typeof onCancel === 'function') onCancel();
   } catch (err) {
-    __uiFeedbackReportNonFatal('confirm.window', err);
+    __uiFeedbackReportNonFatal(App, 'confirm.window', err);
     try {
       if (typeof onCancel === 'function') onCancel();
     } catch (cancelErr) {
-      __uiFeedbackReportNonFatal('confirm.window.cancel', cancelErr);
+      __uiFeedbackReportNonFatal(App, 'confirm.window.cancel', cancelErr);
     }
   }
 }

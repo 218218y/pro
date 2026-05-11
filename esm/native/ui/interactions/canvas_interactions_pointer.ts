@@ -23,7 +23,7 @@ export function createCanvasPointerInteractionOps(
 ) {
   const onPointerDown: EventListener = e => {
     try {
-      const xy = getClientXY(e);
+      const xy = getClientXY(e, App);
       if (!xy) return;
       state.downX = xy.cx;
       state.downY = xy.cy;
@@ -35,7 +35,7 @@ export function createCanvasPointerInteractionOps(
           deps.domEl.setPointerCapture(xy.pointerId);
         }
       } catch (err) {
-        reportCanvasInteractionsNonFatal('pointerDown.capture', err);
+        reportCanvasInteractionsNonFatal(App, 'pointerDown.capture', err);
       }
     } catch {
       state.hasDown = false;
@@ -47,7 +47,7 @@ export function createCanvasPointerInteractionOps(
     try {
       if (typeof deps.triggerRender === 'function') deps.triggerRender(true);
     } catch (err) {
-      reportCanvasInteractionsNonFatal('pointerDown.triggerRender', err);
+      reportCanvasInteractionsNonFatal(App, 'pointerDown.triggerRender', err);
     }
   };
 
@@ -55,7 +55,7 @@ export function createCanvasPointerInteractionOps(
     let isClick = true;
 
     try {
-      const xy = getClientXY(e);
+      const xy = getClientXY(e, App);
       if (xy && state.hasDown) {
         if (state.downPointerId != null && xy.pointerId != null && state.downPointerId !== xy.pointerId)
           return;
@@ -77,19 +77,19 @@ export function createCanvasPointerInteractionOps(
 
     try {
       const rect = rectOps.readRectCached(24);
-      const xy = getClientXY(e);
+      const xy = getClientXY(e, App);
       const ndc = rect && xy ? toNdcFromClient(xy.cx, xy.cy, rect) : null;
       if (ndc && typeof deps.handleCanvasClickNDC === 'function') {
         deps.handleCanvasClickNDC(ndc.x, ndc.y, App);
       }
     } catch (err) {
-      reportCanvasInteractionsNonFatal('click', err);
+      reportCanvasInteractionsNonFatal(App, 'click', err);
     }
 
     try {
       if (typeof deps.triggerRender === 'function') deps.triggerRender(true);
     } catch (err) {
-      reportCanvasInteractionsNonFatal('triggerRender(click)', err);
+      reportCanvasInteractionsNonFatal(App, 'triggerRender(click)', err);
     }
   };
 
@@ -104,7 +104,7 @@ export function createCanvasPointerInteractionOps(
     try {
       if (typeof deps.triggerRender === 'function') deps.triggerRender(false);
     } catch (err) {
-      reportCanvasInteractionsNonFatal('wheel.triggerRender', err);
+      reportCanvasInteractionsNonFatal(App, 'wheel.triggerRender', err);
     }
   };
 
@@ -113,7 +113,7 @@ export function createCanvasPointerInteractionOps(
     try {
       if (typeof deps.triggerRender === 'function') deps.triggerRender(true);
     } catch (err) {
-      reportCanvasInteractionsNonFatal('click.triggerRender', err);
+      reportCanvasInteractionsNonFatal(App, 'click.triggerRender', err);
     }
   };
 
@@ -125,7 +125,7 @@ export function createCanvasPointerInteractionOps(
       try {
         if (typeof deps.triggerRender === 'function') deps.triggerRender(false);
       } catch (err) {
-        reportCanvasInteractionsNonFatal('move.triggerRender', err);
+        reportCanvasInteractionsNonFatal(App, 'move.triggerRender', err);
       }
     }
   };

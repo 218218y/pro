@@ -299,7 +299,11 @@ export function computeModulesAndLayout(args: ComputeModulesAndLayoutArgs): Comp
         })
       );
     } catch (e) {
-      reportError(App, e, 'native/builder/module_layout_pipeline.computeHingedDoorPivotMap');
+      reportError(App, e, {
+        where: 'native/builder/module_layout_pipeline',
+        op: 'computeHingedDoorPivotMap',
+        fatal: false,
+      });
       hingedDoorPivotMap = null;
     }
   }

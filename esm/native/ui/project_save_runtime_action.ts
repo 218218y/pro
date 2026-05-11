@@ -5,6 +5,7 @@ import {
   exportProjectResultViaService,
   getUiFeedback,
   metaUiOnly,
+  reportError,
   setDirtyViaActions,
 } from '../services/api.js';
 import { downloadJsonTextResultViaBrowser, normalizeDownloadFilename } from './browser_file_download.js';
@@ -26,6 +27,15 @@ import {
 type PreparedProjectSaveExport =
   | { ok: true; exported: ProjectExportResultLike; defaultName: string }
   | { ok: false; result: ProjectSaveActionResult };
+
+function reportProjectSaveRuntimeNonFatal(App: AppContainer, op: string, error: unknown): void {
+  reportError(
+    App,
+    error,
+    { where: 'native/ui/project_save_runtime_action', op, fatal: false },
+    { consoleFallback: false }
+  );
+}
 
 function prepareProjectSaveExport(App: AppContainer): PreparedProjectSaveExport {
   const exportResult = exportProjectResultViaService(
@@ -79,8 +89,8 @@ function runPreparedProjectSaveFlow(
       try {
         const meta = metaUiOnly(App, undefined, 'saveProject');
         setDirtyViaActions(App, false, meta);
-      } catch {
-        // ignore dirty reset failures
+      } catch (error) {
+        reportProjectSaveRuntimeNonFatal(App, 'saveProject.clearDirty', error);
       }
 
       return { ok: true } satisfies ProjectSaveActionResult;
@@ -125,11 +135,7 @@ export function runEnsureSaveProjectAction(
       return { ok: true, pending: true } satisfies ProjectSaveActionResult;
     };
   } catch (error) {
-    try {
-      console.error('saveProject failed', error);
-    } catch {
-      // ignore logging failures
-    }
+    reportProjectSaveRuntimeNonFatal(App, 'saveProject.install', error);
     reportSaveResultWithToast(toast, buildProjectSaveActionErrorResult(error, 'שמירה נכשלה'));
     return null;
   }

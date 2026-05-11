@@ -46,6 +46,26 @@ export function _reportExportError(
   });
 }
 
+export function _reportExportRecovery(
+  App: AppContainer,
+  op: string,
+  error: unknown,
+  extra?: Record<string, unknown> | null
+): void {
+  reportError(
+    App,
+    error,
+    {
+      where: 'native/ui/export_canvas',
+      op,
+      recovery: true,
+      expected: true,
+      ...(extra && typeof extra === 'object' ? extra : {}),
+    },
+    { consoleFallback: false }
+  );
+}
+
 export function _exportReportThrottled(
   App: AppContainer,
   op: string,

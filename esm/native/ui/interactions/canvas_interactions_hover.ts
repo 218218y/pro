@@ -23,7 +23,7 @@ export function createCanvasHoverInteractionOps(
 ) {
   const timers = getInteractionTimers(App);
   const clearTransientHoverPreview = createClearTransientHoverPreview(App, deps.domEl, state);
-  const applyHoverCursorFromResult = createHoverCursorApplier(deps.domEl, state);
+  const applyHoverCursorFromResult = createHoverCursorApplier(App, deps.domEl, state);
 
   const flushQueuedHover = (): void => {
     state.hoverRafId = 0;
@@ -51,7 +51,7 @@ export function createCanvasHoverInteractionOps(
   const onPointerMove: EventListener = e => {
     const now = Date.now();
     try {
-      const xy = getClientXY(e);
+      const xy = getClientXY(e, App);
       if (!xy) return;
 
       state.hoverLastCx = xy.cx;
@@ -62,7 +62,7 @@ export function createCanvasHoverInteractionOps(
         if (!state.hoverRafId) state.hoverRafId = timers.requestAnimationFrame(flushQueuedHover);
       }
     } catch (err) {
-      reportCanvasInteractionsNonFatal('move', err);
+      reportCanvasInteractionsNonFatal(App, 'move', err);
     }
 
     rectOps.invalidateRectCache();
@@ -77,7 +77,7 @@ export function createCanvasHoverInteractionOps(
       try {
         timers.cancelAnimationFrame(state.hoverRafId);
       } catch (err) {
-        reportCanvasInteractionsNonFatal('pointerleave.cancelRaf', err);
+        reportCanvasInteractionsNonFatal(App, 'pointerleave.cancelRaf', err);
       }
       state.hoverRafId = 0;
     }
@@ -86,7 +86,7 @@ export function createCanvasHoverInteractionOps(
     try {
       if (typeof deps.triggerRender === 'function') deps.triggerRender(false);
     } catch (err) {
-      reportCanvasInteractionsNonFatal('triggerRender(pointerleave)', err);
+      reportCanvasInteractionsNonFatal(App, 'triggerRender(pointerleave)', err);
     }
   };
 
@@ -97,7 +97,7 @@ export function createCanvasHoverInteractionOps(
       try {
         timers.cancelAnimationFrame(state.hoverRafId);
       } catch (err) {
-        reportCanvasInteractionsNonFatal('cancelRaf', err);
+        reportCanvasInteractionsNonFatal(App, 'cancelRaf', err);
       }
       state.hoverRafId = 0;
     }

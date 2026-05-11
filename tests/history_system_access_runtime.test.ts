@@ -212,3 +212,58 @@ test('history system access runtime: fallback onStatusChange subscriptions unlin
   assert.equal(originalStatuses[1]?.canUndo, true);
   assert.equal(originalStatuses[2], currentStatus);
 });
+
+test('history system access runtime: owner rejections are reported without breaking fail-soft helpers', () => {
+  const reports: Array<{ err: unknown; ctx: any }> = [];
+  const AppActions: any = {
+    services: {
+      platform: {
+        reportError(err: unknown, ctx: unknown) {
+          reports.push({ err, ctx });
+        },
+      },
+    },
+    actions: {
+      history: {
+        schedulePush() {
+          throw new Error('schedule owner rejected');
+        },
+      },
+    },
+  };
+
+  assert.equal(scheduleHistoryPushMaybe(AppActions, { source: 'history:test' }), false);
+  assert.equal(reports.length, 1);
+  assert.equal(reports[0].ctx.where, 'native/runtime/history_system_access');
+  assert.equal(reports[0].ctx.op, 'history.schedulePush.ownerRejected');
+
+  reports.length = 0;
+  const AppService: any = {
+    services: {
+      platform: {
+        reportError(err: unknown, ctx: unknown) {
+          reports.push({ err, ctx });
+        },
+      },
+      history: {
+        system: {
+          undo() {
+            throw new Error('undo owner rejected');
+          },
+        },
+        flushPendingPush() {
+          throw new Error('flush owner rejected');
+        },
+      },
+    },
+  };
+
+  assert.equal(flushHistoryPendingPushMaybe(AppService, { from: 'history:test' }), false);
+  assert.equal(reports.length, 1);
+  assert.equal(reports[0].ctx.op, 'history.service.flushPendingPush.ownerRejected');
+
+  reports.length = 0;
+  assert.equal(runHistoryUndoMaybe(AppService), false);
+  assert.equal(reports.length, 1);
+  assert.equal(reports[0].ctx.op, 'history.undo.ownerRejected');
+});

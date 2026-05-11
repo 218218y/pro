@@ -1,7 +1,12 @@
 // Shared helpers for canvas interaction routing.
 
 import type { AppContainer } from '../../../../types';
-import { clearSketchHoverPreview, getBrowserTimers, getBuilderRenderOps } from '../../services/api.js';
+import {
+  clearSketchHoverPreview,
+  getBrowserTimers,
+  getBuilderRenderOps,
+  reportError,
+} from '../../services/api.js';
 
 export type Ndc = { x: number; y: number };
 export type RectLike = { left: number; top: number; width: number; height: number };
@@ -38,7 +43,12 @@ export type CanvasInteractionState = {
 
 const __canvasInteractionsReportNonFatalSeen = new Map<string, number>();
 
-export function reportCanvasInteractionsNonFatal(op: string, err: unknown, throttleMs = 4000): void {
+export function reportCanvasInteractionsNonFatal(
+  App: AppContainer | null | undefined,
+  op: string,
+  err: unknown,
+  throttleMs = 4000
+): void {
   const now = Date.now();
   let msg = 'unknown';
   if (typeof err === 'string') msg = err;
@@ -58,7 +68,7 @@ export function reportCanvasInteractionsNonFatal(op: string, err: unknown, throt
       if (now - ts > pruneOlderThan) __canvasInteractionsReportNonFatalSeen.delete(k);
     }
   }
-  console.error(`[WardrobePro][canvas_interactions] ${op}`, err);
+  reportError(App || null, err, { where: 'native/ui/interactions/canvas_interactions', op, fatal: false });
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -87,7 +97,7 @@ export function createCanvasInteractionState(): CanvasInteractionState {
   };
 }
 
-export function getClientXY(e: Event): PointerInfo | null {
+export function getClientXY(e: Event, App?: AppContainer | null): PointerInfo | null {
   try {
     const rec = readRecord(e);
     const clientX = rec?.clientX;
@@ -97,7 +107,7 @@ export function getClientXY(e: Event): PointerInfo | null {
       return { cx: clientX, cy: clientY, pointerId: pid };
     }
   } catch (err) {
-    reportCanvasInteractionsNonFatal('clientXY', err);
+    reportCanvasInteractionsNonFatal(App, 'clientXY', err);
   }
   return null;
 }
@@ -116,12 +126,12 @@ export function toNdcFromClient(cx: number, cy: number, rect: RectLike): Ndc | n
   }
 }
 
-export function safeSetCursor(domEl: HTMLElement, cursor: string): void {
+export function safeSetCursor(domEl: HTMLElement, cursor: string, App?: AppContainer | null): void {
   try {
     if (domEl.style.cursor === cursor) return;
     domEl.style.cursor = cursor;
   } catch (err) {
-    reportCanvasInteractionsNonFatal('cursor', err);
+    reportCanvasInteractionsNonFatal(App, 'cursor', err);
   }
 }
 
@@ -132,7 +142,7 @@ export function callNotesFirst(App: AppContainer): boolean {
     const draw = notes ? readRecord(notes.draw) : null;
     return draw?.isScreenDrawMode === true;
   } catch (err) {
-    reportCanvasInteractionsNonFatal('notes.guard', err);
+    reportCanvasInteractionsNonFatal(App, 'notes.guard', err);
   }
   return false;
 }
@@ -177,41 +187,45 @@ export function createClearTransientHoverPreview(
         });
       }
     } catch (err) {
-      reportCanvasInteractionsNonFatal('clearTransientHoverPreview.renderOps', err);
+      reportCanvasInteractionsNonFatal(App, 'clearTransientHoverPreview.renderOps', err);
     }
 
     try {
       clearSketchHoverPreview(App);
     } catch (err) {
-      reportCanvasInteractionsNonFatal('clearTransientHoverPreview.sketchHover', err);
+      reportCanvasInteractionsNonFatal(App, 'clearTransientHoverPreview.sketchHover', err);
     }
 
     try {
-      safeSetCursor(domEl, '');
+      safeSetCursor(domEl, '', App);
       state.cursorManaged = false;
     } catch (err) {
-      reportCanvasInteractionsNonFatal('clearTransientHoverPreview.cursor', err);
+      reportCanvasInteractionsNonFatal(App, 'clearTransientHoverPreview.cursor', err);
     }
   };
 }
 
-export function createHoverCursorApplier(domEl: HTMLElement, state: CanvasInteractionState) {
+export function createHoverCursorApplier(
+  App: AppContainer,
+  domEl: HTMLElement,
+  state: CanvasInteractionState
+) {
   return (hoverRes: unknown): void => {
     try {
       if (typeof hoverRes === 'boolean') {
-        safeSetCursor(domEl, hoverRes ? 'pointer' : '');
+        safeSetCursor(domEl, hoverRes ? 'pointer' : '', App);
         state.cursorManaged = true;
       } else if (state.cursorManaged) {
-        if (domEl.style.cursor === 'pointer') safeSetCursor(domEl, '');
+        if (domEl.style.cursor === 'pointer') safeSetCursor(domEl, '', App);
         state.cursorManaged = false;
       }
     } catch (err) {
-      reportCanvasInteractionsNonFatal('hover.cursor', err);
+      reportCanvasInteractionsNonFatal(App, 'hover.cursor', err);
     }
   };
 }
 
-export function createEventBinding(domEl: HTMLElement) {
+export function createEventBinding(App: AppContainer, domEl: HTMLElement) {
   return (type: string, handler: EventListener, opts?: boolean | AddEventListenerOptions) => {
     try {
       domEl.addEventListener(type, handler, opts);
@@ -223,7 +237,7 @@ export function createEventBinding(domEl: HTMLElement) {
         }
       };
     } catch (err) {
-      reportCanvasInteractionsNonFatal(`add:${type}`, err);
+      reportCanvasInteractionsNonFatal(App, `add:${type}`, err);
       return () => undefined;
     }
   };

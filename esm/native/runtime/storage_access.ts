@@ -14,9 +14,14 @@ function readStorageKeys(value: unknown): StorageKeysLike | null {
 }
 
 function reportStorageAccessIssue(App: unknown, op: string, error: unknown): void {
-  reportError(App, error, { where: 'native/runtime/storage_access', op, fatal: false }, {
-    consoleFallback: false,
-  });
+  reportError(
+    App,
+    error,
+    { where: 'native/runtime/storage_access', op, fatal: false },
+    {
+      consoleFallback: false,
+    }
+  );
 }
 
 export function getStorageServiceMaybe(App: unknown): StorageNamespaceLike | null {

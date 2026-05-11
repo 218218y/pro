@@ -26,7 +26,7 @@ function applyLayoutModeOpts(App: AppLike, opts: ModeActionOptsLike): void {
   try {
     patchUiSoft(App, { currentLayoutType: layoutType }, { source: 'modes:layoutType' });
   } catch (err) {
-    modesReportNonFatal('esm/native/ui/modes_mode_opts.ts:layoutType', err);
+    modesReportNonFatal(App, 'esm/native/ui/modes_mode_opts.ts:layoutType', err);
   }
 }
 
@@ -72,7 +72,7 @@ function applyManualLayoutModeOpts(App: AppLike, opts: ModeActionOptsLike): void
     }
     applySketchManualToolSnap(App);
   } catch (err) {
-    modesReportNonFatal('esm/native/ui/modes_mode_opts.ts:sketchSnap', err);
+    modesReportNonFatal(App, 'esm/native/ui/modes_mode_opts.ts:sketchSnap', err);
   }
 }
 
@@ -87,7 +87,7 @@ function applyExtDrawerModeOpts(App: AppLike, opts: ModeActionOptsLike): void {
 
     if (Object.keys(patch).length) patchUiSoft(App, patch, { source: 'modes:extDrawerOpts' });
   } catch (err) {
-    modesReportNonFatal('esm/native/ui/modes_mode_opts.ts:extDrawerOpts', err);
+    modesReportNonFatal(App, 'esm/native/ui/modes_mode_opts.ts:extDrawerOpts', err);
   }
 }
 
@@ -102,6 +102,6 @@ export function applyModeOptsImpl(App: AppLike, mode: string, opts?: ModeActionO
     if (mode === modes.MANUAL_LAYOUT) applyManualLayoutModeOpts(App, cleanOpts);
     if (mode === modes.EXT_DRAWER) applyExtDrawerModeOpts(App, cleanOpts);
   } catch (err) {
-    modesReportNonFatal('esm/native/ui/modes_mode_opts.ts:apply', err);
+    modesReportNonFatal(App, 'esm/native/ui/modes_mode_opts.ts:apply', err);
   }
 }

@@ -10,7 +10,7 @@ import type {
   BuildStateLike,
 } from '../../../types/index.js';
 
-import { assertApp, guardVoid, reportError } from '../runtime/api.js';
+import { assertApp, reportError } from '../runtime/api.js';
 import {
   ensureSchedulerState,
   normalizeSchedulerDeps,
@@ -291,10 +291,6 @@ export function requestBuildRuntime(
       reason: opts?.reason || null,
       immediate,
       forceBuild,
-    });
-
-    guardVoid(A, { where: 'builder/scheduler', op: 'console.error(requestBuild)', failFast: true }, () => {
-      console.error(e);
     });
 
     return runRecoverablePendingBuildAfterRequestFailure(

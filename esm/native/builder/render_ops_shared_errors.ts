@@ -17,7 +17,6 @@ function __renderOpsReportError(
   if (now - prev < throttleMs) return;
   __renderOpsErrorLastAt.set(key, now);
   reportError(App || null, err, { where: 'builder/render_ops', op, ...(extra || {}) });
-  console.warn('[WardrobePro][render_ops]', op, err);
 }
 
 export function __renderOpsHandleCatch(

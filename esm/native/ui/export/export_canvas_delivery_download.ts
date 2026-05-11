@@ -30,11 +30,6 @@ export function _downloadCanvasDataUrl(App: AppContainer, canvas: HTMLCanvasElem
     }
   } catch (e) {
     _reportExportError(App, 'downloadCanvasDataUrl', e, { filename });
-    try {
-      console.warn('[WardrobePro] downloadCanvasDataUrl failed', e);
-    } catch (_) {
-      // ignore console.warn failure; _reportExportError already captured the export error
-    }
     if (shouldFailFast(App)) throw e;
   }
 }

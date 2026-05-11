@@ -99,12 +99,6 @@
         "runtime-default": 1
       }
     },
-    "esm/native/services/ui_ephemeral_defaults.ts": {
-      "total": 1,
-      "categories": {
-        "runtime-default": 1
-      }
-    },
     "esm/native/ui/interactions/project_save_load.ts": {
       "total": 1,
       "categories": {

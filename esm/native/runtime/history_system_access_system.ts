@@ -4,6 +4,7 @@ import { callActionsHistory, hasActionsHistoryFn } from './history_system_access
 import type { HistoryStatusLike, HistoryStatusListener } from './history_system_access_shared.js';
 import {
   callHistorySystemMethod,
+  reportHistoryAccessOwnerRejection,
   asHistoryStatus,
   emptyHistoryStatus,
   type HistoryMetaInvoker,
@@ -86,7 +87,8 @@ export function getHistorySystemMaybe(App: unknown): HistorySystemLike | null {
     if (hs1) return hs1;
 
     return null;
-  } catch {
+  } catch (error) {
+    reportHistoryAccessOwnerRejection(App, 'history.getSystem.ownerRejected', error);
     return null;
   }
 }
@@ -99,7 +101,8 @@ export function flushHistoryPendingPushMaybe(App: unknown, opts?: HistoryPushReq
       return out === false ? false : true;
     }
     return flushHistoryPendingPushOnServiceMaybe(App, safeOpts);
-  } catch {
+  } catch (error) {
+    reportHistoryAccessOwnerRejection(App, 'history.flushPendingPush.ownerRejected', error);
     return false;
   }
 }
@@ -112,7 +115,8 @@ export function scheduleHistoryPushMaybe(App: unknown, meta?: ActionMetaLike): b
       return out === false ? false : true;
     }
     return scheduleHistoryPushOnServiceMaybe(App, safeMeta);
-  } catch {
+  } catch (error) {
+    reportHistoryAccessOwnerRejection(App, 'history.schedulePush.ownerRejected', error);
     return false;
   }
 }
@@ -125,7 +129,8 @@ export function pushHistoryStateMaybe(App: unknown, opts?: HistoryPushRequestLik
       return out === false ? false : true;
     }
     return pushHistoryStateOnSystemMaybe(App, safeOpts);
-  } catch {
+  } catch (error) {
+    reportHistoryAccessOwnerRejection(App, 'history.pushState.ownerRejected', error);
     return false;
   }
 }
@@ -138,7 +143,8 @@ export function resetHistoryBaselineMaybe(App: unknown, meta?: ActionMetaLike): 
     if (!resetBaseline) return false;
     Reflect.apply(resetBaseline, hs, [asRecord(meta) || {}]);
     return true;
-  } catch {
+  } catch (error) {
+    reportHistoryAccessOwnerRejection(App, 'history.resetBaseline.ownerRejected', error);
     return false;
   }
 }
@@ -181,7 +187,8 @@ export function flushOrPushHistoryStateMaybe(App: unknown, opts?: HistoryPushReq
       return out === false ? false : true;
     }
     return flushOrPushHistoryStateOnServiceMaybe(App, safeOpts);
-  } catch {
+  } catch (error) {
+    reportHistoryAccessOwnerRejection(App, 'history.flushOrPush.ownerRejected', error);
     return false;
   }
 }
@@ -193,7 +200,8 @@ export function getHistoryStatusMaybe(App: unknown): HistoryStatusLike {
     const getStatus = readHistorySystemMethod<HistoryVoidInvoker>(hs, 'getStatus');
     if (!getStatus) return asHistoryStatus(hs);
     return asHistoryStatus(Reflect.apply(getStatus, hs, []));
-  } catch {
+  } catch (error) {
+    reportHistoryAccessOwnerRejection(App, 'history.getStatus.ownerRejected', error);
     return emptyHistoryStatus();
   }
 }
@@ -224,15 +232,16 @@ export function subscribeHistoryStatusMaybe(App: unknown, listener: HistoryStatu
         // ignore cleanup failures
       }
     };
-  } catch {
+  } catch (error) {
+    reportHistoryAccessOwnerRejection(App, 'history.subscribeStatus.ownerRejected', error);
     return () => undefined;
   }
 }
 
 export function runHistoryUndoMaybe(App: unknown): boolean {
-  return callHistorySystemMethod(getHistorySystemMaybe(App), 'undo');
+  return callHistorySystemMethod(App, getHistorySystemMaybe(App), 'undo');
 }
 
 export function runHistoryRedoMaybe(App: unknown): boolean {
-  return callHistorySystemMethod(getHistorySystemMaybe(App), 'redo');
+  return callHistorySystemMethod(App, getHistorySystemMaybe(App), 'redo');
 }

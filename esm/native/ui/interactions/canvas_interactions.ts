@@ -30,7 +30,7 @@ export function installCanvasInteractions(
 
   const state = createCanvasInteractionState();
   const rectOps = createRectCacheOps(domEl, state);
-  const add = createEventBinding(domEl);
+  const add = createEventBinding(App, domEl);
   const normalizedOpts: Required<CanvasInteractionsOptions> = {
     clickMaxDistPx: typeof opts?.clickMaxDistPx === 'number' ? opts.clickMaxDistPx : 5,
     moveThrottleMs: typeof opts?.moveThrottleMs === 'number' ? opts.moveThrottleMs : 40,
@@ -68,7 +68,7 @@ export function installCanvasInteractions(
         }
       }
     } catch (err) {
-      reportCanvasInteractionsNonFatal('dispose', err);
+      reportCanvasInteractionsNonFatal(App, 'dispose', err);
     }
   };
 

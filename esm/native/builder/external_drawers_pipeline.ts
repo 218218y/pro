@@ -85,20 +85,8 @@ function isObjectRecord(value: unknown): value is UnknownRecord {
   return !!value && typeof value === 'object' && !Array.isArray(value);
 }
 
-function safeReportError(
-  App: AppContainer | null | undefined,
-  error: unknown,
-  meta: Record<string, unknown>
-): void {
-  if (App) {
-    reportError(App, error, meta);
-    return;
-  }
-  try {
-    console.warn('[WardrobePro][builder] external drawers pipeline warning:', meta, error);
-  } catch {
-    // ignore console failures in hostile runtimes
-  }
+function safeReportError(App: AppContainer, error: unknown, meta: Record<string, unknown>): void {
+  reportError(App, error, meta);
 }
 
 function asMutableDrawerOpList(ops: ExternalDrawersOpsLike): MutableExternalDrawerOpLike[] {

@@ -14,6 +14,7 @@ import { ensureMetaActions } from '../runtime/actions_access_domains.js';
 import { isActionStubFn } from '../runtime/actions_access_shared.js';
 import { asRecord } from '../runtime/record.js';
 import { metaUiOnly } from '../runtime/meta_profiles_access.js';
+import { reportError } from '../runtime/errors.js';
 import { installStableSurfaceSlot } from '../runtime/stable_surface_slots.js';
 import { getStoreSurfaceMaybe } from '../runtime/store_surface_access.js';
 
@@ -38,6 +39,15 @@ function readSetDirtyFn(obj: UnknownRecord | null): DirtySetter | null {
   return typeof value === 'function' ? (next, meta) => Reflect.apply(value, obj, [next, meta]) : null;
 }
 
+function reportDirtyFlagNonFatal(App: UnknownRecord, op: string, err: unknown): void {
+  reportError(
+    App,
+    err,
+    { where: 'native/platform/dirty_flag', op, fatal: false },
+    { consoleFallback: false }
+  );
+}
+
 function createCanonicalSetDirty(A: UnknownRecord): DirtySetter {
   return function setDirty(isDirty: boolean, meta: ActionMetaLike) {
     try {
@@ -49,7 +59,9 @@ function createCanonicalSetDirty(A: UnknownRecord): DirtySetter {
 
       const setDirtyFn = readSetDirtyFn(asObject(getStoreSurfaceMaybe(A)));
       if (setDirtyFn) setDirtyFn(!!isDirty, merged);
-    } catch (_) {}
+    } catch (err) {
+      reportDirtyFlagNonFatal(A, 'actions.meta.setDirty.ownerRejected', err);
+    }
   };
 }
 

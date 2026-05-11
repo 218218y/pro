@@ -23,12 +23,12 @@ export function openCustomPrompt(
         try {
           if (typeof callback === 'function') callback(value == null ? '' : String(value));
         } catch (err) {
-          __uiFeedbackReportNonFatal('prompt.reactCallback', err);
+          __uiFeedbackReportNonFatal(App, 'prompt.reactCallback', err);
         }
       });
       return;
     } catch (err) {
-      __uiFeedbackReportNonFatal('prompt.react', err);
+      __uiFeedbackReportNonFatal(App, 'prompt.react', err);
     }
   }
 
@@ -52,12 +52,12 @@ export function openCustomPrompt(
   try {
     if (els.titleEl) els.titleEl.textContent = String(title || '');
   } catch (err) {
-    __uiFeedbackReportNonFatal('prompt.title', err);
+    __uiFeedbackReportNonFatal(App, 'prompt.title', err);
   }
   try {
     if (els.msgEl) els.msgEl.classList.add('hidden');
   } catch (err) {
-    __uiFeedbackReportNonFatal('prompt.hideMessage', err);
+    __uiFeedbackReportNonFatal(App, 'prompt.hideMessage', err);
   }
   try {
     if (els.input) {
@@ -65,17 +65,17 @@ export function openCustomPrompt(
       els.input.value = defaultValue == null ? '' : String(defaultValue);
     }
   } catch (err) {
-    __uiFeedbackReportNonFatal('prompt.input', err);
+    __uiFeedbackReportNonFatal(App, 'prompt.input', err);
   }
   try {
     if (els.confirmBtn) els.confirmBtn.className = 'btn btn-save';
   } catch (err) {
-    __uiFeedbackReportNonFatal('prompt.confirmClass', err);
+    __uiFeedbackReportNonFatal(App, 'prompt.confirmClass', err);
   }
   try {
     els.modal.classList.add('open');
   } catch (err) {
-    __uiFeedbackReportNonFatal('prompt.open', err);
+    __uiFeedbackReportNonFatal(App, 'prompt.open', err);
   }
 
   getBrowserTimers(appWithState).setTimeout(() => {
@@ -85,7 +85,7 @@ export function openCustomPrompt(
         els.input.select();
       }
     } catch (err) {
-      __uiFeedbackReportNonFatal('prompt.focus', err);
+      __uiFeedbackReportNonFatal(App, 'prompt.focus', err);
     }
   }, 100);
 }
@@ -107,14 +107,14 @@ export function openCustomConfirm(
           try {
             if (typeof onConfirm === 'function') onConfirm();
           } catch (err) {
-            __uiFeedbackReportNonFatal('confirm.reactCallback', err);
+            __uiFeedbackReportNonFatal(App, 'confirm.reactCallback', err);
           }
         },
         onCancel ?? null
       );
       return;
     } catch (err) {
-      __uiFeedbackReportNonFatal('confirm.react', err);
+      __uiFeedbackReportNonFatal(App, 'confirm.react', err);
     }
   }
 
@@ -138,7 +138,7 @@ export function openCustomConfirm(
   try {
     if (els.titleEl) els.titleEl.textContent = String(title || '');
   } catch (err) {
-    __uiFeedbackReportNonFatal('confirm.title', err);
+    __uiFeedbackReportNonFatal(App, 'confirm.title', err);
   }
   try {
     if (els.msgEl) {
@@ -146,21 +146,21 @@ export function openCustomConfirm(
       els.msgEl.classList.remove('hidden');
     }
   } catch (err) {
-    __uiFeedbackReportNonFatal('confirm.message', err);
+    __uiFeedbackReportNonFatal(App, 'confirm.message', err);
   }
   try {
     if (els.input) els.input.classList.add('hidden');
   } catch (err) {
-    __uiFeedbackReportNonFatal('confirm.hideInput', err);
+    __uiFeedbackReportNonFatal(App, 'confirm.hideInput', err);
   }
   try {
     if (els.confirmBtn) els.confirmBtn.className = 'btn btn-danger';
   } catch (err) {
-    __uiFeedbackReportNonFatal('confirm.confirmClass', err);
+    __uiFeedbackReportNonFatal(App, 'confirm.confirmClass', err);
   }
   try {
     els.modal.classList.add('open');
   } catch (err) {
-    __uiFeedbackReportNonFatal('confirm.open', err);
+    __uiFeedbackReportNonFatal(App, 'confirm.open', err);
   }
 }

@@ -9,6 +9,7 @@ import {
   isCallable,
   isHistorySystemPaused,
   readHistorySystemMethod,
+  reportHistoryAccessOwnerRejection,
   type HistoryMetaInvoker,
   type HistoryOptionsInvoker,
 } from './history_system_access_shared.js';
@@ -53,7 +54,8 @@ export function callHistoryServiceMethodMaybe(
     const fn = historySvc ? historySvc[methodName] : null;
     if (!historySvc || !isCallable(fn)) return undefined;
     return Reflect.apply(fn, historySvc, [arg]);
-  } catch {
+  } catch (error) {
+    reportHistoryAccessOwnerRejection(App, `history.service.${methodName}.ownerRejected`, error);
     return undefined;
   }
 }
@@ -91,7 +93,8 @@ export function flushHistoryPendingPushOnServiceMaybe(App: unknown, opts?: Histo
     if (!flush) return false;
     Reflect.apply(flush, historySvc, [asRecord(opts) || {}]);
     return true;
-  } catch {
+  } catch (error) {
+    reportHistoryAccessOwnerRejection(App, 'history.service.flushPendingPush.ownerRejected', error);
     return false;
   }
 }
@@ -104,7 +107,8 @@ export function scheduleHistoryPushOnServiceMaybe(App: unknown, meta?: ActionMet
     if (!schedulePush) return false;
     Reflect.apply(schedulePush, historySvc, [asRecord(meta) || {}]);
     return true;
-  } catch {
+  } catch (error) {
+    reportHistoryAccessOwnerRejection(App, 'history.service.schedulePush.ownerRejected', error);
     return false;
   }
 }
@@ -118,7 +122,8 @@ export function pushHistoryStateOnSystemMaybe(App: unknown, opts?: HistoryPushRe
     if (isHistorySystemPaused(hs)) return false;
     Reflect.apply(pushState, hs, [asRecord(opts) || {}]);
     return true;
-  } catch {
+  } catch (error) {
+    reportHistoryAccessOwnerRejection(App, 'history.system.pushState.ownerRejected', error);
     return false;
   }
 }

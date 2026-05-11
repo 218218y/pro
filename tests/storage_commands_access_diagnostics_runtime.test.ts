@@ -28,11 +28,14 @@ function createDiagnosticsApp(service: Record<string, unknown>) {
 
 test('storage access reports storage owner rejections without changing fallback results', () => {
   const { App, reports } = createDiagnosticsApp({
-    KEYS: new Proxy({}, {
-      get() {
-        throw new Error('storage keys rejected');
-      },
-    }),
+    KEYS: new Proxy(
+      {},
+      {
+        get() {
+          throw new Error('storage keys rejected');
+        },
+      }
+    ),
     getString() {
       throw new Error('storage get string rejected');
     },
@@ -57,26 +60,32 @@ test('storage access reports storage owner rejections without changing fallback 
   assert.equal(setStorageJSON(App, 'j', { v: 1 }), false);
   assert.equal(removeStorageKey(App, 'old'), false);
 
-  assert.deepEqual(reports.map(entry => entry.ctx.op), [
-    'getStorageKey',
-    'getStorageString',
-    'getStorageJSON',
-    'setStorageString',
-    'setStorageJSON',
-    'removeStorageKey',
-  ]);
+  assert.deepEqual(
+    reports.map(entry => entry.ctx.op),
+    [
+      'getStorageKey',
+      'getStorageString',
+      'getStorageJSON',
+      'setStorageString',
+      'setStorageJSON',
+      'removeStorageKey',
+    ]
+  );
   assert.ok(reports.every(entry => entry.ctx.where === 'native/runtime/storage_access'));
   assert.ok(reports.every(entry => entry.ctx.fatal === false));
 });
 
 test('commands access reports command-surface healing rejection while preserving null result', () => {
   const reports: Array<{ error: unknown; ctx: any }> = [];
-  const commands = new Proxy({}, {
-    get(_target, prop) {
-      if (prop === 'rebuildWardrobe') throw new Error('commands method rejected');
-      return undefined;
-    },
-  });
+  const commands = new Proxy(
+    {},
+    {
+      get(_target, prop) {
+        if (prop === 'rebuildWardrobe') throw new Error('commands method rejected');
+        return undefined;
+      },
+    }
+  );
   const App: any = {
     services: {
       commands,

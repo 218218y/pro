@@ -1,5 +1,5 @@
 import { getMode } from './store_access.js';
-import { MODES, getTools, getUiFeedback } from '../services/api.js';
+import { MODES, getTools, getUiFeedback, reportError } from '../services/api.js';
 
 import type {
   AppContainer,
@@ -242,7 +242,7 @@ export function getHandlesTools(App: AppLike): HandlesToolLike | null {
 
 const __modesSoftSeen = new Map<string, number>();
 
-export function modesReportNonFatal(op: string, err: unknown, throttleMs = 4000): void {
+export function modesReportNonFatal(App: AppLike, op: string, err: unknown, throttleMs = 4000): void {
   try {
     const now = Date.now();
     const prev = __modesSoftSeen.get(op) || 0;
@@ -257,9 +257,9 @@ export function modesReportNonFatal(op: string, err: unknown, throttleMs = 4000)
     // ignore dedupe bookkeeping failures
   }
   try {
-    console.warn('[WardrobePro][modes][' + op + ']', err);
+    reportError(App, err, { where: 'native/ui/modes', op, fatal: false }, { consoleFallback: false });
   } catch (_e) {
-    // ignore console failures
+    // ignore reporting failures
   }
 }
 

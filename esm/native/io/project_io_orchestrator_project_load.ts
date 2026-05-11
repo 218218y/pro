@@ -294,7 +294,7 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
       if (toastEnabled) showToast(toastMessage, 'success');
       return buildProjectLoadSuccessResult({ restoreGen });
     } catch (err) {
-      console.error('Load failed:', err);
+      reportNonFatal('project.load.error', err);
       if (toastEnabled) {
         try {
           showToast('שגיאה בטעינת הנתונים', 'error');

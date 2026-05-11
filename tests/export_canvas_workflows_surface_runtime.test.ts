@@ -21,6 +21,7 @@ test('export canvas workflow factory exposes stable user-facing workflow surface
     _renderSceneForExport: async () => undefined,
     _getRendererCanvasSource: () => null,
     _reportExportError: () => undefined,
+    _reportExportRecovery: () => undefined,
     _toast: () => undefined,
     shouldFailFast: () => false,
     getExportLogoImage: () => null,

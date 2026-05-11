@@ -52,7 +52,7 @@ export function releaseEditHold(App: AppLike, opts?: ReleaseEditHoldOptions): vo
     const current = modeSlice && typeof modeSlice.primary === 'string' ? modeSlice.primary : NONE;
     if (current && current !== NONE && current !== 'none') return;
   } catch (_) {
-    reportDoorsRuntimeNonFatal('L484', _);
+    reportDoorsRuntimeNonFatal(App, 'L484', _);
   }
 
   if (restore) applySnapshot(App, hold.snapshot);

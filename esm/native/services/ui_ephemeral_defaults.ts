@@ -6,6 +6,7 @@
 import type { ActionMetaLike, AppContainer, UiSlicePatch, UiStateLike } from '../../../types';
 import { readUiStateFromApp } from '../runtime/root_state_access.js';
 import { patchUiSoft } from '../runtime/ui_write_access.js';
+import { reportError } from '../runtime/errors.js';
 
 function assertApp(app: unknown): asserts app is AppContainer {
   if (!app || typeof app !== 'object') {
@@ -17,7 +18,20 @@ function hasOwnKeys(v: unknown): boolean {
   return !!v && typeof v === 'object' && Object.keys(v).length > 0;
 }
 
-// Helper: patch UI softly (no build/autosave/persist/history)
+function reportUiEphemeralDefaultsFailure(app: AppContainer, op: string, error: unknown): void {
+  try {
+    reportError(
+      app,
+      error,
+      { where: 'native/services/ui_ephemeral_defaults', op, fatal: false },
+      { consoleFallback: false }
+    );
+  } catch {
+    // UI defaults are boot helpers; diagnostics must not make boot fail.
+  }
+}
+
+// Patch UI softly (no build/autosave/persist/history).
 function applyUiSoftPatch(app: AppContainer, uiPartial: UiSlicePatch, meta?: ActionMetaLike): void {
   const patch: UiSlicePatch = uiPartial && typeof uiPartial === 'object' ? { ...uiPartial } : {};
   if (!hasOwnKeys(patch)) return;
@@ -26,85 +40,70 @@ function applyUiSoftPatch(app: AppContainer, uiPartial: UiSlicePatch, meta?: Act
     const baseMeta: ActionMetaLike =
       meta && typeof meta === 'object' ? { ...meta } : { source: 'uiDefaults' };
     patchUiSoft(app, patch, baseMeta);
-  } catch (_) {
-    // ignore
+  } catch (error) {
+    reportUiEphemeralDefaultsFailure(app, 'patchUiSoft.ownerRejected', error);
   }
 }
 
-// Helper: read UI state from slice store (preferred) or from raw store state (fallback)
+// Read canonical UI state. Early boot/test harness gaps remain empty defaults, not errors.
 function readUi(app: AppContainer): UiStateLike {
   try {
     return readUiStateFromApp(app);
-  } catch (_) {
+  } catch {
     return {};
+  }
+}
+
+type UiDefaultsPatchBuilder = (ui: UiStateLike) => UiSlicePatch;
+
+function seedUiDefaultSection(app: AppContainer, source: string, buildPatch: UiDefaultsPatchBuilder): void {
+  try {
+    const patch = buildPatch(readUi(app));
+    if (hasOwnKeys(patch)) applyUiSoftPatch(app, patch, { source });
+  } catch (error) {
+    reportUiEphemeralDefaultsFailure(app, `${source}.seedFailed`, error);
   }
 }
 
 export function seedUiEphemeralDefaults(app: AppContainer): true {
   assertApp(app);
 
-  // Layout defaults
-  try {
-    const ui = readUi(app);
-    const needsLayout = typeof ui.currentLayoutType !== 'string';
-    const needsDivs = typeof ui.currentGridDivisions !== 'number';
-    const needsShelfVariant = typeof ui.currentGridShelfVariant !== 'string';
-    if (needsLayout || needsDivs || needsShelfVariant) {
-      const patch: UiSlicePatch = {};
-      if (needsLayout) patch.currentLayoutType = 'shelves';
-      if (needsDivs) patch.currentGridDivisions = 6;
-      if (needsShelfVariant) patch.currentGridShelfVariant = 'regular';
-      applyUiSoftPatch(app, patch, { source: 'boot:uiDefaults:layout' });
+  seedUiDefaultSection(app, 'boot:uiDefaults:layout', ui => {
+    const patch: UiSlicePatch = {};
+    if (typeof ui.currentLayoutType !== 'string') patch.currentLayoutType = 'shelves';
+    if (typeof ui.currentGridDivisions !== 'number') patch.currentGridDivisions = 6;
+    if (typeof ui.currentGridShelfVariant !== 'string') patch.currentGridShelfVariant = 'regular';
+    return patch;
+  });
+
+  seedUiDefaultSection(app, 'boot:uiDefaults:perCellGrid', ui => {
+    const patch: UiSlicePatch = {};
+    if (!ui.perCellGridMap || typeof ui.perCellGridMap !== 'object' || Array.isArray(ui.perCellGridMap)) {
+      patch.perCellGridMap = {};
     }
-  } catch (_) {}
-
-  // Per-cell grid defaults
-  try {
-    const ui2 = readUi(app);
-    const needsMap =
-      !ui2.perCellGridMap || typeof ui2.perCellGridMap !== 'object' || Array.isArray(ui2.perCellGridMap);
-    const needsActive = !(typeof ui2.activeGridCellId === 'string' || ui2.activeGridCellId === null);
-
-    if (needsMap || needsActive) {
-      const patch2: UiSlicePatch = {};
-      if (needsMap) patch2.perCellGridMap = {};
-      if (needsActive) patch2.activeGridCellId = null;
-      applyUiSoftPatch(app, patch2, { source: 'boot:uiDefaults:perCellGrid' });
+    if (!(typeof ui.activeGridCellId === 'string' || ui.activeGridCellId === null)) {
+      patch.activeGridCellId = null;
     }
-  } catch (_) {}
+    return patch;
+  });
 
-  // External drawers defaults
-  try {
-    const ui3 = readUi(app);
-    const needsType = typeof ui3.currentExtDrawerType !== 'string';
-    const needsCount = typeof ui3.currentExtDrawerCount !== 'number';
+  seedUiDefaultSection(app, 'boot:uiDefaults:extDrawers', ui => {
+    const patch: UiSlicePatch = {};
+    if (typeof ui.currentExtDrawerType !== 'string') patch.currentExtDrawerType = 'regular';
+    if (typeof ui.currentExtDrawerCount !== 'number') patch.currentExtDrawerCount = 1;
+    return patch;
+  });
 
-    if (needsType || needsCount) {
-      const patch3: UiSlicePatch = {};
-      if (needsType) patch3.currentExtDrawerType = 'regular';
-      if (needsCount) patch3.currentExtDrawerCount = 1;
-      applyUiSoftPatch(app, patch3, { source: 'boot:uiDefaults:extDrawers' });
-    }
-  } catch (_) {}
+  seedUiDefaultSection(app, 'boot:uiDefaults:curtainChoice', ui =>
+    typeof ui.currentCurtainChoice !== 'string' ? { currentCurtainChoice: 'none' } : {}
+  );
 
-  // Curtain defaults
-  try {
-    const ui4 = readUi(app);
-    if (typeof ui4.currentCurtainChoice !== 'string') {
-      applyUiSoftPatch(app, { currentCurtainChoice: 'none' }, { source: 'boot:uiDefaults:curtainChoice' });
-    }
-  } catch (_) {}
-
-  // Mirror draft defaults (UI-only inputs for paint mode)
-  try {
-    const ui5 = readUi(app);
-    const patch5: UiSlicePatch = {};
-    if (typeof ui5.currentMirrorDraftHeightCm !== 'string') patch5.currentMirrorDraftHeightCm = '';
-    if (typeof ui5.currentMirrorDraftWidthCm !== 'string') patch5.currentMirrorDraftWidthCm = '';
-    if (hasOwnKeys(patch5)) {
-      applyUiSoftPatch(app, patch5, { source: 'boot:uiDefaults:mirrorDraft' });
-    }
-  } catch (_) {}
+  seedUiDefaultSection(app, 'boot:uiDefaults:mirrorDraft', ui => {
+    const patch: UiSlicePatch = {};
+    if (typeof ui.currentMirrorDraftHeightCm !== 'string') patch.currentMirrorDraftHeightCm = '';
+    if (typeof ui.currentMirrorDraftWidthCm !== 'string') patch.currentMirrorDraftWidthCm = '';
+    return patch;
+  });
 
   return true;
 }
@@ -121,7 +120,7 @@ export function isUiEphemeralDefaultsSeeded(app: AppContainer): boolean {
       typeof ui.perCellGridMap === 'object' &&
       !Array.isArray(ui.perCellGridMap)
     );
-  } catch (_) {
+  } catch {
     return false;
   }
 }

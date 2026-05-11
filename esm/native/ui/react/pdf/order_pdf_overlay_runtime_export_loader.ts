@@ -1,4 +1,5 @@
-import { asRecord, getFn, orderPdfOverlayReportNonFatal } from './order_pdf_overlay_runtime_shared.js';
+import { reportError } from '../../../services/api.js';
+import { asRecord, getFn } from './order_pdf_overlay_runtime_shared.js';
 import type { ExportApiBindingLike, ExportCanvasModuleLike } from './order_pdf_overlay_runtime_export_api.js';
 import { bindExportApiFromModule } from './order_pdf_overlay_runtime_export_api.js';
 
@@ -48,7 +49,12 @@ export async function ensureExportApiReady(app: unknown): Promise<ExportApiBindi
     const mod = await _exportCanvasModulePromise;
     return bindExportApiFromModule(mod, app);
   } catch (__wpErr) {
-    orderPdfOverlayReportNonFatal('exportCanvas.module', __wpErr);
+    reportError(
+      app,
+      __wpErr,
+      { where: 'native/ui/react/pdf/order_pdf_overlay', op: 'exportCanvas.module', nonFatal: true },
+      { consoleFallback: false }
+    );
     return null;
   }
 }

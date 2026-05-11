@@ -21,7 +21,7 @@ export function showToast(
       reactFeedback.toast(message == null ? '' : String(message), normalizeToastKind(type));
       return;
     } catch (err) {
-      __uiFeedbackReportNonFatal('toast.react', err);
+      __uiFeedbackReportNonFatal(App, 'toast.react', err);
     }
   }
 
@@ -30,14 +30,7 @@ export function showToast(
   if (!doc) return;
 
   const container = ensureToastContainer(App, doc);
-  if (!container) {
-    try {
-      console.warn('toastContainer not found');
-    } catch (err) {
-      __uiFeedbackReportNonFatal('toast.warnMissingContainer', err);
-    }
-    return;
-  }
+  if (!container) return;
 
   const kind = normalizeToastKind(type);
   const toast = doc.createElement('div');
@@ -58,7 +51,7 @@ export function showToast(
     try {
       toast.classList.add('show');
     } catch (err) {
-      __uiFeedbackReportNonFatal('toast.show', err);
+      __uiFeedbackReportNonFatal(App, 'toast.show', err);
     }
   }, 10);
 
@@ -66,13 +59,13 @@ export function showToast(
     try {
       toast.classList.remove('show');
     } catch (err) {
-      __uiFeedbackReportNonFatal('toast.hide', err);
+      __uiFeedbackReportNonFatal(App, 'toast.hide', err);
     }
     getBrowserTimers(App).setTimeout(() => {
       try {
         toast.remove();
       } catch (err) {
-        __uiFeedbackReportNonFatal('toast.remove', err);
+        __uiFeedbackReportNonFatal(App, 'toast.remove', err);
       }
     }, 300);
   }, 3000);

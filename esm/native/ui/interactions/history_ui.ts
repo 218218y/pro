@@ -10,7 +10,7 @@
 
 import type { AppContainer } from '../../../../types';
 
-import { runHistoryRedoMaybe, runHistoryUndoMaybe } from '../../services/api.js';
+import { reportError, runHistoryRedoMaybe, runHistoryUndoMaybe } from '../../services/api.js';
 import { hasSuspendedHistoryShortcuts } from './history_ui_shortcut_guard.js';
 
 const __historyUiReportNonFatalSeen = new Map<string, number>();
@@ -21,7 +21,12 @@ function readErrorInfo(value: unknown): ErrorInfoLike | null {
   return value && typeof value === 'object' ? value : null;
 }
 
-function __historyUiReportNonFatal(op: string, err: unknown, throttleMs = 4000): void {
+function __historyUiReportNonFatal(
+  App: AppContainer | null | undefined,
+  op: string,
+  err: unknown,
+  throttleMs = 4000
+): void {
   const now = Date.now();
   let msg = 'unknown';
   if (typeof err === 'string') msg = err;
@@ -41,7 +46,7 @@ function __historyUiReportNonFatal(op: string, err: unknown, throttleMs = 4000):
       if (now - ts > pruneOlderThan) __historyUiReportNonFatalSeen.delete(k);
     }
   }
-  console.error(`[WardrobePro][history_ui] ${op}`, err);
+  reportError(App || null, err, { where: 'native/ui/interactions/history_ui', op, fatal: false });
 }
 
 function isDocumentWithEvents(v: unknown): v is Document {
@@ -101,7 +106,7 @@ export function installHistoryUI(App: AppContainer, deps: Partial<HistoryUiDeps>
         try {
           copyToClipboard();
         } catch (err) {
-          __historyUiReportNonFatal('copyToClipboard', err);
+          __historyUiReportNonFatal(App, 'copyToClipboard', err);
         }
         return;
       }
@@ -111,7 +116,7 @@ export function installHistoryUI(App: AppContainer, deps: Partial<HistoryUiDeps>
         try {
           runHistoryUndoMaybe(App);
         } catch (err) {
-          __historyUiReportNonFatal('undo', err);
+          __historyUiReportNonFatal(App, 'undo', err);
         }
         return;
       }
@@ -125,26 +130,26 @@ export function installHistoryUI(App: AppContainer, deps: Partial<HistoryUiDeps>
         try {
           runHistoryRedoMaybe(App);
         } catch (err) {
-          __historyUiReportNonFatal('redo', err);
+          __historyUiReportNonFatal(App, 'redo', err);
         }
         return;
       }
     } catch (err) {
-      __historyUiReportNonFatal('keydown', err);
+      __historyUiReportNonFatal(App, 'keydown', err);
     }
   };
 
   try {
     doc.addEventListener('keydown', onKeydown, false);
   } catch (err) {
-    __historyUiReportNonFatal('bind', err);
+    __historyUiReportNonFatal(App, 'bind', err);
   }
 
   const dispose = () => {
     try {
       doc.removeEventListener('keydown', onKeydown, false);
     } catch (err) {
-      __historyUiReportNonFatal('unbind', err);
+      __historyUiReportNonFatal(App, 'unbind', err);
     }
   };
   return dispose;

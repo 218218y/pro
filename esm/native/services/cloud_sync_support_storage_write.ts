@@ -11,6 +11,11 @@ import {
 } from './cloud_sync_support_shared.js';
 import type { StorageLike } from './cloud_sync_support_storage_shared.js';
 
+function assertStorageWriteOk(ok: boolean, key: string): void {
+  if (ok) return;
+  throw new Error(`Cloud Sync storage write failed for ${key}`);
+}
+
 function writeRemoteCollectionsToStorage(
   storage: StorageLike,
   keyModels: string,
@@ -26,19 +31,26 @@ function writeRemoteCollectionsToStorage(
   hiddenPresets: ReturnType<typeof readPayloadList>
 ): void {
   if (typeof storage.setString === 'function') {
-    storage.setString(keyModels, JSON.stringify(models));
-    storage.setString(keyColors, JSON.stringify(colors));
-    if (hasColorOrder) storage.setString(keyColorOrder, JSON.stringify(colorOrder || []));
-    storage.setString(keyPresetOrder, JSON.stringify(presetOrder));
-    storage.setString(keyHiddenPresets, JSON.stringify(hiddenPresets));
+    assertStorageWriteOk(storage.setString(keyModels, JSON.stringify(models)), keyModels);
+    assertStorageWriteOk(storage.setString(keyColors, JSON.stringify(colors)), keyColors);
+    if (hasColorOrder) {
+      assertStorageWriteOk(storage.setString(keyColorOrder, JSON.stringify(colorOrder || [])), keyColorOrder);
+    }
+    assertStorageWriteOk(storage.setString(keyPresetOrder, JSON.stringify(presetOrder)), keyPresetOrder);
+    assertStorageWriteOk(
+      storage.setString(keyHiddenPresets, JSON.stringify(hiddenPresets)),
+      keyHiddenPresets
+    );
     return;
   }
   if (typeof storage.setJSON === 'function') {
-    storage.setJSON(keyModels, models);
-    storage.setJSON(keyColors, colors);
-    if (hasColorOrder) storage.setJSON(keyColorOrder, colorOrder || []);
-    storage.setJSON(keyPresetOrder, presetOrder);
-    storage.setJSON(keyHiddenPresets, hiddenPresets);
+    assertStorageWriteOk(storage.setJSON(keyModels, models), keyModels);
+    assertStorageWriteOk(storage.setJSON(keyColors, colors), keyColors);
+    if (hasColorOrder) {
+      assertStorageWriteOk(storage.setJSON(keyColorOrder, colorOrder || []), keyColorOrder);
+    }
+    assertStorageWriteOk(storage.setJSON(keyPresetOrder, presetOrder), keyPresetOrder);
+    assertStorageWriteOk(storage.setJSON(keyHiddenPresets, hiddenPresets), keyHiddenPresets);
   }
 }
 
@@ -78,8 +90,9 @@ export function applyRemote(
     );
   } catch (e) {
     _cloudSyncReportNonFatal(App, 'applyRemote.writeStorage', e, { throttleMs: 6000 });
+  } finally {
+    suppress.v = false;
   }
-  suppress.v = false;
 
   try {
     ensureModelsLoadedViaService(App, { forceRebuild: true, silent: false });

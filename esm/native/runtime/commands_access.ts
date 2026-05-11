@@ -14,9 +14,14 @@ function asCommandsService(value: unknown): CommandsServiceLike | null {
 }
 
 function reportCommandsAccessIssue(App: unknown, op: string, error: unknown): void {
-  reportError(App, error, { where: 'native/runtime/commands_access', op, fatal: false }, {
-    consoleFallback: false,
-  });
+  reportError(
+    App,
+    error,
+    { where: 'native/runtime/commands_access', op, fatal: false },
+    {
+      consoleFallback: false,
+    }
+  );
 }
 
 function healCommandsSurface(service: CommandsServiceLike | null): CommandsServiceLike | null {

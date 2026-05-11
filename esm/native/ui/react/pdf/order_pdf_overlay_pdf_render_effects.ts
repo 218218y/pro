@@ -126,7 +126,7 @@ export function useOrderPdfOverlayPdfRenderEffects(args: {
       if (loaded) setPdfPageReadyTick(t => t + 1);
     })().catch(err => {
       if (cancelled) return;
-      console.warn('[WardrobePro][PDF editor] load failed', err);
+      reportNonFatal('orderPdfRender:loadFailed', err);
       fb.toast('שגיאה בטעינת ה-PDF', 'error');
     });
 

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { installModesController } from '../esm/native/ui/modes.ts';
+import { modesReportNonFatal } from '../esm/native/ui/modes_shared.ts';
 import { installUiPrimaryMode } from '../esm/native/ui/primary_mode.ts';
 import {
   getModesControllerMaybe,
@@ -174,4 +175,26 @@ test('modes controller suppresses duplicate apply side effects when opts only re
   listener?.();
   assert.equal(handleCalls.length, 2);
   assert.deepEqual(handleCalls[1], ['matte', { source: 'modes:handleType' }]);
+});
+
+test('modes soft diagnostics are app-scoped and throttled without console-only warnings', () => {
+  const reported: Array<{ err: unknown; ctx: any }> = [];
+  const App = {
+    services: {
+      platform: {
+        reportError(err: unknown, ctx: unknown) {
+          reported.push({ err, ctx });
+        },
+      },
+    },
+  } as any;
+
+  modesReportNonFatal(App, 'tests:uiModes:ownerRejected', new Error('mode owner rejected'), 1000);
+  modesReportNonFatal(App, 'tests:uiModes:ownerRejected', new Error('mode owner rejected again'), 1000);
+
+  assert.equal(reported.length, 1);
+  assert.match(String((reported[0].err as Error).message), /mode owner rejected/);
+  assert.equal(reported[0].ctx?.where, 'native/ui/modes');
+  assert.equal(reported[0].ctx?.op, 'tests:uiModes:ownerRejected');
+  assert.equal(reported[0].ctx?.fatal, false);
 });

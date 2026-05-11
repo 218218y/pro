@@ -75,7 +75,6 @@ export function createExportOrderPdfBuilderOps(
       });
     } catch (e) {
       _reportExportError(app, 'buildOrderPdfInteractive', e, { interactivePdf: true });
-      console.warn('[WardrobePro] Interactive PDF generation failed', e);
       _toast(app, 'שגיאה ביצירת PDF', 'error');
       return null;
     }

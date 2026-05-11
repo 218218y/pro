@@ -17,7 +17,7 @@ export function drawExportHeader(
   App: AppContainer,
   deps: Pick<
     ExportCanvasWorkflowDeps,
-    'getExportLogoImage' | 'drawExportLogo' | '_getProjectName' | '_reportExportError' | 'shouldFailFast'
+    'getExportLogoImage' | 'drawExportLogo' | '_getProjectName' | '_reportExportRecovery' | 'shouldFailFast'
   >,
   ctx: CanvasRenderingContext2D,
   width: number,
@@ -35,8 +35,7 @@ export function drawExportHeader(
     try {
       deps.drawExportLogo(App, ctx, width, logoImg, opts.source, opts.logoYOffset);
     } catch (err) {
-      deps._reportExportError(App, 'export.logoDraw', err);
-      console.warn('Logo draw failed', err);
+      deps._reportExportRecovery(App, 'export.logoDraw', err, { includeLogo: true });
       if (deps.shouldFailFast(App)) throw err;
     }
   }

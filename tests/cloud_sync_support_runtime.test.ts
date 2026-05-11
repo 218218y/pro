@@ -1,7 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { captureSketchSnapshot, hashString32 } from '../esm/native/services/cloud_sync_support.ts';
+import {
+  _cloudSyncReportNonFatal,
+  captureSketchSnapshot,
+  hashString32,
+} from '../esm/native/services/cloud_sync_support.ts';
 import { withSuppressedConsole } from './_console_silence.ts';
 
 test('cloud sync support: capture sketch falls back to raw capture only when projectIO export is not installed', async () => {
@@ -93,4 +97,28 @@ test('cloud sync support: fallback capture canonicalizes snapshot order and pres
     first.jsonStr,
     '{"alpha":{"first":1,"second":2},"orderPdfEditorDraft":{"bad":{"keep":{"html":"<p>kept</p>"}},"createdAt":"2026-01-02T03:04:05.000Z","pages":[{"html":"<p>page</p>"}]},"orderPdfEditorZoom":1.25,"zebra":1}'
   );
+});
+
+test('cloud sync support reports non-fatal failures through canonical app diagnostics', () => {
+  const reports: Array<{ error: unknown; ctx: any }> = [];
+  const App = {
+    services: {
+      platform: {
+        reportError(error: unknown, ctx: any) {
+          reports.push({ error, ctx });
+        },
+      },
+    },
+  } as any;
+  const error = new Error('network broke');
+
+  _cloudSyncReportNonFatal(App, 'unit.recoverable', error, { throttleMs: 0, noConsole: true });
+
+  assert.equal(reports.length, 1);
+  assert.equal(reports[0].error, error);
+  assert.deepEqual(reports[0].ctx, {
+    where: 'services/cloud_sync',
+    op: 'unit.recoverable',
+    nonFatal: true,
+  });
 });

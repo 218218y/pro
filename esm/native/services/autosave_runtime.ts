@@ -1,4 +1,5 @@
 import { logViaPlatform } from '../runtime/platform_access.js';
+import { reportError } from '../runtime/errors.js';
 import { getAutosaveServiceMaybe } from '../runtime/autosave_access.js';
 
 import {
@@ -22,7 +23,17 @@ export function commitAutosaveNow(App: AppContainer): boolean {
   dataObj.timestamp = Date.now();
   dataObj.dateString = new Date().toLocaleTimeString();
 
-  const ok = writeAutosavePayloadToStorage(App, getAutosaveStorageKey(App), dataObj);
+  const storageKey = getAutosaveStorageKey(App);
+  const ok = writeAutosavePayloadToStorage(App, storageKey, dataObj);
+
+  if (!ok) {
+    reportError(
+      App,
+      new Error('Autosave storage write failed'),
+      { where: 'services/autosave', op: 'commitAutosaveNow.writeStorage', storageKey, nonFatal: true },
+      { consoleFallback: false }
+    );
+  }
 
   if (ok) {
     try {

@@ -22,7 +22,6 @@ export function createExportRenderAndSketchWorkflow(
     _renderAllNotesToCanvas,
     _renderSceneForExport,
     _getRendererCanvasSource,
-    _reportExportError,
     _createDomCanvas,
     _handleCanvasExport,
     restoreViewportCameraPose,
@@ -80,16 +79,12 @@ export function createExportRenderAndSketchWorkflow(
       });
 
       if (notesEnabled && !notesTransform) {
-        try {
-          console.warn('[WardrobePro][export] notes transform missing (render/sketch export)', {
-            preRef,
-            postRef,
-          });
-        } catch (err) {
-          deps._exportReportThrottled(App, 'copyToClipboard.notesTransform.warn', err, {
-            throttleMs: 1000,
-          });
-        }
+        deps._reportExportRecovery(
+          App,
+          'exportRenderAndSketch.notesTransformMissing',
+          new Error('notes export transform unavailable'),
+          { preRefMissing: !preRef, postRefMissing: !postRef }
+        );
       }
 
       return notesTransform;
@@ -151,8 +146,7 @@ export function createExportRenderAndSketchWorkflow(
           toastClipboardSuccess: 'ייצוא סקיצה/הדמיה הועתק ללוח בהצלחה!',
         });
       } catch (err) {
-        _reportExportError(App, 'exportRenderAndSketch.logoPass', err);
-        console.warn('Export tainted by logo, retrying without logo...', err);
+        deps._reportExportRecovery(App, 'exportRenderAndSketch.retryWithoutLogo', err, { pass: 'logo' });
         if (deps.shouldFailFast(App)) throw err;
         const finalCanvasWithoutLogo = await createComposite(false);
         _handleCanvasExport(App, finalCanvasWithoutLogo, 'wardrobe-render-sketch.png', {

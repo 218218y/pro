@@ -71,7 +71,8 @@ export function createCloudSyncMainRowLocalState(
       args.keyColors,
       args.keyColorOrder,
       args.keyPresetOrder,
-      args.keyHiddenPresets
+      args.keyHiddenPresets,
+      { App: args.App }
     );
 
   const computeHashForLocal = (local: CloudSyncLocalCollections): string =>

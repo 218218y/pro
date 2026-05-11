@@ -85,11 +85,11 @@ function installModeToastSync(App: AppContainer): void {
             const doc = getDocumentMaybe(App);
             if (doc?.body) doc.body.style.cursor = 'default';
           } catch (err) {
-            __uiFeedbackReportNonFatal('feedback.install.resetCursor', err);
+            __uiFeedbackReportNonFatal(App, 'feedback.install.resetCursor', err);
           }
         }
       } catch (err) {
-        __uiFeedbackReportNonFatal('feedback.install.modeSyncCheck', err);
+        __uiFeedbackReportNonFatal(App, 'feedback.install.modeSyncCheck', err);
       }
     };
 
@@ -97,7 +97,7 @@ function installModeToastSync(App: AppContainer): void {
     setModeToastSyncUnsub(App, store.subscribe(check));
     if (!isModeToastSyncInstalled(App)) markModeToastSyncInstalled(App);
   } catch (err) {
-    __uiFeedbackReportNonFatal('feedback.install.modeSync', err);
+    __uiFeedbackReportNonFatal(App, 'feedback.install.modeSync', err);
   }
 }
 
@@ -150,7 +150,7 @@ export function installUiFeedback(App: AppContainer | null | undefined): UiFeedb
     installModeToastSync(App);
     return stableFeedback;
   } catch (err) {
-    __uiFeedbackReportNonFatal('feedback.install', err);
+    __uiFeedbackReportNonFatal(App, 'feedback.install', err);
   }
 
   return hasStableUiFeedbackSurface(fb) ? fb : null;

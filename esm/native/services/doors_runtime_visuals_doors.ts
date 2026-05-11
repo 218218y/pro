@@ -59,7 +59,7 @@ export function forceUpdatePerState(App: AppLike): void {
           }
         }
       } catch (_e) {
-        reportDoorsRuntimeNonFatal('L615', _e);
+        reportDoorsRuntimeNonFatal(App, 'L615', _e);
       }
 
       door.group.rotation.y = open ? baseRot * openDirSign : 0;
@@ -82,7 +82,7 @@ export function forceUpdatePerState(App: AppLike): void {
     try {
       door.group.position.z = finalZ;
     } catch (_e) {
-      reportSlidingDoorZFailure(_e);
+      reportSlidingDoorZFailure(App, _e);
     }
   }
 
@@ -139,7 +139,7 @@ export function syncVisualsNow(App: AppLike, opts?: SyncVisualsOptions): void {
           );
         }
       } catch (_e) {
-        reportDoorsRuntimeNonFatal('syncVisualsNow.noGlobalOpen', _e);
+        reportDoorsRuntimeNonFatal(App, 'syncVisualsNow.noGlobalOpen', _e);
       }
 
       const allowSketchFreeBoxOpen =
@@ -182,14 +182,14 @@ export function syncVisualsNow(App: AppLike, opts?: SyncVisualsOptions): void {
           baseRot *= openDirSign;
         }
       } catch (_e) {
-        reportDoorsRuntimeNonFatal('syncVisualsNow.cornerPentSign', _e);
+        reportDoorsRuntimeNonFatal(App, 'syncVisualsNow.cornerPentSign', _e);
       }
 
       try {
         const invert = !!door.invertSwing || !!getGroupUserData(group)?.__invertSwing;
         if (invert) baseRot = -baseRot;
       } catch (_e) {
-        reportDoorsRuntimeNonFatal('syncVisualsNow.invertSwing', _e);
+        reportDoorsRuntimeNonFatal(App, 'syncVisualsNow.invertSwing', _e);
       }
 
       door.group.rotation.y = baseRot;
@@ -212,7 +212,7 @@ export function syncVisualsNow(App: AppLike, opts?: SyncVisualsOptions): void {
     try {
       door.group.position.z = finalZ;
     } catch (_e) {
-      reportSlidingDoorZFailure(_e);
+      reportSlidingDoorZFailure(App, _e);
     }
   }
 

@@ -23,7 +23,6 @@ export function createExportDualImageWorkflow(
     _renderAllNotesToCanvas,
     _renderSceneForExport,
     _getRendererCanvasSource,
-    _reportExportError,
     _createDomCanvas,
     _handleCanvasExport,
     _setDoorsOpenForExport,
@@ -67,14 +66,12 @@ export function createExportDualImageWorkflow(
       });
 
       if (notesEnabled && !notesTransform) {
-        try {
-          console.warn('[WardrobePro][export] notes transform missing (open/closed export)', {
-            preRef,
-            postRef,
-          });
-        } catch (err) {
-          deps._exportReportThrottled(App, 'export.notesTransformMissing.warn', err, { throttleMs: 5000 });
-        }
+        deps._reportExportRecovery(
+          App,
+          'exportDualImage.notesTransformMissing',
+          new Error('notes export transform unavailable'),
+          { preRefMissing: !preRef, postRefMissing: !postRef }
+        );
       }
 
       return notesTransform;
@@ -126,8 +123,7 @@ export function createExportDualImageWorkflow(
         toastClipboardSuccess: 'ייצוא פתוח/סגור הועתק ללוח בהצלחה!',
       });
     } catch (err) {
-      _reportExportError(App, 'exportDualImage.logoPass', err);
-      console.warn('Export tainted by logo, retrying without logo...', err);
+      deps._reportExportRecovery(App, 'exportDualImage.retryWithoutLogo', err, { pass: 'logo' });
       if (deps.shouldFailFast(App)) throw err;
       const finalCanvasWithoutLogo = await createComposite(false);
       _handleCanvasExport(App, finalCanvasWithoutLogo, 'wardrobe-design-open-closed.png', {

@@ -1,4 +1,4 @@
-import type { CloudSyncLocalCollections } from '../../../types';
+import type { AppContainer, CloudSyncLocalCollections } from '../../../types';
 
 import { _cloudSyncReportNonFatal } from './cloud_sync_support_feedback.js';
 import {
@@ -15,7 +15,8 @@ export function readLocal(
   keyColors: string,
   keyColorOrder: string,
   keyPresetOrder: string,
-  keyHiddenPresets: string
+  keyHiddenPresets: string,
+  opts?: { App?: AppContainer | null }
 ): CloudSyncLocalCollections {
   try {
     return {
@@ -26,7 +27,7 @@ export function readLocal(
       h: readLocalOrderList(storage, keyHiddenPresets),
     };
   } catch (e) {
-    _cloudSyncReportNonFatal(null, 'readLocal.storageParse', e, { throttleMs: 8000 });
+    _cloudSyncReportNonFatal(opts?.App || null, 'readLocal.storageParse', e, { throttleMs: 8000 });
     return buildEmptyCloudSyncLocalCollections();
   }
 }

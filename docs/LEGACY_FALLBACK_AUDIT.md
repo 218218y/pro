@@ -1,14 +1,14 @@
 # Legacy / fallback audit
 
-Generated at: 2026-05-10T15:18:16.409Z
+Generated at: 2026-05-10T20:53:57.480Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **31**
-- Files with occurrences: **24**
+- Total categorized occurrences: **30**
+- Files with occurrences: **23**
 - Category counts:
-  - `runtime-default`: **14**
+  - `runtime-default`: **13**
   - `browser-adapter`: **9**
   - `project-migration`: **1**
   - `test-fixture`: **7**
@@ -42,7 +42,6 @@ Generated at: 2026-05-10T15:18:16.409Z
 - `esm/native/runtime/meta_profiles_access.ts` — **1** (runtime-default: 1)
 - `esm/native/runtime/meta_profiles_contract.ts` — **1** (runtime-default: 1)
 - `esm/native/services/cloud_sync_config_shared.ts` — **1** (runtime-default: 1)
-- `esm/native/services/ui_ephemeral_defaults.ts` — **1** (runtime-default: 1)
 - `esm/native/ui/interactions/project_save_load.ts` — **1** (runtime-default: 1)
 - `esm/native/ui/react/overlay_pdf_host.tsx` — **1** (runtime-default: 1)
 - `esm/native/ui/react/sidebar_app.tsx` — **1** (runtime-default: 1)
@@ -52,4 +51,4 @@ Generated at: 2026-05-10T15:18:16.409Z
 
 ## Allowlist check
 
-- Passed: current categorized inventory matches the allowlist.
+- Not run.

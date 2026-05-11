@@ -1,3 +1,4 @@
+import { reportError } from '../runtime/api.js';
 import { createBuildContext } from './build_context.js';
 import { readBuildContext } from './build_flow_readers.js';
 
@@ -147,9 +148,14 @@ export function applyStackSplitLowerCornerWingIfNeeded(args: {
 
   if (typeof buildArgs.buildCornerWing !== 'function') {
     const msg = '[WardrobePro] buildCornerWing is required for stack-split corner mode but is not available.';
-    console.error(msg);
+    const err = new Error(msg);
+    reportError(buildArgs.App, err, {
+      where: 'builder/build_stack_split_context',
+      op: 'applyStackSplitLowerCornerWingIfNeeded',
+      fatal: true,
+    });
     if (typeof buildArgs.showToast === 'function') buildArgs.showToast(msg, 'error');
-    throw new Error(msg);
+    throw err;
   }
 
   const lowerDims = readBuildContext(lowerCtx)?.dims;

@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-10T15:18:16.409Z",
+  "generatedAt": "2026-05-10T20:53:57.480Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 31,
-    "totalFiles": 24,
+    "totalOccurrences": 30,
+    "totalFiles": 23,
     "byCategory": {
-      "runtime-default": 14,
+      "runtime-default": 13,
       "browser-adapter": 9,
       "project-migration": 1,
       "test-fixture": 7,
@@ -104,12 +104,6 @@
         }
       },
       "esm/native/services/cloud_sync_config_shared.ts": {
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      "esm/native/services/ui_ephemeral_defaults.ts": {
         "total": 1,
         "categories": {
           "runtime-default": 1
@@ -279,13 +273,6 @@
         }
       },
       {
-        "file": "esm/native/services/ui_ephemeral_defaults.ts",
-        "total": 1,
-        "categories": {
-          "runtime-default": 1
-        }
-      },
-      {
         "file": "esm/native/ui/interactions/project_save_load.ts",
         "total": 1,
         "categories": {
@@ -329,10 +316,7 @@
       }
     ]
   },
-  "allowlistComparison": {
-    "ok": true,
-    "failures": []
-  },
+  "allowlistComparison": null,
   "occurrences": [
     {
       "file": "esm/entry_pro_overlay.ts",
@@ -392,7 +376,7 @@
     },
     {
       "file": "esm/native/features/project_config/project_config_persisted_payload_shared.ts",
-      "line": 256,
+      "line": 255,
       "term": "legacy",
       "category": "project-migration",
       "text": "// ignore malformed legacy payloads"
@@ -427,7 +411,7 @@
     },
     {
       "file": "esm/native/runtime/browser_clipboard.ts",
-      "line": 83,
+      "line": 98,
       "term": "fallback",
       "category": "runtime-default",
       "text": "// ignore cleanup failure in clipboard fallback"
@@ -459,13 +443,6 @@
       "term": "Fallback",
       "category": "runtime-default",
       "text": "// Fallback for constrained/non-browser test runtimes only. Runtime private-room mode"
-    },
-    {
-      "file": "esm/native/services/ui_ephemeral_defaults.ts",
-      "line": 34,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "// Helper: read UI state from slice store (preferred) or from raw store state (fallback)"
     },
     {
       "file": "esm/native/ui/interactions/project_save_load.ts",

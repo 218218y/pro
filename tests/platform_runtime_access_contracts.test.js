@@ -495,7 +495,10 @@ test('[platform-runtime] app start and major callsites prefer canonical boot ent
 
   assert.match(threeTargets.buildStateResolver, /reportError\(App, err, 'builder\.buildWardrobe'\)/);
   assert.match(threeTargets.builderDepsResolver, /getPlatformPruneCachesSafe\(App\)/);
-  assert.match(threeTargets.moduleLayout, /reportError\(App, err, \{ where, fatal: true \}\)/);
+  assert.match(
+    threeTargets.moduleLayout,
+    /reportError\(App, e, \{\s*where: 'native\/builder\/module_layout_pipeline',\s*op: 'computeHingedDoorPivotMap',\s*fatal: false,\s*\}\)/
+  );
   assert.match(threeTargets.preBuildReset, /cleanGroupViaPlatform\(App, wardrobeGroup\)/);
   assert.match(threeTargets.preBuildReset, /reportError\(App, err, 'builder\.preBuildReset'\)/);
   assert.match(

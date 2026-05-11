@@ -32,7 +32,7 @@ export function setDoorsOpen(App: AppLike, open: boolean, opts?: SetDoorsOptions
     try {
       runtime.closeDelayUntil = 0;
     } catch (_) {
-      reportDoorsRuntimeNonFatal('L230', _);
+      reportDoorsRuntimeNonFatal(App, 'L230', _);
     }
     touchDoorsRuntimeRender(App);
     return;
@@ -65,7 +65,7 @@ export function setDoorsOpen(App: AppLike, open: boolean, opts?: SetDoorsOptions
         if (entry && entry.noGlobalOpen) entry.isOpen = false;
       });
     } catch (_) {
-      reportDoorsRuntimeNonFatal('L265', _);
+      reportDoorsRuntimeNonFatal(App, 'L265', _);
     }
   }
 
@@ -92,7 +92,7 @@ export function setDoorsOpen(App: AppLike, open: boolean, opts?: SetDoorsOptions
       patchRuntime(App, patch, metaRt);
     }
   } catch (_) {
-    reportDoorsRuntimeNonFatal('L302', _);
+    reportDoorsRuntimeNonFatal(App, 'L302', _);
   }
 
   try {
@@ -102,7 +102,7 @@ export function setDoorsOpen(App: AppLike, open: boolean, opts?: SetDoorsOptions
       });
     }
   } catch (_) {
-    reportDoorsRuntimeNonFatal('L312', _);
+    reportDoorsRuntimeNonFatal(App, 'L312', _);
   }
 
   setDoorStatusCss(App, next);
@@ -112,7 +112,7 @@ export function setDoorsOpen(App: AppLike, open: boolean, opts?: SetDoorsOptions
     try {
       syncVisualsNow(App, { open: next });
     } catch (_) {
-      reportDoorsRuntimeNonFatal('setDoorsOpen.syncVisualsNow', _);
+      reportDoorsRuntimeNonFatal(App, 'setDoorsOpen.syncVisualsNow', _);
     }
   }
 }

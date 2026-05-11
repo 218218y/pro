@@ -102,3 +102,75 @@ test('cloud_sync support storage: applyRemote writes normalized payload into sto
   assert.equal(writes.get('presetOrder'), JSON.stringify(['p1']));
   assert.equal(writes.get('hiddenPresets'), JSON.stringify(['hidden-1']));
 });
+
+test('cloud_sync support storage: readLocal reports parse failures through app-scoped diagnostics when available', () => {
+  const reports: Array<{ error: unknown; ctx: any }> = [];
+  const App = {
+    services: {
+      platform: {
+        reportError(error: unknown, ctx: any) {
+          reports.push({ error, ctx });
+        },
+      },
+    },
+  } as any;
+  const storage = {
+    getString() {
+      throw new Error('storage read failed');
+    },
+  };
+
+  const local = readLocal(storage, 'models', 'colors', 'colorOrder', 'presetOrder', 'hiddenPresets', {
+    App,
+  });
+
+  assert.deepEqual(local, { m: [], c: [], o: [], p: [], h: [] });
+  assert.equal(reports.length, 1);
+  assert.equal(reports[0].ctx?.where, 'services/cloud_sync');
+  assert.equal(reports[0].ctx?.op, 'readLocal.storageParse');
+  assert.equal(reports[0].ctx?.nonFatal, true);
+});
+
+test('cloud_sync support storage: applyRemote reports failed storage writes and clears suppression', () => {
+  const reports: Array<{ error: unknown; ctx: any }> = [];
+  const App = {
+    services: {
+      platform: {
+        reportError(error: unknown, ctx: any) {
+          reports.push({ error, ctx });
+        },
+      },
+    },
+  } as any;
+  const suppress = { v: false };
+  const storage = {
+    setString() {
+      return false;
+    },
+  };
+
+  applyRemote(
+    App,
+    storage,
+    'models',
+    'colors',
+    'colorOrder',
+    'presetOrder',
+    'hiddenPresets',
+    {
+      savedModels: [{ id: 'm1', name: 'Model 1' }],
+      savedColors: [],
+      colorSwatchesOrder: [],
+      presetOrder: [],
+      hiddenPresets: [],
+    },
+    suppress
+  );
+
+  assert.equal(suppress.v, false);
+  assert.equal(reports.length, 1);
+  assert.equal(reports[0].ctx?.where, 'services/cloud_sync');
+  assert.equal(reports[0].ctx?.op, 'applyRemote.writeStorage');
+  assert.equal(reports[0].ctx?.nonFatal, true);
+  assert.match(String((reports[0].error as Error).message), /storage write failed/i);
+});

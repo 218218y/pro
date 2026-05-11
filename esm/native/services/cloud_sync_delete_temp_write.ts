@@ -43,7 +43,8 @@ export async function writeDeleteTempPayloadAndApplyLocally(args: {
     owner.keyColors,
     owner.keyColorOrder,
     owner.keyPresetOrder,
-    owner.keyHiddenPresets
+    owner.keyHiddenPresets,
+    { App: owner.App }
   );
   owner.setLastHash(computeHash(local.m, local.c, local.o, local.p, local.h));
   return true;

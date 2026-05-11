@@ -108,7 +108,7 @@ export function scheduleOrderPdfCanvasRender(args: {
         }
       })
       .catch(err => {
-        console.warn('[WardrobePro][PDF editor] render failed', err);
+        reportNonFatal('orderPdfRender:renderFailed', err);
         fb.toast('שגיאה בהצגת ה-PDF', 'error');
       });
   }, 0);

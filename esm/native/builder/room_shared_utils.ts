@@ -132,11 +132,6 @@ export function __roomReportError(
   if (now - prev < throttleMs) return;
   __roomErrorLastAt.set(key, now);
   reportError(A || null, err, { where: 'builder/room', op, ...(extra || {}) });
-  try {
-    console.warn('[WardrobePro][room]', op, err);
-  } catch {
-    // ignore console failures while reporting room soft errors
-  }
 }
 
 export function __roomHandleCatch(

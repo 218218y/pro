@@ -91,3 +91,36 @@ test('strict action mutation helpers throw when only stubbed or missing seams ar
   );
   assert.throws(() => renderModelUiViaActionsOrThrow(App), /actions\.models\.renderModelUI/i);
 });
+
+test('installDirtyFlag reports store owner rejection while keeping the fallback dirty flag updated', () => {
+  const reported: Array<{ err: unknown; ctx: any }> = [];
+  const App: any = {
+    services: {
+      platform: {
+        reportError(err: unknown, ctx: unknown) {
+          reported.push({ err, ctx });
+        },
+      },
+    },
+    actions: { meta: {} },
+    store: {
+      getState() {
+        return { meta: { dirty: false } };
+      },
+      setDirty() {
+        throw new Error('setDirty owner rejected');
+      },
+    },
+  };
+
+  ensureMetaActions(App);
+  installDirtyFlag(App);
+
+  assert.equal(setDirtyViaActions(App, true, { source: 'test:dirty-rejected' }), true);
+  assert.equal(App.__dirtyFallback, true);
+  assert.equal(reported.length, 1);
+  assert.match(String((reported[0].err as Error).message), /setDirty owner rejected/);
+  assert.equal(reported[0].ctx?.where, 'native/platform/dirty_flag');
+  assert.equal(reported[0].ctx?.op, 'actions.meta.setDirty.ownerRejected');
+  assert.equal(reported[0].ctx?.fatal, false);
+});

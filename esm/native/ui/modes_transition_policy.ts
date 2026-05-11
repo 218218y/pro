@@ -54,7 +54,7 @@ function setDoorHardCloseUntil(App: AppLike, hard: boolean): void {
     if (hard) setHardCloseForMs(App, Number.isFinite(delayMs) ? delayMs : 600, 50);
     else setHardCloseUntil(App, 0);
   } catch (err) {
-    modesReportNonFatal('esm/native/ui/modes_transition_policy.ts:setDoorHardCloseUntil', err);
+    modesReportNonFatal(App, 'esm/native/ui/modes_transition_policy.ts:setDoorHardCloseUntil', err);
   }
 }
 
@@ -126,12 +126,12 @@ function applyEnterExitChrome(App: AppLike, opts: ModeTransitionOptsLike): void 
   try {
     if (typeof opts.cursor === 'string' && opts.cursor) safeBodyCursor(App, opts.cursor);
   } catch (err) {
-    modesReportNonFatal('esm/native/ui/modes_transition_policy.ts:cursor', err);
+    modesReportNonFatal(App, 'esm/native/ui/modes_transition_policy.ts:cursor', err);
   }
   try {
     if (typeof opts.toast === 'string') safeUpdateEditToast(App, opts.toast, true);
   } catch (err) {
-    modesReportNonFatal('esm/native/ui/modes_transition_policy.ts:toast', err);
+    modesReportNonFatal(App, 'esm/native/ui/modes_transition_policy.ts:toast', err);
   }
 }
 
@@ -193,7 +193,7 @@ function readDividerDrawerOpenId(App: AppLike, currentMode: string): string | nu
     const id = typeof tools.getDrawersOpenId === 'function' ? tools.getDrawersOpenId() : null;
     return id == null ? null : String(id);
   } catch (err) {
-    modesReportNonFatal('esm/native/ui/modes_transition_policy.ts:dividerDrawerId', err);
+    modesReportNonFatal(App, 'esm/native/ui/modes_transition_policy.ts:dividerDrawerId', err);
     return null;
   }
 }
@@ -205,7 +205,7 @@ function clearDividerDrawerOpenId(App: AppLike, prevDrawerOpenId: string | null)
     const tools = getTools(App);
     if (typeof tools.setDrawersOpenId === 'function') tools.setDrawersOpenId(null);
   } catch (err) {
-    modesReportNonFatal('esm/native/ui/modes_transition_policy.ts:clearDividerDrawer', err);
+    modesReportNonFatal(App, 'esm/native/ui/modes_transition_policy.ts:clearDividerDrawer', err);
   }
 }
 
@@ -223,7 +223,7 @@ function scheduleRemoveDoorRefresh(App: AppLike, nextMode: string): void {
       });
     }, 0);
   } catch (err) {
-    modesReportNonFatal('esm/native/ui/modes_transition_policy.ts:removeDoorRefresh', err);
+    modesReportNonFatal(App, 'esm/native/ui/modes_transition_policy.ts:removeDoorRefresh', err);
   }
 }
 
@@ -240,7 +240,7 @@ export function togglePrimaryModeImpl(App: AppLike, mode: string, opts: ModeActi
     try {
       reportError(App, err, 'ui.togglePrimaryMode');
     } catch (reportErr) {
-      modesReportNonFatal('esm/native/ui/modes_transition_policy.ts:togglePrimaryMode', reportErr);
+      modesReportNonFatal(App, 'esm/native/ui/modes_transition_policy.ts:togglePrimaryMode', reportErr);
     }
   }
 }
@@ -263,14 +263,14 @@ export function enterPrimaryModeImpl(
     try {
       reportError(App, err, 'ui.enterPrimaryMode');
     } catch (reportErr) {
-      modesReportNonFatal('esm/native/ui/modes_transition_policy.ts:enterPrimaryMode', reportErr);
+      modesReportNonFatal(App, 'esm/native/ui/modes_transition_policy.ts:enterPrimaryMode', reportErr);
     }
   }
 
   try {
     if (!opts.preserveDoors) applyDoorPolicy(App, opts);
   } catch (err) {
-    modesReportNonFatal('esm/native/ui/modes_transition_policy.ts:enterDoorPolicy', err);
+    modesReportNonFatal(App, 'esm/native/ui/modes_transition_policy.ts:enterDoorPolicy', err);
   }
 
   applyEnterExitChrome(App, opts);
@@ -299,7 +299,7 @@ export function exitPrimaryModeImpl(
       opts.openDoors = false;
     }
   } catch (err) {
-    modesReportNonFatal('esm/native/ui/modes_transition_policy.ts:defaultCloseDoors', err);
+    modesReportNonFatal(App, 'esm/native/ui/modes_transition_policy.ts:defaultCloseDoors', err);
   }
 
   if (shouldExit) {
@@ -312,17 +312,17 @@ export function exitPrimaryModeImpl(
       }
       onPrimaryModeChanged(App, currentMode, NONE, {});
     } catch (err) {
-      modesReportNonFatal('esm/native/ui/modes_transition_policy.ts:exitPrimaryMode', err);
+      modesReportNonFatal(App, 'esm/native/ui/modes_transition_policy.ts:exitPrimaryMode', err);
     }
     try {
       safeUpdateEditToast(App, null, false);
     } catch (err) {
-      modesReportNonFatal('esm/native/ui/modes_transition_policy.ts:clearToast', err);
+      modesReportNonFatal(App, 'esm/native/ui/modes_transition_policy.ts:clearToast', err);
     }
     try {
       safeBodyCursor(App, 'default');
     } catch (err) {
-      modesReportNonFatal('esm/native/ui/modes_transition_policy.ts:clearCursor', err);
+      modesReportNonFatal(App, 'esm/native/ui/modes_transition_policy.ts:clearCursor', err);
     }
   }
 
@@ -336,13 +336,13 @@ export function exitPrimaryModeImpl(
       opts.closeDoors = true;
     }
   } catch (err) {
-    modesReportNonFatal('esm/native/ui/modes_transition_policy.ts:defaultCloseDoorsFallback', err);
+    modesReportNonFatal(App, 'esm/native/ui/modes_transition_policy.ts:defaultCloseDoorsFallback', err);
   }
 
   try {
     applyDoorPolicy(App, opts);
   } catch (err) {
-    modesReportNonFatal('esm/native/ui/modes_transition_policy.ts:applyDoorPolicy', err);
+    modesReportNonFatal(App, 'esm/native/ui/modes_transition_policy.ts:applyDoorPolicy', err);
   }
 
   clearDividerDrawerOpenId(App, shouldExit ? prevDrawerOpenId : null);

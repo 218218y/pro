@@ -10,13 +10,13 @@ function resolveToastContainerHost(App: AppContainer, doc: Document): HTMLElemen
       asHTMLElement($('viewer-container')) || asHTMLElement(doc.getElementById('viewer-container'));
     if (viewer) return viewer;
   } catch (err) {
-    __uiFeedbackReportNonFatal('toast.container.resolveHost', err);
+    __uiFeedbackReportNonFatal(App, 'toast.container.resolveHost', err);
   }
 
   return asHTMLElement(doc.body) || asHTMLElement(doc.documentElement) || null;
 }
 
-function syncToastContainerHostClass(container: HTMLElement, host: HTMLElement): void {
+function syncToastContainerHostClass(App: AppContainer, container: HTMLElement, host: HTMLElement): void {
   const isViewerHost = host.id === 'viewer-container';
   const hostClass = isViewerHost ? 'toast-container--viewer' : 'toast-container--body';
   const staleClass = isViewerHost ? 'toast-container--body' : 'toast-container--viewer';
@@ -25,7 +25,7 @@ function syncToastContainerHostClass(container: HTMLElement, host: HTMLElement):
     container.classList.add('toast-container', hostClass);
     container.classList.remove(staleClass);
   } catch (err) {
-    __uiFeedbackReportNonFatal('toast.container.class', err);
+    __uiFeedbackReportNonFatal(App, 'toast.container.class', err);
     container.className = `toast-container ${hostClass}`;
   }
 }
@@ -44,10 +44,10 @@ export function ensureToastContainer(App: AppContainer, doc: Document): HTMLElem
       container = el;
     }
 
-    syncToastContainerHostClass(container, host);
+    syncToastContainerHostClass(App, container, host);
     if (container.parentElement !== host) host.appendChild(container);
   } catch (err) {
-    __uiFeedbackReportNonFatal('toast.container', err);
+    __uiFeedbackReportNonFatal(App, 'toast.container', err);
   }
 
   return container || null;

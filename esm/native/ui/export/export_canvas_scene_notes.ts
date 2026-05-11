@@ -31,11 +31,6 @@ export async function renderAllNotesForExportCanvas(
     return res;
   } catch (e) {
     _exportReportThrottled(App, 'renderAllNotesToCanvas', e, { throttleMs: 1000 });
-    try {
-      console.error('[WardrobePro][export] notes render failed', e);
-    } catch (logErr) {
-      _exportReportThrottled(App, 'renderAllNotesToCanvas.log', logErr, { throttleMs: 2000 });
-    }
     return undefined;
   }
 }

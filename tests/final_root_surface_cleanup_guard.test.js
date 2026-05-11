@@ -45,8 +45,9 @@ test('final root-surface cleanup routes residual runtime/build/service hotspots 
   assert.doesNotMatch(storeSurface, /app\?\.store/);
 
   const cloudSyncFeedback = read('esm/native/services/cloud_sync_support_feedback.ts');
-  assert.match(cloudSyncFeedback, /from '\.\.\/runtime\/platform_access\.js';/);
-  assert.match(cloudSyncFeedback, /getPlatformReportError\(App\)/);
+  assert.match(cloudSyncFeedback, /from '\.\.\/runtime\/errors\.js';/);
+  assert.match(cloudSyncFeedback, /reportError\(/);
+  assert.doesNotMatch(cloudSyncFeedback, /getPlatformReportError\(/);
   assert.doesNotMatch(cloudSyncFeedback, /App\?\.platform\?\.reportError/);
 
   const historyAccess = read('esm/native/kernel/history_access.ts');

@@ -32,7 +32,7 @@ export function closeDrawerById(App: AppLike, id: DrawerId): void {
       if (drawer.id !== undefined && drawer.id !== null) drawerId = String(drawer.id);
       else if (drawer.drawerId !== undefined && drawer.drawerId !== null) drawerId = String(drawer.drawerId);
     } catch (_) {
-      reportDoorsRuntimeNonFatal('L529', _);
+      reportDoorsRuntimeNonFatal(App, 'L529', _);
     }
 
     let match = drawerId && drawerId === sid;
@@ -41,7 +41,7 @@ export function closeDrawerById(App: AppLike, id: DrawerId): void {
         const partId = drawer.group && drawer.group.userData ? drawer.group.userData.partId : null;
         if (partId !== undefined && partId !== null && String(partId) === sid) match = true;
       } catch (_) {
-        reportDoorsRuntimeNonFatal('L537', _);
+        reportDoorsRuntimeNonFatal(App, 'L537', _);
       }
     }
 

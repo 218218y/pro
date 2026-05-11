@@ -77,11 +77,7 @@ export function createProjectIoExportOps(
         meta: safeMeta,
       });
     } catch (err) {
-      try {
-        console.error('[projectIO.exportCurrentProject] failed', err);
-      } catch (consoleErr) {
-        reportNonFatal('project.export.console', consoleErr);
-      }
+      reportNonFatal('project.export.currentProject', err);
       return null;
     }
   }

@@ -45,3 +45,20 @@ test('autosave service guards: runtime gating blocks writes until the app is rea
   assert.equal(commitAutosaveNow(restoring.App), false);
   assert.deepEqual(restoring.writes, []);
 });
+
+test('autosave service reports storage write failures without marking the save successful', () => {
+  const reports: Array<{ error: unknown; ctx: any }> = [];
+  const { App } = createApp({ systemReady: true, restoring: false });
+  App.services.storage.setString = () => false;
+  App.services.platform = {
+    reportError(error: unknown, ctx: any) {
+      reports.push({ error, ctx });
+    },
+  };
+
+  assert.equal(commitAutosaveNow(App), false);
+  assert.equal(reports.length, 1);
+  assert.equal(reports[0].ctx?.where, 'services/autosave');
+  assert.equal(reports[0].ctx?.op, 'commitAutosaveNow.writeStorage');
+  assert.equal(reports[0].ctx?.nonFatal, true);
+});

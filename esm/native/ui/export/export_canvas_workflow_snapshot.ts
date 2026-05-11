@@ -108,8 +108,7 @@ export function createTakeSnapshotWorkflow(
       triggerDownload(finalCanvas);
       _toast(App, 'התמונה נשמרה בהצלחה', 'success');
     } catch (err) {
-      _reportExportError(App, 'takeSnapshot.logoPass', err);
-      console.warn('Snapshot tainted by logo. Retrying without logo...', err);
+      deps._reportExportRecovery(App, 'takeSnapshot.retryWithoutLogo', err, { pass: 'logo' });
       if (deps.shouldFailFast(App)) throw err;
       try {
         const finalCanvasWithoutLogo = await createSnapshotCanvas(false);
@@ -117,7 +116,6 @@ export function createTakeSnapshotWorkflow(
         _toast(App, 'התמונה נשמרה בהצלחה', 'success');
       } catch (retryErr) {
         _reportExportError(App, 'takeSnapshot.retryWithoutLogo', retryErr, { fatal: true });
-        console.error('Critical error saving snapshot:', retryErr);
         _toast(App, 'שגיאה בשמירת התמונה', 'error');
         if (deps.shouldFailFast(App)) throw retryErr;
       }

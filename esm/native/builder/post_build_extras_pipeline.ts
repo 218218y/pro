@@ -11,6 +11,7 @@ import {
   snapDrawersToTargetsViaService,
   syncDoorsVisualsNow,
 } from '../runtime/doors_access.js';
+import { reportError } from '../runtime/api.js';
 import { readRuntimeScalarOrDefault } from '../runtime/runtime_selectors.js';
 import { getStackKeyFromFlags, getStackSplitFromFlags } from '../features/stack_split/index.js';
 
@@ -54,6 +55,12 @@ function syncLocalClickVisualStateAfterBuild(
 ): void {
   applyLocalOpenStateAfterBuild(App);
   if (!skipLocalDoorSync && !skipDoorVisualSync) syncDoorsVisualsNow(App);
+}
+
+function reportPostBuildRequiredDependencyMissing(App: unknown, op: string, message: string): Error {
+  const error = new Error(message);
+  reportError(App, error, { where: 'builder/post_build_extras', op, fatal: true });
+  return error;
 }
 
 export function applyPostBuildExtras(input: BuildContextLike) {
@@ -152,7 +159,11 @@ export function applyPostBuildExtras(input: BuildContextLike) {
   // Corner wing
   if (isCornerMode) {
     if (typeof buildCornerWing !== 'function') {
-      throw new Error('[builder/post_build_extras] isCornerMode=true but modules.buildCornerWing is missing');
+      throw reportPostBuildRequiredDependencyMissing(
+        App,
+        'cornerWing.missingBuilder',
+        '[builder/post_build_extras] isCornerMode=true but modules.buildCornerWing is missing'
+      );
     }
     const __cornerWingMeta = stackSplitActive
       ? __stackKey === 'top'
@@ -236,7 +247,9 @@ export function applyPostBuildExtras(input: BuildContextLike) {
   // Notes restore
   if (Array.isArray(notesToPreserve) && notesToPreserve.length > 0) {
     if (typeof restoreNotesFromSave !== 'function') {
-      throw new Error(
+      throw reportPostBuildRequiredDependencyMissing(
+        App,
+        'notesRestore.missingRestoreFn',
         '[builder/post_build_extras] notesToPreserve exists but notes.restoreNotesFromSave is missing'
       );
     }

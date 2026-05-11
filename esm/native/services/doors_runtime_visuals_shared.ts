@@ -104,6 +104,6 @@ export function resolveSlidingDoorOpenPosition(
   };
 }
 
-export function reportSlidingDoorZFailure(err: unknown): void {
-  reportDoorsRuntimeNonFatal('syncVisualsNow.sliding.z', err);
+export function reportSlidingDoorZFailure(App: AppLike, err: unknown): void {
+  reportDoorsRuntimeNonFatal(App, 'syncVisualsNow.sliding.z', err);
 }

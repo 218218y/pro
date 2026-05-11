@@ -20,7 +20,7 @@ export function ensureCustomModalBindings(App: AppContainer): void {
     try {
       state.bindingsCleanup?.();
     } catch (err) {
-      __uiFeedbackReportNonFatal('modal.cleanup.previous', err);
+      __uiFeedbackReportNonFatal(App, 'modal.cleanup.previous', err);
     }
     state.bindingsInstalled = false;
     state.bindingsCleanup = null;
@@ -35,7 +35,7 @@ export function ensureCustomModalBindings(App: AppContainer): void {
   try {
     state.bindingsCleanup?.();
   } catch (err) {
-    __uiFeedbackReportNonFatal('modal.cleanup.previous', err);
+    __uiFeedbackReportNonFatal(App, 'modal.cleanup.previous', err);
   }
   state.bindingsInstalled = false;
   state.bindingsCleanup = null;
@@ -70,7 +70,7 @@ export function ensureCustomModalBindings(App: AppContainer): void {
       try {
         e.preventDefault();
       } catch (err) {
-        __uiFeedbackReportNonFatal('modal.keydown.enter', err);
+        __uiFeedbackReportNonFatal(App, 'modal.keydown.enter', err);
       }
       handleConfirm();
     }
@@ -78,7 +78,7 @@ export function ensureCustomModalBindings(App: AppContainer): void {
       try {
         e.preventDefault();
       } catch (err) {
-        __uiFeedbackReportNonFatal('modal.keydown.escape', err);
+        __uiFeedbackReportNonFatal(App, 'modal.keydown.escape', err);
       }
       handleCancel();
     }
@@ -98,11 +98,11 @@ export function ensureCustomModalBindings(App: AppContainer): void {
           if (typeof el.removeEventListener !== 'function') return;
           el.removeEventListener(type, handler, opts);
         } catch (err) {
-          __uiFeedbackReportNonFatal(`modal.unbind:${type}`, err);
+          __uiFeedbackReportNonFatal(App, `modal.unbind:${type}`, err);
         }
       });
     } catch (err) {
-      __uiFeedbackReportNonFatal(`modal.bind:${type}`, err);
+      __uiFeedbackReportNonFatal(App, `modal.bind:${type}`, err);
     }
   };
 
@@ -120,7 +120,7 @@ export function ensureCustomModalBindings(App: AppContainer): void {
       try {
         cleanup?.();
       } catch (err) {
-        __uiFeedbackReportNonFatal('modal.cleanup', err);
+        __uiFeedbackReportNonFatal(App, 'modal.cleanup', err);
       }
     }
     state.bindingsInstalled = false;

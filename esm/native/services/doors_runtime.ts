@@ -205,7 +205,7 @@ export function installDoorsRuntimeService(App: AppContainer): UnknownRecord {
   try {
     setDoorStatusCss(context.App, getDoorsOpen(context.App));
   } catch (_) {
-    reportDoorsRuntimeNonFatal('L889', _);
+    reportDoorsRuntimeNonFatal(context.App, 'L889', _);
   }
 
   return doorsSvc;

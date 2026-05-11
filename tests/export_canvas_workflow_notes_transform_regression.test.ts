@@ -144,6 +144,7 @@ function createWorkflowHarness(initial: { sketchMode: boolean; doorsOpen: boolea
     _renderSceneForExport: () => undefined,
     _getRendererCanvasSource: () => rendererSource,
     _reportExportError: () => undefined,
+    _reportExportRecovery: () => undefined,
     _toast: () => undefined,
     shouldFailFast: () => false,
     getExportLogoImage: () => null,
