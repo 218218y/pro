@@ -201,6 +201,7 @@ function InteriorTabInner(props: { active: boolean }) {
         <InteriorHandlesSection
           handleControlEnabled={state.handleControlEnabled}
           isHandleMode={state.isHandleMode}
+          isManualHandlePositionMode={state.isManualHandlePositionMode}
           globalHandleType={state.globalHandleType}
           handleToolType={state.handleToolType}
           globalHandleColor={state.globalHandleColor}
@@ -215,6 +216,7 @@ function InteriorTabInner(props: { active: boolean }) {
           toggleHandleMode={workflows.toggleHandleMode}
           setHandleModeColor={workflows.setHandleModeColor}
           setHandleModeEdgeVariant={workflows.setHandleModeEdgeVariant}
+          enterManualHandlePositionMode={workflows.enterManualHandlePositionMode}
         />
       </div>
     </TabPanel>

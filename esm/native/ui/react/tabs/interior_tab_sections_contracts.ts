@@ -74,6 +74,7 @@ export type InteriorDividerSectionProps = {
 export type InteriorHandlesSectionProps = {
   handleControlEnabled: boolean;
   isHandleMode: boolean;
+  isManualHandlePositionMode: boolean;
   globalHandleType: HandleType;
   handleToolType: HandleType;
   globalHandleColor: HandleUiColor;
@@ -88,4 +89,5 @@ export type InteriorHandlesSectionProps = {
   toggleHandleMode: (type?: HandleType) => void;
   setHandleModeColor: (color: HandleUiColor) => void;
   setHandleModeEdgeVariant: (variant: EdgeHandleVariant) => void;
+  enterManualHandlePositionMode: () => void;
 };

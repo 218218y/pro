@@ -5,6 +5,10 @@ import { getDoorsArray } from '../runtime/render_access.js';
 import { readMapOrEmpty, isSplitBottomEnabledInMap } from '../runtime/maps_access.js';
 import { getBuildStateMaybe, getCfg, getMode, getState, getUi } from './store_access.js';
 import { isEdgeHandleDefaultNone } from './edge_handle_default_none_runtime.js';
+import {
+  readManualHandlePositionForPart,
+  type ManualHandlePosition,
+} from '../features/manual_handle_position.js';
 import { asRecord } from '../runtime/record.js';
 import {
   appFromCtx,
@@ -34,6 +38,7 @@ export type HandlesApplyRuntime = {
   getEdgeHandleVariant: (id: unknown) => EdgeHandleVariant;
   getHandleType: (id: unknown, stackKey?: 'top' | 'bottom') => string;
   getHandleColor: (id: unknown) => string;
+  getManualHandlePosition: (id: unknown) => ManualHandlePosition | null;
   clampAbsYToGroup: (absY: number, centerY: number, height: number) => number;
   removeExistingHandleChildren: (group: NodeLike) => void;
 };
@@ -131,6 +136,15 @@ function createHandleColorResolver(App: AppContainer): (id: unknown) => string {
     const baseV = sid !== base ? readOverride(hm, handleColorPartKey(base)) : undefined;
     const globalV = readOverride(hm, HANDLE_COLOR_GLOBAL_KEY);
     return normalizeHandleFinishColor(partV ?? baseV ?? globalV ?? DEFAULT_HANDLE_FINISH_COLOR);
+  };
+}
+
+function createManualHandlePositionResolver(App: AppContainer): (id: unknown) => ManualHandlePosition | null {
+  return (id: unknown): ManualHandlePosition | null => {
+    const sid = id == null ? '' : String(id);
+    if (!sid) return null;
+    const base = stripSuffix(sid);
+    return readManualHandlePositionForPart(readMapOrEmpty(App, 'handlesMap'), sid, base);
   };
 }
 
@@ -255,6 +269,7 @@ export function createHandlesApplyRuntime(ctx: unknown): HandlesApplyRuntime {
   const getEdgeHandleVariant = createEdgeHandleVariantResolver(App);
   const getHandleType = createHandleTypeResolver(App, getEdgeHandleVariant);
   const getHandleColor = createHandleColorResolver(App);
+  const getManualHandlePosition = createManualHandlePositionResolver(App);
   const syncDoorVisibility = (): void =>
     syncDoorVisibilityForRemovedDoors(App, removeDoorsEnabled, isDoorRemovedV7);
 
@@ -267,6 +282,7 @@ export function createHandlesApplyRuntime(ctx: unknown): HandlesApplyRuntime {
     getEdgeHandleVariant,
     getHandleType,
     getHandleColor,
+    getManualHandlePosition,
     clampAbsYToGroup,
     removeExistingHandleChildren,
   };

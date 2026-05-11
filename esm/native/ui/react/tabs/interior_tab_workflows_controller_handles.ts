@@ -7,6 +7,7 @@ import {
   setHandleModeColor as handlesSetHandleModeColor,
   setHandleModeEdgeVariant as handlesSetHandleModeEdgeVariant,
   toggleHandleMode as handlesToggleHandleMode,
+  enterManualHandlePositionMode as handlesEnterManualHandlePositionMode,
 } from '../actions/handles_actions.js';
 import type { EdgeHandleVariant, HandleType, HandleUiColor } from './interior_tab_helpers.js';
 import type { InteriorTabWorkflowController } from './interior_tab_workflows_controller_contracts.js';
@@ -20,6 +21,7 @@ type InteriorTabHandlesWorkflowController = Pick<
   | 'setGlobalHandleColor'
   | 'toggleHandleMode'
   | 'setHandleModeColor'
+  | 'enterManualHandlePositionMode'
 >;
 
 export function createInteriorTabHandlesWorkflowController(
@@ -52,6 +54,10 @@ export function createInteriorTabHandlesWorkflowController(
 
     setHandleModeColor(color: HandleUiColor) {
       handlesSetHandleModeColor(app, color);
+    },
+
+    enterManualHandlePositionMode() {
+      handlesEnterManualHandlePositionMode(app);
     },
   };
 }

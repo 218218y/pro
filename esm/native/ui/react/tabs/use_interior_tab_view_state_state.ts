@@ -92,6 +92,7 @@ export function useInteriorTabViewStateState(app: AppContainer): UseInteriorTabV
       isDividerMode: coreState.isDividerMode,
       isIntDrawerMode: coreState.isIntDrawerMode,
       isHandleMode: coreState.isHandleMode,
+      isManualHandlePositionMode: coreState.isManualHandlePositionMode,
       isDoorTrimMode: coreState.isDoorTrimMode,
       layoutActive: coreState.layoutActive,
       layoutType: coreState.layoutType,

@@ -1,5 +1,7 @@
 import type { UnknownRecord } from '../../../types';
 import { getThreeMaybe } from '../runtime/three_access.js';
+import { getMode } from '../kernel/api.js';
+import { isManualHandlePositionMode } from '../features/manual_handle_position.js';
 import { resolveDoorHitOwnerByPartId } from './canvas_picking_door_shared.js';
 import type {
   DoorActionHoverModeState,
@@ -20,11 +22,22 @@ import {
 } from './canvas_picking_door_hover_targets.js';
 import { __readParentHitObject } from './canvas_picking_door_hover_targets_runtime.js';
 
+function readModeOptsSafe(App: DoorActionHoverArgs['App']): UnknownRecord | null {
+  try {
+    return __asObject<UnknownRecord>(getMode(App)?.opts);
+  } catch {
+    return null;
+  }
+}
+
 export function resolveDoorActionHoverModeState(args: DoorActionHoverArgs): DoorActionHoverModeState | null {
   const normalizedPaintSelection = __normalizePaintSelection(args.paintSelection);
   const isPaintHoverMode = !!normalizedPaintSelection;
   const isTrimHoverMode = args.isDoorTrimMode === true;
   const isHandleHoverMode = args.isHandleEditMode === true;
+  const modeOpts = readModeOptsSafe(args.App);
+  const isManualHandlePlacementMode =
+    isHandleHoverMode && isManualHandlePositionMode(modeOpts?.handlePlacement);
   const isHingeHoverMode = args.isHingeEditMode === true;
   const isFacePreviewMode = isHandleHoverMode || isHingeHoverMode;
 
@@ -44,6 +57,7 @@ export function resolveDoorActionHoverModeState(args: DoorActionHoverArgs): Door
     isPaintHoverMode,
     isTrimHoverMode,
     isHandleHoverMode,
+    isManualHandlePositionMode: isManualHandlePlacementMode,
     isHingeHoverMode,
     isFacePreviewMode,
   };
@@ -126,7 +140,9 @@ export function resolveDoorActionHoverState(args: {
 }): DoorActionHoverResolvedState | null {
   const { hoverArgs, modeState } = args;
   const preferredFaceHit =
-    modeState.isFacePreviewMode && hoverArgs.preferredFacePreviewPartId
+    modeState.isFacePreviewMode &&
+    !modeState.isManualHandlePositionMode &&
+    hoverArgs.preferredFacePreviewPartId
       ? __resolvePreferredFacePreviewHit({
           App: hoverArgs.App,
           preferredPartId: hoverArgs.preferredFacePreviewPartId,

@@ -37,6 +37,7 @@ export type InteriorTabViewState = {
   isDividerMode: boolean;
   isIntDrawerMode: boolean;
   isHandleMode: boolean;
+  isManualHandlePositionMode: boolean;
   isDoorTrimMode: boolean;
   layoutActive: boolean;
   layoutType: LayoutTypeId;

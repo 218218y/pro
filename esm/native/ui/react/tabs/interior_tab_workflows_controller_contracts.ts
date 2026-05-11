@@ -59,6 +59,7 @@ export type InteriorTabWorkflowController = {
   setGlobalHandleColor: (color: HandleUiColor) => void;
   toggleHandleMode: (type?: HandleType) => void;
   setHandleModeColor: (color: HandleUiColor) => void;
+  enterManualHandlePositionMode: () => void;
   activateManualToolId: (toolId: string) => void;
   activateDoorTrimMode: (
     axis: DoorTrimUiAxis,

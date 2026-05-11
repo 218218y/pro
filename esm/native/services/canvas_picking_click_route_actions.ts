@@ -72,6 +72,9 @@ export function tryHandleCanvasPickingActionRoute(args: CanvasPickingClickRouteA
     tryHandleCanvasHandleAssignClick({
       App,
       primaryHitObject,
+      doorHitObject,
+      primaryHitPoint,
+      doorHitPoint,
       foundDrawerId: hitState.foundDrawerId,
       effectiveDoorId,
       foundPartId,

@@ -200,13 +200,25 @@ export function InteriorHandlesSection(props: InteriorHandlesSectionProps): Reac
             />
           ) : null}
 
+          <div className="wp-mt-8">
+            <OptionBtn
+              className="wp-r-handle-btn wp-r-handle-manual-position-btn"
+              selected={props.isManualHandlePositionMode}
+              onClick={props.enterManualHandlePositionMode}
+            >
+              מיקום ידיות ידני
+            </OptionBtn>
+          </div>
+
           {props.isHandleMode ? (
             <div className="wp-hint wp-hint--handle wp-mt-8">
-              <i className="fas fa-info-circle" aria-hidden="true" /> לחץ על דלת או מגירה כדי לשנות ידית, ואז
-              לחץ "סיום עריכה".
+              <i className="fas fa-info-circle" aria-hidden="true" />{' '}
+              {props.isManualHandlePositionMode
+                ? 'רחף על דלת, כוון גובה ורוחב, ולחץ כדי לקבע מיקום ידית ידני.'
+                : 'לחץ על דלת או מגירה כדי לשנות ידית, ואז לחץ "סיום עריכה".'}
             </div>
           ) : (
-            <InlineNotice>בחר סוג ידית כדי להיכנס למצב עריכה, ואז לחץ על דלת/מגירה.</InlineNotice>
+            <InlineNotice>בחר סוג ידית כדי להיכנס למצב עריכה, או לחץ "מיקום ידיות ידני".</InlineNotice>
           )}
         </div>
       ) : (

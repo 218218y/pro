@@ -1,5 +1,6 @@
 export type {
   DoorFaceHoverPreviewArgs,
+  DoorManualHandleHoverPreviewArgs,
   DoorHoverHit,
   DoorPaintHoverPreviewArgs,
   DoorPreviewBaseArgs,

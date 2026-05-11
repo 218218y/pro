@@ -174,10 +174,8 @@ function isPointInsideDirectDrawerHit(App: AppContainer, hit: CrossDrawerHit, po
   if (!localPoint) return true;
 
   const tolerance = 0.01;
-  const withinX =
-    Math.abs(Number(localPoint.x) - Number(box.centerX)) <= Number(box.width) / 2 + tolerance;
-  const withinY =
-    Math.abs(Number(localPoint.y) - Number(box.centerY)) <= Number(box.height) / 2 + tolerance;
+  const withinX = Math.abs(Number(localPoint.x) - Number(box.centerX)) <= Number(box.width) / 2 + tolerance;
+  const withinY = Math.abs(Number(localPoint.y) - Number(box.centerY)) <= Number(box.height) / 2 + tolerance;
   if (!withinX || !withinY) return false;
 
   const halfDepth = Number(box.depth) / 2;

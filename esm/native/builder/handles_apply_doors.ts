@@ -1,4 +1,6 @@
 import { getDoorsArray } from '../runtime/render_access.js';
+import { HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { resolveManualHandleLocalPosition } from '../features/manual_handle_position.js';
 import { createHandleMeshV7 } from './handles_mesh.js';
 import type { HandlesApplyRuntime } from './handles_apply_shared.js';
 import type { NodeLike } from './handles_shared.js';
@@ -36,7 +38,9 @@ export function applyDoorHandles(runtime: HandlesApplyRuntime): void {
     if (!handle) continue;
 
     applyDoorHandleZFlip(g, handle);
-    applyDoorHandleVerticalPlacement(runtime, g, handle, doorH);
+    if (!applyDoorHandleManualPlacement(runtime, g, handle, doorW, isLeftHinge, hType, id)) {
+      applyDoorHandleVerticalPlacement(runtime, g, handle, doorH);
+    }
     g.add(handle);
   }
 }
@@ -55,6 +59,56 @@ function applyDoorHandleZFlip(group: NodeLike, handle: NodeLike): void {
   } catch (_e) {
     // ignore
   }
+}
+
+function readFinite(value: unknown): number | null {
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+function readDoorLeafRectFromUserData(userData: NodeLike['userData'] | null | undefined) {
+  const width = readFinite(userData?.__doorWidth);
+  const height = readFinite(userData?.__doorHeight);
+  const meshOffsetX = readFinite(userData?.__doorMeshOffsetX) ?? 0;
+  if (width == null || height == null || !(width > 0) || !(height > 0)) return null;
+  return {
+    minX: meshOffsetX - width / 2,
+    maxX: meshOffsetX + width / 2,
+    minY: -height / 2,
+    maxY: height / 2,
+  };
+}
+
+function resolveDefaultHandleAnchorX(hType: string, doorW: number, isLeftHinge: boolean): number {
+  if (hType === 'edge') {
+    return isLeftHinge
+      ? doorW + HANDLE_DIMENSIONS.edge.doorAnchorOffsetM
+      : -doorW - HANDLE_DIMENSIONS.edge.doorAnchorOffsetM;
+  }
+  const offset = HANDLE_DIMENSIONS.standard.doorOffsetM;
+  return isLeftHinge ? doorW - offset : -doorW + offset;
+}
+
+function applyDoorHandleManualPlacement(
+  runtime: HandlesApplyRuntime,
+  group: NodeLike,
+  handle: NodeLike,
+  doorW: number,
+  isLeftHinge: boolean,
+  hType: string,
+  id: unknown
+): boolean {
+  const manualPosition = runtime.getManualHandlePosition(id);
+  if (!manualPosition) return false;
+
+  const rect = readDoorLeafRectFromUserData(group.userData);
+  const local = resolveManualHandleLocalPosition({ rect, position: manualPosition });
+  if (!local) return false;
+
+  const defaultAnchorX = resolveDefaultHandleAnchorX(hType, Number(doorW) || 0, isLeftHinge);
+  handle.position.x = local.x - defaultAnchorX;
+  handle.position.y = local.y;
+  return true;
 }
 
 function applyDoorHandleVerticalPlacement(

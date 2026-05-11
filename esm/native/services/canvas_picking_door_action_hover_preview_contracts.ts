@@ -96,6 +96,12 @@ export type DoorFaceHoverPreviewArgs = DoorPreviewBaseArgs & {
   isHandleHoverMode: boolean;
 };
 
+export type DoorManualHandleHoverPreviewArgs = DoorPreviewBaseArgs & {
+  scopedHitDoorPid: string;
+  modeOpts: UnknownRecord | null;
+  setSketchPreview: SetSketchPreviewFn;
+};
+
 export function __isObject<T extends object = UnknownRecord>(x: unknown): x is T {
   return !!x && typeof x === 'object';
 }

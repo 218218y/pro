@@ -1,4 +1,5 @@
 import { EDGE_HANDLE_VARIANT_GLOBAL_KEY } from '../actions/handles_actions.js';
+import { isManualHandlePositionMode as isManualHandlePlacementMode } from '../../../features/manual_handle_position.js';
 import {
   DEFAULT_HANDLE_FINISH_COLOR,
   HANDLE_COLOR_GLOBAL_KEY,
@@ -79,6 +80,7 @@ export function deriveInteriorTabModeState(args: InteriorTabModeStateArgs) {
   const isDividerMode = primary === modeDivider;
   const isIntDrawerMode = primary === modeIntDrawer;
   const isHandleMode = primary === modeHandle;
+  const isManualHandlePositionMode = isHandleMode && isManualHandlePlacementMode(modeOpts.handlePlacement);
   const isDoorTrimMode = primary === modeDoorTrim;
   const layoutActive = isLayoutMode || isManualLayoutMode || isBraceShelvesMode || isDoorTrimMode;
   const layoutType = isLayoutMode ? readLayoutTypeId(modeOpts.layoutType, layoutTypeUi) : layoutTypeUi;
@@ -96,6 +98,7 @@ export function deriveInteriorTabModeState(args: InteriorTabModeStateArgs) {
     isDividerMode,
     isIntDrawerMode,
     isHandleMode,
+    isManualHandlePositionMode,
     isDoorTrimMode,
     layoutActive,
     layoutType,

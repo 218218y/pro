@@ -1,3 +1,4 @@
+import type { UnknownRecord } from '../../../types';
 import type {
   DoorActionHoverPreviewRuntime,
   DoorActionHoverPreviewRouteArgs,
@@ -6,7 +7,9 @@ import {
   tryHandleDoorFaceHoverPreview,
   tryHandleDoorPaintHoverPreview,
   tryHandleDoorTrimHoverPreview,
+  tryHandleDoorManualHandleHoverPreview,
 } from './canvas_picking_door_action_hover_preview.js';
+import { getMode } from '../kernel/api.js';
 import {
   type TransformNodeLike,
   __asObject,
@@ -15,6 +18,14 @@ import {
   __readHoverThree,
   __reuseValue,
 } from './canvas_picking_door_hover_targets.js';
+
+function readModeOptsSafe(App: unknown): UnknownRecord | null {
+  try {
+    return __asObject<UnknownRecord>(getMode(App as never)?.opts);
+  } catch {
+    return null;
+  }
+}
 
 function createDoorActionHoverPreviewRuntime(
   args: DoorActionHoverPreviewRouteArgs
@@ -113,6 +124,26 @@ export function tryHandleDoorActionHoverMarkerRoute(args: DoorActionHoverPreview
         normalizedPaintSelection: modeState.normalizedPaintSelection || '',
         setSketchPreview,
         readUi,
+      });
+    }
+
+    if (modeState.isManualHandlePositionMode) {
+      return tryHandleDoorManualHandleHoverPreview({
+        App,
+        THREE,
+        hit,
+        groupRec,
+        userData,
+        wardrobeGroup,
+        doorMarker,
+        markerUd,
+        local,
+        localHit,
+        wq,
+        zOff,
+        scopedHitDoorPid,
+        modeOpts: readModeOptsSafe(App),
+        setSketchPreview,
       });
     }
 

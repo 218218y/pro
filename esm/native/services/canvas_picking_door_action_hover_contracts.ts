@@ -14,6 +14,7 @@ export type DoorActionHoverModeState = {
   isPaintHoverMode: boolean;
   isTrimHoverMode: boolean;
   isHandleHoverMode: boolean;
+  isManualHandlePositionMode: boolean;
   isHingeHoverMode: boolean;
   isFacePreviewMode: boolean;
 };

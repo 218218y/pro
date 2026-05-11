@@ -20,6 +20,10 @@ import {
   HANDLE_COLOR_GLOBAL_KEY,
   normalizeHandleFinishColor,
 } from '../../../features/handle_finish_shared.js';
+import {
+  MANUAL_HANDLE_POSITION_MODE,
+  isManualHandlePositionMode,
+} from '../../../features/manual_handle_position.js';
 
 export const EDGE_HANDLE_VARIANT_GLOBAL_KEY = '__wp_edge_handle_variant_global';
 
@@ -99,6 +103,16 @@ function normEdgeHandleVariant(v: unknown): 'short' | 'long' {
 
 function readHandleColor(value: unknown) {
   return normalizeHandleFinishColor(value ?? DEFAULT_HANDLE_FINISH_COLOR);
+}
+
+function readModeHandleType(value: unknown): HandleType {
+  const raw = String(value || '').trim();
+  return raw === 'edge' || raw === 'none' ? (raw as HandleType) : 'standard';
+}
+
+function readManualModeHandleType(value: unknown): HandleType {
+  const type = readModeHandleType(value);
+  return type === 'none' ? 'standard' : type;
 }
 
 function applyHandlesBestEffort(app: AppContainer): void {
@@ -237,6 +251,49 @@ export function setHandleModeColor(app: AppContainer, color: unknown): void {
     modeOpts: { ...curOpts, handleType: curType, handleColor: readHandleColor(color) },
     preserveDoors: true,
     cursor: 'pointer',
+  });
+}
+
+export function enterManualHandlePositionMode(app: AppContainer): void {
+  try {
+    const enabled = !!getUiSnap(app).handleControl;
+    if (!enabled) setHandleControlEnabled(app, true);
+  } catch {
+    // ignore
+  }
+
+  const modeHandle = getHandleModeId();
+  const curMode = getModeState(app);
+  const curOpts = readRecord(curMode.opts) || {};
+  const currentIsManual =
+    String(curMode.primary || '') === modeHandle && isManualHandlePositionMode(curOpts.handlePlacement);
+  if (currentIsManual) {
+    exitPrimaryMode(app, modeHandle, { preserveDoors: true });
+    return;
+  }
+
+  const selectedType =
+    String(curMode.primary || '') === modeHandle ? readManualModeHandleType(curOpts.handleType) : 'standard';
+  const hm = readRecord(getCfgSnap(app).handlesMap) || {};
+  const selectedColor =
+    String(curMode.primary || '') === modeHandle
+      ? readHandleColor(curOpts.handleColor)
+      : DEFAULT_HANDLE_FINISH_COLOR;
+  const selectedEdgeVariant =
+    selectedType === 'edge'
+      ? normEdgeHandleVariant(curOpts.edgeHandleVariant)
+      : normEdgeHandleVariant(hm[EDGE_HANDLE_VARIANT_GLOBAL_KEY]);
+
+  enterPrimaryMode(app, modeHandle, {
+    modeOpts: {
+      handleType: selectedType,
+      edgeHandleVariant: selectedEdgeVariant,
+      handleColor: selectedColor,
+      handlePlacement: MANUAL_HANDLE_POSITION_MODE,
+    },
+    preserveDoors: true,
+    cursor: 'crosshair',
+    toast: 'מיקום ידיות ידני: רחף ולחץ על דלת כדי למקם ידית',
   });
 }
 
