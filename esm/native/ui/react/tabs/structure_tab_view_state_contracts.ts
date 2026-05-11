@@ -8,6 +8,9 @@ export type StructureTabBaseUiState = {
   depth: number;
   doors: number;
   chestDrawersCount: number;
+  chestCommodeEnabled: boolean;
+  chestCommodeMirrorHeightCm: number;
+  chestCommodeMirrorWidthCm: number;
   baseType: 'plinth' | 'legs' | 'none';
   baseLegStyle: BaseLegStyle;
   baseLegColor: BaseLegColor;

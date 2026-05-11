@@ -121,6 +121,10 @@ const UI_RAW_SCALAR_READERS = {
   depth: (raw: UiRawInputsLike) => readNumericRawScalar(raw, 'depth'),
   doors: (raw: UiRawInputsLike) => readNumericRawScalar(raw, 'doors'),
   chestDrawersCount: (raw: UiRawInputsLike) => readNumericRawScalar(raw, 'chestDrawersCount'),
+  chestCommodeMirrorHeightCm: (raw: UiRawInputsLike) =>
+    readNumericRawScalar(raw, 'chestCommodeMirrorHeightCm'),
+  chestCommodeMirrorWidthCm: (raw: UiRawInputsLike) =>
+    readNumericRawScalar(raw, 'chestCommodeMirrorWidthCm'),
   stackSplitLowerHeight: (raw: UiRawInputsLike) => readNumericRawScalar(raw, 'stackSplitLowerHeight'),
   stackSplitLowerDepth: (raw: UiRawInputsLike) => readNumericRawScalar(raw, 'stackSplitLowerDepth'),
   stackSplitLowerWidth: (raw: UiRawInputsLike) => readNumericRawScalar(raw, 'stackSplitLowerWidth'),

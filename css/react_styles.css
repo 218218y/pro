@@ -761,6 +761,31 @@ body.wp-ui-react #sidebar > :not(#reactSidebarRoot) {
   justify-self: end;
 }
 
+#reactSidebarRoot .wp-r-chest-commode-block {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(148, 163, 184, 0.28);
+}
+
+#reactSidebarRoot .wp-r-chest-commode-toggle {
+  margin-bottom: 12px;
+}
+
+#reactSidebarRoot .wp-r-dims-grid.wp-r-dims-grid--commode {
+  grid-template-areas: 'width height';
+  margin-top: 0;
+}
+
+#reactSidebarRoot .wp-r-commode-mirror-height {
+  grid-area: height;
+  direction: rtl;
+}
+
+#reactSidebarRoot .wp-r-commode-mirror-width {
+  grid-area: width;
+  direction: rtl;
+}
+
 #reactSidebarRoot .wp-r-dims-width {
   grid-area: width;
 }

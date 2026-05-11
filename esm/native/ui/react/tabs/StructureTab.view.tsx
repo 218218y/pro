@@ -56,7 +56,10 @@ function StructureTabInner(props: { active: boolean }) {
     commitCornerHeight,
     commitCornerDepth,
     toggleChestMode,
+    toggleChestCommode,
     setChestDrawersCount,
+    setChestCommodeMirrorHeight,
+    setChestCommodeMirrorWidth,
   } = useStructureTabCornerChestActions({
     app,
     meta,
@@ -72,6 +75,9 @@ function StructureTabInner(props: { active: boolean }) {
     isManualWidth: state.isManualWidth,
     baseType: state.baseType,
     preChestState: state.preChestState,
+    chestCommodeEnabled: state.chestCommodeEnabled,
+    chestCommodeMirrorHeightCm: state.chestCommodeMirrorHeightCm,
+    chestCommodeMirrorWidthCm: state.chestCommodeMirrorWidthCm,
   });
 
   const dimensionsSectionVisible = !state.isLibraryMode && !state.isChestMode;
@@ -178,12 +184,18 @@ function StructureTabInner(props: { active: boolean }) {
       <StructureChestSection
         isChestMode={state.isChestMode}
         chestDrawersCount={state.chestDrawersCount}
+        chestCommodeEnabled={state.chestCommodeEnabled}
+        chestCommodeMirrorHeightCm={state.chestCommodeMirrorHeightCm}
+        chestCommodeMirrorWidthCm={state.chestCommodeMirrorWidthCm}
         width={state.width}
         height={state.height}
         depth={state.depth}
         onToggleChestMode={toggleChestMode}
+        onToggleChestCommode={toggleChestCommode}
         onSetRaw={workflows.setRaw}
         onSetChestDrawersCount={setChestDrawersCount}
+        onSetChestCommodeMirrorHeight={setChestCommodeMirrorHeight}
+        onSetChestCommodeMirrorWidth={setChestCommodeMirrorWidth}
       />
 
       <StructureLibrarySection

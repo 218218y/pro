@@ -25,6 +25,7 @@ import {
   WARDROBE_SLIDING_DOORS_MIN,
   WARDROBE_WIDTH_MAX,
   WARDROBE_WIDTH_MIN,
+  CHEST_MODE_DIMENSIONS,
 } from '../../../services/api.js';
 
 export type StructureDimInputBounds = {
@@ -149,6 +150,22 @@ export function readStructureChestDrawersBounds(): StructureDimInputBounds {
     min: WARDROBE_CHEST_DRAWERS_MIN,
     max: WARDROBE_CHEST_DRAWERS_MAX,
     integer: true,
+  };
+}
+
+export function readStructureChestCommodeMirrorBounds(
+  key: 'height' | 'width'
+): StructureDimInputBounds {
+  const commode = CHEST_MODE_DIMENSIONS.commode;
+  if (key === 'height') {
+    return {
+      min: commode.minMirrorHeightCm,
+      max: commode.maxMirrorHeightCm,
+    };
+  }
+  return {
+    min: commode.minMirrorWidthCm,
+    max: commode.maxMirrorWidthCm,
   };
 }
 

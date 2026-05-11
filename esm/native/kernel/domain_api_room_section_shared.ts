@@ -264,6 +264,12 @@ export function pickUiForWardrobeTypeProfile(uiIn: unknown): UiStateLike {
   if (raw0.depth !== undefined) outRaw.depth = raw0.depth;
   if (raw0.doors !== undefined) outRaw.doors = raw0.doors;
   if (raw0.chestDrawersCount !== undefined) outRaw.chestDrawersCount = raw0.chestDrawersCount;
+  if (raw0.chestCommodeMirrorHeightCm !== undefined) {
+    outRaw.chestCommodeMirrorHeightCm = raw0.chestCommodeMirrorHeightCm;
+  }
+  if (raw0.chestCommodeMirrorWidthCm !== undefined) {
+    outRaw.chestCommodeMirrorWidthCm = raw0.chestCommodeMirrorWidthCm;
+  }
 
   for (const key of PROFILE_UI_RAW_KEYS) {
     if (raw0[key] !== undefined) outRaw[key] = raw0[key];

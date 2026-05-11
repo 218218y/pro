@@ -1415,6 +1415,18 @@ export const CHEST_MODE_DIMENSIONS = Object.freeze({
     drawersCount: WARDROBE_LIMITS.chestDrawers.min,
     baseType: 'legs',
   }),
+  commode: Object.freeze({
+    defaultMirrorHeightCm: 100,
+    minMirrorHeightCm: 30,
+    maxMirrorHeightCm: 180,
+    minMirrorWidthCm: WARDROBE_LIMITS.width.chestMinCm,
+    maxMirrorWidthCm: WARDROBE_LIMITS.width.maxCm,
+    backPanelThicknessM: 0.018,
+    mirrorThicknessM: 0.003,
+    mirrorInsetM: 0.03,
+    backPanelYOffsetM: 0.002,
+    mirrorSurfaceLiftM: 0.0015,
+  }),
   drawerBox: Object.freeze({
     panelThicknessM: 0.015,
     accentZOffsetM: 0.0008,

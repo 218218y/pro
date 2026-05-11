@@ -14,6 +14,8 @@ export const UI_RAW_NUMERIC_KEYS = [
   'depth',
   'doors',
   'chestDrawersCount',
+  'chestCommodeMirrorHeightCm',
+  'chestCommodeMirrorWidthCm',
   'stackSplitLowerHeight',
   'stackSplitLowerDepth',
   'stackSplitLowerWidth',

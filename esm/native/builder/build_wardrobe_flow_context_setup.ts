@@ -67,6 +67,9 @@ export function prepareBuildWardrobeContextSetup(
             baseLegWidthCm?: number | string;
             colorChoice: string;
             customColor: string;
+            chestCommodeEnabled: boolean;
+            chestCommodeMirrorHeightCm: number | string;
+            chestCommodeMirrorWidthCm: number | string;
           }) => void
         >(buildChestOnly) || undefined,
     })

@@ -77,6 +77,7 @@ export interface UiState extends UnknownRecord {
   singleDoorPos?: string;
   hingeDirection?: boolean;
   isChestMode?: boolean;
+  chestCommodeEnabled?: boolean;
 
   // Corner
   cornerMode?: boolean;

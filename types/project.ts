@@ -108,6 +108,8 @@ export interface ProjectSettingsLike extends UnknownRecord {
   lightZ?: number | string;
 
   chestDrawersCount?: number | string;
+  chestCommodeMirrorHeightCm?: number | string;
+  chestCommodeMirrorWidthCm?: number | string;
 
   globalHandleType?: HandleType | string | null;
   isLibraryMode?: boolean;
@@ -125,6 +127,7 @@ export interface ProjectTogglesLike extends UnknownRecord {
   multiColor?: ToggleValue;
   grooves?: ToggleValue;
   chestMode?: ToggleValue;
+  chestCommode?: ToggleValue;
   splitDoors?: ToggleValue;
   handleControl?: ToggleValue;
   cornerMode?: ToggleValue;

@@ -39,6 +39,11 @@ function cloneProjectJson(value: unknown): ProjectPdfDraftLike | null {
   return cloneProjectJsonShared(value);
 }
 
+function readOptionalFiniteNumber(value: unknown): number | undefined {
+  const n = typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : NaN;
+  return Number.isFinite(n) ? n : undefined;
+}
+
 function readLoadedProjectName(
   rec: UnknownRecord,
   settings: UnknownRecord,
@@ -114,6 +119,18 @@ export function buildProjectUiSnapshot(
   const cornerSide =
     settings.cornerSide === 'left' ? 'left' : settings.cornerSide === 'right' ? 'right' : 'right';
 
+  const chestSettings = asRecord(rec.chestSettings) || {};
+  const chestCommodeMirrorHeightCm = readOptionalFiniteNumber(
+    typeof chestSettings.mirrorHeightCm !== 'undefined'
+      ? chestSettings.mirrorHeightCm
+      : settings.chestCommodeMirrorHeightCm
+  );
+  const chestCommodeMirrorWidthCm = readOptionalFiniteNumber(
+    typeof chestSettings.mirrorWidthCm !== 'undefined'
+      ? chestSettings.mirrorWidthCm
+      : settings.chestCommodeMirrorWidthCm
+  );
+
   const savedNotesSource = Array.isArray(rec.savedNotes) ? rec.savedNotes : rec.notes;
   const savedNotes = readSavedNotes(savedNotesSource);
   const notesEnabledInFile =
@@ -127,6 +144,8 @@ export function buildProjectUiSnapshot(
       depth: settings.depth,
       cornerWidth: settings.cornerWidth,
       cornerSide,
+      chestCommodeMirrorHeightCm,
+      chestCommodeMirrorWidthCm,
       stackSplitLowerHeight: settings.stackSplitLowerHeight,
       stackSplitLowerDepth: settings.stackSplitLowerDepth,
       stackSplitLowerWidth: settings.stackSplitLowerWidth,
@@ -166,6 +185,10 @@ export function buildProjectUiSnapshot(
     internalDrawersEnabled:
       typeof toggles.internalDrawers !== 'undefined' ? !!toggles.internalDrawers : false,
     isChestMode: !!toggles.chestMode,
+    chestCommodeEnabled:
+      typeof toggles.chestCommode !== 'undefined'
+        ? !!toggles.chestCommode
+        : !!chestSettings.commodeEnabled,
 
     splitDoors: !!toggles.splitDoors,
     handleControl: !!toggles.handleControl,
@@ -203,10 +226,11 @@ export function buildProjectUiSnapshot(
   uiState.cornerDepth =
     typeof cornerDepth === 'number' ? cornerDepth : typeof rawDepth === 'number' ? rawDepth : undefined;
 
-  const chestSettings = asRecord(rec.chestSettings) || {};
   const chestCount = chestSettings.drawersCount || settings.chestDrawersCount || rec.chestDrawers || '';
   if (chestCount !== '') {
     uiState.chestDrawersCount = chestCount;
+    const raw = asRecord(uiState.raw);
+    if (raw) raw.chestDrawersCount = chestCount;
   }
 
   return { uiState, savedNotes };

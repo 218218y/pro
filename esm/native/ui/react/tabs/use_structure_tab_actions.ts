@@ -54,6 +54,9 @@ export function useStructureTabCornerChestActions(args: {
   isManualWidth: boolean;
   baseType: string;
   preChestState: ProjectPreChestStateLike;
+  chestCommodeEnabled: boolean;
+  chestCommodeMirrorHeightCm: number;
+  chestCommodeMirrorWidthCm: number;
 }) {
   return useMemo(
     () =>
@@ -72,6 +75,9 @@ export function useStructureTabCornerChestActions(args: {
         isManualWidth: args.isManualWidth,
         baseType: args.baseType,
         preChestState: args.preChestState,
+        chestCommodeEnabled: args.chestCommodeEnabled,
+        chestCommodeMirrorHeightCm: args.chestCommodeMirrorHeightCm,
+        chestCommodeMirrorWidthCm: args.chestCommodeMirrorWidthCm,
       }),
     [
       args.app,
@@ -88,6 +94,9 @@ export function useStructureTabCornerChestActions(args: {
       args.isManualWidth,
       args.baseType,
       args.preChestState,
+      args.chestCommodeEnabled,
+      args.chestCommodeMirrorHeightCm,
+      args.chestCommodeMirrorWidthCm,
     ]
   );
 }

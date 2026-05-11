@@ -15,6 +15,8 @@ export interface UiRawInputsLike extends UnknownRecord {
 
   // Chest mode
   chestDrawersCount?: number | null;
+  chestCommodeMirrorHeightCm?: number | null;
+  chestCommodeMirrorWidthCm?: number | null;
 
   // Stack split lower unit
   stackSplitLowerHeight?: number | null;
@@ -53,6 +55,8 @@ export type UiRawNumericKey =
   | 'depth'
   | 'doors'
   | 'chestDrawersCount'
+  | 'chestCommodeMirrorHeightCm'
+  | 'chestCommodeMirrorWidthCm'
   | 'stackSplitLowerHeight'
   | 'stackSplitLowerDepth'
   | 'stackSplitLowerWidth'
@@ -73,6 +77,8 @@ export type UiRawScalarValueMap = {
   depth: number | null;
   doors: number | null;
   chestDrawersCount: number | null;
+  chestCommodeMirrorHeightCm: number | null;
+  chestCommodeMirrorWidthCm: number | null;
 
   stackSplitLowerHeight: number | null;
   stackSplitLowerDepth: number | null;
@@ -104,6 +110,8 @@ export const UI_RAW_NUMERIC_KEYS: readonly UiRawNumericKey[] = [
   'depth',
   'doors',
   'chestDrawersCount',
+  'chestCommodeMirrorHeightCm',
+  'chestCommodeMirrorWidthCm',
   'stackSplitLowerHeight',
   'stackSplitLowerDepth',
   'stackSplitLowerWidth',

@@ -110,7 +110,14 @@ function createChestApp() {
             baseLegWidthCm: 6,
             colorChoice: '#cccccc',
             customColor: '#00ff00',
-            raw: { width: 160, height: 90, depth: 45, chestDrawersCount: 3 },
+            raw: {
+              width: 160,
+              height: 90,
+              depth: 45,
+              chestDrawersCount: 3,
+              chestCommodeMirrorHeightCm: 100,
+              chestCommodeMirrorWidthCm: 160,
+            },
           };
         },
       },
@@ -179,11 +186,18 @@ test('visuals chest mode input/material helpers normalize chest-only UI and text
     effectiveBaseType: 'legs',
     baseLegStyle: 'square',
     baseLegColor: 'nickel',
+    basePlinthHeightCm: 8,
+    basePlinthHeightM: 0.08,
     baseLegHeightCm: 16,
     baseLegWidthCm: 6,
     baseLegHeightM: 0.16,
     colorChoice: '#cccccc',
     customColor: '#00ff00',
+    chestCommodeEnabled: false,
+    chestCommodeMirrorHeightCm: 100,
+    chestCommodeMirrorWidthCm: 160,
+    chestCommodeMirrorHeightM: 1,
+    chestCommodeMirrorWidthM: 1.6,
   });
 
   assert.deepEqual(
@@ -239,4 +253,36 @@ test('visuals chest mode build creates wide-leg chest drawers, mirror override, 
   const labels = dimensionCalls.map(call => call[3]);
   assert.deepEqual(labels, ['160', '90']);
   assert.ok(outlined.length >= 10);
+});
+
+
+test('visuals chest mode build adds commode back panel with tracked mirror surface when enabled', () => {
+  const { App, wardrobeGroup } = createChestApp();
+  buildChestOnly(App, {
+    H: 0.9,
+    totalW: 1.6,
+    D: 0.45,
+    drawersCount: 3,
+    baseType: 'legs',
+    baseLegStyle: 'square',
+    baseLegColor: 'nickel',
+    baseLegHeightCm: 15,
+    baseLegWidthCm: 5,
+    colorChoice: '#ffffff',
+    chestCommodeEnabled: true,
+    chestCommodeMirrorHeightCm: 110,
+    chestCommodeMirrorWidthCm: 150,
+  });
+
+  const back = wardrobeGroup.children.find((child: any) => child?.userData?.partId === 'chest_commode_back');
+  const mirror = wardrobeGroup.children.find(
+    (child: any) => child?.userData?.partId === 'chest_commode_mirror'
+  );
+
+  assert.ok(back);
+  assert.ok(mirror);
+  assert.deepEqual(back.geometry.args, [1.5, 1.1, 0.018]);
+  assert.equal(mirror.material.mirror, true);
+  assert.equal(mirror.userData.__wpMirrorSurface, true);
+  assert.equal(App.render.meta.mirrors.includes(mirror), true);
 });

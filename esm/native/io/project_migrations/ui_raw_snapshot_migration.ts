@@ -53,6 +53,8 @@ const projectUiRawMigrationReaders: {
   depth: readNullableNumber,
   doors: readNullableNumber,
   chestDrawersCount: readNullableNumber,
+  chestCommodeMirrorHeightCm: readNullableNumber,
+  chestCommodeMirrorWidthCm: readNullableNumber,
   stackSplitLowerHeight: readNullableNumber,
   stackSplitLowerDepth: readNullableNumber,
   stackSplitLowerWidth: readNullableNumber,

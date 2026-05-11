@@ -81,6 +81,9 @@ const sandbox = {
         DEFAULT_HINGED_DOORS: 4,
         DEFAULT_STACK_SPLIT_LOWER_HEIGHT: 60,
         DEFAULT_WIDTH: 160,
+        CHEST_MODE_DIMENSIONS: {
+          commode: { defaultMirrorHeightCm: 100 },
+        },
         getDefaultDepthForWardrobeType: value => (value === 'sliding' ? 60 : 55),
       };
     }
@@ -136,6 +139,9 @@ test('structure tab view-state runtime normalizes base ui state', () => {
     depth: '64',
     doors: '5',
     chestDrawersCount: '7',
+    chestCommodeMirrorHeightCm: '110',
+    chestCommodeMirrorWidthCm: '180',
+    chestCommodeEnabled: true,
     baseType: 'legs',
     baseLegStyle: 'square',
     baseLegColor: 'gold',
@@ -166,6 +172,9 @@ test('structure tab view-state runtime normalizes base ui state', () => {
   assert.equal(state.cornerSide, 'left');
   assert.equal(state.cornerDoors, 4);
   assert.equal(state.isChestMode, true);
+  assert.equal(state.chestCommodeEnabled, true);
+  assert.equal(state.chestCommodeMirrorHeightCm, 110);
+  assert.equal(state.chestCommodeMirrorWidthCm, 180);
 });
 
 test('structure tab view-state runtime derives stack-split fallback/manual flags correctly', () => {

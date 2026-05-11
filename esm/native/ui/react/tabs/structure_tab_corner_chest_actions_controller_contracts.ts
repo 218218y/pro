@@ -15,6 +15,9 @@ export type StructureTabCornerChestActionsArgs = {
   isManualWidth: boolean;
   baseType: string;
   preChestState: ProjectPreChestStateLike;
+  chestCommodeEnabled: boolean;
+  chestCommodeMirrorHeightCm: number;
+  chestCommodeMirrorWidthCm: number;
 };
 
 export type StructureTabCornerChestActionsController = {
@@ -25,5 +28,8 @@ export type StructureTabCornerChestActionsController = {
   commitCornerHeight(nn: number): void;
   commitCornerDepth(nn: number): void;
   toggleChestMode(next: boolean): void;
+  toggleChestCommode(next: boolean): void;
   setChestDrawersCount(nn: number): void;
+  setChestCommodeMirrorHeight(nn: number): void;
+  setChestCommodeMirrorWidth(nn: number): void;
 };

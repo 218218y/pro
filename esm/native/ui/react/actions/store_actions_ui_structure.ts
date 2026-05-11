@@ -70,6 +70,10 @@ function setUiChestMode(app: AppContainer, on: unknown, meta?: ActionMetaLike): 
   setUiScalarSoft(app, 'isChestMode', !!on, meta);
 }
 
+function setUiChestCommodeEnabled(app: AppContainer, on: unknown, meta?: ActionMetaLike): void {
+  setUiScalarSoft(app, 'chestCommodeEnabled', !!on, meta);
+}
+
 function setUiCornerSide(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
   setUiScalarSoft(app, 'cornerSide', value == null ? '' : String(value), meta);
 }
@@ -104,6 +108,14 @@ function setUiDepth(app: AppContainer, value: unknown, meta?: ActionMetaLike): v
 
 function setUiChestDrawersCount(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
   setUiRawScalar(app, 'chestDrawersCount', value, meta);
+}
+
+function setUiChestCommodeMirrorHeightCm(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
+  setUiRawScalar(app, 'chestCommodeMirrorHeightCm', value, meta);
+}
+
+function setUiChestCommodeMirrorWidthCm(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
+  setUiRawScalar(app, 'chestCommodeMirrorWidthCm', value, meta);
 }
 
 function setUiCellDimsWidth(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
@@ -203,6 +215,9 @@ export {
   setUiCellDimsDepth,
   setUiCellDimsHeight,
   setUiCellDimsWidth,
+  setUiChestCommodeEnabled,
+  setUiChestCommodeMirrorHeightCm,
+  setUiChestCommodeMirrorWidthCm,
   setUiChestDrawersCount,
   setUiChestMode,
   setUiColorChoice,

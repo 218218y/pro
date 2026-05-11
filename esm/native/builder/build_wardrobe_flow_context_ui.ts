@@ -10,6 +10,9 @@ export type ChestModeUiLike = {
   baseLegWidthCm?: number | string;
   colorChoice?: string;
   customColor?: string;
+  chestCommodeEnabled?: boolean;
+  chestCommodeMirrorHeightCm?: number | string;
+  chestCommodeMirrorWidthCm?: number | string;
 };
 
 export function pickChestModeUi(ui: unknown): ChestModeUiLike | null {
@@ -32,5 +35,19 @@ export function pickChestModeUi(ui: unknown): ChestModeUiLike | null {
   }
   if (typeof u.colorChoice === 'string') out.colorChoice = u.colorChoice;
   if (typeof u.customColor === 'string') out.customColor = u.customColor;
+  if (typeof u.chestCommodeEnabled === 'boolean') out.chestCommodeEnabled = u.chestCommodeEnabled;
+  const raw = readRecord(u.raw);
+  const mirrorHeight = raw && (typeof raw.chestCommodeMirrorHeightCm === 'number' || typeof raw.chestCommodeMirrorHeightCm === 'string')
+    ? raw.chestCommodeMirrorHeightCm
+    : u.chestCommodeMirrorHeightCm;
+  const mirrorWidth = raw && (typeof raw.chestCommodeMirrorWidthCm === 'number' || typeof raw.chestCommodeMirrorWidthCm === 'string')
+    ? raw.chestCommodeMirrorWidthCm
+    : u.chestCommodeMirrorWidthCm;
+  if (typeof mirrorHeight === 'number' || typeof mirrorHeight === 'string') {
+    out.chestCommodeMirrorHeightCm = mirrorHeight;
+  }
+  if (typeof mirrorWidth === 'number' || typeof mirrorWidth === 'string') {
+    out.chestCommodeMirrorWidthCm = mirrorWidth;
+  }
   return out;
 }
