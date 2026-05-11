@@ -339,11 +339,6 @@ export function sameModuleKey(a: unknown, b: unknown): boolean {
   return String(a) === String(b);
 }
 
-function readPartIdFromGroup(group: unknown): string {
-  const ud = readUserData(group);
-  return readString(ud?.partId);
-}
-
 function readModuleKeyFromUserData(ud: UnknownRecord | null): string {
   return readString(ud?.moduleIndex ?? ud?.__wpSketchModuleKey);
 }
