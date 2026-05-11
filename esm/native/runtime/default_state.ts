@@ -38,6 +38,7 @@ export function createDefaultState(opts?: { noneMode?: string }): RootStateLike 
         chestDrawersCount: DEFAULT_CHEST_DRAWERS_COUNT,
         chestCommodeMirrorHeightCm: CHEST_MODE_DIMENSIONS.commode.defaultMirrorHeightCm,
         chestCommodeMirrorWidthCm: CHEST_MODE_DIMENSIONS.activeDefaults.widthCm,
+        chestCommodeMirrorWidthManual: false,
         stackSplitLowerHeight: DEFAULT_STACK_SPLIT_LOWER_HEIGHT,
         stackSplitLowerDepth: HINGED_DEFAULT_DEPTH,
         stackSplitLowerWidth: DEFAULT_WIDTH,

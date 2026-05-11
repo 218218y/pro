@@ -8,6 +8,14 @@ const DEFAULT_CAM = {
   target: { x: 0, y: 1.4, z: 0 },
 };
 
+// Default camera for chest mode / מצב שידה.
+// To see the dresser from slightly more above, increase CHEST_CAM.pos.y and/or CHEST_CAM.target.y.
+// To move closer/farther, decrease/increase CHEST_CAM.pos.z.
+const CHEST_CAM = {
+  pos: { x: 0, y: 0.70, z: 2.5 },
+  target: { x: 0, y: 0.55, z: 0 },
+};
+
 const CORNER_CAM = {
   posY: 2.25,
   posZBase: 5.65,
@@ -144,7 +152,7 @@ function applyCamera(
 }
 
 export function adjustCameraForChest(App: AppContainer): boolean {
-  return applyCamera(App, { x: 0, y: 0.8, z: 2.5 }, { x: 0, y: 0.25, z: 0 });
+  return applyCamera(App, CHEST_CAM.pos, CHEST_CAM.target);
 }
 
 export function resetCameraPreset(App: AppContainer): boolean {

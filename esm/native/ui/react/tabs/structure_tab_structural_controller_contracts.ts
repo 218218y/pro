@@ -40,6 +40,8 @@ export type CreateStructureTabStructuralControllerArgs = {
   shouldShowSingleDoor: boolean;
   shouldShowHingeBtn: boolean;
   hingeDirection: boolean;
+  chestCommodeEnabled: boolean;
+  chestCommodeMirrorWidthManual: boolean;
   stackSplitEnabled: boolean;
   stackSplitDecorativeSeparatorEnabled: boolean;
   stackSplitLowerHeight: number;

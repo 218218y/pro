@@ -60,6 +60,7 @@ function StructureTabInner(props: { active: boolean }) {
     setChestDrawersCount,
     setChestCommodeMirrorHeight,
     setChestCommodeMirrorWidth,
+    setChestCommodeMirrorWidthManual,
   } = useStructureTabCornerChestActions({
     app,
     meta,
@@ -78,6 +79,7 @@ function StructureTabInner(props: { active: boolean }) {
     chestCommodeEnabled: state.chestCommodeEnabled,
     chestCommodeMirrorHeightCm: state.chestCommodeMirrorHeightCm,
     chestCommodeMirrorWidthCm: state.chestCommodeMirrorWidthCm,
+    chestCommodeMirrorWidthManual: state.chestCommodeMirrorWidthManual,
   });
 
   const dimensionsSectionVisible = !state.isLibraryMode && !state.isChestMode;
@@ -187,6 +189,7 @@ function StructureTabInner(props: { active: boolean }) {
         chestCommodeEnabled={state.chestCommodeEnabled}
         chestCommodeMirrorHeightCm={state.chestCommodeMirrorHeightCm}
         chestCommodeMirrorWidthCm={state.chestCommodeMirrorWidthCm}
+        chestCommodeMirrorWidthManual={state.chestCommodeMirrorWidthManual}
         width={state.width}
         height={state.height}
         depth={state.depth}
@@ -196,6 +199,7 @@ function StructureTabInner(props: { active: boolean }) {
         onSetChestDrawersCount={setChestDrawersCount}
         onSetChestCommodeMirrorHeight={setChestCommodeMirrorHeight}
         onSetChestCommodeMirrorWidth={setChestCommodeMirrorWidth}
+        onSetChestCommodeMirrorWidthManual={setChestCommodeMirrorWidthManual}
       />
 
       <StructureLibrarySection

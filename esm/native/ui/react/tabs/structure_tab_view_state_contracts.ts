@@ -11,6 +11,7 @@ export type StructureTabBaseUiState = {
   chestCommodeEnabled: boolean;
   chestCommodeMirrorHeightCm: number;
   chestCommodeMirrorWidthCm: number;
+  chestCommodeMirrorWidthManual: boolean;
   baseType: 'plinth' | 'legs' | 'none';
   baseLegStyle: BaseLegStyle;
   baseLegColor: BaseLegColor;

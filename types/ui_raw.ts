@@ -17,6 +17,7 @@ export interface UiRawInputsLike extends UnknownRecord {
   chestDrawersCount?: number | null;
   chestCommodeMirrorHeightCm?: number | null;
   chestCommodeMirrorWidthCm?: number | null;
+  chestCommodeMirrorWidthManual?: boolean;
 
   // Stack split lower unit
   stackSplitLowerHeight?: number | null;
@@ -45,6 +46,7 @@ export interface UiRawInputsLike extends UnknownRecord {
 // Scalar keys we intentionally type-check at call sites.
 // Keep this list focused on "hot" keys that are used broadly.
 export type UiRawBooleanKey =
+  | 'chestCommodeMirrorWidthManual'
   | 'stackSplitLowerDepthManual'
   | 'stackSplitLowerWidthManual'
   | 'stackSplitLowerDoorsManual';
@@ -79,6 +81,7 @@ export type UiRawScalarValueMap = {
   chestDrawersCount: number | null;
   chestCommodeMirrorHeightCm: number | null;
   chestCommodeMirrorWidthCm: number | null;
+  chestCommodeMirrorWidthManual: boolean;
 
   stackSplitLowerHeight: number | null;
   stackSplitLowerDepth: number | null;
@@ -99,6 +102,7 @@ export type UiRawScalarValueMap = {
 };
 
 export const UI_RAW_BOOLEAN_KEYS: readonly UiRawBooleanKey[] = [
+  'chestCommodeMirrorWidthManual',
   'stackSplitLowerDepthManual',
   'stackSplitLowerWidthManual',
   'stackSplitLowerDoorsManual',

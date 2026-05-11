@@ -7,6 +7,7 @@ import {
   STRUCTURE_CORNER_SIDE_BUTTON_TEST_ID,
   STRUCTURE_CHEST_MODE_TOGGLE_TEST_ID,
   STRUCTURE_CHEST_COMMODE_BUTTON_TEST_ID,
+  STRUCTURE_CHEST_COMMODE_WIDTH_MODE_BUTTON_TEST_ID,
   STRUCTURE_CHEST_SECTION_TEST_ID,
   STRUCTURE_CORNER_DIMENSION_FIELDS,
   STRUCTURE_CHEST_DIMENSION_FIELDS,
@@ -38,6 +39,7 @@ test('structure aux contracts expose stable structure-mode test ids', () => {
       STRUCTURE_CHEST_SECTION_TEST_ID,
       STRUCTURE_CHEST_MODE_TOGGLE_TEST_ID,
       STRUCTURE_CHEST_COMMODE_BUTTON_TEST_ID,
+      STRUCTURE_CHEST_COMMODE_WIDTH_MODE_BUTTON_TEST_ID,
       STRUCTURE_LIBRARY_SECTION_TEST_ID,
       STRUCTURE_LIBRARY_MODE_BUTTON_TEST_ID,
     ],
@@ -48,6 +50,7 @@ test('structure aux contracts expose stable structure-mode test ids', () => {
       'structure-chest-section',
       'structure-chest-mode-toggle',
       'structure-chest-commode-button',
+      'structure-chest-commode-width-mode-button',
       'structure-library-section',
       'structure-library-mode-button',
     ]

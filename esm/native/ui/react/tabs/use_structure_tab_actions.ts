@@ -57,6 +57,7 @@ export function useStructureTabCornerChestActions(args: {
   chestCommodeEnabled: boolean;
   chestCommodeMirrorHeightCm: number;
   chestCommodeMirrorWidthCm: number;
+  chestCommodeMirrorWidthManual: boolean;
 }) {
   return useMemo(
     () =>
@@ -78,6 +79,7 @@ export function useStructureTabCornerChestActions(args: {
         chestCommodeEnabled: args.chestCommodeEnabled,
         chestCommodeMirrorHeightCm: args.chestCommodeMirrorHeightCm,
         chestCommodeMirrorWidthCm: args.chestCommodeMirrorWidthCm,
+        chestCommodeMirrorWidthManual: args.chestCommodeMirrorWidthManual,
       }),
     [
       args.app,
@@ -97,6 +99,7 @@ export function useStructureTabCornerChestActions(args: {
       args.chestCommodeEnabled,
       args.chestCommodeMirrorHeightCm,
       args.chestCommodeMirrorWidthCm,
+      args.chestCommodeMirrorWidthManual,
     ]
   );
 }

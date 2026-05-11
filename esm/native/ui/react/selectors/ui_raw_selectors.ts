@@ -76,6 +76,7 @@ const uiRawScalarReaders: UiRawScalarReaderMap = {
   chestDrawersCount: source => readNullableNumberProp(source, 'chestDrawersCount'),
   chestCommodeMirrorHeightCm: source => readNullableNumberProp(source, 'chestCommodeMirrorHeightCm'),
   chestCommodeMirrorWidthCm: source => readNullableNumberProp(source, 'chestCommodeMirrorWidthCm'),
+  chestCommodeMirrorWidthManual: source => readBooleanProp(source, 'chestCommodeMirrorWidthManual'),
   stackSplitLowerHeight: source => readNullableNumberProp(source, 'stackSplitLowerHeight'),
   stackSplitLowerDepth: source => readNullableNumberProp(source, 'stackSplitLowerDepth'),
   stackSplitLowerWidth: source => readNullableNumberProp(source, 'stackSplitLowerWidth'),

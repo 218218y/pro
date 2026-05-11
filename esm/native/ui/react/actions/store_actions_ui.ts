@@ -30,6 +30,7 @@ export {
   setUiChestCommodeEnabled,
   setUiChestCommodeMirrorHeightCm,
   setUiChestCommodeMirrorWidthCm,
+  setUiChestCommodeMirrorWidthManual,
   setUiChestDrawersCount,
   setUiChestMode,
   setUiColorChoice,

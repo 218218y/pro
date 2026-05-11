@@ -1416,7 +1416,7 @@ export const CHEST_MODE_DIMENSIONS = Object.freeze({
     baseType: 'legs',
   }),
   commode: Object.freeze({
-    defaultMirrorHeightCm: 100,
+    defaultMirrorHeightCm: 70,
     minMirrorHeightCm: 30,
     maxMirrorHeightCm: 180,
     minMirrorWidthCm: WARDROBE_LIMITS.width.chestMinCm,

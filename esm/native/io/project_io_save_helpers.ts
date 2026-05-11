@@ -135,6 +135,7 @@ export function buildDefaultProjectDataSnapshot(
       chestDrawersCount: readFiniteNumber(raw.chestDrawersCount),
       chestCommodeMirrorHeightCm: readFiniteNumber(raw.chestCommodeMirrorHeightCm),
       chestCommodeMirrorWidthCm: readFiniteNumber(raw.chestCommodeMirrorWidthCm),
+      chestCommodeMirrorWidthManual: !!raw.chestCommodeMirrorWidthManual,
 
       baseType: ui.baseType,
       baseLegStyle: ui.baseLegStyle,
@@ -196,6 +197,7 @@ export function buildDefaultProjectDataSnapshot(
       commodeEnabled: !!ui.chestCommodeEnabled,
       mirrorHeightCm: readFiniteNumber(raw.chestCommodeMirrorHeightCm),
       mirrorWidthCm: readFiniteNumber(raw.chestCommodeMirrorWidthCm),
+      mirrorWidthManual: !!raw.chestCommodeMirrorWidthManual,
       bodyColor: color,
     },
 

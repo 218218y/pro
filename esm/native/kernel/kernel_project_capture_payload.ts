@@ -54,6 +54,7 @@ function buildProjectCaptureSettings(
   chestDrawersCount: unknown,
   chestCommodeMirrorHeightCm: unknown,
   chestCommodeMirrorWidthCm: unknown,
+  chestCommodeMirrorWidthManual: boolean,
   stackSplitLowerHeight: unknown,
   stackSplitLowerDepth: unknown,
   stackSplitLowerWidth: unknown,
@@ -106,6 +107,7 @@ function buildProjectCaptureSettings(
     chestDrawersCount,
     chestCommodeMirrorHeightCm,
     chestCommodeMirrorWidthCm,
+    chestCommodeMirrorWidthManual,
     stackSplitEnabled: typeof uiRec.stackSplitEnabled !== 'undefined' ? !!uiRec.stackSplitEnabled : false,
     stackSplitDecorativeSeparatorEnabled:
       !!uiRec.stackSplitEnabled && !!uiRec.stackSplitDecorativeSeparatorEnabled,
@@ -177,6 +179,7 @@ export function buildKernelProjectCaptureData(args: BuildKernelProjectCaptureDat
   const chestDrawersCount = readUiRawScalarFromSnapshot(uiRec, 'chestDrawersCount');
   const chestCommodeMirrorHeightCm = readUiRawScalarFromSnapshot(uiRec, 'chestCommodeMirrorHeightCm');
   const chestCommodeMirrorWidthCm = readUiRawScalarFromSnapshot(uiRec, 'chestCommodeMirrorWidthCm');
+  const chestCommodeMirrorWidthManual = !!readUiRawScalarFromSnapshot(uiRec, 'chestCommodeMirrorWidthManual');
 
   const lowerDepthManual = !!readUiRawScalarFromSnapshot(uiRec, 'stackSplitLowerDepthManual');
   const lowerWidthManual = !!readUiRawScalarFromSnapshot(uiRec, 'stackSplitLowerWidthManual');
@@ -207,6 +210,7 @@ export function buildKernelProjectCaptureData(args: BuildKernelProjectCaptureDat
       chestDrawersCount,
       chestCommodeMirrorHeightCm,
       chestCommodeMirrorWidthCm,
+      chestCommodeMirrorWidthManual,
       stackSplitLowerHeight,
       stackSplitLowerDepth,
       stackSplitLowerWidth,
@@ -221,6 +225,7 @@ export function buildKernelProjectCaptureData(args: BuildKernelProjectCaptureDat
       commodeEnabled: !!uiRec.chestCommodeEnabled,
       mirrorHeightCm: chestCommodeMirrorHeightCm,
       mirrorWidthCm: chestCommodeMirrorWidthCm,
+      mirrorWidthManual: chestCommodeMirrorWidthManual,
     },
     modulesConfiguration: canonicalConfigLists.modulesConfiguration,
     stackSplitLowerModulesConfiguration: canonicalConfigLists.stackSplitLowerModulesConfiguration,

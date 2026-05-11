@@ -80,6 +80,8 @@ export function createStructureTabStructuralWriteController(
         doors: args.doors,
         structureSelectRaw: args.structureSelectRaw,
         singleDoorPosRaw: args.singleDoorPosRaw,
+        chestCommodeEnabled: args.chestCommodeEnabled,
+        chestCommodeMirrorWidthManual: args.chestCommodeMirrorWidthManual,
       });
     },
 

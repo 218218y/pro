@@ -78,6 +78,7 @@ export interface UiState extends UnknownRecord {
   hingeDirection?: boolean;
   isChestMode?: boolean;
   chestCommodeEnabled?: boolean;
+  chestCommodeMirrorWidthManual?: boolean;
 
   // Corner
   cornerMode?: boolean;

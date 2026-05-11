@@ -49,6 +49,7 @@ const uiScalarReaders: UiScalarReaderMap = {
   chestDrawersCount: readNullableNumber,
   chestCommodeMirrorHeightCm: readNullableNumber,
   chestCommodeMirrorWidthCm: readNullableNumber,
+  chestCommodeMirrorWidthManual: readBoolean,
   stackSplitLowerHeight: readNullableNumber,
   stackSplitLowerDepth: readNullableNumber,
   stackSplitLowerWidth: readNullableNumber,

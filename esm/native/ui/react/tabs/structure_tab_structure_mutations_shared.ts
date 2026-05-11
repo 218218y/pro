@@ -21,11 +21,12 @@ export type StructureTabStackSplitField = 'depth' | 'width' | 'doors';
 
 export type DisplayedValueReader = (key: StructureTabNumericKey) => number;
 export type StructureRawBooleanKey =
+  | 'chestCommodeMirrorWidthManual'
   | 'stackSplitLowerDepthManual'
   | 'stackSplitLowerWidthManual'
   | 'stackSplitLowerDoorsManual';
 export type StructureRawPatch = Partial<
-  Record<StructureTabNumericKey | StructureRawBooleanKey, number | boolean>
+  Record<StructureTabNumericKey | 'chestCommodeMirrorWidthCm' | StructureRawBooleanKey, number | boolean>
 >;
 export type StructureUiPatch = {
   raw?: StructureRawPatch;

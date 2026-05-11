@@ -130,6 +130,14 @@ export function buildProjectUiSnapshot(
       ? chestSettings.mirrorWidthCm
       : settings.chestCommodeMirrorWidthCm
   );
+  const chestCommodeMirrorWidthManual =
+    typeof chestSettings.mirrorWidthManual !== 'undefined'
+      ? !!chestSettings.mirrorWidthManual
+      : typeof settings.chestCommodeMirrorWidthManual !== 'undefined'
+        ? !!settings.chestCommodeMirrorWidthManual
+        : Number.isFinite(Number(chestCommodeMirrorWidthCm)) &&
+          Number.isFinite(Number(settings.width)) &&
+          Math.abs(Number(chestCommodeMirrorWidthCm) - Number(settings.width)) > 0.01;
 
   const savedNotesSource = Array.isArray(rec.savedNotes) ? rec.savedNotes : rec.notes;
   const savedNotes = readSavedNotes(savedNotesSource);
@@ -146,6 +154,7 @@ export function buildProjectUiSnapshot(
       cornerSide,
       chestCommodeMirrorHeightCm,
       chestCommodeMirrorWidthCm,
+      chestCommodeMirrorWidthManual,
       stackSplitLowerHeight: settings.stackSplitLowerHeight,
       stackSplitLowerDepth: settings.stackSplitLowerDepth,
       stackSplitLowerWidth: settings.stackSplitLowerWidth,

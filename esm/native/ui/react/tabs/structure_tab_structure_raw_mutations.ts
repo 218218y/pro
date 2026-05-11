@@ -58,6 +58,8 @@ export function commitStructureRawValue(args: {
   doors: number;
   structureSelectRaw: string;
   singleDoorPosRaw: string;
+  chestCommodeEnabled?: boolean;
+  chestCommodeMirrorWidthManual?: boolean;
 }): void {
   const {
     app,
@@ -74,6 +76,8 @@ export function commitStructureRawValue(args: {
     doors,
     structureSelectRaw,
     singleDoorPosRaw,
+    chestCommodeEnabled = false,
+    chestCommodeMirrorWidthManual = false,
   } = args;
   const perfMetricName = readStructurePerfMetricName(key);
   const runWithPerf = (task: () => void): void => {
@@ -260,7 +264,12 @@ export function commitStructureRawValue(args: {
         ? { stackSplitLowerWidthManual: true }
         : {};
 
-  const uiPatch = buildRawUiPatch({ [key]: value, ...extraLowerManual });
+  const extraChestCommodeAuto: StructureRawPatch =
+    key === 'width' && isChestMode && chestCommodeEnabled && !chestCommodeMirrorWidthManual
+      ? { chestCommodeMirrorWidthCm: value }
+      : {};
+
+  const uiPatch = buildRawUiPatch({ [key]: value, ...extraLowerManual, ...extraChestCommodeAuto });
   const source = `react:structure:${key}`;
   const m = meta.noBuildImmediate(source);
   const statePatch: Record<string, unknown> = { ui: uiPatch };

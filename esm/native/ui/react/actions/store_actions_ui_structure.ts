@@ -118,6 +118,10 @@ function setUiChestCommodeMirrorWidthCm(app: AppContainer, value: unknown, meta?
   setUiRawScalar(app, 'chestCommodeMirrorWidthCm', value, meta);
 }
 
+function setUiChestCommodeMirrorWidthManual(app: AppContainer, on: unknown, meta?: ActionMetaLike): void {
+  setUiRawScalar(app, 'chestCommodeMirrorWidthManual', !!on, meta);
+}
+
 function setUiCellDimsWidth(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
   setUiRawScalar(app, 'cellDimsWidth', value, meta);
 }
@@ -218,6 +222,7 @@ export {
   setUiChestCommodeEnabled,
   setUiChestCommodeMirrorHeightCm,
   setUiChestCommodeMirrorWidthCm,
+  setUiChestCommodeMirrorWidthManual,
   setUiChestDrawersCount,
   setUiChestMode,
   setUiColorChoice,

@@ -105,6 +105,7 @@ export function readStructureTabBaseUiState(ui: StructureTabUiSnapshot): Structu
       'chestCommodeMirrorWidthCm',
       readUiRawNumberFromSnapshot(ui, 'width', DEFAULT_WIDTH)
     ),
+    chestCommodeMirrorWidthManual: !!readUiRawScalarFromSnapshot(ui, 'chestCommodeMirrorWidthManual'),
     baseType: normalizeStructureTabBaseType(ui.baseType),
     baseLegStyle: normalizeBaseLegStyle(ui.baseLegStyle),
     baseLegColor: normalizeBaseLegColor(ui.baseLegColor),

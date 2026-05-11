@@ -21,7 +21,7 @@ const serviceApiDimensionConstants = Object.freeze({
       baseType: 'legs',
     }),
     commode: Object.freeze({
-      defaultMirrorHeightCm: 100,
+      defaultMirrorHeightCm: 70,
       minMirrorHeightCm: 30,
       maxMirrorHeightCm: 180,
       minMirrorWidthCm: 20,
@@ -93,6 +93,7 @@ function loadStructureActionsControllerModule(calls, overrides = {}) {
         setUiChestCommodeEnabled: (...args) => calls.push(['setUiChestCommodeEnabled', ...args]),
         setUiChestCommodeMirrorHeightCm: (...args) => calls.push(['setUiChestCommodeMirrorHeightCm', ...args]),
         setUiChestCommodeMirrorWidthCm: (...args) => calls.push(['setUiChestCommodeMirrorWidthCm', ...args]),
+        setUiChestCommodeMirrorWidthManual: (...args) => calls.push(['setUiChestCommodeMirrorWidthManual', ...args]),
         setUiChestMode: (...args) => calls.push(['setUiChestMode', ...args]),
         setUiCornerDepth: (...args) => calls.push(['setUiCornerDepth', ...args]),
         setUiCornerDoors: (...args) => calls.push(['setUiCornerDoors', ...args]),
@@ -364,7 +365,6 @@ test('[structure-actions-controller] corner/chest canonical patches collapse ui/
           config: { preChestState: null, isManualWidth: false },
           ui: {
             isChestMode: false,
-            chestCommodeEnabled: false,
             baseType: 'legs',
             raw: { doors: 5, width: 180, height: 230, depth: 60 },
           },

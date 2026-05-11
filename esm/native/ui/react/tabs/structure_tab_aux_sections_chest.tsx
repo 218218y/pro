@@ -9,6 +9,7 @@ import {
 } from './structure_tab_dimension_constraints.js';
 import {
   STRUCTURE_CHEST_COMMODE_BUTTON_TEST_ID,
+  STRUCTURE_CHEST_COMMODE_WIDTH_MODE_BUTTON_TEST_ID,
   STRUCTURE_CHEST_MODE_TOGGLE_TEST_ID,
   STRUCTURE_CHEST_SECTION_TEST_ID,
   STRUCTURE_CHEST_DIMENSION_FIELDS,
@@ -56,6 +57,29 @@ function StructureChestDimsGrid(props: StructureChestSectionProps): ReactElement
   );
 }
 
+function StructureChestCommodeWidthModeButton(props: StructureChestSectionProps): ReactElement {
+  const isManual = !!props.chestCommodeMirrorWidthManual;
+  const isAuto = !isManual;
+  return (
+    <button
+      type="button"
+      className={
+        isAuto
+          ? 'wp-r-mini-link-toggle wp-r-mini-link-toggle--auto'
+          : 'wp-r-mini-link-toggle wp-r-mini-link-toggle--manual'
+      }
+      aria-pressed={isManual}
+      title={isAuto ? 'אוטומטי: רוחב המראה מסונכרן לרוחב השידה' : 'ידני: רוחב מראה נפרד'}
+      tabIndex={-1}
+      onClick={() => props.onSetChestCommodeMirrorWidthManual(!isManual)}
+      data-testid={STRUCTURE_CHEST_COMMODE_WIDTH_MODE_BUTTON_TEST_ID}
+    >
+      <i className={isAuto ? 'fas fa-link' : 'fas fa-unlink'} aria-hidden="true" />
+      <span>{isAuto ? 'אוטומטי' : 'ידני'}</span>
+    </button>
+  );
+}
+
 function StructureChestCommodeControls(props: StructureChestSectionProps): ReactElement {
   return (
     <div className="wp-r-chest-commode-block">
@@ -96,6 +120,7 @@ function StructureChestCommodeControls(props: StructureChestSectionProps): React
               step={5}
               buttonsStep={5}
               bounds={readStructureChestCommodeMirrorBounds('width')}
+              inputAddon={<StructureChestCommodeWidthModeButton {...props} />}
             />
           </div>
         </div>

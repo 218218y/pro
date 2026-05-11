@@ -110,6 +110,7 @@ export interface ProjectSettingsLike extends UnknownRecord {
   chestDrawersCount?: number | string;
   chestCommodeMirrorHeightCm?: number | string;
   chestCommodeMirrorWidthCm?: number | string;
+  chestCommodeMirrorWidthManual?: boolean;
 
   globalHandleType?: HandleType | string | null;
   isLibraryMode?: boolean;

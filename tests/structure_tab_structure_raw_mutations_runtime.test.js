@@ -404,3 +404,46 @@ test('[stack-split] flags reader preserves lowerDoorsCount 0', () => {
 
   assert.equal(split.lowerDoorsCount, 0);
 });
+
+test('[structure-raw-mutations] chest commode mirror width follows chest width while linked automatically', () => {
+  const calls = [];
+  const mod = loadTsModule('esm/native/ui/react/tabs/structure_tab_structure_raw_mutations.ts', calls);
+
+  mod.commitStructureRawValue({
+    ...baseArgs({
+      isChestMode: true,
+      chestCommodeEnabled: true,
+      chestCommodeMirrorWidthManual: false,
+      getDisplayedRawValue: key => ({ width: 50 })[key] || 0,
+    }),
+    key: 'width',
+    nextValue: 90,
+  });
+
+  const batchCall = calls.find(entry => entry[0] === 'applyStructureTemplateRecomputeBatch');
+  assert.ok(batchCall);
+  assert.equal(
+    JSON.stringify(batchCall[1].uiPatch),
+    JSON.stringify({ raw: { width: 90, chestCommodeMirrorWidthCm: 90 } })
+  );
+});
+
+test('[structure-raw-mutations] chest commode mirror width stays manual when manually unlinked', () => {
+  const calls = [];
+  const mod = loadTsModule('esm/native/ui/react/tabs/structure_tab_structure_raw_mutations.ts', calls);
+
+  mod.commitStructureRawValue({
+    ...baseArgs({
+      isChestMode: true,
+      chestCommodeEnabled: true,
+      chestCommodeMirrorWidthManual: true,
+      getDisplayedRawValue: key => ({ width: 50 })[key] || 0,
+    }),
+    key: 'width',
+    nextValue: 90,
+  });
+
+  const batchCall = calls.find(entry => entry[0] === 'applyStructureTemplateRecomputeBatch');
+  assert.ok(batchCall);
+  assert.equal(JSON.stringify(batchCall[1].uiPatch), JSON.stringify({ raw: { width: 90 } }));
+});
