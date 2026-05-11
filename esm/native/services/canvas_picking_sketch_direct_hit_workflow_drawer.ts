@@ -4,7 +4,6 @@ import { isSketchInternalDrawersTool } from '../features/sketch_drawer_sizing.js
 import type { ManualLayoutSketchDirectHitContext } from './canvas_picking_sketch_direct_hit_workflow_contracts.js';
 import { asConfig } from './canvas_picking_sketch_direct_hit_workflow_contracts.js';
 import {
-  findPartAncestor,
   getWorldPositionY,
   readChildObjects,
   readModuleIndex,
@@ -14,7 +13,7 @@ import {
 } from './canvas_picking_sketch_direct_hit_workflow_objects.js';
 import { readRecordNumber, readRecordString } from './canvas_picking_sketch_direct_hit_workflow_records.js';
 import {
-  findCrossDrawerHitInIntersects,
+  findDirectCrossDrawerHitInIntersects,
   removeStandardExternalDrawerFromConfig,
   sameModuleKey,
 } from './canvas_picking_drawer_cross_family.js';
@@ -32,7 +31,6 @@ export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDir
     hitY0,
     intersects,
     __patchConfigForKey,
-    __wp_isViewportRoot,
     __hoverOk,
     __hoverKind,
     __hoverOp,
@@ -41,7 +39,11 @@ export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDir
 
   if (isSketchInternalDrawersTool(__mt)) {
     try {
-      const drawerGroup = findPartAncestor(App, intersects, 'div_int_', __wp_isViewportRoot);
+      const drawerHit = findDirectCrossDrawerHitInIntersects(App, intersects, [
+        'sketch_internal',
+        'standard_internal',
+      ]);
+      const drawerGroup = drawerHit?.object ?? null;
       const pid = readPartId(drawerGroup);
       const moduleIndex = readModuleIndex(drawerGroup);
       if (pid && moduleIndex && moduleIndex === String(__activeModuleKey)) {
@@ -111,7 +113,7 @@ export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDir
   }
 
   if (__mt.startsWith('sketch_ext_drawers:')) {
-    const standardExternalHit = findCrossDrawerHitInIntersects(App, intersects, 'standard_external');
+    const standardExternalHit = findDirectCrossDrawerHitInIntersects(App, intersects, 'standard_external');
     if (
       standardExternalHit &&
       (!standardExternalHit.moduleIndex || sameModuleKey(standardExternalHit.moduleIndex, __activeModuleKey))
@@ -128,7 +130,8 @@ export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDir
     }
 
     try {
-      const drawerGroup = findPartAncestor(App, intersects, 'sketch_ext_drawers_', __wp_isViewportRoot);
+      const sketchDrawerHit = findDirectCrossDrawerHitInIntersects(App, intersects, 'sketch_external');
+      const drawerGroup = sketchDrawerHit?.object ?? null;
       const pid = readPartId(drawerGroup);
       const moduleIndex = readModuleIndex(drawerGroup);
       const drawerId = drawerGroup?.userData

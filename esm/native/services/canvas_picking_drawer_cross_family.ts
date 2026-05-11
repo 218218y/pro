@@ -1,7 +1,11 @@
 import type { AppContainer, ModuleConfigLike, UnknownRecord } from '../../../types';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
 import { getDrawersArray } from '../runtime/render_access.js';
-import { __wp_isViewportRoot } from './canvas_picking_local_helpers.js';
+import {
+  __wp_isViewportRoot,
+  __wp_measureObjectLocalBox,
+  __wp_projectWorldPointToLocal,
+} from './canvas_picking_local_helpers_runtime.js';
 
 export type CrossDrawerFamily =
   | 'standard_external'
@@ -92,6 +96,31 @@ export function classifyCrossDrawerPart(partId: unknown, userData?: UnknownRecor
   return 'other';
 }
 
+function findCrossDrawerHitOnObject(
+  App: AppContainer,
+  object: unknown,
+  allowed: CrossDrawerFamily[]
+): CrossDrawerHit | null {
+  let node = asNode(object);
+  while (node && !__wp_isViewportRoot(App, node)) {
+    const ud = readUserData(node);
+    const pid = readString(ud?.partId);
+    const detected = classifyCrossDrawerPart(pid, ud);
+    if (pid && allowed.includes(detected)) {
+      return {
+        object: node,
+        partId: pid,
+        family: detected,
+        moduleIndex: readString(ud?.moduleIndex ?? ud?.__wpSketchModuleKey),
+        sketchExtDrawerId: readString(ud?.__wpSketchExtDrawerId),
+        sketchBoxId: readString(ud?.__wpSketchBoxId),
+      };
+    }
+    node = asNode(node.parent);
+  }
+  return null;
+}
+
 export function findCrossDrawerHitInIntersects(
   App: AppContainer,
   intersects: RaycastHitLike[],
@@ -99,23 +128,82 @@ export function findCrossDrawerHitInIntersects(
 ): CrossDrawerHit | null {
   const allowed = Array.isArray(family) ? family : [family];
   for (let i = 0; i < intersects.length; i++) {
-    let node = asNode(intersects[i]?.object);
-    while (node && !__wp_isViewportRoot(App, node)) {
-      const ud = readUserData(node);
-      const pid = readString(ud?.partId);
-      const detected = classifyCrossDrawerPart(pid, ud);
-      if (pid && allowed.includes(detected)) {
-        return {
-          object: node,
-          partId: pid,
-          family: detected,
-          moduleIndex: readString(ud?.moduleIndex ?? ud?.__wpSketchModuleKey),
-          sketchExtDrawerId: readString(ud?.__wpSketchExtDrawerId),
-          sketchBoxId: readString(ud?.__wpSketchBoxId),
-        };
-      }
-      node = asNode(node.parent);
+    const hit = findCrossDrawerHitOnObject(App, intersects[i]?.object, allowed);
+    if (hit) return hit;
+  }
+  return null;
+}
+
+function isRenderableDirectHitObject(object: unknown): boolean {
+  const node = asNode(object);
+  if (!node) return false;
+  const type = readString(node.type);
+  return type !== 'LineSegments' && type !== 'Line' && type !== 'Sprite';
+}
+
+function resolveHitDrawerGroup(App: AppContainer, hit: CrossDrawerHit): ObjectNode | null {
+  let node: ObjectNode | null = asNode(hit.object);
+  while (node && !__wp_isViewportRoot(App, node)) {
+    const ud = readUserData(node);
+    const pid = readString(ud?.partId);
+    if (pid === hit.partId) return node;
+    node = asNode(node.parent);
+  }
+
+  const drawers = getDrawersArray(App);
+  for (let i = 0; i < drawers.length; i++) {
+    const group = readEntryGroup(drawers[i]);
+    if (!group) continue;
+    const ud = readUserData(group);
+    const pid = readString(ud?.partId ?? asNode(drawers[i])?.id);
+    if (pid === hit.partId) return group;
+  }
+  return asNode(hit.object);
+}
+
+function isPointInsideDirectDrawerHit(App: AppContainer, hit: CrossDrawerHit, point: unknown): boolean {
+  const group = resolveHitDrawerGroup(App, hit);
+  if (!group) return false;
+  const parent = asNode(group.parent);
+  if (!parent) return true;
+
+  const box = __wp_measureObjectLocalBox(App, group, parent);
+  if (!box || !(box.width > 0) || !(box.height > 0) || !(box.depth > 0)) return true;
+
+  const localPoint = __wp_projectWorldPointToLocal(App, point, parent);
+  if (!localPoint) return true;
+
+  const tolerance = 0.01;
+  const withinX =
+    Math.abs(Number(localPoint.x) - Number(box.centerX)) <= Number(box.width) / 2 + tolerance;
+  const withinY =
+    Math.abs(Number(localPoint.y) - Number(box.centerY)) <= Number(box.height) / 2 + tolerance;
+  if (!withinX || !withinY) return false;
+
+  const halfDepth = Number(box.depth) / 2;
+  const withinDepth =
+    Math.abs(Number(localPoint.z) - Number(box.centerZ)) <= halfDepth + Math.max(0.02, halfDepth);
+  return withinDepth;
+}
+
+export function findDirectCrossDrawerHitInIntersects(
+  App: AppContainer,
+  intersects: RaycastHitLike[],
+  family: CrossDrawerFamily | CrossDrawerFamily[]
+): CrossDrawerHit | null {
+  const allowed = Array.isArray(family) ? family : [family];
+  for (let i = 0; i < intersects.length; i++) {
+    const hitObj = intersects[i]?.object;
+    if (!isRenderableDirectHitObject(hitObj)) continue;
+    const hit = findCrossDrawerHitOnObject(App, hitObj, allowed);
+    if (!hit) continue;
+
+    const point = intersects[i]?.point;
+    if (!point) {
+      if (i === 0) return hit;
+      continue;
     }
+    if (isPointInsideDirectDrawerHit(App, hit, point)) return hit;
   }
   return null;
 }
@@ -199,10 +287,10 @@ export function removeSketchExternalDrawerFromConfig(
 export function removeStandardInternalDrawerFromConfig(
   cfg: ModuleConfigLike | UnknownRecord,
   partId: string,
-  slotFallback?: number | null
+  slotHint?: number | null
 ): boolean {
   const match = partId.match(/_slot_(\d+)/);
-  const slot = match ? Number(match[1]) : Number(slotFallback);
+  const slot = match ? Number(match[1]) : Number(slotHint);
   if (!Number.isFinite(slot)) return false;
   let changed = false;
   const rec = cfg as UnknownRecord;
@@ -329,14 +417,14 @@ function includeMeasuredExternalDrawerBox(args: {
   App: AppContainer;
   entry: unknown;
   parent: unknown;
-  fallbackGroup: unknown;
-  fallbackBox: CrossDrawerPreviewBox;
+  targetGroup: unknown;
+  targetBox: CrossDrawerPreviewBox;
   measureObjectLocalBox: CrossDrawerMeasureObjectLocalBoxFn;
 }): void {
   const group = readEntryGroup(args.entry);
   if (!group) return;
   let box = args.measureObjectLocalBox(args.App, group, args.parent) || null;
-  if (!box && group === args.fallbackGroup) box = args.fallbackBox;
+  if (!box && group === args.targetGroup) box = args.targetBox;
   if (!box || !(box.width > 0) || !(box.height > 0) || !(box.depth > 0)) return;
   args.boxes.push(box);
 }
@@ -379,8 +467,8 @@ export function resolveExternalCrossDrawerStackPreview(args: {
       App: args.App,
       entry,
       parent: args.target.parent,
-      fallbackGroup: targetGroup,
-      fallbackBox: args.target.box,
+      targetGroup,
+      targetBox: args.target.box,
       measureObjectLocalBox: args.measureObjectLocalBox,
     });
   }

@@ -194,3 +194,76 @@ test('regular internal drawer edit mode can remove sketch internal drawers witho
   assert.deepEqual((patched?.cfg as any).intDrawersList, [2]);
   assert.deepEqual(patched?.meta as any, { source: 'intDrawers.removeSketchInternalByHit', immediate: true });
 });
+
+test('regular external drawer edit mode adds regular drawers when a sketch external drawer is only a later non-direct hit', () => {
+  let patched: Record<string, unknown> | null = null;
+  const sketchDrawerGroup = {
+    userData: {
+      partId: 'sketch_ext_drawers_1_sed123',
+      moduleIndex: 1,
+      __wpSketchExtDrawer: true,
+      __wpSketchExtDrawerId: 'sed123',
+    },
+  };
+
+  const handled = tryHandleExternalDrawerModeClick({
+    App: createApp({ ui: { currentExtDrawerType: 'regular', currentExtDrawerCount: 2 } }),
+    foundModuleIndex: 1,
+    activeModuleKey: 1,
+    isExtDrawerEditMode: true,
+    intersects: [
+      { object: { userData: { partId: 'module_selector_1' } } } as any,
+      { object: sketchDrawerGroup } as any,
+    ],
+    patchConfigForKey: (_mk, patchFn, meta) => {
+      const cfg: Record<string, unknown> = {
+        extDrawersCount: 0,
+        sketchExtras: { extDrawers: [{ id: 'sed123' }] },
+      };
+      patchFn(cfg as never);
+      patched = { cfg, meta };
+    },
+  });
+
+  assert.equal(handled, true);
+  assert.equal((patched?.cfg as any).extDrawersCount, 2);
+  assert.deepEqual(((patched?.cfg as any).sketchExtras as any).extDrawers, [{ id: 'sed123' }]);
+  assert.deepEqual(patched?.meta as any, { source: 'extDrawers.toggle', immediate: true });
+});
+
+test('regular internal drawer edit mode adds a regular slot when a sketch internal drawer is only a later non-direct hit', () => {
+  let patched: Record<string, unknown> | null = null;
+  const sketchDrawerGroup = {
+    userData: {
+      partId: 'div_int_sketch_1_sd123',
+      moduleIndex: 1,
+    },
+  };
+
+  const handled = tryHandleInternalDrawerModeClick({
+    App: createApp({ internalGridMap: { 1: { effectiveBottomY: 0, effectiveTopY: 2, gridDivisions: 4 } } }),
+    foundModuleIndex: 1,
+    activeModuleKey: 1,
+    isBottomStack: false,
+    isManualLayoutMode: false,
+    isIntDrawerEditMode: true,
+    moduleHitY: 1,
+    intersects: [
+      { object: { userData: { partId: 'module_selector_1' } }, point: { y: 1 } } as any,
+      { object: sketchDrawerGroup } as any,
+    ],
+    patchConfigForKey: (_mk, patchFn, meta) => {
+      const cfg: Record<string, unknown> = {
+        intDrawersList: [],
+        sketchExtras: { drawers: [{ id: 'sd123' }] },
+      };
+      patchFn(cfg as never);
+      patched = { cfg, meta };
+    },
+  });
+
+  assert.equal(handled, true);
+  assert.deepEqual((patched?.cfg as any).intDrawersList, [2]);
+  assert.deepEqual(((patched?.cfg as any).sketchExtras as any).drawers, [{ id: 'sd123' }]);
+  assert.deepEqual(patched?.meta as any, { source: 'intDrawers.toggle', immediate: true });
+});

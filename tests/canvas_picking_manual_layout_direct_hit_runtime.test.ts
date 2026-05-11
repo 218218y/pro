@@ -261,3 +261,49 @@ test('manual-layout direct hit removes standard external drawers while sketch ex
   assert.equal(cfg.extDrawersCount, 0);
   assert.equal(cfg.hasShoeDrawer, true);
 });
+
+test('manual-layout sketch external direct-hit action ignores standard external drawers that are only later non-direct hits', () => {
+  const cfg: Record<string, unknown> = {
+    extDrawersCount: 3,
+  };
+  let patched = false;
+
+  const drawerGroup = {
+    userData: {
+      partId: 'd1_draw_2',
+      moduleIndex: '2',
+    },
+    parent: null,
+  };
+
+  const applied = tryApplyManualLayoutSketchDirectHitActions({
+    App: {} as never,
+    __mt: 'sketch_ext_drawers:3',
+    __activeModuleKey: 2,
+    topY: 2.4,
+    bottomY: 0,
+    mapKey: 2,
+    __gridMap: { '2': { gridDivisions: 6 } },
+    totalHeight: 2.4,
+    hitY0: 1.9,
+    pad: 0,
+    intersects: [
+      { object: { userData: { partId: 'module_selector_2' } }, point: { y: 1.9 } },
+      { object: drawerGroup },
+    ] as any,
+    __patchConfigForKey: (_mk, patchFn) => {
+      patched = true;
+      patchFn(cfg);
+      return null;
+    },
+    __wp_isViewportRoot: () => false,
+    __hoverOk: false,
+    __hoverKind: '',
+    __hoverOp: '',
+    __hoverRec: null,
+  });
+
+  assert.equal(applied, false);
+  assert.equal(patched, false);
+  assert.equal(cfg.extDrawersCount, 3);
+});

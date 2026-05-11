@@ -4,7 +4,7 @@ import { getTools } from '../runtime/service_access.js';
 import { getInternalGridMap } from '../runtime/cache_access.js';
 import { __wp_ui } from './canvas_picking_core_helpers.js';
 import {
-  findCrossDrawerHitInIntersects,
+  findDirectCrossDrawerHitInIntersects,
   removeSketchInternalDrawerFromConfig,
   sameModuleKey,
 } from './canvas_picking_drawer_cross_family.js';
@@ -35,7 +35,7 @@ export function tryHandleInternalDrawerModeClick(args: {
   } = args;
   if (!isIntDrawerEditMode || foundModuleIndex === null) return false;
 
-  const sketchHit = findCrossDrawerHitInIntersects(App, intersects, 'sketch_internal');
+  const sketchHit = findDirectCrossDrawerHitInIntersects(App, intersects, 'sketch_internal');
   if (sketchHit && (!sketchHit.moduleIndex || sameModuleKey(sketchHit.moduleIndex, activeModuleKey))) {
     patchConfigForKey(
       activeModuleKey,

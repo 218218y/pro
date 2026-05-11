@@ -1,7 +1,7 @@
 import type { AppContainer, ModuleConfigLike } from '../../../types';
 import { __wp_ui } from './canvas_picking_core_helpers.js';
 import {
-  findCrossDrawerHitInIntersects,
+  findDirectCrossDrawerHitInIntersects,
   removeSketchExternalDrawerFromConfig,
   sameModuleKey,
 } from './canvas_picking_drawer_cross_family.js';
@@ -19,7 +19,7 @@ export function tryHandleExternalDrawerModeClick(args: {
   const { App, foundModuleIndex, activeModuleKey, isExtDrawerEditMode, patchConfigForKey } = args;
   if (!isExtDrawerEditMode || foundModuleIndex === null) return false;
 
-  const sketchHit = findCrossDrawerHitInIntersects(App, args.intersects || [], 'sketch_external');
+  const sketchHit = findDirectCrossDrawerHitInIntersects(App, args.intersects || [], 'sketch_external');
   if (sketchHit && (!sketchHit.moduleIndex || sameModuleKey(sketchHit.moduleIndex, activeModuleKey))) {
     patchConfigForKey(
       activeModuleKey,
