@@ -18,6 +18,10 @@ function applyRodPreview(ctx: SketchPlacementPreviewContext): boolean {
   const showCenterYGuide = ctx.input.showCenterYGuide === true && !ctx.isRemove;
   const guideWidth = Number(ctx.input.guideWidth);
   const guideHeight = Number(ctx.input.guideHeight);
+  const guideVerticalX = Number(ctx.input.guideVerticalX);
+  const guideVerticalY = Number(ctx.input.guideVerticalY);
+  const guideHorizontalX = Number(ctx.input.guideHorizontalX);
+  const guideHorizontalY = Number(ctx.input.guideHorizontalY);
   const guideDepth = Math.max(
     SKETCH_BOX_DIMENSIONS.preview.rodGuideDepthMinM,
     d0 + SKETCH_BOX_DIMENSIONS.preview.rodGuideDepthExtraM
@@ -66,8 +70,8 @@ function applyRodPreview(ctx: SketchPlacementPreviewContext): boolean {
         sx: guideThicknessX,
         sy: Number.isFinite(guideHeight) && guideHeight > 0 ? guideHeight : h0,
         sz: guideDepth,
-        px: 0,
-        py: ctx.y,
+        px: Number.isFinite(guideVerticalX) ? guideVerticalX : 0,
+        py: Number.isFinite(guideVerticalY) ? guideVerticalY : ctx.y,
         pz: ctx.z + SKETCH_BOX_DIMENSIONS.preview.rodGuideZOffsetM,
         material: guideMat,
         lineMaterial: guideLine,
@@ -86,8 +90,8 @@ function applyRodPreview(ctx: SketchPlacementPreviewContext): boolean {
         sx: Number.isFinite(guideWidth) && guideWidth > 0 ? guideWidth : ctx.w,
         sy: guideThicknessY,
         sz: guideDepth,
-        px: ctx.x,
-        py: 0,
+        px: Number.isFinite(guideHorizontalX) ? guideHorizontalX : ctx.x,
+        py: Number.isFinite(guideHorizontalY) ? guideHorizontalY : 0,
         pz: ctx.z + SKETCH_BOX_DIMENSIONS.preview.rodGuideZOffsetM,
         material: guideMat,
         lineMaterial: guideLine,
