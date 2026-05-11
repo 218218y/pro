@@ -3,52 +3,16 @@
   "sourceRoot": "esm",
   "policy": "Every existing legacy/fallback occurrence is categorized and count-locked by file. New or moved occurrences must be reviewed and the allowlist regenerated deliberately.",
   "entries": {
-    "esm/entry_pro_overlay.ts": {
-      "total": 1,
-      "categories": {
-        "browser-adapter": 1
-      }
-    },
-    "esm/entry_pro.ts": {
-      "total": 1,
-      "categories": {
-        "browser-adapter": 1
-      }
-    },
-    "esm/native/adapters/browser/active_element.ts": {
-      "total": 1,
-      "categories": {
-        "browser-adapter": 1
-      }
-    },
     "esm/native/adapters/browser/CONTRACT.md": {
       "total": 1,
       "categories": {
         "browser-adapter": 1
       }
     },
-    "esm/native/adapters/browser/ui_ops.ts": {
-      "total": 3,
-      "categories": {
-        "browser-adapter": 3
-      }
-    },
     "esm/native/features/project_config/project_config_persisted_payload_shared.ts": {
       "total": 1,
       "categories": {
         "project-migration": 1
-      }
-    },
-    "esm/native/platform/boot_main.ts": {
-      "total": 1,
-      "categories": {
-        "browser-adapter": 1
-      }
-    },
-    "esm/native/platform/smoke_checks.ts": {
-      "total": 1,
-      "categories": {
-        "browser-adapter": 1
       }
     },
     "esm/native/ui/react/overlay_pdf_host.tsx": {

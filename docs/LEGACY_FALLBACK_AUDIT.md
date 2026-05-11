@@ -1,16 +1,16 @@
 # Legacy / fallback audit
 
-Generated at: 2026-05-11T02:58:04.833Z
+Generated at: 2026-05-11T03:06:57.896Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **19**
-- Files with occurrences: **12**
+- Total categorized occurrences: **11**
+- Files with occurrences: **6**
 - Category counts:
   - `runtime-default`: **0**
   - `framework-default`: **2**
-  - `browser-adapter`: **9**
+  - `browser-adapter`: **1**
   - `project-migration`: **1**
   - `test-fixture`: **7**
   - `legacy-runtime-risk`: **0**
@@ -28,14 +28,8 @@ Generated at: 2026-05-11T02:58:04.833Z
 ## Hot files
 
 - `esm/test_no_side_effects_on_import.mjs` - **6** (test-fixture: 6)
-- `esm/native/adapters/browser/ui_ops.ts` - **3** (browser-adapter: 3)
-- `esm/entry_pro_overlay.ts` - **1** (browser-adapter: 1)
-- `esm/entry_pro.ts` - **1** (browser-adapter: 1)
-- `esm/native/adapters/browser/active_element.ts` - **1** (browser-adapter: 1)
 - `esm/native/adapters/browser/CONTRACT.md` - **1** (browser-adapter: 1)
 - `esm/native/features/project_config/project_config_persisted_payload_shared.ts` - **1** (project-migration: 1)
-- `esm/native/platform/boot_main.ts` - **1** (browser-adapter: 1)
-- `esm/native/platform/smoke_checks.ts` - **1** (browser-adapter: 1)
 - `esm/native/ui/react/overlay_pdf_host.tsx` - **1** (framework-default: 1)
 - `esm/native/ui/react/sidebar_app.tsx` - **1** (framework-default: 1)
 - `esm/test_imports.mjs` - **1** (test-fixture: 1)

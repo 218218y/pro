@@ -3,7 +3,7 @@
 // Design goals:
 // - No static third-party imports (small local boot-policy helper is OK).
 // - Early error handlers (catch unhandled boot/runtime errors).
-// - Best-effort fatal overlay in browser; safe fallback to console in non-DOM environments.
+// - Best-effort fatal overlay in browser; console reporting in non-DOM environments.
 
 import { autoStartEntryPro } from './entry_pro_start.js';
 

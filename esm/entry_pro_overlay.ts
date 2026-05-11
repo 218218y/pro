@@ -263,7 +263,7 @@ export function showBootFatalOverlayFallback(
     setController(win, ctrl);
     return ctrl;
   } catch (_e) {
-    console.error('[WardrobePro][Boot] fatal overlay fallback failed');
+    console.error('[WardrobePro][Boot] fatal overlay recovery failed');
     return null;
   }
 }

@@ -35,12 +35,12 @@ function ensureBrowserUiOpsSurface(App: AppContainer): BrowserUiOpsSurface {
   return ensureBrowserSurface(App);
 }
 
-function safeNumber(v: unknown, fallback: number): number {
+function safeNumber(v: unknown, defaultValue: number): number {
   try {
     const n = Number(v);
-    return Number.isFinite(n) ? n : fallback;
+    return Number.isFinite(n) ? n : defaultValue;
   } catch {
-    return fallback;
+    return defaultValue;
   }
 }
 

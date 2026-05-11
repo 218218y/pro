@@ -1,65 +1,29 @@
 {
-  "generatedAt": "2026-05-11T02:58:04.833Z",
+  "generatedAt": "2026-05-11T03:06:57.896Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 19,
-    "totalFiles": 12,
+    "totalOccurrences": 11,
+    "totalFiles": 6,
     "byCategory": {
       "runtime-default": 0,
       "framework-default": 2,
-      "browser-adapter": 9,
+      "browser-adapter": 1,
       "project-migration": 1,
       "test-fixture": 7,
       "legacy-runtime-risk": 0,
       "unknown": 0
     },
     "byFile": {
-      "esm/entry_pro_overlay.ts": {
-        "total": 1,
-        "categories": {
-          "browser-adapter": 1
-        }
-      },
-      "esm/entry_pro.ts": {
-        "total": 1,
-        "categories": {
-          "browser-adapter": 1
-        }
-      },
-      "esm/native/adapters/browser/active_element.ts": {
-        "total": 1,
-        "categories": {
-          "browser-adapter": 1
-        }
-      },
       "esm/native/adapters/browser/CONTRACT.md": {
         "total": 1,
         "categories": {
           "browser-adapter": 1
         }
       },
-      "esm/native/adapters/browser/ui_ops.ts": {
-        "total": 3,
-        "categories": {
-          "browser-adapter": 3
-        }
-      },
       "esm/native/features/project_config/project_config_persisted_payload_shared.ts": {
         "total": 1,
         "categories": {
           "project-migration": 1
-        }
-      },
-      "esm/native/platform/boot_main.ts": {
-        "total": 1,
-        "categories": {
-          "browser-adapter": 1
-        }
-      },
-      "esm/native/platform/smoke_checks.ts": {
-        "total": 1,
-        "categories": {
-          "browser-adapter": 1
         }
       },
       "esm/native/ui/react/overlay_pdf_host.tsx": {
@@ -96,34 +60,6 @@
         }
       },
       {
-        "file": "esm/native/adapters/browser/ui_ops.ts",
-        "total": 3,
-        "categories": {
-          "browser-adapter": 3
-        }
-      },
-      {
-        "file": "esm/entry_pro_overlay.ts",
-        "total": 1,
-        "categories": {
-          "browser-adapter": 1
-        }
-      },
-      {
-        "file": "esm/entry_pro.ts",
-        "total": 1,
-        "categories": {
-          "browser-adapter": 1
-        }
-      },
-      {
-        "file": "esm/native/adapters/browser/active_element.ts",
-        "total": 1,
-        "categories": {
-          "browser-adapter": 1
-        }
-      },
-      {
         "file": "esm/native/adapters/browser/CONTRACT.md",
         "total": 1,
         "categories": {
@@ -135,20 +71,6 @@
         "total": 1,
         "categories": {
           "project-migration": 1
-        }
-      },
-      {
-        "file": "esm/native/platform/boot_main.ts",
-        "total": 1,
-        "categories": {
-          "browser-adapter": 1
-        }
-      },
-      {
-        "file": "esm/native/platform/smoke_checks.ts",
-        "total": 1,
-        "categories": {
-          "browser-adapter": 1
         }
       },
       {
@@ -180,27 +102,6 @@
   },
   "occurrences": [
     {
-      "file": "esm/entry_pro_overlay.ts",
-      "line": 266,
-      "term": "fallback",
-      "category": "browser-adapter",
-      "text": "console.error('[WardrobePro][Boot] fatal overlay fallback failed');"
-    },
-    {
-      "file": "esm/entry_pro.ts",
-      "line": 6,
-      "term": "fallback",
-      "category": "browser-adapter",
-      "text": "// - Best-effort fatal overlay in browser; safe fallback to console in non-DOM environments."
-    },
-    {
-      "file": "esm/native/adapters/browser/active_element.ts",
-      "line": 42,
-      "term": "Fallback",
-      "category": "browser-adapter",
-      "text": "// Fallback: DOM id."
-    },
-    {
       "file": "esm/native/adapters/browser/CONTRACT.md",
       "line": 11,
       "term": "legacy",
@@ -208,46 +109,11 @@
       "text": "- `App.browser.userAgent?: string` (legacy; prefer `getUserAgent()`)"
     },
     {
-      "file": "esm/native/adapters/browser/ui_ops.ts",
-      "line": 38,
-      "term": "fallback",
-      "category": "browser-adapter",
-      "text": "function safeNumber(v: unknown, fallback: number): number {"
-    },
-    {
-      "file": "esm/native/adapters/browser/ui_ops.ts",
-      "line": 41,
-      "term": "fallback",
-      "category": "browser-adapter",
-      "text": "return Number.isFinite(n) ? n : fallback;"
-    },
-    {
-      "file": "esm/native/adapters/browser/ui_ops.ts",
-      "line": 43,
-      "term": "fallback",
-      "category": "browser-adapter",
-      "text": "return fallback;"
-    },
-    {
       "file": "esm/native/features/project_config/project_config_persisted_payload_shared.ts",
       "line": 255,
       "term": "legacy",
       "category": "project-migration",
       "text": "// ignore malformed legacy payloads"
-    },
-    {
-      "file": "esm/native/platform/boot_main.ts",
-      "line": 5,
-      "term": "fallbacks",
-      "category": "browser-adapter",
-      "text": "// - Pure ESM: attach boot API only to the provided App instance (no window/global fallbacks)."
-    },
-    {
-      "file": "esm/native/platform/smoke_checks.ts",
-      "line": 5,
-      "term": "fallbacks",
-      "category": "browser-adapter",
-      "text": "// - Expose smoke-check helpers on the provided App instance (no window/global fallbacks)."
     },
     {
       "file": "esm/native/ui/react/overlay_pdf_host.tsx",

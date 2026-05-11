@@ -2,7 +2,7 @@
 //
 // Goals:
 // - Provide a real ESM module that can be imported.
-// - Pure ESM: attach boot API only to the provided App instance (no window/global fallbacks).
+// - Pure ESM: attach boot API only to the provided App instance, with no window/global alternate path.
 // - Fail fast if required deps are missing; run UI boot; mark boot-ready; trigger render.
 
 import type { AppContainer, UnknownCallable } from '../../../types';

@@ -39,7 +39,7 @@ export function makeActiveElementIdReader(app: unknown): () => string {
         // ignore
       }
 
-      // Fallback: DOM id.
+      // Secondary source: DOM id.
       return readElementId(ae);
     } catch {
       return '';
