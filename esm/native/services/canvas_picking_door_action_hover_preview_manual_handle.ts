@@ -152,8 +152,16 @@ function resolveSceneManualHandleAlignment(args: {
   scratch: DoorManualHandleHoverPreviewArgs['localHit'];
 }): ManualHandleAlignment {
   const alignment = emptyAlignment();
-  const { App, currentGroup, currentKey, currentRect, currentPlacement, currentPosition, handlesMap, scratch } =
-    args;
+  const {
+    App,
+    currentGroup,
+    currentKey,
+    currentRect,
+    currentPlacement,
+    currentPosition,
+    handlesMap,
+    scratch,
+  } = args;
   if (!handlesMap) return alignment;
 
   const currentWorldY = projectLocalYToWorld({

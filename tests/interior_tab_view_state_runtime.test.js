@@ -24,6 +24,9 @@ const sandbox = {
     if (spec === '../actions/handles_actions.js') {
       return { EDGE_HANDLE_VARIANT_GLOBAL_KEY: '__edge_variant__' };
     }
+    if (spec === '../../../features/manual_handle_position.js') {
+      return { isManualHandlePositionMode: value => String(value || '') === 'manual' };
+    }
     if (spec === '../../../features/handle_finish_shared.js') {
       return { DEFAULT_HANDLE_FINISH_COLOR: 'nickel', HANDLE_COLOR_GLOBAL_KEY: '__handle_color__' };
     }
@@ -121,6 +124,25 @@ test('interior tab view-state runtime derives primary mode flags and sketch tool
   assert.equal(state.layoutType, 'hanging');
   assert.equal(state.manualTool, 'shelf');
   assert.equal(state.manualToolRaw, 'sketch_shelf_double');
+  assert.equal(state.isManualHandlePositionMode, false);
+});
+
+test('interior tab view-state runtime derives manual handle placement mode canonically', () => {
+  const state = deriveInteriorTabModeState({
+    primary: 'handle',
+    modeOptsRaw: { handlePlacement: 'manual' },
+    layoutTypeUiRaw: 'shelves',
+    modeLayout: 'layout',
+    modeManualLayout: 'manual_layout',
+    modeBraceShelves: 'brace_shelves',
+    modeExtDrawer: 'ext_drawer',
+    modeDivider: 'divider',
+    modeIntDrawer: 'int_drawer',
+    modeHandle: 'handle',
+    modeDoorTrim: 'door_trim',
+  });
+  assert.equal(state.isHandleMode, true);
+  assert.equal(state.isManualHandlePositionMode, true);
 });
 
 test('interior tab view-state runtime derives ext drawer and handle tool state canonically', () => {

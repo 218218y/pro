@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { tryHandleCanvasHandleAssignClick } from '../esm/native/services/canvas_picking_handle_assign_flow.ts';
+import { readManualHandlePosition } from '../esm/native/features/manual_handle_position.ts';
 
 test('handle assign click reads parent-chain part ids and preserves edge variant writes through typed mode opts', () => {
   const calls: Array<{ op: string; args: unknown[]; owner?: unknown }> = [];
@@ -157,6 +158,14 @@ test('manual handle position click stores normalized door-local position and exp
   assert.equal(calls[2].args[1], '__wp_manual_handle_position:d2_full');
   assert.deepEqual(JSON.parse(String(calls[2].args[2])), { xRatio: 0.75, yRatio: 0.75 });
   assert.deepEqual(calls[2].args[3], { source: 'handles:assignManualPosition', immediate: true });
+});
+
+test('manual handle position reader accepts the canonical serialized shape only', () => {
+  assert.deepEqual(readManualHandlePosition('{"xRatio":0.25,"yRatio":0.75}'), {
+    xRatio: 0.25,
+    yRatio: 0.75,
+  });
+  assert.equal(readManualHandlePosition('0.25,0.75'), null);
 });
 
 test('normal handle assignment clears a previous manual door handle position', () => {

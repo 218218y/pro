@@ -65,14 +65,10 @@ function readManualHandlePositionString(value: string): ManualHandlePosition | n
   try {
     const parsed = JSON.parse(raw);
     if (isRecord(parsed)) return readManualHandlePosition(parsed);
+    return null;
   } catch {
-    // support the compact legacy-friendly "x,y" shape too
+    return null;
   }
-  const parts = raw.split(',');
-  if (parts.length !== 2) return null;
-  const xRatio = normalizeRatio(parts[0]);
-  const yRatio = normalizeRatio(parts[1]);
-  return xRatio == null || yRatio == null ? null : { xRatio, yRatio };
 }
 
 export function serializeManualHandlePosition(position: ManualHandlePosition): string {
@@ -95,7 +91,7 @@ export function readManualHandlePosition(value: unknown): ManualHandlePosition |
 export function readManualHandlePositionForPart(
   handlesMap: unknown,
   partId: unknown,
-  fallbackPartId?: unknown
+  alternatePartId?: unknown
 ): ManualHandlePosition | null {
   const hm = isRecord(handlesMap) ? handlesMap : null;
   const pid = String(partId || '');
@@ -104,9 +100,9 @@ export function readManualHandlePositionForPart(
   const direct = readManualHandlePosition(hm[manualHandlePositionKey(pid)]);
   if (direct) return direct;
 
-  const fallback = String(fallbackPartId || '');
-  if (fallback && fallback !== pid) {
-    return readManualHandlePosition(hm[manualHandlePositionKey(fallback)]);
+  const alternate = String(alternatePartId || '');
+  if (alternate && alternate !== pid) {
+    return readManualHandlePosition(hm[manualHandlePositionKey(alternate)]);
   }
   return null;
 }
