@@ -1,4 +1,4 @@
-import { HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { HANDLE_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { getDoorsArray } from '../runtime/render_access.js';
 import { readMapOrEmpty } from '../runtime/maps_access.js';
 import {
@@ -10,7 +10,10 @@ import {
   resolveManualHandleLocalPosition,
 } from '../features/manual_handle_position.js';
 import type { UnknownRecord } from '../../../types';
-import { buildRectClearanceMeasurementEntries } from './canvas_picking_hover_clearance_measurements.js';
+import {
+  buildRectClearanceMeasurementEntries,
+  type HoverClearanceMeasurementEntry,
+} from './canvas_picking_hover_clearance_measurements.js';
 import {
   __asObject,
   __positionDoorMarker,
@@ -29,6 +32,17 @@ type ManualDoorGroupLike = UnknownRecord & {
   userData?: UnknownRecord | null;
   localToWorld?: (target: { x: number; y: number; z: number }) => unknown;
 };
+
+type ManualDoorVisualEntryLike = UnknownRecord & {
+  group?: ManualDoorGroupLike | null;
+  hingeSide?: 'left' | 'right' | null;
+};
+
+const MANUAL_HANDLE_MEASUREMENT_TEXT_SCALE = 0.88;
+const MANUAL_HANDLE_HORIZONTAL_LABEL_OUTSET =
+  SKETCH_BOX_DIMENSIONS.preview.measurementScaleCellX * MANUAL_HANDLE_MEASUREMENT_TEXT_SCALE * 0.5 + 0.03;
+const MANUAL_HANDLE_VERTICAL_LABEL_OUTSET =
+  SKETCH_BOX_DIMENSIONS.preview.measurementScaleCellY * MANUAL_HANDLE_MEASUREMENT_TEXT_SCALE * 0.5 + 0.025;
 
 function readHandleType(modeOpts: UnknownRecord | null): 'standard' | 'edge' {
   return modeOpts?.handleType === 'edge' ? 'edge' : 'standard';
@@ -94,34 +108,80 @@ function isAlignedDistance(a: number, b: number, toleranceM = 0.006): boolean {
   return Number.isFinite(a) && Number.isFinite(b) && Math.abs(a - b) <= toleranceM;
 }
 
+function readDoorHingeSide(args: {
+  doorRec?: ManualDoorVisualEntryLike | null;
+  group?: ManualDoorGroupLike | null;
+}): 'left' | 'right' | null {
+  const hingeSide = args.doorRec?.hingeSide;
+  if (hingeSide === 'left' || hingeSide === 'right') return hingeSide;
+  const userData = __asObject<UnknownRecord>(args.group?.userData);
+  if (typeof userData?.__hingeLeft === 'boolean') return userData.__hingeLeft ? 'left' : 'right';
+  return null;
+}
+
+function resolveOpeningSideDistance(args: {
+  currentRect: { minX: number; maxX: number };
+  currentX: number;
+  hingeSide: 'left' | 'right' | null;
+}): number | null {
+  const { currentRect, currentX, hingeSide } = args;
+  if (hingeSide === 'left') return currentRect.maxX - currentX;
+  if (hingeSide === 'right') return currentX - currentRect.minX;
+  return null;
+}
+
 function hasMatchingWidthDistance(args: {
   currentRect: { minX: number; maxX: number };
   currentX: number;
+  currentHingeSide: 'left' | 'right' | null;
   otherRect: { minX: number; maxX: number };
   otherX: number;
+  otherHingeSide: 'left' | 'right' | null;
+  toleranceM?: number;
 }): boolean {
-  const { currentRect, currentX, otherRect, otherX } = args;
-  const currentLeft = currentX - currentRect.minX;
-  const currentRight = currentRect.maxX - currentX;
-  const otherLeft = otherX - otherRect.minX;
-  const otherRight = otherRect.maxX - otherX;
-  return (
-    isAlignedDistance(currentLeft, otherLeft) ||
-    isAlignedDistance(currentRight, otherRight) ||
-    isAlignedDistance(currentLeft, otherRight) ||
-    isAlignedDistance(currentRight, otherLeft)
-  );
+  const currentDistance = resolveOpeningSideDistance({
+    currentRect: args.currentRect,
+    currentX: args.currentX,
+    hingeSide: args.currentHingeSide,
+  });
+  const otherDistance = resolveOpeningSideDistance({
+    currentRect: args.otherRect,
+    currentX: args.otherX,
+    hingeSide: args.otherHingeSide,
+  });
+  if (currentDistance == null || otherDistance == null) return false;
+  return isAlignedDistance(currentDistance, otherDistance, args.toleranceM);
 }
 
-function hasMatchingWidthRatio(
-  currentPosition: ManualHandlePosition,
-  otherPosition: ManualHandlePosition,
-  tolerance = 0.006
-): boolean {
-  const currentX = Number(currentPosition.xRatio);
-  const otherX = Number(otherPosition.xRatio);
-  if (!Number.isFinite(currentX) || !Number.isFinite(otherX)) return false;
-  return Math.abs(currentX - otherX) <= tolerance || Math.abs(currentX - (1 - otherX)) <= tolerance;
+function offsetManualHandleVerticalMeasurementLabels(
+  entries: HoverClearanceMeasurementEntry[]
+): HoverClearanceMeasurementEntry[] {
+  return entries.map(entry => {
+    const startX = Number(entry.startX);
+    const endX = Number(entry.endX);
+    const startY = Number(entry.startY);
+    const endY = Number(entry.endY);
+    const labelY = typeof entry.labelY === 'number' ? entry.labelY : Number(entry.labelY);
+    if (
+      !Number.isFinite(startX) ||
+      !Number.isFinite(endX) ||
+      !Number.isFinite(startY) ||
+      !Number.isFinite(endY) ||
+      !Number.isFinite(labelY) ||
+      Math.abs(startX - endX) > 1e-6
+    ) {
+      return entry;
+    }
+
+    const centerY = (startY + endY) / 2;
+    return {
+      ...entry,
+      labelY:
+        labelY < centerY
+          ? labelY - MANUAL_HANDLE_VERTICAL_LABEL_OUTSET
+          : labelY + MANUAL_HANDLE_VERTICAL_LABEL_OUTSET,
+    };
+  });
 }
 
 function projectLocalYToWorld(args: {
@@ -170,9 +230,10 @@ function resolveSceneManualHandleAlignment(args: {
     x: currentPlacement.x,
     y: currentPlacement.y,
   });
+  const currentHingeSide = readDoorHingeSide({ group: currentGroup });
   const doors = getDoorsArray(App);
   for (let i = 0; i < doors.length; i += 1) {
-    const doorRec = __asObject<UnknownRecord>(doors[i]);
+    const doorRec = __asObject<ManualDoorVisualEntryLike>(doors[i]);
     const otherGroup = __asObject<ManualDoorGroupLike>(doorRec?.group);
     if (!otherGroup || otherGroup === currentGroup) continue;
 
@@ -203,8 +264,10 @@ function resolveSceneManualHandleAlignment(args: {
       hasMatchingWidthDistance({
         currentRect,
         currentX: currentPlacement.x,
+        currentHingeSide,
         otherRect,
         otherX: otherPlacement.x,
+        otherHingeSide: readDoorHingeSide({ doorRec, group: otherGroup }),
       })
     ) {
       alignment.hasHorizontalAlignment = true;
@@ -229,8 +292,7 @@ function resolveMapManualHandleAlignment(args: {
     const other = readManualHandlePosition(handlesMap[key]);
     if (!other) continue;
     if (areManualHandleHeightsAligned(currentPosition, other)) alignment.hasVerticalAlignment = true;
-    if (hasMatchingWidthRatio(currentPosition, other)) alignment.hasHorizontalAlignment = true;
-    if (alignment.hasVerticalAlignment && alignment.hasHorizontalAlignment) return alignment;
+    if (alignment.hasVerticalAlignment) return alignment;
   }
   return alignment;
 }
@@ -320,26 +382,29 @@ export function tryHandleDoorManualHandleHoverPreview(args: DoorManualHandleHove
 
   const size = resolvePreviewSize(modeOpts);
   const handleZ = zOff + (zOff >= 0 ? 0.003 : -0.003);
-  const clearanceMeasurements = buildRectClearanceMeasurementEntries({
-    containerMinX: rect.minX,
-    containerMaxX: rect.maxX,
-    containerMinY: rect.minY,
-    containerMaxY: rect.maxY,
-    targetCenterX: placement.x,
-    targetCenterY: placement.y,
-    targetWidth: Math.max(0.005, size.width),
-    targetHeight: Math.max(0.005, size.height),
-    z: handleZ + (handleZ >= 0 ? 0.0025 : -0.0025),
-    showTop: true,
-    showBottom: true,
-    showLeft: true,
-    showRight: true,
-    minHorizontalCm: 0.5,
-    minVerticalCm: 0.5,
-    horizontalLabelPlacement: 'outside',
-    styleKey: 'cell',
-    textScale: 0.88,
-  });
+  const clearanceMeasurements = offsetManualHandleVerticalMeasurementLabels(
+    buildRectClearanceMeasurementEntries({
+      containerMinX: rect.minX,
+      containerMaxX: rect.maxX,
+      containerMinY: rect.minY,
+      containerMaxY: rect.maxY,
+      targetCenterX: placement.x,
+      targetCenterY: placement.y,
+      targetWidth: Math.max(0.005, size.width),
+      targetHeight: Math.max(0.005, size.height),
+      z: handleZ + (handleZ >= 0 ? 0.0025 : -0.0025),
+      showTop: true,
+      showBottom: true,
+      showLeft: true,
+      showRight: true,
+      minHorizontalCm: 0.5,
+      minVerticalCm: 0.5,
+      horizontalLabelPlacement: 'outside',
+      horizontalLabelOutset: MANUAL_HANDLE_HORIZONTAL_LABEL_OUTSET,
+      styleKey: 'cell',
+      textScale: MANUAL_HANDLE_MEASUREMENT_TEXT_SCALE,
+    })
+  );
 
   const handlesMap = __asObject<Record<string, unknown>>(readMapOrEmpty(App, 'handlesMap'));
   const manualKey = manualHandlePositionKey(scopedHitDoorPid);
@@ -369,8 +434,8 @@ export function tryHandleDoorManualHandleHoverPreview(args: DoorManualHandleHove
     d: Math.max(0.004, size.depth),
     woodThick: Math.max(0.004, Math.min(size.width, size.height)),
     op: 'add',
-    showCenterYGuide: true,
-    showCenterXGuide: alignment.hasHorizontalAlignment,
+    showCenterYGuide: alignment.hasHorizontalAlignment,
+    showCenterXGuide: alignment.hasVerticalAlignment,
     guideWidth: resolveGuideWidth(rect),
     guideHeight: Math.max(0.0001, rect.maxY - rect.minY),
     guideHorizontalX: placement.x,

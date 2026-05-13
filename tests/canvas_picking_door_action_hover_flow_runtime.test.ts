@@ -29,24 +29,25 @@ class Quat {
   }
 }
 
-function createApp() {
-  const wardrobeGroup = {
-    userData: { partId: 'viewport_root' },
-    worldToLocal(target: Vec3) {
-      return target;
-    },
+function createDoorOwner(args: {
+  partId: string;
+  wardrobeGroup: {
+    worldToLocal(target: Vec3): Vec3;
   };
-  const owner = {
+  hingeLeft?: boolean;
+}) {
+  return {
     userData: {
-      partId: 'd1_left',
+      partId: args.partId,
       __doorWidth: 1,
       __doorHeight: 2,
       __doorRectMinX: -0.5,
       __doorRectMaxX: 0.5,
       __doorRectMinY: -1,
       __doorRectMaxY: 1,
+      __hingeLeft: args.hingeLeft ?? true,
     },
-    parent: wardrobeGroup,
+    parent: args.wardrobeGroup,
     worldToLocal(target: Vec3) {
       return target;
     },
@@ -60,6 +61,16 @@ function createApp() {
       return target;
     },
   };
+}
+
+function createApp() {
+  const wardrobeGroup = {
+    userData: { partId: 'viewport_root' },
+    worldToLocal(target: Vec3) {
+      return target;
+    },
+  };
+  const owner = createDoorOwner({ partId: 'd1_left', wardrobeGroup, hingeLeft: true });
   const state = {
     ui: {},
     config: { doorTrimMap: {} },
@@ -128,6 +139,85 @@ function createMarker() {
       },
     },
   } as never;
+}
+
+function runManualHandleHover(args: {
+  app: ReturnType<typeof createApp>['app'];
+  wardrobeGroup: ReturnType<typeof createApp>['wardrobeGroup'];
+  owner: ReturnType<typeof createApp>['owner'];
+  hitPoint: Vec3;
+  doorMarker: ReturnType<typeof createMarker>;
+  previewCalls: Record<string, unknown>[];
+}) {
+  const { app, wardrobeGroup, owner, hitPoint, doorMarker, previewCalls } = args;
+  return tryHandleDoorActionHover({
+    App: app,
+    ndcX: 0.15,
+    ndcY: -0.05,
+    raycaster: {} as never,
+    mouse: {} as never,
+    getViewportRoots() {
+      return { camera: app.render.camera, wardrobeGroup };
+    },
+    getSplitHoverRaycastRoots() {
+      return [wardrobeGroup];
+    },
+    raycastReuse() {
+      return [{ object: owner, point: hitPoint }] as never;
+    },
+    isViewportRoot(_App, node) {
+      return node === wardrobeGroup;
+    },
+    str(_App, value) {
+      return String(value ?? '');
+    },
+    isDoorLikePartId(partId) {
+      return partId === 'd1_left';
+    },
+    isDoorOrDrawerLikePartId(partId) {
+      return partId === 'd1_left';
+    },
+    doorMarker,
+    hideLayoutPreview() {},
+    hideSketchPreview() {},
+    setSketchPreview(previewArgs: Record<string, unknown>) {
+      previewCalls.push(previewArgs);
+      return {
+        hoverMarker: { material: { color: { setHex() {} }, emissive: { setHex() {} } } },
+        mesh: { material: { color: { setHex() {} }, emissive: { setHex() {} } } },
+      };
+    },
+    isGrooveEditMode: false,
+    isRemoveDoorMode: false,
+    isHandleEditMode: true,
+    isHingeEditMode: false,
+    isMirrorPaintMode: false,
+    isDoorTrimMode: false,
+    paintSelection: null,
+    readUi() {
+      return {};
+    },
+    normalizeDoorBaseKey(_App, _hitDoorGroup, hitDoorPid) {
+      return String(hitDoorPid);
+    },
+    readSplitHoverDoorBounds() {
+      return null;
+    },
+    getCanvasPickingRuntime() {
+      return {};
+    },
+    isRemoved() {
+      return false;
+    },
+    isSegmentedDoorBaseId() {
+      return false;
+    },
+    canonDoorPartKeyForMaps(id) {
+      return id;
+    },
+    preferredFacePreviewPartId: 'd1_left',
+    preferredFacePreviewHitObject: owner as never,
+  });
 }
 
 test('door action hover trim mode keeps marker routing alive even when sketch preview factory is unavailable', () => {
@@ -207,7 +297,7 @@ test('door action hover trim mode keeps marker routing alive even when sketch pr
   assert.deepEqual((doorMarker.scale as { last: [number, number, number] | null }).last, [1, 0.035, 1]);
 });
 
-test('manual handle hover uses the precise raycast hit instead of preferred face-only hits', () => {
+test('manual handle hover uses the precise raycast hit and keeps width labels away from the door', () => {
   const { app, wardrobeGroup, owner, hitPoint, state, mapsState } = createApp();
   hitPoint.set(0.2, 0.35, 0.02);
   state.mode.opts = {
@@ -215,108 +305,18 @@ test('manual handle hover uses the precise raycast hit instead of preferred face
     handleType: 'standard',
     handleColor: 'nickel',
   };
-  const otherOwner = {
-    userData: {
-      partId: 'd2_right',
-      __doorWidth: 1,
-      __doorHeight: 2,
-      __doorRectMinX: -0.5,
-      __doorRectMaxX: 0.5,
-      __doorRectMinY: -1,
-      __doorRectMaxY: 1,
-    },
-    parent: wardrobeGroup,
-    worldToLocal(target: Vec3) {
-      return target;
-    },
-    localToWorld(target: Vec3) {
-      return target;
-    },
-    getWorldPosition(target: Vec3) {
-      return target.set(0, 0, 0);
-    },
-    getWorldQuaternion(target: Quat) {
-      return target;
-    },
-  };
+  const otherOwner = createDoorOwner({ partId: 'd2_right', wardrobeGroup, hingeLeft: false });
   (app as { render: { doorsArray: unknown[] } }).render.doorsArray = [
-    { group: owner },
-    { group: otherOwner },
+    { group: owner, hingeSide: 'left' },
+    { group: otherOwner, hingeSide: 'right' },
   ];
   mapsState.handlesMap = {
-    '__wp_manual_handle_position:d2_right': '{"xRatio":0.3,"yRatio":0.675}',
+    '__wp_manual_handle_position:d2_right': '{"xRatio":0.3,"yRatio":0.55}',
   };
   const doorMarker = createMarker();
   const previewCalls: Record<string, unknown>[] = [];
 
-  const handled = tryHandleDoorActionHover({
-    App: app,
-    ndcX: 0.15,
-    ndcY: -0.05,
-    raycaster: {} as never,
-    mouse: {} as never,
-    getViewportRoots() {
-      return { camera: app.render.camera, wardrobeGroup };
-    },
-    getSplitHoverRaycastRoots() {
-      return [wardrobeGroup];
-    },
-    raycastReuse() {
-      return [{ object: owner, point: hitPoint }] as never;
-    },
-    isViewportRoot(_App, node) {
-      return node === wardrobeGroup;
-    },
-    str(_App, value) {
-      return String(value ?? '');
-    },
-    isDoorLikePartId(partId) {
-      return partId === 'd1_left';
-    },
-    isDoorOrDrawerLikePartId(partId) {
-      return partId === 'd1_left';
-    },
-    doorMarker,
-    hideLayoutPreview() {},
-    hideSketchPreview() {},
-    setSketchPreview(previewArgs: Record<string, unknown>) {
-      previewCalls.push(previewArgs);
-      return {
-        hoverMarker: { material: { color: { setHex() {} }, emissive: { setHex() {} } } },
-        mesh: { material: { color: { setHex() {} }, emissive: { setHex() {} } } },
-      };
-    },
-    isGrooveEditMode: false,
-    isRemoveDoorMode: false,
-    isHandleEditMode: true,
-    isHingeEditMode: false,
-    isMirrorPaintMode: false,
-    isDoorTrimMode: false,
-    paintSelection: null,
-    readUi() {
-      return {};
-    },
-    normalizeDoorBaseKey(_App, _hitDoorGroup, hitDoorPid) {
-      return String(hitDoorPid);
-    },
-    readSplitHoverDoorBounds() {
-      return null;
-    },
-    getCanvasPickingRuntime() {
-      return {};
-    },
-    isRemoved() {
-      return false;
-    },
-    isSegmentedDoorBaseId() {
-      return false;
-    },
-    canonDoorPartKeyForMaps(id) {
-      return id;
-    },
-    preferredFacePreviewPartId: 'd1_left',
-    preferredFacePreviewHitObject: owner as never,
-  });
+  const handled = runManualHandleHover({ app, wardrobeGroup, owner, hitPoint, doorMarker, previewCalls });
 
   assert.equal(handled, true);
   assert.equal(previewCalls.length, 1);
@@ -324,9 +324,80 @@ test('manual handle hover uses the precise raycast hit instead of preferred face
   assert.ok(Math.abs(Number(previewCalls[0].y) - 0.35) < 1e-9);
   assert.ok(Math.abs(Number(previewCalls[0].guideHorizontalY) - 0.35) < 1e-9);
   assert.ok(Math.abs(Number(previewCalls[0].guideVerticalX) - 0.2) < 1e-9);
-  assert.equal(previewCalls[0].showCenterXGuide, true);
+  assert.equal(previewCalls[0].showCenterXGuide, false);
+  assert.equal(previewCalls[0].showCenterYGuide, true);
   assert.equal(Array.isArray(previewCalls[0].clearanceMeasurements), true);
   assert.equal((previewCalls[0].clearanceMeasurements as unknown[]).length > 0, true);
+  const measurements = previewCalls[0].clearanceMeasurements as Array<{
+    startX: number;
+    startY: number;
+    endX: number;
+    endY: number;
+    labelX?: number;
+    labelY?: number;
+  }>;
+  const horizontal = measurements.filter(entry => Math.abs(Number(entry.startY) - Number(entry.endY)) < 1e-9);
+  const vertical = measurements.filter(entry => Math.abs(Number(entry.startX) - Number(entry.endX)) < 1e-9);
+  assert.ok(horizontal.some(entry => Number(entry.labelX) < -0.7));
+  assert.ok(horizontal.some(entry => Number(entry.labelX) > 0.7));
+  assert.ok(vertical.some(entry => Number(entry.labelY) < -1.1));
+  assert.ok(vertical.some(entry => Number(entry.labelY) > 1.1));
   assert.equal(doorMarker.visible, true);
   assert.equal(doorMarker.material, 'center');
+});
+
+test('manual handle hover highlights only the vertical guide when the height matches another handle', () => {
+  const { app, wardrobeGroup, owner, hitPoint, state, mapsState } = createApp();
+  hitPoint.set(0.2, 0.35, 0.02);
+  state.mode.opts = {
+    handlePlacement: 'manual',
+    handleType: 'standard',
+    handleColor: 'nickel',
+  };
+  const otherOwner = createDoorOwner({ partId: 'd2_right', wardrobeGroup, hingeLeft: false });
+  (app as { render: { doorsArray: unknown[] } }).render.doorsArray = [
+    { group: owner, hingeSide: 'left' },
+    { group: otherOwner, hingeSide: 'right' },
+  ];
+  mapsState.handlesMap = {
+    '__wp_manual_handle_position:d2_right': '{"xRatio":0.12,"yRatio":0.675}',
+  };
+  const doorMarker = createMarker();
+  const previewCalls: Record<string, unknown>[] = [];
+
+  const handled = runManualHandleHover({ app, wardrobeGroup, owner, hitPoint, doorMarker, previewCalls });
+
+  assert.equal(handled, true);
+  assert.equal(previewCalls.length, 1);
+  assert.equal(previewCalls[0].showCenterXGuide, true);
+  assert.equal(previewCalls[0].showCenterYGuide, false);
+  assert.equal(doorMarker.material, 'center');
+});
+
+test('manual handle hover compares width from the opening side instead of raw left-right ratios', () => {
+  const { app, wardrobeGroup, owner, hitPoint, state, mapsState } = createApp();
+  hitPoint.set(0.2, 0.35, 0.02);
+  state.mode.opts = {
+    handlePlacement: 'manual',
+    handleType: 'standard',
+    handleColor: 'nickel',
+  };
+  const otherOwner = createDoorOwner({ partId: 'd2_right', wardrobeGroup, hingeLeft: false });
+  (app as { render: { doorsArray: unknown[] } }).render.doorsArray = [
+    { group: owner, hingeSide: 'left' },
+    { group: otherOwner, hingeSide: 'right' },
+  ];
+  mapsState.handlesMap = {
+    '__wp_manual_handle_position:d2_right': '{"xRatio":0.7,"yRatio":0.4}',
+  };
+  const doorMarker = createMarker();
+  const previewCalls: Record<string, unknown>[] = [];
+
+  const handled = runManualHandleHover({ app, wardrobeGroup, owner, hitPoint, doorMarker, previewCalls });
+
+  assert.equal(handled, true);
+  assert.equal(previewCalls.length, 1);
+  assert.equal(previewCalls[0].showCenterXGuide, false);
+  assert.equal(previewCalls[0].showCenterYGuide, false);
+  assert.equal(doorMarker.material, 'add');
 });
