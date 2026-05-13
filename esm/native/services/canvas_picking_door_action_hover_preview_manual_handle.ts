@@ -1,4 +1,4 @@
-import { HANDLE_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { getDoorsArray } from '../runtime/render_access.js';
 import { readMapOrEmpty } from '../runtime/maps_access.js';
 import {
@@ -12,7 +12,7 @@ import {
 import type { UnknownRecord } from '../../../types';
 import {
   buildRectClearanceMeasurementEntries,
-  type HoverClearanceMeasurementEntry,
+  resolveCellMeasurementLabelOutsets,
 } from './canvas_picking_hover_clearance_measurements.js';
 import {
   __asObject,
@@ -39,11 +39,6 @@ type ManualDoorVisualEntryLike = UnknownRecord & {
 };
 
 const MANUAL_HANDLE_MEASUREMENT_TEXT_SCALE = 0.88;
-const MANUAL_HANDLE_HORIZONTAL_LABEL_OUTSET =
-  SKETCH_BOX_DIMENSIONS.preview.measurementScaleCellX * MANUAL_HANDLE_MEASUREMENT_TEXT_SCALE * 0.5 + 0.03;
-const MANUAL_HANDLE_VERTICAL_LABEL_OUTSET =
-  SKETCH_BOX_DIMENSIONS.preview.measurementScaleCellY * MANUAL_HANDLE_MEASUREMENT_TEXT_SCALE * 0.5 + 0.025;
-
 function readHandleType(modeOpts: UnknownRecord | null): 'standard' | 'edge' {
   return modeOpts?.handleType === 'edge' ? 'edge' : 'standard';
 }
@@ -151,37 +146,6 @@ function hasMatchingWidthDistance(args: {
   });
   if (currentDistance == null || otherDistance == null) return false;
   return isAlignedDistance(currentDistance, otherDistance, args.toleranceM);
-}
-
-function offsetManualHandleVerticalMeasurementLabels(
-  entries: HoverClearanceMeasurementEntry[]
-): HoverClearanceMeasurementEntry[] {
-  return entries.map(entry => {
-    const startX = Number(entry.startX);
-    const endX = Number(entry.endX);
-    const startY = Number(entry.startY);
-    const endY = Number(entry.endY);
-    const labelY = typeof entry.labelY === 'number' ? entry.labelY : Number(entry.labelY);
-    if (
-      !Number.isFinite(startX) ||
-      !Number.isFinite(endX) ||
-      !Number.isFinite(startY) ||
-      !Number.isFinite(endY) ||
-      !Number.isFinite(labelY) ||
-      Math.abs(startX - endX) > 1e-6
-    ) {
-      return entry;
-    }
-
-    const centerY = (startY + endY) / 2;
-    return {
-      ...entry,
-      labelY:
-        labelY < centerY
-          ? labelY - MANUAL_HANDLE_VERTICAL_LABEL_OUTSET
-          : labelY + MANUAL_HANDLE_VERTICAL_LABEL_OUTSET,
-    };
-  });
 }
 
 function projectLocalYToWorld(args: {
@@ -382,29 +346,31 @@ export function tryHandleDoorManualHandleHoverPreview(args: DoorManualHandleHove
 
   const size = resolvePreviewSize(modeOpts);
   const handleZ = zOff + (zOff >= 0 ? 0.003 : -0.003);
-  const clearanceMeasurements = offsetManualHandleVerticalMeasurementLabels(
-    buildRectClearanceMeasurementEntries({
-      containerMinX: rect.minX,
-      containerMaxX: rect.maxX,
-      containerMinY: rect.minY,
-      containerMaxY: rect.maxY,
-      targetCenterX: placement.x,
-      targetCenterY: placement.y,
-      targetWidth: Math.max(0.005, size.width),
-      targetHeight: Math.max(0.005, size.height),
-      z: handleZ + (handleZ >= 0 ? 0.0025 : -0.0025),
-      showTop: true,
-      showBottom: true,
-      showLeft: true,
-      showRight: true,
-      minHorizontalCm: 0.5,
-      minVerticalCm: 0.5,
-      horizontalLabelPlacement: 'outside',
-      horizontalLabelOutset: MANUAL_HANDLE_HORIZONTAL_LABEL_OUTSET,
-      styleKey: 'cell',
-      textScale: MANUAL_HANDLE_MEASUREMENT_TEXT_SCALE,
-    })
+  const { horizontalLabelOutset, verticalLabelOutset } = resolveCellMeasurementLabelOutsets(
+    MANUAL_HANDLE_MEASUREMENT_TEXT_SCALE
   );
+  const clearanceMeasurements = buildRectClearanceMeasurementEntries({
+    containerMinX: rect.minX,
+    containerMaxX: rect.maxX,
+    containerMinY: rect.minY,
+    containerMaxY: rect.maxY,
+    targetCenterX: placement.x,
+    targetCenterY: placement.y,
+    targetWidth: Math.max(0.005, size.width),
+    targetHeight: Math.max(0.005, size.height),
+    z: handleZ + (handleZ >= 0 ? 0.0025 : -0.0025),
+    showTop: true,
+    showBottom: true,
+    showLeft: true,
+    showRight: true,
+    minHorizontalCm: 0.5,
+    minVerticalCm: 0.5,
+    horizontalLabelPlacement: 'outside',
+    horizontalLabelOutset,
+    verticalLabelOutset,
+    styleKey: 'cell',
+    textScale: MANUAL_HANDLE_MEASUREMENT_TEXT_SCALE,
+  });
 
   const handlesMap = __asObject<Record<string, unknown>>(readMapOrEmpty(App, 'handlesMap'));
   const manualKey = manualHandlePositionKey(scopedHitDoorPid);

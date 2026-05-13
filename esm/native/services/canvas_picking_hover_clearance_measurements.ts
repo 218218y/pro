@@ -1,3 +1,5 @@
+import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+
 export type HoverClearanceMeasurementEntry = {
   startX: number;
   startY: number;
@@ -13,6 +15,11 @@ export type HoverClearanceMeasurementEntry = {
   viewFaceSign?: number;
   labelFaceSign?: number;
   role?: 'cell' | 'neighbor';
+};
+
+export type ClearanceMeasurementLabelOutsets = {
+  horizontalLabelOutset: number;
+  verticalLabelOutset: number;
 };
 
 function clampFinite(value: unknown, defaultValue: number): number {
@@ -53,6 +60,17 @@ function shouldShowClearance(valueM: number, minCm: number): boolean {
   if (!Number.isFinite(valueM)) return false;
   const roundedCm = roundClearanceCmValue(valueM);
   return roundedCm >= Math.max(1, Math.ceil(Math.max(0, minCm)));
+}
+
+export function resolveCellMeasurementLabelOutsets(textScaleValue: unknown): ClearanceMeasurementLabelOutsets {
+  const textScale =
+    typeof textScaleValue === 'number' && Number.isFinite(textScaleValue)
+      ? textScaleValue
+      : SKETCH_BOX_DIMENSIONS.preview.measurementTextScaleDefault;
+  return {
+    horizontalLabelOutset: SKETCH_BOX_DIMENSIONS.preview.measurementScaleCellX * textScale * 0.5 + 0.03,
+    verticalLabelOutset: SKETCH_BOX_DIMENSIONS.preview.measurementScaleCellY * textScale * 0.5 + 0.025,
+  };
 }
 
 export function buildVerticalClearanceMeasurementEntries(args: {
@@ -113,6 +131,7 @@ export function buildRectClearanceMeasurementEntries(args: {
   minHorizontalCm?: number;
   horizontalLabelPlacement?: 'center' | 'outside';
   horizontalLabelOutset?: number;
+  verticalLabelOutset?: number;
   styleKey?: 'default' | 'cell' | 'neighbor';
   textScale?: number;
   faceSign?: unknown;
@@ -144,6 +163,7 @@ export function buildRectClearanceMeasurementEntries(args: {
   const minHorizontalCm = Math.max(0, clampFinite(args.minHorizontalCm, 0));
   const horizontalLabelPlacement = args.horizontalLabelPlacement === 'outside' ? 'outside' : 'center';
   const horizontalLabelOutset = Math.max(0, clampFinite(args.horizontalLabelOutset, 0.06));
+  const verticalLabelOutset = Math.max(0, clampFinite(args.verticalLabelOutset, 0));
   const faceMetadata = resolveFaceMetadata(args);
   const verticalLineX = clampFinite(args.verticalLineX, targetCenterX);
 
@@ -159,7 +179,7 @@ export function buildRectClearanceMeasurementEntries(args: {
       z,
       label: roundClearanceCmLabel(topClearance),
       labelX: verticalLineX,
-      labelY: containerMaxY,
+      labelY: containerMaxY + verticalLabelOutset,
       styleKey,
       textScale,
       ...faceMetadata,
@@ -176,7 +196,7 @@ export function buildRectClearanceMeasurementEntries(args: {
       z,
       label: roundClearanceCmLabel(bottomClearance),
       labelX: verticalLineX,
-      labelY: containerMinY,
+      labelY: containerMinY - verticalLabelOutset,
       styleKey,
       textScale,
       ...faceMetadata,

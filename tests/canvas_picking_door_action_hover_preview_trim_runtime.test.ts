@@ -5,6 +5,7 @@ import {
   __readDoorTrimConfigMap,
   __readDoorTrimModeDraft,
 } from '../esm/native/services/canvas_picking_door_action_hover_preview_state.ts';
+import { resolveCellMeasurementLabelOutsets } from '../esm/native/services/canvas_picking_hover_clearance_measurements.ts';
 import { tryHandleDoorTrimHoverPreview } from '../esm/native/services/canvas_picking_door_action_hover_preview_trim.ts';
 
 class Vec3 {

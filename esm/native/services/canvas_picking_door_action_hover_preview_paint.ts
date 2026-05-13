@@ -30,7 +30,10 @@ import {
   resolveDoorStyleOverrideValue,
   resolveGlassFrameStylePaintSelection,
 } from '../features/door_style_overrides.js';
-import { buildRectClearanceMeasurementEntries } from './canvas_picking_hover_clearance_measurements.js';
+import {
+  buildRectClearanceMeasurementEntries,
+  resolveCellMeasurementLabelOutsets,
+} from './canvas_picking_hover_clearance_measurements.js';
 
 export function tryHandleDoorPaintHoverPreview(args: DoorPaintHoverPreviewArgs): boolean {
   const {
@@ -159,6 +162,9 @@ export function tryHandleDoorPaintHoverPreview(args: DoorPaintHoverPreviewArgs):
     previewHeight = Math.max(0.01, placement.mirrorHeightM);
     zOff = 0.02 * (placement.faceSign === -1 ? -1 : 1);
     const showGuidePreview = !removeMatch && hasSizedDraft && (center.snappedX || center.snappedY);
+    const clearanceTextScale = 0.9;
+    const { horizontalLabelOutset, verticalLabelOutset } =
+      resolveCellMeasurementLabelOutsets(clearanceTextScale);
     const clearanceMeasurements = buildRectClearanceMeasurementEntries({
       containerMinX: mirrorRect.minX,
       containerMaxX: mirrorRect.maxX,
@@ -175,8 +181,10 @@ export function tryHandleDoorPaintHoverPreview(args: DoorPaintHoverPreviewArgs):
       showRight: placement.mirrorWidthM < mirrorRect.maxX - mirrorRect.minX - 0.0005,
       minHorizontalCm: 0.5,
       horizontalLabelPlacement: 'outside',
+      horizontalLabelOutset,
+      verticalLabelOutset,
       styleKey: 'cell',
-      textScale: 0.9,
+      textScale: clearanceTextScale,
     });
     if (setSketchPreview && (showGuidePreview || clearanceMeasurements.length)) {
       const guidePreviewArgs: UnknownRecord = {

@@ -5,6 +5,7 @@ import {
   buildRectClearanceMeasurementEntries,
   buildStackAwareVerticalClearanceMeasurementEntries,
   buildVerticalClearanceMeasurementEntries,
+  resolveCellMeasurementLabelOutsets,
 } from '../esm/native/services/canvas_picking_hover_clearance_measurements.ts';
 
 test('rect clearance builder emits vertical and horizontal cm labels in local coordinates', () => {
@@ -62,6 +63,32 @@ test('rect clearance builder suppresses zero-clearance labels that would round t
   });
 
   assert.deepEqual(entries, []);
+});
+
+test('rect clearance builder can push width labels outward and height labels beyond the top and bottom edges', () => {
+  const { horizontalLabelOutset, verticalLabelOutset } = resolveCellMeasurementLabelOutsets(0.9);
+  const entries = buildRectClearanceMeasurementEntries({
+    containerMinX: -0.5,
+    containerMaxX: 0.5,
+    containerMinY: -1,
+    containerMaxY: 1,
+    targetCenterX: 0.25,
+    targetCenterY: 0,
+    targetWidth: 0.04,
+    targetHeight: 0.4,
+    showTop: true,
+    showBottom: true,
+    showLeft: true,
+    showRight: true,
+    horizontalLabelPlacement: 'outside',
+    horizontalLabelOutset,
+    verticalLabelOutset,
+  });
+
+  assert.equal(entries[0].labelY, 1 + verticalLabelOutset);
+  assert.equal(entries[1].labelY, -1 - verticalLabelOutset);
+  assert.equal(entries[2].labelX, -0.5 - horizontalLabelOutset);
+  assert.equal(entries[3].labelX, 0.5 + horizontalLabelOutset);
 });
 
 test('vertical clearance builder emits only top and bottom cm labels for stacked previews', () => {

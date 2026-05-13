@@ -19,7 +19,10 @@ import {
   type TransformNodeLike,
 } from './canvas_picking_door_action_hover_preview_shared.js';
 import type { UnknownRecord } from '../../../types';
-import { buildRectClearanceMeasurementEntries } from './canvas_picking_hover_clearance_measurements.js';
+import {
+  buildRectClearanceMeasurementEntries,
+  resolveCellMeasurementLabelOutsets,
+} from './canvas_picking_hover_clearance_measurements.js';
 
 export function tryHandleDoorTrimHoverPreview(args: DoorTrimHoverPreviewArgs): boolean {
   const {
@@ -101,6 +104,9 @@ export function tryHandleDoorTrimHoverPreview(args: DoorTrimHoverPreviewArgs): b
         centerXNorm: center.centerXNorm,
         centerYNorm: center.centerYNorm,
       });
+  const clearanceTextScale = 0.9;
+  const { horizontalLabelOutset, verticalLabelOutset } =
+    resolveCellMeasurementLabelOutsets(clearanceTextScale);
   const clearanceMeasurements = buildRectClearanceMeasurementEntries({
     containerMinX: rect0.minX,
     containerMaxX: rect0.maxX,
@@ -117,8 +123,10 @@ export function tryHandleDoorTrimHoverPreview(args: DoorTrimHoverPreviewArgs): b
     showRight: placement.width < rect0.maxX - rect0.minX - 0.0005,
     minHorizontalCm: 0.5,
     horizontalLabelPlacement: 'outside',
+    horizontalLabelOutset,
+    verticalLabelOutset,
     styleKey: 'cell',
-    textScale: 0.9,
+    textScale: clearanceTextScale,
   });
 
   const previewArgs: UnknownRecord = {
