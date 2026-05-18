@@ -32,26 +32,11 @@ function asOpenVector(value: unknown): Vec3Like | null {
     : null;
 }
 
-function isObject3DLike(value: unknown): value is Object3DLike {
-  const rec = asRecord(value);
-  return !!(
-    rec &&
-    Array.isArray(rec.children) &&
-    asRecord(rec.userData) &&
-    asRecord(rec.position) &&
-    asRecord(rec.rotation) &&
-    asRecord(rec.scale) &&
-    typeof rec.add === 'function' &&
-    typeof rec.remove === 'function'
-  );
-}
-
 function asDrawerVisualEntry(value: unknown): DrawerVisualEntryLike | null {
   const rec = asRecord(value);
   const open = asOpenVector(rec?.open);
   const closed = asOpenVector(rec?.closed);
-  const group = isObject3DLike(rec?.group) ? rec.group : null;
-  return rec && open && closed ? { ...rec, group, open, closed } : null;
+  return rec && open && closed ? (value as DrawerVisualEntryLike) : null;
 }
 
 function isPositionCopyLike(value: unknown): value is PositionCopyLike {
@@ -66,6 +51,49 @@ function isPositionedObjectLike(value: unknown): value is PositionedObjectLike {
 
 function readPositionedObject(value: unknown): PositionedObjectLike | null {
   return isPositionedObjectLike(value) ? value : null;
+}
+
+function isDividerModeActive(App: AppContainer): boolean {
+  const modeState: ModeStateLike = readModeStateFromApp(App);
+  const primaryMode = typeof modeState.primary === 'string' ? modeState.primary : null;
+  return (primaryMode || '') === String(readDividerModeKey());
+}
+
+function setForcedDrawerOpenId(
+  App: AppContainer,
+  targetId: DrawersOpenIdLike,
+  nextOpenId: DrawersOpenIdLike
+): void {
+  const base = { where: 'builder/bootstrap.__rebuildDrawerMeta' };
+
+  guardVoid(App, { ...base, op: 'tools.setDrawersOpenId', drawerId: targetId, failFast: true }, () => {
+    const tools = getTools(App);
+    if (typeof tools.setDrawersOpenId === 'function') tools.setDrawersOpenId(nextOpenId);
+  });
+}
+
+function snapDrawerPosition(
+  App: AppContainer,
+  drawer: DrawerVisualEntryLike,
+  targetId: DrawersOpenIdLike,
+  position: Vec3Like,
+  op: string
+): void {
+  const base = { where: 'builder/bootstrap.__rebuildDrawerMeta' };
+  const group = readPositionedObject(drawer.group);
+  if (targetId == null || !group) return;
+
+  guardVoid(App, { ...base, op, drawerId: targetId, failFast: true }, () => {
+    group.position?.copy(position);
+  });
+}
+
+function wakeupDrawerFollowThrough(App: AppContainer, targetId: DrawersOpenIdLike): void {
+  const base = { where: 'builder/bootstrap.__rebuildDrawerMeta' };
+
+  guardVoid(App, { ...base, op: 'platform.wakeupFollowThrough', drawerId: targetId, failFast: true }, () => {
+    runPlatformWakeupFollowThrough(App);
+  });
 }
 
 export function runRebuildDrawerMeta(App: AppContainer): void {
@@ -84,31 +112,25 @@ export function runRebuildDrawerMeta(App: AppContainer): void {
   const drawers = getDrawersArray(App);
   if (!Array.isArray(drawers)) return;
   const drawer = drawers.map(asDrawerVisualEntry).find(x => x && String(x.id) === String(targetId));
-  if (!drawer) return;
-
-  drawer.isOpen = true;
-
-  guardVoid(App, { ...base, op: 'tools.setDrawersOpenId', drawerId: targetId, failFast: true }, () => {
-    const modeState: ModeStateLike = readModeStateFromApp(App);
-    const primaryMode = typeof modeState.primary === 'string' ? modeState.primary : null;
-    const keepDrawerForcedOpen = (primaryMode || '') === String(readDividerModeKey());
-
-    const tools = getTools(App);
-    if (typeof tools.setDrawersOpenId === 'function') {
-      if (keepDrawerForcedOpen) tools.setDrawersOpenId(targetId);
-      else tools.setDrawersOpenId(null);
-    }
-  });
-
-  const group = readPositionedObject(drawer.group);
-  const openPosition = asOpenVector(drawer.open);
-  if (targetId != null && group && openPosition) {
-    guardVoid(App, { ...base, op: 'snapDrawerPosition', drawerId: targetId, failFast: true }, () => {
-      group.position?.copy(openPosition);
-    });
+  const keepDrawerForcedOpen = isDividerModeActive(App);
+  if (!drawer) {
+    if (!keepDrawerForcedOpen) setForcedDrawerOpenId(App, targetId, null);
+    return;
   }
 
-  guardVoid(App, { ...base, op: 'platform.wakeupFollowThrough', drawerId: targetId, failFast: true }, () => {
-    runPlatformWakeupFollowThrough(App);
-  });
+  setForcedDrawerOpenId(App, targetId, keepDrawerForcedOpen ? targetId : null);
+
+  if (!keepDrawerForcedOpen) {
+    drawer.isOpen = false;
+    const closedPosition = asOpenVector(drawer.closed);
+    if (closedPosition) snapDrawerPosition(App, drawer, targetId, closedPosition, 'snapDrawerClosedPosition');
+    wakeupDrawerFollowThrough(App, targetId);
+    return;
+  }
+
+  drawer.isOpen = true;
+  const openPosition = asOpenVector(drawer.open);
+  if (openPosition) snapDrawerPosition(App, drawer, targetId, openPosition, 'snapDrawerOpenPosition');
+
+  wakeupDrawerFollowThrough(App, targetId);
 }

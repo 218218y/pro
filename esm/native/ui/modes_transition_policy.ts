@@ -201,7 +201,7 @@ function readDividerDrawerOpenId(App: AppLike, currentMode: string): string | nu
 function clearDividerDrawerOpenId(App: AppLike, prevDrawerOpenId: string | null): void {
   if (!prevDrawerOpenId) return;
   try {
-    if (!getGlobalClickMode(App)) closeDrawerById(App, prevDrawerOpenId);
+    closeDrawerById(App, prevDrawerOpenId);
     const tools = getTools(App);
     if (typeof tools.setDrawersOpenId === 'function') tools.setDrawersOpenId(null);
   } catch (err) {
