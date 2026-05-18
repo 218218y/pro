@@ -26,6 +26,7 @@ export {
   getDrawerMetaEntry,
   setDrawerMetaEntry,
   setDrawerRebuildIntent,
+  clearDrawerRebuildIntent,
   consumeDrawerRebuildIntent,
 } from './doors_access_drawers.js';
 export {

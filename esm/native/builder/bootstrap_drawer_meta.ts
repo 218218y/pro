@@ -59,6 +59,24 @@ function isDividerModeActive(App: AppContainer): boolean {
   return (primaryMode || '') === String(readDividerModeKey());
 }
 
+function readForcedDrawerOpenId(App: AppContainer): DrawersOpenIdLike {
+  const tools = getTools(App);
+  if (typeof tools.getDrawersOpenId !== 'function') return null;
+  const id = tools.getDrawersOpenId();
+  return typeof id === 'string' || typeof id === 'number' ? id : null;
+}
+
+function sameDrawerId(left: DrawersOpenIdLike, right: DrawersOpenIdLike): boolean {
+  if (left == null || right == null) return false;
+  return String(left) === String(right);
+}
+
+function readDrawerEntryId(drawer: DrawerVisualEntryLike | null | undefined): DrawersOpenIdLike {
+  if (!drawer) return null;
+  const id = drawer.id ?? drawer.drawerId;
+  return typeof id === 'string' || typeof id === 'number' ? id : null;
+}
+
 function setForcedDrawerOpenId(
   App: AppContainer,
   targetId: DrawersOpenIdLike,
@@ -70,6 +88,29 @@ function setForcedDrawerOpenId(
     const tools = getTools(App);
     if (typeof tools.setDrawersOpenId === 'function') tools.setDrawersOpenId(nextOpenId);
   });
+}
+
+function closeDrawerEntry(
+  App: AppContainer,
+  drawer: DrawerVisualEntryLike,
+  drawerId: DrawersOpenIdLike
+): void {
+  drawer.isOpen = false;
+  const closedPosition = asOpenVector(drawer.closed);
+  if (closedPosition) snapDrawerPosition(App, drawer, drawerId, closedPosition, 'snapDrawerClosedPosition');
+}
+
+function closeOtherDrawers(
+  App: AppContainer,
+  drawers: DrawerVisualEntryLike[],
+  targetId: DrawersOpenIdLike
+): void {
+  for (const drawer of drawers) {
+    if (!drawer) continue;
+    const drawerId = readDrawerEntryId(drawer);
+    if (sameDrawerId(drawerId, targetId)) continue;
+    closeDrawerEntry(App, drawer, drawerId);
+  }
 }
 
 function snapDrawerPosition(
@@ -111,23 +152,24 @@ export function runRebuildDrawerMeta(App: AppContainer): void {
 
   const drawers = getDrawersArray(App);
   if (!Array.isArray(drawers)) return;
-  const drawer = drawers.map(asDrawerVisualEntry).find(x => x && String(x.id) === String(targetId));
-  const keepDrawerForcedOpen = isDividerModeActive(App);
+  const drawerEntries = drawers.map(asDrawerVisualEntry).filter((x): x is DrawerVisualEntryLike => !!x);
+  const drawer = drawerEntries.find(x => sameDrawerId(readDrawerEntryId(x), targetId));
+  const forcedOpenId = readForcedDrawerOpenId(App);
+  const keepDrawerForcedOpen = isDividerModeActive(App) && sameDrawerId(forcedOpenId, targetId);
   if (!drawer) {
-    if (!keepDrawerForcedOpen) setForcedDrawerOpenId(App, targetId, null);
+    if (sameDrawerId(forcedOpenId, targetId)) setForcedDrawerOpenId(App, targetId, null);
     return;
   }
 
-  setForcedDrawerOpenId(App, targetId, keepDrawerForcedOpen ? targetId : null);
-
   if (!keepDrawerForcedOpen) {
-    drawer.isOpen = false;
-    const closedPosition = asOpenVector(drawer.closed);
-    if (closedPosition) snapDrawerPosition(App, drawer, targetId, closedPosition, 'snapDrawerClosedPosition');
+    if (sameDrawerId(forcedOpenId, targetId)) setForcedDrawerOpenId(App, targetId, null);
+    closeDrawerEntry(App, drawer, targetId);
     wakeupDrawerFollowThrough(App, targetId);
     return;
   }
 
+  closeOtherDrawers(App, drawerEntries, targetId);
+  setForcedDrawerOpenId(App, targetId, targetId);
   drawer.isOpen = true;
   const openPosition = asOpenVector(drawer.open);
   if (openPosition) snapDrawerPosition(App, drawer, targetId, openPosition, 'snapDrawerOpenPosition');

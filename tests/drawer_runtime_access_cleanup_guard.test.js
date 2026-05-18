@@ -49,6 +49,7 @@ test('[drawer-runtime-access] runtime helper exposes canonical drawer service/ru
   assert.match(doorsAccess, /export function getDrawerMetaMap\(/);
   assert.match(doorsAccess, /export function setDrawerMetaEntry\(/);
   assert.match(doorsAccess, /export function setDrawerRebuildIntent\(/);
+  assert.match(doorsAccess, /export function clearDrawerRebuildIntent\(/);
   assert.match(doorsAccess, /export function consumeDrawerRebuildIntent\(/);
 });
 

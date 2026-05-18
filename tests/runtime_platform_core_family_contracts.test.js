@@ -284,6 +284,7 @@ test('[runtime-platform-core-family] runtime maps/doors seams stay thin over foc
       /export function ensureDoorsService\(/,
       /export function writeDoorsRuntimeNumber\(/,
       /export function setDrawerMetaEntry\(/,
+      /export function clearDrawerRebuildIntent\(/,
       /export function consumeDrawerRebuildIntent\(/,
       /export function setDoorsOpenViaService\(/,
       /export function syncDoorsVisualsNow\(/,

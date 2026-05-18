@@ -17,10 +17,10 @@ function makePosition(initial: Vec) {
   };
 }
 
-function createApp(primaryMode: string) {
+function createApp(primaryMode: string, initialOpenId: string | number | null = null) {
   const state = {
     mode: { primary: primaryMode, opts: {} },
-    runtime: { drawersOpenId: null as string | number | null },
+    runtime: { drawersOpenId: initialOpenId },
     ui: {},
     config: {},
     meta: {},
@@ -36,6 +36,17 @@ function createApp(primaryMode: string) {
     isOpen: false,
     isInternal: true,
   };
+  const otherDrawer = {
+    id: 'int_8',
+    group: {
+      position: makePosition({ x: 8, y: 0, z: 0 }),
+      userData: {},
+    },
+    closed: { x: 0, y: 0, z: 0 },
+    open: { x: 8, y: 0, z: 0 },
+    isOpen: true,
+    isInternal: true,
+  };
   const setOpenIdCalls: Array<string | number | null> = [];
 
   const App = {
@@ -48,6 +59,7 @@ function createApp(primaryMode: string) {
         rebuildMeta: () => undefined,
       },
       tools: {
+        getDrawersOpenId: () => state.runtime.drawersOpenId,
         setDrawersOpenId: (id: string | number | null) => {
           setOpenIdCalls.push(id);
           state.runtime.drawersOpenId = id;
@@ -59,21 +71,23 @@ function createApp(primaryMode: string) {
       },
     },
     render: {
-      drawersArray: [drawer],
+      drawersArray: [drawer, otherDrawer],
     },
   };
 
-  return { App: App as never, drawer, setOpenIdCalls, state };
+  return { App: App as never, drawer, otherDrawer, setOpenIdCalls, state };
 }
 
 test('drawer rebuild intent keeps the target drawer open only while divider mode is active', () => {
-  const { App, drawer, setOpenIdCalls, state } = createApp('divider');
+  const { App, drawer, otherDrawer, setOpenIdCalls, state } = createApp('divider', 'int_4');
 
   setDrawerRebuildIntent(App, 'int_4');
   runRebuildDrawerMeta(App);
 
   assert.equal(drawer.isOpen, true);
   assert.equal(drawer.group.position.x, 5);
+  assert.equal(otherDrawer.isOpen, false);
+  assert.equal(otherDrawer.group.position.x, 0);
   assert.deepEqual(setOpenIdCalls, ['int_4']);
   assert.equal(state.runtime.drawersOpenId, 'int_4');
 });
@@ -86,6 +100,30 @@ test('stale drawer rebuild intent is consumed closed after leaving divider mode'
 
   assert.equal(drawer.isOpen, false);
   assert.equal(drawer.group.position.x, 0);
-  assert.deepEqual(setOpenIdCalls, [null]);
+  assert.deepEqual(setOpenIdCalls, []);
   assert.equal(state.runtime.drawersOpenId, null);
+});
+
+test('stale rebuild intent cannot reopen a previous drawer in a later divider session', () => {
+  const { App, drawer, setOpenIdCalls, state } = createApp('divider');
+
+  setDrawerRebuildIntent(App, 'int_4');
+  runRebuildDrawerMeta(App);
+
+  assert.equal(drawer.isOpen, false);
+  assert.equal(drawer.group.position.x, 0);
+  assert.deepEqual(setOpenIdCalls, []);
+  assert.equal(state.runtime.drawersOpenId, null);
+});
+
+test('stale rebuild intent does not clear a newer forced-open drawer selection', () => {
+  const { App, drawer, setOpenIdCalls, state } = createApp('divider', 'int_8');
+
+  setDrawerRebuildIntent(App, 'int_4');
+  runRebuildDrawerMeta(App);
+
+  assert.equal(drawer.isOpen, false);
+  assert.equal(drawer.group.position.x, 0);
+  assert.deepEqual(setOpenIdCalls, []);
+  assert.equal(state.runtime.drawersOpenId, 'int_8');
 });

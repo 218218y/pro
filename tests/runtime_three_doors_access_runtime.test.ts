@@ -12,6 +12,7 @@ import {
   getDoorsLastToggleTime,
   setDrawerMetaEntry,
   getDrawerMetaEntry,
+  clearDrawerRebuildIntent,
   consumeDrawerRebuildIntent,
   setDrawerRebuildIntent,
 } from '../esm/native/runtime/doors_access.ts';
@@ -70,6 +71,9 @@ test('runtime access hardening: doors/drawers helpers keep service routing and r
 
   const drawerRuntime = getDrawerRuntime(App);
   assert.equal(drawerRuntime.snapAfterBuildId, undefined);
+  setDrawerRebuildIntent(App, 'drawer-1');
+  clearDrawerRebuildIntent(App);
+  assert.equal(consumeDrawerRebuildIntent(App), null);
   setDrawerRebuildIntent(App, 'drawer-1');
   assert.equal(consumeDrawerRebuildIntent(App), 'drawer-1');
   assert.equal(consumeDrawerRebuildIntent(App), null);

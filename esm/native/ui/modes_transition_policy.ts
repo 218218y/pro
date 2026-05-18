@@ -9,6 +9,7 @@ import {
   releaseEditHold,
   closeAllLocal,
   closeDrawerById,
+  clearDrawerRebuildIntent,
   refreshBuilderAfterDoorOps,
   resetAllEditModesViaService,
   reportError,
@@ -199,14 +200,20 @@ function readDividerDrawerOpenId(App: AppLike, currentMode: string): string | nu
 }
 
 function clearDividerDrawerOpenId(App: AppLike, prevDrawerOpenId: string | null): void {
-  if (!prevDrawerOpenId) return;
   try {
-    closeDrawerById(App, prevDrawerOpenId);
+    clearDrawerRebuildIntent(App);
+    if (prevDrawerOpenId) closeDrawerById(App, prevDrawerOpenId);
     const tools = getTools(App);
     if (typeof tools.setDrawersOpenId === 'function') tools.setDrawersOpenId(null);
   } catch (err) {
     modesReportNonFatal(App, 'esm/native/ui/modes_transition_policy.ts:clearDividerDrawer', err);
   }
+}
+
+function shouldClearDividerDrawerOnEnter(currentMode: string, nextMode: string): boolean {
+  const modes = getModesMap();
+  const dividerMode = modes.DIVIDER || 'divider';
+  return currentMode === dividerMode && nextMode !== dividerMode;
 }
 
 function scheduleRemoveDoorRefresh(App: AppLike, nextMode: string): void {
@@ -255,6 +262,10 @@ export function enterPrimaryModeImpl(
   const NONE = getModesMap().NONE ?? 'none';
   const nextMode = mode || NONE;
   const modeOpts = opts.modeOpts && typeof opts.modeOpts === 'object' ? opts.modeOpts : {};
+  const currentMode = getPrimaryModeValue(App) || NONE;
+  const prevDrawerOpenId = shouldClearDividerDrawerOnEnter(currentMode, nextMode)
+    ? readDividerDrawerOpenId(App, currentMode)
+    : null;
 
   try {
     commitPrimaryModeTransition(App, nextMode, modeOpts, opts, 'ui:modes:enterPrimaryMode');
@@ -274,6 +285,9 @@ export function enterPrimaryModeImpl(
   }
 
   applyEnterExitChrome(App, opts);
+  if (shouldClearDividerDrawerOnEnter(currentMode, nextMode)) {
+    clearDividerDrawerOpenId(App, prevDrawerOpenId);
+  }
   scheduleRemoveDoorRefresh(App, nextMode);
 }
 
@@ -345,7 +359,9 @@ export function exitPrimaryModeImpl(
     modesReportNonFatal(App, 'esm/native/ui/modes_transition_policy.ts:applyDoorPolicy', err);
   }
 
-  clearDividerDrawerOpenId(App, shouldExit ? prevDrawerOpenId : null);
+  if (shouldExit && currentMode === (getModesMap().DIVIDER || 'divider')) {
+    clearDividerDrawerOpenId(App, prevDrawerOpenId);
+  }
   applyEnterExitChrome(App, opts);
   safeRestoreScrollTop(App, scrollPos);
 }

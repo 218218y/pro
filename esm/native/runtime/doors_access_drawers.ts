@@ -62,11 +62,16 @@ export function setDrawerRebuildIntent(App: unknown, drawerId: unknown): unknown
   return targetId;
 }
 
+export function clearDrawerRebuildIntent(App: unknown): void {
+  const runtime = initDrawerRuntime(App);
+  runtime.snapAfterBuildId = null;
+  runtime.openAfterBuildId = null;
+}
+
 export function consumeDrawerRebuildIntent(App: unknown): unknown {
   const runtime = initDrawerRuntime(App);
   const targetId = runtime.snapAfterBuildId || runtime.openAfterBuildId || null;
-  runtime.snapAfterBuildId = null;
-  runtime.openAfterBuildId = null;
+  clearDrawerRebuildIntent(App);
   return targetId;
 }
 

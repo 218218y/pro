@@ -83,6 +83,7 @@ export {
   syncDoorsVisualsNow,
   snapDrawersToTargetsViaService,
   getDoorEditHoldActive,
+  clearDrawerRebuildIntent,
   getSuppressGlobalToggleUntil,
   setSuppressGlobalToggleUntil,
   suppressGlobalToggleForMs,

@@ -1,9 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { exitPrimaryMode, installModesController } from '../esm/native/ui/modes.ts';
+import { enterPrimaryMode, exitPrimaryMode, installModesController } from '../esm/native/ui/modes.ts';
 import { modesReportNonFatal } from '../esm/native/ui/modes_shared.ts';
 import { installUiPrimaryMode } from '../esm/native/ui/primary_mode.ts';
+import { consumeDrawerRebuildIntent, setDrawerRebuildIntent } from '../esm/native/runtime/doors_access.ts';
 import {
   getModesControllerMaybe,
   getPrimaryModeEffectsMaybe,
@@ -232,9 +233,53 @@ test('exiting divider mode clears the forced drawer id and closes the visual dra
     },
   } as any;
 
+  setDrawerRebuildIntent(App, 'drawer-7');
   exitPrimaryMode(App, 'divider', { closeDoors: false });
 
   assert.equal(state.mode.primary, 'none');
   assert.equal(drawer.isOpen, false);
   assert.deepEqual(setOpenIdCalls, [null]);
+  assert.equal(consumeDrawerRebuildIntent(App), null);
+});
+
+test('entering a different primary mode clears any active divider drawer session', () => {
+  const drawer = { id: 'drawer-7', isOpen: true };
+  const state = {
+    mode: { primary: 'divider', opts: {} },
+    runtime: { globalClickMode: true },
+    ui: {},
+    config: {},
+    meta: {},
+  };
+  const setOpenIdCalls: unknown[] = [];
+
+  const App = {
+    services: {
+      tools: {
+        getDrawersOpenId: () => 'drawer-7',
+        setDrawersOpenId: (id: unknown) => {
+          setOpenIdCalls.push(id);
+        },
+      },
+    },
+    store: {
+      getState() {
+        return state;
+      },
+      setModePatch(patch: Record<string, unknown>) {
+        Object.assign(state.mode, patch);
+      },
+    },
+    render: {
+      drawersArray: [drawer],
+    },
+  } as any;
+
+  setDrawerRebuildIntent(App, 'drawer-7');
+  enterPrimaryMode(App, 'paint', { preserveDoors: true });
+
+  assert.equal(state.mode.primary, 'paint');
+  assert.equal(drawer.isOpen, false);
+  assert.deepEqual(setOpenIdCalls, [null]);
+  assert.equal(consumeDrawerRebuildIntent(App), null);
 });

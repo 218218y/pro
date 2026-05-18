@@ -7,6 +7,7 @@ import {
   isGlobalClickMode,
   reportDoorsRuntimeNonFatal,
   touchDoorsRuntimeRender,
+  vecCopy,
 } from './doors_runtime_shared.js';
 import { applyAllDoors, applySnapshot, captureSnapshot } from './doors_runtime_lifecycle_shared.js';
 
@@ -45,7 +46,14 @@ export function closeDrawerById(App: AppLike, id: DrawerId): void {
       }
     }
 
-    if (match) drawer.isOpen = false;
+    if (match) {
+      drawer.isOpen = false;
+      try {
+        if (drawer.group?.position && drawer.closed) vecCopy(drawer.group.position, drawer.closed);
+      } catch (_) {
+        reportDoorsRuntimeNonFatal(App, 'L546', _);
+      }
+    }
   }
 
   touchDoorsRuntimeRender(App);

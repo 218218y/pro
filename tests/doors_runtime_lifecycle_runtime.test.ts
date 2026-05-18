@@ -173,7 +173,14 @@ test('doors lifecycle local-open capture reapplies snapshot after build and clos
   App.render.doorsArray.push({ id: 'd1', isOpen: true }, { group: { name: 'fallback' }, isOpen: false });
   App.render.drawersArray.push(
     { id: 'drawer-1', isOpen: true },
-    { group: { userData: { partId: 'drawer-part-2' } }, isOpen: true }
+    {
+      group: {
+        position: { x: 4, y: 0, z: 0 },
+        userData: { partId: 'drawer-part-2' },
+      },
+      closed: { x: 0, y: 0, z: 0 },
+      isOpen: true,
+    }
   );
 
   captureLocalOpenStateBeforeBuild(App, { includeDrawers: true });
@@ -197,5 +204,6 @@ test('doors lifecycle local-open capture reapplies snapshot after build and clos
     App.render.drawersArray.map((entry: any) => !!entry.isOpen),
     [true, false]
   );
+  assert.equal(App.render.drawersArray[1].group.position.x, 0);
   assert.ok(renderCalls.length >= 2);
 });
