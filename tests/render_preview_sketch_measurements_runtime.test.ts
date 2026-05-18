@@ -209,7 +209,7 @@ test('sketch placement measurements keep label flags fixed on the cabinet front 
   assert.deepEqual([label.scale.x, label.scale.y, label.scale.z], [0.432, 0.216, 1]);
 });
 
-test('sketch placement measurements render neighbor labels with their own style and honor explicit edge anchor positions', () => {
+test('sketch placement measurements render neighbor and centered labels with their own styles', () => {
   const shared = createRenderPreviewSketchShared({
     asObject<T extends object = AnyRecord>(value: unknown): T | null {
       return value && typeof value === 'object' ? (value as T) : null;
@@ -256,6 +256,18 @@ test('sketch placement measurements render neighbor labels with their own style 
           styleKey: 'neighbor',
           textScale: 0.72,
         },
+        {
+          startX: -0.4,
+          startY: 0,
+          endX: 0.4,
+          endY: 0,
+          z: 0.02,
+          label: '80',
+          labelX: 0,
+          labelY: 0,
+          styleKey: 'center',
+          textScale: 0.82,
+        },
       ],
     } as never,
     THREE,
@@ -268,18 +280,28 @@ test('sketch placement measurements render neighbor labels with their own style 
   const cellLabel = measurementGroup.children[1] as FakeMesh;
   const neighborLine = measurementGroup.children[2] as FakeLine;
   const neighborLabel = measurementGroup.children[3] as FakeMesh;
+  const centerLine = measurementGroup.children[4] as FakeLine;
+  const centerLabel = measurementGroup.children[5] as FakeMesh;
 
   assert.equal(cellLabel.position.x, 0.62);
   assert.equal(cellLabel.position.y, 1.45);
   assert.equal(neighborLabel.position.x, 0.54);
   assert.equal(neighborLabel.position.y, 1.08);
+  assert.equal(centerLabel.position.x, 0);
+  assert.equal(centerLabel.position.y, 0);
   assert.ok(Math.abs(cellLabel.scale.x - 0.3936) < 1e-12);
   assert.ok(Math.abs(cellLabel.scale.y - 0.1968) < 1e-12);
   assert.equal(cellLabel.scale.z, 1);
   assert.ok(Math.abs(neighborLabel.scale.x - 0.324) < 1e-12);
   assert.ok(Math.abs(neighborLabel.scale.y - 0.162) < 1e-12);
   assert.equal(neighborLabel.scale.z, 1);
+  assert.ok(Math.abs(centerLabel.scale.x - 0.3936) < 1e-12);
+  assert.ok(Math.abs(centerLabel.scale.y - 0.1968) < 1e-12);
+  assert.equal(centerLabel.scale.z, 1);
   assert.notEqual(cellLine.material, neighborLine.material);
+  assert.notEqual(cellLine.material, centerLine.material);
+  assert.notEqual(neighborLine.material, centerLine.material);
   assert.equal((cellLine.material as FakeLineBasicMaterial).opts.color, 0x2b7dbb);
   assert.equal((neighborLine.material as FakeLineBasicMaterial).opts.color, 0x000000);
+  assert.equal((centerLine.material as FakeLineBasicMaterial).opts.color, 0x34d399);
 });

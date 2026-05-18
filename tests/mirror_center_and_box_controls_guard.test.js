@@ -30,7 +30,7 @@ const previewSketchBundle = bundleSources(
   import.meta.url
 );
 
-test('[mirror-center] mirror by-size hover uses shared center snap and full-axis guides', () => {
+test('[mirror-center] mirror by-size hover uses shared center snap and measurement-line center highlights', () => {
   const feature = [
     read('esm/native/features/mirror_layout.ts'),
     read('esm/native/features/mirror_layout_contracts.ts'),
@@ -57,19 +57,25 @@ test('[mirror-center] mirror by-size hover uses shared center snap and full-axis
     /const snappedY = Math\.abs\(rawCenterYNorm - DEFAULT_CENTER_NORM\) <= thresholdNorm/
   );
   assert.match(hover, /buildSnappedMirrorCenterFromHit\(/);
+  assert.match(hover, /markCenteredRectClearanceMeasurements\(/);
   assert.match(hover, /showPrimaryBody: false/);
   assert.match(hover, /const hasSizedDraft = __hasMirrorSizedDraft\(readUi, App\);/);
   assert.match(
     hover,
-    /const showGuidePreview = !removeMatch && hasSizedDraft && \(center\.snappedX \|\| center\.snappedY\);/
+    /const showCenteredMeasurements = !removeMatch && hasSizedDraft;/
   );
-  assert.match(hover, /showCenterXGuide: showGuidePreview && !!center\.snappedX/);
-  assert.match(hover, /showCenterYGuide: showGuidePreview && !!center\.snappedY/);
+  assert.match(hover, /centerX: showCenteredMeasurements && !!center\.snappedX/);
+  assert.match(hover, /centerY: showCenteredMeasurements && !!center\.snappedY/);
+  assert.match(hover, /showCenterXGuide: false/);
+  assert.match(hover, /showCenterYGuide: false/);
   assert.match(
     hover,
-    /if \(setSketchPreview && \(showGuidePreview \|\| clearanceMeasurements\.length\)\) \{/
+    /if \(setSketchPreview && clearanceMeasurements\.length\) \{/
   );
-  assert.match(hover, /__styleMirrorGuidePreview\(guidePreview, \{ isCentered: !!center\.isCentered \}\)/);
+  assert.doesNotMatch(
+    read('esm/native/services/canvas_picking_door_action_hover_preview_paint.ts'),
+    /__styleMirrorGuidePreview/
+  );
   assert.match(preview, /const showPrimaryBody = ctx\.input\.showPrimaryBody !== false;/);
 });
 

@@ -45,6 +45,44 @@ function createIdentityDoorOwner(userData: Record<string, unknown>) {
   };
 }
 
+type ClearanceMeasurement = {
+  startX: number;
+  endX: number;
+  startY: number;
+  endY: number;
+  styleKey?: string;
+};
+
+function isHorizontalMeasurement(entry: ClearanceMeasurement): boolean {
+  return Math.abs(entry.startY - entry.endY) <= 1e-9;
+}
+
+function isVerticalMeasurement(entry: ClearanceMeasurement): boolean {
+  return Math.abs(entry.startX - entry.endX) <= 1e-9;
+}
+
+function assertMirrorCenterMeasurementStyles(
+  previewArgs: Record<string, unknown>,
+  expected: { widthCentered: boolean; heightCentered: boolean }
+) {
+  assert.equal(previewArgs.showCenterXGuide, false);
+  assert.equal(previewArgs.showCenterYGuide, false);
+  const measurements = previewArgs.clearanceMeasurements as ClearanceMeasurement[];
+  assert.equal(Array.isArray(measurements), true);
+  assert.equal(measurements.length, 4);
+
+  const horizontal = measurements.filter(isHorizontalMeasurement);
+  const vertical = measurements.filter(isVerticalMeasurement);
+  assert.equal(horizontal.length, 2);
+  assert.equal(vertical.length, 2);
+  assert.ok(
+    horizontal.every(entry => entry.styleKey === (expected.widthCentered ? 'center' : 'cell'))
+  );
+  assert.ok(
+    vertical.every(entry => entry.styleKey === (expected.heightCentered ? 'center' : 'cell'))
+  );
+}
+
 test('glass hover preview treats regular corner external drawers as special door fronts', () => {
   const owner = createIdentityDoorOwner({
     partId: 'corner_c0_draw_1',
@@ -344,6 +382,103 @@ test('mirror hover preview prefers the styled wood-center metadata over the oute
     expectedPlacement.mirrorHeightM,
     1,
   ]);
+});
+
+test('mirror by-size hover colors centered width and height measurement lines without side guides', () => {
+  function run(hitX: number, hitY: number) {
+    const owner = createIdentityDoorOwner({
+      partId: 'd4_left',
+      __doorWidth: 1,
+      __doorHeight: 2,
+    });
+    const marker: Record<string, unknown> = {
+      visible: false,
+      material: 'base',
+      userData: {
+        __matAdd: 'add',
+        __matRemove: 'remove',
+        __matGroove: 'groove',
+        __matMirror: 'mirror',
+        __matCenter: 'center',
+      },
+      position: {
+        copy(_next: unknown) {
+          return undefined;
+        },
+      },
+      quaternion: {
+        copy(_next: unknown) {
+          return undefined;
+        },
+      },
+      scale: {
+        set() {
+          return undefined;
+        },
+      },
+    };
+    const previewCalls: Record<string, unknown>[] = [];
+    const handled = tryHandleDoorPaintHoverPreview({
+      App: {
+        maps: {
+          getMap() {
+            return {};
+          },
+        },
+      } as never,
+      THREE: { Vector3: Vec3, Quaternion: Quat },
+      hit: {
+        hitDoorPid: 'd4_left',
+        hitDoorGroup: owner as never,
+        hitPoint: {
+          x: hitX,
+          y: hitY,
+          z: 0.1,
+          set() {
+            return undefined;
+          },
+        } as never,
+      },
+      groupRec: owner as never,
+      userData: owner.userData as never,
+      wardrobeGroup: {
+        worldToLocal(target: Vec3) {
+          return target;
+        },
+      } as never,
+      doorMarker: marker as never,
+      markerUd: marker.userData as never,
+      local: new Vec3() as never,
+      localHit: new Vec3() as never,
+      wq: new Quat() as never,
+      zOff: 0.02,
+      scopedHitDoorPid: 'd4_left',
+      canonDoorPartKeyForMaps: (id: string) => id,
+      normalizedPaintSelection: 'mirror',
+      setSketchPreview(previewArgs: Record<string, unknown>) {
+        previewCalls.push(previewArgs);
+        return {};
+      },
+      readUi: () => ({ currentMirrorDraftWidthCm: 20, currentMirrorDraftHeightCm: 40 }) as never,
+    });
+
+    assert.equal(handled, true);
+    assert.equal(previewCalls.length, 1);
+    return previewCalls[0];
+  }
+
+  assertMirrorCenterMeasurementStyles(run(0, 0.6), {
+    widthCentered: true,
+    heightCentered: false,
+  });
+  assertMirrorCenterMeasurementStyles(run(0.2, 0), {
+    widthCentered: false,
+    heightCentered: true,
+  });
+  assertMirrorCenterMeasurementStyles(run(0, 0), {
+    widthCentered: true,
+    heightCentered: true,
+  });
 });
 
 class OffsetDoorNode {

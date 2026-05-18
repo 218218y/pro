@@ -134,6 +134,44 @@ function createMarker() {
   } as never;
 }
 
+type ClearanceMeasurement = {
+  startX: number;
+  endX: number;
+  startY: number;
+  endY: number;
+  styleKey?: string;
+};
+
+function isHorizontalMeasurement(entry: ClearanceMeasurement): boolean {
+  return Math.abs(entry.startY - entry.endY) <= 1e-9;
+}
+
+function isVerticalMeasurement(entry: ClearanceMeasurement): boolean {
+  return Math.abs(entry.startX - entry.endX) <= 1e-9;
+}
+
+function assertTrimCenterMeasurementStyles(
+  previewArgs: Record<string, unknown>,
+  expected: { widthCentered: boolean; heightCentered: boolean }
+) {
+  assert.equal(previewArgs.showCenterXGuide, false);
+  assert.equal(previewArgs.showCenterYGuide, false);
+  const measurements = previewArgs.clearanceMeasurements as ClearanceMeasurement[];
+  assert.equal(Array.isArray(measurements), true);
+  assert.equal(measurements.length, 4);
+
+  const horizontal = measurements.filter(isHorizontalMeasurement);
+  const vertical = measurements.filter(isVerticalMeasurement);
+  assert.equal(horizontal.length, 2);
+  assert.equal(vertical.length, 2);
+  assert.ok(
+    horizontal.every(entry => entry.styleKey === (expected.widthCentered ? 'center' : 'cell'))
+  );
+  assert.ok(
+    vertical.every(entry => entry.styleKey === (expected.heightCentered ? 'center' : 'cell'))
+  );
+}
+
 test('door trim hover reads the same mode opts and config map as click flow', () => {
   const app = createApp();
   assert.deepEqual(__readDoorTrimModeDraft(app), {
@@ -200,6 +238,84 @@ test('door trim hover preview matches vertical custom trim placement and remove 
   assert.equal(marker.visible, true);
   assert.equal(marker.material, 'remove');
   assert.deepEqual((marker.scale as { last: [number, number, number] | null }).last, [0.04, 0.4, 1]);
+});
+
+test('door trim hover colors centered width and height measurement lines without side guides', () => {
+  function run(hitX: number, hitY: number) {
+    const state = createStoreState();
+    state.config.doorTrimMap = {};
+    state.mode.opts = {
+      trimAxis: 'vertical',
+      trimColor: 'black',
+      trimSpan: 'custom',
+      trimSizeCm: 40,
+      trimCrossSizeCm: 4,
+    };
+    const app = {
+      store: {
+        getState() {
+          return state;
+        },
+      },
+      maps: {
+        getMap() {
+          return {};
+        },
+      },
+    } as never;
+    const owner = createDoorOwner();
+    const marker = createMarker();
+    const previewCalls: Record<string, unknown>[] = [];
+
+    const handled = tryHandleDoorTrimHoverPreview({
+      App: app,
+      THREE: { Vector3: Vec3, Quaternion: Quat },
+      hit: {
+        hitDoorPid: 'd1_left',
+        hitDoorGroup: owner,
+        hitPoint: { x: hitX, y: hitY, z: 0.02 },
+      },
+      hitDoorPid: 'd1_left',
+      groupRec: owner,
+      userData: owner.userData,
+      doorMarker: marker,
+      markerUd: marker.userData,
+      local: new Vec3(),
+      localHit: new Vec3(),
+      wq: new Quat(),
+      zOff: 0.02,
+      setSketchPreview(previewArgs: Record<string, unknown>) {
+        previewCalls.push(previewArgs);
+        return {
+          hoverMarker: { material: { color: { setHex() {} }, emissive: { setHex() {} } } },
+          mesh: { material: { color: { setHex() {} }, emissive: { setHex() {} } } },
+        };
+      },
+      wardrobeGroup: {
+        worldToLocal(target: Vec3) {
+          return target;
+        },
+      },
+    });
+
+    assert.equal(handled, true);
+    assert.equal(previewCalls.length, 1);
+    assert.equal(previewCalls[0].op, 'add');
+    return previewCalls[0];
+  }
+
+  assertTrimCenterMeasurementStyles(run(0, 0.6), {
+    widthCentered: true,
+    heightCentered: false,
+  });
+  assertTrimCenterMeasurementStyles(run(0.2, 0), {
+    widthCentered: false,
+    heightCentered: true,
+  });
+  assertTrimCenterMeasurementStyles(run(0, 0), {
+    widthCentered: true,
+    heightCentered: true,
+  });
 });
 
 test('door trim hover stays live even when sketch preview factory is unavailable', () => {

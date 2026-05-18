@@ -8,7 +8,7 @@ const hoverPreview = [
   readFileSync('esm/native/services/canvas_picking_door_action_hover_preview_paint.ts', 'utf8'),
 ].join('\n');
 
-test('[mirror-hover] sized drafts keep sized preview and full mirrors skip center guides', () => {
+test('[mirror-hover] sized drafts keep sized preview and center highlights stay on measurements', () => {
   assert.match(hoverPreview, /widthCm:\s*ui\?\.currentMirrorDraftWidthCm/);
   assert.match(hoverPreview, /heightCm:\s*ui\?\.currentMirrorDraftHeightCm/);
   assert.match(
@@ -20,9 +20,14 @@ test('[mirror-hover] sized drafts keep sized preview and full mirrors skip cente
     /return __readPositiveDraftCm\(draft\.widthCm\) != null \|\| __readPositiveDraftCm\(draft\.heightCm\) != null;/
   );
   assert.match(hoverPreview, /buildRectClearanceMeasurementEntries/);
+  assert.match(hoverPreview, /markCenteredRectClearanceMeasurements/);
   assert.match(
     hoverPreview,
-    /const showGuidePreview = !removeMatch && hasSizedDraft && \(center\.snappedX \|\| center\.snappedY\);/
+    /const showCenteredMeasurements = !removeMatch && hasSizedDraft;/
   );
+  assert.match(hoverPreview, /centerX: showCenteredMeasurements && !!center\.snappedX/);
+  assert.match(hoverPreview, /centerY: showCenteredMeasurements && !!center\.snappedY/);
+  assert.match(hoverPreview, /showCenterXGuide: false/);
+  assert.match(hoverPreview, /showCenterYGuide: false/);
   assert.match(hoverPreview, /: hasSizedDraft && center\.isCentered/);
 });

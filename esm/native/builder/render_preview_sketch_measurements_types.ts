@@ -7,7 +7,7 @@ import type {
   PreviewValueRecord,
 } from './render_preview_ops_contracts.js';
 
-export type MeasurementStyleKey = 'default' | 'cell' | 'neighbor';
+export type MeasurementStyleKey = 'default' | 'cell' | 'neighbor' | 'center';
 
 export type MeasurementEntryLike = {
   startX?: unknown;

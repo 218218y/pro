@@ -20,7 +20,6 @@ import {
   __readMirrorDraft,
   __readPointXYZ,
   __resolveMirrorFaceSignFromLocalPoint,
-  __styleMirrorGuidePreview,
   type DoorPaintHoverPreviewArgs,
 } from './canvas_picking_door_action_hover_preview_shared.js';
 import type { UnknownRecord } from '../../../types';
@@ -32,6 +31,7 @@ import {
 } from '../features/door_style_overrides.js';
 import {
   buildRectClearanceMeasurementEntries,
+  markCenteredRectClearanceMeasurements,
   resolveCellMeasurementLabelOutsets,
 } from './canvas_picking_hover_clearance_measurements.js';
 
@@ -161,32 +161,38 @@ export function tryHandleDoorPaintHoverPreview(args: DoorPaintHoverPreviewArgs):
     previewWidth = Math.max(0.01, placement.mirrorWidthM);
     previewHeight = Math.max(0.01, placement.mirrorHeightM);
     zOff = 0.02 * (placement.faceSign === -1 ? -1 : 1);
-    const showGuidePreview = !removeMatch && hasSizedDraft && (center.snappedX || center.snappedY);
+    const showCenteredMeasurements = !removeMatch && hasSizedDraft;
     const clearanceTextScale = 0.9;
     const { horizontalLabelOutset, verticalLabelOutset } =
       resolveCellMeasurementLabelOutsets(clearanceTextScale);
-    const clearanceMeasurements = buildRectClearanceMeasurementEntries({
-      containerMinX: mirrorRect.minX,
-      containerMaxX: mirrorRect.maxX,
-      containerMinY: mirrorRect.minY,
-      containerMaxY: mirrorRect.maxY,
-      targetCenterX: placement.centerX,
-      targetCenterY: placement.centerY,
-      targetWidth: placement.mirrorWidthM,
-      targetHeight: placement.mirrorHeightM,
-      z: zOff + (zOff >= 0 ? 0.0025 : -0.0025),
-      showTop: true,
-      showBottom: true,
-      showLeft: placement.mirrorWidthM < mirrorRect.maxX - mirrorRect.minX - 0.0005,
-      showRight: placement.mirrorWidthM < mirrorRect.maxX - mirrorRect.minX - 0.0005,
-      minHorizontalCm: 0.5,
-      horizontalLabelPlacement: 'outside',
-      horizontalLabelOutset,
-      verticalLabelOutset,
-      styleKey: 'cell',
-      textScale: clearanceTextScale,
-    });
-    if (setSketchPreview && (showGuidePreview || clearanceMeasurements.length)) {
+    const clearanceMeasurements = markCenteredRectClearanceMeasurements(
+      buildRectClearanceMeasurementEntries({
+        containerMinX: mirrorRect.minX,
+        containerMaxX: mirrorRect.maxX,
+        containerMinY: mirrorRect.minY,
+        containerMaxY: mirrorRect.maxY,
+        targetCenterX: placement.centerX,
+        targetCenterY: placement.centerY,
+        targetWidth: placement.mirrorWidthM,
+        targetHeight: placement.mirrorHeightM,
+        z: zOff + (zOff >= 0 ? 0.0025 : -0.0025),
+        showTop: true,
+        showBottom: true,
+        showLeft: placement.mirrorWidthM < mirrorRect.maxX - mirrorRect.minX - 0.0005,
+        showRight: placement.mirrorWidthM < mirrorRect.maxX - mirrorRect.minX - 0.0005,
+        minHorizontalCm: 0.5,
+        horizontalLabelPlacement: 'outside',
+        horizontalLabelOutset,
+        verticalLabelOutset,
+        styleKey: 'cell',
+        textScale: clearanceTextScale,
+      }),
+      {
+        centerX: showCenteredMeasurements && !!center.snappedX,
+        centerY: showCenteredMeasurements && !!center.snappedY,
+      }
+    );
+    if (setSketchPreview && clearanceMeasurements.length) {
       const guidePreviewArgs: UnknownRecord = {
         App,
         THREE,
@@ -202,14 +208,13 @@ export function tryHandleDoorPaintHoverPreview(args: DoorPaintHoverPreviewArgs):
         woodThick: 0.004,
         op: 'add',
         showPrimaryBody: false,
-        showCenterXGuide: showGuidePreview && !!center.snappedX,
-        showCenterYGuide: showGuidePreview && !!center.snappedY,
+        showCenterXGuide: false,
+        showCenterYGuide: false,
         guideWidth: Math.max(0.0001, mirrorRect.maxX - mirrorRect.minX),
         guideHeight: Math.max(0.0001, mirrorRect.maxY - mirrorRect.minY),
         clearanceMeasurements,
       };
-      const guidePreview = setSketchPreview(guidePreviewArgs);
-      if (showGuidePreview) __styleMirrorGuidePreview(guidePreview, { isCentered: !!center.isCentered });
+      setSketchPreview(guidePreviewArgs);
     }
     previewMaterial = removeMatch
       ? markerUd.__matRemove || markerUd.__matGroove || baseMarkerMaterial

@@ -5,8 +5,17 @@ import {
   buildRectClearanceMeasurementEntries,
   buildStackAwareVerticalClearanceMeasurementEntries,
   buildVerticalClearanceMeasurementEntries,
+  markCenteredRectClearanceMeasurements,
   resolveCellMeasurementLabelOutsets,
 } from '../esm/native/services/canvas_picking_hover_clearance_measurements.ts';
+
+function isHorizontalMeasurement(entry: { startY: number; endY: number }): boolean {
+  return Math.abs(entry.startY - entry.endY) <= 1e-9;
+}
+
+function isVerticalMeasurement(entry: { startX: number; endX: number }): boolean {
+  return Math.abs(entry.startX - entry.endX) <= 1e-9;
+}
 
 test('rect clearance builder emits vertical and horizontal cm labels in local coordinates', () => {
   const entries = buildRectClearanceMeasurementEntries({
@@ -89,6 +98,37 @@ test('rect clearance builder can push width labels outward and height labels bey
   assert.equal(entries[1].labelY, -1 - verticalLabelOutset);
   assert.equal(entries[2].labelX, -0.5 - horizontalLabelOutset);
   assert.equal(entries[3].labelX, 0.5 + horizontalLabelOutset);
+});
+
+test('centered rect clearance marks width and height measurement axes independently', () => {
+  const entries = buildRectClearanceMeasurementEntries({
+    containerMinX: -0.5,
+    containerMaxX: 0.5,
+    containerMinY: -1,
+    containerMaxY: 1,
+    targetCenterX: 0,
+    targetCenterY: 0,
+    targetWidth: 0.2,
+    targetHeight: 0.4,
+    showTop: true,
+    showBottom: true,
+    showLeft: true,
+    showRight: true,
+    styleKey: 'cell',
+  });
+
+  const widthCentered = markCenteredRectClearanceMeasurements(entries, { centerX: true });
+  assert.equal(widthCentered.length, 4);
+  assert.ok(widthCentered.filter(isHorizontalMeasurement).every(entry => entry.styleKey === 'center'));
+  assert.ok(widthCentered.filter(isVerticalMeasurement).every(entry => entry.styleKey === 'cell'));
+
+  const heightCentered = markCenteredRectClearanceMeasurements(entries, { centerY: true });
+  assert.ok(heightCentered.filter(isHorizontalMeasurement).every(entry => entry.styleKey === 'cell'));
+  assert.ok(heightCentered.filter(isVerticalMeasurement).every(entry => entry.styleKey === 'center'));
+
+  const bothCentered = markCenteredRectClearanceMeasurements(entries, { centerX: true, centerY: true });
+  assert.ok(bothCentered.every(entry => entry.styleKey === 'center'));
+  assert.ok(entries.every(entry => entry.styleKey === 'cell'));
 });
 
 test('vertical clearance builder emits only top and bottom cm labels for stacked previews', () => {

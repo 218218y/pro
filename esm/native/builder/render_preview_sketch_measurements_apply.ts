@@ -52,7 +52,13 @@ export function applySketchPlacementMeasurements(args: {
 
     const z = readFinite(entry.z) ?? 0;
     const styleKey =
-      entry.styleKey === 'cell' ? 'cell' : entry.styleKey === 'neighbor' ? 'neighbor' : 'default';
+      entry.styleKey === 'cell'
+        ? 'cell'
+        : entry.styleKey === 'neighbor'
+          ? 'neighbor'
+          : entry.styleKey === 'center'
+            ? 'center'
+            : 'default';
     const lineMaterial = ensureMeasurementLineMaterial(userData, styleKey, THREE, shared);
     const slot = ensureMeasurementSlot({
       slots,
@@ -103,7 +109,7 @@ export function applySketchPlacementMeasurements(args: {
       SKETCH_BOX_DIMENSIONS.preview.measurementTextScaleMin,
       readFinite(entry.textScale) ?? SKETCH_BOX_DIMENSIONS.preview.measurementTextScaleDefault
     );
-    if (styleKey === 'cell') {
+    if (styleKey === 'cell' || styleKey === 'center') {
       slot.label.scale?.set?.(
         SKETCH_BOX_DIMENSIONS.preview.measurementScaleCellX * textScale,
         SKETCH_BOX_DIMENSIONS.preview.measurementScaleCellY * textScale,

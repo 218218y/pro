@@ -93,8 +93,8 @@ function createMeasurementLineMaterial(
   THREE: MeasurementTHREESurface,
   shared: RenderPreviewSketchShared
 ): PreviewMaterialLike {
-  const color = styleKey === 'neighbor' ? 0x000000 : 0x2b7dbb;
-  const opacity = styleKey === 'neighbor' ? 1 : 0.96;
+  const color = styleKey === 'neighbor' ? 0x000000 : styleKey === 'center' ? 0x34d399 : 0x2b7dbb;
+  const opacity = styleKey === 'neighbor' ? 1 : styleKey === 'center' ? 0.98 : 0.96;
   const material = new THREE.LineBasicMaterial({
     color,
     transparent: true,

@@ -21,6 +21,7 @@ import {
 import type { UnknownRecord } from '../../../types';
 import {
   buildRectClearanceMeasurementEntries,
+  markCenteredRectClearanceMeasurements,
   resolveCellMeasurementLabelOutsets,
 } from './canvas_picking_hover_clearance_measurements.js';
 
@@ -107,27 +108,33 @@ export function tryHandleDoorTrimHoverPreview(args: DoorTrimHoverPreviewArgs): b
   const clearanceTextScale = 0.9;
   const { horizontalLabelOutset, verticalLabelOutset } =
     resolveCellMeasurementLabelOutsets(clearanceTextScale);
-  const clearanceMeasurements = buildRectClearanceMeasurementEntries({
-    containerMinX: rect0.minX,
-    containerMaxX: rect0.maxX,
-    containerMinY: rect0.minY,
-    containerMaxY: rect0.maxY,
-    targetCenterX: placement.centerX,
-    targetCenterY: placement.centerY,
-    targetWidth: placement.width,
-    targetHeight: placement.height,
-    z: zOff + (zOff >= 0 ? 0.0025 : -0.0025),
-    showTop: true,
-    showBottom: true,
-    showLeft: placement.width < rect0.maxX - rect0.minX - 0.0005,
-    showRight: placement.width < rect0.maxX - rect0.minX - 0.0005,
-    minHorizontalCm: 0.5,
-    horizontalLabelPlacement: 'outside',
-    horizontalLabelOutset,
-    verticalLabelOutset,
-    styleKey: 'cell',
-    textScale: clearanceTextScale,
-  });
+  const clearanceMeasurements = markCenteredRectClearanceMeasurements(
+    buildRectClearanceMeasurementEntries({
+      containerMinX: rect0.minX,
+      containerMaxX: rect0.maxX,
+      containerMinY: rect0.minY,
+      containerMaxY: rect0.maxY,
+      targetCenterX: placement.centerX,
+      targetCenterY: placement.centerY,
+      targetWidth: placement.width,
+      targetHeight: placement.height,
+      z: zOff + (zOff >= 0 ? 0.0025 : -0.0025),
+      showTop: true,
+      showBottom: true,
+      showLeft: placement.width < rect0.maxX - rect0.minX - 0.0005,
+      showRight: placement.width < rect0.maxX - rect0.minX - 0.0005,
+      minHorizontalCm: 0.5,
+      horizontalLabelPlacement: 'outside',
+      horizontalLabelOutset,
+      verticalLabelOutset,
+      styleKey: 'cell',
+      textScale: clearanceTextScale,
+    }),
+    {
+      centerX: !match && !!center.snappedX,
+      centerY: !match && !!center.snappedY,
+    }
+  );
 
   const previewArgs: UnknownRecord = {
     App,
@@ -143,8 +150,8 @@ export function tryHandleDoorTrimHoverPreview(args: DoorTrimHoverPreviewArgs): b
     d: DEFAULT_DOOR_TRIM_DEPTH_M,
     woodThick: placement.axis === 'vertical' ? placement.width : placement.height,
     op: match ? 'remove' : 'add',
-    showCenterXGuide: !match && !!center.snappedX,
-    showCenterYGuide: !match && !!center.snappedY,
+    showCenterXGuide: false,
+    showCenterYGuide: false,
     guideWidth: Math.max(0.0001, rect0.maxX - rect0.minX),
     guideHeight: Math.max(0.0001, rect0.maxY - rect0.minY),
     clearanceMeasurements,

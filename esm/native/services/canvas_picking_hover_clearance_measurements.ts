@@ -9,7 +9,7 @@ export type HoverClearanceMeasurementEntry = {
   label: string;
   labelX?: number;
   labelY?: number;
-  styleKey?: 'default' | 'cell' | 'neighbor';
+  styleKey?: 'default' | 'cell' | 'neighbor' | 'center';
   textScale?: number;
   faceSign?: number;
   viewFaceSign?: number;
@@ -81,7 +81,7 @@ export function buildVerticalClearanceMeasurementEntries(args: {
   targetWidth: number;
   targetHeight: number;
   z?: number;
-  styleKey?: 'default' | 'cell' | 'neighbor';
+  styleKey?: 'default' | 'cell' | 'neighbor' | 'center';
   textScale?: number;
   faceSign?: unknown;
   viewFaceSign?: unknown;
@@ -132,7 +132,7 @@ export function buildRectClearanceMeasurementEntries(args: {
   horizontalLabelPlacement?: 'center' | 'outside';
   horizontalLabelOutset?: number;
   verticalLabelOutset?: number;
-  styleKey?: 'default' | 'cell' | 'neighbor';
+  styleKey?: 'default' | 'cell' | 'neighbor' | 'center';
   textScale?: number;
   faceSign?: unknown;
   viewFaceSign?: unknown;
@@ -156,7 +156,14 @@ export function buildRectClearanceMeasurementEntries(args: {
   const targetMinY = Math.max(containerMinY, targetCenterY - halfH);
   const targetMaxY = Math.min(containerMaxY, targetCenterY + halfH);
   const z = typeof args.z === 'number' && Number.isFinite(args.z) ? args.z : undefined;
-  const styleKey = args.styleKey === 'cell' ? 'cell' : 'default';
+  const styleKey =
+    args.styleKey === 'cell'
+      ? 'cell'
+      : args.styleKey === 'neighbor'
+        ? 'neighbor'
+        : args.styleKey === 'center'
+          ? 'center'
+          : 'default';
   const textScale =
     typeof args.textScale === 'number' && Number.isFinite(args.textScale) ? args.textScale : 0.9;
   const minVerticalCm = Math.max(0, clampFinite(args.minVerticalCm, 0));
@@ -240,6 +247,30 @@ export function buildRectClearanceMeasurementEntries(args: {
   return entries;
 }
 
+function isHorizontalMeasurement(entry: HoverClearanceMeasurementEntry): boolean {
+  return Math.abs(Number(entry.startY) - Number(entry.endY)) <= 1e-9;
+}
+
+function isVerticalMeasurement(entry: HoverClearanceMeasurementEntry): boolean {
+  return Math.abs(Number(entry.startX) - Number(entry.endX)) <= 1e-9;
+}
+
+export function markCenteredRectClearanceMeasurements(
+  entries: HoverClearanceMeasurementEntry[],
+  args: {
+    centerX?: boolean;
+    centerY?: boolean;
+  }
+): HoverClearanceMeasurementEntry[] {
+  if (!args.centerX && !args.centerY) return entries;
+  return entries.map(entry => {
+    if ((args.centerX && isHorizontalMeasurement(entry)) || (args.centerY && isVerticalMeasurement(entry))) {
+      return { ...entry, styleKey: 'center' as const };
+    }
+    return entry;
+  });
+}
+
 export type VerticalClearanceNeighborKind = 'shelf' | 'drawer';
 
 export type VerticalClearanceNeighborRange = {
@@ -278,7 +309,7 @@ export function buildStackAwareVerticalClearanceMeasurementEntries(args: {
   targetHeight: number;
   neighbors?: VerticalClearanceNeighborRange[];
   z?: number;
-  styleKey?: 'default' | 'cell' | 'neighbor';
+  styleKey?: 'default' | 'cell' | 'neighbor' | 'center';
   textScale?: number;
   minVerticalCm?: number;
   faceSign?: unknown;
