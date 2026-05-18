@@ -60,18 +60,12 @@ test('[mirror-center] mirror by-size hover uses shared center snap and measureme
   assert.match(hover, /markCenteredRectClearanceMeasurements\(/);
   assert.match(hover, /showPrimaryBody: false/);
   assert.match(hover, /const hasSizedDraft = __hasMirrorSizedDraft\(readUi, App\);/);
-  assert.match(
-    hover,
-    /const showCenteredMeasurements = !removeMatch && hasSizedDraft;/
-  );
+  assert.match(hover, /const showCenteredMeasurements = !removeMatch && hasSizedDraft;/);
   assert.match(hover, /centerX: showCenteredMeasurements && !!center\.snappedX/);
   assert.match(hover, /centerY: showCenteredMeasurements && !!center\.snappedY/);
   assert.match(hover, /showCenterXGuide: false/);
   assert.match(hover, /showCenterYGuide: false/);
-  assert.match(
-    hover,
-    /if \(setSketchPreview && clearanceMeasurements\.length\) \{/
-  );
+  assert.match(hover, /if \(setSketchPreview && clearanceMeasurements\.length\) \{/);
   assert.doesNotMatch(
     read('esm/native/services/canvas_picking_door_action_hover_preview_paint.ts'),
     /__styleMirrorGuidePreview/

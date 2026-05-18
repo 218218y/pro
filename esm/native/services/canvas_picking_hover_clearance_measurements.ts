@@ -62,7 +62,9 @@ function shouldShowClearance(valueM: number, minCm: number): boolean {
   return roundedCm >= Math.max(1, Math.ceil(Math.max(0, minCm)));
 }
 
-export function resolveCellMeasurementLabelOutsets(textScaleValue: unknown): ClearanceMeasurementLabelOutsets {
+export function resolveCellMeasurementLabelOutsets(
+  textScaleValue: unknown
+): ClearanceMeasurementLabelOutsets {
   const textScale =
     typeof textScaleValue === 'number' && Number.isFinite(textScaleValue)
       ? textScaleValue

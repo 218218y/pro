@@ -21,10 +21,7 @@ test('[mirror-hover] sized drafts keep sized preview and center highlights stay 
   );
   assert.match(hoverPreview, /buildRectClearanceMeasurementEntries/);
   assert.match(hoverPreview, /markCenteredRectClearanceMeasurements/);
-  assert.match(
-    hoverPreview,
-    /const showCenteredMeasurements = !removeMatch && hasSizedDraft;/
-  );
+  assert.match(hoverPreview, /const showCenteredMeasurements = !removeMatch && hasSizedDraft;/);
   assert.match(hoverPreview, /centerX: showCenteredMeasurements && !!center\.snappedX/);
   assert.match(hoverPreview, /centerY: showCenteredMeasurements && !!center\.snappedY/);
   assert.match(hoverPreview, /showCenterXGuide: false/);

@@ -75,12 +75,8 @@ function assertMirrorCenterMeasurementStyles(
   const vertical = measurements.filter(isVerticalMeasurement);
   assert.equal(horizontal.length, 2);
   assert.equal(vertical.length, 2);
-  assert.ok(
-    horizontal.every(entry => entry.styleKey === (expected.widthCentered ? 'center' : 'cell'))
-  );
-  assert.ok(
-    vertical.every(entry => entry.styleKey === (expected.heightCentered ? 'center' : 'cell'))
-  );
+  assert.ok(horizontal.every(entry => entry.styleKey === (expected.widthCentered ? 'center' : 'cell')));
+  assert.ok(vertical.every(entry => entry.styleKey === (expected.heightCentered ? 'center' : 'cell')));
 }
 
 test('glass hover preview treats regular corner external drawers as special door fronts', () => {

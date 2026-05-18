@@ -164,12 +164,8 @@ function assertTrimCenterMeasurementStyles(
   const vertical = measurements.filter(isVerticalMeasurement);
   assert.equal(horizontal.length, 2);
   assert.equal(vertical.length, 2);
-  assert.ok(
-    horizontal.every(entry => entry.styleKey === (expected.widthCentered ? 'center' : 'cell'))
-  );
-  assert.ok(
-    vertical.every(entry => entry.styleKey === (expected.heightCentered ? 'center' : 'cell'))
-  );
+  assert.ok(horizontal.every(entry => entry.styleKey === (expected.widthCentered ? 'center' : 'cell')));
+  assert.ok(vertical.every(entry => entry.styleKey === (expected.heightCentered ? 'center' : 'cell')));
 }
 
 test('door trim hover reads the same mode opts and config map as click flow', () => {
