@@ -1,4 +1,4 @@
-import type { ReactElement } from 'react';
+import type { ChangeEvent, ReactElement } from 'react';
 
 import { ColorSwatch, OptionButton, OptionButtonGroup, ToggleRow } from '../components/index.js';
 import { CURTAIN_OPTIONS, type CurtainPreset } from './design_tab_multicolor_shared.js';
@@ -11,6 +11,8 @@ import {
   MULTI_GLASS_STYLE_OPTIONS,
   MULTI_MIRROR_AUTO,
   MULTI_MIRROR_HEIGHT,
+  MULTI_MIRROR_RESET_HEIGHT,
+  MULTI_MIRROR_RESET_WIDTH,
   MULTI_MIRROR_WIDTH,
   MULTI_SECTION_TITLE,
   MULTI_SPECIAL_HEADER,
@@ -21,6 +23,8 @@ import {
 } from './design_tab_multicolor_panel_contracts.js';
 import type { DoorStyleOverrideValue } from '../../../features/door_style_overrides.js';
 
+type MirrorDraftFieldKey = 'currentMirrorDraftHeightCm' | 'currentMirrorDraftWidthCm';
+
 export type MultiColorPanelViewProps = {
   embedded?: boolean;
   viewState: MultiColorPanelViewState;
@@ -29,10 +33,7 @@ export type MultiColorPanelViewProps = {
   onPickBrush: (paintId: string, curtainPreset?: CurtainPreset) => void;
   onPickDoorStyle: (style: DoorStyleOverrideValue) => void;
   onSetCurtainPreset: (curtainPreset: CurtainPreset) => void;
-  onSetMirrorDraftField: (
-    key: 'currentMirrorDraftHeightCm' | 'currentMirrorDraftWidthCm',
-    value: string
-  ) => void;
+  onSetMirrorDraftField: (key: MirrorDraftFieldKey, value: string) => void;
 };
 
 function MultiColorSwatchDotButton(props: {
@@ -75,43 +76,71 @@ function MultiColorSwatchRow(props: {
 function MultiColorMirrorDraftCard(props: {
   heightDraft: string;
   widthDraft: string;
-  onSetMirrorDraftField: (
-    key: 'currentMirrorDraftHeightCm' | 'currentMirrorDraftWidthCm',
-    value: string
-  ) => void;
+  onSetMirrorDraftField: (key: MirrorDraftFieldKey, value: string) => void;
 }): ReactElement {
   return (
     <div className="wp-tool-card wp-tool-card--curtain">
       <div className="wp-section-title">מידות מראה</div>
 
-      <div className="wp-row wp-gap-10">
-        <label style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <span>{MULTI_MIRROR_HEIGHT}</span>
-          <input
-            type="text"
-            inputMode="decimal"
-            className="form-control"
-            placeholder={MULTI_MIRROR_AUTO}
-            value={props.heightDraft}
-            onChange={(event: import('react').ChangeEvent<HTMLInputElement>) =>
-              props.onSetMirrorDraftField('currentMirrorDraftHeightCm', event.target.value)
-            }
-          />
-        </label>
+      <div className="wp-row wp-gap-10 wp-r-mirror-draft-fields">
+        <MultiColorMirrorDraftField
+          id="wp-r-mirror-draft-height"
+          label={MULTI_MIRROR_HEIGHT}
+          resetLabel={MULTI_MIRROR_RESET_HEIGHT}
+          value={props.heightDraft}
+          fieldKey="currentMirrorDraftHeightCm"
+          onSetMirrorDraftField={props.onSetMirrorDraftField}
+        />
 
-        <label style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <span>{MULTI_MIRROR_WIDTH}</span>
-          <input
-            type="text"
-            inputMode="decimal"
-            className="form-control"
-            placeholder={MULTI_MIRROR_AUTO}
-            value={props.widthDraft}
-            onChange={(event: import('react').ChangeEvent<HTMLInputElement>) =>
-              props.onSetMirrorDraftField('currentMirrorDraftWidthCm', event.target.value)
-            }
-          />
-        </label>
+        <MultiColorMirrorDraftField
+          id="wp-r-mirror-draft-width"
+          label={MULTI_MIRROR_WIDTH}
+          resetLabel={MULTI_MIRROR_RESET_WIDTH}
+          value={props.widthDraft}
+          fieldKey="currentMirrorDraftWidthCm"
+          onSetMirrorDraftField={props.onSetMirrorDraftField}
+        />
+      </div>
+    </div>
+  );
+}
+
+function MultiColorMirrorDraftField(props: {
+  id: string;
+  label: string;
+  resetLabel: string;
+  value: string;
+  fieldKey: MirrorDraftFieldKey;
+  onSetMirrorDraftField: (key: MirrorDraftFieldKey, value: string) => void;
+}): ReactElement {
+  const onChange = (event: ChangeEvent<HTMLInputElement>) =>
+    props.onSetMirrorDraftField(props.fieldKey, event.target.value);
+  const onReset = () => props.onSetMirrorDraftField(props.fieldKey, '');
+
+  return (
+    <div className="wp-r-mirror-draft-field">
+      <label className="wp-r-label wp-r-label--center wp-r-mirror-draft-label" htmlFor={props.id}>
+        {props.label}
+      </label>
+      <div className="wp-r-mirror-draft-input-row">
+        <button
+          type="button"
+          className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-mirror-draft-reset-btn"
+          title={props.resetLabel}
+          aria-label={props.resetLabel}
+          onClick={onReset}
+        >
+          <i className="fas fa-undo-alt" aria-hidden="true" />
+        </button>
+        <input
+          id={props.id}
+          type="text"
+          inputMode="decimal"
+          className="form-control wp-r-mirror-draft-input"
+          placeholder={MULTI_MIRROR_AUTO}
+          value={props.value}
+          onChange={onChange}
+        />
       </div>
     </div>
   );

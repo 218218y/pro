@@ -27,6 +27,8 @@ export const MULTI_CURTAIN_TITLE = 'בחר צבע וילון לדלת הזכוכ
 export const MULTI_MIRROR_HEIGHT = 'גובה מראה';
 export const MULTI_MIRROR_WIDTH = 'רוחב מראה';
 export const MULTI_MIRROR_AUTO = 'אוטומטי';
+export const MULTI_MIRROR_RESET_HEIGHT = 'חזרה לגובה מלא של הדלת';
+export const MULTI_MIRROR_RESET_WIDTH = 'חזרה לרוחב מלא של הדלת';
 export const MULTI_SECTION_TITLE = 'צביעה מתקדמת ותוספות';
 
 export const MULTI_GLASS_STYLE_OPTIONS: ReadonlyArray<{

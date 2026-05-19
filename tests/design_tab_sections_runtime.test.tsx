@@ -6,6 +6,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { DoorStyleSection } from '../esm/native/ui/react/tabs/design_tab_sections_door_style.js';
 import { DoorFeaturesSection } from '../esm/native/ui/react/tabs/design_tab_sections_door_features.js';
 import { CorniceSection } from '../esm/native/ui/react/tabs/design_tab_sections_cornice.js';
+import { MultiColorPanelView } from '../esm/native/ui/react/tabs/design_tab_multicolor_panel_view.js';
 
 test('[design-tab-sections-runtime] door-style and cornice options render as native buttons', () => {
   const noop = () => {};
@@ -119,4 +120,45 @@ test('[design-tab-sections-runtime] door-features section keeps hinged/sliding v
   assert.doesNotMatch(slidingHtml, /דלתות חתוכות \(Split\)/);
   assert.doesNotMatch(slidingHtml, /הסרת דלתות \(נישה פתוחה\)/);
   assert.equal(hiddenHtml, '');
+});
+
+test('[design-tab-sections-runtime] mirror draft fields keep reset buttons compact and accessible', () => {
+  const noop = () => {};
+  const html = renderToStaticMarkup(
+    React.createElement(MultiColorPanelView, {
+      embedded: true,
+      viewState: {
+        enabled: true,
+        paintActive: true,
+        paintColor: 'mirror',
+        curtainChoice: 'none',
+        mirrorDraftHeight: '140',
+        mirrorDraftWidth: '55',
+        activeDoorStyleOverride: null,
+        activeGlassFrameStyle: null,
+        defaultSwatches: [],
+        savedSwatches: [],
+        specialSwatches: [],
+        hintText: null,
+      },
+      onToggleEnabled: noop,
+      onFinishPaintMode: noop,
+      onPickBrush: noop,
+      onPickDoorStyle: noop,
+      onSetCurtainPreset: noop,
+      onSetMirrorDraftField: noop,
+    })
+  );
+
+  const resetButtons = html.match(/<button[^>]*wp-r-mirror-draft-reset-btn[^>]*>[\s\S]*?<\/button>/g) || [];
+
+  assert.equal(resetButtons.length, 2);
+  assert.match(html, /wp-r-mirror-draft-fields/);
+  assert.match(html, /aria-label="חזרה לגובה מלא של הדלת"/);
+  assert.match(html, /aria-label="חזרה לרוחב מלא של הדלת"/);
+  assert.ok(
+    resetButtons.every(button =>
+      /^<button[^>]*><i class="fas fa-undo-alt" aria-hidden="true"><\/i><\/button>$/.test(button)
+    )
+  );
 });

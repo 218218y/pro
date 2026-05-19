@@ -2882,6 +2882,51 @@ body.wp-ui-react .btn-cancel:hover {
   margin-top: 6px;
 }
 
+#reactSidebarRoot .wp-r-mirror-draft-fields {
+  align-items: flex-start;
+}
+
+#reactSidebarRoot .wp-r-mirror-draft-field {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+}
+
+#reactSidebarRoot .wp-r-mirror-draft-label {
+  white-space: nowrap;
+}
+
+#reactSidebarRoot .wp-r-mirror-draft-input-row {
+  display: grid;
+  grid-template-columns: var(--wp-r-input-h) minmax(0, 1fr);
+  align-items: stretch;
+  gap: 6px;
+  direction: ltr;
+}
+
+#reactSidebarRoot .wp-r-mirror-draft-input {
+  min-width: 0;
+  height: var(--wp-r-input-h);
+  padding-block: 0;
+  padding-inline: 8px;
+  direction: rtl;
+  text-align: center;
+  font-weight: 600;
+}
+
+#reactSidebarRoot .wp-r-mirror-draft-reset-btn {
+  width: var(--wp-r-input-h);
+  min-width: var(--wp-r-input-h);
+  padding: 0;
+  gap: 0;
+}
+
+#reactSidebarRoot .wp-r-mirror-draft-reset-btn i {
+  font-size: 0.76rem;
+}
+
 #reactSidebarRoot .wp-tool-card--divider {
   padding: 8px;
 }
