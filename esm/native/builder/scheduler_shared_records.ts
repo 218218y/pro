@@ -5,6 +5,7 @@ import type {
 } from '../../../types/index.js';
 
 import { readBuildInputFingerprintFromState } from './build_input_fingerprint.js';
+import { readBuildStructureSignature } from './build_structure_signature.js';
 
 export type AnyObj = Record<string, unknown>;
 export type SchedulerPendingPlan = BuilderSchedulerStateInternalLike['pendingPlan'];
@@ -32,8 +33,7 @@ export function readBuildPlan(x: unknown): BuildPlanLike | null {
 }
 
 export function readBuildSignature(state: BuildStateLike): unknown {
-  const build = readObject(state.build);
-  return build?.signature ?? null;
+  return readBuildStructureSignature(state);
 }
 
 export function readStateInputFingerprint(state: BuildStateLike | null | undefined): unknown {
@@ -43,7 +43,7 @@ export function readStateInputFingerprint(state: BuildStateLike | null | undefin
 export function readPlanInputFingerprint(plan: unknown): unknown {
   const rec = readObject(plan);
   if (!rec || !Object.prototype.hasOwnProperty.call(rec, 'inputFingerprint')) return null;
-  return rec.inputFingerprint;
+  return typeof rec.inputFingerprint === 'undefined' ? null : rec.inputFingerprint;
 }
 
 export function createFallbackBuildPlan(state: BuildStateLike): BuildPlanLike {

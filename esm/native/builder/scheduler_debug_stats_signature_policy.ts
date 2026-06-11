@@ -23,6 +23,15 @@ export function readPendingSignature(plan: SchedulerPendingPlan | null | undefin
   return readStateInputFingerprint(readPlanState(plan));
 }
 
+export function readExecutionSignature(
+  plan: SchedulerPendingPlan | null | undefined,
+  buildState: BuildStateLike | null | undefined
+): unknown {
+  const fingerprint = readPendingSignature(plan);
+  if (fingerprint !== null) return fingerprint;
+  return readStateInputFingerprint(buildState);
+}
+
 export function hasDuplicatePendingSignature(
   state: BuilderSchedulerStateInternalLike,
   nextPlan: SchedulerPendingPlan
@@ -46,9 +55,10 @@ export function shouldSuppressDuplicatePendingRequest(
 
 export function hasRepeatedExecuteSignature(
   state: BuilderSchedulerStateInternalLike,
-  buildState: BuildStateLike
+  buildState: BuildStateLike,
+  plan?: SchedulerPendingPlan | null
 ): boolean {
-  const sig = readStateInputFingerprint(buildState);
+  const sig = readExecutionSignature(plan, buildState);
   return sig !== null && Object.is(state.lastExecutedSignature, sig);
 }
 
@@ -56,11 +66,12 @@ export function shouldSuppressSatisfiedRequest(
   state: BuilderSchedulerStateInternalLike,
   buildState: BuildStateLike,
   immediate: boolean,
-  forceBuild: boolean
+  forceBuild: boolean,
+  plan?: SchedulerPendingPlan | null
 ): boolean {
   if (immediate || forceBuild) return false;
   if (state.pendingPlan || state.debouncedRunScheduled || state.waitingForBuilder) return false;
-  return hasRepeatedExecuteSignature(state, buildState);
+  return hasRepeatedExecuteSignature(state, buildState, plan);
 }
 
 export function shouldSuppressRepeatedExecute(
@@ -68,9 +79,10 @@ export function shouldSuppressRepeatedExecute(
   buildState: BuildStateLike,
   immediate: boolean,
   forceBuild: boolean,
-  allowImmediate = false
+  allowImmediate = false,
+  plan?: SchedulerPendingPlan | null
 ): boolean {
   if (forceBuild) return false;
   if (immediate && !allowImmediate) return false;
-  return hasRepeatedExecuteSignature(state, buildState);
+  return hasRepeatedExecuteSignature(state, buildState, plan);
 }

@@ -25,6 +25,7 @@ import {
   makeDebouncedBuild,
   scheduleBuilderWait,
   createPendingPlanFromState,
+  type SchedulerPendingPlan,
 } from './scheduler_shared.js';
 import {
   nowForBuildStats,
@@ -85,9 +86,10 @@ function stagePendingBuildState(
   reason: string,
   immediate: boolean,
   forceBuild: boolean,
-  scheduleVersion?: number
+  scheduleVersion?: number,
+  pendingPlan?: SchedulerPendingPlan | null
 ): void {
-  state.pendingPlan = createPendingPlanFromState(buildState);
+  state.pendingPlan = pendingPlan || createPendingPlanFromState(buildState);
   state.pendingReason = reason;
   state.pendingImmediate = immediate;
   state.pendingForceBuild = forceBuild;
@@ -169,11 +171,12 @@ function executePendingBuild(
   reason: string,
   immediate: boolean,
   forceBuild: boolean,
-  runPendingBuild: (reason: string) => unknown
+  runPendingBuild: (reason: string) => unknown,
+  executionPlan: SchedulerPendingPlan | null
 ): unknown {
   if (!hasBuilder(App)) {
     const scheduleVersion = ensurePendingScheduleVersion(state);
-    stagePendingBuildState(state, buildState, reason, immediate, forceBuild, scheduleVersion);
+    stagePendingBuildState(state, buildState, reason, immediate, forceBuild, scheduleVersion, executionPlan);
     recordBuilderWaitSchedule(state, reason);
     scheduleBuilderWait(App, nextReason => runPendingBuild(nextReason), reason, {
       version: scheduleVersion,
@@ -184,13 +187,13 @@ function executePendingBuild(
     return;
   }
 
-  if (shouldSuppressRepeatedExecute(state, buildState, immediate, forceBuild, immediate)) {
+  if (shouldSuppressRepeatedExecute(state, buildState, immediate, forceBuild, immediate, executionPlan)) {
     recordSkippedRepeatedExecute(state, reason);
     clearPendingBuildState(state);
     return null;
   }
 
-  recordBuildExecute(state, reason, immediate, buildState, nowForBuildStats());
+  recordBuildExecute(state, reason, immediate, buildState, nowForBuildStats(), executionPlan);
   clearPendingBuildState(state);
   invalidateBuilderWait(state);
   return callBuild(App, buildState);
@@ -208,6 +211,7 @@ export function runPendingBuildRuntime(App: AppContainer, reason: string, forceB
   const plan = s.pendingPlan || getBuildPlanForScheduler(A, null);
   const state = readPlanState(plan) || getBuildStateForScheduler(A, null);
   const buildState = withTransientBuildFlags(state, readActiveId(A), effectiveForceBuild);
+  const executionPlan = buildState === state ? plan : createPendingPlanFromState(buildState);
   const execReason = normalizeBuildReason(s.pendingReason || reason);
   const immediate = !!s.pendingImmediate;
 
@@ -218,12 +222,22 @@ export function runPendingBuildRuntime(App: AppContainer, reason: string, forceB
       execReason,
       immediate,
       effectiveForceBuild,
-      ensurePendingScheduleVersion(s)
+      ensurePendingScheduleVersion(s),
+      executionPlan
     );
     return;
   }
 
-  return executePendingBuild(A, s, buildState, execReason, immediate, effectiveForceBuild, rerunPendingBuild);
+  return executePendingBuild(
+    A,
+    s,
+    buildState,
+    execReason,
+    immediate,
+    effectiveForceBuild,
+    rerunPendingBuild,
+    executionPlan
+  );
 }
 
 export function requestBuildRuntime(
@@ -251,7 +265,13 @@ export function requestBuildRuntime(
       immediate,
       forceBuild
     );
-    const suppressSatisfiedRequest = shouldSuppressSatisfiedRequest(s, buildState, immediate, forceBuild);
+    const suppressSatisfiedRequest = shouldSuppressSatisfiedRequest(
+      s,
+      buildState,
+      immediate,
+      forceBuild,
+      nextPendingPlan
+    );
     const requestReason = recordBuildRequest(s, opts?.reason, immediate, nextPendingPlan, now);
 
     if (suppressDuplicatePending) {
@@ -280,7 +300,16 @@ export function requestBuildRuntime(
         return;
       }
       clearScheduledDebouncedRun(s);
-      return executePendingBuild(A, s, buildState, requestReason, true, forceBuild, rerunPendingBuild);
+      return executePendingBuild(
+        A,
+        s,
+        buildState,
+        requestReason,
+        true,
+        forceBuild,
+        rerunPendingBuild,
+        nextPendingPlan
+      );
     }
 
     schedulePendingBuildDebounced(s, A, requestReason, rerunPendingBuild);

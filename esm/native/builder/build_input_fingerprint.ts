@@ -225,8 +225,20 @@ function stableSerializeBuildInputFingerprintValue(
 
 export function createBuildInputFingerprint(parts: BuildInputFingerprintParts): unknown {
   const activeId = parts.activeId || '';
-  if (!activeId && !parts.forceBuild) return parts.signature;
   const signaturePart = normalizeBuildInputFingerprintScalar(parts.signature);
+  if (!activeId && !parts.forceBuild) {
+    const signature = parts.signature;
+    if (
+      signature == null ||
+      typeof signature === 'string' ||
+      typeof signature === 'number' ||
+      typeof signature === 'boolean' ||
+      typeof signature === 'bigint'
+    ) {
+      return signature;
+    }
+    return `sig:${signaturePart}`;
+  }
   return `sig:${signaturePart}|active:${activeId}|force:${parts.forceBuild ? '1' : '0'}`;
 }
 

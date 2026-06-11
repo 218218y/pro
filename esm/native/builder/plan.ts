@@ -13,6 +13,7 @@ import { assertApp } from '../runtime/api.js';
 import { installStableSurfaceMethod } from '../runtime/stable_surface_methods.js';
 import { getBuildStateMaybe } from './store_access.js';
 import { readBuildInputFingerprintFromState } from './build_input_fingerprint.js';
+import { readBuildStructureSignature } from './build_structure_signature.js';
 
 import type { AppContainer, BuildPlanLike, BuildStateLike, BuilderPlanServiceLike } from '../../../types';
 
@@ -23,11 +24,6 @@ const BUILDER_PLAN_CREATE_CANONICAL_KEY = '__wpBuilderCreateBuildPlan';
 type PlanDepsLike = {
   App?: AppContainer;
   getBuildState?: ((input: unknown) => unknown) | null;
-};
-
-type BuildShapeLike = {
-  signature?: unknown;
-  modulesStructure?: unknown;
 };
 
 type BuilderPlanInstallSurface = BuilderPlanServiceLike &
@@ -60,18 +56,6 @@ function __readPlanDeps(deps: unknown): PlanDepsLike | null {
     out.getBuildState = (input: unknown) => Reflect.apply(getBuildState, rec, [input]);
   }
   return out;
-}
-
-function readBuildShape(state: BuildStateLike): BuildShapeLike | null {
-  const envelope = readValueRecord(state);
-  return envelope ? readValueRecord(envelope.build) : null;
-}
-
-function readDoorsCount(moduleShape: unknown): number | null {
-  const rec = readValueRecord(moduleShape);
-  if (!rec || rec.doors == null) return null;
-  const parsed = Number.parseInt(String(rec.doors), 10);
-  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function normalizeBuildState(value: unknown): BuildStateLike | null {
@@ -141,32 +125,6 @@ function ensureState(input: unknown, deps: PlanDepsLike): BuildStateLike {
   return { ui, config: {}, mode: { primary: 'none', opts: {} }, runtime: {}, build: {} };
 }
 
-function readBuildInputSignatureValue(state: BuildStateLike): unknown {
-  const build = readBuildShape(state);
-  if (build && Object.prototype.hasOwnProperty.call(build, 'signature')) return build.signature;
-  return computeSignature(state);
-}
-
-function computeSignature(state: BuildStateLike): number[] | null {
-  try {
-    const build = readBuildShape(state);
-    if (!build) return null;
-
-    if (Array.isArray(build.signature)) {
-      return build.signature.filter(
-        (value): value is number => typeof value === 'number' && Number.isFinite(value)
-      );
-    }
-
-    if (Array.isArray(build.modulesStructure)) {
-      return build.modulesStructure.map(moduleShape => readDoorsCount(moduleShape) ?? 1);
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
-
 /**
  * Create a build plan from input (ui override or state), meta and injected deps.
  */
@@ -177,9 +135,9 @@ export function createBuildPlan(
 ): BuildPlanLike {
   const d = __readPlanDeps(deps) || {};
   const st = ensureState(input, d);
-  const sig = computeSignature(st);
+  const sig = readBuildStructureSignature(st);
   const inputFingerprint = readBuildInputFingerprintFromState(st, next =>
-    readBuildInputSignatureValue(next as BuildStateLike)
+    readBuildStructureSignature(next as BuildStateLike)
   );
 
   return {

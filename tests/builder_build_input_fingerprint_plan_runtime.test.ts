@@ -10,7 +10,10 @@ import {
   createFallbackBuildPlan,
   createPendingPlanFromState,
 } from '../esm/native/builder/scheduler_shared_records.ts';
-import { readPendingSignature } from '../esm/native/builder/scheduler_debug_stats_signature_policy.ts';
+import {
+  readPendingSignature,
+  shouldSuppressRepeatedExecute,
+} from '../esm/native/builder/scheduler_debug_stats_signature_policy.ts';
 
 function readSignature(next: any): unknown {
   return next?.build?.signature ?? null;
@@ -56,6 +59,34 @@ test('builder plan runtime: BuildPlan keeps module signature separate from build
   assert.notEqual(basePlan.inputFingerprint, changedPlan.inputFingerprint);
 });
 
+test('builder plan runtime: modulesStructure fallback feeds the same structure signature contract', () => {
+  const firstState = {
+    build: { modulesStructure: [{ doors: 1 }, { doors: 3 }] },
+    ui: {},
+    config: {},
+  };
+  const secondState = {
+    build: { modulesStructure: [{ doors: 2 }, { doors: 2 }] },
+    ui: {},
+    config: {},
+  };
+
+  const firstPlan = createBuildPlan(firstState);
+  const secondPlan = createBuildPlan(secondState);
+
+  assert.deepEqual(firstPlan.signature, [1, 3]);
+  assert.deepEqual(secondPlan.signature, [2, 2]);
+  assert.notEqual(firstPlan.inputFingerprint, secondPlan.inputFingerprint);
+  assert.notEqual(
+    createPendingPlanFromState(firstState).inputFingerprint,
+    createPendingPlanFromState(secondState).inputFingerprint
+  );
+  assert.notEqual(
+    createFallbackBuildPlan(firstState).inputFingerprint,
+    createFallbackBuildPlan(secondState).inputFingerprint
+  );
+});
+
 test('builder scheduler runtime: pending/fallback plans carry the canonical fingerprint instead of re-reading mutable state', () => {
   const state = {
     build: { signature: 'sig:stable' },
@@ -81,4 +112,25 @@ test('builder scheduler runtime: pending/fallback plans carry the canonical fing
     pendingPlan.inputFingerprint,
     'the mutated state would produce a different fingerprint if the scheduler re-read it'
   );
+});
+
+test('builder scheduler runtime: execute dedupe can use the stored pending plan fingerprint', () => {
+  const state = {
+    build: { signature: 'sig:stable' },
+    ui: {},
+    config: { individualColors: { body: '#ffffff' } },
+  } as any;
+  const pendingPlan = createPendingPlanFromState(state);
+  const schedulerState = {
+    pendingPlan: null,
+    debouncedRunScheduled: false,
+    waitingForBuilder: false,
+    pendingImmediate: false,
+    lastExecutedSignature: pendingPlan.inputFingerprint,
+  } as any;
+
+  state.config.individualColors.body = '#111111';
+
+  assert.equal(shouldSuppressRepeatedExecute(schedulerState, state, false, false, false, pendingPlan), true);
+  assert.equal(shouldSuppressRepeatedExecute(schedulerState, state, false, false, false), false);
 });

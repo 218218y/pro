@@ -655,7 +655,7 @@ export interface BuildDebugBudgetSummaryLike extends UnknownRecord {
 
 export interface BuilderSchedulerStateInternalLike extends UnknownRecord {
   deps: BuilderSchedulerDepsLike;
-  pendingPlan: BuildPlanLike | { state: BuildStateLike } | null;
+  pendingPlan: BuildPlanLike | { state: BuildStateLike; inputFingerprint?: unknown } | null;
   pendingReason?: string;
   pendingImmediate?: boolean;
   pendingForceBuild?: boolean;

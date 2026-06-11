@@ -1,12 +1,13 @@
 import { queueMicrotaskMaybe } from '../runtime/api.js';
 import { asRecord } from '../runtime/record.js';
 import { readBuildInputFingerprintFromArgs } from './build_input_fingerprint.js';
+import { readBuildStructureSignature } from './build_structure_signature.js';
 import { requireBuilderService } from '../runtime/builder_service_access.js';
 import { getRenderer } from '../runtime/render_access.js';
 import { getBuildReactionsServiceMaybe } from '../runtime/build_reactions_access.js';
 import { getPlatformReportError } from '../runtime/platform_access.js';
 
-import type { AppContainer, RendererLike, UnknownCallable, UnknownRecord } from '../../../types';
+import type { AppContainer, RendererLike, UnknownCallable } from '../../../types';
 
 type BuildRunnerSoftErrorExtra = {
   preserveOriginalBuildError?: boolean;
@@ -51,16 +52,6 @@ export type BuildRunnerShadowAutoUpdateState = {
   hadShadowAuto: boolean;
   prevShadowAuto: boolean;
 };
-
-function readRecord(value: unknown): UnknownRecord | null {
-  return asRecord<UnknownRecord>(value);
-}
-
-function readBuildRunnerSignatureValue(state: unknown): unknown {
-  const stateRec = readRecord(state);
-  const buildRec = readRecord(stateRec?.build);
-  return Object.prototype.hasOwnProperty.call(buildRec || {}, 'signature') ? buildRec?.signature : null;
-}
 
 function reportBuildRunnerSoftError(
   App: AppContainer | null | undefined,
@@ -139,7 +130,7 @@ export function runBuildRunnerPostBuildReactions(
 }
 
 export function readBuildRunnerArgsSignature(args: readonly unknown[]): unknown {
-  return readBuildInputFingerprintFromArgs(args, readBuildRunnerSignatureValue);
+  return readBuildInputFingerprintFromArgs(args, readBuildStructureSignature);
 }
 
 export function stageCoalescedBuildRequest(

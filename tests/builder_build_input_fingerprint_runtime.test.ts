@@ -32,6 +32,10 @@ test('builder build input fingerprint runtime: canonical helper keeps scalar nor
 test('builder build input fingerprint runtime: canonical helper includes transient active/force context only when needed', () => {
   assert.equal(createBuildInputFingerprint({ signature: 'sig:a', activeId: '', forceBuild: false }), 'sig:a');
   assert.equal(
+    createBuildInputFingerprint({ signature: [2, 2], activeId: '', forceBuild: false }),
+    createBuildInputFingerprint({ signature: [2, 2], activeId: '', forceBuild: false })
+  );
+  assert.equal(
     createBuildInputFingerprint({ signature: 'sig:a', activeId: 'alpha', forceBuild: false }),
     'sig:str:sig:a|active:alpha|force:0'
   );

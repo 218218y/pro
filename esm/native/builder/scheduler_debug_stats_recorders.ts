@@ -6,7 +6,7 @@ import {
   getReasonStats,
   normalizeBuildReason,
 } from './scheduler_debug_stats_reason_store.js';
-import { readPendingSignature, readStateInputFingerprint } from './scheduler_debug_stats_signature_policy.js';
+import { readExecutionSignature, readPendingSignature } from './scheduler_debug_stats_signature_policy.js';
 
 export function recordSkippedDuplicatePendingRequest(
   state: BuilderSchedulerStateInternalLike,
@@ -137,12 +137,13 @@ export function recordBuildExecute(
   reasonIn: unknown,
   immediate: boolean,
   buildState: BuildStateLike,
-  execTs: number
+  execTs: number,
+  plan?: SchedulerPendingPlan | null
 ): string {
   const reason = normalizeBuildReason(reasonIn);
   const stats = ensureBuildDebugStats(state);
   const perReason = getReasonStats(stats, reason);
-  const sig = readStateInputFingerprint(buildState);
+  const sig = readExecutionSignature(plan, buildState);
 
   stats.executeCount += 1;
   if (immediate) stats.executeImmediateCount += 1;
