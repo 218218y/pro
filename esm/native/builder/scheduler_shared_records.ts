@@ -61,7 +61,10 @@ export function readPlanState(plan: unknown): BuildStateLike | null {
   return readBuildState(rec?.state);
 }
 
-export function createPendingPlanFromState(state: BuildStateLike): { state: BuildStateLike; inputFingerprint: unknown } {
+export function createPendingPlanFromState(state: BuildStateLike): {
+  state: BuildStateLike;
+  inputFingerprint: unknown;
+} {
   return { state, inputFingerprint: readStateInputFingerprint(state) };
 }
 
