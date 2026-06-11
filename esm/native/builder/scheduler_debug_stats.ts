@@ -9,7 +9,7 @@ export {
 } from './scheduler_debug_stats_reason_store.js';
 
 export {
-  readBuildDedupeSignature,
+  readBuildInputFingerprint,
   hasDuplicatePendingSignature,
   hasRepeatedExecuteSignature,
   shouldSuppressDuplicatePendingRequest,

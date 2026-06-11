@@ -2,13 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  createBuildDedupeSignature,
-  normalizeBuildDedupeScalar,
-  readBuildDedupeSignatureFromArgs,
-  readBuildDedupeSignatureFromState,
+  createBuildInputFingerprint,
+  normalizeBuildInputFingerprintScalar,
+  readBuildInputFingerprintFromArgs,
+  readBuildInputFingerprintFromState,
   readTransientBuildUiFlag,
-} from '../esm/native/builder/build_dedupe_signature.ts';
-import { readBuildDedupeSignature } from '../esm/native/builder/scheduler_debug_stats.ts';
+} from '../esm/native/builder/build_input_fingerprint.ts';
+import { readBuildInputFingerprint } from '../esm/native/builder/scheduler_debug_stats.ts';
 
 function createState(signature: unknown, activeId = '', forceBuild = false) {
   return {
@@ -20,28 +20,28 @@ function createState(signature: unknown, activeId = '', forceBuild = false) {
   };
 }
 
-test('builder build dedupe signature runtime: canonical helper keeps scalar normalization stable', () => {
-  assert.equal(normalizeBuildDedupeScalar('abc'), 'str:abc');
-  assert.equal(normalizeBuildDedupeScalar(7), 'num:7');
-  assert.equal(normalizeBuildDedupeScalar(true), 'bool:1');
-  assert.equal(normalizeBuildDedupeScalar(false), 'bool:0');
-  assert.equal(normalizeBuildDedupeScalar(null), '');
-  assert.match(normalizeBuildDedupeScalar({ a: 1 }), /^json:/);
+test('builder build input fingerprint runtime: canonical helper keeps scalar normalization stable', () => {
+  assert.equal(normalizeBuildInputFingerprintScalar('abc'), 'str:abc');
+  assert.equal(normalizeBuildInputFingerprintScalar(7), 'num:7');
+  assert.equal(normalizeBuildInputFingerprintScalar(true), 'bool:1');
+  assert.equal(normalizeBuildInputFingerprintScalar(false), 'bool:0');
+  assert.equal(normalizeBuildInputFingerprintScalar(null), '');
+  assert.match(normalizeBuildInputFingerprintScalar({ a: 1 }), /^json:/);
 });
 
-test('builder build dedupe signature runtime: canonical helper includes transient active/force context only when needed', () => {
-  assert.equal(createBuildDedupeSignature({ signature: 'sig:a', activeId: '', forceBuild: false }), 'sig:a');
+test('builder build input fingerprint runtime: canonical helper includes transient active/force context only when needed', () => {
+  assert.equal(createBuildInputFingerprint({ signature: 'sig:a', activeId: '', forceBuild: false }), 'sig:a');
   assert.equal(
-    createBuildDedupeSignature({ signature: 'sig:a', activeId: 'alpha', forceBuild: false }),
+    createBuildInputFingerprint({ signature: 'sig:a', activeId: 'alpha', forceBuild: false }),
     'sig:str:sig:a|active:alpha|force:0'
   );
   assert.equal(
-    createBuildDedupeSignature({ signature: 'sig:a', activeId: '', forceBuild: true }),
+    createBuildInputFingerprint({ signature: 'sig:a', activeId: '', forceBuild: true }),
     'sig:str:sig:a|active:|force:1'
   );
 });
 
-test('builder build dedupe signature runtime: state and scheduler views stay aligned on canonical signature shaping', () => {
+test('builder build input fingerprint runtime: state and scheduler views stay aligned on canonical fingerprint shaping', () => {
   const plainState = createState('sig:plain');
   const activeState = createState('sig:shared', 'alpha');
   const forcedState = createState('sig:shared', '', true);
@@ -49,30 +49,30 @@ test('builder build dedupe signature runtime: state and scheduler views stay ali
 
   assert.equal(readTransientBuildUiFlag(activeState, '__activeId'), 'alpha');
   assert.equal(readTransientBuildUiFlag(forcedState, 'forceBuild'), true);
-  assert.equal(readBuildDedupeSignatureFromState(plainState, readSignature), 'sig:plain');
-  assert.equal(readBuildDedupeSignature(plainState as any), 'sig:plain');
+  assert.equal(readBuildInputFingerprintFromState(plainState, readSignature), 'sig:plain');
+  assert.equal(readBuildInputFingerprint(plainState as any), 'sig:plain');
   assert.equal(
-    readBuildDedupeSignatureFromState(activeState, readSignature),
-    readBuildDedupeSignature(activeState as any)
+    readBuildInputFingerprintFromState(activeState, readSignature),
+    readBuildInputFingerprint(activeState as any)
   );
   assert.equal(
-    readBuildDedupeSignatureFromState(forcedState, readSignature),
-    readBuildDedupeSignature(forcedState as any)
+    readBuildInputFingerprintFromState(forcedState, readSignature),
+    readBuildInputFingerprint(forcedState as any)
   );
 });
 
-test('builder build dedupe signature runtime: args signature reader reuses the first build-state payload only', () => {
+test('builder build input fingerprint runtime: args fingerprint reader reuses the first build-state payload only', () => {
   const state = createState('sig:args', 'row-7');
   const readSignature = (next: any) => next?.build?.signature ?? null;
 
-  assert.equal(readBuildDedupeSignatureFromArgs([], readSignature), null);
+  assert.equal(readBuildInputFingerprintFromArgs([], readSignature), null);
   assert.equal(
-    readBuildDedupeSignatureFromArgs([state, { ignored: true }], readSignature),
+    readBuildInputFingerprintFromArgs([state, { ignored: true }], readSignature),
     'sig:str:sig:args|active:row-7|force:0'
   );
 });
 
-test('builder build dedupe signature runtime: effective structural config participates in dedupe', () => {
+test('builder build input fingerprint runtime: effective structural config participates in fingerprint', () => {
   const readSignature = (next: any) => next?.build?.signature ?? null;
   const baseState = {
     build: { signature: [2, 2] },
@@ -100,13 +100,13 @@ test('builder build dedupe signature runtime: effective structural config partic
     },
   };
 
-  const baseSignature = readBuildDedupeSignatureFromState(baseState, readSignature);
-  assert.equal(baseSignature, readBuildDedupeSignatureFromState(inactiveInsetChanged, readSignature));
-  assert.notEqual(baseSignature, readBuildDedupeSignatureFromState(activeFrameChanged, readSignature));
+  const baseFingerprint = readBuildInputFingerprintFromState(baseState, readSignature);
+  assert.equal(baseFingerprint, readBuildInputFingerprintFromState(inactiveInsetChanged, readSignature));
+  assert.notEqual(baseFingerprint, readBuildInputFingerprintFromState(activeFrameChanged, readSignature));
   assert.deepEqual(baseState.build.signature, [2, 2]);
 });
 
-test('builder build dedupe signature runtime: sliding thickness uses overlay keys even when door mount mode is inset', () => {
+test('builder build input fingerprint runtime: sliding thickness uses overlay keys even when door mount mode is inset', () => {
   const readSignature = (next: any) => next?.build?.signature ?? null;
   const baseState = {
     build: { signature: [1, 1] },
@@ -134,12 +134,12 @@ test('builder build dedupe signature runtime: sliding thickness uses overlay key
     },
   };
 
-  const baseSignature = readBuildDedupeSignatureFromState(baseState, readSignature);
-  assert.notEqual(baseSignature, readBuildDedupeSignatureFromState(overlayShelfChanged, readSignature));
-  assert.equal(baseSignature, readBuildDedupeSignatureFromState(insetShelfChanged, readSignature));
+  const baseFingerprint = readBuildInputFingerprintFromState(baseState, readSignature);
+  assert.notEqual(baseFingerprint, readBuildInputFingerprintFromState(overlayShelfChanged, readSignature));
+  assert.equal(baseFingerprint, readBuildInputFingerprintFromState(insetShelfChanged, readSignature));
 });
 
-test('builder build dedupe signature runtime: structural ui choices participate in dedupe', () => {
+test('builder build input fingerprint runtime: structural ui choices participate in the fingerprint', () => {
   const readSignature = (next: any) => next?.build?.signature ?? null;
   const flatState = {
     build: { signature: [2, 2] },
@@ -157,12 +157,12 @@ test('builder build dedupe signature runtime: structural ui choices participate 
   };
 
   assert.notEqual(
-    readBuildDedupeSignatureFromState(flatState, readSignature),
-    readBuildDedupeSignatureFromState(profileState, readSignature)
+    readBuildInputFingerprintFromState(flatState, readSignature),
+    readBuildInputFingerprintFromState(profileState, readSignature)
   );
 });
 
-test('builder build dedupe signature runtime: config maps and sketch custom data participate in dedupe', () => {
+test('builder build input fingerprint runtime: config maps and sketch custom data participate in the fingerprint', () => {
   const readSignature = (next: any) => next?.build?.signature ?? null;
   const baseState = {
     build: { signature: [2, 2] },
@@ -178,7 +178,7 @@ test('builder build dedupe signature runtime: config maps and sketch custom data
       ],
     },
   };
-  const baseSignature = readBuildDedupeSignatureFromState(baseState, readSignature);
+  const baseFingerprint = readBuildInputFingerprintFromState(baseState, readSignature);
 
   for (const nextState of [
     {
@@ -208,11 +208,11 @@ test('builder build dedupe signature runtime: config maps and sketch custom data
       },
     },
   ]) {
-    assert.notEqual(baseSignature, readBuildDedupeSignatureFromState(nextState, readSignature));
+    assert.notEqual(baseFingerprint, readBuildInputFingerprintFromState(nextState, readSignature));
   }
 });
 
-test('builder build dedupe signature runtime: mode and build-affecting runtime flags participate in dedupe', () => {
+test('builder build input fingerprint runtime: mode and build-affecting runtime flags participate in the fingerprint', () => {
   const readSignature = (next: any) => next?.build?.signature ?? null;
   const baseState = {
     build: { signature: [2, 2] },
@@ -232,13 +232,13 @@ test('builder build dedupe signature runtime: mode and build-affecting runtime f
     runtime: { ...baseState.runtime, hoverPartId: 'd2_full' },
   };
 
-  const baseSignature = readBuildDedupeSignatureFromState(baseState, readSignature);
-  assert.notEqual(baseSignature, readBuildDedupeSignatureFromState(removeDoorModeState, readSignature));
-  assert.notEqual(baseSignature, readBuildDedupeSignatureFromState(sketchModeState, readSignature));
-  assert.equal(baseSignature, readBuildDedupeSignatureFromState(hoverOnlyState, readSignature));
+  const baseFingerprint = readBuildInputFingerprintFromState(baseState, readSignature);
+  assert.notEqual(baseFingerprint, readBuildInputFingerprintFromState(removeDoorModeState, readSignature));
+  assert.notEqual(baseFingerprint, readBuildInputFingerprintFromState(sketchModeState, readSignature));
+  assert.equal(baseFingerprint, readBuildInputFingerprintFromState(hoverOnlyState, readSignature));
 });
 
-test('builder build dedupe signature runtime: semantic snapshots are stable and ignore volatile capture metadata', () => {
+test('builder build input fingerprint runtime: semantic snapshots are stable and ignore volatile capture metadata', () => {
   const readSignature = (next: any) => next?.build?.signature ?? null;
   const firstState = {
     build: { signature: [1, 1] },
@@ -260,7 +260,7 @@ test('builder build dedupe signature runtime: semantic snapshots are stable and 
   };
 
   assert.equal(
-    readBuildDedupeSignatureFromState(firstState, readSignature),
-    readBuildDedupeSignatureFromState(reorderedState, readSignature)
+    readBuildInputFingerprintFromState(firstState, readSignature),
+    readBuildInputFingerprintFromState(reorderedState, readSignature)
   );
 });

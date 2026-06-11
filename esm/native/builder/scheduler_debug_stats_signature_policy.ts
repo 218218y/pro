@@ -6,21 +6,21 @@ import {
   readPlanInputFingerprint,
   readPlanState,
 } from './scheduler_shared.js';
-import { readBuildDedupeSignatureFromState } from './build_dedupe_signature.js';
+import { readBuildInputFingerprintFromState } from './build_input_fingerprint.js';
 
-export function readBuildDedupeSignature(state: BuildStateLike | null | undefined): unknown {
-  return readBuildDedupeSignatureFromState(state, next => readBuildSignature(next as BuildStateLike));
+export function readBuildInputFingerprint(state: BuildStateLike | null | undefined): unknown {
+  return readBuildInputFingerprintFromState(state, next => readBuildSignature(next as BuildStateLike));
 }
 
-export function readStateSignature(state: BuildStateLike | null | undefined): unknown {
-  return readBuildDedupeSignature(state);
+export function readStateInputFingerprint(state: BuildStateLike | null | undefined): unknown {
+  return readBuildInputFingerprint(state);
 }
 
 export function readPendingSignature(plan: SchedulerPendingPlan | null | undefined): unknown {
   if (!plan) return null;
   const fingerprint = readPlanInputFingerprint(plan);
   if (fingerprint !== null) return fingerprint;
-  return readStateSignature(readPlanState(plan));
+  return readStateInputFingerprint(readPlanState(plan));
 }
 
 export function hasDuplicatePendingSignature(
@@ -48,7 +48,7 @@ export function hasRepeatedExecuteSignature(
   state: BuilderSchedulerStateInternalLike,
   buildState: BuildStateLike
 ): boolean {
-  const sig = readStateSignature(buildState);
+  const sig = readStateInputFingerprint(buildState);
   return sig !== null && Object.is(state.lastExecutedSignature, sig);
 }
 

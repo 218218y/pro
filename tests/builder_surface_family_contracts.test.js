@@ -93,10 +93,11 @@ const schedulerDebugBudget = readSource(
   '../esm/native/builder/scheduler_debug_stats_budget.ts',
   import.meta.url
 );
-const buildDedupeSignatureOwner = readSource(
-  '../esm/native/builder/build_dedupe_signature.ts',
+const buildInputFingerprintOwner = readSource(
+  '../esm/native/builder/build_input_fingerprint.ts',
   import.meta.url
 );
+const buildDedupeSignatureFacade = maybeRead('../esm/native/builder/build_dedupe_signature.ts');
 const buildRunnerOwner = readSource('../esm/native/builder/build_runner.ts', import.meta.url);
 const buildRunnerRuntimeOwner = readSource('../esm/native/builder/build_runner_runtime.ts', import.meta.url);
 const schedulerInstall = readSource('../esm/native/builder/scheduler_install.ts', import.meta.url);
@@ -619,11 +620,12 @@ test('[builder-surface-family] orchestration owners remain thin around canonical
     'scheduler runtime owner'
   );
   assertMatchesAll(assert, schedulerShared, [/export function ensureSchedulerState\(/], 'scheduler shared');
+  assert.equal(buildDedupeSignatureFacade, '', 'legacy build_dedupe_signature facade must be deleted');
   assertMatchesAll(
     assert,
-    buildDedupeSignatureOwner,
-    [/export function createBuildDedupeSignature\(/, /export function readBuildDedupeSignatureFromState\(/],
-    'build dedupe signature owner'
+    buildInputFingerprintOwner,
+    [/export function createBuildInputFingerprint\(/, /export function readBuildInputFingerprintFromState\(/],
+    'build input fingerprint owner'
   );
   assertMatchesAll(
     assert,
@@ -641,7 +643,7 @@ test('[builder-surface-family] orchestration owners remain thin around canonical
     schedulerDebug,
     [
       /function readReasonStat\(/,
-      /readBuildDedupeSignatureFromState\(/,
+      /readBuildInputFingerprintFromState\(/,
       /export function recordBuildExecute\(/,
     ],
     'scheduler debug facade'
@@ -660,8 +662,8 @@ test('[builder-surface-family] orchestration owners remain thin around canonical
     assert,
     schedulerDebugSignaturePolicy,
     [
-      /from '\.\/build_dedupe_signature\.js'/,
-      /readBuildDedupeSignatureFromState\(/,
+      /from '\.\/build_input_fingerprint\.js'/,
+      /readBuildInputFingerprintFromState\(/,
       /export function shouldSuppressDuplicatePendingRequest\(/,
     ],
     'scheduler debug signature policy'
@@ -687,14 +689,14 @@ test('[builder-surface-family] orchestration owners remain thin around canonical
   assertMatchesAll(
     assert,
     buildRunnerRuntimeOwner,
-    [/from '\.\/build_dedupe_signature\.js'/, /readBuildDedupeSignatureFromArgs\(/],
-    'build runner canonical dedupe signature owner'
+    [/from '\.\/build_input_fingerprint\.js'/, /readBuildInputFingerprintFromArgs\(/],
+    'build runner canonical input fingerprint owner'
   );
   assertLacksAll(
     assert,
     buildRunnerRuntimeOwner,
     [/function normalizeBuildRunnerScalar\(/, /function readBuildRunnerStateSignature\(/],
-    'build runner canonical dedupe signature owner'
+    'build runner canonical input fingerprint owner'
   );
   assertMatchesAll(
     assert,

@@ -255,7 +255,7 @@
       "category": "contract"
     },
     {
-      "file": "tests/builder_build_dedupe_signature_runtime.test.ts",
+      "file": "tests/builder_build_input_fingerprint_runtime.test.ts",
       "category": "integration"
     },
     {

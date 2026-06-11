@@ -37,7 +37,7 @@ test('stage 44 scheduler debug stats ownership split is anchored', () => {
     'createBuildDebugStats',
     'ensureBuildDebugStats',
     'cloneBuildDebugStats',
-    'readBuildDedupeSignature',
+    'readBuildInputFingerprint',
     'shouldSuppressDuplicatePendingRequest',
     'shouldSuppressSatisfiedRequest',
     'shouldSuppressRepeatedExecute',
@@ -53,7 +53,7 @@ test('stage 44 scheduler debug stats ownership split is anchored', () => {
 
   for (const internalNeedle of [
     'REASON_STAT_NUMERIC_KEYS',
-    'readBuildDedupeSignatureFromState',
+    'readBuildInputFingerprintFromState',
     'stats.requestCount += 1',
     'function readCount(',
   ]) {
@@ -73,14 +73,14 @@ test('stage 44 scheduler debug stats ownership split is anchored', () => {
     'debug stats construction must live in scheduler_debug_stats_reason_store.ts'
   );
   assert.equal(
-    reasonStore.includes('readBuildDedupeSignatureFromState'),
+    reasonStore.includes('readBuildInputFingerprintFromState'),
     false,
     'reason store must not own signature policy'
   );
 
   assert.ok(
-    signaturePolicy.includes('readBuildDedupeSignatureFromState'),
-    'dedupe signature bridge must live in scheduler_debug_stats_signature_policy.ts'
+    signaturePolicy.includes('readBuildInputFingerprintFromState'),
+    'input fingerprint bridge must live in scheduler_debug_stats_signature_policy.ts'
   );
   assert.ok(
     signaturePolicy.includes('export function shouldSuppressDuplicatePendingRequest'),

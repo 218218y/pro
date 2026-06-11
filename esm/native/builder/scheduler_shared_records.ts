@@ -4,7 +4,7 @@ import type {
   BuilderSchedulerStateInternalLike,
 } from '../../../types/index.js';
 
-import { readBuildDedupeSignatureFromState } from './build_dedupe_signature.js';
+import { readBuildInputFingerprintFromState } from './build_input_fingerprint.js';
 
 export type AnyObj = Record<string, unknown>;
 export type SchedulerPendingPlan = BuilderSchedulerStateInternalLike['pendingPlan'];
@@ -37,7 +37,7 @@ export function readBuildSignature(state: BuildStateLike): unknown {
 }
 
 export function readStateInputFingerprint(state: BuildStateLike | null | undefined): unknown {
-  return readBuildDedupeSignatureFromState(state, next => readBuildSignature(next as BuildStateLike));
+  return readBuildInputFingerprintFromState(state, next => readBuildSignature(next as BuildStateLike));
 }
 
 export function readPlanInputFingerprint(plan: unknown): unknown {

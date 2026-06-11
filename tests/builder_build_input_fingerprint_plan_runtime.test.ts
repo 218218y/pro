@@ -6,7 +6,6 @@ import {
   readBuildInputFingerprintFromState,
   normalizeBuildInputFingerprintScalar,
 } from '../esm/native/builder/build_input_fingerprint.ts';
-import { readBuildDedupeSignatureFromState } from '../esm/native/builder/build_dedupe_signature.ts';
 import {
   createFallbackBuildPlan,
   createPendingPlanFromState,
@@ -17,7 +16,7 @@ function readSignature(next: any): unknown {
   return next?.build?.signature ?? null;
 }
 
-test('builder build input fingerprint runtime: canonical fingerprint stays aligned with the legacy dedupe facade', () => {
+test('builder build input fingerprint runtime: canonical fingerprint is stable for repeated reads', () => {
   const state = {
     build: { signature: [2, 2] },
     ui: { raw: { width: 160, height: 240, depth: 55, doors: 4 } },
@@ -32,7 +31,7 @@ test('builder build input fingerprint runtime: canonical fingerprint stays align
   assert.match(normalizeBuildInputFingerprintScalar({ a: 1 }), /^json:/);
   assert.equal(
     readBuildInputFingerprintFromState(state, readSignature),
-    readBuildDedupeSignatureFromState(state, readSignature)
+    readBuildInputFingerprintFromState(state, readSignature)
   );
 });
 

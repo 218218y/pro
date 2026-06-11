@@ -1,6 +1,6 @@
 import { queueMicrotaskMaybe } from '../runtime/api.js';
 import { asRecord } from '../runtime/record.js';
-import { readBuildDedupeSignatureFromArgs } from './build_dedupe_signature.js';
+import { readBuildInputFingerprintFromArgs } from './build_input_fingerprint.js';
 import { requireBuilderService } from '../runtime/builder_service_access.js';
 import { getRenderer } from '../runtime/render_access.js';
 import { getBuildReactionsServiceMaybe } from '../runtime/build_reactions_access.js';
@@ -139,7 +139,7 @@ export function runBuildRunnerPostBuildReactions(
 }
 
 export function readBuildRunnerArgsSignature(args: readonly unknown[]): unknown {
-  return readBuildDedupeSignatureFromArgs(args, readBuildRunnerSignatureValue);
+  return readBuildInputFingerprintFromArgs(args, readBuildRunnerSignatureValue);
 }
 
 export function stageCoalescedBuildRequest(
