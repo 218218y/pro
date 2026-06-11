@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.checkjs.kernel.json",
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true,
+    "checkJs": false
+  },
+  "include": ["esm/native/kernel/**/*.ts", "types/**/*.d.ts", "types/**/*.ts"],
+  "exclude": ["node_modules", "libs/**", "dist", "release"]
+}

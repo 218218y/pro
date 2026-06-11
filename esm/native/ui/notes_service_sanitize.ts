@@ -1,0 +1,80 @@
+import type { SavedNote as NotesSavedNote, SavedNoteStyle as NotesSavedNoteStyle } from '../../../types';
+import { asRecord, getNotesDocument } from './notes_service_shared.js';
+import { sanitizeHtmlByPolicy } from './html_sanitize_runtime.js';
+import type { NotesServiceApp } from './notes_service_shared.js';
+
+export type SavedNoteStyle = NotesSavedNoteStyle;
+export type SavedNote = NotesSavedNote;
+
+function stripAllHtml(s: string): string {
+  return String(s || '').replace(/<[^>]*>/g, '');
+}
+
+export function sanitizeRichTextHTML(App: NotesServiceApp, html: string): string {
+  const raw = typeof html === 'string' ? html : '';
+  const doc = getNotesDocument(App);
+  if (!doc) return stripAllHtml(raw);
+  return sanitizeHtmlByPolicy(doc, raw, 'notes-rich');
+}
+
+function normPx(v: unknown, fallbackPx: string): string {
+  const s = typeof v === 'string' ? v.trim() : '';
+  if (!s) return fallbackPx;
+  if (!/^[0-9.]+(px|%|vh|vw)?$/i.test(s)) return fallbackPx;
+  return s;
+}
+
+function normFontSize(v: unknown, fallback: string): string {
+  const s = typeof v === 'string' ? v.trim() : typeof v === 'number' ? String(v) : '';
+  return s === '1' || s === '2' || s === '3' || s === '4' || s === '5' || s === '6' || s === '7'
+    ? s
+    : fallback;
+}
+
+function normColor(v: unknown, fallback: string): string {
+  const s = typeof v === 'string' ? v.trim() : '';
+  return s ? s : fallback;
+}
+
+export function normalizeSavedNoteStyle(v: unknown): SavedNoteStyle {
+  const rec = asRecord(v);
+  return {
+    left: normPx(rec?.left, '0px'),
+    top: normPx(rec?.top, '0px'),
+    width: normPx(rec?.width, '150px'),
+    height: normPx(rec?.height, '100px'),
+    baseTextColor: normColor(rec?.baseTextColor, normColor(rec?.textColor, '#000000')),
+    baseFontSize: normFontSize(rec?.baseFontSize, normFontSize(rec?.fontSize, '4')),
+    textColor: normColor(rec?.textColor, '#000000'),
+    fontSize: normFontSize(rec?.fontSize, '4'),
+  };
+}
+
+export function normalizeSavedNotes(App: NotesServiceApp, savedNotes: unknown): SavedNote[] {
+  const arr = Array.isArray(savedNotes) ? savedNotes : [];
+  const out: SavedNote[] = [];
+
+  for (const item of arr) {
+    const noteRec = asRecord(item);
+    if (!noteRec) continue;
+
+    const styleSeed = normalizeSavedNoteStyle(noteRec.style);
+    const style: SavedNoteStyle = {
+      ...styleSeed,
+      baseTextColor: normColor(styleSeed.baseTextColor, styleSeed.textColor || '#000000'),
+      baseFontSize: normFontSize(styleSeed.baseFontSize, styleSeed.fontSize || '4'),
+    };
+
+    const noteId = typeof noteRec.id === 'string' && noteRec.id ? noteRec.id : undefined;
+    const textRaw = typeof noteRec.text === 'string' ? noteRec.text : '';
+    const text = sanitizeRichTextHTML(App, textRaw);
+    const doorsOpen = typeof noteRec.doorsOpen === 'boolean' ? noteRec.doorsOpen : undefined;
+
+    const note: SavedNote = { text, style };
+    if (typeof noteId !== 'undefined') note.id = noteId;
+    if (typeof doorsOpen !== 'undefined') note.doorsOpen = doorsOpen;
+    out.push(note);
+  }
+
+  return out;
+}

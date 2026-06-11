@@ -1,0 +1,305 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      run_lint:
+        description: Run lint only
+        required: false
+        type: boolean
+        default: true
+      run_typecheck:
+        description: Run TypeScript checks only
+        required: false
+        type: boolean
+        default: true
+      run_verify:
+        description: Run the regular CI verification suite
+        required: false
+        type: boolean
+        default: false
+      run_strict_gate:
+        description: Run the strict gate that fails on formatting differences
+        required: false
+        type: boolean
+        default: false
+      run_audit:
+        description: Run dependency audit
+        required: false
+        type: boolean
+        default: false
+      run_release_smoke:
+        description: Run the release/build smoke job
+        required: false
+        type: boolean
+        default: false
+      run_e2e:
+        description: Run the Playwright smoke suite
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  CI: true
+  # Opt JavaScript actions into the newer GitHub Actions runtime now, before
+  # Node.js 24 becomes the platform default.
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  verify:
+    name: Verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    if: github.event_name != 'workflow_dispatch' || inputs.run_verify
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          # Keep CI on the current stable runtime line supported by the project
+          # engines range (>=22.12), while avoiding Node 20 deprecation noise.
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run CI verification
+        run: npm run verify -- --ci
+
+      - name: Publish test failure summary
+        if: success() || failure()
+        run: |
+          if [ -f .artifacts/test-report/failed-tests.md ]; then
+            cat .artifacts/test-report/failed-tests.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verify-diagnostics
+          path: |
+            .artifacts/**
+            test-results/**
+            playwright-report/**
+          if-no-files-found: ignore
+          retention-days: 7
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.event_name == 'workflow_dispatch' && inputs.run_lint
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run lint
+        run: npm run lint
+
+      - name: Upload lint diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-diagnostics
+          path: |
+            .artifacts/**
+          if-no-files-found: ignore
+          retention-days: 7
+
+  typecheck:
+    name: TypeScript
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: github.event_name == 'workflow_dispatch' && inputs.run_typecheck
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run TypeScript checks
+        run: npm run typecheck:all
+
+      - name: Upload TypeScript diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: typecheck-diagnostics
+          path: |
+            .artifacts/**
+          if-no-files-found: ignore
+          retention-days: 7
+
+  strict-gate:
+    name: Strict gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    if: github.event_name == 'workflow_dispatch' && inputs.run_strict_gate
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run strict gate
+        run: npm run gate
+
+      - name: Publish test failure summary
+        if: success() || failure()
+        run: |
+          if [ -f .artifacts/test-report/failed-tests.md ]; then
+            cat .artifacts/test-report/failed-tests.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: strict-gate-diagnostics
+          path: |
+            .artifacts/**
+            test-results/**
+            playwright-report/**
+          if-no-files-found: ignore
+          retention-days: 7
+
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event_name != 'workflow_dispatch' || inputs.run_audit
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Audit high severity dependencies
+        run: npm audit --audit-level=high
+
+  build-smoke:
+    name: Build smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.run_release_smoke)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run Vite production build
+        run: npm run vite:build
+
+      - name: Run release parity source smoke
+        run: npm run release:parity:source
+
+      - name: Upload build diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-smoke-diagnostics
+          path: |
+            .artifacts/**
+            dist/**
+          if-no-files-found: ignore
+          retention-days: 7
+
+  e2e-smoke:
+    name: Playwright smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: github.event_name == 'workflow_dispatch' && inputs.run_e2e
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Install Playwright browsers
+        run: npm run e2e:install -- --with-deps
+
+      - name: Run Playwright smoke suite
+        run: npm run e2e:smoke
+
+      - name: Upload Playwright diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-smoke-diagnostics
+          path: |
+            .artifacts/**
+            test-results/**
+            playwright-report/**
+          if-no-files-found: ignore
+          retention-days: 7

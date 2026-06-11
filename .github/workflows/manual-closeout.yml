@@ -1,0 +1,48 @@
+name: Manual Closeout Verification
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: Closeout profile to run
+        required: true
+        default: verify-core
+
+permissions:
+  contents: read
+
+jobs:
+  closeout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+      - name: Run closeout profile
+        run: node tools/wp_run_closeout_profile.cjs "${{ github.event.inputs.profile }}"
+      - name: Publish closeout summary
+        if: success() || failure()
+        run: |
+          if [ -f docs/FINAL_VERIFICATION_SUMMARY.md ]; then
+            cat docs/FINAL_VERIFICATION_SUMMARY.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Upload closeout diagnostics
+        if: success() || failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: closeout-diagnostics
+          path: |
+            docs/FINAL_VERIFICATION_SUMMARY.md
+            docs/FINAL_VERIFICATION_SUMMARY.json
+            .artifacts/closeout-state.json
+            .artifacts/closeout-logs/**
+            .artifacts/test-report/**
+          if-no-files-found: ignore
+          retention-days: 14

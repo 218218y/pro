@@ -1,0 +1,3810 @@
+{
+  "generatedAt": "2026-05-01T04:03:25.723Z",
+  "totals": {
+    "tests": 947,
+    "packageTestReferences": 436
+  },
+  "categories": {
+    "contract": 289,
+    "runtime-unit": 233,
+    "integration": 378,
+    "e2e-smoke": 5,
+    "perf-smoke": 6,
+    "legacy-migration": 36
+  },
+  "failures": {
+    "missingPackageRefs": [],
+    "legacyRuntimeNames": [],
+    "unreferencedStageGuards": []
+  },
+  "records": [
+    {
+      "file": "tests/action_family_singleflight_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/action_feedback_release_regressions.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/actions_access_binding_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/actions_domain_access_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/actions_meta_stub_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/actions_surface_access_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/adapters_browser_env.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/app_boot_browser_project_family_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/app_container_legacy_surfaces_cleanup_guard.test.js",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/app_helpers_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/app_layers_surface_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/app_roots_access_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/app_start_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/autosave_service_guards_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/autosave_service_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/autosave_service_schedule_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/autosave_service_storage_key_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/autosave_snapshot_runtime_hardening.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/base_leg_support_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/boot_app_shared_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/boot_browser_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/boot_entry_access_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/boot_errors_install_healing_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/boot_fatal_overlay.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/boot_main_seed_reactivity_regression_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/boot_platform_install_healing_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/boot_seeds_part02_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/boot_surface_stable_healing_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/browser_adapter_healing_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/browser_cache_runtime_hardening.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/browser_clipboard_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/browser_dialogs_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/browser_dom_css_healing_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/browser_dom_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/browser_env_adapter_runtime_healing.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/browser_feedback_family_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/browser_file_download_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/browser_file_read_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/browser_settings_export_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/browser_surface_access_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/browser_surface_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/browser_ui_ops_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/build_completion_runtime_owners_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/build_context_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/build_flow_plan_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/build_flow_plan_special_height_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/build_hotpath_runtime_cleanup_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/build_info_service_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/build_reactions_access_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/build_reactions_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/build_reactions_scene_view_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/build_runner_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/build_state_resolver_config_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/build_wardrobe_flow_context_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/build_wardrobe_flow_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/builder_bootstrap_install_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/builder_build_dedupe_signature_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/builder_corner_typed_surface_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/builder_deps_access_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/builder_door_ops_refresh_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/builder_doors_state_utils.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/builder_edge_handle_default_none_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/builder_plan_corner_install_healing_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/builder_public_surface_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/builder_registry_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/builder_request_followthrough_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/builder_room_corner_canonical_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/builder_room_corner_runtime_stage5.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/builder_room_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/builder_room_shared_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/builder_room_visual_apply_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/builder_scheduler_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/builder_service_access_build_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/builder_service_access_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/builder_store_access_canonical_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/builder_surface_family_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cabinet_door_drawer_layout_fixture_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cache_pruning_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/camera_access_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/camera_scene_access_cleanup_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/canvas_hover_leave_cleanup_guard.test.cjs",
+      "category": "contract"
+    },
+    {
+      "file": "tests/canvas_interactions_hover_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_interactions_pointer_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_access_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_cell_dims_corner_cell_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_cell_dims_linear_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_click_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/canvas_picking_click_hit_flow_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_config_meta_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/canvas_picking_corner_readers_canonical_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_door_action_hover_flow_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_door_action_hover_preview_paint_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_door_action_hover_preview_trim_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_door_action_hover_state_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_door_split_click_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_door_style_override_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/canvas_picking_drawer_mode_flow_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_full_mirror_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_generic_paint_hover_preview_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_generic_paint_hover_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_handle_assign_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_hover_clearance_measurements_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_hover_click_hit_identity_parity_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_hover_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/canvas_picking_hover_flow_nonsplit_preview_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_hover_flow_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_hover_preview_modes_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_hover_targets_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_layout_edit_flow_manual_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_local_helpers_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_manual_layout_click_mode_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_manual_layout_config_ops_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_manual_layout_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/canvas_picking_manual_layout_direct_hit_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_manual_layout_divider_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_manual_layout_hover_apply_box_content_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_manual_layout_hover_apply_shelf_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_manual_layout_sketch_click_box_metrics_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_manual_layout_sketch_hover_intent_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_manual_layout_sketch_hover_module_context_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_manual_layout_sketch_hover_module_preview_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_manual_layout_sketch_hover_remove_rod_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_manual_layout_sketch_hover_routing_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_manual_layout_sketch_hover_surface_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/canvas_picking_manual_layout_sketch_hover_tools_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_manual_layout_sketch_shared_helpers_guard.test.cjs",
+      "category": "contract"
+    },
+    {
+      "file": "tests/canvas_picking_module_selector_hits_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_paint_flow_apply_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_projection_runtime_box_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_remove_doors_source_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/canvas_picking_selector_internal_metrics_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_sketch_box_content_commit_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_sketch_box_divider_state_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_sketch_box_door_preview_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_sketch_box_doors_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_sketch_box_overlap_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_sketch_box_runtime_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_sketch_box_vertical_content_preview_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_sketch_free_box_content_preview_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_sketch_free_commit_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_sketch_free_surface_preview_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/canvas_picking_sketch_hover_matching_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_sketch_module_box_workflow_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_sketch_module_surface_commit_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/canvas_picking_sketch_module_surface_preview_rod_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/canvas_picking_sketch_module_surface_preview_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/canvas_picking_sketch_module_surface_preview_shelf_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/canvas_picking_sketch_module_vertical_content_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_sketch_stack_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_sketch_workflow_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cell_dims_hover_preview_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cfg_history_platform_runtime_pack.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/chest_mode_width_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/cloud_sync_access_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_action_feedback_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_actions_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_async_pull_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_async_singleflight_owner_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_attention_pulls_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_coalescer_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_command_shared_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_config_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_delete_temp_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_delete_temp_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_family_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_install_lifecycle_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_install_runtime_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_install_support_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_install_support_publication_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_install_support_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_lifecycle_attention_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_lifecycle_attention_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_lifecycle_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_lifecycle_install_cleanup_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_lifecycle_owner_realtime_start_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_lifecycle_polling_tick_recovery_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_lifecycle_realtime_channel_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_lifecycle_realtime_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_lifecycle_realtime_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_lifecycle_realtime_start_recovery_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_lifecycle_realtime_support_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_lifecycle_realtime_support_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_lifecycle_realtime_transport_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_lifecycle_realtime_transport_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_lifecycle_refresh_async_recovery_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_lifecycle_start_idempotent_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_lifecycle_status_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_lifecycle_status_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_lifecycle_storage_wrap_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_lifecycle_support_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_lifecycle_support_polling_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_lifecycle_support_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_main_row_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_main_row_payload_dedupe_runtime.test.ts",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/cloud_sync_main_row_pull_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_main_row_push_flow_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_main_row_remote_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_main_row_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_main_write_singleflight_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_mutation_commands_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_mutation_commands_singleflight_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_operation_status_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_orchestration_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_owner_context_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_owner_context_diag_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_owner_context_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_owner_context_runtime_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_owner_context_status_publication_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_owner_support_cleanup_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_owner_support_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_owner_support_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_panel_actions_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_panel_api_browser_seams_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_panel_api_commands_controls_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_panel_api_commands_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_panel_api_commands_runtime_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_panel_api_controller_fallback_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_panel_api_failures_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_panel_api_install_healing_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_panel_api_install_surface_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_panel_api_release_regressions.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_panel_api_singleflight_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_panel_api_snapshots_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_panel_api_subscriptions_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_panel_api_support_singleflight_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_panel_api_surface_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_panel_public_support_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_panel_public_support_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_panel_snapshot_controller_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_panel_snapshot_dedupe_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_panel_snapshot_fallback_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_payload_readers_runtime.test.ts",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/cloud_sync_payload_state_runtime.test.ts",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/cloud_sync_pull_coalescer_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_pull_scopes_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_pull_scopes_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_realtime_channel_subscribe_status_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_realtime_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_realtime_lifecycle_transition_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_realtime_support_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_release_quality_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_remote_push_singleflight_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_remote_read_support_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_remote_write_support_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_rest_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_room_commands_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_room_commands_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_service_install_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_site2_sketch_behavior_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_sketch_ops_floating_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_sketch_ops_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_sketch_ops_sketch_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_sketch_pull_load_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_status_install_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_support_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_support_shared_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_support_shared_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_support_storage_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_support_storage_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_sync_pin_command_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_tabs_gate_command_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_tabs_gate_family_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_tabs_gate_release_regressions.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_tabs_gate_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_tabs_gate_snapshot_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_tabs_gate_timer_dedupe_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_ui_action_controller_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_verify_split_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/commands_access_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/config_compounds_service_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/config_compounds_service_runtime_extended.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/config_map_noop_reuse_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/config_render_seam_cleanup_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/confirmed_action_family_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/contents_pipeline_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/core_doors_compute_sliding_vertical_clearance_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/core_engine_entrypoints_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/core_storage_compute_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/corner_configuration_snapshot_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/corner_configuration_stack_patch_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/corner_connector_door_emit_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/corner_connector_emit_shell_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/corner_door_paint_material_refresh_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/corner_door_trim_scoped_lookup_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/corner_ext_drawers_click_target_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/corner_ext_drawers_corner_cfg_count_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/corner_helper_type_hardening_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/corner_layout_preset_explicit_layout_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/corner_sketch_ext_drawers_alignment_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/corner_stack_ext_drawers_scope_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/corner_stack_lower_snapshot_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/corner_stack_paint_material_refresh_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/corner_stack_split_scope_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/corner_state_normalize_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/corner_wing_cell_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/corner_zero_doors_pentagon_only_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cornice_wave_front_alignment_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/debug_console_surface_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/debug_console_surface_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/deps_access_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/design_tab_color_action_family_singleflight_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/design_tab_color_action_feedback_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/design_tab_color_action_result_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/design_tab_color_command_flows_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/design_tab_color_manager_shared_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/design_tab_controller_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/design_tab_custom_color_workflow_singleflight_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/design_tab_custom_color_workflow_surface_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/design_tab_custom_color_workflow_texture_save_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/design_tab_edit_modes_controller_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/design_tab_feedback_and_color_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/design_tab_multicolor_controller_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/design_tab_multicolor_panel_state_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/design_tab_owner_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/design_tab_saved_swatches_controller_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/design_tab_saved_swatches_dnd_controller_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/design_tab_saved_swatches_singleflight_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/design_tab_sections_runtime.test.tsx",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/design_tab_shared_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/design_tab_view_state_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/dom_access_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/domain_api_browser_ui_ops_healing_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/domain_api_install_state_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/domain_api_modules_patch_compat_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/domain_api_modules_recompute_canonical_materialization_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/domain_api_modules_structure_materialization_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/domain_api_room_wardrobe_type_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/domain_api_surface_sections_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/domain_api_surface_sections_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/domain_modules_corner_clone_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/door_glass_build_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/door_glass_profile_visual_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/door_mirror_styled_visual_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/door_mirror_visual_depth_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/door_paint_hover_preview_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/door_profile_tom_cache_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/door_style_overrides_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/door_trim_mirror_avoidance_guard.test.cjs",
+      "category": "contract"
+    },
+    {
+      "file": "tests/door_trim_modeopts_guard.test.cjs",
+      "category": "contract"
+    },
+    {
+      "file": "tests/door_trim_targets_click_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/door_trim_type_hardening_guard.test.cjs",
+      "category": "contract"
+    },
+    {
+      "file": "tests/door_trim_visuals_cache_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/doors_runtime_lifecycle_render_touch_guard.test.cjs",
+      "category": "contract"
+    },
+    {
+      "file": "tests/doors_runtime_lifecycle_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/doors_runtime_support_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/doors_runtime_visuals_int_drawer_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/doors_transient_meta_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/drawer_runtime_access_cleanup_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/e2e/authoring_builds.spec.ts",
+      "category": "e2e-smoke"
+    },
+    {
+      "file": "tests/e2e/resilience.spec.ts",
+      "category": "e2e-smoke"
+    },
+    {
+      "file": "tests/e2e/smoke.spec.ts",
+      "category": "e2e-smoke"
+    },
+    {
+      "file": "tests/e2e/user_paths.spec.ts",
+      "category": "e2e-smoke"
+    },
+    {
+      "file": "tests/edge_handle_default_none_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/edge_handle_profile_geometry_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/edit_state_access_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/edit_state_runtime_extended.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/entry_pro_main_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/entry_pro_start_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/error_normalization_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/error_overlay_release_regressions.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/errors_access_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/errors_install_release_regressions.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/errors_runtime_access_cleanup_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/errors_runtime_state_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/errors_surface_overlay.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/esm_import_sanity.test.js",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/export_actions_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/export_canvas_core_renderer_canvas_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/export_canvas_viewport_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/export_canvas_workflows_surface_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/export_download_dom_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/export_order_pdf_builder_draft_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/export_order_pdf_builder_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/export_order_pdf_builder_sketch_annotations_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/export_order_pdf_capture_cache_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/export_order_pdf_capture_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/export_order_pdf_composite_image_slots_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/export_order_pdf_draft_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/export_order_pdf_ops_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/export_order_pdf_sketch_annotations_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/export_order_pdf_text_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/export_overlay_errors_family_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/ext_drawers_hover_preview_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/final_root_surface_cleanup_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/front_special_visual_routes_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/groove_create_door_visual_forwarding_guard.test.cjs",
+      "category": "contract"
+    },
+    {
+      "file": "tests/groove_lines_count_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/handle_finish_shared_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/handles_apply_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/handles_install_healing_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/hinged_doors_module_ops_full_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/hinged_doors_module_ops_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/hinged_doors_module_ops_shared_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/hinged_doors_module_ops_split_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/hinged_doors_type_hardening_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/history_runtime_action_channel_regression.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/history_service_runtime_state_isolation.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/history_system_access_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/html_sanitize_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/install_idempotency_patterns_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/int_drawer_keep_drawers_closed_guard.test.cjs",
+      "category": "contract"
+    },
+    {
+      "file": "tests/interior_custom_ops_exact_preset_rods_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/interior_pipeline_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/interior_tab_local_state_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/interior_tab_sections_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/interior_tab_view_state_bindings_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/interior_tab_view_state_core_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/interior_tab_view_state_noop_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/interior_tab_view_state_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/interior_tab_view_state_surface_runtime.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/interior_tab_view_state_sync_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/interior_tab_workflows_bootstrap_trim_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/interior_tab_workflows_surface_runtime.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/internal_drawers_do_not_hold_doors_open_guard.test.cjs",
+      "category": "contract"
+    },
+    {
+      "file": "tests/kernel_builder_request_policy_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/kernel_builder_request_policy_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/kernel_di_and_owner_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/kernel_history_runtime_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/kernel_history_service_slot_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/kernel_history_system_lifecycle_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/kernel_install_support_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/kernel_project_capture_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/kernel_snapshot_capture_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/kernel_snapshot_store_build_state_canonical_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/kernel_snapshot_store_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/kernel_state_kernel_config_noop_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/kernel_state_kernel_config_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/kernel_store_boundary_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/layers_access_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/library_mode_recompute_preserves_library_defaults_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/library_mode_recompute_preserves_library_defaults_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/library_preset_canonical_materialization_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/library_preset_flow_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/library_preset_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/local_internal_drawers_local_doors_guard.test.cjs",
+      "category": "contract"
+    },
+    {
+      "file": "tests/maps_access_known_map_normalization_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/maps_access_normalizers_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/maps_access_saved_collections_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/maps_api_runtime_hardening.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/maps_saved_colors_storage_bridge_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/materials_apply_install_healing_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/materials_apply_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/materials_apply_traversal_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/materials_factory_install_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/materials_factory_render_seams_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/meta_actions_fail_fast_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/meta_profile_contract_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/meta_profile_contract_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/mirror_center_and_box_controls_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/mirror_hover_preview_regression_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/mirror_layout_family_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/mirror_layout_map_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/mirror_layout_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/model_record_project_snapshot_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/models_access_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/models_apply_project_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/models_apply_result_reasons_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/models_history_install_healing_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/models_registry_merge_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/models_registry_shared_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/models_registry_storage_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/models_service_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/models_service_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/module_loop_pipeline_runtime_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/modules_configuration_patch_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/modules_patch_noop_reuse_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/modules_recompute_build_policy_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/modules_recompute_request_policy_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/multi_map_mutations_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/no_deps_browser_leaks.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/no_main_corner_dimensions_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/no_main_dimensions_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/no_main_modules_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/no_main_sketch_workspace_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/notes_access_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/notes_export_render_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/notes_export_runtime_behavior.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/notes_overlay_editor_async_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/notes_overlay_editor_state_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/notes_overlay_interaction_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/notes_overlay_palette_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/notes_overlay_persistence_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/notes_overlay_pointer_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/notes_overlay_pointer_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/notes_overlay_text_style_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/notes_service_runtime_extended.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/observability_surface_prod_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/order_pdf_details_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_document_fields_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_export_image_pdf_release_regressions.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_field_specs_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_history_shortcuts_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_image_pdf_text_layout_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_overlay_controller_actions_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_overlay_details_fields_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_overlay_draft_action_feedback_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_overlay_draft_commands_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_overlay_draft_effects_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_overlay_draft_record_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_overlay_draft_support_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_overlay_export_commands_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_overlay_export_ops_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_overlay_export_singleflight_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_overlay_imported_draft_fields_runtime.test.ts",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/order_pdf_overlay_interactions_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_overlay_notes_fields_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_overlay_pdf_import_runtime.test.ts",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/order_pdf_overlay_pdf_render_canvas_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_overlay_pdf_render_cleanup_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_overlay_pdf_render_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_overlay_rich_editor_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_overlay_runtime_export_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_overlay_shell_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_overlay_sketch_card_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/order_pdf_overlay_sketch_image_slots_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_overlay_sketch_panel_measurement_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/order_pdf_overlay_sketch_text_box_create_interaction_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_overlay_sketch_text_box_interaction_preview_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_overlay_text_details_lines_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_overlay_text_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_sketch_annotation_runtime_split_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/order_pdf_sketch_annotation_state_core_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/order_pdf_sketch_annotations_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_sketch_card_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_sketch_draft_persistence_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_sketch_note_preview_edit_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/order_pdf_sketch_palette_placement_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_sketch_panel_canvas_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_sketch_panel_controller_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/order_pdf_sketch_panel_controller_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_sketch_panel_history_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_sketch_panel_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_sketch_panel_runtime_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/order_pdf_sketch_preview_annotations_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/order_pdf_sketch_preview_session_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_sketch_shortcuts_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_sketch_text_box_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_sketch_text_layer_pointer_hooks_decomposition_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/order_pdf_sketch_text_layer_pointer_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/order_pdf_sketch_text_layer_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/order_pdf_sketch_text_mode_layer_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/order_pdf_text_details_merge_release_regressions.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_text_details_merge_support_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_verify_split_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/overlay_feedback_host_timers_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/overlay_quick_actions_dock_controller_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/owned_async_singleflight_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/p1_no_force_update_doors_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/p3_no_react_bridge_facade_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/p3_no_ui_runtime_bind_unbind_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/p9_runtime_config_validation.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/paint_hover_generic_parts_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/perf_runtime_surface_runtime.test.ts",
+      "category": "perf-smoke"
+    },
+    {
+      "file": "tests/platform_access_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/platform_activity_render_touch_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/platform_boot_runtime_state_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/platform_cache_lifecycle_family_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/platform_followthrough_residual_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/platform_meta_three_healing_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/platform_render_state_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/platform_runtime_access_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/platform_surface_healing_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/post_build_dimensions_module_metrics_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/post_build_finalize_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/post_build_front_reveal_frames_drawers_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/post_build_front_reveal_frames_materials_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/post_build_sketch_door_cuts_rebuild_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/post_build_sketch_door_cuts_runtime_assembly.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/preset_stack_runtime_hardening.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/profile_door_paint_material_refresh_guard.test.cjs",
+      "category": "contract"
+    },
+    {
+      "file": "tests/project_action_execution_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/project_action_feedback_flow_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/project_actions_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/project_config_lists_canonical_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/project_config_migration_replace_keys_runtime.test.ts",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/project_config_persisted_snapshot_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/project_drag_drop_controller_failures_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/project_drag_drop_controller_singleflight_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/project_drag_drop_controller_surface_runtime.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/project_file_ingress_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/project_file_ingress_service_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/project_file_load_result_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/project_io_access_runtime.test.ts",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/project_io_config_snapshot_canonicalization_runtime.test.ts",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/project_io_contracts.test.js",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/project_io_export_runtime.test.ts",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/project_io_fail_fast_runtime.test.ts",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/project_io_load_helpers_runtime.test.ts",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/project_io_load_ops_runtime.test.ts",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/project_io_load_result_runtime.test.ts",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/project_io_orchestrator_shared_runtime.test.ts",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/project_load_action_result_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/project_load_runtime_shared_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/project_migration_boundary_contracts.test.js",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/project_migration_runtime_selector_hardening_runtime.test.ts",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/project_model_release_regressions_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/project_payload_runtime_hardening.test.ts",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/project_payload_schema_contracts.test.js",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/project_recovery_action_result_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/project_recovery_release_regressions.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/project_recovery_runtime_singleflight_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/project_reset_default_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/project_save_action_result_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/project_save_load_controller_failure_runtime.test.js",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/project_save_load_controller_save_success_runtime.test.js",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/project_save_load_controller_singleflight_runtime.test.js",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/project_save_runtime_user_flow_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/project_schema_doors.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/project_schema_migrations_runtime.test.ts",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/project_schema_runtime_extended.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/project_schema_runtime_surface.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/project_session_commands_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/project_session_confirm_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/project_ui_action_controller_failure_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/project_ui_action_controller_singleflight_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/project_ui_action_controller_success_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/project_ui_action_events_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/project_ui_feedback_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/public_service_surface_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/react_bridge_surface_family_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/react_config_selectors_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/react_selector_hotspots_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/react_store_cleanup_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/refactor_stage10_refactor_integration_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/refactor_stage11_canvas_hit_parity_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/refactor_stage12_cloud_sync_race_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/refactor_stage13_cloud_sync_push_race_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/refactor_stage14_ui_design_system_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/refactor_stage15_design_swatch_system_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/refactor_stage16_builder_pipeline_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/refactor_stage17_builder_deps_resolver_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/refactor_stage18_canvas_hit_parity_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/refactor_stage19_project_migration_selector_hardening_runtime.test.js",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/refactor_stage20_cloud_sync_polling_recovery_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/refactor_stage21_cloud_sync_realtime_start_recovery_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/refactor_stage22_cloud_sync_lifecycle_owner_recovery_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/refactor_stage3_guardrails_runtime.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/refactor_stage42_legacy_fallback_inventory_guard.test.js",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/refactor_stage43_perf_runtime_surface_ownership_guard.test.js",
+      "category": "perf-smoke"
+    },
+    {
+      "file": "tests/refactor_stage44_scheduler_debug_stats_ownership_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/refactor_stage45_corner_connector_special_ownership_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/refactor_stage46_domain_api_shared_ownership_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/refactor_stage4_public_api_and_type_hardening_runtime.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/refactor_stage5_ui_option_buttons_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/refactor_stage6_ui_effect_cleanup_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/refactor_stage7_canvas_hit_identity_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/refactor_stage8_cloud_sync_and_perf_runtime.test.js",
+      "category": "perf-smoke"
+    },
+    {
+      "file": "tests/refactor_stage9_test_portfolio_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/render_access_engine_consumers_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/render_access_generic_seams_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/render_access_runtime_material_slots.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_access_runtime_mirror_floor_cache.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_access_runtime_scene_ops.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_access_runtime_seams.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_access_runtime_state.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_carcass_ops_shared_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_config_root_cleanup_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/render_context_access_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_dimension_bounds_exclusion_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/render_dimension_ops_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_door_ops_shared_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_install_healing_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_interior_custom_ops_exact_preset_rods_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_interior_custom_ops_storage_barrier_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_interior_rod_ops_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_interior_sketch_boxes_contents_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_interior_sketch_drawers_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_interior_sketch_fronts_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_interior_sketch_layout_dimensions_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_interior_sketch_layout_geometry_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_interior_sketch_support_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_interior_sketch_visuals_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_loop_mirror_driver_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_loop_motion_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_loop_release_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_loop_visual_effects_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_ops_extras_install_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_ops_extras_runtime_render_seams.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_ops_group_binding_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/render_ops_install_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_ops_shared_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_preview_sketch_measurements_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_preview_sketch_pipeline_box_content_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_runtime_primitives_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_surface_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/render_surface_runtime_support_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/render_surface_ui_decoupling_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/render_tab_display_controller_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_tab_library_preset_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/render_tab_lighting_controller_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_tab_room_design_controller_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_tab_sections_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_tab_sections_shared_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_tab_shared_room_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_tab_view_state_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/residual_root_bag_bridge_cleanup_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/residual_service_probe_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/room_actions_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/room_design_service_slot_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/room_visual_state_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/root_state_access_runtime_hardening.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/root_surface_ast_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/root_surface_cleanup_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/runtime_actions_patch_router_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/runtime_assert.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/runtime_boundary_anyrecord_cleanup_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/runtime_callable_surface_hardening_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/runtime_config_platform_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/runtime_globals_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/runtime_mode_write_access_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/runtime_platform_core_family_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/runtime_record_actions_root_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/runtime_selectors_normalization_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/runtime_selectors_normalizer_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/runtime_slice_write_router_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/runtime_surface_family_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/runtime_three_doors_access_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/scene_view_access_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/scene_view_lighting_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/scene_view_shared_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/scene_view_store_sync_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/service_access_legacy_root_runtime.test.ts",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/service_install_healing_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/service_install_healing_runtime_extended.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/service_install_healing_runtime_surface.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/service_install_state_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/service_owner_convergence_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/service_slot_owner_installers_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/service_slots_owner_completion_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/services_namespace_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/services_root_access_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/settings_backup_action_feedback_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/settings_backup_action_result_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/settings_backup_export_failures_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/settings_backup_export_surface_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/settings_backup_import_models_runtime.test.ts",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/settings_backup_import_read_runtime.test.ts",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/settings_backup_import_storage_runtime.test.ts",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/settings_backup_release_regressions.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/settings_backup_roundtrip_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/settings_backup_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/settings_backup_runtime_extended.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/settings_backup_shared_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/settings_backup_singleflight_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/sidebar_background_exit_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/site2_camera_boot_default_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/site_variant_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/sketch_box_adornments_structure_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/sketch_box_divider_hover_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/sketch_box_divider_segments_guard.test.cjs",
+      "category": "contract"
+    },
+    {
+      "file": "tests/sketch_box_door_special_paint_apply_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/sketch_box_door_visuals_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/sketch_box_door_z_clearance_guard.test.cjs",
+      "category": "contract"
+    },
+    {
+      "file": "tests/sketch_box_doors_and_ui_guard.test.cjs",
+      "category": "contract"
+    },
+    {
+      "file": "tests/sketch_box_double_doors_guard.test.cjs",
+      "category": "contract"
+    },
+    {
+      "file": "tests/sketch_box_drawers_and_cuts_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/sketch_box_free_door_pid_resolution_guard.test.cjs",
+      "category": "contract"
+    },
+    {
+      "file": "tests/sketch_box_front_overlay_hover_guard.test.cjs",
+      "category": "contract"
+    },
+    {
+      "file": "tests/sketch_box_hover_and_groove_fix_guard.test.cjs",
+      "category": "contract"
+    },
+    {
+      "file": "tests/sketch_box_hover_click_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/sketch_box_local_projection_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/sketch_box_manual_dims_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/sketch_box_manual_row_guard.test.cjs",
+      "category": "contract"
+    },
+    {
+      "file": "tests/sketch_box_module_defaults_and_free_click_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/sketch_box_render_regression_guard.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/sketch_box_segment_doors_fix_guard.test.cjs",
+      "category": "contract"
+    },
+    {
+      "file": "tests/sketch_click_module_key_resolution_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/sketch_ext_drawers_direct_hit_hover_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/sketch_free_box_dimensions_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/sketch_free_box_int_drawers_open_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/sketch_free_boxes_attach_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/sketch_free_boxes_hover_plane_attach_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/sketch_free_boxes_outside_attach_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/sketch_free_boxes_remove_and_sidewall_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/sketch_free_boxes_room_floor_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/sketch_front_visual_state_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/sketch_manual_tool_host_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/sketch_module_box_remove_hit_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/sketch_module_box_remove_shared_hit_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/sketch_module_boxes_overlap_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/sketch_module_stack_preview_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/sketch_segmented_doors_hover_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/sketch_segmented_doors_pick_meta_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/sketch_verify_split_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/sliding_wardrobe_regression_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/smoke_checks_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/stable_surface_methods_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stable_surface_slots_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stage19_20_three_remaining_cleanup_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stage2_hotspot_compression_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stage3_orchestration_boundary_cleanup_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stage4_ui_build_reactivity_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stage4_workflow_owner_cleanup_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stage7_ui_surface_consolidation_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stageAB_render_ops_interior_dimensions_decomposition_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stageAG_manual_layout_sketch_contract_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stageAL_interiortab_sections_bundle_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stageAS_preset_stack_corner_cleanup_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stageAV_design_interior_surface_cleanup_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stageAX_sidebar_hooks_notes_selection_cleanup_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stageA_domain_corner_delegate_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stageBC_maps_doors_runtime_type_hardening_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stageBE_mode_transition_type_hardening_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stageBF_builder_render_room_type_hardening_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stageBG_meta_opts_surface_hardening_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stageBH_canonical_base_types_cleanup_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stageBI_builder_module_content_callable_hardening_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stageBK_three_builder_constructor_hardening_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stageBM_no_raw_unknown_rest_seams_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stageBN_preview_cloudsync_contract_hardening_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stageB_kernel_viewport_type_hardening_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stageB_notes_settings_type_hardening_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stageB_service_meta_type_hardening_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stageB_type_surface_hardening_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stageC_D_semantic_actions_dom_cleanup_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stageC_react_canonical_write_wrappers_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stageF_react_write_wrapper_sweep_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stageI_cfg_ui_semantic_cleanup_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stageJ_semantic_cfg_helper_expansion_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stageO_render_ops_preview_decomposition_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stageO_ui_surface_anyrecord_cleanup_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/state_api_config_namespace_canonical_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/state_api_history_meta_behavior_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/state_api_history_store_reactivity_build_meta_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/state_api_history_store_reactivity_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/state_api_install_support_noop_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/state_api_stack_router_corner_root_canonical_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/state_api_stack_router_structure_materialization_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/statekernel_audit_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/storage_access_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/store_actions_config_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/store_actions_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/store_actions_ui_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/store_backend_family_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/store_patch_apply_structure_materialization_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/store_patch_noop_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/store_surface_access_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/store_zustand_core_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/store_zustand_root_canonicalization_runtime.test.ts",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/store_zustand_runtime_workflows.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/store_zustand_set_flows_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/structural_install_idempotency_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/structure_e2e_surface_contracts.test.js",
+      "category": "e2e-smoke"
+    },
+    {
+      "file": "tests/structure_tab_actions_controller_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/structure_tab_aux_sections_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/structure_tab_body_section_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/structure_tab_controls_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/structure_tab_corner_chest_recompute_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/structure_tab_dimension_field_shared_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/structure_tab_dimensions_section_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/structure_tab_family_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/structure_tab_owner_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/structure_tab_saved_models_action_feedback_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/structure_tab_saved_models_command_flows_confirm_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/structure_tab_saved_models_command_flows_save_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/structure_tab_saved_models_command_flows_surface_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/structure_tab_saved_models_controller_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/structure_tab_saved_models_controller_singleflight_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/structure_tab_saved_models_dnd_controller_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/structure_tab_saved_models_dnd_events_controller_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/structure_tab_saved_models_list_row_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/structure_tab_shared_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/structure_tab_structural_controller_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/structure_tab_structure_raw_mutations_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/structure_tab_view_state_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/structure_tab_workflows_controller_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/structure_tab_workflows_shared_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/structure_tab_write_and_surface_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/supabase_config_runtime_global.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/textures_cache_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/three_cleanup_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/three_geometry_cache_lifecycle_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/three_geometry_cache_normalization_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/three_geometry_cache_patch_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/type_hotspots_type_hardening_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/ui_boot_app_start_regression_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/ui_boot_fail_fast_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/ui_boot_runtime_lifecycle_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/ui_boot_runtime_state_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/ui_boot_viewport_seams_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/ui_feedback_prompt_cancel_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/ui_feedback_runtime_state_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/ui_feedback_toast_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/ui_feedback_wrapper_upgrade_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/ui_lean_typecheck_contracts.test.cjs",
+      "category": "contract"
+    },
+    {
+      "file": "tests/ui_manifest_order.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/ui_modes_runtime_state_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/ui_notes_export_runtime_state_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/ui_notes_export_service_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/ui_order_pdf_lean_contracts.test.cjs",
+      "category": "contract"
+    },
+    {
+      "file": "tests/ui_pdf_interop_type_hardening_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/ui_portable_typecheck_contracts.test.cjs",
+      "category": "contract"
+    },
+    {
+      "file": "tests/ui_react_import_hardening_contracts.test.js",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/ui_react_jsx_import_hardening_contracts.test.js",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/ui_runtime_browser_board_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/ui_selectors_autosave_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/ui_service_namespace_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/ui_write_access_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/viewport_layout_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/viewport_runtime_decoupling_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/viewport_runtime_release_regressions.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/viewport_runtime_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/visual_service_install_healing_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/visual_surface_family_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/visuals_and_contents_install_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/visuals_chest_mode_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/visuals_contents_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/wave1_write_access_cleanup_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/wave2_namespace_hardening_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/wave3_react_hotspot_wrapper_cleanup_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/wave4_hot_path_hardening_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/wave7_project_io_decomposition_guard.test.js",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/wave8_render_ops_decomposition_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/wp_browser_perf_paths_runtime.test.js",
+      "category": "perf-smoke"
+    },
+    {
+      "file": "tests/wp_browser_perf_support_runtime.test.js",
+      "category": "perf-smoke"
+    },
+    {
+      "file": "tests/wp_build_dist_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/wp_bundle_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/wp_check_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/wp_finish_line_signoff_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/wp_legacy_fallback_audit_runtime.test.js",
+      "category": "legacy-migration"
+    },
+    {
+      "file": "tests/wp_lint_vendor_policy_runtime.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/wp_npm_spawn_support_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/wp_perf_smoke_runtime.test.js",
+      "category": "perf-smoke"
+    },
+    {
+      "file": "tests/wp_playwright_preflight_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/wp_refactor_closeout_audit_runtime.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/wp_release_parity_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/wp_release_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/wp_run_closeout_profile_runtime.test.cjs",
+      "category": "contract"
+    },
+    {
+      "file": "tests/wp_serial_tests_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/wp_test_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/wp_toolchain_family_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/wp_typecheck_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/wp_verify_closeout_support_runtime.test.cjs",
+      "category": "contract"
+    },
+    {
+      "file": "tests/wp_verify_lane_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/wp_verify_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/zustand_boot_store_seams_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/zustand_cfg_access_canonical_first.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/zustand_domain_paths_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/zustand_kernel_seams_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/zustand_modules_stack_surface.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/zustand_parity_integration_paths_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/zustand_routeA_deletepass_bigstep_stage8x_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/zustand_runtime_services_parity.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/zustand_state_api_commit_ui_snapshot_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/zustand_state_api_internal_surfaces_pure_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/zustand_state_api_stack_router_compat_collapse_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/zustand_store_contracts.test.js",
+      "category": "contract"
+    }
+  ]
+}

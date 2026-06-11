@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "toolOwned": true,
+  "reportTarget": "npm run verify:closeout:write",
+  "status": "placeholder-after-docs-cleanup",
+  "note": "Historical closeout output was removed from active docs; regenerate from tooling when needed."
+}

@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.checkjs.json",
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true
+  },
+  "include": [
+    "esm/app_container.ts",
+    "esm/native/runtime/assert.ts",
+    "esm/native/runtime/browser_env.ts",
+    "types/**/*.d.ts",
+    "types/**/*.ts"
+  ],
+  "exclude": ["node_modules", "libs/**", "dist", "release"]
+}

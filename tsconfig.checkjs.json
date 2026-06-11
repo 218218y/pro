@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "checkJs": true,
+    "strict": false,
+    "noImplicitAny": false
+  },
+  "include": [
+    "esm/entry_pro.ts",
+    "esm/main.ts",
+    "esm/native/runtime/browser_env.ts",
+    "esm/native/runtime/assert.ts",
+    "types/**/*.d.ts",
+    "types/**/*.ts"
+  ],
+  "exclude": ["node_modules", "libs/**", "dist", "release"]
+}

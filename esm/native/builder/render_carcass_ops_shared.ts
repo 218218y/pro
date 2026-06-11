@@ -1,0 +1,46 @@
+export type {
+  AnyMap,
+  BackPanelSeg,
+  BoardOp,
+  CarcassOps,
+  CorniceOp,
+  CorniceSegment,
+  ExtrudeGeometryLike,
+  GroupLike,
+  IndexLike,
+  LegacyCorniceOp,
+  LegsBaseOp,
+  OutlineFn,
+  PartMaterialFn,
+  PlinthBaseOp,
+  PlinthSegment,
+  PositionAttributeLike,
+  ProfilePoint,
+  RenderCarcassContext,
+  RenderCarcassOpsDeps,
+  RenderCarcassRuntime,
+  ShapeLike,
+  ThreeCtorLike,
+} from './render_carcass_ops_shared_contracts.js';
+
+export {
+  __asBool,
+  __asContext,
+  __asFinite,
+  __asOps,
+  __asString,
+  __isBoardOp,
+  __isCorniceSegment,
+  __isFn,
+  __isLegPosition,
+  __isPlinthSegment,
+  __isRecord,
+  __outlineFn,
+  __partMaterialFn,
+  __profilePoints,
+  __readArray,
+  __readUnknownArray,
+} from './render_carcass_ops_shared_readers.js';
+
+export { __readGroupLike, __readThreeCtorLike } from './render_carcass_ops_shared_runtime.js';
+export { __backPanelMaterial, __stripMiterCaps } from './render_carcass_ops_shared_geometry.js';

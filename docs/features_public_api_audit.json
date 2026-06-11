@@ -1,0 +1,5 @@
+{
+  "placeholder": true,
+  "report": "npm run report:features-public-api",
+  "policy": "docs/QUALITY_GUARDRAILS.md"
+}

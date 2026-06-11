@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>WardrobePro (Release)</title>
+    <link rel="stylesheet" href="pro_styles.css" />
+  </head>
+  <body>
+    <noscript>צריך להפעיל JavaScript כדי להריץ את WardrobePro.</noscript>
+
+    <!-- Release mode: local ESM libs loader + single JS bundle. -->
+    <script type="module">
+      (function () {
+        function showFatalOverlay(title, err) {
+          try {
+            console.error('[WP LOADER]', title, err);
+          } catch (_) {}
+          const overlay = document.createElement('div');
+          overlay.style.cssText = [
+            'position:fixed',
+            'inset:0',
+            'z-index:999999',
+            'display:flex',
+            'align-items:center',
+            'justify-content:center',
+            'background:#0b1220',
+            'color:#fff',
+            'padding:24px',
+            'font-family:Heebo,Arial,sans-serif',
+            'text-align:center',
+          ].join(';');
+
+          const safe = s =>
+            String(s || '').replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' })[ch]);
+
+          overlay.innerHTML = `
+            <div style="max-width:920px;line-height:1.7">
+              <div style="font-size:22px;font-weight:800;margin-bottom:10px">שגיאת טעינה: ${safe(title)}</div>
+              <div style="opacity:.9;margin-bottom:14px">
+                לא הצלחנו לטעון את ספריות Three.js כ־<b>ESM</b> (או שה־boot נכשל).
+              </div>
+              <div style="text-align:right;background:rgba(255,255,255,.08);padding:14px 16px;border-radius:14px">
+                <div style="font-weight:800;margin-bottom:8px">בדיקה מהירה:</div>
+                <ol style="margin:0;padding-right:18px">
+                  <li>ודא שבתיקיית האתר קיימים הקבצים:</li>
+                  <li style="list-style:none;margin:8px 0 0 0">
+                    <div dir="ltr" style="background:rgba(0,0,0,.35);padding:10px 12px;border-radius:12px;display:inline-block">
+                      libs/three/build/three.module.js<br/>
+                      libs/three/examples/jsm/controls/OrbitControls.js<br/>
+                      libs/three/examples/jsm/geometries/RoundedBoxGeometry.js
+                    </div>
+                  </li>
+                  <li style="margin-top:8px">רענן (Ctrl+F5)</li>
+                </ol>
+                <div style="margin-top:10px;opacity:.85;font-size:13px">
+                  טיפ: אם אתה על נטפרי/פילטר — לפעמים קבצי JS מוחלפים בעמוד חסימה (HTML). במקרה כזה חייבים קבצים מקומיים תקינים.
+                </div>
+              </div>
+            </div>
+          `;
+          document.body.appendChild(overlay);
+        }
+
+        async function loadThree() {
+          try {
+            const threeNs = await import('./libs/three/build/three.module.js');
+            const orbitMod = await import('./libs/three/examples/jsm/controls/OrbitControls.js');
+            const rboxMod = await import('./libs/three/examples/jsm/geometries/RoundedBoxGeometry.js');
+
+            const OrbitControls = orbitMod && orbitMod.OrbitControls ? orbitMod.OrbitControls : null;
+            const RoundedBoxGeometry =
+              rboxMod && rboxMod.RoundedBoxGeometry ? rboxMod.RoundedBoxGeometry : null;
+
+            if (!OrbitControls)
+              throw new Error('OrbitControls module loaded but missing export: OrbitControls');
+            if (!RoundedBoxGeometry)
+              throw new Error('RoundedBoxGeometry module loaded but missing export: RoundedBoxGeometry');
+
+            return Object.assign({}, threeNs, { OrbitControls, RoundedBoxGeometry });
+          } catch (e) {
+            showFatalOverlay('Three.js (ESM)', e);
+            throw e;
+          }
+        }
+
+        async function boot() {
+          try {
+            const THREE = await loadThree();
+            const { boot } = await import('./wardrobepro.bundle.js');
+
+            // Runtime config module (optional):
+            // ../wp_runtime_config.mjs can export either:
+            //   export default { supabaseCloudSync: { ... } };
+            //   export default { config: { ... }, flags: { ... } };
+            async function loadRuntimeModule() {
+              try {
+                const url = new URL('../wp_runtime_config.mjs', import.meta.url).toString();
+                const mod = await import(url);
+                const raw = mod && typeof mod === 'object' && 'default' in mod ? mod.default : mod;
+                if (!raw || typeof raw !== 'object') return { config: null, flags: null };
+
+                const flags = raw.flags && typeof raw.flags === 'object' ? raw.flags : null;
+                const cfgRaw = raw.config && typeof raw.config === 'object' ? raw.config : raw;
+                let cfg = cfgRaw && typeof cfgRaw === 'object' ? Object.assign({}, cfgRaw) : null;
+
+                // If the module exported url/anonKey directly, treat it as supabaseCloudSync.
+                if (cfg && !('supabaseCloudSync' in cfg) && ('url' in cfg || 'anonKey' in cfg)) {
+                  cfg = { supabaseCloudSync: cfg };
+                }
+                // If we used the flat shape and also got flags, avoid merging flags into config.
+                if (cfg && cfg === raw && flags) {
+                  cfg = Object.assign({}, raw);
+                  delete cfg.flags;
+                }
+                return { config: cfg, flags };
+              } catch (_) {
+                // Missing file is OK (Cloud Sync disabled unless env vars are provided).
+                return { config: null, flags: null };
+              }
+            }
+
+            const runtime = await loadRuntimeModule();
+            const flags = Object.assign({ uiFramework: 'react' }, runtime.flags || {});
+            const config = Object.assign(
+              {
+                cacheBudgetMb: 128,
+                cacheMaxItems: 2000,
+                debugBootTimings: false,
+              },
+              runtime.config || {}
+            );
+
+            // Pure-ESM DI: inject browser env for modules that require window/document.
+            const app = await boot({
+              deps: {
+                THREE,
+                flags,
+                config,
+                browser: {
+                  window,
+                  document,
+                  location: window.location,
+                  navigator: window.navigator,
+                },
+              },
+            });
+
+            if (!app) throw new Error('ESM boot failed: app is null/undefined');
+          } catch (err) {
+            showFatalOverlay('Boot', err);
+          }
+        }
+
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+        else boot();
+      })();
+    </script>
+  </body>
+</html>

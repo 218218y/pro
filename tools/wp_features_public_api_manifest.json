@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "policy": "Only feature entries listed here are public to layers outside esm/native/features. Add new entries deliberately with owner documentation; do not import feature internals ad-hoc.",
+  "publicEntries": [
+    "base_leg_support.js",
+    "door_style_overrides.js",
+    "door_trim.js",
+    "handle_finish_shared.js",
+    "interior_layout_presets/api.js",
+    "library_preset/library_preset.js",
+    "library_preset/module_defaults.js",
+    "mirror_layout.js",
+    "model_record/model_record_normalizer.js",
+    "modules_configuration/calc_module_structure.js",
+    "modules_configuration/corner_cells_api.js",
+    "modules_configuration/modules_config_api.js",
+    "modules_configuration/modules_config_contracts.js",
+    "project_config/project_config_lists_canonical.js",
+    "project_config/project_config_persisted_payload_shared.js",
+    "project_config/project_config_persisted_snapshot.js",
+    "project_config/project_config_snapshot_canonical.js",
+    "sketch_drawer_sizing.js",
+    "special_dims/index.js",
+    "special_dims/special_dims.js",
+    "stack_split/index.js",
+    "stack_split/module_config.js"
+  ],
+  "families": {
+    "base_leg_support": ["base_leg_support.js"],
+    "door_style_overrides": ["door_style_overrides.js"],
+    "door_trim": ["door_trim.js"],
+    "handle_finish_shared": ["handle_finish_shared.js"],
+    "interior_layout_presets": ["interior_layout_presets/api.js"],
+    "library_preset": ["library_preset/library_preset.js", "library_preset/module_defaults.js"],
+    "mirror_layout": ["mirror_layout.js"],
+    "model_record": ["model_record/model_record_normalizer.js"],
+    "modules_configuration": [
+      "modules_configuration/calc_module_structure.js",
+      "modules_configuration/corner_cells_api.js",
+      "modules_configuration/modules_config_api.js",
+      "modules_configuration/modules_config_contracts.js"
+    ],
+    "project_config": [
+      "project_config/project_config_lists_canonical.js",
+      "project_config/project_config_persisted_payload_shared.js",
+      "project_config/project_config_persisted_snapshot.js",
+      "project_config/project_config_snapshot_canonical.js"
+    ],
+    "sketch_drawer_sizing": ["sketch_drawer_sizing.js"],
+    "special_dims": ["special_dims/index.js", "special_dims/special_dims.js"],
+    "stack_split": ["stack_split/index.js", "stack_split/module_config.js"]
+  }
+}
