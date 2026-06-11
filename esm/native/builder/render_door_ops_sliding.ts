@@ -54,6 +54,10 @@ export function createApplySlidingDoorsOps(deps: BuilderRenderDoorDeps) {
     const addOutlines = isFunction(args?.addOutlines) ? args.addOutlines : null;
     const doorStyle = args?.doorStyle;
     const globalFrontMat = args?.globalFrontMat;
+    const removeDoorsEnabled = args?.removeDoorsEnabled === true;
+    const isRemoveDoorMode = args?.isRemoveDoorMode === true;
+    const isDoorRemoved = isFunction(args?.isDoorRemoved) ? args.isDoorRemoved : null;
+    const wpStackArg = typeof args?.__wpStack === 'string' ? String(args.__wpStack) : undefined;
 
     const isGroovesEnabled = uiState.groovesEnabled === true;
     const groovesMap = cfg.groovesMap || Object.create(null);
@@ -80,6 +84,61 @@ export function createApplySlidingDoorsOps(deps: BuilderRenderDoorDeps) {
 
       const group = new THREE.Group();
       group.position.set(doorOp.x, doorOp.y, zPos);
+
+      group.userData = group.userData || {};
+      group.userData.partId = slideID;
+      group.userData.__doorWidth = doorOp.width;
+      group.userData.__doorHeight = doorOp.height;
+      group.userData.__doorType = 'sliding';
+      group.userData.__doorPivotCentered = true;
+      group.userData.__hingeLeft = false;
+      group.userData.__doorMeshOffsetX = 0;
+      group.userData.__wpStack = wpStackArg;
+      const removed = !!(removeDoorsEnabled && isDoorRemoved && isDoorRemoved(slideID));
+      group.userData.__wpDoorRemoved = removed;
+      __reg(App, slideID, group, 'slidingDoor');
+
+      if (removed) {
+        if (isRemoveDoorMode) {
+          const hitbox = new THREE.Mesh(
+            new THREE.BoxGeometry(
+              doorOp.width,
+              doorOp.height,
+              DOOR_SYSTEM_DIMENSIONS.sliding.visualThicknessM
+            ),
+            new THREE.MeshBasicMaterial({
+              color: 0xff0000,
+              transparent: true,
+              opacity: 0,
+              side: THREE.DoubleSide,
+            })
+          );
+          group.add(hitbox);
+        }
+        wardrobeGroup.add(group);
+
+        const removedDoorsArray = __doors(App);
+        if (Array.isArray(removedDoorsArray)) {
+          removedDoorsArray.push({
+            type: 'sliding',
+            group,
+            hingeSide: null,
+            width: doorOp.width,
+            index: doorOp.index,
+            total: doorOp.total,
+            isOuter: doorOp.isOuter,
+            originalX: doorOp.x,
+            originalZ: doorOp.z,
+            outerZ,
+            innerZ,
+            stackZStep: DOOR_SYSTEM_DIMENSIONS.sliding.runtimeStackZStepMinM,
+            minX: doorOp.minX,
+            maxX: doorOp.maxX,
+          });
+          __markSplitHoverPickablesDirty(App);
+        }
+        continue;
+      }
 
       const visualState = resolveSlidingDoorVisualState(cfg, slideID, getPartColorValue);
       const grooveKey = `groove_${slideID}`;
@@ -132,15 +191,6 @@ export function createApplySlidingDoorsOps(deps: BuilderRenderDoorDeps) {
         frontZ: DOOR_SYSTEM_DIMENSIONS.sliding.trimFrontZM,
         faceSign: 1,
       });
-      group.userData = group.userData || {};
-      group.userData.partId = slideID;
-      group.userData.__doorWidth = doorOp.width;
-      group.userData.__doorHeight = doorOp.height;
-      group.userData.__doorType = 'sliding';
-      group.userData.__doorPivotCentered = true;
-      group.userData.__hingeLeft = false;
-      group.userData.__doorMeshOffsetX = 0;
-      __reg(App, slideID, group, 'slidingDoor');
 
       if (cfg.slidingDoorHandlesEnabled) {
         const handleType = resolveHandleType(getHandleType, slideID);

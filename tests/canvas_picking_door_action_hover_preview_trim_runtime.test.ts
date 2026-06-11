@@ -368,6 +368,114 @@ test('door trim hover stays live even when sketch preview factory is unavailable
   assert.deepEqual((marker.scale as { last: [number, number, number] | null }).last, [1, 0.035, 1]);
 });
 
+test('door trim hover preview uses the resolved split sketch-door leaf instead of the full parent door', () => {
+  const state = createStoreState();
+  state.config.doorTrimMap = {};
+  state.mode.opts = {
+    trimAxis: 'horizontal',
+    trimColor: 'black',
+    trimSpan: 'full',
+  };
+  const app = {
+    store: {
+      getState() {
+        return state;
+      },
+    },
+    maps: {
+      getMap() {
+        return {};
+      },
+    },
+    render: {
+      doorsArray: [
+        {
+          group: {
+            userData: {
+              partId: 'sketch_box_0_sb_1_door_left',
+              __doorWidth: 0.8,
+              __doorHeight: 2.2,
+              __wpSketchBoxDoor: true,
+            },
+          },
+        },
+      ],
+    },
+  } as never;
+  const parentDoor = {
+    userData: {
+      partId: 'sketch_box_0_sb_1_door_left',
+      __doorWidth: 0.8,
+      __doorHeight: 2.2,
+      __wpSketchBoxDoor: true,
+    },
+  } as never;
+  const leafOwner = {
+    userData: {
+      partId: 'sketch_box_0_sb_1_door_left_top',
+      __doorWidth: 0.8,
+      __doorHeight: 0.6,
+      __doorRectMinX: -0.4,
+      __doorRectMaxX: 0.4,
+      __doorRectMinY: -0.3,
+      __doorRectMaxY: 0.3,
+      __wpSketchDoorLeaf: true,
+    },
+    worldToLocal(target: Vec3) {
+      return target;
+    },
+    localToWorld(target: Vec3) {
+      return target;
+    },
+    getWorldPosition(target: Vec3) {
+      return target.set(0, 0, 0);
+    },
+    getWorldQuaternion(target: Quat) {
+      return target;
+    },
+  } as never;
+  const marker = createMarker();
+  const previewCalls: Record<string, unknown>[] = [];
+
+  const handled = tryHandleDoorTrimHoverPreview({
+    App: app,
+    THREE: { Vector3: Vec3, Quaternion: Quat },
+    hit: {
+      hitDoorPid: 'sketch_box_0_sb_1_door_left',
+      hitDoorGroup: parentDoor,
+      hitPoint: { x: 0, y: 0, z: 0.02 },
+    },
+    hitDoorPid: 'sketch_box_0_sb_1_door_left',
+    groupRec: leafOwner,
+    userData: leafOwner.userData,
+    doorMarker: marker,
+    markerUd: marker.userData,
+    local: new Vec3(),
+    localHit: new Vec3(),
+    wq: new Quat(),
+    zOff: 0.02,
+    setSketchPreview(previewArgs: Record<string, unknown>) {
+      previewCalls.push(previewArgs);
+      return {
+        hoverMarker: { material: { color: { setHex() {} }, emissive: { setHex() {} } } },
+        mesh: { material: { color: { setHex() {} }, emissive: { setHex() {} } } },
+      };
+    },
+    wardrobeGroup: {
+      worldToLocal(target: Vec3) {
+        return target;
+      },
+    },
+  });
+
+  assert.equal(handled, true);
+  assert.equal(previewCalls.length, 1);
+  assert.equal(previewCalls[0].guideHeight, 0.6);
+  assert.equal(previewCalls[0].w, 0.8);
+  assert.equal(previewCalls[0].h, 0.035);
+  assert.deepEqual((marker.scale as { last: [number, number, number] | null }).last, [0.8, 0.035, 1]);
+});
+
 test('door trim hover marker matches default horizontal thickness exactly with no artificial pad', () => {
   const state = createStoreState();
   state.config.doorTrimMap = {};

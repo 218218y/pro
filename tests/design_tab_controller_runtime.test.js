@@ -55,6 +55,19 @@ function loadDesignTabControllerRuntimeModule(stubs = {}) {
           ((...args) => stubs.calls?.push(['requestBuilderStructuralRefresh', ...args])),
       };
     }
+    if (specifier === '../../../features/removable_parts.js') {
+      const readMap = (cfg, name) =>
+        cfg && typeof cfg === 'object' && cfg[name] && typeof cfg[name] === 'object' ? cfg[name] : {};
+      return {
+        ROUNDED_FRAME_SIDE_SHELVES_MAP_NAME: 'roundedFrameSideShelvesMap',
+        readRemovedFrameSidePartIds: cfg => {
+          const removed = readMap(cfg, 'removedDoorsMap');
+          return ['body_left', 'lower_body_left', 'body_right', 'lower_body_right'].filter(
+            partId => removed[`removed_${partId}`] === true
+          );
+        },
+      };
+    }
     return require(specifier);
   };
   const sandbox = {
@@ -165,4 +178,59 @@ test('[design-tab-controller-runtime] delegates structural ui writes through can
       ['groovesEnabled', true],
     ])
   );
+});
+
+test('[design-tab-controller-runtime] toggles rounded shelves for removed frame sides only', () => {
+  const calls = [];
+  const app = { id: 'app' };
+  const mod = loadDesignTabControllerRuntimeModule({
+    calls,
+    readStoreStateMaybe: () => ({
+      config: {
+        removedDoorsMap: { removed_body_left: true },
+        roundedFrameSideShelvesMap: { body_right: true },
+      },
+      ui: {},
+    }),
+  });
+  const controller = mod.createDesignTabControllerRuntime({
+    app,
+    setFeatureToggle: () => undefined,
+  });
+
+  controller.toggleRoundedFrameSideShelves();
+
+  assert.equal(calls.length, 2);
+  assert.equal(calls[0][0], 'runHistoryBatch');
+  assert.equal(calls[0][1], app);
+  assert.deepEqual({ ...calls[0][2] }, { source: 'react:design:roundedFrameSideShelves', immediate: true });
+  assert.equal(calls[1][0], 'setCfgMap');
+  assert.equal(calls[1][1], app);
+  assert.equal(calls[1][2], 'roundedFrameSideShelvesMap');
+  assert.deepEqual({ ...calls[1][3] }, { body_right: true, body_left: true });
+  assert.deepEqual({ ...calls[1][4] }, { source: 'react:design:roundedFrameSideShelves', immediate: true });
+});
+
+test('[design-tab-controller-runtime] toggles rounded shelves on lower scoped removed frame sides', () => {
+  const calls = [];
+  const app = { id: 'app' };
+  const mod = loadDesignTabControllerRuntimeModule({
+    calls,
+    readStoreStateMaybe: () => ({
+      config: {
+        removedDoorsMap: { removed_body_left: true, removed_lower_body_left: true },
+        roundedFrameSideShelvesMap: { body_left: true },
+      },
+      ui: {},
+    }),
+  });
+  const controller = mod.createDesignTabControllerRuntime({
+    app,
+    setFeatureToggle: () => undefined,
+  });
+
+  controller.toggleRoundedFrameSideShelves();
+
+  assert.equal(calls[1][0], 'setCfgMap');
+  assert.deepEqual({ ...calls[1][3] }, { body_left: true, lower_body_left: true });
 });

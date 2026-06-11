@@ -36,7 +36,7 @@ test('preset brace wall faces prefer named walls when they are available', () =>
     renderOpsHandleCatch: createReporter(reports) as any,
   });
 
-  assert.deepEqual(result, { leftX: -0.5 + 0.00005, rightX: 0.5 - 0.00005 });
+  assert.deepEqual(result, { leftX: -0.5, rightX: 0.5 });
   assert.deepEqual(reports, []);
 });
 

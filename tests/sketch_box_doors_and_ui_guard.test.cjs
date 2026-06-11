@@ -68,7 +68,7 @@ test('manual sketch box UI exposes 40cm default and box-door controls', () => {
   assert.match(sections, /מחיצה לקופסא/);
 });
 
-test('sketch box renderer keeps the flat-slab path but upgrades free-box profile/tom doors through the canonical door visual factory', () => {
+test('sketch box renderer keeps the flat-slab path but upgrades free-box profile/double_profile doors through the canonical door visual factory', () => {
   const render = [
     read('esm/native/builder/render_interior_sketch_ops.ts'),
     read('esm/native/builder/render_interior_sketch_boxes.ts'),
@@ -93,7 +93,7 @@ test('sketch box renderer keeps the flat-slab path but upgrades free-box profile
   assert.match(render, /const doorStyle = resolveSketchDoorStyle\(App, input\);/);
   assert.match(
     render,
-    /const canUseStyledDoorVisual = !!\([\s\S]*isFreePlacement === true[\s\S]*effectiveDoorStyle === 'profile' \|\| effectiveDoorStyle === 'tom'/
+    /const canUseStyledDoorVisual = !!\([\s\S]*isFreePlacement === true[\s\S]*effectiveDoorStyle === 'profile' \|\| effectiveDoorStyle === 'double_profile'/
   );
   assert.match(
     render,

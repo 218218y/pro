@@ -5,6 +5,9 @@ import {
   getDoorsOpen,
   getGroupUserData,
   isGlobalClickMode,
+  isInteriorDoorEditModeActive,
+  isSketchEditActive,
+  isSketchExtDrawersEditActive,
   isSketchIntDrawersEditActive,
   reportDoorsRuntimeNonFatal,
   shouldForceSketchFreeBoxDoorsOpen,
@@ -15,14 +18,35 @@ import {
   reportSlidingDoorZFailure,
   resolveDoorPartId,
   resolveSlidingDoorClosedState,
-  resolveSlidingDoorOpenPosition,
+  resolveSlidingDoorTrackOpenPosition,
 } from './doors_runtime_visuals_shared.js';
+import { getSketchFreeBoxMotionScopeFromEntry } from '../runtime/sketch_free_box_motion_identity.js';
+import { shouldHoldSketchFreeBoxDoorsDuringClose } from '../runtime/sketch_free_box_motion_state.js';
+import { readConfigLooseScalarFromApp } from '../runtime/config_selectors.js';
 import { snapDrawersToTargets } from './doors_runtime_visuals_drawers.js';
+import { setSlidingDoorHiddenForOpenState } from '../runtime/sliding_door_visibility.js';
 
-export function forceUpdatePerState(App: AppLike): void {
+function shouldHideOpenSlidingDoorsForContext(App: AppLike, opts?: SyncVisualsOptions): boolean {
+  const rec = opts && typeof opts === 'object' ? opts : null;
+  if (rec && (rec.slidingHideOpen === true || rec.slidingWideOpen === true)) return true;
+  try {
+    return (
+      isInteriorDoorEditModeActive(App) ||
+      isSketchEditActive(App) ||
+      isSketchExtDrawersEditActive(App) ||
+      isSketchIntDrawersEditActive(App)
+    );
+  } catch (_e) {
+    reportDoorsRuntimeNonFatal(App, 'slidingDoorHideOpen.context', _e);
+    return false;
+  }
+}
+
+export function forceUpdatePerState(App: AppLike, opts?: SyncVisualsOptions): void {
   if (!App || typeof App !== 'object') return;
 
   const totalW = readDoorsTotalWidth(App);
+  const hideOpenSlidingDoors = shouldHideOpenSlidingDoorsForContext(App, opts);
   const doors = getDoorsArray(App);
   for (let i = 0; i < doors.length; i++) {
     const door = doors[i];
@@ -68,12 +92,15 @@ export function forceUpdatePerState(App: AppLike): void {
 
     if (door.type !== 'sliding') continue;
 
-    const { closedX, closedZ, doorW, outerZ } = resolveSlidingDoorClosedState(door, totalW);
+    const { closedX, closedZ, doorW } = resolveSlidingDoorClosedState(door, totalW);
     let finalX = closedX;
     let finalZ = closedZ;
 
-    if (open) {
-      const next = resolveSlidingDoorOpenPosition(door, totalW, doorW, outerZ);
+    const hideSlidingDoor = open && hideOpenSlidingDoors;
+    setSlidingDoorHiddenForOpenState(door, hideSlidingDoor);
+
+    if (open && !hideSlidingDoor) {
+      const next = resolveSlidingDoorTrackOpenPosition(door, totalW, doorW, closedZ);
       finalX = next.finalX;
       finalZ = next.finalZ;
     }
@@ -105,15 +132,17 @@ export function syncVisualsNow(App: AppLike, opts?: SyncVisualsOptions): void {
   const includeDrawers = typeof safeOpts.includeDrawers === 'boolean' ? safeOpts.includeDrawers : true;
 
   if (!isGlobalClickMode(App)) {
-    forceUpdatePerState(App);
+    forceUpdatePerState(App, safeOpts);
     if (includeDrawers) snapDrawersToTargets(App);
     return;
   }
 
   const isOpen = typeof safeOpts.open === 'boolean' ? !!safeOpts.open : !!getDoorsOpen(App);
   const totalW = readDoorsTotalWidth(App);
+  const hideOpenSlidingDoors = shouldHideOpenSlidingDoorsForContext(App, safeOpts);
   const manualTool = readInteriorManualTool(App);
-  const sketchIntDrawersEditActive = isSketchIntDrawersEditActive(App);
+  const interiorDoorEditActive = isInteriorDoorEditModeActive(App);
+  const doorDelayMs = Number(readConfigLooseScalarFromApp(App, 'DOOR_DELAY_MS', 600)) || 600;
 
   const doors = getDoorsArray(App);
   for (let i = 0; i < doors.length; i++) {
@@ -142,17 +171,27 @@ export function syncVisualsNow(App: AppLike, opts?: SyncVisualsOptions): void {
         reportDoorsRuntimeNonFatal(App, 'syncVisualsNow.noGlobalOpen', _e);
       }
 
-      const allowSketchFreeBoxOpen =
-        sketchIntDrawersEditActive && shouldForceSketchFreeBoxDoorsOpen(manualTool, userData);
+      const allowSketchFreeBoxOpen = shouldForceSketchFreeBoxDoorsOpen(manualTool, userData, {
+        interiorDoorEditActive,
+      });
 
       if (!allowSketchFreeBoxOpen && !noGlobal && partId && partId.startsWith('corner_pent_door'))
         noGlobal = true;
 
-      if (isOpen && noGlobal && !allowSketchFreeBoxOpen) {
-        targetOpen = !!door.isOpen;
+      if (noGlobal) {
+        targetOpen = allowSketchFreeBoxOpen && isOpen ? true : !!door.isOpen;
         door.noGlobalOpen = true;
       } else if (!isOpen) {
         targetOpen = false;
+      }
+
+      const sketchFreeBoxScope = getSketchFreeBoxMotionScopeFromEntry(door);
+      if (
+        !targetOpen &&
+        sketchFreeBoxScope &&
+        shouldHoldSketchFreeBoxDoorsDuringClose(App, sketchFreeBoxScope, doorDelayMs)
+      ) {
+        targetOpen = true;
       }
 
       let baseRot = targetOpen ? (door.hingeSide === 'left' ? -Math.PI / 2.1 : Math.PI / 2.1) : 0;
@@ -198,12 +237,18 @@ export function syncVisualsNow(App: AppLike, opts?: SyncVisualsOptions): void {
 
     if (door.type !== 'sliding') continue;
 
-    const { closedX, closedZ, doorW, outerZ } = resolveSlidingDoorClosedState(door, totalW);
+    const { closedX, closedZ, doorW } = resolveSlidingDoorClosedState(door, totalW);
     let finalX = closedX;
     let finalZ = closedZ;
 
-    if (isOpen) {
-      const next = resolveSlidingDoorOpenPosition(door, totalW, doorW, outerZ);
+    let targetOpen = !!isOpen;
+    if (!targetOpen && door.noGlobalOpen) targetOpen = !!door.isOpen;
+
+    const hideSlidingDoor = targetOpen && hideOpenSlidingDoors;
+    setSlidingDoorHiddenForOpenState(door, hideSlidingDoor);
+
+    if (targetOpen && !hideSlidingDoor) {
+      const next = resolveSlidingDoorTrackOpenPosition(door, totalW, doorW, closedZ);
       finalX = next.finalX;
       finalZ = next.finalZ;
     }

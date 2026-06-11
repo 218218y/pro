@@ -119,9 +119,10 @@ export function createInteriorTabManualWorkflowController(
       style: SketchBoxLegStyle,
       color: SketchBoxLegColor,
       heightCm: number,
-      widthCm: number
+      widthCm: number,
+      plinthHeightCm?: number
     ) {
-      enterManualLayoutMode(app, mkSketchBoxBaseTool(type, style, color, heightCm, widthCm));
+      enterManualLayoutMode(app, mkSketchBoxBaseTool(type, style, color, heightCm, widthCm, plinthHeightCm));
     },
 
     enterSketchExtDrawersTool(count: number, drawerHeightCm: number) {

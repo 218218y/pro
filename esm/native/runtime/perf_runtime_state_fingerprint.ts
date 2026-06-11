@@ -152,6 +152,7 @@ export function getPerfStateFingerprint(App: AppContainer): WardrobeProPerfState
       splitDoorMapCount: countTruthyRecordEntries(config?.splitDoorsMap),
       splitDoorBottomMapCount: countTruthyRecordEntries(config?.splitDoorsBottomMap),
       removedDoorMapCount: countTruthyRecordEntries(config?.removedDoorsMap),
+      roundedFrameSideShelfCount: countTruthyRecordEntries(config?.roundedFrameSideShelvesMap),
       doorTrimCount: countDoorTrimEntries(config?.doorTrimMap),
       drawerDividerCount: countTruthyRecordEntries(config?.drawerDividersMap),
       internalDrawerPlacementCount: countPerfStateInternalDrawerPlacements(config),

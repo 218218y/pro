@@ -150,6 +150,8 @@ export function useStructureTabViewStateState(app: AppContainer): StructureTabVi
   );
 
   const {
+    cellDimsPanelOpen,
+    cellDimsHexPanelOpen,
     cellDimsWidth,
     cellDimsHeight,
     cellDimsDepth,
@@ -215,6 +217,8 @@ export function useStructureTabViewStateState(app: AppContainer): StructureTabVi
     hingeEditActive,
     cellDimsModeId,
     cellDimsEditActive,
+    cellDimsPanelOpen,
+    cellDimsHexPanelOpen,
     stackSplitEnabled,
     stackSplitDecorativeSeparatorEnabled,
     stackSplitLowerHeight,

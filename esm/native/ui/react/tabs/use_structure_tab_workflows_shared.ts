@@ -21,8 +21,8 @@ import type {
 import type { StructureTabViewState } from './use_structure_tab_view_state_contracts.js';
 
 export const STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID = 'cell_dims';
-export const STRUCTURE_CELL_DIMS_MODE_MESSAGE = 'מצב עריכה: הקלד מידות ואז לחץ על תא בארון כדי להחיל';
-export const STRUCTURE_HEX_CELL_DIMS_MODE_MESSAGE = 'מצב עריכה: לחץ על תא כדי להפוך אותו לתא משושה';
+export const STRUCTURE_CELL_DIMS_MODE_MESSAGE = 'מצב עריכה: הקלד מידות ואז לחץ על תא או קופסא כדי להחיל';
+export const STRUCTURE_HEX_CELL_DIMS_MODE_MESSAGE = 'מצב עריכה: לחץ על תא או קופסא כדי להפוך אותו לתא משושה';
 
 function readNoBuildNoHistoryImmediateMeta(meta: MetaActionsNamespaceLike, source: string): ActionMetaLike {
   if (typeof meta.noHistoryImmediate === 'function') {

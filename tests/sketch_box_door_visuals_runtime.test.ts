@@ -96,8 +96,9 @@ function createArgs() {
   return { doorGroup, renderArgs, layout, mirrorMat, baseMat, partMat, visualCalls, outlines };
 }
 
-test('sketch-box door visuals forward mirror state, mirror layout, and deep pick meta through the special visual path', () => {
+test('sketch-box door visuals forward mirror state, mirror layout, effective frame style, and deep pick meta through the special visual path', () => {
   const { doorGroup, renderArgs, layout, mirrorMat, partMat, visualCalls, outlines } = createArgs();
+  renderArgs.doorStyleMap = { sketch_box_free_alpha_door_left: 'profile' };
 
   appendSketchBoxDoorVisuals({ renderArgs, doorGroup, layout });
 
@@ -106,7 +107,7 @@ test('sketch-box door visuals forward mirror state, mirror layout, and deep pick
   assert.equal(visualCalls[0]?.[1], 1.18);
   assert.equal(visualCalls[0]?.[2], 0.022);
   assert.equal(visualCalls[0]?.[3], mirrorMat);
-  assert.equal(visualCalls[0]?.[4], 'flat');
+  assert.equal(visualCalls[0]?.[4], 'profile');
   assert.equal(visualCalls[0]?.[6], true);
   assert.equal(visualCalls[0]?.[7], null);
   assert.equal(visualCalls[0]?.[8], partMat);
@@ -127,4 +128,35 @@ test('sketch-box door visuals forward mirror state, mirror layout, and deep pick
   assert.equal(nested.userData.partId, 'sketch_box_free_alpha_door_left');
   assert.equal(nested.userData.__wpSketchBoxDoor, true);
   assert.equal(nested.userData.foo, 'bar');
+});
+
+test('sketch-box door visuals use styled profile visuals for in-cabinet whole box doors', () => {
+  const { doorGroup, renderArgs, layout, visualCalls, outlines } = createArgs();
+
+  renderArgs.frontsArgs.shell = { boxId: 'box-7', isFreePlacement: false };
+  renderArgs.frontsArgs.args.input.cfg = { isMultiColorMode: true };
+  renderArgs.frontsArgs.args.input.getPartColorValue = () => null;
+  layout.doorPid = 'sketch_box_0_alpha_door_left';
+  renderArgs.doorStyle = 'flat';
+  renderArgs.doorStyleMap = { sketch_box_0_alpha_door_left: 'profile' };
+
+  appendSketchBoxDoorVisuals({ renderArgs, doorGroup, layout });
+
+  assert.equal(visualCalls.length, 1);
+  assert.equal(visualCalls[0]?.[0], 0.44);
+  assert.equal(visualCalls[0]?.[1], 1.18);
+  assert.equal(visualCalls[0]?.[2], 0.022);
+  assert.equal(visualCalls[0]?.[4], 'profile');
+  assert.equal(visualCalls[0]?.[5], false);
+  assert.equal(visualCalls[0]?.[6], false);
+  assert.equal(visualCalls[0]?.[12], 'sketch_box_0_alpha_door_left');
+  assert.equal(outlines.length, 0);
+  assert.equal(doorGroup.children.length, 1);
+
+  const styledVisual = doorGroup.children[0] as FakeGroup;
+  assert.equal(styledVisual.position.x, 0.17);
+  assert.equal(styledVisual.userData.partId, 'sketch_box_0_alpha_door_left');
+  assert.equal(styledVisual.userData.__wpSketchBoxId, 'box-7');
+  assert.equal(styledVisual.userData.__wpSketchBoxDoor, true);
+  assert.equal(styledVisual.userData.foo, 'bar');
 });

@@ -35,7 +35,7 @@ export function renderSketchBoxExternalDrawers(args: RenderSketchBoxExternalDraw
       ),
       shelfIndex: `external_drawers_${stack.drawerId}`,
       innerWidth: stack.shelfInnerW,
-      woodThick: context.woodThick,
+      shelfThick: context.shelfThick,
       depth: context.shell.geometry.innerD,
       centerX: stack.shelfCenterX,
       stackTopY: stack.baseY + stack.stackH,

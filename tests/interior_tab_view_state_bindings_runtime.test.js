@@ -65,6 +65,8 @@ test('[interior-view-state-bindings] maps local setters into controller args onc
     setSketchBoxCornicePanelOpen: () => 'cornicePanel',
     setSketchBoxBaseType: () => 'baseType',
     setSketchBoxBasePanelOpen: () => 'basePanel',
+    setSketchBoxPlinthHeightCm: () => 'plinthHeightCm',
+    setSketchBoxPlinthHeightDraft: () => 'plinthHeightDraft',
     setSketchBoxLegWidthCm: () => 'legWidthCm',
     setSketchBoxLegWidthDraft: () => 'legWidthDraft',
     setSketchBoxLegStyle: () => 'legStyle',
@@ -88,6 +90,8 @@ test('[interior-view-state-bindings] maps local setters into controller args onc
   assert.equal(args.setSketchShelvesOpen, bindings.setSketchShelvesOpen);
   assert.equal(args.setDoorTrimVerticalCrossDraft, bindings.setDoorTrimVerticalCrossDraft);
   assert.equal(args.setSketchBoxHeightCm, bindings.setSketchBoxHeightCm);
+  assert.equal(args.setSketchBoxPlinthHeightCm, bindings.setSketchBoxPlinthHeightCm);
+  assert.equal(args.setSketchBoxPlinthHeightDraft, bindings.setSketchBoxPlinthHeightDraft);
   assert.equal(args.setSketchBoxLegStyle, bindings.setSketchBoxLegStyle);
   assert.equal(args.setSketchBoxLegColor, bindings.setSketchBoxLegColor);
   assert.equal(args.setSketchBoxLegHeightCm, bindings.setSketchBoxLegHeightCm);
@@ -100,8 +104,8 @@ test('[interior-view-state-bindings] maps local setters into controller args onc
   assert.equal(args.setSketchIntDrawerHeightDraft, bindings.setSketchIntDrawerHeightDraft);
   assert.equal(args.setSketchExtDrawersPanelOpen, bindings.setSketchExtDrawersPanelOpen);
   assert.equal(args.setManualUiTool, bindings.setManualUiTool);
-  assert.equal(Object.keys(args).length, 42);
-  assert.equal(deps.length, 42);
+  assert.equal(Object.keys(args).length, 44);
+  assert.equal(deps.length, 44);
   assert.equal(deps[0].id, 'app');
   assert.equal(deps.at(-1), bindings.setManualUiTool);
   assert.equal(deps[1], bindings.setSketchShelvesOpen);

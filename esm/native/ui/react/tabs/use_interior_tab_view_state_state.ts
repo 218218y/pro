@@ -34,6 +34,7 @@ export function useInteriorTabViewStateState(app: AppContainer): UseInteriorTabV
   const ui = useUiSelectorShallow(readInteriorTabUiSnapshot);
   const handleCfg = useCfgSelectorShallow<InteriorHandleCfgView>(readInteriorTabHandleCfgSnapshot);
   const hasIntDrawerData = useCfgSelector(selectHasInternalDrawersData);
+  const isChestMode = !!ui.isChestMode;
   const wardrobeType = useCfgSelector(cfg =>
     String(cfg.wardrobeType || 'hinged') === 'sliding' ? 'sliding' : 'hinged'
   );
@@ -59,6 +60,7 @@ export function useInteriorTabViewStateState(app: AppContainer): UseInteriorTabV
       wardrobeType,
       isExtDrawerMode: coreState.isExtDrawerMode,
       modeExtDrawer: modeConsts.modeExtDrawer,
+      modeManualLayout: modeConsts.modeManualLayout,
       isSketchToolActive: coreState.isSketchToolActive,
       isSketchDivisionToolActive: coreState.isSketchDivisionToolActive,
       manualToolRaw: coreState.manualToolRaw,
@@ -71,6 +73,7 @@ export function useInteriorTabViewStateState(app: AppContainer): UseInteriorTabV
       wardrobeType,
       coreState.isExtDrawerMode,
       modeConsts.modeExtDrawer,
+      modeConsts.modeManualLayout,
       coreState.isSketchToolActive,
       coreState.isSketchDivisionToolActive,
       coreState.manualToolRaw,
@@ -85,6 +88,7 @@ export function useInteriorTabViewStateState(app: AppContainer): UseInteriorTabV
     () => ({
       modeOpts: coreState.modeOpts,
       wardrobeType,
+      isChestMode,
       hasIntDrawerData,
       isLayoutMode: coreState.isLayoutMode,
       isManualLayoutMode: coreState.isManualLayoutMode,
@@ -121,7 +125,7 @@ export function useInteriorTabViewStateState(app: AppContainer): UseInteriorTabV
       showGridControls: coreState.showGridControls,
       showShelfVariantControls: coreState.showShelfVariantControls,
     }),
-    [coreState, wardrobeType, hasIntDrawerData, localState]
+    [coreState, wardrobeType, isChestMode, hasIntDrawerData, localState]
   );
 
   return {

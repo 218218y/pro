@@ -39,11 +39,12 @@ test('sketch door cuts runtime resolves canonical style, curtain, mirror layout,
           },
         ],
       },
-      doorStyleMap: { d7: 'tom', drawer_1: 'profile', bad: 'glass' },
+      doorStyleMap: { d7: 'double_profile', drawer_1: 'profile', bad: 'glass' },
       removedDoorsMap: { removed_d7_full: true },
       handlesMap: {
         __wp_edge_handle_variant_global: 'long',
         '__wp_edge_handle_variant:d7': 'short',
+        '__wp_manual_handle_position:d7': '{"xRatio":0.3,"yRatio":0.6}',
       },
     },
     bodyMat: { name: 'body' },
@@ -59,6 +60,8 @@ test('sketch door cuts runtime resolves canonical style, curtain, mirror layout,
   assert.equal(runtime.resolveHandleType('drawer_1'), 'standard');
   assert.equal(runtime.resolveEdgeHandleVariant('d7_top'), 'short');
   assert.equal(runtime.resolveEdgeHandleVariant('drawer_1'), 'long');
+  assert.deepEqual(runtime.resolveManualHandlePosition('d7_top'), { xRatio: 0.3, yRatio: 0.6 });
+  assert.equal(runtime.resolveManualHandlePosition('drawer_1'), null);
   assert.equal(runtime.resolveCurtain('d7'), 'linen');
   assert.equal(runtime.resolveSpecial('d7', null), 'mirror');
   assert.equal(runtime.resolveSpecial('drawer_1', 'linen'), 'glass');
@@ -68,7 +71,7 @@ test('sketch door cuts runtime resolves canonical style, curtain, mirror layout,
   assert.equal(runtime.isDoorRemoved('drawer_1'), false);
   assert.equal(runtime.doorStyle, 'flat');
   assert.equal(runtime.doorStyleMap.d7, undefined);
-  assert.equal(runtime.doorStyleMap.d7_full, 'tom');
+  assert.equal(runtime.doorStyleMap.d7_full, 'double_profile');
   assert.equal(runtime.doorStyleMap.drawer_1, 'profile');
   assert.deepEqual(runtime.resolveMirrorLayout('d7'), [
     {

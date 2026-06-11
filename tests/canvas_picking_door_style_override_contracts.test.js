@@ -24,7 +24,7 @@ test('door-style override mode is wired through design tab, paint apply, and hov
 
   assert.match(panel, /סגנון חזית לדלתות ומגירות/);
   assert.match(panel, /enterDoorStyleMode/);
-  assert.match(panel, /פרופיל תום/);
+  assert.match(panel, /פרופיל כפול/);
   assert.match(controller, /enterDoorStyleMode\(style: DoorStyleOverrideValue\)/);
   assert.match(controller, /encodeDoorStyleOverridePaintToken\(style\)/);
   assert.match(paintApply, /tryHandleDoorStyleOverridePaintClick\(/);

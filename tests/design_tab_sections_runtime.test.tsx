@@ -21,6 +21,8 @@ test('[design-tab-sections-runtime] door-style and cornice options render as nat
   const corniceHtml = renderToStaticMarkup(
     React.createElement(CorniceSection, {
       model: {
+        isChestMode: false,
+        noMainWardrobeActive: false,
         hasCornice: true,
         corniceType: 'wave',
         setHasCornice: noop,
@@ -31,7 +33,7 @@ test('[design-tab-sections-runtime] door-style and cornice options render as nat
 
   assert.match(doorStyleHtml, /<button[^>]*type="button"[^>]*>פוסט<\/button>/);
   assert.match(doorStyleHtml, /<button[^>]*type="button"[^>]*>פרופיל<\/button>/);
-  assert.match(doorStyleHtml, /<button[^>]*type="button"[^>]*>פרופיל תום<\/button>/);
+  assert.match(doorStyleHtml, /<button[^>]*type="button"[^>]*>פרופיל כפול<\/button>/);
   assert.match(corniceHtml, /<button[^>]*type="button"[^>]*>רגיל<\/button>/);
   assert.match(corniceHtml, /<button[^>]*type="button"[^>]*>גל<\/button>/);
   assert.doesNotMatch(doorStyleHtml, /role="button"/);
@@ -44,6 +46,7 @@ test('[design-tab-sections-runtime] door-features section keeps hinged/sliding v
     React.createElement(DoorFeaturesSection, {
       model: {
         wardrobeType: 'hinged',
+        isChestMode: false,
         groovesEnabled: true,
         grooveActive: true,
         grooveLinesCount: '8',
@@ -53,6 +56,8 @@ test('[design-tab-sections-runtime] door-features section keeps hinged/sliding v
         splitIsCustom: false,
         removeDoorsEnabled: true,
         removeDoorActive: false,
+        roundedFrameSideShelvesVisible: true,
+        roundedFrameSideShelvesActive: false,
         setFeatureToggle: noop,
         toggleGrooveEdit: noop,
         setGrooveLinesCount: noop,
@@ -60,6 +65,7 @@ test('[design-tab-sections-runtime] door-features section keeps hinged/sliding v
         toggleSplitEdit: noop,
         toggleSplitCustomEdit: noop,
         toggleRemoveDoorEdit: noop,
+        toggleRoundedFrameSideShelves: noop,
       },
     })
   );
@@ -68,6 +74,7 @@ test('[design-tab-sections-runtime] door-features section keeps hinged/sliding v
     React.createElement(DoorFeaturesSection, {
       model: {
         wardrobeType: 'sliding',
+        isChestMode: false,
         groovesEnabled: false,
         grooveActive: false,
         grooveLinesCount: '',
@@ -77,6 +84,8 @@ test('[design-tab-sections-runtime] door-features section keeps hinged/sliding v
         splitIsCustom: false,
         removeDoorsEnabled: false,
         removeDoorActive: false,
+        roundedFrameSideShelvesVisible: false,
+        roundedFrameSideShelvesActive: false,
         setFeatureToggle: noop,
         toggleGrooveEdit: noop,
         setGrooveLinesCount: noop,
@@ -84,6 +93,7 @@ test('[design-tab-sections-runtime] door-features section keeps hinged/sliding v
         toggleSplitEdit: noop,
         toggleSplitCustomEdit: noop,
         toggleRemoveDoorEdit: noop,
+        toggleRoundedFrameSideShelves: noop,
       },
     })
   );
@@ -92,6 +102,7 @@ test('[design-tab-sections-runtime] door-features section keeps hinged/sliding v
     React.createElement(DoorFeaturesSection, {
       model: {
         wardrobeType: 'open',
+        isChestMode: false,
         groovesEnabled: false,
         grooveActive: false,
         grooveLinesCount: '',
@@ -101,6 +112,8 @@ test('[design-tab-sections-runtime] door-features section keeps hinged/sliding v
         splitIsCustom: false,
         removeDoorsEnabled: false,
         removeDoorActive: false,
+        roundedFrameSideShelvesVisible: false,
+        roundedFrameSideShelvesActive: false,
         setFeatureToggle: noop,
         toggleGrooveEdit: noop,
         setGrooveLinesCount: noop,
@@ -108,6 +121,7 @@ test('[design-tab-sections-runtime] door-features section keeps hinged/sliding v
         toggleSplitEdit: noop,
         toggleSplitCustomEdit: noop,
         toggleRemoveDoorEdit: noop,
+        toggleRoundedFrameSideShelves: noop,
       },
     })
   );
@@ -116,10 +130,82 @@ test('[design-tab-sections-runtime] door-features section keeps hinged/sliding v
   assert.match(hingedHtml, /ברירת מחדל/);
   assert.match(hingedHtml, /חיתוך דלתות ידני/);
   assert.match(hingedHtml, /הסר\/החזר דלת/);
+  assert.match(hingedHtml, /מדפים מעוגלים/);
+  assert.match(hingedHtml, /design-rounded-frame-side-shelves-button/);
   assert.match(hingedHtml, /type="number"/);
   assert.doesNotMatch(slidingHtml, /דלתות חתוכות \(Split\)/);
-  assert.doesNotMatch(slidingHtml, /הסרת דלתות \(נישה פתוחה\)/);
+  assert.match(slidingHtml, /הסרת דלתות או דפנות/);
   assert.equal(hiddenHtml, '');
+});
+
+test('[design-tab-sections-runtime] chest mode keeps front engraving but hides door cuts, door removal, and cornice controls', () => {
+  const noop = () => {};
+  const chestDoorFeaturesHtml = renderToStaticMarkup(
+    React.createElement(DoorFeaturesSection, {
+      model: {
+        wardrobeType: 'hinged',
+        isChestMode: true,
+        groovesEnabled: true,
+        grooveActive: false,
+        grooveLinesCount: '6',
+        grooveLinesCountIsAuto: false,
+        splitDoors: true,
+        splitActive: true,
+        splitIsCustom: false,
+        removeDoorsEnabled: true,
+        removeDoorActive: true,
+        roundedFrameSideShelvesVisible: true,
+        roundedFrameSideShelvesActive: true,
+        setFeatureToggle: noop,
+        toggleGrooveEdit: noop,
+        setGrooveLinesCount: noop,
+        resetGrooveLinesCount: noop,
+        toggleSplitEdit: noop,
+        toggleSplitCustomEdit: noop,
+        toggleRemoveDoorEdit: noop,
+        toggleRoundedFrameSideShelves: noop,
+      },
+    })
+  );
+  const chestCorniceHtml = renderToStaticMarkup(
+    React.createElement(CorniceSection, {
+      model: {
+        isChestMode: true,
+        noMainWardrobeActive: false,
+        hasCornice: true,
+        corniceType: 'classic',
+        setHasCornice: noop,
+        setCorniceType: noop,
+      },
+    })
+  );
+
+  assert.match(chestDoorFeaturesHtml, /חריטה \(CNC\) בחזיתות/);
+  assert.match(chestDoorFeaturesHtml, /מספר חריטות/);
+  assert.doesNotMatch(chestDoorFeaturesHtml, /דלתות חתוכות \(Split\)/);
+  assert.doesNotMatch(chestDoorFeaturesHtml, /חיתוך דלתות ידני/);
+  assert.doesNotMatch(chestDoorFeaturesHtml, /הסרת דלתות או דפנות/);
+  assert.doesNotMatch(chestDoorFeaturesHtml, /הסר\/החזר דלת/);
+  assert.doesNotMatch(chestDoorFeaturesHtml, /מדפים מעוגלים/);
+  assert.equal(chestCorniceHtml, '');
+});
+
+test('[design-tab-sections-runtime] no-main wardrobe mode hides height additions cornice controls', () => {
+  const noop = () => {};
+  const html = renderToStaticMarkup(
+    React.createElement(CorniceSection, {
+      model: {
+        isChestMode: false,
+        noMainWardrobeActive: true,
+        hasCornice: true,
+        corniceType: 'classic',
+        setHasCornice: noop,
+        setCorniceType: noop,
+      },
+    })
+  );
+
+  assert.equal(html, '');
 });
 
 test('[design-tab-sections-runtime] mirror draft fields keep reset buttons compact and accessible', () => {
@@ -154,8 +240,8 @@ test('[design-tab-sections-runtime] mirror draft fields keep reset buttons compa
 
   assert.equal(resetButtons.length, 2);
   assert.match(html, /wp-r-mirror-draft-fields/);
-  assert.match(html, /aria-label="חזרה לגובה מלא של הדלת"/);
-  assert.match(html, /aria-label="חזרה לרוחב מלא של הדלת"/);
+  assert.match(html, /aria-label="חזרה לגובה מלא"/);
+  assert.match(html, /aria-label="חזרה לרוחב מלא"/);
   assert.ok(
     resetButtons.every(button =>
       /^<button[^>]*><i class="fas fa-undo-alt" aria-hidden="true"><\/i><\/button>$/.test(button)

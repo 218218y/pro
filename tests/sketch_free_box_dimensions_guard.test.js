@@ -68,5 +68,11 @@ test('[sketch free box] dimension overlay is rendered from sketch box geometry a
   );
   assert.match(boxesNorm, /if \(Array\.isArray\(freeBoxDimensionEntries\)\) \{/);
   assert.match(boxesNorm, /freeBoxDimensionEntries\.push\(\{/);
-  assert.match(boxesNorm, /depth: geometry\.outerD,/);
+  assert.match(boxesNorm, /function resolveSketchBoxDimensionEnvelope\(state: ResolvedSketchBoxState\)/);
+  assert.match(
+    boxesNorm,
+    /const regularEnvelope = \{ centerZ: state\.geometry\.centerZ, depth: state\.geometry\.outerD \};/
+  );
+  assert.match(boxesNorm, /centerZ: dimensionEnvelope\.centerZ,/);
+  assert.match(boxesNorm, /depth: dimensionEnvelope\.depth,/);
 });

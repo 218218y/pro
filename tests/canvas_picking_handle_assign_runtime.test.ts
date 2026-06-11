@@ -160,6 +160,96 @@ test('manual handle position click stores normalized door-local position and exp
   assert.deepEqual(calls[2].args[3], { source: 'handles:assignManualPosition', immediate: true });
 });
 
+test('manual handle position click stores drawer-local position for external drawer fronts', () => {
+  const calls: Array<{ op: string; args: unknown[]; owner?: unknown }> = [];
+  class Vector3 {
+    x: number;
+    y: number;
+    z: number;
+    constructor(x = 0, y = 0, z = 0) {
+      this.x = x;
+      this.y = y;
+      this.z = z;
+    }
+  }
+
+  const App: any = {
+    deps: { THREE: { Vector3 } },
+    store: {
+      getState() {
+        return {
+          ui: {},
+          config: {},
+          runtime: {},
+          mode: { opts: { handlePlacement: 'manual', handleColor: 'black' } },
+          meta: {},
+        };
+      },
+      patch() {
+        return undefined;
+      },
+    },
+    services: {
+      tools: {
+        getHandlesType() {
+          return 'edge';
+        },
+      },
+    },
+    maps: {
+      setHandle(partId: string, handleType: string, meta?: unknown) {
+        calls.push({ op: 'setHandle', args: [partId, handleType, meta], owner: this });
+      },
+      setKey(mapName: string, key: string, value: unknown, meta?: unknown) {
+        calls.push({ op: 'setKey', args: [mapName, key, value, meta], owner: this });
+      },
+    },
+  };
+
+  const drawerOwner = {
+    userData: { partId: 'd2_draw_0', __doorWidth: 1.2, __doorHeight: 0.2 },
+    worldToLocal(target: Vector3) {
+      return target;
+    },
+    parent: null,
+  };
+
+  const handled = tryHandleCanvasHandleAssignClick({
+    App,
+    primaryHitObject: drawerOwner,
+    doorHitObject: null,
+    primaryHitPoint: { x: 0.3, y: 0.04, z: 0 },
+    doorHitPoint: null,
+    foundDrawerId: 'd2_draw_0',
+    effectiveDoorId: null,
+    foundPartId: null,
+    isHandleEditMode: true,
+  });
+
+  assert.equal(handled, true);
+  assert.equal(calls.length, 4);
+  assert.deepEqual(calls[0].args, ['d2_draw_0', 'edge', { source: 'handles:assign', immediate: true }]);
+  assert.deepEqual(calls[1].args, [
+    'handlesMap',
+    '__wp_edge_handle_variant:d2_draw_0',
+    'short',
+    { source: 'handles:assignEdgeVariant', immediate: true },
+  ]);
+  assert.deepEqual(calls[2].args, [
+    'handlesMap',
+    '__wp_handle_color:d2_draw_0',
+    'black',
+    { source: 'handles:assignColor', immediate: true },
+  ]);
+  assert.equal(calls[3].op, 'setKey');
+  assert.equal(calls[3].args[0], 'handlesMap');
+  assert.equal(calls[3].args[1], '__wp_manual_handle_position:d2_draw_0');
+  const manualPosition = JSON.parse(String(calls[3].args[2]));
+  assert.ok(Math.abs(Number(manualPosition.xRatio) - 0.75) < 1e-12);
+  assert.ok(Math.abs(Number(manualPosition.yRatio) - 0.7) < 1e-12);
+  assert.deepEqual(calls[3].args[3], { source: 'handles:assignManualPosition', immediate: true });
+});
+
 test('manual handle position reader accepts the canonical serialized shape only', () => {
   assert.deepEqual(readManualHandlePosition('{"xRatio":0.25,"yRatio":0.75}'), {
     xRatio: 0.25,

@@ -1,4 +1,5 @@
 import type { AppContainer, Object3DLike, UnknownRecord } from '../../../types';
+import { isDrawerBoxPartId } from '../features/drawer_box_identity.js';
 import type { DoorHoverHit, IsViewportRootFn, StrFn } from './canvas_picking_door_hover_targets_shared.js';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
 import { __isReusableVectorLike } from './canvas_picking_door_hover_targets_shared.js';
@@ -66,6 +67,12 @@ function asDoorHoverNode(value: unknown): DoorHoverNode | null {
   return isDoorHoverNode(value) ? value : null;
 }
 
+function isBlockedDoorHoverBodyHit(userData: UnknownRecord | null | undefined): boolean {
+  if (!userData) return false;
+  const partId = userData.partId != null ? String(userData.partId) : '';
+  return userData.__wpDrawerBox === true || isDrawerBoxPartId(partId);
+}
+
 function __resolveNearestMatchingPartId(args: {
   App: AppContainer;
   hitObject: unknown;
@@ -77,6 +84,7 @@ function __resolveNearestMatchingPartId(args: {
   let curr = asDoorHoverNode(hitObject);
   while (curr && !isViewportRoot(App, curr)) {
     const userData = curr.userData;
+    if (isBlockedDoorHoverBodyHit(userData)) return null;
     const partId = userData && userData.partId != null ? str(App, userData.partId) : '';
     if (partId && matchesPartId(partId)) return { partId, node: curr };
     curr = asDoorHoverNode(curr.parent);

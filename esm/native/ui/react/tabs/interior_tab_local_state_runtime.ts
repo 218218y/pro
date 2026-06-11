@@ -62,6 +62,12 @@ export function useInteriorTabLocalState() {
   const [sketchBoxBaseType, setSketchBoxBaseType] = useState<SketchBoxBaseType>(
     () => defaults.sketchBoxBaseType
   );
+  const [sketchBoxPlinthHeightCm, setSketchBoxPlinthHeightCm] = useState<number>(
+    () => defaults.sketchBoxPlinthHeightCm
+  );
+  const [sketchBoxPlinthHeightDraft, setSketchBoxPlinthHeightDraft] = useState<string>(
+    () => defaults.sketchBoxPlinthHeightDraft
+  );
   const [sketchBoxLegStyle, setSketchBoxLegStyle] = useState<SketchBoxLegStyle>(
     () => defaults.sketchBoxLegStyle
   );
@@ -153,6 +159,8 @@ export function useInteriorTabLocalState() {
     sketchBoxCorniceType,
     sketchBoxBasePanelOpen,
     sketchBoxBaseType,
+    sketchBoxPlinthHeightCm,
+    sketchBoxPlinthHeightDraft,
     sketchBoxLegStyle,
     sketchBoxLegColor,
     sketchBoxLegHeightCm,
@@ -195,6 +203,8 @@ export function useInteriorTabLocalState() {
     setSketchBoxCorniceType,
     setSketchBoxBasePanelOpen,
     setSketchBoxBaseType,
+    setSketchBoxPlinthHeightCm,
+    setSketchBoxPlinthHeightDraft,
     setSketchBoxLegStyle,
     setSketchBoxLegColor,
     setSketchBoxLegHeightCm,

@@ -29,7 +29,9 @@ test('GitHub CI keeps required verification split by concern', () => {
   assert.match(ci, /run: npm run typecheck:all/);
   assert.match(ci, /run: npm run contract:layers/);
   assert.match(ci, /run: npm run contract:api/);
-  assert.match(ci, /run: npm run test/);
+  assert.match(ci, /strategy:\n      fail-fast: false\n      matrix:\n        shard: \[1, 2\]/);
+  assert.match(ci, /run: npm run test -- --shard=\$\{\{ matrix\.shard \}\}\/2/);
+  assert.match(ci, /name: runtime-test-diagnostics-shard-\$\{\{ matrix\.shard \}\}-of-2/);
   assert.match(ci, /run: npm run esm:check/);
 
   assert.match(

@@ -15,11 +15,20 @@ export function __resolvePreferredFacePreviewHit(args: {
   App: AppContainer;
   preferredPartId: string;
   preferredHitObject: HitObjectLike | null;
+  preferredHitPoint?: { x?: number; y?: number; z?: number } | null;
   getViewportRoots: GetViewportRootsFn;
   isViewportRoot: IsViewportRootFn;
   str: StrFn;
 }): DoorHoverHit | null {
-  const { App, preferredPartId, preferredHitObject, getViewportRoots, isViewportRoot, str } = args;
+  const {
+    App,
+    preferredPartId,
+    preferredHitObject,
+    preferredHitPoint,
+    getViewportRoots,
+    isViewportRoot,
+    str,
+  } = args;
   if (!preferredPartId || !preferredHitObject || !hasViewportPickingSurface(App)) return null;
 
   const { wardrobeGroup } = getViewportRoots(App);
@@ -38,7 +47,10 @@ export function __resolvePreferredFacePreviewHit(args: {
     hitDoorPid: preferredPartId,
     hitDoorGroup: resolvedGroup,
     hitY: __readPreferredFaceWorldY(App, resolvedGroup),
-    hitPoint: null,
+    hitPoint:
+      preferredHitPoint && typeof preferredHitPoint === 'object'
+        ? (preferredHitPoint as DoorHoverHit['hitPoint'])
+        : null,
     wardrobeGroup,
     hitIdentity: createCanvasPickingDoorHoverHitIdentity({
       partId: preferredPartId,

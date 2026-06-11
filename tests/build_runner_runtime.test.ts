@@ -110,6 +110,30 @@ test('build runner runtime: active element changes still rerun even when build.s
   assert.deepEqual(harness.runs, ['sig:shared|alpha', 'sig:shared|beta']);
 });
 
+test('build runner runtime: structural config changes rerun even when build.signature stays the same', async () => {
+  const stateA = {
+    build: { signature: 'sig:shared-config' },
+    ui: {},
+    config: { individualColors: { body: '#ffffff' } },
+  };
+  const stateB = {
+    build: { signature: 'sig:shared-config' },
+    ui: {},
+    config: { individualColors: { body: '#111111' } },
+  };
+  let nested = 0;
+  const harness = createBuildRunnerHarness((_state, buildWardrobe) => {
+    if (nested > 0) return;
+    nested += 1;
+    buildWardrobe(stateB);
+  });
+
+  harness.buildWardrobe(stateA);
+  await flushMicrotasks();
+
+  assert.deepEqual(harness.runs, ['sig:shared-config|', 'sig:shared-config|']);
+});
+
 test('build runner runtime: shadow autoUpdate is restored and post-build reactions still run when the build throws', () => {
   const afterBuild: boolean[] = [];
   const App: any = {

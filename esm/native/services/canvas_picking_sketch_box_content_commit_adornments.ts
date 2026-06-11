@@ -1,25 +1,32 @@
 import type { ManualLayoutSketchBoxContentHoverIntent } from './canvas_picking_manual_layout_sketch_hover_intent.js';
 import { readBaseLegOptions } from '../features/base_leg_support.js';
+import { getBasePlinthHeightM, normalizeBasePlinthHeightCm } from '../features/base_plinth_support.js';
 import {
   addSketchBoxDividerState,
+  addSketchBoxHorizontalDividerState,
   normalizeSketchBoxBaseType,
   normalizeSketchBoxCorniceType,
   removeSketchBoxDividerState,
+  removeSketchBoxHorizontalDividerState,
 } from './canvas_picking_sketch_box_dividers.js';
 import type { CommitSketchModuleBoxContentArgs } from './canvas_picking_sketch_box_content_commit_contracts.js';
 import { readNumber } from './canvas_picking_sketch_box_content_commit_records.js';
+
+function readSupportHeightCm(source: unknown, key: 'heightCm' | 'basePlinthHeightCm'): unknown {
+  if (source && typeof source === 'object') return (source as Record<string, unknown>)[key];
+  return source;
+}
 
 function getSketchBoxAdornmentBaseHeight(baseType: unknown, source?: unknown): number {
   const normalized = normalizeSketchBoxBaseType(baseType);
   if (normalized === 'legs') {
     if (source && typeof source === 'object') {
-      const rec = source as Record<string, unknown>;
-      const heightCm = Number(rec.heightCm);
+      const heightCm = Number(readSupportHeightCm(source, 'heightCm'));
       if (Number.isFinite(heightCm) && heightCm > 0) return Math.max(0.01, heightCm / 100);
     }
     return readBaseLegOptions(source).heightM;
   }
-  if (normalized === 'plinth') return 0.08;
+  if (normalized === 'plinth') return getBasePlinthHeightM(readSupportHeightCm(source, 'basePlinthHeightCm'));
   return 0;
 }
 
@@ -49,12 +56,45 @@ export function tryCommitSketchBoxAdornment(args: {
   const { commitArgs, hoverIntent, hoverOp } = args;
 
   if (commitArgs.contentKind === 'divider') {
-    const dividerXNorm = hoverIntent?.dividerXNorm ?? null;
     const dividerId = hoverIntent?.dividerId || '';
+    const dividerAxis = hoverIntent?.dividerAxis === 'horizontal' ? 'horizontal' : 'vertical';
+    if (dividerAxis === 'horizontal') {
+      const dividerYNorm = hoverIntent?.dividerYNorm ?? null;
+      const dividerXNorm = hoverIntent?.dividerXNorm ?? null;
+      if (hoverOp === 'remove') {
+        removeSketchBoxHorizontalDividerState(
+          commitArgs.box,
+          dividerId,
+          dividerYNorm ?? undefined,
+          dividerXNorm ?? undefined
+        );
+      } else {
+        addSketchBoxHorizontalDividerState(
+          commitArgs.box,
+          dividerYNorm != null ? dividerYNorm : 0.5,
+          dividerId,
+          {
+            frontZ: hoverIntent?.freePlacement === true ? hoverIntent.dividerFrontZ : undefined,
+            xNorm: dividerXNorm ?? undefined,
+          }
+        );
+      }
+      return { handled: true, nextHover: null };
+    }
+    const dividerXNorm = hoverIntent?.dividerXNorm ?? null;
+    const dividerYNorm = hoverIntent?.dividerYNorm ?? null;
     if (hoverOp === 'remove') {
-      removeSketchBoxDividerState(commitArgs.box, dividerId, dividerXNorm ?? undefined);
+      removeSketchBoxDividerState(
+        commitArgs.box,
+        dividerId,
+        dividerXNorm ?? undefined,
+        dividerYNorm ?? undefined
+      );
     } else {
-      addSketchBoxDividerState(commitArgs.box, dividerXNorm != null ? dividerXNorm : 0.5, dividerId);
+      addSketchBoxDividerState(commitArgs.box, dividerXNorm != null ? dividerXNorm : 0.5, dividerId, {
+        frontZ: hoverIntent?.freePlacement === true ? hoverIntent.dividerFrontZ : undefined,
+        yNorm: dividerYNorm ?? undefined,
+      });
     }
     return { handled: true, nextHover: null };
   }
@@ -82,10 +122,14 @@ export function tryCommitSketchBoxAdornment(args: {
       baseLegHeightCm: hoverIntent?.baseLegHeightCm ?? commitArgs.hoverRec.baseLegHeightCm,
       baseLegWidthCm: hoverIntent?.baseLegWidthCm ?? commitArgs.hoverRec.baseLegWidthCm,
     });
+    const nextBasePlinthHeightCm = normalizeBasePlinthHeightCm(
+      hoverIntent?.basePlinthHeightCm ?? commitArgs.hoverRec.basePlinthHeightCm
+    );
     adjustSketchBoxCenterYForBaseSupport({
       box: commitArgs.box,
       nextBaseType: appliedBaseType,
-      nextBaseOptions,
+      nextBaseOptions:
+        appliedBaseType === 'plinth' ? { basePlinthHeightCm: nextBasePlinthHeightCm } : nextBaseOptions,
       floorY,
     });
     commitArgs.box.baseType = appliedBaseType;
@@ -94,11 +138,17 @@ export function tryCommitSketchBoxAdornment(args: {
       commitArgs.box.baseLegColor = nextBaseOptions.color;
       commitArgs.box.baseLegHeightCm = nextBaseOptions.heightCm;
       commitArgs.box.baseLegWidthCm = nextBaseOptions.widthCm;
+      delete commitArgs.box.basePlinthHeightCm;
     } else {
       delete commitArgs.box.baseLegStyle;
       delete commitArgs.box.baseLegColor;
       delete commitArgs.box.baseLegHeightCm;
       delete commitArgs.box.baseLegWidthCm;
+      if (appliedBaseType === 'plinth') {
+        commitArgs.box.basePlinthHeightCm = nextBasePlinthHeightCm;
+      } else {
+        delete commitArgs.box.basePlinthHeightCm;
+      }
     }
     return { handled: true, nextHover: null };
   }

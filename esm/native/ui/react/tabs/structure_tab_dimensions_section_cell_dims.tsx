@@ -1,4 +1,4 @@
-import type { ReactElement } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 
 import { InlineNotice, ModeToggleButton } from '../components/index.js';
 import { OptionalDimField } from './structure_tab_controls.js';
@@ -37,9 +37,9 @@ function CellDimResetButton(props: {
   return (
     <button
       type="button"
-      className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-cell-dims-reset-dim-btn"
+      className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-cell-dims-reset-dim-btn wp-r-styled-tooltip hint-bottom"
       disabled={props.disabled}
-      title={props.title}
+      data-tooltip={props.title}
       aria-label={props.title}
       onClick={props.onClick}
       data-testid={props.testId}
@@ -49,9 +49,37 @@ function CellDimResetButton(props: {
   );
 }
 
-export function StructureCellDimsControls(props: {
+export type StructureCellDimsControlsTestIds = {
+  section: string;
+  modeButton: string;
+  hexModeButton: string;
+  resetAllButton: string;
+  resetWidthButton: string;
+  resetHeightButton: string;
+  resetDepthButton: string;
+  resetHexProtrusionButton: string;
+  resetHexDoorWidthButton: string;
+};
+
+export type StructureCellDimsControlsLabels = Partial<{
+  widthField: string;
+  heightField: string;
+  depthField: string;
+  resetWidthTitle: string;
+  resetHeightTitle: string;
+  resetDepthTitle: string;
+  hexModeButton: ReactNode;
+  hexProtrusionField: string;
+  hexDoorWidthField: string;
+  resetHexProtrusionTitle: string;
+  resetHexDoorWidthTitle: string;
+}>;
+
+export type StructureCellDimsControlsProps = {
   isSliding: StructureDimensionsContentProps['isSliding'];
   cellDimsEditActive: StructureDimensionsContentProps['cellDimsEditActive'];
+  cellDimsPanelOpen: StructureDimensionsContentProps['cellDimsPanelOpen'];
+  cellDimsHexPanelOpen: StructureDimensionsContentProps['cellDimsHexPanelOpen'];
   hasAnyCellDimsOverrides: StructureDimensionsContentProps['hasAnyCellDimsOverrides'];
   defaultCellWidth: StructureDimensionsContentProps['defaultCellWidth'];
   width: StructureDimensionsContentProps['width'];
@@ -74,26 +102,82 @@ export function StructureCellDimsControls(props: {
   onClearCellDimsDepth: StructureDimensionsContentProps['onClearCellDimsDepth'];
   onClearCellDimsHexProtrusion: StructureDimensionsContentProps['onClearCellDimsHexProtrusion'];
   onClearCellDimsHexDoorWidth: StructureDimensionsContentProps['onClearCellDimsHexDoorWidth'];
-}): ReactElement | null {
-  if (props.isSliding) return null;
+  modeLabel?: ReactNode;
+  resetAllLabel?: ReactNode;
+  resetAllTooltip?: string;
+  notice?: ReactNode;
+  testIds?: Partial<StructureCellDimsControlsTestIds>;
+  labels?: StructureCellDimsControlsLabels;
+  hideForSliding?: boolean;
+};
 
+const DEFAULT_STRUCTURE_CELL_DIMS_TEST_IDS: StructureCellDimsControlsTestIds = {
+  section: STRUCTURE_CELL_DIMS_SECTION_TEST_ID,
+  modeButton: STRUCTURE_CELL_DIMS_MODE_BUTTON_TEST_ID,
+  hexModeButton: STRUCTURE_CELL_DIMS_HEX_MODE_BUTTON_TEST_ID,
+  resetAllButton: STRUCTURE_CELL_DIMS_RESET_BUTTON_TEST_ID,
+  resetWidthButton: STRUCTURE_CELL_DIMS_RESET_WIDTH_BUTTON_TEST_ID,
+  resetHeightButton: STRUCTURE_CELL_DIMS_RESET_HEIGHT_BUTTON_TEST_ID,
+  resetDepthButton: STRUCTURE_CELL_DIMS_RESET_DEPTH_BUTTON_TEST_ID,
+  resetHexProtrusionButton: STRUCTURE_CELL_DIMS_RESET_HEX_PROTRUSION_BUTTON_TEST_ID,
+  resetHexDoorWidthButton: STRUCTURE_CELL_DIMS_RESET_HEX_DOOR_WIDTH_BUTTON_TEST_ID,
+};
+
+export function StructureCellDimsControls(props: StructureCellDimsControlsProps): ReactElement | null {
+  if (props.isSliding && props.hideForSliding !== false) return null;
+
+  const labels = props.labels || {};
   const defaultHexDoorWidth = resolveDefaultHexDoorWidthCm(props.defaultCellWidth);
+  const testIds = { ...DEFAULT_STRUCTURE_CELL_DIMS_TEST_IDS, ...(props.testIds || {}) };
+  const cellDimsPanelOpen = props.cellDimsPanelOpen || props.cellDimsEditActive;
+  const hexCellPanelOpen = props.cellDimsHexPanelOpen || props.cellDimsHexMode;
+
+  const ensureCellDimsEditMode = () => {
+    if (!props.cellDimsEditActive || props.cellDimsHexMode) props.onEnterCellDimsMode();
+  };
+  const ensureHexCellDimsEditMode = () => {
+    if (!props.cellDimsEditActive || !props.cellDimsHexMode) props.onEnterHexCellDimsMode();
+  };
+  const commitCellDim = (key: 'cellDimsWidth' | 'cellDimsHeight' | 'cellDimsDepth', value: number) => {
+    ensureCellDimsEditMode();
+    props.onSetRaw(key, value);
+  };
+  const clearCellDim = (clear: () => void) => {
+    ensureCellDimsEditMode();
+    clear();
+  };
+  const commitHexCellDim = (key: 'cellDimsHexProtrusion' | 'cellDimsHexDoorWidth', value: number) => {
+    ensureHexCellDimsEditMode();
+    props.onSetRaw(key, value);
+  };
+  const clearHexCellDim = (clear: () => void) => {
+    ensureHexCellDimsEditMode();
+    clear();
+  };
 
   return (
-    <div className="wp-field" data-testid={STRUCTURE_CELL_DIMS_SECTION_TEST_ID}>
+    <div className="wp-field" data-testid={testIds.section}>
       <ModeToggleButton
-        active={props.cellDimsEditActive}
+        active={cellDimsPanelOpen}
         onClick={() => {
-          if (props.cellDimsEditActive) props.onExitCellDimsMode();
+          if (cellDimsPanelOpen) props.onExitCellDimsMode();
           else props.onEnterCellDimsMode();
         }}
         className="wp-r-mode-btn"
-        data-testid={STRUCTURE_CELL_DIMS_MODE_BUTTON_TEST_ID}
+        iconPosition="end"
+        icon={
+          <i
+            className={cellDimsPanelOpen ? 'fas fa-chevron-up wp-chevron' : 'fas fa-chevron-down wp-chevron'}
+            aria-hidden="true"
+          />
+        }
+        aria-expanded={cellDimsPanelOpen}
+        data-testid={testIds.modeButton}
       >
-        מידות מיוחדות לפי תא
+        {props.modeLabel || 'מידות מיוחדות לפי תא'}
       </ModeToggleButton>
 
-      {props.cellDimsEditActive ? (
+      {cellDimsPanelOpen ? (
         <div style={{ marginTop: 10 }}>
           <div
             style={{
@@ -107,36 +191,36 @@ export function StructureCellDimsControls(props: {
           >
             <button
               type="button"
-              className="wp-r-link-btn"
+              className="wp-r-link-btn wp-r-styled-tooltip hint-bottom"
               disabled={!props.hasAnyCellDimsOverrides}
               onClick={props.onResetAllCellDimsOverrides}
-              data-testid={STRUCTURE_CELL_DIMS_RESET_BUTTON_TEST_ID}
-              title="ביטול כל המידות המיוחדות וחזרה למידות הכלליות"
+              data-testid={testIds.resetAllButton}
+              data-tooltip={props.resetAllTooltip || 'ביטול כל המידות המיוחדות וחזרה למידות הכלליות'}
             >
-              חזרה למידות שוות לכל התאים
+              {props.resetAllLabel || 'חזרה למידות שוות לכל התאים'}
             </button>
           </div>
           <div className="wp-r-cell-dims-row">
             <div className="wp-r-dims-width">
               <OptionalDimField
-                label={'רוחב תא (ס"מ)'}
+                label={labels.widthField || 'רוחב תא (ס"מ)'}
                 activeId="cellDimsWidth"
                 value={props.cellDimsWidth}
                 placeholder={STRUCTURE_CELL_DIMS_DEFAULT_WIDTH_STEP_BASE}
                 placeholderText={STRUCTURE_CELL_DIMS_PLACEHOLDER_TEXT}
                 onCommit={value => {
                   if (value == null) {
-                    props.onClearCellDimsWidth();
+                    clearCellDim(props.onClearCellDimsWidth);
                     return;
                   }
-                  props.onSetRaw('cellDimsWidth', value);
+                  commitCellDim('cellDimsWidth', value);
                 }}
                 inputAddon={
                   <CellDimResetButton
-                    title="איפוס רוחב התא"
+                    title={labels.resetWidthTitle || 'איפוס רוחב התא'}
                     disabled={props.cellDimsWidth === ''}
-                    onClick={props.onClearCellDimsWidth}
-                    testId={STRUCTURE_CELL_DIMS_RESET_WIDTH_BUTTON_TEST_ID}
+                    onClick={() => clearCellDim(props.onClearCellDimsWidth)}
+                    testId={testIds.resetWidthButton}
                   />
                 }
                 step={5}
@@ -146,24 +230,24 @@ export function StructureCellDimsControls(props: {
             </div>
             <div className="wp-r-dims-height">
               <OptionalDimField
-                label={'גובה תא (ס"מ)'}
+                label={labels.heightField || 'גובה תא (ס"מ)'}
                 activeId="cellDimsHeight"
                 value={props.cellDimsHeight}
                 placeholder={DEFAULT_HEIGHT}
                 placeholderText={STRUCTURE_CELL_DIMS_PLACEHOLDER_TEXT}
                 onCommit={value => {
                   if (value == null) {
-                    props.onClearCellDimsHeight();
+                    clearCellDim(props.onClearCellDimsHeight);
                     return;
                   }
-                  props.onSetRaw('cellDimsHeight', value);
+                  commitCellDim('cellDimsHeight', value);
                 }}
                 inputAddon={
                   <CellDimResetButton
-                    title="איפוס גובה התא"
+                    title={labels.resetHeightTitle || 'איפוס גובה התא'}
                     disabled={props.cellDimsHeight === ''}
-                    onClick={props.onClearCellDimsHeight}
-                    testId={STRUCTURE_CELL_DIMS_RESET_HEIGHT_BUTTON_TEST_ID}
+                    onClick={() => clearCellDim(props.onClearCellDimsHeight)}
+                    testId={testIds.resetHeightButton}
                   />
                 }
                 step={5}
@@ -173,24 +257,24 @@ export function StructureCellDimsControls(props: {
             </div>
             <div className="wp-r-dims-depth">
               <OptionalDimField
-                label={'עומק תא (ס"מ)'}
+                label={labels.depthField || 'עומק תא (ס"מ)'}
                 activeId="cellDimsDepth"
                 value={props.cellDimsDepth}
                 placeholder={HINGED_DEFAULT_DEPTH}
                 placeholderText={STRUCTURE_CELL_DIMS_PLACEHOLDER_TEXT}
                 onCommit={value => {
                   if (value == null) {
-                    props.onClearCellDimsDepth();
+                    clearCellDim(props.onClearCellDimsDepth);
                     return;
                   }
-                  props.onSetRaw('cellDimsDepth', value);
+                  commitCellDim('cellDimsDepth', value);
                 }}
                 inputAddon={
                   <CellDimResetButton
-                    title="איפוס עומק התא"
+                    title={labels.resetDepthTitle || 'איפוס המידה'}
                     disabled={props.cellDimsDepth === ''}
-                    onClick={props.onClearCellDimsDepth}
-                    testId={STRUCTURE_CELL_DIMS_RESET_DEPTH_BUTTON_TEST_ID}
+                    onClick={() => clearCellDim(props.onClearCellDimsDepth)}
+                    testId={testIds.resetDepthButton}
                   />
                 }
                 step={5}
@@ -202,40 +286,50 @@ export function StructureCellDimsControls(props: {
 
           <div className="wp-r-cell-dims-hex-toolbar">
             <ModeToggleButton
-              active={props.cellDimsHexMode}
+              active={hexCellPanelOpen}
               onClick={() => {
-                if (props.cellDimsHexMode) props.onExitHexCellDimsMode();
+                if (hexCellPanelOpen) props.onExitHexCellDimsMode();
                 else props.onEnterHexCellDimsMode();
               }}
               className="wp-r-mode-btn wp-r-hex-cell-mode-btn"
-              data-testid={STRUCTURE_CELL_DIMS_HEX_MODE_BUTTON_TEST_ID}
+              iconPosition="end"
+              icon={
+                <i
+                  className={
+                    hexCellPanelOpen ? 'fas fa-chevron-up wp-chevron' : 'fas fa-chevron-down wp-chevron'
+                  }
+                  aria-hidden="true"
+                />
+              }
+              aria-expanded={hexCellPanelOpen}
+              data-testid={testIds.hexModeButton}
             >
-              תא משושה
+              {labels.hexModeButton || 'תא משושה'}
             </ModeToggleButton>
           </div>
 
-          {props.cellDimsHexMode ? (
+          {hexCellPanelOpen ? (
             <div className="wp-r-cell-dims-row wp-r-cell-dims-hex-row">
               <div className="wp-r-dims-depth">
                 <OptionalDimField
-                  label={'בליטה ישרה תא משושה '}
+                  label={labels.hexProtrusionField || 'בליטה ישרה תא משושה '}
                   activeId="cellDimsHexProtrusion"
                   value={props.cellDimsHexProtrusion}
                   placeholder={HEX_CELL_DEFAULT_PROTRUSION_CM}
                   placeholderText={STRUCTURE_CELL_DIMS_PLACEHOLDER_TEXT}
                   onCommit={value => {
                     if (value == null) {
-                      props.onClearCellDimsHexProtrusion();
+                      clearHexCellDim(props.onClearCellDimsHexProtrusion);
                       return;
                     }
-                    props.onSetRaw('cellDimsHexProtrusion', value);
+                    commitHexCellDim('cellDimsHexProtrusion', value);
                   }}
                   inputAddon={
                     <CellDimResetButton
-                      title="איפוס בליטה ישרה תא משושה"
+                      title={labels.resetHexProtrusionTitle || 'איפוס בליטה ישרה תא משושה'}
                       disabled={props.cellDimsHexProtrusion === ''}
-                      onClick={props.onClearCellDimsHexProtrusion}
-                      testId={STRUCTURE_CELL_DIMS_RESET_HEX_PROTRUSION_BUTTON_TEST_ID}
+                      onClick={() => clearHexCellDim(props.onClearCellDimsHexProtrusion)}
+                      testId={testIds.resetHexProtrusionButton}
                     />
                   }
                   step={1}
@@ -245,24 +339,24 @@ export function StructureCellDimsControls(props: {
               </div>
               <div className="wp-r-dims-width">
                 <OptionalDimField
-                  label={'רוחב דלת תא משושה '}
+                  label={labels.hexDoorWidthField || 'רוחב דלת תא משושה '}
                   activeId="cellDimsHexDoorWidth"
                   value={props.cellDimsHexDoorWidth}
                   placeholder={defaultHexDoorWidth}
                   placeholderText={STRUCTURE_CELL_DIMS_PLACEHOLDER_TEXT}
                   onCommit={value => {
                     if (value == null) {
-                      props.onClearCellDimsHexDoorWidth();
+                      clearHexCellDim(props.onClearCellDimsHexDoorWidth);
                       return;
                     }
-                    props.onSetRaw('cellDimsHexDoorWidth', value);
+                    commitHexCellDim('cellDimsHexDoorWidth', value);
                   }}
                   inputAddon={
                     <CellDimResetButton
-                      title="איפוס רוחב דלת תא משושה"
+                      title={labels.resetHexDoorWidthTitle || 'איפוס רוחב דלת תא משושה'}
                       disabled={props.cellDimsHexDoorWidth === ''}
-                      onClick={props.onClearCellDimsHexDoorWidth}
-                      testId={STRUCTURE_CELL_DIMS_RESET_HEX_DOOR_WIDTH_BUTTON_TEST_ID}
+                      onClick={() => clearHexCellDim(props.onClearCellDimsHexDoorWidth)}
+                      testId={testIds.resetHexDoorWidthButton}
                     />
                   }
                   step={5}
@@ -274,8 +368,8 @@ export function StructureCellDimsControls(props: {
           ) : null}
 
           <InlineNotice>
-            הקלד מידות ואז לחץ על תא בארון כדי להחיל. כפתור תא משושה מפעיל בחירת תא לצורה משושה. שדה ריק = לא
-            נוגעים במימד הזה.
+            {props.notice ||
+              'הקלד מידות ואז לחץ על תא בארון או על קופסא חופשית כדי להחיל. כפתור תא משושה מפעיל בחירת תא או קופסא לצורה משושה. שדה ריק = לא נוגעים במימד הזה.'}
           </InlineNotice>
         </div>
       ) : null}

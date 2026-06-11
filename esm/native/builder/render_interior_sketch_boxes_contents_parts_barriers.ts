@@ -10,7 +10,7 @@ import { resolveSketchBoxSegmentForContent } from './render_interior_sketch_layo
 import { resolveSketchBoxContentPartMaterial } from './render_interior_sketch_boxes_contents_parts_materials.js';
 
 export function renderSketchBoxContentStorageBarriers(args: RenderSketchBoxStaticContentsArgs): void {
-  const { shell, boxDividers, yFromBoxNorm } = args;
+  const { shell, boxDividers, boxHorizontalDividers, yFromBoxNorm } = args;
   const { createBoard, woodThick, bodyMat, getPartMaterial, isFn } = args.args;
   const { box, boxPid, sideH, geometry, frontZ } = shell;
 
@@ -40,6 +40,10 @@ export function renderSketchBoxContentStorageBarriers(args: RenderSketchBoxStati
       innerW: geometry.innerW,
       woodThick,
       xNorm: barrier.xNorm,
+      horizontalDividers: boxHorizontalDividers,
+      boxCenterY: shell.centerY,
+      innerH: shell.sideH,
+      yNorm: barrier.yNorm,
     });
     const barrierW = Math.max(
       storageDims.barrierWidthMinM,

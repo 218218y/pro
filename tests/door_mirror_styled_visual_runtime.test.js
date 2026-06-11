@@ -58,8 +58,8 @@ function loadTsModule(file) {
 const { createProfileDoorVisual } = loadTsModule(
   path.join(process.cwd(), 'esm/native/builder/visuals_and_contents_door_visual_profile.ts')
 );
-const { createTomDoorVisual } = loadTsModule(
-  path.join(process.cwd(), 'esm/native/builder/visuals_and_contents_door_visual_tom.ts')
+const { createDoubleProfileDoorVisual } = loadTsModule(
+  path.join(process.cwd(), 'esm/native/builder/visuals_and_contents_door_visual_double_profile.ts')
 );
 const { createStyledMirrorDoorVisual } = loadTsModule(
   path.join(process.cwd(), 'esm/native/builder/visuals_and_contents_door_visual_mirror_styled.ts')
@@ -287,32 +287,35 @@ test('styled mirror profile visual keeps the decorative frame, preserves the woo
   assert.ok(Array.isArray(woodCenter.children) && woodCenter.children.includes(mirrorPane));
 });
 
-test('styled mirror tom visual keeps the tom frame, preserves the wood center panel, and adds the mirror above it', () => {
+test('styled mirror double_profile visual keeps the double_profile frame, preserves the wood center panel, and adds the mirror above it', () => {
   const mirrorArgs = createCommonArgs();
   const mirrorVisual = createStyledMirrorDoorVisual({
     App: {},
     ...mirrorArgs,
-    style: 'tom',
+    style: 'double_profile',
     mat: { kind: 'mirror' },
     baseMaterial: { kind: 'wood' },
     mirrorLayout: null,
   });
-  const tomArgs = createCommonArgs();
-  const tomVisual = createTomDoorVisual({
+  const doubleProfileArgs = createCommonArgs();
+  const doubleProfileVisual = createDoubleProfileDoorVisual({
     App: {},
-    ...tomArgs,
+    ...doubleProfileArgs,
     mat: { kind: 'wood' },
     hasGrooves: false,
     groovePartId: null,
   });
 
   const mirrorRoles = collectRoles(mirrorVisual);
-  const tomRoles = collectRoles(tomVisual);
-  assert.deepEqual(uniqueSortedRoles(mirrorRoles, 'door_tom_'), uniqueSortedRoles(tomRoles, 'door_tom_'));
+  const doubleProfileRoles = collectRoles(doubleProfileVisual);
+  assert.deepEqual(
+    uniqueSortedRoles(mirrorRoles, 'door_double_profile_'),
+    uniqueSortedRoles(doubleProfileRoles, 'door_double_profile_')
+  );
   assert.ok(mirrorRoles.includes('door_mirror_center_panel'));
-  assert.ok(mirrorRoles.includes('door_tom_center_panel'));
+  assert.ok(mirrorRoles.includes('door_double_profile_center_panel'));
 
-  const woodCenter = findRole(mirrorVisual, 'door_tom_center_panel');
+  const woodCenter = findRole(mirrorVisual, 'door_double_profile_center_panel');
   const mirrorPane = findRole(mirrorVisual, 'door_mirror_center_panel');
   assert.ok(woodCenter);
   assert.ok(mirrorPane);
@@ -324,7 +327,7 @@ test('styled mirror tom visual keeps the tom frame, preserves the wood center pa
   assert.ok(Array.isArray(woodCenter.children) && woodCenter.children.includes(mirrorPane));
 });
 
-test('profile and tom center panels publish mirror placement metadata for sized mirror clicks', () => {
+test('profile and double_profile center panels publish mirror placement metadata for sized mirror clicks', () => {
   const profileArgs = createCommonArgs();
   const profileVisual = createProfileDoorVisual({
     App: {},
@@ -342,22 +345,25 @@ test('profile and tom center panels publish mirror placement metadata for sized 
   assert.equal(profileCenter.userData.__mirrorRectMinY, -(profileCenter.geometry.args[1] / 2));
   assert.equal(profileCenter.userData.__mirrorRectMaxY, profileCenter.geometry.args[1] / 2);
 
-  const tomArgs = createCommonArgs();
-  const tomVisual = createTomDoorVisual({
+  const doubleProfileArgs = createCommonArgs();
+  const doubleProfileVisual = createDoubleProfileDoorVisual({
     App: {},
-    ...tomArgs,
+    ...doubleProfileArgs,
     mat: { kind: 'wood' },
     hasGrooves: false,
     groovePartId: null,
   });
-  const tomCenter = tomVisual.children.find(
-    child => child.userData?.__doorVisualRole === 'door_tom_center_panel'
+  const doubleProfileCenter = doubleProfileVisual.children.find(
+    child => child.userData?.__doorVisualRole === 'door_double_profile_center_panel'
   );
-  assert.ok(tomCenter);
+  assert.ok(doubleProfileCenter);
   const rawFrameW = 0.045;
-  const frameW = Math.max(0.02, Math.min(rawFrameW, tomArgs.w / 2 - 0.02, tomArgs.h / 2 - 0.02));
-  const innerW = Math.max(0.02, tomArgs.w - 2 * frameW);
-  const innerH = Math.max(0.02, tomArgs.h - 2 * frameW);
+  const frameW = Math.max(
+    0.02,
+    Math.min(rawFrameW, doubleProfileArgs.w / 2 - 0.02, doubleProfileArgs.h / 2 - 0.02)
+  );
+  const innerW = Math.max(0.02, doubleProfileArgs.w - 2 * frameW);
+  const innerH = Math.max(0.02, doubleProfileArgs.h - 2 * frameW);
   const innerRaisedInset = Math.max(0.006, Math.min(frameW * 0.22, 0.014));
   const innerRaisedOuterW = Math.max(0.02, innerW - 2 * innerRaisedInset);
   const innerRaisedOuterH = Math.max(0.02, innerH - 2 * innerRaisedInset);
@@ -367,26 +373,26 @@ test('profile and tom center panels publish mirror placement metadata for sized 
   );
   const expectedMirrorW = Math.max(0.02, innerRaisedOuterW - 2 * innerRaisedBandW);
   const expectedMirrorH = Math.max(0.02, innerRaisedOuterH - 2 * innerRaisedBandW);
-  assert.equal(tomCenter.userData.__mirrorRectMinX, -(expectedMirrorW / 2));
-  assert.equal(tomCenter.userData.__mirrorRectMaxX, expectedMirrorW / 2);
-  assert.equal(tomCenter.userData.__mirrorRectMinY, -(expectedMirrorH / 2));
-  assert.equal(tomCenter.userData.__mirrorRectMaxY, expectedMirrorH / 2);
-  assert.ok(expectedMirrorW < tomCenter.geometry.args[0]);
-  assert.ok(expectedMirrorH < tomCenter.geometry.args[1]);
+  assert.equal(doubleProfileCenter.userData.__mirrorRectMinX, -(expectedMirrorW / 2));
+  assert.equal(doubleProfileCenter.userData.__mirrorRectMaxX, expectedMirrorW / 2);
+  assert.equal(doubleProfileCenter.userData.__mirrorRectMinY, -(expectedMirrorH / 2));
+  assert.equal(doubleProfileCenter.userData.__mirrorRectMaxY, expectedMirrorH / 2);
+  assert.ok(expectedMirrorW < doubleProfileCenter.geometry.args[0]);
+  assert.ok(expectedMirrorH < doubleProfileCenter.geometry.args[1]);
 });
 
-test('styled mirror tom visual clamps sized mirror placements to the inner raised opening instead of the full wood center panel', () => {
+test('styled mirror double_profile visual clamps sized mirror placements to the inner raised opening instead of the full wood center panel', () => {
   const mirrorArgs = createCommonArgs();
   const mirrorVisual = createStyledMirrorDoorVisual({
     App: {},
     ...mirrorArgs,
-    style: 'tom',
+    style: 'double_profile',
     mat: { kind: 'mirror' },
     baseMaterial: { kind: 'wood' },
     mirrorLayout: [{ widthCm: 200, heightCm: 200 }],
   });
 
-  const woodCenter = findRole(mirrorVisual, 'door_tom_center_panel');
+  const woodCenter = findRole(mirrorVisual, 'door_double_profile_center_panel');
   const mirrorPane = findRole(mirrorVisual, 'door_mirror_center_panel');
   assert.ok(woodCenter);
   assert.ok(mirrorPane);

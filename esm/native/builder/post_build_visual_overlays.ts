@@ -8,6 +8,7 @@ import type { AppContainer, BuildContextLike, ThreeLike } from '../../../types/i
 import { asRecord } from './post_build_extras_shared.js';
 import { notifyHandleFitSuppressions } from './handles_fit_suppression_feedback.js';
 import { applyFrontRevealFrames } from './post_build_front_reveal_frames.js';
+import { applyRemovedPartsAfterBuild } from './post_build_removed_parts.js';
 import {
   SKETCH_BOX_DOOR_PENDING_STATE_KEY,
   getSketchBoxDoorPendingStateKey,
@@ -86,4 +87,5 @@ export function applyPostBuildSketchVisualOverlays(args: {
     completePass: true,
   });
   applyFrontRevealFrames(ctx);
+  applyRemovedPartsAfterBuild({ App, THREE, cfg });
 }

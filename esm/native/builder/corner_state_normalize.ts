@@ -19,6 +19,11 @@ import {
   resolveCornerWingStackMeta,
 } from './corner_state_normalize_layout.js';
 
+function readPositiveThickness(value: unknown, defaultThickness: number): number {
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? n : defaultThickness;
+}
+
 export function normalizeCornerWingState(args: {
   App: AppContainer;
   mainW: number;
@@ -29,6 +34,7 @@ export function normalizeCornerWingState(args: {
   meta: CornerBuildMeta | null | undefined;
 }): NormalizedCornerWingState {
   const { App, mainW, mainH, mainD, woodThick, startY, meta } = args;
+  const shelfThick = readPositiveThickness(meta?.shelfThick, woodThick);
 
   const uiAny = asCornerBuildUI(getBuildUIFromPlatform(App));
   const __sketchMode = !!readRuntimeScalarOrDefaultFromApp(App, 'sketchMode', false);
@@ -91,6 +97,7 @@ export function normalizeCornerWingState(args: {
     wingW: metrics.wingW,
     wingH: metrics.wingH,
     wingD: metrics.wingD,
+    shelfThick,
     blindWidth: metrics.blindWidth,
     activeWidth: metrics.activeWidth,
     activeFaceCenter: metrics.activeFaceCenter,

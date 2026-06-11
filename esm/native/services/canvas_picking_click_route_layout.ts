@@ -46,6 +46,7 @@ export function tryHandleCanvasPickingLayoutRoute(args: CanvasPickingClickRouteA
       App,
       foundModuleIndex,
       foundPartId: typeof foundPartId === 'string' ? foundPartId : null,
+      hitUserData: hitState.hitUserData || hitState.primaryHitObject?.userData || null,
       isBottomStack: __isBottomStack,
       ensureCornerCellConfigRef: __ensureCornerCellConfigRef,
       ndcX: args.ndcX,

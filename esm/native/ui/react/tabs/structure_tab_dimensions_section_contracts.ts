@@ -16,6 +16,7 @@ export const STRUCTURE_CELL_DIMS_RESET_HEX_DOOR_WIDTH_BUTTON_TEST_ID =
   'structure-cell-dims-reset-hex-door-width-button';
 export const STRUCTURE_LIBRARY_UPPER_DOORS_BUTTON_TEST_ID = 'structure-library-upper-doors-button';
 export const STRUCTURE_LIBRARY_GLASS_BUTTON_GROUP_TEST_ID = 'structure-library-glass-buttons';
+export const STRUCTURE_RESTORE_MAIN_WARDROBE_BUTTON_TEST_ID = 'structure-restore-main-wardrobe-button';
 export const STRUCTURE_STACK_SPLIT_SECTION_TEST_ID = 'structure-stack-split-section';
 export const STRUCTURE_STACK_SPLIT_MODE_BUTTON_TEST_ID = 'structure-stack-split-mode-button';
 export const STRUCTURE_STACK_SPLIT_DECORATIVE_SEPARATOR_BUTTON_TEST_ID =
@@ -47,8 +48,8 @@ export const STRUCTURE_LIBRARY_GLASS_OPTIONS: ReadonlyArray<StructureLibraryGlas
   },
   {
     id: 'profile',
-    paintId: encodeGlassFrameStylePaintToken('tom'),
-    label: 'זכוכית פרופיל תום',
+    paintId: encodeGlassFrameStylePaintToken('double_profile'),
+    label: 'זכוכית פרופיל כפול',
     testId: 'structure-library-glass-button-profile',
   },
 ];
@@ -63,6 +64,8 @@ export type StructureDimensionsContentProps = {
   depth: number;
   doors: number;
   cellDimsEditActive: boolean;
+  cellDimsPanelOpen: boolean;
+  cellDimsHexPanelOpen: boolean;
   hasAnyCellDimsOverrides: boolean;
   defaultCellWidth: number;
   cellDimsWidth: number | '';
@@ -97,6 +100,8 @@ export type StructureDimensionsContentProps = {
   onPickLibraryGlass: (paintId: string) => void;
   renderStackLinkBadge: (field: StructureStackLinkField, isManual: boolean) => ReactNode;
   onResetAutoWidth: () => void;
+  noMainWardrobeActive?: boolean;
+  onRestoreMainWardrobe?: () => void;
 };
 
 export type StructureDimensionsSectionProps = StructureDimensionsContentProps & {

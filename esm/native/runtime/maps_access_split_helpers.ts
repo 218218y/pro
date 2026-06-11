@@ -1,7 +1,7 @@
 import { asRecord, readOwn } from './maps_access_shared.js';
 
 function stripDoorSuffix(id0: string): string {
-  return String(id0 || '').replace(/_(full|top|bot|mid)$/i, '');
+  return String(id0 || '').replace(/_(full|top|bot|mid\d*)$/i, '');
 }
 
 function canonDoorBaseId(id0: unknown): string {

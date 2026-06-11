@@ -3,6 +3,7 @@ import { getDoorsArray, getRenderSlot, getWardrobeGroup, setRenderSlot } from '.
 import { __wp_asRecord, __wp_getCanvasPickingRuntime, __wp_str } from './canvas_picking_core_shared.js';
 import { __wp_isDoorLikePartId } from './canvas_picking_door_part_helpers.js';
 import { __wp_getSplitHoverDoorBaseKey } from './canvas_picking_split_hover_bounds.js';
+import { readCanvasDoorSplitEffectiveNodeBounds } from './canvas_picking_door_split_bounds_shared.js';
 
 export function __wp_getSplitHoverRaycastRoots(App: AppContainer): unknown {
   try {
@@ -49,12 +50,10 @@ export function __wp_getSplitHoverRaycastRoots(App: AppContainer): unknown {
         const baseKey = cachedBase || __wp_getSplitHoverDoorBaseKey(pid);
         if (baseKey && cachedBase !== baseKey) userData.__wpSplitHoverDoorBaseKey = baseKey;
 
-        const h = Number(userData.__doorHeight);
-        if (Number.isFinite(h) && h > 0) {
-          const position = __wp_asRecord(g0.position);
-          const y0 = typeof position?.y === 'number' ? Number(position.y) : 0;
-          const yMin = y0 - h / 2;
-          const yMax = y0 + h / 2;
+        const nodeBounds = readCanvasDoorSplitEffectiveNodeBounds({ App, node: g0, baseKey });
+        if (nodeBounds) {
+          const yMin = nodeBounds.minY;
+          const yMax = nodeBounds.maxY;
 
           if (pid) boundsByBase[pid] = { minY: yMin, maxY: yMax };
 

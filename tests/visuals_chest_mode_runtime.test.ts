@@ -509,7 +509,7 @@ test('visuals chest mode build routes chest drawer fronts through regular door v
       isMultiColorMode: true,
       individualColors: {},
       groovesMap: { groove_chest_drawer_0: true },
-      doorStyleMap: { chest_drawer_1: 'tom' },
+      doorStyleMap: { chest_drawer_1: 'double_profile' },
     },
     ui: {},
     runtime: {},
@@ -536,7 +536,7 @@ test('visuals chest mode build routes chest drawer fronts through regular door v
   assert.equal(calls[0].style, 'profile');
   assert.equal(calls[0].hasGrooves, true);
   assert.equal(calls[0].groovePartId, 'chest_drawer_0');
-  assert.equal(calls[1].style, 'tom');
+  assert.equal(calls[1].style, 'double_profile');
   assert.equal(calls[1].hasGrooves, false);
   assert.equal(calls[1].groovePartId, 'chest_drawer_1');
 

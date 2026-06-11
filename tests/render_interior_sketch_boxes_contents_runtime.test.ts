@@ -163,7 +163,7 @@ test('render sketch box contents keeps divider-aware static parts and reuses rod
   assert.equal(rodMeshes[0].material, rodMeshes[1].material);
   assert.equal(rodMeshes[0].material.__keepMaterial, true);
   assert.equal(shelfPins.length, 1);
-  assert.equal(seamCalls.length, 1);
+  assert.equal(seamCalls.length, 0);
 });
 
 test('render sketch box contents emits paired internal drawer ops with clamped stack placement', () => {
@@ -215,4 +215,48 @@ test('render sketch box shelves emit folded contents inside divider-aware shelf 
   assert.ok(folded[0][3] < 0.8, 'contents width should follow the resolved shelf segment');
   assert.ok(folded[0][5] > 0);
   assert.ok(folded[1][5] > folded[0][5]);
+});
+
+test('removed sketch-box side forces adjacent box shelves to brace and applies rounded shelf option', () => {
+  const { args, boards, shelfPins } = createBaseArgs();
+  const boxPid = 'sketch_box_free_0_sbf_1';
+  const leftSidePartId = `${boxPid}_side_left`;
+  args.shell.boxPid = boxPid;
+  args.args.input.cfg = {
+    removedDoorsMap: { [`removed_${leftSidePartId}`]: true },
+    roundedFrameSideShelvesMap: { [leftSidePartId]: true },
+  };
+  args.boxDividers = [{ id: 'mid', xNorm: 0.5 }];
+  args.shell.box = {
+    shelves: [
+      { id: 'leftShelf', yNorm: 0.25, variant: 'glass', xNorm: 0.25 },
+      { id: 'rightShelf', yNorm: 0.5, variant: 'regular', xNorm: 0.75 },
+    ],
+    storageBarriers: [],
+    rods: [],
+    drawers: [],
+  };
+
+  renderSketchBoxContents(args);
+
+  const shelfBoards = boards.filter(entry => String(entry.args[7]).includes('_shelf_'));
+  assert.equal(shelfBoards.length, 2);
+  const leftShelf = shelfBoards.find(entry => String(entry.args[7]).endsWith('_shelf_leftShelf'));
+  const rightShelf = shelfBoards.find(entry => String(entry.args[7]).endsWith('_shelf_rightShelf'));
+  assert.ok(leftShelf);
+  assert.ok(rightShelf);
+  assert.equal(leftShelf.userData.__wpShelfVariant, 'glass');
+  assert.equal(leftShelf.userData.__wpShelfIsBrace, true);
+  assert.equal(leftShelf.args[1], 0.018);
+  assert.equal(leftShelf.args[2], args.shell.geometry.innerD);
+  assert.equal(leftShelf.args[6], args.args.glassMat);
+  assert.deepEqual(leftShelf.args[8], { shape: 'rounded_shelf', roundedShelfSide: 'left' });
+  assert.equal(rightShelf.userData.__wpShelfIsBrace, false);
+  assert.equal(rightShelf.args[2], args.shell.regularDepth);
+  assert.equal(rightShelf.args[8], null);
+  assert.equal(shelfPins.length, 2);
+  assert.deepEqual(
+    shelfPins.map(call => call[6]),
+    [false, true]
+  );
 });

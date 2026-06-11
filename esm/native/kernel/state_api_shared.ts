@@ -23,6 +23,7 @@ export const PROJECT_CONFIG_REPLACE_KEYS: Record<string, true> = {
   splitDoorsMap: true,
   splitDoorsBottomMap: true,
   removedDoorsMap: true,
+  roundedFrameSideShelvesMap: true,
   drawerDividersMap: true,
   individualColors: true,
   doorSpecialMap: true,

@@ -123,7 +123,9 @@ function createMarker() {
       __matCenter: 'center',
     },
     position: {
-      copy(_next: unknown) {
+      last: null as [number, number, number] | null,
+      copy(next: { x?: number; y?: number; z?: number }) {
+        this.last = [Number(next?.x || 0), Number(next?.y || 0), Number(next?.z || 0)];
         return undefined;
       },
     },
@@ -148,8 +150,12 @@ function runManualHandleHover(args: {
   hitPoint: Vec3;
   doorMarker: ReturnType<typeof createMarker>;
   previewCalls: Record<string, unknown>[];
+  raycastReuseHits?: unknown[];
+  preferredFacePreviewHitObject?: unknown;
+  preferredFacePreviewHitPoint?: { x?: number; y?: number; z?: number } | null;
 }) {
   const { app, wardrobeGroup, owner, hitPoint, doorMarker, previewCalls } = args;
+  const targetPartId = String(owner.userData.partId || '');
   return tryHandleDoorActionHover({
     App: app,
     ndcX: 0.15,
@@ -163,6 +169,7 @@ function runManualHandleHover(args: {
       return [wardrobeGroup];
     },
     raycastReuse() {
+      if (Array.isArray(args.raycastReuseHits)) return args.raycastReuseHits as never;
       return [{ object: owner, point: hitPoint }] as never;
     },
     isViewportRoot(_App, node) {
@@ -172,10 +179,10 @@ function runManualHandleHover(args: {
       return String(value ?? '');
     },
     isDoorLikePartId(partId) {
-      return partId === 'd1_left';
+      return partId === targetPartId && !String(partId).includes('draw');
     },
     isDoorOrDrawerLikePartId(partId) {
-      return partId === 'd1_left';
+      return partId === targetPartId;
     },
     doorMarker,
     hideLayoutPreview() {},
@@ -215,8 +222,9 @@ function runManualHandleHover(args: {
     canonDoorPartKeyForMaps(id) {
       return id;
     },
-    preferredFacePreviewPartId: 'd1_left',
-    preferredFacePreviewHitObject: owner as never,
+    preferredFacePreviewPartId: targetPartId,
+    preferredFacePreviewHitObject: (args.preferredFacePreviewHitObject || owner) as never,
+    preferredFacePreviewHitPoint: args.preferredFacePreviewHitPoint || null,
   });
 }
 
@@ -224,10 +232,15 @@ function runGrooveHover(args: {
   app: ReturnType<typeof createApp>['app'];
   wardrobeGroup: ReturnType<typeof createApp>['wardrobeGroup'];
   owner: ReturnType<typeof createApp>['owner'];
+  hitObject?: unknown;
   hitPoint: Vec3;
   doorMarker: ReturnType<typeof createMarker>;
+  readSplitBounds?: boolean;
+  extraDoorOrDrawerPartIds?: string[];
 }) {
   const { app, wardrobeGroup, owner, hitPoint, doorMarker } = args;
+  const targetPartId = String(owner.userData.partId || '');
+  const extraDoorOrDrawerPartIds = new Set(args.extraDoorOrDrawerPartIds || []);
   return tryHandleDoorActionHover({
     App: app,
     ndcX: 0.15,
@@ -241,7 +254,7 @@ function runGrooveHover(args: {
       return [wardrobeGroup];
     },
     raycastReuse() {
-      return [{ object: owner, point: hitPoint }] as never;
+      return [{ object: args.hitObject || owner, point: hitPoint }] as never;
     },
     isViewportRoot(_App, node) {
       return node === wardrobeGroup;
@@ -250,10 +263,10 @@ function runGrooveHover(args: {
       return String(value ?? '');
     },
     isDoorLikePartId(partId) {
-      return partId === 'd1_left';
+      return partId === targetPartId && !String(partId).includes('draw');
     },
     isDoorOrDrawerLikePartId(partId) {
-      return partId === 'd1_left';
+      return partId === targetPartId || extraDoorOrDrawerPartIds.has(partId);
     },
     doorMarker,
     hideLayoutPreview() {},
@@ -273,7 +286,7 @@ function runGrooveHover(args: {
       return String(hitDoorPid);
     },
     readSplitHoverDoorBounds() {
-      return { minY: -1, maxY: 1 };
+      return args.readSplitBounds === false ? null : { minY: -1, maxY: 1 };
     },
     getCanvasPickingRuntime() {
       return {};
@@ -292,6 +305,7 @@ function runGrooveHover(args: {
 
 test('door action hover trim mode keeps marker routing alive even when sketch preview factory is unavailable', () => {
   const { app, wardrobeGroup, owner, hitPoint } = createApp();
+  const targetPartId = String(owner.userData.partId || '');
   const doorMarker = createMarker();
   const hidden: string[] = [];
 
@@ -317,10 +331,10 @@ test('door action hover trim mode keeps marker routing alive even when sketch pr
       return String(value ?? '');
     },
     isDoorLikePartId(partId) {
-      return partId === 'd1_left';
+      return partId === targetPartId && !String(partId).includes('draw');
     },
     isDoorOrDrawerLikePartId(partId) {
-      return partId === 'd1_left';
+      return partId === targetPartId;
     },
     doorMarker,
     hideLayoutPreview() {
@@ -367,6 +381,80 @@ test('door action hover trim mode keeps marker routing alive even when sketch pr
   assert.deepEqual((doorMarker.scale as { last: [number, number, number] | null }).last, [1, 0.035, 1]);
 });
 
+test('door action hover trim mode supports external drawer fronts', () => {
+  const { app, wardrobeGroup, hitPoint } = createApp();
+  const drawerOwner = createDoorOwner({ partId: 'd1_draw_1', wardrobeGroup, hingeLeft: true });
+  drawerOwner.userData.__doorHeight = 0.24;
+  const targetPartId = String(drawerOwner.userData.partId || '');
+  const doorMarker = createMarker();
+
+  const handled = tryHandleDoorActionHover({
+    App: app,
+    ndcX: 0.15,
+    ndcY: -0.05,
+    raycaster: {} as never,
+    mouse: {} as never,
+    getViewportRoots() {
+      return { camera: app.render.camera, wardrobeGroup };
+    },
+    getSplitHoverRaycastRoots() {
+      return [wardrobeGroup];
+    },
+    raycastReuse() {
+      return [{ object: drawerOwner, point: hitPoint }] as never;
+    },
+    isViewportRoot(_App, node) {
+      return node === wardrobeGroup;
+    },
+    str(_App, value) {
+      return String(value ?? '');
+    },
+    isDoorLikePartId(partId) {
+      return partId === targetPartId && !String(partId).includes('draw');
+    },
+    isDoorOrDrawerLikePartId(partId) {
+      return partId === targetPartId;
+    },
+    doorMarker,
+    hideLayoutPreview() {},
+    hideSketchPreview() {},
+    setSketchPreview: null,
+    isGrooveEditMode: false,
+    isRemoveDoorMode: false,
+    isHandleEditMode: false,
+    isHingeEditMode: false,
+    isMirrorPaintMode: false,
+    isDoorTrimMode: true,
+    paintSelection: null,
+    readUi() {
+      return {};
+    },
+    normalizeDoorBaseKey(_App, _hitDoorGroup, hitDoorPid) {
+      return String(hitDoorPid);
+    },
+    readSplitHoverDoorBounds() {
+      return null;
+    },
+    getCanvasPickingRuntime() {
+      return {};
+    },
+    isRemoved() {
+      return false;
+    },
+    isSegmentedDoorBaseId() {
+      return false;
+    },
+    canonDoorPartKeyForMaps(id) {
+      return id;
+    },
+  });
+
+  assert.equal(handled, true);
+  assert.equal(doorMarker.visible, true);
+  assert.equal(doorMarker.material, 'add');
+  assert.deepEqual((doorMarker.scale as { last: [number, number, number] | null }).last, [1, 0.035, 1]);
+});
+
 test('groove hover uses add material when the hovered door has no existing groove', () => {
   const { app, wardrobeGroup, owner, hitPoint } = createApp();
   const doorMarker = createMarker();
@@ -388,6 +476,179 @@ test('groove hover uses remove material when the next click will remove an exist
   assert.equal(handled, true);
   assert.equal(doorMarker.visible, true);
   assert.equal(doorMarker.material, 'remove');
+});
+
+test('groove hover supports drawer fronts using drawer metrics when split door bounds are absent', () => {
+  const { app, wardrobeGroup, hitPoint } = createApp();
+  const drawerOwner = createDoorOwner({ partId: 'd1_draw_1', wardrobeGroup, hingeLeft: true });
+  drawerOwner.userData.__doorHeight = 0.24;
+  const doorMarker = createMarker();
+
+  const handled = runGrooveHover({
+    app,
+    wardrobeGroup,
+    owner: drawerOwner,
+    hitPoint,
+    doorMarker,
+    readSplitBounds: false,
+  });
+
+  assert.equal(handled, true);
+  assert.equal(doorMarker.visible, true);
+  assert.equal(doorMarker.material, 'groove');
+  const markerScale = (doorMarker.scale as { last: [number, number, number] | null }).last;
+  assert.ok(markerScale);
+  assert.ok(Math.abs(markerScale[0] - 0.99) < 1e-9);
+  assert.ok(Math.abs(markerScale[1] - 0.23) < 1e-9);
+  assert.equal(markerScale[2], 1);
+  const markerPosition = (doorMarker.position as { last: [number, number, number] | null }).last;
+  assert.ok(markerPosition);
+  assert.ok(Math.abs(markerPosition[0]) < 1e-9);
+});
+
+test('groove hover centers sketch drawer fronts on their face offset instead of applying door hinge anchoring', () => {
+  const { app, wardrobeGroup, hitPoint } = createApp();
+  const drawerOwner = createDoorOwner({
+    partId: 'sketch_ext_drawers_1_sed-1_1',
+    wardrobeGroup,
+    hingeLeft: true,
+  });
+  drawerOwner.userData.__doorWidth = 0.74;
+  drawerOwner.userData.__doorHeight = 0.22;
+  drawerOwner.userData.__wpType = 'extDrawer';
+  drawerOwner.userData.__wpFaceOffsetX = -0.13;
+  drawerOwner.userData.__wpFaceOffsetY = 0.04;
+  const doorMarker = createMarker();
+
+  const handled = runGrooveHover({
+    app,
+    wardrobeGroup,
+    owner: drawerOwner,
+    hitPoint,
+    doorMarker,
+    readSplitBounds: false,
+  });
+
+  assert.equal(handled, true);
+  const markerPosition = (doorMarker.position as { last: [number, number, number] | null }).last;
+  assert.ok(markerPosition);
+  assert.ok(Math.abs(markerPosition[0] + 0.13) < 1e-9);
+  assert.ok(Math.abs(markerPosition[1] - 0.04) < 1e-9);
+  const markerScale = (doorMarker.scale as { last: [number, number, number] | null }).last;
+  assert.ok(markerScale);
+  assert.ok(Math.abs(markerScale[0] - 0.73) < 1e-9);
+  assert.ok(Math.abs(markerScale[1] - 0.21) < 1e-9);
+});
+
+test('groove hover ignores drawer-box body hits instead of promoting them to the drawer front', () => {
+  const { app, wardrobeGroup, hitPoint } = createApp();
+  const drawerOwner = createDoorOwner({
+    partId: 'sketch_ext_drawers_1_sed-1_1',
+    wardrobeGroup,
+    hingeLeft: true,
+  });
+  drawerOwner.userData.__doorWidth = 0.74;
+  drawerOwner.userData.__doorHeight = 0.22;
+  drawerOwner.userData.__wpType = 'extDrawer';
+  const drawerBoxPartId = 'drawer_box__sketch_ext_drawers_1_sed-1_1';
+  const drawerBox = {
+    userData: {
+      partId: drawerBoxPartId,
+      __wpDrawerBox: true,
+      __doorWidth: 0.7,
+      __doorHeight: 0.18,
+    },
+    parent: drawerOwner,
+    worldToLocal(target: Vec3) {
+      return target;
+    },
+    localToWorld(target: Vec3) {
+      return target;
+    },
+    getWorldPosition(target: Vec3) {
+      return target.set(0, 0, 0);
+    },
+    getWorldQuaternion(target: Quat) {
+      return target;
+    },
+  };
+  const sidePanel = {
+    userData: {},
+    material: { visible: true, opacity: 1 },
+    parent: drawerBox,
+  };
+  const doorMarker = createMarker();
+
+  const handled = runGrooveHover({
+    app,
+    wardrobeGroup,
+    owner: drawerOwner,
+    hitObject: sidePanel,
+    hitPoint,
+    doorMarker,
+    readSplitBounds: false,
+    extraDoorOrDrawerPartIds: [drawerBoxPartId],
+  });
+
+  assert.equal(handled, false);
+  assert.equal(doorMarker.visible, false);
+  assert.equal((doorMarker.position as { last: [number, number, number] | null }).last, null);
+});
+
+test('groove hover rejects hits outside the resolved local drawer-front rect', () => {
+  const { app, wardrobeGroup, owner, hitPoint } = createApp();
+  hitPoint.set(0.55, 0, 0.02);
+  const doorMarker = createMarker();
+
+  const handled = runGrooveHover({
+    app,
+    wardrobeGroup,
+    owner,
+    hitPoint,
+    doorMarker,
+    readSplitBounds: false,
+  });
+
+  assert.equal(handled, false);
+  assert.equal(doorMarker.visible, false);
+  assert.equal((doorMarker.position as { last: [number, number, number] | null }).last, null);
+});
+
+test('handle face hover rejects preferred sketch-box body hits without door metrics', () => {
+  const { app, wardrobeGroup, owner, hitPoint, state } = createApp();
+  Object.assign(owner.userData, {
+    partId: 'sketch_box_free_0_box-1',
+  });
+  delete (owner.userData as Record<string, unknown>).__doorWidth;
+  delete (owner.userData as Record<string, unknown>).__doorHeight;
+  delete (owner.userData as Record<string, unknown>).__doorRectMinX;
+  delete (owner.userData as Record<string, unknown>).__doorRectMaxX;
+  delete (owner.userData as Record<string, unknown>).__doorRectMinY;
+  delete (owner.userData as Record<string, unknown>).__doorRectMaxY;
+  state.mode.opts = {
+    handleType: 'standard',
+    handleColor: 'nickel',
+  };
+  hitPoint.set(0.1, 0, 0.02);
+  const doorMarker = createMarker();
+  const previewCalls: Record<string, unknown>[] = [];
+
+  const handled = runManualHandleHover({
+    app,
+    wardrobeGroup,
+    owner,
+    hitPoint,
+    doorMarker,
+    previewCalls,
+    raycastReuseHits: [],
+    preferredFacePreviewHitObject: owner,
+    preferredFacePreviewHitPoint: hitPoint,
+  });
+
+  assert.equal(handled, false);
+  assert.equal(previewCalls.length, 0);
+  assert.equal(doorMarker.visible, false);
+  assert.equal((doorMarker.scale as { last: [number, number, number] | null }).last, null);
 });
 
 test('manual handle hover uses the precise raycast hit and keeps width labels away from the door', () => {
@@ -436,6 +697,203 @@ test('manual handle hover uses the precise raycast hit and keeps width labels aw
   assert.ok(vertical.some(entry => Number(entry.labelY) < -1.1));
   assert.ok(vertical.some(entry => Number(entry.labelY) > 1.1));
   assert.equal(doorMarker.visible, true);
+  assert.equal(doorMarker.material, 'center');
+});
+
+test('manual handle hover uses the preferred face hit point for sketch-box doors when hover raycast misses', () => {
+  const { app, wardrobeGroup, owner, hitPoint, state } = createApp();
+  Object.assign(owner.userData, {
+    partId: 'sketch_box_free_0_box-1_door_0_top',
+    __wpSketchBoxDoor: true,
+    __wpSketchDoorLeaf: true,
+    __wpSketchDoorSegment: true,
+    __doorWidth: 0.86,
+    __doorHeight: 0.64,
+    __doorRectMinX: -0.43,
+    __doorRectMaxX: 0.43,
+    __doorRectMinY: -0.32,
+    __doorRectMaxY: 0.32,
+  });
+  hitPoint.set(0.11, 0.17, 0.02);
+  state.mode.opts = {
+    handlePlacement: 'manual',
+    handleType: 'standard',
+    handleColor: 'black',
+  };
+  const doorMarker = createMarker();
+  const previewCalls: Record<string, unknown>[] = [];
+
+  const handled = runManualHandleHover({
+    app,
+    wardrobeGroup,
+    owner,
+    hitPoint,
+    doorMarker,
+    previewCalls,
+    raycastReuseHits: [],
+    preferredFacePreviewHitPoint: hitPoint,
+  });
+
+  assert.equal(handled, true);
+  assert.equal(previewCalls.length, 1);
+  assert.ok(Math.abs(Number(previewCalls[0].x) - 0.11) < 1e-9);
+  assert.ok(Math.abs(Number(previewCalls[0].y) - 0.17) < 1e-9);
+  assert.equal(
+    ((previewCalls[0].anchor as { userData?: { partId?: unknown } })?.userData || {}).partId,
+    'sketch_box_free_0_box-1_door_0_top'
+  );
+  assert.equal(doorMarker.visible, true);
+  assert.equal(doorMarker.material, 'add');
+});
+
+test('manual handle hover previews drawer handles horizontally on drawer fronts', () => {
+  const { app, wardrobeGroup, hitPoint, state } = createApp();
+  const drawerOwner = createDoorOwner({ partId: 'd1_draw_0', wardrobeGroup, hingeLeft: true });
+  drawerOwner.userData.__doorWidth = 1;
+  drawerOwner.userData.__doorHeight = 0.2;
+  drawerOwner.userData.__doorRectMinX = -0.5;
+  drawerOwner.userData.__doorRectMaxX = 0.5;
+  drawerOwner.userData.__doorRectMinY = -0.1;
+  drawerOwner.userData.__doorRectMaxY = 0.1;
+  drawerOwner.userData.__wpType = 'extDrawer';
+  hitPoint.set(0.1, 0.03, 0.02);
+  state.mode.opts = {
+    handlePlacement: 'manual',
+    handleType: 'standard',
+    handleColor: 'nickel',
+  };
+  const doorMarker = createMarker();
+  const previewCalls: Record<string, unknown>[] = [];
+
+  const handled = runManualHandleHover({
+    app,
+    wardrobeGroup,
+    owner: drawerOwner,
+    hitPoint,
+    doorMarker,
+    previewCalls,
+  });
+
+  assert.equal(handled, true);
+  assert.equal(previewCalls.length, 1);
+  assert.ok(Number(previewCalls[0].w) > Number(previewCalls[0].h));
+  assert.ok(Math.abs(Number(previewCalls[0].w) - 0.16) < 1e-9);
+  assert.ok(Math.abs(Number(previewCalls[0].h) - 0.01) < 1e-9);
+  assert.deepEqual((doorMarker.scale as { last: [number, number, number] | null }).last, [0.16, 0.01, 1]);
+});
+
+test('manual handle hover compares drawer width against another manual external drawer handle', () => {
+  const { app, wardrobeGroup, hitPoint, state, mapsState } = createApp();
+  const drawerOwner = createDoorOwner({ partId: 'd1_draw_0', wardrobeGroup, hingeLeft: true });
+  Object.assign(drawerOwner.userData, {
+    __doorWidth: 1,
+    __doorHeight: 0.2,
+    __doorRectMinX: -0.5,
+    __doorRectMaxX: 0.5,
+    __doorRectMinY: -0.1,
+    __doorRectMaxY: 0.1,
+    __wpType: 'extDrawer',
+  });
+  const otherDrawerOwner = createDoorOwner({ partId: 'd2_draw_0', wardrobeGroup, hingeLeft: true });
+  Object.assign(otherDrawerOwner.userData, {
+    __doorWidth: 1,
+    __doorHeight: 0.2,
+    __doorRectMinX: -0.5,
+    __doorRectMaxX: 0.5,
+    __doorRectMinY: -0.1,
+    __doorRectMaxY: 0.1,
+    __wpType: 'extDrawer',
+  });
+  hitPoint.set(0.1, 0.03, 0.02);
+  state.mode.opts = {
+    handlePlacement: 'manual',
+    handleType: 'standard',
+    handleColor: 'nickel',
+  };
+  (app as { render: { drawersArray: unknown[] } }).render.drawersArray = [
+    { id: 'd1_draw_0', group: drawerOwner },
+    { id: 'd2_draw_0', group: otherDrawerOwner },
+  ];
+  mapsState.handlesMap = {
+    '__wp_manual_handle_position:d2_draw_0': '{"xRatio":0.6,"yRatio":0.2}',
+  };
+  const doorMarker = createMarker();
+  const previewCalls: Record<string, unknown>[] = [];
+
+  const handled = runManualHandleHover({
+    app,
+    wardrobeGroup,
+    owner: drawerOwner,
+    hitPoint,
+    doorMarker,
+    previewCalls,
+  });
+
+  assert.equal(handled, true);
+  assert.equal(previewCalls.length, 1);
+  assert.equal(previewCalls[0].showCenterYGuide, true);
+  assert.equal(previewCalls[0].showCenterXGuide, false);
+  assert.equal(doorMarker.material, 'center');
+});
+
+test('manual handle hover compares sketch and regular external drawer manual handles', () => {
+  const { app, wardrobeGroup, hitPoint, state, mapsState } = createApp();
+  const sketchDrawerOwner = createDoorOwner({
+    partId: 'sketch_ext_drawers_1_sed-1_1',
+    wardrobeGroup,
+    hingeLeft: true,
+  });
+  Object.assign(sketchDrawerOwner.userData, {
+    __doorWidth: 1.2,
+    __doorHeight: 0.24,
+    __doorRectMinX: -0.5,
+    __doorRectMaxX: 0.7,
+    __doorRectMinY: -0.12,
+    __doorRectMaxY: 0.12,
+    __wpType: 'extDrawer',
+    __wpSketchExtDrawer: true,
+    __wpSketchExtDrawerId: 'sed-1',
+  });
+  const regularDrawerOwner = createDoorOwner({ partId: 'd2_draw_0', wardrobeGroup, hingeLeft: true });
+  Object.assign(regularDrawerOwner.userData, {
+    __doorWidth: 0.8,
+    __doorHeight: 0.2,
+    __doorRectMinX: -0.4,
+    __doorRectMaxX: 0.4,
+    __doorRectMinY: -0.1,
+    __doorRectMaxY: 0.1,
+    __wpType: 'extDrawer',
+  });
+  hitPoint.set(0.22, 0.024, 0.02);
+  state.mode.opts = {
+    handlePlacement: 'manual',
+    handleType: 'standard',
+    handleColor: 'nickel',
+  };
+  (app as { render: { drawersArray: unknown[] } }).render.drawersArray = [
+    { id: 'sketch_ext_drawers_1_sed-1_1', group: sketchDrawerOwner },
+    { id: 'd2_draw_0', group: regularDrawerOwner },
+  ];
+  mapsState.handlesMap = {
+    '__wp_manual_handle_position:d2_draw_0': '{"xRatio":0.6,"yRatio":0.6}',
+  };
+  const doorMarker = createMarker();
+  const previewCalls: Record<string, unknown>[] = [];
+
+  const handled = runManualHandleHover({
+    app,
+    wardrobeGroup,
+    owner: sketchDrawerOwner,
+    hitPoint,
+    doorMarker,
+    previewCalls,
+  });
+
+  assert.equal(handled, true);
+  assert.equal(previewCalls.length, 1);
+  assert.equal(previewCalls[0].showCenterYGuide, true);
+  assert.equal(previewCalls[0].showCenterXGuide, true);
+  assert.ok(Number(previewCalls[0].w) > Number(previewCalls[0].h));
   assert.equal(doorMarker.material, 'center');
 });
 

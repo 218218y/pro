@@ -78,7 +78,8 @@ export type InteriorTabWorkflowController = {
     style: SketchBoxLegStyle,
     color: SketchBoxLegColor,
     heightCm: number,
-    widthCm: number
+    widthCm: number,
+    plinthHeightCm?: number
   ) => void;
   enterSketchExtDrawersTool: (count: number, drawerHeightCm: number) => void;
   enterSketchIntDrawersTool: (drawerHeightCm: number) => void;

@@ -74,7 +74,10 @@ export function getActionsNamespace(App: AppLike): ActionsNamespaceLike | null {
   return isRecord(actions) ? actions : null;
 }
 
-export function getModeConst(key: 'NONE' | 'MANUAL_LAYOUT', defaultMode: string): string {
+export function getModeConst(
+  key: 'NONE' | 'LAYOUT' | 'MANUAL_LAYOUT' | 'BRACE_SHELVES' | 'EXT_DRAWER',
+  defaultMode: string
+): string {
   const modes = readRecord(MODES);
   if (!modes) return defaultMode;
   const value = modes[key];

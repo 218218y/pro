@@ -11,6 +11,7 @@ import {
   getCachedExtrudeGeometry,
   getCachedRoundedBoxGeometry,
 } from '../esm/native/builder/visuals_contents_shared.ts';
+import { CONTENT_VISUAL_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
 
 class FakeVector3 {
   x: number;
@@ -111,6 +112,30 @@ class FakeMeshStandardMaterial {
   constructor(opts: Record<string, unknown>) {
     this.opts = opts;
   }
+}
+
+function resolveShelfItemBoundsXY(item: any) {
+  const [width, height] = item.geometry.args;
+  if (item.userData.__kind === 'library_book') {
+    const angleZ = Math.abs(Number(item.rotation?.z || 0));
+    const angleCos = Math.abs(Math.cos(angleZ));
+    const angleSin = Math.abs(Math.sin(angleZ));
+    const halfWidth = (width * angleCos + height * angleSin) / 2;
+    const halfHeight = (height * angleCos + width * angleSin) / 2;
+    return {
+      minX: item.position.x - halfWidth,
+      maxX: item.position.x + halfWidth,
+      minY: item.position.y - halfHeight,
+      maxY: item.position.y + halfHeight,
+    };
+  }
+
+  return {
+    minX: item.position.x - width / 2,
+    maxX: item.position.x + width / 2,
+    minY: item.position.y - height / 2,
+    maxY: item.position.y + height / 2,
+  };
 }
 
 function createApp(overrides: Record<string, unknown> = {}) {
@@ -231,10 +256,8 @@ test('visuals_contents folded shelf renders books instead of clothes in library 
   assert.ok(parent.children.length > 0);
   assert.equal(outlined.length, parent.children.length);
   assert.ok(
-    parent.children.every(
-      child => child.userData.__kind === 'library_book' || child.userData.__kind === 'library_book_stack'
-    ),
-    'library contents should be marked as books, not the folded-clothes meshes'
+    parent.children.every(child => child.userData.__kind === 'library_book'),
+    'library contents should render only upright books, not folded-clothes meshes or horizontal stacks'
   );
   assert.ok(parent.children.every(child => child.geometry?.type === 'BoxGeometry'));
 });
@@ -281,6 +304,70 @@ test('visuals_contents library books render as aligned holy-book sets instead of
     ),
     'some books should include spine bands so holy-book sets do not look like plain random blocks'
   );
+});
+
+test('visuals_contents library books avoid tiny decorative slabs and keep depth variation orderly', () => {
+  const { App } = createApp({
+    buildUI: { showContents: true },
+    config: { isLibraryMode: true },
+  });
+  const parent = new FakeGroup();
+  const shelfZ = 0;
+  const maxDepth = 0.55;
+
+  addFoldedClothes(App, 0, 0.2, shelfZ, 1.1, parent as any, 0.42, maxDepth);
+
+  const dims = CONTENT_VISUAL_DIMENSIONS.books;
+  const books = parent.children.filter(child => child.userData.__kind === 'library_book');
+  const stacks = parent.children.filter(child => child.userData.__kind === 'library_book_stack');
+  assert.ok(books.length > 0, 'library mode should render upright books');
+  assert.equal(stacks.length, 0, 'library mode should no longer render horizontal stacked books');
+
+  const bookDepths = books.map(child => Number(child.geometry.args[2]));
+  const roundedDepths = new Set(bookDepths.map(depth => depth.toFixed(3)));
+  assert.ok(roundedDepths.size > 1, 'upright books should have slight depth variation');
+  assert.ok(
+    Math.max(...bookDepths) > 0.2,
+    'deep shelves should no longer cap library books at the old shallow 20cm depth'
+  );
+  assert.ok(
+    bookDepths.every(depth => depth >= dims.depthMaxM - dims.depthRandomTrimRangeM - 1e-9),
+    'depth variation should stay close enough that the shelf still looks ordered'
+  );
+  const expectedBackZ = shelfZ - maxDepth / 2 + dims.depthMarginM;
+  assert.ok(
+    parent.children.every(
+      child => Math.abs(child.position.z - child.geometry.args[2] / 2 - expectedBackZ) <= 1e-9
+    ),
+    'random book depths should stay back-aligned instead of drifting randomly through the shelf'
+  );
+});
+
+test('visuals_contents library books keep tight packing without mesh collisions', () => {
+  const { App } = createApp({
+    buildUI: { showContents: true },
+    config: { isLibraryMode: true },
+  });
+  const parent = new FakeGroup();
+
+  addFoldedClothes(App, 0, 0.2, 0, 1.1, parent as any, 0.42, 0.55);
+
+  const shelfItems = parent.children.filter(child => child.userData.__kind === 'library_book');
+  assert.ok(shelfItems.length > 0, 'library mode should render shelf book visuals');
+
+  const maxPenetrationM = 0.0002;
+  for (let i = 0; i < shelfItems.length; i += 1) {
+    const a = resolveShelfItemBoundsXY(shelfItems[i]);
+    for (let j = i + 1; j < shelfItems.length; j += 1) {
+      const b = resolveShelfItemBoundsXY(shelfItems[j]);
+      const overlapX = Math.min(a.maxX, b.maxX) - Math.max(a.minX, b.minX);
+      const overlapY = Math.min(a.maxY, b.maxY) - Math.max(a.minY, b.minY);
+      assert.ok(
+        overlapX <= maxPenetrationM || overlapY <= maxPenetrationM,
+        `library shelf items should not occupy the same space (pair ${i}-${j}, overlapX=${overlapX}, overlapY=${overlapY})`
+      );
+    }
+  }
 });
 
 test('visuals_contents library books fit small shelf clearance and disappear when too tight', () => {

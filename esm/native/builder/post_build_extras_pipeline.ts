@@ -94,6 +94,7 @@ export function applyPostBuildExtras(input: BuildContextLike) {
     hasCornice: !!(ctx.flags && ctx.flags.hasCornice),
     isCornerMode: !!(ctx.flags && ctx.flags.isCornerMode),
     woodThick: ctx.dims && ctx.dims.woodThick,
+    shelfThick: ctx.dims && ctx.dims.shelfThick,
     startY: ctx.dims && ctx.dims.startY,
     cabinetBodyHeight: ctx.dims && ctx.dims.cabinetBodyHeight,
     bodyMat: ctx.materials && ctx.materials.bodyMat,
@@ -123,6 +124,7 @@ export function applyPostBuildExtras(input: BuildContextLike) {
     hasCornice,
     isCornerMode,
     woodThick,
+    shelfThick,
     startY,
     cabinetBodyHeight,
     bodyMat,
@@ -184,9 +186,16 @@ export function applyPostBuildExtras(input: BuildContextLike) {
         '[builder/post_build_extras] isCornerMode=true but modules.buildCornerWing is missing'
       );
     }
+    const resolvedShelfThick = Number(shelfThick);
     const __cornerWingMeta = stackSplitActive
       ? __stackKey === 'top'
-        ? { stackKey: 'top', baseType: 'none', stackSplitEnabled: true, stackOffsetZ: 0 }
+        ? {
+            stackKey: 'top',
+            baseType: 'none',
+            stackSplitEnabled: true,
+            stackOffsetZ: 0,
+            shelfThick: resolvedShelfThick,
+          }
         : {
             stackKey: 'bottom',
             stackSplitEnabled: true,
@@ -196,6 +205,7 @@ export function applyPostBuildExtras(input: BuildContextLike) {
             basePlinthHeightCm: ctx.strings?.basePlinthHeightCm,
             baseLegHeightCm: ctx.strings?.baseLegHeightCm,
             baseLegWidthCm: ctx.strings?.baseLegWidthCm,
+            shelfThick: resolvedShelfThick,
           }
       : null;
     if (__cornerWingMeta) {
@@ -225,7 +235,8 @@ export function applyPostBuildExtras(input: BuildContextLike) {
           front: globalFrontMat,
           defaultShelfMat,
           braceShelfMat,
-        }
+        },
+        { shelfThick: resolvedShelfThick }
       );
     }
   }

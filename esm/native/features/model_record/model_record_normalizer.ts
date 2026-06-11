@@ -108,6 +108,7 @@ export function normalizeModelRecord(model: SavedModelRecordLike): SavedModelLik
     'splitDoorsMap',
     'splitDoorsBottomMap',
     'removedDoorsMap',
+    'roundedFrameSideShelvesMap',
     'drawerDividersMap',
     'individualColors',
     'doorSpecialMap',

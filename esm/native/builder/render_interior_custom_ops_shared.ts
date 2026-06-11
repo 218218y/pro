@@ -24,6 +24,7 @@ export type InteriorCustomInput = InteriorValueRecord & {
   localGridStep?: unknown;
   innerW?: unknown;
   woodThick?: unknown;
+  shelfThick?: unknown;
   internalDepth?: unknown;
   internalCenterX?: unknown;
   internalZ?: unknown;
@@ -31,6 +32,7 @@ export type InteriorCustomInput = InteriorValueRecord & {
   moduleIndex?: unknown;
   modulesLength?: unknown;
   moduleKey?: unknown;
+  frameSidePartIdPrefix?: unknown;
   currentShelfMat?: unknown;
   currentBraceShelfMat?: unknown;
   bodyMat?: unknown;

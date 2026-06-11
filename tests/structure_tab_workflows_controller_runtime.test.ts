@@ -171,3 +171,45 @@ test('structure workflows controller reports empty reset as info and helper keep
   controller.resetAllCellDimsOverrides();
   assert.deepEqual(toasts, [{ message: 'אין מידות מיוחדות לביטול', type: 'info' }]);
 });
+
+test('structure workflows controller blocks library preset work in no-main wardrobe mode', () => {
+  const libraryCalls: string[] = [];
+  const controller = createStructureTabWorkflowController({
+    fb: null,
+    libraryEnv: {} as never,
+    libraryPreset: {
+      toggleLibraryMode: () => libraryCalls.push('toggle'),
+      ensureInvariants: () => libraryCalls.push('ensure'),
+      resetPreState: () => libraryCalls.push('reset'),
+    },
+    state: {
+      isLibraryMode: true,
+      wardrobeType: 'hinged',
+      width: 0,
+      height: 220,
+      depth: 60,
+      doors: 0,
+      stackSplitEnabled: false,
+      stackSplitLowerHeight: 0,
+      stackSplitLowerDepth: 0,
+      stackSplitLowerWidth: 0,
+      stackSplitLowerDoors: 0,
+      stackSplitLowerDepthManual: false,
+      stackSplitLowerWidthManual: false,
+      stackSplitLowerDoorsManual: false,
+      modulesCount: 0,
+    },
+    mergeUiOverride: (_baseUi, patch) => patch,
+    ops: {
+      getModulesConfiguration: () => [],
+      commitModulesConfiguration: () => undefined,
+      clearCellDim: () => undefined,
+      setAutoWidth: () => undefined,
+    },
+  });
+
+  controller.ensureLibraryInvariants();
+  controller.toggleLibraryMode();
+
+  assert.deepEqual(libraryCalls, []);
+});

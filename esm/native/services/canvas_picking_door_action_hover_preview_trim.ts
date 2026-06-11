@@ -48,11 +48,12 @@ export function tryHandleDoorTrimHoverPreview(args: DoorTrimHoverPreviewArgs): b
     return false;
   }
 
-  const trimTarget = resolveDoorTrimTarget(App, hitDoorPid, hit.hitDoorGroup);
+  const preferredTrimGroup = groupRec || hit.hitDoorGroup;
+  const trimTarget = resolveDoorTrimTarget(App, hitDoorPid, preferredTrimGroup);
   const trimPartId = trimTarget?.partId || hitDoorPid;
-  const trimGroup = trimTarget?.group || hit.hitDoorGroup;
+  const trimGroup = trimTarget?.group || preferredTrimGroup;
   const trimGroupRec = __asObject<TransformNodeLike>(trimGroup);
-  const trimUserData = trimGroupRec ? __asObject<UnknownRecord>(trimGroupRec.userData) : userData;
+  const trimUserData = trimGroupRec ? __asObject<UnknownRecord>(trimGroupRec.userData) || userData : userData;
   const rect0 = __readDoorLeafRect(trimUserData) || rect;
   const trimDraft = __readDoorTrimModeDraft(App);
   const trimMap = __readDoorTrimConfigMap(App);

@@ -3,6 +3,8 @@ import {
   INTERIOR_FITTINGS_DIMENSIONS,
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { resolveEffectiveDoorStyle } from '../features/door_style_overrides.js';
+import { readDoorTrimListForPart } from '../features/door_trim.js';
+import { appendDoorTrimVisuals } from './door_trim_visuals.js';
 import { makeDrawerBoxPartId } from '../features/drawer_box_identity.js';
 import { CORNER_SHELF_GROUP_PART_ID, markShelfBoardUserData } from '../features/shelf_part_identity.js';
 import { readCurtainType } from './render_door_ops_shared.js';
@@ -206,6 +208,22 @@ export function emitCornerWingExternalDrawers(
 
     dGroup.add(dBox);
     dGroup.add(dVis);
+    appendDoorTrimVisuals({
+      App: runtime.App,
+      THREE: runtime.THREE,
+      group: dGroup,
+      partId: id,
+      trims: readDoorTrimListForPart({
+        map: runtime.readMapOrEmpty(runtime.App, 'doorTrimMap'),
+        partId: idRaw,
+        scopedPartId: id,
+        preferScopedOnly: runtime.__stackSplitEnabled && runtime.__stackKey === 'bottom' && id !== idRaw,
+      }),
+      doorWidth: dW,
+      doorHeight: height,
+      frontZ: runtime.woodThick / 2 + 0.0015,
+      faceSign: 1,
+    });
 
     const closed = new runtime.THREE.Vector3(
       cellCenterX,

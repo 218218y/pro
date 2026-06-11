@@ -1,50 +1,13 @@
-import type { SketchBoxDividerState, SketchBoxSegmentState } from './canvas_picking_sketch_box_dividers.js';
+import type {
+  SketchFreeSurfacePreviewResolverArgs,
+  SketchFreeSurfacePreviewResult,
+} from './canvas_picking_sketch_free_box_content_preview_contracts.js';
 import { resolveSketchFreeSurfaceAdornmentPreview } from './canvas_picking_sketch_free_surface_preview_adornment_preview.js';
 import { resolveSketchFreeSurfaceDividerPreview } from './canvas_picking_sketch_free_surface_preview_divider.js';
-import type {
-  SelectorLocalBox,
-  SketchFreeBoxTarget,
-  SketchFreeHoverHost,
-  SketchFreeHoverContentKind,
-  SketchFreeSurfacePreviewResult,
-} from './canvas_picking_sketch_free_surface_preview_shared.js';
 
-export function resolveSketchFreeSurfaceContentPreview(args: {
-  tool: string;
-  contentKind: Extract<SketchFreeHoverContentKind, 'divider' | 'cornice' | 'base'>;
-  host: SketchFreeHoverHost;
-  target: SketchFreeBoxTarget;
-  wardrobeBox: SelectorLocalBox;
-  readSketchBoxDividers: (box: unknown) => SketchBoxDividerState[];
-  resolveSketchBoxSegments: (args: {
-    dividers: SketchBoxDividerState[];
-    boxCenterX: number;
-    innerW: number;
-    woodThick: number;
-  }) => SketchBoxSegmentState[];
-  pickSketchBoxSegment: (args: {
-    segments: SketchBoxSegmentState[];
-    boxCenterX: number;
-    innerW: number;
-    cursorX: number;
-  }) => SketchBoxSegmentState | null;
-  findNearestSketchBoxDivider: (args: {
-    dividers: SketchBoxDividerState[];
-    boxCenterX: number;
-    innerW: number;
-    woodThick: number;
-    cursorX: number;
-  }) => { dividerId: string; xNorm: number; centerX: number; centered: boolean } | null;
-  resolveSketchBoxDividerPlacement: (args: {
-    boxCenterX: number;
-    innerW: number;
-    woodThick: number;
-    cursorX: number;
-    dividerXNorm: number | null;
-    enableCenterSnap: boolean;
-  }) => { xNorm: number; centerX: number; centered: boolean };
-  readSketchBoxDividerXNorm: (box: unknown) => number | null;
-}): SketchFreeSurfacePreviewResult | null {
+export function resolveSketchFreeSurfaceContentPreview(
+  args: SketchFreeSurfacePreviewResolverArgs
+): SketchFreeSurfacePreviewResult | null {
   const {
     tool,
     contentKind,
@@ -52,11 +15,16 @@ export function resolveSketchFreeSurfaceContentPreview(args: {
     target,
     wardrobeBox,
     readSketchBoxDividers,
+    readSketchBoxHorizontalDividers,
     resolveSketchBoxSegments,
     pickSketchBoxSegment,
     findNearestSketchBoxDivider,
     resolveSketchBoxDividerPlacement,
     readSketchBoxDividerXNorm,
+    resolveSketchBoxVerticalSegments,
+    pickSketchBoxVerticalSegment,
+    findNearestSketchBoxHorizontalDivider,
+    resolveSketchBoxHorizontalDividerPlacement,
   } = args;
 
   if (contentKind === 'divider') {
@@ -65,11 +33,16 @@ export function resolveSketchFreeSurfaceContentPreview(args: {
       host,
       target,
       readSketchBoxDividers,
+      readSketchBoxHorizontalDividers,
       resolveSketchBoxSegments,
       pickSketchBoxSegment,
       findNearestSketchBoxDivider,
       resolveSketchBoxDividerPlacement,
       readSketchBoxDividerXNorm,
+      resolveSketchBoxVerticalSegments,
+      pickSketchBoxVerticalSegment,
+      findNearestSketchBoxHorizontalDivider,
+      resolveSketchBoxHorizontalDividerPlacement,
     });
   }
 

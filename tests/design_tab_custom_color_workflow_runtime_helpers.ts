@@ -21,6 +21,7 @@ export function createAppHarness() {
     savedColors: [] as Array<Record<string, unknown>>,
     colorSwatchesOrder: [] as string[],
     customUploadedDataURL: '' as string | null,
+    customUploadedMeta: null as Record<string, unknown> | null,
     batchCalls: 0,
     patchCalls: [] as Array<Record<string, unknown>>,
     appliedChoice: '',
@@ -44,8 +45,9 @@ export function createAppHarness() {
         }
       },
       config: {
-        setCustomUploadedDataURL(next: string | null) {
+        setCustomUploadedDataURL(next: string | null, meta?: Record<string, unknown>) {
           state.customUploadedDataURL = next == null ? null : String(next);
+          state.customUploadedMeta = meta && typeof meta === 'object' ? { ...meta } : null;
         },
       },
       colors: {

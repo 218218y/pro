@@ -2,7 +2,7 @@
 //
 // Owns Object3D-like helpers, subtree pick-meta tagging, segment part-id policy, and door-metric metadata writes.
 
-import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DRAWER_DIMENSIONS, HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { asObject3D, asRecord, type ValueRecord } from './post_build_extras_shared.js';
 
 import type {
@@ -269,12 +269,26 @@ export function buildSketchSegmentUserData(args: {
   node.userData = userData;
 }
 
+export function resolveSegmentHandleClampPadding(edgeHandleVariant?: unknown): number {
+  return edgeHandleVariant === 'long'
+    ? HANDLE_DIMENSIONS.edge.longClampPaddingM
+    : HANDLE_DIMENSIONS.edge.shortClampPaddingM;
+}
+
 export function resolveSegmentHandleAbsY(args: {
   seg: SketchDrawerCutSegment;
   handleAbsY: number | null;
   padding?: number;
 }): number | null {
-  const { seg, handleAbsY, padding = DRAWER_DIMENSIONS.sketch.rebuiltSegmentDefaultHandlePaddingM } = args;
-  if (handleAbsY == null) return null;
-  return Math.max(seg.yMin + padding, Math.min(seg.yMax - padding, handleAbsY));
+  const { seg, padding = DRAWER_DIMENSIONS.sketch.rebuiltSegmentDefaultHandlePaddingM } = args;
+  const requestedAbsY =
+    args.handleAbsY != null && Number.isFinite(args.handleAbsY)
+      ? args.handleAbsY
+      : HANDLE_DIMENSIONS.edge.defaultGlobalAbsYM;
+  if (!Number.isFinite(seg.yMin) || !Number.isFinite(seg.yMax) || !(seg.yMax > seg.yMin)) return null;
+  const safePadding = Number.isFinite(padding) && padding > 0 ? padding : 0;
+  const minY = seg.yMin + safePadding;
+  const maxY = seg.yMax - safePadding;
+  if (!(maxY >= minY)) return Math.max(seg.yMin, Math.min(seg.yMax, requestedAbsY));
+  return Math.max(minY, Math.min(maxY, requestedAbsY));
 }

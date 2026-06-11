@@ -16,6 +16,12 @@ import {
   readRecordValue,
 } from './canvas_picking_sketch_box_vertical_content_preview_records.js';
 import type { SketchBoxVerticalPreviewState } from './canvas_picking_sketch_box_vertical_content_preview_state.js';
+import {
+  buildSketchBoxVerticalPreviewBlockers,
+  doesSketchBoxVerticalCandidateCollide,
+  findSketchBoxVerticalRemovalBlocker,
+  resolveSketchBoxVerticalRemovalPreview,
+} from './canvas_picking_sketch_box_vertical_content_occupancy.js';
 
 export function resolveSketchBoxStoragePreview(
   args: ResolveSketchBoxVerticalContentPreviewArgs,
@@ -40,6 +46,7 @@ export function resolveSketchBoxStoragePreview(
     boxYNormFromCenter,
     targetCenterY,
     targetHeight,
+    hasVerticalRoomFor,
   } = state;
 
   const storageDims = INTERIOR_FITTINGS_DIMENSIONS.storage;
@@ -91,6 +98,37 @@ export function resolveSketchBoxStoragePreview(
     previewY = removePreviewY;
   }
 
+  const blockers = buildSketchBoxVerticalPreviewBlockers(args, state);
+  if (op === 'add') {
+    const storageRemoval = findSketchBoxVerticalRemovalBlocker({
+      blockers,
+      pointerY,
+      allowedKinds: ['storage'],
+      toleranceM: removeEpsBox,
+    });
+    if (storageRemoval) {
+      return resolveSketchBoxVerticalRemovalPreview({
+        previewArgs: args,
+        state,
+        blocker: storageRemoval,
+        previewSegment,
+      });
+    }
+  }
+
+  const blockedReason =
+    op === 'add' && !hasVerticalRoomFor(barrierHeight)
+      ? 'no-room'
+      : op === 'add' &&
+          doesSketchBoxVerticalCandidateCollide({
+            blockers,
+            centerY: previewY,
+            heightM: barrierHeight,
+            blockerKinds: ['storage'],
+          })
+        ? 'collision'
+        : null;
+
   const storageSegment = previewSegment || activeSegment;
   const barrierCenterX = readFiniteSegmentNumber(storageSegment, 'centerX') ?? targetGeo.centerX;
   const barrierWidth = readFiniteSegmentNumber(storageSegment, 'width') ?? targetGeo.innerW;
@@ -119,6 +157,7 @@ export function resolveSketchBoxStoragePreview(
       heightM: barrierHeight,
       removeId,
       removeIdx,
+      blockedReason,
     }),
     preview: {
       kind: 'storage',
@@ -132,7 +171,8 @@ export function resolveSketchBoxStoragePreview(
       h: barrierHeight,
       d: Math.max(storageDims.previewThicknessMinM, woodThick),
       woodThick,
-      op,
+      op: blockedReason ? 'blocked' : op,
+      blockedReason: blockedReason ?? undefined,
     },
   };
 }

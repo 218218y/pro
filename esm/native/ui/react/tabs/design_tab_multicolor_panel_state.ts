@@ -75,6 +75,8 @@ export function createDesignTabMulticolorViewState(
         paintId: swatch.paintId,
         title: swatch.title,
         val: swatch.val,
+        isTexture: swatch.isTexture === true,
+        textureData: swatch.textureData || null,
       },
       paintActive,
       args.paintColor,

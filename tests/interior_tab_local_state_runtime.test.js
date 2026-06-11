@@ -33,6 +33,11 @@ const sandbox = {
         DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_CM: 16.5,
       };
     }
+    if (spec === '../../../features/base_plinth_support.js') {
+      return {
+        DEFAULT_BASE_PLINTH_HEIGHT_CM: 8,
+      };
+    }
     return require(spec);
   },
 };
@@ -61,6 +66,8 @@ test('[interior-local-state-runtime] defaults stay canonical for drafts/options'
   assert.equal(defaults.sketchStorageHeightCm, DEFAULT_SKETCH_STORAGE_HEIGHT_CM);
   assert.equal(defaults.sketchBoxCorniceType, 'classic');
   assert.equal(defaults.sketchBoxBaseType, 'plinth');
+  assert.equal(defaults.sketchBoxPlinthHeightCm, 8);
+  assert.equal(defaults.sketchBoxPlinthHeightDraft, '8');
   assert.equal(defaults.sketchBoxLegWidthCm, 4);
   assert.equal(defaults.sketchBoxLegWidthDraft, '4');
   assert.equal(defaults.sketchExtDrawerCount, 1);

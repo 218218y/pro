@@ -468,15 +468,13 @@ export const INTERIOR_FITTINGS_DIMENSIONS = Object.freeze({
   shelves: Object.freeze({
     regularDepthM: 0.45,
     regularWidthClearanceM: 0.014,
-    braceWidthClearanceM: 0.002,
-    braceSideGapM: 0.001,
-    braceSeamPadM: 0.0001,
-    braceSeamDepthMinM: 0.0001,
-    braceSeamDepthInsetM: 0.0005,
+    braceWidthClearanceM: 0,
     contentsWidthClearanceM: 0.06,
     contentsHeightClearanceM: 0.006,
     spanMinHeightM: 0.05,
     doubleThicknessMultiplier: 2,
+    roundedCornerRadiusM: 0.12,
+    roundedCornerSegments: 18,
   }),
   pins: Object.freeze({
     radiusM: 0.0025,
@@ -538,10 +536,11 @@ export const CONTENT_VISUAL_DIMENSIONS = Object.freeze({
     sideMarginM: 0.035,
     topSafetyM: 0.014,
     minHeightM: 0.07,
-    minStackHeightM: 0.012,
+    minStackHeightM: 0.04,
     defaultMaxDepthM: 0.38,
-    depthMaxM: 0.2,
-    depthMinM: 0.08,
+    depthMaxM: 0.32,
+    depthMinM: 0.12,
+    depthRandomTrimRangeM: 0.045,
     depthViabilityMinM: 0.06,
     cursorEndGapM: 0.018,
     maxCount: 96,
@@ -593,10 +592,10 @@ export const CONTENT_VISUAL_DIMENSIONS = Object.freeze({
     stackWidthRandomRangeM: 0.035,
     stackTrailingGapM: 0.012,
     stackWidthMinM: 0.035,
-    stackHeightBaseM: 0.014,
-    stackHeightRandomRangeM: 0.008,
-    stackDepthScaleBase: 0.88,
-    stackDepthScaleRange: 0.12,
+    stackHeightBaseM: 0.04,
+    stackHeightRandomRangeM: 0.018,
+    stackDepthScaleBase: 0.92,
+    stackDepthScaleRange: 0.08,
     stackXOffsetM: 0.014,
     stackCursorAdvanceM: 0.035,
     stackTiltYRangeRad: 0.04,
@@ -777,7 +776,7 @@ export const DOOR_VISUAL_DIMENSIONS = Object.freeze({
     roundedOuterFaceZBevelRatio: 1.35,
     roundedOuterFaceZDepthRatio: 0.42,
   }),
-  tom: Object.freeze({
+  doubleProfile: Object.freeze({
     frameWidthM: 0.045,
     frameMinM: 0.02,
     frameEdgeClearanceM: 0.02,
@@ -817,6 +816,112 @@ export const DOOR_VISUAL_DIMENSIONS = Object.freeze({
     layoutSizeEpsilonCm: 1e-3,
   }),
 });
+
+export type DoorMountConstructionMode = 'overlay' | 'inset';
+export type DoorMountThicknessKind = 'frame' | 'shelf';
+export type DoorMountThicknessConfigKey =
+  | 'overlayFrameThicknessCm'
+  | 'overlayShelfThicknessCm'
+  | 'insetFrameThicknessCm'
+  | 'insetShelfThicknessCm';
+
+export const DOOR_MOUNT_THICKNESS_DIMENSIONS = Object.freeze({
+  stepCm: 0.1,
+  minCm: 0.4,
+  maxCm: 8,
+});
+
+export const DOOR_MOUNT_THICKNESS_CONFIG_KEYS = Object.freeze({
+  overlay: Object.freeze({
+    frame: 'overlayFrameThicknessCm',
+    shelf: 'overlayShelfThicknessCm',
+  }),
+  inset: Object.freeze({
+    frame: 'insetFrameThicknessCm',
+    shelf: 'insetShelfThicknessCm',
+  }),
+} satisfies Record<DoorMountConstructionMode, Record<DoorMountThicknessKind, DoorMountThicknessConfigKey>>);
+
+function normalizeDoorMountConstructionMode(value: unknown): DoorMountConstructionMode {
+  return String(value ?? '').trim() === 'inset' ? 'inset' : 'overlay';
+}
+
+function roundDoorMountThicknessCm(value: number): number {
+  return Math.round(value * 10) / 10;
+}
+
+export function normalizeDoorMountThicknessCm(value: unknown): number | null {
+  if (value === null || typeof value === 'undefined' || value === '') return null;
+  const n = Number(value);
+  if (!Number.isFinite(n)) return null;
+  const clamped = Math.min(
+    DOOR_MOUNT_THICKNESS_DIMENSIONS.maxCm,
+    Math.max(DOOR_MOUNT_THICKNESS_DIMENSIONS.minCm, n)
+  );
+  return roundDoorMountThicknessCm(clamped);
+}
+
+export function getDefaultDoorMountThicknessM(mode: unknown): number {
+  return normalizeDoorMountConstructionMode(mode) === 'inset'
+    ? DOOR_SYSTEM_DIMENSIONS.hinged.insetFrameThicknessM
+    : MATERIAL_DIMENSIONS.wood.thicknessM;
+}
+
+export function getDefaultDoorMountThicknessCm(mode: unknown): number {
+  return roundDoorMountThicknessCm(getDefaultDoorMountThicknessM(mode) * 100);
+}
+
+export function getDoorMountThicknessConfigKey(
+  mode: unknown,
+  kind: DoorMountThicknessKind
+): DoorMountThicknessConfigKey {
+  const normalizedMode = normalizeDoorMountConstructionMode(mode);
+  return DOOR_MOUNT_THICKNESS_CONFIG_KEYS[normalizedMode][kind];
+}
+
+type DoorMountThicknessConfigLike = Partial<
+  Record<DoorMountThicknessConfigKey | 'doorMountMode' | 'wardrobeType', unknown>
+>;
+
+function normalizeDoorMountConstructionModeFromConfig(
+  cfg: DoorMountThicknessConfigLike | null | undefined
+): DoorMountConstructionMode {
+  return cfg?.wardrobeType === 'sliding' ? 'overlay' : normalizeDoorMountConstructionMode(cfg?.doorMountMode);
+}
+
+export function resolveDoorMountThicknessesFromConfig(cfg: DoorMountThicknessConfigLike | null | undefined): {
+  mode: DoorMountConstructionMode;
+  defaultThicknessCm: number;
+  frameKey: DoorMountThicknessConfigKey;
+  shelfKey: DoorMountThicknessConfigKey;
+  frameThicknessCm: number;
+  shelfThicknessCm: number;
+  frameThicknessM: number;
+  shelfThicknessM: number;
+  frameOverrideCm: number | null;
+  shelfOverrideCm: number | null;
+} {
+  const mode = normalizeDoorMountConstructionModeFromConfig(cfg);
+  const defaultThicknessCm = getDefaultDoorMountThicknessCm(mode);
+  const frameKey = getDoorMountThicknessConfigKey(mode, 'frame');
+  const shelfKey = getDoorMountThicknessConfigKey(mode, 'shelf');
+  const frameOverrideCm = normalizeDoorMountThicknessCm(cfg?.[frameKey]);
+  const shelfOverrideCm = normalizeDoorMountThicknessCm(cfg?.[shelfKey]);
+  const frameThicknessCm = frameOverrideCm ?? defaultThicknessCm;
+  const shelfThicknessCm = shelfOverrideCm ?? defaultThicknessCm;
+  return {
+    mode,
+    defaultThicknessCm,
+    frameKey,
+    shelfKey,
+    frameThicknessCm,
+    shelfThicknessCm,
+    frameThicknessM: frameThicknessCm / 100,
+    shelfThicknessM: shelfThicknessCm / 100,
+    frameOverrideCm,
+    shelfOverrideCm,
+  };
+}
 
 export const DOOR_TRIM_DIMENSIONS = Object.freeze({
   defaults: Object.freeze({
@@ -998,7 +1103,7 @@ export const SKETCH_BOX_DIMENSIONS = Object.freeze({
     placementClampPadMaxM: 0.006,
     placementClampPadWoodRatio: 0.2,
     defaultOuterWidthM: 0.6,
-    defaultOuterDepthM: 0.45,
+    defaultOuterDepthM: 0.55,
     defaultOuterHeightM: 0.4,
     maxOuterHeightM: 1.2,
     centerSnapMinM: 0.015,
@@ -1106,8 +1211,8 @@ export const SKETCH_BOX_DIMENSIONS = Object.freeze({
     removeEpsBoxM: 0.03,
     shelfMinWidthM: 0.02,
     shelfHoverMinWidthM: 0.05,
-    shelfBraceClearanceM: 0.002,
-    shelfRegularClearanceM: 0.014,
+    shelfBraceClearanceM: INTERIOR_FITTINGS_DIMENSIONS.shelves.braceWidthClearanceM,
+    shelfRegularClearanceM: INTERIOR_FITTINGS_DIMENSIONS.shelves.regularWidthClearanceM,
     rodRadiusM: INTERIOR_FITTINGS_DIMENSIONS.rods.radiusM,
     rodMinLengthM: 0.05,
     rodWidthClearanceM: INTERIOR_FITTINGS_DIMENSIONS.rods.contentsWidthClearanceM,
@@ -1167,6 +1272,7 @@ export const SKETCH_BOX_DIMENSIONS = Object.freeze({
     objectBoxPadZMaxM: 0.002,
     objectBoxPadZRatio: 0.5,
     measurementLabelZOffsetM: 0.0035,
+    measurementHorizontalLabelOutsideGapM: 0.012,
     measurementTextScaleMin: 0.55,
     measurementTextScaleDefault: 0.9,
     measurementScaleDefaultX: 0.6,

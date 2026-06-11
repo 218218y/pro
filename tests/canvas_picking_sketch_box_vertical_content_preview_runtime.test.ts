@@ -2,6 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { resolveSketchBoxVerticalContentPreview } from '../esm/native/services/canvas_picking_sketch_box_vertical_content_preview.ts';
+import {
+  pickSketchBoxSegment,
+  pickSketchBoxVerticalSegment,
+  readSketchBoxDividers,
+  readSketchBoxHorizontalDividers,
+  resolveSketchBoxSegments,
+  resolveSketchBoxVerticalSegments,
+} from '../esm/native/services/canvas_picking_sketch_box_dividers.ts';
 
 test('box shelf preview includes vertical clearance labels to the compartment top and bottom', () => {
   const result = resolveSketchBoxVerticalContentPreview({
@@ -121,4 +129,85 @@ test('box shelf preview adds nearest shelf spacing on a separate inner measureme
   assert.ok(neighbor);
   assert.ok(Math.abs((neighbor?.labelY ?? 0) - 1.34) < 1e-9);
   assert.equal(neighbor?.styleKey, 'neighbor');
+});
+
+test('box shelf preview scopes hover to the active split cell after vertical and horizontal dividers', () => {
+  const targetBox = {
+    id: 'box-split',
+    shelves: [],
+    dividers: [{ id: 'v1', xNorm: 0.5 }],
+    horizontalDividers: [{ id: 'h1', yNorm: 0.5 }],
+  };
+  const result = resolveSketchBoxVerticalContentPreview({
+    host: { tool: 'sketch_shelf:regular', moduleKey: 2, isBottom: false, ts: 1 },
+    contentKind: 'shelf',
+    boxId: 'box-split',
+    freePlacement: true,
+    targetBox,
+    targetGeo: {
+      centerX: 0,
+      innerW: 1,
+      innerD: 0.5,
+      innerBackZ: -0.25,
+    },
+    targetCenterY: 1,
+    targetHeight: 1,
+    pointerX: 0.25,
+    pointerY: 1.25,
+    woodThick: 0.02,
+    shelfVariant: 'regular',
+    shelfDepthOverrideM: null,
+    readSketchBoxDividers,
+    readSketchBoxHorizontalDividers,
+    resolveSketchBoxSegments,
+    pickSketchBoxSegment,
+    resolveSketchBoxVerticalSegments,
+    pickSketchBoxVerticalSegment,
+  });
+
+  assert.ok(result);
+  assert.equal(result?.preview.kind, 'shelf');
+  assert.equal(result?.hoverRecord.freePlacement, true);
+  assert.ok(Number(result?.preview.x) > 0);
+  assert.ok(Number(result?.preview.y) > 1);
+  assert.ok(Number(result?.preview.y) < 1.49);
+  assert.ok(Number(result?.hoverRecord.contentXNorm) > 0.5);
+  assert.ok(Number(result?.hoverRecord.boxYNorm) > 0.7);
+  const measurements = result?.preview.clearanceMeasurements as { labelY?: number; role?: string }[];
+  assert.ok(measurements.filter(entry => entry.role === 'cell').every(entry => Number(entry.labelY) > 1));
+});
+
+test('box shelf preview marks a too-short active cell as blocked with no-room metadata', () => {
+  const result = resolveSketchBoxVerticalContentPreview({
+    host: { tool: 'sketch_shelf:regular', moduleKey: 2, isBottom: false, ts: 1 },
+    contentKind: 'shelf',
+    boxId: 'box-short',
+    freePlacement: true,
+    targetBox: { id: 'box-short', shelves: [] },
+    targetGeo: {
+      centerX: 0,
+      innerW: 0.8,
+      innerD: 0.5,
+      innerBackZ: -0.25,
+    },
+    targetCenterY: 1,
+    targetHeight: 0.05,
+    pointerX: 0,
+    pointerY: 1,
+    woodThick: 0.02,
+    shelfVariant: 'regular',
+    shelfDepthOverrideM: null,
+    readSketchBoxDividers,
+    readSketchBoxHorizontalDividers,
+    resolveSketchBoxSegments,
+    pickSketchBoxSegment,
+    resolveSketchBoxVerticalSegments,
+    pickSketchBoxVerticalSegment,
+  });
+
+  assert.ok(result);
+  assert.equal(result?.preview.kind, 'shelf');
+  assert.equal(result?.preview.op, 'blocked');
+  assert.equal(result?.preview.blockedReason, 'no-room');
+  assert.equal(result?.hoverRecord.__wpBlockedReason, 'no-room');
 });

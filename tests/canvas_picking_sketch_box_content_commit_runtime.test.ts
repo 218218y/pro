@@ -79,6 +79,81 @@ test('sketch-box content commit keeps free ext-drawer toggle semantics and clamp
   assert.equal(nextHover?.drawerCount, 5);
 });
 
+test('sketch-box divider commit preserves free-placement divider front depth from hover', () => {
+  const box = createBox({ freePlacement: true });
+
+  commitSketchModuleBoxContent({
+    box,
+    boxId: 'sb1',
+    contentKind: 'divider',
+    hoverRec: {
+      kind: 'box_content',
+      contentKind: 'divider',
+      boxId: 'sb1',
+      op: 'add',
+      freePlacement: true,
+      dividerXNorm: 0.37,
+      dividerFrontZ: 0.14,
+    },
+  });
+
+  assert.equal(Array.isArray(box.dividers), true);
+  assert.equal(box.dividers.length, 1);
+  assert.equal(box.dividers[0].xNorm, 0.37);
+  assert.equal(box.dividers[0].frontZ, 0.14);
+});
+
+test('sketch-box horizontal divider commit stores the active column scope', () => {
+  const box = createBox({ dividers: [{ id: 'mid', xNorm: 0.5 }] });
+
+  commitSketchModuleBoxContent({
+    box,
+    boxId: 'sb1',
+    contentKind: 'divider',
+    hoverRec: {
+      kind: 'box_content',
+      contentKind: 'divider',
+      boxId: 'sb1',
+      op: 'add',
+      dividerAxis: 'horizontal',
+      dividerYNorm: 0.6,
+      dividerXNorm: 0.75,
+    },
+  });
+
+  assert.equal(Array.isArray(box.horizontalDividers), true);
+  assert.equal(box.horizontalDividers.length, 1);
+  assert.equal(box.horizontalDividers[0].yNorm, 0.6);
+  assert.equal(box.horizontalDividers[0].xNorm, 0.75);
+});
+
+test('sketch-box door commit stores the active row for divided box cells', () => {
+  const box = createBox({
+    dividers: [{ id: 'mid', xNorm: 0.5 }],
+    horizontalDividers: [{ id: 'right-row', yNorm: 0.5, xNorm: 0.75 }],
+  });
+
+  commitSketchModuleBoxContent({
+    box,
+    boxId: 'sb1',
+    contentKind: 'door',
+    hoverRec: {
+      kind: 'box_content',
+      contentKind: 'door',
+      boxId: 'sb1',
+      op: 'add',
+      contentXNorm: 0.75,
+      boxYNorm: 0.75,
+      hinge: 'left',
+    },
+  });
+
+  assert.equal(Array.isArray(box.doors), true);
+  assert.equal(box.doors.length, 1);
+  assert.equal(typeof box.doors[0].yNorm, 'number');
+  assert.ok(box.doors[0].yNorm > 0.5);
+});
+
 test('sketch-box content commit routes base/door/storage mutations through focused owners without changing outward behavior', () => {
   const box = createBox({ absY: 0.58, heightM: 1, baseType: 'none' });
 
@@ -94,6 +169,7 @@ test('sketch-box content commit routes base/door/storage mutations through focus
     },
   });
   assert.equal(box.baseType, 'plinth');
+  assert.equal(box.basePlinthHeightCm, 8);
   assert.ok(Math.abs(box.absY - 0.66) < 1e-9);
 
   commitSketchModuleBoxContent({
@@ -153,11 +229,35 @@ test('sketch-box base commit stores leg style color and custom height', () => {
   });
 
   assert.equal(box.baseType, 'legs');
+  assert.equal(box.basePlinthHeightCm, undefined);
   assert.equal(box.baseLegStyle, 'round');
   assert.equal(box.baseLegColor, 'gold');
   assert.equal(box.baseLegHeightCm, 18);
   assert.equal(box.baseLegWidthCm, 6);
   assert.ok(Math.abs(box.absY - 0.76) < 1e-9);
+});
+
+test('sketch-box base commit stores custom plinth height and keeps floor anchor', () => {
+  const floorY = 0.08;
+  const box = createBox({ absY: floorY + 0.5, heightM: 1, baseType: 'none' });
+
+  commitSketchModuleBoxContent({
+    box,
+    contentKind: 'base',
+    floorY,
+    hoverRec: {
+      kind: 'box_content',
+      contentKind: 'base',
+      op: 'add',
+      baseType: 'plinth',
+      basePlinthHeightCm: 14.5,
+    },
+  });
+
+  assert.equal(box.baseType, 'plinth');
+  assert.equal(box.basePlinthHeightCm, 14.5);
+  assert.equal(box.baseLegHeightCm, undefined);
+  assert.ok(Math.abs(box.absY - (floorY + 0.5 + 0.145)) < 1e-9);
 });
 
 test('sketch-box base commit keeps floor-supported legs anchored when removing or switching base', () => {
@@ -185,6 +285,7 @@ test('sketch-box base commit keeps floor-supported legs anchored when removing o
   });
 
   assert.equal(box.baseType, 'plinth');
+  assert.equal(box.basePlinthHeightCm, 8);
   assert.ok(Math.abs(box.absY - (floorY + 0.5 + 0.08)) < 1e-9);
   assert.equal(box.baseLegHeightCm, undefined);
 

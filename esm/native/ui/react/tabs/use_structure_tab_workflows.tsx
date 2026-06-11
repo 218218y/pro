@@ -24,7 +24,7 @@ export type {
 } from './use_structure_tab_workflows_contracts.js';
 
 export function useStructureTabWorkflows(args: UseStructureTabWorkflowsArgs): UseStructureTabWorkflowsResult {
-  const { app, fb, state } = args;
+  const { app, fb, meta, state } = args;
   const { structuralController, workflowController } = useStructureTabWorkflowControllers(args);
   const renderStackLinkBadge = useStructureTabRenderStackLinkBadge(structuralController);
 
@@ -32,6 +32,8 @@ export function useStructureTabWorkflows(args: UseStructureTabWorkflowsArgs): Us
 
   const enterCellDimsMode = useCallback(
     (source: string) => {
+      const actionMeta = meta.uiOnlyImmediate(`${source}:panelOpen`);
+      setUiFlag(app, 'cellDimsPanelOpen', true, actionMeta);
       workflowController.setCellDimsHexMode(false);
       enterStructureEditMode({
         app,
@@ -41,23 +43,31 @@ export function useStructureTabWorkflows(args: UseStructureTabWorkflowsArgs): Us
         message: STRUCTURE_CELL_DIMS_MODE_MESSAGE,
       });
     },
-    [app, fb, state.cellDimsModeId, workflowController]
+    [app, fb, meta, state.cellDimsModeId, workflowController]
   );
 
   const exitCellDimsMode = useCallback(
     (source: string) => {
+      const actionMeta = meta.uiOnlyImmediate(`${source}:panelClose`);
+      setUiFlag(app, 'cellDimsPanelOpen', false, actionMeta);
+      setUiFlag(app, 'cellDimsHexPanelOpen', false, actionMeta);
       workflowController.setCellDimsHexMode(false);
-      exitStructureEditMode({
-        app,
-        modeId: String(state.cellDimsModeId || STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID),
-        source,
-      });
+      if (state.cellDimsEditActive) {
+        exitStructureEditMode({
+          app,
+          modeId: String(state.cellDimsModeId || STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID),
+          source,
+        });
+      }
     },
-    [app, state.cellDimsModeId, workflowController]
+    [app, meta, state.cellDimsEditActive, state.cellDimsModeId, workflowController]
   );
 
   const enterHexCellDimsMode = useCallback(
     (source: string) => {
+      const actionMeta = meta.uiOnlyImmediate(`${source}:panelOpen`);
+      setUiFlag(app, 'cellDimsPanelOpen', true, actionMeta);
+      setUiFlag(app, 'cellDimsHexPanelOpen', true, actionMeta);
       workflowController.setCellDimsHexMode(true);
       enterStructureEditMode({
         app,
@@ -67,14 +77,15 @@ export function useStructureTabWorkflows(args: UseStructureTabWorkflowsArgs): Us
         message: STRUCTURE_HEX_CELL_DIMS_MODE_MESSAGE,
       });
     },
-    [app, fb, state.cellDimsModeId, workflowController]
+    [app, fb, meta, state.cellDimsModeId, workflowController]
   );
 
   const exitHexCellDimsMode = useCallback(
-    (_source: string) => {
+    (source: string) => {
+      setUiFlag(app, 'cellDimsHexPanelOpen', false, meta.uiOnlyImmediate(`${source}:panelClose`));
       workflowController.setCellDimsHexMode(false);
     },
-    [workflowController]
+    [app, meta, workflowController]
   );
 
   const getUpperDoorsCount = useCallback((): number => {
@@ -93,6 +104,8 @@ export function useStructureTabWorkflows(args: UseStructureTabWorkflowsArgs): Us
   );
 
   const toggleLibraryMode = useCallback(() => {
+    if (state.wardrobeType !== 'sliding' && Number(state.doors) === 0) return;
+
     const wasLibraryMode = !!state.isLibraryMode;
     const shouldHideUpperDoorsInLibrary = !!state.libraryUpperDoorsHidden;
     const upperDoorsCount = getUpperDoorsCount();
@@ -120,8 +133,10 @@ export function useStructureTabWorkflows(args: UseStructureTabWorkflowsArgs): Us
     app,
     getUpperDoorsCount,
     setLibraryUpperDoorsRemoved,
+    state.doors,
     state.isLibraryMode,
     state.libraryUpperDoorsHidden,
+    state.wardrobeType,
     workflowController,
   ]);
 

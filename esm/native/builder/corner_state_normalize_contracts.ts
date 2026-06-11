@@ -11,6 +11,7 @@ export type CornerBuildMeta = {
   baseLegWidthCm?: unknown;
   stackSplitEnabled?: boolean;
   stackOffsetZ?: number;
+  shelfThick?: unknown;
   [k: string]: unknown;
 };
 
@@ -73,6 +74,7 @@ export type NormalizedCornerWingState = {
   wingW: number;
   wingH: number;
   wingD: number;
+  shelfThick: number;
   blindWidth: number;
   activeWidth: number;
   activeFaceCenter: number;

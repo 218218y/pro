@@ -148,3 +148,15 @@ export function areManualHandleHeightsAligned(
   if (ay == null || by == null) return false;
   return Math.abs(ay - by) <= Math.max(0, tolerance);
 }
+
+export function areManualHandleWidthsAligned(
+  a: ManualHandlePosition | null | undefined,
+  b: ManualHandlePosition | null | undefined,
+  tolerance = 0.006
+): boolean {
+  if (!a || !b) return false;
+  const ax = normalizeRatio(a.xRatio);
+  const bx = normalizeRatio(b.xRatio);
+  if (ax == null || bx == null) return false;
+  return Math.abs(ax - bx) <= Math.max(0, tolerance);
+}

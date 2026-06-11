@@ -23,6 +23,7 @@ export function readManualLayoutSketchBoxHoverIntent(
     yCenter: readRecordNumber(record, 'yCenter'),
     xNorm: readRecordNumber(record, 'xNorm'),
     removeId: readRecordString(record, 'removeId'),
+    blockedReason: readRecordString(record, '__wpBlockedReason'),
   };
 }
 
@@ -30,6 +31,15 @@ export function readManualLayoutSketchBoxContentHoverIntent(
   record: unknown
 ): ManualLayoutSketchBoxContentHoverIntent | null {
   if (readRecordString(record, 'kind') !== 'box_content') return null;
+  const dividerYNorm = readRecordNumber(record, 'dividerYNorm');
+  const dividerAxis = readRecordString(record, 'dividerAxis');
+  const hasShoeDrawerValue = readRecordValue(record, 'hasShoeDrawer');
+  const hasShoeDrawerPatch =
+    hasShoeDrawerValue === true
+      ? { hasShoeDrawer: true }
+      : hasShoeDrawerValue === false
+        ? { hasShoeDrawer: false }
+        : {};
   return {
     kind: 'box_content',
     op: normalizeOp(readRecordValue(record, 'op')),
@@ -40,7 +50,10 @@ export function readManualLayoutSketchBoxContentHoverIntent(
     boxBaseYNorm: readRecordNumber(record, 'boxBaseYNorm'),
     contentXNorm: readRecordNumber(record, 'contentXNorm'),
     dividerXNorm: readRecordNumber(record, 'dividerXNorm'),
+    ...(dividerYNorm != null ? { dividerYNorm } : {}),
+    ...(dividerAxis ? { dividerAxis } : {}),
     dividerId: readRecordString(record, 'dividerId'),
+    dividerFrontZ: readRecordNumber(record, 'dividerFrontZ'),
     variant: readRecordString(record, 'variant'),
     depthM: readRecordNumber(record, 'depthM'),
     heightM: readRecordNumber(record, 'heightM'),
@@ -53,6 +66,7 @@ export function readManualLayoutSketchBoxContentHoverIntent(
     drawerGap: readRecordNumber(record, 'drawerGap'),
     drawerHeightM: readRecordNumber(record, 'drawerHeightM'),
     drawerCount: readRecordNumber(record, 'drawerCount'),
+    ...hasShoeDrawerPatch,
     hinge: normalizeHinge(readRecordValue(record, 'hinge')),
     doorId: readRecordString(record, 'doorId'),
     doorLeftId: readRecordString(record, 'doorLeftId'),
@@ -62,6 +76,7 @@ export function readManualLayoutSketchBoxContentHoverIntent(
     baseLegColor: readRecordString(record, 'baseLegColor'),
     baseLegHeightCm: readRecordNumber(record, 'baseLegHeightCm'),
     baseLegWidthCm: readRecordNumber(record, 'baseLegWidthCm'),
+    basePlinthHeightCm: readRecordNumber(record, 'basePlinthHeightCm'),
     corniceType: readRecordString(record, 'corniceType'),
     blockedReason: readRecordString(record, '__wpBlockedReason'),
   };
@@ -101,6 +116,10 @@ export function readManualLayoutSketchShelfHoverIntent(
     removeKind: readRecordString(record, 'removeKind') || '',
     removeIdx: readRecordNumber(record, 'removeIdx'),
     shelfIndex: readRecordNumber(record, 'shelfIndex'),
+    yNorm: readRecordNumber(record, 'yNorm'),
+    variant: readRecordString(record, 'variant'),
+    depthM: readRecordNumber(record, 'depthM'),
+    blockedReason: readRecordString(record, '__wpBlockedReason'),
   };
 }
 

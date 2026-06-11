@@ -15,6 +15,12 @@ import {
 import { getDrawersArray } from '../runtime/render_access.js';
 import { drawerVisualMatchesId, isExplicitExternalDrawerVisual } from '../runtime/drawer_visual_identity.js';
 import {
+  getSketchFreeBoxMotionScopeFromEntry,
+  isSketchFreeBoxInternalDrawerEntry,
+  isSketchFreeBoxMotionControlledEntry,
+} from '../runtime/sketch_free_box_motion_identity.js';
+import { readSketchFreeBoxMotionTimeSinceToggle } from '../runtime/sketch_free_box_motion_state.js';
+import {
   type AppLike,
   type DrawerId,
   doorsRuntimeNow,
@@ -54,7 +60,7 @@ export function rebuildDrawerMeta(App: AppLike): void {
         setDrawerMetaEntry(App, drawer.id, { isInternal: !!drawer.isInternal });
       }
 
-      if (drawer.isInternal) {
+      if (drawer.isInternal && !isSketchFreeBoxMotionControlledEntry(drawer)) {
         hasInternal = true;
         break;
       }
@@ -132,10 +138,15 @@ export function snapDrawersToTargets(App: AppLike): void {
     if (!drawer || !drawer.group || !drawer.open || !drawer.closed) continue;
 
     const isExtDrawer = isExplicitExternalDrawerVisual(drawer);
+    const sketchFreeBoxScope = getSketchFreeBoxMotionScopeFromEntry(drawer);
+    const isSketchFreeBoxLocalDrawer = !!sketchFreeBoxScope;
 
     const type = wardrobeType(App);
     let isInternal = !isExtDrawer;
-    if (!isInternal && type === 'sliding') {
+    if (isSketchFreeBoxLocalDrawer) {
+      isInternal = isSketchFreeBoxInternalDrawerEntry(drawer);
+      drawer.isInternal = isInternal;
+    } else if (!isInternal && type === 'sliding') {
       isInternal = true;
     } else if (isInternal) {
       if (typeof drawer.isInternal === 'undefined') {
@@ -145,6 +156,10 @@ export function snapDrawersToTargets(App: AppLike): void {
       }
       if (drawer.isInternal === false && isExtDrawer) isInternal = false;
     }
+
+    const scopedTimeSinceToggle = isSketchFreeBoxLocalDrawer
+      ? readSketchFreeBoxMotionTimeSinceToggle(App, sketchFreeBoxScope, timeSinceToggle, now)
+      : timeSinceToggle;
 
     let shouldOpen = false;
 
@@ -170,11 +185,17 @@ export function snapDrawersToTargets(App: AppLike): void {
         // ignore
       }
     } else if (globalClickMode) {
-      shouldOpen = isInternal ? internalDrawersShouldBeOpen : externalDrawersShouldBeOpen;
+      shouldOpen = isSketchFreeBoxLocalDrawer
+        ? isInternal
+          ? !!drawer.isOpen && scopedTimeSinceToggle > delayTime
+          : !!drawer.isOpen
+        : isInternal
+          ? internalDrawersShouldBeOpen
+          : externalDrawersShouldBeOpen;
     } else if (isInternal) {
       const moduleKey = getDrawerModuleKey(drawer);
       const matchesOpenModule = moduleKey ? localOpenDoorModules.has(moduleKey) : hasAnyLocalOpenDoor;
-      shouldOpen = !!(!sketchEditActive && matchesOpenModule && timeSinceToggle > delayTime);
+      shouldOpen = !!(!sketchEditActive && matchesOpenModule && scopedTimeSinceToggle > delayTime);
     } else {
       shouldOpen = !!drawer.isOpen;
     }

@@ -149,3 +149,57 @@ test('interior hover target recovers the selector object from the wardrobe tree 
   assert.equal(target?.bottomY, 0);
   assert.equal(target?.topY, 1.8);
 });
+
+test('interior hover target does not fall through to the main wardrobe when a free box is in front', () => {
+  const App = createApp();
+  const selectorObj = createSelectorObject(0, 'top');
+  App.render.wardrobeGroup = { children: [selectorObj] };
+  App.services.runtimeCache.internalGridMap['0'] = {
+    effectiveBottomY: 0,
+    effectiveTopY: 2,
+    gridDivisions: 4,
+    woodThick: 0.02,
+  };
+
+  const freeBoxBack = {
+    userData: {
+      partId: 'sketch_box_free_0_free-1_back',
+      moduleIndex: 0,
+      __wpSketchBoxId: 'free-1',
+      __wpSketchModuleKey: 0,
+    },
+    geometry: { parameters: { width: 0.8, height: 1, depth: 0.02 } },
+    position: { x: 1.4, y: 1, z: -0.32 },
+    parent: App.render.wardrobeGroup,
+  } as any;
+
+  const target = resolveInteriorHoverTarget({
+    App,
+    raycaster: {} as any,
+    mouse: { x: 0, y: 0 } as any,
+    ndcX: 0.15,
+    ndcY: -0.2,
+    getViewportRoots: () => ({ camera: {}, wardrobeGroup: App.render.wardrobeGroup }),
+    raycastReuse: () => [
+      { object: freeBoxBack, point: { x: 1.4, y: 1.1, z: -0.32 } } as any,
+      { object: selectorObj, point: { x: 0.4, y: 1.1, z: -0.1 } } as any,
+    ],
+    isViewportRoot: (_App, node) => node === App.render.wardrobeGroup,
+    toModuleKey,
+    projectWorldPointToLocal: (_App, point) => ({
+      x: Number((point as any)?.x ?? 0),
+      y: Number((point as any)?.y ?? 0),
+      z: Number((point as any)?.z ?? 0),
+    }),
+    measureObjectLocalBox: () => ({
+      centerX: 0.5,
+      centerY: 1,
+      centerZ: -0.1,
+      width: 1,
+      height: 2,
+      depth: 0.6,
+    }),
+  });
+
+  assert.equal(target, null);
+});

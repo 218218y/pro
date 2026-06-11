@@ -25,12 +25,14 @@ export type RecordMap = Record<string, unknown>;
 
 export type SketchFreeBoxTarget = {
   boxId: string;
+  partPrefix: string;
   targetBox: RecordMap;
   targetGeo: SketchFreeBoxGeometry;
   targetCenterY: number;
   targetHeight: number;
   pointerX: number;
   pointerY: number;
+  pointerZ?: number;
 };
 
 export type SketchFreeSurfacePreviewResult = {

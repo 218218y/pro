@@ -7,7 +7,7 @@ import { SettingsVisualRoomSection } from '../esm/native/ui/react/tabs/settings_
 import { SettingsVisualLightingSection } from '../esm/native/ui/react/tabs/settings_visual_sections_lighting.js';
 const noop = () => {};
 const countMatches = (source, pattern) => [...source.matchAll(pattern)].length;
-test('[settings-visual-sections-runtime] display section renders dark mode after global click', () => {
+test('[settings-visual-sections-runtime] display section renders dark mode first', () => {
   const html = renderToStaticMarkup(
     React.createElement(SettingsVisualDisplaySection, {
       model: {
@@ -26,7 +26,8 @@ test('[settings-visual-sections-runtime] display section renders dark mode after
   assert.match(html, /toggle-show-dimensions/);
   assert.match(html, /toggle-global-click/);
   assert.match(html, /toggle-dark-mode/);
-  assert.ok(html.indexOf('toggle-global-click') < html.indexOf('toggle-dark-mode'));
+  assert.ok(html.indexOf('toggle-dark-mode') < html.indexOf('toggle-show-dimensions'));
+  assert.ok(html.indexOf('toggle-dark-mode') < html.indexOf('toggle-global-click'));
   assert.match(html, /מצב כהה/);
 });
 test('[settings-visual-sections-runtime] room section renders canonical room-design controls and fallback notice', () => {

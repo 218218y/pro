@@ -7,6 +7,12 @@ import {
   normalizeBaseLegHeightCm,
   normalizeBaseLegWidthCm,
 } from '../../../features/base_leg_support.js';
+import {
+  BASE_PLINTH_HEIGHT_MAX_CM,
+  BASE_PLINTH_HEIGHT_MIN_CM,
+  DEFAULT_BASE_PLINTH_HEIGHT_CM,
+  normalizeBasePlinthHeightCm,
+} from '../../../features/base_plinth_support.js';
 import type { InteriorSketchBoxControlsSectionProps } from './interior_layout_sketch_section_types.js';
 import { syncSketchBoxBaseTool } from './interior_layout_sketch_box_controls_runtime_sync.js';
 
@@ -37,6 +43,44 @@ export function selectSketchBoxLegColor(
   props.setSketchBoxBaseType('legs');
   props.setSketchBoxLegColor(color);
   syncSketchBoxBaseTool(props, 'legs', undefined, color);
+}
+
+export function updateSketchBoxPlinthHeightDraft(
+  props: InteriorSketchBoxControlsSectionProps,
+  raw: string
+): void {
+  props.setSketchBoxPlinthHeightDraft(raw);
+  if (raw.trim() === '') return;
+  const next = Number(raw);
+  if (!Number.isFinite(next)) return;
+  if (next < BASE_PLINTH_HEIGHT_MIN_CM || next > BASE_PLINTH_HEIGHT_MAX_CM) return;
+  const normalized = normalizeBasePlinthHeightCm(next);
+  props.setSketchBoxBaseType('plinth');
+  props.setSketchBoxPlinthHeightCm(normalized);
+  syncSketchBoxBaseTool(props, 'plinth', undefined, undefined, undefined, undefined, normalized);
+}
+
+export function commitSketchBoxPlinthHeightDraft(props: InteriorSketchBoxControlsSectionProps): void {
+  const next = normalizeBasePlinthHeightCm(props.sketchBoxPlinthHeightDraft, props.sketchBoxPlinthHeightCm);
+  props.setSketchBoxBaseType('plinth');
+  props.setSketchBoxPlinthHeightCm(next);
+  props.setSketchBoxPlinthHeightDraft(String(next));
+  syncSketchBoxBaseTool(props, 'plinth', undefined, undefined, undefined, undefined, next);
+}
+
+export function resetSketchBoxPlinthHeight(props: InteriorSketchBoxControlsSectionProps): void {
+  props.setSketchBoxBaseType('plinth');
+  props.setSketchBoxPlinthHeightCm(DEFAULT_BASE_PLINTH_HEIGHT_CM);
+  props.setSketchBoxPlinthHeightDraft(String(DEFAULT_BASE_PLINTH_HEIGHT_CM));
+  syncSketchBoxBaseTool(
+    props,
+    'plinth',
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    DEFAULT_BASE_PLINTH_HEIGHT_CM
+  );
 }
 
 export function updateSketchBoxLegHeightDraft(

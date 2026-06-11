@@ -21,6 +21,10 @@ export type ConfigScalarKey =
   | 'grooveLinesCount'
   | 'boardMaterial'
   | 'doorMountMode'
+  | 'overlayFrameThicknessCm'
+  | 'overlayShelfThicknessCm'
+  | 'insetFrameThicknessCm'
+  | 'insetShelfThicknessCm'
   // Common persisted collections (treated as scalars in the write contract)
   | 'modulesConfiguration'
   | 'stackSplitLowerModulesConfiguration'
@@ -47,6 +51,10 @@ export type ConfigScalarValueMap = {
   grooveLinesCount: number | null;
   boardMaterial: BoardMaterial | '';
   doorMountMode: DoorMountMode | '';
+  overlayFrameThicknessCm: number | null;
+  overlayShelfThicknessCm: number | null;
+  insetFrameThicknessCm: number | null;
+  insetShelfThicknessCm: number | null;
 
   modulesConfiguration: ModulesConfigurationLike;
   stackSplitLowerModulesConfiguration: ModulesConfigurationLike;

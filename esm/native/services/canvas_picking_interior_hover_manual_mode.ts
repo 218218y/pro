@@ -30,6 +30,7 @@ import {
   readSavedGridDivisions,
 } from './canvas_picking_interior_hover_layout_family_shared.js';
 import { resolveManualLayoutShelfFillPlan } from './canvas_picking_manual_layout_config_ops.js';
+import { tryHandleManualLayoutFreeBoxHover } from './canvas_picking_manual_layout_free_box_content.js';
 
 export function tryHandleCanvasManualLayoutHover(args: CanvasInteriorHoverFlowArgs): boolean {
   const {
@@ -46,21 +47,7 @@ export function tryHandleCanvasManualLayoutHover(args: CanvasInteriorHoverFlowAr
   try {
     const manualTool = readManualTool(App);
     if (!manualTool) return false;
-    const target = __wp_resolveInteriorHoverTarget(App, raycaster, mouse, ndcX, ndcY);
-    if (!target) {
-      hideSketchPreview({ App, hideSketchPreview: hideSketchPreviewFn });
-      hideLayoutPreview({ App, hideLayoutPreview: hideLayoutPreviewFn });
-      return false;
-    }
-
     const { setPreview: setSketchPreview } = getSketchPreviewFns(previewRo);
-    if (!setSketchPreview) {
-      hideLayoutPreview({ App, hideLayoutPreview: hideLayoutPreviewFn });
-      return false;
-    }
-
-    hideLayoutPreview({ App, hideLayoutPreview: hideLayoutPreviewFn });
-
     const ui = readUiState(App);
     const currentToolDivs = readGridDivisions(
       ui.currentGridDivisions,
@@ -68,6 +55,39 @@ export function tryHandleCanvasManualLayoutHover(args: CanvasInteriorHoverFlowAr
       8
     );
     const shelfVariant = readShelfVariant(ui.currentGridShelfVariant);
+    if (
+      tryHandleManualLayoutFreeBoxHover({
+        App,
+        tool: manualTool,
+        ndcX,
+        ndcY,
+        raycaster,
+        mouse,
+        currentGridDivisions: currentToolDivs,
+        shelfVariant,
+        setLayoutPreview,
+        setSketchPreview,
+        hideLayoutPreview: () => hideLayoutPreview({ App, hideLayoutPreview: hideLayoutPreviewFn }),
+        hideSketchPreview: () => hideSketchPreview({ App, hideSketchPreview: hideSketchPreviewFn }),
+      })
+    ) {
+      return true;
+    }
+
+    const target = __wp_resolveInteriorHoverTarget(App, raycaster, mouse, ndcX, ndcY);
+    if (!target) {
+      hideSketchPreview({ App, hideSketchPreview: hideSketchPreviewFn });
+      hideLayoutPreview({ App, hideLayoutPreview: hideLayoutPreviewFn });
+      return false;
+    }
+
+    if (!setSketchPreview) {
+      hideLayoutPreview({ App, hideLayoutPreview: hideLayoutPreviewFn });
+      return false;
+    }
+
+    hideLayoutPreview({ App, hideLayoutPreview: hideLayoutPreviewFn });
+
     const cfgRef = asHoverModuleConfig(
       __wp_readInteriorModuleConfigRef(App, target.hitModuleKey, target.isBottom)
     );

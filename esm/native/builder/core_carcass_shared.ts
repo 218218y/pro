@@ -6,6 +6,7 @@ import {
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 import { readBaseLegOptions } from '../features/base_leg_support.js';
+import { isRemovedFrameSideOn } from '../features/removable_parts.js';
 import { readModuleConfig } from './build_flow_readers.js';
 import { getBasePlinthHeightM } from '../features/base_plinth_support.js';
 import { _asObject, __asArray, __asInt, __asNum } from './core_pure_shared.js';
@@ -38,6 +39,8 @@ export type PreparedCarcassInput = {
   hasDepthData: boolean;
   isStepped: boolean;
   isDepthStepped: boolean;
+  removedLeftFrameSide: boolean;
+  removedRightFrameSide: boolean;
 };
 
 export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
@@ -50,6 +53,7 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
   const doorsCount = __asInt(inp.doorsCount, 0);
   const hasCornice = !!inp.hasCornice;
   const corniceType = String(inp.corniceType || 'classic');
+  const cfg = _asObject(inp.cfg) || {};
 
   let baseHeight = 0;
   let startY = 0;
@@ -188,6 +192,8 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
     hasDepthData,
     isStepped,
     isDepthStepped,
+    removedLeftFrameSide: isRemovedFrameSideOn(cfg, 'left', inp.frameSidePartIdPrefix),
+    removedRightFrameSide: isRemovedFrameSideOn(cfg, 'right', inp.frameSidePartIdPrefix),
   };
 }
 

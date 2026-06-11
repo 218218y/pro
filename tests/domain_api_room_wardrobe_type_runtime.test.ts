@@ -342,6 +342,115 @@ test('room wardrobe type runtime: saved wardrobe profiles are canonicalized and 
   assert.equal(h.reports.length, 0);
 });
 
+test('room wardrobe type runtime: first switch to sliding strips sketch external drawers from active config only', () => {
+  const h = createHarness({
+    ui: { raw: { width: 200, height: 240, depth: 55, doors: 4 } },
+    config: {
+      wardrobeType: 'hinged',
+      modulesConfiguration: [
+        {
+          layout: 'shelves',
+          sketchExtras: {
+            extDrawers: [{ id: 'sed-top', yNorm: 0.35, count: 3 }],
+            drawers: [{ id: 'sid-top', yNorm: 0.7 }],
+            shelves: [{ id: 'shelf-top', yNorm: 0.5 }],
+          },
+        },
+        {
+          layout: 'hanging_top2',
+          sketchExtras: {
+            extDrawers: [{ id: 'sed-box-host', yNorm: 0.3, count: 2 }],
+            boxes: [
+              {
+                id: 'box-with-ext-drawers',
+                yNorm: 0.45,
+                extDrawers: [{ id: 'box-sed', yNorm: 0.4, count: 2 }],
+                drawers: [{ id: 'box-sid', yNorm: 0.7 }],
+              },
+            ],
+          },
+        },
+      ],
+      stackSplitLowerModulesConfiguration: [
+        { sketchExtras: { extDrawers: [{ id: 'sed-lower', yNorm: 0.4, count: 1 }] } },
+      ],
+      cornerConfiguration: {
+        modulesConfiguration: [
+          { sketchExtras: { extDrawers: [{ id: 'sed-corner-top', yNorm: 0.4, count: 1 }] } },
+        ],
+        stackSplitLower: {
+          modulesConfiguration: [
+            { sketchExtras: { extDrawers: [{ id: 'sed-corner-lower', yNorm: 0.4, count: 1 }] } },
+          ],
+        },
+      },
+    },
+  });
+
+  h.actions.room.setWardrobeType('sliding');
+
+  const top = h.state.config.modulesConfiguration as AnyRec[];
+  const lower = h.state.config.stackSplitLowerModulesConfiguration as AnyRec[];
+  const corner = h.state.config.cornerConfiguration as AnyRec;
+  const savedHinged = h.state.runtime.wardrobeTypeProfiles.hinged.cfg as AnyRec;
+
+  assert.equal(h.state.config.wardrobeType, 'sliding');
+  assert.equal(top[0].sketchExtras.extDrawers, undefined);
+  assert.deepEqual(top[0].sketchExtras.drawers, [{ id: 'sid-top', yNorm: 0.7 }]);
+  assert.deepEqual(top[0].sketchExtras.shelves, [{ id: 'shelf-top', yNorm: 0.5 }]);
+  assert.equal(top[1].sketchExtras.extDrawers, undefined);
+  assert.equal(top[1].sketchExtras.boxes[0].extDrawers, undefined);
+  assert.deepEqual(top[1].sketchExtras.boxes[0].drawers, [{ id: 'box-sid', yNorm: 0.7 }]);
+  assert.equal(lower[0].sketchExtras, undefined);
+  assert.equal(corner.modulesConfiguration[0].sketchExtras, undefined);
+  assert.equal(corner.stackSplitLower.modulesConfiguration[0].sketchExtras, undefined);
+
+  assert.equal(savedHinged.modulesConfiguration[0].sketchExtras.extDrawers.length, 1);
+  assert.equal(savedHinged.modulesConfiguration[1].sketchExtras.boxes[0].extDrawers.length, 1);
+  assert.equal(h.reports.length, 0);
+});
+
+test('room wardrobe type runtime: restoring a sliding profile strips legacy sketch external drawers', () => {
+  const h = createHarness({
+    ui: { raw: { width: 160, height: 240, depth: 55, doors: 4 } },
+    config: { wardrobeType: 'hinged' },
+    runtime: {
+      wardrobeTypeProfiles: {
+        sliding: {
+          cfg: {
+            isManualWidth: false,
+            modulesConfiguration: [
+              {
+                layout: 'shelves',
+                sketchExtras: {
+                  extDrawers: [{ id: 'legacy-sed', yNorm: 0.35, count: 3 }],
+                  shelves: [{ id: 'legacy-shelf', yNorm: 0.5 }],
+                },
+              },
+            ],
+            stackSplitLowerModulesConfiguration: [
+              { sketchExtras: { extDrawers: [{ id: 'legacy-lower-sed', yNorm: 0.5, count: 2 }] } },
+            ],
+          },
+          ui: { raw: { width: 240, height: 240, depth: 60, doors: 2 } },
+        },
+      },
+    },
+  });
+
+  h.actions.room.setWardrobeType('sliding');
+
+  const top = h.state.config.modulesConfiguration as AnyRec[];
+  const lower = h.state.config.stackSplitLowerModulesConfiguration as AnyRec[];
+
+  assert.equal(h.state.config.wardrobeType, 'sliding');
+  assert.equal(top[0].sketchExtras.extDrawers, undefined);
+  assert.deepEqual(top[0].sketchExtras.shelves, [{ id: 'legacy-shelf', yNorm: 0.5 }]);
+  assert.equal(lower[0].sketchExtras, undefined);
+  assert.equal(h.recomputeCalls.length, 1);
+  assert.equal(h.reports.length, 0);
+});
+
 test('room wardrobe type runtime: saving wardrobe profile keeps valid nested ui branches when stringify fallback is needed', () => {
   const liveFloorStyles = {
     wood: { label: 'oak', nested: { tone: 'warm' } },
@@ -436,6 +545,31 @@ test('room wardrobe type runtime: restoring legacy wardrobe profile rematerializ
   assert.equal(h.state.ui.raw.doors, 5);
   assert.equal(h.state.ui.currentFloorType, 'parquet');
   assert.equal(h.recomputeCalls.length, 1);
+  assert.equal(h.reports.length, 0);
+});
+
+test('room wardrobe type runtime: no-main sketch state blocks direct sliding transition before recompute', () => {
+  const h = createHarness({
+    ui: { raw: { width: 0, height: 240, depth: 55, doors: 0 } },
+    config: { wardrobeType: 'hinged' },
+    runtime: {
+      wardrobeTypeProfiles: {
+        sliding: {
+          cfg: { isManualWidth: false },
+          ui: { raw: { width: 240, height: 240, depth: 60, doors: 3 } },
+        },
+      },
+    },
+  });
+
+  assert.equal(h.actions.room.setWardrobeType('sliding'), 'hinged');
+
+  assert.equal(h.state.config.wardrobeType, 'hinged');
+  assert.equal(h.state.ui.raw.doors, 0);
+  assert.equal(h.state.ui.raw.width, 0);
+  assert.equal(h.recomputeCalls.length, 0);
+  assert.equal(h.builderCalls.length, 0);
+  assert.equal(h.patchCalls.length, 0);
   assert.equal(h.reports.length, 0);
 });
 

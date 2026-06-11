@@ -6,13 +6,20 @@ import type {
   ResolvedSketchBoxState,
   SketchBoxYFromNorm,
 } from './render_interior_sketch_boxes_shared.js';
-import type { SketchBoxDividerState } from './render_interior_sketch_layout.js';
+import type {
+  SketchBoxDividerState,
+  SketchBoxHorizontalDividerState,
+} from './render_interior_sketch_layout.js';
 import type { InteriorValueRecord } from './render_interior_ops_contracts.js';
 
 import { renderSketchBoxShell } from './render_interior_sketch_boxes_shell.js';
 import { renderSketchBoxContents } from './render_interior_sketch_boxes_contents.js';
 import { renderSketchBoxFronts } from './render_interior_sketch_boxes_fronts.js';
-import { readSketchBoxDividers, resolveSketchBoxSegmentForContent } from './render_interior_sketch_layout.js';
+import {
+  readSketchBoxDividers,
+  readSketchBoxHorizontalDividers,
+  resolveSketchBoxSegmentForContent,
+} from './render_interior_sketch_layout.js';
 
 function createSketchBoxYFromNorm(state: ResolvedSketchBoxState): SketchBoxYFromNorm {
   return (rawNorm: unknown, itemHalfH: number) => {
@@ -29,9 +36,10 @@ function createSketchBoxYFromNorm(state: ResolvedSketchBoxState): SketchBoxYFrom
 function createSketchBoxDrawerSpanResolver(args: {
   shell: ResolvedSketchBoxState;
   boxDividers: SketchBoxDividerState[];
+  boxHorizontalDividers: SketchBoxHorizontalDividerState[];
   woodThick: number;
 }): ResolveSketchBoxDrawerSpan {
-  const { shell, boxDividers, woodThick } = args;
+  const { shell, boxDividers, boxHorizontalDividers, woodThick } = args;
   return (item: InteriorValueRecord | null) => {
     const segment = resolveSketchBoxSegmentForContent({
       dividers: boxDividers,
@@ -39,6 +47,10 @@ function createSketchBoxDrawerSpanResolver(args: {
       innerW: shell.geometry.innerW,
       woodThick,
       xNorm: item?.xNorm,
+      horizontalDividers: boxHorizontalDividers,
+      boxCenterY: shell.centerY,
+      innerH: shell.sideH,
+      yNorm: item?.yNormC ?? item?.yNorm,
     });
     const innerLeft = shell.geometry.centerX - shell.geometry.innerW / 2;
     const innerRight = shell.geometry.centerX + shell.geometry.innerW / 2;
@@ -85,16 +97,19 @@ export function renderInteriorSketchBoxes(args: RenderInteriorSketchBoxesArgs): 
     if (shellResult.absEntry) boxAbs.push(shellResult.absEntry);
 
     const boxDividers = readSketchBoxDividers(shellResult.state.box);
+    const boxHorizontalDividers = readSketchBoxHorizontalDividers(shellResult.state.box);
     const yFromBoxNorm = createSketchBoxYFromNorm(shellResult.state);
     const resolveBoxDrawerSpan = createSketchBoxDrawerSpanResolver({
       shell: shellResult.state,
       boxDividers,
+      boxHorizontalDividers,
       woodThick: args.woodThick,
     });
 
     renderSketchBoxContents({
       shell: shellResult.state,
       boxDividers,
+      boxHorizontalDividers,
       yFromBoxNorm,
       resolveBoxDrawerSpan,
       args,
@@ -102,6 +117,7 @@ export function renderInteriorSketchBoxes(args: RenderInteriorSketchBoxesArgs): 
     renderSketchBoxFronts({
       shell: shellResult.state,
       boxDividers,
+      boxHorizontalDividers,
       yFromBoxNorm,
       resolveBoxDrawerSpan,
       args,

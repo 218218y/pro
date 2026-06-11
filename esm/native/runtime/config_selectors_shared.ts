@@ -5,6 +5,7 @@ import type {
   UnknownRecord,
 } from '../../../types/index.js';
 
+import { normalizeDoorMountThicknessCm } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { asRecord as asUnknownRecord } from './record.js';
 
 export type BoardMaterialValue = ConfigScalarValueMap['boardMaterial'];
@@ -62,6 +63,10 @@ export const DEFAULTS: ConfigScalarDefaults = {
   grooveLinesCount: null,
   boardMaterial: 'sandwich',
   doorMountMode: 'overlay',
+  overlayFrameThicknessCm: null,
+  overlayShelfThicknessCm: null,
+  insetFrameThicknessCm: null,
+  insetShelfThicknessCm: null,
   dirty: false,
 };
 
@@ -97,8 +102,21 @@ export function isNullableStringConfigKey(key: ConfigScalarKey): key is 'customU
   return key === 'customUploadedDataURL';
 }
 
-export function isNullableNumberConfigKey(key: ConfigScalarKey): key is 'grooveLinesCount' {
-  return key === 'grooveLinesCount';
+export function isNullableNumberConfigKey(
+  key: ConfigScalarKey
+): key is
+  | 'grooveLinesCount'
+  | 'overlayFrameThicknessCm'
+  | 'overlayShelfThicknessCm'
+  | 'insetFrameThicknessCm'
+  | 'insetShelfThicknessCm' {
+  return (
+    key === 'grooveLinesCount' ||
+    key === 'overlayFrameThicknessCm' ||
+    key === 'overlayShelfThicknessCm' ||
+    key === 'insetFrameThicknessCm' ||
+    key === 'insetShelfThicknessCm'
+  );
 }
 
 export function emptyConfigState(): ConfigScalarState {
@@ -156,6 +174,16 @@ export function normalizeNullableGrooveLinesCount(
   const n = Number(value);
   if (!Number.isFinite(n)) return defaultValue;
   return Math.max(1, Math.floor(n));
+}
+
+export function normalizeNullableConfigNumber(
+  key: ConfigScalarKey,
+  value: unknown,
+  defaultValue: number | null
+): number | null {
+  if (key === 'grooveLinesCount') return normalizeNullableGrooveLinesCount(value, defaultValue);
+  const thickness = normalizeDoorMountThicknessCm(value);
+  return thickness == null ? defaultValue : thickness;
 }
 
 export function readBoardMaterialDefault(value: unknown): BoardMaterialValue {

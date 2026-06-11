@@ -25,6 +25,7 @@ export type CanvasPickingClickHitState = {
   doorHitY: number | null;
   primaryHitY: number | null;
   hitIdentity?: CanvasPickingHitIdentity | null;
+  hitUserData?: Record<string, unknown> | null;
 };
 
 export type CanvasPickingClickHitFlowArgs = {

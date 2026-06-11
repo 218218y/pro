@@ -91,12 +91,14 @@ export type RenderInteriorSketchInput = InteriorValueRecord & {
   effectiveTopY?: BuilderPreviewScalar;
   innerW?: BuilderPreviewScalar;
   woodThick?: BuilderPreviewScalar;
+  shelfThick?: BuilderPreviewScalar;
   internalDepth?: BuilderPreviewScalar;
   internalCenterX?: BuilderPreviewScalar;
   internalZ?: BuilderPreviewScalar;
   moduleIndex?: BuilderSketchIdLike;
   modulesLength?: BuilderPreviewScalar;
   moduleKey?: BuilderSketchIdLike;
+  frameSidePartIdPrefix?: BuilderSketchIdLike;
   stackKey?: BuilderSketchIdLike;
   startY?: BuilderPreviewScalar;
   startDoorId?: BuilderSketchIdLike;
@@ -114,6 +116,8 @@ export type RenderInteriorSketchInput = InteriorValueRecord & {
   createInternalDrawerBox?: InteriorOpsCallable;
   addOutlines?: InteriorOpsCallable;
   showContentsEnabled?: boolean | null;
+  isInternalDrawersEnabled?: unknown;
+  internalDrawersEnabled?: unknown;
   addFoldedClothes?: InteriorOpsCallable;
 };
 

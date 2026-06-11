@@ -111,3 +111,47 @@ test('manual-layout hover click commits sketch-box divider from canonical hover 
   assert.equal(dividers.length, 1);
   assert.equal(dividers[0].xNorm, 0.32);
 });
+
+test('manual-layout hover click consumes blocked sketch-box content without patching', () => {
+  const toasts: Array<[string, string | undefined]> = [];
+  let cleared = 0;
+  let patchCalls = 0;
+
+  const applied = tryApplyManualLayoutSketchHoverClick({
+    App: {
+      services: {
+        uiFeedback: {
+          toast(message: string, type?: string) {
+            toasts.push([message, type]);
+          },
+        },
+      },
+    } as never,
+    __activeModuleKey: 2,
+    topY: 2.4,
+    bottomY: 0,
+    __gridInfo: { gridDivisions: 6 },
+    __hoverRec: {
+      kind: 'box_content',
+      contentKind: 'shelf',
+      boxId: 'sb-blocked',
+      freePlacement: false,
+      op: 'add',
+      __wpBlockedReason: 'no-room',
+    },
+    __hoverOk: true,
+    __patchConfigForKey: () => {
+      patchCalls += 1;
+      throw new Error('blocked hover should not patch config');
+    },
+    __wp_clearSketchHover: () => {
+      cleared += 1;
+    },
+  });
+
+  assert.equal(applied, true);
+  assert.equal(patchCalls, 0);
+  assert.equal(cleared, 1);
+  assert.equal(toasts.length, 1);
+  assert.equal(toasts[0]?.[1], 'error');
+});

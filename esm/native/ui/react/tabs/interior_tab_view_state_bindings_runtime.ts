@@ -31,6 +31,8 @@ export type InteriorTabViewStateControllerBindings = Pick<
   | 'setSketchBoxCornicePanelOpen'
   | 'setSketchBoxBaseType'
   | 'setSketchBoxBasePanelOpen'
+  | 'setSketchBoxPlinthHeightCm'
+  | 'setSketchBoxPlinthHeightDraft'
   | 'setSketchBoxLegWidthCm'
   | 'setSketchBoxLegWidthDraft'
   | 'setSketchBoxLegStyle'
@@ -80,6 +82,8 @@ export function createInteriorTabViewStateControllerMemoDeps(
     bindings.setSketchBoxCornicePanelOpen,
     bindings.setSketchBoxBaseType,
     bindings.setSketchBoxBasePanelOpen,
+    bindings.setSketchBoxPlinthHeightCm,
+    bindings.setSketchBoxPlinthHeightDraft,
     bindings.setSketchBoxLegWidthCm,
     bindings.setSketchBoxLegWidthDraft,
     bindings.setSketchBoxLegStyle,
@@ -130,6 +134,8 @@ export function createInteriorTabViewStateControllerArgs(
     setSketchBoxCornicePanelOpen: bindings.setSketchBoxCornicePanelOpen,
     setSketchBoxBaseType: bindings.setSketchBoxBaseType,
     setSketchBoxBasePanelOpen: bindings.setSketchBoxBasePanelOpen,
+    setSketchBoxPlinthHeightCm: bindings.setSketchBoxPlinthHeightCm,
+    setSketchBoxPlinthHeightDraft: bindings.setSketchBoxPlinthHeightDraft,
     setSketchBoxLegWidthCm: bindings.setSketchBoxLegWidthCm,
     setSketchBoxLegWidthDraft: bindings.setSketchBoxLegWidthDraft,
     setSketchBoxLegStyle: bindings.setSketchBoxLegStyle,

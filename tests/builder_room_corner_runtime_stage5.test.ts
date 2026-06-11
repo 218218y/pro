@@ -71,6 +71,7 @@ test('corner special metrics normalize depth, clearances, and optional wall offs
     L: 1,
     Dmain: 0.6,
     woodThick: 0.018,
+    shelfThick: 0.018,
     startY: 0,
     wingH: 2.4,
     panelThick: 0.018,
@@ -93,7 +94,7 @@ test('corner special helpers derive equal shelf bottoms and inset polygons from 
     enabled: true,
     floorTopY: 0.018,
     targetTop: 1.8,
-    woodThick: 0.018,
+    shelfThick: 0.018,
   });
 
   assert.equal(bottoms.length, 3);

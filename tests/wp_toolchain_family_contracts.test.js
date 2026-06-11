@@ -367,6 +367,39 @@ const TOOLCHAIN_FAMILIES = [
       },
     ],
   },
+  {
+    name: 'verify-parallel',
+    entry: 'tools/wp_verify_parallel.js',
+    maxLines: 90,
+    imports: [
+      './wp_node_child_env.js',
+      './wp_verify_shared.js',
+      './wp_verify_state.js',
+      './wp_verify_parallel_flow.js',
+      './wp_verify_parallel_state.js',
+    ],
+    forbiddenEntryNeedles: ['spawn(', 'function runCommandStep(', 'function runVerifyParallelPlan('],
+    modules: [
+      {
+        path: 'tools/wp_verify_parallel_state.js',
+        requiredNeedles: [
+          'export function parseVerifyParallelArgs(',
+          'export function createVerifyParallelHelpText(',
+        ],
+        forbiddenNeedles: ['export async function runVerifyParallelPlan('],
+      },
+      {
+        path: 'tools/wp_verify_parallel_flow.js',
+        requiredNeedles: [
+          'export function createVerifyParallelPlan(',
+          'export function formatVerifyParallelPlan(',
+          'export function runCommandStep(',
+          'export async function runVerifyParallelPlan(',
+        ],
+        forbiddenNeedles: ['export function parseVerifyParallelArgs('],
+      },
+    ],
+  },
 ];
 
 for (const family of TOOLCHAIN_FAMILIES) {

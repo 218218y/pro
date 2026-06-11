@@ -1,60 +1,116 @@
 import { asRecord } from '../runtime/record.js';
-import type { SketchBoxDividerState } from './canvas_picking_sketch_box_dividers_shared.js';
+import type {
+  SketchBoxDividerState,
+  SketchBoxHorizontalDividerState,
+} from './canvas_picking_sketch_box_dividers_shared.js';
 import {
   normalizeSketchBoxDividerXNorm,
+  normalizeSketchBoxDividerYNorm,
   readDividerRecordList,
 } from './canvas_picking_sketch_box_dividers_shared.js';
 
 export function readSketchBoxDividerXNorm(box: unknown): number | null {
   const dividers = readSketchBoxDividers(box);
-  if (dividers.length) return dividers[0].xNorm;
-  return null;
+  return dividers.length ? dividers[0].xNorm : null;
+}
+
+export function readSketchBoxHorizontalDividerYNorm(box: unknown): number | null {
+  const dividers = readSketchBoxHorizontalDividers(box);
+  return dividers.length ? dividers[0].yNorm : null;
 }
 
 export function readSketchBoxDividers(box: unknown): SketchBoxDividerState[] {
   const rec = asRecord(box);
   if (!rec) return [];
-
   const dividersRaw = readDividerRecordList(rec.dividers);
   const dividers: SketchBoxDividerState[] = [];
   for (let i = 0; i < dividersRaw.length; i++) {
     const it = dividersRaw[i];
     const xNorm = normalizeSketchBoxDividerXNorm(it?.xNorm);
     if (xNorm == null) continue;
-    const idRaw = it?.id;
-    const id = idRaw != null && idRaw !== '' ? String(idRaw) : `sbd_${i}`;
+    const frontZ = Number(it?.frontZ);
+    const yNorm = normalizeSketchBoxDividerYNorm(it?.yNorm);
     dividers.push({
-      id,
+      id: it?.id != null && String(it.id) ? String(it.id) : `sbd_${i}`,
       xNorm,
       centered: Math.abs(xNorm - 0.5) <= 0.001,
+      ...(Number.isFinite(frontZ) ? { frontZ } : {}),
+      ...(yNorm != null ? { yNorm } : {}),
     });
   }
-  if (dividers.length) return dividers.sort((a, b) => a.xNorm - b.xNorm);
-
-  const legacyNorm = normalizeSketchBoxDividerXNorm(rec?.dividerXNorm);
-  if (legacyNorm != null) {
-    return [{ id: 'legacy_divider', xNorm: legacyNorm, centered: Math.abs(legacyNorm - 0.5) <= 0.001 }];
-  }
-  if (rec?.centerDivider === true) {
-    return [{ id: 'legacy_divider', xNorm: 0.5, centered: true }];
-  }
+  if (dividers.length) return dividers.sort((a, b) => (a.yNorm ?? -1) - (b.yNorm ?? -1) || a.xNorm - b.xNorm);
+  const storedNorm = normalizeSketchBoxDividerXNorm(rec.dividerXNorm);
+  if (storedNorm != null)
+    return [{ id: 'stored_divider', xNorm: storedNorm, centered: Math.abs(storedNorm - 0.5) <= 0.001 }];
+  if (rec.centerDivider === true) return [{ id: 'legacy_divider', xNorm: 0.5, centered: true }];
   return [];
+}
+
+export function readSketchBoxHorizontalDividers(box: unknown): SketchBoxHorizontalDividerState[] {
+  const rec = asRecord(box);
+  if (!rec) return [];
+  const dividersRaw = readDividerRecordList(rec.horizontalDividers);
+  const dividers: SketchBoxHorizontalDividerState[] = [];
+  for (let i = 0; i < dividersRaw.length; i++) {
+    const it = dividersRaw[i];
+    const yNorm = normalizeSketchBoxDividerYNorm(it?.yNorm);
+    if (yNorm == null) continue;
+    const xNorm = normalizeSketchBoxDividerXNorm(it?.xNorm);
+    const frontZ = Number(it?.frontZ);
+    dividers.push({
+      id: it?.id != null && String(it.id) ? String(it.id) : `sbh_${i}`,
+      yNorm,
+      centered: Math.abs(yNorm - 0.5) <= 0.001,
+      ...(Number.isFinite(frontZ) ? { frontZ } : {}),
+      ...(xNorm != null ? { xNorm } : {}),
+    });
+  }
+  return dividers.sort((a, b) => (a.xNorm ?? -1) - (b.xNorm ?? -1) || a.yNorm - b.yNorm);
 }
 
 export function writeSketchBoxDividers(box: unknown, dividers: SketchBoxDividerState[]): void {
   const rec = asRecord(box);
   if (!rec) return;
-  if (dividers.length) {
-    rec.dividers = dividers
+  const clean = Array.isArray(dividers)
+    ? dividers.filter(d => normalizeSketchBoxDividerXNorm(d?.xNorm) != null)
+    : [];
+  if (clean.length) {
+    rec.dividers = clean
       .slice()
-      .sort((a, b) => a.xNorm - b.xNorm)
+      .sort((a, b) => (a.yNorm ?? -1) - (b.yNorm ?? -1) || a.xNorm - b.xNorm)
       .map(divider => ({
         id: divider.id,
-        xNorm: divider.xNorm,
+        xNorm: normalizeSketchBoxDividerXNorm(divider.xNorm) ?? 0.5,
+        ...(Number.isFinite(Number(divider.frontZ)) ? { frontZ: Number(divider.frontZ) } : {}),
+        ...(Number.isFinite(Number(divider.yNorm)) ? { yNorm: Number(divider.yNorm) } : {}),
       }));
   } else {
     delete rec.dividers;
   }
   rec.centerDivider = false;
   delete rec.dividerXNorm;
+}
+
+export function writeSketchBoxHorizontalDividers(
+  box: unknown,
+  dividers: SketchBoxHorizontalDividerState[]
+): void {
+  const rec = asRecord(box);
+  if (!rec) return;
+  const clean = Array.isArray(dividers)
+    ? dividers.filter(d => normalizeSketchBoxDividerYNorm(d?.yNorm) != null)
+    : [];
+  if (clean.length) {
+    rec.horizontalDividers = clean
+      .slice()
+      .sort((a, b) => (a.xNorm ?? -1) - (b.xNorm ?? -1) || a.yNorm - b.yNorm)
+      .map(divider => ({
+        id: divider.id,
+        yNorm: normalizeSketchBoxDividerYNorm(divider.yNorm) ?? 0.5,
+        ...(Number.isFinite(Number(divider.frontZ)) ? { frontZ: Number(divider.frontZ) } : {}),
+        ...(Number.isFinite(Number(divider.xNorm)) ? { xNorm: Number(divider.xNorm) } : {}),
+      }));
+  } else {
+    delete rec.horizontalDividers;
+  }
 }

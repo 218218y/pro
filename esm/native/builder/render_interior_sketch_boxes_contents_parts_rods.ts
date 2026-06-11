@@ -9,7 +9,7 @@ import { asMaterial, asRecordArray } from './render_interior_sketch_shared.js';
 import { resolveSketchBoxSegmentForContent } from './render_interior_sketch_layout.js';
 
 export function renderSketchBoxContentRods(args: RenderSketchBoxStaticContentsArgs): void {
-  const { shell, boxDividers, yFromBoxNorm } = args;
+  const { shell, boxDividers, boxHorizontalDividers, yFromBoxNorm } = args;
   const { group, woodThick, THREE } = args.args;
   const { box, boxPid, geometry } = shell;
 
@@ -34,6 +34,10 @@ export function renderSketchBoxContentRods(args: RenderSketchBoxStaticContentsAr
       innerW: geometry.innerW,
       woodThick,
       xNorm: rod.xNorm,
+      horizontalDividers: boxHorizontalDividers,
+      boxCenterY: shell.centerY,
+      innerH: shell.sideH,
+      yNorm: rod.yNorm,
     });
     const previewDims = SKETCH_BOX_DIMENSIONS.preview;
     const rodLen = Math.max(

@@ -28,6 +28,7 @@ test('project schema migrations canonicalize segmented door maps and infer drawe
       showDimensions: false,
     },
     removedDoorsMap: { removed_d1: true },
+    roundedFrameSideShelvesMap: { body_left: true },
     individualColors: { d1: 'oak' },
     doorSpecialMap: { d1: 'mirror' },
     doorStyleMap: { d1: 'profile' },
@@ -53,6 +54,7 @@ test('project schema migrations canonicalize segmented door maps and infer drawe
   stripDeprecatedProjectCompatFields(data, ensureSettingsRecord);
 
   assert.deepEqual(data.removedDoorsMap, { removed_d1_full: true });
+  assert.deepEqual(data.roundedFrameSideShelvesMap, { body_left: true });
   assert.equal(data.individualColors.d1, undefined);
   assert.equal(data.individualColors.d1_full, 'oak');
   assert.equal(data.doorSpecialMap.d1_full, 'mirror');

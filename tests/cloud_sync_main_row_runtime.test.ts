@@ -38,7 +38,7 @@ function createMemoryStorage(seed?: Record<string, unknown>) {
   };
 }
 
-function createHarness(opts?: { localSeed?: Record<string, unknown>; rows?: Array<any> }) {
+function createHarness(opts?: { localSeed?: Record<string, unknown>; rows?: Array<any>; App?: any }) {
   const storage = createMemoryStorage(
     opts?.localSeed || {
       savedModels: [{ id: 'model-1', name: 'Model 1' }],
@@ -57,23 +57,25 @@ function createHarness(opts?: { localSeed?: Record<string, unknown>; rows?: Arra
   const rows = [...(opts?.rows || [])];
 
   const ops = createCloudSyncMainRowOps({
-    App: {
-      services: {
-        models: {
-          ensureLoaded() {
+    App:
+      opts?.App ||
+      ({
+        services: {
+          models: {
+            ensureLoaded() {
+              return undefined;
+            },
+          },
+        },
+        maps: {
+          setSavedColors() {
+            return undefined;
+          },
+          setColorSwatchesOrder() {
             return undefined;
           },
         },
-      },
-      maps: {
-        setSavedColors() {
-          return undefined;
-        },
-        setColorSwatchesOrder() {
-          return undefined;
-        },
-      },
-    } as any,
+      } as any),
     cfg: { anonKey: 'anon' } as any,
     restUrl: 'https://example.test/rest',
     room: 'room-a',
@@ -443,6 +445,57 @@ test('cloud sync main row pull applies newer remote payloads into local storage'
   assert.deepEqual(dump.colorOrder, ['remote-color-2']);
   assert.deepEqual(dump.presetOrder, ['preset-2']);
   assert.deepEqual(dump.hiddenPresets, []);
+});
+
+test('cloud sync main row first remote pull hydrates app maps even when stored hash already matches remote', async () => {
+  const payload = {
+    savedModels: [{ id: 'remote-1', name: 'Remote 1' }],
+    savedColors: [{ id: 'remote-color', type: 'solid', value: '#abcdef' }],
+    colorSwatchesOrder: ['remote-color'],
+    presetOrder: ['preset-remote'],
+    hiddenPresets: ['hidden-remote'],
+  };
+  const savedColorCalls: Array<{ colors: unknown[]; meta?: Record<string, unknown> }> = [];
+  const colorOrderCalls: Array<{ order: string[]; meta?: Record<string, unknown> }> = [];
+  const harness = createHarness({
+    localSeed: {
+      savedModels: payload.savedModels,
+      savedColors: payload.savedColors,
+      colorOrder: payload.colorSwatchesOrder,
+      presetOrder: payload.presetOrder,
+      hiddenPresets: payload.hiddenPresets,
+    },
+    rows: [{ updated_at: '2026-04-02T20:00:00.000Z', payload }],
+    App: {
+      services: {
+        models: {
+          ensureLoaded() {
+            return undefined;
+          },
+        },
+      },
+      maps: {
+        setSavedColors(colors: unknown[], meta?: Record<string, unknown>) {
+          savedColorCalls.push({ colors, meta });
+        },
+        setColorSwatchesOrder(order: string[], meta?: Record<string, unknown>) {
+          colorOrderCalls.push({ order, meta });
+        },
+      },
+      store: {
+        getState() {
+          return { config: { savedColors: [], colorSwatchesOrder: [] } };
+        },
+      },
+    },
+  });
+
+  await harness.ops.pullOnce(false);
+
+  assert.equal(savedColorCalls.length, 1);
+  assert.deepEqual(savedColorCalls[0]?.colors, payload.savedColors);
+  assert.equal(colorOrderCalls.length, 1);
+  assert.deepEqual(colorOrderCalls[0]?.order, ['remote-color']);
 });
 
 test('cloud sync main row coalesces repeated pending pull timers and cancels stale delayed pull on direct pull', async () => {

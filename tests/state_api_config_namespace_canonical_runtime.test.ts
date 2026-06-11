@@ -411,13 +411,13 @@ test('[state-api.config] applyPaintSnapshot commits door style with special glas
     { source: 'test:paint-style-snapshot' },
     { drawer_1: 'glass' },
     {},
-    { drawer_1: 'tom' }
+    { drawer_1: 'double_profile' }
   );
 
   const committedPatch = asRec(store.commits[0]?.patch);
   const replace = asRec(committedPatch.__replace);
   assert.deepEqual(asRec(committedPatch.doorSpecialMap), { drawer_1: 'glass' });
-  assert.deepEqual(asRec(committedPatch.doorStyleMap), { drawer_1: 'tom' });
+  assert.deepEqual(asRec(committedPatch.doorStyleMap), { drawer_1: 'double_profile' });
   assert.equal(replace.doorSpecialMap, true);
   assert.equal(replace.doorStyleMap, true);
 });

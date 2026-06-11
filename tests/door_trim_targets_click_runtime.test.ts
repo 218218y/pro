@@ -145,3 +145,127 @@ test('door trim click writes canonical trim maps through history batch and toggl
   assert.equal(configWrites.length, 2);
   assert.deepEqual(rootState.config.doorTrimMap, {});
 });
+
+test('door trim click resolves sketch external-drawer split door leaves from nested visual children', () => {
+  const { app, rootState, configWrites } = createDoorTrimApp();
+  const segmentedRoot = createDoorGroup('sketch_box_0_sb_1_door_left_top', {
+    __doorWidth: 0.8,
+    __doorHeight: 0.6,
+    __doorRectMinX: -0.4,
+    __doorRectMaxX: 0.4,
+    __doorRectMinY: -0.3,
+    __doorRectMaxY: 0.3,
+    __wpSketchDoorLeaf: true,
+  }) as DoorGroupLike & { parent?: unknown };
+  const nestedMesh = {
+    userData: {
+      partId: 'sketch_box_0_sb_1_door_left_top',
+      __wpSketchDoorSegment: true,
+    },
+    parent: segmentedRoot,
+  } as DoorGroupLike & { parent?: unknown };
+  app.render.doorsArray = [
+    {
+      group: createDoorGroup('sketch_box_0_sb_1_door_left', {
+        __doorWidth: 0.8,
+        __doorHeight: 2.2,
+      }),
+    },
+  ];
+
+  const handled = handleCanvasDoorTrimClick({
+    App: app,
+    effectiveDoorId: 'sketch_box_0_sb_1_door_left_top',
+    foundPartId: null,
+    doorHitPoint: { x: 0, y: 0, z: 0 },
+    doorHitObject: nestedMesh,
+    doorHitGroup: segmentedRoot,
+  });
+
+  assert.equal(handled, true);
+  assert.equal(configWrites.length, 1);
+  assert.equal(rootState.config.doorTrimMap.sketch_box_0_sb_1_door_left, undefined);
+  assert.ok(Array.isArray(rootState.config.doorTrimMap.sketch_box_0_sb_1_door_left_top));
+  assert.equal(rootState.config.doorTrimMap.sketch_box_0_sb_1_door_left_top.length, 1);
+  assert.equal(rootState.config.doorTrimMap.sketch_box_0_sb_1_door_left_top[0].axis, 'horizontal');
+});
+
+test('door trim target resolution supports regular and sketch external drawer fronts', () => {
+  const regularDrawer = createDoorGroup('d1_draw_1');
+  const sketchDrawer = createDoorGroup('sketch_ext_drawers_1_sed-1_1');
+  const sketchBoxDrawer = createDoorGroup('sketch_box_free_box-a_ext_drawers_sed-2_1');
+  const drawerBoxBody = createDoorGroup('drawer_box__d1_draw_1', { __wpDrawerBox: true });
+  const App: any = {
+    render: {
+      drawersArray: [
+        { group: regularDrawer },
+        { group: sketchDrawer },
+        { group: sketchBoxDrawer },
+        { group: drawerBoxBody },
+      ],
+    },
+  };
+
+  const regularTarget = resolveDoorTrimTarget(App, 'd1_draw_1');
+  assert.equal(regularTarget?.partId, 'd1_draw_1');
+  assert.equal(regularTarget?.group, regularDrawer);
+
+  const sketchTarget = resolveDoorTrimTarget(App, 'sketch_ext_drawers_1_sed-1_1');
+  assert.equal(sketchTarget?.partId, 'sketch_ext_drawers_1_sed-1_1');
+  assert.equal(sketchTarget?.group, sketchDrawer);
+
+  const sketchBoxTarget = resolveDoorTrimTarget(App, 'sketch_box_free_box-a_ext_drawers_sed-2_1');
+  assert.equal(sketchBoxTarget?.partId, 'sketch_box_free_box-a_ext_drawers_sed-2_1');
+  assert.equal(sketchBoxTarget?.group, sketchBoxDrawer);
+
+  assert.equal(resolveDoorTrimTarget(App, 'drawer_box__d1_draw_1'), null);
+});
+
+test('door trim click writes trim maps for external drawer fronts', () => {
+  const { app, rootState, configWrites } = createDoorTrimApp();
+  const drawerGroup = createDoorGroup('d1_draw_1', { __wpType: 'extDrawer' });
+  app.render.drawersArray = [{ group: drawerGroup }];
+
+  const handled = handleCanvasDoorTrimClick({
+    App: app,
+    effectiveDoorId: null,
+    foundPartId: 'd1_draw_1',
+    doorHitPoint: { x: 0, y: 0, z: 0 },
+    doorHitObject: drawerGroup,
+  });
+
+  assert.equal(handled, true);
+  assert.equal(configWrites.length, 1);
+  assert.ok(Array.isArray(rootState.config.doorTrimMap.d1_draw_1));
+  assert.equal(rootState.config.doorTrimMap.d1_draw_1.length, 1);
+  assert.equal(rootState.config.doorTrimMap.d1_draw_1[0].axis, 'horizontal');
+});
+
+test('door trim click on regular corner drawer boxes writes to the owning drawer front', () => {
+  const { app, rootState, configWrites } = createDoorTrimApp();
+  const drawerGroup = createDoorGroup('corner_c0_draw_1', { __wpType: 'extDrawer' });
+  const drawerBox = createDoorGroup('drawer_box__corner_c0_draw_1', {
+    __wpDrawerBox: true,
+    __wpDrawerOwnerPartId: 'corner_c0_draw_1',
+    drawerId: 'corner_c0_draw_1',
+  });
+  app.render.drawersArray = [{ group: drawerGroup }];
+
+  const resolved = resolveDoorTrimTarget(app, 'drawer_box__corner_c0_draw_1', drawerBox);
+  assert.equal(resolved?.partId, 'corner_c0_draw_1');
+  assert.equal(resolved?.group, drawerGroup);
+
+  const handled = handleCanvasDoorTrimClick({
+    App: app,
+    effectiveDoorId: null,
+    foundPartId: 'drawer_box__corner_c0_draw_1',
+    doorHitPoint: { x: 0, y: 0, z: 0 },
+    doorHitObject: drawerBox,
+  });
+
+  assert.equal(handled, true);
+  assert.equal(configWrites.length, 1);
+  assert.equal(rootState.config.doorTrimMap.drawer_box__corner_c0_draw_1, undefined);
+  assert.ok(Array.isArray(rootState.config.doorTrimMap.corner_c0_draw_1));
+  assert.equal(rootState.config.doorTrimMap.corner_c0_draw_1.length, 1);
+});

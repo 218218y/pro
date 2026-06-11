@@ -15,6 +15,17 @@ export function SettingsVisualDisplaySection(props: {
       <ToggleRow
         label={
           <>
+            <i className="fas fa-moon"></i> מצב כהה
+          </>
+        }
+        checked={model.darkMode}
+        onChange={model.onToggleDarkMode}
+        testId="toggle-dark-mode"
+      />
+
+      <ToggleRow
+        label={
+          <>
             <i className="fas fa-ruler-combined"></i> הצג מידות
           </>
         }
@@ -42,17 +53,6 @@ export function SettingsVisualDisplaySection(props: {
         checked={model.globalClickUi}
         onChange={model.onToggleGlobalClick}
         testId="toggle-global-click"
-      />
-
-      <ToggleRow
-        label={
-          <>
-            <i className="fas fa-moon"></i> מצב כהה
-          </>
-        }
-        checked={model.darkMode}
-        onChange={model.onToggleDarkMode}
-        testId="toggle-dark-mode"
       />
     </div>
   );

@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+# WardrobePro pre-commit (fast)
+# Formats only staged files, then keeps boundaries clean without slowing you down.
+node.exe tools/wp_prettier_changed.mjs --write --staged
+node.exe tools/wp_check.js --strict --gate

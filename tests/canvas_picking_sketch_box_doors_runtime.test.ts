@@ -7,9 +7,13 @@ import {
   resolveSketchBoxDoorPlacements,
   toggleSketchBoxDoorHingeForSegment,
   upsertSketchBoxDoorForSegment,
+  writeSketchBoxDoors,
   upsertSketchBoxDoubleDoorPairForSegment,
 } from '../esm/native/services/canvas_picking_sketch_box_doors.ts';
-import { resolveSketchBoxSegments } from '../esm/native/services/canvas_picking_sketch_box_segments.ts';
+import {
+  resolveSketchBoxSegments,
+  resolveSketchBoxVerticalSegments,
+} from '../esm/native/services/canvas_picking_sketch_box_segments.ts';
 
 const segments = resolveSketchBoxSegments({
   dividers: [{ id: 'mid', xNorm: 0.5, centered: true }],
@@ -112,4 +116,117 @@ test('sketch-box doors remove a focused segment door without disturbing the othe
   const remaining = readSketchBoxDoors(box);
   assert.equal(remaining.length, 1);
   assert.equal(remaining[0].hinge, 'right');
+});
+
+test('sketch-box doors treat rows inside the same divided column as independent cells', () => {
+  const box: Record<string, unknown> = {};
+  const dividers = [{ id: 'mid', xNorm: 0.5, centered: true }];
+  const horizontalDividers = [{ id: 'right-row', yNorm: 0.5, xNorm: 0.75, centered: true }];
+  const topSegments = resolveSketchBoxSegments({
+    dividers,
+    horizontalDividers,
+    boxCenterX: 0,
+    innerW: 1,
+    boxCenterY: 0,
+    innerH: 1,
+    woodThick: 0.018,
+    xNorm: 0.75,
+    yNorm: 0.75,
+  });
+  const bottomSegments = resolveSketchBoxSegments({
+    dividers,
+    horizontalDividers,
+    boxCenterX: 0,
+    innerW: 1,
+    boxCenterY: 0,
+    innerH: 1,
+    woodThick: 0.018,
+    xNorm: 0.75,
+    yNorm: 0.25,
+  });
+  const verticalSegments = resolveSketchBoxVerticalSegments({
+    dividers: horizontalDividers,
+    verticalDividers: dividers,
+    boxCenterX: 0,
+    innerW: 1,
+    boxCenterY: 0,
+    innerH: 1,
+    woodThick: 0.018,
+    xNorm: 0.75,
+  });
+
+  upsertSketchBoxDoorForSegment({
+    box,
+    segments: topSegments,
+    verticalSegments,
+    boxCenterX: 0,
+    innerW: 1,
+    boxCenterY: 0,
+    innerH: 1,
+    xNorm: 0.75,
+    yNorm: 0.75,
+    hinge: 'left',
+  });
+  upsertSketchBoxDoorForSegment({
+    box,
+    segments: bottomSegments,
+    verticalSegments,
+    boxCenterX: 0,
+    innerW: 1,
+    boxCenterY: 0,
+    innerH: 1,
+    xNorm: 0.75,
+    yNorm: 0.25,
+    hinge: 'right',
+  });
+
+  const doors = readSketchBoxDoors(box);
+  assert.equal(doors.length, 2);
+  assert.equal(new Set(doors.map(door => door.yNorm)).size, 2);
+
+  const removedTop = removeSketchBoxDoorForSegment({
+    box,
+    segments: topSegments,
+    verticalSegments,
+    boxCenterX: 0,
+    innerW: 1,
+    boxCenterY: 0,
+    innerH: 1,
+    xNorm: 0.75,
+    yNorm: 0.75,
+  });
+
+  assert.equal(removedTop, true);
+  const remaining = readSketchBoxDoors(box);
+  assert.equal(remaining.length, 1);
+  assert.ok(Number(remaining[0].yNorm) < 0.5);
+});
+
+test('sketch-box doors preserve stored groove line counts when rewriting door records', () => {
+  const box: Record<string, unknown> = {};
+
+  writeSketchBoxDoors(box, [
+    {
+      id: 'sbdr_saved_count',
+      xNorm: 0.5,
+      hinge: 'left',
+      enabled: true,
+      open: false,
+      groove: true,
+      grooveLinesCount: 7.9,
+    },
+  ]);
+
+  assert.deepEqual(box.doors, [
+    {
+      id: 'sbdr_saved_count',
+      xNorm: 0.5,
+      hinge: 'left',
+      enabled: true,
+      open: false,
+      groove: true,
+      grooveLinesCount: 7,
+    },
+  ]);
+  assert.equal(readSketchBoxDoors(box)[0].grooveLinesCount, 7);
 });

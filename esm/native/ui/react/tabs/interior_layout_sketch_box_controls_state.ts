@@ -2,6 +2,7 @@ import {
   SKETCH_TOOL_BOX_BASE_PREFIX,
   SKETCH_TOOL_BOX_CORNICE_PREFIX,
   SKETCH_TOOL_BOX_DIVIDER,
+  SKETCH_TOOL_BOX_DIVIDER_HORIZONTAL,
   SKETCH_TOOL_BOX_DOOR,
   SKETCH_TOOL_BOX_DOUBLE_DOOR,
   SKETCH_TOOL_BOX_DOOR_HINGE,
@@ -13,6 +14,7 @@ export type SketchBoxControlsViewState = Readonly<{
   isSketchBoxControlsOpen: boolean;
   isSketchBoxToolActive: boolean;
   isDividerToolActive: boolean;
+  isHorizontalDividerToolActive: boolean;
   isDoorToolActive: boolean;
   isDoorHingeToolActive: boolean;
   isDoubleDoorToolActive: boolean;
@@ -26,6 +28,8 @@ export function readSketchBoxControlsViewState(
   const isSketchBoxControlsOpen = props.isSketchBoxControlsOpen;
   const isSketchBoxToolActive = props.isSketchToolActive && isSketchBoxTool(props.manualToolRaw);
   const isDividerToolActive = props.isSketchToolActive && props.manualToolRaw === SKETCH_TOOL_BOX_DIVIDER;
+  const isHorizontalDividerToolActive =
+    props.isSketchToolActive && props.manualToolRaw === SKETCH_TOOL_BOX_DIVIDER_HORIZONTAL;
   const isDoorToolActive = props.isSketchToolActive && props.manualToolRaw === SKETCH_TOOL_BOX_DOOR;
   const isDoorHingeToolActive =
     props.isSketchToolActive && props.manualToolRaw === SKETCH_TOOL_BOX_DOOR_HINGE;
@@ -40,6 +44,7 @@ export function readSketchBoxControlsViewState(
     isSketchBoxControlsOpen,
     isSketchBoxToolActive,
     isDividerToolActive,
+    isHorizontalDividerToolActive,
     isDoorToolActive,
     isDoorHingeToolActive,
     isDoubleDoorToolActive,

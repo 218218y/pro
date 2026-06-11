@@ -21,20 +21,23 @@ import {
   type InteriorCustomBraceMetrics,
   type ShelfVariant,
 } from './render_interior_custom_ops_shared.js';
+import type { RemovedFrameSideShelfRounding } from './removed_frame_side_brace_shelves.js';
 
-const BRACE_SIDE_GAP = INTERIOR_FITTINGS_DIMENSIONS.shelves.braceSideGapM;
-const BRACE_SEAM_PAD = INTERIOR_FITTINGS_DIMENSIONS.shelves.braceSeamPadM;
-const BRACE_SEAM_W = Math.max(0, BRACE_SIDE_GAP - 2 * BRACE_SEAM_PAD);
+type RoundedShelfBoardOptions = {
+  shape: 'rounded_shelf';
+  roundedShelfSide: RemovedFrameSideShelfRounding;
+};
+
 const PIN_RADIUS = INTERIOR_FITTINGS_DIMENSIONS.pins.radiusM;
 const PIN_LEN = INTERIOR_FITTINGS_DIMENSIONS.pins.lengthM;
 const PIN_EDGE_OFFSET_DEFAULT = INTERIOR_FITTINGS_DIMENSIONS.pins.edgeOffsetDefaultM;
 const GLASS_THICK_M = MATERIAL_DIMENSIONS.glassShelf.thicknessM;
 
-function shelfHeightForVariant(variant: ShelfVariant | undefined, woodThick: number): number {
+function shelfHeightForVariant(variant: ShelfVariant | undefined, shelfThick: number): number {
   if (variant === 'glass') return GLASS_THICK_M;
   if (variant === 'double')
-    return Math.max(woodThick, woodThick * INTERIOR_FITTINGS_DIMENSIONS.shelves.doubleThicknessMultiplier);
-  return woodThick;
+    return Math.max(shelfThick, shelfThick * INTERIOR_FITTINGS_DIMENSIONS.shelves.doubleThicknessMultiplier);
+  return shelfThick;
 }
 
 export function createAddCustomGridShelf(args: {
@@ -49,7 +52,8 @@ export function createAddCustomGridShelf(args: {
     y: number,
     z: number,
     material: unknown,
-    partId: string
+    partId: string,
+    options?: RoundedShelfBoardOptions | null
   ) => unknown;
   addFoldedClothes: unknown;
   currentShelfMat: unknown;
@@ -68,10 +72,12 @@ export function createAddCustomGridShelf(args: {
   internalCenterX: number;
   innerW: number;
   woodThick: number;
+  shelfThick: number;
   internalDepth: number;
   internalZ: number;
   isInternalDrawersEnabled: boolean;
   activeSlots: unknown[];
+  roundedShelfSide?: RemovedFrameSideShelfRounding | null;
 }) {
   const {
     threeSurface,
@@ -94,66 +100,16 @@ export function createAddCustomGridShelf(args: {
     gridDivisions,
     internalCenterX,
     innerW,
-    woodThick,
+    shelfThick,
     internalDepth,
     internalZ,
     isInternalDrawersEnabled,
     activeSlots,
+    roundedShelfSide,
   } = args;
 
-  let braceSeamMat: InteriorMaterialLike | null = null;
-  const braceSeamGeoCache: Record<string, unknown> = Object.create(null);
   let pinGeo: unknown = null;
   let pinMat: InteriorMaterialLike | null = null;
-
-  const ensureBraceSeamResources = (depth: number) => {
-    if (!threeSurface) return null;
-    if (!(BRACE_SEAM_W > 0) || !(depth > 0)) return null;
-    if (!braceSeamMat) {
-      braceSeamMat = new threeSurface.MeshBasicMaterial({ color: 0x111111 });
-      braceSeamMat.__keepMaterial = true;
-    }
-    const key = String(Math.round(depth * 1000));
-    if (!braceSeamGeoCache[key]) {
-      braceSeamGeoCache[key] = new threeSurface.BoxGeometry(
-        BRACE_SEAM_W,
-        woodThick,
-        Math.max(
-          INTERIOR_FITTINGS_DIMENSIONS.shelves.braceSeamDepthMinM,
-          depth - INTERIOR_FITTINGS_DIMENSIONS.shelves.braceSeamDepthInsetM
-        )
-      );
-    }
-    return { geo: braceSeamGeoCache[key], mat: braceSeamMat };
-  };
-
-  const addBraceDarkSeams = (
-    shelfY: number,
-    shelfZ: number,
-    shelfDepth: number,
-    isBrace: boolean,
-    shelfPartId: string
-  ) => {
-    if (!isBrace || !threeSurface) return;
-    const resources = ensureBraceSeamResources(shelfDepth);
-    if (!resources) return;
-    const leftFaceX = braceMetrics.leftInnerX;
-    const rightFaceX = braceMetrics.rightInnerX;
-    if (!Number.isFinite(leftFaceX) || !Number.isFinite(rightFaceX) || !(rightFaceX > leftFaceX)) return;
-    const mk = (x: number) => {
-      const mesh = new threeSurface.Mesh(resources.geo, resources.mat);
-      mesh.position?.set?.(x, shelfY, shelfZ);
-      mesh.castShadow = false;
-      mesh.receiveShadow = false;
-      mesh.userData = mesh.userData || {};
-      mesh.userData.partId = shelfPartId;
-      markShelfBoardUserData(mesh.userData, { groupPartId: SHELF_GROUP_PART_ID });
-      mesh.userData.__kind = 'brace_seam';
-      group.add?.(mesh);
-    };
-    mk(leftFaceX + BRACE_SEAM_PAD + BRACE_SEAM_W / 2);
-    mk(rightFaceX - BRACE_SEAM_PAD - BRACE_SEAM_W / 2);
-  };
 
   function ensurePinResources(): boolean {
     if (!threeSurface) return false;
@@ -213,7 +169,7 @@ export function createAddCustomGridShelf(args: {
 
     for (let nextIndex = gridIndex + 1; nextIndex < maxGrid; nextIndex += 1) {
       if (shelfSet[nextIndex]) {
-        const nextShelfH = shelfHeightForVariant(shelfVariantByIndex[nextIndex], woodThick);
+        const nextShelfH = shelfHeightForVariant(shelfVariantByIndex[nextIndex], shelfThick);
         topLimitY = effectiveBottomY + nextIndex * localGridStep - nextShelfH / 2;
         break;
       }
@@ -253,7 +209,7 @@ export function createAddCustomGridShelf(args: {
     const shelfVariant = typeof variant === 'string' ? variant : 'regular';
     const isBrace = !!braceSet[gridIndex] || shelfVariant === 'brace';
     const isGlass = shelfVariant === 'glass';
-    const shelfH = shelfHeightForVariant(shelfVariant, woodThick);
+    const shelfH = shelfHeightForVariant(shelfVariant, shelfThick);
     const shelfDepth = isBrace ? internalDepth : braceMetrics.regularDepth;
     const shelfZ = isBrace ? internalZ : braceMetrics.regularZ;
     const shelfW = isBrace ? braceMetrics.braceShelfWidth : braceMetrics.regularShelfWidth;
@@ -269,8 +225,10 @@ export function createAddCustomGridShelf(args: {
             getPartMaterial,
           });
 
+    const roundedOptions =
+      isBrace && roundedShelfSide ? { shape: 'rounded_shelf' as const, roundedShelfSide } : null;
     const mesh = asMesh(
-      createBoard(shelfW, shelfH, shelfDepth, shelfX, shelfY, shelfZ, material, shelfPartId)
+      createBoard(shelfW, shelfH, shelfDepth, shelfX, shelfY, shelfZ, material, shelfPartId, roundedOptions)
     );
 
     if (mesh && typeof mesh === 'object') {
@@ -280,10 +238,10 @@ export function createAddCustomGridShelf(args: {
         shelfIndex: gridIndex,
         variant: shelfVariant,
         isBrace,
+        roundedSide: roundedOptions?.roundedShelfSide,
       });
     }
 
-    addBraceDarkSeams(shelfY, shelfZ, shelfDepth, isBrace, shelfPartId);
     addShelfPins(shelfY, shelfZ, shelfDepth, shelfH, isBrace, shelfPartId);
 
     if (isGlass && mesh && typeof mesh === 'object') {
@@ -322,6 +280,7 @@ export function addCustomBaseShelfContents(args: {
   internalCenterX: number;
   innerW: number;
   woodThick: number;
+  shelfThick: number;
   internalDepth: number;
   internalZ: number;
   isInternalDrawersEnabled: boolean;
@@ -338,7 +297,7 @@ export function addCustomBaseShelfContents(args: {
     localGridStep,
     internalCenterX,
     innerW,
-    woodThick,
+    shelfThick,
     internalDepth,
     internalZ,
     isInternalDrawersEnabled,
@@ -350,7 +309,7 @@ export function addCustomBaseShelfContents(args: {
   if (hasDrawerInBottomSpace) return;
 
   const firstShelfVariant = shelfVariantByIndex[1] || 'regular';
-  const firstShelfH = shelfHeightForVariant(firstShelfVariant, woodThick);
+  const firstShelfH = shelfHeightForVariant(firstShelfVariant, shelfThick);
   const maxHeight = Math.max(
     0,
     effectiveBottomY +

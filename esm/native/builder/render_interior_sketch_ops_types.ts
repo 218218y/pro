@@ -24,6 +24,7 @@ import type {
 import type { RenderSketchFreeWardrobeBox } from './render_interior_sketch_boxes_shared.js';
 import type { SketchFreeBoxDimensionEntry } from './render_interior_sketch_layout.js';
 import type { SketchPlacementSupport } from './render_interior_sketch_support.js';
+import type { RemovedFrameSideShelfRounding } from './removed_frame_side_brace_shelves.js';
 
 export type RenderInteriorSketchOpsContext = {
   app: RenderInteriorSketchOpsDeps['app'];
@@ -50,6 +51,7 @@ export type InteriorSketchExtrasInput = {
   rods: SketchRodExtra[];
   drawers: SketchDrawerExtra[];
   extDrawers: SketchExternalDrawerExtra[];
+  internalDrawersEnabled: boolean;
   createBoard: InteriorOpsCallable;
   group: InteriorGroupLike;
   effectiveBottomY: number;
@@ -57,6 +59,7 @@ export type InteriorSketchExtrasInput = {
   spanH: number;
   innerW: number;
   woodThick: number;
+  shelfThick: number;
   internalDepth: number;
   internalCenterX: number;
   internalZ: number;
@@ -77,6 +80,8 @@ export type InteriorSketchExtrasInput = {
   regularShelfWidth: number;
   regularDepth: number;
   backZ: number;
+  forceBraceShelves: boolean;
+  roundedShelfSide: RemovedFrameSideShelfRounding | null;
 };
 
 export type InteriorSketchDimensionOverlayContext = {

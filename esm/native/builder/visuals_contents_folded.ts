@@ -7,11 +7,11 @@ import {
   getCachedMeshStandardMaterial,
   getCachedRoundedBoxGeometry,
   getBookSetColor,
-  getRandomBookColor,
   getRandomBookSetPalette,
   getRandomBookSpineBandColor,
   getRandomClothColor,
   getVisualsContentsBuildUI,
+  quantizeVisualContentMetric,
   readVisualsContentsSketchMode,
   resolveLibraryContents,
   resolveShowContents,
@@ -40,6 +40,30 @@ function nextInteger(min: number, max: number): number {
   const low = Math.ceil(min);
   const high = Math.max(low, Math.floor(max));
   return low + Math.floor(seededRandom.random() * (high - low + 1));
+}
+
+function resolveBackAlignedZ(args: {
+  shelfZ: number;
+  backEdgeZ: number;
+  depthMargin: number;
+  depth: number;
+}): number {
+  const { shelfZ, backEdgeZ, depthMargin, depth } = args;
+  const z = backEdgeZ + depthMargin + quantizeVisualContentMetric(depth) / 2;
+  return Number.isFinite(z) ? z : shelfZ;
+}
+
+function resolveBookDepth(baseDepth: number): number {
+  const dims = CONTENT_VISUAL_DIMENSIONS.books;
+  const trimRange = Math.min(dims.depthRandomTrimRangeM, Math.max(0, baseDepth - dims.depthMinM));
+  const randomizedDepth = baseDepth - seededRandom.random() * trimRange;
+  return clamp(randomizedDepth, dims.depthMinM, baseDepth);
+}
+
+function resolveRotatedBookFootprintWidth(width: number, height: number, angleZ: number): number {
+  const angleCos = Math.abs(Math.cos(angleZ));
+  const angleSin = Math.abs(Math.sin(angleZ));
+  return width * angleCos + height * angleSin;
 }
 
 function createShelfBookRun(args: {
@@ -123,67 +147,6 @@ function addBookSpineBands(args: {
   }
 }
 
-function addShelfBookStack(args: {
-  THREE: ReturnType<typeof ensureVisualsContentsTHREE>;
-  cursorX: number;
-  actualW: number;
-  maxX: number;
-  shelfY: number;
-  rowZ: number;
-  bookDepth: number;
-  availableHeight: number;
-  parentGroup: Object3DLike;
-  addOutlines: (mesh: unknown) => unknown;
-  isSketch: boolean;
-}): boolean {
-  const {
-    THREE,
-    cursorX,
-    actualW,
-    maxX,
-    shelfY,
-    rowZ,
-    bookDepth,
-    availableHeight,
-    parentGroup,
-    addOutlines,
-    isSketch,
-  } = args;
-  const dims = CONTENT_VISUAL_DIMENSIONS.books;
-  if (seededRandom.random() > dims.stackChance || cursorX + actualW + dims.stackLookaheadM >= maxX)
-    return false;
-
-  const maxStackTopY = shelfY + availableHeight;
-  let stackY = shelfY;
-  for (let s = 0; s < dims.stackMaxItems; s += 1) {
-    const stackW = Math.min(
-      dims.stackWidthBaseM + seededRandom.random() * dims.stackWidthRandomRangeM,
-      maxX - cursorX - actualW - dims.stackTrailingGapM
-    );
-    if (!(stackW > dims.stackWidthMinM)) break;
-    const stackH = dims.stackHeightBaseM + seededRandom.random() * dims.stackHeightRandomRangeM;
-    if (stackY + stackH > maxStackTopY || stackH < dims.minStackHeightM) break;
-    const stackDepth =
-      bookDepth * (dims.stackDepthScaleBase + seededRandom.random() * dims.stackDepthScaleRange);
-    const stackGeo = getCachedBoxGeometry(THREE, stackW, stackH, stackDepth);
-    const stackColor = getRandomBookColor();
-    const stackMat = getCachedMeshStandardMaterial(THREE, `book-stack:${stackColor}`, {
-      color: stackColor,
-      roughness: 0.76,
-      metalness: 0.0,
-    });
-    const stackedBook = new THREE.Mesh(stackGeo, stackMat);
-    stackedBook.position.set(cursorX + actualW + dims.stackXOffsetM + stackW / 2, stackY + stackH / 2, rowZ);
-    stackedBook.rotation.y = (seededRandom.random() - 0.5) * dims.stackTiltYRangeRad;
-    stackedBook.userData = stackedBook.userData || {};
-    stackedBook.userData.__kind = 'library_book_stack';
-    if (isSketch) addOutlines(stackedBook);
-    parentGroup.add?.(stackedBook);
-    stackY += stackH;
-  }
-  return stackY > shelfY;
-}
-
 function addShelfBooks(args: {
   THREE: ReturnType<typeof ensureVisualsContentsTHREE>;
   shelfX: number;
@@ -207,18 +170,16 @@ function addShelfBooks(args: {
     typeof maxDepth === 'number' && Number.isFinite(maxDepth) && maxDepth > 0
       ? Number(maxDepth)
       : dims.defaultMaxDepthM;
-  const bookDepth = Math.min(dims.depthMaxM, Math.max(dims.depthMinM, resolvedMaxDepth - depthMargin * 2));
+  const maxBookDepth = Math.min(dims.depthMaxM, Math.max(dims.depthMinM, resolvedMaxDepth - depthMargin * 2));
   const availableHeight = Math.max(0, Number(maxHeight) - topSafety);
   if (
     !(width > sideMargin * 2) ||
     !(availableHeight >= minBookHeight) ||
-    !(bookDepth > dims.depthViabilityMinM)
+    !(maxBookDepth > dims.depthViabilityMinM)
   )
     return;
 
   const backEdgeZ = shelfZ - resolvedMaxDepth / 2;
-  const minZ = backEdgeZ + depthMargin + bookDepth / 2;
-  const rowZ = Number.isFinite(minZ) ? minZ : shelfZ;
   const minX = shelfX - width / 2 + sideMargin;
   const maxX = shelfX + width / 2 - sideMargin;
   const shelfSpan = Math.max(0, maxX - minX);
@@ -243,18 +204,33 @@ function addShelfBooks(args: {
     const bookWidth = run.widthBase + seededRandom.random() * run.widthRange;
     const gap = run.gapBase + seededRandom.random() * run.gapRange;
     const actualW = Math.min(bookWidth, remaining);
-    const bookAngleZ = (seededRandom.random() - 0.5) * run.tiltRange;
-    const angleCos = Math.max(dims.angleCosMin, Math.abs(Math.cos(bookAngleZ)));
-    const angleSin = Math.abs(Math.sin(bookAngleZ));
-    const maxRotatedBookHeight = Math.max(0, (availableHeight - actualW * angleSin) / angleCos);
     const localVariation = edgeRun ? (seededRandom.random() - 0.5) * dims.edgeHeightVariationM : 0;
-    const bookHeight = Math.min(
+    let bookAngleZ = (seededRandom.random() - 0.5) * run.tiltRange;
+    let angleCos = Math.max(dims.angleCosMin, Math.abs(Math.cos(bookAngleZ)));
+    let angleSin = Math.abs(Math.sin(bookAngleZ));
+    let maxRotatedBookHeight = Math.max(0, (availableHeight - actualW * angleSin) / angleCos);
+    let bookHeight = Math.min(
       maxRotatedBookHeight,
       clamp(run.height + localVariation, minBookHeight, availableHeight)
     );
     if (!(actualW > dims.widthMinM) || !(bookHeight >= minBookHeight)) break;
-    const rotatedBookHeight = bookHeight * angleCos + actualW * angleSin;
+    let rotatedBookHeight = bookHeight * angleCos + actualW * angleSin;
+    let occupiedBookWidth = resolveRotatedBookFootprintWidth(actualW, bookHeight, bookAngleZ);
+    if (occupiedBookWidth > remaining) {
+      bookAngleZ = 0;
+      angleCos = 1;
+      angleSin = 0;
+      maxRotatedBookHeight = availableHeight;
+      bookHeight = Math.min(
+        maxRotatedBookHeight,
+        clamp(run.height + localVariation, minBookHeight, availableHeight)
+      );
+      rotatedBookHeight = bookHeight;
+      occupiedBookWidth = actualW;
+    }
 
+    const bookDepth = resolveBookDepth(maxBookDepth);
+    const rowZ = resolveBackAlignedZ({ shelfZ, backEdgeZ, depthMargin, depth: bookDepth });
     const geometry = getCachedBoxGeometry(THREE, actualW, bookHeight, bookDepth);
     const bookColor = getBookSetColor(run.palette, run.volumeIndex);
     const mat = getCachedMeshStandardMaterial(THREE, `library-book:${bookColor}`, {
@@ -263,7 +239,7 @@ function addShelfBooks(args: {
       metalness: 0.0,
     });
     const book = new THREE.Mesh(geometry, mat);
-    book.position.set(cursorX + actualW / 2, shelfY + rotatedBookHeight / 2, rowZ);
+    book.position.set(cursorX + occupiedBookWidth / 2, shelfY + rotatedBookHeight / 2, rowZ);
     book.rotation.z = bookAngleZ;
     book.userData = book.userData || {};
     book.userData.__kind = 'library_book';
@@ -272,24 +248,7 @@ function addShelfBooks(args: {
     if (isSketch) addOutlines(book);
     parentGroup.add?.(book);
 
-    const addedStack = addShelfBookStack({
-      THREE,
-      cursorX,
-      actualW,
-      maxX,
-      shelfY,
-      rowZ,
-      bookDepth,
-      availableHeight,
-      parentGroup,
-      addOutlines,
-      isSketch,
-    });
-    cursorX +=
-      actualW +
-      (addedStack ? dims.stackCursorAdvanceM : 0) +
-      (run.remaining <= 1 ? dims.setTrailingGapM : 0) +
-      gap;
+    cursorX += occupiedBookWidth + (run.remaining <= 1 ? dims.setTrailingGapM : 0) + gap;
     run.remaining -= 1;
     run.volumeIndex += 1;
     bookIndex += 1;

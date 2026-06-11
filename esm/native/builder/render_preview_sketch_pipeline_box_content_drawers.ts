@@ -204,9 +204,12 @@ function rememberDrawerDividerMotionPreview(
 function applyDrawerDividerPreview(ctx: SketchPlacementPreviewContext): boolean {
   if (ctx.kind !== 'drawer_divider') return false;
 
+  const axis = String(ctx.input.dividerAxis || 'vertical') === 'horizontal' ? 'horizontal' : 'vertical';
   const highlightX = Number(ctx.input.highlightX);
+  const highlightY = Number(ctx.input.highlightY);
   const snapToCenter = ctx.input.snapToCenter === true;
   const boxX = Number.isFinite(highlightX) ? highlightX : ctx.x;
+  const boxY = Number.isFinite(highlightY) ? highlightY : ctx.y;
   const highlightMat = ctx.ud.__matShelf || ctx.ud.__matBox;
   const highlightLine = ctx.ud.__lineShelf || ctx.ud.__lineBox;
   const dividerMat = ctx.isRemove
@@ -224,7 +227,7 @@ function applyDrawerDividerPreview(ctx: SketchPlacementPreviewContext): boolean 
     Math.min(
       Math.max(
         SKETCH_BOX_DIMENSIONS.preview.doorMinDepthM,
-        ctx.w * DRAWER_DIMENSIONS.sketch.previewDividerWidthRatio
+        (axis === 'horizontal' ? ctx.h : ctx.w) * DRAWER_DIMENSIONS.sketch.previewDividerWidthRatio
       ),
       DRAWER_DIMENSIONS.sketch.previewDividerMaxM
     )
@@ -236,15 +239,15 @@ function applyDrawerDividerPreview(ctx: SketchPlacementPreviewContext): boolean 
     sy: ctx.h,
     sz: ctx.d,
     px: boxX,
-    py: ctx.y,
+    py: boxY,
     pz: ctx.z,
     material: highlightMat,
     lineMaterial: highlightLine,
   });
   ctx.placePreviewBoxMesh({
     mesh: ctx.shelfA,
-    sx: dividerT,
-    sy: ctx.h,
+    sx: axis === 'horizontal' ? ctx.w : dividerT,
+    sy: axis === 'horizontal' ? dividerT : ctx.h,
     sz: ctx.d + DRAWER_DIMENSIONS.sketch.previewDividerDepthExtraM,
     px: ctx.x,
     py: ctx.y,
@@ -259,7 +262,7 @@ function applyDrawerDividerPreview(ctx: SketchPlacementPreviewContext): boolean 
   rememberDrawerDividerMotionPreview(ctx, {
     drawerId: ctx.input.drawerMotionDrawerId,
     boxX,
-    boxY: ctx.y,
+    boxY,
     boxZ: ctx.z,
     shelfX: ctx.x,
     shelfY: ctx.y,

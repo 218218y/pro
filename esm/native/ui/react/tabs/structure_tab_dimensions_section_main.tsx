@@ -7,6 +7,7 @@ import {
   STRUCTURE_LIBRARY_GLASS_BUTTON_GROUP_TEST_ID,
   STRUCTURE_LIBRARY_GLASS_OPTIONS,
   STRUCTURE_LIBRARY_UPPER_DOORS_BUTTON_TEST_ID,
+  STRUCTURE_RESTORE_MAIN_WARDROBE_BUTTON_TEST_ID,
   type StructureDimensionsContentProps,
 } from './structure_tab_dimensions_section_contracts.js';
 
@@ -23,7 +24,30 @@ export function StructureDimensionsMainFields(props: {
   onResetAutoWidth: StructureDimensionsContentProps['onResetAutoWidth'];
   onToggleLibraryUpperDoors: StructureDimensionsContentProps['onToggleLibraryUpperDoors'];
   onPickLibraryGlass: StructureDimensionsContentProps['onPickLibraryGlass'];
+  noMainWardrobeActive?: StructureDimensionsContentProps['noMainWardrobeActive'];
+  onRestoreMainWardrobe?: StructureDimensionsContentProps['onRestoreMainWardrobe'];
 }): ReactElement {
+  if (props.noMainWardrobeActive) {
+    return (
+      <div className="wp-r-no-main-restore-panel">
+        <OptionButton
+          selected
+          density="compact"
+          layout="iconRow"
+          className="wp-r-no-main-restore-button"
+          testId={STRUCTURE_RESTORE_MAIN_WARDROBE_BUTTON_TEST_ID}
+          title="החזר את הארון הראשי למה שהיה לפני הביטול"
+          preventDefault
+          stopPropagation
+          onClick={props.onRestoreMainWardrobe}
+        >
+          <i className="fas fa-undo" aria-hidden="true" />
+          <strong>החזרת ארון ראשי</strong>
+        </OptionButton>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="wp-r-dims-grid">

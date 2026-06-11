@@ -156,7 +156,9 @@ export function createInstalledRenderAnimate(
         }
       }
 
-      const shouldContinueLoop = motionFrame.isAnimating || controlsStillMoving || cameraMoveRenderingActive;
+      const mirrorWorkPending = getRenderSlot(A, '__mirrorWorkPending') === true;
+      const shouldContinueLoop =
+        motionFrame.isAnimating || controlsStillMoving || cameraMoveRenderingActive || mirrorWorkPending;
       if (!shouldContinueLoop) {
         clearLoopSchedule(A);
         return;

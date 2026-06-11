@@ -1,7 +1,7 @@
 import { DOOR_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { __asBufferAttribute } from './visuals_and_contents_shared.js';
 import { appendProfileDoorFrame } from './visuals_and_contents_door_visual_profile_frame.js';
-import { createTomDoorVisual } from './visuals_and_contents_door_visual_tom.js';
+import { createDoubleProfileDoorVisual } from './visuals_and_contents_door_visual_double_profile.js';
 import { readMirrorPlacementRectMetadata } from './visuals_and_contents_door_visual_tagging.js';
 
 import type { BuilderDoorVisualFrameStyle, Object3DLike, UnknownRecord } from '../../../types/index.js';
@@ -22,7 +22,7 @@ function isRecord(value: unknown): value is UnknownRecord {
 
 function normalizeGlassFrameStyle(value: unknown): BuilderDoorVisualFrameStyle {
   const style = typeof value === 'string' ? value.trim().toLowerCase() : '';
-  if (style === 'flat' || style === 'tom' || style === 'profile') return style;
+  if (style === 'flat' || style === 'double_profile' || style === 'profile') return style;
   return 'profile';
 }
 
@@ -100,7 +100,7 @@ function collectNodesByRolePrefix(visualGroup: Object3DLike, rolePrefix: string)
   return matches;
 }
 
-function appendTomCenterSurround(
+function appendDoubleProfileCenterSurround(
   args: GlassDoorVisualArgs,
   center: CenterPanelMetrics,
   openingW: number,
@@ -124,17 +124,29 @@ function appendTomCenterSurround(
     horizontalBand,
     0,
     openingH / 2 + horizontalBand / 2,
-    'door_tom_center_surround_top'
+    'door_double_profile_center_surround_top'
   );
   appendStrip(
     center.width,
     horizontalBand,
     0,
     -(openingH / 2 + horizontalBand / 2),
-    'door_tom_center_surround_bottom'
+    'door_double_profile_center_surround_bottom'
   );
-  appendStrip(verticalBand, openingH, -(openingW / 2 + verticalBand / 2), 0, 'door_tom_center_surround_left');
-  appendStrip(verticalBand, openingH, openingW / 2 + verticalBand / 2, 0, 'door_tom_center_surround_right');
+  appendStrip(
+    verticalBand,
+    openingH,
+    -(openingW / 2 + verticalBand / 2),
+    0,
+    'door_double_profile_center_surround_left'
+  );
+  appendStrip(
+    verticalBand,
+    openingH,
+    openingW / 2 + verticalBand / 2,
+    0,
+    'door_double_profile_center_surround_right'
+  );
 }
 
 function createGlassMaterial(args: GlassDoorVisualArgs) {
@@ -260,8 +272,12 @@ function buildProfileGlass(args: GlassDoorVisualArgs): {
   return { glassW, glassH, glassPaneZ: glassPane.position.z };
 }
 
-function buildTomGlass(args: GlassDoorVisualArgs): { glassW: number; glassH: number; glassPaneZ: number } {
-  createTomDoorVisual({
+function buildDoubleProfileGlass(args: GlassDoorVisualArgs): {
+  glassW: number;
+  glassH: number;
+  glassPaneZ: number;
+} {
+  createDoubleProfileDoorVisual({
     App: args.App,
     THREE: args.THREE,
     visualGroup: args.visualGroup,
@@ -282,23 +298,23 @@ function buildTomGlass(args: GlassDoorVisualArgs): { glassW: number; glassH: num
     removeNode(args.visualGroup, accentNodes[i]!);
   }
 
-  const center = findCenterPanelMetrics(args.visualGroup, 'door_tom_center_panel', args.zSign);
+  const center = findCenterPanelMetrics(args.visualGroup, 'door_double_profile_center_panel', args.zSign);
   if (!center) {
     const fallbackW = Math.max(
       DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM,
-      args.w - 2 * DOOR_VISUAL_DIMENSIONS.tom.frameWidthM
+      args.w - 2 * DOOR_VISUAL_DIMENSIONS.doubleProfile.frameWidthM
     );
     const fallbackH = Math.max(
       DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM,
-      args.h - 2 * DOOR_VISUAL_DIMENSIONS.tom.frameWidthM
+      args.h - 2 * DOOR_VISUAL_DIMENSIONS.doubleProfile.frameWidthM
     );
     const fallbackFaceZ =
       (args.thickness / 2 -
         Math.max(
-          DOOR_VISUAL_DIMENSIONS.tom.recessDepthMinM,
+          DOOR_VISUAL_DIMENSIONS.doubleProfile.recessDepthMinM,
           Math.min(
-            DOOR_VISUAL_DIMENSIONS.tom.recessDepthMaxM,
-            args.thickness - DOOR_VISUAL_DIMENSIONS.tom.recessDepthThicknessClearanceM
+            DOOR_VISUAL_DIMENSIONS.doubleProfile.recessDepthMaxM,
+            args.thickness - DOOR_VISUAL_DIMENSIONS.doubleProfile.recessDepthThicknessClearanceM
           )
         )) *
       args.zSign;
@@ -322,7 +338,7 @@ function buildTomGlass(args: GlassDoorVisualArgs): { glassW: number; glassH: num
   );
 
   if (openingW < center.width || openingH < center.height) {
-    appendTomCenterSurround(args, center, openingW, openingH);
+    appendDoubleProfileCenterSurround(args, center, openingW, openingH);
   }
 
   const { glassW, glassH, glassPane } = appendGlassPane(args, openingW, openingH, center.faceZ);
@@ -349,8 +365,8 @@ export function createGlassDoorVisual(args: GlassDoorVisualArgs) {
   const layout =
     frameStyle === 'flat'
       ? buildFlatGlass(args)
-      : frameStyle === 'tom'
-        ? buildTomGlass(args)
+      : frameStyle === 'double_profile'
+        ? buildDoubleProfileGlass(args)
         : buildProfileGlass(args);
   appendCurtain(args, layout.glassW, layout.glassH, layout.glassPaneZ);
   return args.visualGroup;

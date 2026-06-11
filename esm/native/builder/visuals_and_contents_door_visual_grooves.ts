@@ -1,5 +1,5 @@
 import { DOOR_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
-import { resolveGrooveLinesCount } from './groove_lines_count.js';
+import { normalizeGrooveLinesCount, resolveGrooveLinesCount } from './groove_lines_count.js';
 import {
   createDoorVisualCacheKey,
   getCachedDoorVisualGeometry,
@@ -22,6 +22,7 @@ export function appendGrooveStrips(args: {
   targetH: number;
   zOffset: number;
   densityOverride?: number;
+  linesCountOverride?: unknown;
 }): void {
   const {
     App,
@@ -36,6 +37,7 @@ export function appendGrooveStrips(args: {
     targetH,
     zOffset,
     densityOverride,
+    linesCountOverride,
   } = args;
   if (!hasGrooves) return;
 
@@ -46,7 +48,9 @@ export function appendGrooveStrips(args: {
   );
   if (isSketch) grooveMat.color.setHex(0x000000);
 
-  const stripesCount = resolveGrooveLinesCount(App, targetW, densityOverride, groovePartId || null);
+  const explicitLinesCount = normalizeGrooveLinesCount(linesCountOverride);
+  const stripesCount =
+    explicitLinesCount ?? resolveGrooveLinesCount(App, targetW, densityOverride, groovePartId || null);
   const gap = targetW / (stripesCount + 1);
   const stripGeo = getCachedDoorVisualGeometry(
     App,

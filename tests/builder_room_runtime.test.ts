@@ -464,6 +464,23 @@ test('builder room runtime: default reset heals replaced room materials without 
   assert.equal(harness.getRenderCount(), 2);
 });
 
+test('builder room runtime: wall shell extends below the floor line for under-floor camera views', () => {
+  const harness = createThreeRoomHarness();
+
+  buildRoom(true, harness.App as never);
+
+  const roomGroup = getRoomGroup(harness.App as never) as AnyRecord;
+  const roomWalls = roomGroup.getObjectByName('roomWalls') as AnyRecord;
+  assert.ok(roomWalls);
+  assert.equal(roomWalls.geometry.width, 60);
+  assert.equal(roomWalls.geometry.height, 60);
+  assert.equal(roomWalls.geometry.depth, 60);
+  assert.equal(roomWalls.position.y, 0);
+  assert.equal(roomWalls.position.y - roomWalls.geometry.height / 2, -30);
+  assert.equal(roomWalls.position.y + roomWalls.geometry.height / 2, 30);
+  assert.equal(roomWalls.material.opts.side, 'back');
+});
+
 test('builder room runtime: buildRoom batches active room design into one render and reapplies visuals after primitive rebuild', () => {
   const harness = createThreeRoomHarness();
 

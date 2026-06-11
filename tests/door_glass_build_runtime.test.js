@@ -52,6 +52,12 @@ function createThreeStub() {
     }
   }
 
+  class MeshStandardMaterial {
+    constructor(props = {}) {
+      Object.assign(this, props);
+    }
+  }
+
   class Vector3 {
     constructor(x = 0, y = 0, z = 0) {
       this.x = x;
@@ -66,7 +72,15 @@ function createThreeStub() {
     }
   }
 
-  return { Group, Mesh, BoxGeometry, MeshBasicMaterial, Vector3, DoubleSide: 'DoubleSide' };
+  return {
+    Group,
+    Mesh,
+    BoxGeometry,
+    MeshBasicMaterial,
+    MeshStandardMaterial,
+    Vector3,
+    DoubleSide: 'DoubleSide',
+  };
 }
 
 function createDoorVisualSpy(calls) {
@@ -239,7 +253,7 @@ test('external drawer build treats glass specials like real glass fronts, keeps 
       isMultiColorMode: true,
       doorSpecialMap: { drawer_1: 'glass' },
       curtainMap: { drawer_1: 'purple' },
-      doorStyleMap: { drawer_1: 'tom' },
+      doorStyleMap: { drawer_1: 'double_profile' },
     },
     doorStyle: 'profile',
     globalFrontMat: { kind: 'front' },
@@ -255,7 +269,7 @@ test('external drawer build treats glass specials like real glass fronts, keeps 
   assert.equal(calls[0][4], 'glass');
   assert.equal(calls[0][6], false);
   assert.equal(calls[0][7], 'purple');
-  assert.deepEqual(calls[0][13], { glassFrameStyle: 'tom' });
+  assert.deepEqual(calls[0][13], { glassFrameStyle: 'double_profile' });
   assert.equal(drawerBoxCalls.length, 1);
   assert.deepEqual(drawerBoxCalls[0][8], { omitFrontPanel: true });
   assert.equal(wardrobeGroup.children.length, 1);
@@ -336,6 +350,51 @@ test('external drawer build keeps drawer boxes as independent paint targets', ()
   assert.deepEqual(secondDrawer.children[2].material, { kind: 'paint', partId: secondBoxId });
   assert.equal(secondDrawer.children[0].userData.partId, secondBoxId);
 });
+
+test('external drawer build appends configured door-trim visuals to drawer fronts', () => {
+  const THREE = createThreeStub();
+  const wardrobeGroup = new THREE.Group();
+  const renderDrawerOps = createBuilderRenderDrawerOps({
+    __app: input => input.App,
+    __ops: () => undefined,
+    __wardrobeGroup: () => wardrobeGroup,
+    __reg: () => undefined,
+    __drawers: () => [],
+    getMirrorMaterial: () => ({ kind: 'mirror' }),
+  });
+
+  const didApply = renderDrawerOps.applyExternalDrawersOps({
+    App: {},
+    THREE,
+    ops: {
+      drawers: [
+        {
+          partId: 'd1_draw_1',
+          visualW: 0.6,
+          visualH: 0.25,
+          visualT: 0.02,
+          boxW: 0.56,
+          boxH: 0.18,
+          boxD: 0.5,
+        },
+      ],
+    },
+    cfg: {
+      doorTrimMap: {
+        d1_draw_1: [{ id: 'trim-drawer', axis: 'horizontal', color: 'gold', span: 'full' }],
+      },
+    },
+    bodyMat: { kind: 'body' },
+  });
+
+  assert.equal(didApply, true);
+  const drawerGroup = wardrobeGroup.children[0];
+  assert.equal(drawerGroup.children.length, 3);
+  assert.equal(drawerGroup.children[2].userData.__wpDoorTrim, true);
+  assert.equal(drawerGroup.children[2].userData.partId, 'd1_draw_1');
+  assert.equal(drawerGroup.children[2].position.z > 0, true);
+});
+
 test('external drawer build emits folded contents inside drawer boxes when contents are enabled', () => {
   const foldedCalls = [];
   const THREE = createThreeStub();

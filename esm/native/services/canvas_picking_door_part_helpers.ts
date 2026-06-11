@@ -36,7 +36,7 @@ function __wp_isDoorLikePartId(partId: unknown): boolean {
   if (/^(?:lower_)?d\d+(?:_|$)/.test(pid) && !pid.includes('_draw_')) return true;
   if (/^sketch_box(?:_free)?_.+_door(?:_|$)/.test(pid)) return true;
   if (pid.startsWith('sliding') || pid.startsWith('slide')) return true;
-  if (pid.startsWith('lower_sliding')) return true;
+  if (pid.startsWith('lower_sliding') || pid.startsWith('lower_slide')) return true;
   if (
     pid.startsWith('corner_door') ||
     pid.startsWith('corner_pent_door') ||
@@ -94,6 +94,7 @@ function __wp_scopeCornerPartKeyForStack(
   if (!pid) return '';
   if (stackKey !== 'bottom') return pid;
   if (pid.startsWith('lower_')) return pid;
+  if (pid.startsWith('sliding') || pid.startsWith('slide')) return `lower_${pid}`;
   if (pid.startsWith('corner_')) return `lower_${pid}`;
   return pid;
 }

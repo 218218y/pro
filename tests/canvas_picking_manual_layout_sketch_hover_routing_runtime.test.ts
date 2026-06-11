@@ -61,10 +61,17 @@ function createBaseArgs(overrides: Record<string, unknown> = {}) {
     __wp_getSketchFreeBoxPartPrefix: () => 'free_box',
     __wp_findSketchFreeBoxLocalHit: () => null,
     __wp_readSketchBoxDividers: () => [],
+    __wp_readSketchBoxHorizontalDividers: () => [],
     __wp_resolveSketchBoxSegments: () => [{ index: 0, centerX: 0, width: 0.8, xNorm: 0.5 }],
     __wp_pickSketchBoxSegment: ({ segments }: any) => segments[0] ?? null,
+    __wp_resolveSketchBoxVerticalSegments: () => [
+      { index: 0, bottomY: 0.5, topY: 1.5, centerY: 1, height: 1, yNorm: 0.5 },
+    ],
+    __wp_pickSketchBoxVerticalSegment: ({ segments }: any) => segments[0] ?? null,
     __wp_findNearestSketchBoxDivider: () => null,
+    __wp_findNearestSketchBoxHorizontalDivider: () => null,
     __wp_resolveSketchBoxDividerPlacement: () => ({ dividerX: 0 }),
+    __wp_resolveSketchBoxHorizontalDividerPlacement: () => ({ dividerY: 0 }),
     __wp_findSketchModuleBoxAtPoint: () => null,
     __wp_readSketchBoxDividerXNorm: () => null,
     __wp_isCornerKey: () => false,
@@ -158,10 +165,106 @@ test('manual-layout sketch hover keeps selector hits inside module flow even for
   assert.equal(handled, true);
   assert.equal(calls.hideLayout, 1);
   assert.equal(calls.hideSketch, 0);
-  assert.equal(calls.hover.length, 0);
+  assert.equal(calls.hover.length, 1);
+  assert.equal(calls.hover[0].kind, 'shelf');
+  assert.equal(calls.hover[0].op, 'add');
+  assert.equal(calls.hover[0].moduleKey, 2);
+  assert.equal(calls.hover[0].variant, 'glass');
   assert.equal(calls.previews.length, 1);
   assert.equal(calls.previews[0].kind, 'shelf');
   assert.equal(calls.previews[0].anchor, selectorObj);
+});
+
+test('manual-layout sketch hover targets free-box content before a module selector behind it', () => {
+  const calls = {
+    previews: [] as any[],
+    hover: [] as any[],
+    hideSketch: 0,
+    hideLayout: 0,
+    moduleBoxScans: 0,
+  };
+  const selectorObj = {
+    parent: { id: 'selector-parent' },
+    userData: { isModuleSelector: true, moduleIndex: 1, __wpStack: 'top' },
+    geometry: { boundingBox: { min: { x: -0.5, y: 0, z: -0.2 }, max: { x: 0.5, y: 1, z: 0.2 } } },
+    updateWorldMatrix() {},
+    updateMatrixWorld() {},
+    localToWorld(v: any) {
+      return v;
+    },
+  };
+  const freeBox = {
+    id: 'free-1',
+    freePlacement: true,
+    absX: 0.2,
+    absY: 1,
+    heightM: 1,
+    widthM: 0.8,
+    depthM: 0.4,
+    shelves: [],
+  };
+  const App = createApp({
+    state: {
+      mode: { opts: { manualTool: 'sketch_shelf:regular' } },
+      config: { modulesConfiguration: [{ sketchExtras: { boxes: [freeBox] } }] },
+    },
+    services: {
+      builder: {
+        renderOps: {
+          setSketchPlacementPreview(args: unknown) {
+            calls.previews.push(args);
+          },
+          hideSketchPlacementPreview() {
+            calls.hideSketch += 1;
+          },
+        },
+      },
+    },
+  });
+
+  const handled = tryHandleManualLayoutSketchHoverPreviewImpl(
+    createBaseArgs({
+      App,
+      __hideLayoutPreview: () => {
+        calls.hideLayout += 1;
+      },
+      __wp_raycastReuse: () => [{ object: selectorObj, point: { x: 0, y: 0.6, z: 0 } }],
+      __wp_projectWorldPointToLocal: () => ({ x: 0.2, z: 0 }),
+      __wp_intersectScreenWithLocalZPlane: ({ planeZ }: any) => ({ x: 0.2, y: 1.1, z: planeZ }),
+      __wp_pickSketchFreeBoxHost: () => ({ moduleKey: 0, isBottom: false }),
+      __wp_readInteriorModuleConfigRef: () => ({ sketchExtras: { boxes: [freeBox] } }),
+      __wp_resolveSketchFreeBoxGeometry: () => ({
+        centerX: 0.2,
+        centerZ: -0.2,
+        outerW: 0.84,
+        innerW: 0.8,
+        outerD: 0.44,
+        innerD: 0.4,
+        innerBackZ: -0.4,
+      }),
+      __wp_findSketchFreeBoxLocalHit: () => ({ x: 0.2, y: 1.1, z: 0 }),
+      __wp_findSketchModuleBoxAtPoint: () => {
+        calls.moduleBoxScans += 1;
+        return null;
+      },
+      __wp_writeSketchHover: (_App: unknown, hover: unknown) => {
+        calls.hover.push(hover);
+      },
+    })
+  );
+
+  assert.equal(handled, true);
+  assert.equal(calls.hideLayout, 1);
+  assert.equal(calls.hideSketch, 0);
+  assert.equal(calls.moduleBoxScans, 0);
+  assert.equal(calls.hover.length, 1);
+  assert.equal(calls.hover[0].kind, 'box_content');
+  assert.equal(calls.hover[0].contentKind, 'shelf');
+  assert.equal(calls.hover[0].freePlacement, true);
+  assert.equal(calls.hover[0].boxId, 'free-1');
+  assert.equal(calls.previews.length, 1);
+  assert.equal(calls.previews[0].kind, 'shelf');
+  assert.equal(calls.previews[0].anchorParent, App.render.wardrobeGroup);
 });
 
 test('manual-layout sketch hover falls back to standalone free placement when no selector is hit', () => {
@@ -305,4 +408,96 @@ test('manual-layout sketch internal drawer hover ignores standard external drawe
   assert.equal(handled, false);
   assert.equal(calls.hover.length, 0);
   assert.equal(calls.previews.length, 0);
+});
+
+test('manual-layout free-box external drawer hover prefers the drawer stack over a nearby shelf removal', () => {
+  const calls = {
+    previews: [] as any[],
+    hover: [] as any[],
+    hideSketch: 0,
+    hideLayout: 0,
+  };
+  const freeBox = {
+    id: 'free-drawer-near-shelf',
+    freePlacement: true,
+    absX: 0.2,
+    absY: 1,
+    widthM: 0.8,
+    heightM: 1.4,
+    depthM: 0.4,
+    shelves: [
+      // Very close to the top edge of the existing drawer stack. Before the
+      // drawer-first hover guard this shelf won the hover even though the click
+      // direct-hit path removed the drawer below it.
+      { id: 'shelf-close-to-drawer', yNorm: (1.2 - 0.3) / 1.4, variant: 'regular' },
+    ],
+    regularExtDrawers: [
+      {
+        id: 'regular-drawer-stack',
+        count: 3,
+        xNorm: 0.5,
+        yNormC: 0.4,
+        yNorm: 0.4,
+        drawerHeightM: 0.22,
+        __wpRegularExternalDrawer: true,
+      },
+    ],
+  };
+  const App = createApp({
+    state: {
+      mode: { opts: { manualTool: 'sketch_ext_drawers:3' } },
+      config: { modulesConfiguration: [{ sketchExtras: { boxes: [freeBox] } }] },
+    },
+    services: {
+      builder: {
+        renderOps: {
+          setSketchPlacementPreview(args: unknown) {
+            calls.previews.push(args);
+          },
+          hideSketchPlacementPreview() {
+            calls.hideSketch += 1;
+          },
+        },
+      },
+    },
+  });
+
+  const handled = tryHandleManualLayoutSketchHoverPreviewImpl(
+    createBaseArgs({
+      App,
+      __hideLayoutPreview: () => {
+        calls.hideLayout += 1;
+      },
+      __wp_raycastReuse: () => [],
+      __wp_pickSketchFreeBoxHost: () => ({ moduleKey: 0, isBottom: false }),
+      __wp_readInteriorModuleConfigRef: () => ({ sketchExtras: { boxes: [freeBox] } }),
+      __wp_resolveSketchFreeBoxGeometry: () => ({
+        centerX: 0.2,
+        centerZ: -0.2,
+        outerW: 0.84,
+        innerW: 0.8,
+        outerD: 0.44,
+        innerD: 0.4,
+        innerBackZ: -0.4,
+      }),
+      __wp_findSketchFreeBoxLocalHit: () => ({ x: 0.2, y: 1.185, z: 0 }),
+      __wp_intersectScreenWithLocalZPlane: ({ planeZ }: any) => ({ x: 0.2, y: 1.185, z: planeZ }),
+      __wp_resolveSketchBoxVerticalSegments: () => [],
+      __wp_pickSketchBoxVerticalSegment: () => null,
+      __wp_writeSketchHover: (_App: unknown, hover: unknown) => {
+        calls.hover.push(hover);
+      },
+    })
+  );
+
+  assert.equal(handled, true);
+  assert.equal(calls.hideLayout, 1);
+  assert.equal(calls.hover.length, 1);
+  assert.equal(calls.hover[0].kind, 'box_content');
+  assert.equal(calls.hover[0].contentKind, 'ext_drawers');
+  assert.equal(calls.hover[0].op, 'remove');
+  assert.equal(calls.hover[0].removeId, 'regular-drawer-stack');
+  assert.equal(calls.previews.length, 1);
+  assert.equal(calls.previews[0].kind, 'ext_drawers');
+  assert.equal(calls.previews[0].op, 'remove');
 });

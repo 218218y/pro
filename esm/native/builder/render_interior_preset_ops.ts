@@ -14,6 +14,11 @@ import {
 } from './render_interior_preset_ops_shared.js';
 import { computePresetModuleInnerFaces } from './render_interior_preset_ops_wall_faces.js';
 import { createAddGridShelf } from './render_interior_preset_ops_shelves.js';
+import {
+  forceShelfIndexesToBrace,
+  getRoundedShelfSideForRemovedFrameSide,
+  shouldForceBraceShelvesForRemovedFrameSide,
+} from './removed_frame_side_brace_shelves.js';
 
 export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps) {
   const __app = deps.app;
@@ -61,6 +66,7 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
         : INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault;
     const innerW = Number(input.innerW || 0);
     const woodThick = Number(input.woodThick || MATERIAL_DIMENSIONS.wood.thicknessM);
+    const shelfThick = Number(input.shelfThick || woodThick);
     const internalDepth = Number(input.internalDepth || 0);
     const internalCenterX = Number(input.internalCenterX || 0);
     const internalZ = Number(input.internalZ || 0);
@@ -79,6 +85,22 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
         if (Number.isFinite(shelfIndex)) shelfSet[shelfIndex] = true;
       }
     }
+    if (
+      shouldForceBraceShelvesForRemovedFrameSide({
+        cfg: input.cfg,
+        moduleIndex,
+        modulesLength,
+        frameSidePartIdPrefix: input.frameSidePartIdPrefix,
+      })
+    ) {
+      forceShelfIndexesToBrace({ braceSet, shelfSet, gridDivisions });
+    }
+    const roundedShelfSide = getRoundedShelfSideForRemovedFrameSide({
+      cfg: input.cfg,
+      moduleIndex,
+      modulesLength,
+      frameSidePartIdPrefix: input.frameSidePartIdPrefix,
+    });
 
     const regularShelfDepthCap = INTERIOR_FITTINGS_DIMENSIONS.shelves.regularDepthM;
     const regularDepth =
@@ -104,7 +126,7 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
     const braceCenterX = moduleFaces ? (moduleFaces.leftX + moduleFaces.rightX) / 2 : internalCenterX;
     const braceShelfWidth =
       braceInnerWidth > 0
-        ? Math.max(0, braceInnerWidth - INTERIOR_FITTINGS_DIMENSIONS.shelves.braceSeamPadM)
+        ? Math.max(0, braceInnerWidth - INTERIOR_FITTINGS_DIMENSIONS.shelves.braceWidthClearanceM)
         : innerW;
     const leftInnerX = moduleFaces ? moduleFaces.leftX : internalCenterX - innerW / 2;
     const rightInnerX = moduleFaces ? moduleFaces.rightX : internalCenterX + innerW / 2;
@@ -130,6 +152,7 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
       braceCenterX,
       innerW,
       woodThick,
+      shelfThick,
       internalDepth,
       internalZ,
       regularDepth,
@@ -138,6 +161,7 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
       braceShelfWidth,
       leftInnerX,
       rightInnerX,
+      roundedShelfSide,
       renderOpsHandleCatch: __renderOpsHandleCatch,
     });
 

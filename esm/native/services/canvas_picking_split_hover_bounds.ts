@@ -3,9 +3,14 @@ import { __wp_asRecord, __wp_getCanvasPickingRuntime } from './canvas_picking_co
 
 export type SplitHoverDoorBounds = { minY: number; maxY: number };
 
+function stripSplitDoorSegmentSuffix(partId: string): string {
+  return String(partId || '').replace(/_(?:full|top|bot|mid\d*)$/i, '');
+}
+
 export function __wp_getSplitHoverDoorBaseKey(partId: string): string {
   const pid = typeof partId === 'string' ? partId : String(partId || '');
   if (!pid) return '';
+  if (/^sketch_box(?:_free)?_.+_door(?:_|$)/.test(pid)) return stripSplitDoorSegmentSuffix(pid);
   if (pid.startsWith('d')) return pid.split('_')[0];
   if (pid.startsWith('lower_d')) return pid.split('_').slice(0, 2).join('_');
   if (pid.startsWith('corner_door')) {

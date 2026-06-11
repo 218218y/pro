@@ -208,6 +208,7 @@ export function isSpecialPart(__paintPartKey: string): boolean {
   if (isHexCellDiagonalPanelPartId(__paintPartKey)) return true;
   if (/^d\d+_/.test(__paintPartKey)) return true;
   if (__paintPartKey.startsWith('sliding') || __paintPartKey.startsWith('slide')) return true;
+  if (__paintPartKey.startsWith('lower_sliding') || __paintPartKey.startsWith('lower_slide')) return true;
   if (__paintPartKey.startsWith('corner_door') || __paintPartKey.startsWith('corner_pent_door')) return true;
   if (__paintPartKey.startsWith('lower_corner_door') || __paintPartKey.startsWith('lower_corner_pent_door')) {
     return true;

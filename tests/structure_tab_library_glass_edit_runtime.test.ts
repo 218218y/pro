@@ -12,11 +12,11 @@ import {
 test('structure library glass options expose the three existing glass paint selections in requested order', () => {
   assert.deepEqual(
     STRUCTURE_LIBRARY_GLASS_OPTIONS.map(option => option.label),
-    ['זכוכית', 'זכוכית מלאה', 'זכוכית פרופיל תום']
+    ['זכוכית', 'זכוכית מלאה', 'זכוכית פרופיל כפול']
   );
   assert.deepEqual(
     STRUCTURE_LIBRARY_GLASS_OPTIONS.map(option => option.paintId),
-    ['glass', '__wp_glass_style__:flat', '__wp_glass_style__:tom']
+    ['glass', '__wp_glass_style__:flat', '__wp_glass_style__:double_profile']
   );
 });
 
@@ -58,7 +58,7 @@ test('structure library glass edit mode enters paint mode with no curtain and se
   });
   assert.deepEqual(calls[3], [
     'setPaintColor',
-    '__wp_glass_style__:tom',
+    '__wp_glass_style__:double_profile',
     { source: STRUCTURE_LIBRARY_GLASS_EDIT_SOURCE, immediate: true },
   ]);
   assert.equal(calls.length, 4);

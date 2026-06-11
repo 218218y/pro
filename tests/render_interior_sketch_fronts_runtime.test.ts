@@ -207,3 +207,28 @@ test('render sketch box fronts reuses one mirror material across mirrored extern
   assert.equal(shelfBoards.length, 2);
   assert.equal(group.children.length, 4);
 });
+
+test('render sketch box external drawers flush a top-anchored free-box stack to the box face edge', () => {
+  const { args, App } = createFrontsArgs();
+  args.shell.box = {
+    extDrawers: [{ id: 'top-stack', count: 1, yNormC: 1 }],
+    doors: [],
+  };
+  args.shell.isFreePlacement = true;
+  args.shell.height = 1.4;
+  args.shell.halfH = 0.7;
+  args.shell.centerY = 1;
+  args.shell.sideH = 1.36;
+  args.shell.innerBottomY = 0.32;
+  args.shell.innerTopY = 1.68;
+
+  renderSketchBoxFronts(args);
+
+  const drawers = App.render?.drawersArray || [];
+  assert.equal(drawers.length, 1);
+  const drawerGroup = drawers[0]?.group as FakeGroup;
+  const expectedFaceTopY = args.shell.centerY + args.shell.halfH;
+
+  assert.ok(Math.abs(Number(drawerGroup.userData.__wpFaceMaxY) - expectedFaceTopY) < 1e-9);
+  assert.ok(Number(drawerGroup.userData.__wpFaceMaxY) > args.shell.innerTopY);
+});

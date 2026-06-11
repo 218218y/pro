@@ -37,12 +37,19 @@ export async function renderAllNotesForExportCanvas(
 
 export function setDoorsOpenForExportScene(App: AppContainer, isOpen: boolean): void {
   _guard(App, 'setDoorsOpenForExport', () => {
-    if (setDoorsOpenViaService(App, !!isOpen, { touch: false, forceUpdate: true, source: 'export' })) {
+    if (
+      setDoorsOpenViaService(App, !!isOpen, {
+        touch: false,
+        forceUpdate: true,
+        source: 'export',
+        slidingHideOpen: !!isOpen,
+      })
+    ) {
       return;
     }
     const doorsSvc = getDoorsService(App);
     const sync = doorsSvc && typeof doorsSvc.syncVisualsNow === 'function' ? doorsSvc.syncVisualsNow : null;
-    if (typeof sync === 'function') sync({ open: !!isOpen });
+    if (typeof sync === 'function') sync({ open: !!isOpen, slidingHideOpen: !!isOpen });
   });
 }
 

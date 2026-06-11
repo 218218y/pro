@@ -59,6 +59,8 @@ export function installKernelStateKernelConfigApplySurface(
       if (cfg.splitDoorsMap !== undefined) setValue('splitDoorsMap', cfg.splitDoorsMap);
       if (cfg.splitDoorsBottomMap !== undefined) setValue('splitDoorsBottomMap', cfg.splitDoorsBottomMap);
       if (cfg.removedDoorsMap !== undefined) setValue('removedDoorsMap', cfg.removedDoorsMap);
+      if (cfg.roundedFrameSideShelvesMap !== undefined)
+        setValue('roundedFrameSideShelvesMap', cfg.roundedFrameSideShelvesMap);
       if (cfg.drawerDividersMap !== undefined) setValue('drawerDividersMap', cfg.drawerDividersMap);
       if (cfg.individualColors !== undefined) setValue('individualColors', cfg.individualColors);
       if (cfg.doorSpecialMap !== undefined) setValue('doorSpecialMap', cfg.doorSpecialMap);

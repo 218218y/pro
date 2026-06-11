@@ -40,6 +40,7 @@ export function StructureBodyBaseControls(props: {
   baseLegWidthCm: number;
   isChestMode: boolean;
   isSliding: boolean;
+  hideBaseTypeControls?: boolean;
   slidingTracksColor: SlidingTracksColor;
   onSetBaseType: (value: BaseType) => void;
   onSetBaseLegStyle: (value: StructureBaseLegStyle) => void;
@@ -51,24 +52,26 @@ export function StructureBodyBaseControls(props: {
 }): ReactElement {
   return (
     <>
-      <div className="wp-field">
-        <div className="wp-field-label">סוג בסיס</div>
-        <OptionButtonGroup columns={3} density="compact" className="wp-r-wardrobe-type-selector">
-          {BASE_TYPE_OPTIONS.map(option => (
-            <StructureBodyTypeOptionButton
-              key={option.value}
-              selected={props.baseType === option.value}
-              label={option.label}
-              iconClass={option.iconClass}
-              onClick={() =>
-                props.onSetBaseType(option.value === 'none' && props.isChestMode ? 'legs' : option.value)
-              }
-            />
-          ))}
-        </OptionButtonGroup>
-      </div>
+      {!props.hideBaseTypeControls ? (
+        <div className="wp-field">
+          <div className="wp-field-label">סוג בסיס</div>
+          <OptionButtonGroup columns={3} density="compact" className="wp-r-wardrobe-type-selector">
+            {BASE_TYPE_OPTIONS.map(option => (
+              <StructureBodyTypeOptionButton
+                key={option.value}
+                selected={props.baseType === option.value}
+                label={option.label}
+                iconClass={option.iconClass}
+                onClick={() =>
+                  props.onSetBaseType(option.value === 'none' && props.isChestMode ? 'legs' : option.value)
+                }
+              />
+            ))}
+          </OptionButtonGroup>
+        </div>
+      ) : null}
 
-      {props.baseType === 'plinth' ? (
+      {!props.hideBaseTypeControls && props.baseType === 'plinth' ? (
         <div className="wp-field wp-r-base-plinth-height-field">
           <div className="wp-r-sketch-drawer-height-row wp-r-base-plinth-height-row">
             <button
@@ -103,7 +106,7 @@ export function StructureBodyBaseControls(props: {
         </div>
       ) : null}
 
-      {props.baseType === 'legs' ? (
+      {!props.hideBaseTypeControls && props.baseType === 'legs' ? (
         <>
           <div className="wp-field">
             <div className="wp-field-label">סוג רגליים</div>
@@ -195,7 +198,7 @@ export function StructureBodyBaseControls(props: {
         </>
       ) : null}
 
-      {props.isSliding ? (
+      {!props.hideBaseTypeControls && props.isSliding ? (
         <div className="wp-field">
           <div className="wp-field-label">צבע מסילות</div>
           <OptionButtonGroup columns={2} density="compact" className="wp-r-wardrobe-type-selector">

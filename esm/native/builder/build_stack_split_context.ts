@@ -60,6 +60,7 @@ export function createStackSplitLowerBuildContext(args: {
       D: prepared.bottomD,
       defaultD: prepared.bottomDefaultD,
       woodThick: buildArgs.woodThick,
+      shelfThick: buildArgs.shelfThick,
       startY: prepared.bottomStartY,
       cabinetBodyHeight: prepared.bottomCabinetBodyHeight,
       cabinetTopY: prepared.bottomCabinetTopY,
@@ -188,6 +189,7 @@ export function applyStackSplitLowerCornerWingIfNeeded(args: {
       baseLegWidthCm: buildArgs.baseLegWidthCm,
       stackSplitEnabled: true,
       stackOffsetZ: Number.isFinite(Number(lowerDims.startZ)) ? Number(lowerDims.startZ) : 0,
+      shelfThick: buildArgs.shelfThick,
     }
   );
 }

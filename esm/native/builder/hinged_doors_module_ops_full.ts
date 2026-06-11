@@ -1,5 +1,6 @@
 import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { clampHandleAbsY } from './hinged_doors_module_ops_shared.js';
+import { attachHiddenModuleDoors } from './hinged_doors_module_ops_metadata.js';
 import type {
   HingedDoorIterationState,
   HingedDoorModuleOpsContext,
@@ -41,21 +42,25 @@ export function appendFullHingedDoorOps(
   const fullDoorTopY = ctx.doorBottomY + doorHeight;
   const fullHandleAbsY = clampHandleAbsY(ctx, ctx.globalHandleAbsY, ctx.doorBottomY, fullDoorTopY, colorKey);
 
-  ctx.opsList.push({
-    partId: colorKey,
-    moduleIndex: ctx.index,
-    pivotX: state.pivotX,
-    y: doorCenterY,
-    z: ctx.doorOpZ,
-    width: state.doorWidth,
-    height: doorHeight,
-    meshOffsetX: state.meshOffsetX,
-    isLeftHinge: state.isLeftHinge,
-    isMirror: !!isMirror,
-    hasGroove: !!hasGroove,
-    curtain,
-    style,
-    handleAbsY: fullHandleAbsY,
-    isRemoved: ctx.removeDoorsEnabled && ctx.isDoorRemovedSafe(colorKey),
-  });
+  const op = attachHiddenModuleDoors(
+    {
+      partId: colorKey,
+      moduleIndex: ctx.index,
+      pivotX: state.pivotX,
+      y: doorCenterY,
+      z: ctx.doorOpZ,
+      width: state.doorWidth,
+      height: doorHeight,
+      meshOffsetX: state.meshOffsetX,
+      isLeftHinge: state.isLeftHinge,
+      isMirror: !!isMirror,
+      hasGroove: !!hasGroove,
+      curtain,
+      style,
+      handleAbsY: fullHandleAbsY,
+      isRemoved: ctx.removeDoorsEnabled && ctx.isDoorRemovedSafe(colorKey),
+    },
+    ctx.moduleDoors
+  );
+  ctx.opsList.push(op);
 }

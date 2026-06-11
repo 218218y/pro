@@ -10,9 +10,10 @@ import {
   findNearestSketchModuleShelf,
   findNearestSketchModuleStorageBarrier,
 } from '../esm/native/services/canvas_picking_sketch_module_vertical_content.ts';
+import { INTERIOR_FITTINGS_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
 
-test('sketch module shelf preview respects brace width trimming and clamps depth override to internal depth', () => {
-  const preview = createSketchModuleShelfPreviewGeometry({
+test('sketch module shelf preview keeps brace shelves full-width and regular shelves pin-trimmed', () => {
+  const bracePreview = createSketchModuleShelfPreviewGeometry({
     innerW: 0.9,
     internalDepth: 0.45,
     backZ: -0.2,
@@ -21,11 +22,22 @@ test('sketch module shelf preview respects brace width trimming and clamps depth
     variant: 'brace',
     shelfDepthOverrideM: 0.8,
   });
+  const regularPreview = createSketchModuleShelfPreviewGeometry({
+    innerW: 0.9,
+    internalDepth: 0.45,
+    backZ: -0.2,
+    woodThick: 0.018,
+    regularDepth: 0.35,
+    variant: 'regular',
+  });
 
-  assert.equal(preview.variant, 'brace');
-  assert.equal(preview.w, 0.898);
-  assert.equal(preview.d, 0.45);
-  assert.ok(Math.abs(preview.z - 0.025) < 1e-9);
+  assert.equal(bracePreview.variant, 'brace');
+  assert.equal(bracePreview.w, 0.9);
+  assert.equal(bracePreview.d, 0.45);
+  assert.ok(Math.abs(bracePreview.z - 0.025) < 1e-9);
+  assert.equal(regularPreview.variant, 'regular');
+  assert.equal(regularPreview.w, 0.9 - INTERIOR_FITTINGS_DIMENSIONS.shelves.regularWidthClearanceM);
+  assert.equal(regularPreview.d, 0.35);
 });
 
 test('sketch module shelf commits toggle the nearest shelf and preserve explicit depth metadata', () => {

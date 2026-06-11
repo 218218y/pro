@@ -24,6 +24,7 @@ export function applyCornerConnectorSpecialInterior(params: CornerConnectorSpeci
     App,
     THREE,
     woodThick,
+    shelfThick,
     startY,
     wingH,
     uiAny,
@@ -61,6 +62,7 @@ export function applyCornerConnectorSpecialInterior(params: CornerConnectorSpeci
     L,
     Dmain,
     woodThick,
+    shelfThick,
     startY,
     wingH,
     panelThick,
@@ -115,12 +117,12 @@ export function applyCornerConnectorSpecialInterior(params: CornerConnectorSpeci
     const usableDepth = Math.max(0, depth - backInset);
     if (usableDepth <= specialPostDims.shelfPlanMinDimensionM) return;
 
-    const geo = new THREE.BoxGeometry(width, woodThick, usableDepth);
+    const geo = new THREE.BoxGeometry(width, shelfThick, usableDepth);
     const mat = getCornerShelfMat(partId, false);
     const mesh = new THREE.Mesh(geo, mat);
     const centerX = (postX + wallX) / 2;
     const centerZ = backInset + usableDepth / 2;
-    mesh.position.set(centerX, bottomY + woodThick / 2, centerZ);
+    mesh.position.set(centerX, bottomY + shelfThick / 2, centerZ);
     mesh.userData = { partId };
     markShelfBoardUserData(mesh.userData, {
       groupPartId: CORNER_SHELF_GROUP_PART_ID,
@@ -138,7 +140,7 @@ export function applyCornerConnectorSpecialInterior(params: CornerConnectorSpeci
     enabled: leftShelvesEnabled,
     floorTopY,
     targetTop: shelf1BottomY,
-    woodThick,
+    shelfThick,
   });
   for (let i = 0; i < leftShelfBottomYs.length; i++) {
     addShelfRectMainSide(`corner_pent_int_left_shelf_${i + 1}`, leftShelfBottomYs[i]);
@@ -164,11 +166,11 @@ export function applyCornerConnectorSpecialInterior(params: CornerConnectorSpeci
   const shelfShape = createShapeFromPolygon(THREE, shelfPolygon) || shape;
 
   const addShelfPentagon = (partId: string, bottomY: number) => {
-    const geo = new THREE.ExtrudeGeometry(shelfShape, { depth: woodThick, bevelEnabled: false });
+    const geo = new THREE.ExtrudeGeometry(shelfShape, { depth: shelfThick, bevelEnabled: false });
     const mat = getCornerShelfMat(partId, false);
     const mesh = new THREE.Mesh(geo, mat);
     mesh.rotation.x = Math.PI / 2;
-    mesh.position.y = bottomY + woodThick;
+    mesh.position.y = bottomY + shelfThick;
     mesh.userData = { partId };
     markShelfBoardUserData(mesh.userData, {
       groupPartId: CORNER_SHELF_GROUP_PART_ID,
@@ -188,18 +190,18 @@ export function applyCornerConnectorSpecialInterior(params: CornerConnectorSpeci
       backInset,
       floorTopY,
       shelf1BottomY,
-      woodThick,
+      woodThick: shelfThick,
       leftShelfBottomYs,
     });
     emitFoldedClothesPlans(plans, cornerGroup, emitFoldedClothes, reportErrorThrottled, App);
   }
 
-  const shelf1Added = shelf1BottomY + woodThick <= ceilBottomY - specialPostDims.shelfCeilingClearanceM;
+  const shelf1Added = shelf1BottomY + shelfThick <= ceilBottomY - specialPostDims.shelfCeilingClearanceM;
   if (shelf1Added) addShelfPentagon('corner_pent_int_shelf_180', shelf1BottomY);
 
   const shelf2Added =
     needH <= availH + specialPostDims.shelfFitToleranceM &&
-    shelf2BottomY + woodThick <= ceilBottomY - specialPostDims.shelfCeilingClearanceM;
+    shelf2BottomY + shelfThick <= ceilBottomY - specialPostDims.shelfCeilingClearanceM;
   if (shelf2Added) addShelfPentagon('corner_pent_int_shelf_210', shelf2BottomY);
 
   if (showContentsEnabled) {
@@ -210,7 +212,7 @@ export function applyCornerConnectorSpecialInterior(params: CornerConnectorSpeci
       shelf1BottomY,
       shelf2Added,
       shelf2BottomY,
-      woodThick,
+      woodThick: shelfThick,
       ceilBottomY,
     });
     emitFoldedClothesPlans(plans, cornerGroup, emitFoldedClothes, reportErrorThrottled, App);

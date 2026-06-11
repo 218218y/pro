@@ -10,8 +10,30 @@ export type SketchBoxDoorTarget = {
   doorId: string | null;
 };
 
+function stripSketchBoxDoorSegmentSuffix(partId: string): string {
+  return String(partId || '').replace(
+    /_(?:top|bot|mid\d*)(?=_(?:accent|groove)_(?:top|bottom|left|right)$|$)/i,
+    ''
+  );
+}
+
+export function stripSketchBoxDoorVisualSuffix(partId: string | null | undefined): string {
+  return String(partId || '').replace(/_(?:accent|groove)_(?:top|bottom|left|right)$/i, '');
+}
+
+export function readSketchBoxDoorSegmentSuffix(partId: string | null | undefined): string | null {
+  const cleaned = stripSketchBoxDoorVisualSuffix(partId);
+  const match = /_(top|bot|mid\d*)$/i.exec(cleaned);
+  return match?.[1] ? String(match[1]).toLowerCase() : null;
+}
+
+export function isSketchBoxDoorSegmentPartId(partId: string | null | undefined): boolean {
+  const cleaned = stripSketchBoxDoorVisualSuffix(partId);
+  return !!readSketchBoxDoorSegmentSuffix(cleaned) && parseSketchBoxDoorTarget(cleaned) !== null;
+}
+
 export function parseSketchBoxDoorTarget(partId: string | null | undefined): SketchBoxDoorTarget | null {
-  const pid = String(partId || '');
+  const pid = stripSketchBoxDoorSegmentSuffix(String(partId || ''));
   if (!pid) return null;
   let match =
     /^sketch_box_free_(.+)_(sb(?:f)?_[a-z0-9]+)_door_([a-z0-9_]+?)(?:_(?:accent|groove)_(?:top|bottom|left|right))?$/i.exec(

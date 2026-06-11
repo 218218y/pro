@@ -17,7 +17,7 @@ test('[profile-door-paint] decorative door profile meshes keep the owner door pa
     read('esm/native/builder/visuals_and_contents_door_visual_style_contracts.ts'),
     read('esm/native/builder/visuals_and_contents_door_visual_styles.ts'),
     read('esm/native/builder/visuals_and_contents_door_visual_profile.ts'),
-    read('esm/native/builder/visuals_and_contents_door_visual_tom.ts'),
+    read('esm/native/builder/visuals_and_contents_door_visual_double_profile.ts'),
   ].join('\n');
 
   assert.match(
@@ -29,7 +29,7 @@ test('[profile-door-paint] decorative door profile meshes keep the owner door pa
   assert.match(
     src,
     /const tagDoorVisualPart(?:: TagDoorVisualPartFn)? = \(node: (?:unknown|Object3DLike), visualRole\?: string\) => \{[\s\S]*?const userData = _asObject\(rec\.userData\) \|\| \{\};[\s\S]*?if \(doorOwnerPartId\) userData\.partId = doorOwnerPartId;[\s\S]*?if \(visualRole\) userData\.__doorVisualRole = visualRole;[\s\S]*?\};/,
-    'decorative profile/tom door meshes must keep the owner door partId and store their local role separately'
+    'decorative profile/double_profile door meshes must keep the owner door partId and store their local role separately'
   );
 
   assert.match(
@@ -40,8 +40,8 @@ test('[profile-door-paint] decorative door profile meshes keep the owner door pa
 
   assert.match(
     src,
-    /tagDoorVisualPart\(centerPanel, 'door_tom_center_panel'\);/,
-    'the tom center panel must inherit the actual door partId instead of exposing a shared generic pick id'
+    /tagDoorVisualPart\(centerPanel, 'door_double_profile_center_panel'\);/,
+    'the double_profile center panel must inherit the actual door partId instead of exposing a shared generic pick id'
   );
 
   assert.doesNotMatch(
@@ -52,7 +52,7 @@ test('[profile-door-paint] decorative door profile meshes keep the owner door pa
 
   assert.doesNotMatch(
     src,
-    /centerPanel\.userData\.partId = 'door_tom_center_panel';/,
-    'tom center panel must not overwrite paint/material routing with a shared generic partId'
+    /centerPanel\.userData\.partId = 'door_double_profile_center_panel';/,
+    'double_profile center panel must not overwrite paint/material routing with a shared generic partId'
   );
 });

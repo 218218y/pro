@@ -13,6 +13,12 @@ import type { ApplySketchShelvesArgs } from './render_interior_sketch_support_co
 
 import { readObject } from './render_interior_sketch_shared.js';
 import { normalizeSketchShelfVariant } from './render_interior_sketch_layout.js';
+import type { RemovedFrameSideShelfRounding } from './removed_frame_side_brace_shelves.js';
+
+type RoundedShelfBoardOptions = {
+  shape: 'rounded_shelf';
+  roundedShelfSide: RemovedFrameSideShelfRounding;
+};
 
 function resolveShelfDepth(args: {
   requestedDepth: unknown;
@@ -55,6 +61,7 @@ export function applySketchShelves(args: ApplySketchShelvesArgs): void {
     regularDepth,
     backZ,
     woodThick,
+    shelfThick,
     effectiveTopY,
     showContentsEnabled,
     addFoldedClothes,
@@ -66,17 +73,20 @@ export function applySketchShelves(args: ApplySketchShelvesArgs): void {
     glassMat,
     createBoard,
     group,
-    THREE,
-    addBraceDarkSeams,
     addShelfPins,
   } = args;
+  const forceBraceShelves = args.forceBraceShelves === true;
+  const roundedShelfSide = args.roundedShelfSide || null;
 
   function shelfHeightForVariant(variant: ReturnType<typeof normalizeSketchShelfVariant>): number {
     if (variant === 'glass') return MATERIAL_DIMENSIONS.glassShelf.thicknessM;
     if (variant === 'double') {
-      return Math.max(woodThick, woodThick * INTERIOR_FITTINGS_DIMENSIONS.shelves.doubleThicknessMultiplier);
+      return Math.max(
+        shelfThick,
+        shelfThick * INTERIOR_FITTINGS_DIMENSIONS.shelves.doubleThicknessMultiplier
+      );
     }
-    return woodThick;
+    return shelfThick;
   }
 
   function resolveNextShelfBottomY(currentY: number): number {
@@ -114,8 +124,9 @@ export function applySketchShelves(args: ApplySketchShelvesArgs): void {
     if (!shelf) continue;
     const y = yFromNorm(shelf.yNorm);
     if (y == null) continue;
-    const variant = normalizeSketchShelfVariant(shelf.variant);
-    const isBrace = variant === 'brace';
+    const rawVariant = normalizeSketchShelfVariant(shelf.variant);
+    const variant = rawVariant;
+    const isBrace = forceBraceShelves || variant === 'brace';
     const isGlass = variant === 'glass';
     const isDouble = variant === 'double';
     const isRegular = variant === 'regular';
@@ -153,7 +164,9 @@ export function applySketchShelves(args: ApplySketchShelvesArgs): void {
             getPartColorValue,
             getPartMaterial,
           });
-    const mesh = createBoard(shelfW, shelfH, shelfDepth, shelfX, y, shelfZ, mat, shelfPartId);
+    const roundedOptions: RoundedShelfBoardOptions | null =
+      isBrace && roundedShelfSide ? { shape: 'rounded_shelf', roundedShelfSide } : null;
+    const mesh = createBoard(shelfW, shelfH, shelfDepth, shelfX, y, shelfZ, mat, shelfPartId, roundedOptions);
 
     const meshRec = readObject<{
       userData?: InteriorValueRecord;
@@ -168,10 +181,9 @@ export function applySketchShelves(args: ApplySketchShelvesArgs): void {
         shelfIndex: i + 1,
         variant,
         isBrace,
+        roundedSide: roundedOptions?.roundedShelfSide,
       });
     }
-
-    if (isBrace) addBraceDarkSeams(y, shelfZ, shelfDepth, true, THREE, null, null, shelfPartId);
 
     if (isGlass && meshRec && typeof meshRec === 'object') {
       meshRec.userData = meshRec.userData || {};

@@ -7,6 +7,7 @@ import {
   createInteriorSketchPlacementSupport,
   createSketchBoxLocator,
 } from '../esm/native/builder/render_interior_sketch_support.ts';
+import { INTERIOR_FITTINGS_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
 import { createSketchInteriorHarness, FakeMaterial } from './sketch_box_runtime_helpers.ts';
 
 class FakeVector3 {
@@ -67,7 +68,7 @@ class FakeBoxGeometry {
   }
 }
 
-test('render interior sketch support clamps placement and emits canonical shelf pins and brace seams', () => {
+test('render interior sketch support clamps placement, emits shelf pins, and keeps brace side seams disabled', () => {
   const added: any[] = [];
   const App: any = { __matCache: {} };
   const support = createInteriorSketchPlacementSupport({
@@ -113,12 +114,10 @@ test('render interior sketch support clamps placement and emits canonical shelf 
     BoxGeometry: FakeBoxGeometry,
   } as any);
 
-  assert.equal(added.length, 6);
+  assert.equal(added.length, 4);
   assert.equal(added.filter(entry => entry?.userData?.__kind === 'shelf_pin').length, 4);
-  assert.equal(added.filter(entry => entry?.userData?.__kind === 'brace_seam').length, 2);
+  assert.equal(added.filter(entry => entry?.userData?.__kind === 'brace_seam').length, 0);
   assert.equal(added[0]?.userData?.partId, 'all_shelves');
-  assert.equal(added[4]?.castShadow, false);
-  assert.equal(added[4]?.receiveShadow, false);
   assert.equal(App.__matCache.__sketchShelfPinMat.__keepMaterial, true);
 });
 
@@ -166,6 +165,7 @@ test('render interior sketch shelves emit folded contents with measured shelf cl
     regularDepth: 0.45,
     backZ: -0.275,
     woodThick: 0.02,
+    shelfThick: 0.02,
     effectiveTopY: 1.8,
     showContentsEnabled: true,
     addFoldedClothes: (...call: any[]) => folded.push(call),
@@ -188,6 +188,71 @@ test('render interior sketch shelves emit folded contents with measured shelf cl
   assert.equal(Number(folded[0][1].toFixed(3)), 0.51);
   assert.equal(Number(folded[0][5].toFixed(3)), 0.464);
   assert.equal(Number(folded[1][5].toFixed(3)), 0.774);
+});
+
+test('removed frame side sketch shelves preserve glass and double variants on forced brace geometry', () => {
+  const boards: any[] = [];
+  const pins: any[] = [];
+  const group = { add() {} } as any;
+  const glassMat = new FakeMaterial({ id: 'glass-shelf' });
+
+  applySketchShelves({
+    shelves: [
+      { id: 'double', yNorm: 0.25, variant: 'double' } as any,
+      { id: 'glass', yNorm: 0.5, variant: 'glass' } as any,
+    ],
+    yFromNorm(raw: unknown) {
+      return Number(raw) * 2;
+    },
+    findBoxAtY: () => null,
+    braceCenterX: 0.1,
+    braceShelfWidth: 0.9,
+    regularShelfWidth: 0.84,
+    internalCenterX: 0,
+    internalDepth: 0.55,
+    internalZ: 0,
+    regularDepth: 0.45,
+    backZ: -0.275,
+    woodThick: 0.02,
+    shelfThick: 0.02,
+    effectiveTopY: 1.8,
+    showContentsEnabled: false,
+    addFoldedClothes: () => undefined,
+    currentShelfMat: { id: 'regular-shelf' },
+    currentBraceShelfMat: { id: 'brace-shelf' },
+    glassMat,
+    createBoard: (...call: any[]) => {
+      const mesh = { userData: {}, material: call[6], castShadow: true, receiveShadow: true };
+      boards.push({ call, mesh });
+      return mesh;
+    },
+    group,
+    THREE: null,
+    addBraceDarkSeams: () => undefined,
+    addShelfPins: (...call: any[]) => pins.push(call),
+    forceBraceShelves: true,
+    roundedShelfSide: 'left',
+  });
+
+  assert.equal(boards.length, 2);
+  assert.equal(boards[0].call[0], 0.9);
+  assert.equal(Number(boards[0].call[1].toFixed(3)), 0.04);
+  assert.equal(boards[0].call[2], 0.55);
+  assert.deepEqual(boards[0].call[8], { shape: 'rounded_shelf', roundedShelfSide: 'left' });
+  assert.equal(boards[0].mesh.userData.__wpShelfVariant, 'double');
+  assert.equal(boards[0].mesh.userData.__wpShelfIsBrace, true);
+
+  assert.equal(boards[1].call[0], 0.9);
+  assert.equal(boards[1].call[1], 0.018);
+  assert.equal(boards[1].call[2], 0.55);
+  assert.equal(boards[1].call[6], glassMat);
+  assert.equal(boards[1].mesh.userData.__wpShelfVariant, 'glass');
+  assert.equal(boards[1].mesh.userData.__wpShelfIsBrace, true);
+  assert.deepEqual(boards[1].call[8], { shape: 'rounded_shelf', roundedShelfSide: 'left' });
+  assert.deepEqual(
+    pins.map(call => call[6]),
+    [false, false]
+  );
 });
 
 test('render interior sketch module shelves keep brace shelves on the brace material path', () => {
@@ -217,6 +282,11 @@ test('render interior sketch module shelves keep brace shelves on the brace mate
   assert.equal(regularShelf?.material, regularShelfMat);
   assert.equal(braceShelf?.material, braceShelfMat);
   assert.equal(braceShelf?.userData.__wpShelfIsBrace, true);
+  assert.equal(
+    regularShelf?.geometry.parameters.width,
+    1.2 - INTERIOR_FITTINGS_DIMENSIONS.shelves.regularWidthClearanceM
+  );
+  assert.equal(braceShelf?.geometry.parameters.width, 1.2);
 });
 
 test('render interior sketch rods use the installed rod owner when it succeeds and local visual rod when it rejects', () => {

@@ -1,6 +1,11 @@
 import type { AppContainer, SketchPlacementPreviewArgsLike, UnknownRecord } from '../../../types';
 import type { MouseVectorLike, RaycastHitLike, RaycasterLike } from './canvas_picking_engine.js';
-import type { SketchBoxDividerState, SketchBoxSegmentState } from './canvas_picking_sketch_box_dividers.js';
+import type {
+  SketchBoxDividerState,
+  SketchBoxHorizontalDividerState,
+  SketchBoxSegmentState,
+  SketchBoxVerticalSegmentState,
+} from './canvas_picking_sketch_box_dividers.js';
 
 export type ModuleKey = number | 'corner' | `corner:${number}`;
 
@@ -60,6 +65,7 @@ export interface SketchModuleBoxLike extends UnknownRecord {
   baseLegColor?: string | null;
   baseLegHeightCm?: number | string | null;
   baseLegWidthCm?: number | string | null;
+  basePlinthHeightCm?: number | string | null;
   shelves?: SketchModuleBoxContentLike[];
   rods?: SketchModuleBoxContentLike[];
   storageBarriers?: SketchModuleBoxContentLike[];
@@ -108,6 +114,13 @@ export type ResolveSketchBoxSegmentsArgs = {
   boxCenterX: number;
   innerW: number;
   woodThick: number;
+  horizontalDividers?: SketchBoxHorizontalDividerState[];
+  boxCenterY?: number | null;
+  innerH?: number | null;
+  cursorY?: number | null;
+  cursorX?: number | null;
+  yNorm?: number | null;
+  xNorm?: number | null;
 };
 
 export type PickSketchBoxSegmentArgs = {
@@ -123,6 +136,7 @@ export type FindNearestSketchBoxDividerResult = {
   xNorm: number;
   centerX: number;
   centered: boolean;
+  yNorm?: number;
 };
 
 export type FindNearestSketchBoxDividerArgs = {
@@ -131,6 +145,56 @@ export type FindNearestSketchBoxDividerArgs = {
   innerW: number;
   woodThick: number;
   cursorX: number;
+  horizontalDividers?: SketchBoxHorizontalDividerState[];
+  boxCenterY?: number | null;
+  innerH?: number | null;
+  cursorY?: number | null;
+};
+
+export type FindNearestSketchBoxHorizontalDividerResult = {
+  dividerId: string;
+  yNorm: number;
+  centerY: number;
+  centered: boolean;
+  xNorm?: number;
+};
+export type FindNearestSketchBoxHorizontalDividerArgs = {
+  dividers: SketchBoxHorizontalDividerState[];
+  boxCenterY: number;
+  innerH: number;
+  woodThick: number;
+  cursorY: number;
+  verticalDividers?: SketchBoxDividerState[];
+  boxCenterX?: number | null;
+  innerW?: number | null;
+  cursorX?: number | null;
+};
+export type SketchBoxHorizontalDividerPlacementArgs = {
+  boxCenterY: number;
+  innerH: number;
+  woodThick: number;
+  cursorY?: number | null;
+  dividerYNorm?: number | null;
+  enableCenterSnap?: boolean;
+};
+export type SketchBoxHorizontalDividerPlacement = { yNorm: number; centerY: number; centered: boolean };
+export type ResolveSketchBoxVerticalSegmentsArgs = {
+  dividers: SketchBoxHorizontalDividerState[];
+  boxCenterY: number;
+  innerH: number;
+  woodThick: number;
+  verticalDividers?: SketchBoxDividerState[];
+  boxCenterX?: number | null;
+  innerW?: number | null;
+  cursorX?: number | null;
+  xNorm?: number | null;
+};
+export type PickSketchBoxVerticalSegmentArgs = {
+  segments: SketchBoxVerticalSegmentState[];
+  boxCenterY: number;
+  innerH: number;
+  cursorY?: number | null;
+  yNorm?: number | null;
 };
 
 export type SketchBoxDividerPlacementArgs = {

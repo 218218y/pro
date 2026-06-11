@@ -71,7 +71,9 @@ test('stage 72 render interior sketch box external drawers ownership split is an
   assert.match(plan, /applySketchExternalDrawerFaceOverrides\(/);
   assert.match(plan, /export function createSketchBoxExternalDrawerOpPlan\(/);
   assert.match(plan, /resolveSketchExternalDrawerFaceVerticalAlignment\(/);
-  assert.match(plan, /containerMaxY: innerTopY - context\.woodThick/);
+  assert.match(plan, /containerMinY,\s+containerMaxY,/);
+  assert.match(plan, /containerMinY: stack\.containerMinY/);
+  assert.match(plan, /containerMaxY: stack\.containerMaxY/);
   assert.doesNotMatch(
     plan,
     /resolveBuilderMirrorMaterial|resolveSketchFrontVisualState|createInternalDrawerBox|drawersArray\.push/

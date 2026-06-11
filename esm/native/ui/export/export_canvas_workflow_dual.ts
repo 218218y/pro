@@ -151,7 +151,7 @@ export function createExportDualImageWorkflow(
         position: { x: originalCamPos.x, y: originalCamPos.y, z: originalCamPos.z },
         target: { x: originalTarget.x, y: originalTarget.y, z: originalTarget.z },
       });
-      _setDoorsOpenForExport(App, doorsGetOpen());
+      setDoorsOpen(App, doorsGetOpen(), { source: 'export:restore', forceUpdate: true });
       restoreExportWall();
     }
   };

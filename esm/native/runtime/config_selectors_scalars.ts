@@ -21,7 +21,7 @@ import {
   normalizeBoardMaterial,
   normalizeBoolean,
   normalizeGlobalHandleType,
-  normalizeNullableGrooveLinesCount,
+  normalizeNullableConfigNumber,
   normalizeWardrobeType,
   pickDefaultScalar,
   readBoardMaterialDefault,
@@ -124,7 +124,7 @@ export const readConfigScalarOrDefault: ReadConfigScalarOrDefault = (
   if (isNullableNumberConfigKey(key)) {
     let numberDefault: number | null = null;
     if (typeof def === 'number') numberDefault = def;
-    return normalizeNullableGrooveLinesCount(value, numberDefault);
+    return normalizeNullableConfigNumber(key, value, numberDefault);
   }
 
   return value ?? def;

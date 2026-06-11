@@ -53,6 +53,9 @@ export interface UiState extends UnknownRecord {
   currentExtDrawerCount?: unknown;
   internalDrawersEnabled?: boolean;
   handleControl?: boolean;
+  currentHandleToolType?: unknown;
+  currentHandleToolColor?: unknown;
+  currentHandleToolEdgeVariant?: unknown;
 
   // Notes overlay
   notesEnabled?: boolean;
@@ -66,6 +69,9 @@ export interface UiState extends UnknownRecord {
   // View toggles
   showHanger?: boolean;
   showContents?: boolean;
+
+  // Sketch tab: temporary restore point used while the main wardrobe is hidden.
+  noMainSketchRestoreSnapshot?: unknown;
 
   // Structure tab
   baseType?: 'plinth' | 'legs' | 'none' | string;
@@ -91,6 +97,10 @@ export interface UiState extends UnknownRecord {
 
   // Stack split
   stackSplitEnabled?: boolean;
+
+  // Per-cell dimensions / hex-cell panel disclosure state
+  cellDimsPanelOpen?: boolean;
+  cellDimsHexPanelOpen?: boolean;
 
   // View/mode toggles occasionally mirrored on ui
   sketchMode?: boolean;

@@ -157,3 +157,101 @@ test('sketch-free box content preview returns canonical double-door removal meta
   assert.equal(result?.preview.kind, 'storage');
   assert.equal(result?.preview.op, 'remove');
 });
+
+test('sketch-free external drawer preview blocks construction on existing free-box shelf content', () => {
+  const result = resolveSketchFreeBoxContentPreview(
+    createContentPreviewArgs({
+      tool: 'sketch_ext_drawers:3',
+      contentKind: 'ext_drawers',
+      freeBoxes: [
+        {
+          id: 'free-shelf-blocker',
+          freePlacement: true,
+          absX: 0.2,
+          absY: 1,
+          heightM: 1,
+          widthM: 0.8,
+          depthM: 0.4,
+          shelves: [{ id: 'shelf-1', yNorm: 0.5, variant: 'regular' }],
+        },
+      ],
+      planeHit: { x: 0.2, y: 1 },
+      findSketchFreeBoxLocalHit: () => ({ x: 0.2, y: 1 }) as never,
+    })
+  );
+
+  assert.ok(result && result.mode === 'preview');
+  assert.equal(result?.hoverRecord.kind, 'box_content');
+  assert.equal(result?.hoverRecord.contentKind, 'ext_drawers');
+  assert.equal(result?.hoverRecord.op, 'add');
+  assert.equal(result?.hoverRecord.__wpBlockedReason, 'collision');
+  assert.equal(result?.preview.op, 'blocked');
+  assert.equal(result?.preview.blockedReason, 'collision');
+});
+
+test('sketch-free vertical preview keeps removal hover available while the active tool is sketch external drawers', () => {
+  const result = resolveSketchFreeBoxContentPreview(
+    createContentPreviewArgs({
+      tool: 'sketch_ext_drawers:3',
+      contentKind: 'shelf',
+      freeBoxes: [
+        {
+          id: 'free-shelf-remove',
+          freePlacement: true,
+          absX: 0.2,
+          absY: 1,
+          heightM: 1,
+          widthM: 0.8,
+          depthM: 0.4,
+          shelves: [{ id: 'shelf-1', yNorm: 0.5, variant: 'regular' }],
+        },
+      ],
+      planeHit: { x: 0.2, y: 1 },
+      findSketchFreeBoxLocalHit: () => ({ x: 0.2, y: 1 }) as never,
+    })
+  );
+
+  assert.ok(result && result.mode === 'preview');
+  assert.equal(result?.hoverRecord.tool, 'sketch_ext_drawers:3');
+  assert.equal(result?.hoverRecord.kind, 'box_content');
+  assert.equal(result?.hoverRecord.contentKind, 'shelf');
+  assert.equal(result?.hoverRecord.op, 'remove');
+  assert.equal(result?.hoverRecord.removeId, 'shelf-1');
+  assert.equal(result?.preview.op, 'remove');
+});
+
+test('sketch-free shelf removal accepts direct shelf-board hits with the same generous tolerance as wardrobe shelves', () => {
+  const result = resolveSketchFreeBoxContentPreview(
+    createContentPreviewArgs({
+      tool: 'sketch_ext_drawers:3',
+      contentKind: 'shelf',
+      freeBoxes: [
+        {
+          id: 'free-shelf-wide-hit',
+          freePlacement: true,
+          absX: 0.2,
+          absY: 1,
+          heightM: 1,
+          widthM: 0.8,
+          depthM: 0.4,
+          shelves: [{ id: 'shelf-1', yNorm: 0.5, variant: 'regular' }],
+        },
+      ],
+      planeHit: { x: 0.2, y: 1.031 },
+      intersects: [
+        {
+          object: { userData: { partId: 'prefix:free-shelf-wide-hit_shelf_shelf-1' } },
+          point: { x: 0.2, y: 1.031, z: 0.19 },
+        },
+      ],
+      findSketchFreeBoxLocalHit: () => ({ x: 0.2, y: 1.031 }) as never,
+    })
+  );
+
+  assert.ok(result && result.mode === 'preview');
+  assert.equal(result?.hoverRecord.kind, 'box_content');
+  assert.equal(result?.hoverRecord.contentKind, 'shelf');
+  assert.equal(result?.hoverRecord.op, 'remove');
+  assert.equal(result?.hoverRecord.removeId, 'shelf-1');
+  assert.equal(result?.preview.op, 'remove');
+});

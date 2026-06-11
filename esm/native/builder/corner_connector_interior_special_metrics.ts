@@ -21,6 +21,7 @@ export function resolveCornerConnectorSpecialMetrics(args: {
   L: number;
   Dmain: number;
   woodThick: number;
+  shelfThick: number;
   startY: number;
   wingH: number;
   panelThick: number;
@@ -33,6 +34,7 @@ export function resolveCornerConnectorSpecialMetrics(args: {
     L,
     Dmain,
     woodThick,
+    shelfThick,
     startY,
     wingH,
     panelThick,
@@ -97,13 +99,13 @@ export function resolveCornerConnectorSpecialMetrics(args: {
       postH,
       Math.max(
         CORNER_CONNECTOR_INTERIOR_DIMENSIONS.specialPost.postHeightMinM,
-        availH - 2 * (cellH + woodThick)
+        availH - 2 * (cellH + shelfThick)
       )
     )
   );
-  const needH = postHClamped + 2 * (cellH + woodThick);
+  const needH = postHClamped + 2 * (cellH + shelfThick);
   const shelf1BottomY = floorTopY + postHClamped;
-  const shelf2BottomY = shelf1BottomY + woodThick + cellH;
+  const shelf2BottomY = shelf1BottomY + shelfThick + cellH;
 
   const wallX = mx(-L);
   let postX = wallX / 2;
@@ -149,21 +151,21 @@ export function createEqualShelfBottomYs(args: {
   enabled: boolean;
   floorTopY: number;
   targetTop: number;
-  woodThick: number;
+  shelfThick: number;
 }): number[] {
-  const { enabled, floorTopY, targetTop, woodThick } = args;
+  const { enabled, floorTopY, targetTop, shelfThick } = args;
   if (!enabled) return [];
   const spanH = Math.max(0, targetTop - floorTopY);
   if (spanH < CORNER_CONNECTOR_INTERIOR_DIMENSIONS.specialPost.shelfSpanMinM) return [];
 
-  const net = spanH - 3 * woodThick;
+  const net = spanH - 3 * shelfThick;
   if (net <= CORNER_CONNECTOR_INTERIOR_DIMENSIONS.specialPost.shelfNetMinM) return [];
   const space = net / 4;
   const bottoms: number[] = [];
 
   for (let i = 1; i <= 3; i++) {
-    const by = floorTopY + i * space + (i - 1) * woodThick;
-    if (by + woodThick <= targetTop - CORNER_CONNECTOR_INTERIOR_DIMENSIONS.specialPost.shelfTopClearanceM)
+    const by = floorTopY + i * space + (i - 1) * shelfThick;
+    if (by + shelfThick <= targetTop - CORNER_CONNECTOR_INTERIOR_DIMENSIONS.specialPost.shelfTopClearanceM)
       bottoms.push(by);
   }
   return bottoms;

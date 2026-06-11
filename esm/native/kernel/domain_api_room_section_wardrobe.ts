@@ -70,6 +70,7 @@ export function installRoomWardrobeTypeSurface(args: InstallDomainApiRoomSection
         const cfg0 = _cfg() || {};
         const prev = normalizeWardrobeType(cfg0.wardrobeType);
         if (prev === next) return next;
+        if (isNoMainWardrobeTypeTransitionBlocked(_ui(), prev, next)) return prev;
 
         try {
           const cfgSnap0 = _captureConfigSnapshot();
@@ -119,7 +120,7 @@ export function installRoomWardrobeTypeSurface(args: InstallDomainApiRoomSection
             return result;
           }
 
-          initWardrobeTypeDefaults(App, actions, _metaNoBuild, next, meta);
+          initWardrobeTypeDefaults(App, actions, _metaNoBuild, next, meta, cfg0);
         } catch (_eRestoreAll) {
           _domainApiReportNonFatal(App, 'domain_api_room:setWardrobeType:restore', _eRestoreAll, {
             throttleMs: 6000,
@@ -131,6 +132,187 @@ export function installRoomWardrobeTypeSurface(args: InstallDomainApiRoomSection
 
       return result;
     };
+}
+
+function asRecord(value: unknown): UnknownRecord | null {
+  return value && typeof value === 'object' && !Array.isArray(value) ? (value as UnknownRecord) : null;
+}
+
+function readRoundedFiniteInt(value: unknown): number | null {
+  if (value === null || value === undefined || value === '') return null;
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? Math.round(n) : null;
+}
+
+function readUiDoorsCount(ui: UiStateLike | null | undefined): number | null {
+  const uiRec = asRecord(ui);
+  const raw = asRecord(uiRec?.raw);
+  return readRoundedFiniteInt(raw?.doors) ?? readRoundedFiniteInt(uiRec?.doors);
+}
+
+function isNoMainWardrobeTypeTransitionBlocked(
+  ui: UiStateLike | null | undefined,
+  prev: WardrobeType,
+  next: WardrobeType
+): boolean {
+  return prev !== 'sliding' && next === 'sliding' && readUiDoorsCount(ui) === 0;
+}
+
+function hasOwnKey(value: unknown, key: string): boolean {
+  return !!value && typeof value === 'object' && Object.prototype.hasOwnProperty.call(value, key);
+}
+
+type StripSketchExternalDrawerResult<T> = {
+  value: T;
+  changed: boolean;
+};
+
+function hasSketchExtrasPayload(value: UnknownRecord): boolean {
+  return Object.keys(value).length > 0;
+}
+
+function stripExternalDrawersFromSketchBox(value: unknown): StripSketchExternalDrawerResult<unknown> {
+  const rec = asRecord(value);
+  if (!rec) return { value, changed: false };
+
+  let next: UnknownRecord | null = null;
+  const ensureNext = (): UnknownRecord => {
+    if (!next) next = { ...rec };
+    return next;
+  };
+
+  if (hasOwnKey(rec, 'extDrawers')) {
+    delete ensureNext().extDrawers;
+  }
+
+  const nestedBoxes = rec.boxes;
+  if (Array.isArray(nestedBoxes)) {
+    let boxesChanged = false;
+    const boxes = nestedBoxes.map(box => {
+      const stripped = stripExternalDrawersFromSketchBox(box);
+      if (stripped.changed) boxesChanged = true;
+      return stripped.value;
+    });
+    if (boxesChanged) ensureNext().boxes = boxes;
+  }
+
+  return next ? { value: next, changed: true } : { value, changed: false };
+}
+
+function stripExternalDrawersFromSketchExtras(
+  value: unknown
+): StripSketchExternalDrawerResult<UnknownRecord | null> {
+  const rec = asRecord(value);
+  if (!rec) return { value: null, changed: false };
+
+  let next: UnknownRecord | null = null;
+  const ensureNext = (): UnknownRecord => {
+    if (!next) next = { ...rec };
+    return next;
+  };
+
+  if (hasOwnKey(rec, 'extDrawers')) {
+    delete ensureNext().extDrawers;
+  }
+
+  if (Array.isArray(rec.boxes)) {
+    let boxesChanged = false;
+    const boxes = rec.boxes.map(box => {
+      const stripped = stripExternalDrawersFromSketchBox(box);
+      if (stripped.changed) boxesChanged = true;
+      return stripped.value;
+    });
+    if (boxesChanged) ensureNext().boxes = boxes;
+  }
+
+  if (!next) return { value: rec, changed: false };
+  return { value: hasSketchExtrasPayload(next) ? next : null, changed: true };
+}
+
+function stripModuleSketchExternalDrawers(value: unknown): StripSketchExternalDrawerResult<unknown> {
+  const rec = asRecord(value);
+  if (!rec) return { value, changed: false };
+  if (!hasOwnKey(rec, 'sketchExtras')) return { value, changed: false };
+
+  const stripped = stripExternalDrawersFromSketchExtras(rec.sketchExtras);
+  if (!stripped.changed) return { value, changed: false };
+
+  const next: UnknownRecord = { ...rec };
+  if (stripped.value) next.sketchExtras = stripped.value;
+  else delete next.sketchExtras;
+  return { value: next, changed: true };
+}
+
+function stripModuleListSketchExternalDrawers(value: unknown): StripSketchExternalDrawerResult<unknown> {
+  if (!Array.isArray(value)) return { value, changed: false };
+
+  let changed = false;
+  const list = value.map(item => {
+    const stripped = stripModuleSketchExternalDrawers(item);
+    if (stripped.changed) changed = true;
+    return stripped.value;
+  });
+
+  return changed ? { value: list, changed: true } : { value, changed: false };
+}
+
+function stripCornerSketchExternalDrawers(value: unknown): StripSketchExternalDrawerResult<unknown> {
+  const rec = asRecord(value);
+  if (!rec) return { value, changed: false };
+
+  let next: UnknownRecord | null = null;
+  const ensureNext = (): UnknownRecord => {
+    if (!next) next = { ...rec };
+    return next;
+  };
+
+  const rootModule = stripModuleSketchExternalDrawers(rec);
+  if (rootModule.changed && asRecord(rootModule.value)) {
+    const rootNext = rootModule.value as UnknownRecord;
+    if (hasOwnKey(rootNext, 'sketchExtras')) ensureNext().sketchExtras = rootNext.sketchExtras;
+    else delete ensureNext().sketchExtras;
+  }
+
+  const topModules = stripModuleListSketchExternalDrawers(rec.modulesConfiguration);
+  if (topModules.changed) ensureNext().modulesConfiguration = topModules.value;
+
+  const stackSplitLower = asRecord(rec.stackSplitLower);
+  if (stackSplitLower) {
+    const lowerModules = stripModuleListSketchExternalDrawers(stackSplitLower.modulesConfiguration);
+    if (lowerModules.changed) {
+      ensureNext().stackSplitLower = {
+        ...stackSplitLower,
+        modulesConfiguration: lowerModules.value,
+      };
+    }
+  }
+
+  return next ? { value: next, changed: true } : { value, changed: false };
+}
+
+function buildSlidingSketchExternalDrawersCleanupPatch(
+  cfg: UnknownRecord | null | undefined,
+  next: WardrobeType
+): UnknownRecord {
+  if (next !== 'sliding') return {};
+  const rec = asRecord(cfg);
+  if (!rec) return {};
+
+  const patch: UnknownRecord = {};
+
+  const topModules = stripModuleListSketchExternalDrawers(rec.modulesConfiguration);
+  if (topModules.changed) patch.modulesConfiguration = topModules.value;
+
+  const lowerModules = stripModuleListSketchExternalDrawers(rec.stackSplitLowerModulesConfiguration);
+  if (lowerModules.changed) patch.stackSplitLowerModulesConfiguration = lowerModules.value;
+
+  const cornerConfiguration = stripCornerSketchExternalDrawers(rec.cornerConfiguration);
+  if (cornerConfiguration.changed) patch.cornerConfiguration = cornerConfiguration.value;
+
+  const rootSketchExtras = stripExternalDrawersFromSketchExtras(rec.sketchExtras);
+  if (rootSketchExtras.changed) patch.sketchExtras = rootSketchExtras.value;
+
+  return patch;
 }
 
 function patchWardrobeTypeCanonicalState(
@@ -171,6 +353,7 @@ function restoreWardrobeTypeProfile(
     uiPatch
   );
 
+  Object.assign(cfgPatch, buildSlidingSketchExternalDrawersCleanupPatch(cfgPatch, next));
   cfgPatch.wardrobeType = next;
 
   if (
@@ -226,7 +409,8 @@ function initWardrobeTypeDefaults(
   actions: ActionsNamespaceLike,
   _metaNoBuild: MetaNoBuildFn,
   next: WardrobeType,
-  meta: ActionMetaLike | UnknownRecord | null | undefined
+  meta: ActionMetaLike | UnknownRecord | null | undefined,
+  currentCfg: UnknownRecord | null | undefined
 ): void {
   const rawPatch: Record<string, unknown> = {};
   const doorsI = getDefaultDoorsForWardrobeType(next);
@@ -237,13 +421,19 @@ function initWardrobeTypeDefaults(
   rawPatch.depth = getDefaultDepthForWardrobeType(next);
 
   const uiPatch: UiStateLike = { raw: rawPatch };
+  const cleanupPatch = buildSlidingSketchExternalDrawersCleanupPatch(currentCfg, next);
+  const configPatch = {
+    wardrobeType: next,
+    isManualWidth: false,
+    ...cleanupPatch,
+  };
   if (
     patchWardrobeTypeCanonicalState(
       App,
       actions,
       _metaNoBuild,
       'actions:room:setWardrobeType:init',
-      { wardrobeType: next, isManualWidth: false },
+      configPatch,
       uiPatch,
       meta
     )
@@ -255,6 +445,17 @@ function initWardrobeTypeDefaults(
   const m = _metaNoBuild(actions, meta, 'actions:room:setWardrobeType:init:autoWidth');
   setCfgWardrobeType(App, next, m);
   setCfgManualWidth(App, false, m);
+  for (const key of Object.keys(cleanupPatch)) {
+    if (key === 'modulesConfiguration') {
+      setCfgModulesConfiguration(App, cleanupPatch[key], m);
+    } else if (key === 'stackSplitLowerModulesConfiguration') {
+      setCfgLowerModulesConfiguration(App, cleanupPatch[key], m);
+    } else if (key === 'cornerConfiguration') {
+      setCfgCornerConfiguration(App, cleanupPatch[key], m);
+    } else {
+      actions.setCfgScalar?.(key, cleanupPatch[key], m);
+    }
+  }
 
   const uiMeta = _metaNoBuild(actions, { immediate: true }, 'actions:room:setWardrobeType:init:ui');
   patchUiSoft(App, uiPatch, uiMeta);

@@ -352,3 +352,56 @@ test('tryCommitSketchModuleSurfaceTool blocks module boxes when vertical content
   assert.match(toasts[0]![0], /מתנגשת/);
   assert.equal(toasts[0]![1], 'error');
 });
+
+test('tryCommitSketchModuleSurfaceTool preserves tall module box height instead of shrinking it to the legacy 120cm cap', () => {
+  const args = makeArgs({
+    tool: 'sketch_box:170',
+    bottomY: 0,
+    topY: 2.4,
+    totalHeight: 2.4,
+    hitY0: 1.2,
+    hitYClamped: 1.2,
+    yNorm: 0.5,
+    parseSketchBoxToolSpec: () => ({ heightCm: 170, widthCm: 36, depthCm: 32 }),
+  });
+
+  const handled = tryCommitSketchModuleSurfaceTool(args as never);
+  assert.equal(handled, true);
+
+  const boxes = (
+    (args.cfg as Record<string, unknown>).sketchExtras as { boxes?: Array<Record<string, unknown>> }
+  )?.boxes;
+  assert.equal(boxes?.length, 1);
+  assert.equal(boxes?.[0]?.heightM, 1.7);
+  assert.equal(boxes?.[0]?.widthM, 0.36);
+  assert.equal(boxes?.[0]?.depthM, 0.32);
+});
+
+test('tryCommitSketchModuleSurfaceTool refuses a blocked box hover instead of recomputing a smaller fitting box on click', () => {
+  const cfg: Record<string, unknown> = {};
+  const toasts: Array<[string, string | undefined]> = [];
+  const handled = tryCommitSketchModuleSurfaceTool(
+    makeArgs({
+      App: makeToastApp(toasts),
+      cfg,
+      hoverOk: true,
+      hoverRec: {
+        kind: 'box',
+        op: 'add',
+        xCenter: 0,
+        yCenter: 1.2,
+        xNorm: 0.5,
+        __wpBlockedReason: 'collision',
+      },
+    }) as never
+  );
+
+  assert.equal(handled, true);
+  assert.equal(
+    ((cfg.sketchExtras as Record<string, unknown>).boxes as unknown[] | undefined)?.length ?? 0,
+    0
+  );
+  assert.equal(toasts.length, 1);
+  assert.match(toasts[0]![0], /לא ניתן לבנות קופסא/);
+  assert.equal(toasts[0]![1], 'error');
+});

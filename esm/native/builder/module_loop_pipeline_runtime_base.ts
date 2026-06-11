@@ -42,6 +42,7 @@ export type ModuleLoopRuntimeBase = Pick<
   | 'totalW'
   | 'singleUnitWidth'
   | 'woodThick'
+  | 'shelfThick'
   | 'cabinetBodyHeight'
   | 'startY'
   | 'D'
@@ -71,6 +72,8 @@ export function resolveModuleLoopRuntimeBase(ctx: BuildContextLike): ModuleLoopR
   const totalW = reqNumber(dims.totalW, 'dims.totalW');
   const singleUnitWidth = reqNumber(layout.singleUnitWidth, 'layout.singleUnitWidth');
   const woodThick = reqNumber(dims.woodThick, 'dims.woodThick');
+  const shelfThick =
+    typeof dims.shelfThick === 'number' && Number.isFinite(dims.shelfThick) ? dims.shelfThick : woodThick;
   const cabinetBodyHeight = reqNumber(dims.cabinetBodyHeight, 'dims.cabinetBodyHeight');
   const startY = reqNumber(dims.startY, 'dims.startY');
   const D = reqNumber(dims.D, 'dims.D');
@@ -131,6 +134,7 @@ export function resolveModuleLoopRuntimeBase(ctx: BuildContextLike): ModuleLoopR
     totalW,
     singleUnitWidth,
     woodThick,
+    shelfThick,
     cabinetBodyHeight,
     startY,
     D,

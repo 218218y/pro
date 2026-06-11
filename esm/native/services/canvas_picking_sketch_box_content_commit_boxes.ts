@@ -27,7 +27,7 @@ export function createRandomId(prefix: string): string {
 
 export function ensureSketchBoxContentList(
   box: SketchModuleBoxLike,
-  key: 'shelves' | 'rods' | 'storageBarriers' | 'drawers' | 'extDrawers'
+  key: 'shelves' | 'rods' | 'storageBarriers' | 'drawers' | 'extDrawers' | 'regularExtDrawers'
 ): SketchModuleBoxContentLike[] {
   const list = getProp(box, key);
   if (isSketchModuleBoxContentList(list)) return list;
@@ -86,6 +86,8 @@ export function getSketchModuleBoxContentSource(contentKind: string): string {
       return 'manualSketchBoxDrawers';
     case 'ext_drawers':
       return 'manualSketchBoxExternalDrawers';
+    case 'regular_ext_drawers':
+      return 'manualSketchBoxRegularExternalDrawers';
     case 'cornice':
       return 'manualSketchBoxCornice';
     case 'base':

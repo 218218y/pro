@@ -15,6 +15,7 @@ import type {
   HingeMap,
   IndividualColorsMap,
   RemovedDoorsMap,
+  RoundedFrameSideShelvesMap,
 } from '../../../types/index.js';
 
 import {
@@ -119,6 +120,10 @@ export function readHandlesMap(value: unknown): HandlesMap {
 
 export function readRemovedDoorsMap(value: unknown): RemovedDoorsMap {
   return readRemovedDoorsMapCanonical(value);
+}
+
+export function readRoundedFrameSideShelvesMap(value: unknown): RoundedFrameSideShelvesMap {
+  return readToggleMapCanonical(value);
 }
 
 export function readCurtainMap(value: unknown): CurtainMap {

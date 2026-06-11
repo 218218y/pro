@@ -2,9 +2,11 @@ export type {
   SketchBoxAdornmentBaseType,
   SketchBoxAdornmentCorniceType,
   SketchBoxDividerState,
+  SketchBoxHorizontalDividerState,
   SketchBoxDoorPlacement,
   SketchBoxDoorState,
   SketchBoxSegmentState,
+  SketchBoxVerticalSegmentState,
 } from './canvas_picking_sketch_box_dividers_shared.js';
 
 export {
@@ -12,6 +14,7 @@ export {
   normalizeSketchBoxBaseType,
   normalizeSketchBoxCorniceType,
   normalizeSketchBoxDividerXNorm,
+  normalizeSketchBoxDividerYNorm,
   parseSketchBoxBaseTool,
   parseSketchBoxBaseToolSpec,
   parseSketchBoxCorniceTool,
@@ -19,17 +22,30 @@ export {
 
 export {
   addSketchBoxDividerState,
+  addSketchBoxHorizontalDividerState,
   applySketchBoxDividerState,
   findNearestSketchBoxDivider,
+  findNearestSketchBoxHorizontalDivider,
   readSketchBoxDividerXNorm,
+  readSketchBoxHorizontalDividerYNorm,
   readSketchBoxDividers,
+  readSketchBoxHorizontalDividers,
   resolveSketchBoxDividerPlacement,
+  resolveSketchBoxHorizontalDividerPlacement,
   resolveSketchBoxDividerPlacements,
+  resolveSketchBoxHorizontalDividerPlacements,
   removeSketchBoxDividerState,
+  removeSketchBoxHorizontalDividerState,
   writeSketchBoxDividers,
+  writeSketchBoxHorizontalDividers,
 } from './canvas_picking_sketch_box_divider_state.js';
 
-export { pickSketchBoxSegment, resolveSketchBoxSegments } from './canvas_picking_sketch_box_segments.js';
+export {
+  pickSketchBoxSegment,
+  pickSketchBoxVerticalSegment,
+  resolveSketchBoxSegments,
+  resolveSketchBoxVerticalSegments,
+} from './canvas_picking_sketch_box_segments.js';
 
 export {
   findSketchBoxDoorForSegment,

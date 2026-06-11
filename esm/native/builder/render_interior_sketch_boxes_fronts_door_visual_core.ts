@@ -37,12 +37,13 @@ export function appendSketchBoxDoorCoreVisual(args: {
   const boxDoor = placement.door;
 
   if (visualRoute.route === 'special' && visualRoute.createDoorVisual) {
+    const specialDoorStyle = doorVisualState.isGlass ? 'glass' : visualRoute.effectiveDoorStyle;
     const specialVisual = visualRoute.createDoorVisual(
       doorW,
       doorH,
       doorD,
       materials.doorFaceMat,
-      doorVisualState.isGlass ? 'glass' : 'flat',
+      specialDoorStyle,
       false,
       doorVisualState.isMirror,
       doorVisualState.curtainType,
@@ -78,7 +79,8 @@ export function appendSketchBoxDoorCoreVisual(args: {
       1,
       false,
       null,
-      doorPid
+      doorPid,
+      { grooveLinesCount: boxDoor.grooveLinesCount ?? null }
     );
     const styledVisualObj = readObject<InteriorGroupLike>(styledVisual) || asMesh(styledVisual);
     if (styledVisualObj) {

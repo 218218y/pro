@@ -28,10 +28,14 @@ export function resolveSketchFreeDoorContentPreview(
     targetCenterY,
     targetHeight,
     pointerX,
+    pointerY: target.pointerY,
     woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
     readSketchBoxDividers,
+    readSketchBoxHorizontalDividers: args.readSketchBoxHorizontalDividers,
     resolveSketchBoxSegments,
     pickSketchBoxSegment,
+    resolveSketchBoxVerticalSegments: args.resolveSketchBoxVerticalSegments,
+    pickSketchBoxVerticalSegment: args.pickSketchBoxVerticalSegment,
   });
   return doorPreview ? { mode: 'preview', ...doorPreview } : { mode: 'hide' };
 }

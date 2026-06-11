@@ -62,6 +62,7 @@ export function moduleHasDrawerContent(cfgMod: unknown): boolean {
 
   if (hasDrawerBagContent(readRecord(cfg.sketchExtras))) return true;
   if (hasNonEmptyArray(cfg.drawers) || hasNonEmptyArray(cfg.extDrawers)) return true;
+  if (hasNonEmptyArray(cfg.regularExtDrawers)) return true;
   if (hasSavedDrawerPerCellContent(cfg.drawersPerCell)) return true;
 
   return false;

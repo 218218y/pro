@@ -26,6 +26,7 @@ export type ResolvedSketchBoxDoorLayout = {
   doorH: number;
   doorD: number;
   doorZ: number;
+  doorCenterY: number;
   pivotX: number;
   slabLocalX: number;
   sharedDoorUserData: InteriorValueRecord;

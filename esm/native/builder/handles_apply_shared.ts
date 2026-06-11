@@ -148,6 +148,10 @@ function createManualHandlePositionResolver(App: AppContainer): (id: unknown) =>
   };
 }
 
+function isInternalDrawerDefaultNoHandleId(id: string): boolean {
+  return id.startsWith('div_int_') || id.includes('_int_drawers_');
+}
+
 function createHandleTypeResolver(
   App: AppContainer,
   getEdgeHandleVariant: (id: unknown) => EdgeHandleVariant
@@ -173,8 +177,7 @@ function createHandleTypeResolver(
     const override = readOverride(hm, sid) ?? (stripSuffix(sid) !== sid ? readOverride(hm, base) : undefined);
     if (override !== undefined) return override;
 
-    const __isInternalDrawerId = base.startsWith('div_int_') || sid.startsWith('div_int_');
-    if (__isInternalDrawerId) return 'none';
+    if (isInternalDrawerDefaultNoHandleId(sid) || isInternalDrawerDefaultNoHandleId(base)) return 'none';
 
     if (globalHandleType === 'edge' && isEdgeHandleDefaultNone(App, sk, base)) return 'none';
 

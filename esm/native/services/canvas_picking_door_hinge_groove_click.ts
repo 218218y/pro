@@ -6,14 +6,24 @@ import { toggleGrooveKey, writeHinge } from '../runtime/maps_access.js';
 import { callDoorsAction, hasDoorsAction } from '../runtime/actions_access_domains.js';
 import { toggleGrooveViaActions } from '../runtime/actions_access_mutations.js';
 import { cfgSetMap } from '../runtime/cfg_access.js';
-import { resolvePendingGrooveLinesCount } from '../runtime/groove_lines_access.js';
+import {
+  normalizeGrooveLinesCount,
+  readGrooveLinesCountOverride,
+  resolvePendingGrooveLinesCount,
+} from '../runtime/groove_lines_access.js';
 import { readDoorPartIdFromHitObject, readDoorWidthFromHitObject } from './canvas_picking_door_shared.js';
 import {
   asRecord,
   readGrooveLinesCountMap,
   writePendingGrooveLinesCountForPart,
 } from './canvas_picking_door_edit_shared.js';
-import { parseSketchBoxDoorTarget, patchSketchBoxDoor } from './canvas_picking_door_sketch_box_edit.js';
+import {
+  isSketchBoxDoorSegmentPartId,
+  parseSketchBoxDoorTarget,
+  patchSketchBoxDoor,
+  readSketchBoxDoorRecord,
+  stripSketchBoxDoorVisualSuffix,
+} from './canvas_picking_door_sketch_box_edit.js';
 import { requestDoorAuthoringImmediateRefresh } from './canvas_picking_door_authoring_burst.js';
 import {
   __wp_str,
@@ -82,19 +92,104 @@ export interface CanvasDoorGrooveClickArgs {
   doorHitObject: unknown;
 }
 
+function readSketchBoxSegmentBasePartId(partId: string): string {
+  return stripSketchBoxDoorVisualSuffix(partId).replace(/_(?:top|bot|mid\d*)$/i, '');
+}
+
+function hasGrooveKey(map: Record<string, unknown> | null | undefined, partId: string): boolean {
+  return !!map && !!partId && (map[`groove_${partId}`] != null || map[partId] != null);
+}
+
+function hasAnySketchBoxSegmentGrooveKey(
+  map: Record<string, unknown> | null | undefined,
+  basePartId: string
+): boolean {
+  if (!map || !basePartId) return false;
+  const prefix = `groove_${basePartId}_`;
+  const rawPrefix = `${basePartId}_`;
+  const keys = Object.keys(map);
+  for (let i = 0; i < keys.length; i += 1) {
+    const key = keys[i];
+    if (map[key] == null) continue;
+    if (key.startsWith(prefix) || key.startsWith(rawPrefix)) return true;
+  }
+  return false;
+}
+
+function collectSketchBoxSegmentPartIdsFromNode(args: {
+  node: unknown;
+  basePartId: string;
+  out: Set<string>;
+}): void {
+  const rec = asRecord(args.node);
+  if (!rec) return;
+  const ud = asRecord(rec.userData);
+  const pid = typeof ud?.partId === 'string' ? stripSketchBoxDoorVisualSuffix(String(ud.partId)) : '';
+  if (pid && pid !== args.basePartId && pid.startsWith(args.basePartId + '_')) {
+    if (isSketchBoxDoorSegmentPartId(pid)) args.out.add(pid);
+  }
+  const children = Array.isArray(rec.children) ? rec.children : [];
+  for (let i = 0; i < children.length; i += 1) {
+    collectSketchBoxSegmentPartIdsFromNode({ node: children[i], basePartId: args.basePartId, out: args.out });
+  }
+}
+
+function readSketchBoxSiblingSegmentPartIds(
+  App: AppContainer,
+  basePartId: string,
+  clickedPartId: string
+): string[] {
+  const out = new Set<string>();
+  try {
+    const doorsArray = getDoorsArray(App);
+    for (let i = 0; i < doorsArray.length; i += 1) {
+      collectSketchBoxSegmentPartIdsFromNode({
+        node: doorsArray[i]?.group,
+        basePartId,
+        out,
+      });
+    }
+  } catch {
+    // Best effort: older tests and partial runtimes may not expose a traversable door tree.
+  }
+  if (!out.size && clickedPartId) {
+    out.add(`${basePartId}_bot`);
+    out.add(`${basePartId}_top`);
+  }
+  if (clickedPartId) out.add(clickedPartId);
+  return Array.from(out).sort();
+}
+
 export function handleCanvasDoorGrooveClick(args: CanvasDoorGrooveClickArgs): boolean {
   const { App, effectiveDoorId, foundPartId, activeStack, foundModuleStack, doorHitObject } = args;
   const doorHitRecord = asRecord(doorHitObject);
   const targetIdRaw = readDoorPartIdFromHitObject(doorHitRecord) || effectiveDoorId || foundPartId;
-  const targetId = __wp_canonDoorPartKeyForMaps(__wp_scopeCornerPartKeyForStack(targetIdRaw, activeStack));
+  const targetId = stripSketchBoxDoorVisualSuffix(
+    __wp_canonDoorPartKeyForMaps(__wp_scopeCornerPartKeyForStack(targetIdRaw, activeStack))
+  );
   const clickedDoorWidth = readDoorWidthFromHitObject(doorHitRecord);
   const grooveLinesCountForClick = resolvePendingGrooveLinesCount(App, clickedDoorWidth, undefined, targetId);
+  const explicitGrooveLinesCountForClick = readGrooveLinesCountOverride(App);
 
   const sketchTarget = parseSketchBoxDoorTarget(targetId || effectiveDoorId || foundPartId);
-  if (sketchTarget) {
-    patchSketchBoxDoor(App, sketchTarget, foundModuleStack, current => {
+  const isSketchBoxSegmentTarget = isSketchBoxDoorSegmentPartId(targetId || effectiveDoorId || foundPartId);
+  if (sketchTarget && !isSketchBoxSegmentTarget) {
+    const patchedSketchDoor = patchSketchBoxDoor(App, sketchTarget, foundModuleStack, current => {
       if (!(current && current.enabled !== false)) return current;
-      const nextGroove = !(current.groove === true);
+      const currentGrooveOn = current.groove === true;
+      const currentGrooveLinesCount = normalizeGrooveLinesCount(current.grooveLinesCount);
+      if (
+        currentGrooveOn &&
+        explicitGrooveLinesCountForClick !== null &&
+        currentGrooveLinesCount !== grooveLinesCountForClick
+      ) {
+        return {
+          ...current,
+          groove: true,
+          grooveLinesCount: grooveLinesCountForClick,
+        };
+      }
+      const nextGroove = !currentGrooveOn;
       if (!nextGroove) return { ...current, groove: false, grooveLinesCount: null };
       return {
         ...current,
@@ -102,7 +197,7 @@ export function handleCanvasDoorGrooveClick(args: CanvasDoorGrooveClickArgs): bo
         grooveLinesCount: grooveLinesCountForClick,
       };
     });
-    return true;
+    if (patchedSketchDoor) return true;
   }
 
   if (targetId) {
@@ -116,10 +211,43 @@ export function handleCanvasDoorGrooveClick(args: CanvasDoorGrooveClickArgs): bo
 
     const grooveKey = `groove_${targetId}`;
     const groovesMap = __wp_map(App, 'groovesMap');
-    const isGrooveOn = groovesMap[grooveKey] != null;
-    const nextGrooveOn = !isGrooveOn;
+    const sketchSegmentBasePartId = isSketchBoxSegmentTarget ? readSketchBoxSegmentBasePartId(targetId) : '';
+    const sketchSegmentDoor =
+      isSketchBoxSegmentTarget && sketchTarget
+        ? readSketchBoxDoorRecord(App, sketchTarget, foundModuleStack)
+        : null;
+    const hasExplicitSketchSegmentGrooveState = hasAnySketchBoxSegmentGrooveKey(
+      groovesMap,
+      sketchSegmentBasePartId
+    );
+    const isInheritedSketchSegmentGrooveOn =
+      isSketchBoxSegmentTarget && !hasExplicitSketchSegmentGrooveState && sketchSegmentDoor?.groove === true;
+    const isGrooveOn = hasGrooveKey(groovesMap, targetId) || isInheritedSketchSegmentGrooveOn;
     const grooveLinesCountMap = readGrooveLinesCountMap(App);
+    const inheritedSketchSegmentGrooveLinesCount = isInheritedSketchSegmentGrooveOn
+      ? normalizeGrooveLinesCount(sketchSegmentDoor?.grooveLinesCount)
+      : null;
+    const currentGrooveLinesCount = isInheritedSketchSegmentGrooveOn
+      ? inheritedSketchSegmentGrooveLinesCount
+      : normalizeGrooveLinesCount(grooveLinesCountMap[targetId]);
+    const shouldUpdateExistingGrooveLinesCount =
+      isGrooveOn &&
+      explicitGrooveLinesCountForClick !== null &&
+      currentGrooveLinesCount !== grooveLinesCountForClick;
+    const nextGrooveOn = shouldUpdateExistingGrooveLinesCount || !isGrooveOn;
     const nextGrooveLinesCountMap = { ...grooveLinesCountMap };
+    const siblingSketchSegmentPartIds = isInheritedSketchSegmentGrooveOn
+      ? readSketchBoxSiblingSegmentPartIds(App, sketchSegmentBasePartId, targetId)
+      : [];
+    if (isInheritedSketchSegmentGrooveOn) {
+      for (let i = 0; i < siblingSketchSegmentPartIds.length; i += 1) {
+        const siblingPartId = siblingSketchSegmentPartIds[i];
+        if (!siblingPartId || siblingPartId === targetId) continue;
+        if (inheritedSketchSegmentGrooveLinesCount != null) {
+          nextGrooveLinesCountMap[siblingPartId] = inheritedSketchSegmentGrooveLinesCount;
+        }
+      }
+    }
     if (nextGrooveOn && grooveLinesCountForClick != null)
       nextGrooveLinesCountMap[targetId] = grooveLinesCountForClick;
     else delete nextGrooveLinesCountMap[targetId];
@@ -140,24 +268,44 @@ export function handleCanvasDoorGrooveClick(args: CanvasDoorGrooveClickArgs): bo
           source: 'groove:click:count',
         })
       );
-      if (
-        !toggleGrooveViaActions(
+      if (isInheritedSketchSegmentGrooveOn) {
+        const nextGroovesMap = { ...groovesMap };
+        for (let i = 0; i < siblingSketchSegmentPartIds.length; i += 1) {
+          const siblingPartId = siblingSketchSegmentPartIds[i];
+          if (!siblingPartId || siblingPartId === targetId) continue;
+          nextGroovesMap[`groove_${siblingPartId}`] = true;
+        }
+        if (nextGrooveOn) nextGroovesMap[grooveKey] = true;
+        else delete nextGroovesMap[grooveKey];
+        cfgSetMap(
           App,
-          grooveKey,
-          __wp_metaNoBuild(App, 'groove:click', {
-            immediate: true,
-            source: 'groove:click',
-          })
-        )
-      ) {
-        toggleGrooveKey(
-          App,
-          grooveKey,
+          'groovesMap',
+          nextGroovesMap,
           __wp_metaNoBuild(App, 'groove:click', {
             immediate: true,
             source: 'groove:click',
           })
         );
+      } else if (!shouldUpdateExistingGrooveLinesCount) {
+        if (
+          !toggleGrooveViaActions(
+            App,
+            grooveKey,
+            __wp_metaNoBuild(App, 'groove:click', {
+              immediate: true,
+              source: 'groove:click',
+            })
+          )
+        ) {
+          toggleGrooveKey(
+            App,
+            grooveKey,
+            __wp_metaNoBuild(App, 'groove:click', {
+              immediate: true,
+              source: 'groove:click',
+            })
+          );
+        }
       }
       return undefined;
     });

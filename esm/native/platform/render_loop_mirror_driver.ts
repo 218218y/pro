@@ -70,6 +70,7 @@ function markBudgetDeferred(
   counterKey: string
 ): void {
   setRenderSlot(app, '__mirrorBudgetDeferredAtMs', nowMs);
+  setRenderSlot(app, '__mirrorWorkPending', true);
   incrementRenderSlotCounter(getRenderSlot, setRenderSlot, app, '__mirrorBudgetDeferredCount');
   incrementRenderSlotCounter(getRenderSlot, setRenderSlot, app, counterKey);
 }
@@ -141,6 +142,8 @@ export function createRenderLoopMirrorDriver(
     const tex = rt ? rt['texture'] : null;
     if (!(cube && typeof cube['update'] === 'function' && scene && renderer && tex)) return;
 
+    setRenderSlot(A, '__mirrorWorkPending', false);
+
     const mirrorsToHide = getMirrorHideScratchList(A);
     const last0 = getRenderSlot<number>(A, '__mirrorLastUpdateMs');
     const last = typeof last0 === 'number' && Number.isFinite(last0) ? last0 : -1;
@@ -193,6 +196,7 @@ export function createRenderLoopMirrorDriver(
 
       if (shouldDeferTrackedBudgetWork) {
         setRenderSlot(A, '__mirrorBudgetDeferredAtMs', mirrorNow);
+        setRenderSlot(A, '__mirrorWorkPending', true);
         incrementRenderSlotCounter(getRenderSlot, setRenderSlot, A, '__mirrorBudgetDeferredCount');
         if (shouldPruneTracked) {
           incrementRenderSlotCounter(getRenderSlot, setRenderSlot, A, '__mirrorPruneBudgetSkipCount');
@@ -242,9 +246,12 @@ export function createRenderLoopMirrorDriver(
       }
 
       const intervalDue = mirrorDirty || interval === 0 || last < 0 || mirrorNow - last >= interval;
-      const mirrorDisabledForMotion = motionActive && disableDuringMotion;
+      const mirrorUpdateCount = readFiniteSlotNumber(getRenderSlot, A, '__mirrorUpdateCount', 0);
+      const hasCapturedMirrorOnce = mirrorUpdateCount > 0;
+      const mirrorDisabledForMotion = motionActive && disableDuringMotion && hasCapturedMirrorOnce;
       if (hasMirror && canRunInBudget && mirrorDisabledForMotion && intervalDue) {
         setRenderSlot(A, '__mirrorMotionDeferredAtMs', mirrorNow);
+        setRenderSlot(A, '__mirrorWorkPending', true);
         incrementRenderSlotCounter(getRenderSlot, setRenderSlot, A, '__mirrorMotionDeferredCount');
       }
 
@@ -286,6 +293,7 @@ export function createRenderLoopMirrorDriver(
           setRenderSlot(A, '__mirrorLastUpdateMs', mirrorNow);
           incrementRenderSlotCounter(getRenderSlot, setRenderSlot, A, '__mirrorUpdateCount');
           setRenderSlot(A, '__mirrorDirty', false);
+          setRenderSlot(A, '__mirrorWorkPending', false);
           setRenderSlot(A, '__mirrorPresenceKnown', true);
           setRenderSlot(A, '__mirrorPresenceHasMirror', true);
           setRenderSlot(A, '__mirrorPresenceCheckedAtMs', mirrorNow);

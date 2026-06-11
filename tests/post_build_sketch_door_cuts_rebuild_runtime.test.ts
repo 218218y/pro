@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { rebuildSketchSegmentedDoor } from '../esm/native/builder/post_build_sketch_door_cuts_shared.ts';
+import { applyDoorHandles } from '../esm/native/builder/handles_apply_doors.ts';
+import { HANDLE_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
 
 class FakeVector3 {
   x: number;
@@ -50,6 +52,12 @@ class FakeGroup extends FakeNode {}
 const FakeTHREE = {
   Group: FakeGroup,
   Mesh: FakeMesh,
+  MeshStandardMaterial: class FakeMeshStandardMaterial {
+    args: Record<string, unknown>;
+    constructor(args: Record<string, unknown>) {
+      this.args = args;
+    }
+  },
   MeshBasicMaterial: class FakeMeshBasicMaterial {
     args: Record<string, unknown>;
     constructor(args: Record<string, unknown>) {
@@ -82,6 +90,7 @@ function createBaseRuntime(overrides: Partial<Record<string, unknown>> = {}) {
     resolveHandleType: () => 'standard',
     resolveEdgeHandleVariant: () => 'short',
     resolveHandleColor: () => 'black',
+    resolveManualHandlePosition: () => null,
     resolveCurtain: () => null,
     resolveSpecial: () => null,
     doorStyle: 'flat',
@@ -120,8 +129,161 @@ test('segmented sketch door rebuild clamps handle placement per segment and tags
   const secondSegmentHandle = doorGroup.children[3];
   assert.equal(firstSegmentHandle.userData.partId, 'd12_bot');
   assert.equal(secondSegmentHandle.userData.partId, 'd12_top');
-  assert.ok(Math.abs(firstSegmentHandle.position.y - -0.5008) < 1e-6);
-  assert.ok(Math.abs(secondSegmentHandle.position.y - 0.1992) < 1e-6);
+  assert.ok(Math.abs(firstSegmentHandle.position.y - -0.5) < 1e-6);
+  assert.ok(Math.abs(secondSegmentHandle.position.y - 0.2) < 1e-6);
+});
+
+test('segmented sketch door rebuild falls back to the original full-door handle anchor before segment clamping', () => {
+  const doorGroup = new FakeGroup();
+  doorGroup.userData = {
+    partId: 'd13_full',
+    __doorWidth: 0.9,
+    __doorHeight: 1.8,
+    __hingeLeft: true,
+  };
+  doorGroup.position.set(0, 0.9, 0);
+
+  rebuildSketchSegmentedDoor({
+    runtime: createBaseRuntime(),
+    g: doorGroup,
+    ud: doorGroup.userData,
+    visibleSegments: [
+      { yMin: 0, yMax: 0.7 },
+      { yMin: 1.1, yMax: 1.8 },
+    ],
+    basePartId: 'd13_full',
+  });
+
+  const firstSegmentHandle = doorGroup.children[1];
+  const secondSegmentHandle = doorGroup.children[3];
+  assert.equal(firstSegmentHandle.userData.partId, 'd13_bot');
+  assert.equal(secondSegmentHandle.userData.partId, 'd13_top');
+  assert.ok(Math.abs(firstSegmentHandle.position.y - -0.3) < 1e-9);
+  assert.ok(Math.abs(secondSegmentHandle.position.y - 0.3) < 1e-9);
+});
+
+test('segmented sketch door rebuild keeps auto handles at the original free-box door height when lower drawer cuts leave room', () => {
+  const doorGroup = new FakeGroup();
+  doorGroup.userData = {
+    partId: 'free_box_door_full',
+    __doorWidth: 0.9,
+    __doorHeight: 1.2,
+    __hingeLeft: true,
+  };
+  doorGroup.position.set(0, 2, 0);
+
+  rebuildSketchSegmentedDoor({
+    runtime: createBaseRuntime(),
+    g: doorGroup,
+    ud: doorGroup.userData,
+    visibleSegments: [{ yMin: 1.8, yMax: 2.6 }],
+    basePartId: 'free_box_door_full',
+  });
+
+  const handle = doorGroup.children[1];
+  assert.equal(handle.userData.partId, 'free_box_door_full');
+  assert.ok(Math.abs(handle.position.y) < 1e-9);
+  assert.equal(doorGroup.children[0].userData.__handleAbsY, 2);
+});
+
+test('segmented sketch door rebuild applies manual handle position to rebuilt segment handles', () => {
+  const doorGroup = new FakeGroup();
+  doorGroup.userData = {
+    partId: 'd60_full',
+    __doorWidth: 0.9,
+    __doorHeight: 1.2,
+    __hingeLeft: true,
+  };
+  doorGroup.position.set(0, 0.6, 0);
+
+  rebuildSketchSegmentedDoor({
+    runtime: createBaseRuntime({
+      resolveManualHandlePosition: (partId: string) =>
+        partId === 'd60_top' ? { xRatio: 0.75, yRatio: 0.7 } : null,
+      createHandleMesh: () => {
+        const handle = new FakeGroup();
+        handle.userData.__kind = 'handle';
+        return handle;
+      },
+    }),
+    g: doorGroup,
+    ud: doorGroup.userData,
+    visibleSegments: [
+      { yMin: 0, yMax: 0.5 },
+      { yMin: 0.7, yMax: 1.2 },
+    ],
+    basePartId: 'd60_full',
+  });
+
+  assert.equal(doorGroup.children.length, 4);
+  const topHandle = doorGroup.children[3];
+  assert.equal(topHandle.userData.partId, 'd60_top');
+  assert.ok(Math.abs(topHandle.position.x - -0.625) < 1e-9);
+  assert.ok(topHandle.position.y > 0.44 && topHandle.position.y < 0.46);
+});
+
+test('segmented sketch door manual handle placement includes hinged parent mesh offset on both hinge sides', () => {
+  const cases = [
+    {
+      name: 'left hinge',
+      partId: 'd61_full',
+      hingeLeft: true,
+      meshOffsetX: 0.45,
+      xRatio: 0.75,
+      expectedCenterX: 0.675,
+    },
+    {
+      name: 'right hinge',
+      partId: 'd62_full',
+      hingeLeft: false,
+      meshOffsetX: -0.45,
+      xRatio: 0.25,
+      expectedCenterX: -0.675,
+    },
+  ];
+
+  for (const current of cases) {
+    const doorGroup = new FakeGroup();
+    doorGroup.userData = {
+      partId: current.partId,
+      __doorWidth: 0.9,
+      __doorHeight: 1.2,
+      __hingeLeft: current.hingeLeft,
+      __doorMeshOffsetX: current.meshOffsetX,
+    };
+    doorGroup.position.set(0, 0.6, 0);
+
+    rebuildSketchSegmentedDoor({
+      runtime: createBaseRuntime({
+        resolveManualHandlePosition: (partId: string) =>
+          partId === current.partId ? { xRatio: current.xRatio, yRatio: 0.5 } : null,
+        createHandleMesh: (_type: string, w: number, _h: number, isLeftHinge: boolean) => {
+          const handle = new FakeGroup();
+          handle.userData.__kind = 'handle';
+          const visibleHandle = new FakeGroup();
+          visibleHandle.position.x = isLeftHinge
+            ? w - HANDLE_DIMENSIONS.standard.doorOffsetM
+            : -w + HANDLE_DIMENSIONS.standard.doorOffsetM;
+          handle.add(visibleHandle);
+          return handle;
+        },
+      }),
+      g: doorGroup,
+      ud: doorGroup.userData,
+      visibleSegments: [{ yMin: 0.7, yMax: 1.2 }],
+      basePartId: current.partId,
+    });
+
+    const handle = doorGroup.children.find(child => child.userData.__kind === 'handle');
+    assert.ok(handle, `${current.name}: expected rebuilt segment handle`);
+    const visibleHandle = handle.children[0];
+    assert.ok(visibleHandle, `${current.name}: expected visible handle child`);
+    const renderedCenterX = handle.position.x + visibleHandle.position.x;
+    assert.ok(
+      Math.abs(renderedCenterX - current.expectedCenterX) < 1e-9,
+      `${current.name}: expected rendered center ${current.expectedCenterX}, got ${renderedCenterX}`
+    );
+  }
 });
 
 test('segmented sketch door rebuild keeps canonical segment ids for 4-way splits and removed restore targets', () => {
@@ -320,4 +482,158 @@ test('segmented sketch door rebuild reports all suppressed segment handles throu
   assert.equal(toasts.length, 1);
   assert.match(toasts[0]![0], /הוסרו 3 ידיות/);
   assert.equal(toasts[0]![1], 'info');
+});
+
+test('handle refresh rebuilds custom sketch box segmented-door handles from current handle config', () => {
+  const basePartId = 'sketch_box_free_box1_door_d1';
+  const topPartId = `${basePartId}_top`;
+  const calls: string[] = [];
+
+  const doorGroup = new FakeGroup();
+  doorGroup.userData = {
+    partId: basePartId,
+    __doorWidth: 0.9,
+    __doorHeight: 1.2,
+    __doorMeshOffsetX: 0.45,
+    __hingeLeft: true,
+    __wpSketchCustomHandles: true,
+    __wpSketchSegmentedDoor: true,
+  };
+  doorGroup.position.set(0, 0.6, 0);
+
+  const topSegment = new FakeGroup();
+  topSegment.userData = {
+    partId: topPartId,
+    __wpSketchDoorLeaf: true,
+    __wpSketchDoorSegment: true,
+    __wpSketchDoorSegmentPartId: topPartId,
+    __wpSketchDoorSegmentIndex: 1,
+    __doorWidth: 0.88,
+    __doorHeight: 0.5,
+    __hingeLeft: true,
+    __handleAbsY: 1.05,
+  };
+  topSegment.position.set(0.45, 0.35, 0);
+  doorGroup.add(topSegment);
+
+  const staleHandle = new FakeGroup();
+  staleHandle.name = 'handle_group_v7';
+  staleHandle.userData = { __kind: 'handle', partId: topPartId, handleType: 'standard', isHandle: true };
+  doorGroup.add(staleHandle);
+
+  const App: any = {
+    deps: { THREE: FakeTHREE },
+    render: { doorsArray: [{ group: doorGroup, type: 'hinged' }] },
+    services: { builder: {} },
+  };
+
+  applyDoorHandles({
+    App,
+    THREE: FakeTHREE as any,
+    removeDoorsEnabled: false,
+    isDoorRemovedV7: () => false,
+    syncDoorVisibilityForRemovedDoors: () => undefined,
+    getEdgeHandleVariant: partId => {
+      calls.push(`variant:${String(partId)}`);
+      return 'short';
+    },
+    getHandleType: partId => {
+      calls.push(`type:${String(partId)}`);
+      return 'edge';
+    },
+    getHandleColor: partId => {
+      calls.push(`color:${String(partId)}`);
+      return 'gold';
+    },
+    getManualHandlePosition: () => null,
+    clampAbsYToGroup: absY => absY,
+    removeExistingHandleChildren(group: FakeNode) {
+      for (let i = group.children.length - 1; i >= 0; i -= 1) {
+        const child = group.children[i];
+        if (
+          child.name === 'handle_group_v7' ||
+          child.userData.__kind === 'handle' ||
+          child.userData.isHandle
+        ) {
+          group.remove(child);
+        }
+      }
+    },
+  } as any);
+
+  const handles = doorGroup.children.filter(child => child.userData.__kind === 'handle');
+  assert.equal(handles.length, 1);
+  const handle = handles[0]!;
+  assert.equal(handle.userData.partId, topPartId);
+  assert.equal(handle.userData.handleType, 'edge');
+  assert.ok(Math.abs(handle.position.y - 0.45) < 1e-9);
+  assert.deepEqual(calls, [`type:${topPartId}`, `variant:${topPartId}`, `color:${topPartId}`]);
+});
+
+test('handle refresh applies manual handle position to custom sketch box segmented-door handles', () => {
+  const basePartId = 'sketch_box_free_box2_door_d1';
+  const topPartId = `${basePartId}_top`;
+
+  const doorGroup = new FakeGroup();
+  doorGroup.userData = {
+    partId: basePartId,
+    __doorWidth: 0.9,
+    __doorHeight: 1.2,
+    __doorMeshOffsetX: 0.45,
+    __hingeLeft: true,
+    __wpSketchCustomHandles: true,
+    __wpSketchSegmentedDoor: true,
+  };
+  doorGroup.position.set(0, 0.6, 0);
+
+  const topSegment = new FakeGroup();
+  topSegment.userData = {
+    partId: topPartId,
+    __wpSketchDoorLeaf: true,
+    __wpSketchDoorSegment: true,
+    __wpSketchDoorSegmentPartId: topPartId,
+    __wpSketchDoorSegmentIndex: 1,
+    __doorWidth: 0.88,
+    __doorHeight: 0.5,
+    __hingeLeft: true,
+  };
+  topSegment.position.set(0.45, 0.35, 0);
+  doorGroup.add(topSegment);
+
+  const App: any = {
+    deps: { THREE: FakeTHREE },
+    render: { doorsArray: [{ group: doorGroup, type: 'hinged' }] },
+    services: { builder: {} },
+  };
+
+  applyDoorHandles({
+    App,
+    THREE: FakeTHREE as any,
+    removeDoorsEnabled: false,
+    isDoorRemovedV7: () => false,
+    syncDoorVisibilityForRemovedDoors: () => undefined,
+    getEdgeHandleVariant: () => 'short',
+    getHandleType: () => 'standard',
+    getHandleColor: () => 'black',
+    getManualHandlePosition: partId => (partId === topPartId ? { xRatio: 0.75, yRatio: 0.7 } : null),
+    clampAbsYToGroup: absY => absY,
+    removeExistingHandleChildren(group: FakeNode) {
+      for (let i = group.children.length - 1; i >= 0; i -= 1) {
+        const child = group.children[i];
+        if (
+          child.name === 'handle_group_v7' ||
+          child.userData.__kind === 'handle' ||
+          child.userData.isHandle
+        ) {
+          group.remove(child);
+        }
+      }
+    },
+  } as any);
+
+  const handle = doorGroup.children.find(child => child.userData.__kind === 'handle');
+  assert.ok(handle, 'expected refreshed segmented sketch handle');
+  assert.equal(handle.userData.partId, topPartId);
+  assert.ok(handle.position.x < 0, `expected manual x offset, got ${handle.position.x}`);
+  assert.ok(handle.position.y > 0.44 && handle.position.y < 0.46);
 });

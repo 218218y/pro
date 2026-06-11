@@ -38,31 +38,31 @@ test('[door-style-overrides] tokens, map normalization, and effective style reso
   const mod = loadDoorStyleOverridesModule();
 
   assert.equal(mod.encodeDoorStyleOverridePaintToken('profile'), '__wp_door_style__:profile');
-  assert.equal(mod.parseDoorStyleOverridePaintToken('__wp_door_style__:tom'), 'tom');
+  assert.equal(mod.parseDoorStyleOverridePaintToken('__wp_door_style__:double_profile'), 'double_profile');
   assert.equal(mod.parseDoorStyleOverridePaintToken('mirror'), null);
 
   const map = mod.readDoorStyleMap({
-    d1: 'tom',
+    d1: 'double_profile',
     d1_full: 'profile',
-    drawer_1: 'tom',
+    drawer_1: 'double_profile',
     bad: 'glass',
     nil: null,
   });
   assert.deepEqual(Object.keys(map).sort(), ['d1_full', 'drawer_1']);
   assert.equal(map.d1_full, 'profile');
-  assert.equal(map.drawer_1, 'tom');
+  assert.equal(map.drawer_1, 'double_profile');
 
   assert.equal(mod.toDoorStyleOverrideMapKey('d7'), 'd7_full');
   assert.equal(mod.toDoorStyleOverrideMapKey('drawer_9'), 'drawer_9');
-  assert.equal(mod.resolveDoorStyleOverrideValue({ d7_full: 'tom' }, 'd7'), 'tom');
+  assert.equal(mod.resolveDoorStyleOverrideValue({ d7_full: 'double_profile' }, 'd7'), 'double_profile');
   assert.equal(mod.resolveDoorStyleOverrideValue({ d7: 'profile' }, 'd7_top'), null);
   assert.equal(
     mod.resolveDoorStyleOverrideValue(mod.readDoorStyleMap({ d7: 'profile' }), 'd7_top'),
     'profile'
   );
   assert.equal(mod.resolveDoorStyleOverrideValue({ d7_full: 'profile' }, 'd7_top'), 'profile');
-  assert.equal(mod.resolveDoorStyleOverrideValue({ d7_full: 'tom' }, 'd7_mid1'), 'tom');
+  assert.equal(mod.resolveDoorStyleOverrideValue({ d7_full: 'double_profile' }, 'd7_mid1'), 'double_profile');
   assert.equal(mod.resolveEffectiveDoorStyle('flat', { d7_full: 'profile' }, 'd7_bot'), 'profile');
   assert.equal(mod.resolveEffectiveDoorStyle('flat', { drawer_4: 'profile' }, 'drawer_4'), 'profile');
-  assert.equal(mod.resolveEffectiveDoorStyle('tom', {}, 'drawer_4'), 'tom');
+  assert.equal(mod.resolveEffectiveDoorStyle('double_profile', {}, 'drawer_4'), 'double_profile');
 });

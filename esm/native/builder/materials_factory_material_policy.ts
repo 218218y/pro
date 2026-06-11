@@ -1,3 +1,4 @@
+import { getStandardCabinetTextureKind } from '../../shared/standard_cabinet_textures_shared.js';
 import { readRuntimeScalarOrDefaultFromApp } from '../runtime/runtime_selectors.js';
 import { getCustomUploadedTextureMaybe } from '../runtime/textures_cache_access.js';
 import { getCfg } from './store_access.js';
@@ -60,14 +61,14 @@ function createFrontMaterial(
   }
 
   const safeColor = typeof color === 'string' && /^#([0-9a-f]{3}){1,2}$/i.test(color) ? color : '#ffffff';
-  const isWood = safeColor === '#eaddcf' || safeColor === '#a08060';
-  if (isWood) {
-    const woodTex = generateTexture(App, safeColor, 'wood');
+  const textureKind = getStandardCabinetTextureKind(safeColor);
+  if (textureKind) {
+    const texture = generateTexture(App, safeColor, textureKind);
     return new THREE.MeshStandardMaterial({
       color: 0xffffff,
-      map: woodTex || null,
-      roughness: 0.7,
-      metalness: 0.05,
+      map: texture || null,
+      roughness: textureKind === 'melamine' ? 0.55 : 0.7,
+      metalness: textureKind === 'melamine' ? 0.03 : 0.05,
     });
   }
 

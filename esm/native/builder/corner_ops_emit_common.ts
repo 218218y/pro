@@ -23,6 +23,7 @@ export interface CornerOpsEmitContext extends UnknownRecord {
   THREE: ThreeLike;
   mainD: number;
   woodThick: number;
+  shelfThick: number;
   startY: number;
   wingH: number;
   wingD: number;

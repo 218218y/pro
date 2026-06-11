@@ -18,11 +18,15 @@ export function resolveSketchFreeVerticalContentPreview(
     contentKind,
     host,
     target,
+    intersects,
     readSketchBoxDividers,
+    readSketchBoxHorizontalDividers,
     resolveSketchBoxSegments,
     pickSketchBoxSegment,
+    resolveSketchBoxVerticalSegments,
+    pickSketchBoxVerticalSegment,
   } = args;
-  const { boxId, targetBox, targetGeo, targetCenterY, targetHeight, pointerX, pointerY } = target;
+  const { boxId, partPrefix, targetBox, targetGeo, targetCenterY, targetHeight, pointerX, pointerY } = target;
   const verticalContentPreview = resolveSketchBoxVerticalContentPreview({
     host: { tool, moduleKey: host.moduleKey, isBottom: host.isBottom },
     contentKind,
@@ -34,13 +38,18 @@ export function resolveSketchFreeVerticalContentPreview(
     targetHeight,
     pointerX,
     pointerY,
+    partPrefix,
+    intersects,
     woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
     shelfVariant: contentKind === 'shelf' ? resolveSketchShelfVariant(tool) : null,
     shelfDepthOverrideM: contentKind === 'shelf' ? resolveSketchShelfDepthOverrideM(tool) : null,
     storageHeight: contentKind === 'storage' ? resolveSketchStorageHeight(tool) : null,
     readSketchBoxDividers,
+    readSketchBoxHorizontalDividers,
     resolveSketchBoxSegments,
     pickSketchBoxSegment,
+    resolveSketchBoxVerticalSegments,
+    pickSketchBoxVerticalSegment,
   });
   return verticalContentPreview ? { mode: 'preview', ...verticalContentPreview } : { mode: 'hide' };
 }

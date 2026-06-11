@@ -74,7 +74,8 @@ test('[parity-paths] texture/custom upload flows write config through canonical 
     [
       /from '\.\.\/actions\/store_actions\.js';/,
       /\bsetCfgCustomUploadedDataURL(?:Api)?\(/,
-      /\bsetCfgCustomUploadedDataURL\(app,\s*(?:result\.dataUrl|data),\s*\{\s*source:\s*'react:design:custom:texture'\s*\}\);/,
+      /\bbuildCustomTextureUploadMeta\(colorChoice\)/,
+      /\bforceBuild:\s*true/,
     ],
     'reactDesignBundle'
   );

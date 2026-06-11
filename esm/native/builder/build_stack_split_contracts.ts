@@ -36,6 +36,7 @@ export type BuildStackSplitLowerUnitArgs = {
   doorsCount: number;
   chestDrawersCount: number;
   woodThick: number;
+  shelfThick: number;
   depthReduction: number;
   baseTypeBottom: string;
   baseLegStyle?: string;

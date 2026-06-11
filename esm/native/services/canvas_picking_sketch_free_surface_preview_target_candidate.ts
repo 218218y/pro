@@ -44,6 +44,7 @@ export function resolveSketchFreeHoverTargetCandidate(args: {
     localParent: unknown;
     partPrefix: string;
   }) => LocalPoint | null;
+  projectPointerToLocalZPlane?: ((planeZ: number) => LocalPoint | null) | null;
 }): SketchFreeBoxTargetCandidate | null {
   const {
     App,
@@ -60,6 +61,7 @@ export function resolveSketchFreeHoverTargetCandidate(args: {
     resolveSketchFreeBoxGeometry,
     getSketchFreeBoxPartPrefix,
     findSketchFreeBoxLocalHit,
+    projectPointerToLocalZPlane,
   } = args;
   if (readRecordValue(box, 'freePlacement') !== true) return null;
   const centerX = readRecordNumber(box, 'absX');
@@ -79,10 +81,28 @@ export function resolveSketchFreeHoverTargetCandidate(args: {
   });
   const partPrefix = getSketchFreeBoxPartPrefix(hostModuleKey, readRecordValue(box, 'id') ?? index);
   const localHit = findSketchFreeBoxLocalHit({ App, intersects, localParent, partPrefix });
+  const frontPlaneZ = geo.innerBackZ + geo.innerD;
+  const frontPlaneHit =
+    typeof projectPointerToLocalZPlane === 'function' ? projectPointerToLocalZPlane(frontPlaneZ) : null;
+
+  // Door-profile visuals (raised frames, miter caps, grooves) are legitimate
+  // descendants of the free box and therefore share the same `partPrefix`.
+  // Using their raw raycast point for content placement makes the cursor snap to
+  // the decorative rail that was hit instead of the box's usable front plane.
+  // Project to the canonical box front plane whenever the caller can provide it,
+  // while still using the concrete local hit to choose which free box wins.
+  const pointerHit = frontPlaneHit || localHit;
   const planeHitX = Number(planeHit.x);
   const planeHitY = Number(planeHit.y);
-  const hitX = localHit && Number.isFinite(Number(localHit.x)) ? Number(localHit.x) : planeHitX;
-  const hitY = localHit && Number.isFinite(Number(localHit.y)) ? Number(localHit.y) : planeHitY;
+  const hitX = pointerHit && Number.isFinite(Number(pointerHit.x)) ? Number(pointerHit.x) : planeHitX;
+  const hitY = pointerHit && Number.isFinite(Number(pointerHit.y)) ? Number(pointerHit.y) : planeHitY;
+  const planeHitZ = Number(planeHit.z);
+  const hitZ =
+    pointerHit && Number.isFinite(Number(pointerHit.z))
+      ? Number(pointerHit.z)
+      : Number.isFinite(planeHitZ)
+        ? planeHitZ
+        : undefined;
   const dx = Math.abs(hitX - centerX);
   const tolX = Math.max(0.02, Math.min(0.06, geo.outerW * 0.16));
   const tolY = Math.max(0.02, Math.min(0.06, heightM * 0.16));
@@ -91,13 +111,12 @@ export function resolveSketchFreeHoverTargetCandidate(args: {
     contentKind === 'base'
       ? getSketchBoxAdornmentBaseHeight(
           selectedBaseSpec?.baseType || parseSketchBoxBaseTool(tool) || 'plinth',
-          selectedBaseSpec?.baseLegHeightCm
+          selectedBaseSpec?.baseType === 'plinth'
+            ? { basePlinthHeightCm: selectedBaseSpec.basePlinthHeightCm }
+            : { baseLegHeightCm: selectedBaseSpec?.baseLegHeightCm }
         )
       : 0;
-  const currentBaseHeight = getSketchBoxAdornmentBaseHeight(
-    readRecordValue(box, 'baseType'),
-    readRecordValue(box, 'baseLegHeightCm')
-  );
+  const currentBaseHeight = getSketchBoxAdornmentBaseHeight(readRecordValue(box, 'baseType'), box);
   const baseHoverExtra = contentKind === 'base' ? Math.max(currentBaseHeight, selectedBaseHeight) + 0.03 : 0;
   const topHoverExtra = contentKind === 'cornice' ? 0.05 : 0;
   const minHitY = centerY - heightM / 2 - tolY - baseHoverExtra;
@@ -107,12 +126,14 @@ export function resolveSketchFreeHoverTargetCandidate(args: {
     dist: localHit ? -1 : dx + Math.abs(hitY - centerY),
     target: {
       boxId: readRecordString(box, 'id') || '',
+      partPrefix,
       targetBox: box,
       targetGeo: geo,
       targetCenterY: centerY,
       targetHeight: heightM,
       pointerX: hitX,
       pointerY: hitY,
+      pointerZ: hitZ,
     },
   };
 }

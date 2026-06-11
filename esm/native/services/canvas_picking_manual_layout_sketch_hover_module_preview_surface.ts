@@ -39,6 +39,7 @@ export function tryHandleManualLayoutSketchHoverExistingVerticalRemovePreview(
     info,
     cfgRef,
     hitLocalX,
+    hitY,
     yClamped,
     bottomY,
     topY,
@@ -77,6 +78,9 @@ export function tryHandleManualLayoutSketchHoverExistingVerticalRemovePreview(
     isBox || isStorage || isShelf || isRod || isDrawers || isExtDrawers;
   if (!allowExistingVerticalContentRemove) return false;
 
+  const pointerYForRemoval = Math.max(bottomY + pad, Math.min(topY - pad, Number(hitY)));
+  const removalProbeY = Number.isFinite(pointerYForRemoval) ? pointerYForRemoval : yClamped;
+
   const existingVerticalRemovePreview = resolveSketchModuleSurfacePreview({
     host: { tool, moduleKey: hitModuleKey, isBottom: ctx.isBottom },
     tool,
@@ -85,7 +89,7 @@ export function tryHandleManualLayoutSketchHoverExistingVerticalRemovePreview(
     info,
     cfgRef,
     hitLocalX,
-    yClamped,
+    yClamped: removalProbeY,
     bottomY,
     topY,
     spanH,

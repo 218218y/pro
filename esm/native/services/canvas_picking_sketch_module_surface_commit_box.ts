@@ -47,7 +47,13 @@ export function tryCommitSketchModuleSurfaceBoxTool(args: CommitSketchModuleSurf
   const boxTool = parseSketchModuleBoxTool({
     tool: args.tool,
     parseSketchBoxToolSpec: args.parseSketchBoxToolSpec,
+    maxHeightM: args.totalHeight,
   });
+  if (boxHover?.op !== 'remove' && boxHover?.blockedReason === 'collision') {
+    toastSketchModuleBoxCollisionFailure({ App: args.App });
+    return true;
+  }
+
   const placementBlockers = buildSketchModuleBoxPlacementBlockers({
     cfgRef: args.cfg,
     info: args.cfg,

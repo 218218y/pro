@@ -12,6 +12,14 @@ import {
 
 type RoomGroupLike = Object3DLike & ObjectByNameLike;
 
+// The room shell must straddle y=0: when the floor is hidden below the cabinet,
+// the camera should still see the selected wall color rather than the outside background.
+const ROOM_WALL_SPAN_M = 60;
+const ROOM_WALL_TOP_Y_M = 30;
+const ROOM_WALL_BOTTOM_Y_M = -30;
+const ROOM_WALL_HEIGHT_M = ROOM_WALL_TOP_Y_M - ROOM_WALL_BOTTOM_Y_M;
+const ROOM_WALL_CENTER_Y_M = (ROOM_WALL_TOP_Y_M + ROOM_WALL_BOTTOM_Y_M) / 2;
+
 export type RoomScenePrimitives = {
   roomGroup: RoomGroupLike;
   floorMesh: MeshLike;
@@ -54,14 +62,14 @@ export function createRoomScenePrimitives(T: ThreeLike): RoomScenePrimitives | n
   floorMesh.name = 'smartFloor';
   roomGroup.add?.(floorMesh);
 
-  const wallsGeo = new BoxGeometryCtor(60, 30, 60);
+  const wallsGeo = new BoxGeometryCtor(ROOM_WALL_SPAN_M, ROOM_WALL_HEIGHT_M, ROOM_WALL_SPAN_M);
   const wallsMat = new MeshBasicMaterialCtor({
     color: 0xeaeaea,
     side: Tr.BackSide,
   });
   const roomWalls = __asMeshLikeWithSet(new MeshCtor(wallsGeo, wallsMat));
   if (!roomWalls) return null;
-  roomWalls.position.set(0, 15, 0);
+  roomWalls.position.set(0, ROOM_WALL_CENTER_Y_M, 0);
   roomWalls.name = 'roomWalls';
   roomGroup.add?.(roomWalls);
 

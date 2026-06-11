@@ -119,6 +119,8 @@ test('[interior-view-state-sync] keeps the controller stable across local draft 
   const setSketchBoxCornicePanelOpen = () => undefined;
   const setSketchBoxBaseType = () => undefined;
   const setSketchBoxBasePanelOpen = () => undefined;
+  const setSketchBoxPlinthHeightCm = () => undefined;
+  const setSketchBoxPlinthHeightDraft = () => undefined;
   const setSketchBoxLegStyle = () => undefined;
   const setSketchBoxLegColor = () => undefined;
   const setSketchBoxLegHeightCm = () => undefined;
@@ -162,6 +164,8 @@ test('[interior-view-state-sync] keeps the controller stable across local draft 
     setSketchBoxCornicePanelOpen,
     setSketchBoxBaseType,
     setSketchBoxBasePanelOpen,
+    setSketchBoxPlinthHeightCm,
+    setSketchBoxPlinthHeightDraft,
     setSketchBoxLegStyle,
     setSketchBoxLegColor,
     setSketchBoxLegHeightCm,
@@ -218,6 +222,8 @@ test('[interior-view-state-sync] keeps the controller stable across local draft 
           localState.setSketchBoxCornicePanelOpen,
           localState.setSketchBoxBaseType,
           localState.setSketchBoxBasePanelOpen,
+          localState.setSketchBoxPlinthHeightCm,
+          localState.setSketchBoxPlinthHeightDraft,
           localState.setSketchBoxLegStyle,
           localState.setSketchBoxLegColor,
           localState.setSketchBoxLegHeightCm,

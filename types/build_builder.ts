@@ -13,6 +13,7 @@ import type {
   SplitDoorsMap,
   SplitDoorsBottomMap,
   RemovedDoorsMap,
+  RoundedFrameSideShelvesMap,
   HandlesMap,
   HingeMap,
   CurtainMap,
@@ -48,10 +49,11 @@ export type NullableBuilderObject3DFn<Args extends BuilderArgs = BuilderArgs> =
   BuilderObject3DFn<Args> | null;
 export type BuilderOutlineFn = (mesh: unknown) => unknown;
 export type NullableBuilderOutlineFn = BuilderOutlineFn | null;
-export type BuilderDoorVisualFrameStyle = 'flat' | 'profile' | 'tom';
+export type BuilderDoorVisualFrameStyle = 'flat' | 'profile' | 'double_profile';
 
 export type BuilderDoorVisualOptions = {
   glassFrameStyle?: BuilderDoorVisualFrameStyle | null;
+  grooveLinesCount?: number | null;
 };
 
 export type BuilderInternalDrawerBoxOptions = {
@@ -173,6 +175,15 @@ export type BuilderSketchCorniceTypeLike = 'classic' | 'wave' | string | null | 
 export interface BuilderSketchDividerLike extends UnknownRecord {
   id?: BuilderSketchIdLike;
   xNorm?: BuilderSketchScalar;
+  yNorm?: BuilderSketchScalar;
+  frontZ?: BuilderSketchScalar;
+}
+
+export interface BuilderSketchHorizontalDividerLike extends UnknownRecord {
+  id?: BuilderSketchIdLike;
+  yNorm?: BuilderSketchScalar;
+  xNorm?: BuilderSketchScalar;
+  frontZ?: BuilderSketchScalar;
 }
 
 export interface BuilderSketchShelfLike extends UnknownRecord {
@@ -215,6 +226,7 @@ export interface BuilderSketchBoxDoorLike extends UnknownRecord {
   hinge?: string | null;
   open?: boolean | null;
   xNorm?: BuilderSketchScalar;
+  yNorm?: BuilderSketchScalar;
   groove?: boolean | null;
   grooveLinesCount?: BuilderSketchScalar;
 }
@@ -240,11 +252,13 @@ export interface BuilderSketchBoxLike extends UnknownRecord {
   dividerXNorm?: BuilderSketchScalar;
   centerDivider?: boolean | null;
   dividers?: BuilderSketchDividerLike[] | null;
+  horizontalDividers?: BuilderSketchHorizontalDividerLike[] | null;
   shelves?: BuilderSketchShelfLike[] | null;
   storageBarriers?: BuilderSketchStorageBarrierLike[] | null;
   rods?: BuilderSketchRodLike[] | null;
   drawers?: BuilderSketchDrawerLike[] | null;
   extDrawers?: BuilderSketchExternalDrawerLike[] | null;
+  regularExtDrawers?: BuilderSketchExternalDrawerLike[] | null;
   doors?: BuilderSketchBoxDoorLike[] | null;
 }
 
@@ -354,6 +368,16 @@ export type BuilderDimensionLineFn = (
   labelOffset?: BuilderVec3Like
 ) => unknown;
 
+export type BuilderRoundedShelfSide = 'left' | 'right' | 'both';
+export type BuilderBoardShape = 'box' | 'rounded_shelf';
+
+export interface BuilderCreateBoardOptions extends UnknownRecord {
+  shape?: BuilderBoardShape;
+  roundedShelfSide?: BuilderRoundedShelfSide | null;
+  roundedShelfRadius?: number;
+  roundedShelfSegments?: number;
+}
+
 export type BuilderCreateBoardFn = {
   (args: BuilderCreateBoardArgsLike): Object3DLike;
   (
@@ -365,7 +389,7 @@ export type BuilderCreateBoardFn = {
     z: number,
     mat: unknown,
     partId?: unknown,
-    sketchMode?: boolean
+    options?: BuilderCreateBoardOptions | null
   ): Object3DLike;
 };
 export type BuilderCreateHandleMeshFn = (
@@ -403,6 +427,10 @@ export interface BuilderCreateBoardArgsLike extends BuilderRenderCommonArgsLike 
   mat?: unknown;
   partId?: unknown;
   sketchMode?: boolean;
+  shape?: BuilderBoardShape;
+  roundedShelfSide?: BuilderRoundedShelfSide | null;
+  roundedShelfRadius?: number;
+  roundedShelfSegments?: number;
 }
 export interface BuilderCreateModuleHitBoxArgsLike extends BuilderRenderCommonArgsLike {
   modWidth?: number;
@@ -450,6 +478,7 @@ export interface BuilderCreateRodWithContentsArgsLike extends BuilderRenderCommo
   gridDivisions?: number;
   localGridStep?: number;
   woodThick?: number;
+  shelfThick?: number;
   isInternalDrawersEnabled?: boolean;
   innerW?: number;
   internalCenterX?: number;
@@ -520,6 +549,7 @@ export interface BuilderDoorMapsConfigLike extends UnknownRecord {
   groovesMap?: GroovesMap | null;
   grooveLinesCountMap?: GrooveLinesCountMap | null;
   removedDoorsMap?: RemovedDoorsMap | null;
+  roundedFrameSideShelvesMap?: RoundedFrameSideShelvesMap | null;
   curtainMap?: CurtainMap | null;
   individualColors?: IndividualColorsMap | null;
   doorSpecialMap?: DoorSpecialMap | null;

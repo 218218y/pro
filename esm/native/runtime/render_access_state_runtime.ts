@@ -42,6 +42,7 @@ export type RenderRuntimeStateLike = {
   __mirrorMotionActive: boolean;
   __mirrorMotionUntilMs: number;
   __mirrorMotionSnap: UnknownRecord | null;
+  __mirrorWorkPending: boolean;
   __splitHoverPickablesDirty: boolean;
   __wpAutoHideFloorRef: unknown | null;
   __wpAutoHideFloorRoomKey: unknown | null;
@@ -69,6 +70,7 @@ function isRenderRuntimeStateBag(
     typeof value.__mirrorPresenceKnown === 'boolean' &&
     typeof value.__mirrorPresenceHasMirror === 'boolean' &&
     typeof value.__mirrorMotionActive === 'boolean' &&
+    typeof value.__mirrorWorkPending === 'boolean' &&
     typeof value.__splitHoverPickablesDirty === 'boolean' &&
     Number.isFinite(value.loopRaf) &&
     Number.isFinite(value.__lastFrameTs) &&
@@ -117,6 +119,7 @@ export function ensureRenderRuntimeState(App: unknown): RenderRuntimeStateLike {
   if (typeof renderBag.__mirrorMotionActive !== 'boolean') renderBag.__mirrorMotionActive = false;
   if (!Number.isFinite(renderBag.__mirrorMotionUntilMs)) renderBag.__mirrorMotionUntilMs = 0;
   if (!asRecord(renderBag.__mirrorMotionSnap)) renderBag.__mirrorMotionSnap = null;
+  if (typeof renderBag.__mirrorWorkPending !== 'boolean') renderBag.__mirrorWorkPending = false;
   if (typeof renderBag.__splitHoverPickablesDirty !== 'boolean') renderBag.__splitHoverPickablesDirty = false;
 
   if (typeof renderBag.__wpAutoHideFloorRef === 'undefined') renderBag.__wpAutoHideFloorRef = null;
@@ -261,6 +264,7 @@ function writeMirrorPresenceState(
   nowMs: number
 ): void {
   renderBag.__mirrorDirty = false;
+  renderBag.__mirrorWorkPending = false;
   renderBag.__mirrorPresenceKnown = true;
   renderBag.__mirrorPresenceHasMirror = hasMirror;
   renderBag.__mirrorPresenceCheckedAtMs = nowMs;
@@ -346,6 +350,7 @@ export function invalidateMirrorTracking(App: unknown): void {
     renderBag.__mirrorDirty = true;
     renderBag.__mirrorPresenceKnown = false;
     renderBag.__mirrorPresenceHasMirror = false;
+    renderBag.__mirrorWorkPending = false;
     renderBag.__mirrorPresenceCheckedAtMs = 0;
     renderBag.__mirrorTrackedPruneAtMs = 0;
   } catch {

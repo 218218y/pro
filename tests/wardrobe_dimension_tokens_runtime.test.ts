@@ -20,6 +20,7 @@ import {
   getDefaultDepthForWardrobeType,
   getDefaultDoorsForWardrobeType,
   getDefaultWidthForWardrobeType,
+  resolveDoorMountThicknessesFromConfig,
 } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
 import {
   DEFAULT_BASE_LEG_HEIGHT_CM,
@@ -60,6 +61,23 @@ test('feature facades read physical dimensions from the shared token source', ()
   assert.equal(SKETCH_EXTERNAL_DRAWER_COUNT_MAX, DRAWER_DIMENSIONS.sketch.externalCountMax);
   assert.equal(MATERIAL_DIMENSIONS.wood.thicknessM, 0.018);
   assert.equal(MATERIAL_DIMENSIONS.glassShelf.thicknessM, 0.018);
+});
+
+test('door mount thickness resolver treats sliding wardrobes as overlay construction', () => {
+  const resolved = resolveDoorMountThicknessesFromConfig({
+    wardrobeType: 'sliding',
+    doorMountMode: 'inset',
+    overlayFrameThicknessCm: 2.4,
+    overlayShelfThicknessCm: 1.2,
+    insetFrameThicknessCm: 4.2,
+    insetShelfThicknessCm: 2.1,
+  });
+
+  assert.equal(resolved.mode, 'overlay');
+  assert.equal(resolved.frameKey, 'overlayFrameThicknessCm');
+  assert.equal(resolved.shelfKey, 'overlayShelfThicknessCm');
+  assert.equal(resolved.frameThicknessCm, 2.4);
+  assert.equal(resolved.shelfThicknessCm, 1.2);
 });
 
 test('external drawer compute and fallback geometry share the same dimensional policy', () => {

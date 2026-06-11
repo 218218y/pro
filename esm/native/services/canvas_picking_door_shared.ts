@@ -193,17 +193,32 @@ function walkDoorHitNode<T>(
 export function resolveDoorTrimTargetFromHitObject(
   App: AppContainer,
   doorHitObject: UnknownRecord | null,
-  fallbackPartId: string
+  fallbackPartId: string,
+  preferredGroup?: UnknownRecord | null
 ) {
+  let firstTaggedNode: DoorHitNode | null = null;
+  let firstTaggedPartId = '';
   const target = walkDoorHitNode(doorHitObject, current => {
     const userData = asDoorRecord(current.userData);
     const partId = typeof userData?.partId === 'string' ? String(userData.partId) : '';
-    const looksLikeDoorLeaf =
-      Number.isFinite(Number(userData?.__doorWidth)) && Number.isFinite(Number(userData?.__doorHeight));
-    if (!looksLikeDoorLeaf && !partId) return null;
+    const looksLikeDoorLeaf = !!readDoorLeafRectFromUserData(userData);
+    if (partId && !firstTaggedNode) {
+      firstTaggedNode = current;
+      firstTaggedPartId = partId;
+    }
+    if (!looksLikeDoorLeaf) return null;
     return resolveDoorTrimTarget(App, partId || fallbackPartId, current);
   });
-  return target || resolveDoorTrimTarget(App, fallbackPartId);
+  if (target) return target;
+
+  const preferredTarget = preferredGroup
+    ? resolveDoorTrimTarget(App, fallbackPartId, asDoorRecord<DoorHitNode>(preferredGroup))
+    : null;
+  if (preferredTarget) return preferredTarget;
+
+  if (firstTaggedNode)
+    return resolveDoorTrimTarget(App, firstTaggedPartId || fallbackPartId, firstTaggedNode);
+  return resolveDoorTrimTarget(App, fallbackPartId);
 }
 
 export function readDoorPartIdFromHitObject(doorHitObject: UnknownRecord | null): string | null {

@@ -28,6 +28,7 @@ import type {
   MirrorLayoutMap,
   DoorTrimMap,
   RemovedDoorsMap,
+  RoundedFrameSideShelvesMap,
   SplitDoorsBottomMap,
   SplitDoorsMap,
 } from './maps';
@@ -55,6 +56,7 @@ export interface SavedModelLike extends UnknownRecord {
   splitDoorsMap?: SplitDoorsMap;
   splitDoorsBottomMap?: SplitDoorsBottomMap;
   removedDoorsMap?: RemovedDoorsMap;
+  roundedFrameSideShelvesMap?: RoundedFrameSideShelvesMap;
   drawerDividersMap?: DrawerDividersMap;
   individualColors?: IndividualColorsMap;
   doorSpecialMap?: DoorSpecialMap;

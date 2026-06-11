@@ -1,4 +1,5 @@
 import { readBaseLegOptions } from '../features/base_leg_support.js';
+import { getBasePlinthHeightM } from '../features/base_plinth_support.js';
 
 export function normalizeSketchBoxAdornmentBaseType(value: unknown): 'plinth' | 'legs' | 'none' {
   const raw = String(value || '')
@@ -17,9 +18,14 @@ export function normalizeSketchBoxAdornmentCorniceType(value: unknown): 'classic
     : 'classic';
 }
 
+function readSupportHeightCm(source: unknown, key: 'basePlinthHeightCm'): unknown {
+  if (source && typeof source === 'object') return (source as Record<string, unknown>)[key];
+  return source;
+}
+
 export function getSketchBoxAdornmentBaseHeight(baseType: unknown, source?: unknown): number {
   const normalized = normalizeSketchBoxAdornmentBaseType(baseType);
   if (normalized === 'legs') return readBaseLegOptions(source).heightM;
-  if (normalized === 'plinth') return 0.08;
+  if (normalized === 'plinth') return getBasePlinthHeightM(readSupportHeightCm(source, 'basePlinthHeightCm'));
   return 0;
 }

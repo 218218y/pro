@@ -23,6 +23,7 @@ export function createProfileDoorVisual(args: StyledDoorVisualArgs) {
     mat,
     hasGrooves,
     groovePartId,
+    grooveLinesCount,
     isSketch,
     zSign,
   } = args;
@@ -106,6 +107,7 @@ export function createProfileDoorVisual(args: StyledDoorVisualArgs) {
     targetH: centerH,
     zOffset: centerFaceZ,
     densityOverride: profileDims.grooveDensityOverride,
+    linesCountOverride: grooveLinesCount,
   });
 
   return visualGroup;

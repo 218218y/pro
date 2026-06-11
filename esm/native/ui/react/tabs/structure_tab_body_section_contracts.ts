@@ -22,6 +22,7 @@ export type StructureBodySectionProps = {
   baseLegWidthCm: number;
   isChestMode: boolean;
   isSliding: boolean;
+  hideBaseTypeControls?: boolean;
   slidingTracksColor: SlidingTracksColor;
   shouldShowStructureButtons: boolean;
   patterns: StructurePattern[];

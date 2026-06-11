@@ -3,9 +3,17 @@ import assert from 'node:assert/strict';
 
 import {
   createNoMainSketchModuleConfig,
+  maybeRenderNoMainSketchHost,
   syncNoMainSketchWorkspaceMetrics,
 } from '../esm/native/builder/build_no_main_sketch_host.ts';
 import { __readNoMainWardrobeFallbackBox } from '../esm/native/services/canvas_picking_projection_runtime_box_wardrobe_fallback.ts';
+import {
+  createSketchInteriorHarness,
+  FakeBoxGeometry,
+  FakeMaterial,
+  FakeMesh,
+  THREE,
+} from './sketch_box_runtime_helpers.ts';
 
 type AnyRecord = Record<string, any>;
 
@@ -133,4 +141,98 @@ test('no-main sketch workspace runtime: cache metrics and wardrobe fallback use 
   assert.ok(Math.abs((fallbackBox?.width || 0) - 1.82) < 1e-9);
   assert.equal(fallbackBox?.height, 2.4);
   assert.equal(fallbackBox?.depth, 0.55);
+});
+
+test('no-main sketch workspace runtime: free-box doors receive the same door visual factory as the main build', () => {
+  const { wardrobeGroup, applyInteriorSketchExtras, createBoard } = createSketchInteriorHarness();
+  const captured: Array<{ partId: unknown; style: unknown }> = [];
+  const createDoorVisual = (
+    w: number,
+    h: number,
+    d: number,
+    mat: FakeMaterial,
+    style: unknown,
+    _hasGrooves: boolean,
+    _isMirror: boolean,
+    _curtainType: string | null,
+    _baseMaterial: FakeMaterial | null,
+    _frontFaceSign: number,
+    _forceCurtainFix: boolean,
+    _mirrorLayout: unknown,
+    partId: unknown
+  ) => {
+    captured.push({ partId, style });
+    const mesh = new FakeMesh(new FakeBoxGeometry(w, h, d), mat);
+    mesh.userData.partId = partId;
+    return mesh;
+  };
+  const App = {
+    services: {
+      builder: {
+        renderOps: { applyInteriorCustomOps: () => true, applyInteriorSketchExtras },
+      },
+    },
+    render: {
+      wardrobeGroup,
+      doorsArray: [],
+      drawersArray: [],
+      moduleHitBoxes: [],
+      _partObjects: [],
+    },
+  } as AnyRecord;
+
+  const rendered = maybeRenderNoMainSketchHost({
+    App,
+    THREE,
+    cfg: {
+      modulesConfiguration: [
+        {
+          sketchExtras: {
+            boxes: [
+              {
+                id: 'freeVisual',
+                freePlacement: true,
+                absX: 0,
+                absY: 1.1,
+                heightM: 0.7,
+                widthM: 0.8,
+                depthM: 0.48,
+                doors: [{ id: 'doorA', enabled: true, hinge: 'left' }],
+              },
+            ],
+          },
+        },
+      ],
+    },
+    ui: { doorStyle: 'profile' },
+    totalW: 0,
+    H: 2.4,
+    D: 0.6,
+    woodThick: 0.018,
+    depthReduction: 0,
+    internalDepth: 0.56,
+    internalZ: 0,
+    bodyMat: new FakeMaterial(),
+    legMat: new FakeMaterial(),
+    createBoard,
+    getPartMaterial: () => new FakeMaterial(),
+    getPartColorValue: () => null,
+    createDoorVisual,
+    createInternalDrawerBox: null,
+    addOutlines: null,
+    addHangingClothes: null,
+    addFoldedClothes: null,
+    addRealisticHanger: null,
+    isInternalDrawersEnabled: false,
+    showHangerEnabled: false,
+    showContentsEnabled: false,
+  });
+
+  assert.equal(rendered, true);
+  assert.ok(
+    captured.some(
+      entry => entry.partId === 'sketch_box_free_0_freeVisual_door_doorA' && entry.style === 'profile'
+    ),
+    'no-main free-box door should not fall back to a plain post slab when a styled door visual is available'
+  );
 });

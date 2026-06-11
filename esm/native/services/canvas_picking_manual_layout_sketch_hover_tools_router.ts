@@ -4,6 +4,7 @@ import { tryHandleSketchHoverOverStandardDrawer } from './canvas_picking_manual_
 import { readManualLayoutSketchHoverRuntime } from './canvas_picking_manual_layout_sketch_hover_tools_shared.js';
 import type { ManualLayoutSketchHoverPreviewArgs } from './canvas_picking_manual_layout_sketch_hover_tools_shared.js';
 import { resolvePreferredManualLayoutSketchSelectorHit } from './canvas_picking_manual_layout_sketch_hover_tools_selector.js';
+import { resolveSketchFreeHoverContentKind } from './canvas_picking_sketch_free_surface_preview.js';
 
 export function tryHandleManualLayoutSketchHoverPreviewImpl(
   args: ManualLayoutSketchHoverPreviewArgs
@@ -23,10 +24,15 @@ export function tryHandleManualLayoutSketchHoverPreviewImpl(
     __wp_getSketchFreeBoxPartPrefix,
     __wp_findSketchFreeBoxLocalHit,
     __wp_readSketchBoxDividers,
+    __wp_readSketchBoxHorizontalDividers,
     __wp_resolveSketchBoxSegments,
     __wp_pickSketchBoxSegment,
+    __wp_resolveSketchBoxVerticalSegments,
+    __wp_pickSketchBoxVerticalSegment,
     __wp_findNearestSketchBoxDivider,
+    __wp_findNearestSketchBoxHorizontalDivider,
     __wp_resolveSketchBoxDividerPlacement,
+    __wp_resolveSketchBoxHorizontalDividerPlacement,
     __wp_findSketchModuleBoxAtPoint,
     __wp_readSketchBoxDividerXNorm,
     __wp_isCornerKey,
@@ -83,7 +89,10 @@ export function tryHandleManualLayoutSketchHoverPreviewImpl(
     const hitLocalX = preferredSelector?.hitLocalX ?? null;
     const freeBoxSpec = __wp_parseSketchBoxToolSpec(tool);
 
-    const runFreeHoverFlow = (forceStandalone = false) =>
+    const runFreeHoverFlow = (
+      forceStandalone = false,
+      options: { contentOnly?: boolean; clearOnMiss?: boolean } = {}
+    ) =>
       tryHandleManualLayoutSketchHoverFreeFlow({
         App,
         tool,
@@ -107,17 +116,30 @@ export function tryHandleManualLayoutSketchHoverPreviewImpl(
         __wp_getSketchFreeBoxPartPrefix,
         __wp_findSketchFreeBoxLocalHit,
         __wp_readSketchBoxDividers,
+        __wp_readSketchBoxHorizontalDividers,
         __wp_resolveSketchBoxSegments,
         __wp_pickSketchBoxSegment,
+        __wp_resolveSketchBoxVerticalSegments,
+        __wp_pickSketchBoxVerticalSegment,
         __wp_findNearestSketchBoxDivider,
+        __wp_findNearestSketchBoxHorizontalDivider,
         __wp_resolveSketchBoxDividerPlacement,
+        __wp_resolveSketchBoxHorizontalDividerPlacement,
         __wp_findSketchModuleBoxAtPoint,
         __wp_readSketchBoxDividerXNorm,
         __wp_resolveSketchFreeBoxHoverPlacement,
         __wp_writeSketchHover,
+        ...options,
       });
 
     if (hitModuleKey == null || typeof hitY !== 'number') return runFreeHoverFlow();
+
+    if (
+      resolveSketchFreeHoverContentKind(tool) &&
+      runFreeHoverFlow(true, { contentOnly: true, clearOnMiss: false })
+    ) {
+      return true;
+    }
 
     if (freeBoxSpec) {
       // Important: once a module selector was actually hit, keep the interaction scoped to that module.
@@ -145,10 +167,15 @@ export function tryHandleManualLayoutSketchHoverPreviewImpl(
       __wp_resolveSketchBoxGeometry,
       __wp_findSketchModuleBoxAtPoint,
       __wp_readSketchBoxDividers,
+      __wp_readSketchBoxHorizontalDividers,
       __wp_resolveSketchBoxSegments,
       __wp_pickSketchBoxSegment,
+      __wp_resolveSketchBoxVerticalSegments,
+      __wp_pickSketchBoxVerticalSegment,
       __wp_findNearestSketchBoxDivider,
+      __wp_findNearestSketchBoxHorizontalDivider,
       __wp_resolveSketchBoxDividerPlacement,
+      __wp_resolveSketchBoxHorizontalDividerPlacement,
       __wp_readSketchBoxDividerXNorm,
       __wp_writeSketchHover,
     });

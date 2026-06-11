@@ -23,6 +23,40 @@ function isSketchInternalDrawersToolValue(tool: unknown): tool is string {
   );
 }
 
+function isSketchExternalDrawersToolValue(tool: unknown): tool is string {
+  return typeof tool === 'string' && tool.startsWith('sketch_ext_drawers:');
+}
+
+function isSketchFreePlacementDoorUserData(userData: DoorUserDataLike | null | undefined): boolean {
+  return !!(userData && userData.__wpSketchBoxDoor === true && userData.__wpSketchFreePlacement === true);
+}
+
+function isSketchDoorAuthoringToolValue(
+  tool: unknown
+): tool is 'sketch_box_door' | 'sketch_box_double_door' | 'sketch_box_door_hinge' {
+  return (
+    typeof tool === 'string' &&
+    (tool === 'sketch_box_door' || tool === 'sketch_box_double_door' || tool === 'sketch_box_door_hinge')
+  );
+}
+
+function isInteriorLayoutManualToolValue(tool: unknown): tool is string {
+  if (typeof tool !== 'string' || !tool) return false;
+  if (isSketchDoorAuthoringToolValue(tool)) return false;
+  return (
+    tool === 'shelf' ||
+    tool === 'rod' ||
+    tool === 'storage' ||
+    tool.startsWith('sketch_shelf:') ||
+    tool === 'sketch_rod' ||
+    tool.startsWith('sketch_storage:') ||
+    tool === 'sketch_box_divider' ||
+    tool === 'sketch_box_divider_horizontal' ||
+    isSketchExternalDrawersToolValue(tool) ||
+    isSketchInternalDrawersToolValue(tool)
+  );
+}
+
 export function getModeSlice(App: AppLike): ModeSliceLike | null {
   const state = readRecord(readRootState(App));
   if (!state) return null;
@@ -84,22 +118,40 @@ export function isSketchIntDrawersEditActive(App: AppLike): boolean {
   return isSketchInternalDrawersToolValue(tool);
 }
 
+export function isInteriorDoorEditModeActive(App: AppLike): boolean {
+  try {
+    const modes = {
+      layout: getModeConst('LAYOUT', 'layout'),
+      manualLayout: getModeConst('MANUAL_LAYOUT', 'manual_layout'),
+      braceShelves: getModeConst('BRACE_SHELVES', 'brace_shelves'),
+      extDrawer: getModeConst('EXT_DRAWER', 'ext_drawer'),
+    };
+    const ms = getModeSlice(App);
+    const cur = ms && typeof ms.primary === 'string' ? ms.primary : null;
+    if (!cur) return false;
+    if (cur === modes.layout || cur === modes.braceShelves || cur === modes.extDrawer) return true;
+    if (cur !== modes.manualLayout) return false;
+    return isInteriorLayoutManualToolValue(getSketchManualTool(App));
+  } catch {
+    return false;
+  }
+}
+
 export function shouldForceSketchFreeBoxDoorsOpen(
   manualTool: unknown,
-  userData: DoorUserDataLike | null | undefined
+  userData: DoorUserDataLike | null | undefined,
+  opts?: { interiorDoorEditActive?: boolean }
 ): boolean {
-  return !!(
-    isSketchInternalDrawersToolValue(manualTool) &&
-    userData &&
-    userData.__wpSketchBoxDoor === true &&
-    userData.__wpSketchFreePlacement === true
-  );
+  if (!isSketchFreePlacementDoorUserData(userData)) return false;
+  if (isSketchDoorAuthoringToolValue(manualTool)) return false;
+  if (opts?.interiorDoorEditActive === true) return true;
+  return isSketchInternalDrawersToolValue(manualTool);
 }
 
 export function isSketchExtDrawersEditActive(App: AppLike): boolean {
   if (!isManualLayoutEditActive(App)) return false;
   const tool = getSketchManualTool(App);
-  return typeof tool === 'string' && tool.startsWith('sketch_ext_drawers:');
+  return isSketchExternalDrawersToolValue(tool);
 }
 
 export function isSketchEditActive(App: AppLike): boolean {

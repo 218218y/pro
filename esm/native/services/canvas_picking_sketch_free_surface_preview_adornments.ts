@@ -6,20 +6,27 @@ import {
   parseSketchBoxCorniceTool,
 } from './canvas_picking_sketch_box_dividers.js';
 import { isSketchInternalDrawersTool } from '../features/sketch_drawer_sizing.js';
+import { getBasePlinthHeightM } from '../features/base_plinth_support.js';
 import type { SketchFreeHoverContentKind } from './canvas_picking_sketch_free_surface_preview_contracts.js';
 
-export function getSketchBoxAdornmentBaseHeight(baseType: unknown, legHeightCm?: unknown): number {
+function readSupportHeightCm(source: unknown, key: 'baseLegHeightCm' | 'basePlinthHeightCm'): unknown {
+  if (source && typeof source === 'object') return (source as Record<string, unknown>)[key];
+  return source;
+}
+
+export function getSketchBoxAdornmentBaseHeight(baseType: unknown, source?: unknown): number {
   const normalized = normalizeSketchBoxBaseType(baseType);
   if (normalized === 'legs') {
-    const heightCm = Number(legHeightCm);
+    const heightCm = Number(readSupportHeightCm(source, 'baseLegHeightCm'));
     return Number.isFinite(heightCm) && heightCm > 0 ? Math.max(0.01, heightCm / 100) : 0.12;
   }
-  if (normalized === 'plinth') return 0.08;
+  if (normalized === 'plinth') return getBasePlinthHeightM(readSupportHeightCm(source, 'basePlinthHeightCm'));
   return 0;
 }
 
 export function resolveSketchFreeHoverContentKind(tool: string): SketchFreeHoverContentKind {
   if (tool === 'sketch_box_divider') return 'divider';
+  if (tool === 'sketch_box_divider_horizontal') return 'divider';
   if (tool.startsWith('sketch_shelf:')) return 'shelf';
   if (tool === 'sketch_rod') return 'rod';
   if (tool.startsWith('sketch_storage:')) return 'storage';

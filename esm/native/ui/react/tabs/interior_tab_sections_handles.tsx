@@ -176,7 +176,7 @@ export function InteriorHandlesSection(props: InteriorHandlesSectionProps): Reac
               <OptionBtn
                 key={t.id}
                 className="wp-flex-1 wp-r-handle-btn"
-                selected={props.isHandleMode && props.handleToolType === t.id}
+                selected={props.handleToolType === t.id}
                 onClick={() => props.toggleHandleMode(t.id)}
               >
                 {t.label}
@@ -184,7 +184,7 @@ export function InteriorHandlesSection(props: InteriorHandlesSectionProps): Reac
             ))}
           </div>
 
-          {props.isHandleMode && props.handleToolType === 'edge' ? (
+          {props.handleToolType === 'edge' ? (
             <InteriorEdgeHandleVariantRow
               className="wp-r-edge-variant-advanced wp-mt-8"
               selectedVariant={props.handleToolEdgeVariant}
@@ -192,7 +192,7 @@ export function InteriorHandlesSection(props: InteriorHandlesSectionProps): Reac
             />
           ) : null}
 
-          {props.isHandleMode && props.handleToolType !== 'none' ? (
+          {props.handleToolType !== 'none' ? (
             <HandleColorRow
               title="צבע לידית שתשויך"
               selectedColor={props.handleToolColor}

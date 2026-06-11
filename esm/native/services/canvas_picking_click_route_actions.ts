@@ -35,6 +35,8 @@ export function tryHandleCanvasPickingActionRoute(args: CanvasPickingClickRouteA
     __isDoorTrimMode,
   } = modeState;
   const { __activeStack } = moduleRefs;
+  const routedDoorHitPoint = __isDoorTrimMode ? doorHitPoint || primaryHitPoint : doorHitPoint;
+  const routedDoorHitObject = __isDoorTrimMode ? doorHitObject || primaryHitObject : doorHitObject;
 
   if (
     __isSplitEditMode &&
@@ -62,8 +64,8 @@ export function tryHandleCanvasPickingActionRoute(args: CanvasPickingClickRouteA
       isHingeEditMode: __isHingeEditMode,
       isGrooveEditMode: __isGrooveEditMode,
       isDoorTrimMode: __isDoorTrimMode,
-      doorHitPoint: doorHitPoint && typeof doorHitPoint === 'object' ? doorHitPoint : null,
-      doorHitObject,
+      doorHitPoint: routedDoorHitPoint && typeof routedDoorHitPoint === 'object' ? routedDoorHitPoint : null,
+      doorHitObject: routedDoorHitObject,
       doorHitGroup: doorHitGroup && typeof doorHitGroup === 'object' ? doorHitGroup : null,
     })
   ) {

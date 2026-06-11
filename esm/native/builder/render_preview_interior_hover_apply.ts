@@ -93,7 +93,9 @@ export function setInteriorLayoutHoverPreview(
   const regularDepth =
     internalDepth > 0 ? Math.min(internalDepth, shelvesDims.regularDepthM) : shelvesDims.regularDepthM;
   const shelfVariant = typeof input.shelfVariant === 'string' ? String(input.shelfVariant) : '';
-  const isRemove = input.op === 'remove' || input.isRemove === true;
+  const isBlocked =
+    input.op === 'blocked' || input.isBlocked === true || typeof input.blockedReason === 'string';
+  const isRemove = input.op === 'remove' || input.isRemove === true || isBlocked;
 
   const setVisible = (mesh: PreviewMeshLike | null, on: boolean) => {
     if (!mesh) return;

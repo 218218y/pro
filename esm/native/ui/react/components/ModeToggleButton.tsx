@@ -12,6 +12,7 @@ type ModeToggleButtonProps = Omit<
   active?: boolean;
   onClick?: () => void;
   icon?: ReactNode;
+  iconPosition?: 'start' | 'end';
   children: ReactNode;
 };
 
@@ -20,7 +21,7 @@ type ModeToggleButtonProps = Omit<
  * Uses the existing global .type-option styling (inactive) + .selected (active).
  */
 export function ModeToggleButton(props: ModeToggleButtonProps) {
-  const { active = false, className, onClick, icon, children, ...rest } = props;
+  const { active = false, className, onClick, icon, iconPosition = 'start', children, ...rest } = props;
 
   return (
     <button
@@ -41,8 +42,9 @@ export function ModeToggleButton(props: ModeToggleButtonProps) {
         onClick?.();
       }}
     >
-      {icon ? <span className="wp-r-editmode-toggle__icon">{icon}</span> : null}
+      {icon && iconPosition === 'start' ? <span className="wp-r-editmode-toggle__icon">{icon}</span> : null}
       <span className="wp-r-editmode-toggle__label">{children}</span>
+      {icon && iconPosition === 'end' ? <span className="wp-r-editmode-toggle__icon">{icon}</span> : null}
     </button>
   );
 }

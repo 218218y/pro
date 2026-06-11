@@ -33,6 +33,22 @@ function normalizeFaceSign(value: unknown): number | undefined {
   return n < 0 ? -1 : 1;
 }
 
+function resolveMeasurementLabelWidthScale(styleKey: HoverClearanceMeasurementEntry['styleKey']): number {
+  if (styleKey === 'neighbor') return SKETCH_BOX_DIMENSIONS.preview.measurementScaleNeighborX;
+  if (styleKey === 'default') return SKETCH_BOX_DIMENSIONS.preview.measurementScaleDefaultX;
+  return SKETCH_BOX_DIMENSIONS.preview.measurementScaleCellX;
+}
+
+function resolveOutsideHorizontalLabelCenterOutset(
+  requestedOutset: number,
+  styleKey: HoverClearanceMeasurementEntry['styleKey'],
+  textScale: number
+): number {
+  const labelHalfWidth = Math.max(0, resolveMeasurementLabelWidthScale(styleKey) * textScale * 0.5);
+  const safeOutset = labelHalfWidth + SKETCH_BOX_DIMENSIONS.preview.measurementHorizontalLabelOutsideGapM;
+  return Math.max(0, requestedOutset, safeOutset);
+}
+
 function resolveFaceMetadata(args: {
   faceSign?: unknown;
   viewFaceSign?: unknown;
@@ -410,6 +426,199 @@ export function buildStackAwareVerticalClearanceMeasurementEntries(args: {
         ...faceMetadata,
       });
     }
+  }
+
+  return entries;
+}
+
+export type HorizontalClearanceNeighborKind = 'divider';
+
+export type HorizontalClearanceNeighborRange = {
+  minX: number;
+  maxX: number;
+  kind: HorizontalClearanceNeighborKind;
+};
+
+function normalizeHorizontalNeighborRange(
+  value: HorizontalClearanceNeighborRange
+): HorizontalClearanceNeighborRange | null {
+  const minX = readFinite(value.minX);
+  const maxX = readFinite(value.maxX);
+  if (minX == null || maxX == null) return null;
+  const lo = Math.min(minX, maxX);
+  const hi = Math.max(minX, maxX);
+  if (!(hi > lo)) return null;
+  return {
+    minX: lo,
+    maxX: hi,
+    kind: 'divider',
+  };
+}
+
+export function buildStackAwareHorizontalClearanceMeasurementEntries(args: {
+  containerMinX: number;
+  containerMaxX: number;
+  targetCenterX: number;
+  targetCenterY: number;
+  targetWidth: number;
+  targetHeight: number;
+  neighbors?: HorizontalClearanceNeighborRange[];
+  z?: number;
+  styleKey?: 'default' | 'cell' | 'neighbor' | 'center';
+  textScale?: number;
+  minHorizontalCm?: number;
+  faceSign?: unknown;
+  viewFaceSign?: unknown;
+  labelFaceSign?: unknown;
+  measurementSideSign?: number;
+  overallLineY?: number;
+  neighborLineY?: number;
+  overallLabelOutsetX?: number;
+  neighborLabelOutsetX?: number;
+}): HoverClearanceMeasurementEntry[] {
+  const containerMinX = clampFinite(args.containerMinX, 0);
+  const containerMaxX = clampFinite(args.containerMaxX, 0);
+  const targetCenterX = clampFinite(args.targetCenterX, 0);
+  const targetCenterY = clampFinite(args.targetCenterY, 0);
+  const targetWidth = Math.max(0.0001, clampFinite(args.targetWidth, 0));
+  const targetHeight = Math.max(0.0001, clampFinite(args.targetHeight, 0));
+  const halfW = targetWidth / 2;
+  const targetMinX = targetCenterX - halfW;
+  const targetMaxX = targetCenterX + halfW;
+  const lineGap = Math.max(0.035, Math.min(0.085, targetHeight * 0.08));
+  const maxCenteredOffset = Math.max(0.008, targetHeight / 2 - 0.008);
+  const centeredLineOffset = Math.min(lineGap * 0.9, maxCenteredOffset);
+  const sideSign = args.measurementSideSign === -1 ? -1 : 1;
+  const requestedNeighborLineY = Number(args.neighborLineY);
+  const requestedOverallLineY = Number(args.overallLineY);
+  const neighborLineY = Number.isFinite(requestedNeighborLineY)
+    ? requestedNeighborLineY
+    : targetCenterY - centeredLineOffset * sideSign;
+  const overallLineY = Number.isFinite(requestedOverallLineY)
+    ? requestedOverallLineY
+    : targetCenterY + centeredLineOffset * sideSign;
+  const overallLabelOutsetX = Math.max(0, clampFinite(args.overallLabelOutsetX, 0));
+  const neighborLabelOutsetX = Math.max(0, clampFinite(args.neighborLabelOutsetX, 0));
+  const baseTextScale =
+    typeof args.textScale === 'number' && Number.isFinite(args.textScale) ? args.textScale : 0.82;
+  const styleKey =
+    args.styleKey === 'neighbor'
+      ? 'neighbor'
+      : args.styleKey === 'center'
+        ? 'center'
+        : args.styleKey === 'default'
+          ? 'default'
+          : 'cell';
+  const z = typeof args.z === 'number' && Number.isFinite(args.z) ? args.z : undefined;
+  const minHorizontalCm = Math.max(0, clampFinite(args.minHorizontalCm, 0));
+  const faceMetadata = resolveFaceMetadata({
+    faceSign: args.faceSign,
+    viewFaceSign: args.viewFaceSign,
+    labelFaceSign: args.labelFaceSign ?? args.viewFaceSign ?? args.faceSign ?? 1,
+  });
+  const entries: HoverClearanceMeasurementEntry[] = [];
+
+  const pushHorizontal = (opts: {
+    startX: number;
+    endX: number;
+    y: number;
+    style: 'default' | 'cell' | 'neighbor' | 'center';
+    textScale: number;
+    role: 'cell' | 'neighbor';
+    side?: 'left' | 'right';
+    labelOutsetX?: number;
+  }) => {
+    const startX = clampFinite(opts.startX, 0);
+    const endX = clampFinite(opts.endX, 0);
+    const gap = Math.abs(endX - startX);
+    if (!shouldShowClearance(gap, minHorizontalCm)) return;
+    const requestedLabelOutsetX = Math.max(0, clampFinite(opts.labelOutsetX, 0));
+    const labelOutsetX =
+      opts.side === 'left' || opts.side === 'right'
+        ? resolveOutsideHorizontalLabelCenterOutset(requestedLabelOutsetX, opts.style, opts.textScale)
+        : requestedLabelOutsetX;
+    const labelX =
+      labelOutsetX > 0 && opts.side === 'left'
+        ? Math.min(startX, endX) - labelOutsetX
+        : labelOutsetX > 0 && opts.side === 'right'
+          ? Math.max(startX, endX) + labelOutsetX
+          : (startX + endX) / 2;
+    entries.push({
+      startX,
+      startY: opts.y,
+      endX,
+      endY: opts.y,
+      z,
+      label: roundClearanceCmLabel(gap),
+      labelX,
+      labelY: opts.y,
+      styleKey: opts.style,
+      textScale: opts.textScale,
+      role: opts.role,
+      ...faceMetadata,
+    });
+  };
+
+  pushHorizontal({
+    startX: containerMinX,
+    endX: Math.max(containerMinX, Math.min(containerMaxX, targetMinX)),
+    y: overallLineY,
+    style: styleKey,
+    textScale: baseTextScale,
+    role: 'cell',
+    side: 'left',
+    labelOutsetX: overallLabelOutsetX,
+  });
+  pushHorizontal({
+    startX: Math.max(containerMinX, Math.min(containerMaxX, targetMaxX)),
+    endX: containerMaxX,
+    y: overallLineY,
+    style: styleKey,
+    textScale: baseTextScale,
+    role: 'cell',
+    side: 'right',
+    labelOutsetX: overallLabelOutsetX,
+  });
+
+  const neighborTextScale = Math.max(0.74, baseTextScale * 0.94);
+  const normalizedNeighbors = (Array.isArray(args.neighbors) ? args.neighbors : [])
+    .map(normalizeHorizontalNeighborRange)
+    .filter((range): range is HorizontalClearanceNeighborRange => !!range)
+    .filter(range => range.maxX <= targetMinX + 0.0005 || range.minX >= targetMaxX - 0.0005);
+
+  const left =
+    normalizedNeighbors
+      .filter(range => range.maxX <= targetMinX + 0.0005)
+      .sort((a, b) => b.maxX - a.maxX)[0] ?? null;
+  const right =
+    normalizedNeighbors
+      .filter(range => range.minX >= targetMaxX - 0.0005)
+      .sort((a, b) => a.minX - b.minX)[0] ?? null;
+
+  if (left) {
+    pushHorizontal({
+      startX: left.maxX,
+      endX: targetMinX,
+      y: neighborLineY,
+      style: 'neighbor',
+      textScale: neighborTextScale,
+      role: 'neighbor',
+      side: 'left',
+      labelOutsetX: neighborLabelOutsetX,
+    });
+  }
+
+  if (right) {
+    pushHorizontal({
+      startX: targetMaxX,
+      endX: right.minX,
+      y: neighborLineY,
+      style: 'neighbor',
+      textScale: neighborTextScale,
+      role: 'neighbor',
+      side: 'right',
+      labelOutsetX: neighborLabelOutsetX,
+    });
   }
 
   return entries;

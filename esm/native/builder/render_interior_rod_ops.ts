@@ -51,6 +51,7 @@ type RenderInteriorRodArgs = InteriorValueRecord & {
   effectiveTopY?: unknown;
   gridDivisions?: unknown;
   woodThick?: unknown;
+  shelfThick?: unknown;
   isInternalDrawersEnabled?: boolean;
   innerW?: unknown;
   internalCenterX?: unknown;
@@ -139,6 +140,7 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
     const effectiveTopY = readOptionalFiniteNumber(safeArgs.effectiveTopY);
     const gridDivisions = readOptionalFiniteNumber(safeArgs.gridDivisions);
     const woodThick = readOptionalFiniteNumber(safeArgs.woodThick);
+    const shelfThick = readOptionalFiniteNumber(safeArgs.shelfThick);
     const innerW = readFiniteNumber(safeArgs.innerW);
     const internalCenterX = readFiniteNumber(safeArgs.internalCenterX);
     const internalZ = readFiniteNumber(safeArgs.internalZ);
@@ -167,6 +169,7 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
       gridDivisions,
       manualHeightLimit,
       woodThick,
+      shelfThick,
     });
 
     const hasStorageBarrier =

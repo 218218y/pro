@@ -85,9 +85,12 @@ export function buildCarcassShell(prepared: PreparedCarcassInput): CarcassShellR
       moduleHeightsRaw,
       moduleDepths,
       isDepthStepped,
+      removedLeftFrameSide: prepared.removedLeftFrameSide,
+      removedRightFrameSide: prepared.removedRightFrameSide,
       boards,
       backPanels,
     });
+    applyRemovedFrameSideBackPanelIdentity(prepared, backPanels);
   } else if (
     isDepthStepped &&
     moduleWidths &&
@@ -140,7 +143,131 @@ export function buildCarcassShell(prepared: PreparedCarcassInput): CarcassShellR
     );
   }
 
+  if (!backPanels && hasRemovedFrameSide(prepared)) {
+    backPanels = buildRemovedFrameSideBackPanelSegments(prepared, backPanel);
+  }
+
   return { boards, backPanel, backPanels };
+}
+
+function hasRemovedFrameSide(prepared: PreparedCarcassInput): boolean {
+  return prepared.removedLeftFrameSide || prepared.removedRightFrameSide;
+}
+
+function readRemovedBackPanelPartId(
+  prepared: PreparedCarcassInput,
+  moduleIndex: number,
+  modulesLength: number
+): string | null {
+  const left = prepared.removedLeftFrameSide && moduleIndex === 0;
+  const right = prepared.removedRightFrameSide && moduleIndex === modulesLength - 1;
+  if (left && right) return 'body_back_open';
+  if (left) return 'body_back_left_open';
+  if (right) return 'body_back_right_open';
+  return null;
+}
+
+type BackPanelSegmentBounds = {
+  leftBoundary: number;
+  rightBoundary: number;
+};
+
+type BackPanelSegmentInput = Pick<
+  PreparedCarcassInput,
+  'totalW' | 'woodThick' | 'removedLeftFrameSide' | 'removedRightFrameSide'
+>;
+
+function resolveBackPanelSegmentBounds(args: {
+  prepared: BackPanelSegmentInput;
+  moduleIndex: number;
+  modulesLength: number;
+  internalLeft: number;
+  moduleWidth: number;
+}): BackPanelSegmentBounds {
+  const { prepared, moduleIndex, modulesLength, internalLeft, moduleWidth } = args;
+  const { totalW, woodThick } = prepared;
+  let leftBoundary = moduleIndex === 0 ? -totalW / 2 : internalLeft;
+  let rightBoundary = moduleIndex === modulesLength - 1 ? totalW / 2 : internalLeft + moduleWidth + woodThick;
+
+  if (prepared.removedLeftFrameSide && moduleIndex === 0) {
+    leftBoundary += woodThick;
+  }
+  if (prepared.removedRightFrameSide && moduleIndex === modulesLength - 1) {
+    rightBoundary -= woodThick;
+  }
+
+  return { leftBoundary, rightBoundary };
+}
+
+function applyBackPanelSegmentBounds(seg: MutableRecord, bounds: BackPanelSegmentBounds): void {
+  const rawWidth = bounds.rightBoundary - bounds.leftBoundary;
+  seg.width = Math.max(
+    SHELL_DIMENSIONS.boardMinDimensionM,
+    rawWidth - SHELL_DIMENSIONS.backPanelSegmentWidthClearanceM
+  );
+  seg.x = (bounds.leftBoundary + bounds.rightBoundary) / 2;
+}
+
+function markBackPanelAsWood(seg: MutableRecord, partId: string): void {
+  seg.partId = partId;
+  seg.material = 'wood';
+  seg.__wpWoodBackPanel = true;
+}
+
+function applyRemovedFrameSideBackPanelIdentity(
+  prepared: PreparedCarcassInput,
+  backPanels: MutableRecord[]
+): void {
+  if (!hasRemovedFrameSide(prepared)) return;
+  const modulesLength = backPanels.length;
+  if (!(modulesLength > 0)) return;
+  for (let i = 0; i < modulesLength; i += 1) {
+    const partId = readRemovedBackPanelPartId(prepared, i, modulesLength);
+    if (partId) markBackPanelAsWood(backPanels[i], partId);
+  }
+}
+
+function buildRemovedFrameSideBackPanelSegments(
+  prepared: PreparedCarcassInput,
+  fallbackBackPanel: MutableRecord
+): MutableRecord[] {
+  const { totalW, woodThick, moduleWidths } = prepared;
+  if (!moduleWidths || !moduleWidths.length) {
+    const partId = readRemovedBackPanelPartId(prepared, 0, 1);
+    const single = { ...fallbackBackPanel };
+    applyBackPanelSegmentBounds(
+      single,
+      resolveBackPanelSegmentBounds({
+        prepared,
+        moduleIndex: 0,
+        modulesLength: 1,
+        internalLeft: -prepared.totalW / 2 + prepared.woodThick,
+        moduleWidth: Math.max(0, prepared.totalW - 2 * prepared.woodThick),
+      })
+    );
+    if (partId) markBackPanelAsWood(single, partId);
+    return [single];
+  }
+
+  const backPanels: MutableRecord[] = [];
+  let internalLeft = -totalW / 2 + woodThick;
+  for (let i = 0; i < moduleWidths.length; i += 1) {
+    const width = moduleWidths[i];
+    const bounds = resolveBackPanelSegmentBounds({
+      prepared,
+      moduleIndex: i,
+      modulesLength: moduleWidths.length,
+      internalLeft,
+      moduleWidth: width,
+    });
+    const seg: MutableRecord = { ...fallbackBackPanel };
+    applyBackPanelSegmentBounds(seg, bounds);
+    const partId = readRemovedBackPanelPartId(prepared, i, moduleWidths.length);
+    if (partId) markBackPanelAsWood(seg, partId);
+    backPanels.push(seg);
+    internalLeft += width + (i < moduleWidths.length - 1 ? woodThick : 0);
+  }
+  return backPanels;
 }
 
 type DepthSteppedFloorParams = {
@@ -197,6 +324,8 @@ type SteppedShellParams = {
   moduleHeightsRaw: unknown[];
   moduleDepths: number[] | null;
   isDepthStepped: boolean;
+  removedLeftFrameSide: boolean;
+  removedRightFrameSide: boolean;
   boards: MutableRecord[];
   backPanels: MutableRecord[];
 };
@@ -213,6 +342,8 @@ function appendSteppedShell(params: SteppedShellParams): void {
     moduleHeightsRaw,
     moduleDepths,
     isDepthStepped,
+    removedLeftFrameSide,
+    removedRightFrameSide,
     boards,
     backPanels,
   } = params;
@@ -276,22 +407,23 @@ function appendSteppedShell(params: SteppedShellParams): void {
       z: ceilZ,
     });
 
-    const leftBoundary = i === 0 ? -totalW / 2 : internalLeft;
-    const rightBoundary = i === moduleWidths.length - 1 ? totalW / 2 : internalLeft + w + woodThick;
-    const segW = Math.max(
-      SHELL_DIMENSIONS.boardMinDimensionM,
-      rightBoundary - leftBoundary - SHELL_DIMENSIONS.backPanelSegmentWidthClearanceM
-    );
-
-    backPanels.push({
+    const bounds = resolveBackPanelSegmentBounds({
+      prepared: { totalW, woodThick, removedLeftFrameSide, removedRightFrameSide },
+      moduleIndex: i,
+      modulesLength: moduleWidths.length,
+      internalLeft,
+      moduleWidth: w,
+    });
+    const seg: MutableRecord = {
       kind: 'back_panel',
-      width: segW,
       height: Math.max(SHELL_DIMENSIONS.boardMinDimensionM, h),
       depth: SHELL_DIMENSIONS.backPanelThicknessM,
-      x: (leftBoundary + rightBoundary) / 2,
       y: startY + h / 2,
       z: -D / 2 + SHELL_DIMENSIONS.backPanelZM,
-    });
+    };
+    applyBackPanelSegmentBounds(seg, bounds);
+
+    backPanels.push(seg);
 
     internalLeft += w + (i < moduleWidths.length - 1 ? woodThick : 0);
   }

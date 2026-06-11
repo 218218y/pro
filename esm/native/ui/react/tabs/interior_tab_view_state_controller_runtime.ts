@@ -28,7 +28,10 @@ export function createInteriorTabViewStateController(
       sketchController.syncSlidingWardrobeExtDrawerGuard(
         input.wardrobeType,
         input.isExtDrawerMode,
-        input.modeExtDrawer
+        input.modeExtDrawer,
+        input.isSketchToolActive,
+        input.manualToolRaw,
+        input.modeManualLayout
       );
       sketchController.syncSketchShelvesState(input.isSketchToolActive, input.manualToolRaw);
       doorTrimController.syncDoorTrimPanelState(input.isDoorTrimMode);
@@ -38,7 +41,9 @@ export function createInteriorTabViewStateController(
       sketchController.syncSketchStorageHeightState(input.isSketchToolActive, input.manualToolRaw);
       sketchController.syncSketchBoxCorniceState(input.isSketchToolActive, input.manualToolRaw);
       sketchController.syncSketchBoxBaseState(input.isSketchToolActive, input.manualToolRaw);
-      sketchController.syncSketchExtDrawersState(input.isSketchToolActive, input.manualToolRaw);
+      if (input.wardrobeType !== 'sliding') {
+        sketchController.syncSketchExtDrawersState(input.isSketchToolActive, input.manualToolRaw);
+      }
       sketchController.syncSketchIntDrawersState(input.isSketchToolActive, input.manualToolRaw);
       sketchController.syncSketchShelfDepthState(input.isSketchToolActive, input.manualToolRaw);
       sketchController.syncManualUiToolState(

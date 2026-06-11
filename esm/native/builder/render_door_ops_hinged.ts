@@ -73,6 +73,7 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
       group.userData = {
         partId,
         moduleIndex: doorOp.moduleIndex,
+        __wpModuleDoors: doorOp.moduleDoors,
         __wpStack: wpStackArg,
         __doorWidth: doorOp.width,
         __doorHeight: doorOp.height,

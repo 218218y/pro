@@ -35,7 +35,7 @@ test('sketch internal drawer edit sessions suppress drawer auto-open and stay mo
   assert.match(visuals, /if \(sketchIntDrawersEditActive\) \{/);
   assert.match(
     visuals,
-    /if \(\s*!sketchEditActive &&\s*!sketchExtDrawersEditActive &&\s*!sketchIntDrawersEditActive &&\s*openId &&\s*drawer\.id === openId\s*\) \{/
+    /if \(\s*!sketchEditActive &&\s*!sketchExtDrawersEditActive &&\s*!sketchIntDrawersEditActive &&\s*openId &&\s*drawerVisualMatchesId\(drawer, openId\)\s*\) \{/
   );
 
   assert.match(motion, /sketchIntDrawersEditActive: boolean;/);

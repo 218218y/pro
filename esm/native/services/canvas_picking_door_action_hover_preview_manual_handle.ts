@@ -1,9 +1,12 @@
 import { HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
-import { getDoorsArray } from '../runtime/render_access.js';
+import { getDoorsArray, getDrawersArray } from '../runtime/render_access.js';
 import { readMapOrEmpty } from '../runtime/maps_access.js';
+import { __wp_isDrawerLikePartId } from './canvas_picking_core_helpers.js';
 import {
   areManualHandleHeightsAligned,
+  areManualHandleWidthsAligned,
   createManualHandlePositionFromLocalPoint,
+  MANUAL_HANDLE_POSITION_KEY_PREFIX,
   manualHandlePositionKey,
   type ManualHandlePosition,
   readManualHandlePosition,
@@ -28,6 +31,8 @@ type ManualHandleAlignment = {
   hasHorizontalAlignment: boolean;
 };
 
+type ManualHandleHostKind = 'door' | 'drawer';
+
 type ManualDoorGroupLike = UnknownRecord & {
   userData?: UnknownRecord | null;
   localToWorld?: (target: { x: number; y: number; z: number }) => unknown;
@@ -36,6 +41,15 @@ type ManualDoorGroupLike = UnknownRecord & {
 type ManualDoorVisualEntryLike = UnknownRecord & {
   group?: ManualDoorGroupLike | null;
   hingeSide?: 'left' | 'right' | null;
+  id?: unknown;
+  partId?: unknown;
+};
+
+type ManualHandleSceneCandidate = {
+  group: ManualDoorGroupLike;
+  doorRec: ManualDoorVisualEntryLike | null;
+  hostKind: ManualHandleHostKind;
+  partId: string;
 };
 
 const MANUAL_HANDLE_MEASUREMENT_TEXT_SCALE = 0.88;
@@ -47,20 +61,45 @@ function readEdgeVariant(modeOpts: UnknownRecord | null): 'short' | 'long' {
   return modeOpts?.edgeHandleVariant === 'long' ? 'long' : 'short';
 }
 
-function resolvePreviewSize(modeOpts: UnknownRecord | null): {
+function resolvePreviewSize(args: {
+  modeOpts: UnknownRecord | null;
+  isDrawerHost: boolean;
+  rect: { minX: number; maxX: number };
+}): {
   width: number;
   height: number;
   depth: number;
 } {
+  const { modeOpts, isDrawerHost, rect } = args;
   const handleType = readHandleType(modeOpts);
   if (handleType === 'edge') {
+    const targetLength =
+      readEdgeVariant(modeOpts) === 'long'
+        ? HANDLE_DIMENSIONS.edge.longLengthM
+        : HANDLE_DIMENSIONS.edge.shortLengthM;
+    if (isDrawerHost) {
+      const hostWidth = Math.max(0, rect.maxX - rect.minX);
+      const handleWidth = Math.max(
+        HANDLE_DIMENSIONS.edge.minLengthM,
+        Math.min(Math.max(0, hostWidth - HANDLE_DIMENSIONS.edge.drawerWidthClearanceM), targetLength)
+      );
+      return {
+        width: handleWidth,
+        height: HANDLE_DIMENSIONS.edge.mountThicknessM,
+        depth: HANDLE_DIMENSIONS.edge.mountDepthM,
+      };
+    }
     return {
       width: HANDLE_DIMENSIONS.edge.mountThicknessM,
-      height:
-        readEdgeVariant(modeOpts) === 'long'
-          ? HANDLE_DIMENSIONS.edge.longLengthM
-          : HANDLE_DIMENSIONS.edge.shortLengthM,
+      height: targetLength,
       depth: HANDLE_DIMENSIONS.edge.mountDepthM,
+    };
+  }
+  if (isDrawerHost) {
+    return {
+      width: HANDLE_DIMENSIONS.standard.drawerWidthM,
+      height: HANDLE_DIMENSIONS.standard.drawerHeightM,
+      depth: HANDLE_DIMENSIONS.standard.drawerDepthM,
     };
   }
   return {
@@ -68,6 +107,14 @@ function resolvePreviewSize(modeOpts: UnknownRecord | null): {
     height: HANDLE_DIMENSIONS.standard.doorHeightM,
     depth: HANDLE_DIMENSIONS.standard.doorDepthM,
   };
+}
+
+function isManualHandleDrawerHost(partId: unknown, userData: UnknownRecord | null): boolean {
+  const pid = typeof partId === 'string' ? String(partId) : String(partId ?? '');
+  if (__wp_isDrawerLikePartId(pid)) return true;
+  const userPartId = typeof userData?.partId === 'string' ? String(userData.partId) : '';
+  if (userPartId && __wp_isDrawerLikePartId(userPartId)) return true;
+  return userData?.__wpType === 'extDrawer' || userData?.__wpSketchExtDrawer === true;
 }
 
 function emptyAlignment(): ManualHandleAlignment {
@@ -85,6 +132,81 @@ function readDoorGroupPartId(group: ManualDoorGroupLike | null): string {
   const userData = __asObject<UnknownRecord>(group?.userData);
   const partId = userData && typeof userData.partId === 'string' ? String(userData.partId) : '';
   return partId.trim();
+}
+
+function readVisualEntryPartId(entry: ManualDoorVisualEntryLike | null, group: ManualDoorGroupLike): string {
+  const groupPartId = readDoorGroupPartId(group);
+  if (groupPartId) return groupPartId;
+  const entryPartId = entry?.partId;
+  if (typeof entryPartId === 'string' && entryPartId.trim()) return entryPartId.trim();
+  if (typeof entryPartId === 'number' && Number.isFinite(entryPartId)) return String(entryPartId);
+  const entryId = entry?.id;
+  if (typeof entryId === 'string' && entryId.trim()) return entryId.trim();
+  if (typeof entryId === 'number' && Number.isFinite(entryId)) return String(entryId);
+  return '';
+}
+
+function resolveManualHandleHostKind(args: {
+  defaultKind: ManualHandleHostKind;
+  partId: string;
+  group: ManualDoorGroupLike;
+}): ManualHandleHostKind {
+  const userData = __asObject<UnknownRecord>(args.group.userData);
+  if (args.defaultKind === 'drawer' || isManualHandleDrawerHost(args.partId, userData)) return 'drawer';
+  return 'door';
+}
+
+function pushManualHandleSceneCandidate(args: {
+  out: ManualHandleSceneCandidate[];
+  seenGroups: Set<ManualDoorGroupLike>;
+  entry: unknown;
+  defaultKind: ManualHandleHostKind;
+}): void {
+  const doorRec = __asObject<ManualDoorVisualEntryLike>(args.entry);
+  const group = __asObject<ManualDoorGroupLike>(doorRec?.group);
+  if (!group || args.seenGroups.has(group)) return;
+  const partId = readVisualEntryPartId(doorRec, group);
+  if (!partId) return;
+  if (!__readDoorLeafRect(__asObject<UnknownRecord>(group.userData))) return;
+
+  args.seenGroups.add(group);
+  args.out.push({
+    group,
+    doorRec,
+    partId,
+    hostKind: resolveManualHandleHostKind({
+      defaultKind: args.defaultKind,
+      partId,
+      group,
+    }),
+  });
+}
+
+function collectManualHandleSceneCandidates(
+  App: DoorManualHandleHoverPreviewArgs['App']
+): ManualHandleSceneCandidate[] {
+  const out: ManualHandleSceneCandidate[] = [];
+  const seenGroups = new Set<ManualDoorGroupLike>();
+  const doors = getDoorsArray(App) as unknown[];
+  for (let i = 0; i < doors.length; i += 1) {
+    pushManualHandleSceneCandidate({
+      out,
+      seenGroups,
+      entry: doors[i],
+      defaultKind: 'door',
+    });
+  }
+
+  const drawers = getDrawersArray(App) as unknown[];
+  for (let i = 0; i < drawers.length; i += 1) {
+    pushManualHandleSceneCandidate({
+      out,
+      seenGroups,
+      entry: drawers[i],
+      defaultKind: 'drawer',
+    });
+  }
+  return out;
 }
 
 function readManualPositionForPart(args: {
@@ -148,6 +270,27 @@ function hasMatchingWidthDistance(args: {
   return isAlignedDistance(currentDistance, otherDistance, args.toleranceM);
 }
 
+function hasMatchingDrawerWidthPosition(args: {
+  currentPosition: ManualHandlePosition;
+  currentX: number;
+  otherPosition: ManualHandlePosition;
+  otherX: number;
+  toleranceM?: number;
+}): boolean {
+  return (
+    areManualHandleWidthsAligned(args.currentPosition, args.otherPosition) ||
+    isAlignedDistance(args.currentX, args.otherX, args.toleranceM)
+  );
+}
+
+function shouldCompareSceneCandidate(args: {
+  currentHostKind: ManualHandleHostKind;
+  otherHostKind: ManualHandleHostKind;
+}): boolean {
+  if (args.currentHostKind === 'drawer') return args.otherHostKind === 'drawer';
+  return args.otherHostKind === 'door';
+}
+
 function projectLocalYToWorld(args: {
   group: ManualDoorGroupLike | null;
   scratch: { x: number; y: number; z: number; set: (x: number, y: number, z: number) => unknown };
@@ -172,6 +315,7 @@ function resolveSceneManualHandleAlignment(args: {
   currentRect: { minX: number; maxX: number; minY: number; maxY: number };
   currentPlacement: { x: number; y: number };
   currentPosition: ManualHandlePosition;
+  currentHostKind: ManualHandleHostKind;
   handlesMap: Record<string, unknown> | null;
   scratch: DoorManualHandleHoverPreviewArgs['localHit'];
 }): ManualHandleAlignment {
@@ -183,6 +327,7 @@ function resolveSceneManualHandleAlignment(args: {
     currentRect,
     currentPlacement,
     currentPosition,
+    currentHostKind,
     handlesMap,
     scratch,
   } = args;
@@ -195,13 +340,20 @@ function resolveSceneManualHandleAlignment(args: {
     y: currentPlacement.y,
   });
   const currentHingeSide = readDoorHingeSide({ group: currentGroup });
-  const doors = getDoorsArray(App);
-  for (let i = 0; i < doors.length; i += 1) {
-    const doorRec = __asObject<ManualDoorVisualEntryLike>(doors[i]);
-    const otherGroup = __asObject<ManualDoorGroupLike>(doorRec?.group);
-    if (!otherGroup || otherGroup === currentGroup) continue;
+  const candidates = collectManualHandleSceneCandidates(App);
+  for (let i = 0; i < candidates.length; i += 1) {
+    const candidate = candidates[i];
+    const otherGroup = candidate.group;
+    if (otherGroup === currentGroup) continue;
+    if (
+      !shouldCompareSceneCandidate({
+        currentHostKind,
+        otherHostKind: candidate.hostKind,
+      })
+    )
+      continue;
 
-    const otherPartId = readDoorGroupPartId(otherGroup);
+    const otherPartId = candidate.partId;
     if (!otherPartId || manualHandlePositionKey(otherPartId) === currentKey) continue;
 
     const otherPosition = readManualPositionForPart({ handlesMap, partId: otherPartId });
@@ -224,16 +376,24 @@ function resolveSceneManualHandleAlignment(args: {
       alignment.hasVerticalAlignment = true;
     }
 
-    if (
-      hasMatchingWidthDistance({
-        currentRect,
-        currentX: currentPlacement.x,
-        currentHingeSide,
-        otherRect,
-        otherX: otherPlacement.x,
-        otherHingeSide: readDoorHingeSide({ doorRec, group: otherGroup }),
-      })
-    ) {
+    const hasWidthAlignment =
+      currentHostKind === 'drawer'
+        ? hasMatchingDrawerWidthPosition({
+            currentPosition,
+            currentX: currentPlacement.x,
+            otherPosition,
+            otherX: otherPlacement.x,
+          })
+        : hasMatchingWidthDistance({
+            currentRect,
+            currentX: currentPlacement.x,
+            currentHingeSide,
+            otherRect,
+            otherX: otherPlacement.x,
+            otherHingeSide: readDoorHingeSide({ doorRec: candidate.doorRec, group: otherGroup }),
+          });
+
+    if (hasWidthAlignment) {
       alignment.hasHorizontalAlignment = true;
     }
 
@@ -246,17 +406,24 @@ function resolveMapManualHandleAlignment(args: {
   handlesMap: Record<string, unknown> | null;
   currentKey: string;
   currentPosition: ManualHandlePosition;
+  currentHostKind: ManualHandleHostKind;
 }): ManualHandleAlignment {
-  const { handlesMap, currentKey, currentPosition } = args;
+  const { handlesMap, currentKey, currentPosition, currentHostKind } = args;
   const alignment = emptyAlignment();
   if (!handlesMap) return alignment;
-  const prefix = '__wp_manual_handle_position:';
   for (const key of Object.keys(handlesMap)) {
-    if (key === currentKey || !key.startsWith(prefix)) continue;
+    if (key === currentKey || !key.startsWith(MANUAL_HANDLE_POSITION_KEY_PREFIX)) continue;
+    const otherPartId = key.slice(MANUAL_HANDLE_POSITION_KEY_PREFIX.length);
+    const otherIsDrawer = __wp_isDrawerLikePartId(otherPartId);
+    if (currentHostKind === 'drawer' ? !otherIsDrawer : otherIsDrawer) continue;
     const other = readManualHandlePosition(handlesMap[key]);
     if (!other) continue;
     if (areManualHandleHeightsAligned(currentPosition, other)) alignment.hasVerticalAlignment = true;
-    if (alignment.hasVerticalAlignment) return alignment;
+    if (currentHostKind === 'drawer' && areManualHandleWidthsAligned(currentPosition, other)) {
+      alignment.hasHorizontalAlignment = true;
+    }
+    if (alignment.hasVerticalAlignment && (currentHostKind !== 'drawer' || alignment.hasHorizontalAlignment))
+      return alignment;
   }
   return alignment;
 }
@@ -268,6 +435,7 @@ function resolveManualHandleAlignment(args: {
   currentRect: { minX: number; maxX: number; minY: number; maxY: number };
   currentPlacement: { x: number; y: number };
   currentPosition: ManualHandlePosition;
+  currentHostKind: ManualHandleHostKind;
   handlesMap: Record<string, unknown> | null;
   scratch: DoorManualHandleHoverPreviewArgs['localHit'];
 }): ManualHandleAlignment {
@@ -278,6 +446,7 @@ function resolveManualHandleAlignment(args: {
     currentRect: args.currentRect,
     currentPlacement: args.currentPlacement,
     currentPosition: args.currentPosition,
+    currentHostKind: args.currentHostKind,
     handlesMap: args.handlesMap,
     scratch: args.scratch,
   });
@@ -287,6 +456,7 @@ function resolveManualHandleAlignment(args: {
     handlesMap: args.handlesMap,
     currentKey: args.currentKey,
     currentPosition: args.currentPosition,
+    currentHostKind: args.currentHostKind,
   });
   return {
     hasVerticalAlignment: sceneAlignment.hasVerticalAlignment || mapAlignment.hasVerticalAlignment,
@@ -344,7 +514,14 @@ export function tryHandleDoorManualHandleHoverPreview(args: DoorManualHandleHove
     return false;
   }
 
-  const size = resolvePreviewSize(modeOpts);
+  const size = resolvePreviewSize({
+    modeOpts,
+    isDrawerHost: isManualHandleDrawerHost(scopedHitDoorPid, userData),
+    rect,
+  });
+  const currentHostKind: ManualHandleHostKind = isManualHandleDrawerHost(scopedHitDoorPid, userData)
+    ? 'drawer'
+    : 'door';
   const handleZ = zOff + (zOff >= 0 ? 0.003 : -0.003);
   const { horizontalLabelOutset, verticalLabelOutset } = resolveCellMeasurementLabelOutsets(
     MANUAL_HANDLE_MEASUREMENT_TEXT_SCALE
@@ -382,6 +559,7 @@ export function tryHandleDoorManualHandleHoverPreview(args: DoorManualHandleHove
     currentRect: rect,
     currentPlacement: placement,
     currentPosition: manualPosition,
+    currentHostKind,
     scratch: localHit,
   });
   const hasAlignedNeighbor = alignment.hasVerticalAlignment || alignment.hasHorizontalAlignment;

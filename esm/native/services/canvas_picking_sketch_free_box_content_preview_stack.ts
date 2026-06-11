@@ -19,8 +19,11 @@ export function resolveSketchFreeStackContentPreview(
     host,
     target,
     readSketchBoxDividers,
+    readSketchBoxHorizontalDividers,
     resolveSketchBoxSegments,
     pickSketchBoxSegment,
+    resolveSketchBoxVerticalSegments,
+    pickSketchBoxVerticalSegment,
   } = args;
   const { boxId, targetBox, targetGeo, targetCenterY, targetHeight, pointerX, pointerY } = target;
   const boxStackPreview = resolveSketchBoxStackPreview({
@@ -39,8 +42,11 @@ export function resolveSketchFreeStackContentPreview(
     drawerHeightM:
       contentKind === 'ext_drawers' ? parseSketchExtDrawerHeightM(tool) : parseSketchIntDrawerHeightM(tool),
     readSketchBoxDividers,
+    readSketchBoxHorizontalDividers,
     resolveSketchBoxSegments,
     pickSketchBoxSegment,
+    resolveSketchBoxVerticalSegments,
+    pickSketchBoxVerticalSegment,
   });
   if (!boxStackPreview || !boxStackPreview.preview) return { mode: 'hide' };
   return {

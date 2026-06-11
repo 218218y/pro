@@ -71,17 +71,19 @@ export function finalizeSketchFreeBoxHoverPlacement(args: {
   previewX = clampedPlacement.centerX;
   previewY = clampedPlacement.centerY;
 
-  const finalOutsidePlacement = resolveSketchFreeBoxOutsideWardrobePlacement({
-    centerX: previewX,
-    centerY: previewY,
-    boxW: context.previewW,
-    boxH: context.previewH,
-    wardrobeCenterX: Number(context.wardrobeBox.centerX),
-    wardrobeCenterY: Number(context.wardrobeBox.centerY),
-    wardrobeWidth: Number(context.wardrobeBox.width),
-    wardrobeHeight: Number(context.wardrobeBox.height),
-    roomFloorY: context.roomFloorY,
-  });
+  const finalOutsidePlacement = context.noMainWardrobeSketchMode
+    ? null
+    : resolveSketchFreeBoxOutsideWardrobePlacement({
+        centerX: previewX,
+        centerY: previewY,
+        boxW: context.previewW,
+        boxH: context.previewH,
+        wardrobeCenterX: Number(context.wardrobeBox.centerX),
+        wardrobeCenterY: Number(context.wardrobeBox.centerY),
+        wardrobeWidth: Number(context.wardrobeBox.width),
+        wardrobeHeight: Number(context.wardrobeBox.height),
+        roomFloorY: context.roomFloorY,
+      });
   if (finalOutsidePlacement) {
     previewX = finalOutsidePlacement.centerX;
     previewY = finalOutsidePlacement.centerY;

@@ -20,11 +20,15 @@ export type DesignTabColorSectionModel = DesignTabColorManagerModel & {
 
 export type DesignTabDoorFeaturesSectionModel = {
   wardrobeType: string;
+  isChestMode: boolean;
+  noMainWardrobeActive: boolean;
   groovesEnabled: boolean;
   grooveLinesCount: string;
   grooveLinesCountIsAuto: boolean;
   splitDoors: boolean;
   removeDoorsEnabled: boolean;
+  roundedFrameSideShelvesVisible: boolean;
+  roundedFrameSideShelvesActive: boolean;
   grooveActive: boolean;
   splitActive: boolean;
   splitIsCustom: boolean;
@@ -36,9 +40,12 @@ export type DesignTabDoorFeaturesSectionModel = {
   toggleSplitEdit: () => void;
   toggleSplitCustomEdit: () => void;
   toggleRemoveDoorEdit: () => void;
+  toggleRoundedFrameSideShelves: () => void;
 };
 
 export type DesignTabCorniceSectionModel = {
+  isChestMode: boolean;
+  noMainWardrobeActive: boolean;
   hasCornice: boolean;
   corniceType: DesignTabCorniceType;
   setHasCornice: (checked: boolean) => void;
@@ -60,9 +67,15 @@ export type DesignTabControllerState = {
   grooveLinesCountOverride: unknown;
   groovesDirty: boolean;
   removedDoorsDirty: boolean;
+  leftFrameSideRemoved: boolean;
+  rightFrameSideRemoved: boolean;
+  leftFrameSideShelvesRounded: boolean;
+  rightFrameSideShelvesRounded: boolean;
   doorStyle: DesignTabDoorStyle;
   colorChoice: string;
   frontColorShelfInheritanceMode: FrontColorShelfInheritanceMode;
+  isChestMode: boolean;
+  noMainWardrobeActive: boolean;
   groovesEnabled: boolean;
   splitDoors: boolean;
   removeDoorsEnabled: boolean;

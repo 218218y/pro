@@ -85,11 +85,19 @@ export function useDesignTabControllerSections(args: {
   const doorFeaturesSection = useMemo<DesignTabDoorFeaturesSectionModel>(
     () => ({
       wardrobeType: state.wardrobeType,
+      isChestMode: state.isChestMode,
+      noMainWardrobeActive: state.noMainWardrobeActive,
       groovesEnabled: state.groovesEnabled,
       grooveLinesCount: state.grooveLinesCount,
       grooveLinesCountIsAuto: state.grooveLinesCountIsAuto,
       splitDoors: state.splitDoors,
       removeDoorsEnabled: state.removeDoorsEnabled,
+      roundedFrameSideShelvesVisible:
+        state.removeDoorsEnabled && (state.leftFrameSideRemoved || state.rightFrameSideRemoved),
+      roundedFrameSideShelvesActive:
+        (state.leftFrameSideRemoved || state.rightFrameSideRemoved) &&
+        (!state.leftFrameSideRemoved || state.leftFrameSideShelvesRounded) &&
+        (!state.rightFrameSideRemoved || state.rightFrameSideShelvesRounded),
       grooveActive: editModes.grooveActive,
       splitActive: editModes.splitActive,
       splitIsCustom: editModes.splitIsCustom,
@@ -101,14 +109,21 @@ export function useDesignTabControllerSections(args: {
       toggleSplitEdit: editModes.toggleSplitEdit,
       toggleSplitCustomEdit: editModes.toggleSplitCustomEdit,
       toggleRemoveDoorEdit: editModes.toggleRemoveDoorEdit,
+      toggleRoundedFrameSideShelves: controllerRuntime.toggleRoundedFrameSideShelves,
     }),
     [
       state.wardrobeType,
+      state.isChestMode,
+      state.noMainWardrobeActive,
       state.groovesEnabled,
       state.grooveLinesCount,
       state.grooveLinesCountIsAuto,
       state.splitDoors,
       state.removeDoorsEnabled,
+      state.leftFrameSideRemoved,
+      state.rightFrameSideRemoved,
+      state.leftFrameSideShelvesRounded,
+      state.rightFrameSideShelvesRounded,
       editModes.grooveActive,
       editModes.splitActive,
       editModes.splitIsCustom,
@@ -120,17 +135,27 @@ export function useDesignTabControllerSections(args: {
       editModes.toggleSplitEdit,
       editModes.toggleSplitCustomEdit,
       editModes.toggleRemoveDoorEdit,
+      controllerRuntime.toggleRoundedFrameSideShelves,
     ]
   );
 
   const corniceSection = useMemo<DesignTabCorniceSectionModel>(
     () => ({
+      isChestMode: state.isChestMode,
+      noMainWardrobeActive: state.noMainWardrobeActive,
       hasCornice: state.hasCornice,
       corniceType: state.corniceType,
       setHasCornice: controllerRuntime.setHasCornice,
       setCorniceType: controllerRuntime.setCorniceType,
     }),
-    [state.hasCornice, state.corniceType, controllerRuntime.setHasCornice, controllerRuntime.setCorniceType]
+    [
+      state.isChestMode,
+      state.noMainWardrobeActive,
+      state.hasCornice,
+      state.corniceType,
+      controllerRuntime.setHasCornice,
+      controllerRuntime.setCorniceType,
+    ]
   );
 
   return useMemo(

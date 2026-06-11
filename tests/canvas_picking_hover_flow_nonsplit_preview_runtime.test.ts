@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { resolveNonSplitPreferredFacePreviewState } from '../esm/native/services/canvas_picking_hover_flow_nonsplit_face.ts';
 import { tryHandleCanvasNonSplitDoorPreviewRoute } from '../esm/native/services/canvas_picking_hover_flow_nonsplit_preview_door.ts';
 import { tryHandleCanvasNonSplitPaintPreviewRoute } from '../esm/native/services/canvas_picking_hover_flow_nonsplit_preview_paint.ts';
 import { tryHandleCanvasNonSplitPreviewRoutes } from '../esm/native/services/canvas_picking_hover_flow_nonsplit_preview.ts';
@@ -41,6 +42,127 @@ function createHoverArgs(
   };
 }
 
+test('non-split preferred face preview ignores sketch free-box body hits in handle mode', () => {
+  const wardrobeGroup = {
+    type: 'Group',
+    userData: { partId: 'root' },
+    children: [] as unknown[],
+  };
+  const freeBoxBody = {
+    type: 'Mesh',
+    userData: { partId: 'sketch_box_free_0_box-1', __wpSketchBoxId: 'box-1' },
+    material: { visible: true, opacity: 1 },
+    parent: wardrobeGroup,
+  };
+  wardrobeGroup.children.push(freeBoxBody);
+  const App = {
+    render: { renderer: {}, camera: {}, wardrobeGroup },
+    services: { runtimeCache: {} },
+    store: {
+      getState: () => ({ ui: {}, config: {}, mode: {}, runtime: {}, meta: {} }),
+      patch: () => undefined,
+    },
+    maps: { getMap: () => null },
+  };
+  const raycaster = {
+    setFromCamera() {},
+    intersectObjects(_objects: unknown, _recursive?: boolean, optionalTarget?: unknown[]) {
+      const hits = [{ object: freeBoxBody, point: { x: 0.01, y: 0.02, z: 0.03 } }];
+      if (Array.isArray(optionalTarget)) {
+        optionalTarget.length = 0;
+        optionalTarget.push(...hits);
+        return optionalTarget;
+      }
+      return hits;
+    },
+  };
+
+  const state = resolveNonSplitPreferredFacePreviewState(
+    createHoverArgs({
+      App: App as never,
+      isHandleEditMode: true,
+      raycaster: raycaster as never,
+      mouse: { x: 0, y: 0 } as never,
+    })
+  );
+
+  assert.equal(state.preferredFacePreviewPartId, null);
+  assert.equal(state.preferredFacePreviewHitObject, null);
+  assert.equal(state.preferredFacePreviewHitPoint, null);
+});
+
+test('non-split preferred face preview ignores drawer-box side hits in handle mode', () => {
+  const wardrobeGroup = {
+    type: 'Group',
+    userData: { partId: 'root' },
+    children: [] as unknown[],
+  };
+  const drawerOwner = {
+    type: 'Group',
+    userData: {
+      partId: 'sketch_ext_drawers_1_sed-1_1',
+      __doorWidth: 0.8,
+      __doorHeight: 0.2,
+      __wpType: 'extDrawer',
+    },
+    parent: wardrobeGroup,
+    children: [] as unknown[],
+  };
+  const drawerBox = {
+    type: 'Group',
+    userData: {
+      partId: 'drawer_box__sketch_ext_drawers_1_sed-1_1',
+      __wpDrawerBox: true,
+      __wpDrawerOwnerPartId: 'sketch_ext_drawers_1_sed-1_1',
+    },
+    parent: drawerOwner,
+    children: [] as unknown[],
+  };
+  const drawerBoxSide = {
+    type: 'Mesh',
+    userData: {},
+    material: { visible: true, opacity: 1 },
+    parent: drawerBox,
+  };
+  drawerBox.children.push(drawerBoxSide);
+  drawerOwner.children.push(drawerBox);
+  wardrobeGroup.children.push(drawerOwner);
+  const App = {
+    render: { renderer: {}, camera: {}, wardrobeGroup },
+    services: { runtimeCache: {} },
+    store: {
+      getState: () => ({ ui: {}, config: {}, mode: {}, runtime: {}, meta: {} }),
+      patch: () => undefined,
+    },
+    maps: { getMap: () => null },
+  };
+  const raycaster = {
+    setFromCamera() {},
+    intersectObjects(_objects: unknown, _recursive?: boolean, optionalTarget?: unknown[]) {
+      const hits = [{ object: drawerBoxSide, point: { x: 0.01, y: 0.02, z: 0.03 } }];
+      if (Array.isArray(optionalTarget)) {
+        optionalTarget.length = 0;
+        optionalTarget.push(...hits);
+        return optionalTarget;
+      }
+      return hits;
+    },
+  };
+
+  const state = resolveNonSplitPreferredFacePreviewState(
+    createHoverArgs({
+      App: App as never,
+      isHandleEditMode: true,
+      raycaster: raycaster as never,
+      mouse: { x: 0, y: 0 } as never,
+    })
+  );
+
+  assert.equal(state.preferredFacePreviewPartId, null);
+  assert.equal(state.preferredFacePreviewHitObject, null);
+  assert.equal(state.preferredFacePreviewHitPoint, null);
+});
+
 test('non-split door preview forwards preferred face state and hides the live marker on miss', () => {
   const doorMarker = { visible: true } as { visible: boolean };
   let captured: Record<string, unknown> | null = null;
@@ -54,6 +176,7 @@ test('non-split door preview forwards preferred face state and hides the live ma
       facePreviewState: {
         preferredFacePreviewPartId: 'd1_left',
         preferredFacePreviewHitObject: { id: 'front' },
+        preferredFacePreviewHitPoint: { x: 0.1, y: 0.2, z: 0.03 },
       },
     } satisfies NonSplitPreviewRouteArgs,
     {
@@ -67,6 +190,7 @@ test('non-split door preview forwards preferred face state and hides the live ma
   assert.equal(handled, false);
   assert.equal(doorMarker.visible, false);
   assert.equal(captured?.preferredFacePreviewPartId, 'd1_left');
+  assert.deepEqual(captured?.preferredFacePreviewHitPoint, { x: 0.1, y: 0.2, z: 0.03 });
   assert.equal(captured?.paintUsesWardrobeGroup, true);
   assert.equal(captured?.readUi instanceof Function, true);
 });
@@ -205,6 +329,7 @@ test('non-split paint preview routes drawer-box hits through object-box feedback
     facePreviewState: {
       preferredFacePreviewPartId: null,
       preferredFacePreviewHitObject: null,
+      preferredFacePreviewHitPoint: null,
     },
   });
 

@@ -39,8 +39,8 @@ export function FloorStyleSwatch(props: FloorStyleSwatchProps): ReactElement {
 
   return (
     <div
-      className={'color-dot-swatch' + (props.selected ? ' is-selected' : '')}
-      title={style.name || style.id}
+      className={'color-dot-swatch wp-r-styled-tooltip hint-bottom' + (props.selected ? ' is-selected' : '')}
+      data-tooltip={style.name || style.id}
       style={swatchStyle}
       onClick={() => props.onSelect(style)}
       role="button"
@@ -61,8 +61,8 @@ export function WallColorSwatch(props: {
 }): ReactElement {
   return (
     <div
-      className={'color-dot-swatch' + (props.selected ? ' is-selected' : '')}
-      title={props.title}
+      className={'color-dot-swatch wp-r-styled-tooltip hint-bottom' + (props.selected ? ' is-selected' : '')}
+      data-tooltip={props.title}
       style={{ backgroundColor: props.value || '#ffffff' }}
       onClick={() => props.onSelect(props.value)}
       role="button"

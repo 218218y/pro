@@ -35,6 +35,7 @@ export function createSketchBoxExternalDrawerGroupNode(
     __wpType: 'extDrawer',
     __wpSketchExtDrawer: true,
     __wpSketchExtDrawerId: stack.drawerId,
+    __wpRegularExternalDrawer: stack.item.__wpRegularExternalDrawer === true,
     __wpSketchModuleKey: context.moduleKeyStr,
     __wpSketchBoxId: bid,
     __wpSketchFreePlacement: isFreePlacement === true,

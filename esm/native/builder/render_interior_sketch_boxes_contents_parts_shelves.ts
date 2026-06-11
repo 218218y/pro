@@ -6,6 +6,8 @@ import {
 import { SHELF_GROUP_PART_ID, markShelfBoardUserData } from '../features/shelf_part_identity.js';
 import type { RenderSketchBoxStaticContentsArgs } from './render_interior_sketch_boxes_contents_parts_types.js';
 import type { SketchShelfExtra } from './render_interior_sketch_shared.js';
+import { readSketchBoxRemovedSideShelfState } from '../features/removable_parts.js';
+import type { RemovedFrameSideShelfRounding } from './removed_frame_side_brace_shelves.js';
 
 import { asMesh, asRecordArray } from './render_interior_sketch_shared.js';
 import {
@@ -13,9 +15,18 @@ import {
   resolveSketchBoxSegmentForContent,
 } from './render_interior_sketch_layout.js';
 import { resolveSketchBoxShelfMaterial } from './render_interior_sketch_boxes_contents_parts_materials.js';
+import {
+  resolveSketchBoxUsableContentCenterZ,
+  resolveSketchBoxUsableContentDepth,
+} from './render_interior_sketch_boxes_contents_depth.js';
+
+type RoundedShelfBoardOptions = {
+  shape: 'rounded_shelf';
+  roundedShelfSide: RemovedFrameSideShelfRounding;
+};
 
 export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContentsArgs): void {
-  const { shell, boxDividers, yFromBoxNorm } = args;
+  const { shell, boxDividers, boxHorizontalDividers, yFromBoxNorm } = args;
   const {
     createBoard,
     woodThick,
@@ -23,13 +34,24 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
     currentBraceShelfMat,
     getPartMaterial,
     getPartColorValue,
-    THREE,
     glassMat,
-    addBraceDarkSeams,
     addShelfPins,
     isFn,
   } = args.args;
   const { box, boxPid, geometry, regularDepth } = shell;
+  const usableContentDepth = resolveSketchBoxUsableContentDepth({
+    shell,
+    input: args.args.input,
+    woodThick,
+  });
+  const usableRegularDepth = Math.min(regularDepth, usableContentDepth);
+  const removedSideState = readSketchBoxRemovedSideShelfState(
+    args.args.input.cfg || args.args.input.config,
+    boxPid
+  );
+  const innerLeftX = geometry.centerX - geometry.innerW / 2;
+  const innerRightX = geometry.centerX + geometry.innerW / 2;
+  const sideEdgeEpsilon = SKETCH_BOX_DIMENSIONS.preview.doorEdgeEpsilonM;
 
   const boxShelves = asRecordArray<SketchShelfExtra>(box.shelves);
 
@@ -72,11 +94,8 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
   for (let si = 0; si < boxShelves.length; si++) {
     const shelf = boxShelves[si] || null;
     if (!shelf) continue;
-    const variant = normalizeSketchShelfVariant(shelf.variant);
-    const isBrace = variant === 'brace';
-    const isGlass = variant === 'glass';
-    const isDouble = variant === 'double' || !variant;
-    const shelfH = shelfHeightForVariant(variant);
+    const rawVariant = normalizeSketchShelfVariant(shelf.variant);
+    const shelfH = shelfHeightForVariant(rawVariant);
     const shelfY = yFromBoxNorm(shelf.yNorm, shelfH / 2);
     if (shelfY == null) continue;
     const shelfSegment = resolveSketchBoxSegmentForContent({
@@ -85,12 +104,32 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
       innerW: geometry.innerW,
       woodThick,
       xNorm: shelf.xNorm,
+      horizontalDividers: boxHorizontalDividers,
+      boxCenterY: shell.centerY,
+      innerH: shell.sideH,
+      yNorm: shelf.yNorm,
     });
-    let shelfDepth = isBrace ? geometry.innerD : regularDepth;
+    const segmentLeftX = shelfSegment ? shelfSegment.leftX : innerLeftX;
+    const segmentRightX = shelfSegment ? shelfSegment.rightX : innerRightX;
+    const touchesRemovedLeftSide =
+      removedSideState.leftRemoved && Math.abs(segmentLeftX - innerLeftX) <= sideEdgeEpsilon;
+    const touchesRemovedRightSide =
+      removedSideState.rightRemoved && Math.abs(segmentRightX - innerRightX) <= sideEdgeEpsilon;
+    const forceBraceByRemovedSide = touchesRemovedLeftSide || touchesRemovedRightSide;
+    const variant = rawVariant;
+    const isBrace = forceBraceByRemovedSide || variant === 'brace';
+    const isGlass = variant === 'glass';
+    const isDouble = variant === 'double' || !variant;
+    const roundedLeft = forceBraceByRemovedSide && touchesRemovedLeftSide && removedSideState.leftRounded;
+    const roundedRight = forceBraceByRemovedSide && touchesRemovedRightSide && removedSideState.rightRounded;
+    const roundedShelfSide: RemovedFrameSideShelfRounding | null =
+      roundedLeft && roundedRight ? 'both' : roundedLeft ? 'left' : roundedRight ? 'right' : null;
+
+    let shelfDepth = isBrace ? usableContentDepth : usableRegularDepth;
     const depthRaw = shelf.depthM;
     const depthM = typeof depthRaw === 'number' ? depthRaw : depthRaw != null ? Number(depthRaw) : NaN;
     if (Number.isFinite(depthM) && depthM > 0)
-      shelfDepth = Math.min(geometry.innerD, Math.max(woodThick, depthM));
+      shelfDepth = Math.min(usableContentDepth, Math.max(woodThick, depthM));
     const shelfPid = `${boxPid}_shelf_${String(shelf.id ?? si)}`;
     const shelfMat = resolveSketchBoxShelfMaterial({
       getPartMaterial,
@@ -108,9 +147,21 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
       previewDims.shelfMinWidthM,
       shelfInnerW - (isBrace ? previewDims.shelfBraceClearanceM : previewDims.shelfRegularClearanceM)
     );
-    const shelfZ = geometry.innerBackZ + shelfDepth / 2;
+    const shelfZ = resolveSketchBoxUsableContentCenterZ(shell, shelfDepth);
+    const roundedOptions: RoundedShelfBoardOptions | null =
+      isBrace && roundedShelfSide ? { shape: 'rounded_shelf', roundedShelfSide } : null;
     const mesh = asMesh(
-      createBoard(shelfW, shelfH, shelfDepth, shelfCenterX, shelfY, shelfZ, shelfMat, shelfPid)
+      createBoard(
+        shelfW,
+        shelfH,
+        shelfDepth,
+        shelfCenterX,
+        shelfY,
+        shelfZ,
+        shelfMat,
+        shelfPid,
+        roundedOptions
+      )
     );
     if (mesh && typeof mesh === 'object') {
       mesh.userData = mesh.userData || {};
@@ -119,12 +170,8 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
         shelfIndex: si + 1,
         variant,
         isBrace,
+        roundedSide: roundedOptions?.roundedShelfSide,
       });
-    }
-    if (isBrace) {
-      const boxLeftFaceX = shelfSegment ? shelfSegment.leftX : geometry.centerX - geometry.innerW / 2;
-      const boxRightFaceX = shelfSegment ? shelfSegment.rightX : geometry.centerX + geometry.innerW / 2;
-      addBraceDarkSeams(shelfY, shelfZ, shelfDepth, true, THREE, boxLeftFaceX, boxRightFaceX);
     }
     if (isGlass && mesh && typeof mesh === 'object') {
       mesh.userData = mesh.userData || {};

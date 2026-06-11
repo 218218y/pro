@@ -98,6 +98,7 @@ export function resolveBuildWardrobeSplitMetrics(args: {
     doorsCount: plan.doorsCount,
     chestDrawersCount,
     woodThick: plan.woodThick,
+    shelfThick: plan.shelfThick,
     depthReduction: plan.depthReduction,
     baseTypeBottom: plan.baseTypeBottom,
     baseLegStyle: plan.baseLegStyle,

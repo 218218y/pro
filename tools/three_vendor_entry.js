@@ -82,6 +82,7 @@ import {
 
 // Geometry base
 import { BufferGeometry } from 'three/src/core/BufferGeometry.js';
+import { Float32BufferAttribute } from 'three/src/core/BufferAttribute.js';
 
 // Patched addons (tree-shake friendly)
 import { OrbitControls } from './three_addons/OrbitControls.js';
@@ -131,6 +132,7 @@ export const THREE = {
 
   // Geometries
   BufferGeometry,
+  Float32BufferAttribute,
   BoxGeometry,
   PlaneGeometry,
   SphereGeometry,

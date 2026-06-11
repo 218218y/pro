@@ -26,9 +26,17 @@ export function CountBtn(props: CountBtnProps) {
   return (
     <button
       type="button"
-      title={title}
+      data-tooltip={title}
       data-testid={testId}
-      className={cx('btn', 'btn-count', 'btn-inline', 'wp-flex-1', selected && 'is-selected', className)}
+      className={cx(
+        'btn',
+        'btn-count',
+        'btn-inline',
+        'wp-flex-1',
+        title && 'wp-r-styled-tooltip hint-bottom',
+        selected && 'is-selected',
+        className
+      )}
       onClick={(e: import('react').MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
         e.stopPropagation();

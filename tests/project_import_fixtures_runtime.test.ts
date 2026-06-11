@@ -152,6 +152,7 @@ test('project import fixtures materialize empty replace-owned branches as explic
     'splitDoorsMap',
     'splitDoorsBottomMap',
     'removedDoorsMap',
+    'roundedFrameSideShelvesMap',
     'drawerDividersMap',
     'individualColors',
     'doorSpecialMap',

@@ -216,6 +216,7 @@ export function addCornerWingGridShelf(
   const isGlassShelf = shelfVariant === 'glass';
   const shelfDepth = isBraceShelf ? cellRuntime.__internalDepth : cellRuntime.__regularDepth;
   const shelfH = cornerShelfHeightForVariant(runtime, shelfRuntime, shelfVariant);
+  const shelfW = isBraceShelf ? cellInnerW : cellShelfW;
   const shelfZ = cellRuntime.__backFaceZ + shelfDepth / 2;
   const rawShelfPartId = createCornerShelfPartId(cellKey, gridIndex);
   const shelfPartId =
@@ -225,7 +226,7 @@ export function addCornerWingGridShelf(
       ? shelfRuntime.glassShelfMat
       : runtime.getCornerShelfMat(shelfPartId, isBraceShelf);
   const shelf = new runtime.THREE.Mesh(
-    new runtime.THREE.BoxGeometry(cellShelfW, shelfH, shelfDepth),
+    new runtime.THREE.BoxGeometry(shelfW, shelfH, shelfDepth),
     shelfMaterial
   );
   shelf.position.set(cellInnerCenterX, y, shelfZ);

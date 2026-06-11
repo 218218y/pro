@@ -14,6 +14,7 @@ import {
   DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM,
   DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_CM,
 } from '../../../features/sketch_drawer_sizing.js';
+import { DEFAULT_BASE_PLINTH_HEIGHT_CM } from '../../../features/base_plinth_support.js';
 
 export type LayoutTypeOption = { id: LayoutTypeId; label: string; icon: string };
 export type ManualToolOption = { id: ManualToolId; label: string };
@@ -62,6 +63,8 @@ export type InteriorTabLocalStateDefaults = {
   sketchBoxCorniceType: SketchBoxCorniceType;
   sketchBoxBasePanelOpen: boolean;
   sketchBoxBaseType: SketchBoxBaseType;
+  sketchBoxPlinthHeightCm: number;
+  sketchBoxPlinthHeightDraft: string;
   sketchBoxLegStyle: SketchBoxLegStyle;
   sketchBoxLegColor: SketchBoxLegColor;
   sketchBoxLegHeightCm: number;
@@ -114,6 +117,8 @@ export function createInteriorTabLocalStateDefaults(): InteriorTabLocalStateDefa
     sketchBoxCorniceType: 'classic',
     sketchBoxBasePanelOpen: false,
     sketchBoxBaseType: 'plinth',
+    sketchBoxPlinthHeightCm: DEFAULT_BASE_PLINTH_HEIGHT_CM,
+    sketchBoxPlinthHeightDraft: String(DEFAULT_BASE_PLINTH_HEIGHT_CM),
     sketchBoxLegStyle: 'tapered',
     sketchBoxLegColor: 'black',
     sketchBoxLegHeightCm: 12,

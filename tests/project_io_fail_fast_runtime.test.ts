@@ -351,8 +351,10 @@ test('project io load uses one canonical root patch when the installed actions s
   assert.equal(rootPatches[0].patch.ui?.__snapshot, true);
   assert.equal(typeof rootPatches[0].patch.ui?.__capturedAt, 'number');
   assert.deepEqual(rootPatches[0].patch.config?.removedDoorsMap, {});
+  assert.deepEqual(rootPatches[0].patch.config?.roundedFrameSideShelvesMap, {});
   assert.deepEqual(rootPatches[0].patch.config?.drawerDividersMap, {});
   assert.equal(rootPatches[0].patch.config?.__replace?.removedDoorsMap, true);
+  assert.equal(rootPatches[0].patch.config?.__replace?.roundedFrameSideShelvesMap, true);
   assert.equal(rootPatches[0].patch.config?.__replace?.drawerDividersMap, true);
 });
 

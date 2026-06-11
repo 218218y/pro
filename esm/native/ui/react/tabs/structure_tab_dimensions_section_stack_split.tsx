@@ -27,8 +27,6 @@ export function StructureStackSplitControls(props: {
   onToggleStackSplitDecorativeSeparator: StructureDimensionsContentProps['onToggleStackSplitDecorativeSeparator'];
   renderStackLinkBadge: StructureDimensionsContentProps['renderStackLinkBadge'];
 }): ReactElement | null {
-  if (props.isSliding) return null;
-
   return (
     <div className="wp-field" data-testid={STRUCTURE_STACK_SPLIT_SECTION_TEST_ID}>
       <ModeToggleButton

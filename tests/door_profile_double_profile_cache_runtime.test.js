@@ -58,8 +58,8 @@ function loadTsModule(file) {
 const { createProfileDoorVisual } = loadTsModule(
   path.join(process.cwd(), 'esm/native/builder/visuals_and_contents_door_visual_profile.ts')
 );
-const { createTomDoorVisual } = loadTsModule(
-  path.join(process.cwd(), 'esm/native/builder/visuals_and_contents_door_visual_tom.ts')
+const { createDoubleProfileDoorVisual } = loadTsModule(
+  path.join(process.cwd(), 'esm/native/builder/visuals_and_contents_door_visual_double_profile.ts')
 );
 
 class FakeVector3 {
@@ -240,14 +240,14 @@ test('profile door visuals reuse cached heavy geometries and materials across re
   assert.ok(afterFirst.shape > 0);
 });
 
-test('tom door visuals reuse cached heavy geometries and materials across repeated builds', () => {
+test('double_profile door visuals reuse cached heavy geometries and materials across repeated builds', () => {
   const counts = { box: 0, shape: 0, extrude: 0, buffer: 0, lineMat: 0, basicMat: 0, standardMat: 0 };
   const THREE = createCountingThree(counts);
   const App = { services: {}, render: {} };
 
-  createTomDoorVisual(createArgs(App, THREE));
+  createDoubleProfileDoorVisual(createArgs(App, THREE));
   const afterFirst = snapshotCounts(counts);
-  createTomDoorVisual(createArgs(App, THREE));
+  createDoubleProfileDoorVisual(createArgs(App, THREE));
 
   assert.equal(counts.box, afterFirst.box);
   assert.equal(counts.shape, afterFirst.shape);
@@ -259,7 +259,7 @@ test('tom door visuals reuse cached heavy geometries and materials across repeat
   assert.ok(afterFirst.shape > 0);
 });
 
-test('profile/tom door visual cache writes into canonical render cache/meta maps so prune can see the pressure', () => {
+test('profile/double_profile door visual cache writes into canonical render cache/meta maps so prune can see the pressure', () => {
   const counts = { box: 0, shape: 0, extrude: 0, buffer: 0, lineMat: 0, basicMat: 0, standardMat: 0 };
   const THREE = createCountingThree(counts);
   const App = {
@@ -284,7 +284,7 @@ test('profile/tom door visual cache writes into canonical render cache/meta maps
   };
 
   createProfileDoorVisual(createArgs(App, THREE));
-  createTomDoorVisual(createArgs(App, THREE));
+  createDoubleProfileDoorVisual(createArgs(App, THREE));
 
   assert.ok(App.render.cache.geometryCache.size > 0);
   assert.ok(App.render.cache.materialCache.size > 0);

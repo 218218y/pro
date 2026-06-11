@@ -46,6 +46,8 @@ function addSketchBoxExternalDrawerBox(
   drawerBoxObj.position?.set?.(0, 0, opPlan.boxOffsetZ);
   applySketchBoxPickMetaDeep(drawerBoxObj, opPlan.boxPartId, context.moduleKeyStr, bid, {
     __wpSketchExtDrawer: true,
+    __wpSketchExtDrawerId: opPlan.drawerId,
+    __wpRegularExternalDrawer: opPlan.isRegularExternalDrawer === true,
     __wpSketchFreePlacement: isFreePlacement === true,
     __wpDrawerBox: true,
     __wpDrawerOwnerPartId: opPlan.partId,
@@ -89,6 +91,8 @@ function addSketchBoxExternalDrawerConnector(
   connector.userData = {
     ...(readObject<InteriorValueRecord>(connector.userData) || {}),
     __wpSketchExtDrawer: true,
+    __wpSketchExtDrawerId: opPlan.drawerId,
+    __wpRegularExternalDrawer: opPlan.isRegularExternalDrawer === true,
     __wpDrawerBox: true,
     __wpDrawerOwnerPartId: opPlan.partId,
     __doorWidth: opPlan.connectorW,

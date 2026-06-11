@@ -8,6 +8,7 @@ import {
   type ResolveSketchFreeBoxHoverPlacementArgs,
 } from './canvas_picking_sketch_free_box_shared.js';
 import { resolveSketchFreeBoxPlacementGap } from './canvas_picking_sketch_free_box_gap.js';
+import { isNoMainWardrobeSketchMode } from './canvas_picking_sketch_free_box_no_main.js';
 
 export type SketchFreeBoxHoverContext = {
   planeX: number;
@@ -24,6 +25,7 @@ export type SketchFreeBoxHoverContext = {
   gap: number;
   roomFloorY: number;
   blocksFreeAddUnderWardrobe: boolean;
+  noMainWardrobeSketchMode: boolean;
 };
 
 export function createSketchFreeBoxHoverContext(
@@ -84,12 +86,15 @@ export function createSketchFreeBoxHoverContext(
   const previewW = previewGeo.outerW;
   const previewD = previewGeo.outerD;
   const previewH = boxH;
-  const blocksFreeAddUnderWardrobe = isSketchFreeBoxUnderWardrobeColumn({
-    planeX,
-    planeY,
-    boxH: previewH,
-    wardrobeBox,
-  });
+  const noMainWardrobeSketchMode = isNoMainWardrobeSketchMode(args.App);
+  const blocksFreeAddUnderWardrobe =
+    !noMainWardrobeSketchMode &&
+    isSketchFreeBoxUnderWardrobeColumn({
+      planeX,
+      planeY,
+      boxH: previewH,
+      wardrobeBox,
+    });
   const gap = resolveSketchFreeBoxPlacementGap({ boxW: previewW, boxH: previewH });
 
   return {
@@ -107,5 +112,6 @@ export function createSketchFreeBoxHoverContext(
     gap,
     roomFloorY: getSketchFreePlacementRoomFloorY(),
     blocksFreeAddUnderWardrobe,
+    noMainWardrobeSketchMode,
   };
 }

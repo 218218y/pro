@@ -12,6 +12,7 @@ import {
 } from './canvas_picking_local_helpers.js';
 import { tryHandleManualLayoutSketchToolClick } from './canvas_picking_manual_layout_sketch_tools.js';
 import { readActiveManualTool } from './canvas_picking_manual_tool_access.js';
+import { firstRenderableHitIsSketchFreeBox } from './canvas_picking_sketch_free_box_hit_policy.js';
 import {
   fillManualLayoutShelves,
   type ManualLayoutShelfFillPlan,
@@ -94,7 +95,12 @@ export function tryHandleCanvasManualLayoutClick(args: CanvasLayoutEditClickArgs
     __getActiveConfigRef,
   } = args;
 
-  if (!__isManualLayoutMode || foundModuleIndex === null) return false;
+  if (!__isManualLayoutMode) return false;
+  if (firstRenderableHitIsSketchFreeBox(intersects)) {
+    __wp_clearSketchHover(App);
+    return true;
+  }
+  if (foundModuleIndex === null) return false;
 
   (() => {
     const configRef = __getActiveConfigRef();

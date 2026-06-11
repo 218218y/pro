@@ -138,6 +138,48 @@ test('sketch free stack preview routes ext drawers through the canonical box-sta
   );
 });
 
+test('sketch free external drawer removal preview does not emit a full-cell front overlay', () => {
+  const segment = { index: 0, centerX: 0.3, width: 0.8, xNorm: 0.5, leftX: -0.1, rightX: 0.7 };
+  const result = resolveSketchFreeStackContentPreview({
+    tool: 'sketch_ext_drawers:4@30',
+    contentKind: 'ext_drawers',
+    host: { moduleKey: 2, isBottom: false },
+    target: {
+      boxId: 'free-1',
+      targetBox: {
+        id: 'free-1',
+        freePlacement: true,
+        extDrawers: [{ id: 'sed-existing', xNorm: 0.5, yNormC: 0.5, count: 2, drawerHeightM: 0.2 }],
+      },
+      targetGeo: {
+        centerX: 0.3,
+        innerW: 0.8,
+        innerD: 0.5,
+        innerBackZ: -0.25,
+        outerW: 0.836,
+        centerZ: 0,
+        outerD: 0.536,
+      },
+      targetCenterY: 1,
+      targetHeight: 1.4,
+      pointerX: 0.31,
+      pointerY: 1,
+    },
+    readSketchBoxDividers: () => [],
+    resolveSketchBoxSegments: () => [segment],
+    pickSketchBoxSegment: ({ segments }: { segments: Array<Record<string, unknown>> }) => segments[0] ?? null,
+  });
+
+  assert.equal(result.mode, 'preview');
+  assert.equal(result.hoverRecord.op, 'remove');
+  assert.equal(result.hoverRecord.removeId, 'sed-existing');
+  assert.equal(result.preview.kind, 'ext_drawers');
+  assert.equal(result.preview.op, 'remove');
+  assert.equal(result.preview.drawers.length, 2);
+  assert.equal(Object.prototype.hasOwnProperty.call(result.preview, 'frontOverlayZ'), false);
+  assert.equal(Object.prototype.hasOwnProperty.call(result.preview, 'frontOverlayH'), false);
+});
+
 test('manual-layout module sketch external drawer preview keeps exact size and marks no-room hover red when it cannot fit', () => {
   const { ctx, calls } = createModuleStackContext({
     tool: 'sketch_ext_drawers:4@30',

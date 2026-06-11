@@ -1214,7 +1214,7 @@ async function setDoorStyle(page, style) {
       ? preferred
       : section
           .getByRole('button', {
-            name: style === 'post' ? 'פוסט' : style === 'profile' ? 'פרופיל' : 'פרופיל תום',
+            name: style === 'post' ? 'פוסט' : style === 'profile' ? 'פרופיל' : 'פרופיל כפול',
             exact: true,
           })
           .first();
@@ -1644,7 +1644,7 @@ async function runCabinetBuildVariantAuthoringMatrix(page, canonicalVariant) {
 
   await setStructureType(page, 'sliding');
   await setBoardMaterial(page, 'melamine');
-  await setDoorStyle(page, 'tom');
+  await setDoorStyle(page, 'double_profile');
   await setRenderSketchMode(page, false);
   await setStructureDimension(page, 'width', 188);
   await setStructureDimension(page, 'height', 239);
@@ -1664,8 +1664,8 @@ async function runCabinetBuildVariantAuthoringMatrix(page, canonicalVariant) {
     page,
     canonicalVariant.doorStyle === 'פרופיל'
       ? 'profile'
-      : canonicalVariant.doorStyle === 'פרופיל תום'
-        ? 'tom'
+      : canonicalVariant.doorStyle === 'פרופיל כפול'
+        ? 'double_profile'
         : 'post'
   );
   if (canonicalVariant.textureSwatchId) {
@@ -1686,7 +1686,7 @@ async function runCabinetBuildOptionPressureBurst(page, canonicalVariant) {
     {
       type: 'sliding',
       material: 'melamine',
-      style: 'tom',
+      style: 'double_profile',
       sketch: false,
       width: 186,
       height: 238,
@@ -1720,8 +1720,8 @@ async function runCabinetBuildOptionPressureBurst(page, canonicalVariant) {
     page,
     canonicalVariant.doorStyle === 'פרופיל'
       ? 'profile'
-      : canonicalVariant.doorStyle === 'פרופיל תום'
-        ? 'tom'
+      : canonicalVariant.doorStyle === 'פרופיל כפול'
+        ? 'double_profile'
         : 'post'
   );
   if (canonicalVariant.textureSwatchId) {
@@ -2076,7 +2076,7 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
       async () => {
         await setStructureType(page, 'sliding');
         await setBoardMaterial(page, 'melamine');
-        await setDoorStyle(page, 'tom');
+        await setDoorStyle(page, 'double_profile');
         await setStructureType(page, 'hinged');
         await setBoardMaterial(page, 'sandwich');
         await setDoorStyle(page, 'profile');

@@ -1,7 +1,11 @@
 import type { UnknownRecord } from '../../../types';
 import { getDoorsArray } from '../runtime/render_access.js';
 import { __wp_map } from './canvas_picking_core_helpers.js';
-import { parseSketchBoxDoorTarget, readSketchBoxDoorRecord } from './canvas_picking_door_sketch_box_edit.js';
+import {
+  isSketchBoxDoorSegmentPartId,
+  parseSketchBoxDoorTarget,
+  readSketchBoxDoorRecord,
+} from './canvas_picking_door_sketch_box_edit.js';
 import type { DoorActionHoverResolvedState } from './canvas_picking_door_action_hover_contracts.js';
 import type { DoorActionHoverArgs } from './canvas_picking_door_hover_targets.js';
 import { __asObject, __scopeCornerHoverPartKey } from './canvas_picking_door_hover_targets.js';
@@ -101,15 +105,18 @@ export function readDoorActionHoverWillRemoveGroove(args: {
 }): boolean {
   const { hoverArgs, state } = args;
   try {
-    const sketchTarget = parseSketchBoxDoorTarget(state.scopedHitDoorPid || state.hitDoorPid);
+    const partKey = normalizeGrooveHoverPartKey(args);
+    const sketchTarget = parseSketchBoxDoorTarget(partKey || state.scopedHitDoorPid || state.hitDoorPid);
+    const groovesMap = __asObject<UnknownRecord>(__wp_map(hoverArgs.App, 'groovesMap'));
     if (sketchTarget) {
+      if (partKey && isSketchBoxDoorSegmentPartId(partKey)) {
+        return !!groovesMap && (groovesMap[`groove_${partKey}`] != null || groovesMap[partKey] != null);
+      }
       const sketchDoor = readSketchBoxDoorRecord(hoverArgs.App, sketchTarget, state.hitDoorStack);
       return sketchDoor?.groove === true;
     }
 
-    const partKey = normalizeGrooveHoverPartKey(args);
     if (!partKey) return false;
-    const groovesMap = __asObject<UnknownRecord>(__wp_map(hoverArgs.App, 'groovesMap'));
     if (!groovesMap) return false;
     return groovesMap[`groove_${partKey}`] != null || groovesMap[partKey] != null;
   } catch {

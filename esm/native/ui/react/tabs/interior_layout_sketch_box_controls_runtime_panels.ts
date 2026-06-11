@@ -23,7 +23,7 @@ export function toggleSketchBoxControlsPanel(
 
 export function toggleSketchBoxTool(
   props: InteriorSketchBoxControlsSectionProps,
-  tool: SketchBoxToolId,
+  tool: SketchBoxToolId | 'horizontalDivider',
   toolId: string,
   isActive: boolean
 ): void {
@@ -33,7 +33,13 @@ export function toggleSketchBoxTool(
     return;
   }
   props.setSketchBoxPanelOpen(true);
-  if (tool === 'divider' || tool === 'door' || tool === 'doorHinge' || tool === 'doubleDoor') {
+  if (
+    tool === 'divider' ||
+    tool === 'horizontalDivider' ||
+    tool === 'door' ||
+    tool === 'doorHinge' ||
+    tool === 'doubleDoor'
+  ) {
     props.activateManualToolId(toolId);
   }
 }

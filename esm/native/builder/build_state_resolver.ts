@@ -69,6 +69,10 @@ function _normalizeCfgContainers(cfg: ConfigStateLike): ConfigStateLike {
   cfg.splitDoorsMap = normalizeKnownMapSnapshot('splitDoorsMap', cfg.splitDoorsMap);
   cfg.splitDoorsBottomMap = normalizeKnownMapSnapshot('splitDoorsBottomMap', cfg.splitDoorsBottomMap);
   cfg.removedDoorsMap = normalizeKnownMapSnapshot('removedDoorsMap', cfg.removedDoorsMap);
+  cfg.roundedFrameSideShelvesMap = normalizeKnownMapSnapshot(
+    'roundedFrameSideShelvesMap',
+    cfg.roundedFrameSideShelvesMap
+  );
   cfg.drawerDividersMap = normalizeKnownMapSnapshot('drawerDividersMap', cfg.drawerDividersMap);
   cfg.handlesMap = normalizeKnownMapSnapshot('handlesMap', cfg.handlesMap);
   cfg.hingeMap = normalizeKnownMapSnapshot('hingeMap', cfg.hingeMap);

@@ -1,4 +1,5 @@
 import { resolveEffectiveDoorStyle } from '../features/door_style_overrides.js';
+import { appendDoorTrimVisuals } from './door_trim_visuals.js';
 
 import type { InteriorGroupLike } from './render_interior_ops_contracts.js';
 import type {
@@ -7,7 +8,7 @@ import type {
   SketchExternalDrawerStackPlan,
 } from './render_interior_sketch_drawers_external_types.js';
 
-import { asMesh, readObject } from './render_interior_sketch_shared.js';
+import { asMesh, readObject, readUnknownMap, asValueRecord } from './render_interior_sketch_shared.js';
 import { applySketchModulePickMetaDeep } from './render_interior_sketch_pick_meta.js';
 import { resolveSketchFrontVisualState } from './render_interior_sketch_visuals_door_state.js';
 
@@ -18,6 +19,13 @@ export function addSketchExternalDrawerFrontVisual(
   groupNode: InteriorGroupLike
 ): void {
   const frontVisualState = resolveSketchFrontVisualState(context.input, opPlan.partId);
+  const cfg = asValueRecord(context.input.cfg);
+  const fallbackConfig = asValueRecord(context.input.config);
+  const groovesMap = readUnknownMap(cfg?.groovesMap) || readUnknownMap(fallbackConfig?.groovesMap);
+  const hasGroove = !!(
+    groovesMap &&
+    (groovesMap[`groove_${opPlan.partId}`] != null || groovesMap[opPlan.partId] != null)
+  );
   opPlan.omitBoxFrontPanel = frontVisualState.isGlass;
   opPlan.omitConnectorPanel = frontVisualState.isGlass;
   const materialSet = resolveSketchExternalDrawerFrontMaterials(
@@ -25,7 +33,13 @@ export function addSketchExternalDrawerFrontVisual(
     opPlan.frontMat,
     frontVisualState.isMirror
   );
-  const visual = createSketchExternalDrawerFrontVisual(context, opPlan, materialSet, frontVisualState);
+  const visual = createSketchExternalDrawerFrontVisual(
+    context,
+    opPlan,
+    materialSet,
+    frontVisualState,
+    hasGroove
+  );
   const visualObj =
     (readObject<InteriorGroupLike>(visual) || asMesh(visual)) ??
     new context.THREE.Mesh(
@@ -40,6 +54,19 @@ export function addSketchExternalDrawerFrontVisual(
   });
   if (context.outlineFn) context.outlineFn(visualObj);
   groupNode.add?.(visualObj);
+  const doorTrimMap = asValueRecord(cfg?.doorTrimMap) || asValueRecord(fallbackConfig?.doorTrimMap);
+  appendDoorTrimVisuals({
+    App: context.App,
+    THREE: context.THREE,
+    group: groupNode,
+    partId: opPlan.partId,
+    trims: doorTrimMap?.[opPlan.partId],
+    doorWidth: opPlan.faceW,
+    doorHeight: opPlan.visualH,
+    doorMeshOffsetX: opPlan.faceOffsetX,
+    frontZ: opPlan.visualD / 2 + 0.0015,
+    faceSign: 1,
+  });
 }
 
 function resolveSketchExternalDrawerFrontMaterials(
@@ -66,7 +93,8 @@ function createSketchExternalDrawerFrontVisual(
   context: SketchExternalDrawerRenderContext,
   opPlan: SketchExternalDrawerOpPlan,
   materialSet: { frontFaceMat: unknown; frontBaseMat: unknown },
-  frontVisualState: ReturnType<typeof resolveSketchFrontVisualState>
+  frontVisualState: ReturnType<typeof resolveSketchFrontVisualState>,
+  hasGroove: boolean
 ): unknown {
   if (!context.isFn(context.input.createDoorVisual)) return null;
 
@@ -82,7 +110,7 @@ function createSketchExternalDrawerFrontVisual(
       opPlan.visualD,
       materialSet.frontFaceMat,
       frontVisualState.isGlass ? 'glass' : effectiveFrameStyle,
-      false,
+      hasGroove && !frontVisualState.isGlass,
       frontVisualState.isMirror,
       frontVisualState.curtainType,
       frontVisualState.isMirror ? materialSet.frontBaseMat : context.bodyMat || opPlan.frontMat,

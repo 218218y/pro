@@ -1,5 +1,7 @@
 import type { AppContainer, UnknownCallable } from '../../../types';
 
+import type { HexCellGeometry } from '../features/hex_cell/index.js';
+
 import type {
   InteriorGroupLike,
   InteriorMaterialLike,
@@ -15,6 +17,7 @@ import type {
 } from './render_interior_sketch_shared.js';
 import type {
   SketchBoxDividerState,
+  SketchBoxHorizontalDividerState,
   SketchBoxSegment,
   SketchFreeBoxDimensionEntry,
 } from './render_interior_sketch_layout.js';
@@ -48,6 +51,7 @@ export type RenderInteriorSketchBoxesArgs = {
   spanH: number;
   innerW: number;
   woodThick: number;
+  shelfThick: number;
   internalDepth: number;
   internalCenterX: number;
   internalZ: number;
@@ -120,6 +124,9 @@ export type ResolvedSketchBoxState = {
   sideH: number;
   boxMat: unknown;
   geometry: RenderSketchBoxGeometry;
+  hexGeometry: HexCellGeometry | null;
+  fullDepth: number;
+  backZ: number;
   innerBottomY: number;
   innerTopY: number;
   regularDepth: number;
@@ -150,6 +157,7 @@ export type RenderSketchBoxShellResult = {
 export type RenderSketchBoxContentsArgs = {
   shell: ResolvedSketchBoxState;
   boxDividers: SketchBoxDividerState[];
+  boxHorizontalDividers: SketchBoxHorizontalDividerState[];
   yFromBoxNorm: SketchBoxYFromNorm;
   resolveBoxDrawerSpan: ResolveSketchBoxDrawerSpan;
   args: RenderInteriorSketchBoxesArgs;

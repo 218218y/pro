@@ -11,7 +11,30 @@ import { computeSlidingDoorOps } from './pure_api.js';
 import { requireBuilderRenderOps } from '../runtime/builder_service_access.js';
 import { assertApp } from '../runtime/api.js';
 
-import type { BuildContextLike, SlidingDoorOpsLike } from '../../../types/index.js';
+import type { BuildContextLike, SlidingDoorOpLike, SlidingDoorOpsLike } from '../../../types/index.js';
+
+export function scopeSlidingDoorPartIdForStack(partId: unknown, stackKey: unknown): string {
+  const pid = typeof partId === 'string' ? partId : String(partId ?? '');
+  if (!pid || stackKey !== 'bottom') return pid;
+  if (pid.startsWith('lower_')) return pid;
+  if (pid.startsWith('sliding') || pid.startsWith('slide')) return `lower_${pid}`;
+  return pid;
+}
+
+export function scopeSlidingDoorOpsForStack(ops: SlidingDoorOpsLike, stackKey: unknown): SlidingDoorOpsLike {
+  if (!ops || stackKey !== 'bottom' || !Array.isArray(ops.doors)) return ops;
+
+  let changed = false;
+  const doors = ops.doors.map((door: SlidingDoorOpLike) => {
+    if (!door || typeof door !== 'object') return door;
+    const scopedPartId = scopeSlidingDoorPartIdForStack(door.partId, stackKey);
+    if (!scopedPartId || scopedPartId === door.partId) return door;
+    changed = true;
+    return { ...door, partId: scopedPartId };
+  });
+
+  return changed ? { ...ops, doors } : ops;
+}
 
 /**
  * Apply sliding doors ops if wardrobeType is "sliding".
@@ -48,7 +71,7 @@ export function applySlidingDoorsIfNeeded(ctx: BuildContextLike) {
   const numDoors = Number(ctx.dims && ctx.dims.doorsCount);
 
   // Compute + apply ops (fail-fast).
-  const ops: SlidingDoorOpsLike = computeSlidingDoorOps({
+  const rawOps: SlidingDoorOpsLike = computeSlidingDoorOps({
     totalW: totalW,
     woodThick: woodThick,
     depth: depth,
@@ -59,6 +82,8 @@ export function applySlidingDoorsIfNeeded(ctx: BuildContextLike) {
     railHeight: DOOR_SYSTEM_DIMENSIONS.sliding.railHeightM,
     railDepth: DOOR_SYSTEM_DIMENSIONS.sliding.railDepthM,
   });
+  const stackKey = ctx.flags && typeof ctx.flags.__wpStack === 'string' ? String(ctx.flags.__wpStack) : 'top';
+  const ops = scopeSlidingDoorOpsForStack(rawOps, stackKey);
 
   const ui = ctx.ui || null;
   const ok =
@@ -76,6 +101,10 @@ export function applySlidingDoorsIfNeeded(ctx: BuildContextLike) {
       getPartColorValue: ctx.resolvers && ctx.resolvers.getPartColorValue,
       createDoorVisual: ctx.create && ctx.create.createDoorVisual,
       getHandleType: ctx.resolvers && ctx.resolvers.getHandleType,
+      isDoorRemoved: ctx.resolvers && ctx.resolvers.isDoorRemoved,
+      isRemoveDoorMode: !!(ctx.resolvers && ctx.resolvers.isRemoveDoorMode),
+      removeDoorsEnabled: !!(ctx.resolvers && ctx.resolvers.removeDoorsEnabled),
+      __wpStack: stackKey,
       addOutlines: ctx.fns && ctx.fns.addOutlines,
     });
 

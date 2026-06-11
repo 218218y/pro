@@ -1,6 +1,6 @@
 import type { DoorStyleMap, UnknownRecord } from '../../../types';
 
-export type DoorStyleOverrideValue = 'flat' | 'profile' | 'tom';
+export type DoorStyleOverrideValue = 'flat' | 'profile' | 'double_profile';
 
 export const DOOR_STYLE_OVERRIDE_PAINT_PREFIX = '__wp_door_style__:';
 
@@ -19,11 +19,11 @@ export function normalizeDoorStyleOverrideValue(
   const raw = String(value == null ? defaultValue : value)
     .trim()
     .toLowerCase();
-  return raw === 'profile' || raw === 'tom' || raw === 'flat' ? raw : defaultValue;
+  return raw === 'profile' || raw === 'double_profile' || raw === 'flat' ? raw : defaultValue;
 }
 
 export function isDoorStyleOverrideValue(value: unknown): value is DoorStyleOverrideValue {
-  return value === 'flat' || value === 'profile' || value === 'tom';
+  return value === 'flat' || value === 'profile' || value === 'double_profile';
 }
 
 export function encodeDoorStyleOverridePaintToken(style: unknown): string {

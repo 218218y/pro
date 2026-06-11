@@ -22,6 +22,7 @@ import type {
   MirrorLayoutMap,
   DoorTrimMap,
   RemovedDoorsMap,
+  RoundedFrameSideShelvesMap,
   SplitDoorsBottomMap,
   SplitDoorsMap,
 } from './maps';
@@ -70,6 +71,10 @@ export interface ProjectSettingsLike extends UnknownRecord {
   wardrobeType?: WardrobeType;
   boardMaterial?: BoardMaterial;
   doorMountMode?: DoorMountMode | string;
+  overlayFrameThicknessCm?: number | null;
+  overlayShelfThicknessCm?: number | null;
+  insetFrameThicknessCm?: number | null;
+  insetShelfThicknessCm?: number | null;
 
   stackSplitEnabled?: boolean;
   stackSplitDecorativeSeparatorEnabled?: boolean;
@@ -157,6 +162,7 @@ export interface ProjectMapsLike extends UnknownRecord {
   handlesMap?: HandlesMap;
   hingeMap?: HingeMap;
   removedDoorsMap?: RemovedDoorsMap;
+  roundedFrameSideShelvesMap?: RoundedFrameSideShelvesMap;
   curtainMap?: CurtainMap;
   groovesMap?: GroovesMap;
   grooveLinesCountMap?: GrooveLinesCountMap;

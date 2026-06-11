@@ -69,6 +69,20 @@ export function __boardArgs(x: unknown): BoardArgs {
   if ('mat' in map) next.mat = map.mat;
   if ('partId' in map) next.partId = map.partId;
   if ('sketchMode' in map) next.sketchMode = !!map.sketchMode;
+  if (map.shape === 'rounded_shelf' || map.shape === 'box') next.shape = map.shape;
+  if (
+    map.roundedShelfSide === 'left' ||
+    map.roundedShelfSide === 'right' ||
+    map.roundedShelfSide === 'both'
+  ) {
+    next.roundedShelfSide = map.roundedShelfSide;
+  }
+  if (typeof map.roundedShelfRadius === 'number' && Number.isFinite(map.roundedShelfRadius)) {
+    next.roundedShelfRadius = map.roundedShelfRadius;
+  }
+  if (typeof map.roundedShelfSegments === 'number' && Number.isFinite(map.roundedShelfSegments)) {
+    next.roundedShelfSegments = map.roundedShelfSegments;
+  }
   return next;
 }
 

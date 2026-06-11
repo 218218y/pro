@@ -8,6 +8,14 @@ import type { CommitSketchModuleBoxContentArgs } from './canvas_picking_sketch_b
 import { buildToggleHoverRecord } from './canvas_picking_sketch_box_content_commit_toggle.js';
 import { inferSketchStackVerticalAnchorFromNormalizedItem } from '../features/sketch_stack_positioning.js';
 import { markSketchInternalDrawersDirty } from '../features/sketch_drawer_sizing.js';
+import {
+  SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_CONTENT_KIND,
+  SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_KEY,
+  createSketchBoxRegularExternalDrawerItem,
+  normalizeSketchBoxRegularExternalDrawerCount,
+  normalizeStoredSketchBoxRegularExternalDrawerCount,
+  removeSketchBoxRegularExternalDrawersInCell,
+} from '../features/sketch_box_regular_external_drawers.js';
 
 function clampNorm(value: number | null, defaultValue: number): number {
   return value != null ? Math.max(0, Math.min(1, value)) : defaultValue;
@@ -19,6 +27,88 @@ function removeBoxContentById(list: SketchModuleBoxContentLike[], removeId: stri
   if (idx < 0) return false;
   list.splice(idx, 1);
   return true;
+}
+
+function removeBoxContentFromExistingList(
+  box: Record<string, unknown>,
+  key: string,
+  removeId: string
+): boolean {
+  const raw = box[key];
+  return Array.isArray(raw) ? removeBoxContentById(raw as SketchModuleBoxContentLike[], removeId) : false;
+}
+
+function removeSketchExternalDrawerContentById(args: {
+  box: Record<string, unknown>;
+  extDrawers: SketchModuleBoxContentLike[];
+  removeId: string;
+}): boolean {
+  return (
+    removeBoxContentById(args.extDrawers, args.removeId) ||
+    removeBoxContentFromExistingList(args.box, SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_KEY, args.removeId)
+  );
+}
+
+function findBoxContentById(
+  list: SketchModuleBoxContentLike[],
+  itemId: string
+): SketchModuleBoxContentLike | null {
+  if (!itemId) return null;
+  return list.find(it => it.id != null && String(it.id) === itemId) || null;
+}
+
+function upsertRegularExternalDrawerItem(args: {
+  list: SketchModuleBoxContentLike[];
+  box: Record<string, unknown>;
+  removeId: string;
+  contentXNorm: number | null;
+  boxYNorm: number | null;
+  boxBaseYNorm: number | null;
+  drawerCount: number;
+  hasShoeDrawer: boolean;
+}): SketchModuleBoxContentLike | null {
+  if (args.drawerCount <= 0 && !args.hasShoeDrawer) {
+    removeBoxContentById(args.list, args.removeId);
+    return null;
+  }
+
+  const existing = findBoxContentById(args.list, args.removeId);
+  const item = createSketchBoxRegularExternalDrawerItem({
+    id: existing?.id != null && String(existing.id) ? String(existing.id) : createRandomId('sbrd'),
+    xNorm: args.contentXNorm ?? (existing?.xNorm as number | null | undefined),
+    yNormC: args.boxYNorm ?? (existing?.yNormC as number | null | undefined),
+    yNorm: args.boxBaseYNorm ?? (existing?.yNorm as number | null | undefined),
+    count: args.drawerCount,
+    hasShoeDrawer: args.hasShoeDrawer,
+  }) as SketchModuleBoxContentLike;
+
+  removeSketchBoxRegularExternalDrawersInCell(
+    args.box,
+    {
+      xNorm: item.xNorm as number | null,
+      yNormC: item.yNormC as number | null,
+    },
+    String(item.id)
+  );
+
+  const targetList = Array.isArray(args.box[SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_KEY])
+    ? (args.box[SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_KEY] as SketchModuleBoxContentLike[])
+    : args.list;
+  const current = findBoxContentById(targetList, String(item.id));
+  if (current) Object.assign(current, item);
+  else targetList.push(item);
+  return current || item;
+}
+
+function inferCommittedBoxDrawerAnchor(args: {
+  yNormC: number;
+  yNorm?: number;
+}): ReturnType<typeof inferSketchStackVerticalAnchorFromNormalizedItem> {
+  return inferSketchStackVerticalAnchorFromNormalizedItem({
+    item: { yNormC: args.yNormC, yNorm: args.yNorm },
+    stackH: 0,
+    totalHeight: 1,
+  });
 }
 
 function buildDrawerItem(args: {
@@ -36,11 +126,7 @@ function buildDrawerItem(args: {
     id: createRandomId(args.idPrefix),
     yNormC,
     yNorm,
-    yAnchor: inferSketchStackVerticalAnchorFromNormalizedItem({
-      item: { yNormC, yNorm },
-      stackH: args.stackH ?? 0,
-      totalHeight: 1,
-    }),
+    yAnchor: inferCommittedBoxDrawerAnchor({ yNormC, yNorm }),
   };
   if (args.contentXNorm != null) item.xNorm = clampNorm(args.contentXNorm, 0.5);
   if (args.drawerCount != null) item.count = args.drawerCount;
@@ -119,7 +205,11 @@ export function tryCommitSketchBoxDrawerContent(args: {
     const drawerCountRaw = hoverIntent?.drawerCount ?? null;
     const drawerCount = drawerCountRaw != null ? Math.max(1, Math.min(5, Math.floor(drawerCountRaw))) : 1;
     if (hoverOp === 'remove') {
-      removeBoxContentById(list, removeId);
+      removeSketchExternalDrawerContentById({
+        box: commitArgs.box as Record<string, unknown>,
+        extDrawers: list,
+        removeId,
+      });
       return {
         handled: true,
         nextHover: buildToggleHoverRecord({
@@ -161,6 +251,74 @@ export function tryCommitSketchBoxDrawerContent(args: {
         drawerHeightM,
         drawerH,
       }),
+    };
+  }
+
+  if (commitArgs.contentKind === SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_CONTENT_KIND) {
+    const list = ensureSketchBoxContentList(commitArgs.box, SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_KEY);
+    const hasExplicitShoe = hoverIntent?.hasShoeDrawer != null;
+    const hasShoeDrawer = hasExplicitShoe ? hoverIntent?.hasShoeDrawer === true : false;
+    const drawerCount = hasExplicitShoe
+      ? normalizeStoredSketchBoxRegularExternalDrawerCount(hoverIntent?.drawerCount ?? null)
+      : normalizeSketchBoxRegularExternalDrawerCount(hoverIntent?.drawerCount ?? null);
+
+    if (!hasExplicitShoe && hoverOp === 'remove') {
+      removeBoxContentById(list, removeId);
+      return {
+        handled: true,
+        nextHover: buildToggleHoverRecord({
+          hoverMode,
+          hoverRec: commitArgs.hoverRec,
+          hoverHost,
+          boxId,
+          contentKind: SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_CONTENT_KIND,
+          op: 'add',
+          removeId: '',
+          drawerCount,
+          drawerHeightM,
+          drawerH,
+        }),
+      };
+    }
+
+    const item = upsertRegularExternalDrawerItem({
+      list,
+      box: commitArgs.box as Record<string, unknown>,
+      removeId,
+      contentXNorm,
+      boxYNorm,
+      boxBaseYNorm,
+      drawerCount,
+      hasShoeDrawer,
+    });
+
+    return {
+      handled: true,
+      nextHover: item
+        ? buildToggleHoverRecord({
+            hoverMode,
+            hoverRec: commitArgs.hoverRec,
+            hoverHost,
+            boxId,
+            contentKind: SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_CONTENT_KIND,
+            op: 'remove',
+            removeId: String(item.id),
+            drawerCount,
+            drawerHeightM,
+            drawerH,
+          })
+        : buildToggleHoverRecord({
+            hoverMode,
+            hoverRec: commitArgs.hoverRec,
+            hoverHost,
+            boxId,
+            contentKind: SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_CONTENT_KIND,
+            op: 'add',
+            removeId: '',
+            drawerCount,
+            drawerHeightM,
+            drawerH,
+          }),
     };
   }
 

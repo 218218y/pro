@@ -5,6 +5,9 @@ import { resolveBuildFlowPlanInputs } from '../esm/native/builder/build_flow_pla
 import { resolveBuildFlowPlanLayout } from '../esm/native/builder/build_flow_plan_layout.ts';
 
 const toStr = (value: unknown, fallback = ''): string => (value == null ? fallback : String(value));
+const assertApproximatelyEqual = (actual: number, expected: number): void => {
+  assert.ok(Math.abs(actual - expected) < 1e-12, `${actual} ~= ${expected}`);
+};
 
 test('build_flow_plan inputs derive split build metrics, base routing, and no-main depth policy', () => {
   const plan = resolveBuildFlowPlanInputs({
@@ -46,6 +49,40 @@ test('build_flow_plan inputs derive split build metrics, base routing, and no-ma
   assert.equal(plan.handleControlEnabled, true);
   assert.equal(plan.showHangerEnabled, true);
   assert.equal(plan.showContentsEnabled, false);
+  assert.equal(plan.isInternalDrawersEnabled, true);
+});
+
+test('build_flow_plan inputs ignore stale stack split flags in no-main wardrobe mode', () => {
+  const plan = resolveBuildFlowPlanInputs({
+    ui: {
+      baseType: 'legs',
+      stackSplitEnabled: true,
+      stackSplitDecorativeSeparatorEnabled: true,
+      raw: {
+        stackSplitLowerHeight: 90,
+        stackSplitLowerDepth: 55,
+        stackSplitLowerWidth: 80,
+        stackSplitLowerDoors: 2,
+        stackSplitLowerDepthManual: true,
+        stackSplitLowerWidthManual: true,
+        stackSplitLowerDoorsManual: true,
+      },
+    } as any,
+    cfg: {
+      wardrobeType: 'hinged',
+    } as any,
+    widthCm: 0,
+    heightCm: 240,
+    depthCm: 60,
+    doorsCount: 0,
+    toStr,
+  });
+
+  assert.equal(plan.noMainWardrobe, true);
+  assert.equal(plan.stackSplitEnabled, false);
+  assert.equal(plan.splitActiveForBuild, false);
+  assert.equal(plan.baseTypeBottom, 'legs');
+  assert.equal(plan.baseTypeTop, 'legs');
 });
 
 test('build_flow_plan inputs clear top base when stack split is active and sliding keeps main wardrobe depth reduction', () => {
@@ -383,7 +420,7 @@ test('build_flow_plan layout expands the outer carcass to the full height for un
   assert.ok(Math.abs(layout.carcassH - 2.4) < 1e-9);
 });
 
-test('build_flow_plan inputs use 36mm frame thickness only for inset hinged doors', () => {
+test('build_flow_plan inputs resolve frame and shelf thickness per active hinged door construction', () => {
   const insetPlan = resolveBuildFlowPlanInputs({
     ui: {} as any,
     cfg: { wardrobeType: 'hinged', doorMountMode: 'inset' } as any,
@@ -411,8 +448,65 @@ test('build_flow_plan inputs use 36mm frame thickness only for inset hinged door
     doorsCount: 2,
     toStr,
   });
+  const slidingCustomPlan = resolveBuildFlowPlanInputs({
+    ui: {} as any,
+    cfg: {
+      wardrobeType: 'sliding',
+      doorMountMode: 'inset',
+      overlayFrameThicknessCm: 2.4,
+      overlayShelfThicknessCm: 1.2,
+      insetFrameThicknessCm: 4.2,
+      insetShelfThicknessCm: 2.1,
+    } as any,
+    widthCm: 120,
+    heightCm: 240,
+    depthCm: 60,
+    doorsCount: 2,
+    toStr,
+  });
+  const overlayCustomPlan = resolveBuildFlowPlanInputs({
+    ui: {} as any,
+    cfg: {
+      wardrobeType: 'hinged',
+      doorMountMode: 'overlay',
+      overlayFrameThicknessCm: 2.4,
+      overlayShelfThicknessCm: 1.2,
+      insetFrameThicknessCm: 4.2,
+      insetShelfThicknessCm: 2.1,
+    } as any,
+    widthCm: 120,
+    heightCm: 240,
+    depthCm: 60,
+    doorsCount: 2,
+    toStr,
+  });
+  const insetCustomPlan = resolveBuildFlowPlanInputs({
+    ui: {} as any,
+    cfg: {
+      wardrobeType: 'hinged',
+      doorMountMode: 'inset',
+      overlayFrameThicknessCm: 2.4,
+      overlayShelfThicknessCm: 1.2,
+      insetFrameThicknessCm: 4.2,
+      insetShelfThicknessCm: 2.1,
+    } as any,
+    widthCm: 120,
+    heightCm: 240,
+    depthCm: 60,
+    doorsCount: 2,
+    toStr,
+  });
 
-  assert.equal(insetPlan.woodThick, 0.036);
-  assert.equal(overlayPlan.woodThick, 0.018);
-  assert.equal(slidingPlan.woodThick, 0.018);
+  assertApproximatelyEqual(insetPlan.woodThick, 0.036);
+  assertApproximatelyEqual(insetPlan.shelfThick, 0.036);
+  assertApproximatelyEqual(overlayPlan.woodThick, 0.018);
+  assertApproximatelyEqual(overlayPlan.shelfThick, 0.018);
+  assertApproximatelyEqual(slidingPlan.woodThick, 0.018);
+  assertApproximatelyEqual(slidingPlan.shelfThick, 0.018);
+  assertApproximatelyEqual(slidingCustomPlan.woodThick, 0.024);
+  assertApproximatelyEqual(slidingCustomPlan.shelfThick, 0.012);
+  assertApproximatelyEqual(overlayCustomPlan.woodThick, 0.024);
+  assertApproximatelyEqual(overlayCustomPlan.shelfThick, 0.012);
+  assertApproximatelyEqual(insetCustomPlan.woodThick, 0.042);
+  assertApproximatelyEqual(insetCustomPlan.shelfThick, 0.021);
 });

@@ -1,4 +1,5 @@
 import { getDoorsArray } from '../runtime/render_access.js';
+import { readCanvasDoorSplitEffectiveNodeBounds } from './canvas_picking_door_split_bounds_shared.js';
 import {
   writeMapKey,
   readSplitPosListFromMap,
@@ -52,11 +53,10 @@ export function readCanvasDoorSplitBounds(
       const pid = g.userData ? String(g.userData.partId || '') : '';
       if (!pid) continue;
       if (pid === base || pid === `${base}_full` || pid.startsWith(base + '_')) {
-        const h = g.userData && typeof g.userData.__doorHeight === 'number' ? g.userData.__doorHeight : null;
-        if (typeof h !== 'number' || !isFinite(h)) continue;
-        const y0 = typeof g.position.y === 'number' ? g.position.y : 0;
-        const lo = y0 - h / 2;
-        const hi = y0 + h / 2;
+        const bounds = readCanvasDoorSplitEffectiveNodeBounds({ App, node: g, baseKey: base });
+        if (!bounds) continue;
+        const lo = bounds.minY;
+        const hi = bounds.maxY;
         if (lo < minY) minY = lo;
         if (hi > maxY) maxY = hi;
       }

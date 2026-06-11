@@ -19,6 +19,12 @@ import {
   reportInteriorPresetSoft,
   type InteriorPresetHandleCatch,
 } from './render_interior_preset_ops_shared.js';
+import type { RemovedFrameSideShelfRounding } from './removed_frame_side_brace_shelves.js';
+
+type RoundedShelfBoardOptions = {
+  shape: 'rounded_shelf';
+  roundedShelfSide: RemovedFrameSideShelfRounding;
+};
 
 export function createAddGridShelf(args: {
   App: AppContainer;
@@ -41,6 +47,7 @@ export function createAddGridShelf(args: {
   braceCenterX: number;
   innerW: number;
   woodThick: number;
+  shelfThick: number;
   internalDepth: number;
   internalZ: number;
   regularDepth: number;
@@ -49,6 +56,7 @@ export function createAddGridShelf(args: {
   braceShelfWidth: number;
   leftInnerX: number;
   rightInnerX: number;
+  roundedShelfSide?: RemovedFrameSideShelfRounding | null;
   renderOpsHandleCatch: InteriorPresetHandleCatch;
 }): (gridIndex: number) => void {
   const {
@@ -71,7 +79,7 @@ export function createAddGridShelf(args: {
     internalCenterX,
     braceCenterX,
     innerW,
-    woodThick,
+    shelfThick,
     internalDepth,
     internalZ,
     regularDepth,
@@ -80,6 +88,7 @@ export function createAddGridShelf(args: {
     braceShelfWidth,
     leftInnerX,
     rightInnerX,
+    roundedShelfSide,
     renderOpsHandleCatch,
   } = args;
 
@@ -167,13 +176,6 @@ export function createAddGridShelf(args: {
     mkPin(rightInnerX - pinLength / 2, zFront);
   }
 
-  const addBraceDarkSeams = (
-    _shelfY: number,
-    _shelfZ: number,
-    _shelfDepth: number,
-    _isBrace: boolean
-  ): void => {};
-
   function resolveBaseContentsMaxHeight(shelfH: number): number {
     if (!shelfSet[1]) return 0;
     const firstShelfBottomY = effectiveBottomY + localGridStep - shelfH / 2;
@@ -188,7 +190,7 @@ export function createAddGridShelf(args: {
     const isBrace = !!braceSet[1];
     const shelfDepth = isBrace ? internalDepth : regularDepth;
     const shelfZ = isBrace ? internalZ : regularZ;
-    const maxHeight = resolveBaseContentsMaxHeight(woodThick);
+    const maxHeight = resolveBaseContentsMaxHeight(shelfThick);
     if (!(maxHeight > 0)) return;
 
     addFoldedClothes(
@@ -209,7 +211,7 @@ export function createAddGridShelf(args: {
 
     for (let nextIndex = gridIndex + 1; nextIndex < maxGrid; nextIndex += 1) {
       if (shelfSet[nextIndex]) {
-        topLimitY = effectiveBottomY + nextIndex * localGridStep - woodThick / 2;
+        topLimitY = effectiveBottomY + nextIndex * localGridStep - shelfThick / 2;
         break;
       }
     }
@@ -237,7 +239,19 @@ export function createAddGridShelf(args: {
       getPartColorValue,
       getPartMaterial,
     });
-    const shelfMesh = createBoard(shelfW, woodThick, shelfDepth, shelfX, y, shelfZ, shelfMat, shelfPartId);
+    const roundedOptions: RoundedShelfBoardOptions | null =
+      isBrace && roundedShelfSide ? { shape: 'rounded_shelf', roundedShelfSide } : null;
+    const shelfMesh = createBoard(
+      shelfW,
+      shelfThick,
+      shelfDepth,
+      shelfX,
+      y,
+      shelfZ,
+      shelfMat,
+      shelfPartId,
+      roundedOptions
+    );
     if (shelfMesh && typeof shelfMesh === 'object') {
       const userData = ((shelfMesh as { userData?: Record<string, unknown> }).userData ||= {});
       markShelfBoardUserData(userData, {
@@ -245,19 +259,19 @@ export function createAddGridShelf(args: {
         shelfIndex: gridKey,
         variant: isBrace ? 'brace' : 'regular',
         isBrace,
+        roundedSide: roundedOptions?.roundedShelfSide,
       });
     }
-    addBraceDarkSeams(y, shelfZ, shelfDepth, isBrace);
-    addShelfPins(y, shelfZ, shelfDepth, woodThick, isBrace, shelfPartId);
+    addShelfPins(y, shelfZ, shelfDepth, shelfThick, isBrace, shelfPartId);
 
     if (__isFn(addFoldedClothes)) {
       addFoldedClothes(
         internalCenterX,
-        y + woodThick / 2,
+        y + shelfThick / 2,
         shelfZ,
         innerW - INTERIOR_FITTINGS_DIMENSIONS.shelves.contentsWidthClearanceM,
         group,
-        resolveShelfContentsMaxHeight(Number(gridIndex || 0), y, woodThick),
+        resolveShelfContentsMaxHeight(Number(gridIndex || 0), y, shelfThick),
         shelfDepth
       );
     }

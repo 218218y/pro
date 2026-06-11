@@ -9,7 +9,7 @@ import {
 
 test('design-tab shared readers normalize legacy/raw values safely', () => {
   assert.equal(readDesignTabDoorStyle('PROFILE'), 'profile');
-  assert.equal(readDesignTabDoorStyle('weird', 'tom'), 'tom');
+  assert.equal(readDesignTabDoorStyle('weird', 'double_profile'), 'double_profile');
 
   assert.equal(readDesignTabCorniceType('WAVE'), 'wave');
   assert.equal(readDesignTabCorniceType(null), 'classic');

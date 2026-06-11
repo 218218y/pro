@@ -2,6 +2,7 @@ import { DRAWER_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_
 import { resolveDrawerBoxPaintMaterial } from '../features/drawer_box_identity.js';
 import { getDrawersArray } from '../runtime/render_access.js';
 import { resolveBuilderMirrorMaterial } from '../runtime/builder_service_access.js';
+import { readSketchBoxRegularExternalDrawersForRender } from '../features/sketch_box_regular_external_drawers.js';
 
 import type { InteriorValueRecord } from './render_interior_ops_contracts.js';
 import type {
@@ -16,17 +17,30 @@ export function createSketchBoxExternalDrawersContext(
 ): SketchBoxExternalDrawersContext | null {
   const { frontsArgs } = args;
   const { shell, resolveBoxDrawerSpan } = frontsArgs;
-  const { App, input, group, woodThick, moduleIndex, moduleKeyStr, createDoorVisual, THREE, isFn } =
-    frontsArgs.args;
+  const {
+    App,
+    input,
+    group,
+    woodThick,
+    shelfThick,
+    moduleIndex,
+    moduleKeyStr,
+    createDoorVisual,
+    THREE,
+    isFn,
+  } = frontsArgs.args;
   const { box, geometry: boxGeo, innerBottomY, innerTopY } = shell;
 
   const boxExtDrawers = asRecordArray<InteriorValueRecord>(box.extDrawers);
-  if (!(boxExtDrawers.length && THREE)) return null;
+  const renderBoxExtDrawers = boxExtDrawers.concat(
+    readSketchBoxRegularExternalDrawersForRender(box) as InteriorValueRecord[]
+  );
+  if (!(renderBoxExtDrawers.length && THREE)) return null;
 
   const drawerDims = DRAWER_DIMENSIONS.sketch;
   const outerD = Math.max(drawerDims.externalPreviewMinDepthM, boxGeo.outerD);
   const visualT = SKETCH_BOX_DIMENSIONS.preview.drawerPreviewThicknessM;
-  const frontZ = boxGeo.centerZ + boxGeo.outerD / 2;
+  const frontZ = Number.isFinite(shell.frontZ) ? shell.frontZ : boxGeo.centerZ + boxGeo.outerD / 2;
   const drawersArray = getDrawersArray(App);
   const createInternalDrawerBox = input.createInternalDrawerBox;
   const inputRec = readObject<InteriorValueRecord>(input) || {};
@@ -95,12 +109,13 @@ export function createSketchBoxExternalDrawersContext(
     input,
     group,
     woodThick,
+    shelfThick,
     moduleIndex,
     moduleKeyStr,
     createDoorVisual,
     THREE,
     isFn,
-    boxExtDrawers,
+    boxExtDrawers: renderBoxExtDrawers,
     createInternalDrawerBox,
     outerD,
     visualT,

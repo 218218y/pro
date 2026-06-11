@@ -17,6 +17,7 @@ import { readActiveManualTool } from './canvas_picking_manual_tool_access.js';
 import { tryHandleCanvasManualSketchFreeContentClick } from './canvas_picking_click_manual_sketch_free_content.js';
 import { tryHandleCanvasManualSketchFreeBoxClick } from './canvas_picking_click_manual_sketch_free_box.js';
 import { isRecentModuleScopedSketchHover } from './canvas_picking_click_manual_sketch_free_recent.js';
+import { tryCommitManualLayoutFreeBoxFromHover } from './canvas_picking_manual_layout_free_box_content.js';
 
 export function tryHandleCanvasManualSketchFreeClick(args: CanvasPickingManualSketchFreeClickArgs): boolean {
   const { App, ndcX, ndcY, foundModuleIndex, raycaster, mouse } = args;
@@ -35,6 +36,8 @@ export function tryHandleCanvasManualSketchFreeClick(args: CanvasPickingManualSk
     const floorY = wardrobeBox
       ? Math.max(0, Number(wardrobeBox.centerY) - Number(wardrobeBox.height) / 2)
       : NaN;
+
+    if (tryCommitManualLayoutFreeBoxFromHover(App, manualTool, floorY)) return true;
 
     if (
       tryHandleCanvasManualSketchFreeContentClick({

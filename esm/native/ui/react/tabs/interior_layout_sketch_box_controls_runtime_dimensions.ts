@@ -1,4 +1,5 @@
 import {
+  DEFAULT_SKETCH_BOX_HEIGHT_CM,
   SKETCH_BOX_HEIGHT_MAX_CM,
   SKETCH_BOX_HEIGHT_MIN_CM,
   SKETCH_BOX_OPTIONAL_DIM_MAX_CM,
@@ -38,6 +39,12 @@ export function commitSketchBoxHeightDraft(props: InteriorSketchBoxControlsSecti
   props.setSketchBoxHeightCm(next);
   props.setSketchBoxHeightDraft(String(next));
   syncSketchBoxTool(props, next, props.sketchBoxWidthCm, props.sketchBoxDepthCm);
+}
+
+export function resetSketchBoxHeightDraft(props: InteriorSketchBoxControlsSectionProps): void {
+  props.setSketchBoxHeightCm(DEFAULT_SKETCH_BOX_HEIGHT_CM);
+  props.setSketchBoxHeightDraft(String(DEFAULT_SKETCH_BOX_HEIGHT_CM));
+  syncSketchBoxTool(props, DEFAULT_SKETCH_BOX_HEIGHT_CM, props.sketchBoxWidthCm, props.sketchBoxDepthCm);
 }
 
 export function updateSketchBoxOptionalDimensionDraft(
@@ -82,6 +89,20 @@ export function commitSketchBoxOptionalDimensionDraft(
   setOptionalDimensionValue(props, field, next);
   setOptionalDimensionDraft(props, field, typeof next === 'number' ? String(next) : '');
   applyOptionalDimensionValue(props, field, next);
+}
+
+export function resetSketchBoxOptionalDimensionDraft(
+  props: InteriorSketchBoxControlsSectionProps,
+  field: OptionalDimensionField
+): void {
+  setOptionalDimensionValue(props, field, '');
+  setOptionalDimensionDraft(props, field, '');
+  syncSketchBoxTool(
+    props,
+    props.sketchBoxHeightCm,
+    field === 'width' ? '' : props.sketchBoxWidthCm,
+    field === 'depth' ? '' : props.sketchBoxDepthCm
+  );
 }
 
 function isWithinBounds(value: unknown, min: number, max: number): value is number {

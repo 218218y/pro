@@ -1,5 +1,6 @@
 import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { readSplitPosListFromMap } from '../runtime/maps_access.js';
+import { attachHiddenModuleDoors } from './hinged_doors_module_ops_metadata.js';
 import type {
   HingedDoorIterationState,
   HingedDoorModuleOpsContext,
@@ -27,24 +28,28 @@ export function pushHingedDoorSegment(
   const isMirror = special === 'mirror';
   const hasGroove = ctx.isGroovesEnabled && !!args.grooveFlag && !isMirror;
   const style = special === 'glass' ? 'glass' : null;
-  ctx.opsList.push({
-    partId: args.partId,
-    moduleIndex: ctx.index,
-    pivotX: state.pivotX,
-    y: args.segY,
-    z: ctx.doorOpZ,
-    width: state.doorWidth,
-    height: args.segH,
-    meshOffsetX: state.meshOffsetX,
-    isLeftHinge: state.isLeftHinge,
-    isMirror: !!isMirror,
-    hasGroove: !!hasGroove,
-    curtain: args.curtainVal || null,
-    style,
-    handleAbsY: args.handleAbsY,
-    allowHandle: args.allowHandle !== false,
-    isRemoved: ctx.removeDoorsEnabled && ctx.isDoorRemovedSafe(args.partId),
-  });
+  const op = attachHiddenModuleDoors(
+    {
+      partId: args.partId,
+      moduleIndex: ctx.index,
+      pivotX: state.pivotX,
+      y: args.segY,
+      z: ctx.doorOpZ,
+      width: state.doorWidth,
+      height: args.segH,
+      meshOffsetX: state.meshOffsetX,
+      isLeftHinge: state.isLeftHinge,
+      isMirror: !!isMirror,
+      hasGroove: !!hasGroove,
+      curtain: args.curtainVal || null,
+      style,
+      handleAbsY: args.handleAbsY,
+      allowHandle: args.allowHandle !== false,
+      isRemoved: ctx.removeDoorsEnabled && ctx.isDoorRemovedSafe(args.partId),
+    },
+    ctx.moduleDoors
+  );
+  ctx.opsList.push(op);
 }
 
 export function readSplitPosListSafe(ctx: HingedDoorModuleOpsContext, doorBaseKey: string): number[] {

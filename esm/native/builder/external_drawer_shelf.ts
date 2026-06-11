@@ -25,7 +25,7 @@ export type EmitExternalDrawerBraceShelfArgs = {
   partId: string;
   shelfIndex?: unknown;
   innerWidth: number;
-  woodThick: number;
+  shelfThick: number;
   depth: number;
   centerX: number;
   stackTopY: number;
@@ -46,10 +46,10 @@ export function emitExternalDrawerBraceShelf(args: EmitExternalDrawerBraceShelfA
   });
   const shelf = args.createBoard(
     args.innerWidth - DRAWER_DIMENSIONS.external.separatorBoardWidthClearanceM,
-    args.woodThick,
+    args.shelfThick,
     args.depth,
     args.centerX,
-    args.stackTopY - args.woodThick / 2,
+    args.stackTopY - args.shelfThick / 2,
     args.centerZ,
     shelfMat,
     args.partId

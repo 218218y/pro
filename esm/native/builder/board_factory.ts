@@ -6,6 +6,7 @@
 import type {
   AppContainer,
   BuilderCreateBoardArgsLike,
+  BuilderCreateBoardOptions,
   BuilderOutlineFn,
   ThreeLike,
   UnknownRecord,
@@ -27,7 +28,8 @@ type CreateBoardFn = (
   y: number,
   z: number,
   mat: unknown,
-  partId?: string | null
+  partId?: string | null,
+  options?: BuilderCreateBoardOptions | null
 ) => unknown;
 
 type AddOutlinesFn = BuilderOutlineFn;
@@ -95,7 +97,8 @@ export function makeBoardCreator(args: unknown): CreateBoardFn {
     y: number,
     z: number,
     mat: unknown,
-    partId: string | null = null
+    partId: string | null = null,
+    options: BuilderCreateBoardOptions | null = null
   ) {
     const ro = getBuilderRenderOps(App);
     if (!ro || typeof ro.createBoard !== 'function') {
@@ -119,6 +122,14 @@ export function makeBoardCreator(args: unknown): CreateBoardFn {
         sketchMode,
         addOutlines,
       };
+      if (options?.shape) boardArgs.shape = options.shape;
+      if (options?.roundedShelfSide) boardArgs.roundedShelfSide = options.roundedShelfSide;
+      if (typeof options?.roundedShelfRadius === 'number') {
+        boardArgs.roundedShelfRadius = options.roundedShelfRadius;
+      }
+      if (typeof options?.roundedShelfSegments === 'number') {
+        boardArgs.roundedShelfSegments = options.roundedShelfSegments;
+      }
 
       const mesh = ro.createBoard(boardArgs);
 

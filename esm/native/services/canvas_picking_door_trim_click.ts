@@ -27,14 +27,15 @@ export interface CanvasDoorTrimClickArgs {
   foundPartId: string | null;
   doorHitPoint: UnknownRecord | null;
   doorHitObject: UnknownRecord | null;
+  doorHitGroup?: UnknownRecord | null;
 }
 
 export function handleCanvasDoorTrimClick(args: CanvasDoorTrimClickArgs): boolean {
-  const { App, effectiveDoorId, foundPartId, doorHitObject, doorHitPoint } = args;
+  const { App, effectiveDoorId, foundPartId, doorHitObject, doorHitPoint, doorHitGroup = null } = args;
   const clickedPartId = String(effectiveDoorId || foundPartId || '');
   if (!clickedPartId) return false;
 
-  const target = resolveDoorTrimTargetFromHitObject(App, doorHitObject, clickedPartId);
+  const target = resolveDoorTrimTargetFromHitObject(App, doorHitObject, clickedPartId, doorHitGroup);
   const trimPartId = target?.partId || clickedPartId;
   const doorGroup = target?.group || null;
   const userData = asRecord(doorGroup?.userData);

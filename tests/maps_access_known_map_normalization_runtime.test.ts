@@ -21,6 +21,7 @@ test('maps_access normalizes known maps and clones unknown maps without leaking 
       hingeMap: { d1: 'left', d2: hingeObj, bad: 7 },
       splitDoorsMap: { split_d1: true, splitpos_d1: ['0.25', 0.75, 'bad'], skip: { nope: true } },
       removedDoorsMap: { d1: '1', d2: 'off', d3: 'null', bad: 'wat' },
+      roundedFrameSideShelvesMap: { body_left: 'on', body_right: '0', bad: 'wat' },
       customMap: { nested: customNested },
       doorTrimMap: { d1: [doorTrimRawEntry, { axis: 'bad', color: 'oops', span: 'half' }] },
     },
@@ -47,6 +48,11 @@ test('maps_access normalizes known maps and clones unknown maps without leaking 
   assert.equal(removed?.d2, false);
   assert.equal(removed?.d3, null);
   assert.equal('bad' in (removed || {}), false);
+
+  const roundedFrameSides = readMap(App, 'roundedFrameSideShelvesMap');
+  assert.equal(roundedFrameSides?.body_left, true);
+  assert.equal(roundedFrameSides?.body_right, false);
+  assert.equal('bad' in (roundedFrameSides || {}), false);
 
   const trims = readMap(App, 'doorTrimMap');
   assert.equal(trims?.d1?.length, 2);

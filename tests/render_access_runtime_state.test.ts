@@ -32,6 +32,7 @@ test('ensureRenderRuntimeState repairs canonical loop/mirror/autohide runtime sl
       __mirrorMotionActive: 'bad',
       __mirrorMotionUntilMs: 'bad',
       __mirrorMotionSnap: 'bad',
+      __mirrorWorkPending: 'bad',
       __splitHoverPickablesDirty: 'bad',
       __wpAutoHideFloorTick: 'bad',
       __wpAutoHideFloorVecFloor: 7,
@@ -63,6 +64,7 @@ test('ensureRenderRuntimeState repairs canonical loop/mirror/autohide runtime sl
   assert.equal(state.__mirrorMotionActive, false);
   assert.equal(state.__mirrorMotionUntilMs, 0);
   assert.equal(state.__mirrorMotionSnap, null);
+  assert.equal(state.__mirrorWorkPending, false);
   assert.equal(state.__splitHoverPickablesDirty, false);
   assert.equal(state.__wpAutoHideFloorTick, 0);
   assert.equal(state.__wpAutoHideFloorVecFloor, null);

@@ -69,6 +69,7 @@ test('perf runtime surface records marks, spans, summaries, and errors', async (
             splitDoorsMap: { split_d1: true, split_d2: true },
             splitDoorsBottomMap: { splitb_d1: true },
             removedDoorsMap: { d3: true, d4: true },
+            roundedFrameSideShelvesMap: { body_left: true },
             drawerDividersMap: { 'div:int_4': true, 'div:ext_2': true },
             doorTrimMap: {
               d1_full: [{ axis: 'vertical', sizeCm: 12 }],
@@ -195,6 +196,7 @@ test('perf runtime surface records marks, spans, summaries, and errors', async (
     splitDoorMapCount: 2,
     splitDoorBottomMapCount: 1,
     removedDoorMapCount: 2,
+    roundedFrameSideShelfCount: 1,
     doorTrimCount: 2,
     drawerDividerCount: 2,
     internalDrawerPlacementCount: 4,

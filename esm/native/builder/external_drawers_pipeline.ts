@@ -50,6 +50,7 @@ type ApplyExternalDrawersForModuleParams = {
   frontZ?: number;
   startY?: number;
   woodThick?: number;
+  shelfThick?: number;
   keyPrefix?: string;
   __wpStack?: string;
   hasShoe?: boolean;
@@ -135,6 +136,7 @@ export function applyExternalDrawersForModule(
   const startY = readFiniteNumber(params?.startY, 0);
   const keyPrefix = readString(params?.keyPrefix, '');
   const woodThick = readFiniteNumber(params?.woodThick, 0);
+  const shelfThick = readFiniteNumber(params?.shelfThick, woodThick);
 
   const hasShoe = !!params?.hasShoe;
   const regCount = readFiniteNumber(params?.regCount, 0);
@@ -164,7 +166,7 @@ export function applyExternalDrawersForModule(
     partId: shelfPartId,
     shelfIndex: 'external_drawers',
     innerWidth: innerW,
-    woodThick,
+    shelfThick,
     depth: internalDepth,
     centerX: internalCenterX,
     stackTopY: effectiveBottomY,

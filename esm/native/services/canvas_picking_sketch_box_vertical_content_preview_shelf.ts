@@ -3,6 +3,7 @@ import {
   MATERIAL_DIMENSIONS,
   SKETCH_BOX_DIMENSIONS,
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import type { RaycastHitLike } from './canvas_picking_engine.js';
 import { buildSketchBoxStackAwareMeasurementEntries } from './canvas_picking_sketch_neighbor_measurements.js';
 import { createManualLayoutSketchBoxContentHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import type {
@@ -18,6 +19,35 @@ import {
   readRecordValue,
 } from './canvas_picking_sketch_box_vertical_content_preview_records.js';
 import type { SketchBoxVerticalPreviewState } from './canvas_picking_sketch_box_vertical_content_preview_state.js';
+import {
+  buildSketchBoxVerticalPreviewBlockers,
+  doesSketchBoxVerticalCandidateCollide,
+  findSketchBoxVerticalRemovalBlocker,
+  resolveSketchBoxVerticalRemovalPreview,
+} from './canvas_picking_sketch_box_vertical_content_occupancy.js';
+
+function readDirectFreeBoxShelfHitY(args: {
+  intersects: readonly RaycastHitLike[] | null | undefined;
+  partPrefix: string | null | undefined;
+}): number | null {
+  const hits = Array.isArray(args.intersects) ? args.intersects : [];
+  const partPrefix = typeof args.partPrefix === 'string' && args.partPrefix ? args.partPrefix : '';
+  if (!partPrefix) return null;
+
+  for (let i = 0; i < hits.length; i += 1) {
+    const hit = hits[i];
+    const userData = hit?.object?.userData;
+    if (!userData || typeof userData !== 'object') continue;
+    const rec = userData as Record<string, unknown>;
+    if (rec.__kind === 'shelf_pin' || rec.__kind === 'brace_seam') continue;
+    const partId = typeof rec.partId === 'string' ? rec.partId : '';
+    if (!partId.startsWith(`${partPrefix}_shelf_`)) continue;
+    const y = hit?.point?.y;
+    if (typeof y === 'number' && Number.isFinite(y)) return y;
+  }
+
+  return null;
+}
 
 export function resolveSketchBoxShelfPreview(
   args: ResolveSketchBoxVerticalContentPreviewArgs,
@@ -32,6 +62,8 @@ export function resolveSketchBoxShelfPreview(
     woodThick,
     shelfVariant,
     shelfDepthOverrideM,
+    partPrefix,
+    intersects,
     removeEpsShelf = SKETCH_BOX_DIMENSIONS.preview.removeEpsShelfM,
     pickSketchBoxSegment,
   } = args;
@@ -43,6 +75,10 @@ export function resolveSketchBoxShelfPreview(
     boxYNormFromCenter,
     targetCenterY,
     targetHeight,
+    cellBottomY,
+    cellTopY,
+    cellHeight,
+    hasVerticalRoomFor,
   } = state;
 
   const variant = shelfVariant || 'regular';
@@ -54,7 +90,8 @@ export function resolveSketchBoxShelfPreview(
       : isDouble
         ? Math.max(woodThick, woodThick * 2)
         : woodThick;
-  let previewY = clampBoxCenterY(pointerY, shelfH / 2);
+  const directShelfHitY = readDirectFreeBoxShelfHitY({ intersects, partPrefix });
+  let previewY = clampBoxCenterY(directShelfHitY ?? pointerY, shelfH / 2);
   const localShelves = readRecordArray(targetBox, 'shelves');
   let previewSegment: SketchBoxSegmentLike | null = activeSegment;
   let op: 'add' | 'remove' = 'add';
@@ -92,10 +129,45 @@ export function resolveSketchBoxShelfPreview(
     }
   }
 
-  if (bestDy <= removeEpsShelf && removePreviewY != null) {
+  const removeTolerance =
+    directShelfHitY != null
+      ? Math.max(removeEpsShelf, SKETCH_BOX_DIMENSIONS.preview.shelfRemoveBoardToleranceM)
+      : removeEpsShelf;
+  if (bestDy <= removeTolerance && removePreviewY != null) {
     op = 'remove';
     previewY = removePreviewY;
   }
+
+  const blockers = buildSketchBoxVerticalPreviewBlockers(args, state);
+  if (op === 'add') {
+    const crossRemoval = findSketchBoxVerticalRemovalBlocker({
+      blockers,
+      pointerY: directShelfHitY ?? pointerY,
+      allowedKinds: ['rod', 'storage'],
+      toleranceM: removeTolerance,
+    });
+    if (crossRemoval) {
+      return resolveSketchBoxVerticalRemovalPreview({
+        previewArgs: args,
+        state,
+        blocker: crossRemoval,
+        previewSegment,
+      });
+    }
+  }
+
+  const blockedReason =
+    op === 'add' && !hasVerticalRoomFor(shelfH)
+      ? 'no-room'
+      : op === 'add' &&
+          doesSketchBoxVerticalCandidateCollide({
+            blockers,
+            centerY: previewY,
+            heightM: shelfH,
+            blockerKinds: ['rod', 'storage'],
+          })
+        ? 'collision'
+        : null;
 
   const shelfDepth =
     shelfDepthOverrideM != null && Number.isFinite(shelfDepthOverrideM) && shelfDepthOverrideM > 0
@@ -113,9 +185,9 @@ export function resolveSketchBoxShelfPreview(
   );
   const previewZ = targetGeo.innerBackZ + shelfDepth / 2;
   const clearanceMeasurements = buildSketchBoxStackAwareMeasurementEntries({
-    bottomY: targetCenterY - targetHeight / 2 + woodThick,
-    topY: targetCenterY + targetHeight / 2 - woodThick,
-    totalHeight: targetHeight,
+    bottomY: cellBottomY,
+    topY: cellTopY,
+    totalHeight: cellHeight,
     pad: woodThick,
     woodThick,
     neighborBottomY: targetCenterY - targetHeight / 2,
@@ -152,6 +224,7 @@ export function resolveSketchBoxShelfPreview(
       depthM: shelfDepth,
       removeId,
       removeIdx,
+      blockedReason,
     }),
     preview: {
       kind: 'shelf',
@@ -163,7 +236,8 @@ export function resolveSketchBoxShelfPreview(
       h: shelfH,
       d: shelfDepth,
       woodThick,
-      op,
+      op: blockedReason ? 'blocked' : op,
+      blockedReason: blockedReason ?? undefined,
       clearanceMeasurements,
     },
   };

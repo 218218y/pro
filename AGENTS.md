@@ -169,7 +169,7 @@ For every non-trivial task:
 2. State the likely root cause or change target.
 3. Make the smallest correct architectural fix.
 4. Run the smallest meaningful verification set first.
-5. Expand verification if the change crosses boundaries.
+5. Expand verification only when the change risk justifies it, the user requests it, or a release-style handoff needs it.
 6. Summarize exactly what changed and why.
 
 Do not claim success without verification evidence.
@@ -189,7 +189,16 @@ When a test fails:
 
 ## Verification policy
 
-Choose the narrowest useful validation first, then broaden as needed.
+Choose the narrowest useful validation first. Codex should not run every available test, gate, smoke, and release lane after each normal fix.
+
+Default local verification is intentionally bounded:
+
+- run the most relevant targeted behavior/guard test(s) for the touched area
+- run the nearest relevant TypeScript/typecheck command when source types are touched
+- run `npm run lint` when touched source files are covered by the current lint profile
+- skip broad suites unless the change crosses shared architecture boundaries, the user requests them, or targeted failures point there
+
+GitHub/CI is expected to run the broader regression matrix after handoff. If CI later reports an unrelated failure, treat that as a follow-up task instead of front-loading every lane locally.
 
 ### Typical commands
 
@@ -200,6 +209,8 @@ General:
 - `npm run gate`
 - `npm run verify`
 - `npm run typecheck:all`
+
+Treat `npm run test`, `npm run gate`, `npm run verify`, and `npm run typecheck:all` as broad lanes, not mandatory closeout for every small or medium fix.
 
 Targeted typecheck commands:
 
@@ -218,6 +229,8 @@ UI/browser smoke when relevant:
 
 - `npm run e2e:smoke`
 
+Do not run `npm run e2e:smoke` by default. Use it only when the change touches browser boot, Playwright coverage, canvas/browser interactions, user journeys listed in `docs/e2e_smoke.md`, or when the user explicitly asks for browser smoke.
+
 ### Verification expectations by task size
 
 Small local fix:
@@ -225,16 +238,18 @@ Small local fix:
 - run the most relevant targeted test(s)
 - run the nearest relevant typecheck command
 - run `npm run lint` if touched source files are linted by current profile
+- do not run broad gates or E2E smoke unless the local risk requires it
 
 Cross-layer / architectural / boot / builder / services / state seam change:
 
 - run relevant targeted checks
-- then run `npm run gate`
+- add `npm run gate` only when the touched seam is shared enough that targeted checks are not credible, or when requested/release-style
 
 UI interaction or browser behavior change:
 
 - run relevant tests/checks
-- run `npm run e2e:smoke` when feasible
+- run the narrowest relevant browser/E2E smoke when feasible
+- reserve full `npm run e2e:smoke` for broad UI/browser journey risk or explicit request
 
 Never skip mentioning which commands were run and whether they passed or failed.
 

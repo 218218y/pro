@@ -184,6 +184,8 @@ export function readStructureTabDefaultCellWidth(args: StructureTabDefaultCellWi
 
 export function readStructureTabCellDimsState(ui: StructureTabUiSnapshot): StructureTabCellDimsState {
   return {
+    cellDimsPanelOpen: !!ui.cellDimsPanelOpen,
+    cellDimsHexPanelOpen: !!ui.cellDimsHexPanelOpen,
     cellDimsWidth: readStructureTabOptionalCellDim(ui, 'cellDimsWidth'),
     cellDimsHeight: readStructureTabOptionalCellDim(ui, 'cellDimsHeight'),
     cellDimsDepth: readStructureTabOptionalCellDim(ui, 'cellDimsDepth'),

@@ -156,6 +156,7 @@ export function createBuildFlowContext(args: BuildFlowContextFactoryArgs): Build
       D: plan.carcassD,
       defaultD: plan.D,
       woodThick: plan.woodThick,
+      shelfThick: plan.shelfThick,
       startY,
       cabinetBodyHeight,
       cabinetTopY,

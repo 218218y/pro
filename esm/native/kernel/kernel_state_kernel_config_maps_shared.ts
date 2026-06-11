@@ -123,6 +123,7 @@ export function createKernelStateKernelConfigMapsTools(
       case 'splitDoorsMap':
       case 'splitDoorsBottomMap':
       case 'removedDoorsMap':
+      case 'roundedFrameSideShelvesMap':
       case 'drawerDividersMap':
       case 'individualColors':
       case 'doorSpecialMap':

@@ -63,6 +63,7 @@ test('sketch box base tool parser keeps old legs syntax and reads explicit leg o
     baseLegColor: 'black',
     baseLegHeightCm: 12,
     baseLegWidthCm: 4,
+    basePlinthHeightCm: 8,
   });
 
   assert.deepEqual(parseSketchBoxBaseToolSpec('sketch_box_base:legs@round@gold@18'), {
@@ -71,6 +72,7 @@ test('sketch box base tool parser keeps old legs syntax and reads explicit leg o
     baseLegColor: 'gold',
     baseLegHeightCm: 18,
     baseLegWidthCm: 3.5,
+    basePlinthHeightCm: 8,
   });
 
   assert.deepEqual(parseSketchBoxBaseToolSpec('sketch_box_base:legs@square@nickel@16@6.5'), {
@@ -79,6 +81,16 @@ test('sketch box base tool parser keeps old legs syntax and reads explicit leg o
     baseLegColor: 'nickel',
     baseLegHeightCm: 16,
     baseLegWidthCm: 6.5,
+    basePlinthHeightCm: 8,
+  });
+
+  assert.deepEqual(parseSketchBoxBaseToolSpec('sketch_box_base:plinth@14.5'), {
+    baseType: 'plinth',
+    baseLegStyle: 'tapered',
+    baseLegColor: 'black',
+    baseLegHeightCm: 12,
+    baseLegWidthCm: 4,
+    basePlinthHeightCm: 14.5,
   });
 });
 

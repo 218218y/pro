@@ -16,6 +16,7 @@ export type ProjectConfigSnapshotReplaceKey =
   | 'splitDoorsMap'
   | 'splitDoorsBottomMap'
   | 'removedDoorsMap'
+  | 'roundedFrameSideShelvesMap'
   | 'drawerDividersMap'
   | 'individualColors'
   | 'doorSpecialMap'
@@ -36,7 +37,11 @@ export type ProjectConfigScalarMigrationRequiredKey =
   | 'showDimensions'
   | 'isMultiColorMode'
   | 'isLibraryMode'
-  | 'grooveLinesCount';
+  | 'grooveLinesCount'
+  | 'overlayFrameThicknessCm'
+  | 'overlayShelfThicknessCm'
+  | 'insetFrameThicknessCm'
+  | 'insetShelfThicknessCm';
 
 export type ProjectConfigMigrationRequiredKey =
   | ProjectConfigScalarMigrationRequiredKey
@@ -61,6 +66,10 @@ export const PROJECT_CONFIG_SCALAR_MIGRATION_REQUIRED_KEYS = Object.freeze([
   'isMultiColorMode',
   'isLibraryMode',
   'grooveLinesCount',
+  'overlayFrameThicknessCm',
+  'overlayShelfThicknessCm',
+  'insetFrameThicknessCm',
+  'insetShelfThicknessCm',
 ] as const satisfies readonly ProjectConfigScalarMigrationRequiredKey[]);
 
 /**
@@ -80,6 +89,7 @@ export const PROJECT_CONFIG_SNAPSHOT_REPLACE_KEY_ORDER = Object.freeze([
   'splitDoorsMap',
   'splitDoorsBottomMap',
   'removedDoorsMap',
+  'roundedFrameSideShelvesMap',
   'drawerDividersMap',
   'individualColors',
   'doorSpecialMap',

@@ -115,18 +115,19 @@ export function parseSketchStorageHeight(tool: string): number {
 export function parseSketchModuleBoxTool(args: {
   tool: string;
   parseSketchBoxToolSpec: (tool: string) => SketchBoxToolSpec | null;
+  maxHeightM?: number | null;
 }): { boxH: number; boxWM: number | null; boxDM: number | null } {
   const spec = args.parseSketchBoxToolSpec(args.tool);
   const heightCm = readNumber(spec ? spec.heightCm : null);
   const widthCm = readNumber(spec ? spec.widthCm : null);
   const depthCm = readNumber(spec ? spec.depthCm : null);
+  const maxHeightM = readNumber(args.maxHeightM);
+  const heightCeiling =
+    maxHeightM != null && maxHeightM > 0 ? maxHeightM : SKETCH_BOX_DIMENSIONS.geometry.maxOuterHeightM;
   return {
     boxH:
       heightCm != null
-        ? Math.max(
-            SKETCH_BOX_DIMENSIONS.geometry.minOuterHeightM,
-            Math.min(SKETCH_BOX_DIMENSIONS.geometry.maxOuterHeightM, cmToM(heightCm))
-          )
+        ? Math.max(SKETCH_BOX_DIMENSIONS.geometry.minOuterHeightM, Math.min(heightCeiling, cmToM(heightCm)))
         : SKETCH_BOX_DIMENSIONS.geometry.defaultOuterHeightM,
     boxWM: widthCm != null && widthCm > 0 ? cmToM(widthCm) : null,
     boxDM: depthCm != null && depthCm > 0 ? cmToM(depthCm) : null,

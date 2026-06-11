@@ -4,13 +4,13 @@ import {
   resolveManualLayoutSketchInternalDrawerPlacement,
 } from './canvas_picking_manual_layout_sketch_stack_placement.js';
 import { buildSketchBoxStackAwareMeasurementEntries } from './canvas_picking_sketch_neighbor_measurements.js';
+import { buildSketchBoxVerticalContentBlockers } from './canvas_picking_sketch_box_vertical_content_blockers.js';
 import { createManualLayoutSketchBoxContentHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import type {
   ResolveSketchBoxStackPreviewArgs,
   ResolveSketchBoxStackPreviewResult,
 } from './canvas_picking_sketch_box_stack_preview_contracts.js';
 import {
-  buildSketchBoxFrontOverlayFields,
   clampUnit,
   resolveSketchBoxStackPreviewContext,
 } from './canvas_picking_sketch_box_stack_preview_shared.js';
@@ -21,21 +21,25 @@ export function resolveSketchBoxDrawersPreview(
   const ctx = resolveSketchBoxStackPreviewContext(args);
   const { host, boxId, freePlacement, pointerY, targetGeo, targetHeight, woodThick } = args;
   const {
+    fullBoxBottomY,
+    fullBoxTopY,
     boxBottomY,
     boxTopY,
+    cellHeight,
     readCenterY,
     boxSegments,
     activeSegment,
+    verticalSegments,
+    activeVerticalSegment,
     localDrawers,
     localExtDrawers,
-    frontOverlay,
   } = ctx;
 
   const placement = resolveManualLayoutSketchInternalDrawerPlacement({
     desiredCenterY: pointerY,
     bottomY: boxBottomY,
     topY: boxTopY,
-    totalHeight: targetHeight,
+    totalHeight: cellHeight,
     pad: woodThick,
     drawerHeightM: args.drawerHeightM,
     drawers: localDrawers,
@@ -46,7 +50,21 @@ export function resolveSketchBoxDrawersPreview(
       topY: boxTopY,
       pad: woodThick,
       readCenterY,
-    }),
+    }).concat(
+      buildSketchBoxVerticalContentBlockers({
+        targetBox: args.targetBox,
+        targetGeo,
+        targetCenterY: args.targetCenterY,
+        targetHeight,
+        woodThick,
+        boxSegments,
+        activeSegment,
+        verticalSegments,
+        activeVerticalSegment,
+        pickSketchBoxSegment: args.pickSketchBoxSegment,
+        pickSketchBoxVerticalSegment: args.pickSketchBoxVerticalSegment,
+      })
+    ),
   });
   const baseY = placement.yCenter - placement.stackH / 2;
   const blockedReason =
@@ -71,11 +89,11 @@ export function resolveSketchBoxDrawersPreview(
   const clearanceMeasurements = buildSketchBoxStackAwareMeasurementEntries({
     bottomY: boxBottomY + woodThick,
     topY: boxTopY - woodThick,
-    totalHeight: targetHeight,
+    totalHeight: cellHeight,
     pad: woodThick,
     woodThick,
-    neighborBottomY: boxBottomY,
-    neighborTopY: boxTopY,
+    neighborBottomY: fullBoxBottomY,
+    neighborTopY: fullBoxTopY,
     neighborTotalHeight: targetHeight,
     neighborPad: woodThick,
     targetBox: args.targetBox,
@@ -107,8 +125,8 @@ export function resolveSketchBoxDrawersPreview(
       op: hoverOp,
       removeId: hoverRemoveId,
       contentXNorm: activeSegment ? activeSegment.xNorm : 0.5,
-      boxYNorm: clampUnit((placement.yCenter - boxBottomY) / targetHeight),
-      boxBaseYNorm: clampUnit((baseY - boxBottomY) / targetHeight),
+      boxYNorm: clampUnit((placement.yCenter - fullBoxBottomY) / targetHeight),
+      boxBaseYNorm: clampUnit((baseY - fullBoxBottomY) / targetHeight),
       yCenter: placement.yCenter,
       stackH: placement.stackH,
       drawerH: placement.drawerH,
@@ -129,7 +147,6 @@ export function resolveSketchBoxDrawersPreview(
       op: blockedReason ? 'blocked' : placement.op,
       blockedReason: blockedReason ?? undefined,
       clearanceMeasurements,
-      ...buildSketchBoxFrontOverlayFields(frontOverlay),
     },
   };
 }

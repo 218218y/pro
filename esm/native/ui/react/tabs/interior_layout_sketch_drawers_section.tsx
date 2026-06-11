@@ -46,76 +46,81 @@ export function InteriorSketchDrawersSection(props: InteriorSketchDrawersSection
       props.enterSketchIntDrawersTool(next);
     },
   };
+  const canShowExternalDrawers = props.wardrobeType !== 'sliding';
+
   return (
     <>
-      <div className="wp-field">
-        <div className="wp-r-label wp-r-label--center">מגירות חיצוניות לפי סקיצה</div>
-        <div className="wp-r-type-selector type-selector" style={{ direction: 'rtl' }}>
-          <ModeToggleButton
-            active={isSketchExternalDrawersToolActive}
-            icon={
-              <i
-                className={isSketchExternalDrawersToolActive ? 'fas fa-check' : 'fas fa-layer-group'}
-                aria-hidden="true"
-              />
-            }
-            onClick={() => {
-              props.setSketchShelvesOpen(false);
-              if (isSketchExternalDrawersToolActive) {
-                props.setSketchExtDrawersPanelOpen(false);
-                props.exitManual();
-                return;
+      {canShowExternalDrawers ? (
+        <div className="wp-field">
+          <div className="wp-r-label wp-r-label--center">מגירות חיצוניות לפי סקיצה</div>
+          <div className="wp-r-type-selector type-selector" style={{ direction: 'rtl' }}>
+            <ModeToggleButton
+              active={isSketchExternalDrawersToolActive}
+              icon={
+                <i
+                  className={isSketchExternalDrawersToolActive ? 'fas fa-check' : 'fas fa-layer-group'}
+                  aria-hidden="true"
+                />
               }
-              props.setSketchExtDrawersPanelOpen(true);
-              props.enterSketchExtDrawersTool(props.sketchExtDrawerCount, props.sketchExtDrawerHeightCm);
-            }}
-          >
-            הוסף/הסר מגירות חיצוניות
-            <i
-              className={cx(
-                'fas',
-                props.sketchExtDrawersPanelOpen ? 'fa-chevron-up' : 'fa-chevron-down',
-                'wp-chevron'
-              )}
-              aria-hidden="true"
-            />
-          </ModeToggleButton>
-        </div>
-
-        <div
-          className={cx('wp-row', 'wp-gap-5', isSketchExtDrawersControlsOpen ? '' : 'hidden')}
-          style={{ marginTop: 8, marginBottom: 10 }}
-        >
-          {[1, 2, 3, 4, 5].map(n => (
-            <CountBtn
-              key={n}
-              selected={isSketchExternalDrawersToolActive && props.sketchExtDrawerCount === n}
               onClick={() => {
-                props.setSketchExtDrawerCount(n);
+                props.setSketchShelvesOpen(false);
+                if (isSketchExternalDrawersToolActive) {
+                  props.setSketchExtDrawersPanelOpen(false);
+                  props.exitManual();
+                  return;
+                }
                 props.setSketchExtDrawersPanelOpen(true);
-                props.enterSketchExtDrawersTool(n, props.sketchExtDrawerHeightCm);
+                props.enterSketchExtDrawersTool(props.sketchExtDrawerCount, props.sketchExtDrawerHeightCm);
               }}
             >
-              {n}
-            </CountBtn>
-          ))}
+              הוסף/הסר מגירות חיצוניות
+              <i
+                className={cx(
+                  'fas',
+                  props.sketchExtDrawersPanelOpen ? 'fa-chevron-up' : 'fa-chevron-down',
+                  'wp-chevron'
+                )}
+                aria-hidden="true"
+              />
+            </ModeToggleButton>
+          </div>
+
+          <div
+            className={cx('wp-row', 'wp-gap-5', isSketchExtDrawersControlsOpen ? '' : 'hidden')}
+            style={{ marginTop: 8, marginBottom: 10 }}
+          >
+            {[1, 2, 3, 4, 5].map(n => (
+              <CountBtn
+                key={n}
+                selected={isSketchExternalDrawersToolActive && props.sketchExtDrawerCount === n}
+                onClick={() => {
+                  props.setSketchExtDrawerCount(n);
+                  props.setSketchExtDrawersPanelOpen(true);
+                  props.enterSketchExtDrawersTool(n, props.sketchExtDrawerHeightCm);
+                }}
+              >
+                {n}
+              </CountBtn>
+            ))}
+          </div>
+
+          <div className={cx(isSketchExtDrawersControlsOpen ? '' : 'hidden')}>
+            <SketchDrawerHeightField
+              label={'גובה מגירה חיצונית (ס"מ)'}
+              value={props.sketchExtDrawerHeightDraft}
+              onChange={raw => {
+                updateSketchDrawerHeightDraft(externalHeightController, raw);
+              }}
+              onBlur={() => {
+                commitSketchDrawerHeightDraft(externalHeightController);
+              }}
+              onReset={() => {
+                resetSketchDrawerHeightDraft(externalHeightController);
+              }}
+            />
+          </div>
         </div>
-        <div className={cx(isSketchExtDrawersControlsOpen ? '' : 'hidden')}>
-          <SketchDrawerHeightField
-            label={'גובה מגירה חיצונית (ס"מ)'}
-            value={props.sketchExtDrawerHeightDraft}
-            onChange={raw => {
-              updateSketchDrawerHeightDraft(externalHeightController, raw);
-            }}
-            onBlur={() => {
-              commitSketchDrawerHeightDraft(externalHeightController);
-            }}
-            onReset={() => {
-              resetSketchDrawerHeightDraft(externalHeightController);
-            }}
-          />
-        </div>
-      </div>
+      ) : null}
 
       <div className="wp-field">
         <div className="wp-r-label wp-r-label--center">מגירות פנימיות לפי סקיצה</div>

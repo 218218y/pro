@@ -38,6 +38,7 @@ export type StyledDoorVisualArgs = {
   mat: unknown;
   hasGrooves: boolean;
   groovePartId?: string | null;
+  grooveLinesCount?: number | null;
   isSketch: boolean;
   zSign: number;
 };

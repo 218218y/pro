@@ -28,6 +28,7 @@ export type HandleTypeOption = InteriorHandleTypeOption;
 export type InteriorTabViewState = {
   modeOpts: ModeActionOptsLike;
   wardrobeType: 'sliding' | 'hinged';
+  isChestMode: boolean;
   hasIntDrawerData: boolean;
   isLayoutMode: boolean;
   isManualLayoutMode: boolean;
@@ -77,6 +78,8 @@ export type InteriorTabViewState = {
   sketchBoxCorniceType: SketchBoxCorniceType;
   sketchBoxBasePanelOpen: boolean;
   sketchBoxBaseType: SketchBoxBaseType;
+  sketchBoxPlinthHeightCm: number;
+  sketchBoxPlinthHeightDraft: string;
   sketchBoxLegStyle: SketchBoxLegStyle;
   sketchBoxLegColor: SketchBoxLegColor;
   sketchBoxLegHeightCm: number;
@@ -125,6 +128,8 @@ export type InteriorTabViewState = {
   setSketchBoxCorniceType: Dispatch<SetStateAction<SketchBoxCorniceType>>;
   setSketchBoxBasePanelOpen: Dispatch<SetStateAction<boolean>>;
   setSketchBoxBaseType: Dispatch<SetStateAction<SketchBoxBaseType>>;
+  setSketchBoxPlinthHeightCm: Dispatch<SetStateAction<number>>;
+  setSketchBoxPlinthHeightDraft: Dispatch<SetStateAction<string>>;
   setSketchBoxLegStyle: Dispatch<SetStateAction<SketchBoxLegStyle>>;
   setSketchBoxLegColor: Dispatch<SetStateAction<SketchBoxLegColor>>;
   setSketchBoxLegHeightCm: Dispatch<SetStateAction<number>>;

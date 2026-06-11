@@ -216,6 +216,7 @@ export function loadInteriorTabViewStateControllerModule(calls, options = {}) {
           SKETCH_DRAWER_HEIGHT_MAX_CM: 120,
           SKETCH_DRAWER_HEIGHT_MIN_CM: 5,
           SKETCH_TOOL_SHELF_PREFIX: 'sketch_shelf:',
+          SKETCH_TOOL_EXT_DRAWERS_PREFIX: 'sketch_ext_drawers:',
           asNum: (value, fallback) => {
             const num = Number(value);
             return Number.isFinite(num) ? num : fallback;
@@ -254,6 +255,8 @@ export function loadInteriorTabViewStateControllerModule(calls, options = {}) {
                   : baseLegStyle === 'tapered'
                     ? 4
                     : 3.5,
+              basePlinthHeightCm:
+                type === 'plinth' && Number.isFinite(Number(style)) && style !== '' ? Number(style) : 8,
             };
           },
           readSketchBoxBaseType: value =>
@@ -333,6 +336,8 @@ export function createInteriorViewStateControllerHarness(options = {}) {
     setSketchBoxCornicePanelOpen: value => calls.push(['setSketchBoxCornicePanelOpen', value]),
     setSketchBoxBaseType: value => calls.push(['setSketchBoxBaseType', value]),
     setSketchBoxBasePanelOpen: value => calls.push(['setSketchBoxBasePanelOpen', value]),
+    setSketchBoxPlinthHeightCm: value => calls.push(['setSketchBoxPlinthHeightCm', value]),
+    setSketchBoxPlinthHeightDraft: value => calls.push(['setSketchBoxPlinthHeightDraft', value]),
     setSketchBoxLegStyle: value => calls.push(['setSketchBoxLegStyle', value]),
     setSketchBoxLegColor: value => calls.push(['setSketchBoxLegColor', value]),
     setSketchBoxLegHeightCm: value => calls.push(['setSketchBoxLegHeightCm', value]),

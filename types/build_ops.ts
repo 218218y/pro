@@ -27,6 +27,7 @@ export type Vec3Like = UnknownRecord & { x: number; y: number; z: number };
 export type HingedDoorOpLike = UnknownRecord & {
   partId: string;
   moduleIndex?: number;
+  moduleDoors?: number;
   pivotX?: number;
   y?: number;
   z?: number;
@@ -210,6 +211,9 @@ export type CarcassBoardOpLike = UnknownRecord & {
 
 export type BackPanelOpLike = UnknownRecord & {
   kind: 'back_panel' | string;
+  partId?: string;
+  material?: string;
+  __wpWoodBackPanel?: boolean;
   width: number;
   height: number;
   depth: number;

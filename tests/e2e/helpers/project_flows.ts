@@ -545,7 +545,10 @@ async function resolveBoardMaterialButton(page: Page, material: 'melamine' | 'sa
     .nth(material === 'sandwich' ? 0 : 1);
 }
 
-async function resolveDoorStyleButton(page: Page, style: 'profile' | 'tom' | 'post'): Promise<Locator> {
+async function resolveDoorStyleButton(
+  page: Page,
+  style: 'profile' | 'double_profile' | 'post'
+): Promise<Locator> {
   const optionId = style === 'post' ? 'flat' : style;
   const section = getDoorStyleSection(page);
   const preferred = section.locator(
@@ -553,7 +556,7 @@ async function resolveDoorStyleButton(page: Page, style: 'profile' | 'tom' | 'po
   );
   if ((await preferred.count()) > 0) return preferred.first();
 
-  const label = style === 'post' ? 'פוסט' : style === 'profile' ? 'פרופיל' : 'פרופיל תום';
+  const label = style === 'post' ? 'פוסט' : style === 'profile' ? 'פרופיל' : 'פרופיל כפול';
   const byRole = section.getByRole('button', { name: label, exact: true });
   if ((await byRole.count()) > 0) return byRole.first();
 
@@ -1330,8 +1333,8 @@ export async function readUiStateFingerprint(page: Page): Promise<UiStateFingerp
     getDoorStyleSection(page).locator('button'),
     'data-option-id',
     {
-      byText: { פוסט: 'flat', פרופיל: 'profile', 'פרופיל תום': 'tom' },
-      byIndex: ['flat', 'profile', 'tom'],
+      byText: { פוסט: 'flat', פרופיל: 'profile', 'פרופיל כפול': 'double_profile' },
+      byIndex: ['flat', 'profile', 'double_profile'],
     }
   );
   const grooveLinesInput = getDoorFeaturesSection(page)
@@ -1448,7 +1451,7 @@ export async function setBoardMaterial(page: Page, material: 'melamine' | 'sandw
   await clickButtonAndExpectSelected(button);
 }
 
-export async function setDoorStyle(page: Page, style: 'profile' | 'tom' | 'post'): Promise<void> {
+export async function setDoorStyle(page: Page, style: 'profile' | 'double_profile' | 'post'): Promise<void> {
   await openMainTab(page, 'design');
   const button = await resolveDoorStyleButton(page, style);
   await clickButtonAndExpectSelected(button);

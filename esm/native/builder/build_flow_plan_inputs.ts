@@ -13,8 +13,7 @@ import { normalizeBasePlinthHeightCm } from '../features/base_plinth_support.js'
 import { readUiState } from './build_flow_readers.js';
 import {
   CARCASS_INTERIOR_DIMENSIONS,
-  DOOR_SYSTEM_DIMENSIONS,
-  MATERIAL_DIMENSIONS,
+  resolveDoorMountThicknessesFromConfig,
   WARDROBE_DEFAULTS,
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
@@ -72,7 +71,9 @@ export function resolveBuildFlowPlanInputs(args: BuildFlowPlanInputsArgs): Build
 
   const uiState = readUiState(ui);
   const rawUi: UiRawInputsLike = uiState?.raw || {};
-  const stackSplitEnabled = !!uiState?.stackSplitEnabled;
+  const isSliding = typeof cfg.wardrobeType !== 'undefined' && cfg.wardrobeType === 'sliding';
+  const noMainWardrobe = !isSliding && doorsCount === 0;
+  const stackSplitEnabled = !!uiState?.stackSplitEnabled && !noMainWardrobe;
   const stackSplitDecorativeSeparatorEnabled =
     stackSplitEnabled && !!uiState?.stackSplitDecorativeSeparatorEnabled;
 
@@ -96,11 +97,9 @@ export function resolveBuildFlowPlanInputs(args: BuildFlowPlanInputsArgs): Build
   const lowerWidthCm = split.lowerWidthCm;
   const lowerDoorsCount = split.lowerDoorsCount;
   const splitActiveForBuild = split.active;
-  const isSliding = typeof cfg.wardrobeType !== 'undefined' && cfg.wardrobeType === 'sliding';
-  const isInsetHinged = !isSliding && String(cfg.doorMountMode || '') === 'inset';
-  const woodThick = isInsetHinged
-    ? DOOR_SYSTEM_DIMENSIONS.hinged.insetFrameThicknessM
-    : MATERIAL_DIMENSIONS.wood.thicknessM;
+  const resolvedThicknesses = resolveDoorMountThicknessesFromConfig(cfg);
+  const woodThick = resolvedThicknesses.frameThicknessM;
+  const shelfThick = resolvedThicknesses.shelfThicknessM;
   const stackSplitHasFrameBreakingPerCellGeometry =
     splitActiveForBuild && hasStackSplitPerCellFrameBreakingGeometry(cfg);
   const stackSplitUnifiedFrame =
@@ -123,7 +122,6 @@ export function resolveBuildFlowPlanInputs(args: BuildFlowPlanInputsArgs): Build
   const totalW = widthCm / 100;
   const D = split.topDepthCm / 100;
 
-  const noMainWardrobe = !isSliding && doorsCount === 0;
   const depthReduction = isSliding
     ? CARCASS_INTERIOR_DIMENSIONS.slidingDepthReductionM
     : CARCASS_INTERIOR_DIMENSIONS.hingedDepthReductionM;
@@ -168,7 +166,8 @@ export function resolveBuildFlowPlanInputs(args: BuildFlowPlanInputsArgs): Build
     corniceType: toStr(uiState?.corniceType, 'classic'),
     splitDoors: !!ui.splitDoors,
     isGroovesEnabled: !!ui.groovesEnabled,
-    isInternalDrawersEnabled: false,
+    isInternalDrawersEnabled: !!ui.internalDrawersEnabled,
     woodThick,
+    shelfThick,
   };
 }

@@ -7,6 +7,8 @@ export function createInteriorLayoutSectionProps(
   workflows: UseInteriorTabWorkflowsResult
 ): InteriorLayoutSectionProps {
   return {
+    wardrobeType: state.wardrobeType,
+    isChestMode: state.isChestMode,
     layoutActive: state.layoutActive,
     isLayoutMode: state.isLayoutMode,
     isManualLayoutMode: state.isManualLayoutMode,
@@ -38,6 +40,8 @@ export function createInteriorLayoutSectionProps(
     sketchBoxCorniceType: state.sketchBoxCorniceType,
     sketchBoxBasePanelOpen: state.sketchBoxBasePanelOpen,
     sketchBoxBaseType: state.sketchBoxBaseType,
+    sketchBoxPlinthHeightCm: state.sketchBoxPlinthHeightCm,
+    sketchBoxPlinthHeightDraft: state.sketchBoxPlinthHeightDraft,
     sketchBoxLegStyle: state.sketchBoxLegStyle,
     sketchBoxLegColor: state.sketchBoxLegColor,
     sketchBoxLegHeightCm: state.sketchBoxLegHeightCm,
@@ -85,6 +89,8 @@ export function createInteriorLayoutSectionProps(
     setSketchBoxCorniceType: state.setSketchBoxCorniceType,
     setSketchBoxBasePanelOpen: state.setSketchBoxBasePanelOpen,
     setSketchBoxBaseType: state.setSketchBoxBaseType,
+    setSketchBoxPlinthHeightCm: state.setSketchBoxPlinthHeightCm,
+    setSketchBoxPlinthHeightDraft: state.setSketchBoxPlinthHeightDraft,
     setSketchBoxLegWidthCm: state.setSketchBoxLegWidthCm,
     setSketchBoxLegWidthDraft: state.setSketchBoxLegWidthDraft,
     setSketchBoxLegStyle: state.setSketchBoxLegStyle,

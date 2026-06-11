@@ -20,7 +20,12 @@ export function tryApplySketchDirectHitShelfActions(args: ManualLayoutSketchDire
     totalHeight,
     intersects,
     __patchConfigForKey,
+    __hoverOk,
+    __hoverKind,
+    __hoverOp,
   } = args;
+
+  if (__hoverOk && (__hoverKind !== 'shelf' || __hoverOp !== 'remove')) return false;
 
   try {
     const shelfBoardHit = intersects.find((hit: RaycastHitLike) => {

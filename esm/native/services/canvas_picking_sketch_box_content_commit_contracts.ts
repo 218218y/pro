@@ -4,7 +4,7 @@ import type { ManualLayoutSketchHoverHost } from './canvas_picking_manual_layout
 
 export type RecordMap = UnknownRecord;
 export type SketchBoxToggleHoverMode = 'none' | 'free-toggle' | 'manual-toggle';
-export type SketchBoxToggleContentKind = 'drawers' | 'ext_drawers';
+export type SketchBoxToggleContentKind = 'drawers' | 'ext_drawers' | 'regular_ext_drawers';
 
 export type CommitSketchModuleBoxContentArgs = {
   cfg?: RecordMap | null;

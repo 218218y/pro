@@ -58,6 +58,7 @@ export function readStackKey(value: unknown): PartStackKey {
 export function scopeCornerPartKeyForStack(partId: string, stackKey: PartStackKey): string {
   if (!partId || stackKey !== 'bottom') return partId;
   if (partId.startsWith('lower_')) return partId;
+  if (partId.startsWith('sliding') || partId.startsWith('slide')) return `lower_${partId}`;
   if (partId.startsWith('corner_')) return `lower_${partId}`;
   return partId;
 }

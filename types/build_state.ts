@@ -22,6 +22,7 @@ import type {
   SplitDoorsMap,
   SplitDoorsBottomMap,
   RemovedDoorsMap,
+  RoundedFrameSideShelvesMap,
   DrawerDividersMap,
   HandlesMap,
   HingeMap,
@@ -195,6 +196,9 @@ export interface UiStateLike extends UiState {
   currentGridDivisions?: number;
   currentExtDrawerType?: string;
   currentExtDrawerCount?: number;
+  currentHandleToolType?: string;
+  currentHandleToolColor?: string;
+  currentHandleToolEdgeVariant?: string;
   perCellGridMap?: UnknownRecord;
   activeGridCellId?: string | number | null;
   currentCurtainChoice?: string;
@@ -321,6 +325,7 @@ export interface ConfigStateLike extends UnknownRecord {
   splitDoorsMap?: SplitDoorsMap;
   splitDoorsBottomMap?: SplitDoorsBottomMap;
   removedDoorsMap?: RemovedDoorsMap;
+  roundedFrameSideShelvesMap?: RoundedFrameSideShelvesMap;
   drawerDividersMap?: DrawerDividersMap;
   handlesMap?: HandlesMap;
   hingeMap?: HingeMap;
@@ -393,6 +398,7 @@ export interface BuildCtxDimsLike extends UnknownRecord {
   D?: number;
 
   woodThick?: number;
+  shelfThick?: number;
   startY?: number;
   cabinetBodyHeight?: number;
   cabinetTopY?: number;

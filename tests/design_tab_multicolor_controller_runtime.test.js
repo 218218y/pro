@@ -114,10 +114,12 @@ test('[design-tab-multicolor-controller] paint actions flow through one canonica
   calls.length = 0;
   setPaintColorCalls.length = 0;
   paintActive = true;
-  controller.pickBrush('__wp_glass_style__:tom', 'white');
-  assert.ok(calls.some(entry => entry[0] === 'tool.setPaintColor' && entry[1] === '__wp_glass_style__:tom'));
+  controller.pickBrush('__wp_glass_style__:double_profile', 'white');
+  assert.ok(
+    calls.some(entry => entry[0] === 'tool.setPaintColor' && entry[1] === '__wp_glass_style__:double_profile')
+  );
   assert.ok(calls.some(entry => entry[0] === 'setCurtainChoice' && entry[2] === 'white'));
-  assert.deepEqual(setPaintColorCalls, ['__wp_glass_style__:tom']);
+  assert.deepEqual(setPaintColorCalls, ['__wp_glass_style__:double_profile']);
 
   paintActive = true;
   calls.length = 0;

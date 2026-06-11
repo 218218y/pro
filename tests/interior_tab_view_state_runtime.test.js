@@ -211,6 +211,29 @@ test('interior tab view-state runtime derives ext drawer and handle tool state c
   assert.equal(state.handleToolEdgeVariant, 'short');
 });
 
+test('interior tab view-state runtime keeps advanced handle tool choices after exiting edit mode', () => {
+  const state = deriveInteriorTabUiToolState({
+    ui: {
+      handleControl: true,
+      currentHandleToolType: 'edge',
+      currentHandleToolColor: 'black',
+      currentHandleToolEdgeVariant: 'long',
+    },
+    handleCfg: {
+      globalHandleType: 'standard',
+      handlesMap: { __edge_variant__: 'short', __handle_color__: 'nickel' },
+    },
+    modeOpts: {},
+    isExtDrawerMode: false,
+    isHandleMode: false,
+  });
+  assert.equal(state.handleControlEnabled, true);
+  assert.equal(state.globalHandleType, 'standard');
+  assert.equal(state.handleToolType, 'edge');
+  assert.equal(state.handleToolColor, 'black');
+  assert.equal(state.handleToolEdgeVariant, 'long');
+});
+
 test('interior tab view-state runtime derives manual row visibility from layout and sketch state', () => {
   const active = deriveInteriorTabVisibilityState({
     manualRowOpen: false,

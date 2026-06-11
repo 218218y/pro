@@ -19,6 +19,12 @@ import type {
   PickSketchBoxSegmentArgs,
   FindNearestSketchBoxDividerArgs,
   FindNearestSketchBoxDividerResult,
+  FindNearestSketchBoxHorizontalDividerArgs,
+  FindNearestSketchBoxHorizontalDividerResult,
+  SketchBoxHorizontalDividerPlacementArgs,
+  SketchBoxHorizontalDividerPlacement,
+  ResolveSketchBoxVerticalSegmentsArgs,
+  PickSketchBoxVerticalSegmentArgs,
   SketchBoxDividerPlacementArgs,
   SketchBoxDividerPlacement,
   FindSketchModuleBoxAtPointArgs,
@@ -28,7 +34,12 @@ import type {
   ResolveSketchFreeBoxHoverPlacementArgs,
   ResolveSketchFreeBoxHoverPlacementResult,
 } from './canvas_picking_manual_layout_sketch_contracts.js';
-import type { SketchBoxDividerState, SketchBoxSegmentState } from './canvas_picking_sketch_box_dividers.js';
+import type {
+  SketchBoxDividerState,
+  SketchBoxHorizontalDividerState,
+  SketchBoxSegmentState,
+  SketchBoxVerticalSegmentState,
+} from './canvas_picking_sketch_box_dividers.js';
 
 export type { ModuleKey } from './canvas_picking_manual_layout_sketch_contracts.js';
 
@@ -79,12 +90,25 @@ export type ManualLayoutSketchHoverPreviewArgs = {
   __wp_getSketchFreeBoxPartPrefix: (moduleKey: ModuleKey, boxId: unknown) => string;
   __wp_findSketchFreeBoxLocalHit: (args: SketchFreeBoxLocalHitArgs) => LocalPoint | null;
   __wp_readSketchBoxDividers: (box: unknown) => SketchBoxDividerState[];
+  __wp_readSketchBoxHorizontalDividers: (box: unknown) => SketchBoxHorizontalDividerState[];
   __wp_resolveSketchBoxSegments: (args: ResolveSketchBoxSegmentsArgs) => SketchBoxSegmentState[];
   __wp_pickSketchBoxSegment: (args: PickSketchBoxSegmentArgs) => SketchBoxSegmentState | null;
+  __wp_resolveSketchBoxVerticalSegments: (
+    args: ResolveSketchBoxVerticalSegmentsArgs
+  ) => SketchBoxVerticalSegmentState[];
+  __wp_pickSketchBoxVerticalSegment: (
+    args: PickSketchBoxVerticalSegmentArgs
+  ) => SketchBoxVerticalSegmentState | null;
   __wp_findNearestSketchBoxDivider: (
     args: FindNearestSketchBoxDividerArgs
   ) => FindNearestSketchBoxDividerResult | null;
+  __wp_findNearestSketchBoxHorizontalDivider: (
+    args: FindNearestSketchBoxHorizontalDividerArgs
+  ) => FindNearestSketchBoxHorizontalDividerResult | null;
   __wp_resolveSketchBoxDividerPlacement: (args: SketchBoxDividerPlacementArgs) => SketchBoxDividerPlacement;
+  __wp_resolveSketchBoxHorizontalDividerPlacement: (
+    args: SketchBoxHorizontalDividerPlacementArgs
+  ) => SketchBoxHorizontalDividerPlacement;
   __wp_findSketchModuleBoxAtPoint: (
     args: FindSketchModuleBoxAtPointArgs
   ) => FindSketchModuleBoxAtPointResult | null;

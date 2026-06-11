@@ -32,7 +32,6 @@ export function createOrderPdfCaptureOpenClosedOp(
 
     const base = readOrderPdfCompositeBase(App, deps);
     const doorsGetOpen = () => !!deps.getDoorsOpen(App);
-    const doorsSetOpen = (v: boolean) => deps.setDoorsOpen(App, v, { source: 'export:pdf' });
     const originalOpenState = doorsGetOpen();
     const restoreExportWall = deps._applyExportWallColorOverride(App);
     const preserveLiveViewport = shouldPreserveLiveViewportForSketchImageExport(App);
@@ -95,7 +94,7 @@ export function createOrderPdfCaptureOpenClosedOp(
       clearNotesExportTransform(App);
       deps._setBodyDoorStatusForNotes(App, originalOpenState);
       try {
-        doorsSetOpen(originalOpenState);
+        deps.setDoorsOpen(App, originalOpenState, { source: 'export:pdf:restore', forceUpdate: true });
       } catch (e) {
         deps._exportReportThrottled(App, 'captureCompositeOpenClosed.restoreDoorsOpen', e, {
           throttleMs: 1000,

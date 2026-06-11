@@ -12,7 +12,7 @@ import type {
 import { getPrimaryMode, getModeState, enterPrimaryMode, exitPrimaryMode } from './modes_actions.js';
 import { MODES, getBrowserTimers } from '../../../services/api.js';
 import { refreshBuilderHandles } from '../../../services/api.js';
-import { setCfgGlobalHandleType, setCfgHandlesMap, setUiFlag } from './store_actions.js';
+import { patchUiSoft, setCfgGlobalHandleType, setCfgHandlesMap, setUiFlag } from './store_actions.js';
 import { getDoorsActionFn, getMetaActionFn } from '../../../services/api.js';
 import { readStoreStateMaybe } from '../../../services/api.js';
 import {
@@ -26,6 +26,14 @@ import {
 } from '../../../features/manual_handle_position.js';
 
 export const EDGE_HANDLE_VARIANT_GLOBAL_KEY = '__wp_edge_handle_variant_global';
+
+const HANDLE_TOOL_TYPE_UI_KEY = 'currentHandleToolType';
+const HANDLE_TOOL_COLOR_UI_KEY = 'currentHandleToolColor';
+const HANDLE_TOOL_EDGE_VARIANT_UI_KEY = 'currentHandleToolEdgeVariant';
+const HANDLE_COLOR_PART_PREFIX = '__wp_handle_color:';
+const EDGE_HANDLE_VARIANT_PART_PREFIX = '__wp_edge_handle_variant:';
+const MANUAL_HANDLE_POSITION_KEY_PREFIX = '__wp_manual_handle_position:';
+const HANDLE_EDIT_TOAST = 'עריכת ידיות: לחץ על דלת או מגירה כדי לשנות ידית';
 
 type StoreStateLike = UnknownRecord & {
   config?: unknown;
@@ -115,6 +123,89 @@ function readManualModeHandleType(value: unknown): HandleType {
   return type === 'none' ? 'standard' : type;
 }
 
+function readStoredHandleToolType(app: AppContainer): HandleType {
+  const ui = getUiSnap(app);
+  const cfg = getCfgSnap(app);
+  return readModeHandleType(ui[HANDLE_TOOL_TYPE_UI_KEY] ?? cfg.globalHandleType ?? 'standard');
+}
+
+function readStoredHandleToolColor(app: AppContainer): ReturnType<typeof readHandleColor> {
+  const ui = getUiSnap(app);
+  const cfg = getCfgSnap(app);
+  const hm = readRecord(cfg.handlesMap) || {};
+  return readHandleColor(ui[HANDLE_TOOL_COLOR_UI_KEY] ?? hm[HANDLE_COLOR_GLOBAL_KEY]);
+}
+
+function readStoredHandleToolEdgeVariant(app: AppContainer): 'short' | 'long' {
+  const ui = getUiSnap(app);
+  const cfg = getCfgSnap(app);
+  const hm = readRecord(cfg.handlesMap) || {};
+  return normEdgeHandleVariant(ui[HANDLE_TOOL_EDGE_VARIANT_UI_KEY] ?? hm[EDGE_HANDLE_VARIANT_GLOBAL_KEY]);
+}
+
+function patchHandleToolUi(app: AppContainer, patch: UnknownRecord, source: string): void {
+  try {
+    patchUiSoft(app, patch, { source, noBuild: true, noHistory: true, noAutosave: true, noPersist: true });
+  } catch {
+    // Tool choices are UI-only hints. Mode opts below remain the source of truth while editing.
+  }
+}
+
+function isGlobalHandleToolMapKey(key: string): boolean {
+  return key === HANDLE_COLOR_GLOBAL_KEY || key === EDGE_HANDLE_VARIANT_GLOBAL_KEY;
+}
+
+function isPerPartHandleToolMapKey(key: string): boolean {
+  return (
+    key.startsWith(HANDLE_COLOR_PART_PREFIX) ||
+    key.startsWith(EDGE_HANDLE_VARIANT_PART_PREFIX) ||
+    key.startsWith(MANUAL_HANDLE_POSITION_KEY_PREFIX)
+  );
+}
+
+function isMeaningfulHandleOverrideValue(value: unknown): boolean {
+  return value !== undefined && value !== null && String(value || '').trim() !== '';
+}
+
+function hasDirtyHandleOverrides(app: AppContainer): boolean {
+  const hm = readRecord(getCfgSnap(app).handlesMap);
+  if (!hm) return false;
+  try {
+    return Object.keys(hm).some(key => {
+      if (isGlobalHandleToolMapKey(key)) return false;
+      const value = hm[key];
+      if (!isMeaningfulHandleOverrideValue(value)) return false;
+      // Direct part-id entries are the actual handle-type override. The known
+      // prefixed keys are per-part color/edge/manual-position metadata written
+      // together with that override, so they are also real user changes.
+      return !key.startsWith('__wp_') || isPerPartHandleToolMapKey(key);
+    });
+  } catch {
+    return false;
+  }
+}
+
+function enterDefaultHandleEditModeIfClean(app: AppContainer): void {
+  try {
+    const modeHandle = getHandleModeId();
+    if (String(getPrimaryMode(app)) === modeHandle) return;
+    if (hasDirtyHandleOverrides(app)) return;
+  } catch {
+    return;
+  }
+
+  toggleHandleMode(app);
+}
+
+function enterHandleEditMode(app: AppContainer, modeOpts: UnknownRecord, cursor = 'pointer'): void {
+  enterPrimaryMode(app, getHandleModeId(), {
+    modeOpts,
+    preserveDoors: true,
+    cursor,
+    toast: HANDLE_EDIT_TOAST,
+  });
+}
+
 function applyHandlesBestEffort(app: AppContainer): void {
   try {
     refreshBuilderHandles(app, { purgeRemovedDoors: true });
@@ -154,7 +245,11 @@ function getNoHistoryForceBuildMeta(app: AppContainer): ActionMetaLike {
   };
 }
 
-export function setHandleControlEnabled(app: AppContainer, on: unknown): void {
+function setHandleControlEnabledCore(
+  app: AppContainer,
+  on: unknown,
+  opts: { autoEnterCleanDefault?: boolean } = {}
+): void {
   const enabled = !!on;
   try {
     setUiFlag(app, 'handleControl', enabled, getNoHistoryForceBuildMeta(app));
@@ -173,15 +268,22 @@ export function setHandleControlEnabled(app: AppContainer, on: unknown): void {
     // ignore
   }
 
-  if (!enabled) {
-    try {
-      const modeHandle = getHandleModeId();
-      const cur = getPrimaryMode(app);
-      if (String(cur) === modeHandle) exitPrimaryMode(app, modeHandle, { preserveDoors: true });
-    } catch {
-      // ignore
-    }
+  if (enabled) {
+    if (opts.autoEnterCleanDefault !== false) enterDefaultHandleEditModeIfClean(app);
+    return;
   }
+
+  try {
+    const modeHandle = getHandleModeId();
+    const cur = getPrimaryMode(app);
+    if (String(cur) === modeHandle) exitPrimaryMode(app, modeHandle, { preserveDoors: true });
+  } catch {
+    // ignore
+  }
+}
+
+export function setHandleControlEnabled(app: AppContainer, on: unknown): void {
+  setHandleControlEnabledCore(app, on, { autoEnterCleanDefault: true });
 }
 
 export function setGlobalHandleType(app: AppContainer, t: HandleType): void {
@@ -223,41 +325,65 @@ export function setGlobalEdgeHandleVariant(app: AppContainer, v: 'short' | 'long
 export function setHandleModeEdgeVariant(app: AppContainer, v: 'short' | 'long' | unknown): void {
   const next = normEdgeHandleVariant(v);
   const modeHandle = getHandleModeId();
-
   const curMode = getModeState(app);
   const primary = String(curMode.primary || '');
-  if (primary !== modeHandle) return;
+  const curOpts = primary === modeHandle ? readRecord(curMode.opts) || {} : {};
+  const handleColor =
+    primary === modeHandle ? readHandleColor(curOpts.handleColor) : readStoredHandleToolColor(app);
 
-  const curOpts = readRecord(curMode.opts) || {};
-  const curType = String(curOpts.handleType || 'standard');
+  patchHandleToolUi(
+    app,
+    {
+      [HANDLE_TOOL_TYPE_UI_KEY]: 'edge',
+      [HANDLE_TOOL_EDGE_VARIANT_UI_KEY]: next,
+      [HANDLE_TOOL_COLOR_UI_KEY]: handleColor,
+    },
+    'react:handles:toolEdgeVariant'
+  );
 
-  enterPrimaryMode(app, modeHandle, {
-    modeOpts: { ...curOpts, handleType: curType, edgeHandleVariant: next },
-    preserveDoors: true,
-    cursor: 'pointer',
+  enterHandleEditMode(app, {
+    ...curOpts,
+    handleType: 'edge',
+    edgeHandleVariant: next,
+    handleColor,
   });
 }
 
 export function setHandleModeColor(app: AppContainer, color: unknown): void {
+  const nextColor = readHandleColor(color);
   const modeHandle = getHandleModeId();
   const curMode = getModeState(app);
   const primary = String(curMode.primary || '');
-  if (primary !== modeHandle) return;
+  const curOpts = primary === modeHandle ? readRecord(curMode.opts) || {} : {};
+  const handleType =
+    primary === modeHandle ? readModeHandleType(curOpts.handleType) : readStoredHandleToolType(app);
+  const edgeHandleVariant =
+    primary === modeHandle
+      ? normEdgeHandleVariant(curOpts.edgeHandleVariant)
+      : readStoredHandleToolEdgeVariant(app);
 
-  const curOpts = readRecord(curMode.opts) || {};
-  const curType = String(curOpts.handleType || 'standard');
+  patchHandleToolUi(
+    app,
+    {
+      [HANDLE_TOOL_TYPE_UI_KEY]: handleType,
+      [HANDLE_TOOL_EDGE_VARIANT_UI_KEY]: edgeHandleVariant,
+      [HANDLE_TOOL_COLOR_UI_KEY]: nextColor,
+    },
+    'react:handles:toolColor'
+  );
 
-  enterPrimaryMode(app, modeHandle, {
-    modeOpts: { ...curOpts, handleType: curType, handleColor: readHandleColor(color) },
-    preserveDoors: true,
-    cursor: 'pointer',
+  enterHandleEditMode(app, {
+    ...curOpts,
+    handleType,
+    edgeHandleVariant,
+    handleColor: nextColor,
   });
 }
 
 export function enterManualHandlePositionMode(app: AppContainer): void {
   try {
     const enabled = !!getUiSnap(app).handleControl;
-    if (!enabled) setHandleControlEnabled(app, true);
+    if (!enabled) setHandleControlEnabledCore(app, true, { autoEnterCleanDefault: false });
   } catch {
     // ignore
   }
@@ -273,16 +399,29 @@ export function enterManualHandlePositionMode(app: AppContainer): void {
   }
 
   const selectedType =
-    String(curMode.primary || '') === modeHandle ? readManualModeHandleType(curOpts.handleType) : 'standard';
-  const hm = readRecord(getCfgSnap(app).handlesMap) || {};
+    String(curMode.primary || '') === modeHandle
+      ? readManualModeHandleType(curOpts.handleType)
+      : readManualModeHandleType(readStoredHandleToolType(app));
   const selectedColor =
     String(curMode.primary || '') === modeHandle
       ? readHandleColor(curOpts.handleColor)
-      : DEFAULT_HANDLE_FINISH_COLOR;
+      : readStoredHandleToolColor(app);
   const selectedEdgeVariant =
     selectedType === 'edge'
-      ? normEdgeHandleVariant(curOpts.edgeHandleVariant)
-      : normEdgeHandleVariant(hm[EDGE_HANDLE_VARIANT_GLOBAL_KEY]);
+      ? String(curMode.primary || '') === modeHandle
+        ? normEdgeHandleVariant(curOpts.edgeHandleVariant)
+        : readStoredHandleToolEdgeVariant(app)
+      : readStoredHandleToolEdgeVariant(app);
+
+  patchHandleToolUi(
+    app,
+    {
+      [HANDLE_TOOL_TYPE_UI_KEY]: selectedType,
+      [HANDLE_TOOL_EDGE_VARIANT_UI_KEY]: selectedEdgeVariant,
+      [HANDLE_TOOL_COLOR_UI_KEY]: selectedColor,
+    },
+    'react:handles:manualPositionTool'
+  );
 
   enterPrimaryMode(app, modeHandle, {
     modeOpts: {
@@ -300,37 +439,50 @@ export function enterManualHandlePositionMode(app: AppContainer): void {
 export function toggleHandleMode(app: AppContainer, t?: unknown): void {
   try {
     const enabled = !!getUiSnap(app).handleControl;
-    if (!enabled) setHandleControlEnabled(app, true);
+    if (!enabled) setHandleControlEnabledCore(app, true, { autoEnterCleanDefault: false });
   } catch {
     // ignore
   }
 
   const modeHandle = getHandleModeId();
+  const curMode = getModeState(app);
+  const primary = String(curMode.primary || '');
+  const currentHandleMode = primary === modeHandle;
+  const requestedType = t == null ? '' : String(t || '').trim();
 
-  const cur = getPrimaryMode(app);
-  if (String(cur) === modeHandle) {
+  if (currentHandleMode && !requestedType) {
     exitPrimaryMode(app, modeHandle, { preserveDoors: true });
     return;
   }
 
-  let handleType = String(t || '');
-  let edgeHandleVariant: 'short' | 'long' = 'short';
-
+  const curOpts = currentHandleMode ? readRecord(curMode.opts) || {} : {};
   const cfg = getCfgSnap(app);
   const hm = readRecord(cfg.handlesMap) || {};
-  const handleColor = readHandleColor(hm[HANDLE_COLOR_GLOBAL_KEY]);
 
-  if (!handleType) {
-    handleType = String(cfg.globalHandleType || 'standard');
-    edgeHandleVariant = normEdgeHandleVariant(hm[EDGE_HANDLE_VARIANT_GLOBAL_KEY]);
-  } else if (handleType !== 'edge') {
-    edgeHandleVariant = normEdgeHandleVariant(hm[EDGE_HANDLE_VARIANT_GLOBAL_KEY]);
-  }
+  const handleType = requestedType
+    ? readModeHandleType(requestedType)
+    : currentHandleMode
+      ? readModeHandleType(curOpts.handleType)
+      : readStoredHandleToolType(app);
+  const edgeHandleVariant =
+    handleType === 'edge'
+      ? currentHandleMode && curOpts.edgeHandleVariant != null
+        ? normEdgeHandleVariant(curOpts.edgeHandleVariant)
+        : readStoredHandleToolEdgeVariant(app)
+      : readStoredHandleToolEdgeVariant(app) || normEdgeHandleVariant(hm[EDGE_HANDLE_VARIANT_GLOBAL_KEY]);
+  const handleColor = currentHandleMode
+    ? readHandleColor(curOpts.handleColor)
+    : readStoredHandleToolColor(app);
 
-  enterPrimaryMode(app, modeHandle, {
-    modeOpts: { handleType, edgeHandleVariant, handleColor },
-    preserveDoors: true,
-    cursor: 'pointer',
-    toast: 'עריכת ידיות: לחץ על דלת כדי לשנות ידית',
-  });
+  patchHandleToolUi(
+    app,
+    {
+      [HANDLE_TOOL_TYPE_UI_KEY]: handleType,
+      [HANDLE_TOOL_EDGE_VARIANT_UI_KEY]: edgeHandleVariant,
+      [HANDLE_TOOL_COLOR_UI_KEY]: handleColor,
+    },
+    'react:handles:toolType'
+  );
+
+  enterHandleEditMode(app, { ...curOpts, handleType, edgeHandleVariant, handleColor });
 }

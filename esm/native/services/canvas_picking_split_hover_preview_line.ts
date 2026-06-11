@@ -57,6 +57,41 @@ function readSplitHoverPreviewModuleConfig(args: {
   return null;
 }
 
+function isSketchBoxSplitPreviewDoor(hitDoorGroup: HitObjectLike): boolean {
+  try {
+    const ud = __wp_asRecord(hitDoorGroup?.userData);
+    const partId = typeof ud?.partId === 'string' ? String(ud.partId) : '';
+    return /^sketch_box(?:_free)?_.+_door(?:_|$)/i.test(partId);
+  } catch {
+    return false;
+  }
+}
+
+function resolveBoundsLocalRegularSplitPreviewLineY(args: {
+  bounds: SplitHoverDoorBounds;
+  isBottomRegion: boolean;
+}): number | null {
+  const { bounds, isBottomRegion } = args;
+  const minY = Number(bounds.minY);
+  const maxY = Number(bounds.maxY);
+  const span = maxY - minY;
+  if (!Number.isFinite(minY) || !Number.isFinite(maxY) || !(span > 0.05)) return null;
+
+  if (isBottomRegion) {
+    return clampSplitHoverLineY(
+      bounds,
+      minY + Math.min(span / 3, DOOR_SYSTEM_DIMENSIONS.hinged.split.storageLiftM)
+    );
+  }
+
+  return clampSplitHoverLineY(
+    bounds,
+    minY +
+      (CARCASS_SHELL_DIMENSIONS.drawerSplitGridLineIndex * span) /
+        CARCASS_SHELL_DIMENSIONS.drawerGridDivisions
+  );
+}
+
 function readSplitHoverPreviewMetrics(args: {
   App: AppContainer;
   hitDoorGroup: HitObjectLike;
@@ -133,6 +168,10 @@ export function __wp_getRegularSplitPreviewLineY(args: {
   const maxY = Number(bounds.maxY);
   const span = maxY - minY;
   if (!Number.isFinite(minY) || !Number.isFinite(maxY) || !(span > 0.05)) return null;
+
+  if (isSketchBoxSplitPreviewDoor(hitDoorGroup)) {
+    return resolveBoundsLocalRegularSplitPreviewLineY({ bounds, isBottomRegion });
+  }
 
   const { effectiveBottomY, effectiveTopY, woodThick, drawerHeightTotal } = readSplitHoverPreviewMetrics({
     App,

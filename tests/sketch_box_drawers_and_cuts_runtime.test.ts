@@ -6,9 +6,15 @@ import {
   SHELF_GROUP_PART_ID,
   createSketchExternalDrawerBraceShelfPartId,
 } from '../esm/native/features/shelf_part_identity.ts';
+import { applySketchBoxExternalDrawerDoorCuts } from '../esm/native/builder/post_build_sketch_door_cuts_box.ts';
 
 import {
+  FakeBoxGeometry,
+  FakeGroup,
+  FakeMaterial,
+  FakeMesh,
   FakeNode,
+  THREE,
   createSketchInteriorHarness,
   getWorldY,
   readSketchBoxFrontsBundle,
@@ -48,6 +54,202 @@ function assertSketchExternalDrawerBoxHasIndependentPaintId(drawerGroup: FakeNod
     'front descendants should keep the front paint id'
   );
 }
+
+function createSketchBoxDoorForCuts(partId: string, boxId: string): FakeGroup {
+  const doorGroup = new FakeGroup();
+  doorGroup.position.set(0, 1, 0);
+  doorGroup.userData = {
+    partId,
+    __wpSketchBoxId: boxId,
+    __wpSketchModuleKey: '0',
+    __wpSketchBoxDoor: true,
+    __doorWidth: 0.6,
+    __doorHeight: 1,
+    __doorMeshOffsetX: 0,
+    __hingeLeft: true,
+    __wpFrontThickness: 0.018,
+  };
+  const leaf = new FakeMesh(new FakeBoxGeometry(0.6, 1, 0.018), new FakeMaterial());
+  leaf.userData.partId = partId;
+  doorGroup.add(leaf);
+  return doorGroup;
+}
+
+function createSketchBoxExternalDrawerForCuts(args: {
+  boxId: string;
+  drawerId: string;
+  yMin: number;
+  yMax: number;
+  width?: number;
+}) {
+  const { boxId, drawerId, yMin, yMax, width = 0.6 } = args;
+  const drawerGroup = new FakeGroup();
+  drawerGroup.position.set(0, (yMin + yMax) / 2, 0);
+  drawerGroup.userData = {
+    partId: `sketch_box_free_0_${boxId}_ext_drawer_${drawerId}`,
+    __wpSketchExtDrawer: true,
+    __wpSketchBoxId: boxId,
+    __wpSketchExtDrawerId: drawerId,
+    __wpSketchModuleKey: '0',
+    __doorWidth: width,
+    __doorHeight: yMax - yMin,
+    __wpFaceMinY: yMin,
+    __wpFaceMaxY: yMax,
+  };
+  return { group: drawerGroup };
+}
+
+function applyBoxDoorCutsForTest(args: {
+  doorGroup: FakeGroup;
+  splitDoorsMap: Record<string, unknown>;
+  drawersArray?: unknown[];
+  ctxCreate?: Record<string, unknown>;
+  cfgExtra?: Record<string, unknown>;
+}) {
+  const App = {
+    render: {
+      doorsArray: [{ group: args.doorGroup, type: 'hinged' }],
+      drawersArray: args.drawersArray || [],
+    },
+    store: {
+      getState() {
+        return { ui: {}, config: {}, runtime: {}, mode: {}, meta: {} };
+      },
+    },
+    services: { uiFeedback: { toast() {} } },
+  } as never;
+  applySketchBoxExternalDrawerDoorCuts({
+    App,
+    THREE: THREE as never,
+    ctx: {
+      create: args.ctxCreate || {},
+      resolvers: {
+        getPartMaterial: () => new FakeMaterial(),
+        getHandleType: () => 'none',
+      },
+      strings: {},
+    } as never,
+    cfg: { splitDoorsMap: args.splitDoorsMap, ...(args.cfgExtra || {}) },
+    bodyMat: new FakeMaterial(),
+    globalFrontMat: new FakeMaterial(),
+  });
+}
+
+test('manual split positions segment free-placement sketch box doors without enabling default box cuts', () => {
+  const partId = 'sketch_box_free_0_boxManual_door_main';
+  const doorGroup = createSketchBoxDoorForCuts(partId, 'boxManual');
+
+  applyBoxDoorCutsForTest({
+    doorGroup,
+    splitDoorsMap: {
+      [`split_${partId}`]: true,
+      [`splitpos_${partId}`]: [0.5],
+    },
+  });
+
+  const directSegmentIds = doorGroup.children.map(child => String(child.userData?.partId || '')).sort();
+  assert.equal(doorGroup.userData.__wpSketchSegmentedDoor, true);
+  assert.deepEqual(directSegmentIds, [`${partId}_bot`, `${partId}_top`]);
+});
+
+test('manual split positions on sketch box doors are applied against the visible door above external drawers', () => {
+  const boxId = 'boxManualDrawers';
+  const partId = `sketch_box_free_0_${boxId}_door_main`;
+  const doorGroup = createSketchBoxDoorForCuts(partId, boxId);
+  doorGroup.position.set(0, 1.5, 0);
+  doorGroup.userData.__doorHeight = 3;
+
+  applyBoxDoorCutsForTest({
+    doorGroup,
+    drawersArray: [createSketchBoxExternalDrawerForCuts({ boxId, drawerId: 'ed1', yMin: 0, yMax: 1 })],
+    splitDoorsMap: {
+      [`split_${partId}`]: true,
+      [`splitb_${partId}`]: true,
+      [`splitpos_${partId}`]: [0.25],
+    },
+  });
+
+  const directSegments = doorGroup.children.filter(child => child.userData?.__wpSketchDoorSegment === true);
+  assert.equal(doorGroup.userData.__wpSketchSegmentedDoor, true);
+  assert.deepEqual(directSegments.map(child => String(child.userData?.partId || '')).sort(), [
+    `${partId}_bot`,
+    `${partId}_top`,
+  ]);
+
+  const segmentBounds = directSegments
+    .map(child => {
+      const h = Number(child.userData?.__doorHeight || 0);
+      const y = getWorldY(child as FakeNode);
+      return { id: String(child.userData?.partId || ''), minY: y - h / 2, maxY: y + h / 2 };
+    })
+    .sort((a, b) => a.minY - b.minY);
+
+  assert.ok(segmentBounds[0].minY > 1, 'bottom rebuilt segment should start above the external drawers');
+  assert.ok(
+    segmentBounds[0].maxY > 1.45 && segmentBounds[0].maxY < 1.55,
+    `bottom fixed split should be near the visible-door quarter line, got ${segmentBounds[0].maxY}`
+  );
+});
+
+test('sketch box doors stay uncut when no manual split position was explicitly stored', () => {
+  const partId = 'sketch_box_0_boxPlain_door_main';
+  const doorGroup = createSketchBoxDoorForCuts(partId, 'boxPlain');
+  const originalLeaf = doorGroup.children[0];
+
+  applyBoxDoorCutsForTest({ doorGroup, splitDoorsMap: {} });
+
+  assert.equal(doorGroup.userData.__wpSketchSegmentedDoor, undefined);
+  assert.equal(doorGroup.children.length, 1);
+  assert.equal(doorGroup.children[0], originalLeaf);
+});
+
+test('segmented sketch box doors keep groove state per clicked segment only', () => {
+  const partId = 'sketch_box_free_0_sbf_alpha_door_sbdr_1';
+  const doorGroup = createSketchBoxDoorForCuts(partId, 'sbf_alpha');
+  doorGroup.userData.__wpSketchBoxDoorGroove = true;
+  const visualCalls: Array<{ partId: string; hasGrooves: boolean }> = [];
+
+  applyBoxDoorCutsForTest({
+    doorGroup,
+    splitDoorsMap: {
+      [`split_${partId}`]: true,
+      [`splitpos_${partId}`]: [0.5],
+    },
+    cfgExtra: {
+      groovesMap: {
+        [`groove_${partId}_top`]: true,
+      },
+    },
+    ctxCreate: {
+      createDoorVisual(
+        w: number,
+        h: number,
+        thickness: number,
+        mat: unknown,
+        _style: unknown,
+        hasGrooves: boolean,
+        _isMirror: unknown,
+        _curtainType: unknown,
+        _baseMaterial: unknown,
+        _frontFaceSign: unknown,
+        _forceCurtainFix: unknown,
+        _mirrorLayout: unknown,
+        groovePartId: string
+      ) {
+        visualCalls.push({ partId: groovePartId, hasGrooves });
+        return new FakeMesh(new FakeBoxGeometry(w, h, thickness), mat as FakeMaterial);
+      },
+    },
+  });
+
+  assert.deepEqual(
+    visualCalls.map(call => [call.partId, call.hasGrooves]),
+    [
+      [`${partId}_bot`, false],
+      [`${partId}_top`, true],
+    ]
+  );
+});
 
 test('free-placement sketch box internal drawers render through internal drawer ops', () => {
   const capturedOps: Array<Record<string, unknown>> = [];
@@ -89,6 +291,55 @@ test('free-placement sketch box internal drawers render through internal drawer 
     ]
   );
   assert.ok(capturedOps.every(op => Math.abs(Number(op.height) - 0.165) < 1e-9));
+});
+
+test('free-placement sketch box internal drawers follow the internal-drawers toggle without deleting saved data', () => {
+  const capturedOps: Array<Record<string, unknown>> = [];
+  const { applyInteriorSketchExtras, makeArgs } = createSketchInteriorHarness({
+    applyInternalDrawersOps: (args: unknown) => {
+      const rec = args as Record<string, unknown>;
+      const ops = Array.isArray(rec.ops) ? (rec.ops as Array<Record<string, unknown>>) : [];
+      capturedOps.push(...ops);
+    },
+  });
+  const sketchExtras = {
+    boxes: [
+      {
+        id: 'freeDrawerBox',
+        freePlacement: true,
+        absX: 0,
+        absY: 1.0,
+        heightM: 0.72,
+        widthM: 0.78,
+        depthM: 0.5,
+        drawers: [{ id: 'fd1', yNormC: 0.55 }],
+      },
+    ],
+  };
+
+  assert.equal(
+    applyInteriorSketchExtras(
+      makeArgs({
+        sketchExtras,
+        isInternalDrawersEnabled: false,
+        createInternalDrawerBox: () => null,
+      })
+    ),
+    true
+  );
+  assert.equal(capturedOps.length, 0, 'turning the button off should hide saved free-box internal drawers');
+
+  assert.equal(
+    applyInteriorSketchExtras(
+      makeArgs({
+        sketchExtras,
+        isInternalDrawersEnabled: true,
+        createInternalDrawerBox: () => null,
+      })
+    ),
+    true
+  );
+  assert.equal(capturedOps.length, 2, 'turning the button back on should render the saved drawers again');
 });
 
 test('free-placement sketch box internal drawers keep custom height and skip stacks that do not fit', () => {
@@ -365,7 +616,7 @@ test('sketch external drawer cut envelope matches drawer front envelope', async 
   assert.equal(typeof mod.applyPostBuildExtras, 'function');
 });
 
-test('custom segmented sketch door handles are preserved by generic handles pass', async () => {
+test('custom segmented sketch door handles are refreshed by the generic handles pass', async () => {
   const src = await readSourceFiles([
     '../esm/native/builder/handles.ts',
     '../esm/native/builder/handles_apply.ts',
@@ -374,6 +625,7 @@ test('custom segmented sketch door handles are preserved by generic handles pass
     '../esm/native/builder/handles_apply_drawers.ts',
   ]);
   assert.match(src, /__wpSketchCustomHandles === true/);
+  assert.match(src, /refreshSketchSegmentedDoorHandles\(runtime, g, __sk, suppressedPartIds\)/);
 });
 
 test('generic drawer handles target only root drawer groups so sketch profile fronts do not get a second handle', async () => {
@@ -453,7 +705,10 @@ test('sketch box drawers and external drawers source use divider-aware spans', a
     await readSketchBoxFrontsBundle(),
   ].join('\n');
   assert.match(src, /return \(item: InteriorValueRecord \| null\) => \{/);
-  assert.match(src, /const boxDrawers = asRecordArray<SketchDrawerExtra>\(box\.drawers\);/);
+  assert.match(
+    src,
+    /const boxDrawers = shouldRenderBoxInternalDrawers\(input\)[\s\S]*asRecordArray<SketchDrawerExtra>\(box\.drawers\)/
+  );
   assert.match(src, /const spanSource = readRecord\(drawer\);/);
   assert.match(src, /const span = resolveBoxDrawerSpan\(spanSource\);/);
   assert.match(src, /const drawerFaceW = span\.faceW;/);
@@ -584,4 +839,95 @@ test('stack-split lower module sketch external drawer cuts run bottom pass and k
     cutsSrc,
     /if \(!stacksByModule\.size\) return;[\s\S]*const runtime = createSketchDoorCutsRuntime\(\{/
   );
+});
+
+test('free-placement sketch box inset doors reserve front depth for shelves', () => {
+  const { boards, applyInteriorSketchExtras, makeArgs } = createSketchInteriorHarness({ bodyDepth: 0.6 });
+
+  const ok = applyInteriorSketchExtras(
+    makeArgs({
+      cfg: { doorMountMode: 'inset' },
+      doorStyle: 'profile',
+      woodThick: 0.036,
+      sketchExtras: {
+        boxes: [
+          {
+            id: 'freeInsetContentBox',
+            freePlacement: true,
+            absX: 0,
+            absY: 1.0,
+            heightM: 0.8,
+            widthM: 0.6,
+            depthM: 0.5,
+            doors: [{ id: 'doorA', enabled: true, hinge: 'left' }],
+            shelves: [{ id: 'shelfA', yNorm: 0.5, depthM: 0.5 }],
+          },
+        ],
+      },
+    })
+  );
+
+  assert.equal(ok, true);
+  const shelf = boards.find(
+    board => board.userData.partId === 'sketch_box_free_0_freeInsetContentBox_shelf_shelfA'
+  );
+  assert.ok(shelf, 'shelf should render inside the free box');
+
+  const shelfDepth = shelf.geometry.parameters.depth;
+  const shelfFrontZ = shelf.position.z + shelfDepth / 2;
+  const boxBackZ = -0.3;
+  const boxFrontZ = boxBackZ + 0.5;
+  const doorBackZ = boxFrontZ - 0.018 - 0.003;
+  const expectedMaxShelfFrontZ = doorBackZ - 0.004;
+
+  assert.ok(Math.abs(shelfDepth - (expectedMaxShelfFrontZ - (boxBackZ + 0.036))) < 1e-9);
+  assert.ok(shelfFrontZ <= expectedMaxShelfFrontZ + 1e-9);
+});
+
+test('free-placement sketch box inset doors reserve front depth for internal drawers', () => {
+  const capturedOps: Array<Record<string, unknown>> = [];
+  const { applyInteriorSketchExtras, makeArgs } = createSketchInteriorHarness({
+    bodyDepth: 0.6,
+    applyInternalDrawersOps: (args: unknown) => {
+      const rec = args as Record<string, unknown>;
+      const ops = Array.isArray(rec.ops) ? (rec.ops as Array<Record<string, unknown>>) : [];
+      capturedOps.push(...ops);
+    },
+  });
+
+  const ok = applyInteriorSketchExtras(
+    makeArgs({
+      cfg: { doorMountMode: 'inset' },
+      woodThick: 0.036,
+      sketchExtras: {
+        boxes: [
+          {
+            id: 'freeInsetDrawerBox',
+            freePlacement: true,
+            absX: 0,
+            absY: 1.0,
+            heightM: 0.8,
+            widthM: 0.6,
+            depthM: 0.5,
+            doors: [{ id: 'doorA', enabled: true, hinge: 'left' }],
+            drawers: [{ id: 'drawersA', yNormC: 0.5 }],
+          },
+        ],
+      },
+      createInternalDrawerBox: () => null,
+    })
+  );
+
+  assert.equal(ok, true);
+  assert.equal(capturedOps.length, 2);
+  const lower = capturedOps[0]!;
+  const boxBackZ = -0.3;
+  const innerBackZ = boxBackZ + 0.036;
+  const boxFrontZ = boxBackZ + 0.5;
+  const doorBackZ = boxFrontZ - 0.018 - 0.003;
+  const usableDepth = doorBackZ - 0.004 - innerBackZ;
+
+  assert.ok(Math.abs(Number(lower.depth) - (usableDepth - 0.02)) < 1e-9);
+  assert.ok(Math.abs(Number(lower.z) - (innerBackZ + usableDepth / 2)) < 1e-9);
+  assert.ok(Number(lower.z) + Number(lower.depth) / 2 <= doorBackZ - 0.004 + 1e-9);
 });

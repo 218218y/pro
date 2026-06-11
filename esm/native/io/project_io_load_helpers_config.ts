@@ -19,6 +19,7 @@ import {
 } from './project_io_load_helpers_shared.js';
 import { asObjectRecord } from './project_payload_shared.js';
 import { unwrapProjectEnvelope } from './project_schema_shared.js';
+import { normalizeDoorMountThicknessCm } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 function buildComparableLoadConfigSnapshot(
   rec: UnknownRecord,
@@ -49,6 +50,11 @@ function readProjectConfigSource(
   return unwrapProjectEnvelope(data) ?? asObjectRecord(data) ?? {};
 }
 
+function readLoadedDoorMountThicknessCm(settingsValue: unknown, persistedValue: unknown): number | null {
+  const value = typeof settingsValue === 'undefined' ? persistedValue : settingsValue;
+  return normalizeDoorMountThicknessCm(value);
+}
+
 export function buildProjectConfigSnapshot(
   data: ProjectDataLike | ProjectDataEnvelopeLike | UnknownRecord | null | undefined
 ): ConfigStateLike {
@@ -64,6 +70,22 @@ export function buildProjectConfigSnapshot(
     savedColors: normalizeSavedColorObjectsSnapshot(persistedConfig.savedColors),
     wardrobeType: settings.wardrobeType || 'hinged',
     doorMountMode: settings.doorMountMode === 'inset' ? 'inset' : 'overlay',
+    overlayFrameThicknessCm: readLoadedDoorMountThicknessCm(
+      settings.overlayFrameThicknessCm,
+      persistedConfig.overlayFrameThicknessCm
+    ),
+    overlayShelfThicknessCm: readLoadedDoorMountThicknessCm(
+      settings.overlayShelfThicknessCm,
+      persistedConfig.overlayShelfThicknessCm
+    ),
+    insetFrameThicknessCm: readLoadedDoorMountThicknessCm(
+      settings.insetFrameThicknessCm,
+      persistedConfig.insetFrameThicknessCm
+    ),
+    insetShelfThicknessCm: readLoadedDoorMountThicknessCm(
+      settings.insetShelfThicknessCm,
+      persistedConfig.insetShelfThicknessCm
+    ),
     boardMaterial: settings.boardMaterial === 'melamine' ? 'melamine' : 'sandwich',
     isManualWidth: !!settings.isManualWidth,
     showDimensions: typeof toggles.showDimensions !== 'undefined' ? toggles.showDimensions !== false : true,

@@ -15,6 +15,7 @@ export const KNOWN_PROJECT_CONFIG_MAP_KEYS = new Set([
   'splitDoorsMap',
   'splitDoorsBottomMap',
   'removedDoorsMap',
+  'roundedFrameSideShelvesMap',
   'drawerDividersMap',
   'individualColors',
   'doorSpecialMap',
@@ -35,6 +36,7 @@ export type PersistedProjectConfigBranchKey =
   | 'splitDoorsMap'
   | 'splitDoorsBottomMap'
   | 'removedDoorsMap'
+  | 'roundedFrameSideShelvesMap'
   | 'drawerDividersMap'
   | 'individualColors'
   | 'doorSpecialMap'
@@ -48,7 +50,11 @@ export type PersistedProjectConfigBranchKey =
   | 'savedNotes'
   | 'preChestState'
   | 'isLibraryMode'
-  | 'grooveLinesCount';
+  | 'grooveLinesCount'
+  | 'overlayFrameThicknessCm'
+  | 'overlayShelfThicknessCm'
+  | 'insetFrameThicknessCm'
+  | 'insetShelfThicknessCm';
 
 export const PERSISTED_PROJECT_CONFIG_BRANCH_KEYS: ReadonlyArray<PersistedProjectConfigBranchKey> = [
   'modulesConfiguration',
@@ -59,6 +65,7 @@ export const PERSISTED_PROJECT_CONFIG_BRANCH_KEYS: ReadonlyArray<PersistedProjec
   'splitDoorsMap',
   'splitDoorsBottomMap',
   'removedDoorsMap',
+  'roundedFrameSideShelvesMap',
   'drawerDividersMap',
   'individualColors',
   'doorSpecialMap',
@@ -73,6 +80,10 @@ export const PERSISTED_PROJECT_CONFIG_BRANCH_KEYS: ReadonlyArray<PersistedProjec
   'preChestState',
   'isLibraryMode',
   'grooveLinesCount',
+  'overlayFrameThicknessCm',
+  'overlayShelfThicknessCm',
+  'insetFrameThicknessCm',
+  'insetShelfThicknessCm',
 ];
 
 export interface ProjectConfigSnapshotCanonicalizationOptions extends ProjectConfigListsCanonicalizationOptions {

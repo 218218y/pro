@@ -17,11 +17,11 @@ export function useStructureTabRenderStackLinkBadge(
           type="button"
           className={
             isAuto
-              ? 'wp-r-mini-link-toggle wp-r-mini-link-toggle--auto'
-              : 'wp-r-mini-link-toggle wp-r-mini-link-toggle--manual'
+              ? 'wp-r-mini-link-toggle wp-r-mini-link-toggle--auto wp-r-styled-tooltip hint-bottom'
+              : 'wp-r-mini-link-toggle wp-r-mini-link-toggle--manual wp-r-styled-tooltip hint-bottom'
           }
           aria-pressed={isManual}
-          title={title}
+          data-tooltip={title}
           tabIndex={-1}
           onClick={() => structuralController.setStackSplitLowerLinkMode(field, !isManual)}
         >

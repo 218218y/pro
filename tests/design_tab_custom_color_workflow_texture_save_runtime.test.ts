@@ -1,7 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { createDesignTabCustomColorWorkflowController } from '../esm/native/ui/react/tabs/design_tab_custom_color_workflow_controller_runtime.ts';
+import {
+  buildCustomTextureUploadMeta,
+  createDesignTabCustomColorWorkflowController,
+  shouldRefreshCustomTexturePreview,
+} from '../esm/native/ui/react/tabs/design_tab_custom_color_workflow_controller_runtime.ts';
 import {
   SAVED_COLORS,
   createAppHarness,
@@ -54,6 +58,71 @@ test('custom color workflow controller uploads texture through canonical feedbac
   } finally {
     globalThis.FileReader = OriginalFileReader;
   }
+});
+
+test('custom texture upload forces a preview refresh when replacing the active custom texture', async () => {
+  const OriginalFileReader = globalThis.FileReader;
+  class FakeFileReader {
+    result: string | null = null;
+    error: Error | null = null;
+    onload: null | (() => void) = null;
+    onerror: null | (() => void) = null;
+    readAsDataURL(_file: Blob | File) {
+      this.result = 'data:image/png;base64,BBB=';
+      if (this.onload) this.onload();
+    }
+  }
+  // @ts-expect-error test shim
+  globalThis.FileReader = FakeFileReader;
+  try {
+    const feedback = createFeedbackSpy();
+    const { app, state, applyColorChoice } = createAppHarness();
+    const stateBag = createStateBag();
+    const controller = createDesignTabCustomColorWorkflowController({
+      app: app as never,
+      colorChoice: 'custom',
+      customUploadedDataURL: 'data:image/png;base64,AAA=',
+      feedback,
+      savedColors: SAVED_COLORS,
+      orderedSwatches: SAVED_COLORS,
+      applyColorChoice,
+      customOpen: true,
+      draftColor: '#112233',
+      draftTextureData: 'data:image/png;base64,AAA=',
+      fileRef: { current: { value: 'picked' } },
+      prevRef: { current: null },
+      ...stateBag,
+    });
+
+    await controller.onPickTextureFile({ target: { files: [{ name: 'new-wood.png' } as Blob & File] } });
+
+    assert.equal(stateBag.bag.draftTextureData, 'data:image/png;base64,BBB=');
+    assert.equal(stateBag.bag.draftTextureName, 'new-wood.png');
+    assert.equal(state.customUploadedDataURL, 'data:image/png;base64,BBB=');
+    assert.deepEqual(state.customUploadedMeta, {
+      source: 'react:design:custom:texture',
+      immediate: true,
+      forceBuild: true,
+    });
+    assert.equal(state.appliedChoice, 'custom');
+    assert.equal(state.appliedSource, 'react:design:custom:pickTexture');
+    assert.deepEqual(feedback.seen, [{ message: 'תמונה נטענה!', type: 'success' }]);
+  } finally {
+    globalThis.FileReader = OriginalFileReader;
+  }
+});
+
+test('custom texture upload meta avoids duplicate immediate rebuild before custom is active', () => {
+  assert.equal(shouldRefreshCustomTexturePreview('custom'), true);
+  assert.equal(shouldRefreshCustomTexturePreview('#112233'), false);
+  assert.deepEqual(buildCustomTextureUploadMeta('#112233'), {
+    source: 'react:design:custom:texture',
+  });
+  assert.deepEqual(buildCustomTextureUploadMeta('custom'), {
+    source: 'react:design:custom:texture',
+    immediate: true,
+    forceBuild: true,
+  });
 });
 
 test('custom color workflow controller saves custom color through canonical prompt/result flow', async () => {

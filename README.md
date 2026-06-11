@@ -27,6 +27,17 @@ npm run vite:dev
 ## Before you push
 
 ```bash
+# Format only files touched in your current Git worktree/index.
+npm run format:changed
+
+# Optional: install the fast pre-commit hook.
+# It formats only staged files before each commit.
+npm run hooks:install
+
+# Optional and heavier: also install full verify before push.
+# This is not the default because GitHub Desktop/Windows can be fragile around pre-push stdin.
+npm run hooks:install:full
+
 # Fast, CI-friendly pre-merge gate (skips bundle/release output)
 npm run gate
 

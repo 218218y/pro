@@ -263,32 +263,32 @@ test('glass door visual reuses the exact profile frame and only swaps the center
   assert.equal(glassPane.material.transparent, true);
 });
 
-test('glass door visual can reuse the Tom frame without leaving the wood center insert behind the glass', () => {
+test('glass door visual can reuse the double-profile frame without leaving the wood center insert behind the glass', () => {
   const glassArgs = createCommonArgs();
   const visual = createGlassDoorVisual({
     App: {},
     ...glassArgs,
     curtainType: 'none',
     forceCurtainFix: false,
-    frameStyle: 'tom',
+    frameStyle: 'double_profile',
   });
 
   const roles = collectRoles(visual);
-  assert.ok(roles.some(role => role.startsWith('door_tom_')));
+  assert.ok(roles.some(role => role.startsWith('door_double_profile_')));
   assert.ok(roles.includes('door_glass_center_panel'));
-  assert.ok(roles.includes('door_tom_center_surround_top'));
-  assert.ok(roles.includes('door_tom_center_surround_bottom'));
-  assert.ok(roles.includes('door_tom_center_surround_left'));
-  assert.ok(roles.includes('door_tom_center_surround_right'));
-  assert.ok(!roles.includes('door_tom_center_panel'));
+  assert.ok(roles.includes('door_double_profile_center_surround_top'));
+  assert.ok(roles.includes('door_double_profile_center_surround_bottom'));
+  assert.ok(roles.includes('door_double_profile_center_surround_left'));
+  assert.ok(roles.includes('door_double_profile_center_surround_right'));
+  assert.ok(!roles.includes('door_double_profile_center_panel'));
   assert.ok(!roles.includes('door_profile_center_panel'));
   assert.ok(!roles.some(role => role.startsWith('door_accent_')));
 
   const glassPane = findRole(visual, 'door_glass_center_panel');
   assert.ok(glassPane);
   assert.equal(glassPane.geometry?.type, 'BoxGeometry');
-  assert.ok(glassPane.geometry.args[0] < 0.51, 'glass must stay inside the inner Tom opening');
-  assert.ok(glassPane.geometry.args[1] < 0.91, 'glass must stay inside the inner Tom opening');
+  assert.ok(glassPane.geometry.args[0] < 0.51, 'glass must stay inside the inner double-profile opening');
+  assert.ok(glassPane.geometry.args[1] < 0.91, 'glass must stay inside the inner double-profile opening');
 });
 
 test('glass door visual can be rendered as a flat glass slab when the selected frame style is flat', () => {
@@ -304,7 +304,7 @@ test('glass door visual can be rendered as a flat glass slab when the selected f
   const roles = collectRoles(visual);
   assert.ok(roles.includes('door_glass_center_panel'));
   assert.ok(!roles.some(role => role.startsWith('door_profile_')));
-  assert.ok(!roles.some(role => role.startsWith('door_tom_')));
+  assert.ok(!roles.some(role => role.startsWith('door_double_profile_')));
   assert.ok(!roles.some(role => role.startsWith('door_accent_')));
 });
 

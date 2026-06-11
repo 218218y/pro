@@ -33,6 +33,7 @@ export function createCornerWingEmitContext(args: {
     mainH,
     mainD,
     woodThick,
+    shelfThick: state.shelfThick,
     startY,
 
     uiAny: state.uiAny,

@@ -10,6 +10,9 @@ export type BackPanelSeg = {
   x: number;
   y: number;
   z: number;
+  partId?: unknown;
+  material?: unknown;
+  __wpWoodBackPanel?: unknown;
 };
 
 export type GroupLike = Object3DLike;

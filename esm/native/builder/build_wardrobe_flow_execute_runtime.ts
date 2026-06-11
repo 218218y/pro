@@ -17,6 +17,7 @@ export function runPreparedBuildWardrobePlan(
   const { App, deps, buildState } = prepared;
   const {
     THREE,
+    createDoorVisual,
     createInternalDrawerBox,
     addOutlines,
     addHangingClothes,
@@ -41,6 +42,7 @@ export function runPreparedBuildWardrobePlan(
     H: plan.carcassH,
     D: plan.carcassD,
     woodThick: plan.woodThick,
+    shelfThick: plan.shelfThick,
     depthReduction: plan.depthReduction,
     internalDepth: plan.internalDepth,
     internalZ: plan.internalZ,
@@ -49,6 +51,7 @@ export function runPreparedBuildWardrobePlan(
     createBoard: plan.createBoard,
     getPartMaterial: plan.getPartMaterial,
     getPartColorValue: plan.getPartColorValue,
+    createDoorVisual,
     createInternalDrawerBox,
     addOutlines,
     addHangingClothes,

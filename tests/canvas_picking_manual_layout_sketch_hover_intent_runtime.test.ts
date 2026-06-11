@@ -137,6 +137,7 @@ test('manual-layout hover intent readers normalize box-content and vertical remo
     boxBaseYNorm: '0.1',
     contentXNorm: '0.6',
     dividerXNorm: '0.3',
+    dividerFrontZ: '0.14',
     removeIdx: '2',
     drawerCount: '4',
     hinge: 'RIGHT',
@@ -145,6 +146,7 @@ test('manual-layout hover intent readers normalize box-content and vertical remo
     baseLegColor: 'gold',
     baseLegHeightCm: '14',
     baseLegWidthCm: '5.5',
+    basePlinthHeightCm: '14.5',
     corniceType: 'flat',
   });
   const stack = readManualLayoutSketchStackHoverIntent({
@@ -172,6 +174,7 @@ test('manual-layout hover intent readers normalize box-content and vertical remo
     contentXNorm: 0.6,
     dividerXNorm: 0.3,
     dividerId: null,
+    dividerFrontZ: 0.14,
     variant: null,
     depthM: null,
     heightM: null,
@@ -193,6 +196,7 @@ test('manual-layout hover intent readers normalize box-content and vertical remo
     baseLegColor: 'gold',
     baseLegHeightCm: 14,
     baseLegWidthCm: 5.5,
+    basePlinthHeightCm: 14.5,
     corniceType: 'flat',
     blockedReason: null,
   });

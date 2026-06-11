@@ -27,6 +27,10 @@ test('render_ops_shared arg parsing keeps finite geometry fields and addOutlines
     z: 3,
     mat: { k: 1 },
     partId: 'p1',
+    shape: 'rounded_shelf',
+    roundedShelfSide: 'left',
+    roundedShelfRadius: 0.12,
+    roundedShelfSegments: 18,
     sketchMode: 1,
     addOutlines: (obj: unknown) => seen.push(obj),
   });
@@ -39,6 +43,10 @@ test('render_ops_shared arg parsing keeps finite geometry fields and addOutlines
   assert.equal(args.y, 2);
   assert.equal(args.z, 3);
   assert.equal(args.partId, 'p1');
+  assert.equal(args.shape, 'rounded_shelf');
+  assert.equal(args.roundedShelfSide, 'left');
+  assert.equal(args.roundedShelfRadius, 0.12);
+  assert.equal(args.roundedShelfSegments, 18);
   assert.equal(args.sketchMode, true);
   args.addOutlines?.('mesh');
   assert.deepEqual(seen, ['mesh']);

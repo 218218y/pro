@@ -19,6 +19,7 @@ export type InteriorModeView = {
 };
 
 export type InteriorUiSnapshot = {
+  isChestMode?: unknown;
   currentLayoutType?: unknown;
   currentGridDivisions?: unknown;
   currentGridShelfVariant?: unknown;
@@ -26,6 +27,9 @@ export type InteriorUiSnapshot = {
   currentExtDrawerCount?: unknown;
   internalDrawersEnabled?: unknown;
   handleControl?: unknown;
+  currentHandleToolType?: unknown;
+  currentHandleToolColor?: unknown;
+  currentHandleToolEdgeVariant?: unknown;
 };
 
 export type InteriorModeConsts = {
@@ -41,6 +45,7 @@ export type InteriorModeConsts = {
 
 export function readInteriorTabUiSnapshot(ui: InteriorUiSnapshot): InteriorUiSnapshot {
   return {
+    isChestMode: ui.isChestMode,
     currentLayoutType: ui.currentLayoutType,
     currentGridDivisions: ui.currentGridDivisions,
     currentGridShelfVariant: ui.currentGridShelfVariant,
@@ -48,6 +53,9 @@ export function readInteriorTabUiSnapshot(ui: InteriorUiSnapshot): InteriorUiSna
     currentExtDrawerCount: ui.currentExtDrawerCount,
     internalDrawersEnabled: ui.internalDrawersEnabled,
     handleControl: ui.handleControl,
+    currentHandleToolType: ui.currentHandleToolType,
+    currentHandleToolColor: ui.currentHandleToolColor,
+    currentHandleToolEdgeVariant: ui.currentHandleToolEdgeVariant,
   };
 }
 

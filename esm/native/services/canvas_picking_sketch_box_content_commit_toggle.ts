@@ -16,6 +16,7 @@ export function buildFreeToggleHover(args: {
   drawerCount?: number;
   drawerHeightM?: number | null;
   drawerH?: number | null;
+  hasShoeDrawer?: boolean | null;
 }): RecordMap {
   return {
     ...args.hoverRec,
@@ -30,6 +31,7 @@ export function buildFreeToggleHover(args: {
     ...(args.drawerCount != null ? { drawerCount: args.drawerCount } : {}),
     ...(args.drawerHeightM != null ? { drawerHeightM: args.drawerHeightM } : {}),
     ...(args.drawerH != null ? { drawerH: args.drawerH } : {}),
+    ...(args.hasShoeDrawer != null ? { hasShoeDrawer: args.hasShoeDrawer } : {}),
   };
 }
 
@@ -43,6 +45,7 @@ export function buildManualToggleHover(args: {
   drawerCount?: number;
   drawerHeightM?: number | null;
   drawerH?: number | null;
+  hasShoeDrawer?: boolean | null;
 }): RecordMap {
   return createManualLayoutSketchBoxContentHoverRecord({
     host: args.hoverHost,
@@ -60,6 +63,9 @@ export function buildManualToggleHover(args: {
     drawerGap: readRecordNumber(args.hoverRec, 'drawerGap'),
     drawerHeightM: args.drawerHeightM ?? readRecordNumber(args.hoverRec, 'drawerHeightM'),
     drawerCount: args.drawerCount ?? readRecordNumber(args.hoverRec, 'drawerCount'),
+    hasShoeDrawer:
+      args.hasShoeDrawer ??
+      (args.hoverRec.hasShoeDrawer === true ? true : args.hoverRec.hasShoeDrawer === false ? false : null),
   });
 }
 
@@ -74,6 +80,7 @@ export function buildToggleHoverRecord(args: {
   drawerCount?: number;
   drawerHeightM?: number | null;
   drawerH?: number | null;
+  hasShoeDrawer?: boolean | null;
 }): RecordMap | null {
   if (args.hoverMode === 'free-toggle' && args.boxId) {
     return buildFreeToggleHover({
@@ -85,6 +92,9 @@ export function buildToggleHoverRecord(args: {
       drawerCount: args.drawerCount,
       drawerHeightM: args.drawerHeightM,
       drawerH: args.drawerH,
+      hasShoeDrawer:
+        args.hasShoeDrawer ??
+        (args.hoverRec.hasShoeDrawer === true ? true : args.hoverRec.hasShoeDrawer === false ? false : null),
     });
   }
   if (args.hoverMode === 'manual-toggle' && args.boxId && args.hoverHost) {
@@ -98,6 +108,9 @@ export function buildToggleHoverRecord(args: {
       drawerCount: args.drawerCount,
       drawerHeightM: args.drawerHeightM,
       drawerH: args.drawerH,
+      hasShoeDrawer:
+        args.hasShoeDrawer ??
+        (args.hoverRec.hasShoeDrawer === true ? true : args.hoverRec.hasShoeDrawer === false ? false : null),
     });
   }
   return null;

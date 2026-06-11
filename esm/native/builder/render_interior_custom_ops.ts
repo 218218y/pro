@@ -17,6 +17,11 @@ import {
 } from './render_interior_custom_ops_shared.js';
 import { computeCustomModuleInnerFaces } from './render_interior_custom_ops_wall_faces.js';
 import {
+  forceShelfIndexesToBrace,
+  getRoundedShelfSideForRemovedFrameSide,
+  shouldForceBraceShelvesForRemovedFrameSide,
+} from './removed_frame_side_brace_shelves.js';
+import {
   addCustomBaseShelfContents,
   createAddCustomGridShelf,
 } from './render_interior_custom_ops_shelves.js';
@@ -70,6 +75,7 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
     const localGridStep = Number(input.localGridStep || 0);
     const innerW = Number(input.innerW || 0);
     const woodThick = Number(input.woodThick || MATERIAL_DIMENSIONS.wood.thicknessM);
+    const shelfThick = Number(input.shelfThick || woodThick);
     const internalDepth = Number(input.internalDepth || 0);
     const internalCenterX = Number(input.internalCenterX || 0);
     const internalZ = Number(input.internalZ || 0);
@@ -83,6 +89,22 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
     const braceSet = buildBraceShelfIndexSet(input);
     const shelfSet = buildShelfIndexSet(ops);
     const shelfVariantByIndex = buildShelfVariantByIndex(ops);
+    if (
+      shouldForceBraceShelvesForRemovedFrameSide({
+        cfg: input.cfg,
+        moduleIndex,
+        modulesLength,
+        frameSidePartIdPrefix: input.frameSidePartIdPrefix,
+      })
+    ) {
+      forceShelfIndexesToBrace({ braceSet, shelfSet, shelfVariantByIndex, gridDivisions });
+    }
+    const roundedShelfSide = getRoundedShelfSideForRemovedFrameSide({
+      cfg: input.cfg,
+      moduleIndex,
+      modulesLength,
+      frameSidePartIdPrefix: input.frameSidePartIdPrefix,
+    });
 
     const regularShelfDepthCap = INTERIOR_FITTINGS_DIMENSIONS.shelves.regularDepthM;
     const regularDepth =
@@ -142,10 +164,12 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
       internalCenterX,
       innerW,
       woodThick,
+      shelfThick,
       internalDepth,
       internalZ,
       isInternalDrawersEnabled,
       activeSlots,
+      roundedShelfSide,
     });
 
     addCustomBaseShelfContents({
@@ -168,6 +192,7 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
       internalCenterX,
       innerW,
       woodThick,
+      shelfThick,
       internalDepth,
       internalZ,
       isInternalDrawersEnabled,

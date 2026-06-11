@@ -1,5 +1,6 @@
 import type { SketchBoxDividerState, SketchBoxSegmentState } from './canvas_picking_sketch_box_dividers.js';
 import { readBaseLegOptions } from '../features/base_leg_support.js';
+import { normalizeBasePlinthHeightCm } from '../features/base_plinth_support.js';
 import { MATERIAL_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { resolveSketchBoxVisibleFrontOverlay } from './canvas_picking_manual_layout_sketch_front_overlay.js';
 import {
@@ -80,28 +81,41 @@ export function resolveSketchFreeSurfaceAdornmentPreview(args: {
     baseLegHeightCm: selectedBaseSpec?.baseLegHeightCm,
     baseLegWidthCm: selectedBaseSpec?.baseLegWidthCm,
   });
+  const selectedPlinthHeightCm = normalizeBasePlinthHeightCm(selectedBaseSpec?.basePlinthHeightCm);
   const currentLegOptions = readBaseLegOptions(targetBox);
   const currentBase = normalizeSketchBoxBaseType(readRecordValue(targetBox, 'baseType'));
+  const currentPlinthHeightCm = normalizeBasePlinthHeightCm(readRecordValue(targetBox, 'basePlinthHeightCm'));
   const hasVisibleBase = currentBase !== 'none';
   const sameLegOptions =
     currentLegOptions.style === selectedLegOptions.style &&
     currentLegOptions.color === selectedLegOptions.color &&
     currentLegOptions.heightCm === selectedLegOptions.heightCm &&
     currentLegOptions.widthCm === selectedLegOptions.widthCm;
+  const sameBaseOptions =
+    selectedBase === 'legs'
+      ? sameLegOptions
+      : selectedBase === 'plinth'
+        ? currentPlinthHeightCm === selectedPlinthHeightCm
+        : true;
   const op: 'add' | 'remove' =
     selectedBase === 'none'
       ? hasVisibleBase
         ? 'remove'
         : 'add'
-      : hasVisibleBase && currentBase === selectedBase && (selectedBase !== 'legs' || sameLegOptions)
+      : hasVisibleBase && currentBase === selectedBase && sameBaseOptions
         ? 'remove'
         : 'add';
   const wardrobeFloorY = Number(wardrobeBox.centerY) - Number(wardrobeBox.height) / 2;
   const previewH =
     selectedBase === 'none'
-      ? getSketchBoxAdornmentBaseHeight(currentBase, readRecordValue(targetBox, 'baseLegHeightCm')) ||
+      ? getSketchBoxAdornmentBaseHeight(currentBase, targetBox) ||
         SKETCH_BOX_DIMENSIONS.preview.adornmentBaseDefaultHeightM
-      : getSketchBoxAdornmentBaseHeight(selectedBase, selectedLegOptions.heightCm);
+      : getSketchBoxAdornmentBaseHeight(
+          selectedBase,
+          selectedBase === 'plinth'
+            ? { basePlinthHeightCm: selectedPlinthHeightCm }
+            : { baseLegHeightCm: selectedLegOptions.heightCm }
+        );
   const actualCenterY = targetCenterY - targetHeight / 2 - previewH / 2;
   const visibleCenterY =
     actualCenterY < wardrobeFloorY + previewH / 2
@@ -140,6 +154,7 @@ export function resolveSketchFreeSurfaceAdornmentPreview(args: {
       baseLegColor: selectedLegOptions.color,
       baseLegHeightCm: selectedLegOptions.heightCm,
       baseLegWidthCm: selectedLegOptions.widthCm,
+      basePlinthHeightCm: selectedPlinthHeightCm,
     },
     preview: {
       kind: 'storage',

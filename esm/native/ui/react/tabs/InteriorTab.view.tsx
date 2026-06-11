@@ -29,52 +29,56 @@ function InteriorTabInner(props: { active: boolean }) {
         <div className="control-section">
           <span className="section-title">סידור פנימי ומגירות</span>
 
-          <InteriorLayoutSection {...createInteriorLayoutSectionProps(state, workflows)} />
+          {!state.isChestMode ? (
+            <>
+              <InteriorLayoutSection {...createInteriorLayoutSectionProps(state, workflows)} />
 
-          <InteriorExternalDrawersSection
-            wardrobeType={state.wardrobeType}
-            isExtDrawerMode={state.isExtDrawerMode}
-            extDrawerType={state.extDrawerType}
-            extDrawerCount={state.extDrawerCount}
-            extCounts={state.extCounts}
-            enterExtDrawer={workflows.enterExtDrawer}
-            exitExtDrawer={workflows.exitExtDrawer}
-            sketchControls={{
-              isSketchToolActive: state.isSketchToolActive,
-              manualToolRaw: state.manualToolRaw,
-              sketchExtDrawersPanelOpen: state.sketchExtDrawersPanelOpen,
-              sketchExtDrawerCount: state.sketchExtDrawerCount,
-              sketchExtDrawerHeightCm: state.sketchExtDrawerHeightCm,
-              sketchExtDrawerHeightDraft: state.sketchExtDrawerHeightDraft,
-              setSketchShelvesOpen: state.setSketchShelvesOpen,
-              setSketchRowOpen: state.setSketchRowOpen,
-              setSketchExtDrawersPanelOpen: state.setSketchExtDrawersPanelOpen,
-              setSketchExtDrawerCount: state.setSketchExtDrawerCount,
-              setSketchExtDrawerHeightCm: state.setSketchExtDrawerHeightCm,
-              setSketchExtDrawerHeightDraft: state.setSketchExtDrawerHeightDraft,
-              enterSketchExtDrawersTool: workflows.enterSketchExtDrawersTool,
-              exitManual: workflows.exitManual,
-            }}
-          />
+              <InteriorExternalDrawersSection
+                wardrobeType={state.wardrobeType}
+                isExtDrawerMode={state.isExtDrawerMode}
+                extDrawerType={state.extDrawerType}
+                extDrawerCount={state.extDrawerCount}
+                extCounts={state.extCounts}
+                enterExtDrawer={workflows.enterExtDrawer}
+                exitExtDrawer={workflows.exitExtDrawer}
+                sketchControls={{
+                  isSketchToolActive: state.isSketchToolActive,
+                  manualToolRaw: state.manualToolRaw,
+                  sketchExtDrawersPanelOpen: state.sketchExtDrawersPanelOpen,
+                  sketchExtDrawerCount: state.sketchExtDrawerCount,
+                  sketchExtDrawerHeightCm: state.sketchExtDrawerHeightCm,
+                  sketchExtDrawerHeightDraft: state.sketchExtDrawerHeightDraft,
+                  setSketchShelvesOpen: state.setSketchShelvesOpen,
+                  setSketchRowOpen: state.setSketchRowOpen,
+                  setSketchExtDrawersPanelOpen: state.setSketchExtDrawersPanelOpen,
+                  setSketchExtDrawerCount: state.setSketchExtDrawerCount,
+                  setSketchExtDrawerHeightCm: state.setSketchExtDrawerHeightCm,
+                  setSketchExtDrawerHeightDraft: state.setSketchExtDrawerHeightDraft,
+                  enterSketchExtDrawersTool: workflows.enterSketchExtDrawersTool,
+                  exitManual: workflows.exitManual,
+                }}
+              />
 
-          <InteriorInternalDrawersSection
-            internalDrawersEnabled={state.internalDrawersEnabled}
-            isIntDrawerMode={state.isIntDrawerMode}
-            setInternalDrawersEnabled={workflows.setInternalDrawersEnabled}
-            toggleIntDrawerMode={workflows.toggleIntDrawerMode}
-            sketchControls={{
-              isSketchToolActive: state.isSketchToolActive,
-              manualToolRaw: state.manualToolRaw,
-              sketchIntDrawerHeightCm: state.sketchIntDrawerHeightCm,
-              sketchIntDrawerHeightDraft: state.sketchIntDrawerHeightDraft,
-              setSketchShelvesOpen: state.setSketchShelvesOpen,
-              setSketchRowOpen: state.setSketchRowOpen,
-              setSketchIntDrawerHeightCm: state.setSketchIntDrawerHeightCm,
-              setSketchIntDrawerHeightDraft: state.setSketchIntDrawerHeightDraft,
-              enterSketchIntDrawersTool: workflows.enterSketchIntDrawersTool,
-              exitManual: workflows.exitManual,
-            }}
-          />
+              <InteriorInternalDrawersSection
+                internalDrawersEnabled={state.internalDrawersEnabled}
+                isIntDrawerMode={state.isIntDrawerMode}
+                setInternalDrawersEnabled={workflows.setInternalDrawersEnabled}
+                toggleIntDrawerMode={workflows.toggleIntDrawerMode}
+                sketchControls={{
+                  isSketchToolActive: state.isSketchToolActive,
+                  manualToolRaw: state.manualToolRaw,
+                  sketchIntDrawerHeightCm: state.sketchIntDrawerHeightCm,
+                  sketchIntDrawerHeightDraft: state.sketchIntDrawerHeightDraft,
+                  setSketchShelvesOpen: state.setSketchShelvesOpen,
+                  setSketchRowOpen: state.setSketchRowOpen,
+                  setSketchIntDrawerHeightCm: state.setSketchIntDrawerHeightCm,
+                  setSketchIntDrawerHeightDraft: state.setSketchIntDrawerHeightDraft,
+                  enterSketchIntDrawersTool: workflows.enterSketchIntDrawersTool,
+                  exitManual: workflows.exitManual,
+                }}
+              />
+            </>
+          ) : null}
 
           <InteriorDividerSection
             isDividerMode={state.isDividerMode}

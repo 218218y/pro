@@ -1,6 +1,6 @@
 import { DOOR_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { createProfileDoorVisual } from './visuals_and_contents_door_visual_profile.js';
-import { createTomDoorVisual } from './visuals_and_contents_door_visual_tom.js';
+import { createDoubleProfileDoorVisual } from './visuals_and_contents_door_visual_double_profile.js';
 import { createMirrorDoorVisual } from './visuals_and_contents_door_visual_mirror.js';
 import { readMirrorPlacementRectMetadata } from './visuals_and_contents_door_visual_tagging.js';
 import { FULL_MIRROR_INSET_M } from '../../shared/mirror_layout_contracts_shared.js';
@@ -15,7 +15,7 @@ import type {
 } from '../../../types/index.js';
 import type { StyledDoorVisualArgs } from './visuals_and_contents_door_visual_style_contracts.js';
 
-type MirrorStyledDoorStyle = 'profile' | 'tom';
+type MirrorStyledDoorStyle = 'profile' | 'double_profile';
 
 type CreateStyledMirrorDoorVisualArgs = {
   App: AppContainer;
@@ -163,9 +163,10 @@ function buildStyledDoorFrame(args: CreateStyledMirrorDoorVisualArgs): {
   } as const;
 
   if (args.style === 'profile') createProfileDoorVisual(sharedStyleArgs);
-  else createTomDoorVisual(sharedStyleArgs);
+  else createDoubleProfileDoorVisual(sharedStyleArgs);
 
-  const centerRole = args.style === 'profile' ? 'door_profile_center_panel' : 'door_tom_center_panel';
+  const centerRole =
+    args.style === 'profile' ? 'door_profile_center_panel' : 'door_double_profile_center_panel';
   const center = readCenterPanelMetrics(visualGroup, centerRole);
   return { visualGroup, center };
 }

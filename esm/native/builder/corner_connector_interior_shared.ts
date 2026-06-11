@@ -65,6 +65,7 @@ export type CornerConnectorInteriorCtx = {
   App: unknown;
   THREE: ThreeInteriorLike;
   woodThick: number;
+  shelfThick: number;
   startY: number;
   wingH: number;
   uiAny: UnknownRecord;

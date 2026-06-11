@@ -13,6 +13,7 @@ import type {
   SketchStorageBarrierExtra,
 } from './render_interior_sketch_shared.js';
 import type { SketchModuleInnerFaces } from './render_interior_sketch_module_geometry.js';
+import type { RemovedFrameSideShelfRounding } from './removed_frame_side_brace_shelves.js';
 
 export type SketchBoxLocatorResult = {
   innerW: number;
@@ -99,6 +100,7 @@ export type ApplySketchShelvesArgs = {
   regularDepth: number;
   backZ: number;
   woodThick: number;
+  shelfThick: number;
   effectiveTopY: number;
   showContentsEnabled: boolean;
   addFoldedClothes?: InteriorOpsCallable;
@@ -113,6 +115,8 @@ export type ApplySketchShelvesArgs = {
   THREE: InteriorTHREESurface | null;
   addBraceDarkSeams: SketchPlacementSupport['addBraceDarkSeams'];
   addShelfPins: SketchPlacementSupport['addShelfPins'];
+  forceBraceShelves?: boolean;
+  roundedShelfSide?: RemovedFrameSideShelfRounding | null;
 };
 
 export type ApplySketchRodsArgs = {

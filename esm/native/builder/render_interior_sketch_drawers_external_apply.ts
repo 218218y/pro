@@ -28,7 +28,7 @@ export function applySketchExternalDrawers(args: ApplySketchExternalDrawersArgs)
         partId: createSketchExternalDrawerBraceShelfPartId(context.moduleKeyStr, stack.drawerId),
         shelfIndex: `external_drawers_${stack.drawerId}`,
         innerWidth: context.innerW,
-        woodThick: context.woodThick,
+        shelfThick: context.shelfThick,
         depth: context.internalDepth,
         centerX: context.internalCenterX,
         stackTopY: stack.baseY + stack.stackH,

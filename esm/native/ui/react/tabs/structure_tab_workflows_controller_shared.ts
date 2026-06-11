@@ -11,6 +11,7 @@ import { clearHexCellFromConfig } from '../../../features/hex_cell/index.js';
 import { resolveAutoWidthForDoors } from '../../../services/api.js';
 import type {
   CreateStructureTabWorkflowControllerArgs,
+  StructureWorkflowOps,
   StructureWorkflowState,
   StructureWorkflowToastKind,
 } from './structure_tab_workflows_controller_contracts.js';
@@ -24,8 +25,39 @@ function asRecord(value: unknown): UnknownRecord | null {
   return isRecord(value) ? value : null;
 }
 
-function readModuleSpecialDims(config: ModuleConfigLike): UnknownRecord | null {
-  return asRecord(asRecord(config)?.specialDims);
+function clearCellDimsFromRecordInPlace(config: UnknownRecord): void {
+  const specialDims = asRecord(config.specialDims);
+  clearHexCellFromConfig(config);
+  if (!specialDims) return;
+
+  const nextSpecialDims = cloneSpecialDims(specialDims);
+  clearOverrideKeys(nextSpecialDims, [
+    'widthCm',
+    'baseWidthCm',
+    'heightCm',
+    'baseHeightCm',
+    'depthCm',
+    'baseDepthCm',
+  ]);
+  assignSpecialDimsToConfig(config, nextSpecialDims);
+}
+
+function clearFreeBoxCellDimsOverridesInPlace(config: UnknownRecord): void {
+  const extra = asRecord(config.sketchExtras);
+  const boxes = Array.isArray(extra?.boxes) ? extra.boxes : [];
+  if (!extra || !boxes.length) return;
+
+  let changed = false;
+  const nextBoxes = boxes.map(item => {
+    const box = asRecord(item);
+    if (!box || box.freePlacement !== true) return item;
+    const nextBox: UnknownRecord = { ...box };
+    clearCellDimsFromRecordInPlace(nextBox);
+    changed = true;
+    return nextBox;
+  });
+
+  if (changed) config.sketchExtras = { ...extra, boxes: nextBoxes };
 }
 
 export function emitStructureWorkflowToast(
@@ -37,7 +69,9 @@ export function emitStructureWorkflowToast(
 }
 
 export function reportStructureWorkflowNonFatal(
-  args: CreateStructureTabWorkflowControllerArgs,
+  args:
+    | Pick<CreateStructureTabWorkflowControllerArgs, 'ops'>
+    | { ops: Pick<StructureWorkflowOps, 'reportNonFatal'> },
   op: string,
   err: unknown
 ): void {
@@ -52,20 +86,8 @@ export function clearStructureCellDimsOverrides(list: ModuleConfigLike[]): Modul
   return list.map((moduleConfig: ModuleConfigLike) => {
     if (!moduleConfig || typeof moduleConfig !== 'object') return moduleConfig;
     const nextConfig: ModuleConfigLike = Object.assign({}, moduleConfig);
-    const specialDims = readModuleSpecialDims(nextConfig);
-    clearHexCellFromConfig(nextConfig);
-    if (specialDims) {
-      const nextSpecialDims = cloneSpecialDims(specialDims);
-      clearOverrideKeys(nextSpecialDims, [
-        'widthCm',
-        'baseWidthCm',
-        'heightCm',
-        'baseHeightCm',
-        'depthCm',
-        'baseDepthCm',
-      ]);
-      assignSpecialDimsToConfig(nextConfig, nextSpecialDims);
-    }
+    clearCellDimsFromRecordInPlace(nextConfig);
+    clearFreeBoxCellDimsOverridesInPlace(nextConfig);
     return nextConfig;
   });
 }

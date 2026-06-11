@@ -361,6 +361,11 @@ export interface DoorVisualEntryLike extends UnknownRecord {
   outerZ?: number;
   innerZ?: number;
   stackZStep?: number;
+  minX?: number;
+  maxX?: number;
+  noGlobalOpen?: boolean;
+  slidingOpenMode?: 'wide' | 'track';
+  slidingTrackOpenSide?: 'left' | 'right';
 }
 
 export interface DrawerVisualEntryLike extends UnknownRecord {

@@ -48,7 +48,11 @@ export function tryHandleCanvasNonSplitDoorPreviewRoute(
       hideSketchPreview,
       setSketchPreview,
     },
-    facePreviewState: { preferredFacePreviewPartId, preferredFacePreviewHitObject },
+    facePreviewState: {
+      preferredFacePreviewPartId,
+      preferredFacePreviewHitObject,
+      preferredFacePreviewHitPoint,
+    },
   } = args;
 
   if (
@@ -97,6 +101,7 @@ export function tryHandleCanvasNonSplitDoorPreviewRoute(
       canonDoorPartKeyForMaps: __wp_canonDoorPartKeyForMaps,
       preferredFacePreviewPartId,
       preferredFacePreviewHitObject,
+      preferredFacePreviewHitPoint,
       paintUsesWardrobeGroup: !!paintSelection,
     })
   ) {

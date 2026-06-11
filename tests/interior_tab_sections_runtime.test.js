@@ -35,6 +35,8 @@ function findElementByTestId(node, testId) {
 
 function createLayoutProps(overrides = {}) {
   return {
+    wardrobeType: 'hinged',
+    isChestMode: false,
     layoutActive: true,
     isLayoutMode: true,
     isManualLayoutMode: false,
@@ -66,6 +68,8 @@ function createLayoutProps(overrides = {}) {
     sketchBoxCorniceType: 'classic',
     sketchBoxBasePanelOpen: false,
     sketchBoxBaseType: 'plinth',
+    sketchBoxPlinthHeightCm: 8,
+    sketchBoxPlinthHeightDraft: '8',
     sketchExtDrawersPanelOpen: false,
     sketchExtDrawerCount: 3,
     sketchExtDrawerHeightCm: 22,
@@ -115,6 +119,8 @@ function createLayoutProps(overrides = {}) {
     setSketchBoxCorniceType: setStateNoop,
     setSketchBoxBasePanelOpen: setStateNoop,
     setSketchBoxBaseType: setStateNoop,
+    setSketchBoxPlinthHeightCm: setStateNoop,
+    setSketchBoxPlinthHeightDraft: setStateNoop,
     setSketchExtDrawersPanelOpen: setStateNoop,
     setSketchExtDrawerCount: setStateNoop,
     setSketchExtDrawerHeightCm: setStateNoop,
@@ -191,7 +197,29 @@ function createSketchInternalDrawerControls(overrides = {}) {
 test('[interior-tab-sections-runtime] SketchTabView marks the sketch tool card active only from real edit modes', () => {
   const src = fs.readFileSync(path.resolve('esm/native/ui/react/tabs/SketchTab.view.tsx'), 'utf8');
   assert.doesNotMatch(src, /wp-tool-card wp-tool-card--layout is-active/);
-  assert.match(src, /state\.isSketchToolActive \|\| state\.isDoorTrimMode/);
+  assert.match(src, /state\.isDoorTrimMode \|\| \(!state\.isChestMode && state\.isSketchToolActive\)/);
+});
+test('[interior-tab-sections-runtime] SketchTabView keeps a fixed box cell-dims action at the end of the sketch tab', () => {
+  const src = fs.readFileSync(path.resolve('esm/native/ui/react/tabs/SketchTab.view.tsx'), 'utf8');
+  const toolsIndex = src.indexOf('<InteriorLayoutSketchToolsPanel');
+  const cellDimsIndex = src.indexOf('className="control-section wp-sketch-box-cell-dims-section"');
+
+  assert.ok(toolsIndex >= 0, 'expected sketch tools panel in SketchTabView');
+  assert.ok(cellDimsIndex > toolsIndex, 'expected the box cell-dims action after the sketch tools');
+  assert.match(src, /modeLabel="שינוי מידות מיוחדות לקופסא"/);
+  assert.match(src, /hideForSliding=\{false\}/);
+  assert.match(src, /useStructureCellDimsControlsProps/);
+});
+
+test('[interior-tab-sections-runtime] InteriorTab hides layout and drawer sections in chest mode but keeps divider and handles', () => {
+  const src = fs.readFileSync(path.resolve('esm/native/ui/react/tabs/InteriorTab.view.tsx'), 'utf8');
+
+  assert.match(src, /!state\.isChestMode \? \(/);
+  assert.match(src, /<InteriorLayoutSection/);
+  assert.match(src, /<InteriorExternalDrawersSection/);
+  assert.match(src, /<InteriorInternalDrawersSection/);
+  assert.match(src, /<InteriorDividerSection/);
+  assert.match(src, /<InteriorHandlesSection/);
 });
 test('[interior-tab-sections-runtime] layout section renders canonical layout/manual controls with the sketch-division toggle', () => {
   const html = renderToStaticMarkup(React.createElement(InteriorLayoutSection, createLayoutProps()));
@@ -260,6 +288,30 @@ test('[interior-tab-sections-runtime] sketch tools panel renders the moved sketc
   assert.match(html, /interior-sketch-storage-height-reset-button/);
   assert.ok((html.match(/wp-r-sketch-drawer-height-reset-btn/g) || []).length >= 4);
   assert.ok((html.match(/type="button"/g) || []).length >= 11);
+});
+
+test('[interior-tab-sections-runtime] sliding wardrobe hides sketch external drawer controls', () => {
+  const html = renderToStaticMarkup(
+    React.createElement(InteriorLayoutSketchToolsPanel, createLayoutProps({ wardrobeType: 'sliding' }))
+  );
+
+  assert.doesNotMatch(html, /מגירות חיצוניות לפי סקיצה/);
+  assert.doesNotMatch(html, /הוסף\/הסר מגירות חיצוניות/);
+  assert.doesNotMatch(html, /גובה מגירה חיצונית/);
+  assert.match(html, /מגירות פנימיות לפי סקיצה/);
+  assert.match(html, /הוסף\/הסר מגירות פנימיות/);
+});
+
+test('[interior-tab-sections-runtime] chest sketch tab keeps only door trim tools', () => {
+  const html = renderToStaticMarkup(
+    React.createElement(InteriorLayoutSketchToolsPanel, createLayoutProps({ isChestMode: true }))
+  );
+
+  assert.match(html, /פסי עיטור לדלת/);
+  assert.doesNotMatch(html, /מדפים ותלייה/);
+  assert.doesNotMatch(html, /קופסא חופשית/);
+  assert.doesNotMatch(html, /מגירות חיצוניות לפי סקיצה/);
+  assert.doesNotMatch(html, /מגירות פנימיות לפי סקיצה/);
 });
 
 test('[interior-tab-sections-runtime] sketch shelf and storage reset buttons restore canonical defaults', () => {
@@ -445,4 +497,39 @@ test('[interior-tab-sections-runtime] drawers and handles sections keep canonica
   assert.match(handlesHtml, /צבע ידית ברירת מחדל/);
   assert.match(handlesHtml, /צבע לידית שתשויך/);
   assert.match(handlesHtml, /לחץ על דלת או מגירה כדי לשנות ידית/);
+});
+
+test('interior handles section keeps advanced controls open when handle editing has ended', () => {
+  const html = renderToStaticMarkup(
+    React.createElement(InteriorHandlesSection, {
+      handleControlEnabled: true,
+      isHandleMode: false,
+      isManualHandlePositionMode: false,
+      globalHandleType: 'standard',
+      handleToolType: 'edge',
+      globalHandleColor: 'nickel',
+      handleToolColor: 'black',
+      globalEdgeHandleVariant: 'short',
+      handleToolEdgeVariant: 'long',
+      handleTypes: [
+        { id: 'standard', label: 'סטנדרטי' },
+        { id: 'edge', label: 'רוכבת' },
+        { id: 'none', label: 'ללא' },
+      ],
+      setGlobalHandle: noop,
+      setGlobalHandleColor: noop,
+      setGlobalEdgeHandleVariant: noop,
+      setHandleControlEnabled: noop,
+      toggleHandleMode: noop,
+      setHandleModeColor: noop,
+      setHandleModeEdgeVariant: noop,
+      enterManualHandlePositionMode: noop,
+    })
+  );
+  assert.match(html, /ידית לפי דלת\/מגירה/);
+  assert.match(html, /רוכבת קצרה/);
+  assert.match(html, /רוכבת ארוכה/);
+  assert.match(html, /צבע לידית שתשויך/);
+  assert.match(html, /בחר סוג ידית כדי להיכנס למצב עריכה/);
+  assert.doesNotMatch(html, /סיום עריכה/);
 });

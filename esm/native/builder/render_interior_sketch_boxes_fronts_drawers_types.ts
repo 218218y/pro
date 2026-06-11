@@ -26,6 +26,7 @@ export type SketchBoxExternalDrawersContext = RenderSketchBoxExternalDrawersArgs
   input: RenderSketchBoxFrontsArgs['args']['input'];
   group: RenderSketchBoxFrontsArgs['args']['group'];
   woodThick: number;
+  shelfThick: number;
   moduleIndex: number;
   moduleKeyStr: string;
   createDoorVisual: RenderSketchBoxFrontsArgs['args']['createDoorVisual'];
@@ -50,6 +51,10 @@ export type SketchBoxExternalDrawerStackPlan = {
   stackH: number;
   centerY: number;
   baseY: number;
+  containerMinY: number;
+  containerMaxY: number;
+  faceFlushTargetMinY: number;
+  faceFlushTargetMaxY: number;
   drawerId: string;
   keyPrefix: string;
   outerW: number;
@@ -62,6 +67,8 @@ export type SketchBoxExternalDrawerStackPlan = {
 
 export type SketchBoxExternalDrawerOpPlan = {
   op: InteriorValueRecord;
+  drawerId: string;
+  isRegularExternalDrawer: boolean;
   closed: InteriorValueRecord | null;
   open: InteriorValueRecord | null;
   opIndex: number;

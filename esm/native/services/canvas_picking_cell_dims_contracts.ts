@@ -4,6 +4,7 @@ export interface CanvasCellDimsClickArgs {
   App: AppContainer;
   foundModuleIndex: string | number;
   foundPartId: string | null;
+  hitUserData?: UnknownRecord | null;
   isBottomStack: boolean;
   ensureCornerCellConfigRef: (cellIdx: number) => ModuleConfigLike | null;
   ndcX?: number;

@@ -18,7 +18,8 @@ export function syncSketchBoxBaseTool(
   style: SketchBoxLegStyle = props.sketchBoxLegStyle,
   color: SketchBoxLegColor = props.sketchBoxLegColor,
   heightCm: number = props.sketchBoxLegHeightCm,
-  widthCm: number = props.sketchBoxLegWidthCm
+  widthCm: number = props.sketchBoxLegWidthCm,
+  plinthHeightCm: number = props.sketchBoxPlinthHeightCm
 ): void {
-  props.enterSketchBoxBaseTool(type, style, color, heightCm, widthCm);
+  props.enterSketchBoxBaseTool(type, style, color, heightCm, widthCm, plinthHeightCm);
 }

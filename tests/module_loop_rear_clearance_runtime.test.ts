@@ -301,7 +301,7 @@ test('hex-cell diagonal panel renders as stationary glass visual when glass styl
     cfg: {
       doorSpecialMap: { hex_cell_1_diag_left: 'glass' },
       curtainMap: { hex_cell_1_diag_left: 'none' },
-      doorStyleMap: { hex_cell_1_diag_left: 'tom' },
+      doorStyleMap: { hex_cell_1_diag_left: 'double_profile' },
     },
     D: 0.55,
     woodThick: 0.018,
@@ -330,7 +330,7 @@ test('hex-cell diagonal panel renders as stationary glass visual when glass styl
 
   assert.equal(visualCalls.length, 1);
   assert.equal(visualCalls[0][4], 'glass');
-  assert.equal((visualCalls[0][13] as { glassFrameStyle?: string }).glassFrameStyle, 'tom');
+  assert.equal((visualCalls[0][13] as { glassFrameStyle?: string }).glassFrameStyle, 'double_profile');
   const glassVisual = added.find(item => item instanceof Group) as Group | undefined;
   assert.ok(glassVisual, 'painted diagonal should be rendered as a visual group, not a plain wood board');
   assert.equal(glassVisual!.userData.partId, 'hex_cell_1_diag_left');

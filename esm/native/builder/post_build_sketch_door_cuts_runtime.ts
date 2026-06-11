@@ -9,6 +9,7 @@ import {
   normEdgeHandleVariant,
 } from './handles_shared.js';
 import { readDoorStyleMap } from '../features/door_style_overrides.js';
+import { readManualHandlePositionForPart } from '../features/manual_handle_position.js';
 import { makeDoorRemovalChecker } from './doors_state_utils.js';
 import { readDoorVisualMapValue, readDoorVisualMirrorLayout } from './door_visual_lookup_state.js';
 
@@ -43,6 +44,7 @@ export function createSketchDoorCutsRuntime(args: SketchDoorCutsRuntimeArgs): Sk
   })();
 
   const groovesMap = asRecord(readKey(cfg, 'groovesMap'));
+  const doorTrimMap = asRecord(readKey(cfg, 'doorTrimMap'));
   const curtainMap = asRecord(readKey(cfg, 'curtainMap'));
   const specialMap = asRecord(readKey(cfg, 'doorSpecialMap'));
   const mirrorLayoutMap = asRecord(readKey(cfg, 'mirrorLayoutMap'));
@@ -71,7 +73,11 @@ export function createSketchDoorCutsRuntime(args: SketchDoorCutsRuntimeArgs): Sk
     readDoorVisualMirrorLayout(mirrorLayoutMap, partId);
   const resolveHandleColor = (partId: string): string =>
     resolveConfiguredHandleColor(readKey(cfg, 'handlesMap'), partId);
-  const stripSuffix = (partId: string): string => partId.replace(/_(top|mid|bot|full)$/, '');
+  const stripSuffix = (partId: string): string => partId.replace(/_(top|mid\d*|bot|full)$/, '');
+  const resolveManualHandlePosition = (partId: string) => {
+    const base = stripSuffix(partId);
+    return readManualHandlePositionForPart(handlesMap, partId, base);
+  };
   const readHandleOverride = (key: string): string | undefined => {
     if (!handlesMap || !Object.prototype.hasOwnProperty.call(handlesMap, key)) return undefined;
     const value = handlesMap[key];
@@ -99,11 +105,13 @@ export function createSketchDoorCutsRuntime(args: SketchDoorCutsRuntimeArgs): Sk
     resolveHandleType,
     resolveEdgeHandleVariant,
     resolveHandleColor,
+    resolveManualHandlePosition,
     resolveCurtain,
     resolveSpecial,
     doorStyle,
     doorStyleMap,
     groovesMap,
+    doorTrimMap,
     resolveMirrorLayout,
     isDoorRemoved,
   };

@@ -47,6 +47,7 @@ export type ApplySketchExternalDrawersArgs = {
   moduleIndex: number;
   moduleKeyStr: string;
   woodThick: number;
+  shelfThick: number;
   bodyMat: unknown;
   currentBraceShelfMat?: unknown;
   createBoard: InteriorOpsCallable;
@@ -94,17 +95,17 @@ export type ApplySketchInternalDrawersRuntimeArgs = ApplyInternalSketchDrawersAr
   drawers: SketchDrawerExtra[];
 };
 
-export function normalizeSketchDoorStyle(value: unknown): 'flat' | 'profile' | 'tom' {
+export function normalizeSketchDoorStyle(value: unknown): 'flat' | 'profile' | 'double_profile' {
   const raw = String(value == null ? '' : value)
     .trim()
     .toLowerCase();
-  return raw === 'profile' || raw === 'tom' || raw === 'flat' ? raw : 'flat';
+  return raw === 'profile' || raw === 'double_profile' || raw === 'flat' ? raw : 'flat';
 }
 
 export function resolveSketchDoorStyle(
   App: AppContainer,
   input: RenderInteriorSketchInput
-): 'flat' | 'profile' | 'tom' {
+): 'flat' | 'profile' | 'double_profile' {
   const inputRec = asValueRecord(input);
   const inputUi = asValueRecord(inputRec?.ui);
   const configRec = asValueRecord(inputRec?.config);

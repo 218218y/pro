@@ -28,6 +28,7 @@ export function renderInteriorSketchOwnedBoxes(args: {
     spanH: resolved.spanH,
     innerW: resolved.innerW,
     woodThick: resolved.woodThick,
+    shelfThick: resolved.shelfThick,
     internalDepth: resolved.internalDepth,
     internalCenterX: resolved.internalCenterX,
     internalZ: resolved.internalZ,

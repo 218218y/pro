@@ -1,4 +1,5 @@
 import type { AppContainer, UnknownRecord } from '../../../../../types';
+import { STANDARD_CABINET_COLOR_SWATCHES } from '../../../../shared/standard_cabinet_textures_shared.js';
 
 import { reportError } from '../../../services/api.js';
 
@@ -78,9 +79,20 @@ export type SavedColor = {
 
 export type CurtainPreset = 'none' | 'white' | 'pink' | 'purple';
 
-export type DefaultColorLike = { value?: unknown; name?: unknown };
+export type DefaultColorLike = {
+  value?: unknown;
+  name?: unknown;
+  type?: unknown;
+  textureData?: unknown;
+};
 
-export type DefaultSwatch = { paintId: string; title: string; val: string };
+export type DefaultSwatch = {
+  paintId: string;
+  title: string;
+  val: string;
+  isTexture?: boolean;
+  textureData?: string | null;
+};
 
 export function isRecord(v: unknown): v is Record<string, unknown> {
   return !!v && typeof v === 'object' && !Array.isArray(v);
@@ -121,13 +133,13 @@ export function normalizeSavedColors(raw: unknown): SavedColor[] {
   return out;
 }
 
-export const DEFAULT_COLOR_SWATCHES: SavedColor[] = [
-  { id: 'default_#ffffff', name: 'לבן שלג', type: 'color', value: '#ffffff', textureData: null },
-  { id: 'default_#f2f0eb', name: 'שמנת', type: 'color', value: '#f2f0eb', textureData: null },
-  { id: 'default_#eaddcf', name: 'אלון מבוקע', type: 'color', value: '#eaddcf', textureData: null },
-  { id: 'default_#a08060', name: 'אגוז טבעי', type: 'color', value: '#a08060', textureData: null },
-  { id: 'default_#4a4b4f', name: 'וונגה', type: 'color', value: '#4a4b4f', textureData: null },
-];
+export const DEFAULT_COLOR_SWATCHES: SavedColor[] = STANDARD_CABINET_COLOR_SWATCHES.map(swatch => ({
+  id: swatch.id,
+  name: swatch.name,
+  type: swatch.type,
+  value: swatch.value,
+  textureData: swatch.textureData,
+}));
 
 export const MULTI_CURTAIN_LABELS: Record<CurtainPreset, string> = {
   none: 'ללא',
@@ -149,6 +161,19 @@ export function isCurtainPreset(v: string): v is CurtainPreset {
   return v === 'none' || v === 'white' || v === 'pink' || v === 'purple';
 }
 
+function readDefaultSwatch(c: DefaultColorLike | SavedColor): DefaultSwatch {
+  const value = String(c && c.value ? c.value : '');
+  const type = c && c.type === 'texture' ? 'texture' : 'color';
+  const textureData = typeof c?.textureData === 'string' ? c.textureData : null;
+  return {
+    paintId: value,
+    title: String(c && c.name ? c.name : ''),
+    val: value,
+    isTexture: type === 'texture' && !!textureData,
+    textureData,
+  };
+}
+
 export function readDefaultColorsFromApp(app: Pick<AppContainer, 'ui'>): DefaultColorLike[] | null {
   const ui = isRecord(app.ui) ? app.ui : null;
   const colors = ui && isRecord(ui.colors) ? ui.colors : null;
@@ -162,27 +187,15 @@ export function buildDesignTabDefaultSwatchesFromUi(ui: unknown): DefaultSwatch[
   const defaults = colors?.DEFAULT_COLORS;
   const defaultsFromApp = Array.isArray(defaults) ? defaults.filter(isRecord) : null;
   return Array.isArray(defaultsFromApp)
-    ? defaultsFromApp
-        .map((c: DefaultColorLike) => ({
-          paintId: String(c && c.value ? c.value : ''),
-          title: String(c && c.name ? c.name : ''),
-          val: String(c && c.value ? c.value : ''),
-        }))
-        .filter(c => !!c.paintId && !!c.val)
-    : DEFAULT_COLOR_SWATCHES.map(c => ({ paintId: c.value, title: c.name, val: c.value }));
+    ? defaultsFromApp.map(readDefaultSwatch).filter(c => !!c.paintId && !!c.val)
+    : DEFAULT_COLOR_SWATCHES.map(readDefaultSwatch);
 }
 
 export function buildDesignTabDefaultSwatches(app: AppContainer): DefaultSwatch[] {
   const defaultsFromApp = readDefaultColorsFromApp(app);
   return Array.isArray(defaultsFromApp)
-    ? defaultsFromApp
-        .map((c: DefaultColorLike) => ({
-          paintId: String(c && c.value ? c.value : ''),
-          title: String(c && c.name ? c.name : ''),
-          val: String(c && c.value ? c.value : ''),
-        }))
-        .filter(c => !!c.paintId && !!c.val)
-    : DEFAULT_COLOR_SWATCHES.map(c => ({ paintId: c.value, title: c.name, val: c.value }));
+    ? defaultsFromApp.map(readDefaultSwatch).filter(c => !!c.paintId && !!c.val)
+    : DEFAULT_COLOR_SWATCHES.map(readDefaultSwatch);
 }
 
 export function asUnknownRecord(value: unknown): UnknownRecord | null {

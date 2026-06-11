@@ -13,6 +13,8 @@ import {
   type DesignTabCorniceType,
   type DesignTabDoorStyle,
 } from './design_tab_shared.js';
+import { readRemovedFrameSideShelfState } from '../../../features/removable_parts.js';
+import { readUiRawIntFromSnapshot } from '../selectors/ui_raw_selectors.js';
 
 import type { UnknownRecord } from '../../../../../types';
 
@@ -24,12 +26,18 @@ export type DesignTabCfgState = {
   grooveLinesCountOverride: unknown;
   groovesDirty: boolean;
   removedDoorsDirty: boolean;
+  leftFrameSideRemoved: boolean;
+  rightFrameSideRemoved: boolean;
+  leftFrameSideShelvesRounded: boolean;
+  rightFrameSideShelvesRounded: boolean;
 };
 
 export type DesignTabUiState = {
+  noMainWardrobeActive: boolean;
   doorStyle: DesignTabDoorStyle;
   colorChoice: string;
   frontColorShelfInheritanceMode: 'all' | 'brace';
+  isChestMode: boolean;
   groovesEnabled: boolean;
   splitDoors: boolean;
   removeDoorsEnabled: boolean;
@@ -64,6 +72,7 @@ function normalizeFrontColorShelfInheritanceMode(value: unknown): 'all' | 'brace
 
 export function readDesignTabCfgState(cfg: unknown): DesignTabCfgState {
   const rec = asRecord(cfg);
+  const frameSideState = readRemovedFrameSideShelfState(rec || {});
   return {
     wardrobeType: selectWardrobeType(rec || {}),
     savedColorsRaw: selectSavedColors(rec || {}),
@@ -72,17 +81,24 @@ export function readDesignTabCfgState(cfg: unknown): DesignTabCfgState {
     grooveLinesCountOverride: selectGrooveLinesCount(rec || {}),
     groovesDirty: !!selectGroovesDirty(rec || {}),
     removedDoorsDirty: !!selectRemovedDoorsDirty(rec || {}),
+    leftFrameSideRemoved: frameSideState.leftRemoved,
+    rightFrameSideRemoved: frameSideState.rightRemoved,
+    leftFrameSideShelvesRounded: frameSideState.leftRounded,
+    rightFrameSideShelvesRounded: frameSideState.rightRounded,
   };
 }
 
 export function readDesignTabUiState(ui: unknown): DesignTabUiState {
   const rec = asRecord(ui);
+  const doors = readUiRawIntFromSnapshot(ui, 'doors', -1);
   return {
+    noMainWardrobeActive: doors === 0,
     doorStyle: readDesignTabDoorStyle(rec?.doorStyle),
     colorChoice: String(rec?.colorChoice || '#ffffff'),
     frontColorShelfInheritanceMode: normalizeFrontColorShelfInheritanceMode(
       rec?.frontColorShelfInheritanceMode
     ),
+    isChestMode: readBoolean(rec?.isChestMode),
     groovesEnabled: readBoolean(rec?.groovesEnabled),
     splitDoors: readBoolean(rec?.splitDoors),
     removeDoorsEnabled: readBoolean(rec?.removeDoorsEnabled),

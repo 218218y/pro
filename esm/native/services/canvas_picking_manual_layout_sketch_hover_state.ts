@@ -37,7 +37,10 @@ type ManualLayoutSketchBoxContentHoverArgs = {
   boxBaseYNorm?: number | null;
   contentXNorm?: number | null;
   dividerXNorm?: number | null;
+  dividerYNorm?: number | null;
+  dividerAxis?: 'vertical' | 'horizontal' | string | null;
   dividerId?: string | null;
+  dividerFrontZ?: number | null;
   snapToCenter?: boolean | null;
   variant?: string | null;
   depthM?: number | null;
@@ -51,6 +54,7 @@ type ManualLayoutSketchBoxContentHoverArgs = {
   drawerGap?: number | null;
   drawerHeightM?: number | null;
   drawerCount?: number | null;
+  hasShoeDrawer?: boolean | null;
   hinge?: string | null;
   doorId?: string | null;
   doorLeftId?: string | null;
@@ -127,7 +131,10 @@ export function createManualLayoutSketchBoxContentHoverRecord(
       boxBaseYNorm: args.boxBaseYNorm ?? undefined,
       contentXNorm: args.contentXNorm ?? undefined,
       dividerXNorm: args.dividerXNorm ?? undefined,
+      dividerYNorm: args.dividerYNorm ?? undefined,
+      dividerAxis: args.dividerAxis ?? undefined,
       dividerId: args.dividerId ?? undefined,
+      dividerFrontZ: args.dividerFrontZ ?? undefined,
       snapToCenter: args.snapToCenter ?? undefined,
       variant: args.variant ?? undefined,
       depthM: args.depthM ?? undefined,
@@ -141,6 +148,7 @@ export function createManualLayoutSketchBoxContentHoverRecord(
       drawerGap: args.drawerGap ?? undefined,
       drawerHeightM: args.drawerHeightM ?? undefined,
       drawerCount: args.drawerCount ?? undefined,
+      hasShoeDrawer: args.hasShoeDrawer ?? undefined,
       hinge: args.hinge ?? undefined,
       doorId: args.doorId ?? undefined,
       doorLeftId: args.doorLeftId ?? undefined,

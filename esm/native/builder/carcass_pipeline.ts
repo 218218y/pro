@@ -62,6 +62,7 @@ type ApplyCarcassAndGetCabinetMetricsArgs = {
   moduleDepthsTotal?: number[] | null;
   moduleCfgList?: unknown[] | null;
   moduleConfigs?: unknown[] | null;
+  frameSidePartIdPrefix?: string;
   // Optional prefix for partIds (used for stack-split bottom stack)
   partIdPrefix?: string;
   renderCarcass?: boolean;
@@ -100,6 +101,16 @@ function applyPartIdPrefixToCarcassOps(carcassOps: CarcassOpsLike, prefix: strin
     if (typeof pid !== 'string' || !pid) continue;
     if (pid.startsWith('body_')) board.partId = pfx + pid;
   }
+
+  const prefixBackPanel = (value: unknown) => {
+    const panel = asRecord<PartIdLike>(value);
+    if (!panel) return;
+    const pid = panel.partId;
+    if (typeof pid === 'string' && pid.startsWith('body_')) panel.partId = pfx + pid;
+  };
+  prefixBackPanel(carcassOps.backPanel);
+  const backPanels = Array.isArray(carcassOps.backPanels) ? carcassOps.backPanels : [];
+  for (let i = 0; i < backPanels.length; i++) prefixBackPanel(backPanels[i]);
 }
 
 function appendStackSplitDividerBoardIfNeeded(
@@ -236,6 +247,8 @@ export function applyCarcassAndGetCabinetMetrics(
     moduleDepthsTotal: safeArgs.moduleDepthsTotal,
     moduleCfgList: safeArgs.moduleCfgList,
     moduleConfigs: safeArgs.moduleConfigs,
+    frameSidePartIdPrefix: safeArgs.frameSidePartIdPrefix,
+    cfg: cfgObj,
   });
 
   if (!isCarcassOpsLike(carcassOpsRaw)) {

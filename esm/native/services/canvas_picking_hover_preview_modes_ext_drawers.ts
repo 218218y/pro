@@ -6,6 +6,7 @@ import {
   resolveExternalCrossDrawerStackPreview,
 } from './canvas_picking_drawer_cross_family.js';
 import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { tryHandleSketchBoxRegularExternalDrawersHoverPreview } from './canvas_picking_regular_ext_drawers_free_box.js';
 import {
   __callMaybe,
   __getSketchPlacementPreviewFns,
@@ -119,6 +120,16 @@ export function tryHandleExtDrawersHoverPreview(args: ExtDrawersHoverPreviewArgs
         ],
         op: 'remove',
       });
+      return true;
+    }
+
+    if (
+      tryHandleSketchBoxRegularExternalDrawersHoverPreview(args, {
+        THREE,
+        setPreview,
+        hidePreview: hidePreview ? previewArgs => __callMaybe(hidePreview, previewArgs) : null,
+      })
+    ) {
       return true;
     }
 

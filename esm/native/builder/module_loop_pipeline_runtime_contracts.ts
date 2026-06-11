@@ -38,6 +38,7 @@ export interface ModuleLoopRuntime {
   totalW: number;
   singleUnitWidth: number;
   woodThick: number;
+  shelfThick: number;
   cabinetBodyHeight: number;
   startY: number;
   D: number;

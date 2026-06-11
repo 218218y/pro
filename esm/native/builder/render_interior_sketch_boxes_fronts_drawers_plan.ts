@@ -20,6 +20,11 @@ import type {
   SketchBoxExternalDrawerStackPlan,
 } from './render_interior_sketch_boxes_fronts_drawers_types.js';
 import type { InteriorValueRecord } from './render_interior_ops_contracts.js';
+import {
+  pickSketchBoxVerticalSegment,
+  resolveSketchBoxVerticalSegments,
+  type SketchBoxVerticalSegment,
+} from './render_interior_sketch_layout.js';
 
 import {
   applySketchExternalDrawerFaceOverrides,
@@ -30,6 +35,42 @@ import {
   toFiniteNumber,
 } from './render_interior_sketch_shared.js';
 
+function readStackCenterNorm(item: InteriorValueRecord): number | null {
+  return toFiniteNumber(item.yNormC) ?? toFiniteNumber(item.yNorm);
+}
+
+function resolveExternalDrawerVerticalSegment(
+  context: SketchBoxExternalDrawersContext,
+  item: InteriorValueRecord
+): SketchBoxVerticalSegment | null {
+  const { shell, frontsArgs, woodThick } = context;
+  const boxDividers = Array.isArray(frontsArgs.boxDividers) ? frontsArgs.boxDividers : [];
+  const boxHorizontalDividers = Array.isArray(frontsArgs.boxHorizontalDividers)
+    ? frontsArgs.boxHorizontalDividers
+    : [];
+  if (!boxHorizontalDividers.length) return null;
+  const yNorm = readStackCenterNorm(item);
+  if (yNorm == null) return null;
+  const verticalSegments = resolveSketchBoxVerticalSegments({
+    dividers: boxHorizontalDividers,
+    verticalDividers: boxDividers,
+    boxCenterX: shell.geometry.centerX,
+    innerW: shell.geometry.innerW,
+    boxCenterY: shell.centerY,
+    innerH: shell.sideH,
+    woodThick,
+    xNorm: item.xNorm,
+  });
+  return verticalSegments.length
+    ? pickSketchBoxVerticalSegment({
+        segments: verticalSegments,
+        boxCenterY: shell.centerY,
+        innerH: shell.sideH,
+        yNorm,
+      })
+    : null;
+}
+
 export function createSketchBoxExternalDrawerStackPlan(
   context: SketchBoxExternalDrawersContext,
   item: InteriorValueRecord | null | undefined,
@@ -39,24 +80,52 @@ export function createSketchBoxExternalDrawerStackPlan(
 
   const { shell } = context;
   const { boxPid, height: hM, halfH, centerY: cy, innerBottomY, innerTopY } = shell;
+  const verticalSegment = resolveExternalDrawerVerticalSegment(context, item);
+  const shellBottomY = cy - halfH;
+  const shellTopY = cy + halfH;
+  const containerMinY = verticalSegment ? verticalSegment.bottomY : innerBottomY;
+  const containerMaxY = verticalSegment ? verticalSegment.topY : innerTopY;
+  const isOuterBottomSegment =
+    !verticalSegment ||
+    Math.abs(verticalSegment.bottomY - innerBottomY) <=
+      DRAWER_DIMENSIONS.sketch.faceVerticalAlignmentEpsilonM;
+  const isOuterTopSegment =
+    !verticalSegment ||
+    Math.abs(verticalSegment.topY - innerTopY) <= DRAWER_DIMENSIONS.sketch.faceVerticalAlignmentEpsilonM;
+  const faceFlushTargetMinY = isOuterBottomSegment ? shellBottomY : containerMinY;
+  const faceFlushTargetMaxY = isOuterTopSegment ? shellTopY : containerMaxY;
   const countRaw = toFiniteNumber(item.count);
+  const hasShoeDrawer = item.hasShoeDrawer === true || item.hasShoe === true || item.shoeDrawer === true;
   const drawerCount =
     countRaw != null
       ? Math.max(
-          SKETCH_EXTERNAL_DRAWER_COUNT_MIN,
+          hasShoeDrawer ? 0 : SKETCH_EXTERNAL_DRAWER_COUNT_MIN,
           Math.min(SKETCH_EXTERNAL_DRAWER_COUNT_MAX, Math.floor(countRaw))
         )
-      : 1;
+      : hasShoeDrawer
+        ? 0
+        : 1;
+  if (!hasShoeDrawer && drawerCount <= 0) return null;
   const metrics = resolveSketchExternalDrawerMetrics({
-    drawerCount,
+    drawerCount: Math.max(SKETCH_EXTERNAL_DRAWER_COUNT_MIN, drawerCount),
     drawerHeightM: readSketchDrawerHeightMFromItem(item, DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M),
   });
   const drawerH = metrics.drawerH;
-  const stackH = metrics.stackH;
-  if (!sketchStackFitsAvailableHeight(stackH, Math.max(0, innerTopY - context.woodThick - innerBottomY))) {
+  const shoeDrawerH = DRAWER_DIMENSIONS.external.shoeHeightM;
+  const stackH = (hasShoeDrawer ? shoeDrawerH : 0) + drawerCount * drawerH;
+  if (!sketchStackFitsAvailableHeight(stackH, Math.max(0, containerMaxY - containerMinY))) {
     return null;
   }
-  const centerY = resolveSketchBoxExternalDrawerStackCenterY(context, item, cy, halfH, hM, stackH);
+  const centerY = resolveSketchBoxExternalDrawerStackCenterY(
+    context,
+    item,
+    cy,
+    halfH,
+    hM,
+    stackH,
+    containerMinY,
+    containerMaxY
+  );
   if (centerY == null) return null;
 
   const baseY = centerY - stackH / 2;
@@ -81,7 +150,8 @@ export function createSketchBoxExternalDrawerStackPlan(
       keyPrefix,
       regCount: drawerCount,
       regDrawerHeight: drawerH,
-      hasShoe: false,
+      shoeDrawerHeight: shoeDrawerH,
+      hasShoe: hasShoeDrawer,
     })
   );
   const drawerOps = asRecordArray(opsRec?.drawers);
@@ -95,6 +165,10 @@ export function createSketchBoxExternalDrawerStackPlan(
     stackH,
     centerY,
     baseY,
+    containerMinY,
+    containerMaxY,
+    faceFlushTargetMinY,
+    faceFlushTargetMaxY,
     drawerId,
     keyPrefix,
     outerW,
@@ -117,7 +191,7 @@ export function createSketchBoxExternalDrawerOpPlan(
   const drawerDims = DRAWER_DIMENSIONS.sketch;
 
   const { shell } = context;
-  const { boxMat, geometry: boxGeo, innerBottomY, innerTopY } = shell;
+  const { boxMat, geometry: boxGeo } = shell;
   const closed = asValueRecord(op.closed);
   const open = asValueRecord(op.open);
   const fallbackGeom = resolveExternalDrawerGeometry({
@@ -152,12 +226,16 @@ export function createSketchBoxExternalDrawerOpPlan(
     visualH: visualHRaw,
     stackMinY: stack.baseY,
     stackMaxY: stack.baseY + stack.stackH,
-    containerMinY: innerBottomY,
-    containerMaxY: innerTopY - context.woodThick,
+    containerMinY: stack.containerMinY,
+    containerMaxY: stack.containerMaxY,
+    flushTargetMinY: stack.faceFlushTargetMinY,
+    flushTargetMaxY: stack.faceFlushTargetMaxY,
   });
 
   return {
     op,
+    drawerId: stack.drawerId,
+    isRegularExternalDrawer: stack.item.__wpRegularExternalDrawer === true,
     closed,
     open,
     opIndex,
@@ -196,14 +274,16 @@ function resolveSketchBoxExternalDrawerStackCenterY(
   boxCenterY: number,
   boxHalfH: number,
   boxHeight: number,
-  stackH: number
+  stackH: number,
+  containerMinY: number,
+  containerMaxY: number
 ): number | null {
   const normBottomY = boxCenterY - boxHalfH;
   return resolveSketchStackCenterYFromNormalizedItem({
     item,
-    bottomY: context.shell.innerBottomY,
-    topY: context.shell.innerTopY - context.woodThick,
-    totalHeight: Math.max(0, context.shell.innerTopY - context.woodThick - context.shell.innerBottomY),
+    bottomY: containerMinY,
+    topY: containerMaxY,
+    totalHeight: Math.max(0, containerMaxY - containerMinY),
     normBottomY,
     normHeight: boxHeight,
     stackH,

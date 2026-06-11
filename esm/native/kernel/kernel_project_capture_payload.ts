@@ -236,6 +236,7 @@ export function buildKernelProjectCaptureData(args: BuildKernelProjectCaptureDat
     splitDoorsMap: cloneProjectCaptureValue(canonicalCfg.splitDoorsMap, {}),
     splitDoorsBottomMap: cloneProjectCaptureValue(canonicalCfg.splitDoorsBottomMap, {}),
     removedDoorsMap: cloneProjectCaptureValue(canonicalCfg.removedDoorsMap, {}),
+    roundedFrameSideShelvesMap: cloneProjectCaptureValue(canonicalCfg.roundedFrameSideShelvesMap, {}),
     drawerDividersMap: cloneProjectCaptureValue(canonicalCfg.drawerDividersMap, {}),
     individualColors: cloneProjectCaptureValue(canonicalCfg.individualColors, {}),
     doorSpecialMap: cloneProjectCaptureValue(canonicalCfg.doorSpecialMap, {}),

@@ -12,6 +12,7 @@ import type {
   ProjectJsonLike,
   ProjectPdfDraftLike,
   RemovedDoorsMap,
+  RoundedFrameSideShelvesMap,
   SplitDoorsBottomMap,
   SplitDoorsMap,
   ToggleValue,
@@ -132,12 +133,27 @@ export function readToggleMap(value: unknown): Record<string, ToggleValue | unde
   return out;
 }
 
+export function readBooleanToggleMap(value: unknown): Record<string, true | false | null | undefined> {
+  const src = readToggleMap(value);
+  const out: Record<string, true | false | null | undefined> = {};
+  for (const [key, entry] of Object.entries(src)) {
+    if (entry === 1) out[key] = true;
+    else if (entry === 0) out[key] = false;
+    else out[key] = entry;
+  }
+  return out;
+}
+
 export function readHandlesMap(value: unknown): HandlesMap {
   return readStringMap(value);
 }
 
 export function readRemovedDoorsMap(value: unknown): RemovedDoorsMap {
   return readToggleMap(value);
+}
+
+export function readRoundedFrameSideShelvesMap(value: unknown): RoundedFrameSideShelvesMap {
+  return readBooleanToggleMap(value);
 }
 
 export function readCurtainMap(value: unknown): CurtainMap {

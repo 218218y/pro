@@ -45,6 +45,7 @@ export function applyModuleContents(
       frontZ: frame.moduleFrontZ,
       startY: runtime.startY,
       woodThick: runtime.woodThick,
+      shelfThick: runtime.shelfThick,
       keyPrefix: runtime.drawerKeyPrefix,
       hasShoe: metrics.hasShoe,
       regCount: metrics.regCount,
@@ -82,6 +83,7 @@ export function applyModuleContents(
     gridDivisions: metrics.gridDivisions,
     localGridStep: metrics.localGridStep,
     woodThick: runtime.woodThick,
+    shelfThick: runtime.shelfThick,
     innerW: metrics.innerW,
     internalCenterX: metrics.internalCenterX,
     internalZ: frame.moduleInternalZ,
@@ -115,6 +117,7 @@ export function applyModuleContents(
     localGridStep: metrics.localGridStep,
     innerW: metrics.innerW,
     woodThick: runtime.woodThick,
+    shelfThick: runtime.shelfThick,
     internalDepth: frame.moduleInternalDepth,
     internalCenterX: metrics.internalCenterX,
     internalZ: frame.moduleInternalZ,
@@ -122,6 +125,7 @@ export function applyModuleContents(
     moduleIndex: index,
     modulesLength: runtime.modules.length,
     moduleKey: runtime.stackKey === 'bottom' ? `lower_${index}` : undefined,
+    frameSidePartIdPrefix: runtime.stackKey === 'bottom' ? 'lower_' : '',
     startY: runtime.startY,
     startDoorId: startDoorOfModule,
     moduleDoors: frame.modDoors,
@@ -138,6 +142,7 @@ export function applyModuleContents(
     createInternalDrawerBox: runtime.createInternalDrawerBox,
     addOutlines: runtime.addOutlines,
     showContentsEnabled: runtime.showContentsEnabled,
+    isInternalDrawersEnabled: runtime.isInternalDrawersEnabled,
   });
 
   if (runtime.cfg.wardrobeType !== 'hinged') return;

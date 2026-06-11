@@ -2,9 +2,13 @@ import type { ReactElement } from 'react';
 
 import {
   SKETCH_TOOL_BOX_DIVIDER,
+  SKETCH_TOOL_BOX_DIVIDER_HORIZONTAL,
   SKETCH_TOOL_BOX_DOOR,
   SKETCH_TOOL_BOX_DOUBLE_DOOR,
   SKETCH_TOOL_BOX_DOOR_HINGE,
+  DEFAULT_SKETCH_BOX_DEPTH_CM,
+  DEFAULT_SKETCH_BOX_HEIGHT_CM,
+  DEFAULT_SKETCH_BOX_WIDTH_CM,
   SKETCH_BOX_HEIGHT_MAX_CM,
   SKETCH_BOX_HEIGHT_MIN_CM,
   SKETCH_BOX_OPTIONAL_DIM_MAX_CM,
@@ -17,6 +21,10 @@ import {
   BASE_LEG_WIDTH_MAX_CM,
   BASE_LEG_WIDTH_MIN_CM,
 } from '../../../features/base_leg_support.js';
+import {
+  BASE_PLINTH_HEIGHT_MAX_CM,
+  BASE_PLINTH_HEIGHT_MIN_CM,
+} from '../../../features/base_plinth_support.js';
 import {
   SketchBoxChoicePanel,
   SketchBoxNumericField,
@@ -34,9 +42,13 @@ import {
   commitSketchBoxHeightDraft,
   commitSketchBoxLegHeightDraft,
   commitSketchBoxLegWidthDraft,
+  commitSketchBoxPlinthHeightDraft,
   commitSketchBoxOptionalDimensionDraft,
+  resetSketchBoxHeightDraft,
+  resetSketchBoxOptionalDimensionDraft,
   selectSketchBoxLegColor,
   selectSketchBoxLegStyle,
+  resetSketchBoxPlinthHeight,
   selectSketchBoxBaseType,
   selectSketchBoxCorniceType,
   toggleSketchBoxBasePanel,
@@ -46,6 +58,7 @@ import {
   updateSketchBoxHeightDraft,
   updateSketchBoxLegHeightDraft,
   updateSketchBoxLegWidthDraft,
+  updateSketchBoxPlinthHeightDraft,
   updateSketchBoxOptionalDimensionDraft,
 } from './interior_layout_sketch_box_controls_runtime.js';
 import type { InteriorSketchBoxControlsSectionProps } from './interior_layout_sketch_section_types.js';
@@ -55,6 +68,7 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
     isSketchBoxControlsOpen,
     isSketchBoxToolActive,
     isDividerToolActive,
+    isHorizontalDividerToolActive,
     isDoorToolActive,
     isDoorHingeToolActive,
     isDoubleDoorToolActive,
@@ -93,6 +107,14 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
           min={SKETCH_BOX_HEIGHT_MIN_CM}
           max={SKETCH_BOX_HEIGHT_MAX_CM}
           step={5}
+          resetTitle="איפוס גובה הקופסא"
+          resetDisabled={
+            props.sketchBoxHeightCm === DEFAULT_SKETCH_BOX_HEIGHT_CM &&
+            props.sketchBoxHeightDraft.trim() === String(DEFAULT_SKETCH_BOX_HEIGHT_CM)
+          }
+          onReset={() => {
+            resetSketchBoxHeightDraft(props);
+          }}
           onChange={raw => {
             updateSketchBoxHeightDraft(props, raw);
           }}
@@ -108,9 +130,15 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
               value={props.sketchBoxWidthDraft}
               min={SKETCH_BOX_OPTIONAL_DIM_MIN_CM}
               max={SKETCH_BOX_OPTIONAL_DIM_MAX_CM}
-              step={1}
+              step={5}
               placeholder="אוטומטי"
               allowEmpty={true}
+              emptyStepStartValue={DEFAULT_SKETCH_BOX_WIDTH_CM}
+              resetTitle="איפוס רוחב הקופסא לאוטומטי"
+              resetDisabled={props.sketchBoxWidthCm === '' && props.sketchBoxWidthDraft.trim() === ''}
+              onReset={() => {
+                resetSketchBoxOptionalDimensionDraft(props, 'width');
+              }}
               onChange={raw => {
                 updateSketchBoxOptionalDimensionDraft(props, 'width', raw);
               }}
@@ -124,9 +152,15 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
               value={props.sketchBoxDepthDraft}
               min={SKETCH_BOX_OPTIONAL_DIM_MIN_CM}
               max={SKETCH_BOX_OPTIONAL_DIM_MAX_CM}
-              step={1}
+              step={5}
               placeholder="אוטומטי"
               allowEmpty={true}
+              emptyStepStartValue={DEFAULT_SKETCH_BOX_DEPTH_CM}
+              resetTitle="איפוס עומק הקופסא לאוטומטי"
+              resetDisabled={props.sketchBoxDepthCm === '' && props.sketchBoxDepthDraft.trim() === ''}
+              onReset={() => {
+                resetSketchBoxOptionalDimensionDraft(props, 'depth');
+              }}
               onChange={raw => {
                 updateSketchBoxOptionalDimensionDraft(props, 'depth', raw);
               }}
@@ -135,14 +169,32 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
               }}
             />
 
-            <SketchBoxToolButton
-              label="מחיצה לקופסא"
-              active={isDividerToolActive}
-              iconClass="fas fa-grip-lines-vertical"
-              onClick={() => {
-                toggleSketchBoxTool(props, 'divider', SKETCH_TOOL_BOX_DIVIDER, isDividerToolActive);
-              }}
-            />
+            <SketchBoxToolRow>
+              <SketchBoxToolButton
+                label="מחיצה עומדת"
+                active={isDividerToolActive}
+                iconClass="fas fa-grip-lines-vertical"
+                cellStyle={{ flex: '1 1 0' }}
+                onClick={() => {
+                  toggleSketchBoxTool(props, 'divider', SKETCH_TOOL_BOX_DIVIDER, isDividerToolActive);
+                }}
+              />
+
+              <SketchBoxToolButton
+                label="מחיצה שוכבת"
+                active={isHorizontalDividerToolActive}
+                iconClass="fas fa-grip-lines"
+                cellStyle={{ flex: '1 1 0' }}
+                onClick={() => {
+                  toggleSketchBoxTool(
+                    props,
+                    'horizontalDivider',
+                    SKETCH_TOOL_BOX_DIVIDER_HORIZONTAL,
+                    isHorizontalDividerToolActive
+                  );
+                }}
+              />
+            </SketchBoxToolRow>
 
             <SketchBoxToolButton
               label="דלת לקופסא"
@@ -216,6 +268,48 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
                 selectSketchBoxBaseType(props, next);
               }}
             />
+
+            {props.sketchBoxBaseType === 'plinth' && (props.sketchBoxBasePanelOpen || isBaseToolActive) ? (
+              <div
+                className="wp-sketch-box-cell wp-r-sketch-box-plinth-height-field"
+                style={{ gridColumn: '1 / -1' }}
+              >
+                <div className="wp-r-sketch-drawer-height-row wp-r-base-plinth-height-row wp-r-sketch-box-plinth-height-row">
+                  <button
+                    type="button"
+                    className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-sketch-drawer-height-reset-btn"
+                    onClick={() => {
+                      resetSketchBoxPlinthHeight(props);
+                    }}
+                  >
+                    <i className="fas fa-undo-alt" aria-hidden="true" />
+                    <span>ברירת מחדל</span>
+                  </button>
+                  <div className="wp-r-sketch-drawer-height-control">
+                    <label className="wp-r-label wp-r-label--center wp-r-sketch-drawer-height-label">
+                      גובה צוקל (ס&quot;מ)
+                    </label>
+                    <input
+                      type="number"
+                      className="wp-r-input wp-r-sketch-drawer-height-input"
+                      min={BASE_PLINTH_HEIGHT_MIN_CM}
+                      max={BASE_PLINTH_HEIGHT_MAX_CM}
+                      step={0.5}
+                      value={props.sketchBoxPlinthHeightDraft}
+                      onFocus={(event: import('react').FocusEvent<HTMLInputElement>) => {
+                        event.target.select();
+                      }}
+                      onChange={(event: import('react').ChangeEvent<HTMLInputElement>) => {
+                        updateSketchBoxPlinthHeightDraft(props, event.target.value);
+                      }}
+                      onBlur={() => {
+                        commitSketchBoxPlinthHeightDraft(props);
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            ) : null}
 
             {props.sketchBoxBaseType === 'legs' && (props.sketchBoxBasePanelOpen || isBaseToolActive) ? (
               <>

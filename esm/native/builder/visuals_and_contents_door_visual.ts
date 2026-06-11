@@ -10,11 +10,16 @@ import {
   createFlatDoorVisual,
   createGlassDoorVisual,
   createProfileDoorVisual,
-  createTomDoorVisual,
+  createDoubleProfileDoorVisual,
 } from './visuals_and_contents_door_visual_styles.js';
 import { __ensureApp, __ensureTHREE, __addOutlines } from './visuals_and_contents_shared.js';
 
-import type { AppContainer, MirrorLayoutList, Object3DLike } from '../../../types/index.js';
+import type {
+  AppContainer,
+  BuilderDoorVisualOptions,
+  MirrorLayoutList,
+  Object3DLike,
+} from '../../../types/index.js';
 
 function hasExplicitMirrorLayout(mirrorLayout: MirrorLayoutList | null): boolean {
   if (!Array.isArray(mirrorLayout)) return false;
@@ -79,7 +84,7 @@ export function createDoorVisual(
   forceCurtainFix: boolean = false,
   mirrorLayout: MirrorLayoutList | null = null,
   groovePartId: string | null = null,
-  options: { glassFrameStyle?: 'flat' | 'profile' | 'tom' | null } | null = null
+  options: BuilderDoorVisualOptions | null = null
 ): Object3DLike {
   App = __ensureApp(App);
   const THREE = __ensureTHREE(App);
@@ -91,7 +96,7 @@ export function createDoorVisual(
   // Fail-fast: door style must be resolved from store.ui, without DOM readback.
   if (style == null || String(style).trim() === '') {
     throw new Error(
-      '[WardrobePro] Door style is missing (expected ui.doorStyle to be "flat", "profile", or "tom").'
+      '[WardrobePro] Door style is missing (expected ui.doorStyle to be "flat", "profile", or "double_profile").'
     );
   }
   style = String(style).trim();
@@ -100,7 +105,7 @@ export function createDoorVisual(
   const { tagDoorVisualPart } = createDoorVisualPartTagger({ groovePartId });
 
   if (isMirror) {
-    if (style === 'profile' || style === 'tom') {
+    if (style === 'profile' || style === 'double_profile') {
       if (hasExplicitMirrorLayout(mirrorLayout)) {
         return createStyledMirrorDoorVisual({
           App,
@@ -188,6 +193,7 @@ export function createDoorVisual(
       mat,
       hasGrooves,
       groovePartId,
+      grooveLinesCount: options?.grooveLinesCount ?? null,
       isSketch,
       zSign,
     });
@@ -206,13 +212,14 @@ export function createDoorVisual(
       mat,
       hasGrooves,
       groovePartId,
+      grooveLinesCount: options?.grooveLinesCount ?? null,
       isSketch,
       zSign,
     });
   }
 
-  if (style === 'tom') {
-    return createTomDoorVisual({
+  if (style === 'double_profile') {
+    return createDoubleProfileDoorVisual({
       App,
       THREE,
       visualGroup,
@@ -224,6 +231,7 @@ export function createDoorVisual(
       mat,
       hasGrooves,
       groovePartId,
+      grooveLinesCount: options?.grooveLinesCount ?? null,
       isSketch,
       zSign,
     });

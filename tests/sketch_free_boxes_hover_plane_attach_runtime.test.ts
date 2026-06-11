@@ -50,6 +50,18 @@ function makeArgs(overrides: Partial<HoverArgs>): HoverArgs {
   };
 }
 
+function makeNoMainApp(): Record<string, unknown> {
+  return {
+    store: {
+      getState: () => ({
+        ui: { doors: 0, raw: { doors: 0 } },
+        config: {},
+        runtime: {},
+      }),
+    },
+  };
+}
+
 test('free-box hover attach below falls back to a valid floor-safe side placement when room floor blocks under-stack placement', () => {
   const placement = resolveSketchFreeBoxHoverPlacement(makeArgs({}));
 
@@ -220,4 +232,41 @@ test('free-box hover slightly off-center between adjacent boxes still stays in t
   assert.ok(Math.abs(placement.previewX - 0.05) <= 1e-9);
   assert.ok(Math.abs(placement.previewY - 0.7976) <= 1e-9);
   assert.equal(placement.snapToCenter, false);
+});
+
+test('no-main free-box hover keeps side attachment flush instead of repelling from the phantom wardrobe column', () => {
+  const placement = resolveSketchFreeBoxHoverPlacement(
+    makeArgs({
+      App: makeNoMainApp() as never,
+      planeX: 0.8,
+      planeY: 0.6,
+      wardrobeBox: {
+        centerX: 0,
+        centerY: 1.2,
+        centerZ: 0,
+        width: 1.82,
+        height: 2.4,
+        depth: 0.6,
+      },
+      freeBoxes: [
+        {
+          id: 'a',
+          freePlacement: true,
+          absX: 0.5,
+          absY: 0.6,
+          widthM: 0.6,
+          depthM: 0.5,
+          heightM: 0.4,
+        },
+      ],
+      intersects: [],
+      localParent: null,
+    })
+  );
+
+  assert.ok(placement);
+  assert.equal(placement.op, 'add');
+  assert.ok(Math.abs(placement.previewX - 1.1024) <= 1e-9);
+  assert.ok(Math.abs(placement.previewY - 0.6) <= 1e-9);
+  assert.equal(placement.snapToCenter, true);
 });

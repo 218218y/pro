@@ -15,6 +15,7 @@ import {
   clampSketchModuleStorageCenterY,
 } from './canvas_picking_sketch_module_vertical_content.js';
 import {
+  createShelfAddHoverRecord,
   findSketchBoxInnerShelfSpan,
   type ResolveSketchModuleSurfacePreviewArgs,
   type SketchModuleSurfacePreviewResult,
@@ -214,6 +215,17 @@ export function resolveSketchModuleContentPreview(args: {
   });
   const blockedBySketchDrawers = isAddBlockedBySketchDrawers(shelfPreview.h);
   if (blockedBySketchDrawers) op = 'blocked';
+  const addYNorm = spanH > 0 ? Math.max(0, Math.min(1, (yClamped - bottomY) / spanH)) : 0;
+  const shelfAddHoverRecord =
+    args.isShelf && args.contentOp === 'add'
+      ? createShelfAddHoverRecord({
+          host: source.host,
+          yNorm: addYNorm,
+          variant: variantPreview,
+          depthM: shelfDepthOverrideM,
+          blockedReason: blockedBySketchDrawers ? 'collision' : null,
+        })
+      : undefined;
 
   const clearanceMeasurements = buildSketchModuleStackAwareMeasurementEntries({
     bottomY,
@@ -239,6 +251,7 @@ export function resolveSketchModuleContentPreview(args: {
   });
   return {
     handled: true,
+    hoverRecord: shelfAddHoverRecord,
     preview: {
       kind: 'shelf',
       variant: shelfPreview.variant,

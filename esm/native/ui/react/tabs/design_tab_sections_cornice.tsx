@@ -4,8 +4,9 @@ import { ToggleRow } from '../components/index.js';
 import { DesignTabTypeOption } from './design_tab_sections_controls.js';
 import type { CorniceSectionProps } from './design_tab_sections_contracts.js';
 
-export function CorniceSection(props: CorniceSectionProps): ReactElement {
+export function CorniceSection(props: CorniceSectionProps): ReactElement | null {
   const model = props.model;
+  if (model.isChestMode || model.noMainWardrobeActive) return null;
 
   return (
     <div className="control-section">

@@ -119,6 +119,7 @@ const PROJECT_CONFIG_MAP_NORMALIZERS: Record<string, ProjectConfigMapNormalizer>
   drawerDividersMap: normalizeToggleMap,
   groovesMap: normalizeToggleMap,
   removedDoorsMap: normalizeToggleMap,
+  roundedFrameSideShelvesMap: normalizeToggleMap,
   grooveLinesCountMap: normalizeNullablePositiveIntMap,
   curtainMap: normalizeNullableStringMap,
   individualColors: normalizeNullableStringMap,

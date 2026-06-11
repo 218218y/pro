@@ -6,4 +6,4 @@
 export { createGlassDoorVisual } from './visuals_and_contents_door_visual_glass.js';
 export { createFlatDoorVisual } from './visuals_and_contents_door_visual_flat.js';
 export { createProfileDoorVisual } from './visuals_and_contents_door_visual_profile.js';
-export { createTomDoorVisual } from './visuals_and_contents_door_visual_tom.js';
+export { createDoubleProfileDoorVisual } from './visuals_and_contents_door_visual_double_profile.js';

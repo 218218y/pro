@@ -6,7 +6,9 @@ import path from 'node:path';
 
 import {
   parseTestArgs,
+  parseShardValue,
   selectRunnableTests,
+  selectShardFiles,
   createNoTestsMessage,
   createRunBanner,
 } from '../tools/wp_test_state.js';
@@ -20,7 +22,16 @@ function tempDir() {
 
 test('test arg parsing keeps tsx/no-build/pattern and parallel policy canonical', () => {
   assert.deepEqual(
-    parseTestArgs(['--tsx', '--no-build', '--pattern', 'door', '--batch-size', '32', '--jobs=3']),
+    parseTestArgs([
+      '--tsx',
+      '--no-build',
+      '--pattern',
+      'door',
+      '--batch-size',
+      '32',
+      '--jobs=3',
+      '--shard=2/3',
+    ]),
     {
       forceTsx: true,
       noBuild: true,
@@ -28,6 +39,7 @@ test('test arg parsing keeps tsx/no-build/pattern and parallel policy canonical'
       serial: false,
       batchSize: 32,
       jobs: 3,
+      shard: { index: 2, total: 3 },
     }
   );
   assert.deepEqual(parseTestArgs(['--serial']), {
@@ -37,7 +49,11 @@ test('test arg parsing keeps tsx/no-build/pattern and parallel policy canonical'
     serial: true,
     batchSize: null,
     jobs: null,
+    shard: null,
   });
+  assert.deepEqual(parseShardValue('1/2'), { index: 1, total: 2 });
+  assert.throws(() => parseShardValue('0/2'), /invalid --shard value/);
+  assert.throws(() => parseShardValue('3/2'), /invalid --shard value/);
 });
 
 test('test selection filters by pattern and skips playwright e2e specs', () => {
@@ -58,6 +74,28 @@ test('test selection filters by pattern and skips playwright e2e specs', () => {
   assert.equal(allSelected.skippedE2E, 1);
   assert.match(createNoTestsMessage({ skippedE2E: 1 }), /Playwright E2E specs are skipped/);
   assert.match(createRunBanner({ files: allSelected.files, flags: ['forced tsx'] }), /forced tsx/);
+});
+
+test('test selection shards the canonical runnable file list without overlap', () => {
+  const root = tempDir();
+  fs.mkdirSync(path.join(root, 'tests', 'unit'), { recursive: true });
+  fs.mkdirSync(path.join(root, 'tests', 'e2e'), { recursive: true });
+  for (const name of ['a.test.js', 'b.test.js', 'c.test.ts', 'd.test.js', 'e.test.ts']) {
+    fs.writeFileSync(path.join(root, 'tests', 'unit', name), 'export {}\n', 'utf8');
+  }
+  fs.writeFileSync(path.join(root, 'tests', 'e2e', 'smoke.spec.ts'), 'export {}\n', 'utf8');
+
+  const allSelected = selectRunnableTests({ projectRoot: root, pattern: '', shard: null });
+  const shardOne = selectRunnableTests({ projectRoot: root, pattern: '', shard: { index: 1, total: 2 } });
+  const shardTwo = selectRunnableTests({ projectRoot: root, pattern: '', shard: { index: 2, total: 2 } });
+
+  assert.equal(allSelected.files.length, 5);
+  assert.equal(shardOne.skippedE2E, 1);
+  assert.equal(shardOne.totalRunnableFiles, 5);
+  assert.equal(shardOne.files.length + shardTwo.files.length, allSelected.files.length);
+  assert.deepEqual([...shardOne.files, ...shardTwo.files].sort(), allSelected.files);
+  assert.equal(shardOne.files.filter(file => shardTwo.files.includes(file)).length, 0);
+  assert.deepEqual(selectShardFiles(['a', 'b', 'c', 'd'], { index: 2, total: 2 }), ['b', 'd']);
 });
 
 test('test flow derives tsx loader when ts tests exist and dist build is missing', () => {

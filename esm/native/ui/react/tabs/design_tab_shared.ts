@@ -5,7 +5,7 @@ import { MODES } from '../../../services/api.js';
 import type { SavedColor } from './design_tab_multicolor_panel.js';
 import type { UiFeedbackNamespaceLike, UnknownRecord } from '../../../../../types';
 
-export type DesignTabDoorStyle = 'flat' | 'profile' | 'tom';
+export type DesignTabDoorStyle = 'flat' | 'profile' | 'double_profile';
 export type DesignTabCorniceType = 'classic' | 'wave';
 export type DesignTabModeConstants = Partial<Record<'GROOVE' | 'SPLIT' | 'REMOVE_DOOR', string>>;
 export type DesignTabSwatchDropPos = 'before' | 'after' | '';
@@ -80,7 +80,7 @@ export function readDesignTabDoorStyle(
   const raw = String(value == null ? defaultValue : value)
     .trim()
     .toLowerCase();
-  return raw === 'profile' || raw === 'tom' || raw === 'flat' ? raw : defaultValue;
+  return raw === 'profile' || raw === 'double_profile' || raw === 'flat' ? raw : defaultValue;
 }
 
 export function readDesignTabCorniceType(
@@ -140,9 +140,13 @@ export function isSavedColorLocked(color: SavedColor): boolean {
   return !!color.locked;
 }
 
+function cssUrl(value: unknown): string {
+  return `url(${JSON.stringify(String(value || ''))})`;
+}
+
 export function getSwatchStyle(color: SavedColor): CSSProperties {
   return color.type === 'texture' && color.textureData
-    ? { backgroundImage: `url(${String(color.textureData || '')})` }
+    ? { backgroundImage: cssUrl(color.textureData) }
     : { backgroundColor: readSavedColorValue(color) };
 }
 

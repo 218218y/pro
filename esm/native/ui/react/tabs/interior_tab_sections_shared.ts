@@ -81,6 +81,8 @@ export const DOOR_TRIM_SPAN_PRIMARY_OPTIONS = DOOR_TRIM_SPAN_OPTIONS.slice(0, 3)
 export const DOOR_TRIM_SPAN_SECONDARY_OPTIONS = DOOR_TRIM_SPAN_OPTIONS.slice(3);
 
 export type InteriorLayoutSectionProps = {
+  wardrobeType: 'sliding' | 'hinged';
+  isChestMode: boolean;
   layoutActive: boolean;
   isLayoutMode: boolean;
   isManualLayoutMode: boolean;
@@ -112,6 +114,8 @@ export type InteriorLayoutSectionProps = {
   sketchBoxCorniceType: SketchBoxCorniceType;
   sketchBoxBasePanelOpen: boolean;
   sketchBoxBaseType: SketchBoxBaseType;
+  sketchBoxPlinthHeightCm: number;
+  sketchBoxPlinthHeightDraft: string;
   sketchBoxLegStyle: SketchBoxLegStyle;
   sketchBoxLegColor: SketchBoxLegColor;
   sketchBoxLegHeightCm: number;
@@ -159,6 +163,8 @@ export type InteriorLayoutSectionProps = {
   setSketchBoxCorniceType: Dispatch<SetStateAction<SketchBoxCorniceType>>;
   setSketchBoxBasePanelOpen: Dispatch<SetStateAction<boolean>>;
   setSketchBoxBaseType: Dispatch<SetStateAction<SketchBoxBaseType>>;
+  setSketchBoxPlinthHeightCm: Dispatch<SetStateAction<number>>;
+  setSketchBoxPlinthHeightDraft: Dispatch<SetStateAction<string>>;
   setSketchBoxLegStyle: Dispatch<SetStateAction<SketchBoxLegStyle>>;
   setSketchBoxLegColor: Dispatch<SetStateAction<SketchBoxLegColor>>;
   setSketchBoxLegHeightCm: Dispatch<SetStateAction<number>>;
@@ -207,7 +213,8 @@ export type InteriorLayoutSectionProps = {
     style: SketchBoxLegStyle,
     color: SketchBoxLegColor,
     heightCm: number,
-    widthCm: number
+    widthCm: number,
+    plinthHeightCm?: number
   ) => void;
   enterSketchExtDrawersTool: (count: number, drawerHeightCm: number) => void;
   enterSketchIntDrawersTool: (drawerHeightCm: number) => void;

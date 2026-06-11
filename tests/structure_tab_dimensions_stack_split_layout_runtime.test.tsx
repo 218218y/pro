@@ -4,9 +4,13 @@ import { readFileSync } from 'node:fs';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
+import {
+  StructureDimensionsContent,
+  StructureDimensionsSection,
+} from '../esm/native/ui/react/tabs/structure_tab_dimensions_section.js';
 import { StructureStackSplitControls } from '../esm/native/ui/react/tabs/structure_tab_dimensions_section_stack_split.js';
 
-const renderStackSplitControls = () => {
+const renderStackSplitControls = (overrides = {}) => {
   const noop = () => {};
   return renderToStaticMarkup(
     React.createElement(StructureStackSplitControls, {
@@ -39,6 +43,114 @@ const renderStackSplitControls = () => {
           }),
           React.createElement('span', null, isManual ? 'ידני' : 'אוטומטי')
         ),
+      ...overrides,
+    })
+  );
+};
+
+const renderDimensionsContent = (overrides = {}) => {
+  const noop = () => {};
+  return renderToStaticMarkup(
+    React.createElement(StructureDimensionsContent, {
+      isSliding: false,
+      isLibraryMode: false,
+      libraryUpperDoorsHidden: false,
+      isManualWidth: false,
+      width: 0,
+      height: 240,
+      depth: 60,
+      doors: 0,
+      cellDimsEditActive: false,
+      hasAnyCellDimsOverrides: false,
+      defaultCellWidth: 60,
+      cellDimsWidth: '',
+      cellDimsHeight: '',
+      cellDimsDepth: '',
+      cellDimsHexMode: false,
+      cellDimsHexProtrusion: '',
+      cellDimsHexDoorWidth: '',
+      stackSplitEnabled: false,
+      stackSplitDecorativeSeparatorEnabled: false,
+      stackSplitLowerHeight: 100,
+      stackSplitLowerDepth: 55,
+      stackSplitLowerWidth: 160,
+      stackSplitLowerDoors: 2,
+      stackSplitLowerDepthManual: false,
+      stackSplitLowerWidthManual: false,
+      stackSplitLowerDoorsManual: false,
+      onSetRaw: noop,
+      onResetAllCellDimsOverrides: noop,
+      onEnterCellDimsMode: noop,
+      onExitCellDimsMode: noop,
+      onEnterHexCellDimsMode: noop,
+      onExitHexCellDimsMode: noop,
+      onClearCellDimsWidth: noop,
+      onClearCellDimsHeight: noop,
+      onClearCellDimsDepth: noop,
+      onClearCellDimsHexProtrusion: noop,
+      onClearCellDimsHexDoorWidth: noop,
+      onToggleStackSplit: noop,
+      onToggleStackSplitDecorativeSeparator: noop,
+      onToggleLibraryUpperDoors: noop,
+      onPickLibraryGlass: noop,
+      renderStackLinkBadge: (_field: string, isManual: boolean) =>
+        React.createElement('span', null, isManual ? 'ידני' : 'אוטומטי'),
+      onResetAutoWidth: noop,
+      ...overrides,
+    })
+  );
+};
+
+const renderDimensionsSection = (overrides = {}) => {
+  const noop = () => {};
+  return renderToStaticMarkup(
+    React.createElement(StructureDimensionsSection, {
+      visible: true,
+      isSliding: false,
+      isLibraryMode: false,
+      libraryUpperDoorsHidden: false,
+      isManualWidth: false,
+      width: 0,
+      height: 240,
+      depth: 60,
+      doors: 0,
+      cellDimsEditActive: false,
+      hasAnyCellDimsOverrides: false,
+      defaultCellWidth: 60,
+      cellDimsWidth: '',
+      cellDimsHeight: '',
+      cellDimsDepth: '',
+      cellDimsHexMode: false,
+      cellDimsHexProtrusion: '',
+      cellDimsHexDoorWidth: '',
+      stackSplitEnabled: false,
+      stackSplitDecorativeSeparatorEnabled: false,
+      stackSplitLowerHeight: 100,
+      stackSplitLowerDepth: 55,
+      stackSplitLowerWidth: 160,
+      stackSplitLowerDoors: 2,
+      stackSplitLowerDepthManual: false,
+      stackSplitLowerWidthManual: false,
+      stackSplitLowerDoorsManual: false,
+      onSetRaw: noop,
+      onResetAllCellDimsOverrides: noop,
+      onEnterCellDimsMode: noop,
+      onExitCellDimsMode: noop,
+      onEnterHexCellDimsMode: noop,
+      onExitHexCellDimsMode: noop,
+      onClearCellDimsWidth: noop,
+      onClearCellDimsHeight: noop,
+      onClearCellDimsDepth: noop,
+      onClearCellDimsHexProtrusion: noop,
+      onClearCellDimsHexDoorWidth: noop,
+      onToggleStackSplit: noop,
+      onToggleStackSplitDecorativeSeparator: noop,
+      onToggleLibraryUpperDoors: noop,
+      onPickLibraryGlass: noop,
+      renderStackLinkBadge: (_field: string, isManual: boolean) =>
+        React.createElement('span', null, isManual ? 'ידני' : 'אוטומטי'),
+      onResetAutoWidth: noop,
+      ...overrides,
     })
   );
 };
@@ -57,5 +169,39 @@ test('[structure-stack-split] lower cabinet fields use a compact row layout for 
   assert.match(
     css,
     /#reactSidebarRoot \.wp-r-stack-split-dims-row \.wp-r-mini-link-toggle \{[\s\S]*?font-size:\s*0\.68rem/
+  );
+});
+
+test('[structure-stack-split] sliding wardrobes render the upper/lower split control', () => {
+  const html = renderStackSplitControls({ isSliding: true, stackSplitEnabled: false });
+
+  assert.match(html, /חלוקת ארון לחלק עליון וחלק תחתון/);
+});
+
+test('[structure-dimensions] no-main sketch state shows only restore-main action and hides cell dimensions controls', () => {
+  const html = renderDimensionsContent({ isSliding: false, doors: 0 });
+
+  assert.doesNotMatch(html, /חלוקת ארון לחלק עליון וחלק תחתון/);
+  assert.doesNotMatch(html, /דלתות/);
+  assert.doesNotMatch(html, /רוחב \(ס\&quot;מ\)/);
+  assert.doesNotMatch(html, /גובה \(ס\&quot;מ\)/);
+  assert.doesNotMatch(html, /עומק \(ס\&quot;מ\)/);
+  assert.match(html, /החזרת ארון ראשי/);
+  assert.match(html, /structure-restore-main-wardrobe-button/);
+  assert.doesNotMatch(html, /מידות מיוחדות לפי תא/);
+  assert.doesNotMatch(html, /structure-cell-dims-mode-button/);
+});
+
+test('[structure-dimensions] no-main restore action does not keep the dimensions title shell', () => {
+  const html = renderDimensionsSection({ isSliding: false, doors: 0, noMainWardrobeActive: true });
+  const css = readFileSync(new URL('../css/react_styles.css', import.meta.url), 'utf8');
+
+  assert.doesNotMatch(html, /section-title[^>]*>מידות/);
+  assert.match(html, /wp-r-no-main-restore-section/);
+  assert.match(html, /wp-r-no-main-restore-button/);
+  assert.match(html, /selected active/);
+  assert.match(
+    css,
+    /\.tab-content\[data-tab='structure'\] \.wp-r-no-main-restore-button \{[\s\S]*?width:\s*100%/
   );
 });

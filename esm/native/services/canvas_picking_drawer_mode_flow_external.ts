@@ -6,14 +6,11 @@ import {
 } from '../features/hex_cell/index.js';
 import { getInternalGridMap } from '../runtime/cache_access.js';
 import { __wp_toast, __wp_ui } from './canvas_picking_core_helpers.js';
-import {
-  findDirectCrossDrawerHitInIntersects,
-  removeSketchExternalDrawerFromConfig,
-  sameModuleKey,
-} from './canvas_picking_drawer_cross_family.js';
+import { tryRemoveSketchExternalDrawerByDirectHit } from './canvas_picking_drawer_cross_family.js';
 import type { ModuleKey, PatchConfigForKeyFn } from './canvas_picking_drawer_mode_flow_shared.js';
 import { asInternalGridInfo } from './canvas_picking_drawer_mode_flow_shared.js';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
+import { tryCommitSketchBoxRegularExternalDrawersHover } from './canvas_picking_regular_ext_drawers_free_box.js';
 
 export function tryHandleExternalDrawerModeClick(args: {
   App: AppContainer;
@@ -25,24 +22,22 @@ export function tryHandleExternalDrawerModeClick(args: {
   intersects?: RaycastHitLike[];
 }): boolean {
   const { App, foundModuleIndex, activeModuleKey, isExtDrawerEditMode, patchConfigForKey } = args;
-  if (!isExtDrawerEditMode || foundModuleIndex === null) return false;
+  if (!isExtDrawerEditMode) return false;
 
-  const sketchHit = findDirectCrossDrawerHitInIntersects(App, args.intersects || [], 'sketch_external');
-  if (sketchHit && (!sketchHit.moduleIndex || sameModuleKey(sketchHit.moduleIndex, activeModuleKey))) {
-    patchConfigForKey(
+  if (
+    tryRemoveSketchExternalDrawerByDirectHit({
+      App,
+      intersects: args.intersects || [],
       activeModuleKey,
-      (cfg: ModuleConfigLike) => {
-        removeSketchExternalDrawerFromConfig(
-          cfg,
-          sketchHit.sketchExtDrawerId,
-          sketchHit.sketchBoxId || undefined,
-          sketchHit.partId
-        );
-      },
-      { source: 'extDrawers.removeSketchExternalByHit', immediate: true }
-    );
+      patchConfigForKey,
+      source: 'extDrawers.removeSketchExternalByHit',
+    })
+  ) {
     return true;
   }
+
+  if (tryCommitSketchBoxRegularExternalDrawersHover(App)) return true;
+  if (foundModuleIndex === null) return false;
 
   const targetModuleKey = activeModuleKey ?? foundModuleIndex;
   patchConfigForKey(

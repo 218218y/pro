@@ -33,7 +33,7 @@ Current guard strings that must remain available live in `docs/layering_completi
 
 ## Verification strategy
 
-Start narrow, then expand:
+Start narrow, then expand only when risk warrants it:
 
 ```bash
 npm run check:docs-control-plane
@@ -42,7 +42,15 @@ npm run test
 npm run gate
 ```
 
-Use browser/E2E only when the changed surface needs browser proof or touches a user journey covered by `docs/e2e_smoke.md`.
+For normal Codex fixes, do not treat `npm run test` or `npm run gate` as mandatory local closeout. Prefer the targeted behavior/guard test(s), the nearest relevant typecheck, and lint for touched linted source files. Let GitHub/CI run the full regression matrix after handoff; CI failures can be handled as follow-up fixes.
+
+Use browser/E2E only when the changed surface needs browser proof or touches a user journey covered by `docs/e2e_smoke.md`. Do not run full `npm run e2e:smoke` for unrelated docs, tests, or non-browser source changes.
+
+## CI runtime sharding
+
+`npm run test` is the canonical all-runtime-test entrypoint. CI may split that same file list with `npm run test -- --shard=N/M` to reduce wall-clock time across GitHub runners, but the shards must partition the canonical runnable list without semantic duplication or omitted files.
+
+Use concern-specific `test:*` scripts and verify lanes for targeted local validation. Do not rebuild the required CI runtime lane by stitching those scripts together, because many of them intentionally overlap.
 
 ## Portfolio audit lane
 

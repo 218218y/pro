@@ -5,6 +5,7 @@ import {
   installBootSeedsPart02,
   seedColorSwatchesOrder,
   seedMultiColorMode,
+  seedSavedColors,
 } from '../esm/native/services/boot_seeds_part02.ts';
 
 function makeApp(config: Record<string, unknown> = {}) {
@@ -95,6 +96,52 @@ test('seedColorSwatchesOrder reads storage order and writes normalized swatches 
     order: ['oak', 'white'],
     meta: {
       source: 'core:initColorSwatchOrderSeed',
+      noStorageWrite: true,
+      silent: true,
+      noBuild: true,
+      noAutosave: true,
+      noPersist: true,
+      noHistory: true,
+      noCapture: true,
+    },
+  });
+});
+
+test('seedSavedColors hydrates an empty boot config from stored saved colors without rewriting storage', () => {
+  const { App, calls } = makeApp({ savedColors: [] });
+  const storage = ((App as any).services as any).storage;
+  storage.getString = (key: string) => {
+    if (key === 'wardrobeSavedColors') {
+      return JSON.stringify([
+        { id: 'saved_a', name: 'אלון', type: 'color', value: '#aabbcc' },
+        {
+          id: 'saved_texture',
+          name: 'טקסטורה',
+          type: 'texture',
+          value: 'saved_texture',
+          textureData: 'data:image/png;base64,AAA=',
+        },
+      ]);
+    }
+    return null;
+  };
+
+  seedSavedColors(App as never);
+
+  assert.equal(calls.savedColors.length, 1);
+  assert.deepEqual(calls.savedColors[0], {
+    colors: [
+      { id: 'saved_a', name: 'אלון', type: 'color', value: '#aabbcc' },
+      {
+        id: 'saved_texture',
+        name: 'טקסטורה',
+        type: 'texture',
+        value: 'saved_texture',
+        textureData: 'data:image/png;base64,AAA=',
+      },
+    ],
+    meta: {
+      source: 'core:initSavedColorsSeed',
       noStorageWrite: true,
       silent: true,
       noBuild: true,

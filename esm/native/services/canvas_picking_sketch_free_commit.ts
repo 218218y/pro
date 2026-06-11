@@ -7,6 +7,7 @@ import {
   ensureSketchModuleBoxes,
   findSketchModuleBoxById,
 } from './canvas_picking_sketch_box_content_commit.js';
+import { toastSketchBoxContentBlocked } from './canvas_picking_sketch_box_content_blocked.js';
 
 type RecordMap = UnknownRecord;
 
@@ -177,6 +178,12 @@ export function commitSketchFreePlacementHoverRecord(
   ) {
     const hoverContentKind = readRecordString(args.hoverRec, 'contentKind') || '';
     if (hoverContentKind !== contentKind) return { committed: false };
+    const blockedReason = readRecordString(args.hoverRec, '__wpBlockedReason');
+    if (blockedReason) {
+      // Consume blocked free-box clicks so routing cannot fall through to a module behind the box.
+      toastSketchBoxContentBlocked(args.App, contentKind, blockedReason);
+      return { committed: true, nextHover: null };
+    }
 
     let nextHover: RecordMap | null = null;
     let touched = false;

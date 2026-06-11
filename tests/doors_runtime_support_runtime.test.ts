@@ -1,7 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { getOpenDoorModuleKeys, vecCopy } from '../esm/native/runtime/doors_runtime_support.ts';
+import {
+  getOpenDoorModuleKeys,
+  isInteriorDoorEditModeActive,
+  shouldForceSketchFreeBoxDoorsOpen,
+  vecCopy,
+} from '../esm/native/runtime/doors_runtime_support.ts';
 import { getDoorsArray } from '../esm/native/runtime/render_access.ts';
 
 test('doors runtime support vecCopy only applies finite coordinates on plain-object fallback', () => {
@@ -24,4 +29,24 @@ test('doors runtime support reads open door module keys through render surface a
   );
 
   assert.deepEqual(Array.from(getOpenDoorModuleKeys(App)).sort(), ['12', 'left-bay']);
+});
+
+test('sketch external-drawer edit mode opens free-box doors like other interior edit tools', () => {
+  const App: Record<string, unknown> = {
+    store: {
+      getState: () => ({
+        mode: { primary: 'manual_layout', opts: { manualTool: 'sketch_ext_drawers:3' } },
+      }),
+    },
+  };
+
+  assert.equal(isInteriorDoorEditModeActive(App), true);
+  assert.equal(
+    shouldForceSketchFreeBoxDoorsOpen(
+      'sketch_ext_drawers:3',
+      { __wpSketchBoxDoor: true, __wpSketchFreePlacement: true },
+      { interiorDoorEditActive: isInteriorDoorEditModeActive(App) }
+    ),
+    true
+  );
 });

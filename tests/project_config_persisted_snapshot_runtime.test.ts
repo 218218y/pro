@@ -56,6 +56,7 @@ test('project config persisted snapshot readers share a canonical branch list an
       savedNotes: [{ id: 'n1', blocks: [{ text: 'keep' }] }],
       splitDoorsMap: { d2_top: true, split_d2_full: false, splitPos_d4_full: '0.25,0.75' },
       splitDoorsBottomMap: { d1: 1, drop: 0 },
+      roundedFrameSideShelvesMap: { body_left: 1, body_right: 0, junk: 'bad' },
       mirrorLayoutMap: { d1: [{ widthCm: '55', heightCm: 88 }, { widthCm: 0 }] },
       doorTrimMap: { d1: [{ axis: 'vertical', color: 'gold', span: 'custom', sizeCm: '11' }, { bad: true }] },
       preChestState: { dims: { width: 55 } },
@@ -77,6 +78,7 @@ test('project config persisted snapshot readers share a canonical branch list an
   assert.deepEqual(persisted.savedColors, ['oak', { id: 'c2', value: '#222' }]);
   assert.deepEqual({ ...persisted.splitDoorsMap }, { split_d2: false, splitpos_d4: [0.25, 0.75] });
   assert.deepEqual({ ...persisted.splitDoorsBottomMap }, { splitb_d1: true, drop: false });
+  assert.deepEqual({ ...persisted.roundedFrameSideShelvesMap }, { body_left: true, body_right: false });
   assert.deepEqual({ ...persisted.mirrorLayoutMap }, { d1: [{ widthCm: 55, heightCm: 88 }] });
   assert.equal(Array.isArray(persisted.doorTrimMap.d1), true);
   assert.equal(persisted.doorTrimMap.d1[0].axis, 'vertical');
@@ -94,6 +96,7 @@ test('project config persisted snapshot readers sanitize structural and map bran
     cornerConfiguration: { modulesConfiguration: [{ doors: '5' }] },
     splitDoorsMap: { d3_bot: 'true', splitPos_d5_top: '[0.4, 0.9]' },
     splitDoorsBottomMap: { d1: 1, drop: 0, junk: 'bad' },
+    roundedFrameSideShelvesMap: { body_left: true, body_right: false, junk: 'bad' },
     mirrorLayoutMap: { d1: [{ widthCm: '55', heightCm: 88 }, { widthCm: 0 }] },
     doorTrimMap: { d1: [{ axis: 'vertical', color: 'gold', span: 'custom', sizeCm: '11' }, { bad: true }] },
     savedColors: ['oak', { id: 'c2', value: '#222', nested: { keep: true } }, { id: '' }],
@@ -111,6 +114,7 @@ test('project config persisted snapshot readers sanitize structural and map bran
   assert.equal(persisted.cornerConfiguration.modulesConfiguration?.[0]?.doors, '5');
   assert.deepEqual({ ...persisted.splitDoorsMap }, { split_d3: true, splitpos_d5: [0.4, 0.9] });
   assert.deepEqual({ ...persisted.splitDoorsBottomMap }, { splitb_d1: true, drop: false });
+  assert.deepEqual({ ...persisted.roundedFrameSideShelvesMap }, { body_left: true, body_right: false });
   assert.deepEqual({ ...persisted.mirrorLayoutMap }, { d1: [{ widthCm: 55, heightCm: 88 }] });
   assert.equal(persisted.doorTrimMap.d1[0].sizeCm, 11);
   assert.deepEqual(persisted.savedColors, ['oak', { id: 'c2', value: '#222' }]);

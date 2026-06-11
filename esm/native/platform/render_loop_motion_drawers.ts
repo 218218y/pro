@@ -10,6 +10,11 @@ import {
 import { readFiniteNumber, readFiniteNumberOrNull } from '../runtime/render_runtime_primitives.js';
 import { getDrawerModuleKey } from '../runtime/doors_runtime_support.js';
 import { drawerVisualMatchesId, isExplicitExternalDrawerVisual } from '../runtime/drawer_visual_identity.js';
+import {
+  getSketchFreeBoxMotionScopeFromEntry,
+  isSketchFreeBoxInternalDrawerEntry,
+} from '../runtime/sketch_free_box_motion_identity.js';
+import { readSketchFreeBoxMotionTimeSinceToggle } from '../runtime/sketch_free_box_motion_state.js';
 
 import type { DebugLogFn, MotionFrameState } from './render_loop_motion_shared.js';
 import { asDrawerMotion, moveDrawerGroupPosition } from './render_loop_motion_shared.js';
@@ -154,9 +159,15 @@ export function updateRenderLoopDrawerMotions(
   for (let i = 0; i < drawers.length; i++) {
     const d = asDrawerMotion(drawers[i]);
     if (!d) continue;
+    const sketchFreeBoxScope = getSketchFreeBoxMotionScopeFromEntry(d);
+    const isSketchFreeBoxLocalDrawer = !!sketchFreeBoxScope;
+    const isSketchFreeBoxInternalDrawer = isSketchFreeBoxInternalDrawerEntry(d);
     const group = d.group;
     let isInternal = typeof wardrobeType !== 'undefined' && wardrobeType === 'sliding';
-    if (!isInternal) {
+    if (isSketchFreeBoxLocalDrawer) {
+      isInternal = isSketchFreeBoxInternalDrawer;
+      d.isInternal = isInternal;
+    } else if (!isInternal) {
       if (isExplicitExternalDrawerVisual(d)) {
         d.isInternal = false;
         isInternal = false;
@@ -165,17 +176,24 @@ export function updateRenderLoopDrawerMotions(
         isInternal = !!d.isInternal;
       }
     }
+    const scopedTimeSinceToggle = isSketchFreeBoxLocalDrawer
+      ? readSketchFreeBoxMotionTimeSinceToggle(App, sketchFreeBoxScope, frame.timeSinceToggle)
+      : frame.timeSinceToggle;
 
     let shouldOpen = frame.globalClickMode
-      ? isInternal
-        ? frame.internalDrawersShouldBeOpen
-        : frame.externalDrawersShouldBeOpen
+      ? isSketchFreeBoxLocalDrawer
+        ? isInternal
+          ? !!d.isOpen && scopedTimeSinceToggle > frame.delayTime
+          : !!d.isOpen
+        : isInternal
+          ? frame.internalDrawersShouldBeOpen
+          : frame.externalDrawersShouldBeOpen
       : !!d.isOpen;
 
     if (!frame.globalClickMode && isInternal) {
       const moduleKey = getDrawerModuleKey(d);
       const matchesOpenModule = moduleKey ? frame.localDoorModules.has(moduleKey) : frame.hasAnyLocalOpenDoor;
-      shouldOpen = !!(matchesOpenModule && frame.timeSinceToggle > frame.delayTime);
+      shouldOpen = !!(matchesOpenModule && scopedTimeSinceToggle > frame.delayTime);
     }
 
     const forceClosedBySketchExternalDrawerEdit = frame.sketchExtDrawersEditActive && !isInternal;

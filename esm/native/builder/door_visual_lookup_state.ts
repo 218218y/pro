@@ -22,8 +22,10 @@ export function buildDoorVisualLookupKeys(partId: string): string[] {
     out.push(value);
   };
 
-  if (partId.endsWith('_top') || partId.endsWith('_mid') || partId.endsWith('_bot')) {
-    push(partId.replace(/_(top|mid|bot)$/i, '_full'));
+  if (/(?:_(?:top|bot|mid\d*))$/i.test(partId)) {
+    const base = partId.replace(/_(top|bot|mid\d*)$/i, '');
+    push(`${base}_full`);
+    push(base);
   }
   if (partId.endsWith('_full')) {
     push(partId.slice(0, -5));

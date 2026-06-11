@@ -22,13 +22,13 @@ export const MULTI_LABEL_MIRROR = 'מראה';
 export const MULTI_LABEL_GLASS = 'זכוכית';
 export const MULTI_GLASS_STYLE_HEADER = 'אפשרויות זכוכית';
 export const MULTI_LABEL_GLASS_FULL = 'זכוכית מלאה';
-export const MULTI_LABEL_GLASS_TOM = 'זכוכית פרופיל תום';
+export const MULTI_LABEL_GLASS_DOUBLE_PROFILE = 'זכוכית פרופיל כפול';
 export const MULTI_CURTAIN_TITLE = 'בחר צבע וילון לדלת הזכוכית:';
 export const MULTI_MIRROR_HEIGHT = 'גובה מראה';
 export const MULTI_MIRROR_WIDTH = 'רוחב מראה';
 export const MULTI_MIRROR_AUTO = 'אוטומטי';
-export const MULTI_MIRROR_RESET_HEIGHT = 'חזרה לגובה מלא של הדלת';
-export const MULTI_MIRROR_RESET_WIDTH = 'חזרה לרוחב מלא של הדלת';
+export const MULTI_MIRROR_RESET_HEIGHT = 'חזרה לגובה מלא';
+export const MULTI_MIRROR_RESET_WIDTH = 'חזרה לרוחב מלא';
 export const MULTI_SECTION_TITLE = 'צביעה מתקדמת ותוספות';
 
 export const MULTI_GLASS_STYLE_OPTIONS: ReadonlyArray<{
@@ -39,13 +39,17 @@ export const MULTI_GLASS_STYLE_OPTIONS: ReadonlyArray<{
 }> = [
   { id: 'profile', paintId: 'glass', label: MULTI_LABEL_GLASS, curtainPreset: 'none' },
   { id: 'flat', paintId: encodeGlassFrameStylePaintToken('flat'), label: MULTI_LABEL_GLASS_FULL },
-  { id: 'tom', paintId: encodeGlassFrameStylePaintToken('tom'), label: MULTI_LABEL_GLASS_TOM },
+  {
+    id: 'double_profile',
+    paintId: encodeGlassFrameStylePaintToken('double_profile'),
+    label: MULTI_LABEL_GLASS_DOUBLE_PROFILE,
+  },
 ];
 
 export const MULTI_DOOR_STYLE_OPTIONS: ReadonlyArray<{ id: DoorStyleOverrideValue; label: string }> = [
   { id: 'flat', label: 'פוסט' },
   { id: 'profile', label: 'פרופיל' },
-  { id: 'tom', label: 'פרופיל תום' },
+  { id: 'double_profile', label: 'פרופיל כפול' },
 ];
 
 export type MultiColorSpecialSwatchDef = {

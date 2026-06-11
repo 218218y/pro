@@ -332,6 +332,7 @@ export function runTestFlow({ projectRoot, childEnv, flags, runners = {} }) {
   const selected = selectRunnableTests({
     projectRoot,
     pattern: flags.pattern,
+    shard: flags.shard,
   });
 
   if (!selected.files.length) {
@@ -339,7 +340,11 @@ export function runTestFlow({ projectRoot, childEnv, flags, runners = {} }) {
       ok: true,
       files: [],
       skippedE2E: selected.skippedE2E,
-      message: createNoTestsMessage({ skippedE2E: selected.skippedE2E }),
+      message: createNoTestsMessage({
+        skippedE2E: selected.skippedE2E,
+        shard: flags.shard,
+        totalRunnableFiles: selected.totalRunnableFiles,
+      }),
       note: '',
       failures: [],
       report: null,
@@ -359,7 +364,9 @@ export function runTestFlow({ projectRoot, childEnv, flags, runners = {} }) {
   const runBatch = runners.runBatch || defaultRunBatch;
   const useSerial = flags.serial || Boolean(runners.runOne) || selected.files.length <= 1;
 
-  console.log(createRunBanner({ files: selected.files, flags: runFlags }));
+  console.log(
+    createRunBanner({ files: selected.files, flags: runFlags, totalFiles: selected.totalRunnableFiles })
+  );
   if (notice) console.log(notice);
 
   const failures = [];
@@ -409,7 +416,11 @@ export function runTestFlow({ projectRoot, childEnv, flags, runners = {} }) {
     report,
     files: selected.files,
     skippedE2E: selected.skippedE2E,
-    banner: createRunBanner({ files: selected.files, flags: runFlags }),
+    banner: createRunBanner({
+      files: selected.files,
+      flags: runFlags,
+      totalFiles: selected.totalRunnableFiles,
+    }),
     note: notice,
     nodeArgs,
   };

@@ -26,6 +26,7 @@ type RodClearanceArgs = {
   gridDivisions?: unknown;
   manualHeightLimit?: number | null;
   woodThick?: unknown;
+  shelfThick?: unknown;
 };
 
 type RodPoint = {
@@ -73,21 +74,21 @@ function pushShelfBlocker(args: {
   effectiveBottomY: number;
   localGridStep: number;
   index: number;
-  woodThick: number;
+  shelfThick: number;
 }): void {
-  const { blockers, effectiveBottomY, localGridStep, index, woodThick } = args;
+  const { blockers, effectiveBottomY, localGridStep, index, shelfThick } = args;
   if (!(index > 0) || !(localGridStep > 0)) return;
-  pushShelfContentBlocker({ blockers, shelfY: effectiveBottomY + index * localGridStep, woodThick });
+  pushShelfContentBlocker({ blockers, shelfY: effectiveBottomY + index * localGridStep, shelfThick });
 }
 
-function pushShelfContentBlocker(args: { blockers: number[]; shelfY: number; woodThick: number }): void {
-  const { blockers, shelfY, woodThick } = args;
+function pushShelfContentBlocker(args: { blockers: number[]; shelfY: number; shelfThick: number }): void {
+  const { blockers, shelfY, shelfThick } = args;
   if (!Number.isFinite(shelfY)) return;
 
   // Hanging clothes are shortened against the visible contents resting on a shelf, not only
   // against the wooden shelf slab. Folded clothes are emitted from the shelf top upward, so
   // reserve their maximum generated stack height as a real blocker whenever contents are shown.
-  const shelfHalfH = Math.max(0, woodThick) / 2;
+  const shelfHalfH = Math.max(0, shelfThick) / 2;
   blockers.push(shelfY + shelfHalfH + FOLDED_CLOTHES_BLOCKER_HEIGHT_M);
 }
 
@@ -121,16 +122,16 @@ function collectPresetBlockers(args: {
   effectiveBottomY: number;
   localGridStep: number;
   blockers: number[];
-  woodThick: number;
+  shelfThick: number;
 }): boolean {
-  const { config, layout, effectiveBottomY, localGridStep, blockers, woodThick } = args;
+  const { config, layout, effectiveBottomY, localGridStep, blockers, shelfThick } = args;
   const preset = INTERIOR_FITTINGS_DIMENSIONS.presets;
   const rods: RodPoint[] = [];
   let hasKnownPreset = false;
 
   const addShelves = (rows: readonly number[]): void => {
     for (let i = 0; i < rows.length; i += 1) {
-      pushShelfBlocker({ blockers, effectiveBottomY, localGridStep, index: Number(rows[i]), woodThick });
+      pushShelfBlocker({ blockers, effectiveBottomY, localGridStep, index: Number(rows[i]), shelfThick });
     }
   };
   const addRod = (yFactor: number): void => {
@@ -186,14 +187,14 @@ function collectCustomBlockers(args: {
   effectiveBottomY: number;
   localGridStep: number;
   blockers: number[];
-  woodThick: number;
+  shelfThick: number;
 }): boolean {
-  const { customData, effectiveBottomY, localGridStep, blockers, woodThick } = args;
+  const { customData, effectiveBottomY, localGridStep, blockers, shelfThick } = args;
   let hasEvidence = true;
 
   const shelves = readBoolArray(customData.shelves);
   for (let i = 0; i < shelves.length; i += 1) {
-    if (shelves[i]) pushShelfBlocker({ blockers, effectiveBottomY, localGridStep, index: i + 1, woodThick });
+    if (shelves[i]) pushShelfBlocker({ blockers, effectiveBottomY, localGridStep, index: i + 1, shelfThick });
   }
 
   const rodOps = readRecordArray(customData.rodOps);
@@ -225,9 +226,9 @@ function collectCustomBlockers(args: {
   return hasEvidence;
 }
 
-function resolveWoodThick(value: unknown): number {
-  const woodThick = readNumber(value);
-  if (woodThick != null && woodThick > 0) return woodThick;
+function resolvePositiveThickness(value: unknown): number {
+  const thickness = readNumber(value);
+  if (thickness != null && thickness > 0) return thickness;
   return MATERIAL_DIMENSIONS.wood.thicknessM;
 }
 
@@ -348,8 +349,9 @@ function collectSketchExtraBlockers(args: {
   effectiveTopY: number;
   blockers: number[];
   woodThick: number;
+  shelfThick: number;
 }): boolean {
-  const { config, effectiveBottomY, effectiveTopY, blockers, woodThick } = args;
+  const { config, effectiveBottomY, effectiveTopY, blockers, woodThick, shelfThick } = args;
   const extras = isRecord(config?.sketchExtras) ? config.sketchExtras : null;
   if (!extras) return false;
   let hasEvidence = false;
@@ -372,7 +374,7 @@ function collectSketchExtraBlockers(args: {
   for (let i = 0; i < shelves.length; i += 1) {
     const y = clampNormY(shelves[i].yNorm);
     if (y != null) {
-      pushShelfContentBlocker({ blockers, shelfY: y, woodThick });
+      pushShelfContentBlocker({ blockers, shelfY: y, shelfThick });
       hasEvidence = true;
     }
   }
@@ -419,7 +421,8 @@ export function resolveInteriorRodAvailableHeight(args: RodClearanceArgs): numbe
   if (!Number.isFinite(yPos) || !Number.isFinite(effectiveBottomY)) return 0;
 
   const gridDivisions = readGridDivisions(config, args.gridDivisions);
-  const woodThick = resolveWoodThick(args.woodThick);
+  const woodThick = resolvePositiveThickness(args.woodThick);
+  const shelfThick = resolvePositiveThickness(args.shelfThick ?? args.woodThick);
   const derivedTopY =
     Number.isFinite(localGridStep) && localGridStep > 0
       ? effectiveBottomY + gridDivisions * localGridStep
@@ -432,7 +435,13 @@ export function resolveInteriorRodAvailableHeight(args: RodClearanceArgs): numbe
   const customData = isRecord(config?.customData) ? config.customData : null;
 
   if (config && config.isCustom === true && customData) {
-    hasEvidence = collectCustomBlockers({ customData, effectiveBottomY, localGridStep, blockers, woodThick });
+    hasEvidence = collectCustomBlockers({
+      customData,
+      effectiveBottomY,
+      localGridStep,
+      blockers,
+      shelfThick,
+    });
   } else {
     const layout = typeof config?.layout === 'string' ? config.layout : '';
     hasEvidence = collectPresetBlockers({
@@ -441,13 +450,19 @@ export function resolveInteriorRodAvailableHeight(args: RodClearanceArgs): numbe
       effectiveBottomY,
       localGridStep,
       blockers,
-      woodThick,
+      shelfThick,
     });
   }
 
   hasEvidence =
-    collectSketchExtraBlockers({ config, effectiveBottomY, effectiveTopY, blockers, woodThick }) ||
-    hasEvidence;
+    collectSketchExtraBlockers({
+      config,
+      effectiveBottomY,
+      effectiveTopY,
+      blockers,
+      woodThick,
+      shelfThick,
+    }) || hasEvidence;
 
   let blockerY = effectiveBottomY;
   const sameRodTolerance = Math.max(1e-5, Math.abs(localGridStep || 0) * 1e-4);

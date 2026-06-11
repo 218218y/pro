@@ -46,7 +46,7 @@ export function isCanvasPickingTransparentRestoreTarget(args: {
   let curr: HitObjectLike | null = asRecord<HitObjectLike>(object);
   while (curr && !isViewportRoot(App, curr)) {
     const userData = asRecord(curr.userData);
-    if (userData?.__wpDoorRemoved === true) return true;
+    if (userData?.__wpDoorRemoved === true || userData?.__wpRemovablePartRemoved === true) return true;
     curr = asRecord<HitObjectLike>(curr.parent);
   }
   return false;

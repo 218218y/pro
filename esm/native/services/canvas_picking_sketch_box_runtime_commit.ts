@@ -5,6 +5,7 @@ import { __wp_toModuleKey } from './canvas_picking_core_helpers.js';
 import { pickSketchFreeBoxHost } from './canvas_picking_sketch_free_boxes.js';
 import { getSketchFreeBoxContentKind } from './canvas_picking_sketch_box_dividers.js';
 import { isSketchFreeBoxUnderWardrobeColumn } from './canvas_picking_sketch_free_box_shared.js';
+import { isNoMainWardrobeSketchMode } from './canvas_picking_sketch_free_box_no_main.js';
 import {
   __wp_measureWardrobeLocalBox,
   __wp_readSketchHover,
@@ -83,7 +84,7 @@ export function tryCommitSketchFreePlacementFromHoverWithDeps(
   const floorY = wardrobeBox
     ? Math.max(0, Number(wardrobeBox.centerY) - Number(wardrobeBox.height) / 2)
     : NaN;
-  if (isBlockedFreeBoxAddHover(hoverRec, wardrobeBox)) {
+  if (!isNoMainWardrobeSketchMode(App) && isBlockedFreeBoxAddHover(hoverRec, wardrobeBox)) {
     deps.clearSketchHover(App);
     return false;
   }

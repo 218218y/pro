@@ -31,7 +31,6 @@ export function computePresetModuleInnerFaces(args: {
     renderOpsHandleCatch,
   } = args;
 
-  const BRACE_SIDE_EPS = 0.00005;
   const WALL_FACE_MATCH_TOLERANCE_M = 0.004;
 
   const findParts = (partId: string): InteriorWallMesh[] => {
@@ -173,7 +172,7 @@ export function computePresetModuleInnerFaces(args: {
   const preciseRight = faceXFromMesh(rightMesh, false);
 
   if (Number.isFinite(preciseLeft) && Number.isFinite(preciseRight) && preciseRight > preciseLeft) {
-    return { leftX: preciseLeft + BRACE_SIDE_EPS, rightX: preciseRight - BRACE_SIDE_EPS };
+    return { leftX: preciseLeft, rightX: preciseRight };
   }
 
   const walls = collectWallMeshes();

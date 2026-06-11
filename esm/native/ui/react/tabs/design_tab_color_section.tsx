@@ -18,13 +18,14 @@ export function DesignTabColorSection(props: { model: DesignTabColorSectionModel
           type="button"
           className={
             'wp-r-mini-link-toggle wp-r-mini-link-toggle--manual wp-r-front-color-shelf-mode-toggle ' +
+            'wp-r-styled-tooltip hint-bottom ' +
             (isAllShelfInheritanceMode
               ? 'wp-r-front-color-shelf-mode-toggle--all'
               : 'wp-r-front-color-shelf-mode-toggle--brace')
           }
           onClick={model.toggleFrontColorShelfInheritanceMode}
           aria-pressed={isAllShelfInheritanceMode}
-          title={
+          data-tooltip={
             isAllShelfInheritanceMode
               ? 'צביעת כל המדפים יחד עם צבע הארון'
               : 'צביעת מדפי קושרת בלבד יחד עם צבע הארון'
@@ -72,9 +73,7 @@ export function DesignTabColorSection(props: { model: DesignTabColorSectionModel
             <ColorSwatchItem
               key={id}
               className={dndExtra}
-              title={
-                model.readSavedColorName(color) + (model.canReorderColorSwatches ? ' (גרור לשינוי סדר)' : '')
-              }
+              title={model.readSavedColorName(color)}
               onPick={() => model.onPickSwatch(color)}
               saved={isSaved}
               selected={isSelected}
@@ -107,9 +106,6 @@ export function DesignTabColorSection(props: { model: DesignTabColorSectionModel
                     'swatch-lock' + (model.isSavedColorLocked(color) ? ' is-locked' : ' is-unlocked')
                   }
                   aria-label={
-                    model.isSavedColorLocked(color) ? 'צבע נעול (לחץ לשחרר)' : 'צבע לא נעול (לחץ לנעילה)'
-                  }
-                  title={
                     model.isSavedColorLocked(color) ? 'צבע נעול (לחץ לשחרר)' : 'צבע לא נעול (לחץ לנעילה)'
                   }
                   aria-pressed={!!model.isSavedColorLocked(color)}

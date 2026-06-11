@@ -2,6 +2,7 @@ import {
   normalizeColorSwatchesOrder,
   normalizeSavedColorsList,
 } from '../../../shared/maps_access_collections_shared.js';
+import { normalizeDoorMountThicknessCm } from '../../../shared/wardrobe_dimension_tokens_shared.js';
 import { cloneComparableProjectConfigValue } from './project_config_snapshot_canonical_shared.js';
 import type { ProjectConfigSnapshotCanonicalizationOptions } from './project_config_snapshot_canonical_shared.js';
 
@@ -54,6 +55,10 @@ const PROJECT_CONFIG_SCALAR_NORMALIZERS: Record<string, ProjectConfigScalarNorma
   wardrobeType: value => (value == null ? '' : String(value)),
   boardMaterial: value => (value == null ? '' : String(value)),
   doorMountMode: value => (value == null ? '' : String(value)),
+  overlayFrameThicknessCm: normalizeDoorMountThicknessCm,
+  overlayShelfThicknessCm: normalizeDoorMountThicknessCm,
+  insetFrameThicknessCm: normalizeDoorMountThicknessCm,
+  insetShelfThicknessCm: normalizeDoorMountThicknessCm,
   globalHandleType: value => (value == null ? '' : String(value)),
   customUploadedDataURL: value => (value == null ? null : String(value)),
   grooveLinesCount: normalizeGrooveLinesCount,

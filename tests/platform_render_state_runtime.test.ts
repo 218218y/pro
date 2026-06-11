@@ -51,6 +51,7 @@ test('initRenderState seeds canonical render/material/cache/meta containers on o
   assert.equal(render?.__mirrorMotionActive, false);
   assert.equal(render?.__mirrorMotionUntilMs, 0);
   assert.equal(render?.__mirrorMotionSnap, null);
+  assert.equal(render?.__mirrorWorkPending, false);
   assert.equal(render?.__splitHoverPickablesDirty, false);
   assert.equal(render?.__wpAutoHideFloorRef, null);
   assert.equal(render?.__wpAutoHideFloorRoomKey, null);

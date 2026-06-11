@@ -16,6 +16,12 @@ import {
   readRecordValue,
 } from './canvas_picking_sketch_box_vertical_content_preview_records.js';
 import type { SketchBoxVerticalPreviewState } from './canvas_picking_sketch_box_vertical_content_preview_state.js';
+import {
+  buildSketchBoxVerticalPreviewBlockers,
+  doesSketchBoxVerticalCandidateCollide,
+  findSketchBoxVerticalRemovalBlocker,
+  resolveSketchBoxVerticalRemovalPreview,
+} from './canvas_picking_sketch_box_vertical_content_occupancy.js';
 
 export function resolveSketchBoxRodPreview(
   args: ResolveSketchBoxVerticalContentPreviewArgs,
@@ -39,6 +45,7 @@ export function resolveSketchBoxRodPreview(
     boxYNormFromCenter,
     targetCenterY,
     targetHeight,
+    hasVerticalRoomFor,
   } = state;
 
   const previewDims = SKETCH_BOX_DIMENSIONS.preview;
@@ -84,6 +91,37 @@ export function resolveSketchBoxRodPreview(
     previewY = removePreviewY;
   }
 
+  const blockers = buildSketchBoxVerticalPreviewBlockers(args, state);
+  if (op === 'add') {
+    const crossRemoval = findSketchBoxVerticalRemovalBlocker({
+      blockers,
+      pointerY,
+      allowedKinds: ['shelf', 'storage'],
+      toleranceM: removeEpsShelf,
+    });
+    if (crossRemoval) {
+      return resolveSketchBoxVerticalRemovalPreview({
+        previewArgs: args,
+        state,
+        blocker: crossRemoval,
+        previewSegment,
+      });
+    }
+  }
+
+  const blockedReason =
+    op === 'add' && !hasVerticalRoomFor(rodRadius * 2)
+      ? 'no-room'
+      : op === 'add' &&
+          doesSketchBoxVerticalCandidateCollide({
+            blockers,
+            centerY: previewY,
+            heightM: rodRadius * 2,
+            blockerKinds: ['shelf', 'storage'],
+          })
+        ? 'collision'
+        : null;
+
   const rodSegment = previewSegment || activeSegment;
   const rodCenterX = readFiniteSegmentNumber(rodSegment, 'centerX') ?? targetGeo.centerX;
   const rodWidth = readFiniteSegmentNumber(rodSegment, 'width') ?? targetGeo.innerW;
@@ -99,6 +137,7 @@ export function resolveSketchBoxRodPreview(
       contentXNorm: readFiniteSegmentNumber(rodSegment, 'xNorm') ?? 0.5,
       removeId,
       removeIdx,
+      blockedReason,
     }),
     preview: {
       kind: 'rod',
@@ -109,7 +148,8 @@ export function resolveSketchBoxRodPreview(
       h: previewDims.rodPreviewHeightM,
       d: previewDims.rodPreviewDepthM,
       woodThick,
-      op,
+      op: blockedReason ? 'blocked' : op,
+      blockedReason: blockedReason ?? undefined,
     },
   };
 }

@@ -698,6 +698,76 @@ body.wp-ui-react #sidebar > :not(#reactSidebarRoot) {
   font-size: 0.82rem;
 }
 
+#reactSidebarRoot .wp-r-door-mount-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+#reactSidebarRoot .wp-r-door-thickness-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  direction: rtl;
+  width: 100%;
+}
+
+#reactSidebarRoot .wp-r-door-thickness-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  width: 100%;
+}
+
+#reactSidebarRoot .wp-r-door-thickness-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+  text-align: center;
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: #475569;
+  white-space: nowrap;
+}
+
+#reactSidebarRoot .wp-r-door-thickness-input-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--wp-r-input-h);
+  align-items: stretch;
+  gap: 6px;
+  direction: rtl;
+  width: 100%;
+  min-width: 0;
+}
+
+#reactSidebarRoot .wp-r-door-thickness-auto {
+  padding: 2px 5px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 0.62rem;
+  font-weight: 800;
+}
+
+#reactSidebarRoot .wp-r-door-thickness-input {
+  width: 100%;
+  min-width: 0;
+  height: var(--wp-r-input-h);
+  text-align: center;
+  font-weight: 800;
+}
+
+#reactSidebarRoot .wp-r-door-thickness-reset-btn {
+  align-self: stretch;
+  height: var(--wp-r-input-h);
+  margin: 0;
+}
+
 #reactSidebarRoot .wp-r-single-door-selector {
   display: flex;
   flex-wrap: nowrap;
@@ -1667,6 +1737,36 @@ body.wp-ui-react #sidebar > :not(#reactSidebarRoot) {
   background: rgba(241, 245, 249, 0.45);
 }
 
+#reactSidebarRoot .tab-content[data-tab='sketch'] .wp-sketch-no-main-row {
+  margin: 0 0 10px;
+}
+
+#reactSidebarRoot .tab-content[data-tab='sketch'] .wp-sketch-no-main-toggle {
+  width: 100%;
+  justify-content: center;
+  border-style: solid;
+}
+
+#reactSidebarRoot .tab-content[data-tab='sketch'] .wp-sketch-no-main-toggle:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+#reactSidebarRoot .tab-content[data-tab='structure'] .wp-r-no-main-restore-section {
+  padding-top: 12px;
+}
+
+#reactSidebarRoot .tab-content[data-tab='structure'] .wp-r-no-main-restore-panel {
+  margin: 0;
+}
+
+#reactSidebarRoot .tab-content[data-tab='structure'] .wp-r-no-main-restore-button {
+  width: 100%;
+  justify-content: center;
+  border-style: solid;
+}
+
 /* Sketch mode controls live inside the "חלוקות פנים" card (compact, like manual tools) */
 #reactSidebarRoot
   :is(.tab-content[data-tab='interior'], .tab-content[data-tab='sketch'])
@@ -1833,6 +1933,48 @@ body.wp-ui-react #sidebar > :not(#reactSidebarRoot) {
   .wp-tool-card--layout
   .wp-sketch-box-btn.type-option:hover {
   transform: translateY(-2px);
+}
+
+#reactSidebarRoot
+  :is(.tab-content[data-tab='interior'], .tab-content[data-tab='sketch'])
+  .wp-tool-card--layout
+  .wp-sketch-box-cell
+  .wp-r-input-row--with-addon {
+  --wp-r-link-badge-width: 34px;
+  gap: 5px;
+}
+
+#reactSidebarRoot
+  :is(.tab-content[data-tab='interior'], .tab-content[data-tab='sketch'])
+  .wp-tool-card--layout
+  .wp-sketch-box-cell
+  .wp-r-sketch-box-reset-btn {
+  width: 34px;
+  min-width: 34px;
+  max-width: 34px;
+  height: 34px;
+  padding: 0;
+  gap: 0;
+  border-radius: 6px;
+}
+
+#reactSidebarRoot
+  :is(.tab-content[data-tab='interior'], .tab-content[data-tab='sketch'])
+  .wp-tool-card--layout
+  .wp-sketch-box-cell
+  .wp-r-sketch-box-reset-btn
+  i {
+  font-size: 0.76rem;
+}
+
+#reactSidebarRoot
+  :is(.tab-content[data-tab='interior'], .tab-content[data-tab='sketch'])
+  .wp-tool-card--layout
+  .wp-sketch-box-cell
+  .wp-r-sketch-box-reset-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+  transform: none;
 }
 
 #reactSidebarRoot
@@ -4390,6 +4532,8 @@ body.wp-ui-react .hint-bottom::before {
 
 #reactSidebarRoot .wp-r-header .wp-r-header-hint.hint-bottom:hover,
 #reactSidebarRoot .wp-r-header .wp-r-header-hint.hint-bottom:focus-visible,
+body.wp-ui-react .wp-r-styled-tooltip.hint-bottom:hover,
+body.wp-ui-react .wp-r-styled-tooltip.hint-bottom:focus-visible,
 body.wp-ui-react .hint-bottom::after,
 body.wp-ui-react .hint-bottom::before {
   z-index: var(--wp-z-tooltip);
@@ -4399,6 +4543,62 @@ body.wp-ui-react .hint-bottom:hover::after,
 body.wp-ui-react .hint-bottom:hover::before {
   opacity: 1;
   visibility: visible;
+}
+
+/* Shared React tooltip: used by sidebar controls that should not rely on the browser's native title bubble. */
+body.wp-ui-react .wp-r-styled-tooltip.hint-bottom {
+  position: relative;
+  overflow: visible;
+}
+
+body.wp-ui-react .wp-r-styled-tooltip.hint-bottom::after {
+  top: calc(100% + 10px);
+  bottom: auto;
+  left: 50%;
+  transform: translateX(calc(-50% + var(--wp-r-tooltip-shift-x, 0px))) translateY(-4px);
+  width: max-content;
+  max-width: min(320px, calc(100vw - 16px));
+  white-space: normal;
+  overflow-wrap: break-word;
+  direction: rtl;
+  text-align: center;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: #1e293b;
+  color: #ffffff;
+  line-height: 1.2;
+  box-shadow: var(--wp-r-shadow-tooltip);
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease,
+    visibility 0.18s ease;
+}
+
+body.wp-ui-react .wp-r-styled-tooltip.hint-bottom::before {
+  top: calc(100% + 4px);
+  bottom: auto;
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+  border-color: transparent transparent #1e293b transparent;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease,
+    visibility 0.18s ease;
+}
+
+body.wp-ui-react .wp-r-styled-tooltip.hint-bottom:hover::after,
+body.wp-ui-react .wp-r-styled-tooltip.hint-bottom:focus-visible::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(calc(-50% + var(--wp-r-tooltip-shift-x, 0px))) translateY(0);
+}
+
+body.wp-ui-react .wp-r-styled-tooltip.hint-bottom:hover::before,
+body.wp-ui-react .wp-r-styled-tooltip.hint-bottom:focus-visible::before {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
 }
 
 /* Viewer notes eye also uses .hint-bottom. Keep this after the tooltip helper,
@@ -6992,6 +7192,28 @@ body.wp-ui-react .wp-pdf-page-annotation-tools .wp-pdf-sketch-toolbar--floating 
   color: #e9fffb;
 }
 
+#reactSidebarRoot .wp-r-theme-dark .wp-r-restore-pill {
+  background: rgba(46, 182, 125, 0.12);
+  border-color: rgba(46, 182, 125, 0.5);
+  color: #b9f8da;
+  box-shadow: var(--wp-r-shadow-action-base);
+}
+
+#reactSidebarRoot .wp-r-theme-dark .wp-r-restore-pill:hover:not(:disabled) {
+  background: linear-gradient(180deg, rgba(46, 182, 125, 0.2), rgba(46, 182, 125, 0.1));
+  border-color: rgba(124, 224, 175, 0.72);
+  color: #e9fff3;
+  filter: none;
+  box-shadow: var(--wp-r-shadow-action-hover);
+}
+
+#reactSidebarRoot .wp-r-theme-dark .wp-r-restore-pill:disabled {
+  background: var(--wp-r-dark-card-bg-muted);
+  border-color: var(--wp-r-dark-card-border);
+  color: #7d8894;
+  filter: none;
+}
+
 #reactSidebarRoot .wp-r-theme-dark .wp-r-header .header-btn-small:not(.btn-save) {
   background: #20262d;
   border-color: #3a4652;
@@ -7235,6 +7457,14 @@ body.wp-ui-react .wp-pdf-page-annotation-tools .wp-pdf-sketch-toolbar--floating 
 #reactSidebarRoot .wp-r-theme-dark .wp-sketch-row,
 #reactSidebarRoot .wp-r-theme-dark .wp-r-embedded-sketch-drawers,
 #reactSidebarRoot .wp-r-theme-dark .wp-sketch-choice-panel-inner {
+  background: var(--wp-r-dark-card-bg-muted);
+  border-color: var(--wp-r-dark-card-border);
+}
+
+/* Keep the manual division strip dark: the interior layout card owns a more-specific
+ * light surface rule for this row, so the dark override must match that ownership.
+ */
+#reactSidebarRoot .wp-r-theme-dark .tab-content[data-tab='interior'] .wp-tool-card--layout .wp-manual-row {
   background: var(--wp-r-dark-card-bg-muted);
   border-color: var(--wp-r-dark-card-border);
 }

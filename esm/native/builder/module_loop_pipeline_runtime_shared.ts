@@ -1,6 +1,10 @@
 import { asPivotEntry, asPivotEntryMap, type PivotEntryLike } from './module_loop_pipeline_shared.js';
 
-import type { BuilderCreateBoardArgsLike, BuilderCreateBoardFn } from '../../../types/index.js';
+import type {
+  BuilderCreateBoardArgsLike,
+  BuilderCreateBoardFn,
+  BuilderCreateBoardOptions,
+} from '../../../types/index.js';
 
 import type { ModuleDoorSpan } from './module_loop_pipeline_runtime_contracts.js';
 
@@ -23,7 +27,7 @@ export function readCreateBoard(value: unknown): BuilderCreateBoardFn | undefine
       z: number,
       mat: unknown,
       partId?: unknown,
-      sketchMode?: boolean
+      options?: BuilderCreateBoardOptions | null
     ): ReturnType<BuilderCreateBoardFn>;
   };
   const createBoard: CreateBoardCompat = (...args: readonly unknown[]) =>

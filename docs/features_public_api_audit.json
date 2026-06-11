@@ -25,6 +25,7 @@
     "project_config/project_config_persisted_payload_shared.js",
     "project_config/project_config_persisted_snapshot.js",
     "project_config/project_config_snapshot_canonical.js",
+    "removable_parts.js",
     "shelf_part_identity.js",
     "sketch_drawer_sizing.js",
     "sketch_stack_positioning.js",
@@ -60,6 +61,7 @@
       "project_config/project_config_persisted_snapshot.js",
       "project_config/project_config_snapshot_canonical.js"
     ],
+    "removable_parts": ["removable_parts.js"],
     "shelf_part_identity": ["shelf_part_identity.js"],
     "sketch_drawer_sizing": ["sketch_drawer_sizing.js"],
     "sketch_stack_positioning": ["sketch_stack_positioning.js"],
@@ -386,6 +388,10 @@
     {
       "file": "esm/native/builder/post_build_extras_pipeline.ts",
       "entry": "stack_split/index.js"
+    },
+    {
+      "file": "esm/native/builder/post_build_removed_parts.ts",
+      "entry": "removable_parts.js"
     },
     {
       "file": "esm/native/builder/post_build_sketch_door_cuts_modules.ts",
@@ -1214,6 +1220,14 @@
     {
       "file": "esm/native/services/canvas_picking_projection_runtime_box_wardrobe_fallback.ts",
       "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_removable_part_hover.ts",
+      "entry": "removable_parts.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_removable_part_remove_click.ts",
+      "entry": "removable_parts.js"
     },
     {
       "file": "esm/native/services/canvas_picking_shelf_hit_targets.ts",

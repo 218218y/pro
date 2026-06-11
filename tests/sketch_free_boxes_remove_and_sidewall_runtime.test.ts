@@ -130,3 +130,41 @@ test('free-box placement at side height above the wardrobe still remains availab
   assert.ok(placement.previewX >= 1.3 - 1e-9);
   assert.ok(placement.previewY >= 1.02 - 1e-9);
 });
+
+test('free-box placement at the no-main workspace floor is not blocked as under-wardrobe placement', () => {
+  const App = {
+    store: {
+      getState: () => ({
+        ui: {
+          doors: 0,
+          raw: { doors: 0, width: 0, height: 0, depth: 0 },
+        },
+        config: { wardrobeType: 'hinged' },
+      }),
+    },
+  } as never;
+  const placement = resolveSketchFreeBoxHoverPlacement(
+    makeArgs({
+      App,
+      wardrobeBox: {
+        centerX: 0,
+        centerY: 1.2,
+        centerZ: -0.3,
+        width: 1.82,
+        height: 2.4,
+        depth: 0.56,
+      },
+      wardrobeBackZ: -0.58,
+      freeBoxes: [],
+      planeX: 0,
+      planeY: 0.2,
+      boxH: 0.4,
+      intersects: [],
+      localParent: null,
+    })
+  );
+
+  assert.ok(placement);
+  assert.equal(placement.op, 'add');
+  assert.ok(Math.abs(placement.previewY - 0.206) <= 1e-9);
+});

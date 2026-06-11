@@ -17,6 +17,8 @@ import {
   removeManualLayoutBaseStorage,
   removeManualLayoutSketchExtraByIndex,
 } from './canvas_picking_manual_layout_config_ops.js';
+import { commitSketchModuleShelf } from './canvas_picking_sketch_module_vertical_content.js';
+import { toastSketchBoxContentBlocked } from './canvas_picking_sketch_box_content_blocked.js';
 
 type RecordMap = Record<string, unknown>;
 type ModuleKey = number | 'corner' | `corner:${number}` | null;
@@ -64,6 +66,11 @@ export function tryApplyManualLayoutSketchHoverClick(args: ManualLayoutSketchCli
       contentKind === 'double_door' ||
       contentKind === 'door_hinge'
     ) {
+      if (boxContentHover.blockedReason) {
+        toastSketchBoxContentBlocked(App, contentKind, boxContentHover.blockedReason);
+        __wp_clearSketchHover(App);
+        return true;
+      }
       const boxId = boxContentHover.boxId;
       __patchConfigForKey(
         __activeModuleKey,
@@ -132,6 +139,35 @@ export function tryApplyManualLayoutSketchHoverClick(args: ManualLayoutSketchCli
   }
 
   const shelfHover = __hoverOk ? readManualLayoutSketchShelfHoverIntent(__hoverRec) : null;
+  if (shelfHover && shelfHover.op === 'add') {
+    if (shelfHover.blockedReason) {
+      toastSketchBoxContentBlocked(App, 'shelf', shelfHover.blockedReason);
+      __wp_clearSketchHover(App);
+      return true;
+    }
+    const totalHeight = topY - bottomY;
+    const yNorm = shelfHover.yNorm;
+    if (!(totalHeight > 0) || typeof yNorm !== 'number' || !Number.isFinite(yNorm)) return false;
+    __patchConfigForKey(
+      __activeModuleKey,
+      cfg => {
+        const yNormClamped = Math.max(0, Math.min(1, Number(yNorm)));
+        commitSketchModuleShelf({
+          cfg,
+          bottomY,
+          totalHeight,
+          pointerY: bottomY + yNormClamped * totalHeight,
+          yNorm: yNormClamped,
+          variant: shelfHover.variant || 'double',
+          shelfDepthM: shelfHover.depthM,
+          removeEps: -1,
+        });
+      },
+      { source: 'sketch.hoverAddShelf', immediate: true }
+    );
+    __wp_clearSketchHover(App);
+    return true;
+  }
   if (shelfHover && shelfHover.op === 'remove') {
     __patchConfigForKey(
       __activeModuleKey,

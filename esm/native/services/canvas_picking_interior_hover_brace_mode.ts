@@ -20,6 +20,7 @@ import {
   hasShelfAtIndex,
   readExistingShelfVariant,
 } from './canvas_picking_interior_hover_layout_family_shared.js';
+import { tryHandleBraceShelvesFreeBoxHover } from './canvas_picking_manual_layout_free_box_content.js';
 
 export function tryHandleCanvasBraceShelvesHover(args: CanvasInteriorHoverFlowArgs): boolean {
   const {
@@ -33,8 +34,22 @@ export function tryHandleCanvasBraceShelvesHover(args: CanvasInteriorHoverFlowAr
     hideSketchPreview: hideSketchPreviewFn,
   } = args;
   try {
-    const target = __wp_resolveInteriorHoverTarget(App, raycaster, mouse, ndcX, ndcY);
     const { setPreview: setSketchPreview } = getSketchPreviewFns(previewRo);
+    if (
+      tryHandleBraceShelvesFreeBoxHover({
+        App,
+        ndcX,
+        ndcY,
+        raycaster,
+        mouse,
+        setSketchPreview,
+        hideLayoutPreview: () => hideLayoutPreview({ App, hideLayoutPreview: hideLayoutPreviewFn }),
+        hideSketchPreview: () => hideSketchPreview({ App, hideSketchPreview: hideSketchPreviewFn }),
+      })
+    ) {
+      return true;
+    }
+    const target = __wp_resolveInteriorHoverTarget(App, raycaster, mouse, ndcX, ndcY);
     if (!target || !setSketchPreview) {
       hideSketchPreview({ App, hideSketchPreview: hideSketchPreviewFn });
       hideLayoutPreview({ App, hideLayoutPreview: hideLayoutPreviewFn });

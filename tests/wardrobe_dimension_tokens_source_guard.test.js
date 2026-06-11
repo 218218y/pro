@@ -395,7 +395,6 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
     /measurementLabelZOffsetM:/,
     /objectBoxPadXYWoodRatio:/,
     /barrierHeightMinM:/,
-    /braceSeamDepthInsetM:/,
     /frontTrimZOffsetM:/,
     /opFrontZOffsetM:/,
     /renderMinSegmentHeightM:/,
@@ -419,10 +418,6 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
     ],
     ['esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts', ['DRAWER_DIMENSIONS']],
     ['esm/native/builder/render_interior_sketch_drawers_external_plan.ts', ['DRAWER_DIMENSIONS']],
-    [
-      'esm/native/builder/render_interior_sketch_support_brace_seams.ts',
-      ['INTERIOR_FITTINGS_DIMENSIONS', 'MM_PER_METER'],
-    ],
     ['esm/native/builder/render_interior_sketch_support_shelf_pins.ts', ['INTERIOR_FITTINGS_DIMENSIONS']],
     ['esm/native/builder/render_interior_sketch_support_shelves.ts', ['INTERIOR_FITTINGS_DIMENSIONS']],
     ['esm/native/builder/render_interior_sketch_boxes_shell_geometry.ts', ['SKETCH_BOX_DIMENSIONS']],

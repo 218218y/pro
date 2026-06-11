@@ -9,6 +9,7 @@ import type { MouseVectorLike, RaycasterLike } from './canvas_picking_engine.js'
 import { handleCanvasDoorTrimClick } from './canvas_picking_door_trim_click.js';
 import { handleCanvasDoorSplitClick } from './canvas_picking_door_split_click.js';
 import { handleCanvasDoorRemoveClick } from './canvas_picking_door_remove_click.js';
+import { handleCanvasRemovablePartRemoveClick } from './canvas_picking_removable_part_remove_click.js';
 import {
   handleCanvasDoorHingeClick,
   handleCanvasDoorGrooveClick,
@@ -66,6 +67,7 @@ export function tryHandleCanvasDoorEditClick(args: CanvasDoorEditClickArgs): boo
       foundPartId,
       doorHitPoint,
       doorHitObject,
+      doorHitGroup,
     });
   }
 
@@ -84,13 +86,22 @@ export function tryHandleCanvasDoorEditClick(args: CanvasDoorEditClickArgs): boo
     });
   }
 
-  if (isRemoveDoorMode && effectiveDoorId) {
-    return handleCanvasDoorRemoveClick({
-      App,
-      effectiveDoorId,
-      foundPartId,
-      foundModuleStack,
-    });
+  if (isRemoveDoorMode) {
+    if (effectiveDoorId) {
+      return handleCanvasDoorRemoveClick({
+        App,
+        effectiveDoorId,
+        foundPartId,
+        foundModuleStack,
+      });
+    }
+
+    if (foundPartId) {
+      return handleCanvasRemovablePartRemoveClick({
+        App,
+        partId: foundPartId,
+      });
+    }
   }
 
   if (isHingeEditMode && effectiveDoorId) {

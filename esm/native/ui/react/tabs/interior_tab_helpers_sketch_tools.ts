@@ -1,3 +1,4 @@
+import { SKETCH_BOX_DIMENSIONS, mToCm } from '../../../../shared/wardrobe_dimension_tokens_shared.js';
 import {
   DEFAULT_BASE_LEG_COLOR,
   DEFAULT_BASE_LEG_HEIGHT_CM,
@@ -8,6 +9,10 @@ import {
   normalizeBaseLegStyle,
   normalizeBaseLegWidthCm,
 } from '../../../features/base_leg_support.js';
+import {
+  DEFAULT_BASE_PLINTH_HEIGHT_CM,
+  normalizeBasePlinthHeightCm,
+} from '../../../features/base_plinth_support.js';
 import {
   DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM,
   DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_CM,
@@ -42,6 +47,7 @@ export const SKETCH_TOOL_SHELF_GLASS = 'sketch_shelf:glass';
 export const SKETCH_TOOL_SHELF_BRACE = 'sketch_shelf:brace';
 export const SKETCH_TOOL_ROD = 'sketch_rod';
 export const SKETCH_TOOL_BOX_DIVIDER = 'sketch_box_divider';
+export const SKETCH_TOOL_BOX_DIVIDER_HORIZONTAL = 'sketch_box_divider_horizontal';
 export const SKETCH_TOOL_BOX_DOOR = 'sketch_box_door';
 export const SKETCH_TOOL_BOX_DOUBLE_DOOR = 'sketch_box_double_door';
 export const SKETCH_TOOL_BOX_DOOR_HINGE = 'sketch_box_door_hinge';
@@ -56,6 +62,15 @@ export const SKETCH_BOX_HEIGHT_MIN_CM = 5;
 export const SKETCH_BOX_HEIGHT_MAX_CM = 300;
 export const SKETCH_BOX_OPTIONAL_DIM_MIN_CM = 5;
 export const SKETCH_BOX_OPTIONAL_DIM_MAX_CM = 300;
+export const DEFAULT_SKETCH_BOX_HEIGHT_CM = Math.round(
+  mToCm(SKETCH_BOX_DIMENSIONS.geometry.defaultOuterHeightM)
+);
+export const DEFAULT_SKETCH_BOX_WIDTH_CM = Math.round(
+  mToCm(SKETCH_BOX_DIMENSIONS.geometry.defaultOuterWidthM)
+);
+export const DEFAULT_SKETCH_BOX_DEPTH_CM = Math.round(
+  mToCm(SKETCH_BOX_DIMENSIONS.geometry.defaultOuterDepthM)
+);
 export {
   DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM,
   DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_CM,
@@ -77,6 +92,7 @@ export type SketchBoxBaseToolSpec = {
   baseLegColor: SketchBoxLegColor;
   baseLegHeightCm: number;
   baseLegWidthCm: number;
+  basePlinthHeightCm: number;
 };
 
 export function clampSketch(n: number, a: number, b: number): number {
@@ -146,10 +162,13 @@ export function readSketchBoxBaseToolSpec(tool: string): SketchBoxBaseToolSpec |
     baseLegColor: normalizeBaseLegColor(rawColor),
     baseLegHeightCm: normalizeBaseLegHeightCm(rawHeight),
     baseLegWidthCm: normalizeBaseLegWidthCm(rawWidth, getDefaultBaseLegWidthCm(baseLegStyle)),
+    basePlinthHeightCm: normalizeBasePlinthHeightCm(baseType === 'plinth' ? rawStyle : undefined),
   };
 }
 
-export function readSketchBoxBaseLegOptions(tool: string): Omit<SketchBoxBaseToolSpec, 'baseType'> | null {
+export function readSketchBoxBaseLegOptions(
+  tool: string
+): Omit<SketchBoxBaseToolSpec, 'baseType' | 'basePlinthHeightCm'> | null {
   const spec = readSketchBoxBaseToolSpec(tool);
   if (!spec) return null;
   return {
@@ -165,10 +184,17 @@ export function mkSketchBoxBaseTool(
   style: SketchBoxLegStyle = DEFAULT_BASE_LEG_STYLE,
   color: SketchBoxLegColor = DEFAULT_BASE_LEG_COLOR,
   heightCm: number = DEFAULT_BASE_LEG_HEIGHT_CM,
-  widthCm?: number
+  widthCm?: number,
+  plinthHeightCm: number = DEFAULT_BASE_PLINTH_HEIGHT_CM
 ): string {
   const normalizedType = type === 'legs' ? 'legs' : type === 'none' ? 'none' : 'plinth';
-  if (normalizedType !== 'legs') return `${SKETCH_TOOL_BOX_BASE_PREFIX}${normalizedType}`;
+  if (normalizedType === 'none') return `${SKETCH_TOOL_BOX_BASE_PREFIX}none`;
+  if (normalizedType === 'plinth') {
+    const normalizedPlinthHeight = normalizeBasePlinthHeightCm(plinthHeightCm);
+    return normalizedPlinthHeight === DEFAULT_BASE_PLINTH_HEIGHT_CM
+      ? `${SKETCH_TOOL_BOX_BASE_PREFIX}plinth`
+      : `${SKETCH_TOOL_BOX_BASE_PREFIX}plinth${SKETCH_BOX_DIM_SEP}${normalizedPlinthHeight}`;
+  }
 
   const normalizedStyle = normalizeBaseLegStyle(style);
   const normalizedColor = normalizeBaseLegColor(color);
@@ -191,6 +217,7 @@ export function isSketchBoxTool(tool: string): boolean {
   return (
     tool.startsWith(SKETCH_TOOL_BOX_PREFIX) ||
     tool === SKETCH_TOOL_BOX_DIVIDER ||
+    tool === SKETCH_TOOL_BOX_DIVIDER_HORIZONTAL ||
     tool === SKETCH_TOOL_BOX_DOOR ||
     tool === SKETCH_TOOL_BOX_DOUBLE_DOOR ||
     tool === SKETCH_TOOL_BOX_DOOR_HINGE ||

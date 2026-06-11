@@ -37,6 +37,9 @@ export type InteriorTabUiToolStateArgs = {
     currentExtDrawerCount?: unknown;
     internalDrawersEnabled?: unknown;
     handleControl?: unknown;
+    currentHandleToolType?: unknown;
+    currentHandleToolColor?: unknown;
+    currentHandleToolEdgeVariant?: unknown;
   };
   handleCfg: {
     globalHandleType?: unknown;
@@ -127,21 +130,27 @@ export function deriveInteriorTabUiToolState(args: InteriorTabUiToolStateArgs) {
   const internalDrawersEnabled = !!ui.internalDrawersEnabled;
   const handleControlEnabled = !!ui.handleControl;
   const globalHandleType = readHandleType(handleCfg.globalHandleType, 'standard');
-  const handleToolType = isHandleMode
-    ? readHandleType(modeOpts.handleType, globalHandleType)
-    : globalHandleType;
   const handlesMap = readRecord(handleCfg.handlesMap) || {};
   const globalEdgeHandleVariant = readEdgeHandleVariant(handlesMap[EDGE_HANDLE_VARIANT_GLOBAL_KEY], 'short');
   const globalHandleColor = readHandleUiColor(
     handlesMap[HANDLE_COLOR_GLOBAL_KEY],
     DEFAULT_HANDLE_FINISH_COLOR
   );
+  const storedHandleToolType = readHandleType(ui.currentHandleToolType, globalHandleType);
+  const storedHandleToolColor = readHandleUiColor(ui.currentHandleToolColor, globalHandleColor);
+  const storedHandleToolEdgeVariant = readEdgeHandleVariant(
+    ui.currentHandleToolEdgeVariant,
+    globalEdgeHandleVariant
+  );
+  const handleToolType = isHandleMode
+    ? readHandleType(modeOpts.handleType, storedHandleToolType)
+    : storedHandleToolType;
   const handleToolColor = isHandleMode
-    ? readHandleUiColor(modeOpts.handleColor, globalHandleColor)
-    : globalHandleColor;
+    ? readHandleUiColor(modeOpts.handleColor, storedHandleToolColor)
+    : storedHandleToolColor;
   const handleToolEdgeVariant = isHandleMode
-    ? readEdgeHandleVariant(modeOpts.edgeHandleVariant, globalEdgeHandleVariant)
-    : globalEdgeHandleVariant;
+    ? readEdgeHandleVariant(modeOpts.edgeHandleVariant, storedHandleToolEdgeVariant)
+    : storedHandleToolEdgeVariant;
 
   return {
     currentGridDivisions,

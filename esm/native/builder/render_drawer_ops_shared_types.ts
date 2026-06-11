@@ -21,6 +21,7 @@ export type BuilderRenderDrawerDeps = {
 
 export type DrawerConfig = {
   groovesMap?: Record<string, unknown>;
+  doorTrimMap?: Record<string, unknown>;
   drawerDividersMap?: Record<string, unknown>;
   doorSpecialMap?: Record<string, string | null | undefined>;
   doorStyleMap?: ReturnType<typeof readDoorStyleMap>;

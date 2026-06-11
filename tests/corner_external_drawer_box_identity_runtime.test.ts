@@ -55,6 +55,14 @@ class BoxGeometryStub {
   }
 }
 
+class MeshStandardMaterialStub {
+  params: unknown;
+  __keepMaterial?: boolean;
+  constructor(params: unknown) {
+    this.params = params;
+  }
+}
+
 class Vector3Stub {
   x: number;
   y: number;
@@ -78,7 +86,11 @@ function descendants(node: Object3DStub): Object3DStub[] {
   return out;
 }
 
-function makeRuntime(options?: { boxOverride?: unknown; stackKey?: 'top' | 'bottom' }) {
+function makeRuntime(options?: {
+  boxOverride?: unknown;
+  stackKey?: 'top' | 'bottom';
+  doorTrimMap?: Record<string, unknown>;
+}) {
   const whiteMat = { name: 'white' };
   const bodyMat = { name: 'body-main-painted' };
   const frontMat = { name: 'front-main-painted' };
@@ -95,6 +107,7 @@ function makeRuntime(options?: { boxOverride?: unknown; stackKey?: 'top' | 'bott
       Group: GroupStub,
       Mesh: MeshStub,
       BoxGeometry: BoxGeometryStub,
+      MeshStandardMaterial: MeshStandardMaterialStub,
       Vector3: Vector3Stub,
     },
     wingGroup,
@@ -115,7 +128,7 @@ function makeRuntime(options?: { boxOverride?: unknown; stackKey?: 'top' | 'bott
       if (partId === makeDrawerBoxPartId('lower_corner_c0_draw_1')) return boxOverrideMat || fallback;
       return fallback;
     },
-    readMapOrEmpty: () => ({}),
+    readMapOrEmpty: (_app: unknown, key: string) => (key === 'doorTrimMap' ? options?.doorTrimMap || {} : {}),
     readScopedReaderAny: () => undefined,
     __resolveSpecial: () => null,
     __getMirrorMat: () => ({ name: 'mirror' }),
@@ -222,4 +235,27 @@ test('corner lower-stack regular external drawer box uses a scoped owner id and 
   assert.equal(drawerBox?.userData.__wpDrawerOwnerPartId, 'lower_corner_c0_draw_1');
   assert.equal(drawerBox?.userData.__wpStack, 'bottom');
   assert.equal(drawerBox?.material, setup.whiteMat);
+});
+
+test('corner regular external drawer build appends configured door-trim visuals to the drawer front', () => {
+  const setup = makeRuntime({
+    doorTrimMap: {
+      corner_c0_draw_1: [{ id: 'trim-corner-drawer', axis: 'horizontal', color: 'gold', span: 'full' }],
+    },
+  });
+
+  emitCornerWingExternalDrawers(setup.runtime as any, setup.cellRuntime as any);
+
+  const drawerGroup = descendants(setup.wingGroup).find(
+    node => node.userData?.partId === 'corner_c0_draw_1' && node.userData?.__wpType === 'extDrawer'
+  );
+  assert.ok(drawerGroup, 'expected the corner drawer group to be emitted');
+  const trim = descendants(drawerGroup as Object3DStub).find(node => node.userData?.__wpDoorTrim === true) as
+    | MeshStub
+    | undefined;
+
+  assert.ok(trim, 'expected the corner drawer front to include the configured trim visual');
+  assert.equal(trim?.userData.partId, 'corner_c0_draw_1');
+  assert.equal(trim?.userData.__wpDoorTrimId, 'trim-corner-drawer');
+  assert.equal(trim?.position.z > 0, true);
 });

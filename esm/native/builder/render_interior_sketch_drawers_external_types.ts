@@ -15,7 +15,7 @@ export type SketchExternalDrawerRenderContext = ApplySketchExternalDrawersArgs &
   visualT: number;
   frontZ: number;
   outlineFn: ((value: unknown) => unknown) | null;
-  doorStyle: 'flat' | 'profile' | 'tom';
+  doorStyle: 'flat' | 'profile' | 'double_profile';
   doorStyleMap: DoorStyleMap;
   drawersArray: DrawerVisualEntryLike[];
   doorFaceTopY: number;

@@ -9,8 +9,13 @@ import {
   reportStructureWorkflowNonFatal,
 } from './structure_tab_workflows_controller_shared.js';
 
+export type StructureTabWorkflowCellDimsArgs = Pick<
+  CreateStructureTabWorkflowControllerArgs,
+  'fb' | 'ops' | 'state'
+>;
+
 export function createStructureTabWorkflowCellDimsApi(
-  args: CreateStructureTabWorkflowControllerArgs
+  args: StructureTabWorkflowCellDimsArgs
 ): Pick<
   StructureTabWorkflowController,
   | 'resetAllCellDimsOverrides'

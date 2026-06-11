@@ -69,3 +69,40 @@ test('manual-layout hover click removes one sketch shelf from sketch extras with
   assert.equal(applied, true);
   assert.deepEqual(shelves, ['s2']);
 });
+
+test('manual-layout hover click adds the shelf at the preview yNorm even when a nearby board is also hit', () => {
+  const cfg: Record<string, unknown> = {
+    sketchExtras: {
+      shelves: [{ id: 'existing', yNorm: 0.25, variant: 'regular' }],
+    },
+  };
+  let patchMeta: Record<string, unknown> | null = null;
+  let cleared = false;
+
+  const applied = tryApplyManualLayoutSketchHoverClick({
+    App: {} as never,
+    __activeModuleKey: 0,
+    topY: 2.4,
+    bottomY: 0,
+    __gridInfo: { gridDivisions: 6 },
+    __hoverRec: { kind: 'shelf', op: 'add', yNorm: 0.5, variant: 'glass', depthM: 0.42 },
+    __hoverOk: true,
+    __patchConfigForKey: (_mk, patchFn, meta) => {
+      patchMeta = { ...meta };
+      patchFn(cfg);
+      return null;
+    },
+    __wp_clearSketchHover: () => {
+      cleared = true;
+    },
+  });
+
+  const shelves = ((cfg.sketchExtras as { shelves?: Array<Record<string, unknown>> }) || {}).shelves ?? [];
+  assert.equal(applied, true);
+  assert.equal(cleared, true);
+  assert.deepEqual(patchMeta, { source: 'sketch.hoverAddShelf', immediate: true });
+  assert.deepEqual(shelves, [
+    { id: 'existing', yNorm: 0.25, variant: 'regular' },
+    { yNorm: 0.5, variant: 'glass', depthM: 0.42 },
+  ]);
+});

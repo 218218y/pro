@@ -10,6 +10,7 @@ test('[interior-view-state-controller] centralizes sketch and door-trim sync sid
     wardrobeType: 'sliding',
     isExtDrawerMode: true,
     modeExtDrawer: 'ext_drawer',
+    modeManualLayout: 'manual_layout',
     isSketchToolActive: true,
     isSketchDivisionToolActive: true,
     manualToolRaw: 'sketch_shelf:glass@27',
@@ -29,6 +30,7 @@ test('[interior-view-state-controller] centralizes sketch and door-trim sync sid
     wardrobeType: 'hinged',
     isExtDrawerMode: false,
     modeExtDrawer: 'ext_drawer',
+    modeManualLayout: 'manual_layout',
     isSketchToolActive: true,
     isSketchDivisionToolActive: false,
     manualToolRaw: 'sketch_box:42@60@55',
@@ -87,4 +89,46 @@ test('[interior-view-state-controller] centralizes sketch and door-trim sync sid
       ['setSketchIntDrawerHeightDraft', '24'],
     ])
   );
+});
+
+test('[interior-view-state-controller] syncs sketch box plinth height from the active base tool', () => {
+  const { calls, controller } = createInteriorViewStateControllerHarness();
+
+  controller.syncSketchBoxBaseState(true, 'sketch_box_base:plinth@14.5');
+
+  assert.deepEqual(calls, [
+    ['setSketchBoxBaseType', 'plinth'],
+    ['setSketchBoxPlinthHeightCm', 14.5],
+    ['setSketchBoxPlinthHeightDraft', '14.5'],
+    ['setSketchBoxLegStyle', 'tapered'],
+    ['setSketchBoxLegColor', 'black'],
+    ['setSketchBoxLegHeightCm', 12],
+    ['setSketchBoxLegHeightDraft', '12'],
+    ['setSketchBoxLegWidthCm', 4],
+    ['setSketchBoxLegWidthDraft', '4'],
+    ['setSketchBoxBasePanelOpen', true],
+  ]);
+});
+
+test('[interior-view-state-controller] sliding wardrobe exits hidden sketch external drawers without reopening them', () => {
+  const { calls, controller } = createInteriorViewStateControllerHarness();
+
+  controller.syncFromViewState({
+    wardrobeType: 'sliding',
+    isExtDrawerMode: false,
+    modeExtDrawer: 'ext_drawer',
+    modeManualLayout: 'manual_layout',
+    isSketchToolActive: true,
+    isSketchDivisionToolActive: false,
+    manualToolRaw: 'sketch_ext_drawers:4@28',
+    isDoorTrimMode: false,
+    modeOpts: {},
+    isManualLayoutMode: false,
+    manualTool: 'shelf',
+  });
+
+  assert.deepEqual(calls, [
+    ['setSketchExtDrawersPanelOpen', false],
+    ['exitPrimaryMode', { id: 'app' }, 'manual_layout'],
+  ]);
 });

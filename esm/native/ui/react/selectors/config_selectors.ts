@@ -23,6 +23,7 @@ import { readModulesConfigurationListFromConfigSnapshot } from '../../../feature
 import { moduleHasAnyActiveSpecialDims } from '../../../features/special_dims/special_dims.js';
 import { moduleHasHexCell } from '../../../features/hex_cell/index.js';
 import { hasSketchInternalDrawersDirtyOrData } from '../../../features/sketch_drawer_sizing.js';
+import { resolveDoorMountThicknessesFromConfig } from '../../../../shared/wardrobe_dimension_tokens_shared.js';
 
 type CornerDrawersLike = {
   sketchExtras?: { drawers?: unknown[] } | null;
@@ -64,6 +65,18 @@ function isCornerDrawersLike(value: unknown): value is CornerDrawersLike {
   return isRecord(value);
 }
 
+function hasFreeBoxCellDimsOverrides(value: unknown): boolean {
+  const mod = readRecord(value);
+  const extra = readRecord(mod?.sketchExtras);
+  const boxes = Array.isArray(extra?.boxes) ? extra.boxes : [];
+  for (const item of boxes) {
+    const box = readRecord(item);
+    if (!box || box.freePlacement !== true) continue;
+    if (moduleHasAnyActiveSpecialDims(box, 0) || moduleHasHexCell(box)) return true;
+  }
+  return false;
+}
+
 export function selectWardrobeType(cfg: ConfigStateLike): 'hinged' | 'sliding' {
   const v = readConfigScalarOrDefault(cfg, 'wardrobeType');
   return v === 'sliding' ? 'sliding' : 'hinged';
@@ -77,6 +90,10 @@ export function selectBoardMaterial(cfg: ConfigStateLike): 'sandwich' | 'melamin
 export function selectDoorMountMode(cfg: ConfigStateLike): 'overlay' | 'inset' {
   const v = readConfigScalarOrDefault(cfg, 'doorMountMode');
   return v === 'inset' ? 'inset' : 'overlay';
+}
+
+export function selectDoorMountThicknessControls(cfg: ConfigStateLike) {
+  return resolveDoorMountThicknessesFromConfig(cfg);
 }
 
 export function selectIsManualWidth(cfg: ConfigStateLike): boolean {
@@ -164,6 +181,7 @@ export function selectHasAnyCellDimsOverrides(cfg: ConfigStateLike): boolean {
     for (const item of modules) {
       if (!isModuleConfigReadLike(item)) continue;
       if (moduleHasAnyActiveSpecialDims(item, 0) || moduleHasHexCell(item)) return true;
+      if (hasFreeBoxCellDimsOverrides(item)) return true;
     }
   } catch {
     return false;

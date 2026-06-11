@@ -161,6 +161,7 @@ export type DoorActionHoverArgs = DoorHoverResolverArgs & {
   canonDoorPartKeyForMaps: CanonDoorPartKeyForMapsFn;
   preferredFacePreviewPartId?: string | null;
   preferredFacePreviewHitObject?: HitObjectLike | null;
+  preferredFacePreviewHitPoint?: { x?: number; y?: number; z?: number } | null;
 };
 
 export type SplitDoorHoverArgs = DoorHoverResolverArgs & {

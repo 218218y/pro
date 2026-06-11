@@ -56,6 +56,12 @@ const FakeTHREE = {
       this.args = args;
     }
   },
+  MeshStandardMaterial: class FakeMeshStandardMaterial {
+    args: Record<string, unknown>;
+    constructor(args: Record<string, unknown>) {
+      this.args = args;
+    }
+  },
   DoubleSide: 2,
   BoxGeometry: class FakeBoxGeometry {
     width: number;
@@ -131,6 +137,73 @@ test('segmented sketch door rebuild retags the full visual subtree with the cano
   const secondSegment = doorGroup.children[1];
   assert.equal(secondSegment.userData.partId, 'd3_top');
   assert.equal(secondSegment.userData.__wpSketchDoorSegmentIndex, 1);
+});
+
+test('segmented sketch door rebuild replays door trim visuals per surviving split leaf', () => {
+  const doorGroup = new FakeGroup();
+  doorGroup.userData = {
+    partId: 'sketch_box_0_sb_1_door_left',
+    __doorWidth: 0.8,
+    __doorHeight: 1.8,
+    __hingeLeft: true,
+    __wpFrontThickness: 0.02,
+  };
+  doorGroup.position.set(0, 0.9, 0);
+
+  const runtime = {
+    App: {},
+    THREE: FakeTHREE,
+    bodyMat: { name: 'body' },
+    globalFrontMat: { name: 'front' },
+    createDoorVisual: () => new FakeGroup(),
+    createHandleMesh: null,
+    getPartMaterial: () => ({ name: 'resolved' }),
+    getMirrorMaterial: null,
+    resolveHandleType: () => 'standard',
+    resolveCurtain: () => null,
+    resolveSpecial: () => null,
+    doorStyle: 'flat',
+    doorStyleMap: {},
+    groovesMap: {},
+    doorTrimMap: {
+      sketch_box_0_sb_1_door_left_top: [
+        {
+          id: 'trim_top',
+          axis: 'horizontal',
+          color: 'nickel',
+          span: 'full',
+          centerYNorm: 0.5,
+        },
+      ],
+    },
+    resolveMirrorLayout: () => null,
+    isDoorRemoved: () => false,
+  };
+
+  rebuildSketchSegmentedDoor({
+    runtime,
+    g: doorGroup,
+    ud: doorGroup.userData,
+    visibleSegments: [
+      { yMin: 0, yMax: 0.7 },
+      { yMin: 1.1, yMax: 1.8 },
+    ],
+    basePartId: 'sketch_box_0_sb_1_door_left',
+  });
+
+  assert.equal(doorGroup.children.length, 2);
+  const bottom = doorGroup.children[0];
+  const top = doorGroup.children[1];
+  assert.equal(bottom.userData.partId, 'sketch_box_0_sb_1_door_left_bot');
+  assert.equal(
+    bottom.children.some(child => child.userData.__wpDoorTrim === true),
+    false
+  );
+  const trim = top.children.find(child => child.userData.__wpDoorTrim === true);
+  assert.ok(trim);
+  assert.equal(trim.userData.partId, 'sketch_box_0_sb_1_door_left_top');
+  assert.equal(trim.userData.__wpDoorTrimId, 'trim_top');
+  assert.equal((trim as FakeMesh).geometry.width, 0.796);
 });
 
 test('segmented sketch mirror rebuild reuses canonical mirror material path and marks centered leaf metadata for hover', () => {
@@ -221,7 +294,7 @@ test('segmented sketch door rebuild resolves per-segment style/material/removal 
     resolveCurtain: () => null,
     resolveSpecial: () => null,
     doorStyle: 'flat',
-    doorStyleMap: { d7_top: 'tom', d7_bot: 'profile' },
+    doorStyleMap: { d7_top: 'double_profile', d7_bot: 'profile' },
     groovesMap: {},
     resolveMirrorLayout: () => null,
     isDoorRemoved: (partId: string) => partId === 'd7_top',

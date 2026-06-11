@@ -1,4 +1,4 @@
-import type { ReactElement } from 'react';
+import { useCallback, type ReactElement } from 'react';
 
 import { useApp, useMeta, useUiFeedback } from '../hooks.js';
 import { TabPanel } from '../components/index.js';
@@ -20,6 +20,8 @@ import {
 import { ProjectPanel } from '../panels/ProjectPanel.js';
 import { useStructureTabViewState } from './use_structure_tab_view_state.js';
 import { useStructureTabWorkflows } from './use_structure_tab_workflows.js';
+import { runPerfAction } from '../../../services/api.js';
+import { toggleSketchNoMainWardrobe } from './sketch_tab_no_main_toggle.js';
 
 export function StructureTabView(props: { active: boolean }): ReactElement {
   return <StructureTabInner active={props.active} />;
@@ -82,10 +84,29 @@ function StructureTabInner(props: { active: boolean }) {
     chestCommodeMirrorWidthManual: state.chestCommodeMirrorWidthManual,
   });
 
-  const dimensionsSectionVisible = !state.isLibraryMode && !state.isChestMode;
+  const noMainWardrobeActive = !state.isSliding && !state.isChestMode && state.doors === 0;
+  const auxiliaryModesVisible = !state.isSliding && !noMainWardrobeActive;
+  const effectiveLibraryMode = auxiliaryModesVisible && state.isLibraryMode;
+  const effectiveChestMode = auxiliaryModesVisible && state.isChestMode;
+  const hideWardrobeTypeOptions = effectiveChestMode || noMainWardrobeActive;
+  const dimensionsSectionVisible = !effectiveLibraryMode && !effectiveChestMode;
+  const restoreMainWardrobe = useCallback(() => {
+    if (!noMainWardrobeActive) return;
+    runPerfAction(
+      app,
+      'structure.noMainWardrobe.restore',
+      () => {
+        const result = toggleSketchNoMainWardrobe({ app, meta });
+        fb.toast('הארון הראשי חזר למצב הקודם.', 'success');
+        return result;
+      },
+      { detail: { source: 'structure-tab' } }
+    );
+  }, [app, fb, meta, noMainWardrobeActive]);
+
   const dimensionsProps = {
     isSliding: state.isSliding,
-    isLibraryMode: state.isLibraryMode,
+    isLibraryMode: effectiveLibraryMode,
     libraryUpperDoorsHidden: state.libraryUpperDoorsHidden,
     isManualWidth: state.isManualWidth,
     width: state.width,
@@ -93,6 +114,8 @@ function StructureTabInner(props: { active: boolean }) {
     depth: state.depth,
     doors: state.doors,
     cellDimsEditActive: state.cellDimsEditActive,
+    cellDimsPanelOpen: state.cellDimsPanelOpen,
+    cellDimsHexPanelOpen: state.cellDimsHexPanelOpen,
     hasAnyCellDimsOverrides: state.hasAnyCellDimsOverrides,
     defaultCellWidth: state.defaultCellWidth,
     cellDimsWidth: state.cellDimsWidth,
@@ -127,6 +150,8 @@ function StructureTabInner(props: { active: boolean }) {
     onPickLibraryGlass: workflows.pickLibraryGlass,
     renderStackLinkBadge: workflows.renderStackLinkBadge,
     onResetAutoWidth: workflows.resetAutoWidth,
+    noMainWardrobeActive,
+    onRestoreMainWardrobe: restoreMainWardrobe,
   };
 
   const dimensionsContent = <StructureDimensionsContent {...dimensionsProps} />;
@@ -136,85 +161,96 @@ function StructureTabInner(props: { active: boolean }) {
       <ProjectPanel />
 
       <div className="control-section wp-r-section-transparent">
-        <TypeSelector />
+        <TypeSelector hideTypeOptions={hideWardrobeTypeOptions} />
       </div>
 
       <SavedModelsPanel />
 
       <StructureDimensionsSection visible={dimensionsSectionVisible} {...dimensionsProps} />
 
-      <StructureBodySection
-        baseType={state.baseType}
-        baseLegStyle={state.baseLegStyle}
-        baseLegColor={state.baseLegColor}
-        basePlinthHeightCm={state.basePlinthHeightCm}
-        baseLegHeightCm={state.baseLegHeightCm}
-        baseLegWidthCm={state.baseLegWidthCm}
-        isChestMode={state.isChestMode}
-        isSliding={state.isSliding}
-        slidingTracksColor={state.slidingTracksColor}
-        shouldShowStructureButtons={state.shouldShowStructureButtons}
-        patterns={state.patterns}
-        structureSelect={state.structureSelect}
-        shouldShowSingleDoor={state.shouldShowSingleDoor}
-        doors={state.doors}
-        singleDoorPosRaw={state.singleDoorPosRaw}
-        shouldShowHingeBtn={state.shouldShowHingeBtn}
-        hingeDirection={state.hingeDirection}
-        hingeEditActive={state.hingeEditActive}
-        onSetBaseType={workflows.setBaseType}
-        onSetBaseLegStyle={workflows.setBaseLegStyle}
-        onSetBaseLegColor={workflows.setBaseLegColor}
-        onSetBasePlinthHeightCm={workflows.setBasePlinthHeightCm}
-        onSetBaseLegHeightCm={workflows.setBaseLegHeightCm}
-        onSetBaseLegWidthCm={workflows.setBaseLegWidthCm}
-        onSetSlidingTracksColor={workflows.setSlidingTracksColor}
-        onCommitStructural={workflows.commitStructural}
-        onSetHingeDirection={value => setHingeDirection(value, 'react:structure:hinge:toggle')}
-        onEnterHingeEditMode={() => enterHingeEditMode('react:structure:hinge:edit')}
-        onExitHingeEditMode={() => exitHingeEditMode('react:structure:hinge:finish')}
-      />
+      {!noMainWardrobeActive ? (
+        <StructureBodySection
+          baseType={state.baseType}
+          baseLegStyle={state.baseLegStyle}
+          baseLegColor={state.baseLegColor}
+          basePlinthHeightCm={state.basePlinthHeightCm}
+          baseLegHeightCm={state.baseLegHeightCm}
+          baseLegWidthCm={state.baseLegWidthCm}
+          isChestMode={effectiveChestMode}
+          isSliding={state.isSliding}
+          hideBaseTypeControls={false}
+          slidingTracksColor={state.slidingTracksColor}
+          shouldShowStructureButtons={state.shouldShowStructureButtons}
+          patterns={state.patterns}
+          structureSelect={state.structureSelect}
+          shouldShowSingleDoor={state.shouldShowSingleDoor}
+          doors={state.doors}
+          singleDoorPosRaw={state.singleDoorPosRaw}
+          shouldShowHingeBtn={state.shouldShowHingeBtn}
+          hingeDirection={state.hingeDirection}
+          hingeEditActive={state.hingeEditActive}
+          onSetBaseType={workflows.setBaseType}
+          onSetBaseLegStyle={workflows.setBaseLegStyle}
+          onSetBaseLegColor={workflows.setBaseLegColor}
+          onSetBasePlinthHeightCm={workflows.setBasePlinthHeightCm}
+          onSetBaseLegHeightCm={workflows.setBaseLegHeightCm}
+          onSetBaseLegWidthCm={workflows.setBaseLegWidthCm}
+          onSetSlidingTracksColor={workflows.setSlidingTracksColor}
+          onCommitStructural={workflows.commitStructural}
+          onSetHingeDirection={value => setHingeDirection(value, 'react:structure:hinge:toggle')}
+          onEnterHingeEditMode={() => enterHingeEditMode('react:structure:hinge:edit')}
+          onExitHingeEditMode={() => exitHingeEditMode('react:structure:hinge:finish')}
+        />
+      ) : null}
 
-      <StructureCornerSection
-        cornerMode={state.cornerMode}
-        cornerSide={state.cornerSide}
-        cornerDoors={state.cornerDoors}
-        cornerWidth={state.cornerWidth}
-        cornerHeight={state.cornerHeight}
-        cornerDepth={state.cornerDepth}
-        onToggleCornerMode={toggleCornerMode}
-        onToggleCornerSide={toggleCornerSide}
-        onCommitCornerDoors={commitCornerDoors}
-        onCommitCornerWidth={commitCornerWidth}
-        onCommitCornerHeight={commitCornerHeight}
-        onCommitCornerDepth={commitCornerDepth}
-      />
+      {!effectiveChestMode && !noMainWardrobeActive ? (
+        <StructureCornerSection
+          cornerMode={state.cornerMode}
+          cornerSide={state.cornerSide}
+          cornerDoors={state.cornerDoors}
+          cornerWidth={state.cornerWidth}
+          cornerHeight={state.cornerHeight}
+          cornerDepth={state.cornerDepth}
+          onToggleCornerMode={toggleCornerMode}
+          onToggleCornerSide={toggleCornerSide}
+          onCommitCornerDoors={commitCornerDoors}
+          onCommitCornerWidth={commitCornerWidth}
+          onCommitCornerHeight={commitCornerHeight}
+          onCommitCornerDepth={commitCornerDepth}
+        />
+      ) : null}
 
-      <StructureChestSection
-        isChestMode={state.isChestMode}
-        chestDrawersCount={state.chestDrawersCount}
-        chestCommodeEnabled={state.chestCommodeEnabled}
-        chestCommodeMirrorHeightCm={state.chestCommodeMirrorHeightCm}
-        chestCommodeMirrorWidthCm={state.chestCommodeMirrorWidthCm}
-        chestCommodeMirrorWidthManual={state.chestCommodeMirrorWidthManual}
-        width={state.width}
-        height={state.height}
-        depth={state.depth}
-        onToggleChestMode={toggleChestMode}
-        onToggleChestCommode={toggleChestCommode}
-        onSetRaw={workflows.setRaw}
-        onSetChestDrawersCount={setChestDrawersCount}
-        onSetChestCommodeMirrorHeight={setChestCommodeMirrorHeight}
-        onSetChestCommodeMirrorWidth={setChestCommodeMirrorWidth}
-        onSetChestCommodeMirrorWidthManual={setChestCommodeMirrorWidthManual}
-      />
+      {auxiliaryModesVisible ? (
+        <>
+          <StructureChestSection
+            isChestMode={state.isChestMode}
+            chestDrawersCount={state.chestDrawersCount}
+            chestCommodeEnabled={state.chestCommodeEnabled}
+            chestCommodeMirrorHeightCm={state.chestCommodeMirrorHeightCm}
+            chestCommodeMirrorWidthCm={state.chestCommodeMirrorWidthCm}
+            chestCommodeMirrorWidthManual={state.chestCommodeMirrorWidthManual}
+            width={state.width}
+            height={state.height}
+            depth={state.depth}
+            onToggleChestMode={toggleChestMode}
+            onToggleChestCommode={toggleChestCommode}
+            onSetRaw={workflows.setRaw}
+            onSetChestDrawersCount={setChestDrawersCount}
+            onSetChestCommodeMirrorHeight={setChestCommodeMirrorHeight}
+            onSetChestCommodeMirrorWidth={setChestCommodeMirrorWidth}
+            onSetChestCommodeMirrorWidthManual={setChestCommodeMirrorWidthManual}
+          />
 
-      <StructureLibrarySection
-        isLibraryMode={state.isLibraryMode}
-        isChestMode={state.isChestMode}
-        dimensionsContent={dimensionsContent}
-        onToggleLibraryMode={workflows.toggleLibraryMode}
-      />
+          {!effectiveChestMode ? (
+            <StructureLibrarySection
+              isLibraryMode={state.isLibraryMode}
+              isChestMode={state.isChestMode}
+              dimensionsContent={dimensionsContent}
+              onToggleLibraryMode={workflows.toggleLibraryMode}
+            />
+          ) : null}
+        </>
+      ) : null}
     </TabPanel>
   );
 }

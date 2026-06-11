@@ -9,12 +9,25 @@ import {
   type BaseLegColor,
   type BaseLegStyle,
 } from '../features/base_leg_support.js';
+import { normalizeBasePlinthHeightCm } from '../features/base_plinth_support.js';
 import { asRecord, isRecord } from '../runtime/record.js';
 
 export type SketchBoxDividerState = {
   id: string;
   xNorm: number;
   centered: boolean;
+  frontZ?: number;
+  /** Undefined means a full-height vertical divider. */
+  yNorm?: number;
+};
+
+export type SketchBoxHorizontalDividerState = {
+  id: string;
+  yNorm: number;
+  centered: boolean;
+  frontZ?: number;
+  /** Undefined means a full-width horizontal divider. */
+  xNorm?: number;
 };
 
 export type SketchBoxSegmentState = {
@@ -26,6 +39,15 @@ export type SketchBoxSegmentState = {
   xNorm: number;
 };
 
+export type SketchBoxVerticalSegmentState = {
+  index: number;
+  bottomY: number;
+  topY: number;
+  centerY: number;
+  height: number;
+  yNorm: number;
+};
+
 export type SketchBoxAdornmentCorniceType = 'classic' | 'wave';
 export type SketchBoxAdornmentBaseType = 'plinth' | 'legs' | 'none';
 export type SketchBoxAdornmentBaseToolSpec = {
@@ -34,11 +56,13 @@ export type SketchBoxAdornmentBaseToolSpec = {
   baseLegColor: BaseLegColor;
   baseLegHeightCm: number;
   baseLegWidthCm: number;
+  basePlinthHeightCm: number;
 };
 
 export type SketchBoxDoorState = {
   id: string;
   xNorm: number;
+  yNorm?: number;
   hinge: 'left' | 'right';
   enabled: boolean;
   open: boolean;
@@ -50,6 +74,7 @@ export type SketchBoxDoorPlacement = {
   door: SketchBoxDoorState;
   index: number;
   segment: SketchBoxSegmentState | null;
+  verticalSegment: SketchBoxVerticalSegmentState | null;
 };
 
 export function readFiniteNumber(value: unknown): number | null {
@@ -63,6 +88,12 @@ export function readDividerRecordList(value: unknown): UnknownRecord[] {
 
 export function normalizeSketchBoxDividerXNorm(dividerXNorm: unknown): number | null {
   const n = Number(dividerXNorm);
+  if (!Number.isFinite(n)) return null;
+  return Math.max(0, Math.min(1, n));
+}
+
+export function normalizeSketchBoxDividerYNorm(dividerYNorm: unknown): number | null {
+  const n = Number(dividerYNorm);
   if (!Number.isFinite(n)) return null;
   return Math.max(0, Math.min(1, n));
 }
@@ -108,6 +139,7 @@ export function parseSketchBoxBaseToolSpec(tool: string): SketchBoxAdornmentBase
     baseLegColor: normalizeBaseLegColor(rawColor),
     baseLegHeightCm: normalizeBaseLegHeightCm(rawHeight),
     baseLegWidthCm: normalizeBaseLegWidthCm(rawWidth, getDefaultBaseLegWidthCm(baseLegStyle)),
+    basePlinthHeightCm: normalizeBasePlinthHeightCm(raw === 'plinth' ? rawStyle : undefined),
   };
 }
 
@@ -127,6 +159,7 @@ export function getSketchFreeBoxContentKind(
   | 'ext_drawers'
   | '' {
   if (tool === 'sketch_box_divider') return 'divider';
+  if (tool === 'sketch_box_divider_horizontal') return 'divider';
   if (tool.startsWith('sketch_shelf:')) return 'shelf';
   if (tool === 'sketch_rod') return 'rod';
   if (tool.startsWith('sketch_storage:')) return 'storage';
@@ -145,12 +178,14 @@ export function normalizeSketchBoxDoorState(raw: unknown, fallbackId: string): S
   if (!rec) return null;
   const xNorm = normalizeSketchBoxDividerXNorm(rec.xNorm);
   if (xNorm == null) return null;
+  const yNorm = normalizeSketchBoxDividerYNorm(rec.yNorm);
   const idRaw = rec.id;
   const id = idRaw != null && String(idRaw) ? String(idRaw) : fallbackId;
   const hingeRaw = typeof rec.hinge === 'string' ? String(rec.hinge).trim().toLowerCase() : '';
   return {
     id,
     xNorm,
+    ...(yNorm != null ? { yNorm } : {}),
     hinge: hingeRaw === 'right' ? 'right' : 'left',
     enabled: rec.enabled !== false,
     open: rec.open === true,

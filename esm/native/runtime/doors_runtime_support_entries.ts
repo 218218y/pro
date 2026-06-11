@@ -3,6 +3,7 @@ import type { DoorVisualEntryLike, DrawerVisualEntryLike } from '../../../types'
 import { readConfigScalarOrDefaultFromApp } from './config_selectors.js';
 import { getPlatformPerf } from './platform_access.js';
 import { getDoorsArray, getDrawersArray } from './render_access.js';
+import { isSketchFreeBoxMotionControlledEntry } from './sketch_free_box_motion_identity.js';
 import {
   type AppLike,
   type DoorUserDataLike,
@@ -68,7 +69,7 @@ export function wardrobeType(App: AppLike): string | null {
 }
 
 function isDrawerEntryInternal(App: AppLike, drawer: DrawerVisualEntryLike | null | undefined): boolean {
-  if (!drawer) return false;
+  if (!drawer || isSketchFreeBoxMotionControlledEntry(drawer)) return false;
 
   const userData = getGroupUserData(drawer.group || null);
   const isExtDrawer = !!(userData && userData.__wpType === 'extDrawer');

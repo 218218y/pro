@@ -14,6 +14,7 @@ const KNOWN_MAP_NAMES: KnownMapName[] = [
   'groovesMap',
   'grooveLinesCountMap',
   'removedDoorsMap',
+  'roundedFrameSideShelvesMap',
   'curtainMap',
   'individualColors',
   'doorSpecialMap',
@@ -183,7 +184,7 @@ export function normalizeDoorStyleMap(value: unknown): MapsByName['doorStyleMap'
     const entry = typeof rec[key] === 'string' ? String(rec[key]).trim().toLowerCase() : '';
     const mapKey = toDoorStyleMapKey(key);
     if (!mapKey) continue;
-    if (entry === 'flat' || entry === 'profile' || entry === 'tom') {
+    if (entry === 'flat' || entry === 'profile' || entry === 'double_profile') {
       if (mapKey === key || typeof out[mapKey] === 'undefined') out[mapKey] = entry;
     }
   }

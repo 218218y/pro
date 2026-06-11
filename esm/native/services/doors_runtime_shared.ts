@@ -24,6 +24,7 @@ export {
   hasAnyOpenDoor,
   hasInternalDrawers,
   hasOpenInternalDrawers,
+  isInteriorDoorEditModeActive,
   isInvalidNumber,
   isManualLayoutEditActive,
   isRecord,

@@ -4,6 +4,27 @@ import { readRecord } from './build_flow_readers.js';
 
 import type { AppContainer, BuilderDoorStateAccessorsLike, UnknownRecord } from '../../../types';
 
+function buildLocalBottomHingeMap(args: { cfg: UnknownRecord; lowerDoorIdOffset: number }): UnknownRecord {
+  const c = readRecord(args.cfg);
+  const rawHingeMap = c ? readRecord(c.hingeMap) : null;
+  const out: UnknownRecord = {};
+  if (!rawHingeMap) return out;
+
+  for (const key of Object.keys(rawHingeMap)) {
+    const m = /^door_hinge_(\d+)$/.exec(key);
+    if (!m || !m[1]) continue;
+
+    const globalDoorId = Number(m[1]);
+    if (!Number.isFinite(globalDoorId) || globalDoorId <= args.lowerDoorIdOffset) continue;
+
+    const localDoorId = globalDoorId - args.lowerDoorIdOffset;
+    if (!Number.isInteger(localDoorId) || localDoorId < 1) continue;
+    out[`door_hinge_${localDoorId}`] = rawHingeMap[key];
+  }
+
+  return out;
+}
+
 export function buildShiftedBottomHingedPivotMap(args: {
   cfg: UnknownRecord;
   bottomModules: unknown[];
@@ -15,23 +36,19 @@ export function buildShiftedBottomHingedPivotMap(args: {
   lowerDoorIdOffset: number;
 }): UnknownRecord | null {
   if (args.cfg.wardrobeType !== 'hinged') return null;
-  const baseMap0 =
-    args.bottomHingedDoorPivotBase && typeof args.bottomHingedDoorPivotBase === 'object'
-      ? args.bottomHingedDoorPivotBase
-      : computeHingedDoorPivotMap({
-          modulesStructure: args.bottomModules,
-          totalW: args.bottomTotalW,
-          woodThick: args.woodThick,
-          singleUnitWidth: args.bottomSingleUnitWidth,
-          hingeMap: (() => {
-            const c = readRecord(args.cfg);
-            const hm = c ? readRecord(c.hingeMap) : null;
-            return hm || {};
-          })(),
-          moduleInternalWidths: args.bottomModuleInternalWidths,
-          moduleIsCustom: Array.isArray(args.bottomModules) ? args.bottomModules.map(() => false) : null,
-          doorMountMode: readRecord(args.cfg)?.doorMountMode,
-        });
+  const baseMap0 = computeHingedDoorPivotMap({
+    modulesStructure: args.bottomModules,
+    totalW: args.bottomTotalW,
+    woodThick: args.woodThick,
+    singleUnitWidth: args.bottomSingleUnitWidth,
+    hingeMap: buildLocalBottomHingeMap({
+      cfg: args.cfg,
+      lowerDoorIdOffset: args.lowerDoorIdOffset,
+    }),
+    moduleInternalWidths: args.bottomModuleInternalWidths,
+    moduleIsCustom: Array.isArray(args.bottomModules) ? args.bottomModules.map(() => false) : null,
+    doorMountMode: readRecord(args.cfg)?.doorMountMode,
+  });
 
   const shifted: UnknownRecord = {};
   const baseMap = readRecord(baseMap0);

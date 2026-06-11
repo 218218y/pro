@@ -53,6 +53,8 @@ export type StructureTabDerivedStackSplitState = {
 };
 
 export type StructureTabCellDimsState = {
+  cellDimsPanelOpen: boolean;
+  cellDimsHexPanelOpen: boolean;
   cellDimsWidth: number | '';
   cellDimsHeight: number | '';
   cellDimsDepth: number | '';

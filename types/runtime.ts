@@ -110,6 +110,10 @@ export interface DoorsSetOpenOptionsLike extends ActionMetaLike {
   forceUpdate?: boolean;
   hardCloseDoors?: boolean;
   hardClose?: boolean;
+  /** Hide open sliding doors for edit/export snapshots instead of moving them outside the cabinet. */
+  slidingHideOpen?: boolean;
+  /** @deprecated Open sliding doors are hidden for edit/export; this legacy flag maps to slidingHideOpen. */
+  slidingWideOpen?: boolean;
 }
 
 export interface DoorsSyncVisualsOptionsLike extends UnknownRecord {
@@ -117,6 +121,10 @@ export interface DoorsSyncVisualsOptionsLike extends UnknownRecord {
   open?: boolean;
   /** When true, also snap drawers (default: true). */
   includeDrawers?: boolean;
+  /** Hide open sliding doors for edit/export snapshots instead of moving them outside the cabinet. */
+  slidingHideOpen?: boolean;
+  /** @deprecated Open sliding doors are hidden for edit/export; this legacy flag maps to slidingHideOpen. */
+  slidingWideOpen?: boolean;
 }
 
 export interface DoorsCloseDrawerOptionsLike extends UnknownRecord {
@@ -302,6 +310,7 @@ export interface WardrobeProPerfStateFingerprint {
   splitDoorMapCount: number;
   splitDoorBottomMapCount: number;
   removedDoorMapCount: number;
+  roundedFrameSideShelfCount: number;
   doorTrimCount: number;
   drawerDividerCount: number;
   internalDrawerPlacementCount: number;

@@ -31,6 +31,7 @@ type MakeRodCreatorArgs = {
   gridDivisions?: number;
   localGridStep?: number;
   woodThick?: number;
+  shelfThick?: number;
   innerW?: number;
   internalCenterX?: number;
   internalZ?: number;
@@ -85,6 +86,7 @@ function createRodArgs(
     gridDivisions: baseArgs.gridDivisions,
     localGridStep: baseArgs.localGridStep,
     woodThick: baseArgs.woodThick,
+    shelfThick: baseArgs.shelfThick,
     innerW: baseArgs.innerW,
     internalCenterX: baseArgs.internalCenterX,
     internalZ: baseArgs.internalZ,

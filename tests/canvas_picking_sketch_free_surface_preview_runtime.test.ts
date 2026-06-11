@@ -66,6 +66,87 @@ test('sketch free surface target scan prefers the candidate with a box-local hit
   assert.ok(Math.abs(Number(target?.pointerX) - 0.61) < 1e-9);
 });
 
+test('sketch free divider target scan projects fallback pointer to the box front plane', () => {
+  const box = {
+    id: 'front-plane-box',
+    freePlacement: true,
+    absX: 0,
+    absY: 1,
+    heightM: 0.8,
+    widthM: 0.7,
+    depthM: 0.4,
+  };
+  const projectedPlanes: number[] = [];
+
+  const target = findSketchFreeHoverTargetBox({
+    App: {} as never,
+    tool: 'sketch_box_divider',
+    contentKind: 'divider',
+    hostModuleKey: 0,
+    freeBoxes: [box as any],
+    // This is intentionally outside the box at the wardrobe/back plane.
+    // The divider workflow should behave like module-box hover and resolve the cursor on the box front.
+    planeHit: { x: 0.9, y: 1, z: -0.3 },
+    wardrobeBox: wardrobeBox as any,
+    wardrobeBackZ: -0.3,
+    intersects: [],
+    localParent: null,
+    resolveSketchFreeBoxGeometry: resolveSketchFreeBoxGeometry as never,
+    getSketchFreeBoxPartPrefix: (_moduleKey, boxId) => `prefix:${String(boxId)}`,
+    findSketchFreeBoxLocalHit: () => null,
+    projectPointerToLocalZPlane: planeZ => {
+      projectedPlanes.push(planeZ);
+      return { x: 0.1, y: 1, z: planeZ } as any;
+    },
+  });
+
+  assert.ok(target);
+  assert.equal(target?.boxId, 'front-plane-box');
+  assert.ok(Math.abs(Number(target?.pointerX) - 0.1) < 1e-9);
+  assert.equal(projectedPlanes.length, 1);
+  assert.ok(Math.abs(projectedPlanes[0] - 0.2) < 1e-9);
+});
+
+test('sketch free content target scan projects profile-door hits to the canonical box front plane', () => {
+  const box = {
+    id: 'profile-door-box',
+    freePlacement: true,
+    absX: 0.2,
+    absY: 1,
+    heightM: 1,
+    widthM: 0.8,
+    depthM: 0.4,
+  };
+
+  const projectedPlanes: number[] = [];
+  const target = findSketchFreeHoverTargetBox({
+    App: {} as never,
+    tool: 'sketch_shelf:regular',
+    contentKind: 'shelf',
+    hostModuleKey: 0,
+    freeBoxes: [box as any],
+    planeHit: { x: 0.2, y: 1, z: -0.3 },
+    wardrobeBox: wardrobeBox as any,
+    wardrobeBackZ: -0.3,
+    intersects: [],
+    localParent: null,
+    resolveSketchFreeBoxGeometry: resolveSketchFreeBoxGeometry as never,
+    getSketchFreeBoxPartPrefix: (_moduleKey, boxId) => `prefix:${String(boxId)}`,
+    // Simulates a raised profile rail stealing the raycast at the top of the door.
+    findSketchFreeBoxLocalHit: () => ({ x: 0.2, y: 1.48, z: 0.24 }) as any,
+    projectPointerToLocalZPlane: planeZ => {
+      projectedPlanes.push(planeZ);
+      return { x: 0.2, y: 1.12, z: planeZ } as any;
+    },
+  });
+
+  assert.ok(target);
+  assert.equal(target?.boxId, 'profile-door-box');
+  assert.ok(Math.abs(Number(target?.pointerY) - 1.12) < 1e-9);
+  assert.equal(projectedPlanes.length, 1);
+  assert.ok(Math.abs(projectedPlanes[0] - 0.2) < 1e-9);
+});
+
 test('sketch free surface placement preview produces canonical remove hover metadata and front overlay geometry', () => {
   const preview = resolveSketchFreePlacementBoxPreview({
     App: {} as never,

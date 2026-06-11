@@ -25,6 +25,8 @@ import { getThreeMaybe } from '../runtime/three_access.js';
 import { readMapOrEmpty, writeHandle, writeMapKey } from '../runtime/maps_access.js';
 import { readDoorLeafRectFromUserData, resolveDoorHitOwnerByPartId } from './canvas_picking_door_shared.js';
 import {
+  __wp_isDoorLikePartId,
+  __wp_isDrawerLikePartId,
   __edgeHandleVariantPartKey,
   __normEdgeHandleVariant,
   __wp_str,
@@ -68,22 +70,11 @@ function __readHitPartId(App: AppContainer, primaryHitObject: HitObjectLike | nu
 }
 
 function isDoorPartId(partId: string): boolean {
-  return (
-    partId.startsWith('d') ||
-    partId.startsWith('sliding') ||
-    partId.startsWith('corner_door') ||
-    partId.startsWith('corner_pent_door') ||
-    partId.startsWith('lower_d') ||
-    partId.startsWith('lower_sliding') ||
-    partId.startsWith('sketch_box_') ||
-    partId.startsWith('sketch_box_free_')
-  );
+  return __wp_isDoorLikePartId(partId);
 }
 
 function isDrawerPartId(partId: string): boolean {
-  if (/^chest_drawer_\d+$/.test(partId)) return true;
-  if (partId === 'internal_drawer_accent_line') return false;
-  return partId.includes('drawer') || partId.includes('draw');
+  return __wp_isDrawerLikePartId(partId);
 }
 
 function readClickPoint(args: CanvasHandleAssignClickArgs): PointLike {
@@ -104,6 +95,53 @@ function clearManualHandlePositionIfPresent(App: AppContainer, partId: string): 
     source: 'handles:clearManualPosition',
     immediate: true,
   });
+}
+
+function readUserDataPartId(userData: UnknownRecord | null | undefined): string {
+  return typeof userData?.partId === 'string' ? String(userData.partId) : '';
+}
+
+function readReferencedDrawerOwnerId(userData: UnknownRecord | null | undefined): string {
+  const raw = userData?.__wpDrawerOwnerPartId ?? userData?.drawerId ?? userData?.__wpDrawerId;
+  return typeof raw === 'string' && raw.trim() ? raw.trim() : '';
+}
+
+function findAncestorOwnerByPartId(
+  start: HitObjectLike | null,
+  partId: string,
+  allowDrawerOwnerReference: boolean
+): DoorOwnerLike | null {
+  let cur = asRecord<DoorOwnerLike>(start);
+  while (cur) {
+    const userData = asRecord<UnknownRecord>(cur.userData);
+    const currentPartId = readUserDataPartId(userData);
+    const currentDrawerOwnerId = allowDrawerOwnerReference ? readReferencedDrawerOwnerId(userData) : '';
+    const matchesPart =
+      currentPartId === partId || (currentDrawerOwnerId !== '' && currentDrawerOwnerId === partId);
+    if (matchesPart && readDoorLeafRectFromUserData(userData)) return cur;
+    cur = asRecord<DoorOwnerLike>(cur.parent);
+  }
+  return null;
+}
+
+function resolveManualHandleTargetOwner(args: {
+  primaryHitObject: HitObjectLike | null;
+  doorHitObject?: HitObjectLike | null;
+  partId: string;
+}): DoorOwnerLike | null {
+  const { primaryHitObject, doorHitObject, partId } = args;
+  const preferredRoot = asRecord<UnknownRecord>(doorHitObject) || asRecord<UnknownRecord>(primaryHitObject);
+  const resolvedOwner = asRecord<DoorOwnerLike>(resolveDoorHitOwnerByPartId(preferredRoot, partId));
+  if (resolvedOwner && readDoorLeafRectFromUserData(asRecord<UnknownRecord>(resolvedOwner.userData))) {
+    return resolvedOwner;
+  }
+
+  return (
+    findAncestorOwnerByPartId(doorHitObject || null, partId, false) ||
+    findAncestorOwnerByPartId(primaryHitObject, partId, false) ||
+    findAncestorOwnerByPartId(doorHitObject || null, partId, true) ||
+    findAncestorOwnerByPartId(primaryHitObject, partId, true)
+  );
 }
 
 function writeSelectedHandleConfig(args: {
@@ -144,20 +182,15 @@ function tryHandleManualHandlePositionClick(
 ): boolean {
   if (!isManualHandlePositionMode(modeOpts?.handlePlacement)) return false;
 
-  const { App, primaryHitObject, doorHitObject, effectiveDoorId, foundPartId } = args;
+  const { App, primaryHitObject, doorHitObject, foundDrawerId, effectiveDoorId, foundPartId } = args;
   const __hitPartId = __readHitPartId(App, primaryHitObject);
-  const pickedId = __hitPartId || effectiveDoorId || foundPartId;
+  const pickedId = foundDrawerId || __hitPartId || effectiveDoorId || foundPartId;
   if (!pickedId) return true;
 
   const partId = __wp_str(App, pickedId);
-  if (!partId || !isDoorPartId(partId)) return true;
+  if (!partId || (!isDoorPartId(partId) && !isDrawerPartId(partId))) return true;
 
-  const owner = asRecord<DoorOwnerLike>(
-    resolveDoorHitOwnerByPartId(
-      asRecord<UnknownRecord>(doorHitObject) || asRecord<UnknownRecord>(primaryHitObject),
-      partId
-    )
-  );
+  const owner = resolveManualHandleTargetOwner({ primaryHitObject, doorHitObject, partId });
   const ownerUserData = asRecord<UnknownRecord>(owner?.userData);
   const rect = readDoorLeafRectFromUserData(ownerUserData);
   const point = readClickPoint(args);
@@ -216,7 +249,7 @@ export function tryHandleCanvasHandleAssignClick(args: CanvasHandleAssignClickAr
     const isDoor = isDoorPartId(partId);
     const isDrawer = isDrawerPartId(partId);
     if (isDoor || isDrawer) {
-      if (isDoor) clearManualHandlePositionIfPresent(App, partId);
+      clearManualHandlePositionIfPresent(App, partId);
 
       const __tools_h = getTools(App);
       const __ht = typeof __tools_h.getHandlesType === 'function' ? __tools_h.getHandlesType() : 'standard';

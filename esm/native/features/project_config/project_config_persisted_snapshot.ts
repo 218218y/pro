@@ -7,6 +7,7 @@ import type {
 } from '../../../../types/index.js';
 
 import { normalizeSavedColorsList } from '../../../shared/maps_access_collections_shared.js';
+import { normalizeDoorMountThicknessCm } from '../../../shared/wardrobe_dimension_tokens_shared.js';
 import { cloneCornerConfigurationListsSnapshot } from '../modules_configuration/corner_cells_api.js';
 import { cloneModulesConfigurationSnapshot } from '../modules_configuration/modules_config_api.js';
 import {
@@ -22,6 +23,7 @@ import {
   readIndividualColorsMap,
   readMirrorLayoutConfigMap,
   readRemovedDoorsMap,
+  readRoundedFrameSideShelvesMap,
   readSplitDoorsBottomMapValue,
   readSplitDoorsMapValue,
   readToggleMap,
@@ -43,6 +45,7 @@ export interface PersistedProjectConfigSnapshot {
   splitDoorsMap: NonNullable<ProjectDataLike['splitDoorsMap']>;
   splitDoorsBottomMap: NonNullable<ProjectDataLike['splitDoorsBottomMap']>;
   removedDoorsMap: NonNullable<ProjectDataLike['removedDoorsMap']>;
+  roundedFrameSideShelvesMap: NonNullable<ProjectDataLike['roundedFrameSideShelvesMap']>;
   drawerDividersMap: NonNullable<ProjectDataLike['drawerDividersMap']>;
   individualColors: NonNullable<ProjectDataLike['individualColors']>;
   doorSpecialMap: NonNullable<ProjectDataLike['doorSpecialMap']>;
@@ -57,6 +60,10 @@ export interface PersistedProjectConfigSnapshot {
   preChestState: ProjectPreChestStateLike;
   isLibraryMode: boolean | undefined;
   grooveLinesCount: number | null | undefined;
+  overlayFrameThicknessCm: number | null | undefined;
+  overlayShelfThicknessCm: number | null | undefined;
+  insetFrameThicknessCm: number | null | undefined;
+  insetShelfThicknessCm: number | null | undefined;
 }
 
 export interface ConfigStateProjectConfigSnapshot extends PersistedProjectConfigSnapshot {
@@ -109,6 +116,11 @@ function readGrooveLinesCount(value: unknown): ProjectDataLike['grooveLinesCount
   return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
 }
 
+function readDoorMountThicknessCm(value: unknown): number | null | undefined {
+  if (typeof value === 'undefined') return undefined;
+  return normalizeDoorMountThicknessCm(value);
+}
+
 const PERSISTED_PROJECT_CONFIG_BRANCH_READERS: {
   [K in PersistedProjectConfigBranchKey]: ComparableProjectConfigBranchReader<K>;
 } = {
@@ -123,6 +135,8 @@ const PERSISTED_PROJECT_CONFIG_BRANCH_READERS: {
   splitDoorsMap: canonicalConfig => readSplitDoorsMapValue(canonicalConfig.splitDoorsMap),
   splitDoorsBottomMap: canonicalConfig => readSplitDoorsBottomMapValue(canonicalConfig.splitDoorsBottomMap),
   removedDoorsMap: canonicalConfig => readRemovedDoorsMap(canonicalConfig.removedDoorsMap),
+  roundedFrameSideShelvesMap: canonicalConfig =>
+    readRoundedFrameSideShelvesMap(canonicalConfig.roundedFrameSideShelvesMap),
   drawerDividersMap: canonicalConfig => readToggleMap(canonicalConfig.drawerDividersMap),
   individualColors: canonicalConfig => readIndividualColorsMap(canonicalConfig.individualColors),
   doorSpecialMap: canonicalConfig => readDoorSpecialMap(canonicalConfig.doorSpecialMap),
@@ -137,6 +151,12 @@ const PERSISTED_PROJECT_CONFIG_BRANCH_READERS: {
   preChestState: canonicalConfig => clonePreChestStateSnapshot(canonicalConfig.preChestState),
   isLibraryMode: canonicalConfig => readIsLibraryMode(canonicalConfig.isLibraryMode),
   grooveLinesCount: canonicalConfig => readGrooveLinesCount(canonicalConfig.grooveLinesCount),
+  overlayFrameThicknessCm: canonicalConfig =>
+    readDoorMountThicknessCm(canonicalConfig.overlayFrameThicknessCm),
+  overlayShelfThicknessCm: canonicalConfig =>
+    readDoorMountThicknessCm(canonicalConfig.overlayShelfThicknessCm),
+  insetFrameThicknessCm: canonicalConfig => readDoorMountThicknessCm(canonicalConfig.insetFrameThicknessCm),
+  insetShelfThicknessCm: canonicalConfig => readDoorMountThicknessCm(canonicalConfig.insetShelfThicknessCm),
 };
 
 function readComparableProjectConfigSnapshot(
@@ -152,6 +172,8 @@ function readComparableProjectConfigSnapshot(
     splitDoorsMap: PERSISTED_PROJECT_CONFIG_BRANCH_READERS.splitDoorsMap(canonicalConfig),
     splitDoorsBottomMap: PERSISTED_PROJECT_CONFIG_BRANCH_READERS.splitDoorsBottomMap(canonicalConfig),
     removedDoorsMap: PERSISTED_PROJECT_CONFIG_BRANCH_READERS.removedDoorsMap(canonicalConfig),
+    roundedFrameSideShelvesMap:
+      PERSISTED_PROJECT_CONFIG_BRANCH_READERS.roundedFrameSideShelvesMap(canonicalConfig),
     drawerDividersMap: PERSISTED_PROJECT_CONFIG_BRANCH_READERS.drawerDividersMap(canonicalConfig),
     individualColors: PERSISTED_PROJECT_CONFIG_BRANCH_READERS.individualColors(canonicalConfig),
     doorSpecialMap: PERSISTED_PROJECT_CONFIG_BRANCH_READERS.doorSpecialMap(canonicalConfig),
@@ -166,6 +188,10 @@ function readComparableProjectConfigSnapshot(
     preChestState: PERSISTED_PROJECT_CONFIG_BRANCH_READERS.preChestState(canonicalConfig),
     isLibraryMode: PERSISTED_PROJECT_CONFIG_BRANCH_READERS.isLibraryMode(canonicalConfig),
     grooveLinesCount: PERSISTED_PROJECT_CONFIG_BRANCH_READERS.grooveLinesCount(canonicalConfig),
+    overlayFrameThicknessCm: PERSISTED_PROJECT_CONFIG_BRANCH_READERS.overlayFrameThicknessCm(canonicalConfig),
+    overlayShelfThicknessCm: PERSISTED_PROJECT_CONFIG_BRANCH_READERS.overlayShelfThicknessCm(canonicalConfig),
+    insetFrameThicknessCm: PERSISTED_PROJECT_CONFIG_BRANCH_READERS.insetFrameThicknessCm(canonicalConfig),
+    insetShelfThicknessCm: PERSISTED_PROJECT_CONFIG_BRANCH_READERS.insetShelfThicknessCm(canonicalConfig),
   };
 }
 

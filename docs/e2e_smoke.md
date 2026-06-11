@@ -2,6 +2,8 @@
 
 Use E2E smoke tests for browser-level confidence, not as a replacement for focused unit/runtime coverage.
 
+Do not run full `npm run e2e:smoke` after every Codex fix. Run it when the change touches browser boot, UI/browser interactions, Playwright tests, canvas pointer behavior, cloud-sync reconnect behavior, or another user journey listed below. For unrelated docs, tests, or non-browser source changes, prefer targeted runtime/typecheck/lint verification and leave the full browser matrix to GitHub/CI unless the user asks for it.
+
 ## Commands
 
 ```bash

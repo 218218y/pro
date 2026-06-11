@@ -32,6 +32,7 @@ export function findSketchFreeHoverTargetBox(args: {
     localParent: unknown;
     partPrefix: string;
   }) => LocalPoint | null;
+  projectPointerToLocalZPlane?: ((planeZ: number) => LocalPoint | null) | null;
 }): SketchFreeBoxTarget | null {
   const { freeBoxes, planeHit } = args;
   const planeHitX = Number(planeHit.x);

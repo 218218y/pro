@@ -264,7 +264,7 @@ test('paint special mutation toggles off a canonical full mirror when the same m
 test('paint glass mutation defaults every clicked glass front to regular profile glass and supports explicit glass variants', () => {
   const state = createManualState({
     App: createApp({ ui: { currentCurtainChoice: 'none' } }),
-    style0: { d5_full: 'tom' },
+    style0: { d5_full: 'double_profile' },
   });
 
   applyPaintPartMutation({
@@ -286,7 +286,7 @@ test('paint glass mutation defaults every clicked glass front to regular profile
   applyPaintPartMutation({
     state,
     paintPartKey: 'd6_full',
-    paintSelection: '__wp_glass_style__:tom',
+    paintSelection: '__wp_glass_style__:double_profile',
     clickArgs: {
       App: state.App,
       foundPartId: 'd6_full',
@@ -296,7 +296,7 @@ test('paint glass mutation defaults every clicked glass front to regular profile
   });
 
   assert.equal(state.special.d6_full, 'glass');
-  assert.equal(state.style.d6_full, 'tom');
+  assert.equal(state.style.d6_full, 'double_profile');
 
   applyPaintPartMutation({
     state,
@@ -333,7 +333,7 @@ test('paint glass mutation defaults every clicked glass front to regular profile
   applyPaintPartMutation({
     state,
     paintPartKey: 'lower_corner_hex_cell_c3_diag_right',
-    paintSelection: '__wp_glass_style__:tom',
+    paintSelection: '__wp_glass_style__:double_profile',
     clickArgs: {
       App: state.App,
       foundPartId: 'corner_hex_cell_c3_diag_right',
@@ -343,13 +343,13 @@ test('paint glass mutation defaults every clicked glass front to regular profile
   });
 
   assert.equal(state.special.lower_corner_hex_cell_c3_diag_right, 'glass');
-  assert.equal(state.style.lower_corner_hex_cell_c3_diag_right, 'tom');
+  assert.equal(state.style.lower_corner_hex_cell_c3_diag_right, 'double_profile');
 });
 
 test('paint glass mutation restores the exact previous door style override after removing glass', () => {
   const addState = createManualState({
     App: createApp({ ui: { currentCurtainChoice: 'white' } }),
-    style0: { d5_full: 'tom' },
+    style0: { d5_full: 'double_profile' },
   });
 
   applyPaintPartMutation({
@@ -389,7 +389,7 @@ test('paint glass mutation restores the exact previous door style override after
 
   assert.deepEqual(removeState.special, {});
   assert.equal(removeState.curtains.d5_full, undefined);
-  assert.equal(removeState.style.d5_full, 'tom');
+  assert.equal(removeState.style.d5_full, 'double_profile');
 });
 
 test('paint glass mutation removes the temporary glass frame style when the door had no prior override', () => {
@@ -400,7 +400,7 @@ test('paint glass mutation removes the temporary glass frame style when the door
   applyPaintPartMutation({
     state: addState,
     paintPartKey: 'd6_full',
-    paintSelection: '__wp_glass_style__:tom',
+    paintSelection: '__wp_glass_style__:double_profile',
     clickArgs: {
       App: addState.App,
       foundPartId: 'd6_full',
@@ -410,7 +410,7 @@ test('paint glass mutation removes the temporary glass frame style when the door
   });
 
   assert.equal(addState.special.d6_full, 'glass');
-  assert.equal(addState.style.d6_full, 'tom');
+  assert.equal(addState.style.d6_full, 'double_profile');
 
   const removeState = createManualState({
     App: createApp({ ui: { currentCurtainChoice: 'none' } }),
@@ -422,7 +422,7 @@ test('paint glass mutation removes the temporary glass frame style when the door
   applyPaintPartMutation({
     state: removeState,
     paintPartKey: 'd6_full',
-    paintSelection: '__wp_glass_style__:tom',
+    paintSelection: '__wp_glass_style__:double_profile',
     clickArgs: {
       App: removeState.App,
       foundPartId: 'd6_full',

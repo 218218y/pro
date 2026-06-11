@@ -182,6 +182,7 @@ export function maybeRenderNoMainSketchHost(args: {
   H: number;
   D: number;
   woodThick: number;
+  shelfThick: number;
   depthReduction: number;
   internalDepth: number;
   internalZ: number;
@@ -190,6 +191,7 @@ export function maybeRenderNoMainSketchHost(args: {
   createBoard: unknown;
   getPartMaterial: unknown;
   getPartColorValue: unknown;
+  createDoorVisual: unknown;
   createInternalDrawerBox: unknown;
   addOutlines: unknown;
   addHangingClothes: unknown;
@@ -239,6 +241,7 @@ export function maybeRenderNoMainSketchHost(args: {
     gridDivisions: NO_MAIN_SKETCH_DIMENSIONS.defaultGridDivisions,
     localGridStep,
     woodThick: Number(args.woodThick),
+    shelfThick: Number(args.shelfThick),
     innerW,
     internalCenterX: 0,
     internalZ: Number(args.internalZ),
@@ -274,6 +277,7 @@ export function maybeRenderNoMainSketchHost(args: {
     localGridStep,
     innerW,
     woodThick: args.woodThick,
+    shelfThick: args.shelfThick,
     internalDepth: Math.max(Number(args.woodThick), Number(args.internalDepth)),
     internalCenterX: 0,
     internalZ: Number(args.internalZ),
@@ -283,9 +287,10 @@ export function maybeRenderNoMainSketchHost(args: {
     currentShelfMat: args.bodyMat,
     currentBraceShelfMat: args.bodyMat,
     bodyMat: args.bodyMat,
-    isInternalDrawersEnabled: false,
+    isInternalDrawersEnabled: !!args.isInternalDrawersEnabled,
     getPartMaterial: args.getPartMaterial,
     getPartColorValue: args.getPartColorValue,
+    createDoorVisual: args.createDoorVisual,
     doorStyle: readStringProp(readRecord(args.ui), 'doorStyle') || '',
     createInternalDrawerBox: args.createInternalDrawerBox,
     addOutlines: args.addOutlines,

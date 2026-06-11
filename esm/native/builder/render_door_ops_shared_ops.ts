@@ -60,7 +60,7 @@ export function readHingedDoorOp(value: unknown): HingedDoorOpLike | null {
   const height = readFinite(value.height, NaN);
   const partId = readString(value.partId);
   if (!partId || !Number.isFinite(width) || !Number.isFinite(height)) return null;
-  return {
+  const op: HingedDoorOpLike = {
     x: readFinite(value.x),
     y: readFinite(value.y),
     z: readFinite(value.z),
@@ -89,4 +89,13 @@ export function readHingedDoorOp(value: unknown): HingedDoorOpLike | null {
         : undefined,
     allowHandle: value.allowHandle === false ? false : undefined,
   };
+  if (typeof value.moduleDoors === 'number' && Number.isFinite(value.moduleDoors)) {
+    Object.defineProperty(op, 'moduleDoors', {
+      value: Math.max(1, Math.floor(value.moduleDoors)),
+      enumerable: false,
+      configurable: true,
+      writable: true,
+    });
+  }
+  return op;
 }

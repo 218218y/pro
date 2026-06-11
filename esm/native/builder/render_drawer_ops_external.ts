@@ -1,4 +1,5 @@
 import { makeDrawerBoxPartId, resolveDrawerBoxPaintMaterial } from '../features/drawer_box_identity.js';
+import { appendDoorTrimVisuals } from './door_trim_visuals.js';
 import { resolveDoorVisualStyle } from './render_door_ops_shared.js';
 import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { BuilderRenderDrawerDeps } from './render_drawer_ops_shared.js';
@@ -177,6 +178,19 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
 
       group.add(drawerBox);
       group.add(visual);
+      const visualThickness = drawerOp.visualT || DRAWER_DIMENSIONS.external.visualThicknessM;
+      appendDoorTrimVisuals({
+        App,
+        THREE,
+        group,
+        partId,
+        trims: cfg.doorTrimMap ? cfg.doorTrimMap[partId] : undefined,
+        doorWidth: faceW,
+        doorHeight: drawerOp.visualH,
+        doorMeshOffsetX: faceOffsetX,
+        frontZ: visualThickness / 2 + 0.0015,
+        faceSign: 1,
+      });
 
       if (
         !omitConnectorPanel &&

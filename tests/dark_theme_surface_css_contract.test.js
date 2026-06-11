@@ -21,6 +21,9 @@ test('[dark-theme-css] card-like controls do not fall back to light surfaces', (
   assertContainsSelector('#reactSidebarRoot .wp-r-theme-dark .wp-tool-card');
   assertContainsSelector('#reactSidebarRoot .wp-r-theme-dark .wp-tool-card.is-active');
   assertContainsSelector('#reactSidebarRoot .wp-r-theme-dark .wp-manual-row');
+  assertContainsSelector(
+    "#reactSidebarRoot .wp-r-theme-dark .tab-content[data-tab='interior'] .wp-tool-card--layout .wp-manual-row"
+  );
   assertContainsSelector('#reactSidebarRoot .wp-r-theme-dark .wp-sketch-row');
   assertContainsSelector('#reactSidebarRoot .wp-r-theme-dark .wp-sketch-choice-panel-inner');
   assertContainsSelector(

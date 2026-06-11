@@ -366,7 +366,7 @@ const SCENARIO_BUILDERS = {
   'open-niche-remove': project => {
     project.settings.wardrobeType = 'hinged';
     project.settings.boardMaterial = 'melamine';
-    project.settings.doorStyle = 'tom';
+    project.settings.doorStyle = 'double_profile';
     project.toggles.grooves = false;
     project.toggles.splitDoors = false;
     project.toggles.removeDoors = true;
@@ -389,7 +389,7 @@ const SCENARIO_BUILDERS = {
     return createFingerprint({
       wardrobeType: 'hinged',
       boardMaterial: 'melamine',
-      doorStyle: 'tom',
+      doorStyle: 'double_profile',
       groovesEnabled: false,
       grooveLinesCount: null,
       splitDoors: false,

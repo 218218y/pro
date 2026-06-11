@@ -55,6 +55,9 @@ export type GrooveLinesCountMap = Record<string, number | null | undefined>;
 /** Removed doors: toggle surface. */
 export type RemovedDoorsMap = ToggleMap;
 
+/** Rounded shelves for modules adjacent to removed outer frame sides. */
+export type RoundedFrameSideShelvesMap = ToggleMap;
+
 /** Curtains: per-part selection (string or null). */
 export type CurtainMap = Record<string, string | null | undefined>;
 
@@ -66,7 +69,7 @@ export type DoorSpecialValue = 'mirror' | 'glass' | string | null;
 export type DoorSpecialMap = Record<string, DoorSpecialValue | undefined>;
 
 /** Per-part door/drawer front style override. */
-export type DoorStyleMap = Record<string, 'flat' | 'profile' | 'tom' | undefined>;
+export type DoorStyleMap = Record<string, 'flat' | 'profile' | 'double_profile' | undefined>;
 
 /** Optional per-door mirror sizing / placement (persisted in cm + normalized anchor). */
 export interface MirrorLayoutEntry extends UnknownRecord {
@@ -116,6 +119,7 @@ export interface MapsByName {
   groovesMap: GroovesMap;
   grooveLinesCountMap: GrooveLinesCountMap;
   removedDoorsMap: RemovedDoorsMap;
+  roundedFrameSideShelvesMap: RoundedFrameSideShelvesMap;
 
   curtainMap: CurtainMap;
   individualColors: IndividualColorsMap;

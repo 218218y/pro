@@ -64,16 +64,18 @@ export function ProjectPanel(): ReactElement {
   const autosaveInfo = autosaveInfoFromUi || autosaveInfoFromStorage;
   const canRestore = !!autosaveInfo;
   const restoreTime = autosaveInfo && autosaveInfo.dateString ? String(autosaveInfo.dateString) : '';
+  const restoreTooltip = canRestore ? 'טען את העריכה האחרונה שנשמרה אוטומטית' : 'אין עריכה אחרונה לשחזור';
 
   return (
     <div className="wp-r-structure-head">
       <button
         type="button"
         data-testid="project-restore-button"
-        className="wp-r-restore-pill"
+        className="wp-r-restore-pill wp-r-styled-tooltip hint-bottom"
         disabled={!canRestore}
         onClick={handleRestore}
-        title={canRestore ? 'טען את העריכה האחרונה שנשמרה אוטומטית' : 'אין עריכה אחרונה לשחזור'}
+        data-tooltip={restoreTooltip}
+        aria-label={restoreTooltip}
       >
         <span className="wp-r-restore-pill-inner">
           <i className="fas fa-history" />

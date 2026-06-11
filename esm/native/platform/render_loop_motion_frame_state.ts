@@ -25,6 +25,7 @@ import {
   getVisibleOpenInternalDrawerModuleKeys,
   hasAnyOpenDoor,
   hasOpenInternalDrawers,
+  isInteriorDoorEditModeActive,
   isSketchEditActive,
   isSketchExtDrawersEditActive,
   isSketchIntDrawersEditActive,
@@ -108,6 +109,7 @@ export function readRenderLoopMotionFrameState(App: AppContainer, report: Report
     typeof tools['getInteriorManualTool'] === 'function'
       ? call0m(tools, tools['getInteriorManualTool'])
       : null;
+  const interiorDoorEditActive = isInteriorDoorEditModeActive(App);
   const sketchEditActive = isSketchEditActive(App);
   const sketchIntDrawersEditActive = isSketchIntDrawersEditActive(App);
   const sketchExtDrawersEditActive = isSketchExtDrawersEditActive(App);
@@ -130,6 +132,7 @@ export function readRenderLoopMotionFrameState(App: AppContainer, report: Report
     globalClickMode,
     platformDimsFrame,
     doorsOpenFlag,
+    interiorDoorEditActive,
     sketchEditActive,
     sketchIntDrawersEditActive,
     sketchExtDrawersEditActive,

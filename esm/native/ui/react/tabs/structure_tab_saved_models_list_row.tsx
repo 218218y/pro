@@ -92,8 +92,8 @@ function SavedModelsRowActions(
         type="button"
         className={
           props.row.locked
-            ? 'btn btn-accent btn-inline btn-sm wp-r-savedmodels-rowicon'
-            : 'btn btn-inline btn-sm wp-r-savedmodels-rowicon'
+            ? 'btn btn-accent btn-inline btn-sm wp-r-savedmodels-rowicon wp-r-styled-tooltip hint-bottom'
+            : 'btn btn-inline btn-sm wp-r-savedmodels-rowicon wp-r-styled-tooltip hint-bottom'
         }
         onClick={(event: import('react').MouseEvent<HTMLButtonElement>) => {
           event.preventDefault();
@@ -101,7 +101,7 @@ function SavedModelsRowActions(
           props.onSetSelected(props.row.id);
           props.onToggleLock(props.row.id);
         }}
-        title={props.row.locked ? 'הדגם נעול (לחץ לשחרר)' : 'נעל דגם (מונע מחיקה ושינוי סדר)'}
+        data-tooltip={props.row.locked ? 'הדגם נעול (לחץ לשחרר)' : 'נעל דגם (מונע מחיקה ושינוי סדר)'}
         aria-label="נעילת דגם"
         disabled={props.row.preset}
         aria-disabled={props.row.preset}
@@ -111,14 +111,16 @@ function SavedModelsRowActions(
 
       <button
         type="button"
-        className="btn btn-accent btn-inline btn-sm wp-r-savedmodels-rowicon"
+        className="btn btn-accent btn-inline btn-sm wp-r-savedmodels-rowicon wp-r-styled-tooltip hint-bottom"
         onClick={(event: import('react').MouseEvent<HTMLButtonElement>) => {
           event.preventDefault();
           event.stopPropagation();
           props.onSetSelected(props.row.id);
           props.onOverwriteById(props.row.id);
         }}
-        title={!props.row.canOverwrite ? 'הדגם נעול - בטל נעילה כדי לעדכן' : 'עדכן/דרוס דגם לפי המצב הנוכחי'}
+        data-tooltip={
+          !props.row.canOverwrite ? 'הדגם נעול - בטל נעילה כדי לעדכן' : 'עדכן/דרוס דגם לפי המצב הנוכחי'
+        }
         aria-label="עדכון דגם"
         disabled={!props.row.canOverwrite}
         aria-disabled={!props.row.canOverwrite}
@@ -128,14 +130,14 @@ function SavedModelsRowActions(
 
       <button
         type="button"
-        className="btn btn-danger btn-inline btn-sm wp-r-savedmodels-rowicon"
+        className="btn btn-danger btn-inline btn-sm wp-r-savedmodels-rowicon wp-r-styled-tooltip hint-bottom"
         onClick={(event: import('react').MouseEvent<HTMLButtonElement>) => {
           event.preventDefault();
           event.stopPropagation();
           props.onSetSelected(props.row.id);
           props.onDeleteById(props.row.id);
         }}
-        title={props.row.preset ? 'לא ניתן למחוק דגם מובנה' : 'מחק דגם'}
+        data-tooltip={props.row.preset ? 'לא ניתן למחוק דגם מובנה' : 'מחק דגם'}
         aria-label="מחק דגם"
         disabled={props.row.preset}
         aria-disabled={props.row.preset}
@@ -183,7 +185,7 @@ export function StructureTabSavedModelsListRow(
     >
       <button
         type="button"
-        className="btn btn-inline btn-sm"
+        className="btn btn-inline btn-sm wp-r-styled-tooltip hint-bottom"
         style={
           props.listType === 'preset'
             ? {
@@ -198,7 +200,7 @@ export function StructureTabSavedModelsListRow(
           props.onSetSelected(props.row.id);
           if (props.row.id) props.onApplySelected(props.row.id);
         }}
-        title={props.row.name}
+        data-tooltip={props.row.name}
       >
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
           <span>{props.row.name}</span>

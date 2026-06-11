@@ -59,6 +59,7 @@ export type BuildFlowPlan = {
   isGroovesEnabled: boolean;
   isInternalDrawersEnabled: boolean;
   woodThick: number;
+  shelfThick: number;
   colorHex: string | null;
   useTexture: boolean;
   textureDataURL: string | null;
@@ -121,6 +122,7 @@ export type BuildFlowPlanInputs = Pick<
   | 'isGroovesEnabled'
   | 'isInternalDrawersEnabled'
   | 'woodThick'
+  | 'shelfThick'
 >;
 
 export type BuildFlowPlanMaterials = Pick<

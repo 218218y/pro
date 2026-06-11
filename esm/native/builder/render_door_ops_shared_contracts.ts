@@ -110,6 +110,7 @@ export type HingedDoorOpLike = {
   isMirror: boolean;
   hasGroove: boolean;
   moduleIndex?: unknown;
+  moduleDoors?: number;
   pivotX?: number;
   meshOffsetX?: number;
   style?: string;

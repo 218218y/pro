@@ -34,6 +34,7 @@ export {
 export {
   getModeSlice,
   getSketchManualTool,
+  isInteriorDoorEditModeActive,
   isManualLayoutEditActive,
   isSketchEditActive,
   isSketchExtDrawersEditActive,

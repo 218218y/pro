@@ -1,4 +1,7 @@
-import type { SketchBoxDoorPlacement } from './render_interior_sketch_boxes_fronts_support.js';
+import {
+  getSketchBoxDoorPlacementSegmentKey,
+  type SketchBoxDoorPlacement,
+} from './render_interior_sketch_boxes_fronts_support.js';
 import type {
   RenderSketchBoxDoorFrontsArgs,
   ResolvedSketchBoxDoorLayout,
@@ -6,17 +9,26 @@ import type {
 
 import { readSketchBoxDoorId } from './render_interior_sketch_shared.js';
 import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  resolveSketchBoxDoorMountMode,
+  resolveSketchBoxDoorThickness,
+  resolveSketchBoxInsetReveal,
+} from './render_interior_sketch_boxes_door_geometry.js';
+import { resolveSketchFreeBoxDoorHandleAbsY } from './render_interior_sketch_boxes_fronts_door_handle_policy.js';
 
 export function resolveSketchBoxDoorLayout(args: {
   renderArgs: RenderSketchBoxDoorFrontsArgs;
   placement: SketchBoxDoorPlacement;
-  placementsBySegment: Map<number, SketchBoxDoorPlacement[]>;
+  placementsBySegment: Map<string, SketchBoxDoorPlacement[]>;
+  sharedHandleAbsY?: number | null;
 }): ResolvedSketchBoxDoorLayout | null {
   const { renderArgs, placement, placementsBySegment } = args;
   const { frontsArgs } = renderArgs;
   const { shell } = frontsArgs;
-  const { woodThick, moduleKeyStr } = frontsArgs.args;
+  const { input, woodThick, moduleKeyStr } = frontsArgs.args;
   const { boxId: bid, boxPid, isFreePlacement, height: hM, geometry: boxGeo } = shell;
+  const isInsetDoorMount = resolveSketchBoxDoorMountMode(input) === 'inset';
+  const insetReveal = isInsetDoorMount ? resolveSketchBoxInsetReveal(woodThick) : 0;
 
   const boxDoor = placement?.door || null;
   if (!(boxDoor && boxDoor.enabled !== false)) return null;
@@ -35,7 +47,8 @@ export function resolveSketchBoxDoorLayout(args: {
     )
   );
   const doorSegment = placement.segment || null;
-  const segmentDoors = doorSegment ? placementsBySegment.get(doorSegment.index) || [] : [];
+  const segmentKey = getSketchBoxDoorPlacementSegmentKey(placement);
+  const segmentDoors = segmentKey ? placementsBySegment.get(segmentKey) || [] : [];
   const isCenterDoubleDoorPair =
     segmentDoors.length >= 2 &&
     segmentDoors.some(segmentPlacement => segmentPlacement?.door?.hinge === 'left') &&
@@ -54,47 +67,66 @@ export function resolveSketchBoxDoorLayout(args: {
       : woodThick / 2;
   const segmentFrameLeft = segmentLeft - leftExt;
   const segmentFrameRight = segmentRight + rightExt;
+  let doorSpanLeft = isInsetDoorMount ? segmentLeft : segmentFrameLeft;
+  let doorSpanRight = isInsetDoorMount ? segmentRight : segmentFrameRight;
+  if (isFreePlacement && shell.hexGeometry) {
+    const halfHexDoorW = Math.max(woodThick, Number(shell.hexGeometry.doorWidthM) || 0) / 2;
+    const hexDoorLeft = boxGeo.centerX - halfHexDoorW;
+    const hexDoorRight = boxGeo.centerX + halfHexDoorW;
+    doorSpanLeft = Math.max(doorSpanLeft, hexDoorLeft);
+    doorSpanRight = Math.min(doorSpanRight, hexDoorRight);
+    if (!(doorSpanRight > doorSpanLeft)) return null;
+  }
+  const doorSpanW = Math.max(0, doorSpanRight - doorSpanLeft);
+  const doorSideInset = isInsetDoorMount ? Math.min(insetReveal, Math.max(0, doorSpanW / 8)) : doorInset;
   const centerGap = isCenterDoubleDoorPair
     ? Math.max(
         SKETCH_BOX_DIMENSIONS.preview.doorDoublePairGapMinM,
         Math.min(
           SKETCH_BOX_DIMENSIONS.preview.doorDoublePairGapMaxM,
-          Math.min(segmentFrameRight - segmentFrameLeft, hM) *
-            SKETCH_BOX_DIMENSIONS.preview.doorDoublePairGapSizeRatio
+          Math.min(doorSpanW, hM) * SKETCH_BOX_DIMENSIONS.preview.doorDoublePairGapSizeRatio
         )
       )
     : 0;
-  const segmentCenterX = (segmentFrameLeft + segmentFrameRight) / 2;
+  const segmentCenterX = (doorSpanLeft + doorSpanRight) / 2;
   const pairOuterInset = isCenterDoubleDoorPair
-    ? Math.max(
-        SKETCH_BOX_DIMENSIONS.preview.doorDoublePairOuterInsetMinM,
-        Math.min(
-          doorInset,
-          Math.min(segmentFrameRight - segmentFrameLeft, hM) *
-            SKETCH_BOX_DIMENSIONS.preview.doorDoublePairOuterInsetSizeRatio
+    ? isInsetDoorMount
+      ? doorSideInset
+      : Math.max(
+          SKETCH_BOX_DIMENSIONS.preview.doorDoublePairOuterInsetMinM,
+          Math.min(
+            doorSideInset,
+            Math.min(doorSpanW, hM) * SKETCH_BOX_DIMENSIONS.preview.doorDoublePairOuterInsetSizeRatio
+          )
         )
-      )
-    : doorInset;
+    : doorSideInset;
   const doorFaceLeft = isCenterDoubleDoorPair
     ? hingeLeft
-      ? segmentFrameLeft + pairOuterInset
+      ? doorSpanLeft + pairOuterInset
       : segmentCenterX + centerGap / 2
-    : segmentFrameLeft + doorInset;
+    : doorSpanLeft + doorSideInset;
   const doorFaceRight = isCenterDoubleDoorPair
     ? hingeLeft
       ? segmentCenterX - centerGap / 2
-      : segmentFrameRight - pairOuterInset
-    : segmentFrameRight - doorInset;
+      : doorSpanRight - pairOuterInset
+    : doorSpanRight - doorSideInset;
   const doorW = Math.max(SKETCH_BOX_DIMENSIONS.preview.doorMinDimensionM, doorFaceRight - doorFaceLeft);
-  const doorH = Math.max(SKETCH_BOX_DIMENSIONS.preview.doorMinDimensionM, hM - doorInset * 2);
-  const doorD = Math.max(
-    SKETCH_BOX_DIMENSIONS.preview.doorThicknessMinM,
-    Math.min(
-      SKETCH_BOX_DIMENSIONS.preview.doorThicknessMaxM,
-      Math.max(woodThick, SKETCH_BOX_DIMENSIONS.preview.doorThicknessMinM)
-    )
+  const doorVerticalSegment = placement.verticalSegment || null;
+  const doorCellHeight = doorVerticalSegment
+    ? doorVerticalSegment.height
+    : isInsetDoorMount
+      ? shell.sideH
+      : hM;
+  const doorCenterY = doorVerticalSegment ? doorVerticalSegment.centerY : shell.centerY;
+  const doorVerticalInset = isInsetDoorMount
+    ? Math.min(insetReveal, Math.max(0, doorCellHeight / 8))
+    : doorInset;
+  const doorH = Math.max(
+    SKETCH_BOX_DIMENSIONS.preview.doorMinDimensionM,
+    doorCellHeight - doorVerticalInset * 2
   );
-  const doorFrontZ = boxGeo.centerZ + boxGeo.outerD / 2;
+  const doorD = resolveSketchBoxDoorThickness(woodThick);
+  const doorFrontZ = Number.isFinite(shell.frontZ) ? shell.frontZ : boxGeo.centerZ + boxGeo.outerD / 2;
   const doorBackClearanceZ = Math.max(
     SKETCH_BOX_DIMENSIONS.preview.doorBackClearanceMinM,
     Math.min(
@@ -102,9 +134,23 @@ export function resolveSketchBoxDoorLayout(args: {
       doorD * SKETCH_BOX_DIMENSIONS.preview.doorBackClearanceDepthRatio
     )
   );
-  const doorZ = doorFrontZ + doorD / 2 + doorBackClearanceZ;
+  const doorZ = isInsetDoorMount
+    ? doorFrontZ - doorD / 2 - insetReveal
+    : doorFrontZ + doorD / 2 + doorBackClearanceZ;
   const pivotX = hingeLeft ? doorFaceLeft : doorFaceRight;
   const slabLocalX = hingeLeft ? doorW / 2 : -doorW / 2;
+
+  const boxDoorGrooveOn = boxDoor.groove === true;
+  const boxDoorGrooveLinesCount = boxDoor.grooveLinesCount ?? null;
+  const sharedHandleAbsY =
+    typeof args.sharedHandleAbsY === 'number' && Number.isFinite(args.sharedHandleAbsY)
+      ? args.sharedHandleAbsY
+      : null;
+  const handleAbsY = resolveSketchFreeBoxDoorHandleAbsY({
+    renderArgs,
+    placement,
+    sharedHandleAbsY,
+  });
 
   return {
     placement,
@@ -118,11 +164,14 @@ export function resolveSketchBoxDoorLayout(args: {
     doorH,
     doorD,
     doorZ,
+    doorCenterY,
     pivotX,
     slabLocalX,
     sharedDoorUserData: {
       __wpSketchBoxDoorId: doorId,
       __wpSketchFreePlacement: isFreePlacement === true,
+      __wpSketchBoxDoorGroove: boxDoorGrooveOn,
+      __wpSketchBoxDoorGrooveLinesCount: boxDoorGrooveLinesCount,
     },
     groupUserData: {
       partId: doorPid,
@@ -131,6 +180,8 @@ export function resolveSketchBoxDoorLayout(args: {
       __wpSketchModuleKey: moduleKeyStr,
       __wpSketchBoxDoor: true,
       __wpSketchFreePlacement: isFreePlacement === true,
+      __wpSketchBoxDoorGroove: boxDoorGrooveOn,
+      __wpSketchBoxDoorGrooveLinesCount: boxDoorGrooveLinesCount,
       __wpSketchBoxDoubleDoor: isCenterDoubleDoorPair,
       __doorWidth: doorW,
       __doorHeight: doorH,
@@ -138,6 +189,7 @@ export function resolveSketchBoxDoorLayout(args: {
       __wpFaceOffsetX: slabLocalX,
       __hingeLeft: hingeLeft,
       __handleZSign: 1,
+      ...(handleAbsY != null ? { __handleAbsY: handleAbsY } : {}),
       noGlobalOpen: true,
     },
   };

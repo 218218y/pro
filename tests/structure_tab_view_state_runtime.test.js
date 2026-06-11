@@ -252,10 +252,14 @@ test('structure tab view-state runtime derives default cell width from modules c
 
 test('structure tab view-state runtime normalizes cell dims and record helpers', () => {
   const cellDims = readStructureTabCellDimsState({
+    cellDimsPanelOpen: true,
+    cellDimsHexPanelOpen: true,
     cellDimsWidth: '45.5',
     cellDimsHeight: '',
     cellDimsDepth: null,
   });
+  assert.equal(cellDims.cellDimsPanelOpen, true);
+  assert.equal(cellDims.cellDimsHexPanelOpen, true);
   assert.equal(cellDims.cellDimsWidth, 45.5);
   assert.equal(cellDims.cellDimsHeight, '');
   assert.equal(cellDims.cellDimsDepth, '');

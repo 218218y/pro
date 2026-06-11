@@ -80,9 +80,9 @@ export function SavedModelsPrimaryActions(
         <button
           id="btnMoveModelUp"
           type="button"
-          className="btn btn-accent wp-r-savedmodels-arrow"
+          className="btn btn-accent wp-r-savedmodels-arrow wp-r-styled-tooltip hint-bottom"
           onClick={() => props.moveSelected('up')}
-          title="הזז למעלה"
+          data-tooltip="הזז למעלה"
           aria-label="הזז דגם למעלה"
           aria-disabled={false}
         >
@@ -91,9 +91,9 @@ export function SavedModelsPrimaryActions(
         <button
           id="btnMoveModelDown"
           type="button"
-          className="btn btn-accent wp-r-savedmodels-arrow"
+          className="btn btn-accent wp-r-savedmodels-arrow wp-r-styled-tooltip hint-bottom"
           onClick={() => props.moveSelected('down')}
-          title="הזז למטה"
+          data-tooltip="הזז למטה"
           aria-label="הזז דגם למטה"
           aria-disabled={false}
         >

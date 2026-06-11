@@ -21,6 +21,8 @@ export function validateProjectData(data: ProjectDataLike): ProjectSchemaValidat
     warnings.push('"hingeMap" is not an object (coerced)');
   if (data.removedDoorsMap && typeof data.removedDoorsMap !== 'object')
     warnings.push('"removedDoorsMap" is not an object (coerced)');
+  if (data.roundedFrameSideShelvesMap && typeof data.roundedFrameSideShelvesMap !== 'object')
+    warnings.push('"roundedFrameSideShelvesMap" is not an object (coerced)');
   if (data.curtainMap && typeof data.curtainMap !== 'object')
     warnings.push('"curtainMap" is not an object (coerced)');
   if (data.doorSpecialMap && typeof data.doorSpecialMap !== 'object')

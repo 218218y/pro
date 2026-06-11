@@ -1,8 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { SKETCH_BOX_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
 import {
   buildRectClearanceMeasurementEntries,
+  buildStackAwareHorizontalClearanceMeasurementEntries,
   buildStackAwareVerticalClearanceMeasurementEntries,
   buildVerticalClearanceMeasurementEntries,
   markCenteredRectClearanceMeasurements,
@@ -15,6 +17,32 @@ function isHorizontalMeasurement(entry: { startY: number; endY: number }): boole
 
 function isVerticalMeasurement(entry: { startX: number; endX: number }): boolean {
   return Math.abs(entry.startX - entry.endX) <= 1e-9;
+}
+
+function assertLabelFullyOutsideLeft(
+  entry: { labelX?: number; textScale?: number; styleKey?: string },
+  outsideEdgeX: number,
+  widthScale: number
+): void {
+  const textScale = typeof entry.textScale === 'number' ? entry.textScale : 1;
+  const halfWidth = (widthScale * textScale) / 2;
+  assert.ok(
+    Number(entry.labelX) + halfWidth <=
+      outsideEdgeX - SKETCH_BOX_DIMENSIONS.preview.measurementHorizontalLabelOutsideGapM + 1e-9
+  );
+}
+
+function assertLabelFullyOutsideRight(
+  entry: { labelX?: number; textScale?: number; styleKey?: string },
+  outsideEdgeX: number,
+  widthScale: number
+): void {
+  const textScale = typeof entry.textScale === 'number' ? entry.textScale : 1;
+  const halfWidth = (widthScale * textScale) / 2;
+  assert.ok(
+    Number(entry.labelX) - halfWidth >=
+      outsideEdgeX + SKETCH_BOX_DIMENSIONS.preview.measurementHorizontalLabelOutsideGapM - 1e-9
+  );
 }
 
 test('rect clearance builder emits vertical and horizontal cm labels in local coordinates', () => {
@@ -207,4 +235,51 @@ test('stack-aware vertical clearance builder centers both cell and neighbor meas
   assert.ok((neighborEntries[0]?.startX ?? 0) < (cellEntries[0]?.startX ?? 0));
   assert.ok(cellEntries.every(entry => entry.styleKey === 'cell'));
   assert.ok(neighborEntries.every(entry => entry.styleKey === 'neighbor'));
+});
+
+test('stack-aware horizontal clearance builder emits side and divider-neighbor measurements', () => {
+  const entries = buildStackAwareHorizontalClearanceMeasurementEntries({
+    containerMinX: -0.5,
+    containerMaxX: 0.5,
+    targetCenterX: 0,
+    targetCenterY: 1,
+    targetWidth: 0.02,
+    targetHeight: 0.8,
+    neighbors: [
+      { minX: -0.26, maxX: -0.24, kind: 'divider' },
+      { minX: 0.29, maxX: 0.31, kind: 'divider' },
+    ],
+    styleKey: 'cell',
+    textScale: 0.82,
+    overallLabelOutsetX: 0.06,
+    neighborLabelOutsetX: 0.04,
+  });
+
+  const cellEntries = entries.filter(entry => entry.role === 'cell');
+  const neighborEntries = entries.filter(entry => entry.role === 'neighbor');
+  assert.equal(cellEntries.length, 2);
+  assert.equal(neighborEntries.length, 2);
+  assert.deepEqual(
+    cellEntries.map(entry => entry.label),
+    ['49 ס"מ', '49 ס"מ']
+  );
+  assert.deepEqual(
+    neighborEntries.map(entry => entry.label),
+    ['23 ס"מ', '28 ס"מ']
+  );
+  assert.ok(cellEntries.every(entry => entry.styleKey === 'cell'));
+  assert.ok(neighborEntries.every(entry => entry.styleKey === 'neighbor'));
+  assert.ok(neighborEntries.every(isHorizontalMeasurement));
+  assertLabelFullyOutsideLeft(cellEntries[0], -0.5, SKETCH_BOX_DIMENSIONS.preview.measurementScaleCellX);
+  assertLabelFullyOutsideRight(cellEntries[1], 0.5, SKETCH_BOX_DIMENSIONS.preview.measurementScaleCellX);
+  assertLabelFullyOutsideLeft(
+    neighborEntries[0],
+    -0.24,
+    SKETCH_BOX_DIMENSIONS.preview.measurementScaleNeighborX
+  );
+  assertLabelFullyOutsideRight(
+    neighborEntries[1],
+    0.29,
+    SKETCH_BOX_DIMENSIONS.preview.measurementScaleNeighborX
+  );
 });

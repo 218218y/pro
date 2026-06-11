@@ -255,7 +255,7 @@ export type LibraryPresetInvariantDoorMutators = {
   delSpecial: (key: string) => void;
   delColor: (key: string) => void;
   delCurtainIfNone: (key: string) => void;
-  setStyle: (key: string, val: 'flat' | 'profile' | 'tom') => void;
+  setStyle: (key: string, val: 'flat' | 'profile' | 'double_profile') => void;
   delStyle: (key: string) => void;
 };
 

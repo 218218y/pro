@@ -133,6 +133,7 @@ export function prepareStackSplitLowerSetup(
     bodyMat: args.bodyMat,
     getPartColorValue: args.getPartColorValue,
     getPartMaterial: args.getPartMaterial,
+    frameSidePartIdPrefix: 'lower_',
     partIdPrefix: 'lower_',
     baseHeight: 0,
     startY: 0,

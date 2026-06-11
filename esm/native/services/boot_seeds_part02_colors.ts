@@ -40,6 +40,46 @@ function cfgMetaRestoreProfile(
   }
 }
 
+function readSavedColorsStorageKey(storage: ReturnType<typeof getStorage>): string {
+  return storage && storage.KEYS && storage.KEYS.SAVED_COLORS
+    ? String(storage.KEYS.SAVED_COLORS)
+    : 'wardrobeSavedColors';
+}
+
+function readStorageJsonArray(storage: ReturnType<typeof getStorage>, key: string): unknown[] {
+  if (!storage) return [];
+
+  if (typeof storage.getString === 'function') {
+    const raw = storage.getString(key);
+    if (raw == null) return [];
+    const parsed = raw ? JSON.parse(String(raw)) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  }
+
+  if (typeof storage.getJSON === 'function') {
+    const parsed = storage.getJSON(key, []);
+    return Array.isArray(parsed) ? parsed : [];
+  }
+
+  return [];
+}
+
+function normalizeStoredColorOrder(value: unknown[]): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (let i = 0; i < value.length; i++) {
+    const next = String(value[i] || '').trim();
+    if (!next || seen.has(next)) continue;
+    seen.add(next);
+    out.push(next);
+  }
+  return out;
+}
+
+function cloneStoredArray(value: unknown[]): unknown[] {
+  return cloneUnknownArray(value, value.slice());
+}
+
 export function seedMultiColorMode(App: AppLike): void {
   if (!App || typeof App !== 'object') return;
   const cfg0 = readCfg(App);
@@ -65,28 +105,33 @@ export function seedSavedColors(App: AppLike): void {
   if (!App || typeof App !== 'object') return;
 
   const cfg0 = readCfg(App);
+  const cur = cfg0 && typeof cfg0 === 'object' ? cfg0.savedColors : undefined;
+  const curArr = Array.isArray(cur) ? cur : null;
+  if (curArr && curArr.length > 0) return;
 
   let vSavedColors: unknown[] = [];
   try {
-    if (Array.isArray(cfg0.savedColors)) {
-      vSavedColors = cloneUnknownArray(cfg0.savedColors, cfg0.savedColors.slice());
-    } else {
-      const cfg2 = readCfg(App);
-      vSavedColors = Array.isArray(cfg2.savedColors) ? cfg2.savedColors : [];
+    const storage = getStorage(App);
+    if (storage) {
+      vSavedColors = readStorageJsonArray(storage, readSavedColorsStorageKey(storage));
     }
   } catch (_) {
     vSavedColors = [];
   }
-  if (!Array.isArray(vSavedColors)) vSavedColors = [];
+
+  if (!Array.isArray(vSavedColors) || vSavedColors.length <= 0) {
+    if (curArr) return;
+    try {
+      const cfg2 = readCfg(App);
+      vSavedColors = Array.isArray(cfg2.savedColors) ? cfg2.savedColors : [];
+    } catch (_) {
+      vSavedColors = [];
+    }
+  }
 
   try {
-    const cur = cfg0 && typeof cfg0 === 'object' ? cfg0.savedColors : undefined;
-    const missing = !Array.isArray(cur);
-    if (!missing) return;
-
     const meta = cfgMetaRestoreProfile(App, { noStorageWrite: true }, 'core:initSavedColorsSeed');
-    const cloned = cloneUnknownArray(vSavedColors, vSavedColors.slice());
-    writeSavedColors(App, cloned, meta);
+    writeSavedColors(App, cloneStoredArray(vSavedColors), meta);
   } catch (_) {}
 }
 
@@ -107,31 +152,9 @@ export function seedColorSwatchesOrder(App: AppLike): void {
     const storage = getStorage(App);
     if (!storage) return;
 
-    const keyColors =
-      storage.KEYS && storage.KEYS.SAVED_COLORS ? String(storage.KEYS.SAVED_COLORS) : 'wardrobeSavedColors';
+    const keyColors = readSavedColorsStorageKey(storage);
     const keyOrder = `${keyColors}:order`;
-
-    if (typeof storage.getString === 'function') {
-      const s = storage.getString(keyOrder);
-      if (s == null) return;
-      const parsed = s ? JSON.parse(String(s)) : [];
-      const arr = Array.isArray(parsed) ? parsed : [];
-      const out: string[] = [];
-      for (let i = 0; i < arr.length; i++) {
-        const v = String(arr[i] || '').trim();
-        if (v) out.push(v);
-      }
-      clean = out;
-    } else if (typeof storage.getJSON === 'function') {
-      const parsed = storage.getJSON(keyOrder, []);
-      const arr = Array.isArray(parsed) ? parsed : [];
-      const out: string[] = [];
-      for (let i = 0; i < arr.length; i++) {
-        const v = String(arr[i] || '').trim();
-        if (v) out.push(v);
-      }
-      clean = out;
-    }
+    clean = normalizeStoredColorOrder(readStorageJsonArray(storage, keyOrder));
   } catch (_) {
     clean = [];
   }

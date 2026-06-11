@@ -2,6 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { handleCanvasDoorSplitClick } from '../esm/native/services/canvas_picking_door_split_click.ts';
+import {
+  __wp_getSplitHoverDoorBaseKey,
+  __wp_readSplitHoverDoorBounds,
+} from '../esm/native/services/canvas_picking_split_hover_helpers.ts';
+import { __wp_getSplitHoverRaycastRoots } from '../esm/native/services/canvas_picking_split_hover_roots.ts';
 import { tryHandleSplitDoorHover } from '../esm/native/services/canvas_picking_door_split_hover_flow.ts';
 import {
   readCanvasDoorSplitBounds,
@@ -50,6 +55,9 @@ function createSplitClickApp(args: {
     store: {
       getState() {
         return state;
+      },
+      patch(patch: Record<string, unknown>) {
+        Object.assign(state, patch || {});
       },
     },
     render: {
@@ -101,11 +109,16 @@ test('split click base normalization uses canonical lower/corner door family ids
 
   assert.equal(resolveCanvasDoorSplitBaseKey(App, 'd4_top'), 'd4');
   assert.equal(resolveCanvasDoorSplitBaseKey(App, 'corner_door_2_mid'), 'corner_door_2');
+  assert.equal(resolveCanvasDoorSplitBaseKey(App, 'corner_door_2_mid2'), 'corner_door_2');
   assert.equal(resolveCanvasDoorSplitBaseKey(App, 'lower_d4_bot'), 'lower_d4');
   assert.equal(resolveCanvasDoorSplitBaseKey(App, 'lower_corner_door_2_top'), 'lower_corner_door_2');
   assert.equal(
     resolveCanvasDoorSplitBaseKey(App, 'lower_corner_pent_door_3_bot'),
     'lower_corner_pent_door_3'
+  );
+  assert.equal(
+    resolveCanvasDoorSplitBaseKey(App, 'sketch_box_free_0_boxA_door_main_mid2'),
+    'sketch_box_free_0_boxA_door_main'
   );
 });
 
@@ -166,6 +179,317 @@ test('lower corner custom split commits canonical split position against full-fa
     ]
   );
   assert.deepEqual(maps.splitDoorsMap.splitpos_lower_corner_door_2, [0.625]);
+});
+
+test('regular split click on sketch-box doors stores a concrete split position and toggles removal', () => {
+  const partId = 'sketch_box_free_0_sbf_alpha_door_sbdr_1';
+  const door = createDoorGroup(partId, 1.5, 3);
+  const { App, maps } = createSplitClickApp({
+    doorsArray: [door],
+  });
+
+  const handledAdd = handleCanvasDoorSplitClick({
+    App,
+    effectiveDoorId: partId,
+    foundModuleStack: 'top',
+    doorHitY: 2.4,
+    doorHitGroup: (door as { group: unknown }).group,
+  });
+
+  assert.equal(handledAdd, true);
+  assert.equal(maps.splitDoorsMap[`split_${partId}`], true);
+  assert.equal(maps.splitDoorsBottomMap[`splitb_${partId}`], false);
+  assert.equal(Array.isArray(maps.splitDoorsMap[`splitpos_${partId}`]), true);
+  assert.ok(Math.abs(Number((maps.splitDoorsMap[`splitpos_${partId}`] as number[])[0]) - 2 / 3) < 1e-9);
+
+  const handledRemove = handleCanvasDoorSplitClick({
+    App,
+    effectiveDoorId: partId,
+    foundModuleStack: 'top',
+    doorHitY: 2.4,
+    doorHitGroup: (door as { group: unknown }).group,
+  });
+
+  assert.equal(handledRemove, true);
+  assert.equal(maps.splitDoorsMap[`split_${partId}`], false);
+  assert.equal(maps.splitDoorsMap[`splitpos_${partId}`], null);
+});
+
+test('regular split click on sketch-box doors keeps fixed top and bottom slots only', () => {
+  const partId = 'sketch_box_free_0_sbf_alpha_door_sbdr_1';
+  const door = createDoorGroup(partId, 0.5, 1);
+  const { App, maps } = createSplitClickApp({
+    doorsArray: [door],
+  });
+
+  assert.equal(
+    handleCanvasDoorSplitClick({
+      App,
+      effectiveDoorId: partId,
+      foundModuleStack: 'top',
+      doorHitY: 0.8,
+      doorHitGroup: (door as { group: unknown }).group,
+    }),
+    true
+  );
+  assert.ok(Math.abs(Number((maps.splitDoorsMap[`splitpos_${partId}`] as number[])[0]) - 2 / 3) < 1e-9);
+  assert.equal(maps.splitDoorsBottomMap[`splitb_${partId}`], false);
+
+  assert.equal(
+    handleCanvasDoorSplitClick({
+      App,
+      effectiveDoorId: partId,
+      foundModuleStack: 'top',
+      doorHitY: 0.1,
+      doorHitGroup: (door as { group: unknown }).group,
+    }),
+    true
+  );
+  assert.deepEqual(maps.splitDoorsMap[`splitpos_${partId}`], [1 / 3, 2 / 3]);
+  assert.equal(maps.splitDoorsBottomMap[`splitb_${partId}`], true);
+
+  assert.equal(
+    handleCanvasDoorSplitClick({
+      App,
+      effectiveDoorId: partId,
+      foundModuleStack: 'top',
+      doorHitY: 0.8,
+      doorHitGroup: (door as { group: unknown }).group,
+    }),
+    true
+  );
+  assert.deepEqual(maps.splitDoorsMap[`splitpos_${partId}`], [1 / 3]);
+  assert.equal(maps.splitDoorsMap[`split_${partId}`], true);
+  assert.equal(maps.splitDoorsBottomMap[`splitb_${partId}`], true);
+});
+
+test('split hover bounds for rebuilt sketch-box door segments use world Y instead of child-local Y', () => {
+  const basePartId = 'sketch_box_free_0_sbf_alpha_door_sbdr_1';
+  const wardrobeGroup = { children: [] as unknown[] };
+  const doorGroup = {
+    userData: { partId: basePartId, __doorHeight: 2 },
+    position: { y: 1 },
+    parent: wardrobeGroup,
+    children: [] as unknown[],
+  };
+  const bottomSegment = {
+    userData: { partId: `${basePartId}_bot`, __doorHeight: 1 },
+    position: { y: -0.5 },
+    parent: doorGroup,
+    children: [] as unknown[],
+  };
+  const topSegment = {
+    userData: { partId: `${basePartId}_top`, __doorHeight: 1 },
+    position: { y: 0.5 },
+    parent: doorGroup,
+    children: [] as unknown[],
+  };
+  doorGroup.children.push(bottomSegment, topSegment);
+  wardrobeGroup.children.push(doorGroup);
+
+  const App = {
+    render: {
+      wardrobeGroup,
+      doorsArray: [{ group: doorGroup }],
+    },
+  } as any;
+
+  assert.equal(__wp_getSplitHoverDoorBaseKey(`${basePartId}_top`), basePartId);
+  assert.equal(Array.isArray(__wp_getSplitHoverRaycastRoots(App)), true);
+  assert.deepEqual(__wp_readSplitHoverDoorBounds(App, basePartId), { minY: 0, maxY: 2 });
+});
+
+test('regular split hover and click on rebuilt sketch-box doors ignore the drawer-cut parent height', () => {
+  const partId = 'sketch_box_free_0_sbf_alpha_door_sbdr_1';
+  const wardrobeGroup = { children: [] as unknown[] };
+  const doorGroup = {
+    userData: {
+      partId,
+      __doorHeight: 3,
+      __wpSketchSegmentedDoor: true,
+      __wpSketchBoxDoor: true,
+    },
+    position: { y: 1.5 },
+    parent: wardrobeGroup,
+    children: [] as unknown[],
+  };
+  const visibleDoorAboveDrawers = {
+    userData: {
+      partId,
+      __doorHeight: 2,
+      __doorWidth: 0.8,
+      __wpSketchDoorSegment: true,
+      __wpSketchDoorLeaf: true,
+    },
+    position: { y: 0.5 },
+    parent: doorGroup,
+    children: [] as unknown[],
+  };
+  doorGroup.children.push(visibleDoorAboveDrawers);
+  wardrobeGroup.children.push(doorGroup);
+
+  const { App, maps } = createSplitClickApp({
+    doorsArray: [{ group: doorGroup }],
+  });
+  (App as any).render.wardrobeGroup = wardrobeGroup;
+
+  assert.equal(Array.isArray(__wp_getSplitHoverRaycastRoots(App)), true);
+  assert.deepEqual(__wp_readSplitHoverDoorBounds(App, partId), { minY: 1, maxY: 3 });
+  assert.deepEqual(readCanvasDoorSplitBounds(App, partId), { minY: 1, maxY: 3 });
+
+  assert.equal(
+    handleCanvasDoorSplitClick({
+      App,
+      effectiveDoorId: partId,
+      foundModuleStack: 'top',
+      doorHitY: 1.3,
+      doorHitGroup: visibleDoorAboveDrawers,
+    }),
+    true
+  );
+
+  assert.deepEqual(maps.splitDoorsMap[`splitpos_${partId}`], [0.25]);
+  assert.equal(maps.splitDoorsBottomMap[`splitb_${partId}`], true);
+});
+
+test('regular split click on rebuilt sketch-box doors uses projected pointer Y like hover, not a stale lower hit', () => {
+  class Vec3 {
+    constructor(
+      public x = 0,
+      public y = 0,
+      public z = 0
+    ) {}
+    clone() {
+      return new Vec3(this.x, this.y, this.z);
+    }
+    sub(other: { x: number; y: number; z: number }) {
+      this.x -= other.x;
+      this.y -= other.y;
+      this.z -= other.z;
+      return this;
+    }
+    multiplyScalar(n: number) {
+      this.x *= n;
+      this.y *= n;
+      this.z *= n;
+      return this;
+    }
+    add(other: { x: number; y: number; z: number }) {
+      this.x += other.x;
+      this.y += other.y;
+      this.z += other.z;
+      return this;
+    }
+  }
+
+  const partId = 'sketch_box_free_0_sbf_alpha_door_sbdr_1';
+  const wardrobeGroup = { children: [] as unknown[] };
+  const doorGroup = {
+    userData: {
+      partId,
+      __doorHeight: 3,
+      __wpSketchSegmentedDoor: true,
+      __wpSketchBoxDoor: true,
+    },
+    position: { y: 1.5 },
+    parent: wardrobeGroup,
+    children: [] as unknown[],
+  };
+  const visibleDoorAboveDrawers = {
+    userData: {
+      partId,
+      __doorHeight: 2,
+      __doorWidth: 0.8,
+      __handleZSign: 1,
+      __wpSketchDoorSegment: true,
+      __wpSketchDoorLeaf: true,
+    },
+    position: { y: 0.5 },
+    parent: doorGroup,
+    children: [] as unknown[],
+    worldToLocal(v: Vec3) {
+      return v;
+    },
+    localToWorld(v: Vec3) {
+      return v;
+    },
+  };
+  doorGroup.children.push(visibleDoorAboveDrawers);
+  wardrobeGroup.children.push(doorGroup);
+
+  const { App, maps } = createSplitClickApp({
+    doorsArray: [{ group: doorGroup }],
+  });
+  (App as any).deps = { THREE: { Vector3: Vec3, Box3: class {} } };
+  (App as any).render.wardrobeGroup = wardrobeGroup;
+  (App as any).render.camera = {};
+
+  assert.deepEqual(readCanvasDoorSplitBounds(App, partId), { minY: 1, maxY: 3 });
+
+  const handled = handleCanvasDoorSplitClick({
+    App,
+    effectiveDoorId: partId,
+    foundModuleStack: 'top',
+    doorHitY: 0.2,
+    ndcX: 0,
+    ndcY: 0,
+    raycaster: {
+      ray: { origin: { x: 0, y: 2.8, z: 1 }, direction: { x: 0, y: 0, z: -1 } },
+      setFromCamera() {},
+    } as any,
+    mouse: { x: 0, y: 0 },
+    camera: (App as any).render.camera,
+    doorHitGroup: visibleDoorAboveDrawers,
+  });
+
+  assert.equal(handled, true);
+  assert.ok(Math.abs(Number((maps.splitDoorsMap[`splitpos_${partId}`] as number[])[0]) - 2 / 3) < 1e-9);
+  assert.equal(maps.splitDoorsBottomMap[`splitb_${partId}`], false);
+});
+
+test('regular split click on segmented sketch-box doors uses the whole box door bounds and removes stale extra cuts', () => {
+  const partId = 'sketch_box_0_boxA_door_main';
+  const bottom = createDoorGroup(`${partId}_bot`, 1 / 6, 1 / 3);
+  const middle = createDoorGroup(`${partId}_mid`, 0.5, 1 / 3);
+  const top = createDoorGroup(`${partId}_top`, 5 / 6, 1 / 3);
+  (top as { group: { userData: Record<string, unknown> } }).group.userData.moduleIndex = 0;
+  const { App, maps } = createSplitClickApp({
+    doorsArray: [bottom, middle, top],
+    maps: {
+      splitDoorsMap: {
+        [`split_${partId}`]: true,
+        [`splitpos_${partId}`]: [1 / 3, 2 / 3, 0.82],
+      },
+      splitDoorsBottomMap: {
+        [`splitb_${partId}`]: true,
+      },
+    },
+  });
+  (App as { services?: Record<string, unknown> }).services = {
+    ...((App as { services?: Record<string, unknown> }).services || {}),
+    runtimeCache: {
+      internalGridMap: {
+        0: { effectiveBottomY: 0, effectiveTopY: 2.4, woodThick: 0.018 },
+      },
+    },
+  };
+
+  assert.deepEqual(readCanvasDoorSplitBounds(App, partId), { minY: 0, maxY: 1 });
+
+  assert.equal(
+    handleCanvasDoorSplitClick({
+      App,
+      effectiveDoorId: `${partId}_top`,
+      foundModuleStack: 'top',
+      doorHitY: 0.86,
+      doorHitGroup: (top as { group: unknown }).group,
+    }),
+    true
+  );
+
+  assert.deepEqual(maps.splitDoorsMap[`splitpos_${partId}`], [1 / 3]);
+  assert.equal(maps.splitDoorsMap[`split_${partId}`], true);
+  assert.equal(maps.splitDoorsBottomMap[`splitb_${partId}`], true);
 });
 
 test('custom split click projects pointer onto the visible cut-marker plane instead of using a stale lower raycast point', () => {

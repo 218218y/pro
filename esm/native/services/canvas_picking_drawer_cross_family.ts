@@ -1,5 +1,7 @@
 import type { AppContainer, ModuleConfigLike, UnknownRecord } from '../../../types';
+import type { ModuleKey, PatchConfigForKeyFn } from './canvas_picking_drawer_mode_flow_shared.js';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
+import { SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_KEY } from '../features/sketch_box_regular_external_drawers.js';
 import { getDrawersArray } from '../runtime/render_access.js';
 import {
   __wp_isViewportRoot,
@@ -52,6 +54,8 @@ export type CrossDrawerHit = {
   sketchExtDrawerId: string;
   sketchBoxId: string;
 };
+
+type BoxExternalDrawerListKey = 'extDrawers' | typeof SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_KEY;
 
 type ObjectNode = Record<string, unknown> & {
   parent?: ObjectNode | null;
@@ -220,6 +224,10 @@ function removeListItemById(list: UnknownRecord[], id: string): boolean {
   return true;
 }
 
+function partIdMatchesDrawerId(partId: string, drawerId: string): boolean {
+  return !!drawerId && (partId.endsWith(`_${drawerId}`) || partId.includes(`_${drawerId}_`));
+}
+
 function removeSketchDrawerByPartSuffix(
   cfg: UnknownRecord,
   listKey: 'drawers' | 'extDrawers',
@@ -230,12 +238,80 @@ function removeSketchDrawerByPartSuffix(
   for (let i = list.length - 1; i >= 0; i--) {
     const item = list[i];
     const id = readString(item && typeof item === 'object' ? item.id : '');
-    if (id && partId.endsWith(`_${id}`)) {
+    if (partIdMatchesDrawerId(partId, id)) {
       list.splice(i, 1);
       return true;
     }
   }
   return false;
+}
+
+function removeSketchBoxExternalDrawerByIdOrPart(
+  box: UnknownRecord,
+  listKey: BoxExternalDrawerListKey,
+  drawerId: string,
+  partId?: string
+): boolean {
+  const list = readArray(box, listKey);
+  if (removeListItemById(list, drawerId)) return true;
+  if (!partId) return false;
+
+  for (let i = list.length - 1; i >= 0; i--) {
+    const id = readString(list[i]?.id);
+    if (partIdMatchesDrawerId(partId, id)) {
+      list.splice(i, 1);
+      return true;
+    }
+  }
+  return false;
+}
+
+function coerceCrossDrawerModuleKey(value: unknown): ModuleKey | 'corner' | null {
+  if (value === 'corner') return 'corner';
+  if (typeof value === 'string' && /^corner:\d+$/.test(value)) return value as `corner:${number}`;
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string' && value.trim() !== '') {
+    const n = Number(value);
+    if (Number.isInteger(n) && Number.isFinite(n)) return n;
+  }
+  return null;
+}
+
+export function tryRemoveSketchExternalDrawerByDirectHit(args: {
+  App: AppContainer;
+  intersects: RaycastHitLike[];
+  activeModuleKey: ModuleKey | 'corner' | null;
+  patchConfigForKey: PatchConfigForKeyFn;
+  source: string;
+}): boolean {
+  const hit = findDirectCrossDrawerHitInIntersects(args.App, args.intersects || [], 'sketch_external');
+  if (!hit) return false;
+
+  if (
+    hit.moduleIndex &&
+    args.activeModuleKey != null &&
+    !sameModuleKey(hit.moduleIndex, args.activeModuleKey)
+  ) {
+    return false;
+  }
+
+  const targetModuleKey = args.activeModuleKey ?? coerceCrossDrawerModuleKey(hit.moduleIndex);
+  if (targetModuleKey == null) return false;
+  if (!hit.sketchExtDrawerId && !hit.partId) return false;
+
+  args.patchConfigForKey(
+    targetModuleKey,
+    (cfg: ModuleConfigLike) => {
+      removeSketchExternalDrawerFromConfig(
+        cfg,
+        hit.sketchExtDrawerId,
+        hit.sketchBoxId || undefined,
+        hit.partId
+      );
+    },
+    { source: args.source, immediate: true }
+  );
+  return true;
 }
 
 export function removeSketchInternalDrawerFromConfig(
@@ -261,16 +337,11 @@ export function removeSketchExternalDrawerFromConfig(
   for (let i = 0; i < candidateBoxes.length; i++) {
     const box = candidateBoxes[i];
     if (!box || typeof box !== 'object') continue;
-    const list = readArray(box, 'extDrawers');
-    if (removeListItemById(list, drawerId)) return true;
-    if (partId) {
-      for (let j = list.length - 1; j >= 0; j--) {
-        const id = readString(list[j]?.id);
-        if (id && partId.endsWith(`_${id}`)) {
-          list.splice(j, 1);
-          return true;
-        }
-      }
+    if (removeSketchBoxExternalDrawerByIdOrPart(box, 'extDrawers', drawerId, partId)) return true;
+    if (
+      removeSketchBoxExternalDrawerByIdOrPart(box, SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_KEY, drawerId, partId)
+    ) {
+      return true;
     }
   }
   return false;

@@ -39,6 +39,40 @@ function loadDesignTabViewStateRuntimeModule(stubs = {}) {
           stubs.readDesignTabCorniceType || (value => String(value || 'classic').toLowerCase()),
       };
     }
+    if (specifier === '../selectors/ui_raw_selectors.js') {
+      return {
+        readUiRawIntFromSnapshot:
+          stubs.readUiRawIntFromSnapshot ||
+          ((ui, key, defaultValue) => {
+            const raw = ui && typeof ui === 'object' && ui.raw && typeof ui.raw === 'object' ? ui.raw : ui;
+            const value = raw && typeof raw === 'object' ? raw[key] : undefined;
+            const n = Number.parseInt(String(value), 10);
+            return Number.isFinite(n) ? n : defaultValue;
+          }),
+      };
+    }
+    if (specifier === '../../../features/removable_parts.js') {
+      const readMap = (cfg, name) =>
+        cfg && typeof cfg === 'object' && cfg[name] && typeof cfg[name] === 'object' ? cfg[name] : {};
+      return {
+        readRemovedFrameSideShelfState: cfg => {
+          const removed = readMap(cfg, 'removedDoorsMap');
+          const rounded = readMap(cfg, 'roundedFrameSideShelvesMap');
+          const leftIds = ['body_left', 'lower_body_left'].filter(
+            partId => removed[`removed_${partId}`] === true
+          );
+          const rightIds = ['body_right', 'lower_body_right'].filter(
+            partId => removed[`removed_${partId}`] === true
+          );
+          return {
+            leftRemoved: leftIds.length > 0,
+            rightRemoved: rightIds.length > 0,
+            leftRounded: leftIds.length > 0 && leftIds.every(partId => rounded[partId] === true),
+            rightRounded: rightIds.length > 0 && rightIds.every(partId => rounded[partId] === true),
+          };
+        },
+      };
+    }
     return require(specifier);
   };
   const sandbox = {
@@ -67,6 +101,8 @@ test('[design-tab-view-state-runtime] derives cfg/ui/design feature state throug
         grooveLinesCount: 7,
         groovesDirty: 1,
         removedDoorsDirty: 0,
+        removedDoorsMap: { removed_body_left: true },
+        roundedFrameSideShelvesMap: { body_left: true },
       })
     ),
     JSON.stringify({
@@ -77,6 +113,10 @@ test('[design-tab-view-state-runtime] derives cfg/ui/design feature state throug
       grooveLinesCountOverride: 7,
       groovesDirty: true,
       removedDoorsDirty: false,
+      leftFrameSideRemoved: true,
+      rightFrameSideRemoved: false,
+      leftFrameSideShelvesRounded: true,
+      rightFrameSideShelvesRounded: false,
     })
   );
 
@@ -93,9 +133,11 @@ test('[design-tab-view-state-runtime] derives cfg/ui/design feature state throug
       })
     ),
     JSON.stringify({
+      noMainWardrobeActive: false,
       doorStyle: 'profile',
       colorChoice: '#111111',
       frontColorShelfInheritanceMode: 'all',
+      isChestMode: false,
       groovesEnabled: true,
       splitDoors: false,
       removeDoorsEnabled: true,
@@ -113,6 +155,13 @@ test('[design-tab-view-state-runtime] derives cfg/ui/design feature state throug
     mod.readDesignTabUiState({ frontColorShelfInheritanceMode: 'bad-value' }).frontColorShelfInheritanceMode,
     'all'
   );
+
+  assert.equal(mod.readDesignTabUiState({ doors: 0, hasCornice: true }).noMainWardrobeActive, true);
+  assert.equal(
+    mod.readDesignTabUiState({ raw: { doors: '0' }, hasCornice: true }).noMainWardrobeActive,
+    true
+  );
+  assert.equal(mod.readDesignTabUiState({ doors: 4, hasCornice: true }).noMainWardrobeActive, false);
 
   assert.equal(
     JSON.stringify(
@@ -187,7 +236,7 @@ test('[design-tab-view-state-runtime] delegates selector and shared readers exac
     },
     readDesignTabDoorStyle(value) {
       calls.push(['readDesignTabDoorStyle', value]);
-      return 'tom';
+      return 'double_profile';
     },
     readDesignTabCorniceType(value) {
       calls.push(['readDesignTabCorniceType', value]);
@@ -208,14 +257,20 @@ test('[design-tab-view-state-runtime] delegates selector and shared readers exac
       grooveLinesCountOverride: 4,
       groovesDirty: true,
       removedDoorsDirty: false,
+      leftFrameSideRemoved: false,
+      rightFrameSideRemoved: false,
+      leftFrameSideShelvesRounded: false,
+      rightFrameSideShelvesRounded: false,
     })
   );
   assert.equal(
     JSON.stringify(mod.readDesignTabUiState(ui)),
     JSON.stringify({
-      doorStyle: 'tom',
+      noMainWardrobeActive: false,
+      doorStyle: 'double_profile',
       colorChoice: 'custom',
       frontColorShelfInheritanceMode: 'all',
+      isChestMode: false,
       groovesEnabled: false,
       splitDoors: false,
       removeDoorsEnabled: false,

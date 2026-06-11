@@ -300,7 +300,7 @@ export const addHangingClothes: AppAwareAddHangingClothesFn = (
         : '';
 
   let baseClothDepth: number = dims.defaultDepthM;
-  if (currentStyle === 'profile' || currentStyle === 'tom') baseClothDepth = dims.framedDoorDepthM;
+  if (currentStyle === 'profile' || currentStyle === 'double_profile') baseClothDepth = dims.framedDoorDepthM;
   if (typeof isRestrictedDepth === 'number' && Number.isFinite(isRestrictedDepth) && isRestrictedDepth > 0) {
     baseClothDepth = Math.min(baseClothDepth, Math.max(dims.restrictedDepthMinM, isRestrictedDepth));
   } else if (isRestrictedDepth) {

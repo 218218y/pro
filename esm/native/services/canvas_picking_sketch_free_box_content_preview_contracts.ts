@@ -8,11 +8,22 @@ import type {
   PickSketchBoxSegmentArgs,
   FindNearestSketchBoxDividerArgs,
   FindNearestSketchBoxDividerResult,
+  FindNearestSketchBoxHorizontalDividerArgs,
+  FindNearestSketchBoxHorizontalDividerResult,
   SketchBoxDividerPlacementArgs,
   SketchBoxDividerPlacement,
+  SketchBoxHorizontalDividerPlacementArgs,
+  SketchBoxHorizontalDividerPlacement,
+  ResolveSketchBoxVerticalSegmentsArgs,
+  PickSketchBoxVerticalSegmentArgs,
   SelectorLocalBox,
 } from './canvas_picking_manual_layout_sketch_contracts.js';
-import type { SketchBoxDividerState, SketchBoxSegmentState } from './canvas_picking_sketch_box_dividers.js';
+import type {
+  SketchBoxDividerState,
+  SketchBoxHorizontalDividerState,
+  SketchBoxSegmentState,
+  SketchBoxVerticalSegmentState,
+} from './canvas_picking_sketch_box_dividers.js';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
 import type {
   SketchFreeBoxTarget,
@@ -37,7 +48,9 @@ export type SketchFreeBoxContentPreviewArgs = {
   resolveSketchFreeBoxGeometry: (args: SketchFreeBoxGeometryArgs) => SketchFreeBoxGeometry;
   getSketchFreeBoxPartPrefix: (moduleKey: SketchFreeHoverHost['moduleKey'], boxId: unknown) => string;
   findSketchFreeBoxLocalHit: (args: SketchFreeBoxLocalHitArgs) => LocalPoint | null;
+  projectPointerToLocalZPlane?: ((planeZ: number) => LocalPoint | null) | null;
   readSketchBoxDividers: (box: unknown) => SketchBoxDividerState[];
+  readSketchBoxHorizontalDividers: (box: unknown) => SketchBoxHorizontalDividerState[];
   resolveSketchBoxSegments: (args: ResolveSketchBoxSegmentsArgs) => SketchBoxSegmentState[];
   pickSketchBoxSegment: (args: PickSketchBoxSegmentArgs) => SketchBoxSegmentState | null;
   findNearestSketchBoxDivider: (
@@ -45,6 +58,18 @@ export type SketchFreeBoxContentPreviewArgs = {
   ) => FindNearestSketchBoxDividerResult | null;
   resolveSketchBoxDividerPlacement: (args: SketchBoxDividerPlacementArgs) => SketchBoxDividerPlacement;
   readSketchBoxDividerXNorm: (box: unknown) => number | null;
+  resolveSketchBoxVerticalSegments: (
+    args: ResolveSketchBoxVerticalSegmentsArgs
+  ) => SketchBoxVerticalSegmentState[];
+  pickSketchBoxVerticalSegment: (
+    args: PickSketchBoxVerticalSegmentArgs
+  ) => SketchBoxVerticalSegmentState | null;
+  findNearestSketchBoxHorizontalDivider: (
+    args: FindNearestSketchBoxHorizontalDividerArgs
+  ) => FindNearestSketchBoxHorizontalDividerResult | null;
+  resolveSketchBoxHorizontalDividerPlacement: (
+    args: SketchBoxHorizontalDividerPlacementArgs
+  ) => SketchBoxHorizontalDividerPlacement;
 };
 
 export type SketchFreeBoxContentPreviewResult =
@@ -53,7 +78,14 @@ export type SketchFreeBoxContentPreviewResult =
 
 export type SketchFreeBoxResolvedTarget = Pick<
   SketchFreeBoxTarget,
-  'boxId' | 'targetBox' | 'targetGeo' | 'targetCenterY' | 'targetHeight' | 'pointerX' | 'pointerY'
+  | 'boxId'
+  | 'partPrefix'
+  | 'targetBox'
+  | 'targetGeo'
+  | 'targetCenterY'
+  | 'targetHeight'
+  | 'pointerX'
+  | 'pointerY'
 >;
 
 export type SketchFreeSurfaceKind = Extract<SketchFreeHoverContentKind, 'divider' | 'cornice' | 'base'>;
@@ -68,6 +100,7 @@ export type SketchFreeSurfacePreviewResolverArgs = {
   target: SketchFreeBoxTarget;
   wardrobeBox: SelectorLocalBox;
   readSketchBoxDividers: (box: unknown) => SketchBoxDividerState[];
+  readSketchBoxHorizontalDividers: (box: unknown) => SketchBoxHorizontalDividerState[];
   resolveSketchBoxSegments: (args: ResolveSketchBoxSegmentsArgs) => SketchBoxSegmentState[];
   pickSketchBoxSegment: (args: PickSketchBoxSegmentArgs) => SketchBoxSegmentState | null;
   findNearestSketchBoxDivider: (
@@ -75,6 +108,18 @@ export type SketchFreeSurfacePreviewResolverArgs = {
   ) => FindNearestSketchBoxDividerResult | null;
   resolveSketchBoxDividerPlacement: (args: SketchBoxDividerPlacementArgs) => SketchBoxDividerPlacement;
   readSketchBoxDividerXNorm: (box: unknown) => number | null;
+  resolveSketchBoxVerticalSegments: (
+    args: ResolveSketchBoxVerticalSegmentsArgs
+  ) => SketchBoxVerticalSegmentState[];
+  pickSketchBoxVerticalSegment: (
+    args: PickSketchBoxVerticalSegmentArgs
+  ) => SketchBoxVerticalSegmentState | null;
+  findNearestSketchBoxHorizontalDivider: (
+    args: FindNearestSketchBoxHorizontalDividerArgs
+  ) => FindNearestSketchBoxHorizontalDividerResult | null;
+  resolveSketchBoxHorizontalDividerPlacement: (
+    args: SketchBoxHorizontalDividerPlacementArgs
+  ) => SketchBoxHorizontalDividerPlacement;
 };
 
 export type SketchFreeVerticalPreviewArgs = {
@@ -82,9 +127,17 @@ export type SketchFreeVerticalPreviewArgs = {
   contentKind: SketchFreeVerticalKind;
   host: SketchFreeHoverHost;
   target: SketchFreeBoxResolvedTarget;
+  intersects?: RaycastHitLike[];
   readSketchBoxDividers: (box: unknown) => SketchBoxDividerState[];
+  readSketchBoxHorizontalDividers?: (box: unknown) => SketchBoxHorizontalDividerState[];
   resolveSketchBoxSegments: (args: ResolveSketchBoxSegmentsArgs) => SketchBoxSegmentState[];
   pickSketchBoxSegment: (args: PickSketchBoxSegmentArgs) => SketchBoxSegmentState | null;
+  resolveSketchBoxVerticalSegments?: (
+    args: ResolveSketchBoxVerticalSegmentsArgs
+  ) => SketchBoxVerticalSegmentState[];
+  pickSketchBoxVerticalSegment?: (
+    args: PickSketchBoxVerticalSegmentArgs
+  ) => SketchBoxVerticalSegmentState | null;
 };
 
 export type SketchFreeStackPreviewArgs = {
@@ -93,18 +146,32 @@ export type SketchFreeStackPreviewArgs = {
   host: SketchFreeHoverHost;
   target: SketchFreeBoxResolvedTarget;
   readSketchBoxDividers: (box: unknown) => SketchBoxDividerState[];
+  readSketchBoxHorizontalDividers?: (box: unknown) => SketchBoxHorizontalDividerState[];
   resolveSketchBoxSegments: (args: ResolveSketchBoxSegmentsArgs) => SketchBoxSegmentState[];
   pickSketchBoxSegment: (args: PickSketchBoxSegmentArgs) => SketchBoxSegmentState | null;
+  resolveSketchBoxVerticalSegments?: (
+    args: ResolveSketchBoxVerticalSegmentsArgs
+  ) => SketchBoxVerticalSegmentState[];
+  pickSketchBoxVerticalSegment?: (
+    args: PickSketchBoxVerticalSegmentArgs
+  ) => SketchBoxVerticalSegmentState | null;
 };
 
 export type SketchFreeDoorPreviewArgs = {
   tool: string;
   contentKind: SketchFreeDoorKind;
   host: SketchFreeHoverHost;
-  target: Omit<SketchFreeBoxResolvedTarget, 'pointerY'>;
+  target: SketchFreeBoxResolvedTarget;
   readSketchBoxDividers: (box: unknown) => SketchBoxDividerState[];
+  readSketchBoxHorizontalDividers?: (box: unknown) => SketchBoxHorizontalDividerState[];
   resolveSketchBoxSegments: (args: ResolveSketchBoxSegmentsArgs) => SketchBoxSegmentState[];
   pickSketchBoxSegment: (args: PickSketchBoxSegmentArgs) => SketchBoxSegmentState | null;
+  resolveSketchBoxVerticalSegments?: (
+    args: ResolveSketchBoxVerticalSegmentsArgs
+  ) => SketchBoxVerticalSegmentState[];
+  pickSketchBoxVerticalSegment?: (
+    args: PickSketchBoxVerticalSegmentArgs
+  ) => SketchBoxVerticalSegmentState | null;
 };
 
 export type { SketchFreeSurfacePreviewResult };

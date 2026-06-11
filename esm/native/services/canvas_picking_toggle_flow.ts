@@ -11,13 +11,19 @@ import { getModeId } from '../runtime/api.js';
 import { readRuntimeScalarOrDefaultFromApp } from '../runtime/runtime_selectors.js';
 import {
   toggleDoorsState,
+  tryCloseOpenSlidingTrackDoors,
   tryHandleDirectDoorOrDrawerToggle,
   tryHandleGlobalCornerPentToggle,
+  tryHandleSlidingTrackDoorToggle,
 } from './canvas_picking_toggle_flow_shared.js';
 import {
   resolveSketchBoxToggleTarget,
   toggleSketchBoxDoor,
 } from './canvas_picking_toggle_flow_sketch_box.js';
+import {
+  resolveSketchFreeBoxToggleScope,
+  toggleSketchFreeBoxOpen,
+} from './canvas_picking_toggle_flow_sketch_free_box.js';
 
 export interface CanvasDoorToggleClickArgs {
   App: AppContainer;
@@ -47,10 +53,22 @@ export function handleCanvasDoorToggleClick(args: CanvasDoorToggleClickArgs): vo
   const sup = getSuppressGlobalToggleUntil(App);
   if (typeof sup === 'number' && Date.now() < sup) return;
 
+  const sketchFreeBoxScope = resolveSketchFreeBoxToggleScope(primaryHitObject, foundPartId);
+  if (toggleSketchFreeBoxOpen(App, sketchFreeBoxScope, foundModuleStack)) return;
+
   const sketchBoxTarget = resolveSketchBoxToggleTarget(primaryHitObject, foundPartId, foundModuleIndex);
   if (toggleSketchBoxDoor(App, sketchBoxTarget, foundModuleStack)) return;
 
   if (readRuntimeScalarOrDefaultFromApp(App, 'globalClickMode', true)) {
+    if (
+      tryHandleSlidingTrackDoorToggle({
+        App,
+        primaryHitObject,
+        effectiveDoorId: effectiveDoorId || foundPartId || null,
+      })
+    )
+      return;
+    if (tryCloseOpenSlidingTrackDoors(App)) return;
     if (tryHandleGlobalCornerPentToggle(App, primaryHitObject, effectiveDoorId, foundPartId)) return;
     toggleDoorsState(App);
     return;

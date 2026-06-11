@@ -313,7 +313,7 @@ test('render sketch glass drawers keep the selected frame style and remove hidde
     sketch_ext_drawers_module_2_left_1: 'white',
   };
   args.input.cfg.doorStyleMap = {
-    sketch_ext_drawers_module_2_left_1: 'tom',
+    sketch_ext_drawers_module_2_left_1: 'double_profile',
   };
   args.extDrawers = [{ id: 'left', count: 1, yNormC: 0.5 }];
 
@@ -321,7 +321,7 @@ test('render sketch glass drawers keep the selected frame style and remove hidde
 
   assert.equal(doorVisualCalls.length, 1);
   assert.equal(doorVisualCalls[0]?.style, 'glass');
-  assert.deepEqual(doorVisualCalls[0]?.options, { glassFrameStyle: 'tom' });
+  assert.deepEqual(doorVisualCalls[0]?.options, { glassFrameStyle: 'double_profile' });
   assert.equal(drawerBoxCalls.length, 1);
   assert.deepEqual(drawerBoxCalls[0]?.[8], { omitFrontPanel: true });
 

@@ -4,6 +4,7 @@ import type { HitObjectLike } from './canvas_picking_engine.js';
 import { getTools } from '../runtime/service_access.js';
 import { getDoorsArray, getDrawersArray } from '../runtime/render_access.js';
 import { toggleDoorsViaService, writeDoorsRuntimeNumber } from '../runtime/doors_access.js';
+import { patchRuntime } from '../runtime/runtime_write_access.js';
 import { __wp_reportPickingIssue, __wp_str } from './canvas_picking_core_helpers.js';
 import { runPlatformActivityRenderTouch } from '../runtime/platform_access.js';
 import { __isDoorRuntimeRef } from './canvas_picking_local_helpers_shared.js';
@@ -55,6 +56,117 @@ export function markLocalDoorMotion(App: AppContainer): void {
     updateShadows: false,
     ensureRenderLoopAfterTrigger: true,
   });
+}
+
+function isHitInsideObject(primaryHitObject: HitObjectLike | null, group: unknown): boolean {
+  let parent: HitObjectLike | null = primaryHitObject;
+  while (parent) {
+    if (parent === group) return true;
+    parent = parent.parent || null;
+  }
+  return false;
+}
+
+function findSlidingDoorForClick(
+  doorsArray: ReturnType<typeof getDoorsArray>,
+  primaryHitObject: HitObjectLike | null,
+  effectiveDoorId: string | null
+) {
+  for (let d of doorsArray) {
+    const dg = d ? d.group : null;
+    if (!d || d.type !== 'sliding' || !dg) continue;
+    if (effectiveDoorId && dg.userData && dg.userData.partId === effectiveDoorId) return d;
+    if (isHitInsideObject(primaryHitObject, dg)) return d;
+  }
+  return null;
+}
+
+function resetSlidingDoorLocalOpenMarkers(door: UnknownRecord): void {
+  door.noGlobalOpen = false;
+  door.slidingOpenMode = undefined;
+  door.__slidingOpenMode = undefined;
+  door.slidingTrackOpenSide = undefined;
+  door.__slidingTrackOpenSide = undefined;
+}
+
+function hasOpenSlidingTrackDoor(doorsArray: ReturnType<typeof getDoorsArray>): boolean {
+  return doorsArray.some(
+    sd =>
+      !!sd &&
+      sd.type === 'sliding' &&
+      sd.isOpen === true &&
+      ((sd as UnknownRecord).slidingOpenMode === 'track' ||
+        (sd as UnknownRecord).__slidingOpenMode === 'track')
+  );
+}
+
+function closeSlidingTrackDoors(App: AppContainer, doorsArray: ReturnType<typeof getDoorsArray>): void {
+  for (const sd of doorsArray) {
+    if (!sd || sd.type !== 'sliding') continue;
+    resetSlidingDoorLocalOpenMarkers(sd as UnknownRecord);
+    sd.isOpen = false;
+  }
+
+  try {
+    patchRuntime(App, { doorsOpen: false, doorsLastToggleTime: Date.now() });
+  } catch (_e) {
+    __wp_reportPickingIssue(App, _e, {
+      where: 'canvasPicking',
+      op: 'slidingTrackDoorToggle.close.patchRuntime',
+      throttleMs: 1000,
+    });
+  }
+
+  const __tools_end = getTools(App);
+  if (typeof __tools_end.setDrawersOpenId === 'function') __tools_end.setDrawersOpenId(null);
+  markLocalDoorMotion(App);
+}
+
+export function tryCloseOpenSlidingTrackDoors(App: AppContainer): boolean {
+  const doorsArray = getDoorsArray(App);
+  if (!hasOpenSlidingTrackDoor(doorsArray)) return false;
+  closeSlidingTrackDoors(App, doorsArray);
+  return true;
+}
+
+export function tryHandleSlidingTrackDoorToggle(args: CanvasDirectDoorToggleArgs): boolean {
+  const { App, primaryHitObject, effectiveDoorId } = args;
+  const doorsArray = getDoorsArray(App);
+  const clickedDoor = findSlidingDoorForClick(doorsArray, primaryHitObject, effectiveDoorId);
+  if (!clickedDoor) return false;
+
+  if (hasOpenSlidingTrackDoor(doorsArray)) {
+    closeSlidingTrackDoors(App, doorsArray);
+    return true;
+  }
+
+  for (const sd of doorsArray) {
+    if (!sd || sd.type !== 'sliding') continue;
+    const rec = sd as UnknownRecord;
+    resetSlidingDoorLocalOpenMarkers(rec);
+    sd.isOpen = false;
+  }
+
+  clickedDoor.isOpen = true;
+  const rec = clickedDoor as UnknownRecord;
+  rec.noGlobalOpen = true;
+  rec.slidingOpenMode = 'track';
+  rec.__slidingOpenMode = 'track';
+
+  try {
+    patchRuntime(App, { doorsOpen: false, doorsLastToggleTime: Date.now() });
+  } catch (_e) {
+    __wp_reportPickingIssue(App, _e, {
+      where: 'canvasPicking',
+      op: 'slidingTrackDoorToggle.patchRuntime',
+      throttleMs: 1000,
+    });
+  }
+
+  const __tools_end = getTools(App);
+  if (typeof __tools_end.setDrawersOpenId === 'function') __tools_end.setDrawersOpenId(null);
+  markLocalDoorMotion(App);
+  return true;
 }
 
 export function resolveCanvasToggleClickedId(
@@ -123,29 +235,21 @@ export function tryHandleDirectDoorOrDrawerToggle(args: CanvasDirectDoorToggleAr
   const { App, primaryHitObject, effectiveDoorId } = args;
   const doorsArray = getDoorsArray(App);
 
-  const __toggleAllSlidingDoors = (nextState: boolean): void => {
-    for (let sd of doorsArray) {
-      if (sd && sd.type === 'sliding') sd.isOpen = !!nextState;
-    }
-  };
-
   for (let d of doorsArray) {
     const dg = d ? d.group : null;
     if (!dg) continue;
 
     if (effectiveDoorId && dg.userData && dg.userData.partId === effectiveDoorId) {
-      const __next = !d.isOpen;
-      if (d.type === 'sliding') __toggleAllSlidingDoors(__next);
-      else d.isOpen = __next;
+      if (d.type === 'sliding') return tryHandleSlidingTrackDoorToggle(args);
+      d.isOpen = !d.isOpen;
       markLocalDoorMotion(App);
       return true;
     }
     let parent: HitObjectLike | null = primaryHitObject;
     while (parent) {
       if (parent === dg) {
-        const __next = !d.isOpen;
-        if (d.type === 'sliding') __toggleAllSlidingDoors(__next);
-        else d.isOpen = __next;
+        if (d.type === 'sliding') return tryHandleSlidingTrackDoorToggle(args);
+        d.isOpen = !d.isOpen;
         markLocalDoorMotion(App);
         return true;
       }

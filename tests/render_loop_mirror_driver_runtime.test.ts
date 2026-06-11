@@ -99,6 +99,11 @@ test('render loop mirror driver defers tracked prune and presence scans when the
   assert.equal(slots.__mirrorDirty, true, 'dirty state should stay armed until a real mirror update runs');
   assert.equal(slots.__mirrorBudgetDeferredAtMs, 120);
   assert.equal(slots.__mirrorBudgetDeferredCount, 1);
+  assert.equal(
+    slots.__mirrorWorkPending,
+    true,
+    'budget-deferred mirror work must keep the render loop alive'
+  );
   assert.equal(slots.__mirrorPresenceBudgetSkipCount, 1);
   assert.equal(slots.__mirrorPruneBudgetSkipCount, 1);
   assert.equal(slots.__mirrorUpdateCount, undefined);
@@ -189,6 +194,11 @@ test('render loop mirror driver keeps unknown presence unresolved when a budget-
   );
   assert.equal(slots.__mirrorPresenceBudgetSkipCount, 1);
   assert.equal(slots.__mirrorBudgetDeferredCount, 1);
+  assert.equal(
+    slots.__mirrorWorkPending,
+    true,
+    'presence-budget deferral must stay pending for the next frame'
+  );
 });
 
 test('render loop mirror driver defers the expensive cube update when mirror prep exhausts the frame budget', () => {
@@ -223,13 +233,15 @@ test('render loop mirror driver defers the expensive cube update when mirror pre
   assert.equal(slots.__mirrorBudgetDeferredAtMs, 130);
   assert.equal(slots.__mirrorBudgetDeferredCount, 1);
   assert.equal(slots.__mirrorCubeBudgetSkipCount, 1);
+  assert.equal(slots.__mirrorWorkPending, true, 'cube-budget deferral must stay pending for the next frame');
 });
 
-test('render loop mirror driver defers cube updates during camera/door motion by default', () => {
+test('render loop mirror driver defers cube updates during camera/door motion after a valid capture exists', () => {
   const trackedMirror = { isMesh: true, __taggedMirror: true, parent: {}, visible: true };
   const app = makeApp([trackedMirror]);
   const slots = makeSlots({
-    __mirrorLastUpdateMs: -1,
+    __mirrorLastUpdateMs: 95,
+    __mirrorUpdateCount: 1,
     __mirrorMotionActive: true,
     __frameStartMs: 100,
     __mirrorDirty: true,
@@ -252,8 +264,42 @@ test('render loop mirror driver defers cube updates during camera/door motion by
   assert.equal(hideAttempts, 0, 'motion-deferred mirror updates should skip the hide/update prep entirely');
   assert.equal(((app.render as AnyRecord).mirrorCubeCamera as AnyRecord).updateCalls, 0);
   assert.equal(slots.__mirrorDirty, true, 'dirty state should remain armed until motion settles');
+  assert.equal(slots.__mirrorWorkPending, true, 'deferred mirror work must keep the render loop alive');
   assert.equal(slots.__mirrorMotionDeferredAtMs, 105);
   assert.equal(slots.__mirrorMotionDeferredCount, 1);
+});
+
+test('render loop mirror driver captures the first mirror update even while motion is active', () => {
+  const trackedMirror = { isMesh: true, __taggedMirror: true, parent: {}, visible: true };
+  const app = makeApp([trackedMirror]);
+  const slots = makeSlots({
+    __mirrorLastUpdateMs: 0,
+    __mirrorUpdateCount: 0,
+    __mirrorMotionActive: true,
+    __frameStartMs: 100,
+    __mirrorDirty: true,
+    __mirrorPresenceKnown: true,
+    __mirrorPresenceHasMirror: true,
+    __mirrorPresenceCheckedAtMs: 80,
+    __mirrorTrackedPruneAtMs: 0,
+  });
+  let hideAttempts = 0;
+
+  const driver = createDriver(app, slots, {
+    now: 105,
+    onHide: () => {
+      hideAttempts += 1;
+    },
+  });
+
+  driver.updateMirrorCube();
+
+  assert.equal(hideAttempts, 1, 'first mirror capture must not be deferred into a black env map');
+  assert.equal(((app.render as AnyRecord).mirrorCubeCamera as AnyRecord).updateCalls, 1);
+  assert.equal(trackedMirror.visible, true, 'mirror visibility must be restored after first capture');
+  assert.equal(slots.__mirrorDirty, false);
+  assert.equal(slots.__mirrorWorkPending, false);
+  assert.equal(slots.__mirrorUpdateCount, 1);
 });
 
 test('render loop mirror driver syncs tracked mirror material envMap before cube update', () => {

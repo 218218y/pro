@@ -325,6 +325,62 @@ test('builder scheduler runtime: repeated settled debounced requests are skipped
   assert.equal(stats.reasons['autosave-force']?.executeCount, 1);
 });
 
+test('builder scheduler runtime: settled structural config changes rebuild even when module signature is unchanged', () => {
+  const buildCalls: any[] = [];
+  let bodyColor = '#ffffff';
+  const debounceHarness = createDebounceHarness();
+  const readState = () => ({
+    ui: { panel: 'demo' },
+    config: { individualColors: { body: bodyColor } },
+    runtime: {},
+    mode: {},
+    meta: {},
+    build: { signature: 'sig:stable-structural-config' },
+  });
+  const App: any = {
+    services: {
+      builder: {
+        buildWardrobe(state: unknown) {
+          buildCalls.push(state);
+          return state;
+        },
+      },
+    },
+    actions: {
+      builder: {
+        getBuildState: readState,
+      },
+    },
+    boot: {
+      isReady() {
+        return true;
+      },
+    },
+  };
+
+  installBuilderScheduler(App, {
+    debounce(fn: () => void) {
+      return debounceHarness.debounce(fn);
+    },
+    getBuildState: readState,
+  });
+
+  requestBuild(App, null, { reason: 'color:first' });
+  debounceHarness.flush();
+  assert.equal(buildCalls.length, 1);
+
+  bodyColor = '#111111';
+  requestBuild(App, null, { reason: 'color:second' });
+  debounceHarness.flush();
+
+  assert.equal(buildCalls.length, 2);
+  assert.equal(buildCalls[1]?.config?.individualColors?.body, '#111111');
+
+  const stats = getBuildDebugStats(App);
+  assert.equal(stats.skippedSatisfiedRequestCount, 0);
+  assert.equal(stats.reasons['color:second']?.executeCount, 1);
+});
+
 test('builder scheduler runtime: pending dedupe keeps active editor context distinct even when the build signature is unchanged', () => {
   const buildCalls: any[] = [];
   let signature = 'sig:active';

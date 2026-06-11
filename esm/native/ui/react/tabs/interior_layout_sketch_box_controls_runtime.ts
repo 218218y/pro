@@ -7,6 +7,8 @@ export type {
 export {
   commitSketchBoxHeightDraft,
   commitSketchBoxOptionalDimensionDraft,
+  resetSketchBoxHeightDraft,
+  resetSketchBoxOptionalDimensionDraft,
   updateSketchBoxHeightDraft,
   updateSketchBoxOptionalDimensionDraft,
 } from './interior_layout_sketch_box_controls_runtime_dimensions.js';
@@ -21,11 +23,14 @@ export {
 export {
   commitSketchBoxLegHeightDraft,
   commitSketchBoxLegWidthDraft,
+  commitSketchBoxPlinthHeightDraft,
   selectSketchBoxBaseType,
   selectSketchBoxLegColor,
+  resetSketchBoxPlinthHeight,
   selectSketchBoxLegStyle,
   updateSketchBoxLegHeightDraft,
   updateSketchBoxLegWidthDraft,
+  updateSketchBoxPlinthHeightDraft,
 } from './interior_layout_sketch_box_controls_runtime_base.js';
 
 export { selectSketchBoxCorniceType } from './interior_layout_sketch_box_controls_runtime_cornice.js';

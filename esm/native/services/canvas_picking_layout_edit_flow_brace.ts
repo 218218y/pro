@@ -5,6 +5,8 @@ import {
   resolveShelfSelectorPickToleranceM,
 } from './canvas_picking_shelf_hit_targets.js';
 import { __wp_reportPickingIssue } from './canvas_picking_core_helpers.js';
+import { __wp_clearSketchHover } from './canvas_picking_local_helpers.js';
+import { firstRenderableHitIsSketchFreeBox } from './canvas_picking_sketch_free_box_hit_policy.js';
 import {
   type CanvasLayoutEditClickArgs,
   ensureBraceShelves,
@@ -16,6 +18,7 @@ import {
   addBraceShelfIndex,
   removeBraceShelfIndex,
 } from './canvas_picking_manual_layout_config_ops_shared.js';
+import { tryCommitBraceShelvesFreeBoxFromHover } from './canvas_picking_manual_layout_free_box_content.js';
 
 export function tryHandleCanvasBraceShelvesClick(args: CanvasLayoutEditClickArgs): boolean {
   const {
@@ -29,7 +32,13 @@ export function tryHandleCanvasBraceShelvesClick(args: CanvasLayoutEditClickArgs
     __getActiveConfigRef,
   } = args;
 
-  if (!__isBraceShelvesMode || foundModuleIndex === null) return false;
+  if (!__isBraceShelvesMode) return false;
+  if (tryCommitBraceShelvesFreeBoxFromHover(App)) return true;
+  if (firstRenderableHitIsSketchFreeBox(intersects)) {
+    __wp_clearSketchHover(App);
+    return true;
+  }
+  if (foundModuleIndex === null) return false;
 
   (() => {
     const configRef = __getActiveConfigRef();

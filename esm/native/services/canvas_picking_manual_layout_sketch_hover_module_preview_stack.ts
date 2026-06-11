@@ -69,8 +69,11 @@ export function tryHandleManualLayoutSketchHoverModuleStackPreview(
     hitSelectorObj,
     __wp_isCornerKey,
     __wp_readSketchBoxDividers,
+    __wp_readSketchBoxHorizontalDividers,
     __wp_resolveSketchBoxSegments,
     __wp_pickSketchBoxSegment,
+    __wp_resolveSketchBoxVerticalSegments,
+    __wp_pickSketchBoxVerticalSegment,
   } = ctx;
 
   if (!isDrawers && !isExtDrawers) return false;
@@ -95,8 +98,11 @@ export function tryHandleManualLayoutSketchHoverModuleStackPreview(
       selectedDrawerCount,
       drawerHeightM,
       readSketchBoxDividers: __wp_readSketchBoxDividers,
+      readSketchBoxHorizontalDividers: __wp_readSketchBoxHorizontalDividers,
       resolveSketchBoxSegments: __wp_resolveSketchBoxSegments,
       pickSketchBoxSegment: __wp_pickSketchBoxSegment,
+      resolveSketchBoxVerticalSegments: __wp_resolveSketchBoxVerticalSegments,
+      pickSketchBoxVerticalSegment: __wp_pickSketchBoxVerticalSegment,
     });
     if (!stackPreview) {
       ctx.__wp_writeSketchHover(ctx.App, null);

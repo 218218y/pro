@@ -15,6 +15,7 @@ type ShelfUserDataLike = {
   __wpShelfIndex?: unknown;
   __wpShelfVariant?: unknown;
   __wpShelfIsBrace?: unknown;
+  __wpShelfRoundedSide?: unknown;
 };
 
 function normalizeShelfScopeKey(value: unknown): string {
@@ -99,13 +100,20 @@ export function isShelfBoardPartId(partId: unknown): boolean {
 
 export function markShelfBoardUserData(
   userData: ShelfUserDataLike | null | undefined,
-  args: { groupPartId?: string; shelfIndex?: unknown; variant?: unknown; isBrace?: unknown }
+  args: {
+    groupPartId?: string;
+    shelfIndex?: unknown;
+    variant?: unknown;
+    isBrace?: unknown;
+    roundedSide?: unknown;
+  }
 ): void {
   if (!userData || typeof userData !== 'object') return;
   userData.__wpShelfGroupPartId = args.groupPartId || SHELF_GROUP_PART_ID;
   if (typeof args.shelfIndex !== 'undefined') userData.__wpShelfIndex = args.shelfIndex;
   if (typeof args.variant !== 'undefined') userData.__wpShelfVariant = args.variant;
   if (typeof args.isBrace !== 'undefined') userData.__wpShelfIsBrace = !!args.isBrace;
+  if (typeof args.roundedSide !== 'undefined') userData.__wpShelfRoundedSide = args.roundedSide;
 }
 
 export function resolveShelfPartMaterial(args: {

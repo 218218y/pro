@@ -10,11 +10,11 @@ import {
 test('[design-tab-multicolor-state] exposes all three glass style buttons in the requested RTL order', () => {
   assert.deepEqual(
     MULTI_GLASS_STYLE_OPTIONS.map(option => option.label),
-    ['זכוכית', 'זכוכית מלאה', 'זכוכית פרופיל תום']
+    ['זכוכית', 'זכוכית מלאה', 'זכוכית פרופיל כפול']
   );
   assert.deepEqual(
     MULTI_GLASS_STYLE_OPTIONS.map(option => option.paintId),
-    ['glass', '__wp_glass_style__:flat', '__wp_glass_style__:tom']
+    ['glass', '__wp_glass_style__:flat', '__wp_glass_style__:double_profile']
   );
   assert.equal(MULTI_GLASS_STYLE_OPTIONS[0]?.curtainPreset, 'none');
 });
@@ -55,8 +55,8 @@ test('[design-tab-multicolor-state] keeps door-style and curtain fallback rules 
     curtainChoiceRaw: 'not-a-curtain',
     mirrorDraftHeight: '',
     mirrorDraftWidth: '',
-    paintColor: '__doorStyle:tom',
-    activeDoorStyleOverride: 'tom',
+    paintColor: '__doorStyle:double_profile',
+    activeDoorStyleOverride: 'double_profile',
     defaultSwatches: [],
     savedSwatches: [],
   });
@@ -87,21 +87,24 @@ test('[design-tab-multicolor-state] selects special and saved swatches canonical
   assert.equal(glassState.savedSwatches.find(dot => dot.paintId === 'oak')?.selected, false);
   assert.equal(glassState.savedSwatches.find(dot => dot.paintId === 'oak')?.isTexture, true);
 
-  const tomGlassState = createDesignTabMulticolorViewState({
+  const doubleProfileGlassState = createDesignTabMulticolorViewState({
     enabled: true,
     primaryMode: 'paint',
     curtainChoiceRaw: 'none',
     mirrorDraftHeight: '',
     mirrorDraftWidth: '',
-    paintColor: '__wp_glass_style__:tom',
+    paintColor: '__wp_glass_style__:double_profile',
     activeDoorStyleOverride: null,
     defaultSwatches: [],
     savedSwatches: [],
   });
 
-  assert.equal(tomGlassState.hintText, 'כעת לחץ על דלתות כדי להחיל זכוכית ואת הוילון הנבחר.');
-  assert.equal(tomGlassState.activeGlassFrameStyle, 'tom');
-  assert.equal(tomGlassState.specialSwatches.find(dot => dot.id === 'glass_curtain')?.selected, true);
+  assert.equal(doubleProfileGlassState.hintText, 'כעת לחץ על דלתות כדי להחיל זכוכית ואת הוילון הנבחר.');
+  assert.equal(doubleProfileGlassState.activeGlassFrameStyle, 'double_profile');
+  assert.equal(
+    doubleProfileGlassState.specialSwatches.find(dot => dot.id === 'glass_curtain')?.selected,
+    true
+  );
 
   const savedState = createDesignTabMulticolorViewState({
     enabled: true,

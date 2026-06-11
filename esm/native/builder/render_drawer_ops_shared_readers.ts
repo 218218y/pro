@@ -31,6 +31,7 @@ export function readDrawerConfig(value: unknown): DrawerConfig {
   if (!isRecord(value)) return {};
   return {
     groovesMap: readObjectMap(value.groovesMap),
+    doorTrimMap: readObjectMap(value.doorTrimMap),
     drawerDividersMap: readObjectMap(value.drawerDividersMap),
     doorSpecialMap: readStringNullableMap(value.doorSpecialMap),
     doorStyleMap: readDoorStyleMap(value.doorStyleMap),

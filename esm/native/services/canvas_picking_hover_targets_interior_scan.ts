@@ -1,4 +1,5 @@
 import type { UnknownRecord } from '../../../types';
+import { firstRenderableHitIsSketchFreeBox } from './canvas_picking_sketch_free_box_hit_policy.js';
 import {
   findPreferredModuleSelectorHit,
   readModuleHitCandidateFromIntersection,
@@ -50,6 +51,8 @@ export function scanInteriorHoverHit(args: ResolveInteriorHoverTargetArgs): Inte
     objects: [wardrobeGroup],
     recursive: true,
   });
+
+  if (firstRenderableHitIsSketchFreeBox(intersects)) return null;
 
   let hitModuleKey: ModuleKey | null = null;
   let hitSelectorObj: import('./canvas_picking_engine.js').HitObjectLike | null = null;

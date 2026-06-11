@@ -89,7 +89,7 @@ test('sequential special-door and style overrides preserve prior per-door entrie
     { source: 'test:special:second' },
     { ...cfg.doorSpecialMap, d2_full: 'glass' },
     cfg.mirrorLayoutMap,
-    { ...cfg.doorStyleMap, d2_full: 'tom' }
+    { ...cfg.doorStyleMap, d2_full: 'double_profile' }
   );
   cfg = getCfg(App) as Record<string, any>;
   assert.deepEqual(cfg.doorSpecialMap, {
@@ -101,19 +101,19 @@ test('sequential special-door and style overrides preserve prior per-door entrie
   });
   assert.deepEqual(cfg.doorStyleMap, {
     d1_full: 'profile',
-    d2_full: 'tom',
+    d2_full: 'double_profile',
   });
 
   App.actions.config.setMap('doorStyleMap', { d1_full: 'profile' }, { source: 'test:style:first' });
   cfg = getCfg(App) as Record<string, any>;
   App.actions.config.setMap(
     'doorStyleMap',
-    { ...cfg.doorStyleMap, d2_full: 'tom' },
+    { ...cfg.doorStyleMap, d2_full: 'double_profile' },
     { source: 'test:style:second' }
   );
   cfg = getCfg(App) as Record<string, any>;
   assert.deepEqual(cfg.doorStyleMap, {
     d1_full: 'profile',
-    d2_full: 'tom',
+    d2_full: 'double_profile',
   });
 });

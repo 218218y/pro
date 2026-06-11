@@ -5,7 +5,45 @@ import {
   createCornerWingInteriorCellRuntime,
   getCornerCellInnerFacesX,
 } from '../esm/native/builder/corner_wing_cell_interiors_cell.ts';
+import {
+  addCornerWingGridShelf,
+  createCornerWingInteriorShelfRuntime,
+} from '../esm/native/builder/corner_wing_cell_interiors_shelves.ts';
+import { CORNER_WING_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
 import { createCornerWingCellCfgResolver } from '../esm/native/builder/corner_wing_extension_cells_config.ts';
+
+class FakeVector3 {
+  x = 0;
+  y = 0;
+  z = 0;
+  set(x = 0, y = 0, z = 0) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+  }
+}
+
+class FakeBoxGeometry {
+  parameters: { width: number; height: number; depth: number };
+  constructor(width: number, height: number, depth: number) {
+    this.parameters = { width, height, depth };
+  }
+}
+
+class FakeMesh {
+  position = new FakeVector3();
+  rotation = new FakeVector3();
+  userData: Record<string, unknown> = {};
+  material: any;
+  geometry: FakeBoxGeometry;
+  castShadow = true;
+  receiveShadow = true;
+  renderOrder = 0;
+  constructor(geometry: FakeBoxGeometry, material: unknown) {
+    this.geometry = geometry;
+    this.material = material;
+  }
+}
 
 function createCornerCell(
   idx: number,
@@ -54,6 +92,65 @@ test('corner wing cell runtime: inner faces use full divider thickness next to a
   assert.equal(Number(middleRuntime.cellShelfW.toFixed(3)), 0.439);
   assert.equal(Number(middleRuntime.__regularDepth.toFixed(3)), 0.45);
   assert.equal(Number(middleRuntime.__backFaceZ.toFixed(3)), -0.59);
+});
+
+test('corner wing grid shelves keep brace shelves full-width and regular shelves clearanced', () => {
+  const wingChildren: FakeMesh[] = [];
+  const cell = createCornerCell(0, 0, 0.6, {
+    cfg: {
+      braceShelves: [2],
+      customData: { shelfVariants: ['regular', 'brace'] },
+    },
+  });
+  const runtime: any = {
+    cornerCells: [cell],
+    woodThick: 0.018,
+    blindWidth: 0,
+    wingW: 0.6,
+    wingD: 0.55,
+    startY: 0,
+    App: {},
+    THREE: {
+      BoxGeometry: FakeBoxGeometry,
+      CylinderGeometry: FakeBoxGeometry,
+      Mesh: FakeMesh,
+      MeshStandardMaterial: class {},
+      DoubleSide: 'double-side',
+    },
+    wingGroup: {
+      add(mesh: FakeMesh) {
+        wingChildren.push(mesh);
+        return mesh;
+      },
+    },
+    getCornerShelfMat: (_partId: unknown, isBrace: boolean) =>
+      isBrace ? { id: 'brace' } : { id: 'regular' },
+    getMaterial: () => ({ id: 'pin' }),
+    getOrCreateCacheRecord: () => ({}),
+    addOutlines: () => undefined,
+    showContentsEnabled: false,
+    isRecord: (value: unknown) => !!value && typeof value === 'object' && !Array.isArray(value),
+    asRecord: (value: unknown) =>
+      value && typeof value === 'object' ? (value as Record<string, unknown>) : {},
+    __stackKey: 'top',
+    __stackScopePartKey: (partId: string) => `lower_${partId}`,
+  };
+  const cellRuntime = createCornerWingInteriorCellRuntime(runtime, cell);
+  const shelfRuntime = createCornerWingInteriorShelfRuntime(runtime);
+
+  addCornerWingGridShelf(cellRuntime, shelfRuntime, 1);
+  addCornerWingGridShelf(cellRuntime, shelfRuntime, 2);
+
+  const shelfBoards = wingChildren.filter(child => child.userData.__wpShelfGroupPartId);
+  const regular = shelfBoards.find(child => child.userData.__wpShelfVariant === 'regular');
+  const brace = shelfBoards.find(child => child.userData.__wpShelfVariant === 'brace');
+
+  assert.equal(regular?.geometry.parameters.width, cellRuntime.cellShelfW);
+  assert.equal(
+    regular?.geometry.parameters.width,
+    cellRuntime.cellInnerW - CORNER_WING_DIMENSIONS.interior.shelfWidthClearanceM
+  );
+  assert.equal(brace?.geometry.parameters.width, cellRuntime.cellInnerW);
 });
 
 test('corner wing extension-cell config runtime: bottom stack defaults stay shelf-scoped and use lower-cell canonical actions when present', () => {

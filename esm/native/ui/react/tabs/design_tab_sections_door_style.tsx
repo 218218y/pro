@@ -28,12 +28,12 @@ export function DoorStyleSection(props: DoorStyleSectionProps): ReactElement {
           פרופיל
         </DesignTabTypeOption>
         <DesignTabTypeOption
-          selected={model.doorStyle === 'tom'}
-          onClick={() => model.setDoorStyle('tom')}
-          testId="design-door-style-tom-button"
-          optionId="tom"
+          selected={model.doorStyle === 'double_profile'}
+          onClick={() => model.setDoorStyle('double_profile')}
+          testId="design-door-style-double-profile-button"
+          optionId="double_profile"
         >
-          פרופיל תום
+          פרופיל כפול
         </DesignTabTypeOption>
       </div>
     </div>

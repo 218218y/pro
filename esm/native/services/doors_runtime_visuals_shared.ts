@@ -1,4 +1,9 @@
 import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  resolveSlidingDoorTrackOpenPosition,
+  shouldUseSlidingDoorTrackOpen,
+  shouldUseSlidingDoorWideOpen,
+} from '../runtime/sliding_door_motion.js';
 import { getTools } from '../runtime/service_access.js';
 import { getDimsMFromPlatform } from '../runtime/platform_access.js';
 import { getDoorsArray } from '../runtime/render_access.js';
@@ -78,30 +83,15 @@ export function resolveSlidingDoorClosedState(
   return { closedX, closedZ, doorW, outerZ };
 }
 
+export { resolveSlidingDoorTrackOpenPosition, shouldUseSlidingDoorTrackOpen, shouldUseSlidingDoorWideOpen };
+
 export function resolveSlidingDoorOpenPosition(
   door: ReturnType<typeof getDoorsArray>[number],
   totalW: number,
   doorW: number,
-  outerZ: number
+  closedZ: number
 ): { finalX: number; finalZ: number } {
-  const doorsCount =
-    (typeof door.total === 'number' && Number.isFinite(door.total)
-      ? door.total
-      : DOOR_SYSTEM_DIMENSIONS.sliding.defaultDoorsCount) || DOOR_SYSTEM_DIMENSIONS.sliding.defaultDoorsCount;
-  const idx = typeof door.index === 'number' && Number.isFinite(door.index) ? door.index : 0;
-  const leftCount = Math.floor(doorsCount / 2);
-  const epsX = DOOR_SYSTEM_DIMENSIONS.sliding.runtimeOpenEpsilonXM;
-  const sideX = totalW / 2 + doorW / 2 + epsX;
-  const onLeft = idx < leftCount;
-  const stackPos = Number(onLeft ? idx : doorsCount - 1 - idx);
-  const zStep =
-    typeof door.stackZStep === 'number' && Number.isFinite(door.stackZStep)
-      ? door.stackZStep
-      : DOOR_SYSTEM_DIMENSIONS.sliding.runtimeStackZStepDefaultM;
-  return {
-    finalX: onLeft ? -sideX : sideX,
-    finalZ: outerZ - stackPos * zStep,
-  };
+  return resolveSlidingDoorTrackOpenPosition(door, totalW, doorW, closedZ);
 }
 
 export function reportSlidingDoorZFailure(App: AppLike, err: unknown): void {

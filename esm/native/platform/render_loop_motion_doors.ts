@@ -9,6 +9,10 @@ import { getBuildUIFromPlatform, getDimsMFromPlatform } from '../runtime/platfor
 import { getDoorsArray } from '../runtime/render_access.js';
 import { readFiniteNumber, readFiniteNumberOrNull } from '../runtime/render_runtime_primitives.js';
 import { shouldForceSketchFreeBoxDoorsOpen } from '../runtime/doors_runtime_support.js';
+import { getSketchFreeBoxMotionScopeFromEntry } from '../runtime/sketch_free_box_motion_identity.js';
+import { shouldHoldSketchFreeBoxDoorsDuringClose } from '../runtime/sketch_free_box_motion_state.js';
+import { resolveSlidingDoorTrackOpenPosition } from '../runtime/sliding_door_motion.js';
+import { setSlidingDoorHiddenForOpenState } from '../runtime/sliding_door_visibility.js';
 
 import type { MotionFrameState } from './render_loop_motion_shared.js';
 import {
@@ -19,9 +23,19 @@ import {
   readMotionUserData,
 } from './render_loop_motion_shared.js';
 
+function shouldHideOpenSlidingDoorsForFrame(frame: MotionFrameState): boolean {
+  return !!(
+    frame.interiorDoorEditActive ||
+    frame.sketchEditActive ||
+    frame.sketchIntDrawersEditActive ||
+    frame.sketchExtDrawersEditActive
+  );
+}
+
 export function updateRenderLoopDoorMotions(App: AppContainer, frame: MotionFrameState): boolean {
   let hasActiveDoorMotion = false;
   const doors = getDoorsArray(App);
+  const hideOpenSlidingDoors = shouldHideOpenSlidingDoorsForFrame(frame);
   for (let i = 0; i < doors.length; i++) {
     const d = asDoorMotion(doors[i]);
     if (!d) continue;
@@ -43,12 +57,23 @@ export function updateRenderLoopDoorMotions(App: AppContainer, frame: MotionFram
       if (shouldHoldDoorOpen) targetOpen = true;
     }
 
-    const allowSketchFreeBoxOpen =
-      frame.sketchIntDrawersEditActive &&
-      shouldForceSketchFreeBoxDoorsOpen(frame.manualTool, readMotionUserData(g));
+    const allowSketchFreeBoxOpen = shouldForceSketchFreeBoxDoorsOpen(
+      frame.manualTool,
+      readMotionUserData(g),
+      { interiorDoorEditActive: frame.interiorDoorEditActive }
+    );
 
-    if (frame.globalClickMode && d.noGlobalOpen && !allowSketchFreeBoxOpen) {
-      targetOpen = !!d.isOpen;
+    if (frame.globalClickMode && d.noGlobalOpen) {
+      targetOpen = allowSketchFreeBoxOpen && frame.doorsShouldBeOpen ? true : !!d.isOpen;
+    }
+
+    const sketchFreeBoxScope = getSketchFreeBoxMotionScopeFromEntry(d);
+    if (
+      !targetOpen &&
+      sketchFreeBoxScope &&
+      shouldHoldSketchFreeBoxDoorsDuringClose(App, sketchFreeBoxScope, frame.delayTime)
+    ) {
+      targetOpen = true;
     }
 
     if (d.type === 'hinged') {
@@ -125,27 +150,20 @@ export function updateRenderLoopDoorMotions(App: AppContainer, frame: MotionFram
       d.originalZ = g.position ? g.position.z : 0;
     }
 
-    const outerZ =
-      readFiniteNumberOrNull(d.outerZ) !== null
-        ? readFiniteNumber(d.outerZ, 0)
-        : readFiniteNumberOrNull(d.originalZ) !== null
-          ? d.originalZ
-          : 0;
-
     const originalX = readFiniteNumber(d.originalX, 0);
     const originalZ = readFiniteNumber(d.originalZ, 0);
     let targetX = originalX;
     let targetZ = originalZ;
 
-    if (targetOpen) {
-      const leftCount = Math.floor(doorsCount / 2);
-      const epsX = DOOR_SYSTEM_DIMENSIONS.sliding.runtimeOpenEpsilonXM;
-      const sideX = totalW / 2 + doorW / 2 + epsX;
-      const onLeft = idx < leftCount;
-      const stackPos = onLeft ? idx : doorsCount - 1 - idx;
-      targetX = onLeft ? -sideX : sideX;
-      const zStep = readFiniteNumber(d.stackZStep, DOOR_SYSTEM_DIMENSIONS.sliding.runtimeStackZStepDefaultM);
-      targetZ = outerZ - stackPos * zStep;
+    const hideSlidingDoor = targetOpen && hideOpenSlidingDoors;
+    if (setSlidingDoorHiddenForOpenState(d, hideSlidingDoor)) {
+      hasActiveDoorMotion = true;
+    }
+
+    if (targetOpen && !hideSlidingDoor) {
+      const next = resolveSlidingDoorTrackOpenPosition(d, totalW, doorW, originalZ);
+      targetX = next.finalX;
+      targetZ = next.finalZ;
     }
 
     g.position.x += (targetX - g.position.x) * 0.08;

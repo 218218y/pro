@@ -23,6 +23,10 @@ export function InteriorLayoutSketchToolsPanel(props: InteriorLayoutSectionProps
     props.isSketchToolActive && props.manualToolRaw.startsWith(SKETCH_TOOL_EXT_DRAWERS_PREFIX);
   const isSketchExtDrawersControlsOpen = props.sketchExtDrawersPanelOpen || isSketchExtDrawersToolActive;
 
+  if (props.isChestMode) {
+    return <InteriorDoorTrimSection {...props} isDoorTrimControlsOpen={isDoorTrimControlsOpen} />;
+  }
+
   return (
     <>
       <InteriorSketchShelvesSection {...props} />

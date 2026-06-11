@@ -16,9 +16,19 @@ export {
   resolveSketchBoxDividerPlacement,
   readSketchBoxDividerXNorm,
   readSketchBoxDividers,
+  readSketchBoxHorizontalDividers,
   resolveSketchBoxDividerPlacements,
+  resolveSketchBoxHorizontalDividerPlacement,
+  resolveSketchBoxHorizontalDividerPlacements,
   resolveSketchBoxSegments,
   pickSketchBoxSegment,
+  pickSketchBoxVerticalSegment,
+  resolveSketchBoxVerticalSegments,
   resolveSketchBoxSegmentForContent,
 } from './render_interior_sketch_layout_dividers.js';
-export type { SketchBoxDividerState, SketchBoxSegment } from './render_interior_sketch_layout_dividers.js';
+export type {
+  SketchBoxDividerState,
+  SketchBoxHorizontalDividerState,
+  SketchBoxSegment,
+  SketchBoxVerticalSegment,
+} from './render_interior_sketch_layout_dividers.js';

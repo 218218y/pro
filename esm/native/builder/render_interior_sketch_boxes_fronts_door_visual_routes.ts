@@ -26,15 +26,12 @@ export function resolveSketchBoxDoorVisualRoute(args: {
   const { frontsArgs, doorStyle, doorStyleMap } = renderArgs;
   const { createDoorVisual } = frontsArgs.args;
   const { doorPid } = layout;
-  const { isFreePlacement } = frontsArgs.shell;
-
   const effectiveDoorStyle = resolveEffectiveDoorStyle(doorStyle, doorStyleMap, doorPid);
   const hasDoorVisualFactory = !!createDoorVisual;
   const isSpecialVisual = doorVisualState.isMirror || doorVisualState.isGlass;
   const canUseStyledDoorVisual = !!(
     hasDoorVisualFactory &&
-    isFreePlacement === true &&
-    (effectiveDoorStyle === 'profile' || effectiveDoorStyle === 'tom') &&
+    (effectiveDoorStyle === 'profile' || effectiveDoorStyle === 'double_profile') &&
     !isSpecialVisual
   );
 

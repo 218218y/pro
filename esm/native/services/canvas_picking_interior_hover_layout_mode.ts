@@ -10,6 +10,7 @@ import {
   readNumber,
 } from './canvas_picking_interior_hover_shared.js';
 import { buildLayoutPreviewPayload } from './canvas_picking_interior_hover_layout_family_shared.js';
+import { tryHandlePresetLayoutFreeBoxHover } from './canvas_picking_manual_layout_free_box_content.js';
 
 export function tryHandleCanvasPresetLayoutHover(args: CanvasInteriorHoverFlowArgs): boolean {
   const {
@@ -24,13 +25,28 @@ export function tryHandleCanvasPresetLayoutHover(args: CanvasInteriorHoverFlowAr
   } = args;
   try {
     hideSketchPreview({ App, hideSketchPreview: hideSketchPreviewFn });
+    const layoutType = readLayoutType(App);
+    if (
+      tryHandlePresetLayoutFreeBoxHover({
+        App,
+        layoutType,
+        ndcX,
+        ndcY,
+        raycaster,
+        mouse,
+        setLayoutPreview,
+        hideLayoutPreview: () => hideLayoutPreview({ App, hideLayoutPreview: hideLayoutPreviewFn }),
+        hideSketchPreview: () => hideSketchPreview({ App, hideSketchPreview: hideSketchPreviewFn }),
+      })
+    ) {
+      return true;
+    }
     const target = __wp_resolveInteriorHoverTarget(App, raycaster, mouse, ndcX, ndcY);
     if (!target || !setLayoutPreview) {
       hideLayoutPreview({ App, hideLayoutPreview: hideLayoutPreviewFn });
       return false;
     }
 
-    const layoutType = readLayoutType(App);
     const ops = computeInteriorPresetOps(layoutType);
     const divisions = readGridDivisions(
       CARCASS_SHELL_DIMENSIONS.drawerGridDivisions,

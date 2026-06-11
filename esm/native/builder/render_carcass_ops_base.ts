@@ -142,35 +142,42 @@ export function createApplyCarcassBaseOps(deps: RenderCarcassBaseDeps) {
     backPanel: BackPanelSeg | null | undefined,
     runtime: RenderCarcassRuntime
   ): void {
-    const { THREE, ctx, sketchMode, wardrobeGroup } = runtime;
+    const { THREE, ctx, sketchMode, wardrobeGroup, getPartMaterial, addOutlines, reg, App } = runtime;
     const material = __backPanelMaterial(ctx, THREE, sketchMode);
+    const isWoodBackPanel = (seg: BackPanelSeg): boolean =>
+      seg.__wpWoodBackPanel === true || seg.material === 'wood';
+    const addBackPanel = (seg: BackPanelSeg): void => {
+      const partId = __asString(seg.partId);
+      const woodBack = isWoodBackPanel(seg);
+      const panelMaterial =
+        woodBack && partId
+          ? (getPartMaterial ? getPartMaterial(partId) : ctx.bodyMat) || ctx.bodyMat
+          : material;
+      const mesh = new THREE.Mesh(new THREE.BoxGeometry(seg.width, seg.height, seg.depth), panelMaterial);
+      mesh.position.set(seg.x, seg.y, seg.z);
+      if (woodBack && partId) {
+        mesh.userData = { partId, kind: 'backPanel', __wpWoodBackPanel: true };
+        reg(App, partId, mesh, 'body');
+        addOutlines(mesh);
+      }
+      if (!sketchMode) {
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+      }
+      wardrobeGroup.add(mesh);
+    };
     const backPanels = __readUnknownArray(backPanelsIn);
     if (backPanels && backPanels.length) {
       for (let bp = 0; bp < backPanels.length; bp += 1) {
         const seg = backPanels[bp];
         if (!isBackPanelSeg(seg)) continue;
-        const mesh = new THREE.Mesh(new THREE.BoxGeometry(seg.width, seg.height, seg.depth), material);
-        mesh.position.set(seg.x, seg.y, seg.z);
-        if (!sketchMode) {
-          mesh.castShadow = true;
-          mesh.receiveShadow = true;
-        }
-        wardrobeGroup.add(mesh);
+        addBackPanel(seg);
       }
       return;
     }
 
     if (!backPanel || backPanel.kind !== 'back_panel') return;
-    const mesh = new THREE.Mesh(
-      new THREE.BoxGeometry(backPanel.width, backPanel.height, backPanel.depth),
-      material
-    );
-    mesh.position.set(backPanel.x, backPanel.y, backPanel.z);
-    if (!sketchMode) {
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-    }
-    wardrobeGroup.add(mesh);
+    addBackPanel(backPanel);
   }
 
   return {

@@ -127,6 +127,7 @@ test('project_schema: migrateProjectData stamps schema metadata, keeps canonical
   assert.ok(out.handlesMap && typeof out.handlesMap === 'object');
   assert.ok(out.hingeMap && typeof out.hingeMap === 'object');
   assert.ok(out.removedDoorsMap && typeof out.removedDoorsMap === 'object');
+  assert.ok(out.roundedFrameSideShelvesMap && typeof out.roundedFrameSideShelvesMap === 'object');
   assert.ok(out.curtainMap && typeof out.curtainMap === 'object');
   assert.ok(out.groovesMap && typeof out.groovesMap === 'object');
 

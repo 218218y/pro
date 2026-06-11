@@ -86,6 +86,7 @@ export function finalizeCanvasPickingClickHitState(
     moduleHitY: state.moduleHitY,
     doorHitY: state.doorHitY,
     primaryHitY: state.primaryHitY,
+    hitUserData: state.doorHitUserData || state.foundPartUserData || state.primaryHitObject?.userData || null,
     hitIdentity: createCanvasPickingClickHitIdentity({
       partId: state.foundPartId,
       doorId: state.effectiveDoorId,

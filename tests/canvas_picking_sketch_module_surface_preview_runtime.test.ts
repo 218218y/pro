@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { resolveSketchModuleSurfacePreview } from '../esm/native/services/canvas_picking_sketch_module_surface_preview.ts';
+import { tryHandleManualLayoutSketchHoverExistingVerticalRemovePreview } from '../esm/native/services/canvas_picking_manual_layout_sketch_hover_module_preview_surface.ts';
 
 function resolveSketchBoxGeometry(args: {
   innerW: number;
@@ -553,4 +554,82 @@ test('module surface box preview marks the box blocked when existing vertical co
   assert.equal(result.hoverRecord?.kind, 'box');
   assert.equal(result.hoverRecord?.op, 'add');
   assert.equal(result.hoverRecord?.__wpBlockedReason, 'collision');
+});
+
+test('existing vertical remove probe uses the real pointer Y while a tall box is size-clamped elsewhere', () => {
+  const writes: Array<Record<string, unknown> | null> = [];
+  const previews: Array<Record<string, unknown>> = [];
+
+  const handled = tryHandleManualLayoutSketchHoverExistingVerticalRemovePreview({
+    App: {},
+    tool: 'sketch_box:170',
+    freeBoxSpec: { heightCm: 170, widthCm: 36, depthCm: 32 },
+    hitModuleKey: 0,
+    hitSelectorObj: null,
+    hitStack: 'top',
+    hitY: 2.2,
+    hitLocalX: 0,
+    intersects: [],
+    setPreview: args => {
+      previews.push(args as Record<string, unknown>);
+    },
+    hidePreview: null,
+    __hideSketchPreviewAndClearHover: () => {},
+    __wp_isCornerKey: () => false,
+    __wp_isDefaultCornerCellCfgLike: () => false,
+    __wp_resolveSketchBoxGeometry: resolveSketchBoxGeometry,
+    __wp_findSketchModuleBoxAtPoint: () => null,
+    __wp_readSketchBoxDividers: () => [],
+    __wp_readSketchBoxHorizontalDividers: () => [],
+    __wp_resolveSketchBoxSegments: () => [],
+    __wp_pickSketchBoxSegment: () => null,
+    __wp_resolveSketchBoxVerticalSegments: () => [],
+    __wp_pickSketchBoxVerticalSegment: () => null,
+    __wp_findNearestSketchBoxDivider: () => null,
+    __wp_findNearestSketchBoxHorizontalDivider: () => null,
+    __wp_resolveSketchBoxDividerPlacement: () => ({ xNorm: 0.5, x: 0, segmentIndex: 0 }),
+    __wp_resolveSketchBoxHorizontalDividerPlacement: () => ({ yNorm: 0.5, y: 0, segmentIndex: 0 }),
+    __wp_readSketchBoxDividerXNorm: () => null,
+    __wp_writeSketchHover: (_App, snap) => {
+      writes.push((snap as Record<string, unknown> | null) ?? null);
+    },
+    isBottom: false,
+    info: { gridDivisions: 6 },
+    bottomY: 0,
+    topY: 2.4,
+    woodThick: 0.018,
+    innerW: 1,
+    internalCenterX: 0,
+    internalDepth: 0.55,
+    internalZ: 0,
+    spanH: 2.4,
+    pad: 0.006,
+    yClamped: 1.52,
+    isBox: true,
+    isStorage: false,
+    isShelf: false,
+    isRod: false,
+    isDrawers: false,
+    isExtDrawers: false,
+    variant: 'regular',
+    shelfDepthM: null,
+    shelfDepthOverrideM: null,
+    boxSpec: { heightCm: 170, widthCm: 36, depthCm: 32 },
+    boxH: 1.7,
+    boxWidthOverrideM: 0.36,
+    boxDepthOverrideM: 0.32,
+    storageH: 0.5,
+    boxes: [],
+    storageBarriers: [],
+    shelves: [],
+    rods: [{ id: 'rod-at-clamped-box-center', yNorm: 1.52 / 2.4 }],
+    drawers: [],
+    extDrawers: [],
+    cfgRef: { layout: 'shelves', isCustom: true },
+    activeModuleBox: null,
+  } as never);
+
+  assert.equal(handled, false);
+  assert.deepEqual(writes, []);
+  assert.deepEqual(previews, []);
 });

@@ -1,4 +1,4 @@
-import type { AppContainer } from '../../../../../types';
+import type { ActionMetaLike, AppContainer } from '../../../../../types';
 
 import { setCfgCustomUploadedDataURL } from '../actions/store_actions.js';
 import { buildPerfEntryOptionsFromActionResult, runPerfAction } from '../../../services/api.js';
@@ -19,6 +19,8 @@ import type { DesignTabFeedbackApi } from './design_tab_shared.js';
 import type { SavedColor } from './design_tab_multicolor_panel.js';
 
 export type PrevCustomState = { choice: string; customUploaded: string };
+
+const CUSTOM_TEXTURE_UPLOAD_SOURCE = 'react:design:custom:texture';
 
 export type FileInputLike = { value: string };
 export type MutableRefLike<T> = { current: T };
@@ -107,6 +109,22 @@ export function createPrevCustomState(colorChoice: string, customUploadedDataURL
   return {
     choice: String(colorChoice || '#ffffff'),
     customUploaded: String(customUploadedDataURL || ''),
+  };
+}
+
+export function shouldRefreshCustomTexturePreview(colorChoice: string): boolean {
+  return trim(colorChoice) === 'custom';
+}
+
+export function buildCustomTextureUploadMeta(colorChoice: string): ActionMetaLike {
+  if (!shouldRefreshCustomTexturePreview(colorChoice)) {
+    return { source: CUSTOM_TEXTURE_UPLOAD_SOURCE };
+  }
+
+  return {
+    source: CUSTOM_TEXTURE_UPLOAD_SOURCE,
+    immediate: true,
+    forceBuild: true,
   };
 }
 
@@ -220,7 +238,7 @@ export function createDesignTabCustomColorWorkflowController(
         if (result.ok && result.kind === 'upload-texture') {
           setDraftTextureData(result.dataUrl);
           setDraftTextureName(String(result.textureName || ''));
-          setCfgCustomUploadedDataURL(app, result.dataUrl, { source: 'react:design:custom:texture' });
+          setCfgCustomUploadedDataURL(app, result.dataUrl, buildCustomTextureUploadMeta(colorChoice));
           applyColorChoice('custom', 'react:design:custom:pickTexture');
         }
         reportDesignTabColorActionResult(feedback, result);

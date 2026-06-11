@@ -1,4 +1,8 @@
-import { INTERIOR_FITTINGS_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  INTERIOR_FITTINGS_DIMENSIONS,
+  SKETCH_BOX_DIMENSIONS,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { resolveHexCellGeometry } from '../features/hex_cell/index.js';
 import type {
   RenderInteriorSketchBoxesArgs,
   RenderSketchBoxShellResult,
@@ -55,6 +59,31 @@ export function renderSketchBoxShell(args: {
     defaultMaterial: renderArgs.bodyMat,
   });
 
+  const baseGeometry = geometryResolved.geometry;
+  const baseBackZ = baseGeometry.centerZ - baseGeometry.outerD / 2;
+  const hexGeometry = isFreePlacement
+    ? resolveHexCellGeometry({
+        cfgMod: box,
+        moduleWidthM: baseGeometry.outerW,
+        defaultDepthM: baseGeometry.outerD,
+        woodThickM: renderArgs.woodThick,
+      })
+    : null;
+  const geometry = hexGeometry
+    ? {
+        ...baseGeometry,
+        outerD: hexGeometry.sideDepthM,
+        centerZ: baseBackZ + hexGeometry.sideDepthM / 2,
+        innerBackZ: baseBackZ + Math.min(renderArgs.woodThick, hexGeometry.sideDepthM),
+        innerD: Math.max(
+          SKETCH_BOX_DIMENSIONS.geometry.minInnerDimensionM,
+          hexGeometry.sideDepthM - Math.min(renderArgs.woodThick, hexGeometry.sideDepthM)
+        ),
+      }
+    : baseGeometry;
+  const frontZ = hexGeometry ? baseBackZ + hexGeometry.doorDepthM : geometry.innerBackZ + geometry.innerD;
+  const fullDepth = Math.max(geometry.outerD, frontZ - baseBackZ);
+
   const halfH = height / 2;
   const state: ResolvedSketchBoxState = {
     box,
@@ -66,14 +95,17 @@ export function renderSketchBoxShell(args: {
     centerY: geometryResolved.centerY,
     sideH: Math.max(renderArgs.woodThick, height - 2 * renderArgs.woodThick),
     boxMat,
-    geometry: geometryResolved.geometry,
+    geometry,
+    hexGeometry,
+    fullDepth,
+    backZ: baseBackZ,
     innerBottomY: geometryResolved.centerY - halfH + renderArgs.woodThick,
     innerTopY: geometryResolved.centerY + halfH - renderArgs.woodThick,
     regularDepth:
-      geometryResolved.geometry.innerD > 0
-        ? Math.min(geometryResolved.geometry.innerD, INTERIOR_FITTINGS_DIMENSIONS.shelves.regularDepthM)
-        : geometryResolved.geometry.innerD,
-    frontZ: geometryResolved.geometry.innerBackZ + geometryResolved.geometry.innerD,
+      geometry.innerD > 0
+        ? Math.min(geometry.innerD, INTERIOR_FITTINGS_DIMENSIONS.shelves.regularDepthM)
+        : geometry.innerD,
+    frontZ,
   };
 
   renderSketchBoxShellFrame({ state, renderArgs });

@@ -7,6 +7,10 @@ import {
   buildStructureLibraryToggleArgs,
 } from './structure_tab_workflows_controller_shared.js';
 
+function isNoMainWardrobeState(state: CreateStructureTabWorkflowControllerArgs['state']): boolean {
+  return state.wardrobeType !== 'sliding' && Number(state.doors) === 0;
+}
+
 export function createStructureTabWorkflowLibraryApi(
   args: CreateStructureTabWorkflowControllerArgs
 ): Pick<
@@ -21,10 +25,12 @@ export function createStructureTabWorkflowLibraryApi(
     },
 
     ensureLibraryInvariants() {
+      if (isNoMainWardrobeState(state)) return;
       libraryPreset.ensureInvariants(libraryEnv, buildStructureLibraryInvariantArgs(state));
     },
 
     toggleLibraryMode() {
+      if (isNoMainWardrobeState(state)) return;
       libraryPreset.toggleLibraryMode(libraryEnv, buildStructureLibraryToggleArgs(state), {
         mergeUiOverride,
       });

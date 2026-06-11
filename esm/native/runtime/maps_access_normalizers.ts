@@ -27,6 +27,7 @@ const KNOWN_MAP_NORMALIZERS = {
   groovesMap: normalizeToggleMap,
   grooveLinesCountMap: normalizeNullablePositiveIntMap,
   removedDoorsMap: normalizeToggleMap,
+  roundedFrameSideShelvesMap: normalizeToggleMap,
   curtainMap: normalizeNullableStringMap,
   individualColors: normalizeNullableStringMap,
   doorSpecialMap: normalizeNullableStringMap,

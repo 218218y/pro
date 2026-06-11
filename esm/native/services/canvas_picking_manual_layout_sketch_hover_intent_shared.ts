@@ -47,6 +47,7 @@ export type ManualLayoutSketchBoxHoverIntent = {
   yCenter: number | null;
   xNorm: number | null;
   removeId: string | null;
+  blockedReason: string | null;
 };
 
 export type ManualLayoutSketchBoxContentHoverIntent = {
@@ -59,7 +60,10 @@ export type ManualLayoutSketchBoxContentHoverIntent = {
   boxBaseYNorm: number | null;
   contentXNorm: number | null;
   dividerXNorm: number | null;
+  dividerYNorm?: number | null;
+  dividerAxis?: string | null;
   dividerId: string | null;
+  dividerFrontZ: number | null;
   variant: string | null;
   depthM: number | null;
   heightM: number | null;
@@ -72,6 +76,7 @@ export type ManualLayoutSketchBoxContentHoverIntent = {
   drawerGap: number | null;
   drawerHeightM: number | null;
   drawerCount: number | null;
+  hasShoeDrawer?: boolean | null;
   hinge: 'left' | 'right' | null;
   doorId: string | null;
   doorLeftId: string | null;
@@ -81,6 +86,7 @@ export type ManualLayoutSketchBoxContentHoverIntent = {
   baseLegColor: string | null;
   baseLegHeightCm: number | null;
   baseLegWidthCm: number | null;
+  basePlinthHeightCm: number | null;
   corniceType: string | null;
   blockedReason: string | null;
 };
@@ -108,6 +114,10 @@ export type ManualLayoutSketchShelfHoverIntent = {
   removeKind: string;
   removeIdx: number | null;
   shelfIndex: number | null;
+  yNorm: number | null;
+  variant: string | null;
+  depthM: number | null;
+  blockedReason: string | null;
 };
 
 export type ManualLayoutSketchRodHoverIntent = {

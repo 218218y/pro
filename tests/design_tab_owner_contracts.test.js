@@ -133,6 +133,7 @@ test('[contracts-design-owner] DesignTab owner delegates section orchestration t
       /colorSection/,
       /doorFeaturesSection/,
       /corniceSection/,
+      /noMainWardrobeActive: state\.noMainWardrobeActive/,
       /setFeatureToggle: controllerRuntime\.setFeatureToggle/,
       /toggleSplitCustomEdit: editModes\.toggleSplitCustomEdit/,
     ],
@@ -185,7 +186,7 @@ test('[contracts-design-owner] DesignTab owner delegates section orchestration t
       /DesignTabTypeOption/,
       /model\.setDoorStyle\('flat'\)/,
       /model\.setDoorStyle\('profile'\)/,
-      /model\.setDoorStyle\('tom'\)/,
+      /model\.setDoorStyle\('double_profile'\)/,
     ],
     'design door style section'
   );

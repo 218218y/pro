@@ -14,7 +14,9 @@ export function readSketchBoxDoors(box: unknown): SketchBoxDoorState[] {
     const door = normalizeSketchBoxDoorState(doorsRaw[i], `sbdr_${i}`);
     if (door) doors.push(door);
   }
-  return doors.sort((a, b) => a.xNorm - b.xNorm || a.id.localeCompare(b.id));
+  return doors.sort(
+    (a, b) => (a.yNorm ?? -1) - (b.yNorm ?? -1) || a.xNorm - b.xNorm || a.id.localeCompare(b.id)
+  );
 }
 
 export function writeSketchBoxDoors(box: unknown, doors: SketchBoxDoorState[]): void {
@@ -23,15 +25,26 @@ export function writeSketchBoxDoors(box: unknown, doors: SketchBoxDoorState[]): 
   if (doors.length) {
     rec.doors = doors
       .slice()
-      .sort((a, b) => a.xNorm - b.xNorm || a.id.localeCompare(b.id))
-      .map(door => ({
-        id: door.id,
-        xNorm: door.xNorm,
-        hinge: door.hinge,
-        enabled: door.enabled !== false,
-        open: door.open === true,
-        groove: door.groove === true,
-      }));
+      .sort((a, b) => (a.yNorm ?? -1) - (b.yNorm ?? -1) || a.xNorm - b.xNorm || a.id.localeCompare(b.id))
+      .map(door => {
+        const grooveLinesCount = Number(door.grooveLinesCount);
+        const normalizedGrooveLinesCount =
+          Number.isFinite(grooveLinesCount) && grooveLinesCount >= 1
+            ? Math.max(1, Math.floor(grooveLinesCount))
+            : null;
+        return {
+          id: door.id,
+          xNorm: door.xNorm,
+          ...(Number.isFinite(Number(door.yNorm)) ? { yNorm: Number(door.yNorm) } : {}),
+          hinge: door.hinge,
+          enabled: door.enabled !== false,
+          open: door.open === true,
+          groove: door.groove === true,
+          ...(door.groove === true && normalizedGrooveLinesCount !== null
+            ? { grooveLinesCount: normalizedGrooveLinesCount }
+            : {}),
+        };
+      });
   } else {
     delete rec.doors;
   }

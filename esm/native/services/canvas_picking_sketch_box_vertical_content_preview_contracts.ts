@@ -2,8 +2,16 @@ import type { UnknownRecord } from '../../../types';
 import type {
   ResolveSketchBoxSegmentsArgs,
   PickSketchBoxSegmentArgs,
+  ResolveSketchBoxVerticalSegmentsArgs,
+  PickSketchBoxVerticalSegmentArgs,
 } from './canvas_picking_manual_layout_sketch_contracts.js';
-import type { SketchBoxDividerState, SketchBoxSegmentState } from './canvas_picking_sketch_box_dividers.js';
+import type { RaycastHitLike } from './canvas_picking_engine.js';
+import type {
+  SketchBoxDividerState,
+  SketchBoxHorizontalDividerState,
+  SketchBoxSegmentState,
+  SketchBoxVerticalSegmentState,
+} from './canvas_picking_sketch_box_dividers.js';
 
 export type RecordMap = UnknownRecord;
 export type ModuleKey = number | 'corner' | `corner:${number}` | null;
@@ -37,6 +45,8 @@ export type ResolveSketchBoxVerticalContentPreviewArgs = {
   targetHeight: number;
   pointerX: number;
   pointerY: number;
+  partPrefix?: string | null;
+  intersects?: RaycastHitLike[];
   woodThick: number;
   shelfVariant?: string | null;
   shelfDepthOverrideM?: number | null;
@@ -44,8 +54,15 @@ export type ResolveSketchBoxVerticalContentPreviewArgs = {
   removeEpsShelf?: number;
   removeEpsBox?: number;
   readSketchBoxDividers: (box: unknown) => SketchBoxDividerState[];
+  readSketchBoxHorizontalDividers?: (box: unknown) => SketchBoxHorizontalDividerState[];
   resolveSketchBoxSegments: (args: ResolveSketchBoxSegmentsArgs) => SketchBoxSegmentLike[];
   pickSketchBoxSegment: (args: PickSketchBoxSegmentArgs) => SketchBoxSegmentLike | null;
+  resolveSketchBoxVerticalSegments?: (
+    args: ResolveSketchBoxVerticalSegmentsArgs
+  ) => SketchBoxVerticalSegmentState[];
+  pickSketchBoxVerticalSegment?: (
+    args: PickSketchBoxVerticalSegmentArgs
+  ) => SketchBoxVerticalSegmentState | null;
 };
 
 export type ResolveSketchBoxVerticalContentPreviewResult = {

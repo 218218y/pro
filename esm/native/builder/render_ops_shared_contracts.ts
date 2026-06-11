@@ -23,6 +23,8 @@ export type RenderThreeLike = Pick<
   | 'MeshStandardMaterial'
   | 'MeshBasicMaterial'
   | 'BoxGeometry'
+  | 'BufferGeometry'
+  | 'Float32BufferAttribute'
   | 'Mesh'
   | 'Group'
   | 'DoubleSide'
@@ -60,6 +62,9 @@ export type BackPanelSeg = {
   x: number;
   y: number;
   z: number;
+  partId?: unknown;
+  material?: unknown;
+  __wpWoodBackPanel?: unknown;
 };
 
 export type RenderOpsBag = AnyMap & {

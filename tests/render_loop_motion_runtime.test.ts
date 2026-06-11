@@ -133,6 +133,164 @@ test('render loop motion opens free-box sketch doors during sketch internal draw
   });
 });
 
+test('render loop motion opens free-box sketch doors during interior edit modes', () => {
+  const cases = [
+    { primaryMode: 'layout', opts: { layoutType: 'shelves' } },
+    { primaryMode: 'manual_layout', opts: { manualTool: 'shelf' } },
+    { primaryMode: 'manual_layout', opts: { manualTool: 'sketch_shelf:regular' } },
+    { primaryMode: 'manual_layout', opts: { manualTool: 'sketch_rod' } },
+    { primaryMode: 'manual_layout', opts: { manualTool: 'sketch_storage:40' } },
+    { primaryMode: 'brace_shelves', opts: {} },
+  ];
+
+  for (const { primaryMode, opts } of cases) {
+    withRuntimeNow(100, () => {
+      const label = `${primaryMode}:${String((opts as Record<string, unknown>).manualTool || '')}`;
+      const doorGroup = {
+        position: { x: 0, y: 0, z: 0 },
+        rotation: { y: 0 },
+        userData: {
+          partId: `sketch_box_free_${primaryMode}_door_left`,
+          __wpSketchBoxDoor: true,
+          __wpSketchFreePlacement: true,
+          noGlobalOpen: true,
+        },
+      };
+      const app: Record<string, unknown> = {
+        store: makeStore({
+          mode: { primary: primaryMode, opts },
+          runtime: { globalClickMode: true },
+          ui: {},
+          config: {},
+          meta: {},
+        }),
+        services: {
+          doors: { getOpen: () => true },
+          tools: {},
+          platform: {
+            perf: { hasInternalDrawers: false, perfFlagsDirty: false },
+            activity: { lastActionTime: 100 },
+          },
+        },
+        render: {
+          doorsArray: [
+            { type: 'hinged', group: doorGroup, hingeSide: 'left', noGlobalOpen: true, isOpen: false },
+          ],
+          drawersArray: [],
+        },
+      };
+
+      const controller = createRenderLoopMotionController(app as never, {
+        report: () => undefined,
+        now: () => 100,
+        debugLog: () => undefined,
+      });
+
+      controller.stepFrame(100);
+
+      assert.notEqual(doorGroup.rotation.y, 0, label);
+    });
+  }
+});
+
+test('render loop motion keeps free-box sketch doors closed while authoring a box door', () => {
+  for (const manualTool of ['sketch_box_door', 'sketch_box_double_door', 'sketch_box_door_hinge']) {
+    withRuntimeNow(100, () => {
+      const doorGroup = {
+        position: { x: 0, y: 0, z: 0 },
+        rotation: { y: 0 },
+        userData: {
+          partId: `sketch_box_free_sbf_${manualTool}_door_left`,
+          __wpSketchBoxDoor: true,
+          __wpSketchFreePlacement: true,
+          noGlobalOpen: true,
+        },
+      };
+      const app: Record<string, unknown> = {
+        store: makeStore({
+          mode: { primary: 'manual_layout', opts: { manualTool } },
+          runtime: { globalClickMode: true },
+          ui: {},
+          config: {},
+          meta: {},
+        }),
+        services: {
+          doors: { getOpen: () => true },
+          tools: {},
+          platform: {
+            perf: { hasInternalDrawers: false, perfFlagsDirty: false },
+            activity: { lastActionTime: 100 },
+          },
+        },
+        render: {
+          doorsArray: [
+            { type: 'hinged', group: doorGroup, hingeSide: 'left', noGlobalOpen: true, isOpen: false },
+          ],
+          drawersArray: [],
+        },
+      };
+
+      const controller = createRenderLoopMotionController(app as never, {
+        report: () => undefined,
+        now: () => 100,
+        debugLog: () => undefined,
+      });
+
+      controller.stepFrame(100);
+
+      assert.equal(doorGroup.rotation.y, 0, manualTool);
+    });
+  }
+});
+
+test('render loop motion keeps free-box sketch doors local outside interior edit modes', () => {
+  withRuntimeNow(100, () => {
+    const doorGroup = {
+      position: { x: 0, y: 0, z: 0 },
+      rotation: { y: 0 },
+      userData: {
+        partId: 'sketch_box_free_sbf_3_door_left',
+        __wpSketchBoxDoor: true,
+        __wpSketchFreePlacement: true,
+        noGlobalOpen: true,
+      },
+    };
+    const app: Record<string, unknown> = {
+      store: makeStore({
+        mode: { primary: 'none', opts: {} },
+        runtime: { globalClickMode: true },
+        ui: {},
+        config: {},
+        meta: {},
+      }),
+      services: {
+        doors: { getOpen: () => true },
+        tools: {},
+        platform: {
+          perf: { hasInternalDrawers: false, perfFlagsDirty: false },
+          activity: { lastActionTime: 100 },
+        },
+      },
+      render: {
+        doorsArray: [
+          { type: 'hinged', group: doorGroup, hingeSide: 'left', noGlobalOpen: true, isOpen: false },
+        ],
+        drawersArray: [],
+      },
+    };
+
+    const controller = createRenderLoopMotionController(app as never, {
+      report: () => undefined,
+      now: () => 100,
+      debugLog: () => undefined,
+    });
+
+    controller.stepFrame(100);
+
+    assert.equal(doorGroup.rotation.y, 0);
+  });
+});
+
 test('render loop motion uses runtime clock for delayed internal drawers instead of frame-performance clock', () => {
   const originalDateNow = Date.now;
   Date.now = () => 1_000_000;

@@ -11,6 +11,7 @@ import type {
 } from '../../../types/index.js';
 
 import type { BoundUnknownMethod, ValueRecord } from './post_build_extras_shared.js';
+import type { ManualHandlePosition } from '../features/manual_handle_position.js';
 
 export type { AppContainer, BuildContextLike, Object3DLike, ThreeLike, ValueRecord };
 
@@ -35,11 +36,13 @@ export type SketchDoorCutsRuntime = {
   resolveHandleType: (partId: string) => string;
   resolveEdgeHandleVariant: (partId: string) => 'short' | 'long';
   resolveHandleColor: (partId: string) => string;
+  resolveManualHandlePosition: (partId: string) => ManualHandlePosition | null;
   resolveCurtain: (partId: string) => string | null;
   resolveSpecial: (partId: string, curtain: string | null) => 'mirror' | 'glass' | null;
   doorStyle: string;
   doorStyleMap: DoorStyleMap;
   groovesMap: ValueRecord | null;
+  doorTrimMap?: ValueRecord | null;
   resolveMirrorLayout: (partId: string) => unknown;
   isDoorRemoved: (partId: string) => boolean;
 };
@@ -47,6 +50,7 @@ export type SketchDoorCutsRuntime = {
 export type SketchDoorCutSelection = {
   basePartId: string;
   stacks: SketchDrawerStackBounds[];
+  splitPosList?: number[];
 };
 
 export type SketchDoorCutsRuntimeArgs = {

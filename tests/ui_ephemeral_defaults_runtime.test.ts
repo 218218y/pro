@@ -26,7 +26,7 @@ test('ui ephemeral defaults runtime: seeds only missing UI-only defaults through
   });
 
   assert.equal(seedUiEphemeralDefaults(App), true);
-  assert.equal(calls.length, 5);
+  assert.equal(calls.length, 6);
   assert.deepEqual(calls[0].patch, {
     currentLayoutType: 'shelves',
     currentGridDivisions: 6,
@@ -38,6 +38,12 @@ test('ui ephemeral defaults runtime: seeds only missing UI-only defaults through
   assert.equal(calls[0].meta.noPersist, true);
   assert.equal(calls[0].meta.noHistory, true);
   assert.equal(calls[0].meta.uiOnly, true);
+  assert.deepEqual(calls[3].patch, {
+    currentHandleToolType: 'standard',
+    currentHandleToolColor: 'nickel',
+    currentHandleToolEdgeVariant: 'short',
+  });
+  assert.equal(calls[3].meta.source, 'boot:uiDefaults:handleTool');
   assert.equal(isUiEphemeralDefaultsSeeded(App), true);
 });
 
@@ -53,6 +59,9 @@ test('ui ephemeral defaults runtime: reports soft patch owner rejection without 
           activeGridCellId: null,
           currentExtDrawerType: 'regular',
           currentExtDrawerCount: 1,
+          currentHandleToolType: 'standard',
+          currentHandleToolColor: 'nickel',
+          currentHandleToolEdgeVariant: 'short',
           currentCurtainChoice: 'none',
           currentMirrorDraftHeightCm: '',
           currentMirrorDraftWidthCm: '',

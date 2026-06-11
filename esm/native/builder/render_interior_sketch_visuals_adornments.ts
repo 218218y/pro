@@ -1,5 +1,6 @@
 import { computeCarcassOps } from './pure_api.js';
 import { getBaseLegColorHex, readBaseLegOptions } from '../features/base_leg_support.js';
+import { normalizeBasePlinthHeightCm } from '../features/base_plinth_support.js';
 
 import type {
   InteriorGroupLike,
@@ -77,6 +78,7 @@ export function renderSketchBoxCarcassAdornment(args: {
     baseLegStyle: legOptions.style,
     baseLegHeightCm: legOptions.heightCm,
     baseLegWidthCm: legOptions.widthCm,
+    basePlinthHeightCm: normalizeBasePlinthHeightCm(box.basePlinthHeightCm),
     doorsCount: 2,
     hasCornice,
     corniceType,

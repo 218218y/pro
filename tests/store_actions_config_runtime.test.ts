@@ -233,6 +233,7 @@ test('store actions config falls back to canonical scalar/map writers and replac
             splitDoorsMap: true,
             splitDoorsBottomMap: true,
             removedDoorsMap: true,
+            roundedFrameSideShelvesMap: true,
             drawerDividersMap: true,
             individualColors: true,
             doorSpecialMap: true,

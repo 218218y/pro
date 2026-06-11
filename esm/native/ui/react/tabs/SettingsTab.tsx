@@ -35,11 +35,12 @@ function SettingsAction(props: SettingsActionProps): ReactElement {
       type="button"
       className={cx(
         'wp-r-settings-action',
+        titleAttr && 'wp-r-styled-tooltip hint-bottom',
         variant === 'primary' && 'wp-r-settings-action--primary',
         variant === 'accent' && 'wp-r-settings-action--accent'
       )}
       onClick={onClick}
-      title={titleAttr}
+      data-tooltip={titleAttr}
       data-testid={testId}
     >
       <span className="wp-r-settings-action-icon" aria-hidden="true">
@@ -80,6 +81,8 @@ export function SettingsTab(props: { active: boolean }): ReactElement {
       */}
       {props.active ? (
         <div className="wp-r-settings-layout">
+          <SettingsVisualDisplaySection model={visualController.displaySection} />
+
           <Section title="ייצוא תמונות" className="wp-r-settings-images">
             <div className="wp-r-settings-grid">
               <SettingsAction
@@ -146,7 +149,6 @@ export function SettingsTab(props: { active: boolean }): ReactElement {
             </div>
           </Section>
 
-          <SettingsVisualDisplaySection model={visualController.displaySection} />
           <SettingsVisualRoomSection model={visualController.roomSection} />
           <SettingsVisualLightingSection model={visualController.lightingSection} />
           <CloudSyncPanel />

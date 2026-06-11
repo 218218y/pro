@@ -94,6 +94,14 @@ export function seedUiEphemeralDefaults(app: AppContainer): true {
     return patch;
   });
 
+  seedUiDefaultSection(app, 'boot:uiDefaults:handleTool', ui => {
+    const patch: UiSlicePatch = {};
+    if (typeof ui.currentHandleToolType !== 'string') patch.currentHandleToolType = 'standard';
+    if (typeof ui.currentHandleToolColor !== 'string') patch.currentHandleToolColor = 'nickel';
+    if (typeof ui.currentHandleToolEdgeVariant !== 'string') patch.currentHandleToolEdgeVariant = 'short';
+    return patch;
+  });
+
   seedUiDefaultSection(app, 'boot:uiDefaults:curtainChoice', ui =>
     typeof ui.currentCurtainChoice !== 'string' ? { currentCurtainChoice: 'none' } : {}
   );

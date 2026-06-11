@@ -32,6 +32,10 @@ function readSketchInternalDrawerIdFromPartId(partId: string, moduleKey: unknown
   return splitAt >= 0 ? suffix.slice(splitAt + 1) : suffix;
 }
 
+function isSketchExternalDrawerHoverContentKind(contentKind: string): boolean {
+  return contentKind === 'ext_drawers' || contentKind === 'regular_ext_drawers';
+}
+
 function hoverAllowsSketchExternalRemoval(args: {
   hoverOk: boolean;
   hoverKind: string;
@@ -50,7 +54,7 @@ function hoverAllowsSketchExternalRemoval(args: {
   if (args.hoverKind !== 'box_content') return false;
 
   const hoverContentKind = readRecordString(args.hoverRec, 'contentKind');
-  if (hoverContentKind !== 'ext_drawers') return false;
+  if (!isSketchExternalDrawerHoverContentKind(hoverContentKind)) return false;
 
   const hoverBoxId = readRecordString(args.hoverRec, 'boxId');
   return !args.boxId || !hoverBoxId || hoverBoxId === args.boxId;
@@ -285,7 +289,7 @@ export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDir
             __hoverKind === 'ext_drawers' && __hoverOp === 'remove' && hoverRemoveId === drawerId;
           const hoverRemovesBoxDrawer =
             __hoverKind === 'box_content' &&
-            hoverContentKind === 'ext_drawers' &&
+            (hoverContentKind === 'ext_drawers' || hoverContentKind === 'regular_ext_drawers') &&
             __hoverOp === 'remove' &&
             hoverRemoveId === drawerId &&
             (!boxId || !hoverBoxId || hoverBoxId === boxId);

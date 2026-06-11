@@ -13,6 +13,10 @@ type NumericFieldProps = {
   step: number;
   placeholder?: string;
   allowEmpty?: boolean;
+  resetTitle?: string;
+  resetDisabled?: boolean;
+  emptyStepStartValue?: number;
+  onReset?: () => void;
   onChange: (raw: string) => void;
   onBlur: () => void;
 };
@@ -28,28 +32,44 @@ export function SketchBoxNumericField(props: NumericFieldProps): ReactElement {
 
   return (
     <div className="wp-sketch-box-cell wp-sketch-box-cell--input">
-      <label htmlFor={inputId} className="wp-r-label wp-r-label--center" style={{ marginBottom: 6 }}>
+      <label htmlFor={inputId} className="wp-r-label wp-r-label--center">
         {props.label}
       </label>
-      <input
-        id={inputId}
-        type="number"
-        className="wp-r-input"
-        value={props.value}
-        min={props.min}
-        max={props.max}
-        step={props.step}
-        placeholder={props.placeholder}
-        aria-invalid={validationMessage ? true : undefined}
-        aria-describedby={validationMessage ? errorId : undefined}
-        onFocus={(event: import('react').FocusEvent<HTMLInputElement>) => {
-          event.target.select();
-        }}
-        onChange={(event: import('react').ChangeEvent<HTMLInputElement>) => {
-          props.onChange(event.target.value);
-        }}
-        onBlur={props.onBlur}
-      />
+      <div className={props.onReset ? 'wp-r-input-row wp-r-input-row--with-addon' : 'wp-r-input-row'}>
+        <input
+          id={inputId}
+          type="number"
+          className={props.onReset ? 'wp-r-input wp-r-input--with-addon' : 'wp-r-input'}
+          value={props.value}
+          min={props.min}
+          max={props.max}
+          step={props.step}
+          placeholder={props.placeholder}
+          aria-invalid={validationMessage ? true : undefined}
+          aria-describedby={validationMessage ? errorId : undefined}
+          onFocus={(event: import('react').FocusEvent<HTMLInputElement>) => {
+            event.target.select();
+          }}
+          onChange={(event: import('react').ChangeEvent<HTMLInputElement>) => {
+            props.onChange(resolveSketchBoxNumericChangeValue(props, event));
+          }}
+          onBlur={props.onBlur}
+        />
+        {props.onReset ? (
+          <div className="wp-r-input-addon">
+            <button
+              type="button"
+              className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-cell-dims-reset-dim-btn wp-r-sketch-box-reset-btn wp-r-styled-tooltip hint-bottom"
+              disabled={!!props.resetDisabled}
+              data-tooltip={props.resetTitle || 'איפוס מידה'}
+              aria-label={props.resetTitle || 'איפוס מידה'}
+              onClick={props.onReset}
+            >
+              <i className="fas fa-undo-alt" aria-hidden="true" />
+            </button>
+          </div>
+        ) : null}
+      </div>
       {validationMessage ? (
         <div id={errorId} className="wp-r-input-error" role="alert">
           {validationMessage}
@@ -57,6 +77,20 @@ export function SketchBoxNumericField(props: NumericFieldProps): ReactElement {
       ) : null}
     </div>
   );
+}
+
+function resolveSketchBoxNumericChangeValue(
+  props: NumericFieldProps,
+  event: import('react').ChangeEvent<HTMLInputElement>
+): string {
+  const raw = event.target.value;
+  const start = props.emptyStepStartValue;
+  if (typeof start !== 'number' || !Number.isFinite(start)) return raw;
+  if (String(props.value || '').trim() !== '') return raw;
+  if (String(raw).trim() !== String(props.min)) return raw;
+
+  const inputType = String((event.nativeEvent as { inputType?: unknown }).inputType || '');
+  return inputType ? raw : String(start);
 }
 
 function readSketchBoxNumericValidationMessage(

@@ -53,12 +53,18 @@ export function resolveSketchFreeBoxContentPreview(
     resolveSketchFreeBoxGeometry,
     getSketchFreeBoxPartPrefix,
     findSketchFreeBoxLocalHit,
+    projectPointerToLocalZPlane,
     readSketchBoxDividers,
+    readSketchBoxHorizontalDividers,
     resolveSketchBoxSegments,
     pickSketchBoxSegment,
     findNearestSketchBoxDivider,
     resolveSketchBoxDividerPlacement,
     readSketchBoxDividerXNorm,
+    resolveSketchBoxVerticalSegments,
+    pickSketchBoxVerticalSegment,
+    findNearestSketchBoxHorizontalDivider,
+    resolveSketchBoxHorizontalDividerPlacement,
   } = args;
 
   const surfaceKind = isSketchFreeSurfaceKind(contentKind) ? contentKind : null;
@@ -90,6 +96,7 @@ export function resolveSketchFreeBoxContentPreview(
     resolveSketchFreeBoxGeometry,
     getSketchFreeBoxPartPrefix,
     findSketchFreeBoxLocalHit,
+    projectPointerToLocalZPlane,
   });
   if (!target) return null;
 
@@ -101,11 +108,16 @@ export function resolveSketchFreeBoxContentPreview(
       target,
       wardrobeBox,
       readSketchBoxDividers,
+      readSketchBoxHorizontalDividers,
       resolveSketchBoxSegments,
       pickSketchBoxSegment,
       findNearestSketchBoxDivider,
       resolveSketchBoxDividerPlacement,
       readSketchBoxDividerXNorm,
+      resolveSketchBoxVerticalSegments,
+      pickSketchBoxVerticalSegment,
+      findNearestSketchBoxHorizontalDivider,
+      resolveSketchBoxHorizontalDividerPlacement,
     } satisfies SketchFreeSurfacePreviewResolverArgs);
     return surfacePreview ? { mode: 'preview', ...surfacePreview } : null;
   }
@@ -116,9 +128,13 @@ export function resolveSketchFreeBoxContentPreview(
       contentKind: verticalKind,
       host,
       target,
+      intersects,
       readSketchBoxDividers,
+      readSketchBoxHorizontalDividers,
       resolveSketchBoxSegments,
       pickSketchBoxSegment,
+      resolveSketchBoxVerticalSegments,
+      pickSketchBoxVerticalSegment,
     } satisfies SketchFreeVerticalPreviewArgs);
   }
 
@@ -129,8 +145,11 @@ export function resolveSketchFreeBoxContentPreview(
       host,
       target,
       readSketchBoxDividers,
+      readSketchBoxHorizontalDividers,
       resolveSketchBoxSegments,
       pickSketchBoxSegment,
+      resolveSketchBoxVerticalSegments,
+      pickSketchBoxVerticalSegment,
     } satisfies SketchFreeStackPreviewArgs);
   }
 
@@ -142,7 +161,10 @@ export function resolveSketchFreeBoxContentPreview(
     host,
     target,
     readSketchBoxDividers,
+    readSketchBoxHorizontalDividers,
     resolveSketchBoxSegments,
     pickSketchBoxSegment,
+    resolveSketchBoxVerticalSegments,
+    pickSketchBoxVerticalSegment,
   } satisfies SketchFreeDoorPreviewArgs);
 }

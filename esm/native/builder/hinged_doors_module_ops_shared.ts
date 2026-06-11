@@ -17,3 +17,5 @@ export {
   topSplitHandleInsetForPart,
 } from './hinged_doors_module_ops_handle_policy.js';
 export { pushHingedDoorSegment, readSplitPosListSafe } from './hinged_doors_module_ops_segments.js';
+
+export { attachHiddenModuleDoors } from './hinged_doors_module_ops_metadata.js';

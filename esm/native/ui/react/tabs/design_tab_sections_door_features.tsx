@@ -6,6 +6,8 @@ import type { DoorFeaturesSectionProps } from './design_tab_sections_contracts.j
 export function DoorFeaturesSection(props: DoorFeaturesSectionProps): ReactElement | null {
   const model = props.model;
   if (model.wardrobeType !== 'hinged' && model.wardrobeType !== 'sliding') return null;
+  const showDoorCutAndRemovalControls = !model.isChestMode;
+  const showGrooveLinesControls = model.grooveActive || model.isChestMode;
 
   return (
     <div className="control-section" data-testid="design-door-features-section">
@@ -31,7 +33,7 @@ export function DoorFeaturesSection(props: DoorFeaturesSectionProps): ReactEleme
             {model.grooveActive ? 'סיום עריכה' : 'הוסף/הסר חריטה'}
           </ModeToggleButton>
 
-          {model.grooveActive ? (
+          {showGrooveLinesControls ? (
             <div className="wp-r-mt-2 wp-r-groove-lines-block">
               <label className="wp-r-label wp-r-label--center wp-r-groove-lines-label">מספר חריטות</label>
               <div className="wp-r-groove-lines-row">
@@ -84,7 +86,7 @@ export function DoorFeaturesSection(props: DoorFeaturesSectionProps): ReactEleme
         </div>
       ) : null}
 
-      {model.wardrobeType === 'hinged' ? (
+      {showDoorCutAndRemovalControls && model.wardrobeType === 'hinged' ? (
         <>
           <div className="wp-r-toggle-divider" />
 
@@ -130,11 +132,15 @@ export function DoorFeaturesSection(props: DoorFeaturesSectionProps): ReactEleme
               </div>
             </div>
           ) : null}
+        </>
+      ) : null}
 
+      {showDoorCutAndRemovalControls ? (
+        <>
           <div className="wp-r-toggle-divider" />
 
           <ToggleRow
-            label="הסרת דלתות (נישה פתוחה)"
+            label="הסרת דלתות או דפנות"
             checked={model.removeDoorsEnabled}
             onChange={checked => model.setFeatureToggle('removeDoorsEnabled', checked)}
             testId="design-remove-doors-toggle"
@@ -157,6 +163,23 @@ export function DoorFeaturesSection(props: DoorFeaturesSectionProps): ReactEleme
               </ModeToggleButton>
 
               <div className="wp-r-editmode-hint">לחץ על דלת כדי להסיר או להחזיר אותה לסקיצה.</div>
+
+              {model.roundedFrameSideShelvesVisible ? (
+                <ModeToggleButton
+                  active={model.roundedFrameSideShelvesActive}
+                  icon={
+                    <i
+                      className={model.roundedFrameSideShelvesActive ? 'fas fa-check' : 'fas fa-border-style'}
+                      aria-hidden="true"
+                    />
+                  }
+                  onClick={model.toggleRoundedFrameSideShelves}
+                  className="wp-r-mt-2"
+                  data-testid="design-rounded-frame-side-shelves-button"
+                >
+                  {model.roundedFrameSideShelvesActive ? 'בטל מדפים מעוגלים' : 'מדפים מעוגלים'}
+                </ModeToggleButton>
+              ) : null}
             </div>
           ) : null}
         </>

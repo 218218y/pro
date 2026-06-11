@@ -37,6 +37,7 @@ export type InteriorLayoutParams = ValueRecord & {
   localGridStep?: number;
   innerW?: number;
   woodThick?: number;
+  shelfThick?: number;
   internalDepth?: number;
   internalCenterX?: number;
   internalZ?: number;
@@ -47,6 +48,7 @@ export type InteriorLayoutParams = ValueRecord & {
   moduleIndex?: number;
   modulesLength?: number;
   moduleKey?: unknown;
+  frameSidePartIdPrefix?: string;
   startY?: number;
   startDoorId?: number;
   moduleDoors?: number;
@@ -57,6 +59,7 @@ export type InteriorLayoutParams = ValueRecord & {
   getPartColorValue?: BuilderPartColorResolver | null;
   addOutlines?: BuilderOutlineFn | null;
   showContentsEnabled?: unknown;
+  isInternalDrawersEnabled?: unknown;
   createDoorVisual?: unknown;
   doorStyle?: unknown;
 };
@@ -124,6 +127,7 @@ export function buildSketchExtrasArgs(
     localGridStep: readNumber(input.localGridStep, 0),
     innerW: readNumber(input.innerW, 0),
     woodThick: readNumber(input.woodThick, 0),
+    shelfThick: readNumber(input.shelfThick, readNumber(input.woodThick, 0)),
     internalDepth: readNumber(input.internalDepth, 0),
     internalCenterX: readNumber(input.internalCenterX, 0),
     internalZ: readNumber(input.internalZ, 0),
@@ -131,6 +135,7 @@ export function buildSketchExtrasArgs(
     moduleIndex: readNumber(input.moduleIndex, -1),
     modulesLength: readNumber(input.modulesLength, -1),
     moduleKey: input.moduleKey,
+    frameSidePartIdPrefix: input.frameSidePartIdPrefix,
     startY: readNumber(input.startY, 0),
     startDoorId: readNumber(input.startDoorId, 1),
     moduleDoors: readNumber(input.moduleDoors, 1),
@@ -144,6 +149,7 @@ export function buildSketchExtrasArgs(
     createInternalDrawerBox: input.createInternalDrawerBox,
     addOutlines: input.addOutlines,
     showContentsEnabled: input.showContentsEnabled,
+    isInternalDrawersEnabled: input.isInternalDrawersEnabled,
     addFoldedClothes: input.addFoldedClothes,
     sketchExtras: config.sketchExtras,
   };

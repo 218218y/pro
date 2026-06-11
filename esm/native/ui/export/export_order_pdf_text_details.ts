@@ -158,8 +158,8 @@ export function createOrderPdfTextDetailsOps(deps: ExportOrderPdfDeps) {
         ? 'פוסט'
         : doorStyleKey === 'profile'
           ? 'פרופיל'
-          : doorStyleKey === 'tom'
-            ? 'פרופיל תום'
+          : doorStyleKey === 'double_profile'
+            ? 'פרופיל כפול'
             : '';
 
     const split = calcBodySplit(width, doors, cfg, ui);

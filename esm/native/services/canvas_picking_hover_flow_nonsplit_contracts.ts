@@ -35,6 +35,7 @@ export type HandleCanvasNonSplitHoverArgs = {
 export type NonSplitPreferredFacePreviewState = {
   preferredFacePreviewPartId: string | null;
   preferredFacePreviewHitObject: Record<string, unknown> | null;
+  preferredFacePreviewHitPoint: { x?: number; y?: number; z?: number } | null;
 };
 
 export type NonSplitPreviewRouteArgs = {

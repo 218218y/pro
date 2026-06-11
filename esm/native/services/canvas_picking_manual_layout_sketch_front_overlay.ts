@@ -1,4 +1,7 @@
-import { findSketchBoxDoorsForSegment } from './canvas_picking_sketch_box_dividers.js';
+import {
+  findSketchBoxDoorsForSegment,
+  type SketchBoxVerticalSegmentState,
+} from './canvas_picking_sketch_box_dividers.js';
 import { asRecord } from '../runtime/record.js';
 import { MATERIAL_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
@@ -78,6 +81,10 @@ export function resolveSketchBoxVisibleFrontOverlay(args: {
   geo: { centerX: number; innerW: number; outerW: number; centerZ: number; outerD: number };
   segments: SketchBoxSegmentLike[];
   segment?: SketchBoxSegmentLike | null;
+  verticalSegments?: SketchBoxVerticalSegmentState[] | null;
+  activeVerticalSegment?: SketchBoxVerticalSegmentState | null;
+  fullBoxCenterY?: number | null;
+  fullBoxInnerH?: number | null;
   fullWidth?: boolean;
 }): SketchFrontOverlay | null {
   const woodThick =
@@ -158,9 +165,13 @@ export function resolveSketchBoxVisibleFrontOverlay(args: {
     ? findSketchBoxDoorsForSegment({
         box: args.box,
         segments: args.segments,
+        verticalSegments: Array.isArray(args.verticalSegments) ? args.verticalSegments : [],
         boxCenterX: args.geo.centerX,
         innerW: args.geo.innerW,
+        boxCenterY: args.fullBoxCenterY ?? args.boxCenterY,
+        innerH: args.fullBoxInnerH ?? args.boxHeight,
         xNorm: args.segment.xNorm,
+        yNorm: args.activeVerticalSegment?.yNorm ?? null,
       }).length > 0
     : readRecordArray(args.box, 'doors').length > 0;
   if (hasDoor) setBest(previewDoorZ, doorDepth);

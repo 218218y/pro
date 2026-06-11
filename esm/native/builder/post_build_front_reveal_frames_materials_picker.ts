@@ -33,7 +33,7 @@ export function createFrontRevealMaterialPicker(
   const PREFERRED_REVEAL_ROLES = new Set([
     'door_flat_center_panel',
     'door_profile_center_panel',
-    'door_tom_center_panel',
+    'door_double_profile_center_panel',
     'door_glass_center_panel',
     'door_mirror_center_panel',
   ]);

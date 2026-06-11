@@ -27,7 +27,11 @@ export function createOrderPdfCaptureViewerOp(
     if (!camera) throw new Error('[WardrobePro][ESM] no camera');
 
     _guard(App, 'captureViewerPng.toggleDoors', () => {
-      doorsSetOpen(!!opts.doorsOpen);
+      doorsSetOpen(!!opts.doorsOpen, {
+        source: 'export:pdf',
+        forceUpdate: true,
+        slidingHideOpen: !!opts.doorsOpen,
+      });
     });
 
     _guard(App, 'captureViewerPng.toggleSketch', () => {

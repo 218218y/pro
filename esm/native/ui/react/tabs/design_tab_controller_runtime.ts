@@ -8,6 +8,10 @@ import {
   setUiDoorStyle,
 } from '../actions/store_actions.js';
 import {
+  ROUNDED_FRAME_SIDE_SHELVES_MAP_NAME,
+  readRemovedFrameSidePartIds,
+} from '../../../features/removable_parts.js';
+import {
   materializeActiveGrooveLinesCountMap,
   patchViaActions,
   readStoreStateMaybe,
@@ -27,6 +31,7 @@ export type DesignTabControllerRuntime = {
   setHasCornice: (checked: boolean) => void;
   setGrooveLinesCount: (count: number) => void;
   resetGrooveLinesCount: () => void;
+  toggleRoundedFrameSideShelves: () => void;
 };
 
 export type CreateDesignTabControllerRuntimeArgs = {
@@ -68,6 +73,27 @@ function readCurrentUiString(app: AppContainer, key: string): string {
   } catch {
     return '';
   }
+}
+
+function readCurrentConfigRecord(app: AppContainer): Record<string, unknown> {
+  try {
+    const state = readStoreStateMaybe(app);
+    const config =
+      state && typeof state === 'object' ? (state as { config?: Record<string, unknown> }).config : null;
+    return config && typeof config === 'object' ? config : {};
+  } catch {
+    return {};
+  }
+}
+
+function readCurrentRoundedFrameSideShelvesMap(app: AppContainer): Record<string, unknown> {
+  const cfg = readCurrentConfigRecord(app);
+  const map = cfg[ROUNDED_FRAME_SIDE_SHELVES_MAP_NAME];
+  return map && typeof map === 'object' && !Array.isArray(map) ? { ...(map as Record<string, unknown>) } : {};
+}
+
+function readRemovedFrameSidePartIdList(app: AppContainer): string[] {
+  return readRemovedFrameSidePartIds(readCurrentConfigRecord(app));
 }
 
 export function createDesignTabControllerRuntime(
@@ -124,6 +150,27 @@ export function createDesignTabControllerRuntime(
           });
         },
         { source: 'react:design:grooveLinesCount:reset', immediate: true }
+      );
+    },
+
+    toggleRoundedFrameSideShelves() {
+      const partIds = readRemovedFrameSidePartIdList(app);
+      if (!partIds.length) return;
+
+      const current = readCurrentRoundedFrameSideShelvesMap(app);
+      const allRounded = partIds.every(partId => current[partId] === true);
+      const nextMap = { ...current };
+      for (const partId of partIds) nextMap[partId] = allRounded ? null : true;
+
+      runHistoryBatch(
+        app,
+        () => {
+          setCfgMap(app, ROUNDED_FRAME_SIDE_SHELVES_MAP_NAME, nextMap, {
+            source: 'react:design:roundedFrameSideShelves',
+            immediate: true,
+          });
+        },
+        { source: 'react:design:roundedFrameSideShelves', immediate: true }
       );
     },
   };

@@ -88,7 +88,7 @@ function createSurfaceContext(overrides: Record<string, unknown> = {}) {
   return { ctx, calls };
 }
 
-test('module surface hover writes preview-only shelf add results instead of dropping them', () => {
+test('module surface hover writes shelf add intent so click follows the hover preview', () => {
   const { ctx, calls } = createSurfaceContext({
     tool: 'sketch_shelf:glass',
     isShelf: true,
@@ -97,7 +97,11 @@ test('module surface hover writes preview-only shelf add results instead of drop
 
   const handled = handleManualLayoutSketchHoverModuleSurfacePreview(ctx);
   assert.equal(handled, true);
-  assert.equal(calls.hover.length, 0);
+  assert.equal(calls.hover.length, 1);
+  assert.equal(calls.hover[0].kind, 'shelf');
+  assert.equal(calls.hover[0].op, 'add');
+  assert.equal(calls.hover[0].yNorm, 0.76 / 1.2);
+  assert.equal(calls.hover[0].variant, 'glass');
   assert.equal(calls.previews.length, 1);
   assert.equal(calls.previews[0].kind, 'shelf');
   assert.equal(calls.previews[0].op, 'add');

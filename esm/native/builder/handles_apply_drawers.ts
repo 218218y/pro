@@ -1,5 +1,6 @@
 import { getDrawersArray, getWardrobeGroup } from '../runtime/render_access.js';
 import { HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { resolveManualHandleLocalPosition } from '../features/manual_handle_position.js';
 import { createHandleMeshV7 } from './handles_mesh.js';
 import type { HandlesApplyRuntime } from './handles_apply_shared.js';
 import { asNode, readBox3, readMatrix4, type NodeLike } from './handles_shared.js';
@@ -30,9 +31,65 @@ export function applyDrawerHandles(runtime: HandlesApplyRuntime): void {
     if (!handle) continue;
 
     positionDrawerHandleZ(g, handle, hType, computeGroupMaxZLocal);
-    positionDrawerHandleY(runtime, g, handle, hType, drawH);
+    if (!positionDrawerHandleManual(runtime, g, handle, id)) {
+      positionDrawerHandleY(runtime, g, handle, hType, drawH);
+    }
     g.add(handle);
   }
+}
+
+function readFinite(value: unknown): number | null {
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+function readDrawerHandleRectFromUserData(
+  userData: NodeLike['userData'] | null | undefined
+): { minX: number; maxX: number; minY: number; maxY: number } | null {
+  const explicitMinX = readFinite(userData?.__doorRectMinX);
+  const explicitMaxX = readFinite(userData?.__doorRectMaxX);
+  const explicitMinY = readFinite(userData?.__doorRectMinY);
+  const explicitMaxY = readFinite(userData?.__doorRectMaxY);
+  if (
+    explicitMinX != null &&
+    explicitMaxX != null &&
+    explicitMinY != null &&
+    explicitMaxY != null &&
+    explicitMaxX > explicitMinX &&
+    explicitMaxY > explicitMinY
+  ) {
+    return { minX: explicitMinX, maxX: explicitMaxX, minY: explicitMinY, maxY: explicitMaxY };
+  }
+
+  const width = readFinite(userData?.__doorWidth);
+  const height = readFinite(userData?.__doorHeight);
+  if (width == null || height == null || !(width > 0) || !(height > 0)) return null;
+
+  const offsetX = readFinite(userData?.__doorMeshOffsetX) ?? readFinite(userData?.__wpFaceOffsetX) ?? 0;
+  return {
+    minX: offsetX - width / 2,
+    maxX: offsetX + width / 2,
+    minY: -height / 2,
+    maxY: height / 2,
+  };
+}
+
+function positionDrawerHandleManual(
+  runtime: HandlesApplyRuntime,
+  group: NodeLike,
+  handle: NodeLike,
+  id: unknown
+): boolean {
+  const manualPosition = runtime.getManualHandlePosition(id);
+  if (!manualPosition) return false;
+
+  const rect = readDrawerHandleRectFromUserData(group.userData);
+  const local = resolveManualHandleLocalPosition({ rect, position: manualPosition });
+  if (!local) return false;
+
+  handle.position.x = local.x;
+  handle.position.y = local.y;
+  return true;
 }
 
 function collectSafeDrawers(runtime: HandlesApplyRuntime): NodeLike[] {

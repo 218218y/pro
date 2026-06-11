@@ -13,6 +13,7 @@ import {
   buildStructureUiSnapshotFromUiState,
 } from '../features/project_config/project_config_lists_canonical.js';
 import { readPersistedProjectConfigSnapshot } from '../features/project_config/project_config_persisted_snapshot.js';
+import { normalizeDoorMountThicknessCm } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 type ReportNonFatalFn = (op: string, err: unknown, throttleMs?: number) => void;
 
@@ -151,6 +152,10 @@ export function buildDefaultProjectDataSnapshot(
       structureSelection: ui.structureSelect || '',
       wardrobeType: cfg.wardrobeType === 'sliding' ? 'sliding' : 'hinged',
       doorMountMode: cfg.doorMountMode === 'inset' ? 'inset' : 'overlay',
+      overlayFrameThicknessCm: normalizeDoorMountThicknessCm(cfg.overlayFrameThicknessCm),
+      overlayShelfThicknessCm: normalizeDoorMountThicknessCm(cfg.overlayShelfThicknessCm),
+      insetFrameThicknessCm: normalizeDoorMountThicknessCm(cfg.insetFrameThicknessCm),
+      insetShelfThicknessCm: normalizeDoorMountThicknessCm(cfg.insetShelfThicknessCm),
       isManualWidth: !!cfg.isManualWidth,
       singleDoorPos: ui.singleDoorPos || 'left',
       globalHandleType: cfg.globalHandleType || 'standard',

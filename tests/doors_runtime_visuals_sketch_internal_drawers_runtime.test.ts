@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { snapDrawersToTargets } from '../esm/native/services/doors_runtime_visuals.js';
+import { snapDrawersToTargets, syncVisualsNow } from '../esm/native/services/doors_runtime_visuals.js';
 
 function makeStore(state: Record<string, unknown>) {
   return {
@@ -196,4 +196,86 @@ test('snapDrawersToTargets keeps divider-selected external drawer open by divide
   snapDrawersToTargets(app as never);
 
   assert.equal(externalDrawerGroup.position.z, 5);
+});
+
+test('syncVisualsNow opens free-box sketch doors during interior layout edit modes', () => {
+  const doorGroup = {
+    position: { x: 0, y: 0, z: 0 },
+    rotation: { y: 0 },
+    userData: {
+      partId: 'sketch_box_free_sbf_4_door_left',
+      __wpSketchBoxDoor: true,
+      __wpSketchFreePlacement: true,
+      noGlobalOpen: true,
+    },
+  };
+
+  const app: Record<string, unknown> = {
+    store: makeStore({
+      mode: { primary: 'layout', opts: { layoutType: 'hanging' } },
+      runtime: { globalClickMode: true, doorsOpen: true },
+      ui: {},
+      config: {},
+      meta: {},
+    }),
+    services: {
+      platform: {
+        perf: { hasInternalDrawers: false },
+        dimsM: { w: 2 },
+      },
+      config: {},
+      tools: {},
+    },
+    render: {
+      doorsArray: [
+        { type: 'hinged', group: doorGroup, hingeSide: 'left', noGlobalOpen: true, isOpen: false },
+      ],
+      drawersArray: [],
+    },
+  };
+
+  syncVisualsNow(app as never);
+
+  assert.notEqual(doorGroup.rotation.y, 0);
+});
+
+test('syncVisualsNow keeps free-box sketch doors closed while authoring a box door', () => {
+  const doorGroup = {
+    position: { x: 0, y: 0, z: 0 },
+    rotation: { y: 0 },
+    userData: {
+      partId: 'sketch_box_free_sbf_5_door_left',
+      __wpSketchBoxDoor: true,
+      __wpSketchFreePlacement: true,
+      noGlobalOpen: true,
+    },
+  };
+
+  const app: Record<string, unknown> = {
+    store: makeStore({
+      mode: { primary: 'manual_layout', opts: { manualTool: 'sketch_box_door' } },
+      runtime: { globalClickMode: true, doorsOpen: true },
+      ui: {},
+      config: {},
+      meta: {},
+    }),
+    services: {
+      platform: {
+        perf: { hasInternalDrawers: false },
+        dimsM: { w: 2 },
+      },
+      config: {},
+      tools: {},
+    },
+    render: {
+      doorsArray: [
+        { type: 'hinged', group: doorGroup, hingeSide: 'left', noGlobalOpen: true, isOpen: false },
+      ],
+      drawersArray: [],
+    },
+  };
+
+  syncVisualsNow(app as never);
+
+  assert.equal(doorGroup.rotation.y, 0);
 });

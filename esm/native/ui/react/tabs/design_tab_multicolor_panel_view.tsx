@@ -125,8 +125,11 @@ function MultiColorMirrorDraftField(props: {
       <div className="wp-r-mirror-draft-input-row">
         <button
           type="button"
-          className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-mirror-draft-reset-btn"
-          title={props.resetLabel}
+          className={
+            'btn btn-light btn-inline wp-r-groove-reset-btn ' +
+            'wp-r-mirror-draft-reset-btn wp-r-styled-tooltip hint-bottom'
+          }
+          data-tooltip={props.resetLabel}
           aria-label={props.resetLabel}
           onClick={onReset}
         >

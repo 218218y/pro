@@ -13,6 +13,7 @@ export type InteriorTabViewStateSyncInput = {
   wardrobeType: 'sliding' | 'hinged';
   isExtDrawerMode: boolean;
   modeExtDrawer: string;
+  modeManualLayout: string;
   isSketchToolActive: boolean;
   isSketchDivisionToolActive: boolean;
   manualToolRaw: string;
@@ -27,7 +28,10 @@ export type InteriorTabViewStateController = {
   syncSlidingWardrobeExtDrawerGuard: (
     wardrobeType: 'sliding' | 'hinged',
     isExtDrawerMode: boolean,
-    modeExtDrawer: string
+    modeExtDrawer: string,
+    isSketchToolActive: boolean,
+    manualToolRaw: string,
+    modeManualLayout: string
   ) => void;
   syncSketchShelvesState: (isSketchToolActive: boolean, manualToolRaw: string) => void;
   syncDoorTrimPanelState: (isDoorTrimMode: boolean) => void;
@@ -76,6 +80,8 @@ export type CreateInteriorTabViewStateControllerArgs = {
   setSketchBoxCornicePanelOpen: (next: boolean) => void;
   setSketchBoxBaseType: (next: SketchBoxBaseType) => void;
   setSketchBoxBasePanelOpen: (next: boolean) => void;
+  setSketchBoxPlinthHeightCm: (next: number) => void;
+  setSketchBoxPlinthHeightDraft: (next: string) => void;
   setSketchBoxLegWidthCm: (next: number) => void;
   setSketchBoxLegWidthDraft: (next: string) => void;
   setSketchBoxLegStyle: (next: SketchBoxLegStyle) => void;

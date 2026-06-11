@@ -3,6 +3,7 @@
 // Owns sketch-box stack-bound collection and segmented door rebuild routing.
 
 import { getDrawersArray } from '../runtime/render_access.js';
+import { isSplitEnabledInMap, readSplitPosListFromMap } from '../runtime/maps_access.js';
 import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { AppContainer, BuildContextLike, ThreeLike } from '../../../types/index.js';
 import { getMirrorMaterial } from './render_ops.js';
@@ -24,6 +25,18 @@ import {
 } from './post_build_sketch_door_cuts_shared.js';
 
 type SketchBoxDrawerStackBounds = SketchDrawerStackBounds & { key: string };
+
+function readSketchBoxDoorBasePartId(partId: string): string {
+  return String(partId || '').replace(/_(?:full|top|bot|mid\d*)$/i, '');
+}
+
+function readSketchBoxDoorManualSplitPosList(cfg: ValueRecord, basePartId: string): number[] {
+  if (!basePartId) return [];
+  const splitMap = asRecord(readKey(cfg, 'splitDoorsMap'));
+  if (!splitMap) return [];
+  if (!isSplitEnabledInMap(splitMap, basePartId, false)) return [];
+  return readSplitPosListFromMap(splitMap, basePartId);
+}
 
 function collectSketchBoxExternalDrawerStackBounds(App: AppContainer): SketchBoxDrawerStackBounds[] {
   const drawersArr = getDrawersArray(App);
@@ -92,12 +105,12 @@ export function applySketchBoxExternalDrawerDoorCuts(args: {
 }): void {
   const { App, THREE, ctx, cfg, bodyMat, globalFrontMat } = args;
   const stackBounds = collectSketchBoxExternalDrawerStackBounds(App);
-  if (!stackBounds.length) return;
   const surroundingGap = DRAWER_DIMENSIONS.sketch.externalDoorCutSurroundingGapM;
   const boxStacks = groupSketchDrawerStackBounds(
     stackBounds.map(item => ({ key: item.key, ...expandSketchDrawerCutBounds(item, surroundingGap) }))
   );
-  if (!boxStacks.size) return;
+  const splitMap = asRecord(readKey(cfg, 'splitDoorsMap'));
+  if (!boxStacks.size && !splitMap) return;
   const runtime = createSketchDoorCutsRuntime({
     App,
     THREE,
@@ -116,9 +129,13 @@ export function applySketchBoxExternalDrawerDoorCuts(args: {
       if (!boxId) return null;
       const moduleKey = readStringOrNull(ud.__wpSketchModuleKey);
       const boxKey = getSketchBoxDoorPendingStateKey(moduleKey, boxId);
-      const stacks = boxStacks.get(boxKey);
-      if (!stacks || !stacks.length) return null;
-      return { stacks, basePartId: typeof ud.partId === 'string' ? String(ud.partId) : `${boxKey}_door` };
+      const stacks = boxStacks.get(boxKey) || [];
+      const basePartId = readSketchBoxDoorBasePartId(
+        typeof ud.partId === 'string' ? String(ud.partId) : `${boxKey}_door`
+      );
+      const splitPosList = readSketchBoxDoorManualSplitPosList(cfg, basePartId);
+      if (!stacks.length && !splitPosList.length) return null;
+      return { stacks, basePartId, splitPosList };
     },
   });
 }

@@ -45,12 +45,15 @@ index_pro.html
 2. Identify the canonical owner before editing.
 3. Keep changes surgical: fix the owner, not callers one by one.
 4. Add/adjust behavior tests for user-visible behavior and thin guard tests for ownership boundaries.
-5. Run the smallest relevant verification first, then a broader gate when the change touches shared surfaces.
+5. Run the smallest relevant verification first, then broaden only when the change risk, user request, or release handoff requires it.
 
 ## Common commands
 
+These are available lanes to choose from, not a checklist to run after every fix:
+
 ```bash
 npm run check:docs-control-plane
+npm run verify:parallel -- --no-bundle
 npm run test
 npm run gate
 npm run gate:full
@@ -60,7 +63,11 @@ npm run perf:smoke
 npm run perf:browser
 ```
 
-Use `npm run gate` before normal handoff. Use `npm run gate:full` before release-style handoff.
+For normal Codex handoff, prefer targeted tests for the touched area plus the nearest relevant typecheck and `npm run lint` when touched source files are linted. GitHub/CI owns the broader regression matrix after handoff; if it reports a failure, address that as a follow-up.
+
+Use `npm run gate` for broad shared-surface changes, high-risk architecture changes, explicit user requests, or when targeted checks are not enough evidence. Use `npm run gate:full` only before release-style handoff or when explicitly requested.
+
+Do not run `npm run e2e:smoke` by default. Use browser/E2E smoke only for browser boot, UI interaction, Playwright-covered user journeys, canvas pointer behavior, cloud-sync reconnect behavior, or explicit request.
 
 ## UI/state rules
 

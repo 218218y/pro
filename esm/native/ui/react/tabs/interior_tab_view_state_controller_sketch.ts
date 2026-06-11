@@ -16,6 +16,7 @@ import {
   SKETCH_BOX_HEIGHT_MIN_CM,
   SKETCH_BOX_OPTIONAL_DIM_MAX_CM,
   SKETCH_BOX_OPTIONAL_DIM_MIN_CM,
+  SKETCH_TOOL_EXT_DRAWERS_PREFIX,
   SKETCH_TOOL_SHELF_PREFIX,
 } from './interior_tab_helpers.js';
 import {
@@ -60,6 +61,8 @@ export function createInteriorTabSketchViewStateController(
     | 'setSketchBoxCornicePanelOpen'
     | 'setSketchBoxBaseType'
     | 'setSketchBoxBasePanelOpen'
+    | 'setSketchBoxPlinthHeightCm'
+    | 'setSketchBoxPlinthHeightDraft'
     | 'setSketchBoxLegWidthCm'
     | 'setSketchBoxLegWidthDraft'
     | 'setSketchBoxLegStyle'
@@ -93,6 +96,8 @@ export function createInteriorTabSketchViewStateController(
     setSketchBoxCornicePanelOpen,
     setSketchBoxBaseType,
     setSketchBoxBasePanelOpen,
+    setSketchBoxPlinthHeightCm,
+    setSketchBoxPlinthHeightDraft,
     setSketchBoxLegWidthCm,
     setSketchBoxLegWidthDraft,
     setSketchBoxLegStyle,
@@ -111,8 +116,20 @@ export function createInteriorTabSketchViewStateController(
   } = args;
 
   return {
-    syncSlidingWardrobeExtDrawerGuard(wardrobeType, isExtDrawerMode, modeExtDrawer) {
-      if (wardrobeType === 'sliding' && isExtDrawerMode) exitPrimaryMode(app, modeExtDrawer);
+    syncSlidingWardrobeExtDrawerGuard(
+      wardrobeType,
+      isExtDrawerMode,
+      modeExtDrawer,
+      isSketchToolActive,
+      manualToolRaw,
+      modeManualLayout
+    ) {
+      if (wardrobeType !== 'sliding') return;
+      if (isExtDrawerMode) exitPrimaryMode(app, modeExtDrawer);
+      if (isSketchToolActive && manualToolRaw.startsWith(SKETCH_TOOL_EXT_DRAWERS_PREFIX)) {
+        setSketchExtDrawersPanelOpen(false);
+        exitPrimaryMode(app, modeManualLayout);
+      }
     },
 
     syncSketchShelvesState(isSketchToolActive, manualToolRaw) {
@@ -172,6 +189,10 @@ export function createInteriorTabSketchViewStateController(
       const next = spec ? spec.baseType : readSketchBoxBaseType(manualToolRaw);
       if (!next || !spec) return;
       setSketchBoxBaseType(next);
+      if (next === 'plinth') {
+        setSketchBoxPlinthHeightCm(spec.basePlinthHeightCm);
+        setSketchBoxPlinthHeightDraft(String(spec.basePlinthHeightCm));
+      }
       setSketchBoxLegStyle(spec.baseLegStyle);
       setSketchBoxLegColor(spec.baseLegColor);
       setSketchBoxLegHeightCm(spec.baseLegHeightCm);

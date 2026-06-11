@@ -29,6 +29,7 @@ test('build_state_resolver normalizes config maps and persisted color arrays fro
         individualColors: { d1: 'oak', d2: null, drop: 9 },
         groovesMap: { groove_d1: 'on', groove_d2: 'off', drop: 'wat' },
         grooveLinesCountMap: { d1: '3', d2: null, drop: 'bad' },
+        roundedFrameSideShelvesMap: { body_left: 'on', body_right: 'off', drop: 'wat' },
         doorSpecialMap: { d1: 'mirror', d2: null, drop: 7 },
         mirrorLayoutMap: {
           d1: [{ widthCm: 40, heightCm: 80, faceSign: -1 }, { widthCm: 0 }],
@@ -69,6 +70,13 @@ test('build_state_resolver normalizes config maps and persisted color arrays fro
   assert.deepEqual({ ...result.cfgSnapshot.individualColors }, { d1: 'oak', d2: null });
   assert.deepEqual({ ...result.cfgSnapshot.groovesMap }, { groove_d1: true, groove_d2: false });
   assert.deepEqual({ ...result.cfgSnapshot.grooveLinesCountMap }, { d1: 3, d2: null });
+  assert.deepEqual(
+    { ...result.cfgSnapshot.roundedFrameSideShelvesMap },
+    {
+      body_left: true,
+      body_right: false,
+    }
+  );
   assert.deepEqual({ ...result.cfgSnapshot.doorSpecialMap }, { d1: 'mirror', d2: null });
   assert.deepEqual({ ...result.cfgSnapshot.handlesMap }, { d1: 'bar', d2: null });
   assert.deepEqual({ ...result.cfgSnapshot.hingeMap }, { d1: 'left', d2: { dir: 'right' } });

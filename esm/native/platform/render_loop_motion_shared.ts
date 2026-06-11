@@ -68,6 +68,7 @@ export type MotionFrameState = {
   globalClickMode: boolean;
   platformDimsFrame: UnknownRecord | null;
   doorsOpenFlag: boolean;
+  interiorDoorEditActive: boolean;
   sketchEditActive: boolean;
   sketchIntDrawersEditActive: boolean;
   sketchExtDrawersEditActive: boolean;

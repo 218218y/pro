@@ -10,6 +10,7 @@ import { handleCanvasCornerCellDimsClick } from './canvas_picking_cell_dims_corn
 import { handleCanvasLinearCellDimsClick } from './canvas_picking_cell_dims_linear.js';
 import { handleCanvasLinearHexCellClick } from './canvas_picking_cell_dims_hex_linear.js';
 import { handleCanvasCornerHexCellClick } from './canvas_picking_cell_dims_hex_corner.js';
+import { tryHandleCanvasFreeBoxCellDimsClick } from './canvas_picking_cell_dims_free_box.js';
 import {
   __wp_reportPickingIssue,
   __wp_isCornerKey,
@@ -90,6 +91,17 @@ export function handleCanvasCellDimsClick(args: CanvasCellDimsClickArgs): void {
       hexCellProtrusionCm,
       hexCellDoorWidthCm,
     };
+
+    if (
+      tryHandleCanvasFreeBoxCellDimsClick({
+        ...resolved,
+        foundModuleIndex,
+        foundPartId: typeof foundPartId === 'string' ? foundPartId : null,
+        hitUserData: args.hitUserData || null,
+      })
+    ) {
+      return;
+    }
 
     if (__wp_isCornerKey(foundModuleIndex)) {
       if (hexCellMode) {

@@ -22,7 +22,7 @@ function createCanvasRecorder() {
 }
 
 test('export order pdf capture viewer toggles doors/sketch canonically and rasterizes the composed canvas', async () => {
-  const toggles: Array<{ kind: string; value: unknown }> = [];
+  const toggles: Array<{ kind: string; value: unknown; opts?: unknown }> = [];
   const rendered: unknown[] = [];
   const { canvas, calls } = createCanvasRecorder();
 
@@ -47,13 +47,13 @@ test('export order pdf capture viewer toggles doors/sketch canonically and raste
     height: 20,
     originalDoorOpen: false,
     doorsGetOpen: () => false,
-    doorsSetOpen: (value: boolean) => toggles.push({ kind: 'doors', value }),
+    doorsSetOpen: (value: boolean, opts?: unknown) => toggles.push({ kind: 'doors', value, opts }),
     view: {},
     originalSketchMode: false,
   } as never);
 
   assert.deepEqual(toggles, [
-    { kind: 'doors', value: true },
+    { kind: 'doors', value: true, opts: { source: 'export:pdf', forceUpdate: true, slidingHideOpen: true } },
     { kind: 'sketch', value: true },
   ]);
   assert.equal(rendered.length, 1);

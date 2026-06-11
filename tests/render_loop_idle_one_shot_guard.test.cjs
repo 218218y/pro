@@ -13,7 +13,7 @@ test('render loop keeps plain render wakeups one-shot and continues only for rea
   );
   assert.match(
     source,
-    /const shouldContinueLoop = motionFrame\.isAnimating \|\| controlsStillMoving \|\| cameraMoveRenderingActive;[\s\S]*if \(!shouldContinueLoop\) \{[\s\S]*clearLoopSchedule\(A\);[\s\S]*return;[\s\S]*\}/
+    /const mirrorWorkPending = getRenderSlot\(A, '__mirrorWorkPending'\) === true;[\s\S]*const shouldContinueLoop =[\s\S]*motionFrame\.isAnimating \|\| controlsStillMoving \|\| cameraMoveRenderingActive \|\| mirrorWorkPending;[\s\S]*if \(!shouldContinueLoop\) \{[\s\S]*clearLoopSchedule\(A\);[\s\S]*return;[\s\S]*\}/
   );
   assert.doesNotMatch(
     source,
@@ -24,5 +24,10 @@ test('render loop keeps plain render wakeups one-shot and continues only for rea
     source,
     /const cameraMoveActiveUntil = Number\(getRenderSlot\(A, '__wpCameraMoveRenderingUntilMs'\)\) \|\| 0;/,
     'camera service motion should be a real render-loop continuation source'
+  );
+  assert.match(
+    source,
+    /const mirrorWorkPending = getRenderSlot\(A, '__mirrorWorkPending'\) === true;/,
+    'deferred mirror work should keep RAF alive until the cube map refreshes'
   );
 });

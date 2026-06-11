@@ -8,14 +8,15 @@ import type {
   SketchDrawerStackBounds,
 } from './post_build_sketch_door_cuts_contracts.js';
 
-export function normalizeSketchDrawerCutIntervals(list: SketchDrawerCutSegment[]): SketchDrawerCutSegment[] {
+export function normalizeSketchDrawerCutIntervals(
+  list: SketchDrawerCutSegment[],
+  options: { minHeight?: number } = {}
+): SketchDrawerCutSegment[] {
+  const minHeight = Number.isFinite(options.minHeight)
+    ? Math.max(0, Number(options.minHeight))
+    : DRAWER_DIMENSIONS.sketch.doorCutIntervalMinHeightM;
   const sorted = list
-    .filter(
-      seg =>
-        Number.isFinite(seg.yMin) &&
-        Number.isFinite(seg.yMax) &&
-        seg.yMax - seg.yMin > DRAWER_DIMENSIONS.sketch.doorCutIntervalMinHeightM
-    )
+    .filter(seg => Number.isFinite(seg.yMin) && Number.isFinite(seg.yMax) && seg.yMax - seg.yMin > minHeight)
     .sort((a, b) => a.yMin - b.yMin);
   if (!sorted.length) return [];
   const merged: SketchDrawerCutSegment[] = [sorted[0]];

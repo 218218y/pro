@@ -453,7 +453,7 @@ test('free-placement sketch box doors honor explicit global and per-door door-st
     makeArgs({
       cfg: {
         doorStyleMap: {
-          sketch_box_free_0_freeStyleOverride_door_doorB: 'tom',
+          sketch_box_free_0_freeStyleOverride_door_doorB: 'double_profile',
         },
       },
       doorStyle: 'flat',
@@ -478,7 +478,8 @@ test('free-placement sketch box doors honor explicit global and per-door door-st
   assert.equal(okOverride, true);
   assert.ok(
     capturedStyles.some(
-      entry => entry.partId === 'sketch_box_free_0_freeStyleOverride_door_doorB' && entry.style === 'tom'
+      entry =>
+        entry.partId === 'sketch_box_free_0_freeStyleOverride_door_doorB' && entry.style === 'double_profile'
     )
   );
   assert.ok(wardrobeGroup.children.length > 0);

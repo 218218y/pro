@@ -65,11 +65,11 @@ function StructureChestCommodeWidthModeButton(props: StructureChestSectionProps)
       type="button"
       className={
         isAuto
-          ? 'wp-r-mini-link-toggle wp-r-mini-link-toggle--auto'
-          : 'wp-r-mini-link-toggle wp-r-mini-link-toggle--manual'
+          ? 'wp-r-mini-link-toggle wp-r-mini-link-toggle--auto wp-r-styled-tooltip hint-bottom'
+          : 'wp-r-mini-link-toggle wp-r-mini-link-toggle--manual wp-r-styled-tooltip hint-bottom'
       }
       aria-pressed={isManual}
-      title={isAuto ? 'אוטומטי: רוחב המראה מסונכרן לרוחב השידה' : 'ידני: רוחב מראה נפרד'}
+      data-tooltip={isAuto ? 'אוטומטי: רוחב המראה מסונכרן לרוחב השידה' : 'ידני: רוחב מראה נפרד'}
       tabIndex={-1}
       onClick={() => props.onSetChestCommodeMirrorWidthManual(!isManual)}
       data-testid={STRUCTURE_CHEST_COMMODE_WIDTH_MODE_BUTTON_TEST_ID}

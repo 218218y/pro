@@ -13,6 +13,7 @@ import {
   readHingeMap,
   readIndividualColorsMap,
   readRemovedDoorsMap,
+  readRoundedFrameSideShelvesMap,
 } from './project_payload_shared.js';
 import {
   normalizeSplitDoorsBottomMap as normalizeSplitDoorsBottomMapImpl,
@@ -59,6 +60,7 @@ export function migrateProjectData(data: ProjectDataLike, nowISO?: string): Proj
   data.handlesMap = readHandlesMap(data.handlesMap);
   data.hingeMap = readHingeMap(data.hingeMap);
   data.removedDoorsMap = readRemovedDoorsMap(data.removedDoorsMap);
+  data.roundedFrameSideShelvesMap = readRoundedFrameSideShelvesMap(data.roundedFrameSideShelvesMap);
   data.curtainMap = readCurtainMap(data.curtainMap);
   data.groovesMap = readGroovesMap(data.groovesMap);
   data.grooveLinesCountMap = readGrooveLinesCountMap(data.grooveLinesCountMap);
