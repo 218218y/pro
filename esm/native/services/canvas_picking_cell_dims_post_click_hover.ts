@@ -25,6 +25,7 @@ type CellDimsPostClickHoverTarget = {
   ndcX: number;
   ndcY: number;
   createdAt: number;
+  freeBoxId?: string | null;
 };
 
 function nowMs(): number {
@@ -59,7 +60,9 @@ function asPostClickTarget(value: unknown): CellDimsPostClickHoverTarget | null 
   ) {
     return null;
   }
-  return { moduleKey, stackKey, ndcX, ndcY, createdAt };
+  const freeBoxRaw = rec.freeBoxId;
+  const freeBoxId = typeof freeBoxRaw === 'string' && freeBoxRaw.trim() ? freeBoxRaw.trim() : null;
+  return { moduleKey, stackKey, ndcX, ndcY, createdAt, freeBoxId };
 }
 
 function clearCellDimsPostClickHoverTarget(App: AppContainer): void {
@@ -79,8 +82,9 @@ export function rememberCellDimsPostClickHoverTarget(args: {
   isBottom: boolean;
   ndcX?: number | null;
   ndcY?: number | null;
+  freeBoxId?: string | null;
 }): void {
-  const { App, moduleKey, isBottom, ndcX, ndcY } = args;
+  const { App, moduleKey, isBottom, ndcX, ndcY, freeBoxId } = args;
   const normalizedModuleKey = __wp_toModuleKey(moduleKey);
   if (normalizedModuleKey == null || !isFiniteNumber(ndcX) || !isFiniteNumber(ndcY)) {
     clearCellDimsPostClickHoverTarget(App);
@@ -95,20 +99,20 @@ export function rememberCellDimsPostClickHoverTarget(args: {
       ndcX,
       ndcY,
       createdAt: nowMs(),
+      freeBoxId: typeof freeBoxId === 'string' && freeBoxId.trim() ? freeBoxId.trim() : null,
     } satisfies CellDimsPostClickHoverTarget;
   } catch {
     // ignore
   }
 }
 
-function takeFreshPostClickTarget(
+function readFreshPostClickTarget(
   App: AppContainer,
   ndcX: number,
   ndcY: number
 ): CellDimsPostClickHoverTarget | null {
   const runtime = getCanvasPickingRuntime(App);
   const pending = asPostClickTarget(runtime ? runtime[RUNTIME_KEY] : null);
-  clearCellDimsPostClickHoverTarget(App);
   if (!pending) return null;
 
   const age = nowMs() - pending.createdAt;
@@ -121,6 +125,32 @@ function takeFreshPostClickTarget(
   return pending;
 }
 
+function takeFreshPostClickTarget(
+  App: AppContainer,
+  ndcX: number,
+  ndcY: number
+): CellDimsPostClickHoverTarget | null {
+  const pending = readFreshPostClickTarget(App, ndcX, ndcY);
+  clearCellDimsPostClickHoverTarget(App);
+  return pending;
+}
+
+export function resolveCellDimsPostClickFreeBoxHoverIdentity(args: {
+  App: AppContainer;
+  ndcX: number;
+  ndcY: number;
+}): { moduleKey: ModuleKey; stackKey: 'top' | 'bottom'; freeBoxId: string } | null {
+  const { App, ndcX, ndcY } = args;
+  try {
+    const pending = readFreshPostClickTarget(App, ndcX, ndcY);
+    if (!pending || !pending.freeBoxId) return null;
+    clearCellDimsPostClickHoverTarget(App);
+    return { moduleKey: pending.moduleKey, stackKey: pending.stackKey, freeBoxId: pending.freeBoxId };
+  } catch {
+    return null;
+  }
+}
+
 export function resolveCellDimsPostClickHoverTarget(args: {
   App: AppContainer;
   ndcX: number;
@@ -130,7 +160,7 @@ export function resolveCellDimsPostClickHoverTarget(args: {
   const { App, ndcX, ndcY, measureObjectLocalBox } = args;
   try {
     const pending = takeFreshPostClickTarget(App, ndcX, ndcY);
-    if (!pending) return null;
+    if (!pending || pending.freeBoxId) return null;
 
     const selector = findModuleSelectorObject({
       root: getWardrobeGroup(App),

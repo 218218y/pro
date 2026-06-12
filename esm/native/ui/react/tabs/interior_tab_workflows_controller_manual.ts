@@ -6,6 +6,7 @@ import {
   toggleBraceShelvesMode,
   setGridDivisions as interiorSetGridDivisions,
   setGridShelfVariant as interiorSetGridShelfVariant,
+  setInternalDrawersEnabled as interiorSetInternalDrawersEnabled,
 } from '../actions/interior_actions.js';
 import {
   SKETCH_BOX_HEIGHT_MAX_CM,
@@ -130,6 +131,13 @@ export function createInteriorTabManualWorkflowController(
     },
 
     enterSketchIntDrawersTool(drawerHeightCm: number) {
+      if (!state.internalDrawersEnabled) {
+        interiorSetInternalDrawersEnabled(
+          app,
+          true,
+          'react:interior:sketchIntDrawersTool:autoEnable'
+        );
+      }
       activateManualToolId(mkSketchInternalDrawersTool(drawerHeightCm));
     },
 

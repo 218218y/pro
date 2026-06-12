@@ -11,6 +11,7 @@ import {
   resolveCellDimsPreviewState,
 } from './canvas_picking_hover_preview_modes_cell_dims_state.js';
 import type { InteriorHoverTarget, SelectorLocalBox } from './canvas_picking_hover_preview_modes_shared.js';
+import { resolveCellDimsFreeBoxPreviewTargetBox } from './canvas_picking_cell_dims_free_box_hover.js';
 
 export function resolveCellDimsTargetBox(
   App: AppContainer,
@@ -20,6 +21,9 @@ export function resolveCellDimsTargetBox(
   applyH: number | null | undefined,
   applyD: number | null | undefined
 ): CellDimsPreviewTargetBox {
+  const freeBoxTarget = resolveCellDimsFreeBoxPreviewTargetBox(target, selectorBox, applyW, applyH, applyD);
+  if (freeBoxTarget) return freeBoxTarget;
+
   const currentWcm = readCellDimsCurrentWidthInputCm(App, target, selectorBox);
   const { currentBottomYm, currentTopAbsCm } = readCellDimsCurrentHeightInputCm(selectorBox);
   const currentDcm = Math.max(0, Number(selectorBox.depth) * 100);

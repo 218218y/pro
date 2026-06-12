@@ -70,12 +70,20 @@ export function handleCanvasCellDimsClick(args: CanvasCellDimsClickArgs): void {
       return;
     }
 
+    const freeBoxHoverIdRaw = args.hitUserData?.__wpSketchBoxId;
+    const freeBoxHoverPartIdRaw = args.hitUserData?.partId;
+    const isFreeBoxHoverHit =
+      args.hitUserData?.__wpSketchFreePlacement === true ||
+      (typeof freeBoxHoverPartIdRaw === 'string' && freeBoxHoverPartIdRaw.startsWith('sketch_box_free_'));
     rememberCellDimsPostClickHoverTarget({
       App,
-      moduleKey: foundModuleIndex,
+      moduleKey: isFreeBoxHoverHit
+        ? (args.hitUserData?.__wpSketchModuleKey ?? args.hitUserData?.moduleIndex ?? foundModuleIndex)
+        : foundModuleIndex,
       isBottom: __isBottomStack,
       ndcX,
       ndcY,
+      freeBoxId: typeof freeBoxHoverIdRaw === 'string' && isFreeBoxHoverHit ? freeBoxHoverIdRaw : null,
     });
 
     const resolved = {

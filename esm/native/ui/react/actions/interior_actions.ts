@@ -244,11 +244,14 @@ export function toggleIntDrawerMode(app: AppContainer): void {
   enterManualLayoutMode(app, 'sketch_int_drawers');
 }
 
-export function setInternalDrawersEnabled(app: AppContainer, on: unknown): void {
+export function setInternalDrawersEnabled(
+  app: AppContainer,
+  on: unknown,
+  source = 'react:interior:sketchIntDrawersToggle'
+): void {
   const enabled = !!on;
   const uiSnap = getUiSnap(app);
   if (enabled === !!uiSnap.internalDrawersEnabled) return;
-  const source = 'react:interior:sketchIntDrawersToggle';
 
   try {
     const m: ActionMetaLike = interactiveImmediateMeta(app, source);

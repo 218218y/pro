@@ -8,6 +8,7 @@ import {
 } from './canvas_picking_hover_preview_modes_shared.js';
 import { resolveCellDimsTargetBox } from './canvas_picking_hover_preview_modes_cell_dims_target.js';
 import { resolveCellDimsPostClickHoverTarget } from './canvas_picking_cell_dims_post_click_hover.js';
+import { resolveCellDimsFreeBoxHoverTarget } from './canvas_picking_cell_dims_free_box_hover.js';
 
 export function tryHandleCellDimsHoverPreview(args: CellDimsHoverPreviewArgs): boolean {
   if (!args.isCellDimsMode) return false;
@@ -28,7 +29,9 @@ export function tryHandleCellDimsHoverPreview(args: CellDimsHoverPreviewArgs): b
     } = args;
     const THREE = getThreeMaybe(App);
     const setPreview = __readPreviewSetSketchPlacementPreview(previewRo);
+    const freeBoxTarget = resolveCellDimsFreeBoxHoverTarget({ App, ndcX, ndcY, raycaster, mouse });
     const target =
+      freeBoxTarget?.target ||
       resolveCellDimsPostClickHoverTarget({ App, ndcX, ndcY, measureObjectLocalBox }) ||
       resolveInteriorHoverTarget(App, raycaster, mouse, ndcX, ndcY);
     if (!target || !setPreview) {
@@ -49,7 +52,9 @@ export function tryHandleCellDimsHoverPreview(args: CellDimsHoverPreviewArgs): b
 
     __callMaybe(hideLayoutPreview, __withAppThree(App, THREE));
 
-    const selectorBox = target.hitSelectorObj ? measureObjectLocalBox(App, target.hitSelectorObj) : null;
+    const selectorBox =
+      freeBoxTarget?.selectorBox ||
+      (target.hitSelectorObj ? measureObjectLocalBox(App, target.hitSelectorObj) : null);
     if (!selectorBox || !(selectorBox.width > 0) || !(selectorBox.height > 0) || !(selectorBox.depth > 0)) {
       __callMaybe(hideSketchPreview, __withAppThree(App, THREE));
       return false;

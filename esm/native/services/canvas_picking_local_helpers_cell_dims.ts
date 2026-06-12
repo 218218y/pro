@@ -16,6 +16,7 @@ import { readCornerConfigurationSnapshotForStack } from '../features/modules_con
 import { readModulesConfigurationListFromConfigSnapshot } from '../features/modules_configuration/modules_config_api.js';
 import { getActiveOverrideCm, isOverrideActive } from '../features/special_dims/index.js';
 import { hasHexCellDraftConfigChange, moduleHasHexCell } from '../features/hex_cell/index.js';
+import { resolveCellDimsFreeBoxHoverOp } from './canvas_picking_cell_dims_free_box_hover.js';
 
 function readRecordProp(value: unknown, key: string): unknown {
   return value && typeof value === 'object' && !Array.isArray(value) ? Reflect.get(value, key) : undefined;
@@ -115,6 +116,18 @@ export function __wp_getCellDimsHoverOp(
       __wp_readCellDimsDraft(App);
     const effectiveApplyH = target.isBottom ? null : applyH;
     if (!hexCellMode && applyW == null && effectiveApplyH == null && applyD == null) return 'add';
+
+    const freeBoxOp = resolveCellDimsFreeBoxHoverOp({
+      target,
+      selectorBox,
+      applyW,
+      applyH: effectiveApplyH,
+      applyD,
+      hexCellMode,
+      hexCellProtrusionCm,
+      hexCellDoorWidthCm,
+    });
+    if (freeBoxOp) return freeBoxOp;
 
     const cfg = __wp_cfg(App);
     const ui = __wp_ui(App);

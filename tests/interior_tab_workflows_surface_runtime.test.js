@@ -100,3 +100,30 @@ test('[interior-workflows-controller] exit flow respects active primary mode ord
     JSON.stringify([{ closeDoors: true }, { closeDoors: true }, { closeDoors: true }, { closeDoors: true }])
   );
 });
+
+test('[interior-workflows-controller] sketch internal drawer tool auto-enables drawer visibility once', () => {
+  const disabledHarness = createInteriorWorkflowControllerHarness({ internalDrawersEnabled: false });
+  disabledHarness.controller.enterSketchIntDrawersTool(24);
+
+  assert.deepEqual(
+    disabledHarness.calls.map(entry => [entry[0], entry[2], entry[3]]),
+    [
+      ['setInternalDrawersEnabled', true, 'react:interior:sketchIntDrawersTool:autoEnable'],
+      ['enterManualLayoutMode', 'sketch_int_drawers@24', undefined],
+    ]
+  );
+
+  const enabledHarness = createInteriorWorkflowControllerHarness({ internalDrawersEnabled: true });
+  enabledHarness.controller.enterSketchIntDrawersTool(24);
+
+  assert.equal(
+    enabledHarness.calls.some(entry => entry[0] === 'setInternalDrawersEnabled'),
+    false
+  );
+  assert.ok(
+    enabledHarness.calls.some(
+      entry => entry[0] === 'enterManualLayoutMode' && entry[2] === 'sketch_int_drawers@24'
+    )
+  );
+});
+
