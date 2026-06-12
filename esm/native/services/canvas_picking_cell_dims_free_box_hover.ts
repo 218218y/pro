@@ -35,6 +35,7 @@ export type CellDimsFreeBoxHitCandidate = {
 export type CellDimsFreeBoxHoverBuildResult = {
   target: InteriorHoverTarget;
   selectorBox: SelectorLocalBox;
+  anchorParent: unknown;
 };
 
 function readString(value: unknown): string | null {
@@ -175,8 +176,9 @@ function buildFreeBoxHoverTarget(args: {
   App: AppContainer;
   candidate: CellDimsFreeBoxHitCandidate;
   intersects: RaycastHitLike[];
+  anchorParent: unknown;
 }): CellDimsFreeBoxHoverBuildResult | null {
-  const { App, candidate, intersects } = args;
+  const { App, candidate, intersects, anchorParent } = args;
   const cfgMod = readModuleConfig(App, candidate.moduleKey, candidate.stackKey);
   const box = findFreeBoxById(readFreeBoxesFromModule(cfgMod), candidate.boxId);
   if (!box) return null;
@@ -207,7 +209,7 @@ function buildFreeBoxHoverTarget(args: {
     backZ: currentBackZ,
     regularDepth: Number(selectorBox.depth),
   };
-  return { target, selectorBox };
+  return { target, selectorBox, anchorParent };
 }
 
 function findAnchorForFreeBox(root: unknown, boxId: string, moduleKey: ModuleKey): unknown {
@@ -268,6 +270,7 @@ export function resolveCellDimsFreeBoxHoverTarget(args: {
           anchor: findAnchorForFreeBox(wardrobeGroup, pending.freeBoxId, pending.moduleKey),
         },
         intersects: [],
+        anchorParent: wardrobeGroup,
       });
     }
 
@@ -283,7 +286,9 @@ export function resolveCellDimsFreeBoxHoverTarget(args: {
       recursive: true,
     });
     const candidate = readCellDimsFreeBoxHitCandidate(intersects);
-    return candidate ? buildFreeBoxHoverTarget({ App, candidate, intersects }) : null;
+    return candidate
+      ? buildFreeBoxHoverTarget({ App, candidate, intersects, anchorParent: wardrobeGroup })
+      : null;
   } catch {
     return null;
   }

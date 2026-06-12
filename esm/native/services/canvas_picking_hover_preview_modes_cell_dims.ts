@@ -68,6 +68,7 @@ export function tryHandleCellDimsHoverPreview(args: CellDimsHoverPreviewArgs): b
       App,
       THREE,
       anchor: target.hitSelectorObj,
+      ...(freeBoxTarget?.anchorParent ? { anchorParent: freeBoxTarget.anchorParent } : {}),
       kind: 'box',
       fillFront: true,
       overlayThroughScene: true,

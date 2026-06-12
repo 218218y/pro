@@ -162,12 +162,19 @@ test('[cell-dims/free-box-hover] door hit in front of a main selector stays rout
     },
     material: {},
   };
+  const doorGroup = {
+    type: 'Group',
+    userData: { partId: 'sketch_box_free_0_free-1_door_door-1' },
+    children: [doorObject],
+    material: {},
+  };
+  doorObject.parent = doorGroup;
   const mainObject = {
     type: 'Mesh',
     userData: { isModuleSelector: true, moduleIndex: 0 },
     material: {},
   };
-  const { App } = createAppWithFreeBox(doorObject, mainObject);
+  const { App, wardrobeGroup } = createAppWithFreeBox(doorGroup, mainObject);
   const previews: any[] = [];
   let interiorCalls = 0;
 
@@ -210,6 +217,7 @@ test('[cell-dims/free-box-hover] door hit in front of a main selector stays rout
   assert.equal(interiorCalls, 0);
   assert.equal(previews.length, 1);
   assert.equal(previews[0].anchor, doorObject);
+  assert.equal(previews[0].anchorParent, wardrobeGroup);
   assert.ok(Math.abs(previews[0].x - 0.25) <= 1e-9);
   assert.ok(Math.abs(previews[0].d - 0.4) <= 1e-9);
 });
@@ -223,12 +231,19 @@ test('[cell-dims/free-box-hover] external drawer hit previews the free-standing 
     },
     material: {},
   };
+  const drawerGroup = {
+    type: 'Group',
+    userData: { partId: 'sketch_box_free_0_free-1_ext_drawers_fd1' },
+    children: [drawerObject],
+    material: {},
+  };
+  drawerObject.parent = drawerGroup;
   const mainObject = {
     type: 'Mesh',
     userData: { isModuleSelector: true, moduleIndex: 0 },
     material: {},
   };
-  const { App } = createAppWithFreeBox(drawerObject, mainObject);
+  const { App, wardrobeGroup } = createAppWithFreeBox(drawerGroup, mainObject);
   const previews: any[] = [];
 
   const handled = tryHandleCellDimsHoverPreview({
@@ -269,6 +284,7 @@ test('[cell-dims/free-box-hover] external drawer hit previews the free-standing 
   assert.equal(handled, true);
   assert.equal(previews.length, 1);
   assert.equal(previews[0].anchor, drawerObject);
+  assert.equal(previews[0].anchorParent, wardrobeGroup);
   assert.ok(Math.abs(previews[0].x - 0.25) <= 1e-9);
   assert.ok(Math.abs(previews[0].d - 0.4) <= 1e-9);
 });

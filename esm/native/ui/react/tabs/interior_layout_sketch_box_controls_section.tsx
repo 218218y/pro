@@ -156,7 +156,7 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
               placeholder="אוטומטי"
               allowEmpty={true}
               emptyStepStartValue={DEFAULT_SKETCH_BOX_DEPTH_CM}
-              resetTitle="איפוס עומק הקופסא לאוטומטי"
+              resetTitle="איפוס עומק הקופסא"
               resetDisabled={props.sketchBoxDepthCm === '' && props.sketchBoxDepthDraft.trim() === ''}
               onReset={() => {
                 resetSketchBoxOptionalDimensionDraft(props, 'depth');
