@@ -74,6 +74,7 @@ const structureBundle = bundleSources(
     '../esm/native/ui/react/tabs/structure_tab_core_models.ts',
     '../esm/native/ui/react/tabs/structure_tab_core_numbers.ts',
     '../esm/native/ui/react/tabs/structure_tab_core_recompute.ts',
+    '../esm/native/ui/react/tabs/structure_tab_recompute_batch.ts',
     '../esm/native/ui/react/tabs/structure_tab_core_edit_mode.ts',
     '../esm/native/ui/react/tabs/structure_tab_dimensions_section.tsx',
     '../esm/native/ui/react/tabs/structure_tab_dimensions_section_contracts.ts',

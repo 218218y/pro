@@ -5,12 +5,13 @@ import type {
   UnknownRecord,
 } from '../../../../../types';
 import {
-  createStructuralModulesRecomputeOpts,
-  patchViaActions,
-  runAppStructuralModulesRecompute,
-} from '../../../services/api.js';
-import { getUiSnapshot, runHistoryBatch } from '../actions/store_actions.js';
+  runStructurePatchRecomputeBatch,
+  runStructureRecomputeFromUi,
+  STRUCTURE_RECOMPUTE_OPTS,
+} from './structure_tab_recompute_batch.js';
 import { structureTabReportNonFatal } from './structure_tab_shared.js';
+
+export { STRUCTURE_RECOMPUTE_OPTS } from './structure_tab_recompute_batch.js';
 
 export type CornerPatch = {
   cornerMode?: boolean;
@@ -32,8 +33,6 @@ export type PreChestStateLike = UnknownRecord & {
 
 export type MutableRefLike<T> = { current: T };
 
-export const STRUCTURE_RECOMPUTE_OPTS = createStructuralModulesRecomputeOpts();
-
 function isRecord(value: unknown): value is UnknownRecord {
   return !!value && typeof value === 'object' && !Array.isArray(value);
 }
@@ -44,21 +43,6 @@ export function withImmediate(meta: ActionMetaLike): ActionMetaLike {
 
 export function readPreChestState(value: unknown): PreChestStateLike | null {
   return isRecord(value) ? value : null;
-}
-
-function mergeUiOverride(
-  baseUi: UnknownRecord | null | undefined,
-  uiPatch: UnknownRecord | null | undefined
-): UnknownRecord | null {
-  if (!uiPatch || typeof uiPatch !== 'object')
-    return baseUi && typeof baseUi === 'object' ? { ...baseUi } : null;
-  const base = baseUi && typeof baseUi === 'object' ? baseUi : {};
-  const patch = uiPatch;
-  const out: UnknownRecord = { ...base, ...patch };
-  const baseRaw = base.raw && typeof base.raw === 'object' ? (base.raw as UnknownRecord) : null;
-  const patchRaw = patch.raw && typeof patch.raw === 'object' ? (patch.raw as UnknownRecord) : null;
-  if (baseRaw || patchRaw) out.raw = { ...(baseRaw || {}), ...(patchRaw || {}) };
-  return out;
 }
 
 export function commitStructureStatePatchWithRecompute(args: {
@@ -73,23 +57,15 @@ export function commitStructureStatePatchWithRecompute(args: {
   const { app, source, meta, uiPatch, statePatch, mutate, errorLine } = args;
   const actionMeta = { ...meta, immediate: true, noBuild: true };
   try {
-    runHistoryBatch(
+    runStructurePatchRecomputeBatch({
       app,
-      () => {
-        const rootPatch = statePatch && typeof statePatch === 'object' ? { ...statePatch } : null;
-        const applied = rootPatch ? patchViaActions(app, rootPatch, actionMeta) : false;
-        if (!applied && typeof mutate === 'function') mutate();
-        runAppStructuralModulesRecompute(
-          app,
-          mergeUiOverride(getUiSnapshot(app) as UnknownRecord | null | undefined, uiPatch),
-          null,
-          { source, force: true },
-          STRUCTURE_RECOMPUTE_OPTS,
-          {}
-        );
-      },
-      actionMeta
-    );
+      source,
+      meta: actionMeta,
+      uiPatch,
+      statePatch,
+      mutate,
+      recomputeOpts: STRUCTURE_RECOMPUTE_OPTS,
+    });
   } catch (__wpErr) {
     structureTabReportNonFatal(app, errorLine, __wpErr);
   }
@@ -102,7 +78,7 @@ export function recomputeStructureFromUi(
   errorLine: string
 ): void {
   try {
-    runAppStructuralModulesRecompute(app, rawPatch, meta, null, STRUCTURE_RECOMPUTE_OPTS, {});
+    runStructureRecomputeFromUi(app, rawPatch, meta, STRUCTURE_RECOMPUTE_OPTS);
   } catch (__wpErr) {
     structureTabReportNonFatal(app, errorLine, __wpErr);
   }
