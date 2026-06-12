@@ -50,6 +50,7 @@ export function createApplyInternalDrawersOps(deps: BuilderRenderDrawerDeps) {
         drawerOp.hasDivider,
         false
       );
+      const sketchModuleKey = drawerOp.sketchModuleKey ?? drawerOp.moduleIndex;
       intBox.userData = {
         ...(intBox.userData || {}),
         partId,
@@ -58,6 +59,12 @@ export function createApplyInternalDrawersOps(deps: BuilderRenderDrawerDeps) {
         __wpDrawerId: partId,
         __wpDrawerOwnerPartId: partId,
       };
+      if (drawerOp.sketchBoxId) {
+        intBox.userData.__wpSketchBoxId = drawerOp.sketchBoxId;
+        intBox.userData.__wpSketchModuleKey = sketchModuleKey;
+        intBox.userData.__wpSketchFreePlacement = drawerOp.sketchFreePlacement === true;
+        if (drawerOp.sketchStack) intBox.userData.__wpStack = drawerOp.sketchStack;
+      }
       __reg(App, partId, intBox, 'intDrawer');
 
       const closedPos = new THREE.Vector3(drawerOp.x || 0, drawerOp.y || 0, drawerOp.z || 0);

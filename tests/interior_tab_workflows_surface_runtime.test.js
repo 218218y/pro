@@ -126,4 +126,3 @@ test('[interior-workflows-controller] sketch internal drawer tool auto-enables d
     )
   );
 });
-

@@ -18,9 +18,11 @@ import {
   __wp_ui,
   __wp_cfg,
   __wp_toast,
+  __wp_toModuleKey,
 } from './canvas_picking_core_helpers.js';
 import { asRecord } from '../runtime/record.js';
 import { rememberCellDimsPostClickHoverTarget } from './canvas_picking_cell_dims_post_click_hover.js';
+import { readCellDimsFreeBoxIdFromPartId } from './canvas_picking_cell_dims_free_box_identity.js';
 
 export type { CanvasCellDimsClickArgs } from './canvas_picking_cell_dims_contracts.js';
 
@@ -71,19 +73,29 @@ export function handleCanvasCellDimsClick(args: CanvasCellDimsClickArgs): void {
     }
 
     const freeBoxHoverIdRaw = args.hitUserData?.__wpSketchBoxId;
-    const freeBoxHoverPartIdRaw = args.hitUserData?.partId;
+    const freeBoxHoverPartIdRaw = args.hitUserData?.partId ?? foundPartId;
     const isFreeBoxHoverHit =
       args.hitUserData?.__wpSketchFreePlacement === true ||
       (typeof freeBoxHoverPartIdRaw === 'string' && freeBoxHoverPartIdRaw.startsWith('sketch_box_free_'));
+    const freeBoxHoverModuleKey = isFreeBoxHoverHit
+      ? (args.hitUserData?.__wpSketchModuleKey ?? args.hitUserData?.moduleIndex ?? foundModuleIndex)
+      : foundModuleIndex;
+    const freeBoxHoverId =
+      typeof freeBoxHoverIdRaw === 'string' && isFreeBoxHoverHit
+        ? freeBoxHoverIdRaw
+        : typeof freeBoxHoverPartIdRaw === 'string' && isFreeBoxHoverHit
+          ? readCellDimsFreeBoxIdFromPartId(
+              freeBoxHoverPartIdRaw,
+              __wp_toModuleKey(freeBoxHoverModuleKey as never)
+            )
+          : null;
     rememberCellDimsPostClickHoverTarget({
       App,
-      moduleKey: isFreeBoxHoverHit
-        ? (args.hitUserData?.__wpSketchModuleKey ?? args.hitUserData?.moduleIndex ?? foundModuleIndex)
-        : foundModuleIndex,
+      moduleKey: freeBoxHoverModuleKey,
       isBottom: __isBottomStack,
       ndcX,
       ndcY,
-      freeBoxId: typeof freeBoxHoverIdRaw === 'string' && isFreeBoxHoverHit ? freeBoxHoverIdRaw : null,
+      freeBoxId: freeBoxHoverId,
     });
 
     const resolved = {

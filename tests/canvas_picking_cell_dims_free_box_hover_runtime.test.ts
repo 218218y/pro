@@ -213,3 +213,127 @@ test('[cell-dims/free-box-hover] door hit in front of a main selector stays rout
   assert.ok(Math.abs(previews[0].x - 0.25) <= 1e-9);
   assert.ok(Math.abs(previews[0].d - 0.4) <= 1e-9);
 });
+
+test('[cell-dims/free-box-hover] external drawer hit previews the free-standing box, not the drawer face', () => {
+  const drawerObject = {
+    type: 'Mesh',
+    userData: {
+      partId: 'sketch_box_free_0_free-1_ext_drawers_fd1_face',
+      moduleIndex: 0,
+    },
+    material: {},
+  };
+  const mainObject = {
+    type: 'Mesh',
+    userData: { isModuleSelector: true, moduleIndex: 0 },
+    material: {},
+  };
+  const { App } = createAppWithFreeBox(drawerObject, mainObject);
+  const previews: any[] = [];
+
+  const handled = tryHandleCellDimsHoverPreview({
+    App,
+    ndcX: 0.1,
+    ndcY: -0.2,
+    raycaster: createRaycaster([
+      { object: drawerObject, point: {} },
+      { object: mainObject, point: {} },
+    ]),
+    mouse: { x: 0, y: 0 },
+    isCellDimsMode: true,
+    previewRo: {
+      setSketchPlacementPreview(args: unknown) {
+        previews.push(args);
+      },
+    },
+    resolveInteriorHoverTarget() {
+      throw new Error('main wardrobe fallback must not run while a free-box external drawer was hit');
+    },
+    readCellDimsDraft() {
+      return { applyW: 80, applyH: 90, applyD: 40 };
+    },
+    measureObjectLocalBox() {
+      throw new Error('external drawer dimensions must not drive free-box cell-dims hover');
+    },
+    estimateVisibleModuleFrontZ() {
+      return 0;
+    },
+    getCellDimsHoverOp(_App, target, selectorBox) {
+      assert.equal((target.info as any).__wpCellDimsFreeBoxId, 'free-1');
+      assert.equal(Math.round(selectorBox.width * 100), 60);
+      assert.equal(Math.round(selectorBox.depth * 100), 35);
+      return 'add';
+    },
+  });
+
+  assert.equal(handled, true);
+  assert.equal(previews.length, 1);
+  assert.equal(previews[0].anchor, drawerObject);
+  assert.ok(Math.abs(previews[0].x - 0.25) <= 1e-9);
+  assert.ok(Math.abs(previews[0].d - 0.4) <= 1e-9);
+});
+
+test('[cell-dims/free-box-hover] skips unrelated front hits and parses internal drawer free-box part ids', () => {
+  const unrelatedObject = {
+    type: 'Mesh',
+    userData: { partId: 'folded_clothes_visual' },
+    material: {},
+  };
+  const internalDrawerObject = {
+    type: 'Mesh',
+    userData: {
+      partId: 'sketch_box_free_0_free-1_int_drawers_fd1_lower',
+      moduleIndex: 0,
+    },
+    material: {},
+  };
+  const mainObject = {
+    type: 'Mesh',
+    userData: { isModuleSelector: true, moduleIndex: 0 },
+    material: {},
+  };
+  const { App } = createAppWithFreeBox(internalDrawerObject, mainObject);
+  const previews: any[] = [];
+
+  const handled = tryHandleCellDimsHoverPreview({
+    App,
+    ndcX: 0.1,
+    ndcY: -0.2,
+    raycaster: createRaycaster([
+      { object: unrelatedObject, point: {} },
+      { object: internalDrawerObject, point: {} },
+      { object: mainObject, point: {} },
+    ]),
+    mouse: { x: 0, y: 0 },
+    isCellDimsMode: true,
+    previewRo: {
+      setSketchPlacementPreview(args: unknown) {
+        previews.push(args);
+      },
+    },
+    resolveInteriorHoverTarget() {
+      throw new Error('main wardrobe fallback must not run after a later free-box drawer hit');
+    },
+    readCellDimsDraft() {
+      return { applyW: 80, applyH: 90, applyD: 40 };
+    },
+    measureObjectLocalBox() {
+      throw new Error('internal drawer dimensions must not drive free-box cell-dims hover');
+    },
+    estimateVisibleModuleFrontZ() {
+      return 0;
+    },
+    getCellDimsHoverOp(_App, target, selectorBox) {
+      assert.equal((target.info as any).__wpCellDimsFreeBoxId, 'free-1');
+      assert.equal(Math.round(selectorBox.width * 100), 60);
+      assert.equal(Math.round(selectorBox.height * 100), 80);
+      return 'add';
+    },
+  });
+
+  assert.equal(handled, true);
+  assert.equal(previews.length, 1);
+  assert.equal(previews[0].anchor, internalDrawerObject);
+  assert.ok(Math.abs(previews[0].x - 0.25) <= 1e-9);
+  assert.ok(Math.abs(previews[0].d - 0.4) <= 1e-9);
+});

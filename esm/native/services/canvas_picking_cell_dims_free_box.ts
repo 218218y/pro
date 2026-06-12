@@ -24,6 +24,7 @@ import {
   findSketchModuleBoxById,
 } from './canvas_picking_sketch_box_content_commit.js';
 import { __wp_toModuleKey, __wp_toast } from './canvas_picking_core_helpers.js';
+import { readCellDimsFreeBoxIdFromPartId } from './canvas_picking_cell_dims_free_box_identity.js';
 import { readToastFn } from './canvas_picking_cell_dims_linear_shared.js';
 
 export type CanvasFreeBoxCellDimsArgs = {
@@ -156,24 +157,8 @@ function readHitBoxId(args: CanvasFreeBoxCellDimsArgs): string | null {
   const partId = readString(args.foundPartId);
   if (!partId || !partId.startsWith('sketch_box_free_')) return null;
 
-  const moduleKey = String(args.foundModuleIndex ?? '').trim();
-  if (moduleKey) {
-    const prefix = `sketch_box_free_${moduleKey}_`;
-    if (partId.startsWith(prefix)) {
-      const rest = partId.slice(prefix.length);
-      return (
-        rest.replace(
-          /_(?:side_(?:left|right)|door_.+|divider_.+|hdivider_.+|storage_.+|ext_drawer_.+|hex_diag_(?:left|right))$/i,
-          ''
-        ) || null
-      );
-    }
-  }
-
-  const sideMatch = /^sketch_box_free_(.+)_side_(?:left|right)$/i.exec(partId);
-  const basePartId = sideMatch?.[1] ? `sketch_box_free_${sideMatch[1]}` : partId;
-  const loose = /^sketch_box_free_(?:[^_]+_)?(.+?)$/i.exec(basePartId);
-  return loose?.[1] ? loose[1] : null;
+  const moduleKey = resolveModuleKey(args);
+  return readCellDimsFreeBoxIdFromPartId(partId, moduleKey);
 }
 
 function isFreeBoxHit(args: CanvasFreeBoxCellDimsArgs): boolean {

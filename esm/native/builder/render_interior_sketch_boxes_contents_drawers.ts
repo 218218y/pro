@@ -226,6 +226,8 @@ export function renderSketchBoxDrawerContents(args: RenderSketchBoxContentsArgs)
       const drawerIdRaw = drawer.id;
       const drawerId = drawerIdRaw != null ? String(drawerIdRaw) : String(drawerIndex);
       const stackPartId = `${boxPid}_int_drawers_${drawerId}`;
+      const stackKey =
+        typeof moduleKeyForUd === 'string' && moduleKeyForUd.startsWith('lower_') ? 'bottom' : 'top';
       const width = Math.max(drawerDims.internalWidthMinM, span.innerW - drawerDims.internalWidthClearanceM);
       const depth = Math.min(
         usableContentDepth,
@@ -259,6 +261,10 @@ export function renderSketchBoxDrawerContents(args: RenderSketchBoxContentsArgs)
           openZ: drawerClosedZ + drawerDims.internalOpenOffsetZM,
           hasDivider,
           dividerKey: partId,
+          sketchBoxId: shell.boxId,
+          sketchModuleKey: moduleKeyForUd,
+          sketchFreePlacement: shell.isFreePlacement === true,
+          sketchStack: stackKey,
         });
       }
     }

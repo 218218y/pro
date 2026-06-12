@@ -270,3 +270,27 @@ test('[cell-dims/free-box] blocks hex-cell conversion when the free-standing box
   assert.equal(calls.feedbackToasts.length, 1);
   assert.match(calls.feedbackToasts[0]?.message || '', /אי אפשר לשנות תא עם מגירות/);
 });
+
+test('[cell-dims/free-box] applies from an internal drawer hit that only carries the free-box part id', () => {
+  const { App, calls, freeBox } = createFreeBoxHarness({
+    drawers: [{ id: 'fd1', yNormC: 0.5 }],
+  });
+
+  handleCanvasCellDimsClick({
+    App,
+    foundModuleIndex: 0,
+    foundPartId: 'sketch_box_free_0_free-1_int_drawers_fd1_lower',
+    hitUserData: {
+      partId: 'sketch_box_free_0_free-1_int_drawers_fd1_lower',
+      moduleIndex: 0,
+    },
+    isBottomStack: false,
+    ensureCornerCellConfigRef: () => null,
+  });
+
+  assert.equal(calls.patches.length, 1);
+  assert.equal(freeBox.widthM, 0.8);
+  assert.equal(freeBox.heightM, 0.9);
+  assert.equal(freeBox.depthM, 0.4);
+  assert.match(calls.toasts[0]?.message || '', /הוחלו מידות מיוחדות על הקופסא/);
+});

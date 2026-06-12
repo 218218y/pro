@@ -132,11 +132,7 @@ export function createInteriorTabManualWorkflowController(
 
     enterSketchIntDrawersTool(drawerHeightCm: number) {
       if (!state.internalDrawersEnabled) {
-        interiorSetInternalDrawersEnabled(
-          app,
-          true,
-          'react:interior:sketchIntDrawersTool:autoEnable'
-        );
+        interiorSetInternalDrawersEnabled(app, true, 'react:interior:sketchIntDrawersTool:autoEnable');
       }
       activateManualToolId(mkSketchInternalDrawersTool(drawerHeightCm));
     },

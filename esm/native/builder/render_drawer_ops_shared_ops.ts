@@ -81,5 +81,12 @@ export function readInternalDrawerOp(value: unknown): InternalDrawerOpLike | nul
     y: readFinite(value.y),
     z: readFinite(value.z),
     openZ: typeof value.openZ === 'number' && Number.isFinite(value.openZ) ? value.openZ : undefined,
+    sketchBoxId:
+      typeof value.sketchBoxId === 'string' && value.sketchBoxId.trim()
+        ? value.sketchBoxId.trim()
+        : undefined,
+    sketchModuleKey: value.sketchModuleKey,
+    sketchFreePlacement: value.sketchFreePlacement === true,
+    sketchStack: value.sketchStack === 'bottom' ? 'bottom' : value.sketchStack === 'top' ? 'top' : undefined,
   };
 }

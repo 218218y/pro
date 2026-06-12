@@ -291,6 +291,10 @@ test('free-placement sketch box internal drawers render through internal drawer 
     ]
   );
   assert.ok(capturedOps.every(op => Math.abs(Number(op.height) - 0.165) < 1e-9));
+  assert.ok(capturedOps.every(op => op.sketchBoxId === 'freeDrawerBox'));
+  assert.ok(capturedOps.every(op => op.sketchFreePlacement === true));
+  assert.ok(capturedOps.every(op => op.sketchModuleKey === '0'));
+  assert.ok(capturedOps.every(op => op.sketchStack === 'top'));
 });
 
 test('free-placement sketch box internal drawers follow the internal-drawers toggle without deleting saved data', () => {

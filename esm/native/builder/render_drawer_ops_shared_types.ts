@@ -64,4 +64,8 @@ export type InternalDrawerOpLike = {
   y: number;
   z: number;
   openZ?: number;
+  sketchBoxId?: string;
+  sketchModuleKey?: unknown;
+  sketchFreePlacement?: boolean;
+  sketchStack?: 'top' | 'bottom';
 };

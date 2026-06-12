@@ -56,6 +56,10 @@ export type SketchInternalDrawerOp = InteriorValueRecord & {
   openZ: number;
   hasDivider: boolean;
   dividerKey: string;
+  sketchBoxId?: string;
+  sketchModuleKey?: string | number;
+  sketchFreePlacement?: boolean;
+  sketchStack?: 'top' | 'bottom';
 };
 
 export type ApplyInternalSketchDrawersArgs = InteriorValueRecord & {

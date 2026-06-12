@@ -6,6 +6,10 @@ import { getActiveOverrideCm } from '../features/special_dims/index.js';
 import { hasHexCellDraftConfigChange, moduleHasHexCell } from '../features/hex_cell/index.js';
 import { asRecord } from '../runtime/record.js';
 import { __wp_raycastReuse, __wp_toModuleKey } from './canvas_picking_core_helpers.js';
+import {
+  readCellDimsFreeBoxIdFromPartId,
+  readCellDimsFreeBoxModuleKeyFromPartId,
+} from './canvas_picking_cell_dims_free_box_identity.js';
 import type { MouseVectorLike, RaycastHitLike, RaycasterLike } from './canvas_picking_engine.js';
 import type {
   InteriorHoverTarget,
@@ -67,32 +71,6 @@ function isRenderableHitObject(value: unknown): boolean {
   return true;
 }
 
-function stripFreeBoxPartSuffix(value: string): string {
-  return value.replace(
-    /_(?:side_(?:left|right)|door_.+|divider_.+|hdivider_.+|storage_.+|ext_drawer_.+|int_drawer_.+|shelf_.+|rod_.+|hex_diag_(?:left|right)|accent_.+)$/i,
-    ''
-  );
-}
-
-function parseFreeBoxIdFromPartId(partId: string, moduleKey: ModuleKey | null): string | null {
-  if (!partId.startsWith('sketch_box_free_')) return null;
-  const normalized = stripFreeBoxPartSuffix(partId);
-  if (moduleKey != null) {
-    const prefix = `sketch_box_free_${String(moduleKey)}_`;
-    if (normalized.startsWith(prefix)) {
-      const rest = normalized.slice(prefix.length);
-      return rest ? rest : null;
-    }
-  }
-  const loose = /^sketch_box_free_(?:[^_]+_)?(.+)$/i.exec(normalized);
-  return loose?.[1] ? loose[1] : null;
-}
-
-function readModuleKeyFromPartId(partId: string): ModuleKey | null {
-  const match = /^sketch_box_free_([^_]+)_/.exec(partId);
-  return match?.[1] != null ? __wp_toModuleKey(match[1] as never) : null;
-}
-
 function readStackKey(userData: UnknownRecord | null): StackKey {
   const raw = userData?.__wpStack ?? userData?.stackKey ?? userData?.stack;
   return raw === 'bottom' ? 'bottom' : 'top';
@@ -109,9 +87,8 @@ function readCandidateFromObject(obj: unknown): CellDimsFreeBoxHitCandidate | nu
     if (isFree) {
       const moduleKey =
         __wp_toModuleKey((ud?.__wpSketchModuleKey ?? ud?.moduleIndex) as never) ??
-        (partId ? readModuleKeyFromPartId(partId) : null);
-      const boxId =
-        explicitBoxId || (partId && moduleKey != null ? parseFreeBoxIdFromPartId(partId, moduleKey) : null);
+        (partId ? readCellDimsFreeBoxModuleKeyFromPartId(partId) : null);
+      const boxId = explicitBoxId || (partId ? readCellDimsFreeBoxIdFromPartId(partId, moduleKey) : null);
       if (boxId && moduleKey != null) {
         return { boxId, moduleKey, stackKey: readStackKey(ud), anchor: cur };
       }
@@ -128,7 +105,8 @@ export function readCellDimsFreeBoxHitCandidate(
     const hit = asRecord(intersects[i]);
     const obj = hit?.object ?? null;
     if (!isRenderableHitObject(obj)) continue;
-    return readCandidateFromObject(obj);
+    const candidate = readCandidateFromObject(obj);
+    if (candidate) return candidate;
   }
   return null;
 }
@@ -241,7 +219,7 @@ function findAnchorForFreeBox(root: unknown, boxId: string, moduleKey: ModuleKey
     const nodeBoxId = readString(ud?.__wpSketchBoxId);
     const nodeModuleKey = __wp_toModuleKey((ud?.__wpSketchModuleKey ?? ud?.moduleIndex) as never);
     if (
-      (nodeBoxId === boxId || (partId && parseFreeBoxIdFromPartId(partId, moduleKey) === boxId)) &&
+      (nodeBoxId === boxId || (partId && readCellDimsFreeBoxIdFromPartId(partId, moduleKey) === boxId)) &&
       (nodeModuleKey == null || nodeModuleKey === moduleKey)
     ) {
       found = node;
