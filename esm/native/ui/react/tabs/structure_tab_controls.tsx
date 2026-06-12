@@ -4,7 +4,8 @@ import { OptionButton } from '../components/index.js';
 import { useApp, useCfgSelectorShallow } from '../hooks.js';
 import { setCfgBoardMaterial, setCfgDoorMountMode } from '../actions/store_actions.js';
 import { setWardrobeType } from '../actions/room_actions.js';
-import { cfgSetScalar, patchViaActions, requestBuilderStructuralRefresh } from '../../../services/api.js';
+import { applyImmediateStructuralConfigMutation } from '../actions/structural_build_refresh_actions.js';
+import { cfgSetScalar } from '../../../services/api.js';
 import {
   selectBoardMaterial,
   selectDoorMountMode,
@@ -52,29 +53,14 @@ const STRUCTURE_DOOR_MOUNT_OPTIONS: readonly StructureDoorMountOption[] = [
   { id: 'inset', label: 'דלת שקועה' },
 ];
 
-function applyImmediateStructuralConfigMutation(
-  app: unknown,
-  source: string,
-  configPatch: Record<string, unknown>,
-  applyDirectMutation: () => void
-): void {
-  const meta = { source, immediate: true, noBuild: true };
-  const applied =
-    typeof patchViaActions === 'function' ? patchViaActions(app, { config: configPatch }, meta) : false;
-  if (!applied) applyDirectMutation();
-  if (typeof requestBuilderStructuralRefresh === 'function') {
-    requestBuilderStructuralRefresh(app, { source, immediate: false, force: false, triggerRender: false });
-  }
-}
-
 function applyImmediateStructuralScalarMutation(
   app: unknown,
   source: string,
   key: DoorMountThicknessConfigKey,
   value: number | null
 ): void {
-  applyImmediateStructuralConfigMutation(app, source, { [key]: value }, () => {
-    cfgSetScalar(app, key, value, { source, immediate: true, noBuild: true });
+  applyImmediateStructuralConfigMutation(app, source, { [key]: value }, meta => {
+    cfgSetScalar(app, key, value, meta);
   });
 }
 
@@ -142,12 +128,8 @@ export function TypeSelector(props: { hideTypeOptions?: boolean } = {}) {
                   app,
                   'react:boardMaterial',
                   { boardMaterial: option.id },
-                  () => {
-                    setCfgBoardMaterial(app, option.id, {
-                      source: 'react:boardMaterial',
-                      immediate: true,
-                      noBuild: true,
-                    });
+                  meta => {
+                    setCfgBoardMaterial(app, option.id, meta);
                   }
                 );
               }}
@@ -182,12 +164,8 @@ export function TypeSelector(props: { hideTypeOptions?: boolean } = {}) {
                       app,
                       'react:doorMountMode',
                       { doorMountMode: option.id },
-                      () => {
-                        setCfgDoorMountMode(app, option.id, {
-                          source: 'react:doorMountMode',
-                          immediate: true,
-                          noBuild: true,
-                        });
+                      meta => {
+                        setCfgDoorMountMode(app, option.id, meta);
                       }
                     );
                   }}

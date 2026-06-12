@@ -5,6 +5,8 @@ import path from 'node:path';
 import vm from 'node:vm';
 import { createRequire } from 'node:module';
 
+import { loadStructuralBuildRefreshActionsModule } from './_load_structural_build_refresh_actions.js';
+
 const require = createRequire(import.meta.url);
 const ts = require('typescript');
 
@@ -79,6 +81,7 @@ function loadStructureTabControlsModule(stubs = {}) {
     fileName: file,
   }).outputText;
   const mod = { exports: {} };
+  let structuralBuildRefreshActions;
   const localRequire = specifier => {
     if (specifier === 'react/jsx-runtime') {
       const renderJsx = (type, props) =>
@@ -125,6 +128,10 @@ function loadStructureTabControlsModule(stubs = {}) {
     }
     if (specifier === '../actions/room_actions.js') {
       return { setWardrobeType: (...args) => stubs.calls.push(['setWardrobeType', ...args]) };
+    }
+    if (specifier === '../actions/structural_build_refresh_actions.js') {
+      structuralBuildRefreshActions ||= loadStructuralBuildRefreshActionsModule(stubs);
+      return structuralBuildRefreshActions;
     }
     if (specifier === '../selectors/config_selectors.js') {
       return {

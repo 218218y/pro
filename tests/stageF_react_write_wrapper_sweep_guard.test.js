@@ -22,6 +22,10 @@ const storeActions = bundleSources(
   ['../esm/native/ui/react/actions/store_actions.ts', ...storeConfigActionFiles, ...storeUiActionFiles],
   import.meta.url
 );
+const structuralBuildRefreshActions = readSource(
+  '../esm/native/ui/react/actions/structural_build_refresh_actions.ts',
+  import.meta.url
+);
 const structureBundle = bundleSources(
   [
     '../esm/native/ui/react/tabs/StructureTab.view.tsx',
@@ -141,9 +145,9 @@ test('[stageF] React write hotspots use canonical wrapper sweep for common ui/co
     structureBundle,
     [
       /applyImmediateStructuralConfigMutation\(app, 'react:boardMaterial', \{ boardMaterial: option\.id \},/,
-      /setCfgBoardMaterial\(app, option\.id, \{ source: 'react:boardMaterial', immediate: true, noBuild: true,? \}\)/,
+      /setCfgBoardMaterial\(app, option\.id, meta\)/,
       /applyImmediateStructuralConfigMutation\(\s*app,\s*'react:doorMountMode',\s*\{ doorMountMode: option\.id \},/,
-      /setCfgDoorMountMode\(app, option\.id, \{\s*source: 'react:doorMountMode',\s*immediate: true,\s*noBuild: true,\s*\}\)/,
+      /setCfgDoorMountMode\(app, option\.id, meta\)/,
       /setUiSelectedModelId\(app, nextSelectedId, meta\.uiOnlyImmediate\('react:models:selection:clear'\)\)/,
       /applyUiRawScalarPatch\(app, (?:rawPatch|readRawPatch\(uiPatch\)), m\)/,
       /applyUiSoftScalarPatch\((?:args\.)?app, softPatch, actionMeta\)/,
@@ -159,10 +163,25 @@ test('[stageF] React write hotspots use canonical wrapper sweep for common ui/co
     ],
     'structureBundle'
   );
+  assertMatchesAll(
+    assert,
+    structuralBuildRefreshActions,
+    [
+      /export function createImmediateStructuralMutationMeta\(source: string\): ActionMetaLike/,
+      /return \{ source, immediate: true, noBuild: true \}/,
+      /const payload: UnknownRecord = \{ \[args\.slice\]: args\.patch \}/,
+      /patchViaActions\(args\.app, payload, meta\)/,
+      /requestBuilderStructuralRefresh\(app, \{\s*source,\s*immediate: false,\s*force: false,\s*triggerRender: false,\s*\}\)/,
+      /slice: 'config'/,
+      /slice: 'ui'/,
+    ],
+    'structuralBuildRefreshActions'
+  );
   assertLacksAll(
     assert,
     structureBundle,
     [
+      /function applyImmediateStructuralConfigMutation\(/,
       /setUiScalarSoft\(app, ''selectedModelId''/,
       /setUiRawScalar\(\s*app,\s*''cellDimsWidth''/,
       /setUiScalarSoft\(app, ''cornerSide''/,

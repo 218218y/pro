@@ -7,16 +7,12 @@ import {
   setUiCorniceType,
   setUiDoorStyle,
 } from '../actions/store_actions.js';
+import { applyImmediateStructuralUiMutation } from '../actions/structural_build_refresh_actions.js';
 import {
   ROUNDED_FRAME_SIDE_SHELVES_MAP_NAME,
   readRemovedFrameSidePartIds,
 } from '../../../features/removable_parts.js';
-import {
-  materializeActiveGrooveLinesCountMap,
-  patchViaActions,
-  readStoreStateMaybe,
-  requestBuilderStructuralRefresh,
-} from '../../../services/api.js';
+import { materializeActiveGrooveLinesCountMap, readStoreStateMaybe } from '../../../services/api.js';
 
 import type {
   DesignTabCorniceType,
@@ -48,20 +44,6 @@ function freezeExistingGrooveLinesCount(app: AppContainer): void {
     source: 'react:design:grooveLinesCount:freezeExisting',
     immediate: true,
   });
-}
-
-function applyImmediateStructuralUiMutation(
-  app: AppContainer,
-  source: string,
-  uiPatch: Record<string, unknown>,
-  applyDirectMutation: () => void
-): void {
-  const meta = { source, immediate: true, noBuild: true };
-  const applied = typeof patchViaActions === 'function' ? patchViaActions(app, { ui: uiPatch }, meta) : false;
-  if (!applied) applyDirectMutation();
-  if (typeof requestBuilderStructuralRefresh === 'function') {
-    requestBuilderStructuralRefresh(app, { source, immediate: false, force: false, triggerRender: false });
-  }
 }
 
 function readCurrentUiString(app: AppContainer, key: string): string {
@@ -105,16 +87,16 @@ export function createDesignTabControllerRuntime(
     setDoorStyle(style: DesignTabDoorStyle) {
       const next = String(style || '');
       if (!next || readCurrentUiString(app, 'doorStyle') === next) return;
-      applyImmediateStructuralUiMutation(app, 'react:design:doorStyle', { doorStyle: next }, () => {
-        setUiDoorStyle(app, next, { source: 'react:design:doorStyle', immediate: true, noBuild: true });
+      applyImmediateStructuralUiMutation(app, 'react:design:doorStyle', { doorStyle: next }, meta => {
+        setUiDoorStyle(app, next, meta);
       });
     },
 
     setCorniceType(value: DesignTabCorniceType) {
       const next = String(value || '');
       if (readCurrentUiString(app, 'corniceType') === next) return;
-      applyImmediateStructuralUiMutation(app, 'react:design:corniceType', { corniceType: next }, () => {
-        setUiCorniceType(app, next, { source: 'react:design:corniceType', immediate: true, noBuild: true });
+      applyImmediateStructuralUiMutation(app, 'react:design:corniceType', { corniceType: next }, meta => {
+        setUiCorniceType(app, next, meta);
       });
     },
 

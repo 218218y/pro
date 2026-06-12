@@ -5,6 +5,8 @@ import path from 'node:path';
 import vm from 'node:vm';
 import { createRequire } from 'node:module';
 
+import { loadStructuralBuildRefreshActionsModule } from './_load_structural_build_refresh_actions.js';
+
 const require = createRequire(import.meta.url);
 const ts = require('typescript');
 
@@ -19,6 +21,7 @@ function loadDesignTabControllerRuntimeModule(stubs = {}) {
     fileName: file,
   }).outputText;
   const mod = { exports: {} };
+  let structuralBuildRefreshActions;
   const localRequire = specifier => {
     if (specifier === '../actions/store_actions.js') {
       return {
@@ -34,6 +37,10 @@ function loadDesignTabControllerRuntimeModule(stubs = {}) {
           stubs.setUiCorniceType || ((...args) => stubs.calls?.push(['setUiCorniceType', ...args])),
         setUiDoorStyle: stubs.setUiDoorStyle || ((...args) => stubs.calls?.push(['setUiDoorStyle', ...args])),
       };
+    }
+    if (specifier === '../actions/structural_build_refresh_actions.js') {
+      structuralBuildRefreshActions ||= loadStructuralBuildRefreshActionsModule(stubs);
+      return structuralBuildRefreshActions;
     }
     if (specifier === '../../../services/api.js') {
       return {
@@ -87,10 +94,7 @@ test('[design-tab-controller-runtime] delegates structural ui writes through can
   const calls = [];
   const mod = loadDesignTabControllerRuntimeModule({
     calls,
-    patchViaActions: (...args) => {
-      calls.push(['patchViaActions', ...args]);
-      return true;
-    },
+    patchViaActions: () => true,
     readStoreStateMaybe: () => ({ ui: { doorStyle: 'flat', corniceType: 'classic' } }),
   });
   const toggles = [];
