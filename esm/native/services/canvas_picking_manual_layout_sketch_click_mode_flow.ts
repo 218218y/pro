@@ -3,6 +3,7 @@ import type {
   SketchBoxGeometryArgs,
   SketchBoxGeometry,
 } from './canvas_picking_manual_layout_sketch_contracts.js';
+import { createCanvasPickingConfigStructuralPatchMeta } from './canvas_picking_config_patch_meta.js';
 import { __wp_writeSketchHover } from './canvas_picking_local_helpers.js';
 import { type ManualLayoutSketchHoverHost } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import { tryCommitSketchModuleSurfaceTool } from './canvas_picking_sketch_module_surface_commit.js';
@@ -120,7 +121,7 @@ export function tryApplyManualLayoutSketchModeClick(args: ManualLayoutSketchClic
         return;
       }
     },
-    { source: 'sketch.place', immediate: true }
+    createCanvasPickingConfigStructuralPatchMeta('sketch.place')
   );
   return true;
 }

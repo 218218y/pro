@@ -13,6 +13,7 @@ import {
 import { tryHandleManualLayoutSketchToolClick } from './canvas_picking_manual_layout_sketch_tools.js';
 import { readActiveManualTool } from './canvas_picking_manual_tool_access.js';
 import { firstRenderableHitIsSketchFreeBox } from './canvas_picking_sketch_free_box_hit_policy.js';
+import { createCanvasPickingConfigStructuralPatchMeta } from './canvas_picking_config_patch_meta.js';
 import {
   fillManualLayoutShelves,
   type ManualLayoutShelfFillPlan,
@@ -161,7 +162,7 @@ export function tryHandleCanvasManualLayoutClick(args: CanvasLayoutEditClickArgs
             woodThick: gridInfo?.woodThick,
           });
         },
-        { source: 'manualLayout.fillAllShelves', immediate: true }
+        createCanvasPickingConfigStructuralPatchMeta('manualLayout.fillAllShelves')
       );
       toastManualLayoutSkippedShelves(App, fillPlanRef.current?.skippedCount ?? 0);
       return;
@@ -220,7 +221,7 @@ export function tryHandleCanvasManualLayoutClick(args: CanvasLayoutEditClickArgs
           });
         }
       },
-      { source: 'manualLayout.toggleItem', immediate: true }
+      createCanvasPickingConfigStructuralPatchMeta('manualLayout.toggleItem')
     );
     if (shelfResultRef.current?.blockedBySketchDrawers) toastManualLayoutShelfCollision(App);
   })();

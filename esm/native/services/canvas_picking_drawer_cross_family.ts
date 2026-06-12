@@ -3,6 +3,7 @@ import type { ModuleKey, PatchConfigForKeyFn } from './canvas_picking_drawer_mod
 import type { RaycastHitLike } from './canvas_picking_engine.js';
 import { SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_KEY } from '../features/sketch_box_regular_external_drawers.js';
 import { getDrawersArray } from '../runtime/render_access.js';
+import { createCanvasPickingConfigStructuralPatchMeta } from './canvas_picking_config_patch_meta.js';
 import {
   __wp_isViewportRoot,
   __wp_measureObjectLocalBox,
@@ -309,7 +310,7 @@ export function tryRemoveSketchExternalDrawerByDirectHit(args: {
         hit.partId
       );
     },
-    { source: args.source, immediate: true }
+    createCanvasPickingConfigStructuralPatchMeta(args.source)
   );
   return true;
 }

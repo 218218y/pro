@@ -5,6 +5,7 @@ import {
   findSketchModuleBoxById,
   getSketchModuleBoxContentSource,
 } from './canvas_picking_sketch_box_content_commit.js';
+import { createCanvasPickingConfigStructuralPatchMeta } from './canvas_picking_config_patch_meta.js';
 import {
   readManualLayoutSketchBoxContentHoverIntent,
   readManualLayoutSketchRodHoverIntent,
@@ -85,10 +86,7 @@ export function tryApplyManualLayoutSketchHoverClick(args: ManualLayoutSketchCli
             hoverRec: __hoverRec,
           });
         },
-        {
-          source: getSketchModuleBoxContentSource(contentKind),
-          immediate: true,
-        }
+        createCanvasPickingConfigStructuralPatchMeta(getSketchModuleBoxContentSource(contentKind))
       );
       __wp_clearSketchHover(App);
       return true;
@@ -112,7 +110,7 @@ export function tryApplyManualLayoutSketchHoverClick(args: ManualLayoutSketchCli
           bottomY,
         });
       },
-      { source: 'sketch.hoverRemoveRod', immediate: true }
+      createCanvasPickingConfigStructuralPatchMeta('sketch.hoverRemoveRod')
     );
     return true;
   }
@@ -133,7 +131,7 @@ export function tryApplyManualLayoutSketchHoverClick(args: ManualLayoutSketchCli
           bottomY,
         });
       },
-      { source: 'sketch.hoverRemoveStorage', immediate: true }
+      createCanvasPickingConfigStructuralPatchMeta('sketch.hoverRemoveStorage')
     );
     return true;
   }
@@ -163,7 +161,7 @@ export function tryApplyManualLayoutSketchHoverClick(args: ManualLayoutSketchCli
           removeEps: -1,
         });
       },
-      { source: 'sketch.hoverAddShelf', immediate: true }
+      createCanvasPickingConfigStructuralPatchMeta('sketch.hoverAddShelf')
     );
     __wp_clearSketchHover(App);
     return true;
@@ -186,7 +184,7 @@ export function tryApplyManualLayoutSketchHoverClick(args: ManualLayoutSketchCli
           bottomY,
         });
       },
-      { source: 'sketch.hoverRemoveShelf', immediate: true }
+      createCanvasPickingConfigStructuralPatchMeta('sketch.hoverRemoveShelf')
     );
     return true;
   }

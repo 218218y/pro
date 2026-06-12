@@ -12,6 +12,7 @@ This file is intentionally compact. It keeps only current decomposition guard fa
 - `canvas_picking_click_flow.ts` internal/external drawer + divider flows now live in `services/canvas_picking_drawer_mode_flow.ts`
 - `canvas_picking_click_flow.ts` split/remove/hinge/groove door edit routing now lives in `services/canvas_picking_door_edit_flow.ts`, while focused trim/split/remove/hinge/groove policy lives in `services/canvas_picking_door_trim_click.ts`, `services/canvas_picking_door_split_click.ts`, `services/canvas_picking_door_remove_click.ts`, and `services/canvas_picking_door_hinge_groove_click.ts`
 - `services/canvas_picking_modules_patch_meta.ts` owns the direct Canvas picking `modules.patchForStack` meta profiles: structural module edits are immediate build-visible writes, while motion/open-state toggles persist with no-build/no-history meta
+- `services/canvas_picking_config_patch_meta.ts` owns Canvas picking `__patchConfigForKey` structural patch meta so layout/manual/sketch/drawer config writes remain immediate build-visible writes without no-build/no-history flags
 - `canvas_picking_click_flow.ts` paint flows now live in `services/canvas_picking_paint_flow.ts`
 - `canvas_picking_click_flow.ts` handle-assign flows now live in `services/canvas_picking_handle_assign_flow.ts`
 - `canvas_picking_click_flow.ts` none/screen-note door toggle flows now live in `services/canvas_picking_toggle_flow.ts`

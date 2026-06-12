@@ -1,6 +1,7 @@
 import type { DrawerVisualEntryLike } from '../../../types';
 import { getDrawersArray } from '../runtime/render_access.js';
 import { isSketchInternalDrawersTool } from '../features/sketch_drawer_sizing.js';
+import { createCanvasPickingConfigStructuralPatchMeta } from './canvas_picking_config_patch_meta.js';
 import type { ManualLayoutSketchDirectHitContext } from './canvas_picking_sketch_direct_hit_workflow_contracts.js';
 import { asConfig } from './canvas_picking_sketch_direct_hit_workflow_contracts.js';
 import {
@@ -128,7 +129,7 @@ export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDir
               const cfg = asConfig(cfg0);
               removeSketchExternalDrawerById(cfg, drawerId, boxId || undefined);
             },
-            { source: 'sketch.removeExternalDrawerByCrossHit', immediate: true }
+            createCanvasPickingConfigStructuralPatchMeta('sketch.removeExternalDrawerByCrossHit')
           );
           return true;
         }
@@ -200,7 +201,7 @@ export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDir
               const cfg = asConfig(cfg0);
               removeSketchDrawerById(cfg, removeId);
             },
-            { source: 'sketch.removeInternalDrawerByHit.guardY', immediate: true }
+            createCanvasPickingConfigStructuralPatchMeta('sketch.removeInternalDrawerByHit.guardY')
           );
           return true;
         }
@@ -236,7 +237,7 @@ export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDir
               const cfg = asConfig(cfg0);
               removeSketchDrawerById(cfg, removeId);
             },
-            { source: 'sketch.removeInternalDrawerByCrossHit', immediate: true }
+            createCanvasPickingConfigStructuralPatchMeta('sketch.removeInternalDrawerByCrossHit')
           );
           return true;
         }
@@ -264,7 +265,7 @@ export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDir
           const cfg = asConfig(cfg0);
           removeStandardExternalDrawerFromConfig(cfg, standardExternalHit.partId);
         },
-        { source: 'sketch.removeStandardExternalDrawerByHit', immediate: true }
+        createCanvasPickingConfigStructuralPatchMeta('sketch.removeStandardExternalDrawerByHit')
       );
       return true;
     }
@@ -348,7 +349,7 @@ export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDir
               const cfg = asConfig(cfg0);
               removeSketchExternalDrawerById(cfg, drawerId, boxId || undefined);
             },
-            { source: 'sketch.removeExternalDrawerByHit', immediate: true }
+            createCanvasPickingConfigStructuralPatchMeta('sketch.removeExternalDrawerByHit')
           );
           return true;
         }

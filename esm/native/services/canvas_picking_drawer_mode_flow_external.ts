@@ -6,6 +6,7 @@ import {
 } from '../features/hex_cell/index.js';
 import { getInternalGridMap } from '../runtime/cache_access.js';
 import { __wp_toast, __wp_ui } from './canvas_picking_core_helpers.js';
+import { createCanvasPickingConfigStructuralPatchMeta } from './canvas_picking_config_patch_meta.js';
 import { tryRemoveSketchExternalDrawerByDirectHit } from './canvas_picking_drawer_cross_family.js';
 import type { ModuleKey, PatchConfigForKeyFn } from './canvas_picking_drawer_mode_flow_shared.js';
 import { asInternalGridInfo } from './canvas_picking_drawer_mode_flow_shared.js';
@@ -86,7 +87,7 @@ export function tryHandleExternalDrawerModeClick(args: {
         cfg.extDrawersCount = nextCount;
       }
     },
-    { source: 'extDrawers.toggle', immediate: true }
+    createCanvasPickingConfigStructuralPatchMeta('extDrawers.toggle')
   );
 
   return true;

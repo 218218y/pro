@@ -7,6 +7,7 @@ import {
 import { __wp_reportPickingIssue } from './canvas_picking_core_helpers.js';
 import { __wp_clearSketchHover } from './canvas_picking_local_helpers.js';
 import { firstRenderableHitIsSketchFreeBox } from './canvas_picking_sketch_free_box_hit_policy.js';
+import { createCanvasPickingConfigStructuralPatchMeta } from './canvas_picking_config_patch_meta.js';
 import {
   type CanvasLayoutEditClickArgs,
   ensureBraceShelves,
@@ -128,7 +129,7 @@ export function tryHandleCanvasBraceShelvesClick(args: CanvasLayoutEditClickArgs
           });
         }
       },
-      { source: 'braceShelves.toggle', immediate: true }
+      createCanvasPickingConfigStructuralPatchMeta('braceShelves.toggle')
     );
   })();
 

@@ -1,4 +1,5 @@
 import { isShelfBoardPartId } from '../features/shelf_part_identity.js';
+import { createCanvasPickingConfigStructuralPatchMeta } from './canvas_picking_config_patch_meta.js';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
 import type { ManualLayoutSketchDirectHitContext } from './canvas_picking_sketch_direct_hit_workflow_contracts.js';
 import { asConfig } from './canvas_picking_sketch_direct_hit_workflow_contracts.js';
@@ -58,7 +59,7 @@ export function tryApplySketchDirectHitShelfActions(args: ManualLayoutSketchDire
               const idx = shelfIndex - 1;
               shelves[idx] = !shelves[idx];
             },
-            { source: 'sketch.toggleBaseShelf', immediate: true }
+            createCanvasPickingConfigStructuralPatchMeta('sketch.toggleBaseShelf')
           );
           return true;
         }

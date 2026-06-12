@@ -10,6 +10,7 @@ const clickFlow = read('esm/native/services/canvas_picking_click_flow.ts');
 const clickModeState = read('esm/native/services/canvas_picking_click_mode_state.ts');
 const clickModuleRefs = read('esm/native/services/canvas_picking_click_module_refs.ts');
 const modulesPatchMeta = read('esm/native/services/canvas_picking_modules_patch_meta.ts');
+const configPatchMeta = read('esm/native/services/canvas_picking_config_patch_meta.ts');
 const clickRoute = read('esm/native/services/canvas_picking_click_route.ts');
 const clickRouteShared = read('esm/native/services/canvas_picking_click_route_shared.ts');
 const clickRouteManual = read('esm/native/services/canvas_picking_click_route_manual.ts');
@@ -100,6 +101,12 @@ test('canvas picking click owner stays thin and routes edit families through foc
   assert.match(modulesPatchMeta, /immediate: false/);
   assert.match(modulesPatchMeta, /noBuild: true/);
   assert.match(modulesPatchMeta, /noHistory: true/);
+  assert.match(
+    configPatchMeta,
+    /export function createCanvasPickingConfigStructuralPatchMeta\(source: string\): ActionMetaLike/
+  );
+  assert.match(configPatchMeta, /Canvas picking config structural patch requires a source/);
+  assert.match(configPatchMeta, /immediate: true/);
 
   assert.match(clickRoute, /export function routeCanvasPickingClick\(/);
   assert.match(clickRoute, /canvas_picking_click_route_shared\.js/);
@@ -192,14 +199,20 @@ test('canvas picking click owner stays thin and routes edit families through foc
     layoutFlowManual,
     /export function tryHandleCanvasManualLayoutClick\(args: CanvasLayoutEditClickArgs\): boolean/
   );
-  assert.match(layoutFlowManual, /source: 'manualLayout\.fillAllShelves'/);
-  assert.match(layoutFlowManual, /source: 'manualLayout\.toggleItem'/);
+  assert.match(
+    layoutFlowManual,
+    /createCanvasPickingConfigStructuralPatchMeta\('manualLayout\.fillAllShelves'\)/
+  );
+  assert.match(
+    layoutFlowManual,
+    /createCanvasPickingConfigStructuralPatchMeta\('manualLayout\.toggleItem'\)/
+  );
   assert.match(layoutFlowManual, /tryHandleManualLayoutSketchToolClick\(\{/);
   assert.match(
     layoutFlowBrace,
     /export function tryHandleCanvasBraceShelvesClick\(args: CanvasLayoutEditClickArgs\): boolean/
   );
-  assert.match(layoutFlowBrace, /source: 'braceShelves\.toggle'/);
+  assert.match(layoutFlowBrace, /createCanvasPickingConfigStructuralPatchMeta\('braceShelves\.toggle'\)/);
   assert.match(layoutFlowShared, /export type CanvasLayoutEditClickArgs = \{/);
   assert.match(layoutFlowShared, /export function ensureCustomData\(/);
   assert.match(
@@ -222,7 +235,7 @@ test('canvas picking click owner stays thin and routes edit families through foc
   );
   assert.match(drawerFlow, /tryHandleExternalDrawerModeClick\(\{/);
   assert.match(drawerFlow, /tryHandleDrawerDividerModeClick\(\{/);
-  assert.match(drawerFlowExternal, /source: 'extDrawers\.toggle'/);
+  assert.match(drawerFlowExternal, /createCanvasPickingConfigStructuralPatchMeta\('extDrawers\.toggle'\)/);
   assert.match(drawerFlowDivider, /source: 'divider:click'/);
 
   assert.match(
@@ -337,6 +350,11 @@ test('canvas picking click owner stays thin and routes edit families through foc
   assert.ok(
     audit.includes(
       '`services/canvas_picking_modules_patch_meta.ts` owns the direct Canvas picking `modules.patchForStack` meta profiles: structural module edits are immediate build-visible writes, while motion/open-state toggles persist with no-build/no-history meta'
+    )
+  );
+  assert.ok(
+    audit.includes(
+      '`services/canvas_picking_config_patch_meta.ts` owns Canvas picking `__patchConfigForKey` structural patch meta so layout/manual/sketch/drawer config writes remain immediate build-visible writes without no-build/no-history flags'
     )
   );
   assert.ok(
