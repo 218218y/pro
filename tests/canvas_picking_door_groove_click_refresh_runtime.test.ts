@@ -1,7 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { handleCanvasDoorGrooveClick } from '../esm/native/services/canvas_picking_door_hinge_groove_click.ts';
+import {
+  handleCanvasDoorGrooveClick,
+  handleCanvasDoorHingeClick,
+} from '../esm/native/services/canvas_picking_door_hinge_groove_click.ts';
 import {
   isSketchBoxDoorSegmentPartId,
   parseSketchBoxDoorTarget,
@@ -106,6 +109,22 @@ test('door authoring immediate refresh runs before the post-click hover refresh 
 
   assert.equal(buildRequests.length, 1);
   assert.equal(buildRequests[0].meta.source, 'groove:click');
+  assert.equal(buildRequests[0].meta.immediate, true);
+  assert.equal(buildRequests[0].meta.force, false);
+});
+
+test('regular door hinge click writes the hinge map and requests an immediate rebuild', () => {
+  const { App, state, buildRequests } = createApp();
+
+  const handled = handleCanvasDoorHingeClick({
+    App,
+    effectiveDoorId: 'd1_left',
+  });
+
+  assert.equal(handled, true);
+  assert.equal(state.config.hingeMap.door_hinge_1, 'right');
+  assert.equal(buildRequests.length, 1);
+  assert.equal(buildRequests[0].meta.source, 'hinge:click');
   assert.equal(buildRequests[0].meta.immediate, true);
   assert.equal(buildRequests[0].meta.force, false);
 });

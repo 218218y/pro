@@ -34,6 +34,7 @@ const drawerFlow = read('esm/native/services/canvas_picking_drawer_mode_flow.ts'
 const drawerFlowExternal = read('esm/native/services/canvas_picking_drawer_mode_flow_external.ts');
 const drawerFlowDivider = read('esm/native/services/canvas_picking_drawer_mode_flow_divider.ts');
 const doorEdit = read('esm/native/services/canvas_picking_door_edit_flow.ts');
+const doorHingeGroove = read('esm/native/services/canvas_picking_door_hinge_groove_click.ts');
 const paintFlow = read('esm/native/services/canvas_picking_paint_flow.ts');
 const paintApply = read('esm/native/services/canvas_picking_paint_flow_apply.ts');
 const paintApplyState = read('esm/native/services/canvas_picking_paint_flow_apply_state.ts');
@@ -211,6 +212,8 @@ test('canvas picking click owner stays thin and routes edit families through foc
   assert.doesNotMatch(doorEdit, /const __splitVariant = readSplitVariant\(App\);/);
   assert.doesNotMatch(doorEdit, /const familyPartIds = \(\(\) => \{/);
   assert.doesNotMatch(doorEdit, /const nextGroove = !\(current\.groove === true\);/);
+  assert.match(doorHingeGroove, /requestDoorAuthoringImmediateRefresh\(App, 'hinge:click'\)/);
+  assert.match(doorHingeGroove, /requestDoorAuthoringImmediateRefresh\(App, 'groove:click'\)/);
 
   assert.match(
     paintFlow,

@@ -79,6 +79,7 @@ export function handleCanvasDoorHingeClick(args: CanvasDoorHingeClickArgs): bool
   } else {
     writeHinge(App, hingeKey, nextHinge, { immediate: true });
   }
+  requestDoorAuthoringImmediateRefresh(App, 'hinge:click');
   setDoorsOpenViaService(App, false, { forceUpdate: true });
   return true;
 }
