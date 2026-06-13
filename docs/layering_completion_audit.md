@@ -14,6 +14,8 @@ This file is intentionally compact. It keeps only current decomposition guard fa
 - `services/canvas_picking_modules_patch_meta.ts` owns the direct Canvas picking `modules.patchForStack` meta profiles: structural module edits are immediate build-visible writes, while motion/open-state toggles persist with no-build/no-history meta
 - `services/canvas_picking_config_patch_meta.ts` owns Canvas picking `__patchConfigForKey` structural patch meta so layout/manual/sketch/drawer config writes remain immediate build-visible writes without no-build/no-history flags
 - `services/canvas_picking_door_authoring_meta.ts` owns Canvas picking door-authoring structural meta so hinge/groove/split/trim/remove/removable-part action, map, and history writes stay immediate build-visible writes from one source-normalized contract
+- `services/canvas_picking_handle_assign_meta.ts` owns Canvas picking handle-assignment structural meta so handle type, edge variant, color, manual-position, and clear-manual-position map writes stay immediate build-visible writes from one source-normalized contract
+- `services/canvas_picking_drawer_mode_divider_meta.ts` owns Canvas picking drawer-divider structural meta so action and direct-map divider toggles stay immediate build-visible writes from one source-normalized contract
 - `canvas_picking_click_flow.ts` paint flows now live in `services/canvas_picking_paint_flow.ts`
 - `canvas_picking_click_flow.ts` handle-assign flows now live in `services/canvas_picking_handle_assign_flow.ts`
 - `canvas_picking_click_flow.ts` none/screen-note door toggle flows now live in `services/canvas_picking_toggle_flow.ts`

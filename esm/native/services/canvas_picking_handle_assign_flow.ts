@@ -24,6 +24,7 @@ import { getMode } from '../kernel/api.js';
 import { getThreeMaybe } from '../runtime/three_access.js';
 import { readMapOrEmpty, writeHandle, writeMapKey } from '../runtime/maps_access.js';
 import { readDoorLeafRectFromUserData, resolveDoorHitOwnerByPartId } from './canvas_picking_door_shared.js';
+import { createCanvasPickingHandleAssignStructuralMeta } from './canvas_picking_handle_assign_meta.js';
 import {
   __wp_isDoorLikePartId,
   __wp_isDrawerLikePartId,
@@ -91,10 +92,13 @@ function clearManualHandlePositionIfPresent(App: AppContainer, partId: string): 
   const key = manualHandlePositionKey(partId);
   const handlesMap = asRecord<UnknownRecord>(readMapOrEmpty(App, 'handlesMap'));
   if (!handlesMap || !Object.prototype.hasOwnProperty.call(handlesMap, key)) return;
-  writeMapKey(App, 'handlesMap', key, null, {
-    source: 'handles:clearManualPosition',
-    immediate: true,
-  });
+  writeMapKey(
+    App,
+    'handlesMap',
+    key,
+    null,
+    createCanvasPickingHandleAssignStructuralMeta('handles:clearManualPosition')
+  );
 }
 
 function readUserDataPartId(userData: UnknownRecord | null | undefined): string {
@@ -151,17 +155,17 @@ function writeSelectedHandleConfig(args: {
   modeOpts: UnknownRecord | null;
 }): void {
   const { App, partId, handleType, modeOpts } = args;
-  writeHandle(App, partId, handleType, {
-    source: 'handles:assign',
-    immediate: true,
-  });
+  writeHandle(App, partId, handleType, createCanvasPickingHandleAssignStructuralMeta('handles:assign'));
 
   if (handleType === 'edge') {
     const edgeVariant = __normEdgeHandleVariant(modeOpts ? modeOpts.edgeHandleVariant : undefined);
-    writeMapKey(App, 'handlesMap', __edgeHandleVariantPartKey(partId), edgeVariant, {
-      source: 'handles:assignEdgeVariant',
-      immediate: true,
-    });
+    writeMapKey(
+      App,
+      'handlesMap',
+      __edgeHandleVariantPartKey(partId),
+      edgeVariant,
+      createCanvasPickingHandleAssignStructuralMeta('handles:assignEdgeVariant')
+    );
   }
 
   writeMapKey(
@@ -169,10 +173,7 @@ function writeSelectedHandleConfig(args: {
     'handlesMap',
     handleColorPartKey(partId),
     normalizeHandleFinishColor(modeOpts ? modeOpts.handleColor : DEFAULT_HANDLE_FINISH_COLOR),
-    {
-      source: 'handles:assignColor',
-      immediate: true,
-    }
+    createCanvasPickingHandleAssignStructuralMeta('handles:assignColor')
   );
 }
 
@@ -220,10 +221,13 @@ function tryHandleManualHandlePositionClick(
 
   const handleType = readManualHandleType(App);
   writeSelectedHandleConfig({ App, partId, handleType, modeOpts });
-  writeMapKey(App, 'handlesMap', manualHandlePositionKey(partId), serializeManualHandlePosition(position), {
-    source: 'handles:assignManualPosition',
-    immediate: true,
-  });
+  writeMapKey(
+    App,
+    'handlesMap',
+    manualHandlePositionKey(partId),
+    serializeManualHandlePosition(position),
+    createCanvasPickingHandleAssignStructuralMeta('handles:assignManualPosition')
+  );
   return true;
 }
 
@@ -254,18 +258,18 @@ export function tryHandleCanvasHandleAssignClick(args: CanvasHandleAssignClickAr
       const __tools_h = getTools(App);
       const __ht = typeof __tools_h.getHandlesType === 'function' ? __tools_h.getHandlesType() : 'standard';
 
-      writeHandle(App, partId, __ht, {
-        source: 'handles:assign',
-        immediate: true,
-      });
+      writeHandle(App, partId, __ht, createCanvasPickingHandleAssignStructuralMeta('handles:assign'));
 
       if (__ht === 'edge') {
         const __edgeVariant = __normEdgeHandleVariant(__modeOpts ? __modeOpts.edgeHandleVariant : undefined);
 
-        writeMapKey(App, 'handlesMap', __edgeHandleVariantPartKey(partId), __edgeVariant, {
-          source: 'handles:assignEdgeVariant',
-          immediate: true,
-        });
+        writeMapKey(
+          App,
+          'handlesMap',
+          __edgeHandleVariantPartKey(partId),
+          __edgeVariant,
+          createCanvasPickingHandleAssignStructuralMeta('handles:assignEdgeVariant')
+        );
       }
 
       if (__ht !== 'none') {
@@ -274,10 +278,7 @@ export function tryHandleCanvasHandleAssignClick(args: CanvasHandleAssignClickAr
           'handlesMap',
           handleColorPartKey(partId),
           normalizeHandleFinishColor(__modeOpts ? __modeOpts.handleColor : undefined),
-          {
-            source: 'handles:assignColor',
-            immediate: true,
-          }
+          createCanvasPickingHandleAssignStructuralMeta('handles:assignColor')
         );
       }
     }

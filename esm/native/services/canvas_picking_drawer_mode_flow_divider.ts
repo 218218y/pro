@@ -5,6 +5,7 @@ import { setDoorsOpenViaService, setDrawerRebuildIntent } from '../runtime/doors
 import { toggleDivider } from '../runtime/maps_access.js';
 import { toggleDividerViaActions } from '../runtime/actions_access_mutations.js';
 import { readRuntimeScalarOrDefaultFromApp } from '../runtime/runtime_selectors.js';
+import { createCanvasPickingDrawerDividerStructuralMeta } from './canvas_picking_drawer_mode_divider_meta.js';
 import { hasPartId, readDrawerIsInternal } from './canvas_picking_drawer_mode_flow_shared.js';
 
 export function tryHandleDrawerDividerModeClick(args: {
@@ -45,8 +46,9 @@ export function tryHandleDrawerDividerModeClick(args: {
   if (clickedDrawer) clickedDrawer.isOpen = true;
   setDrawerRebuildIntent(App, targetDrawerId);
 
-  if (!toggleDividerViaActions(App, dividerKey, { immediate: true, source: 'divider:click' })) {
-    toggleDivider(App, dividerKey, { immediate: true });
+  const dividerMeta = createCanvasPickingDrawerDividerStructuralMeta('divider:click');
+  if (!toggleDividerViaActions(App, dividerKey, dividerMeta)) {
+    toggleDivider(App, dividerKey, dividerMeta);
   }
 
   return true;

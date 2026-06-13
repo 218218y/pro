@@ -12,6 +12,7 @@ const clickModuleRefs = read('esm/native/services/canvas_picking_click_module_re
 const modulesPatchMeta = read('esm/native/services/canvas_picking_modules_patch_meta.ts');
 const configPatchMeta = read('esm/native/services/canvas_picking_config_patch_meta.ts');
 const doorAuthoringMeta = read('esm/native/services/canvas_picking_door_authoring_meta.ts');
+const handleAssignMeta = read('esm/native/services/canvas_picking_handle_assign_meta.ts');
 const clickRoute = read('esm/native/services/canvas_picking_click_route.ts');
 const clickRouteShared = read('esm/native/services/canvas_picking_click_route_shared.ts');
 const clickRouteManual = read('esm/native/services/canvas_picking_click_route_manual.ts');
@@ -40,6 +41,7 @@ const manualLayoutFreeBoxContent = read(
 const drawerFlow = read('esm/native/services/canvas_picking_drawer_mode_flow.ts');
 const drawerFlowExternal = read('esm/native/services/canvas_picking_drawer_mode_flow_external.ts');
 const drawerFlowDivider = read('esm/native/services/canvas_picking_drawer_mode_flow_divider.ts');
+const drawerDividerMeta = read('esm/native/services/canvas_picking_drawer_mode_divider_meta.ts');
 const doorEdit = read('esm/native/services/canvas_picking_door_edit_flow.ts');
 const doorRemove = read('esm/native/services/canvas_picking_door_remove_click.ts');
 const doorHingeGroove = read('esm/native/services/canvas_picking_door_hinge_groove_click.ts');
@@ -114,6 +116,18 @@ test('canvas picking click owner stays thin and routes edit families through foc
   );
   assert.match(doorAuthoringMeta, /Canvas picking door-authoring structural meta requires a source/);
   assert.match(doorAuthoringMeta, /immediate: true/);
+  assert.match(
+    handleAssignMeta,
+    /export function createCanvasPickingHandleAssignStructuralMeta\(source: string\): ActionMetaLike/
+  );
+  assert.match(handleAssignMeta, /Canvas picking handle-assignment structural meta requires a source/);
+  assert.match(handleAssignMeta, /immediate: true/);
+  assert.match(
+    drawerDividerMeta,
+    /export function createCanvasPickingDrawerDividerStructuralMeta\(source: string\): ActionMetaLike/
+  );
+  assert.match(drawerDividerMeta, /Canvas picking drawer-divider structural meta requires a source/);
+  assert.match(drawerDividerMeta, /immediate: true/);
 
   assert.match(clickRoute, /export function routeCanvasPickingClick\(/);
   assert.match(clickRoute, /canvas_picking_click_route_shared\.js/);
@@ -243,7 +257,9 @@ test('canvas picking click owner stays thin and routes edit families through foc
   assert.match(drawerFlow, /tryHandleExternalDrawerModeClick\(\{/);
   assert.match(drawerFlow, /tryHandleDrawerDividerModeClick\(\{/);
   assert.match(drawerFlowExternal, /createCanvasPickingConfigStructuralPatchMeta\('extDrawers\.toggle'\)/);
-  assert.match(drawerFlowDivider, /source: 'divider:click'/);
+  assert.match(drawerFlowDivider, /createCanvasPickingDrawerDividerStructuralMeta\('divider:click'\)/);
+  assert.match(drawerFlowDivider, /toggleDividerViaActions\(App, dividerKey, dividerMeta\)/);
+  assert.match(drawerFlowDivider, /toggleDivider\(App, dividerKey, dividerMeta\)/);
 
   assert.match(
     doorEdit,
@@ -308,6 +324,8 @@ test('canvas picking click owner stays thin and routes edit families through foc
     handleFlow,
     /export function tryHandleCanvasHandleAssignClick\(args: CanvasHandleAssignClickArgs\): boolean/
   );
+  assert.match(handleFlow, /createCanvasPickingHandleAssignStructuralMeta\('handles:assign'\)/);
+  assert.match(handleFlow, /createCanvasPickingHandleAssignStructuralMeta\('handles:assignManualPosition'\)/);
   assert.match(
     toggleFlow,
     /export function handleCanvasDoorToggleClick\(args: CanvasDoorToggleClickArgs\): void/
@@ -370,6 +388,16 @@ test('canvas picking click owner stays thin and routes edit families through foc
   assert.ok(
     audit.includes(
       '`services/canvas_picking_door_authoring_meta.ts` owns Canvas picking door-authoring structural meta so hinge/groove/split/trim/remove/removable-part action, map, and history writes stay immediate build-visible writes from one source-normalized contract'
+    )
+  );
+  assert.ok(
+    audit.includes(
+      '`services/canvas_picking_handle_assign_meta.ts` owns Canvas picking handle-assignment structural meta so handle type, edge variant, color, manual-position, and clear-manual-position map writes stay immediate build-visible writes from one source-normalized contract'
+    )
+  );
+  assert.ok(
+    audit.includes(
+      '`services/canvas_picking_drawer_mode_divider_meta.ts` owns Canvas picking drawer-divider structural meta so action and direct-map divider toggles stay immediate build-visible writes from one source-normalized contract'
     )
   );
   assert.ok(
