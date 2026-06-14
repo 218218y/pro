@@ -129,8 +129,8 @@ function SketchTabInner(props: { active: boolean }): ReactElement {
               hexModeButton: 'צורה משושה',
               hexProtrusionField: 'בליטה ישרה משושה',
               hexDoorWidthField: 'רוחב דלת משושה',
-              resetHexProtrusionTitle: 'איפוס בליטה ישרה משושה',
-              resetHexDoorWidthTitle: 'איפוס רוחב דלת משושה',
+              resetHexProtrusionTitle: 'איפוס בליטה ישרה',
+              resetHexDoorWidthTitle: 'איפוס רוחב דלת',
             }}
           />
         </div>

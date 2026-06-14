@@ -326,7 +326,7 @@ export function StructureCellDimsControls(props: StructureCellDimsControlsProps)
                   }}
                   inputAddon={
                     <CellDimResetButton
-                      title={labels.resetHexProtrusionTitle || 'איפוס בליטה ישרה תא משושה'}
+                      title={labels.resetHexProtrusionTitle || 'איפוס בליטה ישרה'}
                       disabled={props.cellDimsHexProtrusion === ''}
                       onClick={() => clearHexCellDim(props.onClearCellDimsHexProtrusion)}
                       testId={testIds.resetHexProtrusionButton}
@@ -353,7 +353,7 @@ export function StructureCellDimsControls(props: StructureCellDimsControlsProps)
                   }}
                   inputAddon={
                     <CellDimResetButton
-                      title={labels.resetHexDoorWidthTitle || 'איפוס רוחב דלת תא משושה'}
+                      title={labels.resetHexDoorWidthTitle || 'איפוס רוחב דלת'}
                       disabled={props.cellDimsHexDoorWidth === ''}
                       onClick={() => clearHexCellDim(props.onClearCellDimsHexDoorWidth)}
                       testId={testIds.resetHexDoorWidthButton}
