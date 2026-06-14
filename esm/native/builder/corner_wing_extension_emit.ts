@@ -6,9 +6,8 @@
 import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { getInternalGridMap } from '../runtime/cache_access.js';
 import { addToWardrobeGroup, getRenderNamespace } from '../runtime/render_access.js';
-import { readMap, readMapOrEmpty, readSplitPosListFromMap } from '../runtime/maps_access.js';
+import { readSplitPosListFromMap } from '../runtime/maps_access.js';
 import { readModulesConfigurationListFromConfigSnapshot } from '../features/modules_configuration/modules_config_api.js';
-import { getCfg } from './store_access.js';
 import { MODES } from '../runtime/api.js';
 import { getBaseLegColorHex, resolveBaseLegGeometrySpec } from '../features/base_leg_support.js';
 import { getOrCreateCacheRecord } from './corner_cache.js';
@@ -31,6 +30,11 @@ import { applyCornerWingCarcass } from './corner_wing_carcass_emit.js';
 import { deriveCornerWingCells, resolveCornerWingDoorCount } from './corner_wing_extension_cells.js';
 import { applyCornerWingCellFlow } from './corner_wing_cell_emit.js';
 import { applyCornerWingCornice } from './corner_wing_cornice_emit.js';
+import {
+  createCornerConfigGetter,
+  createCornerConfigReadMap,
+  createCornerConfigReadMapOrEmpty,
+} from './corner_config_readers.js';
 
 export function emitCornerWingExtension(ctx: CornerOpsEmitContext): void {
   const {
@@ -77,6 +81,9 @@ export function emitCornerWingExtension(ctx: CornerOpsEmitContext): void {
   } = ctx;
 
   const render = asRecord(getRenderNamespace(App));
+  const getCornerCfg = createCornerConfigGetter(__cfg);
+  const readCornerMap = createCornerConfigReadMap(__cfg);
+  const readCornerMapOrEmpty = createCornerConfigReadMapOrEmpty(__cfg);
 
   const materials = { front: frontMat, body: bodyMat };
 
@@ -150,7 +157,7 @@ export function emitCornerWingExtension(ctx: CornerOpsEmitContext): void {
   const { __wingBackPanelThick, __wingBackPanelCenterZ } = applyCornerWingCarcass({
     ctx,
     locals: { App, cornerCells, activeFaceCenter },
-    helpers: { getCfg, getInternalGridMap, asRecord, readNumFrom, readStrFrom, cloneMaybe },
+    helpers: { getCfg: getCornerCfg, getInternalGridMap, asRecord, readNumFrom, readStrFrom, cloneMaybe },
   });
 
   applyCornerWingCellFlow({
@@ -166,11 +173,11 @@ export function emitCornerWingExtension(ctx: CornerOpsEmitContext): void {
       __cornerSharedAlignedEdgeHandleBaseAbsY,
     },
     helpers: {
-      readMap,
-      readMapOrEmpty,
+      readMap: readCornerMap,
+      readMapOrEmpty: readCornerMapOrEmpty,
       readSplitPosListFromMap,
       readModulesConfigurationListFromConfigSnapshot,
-      getCfg,
+      getCfg: getCornerCfg,
       MODES,
       getOrCreateCacheRecord,
       isPrimaryMode,
@@ -196,7 +203,7 @@ export function emitCornerWingExtension(ctx: CornerOpsEmitContext): void {
       __wingBackPanelCenterZ,
       cornerCells,
     },
-    helpers: { getCfg, readMap, isRecord, asRecord, readNumFrom },
+    helpers: { getCfg: getCornerCfg, readMap: readCornerMap, isRecord, asRecord, readNumFrom },
   });
 
   // Enable stable shadows for the corner wing body (exclude doors/drawers).

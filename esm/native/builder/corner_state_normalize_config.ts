@@ -1,6 +1,4 @@
 import type { AppContainer, ConfigStateLike, RemovedDoorsMap } from '../../../types/index.js';
-import { readMap } from '../runtime/maps_access.js';
-import { getCfg } from './store_access.js';
 import {
   cloneCornerConfigurationForLowerSnapshot,
   readCornerConfigurationFromConfigSnapshot,
@@ -9,6 +7,7 @@ import {
 import type { CornerBuildUI, CornerConfigRecord } from './corner_state_normalize_contracts.js';
 import { asRemovedDoorsMap, ensureCornerConfigRecord } from './corner_state_normalize_shared.js';
 import { isRecord } from './corner_geometry_plan.js';
+import { readCornerConfigSnapshot } from './corner_config_readers.js';
 
 export type CornerNormalizedConfigState = {
   __cfg: ConfigStateLike;
@@ -20,12 +19,13 @@ export type CornerNormalizedConfigState = {
 
 export function createCornerNormalizedConfigState(args: {
   App: AppContainer;
+  cfgSnapshot?: ConfigStateLike | null | undefined;
   uiAny: CornerBuildUI;
   __stackKey: 'top' | 'bottom';
   __stackSplitEnabled: boolean;
 }): CornerNormalizedConfigState {
-  const { App, __stackKey, __stackSplitEnabled } = args;
-  const __cfg = getCfg(App);
+  const { App, cfgSnapshot, __stackKey, __stackSplitEnabled } = args;
+  const __cfg = readCornerConfigSnapshot(App, cfgSnapshot);
 
   const __stackScopePartKey = (partId: unknown): string => {
     const pid = String(partId || '');
@@ -36,10 +36,7 @@ export function createCornerNormalizedConfigState(args: {
     return pid;
   };
 
-  const removedDoorsMapCandidate = asRemovedDoorsMap(readMap(App, 'removedDoorsMap'));
-  const cfgRemovedDoorsMap = asRemovedDoorsMap(__cfg.removedDoorsMap);
-  const __removedDoorsMap: RemovedDoorsMap =
-    Object.keys(removedDoorsMapCandidate).length > 0 ? removedDoorsMapCandidate : cfgRemovedDoorsMap;
+  const __removedDoorsMap: RemovedDoorsMap = asRemovedDoorsMap(__cfg.removedDoorsMap);
 
   const __isDoorRemoved = (pid: unknown) => {
     const kRaw = String(pid || '');

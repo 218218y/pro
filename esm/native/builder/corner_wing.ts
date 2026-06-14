@@ -10,12 +10,16 @@
 // - corner_ops_emit.ts
 
 import { assertApp } from '../runtime/api.js';
-import { readMap, getGrooveReader, getCurtainReader } from '../runtime/maps_access.js';
 
 import { normalizeCornerWingState, type CornerBuildMeta } from './corner_state_normalize.js';
 import { createCornerWingMaterials } from './corner_materials.js';
 import { emitCornerConnector, emitCornerWingExtension } from './corner_ops_emit.js';
 import { createCornerWingEmitContext } from './corner_wing_context.js';
+import {
+  createCornerConfigMapReader,
+  createCornerCurtainReader,
+  createCornerGrooveReader,
+} from './corner_config_readers.js';
 import {
   hasAppCtx,
   resolveCornerWingServices,
@@ -45,11 +49,12 @@ export const buildCornerWing: BuilderBuildCornerWingFn = (
   const services = resolveCornerWingServices(App);
 
   const state = normalizeCornerWingState({ App, mainW, mainH, mainD, woodThick, startY, meta });
+  const readCornerMap = createCornerConfigMapReader(state.__cfg);
 
   const readers = {
-    getMap: (name: string) => readMap(App, name),
-    getGroove: getGrooveReader(App),
-    getCurtain: getCurtainReader(App),
+    getMap: readCornerMap,
+    getGroove: createCornerGrooveReader(state.__cfg),
+    getCurtain: createCornerCurtainReader(state.__cfg),
   };
 
   const mats = createCornerWingMaterials({

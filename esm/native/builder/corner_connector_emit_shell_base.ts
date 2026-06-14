@@ -1,6 +1,6 @@
 import { CARCASS_BASE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
-import { getCfg } from './store_access.js';
 import { getBaseLegColorHex, resolveBaseLegGeometrySpec } from '../features/base_leg_support.js';
+import { isCornerMultiColorModeEnabled } from './corner_config_readers.js';
 
 import type { ShapeInputLike, CornerConnectorSetup } from './corner_connector_emit_shared.js';
 import type { CornerConnectorShellMetrics } from './corner_connector_emit_shell_metrics.js';
@@ -85,7 +85,6 @@ function appendCornerConnectorBase(setup: CornerConnectorSetup, metrics: CornerC
     plateShape,
     cornerGroup,
     ctx: {
-      App,
       woodThick,
       startY,
       wingH,
@@ -97,6 +96,7 @@ function appendCornerConnectorBase(setup: CornerConnectorSetup, metrics: CornerC
       baseH,
       bodyMat,
       __individualColors,
+      __cfg,
       getCornerMat,
       addOutlines,
       getMaterial,
@@ -105,7 +105,7 @@ function appendCornerConnectorBase(setup: CornerConnectorSetup, metrics: CornerC
 
   if (baseType === 'plinth' && baseH > 0.001) {
     let plinthMat = bodyMat;
-    if (getCfg(App).isMultiColorMode && __individualColors['corner_pent_plinth']) {
+    if (isCornerMultiColorModeEnabled(__cfg) && __individualColors['corner_pent_plinth']) {
       plinthMat = getCornerMat('corner_pent_plinth', bodyMat);
     }
     const plinth = new THREE.Mesh(

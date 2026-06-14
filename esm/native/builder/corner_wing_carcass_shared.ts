@@ -36,6 +36,7 @@ export type CornerWingCarcassCtx = {
   baseType: string;
   baseH: number;
   cabinetBodyHeight: number;
+  __cfg?: unknown;
   __individualColors: UnknownRecord;
   __doorSpecialMap?: unknown;
   __readScopedMapVal?: (mapObj: UnknownRecord | null | undefined, partId: unknown) => unknown;

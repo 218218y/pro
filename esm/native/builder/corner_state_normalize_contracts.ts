@@ -12,6 +12,7 @@ export type CornerBuildMeta = {
   stackSplitEnabled?: boolean;
   stackOffsetZ?: number;
   shelfThick?: unknown;
+  cfgSnapshot?: ConfigStateLike | UnknownRecord | null;
   [k: string]: unknown;
 };
 

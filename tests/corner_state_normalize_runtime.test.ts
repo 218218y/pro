@@ -119,6 +119,61 @@ test('normalizeCornerWingState does not let top corner special width seed a miss
   assert.equal((state.config as Record<string, unknown>).connectorSpecialDims, undefined);
 });
 
+test('normalizeCornerWingState reads corner config and removed doors from meta snapshot, not stale App maps', () => {
+  const App = createApp({
+    buildUi: {
+      cornerWidth: 180,
+      cornerHeight: 225,
+      cornerDepth: 70,
+      cornerDoors: 2,
+      cornerConnectorEnabled: true,
+    },
+    config: {
+      removedDoorsMap: {
+        removed_lower_corner_pent_door_2_full: true,
+      },
+      cornerConfiguration: {
+        stackSplitLower: {
+          layout: 'hanging_top2',
+          specialDims: { widthCm: 190, depthCm: 80 },
+        },
+      },
+    },
+    maps: {
+      removedDoorsMap: {
+        removed_lower_corner_pent_door_2_full: true,
+      },
+    },
+  });
+
+  const state = normalizeCornerWingState({
+    App,
+    mainW: 1.8,
+    mainH: 1.0,
+    mainD: 0.6,
+    woodThick: 0.018,
+    startY: 0,
+    meta: {
+      stackKey: 'bottom',
+      stackSplitEnabled: true,
+      cfgSnapshot: {
+        removedDoorsMap: {},
+        cornerConfiguration: {
+          stackSplitLower: {
+            layout: 'shelves',
+            specialDims: { widthCm: 130, depthCm: 55 },
+          },
+        },
+      },
+    },
+  });
+
+  assert.equal(state.config.layout, 'shelves');
+  assert.equal(state.wingLengthCM, 130);
+  assert.equal(state.wingD, 0.55);
+  assert.equal(state.__isDoorRemoved('corner_pent_door_2'), false);
+});
+
 test('normalizeCornerWingState forces top split stack to drop the base and honor remove-door mode', () => {
   const App = createApp({
     buildUi: {

@@ -5,14 +5,12 @@
 // in focused helpers.
 
 import {
-  readMapOrEmpty,
   isSplitEnabledInMap,
   isSplitExplicitInMap,
   isSplitBottomEnabledInMap,
   readSplitPosListFromMap,
 } from '../runtime/maps_access.js';
 import { readModulesConfigurationListFromConfigSnapshot } from '../features/modules_configuration/modules_config_api.js';
-import { getCfg } from './store_access.js';
 import { MODES, reportErrorThrottled } from '../runtime/api.js';
 import { addToWardrobeGroup } from '../runtime/render_access.js';
 import { getOrCreateCacheRecord } from './corner_cache.js';
@@ -35,15 +33,18 @@ import { buildCornerConnectorShell } from './corner_connector_emit_shell.js';
 import { applyCornerConnectorInteriorFlow } from './corner_connector_interior_emit.js';
 import { applyCornerConnectorDoorFlow } from './corner_connector_door_emit.js';
 import { applyCornerConnectorCornice } from './corner_connector_cornice_emit.js';
+import { createCornerConfigGetter, createCornerConfigReadMapOrEmpty } from './corner_config_readers.js';
 
 export function emitCornerConnector(ctx: CornerOpsEmitContext): void {
   const setup = createCornerConnectorSetup(ctx);
   if (!setup) return;
 
   const shell = buildCornerConnectorShell(setup);
-  const { App, wingGroup, __applyStableShadowsToModule } = ctx;
+  const { App, wingGroup, __applyStableShadowsToModule, __cfg } = ctx;
   const { mx, L, Dmain, shape, pts, interiorX, interiorZ, cornerGroup, showFrontPanel } = setup;
   const { panelThick, backPanelThick, backPanelOutsideInsetZ, addEdgePanel } = shell;
+  const getCornerCfg = createCornerConfigGetter(__cfg);
+  const readCornerMapOrEmpty = createCornerConfigReadMapOrEmpty(__cfg);
 
   applyCornerConnectorInteriorFlow({
     ctx,
@@ -75,8 +76,8 @@ export function emitCornerConnector(ctx: CornerOpsEmitContext): void {
       addEdgePanel,
     },
     helpers: {
-      getCfg,
-      readMapOrEmpty,
+      getCfg: getCornerCfg,
+      readMapOrEmpty: readCornerMapOrEmpty,
       isSplitEnabledInMap,
       isSplitExplicitInMap,
       isSplitBottomEnabledInMap,

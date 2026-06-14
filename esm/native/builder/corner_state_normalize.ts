@@ -41,6 +41,7 @@ export function normalizeCornerWingState(args: {
   const stackMeta = resolveCornerWingStackMeta(meta);
   const configState = createCornerNormalizedConfigState({
     App,
+    cfgSnapshot: meta?.cfgSnapshot,
     uiAny,
     __stackKey: stackMeta.__stackKey,
     __stackSplitEnabled: stackMeta.__stackSplitEnabled,

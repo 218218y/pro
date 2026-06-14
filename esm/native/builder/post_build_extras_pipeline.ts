@@ -195,6 +195,7 @@ export function applyPostBuildExtras(input: BuildContextLike) {
             stackSplitEnabled: true,
             stackOffsetZ: 0,
             shelfThick: resolvedShelfThick,
+            cfgSnapshot: cfg,
           }
         : {
             stackKey: 'bottom',
@@ -206,6 +207,7 @@ export function applyPostBuildExtras(input: BuildContextLike) {
             baseLegHeightCm: ctx.strings?.baseLegHeightCm,
             baseLegWidthCm: ctx.strings?.baseLegWidthCm,
             shelfThick: resolvedShelfThick,
+            cfgSnapshot: cfg,
           }
       : null;
     if (__cornerWingMeta) {
@@ -236,7 +238,7 @@ export function applyPostBuildExtras(input: BuildContextLike) {
           defaultShelfMat,
           braceShelfMat,
         },
-        { shelfThick: resolvedShelfThick }
+        { shelfThick: resolvedShelfThick, cfgSnapshot: cfg }
       );
     }
   }

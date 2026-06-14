@@ -22,6 +22,7 @@ This file is intentionally compact. It keeps only current decomposition guard fa
 - `canvas_picking_click_flow.ts` handle-assign flows now live in `services/canvas_picking_handle_assign_flow.ts`
 - `canvas_picking_click_flow.ts` none/screen-note door toggle flows now live in `services/canvas_picking_toggle_flow.ts`
 - `builder/build_visible_config_gates.ts` owns build-visible UI gates for persisted door-authoring config maps so resolver snapshots and scheduler fingerprints agree when groove/split/remove/hinge toggles are off
+- `builder/corner_config_readers.ts` owns corner-wing snapshot-backed config/map readers so wing, connector, carcass, door, drawer, and cornice corner flows consume the build `cfgSnapshot` instead of live `App.maps`
 - `canvas_picking_click_flow.ts` cell-dims click flows now live in `services/canvas_picking_cell_dims_flow.ts`
 - `services/canvas_picking_click_flow.ts` is now a thin canonical seam over focused click-mode, module-ref, hit-resolution, and route owners
 - `services/canvas_picking_cell_dims_corner.ts` now stays a thin seam while the canonical corner contracts/context/effects surface lives behind `services/canvas_picking_cell_dims_corner_shared.ts`, per-cell corner width/height/depth policy lives in `services/canvas_picking_cell_dims_corner_cell.ts`, and global wing/connector width policy lives in the focused `services/canvas_picking_cell_dims_corner_global_state.ts` + `services/canvas_picking_cell_dims_corner_global_apply.ts` owners behind `services/canvas_picking_cell_dims_corner_global.ts`

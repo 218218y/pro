@@ -190,6 +190,7 @@ export function applyStackSplitLowerCornerWingIfNeeded(args: {
       stackSplitEnabled: true,
       stackOffsetZ: Number.isFinite(Number(lowerDims.startZ)) ? Number(lowerDims.startZ) : 0,
       shelfThick: buildArgs.shelfThick,
+      cfgSnapshot: buildArgs.cfg,
     }
   );
 }

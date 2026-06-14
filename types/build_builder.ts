@@ -25,7 +25,7 @@ import type {
   DoorTrimMap,
 } from './maps';
 import type { ActionMetaLike } from './kernel';
-import type { BuildStateLike, UiSnapshotLike } from './build_state';
+import type { BuildStateLike, ConfigStateLike, UiSnapshotLike } from './build_state';
 import type {
   BuilderContentsSurfaceLike,
   BuilderModulesSurfaceLike,
@@ -300,6 +300,8 @@ export interface BuilderCornerBuildMetaLike extends UnknownRecord {
   baseLegHeightCm?: number | string;
   stackSplitEnabled?: boolean;
   stackOffsetZ?: number;
+  shelfThick?: unknown;
+  cfgSnapshot?: ConfigStateLike | UnknownRecord | null;
 }
 export interface BuilderBuildCornerWingCtxLike extends UnknownRecord {
   App?: unknown;

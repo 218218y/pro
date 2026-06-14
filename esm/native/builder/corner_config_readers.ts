@@ -1,0 +1,97 @@
+import type { AppContainer, ConfigStateLike, KnownMapName, MapsByName } from '../../../types/index.js';
+import { normalizeKnownMapSnapshot } from '../runtime/maps_access.js';
+import { asRecord } from '../runtime/record.js';
+import { getCfg } from './store_access.js';
+
+type ReadMapFn = typeof import('../runtime/maps_access.js').readMap;
+type ReadMapOrEmptyFn = typeof import('../runtime/maps_access.js').readMapOrEmpty;
+type CornerConfigMap = Record<string, unknown>;
+type SnapshotReader = (key: string) => unknown;
+
+const CORNER_CONFIG_MAP_NAMES = [
+  'handlesMap',
+  'hingeMap',
+  'splitDoorsMap',
+  'splitDoorsBottomMap',
+  'drawerDividersMap',
+  'groovesMap',
+  'grooveLinesCountMap',
+  'removedDoorsMap',
+  'roundedFrameSideShelvesMap',
+  'curtainMap',
+  'individualColors',
+  'doorSpecialMap',
+  'doorStyleMap',
+  'mirrorLayoutMap',
+  'doorTrimMap',
+] as const satisfies readonly KnownMapName[];
+
+const CORNER_CONFIG_MAP_NAME_SET = new Set<string>(CORNER_CONFIG_MAP_NAMES);
+
+function isCornerConfigMapName(value: string): value is (typeof CORNER_CONFIG_MAP_NAMES)[number] {
+  return CORNER_CONFIG_MAP_NAME_SET.has(value);
+}
+
+function toConfigState(value: unknown): ConfigStateLike | null {
+  return asRecord<ConfigStateLike>(value);
+}
+
+function readMapValue<K extends KnownMapName>(cfg: ConfigStateLike, name: K): MapsByName[K] {
+  return normalizeKnownMapSnapshot(name, cfg[name]);
+}
+
+function readScopedSnapshotValue(reader: SnapshotReader, partId: string): unknown {
+  const scoped = reader(partId);
+  return typeof scoped !== 'undefined' ? scoped : undefined;
+}
+
+export function readCornerConfigSnapshot(App: AppContainer, cfgSnapshot: unknown): ConfigStateLike {
+  return toConfigState(cfgSnapshot) || getCfg(App);
+}
+
+export function readCornerConfigMap(cfgSnapshot: unknown, mapName: string): CornerConfigMap {
+  const cfg = toConfigState(cfgSnapshot);
+  const name = String(mapName || '');
+  if (!cfg || !isCornerConfigMapName(name)) return {};
+  return readMapValue(cfg, name) as CornerConfigMap;
+}
+
+export function createCornerConfigMapReader(cfgSnapshot: unknown): (mapName: string) => CornerConfigMap {
+  return (mapName: string) => readCornerConfigMap(cfgSnapshot, mapName);
+}
+
+export function createCornerConfigGetter(cfgSnapshot: unknown): (App: AppContainer) => ConfigStateLike {
+  const cfg = toConfigState(cfgSnapshot) || ({} as ConfigStateLike);
+  return () => cfg;
+}
+
+export function createCornerConfigReadMap(cfgSnapshot: unknown): ReadMapFn {
+  return ((_App: unknown, mapName: string) => readCornerConfigMap(cfgSnapshot, mapName)) as ReadMapFn;
+}
+
+export function createCornerConfigReadMapOrEmpty(cfgSnapshot: unknown): ReadMapOrEmptyFn {
+  return ((_App: unknown, mapName: string) => readCornerConfigMap(cfgSnapshot, mapName)) as ReadMapOrEmptyFn;
+}
+
+export function createCornerGrooveReader(cfgSnapshot: unknown): SnapshotReader {
+  const grooves = readCornerConfigMap(cfgSnapshot, 'groovesMap');
+  return (partId: string) => {
+    const baseId = String(partId || '');
+    if (!baseId) return undefined;
+    const prefixed = readScopedSnapshotValue(key => grooves[`groove_${key}`], baseId);
+    if (typeof prefixed !== 'undefined') return prefixed;
+    return grooves[baseId];
+  };
+}
+
+export function createCornerCurtainReader(cfgSnapshot: unknown): SnapshotReader {
+  const curtains = readCornerConfigMap(cfgSnapshot, 'curtainMap');
+  return (partId: string) => {
+    const baseId = String(partId || '');
+    return baseId ? curtains[baseId] : undefined;
+  };
+}
+
+export function isCornerMultiColorModeEnabled(cfgSnapshot: unknown): boolean {
+  return toConfigState(cfgSnapshot)?.isMultiColorMode === true;
+}

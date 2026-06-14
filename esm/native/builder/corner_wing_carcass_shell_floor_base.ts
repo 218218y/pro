@@ -4,6 +4,7 @@ import {
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { CornerWingCarcassFlowParams } from './corner_wing_carcass_shared.js';
 import { addCornerHexHorizontalBoard } from './corner_wing_hex_cell_geometry.js';
+import { isCornerMultiColorModeEnabled } from './corner_config_readers.js';
 import {
   type CornerWingCarcassShellMetrics,
   resolveCornerWingHorizPlacement,
@@ -28,13 +29,14 @@ export function applyCornerWingCarcassFloorAndBase(
     baseType,
     baseH,
     __individualColors,
+    __cfg,
     getCornerMat,
     bodyMat,
     addOutlines,
     wingGroup,
   } = ctx;
-  const { App, cornerCells } = locals;
-  const { getCfg, readNumFrom, readStrFrom } = helpers;
+  const { cornerCells } = locals;
+  const { readNumFrom, readStrFrom } = helpers;
 
   const __floorMat = getCornerMat('corner_floor', bodyMat);
   const __floorY = startY + woodThick / 2 + CORNER_WING_DIMENSIONS.connector.shellWallHeightClearanceM;
@@ -107,7 +109,7 @@ export function applyCornerWingCarcassFloorAndBase(
   if (baseType !== 'plinth' || baseH <= CORNER_WING_DIMENSIONS.panels.minBlindWidthM) return;
 
   let __plinthMat = bodyMat;
-  if (getCfg(App).isMultiColorMode && __individualColors['corner_plinth']) {
+  if (isCornerMultiColorModeEnabled(__cfg) && __individualColors['corner_plinth']) {
     __plinthMat = getCornerMat('corner_plinth', bodyMat);
   }
 
