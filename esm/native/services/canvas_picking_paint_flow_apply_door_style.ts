@@ -12,7 +12,7 @@ import {
   __wp_map,
   __wp_scopeCornerPartKeyForStack,
 } from './canvas_picking_core_helpers.js';
-import { createImmediateMeta } from './canvas_picking_paint_flow_shared.js';
+import { createCanvasPickingPaintStructuralMeta } from './canvas_picking_paint_meta.js';
 
 export function resolveDoorStylePaintTargetKey(args: {
   foundPartId: string;
@@ -56,7 +56,7 @@ export function tryHandleDoorStyleOverridePaintClick(args: {
 
   if (Object.is(doorStyleMap, doorStyleMap0)) return true;
 
-  const baseMeta = createImmediateMeta(args.paintSource);
+  const baseMeta = createCanvasPickingPaintStructuralMeta(args.paintSource);
   __wp_historyBatch(args.App, baseMeta, () => {
     cfgSetMap(args.App, 'doorStyleMap', doorStyleMap, baseMeta);
     return undefined;

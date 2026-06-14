@@ -18,6 +18,7 @@ const paintApply = read('esm/native/services/canvas_picking_paint_flow_apply.ts'
 const paintApplyState = read('esm/native/services/canvas_picking_paint_flow_apply_state.ts');
 const paintApplyCommit = read('esm/native/services/canvas_picking_paint_flow_apply_commit.ts');
 const paintShared = read('esm/native/services/canvas_picking_paint_flow_shared.ts');
+const paintMeta = read('esm/native/services/canvas_picking_paint_meta.ts');
 const configActions = read('esm/native/services/canvas_picking_config_actions.ts');
 const handleFlow = read('esm/native/services/canvas_picking_handle_assign_flow.ts');
 const coreHelpers = [
@@ -66,8 +67,12 @@ test('canvas picking config snapshots and typed meta/map surfaces stay centraliz
   assert.match(paintApplyState, /readDoorSpecialMap\(App\)/);
   assert.match(paintApplyCommit, /from '\.\/canvas_picking_config_actions\.js'/);
   assert.match(paintApplyCommit, /applyPaintConfigSnapshot\(\{/);
-  assert.match(paintShared, /export type PaintMetaLike = ActionMetaLike & \{ immediate\?: boolean \};/);
-  assert.match(paintShared, /export function createImmediateMeta\(source: string\): PaintMetaLike/);
+  assert.match(
+    paintMeta,
+    /export function createCanvasPickingPaintStructuralMeta\(source: string\): CanvasPickingPaintMeta/
+  );
+  assert.match(paintMeta, /createCanvasPickingPaintMaterialRefreshMeta/);
+  assert.match(paintMeta, /Canvas picking paint meta requires a source/);
   assert.doesNotMatch(paintApply, /\bAnyRecord\b/);
 
   assert.match(configActions, /export interface PaintConfigSnapshotArgs \{/);

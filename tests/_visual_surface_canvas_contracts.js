@@ -118,6 +118,7 @@ const manualFreeClickReset = readSource(
 const paintSeam = readSource('../esm/native/services/canvas_picking_paint_flow.ts', import.meta.url);
 const paintTargets = readSource('../esm/native/services/canvas_picking_paint_targets.ts', import.meta.url);
 const paintShared = readSource('../esm/native/services/canvas_picking_paint_flow_shared.ts', import.meta.url);
+const paintMeta = readSource('../esm/native/services/canvas_picking_paint_meta.ts', import.meta.url);
 const paintMirror = readSource('../esm/native/services/canvas_picking_paint_flow_mirror.ts', import.meta.url);
 const paintApply = readSource('../esm/native/services/canvas_picking_paint_flow_apply.ts', import.meta.url);
 const paintApplyState = readSource(
@@ -507,12 +508,22 @@ test('[canvas-family] paint + overlap + split-hover + toggle seams stay thin ove
     assert,
     paintShared,
     [
-      /export type PaintMetaLike = ActionMetaLike & \{ immediate\?: boolean \};/,
       /export function toggleCorniceGroupPaint/,
       /export function getPaintSourceTag/,
       /export function isSpecialPart/,
     ],
     'paint shared'
+  );
+  assertMatchesAll(
+    assert,
+    paintMeta,
+    [
+      /export type CanvasPickingPaintMeta = ActionMetaLike & \{ immediate\?: boolean \};/,
+      /export function createCanvasPickingPaintStructuralMeta/,
+      /export function createCanvasPickingPaintMaterialRefreshMeta/,
+      /Canvas picking paint meta requires a source/,
+    ],
+    'paint meta'
   );
   assertMatchesAll(
     assert,

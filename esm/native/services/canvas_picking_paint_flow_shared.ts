@@ -1,5 +1,4 @@
 import type {
-  ActionMetaLike,
   AppContainer,
   CurtainMap,
   DoorSpecialMap,
@@ -28,8 +27,6 @@ import {
   mirrorLayoutListEquals,
   readMirrorLayoutMap,
 } from '../features/mirror_layout.js';
-
-export type PaintMetaLike = ActionMetaLike & { immediate?: boolean };
 
 export type MirrorLayoutClickResult = {
   nextLayout: MirrorLayoutEntry | null;
@@ -125,10 +122,6 @@ export function readDoorStyleConfigMap(App: AppContainer): DoorStyleMap {
 
 export function readMirrorLayoutConfigMap(App: AppContainer): MirrorLayoutMap {
   return cloneMirrorLayoutConfigMap(readMirrorLayoutMap(__wp_map(App, 'mirrorLayoutMap')));
-}
-
-export function createImmediateMeta(source: string): PaintMetaLike {
-  return { source, immediate: true };
 }
 
 export function readCurtainChoice(App: AppContainer): string {

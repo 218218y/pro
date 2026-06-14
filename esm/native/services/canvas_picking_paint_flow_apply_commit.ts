@@ -1,8 +1,12 @@
 import type { AppContainer } from '../../../types';
 
 import { applyPaintConfigSnapshot } from './canvas_picking_config_actions.js';
-import { __wp_historyBatch, __wp_metaNoBuild, __wp_triggerRender } from './canvas_picking_core_helpers.js';
-import { createImmediateMeta, refreshMaterialsNoBuild } from './canvas_picking_paint_flow_shared.js';
+import { __wp_historyBatch, __wp_triggerRender } from './canvas_picking_core_helpers.js';
+import {
+  createCanvasPickingPaintMaterialRefreshMeta,
+  createCanvasPickingPaintStructuralMeta,
+} from './canvas_picking_paint_meta.js';
+import { refreshMaterialsNoBuild } from './canvas_picking_paint_flow_shared.js';
 import {
   summarizePaintFlowChanges,
   type PaintFlowChangeSummary,
@@ -18,9 +22,11 @@ export function commitPaintFlowState(args: {
   const summary = summarizePaintFlowChanges(state);
   if (!summary.didChange) return summary;
 
-  const baseMeta = createImmediateMeta(paintSource);
+  const baseMeta = createCanvasPickingPaintStructuralMeta(paintSource);
   __wp_historyBatch(App, baseMeta, () => {
-    const meta = summary.useNoBuildMaterialRefresh ? __wp_metaNoBuild(App, paintSource, baseMeta) : baseMeta;
+    const meta = summary.useNoBuildMaterialRefresh
+      ? createCanvasPickingPaintMaterialRefreshMeta(App, paintSource, baseMeta)
+      : baseMeta;
     applyPaintConfigSnapshot({
       App,
       individualColors: state.colors,

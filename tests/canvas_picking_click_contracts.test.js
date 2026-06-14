@@ -50,6 +50,7 @@ const paintFlow = read('esm/native/services/canvas_picking_paint_flow.ts');
 const paintApply = read('esm/native/services/canvas_picking_paint_flow_apply.ts');
 const paintApplyState = read('esm/native/services/canvas_picking_paint_flow_apply_state.ts');
 const paintApplyCommit = read('esm/native/services/canvas_picking_paint_flow_apply_commit.ts');
+const paintMeta = read('esm/native/services/canvas_picking_paint_meta.ts');
 const paintTargets = read('esm/native/services/canvas_picking_paint_targets.ts');
 const handleFlow = read('esm/native/services/canvas_picking_handle_assign_flow.ts');
 const toggleFlow = read('esm/native/services/canvas_picking_toggle_flow.ts');
@@ -128,6 +129,12 @@ test('canvas picking click owner stays thin and routes edit families through foc
   );
   assert.match(drawerDividerMeta, /Canvas picking drawer-divider structural meta requires a source/);
   assert.match(drawerDividerMeta, /immediate: true/);
+  assert.match(
+    paintMeta,
+    /export function createCanvasPickingPaintStructuralMeta\(source: string\): CanvasPickingPaintMeta/
+  );
+  assert.match(paintMeta, /createCanvasPickingPaintMaterialRefreshMeta/);
+  assert.match(paintMeta, /Canvas picking paint meta requires a source/);
 
   assert.match(clickRoute, /export function routeCanvasPickingClick\(/);
   assert.match(clickRoute, /canvas_picking_click_route_shared\.js/);
@@ -319,6 +326,8 @@ test('canvas picking click owner stays thin and routes edit families through foc
   );
   assert.match(paintApplyState, /export function createPaintFlowMutableState\(/);
   assert.match(paintApplyCommit, /applyPaintConfigSnapshot\(\{/);
+  assert.match(paintApplyCommit, /createCanvasPickingPaintStructuralMeta\(paintSource\)/);
+  assert.match(paintApplyCommit, /createCanvasPickingPaintMaterialRefreshMeta\(App, paintSource, baseMeta\)/);
   assert.match(paintTargets, /export function resolvePaintTargetKeys\(/);
   assert.match(
     handleFlow,
@@ -398,6 +407,11 @@ test('canvas picking click owner stays thin and routes edit families through foc
   assert.ok(
     audit.includes(
       '`services/canvas_picking_drawer_mode_divider_meta.ts` owns Canvas picking drawer-divider structural meta so action and direct-map divider toggles stay immediate build-visible writes from one source-normalized contract'
+    )
+  );
+  assert.ok(
+    audit.includes(
+      '`services/canvas_picking_paint_meta.ts` owns Canvas picking paint meta so structural paint writes stay immediate build-visible and color-only material refresh writes opt into no-build through one source-normalized contract'
     )
   );
   assert.ok(
