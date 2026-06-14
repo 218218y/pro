@@ -8,7 +8,7 @@ test('build_state_resolver normalizes config maps and persisted color arrays fro
   const result = resolveBuildStateOrThrow({
     App,
     stateOrOverride: {
-      ui: { raw: { width: 160, height: 240, depth: 55, doors: 4 } },
+      ui: { hingeDirection: true, raw: { width: 160, height: 240, depth: 55, doors: 4 } },
       runtime: {},
       config: {
         __snapshot: true,
@@ -96,6 +96,38 @@ test('build_state_resolver normalizes config maps and persisted color arrays fro
   assert.equal(result.cfgSnapshot.doorTrimMap?.d1?.[0]?.axis, 'vertical');
   assert.equal(result.cfgSnapshot.doorTrimMap?.d1?.[0]?.sizeCm, 12);
   assert.equal('drop' in (result.cfgSnapshot.doorTrimMap || {}), false);
+});
+
+test('build_state_resolver gates single-door hinge map behind the hinge direction toggle', () => {
+  const baseState = {
+    ui: { raw: { width: 160, height: 240, depth: 55, doors: 4 } },
+    runtime: {},
+    config: {
+      __snapshot: true,
+      hingeMap: { door_hinge_1: 'right' },
+    },
+  };
+
+  const disabled = resolveBuildStateOrThrow({
+    App: {},
+    stateOrOverride: baseState,
+  });
+
+  assert.deepEqual({ ...disabled.cfgSnapshot.hingeMap }, {});
+
+  const enabled = resolveBuildStateOrThrow({
+    App: {},
+    stateOrOverride: {
+      ...baseState,
+      ui: { ...baseState.ui, hingeDirection: true },
+      config: {
+        ...baseState.config,
+        hingeMap: { door_hinge_1: 'right' },
+      },
+    },
+  });
+
+  assert.deepEqual({ ...enabled.cfgSnapshot.hingeMap }, { door_hinge_1: 'right' });
 });
 
 test('build_state_resolver canonicalizes builder module snapshots against the live structure and detaches mutable config lists', () => {

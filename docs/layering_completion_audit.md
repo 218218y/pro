@@ -37,7 +37,7 @@ This file is intentionally compact. It keeps only current decomposition guard fa
 - `render_ops.ts` preview/hover helpers extracted into `builder/render_preview_ops.ts`
 - `services/models.ts` is now a small public service facade while stable surface installation, live App context refresh, and method-slot healing live in `services/models_surface_install.ts`
 - `ui/react/tabs/structure_tab_meta.ts` owns Structure Tab structural write, no-build/no-history, and ui-only meta profiles used by recompute-backed structure, stack-split, corner/chest, workflow, and sketch no-main commits
-- `ui/react/actions/structural_build_refresh_actions.ts` owns React UI immediate structural patch meta and canonical patch/direct-fallback routing for build-visible Structure controls/base/sliding/hinge-map, Design, Sketch runtime, Interior drawer, and Handles writes
+- `ui/react/actions/structural_build_refresh_actions.ts` owns React UI immediate structural patch meta and canonical patch/direct-fallback routing for build-visible Structure controls/base/sliding/hinge-direction gate/hinge-map restore, Design, Sketch runtime, Interior drawer, and Handles writes
 
 ## Maintenance rule
 

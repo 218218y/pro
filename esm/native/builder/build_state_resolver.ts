@@ -94,6 +94,18 @@ function _canonicalizeBuilderConfigLists(cfg: ConfigStateLike, uiSnapshot: UiSta
   });
 }
 
+function readBuildUiToggle(value: unknown): boolean {
+  return value === true || value === 1 || value === '1' || value === 'true';
+}
+
+function _applyBuildVisibleUiGates(cfg: ConfigStateLike, uiSnapshot: UiStateLike): ConfigStateLike {
+  if (!readBuildUiToggle(uiSnapshot.hingeDirection)) {
+    cfg.hingeMap = {};
+  }
+
+  return cfg;
+}
+
 function _captureAndNormalizeConfigSnapshot(
   App: AppContainer,
   cfgMaybe: unknown,
@@ -116,7 +128,10 @@ function _captureAndNormalizeConfigSnapshot(
     cfg.__capturedAt = Date.now();
   }
 
-  return _canonicalizeBuilderConfigLists(_normalizeCfgContainers(cfg), uiSnapshot);
+  return _applyBuildVisibleUiGates(
+    _canonicalizeBuilderConfigLists(_normalizeCfgContainers(cfg), uiSnapshot),
+    uiSnapshot
+  );
 }
 
 function resolveUiSlice(state: BuildStateLike | null | undefined): UiStateLike {

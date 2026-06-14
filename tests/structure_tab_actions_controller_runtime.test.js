@@ -121,6 +121,15 @@ function loadStructureActionsControllerModule(calls, overrides = {}) {
             applyDirectMutation(meta);
             return { appliedViaActions: false, requestedBuild: false };
           }),
+        applyImmediateStructuralUiMutation:
+          overrides.applyImmediateStructuralUiMutation ||
+          ((app, source, patch, applyDirectMutation, metaOverrides) => {
+            calls.push(['applyImmediateStructuralUiMutation', app, source, patch, metaOverrides]);
+            const meta = { ...(metaOverrides || {}), source, immediate: true };
+            delete meta.noBuild;
+            applyDirectMutation(meta);
+            return { appliedViaActions: false, requestedBuild: false };
+          }),
       };
     }
     if (specifier === '../../../services/api.js') {
@@ -212,7 +221,7 @@ function loadStructureActionsControllerModule(calls, overrides = {}) {
   return mod.exports;
 }
 
-test('[structure-actions-controller] hinge controller restores and clears hinge map through canonical seams', () => {
+test('[structure-actions-controller] hinge controller gates build-visible hinge maps through canonical seams', () => {
   const calls = [];
   const mod = loadStructureActionsControllerModule(calls);
   const savedHingeMapRef = { current: null };
@@ -239,9 +248,9 @@ test('[structure-actions-controller] hinge controller restores and clears hinge 
   assert.ok(
     calls.some(
       entry =>
-        entry[0] === 'applyImmediateStructuralConfigMutation' &&
-        entry[2] === 'react:hinge:disable:clear' &&
-        JSON.stringify(entry[3]) === JSON.stringify({ hingeMap: {} }) &&
+        entry[0] === 'applyImmediateStructuralUiMutation' &&
+        entry[2] === 'react:hinge:disable' &&
+        JSON.stringify(entry[3]) === JSON.stringify({ hingeDirection: false }) &&
         JSON.stringify(entry[4]) ===
           JSON.stringify({ noHistory: true, noAutosave: true, noPersist: true, noCapture: true })
     )
@@ -249,24 +258,70 @@ test('[structure-actions-controller] hinge controller restores and clears hinge 
   assert.ok(
     calls.some(
       entry =>
-        entry[0] === 'setCfgHingeMap' &&
-        JSON.stringify(entry[2]) === JSON.stringify({}) &&
+        entry[0] === 'setUiHingeDirection' &&
+        entry[2] === false &&
         JSON.stringify(entry[3]) ===
           JSON.stringify({
             noHistory: true,
             noAutosave: true,
             noPersist: true,
             noCapture: true,
-            source: 'react:hinge:disable:clear',
+            source: 'react:hinge:disable',
             immediate: true,
           })
     )
   );
+  assert.equal(
+    calls.some(entry => entry[0] === 'applyImmediateStructuralConfigMutation'),
+    false
+  );
+  assert.equal(
+    calls.some(entry => entry[0] === 'setCfgHingeMap'),
+    false
+  );
 
   calls.length = 0;
-  hingeMap = {};
+  hingeMap = { a: 'left' };
   controller.setHingeDirection(true, 'react:hinge:enable');
   assert.equal(hingeDispatchRef.current, true);
+  assert.ok(
+    calls.some(
+      entry =>
+        entry[0] === 'applyImmediateStructuralUiMutation' &&
+        entry[2] === 'react:hinge:enable' &&
+        JSON.stringify(entry[3]) === JSON.stringify({ hingeDirection: true })
+    )
+  );
+  assert.equal(
+    calls.some(entry => entry[0] === 'applyImmediateStructuralConfigMutation'),
+    false
+  );
+  assert.equal(
+    calls.some(entry => entry[0] === 'setCfgHingeMap'),
+    false
+  );
+  assert.ok(!calls.some(entry => entry[0] === 'enterStructureEditMode'));
+});
+
+test('[structure-actions-controller] hinge controller restores saved map only when current map is empty', () => {
+  const calls = [];
+  const mod = loadStructureActionsControllerModule(calls);
+  const controller = mod.createStructureTabHingeActionsController({
+    app: { id: 'app' },
+    meta: {
+      noBuild: meta => ({ ...meta, noBuild: true }),
+      noHistoryImmediate: source => ({ source, immediate: true }),
+    },
+    fb: { toast() {} },
+    hingeModeId: 'hinge',
+    getHingeMap: () => ({}),
+    getPrimaryMode: () => 'none',
+    savedHingeMapRef: { current: { a: 'left' } },
+    hingeDispatchRef: { current: null },
+  });
+
+  controller.setHingeDirection(true, 'react:hinge:enable');
+
   assert.ok(
     calls.some(
       entry =>
@@ -292,6 +347,47 @@ test('[structure-actions-controller] hinge controller restores and clears hinge 
     )
   );
   assert.ok(!calls.some(entry => entry[0] === 'enterStructureEditMode'));
+});
+
+test('[structure-actions-controller] hinge controller enters edit mode on first enable without saved map', () => {
+  const calls = [];
+  const mod = loadStructureActionsControllerModule(calls);
+  const controller = mod.createStructureTabHingeActionsController({
+    app: { id: 'app' },
+    meta: {
+      noBuild: meta => ({ ...meta, noBuild: true }),
+      noHistoryImmediate: source => ({ source, immediate: true }),
+    },
+    fb: { toast() {} },
+    hingeModeId: 'hinge',
+    getHingeMap: () => ({}),
+    getPrimaryMode: () => 'none',
+    savedHingeMapRef: { current: null },
+    hingeDispatchRef: { current: null },
+  });
+
+  controller.setHingeDirection(true, 'react:hinge:enable');
+
+  assert.ok(
+    calls.some(
+      entry =>
+        entry[0] === 'applyImmediateStructuralUiMutation' &&
+        entry[2] === 'react:hinge:enable' &&
+        JSON.stringify(entry[3]) === JSON.stringify({ hingeDirection: true })
+    )
+  );
+  assert.ok(
+    calls.some(
+      entry =>
+        entry[0] === 'enterStructureEditMode' &&
+        entry[1].modeId === 'hinge' &&
+        entry[1].source === 'react:hinge:enable:autoEdit'
+    )
+  );
+  assert.equal(
+    calls.some(entry => entry[0] === 'applyImmediateStructuralConfigMutation'),
+    false
+  );
 });
 
 test('[structure-actions-controller] hinge map canonical patch skips direct fallback when applied', () => {

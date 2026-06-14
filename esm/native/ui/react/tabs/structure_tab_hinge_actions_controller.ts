@@ -1,21 +1,23 @@
 import type {
   ActionMetaLike,
   AppContainer,
-  MetaActionsNamespaceLike,
   HingeMap,
+  MetaActionsNamespaceLike,
   UiFeedbackNamespaceLike,
 } from '../../../../../types';
 import { setCfgHingeMap, setUiHingeDirection } from '../actions/store_actions.js';
-import { applyImmediateStructuralConfigMutation } from '../actions/structural_build_refresh_actions.js';
+import {
+  applyImmediateStructuralConfigMutation,
+  applyImmediateStructuralUiMutation,
+} from '../actions/structural_build_refresh_actions.js';
 import {
   enterStructureEditMode,
   exitStructureEditMode,
   structureTabReportNonFatal,
 } from './structure_tab_shared.js';
 import type { MutableRefLike } from './structure_tab_actions_controller_shared.js';
-import { createStructureTabNoBuildNoHistoryImmediateMeta } from './structure_tab_meta.js';
 
-function createHingeMapStructuralMetaOverrides(): ActionMetaLike {
+function createHingeAuthoringStructuralMetaOverrides(): ActionMetaLike {
   return {
     noHistory: true,
     noAutosave: true,
@@ -32,7 +34,19 @@ function applyStructureHingeMapMutation(app: AppContainer, source: string, nextH
     meta => {
       setCfgHingeMap(app, nextHingeMap, meta);
     },
-    createHingeMapStructuralMetaOverrides()
+    createHingeAuthoringStructuralMetaOverrides()
+  );
+}
+
+function applyStructureHingeDirectionMutation(app: AppContainer, source: string, nextOn: boolean): void {
+  applyImmediateStructuralUiMutation(
+    app,
+    source,
+    { hingeDirection: !!nextOn },
+    meta => {
+      setUiHingeDirection(app, !!nextOn, meta);
+    },
+    createHingeAuthoringStructuralMetaOverrides()
   );
 }
 
@@ -64,11 +78,7 @@ export function createStructureTabHingeActionsController(args: {
     const modeHinge = String(args.hingeModeId || 'hinge');
 
     try {
-      setUiHingeDirection(
-        args.app,
-        !!nextOn,
-        createStructureTabNoBuildNoHistoryImmediateMeta(args.meta, reasonSource)
-      );
+      applyStructureHingeDirectionMutation(args.app, reasonSource, !!nextOn);
     } catch (__wpErr) {
       structureTabReportNonFatal('L1936', __wpErr);
     }
@@ -78,7 +88,13 @@ export function createStructureTabHingeActionsController(args: {
     if (nextOn) {
       try {
         const saved = args.savedHingeMapRef.current;
-        if (saved && typeof saved === 'object' && Object.keys(saved).length > 0) {
+        const cur = args.getHingeMap();
+        if (
+          saved &&
+          typeof saved === 'object' &&
+          Object.keys(saved).length > 0 &&
+          Object.keys(cur).length === 0
+        ) {
           applyStructureHingeMapMutation(args.app, `${reasonSource}:restore`, { ...saved });
         }
       } catch (__wpErr) {
@@ -110,12 +126,6 @@ export function createStructureTabHingeActionsController(args: {
       args.savedHingeMapRef.current = Object.keys(cur).length ? { ...cur } : null;
     } catch {
       args.savedHingeMapRef.current = null;
-    }
-
-    try {
-      applyStructureHingeMapMutation(args.app, `${reasonSource}:clear`, {});
-    } catch (__wpErr) {
-      structureTabReportNonFatal('L2004', __wpErr);
     }
   };
 
