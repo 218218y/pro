@@ -8,8 +8,8 @@ import {
   readPendingGrooveLinesCountMap,
 } from '../runtime/groove_lines_access.js';
 import { readDoorTrimMap } from '../features/door_trim.js';
-import { createCanvasPickingDoorAuthoringStructuralMeta } from './canvas_picking_door_authoring_meta.js';
-import { __wp_map, __wp_metaNoBuild } from './canvas_picking_core_helpers.js';
+import { createCanvasPickingDoorAuthoringRefreshGatedMeta } from './canvas_picking_door_authoring_meta.js';
+import { __wp_map } from './canvas_picking_core_helpers.js';
 
 export function asRecord<T extends UnknownRecord = UnknownRecord>(value: unknown): T | null {
   return readRecord<T>(value);
@@ -73,6 +73,6 @@ export function writePendingGrooveLinesCountForPart(
   patchRuntime(
     App,
     { [PENDING_GROOVE_LINES_COUNT_MAP_RUNTIME_KEY]: nextMap },
-    __wp_metaNoBuild(App, source, createCanvasPickingDoorAuthoringStructuralMeta(source))
+    createCanvasPickingDoorAuthoringRefreshGatedMeta(App, source)
   );
 }

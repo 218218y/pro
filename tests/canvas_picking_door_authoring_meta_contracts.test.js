@@ -20,28 +20,30 @@ test('canvas picking door-authoring writes use one immediate structural meta own
     doorAuthoringMeta,
     /export function createCanvasPickingDoorAuthoringStructuralMeta\(source: string\): ActionMetaLike/
   );
+  assert.match(
+    doorAuthoringMeta,
+    /export function createCanvasPickingDoorAuthoringRefreshGatedMeta\([\s\S]*App: AppContainer,[\s\S]*source: string,[\s\S]*baseMeta\?: ActionMetaLike[\s\S]*\): ActionMetaLike/
+  );
   assert.match(doorAuthoringMeta, /Canvas picking door-authoring structural meta requires a source/);
   assert.match(doorAuthoringMeta, /immediate: true/);
-  assert.doesNotMatch(doorAuthoringMeta, /noBuild:/);
+  assert.match(doorAuthoringMeta, /__wp_metaNoBuild\(/);
   assert.doesNotMatch(doorAuthoringMeta, /noHistory:/);
 
   const helperImportPattern =
-    /import \{ createCanvasPickingDoorAuthoringStructuralMeta \} from '\.\/canvas_picking_door_authoring_meta\.js';/;
-  const sourceFiles = [
-    doorEditShared,
-    doorHingeGroove,
-    doorRemove,
-    doorSplitShared,
-    doorTrim,
-    removablePartRemove,
-  ];
+    /import \{[\s\S]*createCanvasPickingDoorAuthoringStructuralMeta[\s\S]*\} from '\.\/canvas_picking_door_authoring_meta\.js';/;
+  const sourceFiles = [doorHingeGroove, doorRemove, doorSplitShared, doorTrim, removablePartRemove];
   for (const source of sourceFiles) {
     assert.match(source, helperImportPattern);
     assert.doesNotMatch(source, /\{\s*source:\s*[^}]*immediate:\s*true\s*\}/);
     assert.doesNotMatch(source, /\{\s*immediate:\s*true\s*,\s*source[^}]*\}/);
   }
 
-  assert.match(doorEditShared, /createCanvasPickingDoorAuthoringStructuralMeta\(source\)/);
+  assert.match(
+    doorEditShared,
+    /import \{ createCanvasPickingDoorAuthoringRefreshGatedMeta \} from '\.\/canvas_picking_door_authoring_meta\.js';/
+  );
+  assert.match(doorEditShared, /createCanvasPickingDoorAuthoringRefreshGatedMeta\(App, source\)/);
+  assert.doesNotMatch(doorEditShared, /__wp_metaNoBuild/);
   assert.match(
     doorHingeGroove,
     /callDoorsAction\(App, 'setHinge', hingeKey, nextHinge, createCanvasPickingDoorAuthoringStructuralMeta\('hinge:click'\)\)/
@@ -52,10 +54,36 @@ test('canvas picking door-authoring writes use one immediate structural meta own
   );
   assert.match(
     doorHingeGroove,
-    /__wp_historyBatch\(App, createCanvasPickingDoorAuthoringStructuralMeta\('groove:click'\)/
+    /const grooveStructuralMeta = createCanvasPickingDoorAuthoringStructuralMeta\('groove:click'\)/
   );
-  assert.match(doorRemove, /createCanvasPickingDoorAuthoringStructuralMeta\('removeDoors:smart'\)/);
-  assert.match(removablePartRemove, /createCanvasPickingDoorAuthoringStructuralMeta\('removeParts:smart'\)/);
+  assert.match(doorHingeGroove, /__wp_historyBatch\(App, grooveStructuralMeta,/);
+  assert.match(
+    doorHingeGroove,
+    /const grooveRefreshGatedMeta = createCanvasPickingDoorAuthoringRefreshGatedMeta\([\s\S]*App,[\s\S]*'groove:click',[\s\S]*grooveStructuralMeta[\s\S]*\)/
+  );
+  assert.match(
+    doorHingeGroove,
+    /const grooveCountRefreshGatedMeta = createCanvasPickingDoorAuthoringRefreshGatedMeta\([\s\S]*App,[\s\S]*'groove:click:count'[\s\S]*\)/
+  );
+  assert.doesNotMatch(doorHingeGroove, /__wp_metaNoBuild/);
+  assert.match(
+    doorRemove,
+    /const structuralMeta = createCanvasPickingDoorAuthoringStructuralMeta\('removeDoors:smart'\)/
+  );
+  assert.match(
+    doorRemove,
+    /const refreshGatedMeta = createCanvasPickingDoorAuthoringRefreshGatedMeta\([\s\S]*App,[\s\S]*'removeDoors:smart',[\s\S]*structuralMeta[\s\S]*\)/
+  );
+  assert.doesNotMatch(doorRemove, /__wp_metaNoBuild/);
+  assert.match(
+    removablePartRemove,
+    /const structuralMeta = createCanvasPickingDoorAuthoringStructuralMeta\('removeParts:smart'\)/
+  );
+  assert.match(
+    removablePartRemove,
+    /const refreshGatedMeta = createCanvasPickingDoorAuthoringRefreshGatedMeta\([\s\S]*App,[\s\S]*'removeParts:smart',[\s\S]*structuralMeta[\s\S]*\)/
+  );
+  assert.doesNotMatch(removablePartRemove, /__wp_metaNoBuild/);
   assert.match(doorTrim, /const meta = createCanvasPickingDoorAuthoringStructuralMeta\('doorTrim:click'\)/);
 
   assert.match(

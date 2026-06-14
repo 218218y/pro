@@ -7,9 +7,11 @@ import {
   readRemovableFrameSideFromPartId,
   readRemovableSketchBoxSideFromPartId,
 } from '../features/removable_parts.js';
-import { createCanvasPickingDoorAuthoringStructuralMeta } from './canvas_picking_door_authoring_meta.js';
 import {
-  __wp_metaNoBuild,
+  createCanvasPickingDoorAuthoringRefreshGatedMeta,
+  createCanvasPickingDoorAuthoringStructuralMeta,
+} from './canvas_picking_door_authoring_meta.js';
+import {
   __wp_reportPickingIssue,
   __wp_isRemoved,
   __wp_historyBatch,
@@ -27,10 +29,11 @@ export function handleCanvasRemovablePartRemoveClick(args: CanvasRemovablePartRe
   const partId = canonicalRemovablePartKey(args.partId);
   if (!partId || !isCanvasRemovablePartId(partId)) return false;
 
-  const meta = __wp_metaNoBuild(
+  const structuralMeta = createCanvasPickingDoorAuthoringStructuralMeta('removeParts:smart');
+  const refreshGatedMeta = createCanvasPickingDoorAuthoringRefreshGatedMeta(
     App,
     'removeParts:smart',
-    createCanvasPickingDoorAuthoringStructuralMeta('removeParts:smart')
+    structuralMeta
   );
 
   const hasRemoved = (pid: string): boolean => {
@@ -49,7 +52,7 @@ export function handleCanvasRemovablePartRemoveClick(args: CanvasRemovablePartRe
   const setRemoved = (pid: string, on: boolean): unknown => {
     try {
       if (hasDoorsAction(App, 'setRemoved')) {
-        return callDoorsAction(App, 'setRemoved', pid, !!on, meta);
+        return callDoorsAction(App, 'setRemoved', pid, !!on, refreshGatedMeta);
       }
     } catch (error) {
       __wp_reportPickingIssue(App, error, { where: 'canvasPicking', op: 'removePart.setRemovedCall' });
@@ -66,7 +69,7 @@ export function handleCanvasRemovablePartRemoveClick(args: CanvasRemovablePartRe
 
   const nextRemoved = !hasRemoved(partId);
 
-  __wp_historyBatch(App, createCanvasPickingDoorAuthoringStructuralMeta('removeParts:smart'), () => {
+  __wp_historyBatch(App, structuralMeta, () => {
     setRemoved(partId, nextRemoved);
     return undefined;
   });

@@ -3,11 +3,13 @@ import type { AppContainer, DoorVisualEntryLike } from '../../../types';
 import { getDoorsArray } from '../runtime/render_access.js';
 import { callDoorsAction, hasDoorsAction } from '../runtime/actions_access_domains.js';
 import { asRecord } from './canvas_picking_door_edit_shared.js';
-import { createCanvasPickingDoorAuthoringStructuralMeta } from './canvas_picking_door_authoring_meta.js';
+import {
+  createCanvasPickingDoorAuthoringRefreshGatedMeta,
+  createCanvasPickingDoorAuthoringStructuralMeta,
+} from './canvas_picking_door_authoring_meta.js';
 import { parseSketchBoxDoorTarget, patchSketchBoxDoor } from './canvas_picking_door_sketch_box_edit.js';
 import { requestDoorAuthoringBurstRefresh } from './canvas_picking_door_authoring_burst.js';
 import {
-  __wp_metaNoBuild,
   __wp_reportPickingIssue,
   __wp_isRemoved,
   __wp_canonDoorPartKeyForMaps,
@@ -50,10 +52,11 @@ export function handleCanvasDoorRemoveClick(args: CanvasDoorRemoveClickArgs): bo
   const clickedId = __wp_scopeCornerPartKeyForStack(clickedIdRaw, foundModuleStack);
   if (!clickedId) return true;
 
-  const meta = __wp_metaNoBuild(
+  const structuralMeta = createCanvasPickingDoorAuthoringStructuralMeta('removeDoors:smart');
+  const refreshGatedMeta = createCanvasPickingDoorAuthoringRefreshGatedMeta(
     App,
     'removeDoors:smart',
-    createCanvasPickingDoorAuthoringStructuralMeta('removeDoors:smart')
+    structuralMeta
   );
 
   const hasRemoved = (pid: string): boolean => {
@@ -73,7 +76,7 @@ export function handleCanvasDoorRemoveClick(args: CanvasDoorRemoveClickArgs): bo
     try {
       if (!pid) return;
       if (hasDoorsAction(App, 'setRemoved')) {
-        return callDoorsAction(App, 'setRemoved', pid, !!on, meta);
+        return callDoorsAction(App, 'setRemoved', pid, !!on, refreshGatedMeta);
       }
     } catch (error) {
       __wp_reportPickingIssue(App, error, { where: 'canvasPicking', op: 'removeDoor.setRemovedCall' });
@@ -103,7 +106,7 @@ export function handleCanvasDoorRemoveClick(args: CanvasDoorRemoveClickArgs): bo
     __wp_isSegmentedDoorBaseId(clickedId);
 
   if (!isSegmentedDoor) {
-    __wp_historyBatch(App, createCanvasPickingDoorAuthoringStructuralMeta('removeDoors:smart'), () => {
+    __wp_historyBatch(App, structuralMeta, () => {
       const now = hasRemoved(clickedId);
       set(clickedId, !now);
       return undefined;
@@ -177,7 +180,7 @@ export function handleCanvasDoorRemoveClick(args: CanvasDoorRemoveClickArgs): bo
     return false;
   })();
 
-  __wp_historyBatch(App, createCanvasPickingDoorAuthoringStructuralMeta('removeDoors:smart'), () => {
+  __wp_historyBatch(App, structuralMeta, () => {
     if (isPart) {
       const fullRemoved = hasRemoved(fullId);
       if (fullRemoved) {

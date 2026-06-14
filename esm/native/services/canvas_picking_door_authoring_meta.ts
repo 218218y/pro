@@ -1,4 +1,6 @@
-import type { ActionMetaLike } from '../../../types';
+import type { ActionMetaLike, AppContainer } from '../../../types';
+
+import { __wp_metaNoBuild } from './canvas_picking_core_helpers.js';
 
 function normalizeCanvasPickingDoorAuthoringSource(source: string): string {
   const normalized = String(source || '').trim();
@@ -13,4 +15,17 @@ export function createCanvasPickingDoorAuthoringStructuralMeta(source: string): 
     source: normalizeCanvasPickingDoorAuthoringSource(source),
     immediate: true,
   };
+}
+
+export function createCanvasPickingDoorAuthoringRefreshGatedMeta(
+  App: AppContainer,
+  source: string,
+  baseMeta?: ActionMetaLike
+): ActionMetaLike {
+  const normalized = normalizeCanvasPickingDoorAuthoringSource(source);
+  return __wp_metaNoBuild(
+    App,
+    normalized,
+    baseMeta || createCanvasPickingDoorAuthoringStructuralMeta(normalized)
+  );
 }
