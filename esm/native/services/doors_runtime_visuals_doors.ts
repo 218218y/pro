@@ -27,19 +27,33 @@ import { readConfigLooseScalarFromApp } from '../runtime/config_selectors.js';
 import { snapDrawersToTargets } from './doors_runtime_visuals_drawers.js';
 import { setSlidingDoorHiddenForOpenState } from '../runtime/sliding_door_visibility.js';
 
-function shouldHideOpenSlidingDoorsForContext(App: AppLike, opts?: SyncVisualsOptions): boolean {
+type SlidingDoorHideOpenPolicy = {
+  hideOpenSlidingDoors: boolean;
+  preserveTrackOpenDoors: boolean;
+};
+
+function resolveSlidingDoorHideOpenPolicy(
+  App: AppLike,
+  opts?: SyncVisualsOptions
+): SlidingDoorHideOpenPolicy {
   const rec = opts && typeof opts === 'object' ? opts : null;
-  if (rec && (rec.slidingHideOpen === true || rec.slidingWideOpen === true)) return true;
+  if (rec && (rec.slidingHideOpen === true || rec.slidingWideOpen === true)) {
+    return { hideOpenSlidingDoors: true, preserveTrackOpenDoors: false };
+  }
+
   try {
-    return (
+    const hideForInteractiveEditContext =
       isInteriorDoorEditModeActive(App) ||
       isSketchEditActive(App) ||
       isSketchExtDrawersEditActive(App) ||
-      isSketchIntDrawersEditActive(App)
-    );
+      isSketchIntDrawersEditActive(App);
+    return {
+      hideOpenSlidingDoors: hideForInteractiveEditContext,
+      preserveTrackOpenDoors: false,
+    };
   } catch (_e) {
     reportDoorsRuntimeNonFatal(App, 'slidingDoorHideOpen.context', _e);
-    return false;
+    return { hideOpenSlidingDoors: false, preserveTrackOpenDoors: false };
   }
 }
 
@@ -47,7 +61,7 @@ export function forceUpdatePerState(App: AppLike, opts?: SyncVisualsOptions): vo
   if (!App || typeof App !== 'object') return;
 
   const totalW = readDoorsTotalWidth(App);
-  const hideOpenSlidingDoors = shouldHideOpenSlidingDoorsForContext(App, opts);
+  const slidingHidePolicy = resolveSlidingDoorHideOpenPolicy(App, opts);
   const doors = getDoorsArray(App);
   for (let i = 0; i < doors.length; i++) {
     const door = doors[i];
@@ -97,7 +111,10 @@ export function forceUpdatePerState(App: AppLike, opts?: SyncVisualsOptions): vo
     let finalX = closedX;
     let finalZ = closedZ;
 
-    const hideSlidingDoor = open && hideOpenSlidingDoors && !isSlidingDoorTrackOpenMode(door);
+    const hideSlidingDoor =
+      open &&
+      slidingHidePolicy.hideOpenSlidingDoors &&
+      !(slidingHidePolicy.preserveTrackOpenDoors && isSlidingDoorTrackOpenMode(door));
     setSlidingDoorHiddenForOpenState(door, hideSlidingDoor);
 
     if (open && !hideSlidingDoor) {
@@ -140,7 +157,7 @@ export function syncVisualsNow(App: AppLike, opts?: SyncVisualsOptions): void {
 
   const isOpen = typeof safeOpts.open === 'boolean' ? !!safeOpts.open : !!getDoorsOpen(App);
   const totalW = readDoorsTotalWidth(App);
-  const hideOpenSlidingDoors = shouldHideOpenSlidingDoorsForContext(App, safeOpts);
+  const slidingHidePolicy = resolveSlidingDoorHideOpenPolicy(App, safeOpts);
   const manualTool = readInteriorManualTool(App);
   const interiorDoorEditActive = isInteriorDoorEditModeActive(App);
   const doorDelayMs = Number(readConfigLooseScalarFromApp(App, 'DOOR_DELAY_MS', 600)) || 600;
@@ -245,7 +262,10 @@ export function syncVisualsNow(App: AppLike, opts?: SyncVisualsOptions): void {
     let targetOpen = !!isOpen;
     if (!targetOpen && door.noGlobalOpen) targetOpen = !!door.isOpen;
 
-    const hideSlidingDoor = targetOpen && hideOpenSlidingDoors && !isSlidingDoorTrackOpenMode(door);
+    const hideSlidingDoor =
+      targetOpen &&
+      slidingHidePolicy.hideOpenSlidingDoors &&
+      !(slidingHidePolicy.preserveTrackOpenDoors && isSlidingDoorTrackOpenMode(door));
     setSlidingDoorHiddenForOpenState(door, hideSlidingDoor);
 
     if (targetOpen && !hideSlidingDoor) {

@@ -63,7 +63,7 @@ function applyDoorPolicy(App: AppLike, opts: ModeTransitionOptsLike): void {
   const gc = getGlobalClickMode(App);
 
   if (opts.openDoors === true) {
-    if (gc) setDoorsOpen(App, true, { touch: true });
+    if (gc) setDoorsOpen(App, true, { touch: true, forceUpdate: true });
     else holdOpenForEdit(App);
     return;
   }

@@ -3,6 +3,7 @@ import { isSlidingDoorTrackOpenMode } from '../runtime/sliding_door_motion.js';
 import {
   type AppLike,
   type CaptureLocalOpenOptions,
+  type DoorsSnapshot,
   type DrawerId,
   type CloseDrawerOptions,
   ensureDoorsRuntimeDefaults,
@@ -11,7 +12,7 @@ import {
   touchDoorsRuntimeRender,
   vecCopy,
 } from './doors_runtime_shared.js';
-import { applyAllDoors, applySnapshot, captureSnapshot } from './doors_runtime_lifecycle_shared.js';
+import { applyAllDoors, applySnapshot, captureSnapshot, doorKey } from './doors_runtime_lifecycle_shared.js';
 
 export function closeAllLocal(App: AppLike): void {
   if (!App || typeof App !== 'object') return;
@@ -28,6 +29,23 @@ function hasOpenSlidingTrackDoor(App: AppLike): boolean {
     reportDoorsRuntimeNonFatal(App, 'captureLocalOpenStateBeforeBuild.readSlidingTrackDoors', _);
     return false;
   }
+}
+
+function captureSlidingTrackOpenSnapshot(App: AppLike, includeDrawers: boolean): DoorsSnapshot {
+  const snapshot = captureSnapshot(App, includeDrawers);
+  const doors = getDoorsArray(App);
+  for (let i = 0; i < doors.length; i++) {
+    const door = doors[i];
+    if (!door) continue;
+    const key = doorKey(door, i, App);
+    snapshot.doors[key] = !!(
+      door.type === 'sliding' &&
+      door.isOpen === true &&
+      isSlidingDoorTrackOpenMode(door)
+    );
+  }
+  snapshot.kind = 'slidingTrack';
+  return snapshot;
 }
 
 function drawerMatchesCloseId(App: AppLike, drawer: Record<string, unknown>, sid: string): boolean {
@@ -91,9 +109,9 @@ export function captureLocalOpenStateBeforeBuild(App: AppLike, opts?: CaptureLoc
   if (globalClickMode && !captureGlobalSlidingTrack) return;
 
   const runtime = ensureDoorsRuntimeDefaults(App);
-  const snapshot = captureSnapshot(App, includeDrawers);
-  if (captureGlobalSlidingTrack) snapshot.kind = 'slidingTrack';
-  runtime.localOpenSnapshot = snapshot;
+  runtime.localOpenSnapshot = captureGlobalSlidingTrack
+    ? captureSlidingTrackOpenSnapshot(App, includeDrawers)
+    : captureSnapshot(App, includeDrawers);
 }
 
 export function applyLocalOpenStateAfterBuild(App: AppLike): void {

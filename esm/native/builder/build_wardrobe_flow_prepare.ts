@@ -46,7 +46,7 @@ export function prepareBuildWardrobeFlow(
   const label = args.label || 'native/builder/build_wardrobe_flow';
   const deps = resolveBuilderDepsOrThrow({ App, builderDeps, label });
   const buildState = resolveBuildStateOrThrow({ App, stateOrOverride });
-  const { ui, runtime, globalClickMode, cfgSnapshot } = buildState;
+  const { ui, runtime, cfgSnapshot } = buildState;
 
   resetInternalGridMaps(App);
 

@@ -1,5 +1,5 @@
 import type { AppContainer } from '../../../types';
-import type { RaycastHitLike } from './canvas_picking_engine.js';
+import type { HitObjectLike, RaycastHitLike } from './canvas_picking_engine.js';
 import type { ModuleKey, PatchConfigForKeyFn } from './canvas_picking_drawer_mode_flow_shared.js';
 import { tryHandleExternalDrawerModeClick } from './canvas_picking_drawer_mode_flow_external.js';
 import { tryHandleDrawerDividerModeClick } from './canvas_picking_drawer_mode_flow_divider.js';
@@ -15,6 +15,7 @@ export type CanvasDrawerModeClickArgs = {
   __isDividerEditMode: boolean;
   foundDrawerId: string | null;
   foundPartId: string | null;
+  primaryHitObject: HitObjectLike | null;
   moduleHitY: number | null;
   intersects: RaycastHitLike[];
   __patchConfigForKey: PatchConfigForKeyFn;
@@ -40,5 +41,6 @@ export function tryHandleCanvasDrawerModeClick(args: CanvasDrawerModeClickArgs):
     isDividerEditMode: args.__isDividerEditMode,
     foundDrawerId: args.foundDrawerId,
     foundPartId: args.foundPartId,
+    primaryHitObject: args.primaryHitObject,
   });
 }

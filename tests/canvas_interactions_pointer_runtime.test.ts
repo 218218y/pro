@@ -254,13 +254,14 @@ test('drawer divider clicks immediately re-run hover at the same pointer after a
   const hoverCalls: Array<{ x: number; y: number; hasDivider: boolean }> = [];
   const openedDrawers: unknown[] = [];
   const App = createApp(false, rafQueue);
+  const drawerGroup = { userData: { partId: 'int_4', drawerId: 'int_4' } };
   App.render = {
     drawersArray: [
       {
         id: 'int_4',
         dividerKey: 'div:int_4',
         isInternal: true,
-        group: { userData: { partId: 'int_4', drawerId: 'int_4' } },
+        group: drawerGroup,
       },
     ],
   };
@@ -284,6 +285,7 @@ test('drawer divider clicks immediately re-run hover at the same pointer after a
           isDividerEditMode: true,
           foundDrawerId: 'int_4',
           foundPartId: 'int_4',
+          primaryHitObject: drawerGroup as any,
         });
       },
       handleCanvasHoverNDC(x: number, y: number) {
@@ -319,6 +321,47 @@ test('drawer divider clicks immediately re-run hover at the same pointer after a
     { x: 0, y: 0, hasDivider: true },
     { x: 0, y: 0, hasDivider: false },
   ]);
+});
+
+test('drawer divider mode ignores a drawer found behind a clicked door', () => {
+  const drawerGroup = { userData: { partId: 'int_4', drawerId: 'int_4' } };
+  const doorGroup = { userData: { partId: 'd1_full', doorId: 'd1_full' } };
+  const openedDrawers: unknown[] = [];
+  const App = createApp(false);
+  App.render = {
+    drawersArray: [
+      {
+        id: 'int_4',
+        dividerKey: 'div:int_4',
+        isInternal: true,
+        isOpen: false,
+        group: drawerGroup,
+      },
+    ],
+  };
+  App.maps = { drawerDividersMap: Object.create(null) };
+  App.services = {
+    tools: {
+      setDrawersOpenId(id: unknown) {
+        openedDrawers.push(id);
+      },
+    },
+  };
+
+  assert.equal(
+    tryHandleDrawerDividerModeClick({
+      App,
+      isDividerEditMode: true,
+      foundDrawerId: 'int_4',
+      foundPartId: 'd1_full',
+      primaryHitObject: doorGroup as any,
+    }),
+    true
+  );
+
+  assert.deepEqual(openedDrawers, []);
+  assert.equal(App.render.drawersArray[0].isOpen, false);
+  assert.equal(App.maps.drawerDividersMap['div:int_4'], undefined);
 });
 
 test('canvas pointer interactions honor notes-first mode and throttle move renders', () => {

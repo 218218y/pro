@@ -131,6 +131,48 @@ test('doors lifecycle global close delays for open internal drawers and immediat
   assert.equal(doorStatusCalls.at(-1), true);
 });
 
+test('doors lifecycle global sliding transitions clear stale track-open markers', () => {
+  const { App } = createApp({
+    runtime: { doorsOpen: false, globalClickMode: true },
+    config: { wardrobeType: 'sliding' },
+  });
+
+  App.render.doorsArray.push(
+    {
+      id: 'sliding_door_1',
+      type: 'sliding',
+      isOpen: true,
+      noGlobalOpen: true,
+      slidingOpenMode: 'track',
+      __slidingOpenMode: 'track',
+      slidingTrackOpenSide: 'left',
+      __slidingTrackOpenSide: 'left',
+    },
+    { id: 'sliding_door_2', type: 'sliding', isOpen: false }
+  );
+
+  setDoorsOpen(App, true, { touch: true, forceUpdate: true });
+
+  assert.deepEqual(
+    App.render.doorsArray.map((entry: any) => !!entry.isOpen),
+    [true, true]
+  );
+  assert.equal(App.render.doorsArray[0].noGlobalOpen, false);
+  assert.equal(App.render.doorsArray[0].slidingOpenMode, undefined);
+  assert.equal(App.render.doorsArray[0].__slidingOpenMode, undefined);
+  assert.equal(App.render.doorsArray[0].slidingTrackOpenSide, undefined);
+  assert.equal(App.render.doorsArray[0].__slidingTrackOpenSide, undefined);
+
+  setDoorsOpen(App, false, { touch: true, forceUpdate: true });
+
+  assert.deepEqual(
+    App.render.doorsArray.map((entry: any) => !!entry.isOpen),
+    [false, false]
+  );
+  assert.equal(App.render.doorsArray[0].noGlobalOpen, false);
+  assert.equal(App.render.doorsArray[0].slidingOpenMode, undefined);
+});
+
 test('doors lifecycle edit hold snapshots and restores door/drawer state only when mode is none', () => {
   const { App, renderCalls, state } = createApp({ mode: { primary: 'none' } });
   App.render.doorsArray.push({ id: 'd1', isOpen: false }, { id: 'd2', isOpen: true });
@@ -253,5 +295,46 @@ test('doors lifecycle preserves a global sliding track-open door across rebuilds
   assert.equal(App.render.doorsArray[1].noGlobalOpen, true);
   assert.equal(App.render.doorsArray[1].slidingOpenMode, 'track');
   assert.equal(App.render.doorsArray[1].__slidingOpenMode, 'track');
+  assert.equal(ensureDoorsRuntimeDefaults(App).localOpenSnapshot, null);
+});
+test('doors lifecycle sliding-track rebuild snapshot preserves only the track-open door when edit mode opened all sliding leaves', () => {
+  const { App } = createApp({
+    runtime: { doorsOpen: true, globalClickMode: true },
+    config: { wardrobeType: 'sliding' },
+  });
+
+  App.render.doorsArray.push(
+    {
+      id: 'sliding_door_1',
+      type: 'sliding',
+      isOpen: true,
+      noGlobalOpen: true,
+      slidingOpenMode: 'track',
+      __slidingOpenMode: 'track',
+    },
+    { id: 'sliding_door_2', type: 'sliding', isOpen: true },
+    { id: 'sliding_door_3', type: 'sliding', isOpen: true }
+  );
+
+  captureLocalOpenStateBeforeBuild(App, { includeDrawers: true, includeSlidingTrackDoors: true });
+
+  App.render.doorsArray = [
+    { id: 'sliding_door_1', type: 'sliding', isOpen: false },
+    { id: 'sliding_door_2', type: 'sliding', isOpen: false },
+    { id: 'sliding_door_3', type: 'sliding', isOpen: false },
+  ];
+
+  applyLocalOpenStateAfterBuild(App);
+
+  assert.deepEqual(
+    App.render.doorsArray.map((entry: any) => !!entry.isOpen),
+    [true, false, false]
+  );
+  assert.equal(App.render.doorsArray[0].noGlobalOpen, true);
+  assert.equal(App.render.doorsArray[0].slidingOpenMode, 'track');
+  assert.equal(App.render.doorsArray[1].noGlobalOpen, undefined);
+  assert.equal(App.render.doorsArray[1].slidingOpenMode, undefined);
+  assert.equal(App.render.doorsArray[2].noGlobalOpen, undefined);
+  assert.equal(App.render.doorsArray[2].slidingOpenMode, undefined);
   assert.equal(ensureDoorsRuntimeDefaults(App).localOpenSnapshot, null);
 });

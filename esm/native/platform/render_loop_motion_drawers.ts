@@ -8,7 +8,7 @@ import {
   setRenderSlot,
 } from '../runtime/render_access.js';
 import { readFiniteNumber, readFiniteNumberOrNull } from '../runtime/render_runtime_primitives.js';
-import { getDrawerModuleKey } from '../runtime/doors_runtime_support.js';
+import { getDrawerModuleKey, vecCopy } from '../runtime/doors_runtime_support.js';
 import { drawerVisualMatchesId, isExplicitExternalDrawerVisual } from '../runtime/drawer_visual_identity.js';
 import {
   getSketchFreeBoxMotionScopeFromEntry,
@@ -193,10 +193,15 @@ export function updateRenderLoopDrawerMotions(
     if (!frame.globalClickMode && isInternal) {
       const moduleKey = getDrawerModuleKey(d);
       const matchesOpenModule = moduleKey ? frame.localDoorModules.has(moduleKey) : frame.hasAnyLocalOpenDoor;
-      shouldOpen = !!(matchesOpenModule && scopedTimeSinceToggle > frame.delayTime);
+      shouldOpen = !!(
+        !frame.interiorDoorEditActive &&
+        matchesOpenModule &&
+        scopedTimeSinceToggle > frame.delayTime
+      );
     }
 
     const forceClosedBySketchExternalDrawerEdit = frame.sketchExtDrawersEditActive && !isInternal;
+    const forceClosedByInteriorEdit = frame.interiorDoorEditActive && isInternal;
     if (forceClosedBySketchExternalDrawerEdit) {
       shouldOpen = false;
       try {
@@ -213,7 +218,7 @@ export function updateRenderLoopDrawerMotions(
       } catch {
         // ignore
       }
-    } else if (frame.sketchEditActive && isInternal) {
+    } else if (forceClosedByInteriorEdit) {
       shouldOpen = false;
       try {
         d.isOpen = false;
@@ -230,7 +235,9 @@ export function updateRenderLoopDrawerMotions(
 
     if (!group) continue;
     const target = shouldOpen ? d.open : d.closed;
-    if (moveDrawerGroupPosition(group, target)) {
+    if (forceClosedByInteriorEdit && target === d.closed) {
+      vecCopy(group.position, d.closed);
+    } else if (moveDrawerGroupPosition(group, target)) {
       hasActiveDrawerMotion = true;
     }
     syncDrawerDividerMotionPreview(App, d);

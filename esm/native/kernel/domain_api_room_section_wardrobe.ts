@@ -12,6 +12,7 @@ import { patchUiSoft } from '../runtime/ui_write_access.js';
 import { patchRuntime } from '../runtime/runtime_write_access.js';
 import {
   cfgBatch,
+  cfgPatchWithReplaceKeys,
   setCfgCornerConfiguration,
   setCfgLowerModulesConfiguration,
   setCfgManualWidth,
@@ -74,7 +75,6 @@ export function installRoomWardrobeTypeSurface(args: InstallDomainApiRoomSection
 
         try {
           const cfgSnap0 = _captureConfigSnapshot();
-          delete cfgSnap0.wardrobeType;
 
           const uiSnap0 = pickUiForWardrobeTypeProfile(_ui());
           const rt0 = _rt() || {};
@@ -87,7 +87,8 @@ export function installRoomWardrobeTypeSurface(args: InstallDomainApiRoomSection
               _ensureObj,
               _domainApiReportNonFatal,
               cfgSnap0,
-              savedUi
+              savedUi,
+              prev
             ),
             ui: savedUi,
           };
@@ -120,7 +121,7 @@ export function installRoomWardrobeTypeSurface(args: InstallDomainApiRoomSection
             return result;
           }
 
-          initWardrobeTypeDefaults(App, actions, _metaNoBuild, next, meta, cfg0);
+          initWardrobeTypeDefaults(App, actions, _metaNoBuild, next, meta);
         } catch (_eRestoreAll) {
           _domainApiReportNonFatal(App, 'domain_api_room:setWardrobeType:restore', _eRestoreAll, {
             throttleMs: 6000,
@@ -315,6 +316,19 @@ function buildSlidingSketchExternalDrawersCleanupPatch(
   return patch;
 }
 
+const WARDROBE_TYPE_PROFILE_STRUCTURAL_KEYS = [
+  'modulesConfiguration',
+  'stackSplitLowerModulesConfiguration',
+  'cornerConfiguration',
+] as const;
+
+function withWardrobeTypeProfileStructuralReplaceKeys(configPatch: UnknownRecord): UnknownRecord {
+  const replaceKeys = WARDROBE_TYPE_PROFILE_STRUCTURAL_KEYS.filter(key => hasOwnKey(configPatch, key));
+  return replaceKeys.length
+    ? (cfgPatchWithReplaceKeys(configPatch, replaceKeys) as UnknownRecord)
+    : configPatch;
+}
+
 function patchWardrobeTypeCanonicalState(
   App: AppContainer,
   actions: ActionsNamespaceLike,
@@ -327,7 +341,7 @@ function patchWardrobeTypeCanonicalState(
   return patchViaActions(
     App,
     {
-      config: { ...configPatch },
+      config: withWardrobeTypeProfileStructuralReplaceKeys({ ...configPatch }),
       ui: { ...uiPatch },
     },
     _metaNoBuild(actions, meta, source)
@@ -350,7 +364,8 @@ function restoreWardrobeTypeProfile(
     _ensureObj,
     _domainApiReportNonFatal,
     cfgSaved,
-    uiPatch
+    uiPatch,
+    next
   );
 
   Object.assign(cfgPatch, buildSlidingSketchExternalDrawersCleanupPatch(cfgPatch, next));
@@ -409,8 +424,7 @@ function initWardrobeTypeDefaults(
   actions: ActionsNamespaceLike,
   _metaNoBuild: MetaNoBuildFn,
   next: WardrobeType,
-  meta: ActionMetaLike | UnknownRecord | null | undefined,
-  currentCfg: UnknownRecord | null | undefined
+  meta: ActionMetaLike | UnknownRecord | null | undefined
 ): void {
   const rawPatch: Record<string, unknown> = {};
   const doorsI = getDefaultDoorsForWardrobeType(next);
@@ -421,11 +435,12 @@ function initWardrobeTypeDefaults(
   rawPatch.depth = getDefaultDepthForWardrobeType(next);
 
   const uiPatch: UiStateLike = { raw: rawPatch };
-  const cleanupPatch = buildSlidingSketchExternalDrawersCleanupPatch(currentCfg, next);
   const configPatch = {
     wardrobeType: next,
     isManualWidth: false,
-    ...cleanupPatch,
+    modulesConfiguration: [],
+    stackSplitLowerModulesConfiguration: [],
+    cornerConfiguration: {},
   };
   if (
     patchWardrobeTypeCanonicalState(
@@ -445,17 +460,9 @@ function initWardrobeTypeDefaults(
   const m = _metaNoBuild(actions, meta, 'actions:room:setWardrobeType:init:autoWidth');
   setCfgWardrobeType(App, next, m);
   setCfgManualWidth(App, false, m);
-  for (const key of Object.keys(cleanupPatch)) {
-    if (key === 'modulesConfiguration') {
-      setCfgModulesConfiguration(App, cleanupPatch[key], m);
-    } else if (key === 'stackSplitLowerModulesConfiguration') {
-      setCfgLowerModulesConfiguration(App, cleanupPatch[key], m);
-    } else if (key === 'cornerConfiguration') {
-      setCfgCornerConfiguration(App, cleanupPatch[key], m);
-    } else {
-      actions.setCfgScalar?.(key, cleanupPatch[key], m);
-    }
-  }
+  setCfgModulesConfiguration(App, [], m);
+  setCfgLowerModulesConfiguration(App, [], m);
+  setCfgCornerConfiguration(App, {}, m);
 
   const uiMeta = _metaNoBuild(actions, { immediate: true }, 'actions:room:setWardrobeType:init:ui');
   patchUiSoft(App, uiPatch, uiMeta);

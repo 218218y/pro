@@ -31,15 +31,16 @@ test('sketch internal drawer edit sessions suppress drawer auto-open and stay mo
   assert.match(runtimeModes, /export function isSketchEditActive\(App: AppLike\): boolean/);
   assert.match(runtimeModes, /export function isSketchExtDrawersEditActive\(App: AppLike\): boolean/);
 
+  assert.match(visuals, /const interiorDoorEditActive = isInteriorDoorEditModeActive\(App\);/);
   assert.match(visuals, /const sketchIntDrawersEditActive = isSketchIntDrawersEditActive\(App\);/);
   assert.match(visuals, /if \(sketchIntDrawersEditActive\) \{/);
   assert.match(
     visuals,
-    /if \(\s*!sketchEditActive &&\s*!sketchExtDrawersEditActive &&\s*!sketchIntDrawersEditActive &&\s*openId &&\s*drawerVisualMatchesId\(drawer, openId\)\s*\) \{/
+    /if \(\s*!interiorDoorEditActive &&\s*!sketchExtDrawersEditActive &&\s*!sketchIntDrawersEditActive &&\s*openId &&\s*drawerVisualMatchesId\(drawer, openId\)\s*\) \{/
   );
 
   assert.match(motion, /sketchIntDrawersEditActive: boolean;/);
   assert.match(motion, /const sketchIntDrawersEditActive = isSketchIntDrawersEditActive\((?:A|App)\);/);
   assert.match(motion, /if \(frame\.sketchIntDrawersEditActive\) \{/);
-  assert.match(motion, /frame\.sketchIntDrawersEditActive &&/);
+  assert.match(motion, /frame\.interiorDoorEditActive && isInternal/);
 });

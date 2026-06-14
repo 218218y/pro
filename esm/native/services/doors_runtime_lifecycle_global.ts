@@ -18,6 +18,24 @@ import {
   wardrobeType,
 } from './doors_runtime_shared.js';
 
+function clearSlidingTrackOpenMarkers(entry: unknown): void {
+  if (!entry || typeof entry !== 'object') return;
+  const rec = entry as {
+    type?: unknown;
+    noGlobalOpen?: boolean;
+    slidingOpenMode?: unknown;
+    __slidingOpenMode?: unknown;
+    slidingTrackOpenSide?: unknown;
+    __slidingTrackOpenSide?: unknown;
+  };
+  if (rec.type !== 'sliding') return;
+  rec.noGlobalOpen = false;
+  rec.slidingOpenMode = undefined;
+  rec.__slidingOpenMode = undefined;
+  rec.slidingTrackOpenSide = undefined;
+  rec.__slidingTrackOpenSide = undefined;
+}
+
 export function setDoorsOpen(App: AppLike, open: boolean, opts?: SetDoorsOptions): void {
   if (!App || typeof App !== 'object') return;
   const runtime = ensureDoorsRuntimeDefaults(App);
@@ -62,7 +80,9 @@ export function setDoorsOpen(App: AppLike, open: boolean, opts?: SetDoorsOptions
   if (!next) {
     try {
       getDoorsArray(App).forEach(entry => {
-        if (entry && entry.noGlobalOpen) entry.isOpen = false;
+        if (!entry) return;
+        if (entry.noGlobalOpen) entry.isOpen = false;
+        clearSlidingTrackOpenMarkers(entry);
       });
     } catch (_) {
       reportDoorsRuntimeNonFatal(App, 'L265', _);
@@ -98,7 +118,9 @@ export function setDoorsOpen(App: AppLike, open: boolean, opts?: SetDoorsOptions
   try {
     if (wardrobeType(App) === 'sliding') {
       getDoorsArray(App).forEach(entry => {
-        if (entry && entry.type === 'sliding') entry.isOpen = next;
+        if (!entry || entry.type !== 'sliding') return;
+        clearSlidingTrackOpenMarkers(entry);
+        entry.isOpen = next;
       });
     }
   } catch (_) {

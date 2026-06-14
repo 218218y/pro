@@ -74,6 +74,53 @@ test('snapDrawersToTargets keeps all drawers closed during internal drawer editi
   assert.equal(externalDrawerGroup.position.x, 0);
 });
 
+test('snapDrawersToTargets keeps sliding internal drawers closed during regular division editing', () => {
+  const internalDrawerGroup = {
+    position: { x: 7, y: 0, z: 0 },
+    userData: { __wpType: 'extDrawer' },
+  };
+
+  const app: Record<string, unknown> = {
+    store: makeStore({
+      mode: { primary: 'layout', opts: { layoutType: 'shelves' } },
+      runtime: { globalClickMode: true, doorsOpen: true },
+      ui: {},
+      config: { wardrobeType: 'sliding', DOOR_DELAY_MS: 0 },
+      meta: {},
+    }),
+    services: {
+      doors: {
+        getOpen: () => true,
+        getLastToggleTime: () => 0,
+      },
+      platform: {
+        perf: { hasInternalDrawers: true },
+      },
+      config: {},
+      tools: {
+        getDrawersOpenId: () => 'drawer-int-1',
+      },
+    },
+    render: {
+      drawersArray: [
+        {
+          id: 'drawer-int-1',
+          group: internalDrawerGroup,
+          closed: { x: 0, y: 0, z: 0 },
+          open: { x: 10, y: 0, z: 0 },
+          isInternal: true,
+          isOpen: true,
+        },
+      ],
+    },
+  };
+
+  snapDrawersToTargets(app as never);
+
+  assert.equal(internalDrawerGroup.position.x, 0);
+  assert.equal((app.render as any).drawersArray[0].isOpen, false);
+});
+
 test('snapDrawersToTargets keeps regular external drawers closed during sketch external drawer editing', () => {
   const externalDrawerGroup = {
     position: { x: 0, y: 0, z: 0 },

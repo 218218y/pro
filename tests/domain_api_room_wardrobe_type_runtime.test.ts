@@ -30,6 +30,25 @@ function mergeSlice(cur: AnyRec | undefined, patch: AnyRec | undefined): AnyRec 
   return base;
 }
 
+const CONFIG_REPLACE_KEY = '__replace';
+
+function mergeConfigSlice(cur: AnyRec | undefined, patch: AnyRec | undefined): AnyRec {
+  const base = cur && typeof cur === 'object' ? { ...cur } : {};
+  const input = patch && typeof patch === 'object' ? { ...patch } : {};
+  const replace = input[CONFIG_REPLACE_KEY];
+  delete input[CONFIG_REPLACE_KEY];
+
+  if (replace && typeof replace === 'object' && !Array.isArray(replace)) {
+    for (const key of Object.keys(replace as AnyRec)) {
+      if (!(replace as AnyRec)[key] || !Object.prototype.hasOwnProperty.call(input, key)) continue;
+      base[key] = input[key];
+      delete input[key];
+    }
+  }
+
+  return mergeSlice(base, input);
+}
+
 function createHarness(seed?: {
   ui?: AnyRec;
   config?: AnyRec;
@@ -59,7 +78,10 @@ function createHarness(seed?: {
     patch: (patch: AnyRec) => {
       for (const slice of ['ui', 'config', 'runtime'] as const) {
         if (patch && patch[slice] && typeof patch[slice] === 'object') {
-          state[slice] = mergeSlice(state[slice], patch[slice]);
+          state[slice] =
+            slice === 'config'
+              ? mergeConfigSlice(state.config, patch.config)
+              : mergeSlice(state[slice], patch[slice]);
         }
       }
       return patch;
@@ -75,7 +97,7 @@ function createHarness(seed?: {
         delete next.__snapshot;
         state.config = clone(next);
       } else {
-        state.config = mergeSlice(state.config, patch);
+        state.config = mergeConfigSlice(state.config, patch);
       }
       return patch;
     },
@@ -342,7 +364,7 @@ test('room wardrobe type runtime: saved wardrobe profiles are canonicalized and 
   assert.equal(h.reports.length, 0);
 });
 
-test('room wardrobe type runtime: first switch to sliding strips sketch external drawers from active config only', () => {
+test('room wardrobe type runtime: first switch to unsaved sliding resets active structural config', () => {
   const h = createHarness({
     ui: { raw: { width: 200, height: 240, depth: 55, doors: 4 } },
     config: {
@@ -389,24 +411,57 @@ test('room wardrobe type runtime: first switch to sliding strips sketch external
 
   h.actions.room.setWardrobeType('sliding');
 
-  const top = h.state.config.modulesConfiguration as AnyRec[];
-  const lower = h.state.config.stackSplitLowerModulesConfiguration as AnyRec[];
-  const corner = h.state.config.cornerConfiguration as AnyRec;
   const savedHinged = h.state.runtime.wardrobeTypeProfiles.hinged.cfg as AnyRec;
 
   assert.equal(h.state.config.wardrobeType, 'sliding');
-  assert.equal(top[0].sketchExtras.extDrawers, undefined);
-  assert.deepEqual(top[0].sketchExtras.drawers, [{ id: 'sid-top', yNorm: 0.7 }]);
-  assert.deepEqual(top[0].sketchExtras.shelves, [{ id: 'shelf-top', yNorm: 0.5 }]);
-  assert.equal(top[1].sketchExtras.extDrawers, undefined);
-  assert.equal(top[1].sketchExtras.boxes[0].extDrawers, undefined);
-  assert.deepEqual(top[1].sketchExtras.boxes[0].drawers, [{ id: 'box-sid', yNorm: 0.7 }]);
-  assert.equal(lower[0].sketchExtras, undefined);
-  assert.equal(corner.modulesConfiguration[0].sketchExtras, undefined);
-  assert.equal(corner.stackSplitLower.modulesConfiguration[0].sketchExtras, undefined);
+  assert.deepEqual(h.state.config.modulesConfiguration, []);
+  assert.deepEqual(h.state.config.stackSplitLowerModulesConfiguration, []);
+  assert.equal((h.state.config.cornerConfiguration as AnyRec).modulesConfiguration, undefined);
+  assert.equal((h.state.config.cornerConfiguration as AnyRec).stackSplitLower, undefined);
 
   assert.equal(savedHinged.modulesConfiguration[0].sketchExtras.extDrawers.length, 1);
+  assert.equal(savedHinged.modulesConfiguration[0].sketchExtras.drawers.length, 1);
   assert.equal(savedHinged.modulesConfiguration[1].sketchExtras.boxes[0].extDrawers.length, 1);
+  assert.equal(savedHinged.modulesConfiguration[1].sketchExtras.boxes[0].drawers.length, 1);
+  assert.equal(h.reports.length, 0);
+});
+
+test('room wardrobe type runtime: saved sliding profile keeps both internal drawer cells across type switches', () => {
+  const h = createHarness({
+    ui: { raw: { width: 160, height: 240, depth: 60, doors: 2 } },
+    config: {
+      wardrobeType: 'sliding',
+      modulesConfiguration: [
+        {
+          doors: 1,
+          layout: 'shelves',
+          sketchExtras: { drawers: [{ id: 'left-internal', yNorm: 0.35 }] },
+        },
+        {
+          doors: 1,
+          layout: 'hanging_top2',
+          sketchExtras: { drawers: [{ id: 'right-internal', yNorm: 0.65 }] },
+        },
+      ],
+    },
+  });
+
+  h.actions.room.setWardrobeType('hinged');
+
+  assert.equal(h.state.config.wardrobeType, 'hinged');
+  assert.deepEqual(h.state.config.modulesConfiguration, []);
+
+  h.actions.room.setWardrobeType('sliding');
+
+  const top = h.state.config.modulesConfiguration as AnyRec[];
+  assert.equal(h.state.config.wardrobeType, 'sliding');
+  assert.equal(top.length, 2);
+  assert.deepEqual(
+    top.map(entry => entry.doors),
+    [1, 1]
+  );
+  assert.deepEqual(top[0].sketchExtras.drawers, [{ id: 'left-internal', yNorm: 0.35 }]);
+  assert.deepEqual(top[1].sketchExtras.drawers, [{ id: 'right-internal', yNorm: 0.65 }]);
   assert.equal(h.reports.length, 0);
 });
 
@@ -533,10 +588,11 @@ test('room wardrobe type runtime: restoring legacy wardrobe profile rematerializ
     : [];
 
   assert.equal(h.state.config.wardrobeType, 'sliding');
-  assert.equal(top.length, 3);
-  assert.equal(top[0].doors, 2);
-  assert.equal(top[1].doors, 2);
-  assert.equal(top[2].doors, 1);
+  assert.equal(top.length, 5);
+  assert.deepEqual(
+    top.map(entry => entry.doors),
+    [1, 1, 1, 1, 1]
+  );
   assert.equal(top[0].extDrawersCount, 4);
   assert.equal(lower.length, 2);
   assert.equal(lower[1].extDrawersCount, 2);
@@ -598,7 +654,18 @@ test('room wardrobe type runtime: init path collapses wardrobe type + ui default
   assert.equal(h.patchCalls.length, 1);
   assert.deepEqual(h.patchCalls[0], [
     {
-      config: { wardrobeType: 'sliding', isManualWidth: false },
+      config: {
+        wardrobeType: 'sliding',
+        isManualWidth: false,
+        modulesConfiguration: [],
+        stackSplitLowerModulesConfiguration: [],
+        cornerConfiguration: {},
+        __replace: {
+          modulesConfiguration: true,
+          stackSplitLowerModulesConfiguration: true,
+          cornerConfiguration: true,
+        },
+      },
       ui: { raw: { doors: 2, width: 160, depth: 60 } },
     },
     { source: 'actions:room:setWardrobeType:init' },

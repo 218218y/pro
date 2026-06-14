@@ -85,6 +85,63 @@ test('render loop motion skips invalid door vectors and still updates valid door
   });
 });
 
+test('render loop motion hides a track-open sliding door during sketch internal drawers editing', () => {
+  withRuntimeNow(100, () => {
+    const doorGroup = {
+      visible: true,
+      position: { x: 1, y: 0, z: 0.25 },
+      rotation: { y: 0 },
+      userData: { partId: 'sliding_door_1' },
+    };
+    const app: Record<string, unknown> = {
+      store: makeStore({
+        mode: { primary: 'manual_layout', opts: { manualTool: 'sketch_int_drawers' } },
+        runtime: { globalClickMode: true, doorsOpen: false },
+        ui: {},
+        config: {},
+        meta: {},
+      }),
+      services: {
+        doors: { getOpen: () => false, getLastToggleTime: () => 0 },
+        tools: { getInteriorManualTool: () => 'sketch_int_drawers' },
+        platform: {
+          perf: { hasInternalDrawers: false, perfFlagsDirty: false },
+          activity: { lastActionTime: 100 },
+        },
+      },
+      render: {
+        doorsArray: [
+          {
+            type: 'sliding',
+            group: doorGroup,
+            total: 2,
+            index: 0,
+            width: 1,
+            originalX: -1,
+            originalZ: 0.25,
+            isOpen: true,
+            noGlobalOpen: true,
+            slidingOpenMode: 'track',
+            __slidingOpenMode: 'track',
+          },
+        ],
+        drawersArray: [],
+      },
+    };
+
+    const controller = createRenderLoopMotionController(app as never, {
+      report: () => undefined,
+      now: () => 100,
+      debugLog: () => undefined,
+    });
+
+    controller.stepFrame(100);
+
+    assert.equal(doorGroup.visible, false);
+    assert.ok(doorGroup.position.x < 1);
+  });
+});
+
 test('render loop motion opens free-box sketch doors during sketch internal drawers editing even when they are local-open only', () => {
   withRuntimeNow(100, () => {
     const doorGroup = {
@@ -727,5 +784,69 @@ test('render loop motion keeps local drawer animation alive after a stale global
     assert.equal(step.isAnimating, true);
     assert.ok(drawerGroup.position.x > 0);
     assert.ok(drawerGroup.position.x < 5);
+  });
+});
+
+test('render loop motion snaps sliding internal drawers closed during regular division editing', () => {
+  withRuntimeNow(1000, () => {
+    const internalDrawerGroup = {
+      position: {
+        x: 8,
+        y: 0,
+        z: 0,
+        lerp(target: { x: number; y: number; z: number }) {
+          this.x += (target.x - this.x) * 0.1;
+          this.y += (target.y - this.y) * 0.1;
+          this.z += (target.z - this.z) * 0.1;
+        },
+      },
+      userData: { __wpType: 'extDrawer' },
+    };
+    const app: Record<string, unknown> = {
+      store: makeStore({
+        mode: { primary: 'layout', opts: { layoutType: 'shelves' } },
+        runtime: { globalClickMode: true, doorsOpen: true, doorsLastToggleTime: 0 },
+        ui: {},
+        config: { wardrobeType: 'sliding', DOOR_DELAY_MS: 0 },
+        meta: {},
+      }),
+      services: {
+        doors: {
+          getOpen: () => true,
+          getLastToggleTime: () => 0,
+        },
+        tools: { getDrawersOpenId: () => 'drawer-int-1' },
+        platform: {
+          perf: { hasInternalDrawers: true, perfFlagsDirty: false },
+          activity: { lastActionTime: 1000 },
+          dimsM: { w: 3 },
+        },
+        config: {},
+      },
+      render: {
+        doorsArray: [],
+        drawersArray: [
+          {
+            id: 'drawer-int-1',
+            group: internalDrawerGroup,
+            closed: { x: 0, y: 0, z: 0 },
+            open: { x: 10, y: 0, z: 0 },
+            isInternal: true,
+            isOpen: true,
+          },
+        ],
+      },
+    };
+
+    const controller = createRenderLoopMotionController(app as never, {
+      report: () => undefined,
+      now: () => 1000,
+      debugLog: () => undefined,
+    });
+
+    controller.stepFrame(1000);
+
+    assert.equal(internalDrawerGroup.position.x, 0);
+    assert.equal((app.render as any).drawersArray[0].isOpen, false);
   });
 });

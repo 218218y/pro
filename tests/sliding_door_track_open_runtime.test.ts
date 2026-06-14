@@ -225,7 +225,7 @@ test('legacy slidingWideOpen request hides sliding doors and does not use an out
   assert.ok(right.group.position.x >= right.minX && right.group.position.x <= right.maxX);
 });
 
-test('sliding track-open door stays visible and open during internal drawer divider/edit visuals', () => {
+test('sliding track-open door is hidden during internal drawer edit visuals', () => {
   const left = makeSlidingDoor(0, 2);
   const right = makeSlidingDoor(1, 2);
   left.isOpen = true;
@@ -243,11 +243,14 @@ test('sliding track-open door stays visible and open during internal drawer divi
 
   syncVisualsNow(App, { open: false });
 
-  assert.notEqual(
-    left.group.visible,
-    false,
-    'track-open sliding door must not be hidden in drawer edit visuals'
-  );
+  assert.equal(left.group.visible, false, 'track-open sliding door must be hidden in drawer edit visuals');
+  assert.equal(left.group.position.x, left.originalX);
+  assert.equal(left.group.position.z, left.originalZ);
+
+  App.store.getState().mode.primary = 'none';
+  syncVisualsNow(App, { open: false });
+
+  assert.notEqual(left.group.visible, false, 'track-open sliding door visibility is restored after edit');
   assert.equal(left.group.position.x, 1);
   assert.equal(left.group.position.z, left.originalZ);
 });

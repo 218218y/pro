@@ -5,7 +5,7 @@ import type { CanvasPickingClickRouteArgs } from './canvas_picking_click_route_s
 
 export function tryHandleCanvasPickingLayoutRoute(args: CanvasPickingClickRouteArgs): boolean {
   const { App, hitState, modeState, moduleRefs } = args;
-  const { intersects, foundPartId, foundModuleIndex, foundDrawerId, moduleHitY } = hitState;
+  const { intersects, foundPartId, foundModuleIndex, foundDrawerId, primaryHitObject, moduleHitY } = hitState;
   const {
     __isLayoutEditMode,
     __isManualLayoutMode,
@@ -66,6 +66,7 @@ export function tryHandleCanvasPickingLayoutRoute(args: CanvasPickingClickRouteA
     __isDividerEditMode,
     foundDrawerId,
     foundPartId,
+    primaryHitObject,
     moduleHitY,
     intersects,
     __patchConfigForKey,

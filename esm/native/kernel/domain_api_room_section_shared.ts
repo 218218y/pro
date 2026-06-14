@@ -230,14 +230,21 @@ export function canonicalizeWardrobeTypeProfileConfigSnapshot(
   _ensureObj: (x: unknown) => UnknownRecord,
   reportNonFatal: ReportFn,
   cfgValue: unknown,
-  uiValue: unknown
+  uiValue: unknown,
+  profileWardrobeType?: WardrobeType
 ): ConfigStateLike {
   const cfg = cloneConfigStateSnapshot(App, _ensureObj, reportNonFatal, cfgValue);
   const ui = cloneUiStateSnapshot(App, _ensureObj, reportNonFatal, uiValue);
+  const cfgForProfile = profileWardrobeType ? { ...cfg } : cfg;
+  const cfgForStructure = profileWardrobeType
+    ? { ...cfg, wardrobeType: normalizeWardrobeType(profileWardrobeType) }
+    : cfg;
 
-  return canonicalizeProjectConfigStructuralSnapshot(cfg, {
+  if (profileWardrobeType) delete cfgForProfile.wardrobeType;
+
+  return canonicalizeProjectConfigStructuralSnapshot(cfgForProfile, {
     uiSnapshot: ui,
-    cfgSnapshot: cfg,
+    cfgSnapshot: cfgForStructure,
     cornerMode: 'auto',
     topMode: 'materialize',
   });
@@ -291,8 +298,16 @@ export function readWardrobeTypeProfiles(
     const profile = asRecord(value);
     if (!profile) continue;
     const ui = readUiStateSnapshot(profile.ui);
+    const profileWardrobeType = normalizeWardrobeType(key);
     out[key] = {
-      cfg: canonicalizeWardrobeTypeProfileConfigSnapshot(App, _ensureObj, reportNonFatal, profile.cfg, ui),
+      cfg: canonicalizeWardrobeTypeProfileConfigSnapshot(
+        App,
+        _ensureObj,
+        reportNonFatal,
+        profile.cfg,
+        ui,
+        profileWardrobeType
+      ),
       ui,
     };
   }

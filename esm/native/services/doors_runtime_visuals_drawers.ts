@@ -31,6 +31,7 @@ import {
   hasAnyOpenDoor,
   hasInternalDrawers,
   isGlobalClickMode,
+  isInteriorDoorEditModeActive,
   isSketchEditActive,
   isSketchExtDrawersEditActive,
   isSketchIntDrawersEditActive,
@@ -109,6 +110,7 @@ export function installDrawerMeta(App: AppLike): void {
 export function snapDrawersToTargets(App: AppLike): void {
   if (!App) return;
 
+  const interiorDoorEditActive = isInteriorDoorEditModeActive(App);
   const sketchEditActive = isSketchEditActive(App);
   const sketchIntDrawersEditActive = isSketchIntDrawersEditActive(App);
   const sketchExtDrawersEditActive = isSketchExtDrawersEditActive(App);
@@ -128,7 +130,7 @@ export function snapDrawersToTargets(App: AppLike): void {
   const localOpenDoorModules = globalClickMode ? new Set<string>() : getOpenDoorModuleKeys(App);
   const hasAnyLocalOpenDoor = globalClickMode ? false : hasAnyOpenDoor(App);
   const internalDrawersShouldBeOpen = !!(
-    !sketchEditActive &&
+    !interiorDoorEditActive &&
     doorsOpenFlag &&
     (!hasInternal || timeSinceToggle > delayTime)
   );
@@ -177,7 +179,7 @@ export function snapDrawersToTargets(App: AppLike): void {
       } catch (_) {
         // ignore
       }
-    } else if (sketchEditActive && isInternal) {
+    } else if (interiorDoorEditActive && isInternal) {
       shouldOpen = false;
       try {
         drawer.isOpen = false;
@@ -195,13 +197,13 @@ export function snapDrawersToTargets(App: AppLike): void {
     } else if (isInternal) {
       const moduleKey = getDrawerModuleKey(drawer);
       const matchesOpenModule = moduleKey ? localOpenDoorModules.has(moduleKey) : hasAnyLocalOpenDoor;
-      shouldOpen = !!(!sketchEditActive && matchesOpenModule && scopedTimeSinceToggle > delayTime);
+      shouldOpen = !!(!interiorDoorEditActive && matchesOpenModule && scopedTimeSinceToggle > delayTime);
     } else {
       shouldOpen = !!drawer.isOpen;
     }
 
     if (
-      !sketchEditActive &&
+      !interiorDoorEditActive &&
       !sketchExtDrawersEditActive &&
       !sketchIntDrawersEditActive &&
       openId &&
