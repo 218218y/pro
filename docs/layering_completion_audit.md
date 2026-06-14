@@ -17,6 +17,7 @@ This file is intentionally compact. It keeps only current decomposition guard fa
 - `services/canvas_picking_handle_assign_meta.ts` owns Canvas picking handle-assignment structural meta so handle type, edge variant, color, manual-position, and clear-manual-position map writes stay immediate build-visible writes from one source-normalized contract
 - `services/canvas_picking_drawer_mode_divider_meta.ts` owns Canvas picking drawer-divider structural meta so action and direct-map divider toggles stay immediate build-visible writes from one source-normalized contract
 - `services/canvas_picking_paint_meta.ts` owns Canvas picking paint meta so structural paint writes stay immediate build-visible and color-only material refresh writes opt into no-build through one source-normalized contract
+- `services/canvas_picking_cell_dims_meta.ts` owns Canvas picking cell-dims structural and refresh-gated meta so linear and corner dimension writes stay source-normalized while explicit commit refreshes avoid duplicate reactive builds
 - `canvas_picking_click_flow.ts` paint flows now live in `services/canvas_picking_paint_flow.ts`
 - `canvas_picking_click_flow.ts` handle-assign flows now live in `services/canvas_picking_handle_assign_flow.ts`
 - `canvas_picking_click_flow.ts` none/screen-note door toggle flows now live in `services/canvas_picking_toggle_flow.ts`

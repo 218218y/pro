@@ -1,10 +1,9 @@
-import type { ActionMetaLike, AppContainer, UnknownRecord } from '../../../types';
+import type { AppContainer, UnknownRecord } from '../../../types';
 import type { CanvasLinearCellDimsArgs } from './canvas_picking_cell_dims_contracts.js';
 import type { ModulesConfigBucketKey } from '../features/modules_configuration/modules_config_api.js';
 
 import { getUiFeedback } from '../runtime/service_access.js';
 import { readRootState } from '../runtime/root_state_access.js';
-import { __wp_metaNoBuild } from './canvas_picking_core_helpers.js';
 
 export type ModuleShape = UnknownRecord & { doors?: unknown; specialDims?: unknown };
 export type FeedbackShape = { updateEditStateToast?: (message: string, sticky?: boolean) => unknown };
@@ -82,10 +81,6 @@ export function readModulesStructureFromRootState(state: unknown): unknown[] | n
 
 export function readModulesStructureFromCfg(cfg: UnknownRecord): unknown[] | null {
   return readArray(cfg.modulesStructure);
-}
-
-export function createHistoryableNoBuildMeta(App: AppContainer, source: string): ActionMetaLike {
-  return __wp_metaNoBuild(App, source, { immediate: true });
 }
 
 export function readToastFn(App: AppContainer): FeedbackShape['updateEditStateToast'] | null {

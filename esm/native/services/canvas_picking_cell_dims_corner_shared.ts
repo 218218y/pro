@@ -17,7 +17,6 @@ export {
 } from './canvas_picking_cell_dims_corner_context.js';
 
 export {
-  createHistoryableNoBuildMeta,
   readToastFn,
   patchCornerConfig,
   patchCornerConfigForStack,

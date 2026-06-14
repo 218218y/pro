@@ -12,11 +12,8 @@ import {
   assignSpecialDimsToConfig,
   cloneSpecialDims,
 } from '../features/special_dims/index.js';
-import {
-  createHistoryableNoBuildMeta,
-  readSpecialDimsRecord,
-  readToastFn,
-} from './canvas_picking_cell_dims_linear_shared.js';
+import { readSpecialDimsRecord, readToastFn } from './canvas_picking_cell_dims_linear_shared.js';
+import { createCanvasPickingCellDimsRefreshGatedMeta } from './canvas_picking_cell_dims_meta.js';
 import { buildMutableLinearModules } from './canvas_picking_cell_dims_linear_mutable.js';
 import { applyLinearCellDimsWidthPolicy } from './canvas_picking_cell_dims_linear_width.js';
 import { promoteUniformLinearCellDim } from './canvas_picking_cell_dims_linear_normalize.js';
@@ -131,7 +128,7 @@ export function applyCanvasLinearCellDimsContextWithOptions(
     Math.abs(depthPromotion.nextTotal - applyCtx.totalD) > 1e-6;
 
   try {
-    const metaCfg = createHistoryableNoBuildMeta(App, source);
+    const metaCfg = createCanvasPickingCellDimsRefreshGatedMeta(App, source);
     applyCellDimsConfigSnapshot({
       App,
       modulesConfiguration: nextModsCfg,
@@ -179,7 +176,7 @@ export function applyCanvasLinearCellDimsContextWithOptions(
         if (depthChanged) rawPatch.depth = depthPromotion.nextTotal;
       }
       if (Object.keys(rawPatch).length) {
-        patchUiSoft(App, { raw: rawPatch }, createHistoryableNoBuildMeta(App, source));
+        patchUiSoft(App, { raw: rawPatch }, createCanvasPickingCellDimsRefreshGatedMeta(App, source));
       }
     } catch (err) {
       __wp_reportPickingIssue(App, err, { where: 'canvasPicking', op: 'cellDims.syncUiRaw' });

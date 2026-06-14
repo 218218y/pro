@@ -12,7 +12,10 @@ const clickRoute = [
   read('esm/native/services/canvas_picking_click_route_actions.ts'),
 ].join('\n');
 const cellDimsLinear = read('esm/native/services/canvas_picking_cell_dims_linear.ts');
+const cellDimsLinearShared = read('esm/native/services/canvas_picking_cell_dims_linear_shared.ts');
 const cellDimsLinearApply = read('esm/native/services/canvas_picking_cell_dims_linear_apply.ts');
+const cellDimsCornerEffects = read('esm/native/services/canvas_picking_cell_dims_corner_effects.ts');
+const cellDimsMeta = read('esm/native/services/canvas_picking_cell_dims_meta.ts');
 const paintFlow = read('esm/native/services/canvas_picking_paint_flow.ts');
 const paintApply = read('esm/native/services/canvas_picking_paint_flow_apply.ts');
 const paintApplyState = read('esm/native/services/canvas_picking_paint_flow_apply_state.ts');
@@ -55,6 +58,16 @@ test('canvas picking config snapshots and typed meta/map surfaces stay centraliz
   assert.match(cellDimsLinear, /canvas_picking_cell_dims_linear_apply\.js/);
   assert.match(cellDimsLinearApply, /from '\.\/canvas_picking_config_actions\.js'/);
   assert.match(cellDimsLinearApply, /applyCellDimsConfigSnapshot\(\{/);
+  assert.match(cellDimsLinearApply, /createCanvasPickingCellDimsRefreshGatedMeta\(App, source\)/);
+  assert.match(cellDimsCornerEffects, /createCanvasPickingCellDimsRefreshGatedMeta\(App, source\)/);
+  assert.match(
+    cellDimsMeta,
+    /export function createCanvasPickingCellDimsRefreshGatedMeta\([\s\S]*\): ActionMetaLike/
+  );
+  assert.doesNotMatch(
+    cellDimsLinearShared + cellDimsLinearApply + cellDimsCornerEffects,
+    /__wp_metaNoBuild\(/
+  );
   assert.doesNotMatch(
     cellDimsLinearApply,
     /cfgBatch\(\s*App,\s*function \(\) \{[\s\S]{0,400}setCfgModulesConfiguration\(App, nextModsCfg, metaCfg\)/

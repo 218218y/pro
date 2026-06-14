@@ -1,11 +1,12 @@
-import type { ActionMetaLike, AppContainer, UnknownRecord } from '../../../types';
+import type { AppContainer, UnknownRecord } from '../../../types';
 
 import { getUiFeedback } from '../runtime/service_access.js';
 import { setCfgCornerConfiguration } from '../runtime/cfg_access.js';
 import { getCfg } from '../kernel/api.js';
 import { patchUiSoft } from '../runtime/ui_write_access.js';
-import { __wp_commitHistoryTouch, __wp_metaNoBuild } from './canvas_picking_core_helpers.js';
+import { __wp_commitHistoryTouch } from './canvas_picking_core_helpers.js';
 import { requestCanvasPickingCommitStructuralRefresh } from './canvas_picking_structural_refresh.js';
+import { createCanvasPickingCellDimsRefreshGatedMeta } from './canvas_picking_cell_dims_meta.js';
 import {
   patchCornerConfigurationForStack,
   readCornerConfigurationFromConfigSnapshot,
@@ -27,10 +28,6 @@ function readFeedbackShape(value: unknown): FeedbackShape | null {
         ? (message: string, sticky?: boolean) => Reflect.apply(fn, rec, [message, sticky])
         : undefined,
   };
-}
-
-export function createHistoryableNoBuildMeta(App: AppContainer, source: string): ActionMetaLike {
-  return __wp_metaNoBuild(App, source, { immediate: true });
 }
 
 export function readToastFn(App: AppContainer): ((message: string, sticky?: boolean) => unknown) | null {
@@ -55,7 +52,7 @@ export function patchCornerConfigForStack(
   stackKey: 'top' | 'bottom' = 'top'
 ): void {
   try {
-    const meta = createHistoryableNoBuildMeta(App, source);
+    const meta = createCanvasPickingCellDimsRefreshGatedMeta(App, source);
     if (stackKey === 'bottom') {
       const cfg = getCfg(App);
       const currentCorner = readCornerConfigurationFromConfigSnapshot(cfg) || {};
@@ -77,7 +74,7 @@ export function patchCornerConfigForStack(
 export function syncCornerUi(App: AppContainer, uiPatch: UnknownRecord, source: string, op: string): void {
   try {
     if (Object.keys(uiPatch).length === 0) return;
-    const uiMeta = createHistoryableNoBuildMeta(App, source);
+    const uiMeta = createCanvasPickingCellDimsRefreshGatedMeta(App, source);
     patchUiSoft(App, uiPatch, uiMeta);
   } catch (_e) {
     reportCornerDimsIssue(App, _e, op);

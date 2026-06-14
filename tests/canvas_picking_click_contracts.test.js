@@ -52,6 +52,8 @@ const paintApplyState = read('esm/native/services/canvas_picking_paint_flow_appl
 const paintApplyCommit = read('esm/native/services/canvas_picking_paint_flow_apply_commit.ts');
 const paintMeta = read('esm/native/services/canvas_picking_paint_meta.ts');
 const paintTargets = read('esm/native/services/canvas_picking_paint_targets.ts');
+const cellDimsMeta = read('esm/native/services/canvas_picking_cell_dims_meta.ts');
+const cellDimsLinearShared = read('esm/native/services/canvas_picking_cell_dims_linear_shared.ts');
 const handleFlow = read('esm/native/services/canvas_picking_handle_assign_flow.ts');
 const toggleFlow = read('esm/native/services/canvas_picking_toggle_flow.ts');
 const toggleFlowShared = read('esm/native/services/canvas_picking_toggle_flow_shared.ts');
@@ -136,6 +138,12 @@ test('canvas picking click owner stays thin and routes edit families through foc
   );
   assert.match(paintMeta, /createCanvasPickingPaintMaterialRefreshMeta/);
   assert.match(paintMeta, /Canvas picking paint meta requires a source/);
+  assert.match(
+    cellDimsMeta,
+    /export function createCanvasPickingCellDimsStructuralMeta\(source: string\): CanvasPickingCellDimsMeta/
+  );
+  assert.match(cellDimsMeta, /createCanvasPickingCellDimsRefreshGatedMeta/);
+  assert.match(cellDimsMeta, /Canvas picking cell-dims meta requires a source/);
 
   assert.match(clickRoute, /export function routeCanvasPickingClick\(/);
   assert.match(clickRoute, /canvas_picking_click_route_shared\.js/);
@@ -207,6 +215,8 @@ test('canvas picking click owner stays thin and routes edit families through foc
     cellDimsCornerEffects,
     /export function patchCornerConfig\(App: AppContainer, nextCornerCfg: CornerConfigShape, source: string, op: string\): void/
   );
+  assert.match(cellDimsCornerEffects, /createCanvasPickingCellDimsRefreshGatedMeta\(App, source\)/);
+  assert.doesNotMatch(cellDimsCornerEffects, /__wp_metaNoBuild\(/);
   assert.match(
     cellDimsCornerGlobalState,
     /export function resolveCornerGlobalDimsTargetState\(ctx: CornerCellDimsContext\): CornerGlobalDimsTargetState/
@@ -217,6 +227,8 @@ test('canvas picking click owner stays thin and routes edit families through foc
     /export function handleCanvasLinearCellDimsClick\(args: CanvasLinearCellDimsArgs\): void/
   );
   assert.match(cellDimsLinearApply, /export function applyCanvasLinearCellDimsContext\(/);
+  assert.match(cellDimsLinearApply, /createCanvasPickingCellDimsRefreshGatedMeta\(App, source\)/);
+  assert.doesNotMatch(cellDimsLinearShared + cellDimsLinearApply, /__wp_metaNoBuild\(/);
   assert.match(cellDimsFreeBox, /createCanvasPickingModulesStructuralPatchMeta\(source\)/);
   assert.doesNotMatch(cellDimsFreeBox, /noBuild:/);
 
@@ -415,6 +427,11 @@ test('canvas picking click owner stays thin and routes edit families through foc
   assert.ok(
     audit.includes(
       '`services/canvas_picking_paint_meta.ts` owns Canvas picking paint meta so structural paint writes stay immediate build-visible and color-only material refresh writes opt into no-build through one source-normalized contract'
+    )
+  );
+  assert.ok(
+    audit.includes(
+      '`services/canvas_picking_cell_dims_meta.ts` owns Canvas picking cell-dims structural and refresh-gated meta so linear and corner dimension writes stay source-normalized while explicit commit refreshes avoid duplicate reactive builds'
     )
   );
   assert.ok(
