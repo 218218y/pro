@@ -5,6 +5,7 @@ import type { AppContainer, ActionMetaLike, UnknownRecord } from '../../../../..
 import { getMetaActionFn } from '../../../services/api.js';
 import { readStoreStateMaybe } from '../../../services/api.js';
 import { setRuntimeSketchMode, setUiSketchModeMirror } from './store_actions.js';
+import { applyImmediateStructuralRuntimeMutation } from './structural_build_refresh_actions.js';
 
 function isRecord(v: unknown): v is UnknownRecord {
   return !!v && typeof v === 'object' && !Array.isArray(v);
@@ -18,15 +19,11 @@ function emptyRecord(): UnknownRecord {
   return {};
 }
 
-function readImmediateStructuralActionMeta(
+function readImmediateStructuralActionSource(
   value: ActionMetaLike | undefined,
   fallbackSource: string
-): ActionMetaLike {
-  const meta: ActionMetaLike = value ? { ...value } : { source: fallbackSource };
-  meta.source = typeof meta.source === 'string' && meta.source ? meta.source : fallbackSource;
-  meta.immediate = true;
-  delete meta.noBuild;
-  return meta;
+): string {
+  return typeof value?.source === 'string' && value.source.trim() ? value.source : fallbackSource;
 }
 
 function getRuntimeSketchMode(app: AppContainer): boolean {
@@ -52,12 +49,20 @@ function getUiOnlyImmediateMeta(app: AppContainer, source: string): ActionMetaLi
 }
 
 export function toggleSketchMode(app: AppContainer, meta?: ActionMetaLike): void {
-  const m = readImmediateStructuralActionMeta(meta, 'react:sketch');
+  const source = readImmediateStructuralActionSource(meta, 'react:sketch');
   const cur = getRuntimeSketchMode(app);
   const next = !cur;
 
   try {
-    setRuntimeSketchMode(app, !!next, m);
+    applyImmediateStructuralRuntimeMutation(
+      app,
+      source,
+      { sketchMode: !!next },
+      actionMeta => {
+        setRuntimeSketchMode(app, !!next, actionMeta);
+      },
+      meta
+    );
   } catch {}
 
   try {

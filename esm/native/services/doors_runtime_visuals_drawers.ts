@@ -32,7 +32,6 @@ import {
   hasInternalDrawers,
   isGlobalClickMode,
   isInteriorDoorEditModeActive,
-  isSketchEditActive,
   isSketchExtDrawersEditActive,
   isSketchIntDrawersEditActive,
   vecCopy,
@@ -111,7 +110,6 @@ export function snapDrawersToTargets(App: AppLike): void {
   if (!App) return;
 
   const interiorDoorEditActive = isInteriorDoorEditModeActive(App);
-  const sketchEditActive = isSketchEditActive(App);
   const sketchIntDrawersEditActive = isSketchIntDrawersEditActive(App);
   const sketchExtDrawersEditActive = isSketchExtDrawersEditActive(App);
 

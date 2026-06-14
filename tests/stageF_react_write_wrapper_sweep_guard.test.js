@@ -89,6 +89,7 @@ const structureBundle = bundleSources(
   import.meta.url
 );
 const handlesActions = readSource('../esm/native/ui/react/actions/handles_actions.ts', import.meta.url);
+const interiorActions = readSource('../esm/native/ui/react/actions/interior_actions.ts', import.meta.url);
 const sketchActions = readSource('../esm/native/ui/react/actions/sketch_actions.ts', import.meta.url);
 const projectPanel = readSource('../esm/native/ui/react/panels/ProjectPanel.tsx', import.meta.url);
 const settingsTab = readSource('../esm/native/ui/react/tabs/SettingsTab.tsx', import.meta.url);
@@ -168,12 +169,13 @@ test('[stageF] React write hotspots use canonical wrapper sweep for common ui/co
     assert,
     structuralBuildRefreshActions,
     [
-      /export function createImmediateStructuralMutationMeta\(source: string\): ActionMetaLike/,
+      /export function createImmediateStructuralMutationMeta\(\s*source: string,\s*metaOverrides\?: ActionMetaLike\s*\): ActionMetaLike/,
       /normalizeImmediateStructuralMutationSource\(source\)/,
       /const payload: UnknownRecord = \{ \[args\.slice\]: args\.patch \}/,
       /patchViaActions\(args\.app, payload, meta\)/,
       /slice: 'config'/,
       /slice: 'ui'/,
+      /slice: 'runtime'/,
     ],
     'structuralBuildRefreshActions'
   );
@@ -197,9 +199,42 @@ test('[stageF] React write hotspots use canonical wrapper sweep for common ui/co
     'structureBundle'
   );
 
-  assert.match(handlesActions, /setCfgGlobalHandleType\(app, type,/);
+  assertMatchesAll(
+    assert,
+    handlesActions,
+    [
+      /createImmediateStructuralMutationMeta\(source, \{ forceBuild: true \}\)/,
+      /applyImmediateStructuralConfigMutation\(\s*app,\s*source,\s*\{ handlesMap: nextHm \}/,
+      /applyImmediateStructuralUiMutation\(\s*app,\s*source,\s*\{ handleControl: enabled \}/,
+      /applyImmediateStructuralConfigMutation\(\s*app,\s*'react:handles:globalType',\s*\{ globalHandleType: type \}/,
+      /setCfgGlobalHandleType\(app, type, meta\)/,
+    ],
+    'handlesActions'
+  );
   assert.doesNotMatch(handlesActions, /actions\.setCfgScalar\('globalHandleType'/);
+  assert.doesNotMatch(
+    handlesActions,
+    /setCfgGlobalHandleType\(app, type, \{ source: 'react:handles:globalType', immediate: true \}\)/
+  );
 
+  assertMatchesAll(
+    assert,
+    interiorActions,
+    [
+      /applyImmediateStructuralUiMutation\(\s*app,\s*source,\s*\{ internalDrawersEnabled: enabled \}/,
+      /setUiFlag\(app, 'internalDrawersEnabled', enabled, meta\)/,
+    ],
+    'interiorActions'
+  );
+  assert.doesNotMatch(
+    interiorActions,
+    /setUiFlag\(app, 'internalDrawersEnabled', enabled, \{ source, immediate: true \}\)/
+  );
+
+  assert.match(
+    sketchActions,
+    /applyImmediateStructuralRuntimeMutation\(\s*app,\s*source,\s*\{ sketchMode: !!next \}/
+  );
   assert.match(
     sketchActions,
     /setUiSketchModeMirror\(app,\s*!!next,\s*(?:uiMeta|getUiOnlyImmediateMeta\(app, 'react:sketch:syncUi'\))\)/

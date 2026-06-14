@@ -503,7 +503,11 @@ test('[builder-surface-family] orchestration owners stay named-only and request-
   assertMatchesAll(
     assert,
     sketchActionsOwner,
-    [/readImmediateStructuralActionMeta/, /meta\.immediate = true/, /delete meta\.noBuild/],
+    [
+      /applyImmediateStructuralRuntimeMutation\(\s*app,\s*source,\s*\{ sketchMode: !!next \}/,
+      /readImmediateStructuralActionSource/,
+      /setUiSketchModeMirror\(app,\s*!!next,\s*getUiOnlyImmediateMeta\(app, 'react:sketch:syncUi'\)\)/,
+    ],
     'sketch actions canonical build policy'
   );
   assertLacksAll(

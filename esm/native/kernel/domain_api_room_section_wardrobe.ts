@@ -210,7 +210,7 @@ function resetWardrobeTypeRuntimeOpenState(
   try {
     patchRuntime(App, createWardrobeTypeOpenStateResetPatch(), _metaNoBuild(actions, meta, source));
   } catch {
-    // Best-effort fallback only: the canonical root patch path carries the same runtime reset.
+    // Best-effort only: the canonical root patch path carries the same runtime reset.
   }
 }
 

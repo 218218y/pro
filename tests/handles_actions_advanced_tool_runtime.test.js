@@ -89,6 +89,26 @@ function loadHandlesActionsHarness(initial = {}) {
           },
         };
       }
+      if (spec === './structural_build_refresh_actions.js') {
+        const buildMeta = (source, overrides = {}) => {
+          const meta = { ...overrides, source: String(source || '').trim(), immediate: true };
+          delete meta.noBuild;
+          return meta;
+        };
+        return {
+          createImmediateStructuralMutationMeta: buildMeta,
+          applyImmediateStructuralConfigMutation: (_app, source, patch, applyDirectMutation, overrides) => {
+            calls.push(['applyImmediateStructuralConfigMutation', source, patch, overrides]);
+            applyDirectMutation(buildMeta(source, overrides));
+            return { appliedViaActions: false, requestedBuild: false };
+          },
+          applyImmediateStructuralUiMutation: (_app, source, patch, applyDirectMutation, overrides) => {
+            calls.push(['applyImmediateStructuralUiMutation', source, patch, overrides]);
+            applyDirectMutation(buildMeta(source, overrides));
+            return { appliedViaActions: false, requestedBuild: false };
+          },
+        };
+      }
       if (spec === '../../../features/handle_finish_shared.js') {
         return {
           DEFAULT_HANDLE_FINISH_COLOR: 'nickel',
@@ -234,4 +254,92 @@ test('tool buttons enabling advanced handle control do not create a duplicate de
   const enterCalls = calls.filter(entry => entry[0] === 'enterPrimaryMode');
   assert.equal(enterCalls.length, 1);
   assert.equal(enterCalls[0][2].modeOpts.handleType, 'edge');
+});
+
+test('global handle type uses immediate structural config mutation with force-build fallback', () => {
+  const { api, store, calls, app } = loadHandlesActionsHarness();
+
+  api.setGlobalHandleType(app, 'edge');
+
+  assert.equal(store.config.globalHandleType, 'edge');
+  assert.ok(
+    calls.some(
+      entry =>
+        entry[0] === 'applyImmediateStructuralConfigMutation' &&
+        entry[1] === 'react:handles:globalType' &&
+        JSON.stringify(entry[2]) === JSON.stringify({ globalHandleType: 'edge' }) &&
+        JSON.stringify(entry[3]) === JSON.stringify({ forceBuild: true })
+    )
+  );
+  assert.ok(
+    calls.some(
+      entry =>
+        entry[0] === 'setCfgGlobalHandleType' &&
+        entry[1] === 'edge' &&
+        JSON.stringify(entry[2]) ===
+          JSON.stringify({ forceBuild: true, source: 'react:handles:globalType', immediate: true })
+    )
+  );
+});
+
+test('global handle color writes reserved handles map key through immediate structural config mutation', () => {
+  const { api, store, calls, app } = loadHandlesActionsHarness();
+
+  api.setGlobalHandleColor(app, 'gold');
+
+  assert.equal(store.config.handlesMap.__handle_color__, 'gold');
+  assert.ok(
+    calls.some(
+      entry =>
+        entry[0] === 'applyImmediateStructuralConfigMutation' &&
+        entry[1] === 'react:handles:globalColor' &&
+        entry[2].handlesMap.__handle_color__ === 'gold' &&
+        JSON.stringify(entry[3]) === JSON.stringify({ forceBuild: true })
+    )
+  );
+  assert.ok(
+    calls.some(
+      entry =>
+        entry[0] === 'setCfgHandlesMap' &&
+        entry[1].__handle_color__ === 'gold' &&
+        JSON.stringify(entry[2]) ===
+          JSON.stringify({ forceBuild: true, source: 'react:handles:globalColor', immediate: true })
+    )
+  );
+});
+
+test('handle control enablement uses immediate structural ui mutation with no-history force-build meta', () => {
+  const { api, store, calls, app } = loadHandlesActionsHarness({
+    ui: { handleControl: true },
+  });
+
+  api.setHandleControlEnabled(app, false);
+
+  assert.equal(store.ui.handleControl, false);
+  assert.ok(
+    calls.some(
+      entry =>
+        entry[0] === 'applyImmediateStructuralUiMutation' &&
+        entry[1] === 'react:handles:toggle' &&
+        JSON.stringify(entry[2]) === JSON.stringify({ handleControl: false }) &&
+        JSON.stringify(entry[3]) ===
+          JSON.stringify({ immediate: true, noHistory: true, noCapture: true, forceBuild: true })
+    )
+  );
+  assert.ok(
+    calls.some(
+      entry =>
+        entry[0] === 'setUiFlag' &&
+        entry[1] === 'handleControl' &&
+        entry[2] === false &&
+        JSON.stringify(entry[3]) ===
+          JSON.stringify({
+            immediate: true,
+            noHistory: true,
+            noCapture: true,
+            forceBuild: true,
+            source: 'react:handles:toggle',
+          })
+    )
+  );
 });

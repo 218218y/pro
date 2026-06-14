@@ -65,6 +65,44 @@ test('[structural-build-refresh-actions] ui mutation skips direct fallback when 
   assert.equal(result.requestedBuild, false);
 });
 
+test('[structural-build-refresh-actions] runtime mutation supports meta overrides and strips noBuild', () => {
+  const calls = [];
+  const app = { id: 'app' };
+  const mod = loadStructuralBuildRefreshActionsModule({
+    calls,
+    patchViaActions: () => true,
+  });
+
+  const result = mod.applyImmediateStructuralRuntimeMutation(
+    app,
+    ' react:test:runtime ',
+    { sketchMode: true },
+    meta => {
+      calls.push(['directRuntimeMutation', meta]);
+    },
+    { source: 'ignored', forceBuild: true, noHistory: true, noBuild: true }
+  );
+
+  assert.equal(
+    JSON.stringify(calls),
+    JSON.stringify([
+      [
+        'patchViaActions',
+        app,
+        { runtime: { sketchMode: true } },
+        {
+          source: 'react:test:runtime',
+          forceBuild: true,
+          noHistory: true,
+          immediate: true,
+        },
+      ],
+    ])
+  );
+  assert.equal(result.appliedViaActions, true);
+  assert.equal(result.requestedBuild, false);
+});
+
 test('[structural-build-refresh-actions] immediate structural meta normalizes source and fails fast without one', () => {
   const mod = loadStructuralBuildRefreshActionsModule();
 

@@ -16,6 +16,11 @@ import { patchUiSoft, setCfgGlobalHandleType, setCfgHandlesMap, setUiFlag } from
 import { getDoorsActionFn, getMetaActionFn } from '../../../services/api.js';
 import { readStoreStateMaybe } from '../../../services/api.js';
 import {
+  applyImmediateStructuralConfigMutation,
+  applyImmediateStructuralUiMutation,
+  createImmediateStructuralMutationMeta,
+} from './structural_build_refresh_actions.js';
+import {
   DEFAULT_HANDLE_FINISH_COLOR,
   HANDLE_COLOR_GLOBAL_KEY,
   normalizeHandleFinishColor,
@@ -69,7 +74,7 @@ function readModesBag(value: unknown): ModesBagLike | null {
 }
 
 function createImmediateBuildMeta(source: string): ActionMetaLike {
-  return { source, immediate: true, forceBuild: true };
+  return createImmediateStructuralMutationMeta(source, { forceBuild: true });
 }
 
 function readStoreState(app: AppContainer): StoreStateLike | null {
@@ -222,25 +227,32 @@ function patchHandlesMapReservedKey(app: AppContainer, key: string, value: unkno
     if (value === undefined || value === null) delete nextHm[key];
     else nextHm[key] = value;
 
-    const meta = createImmediateBuildMeta(source);
-    setCfgHandlesMap(app, nextHm, meta);
+    applyImmediateStructuralConfigMutation(
+      app,
+      source,
+      { handlesMap: nextHm },
+      meta => {
+        setCfgHandlesMap(app, nextHm, meta);
+      },
+      { forceBuild: true }
+    );
   } catch {
     // ignore
   }
 }
 
-function getNoHistoryForceBuildMeta(app: AppContainer): ActionMetaLike {
+function getNoHistoryForceBuildMeta(app: AppContainer, source: string): ActionMetaLike {
   const noHistoryForceBuildImmediate = getMetaActionFn<(source: string) => ActionMetaLike>(
     app,
     'noHistoryForceBuildImmediate'
   );
   if (typeof noHistoryForceBuildImmediate === 'function') {
-    return noHistoryForceBuildImmediate('react:handles:toggle');
+    return noHistoryForceBuildImmediate(source);
   }
   return {
-    source: 'react:handles:toggle',
     immediate: true,
     noHistory: true,
+    noCapture: true,
     forceBuild: true,
   };
 }
@@ -251,8 +263,17 @@ function setHandleControlEnabledCore(
   opts: { autoEnterCleanDefault?: boolean } = {}
 ): void {
   const enabled = !!on;
+  const source = 'react:handles:toggle';
   try {
-    setUiFlag(app, 'handleControl', enabled, getNoHistoryForceBuildMeta(app));
+    applyImmediateStructuralUiMutation(
+      app,
+      source,
+      { handleControl: enabled },
+      meta => {
+        setUiFlag(app, 'handleControl', enabled, meta);
+      },
+      getNoHistoryForceBuildMeta(app, source)
+    );
   } catch {
     // ignore
   }
@@ -297,7 +318,15 @@ export function setGlobalHandleType(app: AppContainer, t: HandleType): void {
     if (typeof setGlobalHandleTypeAction === 'function') {
       setGlobalHandleTypeAction(type, createImmediateBuildMeta('react:handles:globalType'));
     } else {
-      setCfgGlobalHandleType(app, type, { source: 'react:handles:globalType', immediate: true });
+      applyImmediateStructuralConfigMutation(
+        app,
+        'react:handles:globalType',
+        { globalHandleType: type },
+        meta => {
+          setCfgGlobalHandleType(app, type, meta);
+        },
+        { forceBuild: true }
+      );
     }
   } catch {
     // ignore

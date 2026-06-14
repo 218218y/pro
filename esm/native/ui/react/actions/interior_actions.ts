@@ -13,6 +13,7 @@ import {
 } from './store_actions.js';
 import { getMetaActionFn } from '../../../services/api.js';
 import { readStoreStateMaybe } from '../../../services/api.js';
+import { applyImmediateStructuralUiMutation } from './structural_build_refresh_actions.js';
 
 function isRecord(v: unknown): v is UnknownRecord {
   return !!v && typeof v === 'object' && !Array.isArray(v);
@@ -256,7 +257,15 @@ export function setInternalDrawersEnabled(
   try {
     const m: ActionMetaLike = interactiveImmediateMeta(app, source);
 
-    setUiFlag(app, 'internalDrawersEnabled', enabled, m);
+    applyImmediateStructuralUiMutation(
+      app,
+      source,
+      { internalDrawersEnabled: enabled },
+      meta => {
+        setUiFlag(app, 'internalDrawersEnabled', enabled, meta);
+      },
+      m
+    );
   } catch {
     // ignore
   }
