@@ -550,6 +550,67 @@ test('visuals chest mode build routes chest drawer fronts through regular door v
   assert.equal(typeof frontVisual.userData.__doorHeight, 'number');
 });
 
+test('visuals chest mode renders saved door trims on chest drawer fronts', () => {
+  const { App, wardrobeGroup } = createChestApp();
+  App.store.getState = () => ({
+    config: {
+      showDimensions: false,
+      isMultiColorMode: false,
+      individualColors: {},
+      doorTrimMap: {
+        chest_drawer_0: [
+          {
+            id: 'trim_chest_drawer_0_center',
+            axis: 'horizontal',
+            color: 'gold',
+            span: 'half',
+            centerXNorm: 0.5,
+            centerYNorm: 0.5,
+          },
+        ],
+      },
+    },
+    ui: {},
+    runtime: {},
+    mode: {},
+    meta: {},
+  });
+
+  buildChestOnly(App, {
+    H: 0.9,
+    totalW: 1.6,
+    D: 0.45,
+    drawersCount: 2,
+    baseType: 'legs',
+    baseLegStyle: 'square',
+    baseLegColor: 'nickel',
+    baseLegHeightCm: 15,
+    baseLegWidthCm: 5,
+    colorChoice: '#ffffff',
+  });
+
+  const firstDrawer = wardrobeGroup.children.find(
+    (child: any) => child?.userData?.partId === 'chest_drawer_0'
+  );
+  const secondDrawer = wardrobeGroup.children.find(
+    (child: any) => child?.userData?.partId === 'chest_drawer_1'
+  );
+  assert.ok(firstDrawer);
+  assert.ok(secondDrawer);
+
+  const trim = firstDrawer.children.find((child: any) => child?.userData?.__wpDoorTrim === true);
+  assert.ok(trim, 'expected a trim mesh to be appended to the chest drawer group');
+  assert.equal(trim.userData.partId, 'chest_drawer_0');
+  assert.equal(trim.userData.__wpDoorTrimId, 'trim_chest_drawer_0_center');
+  assert.equal(trim.geometry.args[0], Number(firstDrawer.userData.__doorWidth) * 0.5);
+  assert.equal(trim.geometry.args[2], 0.01);
+  assert.equal(trim.position.z > Number(firstDrawer.userData.__frontMaxZ), true);
+  assert.equal(
+    secondDrawer.children.some((child: any) => child?.userData?.__wpDoorTrim === true),
+    false
+  );
+});
+
 test('visuals chest mode uses inset door mount thickness and sinks drawer fronts inside the frame', () => {
   const { App, wardrobeGroup } = createChestApp();
   App.store.getState = () => ({

@@ -36,6 +36,7 @@ import {
 } from './visuals_chest_mode_materials.js';
 import { createInternalDrawerBox } from './visuals_chest_mode_drawer_box.js';
 import { createChestDrawerFrontVisual } from './visuals_chest_mode_drawer_front.js';
+import { appendDoorTrimVisuals } from './door_trim_visuals.js';
 import { applyFrontRevealFrames } from './post_build_front_reveal_frames.js';
 
 import type { BuildContextLike } from '../../../types/index.js';
@@ -207,10 +208,22 @@ export function buildChestOnly(App: AppContainer, opts?: UnknownRecord | null) {
     const frontCenterZ = isInsetDrawerMount
       ? D / 2 - frontThickness / 2 - insetReveal
       : D / 2 + frontThickness / 2;
+    const frontSurfaceZ = isInsetDrawerMount ? D / 2 - insetReveal : D / 2 + frontThickness;
     const frontBackZ = frontCenterZ - frontThickness / 2;
     frontMesh.position.set(0, 0, frontCenterZ);
-    drawerGroup.userData.__frontMaxZ = isInsetDrawerMount ? D / 2 - insetReveal : D / 2 + frontThickness;
+    drawerGroup.userData.__frontMaxZ = frontSurfaceZ;
     drawerGroup.add(frontMesh);
+    appendDoorTrimVisuals({
+      App,
+      THREE,
+      group: drawerGroup,
+      partId: drawerId,
+      trims: cfg?.doorTrimMap ? cfg.doorTrimMap[drawerId] : undefined,
+      doorWidth: drawerWidth,
+      doorHeight: drawerFrontH,
+      frontZ: frontSurfaceZ,
+      faceSign: 1,
+    });
 
     const boxH = drawerFrontH - CHEST_DIMENSIONS.drawerBoxHeightClearanceM;
     const boxD = D - CHEST_DIMENSIONS.drawerBoxDepthClearanceM;

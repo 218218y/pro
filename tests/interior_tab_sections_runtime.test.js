@@ -199,13 +199,15 @@ test('[interior-tab-sections-runtime] SketchTabView marks the sketch tool card a
   assert.doesNotMatch(src, /wp-tool-card wp-tool-card--layout is-active/);
   assert.match(src, /state\.isDoorTrimMode \|\| \(!state\.isChestMode && state\.isSketchToolActive\)/);
 });
-test('[interior-tab-sections-runtime] SketchTabView keeps a fixed box cell-dims action at the end of the sketch tab', () => {
+test('[interior-tab-sections-runtime] SketchTabView keeps box cell-dims after sketch tools and hides it in chest mode', () => {
   const src = fs.readFileSync(path.resolve('esm/native/ui/react/tabs/SketchTab.view.tsx'), 'utf8');
   const toolsIndex = src.indexOf('<InteriorLayoutSketchToolsPanel');
+  const chestGuardIndex = src.indexOf('{!state.isChestMode && (');
   const cellDimsIndex = src.indexOf('className="control-section wp-sketch-box-cell-dims-section"');
 
   assert.ok(toolsIndex >= 0, 'expected sketch tools panel in SketchTabView');
-  assert.ok(cellDimsIndex > toolsIndex, 'expected the box cell-dims action after the sketch tools');
+  assert.ok(chestGuardIndex > toolsIndex, 'expected chest guard after the sketch tools');
+  assert.ok(cellDimsIndex > chestGuardIndex, 'expected the box cell-dims action inside the non-chest guard');
   assert.match(src, /modeLabel="שינוי מידות מיוחדות לקופסא"/);
   assert.match(src, /hideForSliding=\{false\}/);
   assert.match(src, /useStructureCellDimsControlsProps/);

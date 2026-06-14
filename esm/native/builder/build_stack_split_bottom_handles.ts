@@ -1,6 +1,7 @@
 import { computeHingedDoorPivotMap } from './pure_api.js';
 import { makeHandleTypeResolver } from './doors_state_utils.js';
 import { readRecord } from './build_flow_readers.js';
+import { moduleRequiresCustomBoundaryGeometry } from './module_custom_geometry_policy.js';
 
 import type { AppContainer, BuilderDoorStateAccessorsLike, UnknownRecord } from '../../../types';
 
@@ -25,6 +26,19 @@ function buildLocalBottomHingeMap(args: { cfg: UnknownRecord; lowerDoorIdOffset:
   return out;
 }
 
+function buildBottomModuleCustomFlags(
+  bottomModules: unknown[],
+  bottomModuleConfigs: unknown[] | null
+): boolean[] | null {
+  if (!Array.isArray(bottomModules)) return null;
+  if (!Array.isArray(bottomModuleConfigs) || bottomModuleConfigs.length !== bottomModules.length) {
+    return bottomModules.map(() => false);
+  }
+  return bottomModules.map((_module, index) =>
+    moduleRequiresCustomBoundaryGeometry(bottomModuleConfigs[index], 0)
+  );
+}
+
 export function buildShiftedBottomHingedPivotMap(args: {
   cfg: UnknownRecord;
   bottomModules: unknown[];
@@ -32,7 +46,7 @@ export function buildShiftedBottomHingedPivotMap(args: {
   woodThick: number;
   bottomSingleUnitWidth: number;
   bottomModuleInternalWidths: number[] | null;
-  bottomHingedDoorPivotBase: UnknownRecord | null;
+  bottomModuleConfigs: unknown[] | null;
   lowerDoorIdOffset: number;
 }): UnknownRecord | null {
   if (args.cfg.wardrobeType !== 'hinged') return null;
@@ -46,7 +60,8 @@ export function buildShiftedBottomHingedPivotMap(args: {
       lowerDoorIdOffset: args.lowerDoorIdOffset,
     }),
     moduleInternalWidths: args.bottomModuleInternalWidths,
-    moduleIsCustom: Array.isArray(args.bottomModules) ? args.bottomModules.map(() => false) : null,
+    moduleIsCustom: buildBottomModuleCustomFlags(args.bottomModules, args.bottomModuleConfigs),
+    moduleConfigs: Array.isArray(args.bottomModuleConfigs) ? args.bottomModuleConfigs : null,
     doorMountMode: readRecord(args.cfg)?.doorMountMode,
   });
 

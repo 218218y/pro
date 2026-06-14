@@ -109,31 +109,33 @@ function SketchTabInner(props: { active: boolean }): ReactElement {
           </div>
         </div>
 
-        <div className="control-section wp-sketch-box-cell-dims-section">
-          <span className="section-title">מידות מיוחדות לקופסא</span>
-          <StructureCellDimsControls
-            {...sketchBoxCellDimsProps}
-            hideForSliding={false}
-            modeLabel="שינוי מידות מיוחדות לקופסא"
-            resetAllLabel="חזרה למידות רגילות לקופסאות"
-            resetAllTooltip="ביטול כל המידות המיוחדות שהוחלו על תאים וקופסאות חופשיות"
-            notice="הקלד מידות ואז לחץ על קופסא חופשית כדי להחיל. שדה ריק = לא נוגעים במימד הזה. כפתור צורה משושה מפעיל בחירת קופסא לצורה משושה."
-            testIds={SKETCH_BOX_CELL_DIMS_TEST_IDS}
-            labels={{
-              widthField: 'רוחב קופסא/(ס"מ)',
-              heightField: 'גובה קופסא/(ס"מ)',
-              depthField: 'עומק קופסא/(ס"מ)',
-              resetWidthTitle: 'איפוס רוחב הקופסא',
-              resetHeightTitle: 'איפוס גובה הקופסא',
-              resetDepthTitle: 'איפוס המידה',
-              hexModeButton: 'צורה משושה',
-              hexProtrusionField: 'בליטה ישרה משושה',
-              hexDoorWidthField: 'רוחב דלת משושה',
-              resetHexProtrusionTitle: 'איפוס בליטה ישרה',
-              resetHexDoorWidthTitle: 'איפוס רוחב דלת',
-            }}
-          />
-        </div>
+        {!state.isChestMode && (
+          <div className="control-section wp-sketch-box-cell-dims-section">
+            <span className="section-title">מידות מיוחדות לקופסא</span>
+            <StructureCellDimsControls
+              {...sketchBoxCellDimsProps}
+              hideForSliding={false}
+              modeLabel="שינוי מידות מיוחדות לקופסא"
+              resetAllLabel="חזרה למידות רגילות לקופסאות"
+              resetAllTooltip="ביטול כל המידות המיוחדות שהוחלו על תאים וקופסאות חופשיות"
+              notice="הקלד מידות ואז לחץ על קופסא חופשית כדי להחיל. שדה ריק = לא נוגעים במימד הזה. כפתור צורה משושה מפעיל בחירת קופסא לצורה משושה."
+              testIds={SKETCH_BOX_CELL_DIMS_TEST_IDS}
+              labels={{
+                widthField: 'רוחב קופסא/(ס"מ)',
+                heightField: 'גובה קופסא/(ס"מ)',
+                depthField: 'עומק קופסא/(ס"מ)',
+                resetWidthTitle: 'איפוס רוחב הקופסא',
+                resetHeightTitle: 'איפוס גובה הקופסא',
+                resetDepthTitle: 'איפוס המידה',
+                hexModeButton: 'צורה משושה',
+                hexProtrusionField: 'בליטה ישרה משושה',
+                hexDoorWidthField: 'רוחב דלת משושה',
+                resetHexProtrusionTitle: 'איפוס בליטה ישרה',
+                resetHexDoorWidthTitle: 'איפוס רוחב דלת',
+              }}
+            />
+          </div>
+        )}
       </div>
     </TabPanel>
   );

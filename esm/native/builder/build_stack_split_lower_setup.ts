@@ -86,7 +86,6 @@ export function prepareStackSplitLowerSetup(
   const bottomSingleUnitWidth = bottomLayout.singleUnitWidth;
   const bottomLayoutRec = readRecord(bottomLayout);
   const bottomModuleInternalWidths = readFiniteNumberArray(bottomLayoutRec?.moduleInternalWidths);
-  const bottomHingedDoorPivotBase = readRecord(bottomLayoutRec?.hingedDoorPivotMap);
 
   const bottomModuleHeightsTotal = Array.isArray(bottomModules) ? bottomModules.map(() => bottomH) : null;
   const bottomDepthMetrics = Array.isArray(bottomModules)
@@ -163,7 +162,7 @@ export function prepareStackSplitLowerSetup(
     woodThick: args.woodThick,
     bottomSingleUnitWidth,
     bottomModuleInternalWidths,
-    bottomHingedDoorPivotBase,
+    bottomModuleConfigs: bottomModuleCfgList,
     lowerDoorIdOffset,
   });
 
