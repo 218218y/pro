@@ -33,10 +33,24 @@ function loadTsModule(relPath, calls, stubs = {}, cache = new Map()) {
           return { raw: { cellDimsWidth: 37 } };
         },
         recomputeFromUi: (...args) => calls.push(['recomputeFromUi', ...args]),
+        setUiBaseLegColor: (...args) => calls.push(['setUiBaseLegColor', ...args]),
+        setUiBaseLegHeightCm: (...args) => calls.push(['setUiBaseLegHeightCm', ...args]),
+        setUiBaseLegWidthCm: (...args) => calls.push(['setUiBaseLegWidthCm', ...args]),
+        setUiBaseLegStyle: (...args) => calls.push(['setUiBaseLegStyle', ...args]),
+        setUiBasePlinthHeightCm: (...args) => calls.push(['setUiBasePlinthHeightCm', ...args]),
         setUiBaseType: (...args) => calls.push(['setUiBaseType', ...args]),
         setUiSingleDoorPos: (...args) => calls.push(['setUiSingleDoorPos', ...args]),
         setUiSlidingTracksColor: (...args) => calls.push(['setUiSlidingTracksColor', ...args]),
         setUiStructureSelect: (...args) => calls.push(['setUiStructureSelect', ...args]),
+      };
+    }
+    if (specifier === '../actions/structural_build_refresh_actions.js') {
+      return {
+        applyImmediateStructuralUiMutation: (app, source, patch, applyDirectMutation) => {
+          calls.push(['applyImmediateStructuralUiMutation', app, source, patch]);
+          applyDirectMutation({ source, immediate: true });
+          return { appliedViaActions: false, requestedBuild: false };
+        },
       };
     }
     if (specifier === './structure_tab_shared.js') {
@@ -109,7 +123,7 @@ function loadTsModule(relPath, calls, stubs = {}, cache = new Map()) {
     if (specifier === './structure_tab_structural_controller_contracts.js') {
       return {};
     }
-    if (specifier.startsWith('./')) {
+    if (specifier.startsWith('.')) {
       const target = path.join(path.dirname(file), specifier.replace(/\.js$/, '.ts'));
       const rel = path.relative(process.cwd(), target);
       return loadTsModule(rel, calls, stubs, cache);
@@ -231,6 +245,53 @@ test('[structure-structural-controller] commit + normalization + raw flows run t
   assert.ok(calls.some(entry => entry[0] === 'toggleStackSplitState' && entry[1].height === 240));
   assert.ok(calls.some(entry => entry[0] === 'setUiBaseType' && entry[2] === 'legs'));
   assert.ok(calls.some(entry => entry[0] === 'setUiSlidingTracksColor' && entry[2] === 'black'));
+});
+
+test('[structure-structural-controller] base and sliding build-visible writes use immediate structural ui mutation', () => {
+  const calls = [];
+  const mod = loadStructureStructuralControllerModule(calls);
+  const controller = mod.createStructureTabStructuralController(createArgs({ calls }));
+
+  controller.setBaseType('legs');
+  controller.setBaseLegStyle('round');
+  controller.setBaseLegColor('gold');
+  controller.setBasePlinthHeightCm(12.3);
+  controller.setBaseLegHeightCm(14);
+  controller.setBaseLegWidthCm(4.5);
+  controller.setSlidingTracksColor('black');
+
+  const structuralCalls = calls.filter(entry => entry[0] === 'applyImmediateStructuralUiMutation');
+  assert.equal(
+    JSON.stringify(structuralCalls.map(entry => [entry[2], entry[3]])),
+    JSON.stringify([
+      ['react:structure:baseType', { baseType: 'legs' }],
+      ['react:structure:baseLegStyle', { baseLegStyle: 'round' }],
+      ['react:structure:baseLegColor', { baseLegColor: 'gold' }],
+      ['react:structure:basePlinthHeightCm', { basePlinthHeightCm: 12.3 }],
+      ['react:structure:baseLegHeightCm', { baseLegHeightCm: 14 }],
+      ['react:structure:baseLegWidthCm', { baseLegWidthCm: 4.5 }],
+      ['react:structure:slidingTracksColor', { slidingTracksColor: 'black' }],
+    ])
+  );
+
+  assert.ok(
+    calls.some(
+      entry =>
+        entry[0] === 'setUiBaseLegStyle' &&
+        entry[2] === 'round' &&
+        JSON.stringify(entry[3]) ===
+          JSON.stringify({ source: 'react:structure:baseLegStyle', immediate: true })
+    )
+  );
+  assert.ok(
+    calls.some(
+      entry =>
+        entry[0] === 'setUiSlidingTracksColor' &&
+        entry[2] === 'black' &&
+        JSON.stringify(entry[3]) ===
+          JSON.stringify({ source: 'react:structure:slidingTracksColor', immediate: true })
+    )
+  );
 });
 
 test('[structure-structural-controller] commitStructural collapses to a canonical ui patch when patch actions exist', () => {

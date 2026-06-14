@@ -162,6 +162,9 @@ test('[stageF] React write hotspots use canonical wrapper sweep for common ui/co
       /setUiChestMode\((?:args\.)?app,\s*true,\s*metaOn\)/,
       /const actionMeta = createStructureTabRecomputeWriteMeta\(source\)/,
       /setUiCornerSide\((?:args\.)?app,\s*next,\s*actionMeta\)/,
+      /applyImmediateStructureUiPatch\(args, 'react:structure:baseType', \{ baseType: nextBaseType \}/,
+      /applyImmediateStructureUiPatch\(\s*args,\s*'react:structure:baseLegStyle',\s*\{ baseLegStyle: nextBaseLegStyle \}/,
+      /applyImmediateStructureUiPatch\(\s*args,\s*'react:structure:slidingTracksColor',\s*\{ slidingTracksColor: nextSlidingTracksColor \}/,
     ],
     'structureBundle'
   );
@@ -195,6 +198,8 @@ test('[stageF] React write hotspots use canonical wrapper sweep for common ui/co
       /setUiRawScalar\(\s*app,\s*''cellDimsWidth''/,
       /setUiScalarSoft\(app, ''cornerSide''/,
       /setUiRawScalar\(app, ''stackSplitLowerDoorsManual''/,
+      /setUiBaseType\(args\.app, next, \{ source: 'react:structure:baseType', immediate: true \}\)/,
+      /setUiSlidingTracksColor\(args\.app, next, \{[\s\S]*source: 'react:structure:slidingTracksColor'[\s\S]*immediate: true/,
     ],
     'structureBundle'
   );

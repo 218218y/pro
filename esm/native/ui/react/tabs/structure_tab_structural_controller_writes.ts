@@ -7,6 +7,15 @@ import {
   setUiBaseType,
   setUiSlidingTracksColor,
 } from '../actions/store_actions.js';
+import { applyImmediateStructuralUiMutation } from '../actions/structural_build_refresh_actions.js';
+import type { ActionMetaLike, UnknownRecord } from '../../../../../types';
+import {
+  normalizeBaseLegColor,
+  normalizeBaseLegHeightCm,
+  normalizeBaseLegStyle,
+  normalizeBaseLegWidthCm,
+} from '../../../features/base_leg_support.js';
+import { normalizeBasePlinthHeightCm } from '../../../features/base_plinth_support.js';
 import {
   commitStructureRawValue,
   setStackSplitLowerLinkModeValue,
@@ -19,6 +28,23 @@ import type {
 } from './structure_tab_structural_controller_contracts.js';
 import type { DisplayedValueReader } from './structure_tab_structure_mutations_shared.js';
 import { readUiRawNumberFromApp } from './structure_tab_structural_controller_shared.js';
+
+function normalizeStructureBaseType(value: unknown): 'plinth' | 'legs' | 'none' {
+  return value === 'legs' || value === 'none' ? value : 'plinth';
+}
+
+function normalizeStructureSlidingTracksColor(value: unknown): 'nickel' | 'black' {
+  return value === 'black' ? 'black' : 'nickel';
+}
+
+function applyImmediateStructureUiPatch(
+  args: CreateStructureTabStructuralControllerArgs,
+  source: string,
+  patch: UnknownRecord,
+  applyDirectMutation: (meta: ActionMetaLike) => void
+): void {
+  applyImmediateStructuralUiMutation(args.app, source, patch, applyDirectMutation);
+}
 
 export function createStructureTabStructuralWriteController(
   args: CreateStructureTabStructuralControllerArgs
@@ -131,43 +157,82 @@ export function createStructureTabStructuralWriteController(
     },
 
     setBaseType(next: 'plinth' | 'legs' | 'none') {
-      setUiBaseType(args.app, next, { source: 'react:structure:baseType', immediate: true });
+      const nextBaseType = normalizeStructureBaseType(next);
+      applyImmediateStructureUiPatch(args, 'react:structure:baseType', { baseType: nextBaseType }, meta => {
+        setUiBaseType(args.app, nextBaseType, meta);
+      });
     },
 
     setBaseLegStyle(next) {
-      setUiBaseLegStyle(args.app, next, { source: 'react:structure:baseLegStyle', immediate: true });
+      const nextBaseLegStyle = normalizeBaseLegStyle(next);
+      applyImmediateStructureUiPatch(
+        args,
+        'react:structure:baseLegStyle',
+        { baseLegStyle: nextBaseLegStyle },
+        meta => {
+          setUiBaseLegStyle(args.app, nextBaseLegStyle, meta);
+        }
+      );
     },
 
     setBaseLegColor(next) {
-      setUiBaseLegColor(args.app, next, { source: 'react:structure:baseLegColor', immediate: true });
+      const nextBaseLegColor = normalizeBaseLegColor(next);
+      applyImmediateStructureUiPatch(
+        args,
+        'react:structure:baseLegColor',
+        { baseLegColor: nextBaseLegColor },
+        meta => {
+          setUiBaseLegColor(args.app, nextBaseLegColor, meta);
+        }
+      );
     },
 
     setBasePlinthHeightCm(next) {
-      setUiBasePlinthHeightCm(args.app, next, {
-        source: 'react:structure:basePlinthHeightCm',
-        immediate: true,
-      });
+      const nextBasePlinthHeightCm = normalizeBasePlinthHeightCm(next);
+      applyImmediateStructureUiPatch(
+        args,
+        'react:structure:basePlinthHeightCm',
+        { basePlinthHeightCm: nextBasePlinthHeightCm },
+        meta => {
+          setUiBasePlinthHeightCm(args.app, nextBasePlinthHeightCm, meta);
+        }
+      );
     },
 
     setBaseLegHeightCm(next) {
-      setUiBaseLegHeightCm(args.app, next, {
-        source: 'react:structure:baseLegHeightCm',
-        immediate: true,
-      });
+      const nextBaseLegHeightCm = normalizeBaseLegHeightCm(next);
+      applyImmediateStructureUiPatch(
+        args,
+        'react:structure:baseLegHeightCm',
+        { baseLegHeightCm: nextBaseLegHeightCm },
+        meta => {
+          setUiBaseLegHeightCm(args.app, nextBaseLegHeightCm, meta);
+        }
+      );
     },
 
     setBaseLegWidthCm(next) {
-      setUiBaseLegWidthCm(args.app, next, {
-        source: 'react:structure:baseLegWidthCm',
-        immediate: true,
-      });
+      const nextBaseLegWidthCm = normalizeBaseLegWidthCm(next);
+      applyImmediateStructureUiPatch(
+        args,
+        'react:structure:baseLegWidthCm',
+        { baseLegWidthCm: nextBaseLegWidthCm },
+        meta => {
+          setUiBaseLegWidthCm(args.app, nextBaseLegWidthCm, meta);
+        }
+      );
     },
 
     setSlidingTracksColor(next: 'nickel' | 'black') {
-      setUiSlidingTracksColor(args.app, next, {
-        source: 'react:structure:slidingTracksColor',
-        immediate: true,
-      });
+      const nextSlidingTracksColor = normalizeStructureSlidingTracksColor(next);
+      applyImmediateStructureUiPatch(
+        args,
+        'react:structure:slidingTracksColor',
+        { slidingTracksColor: nextSlidingTracksColor },
+        meta => {
+          setUiSlidingTracksColor(args.app, nextSlidingTracksColor, meta);
+        }
+      );
     },
   };
 }

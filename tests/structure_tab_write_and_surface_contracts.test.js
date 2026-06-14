@@ -242,8 +242,10 @@ test('[contracts-structure-surface] StructureTab writes and recompute flows stay
       /commitStructureRawValue\(\{/,
       /setStackSplitLowerLinkModeValue\(\{/,
       /toggleStackSplitState\(\{/,
-      /setUiBaseType\(args\.app, next, \{ source: 'react:structure:baseType', immediate: true \}\)/,
-      /setUiSlidingTracksColor\(args\.app, next, \{[\s\S]*react:structure:slidingTracksColor/,
+      /applyImmediateStructureUiPatch\(args, 'react:structure:baseType', \{ baseType: nextBaseType \}, meta => \{/,
+      /setUiBaseType\(args\.app, nextBaseType, meta\)/,
+      /applyImmediateStructureUiPatch\(\s*args,\s*'react:structure:slidingTracksColor',\s*\{ slidingTracksColor: nextSlidingTracksColor \}/,
+      /setUiSlidingTracksColor\(args\.app, nextSlidingTracksColor, meta\)/,
     ],
     'structure structural controller'
   );
