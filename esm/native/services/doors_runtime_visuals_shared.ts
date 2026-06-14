@@ -1,5 +1,6 @@
 import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
+  isSlidingDoorTrackOpenMode,
   resolveSlidingDoorTrackOpenPosition,
   shouldUseSlidingDoorTrackOpen,
   shouldUseSlidingDoorWideOpen,
@@ -83,7 +84,12 @@ export function resolveSlidingDoorClosedState(
   return { closedX, closedZ, doorW, outerZ };
 }
 
-export { resolveSlidingDoorTrackOpenPosition, shouldUseSlidingDoorTrackOpen, shouldUseSlidingDoorWideOpen };
+export {
+  isSlidingDoorTrackOpenMode,
+  resolveSlidingDoorTrackOpenPosition,
+  shouldUseSlidingDoorTrackOpen,
+  shouldUseSlidingDoorWideOpen,
+};
 
 export function resolveSlidingDoorOpenPosition(
   door: ReturnType<typeof getDoorsArray>[number],

@@ -11,7 +11,10 @@ import { readFiniteNumber, readFiniteNumberOrNull } from '../runtime/render_runt
 import { shouldForceSketchFreeBoxDoorsOpen } from '../runtime/doors_runtime_support.js';
 import { getSketchFreeBoxMotionScopeFromEntry } from '../runtime/sketch_free_box_motion_identity.js';
 import { shouldHoldSketchFreeBoxDoorsDuringClose } from '../runtime/sketch_free_box_motion_state.js';
-import { resolveSlidingDoorTrackOpenPosition } from '../runtime/sliding_door_motion.js';
+import {
+  isSlidingDoorTrackOpenMode,
+  resolveSlidingDoorTrackOpenPosition,
+} from '../runtime/sliding_door_motion.js';
 import { setSlidingDoorHiddenForOpenState } from '../runtime/sliding_door_visibility.js';
 
 import type { MotionFrameState } from './render_loop_motion_shared.js';
@@ -155,7 +158,7 @@ export function updateRenderLoopDoorMotions(App: AppContainer, frame: MotionFram
     let targetX = originalX;
     let targetZ = originalZ;
 
-    const hideSlidingDoor = targetOpen && hideOpenSlidingDoors;
+    const hideSlidingDoor = targetOpen && hideOpenSlidingDoors && !isSlidingDoorTrackOpenMode(d);
     if (setSlidingDoorHiddenForOpenState(d, hideSlidingDoor)) {
       hasActiveDoorMotion = true;
     }

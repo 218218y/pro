@@ -24,6 +24,7 @@ const __doorsRuntimeReportNonFatalSeen = new Map<string, number>();
 export type DoorsSnapshot = {
   doors: Record<string, boolean>;
   drawers: Record<string, boolean> | null;
+  kind?: 'local' | 'slidingTrack';
 };
 
 export type EditHoldState = {

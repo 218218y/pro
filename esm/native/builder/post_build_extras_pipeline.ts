@@ -249,6 +249,7 @@ export function applyPostBuildExtras(input: BuildContextLike) {
   if (skipNextDoorVisualSync && appRec) delete appRec.__wpSkipNextDoorVisualSync;
 
   if (globalClickMode) {
+    applyLocalOpenStateAfterBuild(App);
     syncGlobalClickVisualStateAfterBuild(App, runtime, skipNextDoorVisualSync);
   }
 

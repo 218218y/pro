@@ -1,4 +1,5 @@
-import { getDrawersArray } from '../runtime/render_access.js';
+import { getDoorsArray, getDrawersArray } from '../runtime/render_access.js';
+import { isSlidingDoorTrackOpenMode } from '../runtime/sliding_door_motion.js';
 import {
   type AppLike,
   type CaptureLocalOpenOptions,
@@ -16,6 +17,17 @@ export function closeAllLocal(App: AppLike): void {
   if (!App || typeof App !== 'object') return;
   applyAllDoors(App, false);
   touchDoorsRuntimeRender(App);
+}
+
+function hasOpenSlidingTrackDoor(App: AppLike): boolean {
+  try {
+    return getDoorsArray(App).some(
+      door => !!door && door.type === 'sliding' && door.isOpen === true && isSlidingDoorTrackOpenMode(door)
+    );
+  } catch (_) {
+    reportDoorsRuntimeNonFatal(App, 'captureLocalOpenStateBeforeBuild.readSlidingTrackDoors', _);
+    return false;
+  }
 }
 
 function drawerMatchesCloseId(App: AppLike, drawer: Record<string, unknown>, sid: string): boolean {
@@ -71,20 +83,26 @@ export function captureLocalOpenStateBeforeBuild(App: AppLike, opts?: CaptureLoc
   if (!App || typeof App !== 'object') return;
   const safeOpts = opts && typeof opts === 'object' ? opts : {};
   const includeDrawers = typeof safeOpts.includeDrawers === 'boolean' ? safeOpts.includeDrawers : true;
+  const includeSlidingTrackDoors = safeOpts.includeSlidingTrackDoors === true;
+  const globalClickMode = isGlobalClickMode(App);
+  const captureGlobalSlidingTrack =
+    globalClickMode && includeSlidingTrackDoors && hasOpenSlidingTrackDoor(App);
 
-  if (isGlobalClickMode(App)) return;
+  if (globalClickMode && !captureGlobalSlidingTrack) return;
 
   const runtime = ensureDoorsRuntimeDefaults(App);
-  runtime.localOpenSnapshot = captureSnapshot(App, includeDrawers);
+  const snapshot = captureSnapshot(App, includeDrawers);
+  if (captureGlobalSlidingTrack) snapshot.kind = 'slidingTrack';
+  runtime.localOpenSnapshot = snapshot;
 }
 
 export function applyLocalOpenStateAfterBuild(App: AppLike): void {
   if (!App || typeof App !== 'object') return;
-  if (isGlobalClickMode(App)) return;
 
   const runtime = ensureDoorsRuntimeDefaults(App);
   const snapshot = runtime.localOpenSnapshot;
   if (!snapshot) return;
+  if (isGlobalClickMode(App) && snapshot.kind !== 'slidingTrack') return;
 
   applySnapshot(App, snapshot);
   runtime.localOpenSnapshot = null;

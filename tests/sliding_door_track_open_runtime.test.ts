@@ -224,3 +224,30 @@ test('legacy slidingWideOpen request hides sliding doors and does not use an out
   assert.ok(left.group.position.x >= left.minX && left.group.position.x <= left.maxX);
   assert.ok(right.group.position.x >= right.minX && right.group.position.x <= right.maxX);
 });
+
+test('sliding track-open door stays visible and open during internal drawer divider/edit visuals', () => {
+  const left = makeSlidingDoor(0, 2);
+  const right = makeSlidingDoor(1, 2);
+  left.isOpen = true;
+  left.noGlobalOpen = true;
+  left.slidingOpenMode = 'track';
+  left.__slidingOpenMode = 'track';
+  left.group.visible = true;
+
+  const App = makeAppWithSlidingDoors([left, right], {
+    runtime: { doorsOpen: false, globalClickMode: true },
+    mode: { primary: 'manual_layout', opts: { manualTool: 'sketch_int_drawers' } },
+    config: { wardrobeType: 'sliding' },
+  });
+  App.services.platform.getDimsM = () => ({ w: 3, h: 2, d: 0.6 });
+
+  syncVisualsNow(App, { open: false });
+
+  assert.notEqual(
+    left.group.visible,
+    false,
+    'track-open sliding door must not be hidden in drawer edit visuals'
+  );
+  assert.equal(left.group.position.x, 1);
+  assert.equal(left.group.position.z, left.originalZ);
+});

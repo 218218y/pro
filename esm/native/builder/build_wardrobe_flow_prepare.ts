@@ -52,9 +52,10 @@ export function prepareBuildWardrobeFlow(
 
   resetEdgeHandleDefaultNoneCacheMaps(App);
 
-  if (!globalClickMode) {
-    captureLocalOpenStateBeforeBuild(App, { includeDrawers: true });
-  }
+  captureLocalOpenStateBeforeBuild(App, {
+    includeDrawers: true,
+    includeSlidingTrackDoors: true,
+  });
 
   const handleControlEnabled = !!ui.handleControl;
   const showHangerEnabled = !!ui.showHanger;

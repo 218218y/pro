@@ -1,6 +1,7 @@
 import type { DoorVisualEntryLike, DrawerVisualEntryLike } from '../../../types';
 
 import { getDoorsArray, getDrawersArray } from '../runtime/render_access.js';
+import { isSlidingDoorTrackOpenMode } from '../runtime/sliding_door_motion.js';
 import {
   type AppLike,
   type DoorsSnapshot,
@@ -28,6 +29,32 @@ export function drawerKey(d: DrawerVisualEntryLike, idx: number, App?: AppLike):
     reportDoorsRuntimeNonFatal(App, 'L348', _);
   }
   return `idx:${idx}`;
+}
+
+function setSlidingTrackSnapshotMarkers(door: DoorVisualEntryLike, open: boolean): void {
+  if (!door || door.type !== 'sliding') return;
+  const rec = door as DoorVisualEntryLike & {
+    noGlobalOpen?: boolean;
+    slidingOpenMode?: unknown;
+    __slidingOpenMode?: unknown;
+    slidingTrackOpenSide?: unknown;
+    __slidingTrackOpenSide?: unknown;
+  };
+
+  if (open) {
+    rec.noGlobalOpen = true;
+    rec.slidingOpenMode = 'track';
+    rec.__slidingOpenMode = 'track';
+    return;
+  }
+
+  if (isSlidingDoorTrackOpenMode(rec)) {
+    rec.noGlobalOpen = false;
+    rec.slidingOpenMode = undefined;
+    rec.__slidingOpenMode = undefined;
+    rec.slidingTrackOpenSide = undefined;
+    rec.__slidingTrackOpenSide = undefined;
+  }
 }
 
 export function captureSnapshot(App: AppLike, includeDrawers: boolean): DoorsSnapshot {
@@ -84,7 +111,11 @@ export function applySnapshot(App: AppLike, snap: DoorsSnapshot | null): void {
     const d = arr[i];
     if (!d) continue;
     const key = doorKey(d, i, App);
-    if (key in snap.doors) d.isOpen = !!snap.doors[key];
+    if (key in snap.doors) {
+      const open = !!snap.doors[key];
+      d.isOpen = open;
+      if (snap.kind === 'slidingTrack') setSlidingTrackSnapshotMarkers(d, open);
+    }
   }
 
   if (snap.drawers) {

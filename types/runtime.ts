@@ -138,6 +138,8 @@ export interface DoorsReleaseEditHoldOptionsLike extends UnknownRecord {
 
 export interface DoorsCaptureLocalOpenOptionsLike extends UnknownRecord {
   includeDrawers?: boolean;
+  /** Also preserve per-door sliding-track opens while global door mode is active. */
+  includeSlidingTrackDoors?: boolean;
 }
 
 export interface RuntimeMetaActionsAccessLike extends UnknownRecord {

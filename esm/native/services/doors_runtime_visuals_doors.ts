@@ -15,6 +15,7 @@ import {
 import {
   readDoorsTotalWidth,
   readInteriorManualTool,
+  isSlidingDoorTrackOpenMode,
   reportSlidingDoorZFailure,
   resolveDoorPartId,
   resolveSlidingDoorClosedState,
@@ -96,7 +97,7 @@ export function forceUpdatePerState(App: AppLike, opts?: SyncVisualsOptions): vo
     let finalX = closedX;
     let finalZ = closedZ;
 
-    const hideSlidingDoor = open && hideOpenSlidingDoors;
+    const hideSlidingDoor = open && hideOpenSlidingDoors && !isSlidingDoorTrackOpenMode(door);
     setSlidingDoorHiddenForOpenState(door, hideSlidingDoor);
 
     if (open && !hideSlidingDoor) {
@@ -244,7 +245,7 @@ export function syncVisualsNow(App: AppLike, opts?: SyncVisualsOptions): void {
     let targetOpen = !!isOpen;
     if (!targetOpen && door.noGlobalOpen) targetOpen = !!door.isOpen;
 
-    const hideSlidingDoor = targetOpen && hideOpenSlidingDoors;
+    const hideSlidingDoor = targetOpen && hideOpenSlidingDoors && !isSlidingDoorTrackOpenMode(door);
     setSlidingDoorHiddenForOpenState(door, hideSlidingDoor);
 
     if (targetOpen && !hideSlidingDoor) {
