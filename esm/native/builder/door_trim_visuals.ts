@@ -77,9 +77,9 @@ function normalizeSurfacePlane(value: unknown): DoorTrimSurfacePlane {
   return value === 'yz' || value === 'xz' ? value : 'xy';
 }
 
-function readFinite(value: unknown, fallback: number): number {
+function readFinite(value: unknown, defaultValue: number): number {
   const n = Number(value);
-  return Number.isFinite(n) ? n : fallback;
+  return Number.isFinite(n) ? n : defaultValue;
 }
 
 function resolveSurfaceCenterCoord(args: {

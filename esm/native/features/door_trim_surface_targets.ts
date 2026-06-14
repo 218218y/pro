@@ -32,9 +32,9 @@ type BoardDimensionsLike = {
   depth?: unknown;
 };
 
-function readFinite(value: unknown, fallback = NaN): number {
+function readFinite(value: unknown, defaultValue = NaN): number {
   const n = Number(value);
-  return Number.isFinite(n) ? n : fallback;
+  return Number.isFinite(n) ? n : defaultValue;
 }
 
 function readPositive(value: unknown): number | null {
@@ -145,9 +145,9 @@ export function readDoorTrimSurfaceFaceSignFromUserData(userData: UnknownRecord 
 
 export function readDoorTrimSurfaceFaceCoordFromUserData(
   userData: UnknownRecord | null | undefined,
-  fallback = 0
+  defaultValue = 0
 ): number {
-  return readFinite(userData?.__wpDoorTrimSurfaceFaceCoord, fallback);
+  return readFinite(userData?.__wpDoorTrimSurfaceFaceCoord, defaultValue);
 }
 
 export function mapDoorTrimSurfaceLocalPoint(
