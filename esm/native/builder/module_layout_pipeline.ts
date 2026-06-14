@@ -64,6 +64,17 @@ function toStr(x: unknown, def = ''): string {
   return typeof x === 'string' ? x : x == null ? def : String(x);
 }
 
+function readUiRawPreferredString(
+  ui: UiStateLike | null | undefined,
+  key: string,
+  defaultValue = ''
+): string {
+  const uiRec = asRecord<UnknownRecord>(ui);
+  const raw = asRecord<UnknownRecord>(uiRec?.raw);
+  if (raw && Object.prototype.hasOwnProperty.call(raw, key)) return toStr(raw[key], defaultValue);
+  return toStr(uiRec?.[key], defaultValue);
+}
+
 function toDoorCount(m: ModuleLike | null | undefined): number {
   if (!m) return 0;
   const raw = m.doors;
@@ -180,6 +191,14 @@ function isModuleStructureCurrentForDoorCount(modules: ModuleLike[], doorsCount:
   return sumModuleDoors(modules) === expectedDoors;
 }
 
+function haveSameModuleDoorSignature(a: ModuleLike[], b: ModuleLike[]): boolean {
+  if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i += 1) {
+    if (toDoorCount(a[i]) !== toDoorCount(b[i])) return false;
+  }
+  return true;
+}
+
 /**
  * Resolve module structure + normalized layout values.
  */
@@ -194,42 +213,48 @@ export function computeModulesAndLayout(args: ComputeModulesAndLayoutArgs): Comp
   const calculateModuleStructure = args.calculateModuleStructure;
 
   const wardrobeType = toStr(cfg.wardrobeType, 'hinged');
-
-  let modules: ModuleLike[] = [];
-
-  // Prefer store-derived, precomputed structure only when it still matches
-  // the active door count. A stale build cache must not outrank the canonical
-  // module calculator after door-count or wardrobe-type changes.
-  try {
-    const stBuild = state?.build;
-    if (stBuild && Array.isArray(stBuild.modulesStructure)) {
-      const storedModules = stBuild.modulesStructure;
-      if (isModuleStructureCurrentForDoorCount(storedModules, doorsCount)) {
-        modules = storedModules;
-      }
-    }
-  } catch (_) {}
-
-  // Compute structure using builder module helper when needed.
-  if (!Array.isArray(modules) || !isModuleStructureCurrentForDoorCount(modules, doorsCount)) {
-    if (typeof calculateModuleStructure !== 'function') {
-      throw new Error('Builder tools missing: modules.calculateModuleStructure');
-    }
-
-    const singleDoorPos = toStr(ui.singleDoorPos, '');
+  const singleDoorPos = readUiRawPreferredString(ui, 'singleDoorPos');
+  const structureSelect = readUiRawPreferredString(ui, 'structureSelect');
+  const computeCanonicalModules = (): ModuleLike[] => {
     if (doorsCount > 0 && !singleDoorPos) {
       // Fail-fast: this is required for odd doors.
       throw new Error('[WardrobePro] Missing ui.singleDoorPos (required for odd door counts)');
     }
 
-    modules = calculateModuleStructure(
-      doorsCount,
-      singleDoorPos,
-      toStr(ui.structureSelect, ''),
-      wardrobeType
-    ).map(item => ({
+    if (typeof calculateModuleStructure !== 'function') {
+      throw new Error('Builder tools missing: modules.calculateModuleStructure');
+    }
+
+    return calculateModuleStructure(doorsCount, singleDoorPos, structureSelect, wardrobeType).map(item => ({
       doors: item?.doors,
     }));
+  };
+
+  let modules: ModuleLike[] = [];
+  let canonicalModules: ModuleLike[] | null = null;
+
+  // Prefer store-derived, precomputed structure only when it exactly matches the
+  // active canonical signature. A stale sliding cache like [1,1] must not be
+  // accepted for a hinged two-door wardrobe just because the door sum is also 2.
+  // Legacy/unit callers that do not provide the calculator may still reuse a
+  // door-count-current store structure; production builder calls pass the calculator.
+  try {
+    const stBuild = state?.build;
+    if (stBuild && Array.isArray(stBuild.modulesStructure)) {
+      const storedModules = stBuild.modulesStructure;
+      if (isModuleStructureCurrentForDoorCount(storedModules, doorsCount)) {
+        if (typeof calculateModuleStructure === 'function') {
+          canonicalModules = computeCanonicalModules();
+          if (haveSameModuleDoorSignature(storedModules, canonicalModules)) modules = storedModules;
+        } else {
+          modules = storedModules;
+        }
+      }
+    }
+  } catch (_) {}
+
+  if (!Array.isArray(modules) || !isModuleStructureCurrentForDoorCount(modules, doorsCount)) {
+    modules = canonicalModules || computeCanonicalModules();
   }
 
   if (!Array.isArray(modules)) {

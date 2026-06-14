@@ -55,7 +55,8 @@ test('module layout pipeline ignores stale precomputed build structure and recom
   assert.equal(result.moduleCfgList.length, 2);
 });
 
-test('module layout pipeline keeps current precomputed build structure without calling the calculator', () => {
+test('module layout pipeline validates and keeps a current precomputed build structure', () => {
+  let calculateCalls = 0;
   const result = computeModulesAndLayout(
     createArgs({
       state: {
@@ -64,14 +65,74 @@ test('module layout pipeline keeps current precomputed build structure without c
         },
       },
       calculateModuleStructure() {
-        throw new Error('calculator should not be called for a current precomputed structure');
+        calculateCalls += 1;
+        return [{ doors: 1 }, { doors: 2 }, { doors: 1 }];
+      },
+    })
+  );
+
+  assert.equal(calculateCalls, 1);
+  assert.deepEqual(
+    result.modules.map(item => item.doors),
+    [1, 2, 1]
+  );
+});
+
+test('module layout pipeline rejects stale same-door-sum structure from a previous wardrobe type', () => {
+  const result = computeModulesAndLayout(
+    createArgs({
+      doorsCount: 2,
+      state: {
+        build: {
+          modulesStructure: [{ doors: 1 }, { doors: 1 }],
+        },
+      },
+      calculateModuleStructure(
+        doorsCount: unknown,
+        singleDoorPos: unknown,
+        structureSelect: unknown,
+        wardrobeType: unknown
+      ) {
+        assert.equal(doorsCount, 2);
+        assert.equal(singleDoorPos, 'left');
+        assert.equal(structureSelect, '');
+        assert.equal(wardrobeType, 'hinged');
+        return [{ doors: 2 }];
       },
     })
   );
 
   assert.deepEqual(
     result.modules.map(item => item.doors),
-    [1, 2, 1]
+    [2]
+  );
+  assert.equal(result.moduleCfgList.length, 1);
+});
+
+test('module layout pipeline reads structure controls from ui.raw before stale mirrored ui fields', () => {
+  const result = computeModulesAndLayout(
+    createArgs({
+      doorsCount: 3,
+      ui: {
+        singleDoorPos: 'left',
+        structureSelect: '[1,1,1]',
+        raw: {
+          singleDoorPos: 'right',
+          structureSelect: '[2,1]',
+        },
+      },
+      calculateModuleStructure(doorsCount: unknown, singleDoorPos: unknown, structureSelect: unknown) {
+        assert.equal(doorsCount, 3);
+        assert.equal(singleDoorPos, 'right');
+        assert.equal(structureSelect, '[2,1]');
+        return [{ doors: 2 }, { doors: 1 }];
+      },
+    })
+  );
+
+  assert.deepEqual(
+    result.modules.map(item => item.doors),
+    [2, 1]
   );
 });
 

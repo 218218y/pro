@@ -40,6 +40,16 @@ export interface DomainApiModulesCornerRecomputeRuntime {
   meta: ActionMetaLike;
 }
 
+function readUiRawPreferredString(ui: UnknownRecord, key: string, defaultValue = ''): string {
+  const raw = asRecordOrEmpty(ui.raw);
+  if (Object.prototype.hasOwnProperty.call(raw, key)) {
+    const value = raw[key];
+    return value == null ? defaultValue : String(value);
+  }
+  const value = ui[key];
+  return value == null ? defaultValue : String(value);
+}
+
 export function createDomainApiModulesCornerRecomputeRuntime(args: {
   modulesActions: ModulesActionsLike;
   _cfg: () => ConfigStateLike;
@@ -55,8 +65,8 @@ export function createDomainApiModulesCornerRecomputeRuntime(args: {
   const cfg = asRecordOrEmpty(_cfg());
   const ui = asRecordOrEmpty(uiOverride ?? _ui());
   const doorsCount = readUiRawIntFromSnapshot(ui, 'doors', 2);
-  const singlePos = ui && ui.singleDoorPos != null ? String(ui.singleDoorPos) : '';
-  const structVal = ui && ui.structureSelect != null ? String(ui.structureSelect) : '';
+  const singlePos = readUiRawPreferredString(ui, 'singleDoorPos');
+  const structVal = readUiRawPreferredString(ui, 'structureSelect');
   const wardrobeType = cfg && cfg.wardrobeType ? String(cfg.wardrobeType) : 'hinged';
   const modulesStructure = asModulesStructureList(
     calculateModuleStructurePure(doorsCount, singlePos, structVal, wardrobeType) || []

@@ -265,3 +265,44 @@ test('linear cell-dims applies lower-stack width/depth through lower configurati
   });
   assert.match(calls.toasts[0]?.message || '', /הוחל על תא 2/);
 });
+
+test('linear cell-dims resolves hinged module signature from ui.raw before stale mirrored ui fields', () => {
+  const { App, state, calls } = createAppHarness();
+  state.ui.doors = 3;
+  state.ui.singleDoorPos = 'left';
+  state.ui.structureSelect = '[1,1,1]';
+  state.ui.raw = {
+    width: 300,
+    height: 220,
+    depth: 55,
+    doors: 3,
+    singleDoorPos: 'right',
+    structureSelect: '[2,1]',
+  };
+  state.config.wardrobeType = 'hinged';
+  state.config.modulesConfiguration = [{ doors: 1 }, { doors: 1 }, { doors: 1 }];
+  state.build.modulesStructure = [{ doors: 1 }, { doors: 1 }, { doors: 1 }];
+
+  handleCanvasLinearCellDimsClick({
+    App,
+    ui: state.ui,
+    cfg: state.config,
+    raw: state.ui.raw,
+    applyW: 210,
+    applyH: null,
+    applyD: null,
+    foundModuleIndex: 0,
+  });
+
+  assert.equal(calls.snapshots.length, 1);
+  const snapshot = calls.snapshots[0].snapshot;
+  assert.equal(snapshot.modulesConfiguration.length, 2);
+  assert.deepEqual(
+    snapshot.modulesConfiguration.map((entry: any) => entry.doors),
+    [2, 1]
+  );
+  assert.deepEqual(snapshot.modulesConfiguration[0].specialDims, {
+    baseWidthCm: 200,
+    widthCm: 210,
+  });
+});

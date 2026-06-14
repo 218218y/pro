@@ -95,6 +95,77 @@ test('non-library recompute canonicalizes preserved modules through the top-modu
   assert.equal(next[2].doors, 1);
 });
 
+test('modules recompute runtime derives structure from ui.raw before stale mirrored structure fields', () => {
+  const state: { config: AnyRec; ui: AnyRec } = {
+    config: {
+      wardrobeType: 'hinged',
+      isLibraryMode: false,
+      modulesConfiguration: [
+        { layout: 'legacy', doors: 1 },
+        { layout: 'stale', doors: 1 },
+        { layout: 'stale2', doors: 1 },
+      ],
+    },
+    ui: {
+      doors: 3,
+      singleDoorPos: 'left',
+      structureSelect: '[1,1,1]',
+      raw: {
+        doors: 3,
+        singleDoorPos: 'right',
+        structureSelect: '[2,1]',
+      },
+    },
+  };
+
+  const App: AnyRec = { services: {} };
+  const select: AnyRec = { modules: {}, corner: {} };
+  const setAllCalls: unknown[] = [];
+  const modulesActions: AnyRec = {
+    setAll(next: unknown) {
+      const list = Array.isArray(next) ? clone(next) : [];
+      state.config.modulesConfiguration = list;
+      setAllCalls.push(list);
+      return list;
+    },
+  };
+  const cornerActions: AnyRec = {};
+
+  installDomainApiModulesCorner({
+    App,
+    select,
+    modulesActions,
+    cornerActions,
+    _cfg: () => state.config,
+    _ui: () => state.ui,
+    _ensureObj: (value: unknown) => (isRecord(value) ? value : {}),
+    _isRecord: isRecord,
+    _asMeta: (meta: unknown) => (isRecord(meta) ? meta : undefined),
+    _meta: (meta: unknown, source: string) => ({ ...(isRecord(meta) ? meta : {}), source }),
+    _domainApiReportNonFatal: () => undefined,
+    _markDelegatesStackPatch: () => undefined,
+  });
+
+  const result = modulesActions.recomputeFromUi(
+    null,
+    { source: 'react:structure:doors' },
+    {
+      preserveTemplate: true,
+      structureChanged: true,
+      anchorSide: 'left',
+    }
+  );
+
+  assert.equal(result.ok, true);
+  assert.equal(result.updated, true);
+  assert.equal(setAllCalls.length, 1);
+  assert.deepEqual(
+    state.config.modulesConfiguration.map((entry: AnyRec) => entry.doors),
+    [2, 1]
+  );
+  assert.equal(state.config.modulesConfiguration[0].layout, 'legacy');
+});
+
 test('modules recompute runtime: failed derived write returns canonical writeFailed result', () => {
   const state: { config: AnyRec; ui: AnyRec } = {
     config: {

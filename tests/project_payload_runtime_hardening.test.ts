@@ -148,3 +148,24 @@ test('project payload runtime: essential ui dims accept numeric strings from per
   assert.equal(uiSnapshot.uiState.depth, '55');
   assert.equal(uiSnapshot.uiState.doors, '4');
 });
+
+test('project payload runtime: load helper mirrors structural module controls into ui.raw', () => {
+  const normalized = normalizeProjectData({
+    settings: {
+      wardrobeType: 'hinged',
+      width: 160,
+      height: 240,
+      depth: 55,
+      doors: 3,
+      structureSelection: '[2,1]',
+      singleDoorPos: 'right',
+    },
+  });
+
+  assert.ok(normalized);
+  const uiSnapshot = buildProjectUiSnapshot(normalized, 'Project');
+  assert.equal((uiSnapshot.uiState.raw as any).structureSelect, '[2,1]');
+  assert.equal((uiSnapshot.uiState.raw as any).singleDoorPos, 'right');
+  assert.equal(uiSnapshot.uiState.structureSelect, '[2,1]');
+  assert.equal(uiSnapshot.uiState.singleDoorPos, 'right');
+});

@@ -60,16 +60,31 @@ function resolveDoorsCount(args: CanvasLinearCellDimsArgs): number {
   return raw.stackSplitLowerDoorsManual ? __asInt(raw.stackSplitLowerDoors, topDoors) : topDoors;
 }
 
+function hasOwn(record: Record<string, unknown>, key: string): boolean {
+  return Object.prototype.hasOwnProperty.call(record, key);
+}
+
+function readRawPreferredValue(
+  ui: Record<string, unknown>,
+  raw: Record<string, unknown>,
+  key: string
+): unknown {
+  return hasOwn(raw, key) ? raw[key] : ui[key];
+}
+
 function resolveSingleDoorPos(args: CanvasLinearCellDimsArgs): string {
-  const value = readString(args.ui, 'singleDoorPos', args.isBottomStack ? 'center' : 'left');
+  const value = String(
+    readRawPreferredValue(args.ui, args.raw, 'singleDoorPos') ?? (args.isBottomStack ? 'center' : 'left')
+  );
   if (!args.isBottomStack) return value;
   return value || 'center';
 }
 
 function resolveStructureSelect(args: CanvasLinearCellDimsArgs, doorsCount: number): unknown {
-  if (!args.isBottomStack) return args.ui.structureSelect;
+  const structureSelect = readRawPreferredValue(args.ui, args.raw, 'structureSelect');
+  if (!args.isBottomStack) return structureSelect;
   const topDoors = __asInt(args.raw.doors, __asInt(args.ui.doors, doorsCount));
-  return doorsCount !== topDoors ? '' : args.ui.structureSelect;
+  return doorsCount !== topDoors ? '' : structureSelect;
 }
 
 function readModulesFromConfigBucket(

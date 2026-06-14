@@ -24,15 +24,35 @@ function readTopModulesStructureDoorCount(modulesStructure: unknown, index: numb
   return readDoorsCount(list[index], 2);
 }
 
+function hasOwn(record: Record<string, unknown>, key: string): boolean {
+  return Object.prototype.hasOwnProperty.call(record, key);
+}
+
+function readUiRawPreferredValue(uiSnapshot: unknown, key: string): unknown {
+  const ui = isRecord(uiSnapshot) ? uiSnapshot : {};
+  const raw = isRecord(ui.raw) ? ui.raw : {};
+  return hasOwn(raw, key) ? raw[key] : ui[key];
+}
+
+function readUiRawPreferredInt(uiSnapshot: unknown, key: string, defaultValue: number, min: number): number {
+  const value = readUiRawPreferredValue(uiSnapshot, key);
+  const parsed = toIntMin(value, defaultValue, min);
+  if (Number.isFinite(parsed)) return parsed;
+  return defaultValue;
+}
+
+function readUiRawPreferredString(uiSnapshot: unknown, key: string, defaultValue = ''): string {
+  const value = readUiRawPreferredValue(uiSnapshot, key);
+  return value == null ? defaultValue : String(value);
+}
+
 export function resolveTopModulesStructureFromUiConfig(
   uiSnapshot: unknown,
   cfgSnapshot: unknown
 ): TopModuleStructureLike[] {
-  const ui = isRecord(uiSnapshot) ? uiSnapshot : {};
-  const raw = isRecord(ui.raw) ? ui.raw : {};
-  const doorsCount = toIntMin(ui.doors ?? raw.doors, 2, 0);
-  const singleDoorPos = String(ui.singleDoorPos ?? raw.singleDoorPos ?? '');
-  const structureSelect = String(ui.structureSelect ?? raw.structureSelect ?? '');
+  const doorsCount = readUiRawPreferredInt(uiSnapshot, 'doors', 2, 0);
+  const singleDoorPos = readUiRawPreferredString(uiSnapshot, 'singleDoorPos', '');
+  const structureSelect = readUiRawPreferredString(uiSnapshot, 'structureSelect', '');
   const cfg = isRecord(cfgSnapshot) ? cfgSnapshot : {};
   const wardrobeType = String(cfg.wardrobeType ?? 'hinged');
 
