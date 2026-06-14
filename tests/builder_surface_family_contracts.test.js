@@ -110,11 +110,13 @@ const materialColorLookupOwner = readSource(
   '../esm/native/builder/material_color_lookup.ts',
   import.meta.url
 );
+const materialSelectionOwner = readSource('../esm/native/builder/material_selection.ts', import.meta.url);
 const materialsApplyColorPolicy = readSource(
   '../esm/native/builder/materials_apply_color_policy.ts',
   import.meta.url
 );
 const materialResolverOwner = readSource('../esm/native/builder/material_resolver.ts', import.meta.url);
+const cornerMaterialsOwner = readSource('../esm/native/builder/corner_materials.ts', import.meta.url);
 const handlesApplyOwner = readSource('../esm/native/builder/handles_apply.ts', import.meta.url);
 const roomInternalSharedOwner = readSource('../esm/native/builder/room_internal_shared.ts', import.meta.url);
 const roomSharedStateOwner = readSource('../esm/native/builder/room_shared_state.ts', import.meta.url);
@@ -298,7 +300,10 @@ test('[builder-surface-family] orchestration owners stay named-only and request-
     materialsApplyColorPolicy,
     [
       /from '\.\/material_color_lookup\.js';/,
+      /from '\.\/material_selection\.js';/,
       /const cfg = getMaterialsCfg\(App\);/,
+      /resolveGlobalFrontMaterialInput\(\{/,
+      /resolveSelectionFrontMaterial\(\{/,
       /createPartMaterialResolver\(\{[\s\S]*cfg,[\s\S]*getMaterial/,
     ],
     'materials apply color policy canonical config source'
@@ -306,8 +311,18 @@ test('[builder-surface-family] orchestration owners stay named-only and request-
   assertLacksAll(
     assert,
     materialsApplyColorPolicy,
-    [/readMap\(/, /mapFromRuntime/, /effectiveCfg/],
+    [/hasCustomUploadedTexture/, /findSavedColor/, /readMap\(/, /mapFromRuntime/, /effectiveCfg/],
     'materials apply color policy canonical config source'
+  );
+  assertMatchesAll(
+    assert,
+    materialSelectionOwner,
+    [
+      /export function resolveGlobalFrontMaterialInput\(/,
+      /export function resolveSelectionFrontMaterial\(/,
+      /export function findSavedColorById\(/,
+    ],
+    'material selection shared owner'
   );
   assertMatchesAll(
     assert,
@@ -323,14 +338,26 @@ test('[builder-surface-family] orchestration owners stay named-only and request-
   assertMatchesAll(
     assert,
     materialResolverOwner,
-    [/from '\.\/material_color_lookup\.js';/, /readPartColorEntry\(\{/],
-    'full build material resolver shared color lookup'
+    [/from '\.\/material_color_lookup\.js';/, /from '\.\/material_selection\.js';/, /readPartColorEntry\(\{/],
+    'full build material resolver shared color lookup and selection'
   );
   assertLacksAll(
     assert,
     materialResolverOwner,
-    [/readDoorVisualMapEntry/, /MAIN_WAVE_CORNICE_PARTS/],
-    'full build material resolver shared color lookup'
+    [/resolveGlobalColorChoice/, /savedList/, /readDoorVisualMapEntry/, /MAIN_WAVE_CORNICE_PARTS/],
+    'full build material resolver shared color lookup and selection'
+  );
+  assertMatchesAll(
+    assert,
+    cornerMaterialsOwner,
+    [/from '\.\/material_selection\.js';/, /resolveSelectionFrontMaterial\(\{/],
+    'corner materials shared selection owner'
+  );
+  assertLacksAll(
+    assert,
+    cornerMaterialsOwner,
+    [/__savedColorById/, /saved\.type === 'texture'/],
+    'corner materials shared selection owner'
   );
 
   assertMatchesAll(
@@ -986,8 +1013,13 @@ test('[builder-surface-family] visuals/module seams stay consolidated behind can
   assert.match(chestConfig, /cfgSnapshot is required/);
   assert.match(chestMaterials, /export function resolveChestModeBodyMaterialState\(/);
   assert.match(chestMaterials, /requireChestModeConfigSnapshot/);
+  assert.match(chestMaterials, /material_selection\.js/);
+  assert.match(chestMaterials, /resolveGlobalFrontMaterialInput\(/);
+  assert.match(chestMaterials, /resolveSelectionFrontMaterial\(/);
   assert.doesNotMatch(chestMaterials, /getCfg\(/);
   assert.doesNotMatch(chestMaterials, /readMap\(/);
+  assert.doesNotMatch(chestMaterials, /hasCustomUploadedTexture/);
+  assert.doesNotMatch(chestRuntime, /findSavedColorById/);
   assert.match(chestDrawerBox, /export const createInternalDrawerBox/);
   assert.match(chestBuild, /export function buildChestOnly\(/);
   assert.match(chestBuild, /readChestModeCfgSnapshotFromOpts/);

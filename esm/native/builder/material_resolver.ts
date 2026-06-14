@@ -1,6 +1,6 @@
 // Material resolver (Pure ESM)
 //
-// Goal: centralize multi-color + saved texture handling so Builder Core / pipelines
+// Goal: centralize multi-color handling so Builder Core / pipelines
 // don't carry a large blob of material logic.
 //
 // Behavior:
@@ -15,13 +15,7 @@ import { getBuilderRenderOps } from '../runtime/builder_service_access.js';
 import { getPlatformReportError } from '../runtime/platform_access.js';
 import { isDrawerBoxPartId } from '../features/drawer_box_identity.js';
 import { readPartColorEntry } from './material_color_lookup.js';
-
-type SavedColorItemLike = UnknownRecord & {
-  id?: string;
-  type?: string;
-  value?: unknown;
-  textureData?: unknown;
-};
+import { resolveSelectionFrontMaterial } from './material_selection.js';
 
 type MaterialFactory = (
   color: string | null,
@@ -59,10 +53,7 @@ export function makeMaterialResolver(args: MaterialResolverArgs): {
   const getMaterial = args.getMaterial;
   const globalFrontMat = args.globalFrontMat;
 
-  const toColorKey = (v: unknown): string | null => {
-    if (v == null) return null;
-    return typeof v === 'string' ? v : String(v);
-  };
+  const toColorKey = (value: unknown, fallback = ''): string => String(value ?? fallback);
 
   if (!App || typeof App !== 'object')
     throw new Error('[builder/material_resolver] makeMaterialResolver: App missing');
@@ -123,71 +114,16 @@ export function makeMaterialResolver(args: MaterialResolverArgs): {
       return getMirrorMaterial({ App, THREE });
     }
 
-    if (specificColorVal.startsWith('saved_')) {
-      const savedList = Array.isArray(cfg.savedColors) ? cfg.savedColors : [];
-      const savedItem = savedList.find(
-        (entry: SavedColorItemLike | null | undefined) => entry && entry.id === specificColorVal
-      );
-      if (savedItem) {
-        if (savedItem.type === 'texture' && savedItem.textureData) {
-          return getMaterial(specificColorVal, 'front', true, String(savedItem.textureData));
-        }
-        return getMaterial(toColorKey(savedItem.value), 'front', false);
-      }
-    }
-
-    return getMaterial(toColorKey(specificColorVal), 'front', false);
+    return resolveSelectionFrontMaterial({
+      selection: specificColorVal,
+      cfg,
+      getMaterial,
+      toStr: toColorKey,
+    });
   }
 
   return {
     getPartColorValue,
     getPartMaterial,
   };
-}
-
-/**
- * Resolve the UI color choice into global material inputs.
- *
- * This keeps builder/core orchestration clean and avoids repeating
- * the "custom / saved_* / texture" branching across files.
- */
-export function resolveGlobalColorChoice(args: {
-  ui: UnknownRecord;
-  cfg: UnknownRecord;
-  toStr?: (v: unknown, fb?: string) => string;
-}): { colorKey: string; useTexture: boolean; textureDataURL: string | null } {
-  const ui = args.ui;
-  const cfg = args.cfg || {};
-  const toStr =
-    (typeof args.toStr === 'function' && args.toStr) ||
-    ((v: unknown, fb?: string) => (v == null ? fb || '' : String(v)));
-
-  let colorKey = toStr(ui && ui.colorChoice, '');
-  let useTexture = false;
-  let textureDataURL: string | null = null;
-
-  if (colorKey === 'custom') {
-    textureDataURL =
-      typeof cfg.customUploadedDataURL === 'string' && cfg.customUploadedDataURL
-        ? cfg.customUploadedDataURL
-        : null;
-    if (textureDataURL) {
-      useTexture = true;
-    } else {
-      colorKey = toStr(ui && ui.customColor, '');
-    }
-  } else if (String(colorKey || '').startsWith('saved_')) {
-    const savedList = Array.isArray(cfg.savedColors) ? cfg.savedColors : [];
-    const saved = savedList.find(
-      (entry: SavedColorItemLike | null | undefined) => entry && entry.id === colorKey
-    );
-    if (saved && saved.type === 'texture' && saved.textureData) {
-      useTexture = true;
-      textureDataURL = String(saved.textureData);
-    } else if (saved) {
-      colorKey = String(saved.value);
-    }
-  }
-
-  return { colorKey: String(colorKey || ''), useTexture: !!useTexture, textureDataURL };
 }

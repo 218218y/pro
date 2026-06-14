@@ -389,6 +389,36 @@ test('corner wing shelf group paint still overrides the brace-only shelf default
   assert.equal(mats.getCornerShelfMat('corner_shelf_cell_1_g2', true), 'front:#202020:flat');
 });
 
+test('corner wing materials resolve saved texture paint with explicit texture data', () => {
+  const { App, THREE } = makeCornerShelfPolicyTestRuntime();
+  const calls: unknown[][] = [];
+  const mats = createCornerWingMaterials({
+    App: App as never,
+    THREE: THREE as never,
+    ro: null,
+    materials: {
+      body: 'front:main',
+      front: 'front:main',
+      defaultShelfMat: 'body:#ffffff:flat',
+      braceShelfMat: 'front:main',
+    },
+    getMaterial(color: unknown, kind = 'front', useTexture = false, textureDataURL?: unknown) {
+      calls.push([color, kind, !!useTexture, textureDataURL ?? null]);
+      return `${kind}:${String(color)}:${useTexture ? 'texture' : 'flat'}:${String(textureDataURL ?? '')}`;
+    },
+    cfgSnapshot: {
+      isMultiColorMode: true,
+      savedColors: [{ id: 'saved_tex', type: 'texture', value: 'oak', textureData: 'data:saved' }],
+    },
+    readMap: (name: string) => (name === 'individualColors' ? { corner_body: 'saved_tex' } : {}),
+    stackKey: 'top',
+    stackSplitEnabled: false,
+  });
+
+  assert.equal(mats.bodyMat, 'front:saved_tex:texture:data:saved');
+  assert.deepEqual(calls[0], ['saved_tex', 'front', true, 'data:saved']);
+});
+
 test('corner wing materials require a build config snapshot instead of reading live App config', () => {
   const { App, THREE, getMaterial } = makeCornerShelfPolicyTestRuntime();
 

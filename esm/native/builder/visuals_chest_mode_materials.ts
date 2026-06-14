@@ -1,5 +1,4 @@
 import { isDrawerBoxPartId } from '../features/drawer_box_identity.js';
-import { hasCustomUploadedTexture } from '../runtime/textures_cache_access.js';
 import { getBaseLegColorHex, type BaseLegColor } from '../features/base_leg_support.js';
 
 import type {
@@ -7,21 +6,21 @@ import type {
   BuilderGetMaterialFn,
   ConfigStateLike,
   IndividualColorsMap,
-  SavedColorLike,
   ThreeLike,
 } from '../../../types/index.js';
 
 import {
-  findSavedColorById,
   getChestModeMaterial,
   getMirrorMaterialFromServices,
   readChestModeIndividualColorsMap,
 } from './visuals_chest_mode_runtime.js';
 import { requireChestModeConfigSnapshot } from './visuals_chest_mode_config.js';
+import { resolveGlobalFrontMaterialInput, resolveSelectionFrontMaterial } from './material_selection.js';
 
 export type ChestModeBodyMaterialState = {
   colorHex: string;
   useTexture: boolean;
+  textureDataURL: string | null;
 };
 
 export type ChestModeMaterialPalette = {
@@ -41,31 +40,19 @@ export function resolveChestModeBodyMaterialState(input: {
   colorChoice?: unknown;
   customColor?: unknown;
   cfg: ConfigStateLike;
-  hasCustomTexture?: boolean;
-  findSavedColor?: ((cfg: ConfigStateLike, id: string) => SavedColorLike | null) | null;
 }): ChestModeBodyMaterialState {
-  const colorChoice = String(input.colorChoice || '#ffffff');
-  const customColor = String(input.customColor || '#ffffff');
   const cfg = requireChestModeConfigSnapshot(input.cfg, 'visuals_chest_mode.materials');
-  const hasCustomTexture =
-    typeof input.hasCustomTexture === 'boolean'
-      ? input.hasCustomTexture
-      : !!(input.App && hasCustomUploadedTexture(input.App));
-  const findSavedColor = input.findSavedColor || findSavedColorById;
+  const materialInput = resolveGlobalFrontMaterialInput({
+    colorChoice: input.colorChoice,
+    customColor: input.customColor,
+    cfg,
+  });
 
-  let colorHex = colorChoice;
-  let useTexture = false;
-
-  if (colorHex === 'custom') {
-    if (hasCustomTexture) useTexture = true;
-    else colorHex = customColor;
-  } else if (colorHex.startsWith('saved_')) {
-    const saved = findSavedColor(cfg, colorHex);
-    if (saved && saved.type === 'texture') useTexture = true;
-    else if (saved && typeof saved.value === 'string') colorHex = saved.value;
-  }
-
-  return { colorHex, useTexture };
+  return {
+    colorHex: materialInput.colorKey,
+    useTexture: materialInput.useTexture,
+    textureDataURL: materialInput.textureDataURL,
+  };
 }
 
 export function resolveChestModeMaterialPalette(input: {
@@ -77,7 +64,12 @@ export function resolveChestModeMaterialPalette(input: {
   const getMaterial =
     input.getMaterial ||
     ((...args: Parameters<BuilderGetMaterialFn>) => getChestModeMaterial(input.App, ...args));
-  const globalBodyMat = getMaterial(input.bodyState.colorHex, 'front', input.bodyState.useTexture);
+  const globalBodyMat = getMaterial(
+    input.bodyState.colorHex,
+    'front',
+    input.bodyState.useTexture,
+    input.bodyState.textureDataURL
+  );
   const drawerBoxMat = getMaterial('#ffffff', 'body', false);
   return {
     globalBodyMat,
@@ -150,10 +142,6 @@ export function createChestModePartMaterialResolver(input: {
     if (!value) return input.globalBodyMat;
     if (value === 'mirror') return resolveMirrorMaterial();
     if (value === 'glass') return input.globalBodyMat;
-    if (String(value).startsWith('saved_')) {
-      const saved = findSavedColorById(cfg, String(value));
-      if (saved) return getMaterial(saved.value, 'front', saved.type === 'texture');
-    }
-    return getMaterial(value, 'front', false);
+    return resolveSelectionFrontMaterial({ selection: value, cfg, getMaterial });
   };
 }

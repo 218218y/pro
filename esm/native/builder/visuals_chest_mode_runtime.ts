@@ -12,12 +12,10 @@ import type {
   AppContainer,
   BuilderGetMaterialFn,
   BuilderOutlineFn,
-  ConfigStateLike,
   ControlsLike,
   IndividualColorsMap,
   Object3DLike,
   RendererLike,
-  SavedColorLike,
   ThreeLike,
   UnknownRecord,
 } from '../../../types/index.js';
@@ -114,14 +112,6 @@ export function getChestModeMaterial(
 ): ReturnType<BuilderGetMaterialFn> {
   const App = ensureChestModeApp(passedApp);
   return requireBuilderGetMaterial(App, 'native/builder/visuals_chest_mode.materials.getMaterial')(...args);
-}
-
-export function findSavedColorById(cfg: ConfigStateLike, id: string): SavedColorLike | null {
-  const savedColors = Array.isArray(cfg.savedColors) ? cfg.savedColors : [];
-  for (const entry of savedColors) {
-    if (entry && entry.id === id) return entry;
-  }
-  return null;
 }
 
 export function getMirrorMaterialFromServices(App: AppContainer, THREE: ThreeLike): unknown {

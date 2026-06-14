@@ -13,10 +13,10 @@ import type {
   DoorSpecialValue,
   HandlesMap,
   IndividualColorsMap,
-  SavedColorLike,
   ThreeLike,
   UnknownRecord,
 } from '../../../types/index.js';
+import { resolveSelectionFrontMaterial } from './material_selection.js';
 
 type MaterialsLike = {
   body: unknown;
@@ -76,15 +76,6 @@ function ensureMapRecord<T extends PartMap>(value: unknown): T {
 function readDoorSpecialValue(value: unknown): DoorSpecialValue {
   if (typeof value === 'string') return value;
   if (value === null) return null;
-  return null;
-}
-
-function __savedColorById(cfg: ConfigStateLike, id: string): SavedColorLike | null {
-  const list = Array.isArray(cfg.savedColors) ? cfg.savedColors : [];
-  for (let i = 0; i < list.length; i++) {
-    const item = list[i];
-    if (item && item.id === id) return item;
-  }
   return null;
 }
 
@@ -191,15 +182,13 @@ export function createCornerWingMaterials(args: {
     const scopedColor = readScopedMapVal(individualColors, partId);
     if (cfg.isMultiColorMode && scopedColor) {
       const colorValue = scopedColor ?? null;
-      const colorKey = __appUtilStr(App, colorValue);
       if (colorValue === 'mirror' || colorValue === 'glass') return defaultMat;
-      if (colorKey.startsWith('saved_')) {
-        const saved = __savedColorById(cfg, colorKey);
-        if (saved && saved.type === 'texture' && saved.textureData) {
-          return getMaterial(saved.value, 'front', true);
-        }
-      }
-      return getMaterial(colorValue, 'front', false);
+      return resolveSelectionFrontMaterial({
+        selection: colorValue,
+        cfg,
+        getMaterial,
+        toStr: (value, fallback) => __appUtilStr(App, value ?? fallback),
+      });
     }
     return defaultMat;
   };

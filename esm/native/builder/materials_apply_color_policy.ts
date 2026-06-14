@@ -6,8 +6,7 @@ import {
   isShelfBoardPartId,
   resolveShelfGroupPartId,
 } from '../features/shelf_part_identity.js';
-import { hasCustomUploadedTexture } from '../runtime/textures_cache_access.js';
-import type { AppContainer, BuilderMaterialsServiceLike, SavedColorLike } from '../../../types';
+import type { AppContainer, BuilderMaterialsServiceLike } from '../../../types';
 import type { IndividualColorsMap } from '../../../types/maps';
 import {
   asObject,
@@ -20,6 +19,7 @@ import {
   type ValueRecord,
 } from './materials_apply_shared.js';
 import { readPartColorEntry } from './material_color_lookup.js';
+import { resolveGlobalFrontMaterialInput, resolveSelectionFrontMaterial } from './material_selection.js';
 
 export type MaterialGetter = NonNullable<BuilderMaterialsServiceLike['getMaterial']>;
 
@@ -29,19 +29,6 @@ export type MaterialsApplyColorContext = {
   globalFrontMat: unknown;
   getPartMat: (partId: string, stackKey: PartStackKey, userData?: ValueRecord | null) => unknown;
 };
-
-function readSavedColors(cfg: MaterialsCfgLike): SavedColorLike[] {
-  return Array.isArray(cfg.savedColors) ? cfg.savedColors : [];
-}
-
-function findSavedColor(cfg: MaterialsCfgLike, id: string): SavedColorLike | null {
-  const savedColors = readSavedColors(cfg);
-  for (let i = 0; i < savedColors.length; i += 1) {
-    const saved = savedColors[i];
-    if (saved && saved.id === id) return saved;
-  }
-  return null;
-}
 
 export function readPartId(value: unknown): string | null {
   if (typeof value === 'string' && value) return value;
@@ -76,35 +63,15 @@ function resolveGlobalFrontMaterial(args: {
   ui: BuildUiLike;
   cfg: MaterialsCfgLike;
   getMaterial: MaterialGetter;
-  App: AppContainer;
 }): unknown {
-  const { ui, cfg, getMaterial, App } = args;
+  const { ui, cfg, getMaterial } = args;
+  const materialInput = resolveGlobalFrontMaterialInput({
+    colorChoice: getUiVal(ui, 'color', '#ffffff'),
+    customColor: getUiVal(ui, 'customColorPicker', '#ffffff'),
+    cfg,
+  });
 
-  let colorChoice = String(getUiVal(ui, 'color', '#ffffff') || '#ffffff');
-  let colorHex = colorChoice;
-  let useTexture = false;
-  let textureDataURL: string | null = null;
-
-  if (colorHex === 'custom') {
-    textureDataURL = typeof cfg.customUploadedDataURL === 'string' ? cfg.customUploadedDataURL : null;
-    if (textureDataURL) {
-      useTexture = true;
-    } else if (hasCustomUploadedTexture(App)) {
-      useTexture = true;
-    } else {
-      colorHex = String(getUiVal(ui, 'customColorPicker', '#ffffff') || '#ffffff');
-    }
-  } else if (colorHex.indexOf('saved_') === 0) {
-    const saved = findSavedColor(cfg, colorHex);
-    if (saved && saved.type === 'texture' && saved.textureData) {
-      useTexture = true;
-      textureDataURL = String(saved.textureData);
-    } else if (saved && typeof saved.value === 'string') {
-      colorHex = saved.value;
-    }
-  }
-
-  return getMaterial(colorHex, 'front', useTexture, textureDataURL);
+  return getMaterial(materialInput.colorKey, 'front', materialInput.useTexture, materialInput.textureDataURL);
 }
 
 export function createPartMaterialResolver(args: {
@@ -161,23 +128,12 @@ export function createPartMaterialResolver(args: {
     }
     if (effectiveEntry === 'mirror' || effectiveEntry === 'glass') return globalFrontMat;
 
-    const selection = String(effectiveEntry || '');
-    if (selection.indexOf('saved_') === 0) {
-      const saved = findSavedColor(cfg, selection);
-      if (saved) {
-        if (saved.type === 'texture' && saved.textureData) {
-          return getMaterial(saved.value, 'front', true, String(saved.textureData));
-        }
-        return getMaterial(saved.value, 'front', false);
-      }
-    }
-
-    if (selection === 'custom') {
-      const customColor = String(getUiVal(ui, 'customColorPicker', '#ffffff') || '#ffffff');
-      return getMaterial(customColor, 'front', false);
-    }
-
-    return getMaterial(selection, 'front', false);
+    return resolveSelectionFrontMaterial({
+      selection: effectiveEntry,
+      cfg,
+      getMaterial,
+      customColor: getUiVal(ui, 'customColorPicker', '#ffffff'),
+    });
   };
 }
 
@@ -188,7 +144,7 @@ export function resolveMaterialsApplyColorContext(args: {
   const { App, getMaterial } = args;
   const ui = getBuildUi(App);
   const cfg = getMaterialsCfg(App);
-  const globalFrontMat = resolveGlobalFrontMaterial({ ui, cfg, getMaterial, App });
+  const globalFrontMat = resolveGlobalFrontMaterial({ ui, cfg, getMaterial });
   if (!globalFrontMat) return null;
 
   return {

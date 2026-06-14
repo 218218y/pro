@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { makeDrawerBoxPartId } from '../esm/native/features/drawer_box_identity.ts';
 import { buildChestOnly } from '../esm/native/builder/visuals_chest_mode.ts';
 import {
+  createChestModePartMaterialResolver,
   createChestModePartColorValueResolver,
   resolveChestModeBodyMaterialState,
   resolveChestModeDrawerBoxMaterial,
@@ -87,7 +88,7 @@ function createChestCfg(overrides: Record<string, unknown> = {}) {
     showDimensions: true,
     isMultiColorMode: true,
     individualColors: { chest_drawer_1: 'mirror' },
-    savedColors: [{ id: 'saved_tex', type: 'texture', value: 'oak' }],
+    savedColors: [{ id: 'saved_tex', type: 'texture', value: 'oak', textureData: 'data:saved' }],
     ...overrides,
   };
 }
@@ -236,18 +237,19 @@ test('visuals chest mode input/material helpers normalize chest-only UI and text
     resolveChestModeBodyMaterialState({
       colorChoice: 'custom',
       customColor: '#123456',
-      hasCustomTexture: false,
       cfg: {} as any,
     }),
-    { colorHex: '#123456', useTexture: false }
+    { colorHex: '#123456', useTexture: false, textureDataURL: null }
   );
   assert.deepEqual(
     resolveChestModeBodyMaterialState({
       colorChoice: 'saved_tex',
       customColor: '#123456',
-      cfg: { savedColors: [{ id: 'saved_tex', type: 'texture', value: 'oak' }] } as any,
+      cfg: {
+        savedColors: [{ id: 'saved_tex', type: 'texture', value: 'oak', textureData: 'data:saved' }],
+      } as any,
     }),
-    { colorHex: 'saved_tex', useTexture: true }
+    { colorHex: 'saved_tex', useTexture: true, textureDataURL: 'data:saved' }
   );
 
   assert.throws(
@@ -289,7 +291,7 @@ test('visuals chest mode material palette keeps drawer boxes on independent whit
   const calls: any[] = [];
   const palette = resolveChestModeMaterialPalette({
     App: {} as any,
-    bodyState: { colorHex: '#445566', useTexture: false },
+    bodyState: { colorHex: '#445566', useTexture: false, textureDataURL: null },
     legColor: 'nickel',
     getMaterial(color: unknown, part: unknown, useTexture?: unknown) {
       const material = { color, part, useTexture: !!useTexture };
@@ -303,6 +305,35 @@ test('visuals chest mode material palette keeps drawer boxes on independent whit
   assert.notEqual(palette.drawerBoxMat, palette.globalBodyMat);
   assert.deepEqual(calls[0], { color: '#445566', part: 'front', useTexture: false });
   assert.deepEqual(calls[1], { color: '#ffffff', part: 'body', useTexture: false });
+});
+
+test('visuals chest mode part material resolver passes saved texture data explicitly', () => {
+  const calls: unknown[][] = [];
+  const cfg = createChestCfg({
+    individualColors: { chest_drawer_0: 'saved_tex' },
+    savedColors: [{ id: 'saved_tex', type: 'texture', value: 'oak', textureData: 'data:saved' }],
+  });
+  const resolver = createChestModePartMaterialResolver({
+    App: {} as any,
+    THREE: {} as any,
+    globalBodyMat: { id: 'global-body' },
+    drawerBoxMat: { id: 'drawer-box' },
+    cfg: cfg as any,
+    getMaterial(color: unknown, part: unknown, useTexture?: unknown, textureDataURL?: unknown) {
+      const material = { color, part, useTexture: !!useTexture, textureDataURL: textureDataURL ?? null };
+      calls.push([color, part, !!useTexture, textureDataURL ?? null]);
+      return material as any;
+    },
+    resolveMirrorMaterial: () => ({ mirror: true }),
+  });
+
+  assert.deepEqual(resolver('chest_drawer_0'), {
+    color: 'saved_tex',
+    part: 'front',
+    useTexture: true,
+    textureDataURL: 'data:saved',
+  });
+  assert.deepEqual(calls, [['saved_tex', 'front', true, 'data:saved']]);
 });
 
 test('visuals chest mode drawer box material follows only explicit drawer-box paint', () => {

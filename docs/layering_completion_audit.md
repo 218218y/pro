@@ -27,6 +27,7 @@ This file is intentionally compact. It keeps only current decomposition guard fa
 - `builder/visuals_chest_mode_config.ts` owns Chest Mode `cfgSnapshot` enforcement so `visuals_chest_mode_build.ts` and `visuals_chest_mode_materials.ts` consume the build snapshot instead of live `App.store`/map reads
 - `builder/handles_config_snapshot.ts` owns handle map snapshots so `handles_apply_shared.ts` and `handles_purge.ts` run a single config snapshot per handle pass instead of repeated live map reads
 - `builder/material_color_lookup.ts` owns shared per-part color lookup for full builds and no-build material refreshes so split-door, corner-stack, shelf-group, and cornice paint policy stays aligned
+- `builder/material_selection.ts` owns global and per-part front material selection for full builds, no-build material refreshes, Chest Mode, and corner materials so saved/custom texture data comes from canonical config snapshots and is passed explicitly into material creation
 - `builder/materials_apply_color_policy.ts` consumes canonical `Store.config.individualColors` for no-build material refreshes and no longer lets legacy `App.maps.individualColors` override live material/color state
 - `canvas_picking_click_flow.ts` cell-dims click flows now live in `services/canvas_picking_cell_dims_flow.ts`
 - `services/canvas_picking_click_flow.ts` is now a thin canonical seam over focused click-mode, module-ref, hit-resolution, and route owners

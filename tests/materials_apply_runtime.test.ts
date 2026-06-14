@@ -165,6 +165,95 @@ test('materials apply runtime: drawer boxes keep independent white material unle
   assert.equal(drawerBoxChild.material, boxPaint);
 });
 
+test('materials apply runtime resolves global custom texture from canonical cfg only', () => {
+  const calls: unknown[][] = [];
+  const textureMat = { id: 'front:texture' };
+  const colorMat = { id: 'front:custom-color' };
+  const targetMesh = {
+    isMesh: true,
+    userData: { partId: 'front_panel' },
+    material: { id: 'old' },
+    children: [],
+  };
+  const App: any = {
+    services: {
+      builder: {
+        materials: {
+          getMaterial(color: string, part: string, useTexture?: boolean, textureDataURL?: string | null) {
+            calls.push(['getMaterial', color, part, !!useTexture, textureDataURL ?? null]);
+            return useTexture ? textureMat : colorMat;
+          },
+        },
+        handles: { applyHandles() {} },
+      },
+      platform: { triggerRender() {} },
+      texturesCache: {
+        customUploadedTexture: { uuid: 'stale-live-cache-texture' },
+      },
+    },
+    store: {
+      getState() {
+        return {
+          ui: { colorChoice: 'custom', customColor: '#123456', raw: {} },
+          config: { customUploadedDataURL: 'data:cfg-texture' },
+          runtime: {},
+          mode: {},
+          meta: {},
+        };
+      },
+    },
+    render: { wardrobeGroup: { children: [targetMesh] } },
+  };
+
+  assert.equal(applyMaterials(App), true);
+  assert.equal(targetMesh.material, textureMat);
+  assert.deepEqual(calls[0], ['getMaterial', 'custom', 'front', true, 'data:cfg-texture']);
+});
+
+test('materials apply runtime does not promote stale live custom texture cache without cfg data URL', () => {
+  const calls: unknown[][] = [];
+  const colorMat = { id: 'front:custom-color' };
+  const targetMesh = {
+    isMesh: true,
+    userData: { partId: 'front_panel' },
+    material: { id: 'old' },
+    children: [],
+  };
+  const App: any = {
+    services: {
+      builder: {
+        materials: {
+          getMaterial(color: string, part: string, useTexture?: boolean, textureDataURL?: string | null) {
+            calls.push(['getMaterial', color, part, !!useTexture, textureDataURL ?? null]);
+            return colorMat;
+          },
+        },
+        handles: { applyHandles() {} },
+      },
+      platform: { triggerRender() {} },
+      texturesCache: {
+        customUploadedTexture: { uuid: 'stale-live-cache-texture' },
+      },
+    },
+    store: {
+      getState() {
+        return {
+          ui: { colorChoice: 'custom', customColor: '#123456', raw: {} },
+          config: {},
+          runtime: {},
+          mode: {},
+          meta: {},
+        };
+      },
+    },
+    render: { wardrobeGroup: { children: [targetMesh] } },
+  };
+
+  assert.equal(applyMaterials(App), true);
+  assert.equal(targetMesh.material, colorMat);
+  assert.deepEqual(calls[0], ['getMaterial', '#123456', 'front', false, null]);
+});
+
 test('materials apply color policy inherits full-door paint for split door segments during no-build refresh', () => {
   const colors = { d1_full: 'oak', d2_full: 'walnut' };
 
