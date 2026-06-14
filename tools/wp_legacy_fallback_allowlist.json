@@ -57,12 +57,6 @@
         "domain-default": 1
       }
     },
-    "esm/native/builder/corner_materials.ts": {
-      "total": 2,
-      "categories": {
-        "domain-default": 2
-      }
-    },
     "esm/native/builder/corner_wing_cornice_profile.ts": {
       "total": 1,
       "categories": {

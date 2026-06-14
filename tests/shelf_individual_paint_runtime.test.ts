@@ -354,3 +354,26 @@ test('corner wing shelf group paint still overrides the brace-only shelf default
   assert.equal(mats.getCornerShelfMat('corner_shelf_cell_1_g2', false), 'front:#202020:flat');
   assert.equal(mats.getCornerShelfMat('corner_shelf_cell_1_g2', true), 'front:#202020:flat');
 });
+
+test('corner wing materials require a build config snapshot instead of reading live App config', () => {
+  const { App, THREE, getMaterial } = makeCornerShelfPolicyTestRuntime();
+
+  assert.throws(
+    () =>
+      createCornerWingMaterials({
+        App: App as never,
+        THREE: THREE as never,
+        ro: null,
+        materials: {
+          body: 'front:main',
+          front: 'front:main',
+        },
+        getMaterial: getMaterial as never,
+        cfgSnapshot: null as never,
+        readMap: () => ({}),
+        stackKey: 'top',
+        stackSplitEnabled: false,
+      }),
+    /cfgSnapshot is required/
+  );
+});

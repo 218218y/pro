@@ -1,7 +1,6 @@
 // Corner wing: material resolution + multi-color/special doors
 
 import { CORNER_SHELF_GROUP_PART_ID } from '../features/shelf_part_identity.js';
-import { getCfg } from './store_access.js';
 import { getCommonMatsOrThrow } from './common_mats_resolver.js';
 import { asRecord, cloneRecord } from '../runtime/record.js';
 
@@ -59,8 +58,10 @@ type CornerWingMaterialsResult = {
   braceShelfMat: unknown;
 };
 
-function asSavedColorSnapshot(value: unknown, App: AppContainer): ConfigStateLike {
-  return asRecord<ConfigStateLike>(value) || getCfg(App);
+function requireConfigSnapshot(value: unknown): ConfigStateLike {
+  const cfg = asRecord<ConfigStateLike>(value);
+  if (!cfg) throw new TypeError('[corner_materials] cfgSnapshot is required');
+  return cfg;
 }
 
 function asMapRecord<T extends PartMap>(value: unknown): T | null {
@@ -97,7 +98,7 @@ export function createCornerWingMaterials(args: {
   ro: RenderOpsLike | UnknownRecord | null | undefined;
   materials: MaterialsLike;
   getMaterial: GetMaterialFn;
-  cfgSnapshot: ConfigStateLike | UnknownRecord | null | undefined;
+  cfgSnapshot: ConfigStateLike | UnknownRecord;
   readMap: (name: string) => unknown;
   stackKey: 'top' | 'bottom';
   stackSplitEnabled: boolean;
@@ -106,7 +107,7 @@ export function createCornerWingMaterials(args: {
   const { App, THREE, ro, materials, getMaterial, readMap, stackKey, stackSplitEnabled, stackScopePartKey } =
     args;
 
-  const cfg = asSavedColorSnapshot(args.cfgSnapshot, App);
+  const cfg = requireConfigSnapshot(args.cfgSnapshot);
   const commonMats = getCommonMatsOrThrow({ App, THREE });
   const { masoniteMat, whiteMat, shadowMat } = commonMats;
 
@@ -207,11 +208,11 @@ export function createCornerWingMaterials(args: {
   const braceShelfMat = materials.braceShelfMat || bodyMat;
 
   const getCornerShelfMat = (partId: string, isBraceShelf = false): unknown => {
-    const groupFallback = getCornerMat(
+    const groupMaterial = getCornerMat(
       CORNER_SHELF_GROUP_PART_ID,
       isBraceShelf ? braceShelfMat : defaultShelfMat
     );
-    return getCornerMat(partId, groupFallback);
+    return getCornerMat(partId, groupMaterial);
   };
 
   return {

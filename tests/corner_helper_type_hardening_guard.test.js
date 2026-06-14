@@ -18,6 +18,9 @@ test('[corner-helpers-type-hardening] normalization/material/cache helpers use r
   );
 
   assert.match(materials, /function readDoorSpecialValue\(value: unknown\): DoorSpecialValue/);
+  assert.match(materials, /function requireConfigSnapshot\(value: unknown\): ConfigStateLike/);
+  assert.doesNotMatch(materials, /from '\.\/store_access\.js'/);
+  assert.doesNotMatch(materials, /getCfg\(App\)/);
   assert.match(
     materials,
     /const scopedSpecial = readDoorSpecialValue\(readScopedMapVal\(doorSpecialMap, partId\)\);/
