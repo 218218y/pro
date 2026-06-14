@@ -764,6 +764,7 @@ export interface BuilderMaterialsServiceLike extends UnknownRecord {
 
 export interface BuilderHandlesApplyOptionsLike extends UnknownRecord {
   triggerRender?: boolean;
+  cfgSnapshot?: ConfigStateLike | UnknownRecord | null;
 }
 
 export interface BuilderHandlesServiceLike extends UnknownRecord {

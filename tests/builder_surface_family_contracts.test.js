@@ -852,13 +852,22 @@ test('[builder-surface-family] visuals/module seams stay consolidated behind can
   assert.match(carcassCornice, /export function buildCarcassCornice\(/);
 
   const handlesOwner = read('esm/native/builder/handles_apply.ts');
+  const handlesConfig = read('esm/native/builder/handles_config_snapshot.ts');
   const handlesShared = read('esm/native/builder/handles_apply_shared.ts');
   const handlesDoors = read('esm/native/builder/handles_apply_doors.ts');
   const handlesDrawers = read('esm/native/builder/handles_apply_drawers.ts');
+  const handlesPurge = read('esm/native/builder/handles_purge.ts');
 
   assert.match(handlesOwner, /handles_apply_shared\.js/);
   assert.match(handlesOwner, /handles_apply_doors\.js/);
   assert.match(handlesOwner, /handles_apply_drawers\.js/);
+  assert.match(handlesConfig, /export function captureHandlesConfigSnapshot\(/);
+  assert.match(handlesConfig, /export function createHandlesDoorRemovedReader\(/);
+  assert.match(handlesShared, /handles_config_snapshot\.js/);
+  assert.doesNotMatch(handlesShared, /readMapOrEmpty\(/);
+  assert.doesNotMatch(handlesShared, /getCfg\(/);
+  assert.match(handlesPurge, /handles_config_snapshot\.js/);
+  assert.doesNotMatch(handlesPurge, /readMapOrEmpty\(/);
   assert.doesNotMatch(handlesOwner, /const isDoorRemovedV7 = \(partId: unknown\): boolean =>/);
   assert.doesNotMatch(
     handlesOwner,

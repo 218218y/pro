@@ -1,8 +1,11 @@
 import { getModeId } from '../runtime/api.js';
-import { readMapOrEmpty } from '../runtime/maps_access.js';
 import { getScene, getWardrobeGroup } from '../runtime/render_access.js';
 import { getBuildStateMaybe, getMode, getState, getUi } from './store_access.js';
 import { appFromCtx, asNode, ensureHandlesSurface, getViewFlags, type NodeLike } from './handles_shared.js';
+import {
+  captureHandlesConfigSnapshot,
+  createHandlesDoorRemovedReader,
+} from './handles_config_snapshot.js';
 
 export function purgeHandlesForRemovedDoors(forceEnabled: boolean | unknown, ctx: unknown): void {
   const App = appFromCtx(ctx);
@@ -10,6 +13,7 @@ export function purgeHandlesForRemovedDoors(forceEnabled: boolean | unknown, ctx
 
   const __st = getBuildStateMaybe(App) || getState(App) || {};
   const __mode = (__st && __st.mode) || getMode(App) || { primary: 'none', opts: {} };
+  const handlesCfg = captureHandlesConfigSnapshot(App, ctx, __st);
   const __removeDoorModeId = getModeId(App, 'REMOVE_DOOR') || 'remove_door';
   const __isRemoveDoorMode = !!(__mode && __mode.primary === __removeDoorModeId);
   const __ui = (__st && __st.ui && typeof __st.ui === 'object' ? __st.ui : null) || getUi(App) || {};
@@ -23,41 +27,7 @@ export function purgeHandlesForRemovedDoors(forceEnabled: boolean | unknown, ctx
   const removeDoorsEnabled = typeof forceEnabled === 'boolean' ? forceEnabled : computedEnabled;
   if (!removeDoorsEnabled) return;
 
-  const m = readMapOrEmpty(App, 'removedDoorsMap');
-  if (!m) return;
-
-  const isDoorRemovedV7 = (partId: unknown): boolean => {
-    const raw = String(partId || '');
-    if (!raw) return false;
-
-    const canon = (id0: string): string => {
-      let id = String(id0 || '');
-      if (!id) return '';
-      if (!/(?:_(?:full|top|bot|mid))$/i.test(id)) {
-        if (
-          /^(?:lower_)?d\d+$/.test(id) ||
-          /^(?:lower_)?corner_door_\d+$/.test(id) ||
-          /^(?:lower_)?corner_pent_door_\d+$/.test(id)
-        ) {
-          id = id + '_full';
-        }
-      }
-      return id;
-    };
-
-    const isRemoved = (id0: string): boolean => {
-      const id = canon(id0);
-      if (!id) return false;
-      if (m[`removed_${id}`] === true) return true;
-      if (id.endsWith('_top') || id.endsWith('_mid') || id.endsWith('_bot')) {
-        const full = id.replace(/_(top|mid|bot)$/i, '_full');
-        return m[`removed_${full}`] === true;
-      }
-      return false;
-    };
-
-    return isRemoved(raw);
-  };
+  const isDoorRemovedV7 = createHandlesDoorRemovedReader(handlesCfg.removedDoorsMap);
 
   const roots: NodeLike[] = [];
   const wardrobeGroup = asNode(getWardrobeGroup(App));

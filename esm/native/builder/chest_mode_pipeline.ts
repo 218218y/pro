@@ -113,6 +113,7 @@ export function buildChestModeIfNeeded(params: BuildChestModeIfNeededParams | nu
       applyHandles: true,
       renderViewport: true,
       finalizeRegistry: true,
+      cfgSnapshot,
     });
   });
   return true;

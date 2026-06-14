@@ -18,7 +18,7 @@ export function applyHandles(ctx: unknown): void {
   applyDoorHandles(runtime);
   applyDrawerHandles(runtime);
 
-  if (runtime.removeDoorsEnabled) purgeHandlesForRemovedDoors(true, { App });
+  if (runtime.removeDoorsEnabled) purgeHandlesForRemovedDoors(true, { App, cfgSnapshot: runtime.cfgSnapshot });
   if (shouldTriggerHandlesRender(ctx)) {
     runPlatformRenderFollowThrough(App, { updateShadows: false });
   }

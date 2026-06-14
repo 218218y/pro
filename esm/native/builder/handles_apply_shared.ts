@@ -2,8 +2,7 @@ import { getModeId } from '../runtime/api.js';
 import { HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { getThreeMaybe } from '../runtime/three_access.js';
 import { getDoorsArray } from '../runtime/render_access.js';
-import { readMapOrEmpty, isSplitBottomEnabledInMap } from '../runtime/maps_access.js';
-import { getBuildStateMaybe, getCfg, getMode, getState, getUi } from './store_access.js';
+import { getBuildStateMaybe, getMode, getState, getUi } from './store_access.js';
 import { isEdgeHandleDefaultNone } from './edge_handle_default_none_runtime.js';
 import {
   readManualHandlePositionForPart,
@@ -28,10 +27,17 @@ import {
   handleColorPartKey,
   normalizeHandleFinishColor,
 } from '../features/handle_finish_shared.js';
+import {
+  captureHandlesConfigSnapshot,
+  createHandlesDoorRemovedReader,
+  isBottomSplitBotPartFromSnapshot,
+  type HandlesConfigSnapshot,
+} from './handles_config_snapshot.js';
 
 export type HandlesApplyRuntime = {
   App: AppContainer;
   THREE: ThreeLike | null;
+  cfgSnapshot: HandlesConfigSnapshot['cfg'];
   removeDoorsEnabled: boolean;
   isDoorRemovedV7: (partId: unknown) => boolean;
   syncDoorVisibilityForRemovedDoors: () => void;
@@ -42,56 +48,6 @@ export type HandlesApplyRuntime = {
   clampAbsYToGroup: (absY: number, centerY: number, height: number) => number;
   removeExistingHandleChildren: (group: NodeLike) => void;
 };
-
-function createDoorRemovedReader(App: AppContainer): (partId: unknown) => boolean {
-  return (partId: unknown): boolean => {
-    const raw = String(partId || '');
-    const removedMap = readMapOrEmpty(App, 'removedDoorsMap');
-    const m = asRecord<ValueRecord>(removedMap);
-    if (!m || !raw) return false;
-
-    const canon = (id0: string): string => {
-      let id = String(id0 || '');
-      if (!id) return '';
-      if (!/(?:_(?:full|top|bot|mid))$/i.test(id)) {
-        if (
-          /^(?:lower_)?d\d+$/.test(id) ||
-          /^(?:lower_)?corner_door_\d+$/.test(id) ||
-          /^(?:lower_)?corner_pent_door_\d+$/.test(id)
-        ) {
-          id = id + '_full';
-        }
-      }
-      return id;
-    };
-
-    const isRemoved = (id0: string): boolean => {
-      const id = canon(id0);
-      if (!id) return false;
-      if (!!m[`removed_${id}`]) return true;
-      if (id.endsWith('_top') || id.endsWith('_mid') || id.endsWith('_bot')) {
-        const full = id.replace(/_(top|mid|bot)$/i, '_full');
-        return !!m[`removed_${full}`];
-      }
-      return false;
-    };
-
-    return isRemoved(raw);
-  };
-}
-
-function isBottomSplitBotPart(App: AppContainer, id: unknown): boolean {
-  try {
-    const sid = id == null ? '' : String(id);
-    if (!sid || !sid.endsWith('_bot')) return false;
-    const baseId = sid.replace(/_bot$/, '');
-    if (!baseId) return false;
-    const bm = readMapOrEmpty(App, 'splitDoorsBottomMap');
-    return isSplitBottomEnabledInMap(bm, baseId);
-  } catch (_) {
-    return false;
-  }
-}
 
 function stripSuffix(sid: string): string {
   return sid.replace(/_(top|mid|bot|full)$/, '');
@@ -109,11 +65,11 @@ function readOverride(hm: ValueRecord | null | undefined, key: string): string |
   }
 }
 
-function createEdgeHandleVariantResolver(App: AppContainer): (id: unknown) => EdgeHandleVariant {
+function createEdgeHandleVariantResolver(handlesMap: ValueRecord): (id: unknown) => EdgeHandleVariant {
   return (id: unknown): EdgeHandleVariant => {
     const sid = id == null ? '' : String(id);
     const base = stripSuffix(sid);
-    const hm = readMapOrEmpty(App, 'handlesMap');
+    const hm = handlesMap;
 
     const partV =
       readOverride(hm, edgeHandleVariantPartKey(sid)) ??
@@ -127,11 +83,11 @@ function createEdgeHandleVariantResolver(App: AppContainer): (id: unknown) => Ed
   };
 }
 
-function createHandleColorResolver(App: AppContainer): (id: unknown) => string {
+function createHandleColorResolver(handlesMap: ValueRecord): (id: unknown) => string {
   return (id: unknown): string => {
     const sid = id == null ? '' : String(id);
     const base = stripSuffix(sid);
-    const hm = readMapOrEmpty(App, 'handlesMap');
+    const hm = handlesMap;
     const partV = readOverride(hm, handleColorPartKey(sid));
     const baseV = sid !== base ? readOverride(hm, handleColorPartKey(base)) : undefined;
     const globalV = readOverride(hm, HANDLE_COLOR_GLOBAL_KEY);
@@ -139,12 +95,14 @@ function createHandleColorResolver(App: AppContainer): (id: unknown) => string {
   };
 }
 
-function createManualHandlePositionResolver(App: AppContainer): (id: unknown) => ManualHandlePosition | null {
+function createManualHandlePositionResolver(
+  handlesMap: ValueRecord
+): (id: unknown) => ManualHandlePosition | null {
   return (id: unknown): ManualHandlePosition | null => {
     const sid = id == null ? '' : String(id);
     if (!sid) return null;
     const base = stripSuffix(sid);
-    return readManualHandlePositionForPart(readMapOrEmpty(App, 'handlesMap'), sid, base);
+    return readManualHandlePositionForPart(handlesMap, sid, base);
   };
 }
 
@@ -154,22 +112,23 @@ function isInternalDrawerDefaultNoHandleId(id: string): boolean {
 
 function createHandleTypeResolver(
   App: AppContainer,
+  cfgSnapshot: HandlesConfigSnapshot,
   getEdgeHandleVariant: (id: unknown) => EdgeHandleVariant
 ): (id: unknown, stackKey?: 'top' | 'bottom') => string {
   void getEdgeHandleVariant;
+  const cfg = cfgSnapshot.cfg;
+  const hm = cfgSnapshot.handlesMap;
+  const splitDoorsBottomMap = cfgSnapshot.splitDoorsBottomMap;
+  const __rawGht = asRecord<ValueRecord>(cfg)?.globalHandleType;
+  const globalHandleType =
+    __rawGht === 'standard' || __rawGht === 'edge' || __rawGht === 'none' ? __rawGht : 'standard';
+
   return (id: unknown, stackKey?: 'top' | 'bottom'): string => {
     const sid = id == null ? '' : String(id);
     const base = stripSuffix(sid);
     const sk: 'top' | 'bottom' = stackKey === 'bottom' ? 'bottom' : 'top';
 
-    const cfg = getCfg(App);
-    const hm = readMapOrEmpty(App, 'handlesMap');
-
-    const __rawGht = asRecord<ValueRecord>(cfg)?.globalHandleType;
-    const globalHandleType =
-      __rawGht === 'standard' || __rawGht === 'edge' || __rawGht === 'none' ? __rawGht : 'standard';
-
-    if (isBottomSplitBotPart(App, sid)) {
+    if (isBottomSplitBotPartFromSnapshot(splitDoorsBottomMap, sid)) {
       const ov = readOverride(hm, sid) ?? (stripSuffix(sid) !== sid ? readOverride(hm, base) : undefined);
       return ov !== undefined ? ov : 'none';
     }
@@ -257,6 +216,7 @@ export function createHandlesApplyRuntime(ctx: unknown): HandlesApplyRuntime {
 
   const __st = getBuildStateMaybe(App) || getState(App) || {};
   const __mode = (__st && __st.mode) || getMode(App) || { primary: 'none', opts: {} };
+  const handlesCfg = captureHandlesConfigSnapshot(App, ctx, __st);
   const __removeDoorModeId = getModeId(App, 'REMOVE_DOOR') || 'remove_door';
   const __isRemoveDoorMode = !!(__mode && __mode.primary === __removeDoorModeId);
   const __ui = (__st && __st.ui && typeof __st.ui === 'object' ? __st.ui : null) || getUi(App) || {};
@@ -268,17 +228,18 @@ export function createHandlesApplyRuntime(ctx: unknown): HandlesApplyRuntime {
     !!(__stateView && (__stateView.removeDoorsEnabled || __stateView.removeDoors)) ||
     __isRemoveDoorMode;
 
-  const isDoorRemovedV7 = createDoorRemovedReader(App);
-  const getEdgeHandleVariant = createEdgeHandleVariantResolver(App);
-  const getHandleType = createHandleTypeResolver(App, getEdgeHandleVariant);
-  const getHandleColor = createHandleColorResolver(App);
-  const getManualHandlePosition = createManualHandlePositionResolver(App);
+  const isDoorRemovedV7 = createHandlesDoorRemovedReader(handlesCfg.removedDoorsMap);
+  const getEdgeHandleVariant = createEdgeHandleVariantResolver(handlesCfg.handlesMap);
+  const getHandleType = createHandleTypeResolver(App, handlesCfg, getEdgeHandleVariant);
+  const getHandleColor = createHandleColorResolver(handlesCfg.handlesMap);
+  const getManualHandlePosition = createManualHandlePositionResolver(handlesCfg.handlesMap);
   const syncDoorVisibility = (): void =>
     syncDoorVisibilityForRemovedDoors(App, removeDoorsEnabled, isDoorRemovedV7);
 
   return {
     App,
     THREE,
+    cfgSnapshot: handlesCfg.cfg,
     removeDoorsEnabled,
     isDoorRemovedV7,
     syncDoorVisibilityForRemovedDoors: syncDoorVisibility,

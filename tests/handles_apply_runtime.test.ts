@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { applyHandles } from '../esm/native/builder/handles_apply.ts';
+import { createHandlesApplyRuntime } from '../esm/native/builder/handles_apply_shared.ts';
+import { purgeHandlesForRemovedDoors } from '../esm/native/builder/handles_purge.ts';
 
 function createApp() {
   const calls: unknown[] = [];
@@ -193,11 +195,23 @@ test('handles apply uses stored manual positions when placing external drawer ha
     getMap(name: string) {
       if (name !== 'handlesMap') return {};
       return {
-        d9_draw_0: 'standard',
-        '__wp_manual_handle_position:d9_draw_0': '{"xRatio":0.75,"yRatio":0.7}',
+        d9_draw_0: 'none',
+        '__wp_manual_handle_position:d9_draw_0': '{"xRatio":0.1,"yRatio":0.1}',
       };
     },
   };
+  App.store.getState = () => ({
+    ui: { view: {} },
+    config: {
+      handlesMap: {
+        d9_draw_0: 'standard',
+        '__wp_manual_handle_position:d9_draw_0': '{"xRatio":0.75,"yRatio":0.7}',
+      },
+    },
+    runtime: {},
+    mode: { primary: 'none', opts: {} },
+    meta: {},
+  });
 
   applyHandles({ App, triggerRender: false });
 
@@ -206,4 +220,55 @@ test('handles apply uses stored manual positions when placing external drawer ha
   assert.ok(handleGroup);
   assert.ok(Math.abs(handleGroup.position.x - 0.3) < 1e-12);
   assert.ok(Math.abs(handleGroup.position.y - 0.04) < 1e-12);
+});
+
+test('handles apply runtime captures one canonical config snapshot for handle maps', () => {
+  const { App } = createApp();
+  const handlesMap: Record<string, unknown> = { d1: 'standard' };
+  App.maps = {
+    getMap(name: string) {
+      return name === 'handlesMap' ? { d1: 'none' } : {};
+    },
+  };
+  App.store.getState = () => ({
+    ui: { view: {} },
+    config: {
+      globalHandleType: 'none',
+      handlesMap,
+    },
+    runtime: {},
+    mode: { primary: 'none', opts: {} },
+    meta: {},
+  });
+
+  const runtime = createHandlesApplyRuntime({ App });
+  handlesMap.d1 = 'none';
+
+  assert.equal(runtime.getHandleType('d1'), 'standard');
+});
+
+test('handles purge reads removed-door state from the provided cfg snapshot', () => {
+  const { App } = createApp();
+  const wardrobeGroup = new FakeGroup3D();
+  const door = new FakeGroup3D();
+  door.userData.partId = 'd4_full';
+  const handle = new FakeGroup3D();
+  handle.name = 'handle_group_v7';
+  door.add(handle);
+  wardrobeGroup.add(door);
+  App.render.wardrobeGroup = wardrobeGroup;
+  App.store.getState = () => ({
+    ui: { view: {} },
+    config: { removedDoorsMap: {} },
+    runtime: {},
+    mode: { primary: 'none', opts: {} },
+    meta: {},
+  });
+
+  purgeHandlesForRemovedDoors(true, {
+    App,
+    cfgSnapshot: { removedDoorsMap: { removed_d4_full: true } },
+  });
+
+  assert.equal(door.children.includes(handle), false);
 });

@@ -12,6 +12,7 @@ type BuildWardrobeRuntimeOptions = {
   finalizeBuild?: (ctx: BuildContextLike) => void;
   finalizeBuildBestEffort?: (args: {
     App: unknown;
+    cfgSnapshot?: unknown;
     pruneCachesSafe?: ((scene: unknown) => void) | null;
     rebuildDrawerMeta?: (() => void) | null;
   }) => void;

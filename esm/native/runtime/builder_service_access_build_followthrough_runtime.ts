@@ -9,6 +9,7 @@ import {
   shouldTriggerPlatformRender,
 } from './builder_service_access_build_shared.js';
 import type {
+  ApplyBuilderHandlesOpts,
   BuilderChestModeFollowThroughOpts,
   BuilderChestModeFollowThroughResult,
   BuilderPostBuildFollowThroughOpts,
@@ -31,6 +32,16 @@ function hasDirtyTrackedMirrorSurfaces(App: unknown): boolean {
   }
 }
 
+function createFollowThroughHandleApplyOpts(
+  opts?: BuilderPostBuildFollowThroughOpts | BuilderChestModeFollowThroughOpts | null
+): ApplyBuilderHandlesOpts {
+  const out: ApplyBuilderHandlesOpts = { triggerRender: false };
+  if (opts && Object.prototype.hasOwnProperty.call(opts, 'cfgSnapshot')) {
+    out.cfgSnapshot = opts.cfgSnapshot;
+  }
+  return out;
+}
+
 export function runBuilderPostBuildFollowThroughRuntime(
   App: unknown,
   opts?: BuilderPostBuildFollowThroughOpts | null
@@ -39,7 +50,7 @@ export function runBuilderPostBuildFollowThroughRuntime(
   const rebuiltDrawerMeta =
     typeof opts?.rebuildDrawerMeta === 'function' ? (opts.rebuildDrawerMeta(), true) : false;
   const appliedHandles = shouldApplyBuilderHandles(opts)
-    ? applyBuilderHandles(App, { triggerRender: false })
+    ? applyBuilderHandles(App, createFollowThroughHandleApplyOpts(opts))
     : false;
 
   let prunedCaches = false;
@@ -74,7 +85,7 @@ export function runBuilderChestModeFollowThroughRuntime(
   opts?: BuilderChestModeFollowThroughOpts | null
 ): BuilderChestModeFollowThroughResult {
   const appliedHandles = shouldApplyBuilderHandles(opts)
-    ? applyBuilderHandles(App, { triggerRender: false })
+    ? applyBuilderHandles(App, createFollowThroughHandleApplyOpts(opts))
     : false;
   const viewport =
     opts?.renderViewport === false

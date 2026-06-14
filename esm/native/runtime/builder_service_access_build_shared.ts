@@ -1,9 +1,10 @@
-import type { UnknownRecord } from '../../../types';
+import type { ConfigStateLike, UnknownRecord } from '../../../types';
 import { asRecord } from './record.js';
 import type { BuildRequestMeta } from './builder_service_access_shared.js';
 
 export type ApplyBuilderHandlesOpts = {
   triggerRender?: boolean;
+  cfgSnapshot?: ConfigStateLike | UnknownRecord | null;
 };
 
 export type RefreshBuilderHandlesOpts = {
@@ -54,6 +55,7 @@ export type BuilderPostBuildFollowThroughOpts = {
   finalizeRegistry?: boolean;
   clearBuildUi?: boolean;
   applyHandles?: boolean;
+  cfgSnapshot?: ConfigStateLike | UnknownRecord | null;
   rebuildDrawerMeta?: (() => void) | null;
   pruneCachesSafe?: ((scene: unknown) => void) | null;
   triggerPlatformRender?: boolean;
@@ -79,6 +81,7 @@ export type BuilderChestModeFollowThroughOpts = {
   finalizeRegistry?: boolean;
   applyHandles?: boolean;
   renderViewport?: boolean;
+  cfgSnapshot?: ConfigStateLike | UnknownRecord | null;
 };
 
 export type BuilderChestModeFollowThroughResult = BuilderPostBuildFollowThroughResult &

@@ -28,6 +28,7 @@ export type HandlesCacheLike = ValueRecord & {
 
 export type HandlesApplyOptions = {
   triggerRender?: boolean;
+  cfgSnapshot?: ConfigStateLike | null;
 };
 
 export type HandlesSurfaceLike = ValueRecord & {
