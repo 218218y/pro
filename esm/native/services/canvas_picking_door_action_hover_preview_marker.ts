@@ -10,10 +10,7 @@ import type {
   TransformNodeLike,
 } from './canvas_picking_door_action_hover_preview_contracts.js';
 import type { UnknownRecord } from '../../../types';
-import {
-  mapDoorTrimSurfaceLogicalToLocalPoint,
-  type DoorTrimSurfacePlane,
-} from '../features/door_trim_surface_targets.js';
+import { mapDoorTrimSurfaceLogicalToLocalPoint, type DoorTrimSurfacePlane } from '../features/door_trim.js';
 
 function resolveMarkerLocalZ(groupRec: TransformNodeLike | null, fallbackZ: number): number {
   const userData = __asObject<UnknownRecord>(groupRec?.userData);

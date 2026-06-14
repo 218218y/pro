@@ -1,7 +1,7 @@
 import type { AppContainer, DoorVisualEntryLike, UnknownRecord } from '../../../types';
 import { getDoorsArray, getDrawersArray } from '../runtime/render_access.js';
 import { isDrawerBoxPartId } from '../features/drawer_box_identity.js';
-import { isCabinetBodyDoorTrimSurfacePartId } from '../features/door_trim_surface_targets.js';
+import { isCabinetBodyDoorTrimSurfacePartId } from '../features/door_trim.js';
 import { asRecord } from '../runtime/record.js';
 
 type DoorGroupLike =

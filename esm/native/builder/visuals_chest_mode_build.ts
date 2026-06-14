@@ -41,7 +41,7 @@ import {
   buildDoorTrimSurfaceUserData,
   isCabinetBodyDoorTrimSurfacePartId,
   resolveCabinetBodyDoorTrimSurfaceInfo,
-} from '../features/door_trim_surface_targets.js';
+} from '../features/door_trim.js';
 import { applyFrontRevealFrames } from './post_build_front_reveal_frames.js';
 
 import type { BuildContextLike } from '../../../types/index.js';

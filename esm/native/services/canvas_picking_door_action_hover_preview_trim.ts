@@ -29,7 +29,7 @@ import {
   readDoorTrimSurfaceFaceCoordFromUserData,
   readDoorTrimSurfaceFaceSignFromUserData,
   readDoorTrimSurfacePlaneFromUserData,
-} from '../features/door_trim_surface_targets.js';
+} from '../features/door_trim.js';
 
 export function tryHandleDoorTrimHoverPreview(args: DoorTrimHoverPreviewArgs): boolean {
   const {

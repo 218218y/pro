@@ -5,7 +5,7 @@ import {
   buildDoorTrimSurfaceUserData,
   isCabinetBodyDoorTrimSurfacePartId,
   resolveCabinetBodyDoorTrimSurfaceInfo,
-} from '../features/door_trim_surface_targets.js';
+} from '../features/door_trim.js';
 import { readRootState } from '../runtime/root_state_access.js';
 import {
   __asFinite,

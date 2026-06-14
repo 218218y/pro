@@ -19,7 +19,7 @@ import {
   resolveDoorTrimTargetFromHitObject,
 } from './canvas_picking_door_shared.js';
 import { asRecord, readDoorTrimConfigMap, readDoorTrimModeOpts } from './canvas_picking_door_edit_shared.js';
-import { mapDoorTrimSurfaceLocalPoint } from '../features/door_trim_surface_targets.js';
+import { mapDoorTrimSurfaceLocalPoint } from '../features/door_trim.js';
 import { createCanvasPickingDoorAuthoringStructuralMeta } from './canvas_picking_door_authoring_meta.js';
 import { __wp_historyBatch, __wp_map } from './canvas_picking_core_helpers.js';
 

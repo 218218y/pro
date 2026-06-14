@@ -7,7 +7,7 @@ import {
 import { DOOR_TRIM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { ensureDoorTrimMaterialCache } from '../runtime/door_trim_visuals_access.js';
 import { resolveMetalFinishPalette } from '../features/metal_finish_palette.js';
-import type { DoorTrimSurfacePlane } from '../features/door_trim_surface_targets.js';
+import type { DoorTrimSurfacePlane } from '../features/door_trim.js';
 
 type DoorTrimColorPalette = {
   hex: number;

@@ -1,6 +1,6 @@
 import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { SketchPlacementPreviewContext } from './render_preview_sketch_pipeline_shared.js';
-import type { DoorTrimSurfacePlane } from '../features/door_trim_surface_targets.js';
+import type { DoorTrimSurfacePlane } from '../features/door_trim.js';
 
 function readSurfacePlane(value: unknown): DoorTrimSurfacePlane {
   return value === 'yz' || value === 'xz' ? value : 'xy';
