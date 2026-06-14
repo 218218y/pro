@@ -10,10 +10,11 @@
 // - If 'mirror' is selected, RenderOps.getMirrorMaterial MUST exist (fail-fast).
 
 import type { AppContainer, RenderOpsLike, ThreeLike, UnknownRecord } from '../../../types';
+import type { IndividualColorsMap } from '../../../types/maps';
 import { getBuilderRenderOps } from '../runtime/builder_service_access.js';
 import { getPlatformReportError } from '../runtime/platform_access.js';
 import { isDrawerBoxPartId } from '../features/drawer_box_identity.js';
-import { readDoorVisualMapEntry } from '../features/door_visual_map_lookup.js';
+import { readPartColorEntry } from './material_color_lookup.js';
 
 type SavedColorItemLike = UnknownRecord & {
   id?: string;
@@ -36,12 +37,6 @@ type MaterialResolverArgs = {
   getMaterial: MaterialFactory;
   globalFrontMat: unknown;
 };
-
-const MAIN_WAVE_CORNICE_PARTS = new Set([
-  'cornice_wave_front',
-  'cornice_wave_side_left',
-  'cornice_wave_side_right',
-]);
 
 function _isRecord(x: unknown): x is UnknownRecord {
   return !!x && typeof x === 'object' && !Array.isArray(x);
@@ -88,16 +83,13 @@ export function makeMaterialResolver(args: MaterialResolverArgs): {
 
   function getPartColorValue(partId: string): string | null | undefined {
     if (!cfg.isMultiColorMode) return null;
-    const colors = _asObj(cfg.individualColors) || {};
-    const colorEntry = readDoorVisualMapEntry(colors, partId);
-    let value = colorEntry ? colorEntry.value : undefined;
-    if (
-      typeof value === 'undefined' &&
-      MAIN_WAVE_CORNICE_PARTS.has(partId) &&
-      Object.prototype.hasOwnProperty.call(colors, 'cornice_color')
-    ) {
-      value = colors.cornice_color;
-    }
+    const colors = _asObj(cfg.individualColors) as IndividualColorsMap | null;
+    const value = readPartColorEntry({
+      individualColors: colors,
+      isMulti: !!cfg.isMultiColorMode,
+      partId,
+      stackKey: null,
+    });
     if (value === null) return null;
     if (typeof value === 'undefined') return undefined;
     return String(value);

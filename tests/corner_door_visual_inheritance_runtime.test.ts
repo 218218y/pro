@@ -6,7 +6,7 @@ import {
   createCornerGrooveReader,
 } from '../esm/native/builder/corner_config_readers.ts';
 import { readMirrorLayoutListForPart } from '../esm/native/features/mirror_layout.ts';
-import { readPartColorEntry } from '../esm/native/builder/materials_apply_color_policy.ts';
+import { readPartColorEntry } from '../esm/native/builder/material_color_lookup.ts';
 
 test('corner door visual readers inherit full-door state after corner doors are split', () => {
   const cfg = {

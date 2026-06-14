@@ -106,6 +106,15 @@ const buildWardrobe = readSource('../esm/native/builder/build_wardrobe_flow.ts',
 const builderAccess = readSource('../esm/native/runtime/builder_service_access.ts', import.meta.url);
 const stackPipeline = readSource('../esm/native/builder/build_stack_split_pipeline.ts', import.meta.url);
 const materialsApplyOwner = readSource('../esm/native/builder/materials_apply.ts', import.meta.url);
+const materialColorLookupOwner = readSource(
+  '../esm/native/builder/material_color_lookup.ts',
+  import.meta.url
+);
+const materialsApplyColorPolicy = readSource(
+  '../esm/native/builder/materials_apply_color_policy.ts',
+  import.meta.url
+);
+const materialResolverOwner = readSource('../esm/native/builder/material_resolver.ts', import.meta.url);
 const handlesApplyOwner = readSource('../esm/native/builder/handles_apply.ts', import.meta.url);
 const roomInternalSharedOwner = readSource('../esm/native/builder/room_internal_shared.ts', import.meta.url);
 const roomSharedStateOwner = readSource('../esm/native/builder/room_shared_state.ts', import.meta.url);
@@ -283,6 +292,45 @@ test('[builder-surface-family] orchestration owners stay named-only and request-
     materialsApplyOwner,
     [/applyBuilderHandles\(/, /triggerRenderViaPlatform\(/],
     'materials apply canonical handle/render follow-through'
+  );
+  assertMatchesAll(
+    assert,
+    materialsApplyColorPolicy,
+    [
+      /from '\.\/material_color_lookup\.js';/,
+      /const cfg = getMaterialsCfg\(App\);/,
+      /createPartMaterialResolver\(\{[\s\S]*cfg,[\s\S]*getMaterial/,
+    ],
+    'materials apply color policy canonical config source'
+  );
+  assertLacksAll(
+    assert,
+    materialsApplyColorPolicy,
+    [/readMap\(/, /mapFromRuntime/, /effectiveCfg/],
+    'materials apply color policy canonical config source'
+  );
+  assertMatchesAll(
+    assert,
+    materialColorLookupOwner,
+    [
+      /export function readPartColorEntry\(args: \{/,
+      /scopeCornerPartKeyForStack\(partId, stackKey\)/,
+      /readDoorVisualMapEntry\(individualColors, partId\)/,
+      /resolveShelfGroupPartId\(partId\)/,
+    ],
+    'material color lookup shared owner'
+  );
+  assertMatchesAll(
+    assert,
+    materialResolverOwner,
+    [/from '\.\/material_color_lookup\.js';/, /readPartColorEntry\(\{/],
+    'full build material resolver shared color lookup'
+  );
+  assertLacksAll(
+    assert,
+    materialResolverOwner,
+    [/readDoorVisualMapEntry/, /MAIN_WAVE_CORNICE_PARTS/],
+    'full build material resolver shared color lookup'
   );
 
   assertMatchesAll(

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { applyMaterials } from '../esm/native/builder/materials_apply.ts';
 import { makeDrawerBoxPartId } from '../esm/native/features/drawer_box_identity.ts';
-import { readPartColorEntry } from '../esm/native/builder/materials_apply_color_policy.ts';
+import { readPartColorEntry } from '../esm/native/builder/material_color_lookup.ts';
 function createApp(triggerRenderAvailable = true) {
   const calls: unknown[] = [];
   const appliedMaterial = { id: 'front:white' };
@@ -251,5 +251,61 @@ test('materials apply runtime keeps inherited full-door paint on split segment m
   assert.equal(
     calls.some(call => Array.isArray(call) && call[0] === 'getMaterial' && call[1] === 'oak'),
     true
+  );
+});
+
+test('materials apply runtime reads individual colors from canonical config instead of legacy maps', () => {
+  const calls: unknown[] = [];
+  const canonicalMat = { id: 'front:canonical' };
+  const legacyMat = { id: 'front:legacy' };
+  const globalMat = { id: 'front:white' };
+  const targetMesh = {
+    isMesh: true,
+    userData: { partId: 'front_panel' },
+    material: { id: 'old' },
+    children: [],
+  };
+  const App: any = {
+    services: {
+      builder: {
+        materials: {
+          getMaterial(color: string) {
+            calls.push(['getMaterial', color]);
+            if (color === '#123456') return canonicalMat;
+            if (color === '#654321') return legacyMat;
+            return globalMat;
+          },
+        },
+        handles: { applyHandles() {} },
+      },
+      platform: { triggerRender() {} },
+    },
+    maps: {
+      getMap(name: string) {
+        return name === 'individualColors' ? { front_panel: '#654321' } : {};
+      },
+    },
+    store: {
+      getState() {
+        return {
+          ui: { colorChoice: '#ffffff', customColor: '#ffffff', raw: {} },
+          config: {
+            isMultiColorMode: true,
+            individualColors: { front_panel: '#123456' },
+          },
+          runtime: {},
+          mode: {},
+          meta: {},
+        };
+      },
+    },
+    render: { wardrobeGroup: { children: [targetMesh] } },
+  };
+
+  assert.equal(applyMaterials(App), true);
+  assert.equal(targetMesh.material, canonicalMat);
+  assert.equal(
+    calls.some(call => Array.isArray(call) && call[0] === 'getMaterial' && call[1] === '#654321'),
+    false
   );
 });

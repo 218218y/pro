@@ -57,6 +57,7 @@ const genericPaintHoverTarget = readFileSync(
 );
 const materialsApply = [
   readFileSync('esm/native/builder/materials_apply.ts', 'utf8'),
+  readFileSync('esm/native/builder/material_color_lookup.ts', 'utf8'),
   readFileSync('esm/native/builder/materials_apply_color_policy.ts', 'utf8'),
   readFileSync('esm/native/builder/materials_apply_traversal.ts', 'utf8'),
 ].join('\n');

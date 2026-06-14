@@ -2,18 +2,18 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-const colorPolicy = readFileSync('esm/native/builder/materials_apply_color_policy.ts', 'utf8');
+const colorLookup = readFileSync('esm/native/builder/material_color_lookup.ts', 'utf8');
 const traversal = readFileSync('esm/native/builder/materials_apply_traversal.ts', 'utf8');
 
 test('corner no-build paint refresh is stack-aware for bottom stack materials', () => {
   assert.match(
-    colorPolicy,
+    colorLookup,
     /export function scopeCornerPartKeyForStack\(partId: string, stackKey: PartStackKey\): string \{/
   );
-  assert.match(colorPolicy, /export function readPartColorEntry\(args: \{/);
-  assert.match(colorPolicy, /const scopedPartId = scopeCornerPartKeyForStack\(partId, stackKey\);/);
+  assert.match(colorLookup, /export function readPartColorEntry\(args: \{/);
+  assert.match(colorLookup, /const scopedPartId = scopeCornerPartKeyForStack\(partId, stackKey\);/);
   assert.match(
-    colorPolicy,
+    colorLookup,
     /if \(scopedPartId !== partId\) \{[\s\S]*Object\.prototype\.hasOwnProperty\.call\(individualColors, scopedPartId\)[\s\S]*return undefined;[\s\S]*\}/
   );
 });

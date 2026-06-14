@@ -12,10 +12,9 @@ import {
   isShelfBoardPartId,
   resolveShelfGroupPartId,
 } from '../esm/native/features/shelf_part_identity.ts';
-import {
-  createPartMaterialResolver,
-  readPartColorEntry,
-} from '../esm/native/builder/materials_apply_color_policy.ts';
+import { createPartMaterialResolver } from '../esm/native/builder/materials_apply_color_policy.ts';
+import { readPartColorEntry } from '../esm/native/builder/material_color_lookup.ts';
+import { makeMaterialResolver } from '../esm/native/builder/material_resolver.ts';
 import { resolvePaintTargetKeys } from '../esm/native/services/canvas_picking_paint_targets.ts';
 import { resolvePaintPreviewGroupBox } from '../esm/native/services/canvas_picking_generic_paint_hover_preview.ts';
 import { createCornerWingMaterials } from '../esm/native/builder/corner_materials.ts';
@@ -306,6 +305,41 @@ test('brace-only front color mode keeps regular shelves white while brace shelve
     'front:#202020:flat'
   );
   assert.ok(requestedMaterials.includes('body:#ffffff:flat'));
+});
+
+test('full build material resolver uses the shared shelf and cornice color lookup', () => {
+  const requestedMaterials: string[] = [];
+  const moduleShelfPartId = createModuleShelfPartId('1', 2);
+  const cornerShelfPartId = createCornerShelfPartId('corner-1', 3);
+  const resolver = makeMaterialResolver({
+    App: {} as never,
+    THREE: {} as never,
+    cfg: {
+      isMultiColorMode: true,
+      individualColors: {
+        [SHELF_GROUP_PART_ID]: '#202020',
+        [CORNER_SHELF_GROUP_PART_ID]: '#303030',
+        corner_cornice: '#404040',
+        lower_corner_cornice: '#505050',
+      },
+    },
+    getMaterial(color, kind) {
+      const material = `${kind}:${String(color)}`;
+      requestedMaterials.push(material);
+      return material;
+    },
+    globalFrontMat: 'front:main',
+  });
+
+  assert.equal(resolver.getPartColorValue(moduleShelfPartId), '#202020');
+  assert.equal(resolver.getPartMaterial(moduleShelfPartId), 'front:#202020');
+  assert.equal(resolver.getPartColorValue(cornerShelfPartId), '#303030');
+  assert.equal(resolver.getPartMaterial(cornerShelfPartId), 'front:#303030');
+  assert.equal(resolver.getPartColorValue('corner_cornice_side_left'), '#404040');
+  assert.equal(resolver.getPartMaterial('corner_cornice_side_left'), 'front:#404040');
+  assert.equal(resolver.getPartColorValue('lower_corner_cornice_front'), '#505050');
+  assert.equal(resolver.getPartMaterial('lower_corner_cornice_front'), 'front:#505050');
+  assert.deepEqual(requestedMaterials, ['front:#202020', 'front:#303030', 'front:#404040', 'front:#505050']);
 });
 
 test('corner wing shelf material policy keeps regular shelves on the shelf default while brace shelves inherit the cabinet color', () => {
