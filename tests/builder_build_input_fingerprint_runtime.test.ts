@@ -166,10 +166,11 @@ test('builder build input fingerprint runtime: structural ui choices participate
   );
 });
 
-test('builder build input fingerprint runtime: config maps and sketch custom data participate in the fingerprint', () => {
+test('builder build input fingerprint runtime: build-visible config maps and sketch custom data participate in the fingerprint', () => {
   const readSignature = (next: any) => next?.build?.signature ?? null;
   const baseState = {
     build: { signature: [2, 2] },
+    ui: { groovesEnabled: true, removeDoorsEnabled: true },
     config: {
       color: '#ffffff',
       individualColors: { body: '#ffffff' },
@@ -214,6 +215,67 @@ test('builder build input fingerprint runtime: config maps and sketch custom dat
   ]) {
     assert.notEqual(baseFingerprint, readBuildInputFingerprintFromState(nextState, readSignature));
   }
+});
+
+test('builder build input fingerprint runtime: disabled door authoring maps do not participate in semantic fingerprint', () => {
+  const readSignature = (next: any) => next?.build?.signature ?? null;
+  const baseState = {
+    build: { signature: [2, 2] },
+    ui: {
+      groovesEnabled: false,
+      splitDoors: false,
+      removeDoorsEnabled: false,
+      hingeDirection: false,
+    },
+    config: {
+      groovesMap: { groove_d1_full: true },
+      grooveLinesCountMap: { d1_full: 8 },
+      splitDoorsMap: { split_d1: true, splitpos_d1: [0.5] },
+      splitDoorsBottomMap: { splitb_d1: true },
+      removedDoorsMap: { removed_d2_full: true },
+      roundedFrameSideShelvesMap: { body_left: true },
+      hingeMap: { door_hinge_1: 'right' },
+    },
+  };
+
+  const disabledChangedState = {
+    ...baseState,
+    config: {
+      ...baseState.config,
+      groovesMap: { groove_d1_full: false },
+      grooveLinesCountMap: { d1_full: 12 },
+      splitDoorsMap: { split_d1: false, splitpos_d1: [0.25] },
+      splitDoorsBottomMap: { splitb_d1: false },
+      removedDoorsMap: { removed_d2_full: false },
+      roundedFrameSideShelvesMap: { body_left: false },
+      hingeMap: { door_hinge_1: 'left' },
+    },
+  };
+
+  const enabledState = {
+    ...baseState,
+    ui: {
+      groovesEnabled: true,
+      splitDoors: true,
+      removeDoorsEnabled: true,
+      hingeDirection: true,
+    },
+  };
+  const removeModeState = { ...baseState, mode: { primary: 'remove_door' } };
+  const removeModeChangedState = { ...disabledChangedState, mode: { primary: 'remove_door' } };
+
+  assert.equal(
+    readBuildInputFingerprintFromState(baseState, readSignature),
+    readBuildInputFingerprintFromState(disabledChangedState, readSignature)
+  );
+  assert.notEqual(
+    readBuildInputFingerprintFromState(baseState, readSignature),
+    readBuildInputFingerprintFromState(enabledState, readSignature)
+  );
+  assert.notEqual(
+    readBuildInputFingerprintFromState(removeModeState, readSignature),
+    readBuildInputFingerprintFromState(removeModeChangedState, readSignature)
+  );
 });
 
 test('builder build input fingerprint runtime: mode and build-affecting runtime flags participate in the fingerprint', () => {

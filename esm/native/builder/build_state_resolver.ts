@@ -14,6 +14,7 @@ import type {
   BuildStateLike,
   BuildStateResolvedLike,
   ConfigStateLike,
+  ModeStateLike,
   RuntimeStateLike,
   UiStateLike,
 } from '../../../types';
@@ -26,6 +27,7 @@ import {
 } from '../runtime/maps_access.js';
 import { asRecord } from '../runtime/record.js';
 import { captureConfigSnapshotMaybe, getBuildStateMaybe } from './store_access.js';
+import { applyBuildVisibleConfigMapGates } from './build_visible_config_gates.js';
 import { getDoorEditHoldActive } from '../runtime/doors_access.js';
 import { readRuntimeScalarOrDefault } from '../runtime/runtime_selectors.js';
 import { reportError } from '../runtime/errors.js';
@@ -44,6 +46,14 @@ function isRuntimeState(value: unknown): value is RuntimeStateLike {
 
 function readRuntimeState(value: unknown): RuntimeStateLike | null {
   return isRuntimeState(value) ? value : null;
+}
+
+function isModeState(value: unknown): value is ModeStateLike {
+  return !!asRecord(value);
+}
+
+function readModeState(value: unknown): ModeStateLike | null {
+  return isModeState(value) ? value : null;
 }
 
 function isConfigState(value: unknown): value is ConfigStateLike {
@@ -94,22 +104,11 @@ function _canonicalizeBuilderConfigLists(cfg: ConfigStateLike, uiSnapshot: UiSta
   });
 }
 
-function readBuildUiToggle(value: unknown): boolean {
-  return value === true || value === 1 || value === '1' || value === 'true';
-}
-
-function _applyBuildVisibleUiGates(cfg: ConfigStateLike, uiSnapshot: UiStateLike): ConfigStateLike {
-  if (!readBuildUiToggle(uiSnapshot.hingeDirection)) {
-    cfg.hingeMap = {};
-  }
-
-  return cfg;
-}
-
 function _captureAndNormalizeConfigSnapshot(
   App: AppContainer,
   cfgMaybe: unknown,
-  uiSnapshot: UiStateLike
+  uiSnapshot: UiStateLike,
+  modeSnapshot: ModeStateLike | null
 ): ConfigStateLike {
   // Start from the candidate override if provided; otherwise use an empty container.
   // (We intentionally keep this permissive - builder consumers validate required fields later.)
@@ -128,9 +127,10 @@ function _captureAndNormalizeConfigSnapshot(
     cfg.__capturedAt = Date.now();
   }
 
-  return _applyBuildVisibleUiGates(
+  return applyBuildVisibleConfigMapGates(
     _canonicalizeBuilderConfigLists(_normalizeCfgContainers(cfg), uiSnapshot),
-    uiSnapshot
+    uiSnapshot,
+    modeSnapshot
   );
 }
 
@@ -142,6 +142,11 @@ function resolveUiSlice(state: BuildStateLike | null | undefined): UiStateLike {
 function resolveRuntimeSlice(state: BuildStateLike | null | undefined): RuntimeStateLike {
   const rec = asRecord(state);
   return readRuntimeState(rec && rec.runtime) || {};
+}
+
+function resolveModeSlice(state: BuildStateLike | null | undefined): ModeStateLike {
+  const rec = asRecord(state);
+  return readModeState(rec && rec.mode) || {};
 }
 
 export function resolveBuildStateOrThrow(args: {
@@ -172,10 +177,11 @@ export function resolveBuildStateOrThrow(args: {
 
   const ui = resolveUiSlice(state);
   const runtime = resolveRuntimeSlice(state);
+  const mode = resolveModeSlice(state);
 
   const globalClickMode = readRuntimeScalarOrDefault(runtime, 'globalClickMode', true);
   const hadEditHold = !globalClickMode && getDoorEditHoldActive(App);
-  const cfgSnapshot = _captureAndNormalizeConfigSnapshot(App, state && state.config, ui);
+  const cfgSnapshot = _captureAndNormalizeConfigSnapshot(App, state && state.config, ui, mode);
 
   return { state, ui, runtime, globalClickMode, hadEditHold, cfgSnapshot };
 }

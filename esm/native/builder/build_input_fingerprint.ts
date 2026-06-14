@@ -3,13 +3,14 @@
 // This module owns the semantic build-input identity used by scheduler and
 // build-runner dedupe. `build.signature` remains the module/door shape only.
 
-import type { BuildStateLike, UnknownRecord } from '../../../types/index.js';
+import type { BuildStateLike, ConfigStateLike, UiStateLike, UnknownRecord } from '../../../types/index.js';
 
 import {
   DOOR_MOUNT_THICKNESS_CONFIG_KEYS,
   resolveDoorMountThicknessesFromConfig,
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { asRecord } from '../runtime/record.js';
+import { applyBuildVisibleConfigMapGates } from './build_visible_config_gates.js';
 
 export type BuildInputFingerprintReader = (state: unknown) => unknown;
 
@@ -110,6 +111,12 @@ function readBuildInputFingerprintConfigParts(state: UnknownRecord): UnknownReco
   if (!cfg) return null;
 
   const out = readBuildInputFingerprintSnapshot(cfg, BUILD_INPUT_FINGERPRINT_CONFIG_OMIT_KEYS) || {};
+  applyBuildVisibleConfigMapGates(
+    out as ConfigStateLike,
+    (readRecord(state.ui) || {}) as UiStateLike,
+    readRecord(state.mode)
+  );
+
   if (hasAnyPresentKey(cfg, BUILD_INPUT_FINGERPRINT_DOOR_MOUNT_KEYS)) {
     const thickness = resolveDoorMountThicknessesFromConfig(cfg);
     out.doorMountMode = thickness.mode;

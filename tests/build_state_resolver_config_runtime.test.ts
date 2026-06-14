@@ -8,7 +8,13 @@ test('build_state_resolver normalizes config maps and persisted color arrays fro
   const result = resolveBuildStateOrThrow({
     App,
     stateOrOverride: {
-      ui: { hingeDirection: true, raw: { width: 160, height: 240, depth: 55, doors: 4 } },
+      ui: {
+        groovesEnabled: true,
+        splitDoors: true,
+        removeDoorsEnabled: true,
+        hingeDirection: true,
+        raw: { width: 160, height: 240, depth: 55, doors: 4 },
+      },
       runtime: {},
       config: {
         __snapshot: true,
@@ -29,6 +35,9 @@ test('build_state_resolver normalizes config maps and persisted color arrays fro
         individualColors: { d1: 'oak', d2: null, drop: 9 },
         groovesMap: { groove_d1: 'on', groove_d2: 'off', drop: 'wat' },
         grooveLinesCountMap: { d1: '3', d2: null, drop: 'bad' },
+        splitDoorsMap: { split_d1: true, split_d2: false, splitpos_d3: ['0.25', 'bad', 0.75] },
+        splitDoorsBottomMap: { splitb_d1: 'on', splitb_d2: 'off', drop: 'wat' },
+        removedDoorsMap: { removed_d1: 'on', removed_d2: 'off', drop: 'wat' },
         roundedFrameSideShelvesMap: { body_left: 'on', body_right: 'off', drop: 'wat' },
         doorSpecialMap: { d1: 'mirror', d2: null, drop: 7 },
         mirrorLayoutMap: {
@@ -71,6 +80,16 @@ test('build_state_resolver normalizes config maps and persisted color arrays fro
   assert.deepEqual({ ...result.cfgSnapshot.groovesMap }, { groove_d1: true, groove_d2: false });
   assert.deepEqual({ ...result.cfgSnapshot.grooveLinesCountMap }, { d1: 3, d2: null });
   assert.deepEqual(
+    { ...result.cfgSnapshot.splitDoorsMap },
+    {
+      split_d1: true,
+      split_d2: false,
+      splitpos_d3: [0.25, 0.75],
+    }
+  );
+  assert.deepEqual({ ...result.cfgSnapshot.splitDoorsBottomMap }, { splitb_d1: true, splitb_d2: false });
+  assert.deepEqual({ ...result.cfgSnapshot.removedDoorsMap }, { removed_d1: true, removed_d2: false });
+  assert.deepEqual(
     { ...result.cfgSnapshot.roundedFrameSideShelvesMap },
     {
       body_left: true,
@@ -98,12 +117,18 @@ test('build_state_resolver normalizes config maps and persisted color arrays fro
   assert.equal('drop' in (result.cfgSnapshot.doorTrimMap || {}), false);
 });
 
-test('build_state_resolver gates single-door hinge map behind the hinge direction toggle', () => {
+test('build_state_resolver gates door authoring maps behind their build-visible UI toggles', () => {
   const baseState = {
     ui: { raw: { width: 160, height: 240, depth: 55, doors: 4 } },
     runtime: {},
     config: {
       __snapshot: true,
+      groovesMap: { groove_d1_full: true },
+      grooveLinesCountMap: { d1_full: 8 },
+      splitDoorsMap: { split_d1: true, splitpos_d1: [0.5] },
+      splitDoorsBottomMap: { splitb_d1: true },
+      removedDoorsMap: { removed_d2_full: true },
+      roundedFrameSideShelvesMap: { body_left: true },
       hingeMap: { door_hinge_1: 'right' },
     },
   };
@@ -113,21 +138,60 @@ test('build_state_resolver gates single-door hinge map behind the hinge directio
     stateOrOverride: baseState,
   });
 
+  assert.deepEqual({ ...disabled.cfgSnapshot.groovesMap }, {});
+  assert.deepEqual({ ...disabled.cfgSnapshot.grooveLinesCountMap }, {});
+  assert.deepEqual({ ...disabled.cfgSnapshot.splitDoorsMap }, {});
+  assert.deepEqual({ ...disabled.cfgSnapshot.splitDoorsBottomMap }, {});
+  assert.deepEqual({ ...disabled.cfgSnapshot.removedDoorsMap }, {});
+  assert.deepEqual({ ...disabled.cfgSnapshot.roundedFrameSideShelvesMap }, {});
   assert.deepEqual({ ...disabled.cfgSnapshot.hingeMap }, {});
 
   const enabled = resolveBuildStateOrThrow({
     App: {},
     stateOrOverride: {
       ...baseState,
-      ui: { ...baseState.ui, hingeDirection: true },
-      config: {
-        ...baseState.config,
-        hingeMap: { door_hinge_1: 'right' },
+      ui: {
+        ...baseState.ui,
+        groovesEnabled: true,
+        splitDoors: true,
+        removeDoorsEnabled: true,
+        hingeDirection: true,
       },
     },
   });
 
+  assert.deepEqual({ ...enabled.cfgSnapshot.groovesMap }, { groove_d1_full: true });
+  assert.deepEqual({ ...enabled.cfgSnapshot.grooveLinesCountMap }, { d1_full: 8 });
+  assert.deepEqual(
+    { ...enabled.cfgSnapshot.splitDoorsMap },
+    {
+      split_d1: true,
+      splitpos_d1: [0.5],
+    }
+  );
+  assert.deepEqual({ ...enabled.cfgSnapshot.splitDoorsBottomMap }, { splitb_d1: true });
+  assert.deepEqual({ ...enabled.cfgSnapshot.removedDoorsMap }, { removed_d2_full: true });
+  assert.deepEqual({ ...enabled.cfgSnapshot.roundedFrameSideShelvesMap }, { body_left: true });
   assert.deepEqual({ ...enabled.cfgSnapshot.hingeMap }, { door_hinge_1: 'right' });
+});
+
+test('build_state_resolver keeps remove-door maps build-visible while remove-door edit mode is active', () => {
+  const result = resolveBuildStateOrThrow({
+    App: {},
+    stateOrOverride: {
+      ui: { raw: { width: 160, height: 240, depth: 55, doors: 4 } },
+      mode: { primary: 'remove_door' },
+      runtime: {},
+      config: {
+        __snapshot: true,
+        removedDoorsMap: { removed_d2_full: true },
+        roundedFrameSideShelvesMap: { body_left: true },
+      },
+    },
+  });
+
+  assert.deepEqual({ ...result.cfgSnapshot.removedDoorsMap }, { removed_d2_full: true });
+  assert.deepEqual({ ...result.cfgSnapshot.roundedFrameSideShelvesMap }, { body_left: true });
 });
 
 test('build_state_resolver canonicalizes builder module snapshots against the live structure and detaches mutable config lists', () => {
