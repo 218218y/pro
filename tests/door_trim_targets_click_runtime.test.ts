@@ -269,3 +269,70 @@ test('door trim click on regular corner drawer boxes writes to the owning drawer
   assert.ok(Array.isArray(rootState.config.doorTrimMap.corner_c0_draw_1));
   assert.equal(rootState.config.doorTrimMap.corner_c0_draw_1.length, 1);
 });
+
+test('door trim target resolution and click support cabinet side and top carcass surfaces', () => {
+  const { app, rootState, configWrites } = createDoorTrimApp();
+  const sidePanel = createDoorGroup('body_left', {
+    __wpDoorTrimSurface: true,
+    __wpDoorTrimSurfacePlane: 'yz',
+    __wpDoorTrimSurfaceFaceSign: -1,
+    __wpDoorTrimSurfaceFaceCoord: -0.009,
+    __doorWidth: 0.6,
+    __doorHeight: 2.1,
+    __doorRectMinX: -0.3,
+    __doorRectMaxX: 0.3,
+    __doorRectMinY: -1.05,
+    __doorRectMaxY: 1.05,
+  });
+  const topPanel = createDoorGroup('body_ceil', {
+    __wpDoorTrimSurface: true,
+    __wpDoorTrimSurfacePlane: 'xz',
+    __wpDoorTrimSurfaceFaceSign: 1,
+    __wpDoorTrimSurfaceFaceCoord: 0.009,
+    __doorWidth: 1.6,
+    __doorHeight: 0.6,
+    __doorRectMinX: -0.8,
+    __doorRectMaxX: 0.8,
+    __doorRectMinY: -0.3,
+    __doorRectMaxY: 0.3,
+  });
+
+  const sideTarget = resolveDoorTrimTarget(app, 'body_left', sidePanel);
+  assert.equal(sideTarget?.partId, 'body_left');
+  assert.equal(sideTarget?.group, sidePanel);
+
+  const topTarget = resolveDoorTrimTarget(app, 'body_ceil', topPanel);
+  assert.equal(topTarget?.partId, 'body_ceil');
+  assert.equal(topTarget?.group, topPanel);
+
+  const handled = handleCanvasDoorTrimClick({
+    App: app,
+    effectiveDoorId: null,
+    foundPartId: 'body_left',
+    doorHitPoint: { x: -0.009, y: 0.42, z: 0.18 },
+    doorHitObject: sidePanel,
+  });
+
+  assert.equal(handled, true);
+  assert.equal(configWrites.length, 1);
+  assert.ok(Array.isArray(rootState.config.doorTrimMap.body_left));
+  assert.equal(rootState.config.doorTrimMap.body_left.length, 1);
+  assert.equal(rootState.config.doorTrimMap.body_left[0].axis, 'horizontal');
+  assert.ok(Math.abs(rootState.config.doorTrimMap.body_left[0].centerXNorm - 0.75) < 1e-9);
+  assert.ok(Math.abs(rootState.config.doorTrimMap.body_left[0].centerYNorm - 0.7) < 1e-9);
+
+  const handledTop = handleCanvasDoorTrimClick({
+    App: app,
+    effectiveDoorId: null,
+    foundPartId: 'body_ceil',
+    doorHitPoint: { x: 0.4, y: 0.009, z: -0.12 },
+    doorHitObject: topPanel,
+  });
+
+  assert.equal(handledTop, true);
+  assert.equal(configWrites.length, 2);
+  assert.ok(Array.isArray(rootState.config.doorTrimMap.body_ceil));
+  assert.equal(rootState.config.doorTrimMap.body_ceil.length, 1);
+  assert.ok(Math.abs(rootState.config.doorTrimMap.body_ceil[0].centerXNorm - 0.75) < 1e-9);
+  assert.ok(Math.abs(rootState.config.doorTrimMap.body_ceil[0].centerYNorm - 0.3) < 1e-9);
+});

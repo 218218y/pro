@@ -37,6 +37,11 @@ import {
 import { createInternalDrawerBox } from './visuals_chest_mode_drawer_box.js';
 import { createChestDrawerFrontVisual } from './visuals_chest_mode_drawer_front.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
+import {
+  buildDoorTrimSurfaceUserData,
+  isCabinetBodyDoorTrimSurfacePartId,
+  resolveCabinetBodyDoorTrimSurfaceInfo,
+} from '../features/door_trim_surface_targets.js';
 import { applyFrontRevealFrames } from './post_build_front_reveal_frames.js';
 
 import type { BuildContextLike } from '../../../types/index.js';
@@ -101,8 +106,27 @@ export function buildChestOnly(App: AppContainer, opts?: UnknownRecord | null) {
     const mat = getChestPartMat(idName);
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
     mesh.position.set(x, y, z);
-    mesh.userData = { partId: idName };
+    const surfaceUserData = buildDoorTrimSurfaceUserData(idName, { width: w, height: h, depth: d });
+    mesh.userData = { partId: idName, ...(surfaceUserData || {}) };
     if (addOutlines) addOutlines(mesh);
+    if (isCabinetBodyDoorTrimSurfacePartId(idName)) {
+      const surfaceInfo = resolveCabinetBodyDoorTrimSurfaceInfo(idName, { width: w, height: h, depth: d });
+      if (surfaceInfo) {
+        appendDoorTrimVisuals({
+          App,
+          THREE,
+          group: mesh,
+          partId: idName,
+          trims: cfg?.doorTrimMap ? cfg.doorTrimMap[idName] : undefined,
+          doorWidth: surfaceInfo.doorWidth,
+          doorHeight: surfaceInfo.doorHeight,
+          frontZ: surfaceInfo.faceCoord,
+          faceSign: surfaceInfo.faceSign,
+          surfacePlane: surfaceInfo.plane,
+          surfaceFaceCoord: surfaceInfo.faceCoord,
+        });
+      }
+    }
     wardrobeGroup.add(mesh);
     return mesh;
   };

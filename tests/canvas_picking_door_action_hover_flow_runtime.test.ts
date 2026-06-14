@@ -952,3 +952,98 @@ test('manual handle hover compares width from the opening side instead of raw le
   assert.equal(previewCalls[0].showCenterYGuide, false);
   assert.equal(doorMarker.material, 'add');
 });
+
+test('door action hover trim mode previews cabinet side panels on their depth/height plane', () => {
+  const { app, wardrobeGroup } = createApp();
+  const hitPoint = new Vec3().set(-0.009, 0.42, 0.18);
+  const bodyPanel = createDoorOwner({ partId: 'body_left', wardrobeGroup, hingeLeft: true });
+  bodyPanel.userData.__wpDoorTrimSurface = true;
+  bodyPanel.userData.__wpDoorTrimSurfacePlane = 'yz';
+  bodyPanel.userData.__wpDoorTrimSurfaceFaceSign = -1;
+  bodyPanel.userData.__wpDoorTrimSurfaceFaceCoord = -0.009;
+  bodyPanel.userData.__doorWidth = 0.6;
+  bodyPanel.userData.__doorHeight = 2.1;
+  bodyPanel.userData.__doorRectMinX = -0.3;
+  bodyPanel.userData.__doorRectMaxX = 0.3;
+  bodyPanel.userData.__doorRectMinY = -1.05;
+  bodyPanel.userData.__doorRectMaxY = 1.05;
+  const doorMarker = createMarker();
+  const previewCalls: Record<string, unknown>[] = [];
+
+  const handled = tryHandleDoorActionHover({
+    App: app,
+    ndcX: 0.15,
+    ndcY: -0.05,
+    raycaster: {} as never,
+    mouse: {} as never,
+    getViewportRoots() {
+      return { camera: app.render.camera, wardrobeGroup };
+    },
+    getSplitHoverRaycastRoots() {
+      return [wardrobeGroup];
+    },
+    raycastReuse() {
+      return [{ object: bodyPanel, point: hitPoint }] as never;
+    },
+    isViewportRoot(_App, node) {
+      return node === wardrobeGroup;
+    },
+    str(_App, value) {
+      return String(value ?? '');
+    },
+    isDoorLikePartId() {
+      return false;
+    },
+    isDoorOrDrawerLikePartId() {
+      return false;
+    },
+    doorMarker,
+    hideLayoutPreview() {},
+    hideSketchPreview() {},
+    setSketchPreview(previewArgs: Record<string, unknown>) {
+      previewCalls.push(previewArgs);
+      return {
+        hoverMarker: { material: { color: { setHex() {} }, emissive: { setHex() {} } } },
+        mesh: { material: { color: { setHex() {} }, emissive: { setHex() {} } } },
+      };
+    },
+    isGrooveEditMode: false,
+    isRemoveDoorMode: false,
+    isHandleEditMode: false,
+    isHingeEditMode: false,
+    isMirrorPaintMode: false,
+    isDoorTrimMode: true,
+    paintSelection: null,
+    readUi() {
+      return {};
+    },
+    normalizeDoorBaseKey(_App, _hitDoorGroup, hitDoorPid) {
+      return String(hitDoorPid);
+    },
+    readSplitHoverDoorBounds() {
+      return null;
+    },
+    getCanvasPickingRuntime() {
+      return {};
+    },
+    isRemoved() {
+      return false;
+    },
+    isSegmentedDoorBaseId() {
+      return false;
+    },
+    canonDoorPartKeyForMaps(id) {
+      return id;
+    },
+  });
+
+  assert.equal(handled, true);
+  assert.equal(doorMarker.visible, true);
+  assert.equal(doorMarker.material, 'add');
+  assert.equal(previewCalls.length, 1);
+  assert.equal(previewCalls[0].surfacePlane, 'yz');
+  assert.equal(previewCalls[0].surfaceFaceSign, -1);
+  assert.equal(previewCalls[0].z, -0.009);
+  assert.equal(previewCalls[0].w, 0.6);
+  assert.ok(Math.abs(Number(previewCalls[0].y) - 0.42) < 1e-9);
+});

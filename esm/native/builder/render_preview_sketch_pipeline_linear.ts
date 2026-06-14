@@ -1,5 +1,10 @@
 import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { SketchPlacementPreviewContext } from './render_preview_sketch_pipeline_shared.js';
+import type { DoorTrimSurfacePlane } from '../features/door_trim_surface_targets.js';
+
+function readSurfacePlane(value: unknown): DoorTrimSurfacePlane {
+  return value === 'yz' || value === 'xz' ? value : 'xy';
+}
 
 function applyRodPreview(ctx: SketchPlacementPreviewContext): boolean {
   if (ctx.kind !== 'rod') return false;
@@ -47,17 +52,47 @@ function applyRodPreview(ctx: SketchPlacementPreviewContext): boolean {
 
   if (ctx.shelfA) {
     if (showPrimaryBody) {
-      ctx.placePreviewBoxMesh({
-        mesh: ctx.shelfA,
-        sx: ctx.w,
-        sy: h0,
-        sz: d0,
-        px: ctx.x,
-        py: ctx.y,
-        pz: ctx.z,
-        material,
-        lineMaterial,
-      });
+      const surfacePlane = readSurfacePlane(ctx.input.surfacePlane);
+      const faceSign = Number(ctx.input.surfaceFaceSign) < 0 ? -1 : 1;
+      const faceOffset = d0 / 2 + SKETCH_BOX_DIMENSIONS.preview.rodGuideZOffsetM;
+      const faceCoord = ctx.z + (surfacePlane === 'xy' ? 0 : faceSign * faceOffset);
+      if (surfacePlane === 'yz') {
+        ctx.placePreviewBoxMesh({
+          mesh: ctx.shelfA,
+          sx: d0,
+          sy: h0,
+          sz: ctx.w,
+          px: faceCoord,
+          py: ctx.y,
+          pz: ctx.x,
+          material,
+          lineMaterial,
+        });
+      } else if (surfacePlane === 'xz') {
+        ctx.placePreviewBoxMesh({
+          mesh: ctx.shelfA,
+          sx: ctx.w,
+          sy: d0,
+          sz: h0,
+          px: ctx.x,
+          py: faceCoord,
+          pz: ctx.y,
+          material,
+          lineMaterial,
+        });
+      } else {
+        ctx.placePreviewBoxMesh({
+          mesh: ctx.shelfA,
+          sx: ctx.w,
+          sy: h0,
+          sz: d0,
+          px: ctx.x,
+          py: ctx.y,
+          pz: ctx.z,
+          material,
+          lineMaterial,
+        });
+      }
     } else {
       ctx.setVisible(ctx.shelfA, false);
     }

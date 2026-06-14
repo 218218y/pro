@@ -5,6 +5,7 @@
 
 import type { AppContainer } from '../../../types';
 import { isHexCellDiagonalPanelPartId } from '../features/hex_cell/index.js';
+import { isCabinetBodyDoorTrimSurfacePartId } from '../features/door_trim_surface_targets.js';
 import type { HitObjectLike } from './canvas_picking_engine.js';
 import { __wp_asHitObject, __wp_asRecord, __wp_map, __wp_str } from './canvas_picking_core_shared.js';
 
@@ -64,6 +65,10 @@ function __wp_isDoorOrDrawerLikePartId(partId: unknown): boolean {
 
 function __wp_isDoorActionPaintTargetPartId(partId: unknown): boolean {
   return __wp_isDoorOrDrawerLikePartId(partId) || isHexCellDiagonalPanelPartId(partId);
+}
+
+function __wp_isDoorTrimActionTargetPartId(partId: unknown): boolean {
+  return __wp_isDoorOrDrawerLikePartId(partId) || isCabinetBodyDoorTrimSurfacePartId(partId);
 }
 
 // Segmented doors (hinged + corner doors) persist per-door maps using *_full/_top/_bot keys.
@@ -167,6 +172,7 @@ export {
   __wp_isDrawerLikePartId,
   __wp_isDoorOrDrawerLikePartId,
   __wp_isDoorActionPaintTargetPartId,
+  __wp_isDoorTrimActionTargetPartId,
   __wp_isSegmentedDoorBaseId,
   __wp_canonDoorPartKeyForMaps,
   __wp_scopeCornerPartKeyForStack,

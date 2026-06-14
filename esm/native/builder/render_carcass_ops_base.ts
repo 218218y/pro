@@ -1,4 +1,12 @@
-import type { AnyMap, BackPanelSeg, RenderCarcassRuntime } from './render_carcass_ops_shared.js';
+import type { AnyMap, BackPanelSeg, BoardOp, RenderCarcassRuntime } from './render_carcass_ops_shared.js';
+import { appendDoorTrimVisuals } from './door_trim_visuals.js';
+import { readDoorTrimMap } from '../features/door_trim.js';
+import {
+  buildDoorTrimSurfaceUserData,
+  isCabinetBodyDoorTrimSurfacePartId,
+  resolveCabinetBodyDoorTrimSurfaceInfo,
+} from '../features/door_trim_surface_targets.js';
+import { readRootState } from '../runtime/root_state_access.js';
 import {
   __asFinite,
   __asString,
@@ -17,6 +25,54 @@ type RenderCarcassBaseDeps = {
 
 function readRecord(value: unknown): AnyMap | null {
   return __isRecord(value) ? value : null;
+}
+
+type DoorTrimMapLike = Record<string, unknown>;
+
+function readDoorTrimMapForCarcass(App: unknown): DoorTrimMapLike {
+  try {
+    const rootState = readRecord(readRootState(App));
+    const config = readRecord(rootState?.config);
+    return readDoorTrimMap(config?.doorTrimMap) as DoorTrimMapLike;
+  } catch {
+    return readDoorTrimMap(null) as DoorTrimMapLike;
+  }
+}
+
+function applyDoorTrimSurfaceMetrics(mesh: { userData?: AnyMap | null }, bd: BoardOp, partId: string): void {
+  const surfaceUserData = buildDoorTrimSurfaceUserData(partId, bd);
+  if (!surfaceUserData) return;
+  mesh.userData = {
+    ...(readRecord(mesh.userData) || {}),
+    ...surfaceUserData,
+  };
+}
+
+function appendCarcassDoorTrimVisuals(args: {
+  runtime: RenderCarcassRuntime;
+  mesh: unknown;
+  bd: BoardOp;
+  partId: string;
+  doorTrimMap: DoorTrimMapLike;
+}): void {
+  const { runtime, mesh, bd, partId, doorTrimMap } = args;
+  if (!isCabinetBodyDoorTrimSurfacePartId(partId)) return;
+  const surfaceInfo = resolveCabinetBodyDoorTrimSurfaceInfo(partId, bd);
+  if (!surfaceInfo) return;
+  appendDoorTrimVisuals({
+    App: runtime.App,
+    THREE: runtime.THREE,
+    group: mesh,
+    partId,
+    trims: doorTrimMap[partId],
+    doorWidth: surfaceInfo.doorWidth,
+    doorHeight: surfaceInfo.doorHeight,
+    doorMeshOffsetX: 0,
+    frontZ: surfaceInfo.faceCoord,
+    faceSign: surfaceInfo.faceSign,
+    surfacePlane: surfaceInfo.plane,
+    surfaceFaceCoord: surfaceInfo.faceCoord,
+  });
 }
 
 export function createApplyCarcassBaseOps(deps: RenderCarcassBaseDeps) {
@@ -117,6 +173,7 @@ export function createApplyCarcassBaseOps(deps: RenderCarcassBaseDeps) {
   function applyBoards(boardsIn: unknown, runtime: RenderCarcassRuntime): void {
     const { THREE, ctx, getPartMaterial, sketchMode, addOutlines, wardrobeGroup, reg, App } = runtime;
     const boards = __readArray(boardsIn, __isBoardOp) || [];
+    const doorTrimMap = readDoorTrimMapForCarcass(App);
     for (let b = 0; b < boards.length; b += 1) {
       const bd = boards[b];
       if (bd.kind !== 'board') continue;
@@ -126,6 +183,7 @@ export function createApplyCarcassBaseOps(deps: RenderCarcassBaseDeps) {
       const partId = __asString(bd.partId);
       if (partId) {
         mesh.userData = { partId };
+        applyDoorTrimSurfaceMetrics(mesh, bd, partId);
         reg(App, partId, mesh, 'body');
       }
       if (!sketchMode) {
@@ -133,6 +191,7 @@ export function createApplyCarcassBaseOps(deps: RenderCarcassBaseDeps) {
         mesh.receiveShadow = true;
       }
       addOutlines(mesh);
+      appendCarcassDoorTrimVisuals({ runtime, mesh, bd, partId, doorTrimMap });
       wardrobeGroup.add(mesh);
     }
   }

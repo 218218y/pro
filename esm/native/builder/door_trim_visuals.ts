@@ -7,6 +7,7 @@ import {
 import { DOOR_TRIM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { ensureDoorTrimMaterialCache } from '../runtime/door_trim_visuals_access.js';
 import { resolveMetalFinishPalette } from '../features/metal_finish_palette.js';
+import type { DoorTrimSurfacePlane } from '../features/door_trim_surface_targets.js';
 
 type DoorTrimColorPalette = {
   hex: number;
@@ -46,6 +47,8 @@ type DoorTrimVisualArgs = {
   doorMeshOffsetX?: number;
   frontZ?: number;
   faceSign?: number;
+  surfacePlane?: DoorTrimSurfacePlane;
+  surfaceFaceCoord?: number;
 };
 
 function isRecord(value: unknown): value is UnknownRecord {
@@ -68,6 +71,27 @@ function readRenderOrder(group: unknown): number {
   const rec = isRecord(group) ? group : null;
   const value = rec ? rec.renderOrder : null;
   return typeof value === 'number' && Number.isFinite(value) ? value : 6;
+}
+
+function normalizeSurfacePlane(value: unknown): DoorTrimSurfacePlane {
+  return value === 'yz' || value === 'xz' ? value : 'xy';
+}
+
+function readFinite(value: unknown, fallback: number): number {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function resolveSurfaceCenterCoord(args: {
+  plane: DoorTrimSurfacePlane;
+  frontZ: number;
+  faceSign: number;
+  surfaceFaceCoord?: number;
+}): number {
+  const nudge = DEFAULT_DOOR_TRIM_DEPTH_M * 0.5 + DOOR_TRIM_DIMENSIONS.defaults.frontSurfaceNudgeM;
+  const sign = args.faceSign < 0 ? -1 : 1;
+  if (args.plane === 'xy') return (args.frontZ + nudge) * sign;
+  return readFinite(args.surfaceFaceCoord, args.frontZ * sign) + sign * nudge;
 }
 
 function isMinimalThreeLike(value: unknown): value is MinimalThreeRecord {
@@ -134,6 +158,8 @@ export function appendDoorTrimVisuals(args: DoorTrimVisualArgs): void {
     doorMeshOffsetX = 0,
     frontZ = DOOR_TRIM_DIMENSIONS.defaults.frontZM,
     faceSign = 1,
+    surfacePlane = 'xy',
+    surfaceFaceCoord,
   } = args;
   const three = asMinimalThree(THREE);
   const groupObj = asMinimalGroup(group);
@@ -147,9 +173,9 @@ export function appendDoorTrimVisuals(args: DoorTrimVisualArgs): void {
     minY: -doorHeight / 2,
     maxY: doorHeight / 2,
   };
+  const plane = normalizeSurfacePlane(surfacePlane);
   const face = faceSign < 0 ? -1 : 1;
-  const z =
-    (frontZ + DEFAULT_DOOR_TRIM_DEPTH_M * 0.5 + DOOR_TRIM_DIMENSIONS.defaults.frontSurfaceNudgeM) * face;
+  const faceCoord = resolveSurfaceCenterCoord({ plane, frontZ, faceSign: face, surfaceFaceCoord });
   const renderOrder = readRenderOrder(groupObj);
 
   for (let i = 0; i < trimList.length; i += 1) {
@@ -158,17 +184,32 @@ export function appendDoorTrimVisuals(args: DoorTrimVisualArgs): void {
     const material = getTrimMaterial({ App, THREE: three, color: placement.color });
     if (!material) continue;
     try {
-      const mesh = new three.Mesh(
-        new three.BoxGeometry(placement.width, placement.height, DEFAULT_DOOR_TRIM_DEPTH_M),
-        material
-      );
-      mesh.position?.set?.(placement.centerX, placement.centerY, z);
+      let geometry: unknown;
+      let px = placement.centerX;
+      let py = placement.centerY;
+      let pz = faceCoord;
+      if (plane === 'yz') {
+        geometry = new three.BoxGeometry(DEFAULT_DOOR_TRIM_DEPTH_M, placement.height, placement.width);
+        px = faceCoord;
+        py = placement.centerY;
+        pz = placement.centerX;
+      } else if (plane === 'xz') {
+        geometry = new three.BoxGeometry(placement.width, DEFAULT_DOOR_TRIM_DEPTH_M, placement.height);
+        px = placement.centerX;
+        py = faceCoord;
+        pz = placement.centerY;
+      } else {
+        geometry = new three.BoxGeometry(placement.width, placement.height, DEFAULT_DOOR_TRIM_DEPTH_M);
+      }
+      const mesh = new three.Mesh(geometry, material);
+      mesh.position?.set?.(px, py, pz);
       mesh.renderOrder = renderOrder + 1;
       mesh.userData = {
         ...(isRecord(mesh.userData) ? mesh.userData : {}),
         partId,
         __wpDoorTrim: true,
         __wpDoorTrimId: entry.id,
+        __wpDoorTrimSurfacePlane: plane,
       };
       groupObj.add(mesh);
     } catch {

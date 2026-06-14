@@ -24,6 +24,12 @@ import {
   markCenteredRectClearanceMeasurements,
   resolveCellMeasurementLabelOutsets,
 } from './canvas_picking_hover_clearance_measurements.js';
+import {
+  mapDoorTrimSurfaceLocalPoint,
+  readDoorTrimSurfaceFaceCoordFromUserData,
+  readDoorTrimSurfaceFaceSignFromUserData,
+  readDoorTrimSurfacePlaneFromUserData,
+} from '../features/door_trim_surface_targets.js';
 
 export function tryHandleDoorTrimHoverPreview(args: DoorTrimHoverPreviewArgs): boolean {
   const {
@@ -70,8 +76,9 @@ export function tryHandleDoorTrimHoverPreview(args: DoorTrimHoverPreviewArgs): b
 
   localHit.set(hit.hitPoint.x, hit.hitPoint.y, hit.hitPoint.z);
   trimGroupRec.worldToLocal?.(localHit);
-  const localX = Number(localHit.x);
-  const localY = Number(localHit.y);
+  const mappedLocal = mapDoorTrimSurfaceLocalPoint(trimUserData, localHit);
+  const localX = mappedLocal.localX;
+  const localY = mappedLocal.localY;
   const currentTrims = trimMap[trimPartId] || [];
   const match = findDoorTrimMatchInRect({
     rect: rect0,
@@ -137,6 +144,10 @@ export function tryHandleDoorTrimHoverPreview(args: DoorTrimHoverPreviewArgs): b
     }
   );
 
+  const surfacePlane = readDoorTrimSurfacePlaneFromUserData(trimUserData);
+  const surfaceFaceCoord =
+    surfacePlane === 'xy' ? zOff : readDoorTrimSurfaceFaceCoordFromUserData(trimUserData, zOff);
+  const surfaceFaceSign = readDoorTrimSurfaceFaceSignFromUserData(trimUserData);
   const previewArgs: UnknownRecord = {
     App,
     THREE,
@@ -145,12 +156,14 @@ export function tryHandleDoorTrimHoverPreview(args: DoorTrimHoverPreviewArgs): b
     kind: 'rod',
     x: placement.centerX,
     y: placement.centerY,
-    z: zOff,
+    z: surfaceFaceCoord,
     w: placement.width,
     h: placement.height,
     d: DEFAULT_DOOR_TRIM_DEPTH_M,
     woodThick: placement.axis === 'vertical' ? placement.width : placement.height,
     op: match ? 'remove' : 'add',
+    surfacePlane,
+    surfaceFaceSign,
     showCenterXGuide: false,
     showCenterYGuide: false,
     guideWidth: Math.max(0.0001, rect0.maxX - rect0.minX),
@@ -168,7 +181,8 @@ export function tryHandleDoorTrimHoverPreview(args: DoorTrimHoverPreviewArgs): b
     wq,
     centerX: placement.centerX,
     centerY: placement.centerY,
-    zOff,
+    zOff: surfaceFaceCoord,
+    surfacePlane,
   });
   if (doorMarker) doorMarker.visible = true;
   if (doorMarker)

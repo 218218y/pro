@@ -7,7 +7,11 @@ import {
   readPointXYZ,
   resolveDoorHitOwnerByPartId,
 } from './canvas_picking_door_shared.js';
-import { __wp_isDoorActionPaintTargetPartId } from './canvas_picking_core_helpers.js';
+import { mapDoorTrimSurfaceLocalPoint } from '../features/door_trim_surface_targets.js';
+import {
+  __wp_isDoorActionPaintTargetPartId,
+  __wp_isDoorTrimActionTargetPartId,
+} from './canvas_picking_core_helpers.js';
 import type {
   DoorActionHoverModeState,
   DoorActionHoverResolvedState,
@@ -212,7 +216,8 @@ function isDoorActionHitInsideLeafRect(args: {
     const localHit = new THREE0.Vector3();
     localHit.set(point.x, point.y, point.z);
     groupRec.worldToLocal(localHit);
-    return isPointInsideRect(localHit, rect);
+    const mappedLocal = mapDoorTrimSurfaceLocalPoint(userData, localHit);
+    return isPointInsideRect({ x: mappedLocal.localX, y: mappedLocal.localY }, rect);
   } catch {
     return false;
   }
@@ -269,9 +274,11 @@ export function resolveDoorActionHoverState(args: {
     : null;
   const hoverPartMatcher = modeState.isPaintHoverMode
     ? __wp_isDoorActionPaintTargetPartId
-    : modeState.isHandleHoverMode || hoverArgs.isGrooveEditMode || modeState.isTrimHoverMode
-      ? hoverArgs.isDoorOrDrawerLikePartId
-      : hoverArgs.isDoorLikePartId;
+    : modeState.isTrimHoverMode
+      ? __wp_isDoorTrimActionTargetPartId
+      : modeState.isHandleHoverMode || hoverArgs.isGrooveEditMode
+        ? hoverArgs.isDoorOrDrawerLikePartId
+        : hoverArgs.isDoorLikePartId;
   const hit =
     preferredFaceHit ||
     __resolveHoverHit(

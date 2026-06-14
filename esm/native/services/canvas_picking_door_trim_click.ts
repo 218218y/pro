@@ -19,6 +19,7 @@ import {
   resolveDoorTrimTargetFromHitObject,
 } from './canvas_picking_door_shared.js';
 import { asRecord, readDoorTrimConfigMap, readDoorTrimModeOpts } from './canvas_picking_door_edit_shared.js';
+import { mapDoorTrimSurfaceLocalPoint } from '../features/door_trim_surface_targets.js';
 import { createCanvasPickingDoorAuthoringStructuralMeta } from './canvas_picking_door_authoring_meta.js';
 import { __wp_historyBatch, __wp_map } from './canvas_picking_core_helpers.js';
 
@@ -69,8 +70,9 @@ export function handleCanvasDoorTrimClick(args: CanvasDoorTrimClickArgs): boolea
     return true;
   }
 
-  const localX = typeof localPoint.x === 'number' ? Number(localPoint.x) : 0;
-  const localY = typeof localPoint.y === 'number' ? Number(localPoint.y) : 0;
+  const mappedLocal = mapDoorTrimSurfaceLocalPoint(userData, localPoint);
+  const localX = mappedLocal.localX;
+  const localY = mappedLocal.localY;
   const trimsMap = readDoorTrimConfigMap(App);
   const currentList = trimsMap[trimPartId] || [];
   const mirrorLayoutMap = __wp_map(App, 'mirrorLayoutMap');

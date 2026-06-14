@@ -10,6 +10,10 @@ import type {
   TransformNodeLike,
 } from './canvas_picking_door_action_hover_preview_contracts.js';
 import type { UnknownRecord } from '../../../types';
+import {
+  mapDoorTrimSurfaceLogicalToLocalPoint,
+  type DoorTrimSurfacePlane,
+} from '../features/door_trim_surface_targets.js';
 
 function resolveMarkerLocalZ(groupRec: TransformNodeLike | null, fallbackZ: number): number {
   const userData = __asObject<UnknownRecord>(groupRec?.userData);
@@ -30,9 +34,19 @@ export function __positionDoorMarker(args: {
   centerX: number;
   centerY: number;
   zOff: number;
+  surfacePlane?: DoorTrimSurfacePlane;
 }): void {
   const { groupRec, wardrobeGroup, doorMarker, local, wq, centerX, centerY, zOff } = args;
-  local.set(centerX, centerY, resolveMarkerLocalZ(groupRec, zOff));
+  const userData = __asObject<UnknownRecord>(groupRec?.userData);
+  const localPoint = mapDoorTrimSurfaceLogicalToLocalPoint({
+    userData: args.surfacePlane
+      ? { ...(userData || {}), __wpDoorTrimSurfacePlane: args.surfacePlane }
+      : userData,
+    localX: centerX,
+    localY: centerY,
+    faceCoord: resolveMarkerLocalZ(groupRec, zOff),
+  });
+  local.set(localPoint.x, localPoint.y, localPoint.z);
   groupRec?.localToWorld?.(local);
   __asObject<TransformNodeLike>(wardrobeGroup)?.worldToLocal?.(local);
   doorMarker?.position?.copy?.(local);
