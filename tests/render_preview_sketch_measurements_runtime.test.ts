@@ -70,6 +70,16 @@ class FakeNode {
       this.scale.z = z;
     },
   };
+  rotation = {
+    x: 0,
+    y: 0,
+    z: 0,
+    set: (x: number, y: number, z: number) => {
+      this.rotation.x = x;
+      this.rotation.y = y;
+      this.rotation.z = z;
+    },
+  };
 }
 
 class FakeLine extends FakeNode {
@@ -304,4 +314,105 @@ test('sketch placement measurements render neighbor and centered labels with the
   assert.equal((cellLine.material as FakeLineBasicMaterial).opts.color, 0x2b7dbb);
   assert.equal((neighborLine.material as FakeLineBasicMaterial).opts.color, 0x000000);
   assert.equal((centerLine.material as FakeLineBasicMaterial).opts.color, 0x34d399);
+});
+
+test('sketch placement measurements follow cabinet side and top trim surfaces', () => {
+  const shared = createRenderPreviewSketchShared({
+    asObject<T extends object = AnyRecord>(value: unknown): T | null {
+      return value && typeof value === 'object' ? (value as T) : null;
+    },
+  });
+  const THREE = {
+    BufferGeometry: FakeBufferGeometry,
+    Group: FakeGroup,
+    Line: FakeLine,
+    LineBasicMaterial: FakeLineBasicMaterial,
+    Mesh: FakeMesh,
+    MeshBasicMaterial: FakeMeshBasicMaterial,
+    PlaneGeometry: FakePlaneGeometry,
+    Vector3: FakeVector3,
+    DoubleSide: 'double-side',
+  };
+
+  const sideGroup = new FakeGroup();
+  applySketchPlacementMeasurements({
+    App: createApp() as never,
+    input: {
+      surfacePlane: 'yz',
+      clearanceMeasurements: [
+        {
+          startX: -0.3,
+          startY: -1,
+          endX: 0.3,
+          endY: -1,
+          z: -0.0115,
+          label: '60 ס״מ',
+          labelX: 0,
+          labelY: -1,
+          labelFaceSign: -1,
+          styleKey: 'cell',
+        },
+      ],
+    } as never,
+    THREE,
+    g: sideGroup as never,
+    shared,
+  });
+
+  const sideMeasurementGroup = sideGroup.children[0] as FakeGroup;
+  const sideLine = sideMeasurementGroup.children[0] as FakeLine;
+  const sideLabel = sideMeasurementGroup.children[1] as FakeMesh;
+  const sidePoints = (sideLine.geometry as FakeBufferGeometry).points;
+  assert.deepEqual(
+    sidePoints.map(point => [point.x, point.y, point.z]),
+    [
+      [-0.0115, -1, -0.3],
+      [-0.0115, -1, 0.3],
+    ]
+  );
+  assert.equal(sideLabel.position.y, -1);
+  assert.equal(sideLabel.position.z, 0);
+  assert.equal(sideLabel.position.x < -0.0115, true);
+  assert.ok(Math.abs(sideLabel.rotation.y + Math.PI / 2) < 1e-12);
+
+  const topGroup = new FakeGroup();
+  applySketchPlacementMeasurements({
+    App: createApp() as never,
+    input: {
+      surfacePlane: 'xz',
+      clearanceMeasurements: [
+        {
+          startX: -0.4,
+          startY: -0.2,
+          endX: 0.4,
+          endY: -0.2,
+          z: 0.0215,
+          label: '80 ס״מ',
+          labelX: 0,
+          labelY: -0.2,
+          labelFaceSign: 1,
+          styleKey: 'cell',
+        },
+      ],
+    } as never,
+    THREE,
+    g: topGroup as never,
+    shared,
+  });
+
+  const topMeasurementGroup = topGroup.children[0] as FakeGroup;
+  const topLine = topMeasurementGroup.children[0] as FakeLine;
+  const topLabel = topMeasurementGroup.children[1] as FakeMesh;
+  const topPoints = (topLine.geometry as FakeBufferGeometry).points;
+  assert.deepEqual(
+    topPoints.map(point => [point.x, point.y, point.z]),
+    [
+      [-0.4, 0.0215, -0.2],
+      [0.4, 0.0215, -0.2],
+    ]
+  );
+  assert.equal(topLabel.position.x, 0);
+  assert.equal(topLabel.position.z, -0.2);
+  assert.equal(topLabel.position.y > 0.0215, true);
+  assert.ok(Math.abs(topLabel.rotation.x + Math.PI / 2) < 1e-12);
 });

@@ -113,6 +113,11 @@ export function tryHandleDoorTrimHoverPreview(args: DoorTrimHoverPreviewArgs): b
         centerXNorm: center.centerXNorm,
         centerYNorm: center.centerYNorm,
       });
+  const surfacePlane = readDoorTrimSurfacePlaneFromUserData(trimUserData);
+  const surfaceFaceCoord =
+    surfacePlane === 'xy' ? zOff : readDoorTrimSurfaceFaceCoordFromUserData(trimUserData, zOff);
+  const surfaceFaceSign = readDoorTrimSurfaceFaceSignFromUserData(trimUserData);
+  const measurementFaceCoord = surfaceFaceCoord + (surfaceFaceSign >= 0 ? 0.0025 : -0.0025);
   const clearanceTextScale = 0.9;
   const { horizontalLabelOutset, verticalLabelOutset } =
     resolveCellMeasurementLabelOutsets(clearanceTextScale);
@@ -126,7 +131,7 @@ export function tryHandleDoorTrimHoverPreview(args: DoorTrimHoverPreviewArgs): b
       targetCenterY: placement.centerY,
       targetWidth: placement.width,
       targetHeight: placement.height,
-      z: zOff + (zOff >= 0 ? 0.0025 : -0.0025),
+      z: measurementFaceCoord,
       showTop: true,
       showBottom: true,
       showLeft: placement.width < rect0.maxX - rect0.minX - 0.0005,
@@ -137,17 +142,16 @@ export function tryHandleDoorTrimHoverPreview(args: DoorTrimHoverPreviewArgs): b
       verticalLabelOutset,
       styleKey: 'cell',
       textScale: clearanceTextScale,
+      faceSign: surfaceFaceSign,
+      viewFaceSign: surfaceFaceSign,
+      labelFaceSign: surfaceFaceSign,
+      surfacePlane,
     }),
     {
       centerX: !match && !!center.snappedX,
       centerY: !match && !!center.snappedY,
     }
   );
-
-  const surfacePlane = readDoorTrimSurfacePlaneFromUserData(trimUserData);
-  const surfaceFaceCoord =
-    surfacePlane === 'xy' ? zOff : readDoorTrimSurfaceFaceCoordFromUserData(trimUserData, zOff);
-  const surfaceFaceSign = readDoorTrimSurfaceFaceSignFromUserData(trimUserData);
   const previewArgs: UnknownRecord = {
     App,
     THREE,

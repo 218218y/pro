@@ -8,6 +8,7 @@ import type {
 } from './render_preview_ops_contracts.js';
 
 export type MeasurementStyleKey = 'default' | 'cell' | 'neighbor' | 'center';
+export type MeasurementSurfacePlane = 'xy' | 'yz' | 'xz';
 
 export type MeasurementEntryLike = {
   startX?: unknown;
@@ -23,6 +24,7 @@ export type MeasurementEntryLike = {
   faceSign?: unknown;
   viewFaceSign?: unknown;
   labelFaceSign?: unknown;
+  surfacePlane?: unknown;
 };
 
 export type RotatablePreviewMeshLike = PreviewMeshLike & {

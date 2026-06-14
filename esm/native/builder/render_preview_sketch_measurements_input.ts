@@ -1,5 +1,8 @@
 import type { SketchPlacementPreviewArgs } from './render_preview_ops_contracts.js';
-import type { MeasurementEntryLike } from './render_preview_sketch_measurements_types.js';
+import type {
+  MeasurementEntryLike,
+  MeasurementSurfacePlane,
+} from './render_preview_sketch_measurements_types.js';
 
 export function readMeasurementEntries(input: SketchPlacementPreviewArgs): MeasurementEntryLike[] {
   const raw = input.clearanceMeasurements;
@@ -37,4 +40,19 @@ export function resolveMeasurementLabelFaceSign(
     normalizeMeasurementFaceSign(input.faceSign) ??
     (z < 0 ? -1 : 1)
   );
+}
+
+export function normalizeMeasurementSurfacePlane(value: unknown): MeasurementSurfacePlane {
+  return value === 'yz' || value === 'xz' ? value : 'xy';
+}
+
+export function mapMeasurementPointToSurface(args: {
+  plane: MeasurementSurfacePlane;
+  x: number;
+  y: number;
+  z: number;
+}): { x: number; y: number; z: number } {
+  if (args.plane === 'yz') return { x: args.z, y: args.y, z: args.x };
+  if (args.plane === 'xz') return { x: args.x, y: args.z, z: args.y };
+  return { x: args.x, y: args.y, z: args.z };
 }

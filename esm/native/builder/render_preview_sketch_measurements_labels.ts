@@ -1,6 +1,7 @@
 import type { PreviewMaterialLike, PreviewMeshLike } from './render_preview_ops_contracts.js';
 import type { RenderPreviewSketchShared } from './render_preview_sketch_shared.js';
 import type {
+  MeasurementSurfacePlane,
   MeasurementTHREESurface,
   MeasurementUserData,
   RotatablePreviewMeshLike,
@@ -50,4 +51,48 @@ export function orientMeasurementLabelForFace(label: PreviewMeshLike, faceSign: 
   if (faceSign >= 0 && typeof rotatable.quaternion?.identity === 'function') {
     rotatable.quaternion.identity();
   }
+}
+
+function setQuaternionFromAxisAngle(
+  label: RotatablePreviewMeshLike,
+  x: number,
+  y: number,
+  z: number,
+  angle: number
+): boolean {
+  if (typeof label.quaternion?.set !== 'function') return false;
+  const half = angle / 2;
+  const s = Math.sin(half);
+  label.quaternion.set(x * s, y * s, z * s, Math.cos(half));
+  return true;
+}
+
+export function orientMeasurementLabelForSurface(
+  label: PreviewMeshLike,
+  surfacePlane: MeasurementSurfacePlane,
+  faceSign: number
+): void {
+  if (surfacePlane === 'xy') {
+    orientMeasurementLabelForFace(label, faceSign);
+    return;
+  }
+
+  const rotatable = label as RotatablePreviewMeshLike;
+  const sign = faceSign < 0 ? -1 : 1;
+  if (surfacePlane === 'yz') {
+    const yRotation = sign > 0 ? Math.PI / 2 : -Math.PI / 2;
+    if (typeof rotatable.rotation?.set === 'function') {
+      rotatable.rotation.set(0, yRotation, 0);
+      return;
+    }
+    setQuaternionFromAxisAngle(rotatable, 0, 1, 0, yRotation);
+    return;
+  }
+
+  const xRotation = sign > 0 ? -Math.PI / 2 : Math.PI / 2;
+  if (typeof rotatable.rotation?.set === 'function') {
+    rotatable.rotation.set(xRotation, 0, 0);
+    return;
+  }
+  setQuaternionFromAxisAngle(rotatable, 1, 0, 0, xRotation);
 }

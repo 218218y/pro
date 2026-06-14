@@ -14,6 +14,7 @@ export type HoverClearanceMeasurementEntry = {
   faceSign?: number;
   viewFaceSign?: number;
   labelFaceSign?: number;
+  surfacePlane?: 'xy' | 'yz' | 'xz';
   role?: 'cell' | 'neighbor';
 };
 
@@ -104,6 +105,7 @@ export function buildVerticalClearanceMeasurementEntries(args: {
   faceSign?: unknown;
   viewFaceSign?: unknown;
   labelFaceSign?: unknown;
+  surfacePlane?: 'xy' | 'yz' | 'xz';
   minVerticalCm?: number;
   verticalLineX?: number;
 }): HoverClearanceMeasurementEntry[] {
@@ -128,6 +130,7 @@ export function buildVerticalClearanceMeasurementEntries(args: {
     faceSign: args.faceSign,
     viewFaceSign: args.viewFaceSign,
     labelFaceSign: args.labelFaceSign ?? args.viewFaceSign ?? args.faceSign ?? 1,
+    surfacePlane: args.surfacePlane,
     verticalLineX: args.verticalLineX,
   });
 }
@@ -155,6 +158,7 @@ export function buildRectClearanceMeasurementEntries(args: {
   faceSign?: unknown;
   viewFaceSign?: unknown;
   labelFaceSign?: unknown;
+  surfacePlane?: 'xy' | 'yz' | 'xz';
   verticalLineX?: number;
 }): HoverClearanceMeasurementEntry[] {
   const containerMinX = clampFinite(args.containerMinX, 0);
@@ -190,6 +194,8 @@ export function buildRectClearanceMeasurementEntries(args: {
   const horizontalLabelOutset = Math.max(0, clampFinite(args.horizontalLabelOutset, 0.06));
   const verticalLabelOutset = Math.max(0, clampFinite(args.verticalLabelOutset, 0));
   const faceMetadata = resolveFaceMetadata(args);
+  const surfacePlane =
+    args.surfacePlane === 'yz' || args.surfacePlane === 'xz' ? args.surfacePlane : undefined;
   const verticalLineX = clampFinite(args.verticalLineX, targetCenterX);
 
   const entries: HoverClearanceMeasurementEntry[] = [];
@@ -208,6 +214,7 @@ export function buildRectClearanceMeasurementEntries(args: {
       styleKey,
       textScale,
       ...faceMetadata,
+      ...(surfacePlane ? { surfacePlane } : {}),
     });
   }
 
@@ -225,6 +232,7 @@ export function buildRectClearanceMeasurementEntries(args: {
       styleKey,
       textScale,
       ...faceMetadata,
+      ...(surfacePlane ? { surfacePlane } : {}),
     });
   }
 
@@ -242,6 +250,7 @@ export function buildRectClearanceMeasurementEntries(args: {
       styleKey,
       textScale,
       ...faceMetadata,
+      ...(surfacePlane ? { surfacePlane } : {}),
     });
   }
 
@@ -259,6 +268,7 @@ export function buildRectClearanceMeasurementEntries(args: {
       styleKey,
       textScale,
       ...faceMetadata,
+      ...(surfacePlane ? { surfacePlane } : {}),
     });
   }
 

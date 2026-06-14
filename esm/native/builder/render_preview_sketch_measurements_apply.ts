@@ -4,6 +4,8 @@ import { getDimLabelEntry } from './render_ops_extras_dimensions.js';
 import type { PreviewGroupLike, SketchPlacementPreviewArgs } from './render_preview_ops_contracts.js';
 import type { RenderPreviewSketchShared } from './render_preview_sketch_shared.js';
 import {
+  mapMeasurementPointToSurface,
+  normalizeMeasurementSurfacePlane,
   readFinite,
   readMeasurementEntries,
   resolveMeasurementLabelFaceSign,
@@ -11,6 +13,7 @@ import {
 import {
   ensureMeasurementLabelMaterial,
   orientMeasurementLabelForFace,
+  orientMeasurementLabelForSurface,
 } from './render_preview_sketch_measurements_labels.js';
 import {
   asMeasurementTHREE,
@@ -70,7 +73,13 @@ export function applySketchPlacementMeasurements(args: {
     });
     used += 1;
 
-    const points = [new THREE.Vector3(startX, startY, z), new THREE.Vector3(endX, endY, z)];
+    const surfacePlane = normalizeMeasurementSurfacePlane(entry.surfacePlane ?? input.surfacePlane);
+    const startPoint = mapMeasurementPointToSurface({ plane: surfacePlane, x: startX, y: startY, z });
+    const endPoint = mapMeasurementPointToSurface({ plane: surfacePlane, x: endX, y: endY, z });
+    const points = [
+      new THREE.Vector3(startPoint.x, startPoint.y, startPoint.z),
+      new THREE.Vector3(endPoint.x, endPoint.y, endPoint.z),
+    ];
     const geometry = slot.line.geometry as { setFromPoints?: (points: unknown[]) => unknown } | null;
     if (geometry && typeof geometry.setFromPoints === 'function') {
       const nextGeometry = geometry.setFromPoints(points);
@@ -102,8 +111,10 @@ export function applySketchPlacementMeasurements(args: {
       (labelFaceSign >= 0
         ? SKETCH_BOX_DIMENSIONS.preview.measurementLabelZOffsetM
         : -SKETCH_BOX_DIMENSIONS.preview.measurementLabelZOffsetM);
-    slot.label.position?.set?.(labelX, labelY, labelZ);
+    const labelPoint = mapMeasurementPointToSurface({ plane: surfacePlane, x: labelX, y: labelY, z: labelZ });
+    slot.label.position?.set?.(labelPoint.x, labelPoint.y, labelPoint.z);
     orientMeasurementLabelForFace(slot.label, labelFaceSign);
+    if (surfacePlane !== 'xy') orientMeasurementLabelForSurface(slot.label, surfacePlane, labelFaceSign);
 
     const textScale = Math.max(
       SKETCH_BOX_DIMENSIONS.preview.measurementTextScaleMin,
