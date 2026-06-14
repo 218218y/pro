@@ -7,6 +7,9 @@
 import { CHEST_MODE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { guardVoid } from '../runtime/api.js';
 import { runBuilderChestModeFollowThrough } from '../runtime/builder_service_access.js';
+import { requireChestModeConfigSnapshot } from './visuals_chest_mode_config.js';
+
+import type { ConfigStateLike, UnknownRecord } from '../../../types/index.js';
 
 function asFiniteNumber(v: unknown, name: string): number {
   const n = typeof v === 'number' ? v : Number(v);
@@ -38,6 +41,7 @@ type BuildChestModeIfNeededParams = {
   heightCm?: number | string;
   depthCm?: number | string;
   drawersCount?: number | string;
+  cfgSnapshot?: ConfigStateLike | UnknownRecord | null;
   buildChestOnly?: (args: {
     H: number;
     totalW: number;
@@ -56,6 +60,7 @@ type BuildChestModeIfNeededParams = {
     chestCommodeEnabled: boolean;
     chestCommodeMirrorHeightCm: number | string;
     chestCommodeMirrorWidthCm: number | string;
+    cfgSnapshot: ConfigStateLike | UnknownRecord;
   }) => void;
 };
 
@@ -77,6 +82,8 @@ export function buildChestModeIfNeeded(params: BuildChestModeIfNeededParams | nu
     throw new Error('[WardrobePro] Builder tools missing: modules.buildChestOnly');
   }
 
+  const cfgSnapshot = requireChestModeConfigSnapshot(p.cfgSnapshot, 'builder/chest_mode_pipeline');
+
   buildChestOnly({
     H: heightCm / 100,
     totalW: widthCm / 100,
@@ -96,6 +103,7 @@ export function buildChestModeIfNeeded(params: BuildChestModeIfNeededParams | nu
     chestCommodeMirrorHeightCm:
       ui.chestCommodeMirrorHeightCm ?? CHEST_MODE_DIMENSIONS.commode.defaultMirrorHeightCm,
     chestCommodeMirrorWidthCm: ui.chestCommodeMirrorWidthCm ?? widthCm,
+    cfgSnapshot,
   });
 
   const base = { where: 'builder/chest_mode_pipeline' };

@@ -5,7 +5,7 @@ import { pickChestModeUi } from './build_wardrobe_flow_context_ui.js';
 import { resolveBuildWardrobeContextReaders } from './build_wardrobe_flow_context_readers.js';
 import { createBuildStringNormalizer } from './build_string_normalizer.js';
 
-import type { ProjectSavedNotesLike } from '../../../types';
+import type { ConfigStateLike, ProjectSavedNotesLike, UnknownRecord } from '../../../types';
 import type { PreparedBuildWardrobeFlow } from './build_wardrobe_flow_prepare.js';
 
 export type PreparedBuildWardrobeContextSetup = {
@@ -25,7 +25,7 @@ export function prepareBuildWardrobeContextSetup(
     prepared;
   const { cleanGroup, getNotesForSave, calculateModuleStructure, getMaterial, addOutlines, buildChestOnly } =
     deps;
-  const { state, ui } = buildState;
+  const { state, ui, cfgSnapshot } = buildState;
 
   const readers = resolveBuildWardrobeContextReaders({
     label,
@@ -52,6 +52,7 @@ export function prepareBuildWardrobeContextSetup(
       heightCm,
       depthCm,
       drawersCount: chestDrawersCount,
+      cfgSnapshot,
       buildChestOnly:
         readFunction<
           (args: {
@@ -72,6 +73,7 @@ export function prepareBuildWardrobeContextSetup(
             chestCommodeEnabled: boolean;
             chestCommodeMirrorHeightCm: number | string;
             chestCommodeMirrorWidthCm: number | string;
+            cfgSnapshot: ConfigStateLike | UnknownRecord;
           }) => void
         >(buildChestOnly) || undefined,
     })

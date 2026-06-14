@@ -14,7 +14,6 @@ import {
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { resolveBaseLegGeometrySpec } from '../features/base_leg_support.js';
 import { makeDrawerBoxPartId } from '../features/drawer_box_identity.js';
-import { getCfg } from './store_access.js';
 
 import type { AppContainer, UnknownRecord } from '../../../types/index.js';
 
@@ -34,6 +33,7 @@ import {
   resolveChestModeDrawerBoxMaterial,
   resolveChestModeMaterialPalette,
 } from './visuals_chest_mode_materials.js';
+import { readChestModeCfgSnapshotFromOpts } from './visuals_chest_mode_config.js';
 import { createInternalDrawerBox } from './visuals_chest_mode_drawer_box.js';
 import { createChestDrawerFrontVisual } from './visuals_chest_mode_drawer_front.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
@@ -57,9 +57,10 @@ export function buildChestOnly(App: AppContainer, opts?: UnknownRecord | null) {
   if (!wardrobeGroup) return;
 
   const inputs = resolveChestModeBuildInputs(App, opts || null);
-  const cfg = getCfg(App);
+  const cfg = readChestModeCfgSnapshotFromOpts(opts || null);
   const bodyState = resolveChestModeBodyMaterialState({
     App,
+    cfg,
     colorChoice: inputs.colorChoice,
     customColor: inputs.customColor,
   });
@@ -67,6 +68,7 @@ export function buildChestOnly(App: AppContainer, opts?: UnknownRecord | null) {
   const getChestPartMat = createChestModePartMaterialResolver({
     App,
     THREE,
+    cfg,
     globalBodyMat: palette.globalBodyMat,
     drawerBoxMat: palette.drawerBoxMat,
   });
@@ -355,6 +357,7 @@ export function buildChestOnly(App: AppContainer, opts?: UnknownRecord | null) {
     __kind: 'chestModeBuildContext',
     App,
     THREE,
+    cfg,
   } as BuildContextLike);
 
   if (cfg.showDimensions && addDimensionLine) {

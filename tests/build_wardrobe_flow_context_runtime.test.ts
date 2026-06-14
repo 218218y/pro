@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { pickChestModeUi } from '../esm/native/builder/build_wardrobe_flow_context_ui.ts';
+import { prepareBuildWardrobeContextSetup } from '../esm/native/builder/build_wardrobe_flow_context_setup.ts';
 import { resolveBuildWardrobeContextReaders } from '../esm/native/builder/build_wardrobe_flow_context_readers.ts';
 import { resolveBuildWardrobeSplitMetrics } from '../esm/native/builder/build_wardrobe_flow_context_split.ts';
 import {
@@ -27,6 +28,99 @@ test('build wardrobe context runtime: chest ui sanitizer keeps only canonical fi
       customColor: '#fff',
     }
   );
+});
+
+test('build wardrobe context runtime: chest-only path forwards the canonical cfg snapshot', () => {
+  const cfgSnapshot = { showDimensions: false, doorMountMode: 'inset' };
+  const calls: any[] = [];
+  const App: any = {
+    services: {
+      builder: {
+        handles: {
+          applyHandles(opts?: unknown) {
+            calls.push(['handles', opts ?? null]);
+          },
+        },
+        registry: {
+          reset() {
+            calls.push('registry.reset');
+          },
+          finalize() {
+            calls.push('registry.finalize');
+          },
+        },
+      },
+    },
+    render: {
+      wardrobeGroup: { children: [] },
+      renderer: {
+        render() {
+          calls.push('viewport.render');
+        },
+      },
+      scene: {},
+      camera: {},
+      controls: {
+        update() {
+          calls.push('controls.update');
+        },
+      },
+    },
+  };
+
+  const result = prepareBuildWardrobeContextSetup({
+    App,
+    label: 'unit',
+    deps: {
+      cleanGroup(group: any) {
+        group.children = [];
+        calls.push('cleanGroup');
+      },
+      getNotesForSave() {
+        return [];
+      },
+      calculateModuleStructure() {
+        return [];
+      },
+      getMaterial() {
+        return null;
+      },
+      addOutlines() {},
+      buildChestOnly(args: any) {
+        calls.push(['buildChestOnly', args]);
+      },
+    },
+    buildState: {
+      state: { config: cfgSnapshot },
+      ui: {
+        isChestMode: true,
+        baseType: 'legs',
+        colorChoice: 'white',
+        customColor: '',
+      },
+      runtime: {},
+      globalClickMode: true,
+      hadEditHold: false,
+      cfgSnapshot,
+    },
+    widthCm: 100,
+    heightCm: 120,
+    depthCm: 50,
+    doorsCount: 0,
+    chestDrawersCount: 4,
+    sketchMode: false,
+  } as any);
+
+  assert.equal(result, null);
+  const buildCall = calls.find(call => Array.isArray(call) && call[0] === 'buildChestOnly');
+  assert.ok(buildCall);
+  assert.equal(buildCall[1].cfgSnapshot, cfgSnapshot);
+  assert.deepEqual(calls.slice(-4), [
+    ['handles', { triggerRender: false }],
+    'viewport.render',
+    'controls.update',
+    'registry.finalize',
+  ]);
 });
 
 test('build wardrobe context runtime: reader normalization keeps fallback getMaterial + sketch-only outlines', () => {

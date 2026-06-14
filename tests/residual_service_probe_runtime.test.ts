@@ -64,6 +64,7 @@ test('residual slot access runtime: scene/project seams and chest-mode builder h
       heightCm: 120,
       depthCm: 50,
       drawersCount: 4,
+      cfgSnapshot: { showDimensions: false },
       buildChestOnly(args) {
         built.push(args);
       },
@@ -72,6 +73,7 @@ test('residual slot access runtime: scene/project seams and chest-mode builder h
   );
 
   assert.equal(built.length, 1);
+  assert.deepEqual((built[0] as { cfgSnapshot?: unknown }).cfgSnapshot, { showDimensions: false });
   assert.deepEqual(calls, [
     ['handles', { triggerRender: false }],
     ['render', true, true],

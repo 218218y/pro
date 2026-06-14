@@ -1,8 +1,6 @@
 import { isDrawerBoxPartId } from '../features/drawer_box_identity.js';
-import { readMap } from '../runtime/maps_access.js';
 import { hasCustomUploadedTexture } from '../runtime/textures_cache_access.js';
 import { getBaseLegColorHex, type BaseLegColor } from '../features/base_leg_support.js';
-import { getCfg } from './store_access.js';
 
 import type {
   AppContainer,
@@ -19,6 +17,7 @@ import {
   getMirrorMaterialFromServices,
   readChestModeIndividualColorsMap,
 } from './visuals_chest_mode_runtime.js';
+import { requireChestModeConfigSnapshot } from './visuals_chest_mode_config.js';
 
 export type ChestModeBodyMaterialState = {
   colorHex: string;
@@ -32,24 +31,22 @@ export type ChestModeMaterialPalette = {
 };
 
 export type ChestModePartColorValueResolverInput = {
-  App: AppContainer;
-  cfg?: ConfigStateLike;
+  App?: AppContainer;
+  cfg: ConfigStateLike;
   individualColors?: IndividualColorsMap | null;
 };
-
-const EMPTY_CONFIG_STATE: ConfigStateLike = {};
 
 export function resolveChestModeBodyMaterialState(input: {
   App?: AppContainer;
   colorChoice?: unknown;
   customColor?: unknown;
-  cfg?: ConfigStateLike;
+  cfg: ConfigStateLike;
   hasCustomTexture?: boolean;
   findSavedColor?: ((cfg: ConfigStateLike, id: string) => SavedColorLike | null) | null;
 }): ChestModeBodyMaterialState {
   const colorChoice = String(input.colorChoice || '#ffffff');
   const customColor = String(input.customColor || '#ffffff');
-  const cfg = input.cfg || (input.App ? getCfg(input.App) : EMPTY_CONFIG_STATE);
+  const cfg = requireChestModeConfigSnapshot(input.cfg, 'visuals_chest_mode.materials');
   const hasCustomTexture =
     typeof input.hasCustomTexture === 'boolean'
       ? input.hasCustomTexture
@@ -92,12 +89,11 @@ export function resolveChestModeMaterialPalette(input: {
 export function createChestModePartColorValueResolver(
   input: ChestModePartColorValueResolverInput
 ): (partId: string) => string | null | undefined {
-  const App = input.App;
-  const cfg = input.cfg || getCfg(App);
+  const cfg = requireChestModeConfigSnapshot(input.cfg, 'visuals_chest_mode.colorResolver');
   const individualColors =
-    input.individualColors ||
-    readChestModeIndividualColorsMap(readMap(App, 'individualColors')) ||
-    readChestModeIndividualColorsMap(cfg.individualColors);
+    typeof input.individualColors === 'undefined'
+      ? readChestModeIndividualColorsMap(cfg.individualColors)
+      : readChestModeIndividualColorsMap(input.individualColors);
 
   return (partId: string) => {
     if (!cfg.isMultiColorMode || !individualColors || !partId) return undefined;
@@ -128,14 +124,14 @@ export function createChestModePartMaterialResolver(input: {
   THREE: ThreeLike;
   globalBodyMat: unknown;
   drawerBoxMat?: unknown;
-  cfg?: ConfigStateLike;
+  cfg: ConfigStateLike;
   getMaterial?: BuilderGetMaterialFn | null;
   individualColors?: IndividualColorsMap | null;
   resolveMirrorMaterial?: (() => unknown) | null;
 }): (partId: string) => unknown {
   const App = input.App;
   const THREE = input.THREE;
-  const cfg = input.cfg || getCfg(App);
+  const cfg = requireChestModeConfigSnapshot(input.cfg, 'visuals_chest_mode.materialResolver');
   const getMaterial =
     input.getMaterial || ((...args: Parameters<BuilderGetMaterialFn>) => getChestModeMaterial(App, ...args));
   const getPartColorValue = createChestModePartColorValueResolver({

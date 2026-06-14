@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { makeDrawerBoxPartId } from '../esm/native/features/drawer_box_identity.ts';
 import { buildChestOnly } from '../esm/native/builder/visuals_chest_mode.ts';
 import {
+  createChestModePartColorValueResolver,
   resolveChestModeBodyMaterialState,
   resolveChestModeDrawerBoxMaterial,
   resolveChestModeMaterialPalette,
@@ -80,6 +81,16 @@ class FakeMaterial {
 }
 class FakeMeshStandardMaterial extends FakeMaterial {}
 class FakeMeshBasicMaterial extends FakeMaterial {}
+
+function createChestCfg(overrides: Record<string, unknown> = {}) {
+  return {
+    showDimensions: true,
+    isMultiColorMode: true,
+    individualColors: { chest_drawer_1: 'mirror' },
+    savedColors: [{ id: 'saved_tex', type: 'texture', value: 'oak' }],
+    ...overrides,
+  };
+}
 
 function assertChestDimensionScales(
   actual: unknown[],
@@ -175,10 +186,7 @@ function createChestApp(opts: { createDoorVisual?: (...args: any[]) => unknown }
       getState() {
         return {
           config: {
-            showDimensions: true,
-            isMultiColorMode: true,
-            individualColors: { chest_drawer_1: 'mirror' },
-            savedColors: [{ id: 'saved_tex', type: 'texture', value: 'oak' }],
+            ...createChestCfg(),
           },
           ui: {},
           runtime: {},
@@ -241,6 +249,40 @@ test('visuals chest mode input/material helpers normalize chest-only UI and text
     }),
     { colorHex: 'saved_tex', useTexture: true }
   );
+
+  assert.throws(
+    () =>
+      resolveChestModeBodyMaterialState({
+        colorChoice: '#ffffff',
+        customColor: '#ffffff',
+      } as any),
+    /cfgSnapshot is required/
+  );
+});
+
+test('visuals chest mode color resolver reads only from the active cfg snapshot', () => {
+  const { App } = createChestApp();
+  App.store.getState = () => ({
+    config: {
+      showDimensions: false,
+      isMultiColorMode: true,
+      individualColors: { chest_drawer_0: '#000000' },
+    },
+    ui: {},
+    runtime: {},
+    mode: {},
+    meta: {},
+  });
+
+  const emptySnapshotResolver = createChestModePartColorValueResolver({
+    cfg: createChestCfg({ individualColors: {} }) as any,
+  });
+  assert.equal(emptySnapshotResolver('chest_drawer_0'), undefined);
+
+  const activeSnapshotResolver = createChestModePartColorValueResolver({
+    cfg: createChestCfg({ individualColors: { chest_drawer_0: '#123456' } }) as any,
+  });
+  assert.equal(activeSnapshotResolver('chest_drawer_0'), '#123456');
 });
 
 test('visuals chest mode material palette keeps drawer boxes on independent white body material', () => {
@@ -306,6 +348,7 @@ test('visuals chest mode build creates wide-leg chest drawers, mirror override, 
     baseLegHeightCm: 15,
     baseLegWidthCm: 5,
     colorChoice: '#ffffff',
+    cfgSnapshot: createChestCfg(),
   });
 
   assert.equal(App.render.drawersArray.length, 3);
@@ -356,6 +399,7 @@ test('visuals chest mode build adds commode back panel, tracked mirror surface, 
     chestCommodeEnabled: true,
     chestCommodeMirrorHeightCm: 110,
     chestCommodeMirrorWidthCm: 150,
+    cfgSnapshot: createChestCfg({ individualColors: {} }),
   });
 
   const back = wardrobeGroup.children.find((child: any) => child?.userData?.partId === 'chest_commode_back');
@@ -400,6 +444,7 @@ test('visuals chest mode commode dimensions do not duplicate mirror width when i
     chestCommodeEnabled: true,
     chestCommodeMirrorHeightCm: 110,
     chestCommodeMirrorWidthCm: 160,
+    cfgSnapshot: createChestCfg({ individualColors: {} }),
   });
 
   const labels = dimensionCalls.map(call => call[3]);
@@ -437,6 +482,11 @@ test('visuals chest mode build keeps drawer boxes white unless the drawer box is
     baseLegHeightCm: 15,
     baseLegWidthCm: 5,
     colorChoice: '#ffffff',
+    cfgSnapshot: createChestCfg({
+      showDimensions: false,
+      isMultiColorMode: true,
+      individualColors: { chest_drawer_0: '#884422', [secondDrawerBoxId]: '#226688' },
+    }),
   });
 
   const firstDrawer = wardrobeGroup.children.find(
@@ -530,6 +580,13 @@ test('visuals chest mode build routes chest drawer fronts through regular door v
     colorChoice: '#ffffff',
     doorStyle: 'profile',
     isGroovesEnabled: true,
+    cfgSnapshot: createChestCfg({
+      showDimensions: false,
+      isMultiColorMode: true,
+      individualColors: {},
+      groovesMap: { groove_chest_drawer_0: true },
+      doorStyleMap: { chest_drawer_1: 'double_profile' },
+    }),
   });
 
   assert.equal(calls.length, 2);
@@ -587,6 +644,23 @@ test('visuals chest mode renders saved door trims on chest drawer fronts', () =>
     baseLegHeightCm: 15,
     baseLegWidthCm: 5,
     colorChoice: '#ffffff',
+    cfgSnapshot: createChestCfg({
+      showDimensions: false,
+      isMultiColorMode: false,
+      individualColors: {},
+      doorTrimMap: {
+        chest_drawer_0: [
+          {
+            id: 'trim_chest_drawer_0_center',
+            axis: 'horizontal',
+            color: 'gold',
+            span: 'half',
+            centerXNorm: 0.5,
+            centerYNorm: 0.5,
+          },
+        ],
+      },
+    }),
   });
 
   const firstDrawer = wardrobeGroup.children.find(
@@ -637,6 +711,12 @@ test('visuals chest mode uses inset door mount thickness and sinks drawer fronts
     baseLegHeightCm: 15,
     baseLegWidthCm: 5,
     colorChoice: '#ffffff',
+    cfgSnapshot: createChestCfg({
+      showDimensions: false,
+      isMultiColorMode: false,
+      doorMountMode: 'inset',
+      individualColors: {},
+    }),
   });
 
   const leftSide = wardrobeGroup.children.find((child: any) => child?.userData?.partId === 'chest_left');

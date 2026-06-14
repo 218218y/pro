@@ -915,6 +915,7 @@ test('[builder-surface-family] visuals/module seams stay consolidated behind can
   const chestSeam = read('esm/native/builder/visuals_chest_mode.ts');
   const chestRuntime = read('esm/native/builder/visuals_chest_mode_runtime.ts');
   const chestInputs = read('esm/native/builder/visuals_chest_mode_inputs.ts');
+  const chestConfig = read('esm/native/builder/visuals_chest_mode_config.ts');
   const chestMaterials = read('esm/native/builder/visuals_chest_mode_materials.ts');
   const chestDrawerBox = read('esm/native/builder/visuals_chest_mode_drawer_box.ts');
   const chestBuild = read('esm/native/builder/visuals_chest_mode_build.ts');
@@ -924,9 +925,16 @@ test('[builder-surface-family] visuals/module seams stay consolidated behind can
   assert.match(chestSeam, /visuals_chest_mode_build\.js/);
   assert.match(chestRuntime, /export function ensureChestModeApp\(/);
   assert.match(chestInputs, /export function resolveChestModeBuildInputs\(/);
+  assert.match(chestConfig, /export function requireChestModeConfigSnapshot\(/);
+  assert.match(chestConfig, /cfgSnapshot is required/);
   assert.match(chestMaterials, /export function resolveChestModeBodyMaterialState\(/);
+  assert.match(chestMaterials, /requireChestModeConfigSnapshot/);
+  assert.doesNotMatch(chestMaterials, /getCfg\(/);
+  assert.doesNotMatch(chestMaterials, /readMap\(/);
   assert.match(chestDrawerBox, /export const createInternalDrawerBox/);
   assert.match(chestBuild, /export function buildChestOnly\(/);
+  assert.match(chestBuild, /readChestModeCfgSnapshotFromOpts/);
+  assert.doesNotMatch(chestBuild, /getCfg\(/);
   assert.match(chestBuild, /applyFrontRevealFrames\(\{/);
   assert.doesNotMatch(chestBuild, /shadowLine/);
   assert.doesNotMatch(chestBuild, /MeshBasicMaterial\(\{ color: 0x000000 \}\)/);

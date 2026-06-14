@@ -281,8 +281,15 @@ export interface BuilderBuildChestOnlyOptsLike extends UnknownRecord {
   baseLegColor?: unknown;
   basePlinthHeightCm?: unknown;
   baseLegHeightCm?: unknown;
+  baseLegWidthCm?: unknown;
   colorChoice?: unknown;
   customColor?: unknown;
+  doorStyle?: unknown;
+  isGroovesEnabled?: unknown;
+  chestCommodeEnabled?: unknown;
+  chestCommodeMirrorHeightCm?: unknown;
+  chestCommodeMirrorWidthCm?: unknown;
+  cfgSnapshot?: ConfigStateLike | UnknownRecord | null;
 }
 export type BuilderBuildChestOnlyFn = (opts?: BuilderBuildChestOnlyOptsLike | null) => unknown;
 export interface BuilderBuildCornerWingMaterialsLike extends UnknownRecord {
