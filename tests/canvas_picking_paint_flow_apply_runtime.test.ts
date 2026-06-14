@@ -295,6 +295,36 @@ test('paint special mutation materializes an inherited full-door mirror before r
   assert.equal(state.mirrorLayout.d3_full, undefined);
 });
 
+test('paint special mutation materializes inherited corner full-door mirror before removing only the clicked segment', () => {
+  const state = createManualState({
+    App: createApp({ ui: { currentCurtainChoice: 'linen' } }),
+    special0: { corner_door_1_full: 'mirror' },
+  });
+
+  applyPaintPartMutation({
+    state,
+    paintPartKey: 'corner_door_1_bot',
+    paintSelection: 'mirror',
+    clickArgs: {
+      App: state.App,
+      foundPartId: 'corner_door_1_bot',
+      activeStack: 'top',
+      isPaintMode: true,
+    },
+    resolveMirrorLayout: () => ({
+      nextLayout: null,
+      removeMatch: null,
+      canApplyMirror: true,
+      hitFaceSign: 1,
+      isFullDoorMirror: true,
+    }),
+  });
+
+  assert.equal(state.special.corner_door_1_full, undefined);
+  assert.equal(state.special.corner_door_1_bot, undefined);
+  assert.equal(state.special.corner_door_1_top, 'mirror');
+});
+
 test('paint glass mutation defaults every clicked glass front to regular profile glass and supports explicit glass variants', () => {
   const state = createManualState({
     App: createApp({ ui: { currentCurtainChoice: 'none' } }),
@@ -563,6 +593,26 @@ test('paint color mutation materializes an inherited full-door color before remo
   assert.equal(state.colors.d7_full, undefined);
   assert.equal(state.colors.d7_top, undefined);
   assert.equal(state.colors.d7_bot, 'oak');
+});
+
+test('paint color mutation materializes inherited corner full-door color before removing only the clicked segment', () => {
+  const state = createManualState({ colors0: { corner_door_1_full: 'oak' } });
+
+  applyPaintPartMutation({
+    state,
+    paintPartKey: 'corner_door_1_bot',
+    paintSelection: 'oak',
+    clickArgs: {
+      App: state.App,
+      foundPartId: 'corner_door_1_bot',
+      activeStack: 'top',
+      isPaintMode: true,
+    },
+  });
+
+  assert.equal(state.colors.corner_door_1_full, undefined);
+  assert.equal(state.colors.corner_door_1_bot, undefined);
+  assert.equal(state.colors.corner_door_1_top, 'oak');
 });
 
 test('paint color mutation writes a split-segment override without erasing the inherited full-door color', () => {

@@ -52,7 +52,7 @@ test('[door-paint-hover] mirror hover reads canonical draft fields and special p
   assert.match(actionPreview, /const mirrorDraft = __readMirrorDraft\(readUi, App\);/);
   assert.match(actionPreview, /draft:\s*mirrorDraft/);
   assert.match(actionPreview, /const hasSizedDraft = __hasMirrorSizedDraft\(readUi, App\);/);
-  assert.match(actionPreview, /readMirrorLayoutList\(mirrorLayoutMap\[partKey\]\)/);
+  assert.match(actionPreview, /readDoorVisualMirrorLayout\(mirrorLayoutMap, partKey\)/);
   assert.match(actionPreview, /findMirrorLayoutMatchInRect/);
   assert.match(actionPreview, /markerUd\.__matAdd/);
   assert.match(actionPreview, /markerUd\.__matRemove/);

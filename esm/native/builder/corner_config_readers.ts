@@ -1,4 +1,5 @@
 import type { AppContainer, ConfigStateLike, KnownMapName, MapsByName } from '../../../types/index.js';
+import { buildDoorVisualLookupKeys, readDoorVisualMapValue } from '../features/door_visual_map_lookup.js';
 import { normalizeKnownMapSnapshot } from '../runtime/maps_access.js';
 import { asRecord } from '../runtime/record.js';
 import { getCfg } from './store_access.js';
@@ -78,9 +79,14 @@ export function createCornerGrooveReader(cfgSnapshot: unknown): SnapshotReader {
   return (partId: string) => {
     const baseId = String(partId || '');
     if (!baseId) return undefined;
-    const prefixed = readScopedSnapshotValue(key => grooves[`groove_${key}`], baseId);
-    if (typeof prefixed !== 'undefined') return prefixed;
-    return grooves[baseId];
+    const keys = buildDoorVisualLookupKeys(baseId);
+    for (let i = 0; i < keys.length; i += 1) {
+      const prefixed = readScopedSnapshotValue(key => grooves[`groove_${key}`], keys[i]);
+      if (typeof prefixed !== 'undefined') return prefixed;
+      const raw = grooves[keys[i]];
+      if (typeof raw !== 'undefined') return raw;
+    }
+    return undefined;
   };
 }
 
@@ -88,7 +94,7 @@ export function createCornerCurtainReader(cfgSnapshot: unknown): SnapshotReader 
   const curtains = readCornerConfigMap(cfgSnapshot, 'curtainMap');
   return (partId: string) => {
     const baseId = String(partId || '');
-    return baseId ? curtains[baseId] : undefined;
+    return baseId ? readDoorVisualMapValue(curtains, baseId) : undefined;
   };
 }
 

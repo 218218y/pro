@@ -74,16 +74,21 @@ export function readPartColorEntry(args: {
   if (!partId || !isMulti || !individualColors) return undefined;
 
   const scopedPartId = scopeCornerPartKeyForStack(partId, stackKey);
-  const colorEntry = readDoorVisualMapEntry(individualColors, scopedPartId);
-  if (colorEntry) return colorEntry.value;
-
   if (scopedPartId !== partId) {
+    const scopedColorEntry = readDoorVisualMapEntry(individualColors, scopedPartId);
+    if (scopedColorEntry) return scopedColorEntry.value;
+    if (Object.prototype.hasOwnProperty.call(individualColors, scopedPartId)) {
+      return individualColors[scopedPartId];
+    }
     const shelfGroupPartId = isIndividualShelfPartId(partId) ? resolveShelfGroupPartId(partId) : null;
     if (shelfGroupPartId && Object.prototype.hasOwnProperty.call(individualColors, shelfGroupPartId)) {
       return individualColors[shelfGroupPartId];
     }
     return undefined;
   }
+
+  const colorEntry = readDoorVisualMapEntry(individualColors, partId);
+  if (colorEntry) return colorEntry.value;
 
   const shelfGroupPartId = isIndividualShelfPartId(partId) ? resolveShelfGroupPartId(partId) : null;
   if (shelfGroupPartId && Object.prototype.hasOwnProperty.call(individualColors, shelfGroupPartId)) {

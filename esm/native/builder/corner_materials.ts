@@ -1,6 +1,7 @@
 // Corner wing: material resolution + multi-color/special doors
 
 import { CORNER_SHELF_GROUP_PART_ID } from '../features/shelf_part_identity.js';
+import { readDoorVisualMapEntry } from '../features/door_visual_map_lookup.js';
 import { getCommonMatsOrThrow } from './common_mats_resolver.js';
 import { asRecord, cloneRecord } from '../runtime/record.js';
 
@@ -139,13 +140,14 @@ export function createCornerWingMaterials(args: {
     const useScopedNamespace =
       stackSplitEnabled && stackKey === 'bottom' && typeof stackScopePartKey === 'function';
     const scopedId = useScopedNamespace ? String(stackScopePartKey(baseId) || '') : baseId;
-    const scopedVal = scopedId ? rec[scopedId] : undefined;
-    if (typeof scopedVal !== 'undefined') return scopedVal;
+    const scopedEntry = scopedId ? readDoorVisualMapEntry(rec, scopedId) : null;
+    if (scopedEntry) return scopedEntry.value;
     // Root fix for stacked corner wardrobes:
     // when the lower unit has its own lower_* namespace, it must NOT silently inherit
     // upper-unit per-part overrides (paint / mirror / glass / curtain) from the unscoped key.
     if (useScopedNamespace && scopedId && scopedId !== baseId) return undefined;
-    return rec[baseId];
+    const baseEntry = readDoorVisualMapEntry(rec, baseId);
+    return baseEntry ? baseEntry.value : undefined;
   };
 
   const readScopedReader = (reader: ScopedReaderLike, partId: unknown): unknown => {

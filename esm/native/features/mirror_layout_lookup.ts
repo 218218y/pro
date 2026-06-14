@@ -17,6 +17,7 @@ import {
   type MirrorRect,
   type ResolvedMirrorPlacement,
 } from './mirror_layout_geometry.js';
+import { buildDoorVisualLookupKeys } from './door_visual_map_lookup.js';
 
 export type MirrorLayoutHitMatch = {
   index: number;
@@ -41,17 +42,11 @@ export function readMirrorLayoutListForPart(args: {
     out.push(key);
   };
 
-  const isSegmentedDoorBaseKey = (value: string): boolean =>
-    /^(?:lower_)?d\d+$/i.test(value) ||
-    /^(?:lower_)?corner_door_\d+$/i.test(value) ||
-    /^(?:lower_)?corner_pent_door_\d+$/i.test(value);
-
   const pushVariants = (out: string[], seen: Record<string, true>, value: unknown): void => {
     const key = typeof value === 'string' ? value : String(value ?? '');
     if (!key) return;
-    pushCandidate(out, seen, key);
-    if (key.startsWith('lower_')) pushCandidate(out, seen, key.slice('lower_'.length));
-    if (isSegmentedDoorBaseKey(key)) pushCandidate(out, seen, `${key}_full`);
+    const keys = buildDoorVisualLookupKeys(key);
+    for (let i = 0; i < keys.length; i += 1) pushCandidate(out, seen, keys[i]);
   };
 
   const candidates: string[] = [];
