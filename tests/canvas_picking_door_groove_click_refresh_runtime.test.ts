@@ -183,6 +183,41 @@ test('regular door groove click updates an existing grooved door count instead o
   assert.equal(buildRequests.length, 1);
 });
 
+test('regular segmented door groove click materializes inherited full-door groove before removing the clicked segment', () => {
+  const { App, state, buildRequests } = createApp();
+  state.config.groovesMap = { groove_d1_full: true };
+  state.config.grooveLinesCountMap = { d1_full: 7 };
+  App.render.doorsArray = [
+    { group: { userData: { partId: 'd1_bot' }, children: [] } },
+    { group: { userData: { partId: 'd1_top' }, children: [] } },
+  ];
+
+  const handled = handleCanvasDoorGrooveClick({
+    App,
+    effectiveDoorId: 'd1_bot',
+    foundPartId: null,
+    activeStack: 'top',
+    foundModuleStack: 'top',
+    doorHitObject: {
+      userData: {
+        partId: 'd1_bot',
+        __doorWidth: 0.45,
+      },
+    },
+  });
+
+  assert.equal(handled, true);
+  assert.equal(state.config.groovesMap.groove_d1_full, undefined);
+  assert.equal(state.config.groovesMap.groove_d1_bot, undefined);
+  assert.equal(state.config.groovesMap.groove_d1_top, true);
+  assert.equal(state.config.grooveLinesCountMap.d1_full, undefined);
+  assert.equal(state.config.grooveLinesCountMap.d1_bot, undefined);
+  assert.equal(state.config.grooveLinesCountMap.d1_top, 7);
+  assert.equal(buildRequests.length, 1);
+  assert.equal(buildRequests[0].meta.source, 'groove:click');
+  assert.equal(buildRequests[0].meta.immediate, true);
+});
+
 test('free sketch-box door groove click updates changed line count without requiring remove and re-add', () => {
   const { App, state } = createApp();
   const patchCalls: Array<{

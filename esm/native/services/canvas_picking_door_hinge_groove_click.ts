@@ -30,6 +30,14 @@ import {
 } from './canvas_picking_door_sketch_box_edit.js';
 import { requestDoorAuthoringImmediateRefresh } from './canvas_picking_door_authoring_burst.js';
 import {
+  isDoorGrooveSegmentPartId,
+  readDoorGrooveBasePartId,
+  readDoorGrooveFullPartId,
+  readDoorGrooveLinesCountForPart,
+  readDoorGrooveMapFlag,
+  readDoorGrooveSiblingSegmentPartIds,
+} from './canvas_picking_door_groove_segments.js';
+import {
   __wp_str,
   __wp_hingeDir,
   __wp_map,
@@ -104,7 +112,7 @@ function readSketchBoxSegmentBasePartId(partId: string): string {
 }
 
 function hasGrooveKey(map: Record<string, unknown> | null | undefined, partId: string): boolean {
-  return !!map && !!partId && (map[`groove_${partId}`] != null || map[partId] != null);
+  return readDoorGrooveMapFlag(map, partId) === true;
 }
 
 function hasAnySketchBoxSegmentGrooveKey(
@@ -224,6 +232,8 @@ export function handleCanvasDoorGrooveClick(args: CanvasDoorGrooveClickArgs): bo
 
     const grooveKey = `groove_${targetId}`;
     const groovesMap = __wp_map(App, 'groovesMap');
+    const grooveLinesCountMap = readGrooveLinesCountMap(App);
+    const targetGrooveFlag = readDoorGrooveMapFlag(groovesMap, targetId);
     const sketchSegmentBasePartId = isSketchBoxSegmentTarget ? readSketchBoxSegmentBasePartId(targetId) : '';
     const sketchSegmentDoor =
       isSketchBoxSegmentTarget && sketchTarget
@@ -235,14 +245,30 @@ export function handleCanvasDoorGrooveClick(args: CanvasDoorGrooveClickArgs): bo
     );
     const isInheritedSketchSegmentGrooveOn =
       isSketchBoxSegmentTarget && !hasExplicitSketchSegmentGrooveState && sketchSegmentDoor?.groove === true;
-    const isGrooveOn = hasGrooveKey(groovesMap, targetId) || isInheritedSketchSegmentGrooveOn;
-    const grooveLinesCountMap = readGrooveLinesCountMap(App);
+    const regularSegmentBasePartId =
+      !isSketchBoxSegmentTarget && isDoorGrooveSegmentPartId(targetId)
+        ? readDoorGrooveBasePartId(targetId)
+        : '';
+    const regularSegmentFullPartId = regularSegmentBasePartId ? readDoorGrooveFullPartId(targetId) : '';
+    const isInheritedRegularSegmentGrooveOn =
+      !!regularSegmentFullPartId &&
+      targetGrooveFlag === null &&
+      hasGrooveKey(groovesMap, regularSegmentFullPartId);
+    const isGrooveOn =
+      targetGrooveFlag === true || isInheritedSketchSegmentGrooveOn || isInheritedRegularSegmentGrooveOn;
     const inheritedSketchSegmentGrooveLinesCount = isInheritedSketchSegmentGrooveOn
       ? normalizeGrooveLinesCount(sketchSegmentDoor?.grooveLinesCount)
       : null;
-    const currentGrooveLinesCount = isInheritedSketchSegmentGrooveOn
+    const inheritedRegularSegmentGrooveLinesCount = isInheritedRegularSegmentGrooveOn
+      ? readDoorGrooveLinesCountForPart(grooveLinesCountMap, regularSegmentFullPartId)
+      : null;
+    const inheritedGrooveLinesCount = isInheritedSketchSegmentGrooveOn
       ? inheritedSketchSegmentGrooveLinesCount
-      : normalizeGrooveLinesCount(grooveLinesCountMap[targetId]);
+      : inheritedRegularSegmentGrooveLinesCount;
+    const currentGrooveLinesCount =
+      isInheritedSketchSegmentGrooveOn || isInheritedRegularSegmentGrooveOn
+        ? inheritedGrooveLinesCount
+        : readDoorGrooveLinesCountForPart(grooveLinesCountMap, targetId);
     const shouldUpdateExistingGrooveLinesCount =
       isGrooveOn &&
       explicitGrooveLinesCountForClick !== null &&
@@ -252,14 +278,28 @@ export function handleCanvasDoorGrooveClick(args: CanvasDoorGrooveClickArgs): bo
     const siblingSketchSegmentPartIds = isInheritedSketchSegmentGrooveOn
       ? readSketchBoxSiblingSegmentPartIds(App, sketchSegmentBasePartId, targetId)
       : [];
-    if (isInheritedSketchSegmentGrooveOn) {
-      for (let i = 0; i < siblingSketchSegmentPartIds.length; i += 1) {
-        const siblingPartId = siblingSketchSegmentPartIds[i];
+    const siblingRegularSegmentPartIds = isInheritedRegularSegmentGrooveOn
+      ? readDoorGrooveSiblingSegmentPartIds({
+          App,
+          basePartId: regularSegmentBasePartId,
+          clickedPartId: targetId,
+        })
+      : [];
+    if (isInheritedSketchSegmentGrooveOn || isInheritedRegularSegmentGrooveOn) {
+      const siblingPartIds = isInheritedSketchSegmentGrooveOn
+        ? siblingSketchSegmentPartIds
+        : siblingRegularSegmentPartIds;
+      for (let i = 0; i < siblingPartIds.length; i += 1) {
+        const siblingPartId = siblingPartIds[i];
         if (!siblingPartId || siblingPartId === targetId) continue;
-        if (inheritedSketchSegmentGrooveLinesCount != null) {
-          nextGrooveLinesCountMap[siblingPartId] = inheritedSketchSegmentGrooveLinesCount;
+        if (inheritedGrooveLinesCount != null) {
+          nextGrooveLinesCountMap[siblingPartId] = inheritedGrooveLinesCount;
         }
       }
+    }
+    if (isInheritedRegularSegmentGrooveOn && regularSegmentFullPartId) {
+      delete nextGrooveLinesCountMap[regularSegmentFullPartId];
+      delete nextGrooveLinesCountMap[`groove_${regularSegmentFullPartId}`];
     }
     if (nextGrooveOn && grooveLinesCountForClick != null)
       nextGrooveLinesCountMap[targetId] = grooveLinesCountForClick;
@@ -284,15 +324,25 @@ export function handleCanvasDoorGrooveClick(args: CanvasDoorGrooveClickArgs): bo
         'groove:click:pendingCount'
       );
       cfgSetMap(App, 'grooveLinesCountMap', nextGrooveLinesCountMap, grooveCountRefreshGatedMeta);
-      if (isInheritedSketchSegmentGrooveOn) {
+      if (isInheritedSketchSegmentGrooveOn || isInheritedRegularSegmentGrooveOn) {
         const nextGroovesMap = { ...groovesMap };
-        for (let i = 0; i < siblingSketchSegmentPartIds.length; i += 1) {
-          const siblingPartId = siblingSketchSegmentPartIds[i];
+        const siblingPartIds = isInheritedSketchSegmentGrooveOn
+          ? siblingSketchSegmentPartIds
+          : siblingRegularSegmentPartIds;
+        if (isInheritedRegularSegmentGrooveOn && regularSegmentFullPartId) {
+          delete nextGroovesMap[`groove_${regularSegmentFullPartId}`];
+          delete nextGroovesMap[regularSegmentFullPartId];
+        }
+        for (let i = 0; i < siblingPartIds.length; i += 1) {
+          const siblingPartId = siblingPartIds[i];
           if (!siblingPartId || siblingPartId === targetId) continue;
           nextGroovesMap[`groove_${siblingPartId}`] = true;
         }
         if (nextGrooveOn) nextGroovesMap[grooveKey] = true;
-        else delete nextGroovesMap[grooveKey];
+        else {
+          delete nextGroovesMap[grooveKey];
+          delete nextGroovesMap[targetId];
+        }
         cfgSetMap(App, 'groovesMap', nextGroovesMap, grooveRefreshGatedMeta);
       } else if (!shouldUpdateExistingGrooveLinesCount) {
         if (!toggleGrooveViaActions(App, grooveKey, grooveRefreshGatedMeta)) {

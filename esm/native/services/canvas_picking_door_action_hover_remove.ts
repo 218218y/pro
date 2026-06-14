@@ -9,6 +9,13 @@ import {
 import type { DoorActionHoverResolvedState } from './canvas_picking_door_action_hover_contracts.js';
 import type { DoorActionHoverArgs } from './canvas_picking_door_hover_targets.js';
 import { __asObject, __scopeCornerHoverPartKey } from './canvas_picking_door_hover_targets.js';
+import {
+  hasAnyDoorGrooveSegmentMapEntry,
+  isDoorGrooveSegmentPartId,
+  readDoorGrooveBasePartId,
+  readDoorGrooveFullPartId,
+  readDoorGrooveMapFlag,
+} from './canvas_picking_door_groove_segments.js';
 
 function readDoorActionHoverFamilyPartIds(args: {
   hoverArgs: DoorActionHoverArgs;
@@ -110,7 +117,10 @@ export function readDoorActionHoverWillRemoveGroove(args: {
     const groovesMap = __asObject<UnknownRecord>(__wp_map(hoverArgs.App, 'groovesMap'));
     if (sketchTarget) {
       if (partKey && isSketchBoxDoorSegmentPartId(partKey)) {
-        return !!groovesMap && (groovesMap[`groove_${partKey}`] != null || groovesMap[partKey] != null);
+        const segmentFlag = readDoorGrooveMapFlag(groovesMap, partKey);
+        if (segmentFlag !== null) return segmentFlag;
+        const basePartId = readDoorGrooveBasePartId(partKey);
+        if (hasAnyDoorGrooveSegmentMapEntry(groovesMap, basePartId)) return false;
       }
       const sketchDoor = readSketchBoxDoorRecord(hoverArgs.App, sketchTarget, state.hitDoorStack);
       return sketchDoor?.groove === true;
@@ -118,7 +128,14 @@ export function readDoorActionHoverWillRemoveGroove(args: {
 
     if (!partKey) return false;
     if (!groovesMap) return false;
-    return groovesMap[`groove_${partKey}`] != null || groovesMap[partKey] != null;
+    const explicitFlag = readDoorGrooveMapFlag(groovesMap, partKey);
+    if (explicitFlag !== null) return explicitFlag;
+    if (isDoorGrooveSegmentPartId(partKey)) {
+      const basePartId = readDoorGrooveBasePartId(partKey);
+      if (hasAnyDoorGrooveSegmentMapEntry(groovesMap, basePartId)) return false;
+      return readDoorGrooveMapFlag(groovesMap, readDoorGrooveFullPartId(partKey)) === true;
+    }
+    return false;
   } catch {
     return false;
   }

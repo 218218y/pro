@@ -478,6 +478,44 @@ test('groove hover uses remove material when the next click will remove an exist
   assert.equal(doorMarker.material, 'remove');
 });
 
+test('groove hover uses remove material for a split door segment inheriting a full-door groove', () => {
+  const { app, wardrobeGroup, hitPoint, mapsState } = createApp();
+  const segmentOwner = createDoorOwner({ partId: 'd1_bot', wardrobeGroup, hingeLeft: true });
+  mapsState.groovesMap = { groove_d1_full: true };
+  const doorMarker = createMarker();
+
+  const handled = runGrooveHover({
+    app,
+    wardrobeGroup,
+    owner: segmentOwner,
+    hitPoint,
+    doorMarker,
+  });
+
+  assert.equal(handled, true);
+  assert.equal(doorMarker.visible, true);
+  assert.equal(doorMarker.material, 'remove');
+});
+
+test('groove hover uses add material after a split door groove was materialized away from the clicked segment', () => {
+  const { app, wardrobeGroup, hitPoint, mapsState } = createApp();
+  const segmentOwner = createDoorOwner({ partId: 'd1_bot', wardrobeGroup, hingeLeft: true });
+  mapsState.groovesMap = { groove_d1_top: true };
+  const doorMarker = createMarker();
+
+  const handled = runGrooveHover({
+    app,
+    wardrobeGroup,
+    owner: segmentOwner,
+    hitPoint,
+    doorMarker,
+  });
+
+  assert.equal(handled, true);
+  assert.equal(doorMarker.visible, true);
+  assert.equal(doorMarker.material, 'groove');
+});
+
 test('groove hover supports drawer fronts using drawer metrics when split door bounds are absent', () => {
   const { app, wardrobeGroup, hitPoint } = createApp();
   const drawerOwner = createDoorOwner({ partId: 'd1_draw_1', wardrobeGroup, hingeLeft: true });
