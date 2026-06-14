@@ -3,6 +3,12 @@
 // Owns per-segment material selection and visual creation for segmented sketch-door rebuild flows.
 
 import { resolveEffectiveDoorStyle } from '../features/door_style_overrides.js';
+import {
+  hasAnyDoorVisualSegmentMapEntry,
+  readDoorVisualPrefixedMapEntry,
+  readDoorVisualPrefixedOwnMapEntry,
+  readDoorVisualSegmentBasePartId,
+} from '../features/door_visual_map_lookup.js';
 import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 import { asRecord, isObject3DLike, type ValueRecord } from './post_build_extras_shared.js';
@@ -18,6 +24,29 @@ export type SketchSegmentVisualFlags = {
   segmentCurtain: string | null;
   segmentMirrorLayout: unknown;
 };
+
+const GROOVE_MAP_PREFIX = 'groove_';
+
+function readGrooveBooleanValue(value: unknown): boolean {
+  return value === true || value === 'true' || value === 1 || value === '1';
+}
+
+function readSketchSegmentGrooveMapFlag(map: ValueRecord | null | undefined, partId: string): boolean | null {
+  const entry = readDoorVisualPrefixedOwnMapEntry({ map, partId, prefix: GROOVE_MAP_PREFIX });
+  return entry ? readGrooveBooleanValue(entry.value) : null;
+}
+
+function readSketchSegmentGrooveVisualMapFlag(
+  map: ValueRecord | null | undefined,
+  partId: string
+): boolean | null {
+  const entry = readDoorVisualPrefixedMapEntry({ map, partId, prefix: GROOVE_MAP_PREFIX });
+  return entry ? readGrooveBooleanValue(entry.value) : null;
+}
+
+function hasAnySketchSegmentGrooveMapEntry(map: ValueRecord | null | undefined, basePartId: string): boolean {
+  return hasAnyDoorVisualSegmentMapEntry({ map, basePartId, prefix: GROOVE_MAP_PREFIX });
+}
 
 export function readSegmentMaterial(args: {
   runtime: SketchDoorCutsRuntime;
@@ -48,63 +77,23 @@ export function readSegmentMaterial(args: {
   return { segmentPartMat, segmentWoodMat, segmentMirrorMat };
 }
 
-function readSketchDoorBasePartId(partId: string): string {
-  return String(partId || '').replace(/_(?:full|top|bot|mid\d*)$/i, '');
-}
-
-function hasOwnSketchSegmentGroove(map: ValueRecord | null | undefined, key: string): boolean {
-  return !!map && !!key && Object.prototype.hasOwnProperty.call(map, key) && map[key] != null;
-}
-
-function isSketchBoxDoorSegmentPartId(partId: string): boolean {
-  return /^sketch_box(?:_free)?_.+_door(?:_|$)/.test(String(partId || ''));
-}
-
-function hasAnySketchBoxSegmentGroove(map: ValueRecord | null | undefined, basePartId: string): boolean {
-  if (!map || !basePartId) return false;
-  const prefixed = `groove_${basePartId}_`;
-  const raw = `${basePartId}_`;
-  const keys = Object.keys(map);
-  for (let i = 0; i < keys.length; i += 1) {
-    const key = keys[i];
-    if (map[key] == null) continue;
-    if (key.startsWith(prefixed) || key.startsWith(raw)) return true;
-  }
-  return false;
-}
-
 function readSketchSegmentGrooveEnabled(args: {
   groovesMap: ValueRecord | null | undefined;
   segmentPartId: string;
   sourceUserData?: ValueRecord | null;
 }): boolean {
   const { groovesMap, segmentPartId, sourceUserData } = args;
-  const basePartId = readSketchDoorBasePartId(segmentPartId);
-  const isSketchBoxDoorSegment =
-    isSketchBoxDoorSegmentPartId(segmentPartId) || sourceUserData?.__wpSketchBoxDoor === true;
+  const basePartId = readDoorVisualSegmentBasePartId(segmentPartId);
+  const hasExplicitSegmentState = hasAnySketchSegmentGrooveMapEntry(groovesMap, basePartId);
+  const directFlag = readSketchSegmentGrooveMapFlag(groovesMap, segmentPartId);
 
-  if (isSketchBoxDoorSegment) {
-    const sketchBoxSegmentKeys = [`groove_${segmentPartId}`, segmentPartId];
-    for (let i = 0; i < sketchBoxSegmentKeys.length; i += 1) {
-      if (hasOwnSketchSegmentGroove(groovesMap, sketchBoxSegmentKeys[i])) return true;
-    }
-    if (hasAnySketchBoxSegmentGroove(groovesMap, basePartId)) return false;
-    return sourceUserData?.__wpSketchBoxDoorGroove === true;
-  }
+  if (directFlag !== null) return directFlag;
+  if (hasExplicitSegmentState) return false;
 
-  if (sourceUserData && sourceUserData.__wpSketchBoxDoorGroove === true) return true;
-  const keys = [
-    `groove_${segmentPartId}`,
-    segmentPartId,
-    basePartId ? `groove_${basePartId}` : '',
-    basePartId,
-    basePartId ? `groove_${basePartId}_full` : '',
-    basePartId ? `${basePartId}_full` : '',
-  ];
-  for (let i = 0; i < keys.length; i += 1) {
-    if (hasOwnSketchSegmentGroove(groovesMap, keys[i])) return true;
-  }
-  return false;
+  const inheritedFlag = readSketchSegmentGrooveVisualMapFlag(groovesMap, segmentPartId);
+  if (inheritedFlag !== null) return inheritedFlag;
+
+  return sourceUserData?.__wpSketchBoxDoorGroove === true;
 }
 
 export function resolveSketchSegmentVisualFlags(args: {

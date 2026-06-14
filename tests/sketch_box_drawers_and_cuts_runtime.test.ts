@@ -251,6 +251,115 @@ test('segmented sketch box doors keep groove state per clicked segment only', ()
   );
 });
 
+test('free-placement split sketch box doors inherit full-door visual maps', () => {
+  const partId = 'sketch_box_free_0_boxVisual_door_main';
+  const doorGroup = createSketchBoxDoorForCuts(partId, 'boxVisual');
+  const visualCalls: Array<{
+    partId: string;
+    style: unknown;
+    isMirror: unknown;
+    hasGrooves: boolean;
+    mirrorLayout: unknown;
+  }> = [];
+  const mirrorLayout = [{ faceSign: 1, widthCm: 20, heightCm: 30 }];
+
+  applyBoxDoorCutsForTest({
+    doorGroup,
+    splitDoorsMap: {
+      [`split_${partId}`]: true,
+      [`splitpos_${partId}`]: [0.5],
+    },
+    cfgExtra: {
+      doorSpecialMap: { [partId]: 'mirror' },
+      doorStyleMap: { [partId]: 'double_profile' },
+      mirrorLayoutMap: { [partId]: mirrorLayout },
+      groovesMap: { [`groove_${partId}`]: true },
+    },
+    ctxCreate: {
+      createDoorVisual(
+        w: number,
+        h: number,
+        thickness: number,
+        mat: unknown,
+        style: unknown,
+        hasGrooves: boolean,
+        isMirror: unknown,
+        _curtainType: unknown,
+        _baseMaterial: unknown,
+        _frontFaceSign: unknown,
+        _forceCurtainFix: unknown,
+        inheritedMirrorLayout: unknown,
+        groovePartId: string
+      ) {
+        visualCalls.push({
+          partId: groovePartId,
+          style,
+          isMirror,
+          hasGrooves,
+          mirrorLayout: inheritedMirrorLayout,
+        });
+        return new FakeMesh(new FakeBoxGeometry(w, h, thickness), mat as FakeMaterial);
+      },
+    },
+  });
+
+  assert.deepEqual(
+    visualCalls.map(call => [call.partId, call.style, call.isMirror, call.hasGrooves, call.mirrorLayout]),
+    [
+      [`${partId}_bot`, 'double_profile', true, false, mirrorLayout],
+      [`${partId}_top`, 'double_profile', true, false, mirrorLayout],
+    ]
+  );
+});
+
+test('free-placement split sketch box door grooves inherit full-door state until a segment override exists', () => {
+  const partId = 'sketch_box_free_0_boxGroove_door_main';
+  const doorGroup = createSketchBoxDoorForCuts(partId, 'boxGroove');
+  const visualCalls: Array<{ partId: string; hasGrooves: boolean }> = [];
+
+  applyBoxDoorCutsForTest({
+    doorGroup,
+    splitDoorsMap: {
+      [`split_${partId}`]: true,
+      [`splitpos_${partId}`]: [0.5],
+    },
+    cfgExtra: {
+      groovesMap: {
+        [`groove_${partId}`]: true,
+        [`groove_${partId}_top`]: true,
+      },
+    },
+    ctxCreate: {
+      createDoorVisual(
+        w: number,
+        h: number,
+        thickness: number,
+        mat: unknown,
+        _style: unknown,
+        hasGrooves: boolean,
+        _isMirror: unknown,
+        _curtainType: unknown,
+        _baseMaterial: unknown,
+        _frontFaceSign: unknown,
+        _forceCurtainFix: unknown,
+        _mirrorLayout: unknown,
+        groovePartId: string
+      ) {
+        visualCalls.push({ partId: groovePartId, hasGrooves });
+        return new FakeMesh(new FakeBoxGeometry(w, h, thickness), mat as FakeMaterial);
+      },
+    },
+  });
+
+  assert.deepEqual(
+    visualCalls.map(call => [call.partId, call.hasGrooves]),
+    [
+      [`${partId}_bot`, false],
+      [`${partId}_top`, true],
+    ]
+  );
+});
+
 test('free-placement sketch box internal drawers render through internal drawer ops', () => {
   const capturedOps: Array<Record<string, unknown>> = [];
   const { applyInteriorSketchExtras, makeArgs } = createSketchInteriorHarness({

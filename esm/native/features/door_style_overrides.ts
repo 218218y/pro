@@ -1,5 +1,7 @@
 import type { DoorStyleMap, UnknownRecord } from '../../../types';
 
+import { readDoorVisualMapEntry } from './door_visual_map_lookup.js';
+
 export type DoorStyleOverrideValue = 'flat' | 'profile' | 'double_profile';
 
 export const DOOR_STYLE_OVERRIDE_PAINT_PREFIX = '__wp_door_style__:';
@@ -94,12 +96,6 @@ export function readDoorStyleMap(value: unknown): DoorStyleMap {
   return out;
 }
 
-function readDoorStyleOverrideFromMap(map: UnknownRecord, key: string): DoorStyleOverrideValue | null {
-  if (!key) return null;
-  const value = typeof map[key] === 'string' ? String(map[key]).trim().toLowerCase() : '';
-  return isDoorStyleOverrideValue(value) ? value : null;
-}
-
 export function resolveDoorStyleOverrideValue(
   doorStyleMap: DoorStyleMap | Record<string, unknown> | null | undefined,
   partId: unknown
@@ -107,20 +103,14 @@ export function resolveDoorStyleOverrideValue(
   const map = asRecord(doorStyleMap);
   if (!map) return null;
   const directKey = typeof partId === 'string' ? partId.trim() : String(partId ?? '').trim();
-  const direct = readDoorStyleOverrideFromMap(map, directKey);
-  if (direct) return direct;
 
-  const segmentMatch = directKey.match(/^(.*)_(?:top|bot|mid\d*)$/i);
-  if (segmentMatch && segmentMatch[1]) {
-    const fullFromSegment = `${segmentMatch[1]}_full`;
-    const fullStyle = readDoorStyleOverrideFromMap(map, fullFromSegment);
-    if (fullStyle) return fullStyle;
-  }
+  const effectiveEntry = readDoorVisualMapEntry(map, directKey);
+  if (effectiveEntry && isDoorStyleOverrideValue(effectiveEntry.value)) return effectiveEntry.value;
 
   const scopedKey = toDoorStyleOverrideMapKey(directKey);
   if (scopedKey && scopedKey !== directKey) {
-    const scoped = readDoorStyleOverrideFromMap(map, scopedKey);
-    if (scoped) return scoped;
+    const scopedEntry = readDoorVisualMapEntry(map, scopedKey);
+    if (scopedEntry && isDoorStyleOverrideValue(scopedEntry.value)) return scopedEntry.value;
   }
 
   return null;

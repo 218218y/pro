@@ -8,6 +8,42 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const ts = require('typescript');
 
+function createDoorVisualMapLookupMock() {
+  const anySuffixRe = /_(?:full|top|bot|mid\d*)$/i;
+
+  function isSegmentedDoorBaseId(partId) {
+    if (/^(?:lower_)?d\d+$/.test(partId)) return true;
+    if (/^(?:lower_)?corner_door_\d+$/.test(partId)) return true;
+    if (/^(?:lower_)?corner_pent_door_\d+$/.test(partId)) return true;
+    return /^sketch_box(?:_free)?_.+_door(?:_|$)/i.test(partId) && !anySuffixRe.test(partId);
+  }
+
+  function buildDoorVisualLookupKeys(partId) {
+    if (typeof partId !== 'string' || !partId) return [];
+    const out = [partId];
+    const push = value => {
+      if (value && !out.includes(value)) out.push(value);
+    };
+    if (/(?:_(?:top|bot|mid\d*))$/i.test(partId)) {
+      const base = partId.replace(/_(top|bot|mid\d*)$/i, '');
+      push(`${base}_full`);
+      push(base);
+    }
+    if (partId.endsWith('_full')) push(partId.slice(0, -5));
+    if (isSegmentedDoorBaseId(partId)) push(`${partId}_full`);
+    return out;
+  }
+
+  return {
+    readDoorVisualMapEntry(map, partId) {
+      for (const key of buildDoorVisualLookupKeys(partId)) {
+        if (map && Object.prototype.hasOwnProperty.call(map, key)) return { key, value: map[key] };
+      }
+      return null;
+    },
+  };
+}
+
 function loadDoorStyleOverridesModule() {
   const file = path.join(process.cwd(), 'esm/native/features/door_style_overrides.ts');
   const source = fs.readFileSync(file, 'utf8');
@@ -19,10 +55,14 @@ function loadDoorStyleOverridesModule() {
     fileName: file,
   }).outputText;
   const mod = { exports: {} };
+  const localRequire = spec => {
+    if (spec === './door_visual_map_lookup.js') return createDoorVisualMapLookupMock();
+    return require(spec);
+  };
   const sandbox = {
     module: mod,
     exports: mod.exports,
-    require,
+    require: localRequire,
     __dirname: path.dirname(file),
     __filename: file,
     console,
@@ -55,7 +95,7 @@ test('[door-style-overrides] tokens, map normalization, and effective style reso
   assert.equal(mod.toDoorStyleOverrideMapKey('d7'), 'd7_full');
   assert.equal(mod.toDoorStyleOverrideMapKey('drawer_9'), 'drawer_9');
   assert.equal(mod.resolveDoorStyleOverrideValue({ d7_full: 'double_profile' }, 'd7'), 'double_profile');
-  assert.equal(mod.resolveDoorStyleOverrideValue({ d7: 'profile' }, 'd7_top'), null);
+  assert.equal(mod.resolveDoorStyleOverrideValue({ d7: 'profile' }, 'd7_top'), 'profile');
   assert.equal(
     mod.resolveDoorStyleOverrideValue(mod.readDoorStyleMap({ d7: 'profile' }), 'd7_top'),
     'profile'
@@ -63,6 +103,22 @@ test('[door-style-overrides] tokens, map normalization, and effective style reso
   assert.equal(mod.resolveDoorStyleOverrideValue({ d7_full: 'profile' }, 'd7_top'), 'profile');
   assert.equal(mod.resolveDoorStyleOverrideValue({ d7_full: 'double_profile' }, 'd7_mid1'), 'double_profile');
   assert.equal(mod.resolveEffectiveDoorStyle('flat', { d7_full: 'profile' }, 'd7_bot'), 'profile');
+  assert.equal(
+    mod.resolveEffectiveDoorStyle(
+      'flat',
+      { sketch_box_free_0_boxStyle_door_main: 'double_profile' },
+      'sketch_box_free_0_boxStyle_door_main_bot'
+    ),
+    'double_profile'
+  );
+  assert.equal(
+    mod.resolveEffectiveDoorStyle(
+      'flat',
+      { sketch_box_0_boxStyle_door_main_full: 'profile' },
+      'sketch_box_0_boxStyle_door_main_top'
+    ),
+    'profile'
+  );
   assert.equal(mod.resolveEffectiveDoorStyle('flat', { drawer_4: 'profile' }, 'drawer_4'), 'profile');
   assert.equal(mod.resolveEffectiveDoorStyle('double_profile', {}, 'drawer_4'), 'double_profile');
 });

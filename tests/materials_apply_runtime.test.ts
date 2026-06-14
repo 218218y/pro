@@ -182,6 +182,30 @@ test('materials apply color policy inherits full-door paint for split door segme
   );
 });
 
+test('materials apply color policy inherits free-box full-door paint for split segments', () => {
+  const basePartId = 'sketch_box_free_0_boxColor_door_main';
+  const colors = { [basePartId]: 'oak', [`${basePartId}_full`]: 'walnut' };
+
+  assert.equal(
+    readPartColorEntry({
+      individualColors: colors,
+      isMulti: true,
+      partId: `${basePartId}_top`,
+      stackKey: null,
+    }),
+    'walnut'
+  );
+  assert.equal(
+    readPartColorEntry({
+      individualColors: { [basePartId]: 'oak' },
+      isMulti: true,
+      partId: `${basePartId}_bot`,
+      stackKey: null,
+    }),
+    'oak'
+  );
+});
+
 test('materials apply runtime keeps inherited full-door paint on split segment meshes after another color refresh', () => {
   const calls: unknown[] = [];
   const oakMat = { id: 'front:oak' };
