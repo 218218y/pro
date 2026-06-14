@@ -17,7 +17,10 @@ import {
 } from '../esm/native/services/canvas_picking_paint_flow_apply_state.ts';
 import { buildMirrorLayoutFromHit } from '../esm/native/features/mirror_layout.ts';
 import { isSpecialPart, getPaintSourceTag } from '../esm/native/services/canvas_picking_paint_flow_shared.ts';
-import { resolveDoorStylePaintTargetKey } from '../esm/native/services/canvas_picking_paint_flow_apply_door_style.ts';
+import {
+  resolveDoorStylePaintTargetKey,
+  tryHandleDoorStyleOverridePaintClick,
+} from '../esm/native/services/canvas_picking_paint_flow_apply_door_style.ts';
 import { commitPaintFlowState } from '../esm/native/services/canvas_picking_paint_flow_apply_commit.ts';
 
 function createApp(
@@ -261,6 +264,37 @@ test('paint special mutation toggles off a canonical full mirror when the same m
   assert.equal(state.mirrorLayout.d3_full, undefined);
 });
 
+test('paint special mutation materializes an inherited full-door mirror before removing the clicked split segment', () => {
+  const state = createManualState({
+    App: createApp({ ui: { currentCurtainChoice: 'linen' } }),
+    special0: { d3_full: 'mirror' },
+  });
+
+  applyPaintPartMutation({
+    state,
+    paintPartKey: 'd3_top',
+    paintSelection: 'mirror',
+    clickArgs: {
+      App: state.App,
+      foundPartId: 'd3_top',
+      activeStack: 'top',
+      isPaintMode: true,
+    },
+    resolveMirrorLayout: () => ({
+      nextLayout: null,
+      removeMatch: null,
+      canApplyMirror: true,
+      hitFaceSign: 1,
+      isFullDoorMirror: true,
+    }),
+  });
+
+  assert.equal(state.special.d3_full, undefined);
+  assert.equal(state.special.d3_top, undefined);
+  assert.equal(state.special.d3_bot, 'mirror');
+  assert.equal(state.mirrorLayout.d3_full, undefined);
+});
+
 test('paint glass mutation defaults every clicked glass front to regular profile glass and supports explicit glass variants', () => {
   const state = createManualState({
     App: createApp({ ui: { currentCurtainChoice: 'none' } }),
@@ -392,6 +426,56 @@ test('paint glass mutation restores the exact previous door style override after
   assert.equal(removeState.style.d5_full, 'double_profile');
 });
 
+test('paint glass mutation materializes inherited full-door glass before removing the clicked split segment', () => {
+  const addState = createManualState({
+    App: createApp({ ui: { currentCurtainChoice: 'white' } }),
+    style0: { d8_full: 'double_profile' },
+  });
+
+  applyPaintPartMutation({
+    state: addState,
+    paintPartKey: 'd8_full',
+    paintSelection: 'glass',
+    clickArgs: {
+      App: addState.App,
+      foundPartId: 'd8_full',
+      activeStack: 'top',
+      isPaintMode: true,
+    },
+  });
+
+  const removeState = createManualState({
+    App: createApp({ ui: { currentCurtainChoice: 'white' } }),
+    special0: { ...addState.special },
+    curtains0: { ...addState.curtains },
+    style0: { ...addState.style },
+  });
+
+  applyPaintPartMutation({
+    state: removeState,
+    paintPartKey: 'd8_top',
+    paintSelection: 'glass',
+    clickArgs: {
+      App: removeState.App,
+      foundPartId: 'd8_top',
+      activeStack: 'top',
+      isPaintMode: true,
+    },
+  });
+
+  assert.equal(removeState.special.d8_full, undefined);
+  assert.equal(removeState.special.d8_top, undefined);
+  assert.equal(removeState.special.d8_bot, 'glass');
+  assert.equal(removeState.special['__wp_glass_previous_door_style__:d8_full'], undefined);
+  assert.equal(removeState.special['__wp_glass_previous_door_style__:d8_bot'], 'double_profile');
+  assert.equal(removeState.curtains.d8_full, undefined);
+  assert.equal(removeState.curtains.d8_top, undefined);
+  assert.equal(removeState.curtains.d8_bot, 'white');
+  assert.equal(removeState.style.d8_full, undefined);
+  assert.equal(removeState.style.d8_top, 'double_profile');
+  assert.equal(removeState.style.d8_bot, 'profile');
+});
+
 test('paint glass mutation removes the temporary glass frame style when the door had no prior override', () => {
   const addState = createManualState({
     App: createApp({ ui: { currentCurtainChoice: 'none' } }),
@@ -461,6 +545,45 @@ test('paint color mutation clears stale curtains but preserves mirror layouts fo
   assert.deepEqual(state.mirrorLayout.d1_right, [{ widthCm: 30, heightCm: 60 }]);
 });
 
+test('paint color mutation materializes an inherited full-door color before removing the clicked split segment', () => {
+  const state = createManualState({ colors0: { d7_full: 'oak' } });
+
+  applyPaintPartMutation({
+    state,
+    paintPartKey: 'd7_top',
+    paintSelection: 'oak',
+    clickArgs: {
+      App: state.App,
+      foundPartId: 'd7_top',
+      activeStack: 'top',
+      isPaintMode: true,
+    },
+  });
+
+  assert.equal(state.colors.d7_full, undefined);
+  assert.equal(state.colors.d7_top, undefined);
+  assert.equal(state.colors.d7_bot, 'oak');
+});
+
+test('paint color mutation writes a split-segment override without erasing the inherited full-door color', () => {
+  const state = createManualState({ colors0: { d7_full: 'oak' } });
+
+  applyPaintPartMutation({
+    state,
+    paintPartKey: 'd7_top',
+    paintSelection: 'walnut',
+    clickArgs: {
+      App: state.App,
+      foundPartId: 'd7_top',
+      activeStack: 'top',
+      isPaintMode: true,
+    },
+  });
+
+  assert.equal(state.colors.d7_full, 'oak');
+  assert.equal(state.colors.d7_top, 'walnut');
+});
+
 test('paint flow summary enables no-build material refresh only for color-only diffs when live materials are available', () => {
   const App = createApp({
     maps: {
@@ -522,6 +645,41 @@ test('paint flow helpers resolve scoped door-style and paint-part keys without l
     }),
     'sketch_box_free_alpha_door_sbdr_1'
   );
+});
+
+test('door style paint click materializes an inherited full-door style before removing the clicked split segment', () => {
+  const writtenMaps: Record<string, unknown>[] = [];
+  const App = createApp({
+    maps: {
+      doorStyleMap: { d9_full: 'profile' },
+    },
+  });
+  App.actions = {
+    history: {
+      batch(cb: () => unknown) {
+        return cb();
+      },
+    },
+    config: {
+      setMap(name: string, next: Record<string, unknown>) {
+        if (name === 'doorStyleMap') writtenMaps.push({ ...next });
+        return next;
+      },
+    },
+  };
+
+  const handled = tryHandleDoorStyleOverridePaintClick({
+    App: App as never,
+    foundPartId: 'd9_top',
+    effectiveDoorId: 'd9_top',
+    foundDrawerId: null,
+    activeStack: 'top',
+    paintSelection: '__wp_door_style__:profile',
+    paintSource: 'paint.apply:doorStyle',
+  });
+
+  assert.equal(handled, true);
+  assert.deepEqual(writtenMaps[0], { d9_bot: 'profile' });
 });
 
 test('paint special target detection includes corner and sketch external drawer fronts so mirror/glass clicks rebuild as door specials', () => {

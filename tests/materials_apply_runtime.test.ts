@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { applyMaterials } from '../esm/native/builder/materials_apply.ts';
 import { makeDrawerBoxPartId } from '../esm/native/features/drawer_box_identity.ts';
+import { readPartColorEntry } from '../esm/native/builder/materials_apply_color_policy.ts';
 function createApp(triggerRenderAvailable = true) {
   const calls: unknown[] = [];
   const appliedMaterial = { id: 'front:white' };
@@ -162,4 +163,69 @@ test('materials apply runtime: drawer boxes keep independent white material unle
   });
   assert.equal(applyMaterials(App), true);
   assert.equal(drawerBoxChild.material, boxPaint);
+});
+
+test('materials apply color policy inherits full-door paint for split door segments during no-build refresh', () => {
+  const colors = { d1_full: 'oak', d2_full: 'walnut' };
+
+  assert.equal(
+    readPartColorEntry({ individualColors: colors, isMulti: true, partId: 'd1_top', stackKey: null }),
+    'oak'
+  );
+  assert.equal(
+    readPartColorEntry({ individualColors: colors, isMulti: true, partId: 'd1_mid2', stackKey: null }),
+    'oak'
+  );
+  assert.equal(
+    readPartColorEntry({ individualColors: colors, isMulti: true, partId: 'd2_bot', stackKey: null }),
+    'walnut'
+  );
+});
+
+test('materials apply runtime keeps inherited full-door paint on split segment meshes after another color refresh', () => {
+  const calls: unknown[] = [];
+  const oakMat = { id: 'front:oak' };
+  const globalMat = { id: 'front:white' };
+  const splitDoorMesh = {
+    isMesh: true,
+    userData: { partId: 'd1_top' },
+    material: { id: 'old' },
+    children: [],
+  };
+  const App: any = {
+    services: {
+      builder: {
+        materials: {
+          getMaterial(color: string) {
+            calls.push(['getMaterial', color]);
+            return color === 'oak' ? oakMat : globalMat;
+          },
+        },
+        handles: { applyHandles() {} },
+      },
+      platform: { triggerRender() {} },
+    },
+    store: {
+      getState() {
+        return {
+          ui: { colorChoice: 'white', customColor: '#ffffff', raw: {} },
+          config: {
+            isMultiColorMode: true,
+            individualColors: { d1_full: 'oak', d2_top: 'walnut' },
+          },
+          runtime: {},
+          mode: {},
+          meta: {},
+        };
+      },
+    },
+    render: { wardrobeGroup: { children: [splitDoorMesh] } },
+  };
+
+  assert.equal(applyMaterials(App), true);
+  assert.equal(splitDoorMesh.material, oakMat);
+  assert.equal(
+    calls.some(call => Array.isArray(call) && call[0] === 'getMaterial' && call[1] === 'oak'),
+    true
+  );
 });

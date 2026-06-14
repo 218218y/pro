@@ -1,9 +1,11 @@
 import type { MirrorLayoutEntry, MirrorLayoutList } from '../../../types';
 
 import { readMirrorLayoutList } from '../features/mirror_layout.js';
+import { readDoorVisualMapEntry } from '../features/door_visual_map_lookup.js';
 import {
   isDoorStyleOverrideValue,
   resolveGlassFrameStylePaintSelection,
+  type DoorStyleOverrideValue,
 } from '../features/door_style_overrides.js';
 import { isHexCellDiagonalPanelPartId } from '../features/hex_cell/index.js';
 import {
@@ -13,10 +15,14 @@ import {
 import { resolveMirrorLayoutForPaintClick } from './canvas_picking_paint_flow_mirror.js';
 import {
   isSpecialPart,
-  isSpecialVal,
   readCurtainChoice,
   type MirrorLayoutClickResult,
 } from './canvas_picking_paint_flow_shared.js';
+import {
+  isDoorVisualInheritedOwner,
+  materializeInheritedDoorVisualOwner,
+  type DoorVisualSegmentMaterializeResult,
+} from './canvas_picking_door_segment_materialization.js';
 import type { CanvasPaintClickArgs } from './canvas_picking_paint_flow_contracts.js';
 import type { PaintFlowMutableState } from './canvas_picking_paint_flow_apply_state.js';
 
@@ -30,6 +36,39 @@ function getGlassPreviousStyleKey(partKey: string): string {
 function normalizeCurtainChoiceForCompare(value: unknown): string {
   const text = typeof value === 'string' ? value.trim() : '';
   return text || 'none';
+}
+
+function readEffectiveMapEntry(
+  map: Record<string, unknown> | null | undefined,
+  partKey: string
+): { key: string; value: unknown } | null {
+  return readDoorVisualMapEntry(map, partKey);
+}
+
+function readEffectiveSpecialEntry(
+  state: PaintFlowMutableState,
+  partKey: string
+): { key: string; value: 'mirror' | 'glass' } | null {
+  const entry = readEffectiveMapEntry(state.special0, partKey);
+  return entry && (entry.value === 'mirror' || entry.value === 'glass')
+    ? { key: entry.key, value: entry.value }
+    : null;
+}
+
+function readEffectiveTextEntry(
+  map: Record<string, unknown> | null | undefined,
+  partKey: string
+): { key: string; value: string } | null {
+  const entry = readEffectiveMapEntry(map, partKey);
+  return entry && typeof entry.value === 'string' ? { key: entry.key, value: String(entry.value) } : null;
+}
+
+function readEffectiveDoorStyleEntry(
+  state: PaintFlowMutableState,
+  partKey: string
+): { key: string; value: DoorStyleOverrideValue } | null {
+  const entry = readEffectiveMapEntry(state.style0, partKey);
+  return entry && isDoorStyleOverrideValue(entry.value) ? { key: entry.key, value: entry.value } : null;
 }
 
 function rememberDoorStyleBeforeGlass(state: PaintFlowMutableState, paintPartKey: string): void {
@@ -52,7 +91,72 @@ function restoreDoorStyleBeforeGlass(state: PaintFlowMutableState, paintPartKey:
 
 function clearDoorStyleBeforeGlassMarker(state: PaintFlowMutableState, paintPartKey: string): void {
   const markerKey = getGlassPreviousStyleKey(paintPartKey);
-  if (typeof state.special0[markerKey] !== 'undefined') delete state.ensureSpecial()[markerKey];
+  if (typeof state.special[markerKey] !== 'undefined' || typeof state.special0[markerKey] !== 'undefined') {
+    delete state.ensureSpecial()[markerKey];
+  }
+}
+
+function readGlassPreviousStyleMarkerValue(state: PaintFlowMutableState, paintPartKey: string): unknown {
+  const markerKey = getGlassPreviousStyleKey(paintPartKey);
+  const currentValue = state.special[markerKey];
+  if (typeof currentValue !== 'undefined') return currentValue;
+  return state.special0[markerKey];
+}
+
+function restoreDoorStyleBeforeGlassToTarget(
+  state: PaintFlowMutableState,
+  targetPartKey: string,
+  markerOwnerPartKey: string
+): void {
+  const previousStyle = readGlassPreviousStyleMarkerValue(state, markerOwnerPartKey);
+  const nextStyle = state.ensureStyle();
+  if (isDoorStyleOverrideValue(previousStyle)) nextStyle[targetPartKey] = previousStyle;
+  else delete nextStyle[targetPartKey];
+}
+
+function materializeInheritedPaintMapOwner(args: {
+  state: PaintFlowMutableState;
+  map: Record<string, unknown> | null | undefined;
+  targetPartKey: string;
+  ownerPartKey: string | null | undefined;
+}): DoorVisualSegmentMaterializeResult | null {
+  return materializeInheritedDoorVisualOwner({
+    App: args.state.App,
+    map: args.map,
+    targetPartId: args.targetPartKey,
+    ownerPartId: args.ownerPartKey,
+  });
+}
+
+function materializeGlassPreviousStyleMarkers(args: {
+  state: PaintFlowMutableState;
+  sourceOwnerPartKey: string;
+  materialized: DoorVisualSegmentMaterializeResult | null;
+}): void {
+  const { state, sourceOwnerPartKey, materialized } = args;
+  if (!materialized) return;
+  const markerValue = readGlassPreviousStyleMarkerValue(state, sourceOwnerPartKey);
+  const nextSpecial = state.ensureSpecial();
+  for (let index = 0; index < materialized.segmentPartIds.length; index += 1) {
+    const segmentPartId = materialized.segmentPartIds[index];
+    if (!segmentPartId || segmentPartId === materialized.clickedPartId) continue;
+    if (nextSpecial[segmentPartId] === 'glass') {
+      nextSpecial[getGlassPreviousStyleKey(segmentPartId)] =
+        typeof markerValue === 'undefined' ? GLASS_PREVIOUS_STYLE_NONE : String(markerValue);
+    }
+  }
+}
+
+function deleteClickedDoorVisualEntries(args: {
+  state: PaintFlowMutableState;
+  partKey: string;
+  includeStyle?: boolean;
+}): void {
+  const { state, partKey, includeStyle } = args;
+  delete state.ensureSpecial()[partKey];
+  delete state.ensureCurtains()[partKey];
+  delete state.ensureMirrorLayout()[partKey];
+  if (includeStyle) delete state.ensureStyle()[partKey];
 }
 
 export type ResolveMirrorLayoutForPaintClickFn = (
@@ -128,11 +232,17 @@ export function applyPaintPartMutation(args: {
 }): void {
   const { state, paintPartKey, paintSelection, clickArgs } = args;
   const curtainChoice = readCurtainChoice(state.App);
-  const existingCurtain = state.curtains0[paintPartKey];
-  const existingSpecial = isSpecialVal(state.special0[paintPartKey])
-    ? String(state.special0[paintPartKey])
-    : null;
-  const existingMirrorLayouts = readMirrorLayoutList(state.mirror0[paintPartKey]);
+  const existingCurtainEntry = readEffectiveTextEntry(state.curtains0, paintPartKey);
+  const existingCurtain = existingCurtainEntry?.value;
+  const existingSpecialEntry = readEffectiveSpecialEntry(state, paintPartKey);
+  const existingSpecial = existingSpecialEntry?.value ?? null;
+  const specialOwnerKey = existingSpecialEntry?.key || paintPartKey;
+  const existingMirrorEntry = readEffectiveMapEntry(state.mirror0, paintPartKey);
+  const existingMirrorLayouts = readMirrorLayoutList(existingMirrorEntry?.value);
+  const mirrorOwnerKey = existingMirrorLayouts.length
+    ? existingMirrorEntry?.key || paintPartKey
+    : specialOwnerKey;
+  const existingStyleEntry = readEffectiveDoorStyleEntry(state, paintPartKey);
   const resolveMirrorLayout = args.resolveMirrorLayout || resolveMirrorLayoutForPaintClick;
   const glassFrameStyle = resolveGlassFrameStylePaintSelection(paintSelection);
   const isSpecialPaintPart = isSpecialPart(paintPartKey);
@@ -143,15 +253,43 @@ export function applyPaintPartMutation(args: {
     const { removeMatch, canApplyMirror } = mirrorResult;
     if (existingSpecial === 'mirror' && removeMatch) {
       const nextLayouts = existingMirrorLayouts.filter((_, idx) => idx !== removeMatch.index);
-      if (nextLayouts.length) {
-        state.ensureSpecial()[paintPartKey] = 'mirror';
-        delete state.ensureCurtains()[paintPartKey];
-        state.ensureMirrorLayout()[paintPartKey] = nextLayouts;
+      const isInheritedSpecialOwner = isDoorVisualInheritedOwner({
+        targetPartId: paintPartKey,
+        ownerPartId: specialOwnerKey,
+      });
+      if (isInheritedSpecialOwner) {
+        materializeInheritedPaintMapOwner({
+          state,
+          map: state.ensureSpecial(),
+          targetPartKey: paintPartKey,
+          ownerPartKey: specialOwnerKey,
+        });
+        materializeInheritedPaintMapOwner({
+          state,
+          map: state.ensureCurtains(),
+          targetPartKey: paintPartKey,
+          ownerPartKey: existingCurtainEntry?.key || specialOwnerKey,
+        });
+        materializeInheritedPaintMapOwner({
+          state,
+          map: state.ensureMirrorLayout(),
+          targetPartKey: paintPartKey,
+          ownerPartKey: existingMirrorEntry?.key || mirrorOwnerKey,
+        });
+        deleteClickedDoorVisualEntries({ state, partKey: paintPartKey });
+        if (nextLayouts.length) {
+          state.ensureSpecial()[paintPartKey] = 'mirror';
+          state.ensureMirrorLayout()[paintPartKey] = nextLayouts;
+        }
+      } else if (nextLayouts.length) {
+        state.ensureSpecial()[mirrorOwnerKey] = 'mirror';
+        delete state.ensureCurtains()[mirrorOwnerKey];
+        state.ensureMirrorLayout()[mirrorOwnerKey] = nextLayouts;
       } else {
-        delete state.ensureSpecial()[paintPartKey];
-        clearDoorStyleBeforeGlassMarker(state, paintPartKey);
-        delete state.ensureCurtains()[paintPartKey];
-        delete state.ensureMirrorLayout()[paintPartKey];
+        delete state.ensureSpecial()[mirrorOwnerKey];
+        clearDoorStyleBeforeGlassMarker(state, mirrorOwnerKey);
+        delete state.ensureCurtains()[mirrorOwnerKey];
+        delete state.ensureMirrorLayout()[mirrorOwnerKey];
       }
       return;
     }
@@ -164,10 +302,36 @@ export function applyPaintPartMutation(args: {
       normalizeMirrorClickFaceSign(mirrorResult.hitFaceSign) === 1 &&
       !existingMirrorLayouts.length;
     if (isTogglingCanonicalOutsideMirror) {
-      delete state.ensureSpecial()[paintPartKey];
-      clearDoorStyleBeforeGlassMarker(state, paintPartKey);
-      delete state.ensureCurtains()[paintPartKey];
-      delete state.ensureMirrorLayout()[paintPartKey];
+      const isInheritedSpecialOwner = isDoorVisualInheritedOwner({
+        targetPartId: paintPartKey,
+        ownerPartId: specialOwnerKey,
+      });
+      if (isInheritedSpecialOwner) {
+        materializeInheritedPaintMapOwner({
+          state,
+          map: state.ensureSpecial(),
+          targetPartKey: paintPartKey,
+          ownerPartKey: specialOwnerKey,
+        });
+        materializeInheritedPaintMapOwner({
+          state,
+          map: state.ensureCurtains(),
+          targetPartKey: paintPartKey,
+          ownerPartKey: existingCurtainEntry?.key || specialOwnerKey,
+        });
+        materializeInheritedPaintMapOwner({
+          state,
+          map: state.ensureMirrorLayout(),
+          targetPartKey: paintPartKey,
+          ownerPartKey: existingMirrorEntry?.key || mirrorOwnerKey,
+        });
+        deleteClickedDoorVisualEntries({ state, partKey: paintPartKey });
+      } else {
+        delete state.ensureSpecial()[specialOwnerKey];
+        clearDoorStyleBeforeGlassMarker(state, specialOwnerKey);
+        delete state.ensureCurtains()[specialOwnerKey];
+        delete state.ensureMirrorLayout()[specialOwnerKey];
+      }
       return;
     }
 
@@ -186,16 +350,55 @@ export function applyPaintPartMutation(args: {
   }
 
   if (isSpecialPaintPart && glassFrameStyle != null) {
-    const existingStyle = state.style0[paintPartKey] || null;
+    const existingStyle = existingStyleEntry?.value || null;
     const shouldRemove =
       existingSpecial === 'glass' &&
       normalizeCurtainChoiceForCompare(existingCurtain) === curtainChoice &&
       existingStyle === glassFrameStyle;
     if (shouldRemove) {
-      delete state.ensureSpecial()[paintPartKey];
-      restoreDoorStyleBeforeGlass(state, paintPartKey);
-      delete state.ensureCurtains()[paintPartKey];
-      delete state.ensureMirrorLayout()[paintPartKey];
+      const isInheritedSpecialOwner = isDoorVisualInheritedOwner({
+        targetPartId: paintPartKey,
+        ownerPartId: specialOwnerKey,
+      });
+      if (isInheritedSpecialOwner) {
+        const materializedSpecial = materializeInheritedPaintMapOwner({
+          state,
+          map: state.ensureSpecial(),
+          targetPartKey: paintPartKey,
+          ownerPartKey: specialOwnerKey,
+        });
+        materializeInheritedPaintMapOwner({
+          state,
+          map: state.ensureCurtains(),
+          targetPartKey: paintPartKey,
+          ownerPartKey: existingCurtainEntry?.key || specialOwnerKey,
+        });
+        materializeInheritedPaintMapOwner({
+          state,
+          map: state.ensureStyle(),
+          targetPartKey: paintPartKey,
+          ownerPartKey: existingStyleEntry?.key || specialOwnerKey,
+        });
+        materializeInheritedPaintMapOwner({
+          state,
+          map: state.ensureMirrorLayout(),
+          targetPartKey: paintPartKey,
+          ownerPartKey: mirrorOwnerKey,
+        });
+        materializeGlassPreviousStyleMarkers({
+          state,
+          sourceOwnerPartKey: specialOwnerKey,
+          materialized: materializedSpecial,
+        });
+        deleteClickedDoorVisualEntries({ state, partKey: paintPartKey, includeStyle: true });
+        restoreDoorStyleBeforeGlassToTarget(state, paintPartKey, specialOwnerKey);
+        delete state.ensureSpecial()[getGlassPreviousStyleKey(specialOwnerKey)];
+      } else {
+        delete state.ensureSpecial()[specialOwnerKey];
+        restoreDoorStyleBeforeGlass(state, specialOwnerKey);
+        delete state.ensureCurtains()[existingCurtainEntry?.key || specialOwnerKey];
+        delete state.ensureMirrorLayout()[mirrorOwnerKey];
+      }
       return;
     }
 
@@ -208,9 +411,27 @@ export function applyPaintPartMutation(args: {
   }
 
   const nextColors = state.ensureColors();
-  const existingColor = nextColors[paintPartKey];
-  if (existingColor === paintSelection) delete nextColors[paintPartKey];
-  else nextColors[paintPartKey] = paintSelection;
+  const existingColorEntry = readEffectiveTextEntry(state.colors0, paintPartKey);
+  const existingColor = existingColorEntry?.value;
+  if (existingColor === paintSelection) {
+    const existingColorOwnerKey = existingColorEntry?.key || paintPartKey;
+    if (
+      isDoorVisualInheritedOwner({
+        targetPartId: paintPartKey,
+        ownerPartId: existingColorOwnerKey,
+      })
+    ) {
+      materializeInheritedPaintMapOwner({
+        state,
+        map: nextColors,
+        targetPartKey: paintPartKey,
+        ownerPartKey: existingColorOwnerKey,
+      });
+      delete nextColors[paintPartKey];
+    } else {
+      delete nextColors[existingColorOwnerKey];
+    }
+  } else nextColors[paintPartKey] = paintSelection;
 
   if (existingSpecial !== 'glass') delete state.ensureCurtains()[paintPartKey];
   if (existingSpecial !== 'mirror') delete state.ensureMirrorLayout()[paintPartKey];

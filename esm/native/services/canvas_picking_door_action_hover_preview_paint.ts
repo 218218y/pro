@@ -2,7 +2,6 @@ import {
   buildMirrorLayoutFromHit,
   buildSnappedMirrorCenterFromHit,
   findMirrorLayoutMatchInRect,
-  readMirrorLayoutList,
   resolveMirrorPlacementInRect,
 } from '../features/mirror_layout.js';
 import {
@@ -29,6 +28,7 @@ import {
   resolveDoorStyleOverrideValue,
   resolveGlassFrameStylePaintSelection,
 } from '../features/door_style_overrides.js';
+import { readDoorVisualMapValue, readDoorVisualMirrorLayout } from '../features/door_visual_map_lookup.js';
 import { isHexCellDiagonalPanelPartId } from '../features/hex_cell/index.js';
 import {
   buildRectClearanceMeasurementEntries,
@@ -74,13 +74,15 @@ export function tryHandleDoorPaintHoverPreview(args: DoorPaintHoverPreviewArgs):
       ? (resolveDoorStyleOverrideValue(doorStyleMap, partKey) ?? undefined)
       : undefined;
   })();
+  const existingSpecialValue = readDoorVisualMapValue(doorSpecialMap, partKey);
   const existingSpecial =
-    doorSpecialMap[partKey] === 'mirror' || doorSpecialMap[partKey] === 'glass'
-      ? String(doorSpecialMap[partKey])
+    existingSpecialValue === 'mirror' || existingSpecialValue === 'glass'
+      ? String(existingSpecialValue)
       : null;
-  const existingCurtain = typeof curtainMap[partKey] === 'string' ? String(curtainMap[partKey]).trim() : '';
-  const existingColor =
-    typeof individualColors[partKey] === 'string' ? String(individualColors[partKey]) : undefined;
+  const existingCurtainValue = readDoorVisualMapValue(curtainMap, partKey);
+  const existingCurtain = typeof existingCurtainValue === 'string' ? String(existingCurtainValue).trim() : '';
+  const existingColorValue = readDoorVisualMapValue(individualColors, partKey);
+  const existingColor = typeof existingColorValue === 'string' ? String(existingColorValue) : undefined;
 
   let previewCenterX = (rect.minX + rect.maxX) / 2;
   let previewCenterY = (rect.minY + rect.maxY) / 2;
@@ -124,7 +126,7 @@ export function tryHandleDoorPaintHoverPreview(args: DoorPaintHoverPreviewArgs):
     localHit.set(hitPoint.x, hitPoint.y, hitPoint.z);
     mirrorOwnerGroup?.worldToLocal?.(localHit);
     const hitFaceSign = __resolveMirrorFaceSignFromLocalPoint(localHit);
-    const existingMirrorLayouts = readMirrorLayoutList(mirrorLayoutMap[partKey]);
+    const existingMirrorLayouts = readDoorVisualMirrorLayout(mirrorLayoutMap, partKey) || [];
     const mirrorDraft = __readMirrorDraft(readUi, App);
     const hasSizedDraft = __hasMirrorSizedDraft(readUi, App);
     const removeMatch =

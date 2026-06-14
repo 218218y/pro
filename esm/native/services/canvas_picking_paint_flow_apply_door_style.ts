@@ -1,7 +1,13 @@
 import type { AppContainer } from '../../../types';
 
 import { cfgSetMap } from '../runtime/cfg_access.js';
+import { readDoorVisualMapEntry } from '../features/door_visual_map_lookup.js';
 import {
+  isDoorVisualInheritedOwner,
+  materializeInheritedDoorVisualOwner,
+} from './canvas_picking_door_segment_materialization.js';
+import {
+  isDoorStyleOverrideValue,
   parseDoorStyleOverridePaintToken,
   readDoorStyleMap,
   toDoorStyleOverrideMapKey,
@@ -50,9 +56,30 @@ export function tryHandleDoorStyleOverridePaintClick(args: {
     return doorStyleMap;
   };
 
-  const existingStyle = doorStyleMap0[paintTargetKey];
-  if (existingStyle === doorStyleSelection) delete ensureDoorStyleMap()[paintTargetKey];
-  else ensureDoorStyleMap()[paintTargetKey] = doorStyleSelection;
+  const existingStyleEntry = readDoorVisualMapEntry(doorStyleMap0, paintTargetKey);
+  const existingStyle = isDoorStyleOverrideValue(existingStyleEntry?.value)
+    ? existingStyleEntry.value
+    : undefined;
+  if (existingStyle === doorStyleSelection) {
+    const existingStyleOwnerKey = existingStyleEntry?.key || paintTargetKey;
+    const nextDoorStyleMap = ensureDoorStyleMap();
+    if (
+      isDoorVisualInheritedOwner({
+        targetPartId: paintTargetKey,
+        ownerPartId: existingStyleOwnerKey,
+      })
+    ) {
+      materializeInheritedDoorVisualOwner({
+        App: args.App,
+        map: nextDoorStyleMap,
+        targetPartId: paintTargetKey,
+        ownerPartId: existingStyleOwnerKey,
+      });
+      delete nextDoorStyleMap[paintTargetKey];
+    } else {
+      delete nextDoorStyleMap[existingStyleOwnerKey];
+    }
+  } else ensureDoorStyleMap()[paintTargetKey] = doorStyleSelection;
 
   if (Object.is(doorStyleMap, doorStyleMap0)) return true;
 

@@ -1,4 +1,5 @@
 import { reportError, shouldFailFast } from '../runtime/api.js';
+import { readDoorVisualMapValue } from '../features/door_visual_map_lookup.js';
 import {
   DOOR_SYSTEM_DIMENSIONS,
   DRAWER_DIMENSIONS,
@@ -152,13 +153,8 @@ export function createHingedDoorModuleOpsContext(
   ): string | null => {
     try {
       const cm = readTextMap(cfg && cfg.curtainMap);
-      if (cm && partId) {
-        if (Object.prototype.hasOwnProperty.call(cm, partId)) return String(cm[partId]);
-        if (partId.endsWith('_top') || partId.endsWith('_mid') || partId.endsWith('_bot')) {
-          const full = partId.replace(/_(top|mid|bot)$/i, '_full');
-          if (Object.prototype.hasOwnProperty.call(cm, full)) return String(cm[full]);
-        }
-      }
+      const raw = cm && partId ? readDoorVisualMapValue(cm, partId) : null;
+      if (typeof raw === 'string') return String(raw);
     } catch (e) {
       reportDoorSoftOnce('resolveCurtainForPart.mapLookup', e, { partId });
     }
@@ -185,16 +181,7 @@ export function createHingedDoorModuleOpsContext(
     resolvedCurtainVal: string | null
   ): 'mirror' | 'glass' | null => {
     try {
-      let v: unknown =
-        partId && Object.prototype.hasOwnProperty.call(doorSpecialMap, partId)
-          ? doorSpecialMap[partId]
-          : null;
-      if (!isSpecialVal(v) && typeof partId === 'string') {
-        if (partId.endsWith('_top') || partId.endsWith('_mid') || partId.endsWith('_bot')) {
-          const full = partId.replace(/_(top|mid|bot)$/i, '_full');
-          if (Object.prototype.hasOwnProperty.call(doorSpecialMap, full)) v = doorSpecialMap[full];
-        }
-      }
+      let v: unknown = partId ? readDoorVisualMapValue(doorSpecialMap, partId) : null;
       if (!isSpecialVal(v) && resolvedCurtainVal && resolvedCurtainVal !== 'none') v = 'glass';
       return v === 'mirror' || v === 'glass' ? v : null;
     } catch (e) {

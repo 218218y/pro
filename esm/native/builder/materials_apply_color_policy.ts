@@ -1,4 +1,5 @@
 import { isDrawerBoxPartId } from '../features/drawer_box_identity.js';
+import { readDoorVisualMapEntry } from '../features/door_visual_map_lookup.js';
 import { isFrontColorBraceShelvesOnlyMode } from '../features/front_color_shelf_inheritance.js';
 import {
   SHELF_GROUP_PART_ID,
@@ -73,19 +74,15 @@ export function readPartColorEntry(args: {
   if (!partId || !isMulti || !individualColors) return undefined;
 
   const scopedPartId = scopeCornerPartKeyForStack(partId, stackKey);
+  const colorEntry = readDoorVisualMapEntry(individualColors, scopedPartId);
+  if (colorEntry) return colorEntry.value;
+
   if (scopedPartId !== partId) {
-    if (Object.prototype.hasOwnProperty.call(individualColors, scopedPartId)) {
-      return individualColors[scopedPartId];
-    }
     const shelfGroupPartId = isIndividualShelfPartId(partId) ? resolveShelfGroupPartId(partId) : null;
     if (shelfGroupPartId && Object.prototype.hasOwnProperty.call(individualColors, shelfGroupPartId)) {
       return individualColors[shelfGroupPartId];
     }
     return undefined;
-  }
-
-  if (Object.prototype.hasOwnProperty.call(individualColors, partId)) {
-    return individualColors[partId];
   }
 
   const shelfGroupPartId = isIndividualShelfPartId(partId) ? resolveShelfGroupPartId(partId) : null;

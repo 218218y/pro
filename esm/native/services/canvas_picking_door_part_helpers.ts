@@ -3,6 +3,8 @@
 // This owner keeps part-key normalization, stack scoping, nearest actionable
 // hit resolution, and door-specific config reads out of the runtime helper seam.
 
+import { readDoorVisualMapValue } from '../features/door_visual_map_lookup.js';
+
 import type { AppContainer } from '../../../types';
 import { isHexCellDiagonalPanelPartId } from '../features/hex_cell/index.js';
 import { isCabinetBodyDoorTrimSurfacePartId } from '../features/door_trim.js';
@@ -159,10 +161,10 @@ function __wp_colorGet(App: AppContainer, partKey: string): string {
   // Door special types (mirror/glass) are stored in a dedicated map so "special colors"
   // won't overwrite the actual door style.
   const sm = __wp_map(App, 'doorSpecialMap');
-  const sv = sm[key];
+  const sv = readDoorVisualMapValue(sm, key);
   if (sv === 'mirror' || sv === 'glass') return sv;
   const m = __wp_map(App, 'individualColors');
-  const v = m[key];
+  const v = readDoorVisualMapValue(m, key);
   return typeof v === 'string' && v ? v : 'default';
 }
 

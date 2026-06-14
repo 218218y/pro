@@ -13,6 +13,7 @@ import type { AppContainer, RenderOpsLike, ThreeLike, UnknownRecord } from '../.
 import { getBuilderRenderOps } from '../runtime/builder_service_access.js';
 import { getPlatformReportError } from '../runtime/platform_access.js';
 import { isDrawerBoxPartId } from '../features/drawer_box_identity.js';
+import { readDoorVisualMapEntry } from '../features/door_visual_map_lookup.js';
 
 type SavedColorItemLike = UnknownRecord & {
   id?: string;
@@ -88,18 +89,14 @@ export function makeMaterialResolver(args: MaterialResolverArgs): {
   function getPartColorValue(partId: string): string | null | undefined {
     if (!cfg.isMultiColorMode) return null;
     const colors = _asObj(cfg.individualColors) || {};
-    let value = colors[partId];
+    const colorEntry = readDoorVisualMapEntry(colors, partId);
+    let value = colorEntry ? colorEntry.value : undefined;
     if (
       typeof value === 'undefined' &&
       MAIN_WAVE_CORNICE_PARTS.has(partId) &&
       Object.prototype.hasOwnProperty.call(colors, 'cornice_color')
     ) {
       value = colors.cornice_color;
-    }
-    // Inherit full-door paint when a door is split but only the *_full key exists.
-    if (typeof value === 'undefined' && /_(top|bot)$/.test(partId)) {
-      const fullKey = String(partId).replace(/_(top|bot)$/, '_full');
-      if (Object.prototype.hasOwnProperty.call(colors, fullKey)) value = colors[fullKey];
     }
     if (value === null) return null;
     if (typeof value === 'undefined') return undefined;

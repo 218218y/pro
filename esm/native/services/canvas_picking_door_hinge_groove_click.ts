@@ -35,8 +35,8 @@ import {
   readDoorGrooveFullPartId,
   readDoorGrooveLinesCountForPart,
   readDoorGrooveMapFlag,
-  readDoorGrooveSiblingSegmentPartIds,
 } from './canvas_picking_door_groove_segments.js';
+import { readDoorVisualSiblingSegmentPartIds } from './canvas_picking_door_segment_materialization.js';
 import {
   __wp_str,
   __wp_hingeDir,
@@ -279,7 +279,7 @@ export function handleCanvasDoorGrooveClick(args: CanvasDoorGrooveClickArgs): bo
       ? readSketchBoxSiblingSegmentPartIds(App, sketchSegmentBasePartId, targetId)
       : [];
     const siblingRegularSegmentPartIds = isInheritedRegularSegmentGrooveOn
-      ? readDoorGrooveSiblingSegmentPartIds({
+      ? readDoorVisualSiblingSegmentPartIds({
           App,
           basePartId: regularSegmentBasePartId,
           clickedPartId: targetId,
