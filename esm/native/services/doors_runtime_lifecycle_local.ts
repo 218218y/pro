@@ -97,8 +97,24 @@ export function closeDrawerById(App: AppLike, id: DrawerId, opts?: CloseDrawerOp
   touchDoorsRuntimeRender(App);
 }
 
+function consumeSkipNextLocalOpenCapture(App: AppLike): boolean {
+  try {
+    const rec = App as AppLike & { __wpSkipNextLocalOpenCapture?: unknown };
+    if (rec.__wpSkipNextLocalOpenCapture !== true) return false;
+    delete rec.__wpSkipNextLocalOpenCapture;
+    return true;
+  } catch (_) {
+    reportDoorsRuntimeNonFatal(App, 'captureLocalOpenStateBeforeBuild.consumeSkipFlag', _);
+    return false;
+  }
+}
+
 export function captureLocalOpenStateBeforeBuild(App: AppLike, opts?: CaptureLocalOpenOptions): void {
   if (!App || typeof App !== 'object') return;
+  if (consumeSkipNextLocalOpenCapture(App)) {
+    ensureDoorsRuntimeDefaults(App).localOpenSnapshot = null;
+    return;
+  }
   const safeOpts = opts && typeof opts === 'object' ? opts : {};
   const includeDrawers = typeof safeOpts.includeDrawers === 'boolean' ? safeOpts.includeDrawers : true;
   const includeSlidingTrackDoors = safeOpts.includeSlidingTrackDoors === true;

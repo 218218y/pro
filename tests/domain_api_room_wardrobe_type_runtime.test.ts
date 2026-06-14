@@ -652,24 +652,24 @@ test('room wardrobe type runtime: init path collapses wardrobe type + ui default
   h.actions.room.setWardrobeType('sliding');
 
   assert.equal(h.patchCalls.length, 1);
-  assert.deepEqual(h.patchCalls[0], [
-    {
-      config: {
-        wardrobeType: 'sliding',
-        isManualWidth: false,
-        modulesConfiguration: [],
-        stackSplitLowerModulesConfiguration: [],
-        cornerConfiguration: {},
-        __replace: {
-          modulesConfiguration: true,
-          stackSplitLowerModulesConfiguration: true,
-          cornerConfiguration: true,
-        },
-      },
-      ui: { raw: { doors: 2, width: 160, depth: 60 } },
+  const [patch, meta] = h.patchCalls[0];
+  assert.deepEqual(patch.config, {
+    wardrobeType: 'sliding',
+    isManualWidth: false,
+    modulesConfiguration: [],
+    stackSplitLowerModulesConfiguration: [],
+    cornerConfiguration: {},
+    __replace: {
+      modulesConfiguration: true,
+      stackSplitLowerModulesConfiguration: true,
+      cornerConfiguration: true,
     },
-    { source: 'actions:room:setWardrobeType:init' },
-  ]);
+  });
+  assert.deepEqual(patch.ui, { raw: { doors: 2, width: 160, depth: 60 } });
+  assert.equal(patch.runtime.doorsOpen, false);
+  assert.equal(patch.runtime.drawersOpenId, null);
+  assert.equal(typeof patch.runtime.doorsLastToggleTime, 'number');
+  assert.deepEqual(meta, { source: 'actions:room:setWardrobeType:init' });
 });
 
 test('room wardrobe type runtime: restore path collapses wardrobe type profile config + ui into one canonical root patch', () => {
@@ -704,4 +704,33 @@ test('room wardrobe type runtime: restore path collapses wardrobe type profile c
   assert.equal(patch.ui.raw.depth, 60);
   assert.equal(patch.ui.raw.doors, 3);
   assert.equal(patch.ui.currentFloorType, 'parquet');
+  assert.equal(patch.runtime.doorsOpen, false);
+  assert.equal(patch.runtime.drawersOpenId, null);
+  assert.equal(typeof patch.runtime.doorsLastToggleTime, 'number');
+});
+
+test('room wardrobe type runtime: switching type clears transient door and drawer open runtime', () => {
+  const h = createHarness({
+    ui: { raw: { width: 160, height: 240, depth: 55, doors: 4 } },
+    config: { wardrobeType: 'hinged' },
+    runtime: {
+      doorsOpen: true,
+      drawersOpenId: 'int_4',
+      wardrobeTypeProfiles: {
+        sliding: {
+          cfg: { isManualWidth: false },
+          ui: { raw: { width: 240, height: 240, depth: 60, doors: 2 } },
+        },
+      },
+    },
+  });
+
+  h.actions.room.setWardrobeType('sliding');
+
+  assert.equal(h.state.config.wardrobeType, 'sliding');
+  assert.equal(h.state.runtime.doorsOpen, false);
+  assert.equal(h.state.runtime.drawersOpenId, null);
+  assert.equal(typeof h.state.runtime.doorsLastToggleTime, 'number');
+  assert.ok(h.state.runtime.wardrobeTypeProfiles.hinged);
+  assert.ok(h.state.runtime.wardrobeTypeProfiles.sliding);
 });

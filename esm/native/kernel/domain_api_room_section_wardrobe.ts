@@ -163,6 +163,57 @@ function hasOwnKey(value: unknown, key: string): boolean {
   return !!value && typeof value === 'object' && Object.prototype.hasOwnProperty.call(value, key);
 }
 
+function createWardrobeTypeOpenStateResetPatch(): RuntimeStateLike {
+  return {
+    doorsOpen: false,
+    drawersOpenId: null,
+    doorsLastToggleTime: Date.now(),
+  };
+}
+
+function markWardrobeTypeOpenStateBoundary(App: AppContainer): void {
+  const appRec = asRecord(App);
+  if (appRec) {
+    appRec.__wpSkipNextLocalOpenCapture = true;
+    appRec.__wpSkipNextLocalDoorSync = true;
+  }
+
+  const services = asRecord(appRec?.services);
+  const doorsService = asRecord(services?.doors);
+  const doorsRuntime = asRecord(doorsService?.runtime);
+  if (!doorsRuntime) return;
+
+  doorsRuntime.open = false;
+  doorsRuntime.prevOpen = false;
+  doorsRuntime.closeDelayUntil = 0;
+  doorsRuntime.hardCloseUntil = 0;
+  doorsRuntime.localOpenSnapshot = null;
+
+  const editHold = asRecord(doorsRuntime.editHold);
+  if (editHold) {
+    editHold.active = false;
+    editHold.snapshot = null;
+    editHold.includeDrawers = false;
+  } else {
+    doorsRuntime.editHold = { active: false, snapshot: null, includeDrawers: false };
+  }
+}
+
+function resetWardrobeTypeRuntimeOpenState(
+  App: AppContainer,
+  actions: ActionsNamespaceLike,
+  _metaNoBuild: MetaNoBuildFn,
+  source: string,
+  meta?: ActionMetaLike | UnknownRecord | null
+): void {
+  markWardrobeTypeOpenStateBoundary(App);
+  try {
+    patchRuntime(App, createWardrobeTypeOpenStateResetPatch(), _metaNoBuild(actions, meta, source));
+  } catch {
+    // Best-effort fallback only: the canonical root patch path carries the same runtime reset.
+  }
+}
+
 type StripSketchExternalDrawerResult<T> = {
   value: T;
   changed: boolean;
@@ -338,11 +389,13 @@ function patchWardrobeTypeCanonicalState(
   uiPatch: UiStateLike,
   meta?: ActionMetaLike | UnknownRecord | null
 ): boolean {
+  markWardrobeTypeOpenStateBoundary(App);
   return patchViaActions(
     App,
     {
       config: withWardrobeTypeProfileStructuralReplaceKeys({ ...configPatch }),
       ui: { ...uiPatch },
+      runtime: createWardrobeTypeOpenStateResetPatch(),
     },
     _metaNoBuild(actions, meta, source)
   );
@@ -385,6 +438,14 @@ function restoreWardrobeTypeProfile(
     triggerRoomTypeRecompute(App, 'wardrobeType:restore');
     return;
   }
+
+  resetWardrobeTypeRuntimeOpenState(
+    App,
+    actions,
+    _metaNoBuild,
+    'actions:room:setWardrobeType:restore:runtime',
+    { immediate: true }
+  );
 
   const restoreMeta = _metaNoBuild(actions, { immediate: true }, 'actions:room:setWardrobeType:restore');
   cfgBatch(
@@ -456,6 +517,14 @@ function initWardrobeTypeDefaults(
     triggerRoomTypeRecompute(App, 'wardrobeType:init');
     return;
   }
+
+  resetWardrobeTypeRuntimeOpenState(
+    App,
+    actions,
+    _metaNoBuild,
+    'actions:room:setWardrobeType:init:runtime',
+    meta
+  );
 
   const m = _metaNoBuild(actions, meta, 'actions:room:setWardrobeType:init:autoWidth');
   setCfgWardrobeType(App, next, m);

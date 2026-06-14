@@ -92,6 +92,29 @@ test('sliding click opens only the clicked sliding door in track mode', () => {
   assert.equal(App.drawerOpenId, null);
 });
 
+test('sliding click prefers the raycast object over a stale promoted door id', () => {
+  const left = makeSlidingDoor(0, 2);
+  const right = makeSlidingDoor(1, 2);
+  const state = { runtime: { doorsOpen: true } };
+  const App = makeAppWithSlidingDoors([left, right], state);
+
+  assert.equal(
+    tryHandleSlidingTrackDoorToggle({
+      App,
+      primaryHitObject: right.group,
+      effectiveDoorId: 'sliding_door_1',
+    }),
+    true
+  );
+
+  assert.deepEqual(
+    App.render.doorsArray.map((d: any) => !!d.isOpen),
+    [false, true]
+  );
+  assert.equal(right.slidingOpenMode, 'track');
+  assert.equal(left.slidingOpenMode, undefined);
+});
+
 test('sliding click closes an existing track-open door instead of switching to another door', () => {
   const left = makeSlidingDoor(0, 2);
   const right = makeSlidingDoor(1, 2);

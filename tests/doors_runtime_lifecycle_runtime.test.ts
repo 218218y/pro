@@ -210,6 +210,31 @@ test('doors lifecycle edit hold snapshots and restores door/drawer state only wh
   assert.ok(renderCalls.length >= 2);
 });
 
+test('doors lifecycle skips one local-open capture after an explicit wardrobe type boundary', () => {
+  const { App } = createApp();
+  App.__wpSkipNextLocalOpenCapture = true;
+  App.render.doorsArray.push({ id: 'd1', isOpen: true });
+  App.render.drawersArray.push({ id: 'drawer-1', isOpen: true });
+
+  captureLocalOpenStateBeforeBuild(App, { includeDrawers: true });
+
+  assert.equal(App.__wpSkipNextLocalOpenCapture, undefined);
+  assert.equal(ensureDoorsRuntimeDefaults(App).localOpenSnapshot, null);
+
+  App.render.doorsArray[0].isOpen = false;
+  App.render.drawersArray[0].isOpen = false;
+  applyLocalOpenStateAfterBuild(App);
+
+  assert.deepEqual(
+    App.render.doorsArray.map((entry: any) => !!entry.isOpen),
+    [false]
+  );
+  assert.deepEqual(
+    App.render.drawersArray.map((entry: any) => !!entry.isOpen),
+    [false]
+  );
+});
+
 test('doors lifecycle local-open capture reapplies snapshot after build and closes drawers by stable ids', () => {
   const { App, renderCalls } = createApp();
   App.render.doorsArray.push({ id: 'd1', isOpen: true }, { group: { name: 'fallback' }, isOpen: false });

@@ -72,13 +72,20 @@ function findSlidingDoorForClick(
   primaryHitObject: HitObjectLike | null,
   effectiveDoorId: string | null
 ) {
+  let matchedById: ReturnType<typeof getDoorsArray>[number] | null = null;
   for (let d of doorsArray) {
     const dg = d ? d.group : null;
     if (!d || d.type !== 'sliding' || !dg) continue;
-    if (effectiveDoorId && dg.userData && dg.userData.partId === effectiveDoorId) return d;
+
+    // Prefer the actual raycast object ancestry over the promoted/effective id.
+    // Sliding doors overlap by design, and the generic hit-promotion path can carry
+    // the opposite leaf id after a type switch or when lanes overlap. The object
+    // ancestry is the only deterministic signal for the clicked leaf.
     if (isHitInsideObject(primaryHitObject, dg)) return d;
+
+    if (effectiveDoorId && dg.userData && dg.userData.partId === effectiveDoorId) matchedById = d;
   }
-  return null;
+  return matchedById;
 }
 
 function resetSlidingDoorLocalOpenMarkers(door: UnknownRecord): void {
