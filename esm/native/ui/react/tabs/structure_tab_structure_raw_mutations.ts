@@ -23,6 +23,11 @@ import {
 import { applyStructureTemplateRecomputeBatch, structureTabReportNonFatal } from './structure_tab_core.js';
 import { normalizeStructureRawValue } from './structure_tab_dimension_constraints.js';
 import {
+  createStructureTabNoBuildImmediateMeta,
+  createStructureTabNoBuildNoHistoryMeta,
+  createStructureTabUiOnlyImmediateMeta,
+} from './structure_tab_meta.js';
+import {
   buildRawUiPatch,
   normalizeDoorsValue,
   readRawPatch,
@@ -130,17 +135,35 @@ export function commitStructureRawValue(args: {
   ) {
     try {
       if (key === 'cellDimsWidth') {
-        setUiCellDimsWidth(app, value, meta.uiOnlyImmediate('react:structure:cellDimsWidth'));
+        setUiCellDimsWidth(
+          app,
+          value,
+          createStructureTabUiOnlyImmediateMeta(meta, 'react:structure:cellDimsWidth')
+        );
       } else if (key === 'cellDimsHeight') {
-        setUiCellDimsHeight(app, value, meta.uiOnlyImmediate('react:structure:cellDimsHeight'));
+        setUiCellDimsHeight(
+          app,
+          value,
+          createStructureTabUiOnlyImmediateMeta(meta, 'react:structure:cellDimsHeight')
+        );
       } else if (key === 'cellDimsDepth') {
-        setUiCellDimsDepth(app, value, meta.uiOnlyImmediate('react:structure:cellDimsDepth'));
+        setUiCellDimsDepth(
+          app,
+          value,
+          createStructureTabUiOnlyImmediateMeta(meta, 'react:structure:cellDimsDepth')
+        );
       } else if (key === 'cellDimsHexProtrusion') {
-        const actionMeta = meta.uiOnlyImmediate('react:structure:cellDimsHexProtrusion');
+        const actionMeta = createStructureTabUiOnlyImmediateMeta(
+          meta,
+          'react:structure:cellDimsHexProtrusion'
+        );
         setUiCellDimsHexProtrusion(app, value, actionMeta);
         setUiCellDimsHexMode(app, true, actionMeta);
       } else {
-        const actionMeta = meta.uiOnlyImmediate('react:structure:cellDimsHexDoorWidth');
+        const actionMeta = createStructureTabUiOnlyImmediateMeta(
+          meta,
+          'react:structure:cellDimsHexDoorWidth'
+        );
         setUiCellDimsHexDoorWidth(app, value, actionMeta);
         setUiCellDimsHexMode(app, true, actionMeta);
       }
@@ -154,7 +177,7 @@ export function commitStructureRawValue(args: {
     const doorsN = Math.max(0, Math.round(Number(value) || 0));
     const uiPatch = buildRawUiPatch({ stackSplitLowerDoors: doorsN, stackSplitLowerDoorsManual: true });
     const source = 'react:structure:stackSplitLowerDoors';
-    const m = meta.noBuildImmediate(source);
+    const m = createStructureTabNoBuildImmediateMeta(meta, source);
 
     try {
       applyStructureTemplateRecomputeBatch({
@@ -233,7 +256,7 @@ export function commitStructureRawValue(args: {
     }
 
     const source = 'react:structure:doors';
-    const m = meta.noBuildImmediate(source);
+    const m = createStructureTabNoBuildImmediateMeta(meta, source);
     const statePatch: Record<string, unknown> = { ui: uiPatch };
     if (treatManualWidth !== !!isManualWidth) {
       statePatch.config = { isManualWidth: treatManualWidth };
@@ -251,10 +274,7 @@ export function commitStructureRawValue(args: {
             setManualWidth(
               app,
               treatManualWidth,
-              meta.noBuild(
-                meta.noHistory(undefined, 'react:structure:doors:manualWidth'),
-                'react:structure:doors:manualWidth'
-              )
+              createStructureTabNoBuildNoHistoryMeta(meta, 'react:structure:doors:manualWidth')
             );
           }
 
@@ -288,7 +308,7 @@ export function commitStructureRawValue(args: {
 
   const uiPatch = buildRawUiPatch({ [key]: value, ...extraLowerManual, ...extraChestCommodeAuto });
   const source = `react:structure:${key}`;
-  const m = meta.noBuildImmediate(source);
+  const m = createStructureTabNoBuildImmediateMeta(meta, source);
   const statePatch: Record<string, unknown> = { ui: uiPatch };
   if (key === 'width' && !isManualWidth) {
     statePatch.config = { isManualWidth: true };
@@ -307,10 +327,7 @@ export function commitStructureRawValue(args: {
             setManualWidth(
               app,
               true,
-              meta.noBuild(
-                meta.noHistory(undefined, 'react:structure:manualWidth'),
-                'react:structure:manualWidth'
-              )
+              createStructureTabNoBuildNoHistoryMeta(meta, 'react:structure:manualWidth')
             );
           }
           applyUiRawScalarPatch(app, readRawPatch(uiPatch), m);

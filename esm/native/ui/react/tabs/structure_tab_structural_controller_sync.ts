@@ -14,6 +14,7 @@ import {
 } from './structure_tab_structural_controller_contracts.js';
 import { asRecord } from './structure_tab_structural_controller_shared.js';
 import { structureTabReportNonFatal } from './structure_tab_shared.js';
+import { createStructureTabStructuralCommitMeta } from './structure_tab_meta.js';
 
 const STRUCTURAL_AUTO_COMMIT_SUFFIXES = [':init', ':normalize'];
 
@@ -33,15 +34,9 @@ function createStructuralCommitMeta(
   patch: UnknownRecord,
   source: string
 ): ActionMetaLike {
-  if (!hasOwnStructuralCommitField(patch) || isAutoStructuralCommitSource(source)) {
-    return args.meta.uiOnlyImmediate(source);
-  }
-
-  if (typeof args.meta.noBuildImmediate === 'function') {
-    return args.meta.noBuildImmediate(source);
-  }
-
-  return args.meta.noBuild({ immediate: true }, source);
+  return createStructureTabStructuralCommitMeta(args.meta, source, {
+    uiOnly: !hasOwnStructuralCommitField(patch) || isAutoStructuralCommitSource(source),
+  });
 }
 
 export function createStructureTabStructuralSyncController(

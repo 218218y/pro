@@ -58,6 +58,19 @@ function loadStructureWorkflowsSharedModule(stubs = {}) {
         structureTabReportNonFatal: (...args) => stubs.calls.push(['structureTabReportNonFatal', ...args]),
       };
     }
+    if (specifier === './structure_tab_meta.js') {
+      return {
+        createStructureTabNoBuildImmediateMeta: (meta, source) =>
+          typeof meta.noBuildImmediate === 'function'
+            ? meta.noBuildImmediate(source)
+            : meta.noBuild({ immediate: true }, source),
+        createStructureTabNoBuildNoHistoryImmediateMeta: (meta, source) =>
+          typeof meta.noHistoryImmediate === 'function'
+            ? meta.noBuild(meta.noHistoryImmediate(source), source)
+            : meta.noBuild(meta.noHistory({ immediate: true, source }, source), source),
+        createStructureTabUiOnlyImmediateMeta: (meta, source) => meta.uiOnlyImmediate(source),
+      };
+    }
     if (specifier === '../../../features/modules_configuration/modules_config_api.js') {
       return {
         readModulesConfigurationListFromConfigSnapshot: cfg => {

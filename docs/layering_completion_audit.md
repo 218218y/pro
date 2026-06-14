@@ -36,6 +36,7 @@ This file is intentionally compact. It keeps only current decomposition guard fa
 - `render_ops.ts` dimensions + interior preset/custom/rod flows now live in helper modules
 - `render_ops.ts` preview/hover helpers extracted into `builder/render_preview_ops.ts`
 - `services/models.ts` is now a small public service facade while stable surface installation, live App context refresh, and method-slot healing live in `services/models_surface_install.ts`
+- `ui/react/tabs/structure_tab_meta.ts` owns Structure Tab structural write, no-build/no-history, and ui-only meta profiles used by recompute-backed structure, stack-split, corner/chest, workflow, and sketch no-main commits
 
 ## Maintenance rule
 

@@ -35,6 +35,7 @@ const structureNotesBundle = bundleSources(
     '../esm/native/ui/react/tabs/StructureTab.view.tsx',
     '../esm/native/ui/react/tabs/use_structure_tab_workflows.tsx',
     '../esm/native/ui/react/tabs/use_structure_tab_workflows_shared.ts',
+    '../esm/native/ui/react/tabs/structure_tab_meta.ts',
     '../esm/native/ui/react/tabs/use_structure_tab_workflows_controllers.tsx',
     '../esm/native/ui/react/tabs/use_structure_tab_workflows_effects.ts',
     '../esm/native/ui/react/tabs/use_structure_tab_workflows_render.tsx',
@@ -56,7 +57,9 @@ const structureChestActionsBundle = bundleSources(
   [
     '../esm/native/ui/react/tabs/structure_tab_actions_controller_runtime.ts',
     '../esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller.ts',
+    '../esm/native/ui/react/tabs/structure_tab_actions_controller_shared.ts',
     '../esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_chest.ts',
+    '../esm/native/ui/react/tabs/structure_tab_meta.ts',
   ],
   import.meta.url,
   { stripNoise: false }
@@ -362,8 +365,9 @@ test('[structure-tab-family] structure notes/workflows stay normalized and chest
     [
       /export type StructureUiPartial = UnknownRecord &/,
       /function clearStructureCellDimsOverrides\(list: ModuleConfigLike\[\]\): ModuleConfigLike\[\]*/,
-      /meta\.noBuildImmediate\(source\)/,
-      /readNoBuildNoHistoryImmediateMeta\(meta, source\)/,
+      /createStructureTabNoBuildImmediateMeta\(meta, source\)/,
+      /createStructureTabNoBuildNoHistoryImmediateMeta\(meta, source\)/,
+      /export function createStructureTabNoBuildImmediateMeta\(/,
       /function readUiRawNumberFromApp\(app: Parameters<typeof getUiSnapshot>\[0\], key: string\): number/,
       /ensureUiNotesExportService\(app\)/,
       /function ensureNotesExportApi\(app: AppContainer\): NotesExportApi/,
@@ -378,9 +382,16 @@ test('[structure-tab-family] structure notes/workflows stay normalized and chest
     [
       /const setChestDrawersCount = \(nn: number\) =>/,
       /setUiChestDrawersCount\(args\.app, next, actionMeta\);/,
-      /commitStructureStatePatchWithRecompute\(\{[\s\S]*source: 'react:structure:chest:count'/,
+      /const source = 'react:structure:chest:count';[\s\S]*commitStructureStatePatchWithRecompute\(\{[\s\S]*source,/,
       /statePatch:\s*\{\s*ui:\s*uiPatch\s*\}/,
+      /createStructureTabRecomputeWriteMeta\(source\)/,
     ],
+    'structure chest drawer recompute bundle'
+  );
+  assertLacksAll(
+    assert,
+    structureChestActionsBundle,
+    [/\{\s*source:\s*'react:structure:chest:count'[\s\S]*noBuild:\s*true\s*\}/],
     'structure chest drawer recompute bundle'
   );
 });

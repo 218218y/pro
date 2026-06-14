@@ -11,6 +11,7 @@ import {
   structureTabReportNonFatal,
 } from './structure_tab_shared.js';
 import type { MutableRefLike } from './structure_tab_actions_controller_shared.js';
+import { createStructureTabNoBuildNoHistoryImmediateMeta } from './structure_tab_meta.js';
 
 export function createStructureTabHingeActionsController(args: {
   app: AppContainer;
@@ -43,7 +44,7 @@ export function createStructureTabHingeActionsController(args: {
       setUiHingeDirection(
         args.app,
         !!nextOn,
-        args.meta.noBuild(args.meta.noHistoryImmediate(reasonSource), reasonSource)
+        createStructureTabNoBuildNoHistoryImmediateMeta(args.meta, reasonSource)
       );
     } catch (__wpErr) {
       structureTabReportNonFatal('L1936', __wpErr);

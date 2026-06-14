@@ -1,4 +1,4 @@
-import type { ActionMetaLike, UnknownRecord } from '../../../../../types';
+import type { UnknownRecord } from '../../../../../types';
 import { setManualWidth } from '../actions/room_actions.js';
 import {
   setCfgPreChestState,
@@ -35,6 +35,7 @@ import {
   readStructureChestCommodeMirrorBounds,
   readStructureChestDrawersBounds,
 } from './structure_tab_dimension_constraints.js';
+import { createStructureTabRecomputeWriteMeta } from './structure_tab_meta.js';
 
 function readDefaultCommodeMirrorWidthCm(width: unknown): number {
   return (
@@ -55,7 +56,8 @@ export function createStructureTabChestActionsController(args: StructureTabCorne
     const app = args.app;
 
     if (next) {
-      const metaOn: ActionMetaLike = { source: 'react:structure:chest:on', immediate: true, noBuild: true };
+      const source = 'react:structure:chest:on';
+      const metaOn = createStructureTabRecomputeWriteMeta(source);
       const chestRawPatch: UnknownRecord = {
         doors: CHEST_MODE_DIMENSIONS.activeDefaults.doorsCount,
         width: CHEST_MODE_DIMENSIONS.activeDefaults.widthCm,
@@ -74,7 +76,7 @@ export function createStructureTabChestActionsController(args: StructureTabCorne
       };
       commitStructureStatePatchWithRecompute({
         app: args.app,
-        source: 'react:structure:chest:on',
+        source,
         meta: metaOn,
         uiPatch,
         statePatch: {
@@ -140,7 +142,8 @@ export function createStructureTabChestActionsController(args: StructureTabCorne
     const baseR =
       pre && typeof pre.base === 'string' && pre.base ? pre.base : String(args.baseType || 'plinth');
 
-    const metaOff: ActionMetaLike = { source: 'react:structure:chest:off', immediate: true, noBuild: true };
+    const source = 'react:structure:chest:off';
+    const metaOff = createStructureTabRecomputeWriteMeta(source);
     const uiPatch: UnknownRecord = {
       isChestMode: false,
       baseType: baseR,
@@ -151,7 +154,7 @@ export function createStructureTabChestActionsController(args: StructureTabCorne
 
     commitStructureStatePatchWithRecompute({
       app: args.app,
-      source: 'react:structure:chest:off',
+      source,
       meta: metaOff,
       uiPatch,
       statePatch: { config: configPatch, ui: uiPatch },
@@ -182,15 +185,12 @@ export function createStructureTabChestActionsController(args: StructureTabCorne
       normalizeStructureDimensionValue(nn, readStructureChestDrawersBounds()) ??
       readStructureChestDrawersBounds().min ??
       WARDROBE_CHEST_DRAWERS_MIN;
-    const actionMeta: ActionMetaLike = {
-      source: 'react:structure:chest:count',
-      immediate: true,
-      noBuild: true,
-    };
+    const source = 'react:structure:chest:count';
+    const actionMeta = createStructureTabRecomputeWriteMeta(source);
     const uiPatch: UnknownRecord = { raw: { chestDrawersCount: next } };
     commitStructureStatePatchWithRecompute({
       app: args.app,
-      source: 'react:structure:chest:count',
+      source,
       meta: actionMeta,
       uiPatch,
       statePatch: { ui: uiPatch },
@@ -202,11 +202,8 @@ export function createStructureTabChestActionsController(args: StructureTabCorne
   };
 
   const toggleChestCommode = (nextOn: boolean) => {
-    const actionMeta: ActionMetaLike = {
-      source: nextOn ? 'react:structure:chest:commode:on' : 'react:structure:chest:commode:off',
-      immediate: true,
-      noBuild: true,
-    };
+    const source = nextOn ? 'react:structure:chest:commode:on' : 'react:structure:chest:commode:off';
+    const actionMeta = createStructureTabRecomputeWriteMeta(source);
     const mirrorHeight = readDefaultCommodeMirrorHeightCm(args.chestCommodeMirrorHeightCm);
     const mirrorWidthManual = !!args.chestCommodeMirrorWidthManual;
     const mirrorWidth = readDefaultCommodeMirrorWidthCm(
@@ -227,7 +224,7 @@ export function createStructureTabChestActionsController(args: StructureTabCorne
 
     commitStructureStatePatchWithRecompute({
       app: args.app,
-      source: actionMeta.source || 'react:structure:chest:commode',
+      source,
       meta: actionMeta,
       uiPatch,
       statePatch: { ui: uiPatch },
@@ -244,15 +241,12 @@ export function createStructureTabChestActionsController(args: StructureTabCorne
 
   const setChestCommodeMirrorHeight = (nn: number) => {
     const next = readDefaultCommodeMirrorHeightCm(nn);
-    const actionMeta: ActionMetaLike = {
-      source: 'react:structure:chest:commode:mirror-height',
-      immediate: true,
-      noBuild: true,
-    };
+    const source = 'react:structure:chest:commode:mirror-height';
+    const actionMeta = createStructureTabRecomputeWriteMeta(source);
     const uiPatch: UnknownRecord = { raw: { chestCommodeMirrorHeightCm: next } };
     commitStructureStatePatchWithRecompute({
       app: args.app,
-      source: 'react:structure:chest:commode:mirror-height',
+      source,
       meta: actionMeta,
       uiPatch,
       statePatch: { ui: uiPatch },
@@ -265,17 +259,14 @@ export function createStructureTabChestActionsController(args: StructureTabCorne
 
   const setChestCommodeMirrorWidth = (nn: number) => {
     const next = readDefaultCommodeMirrorWidthCm(nn);
-    const actionMeta: ActionMetaLike = {
-      source: 'react:structure:chest:commode:mirror-width',
-      immediate: true,
-      noBuild: true,
-    };
+    const source = 'react:structure:chest:commode:mirror-width';
+    const actionMeta = createStructureTabRecomputeWriteMeta(source);
     const uiPatch: UnknownRecord = {
       raw: { chestCommodeMirrorWidthCm: next, chestCommodeMirrorWidthManual: true },
     };
     commitStructureStatePatchWithRecompute({
       app: args.app,
-      source: 'react:structure:chest:commode:mirror-width',
+      source,
       meta: actionMeta,
       uiPatch,
       statePatch: { ui: uiPatch },
@@ -289,13 +280,10 @@ export function createStructureTabChestActionsController(args: StructureTabCorne
 
   const setChestCommodeMirrorWidthManual = (nextManual: boolean) => {
     const manual = !!nextManual;
-    const actionMeta: ActionMetaLike = {
-      source: manual
-        ? 'react:structure:chest:commode:mirror-width:manual'
-        : 'react:structure:chest:commode:mirror-width:auto',
-      immediate: true,
-      noBuild: true,
-    };
+    const source = manual
+      ? 'react:structure:chest:commode:mirror-width:manual'
+      : 'react:structure:chest:commode:mirror-width:auto';
+    const actionMeta = createStructureTabRecomputeWriteMeta(source);
     const autoWidth = readDefaultCommodeMirrorWidthCm(
       args.width || CHEST_MODE_DIMENSIONS.activeDefaults.widthCm
     );
@@ -305,7 +293,7 @@ export function createStructureTabChestActionsController(args: StructureTabCorne
     const uiPatch: UnknownRecord = { raw: rawPatch };
     commitStructureStatePatchWithRecompute({
       app: args.app,
-      source: actionMeta.source || 'react:structure:chest:commode:mirror-width-mode',
+      source,
       meta: actionMeta,
       uiPatch,
       statePatch: { ui: uiPatch },

@@ -62,6 +62,7 @@ const structureBundle = bundleSources(
     '../esm/native/ui/react/tabs/use_structure_tab_actions.ts',
     '../esm/native/ui/react/tabs/structure_tab_actions_controller_runtime.ts',
     '../esm/native/ui/react/tabs/structure_tab_actions_controller_shared.ts',
+    '../esm/native/ui/react/tabs/structure_tab_meta.ts',
     '../esm/native/ui/react/tabs/structure_tab_hinge_actions_controller.ts',
     '../esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller.ts',
     '../esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_contracts.ts',
@@ -158,7 +159,7 @@ test('[stageF] React write hotspots use canonical wrapper sweep for common ui/co
       /setUiCellDimsWidth\(app, null, actionMeta\)/,
       /setUiStackSplitLowerDoorsManual\(app, true, m\)/,
       /setUiChestMode\((?:args\.)?app,\s*true,\s*metaOn\)/,
-      /const actionMeta:\s*ActionMetaLike\s*=\s*\{\s*source:\s*'react:structure:cornerSide',\s*immediate:\s*true(?:,\s*noBuild:\s*true,?)?\s*\}/,
+      /const actionMeta = createStructureTabRecomputeWriteMeta\(source\)/,
       /setUiCornerSide\((?:args\.)?app,\s*next,\s*actionMeta\)/,
     ],
     'structureBundle'

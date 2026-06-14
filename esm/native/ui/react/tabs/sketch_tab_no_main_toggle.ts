@@ -14,6 +14,7 @@ import {
   patchUi,
 } from '../actions/store_actions.js';
 import { applyStructureTemplateRecomputeBatch } from './structure_tab_core_recompute.js';
+import { createStructureTabNoBuildImmediateMeta } from './structure_tab_meta.js';
 
 export const SKETCH_NO_MAIN_RESTORE_KEY = 'noMainSketchRestoreSnapshot';
 export const SKETCH_NO_MAIN_FREE_EXTRAS_KEY = 'noMainSketchFreeExtrasSnapshot';
@@ -474,12 +475,6 @@ function applyNoMainBatch(args: {
   });
 }
 
-function createNoBuildMeta(meta: MetaActionsNamespaceLike, source: string): ActionMetaLike {
-  return typeof meta.noBuildImmediate === 'function'
-    ? meta.noBuildImmediate(source)
-    : { source, noBuild: true };
-}
-
 export function hasSketchNoMainRestoreSnapshot(ui: UnknownRecord | null | undefined): boolean {
   return !!(ui && readRestoreSnapshot(ui));
 }
@@ -516,7 +511,7 @@ export function toggleSketchNoMainWardrobe(args: {
     applyNoMainBatch({
       app,
       source,
-      meta: createNoBuildMeta(meta, source),
+      meta: createStructureTabNoBuildImmediateMeta(meta, source),
       uiPatch,
       configPatch,
     });
@@ -540,7 +535,7 @@ export function toggleSketchNoMainWardrobe(args: {
   applyNoMainBatch({
     app,
     source,
-    meta: createNoBuildMeta(meta, source),
+    meta: createStructureTabNoBuildImmediateMeta(meta, source),
     uiPatch,
     configSnapshot,
   });

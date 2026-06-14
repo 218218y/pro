@@ -2,6 +2,7 @@ import type { AppContainer, MetaActionsNamespaceLike } from '../../../../../type
 
 import { applyUiRawScalarPatch, setUiFlag } from '../actions/store_actions.js';
 import { applyStructureTemplateRecomputeBatch, structureTabReportNonFatal } from './structure_tab_core.js';
+import { createStructureTabNoBuildImmediateMeta } from './structure_tab_meta.js';
 import { normalizeStructureRawValue } from './structure_tab_dimension_constraints.js';
 import {
   DEFAULT_STACK_SPLIT_LOWER_HEIGHT,
@@ -85,7 +86,7 @@ export function setStackSplitLowerLinkModeValue(args: {
 
   const uiPatch = buildRawUiPatch({ [manualKey]: nextManual, [valueKey]: normalizedValue });
   const source = `react:structure:stackSplit:link:${field}:${nextManual ? 'manual' : 'auto'}`;
-  const m = meta.noBuildImmediate(source);
+  const m = createStructureTabNoBuildImmediateMeta(meta, source);
 
   try {
     applyStructureTemplateRecomputeBatch({
@@ -110,7 +111,7 @@ export function toggleStackSplitDecorativeSeparatorState(args: {
   stackSplitEnabled: boolean;
 }): void {
   const source = `react:structure:stackSplit:decorativeSeparator:${args.enabled ? 'off' : 'on'}`;
-  const m = args.meta.noBuildImmediate(source);
+  const m = createStructureTabNoBuildImmediateMeta(args.meta, source);
   const next = !args.enabled;
   const uiPatch: StructureUiPatch = {
     stackSplitEnabled: args.stackSplitEnabled || next,
@@ -172,7 +173,7 @@ export function toggleStackSplitState(args: {
   const source = 'react:structure:stackSplit';
 
   if (stackSplitEnabled) {
-    const m = meta.noBuildImmediate(source + ':off');
+    const m = createStructureTabNoBuildImmediateMeta(meta, source + ':off');
     try {
       applyStructureTemplateRecomputeBatch({
         app,
@@ -259,7 +260,7 @@ export function toggleStackSplitState(args: {
       stackSplitLowerDoorsManual: !!stackSplitLowerDoorsManual,
     },
   };
-  const m = meta.noBuildImmediate(source + ':on');
+  const m = createStructureTabNoBuildImmediateMeta(meta, source + ':on');
 
   try {
     applyStructureTemplateRecomputeBatch({

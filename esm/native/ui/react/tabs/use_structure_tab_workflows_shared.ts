@@ -13,6 +13,11 @@ import { applyStructureTemplateRecomputeBatch } from './structure_tab_core.js';
 import { setManualWidth } from '../actions/room_actions.js';
 import { getCfg as getCfgStore } from '../../store_access.js';
 import { structureTabReportNonFatal } from './structure_tab_shared.js';
+import {
+  createStructureTabNoBuildImmediateMeta,
+  createStructureTabNoBuildNoHistoryImmediateMeta,
+  createStructureTabUiOnlyImmediateMeta,
+} from './structure_tab_meta.js';
 import { readModulesConfigurationListFromConfigSnapshot } from '../../../features/modules_configuration/modules_config_api.js';
 import type {
   StructureWorkflowOps,
@@ -23,13 +28,6 @@ import type { StructureTabViewState } from './use_structure_tab_view_state_contr
 export const STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID = 'cell_dims';
 export const STRUCTURE_CELL_DIMS_MODE_MESSAGE = 'מצב עריכה: הקלד מידות ואז לחץ על תא או קופסא כדי להחיל';
 export const STRUCTURE_HEX_CELL_DIMS_MODE_MESSAGE = 'מצב עריכה: לחץ על תא או קופסא כדי להפוך אותו לתא משושה';
-
-function readNoBuildNoHistoryImmediateMeta(meta: MetaActionsNamespaceLike, source: string): ActionMetaLike {
-  if (typeof meta.noHistoryImmediate === 'function') {
-    return meta.noBuild(meta.noHistoryImmediate(source), source);
-  }
-  return meta.noBuild(meta.noHistory({ immediate: true, source }, source), source);
-}
 
 export function createStructureWorkflowState(state: StructureTabViewState): StructureWorkflowState {
   return {
@@ -59,7 +57,7 @@ export function createStructureWorkflowOps(
     getModulesConfiguration: () =>
       readModulesConfigurationListFromConfigSnapshot(getCfgStore(app), 'modulesConfiguration'),
     commitModulesConfiguration: (nextList, source) => {
-      const actionMeta: ActionMetaLike = meta.noBuildImmediate(source);
+      const actionMeta: ActionMetaLike = createStructureTabNoBuildImmediateMeta(meta, source);
       applyStructureTemplateRecomputeBatch({
         app,
         source,
@@ -82,7 +80,7 @@ export function createStructureWorkflowOps(
                 ? 'HexProtrusion'
                 : 'HexDoorWidth'
       }:clear`;
-      const actionMeta = meta.uiOnlyImmediate(source);
+      const actionMeta = createStructureTabUiOnlyImmediateMeta(meta, source);
       if (key === 'width') setUiCellDimsWidth(app, null, actionMeta);
       else if (key === 'height') setUiCellDimsHeight(app, null, actionMeta);
       else if (key === 'depth') setUiCellDimsDepth(app, null, actionMeta);
@@ -96,11 +94,11 @@ export function createStructureWorkflowOps(
     },
     setCellDimsHexMode: on => {
       const source = on ? 'react:structure:cellDimsHex:enter' : 'react:structure:cellDimsHex:exit';
-      setUiCellDimsHexMode(app, !!on, meta.uiOnlyImmediate(source));
+      setUiCellDimsHexMode(app, !!on, createStructureTabUiOnlyImmediateMeta(meta, source));
     },
     setAutoWidth: nextWidth => {
       const source = 'react:structure:width:auto';
-      const actionMeta = readNoBuildNoHistoryImmediateMeta(meta, source);
+      const actionMeta = createStructureTabNoBuildNoHistoryImmediateMeta(meta, source);
       applyStructureTemplateRecomputeBatch({
         app,
         source,

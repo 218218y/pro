@@ -1,4 +1,3 @@
-import type { ActionMetaLike } from '../../../../../types';
 import {
   setUiCornerDepth,
   setUiCornerDoors,
@@ -26,10 +25,12 @@ import {
   readStructureCornerDimensionBounds,
   readStructureCornerDoorsBounds,
 } from './structure_tab_dimension_constraints.js';
+import { createStructureTabRecomputeWriteMeta } from './structure_tab_meta.js';
 
 export function createStructureTabCornerActionsController(args: StructureTabCornerChestActionsArgs) {
   const toggleCornerMode = (nextOn: boolean) => {
-    const actionMeta: ActionMetaLike = { source: 'react:structure:corner', immediate: true, noBuild: true };
+    const source = 'react:structure:corner';
+    const actionMeta = createStructureTabRecomputeWriteMeta(source);
     const patch: CornerPatch = { cornerMode: !!nextOn };
     if (nextOn) {
       patch.cornerSide = args.cornerSide;
@@ -41,7 +42,7 @@ export function createStructureTabCornerActionsController(args: StructureTabCorn
 
     commitStructureStatePatchWithRecompute({
       app: args.app,
-      source: 'react:structure:corner',
+      source,
       meta: actionMeta,
       uiPatch: patch,
       statePatch: { ui: patch },
@@ -75,14 +76,11 @@ export function createStructureTabCornerActionsController(args: StructureTabCorn
 
   const toggleCornerSide = () => {
     const next = args.cornerSide === 'left' ? 'right' : 'left';
-    const actionMeta: ActionMetaLike = {
-      source: 'react:structure:cornerSide',
-      immediate: true,
-      noBuild: true,
-    };
+    const source = 'react:structure:cornerSide';
+    const actionMeta = createStructureTabRecomputeWriteMeta(source);
     commitStructureStatePatchWithRecompute({
       app: args.app,
-      source: 'react:structure:cornerSide',
+      source,
       meta: actionMeta,
       uiPatch: { cornerSide: next },
       statePatch: { ui: { cornerSide: next } },
@@ -116,14 +114,11 @@ export function createStructureTabCornerActionsController(args: StructureTabCorn
 
     if (widthIsAuto) patch.cornerWidth = nextDoors * perDoor;
 
-    const actionMeta: ActionMetaLike = {
-      source: 'react:structure:cornerDoors',
-      immediate: true,
-      noBuild: true,
-    };
+    const source = 'react:structure:cornerDoors';
+    const actionMeta = createStructureTabRecomputeWriteMeta(source);
     commitStructureStatePatchWithRecompute({
       app: args.app,
-      source: 'react:structure:cornerDoors',
+      source,
       meta: actionMeta,
       uiPatch: patch,
       statePatch: { ui: patch },
@@ -144,14 +139,11 @@ export function createStructureTabCornerActionsController(args: StructureTabCorn
     );
     if (next == null) return;
     if (Math.abs((Number(args.cornerWidth) || 0) - next) < 0.0001) return;
-    const actionMeta: ActionMetaLike = {
-      source: 'react:structure:cornerWidth',
-      immediate: true,
-      noBuild: true,
-    };
+    const source = 'react:structure:cornerWidth';
+    const actionMeta = createStructureTabRecomputeWriteMeta(source);
     commitStructureStatePatchWithRecompute({
       app: args.app,
-      source: 'react:structure:cornerWidth',
+      source,
       meta: actionMeta,
       uiPatch: { cornerWidth: next },
       statePatch: { ui: { cornerWidth: next } },
@@ -166,14 +158,11 @@ export function createStructureTabCornerActionsController(args: StructureTabCorn
     const next = normalizeStructureDimensionValue(nn, readStructureCornerDimensionBounds('cornerHeight'));
     if (next == null) return;
     if (Math.abs((Number(args.cornerHeight) || 0) - next) < 0.0001) return;
-    const actionMeta: ActionMetaLike = {
-      source: 'react:structure:cornerHeight',
-      immediate: true,
-      noBuild: true,
-    };
+    const source = 'react:structure:cornerHeight';
+    const actionMeta = createStructureTabRecomputeWriteMeta(source);
     commitStructureStatePatchWithRecompute({
       app: args.app,
-      source: 'react:structure:cornerHeight',
+      source,
       meta: actionMeta,
       uiPatch: { cornerHeight: next },
       statePatch: { ui: { cornerHeight: next } },
@@ -188,14 +177,11 @@ export function createStructureTabCornerActionsController(args: StructureTabCorn
     const next = normalizeStructureDimensionValue(nn, readStructureCornerDimensionBounds('cornerDepth'));
     if (next == null) return;
     if (Math.abs((Number(args.cornerDepth) || 0) - next) < 0.0001) return;
-    const actionMeta: ActionMetaLike = {
-      source: 'react:structure:cornerDepth',
-      immediate: true,
-      noBuild: true,
-    };
+    const source = 'react:structure:cornerDepth';
+    const actionMeta = createStructureTabRecomputeWriteMeta(source);
     commitStructureStatePatchWithRecompute({
       app: args.app,
-      source: 'react:structure:cornerDepth',
+      source,
       meta: actionMeta,
       uiPatch: { cornerDepth: next },
       statePatch: { ui: { cornerDepth: next } },

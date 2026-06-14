@@ -1,15 +1,14 @@
-import type {
-  ActionMetaLike,
-  AppContainer,
-  MetaActionsNamespaceLike,
-  UnknownRecord,
-} from '../../../../../types';
+import type { ActionMetaLike, AppContainer, UnknownRecord } from '../../../../../types';
 import {
   runStructurePatchRecomputeBatch,
   runStructureRecomputeFromUi,
   STRUCTURE_RECOMPUTE_OPTS,
 } from './structure_tab_recompute_batch.js';
 import { structureTabReportNonFatal } from './structure_tab_shared.js';
+import { createStructureTabRecomputeWriteMeta } from './structure_tab_meta.js';
+
+export { withImmediate } from './structure_tab_meta.js';
+export type { StructureMetaAccess } from './structure_tab_meta.js';
 
 export { STRUCTURE_RECOMPUTE_OPTS } from './structure_tab_recompute_batch.js';
 
@@ -37,10 +36,6 @@ function isRecord(value: unknown): value is UnknownRecord {
   return !!value && typeof value === 'object' && !Array.isArray(value);
 }
 
-export function withImmediate(meta: ActionMetaLike): ActionMetaLike {
-  return { ...meta, immediate: true };
-}
-
 export function readPreChestState(value: unknown): PreChestStateLike | null {
   return isRecord(value) ? value : null;
 }
@@ -55,7 +50,7 @@ export function commitStructureStatePatchWithRecompute(args: {
   errorLine: string;
 }): void {
   const { app, source, meta, uiPatch, statePatch, mutate, errorLine } = args;
-  const actionMeta = { ...meta, immediate: true, noBuild: true };
+  const actionMeta = createStructureTabRecomputeWriteMeta(source, meta);
   try {
     runStructurePatchRecomputeBatch({
       app,
@@ -83,8 +78,3 @@ export function recomputeStructureFromUi(
     structureTabReportNonFatal(app, errorLine, __wpErr);
   }
 }
-
-export type StructureMetaAccess = Pick<
-  MetaActionsNamespaceLike,
-  'uiOnlyImmediate' | 'noBuild' | 'noHistory' | 'noHistoryImmediate'
->;
