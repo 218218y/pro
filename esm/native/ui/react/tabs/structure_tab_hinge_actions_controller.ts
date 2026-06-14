@@ -1,10 +1,12 @@
 import type {
+  ActionMetaLike,
   AppContainer,
   MetaActionsNamespaceLike,
   HingeMap,
   UiFeedbackNamespaceLike,
 } from '../../../../../types';
 import { setCfgHingeMap, setUiHingeDirection } from '../actions/store_actions.js';
+import { applyImmediateStructuralConfigMutation } from '../actions/structural_build_refresh_actions.js';
 import {
   enterStructureEditMode,
   exitStructureEditMode,
@@ -12,6 +14,27 @@ import {
 } from './structure_tab_shared.js';
 import type { MutableRefLike } from './structure_tab_actions_controller_shared.js';
 import { createStructureTabNoBuildNoHistoryImmediateMeta } from './structure_tab_meta.js';
+
+function createHingeMapStructuralMetaOverrides(): ActionMetaLike {
+  return {
+    noHistory: true,
+    noAutosave: true,
+    noPersist: true,
+    noCapture: true,
+  };
+}
+
+function applyStructureHingeMapMutation(app: AppContainer, source: string, nextHingeMap: HingeMap): void {
+  applyImmediateStructuralConfigMutation(
+    app,
+    source,
+    { hingeMap: nextHingeMap },
+    meta => {
+      setCfgHingeMap(app, nextHingeMap, meta);
+    },
+    createHingeMapStructuralMetaOverrides()
+  );
+}
 
 export function createStructureTabHingeActionsController(args: {
   app: AppContainer;
@@ -52,20 +75,11 @@ export function createStructureTabHingeActionsController(args: {
 
     args.hingeDispatchRef.current = !!nextOn;
 
-    const hingeMapMeta = {
-      source: reasonSource + (nextOn ? ':restore' : ':clear'),
-      immediate: true,
-      noHistory: true,
-      noAutosave: true,
-      noPersist: true,
-      noCapture: true,
-    };
-
     if (nextOn) {
       try {
         const saved = args.savedHingeMapRef.current;
         if (saved && typeof saved === 'object' && Object.keys(saved).length > 0) {
-          setCfgHingeMap(args.app, { ...saved }, hingeMapMeta);
+          applyStructureHingeMapMutation(args.app, `${reasonSource}:restore`, { ...saved });
         }
       } catch (__wpErr) {
         structureTabReportNonFatal('L1959', __wpErr);
@@ -99,7 +113,7 @@ export function createStructureTabHingeActionsController(args: {
     }
 
     try {
-      setCfgHingeMap(args.app, {}, hingeMapMeta);
+      applyStructureHingeMapMutation(args.app, `${reasonSource}:clear`, {});
     } catch (__wpErr) {
       structureTabReportNonFatal('L2004', __wpErr);
     }

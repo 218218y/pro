@@ -165,6 +165,8 @@ test('[stageF] React write hotspots use canonical wrapper sweep for common ui/co
       /applyImmediateStructureUiPatch\(args, 'react:structure:baseType', \{ baseType: nextBaseType \}/,
       /applyImmediateStructureUiPatch\(\s*args,\s*'react:structure:baseLegStyle',\s*\{ baseLegStyle: nextBaseLegStyle \}/,
       /applyImmediateStructureUiPatch\(\s*args,\s*'react:structure:slidingTracksColor',\s*\{ slidingTracksColor: nextSlidingTracksColor \}/,
+      /applyStructureHingeMapMutation\(args\.app, `\$\{reasonSource\}:restore`, \{ \.\.\.saved \}\)/,
+      /applyStructureHingeMapMutation\(args\.app, `\$\{reasonSource\}:clear`, \{\}\)/,
     ],
     'structureBundle'
   );
@@ -200,6 +202,9 @@ test('[stageF] React write hotspots use canonical wrapper sweep for common ui/co
       /setUiRawScalar\(app, ''stackSplitLowerDoorsManual''/,
       /setUiBaseType\(args\.app, next, \{ source: 'react:structure:baseType', immediate: true \}\)/,
       /setUiSlidingTracksColor\(args\.app, next, \{[\s\S]*source: 'react:structure:slidingTracksColor'[\s\S]*immediate: true/,
+      /const hingeMapMeta\s*=\s*\{/,
+      /setCfgHingeMap\(args\.app, \{ \.\.\.saved \}, hingeMapMeta\)/,
+      /setCfgHingeMap\(args\.app, \{\}, hingeMapMeta\)/,
     ],
     'structureBundle'
   );

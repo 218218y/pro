@@ -110,6 +110,19 @@ function loadStructureActionsControllerModule(calls, overrides = {}) {
         setUiWidth: (...args) => calls.push(['setUiWidth', ...args]),
       };
     }
+    if (specifier === '../actions/structural_build_refresh_actions.js') {
+      return {
+        applyImmediateStructuralConfigMutation:
+          overrides.applyImmediateStructuralConfigMutation ||
+          ((app, source, patch, applyDirectMutation, metaOverrides) => {
+            calls.push(['applyImmediateStructuralConfigMutation', app, source, patch, metaOverrides]);
+            const meta = { ...(metaOverrides || {}), source, immediate: true };
+            delete meta.noBuild;
+            applyDirectMutation(meta);
+            return { appliedViaActions: false, requestedBuild: false };
+          }),
+      };
+    }
     if (specifier === '../../../services/api.js') {
       return {
         ...serviceApiDimensionConstants,
@@ -224,7 +237,30 @@ test('[structure-actions-controller] hinge controller restores and clears hinge 
   assert.equal(JSON.stringify(savedHingeMapRef.current), JSON.stringify({ a: 'left' }));
   assert.ok(calls.some(entry => entry[0] === 'exitStructureEditMode'));
   assert.ok(
-    calls.some(entry => entry[0] === 'setCfgHingeMap' && JSON.stringify(entry[2]) === JSON.stringify({}))
+    calls.some(
+      entry =>
+        entry[0] === 'applyImmediateStructuralConfigMutation' &&
+        entry[2] === 'react:hinge:disable:clear' &&
+        JSON.stringify(entry[3]) === JSON.stringify({ hingeMap: {} }) &&
+        JSON.stringify(entry[4]) ===
+          JSON.stringify({ noHistory: true, noAutosave: true, noPersist: true, noCapture: true })
+    )
+  );
+  assert.ok(
+    calls.some(
+      entry =>
+        entry[0] === 'setCfgHingeMap' &&
+        JSON.stringify(entry[2]) === JSON.stringify({}) &&
+        JSON.stringify(entry[3]) ===
+          JSON.stringify({
+            noHistory: true,
+            noAutosave: true,
+            noPersist: true,
+            noCapture: true,
+            source: 'react:hinge:disable:clear',
+            immediate: true,
+          })
+    )
   );
 
   calls.length = 0;
@@ -233,10 +269,67 @@ test('[structure-actions-controller] hinge controller restores and clears hinge 
   assert.equal(hingeDispatchRef.current, true);
   assert.ok(
     calls.some(
-      entry => entry[0] === 'setCfgHingeMap' && JSON.stringify(entry[2]) === JSON.stringify({ a: 'left' })
+      entry =>
+        entry[0] === 'applyImmediateStructuralConfigMutation' &&
+        entry[2] === 'react:hinge:enable:restore' &&
+        JSON.stringify(entry[3]) === JSON.stringify({ hingeMap: { a: 'left' } })
+    )
+  );
+  assert.ok(
+    calls.some(
+      entry =>
+        entry[0] === 'setCfgHingeMap' &&
+        JSON.stringify(entry[2]) === JSON.stringify({ a: 'left' }) &&
+        JSON.stringify(entry[3]) ===
+          JSON.stringify({
+            noHistory: true,
+            noAutosave: true,
+            noPersist: true,
+            noCapture: true,
+            source: 'react:hinge:enable:restore',
+            immediate: true,
+          })
     )
   );
   assert.ok(!calls.some(entry => entry[0] === 'enterStructureEditMode'));
+});
+
+test('[structure-actions-controller] hinge map canonical patch skips direct fallback when applied', () => {
+  const calls = [];
+  const mod = loadStructureActionsControllerModule(calls, {
+    applyImmediateStructuralConfigMutation: (app, source, patch, _applyDirectMutation, metaOverrides) => {
+      calls.push(['applyImmediateStructuralConfigMutation', app, source, patch, metaOverrides]);
+      return { appliedViaActions: true, requestedBuild: false };
+    },
+  });
+  const controller = mod.createStructureTabHingeActionsController({
+    app: { id: 'app' },
+    meta: {
+      noBuild: meta => ({ ...meta, noBuild: true }),
+      noHistoryImmediate: source => ({ source, immediate: true }),
+    },
+    fb: { toast() {} },
+    hingeModeId: 'hinge',
+    getHingeMap: () => ({}),
+    getPrimaryMode: () => 'hinge',
+    savedHingeMapRef: { current: { a: 'left' } },
+    hingeDispatchRef: { current: null },
+  });
+
+  controller.setHingeDirection(true, 'react:hinge:enable');
+
+  assert.ok(
+    calls.some(
+      entry =>
+        entry[0] === 'applyImmediateStructuralConfigMutation' &&
+        entry[2] === 'react:hinge:enable:restore' &&
+        JSON.stringify(entry[3]) === JSON.stringify({ hingeMap: { a: 'left' } })
+    )
+  );
+  assert.equal(
+    calls.some(entry => entry[0] === 'setCfgHingeMap'),
+    false
+  );
 });
 
 test('[structure-actions-controller] chest and corner controller runs recompute/camera policy through one owner', () => {
