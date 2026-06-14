@@ -39,6 +39,15 @@ function loadDesignTabEditModesControllerModule(calls) {
         setUiFlag: (...args) => calls.push(['setUiFlag', ...args]),
       };
     }
+    if (specifier === '../actions/structural_build_refresh_actions.js') {
+      return {
+        applyImmediateStructuralUiMutation: (app, source, patch, applyDirectMutation) => {
+          calls.push(['applyImmediateStructuralUiMutation', app, source, patch]);
+          applyDirectMutation({ source, immediate: true });
+          return { appliedViaActions: false, requestedBuild: false };
+        },
+      };
+    }
     if (specifier === './design_tab_multicolor_shared.js') {
       return {
         __designTabReportNonFatal: (...args) => calls.push(['reportNonFatal', ...args]),
@@ -109,6 +118,26 @@ test('[design-tab-edit-modes-controller] feature toggles and edit mode entry flo
   assert.ok(grooveEnterCall);
   assert.equal(JSON.stringify(grooveEnterCall[3].uiPatch), JSON.stringify({ groovesEnabled: true }));
   assert.equal(grooveEnterCall[3].source, 'react:design:groovesEnabled');
+
+  calls.length = 0;
+  controller.setFeatureToggle('splitDoors', true);
+  assert.ok(
+    calls.some(
+      entry =>
+        entry[0] === 'applyImmediateStructuralUiMutation' &&
+        entry[2] === 'react:design:splitDoors' &&
+        JSON.stringify(entry[3]) === JSON.stringify({ splitDoors: true })
+    )
+  );
+  assert.ok(
+    calls.some(
+      entry =>
+        entry[0] === 'setUiFlag' &&
+        entry[2] === 'splitDoors' &&
+        entry[3] === true &&
+        JSON.stringify(entry[4]) === JSON.stringify({ source: 'react:design:splitDoors', immediate: true })
+    )
+  );
 
   calls.length = 0;
   controller.toggleSplitCustomEdit();
@@ -217,6 +246,15 @@ test('[design-tab-edit-modes-controller] failures stay reported without throwing
       if (specifier === '../actions/store_actions.js') {
         return {
           setUiFlag: (...args) => realEnter(['setUiFlag', ...args]),
+        };
+      }
+      if (specifier === '../actions/structural_build_refresh_actions.js') {
+        return {
+          applyImmediateStructuralUiMutation: (app, source, patch, applyDirectMutation) => {
+            realEnter(['applyImmediateStructuralUiMutation', app, source, patch]);
+            applyDirectMutation({ source, immediate: true });
+            return { appliedViaActions: false, requestedBuild: false };
+          },
         };
       }
       if (specifier === './design_tab_multicolor_shared.js') {

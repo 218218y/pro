@@ -3,6 +3,7 @@ import { useCallback, useMemo } from 'react';
 import type { AppContainer, UiFeedbackNamespaceLike } from '../../../../../types';
 
 import { setUiFrontColorShelfInheritanceMode } from '../actions/store_actions.js';
+import { applyImmediateStructuralUiMutation } from '../actions/structural_build_refresh_actions.js';
 import { getNextFrontColorShelfInheritanceMode } from '../../../features/front_color_shelf_inheritance.js';
 import { useDesignTabColorManager } from './use_design_tab_color_manager.js';
 import { useDesignTabEditModes } from './use_design_tab_edit_modes.js';
@@ -60,11 +61,11 @@ export function useDesignTabControllerSections(args: {
   );
 
   const toggleFrontColorShelfInheritanceMode = useCallback(() => {
-    setUiFrontColorShelfInheritanceMode(
-      app,
-      getNextFrontColorShelfInheritanceMode(state.frontColorShelfInheritanceMode),
-      { source: 'react:design:frontColorShelfInheritanceMode', immediate: true }
-    );
+    const next = getNextFrontColorShelfInheritanceMode(state.frontColorShelfInheritanceMode);
+    const source = 'react:design:frontColorShelfInheritanceMode';
+    applyImmediateStructuralUiMutation(app, source, { frontColorShelfInheritanceMode: next }, meta => {
+      setUiFrontColorShelfInheritanceMode(app, next, meta);
+    });
   }, [app, state.frontColorShelfInheritanceMode]);
 
   const colorSection = useMemo<DesignTabColorSectionModel>(

@@ -64,3 +64,19 @@ test('[structural-build-refresh-actions] ui mutation skips direct fallback when 
   assert.equal(result.appliedViaActions, true);
   assert.equal(result.requestedBuild, false);
 });
+
+test('[structural-build-refresh-actions] immediate structural meta normalizes source and fails fast without one', () => {
+  const mod = loadStructuralBuildRefreshActionsModule();
+
+  assert.equal(
+    JSON.stringify(mod.createImmediateStructuralMutationMeta(' react:test:trimmed ')),
+    JSON.stringify({
+      source: 'react:test:trimmed',
+      immediate: true,
+    })
+  );
+  assert.throws(
+    () => mod.createImmediateStructuralMutationMeta('  '),
+    /Immediate structural mutation requires a source/
+  );
+});

@@ -121,6 +121,7 @@ test('[contracts-design-color-feedback] DesignTab color workflows use stable fee
     designColorManager,
     [
       /export function useDesignTabColorManager\(/,
+      /applyImmediateStructuralUiMutation\(args\.app, source, \{ colorChoice: value \}/,
       /useDesignTabSavedSwatches\(/,
       /useDesignTabCustomColorWorkflow\(/,
       /buildOrderedSwatches\(/,

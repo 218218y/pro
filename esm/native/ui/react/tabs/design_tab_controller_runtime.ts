@@ -7,7 +7,11 @@ import {
   setUiCorniceType,
   setUiDoorStyle,
 } from '../actions/store_actions.js';
-import { applyImmediateStructuralUiMutation } from '../actions/structural_build_refresh_actions.js';
+import {
+  applyImmediateStructuralConfigMutation,
+  applyImmediateStructuralUiMutation,
+  createImmediateStructuralMutationMeta,
+} from '../actions/structural_build_refresh_actions.js';
 import {
   ROUNDED_FRAME_SIDE_SHELVES_MAP_NAME,
   readRemovedFrameSidePartIds,
@@ -40,9 +44,10 @@ export function normalizeDesignTabGrooveLinesCount(count: number): number {
 }
 
 function freezeExistingGrooveLinesCount(app: AppContainer): void {
-  setCfgMap(app, 'grooveLinesCountMap', materializeActiveGrooveLinesCountMap(app), {
-    source: 'react:design:grooveLinesCount:freezeExisting',
-    immediate: true,
+  const source = 'react:design:grooveLinesCount:freezeExisting';
+  const nextMap = materializeActiveGrooveLinesCountMap(app);
+  applyImmediateStructuralConfigMutation(app, source, { grooveLinesCountMap: nextMap }, meta => {
+    setCfgMap(app, 'grooveLinesCountMap', nextMap, meta);
   });
 }
 
@@ -108,30 +113,30 @@ export function createDesignTabControllerRuntime(
 
     setGrooveLinesCount(count: number) {
       const nextValue = normalizeDesignTabGrooveLinesCount(count);
+      const source = 'react:design:grooveLinesCount';
       runHistoryBatch(
         app,
         () => {
           freezeExistingGrooveLinesCount(app);
-          setCfgScalar(app, 'grooveLinesCount', nextValue, {
-            source: 'react:design:grooveLinesCount',
-            immediate: true,
+          applyImmediateStructuralConfigMutation(app, source, { grooveLinesCount: nextValue }, meta => {
+            setCfgScalar(app, 'grooveLinesCount', nextValue, meta);
           });
         },
-        { source: 'react:design:grooveLinesCount', immediate: true }
+        createImmediateStructuralMutationMeta(source)
       );
     },
 
     resetGrooveLinesCount() {
+      const source = 'react:design:grooveLinesCount:reset';
       runHistoryBatch(
         app,
         () => {
           freezeExistingGrooveLinesCount(app);
-          setCfgScalar(app, 'grooveLinesCount', null, {
-            source: 'react:design:grooveLinesCount:reset',
-            immediate: true,
+          applyImmediateStructuralConfigMutation(app, source, { grooveLinesCount: null }, meta => {
+            setCfgScalar(app, 'grooveLinesCount', null, meta);
           });
         },
-        { source: 'react:design:grooveLinesCount:reset', immediate: true }
+        createImmediateStructuralMutationMeta(source)
       );
     },
 
@@ -144,15 +149,20 @@ export function createDesignTabControllerRuntime(
       const nextMap = { ...current };
       for (const partId of partIds) nextMap[partId] = allRounded ? null : true;
 
+      const source = 'react:design:roundedFrameSideShelves';
       runHistoryBatch(
         app,
         () => {
-          setCfgMap(app, ROUNDED_FRAME_SIDE_SHELVES_MAP_NAME, nextMap, {
-            source: 'react:design:roundedFrameSideShelves',
-            immediate: true,
-          });
+          applyImmediateStructuralConfigMutation(
+            app,
+            source,
+            { [ROUNDED_FRAME_SIDE_SHELVES_MAP_NAME]: nextMap },
+            meta => {
+              setCfgMap(app, ROUNDED_FRAME_SIDE_SHELVES_MAP_NAME, nextMap, meta);
+            }
+          );
         },
-        { source: 'react:design:roundedFrameSideShelves', immediate: true }
+        createImmediateStructuralMutationMeta(source)
       );
     },
   };

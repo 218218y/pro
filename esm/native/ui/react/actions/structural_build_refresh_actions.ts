@@ -17,8 +17,16 @@ type ApplyImmediateStructuralMutationArgs = {
   applyDirectMutation: (meta: ActionMetaLike) => void;
 };
 
+function normalizeImmediateStructuralMutationSource(source: string): string {
+  const normalized = String(source || '').trim();
+  if (!normalized) {
+    throw new Error('[WardrobePro] Immediate structural mutation requires a source.');
+  }
+  return normalized;
+}
+
 export function createImmediateStructuralMutationMeta(source: string): ActionMetaLike {
-  return { source, immediate: true };
+  return { source: normalizeImmediateStructuralMutationSource(source), immediate: true };
 }
 
 export function applyImmediateStructuralMutation(

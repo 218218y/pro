@@ -2,6 +2,7 @@ import type { AppContainer, UnknownRecord } from '../../../../../types';
 
 import { enterPrimaryMode, exitPrimaryMode } from '../actions/modes_actions.js';
 import { setUiFlag } from '../actions/store_actions.js';
+import { applyImmediateStructuralUiMutation } from '../actions/structural_build_refresh_actions.js';
 import { __designTabReportNonFatal } from './design_tab_multicolor_shared.js';
 import type {
   DesignTabFeatureToggleKey,
@@ -196,6 +197,11 @@ export function createDesignTabEditModesController(
 
     const source = `react:design:${key}`;
     const uiPatch = { [key]: nextOn };
+    const applyDirectFeatureToggle = () => {
+      applyImmediateStructuralUiMutation(args.app, source, uiPatch, meta => {
+        setUiFlag(args.app, key, nextOn, meta);
+      });
+    };
     activeFeatureToggleTransaction = { uiPatch, source, consumed: false };
 
     if (nextOn) {
@@ -215,7 +221,7 @@ export function createDesignTabEditModesController(
         reportNonFatal('editModes:featureToggle:on', err);
       }
       if (!activeFeatureToggleTransaction?.consumed) {
-        setUiFlag(args.app, key, nextOn, { source, immediate: true });
+        applyDirectFeatureToggle();
       }
       activeFeatureToggleTransaction = null;
       return;
@@ -231,7 +237,7 @@ export function createDesignTabEditModesController(
       reportNonFatal('editModes:featureToggle:off', err);
     }
     if (!activeFeatureToggleTransaction?.consumed) {
-      setUiFlag(args.app, key, nextOn, { source, immediate: true });
+      applyDirectFeatureToggle();
     }
     activeFeatureToggleTransaction = null;
   };

@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 
 import { setUiColorChoice } from '../actions/store_actions.js';
+import { applyImmediateStructuralUiMutation } from '../actions/structural_build_refresh_actions.js';
 import {
   buildOrderedSwatches,
   normalizeColorSwatchesOrder,
@@ -40,7 +41,9 @@ export function useDesignTabColorManager(args: UseDesignTabColorManagerArgs): De
     (choice: string, source = 'react:design:colorChoice') => {
       const value = String(choice || '');
       if (!value || value === String(args.colorChoice || '')) return;
-      setUiColorChoice(args.app, value, { source, immediate: true });
+      applyImmediateStructuralUiMutation(args.app, source, { colorChoice: value }, meta => {
+        setUiColorChoice(args.app, value, meta);
+      });
     },
     [args.app, args.colorChoice]
   );
