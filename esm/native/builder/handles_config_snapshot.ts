@@ -67,9 +67,7 @@ function canonicalDoorRemovalId(partId: string): string {
   return id;
 }
 
-export function createHandlesDoorRemovedReader(
-  removedDoorsMap: ValueRecord
-): (partId: unknown) => boolean {
+export function createHandlesDoorRemovedReader(removedDoorsMap: ValueRecord): (partId: unknown) => boolean {
   return (partId: unknown): boolean => {
     const raw = String(partId || '');
     const id = canonicalDoorRemovalId(raw);
@@ -83,10 +81,7 @@ export function createHandlesDoorRemovedReader(
   };
 }
 
-export function isBottomSplitBotPartFromSnapshot(
-  splitDoorsBottomMap: ValueRecord,
-  id: unknown
-): boolean {
+export function isBottomSplitBotPartFromSnapshot(splitDoorsBottomMap: ValueRecord, id: unknown): boolean {
   const sid = id == null ? '' : String(id);
   if (!sid || !sid.endsWith('_bot')) return false;
   const baseId = sid.replace(/_bot$/, '');

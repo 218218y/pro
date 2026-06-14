@@ -2,10 +2,7 @@ import { getModeId } from '../runtime/api.js';
 import { getScene, getWardrobeGroup } from '../runtime/render_access.js';
 import { getBuildStateMaybe, getMode, getState, getUi } from './store_access.js';
 import { appFromCtx, asNode, ensureHandlesSurface, getViewFlags, type NodeLike } from './handles_shared.js';
-import {
-  captureHandlesConfigSnapshot,
-  createHandlesDoorRemovedReader,
-} from './handles_config_snapshot.js';
+import { captureHandlesConfigSnapshot, createHandlesDoorRemovedReader } from './handles_config_snapshot.js';
 
 export function purgeHandlesForRemovedDoors(forceEnabled: boolean | unknown, ctx: unknown): void {
   const App = appFromCtx(ctx);
