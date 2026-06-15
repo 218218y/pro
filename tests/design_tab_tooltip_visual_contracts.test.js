@@ -69,6 +69,8 @@ test('[design-tab-tooltips] styled tooltip body is viewport-clamped without movi
     tooltipPlacement,
     [
       /TOOLTIP_VIEWPORT_GUTTER_PX = 8/,
+      /TOOLTIP_SHIFT_ZERO = '0px'/,
+      /resetStyledTooltipViewportClamp[\s\S]*?setProperty\(TOOLTIP_SHIFT_VAR, TOOLTIP_SHIFT_ZERO\)/,
       /measureTooltipWidth\(doc, viewportWidth, tooltip\)/,
       /const clampedLeft = clamp\(desiredLeft, TOOLTIP_VIEWPORT_GUTTER_PX, maxLeft\);/,
       /el\.style\.setProperty\(TOOLTIP_SHIFT_VAR, `\$\{shift\}px`\);/,
@@ -80,7 +82,8 @@ test('[design-tab-tooltips] styled tooltip body is viewport-clamped without movi
     assert,
     reactStyles,
     [
-      /transform:\s*translateX\(calc\(-50% \+ var\(--wp-r-tooltip-shift-x, 0px\)\)\) translateY\(-4px\);/,
+      /--wp-r-tooltip-shift-x:\s*0px;/,
+      /transform:\s*translateX\(calc\(-50% \+ var\(--wp-r-tooltip-shift-x\)\)\) translateY\(-4px\);/,
       /max-width:\s*min\(320px, calc\(100vw - 16px\)\);/,
       /overflow-wrap:\s*break-word;/,
       /body\.wp-ui-react \.wp-r-styled-tooltip\.hint-bottom:hover::before,[\s\S]*?transform:\s*translateX\(-50%\) translateY\(0\);/,

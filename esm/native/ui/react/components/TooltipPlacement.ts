@@ -1,6 +1,7 @@
 const TOOLTIP_VIEWPORT_GUTTER_PX = 8;
 const TOOLTIP_MAX_WIDTH_PX = 320;
 const TOOLTIP_SHIFT_VAR = '--wp-r-tooltip-shift-x';
+const TOOLTIP_SHIFT_ZERO = '0px';
 
 let tooltipMeasureEl: HTMLElement | null = null;
 
@@ -52,7 +53,7 @@ function measureTooltipWidth(doc: Document, viewportWidth: number, text: string)
 
 export function resetStyledTooltipViewportClamp(el: HTMLElement | null | undefined): void {
   if (!el) return;
-  el.style.removeProperty(TOOLTIP_SHIFT_VAR);
+  el.style.setProperty(TOOLTIP_SHIFT_VAR, TOOLTIP_SHIFT_ZERO);
 }
 
 export function clampStyledTooltipToViewport(

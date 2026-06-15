@@ -4549,13 +4549,15 @@ body.wp-ui-react .hint-bottom:hover::before {
 body.wp-ui-react .wp-r-styled-tooltip.hint-bottom {
   position: relative;
   overflow: visible;
+  /* Keep the release CSS minifier from turning a typed calc fallback (0px) into an invalid unitless 0. */
+  --wp-r-tooltip-shift-x: 0px;
 }
 
 body.wp-ui-react .wp-r-styled-tooltip.hint-bottom::after {
   top: calc(100% + 10px);
   bottom: auto;
   left: 50%;
-  transform: translateX(calc(-50% + var(--wp-r-tooltip-shift-x, 0px))) translateY(-4px);
+  transform: translateX(calc(-50% + var(--wp-r-tooltip-shift-x))) translateY(-4px);
   width: max-content;
   max-width: min(320px, calc(100vw - 16px));
   white-space: normal;
@@ -4591,7 +4593,7 @@ body.wp-ui-react .wp-r-styled-tooltip.hint-bottom:hover::after,
 body.wp-ui-react .wp-r-styled-tooltip.hint-bottom:focus-visible::after {
   opacity: 1;
   visibility: visible;
-  transform: translateX(calc(-50% + var(--wp-r-tooltip-shift-x, 0px))) translateY(0);
+  transform: translateX(calc(-50% + var(--wp-r-tooltip-shift-x))) translateY(0);
 }
 
 body.wp-ui-react .wp-r-styled-tooltip.hint-bottom:hover::before,
