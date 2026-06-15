@@ -11,7 +11,6 @@ import {
   ensureRenderMetaMap,
   ensureRenderMetaMaps,
 } from '../runtime/render_access.js';
-import { ensureTexturesCacheService } from '../runtime/textures_cache_access.js';
 import { ensureBuilderService } from '../runtime/builder_service_access.js';
 
 import type { AppContainer, RenderCacheMapsLike, RenderMetaMapsLike, ThreeLike } from '../../../types';
@@ -90,7 +89,6 @@ export function ensureMaterialsRuntime(App: AppLike): MaterialsRuntime {
   const materials = isValueRecord(builder.materials) ? builder.materials : null;
   builder.materials = materials || {};
 
-  ensureTexturesCacheService(App);
   ensurePlatformHash32(App);
 
   const renderCacheBase = ensureRenderCacheMaps(App);

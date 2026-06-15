@@ -142,8 +142,8 @@ test('materials_factory resolves config texture data URL without falling back to
   });
 });
 
-test('materials_factory keeps live texture cache fallback only for legacy calls without canonical URL', () => {
-  const liveTexture = makeLiveTexture('legacy-live-cache');
+test('materials_factory ignores live texture cache when no canonical texture URL exists', () => {
+  const liveTexture = makeLiveTexture('stale-live-cache');
   const App: AnyRecord = {
     deps: { THREE: makeThreeStub() },
     services: { texturesCache: { customUploadedTexture: liveTexture } },
@@ -152,5 +152,6 @@ test('materials_factory keeps live texture cache fallback only for legacy calls 
 
   const material = getMaterial(App, 'custom', 'front', true) as AnyRecord;
   const opts = material.opts as AnyRecord;
-  assert.equal(opts.map, liveTexture);
+  assert.equal(opts.map, undefined);
+  assert.equal(opts.color, '#ffffff');
 });

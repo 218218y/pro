@@ -134,6 +134,14 @@ function loadSavedSwatchesModule(stubs = {}) {
         runDeleteSavedColorFlow: stubs.runDeleteSavedColorFlow,
       };
     }
+    if (specifier === './design_tab_color_command_shared.js') {
+      return {
+        findSavedColor(savedColors, id) {
+          const target = String(id || '').trim();
+          return savedColors.find(color => String(color.id || '').trim() === target) || null;
+        },
+      };
+    }
     return require(specifier);
   };
   const sandbox = {

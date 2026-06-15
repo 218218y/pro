@@ -357,23 +357,6 @@ export interface CommandsServiceLike extends UnknownRecord {
   cleanGroup?: (group: unknown) => unknown;
 }
 
-export interface DisposableTextureLike extends UnknownRecord {
-  dispose?: () => void;
-}
-
-export interface TexturesCacheOptionsLike extends UnknownRecord {
-  disposePrev?: boolean;
-}
-
-export interface TexturesCacheServiceLike extends UnknownRecord {
-  customUploadedTexture?: DisposableTextureLike | null;
-  getCustomUploadedTexture?: () => DisposableTextureLike | null;
-  setCustomUploadedTexture?: (
-    tex: DisposableTextureLike | null,
-    opts?: TexturesCacheOptionsLike
-  ) => DisposableTextureLike | null;
-}
-
 export interface BuildReactionsServiceLike extends UnknownRecord {
   __esm_v1?: true;
   afterBuild?: (ok?: boolean) => void;
@@ -525,7 +508,6 @@ export interface ServicesNamespace {
   roomDesign?: RoomDesignServiceLike;
   runtimeCache?: RuntimeCacheServiceLike;
   textures?: UnknownRecord;
-  texturesCache?: TexturesCacheServiceLike;
   ui?: UnknownRecord;
 
   // Canonical ESM-only helpers. Root legacy aliases were removed; use App.services only.

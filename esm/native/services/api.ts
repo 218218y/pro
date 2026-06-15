@@ -132,7 +132,6 @@ export {
   normalizeAutosavePayload,
   setAutosaveAllowed,
   resetAllEditModesViaService,
-  getCustomUploadedTextureMaybe,
   normalizeModelRecord,
   normalizeModelList,
   buildDefaultProjectDataViaService,

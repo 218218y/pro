@@ -1,14 +1,12 @@
-import { getCustomUploadedTextureMaybe } from '../runtime/textures_cache_access.js';
 import { getCfg } from './store_access.js';
 import { readTextureLike, type AppLike, type TextureLike } from './materials_factory_shared.js';
 import { getDataURLTexture } from './materials_factory_texture_runtime.js';
 
-export type FrontTextureSourceKind = 'none' | 'explicit-data-url' | 'config-data-url' | 'legacy-live-cache';
+export type FrontTextureSourceKind = 'none' | 'explicit-data-url' | 'config-data-url';
 
 export type FrontTextureSource = {
   kind: FrontTextureSourceKind;
   dataURL: string | null;
-  allowLiveCacheFallback: boolean;
 };
 
 function readDataURL(value: unknown): string | null {
@@ -25,14 +23,13 @@ export function resolveFrontTextureSource(
   useCustomTexture: unknown,
   customTextureDataURL: unknown
 ): FrontTextureSource {
-  if (!useCustomTexture) return { kind: 'none', dataURL: null, allowLiveCacheFallback: false };
+  if (!useCustomTexture) return { kind: 'none', dataURL: null };
 
   const explicitDataURL = readDataURL(customTextureDataURL);
   if (explicitDataURL) {
     return {
       kind: 'explicit-data-url',
       dataURL: explicitDataURL,
-      allowLiveCacheFallback: false,
     };
   }
 
@@ -41,11 +38,10 @@ export function resolveFrontTextureSource(
     return {
       kind: 'config-data-url',
       dataURL: configDataURL,
-      allowLiveCacheFallback: false,
     };
   }
 
-  return { kind: 'legacy-live-cache', dataURL: null, allowLiveCacheFallback: true };
+  return { kind: 'none', dataURL: null };
 }
 
 export function resolveFrontTexture(
@@ -58,6 +54,5 @@ export function resolveFrontTexture(
     const texture = readTextureLike(getDataURLTexture(App, source.dataURL));
     if (texture) return texture;
   }
-  if (!source.allowLiveCacheFallback) return null;
-  return readTextureLike(getCustomUploadedTextureMaybe(App));
+  return null;
 }

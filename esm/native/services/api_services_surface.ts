@@ -39,7 +39,6 @@ export {
   normalizeAutosavePayload,
   setAutosaveAllowed,
   resetAllEditModesViaService,
-  getCustomUploadedTextureMaybe,
   normalizeModelRecord,
   normalizeModelList,
 } from './api_services_project_surface.js';

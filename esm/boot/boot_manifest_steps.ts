@@ -43,7 +43,6 @@ import {
 } from '../native/core/install.js';
 
 import {
-  installTexturesCacheService,
   installCameraService,
   installSceneViewService,
   installViewportRuntimeService,
@@ -195,11 +194,6 @@ export const BOOT_STEPS: BootStep[] = [
     id: 'services.appStart',
     phase: 'services',
     run: requireBootInstaller(installAppStartService, 'services.appStart'),
-  },
-  {
-    id: 'services.texturesCache',
-    phase: 'services',
-    run: requireBootInstaller(installTexturesCacheService, 'services.texturesCache'),
   },
   {
     id: 'services.camera',

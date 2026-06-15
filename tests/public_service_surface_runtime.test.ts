@@ -5,7 +5,6 @@ import {
   captureProjectSnapshotMaybe,
   ensureModelsLoadedViaService,
   exportUserModelsViaService,
-  getCustomUploadedTextureMaybe,
   mergeImportedModelsViaService,
   persistNotesViaService,
   resetAllEditModesViaService,
@@ -13,14 +12,9 @@ import {
   setAutosaveAllowed,
 } from '../esm/native/services/api.ts';
 import { scheduleAutosaveViaService } from '../esm/native/runtime/autosave_access.ts';
-import {
-  ensureTexturesCacheService,
-  setCustomUploadedTextureViaService,
-} from '../esm/native/runtime/textures_cache_access.ts';
 
-test('public service surface runtime: autosave, edit-state, and textures stay behavior-first', () => {
+test('public service surface runtime: autosave and edit-state stay behavior-first', () => {
   const calls: string[] = [];
-  const texture = { dispose() {} };
   const resetAllEditModes = () => calls.push('reset');
   const App = {
     services: Object.assign(Object.create(null), {
@@ -40,11 +34,6 @@ test('public service surface runtime: autosave, edit-state, and textures stay be
   assert.equal(setAutosaveAllowed(App, true), true);
   assert.equal(App.services.autosave.allow, true);
   assert.equal(scheduleAutosaveViaService(App), true);
-
-  assert.equal(getCustomUploadedTextureMaybe(App), null);
-  assert.equal(ensureTexturesCacheService(App).customUploadedTexture, null);
-  assert.equal(setCustomUploadedTextureViaService(App, texture), texture);
-  assert.equal(getCustomUploadedTextureMaybe(App), texture);
 
   assert.equal(resetAllEditModesViaService(App), true);
   assert.deepEqual(calls, ['schedule', 'reset']);

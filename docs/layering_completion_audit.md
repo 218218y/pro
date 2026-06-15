@@ -29,7 +29,8 @@ This file is intentionally compact. It keeps only current decomposition guard fa
 - `builder/material_color_lookup.ts` owns shared per-part color lookup for full builds and no-build material refreshes so split-door, corner-stack, shelf-group, and cornice paint policy stays aligned
 - `builder/material_selection.ts` owns global and per-part front material selection for full builds, no-build material refreshes, Chest Mode, and corner materials so saved/custom texture data comes from canonical config snapshots and is passed explicitly into material creation
 - `builder/material_selection.ts` and Design Tab saved-swatch selection resolve saved colors by canonical `savedColors` membership rather than the legacy `saved_` id prefix, so imported saved texture/color IDs stay build-visible and UI-actionable
-- `builder/materials_factory_texture_policy.ts` owns front texture source resolution so explicit/config data URLs never fall through to the legacy live texture cache fallback; that fallback is isolated for public compatibility calls without a canonical URL
+- `builder/materials_factory_texture_policy.ts` owns front texture source resolution so front textures come only from explicit/config data URLs and never from a stale live texture cache
+- The old `texturesCache.customUploadedTexture` service surface is retired; uploaded front textures move through canonical config/data URLs and the builder material runtime no longer installs or reads a live texture slot
 - `builder/materials_apply_color_policy.ts` consumes canonical `Store.config.individualColors` for no-build material refreshes and no longer lets legacy `App.maps.individualColors` override live material/color state
 - `canvas_picking_click_flow.ts` cell-dims click flows now live in `services/canvas_picking_cell_dims_flow.ts`
 - `services/canvas_picking_click_flow.ts` is now a thin canonical seam over focused click-mode, module-ref, hit-resolution, and route owners

@@ -8,7 +8,6 @@ export { installHistoryService } from './history.js';
 export { installEditStateService } from './edit_state.js';
 export { installAutosaveService } from './autosave.js';
 export { installModelsService } from './models.js';
-export { installTexturesCacheService } from './textures_cache.js';
 export { installCameraService } from './camera.js';
 export { installSceneViewService } from './scene_view.js';
 export { installBuildReactionsService } from './build_reactions.js';

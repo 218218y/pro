@@ -187,13 +187,6 @@ export {
   resetAllEditModesViaService,
 } from '../runtime/edit_state_access.js';
 export {
-  getTexturesCacheServiceMaybe,
-  ensureTexturesCacheService,
-  getCustomUploadedTextureMaybe,
-  setCustomUploadedTextureViaService,
-  hasCustomUploadedTexture,
-} from '../runtime/textures_cache_access.js';
-export {
   getModelsServiceSourceMaybe,
   getModelsServiceMaybe,
   ensureModelsService,

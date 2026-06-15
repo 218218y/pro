@@ -878,9 +878,9 @@ test('[builder-surface-family] orchestration owners remain thin around canonical
     materialsFactoryTexturePolicyOwner,
     [
       /export function resolveFrontTextureSource\(/,
-      /allowLiveCacheFallback: false/,
-      /allowLiveCacheFallback: true/,
-      /getCustomUploadedTextureMaybe\(App\)/,
+      /kind: 'explicit-data-url'/,
+      /kind: 'config-data-url'/,
+      /return null;/,
     ],
     'materials factory texture policy owner'
   );
@@ -898,6 +898,12 @@ test('[builder-surface-family] orchestration owners remain thin around canonical
     materialsFactoryMaterialPolicyOwner,
     [/getCustomUploadedTextureMaybe/, /getCfg\(/, /customUploadedDataURL/],
     'materials factory material policy delegates texture-source decisions'
+  );
+  assertLacksAll(
+    assert,
+    materialsFactoryTexturePolicyOwner,
+    [/getCustomUploadedTextureMaybe/, /customUploadedTexture/, /allowLiveCacheFallback/],
+    'materials factory texture policy is data-url only'
   );
 
   assertMatchesAll(

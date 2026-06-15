@@ -8,7 +8,6 @@ import type { AppContainer, EngineLayerFacadeLike } from '../../../types';
 import * as engineApiNs from './api.js';
 
 import { ensureAppLayer } from '../runtime/layers_access.js';
-import { installTexturesCacheService } from '../services/textures_cache.js';
 import { installCameraService } from '../services/camera.js';
 import { installSceneViewService } from '../services/scene_view.js';
 import { installViewportRuntimeService } from '../services/viewport_runtime.js';
@@ -18,7 +17,6 @@ import { installCanvasPickingService } from '../services/canvas_picking.js';
 
 const ENGINE_API_SURFACE = Object.freeze({ ...engineApiNs });
 const ENGINE_INSTALL_SURFACE = Object.freeze({
-  installTexturesCacheService,
   installCameraService,
   installSceneViewService,
   installViewportRuntimeService,
@@ -58,7 +56,6 @@ export function installEngineLayerSurface(App: AppContainer): InstalledEngineLay
   });
 }
 
-export { installTexturesCacheService };
 export { installCameraService };
 export { installSceneViewService };
 export { installViewportRuntimeService };
