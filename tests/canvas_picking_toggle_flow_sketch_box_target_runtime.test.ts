@@ -83,3 +83,24 @@ test('sketch-box toggle target still resolves door identity from a door part id 
     }
   );
 });
+
+test('sketch-box toggle target normalizes segmented door part ids to the source door identity', () => {
+  const segmentHit = node({
+    partId: 'sketch_box_free_7_sbf_alpha_door_sbdr_1_bot',
+    __wpSketchDoorSegment: true,
+  });
+
+  assert.deepEqual(resolveSketchBoxToggleTarget(segmentHit as never, null, null), {
+    moduleKey: '7',
+    boxId: 'sbf_alpha',
+    doorId: 'sbdr_1',
+  });
+  assert.deepEqual(
+    resolveSketchBoxToggleTarget(null, 'sketch_box_free_7_sbf_alpha_door_sbdr_1_mid2_groove_left', null),
+    {
+      moduleKey: '7',
+      boxId: 'sbf_alpha',
+      doorId: 'sbdr_1',
+    }
+  );
+});

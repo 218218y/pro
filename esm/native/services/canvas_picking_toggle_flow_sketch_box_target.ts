@@ -17,8 +17,16 @@ function isResolvedDoorTarget(target: SketchBoxDoorTarget | null): target is Ske
   return !!(target && target.doorId);
 }
 
+function stripSketchBoxDoorVisualSuffix(partId: string): string {
+  return String(partId || '').replace(/_(?:accent|groove)_(?:top|bottom|left|right)$/i, '');
+}
+
+function stripSketchBoxDoorSegmentSuffix(partId: string): string {
+  return stripSketchBoxDoorVisualSuffix(partId).replace(/_(?:top|bot|mid\d*)$/i, '');
+}
+
 export function parseSketchBoxPartId(partId: string): SketchBoxDoorTarget | null {
-  const pid = String(partId || '');
+  const pid = stripSketchBoxDoorSegmentSuffix(String(partId || ''));
   let match =
     /^sketch_box_free_(.+)_(sb(?:f)?_[a-z0-9]+)_door_([a-z0-9_]+?)(?:_(?:accent|groove)_(?:top|bottom|left|right))?$/i.exec(
       pid

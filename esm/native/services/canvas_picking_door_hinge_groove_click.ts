@@ -27,6 +27,7 @@ import {
   patchSketchBoxDoor,
   readSketchBoxDoorRecord,
   stripSketchBoxDoorVisualSuffix,
+  type SketchBoxDoorTarget,
 } from './canvas_picking_door_sketch_box_edit.js';
 import { requestDoorAuthoringImmediateRefresh } from './canvas_picking_door_authoring_burst.js';
 import {
@@ -107,6 +108,24 @@ export interface CanvasDoorGrooveClickArgs {
   activeStack: 'top' | 'bottom';
   foundModuleStack: 'top' | 'bottom';
   doorHitObject: unknown;
+}
+
+function clearInheritedSketchBoxDoorGrooveSource(args: {
+  App: AppContainer;
+  target: SketchBoxDoorTarget | null;
+  preferredStack: 'top' | 'bottom';
+}): boolean {
+  return patchSketchBoxDoor(
+    args.App,
+    args.target,
+    args.preferredStack,
+    current => {
+      if (!(current && current.enabled !== false)) return current;
+      if (current.groove !== true && current.grooveLinesCount == null) return current;
+      return { ...current, groove: false, grooveLinesCount: null };
+    },
+    { source: 'groove:click' }
+  );
 }
 
 export function handleCanvasDoorGrooveClick(args: CanvasDoorGrooveClickArgs): boolean {
@@ -264,6 +283,18 @@ export function handleCanvasDoorGrooveClick(args: CanvasDoorGrooveClickArgs): bo
     );
 
     __wp_historyBatch(App, grooveStructuralMeta, () => {
+      if (isSketchBoxSegmentTarget && sketchSegmentDoor?.groove === true) {
+        const clearedWholeSketchDoorGroove = clearInheritedSketchBoxDoorGrooveSource({
+          App,
+          target: sketchTarget,
+          preferredStack: foundModuleStack,
+        });
+        if (!clearedWholeSketchDoorGroove) {
+          throw new Error(
+            '[canvas_picking] Failed to clear sketch-box whole-door groove source before segment edit'
+          );
+        }
+      }
       writePendingGrooveLinesCountForPart(
         App,
         targetId,

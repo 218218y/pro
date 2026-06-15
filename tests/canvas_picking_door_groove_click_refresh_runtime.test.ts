@@ -428,6 +428,11 @@ test('free sketch-box segmented door groove click toggles only the clicked segme
 test('free sketch-box segmented door groove click materializes inherited whole-door groove before toggling one segment', () => {
   const { App, state } = createApp();
   const base = 'sketch_box_free_0_sbf_alpha_door_sbdr_1';
+  const patchCalls: Array<{
+    stack: string;
+    moduleKey: string;
+    meta: Record<string, unknown>;
+  }> = [];
   state.modulesConfiguration = [
     {
       sketchExtras: {
@@ -466,10 +471,12 @@ test('free sketch-box segmented door groove click materializes inherited whole-d
       return state.modulesConfiguration[Number(moduleKey)];
     },
     patchForStack(
-      _stack: 'top' | 'bottom',
+      stack: 'top' | 'bottom',
       moduleKey: string,
-      mutate: (cfg: Record<string, unknown>) => void
+      mutate: (cfg: Record<string, unknown>) => void,
+      meta?: Record<string, unknown>
     ) {
+      patchCalls.push({ stack, moduleKey, meta: { ...(meta || {}) } });
       mutate(state.modulesConfiguration[Number(moduleKey)]);
     },
   };
@@ -489,10 +496,119 @@ test('free sketch-box segmented door groove click materializes inherited whole-d
   });
 
   assert.equal(handled, true);
+  const door = state.modulesConfiguration[0].sketchExtras.boxes[0].doors[0];
+  assert.equal(door.groove, false);
+  assert.equal(door.grooveLinesCount, null);
   assert.equal(state.config.groovesMap[`groove_${base}_bot`], undefined);
   assert.equal(state.config.groovesMap[`groove_${base}_top`], true);
   assert.equal(state.config.grooveLinesCountMap[`${base}_bot`], undefined);
   assert.equal(state.config.grooveLinesCountMap[`${base}_top`], 5);
+  assert.deepEqual(patchCalls, [
+    {
+      stack: 'top',
+      moduleKey: '0',
+      meta: { source: 'groove:click', immediate: true },
+    },
+  ]);
+
+  const handledSecond = handleCanvasDoorGrooveClick({
+    App,
+    effectiveDoorId: `${base}_top`,
+    foundPartId: null,
+    activeStack: 'top',
+    foundModuleStack: 'top',
+    doorHitObject: {
+      userData: {
+        partId: `${base}_top`,
+        __doorWidth: 0.45,
+      },
+    },
+  });
+
+  assert.equal(handledSecond, true);
+  assert.equal(door.groove, false);
+  assert.equal(door.grooveLinesCount, null);
+  assert.equal(state.config.groovesMap[`groove_${base}_bot`], undefined);
+  assert.equal(state.config.groovesMap[`groove_${base}_top`], undefined);
+  assert.equal(state.config.grooveLinesCountMap[`${base}_bot`], undefined);
+  assert.equal(state.config.grooveLinesCountMap[`${base}_top`], undefined);
+  assert.equal(patchCalls.length, 1);
+});
+
+test('free sketch-box segmented door groove click clears stale whole-door source when segment maps already exist', () => {
+  const { App, state } = createApp();
+  const base = 'sketch_box_free_0_sbf_alpha_door_sbdr_1';
+  const patchCalls: Array<{
+    stack: string;
+    moduleKey: string;
+    meta: Record<string, unknown>;
+  }> = [];
+  state.config.groovesMap = { [`groove_${base}_top`]: true };
+  state.config.grooveLinesCountMap = { [`${base}_top`]: 5 };
+  state.modulesConfiguration = [
+    {
+      sketchExtras: {
+        boxes: [
+          {
+            id: 'sbf_alpha',
+            doors: [
+              {
+                id: 'sbdr_1',
+                xNorm: 0.5,
+                hinge: 'left',
+                enabled: true,
+                open: false,
+                groove: true,
+                grooveLinesCount: 5,
+              },
+            ],
+          },
+        ],
+      },
+    },
+  ];
+  App.actions.modules = {
+    ensureForStack(_stack: 'top' | 'bottom', moduleKey: string) {
+      return state.modulesConfiguration[Number(moduleKey)];
+    },
+    patchForStack(
+      stack: 'top' | 'bottom',
+      moduleKey: string,
+      mutate: (cfg: Record<string, unknown>) => void,
+      meta?: Record<string, unknown>
+    ) {
+      patchCalls.push({ stack, moduleKey, meta: { ...(meta || {}) } });
+      mutate(state.modulesConfiguration[Number(moduleKey)]);
+    },
+  };
+
+  const handled = handleCanvasDoorGrooveClick({
+    App,
+    effectiveDoorId: `${base}_top`,
+    foundPartId: null,
+    activeStack: 'top',
+    foundModuleStack: 'top',
+    doorHitObject: {
+      userData: {
+        partId: `${base}_top`,
+        __doorWidth: 0.45,
+      },
+    },
+  });
+
+  const door = state.modulesConfiguration[0].sketchExtras.boxes[0].doors[0];
+  assert.equal(handled, true);
+  assert.equal(door.groove, false);
+  assert.equal(door.grooveLinesCount, null);
+  assert.equal(state.config.groovesMap[`groove_${base}_top`], undefined);
+  assert.equal(state.config.grooveLinesCountMap[`${base}_top`], undefined);
+  assert.deepEqual(patchCalls, [
+    {
+      stack: 'top',
+      moduleKey: '0',
+      meta: { source: 'groove:click', immediate: true },
+    },
+  ]);
 });
 
 test('sketch-box segmented door target helpers keep the clicked segment identity', () => {
