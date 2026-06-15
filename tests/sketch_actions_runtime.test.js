@@ -65,6 +65,7 @@ function loadSketchActionsHarness(initialRuntime = {}) {
         const buildMeta = (sourceName, overrides = {}) => {
           const meta = { ...overrides, source: String(sourceName || '').trim(), immediate: true };
           delete meta.noBuild;
+          meta.noBuild = false;
           return meta;
         };
         return {
@@ -113,7 +114,7 @@ test('[sketch-actions] sketch mode runtime write routes through immediate struct
         entry[0] === 'setRuntimeSketchMode' &&
         entry[1] === true &&
         JSON.stringify(entry[2]) ===
-          JSON.stringify({ source: 'custom:sketch', trace: 'kept', immediate: true })
+          JSON.stringify({ source: 'custom:sketch', trace: 'kept', immediate: true, noBuild: false })
     )
   );
   assert.ok(

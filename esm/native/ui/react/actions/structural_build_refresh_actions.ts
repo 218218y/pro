@@ -37,10 +37,28 @@ export function createImmediateStructuralMutationMeta(
   return meta;
 }
 
+function createSliceImmediateStructuralMutationMeta(
+  slice: StructuralMutationSlice,
+  source: string,
+  metaOverrides?: ActionMetaLike
+): ActionMetaLike {
+  const meta = createImmediateStructuralMutationMeta(source, metaOverrides);
+
+  // Runtime slice writes are normally profiled as transient/noBuild by the runtime
+  // namespace because most runtime values are UI-only. Structural runtime inputs
+  // (currently sketchMode) are different: the builder fingerprint reads them, so
+  // the immediate store reaction must be allowed to schedule a rebuild. Use an
+  // explicit false sentinel so downstream transient meta merging cannot re-add
+  // noBuild:true after this helper already stripped caller-provided noBuild.
+  if (slice === 'runtime') meta.noBuild = false;
+
+  return meta;
+}
+
 export function applyImmediateStructuralMutation(
   args: ApplyImmediateStructuralMutationArgs
 ): ApplyImmediateStructuralMutationResult {
-  const meta = createImmediateStructuralMutationMeta(args.source, args.metaOverrides);
+  const meta = createSliceImmediateStructuralMutationMeta(args.slice, args.source, args.metaOverrides);
   const payload: UnknownRecord = { [args.slice]: args.patch };
   const appliedViaActions = !!patchViaActions(args.app, payload, meta);
 

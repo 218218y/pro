@@ -95,6 +95,7 @@ test('[structural-build-refresh-actions] runtime mutation supports meta override
           forceBuild: true,
           noHistory: true,
           immediate: true,
+          noBuild: false,
         },
       ],
     ])
