@@ -353,3 +353,42 @@ test('[design-tab-edit-modes-controller] enabling dirty or already-active featur
     JSON.stringify([{ splitDoors: false }, { groovesEnabled: false }, { removeDoorsEnabled: false }])
   );
 });
+
+test('[design-tab-edit-modes-controller] enabling grooves with existing groove data rebuilds without edit mode entry', () => {
+  const calls = [];
+  const mod = loadDesignTabEditModesControllerModule(calls);
+  const controller = mod.createDesignTabEditModesController({
+    app: { id: 'app' },
+    feedback: { toast: (...args) => calls.push(['toast', ...args]) },
+    grooveModeId: 'groove',
+    splitModeId: 'split',
+    removeDoorModeId: 'remove_door',
+    groovesEnabled: false,
+    splitDoors: false,
+    removeDoorsEnabled: false,
+    groovesDirty: true,
+    removedDoorsDirty: false,
+    grooveActive: false,
+    splitActive: false,
+    splitIsCustom: false,
+    removeDoorActive: false,
+  });
+
+  controller.setFeatureToggle('groovesEnabled', true);
+
+  assert.equal(
+    calls.some(entry => entry[0] === 'enterPrimaryMode'),
+    false
+  );
+  const buildMutationCall = calls.find(entry => entry[0] === 'applyImmediateStructuralUiMutation');
+  assert.equal(buildMutationCall[2], 'react:design:groovesEnabled');
+  assert.equal(JSON.stringify(buildMutationCall[3]), JSON.stringify({ groovesEnabled: true }));
+
+  const uiFlagCall = calls.find(entry => entry[0] === 'setUiFlag');
+  assert.equal(uiFlagCall[2], 'groovesEnabled');
+  assert.equal(uiFlagCall[3], true);
+  assert.equal(
+    JSON.stringify(uiFlagCall[4]),
+    JSON.stringify({ source: 'react:design:groovesEnabled', immediate: true })
+  );
+});

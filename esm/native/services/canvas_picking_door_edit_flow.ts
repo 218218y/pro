@@ -115,6 +115,7 @@ export function tryHandleCanvasDoorEditClick(args: CanvasDoorEditClickArgs): boo
       foundPartId,
       activeStack,
       foundModuleStack,
+      doorHitY,
       doorHitObject,
     });
   }

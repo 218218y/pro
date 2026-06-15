@@ -5,6 +5,7 @@ import {
   selectSavedColors,
   selectColorSwatchesOrder,
   selectHasInternalDrawersData,
+  selectGroovesDirty,
 } from '../esm/native/ui/react/selectors/config_selectors.ts';
 
 test('react config selectors keep saved colors and swatch order typed with safe defaults', () => {
@@ -37,5 +38,65 @@ test('react config selectors detect sketch internal drawer data', () => {
       cornerConfiguration: { sketchExtras: { drawers: [{ id: 'corner' }] } },
     } as never),
     true
+  );
+});
+
+test('react config selectors detect whole-door sketch-box grooves as dirty state', () => {
+  assert.equal(
+    selectGroovesDirty({
+      groovesMap: { groove_regular: false },
+      modulesConfiguration: [
+        {
+          sketchExtras: {
+            boxes: [{ id: 'sbf_alpha', doors: [{ id: 'sbdr_1', groove: true }] }],
+          },
+        },
+      ],
+    } as never),
+    true
+  );
+
+  assert.equal(
+    selectGroovesDirty({
+      stackSplitLowerModulesConfiguration: [
+        {
+          sketchExtras: {
+            boxes: [{ id: 'sbf_lower', doors: [{ id: 'sbdr_2', groove: true }] }],
+          },
+        },
+      ],
+    } as never),
+    true
+  );
+
+  assert.equal(
+    selectGroovesDirty({
+      cornerConfiguration: {
+        stackSplitLower: {
+          modulesConfiguration: [
+            {
+              sketchExtras: {
+                boxes: [{ id: 'sbf_corner_lower', doors: [{ id: 'sbdr_3', groove: true }] }],
+              },
+            },
+          ],
+        },
+      },
+    } as never),
+    true
+  );
+
+  assert.equal(
+    selectGroovesDirty({
+      groovesMap: { groove_regular: false },
+      modulesConfiguration: [
+        {
+          sketchExtras: {
+            boxes: [{ id: 'sbf_alpha', doors: [{ id: 'sbdr_1', groove: false }] }],
+          },
+        },
+      ],
+    } as never),
+    false
   );
 });

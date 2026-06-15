@@ -77,6 +77,52 @@ function hasFreeBoxCellDimsOverrides(value: unknown): boolean {
   return false;
 }
 
+function hasSketchBoxDoorGroove(value: unknown): boolean {
+  const mod = readRecord(value);
+  const extra = readRecord(mod?.sketchExtras);
+  const boxes = Array.isArray(extra?.boxes) ? extra.boxes : [];
+  for (const item of boxes) {
+    const box = readRecord(item);
+    const doors = Array.isArray(box?.doors) ? box.doors : [];
+    for (const doorValue of doors) {
+      const door = readRecord(doorValue);
+      if (door?.groove === true) return true;
+    }
+  }
+  return false;
+}
+
+function hasSketchBoxDoorGrooveInList(value: unknown): boolean {
+  const modules = Array.isArray(value) ? value : [];
+  for (const item of modules) {
+    if (hasSketchBoxDoorGroove(item)) return true;
+  }
+  return false;
+}
+
+function hasSketchBoxDoorGrooveInModules(
+  cfg: ConfigStateLike,
+  bucket: 'modulesConfiguration' | 'stackSplitLowerModulesConfiguration'
+): boolean {
+  try {
+    const modules = readModulesConfigurationListFromConfigSnapshot(cfg, bucket);
+    for (const item of modules) {
+      if (hasSketchBoxDoorGroove(item)) return true;
+    }
+  } catch {
+    return false;
+  }
+  return false;
+}
+
+function hasSketchBoxDoorGrooveInCorner(cfg: ConfigStateLike): boolean {
+  const corner = readRecord(cfg.cornerConfiguration);
+  if (!corner) return false;
+  if (hasSketchBoxDoorGrooveInList(corner.modulesConfiguration)) return true;
+  const lower = readRecord(corner.stackSplitLower);
+  return hasSketchBoxDoorGrooveInList(lower?.modulesConfiguration);
+}
+
 export function selectWardrobeType(cfg: ConfigStateLike): 'hinged' | 'sliding' {
   const v = readConfigScalarOrDefault(cfg, 'wardrobeType');
   return v === 'sliding' ? 'sliding' : 'hinged';
@@ -148,10 +194,15 @@ export function selectGrooveLinesCount(cfg: ConfigStateLike): number | null {
 export function selectGroovesDirty(cfg: ConfigStateLike): boolean {
   const map = readConfigMapFromSnapshot(cfg, 'groovesMap', {});
   try {
-    return Object.values(map).some(v => v === true);
+    if (Object.values(map).some(v => v === true)) return true;
   } catch {
-    return false;
+    // Keep scanning sketch-box door state below; sketch grooves do not live in groovesMap.
   }
+  return (
+    hasSketchBoxDoorGrooveInModules(cfg, 'modulesConfiguration') ||
+    hasSketchBoxDoorGrooveInModules(cfg, 'stackSplitLowerModulesConfiguration') ||
+    hasSketchBoxDoorGrooveInCorner(cfg)
+  );
 }
 
 export function selectRemovedDoorsDirty(cfg: ConfigStateLike): boolean {

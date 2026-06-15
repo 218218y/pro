@@ -16,6 +16,7 @@ import {
   resolvePendingGrooveLinesCount,
 } from '../runtime/groove_lines_access.js';
 import { readDoorPartIdFromHitObject, readDoorWidthFromHitObject } from './canvas_picking_door_shared.js';
+import { readCanvasDoorSplitNodeOwnBounds } from './canvas_picking_door_split_bounds_shared.js';
 import {
   asRecord,
   readGrooveLinesCountMap,
@@ -106,16 +107,93 @@ export interface CanvasDoorGrooveClickArgs {
   foundPartId: string | null;
   activeStack: 'top' | 'bottom';
   foundModuleStack: 'top' | 'bottom';
+  doorHitY?: number | null;
   doorHitObject: unknown;
 }
 
+type GrooveHitNode = {
+  userData?: Record<string, unknown> | null;
+  children?: unknown[] | null;
+};
+
+function readGrooveHitNodePartId(node: unknown): string {
+  const rec = asRecord(node) as GrooveHitNode | null;
+  const userData = asRecord(rec?.userData);
+  return typeof userData?.partId === 'string' ? stripSketchBoxDoorVisualSuffix(userData.partId) : '';
+}
+
+function readGrooveHitNodeChildren(node: unknown): unknown[] {
+  const rec = asRecord(node) as GrooveHitNode | null;
+  return Array.isArray(rec?.children) ? rec.children : [];
+}
+
+function isHitYInsideBounds(hitY: number, bounds: { minY: number; maxY: number }): boolean {
+  const epsilon = 1e-6;
+  return hitY >= bounds.minY - epsilon && hitY <= bounds.maxY + epsilon;
+}
+
+function resolveSketchBoxSegmentTargetFromHitY(args: {
+  App: AppContainer;
+  targetId: string;
+  doorHitY: number | null | undefined;
+}): string {
+  const hitY = typeof args.doorHitY === 'number' && Number.isFinite(args.doorHitY) ? args.doorHitY : null;
+  if (hitY == null) return args.targetId;
+
+  const targetId = stripSketchBoxDoorVisualSuffix(args.targetId);
+  const basePartId = isSketchBoxDoorSegmentPartId(targetId) ? readDoorGrooveBasePartId(targetId) : targetId;
+  if (!basePartId || !parseSketchBoxDoorTarget(basePartId)) return args.targetId;
+
+  let resolvedPartId = '';
+  let resolvedSpan = Infinity;
+  const visit = (node: unknown) => {
+    const stack: unknown[] = [node];
+    const seen = new Set<unknown>();
+    while (stack.length) {
+      const current = stack.pop();
+      if (!current || seen.has(current)) continue;
+      seen.add(current);
+
+      const partId = readGrooveHitNodePartId(current);
+      if (partId && isSketchBoxDoorSegmentPartId(partId) && readDoorGrooveBasePartId(partId) === basePartId) {
+        const bounds = readCanvasDoorSplitNodeOwnBounds(args.App, current);
+        if (bounds && isHitYInsideBounds(hitY, bounds)) {
+          const span = bounds.maxY - bounds.minY;
+          if (span > 0 && span < resolvedSpan) {
+            resolvedSpan = span;
+            resolvedPartId = partId;
+          }
+        }
+      }
+
+      const children = readGrooveHitNodeChildren(current);
+      for (let index = 0; index < children.length; index += 1) stack.push(children[index]);
+    }
+  };
+
+  try {
+    const doorsArray = getDoorsArray(args.App);
+    for (let index = 0; index < doorsArray.length; index += 1) {
+      visit(doorsArray[index]?.group);
+    }
+  } catch {
+    return args.targetId;
+  }
+
+  return resolvedPartId || args.targetId;
+}
+
 export function handleCanvasDoorGrooveClick(args: CanvasDoorGrooveClickArgs): boolean {
-  const { App, effectiveDoorId, foundPartId, activeStack, foundModuleStack, doorHitObject } = args;
+  const { App, effectiveDoorId, foundPartId, activeStack, foundModuleStack, doorHitObject, doorHitY } = args;
   const doorHitRecord = asRecord(doorHitObject);
   const targetIdRaw = readDoorPartIdFromHitObject(doorHitRecord) || effectiveDoorId || foundPartId;
-  const targetId = stripSketchBoxDoorVisualSuffix(
-    __wp_canonDoorPartKeyForMaps(__wp_scopeCornerPartKeyForStack(targetIdRaw, activeStack))
-  );
+  const targetId = resolveSketchBoxSegmentTargetFromHitY({
+    App,
+    targetId: stripSketchBoxDoorVisualSuffix(
+      __wp_canonDoorPartKeyForMaps(__wp_scopeCornerPartKeyForStack(targetIdRaw, activeStack))
+    ),
+    doorHitY,
+  });
   const clickedDoorWidth = readDoorWidthFromHitObject(doorHitRecord);
   const grooveLinesCountForClick = resolvePendingGrooveLinesCount(App, clickedDoorWidth, undefined, targetId);
   const explicitGrooveLinesCountForClick = readGrooveLinesCountOverride(App);

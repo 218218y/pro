@@ -495,6 +495,96 @@ test('free sketch-box segmented door groove click materializes inherited whole-d
   assert.equal(state.config.grooveLinesCountMap[`${base}_top`], 5);
 });
 
+test('free sketch-box segmented groove click uses hit Y when first split metadata points at the sibling', () => {
+  const { App, state } = createApp();
+  const base = 'sketch_box_free_0_sbf_alpha_door_sbdr_1';
+  state.modulesConfiguration = [
+    {
+      sketchExtras: {
+        boxes: [
+          {
+            id: 'sbf_alpha',
+            doors: [
+              {
+                id: 'sbdr_1',
+                xNorm: 0.5,
+                hinge: 'left',
+                enabled: true,
+                open: false,
+                groove: true,
+                grooveLinesCount: 5,
+              },
+            ],
+          },
+        ],
+      },
+    },
+  ];
+
+  const group: any = {
+    userData: { partId: base },
+    position: { y: 0 },
+    children: [],
+  };
+  const bot: any = {
+    userData: {
+      partId: `${base}_bot`,
+      __doorHeight: 1,
+      __wpSketchDoorSegment: true,
+      __wpSketchDoorLeaf: true,
+    },
+    position: { y: 0.5 },
+    parent: group,
+    children: [],
+  };
+  const top: any = {
+    userData: {
+      partId: `${base}_top`,
+      __doorHeight: 1,
+      __wpSketchDoorSegment: true,
+      __wpSketchDoorLeaf: true,
+    },
+    position: { y: 1.5 },
+    parent: group,
+    children: [],
+  };
+  group.children = [bot, top];
+  App.render.doorsArray = [{ group }];
+  App.actions.modules = {
+    ensureForStack(_stack: 'top' | 'bottom', moduleKey: string) {
+      return state.modulesConfiguration[Number(moduleKey)];
+    },
+    patchForStack(
+      _stack: 'top' | 'bottom',
+      moduleKey: string,
+      mutate: (cfg: Record<string, unknown>) => void
+    ) {
+      mutate(state.modulesConfiguration[Number(moduleKey)]);
+    },
+  };
+
+  const handled = handleCanvasDoorGrooveClick({
+    App,
+    effectiveDoorId: `${base}_top`,
+    foundPartId: null,
+    activeStack: 'top',
+    foundModuleStack: 'top',
+    doorHitY: 0.5,
+    doorHitObject: {
+      userData: {
+        partId: `${base}_top`,
+        __doorWidth: 0.45,
+      },
+    },
+  });
+
+  assert.equal(handled, true);
+  assert.equal(state.config.groovesMap[`groove_${base}_bot`], false);
+  assert.equal(state.config.groovesMap[`groove_${base}_top`], true);
+  assert.equal(state.config.grooveLinesCountMap[`${base}_bot`], undefined);
+  assert.equal(state.config.grooveLinesCountMap[`${base}_top`], 5);
+});
+
 test('free sketch-box segmented door groove clicks preserve explicit off state after all inherited segments are off', () => {
   const { App, state } = createApp();
   const base = 'sketch_box_free_0_sbf_alpha_door_sbdr_1';
