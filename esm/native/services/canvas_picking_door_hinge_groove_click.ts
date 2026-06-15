@@ -127,6 +127,41 @@ function readGrooveHitNodeChildren(node: unknown): unknown[] {
   return Array.isArray(rec?.children) ? rec.children : [];
 }
 
+type SketchBoxInheritedGrooveState = {
+  groove: true;
+  grooveLinesCount: number | null;
+};
+
+function readSketchBoxInheritedGrooveStateFromHitObject(args: {
+  doorHitObject: unknown;
+  basePartId: string;
+}): SketchBoxInheritedGrooveState | null {
+  const basePartId = stripSketchBoxDoorVisualSuffix(args.basePartId);
+  if (!basePartId) return null;
+
+  let current = asRecord(args.doorHitObject) as (GrooveHitNode & { parent?: unknown }) | null;
+  const seen = new Set<unknown>();
+  while (current && !seen.has(current)) {
+    seen.add(current);
+    const userData = asRecord(current.userData);
+    const partId = readGrooveHitNodePartId(current);
+    const partMatches = !partId || partId === basePartId || readDoorGrooveBasePartId(partId) === basePartId;
+
+    if (partMatches && userData?.__wpSketchBoxDoorGroove === true) {
+      return {
+        groove: true,
+        grooveLinesCount: normalizeGrooveLinesCount(userData.__wpSketchBoxDoorGrooveLinesCount),
+      };
+    }
+
+    current = asRecord((current as { parent?: unknown }).parent) as
+      | (GrooveHitNode & { parent?: unknown })
+      | null;
+  }
+
+  return null;
+}
+
 function isHitYInsideBounds(hitY: number, bounds: { minY: number; maxY: number }): boolean {
   const epsilon = 1e-6;
   return hitY >= bounds.minY - epsilon && hitY <= bounds.maxY + epsilon;
@@ -251,6 +286,12 @@ export function handleCanvasDoorGrooveClick(args: CanvasDoorGrooveClickArgs): bo
       isSketchBoxSegmentTarget && sketchTarget
         ? readSketchBoxDoorRecord(App, sketchTarget, foundModuleStack)
         : null;
+    const inheritedSketchBoxGrooveState = isSketchBoxSegmentTarget
+      ? readSketchBoxInheritedGrooveStateFromHitObject({
+          doorHitObject,
+          basePartId: sketchSegmentBasePartId,
+        })
+      : null;
     const hasExplicitSketchSegmentGrooveState = hasAnyDoorGrooveSegmentMapEntry(
       groovesMap,
       sketchSegmentBasePartId
@@ -258,7 +299,9 @@ export function handleCanvasDoorGrooveClick(args: CanvasDoorGrooveClickArgs): bo
     const isInheritedSketchSegmentGrooveOn =
       isSketchBoxSegmentTarget &&
       !hasExplicitSketchSegmentGrooveState &&
-      (sketchSegmentDoor?.groove === true || readDoorGrooveVisualMapFlag(groovesMap, targetId) === true);
+      (sketchSegmentDoor?.groove === true ||
+        inheritedSketchBoxGrooveState?.groove === true ||
+        readDoorGrooveVisualMapFlag(groovesMap, targetId) === true);
     const regularSegmentBasePartId =
       !isSketchBoxSegmentTarget && isDoorGrooveSegmentPartId(targetId)
         ? readDoorGrooveBasePartId(targetId)
@@ -272,7 +315,9 @@ export function handleCanvasDoorGrooveClick(args: CanvasDoorGrooveClickArgs): bo
       targetGrooveFlag === true || isInheritedSketchSegmentGrooveOn || isInheritedRegularSegmentGrooveOn;
     const inheritedSketchSegmentGrooveLinesCount = isInheritedSketchSegmentGrooveOn
       ? (readDoorGrooveLinesCountForPart(grooveLinesCountMap, targetId) ??
-        normalizeGrooveLinesCount(sketchSegmentDoor?.grooveLinesCount))
+        normalizeGrooveLinesCount(sketchSegmentDoor?.grooveLinesCount) ??
+        inheritedSketchBoxGrooveState?.grooveLinesCount ??
+        null)
       : null;
     const inheritedRegularSegmentGrooveLinesCount = isInheritedRegularSegmentGrooveOn
       ? readDoorGrooveLinesCountForPart(grooveLinesCountMap, regularSegmentFullPartId)

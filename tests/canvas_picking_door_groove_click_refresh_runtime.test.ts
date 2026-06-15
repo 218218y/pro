@@ -495,6 +495,74 @@ test('free sketch-box segmented door groove click materializes inherited whole-d
   assert.equal(state.config.grooveLinesCountMap[`${base}_top`], 5);
 });
 
+test('free sketch-box segmented door groove click materializes rendered inherited state when config lookup is unavailable', () => {
+  const { App, state } = createApp();
+  const base = 'sketch_box_free_0_sbf_alpha_door_sbdr_1';
+
+  const group: any = {
+    userData: {
+      partId: base,
+      __wpSketchBoxDoor: true,
+      __wpSketchBoxDoorGroove: true,
+      __wpSketchBoxDoorGrooveLinesCount: 4,
+    },
+    position: { y: 1.5 },
+    children: [],
+  };
+  const bot: any = {
+    userData: {
+      partId: `${base}_bot`,
+      __doorHeight: 1,
+      __wpSketchDoorSegment: true,
+      __wpSketchDoorLeaf: true,
+    },
+    position: { y: -1 },
+    parent: group,
+    children: [],
+  };
+  const mid: any = {
+    userData: {
+      partId: `${base}_mid`,
+      __doorHeight: 1,
+      __wpSketchDoorSegment: true,
+      __wpSketchDoorLeaf: true,
+    },
+    position: { y: 0 },
+    parent: group,
+    children: [],
+  };
+  const top: any = {
+    userData: {
+      partId: `${base}_top`,
+      __doorHeight: 1,
+      __wpSketchDoorSegment: true,
+      __wpSketchDoorLeaf: true,
+    },
+    position: { y: 1 },
+    parent: group,
+    children: [],
+  };
+  group.children = [bot, mid, top];
+  App.render.doorsArray = [{ group }];
+
+  const handled = handleCanvasDoorGrooveClick({
+    App,
+    effectiveDoorId: `${base}_mid`,
+    foundPartId: null,
+    activeStack: 'top',
+    foundModuleStack: 'top',
+    doorHitObject: mid,
+  });
+
+  assert.equal(handled, true);
+  assert.equal(state.config.groovesMap[`groove_${base}_bot`], true);
+  assert.equal(state.config.groovesMap[`groove_${base}_mid`], false);
+  assert.equal(state.config.groovesMap[`groove_${base}_top`], true);
+  assert.equal(state.config.grooveLinesCountMap[`${base}_bot`], 4);
+  assert.equal(state.config.grooveLinesCountMap[`${base}_mid`], undefined);
+  assert.equal(state.config.grooveLinesCountMap[`${base}_top`], 4);
+});
+
 test('free sketch-box segmented groove click uses hit Y when first split metadata points at the sibling', () => {
   const { App, state } = createApp();
   const base = 'sketch_box_free_0_sbf_alpha_door_sbdr_1';
