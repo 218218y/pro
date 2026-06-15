@@ -114,6 +114,17 @@ function restoreDoorStyleBeforeGlassToTarget(
   else delete nextStyle[targetPartKey];
 }
 
+function restoreDoorStyleBeforeReplacingGlassSpecial(
+  state: PaintFlowMutableState,
+  targetPartKey: string,
+  markerOwnerPartKey: string
+): void {
+  restoreDoorStyleBeforeGlassToTarget(state, targetPartKey, markerOwnerPartKey);
+  if (markerOwnerPartKey === targetPartKey) {
+    delete state.ensureSpecial()[getGlassPreviousStyleKey(markerOwnerPartKey)];
+  }
+}
+
 function materializeInheritedPaintMapOwner(args: {
   state: PaintFlowMutableState;
   map: Record<string, unknown> | null | undefined;
@@ -341,6 +352,9 @@ export function applyPaintPartMutation(args: {
       result: mirrorResult,
     });
 
+    if (existingSpecial === 'glass') {
+      restoreDoorStyleBeforeReplacingGlassSpecial(state, paintPartKey, specialOwnerKey);
+    }
     state.ensureSpecial()[paintPartKey] = 'mirror';
     clearDoorStyleBeforeGlassMarker(state, paintPartKey);
     delete state.ensureCurtains()[paintPartKey];

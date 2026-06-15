@@ -240,6 +240,68 @@ test('paint special mutation applies a canonical full mirror on the first click 
   assert.equal(state.mirrorLayout.d3_full, undefined);
 });
 
+test('paint special mutation replaces glass with mirror on the first click and clears glass-only style state', () => {
+  const state = createManualState({
+    App: createApp({ ui: { currentCurtainChoice: 'linen' } }),
+    special0: {
+      d3_full: 'glass',
+      '__wp_glass_previous_door_style__:d3_full': '__wp_none__',
+    },
+    curtains0: { d3_full: 'linen' },
+    style0: { d3_full: 'profile' },
+  });
+
+  applyPaintPartMutation({
+    state,
+    paintPartKey: 'd3_full',
+    paintSelection: 'mirror',
+    clickArgs: {
+      App: state.App,
+      foundPartId: 'd3_full',
+      activeStack: 'top',
+      isPaintMode: true,
+    },
+    resolveMirrorLayout: () => ({ nextLayout: null, removeMatch: null, canApplyMirror: true }),
+  });
+
+  assert.equal(state.special.d3_full, 'mirror');
+  assert.equal(state.special['__wp_glass_previous_door_style__:d3_full'], undefined);
+  assert.equal(state.curtains.d3_full, undefined);
+  assert.equal(state.style.d3_full, undefined);
+  assert.equal(state.mirrorLayout.d3_full, undefined);
+});
+
+test('paint special mutation restores the pre-glass door style when glass is replaced by mirror', () => {
+  const state = createManualState({
+    App: createApp({ ui: { currentCurtainChoice: 'linen' } }),
+    special0: {
+      d4_full: 'glass',
+      '__wp_glass_previous_door_style__:d4_full': 'double_profile',
+    },
+    curtains0: { d4_full: 'linen' },
+    style0: { d4_full: 'profile' },
+  });
+
+  applyPaintPartMutation({
+    state,
+    paintPartKey: 'd4_full',
+    paintSelection: 'mirror',
+    clickArgs: {
+      App: state.App,
+      foundPartId: 'd4_full',
+      activeStack: 'top',
+      isPaintMode: true,
+    },
+    resolveMirrorLayout: () => ({ nextLayout: null, removeMatch: null, canApplyMirror: true }),
+  });
+
+  assert.equal(state.special.d4_full, 'mirror');
+  assert.equal(state.special['__wp_glass_previous_door_style__:d4_full'], undefined);
+  assert.equal(state.curtains.d4_full, undefined);
+  assert.equal(state.style.d4_full, 'double_profile');
+  assert.equal(state.mirrorLayout.d4_full, undefined);
+});
+
 test('paint special mutation treats chest drawer fronts like regular drawer fronts for mirror and glass', () => {
   const mirrorState = createManualState({
     App: createApp({ ui: { currentCurtainChoice: 'linen' } }),
