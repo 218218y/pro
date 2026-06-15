@@ -33,6 +33,7 @@ import {
   adjustCameraForCorner,
   resetCameraPreset,
   resetAllEditModesViaService,
+  setRuntimeScalar,
   setRuntimeSketchMode,
   updateSceneLightsViaService,
 } from '../services/api.js';
@@ -75,6 +76,10 @@ function buildProjectLoadCanonicalPatch(
     runtime: {
       sketchMode: !!committedUiSnap.sketchMode,
       restoring: !!restoring,
+      // Wardrobe-type profiles are a transient mode-switch cache, not project data.
+      // Loading a snapshot must clear them so switching Hinged/Sliding after a reset or file load
+      // cannot resurrect a cabinet from the previous in-memory project.
+      wardrobeTypeProfiles: null,
     },
     meta: { dirty: false },
   };
@@ -229,8 +234,14 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
               !!committedUiSnap.sketchMode,
               metaRestore('project.load:sketchMode', { silent: false })
             );
+            setRuntimeScalar(
+              App,
+              'wardrobeTypeProfiles',
+              null,
+              metaRestore('project.load:clearWardrobeTypeProfiles', { silent: false })
+            );
           } catch (err) {
-            reportNonFatal('project.load.syncSketchMode', err);
+            reportNonFatal('project.load.syncRuntimeSnapshotState', err);
             throw err;
           }
 

@@ -319,6 +319,18 @@ test('project io load syncs persisted sketch mode into the runtime SSOT', () => 
   );
 });
 
+test('project io load clears wardrobe-type profile cache in fallback runtime writes', () => {
+  const { orchestrator, runtimeFlags } = createProjectIoApp();
+
+  const result = orchestrator.loadProjectData(VALID_PROJECT as never, { toast: false });
+
+  assert.deepEqual(result, { ok: true, restoreGen: 1 });
+  assert.equal(
+    runtimeFlags.some(flag => flag.key === 'wardrobeTypeProfiles' && flag.value === null),
+    true
+  );
+});
+
 test('project io load uses one canonical root patch when the installed actions surface supports it', () => {
   const rootPatches: Array<{ patch: Record<string, unknown>; meta?: Record<string, unknown> }> = [];
   const { orchestrator, calls, autosaveCalls, runtimeFlags } = createProjectIoApp({
@@ -345,6 +357,7 @@ test('project io load uses one canonical root patch when the installed actions s
   assert.equal(rootPatches[0].meta?.source, 'project.load');
   assert.equal(rootPatches[0].patch.runtime?.sketchMode, true);
   assert.equal(rootPatches[0].patch.runtime?.restoring, false);
+  assert.equal(rootPatches[0].patch.runtime?.wardrobeTypeProfiles, null);
   assert.equal(rootPatches[0].patch.meta?.dirty, false);
   assert.equal(rootPatches[0].patch.ui?.orderPdfEditorZoom, 1.25);
   assert.deepEqual(rootPatches[0].patch.ui?.orderPdfEditorDraft, { id: 'draft-1' });
