@@ -16,7 +16,7 @@ export function applyDoorHandles(runtime: HandlesApplyRuntime): void {
   const doorsArray = getDoorsArray(App);
   if (!Array.isArray(doorsArray)) return;
   const standardSuppressedPartIds: string[] = [];
-  const sketchSegmentSuppressedPartIds: string[] = [];
+  const suppressedPartIds: string[] = [];
 
   for (const d of doorsArray) {
     const g = d && d.group;
@@ -25,7 +25,7 @@ export function applyDoorHandles(runtime: HandlesApplyRuntime): void {
 
     const __sk = g.userData && g.userData.__wpStack === 'bottom' ? 'bottom' : 'top';
     if (g.userData.__wpSketchCustomHandles === true) {
-      refreshSketchSegmentedDoorHandles(runtime, g, __sk, sketchSegmentSuppressedPartIds);
+      refreshSketchSegmentedDoorHandles(runtime, g, __sk, suppressedPartIds);
       continue;
     }
 
@@ -78,7 +78,7 @@ export function applyDoorHandles(runtime: HandlesApplyRuntime): void {
   }
 
   notifySuppressedStandardDoorHandles(App, standardSuppressedPartIds);
-  notifySuppressedSketchSegmentDoorHandles(App, sketchSegmentSuppressedPartIds);
+  notifySuppressedSketchSegmentDoorHandles(App, suppressedPartIds);
 }
 
 function applyDoorHandleZFlip(group: NodeLike, handle: NodeLike): void {

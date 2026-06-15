@@ -88,6 +88,11 @@ export function __resolveMirrorFaceSignFromLocalPoint(localPoint: { z: number } 
   return 1;
 }
 
+function __isSketchExternalDrawerSpecialPaintTarget(partId: string): boolean {
+  return partId.startsWith('sketch_ext_drawers_') || /^sketch_box(?:_free)?_.+_ext_drawers_/.test(partId);
+}
+
 export function __isSpecialPaintTarget(partId: string): boolean {
+  if (__isSketchExternalDrawerSpecialPaintTarget(partId)) return true;
   return isCanvasPickingSpecialPaintTargetPartId(partId);
 }
