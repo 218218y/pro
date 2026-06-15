@@ -187,7 +187,7 @@ export function createCornerWingMaterials(args: {
         selection: colorValue,
         cfg,
         getMaterial,
-        toStr: (value, fallback) => __appUtilStr(App, value ?? fallback),
+        toStr: (value, defaultValue) => __appUtilStr(App, value ?? defaultValue),
       });
     }
     return defaultMat;

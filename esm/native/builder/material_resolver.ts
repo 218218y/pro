@@ -53,7 +53,7 @@ export function makeMaterialResolver(args: MaterialResolverArgs): {
   const getMaterial = args.getMaterial;
   const globalFrontMat = args.globalFrontMat;
 
-  const toColorKey = (value: unknown, fallback = ''): string => String(value ?? fallback);
+  const toColorKey = (value: unknown, defaultValue = ''): string => String(value ?? defaultValue);
 
   if (!App || typeof App !== 'object')
     throw new Error('[builder/material_resolver] makeMaterialResolver: App missing');

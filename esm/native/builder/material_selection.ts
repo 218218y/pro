@@ -25,10 +25,10 @@ function asCfg(value: unknown): MaterialSelectionCfgLike {
   return asRecord<MaterialSelectionCfgLike>(value) || {};
 }
 
-function toText(value: unknown, fallback: string, toStr?: MaterialSelectionStringifier): string {
-  if (typeof toStr === 'function') return String(toStr(value, fallback) || fallback);
-  if (value == null) return fallback;
-  return String(value || fallback);
+function toText(value: unknown, defaultText: string, toStr?: MaterialSelectionStringifier): string {
+  if (typeof toStr === 'function') return String(toStr(value, defaultText) || defaultText);
+  if (value == null) return defaultText;
+  return String(value || defaultText);
 }
 
 function readTextureDataURL(value: unknown): string | null {
@@ -63,9 +63,9 @@ export function resolveGlobalFrontMaterialInput(args: {
   toStr?: MaterialSelectionStringifier;
 }): FrontMaterialInput {
   const cfg = asCfg(args.cfg);
-  const fallback = args.defaultColor || '#ffffff';
-  const colorChoice = toText(args.colorChoice, fallback, args.toStr);
-  const customColor = toText(args.customColor, fallback, args.toStr);
+  const baseColor = args.defaultColor || '#ffffff';
+  const colorChoice = toText(args.colorChoice, baseColor, args.toStr);
+  const customColor = toText(args.customColor, baseColor, args.toStr);
 
   if (colorChoice === 'custom') {
     const textureDataURL = readTextureDataURL(cfg.customUploadedDataURL);
@@ -97,11 +97,11 @@ export function resolveSelectionFrontMaterial(args: {
   defaultColor?: string;
   toStr?: MaterialSelectionStringifier;
 }): unknown {
-  const fallback = args.defaultColor || '#ffffff';
+  const baseColor = args.defaultColor || '#ffffff';
   const selection = toText(args.selection, '', args.toStr);
   if (selection === 'custom') {
     if (args.customColor != null) {
-      return args.getMaterial(toText(args.customColor, fallback, args.toStr), 'front', false);
+      return args.getMaterial(toText(args.customColor, baseColor, args.toStr), 'front', false);
     }
     return args.getMaterial(selection, 'front', false);
   }
