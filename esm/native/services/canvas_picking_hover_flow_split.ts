@@ -28,11 +28,12 @@ type HandleCanvasSplitHoverArgs = {
   mouse: MouseVectorLike;
   marker: HoverMarkerLike | null;
   cutMarker: HoverMarkerLike | null;
+  setSketchPreview: ((args: Record<string, unknown>) => unknown) | null;
   splitVariant: string;
 };
 
 export function tryHandleCanvasSplitHover(args: HandleCanvasSplitHoverArgs): boolean {
-  const { App, ndcX, ndcY, raycaster, mouse, marker, cutMarker, splitVariant } = args;
+  const { App, ndcX, ndcY, raycaster, mouse, marker, cutMarker, setSketchPreview, splitVariant } = args;
   return tryHandleSplitDoorHover({
     App,
     ndcX,
@@ -41,6 +42,7 @@ export function tryHandleCanvasSplitHover(args: HandleCanvasSplitHoverArgs): boo
     mouse,
     marker,
     cutMarker,
+    setSketchPreview,
     splitVariant,
     getViewportRoots: __wp_getViewportRoots,
     getSplitHoverRaycastRoots: __wp_getSplitHoverRaycastRoots,

@@ -167,6 +167,7 @@ export type DoorActionHoverArgs = DoorHoverResolverArgs & {
 export type SplitDoorHoverArgs = DoorHoverResolverArgs & {
   marker: MarkerLike | null;
   cutMarker: MarkerLike | null;
+  setSketchPreview?: ((args: UnknownRecord) => unknown) | null;
   splitVariant: string;
   normalizeDoorBaseKey: NormalizeDoorBaseKeyFn;
   readSplitHoverDoorBounds: ReadSplitHoverDoorBoundsFn;

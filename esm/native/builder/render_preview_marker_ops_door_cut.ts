@@ -29,11 +29,13 @@ export function createDoorCutHoverMarkerOwner(ctx: RenderPreviewMarkerContext) {
       const geo = new THREE.PlaneGeometry(1, 1);
       const addMat = createMarkerMaterial(THREE, 0x7fd3ff, 0.22);
       const removeMat = createMarkerMaterial(THREE, 0xff6b6b, 0.26);
+      const centerMat = createMarkerMaterial(THREE, 0x34d399, 0.3);
 
       const mesh = new THREE.Mesh(geo, addMat);
       mesh.userData = mesh.userData || {};
       mesh.userData.__matAdd = addMat;
       mesh.userData.__matRemove = removeMat;
+      mesh.userData.__matCenter = centerMat;
       mesh.visible = false;
       mesh.renderOrder = 10000;
 

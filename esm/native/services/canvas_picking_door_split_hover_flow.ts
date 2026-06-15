@@ -1,5 +1,9 @@
 import type { UnknownRecord } from '../../../types';
 import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  hasCanvasDoorCustomSplitHeightAlignment,
+  setCanvasDoorCustomSplitHoverMeasurements,
+} from './canvas_picking_door_split_hover_feedback.js';
 import { getThreeMaybe } from '../runtime/three_access.js';
 import { resolveCanvasDoorSplitPointerWorldY } from './canvas_picking_door_split_pointer_y.js';
 import { validateCanvasDoorCustomSplitAdd } from './canvas_picking_door_split_click_custom.js';
@@ -37,6 +41,7 @@ export function tryHandleSplitDoorHover(args: SplitDoorHoverArgs): boolean {
     getSplitHoverRaycastRoots,
     getRegularSplitPreviewLineY,
     reportPickingIssue,
+    setSketchPreview,
   } = args;
 
   if (marker) marker.visible = false;
@@ -131,6 +136,8 @@ export function tryHandleSplitDoorHover(args: SplitDoorHoverArgs): boolean {
   let material: unknown = null;
   let standardLineY: number | null = null;
   let standardLineH = 0.02;
+  let customIsRemove = false;
+  let customIsBlocked = false;
 
   if (!isSplitCustom) {
     if (!hit) {
@@ -177,6 +184,7 @@ export function tryHandleSplitDoorHover(args: SplitDoorHoverArgs): boolean {
 
     const isRemove = !!removeTarget;
     let isBlocked = false;
+    let hasAlignedCut = false;
     let yUse = removeTarget ? removeTarget.yAbs : Math.max(minY, Math.min(maxY, pointerY));
     if (!isRemove) {
       const addValidation = validateCanvasDoorCustomSplitAdd({
@@ -186,15 +194,33 @@ export function tryHandleSplitDoorHover(args: SplitDoorHoverArgs): boolean {
       });
       yUse = addValidation.yAbs;
       isBlocked = !addValidation.canAdd;
+      hasAlignedCut =
+        !isBlocked &&
+        hasCanvasDoorCustomSplitHeightAlignment({
+          App,
+          currentDoorBaseKey: doorBaseKey,
+          currentYAbs: yUse,
+          currentBounds: { minY, maxY },
+          readSplitPosList,
+          readSplitHoverDoorBounds,
+          getCanvasPickingRuntime,
+        });
     }
 
+    customIsRemove = isRemove;
+    customIsBlocked = isBlocked;
     regionCenterY = yUse;
     regionH = Math.max(
       splitHoverDims.hoverCustomMarkerMinHeightM,
       Math.min(splitHoverDims.hoverCustomMarkerMaxHeightM, H * splitHoverDims.hoverCustomMarkerHeightRatio)
     );
     const activeUd = __asObject<MarkerUserDataLike>(activeMarker.userData) || {};
-    material = isRemove || isBlocked ? activeUd.__matRemove || activeUd.__matAdd : activeUd.__matAdd;
+    material =
+      isRemove || isBlocked
+        ? activeUd.__matRemove || activeUd.__matAdd
+        : hasAlignedCut
+          ? activeUd.__matCenter || activeUd.__matAdd
+          : activeUd.__matAdd;
   }
 
   try {
@@ -230,13 +256,38 @@ export function tryHandleSplitDoorHover(args: SplitDoorHoverArgs): boolean {
 
     local.set(anchorX, 0, zOff);
     groupRec?.getWorldPosition?.(hgWp);
-    local.y = regionCenterY - hgWp.y;
+    const markerLocalY = regionCenterY - hgWp.y;
+    local.y = markerLocalY;
     groupRec?.localToWorld?.(local);
     __asObject<TransformNodeLike>(wardrobeGroup)?.worldToLocal?.(local);
     activeMarker.position?.copy?.(local);
 
     groupRec?.getWorldQuaternion?.(wq);
     activeMarker.quaternion?.copy?.(wq);
+
+    if (isSplitCustom) {
+      setCanvasDoorCustomSplitHoverMeasurements({
+        App,
+        setSketchPreview,
+        anchor: hitDoorGroup,
+        anchorParent: hitDoorGroup,
+        bounds: { minY, maxY },
+        doorBaseKey,
+        yAbs: regionCenterY,
+        localY: markerLocalY,
+        localMinY: minY - hgWp.y,
+        localMaxY: maxY - hgWp.y,
+        anchorX,
+        width: Math.max(splitHoverDims.hoverMarkerScaleMinM, w - splitHoverDims.hoverMarkerWidthClearanceM),
+        z: zOff,
+        zSign,
+        isRemove: customIsRemove,
+        isBlocked: customIsBlocked,
+        readSplitPosList,
+        readSplitHoverDoorBounds,
+        getCanvasPickingRuntime,
+      });
+    }
 
     if (!isSplitCustom && cutMarker) {
       if (Number.isFinite(standardLineY)) {

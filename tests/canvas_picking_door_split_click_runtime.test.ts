@@ -959,3 +959,160 @@ test('custom split hover does not use a remembered post-click fallback when the 
   assert.equal(handled, false);
   assert.equal(marker.visible, false);
 });
+
+test('custom split hover exposes top and bottom cut-distance measurements and marks aligned cuts', () => {
+  class Vec3 {
+    x = 0;
+    y = 0;
+    z = 0;
+    constructor(x = 0, y = 0, z = 0) {
+      this.x = x;
+      this.y = y;
+      this.z = z;
+    }
+    set(x: number, y: number, z: number) {
+      this.x = x;
+      this.y = y;
+      this.z = z;
+      return this;
+    }
+    copy(other: { x: number; y: number; z: number }) {
+      this.x = other.x;
+      this.y = other.y;
+      this.z = other.z;
+      return this;
+    }
+  }
+  class Quat {
+    copy() {
+      return this;
+    }
+  }
+
+  const wardrobeGroup = {
+    worldToLocal(v: Vec3) {
+      return v;
+    },
+  };
+  const group = {
+    userData: {
+      partId: 'd1_full',
+      __doorHeight: 4,
+      __doorWidth: 0.7,
+      __hingeLeft: true,
+      __handleZSign: 1,
+    },
+    position: { y: 2 },
+    parent: wardrobeGroup,
+    getWorldPosition(v: Vec3) {
+      v.set(0, 2, 0);
+    },
+    localToWorld(v: Vec3) {
+      v.y += this.position.y;
+      return v;
+    },
+    getWorldQuaternion() {
+      return undefined;
+    },
+  } as any;
+  const App = {
+    deps: { THREE: { Vector3: Vec3, Quaternion: Quat } },
+    render: {
+      renderer: {},
+      camera: {},
+      wardrobeGroup,
+      doorsArray: [{ group }],
+    },
+    store: {
+      getState() {
+        return { ui: {}, config: {}, runtime: {}, mode: {}, meta: {} };
+      },
+    },
+  } as any;
+  const runtime: Record<string, unknown> = {
+    __splitHoverDoorBoundsByBase: {
+      d1: { minY: 0, maxY: 4 },
+      d2: { minY: 0, maxY: 4 },
+    },
+  };
+  const marker = {
+    visible: false,
+    material: null as unknown,
+    userData: { __matRemove: 'remove', __matAdd: 'add', __matCenter: 'center' },
+    position: { copy() {} },
+    quaternion: { copy() {} },
+    scale: { set() {} },
+  };
+  let preview: Record<string, unknown> | null = null;
+
+  const handled = tryHandleSplitDoorHover({
+    App,
+    ndcX: 0,
+    ndcY: 0,
+    raycaster: {} as any,
+    mouse: {} as any,
+    marker: null,
+    cutMarker: marker as any,
+    setSketchPreview(args: Record<string, unknown>) {
+      preview = args;
+      return args;
+    },
+    splitVariant: 'custom',
+    normalizeDoorBaseKey() {
+      return 'd1';
+    },
+    readSplitHoverDoorBounds(_App: unknown, key: string) {
+      return key === 'd1' || key === 'd2' ? { minY: 0, maxY: 4 } : null;
+    },
+    getCanvasPickingRuntime() {
+      return runtime as any;
+    },
+    readSplitPosList(_App: unknown, key: string) {
+      return key === 'd2' ? [0.625] : [];
+    },
+    getRegularSplitPreviewLineY() {
+      return null;
+    },
+    reportPickingIssue() {
+      return undefined;
+    },
+    getViewportRoots() {
+      return { camera: {}, wardrobeGroup, scene: null, renderer: {} };
+    },
+    getSplitHoverRaycastRoots() {
+      return [group];
+    },
+    raycastReuse() {
+      return [{ object: group, point: { x: 0, y: 2.5, z: 0 } }];
+    },
+    isViewportRoot(_App: unknown, node: unknown) {
+      return node === wardrobeGroup;
+    },
+    str(_App: unknown, value: unknown) {
+      return String(value || '');
+    },
+    isDoorLikePartId(partId: string) {
+      return /^d\d+/.test(partId);
+    },
+    isDoorOrDrawerLikePartId(partId: string) {
+      return /^d\d+/.test(partId);
+    },
+  });
+
+  assert.equal(handled, true);
+  assert.equal(marker.visible, true);
+  assert.equal(marker.material, 'center');
+  assert.ok(preview);
+  assert.equal(preview?.showPrimaryBody, false);
+  assert.equal(preview?.showCenterYGuide, true);
+  const measurements = preview?.clearanceMeasurements as Array<{
+    label: string;
+    labelY: number;
+    styleKey?: string;
+  }>;
+  assert.equal(Array.isArray(measurements), true);
+  assert.deepEqual(measurements.map(entry => entry.label).sort(), ['150 ס"מ', '250 ס"מ']);
+  assert.ok(measurements.every(entry => entry.styleKey === 'center'));
+  assert.ok(measurements.some(entry => entry.label === '150 ס"מ' && entry.labelY > 2));
+  assert.ok(measurements.some(entry => entry.label === '250 ס"מ' && entry.labelY < -2));
+});

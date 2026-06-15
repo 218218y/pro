@@ -160,6 +160,7 @@ export function handleCanvasHoverNDCImpl(App: AppContainer, ndcX: number, ndcY: 
       mouse: __wpMouse,
       marker: marker || null,
       cutMarker: cutMarker || null,
+      setSketchPreview: __setSketchPreview,
       splitVariant: __splitVariant,
     });
   } catch (err) {
