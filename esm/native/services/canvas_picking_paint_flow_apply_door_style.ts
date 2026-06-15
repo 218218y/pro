@@ -1,4 +1,4 @@
-import type { AppContainer, DoorSpecialMap, DoorStyleMap, MirrorLayoutMap, CurtainMap } from '../../../types';
+import type { AppContainer, DoorSpecialMap, MirrorLayoutMap, CurtainMap } from '../../../types';
 
 import { cfgSetMap } from '../runtime/cfg_access.js';
 import { readDoorVisualMapEntry } from '../features/door_visual_map_lookup.js';
