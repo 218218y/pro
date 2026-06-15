@@ -1,5 +1,5 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
-import { isHexCellDiagonalPanelPartId } from '../features/hex_cell/index.js';
+import { isCanvasPickingSpecialPaintTargetPartId } from './canvas_picking_special_paint_targets.js';
 import {
   normalizeDoorTrimAxis,
   normalizeDoorTrimColor,
@@ -89,17 +89,5 @@ export function __resolveMirrorFaceSignFromLocalPoint(localPoint: { z: number } 
 }
 
 export function __isSpecialPaintTarget(partId: string): boolean {
-  if (!partId) return false;
-  if (isHexCellDiagonalPanelPartId(partId)) return true;
-  if (/^d\d+_/.test(partId)) return true;
-  if (partId.startsWith('lower_d') && partId.indexOf('_') !== -1) return true;
-  if (partId.startsWith('sliding') || partId.startsWith('slide')) return true;
-  if (partId.startsWith('lower_sliding') || partId.startsWith('lower_slide')) return true;
-  if (partId.startsWith('corner_door') || partId.startsWith('corner_pent_door')) return true;
-  if (partId.startsWith('lower_corner_door') || partId.startsWith('lower_corner_pent_door')) return true;
-  if (/^(?:lower_)?corner_c\d+_draw_(?:shoe|\d+)$/.test(partId)) return true;
-  if (/^sketch_box(?:_free)?_.+_door(?:_|$)/.test(partId)) return true;
-  if (partId.startsWith('sketch_ext_drawers_')) return true;
-  if (/^sketch_box(?:_free)?_.+_ext_drawers_/.test(partId)) return true;
-  return false;
+  return isCanvasPickingSpecialPaintTargetPartId(partId);
 }

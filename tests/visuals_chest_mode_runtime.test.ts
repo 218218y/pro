@@ -366,6 +366,46 @@ test('visuals chest mode drawer box material follows only explicit drawer-box pa
   );
 });
 
+test('visuals chest mode drawer fronts consume door-special mirror and glass maps', () => {
+  const createDoorVisualCalls: any[][] = [];
+  const { App } = createChestApp({
+    createDoorVisual: (...args: any[]) => {
+      createDoorVisualCalls.push(args);
+      return new FakeGroup();
+    },
+  });
+
+  buildChestOnly(App, {
+    H: 0.9,
+    totalW: 1.6,
+    D: 0.45,
+    drawersCount: 3,
+    baseType: 'legs',
+    baseLegStyle: 'square',
+    baseLegColor: 'nickel',
+    baseLegHeightCm: 15,
+    baseLegWidthCm: 5,
+    colorChoice: '#ffffff',
+    doorStyle: 'flat',
+    cfgSnapshot: createChestCfg({
+      individualColors: {},
+      doorSpecialMap: { chest_drawer_0: 'mirror', chest_drawer_1: 'glass' },
+      curtainMap: { chest_drawer_1: 'linen' },
+      doorStyleMap: { chest_drawer_1: 'double_profile' },
+    }),
+  });
+
+  assert.equal(createDoorVisualCalls.length, 3);
+  assert.equal(createDoorVisualCalls[0][6], true);
+  assert.deepEqual(createDoorVisualCalls[0][3], { mirror: true });
+  assert.equal(createDoorVisualCalls[0][12], 'chest_drawer_0');
+  assert.equal(createDoorVisualCalls[1][4], 'glass');
+  assert.equal(createDoorVisualCalls[1][6], false);
+  assert.equal(createDoorVisualCalls[1][7], 'linen');
+  assert.equal(createDoorVisualCalls[1][12], 'chest_drawer_1');
+  assert.deepEqual(createDoorVisualCalls[1][13], { glassFrameStyle: 'double_profile' });
+});
+
 test('visuals chest mode build creates wide-leg chest drawers, mirror override, and dimensions via focused owners', () => {
   const { App, wardrobeGroup, dimensionCalls, outlined, getRenderCalls, getUpdateCalls } = createChestApp();
   buildChestOnly(App, {

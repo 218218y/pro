@@ -12,7 +12,7 @@ import type {
 
 import { getBuilderMaterialsService } from '../runtime/builder_service_access.js';
 import { isGlassPaintSelection, readDoorStyleMap } from '../features/door_style_overrides.js';
-import { isHexCellDiagonalPanelPartId } from '../features/hex_cell/index.js';
+import { isCanvasPickingSpecialPaintTargetPartId } from './canvas_picking_special_paint_targets.js';
 import { __wp_map, __wp_ui } from './canvas_picking_core_helpers.js';
 import {
   CHEST_BODY_PARTS,
@@ -197,20 +197,7 @@ export function sameMirrorLayoutMap(a: MirrorLayoutMap, b: MirrorLayoutMap): boo
 }
 
 export function isSpecialPart(__paintPartKey: string): boolean {
-  if (!__paintPartKey) return false;
-  if (isHexCellDiagonalPanelPartId(__paintPartKey)) return true;
-  if (/^d\d+_/.test(__paintPartKey)) return true;
-  if (__paintPartKey.startsWith('sliding') || __paintPartKey.startsWith('slide')) return true;
-  if (__paintPartKey.startsWith('lower_sliding') || __paintPartKey.startsWith('lower_slide')) return true;
-  if (__paintPartKey.startsWith('corner_door') || __paintPartKey.startsWith('corner_pent_door')) return true;
-  if (__paintPartKey.startsWith('lower_corner_door') || __paintPartKey.startsWith('lower_corner_pent_door')) {
-    return true;
-  }
-  if (/^(?:lower_)?corner_c\d+_draw_(?:shoe|\d+)$/.test(__paintPartKey)) return true;
-  if (/^sketch_box(?:_free)?_.+_door(?:_|$)/.test(__paintPartKey)) return true;
-  if (__paintPartKey.startsWith('sketch_ext_drawers_')) return true;
-  if (/^sketch_box(?:_free)?_.+_ext_drawers_/.test(__paintPartKey)) return true;
-  return false;
+  return isCanvasPickingSpecialPaintTargetPartId(__paintPartKey);
 }
 
 export function isSpecialVal(v: unknown): v is DoorSpecialValue {

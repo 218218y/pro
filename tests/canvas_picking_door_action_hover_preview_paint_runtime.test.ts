@@ -299,6 +299,89 @@ test('glass curtain hover uses current curtain UI state and shows remove materia
   assert.deepEqual((marker.scale as { last: [number, number, number] | null }).last, [0.7, 1.9, 1]);
 });
 
+test('mirror and glass hover previews treat chest drawer fronts as special fronts', () => {
+  for (const selection of ['mirror', '__wp_glass_style__:flat']) {
+    const owner = createIdentityDoorOwner({
+      partId: 'chest_drawer_0',
+      __doorWidth: 0.8,
+      __doorHeight: 0.24,
+      __frontMaxZ: 0.24,
+    });
+    const marker: Record<string, unknown> = {
+      visible: false,
+      material: 'base',
+      userData: {
+        __matAdd: 'add',
+        __matRemove: 'remove',
+        __matGroove: 'groove',
+        __matMirror: 'mirror',
+      },
+      position: {
+        copy(_next: unknown) {
+          return undefined;
+        },
+      },
+      quaternion: {
+        copy(_next: unknown) {
+          return undefined;
+        },
+      },
+      scale: {
+        last: null as [number, number, number] | null,
+        set(x: number, y: number, z: number) {
+          this.last = [x, y, z];
+        },
+      },
+    };
+
+    const handled = tryHandleDoorPaintHoverPreview({
+      App: {
+        maps: {
+          getMap() {
+            return {};
+          },
+        },
+      } as never,
+      THREE: { Vector3: Vec3, Quaternion: Quat },
+      hit: {
+        hitDoorPid: 'chest_drawer_0',
+        hitDoorGroup: owner as never,
+        hitPoint: {
+          x: 0,
+          y: 0,
+          z: 0.1,
+          set() {
+            return undefined;
+          },
+        } as never,
+      },
+      groupRec: owner as never,
+      userData: owner.userData as never,
+      wardrobeGroup: {
+        worldToLocal(target: Vec3) {
+          return target;
+        },
+      } as never,
+      doorMarker: marker as never,
+      markerUd: marker.userData as never,
+      local: new Vec3() as never,
+      localHit: new Vec3() as never,
+      wq: new Quat() as never,
+      zOff: 0.02,
+      scopedHitDoorPid: 'chest_drawer_0',
+      canonDoorPartKeyForMaps: (id: string) => id,
+      normalizedPaintSelection: selection,
+      setSketchPreview: null,
+      readUi: () => ({ currentCurtainChoice: 'none' }) as never,
+    });
+
+    assert.equal(handled, true);
+    assert.equal(marker.visible, true);
+    const expectedScale = selection === 'mirror' ? [0.798, 0.238, 1] : [0.8, 0.24, 1];
+    assert.deepEqual((marker.scale as { last: [number, number, number] | null }).last, expectedScale);
+  }
+});
+
 test('paint hover on drawer handles uses the drawer front plane instead of the drawer group depth', () => {
   const owner = createIdentityDoorOwner({
     partId: 'chest_drawer_0',

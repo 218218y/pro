@@ -240,6 +240,51 @@ test('paint special mutation applies a canonical full mirror on the first click 
   assert.equal(state.mirrorLayout.d3_full, undefined);
 });
 
+test('paint special mutation treats chest drawer fronts like regular drawer fronts for mirror and glass', () => {
+  const mirrorState = createManualState({
+    App: createApp({ ui: { currentCurtainChoice: 'linen' } }),
+  });
+
+  applyPaintPartMutation({
+    state: mirrorState,
+    paintPartKey: 'chest_drawer_0',
+    paintSelection: 'mirror',
+    clickArgs: {
+      App: mirrorState.App,
+      foundPartId: 'chest_drawer_0',
+      foundDrawerId: 'chest_drawer_0',
+      activeStack: 'top',
+      isPaintMode: true,
+    },
+    resolveMirrorLayout: () => ({ nextLayout: null, removeMatch: null, canApplyMirror: true }),
+  });
+
+  assert.equal(mirrorState.special.chest_drawer_0, 'mirror');
+  assert.equal(mirrorState.colors.chest_drawer_0, undefined);
+
+  const glassState = createManualState({
+    App: createApp({ ui: { currentCurtainChoice: 'linen' } }),
+  });
+
+  applyPaintPartMutation({
+    state: glassState,
+    paintPartKey: 'chest_drawer_1',
+    paintSelection: '__wp_glass_style__:double_profile',
+    clickArgs: {
+      App: glassState.App,
+      foundPartId: 'chest_drawer_1',
+      foundDrawerId: 'chest_drawer_1',
+      activeStack: 'top',
+      isPaintMode: true,
+    },
+  });
+
+  assert.equal(glassState.special.chest_drawer_1, 'glass');
+  assert.equal(glassState.curtains.chest_drawer_1, 'linen');
+  assert.equal(glassState.style.chest_drawer_1, 'double_profile');
+  assert.equal(glassState.colors.chest_drawer_1, undefined);
+});
+
 test('paint special mutation toggles off a canonical full mirror when the same mirror target is clicked again', () => {
   const state = createManualState({
     App: createApp({ ui: { currentCurtainChoice: 'linen' } }),
@@ -824,6 +869,7 @@ test('paint special target detection includes corner and sketch external drawer 
   assert.equal(isSpecialPart('corner_c0_draw_1'), true);
   assert.equal(isSpecialPart('corner_c1_draw_shoe'), true);
   assert.equal(isSpecialPart('lower_corner_c0_draw_2'), true);
+  assert.equal(isSpecialPart('chest_drawer_0'), true);
   assert.equal(isSpecialPart('sketch_ext_drawers_2_main_1'), true);
   assert.equal(isSpecialPart('sketch_box_free_a_ext_drawers_3_1'), true);
   assert.equal(isSpecialPart('hex_cell_2_diag_left'), true);

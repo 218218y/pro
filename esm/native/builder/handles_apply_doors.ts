@@ -15,7 +15,8 @@ export function applyDoorHandles(runtime: HandlesApplyRuntime): void {
     runtime;
   const doorsArray = getDoorsArray(App);
   if (!Array.isArray(doorsArray)) return;
-  const suppressedPartIds: string[] = [];
+  const standardSuppressedPartIds: string[] = [];
+  const sketchSegmentSuppressedPartIds: string[] = [];
 
   for (const d of doorsArray) {
     const g = d && d.group;
@@ -24,7 +25,7 @@ export function applyDoorHandles(runtime: HandlesApplyRuntime): void {
 
     const __sk = g.userData && g.userData.__wpStack === 'bottom' ? 'bottom' : 'top';
     if (g.userData.__wpSketchCustomHandles === true) {
-      refreshSketchSegmentedDoorHandles(runtime, g, __sk, suppressedPartIds);
+      refreshSketchSegmentedDoorHandles(runtime, g, __sk, sketchSegmentSuppressedPartIds);
       continue;
     }
 
@@ -70,13 +71,14 @@ export function applyDoorHandles(runtime: HandlesApplyRuntime): void {
         isManualPlacement,
       })
     ) {
-      suppressedPartIds.push(String(id));
+      standardSuppressedPartIds.push(String(id));
       continue;
     }
     g.add(handle);
   }
 
-  notifySuppressedDoorHandles(App, suppressedPartIds);
+  notifySuppressedStandardDoorHandles(App, standardSuppressedPartIds);
+  notifySuppressedSketchSegmentDoorHandles(App, sketchSegmentSuppressedPartIds);
 }
 
 function applyDoorHandleZFlip(group: NodeLike, handle: NodeLike): void {
@@ -385,9 +387,16 @@ function ensureDoorHandleFitsLeaf(args: {
   return true;
 }
 
-function notifySuppressedDoorHandles(App: unknown, partIds: string[]): void {
+function notifySuppressedStandardDoorHandles(App: unknown, partIds: string[]): void {
   notifyHandleFitSuppressions(App, partIds, {
     scope: 'standard-door-handles',
+    completePass: true,
+  });
+}
+
+function notifySuppressedSketchSegmentDoorHandles(App: unknown, partIds: string[]): void {
+  notifyHandleFitSuppressions(App, partIds, {
+    scope: 'sketch-segment-door-handles',
     completePass: true,
   });
 }

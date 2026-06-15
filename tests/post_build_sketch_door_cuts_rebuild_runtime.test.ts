@@ -484,6 +484,87 @@ test('segmented sketch door rebuild reports all suppressed segment handles throu
   assert.equal(toasts[0]![1], 'info');
 });
 
+test('segmented sketch handle suppressions are not reported again during generic handle refresh', () => {
+  const toasts: Array<[string, string | undefined]> = [];
+  const App: any = {
+    deps: { THREE: FakeTHREE },
+    render: { doorsArray: [] },
+    services: {
+      builder: {},
+      uiFeedback: {
+        toast: (message: string, type?: string) => {
+          toasts.push([message, type]);
+        },
+      },
+    },
+  };
+
+  const doorGroup = new FakeGroup();
+  doorGroup.userData = {
+    partId: 'sketch_low_drawers_door_full',
+    __doorWidth: 0.9,
+    __doorHeight: 1.2,
+    __hingeLeft: true,
+  };
+  doorGroup.position.set(0, 0.6, 0);
+
+  const runtime = createBaseRuntime({
+    App,
+    resolveHandleType: () => 'edge',
+    resolveEdgeHandleVariant: () => 'long',
+    createHandleMesh: () => {
+      const handle = new FakeGroup();
+      handle.userData.__kind = 'handle';
+      return handle;
+    },
+  });
+
+  rebuildSketchSegmentedDoor({
+    runtime,
+    g: doorGroup,
+    ud: doorGroup.userData,
+    visibleSegments: [
+      { yMin: 0, yMax: 0.25 },
+      { yMin: 0.95, yMax: 1.2 },
+    ],
+    basePartId: 'sketch_low_drawers_door_full',
+  });
+
+  App.render.doorsArray = [{ group: doorGroup, type: 'hinged' }];
+  applyDoorHandles({
+    App,
+    THREE: FakeTHREE as any,
+    removeDoorsEnabled: false,
+    isDoorRemovedV7: () => false,
+    syncDoorVisibilityForRemovedDoors: () => undefined,
+    getEdgeHandleVariant: () => 'long',
+    getHandleType: () => 'edge',
+    getHandleColor: () => 'black',
+    getManualHandlePosition: () => null,
+    clampAbsYToGroup: absY => absY,
+    removeExistingHandleChildren(group: FakeNode) {
+      for (let i = group.children.length - 1; i >= 0; i -= 1) {
+        const child = group.children[i];
+        if (
+          child.name === 'handle_group_v7' ||
+          child.userData.__kind === 'handle' ||
+          child.userData.isHandle
+        ) {
+          group.remove(child);
+        }
+      }
+    },
+  } as any);
+
+  assert.equal(
+    doorGroup.children.some(child => child.userData.__kind === 'handle'),
+    false
+  );
+  assert.equal(toasts.length, 1);
+  assert.match(toasts[0]![0], /הוסרו 2 ידיות/);
+  assert.equal(toasts[0]![1], 'info');
+});
+
 test('handle refresh rebuilds custom sketch box segmented-door handles from current handle config', () => {
   const basePartId = 'sketch_box_free_box1_door_d1';
   const topPartId = `${basePartId}_top`;
