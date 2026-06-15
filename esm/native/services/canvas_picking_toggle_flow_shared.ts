@@ -116,20 +116,20 @@ function readSlidingDoorIndex(door: ReturnType<typeof getDoorsArray>[number]): n
 function findDefaultSlidingDoorForCabinetClick(
   doorsArray: ReturnType<typeof getDoorsArray>
 ): ReturnType<typeof getDoorsArray>[number] | null {
-  let fallback: ReturnType<typeof getDoorsArray>[number] | null = null;
-  let fallbackIndex = Number.POSITIVE_INFINITY;
+  let defaultDoor: ReturnType<typeof getDoorsArray>[number] | null = null;
+  let defaultDoorIndex = Number.POSITIVE_INFINITY;
 
   for (const door of doorsArray) {
     if (!door || door.type !== 'sliding' || !door.group) continue;
 
     const idx = readSlidingDoorIndex(door);
-    if (!fallback || (idx != null && idx < fallbackIndex)) {
-      fallback = door;
-      fallbackIndex = idx == null ? fallbackIndex : idx;
+    if (!defaultDoor || (idx != null && idx < defaultDoorIndex)) {
+      defaultDoor = door;
+      defaultDoorIndex = idx == null ? defaultDoorIndex : idx;
     }
   }
 
-  return fallback;
+  return defaultDoor;
 }
 
 function closeSlidingTrackDoors(App: AppContainer, doorsArray: ReturnType<typeof getDoorsArray>): void {
@@ -209,12 +209,12 @@ export function tryHandleSlidingTrackDoorToggle(args: CanvasDirectDoorToggleArgs
   return true;
 }
 
-export function tryHandleSlidingCabinetFallbackToggle(App: AppContainer): boolean {
+export function tryHandleSlidingCabinetDefaultToggle(App: AppContainer): boolean {
   const doorsArray = getDoorsArray(App);
-  const fallbackDoor = findDefaultSlidingDoorForCabinetClick(doorsArray);
-  if (!fallbackDoor) return false;
+  const defaultDoor = findDefaultSlidingDoorForCabinetClick(doorsArray);
+  if (!defaultDoor) return false;
 
-  openSlidingDoorInTrackMode(App, doorsArray, fallbackDoor);
+  openSlidingDoorInTrackMode(App, doorsArray, defaultDoor);
   return true;
 }
 

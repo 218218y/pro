@@ -10,7 +10,7 @@ import {
   toggleDoorsState,
   tryCloseOpenSlidingTrackDoors,
   tryHandleDirectDoorOrDrawerToggle,
-  tryHandleSlidingCabinetFallbackToggle,
+  tryHandleSlidingCabinetDefaultToggle,
   tryHandleGlobalCornerPentToggle,
   tryHandleSlidingTrackDoorToggle,
 } from './canvas_picking_toggle_flow_shared.js';
@@ -68,7 +68,7 @@ export function handleCanvasDoorToggleClick(args: CanvasDoorToggleClickArgs): vo
       return;
     if (tryCloseOpenSlidingTrackDoors(App)) return;
     if (tryHandleGlobalCornerPentToggle(App, primaryHitObject, effectiveDoorId, foundPartId)) return;
-    if (tryHandleSlidingCabinetFallbackToggle(App)) return;
+    if (tryHandleSlidingCabinetDefaultToggle(App)) return;
     toggleDoorsState(App);
     return;
   }
