@@ -39,6 +39,7 @@ export type DesignTabColorManagerModel = {
   fileRef: RefObject<HTMLInputElement | null>;
   getSwatchStyle: typeof getSwatchStyle;
   isSavedColorLocked: typeof isSavedColorLocked;
+  isSavedColorId: (id: string) => boolean;
   readSavedColorId: typeof readSavedColorId;
   readSavedColorName: typeof readSavedColorName;
   readSavedColorValue: typeof readSavedColorValue;
@@ -123,6 +124,12 @@ export function normalizeColorSwatchesOrder(raw: unknown): string[] {
 
 export function normalizeDesignTabSavedColors(raw: unknown): SavedColor[] {
   return normalizeSavedColors(raw);
+}
+
+export function isKnownSavedColorId(savedColors: SavedColor[], id: string): boolean {
+  const target = String(id || '').trim();
+  if (!target) return false;
+  return savedColors.some(color => readSavedColorId(color) === target);
 }
 
 export function buildOrderedSwatches(savedColors: SavedColor[], colorSwatchesOrder: string[]): SavedColor[] {

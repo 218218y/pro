@@ -105,6 +105,14 @@ const buildFlowPlan = readSource('../esm/native/builder/build_flow_plan.ts', imp
 const buildWardrobe = readSource('../esm/native/builder/build_wardrobe_flow.ts', import.meta.url);
 const builderAccess = readSource('../esm/native/runtime/builder_service_access.ts', import.meta.url);
 const stackPipeline = readSource('../esm/native/builder/build_stack_split_pipeline.ts', import.meta.url);
+const materialsFactoryMaterialPolicyOwner = readSource(
+  '../esm/native/builder/materials_factory_material_policy.ts',
+  import.meta.url
+);
+const materialsFactoryTexturePolicyOwner = readSource(
+  '../esm/native/builder/materials_factory_texture_policy.ts',
+  import.meta.url
+);
 const materialsApplyOwner = readSource('../esm/native/builder/materials_apply.ts', import.meta.url);
 const materialColorLookupOwner = readSource(
   '../esm/native/builder/material_color_lookup.ts',
@@ -321,8 +329,15 @@ test('[builder-surface-family] orchestration owners stay named-only and request-
       /export function resolveGlobalFrontMaterialInput\(/,
       /export function resolveSelectionFrontMaterial\(/,
       /export function findSavedColorById\(/,
+      /export function resolveSavedFrontMaterialInput\(/,
     ],
     'material selection shared owner'
+  );
+  assertLacksAll(
+    assert,
+    materialSelectionOwner,
+    [/startsWith\('saved_'\)/],
+    'material selection resolves saved colors by canonical savedColors lookup'
   );
   assertMatchesAll(
     assert,
@@ -856,6 +871,33 @@ test('[builder-surface-family] orchestration owners remain thin around canonical
       /export function buildStackSplitLowerUnit\(/,
     ],
     'stack split pipeline owner'
+  );
+
+  assertMatchesAll(
+    assert,
+    materialsFactoryTexturePolicyOwner,
+    [
+      /export function resolveFrontTextureSource\(/,
+      /allowLiveCacheFallback: false/,
+      /allowLiveCacheFallback: true/,
+      /getCustomUploadedTextureMaybe\(App\)/,
+    ],
+    'materials factory texture policy owner'
+  );
+  assertMatchesAll(
+    assert,
+    materialsFactoryMaterialPolicyOwner,
+    [
+      /from '\.\/materials_factory_texture_policy\.js';/,
+      /resolveFrontTexture\(App, useCustomTexture, customTextureDataURL\)/,
+    ],
+    'materials factory material policy delegates texture-source decisions'
+  );
+  assertLacksAll(
+    assert,
+    materialsFactoryMaterialPolicyOwner,
+    [/getCustomUploadedTextureMaybe/, /getCfg\(/, /customUploadedDataURL/],
+    'materials factory material policy delegates texture-source decisions'
   );
 
   assertMatchesAll(

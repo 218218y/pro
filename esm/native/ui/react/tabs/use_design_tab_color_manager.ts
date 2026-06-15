@@ -4,6 +4,7 @@ import { setUiColorChoice } from '../actions/store_actions.js';
 import { applyImmediateStructuralUiMutation } from '../actions/structural_build_refresh_actions.js';
 import {
   buildOrderedSwatches,
+  isKnownSavedColorId,
   normalizeColorSwatchesOrder,
   normalizeDesignTabSavedColors,
   type DesignTabColorManagerModel,
@@ -36,6 +37,7 @@ export function useDesignTabColorManager(args: UseDesignTabColorManagerArgs): De
     [savedColors, colorSwatchesOrder]
   );
   const feedback = useMemo(() => resolveDesignTabFeedback(args.fb), [args.fb]);
+  const isSavedColorId = useCallback((id: string) => isKnownSavedColorId(savedColors, id), [savedColors]);
 
   const applyColorChoice = useCallback(
     (choice: string, source = 'react:design:colorChoice') => {
@@ -73,6 +75,7 @@ export function useDesignTabColorManager(args: UseDesignTabColorManagerArgs): De
     ...customWorkflow,
     getSwatchStyle,
     isSavedColorLocked,
+    isSavedColorId,
     readSavedColorId,
     readSavedColorName,
     readSavedColorValue,

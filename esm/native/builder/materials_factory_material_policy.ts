@@ -1,38 +1,16 @@
 import { getStandardCabinetTextureKind } from '../../shared/standard_cabinet_textures_shared.js';
 import { readRuntimeScalarOrDefaultFromApp } from '../runtime/runtime_selectors.js';
-import { getCustomUploadedTextureMaybe } from '../runtime/textures_cache_access.js';
-import { getCfg } from './store_access.js';
 import {
   ensureMaterialsFactoryApp,
   ensureMaterialsRuntime,
   getMaterialsTHREE,
-  readTextureLike,
   touchMaterialsCacheMeta,
   type AppLike,
   type MaterialLike,
   type TextureLike,
 } from './materials_factory_shared.js';
-import { generateTexture, getDataURLTexture } from './materials_factory_texture_runtime.js';
-
-function resolveCustomTextureDataUrl(App: AppLike, customTextureDataURL: unknown): string | null {
-  if (typeof customTextureDataURL === 'string' && customTextureDataURL) return customTextureDataURL;
-  const cfg = getCfg(App);
-  return typeof cfg.customUploadedDataURL === 'string' ? cfg.customUploadedDataURL : null;
-}
-
-function resolveFrontTexture(
-  App: AppLike,
-  useCustomTexture: unknown,
-  customTextureDataURL: unknown
-): TextureLike | null {
-  if (!useCustomTexture) return null;
-  const dataUrl = resolveCustomTextureDataUrl(App, customTextureDataURL);
-  return (
-    readTextureLike(getDataURLTexture(App, dataUrl)) ||
-    readTextureLike(getCustomUploadedTextureMaybe(App)) ||
-    null
-  );
-}
+import { generateTexture } from './materials_factory_texture_runtime.js';
+import { resolveFrontTexture } from './materials_factory_texture_policy.js';
 
 function getSketchMaterial(App: AppLike, cacheKey: string) {
   const runtime = ensureMaterialsRuntime(App);

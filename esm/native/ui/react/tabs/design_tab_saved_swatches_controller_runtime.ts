@@ -11,6 +11,7 @@ import {
   runDeleteSavedColorFlow,
   toggleSavedColorLock,
 } from './design_tab_color_command_flows.js';
+import { findSavedColor } from './design_tab_color_command_shared.js';
 import type { DesignTabApplyColorChoice } from './design_tab_color_manager_shared.js';
 import type { DesignTabFeedbackApi, DesignTabSwatchReorderPos } from './design_tab_shared.js';
 import type { SavedColor } from './design_tab_multicolor_panel.js';
@@ -33,9 +34,9 @@ export type CreateDesignTabSavedSwatchesControllerArgs = {
 };
 
 export function resolveSelectedSavedColor(savedColors: SavedColor[], colorChoice: string): SavedColor | null {
-  const key = String(colorChoice || '');
-  if (!key || key.indexOf('saved_') !== 0) return null;
-  return savedColors.find(color => String(color.id || '') === key) || null;
+  const key = String(colorChoice || '').trim();
+  if (!key) return null;
+  return findSavedColor(savedColors, key);
 }
 
 export function createDesignTabSavedSwatchesController(

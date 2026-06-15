@@ -38,6 +38,17 @@ test('material selection resolves global custom and saved texture inputs from cf
 
   assert.deepEqual(
     resolveGlobalFrontMaterialInput({
+      colorChoice: 'oak',
+      customColor: '#ffffff',
+      cfg: {
+        savedColors: [{ id: 'oak', type: 'texture', value: '#a08060', textureData: 'data:oak' }],
+      },
+    }),
+    { colorKey: 'oak', useTexture: true, textureDataURL: 'data:oak' }
+  );
+
+  assert.deepEqual(
+    resolveGlobalFrontMaterialInput({
       colorChoice: 'saved_flat',
       customColor: '#ffffff',
       cfg: { savedColors: [{ id: 'saved_flat', type: 'color', value: '#abcdef' }] },
@@ -61,12 +72,16 @@ test('material selection resolves per-part saved and custom materials with expli
   const cfg = {
     savedColors: [
       { id: 'saved_tex', type: 'texture', value: 'oak', textureData: 'data:saved' },
+      { id: 'oak', type: 'texture', value: '#a08060', textureData: 'data:oak' },
       { id: 'saved_flat', type: 'color', value: '#334455' },
     ],
   };
 
   assert.deepEqual(resolveSelectionFrontMaterial({ selection: 'saved_tex', cfg, getMaterial }), {
     args: ['saved_tex', 'front', true, 'data:saved'],
+  });
+  assert.deepEqual(resolveSelectionFrontMaterial({ selection: 'oak', cfg, getMaterial }), {
+    args: ['oak', 'front', true, 'data:oak'],
   });
   assert.deepEqual(resolveSelectionFrontMaterial({ selection: 'saved_flat', cfg, getMaterial }), {
     args: ['#334455', 'front', false, null],
@@ -80,6 +95,7 @@ test('material selection resolves per-part saved and custom materials with expli
   });
   assert.deepEqual(calls, [
     ['saved_tex', 'front', true, 'data:saved'],
+    ['oak', 'front', true, 'data:oak'],
     ['#334455', 'front', false, null],
     ['#112233', 'front', false, null],
     ['custom', 'front', false, null],

@@ -66,13 +66,13 @@ export function useDesignTabSavedSwatches(args: UseDesignTabSavedSwatchesArgs): 
   const onPickSwatch = useCallback(
     (color: SavedColor) => {
       const id = String(color.id || '');
-      if (id.indexOf('saved_') === 0) {
+      if (resolveSelectedSavedColor(savedColors, id)) {
         applyColorChoice(id, 'react:design:palette:saved');
         return;
       }
       applyColorChoice(String(color.value || ''), 'react:design:palette:default');
     },
-    [applyColorChoice]
+    [applyColorChoice, savedColors]
   );
 
   const onSwatchRowDragLeave = useCallback(() => {

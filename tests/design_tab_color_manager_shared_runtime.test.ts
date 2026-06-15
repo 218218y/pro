@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   buildOrderedSwatches,
+  isKnownSavedColorId,
   normalizeColorSwatchesOrder,
 } from '../esm/native/ui/react/tabs/design_tab_color_manager_shared.js';
 import { normalizeSavedColors } from '../esm/native/ui/react/tabs/design_tab_multicolor_shared.js';
@@ -37,6 +38,17 @@ test('design tab color manager shared canonicalizes duplicate saved colors and s
     'saved_b',
     'saved_a',
   ]);
+  assert.equal(isKnownSavedColorId(savedColors, 'saved_a'), true);
+  assert.equal(isKnownSavedColorId(savedColors, '#111111'), false);
+  assert.equal(
+    isKnownSavedColorId(
+      normalizeSavedColors([
+        { id: 'oak', name: 'Oak', type: 'texture', value: '#a08060', textureData: 'data:oak' },
+      ]),
+      'oak'
+    ),
+    true
+  );
 });
 
 test('design tab color manager shared builds ordered swatches without duplicate ids from raw order', () => {

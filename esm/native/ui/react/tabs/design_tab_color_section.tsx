@@ -50,7 +50,7 @@ export function DesignTabColorSection(props: { model: DesignTabColorSectionModel
         {model.orderedSwatches.map(color => {
           const choice = String(model.colorChoice || '');
           const id = model.readSavedColorId(color);
-          const isSaved = id.indexOf('saved_') === 0;
+          const isSaved = model.isSavedColorId(id);
           const isSelected =
             choice === id ||
             (!!choice &&

@@ -55,6 +55,22 @@ export function findSavedColorById(cfgLike: unknown, id: string): SavedColorLike
   return null;
 }
 
+export function resolveSavedFrontMaterialInput(cfgLike: unknown, id: string): FrontMaterialInput | null {
+  const saved = findSavedColorById(cfgLike, id);
+  if (!saved) return null;
+
+  const textureDataURL = readTextureDataURL(saved.textureData);
+  if (saved.type === 'texture' && textureDataURL) {
+    return { colorKey: saved.id, useTexture: true, textureDataURL };
+  }
+
+  if (typeof saved.value === 'string' && saved.value) {
+    return { colorKey: saved.value, useTexture: false, textureDataURL: null };
+  }
+
+  return null;
+}
+
 export function resolveGlobalFrontMaterialInput(args: {
   colorChoice?: unknown;
   customColor?: unknown;
@@ -73,18 +89,8 @@ export function resolveGlobalFrontMaterialInput(args: {
     return { colorKey: customColor, useTexture: false, textureDataURL: null };
   }
 
-  if (colorChoice.startsWith('saved_')) {
-    const saved = findSavedColorById(cfg, colorChoice);
-    if (saved) {
-      const textureDataURL = readTextureDataURL(saved.textureData);
-      if (saved.type === 'texture' && textureDataURL) {
-        return { colorKey: saved.id, useTexture: true, textureDataURL };
-      }
-      if (typeof saved.value === 'string' && saved.value) {
-        return { colorKey: saved.value, useTexture: false, textureDataURL: null };
-      }
-    }
-  }
+  const savedInput = resolveSavedFrontMaterialInput(cfg, colorChoice);
+  if (savedInput) return savedInput;
 
   return { colorKey: colorChoice, useTexture: false, textureDataURL: null };
 }
@@ -106,17 +112,9 @@ export function resolveSelectionFrontMaterial(args: {
     return args.getMaterial(selection, 'front', false);
   }
 
-  if (selection.startsWith('saved_')) {
-    const saved = findSavedColorById(args.cfg, selection);
-    if (saved) {
-      const textureDataURL = readTextureDataURL(saved.textureData);
-      if (saved.type === 'texture' && textureDataURL) {
-        return args.getMaterial(saved.id, 'front', true, textureDataURL);
-      }
-      if (typeof saved.value === 'string' && saved.value) {
-        return args.getMaterial(saved.value, 'front', false);
-      }
-    }
+  const savedInput = resolveSavedFrontMaterialInput(args.cfg, selection);
+  if (savedInput) {
+    return args.getMaterial(savedInput.colorKey, 'front', savedInput.useTexture, savedInput.textureDataURL);
   }
 
   return args.getMaterial(selection, 'front', false);

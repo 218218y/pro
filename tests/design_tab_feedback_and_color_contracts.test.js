@@ -286,12 +286,19 @@ test('[contracts-design-color-feedback] DesignTab color workflows use stable fee
     [
       /export function resolveSelectedSavedColor\(/,
       /export function createDesignTabSavedSwatchesController\(/,
+      /findSavedColor\(savedColors, key\)/,
       /reorderSavedColorSwatches\(/,
       /toggleSavedColorLock\(/,
       /runDeleteSavedColorFlow\(/,
       /reportDesignTabColorActionResult\(/,
     ],
     'design saved swatches controller seam'
+  );
+  assertLacksAll(
+    assert,
+    designSavedSwatchesController,
+    [/indexOf\('saved_'\)/],
+    'design saved swatches controller resolves selected saved color by canonical list membership'
   );
 
   assertMatchesAll(

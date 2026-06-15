@@ -72,6 +72,10 @@ const SAVED_COLORS: SavedColor[] = [
 
 test('resolveSelectedSavedColor keeps saved-only active choice lookup canonical', () => {
   assert.deepEqual(resolveSelectedSavedColor(SAVED_COLORS, 'saved_a'), SAVED_COLORS[0]);
+  assert.deepEqual(
+    resolveSelectedSavedColor([{ id: 'oak', name: '׳׳׳•׳', value: '#a08060' } as SavedColor], 'oak'),
+    { id: 'oak', name: '׳׳׳•׳', value: '#a08060' }
+  );
   assert.equal(resolveSelectedSavedColor(SAVED_COLORS, '#ffffff'), null);
   assert.equal(resolveSelectedSavedColor(SAVED_COLORS, 'saved_missing'), null);
 });
