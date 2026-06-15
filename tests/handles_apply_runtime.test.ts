@@ -272,3 +272,62 @@ test('handles purge reads removed-door state from the provided cfg snapshot', ()
 
   assert.equal(door.children.includes(handle), false);
 });
+
+test('handles apply does not treat external drawer boxes as separate drawer fronts', () => {
+  const { App } = createApp();
+  App.deps = {
+    THREE: {
+      Group: FakeGroup3D,
+      Mesh: FakeMesh3D,
+      BoxGeometry: FakeGeometry3D,
+      MeshStandardMaterial: class FakeMeshStandardMaterial {},
+      Box3: FakeBox3D,
+      Matrix4: FakeMatrix4D,
+    },
+  };
+
+  const wardrobeGroup = new FakeGroup3D();
+  const drawerGroup = new FakeGroup3D();
+  drawerGroup.userData = {
+    partId: 'd1_draw_0',
+    __doorWidth: 0.7,
+    __doorHeight: 0.22,
+    __frontMaxZ: 0.018,
+    __wpType: 'extDrawer',
+  };
+
+  const drawerBoxGroup = new FakeGroup3D();
+  drawerBoxGroup.userData = {
+    partId: 'drawer_box__d1_draw_0',
+    __wpDrawerBox: true,
+    __wpDrawerOwnerPartId: 'd1_draw_0',
+    __doorWidth: 0.64,
+    __doorHeight: 0.18,
+  };
+  drawerGroup.add(drawerBoxGroup);
+  wardrobeGroup.add(drawerGroup);
+
+  App.render.wardrobeGroup = wardrobeGroup;
+  App.render.drawersArray = [{ id: 'd1_draw_0', group: drawerGroup }];
+  App.store.getState = () => ({
+    ui: { view: {} },
+    config: { globalHandleType: 'standard', handlesMap: {} },
+    runtime: {},
+    mode: { primary: 'none', opts: {} },
+    meta: {},
+  });
+
+  applyHandles({ App, triggerRender: false });
+
+  const handleHosts: FakeGroup3D[] = [];
+  wardrobeGroup.traverse(node => {
+    if (node.children.some(child => child.userData.__kind === 'handle'))
+      handleHosts.push(node as FakeGroup3D);
+  });
+
+  assert.deepEqual(
+    handleHosts.map(node => node.userData.partId),
+    ['d1_draw_0'],
+    'only the drawer-front owner should receive a handle; the drawer box must stay handle-free'
+  );
+});

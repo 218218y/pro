@@ -1,4 +1,5 @@
 import { getDrawersArray, getWardrobeGroup } from '../runtime/render_access.js';
+import { isDrawerBoxPartId } from '../features/drawer_box_identity.js';
 import { HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { resolveManualHandleLocalPosition } from '../features/manual_handle_position.js';
 import { createHandleMeshV7 } from './handles_mesh.js';
@@ -119,10 +120,12 @@ function collectSafeDrawers(runtime: HandlesApplyRuntime): NodeLike[] {
 
 function isDrawerLikeGroup(node: NodeLike | null | undefined): boolean {
   if (!node || node.isGroup !== true) return false;
-  const partId = node.userData && node.userData.partId ? String(node.userData.partId) : '';
+  const userData = node.userData || {};
+  const partId = userData.partId ? String(userData.partId) : '';
+  if (userData.__wpDrawerBox === true || isDrawerBoxPartId(partId)) return false;
   if (!partId || !partId.includes('drawer')) return false;
-  const doorW = Number(node.userData && node.userData.__doorWidth);
-  const doorH = Number(node.userData && node.userData.__doorHeight);
+  const doorW = Number(userData.__doorWidth);
+  const doorH = Number(userData.__doorHeight);
   return Number.isFinite(doorW) && doorW > 0 && Number.isFinite(doorH) && doorH > 0;
 }
 
