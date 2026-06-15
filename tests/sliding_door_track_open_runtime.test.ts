@@ -172,6 +172,74 @@ test('sliding cabinet-space click closes an existing track-open door before glob
   assert.equal(left.slidingOpenMode, undefined);
 });
 
+test('sliding cabinet-side click opens only one default sliding door instead of global-opening all doors', () => {
+  const doors = [makeSlidingDoor(0, 4), makeSlidingDoor(1, 4), makeSlidingDoor(2, 4), makeSlidingDoor(3, 4)];
+  const state = { runtime: { doorsOpen: false, globalClickMode: true }, config: { wardrobeType: 'sliding' } };
+  const App = makeAppWithSlidingDoors(doors, state);
+  let globalToggleCount = 0;
+  App.services.doors.toggle = () => {
+    globalToggleCount += 1;
+    App.store.getState().runtime.doorsOpen = !App.store.getState().runtime.doorsOpen;
+  };
+
+  handleCanvasDoorToggleClick({
+    App,
+    primaryMode: 'none',
+    primaryHitObject: { userData: { partId: 'right_side_panel' } } as any,
+    effectiveDoorId: null,
+    foundPartId: 'right_side_panel',
+  });
+
+  assert.equal(globalToggleCount, 0);
+  assert.equal(state.runtime.doorsOpen, false);
+  assert.deepEqual(
+    App.render.doorsArray.map((d: any) => !!d.isOpen),
+    [true, false, false, false]
+  );
+  assert.equal(doors[0].slidingOpenMode, 'track');
+  assert.equal(doors[0].noGlobalOpen, true);
+  assert.equal(App.drawerOpenId, null);
+});
+
+test('sliding cabinet-side fallback keeps internal drawers closed behind the sliding doors', () => {
+  const doors = [makeSlidingDoor(0, 3), makeSlidingDoor(1, 3), makeSlidingDoor(2, 3)];
+  const drawer = {
+    id: 'int_drawer_1',
+    isOpen: false,
+    isInternal: true,
+    group: { position: { x: 0, y: 0, z: 0 }, userData: { moduleIndex: 0 } },
+    closed: { x: 0, y: 0, z: 0 },
+    open: { x: 0, y: 0, z: 1 },
+  } as any;
+  const state = {
+    runtime: { doorsOpen: false, globalClickMode: true, doorsLastToggleTime: 0 },
+    config: { wardrobeType: 'sliding', DOOR_DELAY_MS: 0 },
+  };
+  const App = makeAppWithSlidingDoors(doors, state);
+  App.render.drawersArray.push(drawer);
+  App.services.platform.getDimsM = () => ({ w: 3, h: 2, d: 0.6 });
+  App.services.doors.toggle = () => {
+    App.store.getState().runtime.doorsOpen = !App.store.getState().runtime.doorsOpen;
+  };
+
+  handleCanvasDoorToggleClick({
+    App,
+    primaryMode: 'none',
+    primaryHitObject: { userData: { partId: 'toe_kick' } } as any,
+    effectiveDoorId: null,
+    foundPartId: 'toe_kick',
+  });
+  syncVisualsNow(App, { open: state.runtime.doorsOpen });
+
+  assert.equal(state.runtime.doorsOpen, false);
+  assert.deepEqual(
+    App.render.doorsArray.map((d: any) => !!d.isOpen),
+    [true, false, false]
+  );
+  assert.equal(drawer.isOpen, false);
+  assert.deepEqual(drawer.group.position, drawer.closed);
+});
+
 test('sliding close helper does nothing when there is no track-open sliding door', () => {
   const left = makeSlidingDoor(0, 2);
   const right = makeSlidingDoor(1, 2);

@@ -1,7 +1,4 @@
 // Canvas picking door/global toggle click handling.
-//
-// Extracted from canvas_picking_click_flow.ts to keep the click owner focused on
-// routing while preserving the canonical none/screen-note toggle behavior.
 
 import type { AppContainer } from '../../../types';
 
@@ -13,6 +10,7 @@ import {
   toggleDoorsState,
   tryCloseOpenSlidingTrackDoors,
   tryHandleDirectDoorOrDrawerToggle,
+  tryHandleSlidingCabinetFallbackToggle,
   tryHandleGlobalCornerPentToggle,
   tryHandleSlidingTrackDoorToggle,
 } from './canvas_picking_toggle_flow_shared.js';
@@ -70,6 +68,7 @@ export function handleCanvasDoorToggleClick(args: CanvasDoorToggleClickArgs): vo
       return;
     if (tryCloseOpenSlidingTrackDoors(App)) return;
     if (tryHandleGlobalCornerPentToggle(App, primaryHitObject, effectiveDoorId, foundPartId)) return;
+    if (tryHandleSlidingCabinetFallbackToggle(App)) return;
     toggleDoorsState(App);
     return;
   }

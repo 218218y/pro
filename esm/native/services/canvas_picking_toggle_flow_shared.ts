@@ -107,6 +107,31 @@ function hasOpenSlidingTrackDoor(doorsArray: ReturnType<typeof getDoorsArray>): 
   );
 }
 
+function readSlidingDoorIndex(door: ReturnType<typeof getDoorsArray>[number]): number | null {
+  const raw = (door as UnknownRecord | null | undefined)?.index;
+  const num = readFiniteNumber(raw);
+  return num == null ? null : num;
+}
+
+function findDefaultSlidingDoorForCabinetClick(
+  doorsArray: ReturnType<typeof getDoorsArray>
+): ReturnType<typeof getDoorsArray>[number] | null {
+  let fallback: ReturnType<typeof getDoorsArray>[number] | null = null;
+  let fallbackIndex = Number.POSITIVE_INFINITY;
+
+  for (const door of doorsArray) {
+    if (!door || door.type !== 'sliding' || !door.group) continue;
+
+    const idx = readSlidingDoorIndex(door);
+    if (!fallback || (idx != null && idx < fallbackIndex)) {
+      fallback = door;
+      fallbackIndex = idx == null ? fallbackIndex : idx;
+    }
+  }
+
+  return fallback;
+}
+
 function closeSlidingTrackDoors(App: AppContainer, doorsArray: ReturnType<typeof getDoorsArray>): void {
   for (const sd of doorsArray) {
     if (!sd || sd.type !== 'sliding') continue;
@@ -136,17 +161,11 @@ export function tryCloseOpenSlidingTrackDoors(App: AppContainer): boolean {
   return true;
 }
 
-export function tryHandleSlidingTrackDoorToggle(args: CanvasDirectDoorToggleArgs): boolean {
-  const { App, primaryHitObject, effectiveDoorId } = args;
-  const doorsArray = getDoorsArray(App);
-  const clickedDoor = findSlidingDoorForClick(doorsArray, primaryHitObject, effectiveDoorId);
-  if (!clickedDoor) return false;
-
-  if (hasOpenSlidingTrackDoor(doorsArray)) {
-    closeSlidingTrackDoors(App, doorsArray);
-    return true;
-  }
-
+function openSlidingDoorInTrackMode(
+  App: AppContainer,
+  doorsArray: ReturnType<typeof getDoorsArray>,
+  clickedDoor: ReturnType<typeof getDoorsArray>[number]
+): void {
   for (const sd of doorsArray) {
     if (!sd || sd.type !== 'sliding') continue;
     const rec = sd as UnknownRecord;
@@ -173,6 +192,29 @@ export function tryHandleSlidingTrackDoorToggle(args: CanvasDirectDoorToggleArgs
   const __tools_end = getTools(App);
   if (typeof __tools_end.setDrawersOpenId === 'function') __tools_end.setDrawersOpenId(null);
   markLocalDoorMotion(App);
+}
+
+export function tryHandleSlidingTrackDoorToggle(args: CanvasDirectDoorToggleArgs): boolean {
+  const { App, primaryHitObject, effectiveDoorId } = args;
+  const doorsArray = getDoorsArray(App);
+  const clickedDoor = findSlidingDoorForClick(doorsArray, primaryHitObject, effectiveDoorId);
+  if (!clickedDoor) return false;
+
+  if (hasOpenSlidingTrackDoor(doorsArray)) {
+    closeSlidingTrackDoors(App, doorsArray);
+    return true;
+  }
+
+  openSlidingDoorInTrackMode(App, doorsArray, clickedDoor);
+  return true;
+}
+
+export function tryHandleSlidingCabinetFallbackToggle(App: AppContainer): boolean {
+  const doorsArray = getDoorsArray(App);
+  const fallbackDoor = findDefaultSlidingDoorForCabinetClick(doorsArray);
+  if (!fallbackDoor) return false;
+
+  openSlidingDoorInTrackMode(App, doorsArray, fallbackDoor);
   return true;
 }
 
