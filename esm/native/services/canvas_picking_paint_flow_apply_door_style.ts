@@ -1,4 +1,4 @@
-import type { AppContainer } from '../../../types';
+import type { AppContainer, DoorSpecialMap, DoorStyleMap, MirrorLayoutMap, CurtainMap } from '../../../types';
 
 import { cfgSetMap } from '../runtime/cfg_access.js';
 import { readDoorVisualMapEntry } from '../features/door_visual_map_lookup.js';
@@ -19,6 +19,23 @@ import {
   __wp_scopeCornerPartKeyForStack,
 } from './canvas_picking_core_helpers.js';
 import { createCanvasPickingPaintStructuralMeta } from './canvas_picking_paint_meta.js';
+import {
+  cloneCurtainMap,
+  cloneDoorSpecialMap,
+  cloneDoorStyleMap,
+  cloneMirrorLayoutConfigMap,
+  readCurtainMap,
+  readDoorSpecialMap,
+  readMirrorLayoutConfigMap,
+  sameFlatMap,
+  sameMirrorLayoutMap,
+} from './canvas_picking_paint_flow_shared.js';
+import {
+  deleteDoorVisualOwnerAliasEntries,
+  deletePrefixedDoorVisualOwnerAliasEntries,
+} from './canvas_picking_door_visual_owner_map.js';
+
+const GLASS_PREVIOUS_STYLE_PREFIX = '__wp_glass_previous_door_style__:';
 
 export function resolveDoorStylePaintTargetKey(args: {
   foundPartId: string;
@@ -32,6 +49,99 @@ export function resolveDoorStylePaintTargetKey(args: {
     (__wp_isDoorOrDrawerLikePartId(args.foundPartId) ? args.foundPartId : '');
   const scopedTarget = __wp_scopeCornerPartKeyForStack(rawTarget, args.activeStack);
   return toDoorStyleOverrideMapKey(scopedTarget);
+}
+
+function cloneMirrorMap(src: MirrorLayoutMap): MirrorLayoutMap {
+  return cloneMirrorLayoutConfigMap(src);
+}
+
+function clearSpecialVisualForDoorStyleTarget(args: {
+  App: AppContainer;
+  targetPartKey: string;
+  special0: DoorSpecialMap;
+  curtains0: CurtainMap;
+  mirror0: MirrorLayoutMap;
+}): {
+  hadSpecialVisual: boolean;
+  special: DoorSpecialMap;
+  curtains: CurtainMap;
+  mirror: MirrorLayoutMap;
+} {
+  const specialEntry = readDoorVisualMapEntry(args.special0, args.targetPartKey);
+  const specialValue = specialEntry?.value;
+  const hadSpecialVisual = specialValue === 'glass' || specialValue === 'mirror';
+  let special = args.special0;
+  let curtains = args.curtains0;
+  let mirror = args.mirror0;
+
+  if (!hadSpecialVisual) return { hadSpecialVisual: false, special, curtains, mirror };
+
+  const ensureSpecial = () => {
+    if (Object.is(special, args.special0)) special = cloneDoorSpecialMap(args.special0);
+    return special;
+  };
+  const ensureCurtains = () => {
+    if (Object.is(curtains, args.curtains0)) curtains = cloneCurtainMap(args.curtains0);
+    return curtains;
+  };
+  const ensureMirror = () => {
+    if (Object.is(mirror, args.mirror0)) mirror = cloneMirrorMap(args.mirror0);
+    return mirror;
+  };
+
+  const specialOwnerKey = specialEntry?.key || args.targetPartKey;
+  const curtainOwnerKey = readDoorVisualMapEntry(args.curtains0, args.targetPartKey)?.key || specialOwnerKey;
+  const mirrorOwnerKey = readDoorVisualMapEntry(args.mirror0, args.targetPartKey)?.key || specialOwnerKey;
+  const isInheritedSpecialOwner = isDoorVisualInheritedOwner({
+    targetPartId: args.targetPartKey,
+    ownerPartId: specialOwnerKey,
+  });
+
+  if (isInheritedSpecialOwner) {
+    materializeInheritedDoorVisualOwner({
+      App: args.App,
+      map: ensureSpecial(),
+      targetPartId: args.targetPartKey,
+      ownerPartId: specialOwnerKey,
+    });
+    materializeInheritedDoorVisualOwner({
+      App: args.App,
+      map: ensureCurtains(),
+      targetPartId: args.targetPartKey,
+      ownerPartId: curtainOwnerKey,
+    });
+    materializeInheritedDoorVisualOwner({
+      App: args.App,
+      map: ensureMirror(),
+      targetPartId: args.targetPartKey,
+      ownerPartId: mirrorOwnerKey,
+    });
+  }
+
+  deleteDoorVisualOwnerAliasEntries(
+    ensureSpecial(),
+    isInheritedSpecialOwner ? args.targetPartKey : specialOwnerKey
+  );
+  deleteDoorVisualOwnerAliasEntries(
+    ensureCurtains(),
+    isInheritedSpecialOwner ? args.targetPartKey : curtainOwnerKey
+  );
+  deleteDoorVisualOwnerAliasEntries(
+    ensureMirror(),
+    isInheritedSpecialOwner ? args.targetPartKey : mirrorOwnerKey
+  );
+  deletePrefixedDoorVisualOwnerAliasEntries({
+    map: ensureSpecial(),
+    prefix: GLASS_PREVIOUS_STYLE_PREFIX,
+    partId: args.targetPartKey,
+  });
+  deletePrefixedDoorVisualOwnerAliasEntries({
+    map: ensureSpecial(),
+    prefix: GLASS_PREVIOUS_STYLE_PREFIX,
+    partId: specialOwnerKey,
+  });
+
+  return { hadSpecialVisual: true, special, curtains, mirror };
 }
 
 export function tryHandleDoorStyleOverridePaintClick(args: {
@@ -50,17 +160,28 @@ export function tryHandleDoorStyleOverridePaintClick(args: {
   if (!paintTargetKey) return true;
 
   const doorStyleMap0 = readDoorStyleMap(__wp_map(args.App, 'doorStyleMap'));
+  const special0 = readDoorSpecialMap(args.App);
+  const curtains0 = readCurtainMap(args.App);
+  const mirror0 = readMirrorLayoutConfigMap(args.App);
   let doorStyleMap = doorStyleMap0;
   const ensureDoorStyleMap = () => {
-    if (Object.is(doorStyleMap, doorStyleMap0)) doorStyleMap = { ...doorStyleMap0 };
+    if (Object.is(doorStyleMap, doorStyleMap0)) doorStyleMap = cloneDoorStyleMap(doorStyleMap0);
     return doorStyleMap;
   };
+
+  const specialCleanup = clearSpecialVisualForDoorStyleTarget({
+    App: args.App,
+    targetPartKey: paintTargetKey,
+    special0,
+    curtains0,
+    mirror0,
+  });
 
   const existingStyleEntry = readDoorVisualMapEntry(doorStyleMap0, paintTargetKey);
   const existingStyle = isDoorStyleOverrideValue(existingStyleEntry?.value)
     ? existingStyleEntry.value
     : undefined;
-  if (existingStyle === doorStyleSelection) {
+  if (existingStyle === doorStyleSelection && !specialCleanup.hadSpecialVisual) {
     const existingStyleOwnerKey = existingStyleEntry?.key || paintTargetKey;
     const nextDoorStyleMap = ensureDoorStyleMap();
     if (
@@ -77,15 +198,22 @@ export function tryHandleDoorStyleOverridePaintClick(args: {
       });
       delete nextDoorStyleMap[paintTargetKey];
     } else {
-      delete nextDoorStyleMap[existingStyleOwnerKey];
+      deleteDoorVisualOwnerAliasEntries(nextDoorStyleMap, existingStyleOwnerKey);
     }
   } else ensureDoorStyleMap()[paintTargetKey] = doorStyleSelection;
 
-  if (Object.is(doorStyleMap, doorStyleMap0)) return true;
+  const styleChanged = !sameFlatMap(doorStyleMap0, doorStyleMap);
+  const specialChanged = !sameFlatMap(special0, specialCleanup.special);
+  const curtainsChanged = !sameFlatMap(curtains0, specialCleanup.curtains);
+  const mirrorChanged = !sameMirrorLayoutMap(mirror0, specialCleanup.mirror);
+  if (!styleChanged && !specialChanged && !curtainsChanged && !mirrorChanged) return true;
 
   const baseMeta = createCanvasPickingPaintStructuralMeta(args.paintSource);
   __wp_historyBatch(args.App, baseMeta, () => {
-    cfgSetMap(args.App, 'doorStyleMap', doorStyleMap, baseMeta);
+    if (specialChanged) cfgSetMap(args.App, 'doorSpecialMap', specialCleanup.special, baseMeta);
+    if (curtainsChanged) cfgSetMap(args.App, 'curtainMap', specialCleanup.curtains, baseMeta);
+    if (mirrorChanged) cfgSetMap(args.App, 'mirrorLayoutMap', specialCleanup.mirror, baseMeta);
+    if (styleChanged) cfgSetMap(args.App, 'doorStyleMap', doorStyleMap, baseMeta);
     return undefined;
   });
   return true;

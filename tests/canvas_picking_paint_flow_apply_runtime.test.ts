@@ -329,6 +329,33 @@ test('paint special mutation replaces glass with mirror on the first click and c
   assert.equal(state.mirrorLayout.d3_full, undefined);
 });
 
+test('paint special mutation cancels full-door library glass without leaving base fallback glass', () => {
+  const state = createManualState({
+    App: createApp({ ui: { currentCurtainChoice: 'none' } }),
+    special0: { d8: 'glass', d8_full: 'glass' },
+    curtains0: { d8: 'none', d8_full: 'none' },
+    style0: { d8_full: 'profile' },
+  });
+
+  applyPaintPartMutation({
+    state,
+    paintPartKey: 'd8_full',
+    paintSelection: 'glass',
+    clickArgs: {
+      App: state.App,
+      foundPartId: 'd8_full',
+      activeStack: 'top',
+      isPaintMode: true,
+    },
+  });
+
+  assert.equal(state.special.d8, undefined);
+  assert.equal(state.special.d8_full, undefined);
+  assert.equal(state.curtains.d8, undefined);
+  assert.equal(state.curtains.d8_full, undefined);
+  assert.equal(state.style.d8_full, undefined);
+});
+
 test('paint special mutation restores the pre-glass door style when glass is replaced by mirror', () => {
   const state = createManualState({
     App: createApp({ ui: { currentCurtainChoice: 'linen' } }),
@@ -981,6 +1008,89 @@ test('paint flow helpers resolve scoped door-style and paint-part keys without l
       activeStack: 'top',
     }),
     'sketch_box_free_alpha_door_sbdr_1'
+  );
+});
+
+test('door style paint click clears full-door library glass aliases before applying post style', () => {
+  const writtenMaps: Record<string, Record<string, unknown>> = {};
+  const App = createApp({
+    maps: {
+      doorSpecialMap: { d9: 'glass', d9_full: 'glass' },
+      curtainMap: { d9: 'none', d9_full: 'none' },
+      doorStyleMap: { d9_full: 'profile' },
+      mirrorLayoutMap: {},
+    },
+  });
+  App.actions = {
+    history: {
+      batch(cb: () => unknown) {
+        return cb();
+      },
+    },
+    config: {
+      setMap(name: string, next: Record<string, unknown>) {
+        writtenMaps[name] = { ...next };
+        return next;
+      },
+    },
+  };
+
+  const handled = tryHandleDoorStyleOverridePaintClick({
+    App: App as never,
+    foundPartId: 'd9_full',
+    effectiveDoorId: 'd9_full',
+    foundDrawerId: null,
+    activeStack: 'top',
+    paintSelection: '__wp_door_style__:flat',
+    paintSource: 'paint.apply:doorStyle',
+  });
+
+  assert.equal(handled, true);
+  assert.deepEqual(writtenMaps.doorSpecialMap, {});
+  assert.deepEqual(writtenMaps.curtainMap, {});
+  assert.deepEqual(writtenMaps.doorStyleMap, { d9_full: 'flat' });
+});
+
+test('door style paint click keeps requested profile when it clears existing glass', () => {
+  const writtenMaps: Record<string, Record<string, unknown>> = {};
+  const App = createApp({
+    maps: {
+      doorSpecialMap: { d10: 'glass', d10_full: 'glass' },
+      curtainMap: { d10_full: 'none' },
+      doorStyleMap: { d10_full: 'profile' },
+      mirrorLayoutMap: {},
+    },
+  });
+  App.actions = {
+    history: {
+      batch(cb: () => unknown) {
+        return cb();
+      },
+    },
+    config: {
+      setMap(name: string, next: Record<string, unknown>) {
+        writtenMaps[name] = { ...next };
+        return next;
+      },
+    },
+  };
+
+  const handled = tryHandleDoorStyleOverridePaintClick({
+    App: App as never,
+    foundPartId: 'd10_full',
+    effectiveDoorId: 'd10_full',
+    foundDrawerId: null,
+    activeStack: 'top',
+    paintSelection: '__wp_door_style__:profile',
+    paintSource: 'paint.apply:doorStyle',
+  });
+
+  assert.equal(handled, true);
+  assert.deepEqual(writtenMaps.doorSpecialMap, {});
+  assert.equal(
+    writtenMaps.doorStyleMap,
+    undefined,
+    'the existing requested profile style should remain untouched while glass is cleared'
   );
 });
 
