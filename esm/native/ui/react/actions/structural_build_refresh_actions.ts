@@ -49,7 +49,7 @@ function createSliceImmediateStructuralMutationMeta(
   // (currently sketchMode) are different: the builder fingerprint reads them, so
   // the immediate store reaction must be allowed to schedule a rebuild. Use an
   // explicit false sentinel so downstream transient meta merging cannot re-add
-  // noBuild:true after this helper already stripped caller-provided noBuild.
+  // a no-build profile after this helper already stripped caller-provided noBuild.
   if (slice === 'runtime') meta.noBuild = false;
 
   return meta;
