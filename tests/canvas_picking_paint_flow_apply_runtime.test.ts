@@ -159,6 +159,64 @@ test('paint click ignores corner back-panel hit ids because those meshes are not
   assert.equal(applyPaintCalled, false);
 });
 
+test('paint click replaces glass with a one-sided mirror through the public paint route on the first click', () => {
+  const applyPaintCalls: unknown[][] = [];
+  const App = createApp({
+    ui: { currentCurtainChoice: 'linen' },
+    maps: {
+      individualColors: {},
+      curtainMap: { d12_full: 'linen' },
+      doorSpecialMap: {
+        d12_full: 'glass',
+        '__wp_glass_previous_door_style__:d12_full': 'double_profile',
+      },
+      doorStyleMap: { d12_full: 'profile' },
+      mirrorLayoutMap: {},
+    },
+  });
+  App.services.tools = { getPaintColor: () => 'mirror' };
+  App.actions = {
+    history: {
+      batch(cb: () => unknown) {
+        return cb();
+      },
+    },
+    colors: {
+      applyPaint(...args: unknown[]) {
+        applyPaintCalls.push(args);
+      },
+    },
+  };
+
+  const handled = tryHandleCanvasPaintClick({
+    App,
+    foundPartId: 'd12_full',
+    effectiveDoorId: 'd12_full',
+    activeStack: 'top',
+    isPaintMode: true,
+    hitIdentity: {
+      targetKind: 'door',
+      partId: 'd12_full',
+      doorId: 'd12',
+      drawerId: null,
+      moduleIndex: null,
+      moduleStack: null,
+      surfaceId: 'door:d12:inside',
+      faceSign: -1,
+      faceSide: 'inside',
+      splitPart: 'full',
+      source: 'click',
+    },
+  } as never);
+
+  assert.equal(handled, true);
+  assert.equal(applyPaintCalls.length, 1);
+  assert.deepEqual(applyPaintCalls[0]?.[1], {});
+  assert.deepEqual(applyPaintCalls[0]?.[3], { d12_full: 'mirror' });
+  assert.deepEqual(applyPaintCalls[0]?.[4], { d12_full: [{ faceSign: -1 }] });
+  assert.deepEqual(applyPaintCalls[0]?.[5], { d12_full: 'double_profile' });
+});
+
 test('paint grouped target treats the stack-split lower carcass frame as one shell', () => {
   assert.deepEqual(resolvePaintTargetKeys('lower_body_ceil', 'bottom'), [
     'lower_body_left',
@@ -300,6 +358,76 @@ test('paint special mutation restores the pre-glass door style when glass is rep
   assert.equal(state.curtains.d4_full, undefined);
   assert.equal(state.style.d4_full, 'double_profile');
   assert.equal(state.mirrorLayout.d4_full, undefined);
+});
+
+test('paint special mutation replaces glass with a one-sided full mirror on the first click', () => {
+  const outsideState = createManualState({
+    App: createApp({ ui: { currentCurtainChoice: 'linen' } }),
+    special0: {
+      d10_full: 'glass',
+      '__wp_glass_previous_door_style__:d10_full': 'profile',
+    },
+    curtains0: { d10_full: 'linen' },
+    style0: { d10_full: 'double_profile' },
+  });
+
+  applyPaintPartMutation({
+    state: outsideState,
+    paintPartKey: 'd10_full',
+    paintSelection: 'mirror',
+    clickArgs: {
+      App: outsideState.App,
+      foundPartId: 'd10_full',
+      activeStack: 'top',
+      isPaintMode: true,
+    },
+    resolveMirrorLayout: () => ({
+      nextLayout: null,
+      removeMatch: null,
+      canApplyMirror: true,
+      hitFaceSign: 1,
+      isFullDoorMirror: true,
+    }),
+  });
+
+  assert.equal(outsideState.special.d10_full, 'mirror');
+  assert.equal(outsideState.curtains.d10_full, undefined);
+  assert.equal(outsideState.style.d10_full, 'profile');
+  assert.equal(outsideState.mirrorLayout.d10_full, undefined);
+
+  const insideState = createManualState({
+    App: createApp({ ui: { currentCurtainChoice: 'linen' } }),
+    special0: {
+      d11_full: 'glass',
+      '__wp_glass_previous_door_style__:d11_full': 'double_profile',
+    },
+    curtains0: { d11_full: 'linen' },
+    style0: { d11_full: 'profile' },
+  });
+
+  applyPaintPartMutation({
+    state: insideState,
+    paintPartKey: 'd11_full',
+    paintSelection: 'mirror',
+    clickArgs: {
+      App: insideState.App,
+      foundPartId: 'd11_full',
+      activeStack: 'top',
+      isPaintMode: true,
+    },
+    resolveMirrorLayout: () => ({
+      nextLayout: null,
+      removeMatch: null,
+      canApplyMirror: true,
+      hitFaceSign: -1,
+      isFullDoorMirror: true,
+    }),
+  });
+
+  assert.equal(insideState.special.d11_full, 'mirror');
+  assert.equal(insideState.curtains.d11_full, undefined);
+  assert.equal(insideState.style.d11_full, 'double_profile');
+  assert.deepEqual(insideState.mirrorLayout.d11_full, [{ faceSign: -1 }]);
 });
 
 test('paint special mutation treats chest drawer fronts like regular drawer fronts for mirror and glass', () => {

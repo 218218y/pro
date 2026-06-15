@@ -5,6 +5,7 @@ import { createDoorVisual } from '../esm/native/builder/visuals_and_contents_doo
 import { createGlassDoorVisual } from '../esm/native/builder/visuals_and_contents_door_visual_glass.ts';
 import { createProfileDoorVisual } from '../esm/native/builder/visuals_and_contents_door_visual_profile.ts';
 import { createStyledMirrorDoorVisual } from '../esm/native/builder/visuals_and_contents_door_visual_mirror_styled.ts';
+import { resolveMirrorLayoutForPaintClick } from '../esm/native/services/canvas_picking_paint_flow_mirror.ts';
 
 class FakeVector3 {
   constructor(x = 0, y = 0, z = 0) {
@@ -41,6 +42,26 @@ class FakeObject3D {
     }
     return child;
   }
+  worldOffset() {
+    let x = 0;
+    let y = 0;
+    let z = 0;
+    let current = this;
+    while (current) {
+      x += Number(current.position?.x || 0);
+      y += Number(current.position?.y || 0);
+      z += Number(current.position?.z || 0);
+      current = current.parent || null;
+    }
+    return { x, y, z };
+  }
+  worldToLocal(target) {
+    const offset = this.worldOffset();
+    target.x -= offset.x;
+    target.y -= offset.y;
+    target.z -= offset.z;
+    return target;
+  }
 }
 
 class FakeGroup extends FakeObject3D {}
@@ -72,6 +93,7 @@ class FakeNativeBoxGeometry {
     };
   }
 }
+class FakeBox3 {}
 
 class FakePlaneGeometry {
   constructor(...args) {
@@ -165,6 +187,7 @@ function createThree() {
   return {
     Group: FakeGroup,
     Mesh: FakeMesh,
+    Box3: FakeBox3,
     BoxGeometry: FakeBoxGeometry,
     PlaneGeometry: FakePlaneGeometry,
     Shape: FakeShape,
@@ -261,6 +284,66 @@ test('glass door visual reuses the exact profile frame and only swaps the center
   assert.ok(glassPane.geometry.args[0] < glassArgs.w);
   assert.ok(glassPane.geometry.args[1] < glassArgs.h);
   assert.equal(glassPane.material.transparent, true);
+  assert.equal(glassPane.userData?.faceSign, 1);
+  assert.equal(glassPane.userData?.faceSide, 'outside');
+  assert.equal(glassPane.userData?.__mirrorRectMinX, -(glassPane.geometry.args[0] / 2));
+  assert.equal(glassPane.userData?.__mirrorRectMaxX, glassPane.geometry.args[0] / 2);
+  assert.equal(glassPane.userData?.__mirrorRectMinY, -(glassPane.geometry.args[1] / 2));
+  assert.equal(glassPane.userData?.__mirrorRectMaxY, glassPane.geometry.args[1] / 2);
+});
+
+test('profile glass mirror clicks resolve against the glass pane so recessed outside hits stay outside', () => {
+  const glassArgs = createCommonArgs();
+  const glassVisual = createGlassDoorVisual({
+    ...glassArgs,
+    curtainType: 'none',
+    forceCurtainFix: false,
+  });
+  const glassPane = findRole(glassVisual, 'door_glass_center_panel');
+  assert.ok(glassPane);
+  glassPane.userData.partId = 'd12_full';
+  glassPane.position.z = -0.003;
+
+  const doorGroup = new glassArgs.THREE.Group();
+  doorGroup.userData = { partId: 'd12_full', __doorWidth: glassArgs.w, __doorHeight: glassArgs.h };
+  doorGroup.add(glassVisual);
+
+  const App = {
+    deps: { THREE: glassArgs.THREE },
+    store: {
+      getState: () => ({ ui: {}, config: {}, runtime: {}, mode: {} }),
+      patch() {},
+    },
+  };
+  const result = resolveMirrorLayoutForPaintClick(
+    {
+      App,
+      foundPartId: 'd12_full',
+      effectiveDoorId: 'd12_full',
+      activeStack: 'top',
+      isPaintMode: true,
+      doorHitObject: glassPane,
+      doorHitPoint: { x: 0, y: 0, z: -0.002 },
+      hitIdentity: {
+        targetKind: 'door',
+        partId: 'd12_full',
+        doorId: 'd12',
+        drawerId: null,
+        moduleIndex: null,
+        moduleStack: null,
+        surfaceId: null,
+        faceSign: 1,
+        faceSide: 'outside',
+        splitPart: 'full',
+        source: 'click',
+      },
+    },
+    []
+  );
+
+  assert.equal(result.canApplyMirror, true);
+  assert.equal(result.hitFaceSign, 1);
+  assert.equal(result.nextLayout, null);
 });
 
 test('glass door visual can reuse the double-profile frame without leaving the wood center insert behind the glass', () => {

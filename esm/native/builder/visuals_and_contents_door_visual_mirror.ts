@@ -7,6 +7,7 @@ import { createCanvasViaPlatform } from '../runtime/platform_access.js';
 import { DOOR_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { getCacheBag } from '../runtime/cache_access.js';
 import { readMirrorLayoutFaceSign, resolveMirrorPlacementListInRect } from '../features/mirror_layout.js';
+import { applyDoorFaceIdentityMetadata } from './visuals_and_contents_door_visual_tagging.js';
 import { __asCanvas, __markMirrorTracked } from './visuals_and_contents_shared.js';
 
 import type { AppContainer, MirrorLayoutList, Object3DLike, ThreeLike } from '../../../types/index.js';
@@ -123,6 +124,7 @@ export function createMirrorDoorVisual(args: MirrorDoorVisualArgs): Object3DLike
     mirrorMesh.userData = mirrorMesh.userData || {};
     mirrorMesh.userData.__keepMaterial = true;
     mirrorMesh.userData.__wpMirrorSurface = true;
+    applyDoorFaceIdentityMetadata(mirrorMesh, placementFaceSign);
     mirrorMesh.position.set(
       placement.offsetX,
       placement.offsetY,
@@ -159,6 +161,7 @@ export function createMirrorDoorVisual(args: MirrorDoorVisualArgs): Object3DLike
         marking.userData.__keepMaterial = true;
 
         const markingFaceSign = readMirrorLayoutFaceSign(placementLayout, zSign);
+        applyDoorFaceIdentityMetadata(marking, markingFaceSign);
         marking.position.set(
           placement.offsetX,
           placement.offsetY,

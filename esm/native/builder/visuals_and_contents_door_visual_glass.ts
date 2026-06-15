@@ -2,7 +2,11 @@ import { DOOR_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_s
 import { __asBufferAttribute } from './visuals_and_contents_shared.js';
 import { appendProfileDoorFrame } from './visuals_and_contents_door_visual_profile_frame.js';
 import { createDoubleProfileDoorVisual } from './visuals_and_contents_door_visual_double_profile.js';
-import { readMirrorPlacementRectMetadata } from './visuals_and_contents_door_visual_tagging.js';
+import {
+  applyDoorFaceIdentityMetadata,
+  applyMirrorPlacementRectMetadata,
+  readMirrorPlacementRectMetadata,
+} from './visuals_and_contents_door_visual_tagging.js';
 
 import type { BuilderDoorVisualFrameStyle, Object3DLike, UnknownRecord } from '../../../types/index.js';
 import type { GlassDoorVisualArgs } from './visuals_and_contents_door_visual_style_contracts.js';
@@ -177,6 +181,8 @@ function appendGlassPane(args: GlassDoorVisualArgs, glassW: number, glassH: numb
   );
   glassPane.userData = glassPane.userData || {};
   glassPane.userData.__keepMaterial = true;
+  applyDoorFaceIdentityMetadata(glassPane, zSign);
+  applyMirrorPlacementRectMetadata(glassPane, glassW, glassH);
   glassPane.renderOrder = DOOR_VISUAL_DIMENSIONS.glass.paneRenderOrder;
   glassPane.position.set(0, 0, glassFaceZ - (glassDepth / 2) * zSign);
   tagDoorVisualPart(glassPane, 'door_glass_center_panel');
@@ -235,6 +241,7 @@ function appendCurtain(args: GlassDoorVisualArgs, glassW: number, glassH: number
   const curtainMesh = new THREE.Mesh(curtainGeo, curtainMat);
   curtainMesh.userData = curtainMesh.userData || {};
   curtainMesh.userData.__keepMaterial = true;
+  applyDoorFaceIdentityMetadata(curtainMesh, zSign);
   curtainMesh.renderOrder = DOOR_VISUAL_DIMENSIONS.glass.curtainRenderOrder;
   const curtainGap = forceCurtainFix
     ? DOOR_VISUAL_DIMENSIONS.glass.curtainForcedGapM

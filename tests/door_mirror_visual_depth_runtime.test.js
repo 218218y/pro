@@ -92,6 +92,8 @@ test('mirror door visual keeps a full door slab and mounts the mirror as a proud
   const mirrorThickness = Number(mirrorMesh.geometry?.args?.[2] || 0);
   const mirrorBackFaceZ = Number(mirrorMesh.position?.z || 0) - mirrorThickness / 2;
   assert.ok(mirrorBackFaceZ > 0.02 / 2, 'mirror should sit in front of the wood face, not be half-recessed');
+  assert.equal(mirrorMesh.userData?.faceSign, 1);
+  assert.equal(mirrorMesh.userData?.faceSide, 'outside');
 });
 
 test('sized mirror placements on the back face keep the same proud add-on depth with negative faceSign', () => {
@@ -116,4 +118,6 @@ test('sized mirror placements on the back face keep the same proud add-on depth 
   assert.ok(mirrorMesh.geometry?.args?.[0] < 0.8);
   assert.ok(mirrorMesh.geometry?.args?.[1] < 2);
   assert.ok(mirrorBackFaceZ < -(0.018 / 2), 'back-face mirror should also protrude beyond the door slab');
+  assert.equal(mirrorMesh.userData?.faceSign, -1);
+  assert.equal(mirrorMesh.userData?.faceSide, 'inside');
 });

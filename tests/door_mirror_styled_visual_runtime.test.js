@@ -431,6 +431,8 @@ test('createDoorVisual routes default outside full mirror on a profile door thro
   assert.equal(visual.children[0].geometry.args[0], 0.7);
   assert.equal(visual.children[0].geometry.args[1], 1.9);
   assert.equal(visual.children[1].material.kind, 'mirror');
+  assert.equal(visual.children[1].userData?.faceSign, 1);
+  assert.equal(visual.children[1].userData?.faceSide, 'outside');
 });
 
 test('createDoorVisual keeps profile styling when the only full mirror is on the inside face', () => {
@@ -463,6 +465,8 @@ test('createDoorVisual keeps profile styling when the only full mirror is on the
 
   const mirrorPane = findRole(visual, 'door_mirror_inside_full_panel');
   assert.ok(mirrorPane);
+  assert.equal(mirrorPane.userData?.faceSign, -1);
+  assert.equal(mirrorPane.userData?.faceSide, 'inside');
   assert.equal(mirrorPane.geometry.args[0], 0.7 - FULL_MIRROR_INSET_M);
   assert.equal(mirrorPane.geometry.args[1], 1.9 - FULL_MIRROR_INSET_M);
   const mirrorThickness = mirrorPane.geometry.args[2];

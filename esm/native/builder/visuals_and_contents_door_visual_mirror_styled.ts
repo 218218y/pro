@@ -2,7 +2,10 @@ import { DOOR_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_s
 import { createProfileDoorVisual } from './visuals_and_contents_door_visual_profile.js';
 import { createDoubleProfileDoorVisual } from './visuals_and_contents_door_visual_double_profile.js';
 import { createMirrorDoorVisual } from './visuals_and_contents_door_visual_mirror.js';
-import { readMirrorPlacementRectMetadata } from './visuals_and_contents_door_visual_tagging.js';
+import {
+  applyDoorFaceIdentityMetadata,
+  readMirrorPlacementRectMetadata,
+} from './visuals_and_contents_door_visual_tagging.js';
 import { FULL_MIRROR_INSET_M } from '../../shared/mirror_layout_contracts_shared.js';
 import { readMirrorLayoutFaceSign, resolveMirrorPlacementListInRect } from '../features/mirror_layout.js';
 
@@ -208,6 +211,7 @@ export function createStyledMirrorDoorVisual(args: CreateStyledMirrorDoorVisualA
     mirrorMesh.userData = mirrorMesh.userData || {};
     mirrorMesh.userData.__keepMaterial = true;
     mirrorMesh.userData.__wpMirrorSurface = true;
+    applyDoorFaceIdentityMetadata(mirrorMesh, placementFaceSign);
     args.tagDoorVisualPart(mirrorMesh, 'door_mirror_center_panel');
     mirrorMesh.position.set(
       placement.offsetX,
@@ -243,6 +247,7 @@ export function createStyledFullMirrorDoorVisual(args: CreateStyledMirrorDoorVis
     mirrorMesh.userData.__keepMaterial = true;
     mirrorMesh.userData.__wpMirrorSurface = true;
     mirrorMesh.userData.__doorVisualRole = 'door_mirror_inside_full_panel';
+    applyDoorFaceIdentityMetadata(mirrorMesh, -1);
     mirrorMesh.position.set(
       0,
       0,

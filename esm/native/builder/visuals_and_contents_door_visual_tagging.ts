@@ -21,6 +21,16 @@ export function createDoorVisualPartTagger(args: { groovePartId?: string | null 
   return { doorOwnerPartId, tagDoorVisualPart };
 }
 
+export function applyDoorFaceIdentityMetadata(node: Object3DLike, faceSign: number): void {
+  const rec = _asObject(node);
+  if (!rec) return;
+  const userData = _asObject(rec.userData) || {};
+  rec.userData = userData;
+  const sign = faceSign < 0 ? -1 : 1;
+  userData.faceSign = sign;
+  userData.faceSide = sign < 0 ? 'inside' : 'outside';
+}
+
 export function applyMirrorPlacementRectMetadata(node: Object3DLike, width: number, height: number): void {
   const rec = _asObject(node);
   if (!rec) return;
