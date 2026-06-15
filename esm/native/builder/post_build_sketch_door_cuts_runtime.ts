@@ -12,6 +12,7 @@ import { readDoorStyleMap } from '../features/door_style_overrides.js';
 import { readManualHandlePositionForPart } from '../features/manual_handle_position.js';
 import { makeDoorRemovalChecker } from './doors_state_utils.js';
 import { readDoorVisualMapValue, readDoorVisualMirrorLayout } from './door_visual_lookup_state.js';
+import { resolveSketchGroovesEnabledFromBuildContext } from './render_interior_sketch_grooves_visibility.js';
 
 import {
   asRecord,
@@ -44,6 +45,7 @@ export function createSketchDoorCutsRuntime(args: SketchDoorCutsRuntimeArgs): Sk
   })();
 
   const groovesMap = asRecord(readKey(cfg, 'groovesMap'));
+  const groovesEnabled = resolveSketchGroovesEnabledFromBuildContext(ctx);
   const doorTrimMap = asRecord(readKey(cfg, 'doorTrimMap'));
   const curtainMap = asRecord(readKey(cfg, 'curtainMap'));
   const specialMap = asRecord(readKey(cfg, 'doorSpecialMap'));
@@ -111,6 +113,7 @@ export function createSketchDoorCutsRuntime(args: SketchDoorCutsRuntimeArgs): Sk
     doorStyle,
     doorStyleMap,
     groovesMap,
+    groovesEnabled,
     doorTrimMap,
     resolveMirrorLayout,
     isDoorRemoved,

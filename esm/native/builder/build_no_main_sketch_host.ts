@@ -295,5 +295,6 @@ export function maybeRenderNoMainSketchHost(args: {
     createInternalDrawerBox: args.createInternalDrawerBox,
     addOutlines: args.addOutlines,
     showContentsEnabled: !!args.showContentsEnabled,
+    isGroovesEnabled: readRecord(args.ui)?.groovesEnabled === true,
   });
 }

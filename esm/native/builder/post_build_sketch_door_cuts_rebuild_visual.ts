@@ -110,6 +110,7 @@ export function resolveSketchSegmentVisualFlags(args: {
   const segmentIsMirror = segmentSpecial === 'mirror';
   const segmentIsGlass = segmentSpecial === 'glass';
   const segmentHasGroove =
+    runtime.groovesEnabled !== false &&
     !segmentIsMirror &&
     !segmentIsGlass &&
     readSketchSegmentGrooveEnabled({ groovesMap, segmentPartId, sourceUserData });

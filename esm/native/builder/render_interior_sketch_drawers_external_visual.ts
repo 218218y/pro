@@ -11,6 +11,7 @@ import type {
 import { asMesh, readObject, readUnknownMap, asValueRecord } from './render_interior_sketch_shared.js';
 import { applySketchModulePickMetaDeep } from './render_interior_sketch_pick_meta.js';
 import { resolveSketchFrontVisualState } from './render_interior_sketch_visuals_door_state.js';
+import { resolveSketchGroovesEnabled } from './render_interior_sketch_grooves_visibility.js';
 
 export function addSketchExternalDrawerFrontVisual(
   context: SketchExternalDrawerRenderContext,
@@ -23,6 +24,7 @@ export function addSketchExternalDrawerFrontVisual(
   const fallbackConfig = asValueRecord(context.input.config);
   const groovesMap = readUnknownMap(cfg?.groovesMap) || readUnknownMap(fallbackConfig?.groovesMap);
   const hasGroove = !!(
+    resolveSketchGroovesEnabled(context.input) &&
     groovesMap &&
     (groovesMap[`groove_${opPlan.partId}`] != null || groovesMap[opPlan.partId] != null)
   );

@@ -59,6 +59,8 @@ export type InteriorLayoutParams = ValueRecord & {
   getPartColorValue?: BuilderPartColorResolver | null;
   addOutlines?: BuilderOutlineFn | null;
   showContentsEnabled?: unknown;
+  isGroovesEnabled?: unknown;
+  groovesEnabled?: unknown;
   isInternalDrawersEnabled?: unknown;
   createDoorVisual?: unknown;
   doorStyle?: unknown;
@@ -149,6 +151,8 @@ export function buildSketchExtrasArgs(
     createInternalDrawerBox: input.createInternalDrawerBox,
     addOutlines: input.addOutlines,
     showContentsEnabled: input.showContentsEnabled,
+    isGroovesEnabled: input.isGroovesEnabled,
+    groovesEnabled: input.groovesEnabled,
     isInternalDrawersEnabled: input.isInternalDrawersEnabled,
     addFoldedClothes: input.addFoldedClothes,
     sketchExtras: config.sketchExtras,

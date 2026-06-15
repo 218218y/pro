@@ -120,6 +120,8 @@ export type RenderInteriorSketchInput = InteriorValueRecord & {
   createInternalDrawerBox?: InteriorOpsCallable;
   addOutlines?: InteriorOpsCallable;
   showContentsEnabled?: boolean | null;
+  isGroovesEnabled?: unknown;
+  groovesEnabled?: unknown;
   isInternalDrawersEnabled?: unknown;
   internalDrawersEnabled?: unknown;
   addFoldedClothes?: InteriorOpsCallable;

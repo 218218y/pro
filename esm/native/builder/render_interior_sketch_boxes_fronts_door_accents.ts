@@ -25,6 +25,7 @@ export function appendClassicDoorAccentAndGrooves(args: {
   doorH: number;
   doorD: number;
   boxDoor: { groove?: unknown; grooveLinesCount?: unknown };
+  groovesEnabled?: boolean;
 }): void {
   const {
     App,
@@ -40,6 +41,7 @@ export function appendClassicDoorAccentAndGrooves(args: {
     doorH,
     doorD,
     boxDoor,
+    groovesEnabled = true,
   } = args;
   const accentMat = new THREE.MeshBasicMaterial({
     color: 0x2b2b2b,
@@ -107,7 +109,7 @@ export function appendClassicDoorAccentAndGrooves(args: {
     0
   );
 
-  if (boxDoor.groove === true) {
+  if (groovesEnabled && boxDoor.groove === true) {
     const grooveFillMat = new THREE.MeshStandardMaterial({
       color: 0x000000,
       roughness: 0.9,

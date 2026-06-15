@@ -127,6 +127,7 @@ test('styled sketch-box profile doors forward the stored per-box groove count in
           moduleKeyStr: 'module-A',
           bodyMat: { kind: 'body' },
           currentShelfMat: { kind: 'shelf' },
+          input: {},
           isFn: (value: unknown) => typeof value === 'function',
         },
         shell: {
@@ -176,4 +177,66 @@ test('styled sketch-box profile doors forward the stored per-box groove count in
   assert.equal(calls.length, 1);
   assert.deepEqual(calls[0][13], { grooveLinesCount: 7.8 });
   assert.equal(doorGroup.children[0], createdVisual);
+});
+
+test('styled sketch-box profile doors hide stored grooves when the global groove toggle is off', () => {
+  const calls: unknown[][] = [];
+
+  appendSketchBoxDoorCoreVisual({
+    renderArgs: {
+      frontsArgs: {
+        args: {
+          moduleKeyStr: 'module-A',
+          bodyMat: { kind: 'body' },
+          currentShelfMat: { kind: 'shelf' },
+          input: { isGroovesEnabled: false },
+          isFn: (value: unknown) => typeof value === 'function',
+        },
+        shell: {
+          boxId: 'box-1',
+        },
+      },
+    } as never,
+    doorGroup: new FakeGroup() as never,
+    layout: {
+      placement: {
+        door: {
+          groove: true,
+          grooveLinesCount: 4,
+        },
+      },
+      doorPid: 'sketch_box_1_door_sbdr_1',
+      slabLocalX: 0,
+      doorW: 0.6,
+      doorH: 1.1,
+      doorD: 0.018,
+      sharedDoorUserData: {},
+    } as never,
+    materials: {
+      doorMat: { kind: 'door' },
+      doorFaceMat: { kind: 'door-face' },
+      doorBaseMat: { kind: 'door-base' },
+    } as never,
+    visualRoute: {
+      route: 'styled',
+      effectiveDoorStyle: 'profile',
+      createDoorVisual(...args: unknown[]) {
+        calls.push(args);
+        return new FakeGroup() as never;
+      },
+      shouldUseClassicAccents: false,
+    } as never,
+    THREE: createThree() as never,
+    addOutlines: null,
+    doorVisualState: {
+      isMirror: false,
+      isGlass: false,
+      curtainType: null,
+      mirrorLayout: null,
+    },
+  });
+
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0][5], false);
+  assert.deepEqual(calls[0][13], { grooveLinesCount: 4 });
 });

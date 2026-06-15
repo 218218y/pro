@@ -12,6 +12,7 @@ import type {
 } from './render_interior_sketch_boxes_fronts_door_contracts.js';
 
 import { asValueRecord } from './render_interior_sketch_shared.js';
+import { resolveSketchGroovesEnabled } from './render_interior_sketch_grooves_visibility.js';
 
 export function appendSketchBoxDoorVisuals(args: {
   renderArgs: RenderSketchBoxDoorFrontsArgs;
@@ -27,6 +28,7 @@ export function appendSketchBoxDoorVisuals(args: {
   const { boxId: bid, isFreePlacement } = shell;
   const { placement, doorId, doorPid, slabLocalX, doorW, doorH, doorD } = layout;
   const boxDoor = placement.door;
+  const groovesEnabled = resolveSketchGroovesEnabled(input);
   const doorVisualState = resolveSketchBoxDoorVisualState(input, doorPid);
   const materials = resolveSketchBoxDoorVisualMaterials({
     renderArgs,
@@ -79,6 +81,7 @@ export function appendSketchBoxDoorVisuals(args: {
       doorH,
       doorD,
       boxDoor,
+      groovesEnabled,
     });
   }
 }

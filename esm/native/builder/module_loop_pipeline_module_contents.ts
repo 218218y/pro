@@ -142,6 +142,7 @@ export function applyModuleContents(
     createInternalDrawerBox: runtime.createInternalDrawerBox,
     addOutlines: runtime.addOutlines,
     showContentsEnabled: runtime.showContentsEnabled,
+    isGroovesEnabled: runtime.isGroovesEnabled,
     isInternalDrawersEnabled: runtime.isInternalDrawersEnabled,
   });
 

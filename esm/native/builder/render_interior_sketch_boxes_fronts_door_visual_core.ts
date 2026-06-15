@@ -11,6 +11,7 @@ import type { ResolvedSketchBoxDoorVisualMaterials } from './render_interior_ske
 import type { ResolvedSketchBoxDoorVisualRoute } from './render_interior_sketch_boxes_fronts_door_visual_routes.js';
 
 import { asMesh, readObject } from './render_interior_sketch_shared.js';
+import { resolveSketchGroovesEnabled } from './render_interior_sketch_grooves_visibility.js';
 import { applySketchBoxPickMeta, applySketchBoxPickMetaDeep } from './render_interior_sketch_pick_meta.js';
 
 export function appendSketchBoxDoorCoreVisual(args: {
@@ -30,7 +31,7 @@ export function appendSketchBoxDoorCoreVisual(args: {
 }): void {
   const { renderArgs, doorGroup, layout, materials, visualRoute, THREE, addOutlines, doorVisualState } = args;
   const { frontsArgs } = renderArgs;
-  const { moduleKeyStr, bodyMat, currentShelfMat, isFn } = frontsArgs.args;
+  const { moduleKeyStr, bodyMat, currentShelfMat, input, isFn } = frontsArgs.args;
   const { shell } = frontsArgs;
   const { boxId: bid } = shell;
   const { placement, doorPid, slabLocalX, doorW, doorH, doorD, sharedDoorUserData } = layout;
@@ -72,7 +73,7 @@ export function appendSketchBoxDoorCoreVisual(args: {
       doorD,
       materials.doorMat,
       visualRoute.effectiveDoorStyle,
-      boxDoor.groove === true,
+      resolveSketchGroovesEnabled(input) && boxDoor.groove === true,
       false,
       null,
       bodyMat || currentShelfMat || materials.doorMat,
