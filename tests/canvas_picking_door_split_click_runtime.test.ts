@@ -8,6 +8,7 @@ import {
 } from '../esm/native/services/canvas_picking_split_hover_helpers.ts';
 import { __wp_getSplitHoverRaycastRoots } from '../esm/native/services/canvas_picking_split_hover_roots.ts';
 import { tryHandleSplitDoorHover } from '../esm/native/services/canvas_picking_door_split_hover_flow.ts';
+import { hasCanvasDoorCustomSplitHeightAlignment } from '../esm/native/services/canvas_picking_door_split_hover_feedback.ts';
 import {
   readCanvasDoorSplitBounds,
   resolveCanvasDoorSplitBaseKey,
@@ -1038,7 +1039,7 @@ test('custom split hover exposes top and bottom cut-distance measurements and ma
   const marker = {
     visible: false,
     material: null as unknown,
-    userData: { __matRemove: 'remove', __matAdd: 'add', __matCenter: 'center' },
+    userData: { __matRemove: 'remove', __matAdd: 'add', __matAligned: 'center' },
     position: { copy() {} },
     quaternion: { copy() {} },
     scale: { set() {} },
@@ -1115,4 +1116,44 @@ test('custom split hover exposes top and bottom cut-distance measurements and ma
   assert.ok(measurements.every(entry => entry.styleKey === 'center'));
   assert.ok(measurements.some(entry => entry.label === '150 ס"מ' && entry.labelY > 2));
   assert.ok(measurements.some(entry => entry.label === '250 ס"מ' && entry.labelY < -2));
+});
+
+test('custom split hover alignment tolerance is tighter than same-door duplicate-cut tolerance', () => {
+  const App = {} as any;
+  const runtime: Record<string, unknown> = {
+    __splitHoverDoorBoundsByBase: {
+      d1: { minY: 0, maxY: 4 },
+      d2: { minY: 0, maxY: 4 },
+    },
+  };
+
+  const baseArgs = {
+    App,
+    currentDoorBaseKey: 'd1',
+    currentBounds: { minY: 0, maxY: 4 },
+    readSplitHoverDoorBounds(_App: unknown, key: string) {
+      return key === 'd1' || key === 'd2' ? { minY: 0, maxY: 4 } : null;
+    },
+    getCanvasPickingRuntime() {
+      return runtime as any;
+    },
+    readSplitPosList(_App: unknown, key: string) {
+      return key === 'd2' ? [0.625] : [];
+    },
+  };
+
+  assert.equal(
+    hasCanvasDoorCustomSplitHeightAlignment({
+      ...baseArgs,
+      currentYAbs: 2.507,
+    }),
+    true
+  );
+  assert.equal(
+    hasCanvasDoorCustomSplitHeightAlignment({
+      ...baseArgs,
+      currentYAbs: 2.51,
+    }),
+    false
+  );
 });

@@ -57,6 +57,7 @@ export type MarkerUserDataLike = UnknownRecord & {
   __matGroove?: unknown;
   __matMirror?: unknown;
   __matCenter?: unknown;
+  __matAligned?: unknown;
 };
 
 export type MarkerLike = {

@@ -219,7 +219,7 @@ export function tryHandleSplitDoorHover(args: SplitDoorHoverArgs): boolean {
       isRemove || isBlocked
         ? activeUd.__matRemove || activeUd.__matAdd
         : hasAlignedCut
-          ? activeUd.__matCenter || activeUd.__matAdd
+          ? activeUd.__matAligned || activeUd.__matAdd
           : activeUd.__matAdd;
   }
 

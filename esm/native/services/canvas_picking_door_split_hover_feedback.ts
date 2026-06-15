@@ -57,12 +57,18 @@ function readBounds(value: unknown): { minY: number; maxY: number } | null {
   return { minY, maxY };
 }
 
-function resolveCustomSplitAlignmentTolerance(bounds: { minY: number; maxY: number }): number {
+export function resolveCanvasDoorCustomSplitHeightAlignmentTolerance(bounds: {
+  minY: number;
+  maxY: number;
+}): number {
   const height = Math.max(0, Number(bounds.maxY) - Number(bounds.minY));
   const splitDims = DOOR_SYSTEM_DIMENSIONS.hinged.split;
   return Math.max(
-    splitDims.duplicateCutToleranceMinM,
-    Math.min(splitDims.duplicateCutToleranceMaxM, height * splitDims.duplicateCutToleranceHeightRatio)
+    splitDims.hoverCustomAlignmentToleranceMinM,
+    Math.min(
+      splitDims.hoverCustomAlignmentToleranceMaxM,
+      height * splitDims.hoverCustomAlignmentToleranceHeightRatio
+    )
   );
 }
 
@@ -94,7 +100,7 @@ export function hasCanvasDoorCustomSplitHeightAlignment(args: {
   const boundsMap = asRecord(runtime?.__splitHoverDoorBoundsByBase);
   if (!boundsMap) return false;
 
-  const tolerance = resolveCustomSplitAlignmentTolerance(args.currentBounds);
+  const tolerance = resolveCanvasDoorCustomSplitHeightAlignmentTolerance(args.currentBounds);
   for (const rawKey of Object.keys(boundsMap)) {
     const key = String(rawKey || '');
     if (!key || key === currentKey) continue;
