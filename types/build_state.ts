@@ -66,14 +66,13 @@ import type { HingedDoorOpLike, BuilderDepsResolvedLike, SavedColorLike } from '
 export interface ProjectDataLike extends UnknownRecord {
   __schema?: string;
   __version?: number;
-  __migratedFrom?: number;
   __createdAt?: string;
   __updatedAt?: string;
 
   settings?: ProjectSettingsLike;
   toggles?: ProjectTogglesLike;
 
-  // Common persisted collections / maps (legacy + v2)
+  // Current persisted collections / maps.
   modulesConfiguration?: ModulesConfigurationLike;
   stackSplitLowerModulesConfiguration?: ModulesConfigurationLike;
   cornerConfiguration?: CornerConfigurationLike;
@@ -82,10 +81,8 @@ export interface ProjectDataLike extends UnknownRecord {
   splitDoorsBottomMap?: SplitDoorsBottomMap;
   handlesMap?: HandlesMap;
   hingeMap?: HingeMap;
-  hingeDoorsMap?: HingeMap;
   removedDoorsMap?: RemovedDoorsMap;
   curtainMap?: CurtainMap;
-  grooveMap?: GroovesMap;
   groovesMap?: GroovesMap;
   grooveLinesCountMap?: GrooveLinesCountMap;
   individualColors?: IndividualColorsMap;
@@ -109,7 +106,6 @@ export interface ProjectDataEnvelopeLike extends UnknownRecord {
   payload?: ProjectDataLike;
   project?: ProjectDataLike;
   schema?: string;
-  schemaVersion?: number;
   __schema?: string;
   __version?: number;
 }

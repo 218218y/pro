@@ -9,21 +9,15 @@ import {
   buildCanonicalProjectConfigSnapshot,
   buildCanonicalProjectUiSnapshot,
   PROJECT_CONFIG_SNAPSHOT_REPLACE_KEY_ORDER,
-} from '../esm/native/io/project_migrations/index.ts';
-import {
-  assertCanonicalUiRawDims,
-  readCanonicalUiRawDimsCmFromSnapshot,
-  readUiRawScalarFromCanonicalSnapshot,
-} from '../esm/native/runtime/ui_raw_selectors.ts';
+} from '../esm/native/io/project_load_canonical_snapshot.ts';
+import { readCanonicalUiRawDimsCmFromSnapshot } from '../esm/native/runtime/ui_raw_selectors.ts';
 
 const FIXTURE_NOW_ISO = '2026-05-03T00:00:00.000Z';
 
-function readFixtureText(fileName: string): string {
-  return readFileSync(new URL(`./fixtures/project_import/${fileName}`, import.meta.url), 'utf8');
-}
-
 function readFixtureObject(fileName: string): unknown {
-  return JSON.parse(readFixtureText(fileName)) as unknown;
+  return JSON.parse(
+    readFileSync(new URL(`./fixtures/project_import/${fileName}`, import.meta.url), 'utf8')
+  ) as unknown;
 }
 
 function normalizeFixtureInput(input: unknown, label: string) {
@@ -44,80 +38,19 @@ function asArray(value: unknown, label: string): unknown[] {
   return value;
 }
 
-test('project import fixtures canonicalize an enveloped legacy project through schema, ui, and config ingress', () => {
-  const normalized = normalizeFixtureInput(
-    readFixtureText('legacy_hinged_v1_project.json'),
-    'legacy_hinged_v1_project'
-  );
-
-  assert.equal(normalized.__schema, 'wardrobepro.project');
-  assert.equal(normalized.__version, 2);
-  assert.equal(normalized.settings?.projectName, 'Legacy Hinged Import');
-
-  const loadSnapshot = buildProjectUiSnapshot(normalized, 'Fallback Project Name');
-  assert.equal(loadSnapshot.uiState.projectName, 'Legacy Hinged Import');
-  assert.equal(loadSnapshot.savedNotes.length, 1);
-  assert.equal(loadSnapshot.savedNotes[0]?.doorsOpen, true);
-
-  const canonicalUi = buildCanonicalProjectUiSnapshot(loadSnapshot.uiState);
-  const raw = assertCanonicalUiRawDims(canonicalUi, 'fixtures.legacy_hinged.ui');
-  assert.deepEqual(readCanonicalUiRawDimsCmFromSnapshot(canonicalUi, 'fixtures.legacy_hinged.ui'), {
-    widthCm: 183.5,
-    heightCm: 242,
-    depthCm: 61.2,
-    doorsCount: 4,
-    chestDrawersCount: 4,
-  });
-  assert.equal(raw.width, 183.5);
-  assert.equal(readUiRawScalarFromCanonicalSnapshot(canonicalUi, 'stackSplitLowerDepthManual'), true);
-  assert.equal(readUiRawScalarFromCanonicalSnapshot(canonicalUi, 'stackSplitLowerWidthManual'), true);
-  assert.equal(readUiRawScalarFromCanonicalSnapshot(canonicalUi, 'stackSplitLowerDoorsManual'), true);
-  assert.equal(readUiRawScalarFromCanonicalSnapshot(canonicalUi, 'cornerWidth'), 72);
-
-  const config = buildCanonicalProjectConfigSnapshot(normalized);
-  assertCanonicalProjectConfigSnapshot(config, 'fixtures.legacy_hinged.config');
-  const configRecord = config as Record<string, unknown>;
-
-  assert.equal(configRecord.wardrobeType, 'hinged');
-  assert.equal(configRecord.boardMaterial, 'melamine');
-  assert.equal(configRecord.showDimensions, false);
-  assert.equal(configRecord.isMultiColorMode, true);
-  assert.equal(configRecord.globalHandleType, 'edge');
-  assert.equal(configRecord.isLibraryMode, true);
-  assert.equal(configRecord.grooveLinesCount, 4);
-
-  const splitDoorsMap = asRecord(configRecord.splitDoorsMap, 'legacy splitDoorsMap');
-  assert.equal(splitDoorsMap.split_d1, true);
-  assert.deepEqual(splitDoorsMap.splitpos_d1, [0.33, 0.66]);
-  assert.equal(splitDoorsMap.split_d2, false);
-
-  const splitDoorsBottomMap = asRecord(configRecord.splitDoorsBottomMap, 'legacy splitDoorsBottomMap');
-  assert.equal(splitDoorsBottomMap.splitb_d1, true);
-  assert.equal(splitDoorsBottomMap.splitb_d2, false);
-
-  const removedDoorsMap = asRecord(configRecord.removedDoorsMap, 'legacy removedDoorsMap');
-  assert.equal(removedDoorsMap.removed_d4_full, true);
-  assert.equal(Object.prototype.hasOwnProperty.call(removedDoorsMap, 'junk'), false);
-
-  const doorStyleMap = asRecord(configRecord.doorStyleMap, 'legacy doorStyleMap');
-  assert.equal(doorStyleMap.d1_full, 'profile');
-  assert.equal(Object.prototype.hasOwnProperty.call(doorStyleMap, 'd1'), false);
-  assert.equal(Object.prototype.hasOwnProperty.call(doorStyleMap, 'd2'), false);
-
-  const savedColors = asArray(configRecord.savedColors, 'legacy savedColors');
-  assert.equal(savedColors.length, 1);
-  assert.equal(asRecord(savedColors[0], 'legacy saved color').id, 'matte-white');
-});
-
-test('project import fixtures materialize empty replace-owned branches as explicit clears', () => {
+test('project import fixtures load only the current project schema and keep canonical branches explicit', () => {
   const normalized = normalizeFixtureInput(
     readFixtureObject('minimal_empty_owned_branches_project.json'),
     'minimal_empty_owned_branches_project'
   );
 
+  assert.equal(normalized.__schema, 'wardrobepro.project');
+  assert.equal(normalized.__version, 2);
+  assert.equal(normalized.settings?.projectName, 'Empty Owned Branches Import');
+
   const loadSnapshot = buildProjectUiSnapshot(normalized, 'Fallback Project Name');
   const canonicalUi = buildCanonicalProjectUiSnapshot(loadSnapshot.uiState);
-  assert.deepEqual(readCanonicalUiRawDimsCmFromSnapshot(canonicalUi, 'fixtures.empty_owned.ui'), {
+  assert.deepEqual(readCanonicalUiRawDimsCmFromSnapshot(canonicalUi, 'fixtures.current_empty.ui'), {
     widthCm: 160,
     heightCm: 240,
     depthCm: 55,
@@ -126,7 +59,7 @@ test('project import fixtures materialize empty replace-owned branches as explic
   });
 
   const config = buildCanonicalProjectConfigSnapshot(normalized);
-  assertCanonicalProjectConfigSnapshot(config, 'fixtures.empty_owned.config');
+  assertCanonicalProjectConfigSnapshot(config, 'fixtures.current_empty.config');
   const configRecord = config as Record<string, unknown>;
 
   for (const key of PROJECT_CONFIG_SNAPSHOT_REPLACE_KEY_ORDER) {
@@ -174,6 +107,9 @@ test('project import fixtures materialize empty replace-owned branches as explic
   assert.deepEqual(asArray(configRecord.savedNotes, 'empty savedNotes'), []);
   assert.equal(Array.isArray(configRecord.modulesConfiguration), true);
   assert.equal(Array.isArray(configRecord.stackSplitLowerModulesConfiguration), true);
-  const cornerConfiguration = asRecord(configRecord.cornerConfiguration, 'empty cornerConfiguration');
-  assert.equal(cornerConfiguration.layout, 'shelves');
+});
+
+test('project import rejects old envelopes and missing schema metadata', () => {
+  assert.equal(normalizeProjectData({ project: { settings: { wardrobeType: 'hinged' } } }), null);
+  assert.equal(normalizeProjectData({ settings: { wardrobeType: 'hinged' }, toggles: {} }), null);
 });

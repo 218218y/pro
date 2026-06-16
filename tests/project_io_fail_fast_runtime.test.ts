@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createProjectIoOrchestrator } from '../esm/native/io/project_io_orchestrator.ts';
+import { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from '../esm/native/shared/project_schema_constants.ts';
 import { withSuppressedConsole } from './_console_silence.ts';
 
 type ProjectIoTestApp = {
@@ -180,6 +181,8 @@ function createProjectIoApp(overrides?: {
 }
 
 const VALID_PROJECT = {
+  __schema: PROJECT_SCHEMA_ID,
+  __version: PROJECT_SCHEMA_VERSION,
   settings: {
     width: 120,
     height: 240,
@@ -412,6 +415,8 @@ test('project io load accepts persisted numeric-string ui dims instead of reject
 
   const result = orchestrator.loadProjectData(
     {
+      __schema: PROJECT_SCHEMA_ID,
+      __version: PROJECT_SCHEMA_VERSION,
       settings: {
         width: '160',
         height: '240',

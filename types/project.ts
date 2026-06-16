@@ -3,7 +3,7 @@
 // Goal:
 // - Give project load/save/schema code a stable typed surface.
 // - Reuse named map types instead of ad-hoc loose bags.
-// - Keep legacy index signatures so migration can remain incremental where needed.
+// - Keep index signatures for future persisted fields without reintroducing legacy-load branches.
 
 import type { UnknownRecord } from './common';
 import type { SavedNote } from './notes';
@@ -56,13 +56,6 @@ export interface ProjectFileReaderEventLike extends UnknownRecord {
 }
 
 export interface ProjectSettingsLike extends UnknownRecord {
-  modulesConfiguration?: ModulesConfigurationLike;
-  stackSplitLowerModulesConfiguration?: ModulesConfigurationLike;
-
-  doorsCount?: number;
-  wardrobeWidth?: number;
-  wardrobeHeight?: number;
-
   width?: number;
   height?: number;
   depth?: number;
@@ -101,7 +94,6 @@ export interface ProjectSettingsLike extends UnknownRecord {
   slidingTracksColor?: 'black' | 'nickel' | string;
   structureSelection?: string;
   singleDoorPos?: string;
-  singleDoorPosition?: string;
   doorStyle?: string;
   corniceType?: string;
   color?: string;

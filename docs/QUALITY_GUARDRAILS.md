@@ -139,10 +139,10 @@ npm run e2e:cloud-sync-reconnect
 ## Project load and runtime selectors
 
 - Project compatibility belongs at project ingress, not inside the live runtime/build path.
-- Old persisted shapes may be converted once in `esm/native/io/project_migrations/`.
-- After load/import migration, runtime and builder paths should read canonical state only.
+- Project files must already use the current top-level schema metadata; old persisted shapes are rejected at project ingress.
+- After load/import canonicalization, runtime and builder paths should read canonical state only.
 - Tolerant compatibility readers may remain for staged migration, but new live paths should prefer canonical readers/assertions.
-- Real project import fixtures under `tests/fixtures/project_import/` guard string/envelope ingress, canonical `ui.raw` materialization, config replace-owned branches, and map cleanup behavior.
+- Real project import fixtures under `tests/fixtures/project_import/` guard current-schema ingress, canonical `ui.raw` validation, config replace-owned branches, and map cleanup behavior.
 
 Relevant checks:
 

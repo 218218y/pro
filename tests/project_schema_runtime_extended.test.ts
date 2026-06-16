@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { normalizeProjectData } from '../esm/native/io/project_schema.ts';
+import { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from '../esm/native/shared/project_schema_constants.ts';
 import { deepCloneProjectJson } from '../esm/native/io/project_schema_shared.ts';
 
 test('project schema deep clone fallback detaches cyclic payloads instead of returning live references', () => {
@@ -22,6 +23,8 @@ test('project schema deep clone fallback detaches cyclic payloads instead of ret
 
 test('project schema normalization detaches custom payload state when JSON clone path would fail', () => {
   const raw: any = {
+    __schema: PROJECT_SCHEMA_ID,
+    __version: PROJECT_SCHEMA_VERSION,
     settings: { wardrobeType: 'sliding', projectName: 'Cycle demo' },
     toggles: { multiColor: true },
     customMeta: { nested: { enabled: true } },
@@ -36,5 +39,5 @@ test('project schema normalization detaches custom payload state when JSON clone
 
   (normalized as any).customMeta.nested.enabled = false;
   assert.equal(raw.customMeta.nested.enabled, true);
-  assert.equal((normalized as any).__schema, 'wardrobepro.project');
+  assert.equal((normalized as any).__schema, PROJECT_SCHEMA_ID);
 });

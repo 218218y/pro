@@ -15,15 +15,13 @@ import {
   unwrapProjectEnvelope as unwrapProjectEnvelopeImpl,
 } from './project_schema_shared.js';
 import {
-  migrateProjectData as migrateProjectDataImpl,
   normalizeSplitDoorsBottomMap as normalizeSplitDoorsBottomMapImpl,
   normalizeSplitDoorsMap as normalizeSplitDoorsMapImpl,
-} from './project_schema_migrate.js';
+} from './project_schema_door_maps.js';
 import { normalizeProjectData as normalizeProjectDataImpl } from './project_schema_normalize.js';
 import { validateProjectData as validateProjectDataImpl } from './project_schema_validation.js';
 
-// Project file schema (v2): migrate on load, stamp on save.
-// Payload shape stays stable; metadata fields are prefixed with "__" so older readers can ignore them.
+// Project file schema (v2): strict current-schema load, stamp on save.
 export { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION };
 
 export function asObject(x: unknown): UnknownRecord {
@@ -50,10 +48,6 @@ export function normalizeSplitDoorsMap(map: unknown): SplitDoorsMap {
 // Bottom split map keys: splitb_dX (opt-in). Normalize keys similarly to splitDoorsMap.
 export function normalizeSplitDoorsBottomMap(map: unknown): SplitDoorsBottomMap {
   return normalizeSplitDoorsBottomMapImpl(map);
-}
-
-export function migrateProjectData(data: ProjectDataLike, nowISO?: string): ProjectDataLike {
-  return migrateProjectDataImpl(data, nowISO);
 }
 
 export function validateProjectData(data: ProjectDataLike): ProjectSchemaValidationResult {

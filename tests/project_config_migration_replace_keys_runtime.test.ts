@@ -5,14 +5,14 @@ import {
   assertCanonicalProjectConfigSnapshot,
   buildCanonicalProjectConfigSnapshot,
   isProjectConfigSnapshotReplaceKey,
-  PROJECT_CONFIG_MIGRATION_REQUIRED_KEYS,
-  PROJECT_CONFIG_SCALAR_MIGRATION_REQUIRED_KEYS,
+  PROJECT_CONFIG_SNAPSHOT_REQUIRED_KEYS,
+  PROJECT_CONFIG_SCALAR_REQUIRED_KEYS,
   PROJECT_CONFIG_SNAPSHOT_REPLACE_KEY_ORDER,
   PROJECT_CONFIG_SNAPSHOT_REPLACE_KEYS,
   type ProjectConfigSnapshotReplaceKey,
-} from '../esm/native/io/project_migrations/config_snapshot_migration.ts';
+} from '../esm/native/io/project_load_canonical_snapshot.ts';
 
-test('project config migration materializes every replace-owned branch so project load can clear stale state', () => {
+test('project config canonical snapshot materializes every replace-owned branch so project load can clear stale state', () => {
   const cfg = buildCanonicalProjectConfigSnapshot({
     settings: {
       width: 160,
@@ -34,14 +34,14 @@ test('project config migration materializes every replace-owned branch so projec
       `${key} must not be undefined on canonical project config snapshots`
     );
     assert.equal(
-      PROJECT_CONFIG_MIGRATION_REQUIRED_KEYS.includes(key),
+      PROJECT_CONFIG_SNAPSHOT_REQUIRED_KEYS.includes(key),
       true,
       `${key} must be part of the canonical project config required-key contract`
     );
   }
 });
 
-test('project config migration fails fast when a replace-owned branch is missing', () => {
+test('project config canonical snapshot fails fast when a replace-owned branch is missing', () => {
   const cfg = buildCanonicalProjectConfigSnapshot({ settings: {} }) as Record<string, unknown>;
   delete cfg.removedDoorsMap;
 
@@ -70,13 +70,12 @@ test('project config replace-key owner remains immutable and reusable by project
 
 test('project config replace-key required contract is deterministic and type-narrowed', () => {
   assert.deepEqual(
-    PROJECT_CONFIG_MIGRATION_REQUIRED_KEYS.slice(0, PROJECT_CONFIG_SCALAR_MIGRATION_REQUIRED_KEYS.length),
-    [...PROJECT_CONFIG_SCALAR_MIGRATION_REQUIRED_KEYS]
+    PROJECT_CONFIG_SNAPSHOT_REQUIRED_KEYS.slice(0, PROJECT_CONFIG_SCALAR_REQUIRED_KEYS.length),
+    [...PROJECT_CONFIG_SCALAR_REQUIRED_KEYS]
   );
-  assert.deepEqual(
-    PROJECT_CONFIG_MIGRATION_REQUIRED_KEYS.slice(PROJECT_CONFIG_SCALAR_MIGRATION_REQUIRED_KEYS.length),
-    [...PROJECT_CONFIG_SNAPSHOT_REPLACE_KEY_ORDER]
-  );
+  assert.deepEqual(PROJECT_CONFIG_SNAPSHOT_REQUIRED_KEYS.slice(PROJECT_CONFIG_SCALAR_REQUIRED_KEYS.length), [
+    ...PROJECT_CONFIG_SNAPSHOT_REPLACE_KEY_ORDER,
+  ]);
 
   const candidate = 'removedDoorsMap';
   assert.equal(isProjectConfigSnapshotReplaceKey(candidate), true);

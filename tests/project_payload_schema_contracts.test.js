@@ -14,7 +14,7 @@ const projectSchema = bundleSources(
   [
     '../esm/native/io/project_schema.ts',
     '../esm/native/io/project_schema_shared.ts',
-    '../esm/native/io/project_schema_migrate.ts',
+    '../esm/native/io/project_schema_current.ts',
   ],
   import.meta.url
 );
@@ -152,7 +152,7 @@ test('project payload/schema contracts stay typed across types, schema normaliza
       /function ensureTogglesRecord\(data: ProjectDataLike\): ProjectTogglesLike & UnknownRecord/,
       /function readSavedNotes\(value: unknown\): ProjectSavedNotesLike \{/,
       /project_schema_shared\.js/,
-      /project_schema_migrate\.js/,
+      /project_schema_current\.js/,
       /project_schema_normalize\.js/,
       /project_schema_validation\.js/,
     ],

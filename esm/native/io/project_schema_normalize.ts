@@ -1,11 +1,12 @@
 import type { ProjectDataLike } from '../../../types/index.js';
 
 import { canonicalizeProjectPayloadConfigSlicesInPlace } from './project_payload_canonical.js';
-import { migrateProjectData } from './project_schema_migrate.js';
+import { normalizeCurrentProjectData } from './project_schema_current.js';
 import {
   cloneProjectJson,
   deepCloneProjectJson,
   ensureProjectDataRecord,
+  hasCurrentProjectSchema,
   readPreChestState,
   readSavedNotes,
   safeJsonParse,
@@ -16,26 +17,26 @@ import { validateProjectData } from './project_schema_validation.js';
 export function normalizeProjectData(input: unknown, nowISO?: string): ProjectDataLike | null {
   if (typeof input === 'string') input = safeJsonParse(input);
   const data = unwrapProjectEnvelope(input);
-  if (!data || typeof data !== 'object') return null;
+  if (!data || typeof data !== 'object' || !hasCurrentProjectSchema(data)) return null;
 
   const cloned = ensureProjectDataRecord(deepCloneProjectJson(data));
-  const migrated = migrateProjectData(cloned, nowISO);
-  if (Object.prototype.hasOwnProperty.call(migrated, 'savedNotes'))
-    migrated.savedNotes = readSavedNotes(migrated.savedNotes);
-  if (Object.prototype.hasOwnProperty.call(migrated, 'notes'))
-    migrated.notes = readSavedNotes(migrated.notes);
-  if (Object.prototype.hasOwnProperty.call(migrated, 'orderPdfEditorDraft')) {
-    migrated.orderPdfEditorDraft = cloneProjectJson(migrated.orderPdfEditorDraft);
+  const normalized = normalizeCurrentProjectData(cloned, nowISO);
+  if (Object.prototype.hasOwnProperty.call(normalized, 'savedNotes'))
+    normalized.savedNotes = readSavedNotes(normalized.savedNotes);
+  if (Object.prototype.hasOwnProperty.call(normalized, 'notes'))
+    normalized.notes = readSavedNotes(normalized.notes);
+  if (Object.prototype.hasOwnProperty.call(normalized, 'orderPdfEditorDraft')) {
+    normalized.orderPdfEditorDraft = cloneProjectJson(normalized.orderPdfEditorDraft);
   }
-  if (Object.prototype.hasOwnProperty.call(migrated, 'preChestState')) {
-    migrated.preChestState = readPreChestState(migrated.preChestState);
+  if (Object.prototype.hasOwnProperty.call(normalized, 'preChestState')) {
+    normalized.preChestState = readPreChestState(normalized.preChestState);
   }
 
-  canonicalizeProjectPayloadConfigSlicesInPlace(migrated);
+  canonicalizeProjectPayloadConfigSlicesInPlace(normalized);
 
-  const validation = validateProjectData(migrated);
-  migrated.__validation = validation;
+  const validation = validateProjectData(normalized);
+  normalized.__validation = validation;
 
   if (!validation.ok) return null;
-  return migrated;
+  return normalized;
 }

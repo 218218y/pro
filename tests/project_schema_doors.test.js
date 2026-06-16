@@ -87,42 +87,39 @@ test('project_schema: normalizeSplitDoorsBottomMap normalizes splitBottom_* and 
   assert.equal(Object.prototype.hasOwnProperty.call(out, 'splitBottom_d7_full'), false);
 });
 
-test('project_schema: detectProjectSchemaVersion prefers __version, then version, then schemaVersion', async () => {
+test('project_schema: detectProjectSchemaVersion accepts only the current __version field', async () => {
   const { detectProjectSchemaVersion } = await schemaMod();
 
   assert.equal(detectProjectSchemaVersion({ __version: 2, version: 1, schemaVersion: 7 }), 2);
-  assert.equal(detectProjectSchemaVersion({ version: 3, schemaVersion: 7 }), 3);
-  assert.equal(detectProjectSchemaVersion({ schemaVersion: 4 }), 4);
+  assert.equal(detectProjectSchemaVersion({ version: 3, schemaVersion: 7 }), 0);
+  assert.equal(detectProjectSchemaVersion({ schemaVersion: 4 }), 0);
   assert.equal(detectProjectSchemaVersion({}), 0);
 });
 
-test('project_schema: migrateProjectData stamps schema metadata, keeps canonical maps, and strips deprecated compat fields', async () => {
-  const { migrateProjectData, PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } = await schemaMod();
+test('project_schema: normalizeProjectData accepts only current-schema project data', async () => {
+  const { normalizeProjectData, PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } = await schemaMod();
 
   const data = {
-    // intentionally missing settings + maps
-    doorsCount: 3,
-    wardrobeWidth: 120,
-    wardrobeHeight: 240,
-    hingeDoorsMap: { d9: 'left' },
-    grooveMap: { legacy_groove: true },
+    __schema: PROJECT_SCHEMA_ID,
+    __version: PROJECT_SCHEMA_VERSION,
     settings: {
-      modulesConfiguration: [{ legacy: true }],
-      stackSplitLowerModulesConfiguration: [{ legacy: 'lower' }],
-      isLibraryMode: true,
-      preChestState: { open: true },
+      wardrobeType: 'hinged',
+      width: 120,
+      height: 240,
+      depth: 60,
+      doors: 3,
     },
+    toggles: {},
     splitDoorsMap: { split_d1_full: true },
   };
 
-  const out = migrateProjectData(data, '2026-02-04T00:00:00.000Z');
+  const out = normalizeProjectData(data, '2026-02-04T00:00:00.000Z');
 
+  assert.ok(out);
   assert.equal(out.__schema, PROJECT_SCHEMA_ID);
   assert.equal(out.__version, PROJECT_SCHEMA_VERSION);
   assert.equal(out.__createdAt, '2026-02-04T00:00:00.000Z');
-
-  // maps are objects after migrate
-  assert.ok(out.splitDoorsMap && typeof out.splitDoorsMap === 'object');
+  assert.equal(out.splitDoorsMap.split_d1, true);
   assert.ok(out.splitDoorsBottomMap && typeof out.splitDoorsBottomMap === 'object');
   assert.ok(out.handlesMap && typeof out.handlesMap === 'object');
   assert.ok(out.hingeMap && typeof out.hingeMap === 'object');
@@ -131,24 +128,8 @@ test('project_schema: migrateProjectData stamps schema metadata, keeps canonical
   assert.ok(out.curtainMap && typeof out.curtainMap === 'object');
   assert.ok(out.groovesMap && typeof out.groovesMap === 'object');
 
-  // deprecated compat fields are no longer migrated forward
-  assert.equal(Object.prototype.hasOwnProperty.call(out, 'doorsCount'), false);
-  assert.equal(Object.prototype.hasOwnProperty.call(out, 'wardrobeWidth'), false);
-  assert.equal(Object.prototype.hasOwnProperty.call(out, 'wardrobeHeight'), false);
-  assert.equal(Object.prototype.hasOwnProperty.call(out, 'hingeDoorsMap'), false);
-  assert.equal(Object.prototype.hasOwnProperty.call(out, 'grooveMap'), false);
-  assert.equal(Object.prototype.hasOwnProperty.call(out.settings, 'modulesConfiguration'), false);
-  assert.equal(
-    Object.prototype.hasOwnProperty.call(out.settings, 'stackSplitLowerModulesConfiguration'),
-    false
-  );
-  assert.equal(Object.prototype.hasOwnProperty.call(out.settings, 'isLibraryMode'), false);
-  assert.equal(Object.prototype.hasOwnProperty.call(out.settings, 'preChestState'), false);
-  assert.deepEqual(out.hingeMap, {});
-  assert.deepEqual(out.groovesMap, {});
-
-  // normalized key
-  assert.equal(out.splitDoorsMap.split_d1, true);
+  assert.equal(normalizeProjectData({ settings: data.settings, toggles: {} }), null);
+  assert.equal(normalizeProjectData({ project: data }), null);
 });
 
 test('project_schema: validateProjectData fails when settings is missing', async () => {

@@ -1,19 +1,19 @@
 # Legacy / fallback audit
 
-Generated at: 2026-06-02T08:59:37.127Z
+Generated at: 2026-06-16T07:14:11.987Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **513**
-- Files with occurrences: **165**
+- Total categorized occurrences: **503**
+- Files with occurrences: **161**
 - Category counts:
   - `runtime-default`: **0**
-  - `domain-default`: **190**
+  - `domain-default`: **188**
   - `error-message-default`: **29**
   - `framework-default`: **2**
   - `browser-adapter`: **40**
-  - `project-migration`: **49**
+  - `project-migration`: **41**
   - `external-api-compat`: **12**
   - `compat-boundary`: **185**
   - `test-fixture`: **6**
@@ -55,7 +55,6 @@ Generated at: 2026-06-02T08:59:37.127Z
 - `esm/native/kernel/domain_api_surface_sections_map_writes.ts` - **6** (compat-boundary: 3, domain-default: 3)
 - `esm/native/kernel/domain_module_stack_patch.ts` - **6** (compat-boundary: 5, project-migration: 1)
 - `esm/native/ui/react/tabs/settings_visual_shared_room.ts` - **6** (domain-default: 6)
-- `esm/native/io/project_schema_migrations_settings.ts` - **5** (project-migration: 5)
 - `esm/native/kernel/cfg_meta.ts` - **5** (domain-default: 5)
 - `esm/native/services/canvas_picking_hover_targets_interior_scan.ts` - **5** (domain-default: 5)
 - `esm/native/services/canvas_picking_selector_internal_metrics.ts` - **5** (domain-default: 5)
@@ -65,6 +64,7 @@ Generated at: 2026-06-02T08:59:37.127Z
 - `esm/test_no_side_effects_on_import.mjs` - **5** (test-fixture: 5)
 - `esm/native/builder/visuals_and_contents.ts` - **4** (compat-boundary: 4)
 - `esm/native/features/door_trim_map.ts` - **4** (domain-default: 4)
+- `esm/native/kernel/domain_api_surface_sections_bindings_drawers_dividers.ts` - **4** (domain-default: 4)
 
 ## Allowlist check
 

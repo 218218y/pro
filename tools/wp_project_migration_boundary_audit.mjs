@@ -4,8 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const PROJECT_LOAD_FILE = 'esm/native/io/project_io_orchestrator_project_load.ts';
-const PROJECT_CONFIG_MIGRATION_FILE = 'esm/native/io/project_migrations/config_snapshot_migration.ts';
-const PROJECT_MIGRATION_INDEX_FILE = 'esm/native/io/project_migrations/index.ts';
+const PROJECT_CANONICAL_SNAPSHOT_FILE = 'esm/native/io/project_load_canonical_snapshot.ts';
 const UI_RAW_SELECTORS_FILE = 'esm/native/runtime/ui_raw_selectors.ts';
 const RUNTIME_ROOT = 'esm/native/runtime';
 
@@ -17,6 +16,10 @@ const PROJECT_CONFIG_SCALAR_REQUIRED_KEYS = [
   'isMultiColorMode',
   'isLibraryMode',
   'grooveLinesCount',
+  'overlayFrameThicknessCm',
+  'overlayShelfThicknessCm',
+  'insetFrameThicknessCm',
+  'insetShelfThicknessCm',
 ];
 
 const PROJECT_CONFIG_REPLACE_KEYS = [
@@ -28,6 +31,7 @@ const PROJECT_CONFIG_REPLACE_KEYS = [
   'splitDoorsMap',
   'splitDoorsBottomMap',
   'removedDoorsMap',
+  'roundedFrameSideShelvesMap',
   'drawerDividersMap',
   'individualColors',
   'doorSpecialMap',
@@ -72,16 +76,18 @@ function requireNoNeedle(failures, label, source, needle, message) {
   if (source.includes(needle)) failures.push(`${label}: ${message || `must not contain ${needle}`}`);
 }
 
-function findRuntimeImportsFromProjectMigrations(projectRoot) {
+function findRuntimeImportsFromProjectCanonicalSnapshot(projectRoot) {
   const failures = [];
   for (const file of walkFiles(path.join(projectRoot, RUNTIME_ROOT))) {
     const rel = path.relative(projectRoot, file).split(path.sep).join('/');
     const text = read(file);
     if (
+      /from\s+['"][.\/]+io\/project_load_canonical_snapshot/.test(text) ||
+      /from\s+['"][.\/]+project_load_canonical_snapshot/.test(text) ||
       /from\s+['"][.\/]+io\/project_migrations\//.test(text) ||
       /from\s+['"][.\/]+project_migrations\//.test(text)
     ) {
-      failures.push(`${rel} imports the project migration boundary; runtime must stay below IO.`);
+      failures.push(`${rel} imports the project-load canonicalization boundary; runtime must stay below IO.`);
     }
   }
   return failures;
@@ -103,34 +109,37 @@ function requireOrderedNeedles(failures, label, source, needles, message) {
 export function runProjectMigrationBoundaryAudit(projectRoot = process.cwd()) {
   const failures = [];
   const projectLoadPath = path.join(projectRoot, PROJECT_LOAD_FILE);
-  const configMigrationPath = path.join(projectRoot, PROJECT_CONFIG_MIGRATION_FILE);
-  const migrationIndexPath = path.join(projectRoot, PROJECT_MIGRATION_INDEX_FILE);
+  const canonicalSnapshotPath = path.join(projectRoot, PROJECT_CANONICAL_SNAPSHOT_FILE);
   const uiRawSelectorsPath = path.join(projectRoot, UI_RAW_SELECTORS_FILE);
 
   if (!fs.existsSync(projectLoadPath)) failures.push(`${PROJECT_LOAD_FILE} is missing.`);
-  if (!fs.existsSync(configMigrationPath)) failures.push(`${PROJECT_CONFIG_MIGRATION_FILE} is missing.`);
-  if (!fs.existsSync(migrationIndexPath)) failures.push(`${PROJECT_MIGRATION_INDEX_FILE} is missing.`);
+  if (!fs.existsSync(canonicalSnapshotPath)) failures.push(`${PROJECT_CANONICAL_SNAPSHOT_FILE} is missing.`);
   if (!fs.existsSync(uiRawSelectorsPath)) failures.push(`${UI_RAW_SELECTORS_FILE} is missing.`);
 
   if (fs.existsSync(projectLoadPath)) {
     const projectLoad = read(projectLoadPath);
-    if (!projectLoad.includes("from './project_migrations/index.js'")) {
+    if (!projectLoad.includes("from './project_load_canonical_snapshot.js'")) {
       failures.push(
-        'project load must use the project_migrations owner for project-ingress UI raw canonicalization.'
+        'project load must use the project-load canonical snapshot owner for current-schema ingress.'
       );
+    }
+    if (/project_migrations|project_schema_migrations|project_schema_migrate/.test(projectLoad)) {
+      failures.push('project load must not import or reference deleted legacy migration owners.');
     }
     if (/ensureUiRawDimsFromSnapshot|hasEssentialUiDimsFromSnapshot/.test(projectLoad)) {
       failures.push('project load must not use runtime fail-soft ui.raw completion helpers directly.');
     }
     if (!/assertCanonicalUiRawDims\(/.test(projectLoad)) {
-      failures.push('project load must assert canonical ui.raw dimensions after project migration.');
+      failures.push(
+        'project load must assert canonical ui.raw dimensions after current-schema canonicalization.'
+      );
     }
     requireNeedle(
       failures,
       PROJECT_LOAD_FILE,
       projectLoad,
       'PROJECT_CONFIG_SNAPSHOT_REPLACE_KEYS',
-      'project load must use the migration-owned config replace-key map'
+      'project load must use the canonical snapshot config replace-key map'
     );
     requireNoNeedle(
       failures,
@@ -141,103 +150,113 @@ export function runProjectMigrationBoundaryAudit(projectRoot = process.cwd()) {
     );
   }
 
-  if (fs.existsSync(configMigrationPath)) {
-    const configMigration = read(configMigrationPath);
+  if (fs.existsSync(canonicalSnapshotPath)) {
+    const canonicalSnapshot = read(canonicalSnapshotPath);
     requireNeedle(
       failures,
-      PROJECT_CONFIG_MIGRATION_FILE,
-      configMigration,
-      'PROJECT_CONFIG_SCALAR_MIGRATION_REQUIRED_KEYS',
-      'config migration owner must define deterministic scalar required-key order'
+      PROJECT_CANONICAL_SNAPSHOT_FILE,
+      canonicalSnapshot,
+      'PROJECT_CONFIG_SCALAR_REQUIRED_KEYS',
+      'canonical snapshot owner must define deterministic scalar required-key order'
     );
     requireNeedle(
       failures,
-      PROJECT_CONFIG_MIGRATION_FILE,
-      configMigration,
+      PROJECT_CANONICAL_SNAPSHOT_FILE,
+      canonicalSnapshot,
       'PROJECT_CONFIG_SNAPSHOT_REPLACE_KEY_ORDER',
-      'config migration owner must define deterministic project-load replace-owned branches'
+      'canonical snapshot owner must define deterministic project-load replace-owned branches'
     );
     requireNeedle(
       failures,
-      PROJECT_CONFIG_MIGRATION_FILE,
-      configMigration,
+      PROJECT_CANONICAL_SNAPSHOT_FILE,
+      canonicalSnapshot,
       'buildProjectConfigSnapshotReplaceKeyMap',
-      'config migration replace-key map must be derived from the deterministic owner order'
+      'canonical snapshot replace-key map must be derived from the deterministic owner order'
     );
     requireNeedle(
       failures,
-      PROJECT_CONFIG_MIGRATION_FILE,
-      configMigration,
+      PROJECT_CANONICAL_SNAPSHOT_FILE,
+      canonicalSnapshot,
       'isProjectConfigSnapshotReplaceKey',
-      'config migration owner must expose a type-narrowing replace-key guard'
+      'canonical snapshot owner must expose a type-narrowing replace-key guard'
     );
     requireNeedle(
       failures,
-      PROJECT_CONFIG_MIGRATION_FILE,
-      configMigration,
-      'PROJECT_CONFIG_MIGRATION_REQUIRED_KEYS',
-      'config migration owner must include replace-owned branches in the canonical required-key contract'
+      PROJECT_CANONICAL_SNAPSHOT_FILE,
+      canonicalSnapshot,
+      'PROJECT_CONFIG_SNAPSHOT_REQUIRED_KEYS',
+      'canonical snapshot owner must include replace-owned branches in the canonical required-key contract'
+    );
+    requireNeedle(
+      failures,
+      PROJECT_CANONICAL_SNAPSHOT_FILE,
+      canonicalSnapshot,
+      'canonicalizeProjectUiSnapshot',
+      'canonical snapshot owner must expose ui.raw canonicalization'
+    );
+    requireNeedle(
+      failures,
+      PROJECT_CANONICAL_SNAPSHOT_FILE,
+      canonicalSnapshot,
+      'buildCanonicalProjectUiSnapshot',
+      'canonical snapshot owner must expose project-load ui.raw canonical snapshots'
     );
     requireNoNeedle(
       failures,
-      PROJECT_CONFIG_MIGRATION_FILE,
-      configMigration,
+      PROJECT_CANONICAL_SNAPSHOT_FILE,
+      canonicalSnapshot,
+      'filledKeys',
+      'current-schema ui.raw canonicalization must not fill from old top-level UI fields'
+    );
+    requireNoNeedle(
+      failures,
+      PROJECT_CANONICAL_SNAPSHOT_FILE,
+      canonicalSnapshot,
+      'source[key]',
+      'current-schema ui.raw canonicalization must not read old top-level UI scalar fields'
+    );
+    requireNoNeedle(
+      failures,
+      PROJECT_CANONICAL_SNAPSHOT_FILE,
+      canonicalSnapshot,
       '...Object.keys(PROJECT_CONFIG_SNAPSHOT_REPLACE_KEYS)',
       'required-key contract must not depend on object-key enumeration order'
     );
     requireOrderedNeedles(
       failures,
-      PROJECT_CONFIG_MIGRATION_FILE,
-      configMigration,
+      PROJECT_CANONICAL_SNAPSHOT_FILE,
+      canonicalSnapshot,
       [
-        'PROJECT_CONFIG_SCALAR_MIGRATION_REQUIRED_KEYS',
+        'PROJECT_CONFIG_SCALAR_REQUIRED_KEYS',
         'PROJECT_CONFIG_SNAPSHOT_REPLACE_KEY_ORDER',
         'PROJECT_CONFIG_SNAPSHOT_REPLACE_KEYS',
-        'PROJECT_CONFIG_MIGRATION_REQUIRED_KEYS',
+        'PROJECT_CONFIG_SNAPSHOT_REQUIRED_KEYS',
       ],
-      'config migration owner order must stay scalar keys -> replace-key order -> map -> required keys'
+      'canonical snapshot owner order must stay scalar keys -> replace-key order -> map -> required keys'
     );
     for (const key of PROJECT_CONFIG_SCALAR_REQUIRED_KEYS) {
       requireNeedle(
         failures,
-        PROJECT_CONFIG_MIGRATION_FILE,
-        configMigration,
+        PROJECT_CANONICAL_SNAPSHOT_FILE,
+        canonicalSnapshot,
         `'${key}'`,
-        `config migration scalar required-key order must include ${key}`
+        `canonical snapshot scalar required-key order must include ${key}`
       );
     }
     for (const key of PROJECT_CONFIG_REPLACE_KEYS) {
       requireNeedle(
         failures,
-        PROJECT_CONFIG_MIGRATION_FILE,
-        configMigration,
+        PROJECT_CANONICAL_SNAPSHOT_FILE,
+        canonicalSnapshot,
         `'${key}'`,
-        `config migration replace-key order must include ${key}`
+        `canonical snapshot replace-key order must include ${key}`
       );
       requireNeedle(
         failures,
-        PROJECT_CONFIG_MIGRATION_FILE,
-        configMigration,
+        PROJECT_CANONICAL_SNAPSHOT_FILE,
+        canonicalSnapshot,
         `out[key] = true`,
-        'config migration replace-key map must be built from the owner order'
-      );
-    }
-  }
-
-  if (fs.existsSync(migrationIndexPath)) {
-    const migrationIndex = read(migrationIndexPath);
-    for (const symbol of [
-      'PROJECT_CONFIG_SCALAR_MIGRATION_REQUIRED_KEYS',
-      'PROJECT_CONFIG_SNAPSHOT_REPLACE_KEY_ORDER',
-      'PROJECT_CONFIG_SNAPSHOT_REPLACE_KEYS',
-      'isProjectConfigSnapshotReplaceKey',
-    ]) {
-      requireNeedle(
-        failures,
-        PROJECT_MIGRATION_INDEX_FILE,
-        migrationIndex,
-        symbol,
-        `project migrations barrel must export ${symbol}`
+        'canonical snapshot replace-key map must be built from the owner order'
       );
     }
   }
@@ -255,7 +274,7 @@ export function runProjectMigrationBoundaryAudit(projectRoot = process.cwd()) {
     }
   }
 
-  failures.push(...findRuntimeImportsFromProjectMigrations(projectRoot));
+  failures.push(...findRuntimeImportsFromProjectCanonicalSnapshot(projectRoot));
   return { ok: failures.length === 0, failures };
 }
 
@@ -266,7 +285,7 @@ function main() {
     process.exitCode = 1;
     return;
   }
-  console.log('Project migration boundary audit passed.');
+  console.log('Project canonical snapshot boundary audit passed.');
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

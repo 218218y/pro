@@ -163,7 +163,7 @@ export function buildProjectUiSnapshot(
       stackSplitLowerWidthManual: lowerWidthManual,
       stackSplitLowerDoorsManual: lowerDoorsManual,
       structureSelect: settings.structureSelection,
-      singleDoorPos: settings.singleDoorPos || settings.singleDoorPosition || 'left',
+      singleDoorPos: settings.singleDoorPos || 'left',
     },
     projectName: readLoadedProjectName(rec, settings, currentProjectName),
     doors: settings.doors,
@@ -182,7 +182,7 @@ export function buildProjectUiSnapshot(
     baseLegWidthCm: settings.baseLegWidthCm,
     slidingTracksColor: settings.slidingTracksColor === 'black' ? 'black' : 'nickel',
     structureSelect: settings.structureSelection,
-    singleDoorPos: settings.singleDoorPos || settings.singleDoorPosition || 'left',
+    singleDoorPos: settings.singleDoorPos || 'left',
     doorStyle: settings.doorStyle,
 
     corniceType: String(settings.corniceType || 'classic').toLowerCase() === 'wave' ? 'wave' : 'classic',
