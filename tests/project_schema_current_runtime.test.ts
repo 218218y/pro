@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { normalizeProjectData } from '../esm/native/io/project_schema_normalize.ts';
-import { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from '../esm/native/shared/project_schema_constants.ts';
+import { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from '../esm/shared/project_schema_constants.ts';
 
 test('current project schema normalizes canonical maps without accepting old project envelopes', () => {
   const data: any = {

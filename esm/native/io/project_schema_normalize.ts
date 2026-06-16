@@ -10,16 +10,14 @@ import {
   readPreChestState,
   readSavedNotes,
   safeJsonParse,
-  unwrapProjectEnvelope,
 } from './project_schema_shared.js';
 import { validateProjectData } from './project_schema_validation.js';
 
 export function normalizeProjectData(input: unknown, nowISO?: string): ProjectDataLike | null {
   if (typeof input === 'string') input = safeJsonParse(input);
-  const data = unwrapProjectEnvelope(input);
-  if (!data || typeof data !== 'object' || !hasCurrentProjectSchema(data)) return null;
+  if (!hasCurrentProjectSchema(input)) return null;
 
-  const cloned = ensureProjectDataRecord(deepCloneProjectJson(data));
+  const cloned = ensureProjectDataRecord(deepCloneProjectJson(input));
   const normalized = normalizeCurrentProjectData(cloned, nowISO);
   if (Object.prototype.hasOwnProperty.call(normalized, 'savedNotes'))
     normalized.savedNotes = readSavedNotes(normalized.savedNotes);

@@ -29,7 +29,7 @@ import type {
   WardrobeProDebugCanvasHitInfo,
 } from './runtime';
 import type { BuilderServiceLike, RoomDesignServiceLike } from './build_builder';
-import type { ProjectDataLike, ProjectDataEnvelopeLike, ProjectLoadOpts } from './build_state';
+import type { ProjectDataLike, ProjectLoadOpts } from './build_state';
 import type { Vec3Like } from './build_ops';
 
 export interface HistorySystemLike {
@@ -339,7 +339,7 @@ export interface ProjectExportResultLike extends UnknownRecord {
   meta?: UnknownRecord | null;
 }
 
-export type ProjectLoadInputLike = ProjectDataLike | ProjectDataEnvelopeLike | UnknownRecord | object;
+export type ProjectLoadInputLike = ProjectDataLike | UnknownRecord | object;
 
 export interface ProjectIoServiceLike extends UnknownRecord {
   exportCurrentProject?: (meta?: UnknownRecord) => ProjectExportResultLike | null | undefined;

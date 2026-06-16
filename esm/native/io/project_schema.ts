@@ -12,7 +12,7 @@ import {
   asFiniteNumber as asFiniteNumberImpl,
   asObject as asObjectImpl,
   detectProjectSchemaVersion as detectProjectSchemaVersionImpl,
-  unwrapProjectEnvelope as unwrapProjectEnvelopeImpl,
+  hasCurrentProjectSchema as hasCurrentProjectSchemaImpl,
 } from './project_schema_shared.js';
 import {
   normalizeSplitDoorsBottomMap as normalizeSplitDoorsBottomMapImpl,
@@ -28,8 +28,8 @@ export function asObject(x: unknown): UnknownRecord {
   return asObjectImpl(x);
 }
 
-export function unwrapProjectEnvelope(data: unknown): ProjectDataLike | null {
-  return unwrapProjectEnvelopeImpl(data);
+export function hasCurrentProjectSchema(data: unknown): boolean {
+  return hasCurrentProjectSchemaImpl(data);
 }
 
 export function asFiniteNumber(x: unknown): number | undefined {

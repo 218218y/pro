@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createProjectIoOrchestrator } from '../esm/native/io/project_io_orchestrator.ts';
-import { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from '../esm/native/shared/project_schema_constants.ts';
+import { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from '../esm/shared/project_schema_constants.ts';
 import { withSuppressedConsole } from './_console_silence.ts';
 
 type ProjectIoTestApp = {

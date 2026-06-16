@@ -14,6 +14,7 @@ const projectSchema = bundleSources(
   [
     '../esm/native/io/project_schema.ts',
     '../esm/native/io/project_schema_shared.ts',
+    '../esm/native/io/project_schema_normalize.ts',
     '../esm/native/io/project_schema_current.ts',
   ],
   import.meta.url
@@ -115,7 +116,7 @@ test('project payload/schema contracts stay typed across types, schema normaliza
       /preChestState\?: ProjectPreChestStateLike;/,
       /orderPdfEditorDraft\?: ProjectPdfDraftLike \| null;/,
       /export interface ProjectExportResultLike extends UnknownRecord/,
-      /export type ProjectLoadInputLike = ProjectDataLike \| ProjectDataEnvelopeLike \| UnknownRecord \| object;/,
+      /export type ProjectLoadInputLike = ProjectDataLike \| UnknownRecord \| object;/,
       /export interface ProjectIoServiceLike extends UnknownRecord/,
       /exportCurrentProject\?: \(meta\?: UnknownRecord\) => ProjectExportResultLike \| null \| undefined;/,
       /loadProjectData\?: \(\s*data: ProjectLoadInputLike,/s,
@@ -145,7 +146,7 @@ test('project payload/schema contracts stay typed across types, schema normaliza
     assert,
     projectSchema,
     [
-      /unwrapProjectEnvelope\(data: unknown\): ProjectDataLike \| null/,
+      /hasCurrentProjectSchema\(data: unknown\): boolean/,
       /validateProjectData\(data: ProjectDataLike\): ProjectSchemaValidationResult/,
       /normalizeProjectData\(input: unknown, nowISO\?: string\): ProjectDataLike \| null/,
       /function ensureSettingsRecord\(data: ProjectDataLike\): ProjectSettingsLike & UnknownRecord|export function ensureSettingsRecord\(data: ProjectDataLike\): ProjectSettingsLike & UnknownRecord/,

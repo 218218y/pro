@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  unwrapProjectEnvelope,
+  hasCurrentProjectSchema,
   detectProjectSchemaVersion,
   normalizeProjectData,
   PROJECT_SCHEMA_ID,
@@ -10,10 +10,7 @@ import {
 } from '../esm/native/io/project_schema.ts';
 
 test('project schema source runtime accepts only current top-level schema data', () => {
-  assert.equal(
-    unwrapProjectEnvelope({ payload: { settings: { wardrobeType: 'hinged' } } } as any)?.settings,
-    undefined
-  );
+  assert.equal(hasCurrentProjectSchema({ payload: { settings: { wardrobeType: 'hinged' } } } as any), false);
 
   assert.equal(
     detectProjectSchemaVersion({ __version: PROJECT_SCHEMA_VERSION, version: 1 } as any),

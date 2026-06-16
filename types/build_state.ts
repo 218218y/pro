@@ -102,14 +102,6 @@ export interface ProjectDataLike extends UnknownRecord {
   [k: string]: unknown;
 }
 
-export interface ProjectDataEnvelopeLike extends UnknownRecord {
-  payload?: ProjectDataLike;
-  project?: ProjectDataLike;
-  schema?: string;
-  __schema?: string;
-  __version?: number;
-}
-
 export interface ProjectLoadOpts extends UnknownRecord {
   silent?: boolean;
   toast?: boolean;

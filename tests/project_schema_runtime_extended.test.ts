@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { normalizeProjectData } from '../esm/native/io/project_schema.ts';
-import { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from '../esm/native/shared/project_schema_constants.ts';
+import { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from '../esm/shared/project_schema_constants.ts';
 import { deepCloneProjectJson } from '../esm/native/io/project_schema_shared.ts';
 
 test('project schema deep clone fallback detaches cyclic payloads instead of returning live references', () => {

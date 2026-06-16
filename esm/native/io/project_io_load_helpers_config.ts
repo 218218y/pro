@@ -4,12 +4,7 @@ import {
 } from './project_io_config_snapshot_canonical.js';
 import { readConfigStateProjectConfigSnapshot } from '../features/project_config/project_config_persisted_snapshot.js';
 
-import type {
-  ConfigStateLike,
-  ProjectDataEnvelopeLike,
-  ProjectDataLike,
-  UnknownRecord,
-} from '../../../types/index.js';
+import type { ConfigStateLike, ProjectDataLike, UnknownRecord } from '../../../types/index.js';
 
 import { normalizeSavedColorObjectsSnapshot } from '../runtime/maps_access_normalizers_collections.js';
 import {
@@ -18,7 +13,6 @@ import {
   readProjectToggles,
 } from './project_io_load_helpers_shared.js';
 import { asObjectRecord } from './project_payload_shared.js';
-import { unwrapProjectEnvelope } from './project_schema_shared.js';
 import { normalizeDoorMountThicknessCm } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 function buildComparableLoadConfigSnapshot(
@@ -44,10 +38,8 @@ function buildComparableLoadConfigSnapshot(
   });
 }
 
-function readProjectConfigSource(
-  data: ProjectDataLike | ProjectDataEnvelopeLike | UnknownRecord | null | undefined
-): UnknownRecord {
-  return unwrapProjectEnvelope(data) ?? asObjectRecord(data) ?? {};
+function readProjectConfigSource(data: ProjectDataLike | UnknownRecord | null | undefined): UnknownRecord {
+  return asObjectRecord(data) ?? {};
 }
 
 function readLoadedDoorMountThicknessCm(settingsValue: unknown, persistedValue: unknown): number | null {
@@ -56,7 +48,7 @@ function readLoadedDoorMountThicknessCm(settingsValue: unknown, persistedValue: 
 }
 
 export function buildProjectConfigSnapshot(
-  data: ProjectDataLike | ProjectDataEnvelopeLike | UnknownRecord | null | undefined
+  data: ProjectDataLike | UnknownRecord | null | undefined
 ): ConfigStateLike {
   const rec = readProjectConfigSource(data);
   const settings = readProjectSettings(rec);

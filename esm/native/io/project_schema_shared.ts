@@ -16,10 +16,10 @@ import {
   readPreChestState as readPreChestStateShared,
   readSavedNotes as readSavedNotesShared,
 } from './project_payload_shared.js';
-import { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from '../shared/project_schema_constants.js';
-export { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from '../shared/project_schema_constants.js';
+import { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from '../../shared/project_schema_constants.js';
+export { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from '../../shared/project_schema_constants.js';
 
-function asProjectData(value: unknown): ProjectDataLike | null {
+export function readProjectDataRecord(value: unknown): ProjectDataLike | null {
   return isObjectRecord(value) ? value : null;
 }
 
@@ -52,11 +52,7 @@ export function ensureTogglesRecord(data: ProjectDataLike): ProjectTogglesLike &
 }
 
 export function ensureProjectDataRecord(value: unknown): ProjectDataLike {
-  return asProjectData(value) ?? {};
-}
-
-export function unwrapProjectEnvelope(data: unknown): ProjectDataLike | null {
-  return asProjectData(data);
+  return readProjectDataRecord(value) ?? {};
 }
 
 export function asFiniteNumber(x: unknown): number | undefined {

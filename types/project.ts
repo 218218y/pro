@@ -8,7 +8,6 @@
 import type { UnknownRecord } from './common';
 import type { SavedNote } from './notes';
 import type { BoardMaterial, DoorMountMode, HandleType, WardrobeType } from './domain';
-import type { ModulesConfigurationLike } from './modules_configuration';
 import type { ToggleValue } from './maps';
 import type {
   CurtainMap,

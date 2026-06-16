@@ -1,6 +1,5 @@
 import type {
   ConfigStateLike,
-  ProjectDataEnvelopeLike,
   ProjectDataLike,
   ProjectLoadOpts,
   ProjectPdfDraftLike,
@@ -70,13 +69,13 @@ export function captureProjectLoadSourceFlags(opts?: ProjectLoadOpts) {
 }
 
 export function buildProjectConfigSnapshot(
-  data: ProjectDataLike | ProjectDataEnvelopeLike | UnknownRecord | null | undefined
+  data: ProjectDataLike | UnknownRecord | null | undefined
 ): ConfigStateLike {
   return buildProjectConfigSnapshotImpl(data);
 }
 
 export function buildProjectUiSnapshot(
-  data: ProjectDataLike | ProjectDataEnvelopeLike | UnknownRecord | null | undefined,
+  data: ProjectDataLike | UnknownRecord | null | undefined,
   currentProjectName: string
 ): { uiState: UiStateLike; savedNotes: ProjectSavedNotesLike } {
   const rec = asRecord(data) || {};
@@ -250,7 +249,7 @@ export function preserveUiEphemeral(uiSnap: UiStateLike, uiNow: UiStateLike | nu
 }
 
 export function buildProjectPdfUiPatch(
-  data: ProjectDataLike | ProjectDataEnvelopeLike | UnknownRecord | null | undefined,
+  data: ProjectDataLike | UnknownRecord | null | undefined,
   _cloneJson: <T>(value: T) => T
 ): Pick<ProjectPdfStateLike, 'orderPdfEditorDraft' | 'orderPdfEditorZoom'> {
   const rec = asRecord(data) || {};

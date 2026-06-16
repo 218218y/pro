@@ -1,6 +1,5 @@
 import type {
   ConfigStateLike,
-  ProjectDataEnvelopeLike,
   ProjectDataLike,
   UiRawInputsLike,
   UiRawScalarKey,
@@ -126,7 +125,7 @@ function readMissingCanonicalProjectConfigKeys(config: ConfigStateLike): Project
 }
 
 export function readCanonicalProjectConfigSnapshot(
-  data: ProjectDataLike | ProjectDataEnvelopeLike | UnknownRecord | null | undefined
+  data: ProjectDataLike | UnknownRecord | null | undefined
 ): ProjectConfigCanonicalSnapshotResult {
   const config = buildProjectConfigSnapshotFromProjectLoad(data);
   return {
@@ -147,7 +146,7 @@ export function assertCanonicalProjectConfigSnapshot(
 }
 
 export function buildCanonicalProjectConfigSnapshot(
-  data: ProjectDataLike | ProjectDataEnvelopeLike | UnknownRecord | null | undefined
+  data: ProjectDataLike | UnknownRecord | null | undefined
 ): ConfigStateLike {
   const result = readCanonicalProjectConfigSnapshot(data);
   return assertCanonicalProjectConfigSnapshot(result.config, 'project.load.config');

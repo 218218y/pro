@@ -221,19 +221,17 @@ test('project io load snapshot detaches raw config branches and normalizes live 
   assert.equal((sourceSavedColors[1] as Record<string, unknown>).value, '#222');
 });
 
-test('project io load snapshot unwraps payload envelopes before canonicalization', () => {
+test('project io load snapshot canonicalizes direct current payloads without legacy envelopes', () => {
   const cfg = buildProjectConfigSnapshot({
-    payload: {
-      settings: {
-        doors: 2,
-        wardrobeType: 'hinged',
-        singleDoorPos: 'left',
-        structureSelection: '[1,1]',
-      },
-      savedColors: ['legacy-oak', { id: 'c2', value: '#222' }],
-      grooveLinesCount: '5',
-      isLibraryMode: true,
+    settings: {
+      doors: 2,
+      wardrobeType: 'hinged',
+      singleDoorPos: 'left',
+      structureSelection: '[1,1]',
     },
+    savedColors: ['legacy-oak', { id: 'c2', value: '#222' }],
+    grooveLinesCount: '5',
+    isLibraryMode: true,
   } as never);
 
   assert.deepEqual(cfg.savedColors, [{ id: 'c2', value: '#222' }]);
