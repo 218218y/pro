@@ -2,7 +2,7 @@
 //
 // This file controls only store-specific build/runtime values.
 // Shared application code remains in the project root.
-// Bargig keeps using the legacy root assets so there is one canonical copy for the current live store.
+// Bargig keeps using the root default assets so there is one canonical copy for the current live store.
 
 export default {
   id: 'bargig',

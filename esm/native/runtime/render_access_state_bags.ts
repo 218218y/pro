@@ -212,7 +212,7 @@ export function writeRenderMaterialSlot<T = unknown>(App: unknown, key: string, 
   return readValue<T>(materials[key]);
 }
 
-export function bindLegacyRenderCompatRefs(App: unknown): void {
+export function clearDeprecatedRenderRefs(App: unknown): void {
   const app = asRecord(App);
   if (!app) return;
   try {

@@ -5,6 +5,7 @@
     "base_leg_support.js",
     "base_plinth_support.js",
     "door_style_overrides.js",
+    "door_visual_map_lookup.js",
     "door_trim.js",
     "drawer_box_identity.js",
     "front_color_shelf_inheritance.js",
@@ -27,6 +28,7 @@
     "project_config/project_config_snapshot_canonical.js",
     "removable_parts.js",
     "shelf_part_identity.js",
+    "sketch_box_regular_external_drawers.js",
     "sketch_drawer_sizing.js",
     "sketch_stack_positioning.js",
     "special_dims/index.js",
@@ -38,6 +40,7 @@
     "base_leg_support": ["base_leg_support.js"],
     "base_plinth_support": ["base_plinth_support.js"],
     "door_style_overrides": ["door_style_overrides.js"],
+    "door_visual_map_lookup": ["door_visual_map_lookup.js"],
     "door_trim": ["door_trim.js"],
     "drawer_box_identity": ["drawer_box_identity.js"],
     "front_color_shelf_inheritance": ["front_color_shelf_inheritance.js"],
@@ -63,6 +66,7 @@
     ],
     "removable_parts": ["removable_parts.js"],
     "shelf_part_identity": ["shelf_part_identity.js"],
+    "sketch_box_regular_external_drawers": ["sketch_box_regular_external_drawers.js"],
     "sketch_drawer_sizing": ["sketch_drawer_sizing.js"],
     "sketch_stack_positioning": ["sketch_stack_positioning.js"],
     "special_dims": ["special_dims/index.js", "special_dims/special_dims.js"],
@@ -143,6 +147,10 @@
     },
     {
       "file": "esm/native/builder/core_carcass_shared.ts",
+      "entry": "removable_parts.js"
+    },
+    {
+      "file": "esm/native/builder/core_carcass_shared.ts",
       "entry": "base_plinth_support.js"
     },
     {
@@ -160,6 +168,10 @@
     {
       "file": "esm/native/builder/core_pure_compute.ts",
       "entry": "interior_layout_presets/api.js"
+    },
+    {
+      "file": "esm/native/builder/corner_config_readers.ts",
+      "entry": "door_visual_map_lookup.js"
     },
     {
       "file": "esm/native/builder/corner_connector_door_emit_context.ts",
@@ -200,6 +212,10 @@
     {
       "file": "esm/native/builder/corner_materials.ts",
       "entry": "shelf_part_identity.js"
+    },
+    {
+      "file": "esm/native/builder/corner_materials.ts",
+      "entry": "door_visual_map_lookup.js"
     },
     {
       "file": "esm/native/builder/corner_state_normalize_config.ts",
@@ -251,6 +267,10 @@
     },
     {
       "file": "esm/native/builder/corner_wing_cell_interiors_storage.ts",
+      "entry": "door_trim.js"
+    },
+    {
+      "file": "esm/native/builder/corner_wing_cell_interiors_storage.ts",
       "entry": "drawer_box_identity.js"
     },
     {
@@ -282,8 +302,12 @@
       "entry": "metal_finish_palette.js"
     },
     {
+      "file": "esm/native/builder/door_trim_visuals.ts",
+      "entry": "door_trim.js"
+    },
+    {
       "file": "esm/native/builder/door_visual_lookup_state.ts",
-      "entry": "mirror_layout.js"
+      "entry": "door_visual_map_lookup.js"
     },
     {
       "file": "esm/native/builder/external_drawer_shelf.ts",
@@ -299,6 +323,14 @@
     },
     {
       "file": "esm/native/builder/handles_apply_doors.ts",
+      "entry": "manual_handle_position.js"
+    },
+    {
+      "file": "esm/native/builder/handles_apply_drawers.ts",
+      "entry": "drawer_box_identity.js"
+    },
+    {
+      "file": "esm/native/builder/handles_apply_drawers.ts",
       "entry": "manual_handle_position.js"
     },
     {
@@ -322,8 +354,20 @@
       "entry": "door_style_overrides.js"
     },
     {
+      "file": "esm/native/builder/hinged_doors_module_ops_context.ts",
+      "entry": "door_visual_map_lookup.js"
+    },
+    {
       "file": "esm/native/builder/hinged_doors_module_ops_handle_policy.ts",
       "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/builder/material_color_lookup.ts",
+      "entry": "door_visual_map_lookup.js"
+    },
+    {
+      "file": "esm/native/builder/material_color_lookup.ts",
+      "entry": "shelf_part_identity.js"
     },
     {
       "file": "esm/native/builder/material_resolver.ts",
@@ -394,6 +438,10 @@
       "entry": "removable_parts.js"
     },
     {
+      "file": "esm/native/builder/post_build_sketch_door_cuts_contracts.ts",
+      "entry": "manual_handle_position.js"
+    },
+    {
       "file": "esm/native/builder/post_build_sketch_door_cuts_modules.ts",
       "entry": "sketch_drawer_sizing.js"
     },
@@ -402,16 +450,40 @@
       "entry": "sketch_stack_positioning.js"
     },
     {
+      "file": "esm/native/builder/post_build_sketch_door_cuts_rebuild_handles.ts",
+      "entry": "manual_handle_position.js"
+    },
+    {
       "file": "esm/native/builder/post_build_sketch_door_cuts_rebuild_visual.ts",
       "entry": "door_style_overrides.js"
+    },
+    {
+      "file": "esm/native/builder/post_build_sketch_door_cuts_rebuild_visual.ts",
+      "entry": "door_visual_map_lookup.js"
     },
     {
       "file": "esm/native/builder/post_build_sketch_door_cuts_runtime.ts",
       "entry": "door_style_overrides.js"
     },
     {
+      "file": "esm/native/builder/post_build_sketch_door_cuts_runtime.ts",
+      "entry": "manual_handle_position.js"
+    },
+    {
       "file": "esm/native/builder/pure_api.ts",
       "entry": "interior_layout_presets/api.js"
+    },
+    {
+      "file": "esm/native/builder/removed_frame_side_brace_shelves.ts",
+      "entry": "removable_parts.js"
+    },
+    {
+      "file": "esm/native/builder/render_carcass_ops_base.ts",
+      "entry": "door_trim.js"
+    },
+    {
+      "file": "esm/native/builder/render_carcass_ops_base.ts",
+      "entry": "door_trim.js"
     },
     {
       "file": "esm/native/builder/render_door_ops_shared_config.ts",
@@ -463,6 +535,10 @@
     },
     {
       "file": "esm/native/builder/render_interior_sketch_boxes_contents_drawers.ts",
+      "entry": "sketch_box_regular_external_drawers.js"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_boxes_contents_drawers.ts",
       "entry": "sketch_drawer_sizing.js"
     },
     {
@@ -472,6 +548,10 @@
     {
       "file": "esm/native/builder/render_interior_sketch_boxes_contents_parts_shelves.ts",
       "entry": "shelf_part_identity.js"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_boxes_contents_parts_shelves.ts",
+      "entry": "removable_parts.js"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_boxes_fronts_door_visual_routes.ts",
@@ -484,6 +564,10 @@
     {
       "file": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_context.ts",
       "entry": "drawer_box_identity.js"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_context.ts",
+      "entry": "sketch_box_regular_external_drawers.js"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts",
@@ -504,6 +588,18 @@
     {
       "file": "esm/native/builder/render_interior_sketch_boxes_fronts_support.ts",
       "entry": "door_style_overrides.js"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_boxes_shared.ts",
+      "entry": "hex_cell/index.js"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_boxes_shell_apply.ts",
+      "entry": "hex_cell/index.js"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_boxes_shell_frame.ts",
+      "entry": "removable_parts.js"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_drawers_external_apply.ts",
@@ -550,10 +646,6 @@
       "entry": "sketch_stack_positioning.js"
     },
     {
-      "file": "esm/native/builder/render_interior_sketch_support_brace_seams.ts",
-      "entry": "shelf_part_identity.js"
-    },
-    {
       "file": "esm/native/builder/render_interior_sketch_support_shelf_pins.ts",
       "entry": "shelf_part_identity.js"
     },
@@ -566,12 +658,24 @@
       "entry": "base_leg_support.js"
     },
     {
+      "file": "esm/native/builder/render_interior_sketch_visuals_adornments.ts",
+      "entry": "base_plinth_support.js"
+    },
+    {
       "file": "esm/native/builder/render_interior_sketch_visuals_adornments_normalize.ts",
       "entry": "base_leg_support.js"
     },
     {
+      "file": "esm/native/builder/render_interior_sketch_visuals_adornments_normalize.ts",
+      "entry": "base_plinth_support.js"
+    },
+    {
       "file": "esm/native/builder/render_ops_primitives.ts",
       "entry": "handle_finish_shared.js"
+    },
+    {
+      "file": "esm/native/builder/render_preview_sketch_pipeline_linear.ts",
+      "entry": "door_trim.js"
     },
     {
       "file": "esm/native/builder/store_access.ts",
@@ -596,6 +700,10 @@
     {
       "file": "esm/native/builder/visuals_chest_mode_build.ts",
       "entry": "drawer_box_identity.js"
+    },
+    {
+      "file": "esm/native/builder/visuals_chest_mode_build.ts",
+      "entry": "door_trim.js"
     },
     {
       "file": "esm/native/builder/visuals_chest_mode_inputs.ts",
@@ -662,10 +770,6 @@
       "entry": "project_config/project_config_persisted_payload_shared.js"
     },
     {
-      "file": "esm/native/io/project_schema_door_maps.ts",
-      "entry": "project_config/project_config_persisted_payload_shared.js"
-    },
-    {
       "file": "esm/native/io/project_schema_current.ts",
       "entry": "mirror_layout.js"
     },
@@ -679,7 +783,7 @@
     },
     {
       "file": "esm/native/io/project_schema_door_maps.ts",
-      "entry": "mirror_layout.js"
+      "entry": "project_config/project_config_persisted_payload_shared.js"
     },
     {
       "file": "esm/native/kernel/domain_api.ts",
@@ -942,6 +1046,26 @@
       "entry": "special_dims/index.js"
     },
     {
+      "file": "esm/native/services/canvas_picking_cell_dims_free_box.ts",
+      "entry": "hex_cell/index.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_cell_dims_free_box.ts",
+      "entry": "special_dims/index.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_cell_dims_free_box_hover.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_cell_dims_free_box_hover.ts",
+      "entry": "special_dims/index.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_cell_dims_free_box_hover.ts",
+      "entry": "hex_cell/index.js"
+    },
+    {
       "file": "esm/native/services/canvas_picking_cell_dims_hex_corner.ts",
       "entry": "hex_cell/index.js"
     },
@@ -1002,6 +1126,10 @@
       "entry": "manual_handle_position.js"
     },
     {
+      "file": "esm/native/services/canvas_picking_door_action_hover_preview_marker.ts",
+      "entry": "door_trim.js"
+    },
+    {
       "file": "esm/native/services/canvas_picking_door_action_hover_preview_paint.ts",
       "entry": "mirror_layout.js"
     },
@@ -1011,10 +1139,10 @@
     },
     {
       "file": "esm/native/services/canvas_picking_door_action_hover_preview_paint.ts",
-      "entry": "hex_cell/index.js"
+      "entry": "door_visual_map_lookup.js"
     },
     {
-      "file": "esm/native/services/canvas_picking_door_action_hover_preview_state.ts",
+      "file": "esm/native/services/canvas_picking_door_action_hover_preview_paint.ts",
       "entry": "hex_cell/index.js"
     },
     {
@@ -1030,12 +1158,28 @@
       "entry": "mirror_layout.js"
     },
     {
+      "file": "esm/native/services/canvas_picking_door_action_hover_preview_trim.ts",
+      "entry": "door_trim.js"
+    },
+    {
       "file": "esm/native/services/canvas_picking_door_action_hover_state.ts",
       "entry": "manual_handle_position.js"
     },
     {
+      "file": "esm/native/services/canvas_picking_door_action_hover_state.ts",
+      "entry": "door_trim.js"
+    },
+    {
       "file": "esm/native/services/canvas_picking_door_edit_shared.ts",
       "entry": "door_trim.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_groove_segments.ts",
+      "entry": "door_visual_map_lookup.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_hover_targets_hit_scan.ts",
+      "entry": "drawer_box_identity.js"
     },
     {
       "file": "esm/native/services/canvas_picking_door_hover_targets_policy.ts",
@@ -1043,7 +1187,15 @@
     },
     {
       "file": "esm/native/services/canvas_picking_door_part_helpers.ts",
+      "entry": "door_visual_map_lookup.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_part_helpers.ts",
       "entry": "hex_cell/index.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_part_helpers.ts",
+      "entry": "door_trim.js"
     },
     {
       "file": "esm/native/services/canvas_picking_door_trim_click.ts",
@@ -1052,6 +1204,22 @@
     {
       "file": "esm/native/services/canvas_picking_door_trim_click.ts",
       "entry": "door_trim.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_trim_click.ts",
+      "entry": "door_trim.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_trim_targets.ts",
+      "entry": "drawer_box_identity.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_trim_targets.ts",
+      "entry": "door_trim.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_drawer_cross_family.ts",
+      "entry": "sketch_box_regular_external_drawers.js"
     },
     {
       "file": "esm/native/services/canvas_picking_drawer_mode_flow_external.ts",
@@ -1084,6 +1252,10 @@
     {
       "file": "esm/native/services/canvas_picking_handle_assign_flow.ts",
       "entry": "manual_handle_position.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_hover_flow_nonsplit_face.ts",
+      "entry": "drawer_box_identity.js"
     },
     {
       "file": "esm/native/services/canvas_picking_hover_preview_modes_cell_dims_inputs.ts",
@@ -1146,6 +1318,10 @@
       "entry": "interior_layout_presets/api.js"
     },
     {
+      "file": "esm/native/services/canvas_picking_manual_layout_free_box_content.ts",
+      "entry": "interior_layout_presets/api.js"
+    },
+    {
       "file": "esm/native/services/canvas_picking_manual_layout_sketch_hover_module_context_base.ts",
       "entry": "sketch_drawer_sizing.js"
     },
@@ -1187,11 +1363,19 @@
     },
     {
       "file": "esm/native/services/canvas_picking_paint_flow_apply_door_style.ts",
+      "entry": "door_visual_map_lookup.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_paint_flow_apply_door_style.ts",
       "entry": "door_style_overrides.js"
     },
     {
       "file": "esm/native/services/canvas_picking_paint_flow_apply_special.ts",
       "entry": "mirror_layout.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_paint_flow_apply_special.ts",
+      "entry": "door_visual_map_lookup.js"
     },
     {
       "file": "esm/native/services/canvas_picking_paint_flow_apply_special.ts",
@@ -1211,15 +1395,15 @@
     },
     {
       "file": "esm/native/services/canvas_picking_paint_flow_shared.ts",
-      "entry": "hex_cell/index.js"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_paint_flow_shared.ts",
       "entry": "mirror_layout.js"
     },
     {
       "file": "esm/native/services/canvas_picking_projection_runtime_box_wardrobe_fallback.ts",
       "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_regular_ext_drawers_free_box.ts",
+      "entry": "sketch_box_regular_external_drawers.js"
     },
     {
       "file": "esm/native/services/canvas_picking_removable_part_hover.ts",
@@ -1242,12 +1426,20 @@
       "entry": "base_leg_support.js"
     },
     {
+      "file": "esm/native/services/canvas_picking_sketch_box_content_commit_adornments.ts",
+      "entry": "base_plinth_support.js"
+    },
+    {
       "file": "esm/native/services/canvas_picking_sketch_box_content_commit_drawers.ts",
       "entry": "sketch_stack_positioning.js"
     },
     {
       "file": "esm/native/services/canvas_picking_sketch_box_content_commit_drawers.ts",
       "entry": "sketch_drawer_sizing.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_sketch_box_content_commit_drawers.ts",
+      "entry": "sketch_box_regular_external_drawers.js"
     },
     {
       "file": "esm/native/services/canvas_picking_sketch_box_dividers_shared.ts",
@@ -1258,12 +1450,28 @@
       "entry": "base_leg_support.js"
     },
     {
+      "file": "esm/native/services/canvas_picking_sketch_box_dividers_shared.ts",
+      "entry": "base_plinth_support.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_sketch_box_stack_preview_context.ts",
+      "entry": "sketch_box_regular_external_drawers.js"
+    },
+    {
       "file": "esm/native/services/canvas_picking_sketch_box_stack_preview_ext_drawers.ts",
       "entry": "sketch_drawer_sizing.js"
     },
     {
+      "file": "esm/native/services/canvas_picking_sketch_box_vertical_content_preview_state.ts",
+      "entry": "sketch_box_regular_external_drawers.js"
+    },
+    {
       "file": "esm/native/services/canvas_picking_sketch_direct_hit_workflow_drawer.ts",
       "entry": "sketch_drawer_sizing.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_sketch_direct_hit_workflow_drawers_shared.ts",
+      "entry": "sketch_box_regular_external_drawers.js"
     },
     {
       "file": "esm/native/services/canvas_picking_sketch_direct_hit_workflow_records.ts",
@@ -1286,8 +1494,16 @@
       "entry": "base_leg_support.js"
     },
     {
+      "file": "esm/native/services/canvas_picking_sketch_free_surface_preview_adornment_preview.ts",
+      "entry": "base_plinth_support.js"
+    },
+    {
       "file": "esm/native/services/canvas_picking_sketch_free_surface_preview_adornments.ts",
       "entry": "sketch_drawer_sizing.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_sketch_free_surface_preview_adornments.ts",
+      "entry": "base_plinth_support.js"
     },
     {
       "file": "esm/native/services/canvas_picking_sketch_module_stack_apply.ts",
@@ -1320,6 +1536,10 @@
     {
       "file": "esm/native/services/canvas_picking_sketch_module_surface_preview_shelf.ts",
       "entry": "shelf_part_identity.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_special_paint_targets.ts",
+      "entry": "hex_cell/index.js"
     },
     {
       "file": "esm/native/services/canvas_picking_split_hover_preview_line.ts",
@@ -1406,6 +1626,10 @@
       "entry": "modules_configuration/modules_config_api.js"
     },
     {
+      "file": "esm/native/ui/react/tabs/design_tab_controller_runtime.ts",
+      "entry": "removable_parts.js"
+    },
+    {
       "file": "esm/native/ui/react/tabs/design_tab_multicolor_controller_runtime.ts",
       "entry": "door_style_overrides.js"
     },
@@ -1426,6 +1650,10 @@
       "entry": "door_style_overrides.js"
     },
     {
+      "file": "esm/native/ui/react/tabs/design_tab_view_state_runtime.ts",
+      "entry": "removable_parts.js"
+    },
+    {
       "file": "esm/native/ui/react/tabs/interior_layout_door_trim_axis_panel.tsx",
       "entry": "door_trim.js"
     },
@@ -1434,8 +1662,16 @@
       "entry": "base_leg_support.js"
     },
     {
+      "file": "esm/native/ui/react/tabs/interior_layout_sketch_box_controls_runtime_base.ts",
+      "entry": "base_plinth_support.js"
+    },
+    {
       "file": "esm/native/ui/react/tabs/interior_layout_sketch_box_controls_section.tsx",
       "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/interior_layout_sketch_box_controls_section.tsx",
+      "entry": "base_plinth_support.js"
     },
     {
       "file": "esm/native/ui/react/tabs/interior_tab_helpers_core.ts",
@@ -1444,6 +1680,10 @@
     {
       "file": "esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts",
       "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts",
+      "entry": "base_plinth_support.js"
     },
     {
       "file": "esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts",
@@ -1460,6 +1700,10 @@
     {
       "file": "esm/native/ui/react/tabs/interior_tab_local_state_shared.ts",
       "entry": "sketch_drawer_sizing.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/interior_tab_local_state_shared.ts",
+      "entry": "base_plinth_support.js"
     },
     {
       "file": "esm/native/ui/react/tabs/interior_tab_sections_handles.tsx",
@@ -1516,6 +1760,14 @@
     {
       "file": "esm/native/ui/react/tabs/structure_tab_structural_controller_contracts.ts",
       "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/structure_tab_structural_controller_writes.ts",
+      "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/structure_tab_structural_controller_writes.ts",
+      "entry": "base_plinth_support.js"
     },
     {
       "file": "esm/native/ui/react/tabs/structure_tab_view_state_contracts.ts",

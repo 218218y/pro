@@ -103,7 +103,7 @@
     inset 0 1px 2px rgba(15, 23, 42, 0.12), 0 0 0 3px rgba(16, 185, 129, 0.14),
     0 10px 20px rgba(16, 185, 129, 0.12);
 
-  /* Aliases to the legacy palette (keep React styling consistent without copying colors) */
+  /* Aliases to the current production palette (keep React styling consistent without copying colors) */
   --wp-r-border: var(--border-color);
   --wp-r-panel-bg: var(--panel-bg);
   --wp-r-input-bg: var(--input-bg);

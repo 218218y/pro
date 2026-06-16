@@ -1,6 +1,6 @@
 import { assertApp, assertTHREE } from '../runtime/api.js';
 import {
-  bindLegacyRenderCompatRefs,
+  clearDeprecatedRenderRefs,
   ensureRenderCacheMaps,
   ensureRenderMaterialSlots,
   ensureRenderMetaMaps,
@@ -195,7 +195,7 @@ export function ensureRenderOpsExtrasPlatformSurface(
 
 export function ensureRenderOpsExtrasRuntime(App: AppLike): RenderOpsRuntime {
   const util = readPlatformUtil(ensurePlatformUtil(App)) || {};
-  bindLegacyRenderCompatRefs(App);
+  clearDeprecatedRenderRefs(App);
 
   const builder = ensureBuilderService(App, 'native/builder/render_ops_extras.ensure');
   const renderOps = readRenderOpsSurface(builder.renderOps);

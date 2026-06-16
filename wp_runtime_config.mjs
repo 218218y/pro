@@ -1,6 +1,6 @@
 // WardrobePro runtime configuration (Pure ESM, static deployments)
 //
-// This file is the legacy/default Bargig runtime config used by the existing root build commands.
+// This file is the root Bargig default runtime config used by the existing root build commands.
 // Multi-store releases write a generated wp_runtime_config.mjs into each dist/sites/<store>/<variant> output
 // from sites/<store>/site.profile.mjs; do not edit generated release copies manually.
 //

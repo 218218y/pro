@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-06-16T07:14:11.987Z",
+  "generatedAt": "2026-06-16T10:46:19.333Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 503,
-    "totalFiles": 161,
+    "totalOccurrences": 495,
+    "totalFiles": 159,
     "byCategory": {
       "runtime-default": 0,
       "domain-default": 188,
@@ -12,7 +12,7 @@
       "browser-adapter": 40,
       "project-migration": 41,
       "external-api-compat": 12,
-      "compat-boundary": 185,
+      "compat-boundary": 177,
       "test-fixture": 6,
       "legacy-runtime-risk": 0,
       "unknown": 0
@@ -142,12 +142,6 @@
         "total": 1,
         "categories": {
           "compat-boundary": 1
-        }
-      },
-      "esm/native/builder/render_ops_extras_shared.ts": {
-        "total": 2,
-        "categories": {
-          "compat-boundary": 2
         }
       },
       "esm/native/builder/render_ops_extras.ts": {
@@ -377,15 +371,15 @@
         }
       },
       "esm/native/runtime/api_boot_render_surface.ts": {
-        "total": 3,
+        "total": 2,
         "categories": {
-          "compat-boundary": 3
+          "compat-boundary": 2
         }
       },
       "esm/native/runtime/api.ts": {
-        "total": 3,
+        "total": 2,
         "categories": {
-          "compat-boundary": 3
+          "compat-boundary": 2
         }
       },
       "esm/native/runtime/browser_clipboard.ts": {
@@ -472,12 +466,6 @@
           "compat-boundary": 2
         }
       },
-      "esm/native/runtime/render_access_state_bags.ts": {
-        "total": 1,
-        "categories": {
-          "compat-boundary": 1
-        }
-      },
       "esm/native/runtime/render_access_state_runtime.ts": {
         "total": 14,
         "categories": {
@@ -485,15 +473,15 @@
         }
       },
       "esm/native/runtime/render_access_state.ts": {
-        "total": 3,
+        "total": 2,
         "categories": {
-          "compat-boundary": 3
+          "compat-boundary": 2
         }
       },
       "esm/native/runtime/render_access.ts": {
-        "total": 3,
+        "total": 2,
         "categories": {
-          "compat-boundary": 3
+          "compat-boundary": 2
         }
       },
       "esm/native/runtime/storage_access.ts": {
@@ -503,9 +491,9 @@
         }
       },
       "esm/native/services/api_runtime_base_surface.ts": {
-        "total": 3,
+        "total": 2,
         "categories": {
-          "compat-boundary": 3
+          "compat-boundary": 2
         }
       },
       "esm/native/services/app_start.ts": {
@@ -1710,20 +1698,6 @@
       "text": "export function applyLegacyCornice("
     },
     {
-      "file": "esm/native/builder/render_ops_extras_shared.ts",
-      "line": 3,
-      "term": "bindLegacyRenderCompatRefs",
-      "category": "compat-boundary",
-      "text": "bindLegacyRenderCompatRefs,"
-    },
-    {
-      "file": "esm/native/builder/render_ops_extras_shared.ts",
-      "line": 198,
-      "term": "bindLegacyRenderCompatRefs",
-      "category": "compat-boundary",
-      "text": "bindLegacyRenderCompatRefs(App);"
-    },
-    {
       "file": "esm/native/builder/render_ops_extras.ts",
       "line": 75,
       "term": "clearLegacyInstalledRenderOpsExtrasDrift",
@@ -1998,56 +1972,56 @@
     },
     {
       "file": "esm/native/io/project_schema_shared.ts",
-      "line": 91,
+      "line": 89,
       "term": "cloneJsonFallbackArray",
       "category": "project-migration",
       "text": "function cloneJsonFallbackArray(value: readonly unknown[], seen: JsonCloneCache): unknown[] {"
     },
     {
       "file": "esm/native/io/project_schema_shared.ts",
-      "line": 98,
+      "line": 96,
       "term": "cloneJsonFallback",
       "category": "project-migration",
       "text": "const next = cloneJsonFallback(value[i], seen);"
     },
     {
       "file": "esm/native/io/project_schema_shared.ts",
-      "line": 104,
+      "line": 102,
       "term": "cloneJsonFallbackRecord",
       "category": "project-migration",
       "text": "function cloneJsonFallbackRecord(value: UnknownRecord, seen: JsonCloneCache): UnknownRecord {"
     },
     {
       "file": "esm/native/io/project_schema_shared.ts",
-      "line": 111,
+      "line": 109,
       "term": "cloneJsonFallback",
       "category": "project-migration",
       "text": "const next = cloneJsonFallback(raw, seen);"
     },
     {
       "file": "esm/native/io/project_schema_shared.ts",
-      "line": 117,
+      "line": 115,
       "term": "cloneJsonFallback",
       "category": "project-migration",
       "text": "function cloneJsonFallback(value: unknown, seen: JsonCloneCache): unknown {"
     },
     {
       "file": "esm/native/io/project_schema_shared.ts",
-      "line": 131,
+      "line": 129,
       "term": "cloneJsonFallbackArray",
       "category": "project-migration",
       "text": "if (Array.isArray(value)) return cloneJsonFallbackArray(value, seen);"
     },
     {
       "file": "esm/native/io/project_schema_shared.ts",
-      "line": 132,
+      "line": 130,
       "term": "cloneJsonFallbackRecord",
       "category": "project-migration",
       "text": "return isObjectRecord(value) ? cloneJsonFallbackRecord(value, seen) : undefined;"
     },
     {
       "file": "esm/native/io/project_schema_shared.ts",
-      "line": 147,
+      "line": 145,
       "term": "cloneJsonFallback",
       "category": "project-migration",
       "text": "return cloneJsonFallback(value, new Map<object, unknown[] | UnknownRecord>());"
@@ -2509,13 +2483,6 @@
     },
     {
       "file": "esm/native/runtime/api_boot_render_surface.ts",
-      "line": 47,
-      "term": "bindLegacyRenderCompatRefs",
-      "category": "compat-boundary",
-      "text": "bindLegacyRenderCompatRefs,"
-    },
-    {
-      "file": "esm/native/runtime/api_boot_render_surface.ts",
       "line": 67,
       "term": "readRendererCompatDefaults",
       "category": "compat-boundary",
@@ -2527,13 +2494,6 @@
       "term": "writeRendererCompatDefaults",
       "category": "compat-boundary",
       "text": "writeRendererCompatDefaults,"
-    },
-    {
-      "file": "esm/native/runtime/api.ts",
-      "line": 145,
-      "term": "bindLegacyRenderCompatRefs",
-      "category": "compat-boundary",
-      "text": "bindLegacyRenderCompatRefs,"
     },
     {
       "file": "esm/native/runtime/api.ts",
@@ -2886,13 +2846,6 @@
       "text": "RendererCompatDefaultsLike,"
     },
     {
-      "file": "esm/native/runtime/render_access_state_bags.ts",
-      "line": 215,
-      "term": "bindLegacyRenderCompatRefs",
-      "category": "compat-boundary",
-      "text": "export function bindLegacyRenderCompatRefs(App: unknown): void {"
-    },
-    {
       "file": "esm/native/runtime/render_access_state_runtime.ts",
       "line": 4,
       "term": "RendererCompatDefaultsLike",
@@ -2992,13 +2945,6 @@
     },
     {
       "file": "esm/native/runtime/render_access_state.ts",
-      "line": 19,
-      "term": "bindLegacyRenderCompatRefs",
-      "category": "compat-boundary",
-      "text": "bindLegacyRenderCompatRefs,"
-    },
-    {
-      "file": "esm/native/runtime/render_access_state.ts",
       "line": 42,
       "term": "readRendererCompatDefaults",
       "category": "compat-boundary",
@@ -3010,13 +2956,6 @@
       "term": "writeRendererCompatDefaults",
       "category": "compat-boundary",
       "text": "writeRendererCompatDefaults,"
-    },
-    {
-      "file": "esm/native/runtime/render_access.ts",
-      "line": 60,
-      "term": "bindLegacyRenderCompatRefs",
-      "category": "compat-boundary",
-      "text": "bindLegacyRenderCompatRefs,"
     },
     {
       "file": "esm/native/runtime/render_access.ts",
@@ -3038,13 +2977,6 @@
       "term": "consoleFallback",
       "category": "domain-default",
       "text": "consoleFallback: false,"
-    },
-    {
-      "file": "esm/native/services/api_runtime_base_surface.ts",
-      "line": 174,
-      "term": "bindLegacyRenderCompatRefs",
-      "category": "compat-boundary",
-      "text": "bindLegacyRenderCompatRefs,"
     },
     {
       "file": "esm/native/services/api_runtime_base_surface.ts",
@@ -4399,14 +4331,14 @@
     },
     {
       "file": "esm/native/ui/react/boot_react_ui.tsx",
-      "line": 44,
+      "line": 45,
       "term": "createToastFallback",
       "category": "domain-default",
       "text": "function createToastFallback(): (msg: string, type?: string) => void {"
     },
     {
       "file": "esm/native/ui/react/boot_react_ui.tsx",
-      "line": 76,
+      "line": 77,
       "term": "createToastFallback",
       "category": "domain-default",
       "text": ": createToastFallback();"

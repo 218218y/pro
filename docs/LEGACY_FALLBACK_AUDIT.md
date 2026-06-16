@@ -1,12 +1,12 @@
 # Legacy / fallback audit
 
-Generated at: 2026-06-16T07:14:11.987Z
+Generated at: 2026-06-16T10:46:19.333Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **503**
-- Files with occurrences: **161**
+- Total categorized occurrences: **495**
+- Files with occurrences: **159**
 - Category counts:
   - `runtime-default`: **0**
   - `domain-default`: **188**
@@ -15,7 +15,7 @@ Generated at: 2026-06-16T07:14:11.987Z
   - `browser-adapter`: **40**
   - `project-migration`: **41**
   - `external-api-compat`: **12**
-  - `compat-boundary`: **185**
+  - `compat-boundary`: **177**
   - `test-fixture`: **6**
   - `legacy-runtime-risk`: **0**
   - `unknown`: **0**

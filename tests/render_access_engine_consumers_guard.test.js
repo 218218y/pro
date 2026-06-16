@@ -64,7 +64,7 @@ test('engine consumers use canonical render access helpers instead of raw App.re
       /ensureRenderCacheMaps\(/,
       /ensureRenderMetaMaps\(/,
       /ensureRenderMaterialSlots\(/,
-      /bindLegacyRenderCompatRefs\(/,
+      /clearDeprecatedRenderRefs\(/,
       /getWardrobeGroup\(/,
     ],
     'engine render bundle'
@@ -77,7 +77,7 @@ test('engine consumers use canonical render access helpers instead of raw App.re
       /getRenderCache\(/,
       /getRenderMeta\(/,
       /getRenderMaterials\(/,
-      /bindLegacyRenderCompatRefs\(/,
+      /clearDeprecatedRenderRefs\(/,
       /ensureRenderCacheMaps\(/,
       /ensureRenderMetaMaps\(/,
       /ensureRenderMaterialSlots\(/,

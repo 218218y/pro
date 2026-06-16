@@ -7,9 +7,9 @@ The project supports store-specific builds without forking the shared applicatio
 There are two kinds of store-related files, and they intentionally have different roles:
 
 ```text
-wp_logo_data.js               # legacy/default Bargig logo used by the existing root build
-public/order_template.pdf     # legacy/default Bargig PDF used by the existing root build
-wp_runtime_config.mjs         # legacy/default Bargig runtime config used by npm run bundle / bundle:site2
+wp_logo_data.js               # root Bargig default logo used by the existing root build
+public/order_template.pdf     # root Bargig default PDF used by the existing root build
+wp_runtime_config.mjs         # root Bargig default runtime config used by npm run bundle / bundle:site2
 
 sites/<store-id>/site.profile.mjs  # profile used by the multi-store release wrapper
 sites/store-1/wp_logo_data.js      # store-specific logo copy for חנות 1
@@ -29,7 +29,7 @@ This keeps Bargig backward-compatible and avoids a confusing duplicate copy unde
 
 ## What not to delete
 
-Do not delete these root files while the legacy/default commands are still in use:
+Do not delete these root files while the root Bargig default commands are still in use:
 
 ```text
 wp_logo_data.js

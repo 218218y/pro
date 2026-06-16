@@ -57,7 +57,7 @@ export {
   ensureRenderMaterialSlot,
   readRenderMaterialSlot,
   writeRenderMaterialSlot,
-  bindLegacyRenderCompatRefs,
+  clearDeprecatedRenderRefs,
   ensureRenderCacheMap,
   ensureRenderMetaMap,
   getAmbientLight,

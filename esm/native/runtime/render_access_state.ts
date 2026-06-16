@@ -16,7 +16,7 @@ export {
   ensureRenderMaterialSlot,
   readRenderMaterialSlot,
   writeRenderMaterialSlot,
-  bindLegacyRenderCompatRefs,
+  clearDeprecatedRenderRefs,
   ensureRenderCacheMap,
   ensureRenderMetaMap,
 } from './render_access_state_bags.js';

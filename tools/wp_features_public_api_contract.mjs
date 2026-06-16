@@ -72,6 +72,46 @@ function buildMarkdownReport(result) {
   return `${lines.join('\n')}\n`;
 }
 
+function resolveProjectPath(projectRoot, file) {
+  return path.isAbsolute(file) ? file : path.join(projectRoot, file);
+}
+
+function ensureParentDir(file) {
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+}
+
+function readTextIfExists(file) {
+  return fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : null;
+}
+
+function normalizeLineEndings(text) {
+  return String(text || '').replace(/\r\n/g, '\n');
+}
+
+function compareGeneratedArtifact({ file, expected }) {
+  const actual = readTextIfExists(file);
+  if (actual !== null && normalizeLineEndings(actual) === normalizeLineEndings(expected)) return null;
+  return {
+    file: rel(root, file),
+    reason: actual === null ? 'missing' : 'stale',
+  };
+}
+
+function checkDocsAreCurrent(result) {
+  const expectedJson = `${JSON.stringify(result, null, 2)}\n`;
+  const expectedMarkdown = buildMarkdownReport(result);
+  return [
+    compareGeneratedArtifact({
+      file: path.join(root, 'docs/features_public_api_audit.json'),
+      expected: expectedJson,
+    }),
+    compareGeneratedArtifact({
+      file: path.join(root, 'docs/FEATURES_PUBLIC_API_AUDIT.md'),
+      expected: expectedMarkdown,
+    }),
+  ].filter(Boolean);
+}
+
 export function runFeaturesPublicApiContract(projectRoot = root) {
   const manifest = readJson(path.join(projectRoot, 'tools/wp_features_public_api_manifest.json'));
   const publicEntries = Array.isArray(manifest.publicEntries) ? manifest.publicEntries : [];
@@ -112,11 +152,12 @@ export function runFeaturesPublicApiContract(projectRoot = root) {
 }
 
 function parseArgs(argv) {
-  const args = { jsonOut: '', mdOut: '' };
+  const args = { jsonOut: '', mdOut: '', checkDocs: false };
   for (let i = 2; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === '--json-out') args.jsonOut = argv[++i] || '';
     else if (arg === '--md-out') args.mdOut = argv[++i] || '';
+    else if (arg === '--check-docs') args.checkDocs = true;
   }
   return args;
 }
@@ -124,8 +165,22 @@ function parseArgs(argv) {
 function main() {
   const args = parseArgs(process.argv);
   const result = runFeaturesPublicApiContract(root);
-  if (args.jsonOut) fs.writeFileSync(path.join(root, args.jsonOut), `${JSON.stringify(result, null, 2)}\n`);
-  if (args.mdOut) fs.writeFileSync(path.join(root, args.mdOut), buildMarkdownReport(result));
+  if (args.jsonOut) {
+    const jsonOut = resolveProjectPath(root, args.jsonOut);
+    ensureParentDir(jsonOut);
+    fs.writeFileSync(jsonOut, `${JSON.stringify(result, null, 2)}\n`);
+  }
+  if (args.mdOut) {
+    const mdOut = resolveProjectPath(root, args.mdOut);
+    ensureParentDir(mdOut);
+    fs.writeFileSync(mdOut, buildMarkdownReport(result));
+  }
+  const docDrift = args.checkDocs ? checkDocsAreCurrent(result) : [];
+  if (docDrift.length) {
+    console.error('[features-public-api] generated docs are stale');
+    for (const drift of docDrift) console.error(`- ${drift.file}: ${drift.reason}`);
+    process.exit(1);
+  }
   if (!result.ok) {
     console.error('[features-public-api] FAILED');
     for (const violation of result.violations) console.error(`- ${violation}`);
