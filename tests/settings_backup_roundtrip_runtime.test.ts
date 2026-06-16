@@ -249,7 +249,7 @@ test('settings backup roundtrip restores models/colors/orders and emits a single
     assert.deepEqual(storageWrites['wardrobeSavedModels:hiddenPresets'], ['legacy-hidden']);
     assert.deepEqual(storageWrites['wardrobeSavedColors:order'], ['c1', 'existing']);
     assert.deepEqual(storageWrites.colorOrderState, ['c1', 'existing']);
-    assert.deepEqual(lifecycle, ['render', 'ensure']);
+    assert.deepEqual(lifecycle, ['ensure', 'render']);
 
     const seen: Array<{ message: string; type?: string }> = [];
     const toast = reportSettingsBackupActionResult(

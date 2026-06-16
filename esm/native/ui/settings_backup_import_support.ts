@@ -1,13 +1,13 @@
 import type { AppContainer, ModelsMergeResult, SavedModelLike, UnknownRecord } from '../../../types';
 import { getCfg } from './store_access.js';
 import {
-  ensureModelsLoadedViaServiceOrThrow,
+  ensureModelsLoadedViaService,
   mergeImportedModelsViaServiceOrThrow,
   normalizeUnknownError,
   patchViaActions,
   readFileTextResultViaBrowser,
   readSavedColors,
-  renderModelUiViaActionsOrThrow,
+  renderModelUiViaActions,
   setCfgColorSwatchesOrder,
   setCfgSavedColors,
   writeColorSwatchesOrder,
@@ -325,16 +325,25 @@ export function finalizeImportedModels(App: AppContainer, result: ModelsMergeRes
   if (added + updated <= 0) return;
 
   try {
-    renderModelUiViaActionsOrThrow(App, 'settings backup import models render');
-    ensureModelsLoadedViaServiceOrThrow(
+    const reloaded = ensureModelsLoadedViaService(App, { forceRebuild: true, silent: false });
+    const rendered = renderModelUiViaActions(App);
+    if (reloaded && rendered) return;
+
+    const missing = [
+      reloaded ? '' : 'services.models.ensureLoaded',
+      rendered ? '' : 'actions.models.renderModelUI',
+    ]
+      .filter(Boolean)
+      .join(', ');
+    settingsBackupReport(
       App,
-      { forceRebuild: true, silent: false },
-      'settings backup import models ensureLoaded'
+      'import:models.refresh',
+      new Error(
+        `[WardrobePro] Settings backup model refresh skipped missing ${missing || 'refresh surface'}.`
+      ),
+      true
     );
   } catch (error) {
-    throw new SettingsBackupActionError(
-      'models-unavailable',
-      normalizeUnknownError(error, '[WardrobePro] Settings backup model refresh failed.').message
-    );
+    settingsBackupReport(App, 'import:models.refresh', error, true);
   }
 }
