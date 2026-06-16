@@ -297,25 +297,6 @@ test('sliding edit/export-style all-open state hides sliding doors instead of mo
   assert.ok(right.group.position.x >= right.minX && right.group.position.x <= right.maxX);
 });
 
-test('legacy slidingWideOpen request hides sliding doors and does not use an outside pose', () => {
-  const left = makeSlidingDoor(0, 2);
-  const right = makeSlidingDoor(1, 2);
-  left.isOpen = true;
-  right.isOpen = true;
-
-  const App = makeAppWithSlidingDoors([left, right], {
-    runtime: { doorsOpen: true, globalClickMode: true },
-  });
-  App.services.platform.getDimsM = () => ({ w: 3, h: 2, d: 0.6 });
-
-  syncVisualsNow(App, { open: true, slidingWideOpen: true });
-
-  assert.equal(left.group.visible, false);
-  assert.equal(right.group.visible, false);
-  assert.ok(left.group.position.x >= left.minX && left.group.position.x <= left.maxX);
-  assert.ok(right.group.position.x >= right.minX && right.group.position.x <= right.maxX);
-});
-
 test('sliding track-open door is hidden during internal drawer edit visuals', () => {
   const left = makeSlidingDoor(0, 2);
   const right = makeSlidingDoor(1, 2);

@@ -110,7 +110,6 @@ export interface UiState extends UnknownRecord {
   // Settings visual controls / room design
   lightingControl?: boolean;
   lastSelectedFloorStyleIdByType?: UnknownRecord;
-  lastSelectedFloorStyleId?: string | number | null;
   lastSelectedWallColor?: string;
   lastLightPreset?: string;
   lightAmb?: number | string;

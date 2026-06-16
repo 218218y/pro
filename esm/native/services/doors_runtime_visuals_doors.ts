@@ -37,7 +37,7 @@ function resolveSlidingDoorHideOpenPolicy(
   opts?: SyncVisualsOptions
 ): SlidingDoorHideOpenPolicy {
   const rec = opts && typeof opts === 'object' ? opts : null;
-  if (rec && (rec.slidingHideOpen === true || rec.slidingWideOpen === true)) {
+  if (rec && rec.slidingHideOpen === true) {
     return { hideOpenSlidingDoors: true, preserveTrackOpenDoors: false };
   }
 

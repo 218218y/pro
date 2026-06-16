@@ -192,7 +192,6 @@ export interface UiStateLike extends UiState {
   currentCurtainChoice?: string;
   currentFloorType?: string;
   lastSelectedWallColor?: string;
-  lastSelectedFloorStyleId?: string | number | null;
   lastSelectedFloorStyleIdByType?: UnknownRecord;
   lastLightPreset?: string;
 

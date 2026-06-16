@@ -83,7 +83,6 @@ export type RoomUiLike = AnyObj & {
   // UI widget persists these fields.
   currentFloorType?: FloorType;
   lastSelectedFloorStyleIdByType?: Partial<Record<FloorType, string | null>>;
-  lastSelectedFloorStyleId?: string | null;
   lastSelectedWallColor?: string | null;
 
   // Compatibility field still read by room selection callers.

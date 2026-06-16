@@ -42,12 +42,7 @@ export function readSettingsVisualFloorStyleId(
 ): string | null {
   const map = asRecord(ui.lastSelectedFloorStyleIdByType);
   const byType = map ? map[floorType] : undefined;
-  const byTypeId = typeof byType === 'string' && byType ? byType : null;
-  const legacyId =
-    typeof ui.lastSelectedFloorStyleId === 'string' && ui.lastSelectedFloorStyleId
-      ? ui.lastSelectedFloorStyleId
-      : null;
-  return byTypeId || legacyId;
+  return typeof byType === 'string' && byType ? byType : null;
 }
 
 export function readSettingsVisualWallColor(ui: UnknownRecord): string {

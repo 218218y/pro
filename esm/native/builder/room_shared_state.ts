@@ -95,10 +95,7 @@ export function __metaUiOnly(App: AppContainer, source: string) {
 export function __readRoomFloorStyleId(ui: RoomUiLike | null | undefined, type: FloorType): string | null {
   const map = ui && typeof ui === 'object' ? ui.lastSelectedFloorStyleIdByType : null;
   const byType = map && typeof map === 'object' ? map[type] : null;
-  if (typeof byType === 'string' && byType) return byType;
-  return ui && typeof ui.lastSelectedFloorStyleId === 'string' && ui.lastSelectedFloorStyleId
-    ? ui.lastSelectedFloorStyleId
-    : null;
+  return typeof byType === 'string' && byType ? byType : null;
 }
 
 export function __readRoomWallColor(
@@ -125,7 +122,6 @@ export function __readRoomUiSelectionState(
 export function __buildRoomLastStyleUiPatch(type: FloorType, styleId: string | null): RoomUiLike {
   const nextStyleId = styleId || null;
   return {
-    lastSelectedFloorStyleId: nextStyleId,
     lastSelectedFloorStyleIdByType: { [type]: nextStyleId },
   };
 }

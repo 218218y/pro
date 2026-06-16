@@ -129,10 +129,6 @@ export const readSketchBoxDividers = (box: unknown): SketchBoxDividerState[] => 
     });
   }
   if (dividers.length) return dividers.sort((a, b) => (a.yNorm ?? -1) - (b.yNorm ?? -1) || a.xNorm - b.xNorm);
-  const storedNorm = clampUnit(rec.dividerXNorm);
-  if (storedNorm != null)
-    return [{ id: 'stored_divider', xNorm: storedNorm, centered: Math.abs(storedNorm - 0.5) <= 0.001 }];
-  if (rec.centerDivider === true) return [{ id: 'legacy_divider', xNorm: 0.5, centered: true }];
   return [];
 };
 

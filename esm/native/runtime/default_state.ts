@@ -115,7 +115,6 @@ export function createDefaultState(opts?: { noneMode?: string }): RootStateLike 
       currentFloorType: 'parquet',
       // Default wall color should match the "אפור גרפיט" preset.
       lastSelectedWallColor: '#37474f',
-      lastSelectedFloorStyleId: null,
       lastSelectedFloorStyleIdByType: {},
       lastLightPreset: 'default',
     },

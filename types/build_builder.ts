@@ -249,8 +249,6 @@ export interface BuilderSketchBoxLike extends UnknownRecord {
   baseLegColor?: string | null;
   basePlinthHeightCm?: BuilderSketchScalar;
   baseLegHeightCm?: BuilderSketchScalar;
-  dividerXNorm?: BuilderSketchScalar;
-  centerDivider?: boolean | null;
   dividers?: BuilderSketchDividerLike[] | null;
   horizontalDividers?: BuilderSketchHorizontalDividerLike[] | null;
   shelves?: BuilderSketchShelfLike[] | null;

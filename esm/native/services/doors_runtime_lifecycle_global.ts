@@ -134,7 +134,7 @@ export function setDoorsOpen(App: AppLike, open: boolean, opts?: SetDoorsOptions
     try {
       syncVisualsNow(App, {
         open: next,
-        slidingHideOpen: safeOpts.slidingHideOpen === true || safeOpts.slidingWideOpen === true,
+        slidingHideOpen: safeOpts.slidingHideOpen === true,
       });
     } catch (_) {
       reportDoorsRuntimeNonFatal(App, 'setDoorsOpen.syncVisualsNow', _);

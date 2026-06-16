@@ -68,12 +68,7 @@ export function resolveSettingsVisualFloorStyle(
   const uiNow = getUiSnapshot(args.app);
   const map = asRecord(uiNow.lastSelectedFloorStyleIdByType);
   const byType = map ? map[type] : undefined;
-  const lastId =
-    typeof byType === 'string' && byType
-      ? String(byType)
-      : typeof uiNow.lastSelectedFloorStyleId === 'string' && uiNow.lastSelectedFloorStyleId
-        ? String(uiNow.lastSelectedFloorStyleId)
-        : null;
+  const lastId = typeof byType === 'string' && byType ? String(byType) : null;
 
   const resolvedRaw =
     typeof runtime.__wp_room_resolveStyle === 'function'

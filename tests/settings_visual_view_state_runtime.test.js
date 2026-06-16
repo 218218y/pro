@@ -75,22 +75,18 @@ test('settings visual controls view-state runtime reads cfg state through canoni
   );
 });
 
-test('settings visual controls view-state runtime prefers type-specific floor style and falls back to legacy id', () => {
+test('settings visual controls view-state runtime reads only type-specific floor style ids', () => {
   const mod = loadSettingsVisualViewStateModule();
   assert.equal(
     mod.readSettingsVisualFloorStyleId(
       {
         lastSelectedFloorStyleIdByType: { parquet: 'oak_light', tiles: 'marble_white' },
-        lastSelectedFloorStyleId: 'legacy_fallback',
       },
       'tiles'
     ),
     'marble_white'
   );
-  assert.equal(
-    mod.readSettingsVisualFloorStyleId({ lastSelectedFloorStyleId: 'legacy_fallback' }, 'parquet'),
-    'legacy_fallback'
-  );
+  assert.equal(mod.readSettingsVisualFloorStyleId({}, 'parquet'), null);
 });
 
 test('settings visual controls view-state runtime normalizes wall color and preset fallbacks', () => {

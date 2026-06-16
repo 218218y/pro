@@ -148,6 +148,6 @@ export function applySketchBoxDividerState(box: unknown, dividerXNorm: number | 
     return;
   }
   writeSketchBoxDividers(box, [
-    { id: 'legacy_divider', xNorm: norm, centered: Math.abs(norm - 0.5) <= 0.001 },
+    { id: 'primary_divider', xNorm: norm, centered: Math.abs(norm - 0.5) <= 0.001 },
   ]);
 }

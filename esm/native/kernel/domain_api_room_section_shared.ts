@@ -99,7 +99,6 @@ export const PROFILE_UI_RAW_KEYS = [
   'currentCurtainChoice',
   'currentFloorType',
   'lastSelectedWallColor',
-  'lastSelectedFloorStyleId',
   'lastSelectedFloorStyleIdByType',
   'lastLightPreset',
 ] satisfies readonly string[];

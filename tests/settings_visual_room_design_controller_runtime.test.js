@@ -107,7 +107,7 @@ test('[settings-visual-room-design-controller] delegates floor/wall flows throug
 test('[settings-visual-room-design-controller] falls back cleanly when runtime activation/update misbehaves', () => {
   const calls = [];
   const mod = loadSettingsVisualRoomDesignControllerModule({
-    getUiSnapshot: () => ({ lastSelectedFloorStyleId: 'legacy-id' }),
+    getUiSnapshot: () => ({}),
     setUiCurrentFloorType: (...args) => calls.push(['uiFloorType', ...args]),
     setUiLastSelectedWallColor: (...args) => calls.push(['uiWall', ...args]),
   });

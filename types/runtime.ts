@@ -112,8 +112,6 @@ export interface DoorsSetOpenOptionsLike extends ActionMetaLike {
   hardClose?: boolean;
   /** Hide open sliding doors for edit/export snapshots instead of moving them outside the cabinet. */
   slidingHideOpen?: boolean;
-  /** @deprecated Open sliding doors are hidden for edit/export; this legacy flag maps to slidingHideOpen. */
-  slidingWideOpen?: boolean;
 }
 
 export interface DoorsSyncVisualsOptionsLike extends UnknownRecord {
@@ -123,8 +121,6 @@ export interface DoorsSyncVisualsOptionsLike extends UnknownRecord {
   includeDrawers?: boolean;
   /** Hide open sliding doors for edit/export snapshots instead of moving them outside the cabinet. */
   slidingHideOpen?: boolean;
-  /** @deprecated Open sliding doors are hidden for edit/export; this legacy flag maps to slidingHideOpen. */
-  slidingWideOpen?: boolean;
 }
 
 export interface DoorsCloseDrawerOptionsLike extends UnknownRecord {

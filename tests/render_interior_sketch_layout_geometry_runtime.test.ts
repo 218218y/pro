@@ -64,7 +64,7 @@ test('render interior sketch layout geometry keeps free-box vertical slack and n
   assert.ok(Math.abs(clampedHigh - 3) < 1e-9);
 });
 
-test('render interior sketch layout dividers sort explicit dividers and still honor legacy centered fallbacks', () => {
+test('render interior sketch layout dividers sort explicit dividers and ignore removed persisted fallbacks', () => {
   const explicit = readSketchBoxDividers({
     dividers: [
       { id: 'right', xNorm: 0.8 },
@@ -79,8 +79,7 @@ test('render interior sketch layout dividers sort explicit dividers and still ho
     ]
   );
 
-  const legacyCentered = readSketchBoxDividers({ centerDivider: true });
-  assert.deepEqual(legacyCentered, [{ id: 'legacy_divider', xNorm: 0.5, centered: true }]);
+  assert.deepEqual(readSketchBoxDividers({ centerDivider: true, dividerXNorm: 0.5 }), []);
 });
 
 test('render interior sketch layout resolves content segments from divider-separated spans', () => {
