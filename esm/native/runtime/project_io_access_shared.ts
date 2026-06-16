@@ -94,13 +94,13 @@ function readProjectIoLoadResultRecord(value: unknown): ProjectIoLoadResultLike 
 
 export function normalizeProjectIoLoadResult(
   value: unknown,
-  fallbackReason: ProjectIoLoadFailureLike = 'result'
+  defaultReason: ProjectIoLoadFailureLike = 'result'
 ): ProjectIoLoadResultLike {
   if (value === true) return { ok: true };
-  if (value === false) return { ok: false, reason: fallbackReason };
+  if (value === false) return { ok: false, reason: defaultReason };
 
   const rec = readProjectIoLoadResultRecord(value);
-  if (!rec) return { ok: false, reason: fallbackReason };
+  if (!rec) return { ok: false, reason: defaultReason };
 
   const ok = rec.ok === true;
   const pending = rec.pending === true;
@@ -108,7 +108,7 @@ export function normalizeProjectIoLoadResult(
   const restoreGen =
     Number.isFinite(restoreGenRaw) && restoreGenRaw > 0 ? Math.floor(restoreGenRaw) : undefined;
   const reason =
-    typeof rec.reason === 'string' && rec.reason.trim() ? rec.reason.trim() : ok ? undefined : fallbackReason;
+    typeof rec.reason === 'string' && rec.reason.trim() ? rec.reason.trim() : ok ? undefined : defaultReason;
   const message = typeof rec.message === 'string' && rec.message.trim() ? rec.message.trim() : undefined;
 
   return {
@@ -122,15 +122,15 @@ export function normalizeProjectIoLoadResult(
 
 export function normalizeProjectLoadActionResultViaProjectIo(
   value: unknown,
-  fallbackReason: ProjectLoadFailureReason = 'error'
+  defaultReason: ProjectLoadFailureReason = 'error'
 ): ProjectLoadActionResult {
-  return normalizeProjectLoadActionResult(value, fallbackReason);
+  return normalizeProjectLoadActionResult(value, defaultReason);
 }
 
 export function buildProjectIoLoadFailureMessage(
   result: ProjectLoadActionResult | ProjectIoLoadResultLike | ProjectRestoreActionResult,
   label: string,
-  errorFallback: string
+  defaultErrorMessage: string
 ): string {
   const message = 'message' in result && typeof result.message === 'string' ? result.message.trim() : '';
   if (message) return message;
@@ -141,7 +141,7 @@ export function buildProjectIoLoadFailureMessage(
   if ('pending' in result && result.pending === true) {
     return `[WardrobePro] ${label} returned an unexpected pending result.`;
   }
-  return errorFallback;
+  return defaultErrorMessage;
 }
 
 export function buildAutosaveRestoreLoadOpts(opts?: ProjectLoadOpts): ProjectLoadOpts {

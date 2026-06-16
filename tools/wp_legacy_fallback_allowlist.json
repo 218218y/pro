@@ -199,12 +199,6 @@
         "domain-default": 1
       }
     },
-    "esm/native/runtime/actions_access_mutations.ts": {
-      "total": 2,
-      "categories": {
-        "error-message-default": 2
-      }
-    },
     "esm/native/runtime/browser_clipboard.ts": {
       "total": 1,
       "categories": {
@@ -263,24 +257,6 @@
       "total": 2,
       "categories": {
         "domain-default": 2
-      }
-    },
-    "esm/native/runtime/project_io_access_load.ts": {
-      "total": 12,
-      "categories": {
-        "project-migration": 12
-      }
-    },
-    "esm/native/runtime/project_io_access_restore.ts": {
-      "total": 13,
-      "categories": {
-        "project-migration": 13
-      }
-    },
-    "esm/native/runtime/project_io_access_shared.ts": {
-      "total": 2,
-      "categories": {
-        "project-migration": 2
       }
     },
     "esm/native/runtime/storage_access.ts": {

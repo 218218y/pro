@@ -95,39 +95,39 @@ export function readMergeResult(value: unknown): ModelsMergeResult {
 
 export function readSaveResult(
   value: unknown,
-  fallbackReason: ModelsCommandReason = 'not-installed'
+  defaultReason: ModelsCommandReason = 'not-installed'
 ): ModelsSaveResult {
-  const base = readCommandResult(value, fallbackReason);
+  const base = readCommandResult(value, defaultReason);
   const id = isRecord(value) ? (normalizeSavedModelId(value.id) ?? undefined) : undefined;
   return id ? { ...base, id } : base;
 }
 
 export function readLockResult(
   value: unknown,
-  fallbackReason: ModelsCommandReason = 'not-installed'
+  defaultReason: ModelsCommandReason = 'not-installed'
 ): ModelsLockResult {
-  const base = readCommandResult(value, fallbackReason);
+  const base = readCommandResult(value, defaultReason);
   const locked = isRecord(value) && typeof value.locked === 'boolean' ? value.locked : false;
   return { ...base, locked };
 }
 
 export function readDeleteTemporaryResult(
   value: unknown,
-  fallbackReason: ModelsCommandReason = 'not-installed'
+  defaultReason: ModelsCommandReason = 'not-installed'
 ): ModelsDeleteTemporaryResult {
-  const base = readCommandResult(value, fallbackReason);
+  const base = readCommandResult(value, defaultReason);
   const removed = isRecord(value) && Number.isFinite(Number(value.removed)) ? Number(value.removed) : 0;
   return { ...base, removed };
 }
 
-export function readCommandResult(value: unknown, fallbackReason: ModelsCommandReason = 'not-installed') {
-  if (!isRecord(value)) return { ok: false, reason: fallbackReason };
+export function readCommandResult(value: unknown, defaultReason: ModelsCommandReason = 'not-installed') {
+  if (!isRecord(value)) return { ok: false, reason: defaultReason };
   const ok = value.ok === true;
   const message =
     typeof value.message === 'string' && value.message.trim() ? value.message.trim() : undefined;
   return {
     ok,
-    reason: ok ? undefined : normalizeModelsCommandReason(value.reason, fallbackReason),
+    reason: ok ? undefined : normalizeModelsCommandReason(value.reason, defaultReason),
     ...(message ? { message } : {}),
   };
 }

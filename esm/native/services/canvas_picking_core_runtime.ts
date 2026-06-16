@@ -23,7 +23,7 @@ import {
 } from './canvas_picking_core_support.js';
 
 function __wp_primaryMode(App: AppContainer): string {
-  const NONE = getModeId(App, 'NONE') || 'none';
+  const NONE = getModeId('NONE') || 'none';
   try {
     const md = __wp_asRecord(getMode(App));
     const p = __wp_readRecordString(md, 'primary');

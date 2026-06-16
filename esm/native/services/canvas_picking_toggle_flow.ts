@@ -44,8 +44,8 @@ export function handleCanvasDoorToggleClick(args: CanvasDoorToggleClickArgs): vo
     foundModuleStack,
   } = args;
 
-  const __NONE = getModeId(App, 'NONE') || 'none';
-  const __notesMode = getModeId(App, 'SCREEN_NOTE') || 'screen_note';
+  const __NONE = getModeId('NONE') || 'none';
+  const __notesMode = getModeId('SCREEN_NOTE') || 'screen_note';
   if (__pm !== __NONE && __pm !== __notesMode) return;
 
   const sup = getSuppressGlobalToggleUntil(App);

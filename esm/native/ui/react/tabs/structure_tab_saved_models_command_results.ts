@@ -97,12 +97,12 @@ export function buildCommandActionResult<K extends SavedModelsActionKind>(
   kind: K,
   result: ModelsCommandResult | ModelsLockResult | ModelsSaveResult | null | undefined,
   extras: Omit<SavedModelsActionBase, 'kind'> = {},
-  fallbackReason: ModelsCommandReason = 'error'
+  defaultReason: ModelsCommandReason = 'error'
 ): SavedModelsActionResult & { kind: K } {
   if (result?.ok) return buildActionSuccess(kind, extras);
   return buildActionFailure(
     kind,
-    normalizeModelsCommandReason(result?.reason, fallbackReason),
+    normalizeModelsCommandReason(result?.reason, defaultReason),
     extras,
     readResultMessage(result)
   );

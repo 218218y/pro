@@ -23,7 +23,7 @@ function readModePrimary(App: AppContainer): unknown {
 }
 
 function isRemovePartsMode(App: AppContainer): boolean {
-  const removeModeId = getModeId(App, 'REMOVE_DOOR') || 'remove_door';
+  const removeModeId = getModeId('REMOVE_DOOR') || 'remove_door';
   return readModePrimary(App) === removeModeId;
 }
 

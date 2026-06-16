@@ -33,7 +33,7 @@ function normalizeBackupMessage(value: unknown): string | undefined {
 
 export function normalizeSettingsBackupExportFailureReason(
   value: unknown,
-  fallbackReason: SettingsBackupExportFailureReason = 'error'
+  defaultReason: SettingsBackupExportFailureReason = 'error'
 ): SettingsBackupExportFailureReason {
   const reason = typeof value === 'string' ? value.trim().toLowerCase() : '';
   switch (reason) {
@@ -45,13 +45,13 @@ export function normalizeSettingsBackupExportFailureReason(
     case 'download_unavailable':
       return 'download-unavailable';
     default:
-      return fallbackReason;
+      return defaultReason;
   }
 }
 
 export function normalizeSettingsBackupImportFailureReason(
   value: unknown,
-  fallbackReason: SettingsBackupImportFailureReason = 'error'
+  defaultReason: SettingsBackupImportFailureReason = 'error'
 ): SettingsBackupImportFailureReason {
   const reason = typeof value === 'string' ? value.trim().toLowerCase() : '';
   switch (reason) {
@@ -76,7 +76,7 @@ export function normalizeSettingsBackupImportFailureReason(
     case 'models unavailable':
       return 'models-unavailable';
     default:
-      return fallbackReason;
+      return defaultReason;
   }
 }
 
@@ -129,9 +129,9 @@ export function buildSettingsBackupImportFailureResult(
 export function buildSettingsBackupActionErrorResult(
   kind: SettingsBackupActionKind,
   error: unknown,
-  fallbackMessage: string
+  defaultMessage: string
 ): SettingsBackupActionResult {
-  const message = normalizeUnknownError(error, fallbackMessage).message;
+  const message = normalizeUnknownError(error, defaultMessage).message;
   return kind === 'import'
     ? buildSettingsBackupImportFailureResult('error', message)
     : buildSettingsBackupExportFailureResult('error', message);

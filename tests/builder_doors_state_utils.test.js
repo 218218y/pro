@@ -42,7 +42,7 @@ test('doors_state_utils: makeDoorStateAccessors resolves hinge, split, curtain a
 test('doors_state_utils: remove-doors helpers honor mode and ui toggle', async () => {
   const { isRemoveDoorMode, isRemoveDoorsEnabled } = await mod();
 
-  const App = {}; // getModeId() falls back to canonical constants
+  const App = {};
 
   assert.equal(isRemoveDoorMode(App, {}), false);
   assert.equal(isRemoveDoorMode(App, { mode: { primary: 'remove_door' } }), true);

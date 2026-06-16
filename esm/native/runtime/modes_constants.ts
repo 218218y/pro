@@ -27,23 +27,14 @@ function isModeKey(key: string): key is keyof typeof MODES {
   return Object.prototype.hasOwnProperty.call(MODES, key);
 }
 
-/**
- * Return the canonical mode id for a given mode key.
- *
- * The `App` parameter is kept for backwards compatibility, but is intentionally ignored.
- */
-export function getModeId(_App: unknown, key: string): string | undefined {
+/** Return the canonical mode id for a given mode key. */
+export function getModeId(key: string): string | undefined {
   const k = String(key || '').trim();
   if (!k) return undefined;
   return isModeKey(k) ? MODES[k] : undefined;
 }
 
-/**
- * Return the canonical modes map.
- *
- * NOTE: The `App` parameter is kept for backwards compatibility with older call sites,
- * but is intentionally ignored.
- */
-export function getModes(_App: unknown): ModeMap {
+/** Return the canonical modes map. */
+export function getModes(): ModeMap {
   return MODES;
 }

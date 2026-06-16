@@ -141,7 +141,7 @@ export function makeDoorStateAccessors(
 
 function _removeDoorModeId(App: unknown): string {
   // Canonical id is 'remove_door'.
-  return getModeId(App, 'REMOVE_DOOR') || 'remove_door';
+  return getModeId('REMOVE_DOOR') || 'remove_door';
 }
 
 /**

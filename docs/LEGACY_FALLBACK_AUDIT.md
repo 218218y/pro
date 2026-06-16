@@ -1,19 +1,19 @@
 # Legacy / fallback audit
 
-Generated at: 2026-06-16T19:19:28.459Z
+Generated at: 2026-06-16T19:42:32.346Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **260**
-- Files with occurrences: **106**
+- Total categorized occurrences: **231**
+- Files with occurrences: **102**
 - Category counts:
   - `runtime-default`: **0**
   - `domain-default`: **141**
-  - `error-message-default`: **29**
+  - `error-message-default`: **27**
   - `framework-default`: **2**
   - `browser-adapter`: **2**
-  - `project-migration`: **37**
+  - `project-migration`: **10**
   - `external-api-compat`: **0**
   - `compat-boundary`: **43**
   - `test-fixture`: **6**
@@ -35,8 +35,6 @@ Generated at: 2026-06-16T19:19:28.459Z
 
 ## Hot files
 
-- `esm/native/runtime/project_io_access_restore.ts` - **13** (project-migration: 13)
-- `esm/native/runtime/project_io_access_load.ts` - **12** (project-migration: 12)
 - `esm/native/io/project_schema_shared.ts` - **8** (project-migration: 8)
 - `esm/native/ui/react/tabs/design_tab_color_action_result_builders.ts` - **8** (error-message-default: 8)
 - `esm/native/kernel/domain_api_modules_corner_shared.ts` - **7** (compat-boundary: 7)
@@ -65,6 +63,8 @@ Generated at: 2026-06-16T19:19:28.459Z
 - `esm/native/kernel/domain_api_modules_corner_recompute_policy.ts` - **3** (domain-default: 3)
 - `esm/native/kernel/domain_api_surface_sections_shared.ts` - **3** (compat-boundary: 1, domain-default: 2)
 - `esm/native/kernel/state_api_meta_namespace.ts` - **3** (domain-default: 3)
+- `esm/native/services/cloud_sync_delete_temp_runtime.ts` - **3** (error-message-default: 3)
+- `esm/native/ui/project_save_runtime_action.ts` - **3** (domain-default: 3)
 
 ## Allowlist check
 

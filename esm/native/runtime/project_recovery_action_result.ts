@@ -71,7 +71,7 @@ export function buildProjectRecoverySuccessResult(options?: {
 
 function normalizeProjectRestoreFailureReason(
   value: unknown,
-  fallbackReason: ProjectRestoreFailureReason = 'error'
+  defaultReason: ProjectRestoreFailureReason = 'error'
 ): ProjectRestoreFailureReason {
   const reason = typeof value === 'string' ? value.trim().toLowerCase() : '';
   switch (reason) {
@@ -95,13 +95,13 @@ function normalizeProjectRestoreFailureReason(
     case 'reset':
       return 'error';
     default:
-      return fallbackReason;
+      return defaultReason;
   }
 }
 
 function normalizeProjectResetDefaultFailureReason(
   value: unknown,
-  fallbackReason: ProjectResetDefaultFailureReason = 'error'
+  defaultReason: ProjectResetDefaultFailureReason = 'error'
 ): ProjectResetDefaultFailureReason {
   const reason = typeof value === 'string' ? value.trim().toLowerCase() : '';
   switch (reason) {
@@ -120,7 +120,7 @@ function normalizeProjectResetDefaultFailureReason(
     case 'load':
       return 'error';
     default:
-      return fallbackReason;
+      return defaultReason;
   }
 }
 
@@ -156,53 +156,53 @@ export function buildProjectResetDefaultFailureResult(
 
 export function normalizeProjectRestoreActionResult(
   value: unknown,
-  fallbackReason: ProjectRestoreFailureReason = 'error'
+  defaultReason: ProjectRestoreFailureReason = 'error'
 ): ProjectRestoreActionResult {
   if (value === true) return buildProjectRecoverySuccessResult();
-  if (value === false) return buildProjectRestoreFailureResult(fallbackReason);
+  if (value === false) return buildProjectRestoreFailureResult(defaultReason);
 
   const rec = asRecord<ProjectRecoveryResultRecord>(value);
-  if (!rec) return buildProjectRestoreFailureResult(fallbackReason);
+  if (!rec) return buildProjectRestoreFailureResult(defaultReason);
   if (rec.ok === true) return buildProjectRecoverySuccessResult(rec);
 
   return buildProjectRestoreFailureResult(
-    normalizeProjectRestoreFailureReason(rec.reason, fallbackReason),
+    normalizeProjectRestoreFailureReason(rec.reason, defaultReason),
     rec
   );
 }
 
 export function normalizeProjectResetDefaultActionResult(
   value: unknown,
-  fallbackReason: ProjectResetDefaultFailureReason = 'error'
+  defaultReason: ProjectResetDefaultFailureReason = 'error'
 ): ProjectResetDefaultActionResult {
   if (value === true) return buildProjectRecoverySuccessResult();
-  if (value === false) return buildProjectResetDefaultFailureResult(fallbackReason);
+  if (value === false) return buildProjectResetDefaultFailureResult(defaultReason);
 
   const rec = asRecord<ProjectRecoveryResultRecord>(value);
-  if (!rec) return buildProjectResetDefaultFailureResult(fallbackReason);
+  if (!rec) return buildProjectResetDefaultFailureResult(defaultReason);
   if (rec.ok === true) return buildProjectRecoverySuccessResult(rec);
 
   return buildProjectResetDefaultFailureResult(
-    normalizeProjectResetDefaultFailureReason(rec.reason, fallbackReason),
+    normalizeProjectResetDefaultFailureReason(rec.reason, defaultReason),
     rec
   );
 }
 
 export function buildProjectRestoreActionErrorResult(
   error: unknown,
-  fallbackMessage: string
+  defaultMessage: string
 ): ProjectRestoreFailureResult {
   return buildProjectRestoreFailureResult('error', {
-    message: normalizeUnknownError(error, fallbackMessage).message,
+    message: normalizeUnknownError(error, defaultMessage).message,
   });
 }
 
 export function buildProjectResetDefaultActionErrorResult(
   error: unknown,
-  fallbackMessage: string
+  defaultMessage: string
 ): ProjectResetDefaultFailureResult {
   return buildProjectResetDefaultFailureResult('error', {
-    message: normalizeUnknownError(error, fallbackMessage).message,
+    message: normalizeUnknownError(error, defaultMessage).message,
   });
 }
 

@@ -74,7 +74,7 @@ function ensureDoorCutHoverMarker(App: AppContainer) {
 }
 
 function readPaintSelection(App: AppContainer, primaryMode: string): string | null {
-  if (primaryMode !== (getModeId(App, 'PAINT') || 'paint')) return null;
+  if (primaryMode !== (getModeId('PAINT') || 'paint')) return null;
   try {
     const tools = getTools(App);
     const paint = typeof tools.getPaintColor === 'function' ? tools.getPaintColor() : null;
@@ -90,15 +90,15 @@ export function handleCanvasHoverNDCImpl(App: AppContainer, ndcX: number, ndcY: 
   syncCanvasPickingViewportMatrices(App);
   try {
     const __pm = __wp_primaryMode(App);
-    const __isSplitEditMode = __pm === (getModeId(App, 'SPLIT') || 'split');
-    const __isGrooveEditMode = __pm === (getModeId(App, 'GROOVE') || 'groove');
-    const __isRemoveDoorMode = __pm === (getModeId(App, 'REMOVE_DOOR') || 'remove_door');
-    const __isDoorTrimMode = __pm === (getModeId(App, 'DOOR_TRIM') || 'door_trim');
-    const __isHandleEditMode = __pm === (getModeId(App, 'HANDLE') || 'handle');
-    const __isHingeEditMode = __pm === (getModeId(App, 'HINGE') || 'hinge');
-    const __isExtDrawerEditMode = __pm === (getModeId(App, 'EXT_DRAWER') || 'ext_drawer');
-    const __isDividerEditMode = __pm === (getModeId(App, 'DIVIDER') || 'divider');
-    const __isCellDimsMode = __pm === (getModeId(App, 'CELL_DIMS') || 'cell_dims');
+    const __isSplitEditMode = __pm === (getModeId('SPLIT') || 'split');
+    const __isGrooveEditMode = __pm === (getModeId('GROOVE') || 'groove');
+    const __isRemoveDoorMode = __pm === (getModeId('REMOVE_DOOR') || 'remove_door');
+    const __isDoorTrimMode = __pm === (getModeId('DOOR_TRIM') || 'door_trim');
+    const __isHandleEditMode = __pm === (getModeId('HANDLE') || 'handle');
+    const __isHingeEditMode = __pm === (getModeId('HINGE') || 'hinge');
+    const __isExtDrawerEditMode = __pm === (getModeId('EXT_DRAWER') || 'ext_drawer');
+    const __isDividerEditMode = __pm === (getModeId('DIVIDER') || 'divider');
+    const __isCellDimsMode = __pm === (getModeId('CELL_DIMS') || 'cell_dims');
     const __splitVariant = readSplitVariant(App);
     const __paintSelection = readPaintSelection(App, __pm);
     const __isMirrorPaintMode = __paintSelection === 'mirror';

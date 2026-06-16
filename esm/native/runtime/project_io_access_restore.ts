@@ -42,19 +42,19 @@ export function readAutosaveProjectPayload(
 export function restoreProjectAutosavePayloadActionResultViaService(
   App: unknown,
   autosavePayload: ProjectAutosavePayloadSuccessResult,
-  fallbackReason: ProjectRestoreFailureReason = 'error',
-  loadFallbackReason: ProjectLoadFailureReason = 'not-installed',
-  errorFallback = '[WardrobePro] Restore session load failed.'
+  defaultReason: ProjectRestoreFailureReason = 'error',
+  loadDefaultReason: ProjectLoadFailureReason = 'not-installed',
+  defaultErrorMessage = '[WardrobePro] Restore session load failed.'
 ): ProjectRestoreActionResult {
   return normalizeProjectRestoreActionResult(
     loadProjectDataActionResultViaService(
       App,
       autosavePayload.data,
       autosavePayload.opts,
-      loadFallbackReason,
-      errorFallback
+      loadDefaultReason,
+      defaultErrorMessage
     ),
-    fallbackReason
+    defaultReason
   );
 }
 
@@ -63,18 +63,18 @@ export function restoreProjectSessionActionResultViaService(
   opts?: ProjectLoadOpts,
   missingReason: 'missing-autosave' = 'missing-autosave',
   invalidReason: 'invalid' = 'invalid',
-  fallbackReason: ProjectRestoreFailureReason = 'error',
-  loadFallbackReason: ProjectLoadFailureReason = 'not-installed',
-  errorFallback = '[WardrobePro] Restore session load failed.'
+  defaultReason: ProjectRestoreFailureReason = 'error',
+  loadDefaultReason: ProjectLoadFailureReason = 'not-installed',
+  defaultErrorMessage = '[WardrobePro] Restore session load failed.'
 ): ProjectRestoreActionResult {
   const autosavePayload = readAutosaveProjectPayload(App, opts, missingReason, invalidReason);
-  if (!autosavePayload.ok) return normalizeProjectRestoreActionResult(autosavePayload, fallbackReason);
+  if (!autosavePayload.ok) return normalizeProjectRestoreActionResult(autosavePayload, defaultReason);
   return restoreProjectAutosavePayloadActionResultViaService(
     App,
     autosavePayload,
-    fallbackReason,
-    loadFallbackReason,
-    errorFallback
+    defaultReason,
+    loadDefaultReason,
+    defaultErrorMessage
   );
 }
 
@@ -83,9 +83,9 @@ export function restoreProjectSessionActionResultViaServiceOrThrow(
   opts?: ProjectLoadOpts,
   missingReason: 'missing-autosave' = 'missing-autosave',
   invalidReason: 'invalid' = 'invalid',
-  fallbackReason: ProjectRestoreFailureReason = 'error',
-  loadFallbackReason: ProjectLoadFailureReason = 'not-installed',
-  errorFallback = '[WardrobePro] Restore session load failed.',
+  defaultReason: ProjectRestoreFailureReason = 'error',
+  loadDefaultReason: ProjectLoadFailureReason = 'not-installed',
+  defaultErrorMessage = '[WardrobePro] Restore session load failed.',
   label = 'projectIO.restoreLastSession'
 ): ProjectRestoreActionResult {
   const result = restoreProjectSessionActionResultViaService(
@@ -93,12 +93,12 @@ export function restoreProjectSessionActionResultViaServiceOrThrow(
     opts,
     missingReason,
     invalidReason,
-    fallbackReason,
-    loadFallbackReason,
-    errorFallback
+    defaultReason,
+    loadDefaultReason,
+    defaultErrorMessage
   );
   if (result.ok && result.pending !== true) return result;
-  throw new Error(buildProjectIoLoadFailureMessage(result, label, errorFallback));
+  throw new Error(buildProjectIoLoadFailureMessage(result, label, defaultErrorMessage));
 }
 
 export function restoreProjectSessionViaService(App: unknown): unknown {

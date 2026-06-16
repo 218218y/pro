@@ -55,7 +55,7 @@ export function buildProjectLoadSuccessResult(options?: {
 
 export function normalizeProjectLoadFailureReason(
   value: unknown,
-  fallbackReason: ProjectLoadFailureReason = 'error'
+  defaultReason: ProjectLoadFailureReason = 'error'
 ): ProjectLoadFailureReason {
   const reason = typeof value === 'string' ? value.trim().toLowerCase() : '';
   switch (reason) {
@@ -78,7 +78,7 @@ export function normalizeProjectLoadFailureReason(
     case 'reset':
       return 'error';
     default:
-      return fallbackReason;
+      return defaultReason;
   }
 }
 
@@ -102,28 +102,26 @@ export function buildProjectLoadFailureResult(
 
 export function normalizeProjectLoadActionResult(
   value: unknown,
-  fallbackReason: ProjectLoadFailureReason = 'error'
+  defaultReason: ProjectLoadFailureReason = 'error'
 ): ProjectLoadActionResult {
   if (value === true) return buildProjectLoadSuccessResult();
-  if (value === false) return buildProjectLoadFailureResult(fallbackReason);
+  if (value === false) return buildProjectLoadFailureResult(defaultReason);
 
   const rec = asRecord<ProjectLoadResultRecord>(value);
-  if (!rec) return buildProjectLoadFailureResult(fallbackReason);
+  if (!rec) return buildProjectLoadFailureResult(defaultReason);
   if (rec.ok === true) return buildProjectLoadSuccessResult(rec);
 
-  return buildProjectLoadFailureResult(normalizeProjectLoadFailureReason(rec.reason, fallbackReason), rec);
+  return buildProjectLoadFailureResult(normalizeProjectLoadFailureReason(rec.reason, defaultReason), rec);
 }
 
 export function buildProjectLoadActionErrorResult(
   error: unknown,
-  fallbackMessage: string
+  defaultMessage: string
 ): ProjectLoadFailureResult & { reason: 'error'; message: string } {
-  const normalizedMessage = normalizeProjectLoadMessage(
-    normalizeUnknownError(error, fallbackMessage).message
-  );
+  const normalizedMessage = normalizeProjectLoadMessage(normalizeUnknownError(error, defaultMessage).message);
   return {
     ok: false,
     reason: 'error',
-    message: normalizedMessage || fallbackMessage,
+    message: normalizedMessage || defaultMessage,
   };
 }

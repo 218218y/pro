@@ -40,7 +40,7 @@ type ProjectSaveResultRecord = {
 
 export function normalizeProjectSaveFailureReason(
   value: unknown,
-  fallbackReason: ProjectSaveFailureReason = 'error'
+  defaultReason: ProjectSaveFailureReason = 'error'
 ): ProjectSaveFailureReason {
   const trimmed = typeof value === 'string' ? value.trim().toLowerCase() : '';
   switch (trimmed) {
@@ -59,36 +59,36 @@ export function normalizeProjectSaveFailureReason(
     case 'not_installed':
       return 'not-installed';
     default:
-      return fallbackReason;
+      return defaultReason;
   }
 }
 
 export function normalizeProjectSaveActionResult(
   value: unknown,
-  fallbackReason: ProjectSaveFailureReason = 'not-installed'
+  defaultReason: ProjectSaveFailureReason = 'not-installed'
 ): ProjectSaveActionResult {
   if (value === true) return { ok: true };
-  if (value === false) return { ok: false, reason: fallbackReason };
+  if (value === false) return { ok: false, reason: defaultReason };
 
   const rec = asRecord<ProjectSaveResultRecord>(value);
-  if (!rec) return { ok: false, reason: fallbackReason };
+  if (!rec) return { ok: false, reason: defaultReason };
 
   if (rec.ok === true) {
     return rec.pending === true ? { ok: true, pending: true } : { ok: true };
   }
 
-  const reason = normalizeProjectSaveFailureReason(rec.reason, fallbackReason);
+  const reason = normalizeProjectSaveFailureReason(rec.reason, defaultReason);
   const message = typeof rec.message === 'string' && rec.message.trim() ? rec.message.trim() : undefined;
   return message ? { ok: false, reason, message } : { ok: false, reason };
 }
 
 export function buildProjectSaveActionErrorResult(
   error: unknown,
-  fallbackMessage: string
+  defaultMessage: string
 ): ProjectSaveFailureResult {
   return {
     ok: false,
     reason: 'error',
-    message: normalizeUnknownError(error, fallbackMessage).message,
+    message: normalizeUnknownError(error, defaultMessage).message,
   };
 }

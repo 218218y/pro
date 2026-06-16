@@ -282,20 +282,20 @@ export type ProjectSaveActionResultLike = ProjectSaveActionResult;
 
 export function saveProjectResultViaActions(
   App: unknown,
-  fallbackReason: import('./project_save_action_result.js').ProjectSaveFailureReason = 'not-installed',
-  errorFallback = '[WardrobePro] Project save failed.'
+  defaultReason: import('./project_save_action_result.js').ProjectSaveFailureReason = 'not-installed',
+  defaultErrorMessage = '[WardrobePro] Project save failed.'
 ): ProjectSaveActionResultLike {
   const fn = getSaveProjectAction(App);
   if (typeof fn !== 'function') return { ok: false, reason: 'not-installed' };
 
   try {
-    return normalizeProjectSaveActionResult(fn(), fallbackReason);
+    return normalizeProjectSaveActionResult(fn(), defaultReason);
   } catch (error) {
     reportError(App, error, {
       where: 'native/runtime/actions_access',
       op: 'actions.saveProject.ownerRejected',
       fatal: false,
     });
-    return buildProjectSaveActionErrorResult(error, errorFallback);
+    return buildProjectSaveActionErrorResult(error, defaultErrorMessage);
   }
 }

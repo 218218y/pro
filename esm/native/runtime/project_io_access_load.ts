@@ -54,7 +54,7 @@ export function exportProjectViaService(
 export function exportProjectResultViaService(
   App: unknown,
   meta?: UnknownRecord | null,
-  errorFallback = '[WardrobePro] Project export failed.'
+  defaultErrorMessage = '[WardrobePro] Project export failed.'
 ): ProjectExportAccessResult {
   const svc = getProjectIoServiceMaybe(App);
   const exportCurrentProject =
@@ -66,7 +66,7 @@ export function exportProjectResultViaService(
     return exported ? { ok: true, exported } : { ok: false, reason: 'invalid' };
   } catch (error) {
     reportProjectIoAccessNonFatal(App, 'projectIO.exportCurrentProject.resultOwnerRejected', error);
-    return buildNormalizedErrorResult('error', error, errorFallback);
+    return buildNormalizedErrorResult('error', error, defaultErrorMessage);
   }
 }
 
@@ -93,8 +93,8 @@ export function loadProjectDataResultViaService(
   App: unknown,
   data: ProjectLoadInputLike,
   opts?: ProjectLoadOpts,
-  fallbackReason: ProjectIoLoadFailureLike = 'not-installed',
-  errorFallback = '[WardrobePro] Project load failed.'
+  defaultReason: ProjectIoLoadFailureLike = 'not-installed',
+  defaultErrorMessage = '[WardrobePro] Project load failed.'
 ): ProjectIoLoadResultLike {
   const loadProjectData = getProjectIoLoadProjectDataFn(App);
   if (typeof loadProjectData !== 'function') {
@@ -102,10 +102,10 @@ export function loadProjectDataResultViaService(
   }
 
   try {
-    return normalizeProjectIoLoadResult(loadProjectData(data, opts), fallbackReason);
+    return normalizeProjectIoLoadResult(loadProjectData(data, opts), defaultReason);
   } catch (error) {
     reportProjectIoAccessNonFatal(App, 'projectIO.loadProjectData.resultOwnerRejected', error);
-    return buildNormalizedErrorResult('error', error, errorFallback);
+    return buildNormalizedErrorResult('error', error, defaultErrorMessage);
   }
 }
 
@@ -113,8 +113,8 @@ export function loadProjectDataActionResultViaService(
   App: unknown,
   data: ProjectLoadInputLike,
   opts?: ProjectLoadOpts,
-  fallbackReason: ProjectLoadFailureReason = 'not-installed',
-  errorFallback = '[WardrobePro] Project load failed.'
+  defaultReason: ProjectLoadFailureReason = 'not-installed',
+  defaultErrorMessage = '[WardrobePro] Project load failed.'
 ): ProjectLoadActionResult {
   const loadProjectData = getProjectIoLoadProjectDataFn(App);
   if (typeof loadProjectData !== 'function') {
@@ -122,10 +122,10 @@ export function loadProjectDataActionResultViaService(
   }
 
   try {
-    return normalizeProjectLoadActionResultViaProjectIo(loadProjectData(data, opts), fallbackReason);
+    return normalizeProjectLoadActionResultViaProjectIo(loadProjectData(data, opts), defaultReason);
   } catch (error) {
     reportProjectIoAccessNonFatal(App, 'projectIO.loadProjectData.actionOwnerRejected', error);
-    return buildProjectLoadActionErrorResult(error, errorFallback);
+    return buildProjectLoadActionErrorResult(error, defaultErrorMessage);
   }
 }
 
@@ -133,26 +133,26 @@ export function loadProjectDataResultViaServiceOrThrow(
   App: unknown,
   data: ProjectLoadInputLike,
   opts?: ProjectLoadOpts,
-  fallbackReason: ProjectIoLoadFailureLike = 'not-installed',
-  errorFallback = '[WardrobePro] Project load failed.',
+  defaultReason: ProjectIoLoadFailureLike = 'not-installed',
+  defaultErrorMessage = '[WardrobePro] Project load failed.',
   label = 'projectIO.loadProjectData'
 ): ProjectIoLoadResultLike {
-  const result = loadProjectDataResultViaService(App, data, opts, fallbackReason, errorFallback);
+  const result = loadProjectDataResultViaService(App, data, opts, defaultReason, defaultErrorMessage);
   if (result.ok && result.pending !== true) return result;
-  throw new Error(buildProjectIoLoadFailureMessage(result, label, errorFallback));
+  throw new Error(buildProjectIoLoadFailureMessage(result, label, defaultErrorMessage));
 }
 
 export function loadProjectDataActionResultViaServiceOrThrow(
   App: unknown,
   data: ProjectLoadInputLike,
   opts?: ProjectLoadOpts,
-  fallbackReason: ProjectLoadFailureReason = 'not-installed',
-  errorFallback = '[WardrobePro] Project load failed.',
+  defaultReason: ProjectLoadFailureReason = 'not-installed',
+  defaultErrorMessage = '[WardrobePro] Project load failed.',
   label = 'projectIO.loadProjectData'
 ): ProjectLoadActionResult {
-  const result = loadProjectDataActionResultViaService(App, data, opts, fallbackReason, errorFallback);
+  const result = loadProjectDataActionResultViaService(App, data, opts, defaultReason, defaultErrorMessage);
   if (result.ok && result.pending !== true) return result;
-  throw new Error(buildProjectIoLoadFailureMessage(result, label, errorFallback));
+  throw new Error(buildProjectIoLoadFailureMessage(result, label, defaultErrorMessage));
 }
 
 export function loadProjectDataViaServiceOrThrow(

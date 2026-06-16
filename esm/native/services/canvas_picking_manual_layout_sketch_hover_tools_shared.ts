@@ -183,7 +183,7 @@ export function readManualLayoutSketchHoverRuntime(
     __wp_clearSketchHover(App);
   };
 
-  const __manualMode = getModeId(App, 'MANUAL_LAYOUT') || 'manual_layout';
+  const __manualMode = getModeId('MANUAL_LAYOUT') || 'manual_layout';
   if (__pm !== __manualMode) {
     hideSketchPreviewAndClearHover();
     hideLayoutPreviewIfPresent(App, __hideLayoutPreview);
