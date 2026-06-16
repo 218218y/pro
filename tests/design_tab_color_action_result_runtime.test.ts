@@ -59,7 +59,11 @@ test('design tab color action result runtime: normalizes success payloads and dr
 
 test('design tab color action result runtime: preserves real error messages from unknown throws', () => {
   assert.deepEqual(
-    buildDesignTabColorActionErrorResult('save-custom-color', { message: ' prompt exploded ' }, 'fallback'),
+    buildDesignTabColorActionErrorResult(
+      'save-custom-color',
+      { message: ' prompt exploded ' },
+      'default message'
+    ),
     buildDesignTabColorActionFailure('save-custom-color', 'error', {}, 'prompt exploded')
   );
 });

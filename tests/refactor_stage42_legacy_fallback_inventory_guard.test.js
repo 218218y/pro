@@ -32,7 +32,6 @@ test('stage 42 legacy fallback inventory closeout is anchored', () => {
   for (const entry of [
     ['esm/native/builder/core_carcass_cornice.ts', 'domain-default'],
     ['esm/native/services/render_surface_runtime_support_readers.ts', 'compat-boundary'],
-    ['esm/native/ui/react/tabs/design_tab_color_action_result_reason.ts', 'error-message-default'],
     ['esm/shared/wardrobe_dimension_tokens_shared.ts', 'domain-default'],
   ]) {
     const [file, category] = entry;
@@ -41,6 +40,22 @@ test('stage 42 legacy fallback inventory closeout is anchored', () => {
       `${file} must be categorized as ${category}`
     );
   }
+
+  assert.equal(
+    audit.summary.byFile['esm/native/ui/react/tabs/design_tab_color_action_result_reason.ts']?.total || 0,
+    0,
+    'design tab color action result reasons should use default-message naming without fallback vocabulary'
+  );
+  assert.equal(
+    audit.summary.byFile['esm/native/ui/react/tabs/settings_visual_shared_room.ts']?.total || 0,
+    0,
+    'settings visual room shared data should use default room palettes without fallback vocabulary'
+  );
+  assert.equal(
+    audit.summary.byFile['esm/native/ui/react/tabs/settings_visual_shared_room_defaults.ts']?.total || 0,
+    0,
+    'settings visual room defaults module should not use fallback vocabulary'
+  );
 
   assert.equal(
     audit.summary.byFile['esm/native/kernel/domain_api_modules_corner_shared.ts']?.total || 0,

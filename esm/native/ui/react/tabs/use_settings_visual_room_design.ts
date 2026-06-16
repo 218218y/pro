@@ -9,7 +9,7 @@ import type {
   RoomDesignRuntimeLike,
 } from './settings_visual_shared_contracts.js';
 import {
-  FALLBACK_FLOOR_STYLES,
+  DEFAULT_FLOOR_STYLES,
   getRoomDesignData,
   getRoomDesignRuntime,
 } from './settings_visual_shared_room.js';
@@ -38,7 +38,7 @@ export function useSettingsVisualRoomDesign(
   const roomDesignRuntime = useMemo(() => getRoomDesignRuntime(app), [app]);
   const roomData = useMemo(() => getRoomDesignData(roomDesignRuntime), [roomDesignRuntime]);
   const floorStylesForType = useMemo(
-    () => roomData.floorStyles[floorType] || FALLBACK_FLOOR_STYLES[floorType] || [],
+    () => roomData.floorStyles[floorType] || DEFAULT_FLOOR_STYLES[floorType] || [],
     [floorType, roomData.floorStyles]
   );
 

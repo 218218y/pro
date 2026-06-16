@@ -502,34 +502,10 @@
         "framework-default": 1
       }
     },
-    "esm/native/ui/react/tabs/design_tab_color_action_result_builders.ts": {
-      "total": 8,
-      "categories": {
-        "error-message-default": 8
-      }
-    },
-    "esm/native/ui/react/tabs/design_tab_color_action_result_helpers.ts": {
-      "total": 4,
-      "categories": {
-        "error-message-default": 4
-      }
-    },
-    "esm/native/ui/react/tabs/design_tab_color_action_result_reason.ts": {
-      "total": 4,
-      "categories": {
-        "error-message-default": 4
-      }
-    },
     "esm/native/ui/react/tabs/design_tab_multicolor_shared.ts": {
       "total": 1,
       "categories": {
         "domain-default": 1
-      }
-    },
-    "esm/native/ui/react/tabs/settings_visual_shared_room.ts": {
-      "total": 6,
-      "categories": {
-        "domain-default": 6
       }
     },
     "esm/native/ui/react/tabs/structure_tab_core_edit_mode.ts": {

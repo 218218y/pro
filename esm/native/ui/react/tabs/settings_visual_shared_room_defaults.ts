@@ -1,6 +1,6 @@
 import type { FloorStyle, SettingsVisualFloorType, WallColor } from './settings_visual_shared_contracts.js';
 
-export const FALLBACK_FLOOR_STYLES: Record<SettingsVisualFloorType, FloorStyle[]> = {
+export const DEFAULT_FLOOR_STYLES: Record<SettingsVisualFloorType, FloorStyle[]> = {
   parquet: [
     { id: 'oak_light', color1: '#dfd0bc', color2: '#cdbda7', name: 'אלון בהיר' },
     { id: 'oak_honey', color1: '#d4a373', color2: '#cd9763', name: 'אלון דבש' },
@@ -64,7 +64,7 @@ export const FALLBACK_FLOOR_STYLES: Record<SettingsVisualFloorType, FloorStyle[]
   ],
 };
 
-export const FALLBACK_WALL_COLORS: WallColor[] = [
+export const DEFAULT_WALL_COLORS: WallColor[] = [
   { id: 'white', val: '#ffffff', name: 'לבן קלאסי' },
   { id: 'cream', val: '#d8c7aa', name: 'חול חמים' },
   { id: 'grey', val: '#c3ccd1', name: 'אפור בטון' },

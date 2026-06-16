@@ -3,7 +3,7 @@ import type { AppContainer } from '../../../../../types';
 import { getRoomDesignServiceMaybe } from '../../../services/api.js';
 
 import { DEFAULT_WALL_COLOR, SETTINGS_VISUAL_FLOOR_TYPES } from './settings_visual_shared_contracts.js';
-import { FALLBACK_FLOOR_STYLES, FALLBACK_WALL_COLORS } from './settings_visual_shared_room_fallbacks.js';
+import { DEFAULT_FLOOR_STYLES, DEFAULT_WALL_COLORS } from './settings_visual_shared_room_defaults.js';
 import type {
   FloorStyle,
   SettingsVisualFloorType,
@@ -19,7 +19,7 @@ import {
   normalizeWallColor,
 } from './settings_visual_shared_normalize.js';
 
-export { FALLBACK_WALL_COLORS, FALLBACK_FLOOR_STYLES } from './settings_visual_shared_room_fallbacks.js';
+export { DEFAULT_WALL_COLORS, DEFAULT_FLOOR_STYLES } from './settings_visual_shared_room_defaults.js';
 
 function isRoomDesignRuntimeLike(value: unknown): value is RoomDesignRuntimeLike {
   return isRecord(value);
@@ -46,22 +46,22 @@ function cloneWallColorsList(list: WallColor[]): WallColor[] {
   return list.map(color => ({ ...color }));
 }
 
-function buildFallbackFloorStyles(): Record<SettingsVisualFloorType, FloorStyle[]> {
+function buildDefaultFloorStyles(): Record<SettingsVisualFloorType, FloorStyle[]> {
   return {
-    parquet: cloneFloorStylesList(FALLBACK_FLOOR_STYLES.parquet),
-    tiles: cloneFloorStylesList(FALLBACK_FLOOR_STYLES.tiles),
-    none: cloneFloorStylesList(FALLBACK_FLOOR_STYLES.none),
+    parquet: cloneFloorStylesList(DEFAULT_FLOOR_STYLES.parquet),
+    tiles: cloneFloorStylesList(DEFAULT_FLOOR_STYLES.tiles),
+    none: cloneFloorStylesList(DEFAULT_FLOOR_STYLES.none),
   };
 }
 
-function buildFallbackWallColors(): WallColor[] {
-  return cloneWallColorsList(FALLBACK_WALL_COLORS);
+function buildDefaultWallColors(): WallColor[] {
+  return cloneWallColorsList(DEFAULT_WALL_COLORS);
 }
 
 export function getRoomDesignData(runtime: RoomDesignRuntimeLike | null): RoomDesignData {
   try {
-    const floorStylesOut: Record<SettingsVisualFloorType, FloorStyle[]> = buildFallbackFloorStyles();
-    const wallColorsOut: WallColor[] = buildFallbackWallColors();
+    const floorStylesOut: Record<SettingsVisualFloorType, FloorStyle[]> = buildDefaultFloorStyles();
+    const wallColorsOut: WallColor[] = buildDefaultWallColors();
     const hasRoomDesign = !!runtime;
 
     const fsRec = asRecord(runtime ? runtime.FLOOR_STYLES : null);
@@ -89,8 +89,8 @@ export function getRoomDesignData(runtime: RoomDesignRuntimeLike | null): RoomDe
     };
   } catch {
     return {
-      floorStyles: FALLBACK_FLOOR_STYLES,
-      wallColors: FALLBACK_WALL_COLORS,
+      floorStyles: DEFAULT_FLOOR_STYLES,
+      wallColors: DEFAULT_WALL_COLORS,
       defaultWall: DEFAULT_WALL_COLOR,
       hasRoomDesign: false,
     };

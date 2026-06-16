@@ -78,7 +78,7 @@ const renderBundle = bundleSources(
     '../esm/native/ui/react/tabs/settings_visual_shared_normalize.ts',
     '../esm/native/ui/react/tabs/settings_visual_shared_lighting.ts',
     '../esm/native/ui/react/tabs/settings_visual_shared_room.ts',
-    '../esm/native/ui/react/tabs/settings_visual_shared_room_fallbacks.ts',
+    '../esm/native/ui/react/tabs/settings_visual_shared_room_defaults.ts',
     '../esm/native/ui/react/tabs/settings_visual_shared_interactions.ts',
     '../esm/native/ui/react/tabs/settings_visual_sections.tsx',
     '../esm/native/ui/react/tabs/settings_visual_sections_room.tsx',

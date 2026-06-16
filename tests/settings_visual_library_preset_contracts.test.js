@@ -61,7 +61,7 @@ const renderShared = bundleSources(
     '../esm/native/ui/react/tabs/settings_visual_shared_normalize.ts',
     '../esm/native/ui/react/tabs/settings_visual_shared_lighting.ts',
     '../esm/native/ui/react/tabs/settings_visual_shared_room.ts',
-    '../esm/native/ui/react/tabs/settings_visual_shared_room_fallbacks.ts',
+    '../esm/native/ui/react/tabs/settings_visual_shared_room_defaults.ts',
     '../esm/native/ui/react/tabs/settings_visual_shared_interactions.ts',
   ],
   import.meta.url
@@ -107,7 +107,7 @@ const renderBundle = bundleSources(
     '../esm/native/ui/react/tabs/settings_visual_shared_normalize.ts',
     '../esm/native/ui/react/tabs/settings_visual_shared_lighting.ts',
     '../esm/native/ui/react/tabs/settings_visual_shared_room.ts',
-    '../esm/native/ui/react/tabs/settings_visual_shared_room_fallbacks.ts',
+    '../esm/native/ui/react/tabs/settings_visual_shared_room_defaults.ts',
     '../esm/native/ui/react/tabs/settings_visual_shared_interactions.ts',
   ],
   import.meta.url
@@ -360,7 +360,7 @@ test('settings visual controls owner stays thin and delegates notes, room, light
     assert,
     renderShared,
     [
-      /export const FALLBACK_FLOOR_STYLES/,
+      /export const DEFAULT_FLOOR_STYLES/,
       /export const LIGHT_PRESETS/,
       /export function getRoomDesignData\(/,
       /export function getRoomDesignRuntime\(/,

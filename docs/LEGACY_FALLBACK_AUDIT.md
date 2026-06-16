@@ -1,16 +1,16 @@
 # Legacy / fallback audit
 
-Generated at: 2026-06-16T19:57:49.179Z
+Generated at: 2026-06-16T20:36:47.180Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **191**
-- Files with occurrences: **92**
+- Total categorized occurrences: **169**
+- Files with occurrences: **88**
 - Category counts:
   - `runtime-default`: **0**
-  - `domain-default`: **125**
-  - `error-message-default`: **27**
+  - `domain-default`: **119**
+  - `error-message-default`: **11**
   - `framework-default`: **2**
   - `browser-adapter`: **2**
   - `project-migration`: **10**
@@ -36,8 +36,6 @@ Generated at: 2026-06-16T19:57:49.179Z
 ## Hot files
 
 - `esm/native/io/project_schema_shared.ts` - **8** (project-migration: 8)
-- `esm/native/ui/react/tabs/design_tab_color_action_result_builders.ts` - **8** (error-message-default: 8)
-- `esm/native/ui/react/tabs/settings_visual_shared_room.ts` - **6** (domain-default: 6)
 - `esm/native/kernel/cfg_meta.ts` - **5** (domain-default: 5)
 - `esm/native/services/canvas_picking_hover_targets_interior_scan.ts` - **5** (domain-default: 5)
 - `esm/native/services/canvas_picking_selector_internal_metrics.ts` - **5** (domain-default: 5)
@@ -52,8 +50,6 @@ Generated at: 2026-06-16T19:57:49.179Z
 - `esm/native/ui/html_sanitize_runtime.ts` - **4** (domain-default: 4)
 - `esm/native/ui/notes_service_shared.ts` - **4** (domain-default: 4)
 - `esm/native/ui/project_save_runtime.ts` - **4** (browser-adapter: 1, domain-default: 3)
-- `esm/native/ui/react/tabs/design_tab_color_action_result_helpers.ts` - **4** (error-message-default: 4)
-- `esm/native/ui/react/tabs/design_tab_color_action_result_reason.ts` - **4** (error-message-default: 4)
 - `esm/native/features/stack_split/stack_split.ts` - **3** (compat-boundary: 3)
 - `esm/native/kernel/domain_api_modules_corner_recompute_policy.ts` - **3** (domain-default: 3)
 - `esm/native/kernel/state_api_meta_namespace.ts` - **3** (domain-default: 3)
@@ -65,6 +61,10 @@ Generated at: 2026-06-16T19:57:49.179Z
 - `esm/native/runtime/errors.ts` - **2** (domain-default: 2)
 - `esm/native/runtime/platform_access_ops.ts` - **2** (domain-default: 2)
 - `esm/native/services/app_start.ts` - **2** (compat-boundary: 2)
+- `esm/native/services/camera_shared.ts` - **2** (domain-default: 2)
+- `esm/native/services/canvas_picking_click_hit_flow_stack_runtime.ts` - **2** (domain-default: 2)
+- `esm/native/services/canvas_picking_generic_paint_hover_preview_objects.ts` - **2** (domain-default: 2)
+- `esm/native/services/canvas_picking_generic_paint_hover_preview.ts` - **2** (domain-default: 2)
 
 ## Allowlist check
 

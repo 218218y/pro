@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-06-16T19:57:49.179Z",
+  "generatedAt": "2026-06-16T20:36:47.180Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 191,
-    "totalFiles": 92,
+    "totalOccurrences": 169,
+    "totalFiles": 88,
     "byCategory": {
       "runtime-default": 0,
-      "domain-default": 125,
-      "error-message-default": 27,
+      "domain-default": 119,
+      "error-message-default": 11,
       "framework-default": 2,
       "browser-adapter": 2,
       "project-migration": 10,
@@ -517,34 +517,10 @@
           "framework-default": 1
         }
       },
-      "esm/native/ui/react/tabs/design_tab_color_action_result_builders.ts": {
-        "total": 8,
-        "categories": {
-          "error-message-default": 8
-        }
-      },
-      "esm/native/ui/react/tabs/design_tab_color_action_result_helpers.ts": {
-        "total": 4,
-        "categories": {
-          "error-message-default": 4
-        }
-      },
-      "esm/native/ui/react/tabs/design_tab_color_action_result_reason.ts": {
-        "total": 4,
-        "categories": {
-          "error-message-default": 4
-        }
-      },
       "esm/native/ui/react/tabs/design_tab_multicolor_shared.ts": {
         "total": 1,
         "categories": {
           "domain-default": 1
-        }
-      },
-      "esm/native/ui/react/tabs/settings_visual_shared_room.ts": {
-        "total": 6,
-        "categories": {
-          "domain-default": 6
         }
       },
       "esm/native/ui/react/tabs/structure_tab_core_edit_mode.ts": {
@@ -579,20 +555,6 @@
         "total": 8,
         "categories": {
           "project-migration": 8
-        }
-      },
-      {
-        "file": "esm/native/ui/react/tabs/design_tab_color_action_result_builders.ts",
-        "total": 8,
-        "categories": {
-          "error-message-default": 8
-        }
-      },
-      {
-        "file": "esm/native/ui/react/tabs/settings_visual_shared_room.ts",
-        "total": 6,
-        "categories": {
-          "domain-default": 6
         }
       },
       {
@@ -696,20 +658,6 @@
         }
       },
       {
-        "file": "esm/native/ui/react/tabs/design_tab_color_action_result_helpers.ts",
-        "total": 4,
-        "categories": {
-          "error-message-default": 4
-        }
-      },
-      {
-        "file": "esm/native/ui/react/tabs/design_tab_color_action_result_reason.ts",
-        "total": 4,
-        "categories": {
-          "error-message-default": 4
-        }
-      },
-      {
         "file": "esm/native/features/stack_split/stack_split.ts",
         "total": 3,
         "categories": {
@@ -784,6 +732,34 @@
         "total": 2,
         "categories": {
           "compat-boundary": 2
+        }
+      },
+      {
+        "file": "esm/native/services/camera_shared.ts",
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      {
+        "file": "esm/native/services/canvas_picking_click_hit_flow_stack_runtime.ts",
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      {
+        "file": "esm/native/services/canvas_picking_generic_paint_hover_preview_objects.ts",
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      {
+        "file": "esm/native/services/canvas_picking_generic_paint_hover_preview.ts",
+        "total": 2,
+        "categories": {
+          "domain-default": 2
         }
       }
     ]
@@ -1883,165 +1859,11 @@
       "text": "fallback={"
     },
     {
-      "file": "esm/native/ui/react/tabs/design_tab_color_action_result_builders.ts",
-      "line": 19,
-      "term": "readDeleteFallbackReason",
-      "category": "error-message-default",
-      "text": "readDeleteFallbackReason,"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/design_tab_color_action_result_builders.ts",
-      "line": 20,
-      "term": "readSaveCustomColorFallbackReason",
-      "category": "error-message-default",
-      "text": "readSaveCustomColorFallbackReason,"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/design_tab_color_action_result_builders.ts",
-      "line": 21,
-      "term": "readToggleLockFallbackReason",
-      "category": "error-message-default",
-      "text": "readToggleLockFallbackReason,"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/design_tab_color_action_result_builders.ts",
-      "line": 22,
-      "term": "readUploadTextureFallbackReason",
-      "category": "error-message-default",
-      "text": "readUploadTextureFallbackReason,"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/design_tab_color_action_result_builders.ts",
-      "line": 209,
-      "term": "readToggleLockFallbackReason",
-      "category": "error-message-default",
-      "text": "normalizeDesignTabColorToggleLockReason('error', readToggleLockFallbackReason(fallbackReason)),"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/design_tab_color_action_result_builders.ts",
-      "line": 215,
-      "term": "readDeleteFallbackReason",
-      "category": "error-message-default",
-      "text": "normalizeDesignTabColorDeleteReason('error', readDeleteFallbackReason(fallbackReason)),"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/design_tab_color_action_result_builders.ts",
-      "line": 221,
-      "term": "readUploadTextureFallbackReason",
-      "category": "error-message-default",
-      "text": "normalizeDesignTabColorUploadTextureReason('error', readUploadTextureFallbackReason(fallbackReason)),"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/design_tab_color_action_result_builders.ts",
-      "line": 229,
-      "term": "readSaveCustomColorFallbackReason",
-      "category": "error-message-default",
-      "text": "readSaveCustomColorFallbackReason(fallbackReason)"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/design_tab_color_action_result_helpers.ts",
-      "line": 20,
-      "term": "readDeleteFallbackReason",
-      "category": "error-message-default",
-      "text": "readDeleteFallbackReason,"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/design_tab_color_action_result_helpers.ts",
-      "line": 21,
-      "term": "readSaveCustomColorFallbackReason",
-      "category": "error-message-default",
-      "text": "readSaveCustomColorFallbackReason,"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/design_tab_color_action_result_helpers.ts",
-      "line": 22,
-      "term": "readToggleLockFallbackReason",
-      "category": "error-message-default",
-      "text": "readToggleLockFallbackReason,"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/design_tab_color_action_result_helpers.ts",
-      "line": 23,
-      "term": "readUploadTextureFallbackReason",
-      "category": "error-message-default",
-      "text": "readUploadTextureFallbackReason,"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/design_tab_color_action_result_reason.ts",
-      "line": 132,
-      "term": "readToggleLockFallbackReason",
-      "category": "error-message-default",
-      "text": "export function readToggleLockFallbackReason("
-    },
-    {
-      "file": "esm/native/ui/react/tabs/design_tab_color_action_result_reason.ts",
-      "line": 151,
-      "term": "readDeleteFallbackReason",
-      "category": "error-message-default",
-      "text": "export function readDeleteFallbackReason(value: unknown): DesignTabColorDeleteFailureReason | undefined {"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/design_tab_color_action_result_reason.ts",
-      "line": 176,
-      "term": "readUploadTextureFallbackReason",
-      "category": "error-message-default",
-      "text": "export function readUploadTextureFallbackReason("
-    },
-    {
-      "file": "esm/native/ui/react/tabs/design_tab_color_action_result_reason.ts",
-      "line": 202,
-      "term": "readSaveCustomColorFallbackReason",
-      "category": "error-message-default",
-      "text": "export function readSaveCustomColorFallbackReason("
-    },
-    {
       "file": "esm/native/ui/react/tabs/design_tab_multicolor_shared.ts",
       "line": 60,
       "term": "consoleFallback",
       "category": "domain-default",
       "text": "{ consoleFallback: false }"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/settings_visual_shared_room.ts",
-      "line": 6,
-      "term": "settings_visual_shared_room_fallbacks",
-      "category": "domain-default",
-      "text": "import { FALLBACK_FLOOR_STYLES, FALLBACK_WALL_COLORS } from './settings_visual_shared_room_fallbacks.js';"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/settings_visual_shared_room.ts",
-      "line": 22,
-      "term": "settings_visual_shared_room_fallbacks",
-      "category": "domain-default",
-      "text": "export { FALLBACK_WALL_COLORS, FALLBACK_FLOOR_STYLES } from './settings_visual_shared_room_fallbacks.js';"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/settings_visual_shared_room.ts",
-      "line": 49,
-      "term": "buildFallbackFloorStyles",
-      "category": "domain-default",
-      "text": "function buildFallbackFloorStyles(): Record<SettingsVisualFloorType, FloorStyle[]> {"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/settings_visual_shared_room.ts",
-      "line": 57,
-      "term": "buildFallbackWallColors",
-      "category": "domain-default",
-      "text": "function buildFallbackWallColors(): WallColor[] {"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/settings_visual_shared_room.ts",
-      "line": 63,
-      "term": "buildFallbackFloorStyles",
-      "category": "domain-default",
-      "text": "const floorStylesOut: Record<SettingsVisualFloorType, FloorStyle[]> = buildFallbackFloorStyles();"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/settings_visual_shared_room.ts",
-      "line": 64,
-      "term": "buildFallbackWallColors",
-      "category": "domain-default",
-      "text": "const wallColorsOut: WallColor[] = buildFallbackWallColors();"
     },
     {
       "file": "esm/native/ui/react/tabs/structure_tab_core_edit_mode.ts",

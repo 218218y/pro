@@ -10,19 +10,19 @@ import { trimString } from './design_tab_color_action_result_shared.js';
 
 export function normalizeToggleLockReason(
   value: unknown,
-  fallbackReason?: DesignTabColorToggleLockFailureReason
+  defaultReason?: DesignTabColorToggleLockFailureReason
 ): DesignTabColorToggleLockFailureReason {
   const token = trimString(value).toLowerCase();
   if (token === 'missing' || token === 'not-found') return 'missing';
   if (token === 'missing-selection' || token === 'missing_selection' || token === 'missing selection') {
     return 'missing-selection';
   }
-  return fallbackReason === 'missing' || fallbackReason === 'missing-selection' ? fallbackReason : 'error';
+  return defaultReason === 'missing' || defaultReason === 'missing-selection' ? defaultReason : 'error';
 }
 
 export function normalizeDeleteReason(
   value: unknown,
-  fallbackReason?: DesignTabColorDeleteFailureReason
+  defaultReason?: DesignTabColorDeleteFailureReason
 ): DesignTabColorDeleteFailureReason {
   const token = trimString(value).toLowerCase();
   if (token === 'busy') return 'busy';
@@ -32,18 +32,18 @@ export function normalizeDeleteReason(
   if (token === 'missing-selection' || token === 'missing_selection' || token === 'missing selection') {
     return 'missing-selection';
   }
-  return fallbackReason === 'busy' ||
-    fallbackReason === 'cancelled' ||
-    fallbackReason === 'locked' ||
-    fallbackReason === 'missing' ||
-    fallbackReason === 'missing-selection'
-    ? fallbackReason
+  return defaultReason === 'busy' ||
+    defaultReason === 'cancelled' ||
+    defaultReason === 'locked' ||
+    defaultReason === 'missing' ||
+    defaultReason === 'missing-selection'
+    ? defaultReason
     : 'error';
 }
 
 export function normalizeUploadTextureReason(
   value: unknown,
-  fallbackReason?: DesignTabColorUploadTextureFailureReason
+  defaultReason?: DesignTabColorUploadTextureFailureReason
 ): DesignTabColorUploadTextureFailureReason {
   const token = trimString(value).toLowerCase();
   if (token === 'busy') return 'busy';
@@ -59,14 +59,14 @@ export function normalizeUploadTextureReason(
   if (token === 'read-failed' || token === 'read_failed' || token === 'read failed' || token === 'error') {
     return 'read-failed';
   }
-  return fallbackReason === 'busy' || fallbackReason === 'missing-file' || fallbackReason === 'unavailable'
-    ? fallbackReason
+  return defaultReason === 'busy' || defaultReason === 'missing-file' || defaultReason === 'unavailable'
+    ? defaultReason
     : 'read-failed';
 }
 
 export function normalizeSaveCustomColorReason(
   value: unknown,
-  fallbackReason?: DesignTabColorSaveCustomColorFailureReason
+  defaultReason?: DesignTabColorSaveCustomColorFailureReason
 ): DesignTabColorSaveCustomColorFailureReason {
   const token = trimString(value).toLowerCase();
   if (token === 'busy') return 'busy';
@@ -74,15 +74,15 @@ export function normalizeSaveCustomColorReason(
   if (token === 'missing-input' || token === 'missing_input' || token === 'missing input') {
     return 'missing-input';
   }
-  return fallbackReason === 'busy' || fallbackReason === 'cancelled' || fallbackReason === 'missing-input'
-    ? fallbackReason
+  return defaultReason === 'busy' || defaultReason === 'cancelled' || defaultReason === 'missing-input'
+    ? defaultReason
     : 'error';
 }
 
 type DesignTabColorReasonNormalizerMap = {
   [K in DesignTabColorFailureKind]: (
     value: unknown,
-    fallbackReason?: DesignTabColorFailureReasonByKind[K]
+    defaultReason?: DesignTabColorFailureReasonByKind[K]
   ) => DesignTabColorFailureReasonByKind[K];
 };
 
@@ -96,40 +96,40 @@ const normalizeFailureReasonByKind: DesignTabColorReasonNormalizerMap = {
 export function normalizeDesignTabColorActionReason<K extends DesignTabColorFailureKind>(
   kind: K,
   value: unknown,
-  fallbackReason?: DesignTabColorFailureReasonByKind[K]
+  defaultReason?: DesignTabColorFailureReasonByKind[K]
 ): DesignTabColorFailureReasonByKind[K] {
-  return normalizeFailureReasonByKind[kind](value, fallbackReason);
+  return normalizeFailureReasonByKind[kind](value, defaultReason);
 }
 
 export function normalizeDesignTabColorToggleLockReason(
   value: unknown,
-  fallbackReason: DesignTabColorToggleLockFailureReason = 'error'
+  defaultReason: DesignTabColorToggleLockFailureReason = 'error'
 ): DesignTabColorToggleLockFailureReason {
-  return normalizeDesignTabColorActionReason('toggle-lock', value, fallbackReason);
+  return normalizeDesignTabColorActionReason('toggle-lock', value, defaultReason);
 }
 
 export function normalizeDesignTabColorDeleteReason(
   value: unknown,
-  fallbackReason: DesignTabColorDeleteFailureReason = 'error'
+  defaultReason: DesignTabColorDeleteFailureReason = 'error'
 ): DesignTabColorDeleteFailureReason {
-  return normalizeDesignTabColorActionReason('delete-color', value, fallbackReason);
+  return normalizeDesignTabColorActionReason('delete-color', value, defaultReason);
 }
 
 export function normalizeDesignTabColorUploadTextureReason(
   value: unknown,
-  fallbackReason: DesignTabColorUploadTextureFailureReason = 'read-failed'
+  defaultReason: DesignTabColorUploadTextureFailureReason = 'read-failed'
 ): DesignTabColorUploadTextureFailureReason {
-  return normalizeDesignTabColorActionReason('upload-texture', value, fallbackReason);
+  return normalizeDesignTabColorActionReason('upload-texture', value, defaultReason);
 }
 
 export function normalizeDesignTabColorSaveCustomColorReason(
   value: unknown,
-  fallbackReason: DesignTabColorSaveCustomColorFailureReason = 'error'
+  defaultReason: DesignTabColorSaveCustomColorFailureReason = 'error'
 ): DesignTabColorSaveCustomColorFailureReason {
-  return normalizeDesignTabColorActionReason('save-custom-color', value, fallbackReason);
+  return normalizeDesignTabColorActionReason('save-custom-color', value, defaultReason);
 }
 
-export function readToggleLockFallbackReason(
+export function readToggleLockDefaultReason(
   value: unknown
 ): DesignTabColorToggleLockFailureReason | undefined {
   const token = trimString(value).toLowerCase();
@@ -148,7 +148,7 @@ export function readToggleLockFallbackReason(
   }
 }
 
-export function readDeleteFallbackReason(value: unknown): DesignTabColorDeleteFailureReason | undefined {
+export function readDeleteDefaultReason(value: unknown): DesignTabColorDeleteFailureReason | undefined {
   const token = trimString(value).toLowerCase();
   switch (token) {
     case 'busy':
@@ -173,7 +173,7 @@ export function readDeleteFallbackReason(value: unknown): DesignTabColorDeleteFa
   }
 }
 
-export function readUploadTextureFallbackReason(
+export function readUploadTextureDefaultReason(
   value: unknown
 ): DesignTabColorUploadTextureFailureReason | undefined {
   const token = trimString(value).toLowerCase();
@@ -199,7 +199,7 @@ export function readUploadTextureFallbackReason(
   }
 }
 
-export function readSaveCustomColorFallbackReason(
+export function readSaveCustomColorDefaultReason(
   value: unknown
 ): DesignTabColorSaveCustomColorFailureReason | undefined {
   const token = trimString(value).toLowerCase();

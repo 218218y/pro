@@ -17,10 +17,10 @@ export {
   normalizeSaveCustomColorReason,
   normalizeToggleLockReason,
   normalizeUploadTextureReason,
-  readDeleteFallbackReason,
-  readSaveCustomColorFallbackReason,
-  readToggleLockFallbackReason,
-  readUploadTextureFallbackReason,
+  readDeleteDefaultReason,
+  readSaveCustomColorDefaultReason,
+  readToggleLockDefaultReason,
+  readUploadTextureDefaultReason,
 } from './design_tab_color_action_result_reason.js';
 
 export {

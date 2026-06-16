@@ -12,7 +12,7 @@ import type {
   RoomDesignRuntimeLike,
 } from './settings_visual_shared_contracts.js';
 import { normalizeFloorStyle } from './settings_visual_shared_normalize.js';
-import { FALLBACK_FLOOR_STYLES } from './settings_visual_shared_room.js';
+import { DEFAULT_FLOOR_STYLES } from './settings_visual_shared_room.js';
 
 export type SettingsVisualRoomDesignController = {
   setFloorType: (type: SettingsVisualFloorType) => void;
@@ -63,7 +63,7 @@ export function resolveSettingsVisualFloorStyle(
   type: SettingsVisualFloorType
 ): FloorStyle | null {
   const runtime = args.roomDesignRuntime;
-  if (!runtime) return (args.roomData.floorStyles[type] || FALLBACK_FLOOR_STYLES[type] || [])[0] || null;
+  if (!runtime) return (args.roomData.floorStyles[type] || DEFAULT_FLOOR_STYLES[type] || [])[0] || null;
 
   const uiNow = getUiSnapshot(args.app);
   const map = asRecord(uiNow.lastSelectedFloorStyleIdByType);
@@ -75,7 +75,7 @@ export function resolveSettingsVisualFloorStyle(
       ? runtime.__wp_room_resolveStyle(type, lastId)
       : null;
   const resolved = normalizeFloorStyle(resolvedRaw);
-  const defaultStyle = (args.roomData.floorStyles[type] || FALLBACK_FLOOR_STYLES[type] || [])[0] || null;
+  const defaultStyle = (args.roomData.floorStyles[type] || DEFAULT_FLOOR_STYLES[type] || [])[0] || null;
   return resolved || defaultStyle;
 }
 

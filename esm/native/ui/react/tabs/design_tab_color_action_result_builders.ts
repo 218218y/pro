@@ -16,10 +16,10 @@ import {
   normalizeDesignTabColorSuccessExtras,
   normalizeDesignTabColorToggleLockReason,
   normalizeDesignTabColorUploadTextureReason,
-  readDeleteFallbackReason,
-  readSaveCustomColorFallbackReason,
-  readToggleLockFallbackReason,
-  readUploadTextureFallbackReason,
+  readDeleteDefaultReason,
+  readSaveCustomColorDefaultReason,
+  readToggleLockDefaultReason,
+  readUploadTextureDefaultReason,
 } from './design_tab_color_action_result_helpers.js';
 
 function buildToggleLockSuccess(
@@ -199,35 +199,32 @@ type DesignTabColorErrorBuilderMap = {
   [K in DesignTabColorFailureKind]: (
     normalizedMessage: string,
     extras?: DesignTabColorFailureExtrasByKind[K] | unknown,
-    fallbackReason?: DesignTabColorFailureReasonByKind[K] | unknown
+    defaultReason?: DesignTabColorFailureReasonByKind[K] | unknown
   ) => DesignTabColorFailureResultByKind<K>;
 };
 
 const buildErrorByKind: DesignTabColorErrorBuilderMap = {
-  'toggle-lock': (normalizedMessage, extras, fallbackReason) =>
+  'toggle-lock': (normalizedMessage, extras, defaultReason) =>
     buildToggleLockFailure(
-      normalizeDesignTabColorToggleLockReason('error', readToggleLockFallbackReason(fallbackReason)),
+      normalizeDesignTabColorToggleLockReason('error', readToggleLockDefaultReason(defaultReason)),
       normalizeDesignTabColorFailureExtras('toggle-lock', extras),
       normalizedMessage
     ),
-  'delete-color': (normalizedMessage, extras, fallbackReason) =>
+  'delete-color': (normalizedMessage, extras, defaultReason) =>
     buildDeleteFailure(
-      normalizeDesignTabColorDeleteReason('error', readDeleteFallbackReason(fallbackReason)),
+      normalizeDesignTabColorDeleteReason('error', readDeleteDefaultReason(defaultReason)),
       normalizeDesignTabColorFailureExtras('delete-color', extras),
       normalizedMessage
     ),
-  'upload-texture': (normalizedMessage, extras, fallbackReason) =>
+  'upload-texture': (normalizedMessage, extras, defaultReason) =>
     buildUploadTextureFailure(
-      normalizeDesignTabColorUploadTextureReason('error', readUploadTextureFallbackReason(fallbackReason)),
+      normalizeDesignTabColorUploadTextureReason('error', readUploadTextureDefaultReason(defaultReason)),
       normalizeDesignTabColorFailureExtras('upload-texture', extras),
       normalizedMessage
     ),
-  'save-custom-color': (normalizedMessage, extras, fallbackReason) =>
+  'save-custom-color': (normalizedMessage, extras, defaultReason) =>
     buildSaveCustomColorFailure(
-      normalizeDesignTabColorSaveCustomColorReason(
-        'error',
-        readSaveCustomColorFallbackReason(fallbackReason)
-      ),
+      normalizeDesignTabColorSaveCustomColorReason('error', readSaveCustomColorDefaultReason(defaultReason)),
       normalizeDesignTabColorFailureExtras('save-custom-color', extras),
       normalizedMessage
     ),
@@ -236,10 +233,10 @@ const buildErrorByKind: DesignTabColorErrorBuilderMap = {
 export function buildDesignTabColorActionErrorResult<K extends DesignTabColorFailureKind>(
   kind: K,
   error: unknown,
-  fallbackMessage: string,
+  defaultMessage: string,
   extras?: DesignTabColorFailureExtrasByKind[K] | unknown,
-  fallbackReason?: DesignTabColorFailureReasonByKind[K] | unknown
+  defaultReason?: DesignTabColorFailureReasonByKind[K] | unknown
 ): DesignTabColorFailureResultByKind<K> {
-  const normalized = normalizeUnknownError(error, fallbackMessage);
-  return buildErrorByKind[kind](normalized.message, extras, fallbackReason);
+  const normalized = normalizeUnknownError(error, defaultMessage);
+  return buildErrorByKind[kind](normalized.message, extras, defaultReason);
 }

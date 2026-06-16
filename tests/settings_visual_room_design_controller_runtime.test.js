@@ -32,7 +32,7 @@ function loadSettingsVisualRoomDesignControllerModule(stubs = {}) {
     }
     if (specifier === './settings_visual_shared_room.js') {
       return {
-        FALLBACK_FLOOR_STYLES: stubs.FALLBACK_FLOOR_STYLES || { parquet: [{ id: 'fallback' }], tile: [] },
+        DEFAULT_FLOOR_STYLES: stubs.DEFAULT_FLOOR_STYLES || { parquet: [{ id: 'fallback' }], tile: [] },
       };
     }
     if (specifier === './settings_visual_shared_normalize.js') {

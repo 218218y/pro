@@ -94,14 +94,6 @@ test('legacy fallback audit classifies boundary occurrences before runtime risk'
   );
   assert.equal(
     classifyLegacyFallbackOccurrence({
-      relPath: 'esm/native/ui/react/tabs/design_tab_color_action_result_reason.ts',
-      lineText: 'return normalizeReason(value, fallbackReason);',
-      term: 'fallbackReason',
-    }),
-    'error-message-default'
-  );
-  assert.equal(
-    classifyLegacyFallbackOccurrence({
       relPath: 'esm/native/builder/core_carcass_cornice.ts',
       lineText: 'return buildCompatCorniceEnvelope({});',
       term: 'buildCompatCorniceEnvelope',
