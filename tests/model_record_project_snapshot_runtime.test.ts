@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { normalizeModelRecord } from '../esm/native/features/model_record/model_record_normalizer.ts';
 import { buildProjectStructureFromModel } from '../esm/native/services/models_apply_project_snapshot.ts';
+import { normalizeProjectData } from '../esm/native/io/project_schema_normalize.ts';
 
 test('normalizeModelRecord canonicalizes persisted model config maps and detaches nested branches', () => {
   const sourceModel: Record<string, any> = {
@@ -182,4 +183,37 @@ test('buildProjectStructureFromModel detaches settings toggles and chest setting
   assert.equal(builtSettings.width, 240);
   assert.equal(builtToggles.groovesEnabled, true);
   assert.equal((builtChest.dims as Record<string, unknown>).width, 60);
+});
+
+test('buildProjectStructureFromModel emits a current-schema project load payload', () => {
+  const App = {
+    store: {
+      getState: () => ({ ui: {}, config: { savedColors: [] } }),
+      patch: () => true,
+    },
+  } as never;
+
+  const model = {
+    id: 'model-current-schema',
+    name: 'Current schema model',
+    settings: {
+      doors: 4,
+      width: 160,
+      height: 240,
+      depth: 55,
+      structureSelection: '[2,2]',
+      wardrobeType: 'hinged',
+    },
+    toggles: { splitDoors: false },
+    modulesConfiguration: [
+      { layout: 'hanging_top2', doors: 2 },
+      { layout: 'shelves', doors: 2, extDrawersCount: 4 },
+    ],
+  } as Record<string, any>;
+
+  const built = buildProjectStructureFromModel(App, model as never);
+
+  assert.equal(built.__schema, 'wardrobepro.project');
+  assert.equal(built.__version, 2);
+  assert.ok(normalizeProjectData(built), 'model apply payload must satisfy current project schema');
 });

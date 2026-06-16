@@ -83,6 +83,8 @@ export function finalizeProjectForSavePayload(
   const cloneJson = options.cloneJson;
   const reportNonFatal = options.reportNonFatal;
   const out = cloneJson(projectData || {});
+  delete out.version;
+  delete out.format;
 
   const canonicalCfg = readCanonicalProjectConfigForExportPayload(out);
   Object.assign(out, readPersistedProjectConfigSnapshot(canonicalCfg));
