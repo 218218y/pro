@@ -135,6 +135,30 @@ export function createOrderPdfTextDetailsOps(deps: ExportOrderPdfDeps) {
     }
   }
 
+  function readEnabledFlag(value: unknown): boolean {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'number') return Number.isFinite(value) && value !== 0;
+    if (typeof value === 'string') {
+      const normalized = value.trim().toLowerCase();
+      if (!normalized) return false;
+      return !['0', 'false', 'no', 'off', 'null', 'undefined'].includes(normalized);
+    }
+    return !!value;
+  }
+
+  function readCorniceLabel(ui: Record<string, unknown>): string {
+    try {
+      if (!readEnabledFlag(ui['hasCornice'])) return '';
+      const type = String(ui['corniceType'] ?? 'classic')
+        .trim()
+        .toLowerCase();
+      return type === 'wave' ? 'גל' : 'רגיל';
+    } catch (e) {
+      _exportReportNonFatalNoApp('readCorniceLabel', e, 3000);
+      return '';
+    }
+  }
+
   function buildOrderDetailsText(App: AppContainer): string {
     const cfg = asObject(getCfg(App));
     const ui = asObject(getUi(App));
@@ -163,6 +187,7 @@ export function createOrderPdfTextDetailsOps(deps: ExportOrderPdfDeps) {
             : '';
 
     const split = calcBodySplit(width, doors, cfg, ui);
+    const corniceLabel = readCorniceLabel(ui);
     const lines: string[] = [];
 
     if (selectedModelId) {
@@ -181,6 +206,7 @@ export function createOrderPdfTextDetailsOps(deps: ExportOrderPdfDeps) {
     lines.push(`דלתות: ${doors}, ${materialHeb}${doorStyleHeb ? `, ${doorStyleHeb}` : ''}`);
     lines.push(`מידות (ס"מ): ${Math.round(width)}×${Math.round(height)}×${Math.round(depth)}`);
     if (split) lines.push(`חלוקת גוף: ${split}`);
+    if (corniceLabel) lines.push(`קרניז: ${corniceLabel}`);
     return lines.join('\n');
   }
 
