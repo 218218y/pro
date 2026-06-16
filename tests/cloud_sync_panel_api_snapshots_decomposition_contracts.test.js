@@ -36,7 +36,7 @@ test('cloud sync panel snapshot controller keeps a thin facade over publish/subs
 
   assertLacksAll(assert, facade, [
     /createCloudSyncPanelSnapshotReaders\(/,
-    /scheduleSite2TabsGateFallbackTick\(/,
+    /scheduleSite2TabsGateDeadlineTick\(/,
     /disposeFloatingPanelSourceSubscription\(/,
   ]);
 
@@ -44,7 +44,7 @@ test('cloud sync panel snapshot controller keeps a thin facade over publish/subs
     /export interface CloudSyncPanelSnapshotController \{/,
     /export interface CloudSyncPanelSnapshotMutableState \{/,
     /createCloudSyncPanelSnapshotMutableState\(/,
-    /buildSite2TabsGateFallbackScheduleKey\(/,
+    /buildSite2TabsGateDeadlineScheduleKey\(/,
   ]);
 
   assertMatchesAll(assert, runtimeShared, [
@@ -55,7 +55,7 @@ test('cloud sync panel snapshot controller keeps a thin facade over publish/subs
 
   assertMatchesAll(assert, publishRuntime, [
     /createCloudSyncPanelSnapshotPublishers\(/,
-    /scheduleSite2TabsGateFallbackTick\(/,
+    /scheduleSite2TabsGateDeadlineTick\(/,
     /cloneCloudSyncPanelSnapshot\(/,
     /cloneCloudSyncSite2TabsGateSnapshot\(/,
   ]);
@@ -64,7 +64,7 @@ test('cloud sync panel snapshot controller keeps a thin facade over publish/subs
     /createCloudSyncPanelSnapshotSubscriptions\(/,
     /readCloudSyncPanelSnapshotPublicReaders\(/,
     /ensureFloatingPanelSourceSubscription\(/,
-    /clearSite2TabsGateFallbackTimer\(/,
+    /clearSite2TabsGateDeadlineTimer\(/,
   ]);
 
   assertMatchesAll(assert, sources, [
@@ -72,8 +72,8 @@ test('cloud sync panel snapshot controller keeps a thin facade over publish/subs
     /ensureFloatingPanelSourceSubscription\(/,
     /disposeSite2TabsGateSourceSubscription\(/,
     /ensureSite2TabsGateSourceSubscription\(/,
-    /scheduleSite2TabsGateFallbackTick\(/,
-    /clearSite2TabsGateFallbackTimer\(/,
+    /scheduleSite2TabsGateDeadlineTick\(/,
+    /clearSite2TabsGateDeadlineTimer\(/,
     /CloudSyncPanelSnapshotRuntimeContext/,
   ]);
 
@@ -87,7 +87,7 @@ test('cloud sync panel snapshot controller keeps a thin facade over publish/subs
   ]);
 
   assertLacksAll(assert, runtime, [
-    /scheduleSite2TabsGateFallbackTick\(/,
+    /scheduleSite2TabsGateDeadlineTick\(/,
     /ensureFloatingPanelSourceSubscription\(/,
     /listener\(cloneCloudSyncPanelSnapshot/,
   ]);

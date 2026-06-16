@@ -415,18 +415,6 @@
         "domain-default": 1
       }
     },
-    "esm/native/services/autosave_schedule.ts": {
-      "total": 4,
-      "categories": {
-        "compat-boundary": 4
-      }
-    },
-    "esm/native/services/autosave_shared.ts": {
-      "total": 10,
-      "categories": {
-        "compat-boundary": 10
-      }
-    },
     "esm/native/services/camera_shared.ts": {
       "total": 2,
       "categories": {
@@ -557,38 +545,6 @@
       "total": 1,
       "categories": {
         "compat-boundary": 1
-      }
-    },
-    "esm/native/services/cloud_sync_panel_api_snapshots_publish_runtime.ts": {
-      "total": 2,
-      "categories": {
-        "domain-default": 2
-      }
-    },
-    "esm/native/services/cloud_sync_panel_api_snapshots_reads.ts": {
-      "total": 4,
-      "categories": {
-        "domain-default": 4
-      }
-    },
-    "esm/native/services/cloud_sync_panel_api_snapshots_shared.ts": {
-      "total": 5,
-      "categories": {
-        "domain-default": 5
-      }
-    },
-    "esm/native/services/cloud_sync_panel_api_snapshots_sources.ts": {
-      "total": 21,
-      "categories": {
-        "compat-boundary": 6,
-        "domain-default": 15
-      }
-    },
-    "esm/native/services/cloud_sync_panel_api_snapshots_subscription_runtime.ts": {
-      "total": 4,
-      "categories": {
-        "compat-boundary": 2,
-        "domain-default": 2
       }
     },
     "esm/native/services/cloud_sync_status_install_runtime.ts": {

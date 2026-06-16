@@ -18,8 +18,8 @@ export interface CloudSyncPanelSnapshotMutableState {
   panelSnapshotListeners: Set<(snapshot: CloudSyncPanelSnapshot) => void>;
   site2TabsGateSnapshot: CloudSyncSite2TabsGateSnapshot;
   site2TabsGateSnapshotListeners: Set<(snapshot: CloudSyncSite2TabsGateSnapshot) => void>;
-  site2TabsGateFallbackTimer: TimeoutHandleLike | null;
-  site2TabsGateFallbackScheduleKey: string;
+  site2TabsGateDeadlineTimer: TimeoutHandleLike | null;
+  site2TabsGateDeadlineScheduleKey: string;
   disposeFloatingPanelSource: null | (() => void);
   disposeSite2TabsGateSource: null | (() => void);
 }
@@ -33,13 +33,13 @@ export function createCloudSyncPanelSnapshotMutableState(
     panelSnapshotListeners: new Set<(snapshot: CloudSyncPanelSnapshot) => void>(),
     site2TabsGateSnapshot: readSite2TabsGateSnapshot(),
     site2TabsGateSnapshotListeners: new Set<(snapshot: CloudSyncSite2TabsGateSnapshot) => void>(),
-    site2TabsGateFallbackTimer: null,
-    site2TabsGateFallbackScheduleKey: '',
+    site2TabsGateDeadlineTimer: null,
+    site2TabsGateDeadlineScheduleKey: '',
     disposeFloatingPanelSource: null,
     disposeSite2TabsGateSource: null,
   };
 }
 
-export function buildSite2TabsGateFallbackScheduleKey(snapshot: CloudSyncSite2TabsGateSnapshot): string {
+export function buildSite2TabsGateDeadlineScheduleKey(snapshot: CloudSyncSite2TabsGateSnapshot): string {
   return `${snapshot.open ? 1 : 0}:${Number(snapshot.until) || 0}:${Number(snapshot.minutesLeft) || 0}`;
 }

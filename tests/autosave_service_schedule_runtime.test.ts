@@ -209,10 +209,10 @@ test('autosave service: app-scoped cancellation only clears the targeted app tim
   cancelAutosaveTimer();
 });
 
-test('autosave service: fallback timeout is cleared on cancel so stale post-trigger autosave cannot publish later', () => {
+test('autosave service: idle timeout is cleared on cancel so stale post-trigger autosave cannot publish later', () => {
   cancelAutosaveTimer();
 
-  const { App, timers, cleared, storageWrites, idleRuns } = createApp('fallback-cancel', {
+  const { App, timers, cleared, storageWrites, idleRuns } = createApp('idle-timeout-cancel', {
     idleAvailable: false,
   });
   installAutosaveService(App);
@@ -222,24 +222,24 @@ test('autosave service: fallback timeout is cleared on cancel so stale post-trig
 
   timers[0].cb();
   assert.equal(idleRuns.length, 0, 'idle path should stay unused when platform idle is unavailable');
-  assert.equal(timers.length, 2, 'fallback should schedule a zero-delay timer when idle is unavailable');
-  const fallbackTimer = timers[1];
+  assert.equal(timers.length, 2, 'idle timeout should schedule a zero-delay timer when idle is unavailable');
+  const idleTimeoutTimer = timers[1];
 
   cancelAutosaveTimer(App);
 
-  assert.ok(cleared.includes(fallbackTimer.handle), 'cancel should clear the pending fallback timeout');
+  assert.ok(cleared.includes(idleTimeoutTimer.handle), 'cancel should clear the pending idle timeout');
   assert.equal(storageWrites.length, 0);
 
-  fallbackTimer.cb();
-  assert.equal(storageWrites.length, 0, 'stale cleared fallback callback must not commit autosave later');
+  idleTimeoutTimer.cb();
+  assert.equal(storageWrites.length, 0, 'stale cleared idle timeout callback must not commit autosave later');
 
   cancelAutosaveTimer();
 });
 
-test('autosave service: flush clears pending fallback timeout and keeps stale fallback callback from double-saving', () => {
+test('autosave service: flush clears pending idle timeout and keeps stale idle timeout callback from double-saving', () => {
   cancelAutosaveTimer();
 
-  const { App, timers, cleared, storageWrites, idleRuns } = createApp('fallback-flush', {
+  const { App, timers, cleared, storageWrites, idleRuns } = createApp('idle-timeout-flush', {
     idleAvailable: false,
   });
   installAutosaveService(App);
@@ -248,14 +248,14 @@ test('autosave service: flush clears pending fallback timeout and keeps stale fa
   timers[0].cb();
   assert.equal(idleRuns.length, 0);
   assert.equal(timers.length, 2);
-  const fallbackTimer = timers[1];
+  const idleTimeoutTimer = timers[1];
 
   assert.equal(flushAutosavePending(App), true);
-  assert.ok(cleared.includes(fallbackTimer.handle), 'flush should clear the pending fallback timeout');
+  assert.ok(cleared.includes(idleTimeoutTimer.handle), 'flush should clear the pending idle timeout');
   assert.equal(storageWrites.length, 1);
 
-  fallbackTimer.cb();
-  assert.equal(storageWrites.length, 1, 'stale cleared fallback callback must not run a second autosave');
+  idleTimeoutTimer.cb();
+  assert.equal(storageWrites.length, 1, 'stale cleared idle timeout callback must not run a second autosave');
 
   cancelAutosaveTimer();
 });

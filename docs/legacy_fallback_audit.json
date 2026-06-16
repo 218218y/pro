@@ -1,18 +1,18 @@
 {
-  "generatedAt": "2026-06-16T17:51:36.329Z",
+  "generatedAt": "2026-06-16T18:48:12.256Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 401,
-    "totalFiles": 142,
+    "totalOccurrences": 351,
+    "totalFiles": 135,
     "byCategory": {
       "runtime-default": 0,
-      "domain-default": 188,
+      "domain-default": 160,
       "error-message-default": 29,
       "framework-default": 2,
       "browser-adapter": 40,
       "project-migration": 37,
       "external-api-compat": 2,
-      "compat-boundary": 97,
+      "compat-boundary": 75,
       "test-fixture": 6,
       "legacy-runtime-risk": 0,
       "unknown": 0
@@ -430,18 +430,6 @@
           "domain-default": 1
         }
       },
-      "esm/native/services/autosave_schedule.ts": {
-        "total": 4,
-        "categories": {
-          "compat-boundary": 4
-        }
-      },
-      "esm/native/services/autosave_shared.ts": {
-        "total": 10,
-        "categories": {
-          "compat-boundary": 10
-        }
-      },
       "esm/native/services/camera_shared.ts": {
         "total": 2,
         "categories": {
@@ -572,38 +560,6 @@
         "total": 1,
         "categories": {
           "compat-boundary": 1
-        }
-      },
-      "esm/native/services/cloud_sync_panel_api_snapshots_publish_runtime.ts": {
-        "total": 2,
-        "categories": {
-          "domain-default": 2
-        }
-      },
-      "esm/native/services/cloud_sync_panel_api_snapshots_reads.ts": {
-        "total": 4,
-        "categories": {
-          "domain-default": 4
-        }
-      },
-      "esm/native/services/cloud_sync_panel_api_snapshots_shared.ts": {
-        "total": 5,
-        "categories": {
-          "domain-default": 5
-        }
-      },
-      "esm/native/services/cloud_sync_panel_api_snapshots_sources.ts": {
-        "total": 21,
-        "categories": {
-          "compat-boundary": 6,
-          "domain-default": 15
-        }
-      },
-      "esm/native/services/cloud_sync_panel_api_snapshots_subscription_runtime.ts": {
-        "total": 4,
-        "categories": {
-          "compat-boundary": 2,
-          "domain-default": 2
         }
       },
       "esm/native/services/cloud_sync_status_install_runtime.ts": {
@@ -882,14 +838,6 @@
     },
     "hotFiles": [
       {
-        "file": "esm/native/services/cloud_sync_panel_api_snapshots_sources.ts",
-        "total": 21,
-        "categories": {
-          "compat-boundary": 6,
-          "domain-default": 15
-        }
-      },
-      {
         "file": "esm/entry_pro_overlay.ts",
         "total": 19,
         "categories": {
@@ -908,13 +856,6 @@
         "total": 12,
         "categories": {
           "project-migration": 12
-        }
-      },
-      {
-        "file": "esm/native/services/autosave_shared.ts",
-        "total": 10,
-        "categories": {
-          "compat-boundary": 10
         }
       },
       {
@@ -1013,13 +954,6 @@
         }
       },
       {
-        "file": "esm/native/services/cloud_sync_panel_api_snapshots_shared.ts",
-        "total": 5,
-        "categories": {
-          "domain-default": 5
-        }
-      },
-      {
         "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
         "total": 5,
         "categories": {
@@ -1070,13 +1004,6 @@
         }
       },
       {
-        "file": "esm/native/services/autosave_schedule.ts",
-        "total": 4,
-        "categories": {
-          "compat-boundary": 4
-        }
-      },
-      {
         "file": "esm/native/services/canvas_picking_cell_dims_linear_context_modules.ts",
         "total": 4,
         "categories": {
@@ -1091,10 +1018,39 @@
         }
       },
       {
-        "file": "esm/native/services/cloud_sync_panel_api_snapshots_reads.ts",
+        "file": "esm/native/services/models_registry_storage_state.ts",
+        "total": 4,
+        "categories": {
+          "compat-boundary": 4
+        }
+      },
+      {
+        "file": "esm/native/services/render_surface_runtime_support_readers.ts",
+        "total": 4,
+        "categories": {
+          "compat-boundary": 4
+        }
+      },
+      {
+        "file": "esm/native/ui/html_sanitize_runtime.ts",
         "total": 4,
         "categories": {
           "domain-default": 4
+        }
+      },
+      {
+        "file": "esm/native/ui/notes_service_shared.ts",
+        "total": 4,
+        "categories": {
+          "domain-default": 4
+        }
+      },
+      {
+        "file": "esm/native/ui/project_save_runtime.ts",
+        "total": 4,
+        "categories": {
+          "browser-adapter": 1,
+          "domain-default": 3
         }
       }
     ]
@@ -2516,104 +2472,6 @@
       "text": "{ consoleFallback: false }"
     },
     {
-      "file": "esm/native/services/autosave_schedule.ts",
-      "line": 47,
-      "term": "clearIdleFallbackTimer",
-      "category": "compat-boundary",
-      "text": "state.clearIdleFallbackTimer = handle => {"
-    },
-    {
-      "file": "esm/native/services/autosave_schedule.ts",
-      "line": 67,
-      "term": "idleFallbackTimer",
-      "category": "compat-boundary",
-      "text": "state.idleFallbackTimer = null;"
-    },
-    {
-      "file": "esm/native/services/autosave_schedule.ts",
-      "line": 75,
-      "term": "idleFallbackTimer",
-      "category": "compat-boundary",
-      "text": "if (state.idleFallbackTimer === fallbackHandle) state.idleFallbackTimer = null;"
-    },
-    {
-      "file": "esm/native/services/autosave_schedule.ts",
-      "line": 78,
-      "term": "idleFallbackTimer",
-      "category": "compat-boundary",
-      "text": "state.idleFallbackTimer = fallbackHandle;"
-    },
-    {
-      "file": "esm/native/services/autosave_shared.ts",
-      "line": 29,
-      "term": "idleFallbackTimer",
-      "category": "compat-boundary",
-      "text": "idleFallbackTimer?: TimeoutHandleLike | null;"
-    },
-    {
-      "file": "esm/native/services/autosave_shared.ts",
-      "line": 31,
-      "term": "clearIdleFallbackTimer",
-      "category": "compat-boundary",
-      "text": "clearIdleFallbackTimer?: ((handle?: TimeoutHandleLike | null) => void) | null;"
-    },
-    {
-      "file": "esm/native/services/autosave_shared.ts",
-      "line": 59,
-      "term": "idleFallbackTimer",
-      "category": "compat-boundary",
-      "text": "state.idleFallbackTimer = null;"
-    },
-    {
-      "file": "esm/native/services/autosave_shared.ts",
-      "line": 61,
-      "term": "clearIdleFallbackTimer",
-      "category": "compat-boundary",
-      "text": "state.clearIdleFallbackTimer = null;"
-    },
-    {
-      "file": "esm/native/services/autosave_shared.ts",
-      "line": 66,
-      "term": "idleFallbackTimer",
-      "category": "compat-boundary",
-      "text": "if (state.timer || state.idlePending || state.idleFallbackTimer) {"
-    },
-    {
-      "file": "esm/native/services/autosave_shared.ts",
-      "line": 94,
-      "term": "idleFallbackTimer",
-      "category": "compat-boundary",
-      "text": "const idleFallbackTimer = state.idleFallbackTimer;"
-    },
-    {
-      "file": "esm/native/services/autosave_shared.ts",
-      "line": 104,
-      "term": "idleFallbackTimer",
-      "category": "compat-boundary",
-      "text": "if (idleFallbackTimer) {"
-    },
-    {
-      "file": "esm/native/services/autosave_shared.ts",
-      "line": 106,
-      "term": "clearIdleFallbackTimer",
-      "category": "compat-boundary",
-      "text": "state.clearIdleFallbackTimer?.(idleFallbackTimer);"
-    },
-    {
-      "file": "esm/native/services/autosave_shared.ts",
-      "line": 106,
-      "term": "idleFallbackTimer",
-      "category": "compat-boundary",
-      "text": "state.clearIdleFallbackTimer?.(idleFallbackTimer);"
-    },
-    {
-      "file": "esm/native/services/autosave_shared.ts",
-      "line": 114,
-      "term": "idleFallbackTimer",
-      "category": "compat-boundary",
-      "text": "state.idleFallbackTimer = null;"
-    },
-    {
       "file": "esm/native/services/camera_shared.ts",
       "line": 22,
       "term": "TimeoutFallbackHandle",
@@ -2948,258 +2806,6 @@
       "term": "clearLegacyInstalledCloudSyncPanelApiDrift",
       "category": "compat-boundary",
       "text": "clearLegacyInstalledCloudSyncPanelApiDrift,"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_publish_runtime.ts",
-      "line": 9,
-      "term": "scheduleSite2TabsGateFallbackTick",
-      "category": "domain-default",
-      "text": "import { scheduleSite2TabsGateFallbackTick } from './cloud_sync_panel_api_snapshots_sources.js';"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_publish_runtime.ts",
-      "line": 37,
-      "term": "scheduleSite2TabsGateFallbackTick",
-      "category": "domain-default",
-      "text": "scheduleSite2TabsGateFallbackTick(context, nextSnapshot);"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_reads.ts",
-      "line": 22,
-      "term": "readFallbackCloudSyncSite2TabsGateSnapshot",
-      "category": "domain-default",
-      "text": "function readFallbackCloudSyncSite2TabsGateSnapshot(opts: {"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_reads.ts",
-      "line": 60,
-      "term": "readFallbackSite2TabsGateSnapshot",
-      "category": "domain-default",
-      "text": "const readFallbackSite2TabsGateSnapshot = (): CloudSyncSite2TabsGateSnapshot =>"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_reads.ts",
-      "line": 61,
-      "term": "readFallbackCloudSyncSite2TabsGateSnapshot",
-      "category": "domain-default",
-      "text": "readFallbackCloudSyncSite2TabsGateSnapshot({ tabsGateOpenRef, tabsGateUntilRef, now });"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_reads.ts",
-      "line": 94,
-      "term": "readFallbackSite2TabsGateSnapshot",
-      "category": "domain-default",
-      "text": "return readFallbackSite2TabsGateSnapshot();"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_shared.ts",
-      "line": 21,
-      "term": "site2TabsGateFallbackTimer",
-      "category": "domain-default",
-      "text": "site2TabsGateFallbackTimer: TimeoutHandleLike | null;"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_shared.ts",
-      "line": 22,
-      "term": "site2TabsGateFallbackScheduleKey",
-      "category": "domain-default",
-      "text": "site2TabsGateFallbackScheduleKey: string;"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_shared.ts",
-      "line": 36,
-      "term": "site2TabsGateFallbackTimer",
-      "category": "domain-default",
-      "text": "site2TabsGateFallbackTimer: null,"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_shared.ts",
-      "line": 37,
-      "term": "site2TabsGateFallbackScheduleKey",
-      "category": "domain-default",
-      "text": "site2TabsGateFallbackScheduleKey: '',"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_shared.ts",
-      "line": 43,
-      "term": "buildSite2TabsGateFallbackScheduleKey",
-      "category": "domain-default",
-      "text": "export function buildSite2TabsGateFallbackScheduleKey(snapshot: CloudSyncSite2TabsGateSnapshot): string {"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_sources.ts",
-      "line": 3,
-      "term": "buildSite2TabsGateFallbackScheduleKey",
-      "category": "domain-default",
-      "text": "import { buildSite2TabsGateFallbackScheduleKey } from './cloud_sync_panel_api_snapshots_shared.js';"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_sources.ts",
-      "line": 66,
-      "term": "clearSite2TabsGateFallbackTimer",
-      "category": "compat-boundary",
-      "text": "export function clearSite2TabsGateFallbackTimer(context: CloudSyncPanelSnapshotRuntimeContext): void {"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_sources.ts",
-      "line": 69,
-      "term": "site2TabsGateFallbackTimer",
-      "category": "domain-default",
-      "text": "if (state.site2TabsGateFallbackTimer) {"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_sources.ts",
-      "line": 70,
-      "term": "site2TabsGateFallbackTimer",
-      "category": "domain-default",
-      "text": "deps.clearTimeoutFn(state.site2TabsGateFallbackTimer);"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_sources.ts",
-      "line": 71,
-      "term": "site2TabsGateFallbackTimer",
-      "category": "domain-default",
-      "text": "state.site2TabsGateFallbackTimer = null;"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_sources.ts",
-      "line": 73,
-      "term": "site2TabsGateFallbackScheduleKey",
-      "category": "domain-default",
-      "text": "state.site2TabsGateFallbackScheduleKey = '';"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_sources.ts",
-      "line": 75,
-      "term": "tabsGateFallbackTimerClear",
-      "category": "compat-boundary",
-      "text": "deps.reportNonFatal(deps.App, panelApiOp('tabsGateFallbackTimerClear'), __wpErr, { throttleMs: 4000 });"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_sources.ts",
-      "line": 76,
-      "term": "site2TabsGateFallbackTimer",
-      "category": "domain-default",
-      "text": "state.site2TabsGateFallbackTimer = null;"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_sources.ts",
-      "line": 77,
-      "term": "site2TabsGateFallbackScheduleKey",
-      "category": "domain-default",
-      "text": "state.site2TabsGateFallbackScheduleKey = '';"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_sources.ts",
-      "line": 81,
-      "term": "scheduleSite2TabsGateFallbackTick",
-      "category": "domain-default",
-      "text": "export function scheduleSite2TabsGateFallbackTick("
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_sources.ts",
-      "line": 87,
-      "term": "clearSite2TabsGateFallbackTimer",
-      "category": "compat-boundary",
-      "text": "clearSite2TabsGateFallbackTimer(context);"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_sources.ts",
-      "line": 91,
-      "term": "clearSite2TabsGateFallbackTimer",
-      "category": "compat-boundary",
-      "text": "clearSite2TabsGateFallbackTimer(context);"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_sources.ts",
-      "line": 96,
-      "term": "clearSite2TabsGateFallbackTimer",
-      "category": "compat-boundary",
-      "text": "clearSite2TabsGateFallbackTimer(context);"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_sources.ts",
-      "line": 100,
-      "term": "buildSite2TabsGateFallbackScheduleKey",
-      "category": "domain-default",
-      "text": "const scheduleKey = buildSite2TabsGateFallbackScheduleKey({ ...snapshot, minutesLeft });"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_sources.ts",
-      "line": 101,
-      "term": "site2TabsGateFallbackTimer",
-      "category": "domain-default",
-      "text": "if (state.site2TabsGateFallbackTimer && state.site2TabsGateFallbackScheduleKey === scheduleKey) return;"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_sources.ts",
-      "line": 101,
-      "term": "site2TabsGateFallbackScheduleKey",
-      "category": "domain-default",
-      "text": "if (state.site2TabsGateFallbackTimer && state.site2TabsGateFallbackScheduleKey === scheduleKey) return;"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_sources.ts",
-      "line": 102,
-      "term": "clearSite2TabsGateFallbackTimer",
-      "category": "compat-boundary",
-      "text": "clearSite2TabsGateFallbackTimer(context);"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_sources.ts",
-      "line": 105,
-      "term": "site2TabsGateFallbackScheduleKey",
-      "category": "domain-default",
-      "text": "state.site2TabsGateFallbackScheduleKey = scheduleKey;"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_sources.ts",
-      "line": 106,
-      "term": "site2TabsGateFallbackTimer",
-      "category": "domain-default",
-      "text": "state.site2TabsGateFallbackTimer = deps.setTimeoutFn(() => {"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_sources.ts",
-      "line": 107,
-      "term": "site2TabsGateFallbackTimer",
-      "category": "domain-default",
-      "text": "state.site2TabsGateFallbackTimer = null;"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_sources.ts",
-      "line": 108,
-      "term": "site2TabsGateFallbackScheduleKey",
-      "category": "domain-default",
-      "text": "state.site2TabsGateFallbackScheduleKey = '';"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_subscription_runtime.ts",
-      "line": 4,
-      "term": "clearSite2TabsGateFallbackTimer",
-      "category": "compat-boundary",
-      "text": "clearSite2TabsGateFallbackTimer,"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_subscription_runtime.ts",
-      "line": 9,
-      "term": "scheduleSite2TabsGateFallbackTick",
-      "category": "domain-default",
-      "text": "scheduleSite2TabsGateFallbackTick,"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_subscription_runtime.ts",
-      "line": 31,
-      "term": "scheduleSite2TabsGateFallbackTick",
-      "category": "domain-default",
-      "text": "else scheduleSite2TabsGateFallbackTick(context, context.state.site2TabsGateSnapshot);"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_snapshots_subscription_runtime.ts",
-      "line": 36,
-      "term": "clearSite2TabsGateFallbackTimer",
-      "category": "compat-boundary",
-      "text": "clearSite2TabsGateFallbackTimer(context);"
     },
     {
       "file": "esm/native/services/cloud_sync_status_install_runtime.ts",

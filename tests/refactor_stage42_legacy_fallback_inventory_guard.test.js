@@ -33,7 +33,7 @@ test('stage 42 legacy fallback inventory closeout is anchored', () => {
     ['esm/entry_pro_overlay.ts', 'browser-adapter'],
     ['esm/native/builder/core_carcass_cornice.ts', 'domain-default'],
     ['esm/boot/boot_manifest_steps.ts', 'external-api-compat'],
-    ['esm/native/services/autosave_shared.ts', 'compat-boundary'],
+    ['esm/native/kernel/domain_api_modules_corner_shared.ts', 'compat-boundary'],
     ['esm/native/ui/react/tabs/design_tab_color_action_result_reason.ts', 'error-message-default'],
     ['esm/shared/wardrobe_dimension_tokens_shared.ts', 'domain-default'],
   ]) {
@@ -43,6 +43,19 @@ test('stage 42 legacy fallback inventory closeout is anchored', () => {
       `${file} must be categorized as ${category}`
     );
   }
+
+  assert.equal(
+    audit.summary.byFile['esm/native/services/autosave_shared.ts']?.total || 0,
+    0,
+    'autosave shared scheduler state should use current idle-timeout naming'
+  );
+  assert.equal(
+    audit.summary.byFile['esm/native/services/cloud_sync_panel_api_snapshots_sources.ts']?.categories?.[
+      'compat-boundary'
+    ] || 0,
+    0,
+    'cloud sync snapshot source timers should use current deadline naming'
+  );
 
   assert.equal(audit.summary.byFile['esm/native/runtime/ui_raw_selectors.ts']?.total || 0, 0);
   assert.equal(audit.summary.byFile['esm/native/runtime/ui_raw_selectors_snapshot.ts']?.total || 0, 0);

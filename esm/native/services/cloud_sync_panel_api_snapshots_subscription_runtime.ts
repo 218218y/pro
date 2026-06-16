@@ -1,12 +1,12 @@
 import type { CloudSyncPanelSnapshot, CloudSyncSite2TabsGateSnapshot } from '../../../types';
 
 import {
-  clearSite2TabsGateFallbackTimer,
+  clearSite2TabsGateDeadlineTimer,
   disposeFloatingPanelSourceSubscription,
   disposeSite2TabsGateSourceSubscription,
   ensureFloatingPanelSourceSubscription,
   ensureSite2TabsGateSourceSubscription,
-  scheduleSite2TabsGateFallbackTick,
+  scheduleSite2TabsGateDeadlineTick,
 } from './cloud_sync_panel_api_snapshots_sources.js';
 import { cloneCloudSyncPanelSnapshot } from './cloud_sync_panel_api_public_support.js';
 import { cloneCloudSyncSite2TabsGateSnapshot } from './cloud_sync_tabs_gate_support.js';
@@ -28,12 +28,12 @@ export function createCloudSyncPanelSnapshotSubscriptions(context: CloudSyncPane
     subscribeSite2TabsGateSnapshot: fn => {
       context.state.site2TabsGateSnapshotListeners.add(fn);
       if (context.hasSite2TabsGateSource) ensureSite2TabsGateSourceSubscription(context);
-      else scheduleSite2TabsGateFallbackTick(context, context.state.site2TabsGateSnapshot);
+      else scheduleSite2TabsGateDeadlineTick(context, context.state.site2TabsGateSnapshot);
       return (): void => {
         context.state.site2TabsGateSnapshotListeners.delete(fn);
         if (!context.state.site2TabsGateSnapshotListeners.size) {
           disposeSite2TabsGateSourceSubscription(context);
-          clearSite2TabsGateFallbackTimer(context);
+          clearSite2TabsGateDeadlineTimer(context);
         }
       };
     },

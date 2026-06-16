@@ -51,7 +51,7 @@ test('cloud sync panel snapshot controller suppresses duplicate panel publishes 
   dispose();
 });
 
-test('cloud sync panel snapshot controller suppresses duplicate tabs-gate publishes and avoids fallback timer churn for unchanged snapshots', () => {
+test('cloud sync panel snapshot controller suppresses duplicate tabs-gate publishes and avoids deadline timer churn for unchanged snapshots', () => {
   let now = 1_000;
   let nextId = 1;
   const timers = new Map<number, { cb: () => void; ms: number; active: boolean }>();
@@ -91,7 +91,7 @@ test('cloud sync panel snapshot controller suppresses duplicate tabs-gate publis
   controller.publishSite2TabsGateSnapshot();
   assert.deepEqual(snapshots, []);
   assert.equal([...timers.values()].filter(timer => timer.active).length, 1);
-  assert.deepEqual(cleared, [], 'same snapshot should not clear and recreate fallback timer');
+  assert.deepEqual(cleared, [], 'same snapshot should not clear and recreate deadline timer');
 
   now = 61_010;
   snapshot = { open: true, until: 121_000, minutesLeft: 1 };
@@ -109,7 +109,7 @@ test('cloud sync panel snapshot controller suppresses duplicate tabs-gate publis
   dispose();
 });
 
-test('cloud sync panel snapshot controller does not create fallback timer until a tabs-gate subscriber exists', () => {
+test('cloud sync panel snapshot controller does not create deadline timer until a tabs-gate subscriber exists', () => {
   let nextId = 1;
   const timers = new Map<number, { ms: number; active: boolean }>();
 

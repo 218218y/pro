@@ -6,7 +6,7 @@ import {
 } from './cloud_sync_panel_api_support.js';
 import { cloneCloudSyncSite2TabsGateSnapshot } from './cloud_sync_tabs_gate_support.js';
 import { cloneCloudSyncPanelSnapshot } from './cloud_sync_panel_api_public_support.js';
-import { scheduleSite2TabsGateFallbackTick } from './cloud_sync_panel_api_snapshots_sources.js';
+import { scheduleSite2TabsGateDeadlineTick } from './cloud_sync_panel_api_snapshots_sources.js';
 import type { CloudSyncPanelSnapshotRuntimeContext } from './cloud_sync_panel_api_snapshots_runtime_shared.js';
 
 export function createCloudSyncPanelSnapshotPublishers(context: CloudSyncPanelSnapshotRuntimeContext): {
@@ -34,7 +34,7 @@ export function createCloudSyncPanelSnapshotPublishers(context: CloudSyncPanelSn
 
   const publishSite2TabsGateSnapshot = (): CloudSyncSite2TabsGateSnapshot => {
     const nextSnapshot = context.readSite2TabsGateSnapshot();
-    scheduleSite2TabsGateFallbackTick(context, nextSnapshot);
+    scheduleSite2TabsGateDeadlineTick(context, nextSnapshot);
     if (areCloudSyncSite2TabsGateSnapshotsEqual(context.state.site2TabsGateSnapshot, nextSnapshot)) {
       return cloneCloudSyncSite2TabsGateSnapshot(context.state.site2TabsGateSnapshot);
     }

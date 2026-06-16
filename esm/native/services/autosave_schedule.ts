@@ -44,7 +44,7 @@ export function scheduleAutosave(App: AppContainer): void {
       // ignore
     }
   };
-  state.clearIdleFallbackTimer = handle => {
+  state.clearIdleTimeoutTimer = handle => {
     try {
       timers.clearTimeout(handle || undefined);
     } catch {
@@ -64,18 +64,18 @@ export function scheduleAutosave(App: AppContainer): void {
         return commitAutosaveNow(App);
       } finally {
         if (Number(state.idleToken || 0) === token) state.idlePending = false;
-        state.idleFallbackTimer = null;
+        state.idleTimeoutTimer = null;
         refreshAutosaveScheduleStateRegistration(state);
       }
     };
 
     try {
       if (!idleViaPlatform(App, run, 1500)) {
-        const fallbackHandle = timers.setTimeout(() => {
-          if (state.idleFallbackTimer === fallbackHandle) state.idleFallbackTimer = null;
+        const idleTimeoutHandle = timers.setTimeout(() => {
+          if (state.idleTimeoutTimer === idleTimeoutHandle) state.idleTimeoutTimer = null;
           run();
         }, 0);
-        state.idleFallbackTimer = fallbackHandle;
+        state.idleTimeoutTimer = idleTimeoutHandle;
         refreshAutosaveScheduleStateRegistration(state);
       }
     } catch {

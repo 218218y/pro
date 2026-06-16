@@ -26,9 +26,9 @@ export type AutosaveScheduleState = UnknownRecord & {
   timerDueAt?: number | null;
   idlePending?: boolean;
   idleToken?: number;
-  idleFallbackTimer?: TimeoutHandleLike | null;
+  idleTimeoutTimer?: TimeoutHandleLike | null;
   clearTimer?: ((handle?: TimeoutHandleLike | null) => void) | null;
-  clearIdleFallbackTimer?: ((handle?: TimeoutHandleLike | null) => void) | null;
+  clearIdleTimeoutTimer?: ((handle?: TimeoutHandleLike | null) => void) | null;
 };
 
 const activeScheduleStates = new Set<AutosaveScheduleState>();
@@ -56,14 +56,14 @@ export function createAutosaveScheduleState(): AutosaveScheduleState {
   state.timerDueAt = null;
   state.idlePending = false;
   state.idleToken = 0;
-  state.idleFallbackTimer = null;
+  state.idleTimeoutTimer = null;
   state.clearTimer = null;
-  state.clearIdleFallbackTimer = null;
+  state.clearIdleTimeoutTimer = null;
   return state;
 }
 
 export function refreshAutosaveScheduleStateRegistration(state: AutosaveScheduleState): void {
-  if (state.timer || state.idlePending || state.idleFallbackTimer) {
+  if (state.timer || state.idlePending || state.idleTimeoutTimer) {
     activeScheduleStates.add(state);
     return;
   }
@@ -91,7 +91,7 @@ export function ensureAutosaveScheduleState(App: AppContainer): AutosaveSchedule
 
 export function clearAutosaveScheduleTimer(state: AutosaveScheduleState): void {
   const timer = state.timer;
-  const idleFallbackTimer = state.idleFallbackTimer;
+  const idleTimeoutTimer = state.idleTimeoutTimer;
 
   if (timer) {
     try {
@@ -101,9 +101,9 @@ export function clearAutosaveScheduleTimer(state: AutosaveScheduleState): void {
     }
   }
 
-  if (idleFallbackTimer) {
+  if (idleTimeoutTimer) {
     try {
-      state.clearIdleFallbackTimer?.(idleFallbackTimer);
+      state.clearIdleTimeoutTimer?.(idleTimeoutTimer);
     } catch {
       // ignore timer cleanup failures
     }
@@ -111,7 +111,7 @@ export function clearAutosaveScheduleTimer(state: AutosaveScheduleState): void {
 
   state.timer = null;
   state.timerDueAt = null;
-  state.idleFallbackTimer = null;
+  state.idleTimeoutTimer = null;
   refreshAutosaveScheduleStateRegistration(state);
 }
 

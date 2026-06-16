@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { createCloudSyncPanelSnapshotController } from '../esm/native/services/cloud_sync_panel_api_snapshots.ts';
 
-test('cloud sync panel snapshot controller falls back to timer-driven tabs-gate minute updates when no source subscription exists', () => {
+test('cloud sync panel snapshot controller uses timer-driven tabs-gate minute updates when no source subscription exists', () => {
   let now = 1_000;
   let nextId = 1;
   const timers = new Map<number, { cb: () => void; ms: number; active: boolean }>();
@@ -47,7 +47,7 @@ test('cloud sync panel snapshot controller falls back to timer-driven tabs-gate 
 
   assert.equal(reported.includes('services/cloud_sync.panelApi.tabsGateSnapshot'), true);
   const firstTimer = [...timers.entries()].find(([, timer]) => timer.active);
-  assert.ok(firstTimer, 'expected fallback timer to be scheduled');
+  assert.ok(firstTimer, 'expected deadline timer to be scheduled');
   assert.equal(firstTimer?.[1].ms, 60_050);
 
   now = 61_010;

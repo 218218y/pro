@@ -1,21 +1,21 @@
 # Legacy / fallback audit
 
-Generated at: 2026-06-16T17:51:36.329Z
+Generated at: 2026-06-16T18:48:12.256Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **401**
-- Files with occurrences: **142**
+- Total categorized occurrences: **351**
+- Files with occurrences: **135**
 - Category counts:
   - `runtime-default`: **0**
-  - `domain-default`: **188**
+  - `domain-default`: **160**
   - `error-message-default`: **29**
   - `framework-default`: **2**
   - `browser-adapter`: **40**
   - `project-migration`: **37**
   - `external-api-compat`: **2**
-  - `compat-boundary`: **97**
+  - `compat-boundary`: **75**
   - `test-fixture`: **6**
   - `legacy-runtime-risk`: **0**
   - `unknown`: **0**
@@ -35,11 +35,9 @@ Generated at: 2026-06-16T17:51:36.329Z
 
 ## Hot files
 
-- `esm/native/services/cloud_sync_panel_api_snapshots_sources.ts` - **21** (compat-boundary: 6, domain-default: 15)
 - `esm/entry_pro_overlay.ts` - **19** (browser-adapter: 19)
 - `esm/native/runtime/project_io_access_restore.ts` - **13** (project-migration: 13)
 - `esm/native/runtime/project_io_access_load.ts` - **12** (project-migration: 12)
-- `esm/native/services/autosave_shared.ts` - **10** (compat-boundary: 10)
 - `esm/entry_pro_shared.ts` - **8** (browser-adapter: 8)
 - `esm/native/io/project_schema_shared.ts` - **8** (project-migration: 8)
 - `esm/native/ui/react/tabs/design_tab_color_action_result_builders.ts` - **8** (error-message-default: 8)
@@ -53,7 +51,6 @@ Generated at: 2026-06-16T17:51:36.329Z
 - `esm/native/kernel/cfg_meta.ts` - **5** (domain-default: 5)
 - `esm/native/services/canvas_picking_hover_targets_interior_scan.ts` - **5** (domain-default: 5)
 - `esm/native/services/canvas_picking_selector_internal_metrics.ts` - **5** (domain-default: 5)
-- `esm/native/services/cloud_sync_panel_api_snapshots_shared.ts` - **5** (domain-default: 5)
 - `esm/shared/wardrobe_dimension_tokens_shared.ts` - **5** (compat-boundary: 2, domain-default: 3)
 - `esm/test_no_side_effects_on_import.mjs` - **5** (test-fixture: 5)
 - `esm/native/builder/visuals_and_contents.ts` - **4** (compat-boundary: 4)
@@ -61,10 +58,13 @@ Generated at: 2026-06-16T17:51:36.329Z
 - `esm/native/kernel/domain_api_surface_sections_bindings_drawers_dividers.ts` - **4** (domain-default: 4)
 - `esm/native/platform/dirty_flag.ts` - **4** (domain-default: 4)
 - `esm/native/runtime/meta_actions_namespace.ts` - **4** (domain-default: 4)
-- `esm/native/services/autosave_schedule.ts` - **4** (compat-boundary: 4)
 - `esm/native/services/canvas_picking_cell_dims_linear_context_modules.ts` - **4** (domain-default: 4)
 - `esm/native/services/canvas_picking_hover_targets_interior_target.ts` - **4** (domain-default: 4)
-- `esm/native/services/cloud_sync_panel_api_snapshots_reads.ts` - **4** (domain-default: 4)
+- `esm/native/services/models_registry_storage_state.ts` - **4** (compat-boundary: 4)
+- `esm/native/services/render_surface_runtime_support_readers.ts` - **4** (compat-boundary: 4)
+- `esm/native/ui/html_sanitize_runtime.ts` - **4** (domain-default: 4)
+- `esm/native/ui/notes_service_shared.ts` - **4** (domain-default: 4)
+- `esm/native/ui/project_save_runtime.ts` - **4** (browser-adapter: 1, domain-default: 3)
 
 ## Allowlist check
 

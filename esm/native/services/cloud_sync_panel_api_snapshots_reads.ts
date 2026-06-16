@@ -19,7 +19,7 @@ function cloneCloudSyncRoomStatusSnapshot(
   };
 }
 
-function readFallbackCloudSyncSite2TabsGateSnapshot(opts: {
+function readLocalCloudSyncSite2TabsGateSnapshot(opts: {
   tabsGateOpenRef: { value: unknown };
   tabsGateUntilRef: { value: unknown };
   now: () => number;
@@ -57,8 +57,8 @@ export function createCloudSyncPanelSnapshotReaders(
 
   const panelApiOp = (name: string): string => buildCloudSyncPanelApiOp(name);
 
-  const readFallbackSite2TabsGateSnapshot = (): CloudSyncSite2TabsGateSnapshot =>
-    readFallbackCloudSyncSite2TabsGateSnapshot({ tabsGateOpenRef, tabsGateUntilRef, now });
+  const readLocalSite2TabsGateSnapshot = (): CloudSyncSite2TabsGateSnapshot =>
+    readLocalCloudSyncSite2TabsGateSnapshot({ tabsGateOpenRef, tabsGateUntilRef, now });
 
   const readRoomStatusSnapshot = (roomOverride?: string | null): CloudSyncRoomStatusSnapshot => {
     try {
@@ -91,7 +91,7 @@ export function createCloudSyncPanelSnapshotReaders(
       return cloneCloudSyncSite2TabsGateSnapshot(getSite2TabsGateSnapshot());
     } catch (__wpErr) {
       reportNonFatal(App, panelApiOp('tabsGateSnapshot'), __wpErr, { throttleMs: 4000 });
-      return readFallbackSite2TabsGateSnapshot();
+      return readLocalSite2TabsGateSnapshot();
     }
   };
 
