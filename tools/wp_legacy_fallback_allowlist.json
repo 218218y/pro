@@ -117,12 +117,6 @@
         "domain-default": 1
       }
     },
-    "esm/native/builder/scheduler_install.ts": {
-      "total": 10,
-      "categories": {
-        "compat-boundary": 10
-      }
-    },
     "esm/native/builder/scheduler_runtime.ts": {
       "total": 3,
       "categories": {
@@ -693,12 +687,6 @@
         "domain-default": 1
       }
     },
-    "esm/native/ui/export/export_order_pdf_builder_layout.ts": {
-      "total": 4,
-      "categories": {
-        "compat-boundary": 4
-      }
-    },
     "esm/native/ui/export/export_order_pdf_builder_template.ts": {
       "total": 1,
       "categories": {
@@ -721,12 +709,6 @@
       "total": 2,
       "categories": {
         "domain-default": 2
-      }
-    },
-    "esm/native/ui/export/export_order_pdf_composite_image_slots_runtime.ts": {
-      "total": 5,
-      "categories": {
-        "compat-boundary": 5
       }
     },
     "esm/native/ui/html_sanitize_runtime.ts": {

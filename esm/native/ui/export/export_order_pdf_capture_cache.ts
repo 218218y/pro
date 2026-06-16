@@ -1,11 +1,11 @@
 import type { AppContainer } from '../../../../types/app.js';
 import type { OrderPdfDraftLike } from '../../../../types/build.js';
+import type { OrderPdfCompositeImageSlotBytes } from './export_order_pdf_composite_image_slots_runtime.js';
 import { readStoreStateMaybe } from '../../services/api.js';
 
 type OrderPdfCompositeCaptureCacheEntry = {
   signature: string;
-  pngRenderSketch: Uint8Array | null;
-  pngOpenClosed: Uint8Array | null;
+  slotBytes: OrderPdfCompositeImageSlotBytes;
 };
 
 type UnknownRecord = Record<string, unknown>;
@@ -58,6 +58,17 @@ function cloneBytes(bytes: Uint8Array | null | undefined): Uint8Array | null {
   const copy = new Uint8Array(bytes.byteLength);
   copy.set(bytes);
   return copy;
+}
+
+function cloneSlotBytes(
+  slotBytes: OrderPdfCompositeImageSlotBytes | null | undefined
+): OrderPdfCompositeImageSlotBytes {
+  const source = slotBytes || {};
+  const out: OrderPdfCompositeImageSlotBytes = {};
+  for (const key of Object.keys(source) as Array<keyof OrderPdfCompositeImageSlotBytes>) {
+    out[key] = cloneBytes(source[key] ?? null);
+  }
+  return out;
 }
 
 function cloneRecord(value: unknown): UnknownRecord {
@@ -128,21 +139,18 @@ export function readOrderPdfCompositeCaptureCache(
   orderPdfCompositeCaptureCache.set(signature, entry);
   return {
     signature: entry.signature,
-    pngRenderSketch: cloneBytes(entry.pngRenderSketch),
-    pngOpenClosed: cloneBytes(entry.pngOpenClosed),
+    slotBytes: cloneSlotBytes(entry.slotBytes),
   };
 }
 
 export function writeOrderPdfCompositeCaptureCache(entry: {
   signature: string;
-  pngRenderSketch: Uint8Array | null | undefined;
-  pngOpenClosed: Uint8Array | null | undefined;
+  slotBytes: OrderPdfCompositeImageSlotBytes | null | undefined;
 }): void {
   if (!entry.signature) return;
   orderPdfCompositeCaptureCache.set(entry.signature, {
     signature: entry.signature,
-    pngRenderSketch: cloneBytes(entry.pngRenderSketch),
-    pngOpenClosed: cloneBytes(entry.pngOpenClosed),
+    slotBytes: cloneSlotBytes(entry.slotBytes),
   });
   while (orderPdfCompositeCaptureCache.size > ORDER_PDF_CAPTURE_CACHE_LIMIT) {
     const firstKey = orderPdfCompositeCaptureCache.keys().next().value;

@@ -234,6 +234,46 @@ test('build_flow_plan inputs use separate stack frames when top per-cell depth d
   assert.equal(plan.baseTypeTop, '');
 });
 
+test('build_flow_plan inputs use separate stack frames when top per-cell height differs', () => {
+  const plan = resolveBuildFlowPlanInputs({
+    ui: {
+      baseType: 'legs',
+      raw: {
+        stackSplitLowerHeight: 90,
+        stackSplitLowerHeightManual: true,
+        stackSplitLowerDepth: 60,
+        stackSplitLowerDepthManual: false,
+        stackSplitLowerWidth: 180,
+        stackSplitLowerWidthManual: false,
+      },
+      stackSplitEnabled: true,
+    } as any,
+    cfg: {
+      wardrobeType: 'hinged',
+      modulesConfiguration: [
+        {
+          specialDims: {
+            heightCm: 250,
+            baseHeightCm: 240,
+          },
+        },
+        {},
+      ],
+    } as any,
+    widthCm: 180,
+    heightCm: 240,
+    depthCm: 60,
+    doorsCount: 3,
+    toStr,
+  });
+
+  assert.equal(plan.splitActiveForBuild, true);
+  assert.equal(plan.stackSplitUnifiedFrame, false);
+  assert.equal(plan.splitSeamGapM, 0.002);
+  assert.equal(plan.baseTypeBottom, 'legs');
+  assert.equal(plan.baseTypeTop, '');
+});
+
 test('build_flow_plan inputs use separate stack frames when lower per-cell depth differs', () => {
   const plan = resolveBuildFlowPlanInputs({
     ui: {

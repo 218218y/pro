@@ -159,7 +159,7 @@ function createSchedulerHarness(initialSignature = 'sig:a') {
   };
 }
 
-test('builder scheduler runtime: install surface exposes runtime stats/reset hooks and compat scheduler state', () => {
+test('builder scheduler runtime: install surface exposes runtime stats/reset hooks and public scheduler state', () => {
   const harness = createSchedulerHarness('sig:surface');
   const builder = harness.App.services.builder;
 

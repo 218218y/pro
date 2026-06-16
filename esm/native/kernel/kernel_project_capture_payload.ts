@@ -3,6 +3,7 @@ import type { UnknownRecord } from '../../../types';
 import { readUiRawScalarFromSnapshot } from '../runtime/ui_raw_selectors.js';
 import { readMirrorLayoutMap } from '../features/mirror_layout.js';
 import { readDoorTrimMap } from '../features/door_trim.js';
+import { normalizeDoorMountThicknessCm } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 import { asString } from './kernel_shared.js';
 import {
@@ -84,6 +85,10 @@ function buildProjectCaptureSettings(
     structureSelection: asString(uiRec.structureSelect, ''),
     wardrobeType: cfgRec.wardrobeType !== undefined ? asString(cfgRec.wardrobeType, 'hinged') : 'hinged',
     doorMountMode: cfgRec.doorMountMode === 'inset' ? 'inset' : 'overlay',
+    overlayFrameThicknessCm: normalizeDoorMountThicknessCm(cfgRec.overlayFrameThicknessCm),
+    overlayShelfThicknessCm: normalizeDoorMountThicknessCm(cfgRec.overlayShelfThicknessCm),
+    insetFrameThicknessCm: normalizeDoorMountThicknessCm(cfgRec.insetFrameThicknessCm),
+    insetShelfThicknessCm: normalizeDoorMountThicknessCm(cfgRec.insetShelfThicknessCm),
     boardMaterial:
       cfgRec.boardMaterial !== undefined ? asString(cfgRec.boardMaterial, 'sandwich') : 'sandwich',
     isManualWidth: cfgRec.isManualWidth !== undefined ? !!cfgRec.isManualWidth : false,
@@ -248,6 +253,10 @@ export function buildKernelProjectCaptureData(args: BuildKernelProjectCaptureDat
     curtainMap: cloneProjectCaptureValue(readCurtainSnapshot(cfgRec.curtainMap), {}),
     doorTrimMap: cloneProjectCaptureValue(readDoorTrimMap(cfgRec.doorTrimMap), {}),
     preChestState: cloneProjectCaptureValue(canonicalCfg.preChestState, null),
+    overlayFrameThicknessCm: normalizeDoorMountThicknessCm(canonicalCfg.overlayFrameThicknessCm),
+    overlayShelfThicknessCm: normalizeDoorMountThicknessCm(canonicalCfg.overlayShelfThicknessCm),
+    insetFrameThicknessCm: normalizeDoorMountThicknessCm(canonicalCfg.insetFrameThicknessCm),
+    insetShelfThicknessCm: normalizeDoorMountThicknessCm(canonicalCfg.insetShelfThicknessCm),
     grooveLinesCount: canonicalCfg.grooveLinesCount == null ? null : Number(canonicalCfg.grooveLinesCount),
     isLibraryMode: typeof canonicalCfg.isLibraryMode !== 'undefined' ? !!canonicalCfg.isLibraryMode : false,
     savedNotes: cloneProjectCaptureValue(savedNotes, []),

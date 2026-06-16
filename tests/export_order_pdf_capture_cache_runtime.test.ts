@@ -38,19 +38,21 @@ test('order pdf capture cache returns cloned bytes instead of live cache buffers
   clearOrderPdfCompositeCaptureCache();
   writeOrderPdfCompositeCaptureCache({
     signature: 'clone-test',
-    pngRenderSketch: Uint8Array.from([1, 2, 3]),
-    pngOpenClosed: Uint8Array.from([4, 5, 6]),
+    slotBytes: {
+      renderSketch: Uint8Array.from([1, 2, 3]),
+      openClosed: Uint8Array.from([4, 5, 6]),
+    },
   });
 
   const firstRead = readOrderPdfCompositeCaptureCache('clone-test');
   assert.ok(firstRead);
-  firstRead.pngRenderSketch?.set([9, 9, 9]);
-  firstRead.pngOpenClosed?.set([8, 8, 8]);
+  firstRead.slotBytes.renderSketch?.set([9, 9, 9]);
+  firstRead.slotBytes.openClosed?.set([8, 8, 8]);
 
   const secondRead = readOrderPdfCompositeCaptureCache('clone-test');
   assert.ok(secondRead);
-  assert.deepEqual(Array.from(secondRead.pngRenderSketch || []), [1, 2, 3]);
-  assert.deepEqual(Array.from(secondRead.pngOpenClosed || []), [4, 5, 6]);
+  assert.deepEqual(Array.from(secondRead.slotBytes.renderSketch || []), [1, 2, 3]);
+  assert.deepEqual(Array.from(secondRead.slotBytes.openClosed || []), [4, 5, 6]);
 });
 
 test('order pdf capture cache reuses sketch base assets while signature is unchanged', async () => {
@@ -67,8 +69,10 @@ test('order pdf capture cache reuses sketch base assets while signature is uncha
 
   writeOrderPdfCompositeCaptureCache({
     signature,
-    pngRenderSketch: new Uint8Array([1, 2, 3]),
-    pngOpenClosed: new Uint8Array([4, 5, 6]),
+    slotBytes: {
+      renderSketch: new Uint8Array([1, 2, 3]),
+      openClosed: new Uint8Array([4, 5, 6]),
+    },
   });
 
   const calls = { render: 0, open: 0, annotate: 0 };

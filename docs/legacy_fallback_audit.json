@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-06-16T15:34:00.282Z",
+  "generatedAt": "2026-06-16T17:51:36.329Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 420,
-    "totalFiles": 145,
+    "totalOccurrences": 401,
+    "totalFiles": 142,
     "byCategory": {
       "runtime-default": 0,
       "domain-default": 188,
@@ -12,7 +12,7 @@
       "browser-adapter": 40,
       "project-migration": 37,
       "external-api-compat": 2,
-      "compat-boundary": 116,
+      "compat-boundary": 97,
       "test-fixture": 6,
       "legacy-runtime-risk": 0,
       "unknown": 0
@@ -130,12 +130,6 @@
         "total": 1,
         "categories": {
           "domain-default": 1
-        }
-      },
-      "esm/native/builder/scheduler_install.ts": {
-        "total": 10,
-        "categories": {
-          "compat-boundary": 10
         }
       },
       "esm/native/builder/scheduler_runtime.ts": {
@@ -708,12 +702,6 @@
           "domain-default": 1
         }
       },
-      "esm/native/ui/export/export_order_pdf_builder_layout.ts": {
-        "total": 4,
-        "categories": {
-          "compat-boundary": 4
-        }
-      },
       "esm/native/ui/export/export_order_pdf_builder_template.ts": {
         "total": 1,
         "categories": {
@@ -736,12 +724,6 @@
         "total": 2,
         "categories": {
           "domain-default": 2
-        }
-      },
-      "esm/native/ui/export/export_order_pdf_composite_image_slots_runtime.ts": {
-        "total": 5,
-        "categories": {
-          "compat-boundary": 5
         }
       },
       "esm/native/ui/html_sanitize_runtime.ts": {
@@ -929,13 +911,6 @@
         }
       },
       {
-        "file": "esm/native/builder/scheduler_install.ts",
-        "total": 10,
-        "categories": {
-          "compat-boundary": 10
-        }
-      },
-      {
         "file": "esm/native/services/autosave_shared.ts",
         "total": 10,
         "categories": {
@@ -1045,13 +1020,6 @@
         }
       },
       {
-        "file": "esm/native/ui/export/export_order_pdf_composite_image_slots_runtime.ts",
-        "total": 5,
-        "categories": {
-          "compat-boundary": 5
-        }
-      },
-      {
         "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
         "total": 5,
         "categories": {
@@ -1110,6 +1078,20 @@
       },
       {
         "file": "esm/native/services/canvas_picking_cell_dims_linear_context_modules.ts",
+        "total": 4,
+        "categories": {
+          "domain-default": 4
+        }
+      },
+      {
+        "file": "esm/native/services/canvas_picking_hover_targets_interior_target.ts",
+        "total": 4,
+        "categories": {
+          "domain-default": 4
+        }
+      },
+      {
+        "file": "esm/native/services/cloud_sync_panel_api_snapshots_reads.ts",
         "total": 4,
         "categories": {
           "domain-default": 4
@@ -1531,76 +1513,6 @@
       "term": "previewExternalFallbackHeightM",
       "category": "domain-default",
       "text": ": DRAWER_DIMENSIONS.sketch.previewExternalFallbackHeightM;"
-    },
-    {
-      "file": "esm/native/builder/scheduler_install.ts",
-      "line": 48,
-      "term": "SchedulerCompatSurface",
-      "category": "compat-boundary",
-      "text": "type SchedulerCompatSurface = BuilderSchedulerPublicLike & {"
-    },
-    {
-      "file": "esm/native/builder/scheduler_install.ts",
-      "line": 57,
-      "term": "isSchedulerCompatSurface",
-      "category": "compat-boundary",
-      "text": "function isSchedulerCompatSurface(value: unknown): value is SchedulerCompatSurface {"
-    },
-    {
-      "file": "esm/native/builder/scheduler_install.ts",
-      "line": 57,
-      "term": "SchedulerCompatSurface",
-      "category": "compat-boundary",
-      "text": "function isSchedulerCompatSurface(value: unknown): value is SchedulerCompatSurface {"
-    },
-    {
-      "file": "esm/native/builder/scheduler_install.ts",
-      "line": 95,
-      "term": "ensureSchedulerCompatSurface",
-      "category": "compat-boundary",
-      "text": "function ensureSchedulerCompatSurface(builder: BuilderServiceLike): SchedulerCompatSurface {"
-    },
-    {
-      "file": "esm/native/builder/scheduler_install.ts",
-      "line": 95,
-      "term": "SchedulerCompatSurface",
-      "category": "compat-boundary",
-      "text": "function ensureSchedulerCompatSurface(builder: BuilderServiceLike): SchedulerCompatSurface {"
-    },
-    {
-      "file": "esm/native/builder/scheduler_install.ts",
-      "line": 97,
-      "term": "isSchedulerCompatSurface",
-      "category": "compat-boundary",
-      "text": "if (isSchedulerCompatSurface(existing)) return existing;"
-    },
-    {
-      "file": "esm/native/builder/scheduler_install.ts",
-      "line": 98,
-      "term": "SchedulerCompatSurface",
-      "category": "compat-boundary",
-      "text": "const next: SchedulerCompatSurface = {};"
-    },
-    {
-      "file": "esm/native/builder/scheduler_install.ts",
-      "line": 104,
-      "term": "SchedulerCompatSurface",
-      "category": "compat-boundary",
-      "text": "scheduler: SchedulerCompatSurface,"
-    },
-    {
-      "file": "esm/native/builder/scheduler_install.ts",
-      "line": 122,
-      "term": "SchedulerCompatSurface",
-      "category": "compat-boundary",
-      "text": "scheduler: SchedulerCompatSurface,"
-    },
-    {
-      "file": "esm/native/builder/scheduler_install.ts",
-      "line": 190,
-      "term": "ensureSchedulerCompatSurface",
-      "category": "compat-boundary",
-      "text": "const scheduler = ensureSchedulerCompatSurface(builder);"
     },
     {
       "file": "esm/native/builder/scheduler_runtime.ts",
@@ -3465,34 +3377,6 @@
       "text": "reportOrderPdfBuilderFieldError(ctx, 'buildOrderPdfInteractive.setFieldText.createFallbackField', e);"
     },
     {
-      "file": "esm/native/ui/export/export_order_pdf_builder_layout.ts",
-      "line": 18,
-      "term": "buildOrderPdfCompositeImageLegacyBytes",
-      "category": "compat-boundary",
-      "text": "buildOrderPdfCompositeImageLegacyBytes,"
-    },
-    {
-      "file": "esm/native/ui/export/export_order_pdf_builder_layout.ts",
-      "line": 21,
-      "term": "readOrderPdfCompositeImageSlotBytesFromLegacy",
-      "category": "compat-boundary",
-      "text": "readOrderPdfCompositeImageSlotBytesFromLegacy,"
-    },
-    {
-      "file": "esm/native/ui/export/export_order_pdf_builder_layout.ts",
-      "line": 56,
-      "term": "readOrderPdfCompositeImageSlotBytesFromLegacy",
-      "category": "compat-boundary",
-      "text": "const cachedSlotBytes = readOrderPdfCompositeImageSlotBytesFromLegacy("
-    },
-    {
-      "file": "esm/native/ui/export/export_order_pdf_builder_layout.ts",
-      "line": 86,
-      "term": "buildOrderPdfCompositeImageLegacyBytes",
-      "category": "compat-boundary",
-      "text": "...buildOrderPdfCompositeImageLegacyBytes({ flags: resolvedDraft, slotBytes: baseSlotBytes }),"
-    },
-    {
       "file": "esm/native/ui/export/export_order_pdf_builder_template.ts",
       "line": 169,
       "term": "setNeedAppearancesFallback",
@@ -3533,41 +3417,6 @@
       "term": "captureCompositeWithLogoFallback",
       "category": "domain-default",
       "text": "return await captureCompositeWithLogoFallback("
-    },
-    {
-      "file": "esm/native/ui/export/export_order_pdf_composite_image_slots_runtime.ts",
-      "line": 14,
-      "term": "OrderPdfCompositeImageLegacyBytes",
-      "category": "compat-boundary",
-      "text": "export type OrderPdfCompositeImageLegacyBytes = {"
-    },
-    {
-      "file": "esm/native/ui/export/export_order_pdf_composite_image_slots_runtime.ts",
-      "line": 24,
-      "term": "readOrderPdfCompositeImageSlotBytesFromLegacy",
-      "category": "compat-boundary",
-      "text": "export function readOrderPdfCompositeImageSlotBytesFromLegacy("
-    },
-    {
-      "file": "esm/native/ui/export/export_order_pdf_composite_image_slots_runtime.ts",
-      "line": 25,
-      "term": "OrderPdfCompositeImageLegacyBytes",
-      "category": "compat-boundary",
-      "text": "value: Partial<OrderPdfCompositeImageLegacyBytes> | null | undefined"
-    },
-    {
-      "file": "esm/native/ui/export/export_order_pdf_composite_image_slots_runtime.ts",
-      "line": 33,
-      "term": "buildOrderPdfCompositeImageLegacyBytes",
-      "category": "compat-boundary",
-      "text": "export function buildOrderPdfCompositeImageLegacyBytes(args: {"
-    },
-    {
-      "file": "esm/native/ui/export/export_order_pdf_composite_image_slots_runtime.ts",
-      "line": 36,
-      "term": "OrderPdfCompositeImageLegacyBytes",
-      "category": "compat-boundary",
-      "text": "}): OrderPdfCompositeImageLegacyBytes {"
     },
     {
       "file": "esm/native/ui/html_sanitize_runtime.ts",

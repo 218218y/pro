@@ -10,6 +10,11 @@ test('kernel project capture canonicalizes config lists and detaches mutable sna
   cyclicMirrorLayout.self = cyclicMirrorLayout;
   const cfgSource: Record<string, unknown> = {
     wardrobeType: 'hinged',
+    doorMountMode: 'inset',
+    overlayFrameThicknessCm: '2.4',
+    overlayShelfThicknessCm: 1.2,
+    insetFrameThicknessCm: 3.6,
+    insetShelfThicknessCm: '2.1',
     modulesConfiguration: [{ layout: 'drawers', doors: '2' }, null, { customData: { storage: true } }],
     stackSplitLowerModulesConfiguration: [{ extDrawersCount: '3' }],
     cornerConfiguration: { modulesConfiguration: [{ doors: '5' }] },
@@ -48,6 +53,16 @@ test('kernel project capture canonicalizes config lists and detaches mutable sna
   });
 
   const snapshot = capture('persist') as Record<string, any>;
+
+  assert.equal(snapshot.settings.doorMountMode, 'inset');
+  assert.equal(snapshot.settings.overlayFrameThicknessCm, 2.4);
+  assert.equal(snapshot.settings.overlayShelfThicknessCm, 1.2);
+  assert.equal(snapshot.settings.insetFrameThicknessCm, 3.6);
+  assert.equal(snapshot.settings.insetShelfThicknessCm, 2.1);
+  assert.equal(snapshot.overlayFrameThicknessCm, 2.4);
+  assert.equal(snapshot.overlayShelfThicknessCm, 1.2);
+  assert.equal(snapshot.insetFrameThicknessCm, 3.6);
+  assert.equal(snapshot.insetShelfThicknessCm, 2.1);
 
   assert.equal(snapshot.modulesConfiguration.length, 3);
   assert.equal(snapshot.modulesConfiguration[0].layout, 'drawers');

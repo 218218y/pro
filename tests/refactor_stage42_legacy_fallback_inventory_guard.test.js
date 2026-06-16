@@ -33,7 +33,7 @@ test('stage 42 legacy fallback inventory closeout is anchored', () => {
     ['esm/entry_pro_overlay.ts', 'browser-adapter'],
     ['esm/native/builder/core_carcass_cornice.ts', 'domain-default'],
     ['esm/boot/boot_manifest_steps.ts', 'external-api-compat'],
-    ['esm/native/ui/export/export_order_pdf_composite_image_slots_runtime.ts', 'compat-boundary'],
+    ['esm/native/services/autosave_shared.ts', 'compat-boundary'],
     ['esm/native/ui/react/tabs/design_tab_color_action_result_reason.ts', 'error-message-default'],
     ['esm/shared/wardrobe_dimension_tokens_shared.ts', 'domain-default'],
   ]) {
@@ -49,6 +49,12 @@ test('stage 42 legacy fallback inventory closeout is anchored', () => {
   assert.equal(audit.summary.byFile['esm/native/runtime/ui_raw_selectors_canonical.ts']?.total || 0, 0);
   assert.equal(audit.summary.byFile['esm/native/runtime/ui_raw_selectors_store.ts']?.total || 0, 0);
   assert.equal(audit.summary.byFile['esm/native/services/render_surface_runtime.ts']?.total || 0, 0);
+  assert.equal(
+    audit.summary.byFile['esm/native/ui/export/export_order_pdf_composite_image_slots_runtime.ts']?.total ||
+      0,
+    0,
+    'order PDF composite-image slot runtime should stay canonical slot-bytes only'
+  );
 
   for (const file of [
     'esm/native/runtime/maps_access_writers.ts',
@@ -77,6 +83,10 @@ test('stage 42 legacy fallback inventory closeout is anchored', () => {
     [
       'esm/native/services/scene_view_lighting_renderer.ts',
       /applyRendererCompatibility|ensureRendererCompatDefaults|restoreRendererCompatDefaults|applyNormalModeRendererCompat|rendererCompat/,
+    ],
+    [
+      'esm/native/ui/export/export_order_pdf_composite_image_slots_runtime.ts',
+      /Legacy|legacy|pngRenderSketch|pngOpenClosed|readOrderPdfCompositeImageSlotBytesFromLegacy|buildOrderPdfCompositeImageLegacyBytes/,
     ],
   ]) {
     assert.doesNotMatch(readFileSync(file, 'utf8'), forbidden, `${file} should use current naming`);

@@ -45,7 +45,7 @@ type SchedulerInstallRefs = {
   getState: () => BuilderSchedulerStateSummaryLike;
 };
 
-type SchedulerCompatSurface = BuilderSchedulerPublicLike & {
+type SchedulerPublicSurface = BuilderSchedulerPublicLike & {
   __installContext?: SchedulerInstallContext;
   __installRefs?: SchedulerInstallRefs;
 };
@@ -54,7 +54,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object';
 }
 
-function isSchedulerCompatSurface(value: unknown): value is SchedulerCompatSurface {
+function isSchedulerPublicSurface(value: unknown): value is SchedulerPublicSurface {
   return isRecord(value);
 }
 
@@ -92,16 +92,16 @@ function hasSchedulerInstallRefs(value: unknown): value is SchedulerInstallRefs 
   );
 }
 
-function ensureSchedulerCompatSurface(builder: BuilderServiceLike): SchedulerCompatSurface {
+function ensureSchedulerPublicSurface(builder: BuilderServiceLike): SchedulerPublicSurface {
   const existing = builder.__scheduler;
-  if (isSchedulerCompatSurface(existing)) return existing;
-  const next: SchedulerCompatSurface = {};
+  if (isSchedulerPublicSurface(existing)) return existing;
+  const next: SchedulerPublicSurface = {};
   builder.__scheduler = next;
   return next;
 }
 
 function ensureSchedulerInstallContext(
-  scheduler: SchedulerCompatSurface,
+  scheduler: SchedulerPublicSurface,
   app: AppContainer,
   callbacks: SchedulerInstallCallbacks
 ): SchedulerInstallContext {
@@ -119,7 +119,7 @@ function ensureSchedulerInstallContext(
 }
 
 function ensureSchedulerInstallRefs(
-  scheduler: SchedulerCompatSurface,
+  scheduler: SchedulerPublicSurface,
   state: ReturnType<typeof ensureSchedulerState>,
   context: SchedulerInstallContext
 ): SchedulerInstallRefs {
@@ -187,7 +187,7 @@ export function installBuilderSchedulerSurface(
 
   ensureSchedulerDebouncedRunner(a, s, nextReason => callbacks.runPendingBuild(a, nextReason));
   const builder = ensureBuilderService(a, 'native/builder/scheduler.install');
-  const scheduler = ensureSchedulerCompatSurface(builder);
+  const scheduler = ensureSchedulerPublicSurface(builder);
   const context = ensureSchedulerInstallContext(scheduler, a, callbacks);
   const refs = ensureSchedulerInstallRefs(scheduler, s, context);
 

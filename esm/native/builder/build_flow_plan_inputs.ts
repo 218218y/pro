@@ -1,5 +1,5 @@
 import { moduleHasHexCell } from '../features/hex_cell/index.js';
-import { getActiveDepthCmFromConfig } from '../features/special_dims/index.js';
+import { getActiveDepthCmFromConfig, getActiveHeightCmFromConfig } from '../features/special_dims/index.js';
 import { readModulesConfigurationListFromConfigSnapshot } from '../features/modules_configuration/modules_config_api.js';
 import { normalizeStackSplit } from '../features/stack_split/index.js';
 import {
@@ -44,6 +44,14 @@ function moduleConfigListHasActiveDepthOverride(list: unknown[]): boolean {
   return false;
 }
 
+function moduleConfigListHasActiveHeightOverride(list: unknown[], heightOffsetCm: number): boolean {
+  if (!Array.isArray(list) || !list.length) return false;
+  for (let i = 0; i < list.length; i += 1) {
+    if (getActiveHeightCmFromConfig(list[i], heightOffsetCm) != null) return true;
+  }
+  return false;
+}
+
 function moduleConfigListHasHexCell(list: unknown[]): boolean {
   if (!Array.isArray(list) || !list.length) return false;
   for (let i = 0; i < list.length; i += 1) {
@@ -52,15 +60,18 @@ function moduleConfigListHasHexCell(list: unknown[]): boolean {
   return false;
 }
 
-function hasStackSplitPerCellFrameBreakingGeometry(cfg: unknown): boolean {
+function hasStackSplitPerCellFrameBreakingGeometry(cfg: unknown, lowerHeightCm: number): boolean {
   const upperModules = readModulesConfigurationListFromConfigSnapshot(cfg, 'modulesConfiguration');
   const lowerModules = readModulesConfigurationListFromConfigSnapshot(
     cfg,
     'stackSplitLowerModulesConfiguration'
   );
+  const upperHeightOffsetCm = Number.isFinite(lowerHeightCm) && lowerHeightCm > 0 ? lowerHeightCm : 0;
   return (
     moduleConfigListHasActiveDepthOverride(upperModules) ||
     moduleConfigListHasActiveDepthOverride(lowerModules) ||
+    moduleConfigListHasActiveHeightOverride(upperModules, upperHeightOffsetCm) ||
+    moduleConfigListHasActiveHeightOverride(lowerModules, 0) ||
     moduleConfigListHasHexCell(upperModules) ||
     moduleConfigListHasHexCell(lowerModules)
   );
@@ -101,7 +112,7 @@ export function resolveBuildFlowPlanInputs(args: BuildFlowPlanInputsArgs): Build
   const woodThick = resolvedThicknesses.frameThicknessM;
   const shelfThick = resolvedThicknesses.shelfThicknessM;
   const stackSplitHasFrameBreakingPerCellGeometry =
-    splitActiveForBuild && hasStackSplitPerCellFrameBreakingGeometry(cfg);
+    splitActiveForBuild && hasStackSplitPerCellFrameBreakingGeometry(cfg, lowerHeightCm);
   const stackSplitUnifiedFrame =
     splitActiveForBuild &&
     !stackSplitDecorativeSeparatorEnabled &&

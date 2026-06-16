@@ -11,39 +11,10 @@ export type OrderPdfCompositeImageFlagsLike = {
 
 export type OrderPdfCompositeImageSlotBytes = Partial<Record<OrderPdfSketchImageSlotKey, Uint8Array | null>>;
 
-export type OrderPdfCompositeImageLegacyBytes = {
-  pngRenderSketch: Uint8Array | null;
-  pngOpenClosed: Uint8Array | null;
-};
-
 export type OrderPdfCompositeImageCapturePlanEntry = {
   key: OrderPdfSketchImageSlotKey;
   basePngBytes: Uint8Array | null;
 };
-
-export function readOrderPdfCompositeImageSlotBytesFromLegacy(
-  value: Partial<OrderPdfCompositeImageLegacyBytes> | null | undefined
-): OrderPdfCompositeImageSlotBytes {
-  return {
-    renderSketch: value?.pngRenderSketch ?? null,
-    openClosed: value?.pngOpenClosed ?? null,
-  };
-}
-
-export function buildOrderPdfCompositeImageLegacyBytes(args: {
-  flags: OrderPdfCompositeImageFlagsLike | null | undefined;
-  slotBytes: OrderPdfCompositeImageSlotBytes | null | undefined;
-}): OrderPdfCompositeImageLegacyBytes {
-  const slotBytes = args.slotBytes || {};
-  return {
-    pngRenderSketch: readOrderPdfSketchImageSlotEnabled(args.flags, 'renderSketch')
-      ? (slotBytes.renderSketch ?? null)
-      : null,
-    pngOpenClosed: readOrderPdfSketchImageSlotEnabled(args.flags, 'openClosed')
-      ? (slotBytes.openClosed ?? null)
-      : null,
-  };
-}
 
 export function listOrderPdfCompositeImageCapturePlan(args: {
   flags: OrderPdfCompositeImageFlagsLike | null | undefined;

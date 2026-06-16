@@ -15,10 +15,8 @@ import {
   writeOrderPdfCompositeCaptureCache,
 } from './export_order_pdf_capture_cache.js';
 import {
-  buildOrderPdfCompositeImageLegacyBytes,
   listOrderPdfCompositeImageCapturePlan,
   type OrderPdfCompositeImageSlotBytes,
-  readOrderPdfCompositeImageSlotBytesFromLegacy,
 } from './export_order_pdf_composite_image_slots_runtime.js';
 
 export function resolveOrderPdfBuildDraft(
@@ -53,9 +51,7 @@ export async function captureOrderPdfCompositeImages(
   }
 ): Promise<OrderPdfCompositeImageSlotBytes> {
   const captureSignature = buildOrderPdfCompositeCaptureSignature(App, draft);
-  const cachedSlotBytes = readOrderPdfCompositeImageSlotBytesFromLegacy(
-    readOrderPdfCompositeCaptureCache(captureSignature)
-  );
+  const cachedSlotBytes = readOrderPdfCompositeCaptureCache(captureSignature)?.slotBytes ?? null;
   const capturePlan = listOrderPdfCompositeImageCapturePlan({
     flags: resolvedDraft,
     cachedSlotBytes,
@@ -83,7 +79,7 @@ export async function captureOrderPdfCompositeImages(
 
   writeOrderPdfCompositeCaptureCache({
     signature: captureSignature,
-    ...buildOrderPdfCompositeImageLegacyBytes({ flags: resolvedDraft, slotBytes: baseSlotBytes }),
+    slotBytes: baseSlotBytes,
   });
 
   const finalSlotBytes: OrderPdfCompositeImageSlotBytes = {};

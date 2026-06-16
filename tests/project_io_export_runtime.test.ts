@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createProjectIoOrchestrator } from '../esm/native/io/project_io_orchestrator.ts';
+import { buildProjectConfigSnapshot } from '../esm/native/io/project_io_load_helpers.ts';
 
 test('project io export falls back to history snapshot and preserves pdf draft payloads from UI state', () => {
   const App = {
@@ -142,4 +143,78 @@ test('project io export sanitizes toxic pdf draft branches instead of aliasing t
     (exported?.projectData?.orderPdfEditorDraft as any)?.meta?.createdAt,
     '2026-01-02T03:04:05.000Z'
   );
+});
+
+test('project io export preserves live door-mount thickness overrides through save/load payload', () => {
+  const App = {
+    actions: {},
+    services: {
+      project: {
+        capture(scope: unknown) {
+          assert.equal(scope, 'persist');
+          return {
+            settings: {
+              wardrobeType: 'hinged',
+              width: 180,
+              doorMountMode: 'inset',
+              overlayFrameThicknessCm: 2.4,
+              overlayShelfThicknessCm: 1.2,
+              insetFrameThicknessCm: 3.6,
+              insetShelfThicknessCm: 2.1,
+            },
+          };
+        },
+      },
+      history: {
+        system: {
+          getCurrentSnapshot() {
+            throw new Error('history fallback should not be used when project capture is available');
+          },
+        },
+      },
+      platform: {
+        util: {
+          log() {},
+        },
+        reportError() {},
+        triggerRender() {},
+      },
+    },
+    store: {
+      getState() {
+        return {
+          ui: { projectName: 'Thickness project' },
+          config: {},
+          runtime: {},
+          mode: {},
+          meta: {},
+        };
+      },
+    },
+  } as any;
+
+  const orchestrator = createProjectIoOrchestrator({
+    App,
+    showToast() {},
+    openCustomConfirm() {},
+    userAgent: 'node:test',
+    schemaId: 'schema:test',
+    schemaVersion: 123,
+    reportNonFatal() {},
+  });
+
+  const exported = orchestrator.exportCurrentProject({ source: 'unit' });
+  assert.ok(exported);
+  assert.equal(exported?.projectData?.settings?.doorMountMode, 'inset');
+  assert.equal(exported?.projectData?.settings?.overlayFrameThicknessCm, 2.4);
+  assert.equal(exported?.projectData?.settings?.overlayShelfThicknessCm, 1.2);
+  assert.equal(exported?.projectData?.settings?.insetFrameThicknessCm, 3.6);
+  assert.equal(exported?.projectData?.settings?.insetShelfThicknessCm, 2.1);
+
+  const loadedCfg = buildProjectConfigSnapshot(exported?.projectData as never);
+  assert.equal(loadedCfg.overlayFrameThicknessCm, 2.4);
+  assert.equal(loadedCfg.overlayShelfThicknessCm, 1.2);
+  assert.equal(loadedCfg.insetFrameThicknessCm, 3.6);
+  assert.equal(loadedCfg.insetShelfThicknessCm, 2.1);
+  assert.match(String(exported?.jsonStr || ''), /insetFrameThicknessCm/);
 });

@@ -1,12 +1,12 @@
 # Legacy / fallback audit
 
-Generated at: 2026-06-16T15:34:00.282Z
+Generated at: 2026-06-16T17:51:36.329Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **420**
-- Files with occurrences: **145**
+- Total categorized occurrences: **401**
+- Files with occurrences: **142**
 - Category counts:
   - `runtime-default`: **0**
   - `domain-default`: **188**
@@ -15,7 +15,7 @@ Generated at: 2026-06-16T15:34:00.282Z
   - `browser-adapter`: **40**
   - `project-migration`: **37**
   - `external-api-compat`: **2**
-  - `compat-boundary`: **116**
+  - `compat-boundary`: **97**
   - `test-fixture`: **6**
   - `legacy-runtime-risk`: **0**
   - `unknown`: **0**
@@ -39,7 +39,6 @@ Generated at: 2026-06-16T15:34:00.282Z
 - `esm/entry_pro_overlay.ts` - **19** (browser-adapter: 19)
 - `esm/native/runtime/project_io_access_restore.ts` - **13** (project-migration: 13)
 - `esm/native/runtime/project_io_access_load.ts` - **12** (project-migration: 12)
-- `esm/native/builder/scheduler_install.ts` - **10** (compat-boundary: 10)
 - `esm/native/services/autosave_shared.ts` - **10** (compat-boundary: 10)
 - `esm/entry_pro_shared.ts` - **8** (browser-adapter: 8)
 - `esm/native/io/project_schema_shared.ts` - **8** (project-migration: 8)
@@ -55,7 +54,6 @@ Generated at: 2026-06-16T15:34:00.282Z
 - `esm/native/services/canvas_picking_hover_targets_interior_scan.ts` - **5** (domain-default: 5)
 - `esm/native/services/canvas_picking_selector_internal_metrics.ts` - **5** (domain-default: 5)
 - `esm/native/services/cloud_sync_panel_api_snapshots_shared.ts` - **5** (domain-default: 5)
-- `esm/native/ui/export/export_order_pdf_composite_image_slots_runtime.ts` - **5** (compat-boundary: 5)
 - `esm/shared/wardrobe_dimension_tokens_shared.ts` - **5** (compat-boundary: 2, domain-default: 3)
 - `esm/test_no_side_effects_on_import.mjs` - **5** (test-fixture: 5)
 - `esm/native/builder/visuals_and_contents.ts` - **4** (compat-boundary: 4)
@@ -65,6 +63,8 @@ Generated at: 2026-06-16T15:34:00.282Z
 - `esm/native/runtime/meta_actions_namespace.ts` - **4** (domain-default: 4)
 - `esm/native/services/autosave_schedule.ts` - **4** (compat-boundary: 4)
 - `esm/native/services/canvas_picking_cell_dims_linear_context_modules.ts` - **4** (domain-default: 4)
+- `esm/native/services/canvas_picking_hover_targets_interior_target.ts` - **4** (domain-default: 4)
+- `esm/native/services/cloud_sync_panel_api_snapshots_reads.ts` - **4** (domain-default: 4)
 
 ## Allowlist check
 
