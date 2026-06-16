@@ -57,11 +57,10 @@ export type DirectionalLightLike = AmbientLightLike & {
   castShadow?: boolean;
   shadow?: SceneShadowLike | null;
 };
-export type SceneRendererCompatLike = UnknownRecord & {
+export type SceneRendererLightingSurfaceLike = UnknownRecord & {
   outputColorSpace?: unknown;
   toneMapping?: unknown;
   toneMappingExposure?: number;
-  useLegacyLights?: boolean;
 };
 export type SceneThreeLightingLike = ThreeLike & {
   AmbientLight: new (color?: number, intensity?: number) => AmbientLightLike;
@@ -70,11 +69,10 @@ export type SceneThreeLightingLike = ThreeLike & {
   NeutralToneMapping?: unknown;
 };
 
-export type SceneViewCompatDefaults = {
+export type SceneViewRendererLightingDefaults = {
   outputColorSpace?: unknown;
   toneMapping?: unknown;
   toneMappingExposure?: number;
-  useLegacyLights?: boolean;
 };
 
 export type RootStateWithStoreUi = RootStateLike & { storeUi?: unknown };
@@ -152,11 +150,11 @@ export function asDirectionalLight(value: unknown): DirectionalLightLike | null 
   return isDirectionalLightLike(value) ? value : null;
 }
 
-export function asSceneRendererCompat(value: unknown): SceneRendererCompatLike | null {
+export function asSceneRendererLightingSurface(value: unknown): SceneRendererLightingSurfaceLike | null {
   return isRecord(value) ? value : null;
 }
 
-export function asCompatDefaults(value: unknown): SceneViewCompatDefaults | undefined {
+export function asRendererLightingDefaults(value: unknown): SceneViewRendererLightingDefaults | undefined {
   return isRecord(value) ? value : undefined;
 }
 

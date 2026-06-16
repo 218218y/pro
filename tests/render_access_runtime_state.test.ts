@@ -5,7 +5,7 @@ import {
   ensureRenderRuntimeState,
   getMirrorHideScratch,
   readAutoHideFloorCache,
-  readRendererCompatDefaults,
+  readRendererLightingDefaults,
 } from '../esm/native/runtime/render_access.ts';
 
 type AnyRecord = Record<string, unknown>;
@@ -17,7 +17,7 @@ test('ensureRenderRuntimeState repairs canonical loop/mirror/autohide runtime sl
       __lastFrameTs: 'bad',
       __rafScheduledAt: NaN,
       __mirrorHideScratch: { nope: true },
-      __wpRendererCompatDefaults: 'bad',
+      __wpRendererLightingDefaults: 'bad',
       __mirrorLastUpdateMs: 'bad',
       __mirrorDirty: 'bad',
       __mirrorPresenceKnown: 1,
@@ -48,8 +48,8 @@ test('ensureRenderRuntimeState repairs canonical loop/mirror/autohide runtime sl
   assert.equal(state.__lastFrameTs, 0);
   assert.equal(state.__rafScheduledAt, 0);
   assert.deepEqual(state.__mirrorHideScratch, []);
-  assert.equal(state.__wpRendererCompatDefaults, null);
-  assert.equal(readRendererCompatDefaults(App), null);
+  assert.equal(state.__wpRendererLightingDefaults, null);
+  assert.equal(readRendererLightingDefaults(App), null);
   assert.equal(state.__mirrorLastUpdateMs, 0);
   assert.equal(state.__mirrorDirty, false);
   assert.equal(state.__mirrorPresenceKnown, false);

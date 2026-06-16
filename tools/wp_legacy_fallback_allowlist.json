@@ -87,28 +87,10 @@
         "compat-boundary": 2
       }
     },
-    "esm/native/builder/post_build_front_reveal_frames_cleanup.ts": {
-      "total": 8,
-      "categories": {
-        "compat-boundary": 8
-      }
-    },
-    "esm/native/builder/post_build_front_reveal_frames_contracts.ts": {
-      "total": 2,
-      "categories": {
-        "compat-boundary": 2
-      }
-    },
     "esm/native/builder/post_build_front_reveal_frames_doors.ts": {
       "total": 1,
       "categories": {
         "domain-default": 1
-      }
-    },
-    "esm/native/builder/post_build_front_reveal_frames.ts": {
-      "total": 2,
-      "categories": {
-        "compat-boundary": 2
       }
     },
     "esm/native/builder/provide.ts": {
@@ -343,18 +325,6 @@
         "error-message-default": 2
       }
     },
-    "esm/native/runtime/api_boot_render_surface.ts": {
-      "total": 2,
-      "categories": {
-        "compat-boundary": 2
-      }
-    },
-    "esm/native/runtime/api.ts": {
-      "total": 2,
-      "categories": {
-        "compat-boundary": 2
-      }
-    },
     "esm/native/runtime/browser_clipboard.ts": {
       "total": 1,
       "categories": {
@@ -433,40 +403,10 @@
         "project-migration": 2
       }
     },
-    "esm/native/runtime/render_access_shared.ts": {
-      "total": 2,
-      "categories": {
-        "compat-boundary": 2
-      }
-    },
-    "esm/native/runtime/render_access_state_runtime.ts": {
-      "total": 14,
-      "categories": {
-        "compat-boundary": 14
-      }
-    },
-    "esm/native/runtime/render_access_state.ts": {
-      "total": 2,
-      "categories": {
-        "compat-boundary": 2
-      }
-    },
-    "esm/native/runtime/render_access.ts": {
-      "total": 2,
-      "categories": {
-        "compat-boundary": 2
-      }
-    },
     "esm/native/runtime/storage_access.ts": {
       "total": 1,
       "categories": {
         "domain-default": 1
-      }
-    },
-    "esm/native/services/api_runtime_base_surface.ts": {
-      "total": 2,
-      "categories": {
-        "compat-boundary": 2
       }
     },
     "esm/native/services/app_start.ts": {
@@ -709,20 +649,6 @@
       "total": 1,
       "categories": {
         "compat-boundary": 1
-      }
-    },
-    "esm/native/services/scene_view_lighting_renderer.ts": {
-      "total": 21,
-      "categories": {
-        "compat-boundary": 13,
-        "external-api-compat": 8
-      }
-    },
-    "esm/native/services/scene_view_shared_contracts.ts": {
-      "total": 8,
-      "categories": {
-        "compat-boundary": 6,
-        "external-api-compat": 2
       }
     },
     "esm/native/services/ui_ephemeral_defaults.ts": {

@@ -435,7 +435,7 @@ export interface RenderMaterialSlotsLike extends RenderMaterialsLike {
   sketchFillMaterial?: unknown | null;
 }
 
-export interface RendererCompatDefaultsLike extends UnknownRecord {
+export interface RendererLightingDefaultsLike extends UnknownRecord {
   [k: string]: unknown;
 }
 
@@ -512,7 +512,7 @@ export interface RenderNamespaceLike extends UnknownRecord {
   __lastFrameTs?: number;
   __rafScheduledAt?: number;
   __mirrorHideScratch?: Object3DLike[];
-  __wpRendererCompatDefaults?: RendererCompatDefaultsLike | null;
+  __wpRendererLightingDefaults?: RendererLightingDefaultsLike | null;
 
   // Render-loop / mirror runtime metadata. Seeded canonically so runtime/services do not need
   // to guess whether a slot exists yet during boot or after cleanup paths.

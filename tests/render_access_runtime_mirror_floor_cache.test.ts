@@ -7,14 +7,14 @@ import {
   invalidateMirrorTracking,
   readAutoHideFloorCache,
   writeAutoHideFloorCache,
-  readRendererCompatDefaults,
-  writeRendererCompatDefaults,
+  readRendererLightingDefaults,
+  writeRendererLightingDefaults,
   ensureRenderMetaArray,
 } from '../esm/native/runtime/render_access.ts';
 
 type AnyRecord = Record<string, unknown>;
 
-test('render_access owns mirror tracking metadata + floor cache + renderer compat defaults on one seam', () => {
+test('render_access owns mirror tracking metadata + floor cache + renderer lighting defaults on one seam', () => {
   const App: AnyRecord = {};
 
   const mirrorMesh = { id: 'mirror-1' };
@@ -36,9 +36,9 @@ test('render_access owns mirror tracking metadata + floor cache + renderer compa
     sceneKey: 'scene-key',
   });
 
-  const compat = { toneMapping: 'neutral', shadowAutoUpdate: true };
-  assert.deepEqual(writeRendererCompatDefaults(App, compat as AnyRecord), compat);
-  assert.deepEqual(readRendererCompatDefaults(App), compat);
+  const defaults = { toneMapping: 'neutral', shadowAutoUpdate: true };
+  assert.deepEqual(writeRendererLightingDefaults(App, defaults as AnyRecord), defaults);
+  assert.deepEqual(readRendererLightingDefaults(App), defaults);
 
   invalidateMirrorTracking(App);
   assert.equal(ensureRenderMetaArray<AnyRecord>(App, 'mirrors').length, 0);

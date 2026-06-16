@@ -36,7 +36,7 @@ test('initRenderState seeds canonical render/material/cache/meta containers on o
   assert.equal(render?.__lastFrameTs, 0);
   assert.equal(render?.__rafScheduledAt, 0);
   assert.deepEqual(render?.__mirrorHideScratch, []);
-  assert.equal(render?.__wpRendererCompatDefaults, null);
+  assert.equal(render?.__wpRendererLightingDefaults, null);
   assert.equal(render?.__mirrorLastUpdateMs, 0);
   assert.equal(render?.__mirrorDirty, false);
   assert.equal(render?.__mirrorPresenceKnown, false);

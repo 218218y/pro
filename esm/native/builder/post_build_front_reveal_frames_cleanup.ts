@@ -7,9 +7,7 @@ import type { Object3DLike } from '../../../types/index.js';
 import { getGeometry, type TraversableLike, type ValueRecord } from './post_build_extras_shared.js';
 
 export type FrontRevealCleanupRuntime = {
-  cleanupLegacyFrames: () => void;
   cleanupStaleLocalFrames: () => void;
-  cleanupLegacySeamHelpers: () => void;
   removeLocalFrames: (root: Object3DLike | null) => void;
 };
 
@@ -33,20 +31,6 @@ export function createFrontRevealCleanupRuntime(
       });
     } catch (error) {
       reportSoft(op, error);
-    }
-  };
-
-  const cleanupLegacyFrames = () => {
-    try {
-      const prev = wardrobeGroup.getObjectByName
-        ? wardrobeGroup.getObjectByName('wp_front_reveal_frames')
-        : null;
-      if (prev) {
-        wardrobeGroup.remove(prev);
-        disposeGeometryTreeSoft(prev, 'applyFrontRevealFrames.disposeLegacyFrames');
-      }
-    } catch (error) {
-      reportSoft('applyFrontRevealFrames.removeLegacyFrames', error);
     }
   };
 
@@ -77,25 +61,8 @@ export function createFrontRevealCleanupRuntime(
     }
   };
 
-  const cleanupLegacySeamHelpers = () => {
-    const old1 = wardrobeGroup.getObjectByName
-      ? wardrobeGroup.getObjectByName('wp_door_divider_reveal')
-      : null;
-    if (old1) wardrobeGroup.remove(old1);
-    const old2 = wardrobeGroup.getObjectByName
-      ? wardrobeGroup.getObjectByName('wp_drawer_front_reveal_lines')
-      : null;
-    if (old2) wardrobeGroup.remove(old2);
-    const old3 = wardrobeGroup.getObjectByName
-      ? wardrobeGroup.getObjectByName('wp_split_stack_reveal')
-      : null;
-    if (old3 && !(old3.userData && old3.userData.kind === 'splitStackReveal')) wardrobeGroup.remove(old3);
-  };
-
   return {
-    cleanupLegacyFrames,
     cleanupStaleLocalFrames,
-    cleanupLegacySeamHelpers,
     removeLocalFrames,
   };
 }

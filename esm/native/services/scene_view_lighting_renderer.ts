@@ -2,23 +2,23 @@ import type { AppContainer } from '../../../types';
 
 import {
   getRenderer,
-  readRendererCompatDefaults,
-  writeRendererCompatDefaults,
+  readRendererLightingDefaults,
+  writeRendererLightingDefaults,
 } from '../runtime/render_access.js';
 import {
-  asCompatDefaults,
-  asSceneRendererCompat,
+  asRendererLightingDefaults,
+  asSceneRendererLightingSurface,
   asSceneThreeLighting,
   getTHREE,
   reportSceneViewNonFatal,
-  type SceneViewCompatDefaults,
+  type SceneViewRendererLightingDefaults,
 } from './scene_view_shared.js';
 import { NORMAL_EXPOSURE } from './scene_view_lighting_shared.js';
 
-type RendererLightingSurface = NonNullable<ReturnType<typeof asSceneRendererCompat>>;
+type RendererLightingSurface = NonNullable<ReturnType<typeof asSceneRendererLightingSurface>>;
 
 function restoreRendererLightingDefaults(App: AppContainer, rendererSurface: RendererLightingSurface): void {
-  const defaults = asCompatDefaults(readRendererCompatDefaults(App));
+  const defaults = asRendererLightingDefaults(readRendererLightingDefaults(App));
   if (!rendererSurface || !defaults) return;
 
   if (typeof defaults.outputColorSpace !== 'undefined') {
@@ -50,30 +50,21 @@ function restoreRendererLightingDefaults(App: AppContainer, rendererSurface: Ren
       );
     }
   }
-  if (typeof defaults.useLegacyLights === 'boolean' && typeof rendererSurface.useLegacyLights === 'boolean') {
-    try {
-      rendererSurface.useLegacyLights = defaults.useLegacyLights;
-    } catch (err) {
-      reportSceneViewNonFatal(App, 'sceneView.lighting.restoreRendererLightingDefaults.useLegacyLights', err);
-    }
-  }
 }
 
 export function ensureRendererLightingDefaults(
   App: AppContainer,
   rendererSurface: RendererLightingSurface
-): SceneViewCompatDefaults | undefined {
+): SceneViewRendererLightingDefaults | undefined {
   if (!rendererSurface) return undefined;
-  let rendererDefaults = readRendererCompatDefaults(App);
+  let rendererDefaults = readRendererLightingDefaults(App);
   if (!rendererDefaults) {
     rendererDefaults = {
       outputColorSpace: rendererSurface.outputColorSpace,
       toneMapping: rendererSurface.toneMapping,
       toneMappingExposure: rendererSurface.toneMappingExposure,
-      useLegacyLights:
-        typeof rendererSurface.useLegacyLights === 'boolean' ? rendererSurface.useLegacyLights : undefined,
-    } satisfies SceneViewCompatDefaults;
-    writeRendererCompatDefaults(App, rendererDefaults);
+    } satisfies SceneViewRendererLightingDefaults;
+    writeRendererLightingDefaults(App, rendererDefaults);
   }
   return rendererDefaults;
 }
@@ -102,18 +93,11 @@ function applyNormalModeRendererLighting(App: AppContainer, rendererSurface: Ren
       reportSceneViewNonFatal(App, 'sceneView.lighting.applyNormalRendererLighting.toneMappingExposure', err);
     }
   }
-  if (typeof rendererSurface.useLegacyLights === 'boolean') {
-    try {
-      rendererSurface.useLegacyLights = false;
-    } catch (err) {
-      reportSceneViewNonFatal(App, 'sceneView.lighting.applyNormalRendererLighting.useLegacyLights', err);
-    }
-  }
 }
 
 export function applyRendererLightingMode(App: AppContainer, sketchMode: boolean): void {
   try {
-    const rendererSurface = asSceneRendererCompat(getRenderer(App));
+    const rendererSurface = asSceneRendererLightingSurface(getRenderer(App));
     if (!rendererSurface) return;
     ensureRendererLightingDefaults(App, rendererSurface);
     if (sketchMode) restoreRendererLightingDefaults(App, rendererSurface);

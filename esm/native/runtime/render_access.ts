@@ -75,6 +75,6 @@ export {
   invalidateMirrorTracking,
   readAutoHideFloorCache,
   writeAutoHideFloorCache,
-  readRendererCompatDefaults,
-  writeRendererCompatDefaults,
+  readRendererLightingDefaults,
+  writeRendererLightingDefaults,
 } from './render_access_state.js';

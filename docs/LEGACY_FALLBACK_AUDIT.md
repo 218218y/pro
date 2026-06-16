@@ -1,12 +1,12 @@
 # Legacy / fallback audit
 
-Generated at: 2026-06-16T15:08:21.621Z
+Generated at: 2026-06-16T15:34:00.282Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **487**
-- Files with occurrences: **157**
+- Total categorized occurrences: **420**
+- Files with occurrences: **145**
 - Category counts:
   - `runtime-default`: **0**
   - `domain-default`: **188**
@@ -14,8 +14,8 @@ Generated at: 2026-06-16T15:08:21.621Z
   - `framework-default`: **2**
   - `browser-adapter`: **40**
   - `project-migration`: **37**
-  - `external-api-compat`: **12**
-  - `compat-boundary`: **173**
+  - `external-api-compat`: **2**
+  - `compat-boundary`: **116**
   - `test-fixture`: **6**
   - `legacy-runtime-risk`: **0**
   - `unknown`: **0**
@@ -36,17 +36,13 @@ Generated at: 2026-06-16T15:08:21.621Z
 ## Hot files
 
 - `esm/native/services/cloud_sync_panel_api_snapshots_sources.ts` - **21** (compat-boundary: 6, domain-default: 15)
-- `esm/native/services/scene_view_lighting_renderer.ts` - **21** (compat-boundary: 13, external-api-compat: 8)
 - `esm/entry_pro_overlay.ts` - **19** (browser-adapter: 19)
-- `esm/native/runtime/render_access_state_runtime.ts` - **14** (compat-boundary: 14)
 - `esm/native/runtime/project_io_access_restore.ts` - **13** (project-migration: 13)
 - `esm/native/runtime/project_io_access_load.ts` - **12** (project-migration: 12)
 - `esm/native/builder/scheduler_install.ts` - **10** (compat-boundary: 10)
 - `esm/native/services/autosave_shared.ts` - **10** (compat-boundary: 10)
 - `esm/entry_pro_shared.ts` - **8** (browser-adapter: 8)
-- `esm/native/builder/post_build_front_reveal_frames_cleanup.ts` - **8** (compat-boundary: 8)
 - `esm/native/io/project_schema_shared.ts` - **8** (project-migration: 8)
-- `esm/native/services/scene_view_shared_contracts.ts` - **8** (compat-boundary: 6, external-api-compat: 2)
 - `esm/native/ui/react/tabs/design_tab_color_action_result_builders.ts` - **8** (error-message-default: 8)
 - `esm/entry_pro_start_runtime.ts` - **7** (browser-adapter: 7)
 - `esm/native/kernel/domain_api_modules_corner_shared.ts` - **7** (compat-boundary: 7)
@@ -65,6 +61,10 @@ Generated at: 2026-06-16T15:08:21.621Z
 - `esm/native/builder/visuals_and_contents.ts` - **4** (compat-boundary: 4)
 - `esm/native/features/door_trim_map.ts` - **4** (domain-default: 4)
 - `esm/native/kernel/domain_api_surface_sections_bindings_drawers_dividers.ts` - **4** (domain-default: 4)
+- `esm/native/platform/dirty_flag.ts` - **4** (domain-default: 4)
+- `esm/native/runtime/meta_actions_namespace.ts` - **4** (domain-default: 4)
+- `esm/native/services/autosave_schedule.ts` - **4** (compat-boundary: 4)
+- `esm/native/services/canvas_picking_cell_dims_linear_context_modules.ts` - **4** (domain-default: 4)
 
 ## Allowlist check
 

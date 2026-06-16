@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { readRendererCompatDefaults } from '../esm/native/runtime/render_access.ts';
+import { readRendererLightingDefaults } from '../esm/native/runtime/render_access.ts';
 import { applyViewMode } from '../esm/native/services/scene_view_lighting.ts';
 import { LIGHT_PRESETS } from '../esm/native/ui/react/tabs/settings_visual_shared_lighting.ts';
 import {
@@ -89,7 +89,6 @@ function makeApp() {
         outputColorSpace: 'initialSpace',
         toneMapping: 'initialTone',
         toneMappingExposure: 0.75,
-        useLegacyLights: false,
         shadowMap: { autoUpdate: false, needsUpdate: false },
       },
       ambLightObj: { intensity: 0 },
@@ -121,7 +120,7 @@ test('scene view normal lighting matches the default advanced-lighting preset', 
   assert.equal(LIGHT_PRESETS.default.z, 8);
 });
 
-test('scene view lighting keeps renderer compat defaults detached and restores them in sketch mode', () => {
+test('scene view lighting keeps renderer lighting defaults detached and restores them in sketch mode', () => {
   const { App, state, floor, smartFloor, renderCalls } = makeApp();
 
   applyViewMode(App as any, true);
@@ -129,12 +128,10 @@ test('scene view lighting keeps renderer compat defaults detached and restores t
   assert.equal(App.render.renderer.outputColorSpace, 'srgb');
   assert.equal(App.render.renderer.toneMapping, 'neutral');
   assert.equal(App.render.renderer.toneMappingExposure, NORMAL_EXPOSURE);
-  assert.equal(App.render.renderer.useLegacyLights, false);
-  assert.deepEqual(readRendererCompatDefaults(App), {
+  assert.deepEqual(readRendererLightingDefaults(App), {
     outputColorSpace: 'initialSpace',
     toneMapping: 'initialTone',
     toneMappingExposure: 0.75,
-    useLegacyLights: false,
   });
   assert.equal(App.render.ambLightObj.intensity, NORMAL_AMBIENT_DEFAULT);
   assert.equal(App.render.dirLightObj.intensity, NORMAL_DIR_DEFAULT);
@@ -155,7 +152,6 @@ test('scene view lighting keeps renderer compat defaults detached and restores t
   assert.equal(App.render.renderer.outputColorSpace, 'initialSpace');
   assert.equal(App.render.renderer.toneMapping, 'initialTone');
   assert.equal(App.render.renderer.toneMappingExposure, 0.75);
-  assert.equal(App.render.renderer.useLegacyLights, false);
   assert.equal(App.render.ambLightObj.intensity, SKETCH_AMBIENT_DEFAULT);
   assert.equal(App.render.dirLightObj.visible, false);
   assert.equal(App.render.renderer.shadowMap.needsUpdate, false);

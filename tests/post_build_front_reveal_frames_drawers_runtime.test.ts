@@ -47,9 +47,7 @@ test('front reveal drawer frames honor the face vertical offset when external dr
     zNudge: 0.001,
     localName: 'frontRevealFrames',
     reportSoft() {},
-    cleanupLegacyFrames() {},
     cleanupStaleLocalFrames() {},
-    cleanupLegacySeamHelpers() {},
     getRevealZSignOverride() {
       return null;
     },
@@ -91,9 +89,7 @@ test('front reveal drawer frames apply to chest-mode drawer groups', () => {
     zNudge: 0.001,
     localName: 'frontRevealFrames',
     reportSoft() {},
-    cleanupLegacyFrames() {},
     cleanupStaleLocalFrames() {},
-    cleanupLegacySeamHelpers() {},
     getRevealZSignOverride() {
       return null;
     },

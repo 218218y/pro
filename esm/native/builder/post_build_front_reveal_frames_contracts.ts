@@ -12,9 +12,7 @@ export type FrontRevealFramesRuntime = {
   zNudge: number;
   localName: string;
   reportSoft: (op: string, error: unknown) => void;
-  cleanupLegacyFrames: () => void;
   cleanupStaleLocalFrames: () => void;
-  cleanupLegacySeamHelpers: () => void;
   getRevealZSignOverride: (ud: ValueRecord | null) => number | null;
   getObjectLocalBounds: (root: Object3DLike | null) => Box3Like | null;
   pickRevealLineMaterial: (root: Object3DLike | null) => LineMaterialLike | null;

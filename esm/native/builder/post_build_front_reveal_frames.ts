@@ -18,9 +18,7 @@ export function applyFrontRevealFrames(ctx: BuildContextLike): void {
   const runtime = createFrontRevealFramesRuntime(ctx);
   if (!runtime) return;
 
-  runtime.cleanupLegacyFrames();
   runtime.cleanupStaleLocalFrames();
   applyFrontRevealDoorFrames(ctx, runtime);
   applyFrontRevealDrawerFrames(runtime);
-  runtime.cleanupLegacySeamHelpers();
 }

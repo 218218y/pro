@@ -9,7 +9,7 @@ import { isRecord, type LineMaterialLike } from './post_build_extras_shared.js';
 
 export type FrontRevealLineMaterialCacheRuntime = {
   baseLineMaterial: LineMaterialLike;
-  legacyRevealOpacity: number;
+  baseRevealOpacity: number;
   darkFrontRevealOpacity: number;
   ensureAdaptiveRevealLineMaterial: (darkness: number) => LineMaterialLike;
 };
@@ -68,7 +68,7 @@ export function createFrontRevealLineMaterialCache(
   args: CreateFrontRevealLineMaterialCacheArgs
 ): FrontRevealLineMaterialCacheRuntime | null {
   const { THREE, sketchMode, readLineMaterial, writeLineMaterial } = args;
-  const legacyRevealOpacity = sketchMode ? 0.5625 : 0.75;
+  const baseRevealOpacity = sketchMode ? 0.5625 : 0.75;
   const darkFrontRevealOpacity = sketchMode ? 0.58 : 0.9;
 
   const tuneRevealLineMaterial = (m: LineMaterialLike | null, opacity: number) => {
@@ -97,7 +97,7 @@ export function createFrontRevealLineMaterialCache(
   const baseLineMaterial = ensureRevealLineMaterial(
     'frontRevealFrameLineMaterial',
     0x666666,
-    legacyRevealOpacity
+    baseRevealOpacity
   );
   if (!baseLineMaterial) return null;
 
@@ -110,7 +110,7 @@ export function createFrontRevealLineMaterialCache(
     const tColor = Math.pow(t, 1.22) * 0.9;
     const tOpacity = Math.pow(t, 1.14);
     const color = mixHex(0x666666, 0x232323, tColor);
-    const opacity = legacyRevealOpacity + (darkFrontRevealOpacity - legacyRevealOpacity) * (tOpacity * 0.78);
+    const opacity = baseRevealOpacity + (darkFrontRevealOpacity - baseRevealOpacity) * (tOpacity * 0.78);
 
     return (
       ensureRevealLineMaterial('frontRevealFrameLineMaterialAdaptive_' + String(bucket), color, opacity) ||
@@ -120,7 +120,7 @@ export function createFrontRevealLineMaterialCache(
 
   return {
     baseLineMaterial,
-    legacyRevealOpacity,
+    baseRevealOpacity,
     darkFrontRevealOpacity,
     ensureAdaptiveRevealLineMaterial,
   };

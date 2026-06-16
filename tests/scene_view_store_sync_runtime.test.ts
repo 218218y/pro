@@ -145,7 +145,6 @@ function makeSceneViewApp() {
         outputColorSpace: 'initial',
         toneMapping: 'initial',
         toneMappingExposure: 1,
-        useLegacyLights: false,
         shadowMap: { autoUpdate: false, needsUpdate: false },
       },
     },

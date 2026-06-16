@@ -25,7 +25,7 @@ export const LEGACY_FALLBACK_CATEGORIES = [
 const NEEDLE_RE =
   /\b(?:legacy|fallbacks?|compat)\b|\b[$A-Z_a-z][$\w]*(?:Legacy|legacy|Fallback|fallback|Compat)[$\w]*\b/g;
 const EXTERNAL_API_COMPAT_RE =
-  /(THREE|Three|three|React|browser|Browser|adapter|polyfill|vendor|rendererCompat|useLegacyLights|import-compatible|compatible seam)/;
+  /(THREE|Three|three|React|browser|Browser|adapter|polyfill|vendor|rendererCompat|import-compatible|compatible seam)/;
 const REVIEWED_COMPAT_BOUNDARY_TERM_RE =
   /(alias|bytes|canonical|cleanup|clear|compat|cornice|dispose|drift|envelope|frames|id|invalidate|lights|mirror|normalize|payload|persisted|profile|remove|schema|seam|stored|saved|surface)/i;
 const REVIEWED_COMPAT_BOUNDARY_TEXT_RE =

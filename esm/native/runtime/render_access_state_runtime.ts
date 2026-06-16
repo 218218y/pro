@@ -1,7 +1,7 @@
 import type {
   Object3DLike,
   RenderAutoHideFloorCacheLike,
-  RendererCompatDefaultsLike,
+  RendererLightingDefaultsLike,
   RendererLike,
   ShadowMapLike,
   UnknownRecord,
@@ -27,7 +27,7 @@ export type RenderRuntimeStateLike = {
   __lastFrameTs: number;
   __rafScheduledAt: number;
   __mirrorHideScratch: Object3DLike[];
-  __wpRendererCompatDefaults: RendererCompatDefaultsLike | null;
+  __wpRendererLightingDefaults: RendererLightingDefaultsLike | null;
   __mirrorLastUpdateMs: number;
   __mirrorDirty: boolean;
   __mirrorPresenceKnown: boolean;
@@ -102,7 +102,7 @@ export function ensureRenderRuntimeState(App: unknown): RenderRuntimeStateLike {
   if (!Number.isFinite(renderBag.__lastFrameTs)) renderBag.__lastFrameTs = 0;
   if (!Number.isFinite(renderBag.__rafScheduledAt)) renderBag.__rafScheduledAt = 0;
   if (!Array.isArray(renderBag.__mirrorHideScratch)) renderBag.__mirrorHideScratch = [];
-  if (!asRecord(renderBag.__wpRendererCompatDefaults)) renderBag.__wpRendererCompatDefaults = null;
+  if (!asRecord(renderBag.__wpRendererLightingDefaults)) renderBag.__wpRendererLightingDefaults = null;
 
   if (!Number.isFinite(renderBag.__mirrorLastUpdateMs)) renderBag.__mirrorLastUpdateMs = 0;
   if (typeof renderBag.__mirrorDirty !== 'boolean') renderBag.__mirrorDirty = false;
@@ -385,19 +385,19 @@ export function writeAutoHideFloorCache(
   }
 }
 
-export function readRendererCompatDefaults(App: unknown): RendererCompatDefaultsLike | null {
-  return readValue<RendererCompatDefaultsLike>(ensureRenderRuntimeState(App).__wpRendererCompatDefaults);
+export function readRendererLightingDefaults(App: unknown): RendererLightingDefaultsLike | null {
+  return readValue<RendererLightingDefaultsLike>(ensureRenderRuntimeState(App).__wpRendererLightingDefaults);
 }
 
-export function writeRendererCompatDefaults(
+export function writeRendererLightingDefaults(
   App: unknown,
-  value: RendererCompatDefaultsLike | null
-): RendererCompatDefaultsLike | null {
+  value: RendererLightingDefaultsLike | null
+): RendererLightingDefaultsLike | null {
   const renderBag = ensureRenderRuntimeState(App);
   try {
-    renderBag.__wpRendererCompatDefaults = value || null;
+    renderBag.__wpRendererLightingDefaults = value || null;
   } catch {
     // ignore
   }
-  return readValue<RendererCompatDefaultsLike>(renderBag.__wpRendererCompatDefaults);
+  return readValue<RendererLightingDefaultsLike>(renderBag.__wpRendererLightingDefaults);
 }

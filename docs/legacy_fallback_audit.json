@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-06-16T15:08:21.621Z",
+  "generatedAt": "2026-06-16T15:34:00.282Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 487,
-    "totalFiles": 157,
+    "totalOccurrences": 420,
+    "totalFiles": 145,
     "byCategory": {
       "runtime-default": 0,
       "domain-default": 188,
@@ -11,8 +11,8 @@
       "framework-default": 2,
       "browser-adapter": 40,
       "project-migration": 37,
-      "external-api-compat": 12,
-      "compat-boundary": 173,
+      "external-api-compat": 2,
+      "compat-boundary": 116,
       "test-fixture": 6,
       "legacy-runtime-risk": 0,
       "unknown": 0
@@ -102,28 +102,10 @@
           "compat-boundary": 2
         }
       },
-      "esm/native/builder/post_build_front_reveal_frames_cleanup.ts": {
-        "total": 8,
-        "categories": {
-          "compat-boundary": 8
-        }
-      },
-      "esm/native/builder/post_build_front_reveal_frames_contracts.ts": {
-        "total": 2,
-        "categories": {
-          "compat-boundary": 2
-        }
-      },
       "esm/native/builder/post_build_front_reveal_frames_doors.ts": {
         "total": 1,
         "categories": {
           "domain-default": 1
-        }
-      },
-      "esm/native/builder/post_build_front_reveal_frames.ts": {
-        "total": 2,
-        "categories": {
-          "compat-boundary": 2
         }
       },
       "esm/native/builder/provide.ts": {
@@ -358,18 +340,6 @@
           "error-message-default": 2
         }
       },
-      "esm/native/runtime/api_boot_render_surface.ts": {
-        "total": 2,
-        "categories": {
-          "compat-boundary": 2
-        }
-      },
-      "esm/native/runtime/api.ts": {
-        "total": 2,
-        "categories": {
-          "compat-boundary": 2
-        }
-      },
       "esm/native/runtime/browser_clipboard.ts": {
         "total": 1,
         "categories": {
@@ -448,40 +418,10 @@
           "project-migration": 2
         }
       },
-      "esm/native/runtime/render_access_shared.ts": {
-        "total": 2,
-        "categories": {
-          "compat-boundary": 2
-        }
-      },
-      "esm/native/runtime/render_access_state_runtime.ts": {
-        "total": 14,
-        "categories": {
-          "compat-boundary": 14
-        }
-      },
-      "esm/native/runtime/render_access_state.ts": {
-        "total": 2,
-        "categories": {
-          "compat-boundary": 2
-        }
-      },
-      "esm/native/runtime/render_access.ts": {
-        "total": 2,
-        "categories": {
-          "compat-boundary": 2
-        }
-      },
       "esm/native/runtime/storage_access.ts": {
         "total": 1,
         "categories": {
           "domain-default": 1
-        }
-      },
-      "esm/native/services/api_runtime_base_surface.ts": {
-        "total": 2,
-        "categories": {
-          "compat-boundary": 2
         }
       },
       "esm/native/services/app_start.ts": {
@@ -726,20 +666,6 @@
           "compat-boundary": 1
         }
       },
-      "esm/native/services/scene_view_lighting_renderer.ts": {
-        "total": 21,
-        "categories": {
-          "compat-boundary": 13,
-          "external-api-compat": 8
-        }
-      },
-      "esm/native/services/scene_view_shared_contracts.ts": {
-        "total": 8,
-        "categories": {
-          "compat-boundary": 6,
-          "external-api-compat": 2
-        }
-      },
       "esm/native/services/ui_ephemeral_defaults.ts": {
         "total": 1,
         "categories": {
@@ -982,25 +908,10 @@
         }
       },
       {
-        "file": "esm/native/services/scene_view_lighting_renderer.ts",
-        "total": 21,
-        "categories": {
-          "compat-boundary": 13,
-          "external-api-compat": 8
-        }
-      },
-      {
         "file": "esm/entry_pro_overlay.ts",
         "total": 19,
         "categories": {
           "browser-adapter": 19
-        }
-      },
-      {
-        "file": "esm/native/runtime/render_access_state_runtime.ts",
-        "total": 14,
-        "categories": {
-          "compat-boundary": 14
         }
       },
       {
@@ -1039,25 +950,10 @@
         }
       },
       {
-        "file": "esm/native/builder/post_build_front_reveal_frames_cleanup.ts",
-        "total": 8,
-        "categories": {
-          "compat-boundary": 8
-        }
-      },
-      {
         "file": "esm/native/io/project_schema_shared.ts",
         "total": 8,
         "categories": {
           "project-migration": 8
-        }
-      },
-      {
-        "file": "esm/native/services/scene_view_shared_contracts.ts",
-        "total": 8,
-        "categories": {
-          "compat-boundary": 6,
-          "external-api-compat": 2
         }
       },
       {
@@ -1186,6 +1082,34 @@
       },
       {
         "file": "esm/native/kernel/domain_api_surface_sections_bindings_drawers_dividers.ts",
+        "total": 4,
+        "categories": {
+          "domain-default": 4
+        }
+      },
+      {
+        "file": "esm/native/platform/dirty_flag.ts",
+        "total": 4,
+        "categories": {
+          "domain-default": 4
+        }
+      },
+      {
+        "file": "esm/native/runtime/meta_actions_namespace.ts",
+        "total": 4,
+        "categories": {
+          "domain-default": 4
+        }
+      },
+      {
+        "file": "esm/native/services/autosave_schedule.ts",
+        "total": 4,
+        "categories": {
+          "compat-boundary": 4
+        }
+      },
+      {
+        "file": "esm/native/services/canvas_picking_cell_dims_linear_context_modules.ts",
         "total": 4,
         "categories": {
           "domain-default": 4
@@ -1560,95 +1484,11 @@
       "text": "if (shouldInvalidateLegacyPlanSurface(plan)) {"
     },
     {
-      "file": "esm/native/builder/post_build_front_reveal_frames_cleanup.ts",
-      "line": 10,
-      "term": "cleanupLegacyFrames",
-      "category": "compat-boundary",
-      "text": "cleanupLegacyFrames: () => void;"
-    },
-    {
-      "file": "esm/native/builder/post_build_front_reveal_frames_cleanup.ts",
-      "line": 12,
-      "term": "cleanupLegacySeamHelpers",
-      "category": "compat-boundary",
-      "text": "cleanupLegacySeamHelpers: () => void;"
-    },
-    {
-      "file": "esm/native/builder/post_build_front_reveal_frames_cleanup.ts",
-      "line": 39,
-      "term": "cleanupLegacyFrames",
-      "category": "compat-boundary",
-      "text": "const cleanupLegacyFrames = () => {"
-    },
-    {
-      "file": "esm/native/builder/post_build_front_reveal_frames_cleanup.ts",
-      "line": 46,
-      "term": "disposeLegacyFrames",
-      "category": "compat-boundary",
-      "text": "disposeGeometryTreeSoft(prev, 'applyFrontRevealFrames.disposeLegacyFrames');"
-    },
-    {
-      "file": "esm/native/builder/post_build_front_reveal_frames_cleanup.ts",
-      "line": 49,
-      "term": "removeLegacyFrames",
-      "category": "compat-boundary",
-      "text": "reportSoft('applyFrontRevealFrames.removeLegacyFrames', error);"
-    },
-    {
-      "file": "esm/native/builder/post_build_front_reveal_frames_cleanup.ts",
-      "line": 80,
-      "term": "cleanupLegacySeamHelpers",
-      "category": "compat-boundary",
-      "text": "const cleanupLegacySeamHelpers = () => {"
-    },
-    {
-      "file": "esm/native/builder/post_build_front_reveal_frames_cleanup.ts",
-      "line": 96,
-      "term": "cleanupLegacyFrames",
-      "category": "compat-boundary",
-      "text": "cleanupLegacyFrames,"
-    },
-    {
-      "file": "esm/native/builder/post_build_front_reveal_frames_cleanup.ts",
-      "line": 98,
-      "term": "cleanupLegacySeamHelpers",
-      "category": "compat-boundary",
-      "text": "cleanupLegacySeamHelpers,"
-    },
-    {
-      "file": "esm/native/builder/post_build_front_reveal_frames_contracts.ts",
-      "line": 15,
-      "term": "cleanupLegacyFrames",
-      "category": "compat-boundary",
-      "text": "cleanupLegacyFrames: () => void;"
-    },
-    {
-      "file": "esm/native/builder/post_build_front_reveal_frames_contracts.ts",
-      "line": 17,
-      "term": "cleanupLegacySeamHelpers",
-      "category": "compat-boundary",
-      "text": "cleanupLegacySeamHelpers: () => void;"
-    },
-    {
       "file": "esm/native/builder/post_build_front_reveal_frames_doors.ts",
       "line": 42,
       "term": "collectFallbackDoors",
       "category": "domain-default",
       "text": "runtime.reportSoft('applyFrontRevealFrames.collectFallbackDoors', error);"
-    },
-    {
-      "file": "esm/native/builder/post_build_front_reveal_frames.ts",
-      "line": 21,
-      "term": "cleanupLegacyFrames",
-      "category": "compat-boundary",
-      "text": "runtime.cleanupLegacyFrames();"
-    },
-    {
-      "file": "esm/native/builder/post_build_front_reveal_frames.ts",
-      "line": 25,
-      "term": "cleanupLegacySeamHelpers",
-      "category": "compat-boundary",
-      "text": "runtime.cleanupLegacySeamHelpers();"
     },
     {
       "file": "esm/native/builder/provide.ts",
@@ -2442,34 +2282,6 @@
       "text": "return buildProjectSaveActionErrorResult(error, errorFallback);"
     },
     {
-      "file": "esm/native/runtime/api_boot_render_surface.ts",
-      "line": 67,
-      "term": "readRendererCompatDefaults",
-      "category": "compat-boundary",
-      "text": "readRendererCompatDefaults,"
-    },
-    {
-      "file": "esm/native/runtime/api_boot_render_surface.ts",
-      "line": 68,
-      "term": "writeRendererCompatDefaults",
-      "category": "compat-boundary",
-      "text": "writeRendererCompatDefaults,"
-    },
-    {
-      "file": "esm/native/runtime/api.ts",
-      "line": 165,
-      "term": "readRendererCompatDefaults",
-      "category": "compat-boundary",
-      "text": "readRendererCompatDefaults,"
-    },
-    {
-      "file": "esm/native/runtime/api.ts",
-      "line": 166,
-      "term": "writeRendererCompatDefaults",
-      "category": "compat-boundary",
-      "text": "writeRendererCompatDefaults,"
-    },
-    {
       "file": "esm/native/runtime/browser_clipboard.ts",
       "line": 44,
       "term": "consoleFallback",
@@ -2764,165 +2576,11 @@
       "text": "return errorFallback;"
     },
     {
-      "file": "esm/native/runtime/render_access_shared.ts",
-      "line": 15,
-      "term": "RendererCompatDefaultsLike",
-      "category": "compat-boundary",
-      "text": "RendererCompatDefaultsLike,"
-    },
-    {
-      "file": "esm/native/runtime/render_access_shared.ts",
-      "line": 51,
-      "term": "RendererCompatDefaultsLike",
-      "category": "compat-boundary",
-      "text": "RendererCompatDefaultsLike,"
-    },
-    {
-      "file": "esm/native/runtime/render_access_state_runtime.ts",
-      "line": 4,
-      "term": "RendererCompatDefaultsLike",
-      "category": "compat-boundary",
-      "text": "RendererCompatDefaultsLike,"
-    },
-    {
-      "file": "esm/native/runtime/render_access_state_runtime.ts",
-      "line": 30,
-      "term": "__wpRendererCompatDefaults",
-      "category": "compat-boundary",
-      "text": "__wpRendererCompatDefaults: RendererCompatDefaultsLike | null;"
-    },
-    {
-      "file": "esm/native/runtime/render_access_state_runtime.ts",
-      "line": 30,
-      "term": "RendererCompatDefaultsLike",
-      "category": "compat-boundary",
-      "text": "__wpRendererCompatDefaults: RendererCompatDefaultsLike | null;"
-    },
-    {
-      "file": "esm/native/runtime/render_access_state_runtime.ts",
-      "line": 105,
-      "term": "__wpRendererCompatDefaults",
-      "category": "compat-boundary",
-      "text": "if (!asRecord(renderBag.__wpRendererCompatDefaults)) renderBag.__wpRendererCompatDefaults = null;"
-    },
-    {
-      "file": "esm/native/runtime/render_access_state_runtime.ts",
-      "line": 388,
-      "term": "readRendererCompatDefaults",
-      "category": "compat-boundary",
-      "text": "export function readRendererCompatDefaults(App: unknown): RendererCompatDefaultsLike | null {"
-    },
-    {
-      "file": "esm/native/runtime/render_access_state_runtime.ts",
-      "line": 388,
-      "term": "RendererCompatDefaultsLike",
-      "category": "compat-boundary",
-      "text": "export function readRendererCompatDefaults(App: unknown): RendererCompatDefaultsLike | null {"
-    },
-    {
-      "file": "esm/native/runtime/render_access_state_runtime.ts",
-      "line": 389,
-      "term": "RendererCompatDefaultsLike",
-      "category": "compat-boundary",
-      "text": "return readValue<RendererCompatDefaultsLike>(ensureRenderRuntimeState(App).__wpRendererCompatDefaults);"
-    },
-    {
-      "file": "esm/native/runtime/render_access_state_runtime.ts",
-      "line": 389,
-      "term": "__wpRendererCompatDefaults",
-      "category": "compat-boundary",
-      "text": "return readValue<RendererCompatDefaultsLike>(ensureRenderRuntimeState(App).__wpRendererCompatDefaults);"
-    },
-    {
-      "file": "esm/native/runtime/render_access_state_runtime.ts",
-      "line": 392,
-      "term": "writeRendererCompatDefaults",
-      "category": "compat-boundary",
-      "text": "export function writeRendererCompatDefaults("
-    },
-    {
-      "file": "esm/native/runtime/render_access_state_runtime.ts",
-      "line": 394,
-      "term": "RendererCompatDefaultsLike",
-      "category": "compat-boundary",
-      "text": "value: RendererCompatDefaultsLike | null"
-    },
-    {
-      "file": "esm/native/runtime/render_access_state_runtime.ts",
-      "line": 395,
-      "term": "RendererCompatDefaultsLike",
-      "category": "compat-boundary",
-      "text": "): RendererCompatDefaultsLike | null {"
-    },
-    {
-      "file": "esm/native/runtime/render_access_state_runtime.ts",
-      "line": 398,
-      "term": "__wpRendererCompatDefaults",
-      "category": "compat-boundary",
-      "text": "renderBag.__wpRendererCompatDefaults = value || null;"
-    },
-    {
-      "file": "esm/native/runtime/render_access_state_runtime.ts",
-      "line": 402,
-      "term": "RendererCompatDefaultsLike",
-      "category": "compat-boundary",
-      "text": "return readValue<RendererCompatDefaultsLike>(renderBag.__wpRendererCompatDefaults);"
-    },
-    {
-      "file": "esm/native/runtime/render_access_state_runtime.ts",
-      "line": 402,
-      "term": "__wpRendererCompatDefaults",
-      "category": "compat-boundary",
-      "text": "return readValue<RendererCompatDefaultsLike>(renderBag.__wpRendererCompatDefaults);"
-    },
-    {
-      "file": "esm/native/runtime/render_access_state.ts",
-      "line": 42,
-      "term": "readRendererCompatDefaults",
-      "category": "compat-boundary",
-      "text": "readRendererCompatDefaults,"
-    },
-    {
-      "file": "esm/native/runtime/render_access_state.ts",
-      "line": 43,
-      "term": "writeRendererCompatDefaults",
-      "category": "compat-boundary",
-      "text": "writeRendererCompatDefaults,"
-    },
-    {
-      "file": "esm/native/runtime/render_access.ts",
-      "line": 78,
-      "term": "readRendererCompatDefaults",
-      "category": "compat-boundary",
-      "text": "readRendererCompatDefaults,"
-    },
-    {
-      "file": "esm/native/runtime/render_access.ts",
-      "line": 79,
-      "term": "writeRendererCompatDefaults",
-      "category": "compat-boundary",
-      "text": "writeRendererCompatDefaults,"
-    },
-    {
       "file": "esm/native/runtime/storage_access.ts",
       "line": 22,
       "term": "consoleFallback",
       "category": "domain-default",
       "text": "consoleFallback: false,"
-    },
-    {
-      "file": "esm/native/services/api_runtime_base_surface.ts",
-      "line": 189,
-      "term": "readRendererCompatDefaults",
-      "category": "compat-boundary",
-      "text": "readRendererCompatDefaults,"
-    },
-    {
-      "file": "esm/native/services/api_runtime_base_surface.ts",
-      "line": 190,
-      "term": "writeRendererCompatDefaults",
-      "category": "compat-boundary",
-      "text": "writeRendererCompatDefaults,"
     },
     {
       "file": "esm/native/services/app_start.ts",
@@ -3749,209 +3407,6 @@
       "term": "Object3DCompatible",
       "category": "compat-boundary",
       "text": "Object3DCompatible,"
-    },
-    {
-      "file": "esm/native/services/scene_view_lighting_renderer.ts",
-      "line": 5,
-      "term": "readRendererCompatDefaults",
-      "category": "compat-boundary",
-      "text": "readRendererCompatDefaults,"
-    },
-    {
-      "file": "esm/native/services/scene_view_lighting_renderer.ts",
-      "line": 6,
-      "term": "writeRendererCompatDefaults",
-      "category": "compat-boundary",
-      "text": "writeRendererCompatDefaults,"
-    },
-    {
-      "file": "esm/native/services/scene_view_lighting_renderer.ts",
-      "line": 9,
-      "term": "asCompatDefaults",
-      "category": "compat-boundary",
-      "text": "asCompatDefaults,"
-    },
-    {
-      "file": "esm/native/services/scene_view_lighting_renderer.ts",
-      "line": 10,
-      "term": "asSceneRendererCompat",
-      "category": "compat-boundary",
-      "text": "asSceneRendererCompat,"
-    },
-    {
-      "file": "esm/native/services/scene_view_lighting_renderer.ts",
-      "line": 14,
-      "term": "SceneViewCompatDefaults",
-      "category": "compat-boundary",
-      "text": "type SceneViewCompatDefaults,"
-    },
-    {
-      "file": "esm/native/services/scene_view_lighting_renderer.ts",
-      "line": 18,
-      "term": "asSceneRendererCompat",
-      "category": "compat-boundary",
-      "text": "type RendererLightingSurface = NonNullable<ReturnType<typeof asSceneRendererCompat>>;"
-    },
-    {
-      "file": "esm/native/services/scene_view_lighting_renderer.ts",
-      "line": 21,
-      "term": "asCompatDefaults",
-      "category": "compat-boundary",
-      "text": "const defaults = asCompatDefaults(readRendererCompatDefaults(App));"
-    },
-    {
-      "file": "esm/native/services/scene_view_lighting_renderer.ts",
-      "line": 21,
-      "term": "readRendererCompatDefaults",
-      "category": "compat-boundary",
-      "text": "const defaults = asCompatDefaults(readRendererCompatDefaults(App));"
-    },
-    {
-      "file": "esm/native/services/scene_view_lighting_renderer.ts",
-      "line": 53,
-      "term": "useLegacyLights",
-      "category": "external-api-compat",
-      "text": "if (typeof defaults.useLegacyLights === 'boolean' && typeof rendererSurface.useLegacyLights === 'boolean') {"
-    },
-    {
-      "file": "esm/native/services/scene_view_lighting_renderer.ts",
-      "line": 55,
-      "term": "useLegacyLights",
-      "category": "external-api-compat",
-      "text": "rendererSurface.useLegacyLights = defaults.useLegacyLights;"
-    },
-    {
-      "file": "esm/native/services/scene_view_lighting_renderer.ts",
-      "line": 57,
-      "term": "useLegacyLights",
-      "category": "external-api-compat",
-      "text": "reportSceneViewNonFatal(App, 'sceneView.lighting.restoreRendererLightingDefaults.useLegacyLights', err);"
-    },
-    {
-      "file": "esm/native/services/scene_view_lighting_renderer.ts",
-      "line": 65,
-      "term": "SceneViewCompatDefaults",
-      "category": "compat-boundary",
-      "text": "): SceneViewCompatDefaults | undefined {"
-    },
-    {
-      "file": "esm/native/services/scene_view_lighting_renderer.ts",
-      "line": 67,
-      "term": "readRendererCompatDefaults",
-      "category": "compat-boundary",
-      "text": "let rendererDefaults = readRendererCompatDefaults(App);"
-    },
-    {
-      "file": "esm/native/services/scene_view_lighting_renderer.ts",
-      "line": 73,
-      "term": "useLegacyLights",
-      "category": "external-api-compat",
-      "text": "useLegacyLights:"
-    },
-    {
-      "file": "esm/native/services/scene_view_lighting_renderer.ts",
-      "line": 74,
-      "term": "useLegacyLights",
-      "category": "external-api-compat",
-      "text": "typeof rendererSurface.useLegacyLights === 'boolean' ? rendererSurface.useLegacyLights : undefined,"
-    },
-    {
-      "file": "esm/native/services/scene_view_lighting_renderer.ts",
-      "line": 75,
-      "term": "SceneViewCompatDefaults",
-      "category": "compat-boundary",
-      "text": "} satisfies SceneViewCompatDefaults;"
-    },
-    {
-      "file": "esm/native/services/scene_view_lighting_renderer.ts",
-      "line": 76,
-      "term": "writeRendererCompatDefaults",
-      "category": "compat-boundary",
-      "text": "writeRendererCompatDefaults(App, rendererDefaults);"
-    },
-    {
-      "file": "esm/native/services/scene_view_lighting_renderer.ts",
-      "line": 105,
-      "term": "useLegacyLights",
-      "category": "external-api-compat",
-      "text": "if (typeof rendererSurface.useLegacyLights === 'boolean') {"
-    },
-    {
-      "file": "esm/native/services/scene_view_lighting_renderer.ts",
-      "line": 107,
-      "term": "useLegacyLights",
-      "category": "external-api-compat",
-      "text": "rendererSurface.useLegacyLights = false;"
-    },
-    {
-      "file": "esm/native/services/scene_view_lighting_renderer.ts",
-      "line": 109,
-      "term": "useLegacyLights",
-      "category": "external-api-compat",
-      "text": "reportSceneViewNonFatal(App, 'sceneView.lighting.applyNormalRendererLighting.useLegacyLights', err);"
-    },
-    {
-      "file": "esm/native/services/scene_view_lighting_renderer.ts",
-      "line": 116,
-      "term": "asSceneRendererCompat",
-      "category": "compat-boundary",
-      "text": "const rendererSurface = asSceneRendererCompat(getRenderer(App));"
-    },
-    {
-      "file": "esm/native/services/scene_view_shared_contracts.ts",
-      "line": 60,
-      "term": "SceneRendererCompatLike",
-      "category": "compat-boundary",
-      "text": "export type SceneRendererCompatLike = UnknownRecord & {"
-    },
-    {
-      "file": "esm/native/services/scene_view_shared_contracts.ts",
-      "line": 64,
-      "term": "useLegacyLights",
-      "category": "external-api-compat",
-      "text": "useLegacyLights?: boolean;"
-    },
-    {
-      "file": "esm/native/services/scene_view_shared_contracts.ts",
-      "line": 73,
-      "term": "SceneViewCompatDefaults",
-      "category": "compat-boundary",
-      "text": "export type SceneViewCompatDefaults = {"
-    },
-    {
-      "file": "esm/native/services/scene_view_shared_contracts.ts",
-      "line": 77,
-      "term": "useLegacyLights",
-      "category": "external-api-compat",
-      "text": "useLegacyLights?: boolean;"
-    },
-    {
-      "file": "esm/native/services/scene_view_shared_contracts.ts",
-      "line": 155,
-      "term": "asSceneRendererCompat",
-      "category": "compat-boundary",
-      "text": "export function asSceneRendererCompat(value: unknown): SceneRendererCompatLike | null {"
-    },
-    {
-      "file": "esm/native/services/scene_view_shared_contracts.ts",
-      "line": 155,
-      "term": "SceneRendererCompatLike",
-      "category": "compat-boundary",
-      "text": "export function asSceneRendererCompat(value: unknown): SceneRendererCompatLike | null {"
-    },
-    {
-      "file": "esm/native/services/scene_view_shared_contracts.ts",
-      "line": 159,
-      "term": "asCompatDefaults",
-      "category": "compat-boundary",
-      "text": "export function asCompatDefaults(value: unknown): SceneViewCompatDefaults | undefined {"
-    },
-    {
-      "file": "esm/native/services/scene_view_shared_contracts.ts",
-      "line": 159,
-      "term": "SceneViewCompatDefaults",
-      "category": "compat-boundary",
-      "text": "export function asCompatDefaults(value: unknown): SceneViewCompatDefaults | undefined {"
     },
     {
       "file": "esm/native/services/ui_ephemeral_defaults.ts",
