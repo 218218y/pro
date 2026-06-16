@@ -10,8 +10,8 @@ import {
   setTextIfPossible,
   silentNoDom,
   stableStringify,
-  type BootFatalFallbackController,
-  type BootFatalFallbackOpts,
+  type BootFatalOverlayController,
+  type BootFatalOverlayOpts,
 } from './entry_pro_shared.js';
 
 async function copyText(win: Window | null, txt: unknown): Promise<boolean> {
@@ -52,7 +52,7 @@ async function copyText(win: Window | null, txt: unknown): Promise<boolean> {
   }
 }
 
-function makeCopyText(opts: BootFatalFallbackOpts | null | undefined): string {
+function makeCopyText(opts: BootFatalOverlayOpts | null | undefined): string {
   const title = opts && opts.title ? String(opts.title) : 'WardrobePro error';
   const description = opts && opts.description ? String(opts.description) : '';
   const ctx = opts && opts.context ? opts.context : null;
@@ -72,9 +72,7 @@ function makeCopyText(opts: BootFatalFallbackOpts | null | undefined): string {
   return out;
 }
 
-export function showBootFatalOverlayFallback(
-  opts: BootFatalFallbackOpts = {}
-): BootFatalFallbackController | null {
+export function showBootFatalOverlay(opts: BootFatalOverlayOpts = {}): BootFatalOverlayController | null {
   try {
     const doc = opts.document || null;
     const win = opts.window || null;
@@ -98,7 +96,7 @@ export function showBootFatalOverlayFallback(
       } catch (err) {
         reportEntrySoft(err, {
           area: 'entry_pro',
-          op: 'showBootFatalOverlayFallback.updateExisting',
+          op: 'showBootFatalOverlay.updateExisting',
           throttleMs: 1000,
         });
       }
@@ -107,13 +105,13 @@ export function showBootFatalOverlayFallback(
     }
 
     const root = doc.createElement('div');
-    root.id = 'wpBootFatalOverlayFallback';
+    root.id = 'wpBootFatalOverlay';
     try {
       root.role = 'dialog';
     } catch (err) {
       reportEntrySoft(err, {
         area: 'entry_pro',
-        op: 'showBootFatalOverlayFallback.root.roleProp',
+        op: 'showBootFatalOverlay.root.roleProp',
         throttleMs: 1000,
       });
     }
@@ -123,7 +121,7 @@ export function showBootFatalOverlayFallback(
     } catch (err) {
       reportEntrySoft(err, {
         area: 'entry_pro',
-        op: 'showBootFatalOverlayFallback.root.roleAttrs',
+        op: 'showBootFatalOverlay.root.roleAttrs',
         throttleMs: 1000,
       });
     }
@@ -141,7 +139,7 @@ export function showBootFatalOverlayFallback(
     } catch (err) {
       reportEntrySoft(err, {
         area: 'entry_pro',
-        op: 'showBootFatalOverlayFallback.titleAttr',
+        op: 'showBootFatalOverlay.titleAttr',
         throttleMs: 1000,
       });
     }
@@ -154,7 +152,7 @@ export function showBootFatalOverlayFallback(
     } catch (err) {
       reportEntrySoft(err, {
         area: 'entry_pro',
-        op: 'showBootFatalOverlayFallback.descAttr',
+        op: 'showBootFatalOverlay.descAttr',
         throttleMs: 1000,
       });
     }
@@ -167,7 +165,7 @@ export function showBootFatalOverlayFallback(
     } catch (err) {
       reportEntrySoft(err, {
         area: 'entry_pro',
-        op: 'showBootFatalOverlayFallback.detailsAttr',
+        op: 'showBootFatalOverlay.detailsAttr',
         throttleMs: 1000,
       });
     }
@@ -193,7 +191,7 @@ export function showBootFatalOverlayFallback(
       } catch (err) {
         reportEntrySoft(err, {
           area: 'entry_pro',
-          op: 'showBootFatalOverlayFallback.copyButton',
+          op: 'showBootFatalOverlay.copyButton',
           throttleMs: 1000,
         });
       }
@@ -216,7 +214,7 @@ export function showBootFatalOverlayFallback(
       } catch (err) {
         reportEntrySoft(err, {
           area: 'entry_pro',
-          op: 'showBootFatalOverlayFallback.helpHtml',
+          op: 'showBootFatalOverlay.helpHtml',
           throttleMs: 1000,
         });
       }
@@ -233,7 +231,7 @@ export function showBootFatalOverlayFallback(
     if (!body) return null;
     body.appendChild(root);
 
-    const ctrl: BootFatalFallbackController = {
+    const ctrl: BootFatalOverlayController = {
       el: root,
       show: () => {
         try {
@@ -241,7 +239,7 @@ export function showBootFatalOverlayFallback(
         } catch (err) {
           reportEntrySoft(err, {
             area: 'entry_pro',
-            op: 'showBootFatalOverlayFallback.ctrl.show',
+            op: 'showBootFatalOverlay.ctrl.show',
             throttleMs: 1000,
           });
         }
@@ -252,7 +250,7 @@ export function showBootFatalOverlayFallback(
         } catch (err) {
           reportEntrySoft(err, {
             area: 'entry_pro',
-            op: 'showBootFatalOverlayFallback.ctrl.hide',
+            op: 'showBootFatalOverlay.ctrl.hide',
             throttleMs: 1000,
           });
         }
@@ -276,7 +274,7 @@ export function hasAnyOverlay(win: Window): boolean {
     const getById =
       win.document && win.document.getElementById ? win.document.getElementById.bind(win.document) : null;
     if (!getById) return false;
-    return !!(getById('wpBootFatalOverlayFallback') || getById('wp-fatal-overlay'));
+    return !!(getById('wpBootFatalOverlay') || getById('wp-fatal-overlay'));
   } catch (err) {
     reportEntrySoft(err, { area: 'entry_pro', op: 'hasAnyOverlay', throttleMs: 1000 });
     return false;

@@ -162,12 +162,7 @@ import {
     assertMatchesAll(
       assert,
       entryOwner,
-      [
-        /entry_pro_overlay\.js/,
-        /entry_pro_start\.js/,
-        /showBootFatalOverlayFallback/,
-        /autoStartEntryPro\(\)/,
-      ],
+      [/entry_pro_overlay\.js/, /entry_pro_start\.js/, /showBootFatalOverlay/, /autoStartEntryPro\(\)/],
       'entryOwner'
     );
     assertLacksAll(
@@ -181,9 +176,9 @@ import {
       assert,
       entryBundle,
       [
-        /export type BootFatalFallbackOpts = \{/,
+        /export type BootFatalOverlayOpts = \{/,
         /export function reportEntryBestEffort\(/,
-        /export function showBootFatalOverlayFallback\(/,
+        /export function showBootFatalOverlay\(/,
         /installEntryProEarlyHandlers as installEarlyHandlers/,
         /startEntryProRuntime as startEntryPro/,
         /export async function startEntryProRuntime\(/,

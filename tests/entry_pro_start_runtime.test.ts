@@ -35,7 +35,7 @@ test('entry_pro_start_runtime installs early handlers once', () => {
   assert.equal(win.listeners.unhandledrejection.length, 1);
 });
 
-test('entry_pro_start_runtime starts boot module and falls back to overlay on failure', async () => {
+test('entry_pro_start_runtime starts boot module and uses the boot overlay on failure', async () => {
   const win = createWindowStub();
   const doc = {} as Document;
   const calls: string[] = [];

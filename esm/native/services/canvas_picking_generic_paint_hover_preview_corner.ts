@@ -28,8 +28,8 @@ export function resolveNearestPreviewObject(args: {
     if (objects[i] === fallbackObject) return fallbackObject;
   }
 
-  const fallbackBox = __wp_measureObjectLocalBox(App, fallbackObject, wardrobeGroup);
-  if (!fallbackBox) return objects[0] || fallbackObject;
+  const referenceBox = __wp_measureObjectLocalBox(App, fallbackObject, wardrobeGroup);
+  if (!referenceBox) return objects[0] || fallbackObject;
 
   let bestObject: UnknownRecord | null = objects[0] || null;
   let bestDist = Infinity;
@@ -37,9 +37,9 @@ export function resolveNearestPreviewObject(args: {
     const candidate = objects[i];
     const box = __wp_measureObjectLocalBox(App, candidate, wardrobeGroup);
     if (!box) continue;
-    const dx = box.centerX - fallbackBox.centerX;
-    const dy = box.centerY - fallbackBox.centerY;
-    const dz = box.centerZ - fallbackBox.centerZ;
+    const dx = box.centerX - referenceBox.centerX;
+    const dy = box.centerY - referenceBox.centerY;
+    const dz = box.centerZ - referenceBox.centerZ;
     const distSq = dx * dx + dy * dy + dz * dz;
     if (distSq < bestDist) {
       bestDist = distSq;

@@ -1398,7 +1398,7 @@
       "entry": "mirror_layout.js"
     },
     {
-      "file": "esm/native/services/canvas_picking_projection_runtime_box_wardrobe_fallback.ts",
+      "file": "esm/native/services/canvas_picking_projection_runtime_box_no_main_workspace.ts",
       "entry": "modules_configuration/modules_config_api.js"
     },
     {

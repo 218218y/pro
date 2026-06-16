@@ -84,7 +84,7 @@ test('[cell-dims-hover] preview resolves the future target box instead of painti
       '../esm/native/services/canvas_picking_projection_runtime_box_shared.ts',
       '../esm/native/services/canvas_picking_projection_runtime_box_object.ts',
       '../esm/native/services/canvas_picking_projection_runtime_box_wardrobe_scene.ts',
-      '../esm/native/services/canvas_picking_projection_runtime_box_wardrobe_fallback.ts',
+      '../esm/native/services/canvas_picking_projection_runtime_box_no_main_workspace.ts',
       '../esm/native/services/canvas_picking_projection_runtime_plane.ts',
     ],
     import.meta.url

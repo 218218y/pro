@@ -120,7 +120,7 @@ test('[dimension tokens] sketch divider, attachment, and free-box measurement ov
   assert.doesNotMatch(freeBoxGap, /Math\.max\(0\.0015, Math\.min\(0\.004/);
 
   const projectionFallback = read(
-    'esm/native/services/canvas_picking_projection_runtime_box_wardrobe_fallback.ts'
+    'esm/native/services/canvas_picking_projection_runtime_box_no_main_workspace.ts'
   );
   assert.match(projectionFallback, /WARDROBE_DEFAULTS/);
   assert.match(projectionFallback, /NO_MAIN_SKETCH_DIMENSIONS/);

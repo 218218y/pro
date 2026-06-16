@@ -5,7 +5,7 @@ import type { BootErrorPolicyReportOpts } from './boot/boot_error_policy.js';
 export type ErrorOverlayModule = typeof import('./native/ui/error_overlay.js');
 export type EntryProMainModule = typeof import('./entry_pro_main.js');
 
-export type BootFatalFallbackOpts = {
+export type BootFatalOverlayOpts = {
   document?: Document | null;
   window?: Window | null;
 
@@ -18,7 +18,7 @@ export type BootFatalFallbackOpts = {
   silentConsole?: boolean;
 };
 
-export type BootFatalFallbackController = {
+export type BootFatalOverlayController = {
   el: HTMLElement;
   show: () => void;
   hide: () => void;
@@ -60,7 +60,7 @@ function isControllerElement(value: unknown): value is ControllerElement {
   return isRecord(value) && typeof value.querySelector === 'function' && isRecord(value.style);
 }
 
-export function isBootFatalFallbackController(value: unknown): value is BootFatalFallbackController {
+export function isBootFatalOverlayController(value: unknown): value is BootFatalOverlayController {
   return (
     isRecord(value) &&
     isControllerElement(value.el) &&
@@ -98,7 +98,7 @@ export function hasDom(doc: Document | null | undefined): doc is Document {
   return !!(doc && typeof doc.createElement === 'function' && doc.body);
 }
 
-export function silentNoDom(opts: BootFatalFallbackOpts | null | undefined): boolean {
+export function silentNoDom(opts: BootFatalOverlayOpts | null | undefined): boolean {
   try {
     if (opts && typeof opts.silentConsole === 'boolean') return opts.silentConsole;
     const isNode = typeof process !== 'undefined' && hasNodeProcess(process);
@@ -192,13 +192,11 @@ export function reportEntrySoft(
   });
 }
 
-export function getExistingController(
-  win: WindowWithFatalOverlay | null
-): BootFatalFallbackController | null {
+export function getExistingController(win: WindowWithFatalOverlay | null): BootFatalOverlayController | null {
   try {
     if (!win) return null;
     const raw = win.__WARDROBE_PRO_FATAL_OVERLAY__;
-    if (!isBootFatalFallbackController(raw)) return null;
+    if (!isBootFatalOverlayController(raw)) return null;
     return raw;
   } catch (err) {
     reportEntrySoft(err, { area: 'entry_pro', op: 'getExistingController', throttleMs: 1000 });
@@ -206,7 +204,7 @@ export function getExistingController(
   }
 }
 
-export function setController(win: WindowWithFatalOverlay | null, ctrl: BootFatalFallbackController): void {
+export function setController(win: WindowWithFatalOverlay | null, ctrl: BootFatalOverlayController): void {
   try {
     if (!win) return;
     win.__WARDROBE_PRO_FATAL_OVERLAY__ = ctrl;

@@ -204,7 +204,7 @@ async function installCloudSyncRestIsolation(context) {
 
 const BOOT_READY_TIMEOUT_MS = 45000;
 const BOOT_READY_POLL_MS = 250;
-const BOOT_OVERLAY_IDS = ['wpFatalOverlay', 'wpBootFatalOverlayFallback', 'wp-fatal-overlay'];
+const BOOT_OVERLAY_IDS = ['wpFatalOverlay', 'wpBootFatalOverlay', 'wp-fatal-overlay'];
 const AUTOSAVE_SETTLE_MS = 5000;
 
 function formatRuntimeIssueLines(runtimeIssues = {}) {

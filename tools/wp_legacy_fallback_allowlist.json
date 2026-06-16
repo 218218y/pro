@@ -3,30 +3,6 @@
   "sourceRoot": "esm",
   "policy": "Every existing legacy/fallback occurrence is categorized and count-locked by file. New or moved occurrences must be reviewed and the allowlist regenerated deliberately.",
   "entries": {
-    "esm/entry_pro_overlay.ts": {
-      "total": 19,
-      "categories": {
-        "browser-adapter": 19
-      }
-    },
-    "esm/entry_pro_shared.ts": {
-      "total": 8,
-      "categories": {
-        "browser-adapter": 8
-      }
-    },
-    "esm/entry_pro_start_runtime.ts": {
-      "total": 7,
-      "categories": {
-        "browser-adapter": 7
-      }
-    },
-    "esm/entry_pro.ts": {
-      "total": 3,
-      "categories": {
-        "browser-adapter": 3
-      }
-    },
     "esm/native/builder/build_state_resolver.ts": {
       "total": 1,
       "categories": {
@@ -395,18 +371,6 @@
       "total": 1,
       "categories": {
         "domain-default": 1
-      }
-    },
-    "esm/native/services/canvas_picking_projection_runtime_box_wardrobe_fallback.ts": {
-      "total": 1,
-      "categories": {
-        "domain-default": 1
-      }
-    },
-    "esm/native/services/canvas_picking_projection_runtime_box.ts": {
-      "total": 3,
-      "categories": {
-        "domain-default": 3
       }
     },
     "esm/native/services/canvas_picking_selector_internal_metrics.ts": {

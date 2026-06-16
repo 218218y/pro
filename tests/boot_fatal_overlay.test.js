@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { showBootFatalOverlayFallback } from '../dist/esm/entry_pro.js';
+import { showBootFatalOverlay } from '../dist/esm/entry_pro.js';
 
 function makeElement(tag) {
   return {
@@ -34,17 +34,17 @@ function makeWindow() {
   };
 }
 
-test('boot fatal fallback does not throw when DOM is missing', () => {
+test('boot fatal overlay does not throw when DOM is missing', () => {
   const win = makeWindow();
-  const ctrl = showBootFatalOverlayFallback({ window: win, document: null, error: new Error('boom') });
+  const ctrl = showBootFatalOverlay({ window: win, document: null, error: new Error('boom') });
   assert.equal(ctrl, null);
 });
 
-test('boot fatal fallback builds an overlay when DOM exists', () => {
+test('boot fatal overlay builds an overlay when DOM exists', () => {
   const win = makeWindow();
   const doc = makeDocument();
 
-  const ctrl = showBootFatalOverlayFallback({
+  const ctrl = showBootFatalOverlay({
     window: win,
     document: doc,
     title: 'שגיאת טעינה: בדיקה',
@@ -54,7 +54,7 @@ test('boot fatal fallback builds an overlay when DOM exists', () => {
 
   assert.ok(ctrl);
   assert.ok(ctrl.el);
-  assert.equal(ctrl.el.id, 'wpBootFatalOverlayFallback');
+  assert.equal(ctrl.el.id, 'wpBootFatalOverlay');
   assert.equal(doc.body.children.length, 1);
   assert.equal(doc.body.children[0], ctrl.el);
 

@@ -30,7 +30,6 @@ test('stage 42 legacy fallback inventory closeout is anchored', () => {
   }
 
   for (const entry of [
-    ['esm/entry_pro_overlay.ts', 'browser-adapter'],
     ['esm/native/builder/core_carcass_cornice.ts', 'domain-default'],
     ['esm/native/kernel/domain_api_modules_corner_shared.ts', 'compat-boundary'],
     ['esm/native/ui/react/tabs/design_tab_color_action_result_reason.ts', 'error-message-default'],
@@ -40,6 +39,19 @@ test('stage 42 legacy fallback inventory closeout is anchored', () => {
     assert.ok(
       audit.summary.byFile[file]?.categories?.[category] > 0,
       `${file} must be categorized as ${category}`
+    );
+  }
+
+  for (const file of [
+    'esm/entry_pro.ts',
+    'esm/entry_pro_overlay.ts',
+    'esm/entry_pro_shared.ts',
+    'esm/entry_pro_start_runtime.ts',
+  ]) {
+    assert.equal(
+      audit.summary.byFile[file]?.total || 0,
+      0,
+      `${file} should use current boot overlay naming without fallback vocabulary`
     );
   }
 

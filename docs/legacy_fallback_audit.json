@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-06-16T19:01:59.175Z",
+  "generatedAt": "2026-06-16T19:19:28.459Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 301,
-    "totalFiles": 112,
+    "totalOccurrences": 260,
+    "totalFiles": 106,
     "byCategory": {
       "runtime-default": 0,
-      "domain-default": 145,
+      "domain-default": 141,
       "error-message-default": 29,
       "framework-default": 2,
-      "browser-adapter": 39,
+      "browser-adapter": 2,
       "project-migration": 37,
       "external-api-compat": 0,
       "compat-boundary": 43,
@@ -18,30 +18,6 @@
       "unknown": 0
     },
     "byFile": {
-      "esm/entry_pro_overlay.ts": {
-        "total": 19,
-        "categories": {
-          "browser-adapter": 19
-        }
-      },
-      "esm/entry_pro_shared.ts": {
-        "total": 8,
-        "categories": {
-          "browser-adapter": 8
-        }
-      },
-      "esm/entry_pro_start_runtime.ts": {
-        "total": 7,
-        "categories": {
-          "browser-adapter": 7
-        }
-      },
-      "esm/entry_pro.ts": {
-        "total": 3,
-        "categories": {
-          "browser-adapter": 3
-        }
-      },
       "esm/native/builder/build_state_resolver.ts": {
         "total": 1,
         "categories": {
@@ -412,18 +388,6 @@
           "domain-default": 1
         }
       },
-      "esm/native/services/canvas_picking_projection_runtime_box_wardrobe_fallback.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      "esm/native/services/canvas_picking_projection_runtime_box.ts": {
-        "total": 3,
-        "categories": {
-          "domain-default": 3
-        }
-      },
       "esm/native/services/canvas_picking_selector_internal_metrics.ts": {
         "total": 5,
         "categories": {
@@ -699,13 +663,6 @@
     },
     "hotFiles": [
       {
-        "file": "esm/entry_pro_overlay.ts",
-        "total": 19,
-        "categories": {
-          "browser-adapter": 19
-        }
-      },
-      {
         "file": "esm/native/runtime/project_io_access_restore.ts",
         "total": 13,
         "categories": {
@@ -720,13 +677,6 @@
         }
       },
       {
-        "file": "esm/entry_pro_shared.ts",
-        "total": 8,
-        "categories": {
-          "browser-adapter": 8
-        }
-      },
-      {
         "file": "esm/native/io/project_schema_shared.ts",
         "total": 8,
         "categories": {
@@ -738,13 +688,6 @@
         "total": 8,
         "categories": {
           "error-message-default": 8
-        }
-      },
-      {
-        "file": "esm/entry_pro_start_runtime.ts",
-        "total": 7,
-        "categories": {
-          "browser-adapter": 7
         }
       },
       {
@@ -907,275 +850,38 @@
         }
       },
       {
-        "file": "esm/entry_pro.ts",
+        "file": "esm/native/features/stack_split/stack_split.ts",
         "total": 3,
         "categories": {
-          "browser-adapter": 3
+          "compat-boundary": 3
+        }
+      },
+      {
+        "file": "esm/native/kernel/domain_api_modules_corner_recompute_policy.ts",
+        "total": 3,
+        "categories": {
+          "domain-default": 3
+        }
+      },
+      {
+        "file": "esm/native/kernel/domain_api_surface_sections_shared.ts",
+        "total": 3,
+        "categories": {
+          "compat-boundary": 1,
+          "domain-default": 2
+        }
+      },
+      {
+        "file": "esm/native/kernel/state_api_meta_namespace.ts",
+        "total": 3,
+        "categories": {
+          "domain-default": 3
         }
       }
     ]
   },
   "allowlistComparison": null,
   "occurrences": [
-    {
-      "file": "esm/entry_pro_overlay.ts",
-      "line": 13,
-      "term": "BootFatalFallbackController",
-      "category": "browser-adapter",
-      "text": "type BootFatalFallbackController,"
-    },
-    {
-      "file": "esm/entry_pro_overlay.ts",
-      "line": 14,
-      "term": "BootFatalFallbackOpts",
-      "category": "browser-adapter",
-      "text": "type BootFatalFallbackOpts,"
-    },
-    {
-      "file": "esm/entry_pro_overlay.ts",
-      "line": 55,
-      "term": "BootFatalFallbackOpts",
-      "category": "browser-adapter",
-      "text": "function makeCopyText(opts: BootFatalFallbackOpts | null | undefined): string {"
-    },
-    {
-      "file": "esm/entry_pro_overlay.ts",
-      "line": 75,
-      "term": "showBootFatalOverlayFallback",
-      "category": "browser-adapter",
-      "text": "export function showBootFatalOverlayFallback("
-    },
-    {
-      "file": "esm/entry_pro_overlay.ts",
-      "line": 76,
-      "term": "BootFatalFallbackOpts",
-      "category": "browser-adapter",
-      "text": "opts: BootFatalFallbackOpts = {}"
-    },
-    {
-      "file": "esm/entry_pro_overlay.ts",
-      "line": 77,
-      "term": "BootFatalFallbackController",
-      "category": "browser-adapter",
-      "text": "): BootFatalFallbackController | null {"
-    },
-    {
-      "file": "esm/entry_pro_overlay.ts",
-      "line": 101,
-      "term": "showBootFatalOverlayFallback",
-      "category": "browser-adapter",
-      "text": "op: 'showBootFatalOverlayFallback.updateExisting',"
-    },
-    {
-      "file": "esm/entry_pro_overlay.ts",
-      "line": 110,
-      "term": "wpBootFatalOverlayFallback",
-      "category": "browser-adapter",
-      "text": "root.id = 'wpBootFatalOverlayFallback';"
-    },
-    {
-      "file": "esm/entry_pro_overlay.ts",
-      "line": 116,
-      "term": "showBootFatalOverlayFallback",
-      "category": "browser-adapter",
-      "text": "op: 'showBootFatalOverlayFallback.root.roleProp',"
-    },
-    {
-      "file": "esm/entry_pro_overlay.ts",
-      "line": 126,
-      "term": "showBootFatalOverlayFallback",
-      "category": "browser-adapter",
-      "text": "op: 'showBootFatalOverlayFallback.root.roleAttrs',"
-    },
-    {
-      "file": "esm/entry_pro_overlay.ts",
-      "line": 144,
-      "term": "showBootFatalOverlayFallback",
-      "category": "browser-adapter",
-      "text": "op: 'showBootFatalOverlayFallback.titleAttr',"
-    },
-    {
-      "file": "esm/entry_pro_overlay.ts",
-      "line": 157,
-      "term": "showBootFatalOverlayFallback",
-      "category": "browser-adapter",
-      "text": "op: 'showBootFatalOverlayFallback.descAttr',"
-    },
-    {
-      "file": "esm/entry_pro_overlay.ts",
-      "line": 170,
-      "term": "showBootFatalOverlayFallback",
-      "category": "browser-adapter",
-      "text": "op: 'showBootFatalOverlayFallback.detailsAttr',"
-    },
-    {
-      "file": "esm/entry_pro_overlay.ts",
-      "line": 196,
-      "term": "showBootFatalOverlayFallback",
-      "category": "browser-adapter",
-      "text": "op: 'showBootFatalOverlayFallback.copyButton',"
-    },
-    {
-      "file": "esm/entry_pro_overlay.ts",
-      "line": 219,
-      "term": "showBootFatalOverlayFallback",
-      "category": "browser-adapter",
-      "text": "op: 'showBootFatalOverlayFallback.helpHtml',"
-    },
-    {
-      "file": "esm/entry_pro_overlay.ts",
-      "line": 236,
-      "term": "BootFatalFallbackController",
-      "category": "browser-adapter",
-      "text": "const ctrl: BootFatalFallbackController = {"
-    },
-    {
-      "file": "esm/entry_pro_overlay.ts",
-      "line": 244,
-      "term": "showBootFatalOverlayFallback",
-      "category": "browser-adapter",
-      "text": "op: 'showBootFatalOverlayFallback.ctrl.show',"
-    },
-    {
-      "file": "esm/entry_pro_overlay.ts",
-      "line": 255,
-      "term": "showBootFatalOverlayFallback",
-      "category": "browser-adapter",
-      "text": "op: 'showBootFatalOverlayFallback.ctrl.hide',"
-    },
-    {
-      "file": "esm/entry_pro_overlay.ts",
-      "line": 279,
-      "term": "wpBootFatalOverlayFallback",
-      "category": "browser-adapter",
-      "text": "return !!(getById('wpBootFatalOverlayFallback') || getById('wp-fatal-overlay'));"
-    },
-    {
-      "file": "esm/entry_pro_shared.ts",
-      "line": 8,
-      "term": "BootFatalFallbackOpts",
-      "category": "browser-adapter",
-      "text": "export type BootFatalFallbackOpts = {"
-    },
-    {
-      "file": "esm/entry_pro_shared.ts",
-      "line": 21,
-      "term": "BootFatalFallbackController",
-      "category": "browser-adapter",
-      "text": "export type BootFatalFallbackController = {"
-    },
-    {
-      "file": "esm/entry_pro_shared.ts",
-      "line": 63,
-      "term": "isBootFatalFallbackController",
-      "category": "browser-adapter",
-      "text": "export function isBootFatalFallbackController(value: unknown): value is BootFatalFallbackController {"
-    },
-    {
-      "file": "esm/entry_pro_shared.ts",
-      "line": 63,
-      "term": "BootFatalFallbackController",
-      "category": "browser-adapter",
-      "text": "export function isBootFatalFallbackController(value: unknown): value is BootFatalFallbackController {"
-    },
-    {
-      "file": "esm/entry_pro_shared.ts",
-      "line": 101,
-      "term": "BootFatalFallbackOpts",
-      "category": "browser-adapter",
-      "text": "export function silentNoDom(opts: BootFatalFallbackOpts | null | undefined): boolean {"
-    },
-    {
-      "file": "esm/entry_pro_shared.ts",
-      "line": 197,
-      "term": "BootFatalFallbackController",
-      "category": "browser-adapter",
-      "text": "): BootFatalFallbackController | null {"
-    },
-    {
-      "file": "esm/entry_pro_shared.ts",
-      "line": 201,
-      "term": "isBootFatalFallbackController",
-      "category": "browser-adapter",
-      "text": "if (!isBootFatalFallbackController(raw)) return null;"
-    },
-    {
-      "file": "esm/entry_pro_shared.ts",
-      "line": 209,
-      "term": "BootFatalFallbackController",
-      "category": "browser-adapter",
-      "text": "export function setController(win: WindowWithFatalOverlay | null, ctrl: BootFatalFallbackController): void {"
-    },
-    {
-      "file": "esm/entry_pro_start_runtime.ts",
-      "line": 3,
-      "term": "showBootFatalOverlayFallback",
-      "category": "browser-adapter",
-      "text": "import { hasAnyOverlay, showBootFatalOverlayFallback } from './entry_pro_overlay.js';"
-    },
-    {
-      "file": "esm/entry_pro_start_runtime.ts",
-      "line": 8,
-      "term": "FatalOverlayFallbackFn",
-      "category": "browser-adapter",
-      "text": "type FatalOverlayFallbackFn = typeof showBootFatalOverlayFallback;"
-    },
-    {
-      "file": "esm/entry_pro_start_runtime.ts",
-      "line": 8,
-      "term": "showBootFatalOverlayFallback",
-      "category": "browser-adapter",
-      "text": "type FatalOverlayFallbackFn = typeof showBootFatalOverlayFallback;"
-    },
-    {
-      "file": "esm/entry_pro_start_runtime.ts",
-      "line": 16,
-      "term": "showBootFatalOverlayFallback",
-      "category": "browser-adapter",
-      "text": "showBootFatalOverlayFallback: FatalOverlayFallbackFn;"
-    },
-    {
-      "file": "esm/entry_pro_start_runtime.ts",
-      "line": 16,
-      "term": "FatalOverlayFallbackFn",
-      "category": "browser-adapter",
-      "text": "showBootFatalOverlayFallback: FatalOverlayFallbackFn;"
-    },
-    {
-      "file": "esm/entry_pro_start_runtime.ts",
-      "line": 31,
-      "term": "showBootFatalOverlayFallback",
-      "category": "browser-adapter",
-      "text": "showBootFatalOverlayFallback,"
-    },
-    {
-      "file": "esm/entry_pro_start_runtime.ts",
-      "line": 73,
-      "term": "showBootFatalOverlayFallback",
-      "category": "browser-adapter",
-      "text": "ops.showBootFatalOverlayFallback({"
-    },
-    {
-      "file": "esm/entry_pro.ts",
-      "line": 10,
-      "term": "showBootFatalOverlayFallback",
-      "category": "browser-adapter",
-      "text": "export { showBootFatalOverlayFallback } from './entry_pro_overlay.js';"
-    },
-    {
-      "file": "esm/entry_pro.ts",
-      "line": 11,
-      "term": "BootFatalFallbackController",
-      "category": "browser-adapter",
-      "text": "export type { BootFatalFallbackController, BootFatalFallbackOpts } from './entry_pro_shared.js';"
-    },
-    {
-      "file": "esm/entry_pro.ts",
-      "line": 11,
-      "term": "BootFatalFallbackOpts",
-      "category": "browser-adapter",
-      "text": "export type { BootFatalFallbackController, BootFatalFallbackOpts } from './entry_pro_shared.js';"
-    },
     {
       "file": "esm/native/builder/build_state_resolver.ts",
       "line": 5,
@@ -2316,34 +2022,6 @@
       "term": "woodThickFallback",
       "category": "domain-default",
       "text": "woodThickFallback: woodThick,"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_projection_runtime_box_wardrobe_fallback.ts",
-      "line": 103,
-      "term": "__readNoMainWardrobeFallbackBox",
-      "category": "domain-default",
-      "text": "export function __readNoMainWardrobeFallbackBox(App: AppContainer): __ProjectionLocalBox | null {"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_projection_runtime_box.ts",
-      "line": 4,
-      "term": "__readNoMainWardrobeFallbackBox",
-      "category": "domain-default",
-      "text": "import { __readNoMainWardrobeFallbackBox } from './canvas_picking_projection_runtime_box_wardrobe_fallback.js';"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_projection_runtime_box.ts",
-      "line": 4,
-      "term": "canvas_picking_projection_runtime_box_wardrobe_fallback",
-      "category": "domain-default",
-      "text": "import { __readNoMainWardrobeFallbackBox } from './canvas_picking_projection_runtime_box_wardrobe_fallback.js';"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_projection_runtime_box.ts",
-      "line": 16,
-      "term": "__readNoMainWardrobeFallbackBox",
-      "category": "domain-default",
-      "text": "const fallbackBox = __readNoMainWardrobeFallbackBox(App);"
     },
     {
       "file": "esm/native/services/canvas_picking_selector_internal_metrics.ts",

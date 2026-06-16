@@ -1,11 +1,11 @@
 import type { ErrorOverlayModule, EntryProMainModule, WindowWithEarlyHandlers } from './entry_pro_shared.js';
 
-import { hasAnyOverlay, showBootFatalOverlayFallback } from './entry_pro_overlay.js';
+import { hasAnyOverlay, showBootFatalOverlay } from './entry_pro_overlay.js';
 import { reportEntryBestEffort, shouldFailFastBoot } from './entry_pro_shared.js';
 
 type EntryProStartReporter = typeof reportEntryBestEffort;
 type OverlayPresenceFn = (win: Window | null | undefined) => boolean;
-type FatalOverlayFallbackFn = typeof showBootFatalOverlayFallback;
+type BootFatalOverlayFn = typeof showBootFatalOverlay;
 type ErrorOverlayLoader = () => Promise<ErrorOverlayModule>;
 type EntryMainLoader = () => Promise<EntryProMainModule>;
 
@@ -13,7 +13,7 @@ type EntryProStartRuntimeOps = {
   reportBestEffort: EntryProStartReporter;
   shouldFailFastBoot: typeof shouldFailFastBoot;
   hasAnyOverlay: OverlayPresenceFn;
-  showBootFatalOverlayFallback: FatalOverlayFallbackFn;
+  showBootFatalOverlay: BootFatalOverlayFn;
   loadErrorOverlayModule: ErrorOverlayLoader;
   loadEntryProMainModule: EntryMainLoader;
 };
@@ -28,7 +28,7 @@ const defaultStartRuntimeOps: EntryProStartRuntimeOps = {
   reportBestEffort: reportEntryBestEffort,
   shouldFailFastBoot,
   hasAnyOverlay: (win: Window | null | undefined) => !!win && hasAnyOverlay(win),
-  showBootFatalOverlayFallback,
+  showBootFatalOverlay,
   loadErrorOverlayModule: () => import('./native/ui/error_overlay.js'),
   loadEntryProMainModule: () => import('./entry_pro_main.js'),
 };
@@ -70,7 +70,7 @@ export async function showRuntimeFatalOverlay(
     ops.reportBestEffort(overlayErr, { area: 'entry_pro', op: 'runtime.showFatalOverlay' }, { win });
   }
 
-  ops.showBootFatalOverlayFallback({
+  ops.showBootFatalOverlay({
     window: win,
     document: doc,
     title: opts.title,
@@ -153,8 +153,8 @@ export async function startEntryProRuntime(
       } else {
         console.error('[WardrobePro][Pro] boot failed:', err);
       }
-    } catch (fallbackErr) {
-      ops.reportBestEffort(fallbackErr, { area: 'entry_pro', op: 'start.fallbackOverlay' }, { win });
+    } catch (recoveryOverlayErr) {
+      ops.reportBestEffort(recoveryOverlayErr, { area: 'entry_pro', op: 'start.recoveryOverlay' }, { win });
       console.error('[WardrobePro][Pro] boot failed:', err);
     }
   }

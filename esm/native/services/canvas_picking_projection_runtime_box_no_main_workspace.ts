@@ -100,7 +100,7 @@ function __readNoMainWorkspaceWidthCm(App: AppContainer): number | null {
   }
 }
 
-export function __readNoMainWardrobeFallbackBox(App: AppContainer): __ProjectionLocalBox | null {
+export function __readNoMainWorkspaceBox(App: AppContainer): __ProjectionLocalBox | null {
   try {
     const ui = __wp_ui(App);
     const raw = __readUiRaw(ui);

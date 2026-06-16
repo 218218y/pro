@@ -6,7 +6,7 @@ import {
   maybeRenderNoMainSketchHost,
   syncNoMainSketchWorkspaceMetrics,
 } from '../esm/native/builder/build_no_main_sketch_host.ts';
-import { __readNoMainWardrobeFallbackBox } from '../esm/native/services/canvas_picking_projection_runtime_box_wardrobe_fallback.ts';
+import { __readNoMainWorkspaceBox } from '../esm/native/services/canvas_picking_projection_runtime_box_no_main_workspace.ts';
 import {
   createSketchInteriorHarness,
   FakeBoxGeometry,
@@ -76,7 +76,7 @@ test('no-main sketch workspace runtime: module config keeps only free-placement 
   assert.deepEqual(next.sketchExtras?.drawers, [{ id: 'drawer-1' }]);
 });
 
-test('no-main sketch workspace runtime: cache metrics and wardrobe fallback use canonical free-box workspace span', () => {
+test('no-main sketch workspace runtime: cache metrics and no-main workspace box uses canonical free-box workspace span', () => {
   const App = createApp({
     state: {
       ui: {
@@ -122,7 +122,7 @@ test('no-main sketch workspace runtime: cache metrics and wardrobe fallback use 
   assert.equal(metrics.depth, 0.56);
   assert.ok(Math.abs(metrics.backZ - -0.59) < 1e-9);
 
-  const cachedBox = __readNoMainWardrobeFallbackBox(App);
+  const cachedBox = __readNoMainWorkspaceBox(App);
   assert.ok(cachedBox);
   assert.equal(cachedBox?.centerX, 0);
   assert.equal(cachedBox?.centerY, 1.2);
@@ -133,14 +133,14 @@ test('no-main sketch workspace runtime: cache metrics and wardrobe fallback use 
 
   App.services.runtimeCache.noMainSketchWorkspaceMetrics = null;
 
-  const fallbackBox = __readNoMainWardrobeFallbackBox(App);
-  assert.ok(fallbackBox);
-  assert.equal(fallbackBox?.centerX, 0);
-  assert.equal(fallbackBox?.centerY, 1.2);
-  assert.equal(fallbackBox?.centerZ, -0.275);
-  assert.ok(Math.abs((fallbackBox?.width || 0) - 1.82) < 1e-9);
-  assert.equal(fallbackBox?.height, 2.4);
-  assert.equal(fallbackBox?.depth, 0.55);
+  const noMainWorkspaceBox = __readNoMainWorkspaceBox(App);
+  assert.ok(noMainWorkspaceBox);
+  assert.equal(noMainWorkspaceBox?.centerX, 0);
+  assert.equal(noMainWorkspaceBox?.centerY, 1.2);
+  assert.equal(noMainWorkspaceBox?.centerZ, -0.275);
+  assert.ok(Math.abs((noMainWorkspaceBox?.width || 0) - 1.82) < 1e-9);
+  assert.equal(noMainWorkspaceBox?.height, 2.4);
+  assert.equal(noMainWorkspaceBox?.depth, 0.55);
 });
 
 test('no-main sketch workspace runtime: free-box doors receive the same door visual factory as the main build', () => {

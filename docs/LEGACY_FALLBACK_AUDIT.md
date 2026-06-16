@@ -1,18 +1,18 @@
 # Legacy / fallback audit
 
-Generated at: 2026-06-16T19:01:59.175Z
+Generated at: 2026-06-16T19:19:28.459Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **301**
-- Files with occurrences: **112**
+- Total categorized occurrences: **260**
+- Files with occurrences: **106**
 - Category counts:
   - `runtime-default`: **0**
-  - `domain-default`: **145**
+  - `domain-default`: **141**
   - `error-message-default`: **29**
   - `framework-default`: **2**
-  - `browser-adapter`: **39**
+  - `browser-adapter`: **2**
   - `project-migration`: **37**
   - `external-api-compat`: **0**
   - `compat-boundary`: **43**
@@ -35,13 +35,10 @@ Generated at: 2026-06-16T19:01:59.175Z
 
 ## Hot files
 
-- `esm/entry_pro_overlay.ts` - **19** (browser-adapter: 19)
 - `esm/native/runtime/project_io_access_restore.ts` - **13** (project-migration: 13)
 - `esm/native/runtime/project_io_access_load.ts` - **12** (project-migration: 12)
-- `esm/entry_pro_shared.ts` - **8** (browser-adapter: 8)
 - `esm/native/io/project_schema_shared.ts` - **8** (project-migration: 8)
 - `esm/native/ui/react/tabs/design_tab_color_action_result_builders.ts` - **8** (error-message-default: 8)
-- `esm/entry_pro_start_runtime.ts` - **7** (browser-adapter: 7)
 - `esm/native/kernel/domain_api_modules_corner_shared.ts` - **7** (compat-boundary: 7)
 - `esm/native/kernel/domain_api_surface_sections_bindings_doors.ts` - **6** (compat-boundary: 3, domain-default: 3)
 - `esm/native/kernel/domain_api_surface_sections_map_writes.ts` - **6** (compat-boundary: 3, domain-default: 3)
@@ -64,7 +61,10 @@ Generated at: 2026-06-16T19:01:59.175Z
 - `esm/native/ui/project_save_runtime.ts` - **4** (browser-adapter: 1, domain-default: 3)
 - `esm/native/ui/react/tabs/design_tab_color_action_result_helpers.ts` - **4** (error-message-default: 4)
 - `esm/native/ui/react/tabs/design_tab_color_action_result_reason.ts` - **4** (error-message-default: 4)
-- `esm/entry_pro.ts` - **3** (browser-adapter: 3)
+- `esm/native/features/stack_split/stack_split.ts` - **3** (compat-boundary: 3)
+- `esm/native/kernel/domain_api_modules_corner_recompute_policy.ts` - **3** (domain-default: 3)
+- `esm/native/kernel/domain_api_surface_sections_shared.ts` - **3** (compat-boundary: 1, domain-default: 2)
+- `esm/native/kernel/state_api_meta_namespace.ts` - **3** (domain-default: 3)
 
 ## Allowlist check
 

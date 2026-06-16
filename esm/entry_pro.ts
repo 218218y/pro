@@ -7,7 +7,7 @@
 
 import { autoStartEntryPro } from './entry_pro_start.js';
 
-export { showBootFatalOverlayFallback } from './entry_pro_overlay.js';
-export type { BootFatalFallbackController, BootFatalFallbackOpts } from './entry_pro_shared.js';
+export { showBootFatalOverlay } from './entry_pro_overlay.js';
+export type { BootFatalOverlayController, BootFatalOverlayOpts } from './entry_pro_shared.js';
 
 autoStartEntryPro();
