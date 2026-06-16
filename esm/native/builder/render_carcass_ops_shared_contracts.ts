@@ -139,20 +139,7 @@ export type CorniceSegment = {
   miterMode?: unknown;
 };
 
-export type LegacyCorniceOp = {
-  x?: number;
-  y?: number;
-  z?: number;
-  scaleX?: number;
-  scaleZ?: number;
-  topRadius?: number;
-  bottomRadius?: number;
-  height?: number;
-  radialSegments?: number;
-  rotationY?: number;
-};
-
-export type CorniceOp = LegacyCorniceOp & {
+export type CorniceOp = {
   kind: 'cornice';
   partId?: unknown;
   segments?: unknown;

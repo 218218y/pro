@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-06-16T14:24:38.309Z",
+  "generatedAt": "2026-06-16T15:08:21.621Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 491,
-    "totalFiles": 159,
+    "totalOccurrences": 487,
+    "totalFiles": 157,
     "byCategory": {
       "runtime-default": 0,
       "domain-default": 188,
@@ -12,7 +12,7 @@
       "browser-adapter": 40,
       "project-migration": 37,
       "external-api-compat": 12,
-      "compat-boundary": 177,
+      "compat-boundary": 173,
       "test-fixture": 6,
       "legacy-runtime-risk": 0,
       "unknown": 0
@@ -127,18 +127,6 @@
         }
       },
       "esm/native/builder/provide.ts": {
-        "total": 1,
-        "categories": {
-          "compat-boundary": 1
-        }
-      },
-      "esm/native/builder/render_carcass_ops_cornice_apply.ts": {
-        "total": 3,
-        "categories": {
-          "compat-boundary": 3
-        }
-      },
-      "esm/native/builder/render_carcass_ops_cornice_legacy.ts": {
         "total": 1,
         "categories": {
           "compat-boundary": 1
@@ -1496,7 +1484,7 @@
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 905,
+      "line": 885,
       "term": "xMaxFallbackM",
       "category": "domain-default",
       "text": "xMaxBase = CORNICE_PROFILE.xMaxFallbackM;"
@@ -1668,34 +1656,6 @@
       "term": "compat",
       "category": "compat-boundary",
       "text": "// Any remaining compat probing is centralized in builder/store_access helpers."
-    },
-    {
-      "file": "esm/native/builder/render_carcass_ops_cornice_apply.ts",
-      "line": 11,
-      "term": "applyLegacyCornice",
-      "category": "compat-boundary",
-      "text": "import { applyLegacyCornice } from './render_carcass_ops_cornice_legacy.js';"
-    },
-    {
-      "file": "esm/native/builder/render_carcass_ops_cornice_apply.ts",
-      "line": 11,
-      "term": "render_carcass_ops_cornice_legacy",
-      "category": "compat-boundary",
-      "text": "import { applyLegacyCornice } from './render_carcass_ops_cornice_legacy.js';"
-    },
-    {
-      "file": "esm/native/builder/render_carcass_ops_cornice_apply.ts",
-      "line": 37,
-      "term": "applyLegacyCornice",
-      "category": "compat-boundary",
-      "text": "applyLegacyCornice(cornice, pid, corniceMat, runtime);"
-    },
-    {
-      "file": "esm/native/builder/render_carcass_ops_cornice_legacy.ts",
-      "line": 4,
-      "term": "applyLegacyCornice",
-      "category": "compat-boundary",
-      "text": "export function applyLegacyCornice("
     },
     {
       "file": "esm/native/builder/render_ops_extras.ts",
@@ -4583,21 +4543,21 @@
     },
     {
       "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-      "line": 977,
+      "line": 974,
       "term": "previewExternalFallbackHeightM",
       "category": "domain-default",
       "text": "previewExternalFallbackHeightM: 0.08,"
     },
     {
       "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-      "line": 1005,
+      "line": 1002,
       "term": "internalPreviewGridDivisionsFallback",
       "category": "compat-boundary",
       "text": "internalPreviewGridDivisionsFallback: INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault,"
     },
     {
       "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-      "line": 1346,
+      "line": 1343,
       "term": "placementGapFallbackM",
       "category": "domain-default",
       "text": "placementGapFallbackM: 0.002,"

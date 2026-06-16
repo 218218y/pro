@@ -8,7 +8,6 @@ export type {
   ExtrudeGeometryLike,
   GroupLike,
   IndexLike,
-  LegacyCorniceOp,
   LegsBaseOp,
   OutlineFn,
   PartMaterialFn,

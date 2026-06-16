@@ -18,7 +18,6 @@ const renderBundle = bundleSources(
     '../esm/native/builder/render_carcass_ops_cornice.ts',
     '../esm/native/builder/render_carcass_ops_cornice_apply.ts',
     '../esm/native/builder/render_carcass_ops_cornice_finalize.ts',
-    '../esm/native/builder/render_carcass_ops_cornice_legacy.ts',
     '../esm/native/builder/render_carcass_ops_cornice_miter.ts',
     '../esm/native/builder/render_carcass_ops_cornice_segments.ts',
     '../esm/native/builder/render_carcass_ops_cornice_types.ts',

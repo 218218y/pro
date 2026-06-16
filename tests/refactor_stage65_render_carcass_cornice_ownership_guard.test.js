@@ -6,6 +6,10 @@ function read(file) {
   return fs.readFileSync(file, 'utf8');
 }
 
+function exists(file) {
+  return fs.existsSync(file);
+}
+
 function lineCount(source) {
   return source.split(/\r\n|\r|\n/).length;
 }
@@ -16,7 +20,7 @@ test('stage 65 render carcass cornice ownership split is anchored', () => {
   const segments = read('esm/native/builder/render_carcass_ops_cornice_segments.ts');
   const miter = read('esm/native/builder/render_carcass_ops_cornice_miter.ts');
   const finalize = read('esm/native/builder/render_carcass_ops_cornice_finalize.ts');
-  const legacy = read('esm/native/builder/render_carcass_ops_cornice_legacy.ts');
+  const deletedLegacyCylinderOwner = 'esm/native/builder/render_carcass_ops_cornice_legacy.ts';
   const types = read('esm/native/builder/render_carcass_ops_cornice_types.ts');
   const carcassOwner = read('esm/native/builder/render_carcass_ops.ts');
 
@@ -25,7 +29,7 @@ test('stage 65 render carcass cornice ownership split is anchored', () => {
   assert.doesNotMatch(
     facade,
     /function applyCarcassCorniceOps|function applyCorniceSegment|new THREE|__stripMiterCaps|CylinderGeometry/,
-    'cornice facade must not own render orchestration, geometry, miter trimming, or legacy cylinder creation'
+    'cornice facade must not own render orchestration, geometry, miter trimming, or unsegmented cylinder rendering'
   );
 
   assert.match(apply, /export function createApplyCarcassCorniceOps\(/);
@@ -34,7 +38,7 @@ test('stage 65 render carcass cornice ownership split is anchored', () => {
   assert.match(apply, /createWaveFrontSegment\(/);
   assert.match(apply, /createWaveSideSegment\(/);
   assert.match(apply, /createProfileSegment\(/);
-  assert.match(apply, /applyLegacyCornice\(/);
+  assert.doesNotMatch(apply, /applyLegacyCornice|render_carcass_ops_cornice_legacy/);
   assert.match(apply, /const segMat = corniceMat \|\| ctx\.bodyMat;/);
   assert.doesNotMatch(apply, /new THREE\.(Shape|ExtrudeGeometry|CylinderGeometry|Group)\(/);
   assert.doesNotMatch(apply, /__stripMiterCaps|computeVertexNormals\(/);
@@ -57,10 +61,11 @@ test('stage 65 render carcass cornice ownership split is anchored', () => {
   assert.match(finalize, /wardrobeGroup\.add\(mesh\)/);
   assert.doesNotMatch(finalize, /new THREE|__stripMiterCaps|CylinderGeometry/);
 
-  assert.match(legacy, /export function applyLegacyCornice\(/);
-  assert.match(legacy, /new THREE\.CylinderGeometry\(/);
-  assert.match(legacy, /new THREE\.Group\(/);
-  assert.doesNotMatch(legacy, /createWaveFrontSegment|applyMiterTrims|__readArray\(/);
+  assert.equal(
+    exists(deletedLegacyCylinderOwner),
+    false,
+    'unsegmented cornice cylinder owner should stay deleted after segmented cornice became canonical'
+  );
 
   for (const exportedType of [
     'CorniceThreeRuntime',
@@ -75,9 +80,9 @@ test('stage 65 render carcass cornice ownership split is anchored', () => {
   assert.match(carcassOwner, /from '\.\/render_carcass_ops_cornice\.js';/);
   assert.doesNotMatch(
     carcassOwner,
-    /render_carcass_ops_cornice_(apply|segments|miter|finalize|legacy|types)\.js/,
+    /render_carcass_ops_cornice_(apply|segments|miter|finalize|types)\.js/,
     'carcass owner must keep using the public cornice facade instead of private cornice owners'
   );
 
-  assert.doesNotMatch(facade + apply + segments + miter + finalize + legacy + types, /export default\s+/);
+  assert.doesNotMatch(facade + apply + segments + miter + finalize + types, /export default\s+/);
 });

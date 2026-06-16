@@ -383,9 +383,6 @@ export const CARCASS_CORNICE_DIMENSIONS = Object.freeze({
     miterEpsilonZM: 0.0005,
     baseSealEpsilonM: 0.003,
     baseBandEpsilonM: 1e-6,
-    envelopeProfileZM: 0.02,
-    envelopeTopRadiusPadM: 0.12,
-    envelopeDepthPadM: 0.08,
   }),
 });
 

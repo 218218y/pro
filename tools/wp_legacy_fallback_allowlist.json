@@ -117,18 +117,6 @@
         "compat-boundary": 1
       }
     },
-    "esm/native/builder/render_carcass_ops_cornice_apply.ts": {
-      "total": 3,
-      "categories": {
-        "compat-boundary": 3
-      }
-    },
-    "esm/native/builder/render_carcass_ops_cornice_legacy.ts": {
-      "total": 1,
-      "categories": {
-        "compat-boundary": 1
-      }
-    },
     "esm/native/builder/render_ops_extras.ts": {
       "total": 2,
       "categories": {

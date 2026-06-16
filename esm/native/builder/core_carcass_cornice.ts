@@ -152,19 +152,9 @@ function buildSegmentedCornice(
     }
   }
 
-  const maxTopY = runs.reduce(
-    (max, run) => Math.max(max, run.topY),
-    prepared.startY + prepared.cabinetBodyHeight
-  );
-  const maxDepth = runs.reduce((max, run) => Math.max(max, run.maxDepth), prepared.D);
   const isWave = corniceTypeNorm === 'wave';
   return buildCorniceEnvelope({
-    totalW: prepared.totalW,
-    D: maxDepth,
-    topY: maxTopY,
-    height: isWave ? WAVE_MAX_HEIGHT : PROFILE_HEIGHT,
     mode: isWave ? 'wave_frame_segmented' : 'profile_open_back_segmented',
-    z: isWave ? 0 : CORNICE_PROFILE.envelopeProfileZM,
     segments,
   });
 }
@@ -592,12 +582,7 @@ function buildWaveCornice(params: CorniceParams): MutableRecord {
   });
 
   return buildCorniceEnvelope({
-    totalW,
-    D,
-    topY,
-    height: WAVE_MAX_HEIGHT,
     mode: 'wave_frame',
-    z: 0,
     segments,
   });
 }
@@ -707,12 +692,7 @@ function buildProfileCornice(params: CorniceParams): MutableRecord {
   });
 
   return buildCorniceEnvelope({
-    totalW,
-    D,
-    topY,
-    height: PROFILE_HEIGHT,
     mode: 'profile_open_back',
-    z: CORNICE_PROFILE.envelopeProfileZM,
     segments,
   });
 }
@@ -936,38 +916,15 @@ function makeCorniceProfile(overhang: number): MutableRecord[] {
 }
 
 type CorniceEnvelopeParams = {
-  totalW: number;
-  D: number;
-  topY: number;
-  height: number;
   mode: string;
-  z: number;
   segments: MutableRecord[];
 };
 
 function buildCorniceEnvelope(params: CorniceEnvelopeParams): MutableRecord {
-  const { totalW, D, topY, height, mode, z, segments } = params;
-  const baseSize = Math.max(totalW, D);
-  const topRadius = (baseSize + CORNICE_PROFILE.envelopeTopRadiusPadM) / Math.sqrt(2);
-  const bottomRadius = baseSize / Math.sqrt(2);
-  const scaleX =
-    (totalW + CORNICE_PROFILE.envelopeTopRadiusPadM) / (baseSize + CORNICE_PROFILE.envelopeTopRadiusPadM);
-  const scaleZ = (D + CORNICE_PROFILE.envelopeDepthPadM) / (baseSize + CORNICE_PROFILE.envelopeTopRadiusPadM);
-
+  const { mode, segments } = params;
   return {
     kind: 'cornice',
     mode,
-    height,
-    baseSize,
-    topRadius,
-    bottomRadius,
-    radialSegments: 4,
-    scaleX,
-    scaleZ,
-    x: 0,
-    y: topY + height / 2,
-    z,
-    rotationY: Math.PI / 4,
     partId: 'cornice_color',
     segments,
   };

@@ -8,7 +8,6 @@ import {
   __readArray,
 } from './render_carcass_ops_shared.js';
 import { finalizeCorniceMesh } from './render_carcass_ops_cornice_finalize.js';
-import { applyLegacyCornice } from './render_carcass_ops_cornice_legacy.js';
 import {
   createProfileSegment,
   createWaveFrontSegment,
@@ -27,14 +26,11 @@ export function createApplyCarcassCorniceOps() {
     const corniceMat = (getPartMaterial ? getPartMaterial(pid) : null) || ctx.corniceMat || ctx.bodyMat;
     const segments = __readArray(cornice.segments, __isCorniceSegment);
 
-    if (segments && segments.length) {
-      for (let si = 0; si < segments.length; si++) {
-        applyCorniceSegment(segments[si], pid, corniceMat, runtime);
-      }
-      return;
-    }
+    if (!segments || !segments.length) return;
 
-    applyLegacyCornice(cornice, pid, corniceMat, runtime);
+    for (let si = 0; si < segments.length; si++) {
+      applyCorniceSegment(segments[si], pid, corniceMat, runtime);
+    }
   }
 
   return {
