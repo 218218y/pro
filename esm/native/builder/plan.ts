@@ -93,7 +93,7 @@ function updateInstalledPlanDeps(plan: BuilderPlanInstallSurface, deps: PlanDeps
   plan.__planDeps = { ...deps };
 }
 
-function shouldInvalidateLegacyPlanSurface(plan: BuilderPlanInstallSurface): boolean {
+function shouldInvalidateDeprecatedPlanSurface(plan: BuilderPlanInstallSurface): boolean {
   return plan.__esm_v1 === true && typeof plan[BUILDER_PLAN_CREATE_CANONICAL_KEY] !== 'function';
 }
 
@@ -167,7 +167,7 @@ export function installBuilderPlan(App: AppContainer, deps?: unknown): BuilderPl
 
   updateInstalledPlanDeps(plan, normalizedDeps);
 
-  if (shouldInvalidateLegacyPlanSurface(plan)) {
+  if (shouldInvalidateDeprecatedPlanSurface(plan)) {
     delete plan.createBuildPlan;
   }
 

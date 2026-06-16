@@ -288,9 +288,9 @@ export const BOOT_STEPS: BootStep[] = [
     run: requireBootInstaller(provideBuilder, 'builder.provide.refresh'),
   },
   {
-    id: 'builder.coreBrowserCompat',
+    id: 'builder.core.install',
     phase: 'addons',
-    run: requireBootInstaller(installBuilderCore, 'builder.coreBrowserCompat'),
+    run: requireBootInstaller(installBuilderCore, 'builder.core.install'),
   },
   {
     id: 'io.projectIo',

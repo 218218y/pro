@@ -28,7 +28,7 @@ function updateInstallContext(modules: CornerWingInstallSurface, App: AppContain
   modules.__installContext = { App };
 }
 
-function shouldInvalidateLegacyCornerWingSurface(modules: CornerWingInstallSurface): boolean {
+function shouldInvalidateDeprecatedCornerWingSurface(modules: CornerWingInstallSurface): boolean {
   return (
     modules.__esm_corner_wing_v1 === true && typeof modules[CORNER_WING_BUILD_CANONICAL_KEY] !== 'function'
   );
@@ -46,7 +46,7 @@ export function installBuilderCornerWing(App: unknown) {
 
   updateInstallContext(modules, A);
 
-  if (shouldInvalidateLegacyCornerWingSurface(modules)) {
+  if (shouldInvalidateDeprecatedCornerWingSurface(modules)) {
     delete modules.buildCornerWing;
   }
 

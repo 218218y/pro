@@ -1,21 +1,21 @@
 # Legacy / fallback audit
 
-Generated at: 2026-06-16T18:48:12.256Z
+Generated at: 2026-06-16T19:01:59.175Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **351**
-- Files with occurrences: **135**
+- Total categorized occurrences: **301**
+- Files with occurrences: **112**
 - Category counts:
   - `runtime-default`: **0**
-  - `domain-default`: **160**
+  - `domain-default`: **145**
   - `error-message-default`: **29**
   - `framework-default`: **2**
-  - `browser-adapter`: **40**
+  - `browser-adapter`: **39**
   - `project-migration`: **37**
-  - `external-api-compat`: **2**
-  - `compat-boundary`: **75**
+  - `external-api-compat`: **0**
+  - `compat-boundary`: **43**
   - `test-fixture`: **6**
   - `legacy-runtime-risk`: **0**
   - `unknown`: **0**
@@ -43,7 +43,6 @@ Generated at: 2026-06-16T18:48:12.256Z
 - `esm/native/ui/react/tabs/design_tab_color_action_result_builders.ts` - **8** (error-message-default: 8)
 - `esm/entry_pro_start_runtime.ts` - **7** (browser-adapter: 7)
 - `esm/native/kernel/domain_api_modules_corner_shared.ts` - **7** (compat-boundary: 7)
-- `esm/native/ui/settings_backup_shared_collections.ts` - **7** (compat-boundary: 4, domain-default: 3)
 - `esm/native/kernel/domain_api_surface_sections_bindings_doors.ts` - **6** (compat-boundary: 3, domain-default: 3)
 - `esm/native/kernel/domain_api_surface_sections_map_writes.ts` - **6** (compat-boundary: 3, domain-default: 3)
 - `esm/native/kernel/domain_module_stack_patch.ts` - **6** (compat-boundary: 5, project-migration: 1)
@@ -53,18 +52,19 @@ Generated at: 2026-06-16T18:48:12.256Z
 - `esm/native/services/canvas_picking_selector_internal_metrics.ts` - **5** (domain-default: 5)
 - `esm/shared/wardrobe_dimension_tokens_shared.ts` - **5** (compat-boundary: 2, domain-default: 3)
 - `esm/test_no_side_effects_on_import.mjs` - **5** (test-fixture: 5)
-- `esm/native/builder/visuals_and_contents.ts` - **4** (compat-boundary: 4)
 - `esm/native/features/door_trim_map.ts` - **4** (domain-default: 4)
 - `esm/native/kernel/domain_api_surface_sections_bindings_drawers_dividers.ts` - **4** (domain-default: 4)
 - `esm/native/platform/dirty_flag.ts` - **4** (domain-default: 4)
 - `esm/native/runtime/meta_actions_namespace.ts` - **4** (domain-default: 4)
 - `esm/native/services/canvas_picking_cell_dims_linear_context_modules.ts` - **4** (domain-default: 4)
 - `esm/native/services/canvas_picking_hover_targets_interior_target.ts` - **4** (domain-default: 4)
-- `esm/native/services/models_registry_storage_state.ts` - **4** (compat-boundary: 4)
 - `esm/native/services/render_surface_runtime_support_readers.ts` - **4** (compat-boundary: 4)
 - `esm/native/ui/html_sanitize_runtime.ts` - **4** (domain-default: 4)
 - `esm/native/ui/notes_service_shared.ts` - **4** (domain-default: 4)
 - `esm/native/ui/project_save_runtime.ts` - **4** (browser-adapter: 1, domain-default: 3)
+- `esm/native/ui/react/tabs/design_tab_color_action_result_helpers.ts` - **4** (error-message-default: 4)
+- `esm/native/ui/react/tabs/design_tab_color_action_result_reason.ts` - **4** (error-message-default: 4)
+- `esm/entry_pro.ts` - **3** (browser-adapter: 3)
 
 ## Allowlist check
 

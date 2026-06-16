@@ -42,7 +42,7 @@ function hasStableCloudSyncPanelApiMethod(api: InstallableCloudSyncPanelApi, sta
   return typeof Reflect.get(api, stableKey) === 'function';
 }
 
-function clearLegacyInstalledCloudSyncPanelApiMethod(
+function clearDeprecatedInstalledCloudSyncPanelApiMethod(
   api: InstallableCloudSyncPanelApi,
   key: keyof CloudSyncServiceLike
 ): void {
@@ -54,11 +54,11 @@ function clearLegacyInstalledCloudSyncPanelApiMethod(
   Reflect.set(api, key, undefined);
 }
 
-export function clearLegacyInstalledCloudSyncPanelApiDrift(api: InstallableCloudSyncPanelApi): void {
+export function clearDeprecatedInstalledCloudSyncPanelApiDrift(api: InstallableCloudSyncPanelApi): void {
   if (api.__wpCloudSyncPanelApiInstalled !== true) return;
 
   for (const spec of CLOUD_SYNC_PANEL_API_STABLE_METHOD_SPECS) {
     if (hasStableCloudSyncPanelApiMethod(api, spec.stableKey)) continue;
-    clearLegacyInstalledCloudSyncPanelApiMethod(api, spec.key);
+    clearDeprecatedInstalledCloudSyncPanelApiMethod(api, spec.key);
   }
 }

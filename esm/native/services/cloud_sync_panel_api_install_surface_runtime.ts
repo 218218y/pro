@@ -11,7 +11,7 @@ import {
   type CloudSyncPanelApiInstallContext,
   type InstallableCloudSyncPanelApi,
 } from './cloud_sync_panel_api_install_context_runtime.js';
-import { clearLegacyInstalledCloudSyncPanelApiDrift } from './cloud_sync_panel_api_install_surface_contracts.js';
+import { clearDeprecatedInstalledCloudSyncPanelApiDrift } from './cloud_sync_panel_api_install_surface_contracts.js';
 import { installCloudSyncPanelApiMutationRefs } from './cloud_sync_panel_api_install_surface_mutations.js';
 import { installCloudSyncPanelApiReadRefs } from './cloud_sync_panel_api_install_surface_reads.js';
 
@@ -47,7 +47,7 @@ export function installCloudSyncPanelApiSurface(
   impl: CloudSyncServiceLike
 ): InstallableCloudSyncPanelApi {
   const api = asInstallableCloudSyncPanelApi(current) || {};
-  clearLegacyInstalledCloudSyncPanelApiDrift(api);
+  clearDeprecatedInstalledCloudSyncPanelApiDrift(api);
   const context = resolveCloudSyncPanelApiInstallContext(api, impl);
   const bridges = resolveCloudSyncPanelApiBridges(api);
 

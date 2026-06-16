@@ -17,7 +17,7 @@ export function ensureSchedulerState(App: AppContainer): BuilderSchedulerStateIn
     pendingForceBuild: false,
     debouncedRunScheduled: false,
     debouncedRunVersion: 0,
-    debouncedUsesFallbackTimer: false,
+    debouncedUsesTimerDeadline: false,
     pendingScheduleVersion: 0,
     scheduleVersionSeq: 0,
     lastExecutedSignature: null,

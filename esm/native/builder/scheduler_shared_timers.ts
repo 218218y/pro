@@ -40,14 +40,14 @@ function createDebouncedRunner(
   const s = ensureSchedulerState(App);
   const debounce = readDebounceDep(App, s.deps);
   if (typeof debounce === 'function') {
-    s.debouncedUsesFallbackTimer = false;
+    s.debouncedUsesTimerDeadline = false;
     const debounced = debounce(fire, ms);
     return () => {
       Reflect.apply(debounced, undefined, []);
     };
   }
 
-  s.debouncedUsesFallbackTimer = true;
+  s.debouncedUsesTimerDeadline = true;
   let pendingHandle: TimeoutHandleLike | undefined;
   const handleVersions = new Map<TimeoutHandleLike, number>();
   return () => {

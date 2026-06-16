@@ -7,7 +7,7 @@ import {
   normalizeBuildInputFingerprintScalar,
 } from '../esm/native/builder/build_input_fingerprint.ts';
 import {
-  createFallbackBuildPlan,
+  createDefaultBuildPlan,
   createPendingPlanFromState,
 } from '../esm/native/builder/scheduler_shared_records.ts';
 import {
@@ -82,8 +82,8 @@ test('builder plan runtime: modulesStructure fallback feeds the same structure s
     createPendingPlanFromState(secondState).inputFingerprint
   );
   assert.notEqual(
-    createFallbackBuildPlan(firstState).inputFingerprint,
-    createFallbackBuildPlan(secondState).inputFingerprint
+    createDefaultBuildPlan(firstState).inputFingerprint,
+    createDefaultBuildPlan(secondState).inputFingerprint
   );
 });
 
@@ -95,7 +95,7 @@ test('builder scheduler runtime: pending/fallback plans carry the canonical fing
   } as any;
 
   const pendingPlan = createPendingPlanFromState(state) as any;
-  const fallbackPlan = createFallbackBuildPlan(state) as any;
+  const fallbackPlan = createDefaultBuildPlan(state) as any;
 
   assert.equal(pendingPlan.inputFingerprint, readPendingSignature(pendingPlan));
   assert.equal(fallbackPlan.inputFingerprint, readPendingSignature(fallbackPlan));

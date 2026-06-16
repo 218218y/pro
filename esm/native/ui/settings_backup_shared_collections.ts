@@ -174,12 +174,12 @@ export function sanitizeSettingsBackupCollectionIds(
 export function sanitizeColorSwatchesOrder(
   savedColors: unknown,
   order: unknown,
-  fallbackOrder: SettingsBackupIdList = []
+  secondaryOrder: SettingsBackupIdList = []
 ): SettingsBackupIdList {
   const normalizedOrder = readSettingsBackupIdList(order);
-  const normalizedFallback = readSettingsBackupIdList(fallbackOrder);
+  const normalizedSecondaryOrder = readSettingsBackupIdList(secondaryOrder);
   const colorIds = collectSavedColorIds(savedColors);
-  if (colorIds.size <= 0) return normalizedFallback;
+  if (colorIds.size <= 0) return normalizedSecondaryOrder;
   const out: SettingsBackupIdList = [];
   const seen = new Set<string>();
   for (let i = 0; i < normalizedOrder.length; i += 1) {
@@ -188,8 +188,8 @@ export function sanitizeColorSwatchesOrder(
     seen.add(id);
     out.push(id);
   }
-  for (let i = 0; i < normalizedFallback.length; i += 1) {
-    const id = normalizedFallback[i];
+  for (let i = 0; i < normalizedSecondaryOrder.length; i += 1) {
+    const id = normalizedSecondaryOrder[i];
     if (!colorIds.has(id) || seen.has(id)) continue;
     seen.add(id);
     out.push(id);
@@ -212,15 +212,15 @@ export function readCanonicalSavedColorOrder(savedColors: unknown): SettingsBack
 export function resolveColorSwatchesOrder(
   savedColors: unknown,
   preferredOrder: unknown,
-  ...fallbackOrders: unknown[]
+  ...secondaryOrders: unknown[]
 ): SettingsBackupIdList {
-  const flattenedFallback: SettingsBackupIdList = [];
-  for (let i = 0; i < fallbackOrders.length; i += 1) {
-    const normalized = readSettingsBackupIdList(fallbackOrders[i]);
+  const flattenedSecondaryOrder: SettingsBackupIdList = [];
+  for (let i = 0; i < secondaryOrders.length; i += 1) {
+    const normalized = readSettingsBackupIdList(secondaryOrders[i]);
     if (normalized.length <= 0) continue;
-    flattenedFallback.push(...normalized);
+    flattenedSecondaryOrder.push(...normalized);
   }
-  return sanitizeColorSwatchesOrder(savedColors, preferredOrder, flattenedFallback);
+  return sanitizeColorSwatchesOrder(savedColors, preferredOrder, flattenedSecondaryOrder);
 }
 
 export function isSettingsBackupData(v: unknown): v is SettingsBackupData {

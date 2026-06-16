@@ -72,7 +72,7 @@ function resolveRenderOpsExtrasInstallContext(
   return refreshRenderOpsExtrasInstallContext(context, App);
 }
 
-function clearLegacyInstalledRenderOpsExtrasDrift(renderOps: InstallableRenderOpsExtrasSurface): void {
+function clearDeprecatedInstalledRenderOpsExtrasDrift(renderOps: InstallableRenderOpsExtrasSurface): void {
   if (renderOps.__esm_extras_v1 !== true) return;
   const keys = Object.keys(RENDER_OPS_EXTRAS_CANONICAL_KEYS) as RenderOpsExtrasCallableKey[];
   for (let i = 0; i < keys.length; i += 1) {
@@ -94,7 +94,7 @@ export function installBuilderRenderOpsExtras(appIn: unknown): RenderOpsExtrasSu
   const context = resolveRenderOpsExtrasInstallContext(renderOps, App);
   builder.renderOps = renderOps;
 
-  clearLegacyInstalledRenderOpsExtrasDrift(renderOps);
+  clearDeprecatedInstalledRenderOpsExtrasDrift(renderOps);
 
   installStableSurfaceMethod(
     renderOps,

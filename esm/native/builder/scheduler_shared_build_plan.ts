@@ -4,7 +4,7 @@ import { reportError } from '../runtime/api.js';
 import { getBuildStateMaybe } from './store_access.js';
 import { readGetBuildStateDep } from './scheduler_shared_deps.js';
 import {
-  createFallbackBuildPlan,
+  createDefaultBuildPlan,
   readBuildPlan,
   readBuildState,
   readPlanState,
@@ -49,5 +49,5 @@ export function getBuildPlanForScheduler(App: AppContainer, uiOverride: UnknownR
     }
   }
 
-  return createFallbackBuildPlan(readPlanState({ state }) || state);
+  return createDefaultBuildPlan(readPlanState({ state }) || state);
 }

@@ -128,12 +128,9 @@ test('browser surface adapter heals drifted dialogs, css, and createCanvas surfa
   const firstPrompt = App.browser.prompt;
   const firstDoorStatus = App.browser.setDoorStatusCss;
   const firstCreateCanvas = App.platform.createCanvas;
-  const firstUserAgent = App.browser.userAgent;
-
   App.browser.confirm = () => false;
   delete App.browser.prompt;
   delete App.browser.setDoorStatusCss;
-  delete App.browser.userAgent;
   App.platform.createCanvas = () => ({ kind: 'stale' });
 
   installBrowserSurfaceAdapter(App);
@@ -142,8 +139,6 @@ test('browser surface adapter heals drifted dialogs, css, and createCanvas surfa
   assert.equal(App.browser.prompt, firstPrompt);
   assert.equal(App.browser.setDoorStatusCss, firstDoorStatus);
   assert.equal(App.platform.createCanvas, firstCreateCanvas);
-  assert.equal(App.browser.userAgent, firstUserAgent);
-
   assert.equal(App.browser.confirm('keep?'), true);
   assert.equal(App.browser.prompt('name', 7), 'ok');
   App.browser.setDoorStatusCss(true);

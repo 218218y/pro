@@ -32,7 +32,6 @@ test('stage 42 legacy fallback inventory closeout is anchored', () => {
   for (const entry of [
     ['esm/entry_pro_overlay.ts', 'browser-adapter'],
     ['esm/native/builder/core_carcass_cornice.ts', 'domain-default'],
-    ['esm/boot/boot_manifest_steps.ts', 'external-api-compat'],
     ['esm/native/kernel/domain_api_modules_corner_shared.ts', 'compat-boundary'],
     ['esm/native/ui/react/tabs/design_tab_color_action_result_reason.ts', 'error-message-default'],
     ['esm/shared/wardrobe_dimension_tokens_shared.ts', 'domain-default'],
@@ -55,6 +54,12 @@ test('stage 42 legacy fallback inventory closeout is anchored', () => {
     ] || 0,
     0,
     'cloud sync snapshot source timers should use current deadline naming'
+  );
+
+  assert.equal(
+    audit.summary.byFile['esm/boot/boot_manifest_steps.ts']?.total || 0,
+    0,
+    'boot manifest steps should use current builder install naming'
   );
 
   assert.equal(audit.summary.byFile['esm/native/runtime/ui_raw_selectors.ts']?.total || 0, 0);

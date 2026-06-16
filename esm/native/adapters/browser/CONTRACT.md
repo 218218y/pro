@@ -8,7 +8,6 @@
 
 - `App.browser.confirm(message: string): boolean`
 - `App.browser.prompt(message: string, def?: unknown): string | null`
-- `App.browser.userAgent?: string` (legacy; prefer `getUserAgent()`)
 - `App.browser.getWindow(): Window | null`
 - `App.browser.getDocument(): Document | null`
 - `App.browser.getNavigator(): Navigator | null`

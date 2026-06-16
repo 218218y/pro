@@ -149,8 +149,8 @@ function schedulePendingBuildDebounced(
 ): void {
   const scheduleVersion = ensurePendingScheduleVersion(state);
   if (preserveExistingSchedule && state.debouncedRunScheduled) {
-    const usingFallbackTimer = state.debouncedUsesFallbackTimer === true;
-    if (!usingFallbackTimer || state.debouncedRunVersion === scheduleVersion) {
+    const usingTimerDeadline = state.debouncedUsesTimerDeadline === true;
+    if (!usingTimerDeadline || state.debouncedRunVersion === scheduleVersion) {
       state.debouncedRunVersion = scheduleVersion;
       recordDebouncedSchedule(state, reason, true);
       return;

@@ -123,7 +123,7 @@ test('[cloud-sync-orchestration] panel api install and lifecycle support stay th
     [
       /const cloudSyncPanelApiInstallContexts = new WeakMap/,
       /export const CLOUD_SYNC_PANEL_API_STABLE_METHOD_SPECS = \[/,
-      /function clearLegacyInstalledCloudSyncPanelApiDrift\(/,
+      /function clearDeprecatedInstalledCloudSyncPanelApiDrift\(/,
       /function invokeCloudSyncPanelApi</,
     ],
     'panelSharedFacade'
@@ -144,7 +144,7 @@ test('[cloud-sync-orchestration] panel api install and lifecycle support stay th
     panelContractsOwner,
     [
       /export const CLOUD_SYNC_PANEL_API_STABLE_METHOD_SPECS = \[/,
-      /export function clearLegacyInstalledCloudSyncPanelApiDrift\(/,
+      /export function clearDeprecatedInstalledCloudSyncPanelApiDrift\(/,
       /__wpCloudSyncGetCurrentRoom/,
       /__wpCloudSyncToggleSite2TabsGateOpen/,
     ],

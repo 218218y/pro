@@ -8,7 +8,7 @@ export type {
 export {
   CLOUD_SYNC_PANEL_API_STABLE_METHOD_SPECS,
   asInstallableCloudSyncPanelApi,
-  clearLegacyInstalledCloudSyncPanelApiDrift,
+  clearDeprecatedInstalledCloudSyncPanelApiDrift,
   createCloudSyncPanelApiInstallContext,
   refreshCloudSyncPanelApiInstallContext,
   resolveCloudSyncPanelApiInstallContext,

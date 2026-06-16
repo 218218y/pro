@@ -229,11 +229,11 @@ test('models registry runtime: app-scoped runtime state keeps normalizers and lo
     ['preset-b', 'shared']
   );
 
-  (a.App.services.models._all as any[])[0].name = 'mutated compatibility snapshot';
+  (a.App.services.models._all as any[])[0].name = 'mutated runtime mirror snapshot';
   assert.equal(stateA.all[0]?.name, 'A:Preset A');
 });
 
-test('models registry storage: repeated compat sync reuses the published compatibility snapshots when state revision is unchanged', () => {
+test('models registry storage: repeated runtime mirror sync reuses the published runtime mirror snapshots when state revision is unchanged', () => {
   const { App } = createApp({ savedModels: [{ id: ' user-1 ', name: ' User 1 ' }] });
   setModelPresetsInternal(App, [{ id: 'preset-a', name: 'Preset A' }] as any);
   ensureModelsLoadedInternal(App, { forceRebuild: true, silent: true });
@@ -241,14 +241,14 @@ test('models registry storage: repeated compat sync reuses the published compati
   const firstAll = App.services.models._all;
   const firstPresets = App.services.models._presets;
   const firstListeners = App.services.models._listeners;
-  const firstRevision = App.services.models.__wpCompatRevision;
+  const firstRevision = App.services.models.__wpRuntimeMirrorRevision;
 
   syncModelsStateToApp(App);
 
   assert.equal(App.services.models._all, firstAll);
   assert.equal(App.services.models._presets, firstPresets);
   assert.equal(App.services.models._listeners, firstListeners);
-  assert.equal(App.services.models.__wpCompatRevision, firstRevision);
+  assert.equal(App.services.models.__wpRuntimeMirrorRevision, firstRevision);
 });
 
 test('models registry storage: no-op preset and normalizer installs do not trigger rebuild notifications', () => {
@@ -265,13 +265,13 @@ test('models registry storage: no-op preset and normalizer installs do not trigg
   ensureModelsLoadedInternal(App, { forceRebuild: true, silent: false });
 
   const notificationsAfterInitialLoad = seen.length;
-  const compatRevisionAfterInitialLoad = App.services.models.__wpCompatRevision;
+  const runtimeMirrorRevisionAfterInitialLoad = App.services.models.__wpRuntimeMirrorRevision;
   const publishedAll = App.services.models._all;
 
   setModelsNormalizerInternal(App, normalizer as any);
   setModelPresetsInternal(App, [{ id: 'preset-a', name: 'Preset A' }] as any);
 
   assert.equal(seen.length, notificationsAfterInitialLoad);
-  assert.equal(App.services.models.__wpCompatRevision, compatRevisionAfterInitialLoad);
+  assert.equal(App.services.models.__wpRuntimeMirrorRevision, runtimeMirrorRevisionAfterInitialLoad);
   assert.equal(App.services.models._all, publishedAll);
 });

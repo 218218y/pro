@@ -17,7 +17,7 @@ export {
 
 export {
   CLOUD_SYNC_PANEL_API_STABLE_METHOD_SPECS,
-  clearLegacyInstalledCloudSyncPanelApiDrift,
+  clearDeprecatedInstalledCloudSyncPanelApiDrift,
 } from './cloud_sync_panel_api_install_surface_contracts.js';
 
 export {

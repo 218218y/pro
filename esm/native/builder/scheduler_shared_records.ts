@@ -46,7 +46,7 @@ export function readPlanInputFingerprint(plan: unknown): unknown {
   return typeof rec.inputFingerprint === 'undefined' ? null : rec.inputFingerprint;
 }
 
-export function createFallbackBuildPlan(state: BuildStateLike): BuildPlanLike {
+export function createDefaultBuildPlan(state: BuildStateLike): BuildPlanLike {
   return {
     kind: 'buildPlan_v1',
     createdAt: Date.now(),

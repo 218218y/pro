@@ -6,7 +6,7 @@ import type {
 } from '../../../types/index.js';
 
 import {
-  createFallbackBuildPlan,
+  createDefaultBuildPlan,
   readBuildPlan,
   readBuildState,
   readObject,
@@ -51,7 +51,7 @@ export function normalizeSchedulerDeps(deps: unknown): BuilderSchedulerDepsLike 
   if (typeof createBuildPlan === 'function') {
     out.createBuildPlan = (state: BuildStateLike) => {
       const plan = Reflect.apply(createBuildPlan, d, [state]);
-      return readBuildPlan(plan) || createFallbackBuildPlan(state);
+      return readBuildPlan(plan) || createDefaultBuildPlan(state);
     };
   }
 

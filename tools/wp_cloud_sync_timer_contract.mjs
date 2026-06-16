@@ -45,7 +45,7 @@ const snapshotRuntime = path.join(root, 'esm/native/services/cloud_sync_panel_ap
 const snapshotSource = fs.readFileSync(snapshotRuntime, 'utf8');
 if (!/getBrowserTimers\(deps\.App\)/.test(snapshotSource)) {
   violations.push(
-    'esm/native/services/cloud_sync_panel_api_snapshots_runtime.ts: must resolve fallback timers through getBrowserTimers(deps.App)'
+    'esm/native/services/cloud_sync_panel_api_snapshots_runtime.ts: must resolve timer deadlines through getBrowserTimers(deps.App)'
   );
 }
 

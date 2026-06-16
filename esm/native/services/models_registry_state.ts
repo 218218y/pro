@@ -27,8 +27,8 @@ function cloneModelsRuntimeStateFromSurface(surface: Record<string, unknown>): M
     loaded: !!surface._loaded,
     all: Array.isArray(surface._all) ? asModelsList(surface._all) : [],
     listeners: Array.isArray(surface._listeners) ? asListenersList(surface._listeners) : [],
-    revision: Number.isFinite((surface as { __wpCompatRevision?: unknown }).__wpCompatRevision)
-      ? Number((surface as { __wpCompatRevision?: unknown }).__wpCompatRevision)
+    revision: Number.isFinite((surface as { __wpRuntimeMirrorRevision?: unknown }).__wpRuntimeMirrorRevision)
+      ? Number((surface as { __wpRuntimeMirrorRevision?: unknown }).__wpRuntimeMirrorRevision)
       : 0,
   };
 }

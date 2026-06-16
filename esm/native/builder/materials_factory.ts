@@ -61,7 +61,7 @@ function resolveMaterialsFactoryInstallContext(
   return refreshMaterialsFactoryInstallContext(context, App);
 }
 
-function clearLegacyInstalledMaterialsFactoryDrift(materials: InstallableBuilderMaterialsService): void {
+function clearDeprecatedInstalledMaterialsFactoryDrift(materials: InstallableBuilderMaterialsService): void {
   if (materials.__esm_materials_factory_v1 !== true) return;
   const keys = Object.keys(MATERIALS_FACTORY_CANONICAL_KEYS) as MaterialsFactoryCallableKey[];
   for (let i = 0; i < keys.length; i += 1) {
@@ -82,7 +82,7 @@ export function installBuilderMaterialsFactory(appIn: unknown) {
     : {});
   const context = resolveMaterialsFactoryInstallContext(materials, App);
 
-  clearLegacyInstalledMaterialsFactoryDrift(materials);
+  clearDeprecatedInstalledMaterialsFactoryDrift(materials);
 
   installStableSurfaceMethod(
     materials,

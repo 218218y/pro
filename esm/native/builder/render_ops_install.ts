@@ -117,7 +117,7 @@ function toStableRenderOpKey(key: RenderOpsCallableKey): string {
   return `__wpRenderOps${key.charAt(0).toUpperCase()}${key.slice(1)}`;
 }
 
-function clearLegacyInstalledRenderOpDrift(target: RenderOpsTarget): void {
+function clearDeprecatedInstalledRenderOpDrift(target: RenderOpsTarget): void {
   if (target.__esm_v1 !== true) return;
   for (let i = 0; i < RENDER_OP_CALLABLE_KEYS.length; i += 1) {
     const key = RENDER_OP_CALLABLE_KEYS[i];
@@ -155,7 +155,7 @@ export function createBuilderRenderOpsInstall(deps: RenderOpsInstallDeps) {
     const context = resolveRenderOpsInstallContext(target, App);
     B.renderOps = target;
 
-    clearLegacyInstalledRenderOpDrift(target);
+    clearDeprecatedInstalledRenderOpDrift(target);
 
     function withBoundApp(value?: unknown): AnyMap {
       const next = asMap(value) || {};

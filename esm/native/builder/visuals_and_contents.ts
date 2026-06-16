@@ -111,7 +111,7 @@ function resolveVisualsAndContentsInstallContext(
   return refreshVisualsAndContentsInstallContext(context, App);
 }
 
-function clearLegacyInstalledVisualsDrift(modules: InstallableBuilderModulesSurface): void {
+function clearDeprecatedInstalledVisualsDrift(modules: InstallableBuilderModulesSurface): void {
   if (modules.__esm_visuals_v1 !== true) return;
   for (const key of BUILDER_MODULES_CALLABLE_KEYS) {
     const stableKey = BUILDER_MODULES_CANONICAL_KEYS[key];
@@ -121,7 +121,7 @@ function clearLegacyInstalledVisualsDrift(modules: InstallableBuilderModulesSurf
   }
 }
 
-function clearLegacyInstalledContentsDrift(contents: InstallableBuilderContentsSurface): void {
+function clearDeprecatedInstalledContentsDrift(contents: InstallableBuilderContentsSurface): void {
   if (contents.__esm_contents_v1 !== true) return;
   for (const key of BUILDER_CONTENTS_CALLABLE_KEYS) {
     const stableKey = BUILDER_CONTENTS_CANONICAL_KEYS[key];
@@ -147,8 +147,8 @@ export function installBuilderVisualsAndContents(App: AppContainer) {
   const modulesContext = resolveVisualsAndContentsInstallContext(M, App);
   const contentsContext = resolveVisualsAndContentsInstallContext(C, App);
 
-  clearLegacyInstalledVisualsDrift(M);
-  clearLegacyInstalledContentsDrift(C);
+  clearDeprecatedInstalledVisualsDrift(M);
+  clearDeprecatedInstalledContentsDrift(C);
 
   installStableSurfaceMethod(M, 'createDoorVisual', BUILDER_MODULES_CANONICAL_KEYS.createDoorVisual, () => {
     return __bindWithApp<Parameters<BuilderCreateDoorVisualFn>, ReturnType<BuilderCreateDoorVisualFn>>(

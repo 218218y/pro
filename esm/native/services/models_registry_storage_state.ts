@@ -11,7 +11,7 @@ import { _modelsReportNonFatal } from './models_registry_nonfatal.js';
 import { getAppModels } from './models_registry_storage_keys.js';
 import { getModelsRuntimeStateForApp } from './models_registry_state.js';
 
-function buildModelsCompatibilitySnapshot(
+function buildModelsRuntimeMirrorSnapshot(
   state: ModelsRuntimeState
 ): Pick<AppModelsState, '_normalizer' | '_presets' | '_loaded' | '_all' | '_listeners'> {
   return {
@@ -27,10 +27,10 @@ export function syncModelsStateToApp(App: AppContainer): void {
   try {
     const models = getAppModels(App);
     const state = getModelsRuntimeStateForApp(App);
-    if (models.__wpRuntimeState === state && models.__wpCompatRevision === state.revision) return;
-    const snapshot = buildModelsCompatibilitySnapshot(state);
+    if (models.__wpRuntimeState === state && models.__wpRuntimeMirrorRevision === state.revision) return;
+    const snapshot = buildModelsRuntimeMirrorSnapshot(state);
     models.__wpRuntimeState = state;
-    models.__wpCompatRevision = state.revision;
+    models.__wpRuntimeMirrorRevision = state.revision;
     models._normalizer = snapshot._normalizer;
     models._presets = snapshot._presets;
     models._loaded = snapshot._loaded;

@@ -7,7 +7,7 @@ export type { DebounceDep, GetBuildStateDep } from './scheduler_shared_deps.js';
 export type { BuilderCoreLike } from './scheduler_shared_environment.js';
 
 export {
-  createFallbackBuildPlan,
+  createDefaultBuildPlan,
   createPendingPlanFromState,
   readBuildPlan,
   readBuildSignature,

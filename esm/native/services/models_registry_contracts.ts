@@ -17,7 +17,7 @@ export type AppModelsState = ModelsServiceLike & {
   _all?: SavedModelLike[];
   _listeners?: ModelsChangeListener[];
   __wpRuntimeState?: ModelsRuntimeState;
-  __wpCompatRevision?: number;
+  __wpRuntimeMirrorRevision?: number;
 };
 
 export type StorageLike = StorageNamespaceLike & {

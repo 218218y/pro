@@ -888,7 +888,7 @@ test('builder scheduler runtime: flush invalidates an older debounced callback s
   assert.equal(stats.reasons['drag:debounced']?.executeCount, 1);
 });
 
-test('builder scheduler runtime: fallback timer stale callbacks are ignored after a newer debounced schedule replaces them', () => {
+test('builder scheduler runtime: timer deadline stale callbacks are ignored after a newer debounced schedule replaces them', () => {
   const buildCalls: any[] = [];
   let signature = 'sig:leaky:one';
   const timers = createLeakyTimerHarness();

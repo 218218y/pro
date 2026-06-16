@@ -43,7 +43,7 @@ test('stage 51 scheduler shared ownership split is anchored', () => {
 
   assert.match(records, /export function readObject\(/);
   assert.match(records, /export function readBuildPlan\(/);
-  assert.match(records, /export function createFallbackBuildPlan\(/);
+  assert.match(records, /export function createDefaultBuildPlan\(/);
   assert.match(records, /export function withTransientBuildFlags\(/);
   assert.doesNotMatch(records, /assertApp|getBrowserTimers|getBuildStateMaybe|ensureBuilderService/);
 

@@ -111,7 +111,7 @@ test('legacy fallback audit classifies boundary occurrences before runtime risk'
   assert.equal(
     classifyLegacyFallbackOccurrence({
       relPath: 'esm/boot/boot_manifest_steps.ts',
-      lineText: "id: 'builder.coreBrowserCompat',",
+      lineText: "id: 'builder.core.install',",
       term: 'coreBrowserCompat',
     }),
     'external-api-compat'

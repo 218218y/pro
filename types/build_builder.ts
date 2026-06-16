@@ -668,7 +668,7 @@ export interface BuilderSchedulerStateInternalLike extends UnknownRecord {
   pendingForceBuild?: boolean;
   debouncedRunScheduled?: boolean;
   debouncedRunVersion?: number;
-  debouncedUsesFallbackTimer?: boolean;
+  debouncedUsesTimerDeadline?: boolean;
   pendingScheduleVersion?: number;
   scheduleVersionSeq?: number;
   lastExecutedSignature?: unknown;

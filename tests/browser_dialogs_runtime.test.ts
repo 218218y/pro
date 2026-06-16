@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { installBrowserDialogsAdapter } from '../esm/native/adapters/browser/dialogs.ts';
 
-test('browser dialogs adapter installs confirm/prompt wrappers and snapshots userAgent', () => {
+test('browser dialogs adapter installs confirm/prompt wrappers without publishing userAgent snapshots', () => {
   const calls: Array<[string, string]> = [];
   const browserWindow = {
     document: {
@@ -38,7 +38,7 @@ test('browser dialogs adapter installs confirm/prompt wrappers and snapshots use
   installBrowserDialogsAdapter(App as never);
   const browser = App.browser || {};
 
-  assert.equal(browser.userAgent, 'Agent/1.0');
+  assert.equal(Object.prototype.hasOwnProperty.call(browser, 'userAgent'), false);
   assert.equal(typeof browser.confirm, 'function');
   assert.equal(typeof browser.prompt, 'function');
   assert.equal(browser.confirm?.('Delete it?'), true);

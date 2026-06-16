@@ -1,29 +1,23 @@
 {
-  "generatedAt": "2026-06-16T18:48:12.256Z",
+  "generatedAt": "2026-06-16T19:01:59.175Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 351,
-    "totalFiles": 135,
+    "totalOccurrences": 301,
+    "totalFiles": 112,
     "byCategory": {
       "runtime-default": 0,
-      "domain-default": 160,
+      "domain-default": 145,
       "error-message-default": 29,
       "framework-default": 2,
-      "browser-adapter": 40,
+      "browser-adapter": 39,
       "project-migration": 37,
-      "external-api-compat": 2,
-      "compat-boundary": 75,
+      "external-api-compat": 0,
+      "compat-boundary": 43,
       "test-fixture": 6,
       "legacy-runtime-risk": 0,
       "unknown": 0
     },
     "byFile": {
-      "esm/boot/boot_manifest_steps.ts": {
-        "total": 2,
-        "categories": {
-          "external-api-compat": 2
-        }
-      },
       "esm/entry_pro_overlay.ts": {
         "total": 19,
         "categories": {
@@ -46,12 +40,6 @@
         "total": 3,
         "categories": {
           "browser-adapter": 3
-        }
-      },
-      "esm/native/adapters/browser/CONTRACT.md": {
-        "total": 1,
-        "categories": {
-          "browser-adapter": 1
         }
       },
       "esm/native/builder/build_state_resolver.ts": {
@@ -78,25 +66,7 @@
           "domain-default": 1
         }
       },
-      "esm/native/builder/corner_wing_install.ts": {
-        "total": 2,
-        "categories": {
-          "compat-boundary": 2
-        }
-      },
-      "esm/native/builder/materials_factory.ts": {
-        "total": 2,
-        "categories": {
-          "compat-boundary": 2
-        }
-      },
       "esm/native/builder/module_loop_pipeline_runtime_shared.ts": {
-        "total": 2,
-        "categories": {
-          "compat-boundary": 2
-        }
-      },
-      "esm/native/builder/plan.ts": {
         "total": 2,
         "categories": {
           "compat-boundary": 2
@@ -114,70 +84,10 @@
           "compat-boundary": 1
         }
       },
-      "esm/native/builder/render_ops_extras.ts": {
-        "total": 2,
-        "categories": {
-          "compat-boundary": 2
-        }
-      },
-      "esm/native/builder/render_ops_install.ts": {
-        "total": 2,
-        "categories": {
-          "compat-boundary": 2
-        }
-      },
       "esm/native/builder/render_preview_sketch_pipeline_box_content_drawers.ts": {
         "total": 1,
         "categories": {
           "domain-default": 1
-        }
-      },
-      "esm/native/builder/scheduler_runtime.ts": {
-        "total": 3,
-        "categories": {
-          "domain-default": 3
-        }
-      },
-      "esm/native/builder/scheduler_shared_build_plan.ts": {
-        "total": 2,
-        "categories": {
-          "domain-default": 2
-        }
-      },
-      "esm/native/builder/scheduler_shared_deps.ts": {
-        "total": 2,
-        "categories": {
-          "domain-default": 2
-        }
-      },
-      "esm/native/builder/scheduler_shared_records.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      "esm/native/builder/scheduler_shared_state.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      "esm/native/builder/scheduler_shared_timers.ts": {
-        "total": 2,
-        "categories": {
-          "domain-default": 2
-        }
-      },
-      "esm/native/builder/scheduler_shared.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      "esm/native/builder/visuals_and_contents.ts": {
-        "total": 4,
-        "categories": {
-          "compat-boundary": 4
         }
       },
       "esm/native/features/door_trim_map.ts": {
@@ -538,30 +448,6 @@
           "error-message-default": 1
         }
       },
-      "esm/native/services/cloud_sync_panel_api_install_shared.ts": {
-        "total": 1,
-        "categories": {
-          "compat-boundary": 1
-        }
-      },
-      "esm/native/services/cloud_sync_panel_api_install_surface_contracts.ts": {
-        "total": 3,
-        "categories": {
-          "compat-boundary": 3
-        }
-      },
-      "esm/native/services/cloud_sync_panel_api_install_surface_runtime.ts": {
-        "total": 2,
-        "categories": {
-          "compat-boundary": 2
-        }
-      },
-      "esm/native/services/cloud_sync_panel_api_install.ts": {
-        "total": 1,
-        "categories": {
-          "compat-boundary": 1
-        }
-      },
       "esm/native/services/cloud_sync_status_install_runtime.ts": {
         "total": 2,
         "categories": {
@@ -578,24 +464,6 @@
         "total": 1,
         "categories": {
           "domain-default": 1
-        }
-      },
-      "esm/native/services/models_registry_contracts.ts": {
-        "total": 1,
-        "categories": {
-          "compat-boundary": 1
-        }
-      },
-      "esm/native/services/models_registry_state.ts": {
-        "total": 2,
-        "categories": {
-          "compat-boundary": 2
-        }
-      },
-      "esm/native/services/models_registry_storage_state.ts": {
-        "total": 4,
-        "categories": {
-          "compat-boundary": 4
         }
       },
       "esm/native/services/render_surface_runtime_support_readers.ts": {
@@ -809,13 +677,6 @@
           "domain-default": 1
         }
       },
-      "esm/native/ui/settings_backup_shared_collections.ts": {
-        "total": 7,
-        "categories": {
-          "compat-boundary": 4,
-          "domain-default": 3
-        }
-      },
       "esm/shared/wardrobe_dimension_tokens_shared.ts": {
         "total": 5,
         "categories": {
@@ -894,14 +755,6 @@
         }
       },
       {
-        "file": "esm/native/ui/settings_backup_shared_collections.ts",
-        "total": 7,
-        "categories": {
-          "compat-boundary": 4,
-          "domain-default": 3
-        }
-      },
-      {
         "file": "esm/native/kernel/domain_api_surface_sections_bindings_doors.ts",
         "total": 6,
         "categories": {
@@ -969,13 +822,6 @@
         }
       },
       {
-        "file": "esm/native/builder/visuals_and_contents.ts",
-        "total": 4,
-        "categories": {
-          "compat-boundary": 4
-        }
-      },
-      {
         "file": "esm/native/features/door_trim_map.ts",
         "total": 4,
         "categories": {
@@ -1018,13 +864,6 @@
         }
       },
       {
-        "file": "esm/native/services/models_registry_storage_state.ts",
-        "total": 4,
-        "categories": {
-          "compat-boundary": 4
-        }
-      },
-      {
         "file": "esm/native/services/render_surface_runtime_support_readers.ts",
         "total": 4,
         "categories": {
@@ -1052,25 +891,32 @@
           "browser-adapter": 1,
           "domain-default": 3
         }
+      },
+      {
+        "file": "esm/native/ui/react/tabs/design_tab_color_action_result_helpers.ts",
+        "total": 4,
+        "categories": {
+          "error-message-default": 4
+        }
+      },
+      {
+        "file": "esm/native/ui/react/tabs/design_tab_color_action_result_reason.ts",
+        "total": 4,
+        "categories": {
+          "error-message-default": 4
+        }
+      },
+      {
+        "file": "esm/entry_pro.ts",
+        "total": 3,
+        "categories": {
+          "browser-adapter": 3
+        }
       }
     ]
   },
   "allowlistComparison": null,
   "occurrences": [
-    {
-      "file": "esm/boot/boot_manifest_steps.ts",
-      "line": 291,
-      "term": "coreBrowserCompat",
-      "category": "external-api-compat",
-      "text": "id: 'builder.coreBrowserCompat',"
-    },
-    {
-      "file": "esm/boot/boot_manifest_steps.ts",
-      "line": 293,
-      "term": "coreBrowserCompat",
-      "category": "external-api-compat",
-      "text": "run: requireBootInstaller(installBuilderCore, 'builder.coreBrowserCompat'),"
-    },
     {
       "file": "esm/entry_pro_overlay.ts",
       "line": 13,
@@ -1331,13 +1177,6 @@
       "text": "export type { BootFatalFallbackController, BootFatalFallbackOpts } from './entry_pro_shared.js';"
     },
     {
-      "file": "esm/native/adapters/browser/CONTRACT.md",
-      "line": 11,
-      "term": "legacy",
-      "category": "browser-adapter",
-      "text": "- `App.browser.userAgent?: string` (legacy; prefer `getUserAgent()`)"
-    },
-    {
       "file": "esm/native/builder/build_state_resolver.ts",
       "line": 5,
       "term": "compat",
@@ -1366,34 +1205,6 @@
       "text": "xMaxBase = corniceProfile.xMaxFallbackM;"
     },
     {
-      "file": "esm/native/builder/corner_wing_install.ts",
-      "line": 31,
-      "term": "shouldInvalidateLegacyCornerWingSurface",
-      "category": "compat-boundary",
-      "text": "function shouldInvalidateLegacyCornerWingSurface(modules: CornerWingInstallSurface): boolean {"
-    },
-    {
-      "file": "esm/native/builder/corner_wing_install.ts",
-      "line": 49,
-      "term": "shouldInvalidateLegacyCornerWingSurface",
-      "category": "compat-boundary",
-      "text": "if (shouldInvalidateLegacyCornerWingSurface(modules)) {"
-    },
-    {
-      "file": "esm/native/builder/materials_factory.ts",
-      "line": 64,
-      "term": "clearLegacyInstalledMaterialsFactoryDrift",
-      "category": "compat-boundary",
-      "text": "function clearLegacyInstalledMaterialsFactoryDrift(materials: InstallableBuilderMaterialsService): void {"
-    },
-    {
-      "file": "esm/native/builder/materials_factory.ts",
-      "line": 85,
-      "term": "clearLegacyInstalledMaterialsFactoryDrift",
-      "category": "compat-boundary",
-      "text": "clearLegacyInstalledMaterialsFactoryDrift(materials);"
-    },
-    {
       "file": "esm/native/builder/module_loop_pipeline_runtime_shared.ts",
       "line": 19,
       "term": "CreateBoardCompat",
@@ -1406,20 +1217,6 @@
       "term": "CreateBoardCompat",
       "category": "compat-boundary",
       "text": "const createBoard: CreateBoardCompat = (...args: readonly unknown[]) =>"
-    },
-    {
-      "file": "esm/native/builder/plan.ts",
-      "line": 96,
-      "term": "shouldInvalidateLegacyPlanSurface",
-      "category": "compat-boundary",
-      "text": "function shouldInvalidateLegacyPlanSurface(plan: BuilderPlanInstallSurface): boolean {"
-    },
-    {
-      "file": "esm/native/builder/plan.ts",
-      "line": 170,
-      "term": "shouldInvalidateLegacyPlanSurface",
-      "category": "compat-boundary",
-      "text": "if (shouldInvalidateLegacyPlanSurface(plan)) {"
     },
     {
       "file": "esm/native/builder/post_build_front_reveal_frames_doors.ts",
@@ -1436,151 +1233,11 @@
       "text": "// Any remaining compat probing is centralized in builder/store_access helpers."
     },
     {
-      "file": "esm/native/builder/render_ops_extras.ts",
-      "line": 75,
-      "term": "clearLegacyInstalledRenderOpsExtrasDrift",
-      "category": "compat-boundary",
-      "text": "function clearLegacyInstalledRenderOpsExtrasDrift(renderOps: InstallableRenderOpsExtrasSurface): void {"
-    },
-    {
-      "file": "esm/native/builder/render_ops_extras.ts",
-      "line": 97,
-      "term": "clearLegacyInstalledRenderOpsExtrasDrift",
-      "category": "compat-boundary",
-      "text": "clearLegacyInstalledRenderOpsExtrasDrift(renderOps);"
-    },
-    {
-      "file": "esm/native/builder/render_ops_install.ts",
-      "line": 120,
-      "term": "clearLegacyInstalledRenderOpDrift",
-      "category": "compat-boundary",
-      "text": "function clearLegacyInstalledRenderOpDrift(target: RenderOpsTarget): void {"
-    },
-    {
-      "file": "esm/native/builder/render_ops_install.ts",
-      "line": 158,
-      "term": "clearLegacyInstalledRenderOpDrift",
-      "category": "compat-boundary",
-      "text": "clearLegacyInstalledRenderOpDrift(target);"
-    },
-    {
       "file": "esm/native/builder/render_preview_sketch_pipeline_box_content_drawers.ts",
       "line": 103,
       "term": "previewExternalFallbackHeightM",
       "category": "domain-default",
       "text": ": DRAWER_DIMENSIONS.sketch.previewExternalFallbackHeightM;"
-    },
-    {
-      "file": "esm/native/builder/scheduler_runtime.ts",
-      "line": 152,
-      "term": "usingFallbackTimer",
-      "category": "domain-default",
-      "text": "const usingFallbackTimer = state.debouncedUsesFallbackTimer === true;"
-    },
-    {
-      "file": "esm/native/builder/scheduler_runtime.ts",
-      "line": 152,
-      "term": "debouncedUsesFallbackTimer",
-      "category": "domain-default",
-      "text": "const usingFallbackTimer = state.debouncedUsesFallbackTimer === true;"
-    },
-    {
-      "file": "esm/native/builder/scheduler_runtime.ts",
-      "line": 153,
-      "term": "usingFallbackTimer",
-      "category": "domain-default",
-      "text": "if (!usingFallbackTimer || state.debouncedRunVersion === scheduleVersion) {"
-    },
-    {
-      "file": "esm/native/builder/scheduler_shared_build_plan.ts",
-      "line": 7,
-      "term": "createFallbackBuildPlan",
-      "category": "domain-default",
-      "text": "createFallbackBuildPlan,"
-    },
-    {
-      "file": "esm/native/builder/scheduler_shared_build_plan.ts",
-      "line": 52,
-      "term": "createFallbackBuildPlan",
-      "category": "domain-default",
-      "text": "return createFallbackBuildPlan(readPlanState({ state }) || state);"
-    },
-    {
-      "file": "esm/native/builder/scheduler_shared_deps.ts",
-      "line": 9,
-      "term": "createFallbackBuildPlan",
-      "category": "domain-default",
-      "text": "createFallbackBuildPlan,"
-    },
-    {
-      "file": "esm/native/builder/scheduler_shared_deps.ts",
-      "line": 54,
-      "term": "createFallbackBuildPlan",
-      "category": "domain-default",
-      "text": "return readBuildPlan(plan) || createFallbackBuildPlan(state);"
-    },
-    {
-      "file": "esm/native/builder/scheduler_shared_records.ts",
-      "line": 49,
-      "term": "createFallbackBuildPlan",
-      "category": "domain-default",
-      "text": "export function createFallbackBuildPlan(state: BuildStateLike): BuildPlanLike {"
-    },
-    {
-      "file": "esm/native/builder/scheduler_shared_state.ts",
-      "line": 20,
-      "term": "debouncedUsesFallbackTimer",
-      "category": "domain-default",
-      "text": "debouncedUsesFallbackTimer: false,"
-    },
-    {
-      "file": "esm/native/builder/scheduler_shared_timers.ts",
-      "line": 43,
-      "term": "debouncedUsesFallbackTimer",
-      "category": "domain-default",
-      "text": "s.debouncedUsesFallbackTimer = false;"
-    },
-    {
-      "file": "esm/native/builder/scheduler_shared_timers.ts",
-      "line": 50,
-      "term": "debouncedUsesFallbackTimer",
-      "category": "domain-default",
-      "text": "s.debouncedUsesFallbackTimer = true;"
-    },
-    {
-      "file": "esm/native/builder/scheduler_shared.ts",
-      "line": 10,
-      "term": "createFallbackBuildPlan",
-      "category": "domain-default",
-      "text": "createFallbackBuildPlan,"
-    },
-    {
-      "file": "esm/native/builder/visuals_and_contents.ts",
-      "line": 114,
-      "term": "clearLegacyInstalledVisualsDrift",
-      "category": "compat-boundary",
-      "text": "function clearLegacyInstalledVisualsDrift(modules: InstallableBuilderModulesSurface): void {"
-    },
-    {
-      "file": "esm/native/builder/visuals_and_contents.ts",
-      "line": 124,
-      "term": "clearLegacyInstalledContentsDrift",
-      "category": "compat-boundary",
-      "text": "function clearLegacyInstalledContentsDrift(contents: InstallableBuilderContentsSurface): void {"
-    },
-    {
-      "file": "esm/native/builder/visuals_and_contents.ts",
-      "line": 150,
-      "term": "clearLegacyInstalledVisualsDrift",
-      "category": "compat-boundary",
-      "text": "clearLegacyInstalledVisualsDrift(M);"
-    },
-    {
-      "file": "esm/native/builder/visuals_and_contents.ts",
-      "line": 151,
-      "term": "clearLegacyInstalledContentsDrift",
-      "category": "compat-boundary",
-      "text": "clearLegacyInstalledContentsDrift(C);"
     },
     {
       "file": "esm/native/features/door_trim_map.ts",
@@ -2759,55 +2416,6 @@
       "text": "_cloudSyncReportNonFatal(App, 'realtime.startFlightFallback', fallbackErr, {"
     },
     {
-      "file": "esm/native/services/cloud_sync_panel_api_install_shared.ts",
-      "line": 20,
-      "term": "clearLegacyInstalledCloudSyncPanelApiDrift",
-      "category": "compat-boundary",
-      "text": "clearLegacyInstalledCloudSyncPanelApiDrift,"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_install_surface_contracts.ts",
-      "line": 45,
-      "term": "clearLegacyInstalledCloudSyncPanelApiMethod",
-      "category": "compat-boundary",
-      "text": "function clearLegacyInstalledCloudSyncPanelApiMethod("
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_install_surface_contracts.ts",
-      "line": 57,
-      "term": "clearLegacyInstalledCloudSyncPanelApiDrift",
-      "category": "compat-boundary",
-      "text": "export function clearLegacyInstalledCloudSyncPanelApiDrift(api: InstallableCloudSyncPanelApi): void {"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_install_surface_contracts.ts",
-      "line": 62,
-      "term": "clearLegacyInstalledCloudSyncPanelApiMethod",
-      "category": "compat-boundary",
-      "text": "clearLegacyInstalledCloudSyncPanelApiMethod(api, spec.key);"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_install_surface_runtime.ts",
-      "line": 14,
-      "term": "clearLegacyInstalledCloudSyncPanelApiDrift",
-      "category": "compat-boundary",
-      "text": "import { clearLegacyInstalledCloudSyncPanelApiDrift } from './cloud_sync_panel_api_install_surface_contracts.js';"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_install_surface_runtime.ts",
-      "line": 50,
-      "term": "clearLegacyInstalledCloudSyncPanelApiDrift",
-      "category": "compat-boundary",
-      "text": "clearLegacyInstalledCloudSyncPanelApiDrift(api);"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_panel_api_install.ts",
-      "line": 11,
-      "term": "clearLegacyInstalledCloudSyncPanelApiDrift",
-      "category": "compat-boundary",
-      "text": "clearLegacyInstalledCloudSyncPanelApiDrift,"
-    },
-    {
       "file": "esm/native/services/cloud_sync_status_install_runtime.ts",
       "line": 8,
       "term": "getFallbackRuntimeStatus",
@@ -2834,55 +2442,6 @@
       "term": "consoleFallback",
       "category": "domain-default",
       "text": "{ consoleFallback: !(opts && opts.noConsole) }"
-    },
-    {
-      "file": "esm/native/services/models_registry_contracts.ts",
-      "line": 20,
-      "term": "__wpCompatRevision",
-      "category": "compat-boundary",
-      "text": "__wpCompatRevision?: number;"
-    },
-    {
-      "file": "esm/native/services/models_registry_state.ts",
-      "line": 30,
-      "term": "__wpCompatRevision",
-      "category": "compat-boundary",
-      "text": "revision: Number.isFinite((surface as { __wpCompatRevision?: unknown }).__wpCompatRevision)"
-    },
-    {
-      "file": "esm/native/services/models_registry_state.ts",
-      "line": 31,
-      "term": "__wpCompatRevision",
-      "category": "compat-boundary",
-      "text": "? Number((surface as { __wpCompatRevision?: unknown }).__wpCompatRevision)"
-    },
-    {
-      "file": "esm/native/services/models_registry_storage_state.ts",
-      "line": 14,
-      "term": "buildModelsCompatibilitySnapshot",
-      "category": "compat-boundary",
-      "text": "function buildModelsCompatibilitySnapshot("
-    },
-    {
-      "file": "esm/native/services/models_registry_storage_state.ts",
-      "line": 30,
-      "term": "__wpCompatRevision",
-      "category": "compat-boundary",
-      "text": "if (models.__wpRuntimeState === state && models.__wpCompatRevision === state.revision) return;"
-    },
-    {
-      "file": "esm/native/services/models_registry_storage_state.ts",
-      "line": 31,
-      "term": "buildModelsCompatibilitySnapshot",
-      "category": "compat-boundary",
-      "text": "const snapshot = buildModelsCompatibilitySnapshot(state);"
-    },
-    {
-      "file": "esm/native/services/models_registry_storage_state.ts",
-      "line": 33,
-      "term": "__wpCompatRevision",
-      "category": "compat-boundary",
-      "text": "models.__wpCompatRevision = state.revision;"
     },
     {
       "file": "esm/native/services/render_surface_runtime_support_readers.ts",
@@ -3387,55 +2946,6 @@
       "term": "consoleFallback",
       "category": "domain-default",
       "text": "{ consoleFallback: false }"
-    },
-    {
-      "file": "esm/native/ui/settings_backup_shared_collections.ts",
-      "line": 180,
-      "term": "normalizedFallback",
-      "category": "compat-boundary",
-      "text": "const normalizedFallback = readSettingsBackupIdList(fallbackOrder);"
-    },
-    {
-      "file": "esm/native/ui/settings_backup_shared_collections.ts",
-      "line": 182,
-      "term": "normalizedFallback",
-      "category": "compat-boundary",
-      "text": "if (colorIds.size <= 0) return normalizedFallback;"
-    },
-    {
-      "file": "esm/native/ui/settings_backup_shared_collections.ts",
-      "line": 191,
-      "term": "normalizedFallback",
-      "category": "compat-boundary",
-      "text": "for (let i = 0; i < normalizedFallback.length; i += 1) {"
-    },
-    {
-      "file": "esm/native/ui/settings_backup_shared_collections.ts",
-      "line": 192,
-      "term": "normalizedFallback",
-      "category": "compat-boundary",
-      "text": "const id = normalizedFallback[i];"
-    },
-    {
-      "file": "esm/native/ui/settings_backup_shared_collections.ts",
-      "line": 217,
-      "term": "flattenedFallback",
-      "category": "domain-default",
-      "text": "const flattenedFallback: SettingsBackupIdList = [];"
-    },
-    {
-      "file": "esm/native/ui/settings_backup_shared_collections.ts",
-      "line": 221,
-      "term": "flattenedFallback",
-      "category": "domain-default",
-      "text": "flattenedFallback.push(...normalized);"
-    },
-    {
-      "file": "esm/native/ui/settings_backup_shared_collections.ts",
-      "line": 223,
-      "term": "flattenedFallback",
-      "category": "domain-default",
-      "text": "return sanitizeColorSwatchesOrder(savedColors, preferredOrder, flattenedFallback);"
     },
     {
       "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
