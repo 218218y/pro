@@ -7,6 +7,7 @@ import type { AppContainer } from '../../../../types';
 import { createExportActions } from './export_actions.js';
 import { AppProvider } from './hooks.js';
 import { AppErrorBoundary } from './components/index.js';
+import { installStyledTooltipViewportHost } from './components/TooltipPlacement.js';
 import { ReactOverlayApp } from './overlay_app.js';
 import { ReactSidebarApp } from './sidebar_app.js';
 
@@ -120,6 +121,14 @@ export function bootReactUi(opts: BootReactUiOpts): void {
     uiRt.install('ui:projectDragDrop', () => installProjectDragDrop(app, { doc, toast }));
   } catch (e) {
     __reportBoot('installProjectDragDrop', e);
+  }
+
+  // Styled React tooltips live in a fixed viewport host so long labels never expand
+  // scrollable panels such as the saved-models list.
+  try {
+    uiRt.install('ui:styledTooltipViewportHost', () => installStyledTooltipViewportHost(doc));
+  } catch (e) {
+    __reportBoot('installStyledTooltipViewportHost', e);
   }
 
   const mount = (id: string, node: ReactNode): void => {

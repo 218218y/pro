@@ -4553,54 +4553,84 @@ body.wp-ui-react .wp-r-styled-tooltip.hint-bottom {
   --wp-r-tooltip-shift-x: 0px;
 }
 
-body.wp-ui-react .wp-r-styled-tooltip.hint-bottom::after {
-  top: calc(100% + 10px);
-  bottom: auto;
-  left: 50%;
-  transform: translateX(calc(-50% + var(--wp-r-tooltip-shift-x))) translateY(-4px);
+/* Styled tooltips are rendered into a fixed viewport host by TooltipPlacement.ts.
+   Keeping the old pseudo-elements disabled prevents long labels from becoming
+   scrollable overflow inside compact panels such as saved models. */
+body.wp-ui-react .wp-r-styled-tooltip.hint-bottom::after,
+body.wp-ui-react .wp-r-styled-tooltip.hint-bottom::before {
+  content: none;
+  display: none;
+}
+
+body.wp-ui-react .wp-r-floating-tooltip,
+body.wp-ui-react .wp-r-floating-tooltip-arrow {
+  position: fixed;
+}
+
+body.wp-ui-react .wp-r-floating-tooltip {
+  top: var(--wp-r-tooltip-top, -9999px);
+  left: var(--wp-r-tooltip-left, -9999px);
+  box-sizing: border-box;
+  display: block;
   width: max-content;
   max-width: min(320px, calc(100vw - 16px));
   white-space: normal;
   overflow-wrap: break-word;
   direction: rtl;
   text-align: center;
+  font-family: 'Heebo', sans-serif;
+  font-size: 0.75rem;
   font-weight: 700;
+  line-height: 1.2;
   padding: 6px 12px;
   border-radius: 6px;
   background: #1e293b;
   color: #ffffff;
-  line-height: 1.2;
   box-shadow: var(--wp-r-shadow-tooltip);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-4px);
   transition:
     opacity 0.18s ease,
     transform 0.18s ease,
     visibility 0.18s ease;
 }
 
-body.wp-ui-react .wp-r-styled-tooltip.hint-bottom::before {
-  top: calc(100% + 4px);
-  bottom: auto;
-  left: 50%;
-  transform: translateX(-50%) translateY(-4px);
-  border-color: transparent transparent #1e293b transparent;
+body.wp-ui-react .wp-r-floating-tooltip.is-open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+body.wp-ui-react .wp-r-floating-tooltip-arrow {
+  top: var(--wp-r-tooltip-arrow-top, -9999px);
+  left: var(--wp-r-tooltip-arrow-left, -9999px);
+  width: 0;
+  height: 0;
+  border-width: 6px;
+  border-style: solid;
+  border-color: transparent;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateX(-50%);
   transition:
     opacity 0.18s ease,
-    transform 0.18s ease,
     visibility 0.18s ease;
 }
 
-body.wp-ui-react .wp-r-styled-tooltip.hint-bottom:hover::after,
-body.wp-ui-react .wp-r-styled-tooltip.hint-bottom:focus-visible::after {
+body.wp-ui-react .wp-r-floating-tooltip-arrow.is-open {
   opacity: 1;
   visibility: visible;
-  transform: translateX(calc(-50% + var(--wp-r-tooltip-shift-x))) translateY(0);
 }
 
-body.wp-ui-react .wp-r-styled-tooltip.hint-bottom:hover::before,
-body.wp-ui-react .wp-r-styled-tooltip.hint-bottom:focus-visible::before {
-  opacity: 1;
-  visibility: visible;
-  transform: translateX(-50%) translateY(0);
+body.wp-ui-react .wp-r-floating-tooltip-arrow.is-below {
+  border-bottom-color: #1e293b;
+}
+
+body.wp-ui-react .wp-r-floating-tooltip-arrow.is-above {
+  border-top-color: #1e293b;
 }
 
 /* Viewer notes eye also uses .hint-bottom. Keep this after the tooltip helper,
