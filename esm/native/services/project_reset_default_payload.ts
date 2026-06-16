@@ -11,10 +11,19 @@ import {
 } from '../runtime/project_recovery_action_result.js';
 import { normalizeResetDefaultProjectStructureInPlace } from '../io/project_payload_canonical.js';
 import { cloneProjectJson, isObjectRecord } from '../io/project_payload_shared.js';
+import { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from '../../shared/project_schema_constants.js';
 
 function cloneJsonProjectData(value: ProjectDataLike): ProjectDataLike & Record<string, unknown> {
   const cloned = cloneProjectJson(value);
   return isObjectRecord(cloned) ? (cloned as ProjectDataLike & Record<string, unknown>) : {};
+}
+
+function stampResetDefaultProjectSchema(data: ProjectDataLike & Record<string, unknown>): void {
+  data.__schema = PROJECT_SCHEMA_ID;
+  data.__version = PROJECT_SCHEMA_VERSION;
+  if (typeof data.__createdAt !== 'string' || !data.__createdAt.trim()) {
+    data.__createdAt = new Date().toISOString();
+  }
 }
 
 export function normalizeResetDefaultProjectData(
@@ -24,6 +33,7 @@ export function normalizeResetDefaultProjectData(
 
   const next = cloneJsonProjectData(data);
   normalizeResetDefaultProjectStructureInPlace(next);
+  stampResetDefaultProjectSchema(next);
   return next;
 }
 

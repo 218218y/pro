@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { normalizeProjectData } from '../esm/native/io/project_schema.ts';
+import { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from '../esm/shared/project_schema_constants.ts';
 import {
   buildResetDefaultProjectData,
   readResetDefaultProjectPayload,
@@ -40,6 +42,8 @@ test('reset default payload canonicalizes top modules and clears disabled struct
 
   const next = buildResetDefaultProjectData(App);
   assert.ok(next);
+  assert.equal(next?.__schema, PROJECT_SCHEMA_ID);
+  assert.equal(next?.__version, PROJECT_SCHEMA_VERSION);
   assert.equal(next?.projectName, '');
   assert.equal(next?.toggles?.cornerMode, false);
   assert.equal(next?.toggles?.removeDoors, false);
@@ -84,6 +88,8 @@ test('reset default payload reader returns canonical payload/load opts and preci
   const payload = readResetDefaultProjectPayload(App);
   assert.equal(payload.ok, true);
   if (payload.ok) {
+    assert.equal(payload.data.__schema, PROJECT_SCHEMA_ID);
+    assert.equal(payload.data.__version, PROJECT_SCHEMA_VERSION);
     assert.equal(payload.data.projectName, '');
     assert.deepEqual(payload.data.settings, {
       width: 120,
@@ -140,6 +146,36 @@ test('reset default payload reader returns canonical payload/load opts and preci
     reason: 'error',
     message: 'default builder exploded',
   });
+});
+
+test('reset default payload is accepted by the current-schema project loader', () => {
+  const App = {
+    services: {
+      projectIO: {
+        buildDefaultProjectData: () => ({
+          settings: {
+            width: 160,
+            height: 240,
+            depth: 55,
+            doors: 4,
+            wardrobeType: 'hinged',
+            structureSelection: '[2,2]',
+          },
+          toggles: { showHanger: true, showDimensions: true },
+          modulesConfiguration: [{ layout: 'hanging_top2' }, { layout: 'shelves' }],
+        }),
+      },
+    },
+  } as any;
+
+  const payload = readResetDefaultProjectPayload(App);
+  assert.equal(payload.ok, true);
+  if (!payload.ok) return;
+
+  const normalized = normalizeProjectData(payload.data);
+  assert.ok(normalized);
+  assert.equal(normalized.__schema, PROJECT_SCHEMA_ID);
+  assert.equal(normalized.__version, PROJECT_SCHEMA_VERSION);
 });
 
 test('reset default preserves healthy project branches when draft payload contains bigint/cycle junk', () => {
@@ -245,6 +281,8 @@ test('reset default command routes the cleaned payload through canonical project
   const result = resetProjectToDefault(App);
   assert.deepEqual(result, { ok: true, restoreGen: 9 });
   assert.equal(calls.length, 1);
+  assert.equal(calls[0].data.__schema, PROJECT_SCHEMA_ID);
+  assert.equal(calls[0].data.__version, PROJECT_SCHEMA_VERSION);
   assert.equal(calls[0].data.toggles.cornerMode, false);
   assert.equal(calls[0].data.toggles.sketchMode, false);
   assert.deepEqual(
