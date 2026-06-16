@@ -14,7 +14,7 @@ test('[project-save-load-controller] runtime export/download failures stay canon
     api: {
       exportProjectResultViaService: () => ({ ok: false, reason: 'invalid' }),
       getUiFeedback: () => ({}),
-      handleProjectFileLoadViaService: async (_app, evt) => ({ ok: !!evt, pending: false }),
+      loadProjectFileInputViaService: async (_app, evt) => ({ ok: !!evt, pending: false }),
       metaUiOnly: () => null,
       setDirtyViaActions: () => undefined,
     },
@@ -85,7 +85,7 @@ test('[project-save-load-controller] thrown save/load handlers preserve real err
           throw new Error('prompt exploded');
         },
       }),
-      handleProjectFileLoadViaService: async () => {
+      loadProjectFileInputViaService: async () => {
         throw new Error('load exploded');
       },
       metaUiOnly: () => null,
@@ -142,7 +142,7 @@ test('[project-save-load-controller] browser download failures preserve actionab
       getUiFeedback: () => ({
         openCustomPrompt: (_title, _def, cb) => cb('demo'),
       }),
-      handleProjectFileLoadViaService: async () => ({ ok: true }),
+      loadProjectFileInputViaService: async () => ({ ok: true }),
       metaUiOnly: () => null,
       setDirtyViaActions: () => undefined,
     },
@@ -196,7 +196,7 @@ test('[project-save-load-controller] thrown non-Error save failures keep canonic
           throw { message: 'prompt record exploded' };
         },
       }),
-      handleProjectFileLoadViaService: async () => ({ ok: true }),
+      loadProjectFileInputViaService: async () => ({ ok: true }),
       metaUiOnly: () => null,
       setDirtyViaActions: () => undefined,
       normalizeUnknownError: (error, fallbackMessage) => ({

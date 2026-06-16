@@ -249,12 +249,21 @@ test('project-io access, restore-generation, and callers stay on canonical servi
       /export function normalizeProjectIoLoadResult\(/,
       /export function exportProjectViaService\(\s*App: unknown,\s*meta\?: UnknownRecord \| null\s*\): ProjectExportResultLike \| null \| undefined/s,
       /export function exportProjectResultViaService\(/,
-      /export function handleProjectFileLoadViaService\(/,
       /export function loadProjectDataViaService\(\s*App: unknown,\s*data: ProjectLoadInputLike,/s,
       /export function restoreProjectSessionViaService\(/,
       /export function buildDefaultProjectDataViaService\(/,
       /getServiceSlotMaybe\(App, 'projectIO'\)/,
       /readAutosavePayloadFromStorageResult\(App\)/,
+    ],
+    'projectIoAccess'
+  );
+  assertLacksAll(
+    assert,
+    projectIoAccess,
+    [
+      /handleProjectFileLoadViaService/,
+      /handleProjectFileLoadResultViaService/,
+      /getProjectIoHandleFileLoadFn/,
     ],
     'projectIoAccess'
   );
@@ -268,12 +277,13 @@ test('project-io access, restore-generation, and callers stay on canonical servi
       /resetProjectToDefaultActionResult/,
       /resetProjectToDefault/,
       /loadProjectDataViaService/,
-      /handleProjectFileLoadViaService/,
+      /loadProjectFileInputViaService/,
       /nextProjectIoRestoreGeneration/,
       /isProjectIoRestoreGenerationCurrent/,
     ],
     'servicesApi'
   );
+  assertLacksAll(assert, servicesApi, [/handleProjectFileLoadViaService/], 'servicesApi');
 
   assertMatchesAll(
     assert,
@@ -294,7 +304,7 @@ test('project-io access, restore-generation, and callers stay on canonical servi
       /isProjectIoRestoreGenerationCurrent\(App,\s*[A-Za-z_$][\w$]*\)/,
       /setProjectIoRestoring\(\s*true,\s*(?:[A-Za-z_$][\w$]*\([^)]*\)|[A-Za-z_$][\w$]*)\s*\)/,
       /setProjectIoRestoring\(\s*false,\s*(?:[A-Za-z_$][\w$]*\([^)]*\)|[A-Za-z_$][\w$]*)\s*\)/,
-      /handleProjectFileLoadViaService\(app, evt\)/,
+      /loadProjectFileInputViaService\(app, evt\)/,
       /restoreProjectSessionWithConfirm\(app\)/,
       /resetProjectToDefaultWithConfirm\(app\)/,
       /buildResetDefaultProjectData\(/,
@@ -309,7 +319,7 @@ test('project-io access, restore-generation, and callers stay on canonical servi
       /reportProjectSaveResult\(fb, result\)|reportProjectSaveResult\(\{ toast \}, result\)|reportProjectSaveResult\(\{ toast: toast \}, result\)/,
       /exportProjectResultViaService\(\s*App,\s*\{\s*source:\s*'ui:saveProject'\s*\}/,
       /handleProjectSaveLoadInputChange\(App, toast, evt\)|runProjectLoadAction\(App, \{ toast \}, asProjectFileLoadEvent\(evt\) \?\? evt/,
-      /handleProjectFileLoadViaService\(App, file\)|runProjectLoadAction\(App, \{ toast \}, file/,
+      /loadProjectFileInputViaService\(App, file\)|runProjectLoadAction\(App, \{ toast \}, file/,
       /exportProjectResultViaService\(App, \{ source: 'smoke' \}/,
     ],
     'projectIoBundle'

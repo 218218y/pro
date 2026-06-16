@@ -34,7 +34,7 @@ test('[project-save-load-controller] installed save action exports current proje
           cb(' saved_name ');
         },
       }),
-      handleProjectFileLoadViaService: async () => ({ ok: true }),
+      loadProjectFileInputViaService: async () => ({ ok: true }),
       normalizeProjectIoLoadResult: value => value,
       metaUiOnly: (_app, _meta, source) => ({ source }),
       setDirtyViaActions: (_app, dirty, meta) => setDirtyCalls.push([dirty, meta]),

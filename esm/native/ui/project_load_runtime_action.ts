@@ -2,7 +2,7 @@ import type { AppContainer, ProjectFileLike, ProjectFileLoadEventLike } from '..
 
 import {
   buildProjectLoadFailureResult,
-  handleProjectFileLoadViaService,
+  loadProjectFileInputViaService,
   normalizeProjectLoadActionResult,
   type ProjectLoadActionResult,
 } from '../services/api.js';
@@ -62,7 +62,7 @@ export async function runProjectLoadAction(
   const runLoad = () =>
     runProjectLoadActionResult(
       feedback,
-      async () => normalizeProjectLoadActionResult(await handleProjectFileLoadViaService(App, actionInput)),
+      async () => normalizeProjectLoadActionResult(await loadProjectFileInputViaService(App, actionInput)),
       {
         fallbackMessage,
         clearInputTargetFrom,

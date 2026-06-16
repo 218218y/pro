@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { handleProjectFileLoadViaService } from '../esm/native/services/api_services_project_surface.ts';
+import { loadProjectFileInputViaService } from '../esm/native/services/api_services_project_surface.ts';
 
 function createNamedBlob(name: string, text = '{}'): Blob & { name: string } {
   const blob = new Blob([text], { type: 'application/json' }) as Blob & { name: string };
@@ -27,7 +27,7 @@ test('project file service uses the canonical async ingress and loadProjectData 
     },
   } as any;
 
-  const result = await handleProjectFileLoadViaService(App, file);
+  const result = await loadProjectFileInputViaService(App, file);
   assert.deepEqual(result, { ok: true, restoreGen: 11 });
   assert.equal(calls.length, 1);
   assert.match(calls[0], /"toast":false/);
@@ -48,7 +48,7 @@ test('project file service does not fall back to raw handleFileLoad when canonic
     },
   } as any;
 
-  const result = await handleProjectFileLoadViaService(App, file);
+  const result = await loadProjectFileInputViaService(App, file);
   assert.deepEqual(result, { ok: false, reason: 'not-installed' });
   assert.deepEqual(calls, []);
 });
@@ -71,7 +71,7 @@ test('project file service reports canonical file parse/read failures before ser
     },
   } as any;
 
-  const result = await handleProjectFileLoadViaService(App, invalidJsonFile);
+  const result = await loadProjectFileInputViaService(App, invalidJsonFile);
   assert.deepEqual(result, { ok: false, reason: 'invalid' });
   assert.deepEqual(calls, []);
 });

@@ -17,7 +17,7 @@ test('[project-save-load-controller] load action seam reuses same-key inflight l
 
   const mod = loadProjectSaveLoadControllerModule({
     api: {
-      handleProjectFileLoadViaService: async (_app, evt) => {
+      loadProjectFileInputViaService: async (_app, evt) => {
         loadCalls += 1;
         await loadGate;
         const target = (evt && typeof evt === 'object' && (evt.currentTarget || evt.target)) || null;

@@ -88,24 +88,52 @@ function normalizeLineEndings(text) {
   return String(text || '').replace(/\r\n/g, '\n');
 }
 
-function compareGeneratedArtifact({ file, expected }) {
+function normalizeMarkdownArtifact(text) {
+  return normalizeLineEndings(text)
+    .split('\n')
+    .map(line => line.replace(/[ \t]+$/g, ''))
+    .join('\n')
+    .replace(/\n+$/g, '');
+}
+
+function normalizeJsonForCompare(value) {
+  if (Array.isArray(value)) return value.map(normalizeJsonForCompare);
+  if (!value || typeof value !== 'object') return value;
+  return Object.fromEntries(
+    Object.entries(value)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, entry]) => [key, normalizeJsonForCompare(entry)])
+  );
+}
+
+function compareJsonArtifact({ file, expected }) {
   const actual = readTextIfExists(file);
-  if (actual !== null && normalizeLineEndings(actual) === normalizeLineEndings(expected)) return null;
-  return {
-    file: rel(root, file),
-    reason: actual === null ? 'missing' : 'stale',
-  };
+  if (actual === null) return { file: rel(root, file), reason: 'missing' };
+  try {
+    const actualComparable = JSON.stringify(normalizeJsonForCompare(JSON.parse(actual)));
+    const expectedComparable = JSON.stringify(normalizeJsonForCompare(expected));
+    if (actualComparable === expectedComparable) return null;
+    return { file: rel(root, file), reason: 'stale' };
+  } catch {
+    return { file: rel(root, file), reason: 'invalid-json' };
+  }
+}
+
+function compareTextArtifact({ file, expected }) {
+  const actual = readTextIfExists(file);
+  if (actual === null) return { file: rel(root, file), reason: 'missing' };
+  if (normalizeMarkdownArtifact(actual) === normalizeMarkdownArtifact(expected)) return null;
+  return { file: rel(root, file), reason: 'stale' };
 }
 
 function checkDocsAreCurrent(result) {
-  const expectedJson = `${JSON.stringify(result, null, 2)}\n`;
   const expectedMarkdown = buildMarkdownReport(result);
   return [
-    compareGeneratedArtifact({
+    compareJsonArtifact({
       file: path.join(root, 'docs/features_public_api_audit.json'),
-      expected: expectedJson,
+      expected: result,
     }),
-    compareGeneratedArtifact({
+    compareTextArtifact({
       file: path.join(root, 'docs/FEATURES_PUBLIC_API_AUDIT.md'),
       expected: expectedMarkdown,
     }),

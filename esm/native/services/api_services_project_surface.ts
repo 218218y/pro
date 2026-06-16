@@ -1,7 +1,5 @@
 // Project/data workflow service access public API section extracted from api_services_surface.ts
 
-import type { AppContainer } from '../../../types';
-
 import {
   getProjectIoServiceMaybe,
   ensureProjectIoService,
@@ -62,7 +60,6 @@ import {
   type ProjectRestoreFailureResult,
 } from '../runtime/project_recovery_action_result.js';
 import { normalizeModelsCommandReason } from '../runtime/models_access.js';
-import { assertApp } from '../runtime/api.js';
 import {
   normalizeModelRecord,
   normalizeModelList,
@@ -129,16 +126,6 @@ export type {
   ProjectRestoreFailureReason,
   ProjectRestoreFailureResult,
 };
-
-export async function handleProjectFileLoadViaService(
-  App: AppContainer | unknown,
-  eventOrFile: unknown
-): Promise<ProjectLoadActionResult> {
-  return normalizeProjectLoadActionResult(
-    await loadProjectFileInputViaService(assertApp(App, 'services/project_file_ingress'), eventOrFile),
-    'not-installed'
-  );
-}
 
 export {
   buildResetDefaultProjectData,

@@ -2,7 +2,7 @@
 
 import type { AppContainer, ProjectFileLoadEventLike } from '../../../../../types';
 import {
-  handleProjectFileLoadViaService,
+  loadProjectFileInputViaService,
   normalizeProjectLoadActionResult,
   saveProjectResultViaActions,
   type ProjectLoadActionResult,
@@ -23,7 +23,7 @@ export async function loadFromFileEvent(
   app: AppContainer,
   evt: ProjectFileLoadEventLike | unknown
 ): Promise<ProjectLoadActionResult> {
-  return normalizeProjectLoadActionResult(await handleProjectFileLoadViaService(app, evt), 'not-installed');
+  return normalizeProjectLoadActionResult(await loadProjectFileInputViaService(app, evt), 'not-installed');
 }
 
 export async function restoreLastSession(app: AppContainer): Promise<ProjectRestoreActionResult> {

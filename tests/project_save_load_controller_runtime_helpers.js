@@ -44,8 +44,8 @@ export function loadProjectSaveLoadControllerModule(overrides = {}) {
       const runLoad = async (_app, feedback, eventOrFile, options) => {
         try {
           const loadEvent = eventOrFile && typeof eventOrFile === 'object' ? { ...eventOrFile } : null;
-          const result = await (overrides.api?.handleProjectFileLoadViaService
-            ? overrides.api.handleProjectFileLoadViaService(_app, loadEvent ?? eventOrFile)
+          const result = await (overrides.api?.loadProjectFileInputViaService
+            ? overrides.api.loadProjectFileInputViaService(_app, loadEvent ?? eventOrFile)
             : { ok: !!eventOrFile, pending: false });
           overrides.feedback.reportProjectLoadResult(feedback, result);
           return result;

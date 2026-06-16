@@ -142,7 +142,7 @@ export {
   normalizeProjectIoLoadResult,
   loadProjectDataViaService,
   loadProjectDataResultViaService,
-  handleProjectFileLoadViaService,
+  loadProjectFileInputViaService,
   readAutosaveProjectPayload,
   restoreProjectAutosavePayloadActionResultViaService,
   restoreProjectSessionActionResultViaService,
