@@ -24,7 +24,6 @@ import {
 } from './project_io_access_shared.js';
 
 type ProjectIoLoadDataFn = (data: ProjectLoadInputLike, opts?: ProjectLoadOpts) => unknown;
-type ProjectIoHandleFileLoadFn = (eventOrFile: unknown) => unknown;
 type ProjectIoBuildDefaultDataFn = () => ProjectDataLike;
 
 export type ProjectExportAccessResult =
@@ -68,59 +67,6 @@ export function exportProjectResultViaService(
   } catch (error) {
     reportProjectIoAccessNonFatal(App, 'projectIO.exportCurrentProject.resultOwnerRejected', error);
     return buildNormalizedErrorResult('error', error, errorFallback);
-  }
-}
-
-export function getProjectIoHandleFileLoadFn(App: unknown): ProjectIoHandleFileLoadFn | null {
-  const svc = getProjectIoServiceMaybe(App);
-  return svc && typeof svc.handleFileLoad === 'function' ? svc.handleFileLoad : null;
-}
-
-export function handleProjectFileLoadViaService(App: unknown, eventOrFile: unknown): unknown {
-  try {
-    const handleFileLoad = getProjectIoHandleFileLoadFn(App);
-    return handleFileLoad ? handleFileLoad(eventOrFile) : undefined;
-  } catch (error) {
-    reportProjectIoAccessNonFatal(App, 'projectIO.handleFileLoad.ownerRejected', error);
-    return undefined;
-  }
-}
-
-export async function handleProjectFileLoadResultViaService(
-  App: unknown,
-  eventOrFile: unknown,
-  fallbackReason: ProjectIoLoadFailureLike = 'not-installed',
-  errorFallback = '[WardrobePro] Project file load failed.'
-): Promise<ProjectIoLoadResultLike> {
-  const handleFileLoad = getProjectIoHandleFileLoadFn(App);
-  if (typeof handleFileLoad !== 'function') {
-    return { ok: false, reason: 'not-installed' };
-  }
-
-  try {
-    return normalizeProjectIoLoadResult(await handleFileLoad(eventOrFile), fallbackReason);
-  } catch (error) {
-    reportProjectIoAccessNonFatal(App, 'projectIO.handleFileLoad.resultOwnerRejected', error);
-    return buildNormalizedErrorResult('error', error, errorFallback);
-  }
-}
-
-export async function handleProjectFileLoadActionResultViaService(
-  App: unknown,
-  eventOrFile: unknown,
-  fallbackReason: ProjectLoadFailureReason = 'not-installed',
-  errorFallback = '[WardrobePro] Project file load failed.'
-): Promise<ProjectLoadActionResult> {
-  const handleFileLoad = getProjectIoHandleFileLoadFn(App);
-  if (typeof handleFileLoad !== 'function') {
-    return { ok: false, reason: 'not-installed' };
-  }
-
-  try {
-    return normalizeProjectLoadActionResultViaProjectIo(await handleFileLoad(eventOrFile), fallbackReason);
-  } catch (error) {
-    reportProjectIoAccessNonFatal(App, 'projectIO.handleFileLoad.actionOwnerRejected', error);
-    return buildProjectLoadActionErrorResult(error, errorFallback);
   }
 }
 

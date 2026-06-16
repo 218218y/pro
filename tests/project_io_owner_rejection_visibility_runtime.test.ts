@@ -4,7 +4,6 @@ import assert from 'node:assert/strict';
 import {
   buildDefaultProjectDataViaService,
   exportProjectViaService,
-  handleProjectFileLoadResultViaService,
   loadProjectDataResultViaService,
   restoreProjectSessionViaService,
 } from '../esm/native/runtime/project_io_access.ts';
@@ -52,24 +51,6 @@ test('project io access reports loadProjectData owner rejection while preserving
     reports[0],
     /installed project loader rejected/,
     'projectIO.loadProjectData.resultOwnerRejected'
-  );
-});
-
-test('project io access reports handleFileLoad owner rejection while preserving async error-result recovery', async () => {
-  const { App, reports } = createReportingProjectIoApp({
-    async handleFileLoad() {
-      throw new Error('installed file loader rejected');
-    },
-  });
-
-  const result = await handleProjectFileLoadResultViaService(App, { name: 'demo.json' });
-
-  assert.deepEqual(result, { ok: false, reason: 'error', message: 'installed file loader rejected' });
-  assert.equal(reports.length, 1);
-  assertProjectIoReport(
-    reports[0],
-    /installed file loader rejected/,
-    'projectIO.handleFileLoad.resultOwnerRejected'
   );
 });
 

@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-06-16T10:46:19.333Z",
+  "generatedAt": "2026-06-16T14:24:38.309Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 495,
+    "totalOccurrences": 491,
     "totalFiles": 159,
     "byCategory": {
       "runtime-default": 0,
@@ -10,7 +10,7 @@
       "error-message-default": 29,
       "framework-default": 2,
       "browser-adapter": 40,
-      "project-migration": 41,
+      "project-migration": 37,
       "external-api-compat": 12,
       "compat-boundary": 177,
       "test-fixture": 6,
@@ -443,9 +443,9 @@
         }
       },
       "esm/native/runtime/project_io_access_load.ts": {
-        "total": 16,
+        "total": 12,
         "categories": {
-          "project-migration": 16
+          "project-migration": 12
         }
       },
       "esm/native/runtime/project_io_access_restore.ts": {
@@ -1009,13 +1009,6 @@
         }
       },
       {
-        "file": "esm/native/runtime/project_io_access_load.ts",
-        "total": 16,
-        "categories": {
-          "project-migration": 16
-        }
-      },
-      {
         "file": "esm/native/runtime/render_access_state_runtime.ts",
         "total": 14,
         "categories": {
@@ -1027,6 +1020,13 @@
         "total": 13,
         "categories": {
           "project-migration": 13
+        }
+      },
+      {
+        "file": "esm/native/runtime/project_io_access_load.ts",
+        "total": 12,
+        "categories": {
+          "project-migration": 12
         }
       },
       {
@@ -2616,112 +2616,84 @@
     },
     {
       "file": "esm/native/runtime/project_io_access_load.ts",
-      "line": 58,
+      "line": 57,
       "term": "errorFallback",
       "category": "project-migration",
       "text": "errorFallback = '[WardrobePro] Project export failed.'"
     },
     {
       "file": "esm/native/runtime/project_io_access_load.ts",
-      "line": 70,
+      "line": 69,
       "term": "errorFallback",
       "category": "project-migration",
       "text": "return buildNormalizedErrorResult('error', error, errorFallback);"
     },
     {
       "file": "esm/native/runtime/project_io_access_load.ts",
-      "line": 93,
-      "term": "errorFallback",
-      "category": "project-migration",
-      "text": "errorFallback = '[WardrobePro] Project file load failed.'"
-    },
-    {
-      "file": "esm/native/runtime/project_io_access_load.ts",
-      "line": 104,
-      "term": "errorFallback",
-      "category": "project-migration",
-      "text": "return buildNormalizedErrorResult('error', error, errorFallback);"
-    },
-    {
-      "file": "esm/native/runtime/project_io_access_load.ts",
-      "line": 112,
-      "term": "errorFallback",
-      "category": "project-migration",
-      "text": "errorFallback = '[WardrobePro] Project file load failed.'"
-    },
-    {
-      "file": "esm/native/runtime/project_io_access_load.ts",
-      "line": 123,
-      "term": "errorFallback",
-      "category": "project-migration",
-      "text": "return buildProjectLoadActionErrorResult(error, errorFallback);"
-    },
-    {
-      "file": "esm/native/runtime/project_io_access_load.ts",
-      "line": 151,
+      "line": 97,
       "term": "errorFallback",
       "category": "project-migration",
       "text": "errorFallback = '[WardrobePro] Project load failed.'"
     },
     {
       "file": "esm/native/runtime/project_io_access_load.ts",
-      "line": 162,
+      "line": 108,
       "term": "errorFallback",
       "category": "project-migration",
       "text": "return buildNormalizedErrorResult('error', error, errorFallback);"
     },
     {
       "file": "esm/native/runtime/project_io_access_load.ts",
-      "line": 171,
+      "line": 117,
       "term": "errorFallback",
       "category": "project-migration",
       "text": "errorFallback = '[WardrobePro] Project load failed.'"
     },
     {
       "file": "esm/native/runtime/project_io_access_load.ts",
-      "line": 182,
+      "line": 128,
       "term": "errorFallback",
       "category": "project-migration",
       "text": "return buildProjectLoadActionErrorResult(error, errorFallback);"
     },
     {
       "file": "esm/native/runtime/project_io_access_load.ts",
-      "line": 191,
+      "line": 137,
       "term": "errorFallback",
       "category": "project-migration",
       "text": "errorFallback = '[WardrobePro] Project load failed.',"
     },
     {
       "file": "esm/native/runtime/project_io_access_load.ts",
-      "line": 194,
+      "line": 140,
       "term": "errorFallback",
       "category": "project-migration",
       "text": "const result = loadProjectDataResultViaService(App, data, opts, fallbackReason, errorFallback);"
     },
     {
       "file": "esm/native/runtime/project_io_access_load.ts",
-      "line": 196,
+      "line": 142,
       "term": "errorFallback",
       "category": "project-migration",
       "text": "throw new Error(buildProjectIoLoadFailureMessage(result, label, errorFallback));"
     },
     {
       "file": "esm/native/runtime/project_io_access_load.ts",
-      "line": 204,
+      "line": 150,
       "term": "errorFallback",
       "category": "project-migration",
       "text": "errorFallback = '[WardrobePro] Project load failed.',"
     },
     {
       "file": "esm/native/runtime/project_io_access_load.ts",
-      "line": 207,
+      "line": 153,
       "term": "errorFallback",
       "category": "project-migration",
       "text": "const result = loadProjectDataActionResultViaService(App, data, opts, fallbackReason, errorFallback);"
     },
     {
       "file": "esm/native/runtime/project_io_access_load.ts",
-      "line": 209,
+      "line": 155,
       "term": "errorFallback",
       "category": "project-migration",
       "text": "throw new Error(buildProjectIoLoadFailureMessage(result, label, errorFallback));"

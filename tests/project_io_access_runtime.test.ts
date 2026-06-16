@@ -4,9 +4,7 @@ import assert from 'node:assert/strict';
 import {
   ensureProjectIoRuntime,
   ensureProjectIoService,
-  handleProjectFileLoadActionResultViaService,
   getProjectIoRestoreGeneration,
-  handleProjectFileLoadResultViaService,
   loadProjectDataActionResultViaService,
   isProjectIoRestoreGenerationCurrent,
   loadProjectDataResultViaService,
@@ -69,66 +67,20 @@ test('project io access preserves concrete load failures through the shared load
   );
 });
 
-test('project io access preserves concrete legacy handleFileLoad failures through the shared file-load seam', async () => {
-  const missingApp = {} as any;
-  assert.deepEqual(await handleProjectFileLoadResultViaService(missingApp, { name: 'demo.json' }), {
-    ok: false,
-    reason: 'not-installed',
-  });
-
-  const App = {} as any;
-  const svc = ensureProjectIoService(App) as any;
-  App.services.platform = { reportError() {} };
-  svc.handleFileLoad = async () => ({ ok: false, reason: 'invalid', message: 'bad file payload' });
-  assert.deepEqual(await handleProjectFileLoadResultViaService(App, { name: 'demo.json' }, 'load'), {
-    ok: false,
-    reason: 'invalid',
-    message: 'bad file payload',
-  });
-
-  svc.handleFileLoad = async () => {
-    throw new Error('legacy file handler exploded');
-  };
-  assert.deepEqual(
-    await handleProjectFileLoadResultViaService(
-      App,
-      { name: 'demo.json' },
-      'load',
-      '[WardrobePro] Shared file-load seam failed.'
-    ),
-    {
-      ok: false,
-      reason: 'error',
-      message: 'legacy file handler exploded',
-    }
-  );
-});
-
-test('project io access also exposes canonical load/file-load action results for runtime callers', async () => {
+test('project io access exposes canonical load action results for runtime callers', () => {
   const missingApp = {} as any;
   assert.deepEqual(loadProjectDataActionResultViaService(missingApp, { settings: {} }), {
     ok: false,
     reason: 'not-installed',
   });
-  assert.deepEqual(await handleProjectFileLoadActionResultViaService(missingApp, { name: 'demo.json' }), {
-    ok: false,
-    reason: 'not-installed',
-  });
-
   const App = {} as any;
   const svc = ensureProjectIoService(App) as any;
-  svc.loadProjectData = () => ({ ok: false, reason: 'load', message: 'legacy loader reason' });
-  svc.handleFileLoad = async () => ({ ok: false, reason: 'load', message: 'legacy file reason' });
+  svc.loadProjectData = () => ({ ok: false, reason: 'load', message: 'loader reason' });
 
   assert.deepEqual(loadProjectDataActionResultViaService(App, { settings: {} }, undefined, 'error'), {
     ok: false,
     reason: 'error',
-    message: 'legacy loader reason',
-  });
-  assert.deepEqual(await handleProjectFileLoadActionResultViaService(App, { name: 'demo.json' }, 'error'), {
-    ok: false,
-    reason: 'error',
-    message: 'legacy file reason',
+    message: 'loader reason',
   });
 });
 

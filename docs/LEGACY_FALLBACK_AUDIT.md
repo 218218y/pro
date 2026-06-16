@@ -1,11 +1,11 @@
 # Legacy / fallback audit
 
-Generated at: 2026-06-16T10:46:19.333Z
+Generated at: 2026-06-16T14:24:38.309Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **495**
+- Total categorized occurrences: **491**
 - Files with occurrences: **159**
 - Category counts:
   - `runtime-default`: **0**
@@ -13,7 +13,7 @@ Generated at: 2026-06-16T10:46:19.333Z
   - `error-message-default`: **29**
   - `framework-default`: **2**
   - `browser-adapter`: **40**
-  - `project-migration`: **41**
+  - `project-migration`: **37**
   - `external-api-compat`: **12**
   - `compat-boundary`: **177**
   - `test-fixture`: **6**
@@ -38,9 +38,9 @@ Generated at: 2026-06-16T10:46:19.333Z
 - `esm/native/services/cloud_sync_panel_api_snapshots_sources.ts` - **21** (compat-boundary: 6, domain-default: 15)
 - `esm/native/services/scene_view_lighting_renderer.ts` - **21** (compat-boundary: 13, external-api-compat: 8)
 - `esm/entry_pro_overlay.ts` - **19** (browser-adapter: 19)
-- `esm/native/runtime/project_io_access_load.ts` - **16** (project-migration: 16)
 - `esm/native/runtime/render_access_state_runtime.ts` - **14** (compat-boundary: 14)
 - `esm/native/runtime/project_io_access_restore.ts` - **13** (project-migration: 13)
+- `esm/native/runtime/project_io_access_load.ts` - **12** (project-migration: 12)
 - `esm/native/builder/scheduler_install.ts` - **10** (compat-boundary: 10)
 - `esm/native/services/autosave_shared.ts` - **10** (compat-boundary: 10)
 - `esm/entry_pro_shared.ts` - **8** (browser-adapter: 8)

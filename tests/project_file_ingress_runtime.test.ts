@@ -76,9 +76,12 @@ test('project drag-drop routes JSON files through canonical ProjectIO file ingre
     const App = {
       services: {
         projectIO: {
-          handleFileLoad(input: unknown) {
-            calls.push(input);
+          loadProjectData(data: unknown, opts?: unknown) {
+            calls.push({ data, opts });
             return { ok: true, restoreGen: 3 };
+          },
+          handleFileLoad() {
+            throw new Error('raw ProjectIO.handleFileLoad should not be used by drag-drop');
           },
         },
       },
@@ -102,7 +105,12 @@ test('project drag-drop routes JSON files through canonical ProjectIO file ingre
       }) as unknown as Event
     );
 
-    assert.deepEqual(calls, [file]);
+    assert.deepEqual(calls, [
+      {
+        data: {},
+        opts: { toast: false, meta: { source: 'load.file' } },
+      },
+    ]);
     assert.deepEqual(toasts, [{ msg: 'הפרויקט נטען בהצלחה!', type: 'success' }]);
     assert.equal(classNames.has('is-dragover'), false);
   } finally {
@@ -125,9 +133,12 @@ test('project drag-drop rejects non-json files before touching ProjectIO', async
     const App = {
       services: {
         projectIO: {
-          handleFileLoad(input: unknown) {
-            calls.push(input);
+          loadProjectData(data: unknown, opts?: unknown) {
+            calls.push({ data, opts });
             return { ok: true, restoreGen: 3 };
+          },
+          handleFileLoad() {
+            throw new Error('raw ProjectIO.handleFileLoad should not be used by drag-drop');
           },
         },
       },

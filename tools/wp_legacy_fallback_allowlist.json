@@ -428,9 +428,9 @@
       }
     },
     "esm/native/runtime/project_io_access_load.ts": {
-      "total": 16,
+      "total": 12,
       "categories": {
-        "project-migration": 16
+        "project-migration": 12
       }
     },
     "esm/native/runtime/project_io_access_restore.ts": {
