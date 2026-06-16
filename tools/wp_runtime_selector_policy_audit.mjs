@@ -137,21 +137,19 @@ function requirePublicUiRawExports(rel, source) {
 }
 
 const loaderRel = 'esm/native/io/project_io_orchestrator_project_load.ts';
-const migrationsRel = 'esm/native/io/project_migrations/index.ts';
 const uiSelectorsRel = 'esm/native/runtime/ui_raw_selectors.ts';
 const uiSnapshotSelectorsRel = 'esm/native/runtime/ui_raw_selectors_snapshot.ts';
 const uiCanonicalSelectorsRel = 'esm/native/runtime/ui_raw_selectors_canonical.ts';
-const cfgMigrationRel = 'esm/native/io/project_migrations/config_snapshot_migration.ts';
+const canonicalSnapshotRel = 'esm/native/io/project_load_canonical_snapshot.ts';
 const runtimeSelectorTestRel = 'tests/project_migration_runtime_selector_hardening_runtime.test.ts';
 const coreApiRel = 'esm/native/core/api.ts';
 const stateSurfaceRel = 'esm/native/services/api_state_surface.ts';
 
 const loader = read(loaderRel);
-const migrations = read(migrationsRel);
 const uiSelectors = read(uiSelectorsRel);
 const uiSnapshotSelectors = read(uiSnapshotSelectorsRel);
 const uiCanonicalSelectors = read(uiCanonicalSelectorsRel);
-const cfgMigration = read(cfgMigrationRel);
+const canonicalSnapshot = read(canonicalSnapshotRel);
 const runtimeSelectorTest = read(runtimeSelectorTestRel);
 const coreApi = read(coreApiRel);
 const stateSurface = read(stateSurfaceRel);
@@ -160,13 +158,13 @@ requireIncludes(
   loaderRel,
   loader,
   'buildCanonicalProjectUiSnapshot',
-  'project load must canonicalize ui snapshots through the migration owner'
+  'project load must canonicalize ui snapshots through the current-schema snapshot owner'
 );
 requireIncludes(
   loaderRel,
   loader,
   'buildCanonicalProjectConfigSnapshot',
-  'project load must canonicalize config snapshots through the migration owner'
+  'project load must canonicalize config snapshots through the current-schema snapshot owner'
 );
 requireIncludes(
   loaderRel,
@@ -182,28 +180,40 @@ requireNotIncludes(
 );
 
 requireIncludes(
-  migrationsRel,
-  migrations,
-  './ui_raw_snapshot_migration.js',
-  'migration barrel must export the ui.raw migration owner'
+  loaderRel,
+  loader,
+  "from './project_load_canonical_snapshot.js'",
+  'project load must import the current-schema snapshot owner directly'
 );
 requireIncludes(
-  migrationsRel,
-  migrations,
-  './config_snapshot_migration.js',
-  'migration barrel must export the config migration owner'
+  canonicalSnapshotRel,
+  canonicalSnapshot,
+  'canonicalizeProjectUiSnapshot',
+  'current-schema snapshot owner must expose ui.raw canonicalization'
 );
 requireIncludes(
-  cfgMigrationRel,
-  cfgMigration,
-  'PROJECT_CONFIG_MIGRATION_REQUIRED_KEYS',
-  'config migration owner must define canonical required keys'
+  canonicalSnapshotRel,
+  canonicalSnapshot,
+  'buildCanonicalProjectUiSnapshot',
+  'current-schema snapshot owner must expose project-load ui.raw snapshots'
 );
 requireIncludes(
-  cfgMigrationRel,
-  cfgMigration,
+  canonicalSnapshotRel,
+  canonicalSnapshot,
+  'PROJECT_CONFIG_SNAPSHOT_REQUIRED_KEYS',
+  'current-schema snapshot owner must define canonical config required keys'
+);
+requireIncludes(
+  canonicalSnapshotRel,
+  canonicalSnapshot,
   'assertCanonicalProjectConfigSnapshot',
-  'config migration owner must expose a fail-fast assertion'
+  'current-schema snapshot owner must expose a fail-fast config assertion'
+);
+requireNotIncludes(
+  canonicalSnapshotRel,
+  canonicalSnapshot,
+  'filledKeys',
+  'current-schema ui.raw canonicalization must not fill from old top-level UI fields'
 );
 
 requireIncludes(
@@ -306,8 +316,8 @@ requirePublicUiRawExports(stateSurfaceRel, stateSurface);
 requireIncludes(
   runtimeSelectorTestRel,
   runtimeSelectorTest,
-  'canonical ui.raw batch readers fail fast before project ingress migration and stay raw-only afterwards',
-  'runtime selector tests must cover canonical batch readers against legacy ui.* fallback regression'
+  'canonical ui.raw batch readers fail fast for old top-level-only snapshots before and after project ingress canonicalization',
+  'runtime selector tests must cover canonical batch readers against old ui.* fallback regression'
 );
 requireIncludes(
   runtimeSelectorTestRel,
@@ -318,8 +328,8 @@ requireIncludes(
 requireIncludes(
   runtimeSelectorTestRel,
   runtimeSelectorTest,
-  'readCanonicalUiRawDimsCmFromSnapshot(legacySnapshot',
-  'runtime selector tests must prove canonical batch readers reject unmigrated legacy snapshots'
+  'readCanonicalUiRawDimsCmFromSnapshot(oldSnapshot',
+  'runtime selector tests must prove canonical batch readers reject old top-level-only snapshots'
 );
 
 if (failures.length) {

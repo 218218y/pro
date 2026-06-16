@@ -225,24 +225,6 @@
         "compat-boundary": 3
       }
     },
-    "esm/native/io/project_schema_migrate.ts": {
-      "total": 2,
-      "categories": {
-        "project-migration": 2
-      }
-    },
-    "esm/native/io/project_schema_migrations_settings.ts": {
-      "total": 5,
-      "categories": {
-        "project-migration": 5
-      }
-    },
-    "esm/native/io/project_schema_migrations.ts": {
-      "total": 1,
-      "categories": {
-        "project-migration": 1
-      }
-    },
     "esm/native/io/project_schema_shared.ts": {
       "total": 8,
       "categories": {

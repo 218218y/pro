@@ -1,5 +1,4 @@
 import type {
-  ProjectDataEnvelopeLike,
   ProjectDataLike,
   ProjectLoadOpts,
   HandleType,
@@ -33,14 +32,14 @@ export function asRecord(v: unknown): UnknownRecord | null {
 }
 
 export function readProjectSettings(
-  rec: ProjectDataLike | ProjectDataEnvelopeLike | UnknownRecord | null | undefined
+  rec: ProjectDataLike | UnknownRecord | null | undefined
 ): ProjectSettingsLike {
   const settings = asRecord(asRecord(rec)?.settings);
   return settings ? { ...settings } : {};
 }
 
 export function readProjectToggles(
-  rec: ProjectDataLike | ProjectDataEnvelopeLike | UnknownRecord | null | undefined
+  rec: ProjectDataLike | UnknownRecord | null | undefined
 ): ProjectTogglesLike {
   const toggles = asRecord(asRecord(rec)?.toggles);
   return toggles ? { ...toggles } : {};

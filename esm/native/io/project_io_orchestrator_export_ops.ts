@@ -52,8 +52,6 @@ export function createProjectIoExportOps(
       const projectData = finalizeProjectForSave(projectDataRaw);
       if (!projectData || !projectData.settings) throw new Error('Project capture unavailable');
 
-      projectData.version = projectData.version || '1.8-step7';
-      projectData.format = projectData.format || 'step7';
       projectData.projectName = projectData.projectName || projectName;
       projectData.timestamp = Date.now();
 

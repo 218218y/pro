@@ -148,6 +148,8 @@ test('[wave7] save helpers normalize persisted payloads and default project snap
         splitDoorsBottomMap: { d2: 3 },
         mirrorLayoutMap: { d1_full: [{ widthCm: 40, heightCm: 80 }, { widthCm: 0 }], bad: { nope: true } },
         doorTrimMap: { d1_full: [{ axis: 'vertical', span: 'half', color: 'gold' }, { axis: 'bad' }], bad: 7 },
+        version: '1.8-step7',
+        format: 'step7',
         __app: {},
       },
       { cloneJson, schemaId: 'wardrobepro.test', schemaVersion: 77, buildTags: { channel: 'test' }, userAgent: 'node:test' }
@@ -185,6 +187,8 @@ test('[wave7] save helpers normalize persisted payloads and default project snap
   assert.equal(Object.prototype.hasOwnProperty.call(finalized.doorTrimMap, 'bad'), false);
   assert.equal(finalized.__schema, 'wardrobepro.test');
   assert.equal(finalized.__version, 77);
+  assert.equal(Object.prototype.hasOwnProperty.call(finalized, 'version'), false);
+  assert.equal(Object.prototype.hasOwnProperty.call(finalized, 'format'), false);
   assert.deepEqual(finalized.__app.buildTags, { channel: 'test' });
   assert.equal(finalized.__app.userAgent, 'node:test');
   assert.equal(typeof finalized.__createdAt, 'string');

@@ -19,6 +19,8 @@ function createTextDeps(overrides: Record<string, unknown> = {}) {
       depth: 55,
       singleDoorPos: 'left',
     },
+    hasCornice: true,
+    corniceType: 'wave',
     selectedModelId: 'model-1',
     doorStyle: 'profile',
   };
@@ -50,6 +52,7 @@ test('export order pdf text ops compose details, bidi, and layout behavior from 
   assert.match(details, /דלתות: 3, מלמין, פרופיל/);
   assert.match(details, /מידות \(ס"מ\): 150×240×55/);
   assert.match(details, /חלוקת גוף: 50-100/);
+  assert.match(details, /קרניז: גל/);
 
   const wrapped = ops.wrapTextToWidth(
     'alpha beta gamma',
@@ -103,4 +106,34 @@ test('export order pdf text uses wardrobe-type depth fallback only when raw dept
   assert.match(slidingDetails, /סוג: הזזה/);
   assert.match(slidingDetails, /דלתות: 2, סנדביץ', פוסט/);
   assert.match(slidingDetails, /מידות \(ס"מ\): 160×240×60/);
+});
+
+test('export order pdf text includes classic cornice only when the main cornice flag is enabled', () => {
+  const ops = createExportOrderPdfTextOps(
+    createTextDeps({
+      getCfg: () => ({ wardrobeType: 'hinged', boardMaterial: 'sandwich', doorStyle: 'flat' }),
+      getUi: () => ({ raw: { doors: 2, width: 120, height: 240, depth: 55 }, hasCornice: '1' }),
+      getModelById: () => null,
+    })
+  );
+
+  const details = ops.buildOrderDetailsText({} as never);
+  assert.match(details, /קרניז: רגיל/);
+});
+
+test('export order pdf text omits cornice when the main cornice flag is disabled', () => {
+  const ops = createExportOrderPdfTextOps(
+    createTextDeps({
+      getCfg: () => ({ wardrobeType: 'hinged', boardMaterial: 'sandwich', doorStyle: 'flat' }),
+      getUi: () => ({
+        raw: { doors: 2, width: 120, height: 240, depth: 55 },
+        hasCornice: false,
+        corniceType: 'wave',
+      }),
+      getModelById: () => null,
+    })
+  );
+
+  const details = ops.buildOrderDetailsText({} as never);
+  assert.doesNotMatch(details, /קרניז:/);
 });

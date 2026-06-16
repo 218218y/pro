@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { normalizeProjectData } from '../esm/native/io/project_schema.ts';
+import { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from '../esm/shared/project_schema_constants.ts';
 import { buildProjectPdfUiPatch, buildProjectUiSnapshot } from '../esm/native/io/project_io_load_helpers.ts';
 
 function cloneJson<T>(value: T): T {
@@ -10,6 +11,8 @@ function cloneJson<T>(value: T): T {
 
 test('project payload runtime: schema/load helpers normalize saved notes, pdf draft, and pre-chest state', () => {
   const normalized = normalizeProjectData({
+    __schema: PROJECT_SCHEMA_ID,
+    __version: PROJECT_SCHEMA_VERSION,
     settings: {
       wardrobeType: 'hinged',
       projectName: 'Demo',
@@ -55,6 +58,8 @@ test('project payload runtime: pdf draft clone keeps valid branches when malform
   cyclic.self = cyclic;
 
   const normalized = normalizeProjectData({
+    __schema: PROJECT_SCHEMA_ID,
+    __version: PROJECT_SCHEMA_VERSION,
     settings: { wardrobeType: 'hinged', projectName: 'Demo' },
     orderPdfEditorDraft: {
       notes: 'Hello',
@@ -75,6 +80,8 @@ test('project payload runtime: pdf draft clone keeps valid branches when malform
 });
 test('project payload runtime: schema canonicalizes structural config slices before load helpers run', () => {
   const normalized = normalizeProjectData({
+    __schema: PROJECT_SCHEMA_ID,
+    __version: PROJECT_SCHEMA_VERSION,
     settings: {
       wardrobeType: 'hinged',
       doors: 5,
@@ -98,6 +105,8 @@ test('project payload runtime: schema canonicalizes structural config slices bef
 
 test('project payload runtime: load helpers restore top-level projectName when legacy settings.projectName is absent', () => {
   const normalized = normalizeProjectData({
+    __schema: PROJECT_SCHEMA_ID,
+    __version: PROJECT_SCHEMA_VERSION,
     settings: {
       wardrobeType: 'hinged',
       width: 160,
@@ -115,6 +124,8 @@ test('project payload runtime: load helpers restore top-level projectName when l
 
 test('project payload runtime: load helpers respect explicit empty top-level projectName instead of reviving the previous name', () => {
   const normalized = normalizeProjectData({
+    __schema: PROJECT_SCHEMA_ID,
+    __version: PROJECT_SCHEMA_VERSION,
     settings: {
       wardrobeType: 'hinged',
       width: 160,
@@ -132,6 +143,8 @@ test('project payload runtime: load helpers respect explicit empty top-level pro
 
 test('project payload runtime: essential ui dims accept numeric strings from persisted saved-model snapshots', () => {
   const normalized = normalizeProjectData({
+    __schema: PROJECT_SCHEMA_ID,
+    __version: PROJECT_SCHEMA_VERSION,
     settings: {
       wardrobeType: 'hinged',
       width: '160',
@@ -151,6 +164,8 @@ test('project payload runtime: essential ui dims accept numeric strings from per
 
 test('project payload runtime: load helper mirrors structural module controls into ui.raw', () => {
   const normalized = normalizeProjectData({
+    __schema: PROJECT_SCHEMA_ID,
+    __version: PROJECT_SCHEMA_VERSION,
     settings: {
       wardrobeType: 'hinged',
       width: 160,

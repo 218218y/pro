@@ -4,8 +4,8 @@ import { readFileSync } from 'node:fs';
 
 import {
   buildCanonicalProjectUiSnapshot,
-  migrateProjectUiSnapshotToCanonicalRaw,
-} from '../esm/native/io/project_migrations/ui_raw_snapshot_migration.ts';
+  canonicalizeProjectUiSnapshot,
+} from '../esm/native/io/project_load_canonical_snapshot.ts';
 import {
   assertCanonicalUiRawDims,
   readCanonicalUiRawDimsCmFromSnapshot,
@@ -15,8 +15,8 @@ import {
   readUiRawScalarFromCanonicalSnapshot,
 } from '../esm/native/runtime/ui_raw_selectors.ts';
 
-test('project UI raw migration canonicalizes existing raw scalar values before runtime selectors read them', () => {
-  const legacySnapshot = {
+test('project UI raw canonical snapshot normalizes existing raw scalar values only', () => {
+  const snapshot = {
     width: '160',
     height: '240',
     depth: '55',
@@ -32,32 +32,37 @@ test('project UI raw migration canonicalizes existing raw scalar values before r
     },
   };
 
-  const migrated = migrateProjectUiSnapshotToCanonicalRaw(legacySnapshot);
+  const canonicalized = canonicalizeProjectUiSnapshot(snapshot);
+  const canonicalSnapshot = canonicalized.ui;
 
-  assert.equal(migrated.raw.width, 180.5);
-  assert.equal(migrated.raw.height, 240);
-  assert.equal(migrated.raw.depth, null);
-  assert.equal(migrated.raw.doors, 3);
-  assert.equal(migrated.raw.stackSplitLowerDepthManual, true);
+  assert.equal(canonicalized.raw.width, 180.5);
+  assert.equal(Object.prototype.hasOwnProperty.call(canonicalized.raw, 'height'), false);
+  assert.equal(canonicalized.raw.depth, null);
+  assert.equal(canonicalized.raw.doors, 3);
+  assert.equal(canonicalized.raw.stackSplitLowerDepthManual, true);
   assert.equal(
-    Object.prototype.hasOwnProperty.call(migrated.raw, 'stackSplitLowerWidthManual'),
+    Object.prototype.hasOwnProperty.call(canonicalized.raw, 'stackSplitLowerWidthManual'),
     false,
     'invalid typed scalar raw values should not survive canonical project ingress'
   );
-  assert.equal(migrated.raw.customExperimentalKey, 'keep-me');
+  assert.equal(canonicalized.raw.customExperimentalKey, 'keep-me');
 
-  assert.deepEqual(migrated.filledKeys, ['height']);
-  assert.deepEqual([...migrated.normalizedKeys].sort(), ['doors', 'width']);
+  assert.deepEqual([...canonicalized.droppedKeys].sort(), ['height', 'stackSplitLowerWidthManual']);
+  assert.deepEqual([...canonicalized.normalizedKeys].sort(), ['doors', 'width']);
+  assert.equal(Object.prototype.hasOwnProperty.call(canonicalized, 'filledKeys'), false);
 
-  assert.equal(readUiRawScalarFromCanonicalSnapshot(migrated.ui, 'width'), 180.5);
-  assert.equal(readUiRawScalarFromCanonicalSnapshot(migrated.ui, 'height'), 240);
-  assert.equal(readUiRawScalarFromCanonicalSnapshot(migrated.ui, 'depth'), null);
-  assert.equal(readUiRawScalarFromCanonicalSnapshot(migrated.ui, 'doors'), 3);
-  assert.doesNotThrow(() => assertCanonicalUiRawDims(migrated.ui, 'stage19.fixture'));
+  assert.equal(readUiRawScalarFromCanonicalSnapshot(canonicalSnapshot, 'width'), 180.5);
+  assert.equal(readUiRawScalarFromCanonicalSnapshot(canonicalSnapshot, 'height'), undefined);
+  assert.equal(readUiRawScalarFromCanonicalSnapshot(canonicalSnapshot, 'depth'), null);
+  assert.equal(readUiRawScalarFromCanonicalSnapshot(canonicalSnapshot, 'doors'), 3);
+  assert.throws(
+    () => assertCanonicalUiRawDims(canonicalSnapshot, 'current-schema.fixture'),
+    /current-schema\.fixture missing canonical ui\.raw dimension\(s\): height/
+  );
 });
 
-test('canonical runtime selector stays raw-only while project ingress migrates legacy top-level dimensions', () => {
-  const legacySnapshot = {
+test('canonical runtime selector stays raw-only and project ingress does not materialize old top-level dimensions', () => {
+  const oldSnapshot = {
     width: '160',
     height: '240',
     depth: '55',
@@ -68,22 +73,25 @@ test('canonical runtime selector stays raw-only while project ingress migrates l
   };
 
   assert.equal(
-    readUiRawScalarFromCanonicalSnapshot(legacySnapshot, 'width'),
+    readUiRawScalarFromCanonicalSnapshot(oldSnapshot, 'width'),
     undefined,
     'canonical runtime selector must not read legacy ui.width directly'
   );
 
-  const canonicalSnapshot = buildCanonicalProjectUiSnapshot(legacySnapshot);
+  const canonicalSnapshot = buildCanonicalProjectUiSnapshot(oldSnapshot);
 
-  assert.equal(readUiRawScalarFromCanonicalSnapshot(canonicalSnapshot, 'width'), 160);
-  assert.equal(readUiRawScalarFromCanonicalSnapshot(canonicalSnapshot, 'height'), 240);
-  assert.equal(readUiRawScalarFromCanonicalSnapshot(canonicalSnapshot, 'depth'), 55);
-  assert.equal(readUiRawScalarFromCanonicalSnapshot(canonicalSnapshot, 'doors'), 4);
-  assert.doesNotThrow(() => assertCanonicalUiRawDims(canonicalSnapshot, 'stage19.canonical'));
+  assert.equal(readUiRawScalarFromCanonicalSnapshot(canonicalSnapshot, 'width'), undefined);
+  assert.equal(readUiRawScalarFromCanonicalSnapshot(canonicalSnapshot, 'height'), undefined);
+  assert.equal(readUiRawScalarFromCanonicalSnapshot(canonicalSnapshot, 'depth'), undefined);
+  assert.equal(readUiRawScalarFromCanonicalSnapshot(canonicalSnapshot, 'doors'), undefined);
+  assert.throws(
+    () => assertCanonicalUiRawDims(canonicalSnapshot, 'current-schema.raw-only'),
+    /current-schema\.raw-only missing canonical ui\.raw dimension\(s\): doors, width, height, depth/
+  );
 });
 
-test('canonical ui.raw batch readers fail fast before project ingress migration and stay raw-only afterwards', () => {
-  const legacySnapshot = {
+test('canonical ui.raw batch readers fail fast for old top-level-only snapshots before and after project ingress canonicalization', () => {
+  const oldSnapshot = {
     width: '160',
     height: '240',
     depth: '55',
@@ -91,23 +99,20 @@ test('canonical ui.raw batch readers fail fast before project ingress migration 
     chestDrawersCount: '7',
   };
 
-  assert.equal(readUiRawNumberFromSnapshot(legacySnapshot, 'width', 999), 160);
-  assert.equal(readCanonicalUiRawNumberFromSnapshot(legacySnapshot, 'width', 999), 999);
-  assert.equal(readCanonicalUiRawIntFromSnapshot(legacySnapshot, 'doors', 9), 9);
+  assert.equal(readUiRawNumberFromSnapshot(oldSnapshot, 'width', 999), 160);
+  assert.equal(readCanonicalUiRawNumberFromSnapshot(oldSnapshot, 'width', 999), 999);
+  assert.equal(readCanonicalUiRawIntFromSnapshot(oldSnapshot, 'doors', 9), 9);
   assert.throws(
-    () => readCanonicalUiRawDimsCmFromSnapshot(legacySnapshot, 'stage29.legacy'),
-    /stage29\.legacy missing canonical ui\.raw dimension\(s\): doors, width, height, depth/
+    () => readCanonicalUiRawDimsCmFromSnapshot(oldSnapshot, 'current-schema.old-top-level'),
+    /current-schema\.old-top-level missing canonical ui\.raw dimension\(s\): doors, width, height, depth/
   );
 
-  const canonicalSnapshot = buildCanonicalProjectUiSnapshot(legacySnapshot);
+  const canonicalSnapshot = buildCanonicalProjectUiSnapshot(oldSnapshot);
 
-  assert.deepEqual(readCanonicalUiRawDimsCmFromSnapshot(canonicalSnapshot, 'stage29.canonical'), {
-    widthCm: 160,
-    heightCm: 240,
-    depthCm: 55,
-    doorsCount: 4,
-    chestDrawersCount: 7,
-  });
+  assert.throws(
+    () => readCanonicalUiRawDimsCmFromSnapshot(canonicalSnapshot, 'current-schema.canonical'),
+    /current-schema\.canonical missing canonical ui\.raw dimension\(s\): doors, width, height, depth/
+  );
 });
 
 test('canonical ui.raw readers are exposed through public core and state surfaces', () => {

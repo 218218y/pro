@@ -16,6 +16,7 @@ import { installNotesService } from '../esm/native/ui/notes_service.ts';
 import { setHistorySystem, getHistorySystem } from '../esm/native/kernel/history_access.ts';
 import { cfgSetScalar } from '../esm/native/runtime/cfg_access.ts';
 import { normalizeProjectData } from '../esm/native/io/project_schema.ts';
+import { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from '../esm/shared/project_schema_constants.ts';
 
 type AnyRecord = Record<string, unknown>;
 
@@ -296,15 +297,15 @@ test('runtime services parity: history undo/redo seam uses canonical stateKernel
 
 test('runtime services parity: import/load schema normalization preserves canonical payload shape', () => {
   const raw = {
-    payload: {
-      settings: { width: 120 },
-      splitDoorsMap: {
-        split_d3_full: true,
-        split_d3_bot: false,
-      },
-      splitDoorsBottomMap: {
-        splitBottom_d9_top: true,
-      },
+    __schema: PROJECT_SCHEMA_ID,
+    __version: PROJECT_SCHEMA_VERSION,
+    settings: { width: 120 },
+    splitDoorsMap: {
+      split_d3_full: true,
+      split_d3_bot: false,
+    },
+    splitDoorsBottomMap: {
+      splitBottom_d9_top: true,
     },
   };
 
@@ -315,10 +316,22 @@ test('runtime services parity: import/load schema normalization preserves canoni
   // schema normalization may stamp additional defaults beyond user-provided scalars.
   // We validate the important invariants without forbidding new defaults.
   assert.equal((normalized?.settings as AnyRecord).width, 120);
-  assert.equal((normalized?.settings as AnyRecord).globalHandleType, 'standard');
-  assert.equal((normalized?.settings as AnyRecord).stackSplitLowerDepthManual, false);
-  assert.equal((normalized?.settings as AnyRecord).stackSplitLowerDoorsManual, false);
-  assert.equal((normalized?.settings as AnyRecord).stackSplitLowerWidthManual, false);
+  assert.equal(
+    Object.prototype.hasOwnProperty.call(normalized?.settings as AnyRecord, 'globalHandleType'),
+    false
+  );
+  assert.equal(
+    Object.prototype.hasOwnProperty.call(normalized?.settings as AnyRecord, 'stackSplitLowerDepthManual'),
+    false
+  );
+  assert.equal(
+    Object.prototype.hasOwnProperty.call(normalized?.settings as AnyRecord, 'stackSplitLowerDoorsManual'),
+    false
+  );
+  assert.equal(
+    Object.prototype.hasOwnProperty.call(normalized?.settings as AnyRecord, 'stackSplitLowerWidthManual'),
+    false
+  );
 
   // Key normalization is core import/load parity hardening (fixes runtime mismatches after project load).
   assert.equal((normalized?.splitDoorsMap as AnyRecord).split_d3, false);

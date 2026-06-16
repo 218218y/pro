@@ -2635,8 +2635,8 @@
       "category": "integration"
     },
     {
-      "file": "tests/project_schema_migrations_runtime.test.ts",
-      "category": "legacy-migration"
+      "file": "tests/project_schema_current_runtime.test.ts",
+      "category": "integration"
     },
     {
       "file": "tests/project_schema_runtime_extended.test.ts",

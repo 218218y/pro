@@ -1,16 +1,16 @@
 {
-  "generatedAt": "2026-06-02T08:59:37.127Z",
+  "generatedAt": "2026-06-16T07:14:11.987Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 513,
-    "totalFiles": 165,
+    "totalOccurrences": 503,
+    "totalFiles": 161,
     "byCategory": {
       "runtime-default": 0,
-      "domain-default": 190,
+      "domain-default": 188,
       "error-message-default": 29,
       "framework-default": 2,
       "browser-adapter": 40,
-      "project-migration": 49,
+      "project-migration": 41,
       "external-api-compat": 12,
       "compat-boundary": 185,
       "test-fixture": 6,
@@ -70,12 +70,6 @@
         "total": 1,
         "categories": {
           "domain-default": 1
-        }
-      },
-      "esm/native/builder/corner_materials.ts": {
-        "total": 2,
-        "categories": {
-          "domain-default": 2
         }
       },
       "esm/native/builder/corner_wing_cornice_profile.ts": {
@@ -244,24 +238,6 @@
         "total": 3,
         "categories": {
           "compat-boundary": 3
-        }
-      },
-      "esm/native/io/project_schema_migrate.ts": {
-        "total": 2,
-        "categories": {
-          "project-migration": 2
-        }
-      },
-      "esm/native/io/project_schema_migrations_settings.ts": {
-        "total": 5,
-        "categories": {
-          "project-migration": 5
-        }
-      },
-      "esm/native/io/project_schema_migrations.ts": {
-        "total": 1,
-        "categories": {
-          "project-migration": 1
         }
       },
       "esm/native/io/project_schema_shared.ts": {
@@ -1169,13 +1145,6 @@
         }
       },
       {
-        "file": "esm/native/io/project_schema_migrations_settings.ts",
-        "total": 5,
-        "categories": {
-          "project-migration": 5
-        }
-      },
-      {
         "file": "esm/native/kernel/cfg_meta.ts",
         "total": 5,
         "categories": {
@@ -1238,6 +1207,13 @@
         "categories": {
           "domain-default": 4
         }
+      },
+      {
+        "file": "esm/native/kernel/domain_api_surface_sections_bindings_drawers_dividers.ts",
+        "total": 4,
+        "categories": {
+          "domain-default": 4
+        }
       }
     ]
   },
@@ -1245,14 +1221,14 @@
   "occurrences": [
     {
       "file": "esm/boot/boot_manifest_steps.ts",
-      "line": 297,
+      "line": 291,
       "term": "coreBrowserCompat",
       "category": "external-api-compat",
       "text": "id: 'builder.coreBrowserCompat',"
     },
     {
       "file": "esm/boot/boot_manifest_steps.ts",
-      "line": 299,
+      "line": 293,
       "term": "coreBrowserCompat",
       "category": "external-api-compat",
       "text": "run: requireBootInstaller(installBuilderCore, 'builder.coreBrowserCompat'),"
@@ -1545,20 +1521,6 @@
       "text": "xMaxBase = corniceProfile.xMaxFallbackM;"
     },
     {
-      "file": "esm/native/builder/corner_materials.ts",
-      "line": 210,
-      "term": "groupFallback",
-      "category": "domain-default",
-      "text": "const groupFallback = getCornerMat("
-    },
-    {
-      "file": "esm/native/builder/corner_materials.ts",
-      "line": 214,
-      "term": "groupFallback",
-      "category": "domain-default",
-      "text": "return getCornerMat(partId, groupFallback);"
-    },
-    {
       "file": "esm/native/builder/corner_wing_cornice_profile.ts",
       "line": 110,
       "term": "xMaxFallbackM",
@@ -1595,28 +1557,28 @@
     },
     {
       "file": "esm/native/builder/module_loop_pipeline_runtime_shared.ts",
-      "line": 15,
+      "line": 19,
       "term": "CreateBoardCompat",
       "category": "compat-boundary",
       "text": "type CreateBoardCompat = {"
     },
     {
       "file": "esm/native/builder/module_loop_pipeline_runtime_shared.ts",
-      "line": 29,
+      "line": 33,
       "term": "CreateBoardCompat",
       "category": "compat-boundary",
       "text": "const createBoard: CreateBoardCompat = (...args: readonly unknown[]) =>"
     },
     {
       "file": "esm/native/builder/plan.ts",
-      "line": 111,
+      "line": 96,
       "term": "shouldInvalidateLegacyPlanSurface",
       "category": "compat-boundary",
       "text": "function shouldInvalidateLegacyPlanSurface(plan: BuilderPlanInstallSurface): boolean {"
     },
     {
       "file": "esm/native/builder/plan.ts",
-      "line": 201,
+      "line": 170,
       "term": "shouldInvalidateLegacyPlanSurface",
       "category": "compat-boundary",
       "text": "if (shouldInvalidateLegacyPlanSurface(plan)) {"
@@ -1868,21 +1830,21 @@
     },
     {
       "file": "esm/native/builder/scheduler_runtime.ts",
-      "line": 150,
+      "line": 152,
       "term": "usingFallbackTimer",
       "category": "domain-default",
       "text": "const usingFallbackTimer = state.debouncedUsesFallbackTimer === true;"
     },
     {
       "file": "esm/native/builder/scheduler_runtime.ts",
-      "line": 150,
+      "line": 152,
       "term": "debouncedUsesFallbackTimer",
       "category": "domain-default",
       "text": "const usingFallbackTimer = state.debouncedUsesFallbackTimer === true;"
     },
     {
       "file": "esm/native/builder/scheduler_runtime.ts",
-      "line": 151,
+      "line": 153,
       "term": "usingFallbackTimer",
       "category": "domain-default",
       "text": "if (!usingFallbackTimer || state.debouncedRunVersion === scheduleVersion) {"
@@ -1917,7 +1879,7 @@
     },
     {
       "file": "esm/native/builder/scheduler_shared_records.ts",
-      "line": 37,
+      "line": 49,
       "term": "createFallbackBuildPlan",
       "category": "domain-default",
       "text": "export function createFallbackBuildPlan(state: BuildStateLike): BuildPlanLike {"
@@ -2008,7 +1970,7 @@
     },
     {
       "file": "esm/native/features/project_config/project_config_persisted_payload_shared.ts",
-      "line": 255,
+      "line": 271,
       "term": "legacy",
       "category": "project-migration",
       "text": "// ignore malformed legacy payloads"
@@ -2035,113 +1997,57 @@
       "text": "defaultOverallWidth || WARDROBE_DEFAULTS.stackSplit.lowerWidthFallbackCm"
     },
     {
-      "file": "esm/native/io/project_schema_migrate.ts",
-      "line": 30,
-      "term": "stripDeprecatedProjectCompatFields",
-      "category": "project-migration",
-      "text": "stripDeprecatedProjectCompatFields,"
-    },
-    {
-      "file": "esm/native/io/project_schema_migrate.ts",
-      "line": 87,
-      "term": "stripDeprecatedProjectCompatFields",
-      "category": "project-migration",
-      "text": "stripDeprecatedProjectCompatFields(data, ensureSettingsRecord);"
-    },
-    {
-      "file": "esm/native/io/project_schema_migrations_settings.ts",
-      "line": 42,
-      "term": "stripDeprecatedProjectCompatFields",
-      "category": "project-migration",
-      "text": "export function stripDeprecatedProjectCompatFields("
-    },
-    {
-      "file": "esm/native/io/project_schema_migrations_settings.ts",
-      "line": 48,
-      "term": "rootCompatKeys",
-      "category": "project-migration",
-      "text": "const rootCompatKeys = ['hingeDoorsMap', 'grooveMap', 'doorsCount', 'wardrobeWidth', 'wardrobeHeight'];"
-    },
-    {
-      "file": "esm/native/io/project_schema_migrations_settings.ts",
-      "line": 49,
-      "term": "rootCompatKeys",
-      "category": "project-migration",
-      "text": "for (const key of rootCompatKeys) {"
-    },
-    {
-      "file": "esm/native/io/project_schema_migrations_settings.ts",
-      "line": 58,
-      "term": "settingsCompatKeys",
-      "category": "project-migration",
-      "text": "const settingsCompatKeys = ["
-    },
-    {
-      "file": "esm/native/io/project_schema_migrations_settings.ts",
-      "line": 64,
-      "term": "settingsCompatKeys",
-      "category": "project-migration",
-      "text": "for (const key of settingsCompatKeys) {"
-    },
-    {
-      "file": "esm/native/io/project_schema_migrations.ts",
-      "line": 20,
-      "term": "stripDeprecatedProjectCompatFields",
-      "category": "project-migration",
-      "text": "stripDeprecatedProjectCompatFields,"
-    },
-    {
       "file": "esm/native/io/project_schema_shared.ts",
-      "line": 102,
+      "line": 91,
       "term": "cloneJsonFallbackArray",
       "category": "project-migration",
       "text": "function cloneJsonFallbackArray(value: readonly unknown[], seen: JsonCloneCache): unknown[] {"
     },
     {
       "file": "esm/native/io/project_schema_shared.ts",
-      "line": 109,
+      "line": 98,
       "term": "cloneJsonFallback",
       "category": "project-migration",
       "text": "const next = cloneJsonFallback(value[i], seen);"
     },
     {
       "file": "esm/native/io/project_schema_shared.ts",
-      "line": 115,
+      "line": 104,
       "term": "cloneJsonFallbackRecord",
       "category": "project-migration",
       "text": "function cloneJsonFallbackRecord(value: UnknownRecord, seen: JsonCloneCache): UnknownRecord {"
     },
     {
       "file": "esm/native/io/project_schema_shared.ts",
-      "line": 122,
+      "line": 111,
       "term": "cloneJsonFallback",
       "category": "project-migration",
       "text": "const next = cloneJsonFallback(raw, seen);"
     },
     {
       "file": "esm/native/io/project_schema_shared.ts",
-      "line": 128,
+      "line": 117,
       "term": "cloneJsonFallback",
       "category": "project-migration",
       "text": "function cloneJsonFallback(value: unknown, seen: JsonCloneCache): unknown {"
     },
     {
       "file": "esm/native/io/project_schema_shared.ts",
-      "line": 142,
+      "line": 131,
       "term": "cloneJsonFallbackArray",
       "category": "project-migration",
       "text": "if (Array.isArray(value)) return cloneJsonFallbackArray(value, seen);"
     },
     {
       "file": "esm/native/io/project_schema_shared.ts",
-      "line": 143,
+      "line": 132,
       "term": "cloneJsonFallbackRecord",
       "category": "project-migration",
       "text": "return isObjectRecord(value) ? cloneJsonFallbackRecord(value, seen) : undefined;"
     },
     {
       "file": "esm/native/io/project_schema_shared.ts",
-      "line": 158,
+      "line": 147,
       "term": "cloneJsonFallback",
       "category": "project-migration",
       "text": "return cloneJsonFallback(value, new Map<object, unknown[] | UnknownRecord>());"
@@ -2519,14 +2425,14 @@
     },
     {
       "file": "esm/native/kernel/state_api_shared.ts",
-      "line": 70,
+      "line": 71,
       "term": "sourceFallback",
       "category": "domain-default",
       "text": "sourceFallback: string"
     },
     {
       "file": "esm/native/kernel/state_api_shared.ts",
-      "line": 73,
+      "line": 74,
       "term": "sourceFallback",
       "category": "domain-default",
       "text": "if (sourceFallback && !next.source) next.source = sourceFallback;"
@@ -3009,77 +2915,77 @@
     },
     {
       "file": "esm/native/runtime/render_access_state_runtime.ts",
-      "line": 103,
+      "line": 105,
       "term": "__wpRendererCompatDefaults",
       "category": "compat-boundary",
       "text": "if (!asRecord(renderBag.__wpRendererCompatDefaults)) renderBag.__wpRendererCompatDefaults = null;"
     },
     {
       "file": "esm/native/runtime/render_access_state_runtime.ts",
-      "line": 383,
+      "line": 388,
       "term": "readRendererCompatDefaults",
       "category": "compat-boundary",
       "text": "export function readRendererCompatDefaults(App: unknown): RendererCompatDefaultsLike | null {"
     },
     {
       "file": "esm/native/runtime/render_access_state_runtime.ts",
-      "line": 383,
+      "line": 388,
       "term": "RendererCompatDefaultsLike",
       "category": "compat-boundary",
       "text": "export function readRendererCompatDefaults(App: unknown): RendererCompatDefaultsLike | null {"
     },
     {
       "file": "esm/native/runtime/render_access_state_runtime.ts",
-      "line": 384,
+      "line": 389,
       "term": "RendererCompatDefaultsLike",
       "category": "compat-boundary",
       "text": "return readValue<RendererCompatDefaultsLike>(ensureRenderRuntimeState(App).__wpRendererCompatDefaults);"
     },
     {
       "file": "esm/native/runtime/render_access_state_runtime.ts",
-      "line": 384,
+      "line": 389,
       "term": "__wpRendererCompatDefaults",
       "category": "compat-boundary",
       "text": "return readValue<RendererCompatDefaultsLike>(ensureRenderRuntimeState(App).__wpRendererCompatDefaults);"
     },
     {
       "file": "esm/native/runtime/render_access_state_runtime.ts",
-      "line": 387,
+      "line": 392,
       "term": "writeRendererCompatDefaults",
       "category": "compat-boundary",
       "text": "export function writeRendererCompatDefaults("
     },
     {
       "file": "esm/native/runtime/render_access_state_runtime.ts",
-      "line": 389,
+      "line": 394,
       "term": "RendererCompatDefaultsLike",
       "category": "compat-boundary",
       "text": "value: RendererCompatDefaultsLike | null"
     },
     {
       "file": "esm/native/runtime/render_access_state_runtime.ts",
-      "line": 390,
+      "line": 395,
       "term": "RendererCompatDefaultsLike",
       "category": "compat-boundary",
       "text": "): RendererCompatDefaultsLike | null {"
     },
     {
       "file": "esm/native/runtime/render_access_state_runtime.ts",
-      "line": 393,
+      "line": 398,
       "term": "__wpRendererCompatDefaults",
       "category": "compat-boundary",
       "text": "renderBag.__wpRendererCompatDefaults = value || null;"
     },
     {
       "file": "esm/native/runtime/render_access_state_runtime.ts",
-      "line": 397,
+      "line": 402,
       "term": "RendererCompatDefaultsLike",
       "category": "compat-boundary",
       "text": "return readValue<RendererCompatDefaultsLike>(renderBag.__wpRendererCompatDefaults);"
     },
     {
       "file": "esm/native/runtime/render_access_state_runtime.ts",
-      "line": 397,
+      "line": 402,
       "term": "__wpRendererCompatDefaults",
       "category": "compat-boundary",
       "text": "return readValue<RendererCompatDefaultsLike>(renderBag.__wpRendererCompatDefaults);"
@@ -3394,35 +3300,35 @@
     },
     {
       "file": "esm/native/services/canvas_picking_hover_targets_interior_scan.ts",
-      "line": 20,
+      "line": 21,
       "term": "hitFallbackObj",
       "category": "domain-default",
       "text": "hitFallbackObj: import('./canvas_picking_engine.js').HitObjectLike | null;"
     },
     {
       "file": "esm/native/services/canvas_picking_hover_targets_interior_scan.ts",
-      "line": 56,
+      "line": 59,
       "term": "hitFallbackObj",
       "category": "domain-default",
       "text": "let hitFallbackObj: import('./canvas_picking_engine.js').HitObjectLike | null = null;"
     },
     {
       "file": "esm/native/services/canvas_picking_hover_targets_interior_scan.ts",
-      "line": 65,
+      "line": 68,
       "term": "hitFallbackObj",
       "category": "domain-default",
       "text": "hitFallbackObj = hitSelectorObj;"
     },
     {
       "file": "esm/native/services/canvas_picking_hover_targets_interior_scan.ts",
-      "line": 91,
+      "line": 94,
       "term": "hitFallbackObj",
       "category": "domain-default",
       "text": "hitFallbackObj = candidate.object;"
     },
     {
       "file": "esm/native/services/canvas_picking_hover_targets_interior_scan.ts",
-      "line": 110,
+      "line": 113,
       "term": "hitFallbackObj",
       "category": "domain-default",
       "text": "hitFallbackObj,"
@@ -4111,7 +4017,7 @@
       "line": 107,
       "term": "useLegacyLights",
       "category": "external-api-compat",
-      "text": "rendererSurface.useLegacyLights = true;"
+      "text": "rendererSurface.useLegacyLights = false;"
     },
     {
       "file": "esm/native/services/scene_view_lighting_renderer.ts",
@@ -4290,7 +4196,7 @@
     },
     {
       "file": "esm/native/ui/export/export_order_pdf_capture_open_closed.ts",
-      "line": 87,
+      "line": 86,
       "term": "captureCompositeWithLogoFallback",
       "category": "domain-default",
       "text": "return await captureCompositeWithLogoFallback("
@@ -4374,7 +4280,7 @@
     },
     {
       "file": "esm/native/ui/modes_shared.ts",
-      "line": 260,
+      "line": 259,
       "term": "consoleFallback",
       "category": "domain-default",
       "text": "reportError(App, err, { where: 'native/ui/modes', op, fatal: false }, { consoleFallback: false });"
@@ -4535,7 +4441,7 @@
     },
     {
       "file": "esm/native/ui/react/sidebar_app.tsx",
-      "line": 88,
+      "line": 92,
       "term": "fallback",
       "category": "framework-default",
       "text": "fallback={"
@@ -4654,7 +4560,7 @@
     },
     {
       "file": "esm/native/ui/react/tabs/design_tab_multicolor_shared.ts",
-      "line": 59,
+      "line": 60,
       "term": "consoleFallback",
       "category": "domain-default",
       "text": "{ consoleFallback: false }"
@@ -4773,21 +4679,21 @@
     },
     {
       "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-      "line": 869,
+      "line": 977,
       "term": "previewExternalFallbackHeightM",
       "category": "domain-default",
       "text": "previewExternalFallbackHeightM: 0.08,"
     },
     {
       "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-      "line": 897,
+      "line": 1005,
       "term": "internalPreviewGridDivisionsFallback",
       "category": "compat-boundary",
       "text": "internalPreviewGridDivisionsFallback: INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault,"
     },
     {
       "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-      "line": 1237,
+      "line": 1346,
       "term": "placementGapFallbackM",
       "category": "domain-default",
       "text": "placementGapFallbackM: 0.002,"

@@ -1,6 +1,5 @@
 import type {
   ConfigStateLike,
-  ProjectDataEnvelopeLike,
   ProjectDataLike,
   ProjectLoadOpts,
   ProjectPdfDraftLike,
@@ -70,13 +69,13 @@ export function captureProjectLoadSourceFlags(opts?: ProjectLoadOpts) {
 }
 
 export function buildProjectConfigSnapshot(
-  data: ProjectDataLike | ProjectDataEnvelopeLike | UnknownRecord | null | undefined
+  data: ProjectDataLike | UnknownRecord | null | undefined
 ): ConfigStateLike {
   return buildProjectConfigSnapshotImpl(data);
 }
 
 export function buildProjectUiSnapshot(
-  data: ProjectDataLike | ProjectDataEnvelopeLike | UnknownRecord | null | undefined,
+  data: ProjectDataLike | UnknownRecord | null | undefined,
   currentProjectName: string
 ): { uiState: UiStateLike; savedNotes: ProjectSavedNotesLike } {
   const rec = asRecord(data) || {};
@@ -163,7 +162,7 @@ export function buildProjectUiSnapshot(
       stackSplitLowerWidthManual: lowerWidthManual,
       stackSplitLowerDoorsManual: lowerDoorsManual,
       structureSelect: settings.structureSelection,
-      singleDoorPos: settings.singleDoorPos || settings.singleDoorPosition || 'left',
+      singleDoorPos: settings.singleDoorPos || 'left',
     },
     projectName: readLoadedProjectName(rec, settings, currentProjectName),
     doors: settings.doors,
@@ -182,7 +181,7 @@ export function buildProjectUiSnapshot(
     baseLegWidthCm: settings.baseLegWidthCm,
     slidingTracksColor: settings.slidingTracksColor === 'black' ? 'black' : 'nickel',
     structureSelect: settings.structureSelection,
-    singleDoorPos: settings.singleDoorPos || settings.singleDoorPosition || 'left',
+    singleDoorPos: settings.singleDoorPos || 'left',
     doorStyle: settings.doorStyle,
 
     corniceType: String(settings.corniceType || 'classic').toLowerCase() === 'wave' ? 'wave' : 'classic',
@@ -250,7 +249,7 @@ export function preserveUiEphemeral(uiSnap: UiStateLike, uiNow: UiStateLike | nu
 }
 
 export function buildProjectPdfUiPatch(
-  data: ProjectDataLike | ProjectDataEnvelopeLike | UnknownRecord | null | undefined,
+  data: ProjectDataLike | UnknownRecord | null | undefined,
   _cloneJson: <T>(value: T) => T
 ): Pick<ProjectPdfStateLike, 'orderPdfEditorDraft' | 'orderPdfEditorZoom'> {
   const rec = asRecord(data) || {};

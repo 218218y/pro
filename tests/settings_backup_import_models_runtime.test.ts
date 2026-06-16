@@ -42,6 +42,41 @@ test('importSystemSettings fails closed with models-unavailable when saved model
   }
 });
 
+test('importSystemSettings keeps a successful model import successful when only the UI refresh seam is unavailable', async () => {
+  const env = installFakeFilePrimitives();
+  try {
+    await withSuppressedConsole(async () => {
+      const mergedModels: unknown[][] = [];
+      const { app } = createImportApp();
+      delete (app as any).actions.models;
+      app.services.models.mergeImportedModels = (list: unknown[]) => {
+        mergedModels.push(list);
+        return { added: list.length, updated: 0 };
+      };
+
+      const file = new env.FakeFile(
+        [
+          JSON.stringify({
+            type: 'system_backup',
+            timestamp: Date.now(),
+            savedModels: [{ id: 'm1', name: 'Model 1', width: 180 }],
+          }),
+        ],
+        'backup.json',
+        { type: 'application/json' }
+      );
+      const input = { value: 'backup.json', files: [file] };
+      const result = await importSystemSettings(app as never, { currentTarget: input });
+
+      assert.deepEqual(result, { ok: true, kind: 'import', modelsAdded: 1, colorsAdded: 0 });
+      assert.equal(input.value, '');
+      assert.equal(mergedModels.length, 1);
+      assert.equal((mergedModels[0] as any[])[0].id, 'm1');
+    });
+  } finally {
+    env.restore();
+  }
+});
 test('importSystemSettings still succeeds for color-only backups even when model import seams are absent', async () => {
   const env = installFakeFilePrimitives();
   try {

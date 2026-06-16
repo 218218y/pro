@@ -2,19 +2,25 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  unwrapProjectEnvelope,
+  hasCurrentProjectSchema,
   detectProjectSchemaVersion,
   normalizeProjectData,
+  PROJECT_SCHEMA_ID,
+  PROJECT_SCHEMA_VERSION,
 } from '../esm/native/io/project_schema.ts';
 
-test('project schema source runtime keeps envelope/version/normalization seams stable', () => {
-  const payload = unwrapProjectEnvelope({ payload: { settings: { wardrobeType: 'hinged' } } } as any);
-  assert.equal((payload as any)?.settings?.wardrobeType, 'hinged');
+test('project schema source runtime accepts only current top-level schema data', () => {
+  assert.equal(hasCurrentProjectSchema({ payload: { settings: { wardrobeType: 'hinged' } } } as any), false);
 
-  assert.equal(detectProjectSchemaVersion({ __version: 2, version: 1 } as any), 2);
-  assert.equal(detectProjectSchemaVersion({ version: 3 } as any), 3);
+  assert.equal(
+    detectProjectSchemaVersion({ __version: PROJECT_SCHEMA_VERSION, version: 1 } as any),
+    PROJECT_SCHEMA_VERSION
+  );
+  assert.equal(detectProjectSchemaVersion({ version: 3 } as any), 0);
 
   const normalized = normalizeProjectData({
+    __schema: PROJECT_SCHEMA_ID,
+    __version: PROJECT_SCHEMA_VERSION,
     settings: { wardrobeType: 'sliding' },
     toggles: { multiColor: true },
     orderPdfEditorZoom: '1.75',
@@ -22,5 +28,10 @@ test('project schema source runtime keeps envelope/version/normalization seams s
 
   assert.equal((normalized as any)?.settings?.wardrobeType, 'sliding');
   assert.equal((normalized as any)?.toggles?.multiColor, true);
-  assert.equal((normalized as any)?.__schema, 'wardrobepro.project');
+  assert.equal((normalized as any)?.__schema, PROJECT_SCHEMA_ID);
+
+  assert.equal(
+    normalizeProjectData({ settings: { wardrobeType: 'sliding' }, toggles: { multiColor: true } } as any),
+    null
+  );
 });

@@ -3,6 +3,7 @@ import type { AppContainer, StateKernelLike, UnknownRecord } from '../../../type
 import { readConfigLooseScalarFromApp } from '../runtime/config_selectors.js';
 import { hasEssentialUiDimsFromSnapshot } from '../runtime/ui_raw_selectors.js';
 import { asRecord } from './kernel_shared.js';
+import { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from '../../shared/project_schema_constants.js';
 import { buildKernelProjectCaptureData } from './kernel_project_capture_payload.js';
 
 export interface CreateKernelProjectCaptureArgs {
@@ -58,7 +59,8 @@ export function createKernelProjectCapture(
       }
     }
 
-    data.__schema = 9;
+    data.__schema = PROJECT_SCHEMA_ID;
+    data.__version = PROJECT_SCHEMA_VERSION;
     data.__savedAt = Date.now();
     data.__scope = scopeStr;
     if (scopeStr === 'undo') {

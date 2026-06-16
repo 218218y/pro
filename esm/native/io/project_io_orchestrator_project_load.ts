@@ -22,7 +22,7 @@ import {
   buildCanonicalProjectConfigSnapshot,
   buildCanonicalProjectUiSnapshot,
   PROJECT_CONFIG_SNAPSHOT_REPLACE_KEYS,
-} from './project_migrations/index.js';
+} from './project_load_canonical_snapshot.js';
 import { setAutoCameraBuildKey } from '../runtime/render_access.js';
 import {
   nextProjectIoRestoreGeneration,
@@ -132,16 +132,6 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
     }
 
     let restoreGen = 0;
-
-    try {
-      if (data && typeof data.__migratedFrom !== 'undefined') {
-        deps.log(
-          '[ProjectIO] loaded with migrations from v' + data.__migratedFrom + ' -> v' + deps.schemaVersion
-        );
-      }
-    } catch (err) {
-      reportNonFatal('project.load.migrationLog', err);
-    }
 
     try {
       setProjectIoRestoring(true, metaRestore('project.load', { silent: false }));

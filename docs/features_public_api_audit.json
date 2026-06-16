@@ -666,19 +666,19 @@
       "entry": "project_config/project_config_persisted_payload_shared.js"
     },
     {
-      "file": "esm/native/io/project_schema_migrate.ts",
+      "file": "esm/native/io/project_schema_current.ts",
       "entry": "mirror_layout.js"
     },
     {
-      "file": "esm/native/io/project_schema_migrate.ts",
+      "file": "esm/native/io/project_schema_current.ts",
       "entry": "door_trim.js"
     },
     {
-      "file": "esm/native/io/project_schema_migrate.ts",
+      "file": "esm/native/io/project_schema_current.ts",
       "entry": "door_style_overrides.js"
     },
     {
-      "file": "esm/native/io/project_schema_migrations_doors.ts",
+      "file": "esm/native/io/project_schema_door_maps.ts",
       "entry": "mirror_layout.js"
     },
     {

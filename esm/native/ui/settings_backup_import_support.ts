@@ -325,16 +325,13 @@ export function finalizeImportedModels(App: AppContainer, result: ModelsMergeRes
   if (added + updated <= 0) return;
 
   try {
-    renderModelUiViaActionsOrThrow(App, 'settings backup import models render');
     ensureModelsLoadedViaServiceOrThrow(
       App,
       { forceRebuild: true, silent: false },
-      'settings backup import models ensureLoaded'
+      'settings backup import models refresh'
     );
+    renderModelUiViaActionsOrThrow(App, 'settings backup import models render');
   } catch (error) {
-    throw new SettingsBackupActionError(
-      'models-unavailable',
-      normalizeUnknownError(error, '[WardrobePro] Settings backup model refresh failed.').message
-    );
+    settingsBackupReport(App, 'import:models.refresh', error, true);
   }
 }

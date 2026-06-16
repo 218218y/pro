@@ -24,18 +24,21 @@ function exportedFunctionBody(source, name) {
   assert.fail(`${name} body did not close`);
 }
 
-test('project migration boundary audit passes', () => {
+test('project canonical snapshot boundary audit passes', () => {
   assert.deepEqual(runProjectMigrationBoundaryAudit().failures, []);
 });
 
-test('project UI raw migration owns old direct-dimension materialization', () => {
-  const source = readSource('esm/native/io/project_migrations/ui_raw_snapshot_migration.ts');
+test('project canonical snapshot owner normalizes raw values without old direct-dimension materialization', () => {
+  const source = readSource('esm/native/io/project_load_canonical_snapshot.ts');
+  const body = exportedFunctionBody(source, 'canonicalizeProjectUiSnapshot');
 
-  assert.match(source, /export function migrateProjectUiSnapshotToCanonicalRaw/);
-  assert.match(source, /cloneUiRawInputs\(source\.raw\)/);
-  assert.match(source, /for \(const key of UI_RAW_SCALAR_KEYS\)/);
-  assert.match(source, /hasOwn\(raw, key\)/);
-  assert.match(source, /filledKeys\.push\(key\)/);
+  assert.match(source, /export function canonicalizeProjectUiSnapshot/);
+  assert.match(body, /cloneUiRawInputs\(source\.raw\)/);
+  assert.match(body, /for \(const key of UI_RAW_SCALAR_KEYS\)/);
+  assert.match(body, /hasOwn\(raw as UnknownRecord, key\)/);
+  assert.match(body, /droppedKeys\.push\(key\)/);
+  assert.doesNotMatch(source, /filledKeys/);
+  assert.doesNotMatch(body, /source\[key\]/);
 });
 
 test('canonical ui.raw selector is raw-only and old fail-soft helpers remain quarantined', () => {
@@ -54,10 +57,10 @@ test('canonical ui.raw selector is raw-only and old fail-soft helpers remain qua
   assert.match(facade, /ensureUiRawDimsFromSnapshot/);
 });
 
-test('project load route migrates then asserts canonical ui.raw before commit', () => {
+test('project load route canonicalizes then asserts canonical ui.raw before commit', () => {
   const source = readSource('esm/native/io/project_io_orchestrator_project_load.ts');
 
-  assert.match(source, /from '\.\/project_migrations\/index\.js'/);
+  assert.match(source, /from '\.\/project_load_canonical_snapshot\.js'/);
   assert.match(source, /buildCanonicalProjectUiSnapshot\(loadSnapshot\.uiState\)/);
   assert.match(source, /assertCanonicalUiRawDims\(loadUiPreview, 'project\.load\.preview'\)/);
   assert.match(source, /buildCanonicalProjectUiSnapshot\(uiState\)/);

@@ -1,5 +1,4 @@
 import type {
-  ProjectDataEnvelopeLike,
   ProjectDataLike,
   ProjectPdfDraftLike,
   ProjectPreChestStateLike,
@@ -17,16 +16,11 @@ import {
   readPreChestState as readPreChestStateShared,
   readSavedNotes as readSavedNotesShared,
 } from './project_payload_shared.js';
+import { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from '../../shared/project_schema_constants.js';
+export { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from '../../shared/project_schema_constants.js';
 
-export const PROJECT_SCHEMA_ID = 'wardrobepro.project';
-export const PROJECT_SCHEMA_VERSION = 2;
-
-function asProjectData(value: unknown): ProjectDataLike | null {
+export function readProjectDataRecord(value: unknown): ProjectDataLike | null {
   return isObjectRecord(value) ? value : null;
-}
-
-function asEnvelopeRecord(data: unknown): ProjectDataEnvelopeLike | null {
-  return isObjectRecord(data) ? data : null;
 }
 
 export function readSavedNotes(value: unknown): ProjectSavedNotesLike {
@@ -58,13 +52,7 @@ export function ensureTogglesRecord(data: ProjectDataLike): ProjectTogglesLike &
 }
 
 export function ensureProjectDataRecord(value: unknown): ProjectDataLike {
-  return asProjectData(value) ?? {};
-}
-
-export function unwrapProjectEnvelope(data: unknown): ProjectDataLike | null {
-  const obj = asEnvelopeRecord(data);
-  if (!obj) return null;
-  return asProjectData(obj.payload) || asProjectData(obj.project) || asProjectData(obj);
+  return readProjectDataRecord(value) ?? {};
 }
 
 export function asFiniteNumber(x: unknown): number | undefined {
@@ -75,16 +63,15 @@ export function asFiniteNumber(x: unknown): number | undefined {
 export function detectProjectSchemaVersion(data: unknown): number {
   if (!data || typeof data !== 'object') return 0;
   const obj = asObjectRecord(data) ?? Object.create(null);
-  const v =
-    obj.__version != null
-      ? obj.__version
-      : obj.version != null
-        ? obj.version
-        : obj.schemaVersion != null
-          ? obj.schemaVersion
-          : 0;
-  const n = Number(v);
+  const n = Number(obj.__version);
   return Number.isFinite(n) ? n : 0;
+}
+
+export function hasCurrentProjectSchema(data: unknown): boolean {
+  const rec = asObjectRecord(data);
+  return (
+    !!rec && rec.__schema === PROJECT_SCHEMA_ID && detectProjectSchemaVersion(rec) === PROJECT_SCHEMA_VERSION
+  );
 }
 
 type JsonCloneCache = Map<object, unknown[] | UnknownRecord>;

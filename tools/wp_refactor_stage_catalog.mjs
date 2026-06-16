@@ -126,7 +126,7 @@ export const REFACTOR_POST_CLOSEOUT_GUARDRAILS = Object.freeze([
 export const REFACTOR_INTEGRATION_ANCHORS = Object.freeze([
   {
     file: 'tests/refactor_stage19_project_migration_selector_hardening_runtime.test.js',
-    needle: 'stage 33 to 35 project config migration replace-owned branches are anchored',
+    needle: 'stage 33 to 35 project config canonical replace-owned branches are anchored',
     message: 'stage 33-35 project config replace-owned branch guard must stay anchored',
   },
   {
@@ -343,7 +343,7 @@ export const REFACTOR_INTEGRATION_ANCHORS = Object.freeze([
   {
     file: 'tests/project_config_migration_replace_keys_runtime.test.ts',
     needle: 'materializes every replace-owned branch',
-    message: 'project config migration must prove replace-owned branch materialization',
+    message: 'project config canonical snapshot must prove replace-owned branch materialization',
   },
 
   {
@@ -355,17 +355,18 @@ export const REFACTOR_INTEGRATION_ANCHORS = Object.freeze([
   {
     file: 'tests/project_config_migration_replace_keys_runtime.test.ts',
     needle: 'deterministic and type-narrowed',
-    message: 'project config migration must prove deterministic replace-key order and type narrowing',
+    message:
+      'project config canonical snapshot must prove deterministic replace-key order and type narrowing',
   },
   {
-    file: 'esm/native/io/project_migrations/config_snapshot_migration.ts',
+    file: 'esm/native/io/project_load_canonical_snapshot.ts',
     needle: 'PROJECT_CONFIG_SNAPSHOT_REPLACE_KEY_ORDER',
-    message: 'project config migration owner must expose deterministic replace-key order',
+    message: 'project config canonical snapshot owner must expose deterministic replace-key order',
   },
   {
-    file: 'esm/native/io/project_migrations/config_snapshot_migration.ts',
+    file: 'esm/native/io/project_load_canonical_snapshot.ts',
     needle: 'isProjectConfigSnapshotReplaceKey',
-    message: 'project config migration owner must expose the replace-key type guard',
+    message: 'project config canonical snapshot owner must expose the replace-key type guard',
   },
   {
     file: 'tools/wp_project_migration_boundary_audit.mjs',

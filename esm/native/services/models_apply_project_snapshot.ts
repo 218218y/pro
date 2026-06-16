@@ -7,6 +7,7 @@ import { normalizeModelRecord } from '../features/model_record/model_record_norm
 import { canonicalizeComparableProjectConfigSnapshot } from '../features/project_config/project_config_snapshot_canonical.js';
 import { readPersistedProjectConfigSnapshot } from '../features/project_config/project_config_persisted_snapshot.js';
 import { asCornerConfiguration } from '../runtime/cfg_access_shared.js';
+import { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from '../../shared/project_schema_constants.js';
 
 import {
   _attachPdfEditorDraft,
@@ -40,6 +41,11 @@ function captureCanonicalModelConfigSnapshot(model: SavedModelLike): UnknownReco
     cornerMode: 'full',
     savedColorsMode: 'mixed',
   });
+}
+
+function stampCurrentProjectSchema(projectStructure: ProjectDataLike): void {
+  projectStructure.__schema = PROJECT_SCHEMA_ID;
+  projectStructure.__version = PROJECT_SCHEMA_VERSION;
 }
 
 function preserveOrderPdfEditorDraft(App: AppContainer, projectStructure: ProjectDataLike): void {
@@ -122,6 +128,7 @@ export function buildProjectStructureFromModel(
         : normalizedModel.grooveLinesCount,
   };
 
+  stampCurrentProjectSchema(projectStructure);
   preserveOrderPdfEditorDraft(App, projectStructure);
   normalizeProjectStructureSplitDoors(App, projectStructure);
 

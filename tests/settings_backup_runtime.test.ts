@@ -231,7 +231,7 @@ test('importSystemSettings merges models/colors, syncs storage order, and clears
     assert.deepEqual(storageWrites['wardrobeSavedModels:hiddenPresets'], ['b']);
     assert.deepEqual(storageWrites['wardrobeSavedColors:order'], ['new-color', 'existing']);
     assert.deepEqual(storageWrites.colorOrderState, ['new-color', 'existing']);
-    assert.deepEqual(rendered, ['render', 'ensure']);
+    assert.deepEqual(rendered, ['ensure', 'render']);
     assert.equal(confirmed.length, 1);
     const perfEntries = getPerfEntries(app as never, 'settingsBackup.import');
     assert.equal(perfEntries.length, 1);
