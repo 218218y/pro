@@ -81,79 +81,15 @@
         "domain-default": 5
       }
     },
-    "esm/native/kernel/domain_api_modules_corner_module_patch.ts": {
-      "total": 2,
-      "categories": {
-        "compat-boundary": 2
-      }
-    },
     "esm/native/kernel/domain_api_modules_corner_recompute_policy.ts": {
       "total": 3,
       "categories": {
         "domain-default": 3
       }
     },
-    "esm/native/kernel/domain_api_modules_corner_shared.ts": {
-      "total": 7,
-      "categories": {
-        "compat-boundary": 7
-      }
-    },
-    "esm/native/kernel/domain_api_surface_sections_bindings_doors.ts": {
-      "total": 6,
-      "categories": {
-        "compat-boundary": 3,
-        "domain-default": 3
-      }
-    },
-    "esm/native/kernel/domain_api_surface_sections_bindings_drawers_dividers.ts": {
-      "total": 4,
-      "categories": {
-        "domain-default": 4
-      }
-    },
-    "esm/native/kernel/domain_api_surface_sections_bindings_grooves_curtains.ts": {
-      "total": 2,
-      "categories": {
-        "domain-default": 2
-      }
-    },
-    "esm/native/kernel/domain_api_surface_sections_bindings_root_map.ts": {
-      "total": 2,
-      "categories": {
-        "domain-default": 2
-      }
-    },
-    "esm/native/kernel/domain_api_surface_sections_contracts.ts": {
+    "esm/native/kernel/domain_module_stack_patch.ts": {
       "total": 1,
       "categories": {
-        "compat-boundary": 1
-      }
-    },
-    "esm/native/kernel/domain_api_surface_sections_map_writes.ts": {
-      "total": 6,
-      "categories": {
-        "compat-boundary": 3,
-        "domain-default": 3
-      }
-    },
-    "esm/native/kernel/domain_api_surface_sections_shared.ts": {
-      "total": 3,
-      "categories": {
-        "compat-boundary": 1,
-        "domain-default": 2
-      }
-    },
-    "esm/native/kernel/domain_api_surface_sections_state.ts": {
-      "total": 2,
-      "categories": {
-        "compat-boundary": 2
-      }
-    },
-    "esm/native/kernel/domain_module_stack_patch.ts": {
-      "total": 6,
-      "categories": {
-        "compat-boundary": 5,
         "project-migration": 1
       }
     },

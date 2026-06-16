@@ -1,18 +1,18 @@
 {
-  "generatedAt": "2026-06-16T19:42:32.346Z",
+  "generatedAt": "2026-06-16T19:57:49.179Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 231,
-    "totalFiles": 102,
+    "totalOccurrences": 191,
+    "totalFiles": 92,
     "byCategory": {
       "runtime-default": 0,
-      "domain-default": 141,
+      "domain-default": 125,
       "error-message-default": 27,
       "framework-default": 2,
       "browser-adapter": 2,
       "project-migration": 10,
       "external-api-compat": 0,
-      "compat-boundary": 43,
+      "compat-boundary": 19,
       "test-fixture": 6,
       "legacy-runtime-risk": 0,
       "unknown": 0
@@ -96,79 +96,15 @@
           "domain-default": 5
         }
       },
-      "esm/native/kernel/domain_api_modules_corner_module_patch.ts": {
-        "total": 2,
-        "categories": {
-          "compat-boundary": 2
-        }
-      },
       "esm/native/kernel/domain_api_modules_corner_recompute_policy.ts": {
         "total": 3,
         "categories": {
           "domain-default": 3
         }
       },
-      "esm/native/kernel/domain_api_modules_corner_shared.ts": {
-        "total": 7,
-        "categories": {
-          "compat-boundary": 7
-        }
-      },
-      "esm/native/kernel/domain_api_surface_sections_bindings_doors.ts": {
-        "total": 6,
-        "categories": {
-          "compat-boundary": 3,
-          "domain-default": 3
-        }
-      },
-      "esm/native/kernel/domain_api_surface_sections_bindings_drawers_dividers.ts": {
-        "total": 4,
-        "categories": {
-          "domain-default": 4
-        }
-      },
-      "esm/native/kernel/domain_api_surface_sections_bindings_grooves_curtains.ts": {
-        "total": 2,
-        "categories": {
-          "domain-default": 2
-        }
-      },
-      "esm/native/kernel/domain_api_surface_sections_bindings_root_map.ts": {
-        "total": 2,
-        "categories": {
-          "domain-default": 2
-        }
-      },
-      "esm/native/kernel/domain_api_surface_sections_contracts.ts": {
+      "esm/native/kernel/domain_module_stack_patch.ts": {
         "total": 1,
         "categories": {
-          "compat-boundary": 1
-        }
-      },
-      "esm/native/kernel/domain_api_surface_sections_map_writes.ts": {
-        "total": 6,
-        "categories": {
-          "compat-boundary": 3,
-          "domain-default": 3
-        }
-      },
-      "esm/native/kernel/domain_api_surface_sections_shared.ts": {
-        "total": 3,
-        "categories": {
-          "compat-boundary": 1,
-          "domain-default": 2
-        }
-      },
-      "esm/native/kernel/domain_api_surface_sections_state.ts": {
-        "total": 2,
-        "categories": {
-          "compat-boundary": 2
-        }
-      },
-      "esm/native/kernel/domain_module_stack_patch.ts": {
-        "total": 6,
-        "categories": {
-          "compat-boundary": 5,
           "project-migration": 1
         }
       },
@@ -653,37 +589,6 @@
         }
       },
       {
-        "file": "esm/native/kernel/domain_api_modules_corner_shared.ts",
-        "total": 7,
-        "categories": {
-          "compat-boundary": 7
-        }
-      },
-      {
-        "file": "esm/native/kernel/domain_api_surface_sections_bindings_doors.ts",
-        "total": 6,
-        "categories": {
-          "compat-boundary": 3,
-          "domain-default": 3
-        }
-      },
-      {
-        "file": "esm/native/kernel/domain_api_surface_sections_map_writes.ts",
-        "total": 6,
-        "categories": {
-          "compat-boundary": 3,
-          "domain-default": 3
-        }
-      },
-      {
-        "file": "esm/native/kernel/domain_module_stack_patch.ts",
-        "total": 6,
-        "categories": {
-          "compat-boundary": 5,
-          "project-migration": 1
-        }
-      },
-      {
         "file": "esm/native/ui/react/tabs/settings_visual_shared_room.ts",
         "total": 6,
         "categories": {
@@ -728,13 +633,6 @@
       },
       {
         "file": "esm/native/features/door_trim_map.ts",
-        "total": 4,
-        "categories": {
-          "domain-default": 4
-        }
-      },
-      {
-        "file": "esm/native/kernel/domain_api_surface_sections_bindings_drawers_dividers.ts",
         "total": 4,
         "categories": {
           "domain-default": 4
@@ -826,14 +724,6 @@
         }
       },
       {
-        "file": "esm/native/kernel/domain_api_surface_sections_shared.ts",
-        "total": 3,
-        "categories": {
-          "compat-boundary": 1,
-          "domain-default": 2
-        }
-      },
-      {
         "file": "esm/native/kernel/state_api_meta_namespace.ts",
         "total": 3,
         "categories": {
@@ -852,6 +742,48 @@
         "total": 3,
         "categories": {
           "domain-default": 3
+        }
+      },
+      {
+        "file": "esm/native/builder/module_loop_pipeline_runtime_shared.ts",
+        "total": 2,
+        "categories": {
+          "compat-boundary": 2
+        }
+      },
+      {
+        "file": "esm/native/kernel/state_api_shared.ts",
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      {
+        "file": "esm/native/kernel/state_api.ts",
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      {
+        "file": "esm/native/runtime/errors.ts",
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      {
+        "file": "esm/native/runtime/platform_access_ops.ts",
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      {
+        "file": "esm/native/services/app_start.ts",
+        "total": 2,
+        "categories": {
+          "compat-boundary": 2
         }
       }
     ]
@@ -1069,20 +1001,6 @@
       "text": "if (sourceFallback && !out.source) out.source = sourceFallback;"
     },
     {
-      "file": "esm/native/kernel/domain_api_modules_corner_module_patch.ts",
-      "line": 14,
-      "term": "resolveModulePatchCompatDescriptor",
-      "category": "compat-boundary",
-      "text": "resolveModulePatchCompatDescriptor,"
-    },
-    {
-      "file": "esm/native/kernel/domain_api_modules_corner_module_patch.ts",
-      "line": 144,
-      "term": "resolveModulePatchCompatDescriptor",
-      "category": "compat-boundary",
-      "text": "const desc = resolveModulePatchCompatDescriptor(arg1);"
-    },
-    {
       "file": "esm/native/kernel/domain_api_modules_corner_recompute_policy.ts",
       "line": 30,
       "term": "cfgSetScalarFallback",
@@ -1104,277 +1022,11 @@
       "text": "return { ok: true, via: 'cfgFallback', writeMeta };"
     },
     {
-      "file": "esm/native/kernel/domain_api_modules_corner_shared.ts",
-      "line": 92,
-      "term": "cloneJsonCompatibleRecord",
-      "category": "compat-boundary",
-      "text": "return cloneJsonCompatibleRecord(rec);"
-    },
-    {
-      "file": "esm/native/kernel/domain_api_modules_corner_shared.ts",
-      "line": 105,
-      "term": "cloneJsonCompatibleValue",
-      "category": "compat-boundary",
-      "text": "function cloneJsonCompatibleValue(value: unknown, seen: WeakSet<object> = new WeakSet<object>()): unknown {"
-    },
-    {
-      "file": "esm/native/kernel/domain_api_modules_corner_shared.ts",
-      "line": 118,
-      "term": "cloneJsonCompatibleValue",
-      "category": "compat-boundary",
-      "text": "const cloned = cloneJsonCompatibleValue(entry, seen);"
-    },
-    {
-      "file": "esm/native/kernel/domain_api_modules_corner_shared.ts",
-      "line": 132,
-      "term": "cloneJsonCompatibleValue",
-      "category": "compat-boundary",
-      "text": "if (toJsonValue !== rec) return cloneJsonCompatibleValue(toJsonValue, seen);"
-    },
-    {
-      "file": "esm/native/kernel/domain_api_modules_corner_shared.ts",
-      "line": 135,
-      "term": "cloneJsonCompatibleValue",
-      "category": "compat-boundary",
-      "text": "const cloned = cloneJsonCompatibleValue(entry, seen);"
-    },
-    {
-      "file": "esm/native/kernel/domain_api_modules_corner_shared.ts",
-      "line": 144,
-      "term": "cloneJsonCompatibleRecord",
-      "category": "compat-boundary",
-      "text": "function cloneJsonCompatibleRecord(value: UnknownRecord): UnknownRecord | null {"
-    },
-    {
-      "file": "esm/native/kernel/domain_api_modules_corner_shared.ts",
-      "line": 145,
-      "term": "cloneJsonCompatibleValue",
-      "category": "compat-boundary",
-      "text": "const cloned = cloneJsonCompatibleValue(value);"
-    },
-    {
-      "file": "esm/native/kernel/domain_api_surface_sections_bindings_doors.ts",
-      "line": 24,
-      "term": "patchCanonicalPrefixedMapFallback",
-      "category": "compat-boundary",
-      "text": "patchCanonicalPrefixedMapFallback,"
-    },
-    {
-      "file": "esm/native/kernel/domain_api_surface_sections_bindings_doors.ts",
-      "line": 33,
-      "term": "writeSimpleMapValueWithFallback",
-      "category": "domain-default",
-      "text": "writeSimpleMapValueWithFallback,"
-    },
-    {
-      "file": "esm/native/kernel/domain_api_surface_sections_bindings_doors.ts",
-      "line": 128,
-      "term": "patchCanonicalPrefixedMapFallback",
-      "category": "compat-boundary",
-      "text": "return patchCanonicalPrefixedMapFallback("
-    },
-    {
-      "file": "esm/native/kernel/domain_api_surface_sections_bindings_doors.ts",
-      "line": 154,
-      "term": "patchCanonicalPrefixedMapFallback",
-      "category": "compat-boundary",
-      "text": "return patchCanonicalPrefixedMapFallback("
-    },
-    {
-      "file": "esm/native/kernel/domain_api_surface_sections_bindings_doors.ts",
-      "line": 170,
-      "term": "writeSimpleMapValueWithFallback",
-      "category": "domain-default",
-      "text": "return writeSimpleMapValueWithFallback(state, 'hingeMap', key, hinge, nextMeta);"
-    },
-    {
-      "file": "esm/native/kernel/domain_api_surface_sections_bindings_doors.ts",
-      "line": 178,
-      "term": "writeSimpleMapValueWithFallback",
-      "category": "domain-default",
-      "text": "return writeSimpleMapValueWithFallback(state, 'handlesMap', key, handleType, nextMeta);"
-    },
-    {
-      "file": "esm/native/kernel/domain_api_surface_sections_bindings_drawers_dividers.ts",
-      "line": 8,
-      "term": "toggleSimpleBooleanMapValueWithFallback",
-      "category": "domain-default",
-      "text": "toggleSimpleBooleanMapValueWithFallback,"
-    },
-    {
-      "file": "esm/native/kernel/domain_api_surface_sections_bindings_drawers_dividers.ts",
-      "line": 13,
-      "term": "writeSimpleMapValueWithFallback",
-      "category": "domain-default",
-      "text": "writeSimpleMapValueWithFallback,"
-    },
-    {
-      "file": "esm/native/kernel/domain_api_surface_sections_bindings_drawers_dividers.ts",
-      "line": 62,
-      "term": "toggleSimpleBooleanMapValueWithFallback",
-      "category": "domain-default",
-      "text": "return toggleSimpleBooleanMapValueWithFallback("
-    },
-    {
-      "file": "esm/native/kernel/domain_api_surface_sections_bindings_drawers_dividers.ts",
-      "line": 72,
-      "term": "writeSimpleMapValueWithFallback",
-      "category": "domain-default",
-      "text": "return writeSimpleMapValueWithFallback("
-    },
-    {
-      "file": "esm/native/kernel/domain_api_surface_sections_bindings_grooves_curtains.ts",
-      "line": 13,
-      "term": "writeSimpleMapValueWithFallback",
-      "category": "domain-default",
-      "text": "writeSimpleMapValueWithFallback,"
-    },
-    {
-      "file": "esm/native/kernel/domain_api_surface_sections_bindings_grooves_curtains.ts",
-      "line": 93,
-      "term": "writeSimpleMapValueWithFallback",
-      "category": "domain-default",
-      "text": "return writeSimpleMapValueWithFallback(state, 'curtainMap', partId, value, nextMeta);"
-    },
-    {
-      "file": "esm/native/kernel/domain_api_surface_sections_bindings_root_map.ts",
-      "line": 9,
-      "term": "writeSimpleMapValueWithFallback",
-      "category": "domain-default",
-      "text": "writeSimpleMapValueWithFallback,"
-    },
-    {
-      "file": "esm/native/kernel/domain_api_surface_sections_bindings_root_map.ts",
-      "line": 23,
-      "term": "writeSimpleMapValueWithFallback",
-      "category": "domain-default",
-      "text": "return writeSimpleMapValueWithFallback(state, nextMapName, key, val, nextMeta);"
-    },
-    {
-      "file": "esm/native/kernel/domain_api_surface_sections_contracts.ts",
-      "line": 74,
-      "term": "patchCanonicalMapFallback",
-      "category": "compat-boundary",
-      "text": "patchCanonicalMapFallback: ("
-    },
-    {
-      "file": "esm/native/kernel/domain_api_surface_sections_map_writes.ts",
-      "line": 147,
-      "term": "patchCanonicalMapFallback",
-      "category": "compat-boundary",
-      "text": "return state.patchCanonicalMapFallback(mapName, canonicalKey, value, meta, aliasesToClear);"
-    },
-    {
-      "file": "esm/native/kernel/domain_api_surface_sections_map_writes.ts",
-      "line": 150,
-      "term": "patchCanonicalPrefixedMapFallback",
-      "category": "compat-boundary",
-      "text": "export function patchCanonicalPrefixedMapFallback("
-    },
-    {
-      "file": "esm/native/kernel/domain_api_surface_sections_map_writes.ts",
-      "line": 161,
-      "term": "patchCanonicalMapFallback",
-      "category": "compat-boundary",
-      "text": "return state.patchCanonicalMapFallback("
-    },
-    {
-      "file": "esm/native/kernel/domain_api_surface_sections_map_writes.ts",
-      "line": 191,
-      "term": "writeSimpleMapValueWithFallback",
-      "category": "domain-default",
-      "text": "export function writeSimpleMapValueWithFallback("
-    },
-    {
-      "file": "esm/native/kernel/domain_api_surface_sections_map_writes.ts",
-      "line": 206,
-      "term": "toggleSimpleBooleanMapValueWithFallback",
-      "category": "domain-default",
-      "text": "export function toggleSimpleBooleanMapValueWithFallback("
-    },
-    {
-      "file": "esm/native/kernel/domain_api_surface_sections_map_writes.ts",
-      "line": 215,
-      "term": "writeSimpleMapValueWithFallback",
-      "category": "domain-default",
-      "text": "return writeSimpleMapValueWithFallback(state, mapName, nextKey, readIsOn(nextKey) ? null : true, meta);"
-    },
-    {
-      "file": "esm/native/kernel/domain_api_surface_sections_shared.ts",
-      "line": 31,
-      "term": "patchCanonicalPrefixedMapFallback",
-      "category": "compat-boundary",
-      "text": "patchCanonicalPrefixedMapFallback,"
-    },
-    {
-      "file": "esm/native/kernel/domain_api_surface_sections_shared.ts",
-      "line": 36,
-      "term": "toggleSimpleBooleanMapValueWithFallback",
-      "category": "domain-default",
-      "text": "toggleSimpleBooleanMapValueWithFallback,"
-    },
-    {
-      "file": "esm/native/kernel/domain_api_surface_sections_shared.ts",
-      "line": 38,
-      "term": "writeSimpleMapValueWithFallback",
-      "category": "domain-default",
-      "text": "writeSimpleMapValueWithFallback,"
-    },
-    {
-      "file": "esm/native/kernel/domain_api_surface_sections_state.ts",
-      "line": 175,
-      "term": "patchCanonicalMapFallback",
-      "category": "compat-boundary",
-      "text": "const patchCanonicalMapFallback = ("
-    },
-    {
-      "file": "esm/native/kernel/domain_api_surface_sections_state.ts",
-      "line": 217,
-      "term": "patchCanonicalMapFallback",
-      "category": "compat-boundary",
-      "text": "patchCanonicalMapFallback,"
-    },
-    {
       "file": "esm/native/kernel/domain_module_stack_patch.ts",
       "line": 6,
       "term": "compat",
       "category": "project-migration",
       "text": "// - keeping the compat parser separate makes the canonical patch seam easier to reason about"
-    },
-    {
-      "file": "esm/native/kernel/domain_module_stack_patch.ts",
-      "line": 10,
-      "term": "ModulePatchCompatInput",
-      "category": "compat-boundary",
-      "text": "ModulePatchCompatInput,"
-    },
-    {
-      "file": "esm/native/kernel/domain_module_stack_patch.ts",
-      "line": 28,
-      "term": "readCompatInput",
-      "category": "compat-boundary",
-      "text": "function readCompatInput(value: unknown): ModulePatchCompatInput | null {"
-    },
-    {
-      "file": "esm/native/kernel/domain_module_stack_patch.ts",
-      "line": 28,
-      "term": "ModulePatchCompatInput",
-      "category": "compat-boundary",
-      "text": "function readCompatInput(value: unknown): ModulePatchCompatInput | null {"
-    },
-    {
-      "file": "esm/native/kernel/domain_module_stack_patch.ts",
-      "line": 46,
-      "term": "resolveModulePatchCompatDescriptor",
-      "category": "compat-boundary",
-      "text": "export function resolveModulePatchCompatDescriptor(input: unknown): ModuleStackPatchDescriptor | null {"
-    },
-    {
-      "file": "esm/native/kernel/domain_module_stack_patch.ts",
-      "line": 47,
-      "term": "readCompatInput",
-      "category": "compat-boundary",
-      "text": "const obj = readCompatInput(input);"
     },
     {
       "file": "esm/native/kernel/state_api_history_meta_reactivity_contracts.ts",

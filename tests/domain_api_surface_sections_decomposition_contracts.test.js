@@ -94,7 +94,7 @@ test('[domain-api-sections] shared facade delegates contracts, prefixed maps, ma
     [
       /export function canonicalRemovedDoorPartId\(/,
       /export function commitCanonicalPrefixedMapValue\(/,
-      /export function writeSimpleMapValueWithFallback\(/,
+      /export function writeSimpleMapValue\(/,
       /export function shouldSkipCanonicalPrefixedMapCommit\(/,
       /writeMapKey\(/,
     ],
@@ -128,7 +128,7 @@ test('[domain-api-sections] shared facade delegates contracts, prefixed maps, ma
     sectionsMapWritesOwner,
     [
       /export function commitCanonicalPrefixedMapValue\(/,
-      /export function writeSimpleMapValueWithFallback\(/,
+      /export function writeSimpleMapValue\(/,
       /export function shouldSkipCanonicalPrefixedMapCommit\(/,
       /writeMapKey\(/,
     ],

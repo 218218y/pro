@@ -5,12 +5,12 @@ import { patchRuntime } from '../runtime/runtime_write_access.js';
 import { toggleDivider } from '../runtime/maps_access.js';
 import {
   shouldSkipSimpleMapWrite,
-  toggleSimpleBooleanMapValueWithFallback,
+  toggleSimpleBooleanMapValue,
   type DomainApiSurfaceSectionBindings,
   type DomainApiSurfaceSectionBindingFactory,
   type DomainApiSurfaceSectionKey,
   type DomainApiSurfaceSectionsState,
-  writeSimpleMapValueWithFallback,
+  writeSimpleMapValue,
 } from './domain_api_surface_sections_shared.js';
 
 function createDrawersSelectBindings(state: DomainApiSurfaceSectionsState): UnknownRecord {
@@ -59,7 +59,7 @@ function createDividersActionBindings(state: DomainApiSurfaceSectionsState): Unk
       const nextValue = state.readDividerIsOn(key) ? null : true;
       if (shouldSkipSimpleMapWrite(state, 'drawerDividersMap', key, nextValue)) return;
       if (toggleDivider(state.App, dividerKey, nextMeta)) return;
-      return toggleSimpleBooleanMapValueWithFallback(
+      return toggleSimpleBooleanMapValue(
         state,
         'drawerDividersMap',
         dividerKey,
@@ -69,13 +69,7 @@ function createDividersActionBindings(state: DomainApiSurfaceSectionsState): Unk
     },
     set(dividerKey: unknown, isOn: unknown, meta: ActionMetaLike | undefined) {
       const nextMeta = state._meta(meta, 'actions:dividers:set');
-      return writeSimpleMapValueWithFallback(
-        state,
-        'drawerDividersMap',
-        dividerKey,
-        !!isOn ? true : null,
-        nextMeta
-      );
+      return writeSimpleMapValue(state, 'drawerDividersMap', dividerKey, !!isOn ? true : null, nextMeta);
     },
   };
 }

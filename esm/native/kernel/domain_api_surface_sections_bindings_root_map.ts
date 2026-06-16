@@ -6,7 +6,7 @@ import {
   type DomainApiSurfaceSectionBindingFactory,
   type DomainApiSurfaceSectionKey,
   type DomainApiSurfaceSectionsState,
-  writeSimpleMapValueWithFallback,
+  writeSimpleMapValue,
 } from './domain_api_surface_sections_shared.js';
 
 function createSelectRootBindings(state: DomainApiSurfaceSectionsState): UnknownRecord {
@@ -20,7 +20,7 @@ function createMapActionBindings(state: DomainApiSurfaceSectionsState): UnknownR
     setKey(mapName: unknown, key: unknown, val: unknown, meta: ActionMetaLike | undefined) {
       const nextMapName = readMapKey(mapName);
       const nextMeta = state._meta(meta, 'actions:map:setKey:' + nextMapName);
-      return writeSimpleMapValueWithFallback(state, nextMapName, key, val, nextMeta);
+      return writeSimpleMapValue(state, nextMapName, key, val, nextMeta);
     },
   };
 }

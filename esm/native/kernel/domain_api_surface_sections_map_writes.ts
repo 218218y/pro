@@ -144,10 +144,10 @@ export function commitCanonicalMapValue(
   if (writeCanonicalMapValueDirect(state.App, mapName, canonicalKey, value, meta, aliasesToClear)) {
     return undefined;
   }
-  return state.patchCanonicalMapFallback(mapName, canonicalKey, value, meta, aliasesToClear);
+  return state.patchCanonicalMapViaCfg(mapName, canonicalKey, value, meta, aliasesToClear);
 }
 
-export function patchCanonicalPrefixedMapFallback(
+export function patchCanonicalPrefixedMapViaCfg(
   state: DomainApiSurfaceSectionsState,
   mapName: string,
   valueOrKey: unknown,
@@ -158,7 +158,7 @@ export function patchCanonicalPrefixedMapFallback(
 ): unknown {
   const nextKey = canonicalKey || normalizePrefixedMapKey(valueOrKey, semantics.prefix);
   if (!nextKey) return undefined;
-  return state.patchCanonicalMapFallback(
+  return state.patchCanonicalMapViaCfg(
     mapName,
     nextKey,
     value,
@@ -188,7 +188,7 @@ export function commitCanonicalPrefixedMapValue(
   );
 }
 
-export function writeSimpleMapValueWithFallback(
+export function writeSimpleMapValue(
   state: DomainApiSurfaceSectionsState,
   mapName: string,
   key: unknown,
@@ -203,7 +203,7 @@ export function writeSimpleMapValueWithFallback(
   return state._cfgMapPatch(nextMapName, nextKey, value, meta);
 }
 
-export function toggleSimpleBooleanMapValueWithFallback(
+export function toggleSimpleBooleanMapValue(
   state: DomainApiSurfaceSectionsState,
   mapName: string,
   key: unknown,
@@ -212,5 +212,5 @@ export function toggleSimpleBooleanMapValueWithFallback(
 ): unknown {
   const nextKey = readMapKey(key);
   if (!nextKey) return undefined;
-  return writeSimpleMapValueWithFallback(state, mapName, nextKey, readIsOn(nextKey) ? null : true, meta);
+  return writeSimpleMapValue(state, mapName, nextKey, readIsOn(nextKey) ? null : true, meta);
 }

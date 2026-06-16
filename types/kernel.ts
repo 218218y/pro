@@ -410,7 +410,7 @@ export interface ModuleStackPatchDescriptor {
   patch: ModuleConfigPatchLike;
 }
 
-export interface ModulePatchCompatInput extends UnknownRecord {
+export interface ModuleStackPatchInput extends UnknownRecord {
   stack?: ModuleStackName | 'lower' | 'bottom' | 'top' | string;
   side?: string;
   layer?: string;
@@ -424,9 +424,9 @@ export interface ModulePatchCompatInput extends UnknownRecord {
   list?: ModulesConfigurationLike;
 }
 
-export interface ModulesPatchCompatFn {
+export interface ModulesPatchFn {
   (index: number, patch: ModuleConfigPatchLike, meta?: ActionMetaLike): unknown;
-  (descriptor: ModulePatchCompatInput, meta?: ActionMetaLike): unknown;
+  (descriptor: ModuleStackPatchInput, meta?: ActionMetaLike): unknown;
   (list: ModulesConfigurationLike, meta?: ActionMetaLike): unknown;
 }
 
@@ -465,7 +465,7 @@ export interface ModulesActionsLike extends UnknownRecord {
   setAll?: (list: ModulesConfigurationLike, meta?: ActionMetaLike) => unknown;
   patchAt?: (index: number | string, patch: ModuleConfigPatchLike, meta?: ActionMetaLike) => unknown;
   patchLowerAt?: (index: number | string, patch: ModuleConfigPatchLike, meta?: ActionMetaLike) => unknown;
-  patch?: ModulesPatchCompatFn;
+  patch?: ModulesPatchFn;
   [k: string]: unknown;
 }
 

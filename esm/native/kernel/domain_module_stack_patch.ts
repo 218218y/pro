@@ -7,7 +7,7 @@
 
 import type {
   ModuleConfigPatchLike,
-  ModulePatchCompatInput,
+  ModuleStackPatchInput,
   ModuleStackName,
   ModuleStackPatchDescriptor,
   ModuleStackPatchKey,
@@ -25,7 +25,7 @@ function normalizeModuleStackName(input: unknown): ModuleStackName {
   return raw === 'bottom' || raw === 'lower' ? 'bottom' : 'top';
 }
 
-function readCompatInput(value: unknown): ModulePatchCompatInput | null {
+function readStackPatchInput(value: unknown): ModuleStackPatchInput | null {
   return isRecord(value) ? value : null;
 }
 
@@ -43,8 +43,8 @@ export function normalizeModuleStackPatchKey(moduleKey: unknown): ModuleStackPat
   return coerced ? coerced : null;
 }
 
-export function resolveModulePatchCompatDescriptor(input: unknown): ModuleStackPatchDescriptor | null {
-  const obj = readCompatInput(input);
+export function resolveModuleStackPatchDescriptor(input: unknown): ModuleStackPatchDescriptor | null {
+  const obj = readStackPatchInput(input);
   if (!obj) return null;
 
   const hasIndex = typeof obj.index === 'number' && Number.isFinite(obj.index) && obj.index >= 0;

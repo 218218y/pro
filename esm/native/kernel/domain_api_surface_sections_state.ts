@@ -172,7 +172,7 @@ export function createDomainApiSurfaceSectionsState(
     ]);
   const readGrooveFlag = (partIdOrKey: unknown): boolean =>
     readPrefixedToggleMapFlag(readGroovesMap, partIdOrKey, grooveMapSemantics);
-  const patchCanonicalMapFallback = (
+  const patchCanonicalMapViaCfg = (
     mapName: string,
     canonicalKey: string,
     value: unknown,
@@ -214,7 +214,7 @@ export function createDomainApiSurfaceSectionsState(
     readSplitFlag,
     readSplitBottomFlag,
     readGrooveFlag,
-    patchCanonicalMapFallback,
+    patchCanonicalMapViaCfg,
   };
 }
 

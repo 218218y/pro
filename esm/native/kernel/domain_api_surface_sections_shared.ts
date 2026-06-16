@@ -28,14 +28,14 @@ export {
   commitCanonicalMapValue,
   commitCanonicalPrefixedMapValue,
   patchCanonicalMapValue,
-  patchCanonicalPrefixedMapFallback,
+  patchCanonicalPrefixedMapViaCfg,
   readDomainMapValue,
   shouldSkipCanonicalMapCommit,
   shouldSkipCanonicalPrefixedMapCommit,
   shouldSkipSimpleMapWrite,
-  toggleSimpleBooleanMapValueWithFallback,
+  toggleSimpleBooleanMapValue,
   writeCanonicalMapValueDirect,
-  writeSimpleMapValueWithFallback,
+  writeSimpleMapValue,
 } from './domain_api_surface_sections_map_writes.js';
 export {
   canonicalRemovedDoorPartId,

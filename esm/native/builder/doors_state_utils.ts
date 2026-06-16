@@ -139,7 +139,7 @@ export function makeDoorStateAccessors(
  * These helpers were extracted from builder/core to keep orchestration lean.
  */
 
-function _removeDoorModeId(App: unknown): string {
+function removeDoorModeId(): string {
   // Canonical id is 'remove_door'.
   return getModeId('REMOVE_DOOR') || 'remove_door';
 }
@@ -149,11 +149,11 @@ function _removeDoorModeId(App: unknown): string {
  */
 const DEFAULT_MODE: UnknownRecord = { primary: 'none', opts: {} };
 
-export function isRemoveDoorMode(App: unknown, state: unknown): boolean {
+export function isRemoveDoorMode(_App: unknown, state: unknown): boolean {
   const st = _asObj(state);
   const mode = st && isRecord(st['mode']) ? st['mode'] : DEFAULT_MODE;
-  const removeDoorModeId = _removeDoorModeId(App);
-  return !!(mode && mode['primary'] === removeDoorModeId);
+  const currentRemoveDoorModeId = removeDoorModeId();
+  return !!(mode && mode['primary'] === currentRemoveDoorModeId);
 }
 
 /**

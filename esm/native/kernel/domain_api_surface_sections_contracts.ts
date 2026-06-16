@@ -71,7 +71,7 @@ export interface DomainApiSurfaceSectionsState extends DomainApiSurfaceSectionsC
   readSplitFlag: (doorBaseId: unknown) => boolean;
   readSplitBottomFlag: (doorBaseId: unknown) => boolean;
   readGrooveFlag: (partIdOrKey: unknown) => boolean;
-  patchCanonicalMapFallback: (
+  patchCanonicalMapViaCfg: (
     mapName: string,
     canonicalKey: string,
     value: unknown,

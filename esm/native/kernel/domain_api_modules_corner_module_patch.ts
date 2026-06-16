@@ -11,7 +11,7 @@ import { patchModulesConfigurationListAtForPatch } from '../features/modules_con
 import { asRecordOrEmpty } from './domain_api_modules_corner_shared.js';
 import {
   normalizeModuleStackPatchKey,
-  resolveModulePatchCompatDescriptor,
+  resolveModuleStackPatchDescriptor,
 } from './domain_module_stack_patch.js';
 import type { DomainApiModulesCornerContext } from './domain_api_modules_corner_contracts.js';
 
@@ -141,7 +141,7 @@ export function installDomainApiModulesCornerModulePatch(ctx: DomainApiModulesCo
         return modulesActions.patchAt?.(arg1, patch, _asMeta(asMetaInput(arg3)));
       }
 
-      const desc = resolveModulePatchCompatDescriptor(arg1);
+      const desc = resolveModuleStackPatchDescriptor(arg1);
       if (desc) {
         const meta = _meta(asMetaInput(arg2), 'actions:modules:patch');
         if (typeof desc.moduleKey === 'number') {

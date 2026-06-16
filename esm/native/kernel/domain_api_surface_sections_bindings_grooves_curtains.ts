@@ -10,7 +10,7 @@ import {
   type DomainApiSurfaceSectionBindingFactory,
   type DomainApiSurfaceSectionKey,
   type DomainApiSurfaceSectionsState,
-  writeSimpleMapValueWithFallback,
+  writeSimpleMapValue,
 } from './domain_api_surface_sections_shared.js';
 
 function createGroovesSelectBindings(state: DomainApiSurfaceSectionsState): UnknownRecord {
@@ -90,7 +90,7 @@ function createCurtainsActionBindings(state: DomainApiSurfaceSectionsState): Unk
     set(partId: unknown, preset: unknown, meta: ActionMetaLike | undefined) {
       const nextMeta = state._meta(meta, 'actions:curtains:set');
       const value = preset === undefined || preset === null ? null : String(preset || 'none');
-      return writeSimpleMapValueWithFallback(state, 'curtainMap', partId, value, nextMeta);
+      return writeSimpleMapValue(state, 'curtainMap', partId, value, nextMeta);
     },
   };
 }

@@ -89,7 +89,7 @@ export function cloneJsonRecord(value: unknown): UnknownRecord | null {
   try {
     return asRecord(JSON.parse(JSON.stringify(rec)));
   } catch {
-    return cloneJsonCompatibleRecord(rec);
+    return cloneJsonSafeRecord(rec);
   }
 }
 
@@ -102,7 +102,7 @@ function readCloneToJSONValue(value: object): unknown {
   }
 }
 
-function cloneJsonCompatibleValue(value: unknown, seen: WeakSet<object> = new WeakSet<object>()): unknown {
+function cloneJsonSafeValue(value: unknown, seen: WeakSet<object> = new WeakSet<object>()): unknown {
   if (value === null) return null;
   if (typeof value === 'string' || typeof value === 'boolean') return value;
   if (typeof value === 'number') return Number.isFinite(value) ? value : null;
@@ -115,7 +115,7 @@ function cloneJsonCompatibleValue(value: unknown, seen: WeakSet<object> = new We
     try {
       const out: unknown[] = [];
       for (const entry of value) {
-        const cloned = cloneJsonCompatibleValue(entry, seen);
+        const cloned = cloneJsonSafeValue(entry, seen);
         out.push(typeof cloned === 'undefined' ? null : cloned);
       }
       return out;
@@ -129,10 +129,10 @@ function cloneJsonCompatibleValue(value: unknown, seen: WeakSet<object> = new We
   seen.add(rec);
   try {
     const toJsonValue = readCloneToJSONValue(rec);
-    if (toJsonValue !== rec) return cloneJsonCompatibleValue(toJsonValue, seen);
+    if (toJsonValue !== rec) return cloneJsonSafeValue(toJsonValue, seen);
     const out: UnknownRecord = {};
     for (const [key, entry] of Object.entries(rec)) {
-      const cloned = cloneJsonCompatibleValue(entry, seen);
+      const cloned = cloneJsonSafeValue(entry, seen);
       if (typeof cloned !== 'undefined') out[key] = cloned;
     }
     return out;
@@ -141,8 +141,8 @@ function cloneJsonCompatibleValue(value: unknown, seen: WeakSet<object> = new We
   }
 }
 
-function cloneJsonCompatibleRecord(value: UnknownRecord): UnknownRecord | null {
-  const cloned = cloneJsonCompatibleValue(value);
+function cloneJsonSafeRecord(value: UnknownRecord): UnknownRecord | null {
+  const cloned = cloneJsonSafeValue(value);
   return asRecord(cloned);
 }
 

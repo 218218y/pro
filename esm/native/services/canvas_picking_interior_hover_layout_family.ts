@@ -5,7 +5,7 @@ import { tryHandleCanvasPresetLayoutHover } from './canvas_picking_interior_hove
 import { tryHandleCanvasManualLayoutHover } from './canvas_picking_interior_hover_manual_mode.js';
 
 export function tryHandleCanvasLayoutFamilyHover(args: CanvasInteriorHoverFlowArgs): boolean {
-  const { App, primaryMode } = args;
+  const { primaryMode } = args;
   const layoutMode = getModeId('LAYOUT') || 'layout';
   if (primaryMode === layoutMode) return tryHandleCanvasPresetLayoutHover(args);
 

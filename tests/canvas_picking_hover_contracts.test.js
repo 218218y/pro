@@ -140,17 +140,14 @@ test('canvas picking hover owners stay thin and delegate preview/target/interior
     hoverFlowCore,
     /import \{[\s\S]*asHoverRenderOps,[\s\S]*asPreviewCallback,[\s\S]*createPreviewOpsArgs,[\s\S]*readSplitVariant,[\s\S]*\} from '\.\/canvas_picking_hover_flow_shared\.js';/
   );
+  assert.match(hoverFlowCore, /const __isSplitEditMode = __pm === \(getModeId\('SPLIT'\) \|\| 'split'\);/);
   assert.match(
     hoverFlowCore,
-    /const __isSplitEditMode = __pm === \(getModeId\(App, 'SPLIT'\) \|\| 'split'\);/
+    /const __isDividerEditMode = __pm === \(getModeId\('DIVIDER'\) \|\| 'divider'\);/
   );
   assert.match(
     hoverFlowCore,
-    /const __isDividerEditMode = __pm === \(getModeId\(App, 'DIVIDER'\) \|\| 'divider'\);/
-  );
-  assert.match(
-    hoverFlowCore,
-    /const __isCellDimsMode = __pm === \(getModeId\(App, 'CELL_DIMS'\) \|\| 'cell_dims'\);/
+    /const __isCellDimsMode = __pm === \(getModeId\('CELL_DIMS'\) \|\| 'cell_dims'\);/
   );
   assert.match(hoverFlowCore, /return tryHandleCanvasNonSplitHover\(\{/);
   assert.match(hoverFlowCore, /return tryHandleCanvasSplitHover\(\{/);

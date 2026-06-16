@@ -31,7 +31,7 @@ test('stage 42 legacy fallback inventory closeout is anchored', () => {
 
   for (const entry of [
     ['esm/native/builder/core_carcass_cornice.ts', 'domain-default'],
-    ['esm/native/kernel/domain_api_modules_corner_shared.ts', 'compat-boundary'],
+    ['esm/native/services/render_surface_runtime_support_readers.ts', 'compat-boundary'],
     ['esm/native/ui/react/tabs/design_tab_color_action_result_reason.ts', 'error-message-default'],
     ['esm/shared/wardrobe_dimension_tokens_shared.ts', 'domain-default'],
   ]) {
@@ -39,6 +39,24 @@ test('stage 42 legacy fallback inventory closeout is anchored', () => {
     assert.ok(
       audit.summary.byFile[file]?.categories?.[category] > 0,
       `${file} must be categorized as ${category}`
+    );
+  }
+
+  assert.equal(
+    audit.summary.byFile['esm/native/kernel/domain_api_modules_corner_shared.ts']?.total || 0,
+    0,
+    'domain module corner shared JSON cloning should use safe/current naming without compatible vocabulary'
+  );
+
+  for (const file of [
+    'esm/native/kernel/domain_api_surface_sections_map_writes.ts',
+    'esm/native/kernel/domain_api_surface_sections_contracts.ts',
+    'esm/native/kernel/domain_api_surface_sections_state.ts',
+  ]) {
+    assert.equal(
+      audit.summary.byFile[file]?.total || 0,
+      0,
+      `${file} should use canonical cfg-write naming without fallback vocabulary`
     );
   }
 

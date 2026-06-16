@@ -21,7 +21,7 @@ import {
   commitCanonicalMapValue,
   listRemovedDoorCleanupKeys,
   listRemovedDoorLookupKeys,
-  patchCanonicalPrefixedMapFallback,
+  patchCanonicalPrefixedMapViaCfg,
   shouldSkipCanonicalPrefixedMapCommit,
   shouldSkipSimpleMapWrite,
   splitDoorBottomMapSemantics,
@@ -30,7 +30,7 @@ import {
   type DomainApiSurfaceSectionBindingFactory,
   type DomainApiSurfaceSectionKey,
   type DomainApiSurfaceSectionsState,
-  writeSimpleMapValueWithFallback,
+  writeSimpleMapValue,
 } from './domain_api_surface_sections_shared.js';
 
 function createDoorsSelectBindings(state: DomainApiSurfaceSectionsState): UnknownRecord {
@@ -125,7 +125,7 @@ function createDoorsActionBindings(state: DomainApiSurfaceSectionsState): Unknow
       )
         return;
       if (writeSplit(state.App, doorId, !!isSplit, nextMeta)) return;
-      return patchCanonicalPrefixedMapFallback(
+      return patchCanonicalPrefixedMapViaCfg(
         state,
         'splitDoorsMap',
         doorId,
@@ -151,7 +151,7 @@ function createDoorsActionBindings(state: DomainApiSurfaceSectionsState): Unknow
       )
         return;
       if (writeSplitBottom(state.App, doorId, !!isOn, nextMeta)) return;
-      return patchCanonicalPrefixedMapFallback(
+      return patchCanonicalPrefixedMapViaCfg(
         state,
         'splitDoorsBottomMap',
         doorId,
@@ -167,7 +167,7 @@ function createDoorsActionBindings(state: DomainApiSurfaceSectionsState): Unknow
       if (!key) return;
       if (shouldSkipSimpleMapWrite(state, 'hingeMap', key, hinge)) return;
       if (writeHinge(state.App, key, hinge, nextMeta)) return;
-      return writeSimpleMapValueWithFallback(state, 'hingeMap', key, hinge, nextMeta);
+      return writeSimpleMapValue(state, 'hingeMap', key, hinge, nextMeta);
     },
     setHandle(doorId: unknown, handleType: HandleType | string | null, meta: ActionMetaLike | undefined) {
       const nextMeta = state._meta(meta, 'actions:doors:setHandle');
@@ -175,7 +175,7 @@ function createDoorsActionBindings(state: DomainApiSurfaceSectionsState): Unknow
       if (!key) return;
       if (shouldSkipSimpleMapWrite(state, 'handlesMap', key, handleType)) return;
       if (writeHandle(state.App, key, handleType, nextMeta)) return;
-      return writeSimpleMapValueWithFallback(state, 'handlesMap', key, handleType, nextMeta);
+      return writeSimpleMapValue(state, 'handlesMap', key, handleType, nextMeta);
     },
     setGlobalHandleType(handleType: HandleType | string | null, meta: ActionMetaLike | undefined) {
       const nextMeta = state._meta(meta, 'actions:doors:setGlobalHandleType');
