@@ -14,7 +14,6 @@ import {
   exportProjectViaService,
   normalizeProjectExportResult,
   exportProjectResultViaService,
-  handleProjectFileLoadActionResultViaService as handleProjectFileLoadActionResultViaRuntimeService,
   loadProjectDataViaService,
   loadProjectDataActionResultViaService,
   loadProjectDataActionResultViaServiceOrThrow,
@@ -135,20 +134,8 @@ export async function handleProjectFileLoadViaService(
   App: AppContainer | unknown,
   eventOrFile: unknown
 ): Promise<ProjectLoadActionResult> {
-  const canonical = normalizeProjectLoadActionResult(
-    await loadProjectFileInputViaService(assertApp(App, 'services/project_file_ingress'), eventOrFile),
-    'not-installed'
-  );
-  if (canonical.ok) return canonical;
-  if (!('reason' in canonical) || canonical.reason !== 'not-installed') return canonical;
-
   return normalizeProjectLoadActionResult(
-    await handleProjectFileLoadActionResultViaRuntimeService(
-      App,
-      eventOrFile,
-      'not-installed',
-      '[WardrobePro] Project file load failed.'
-    ),
+    await loadProjectFileInputViaService(assertApp(App, 'services/project_file_ingress'), eventOrFile),
     'not-installed'
   );
 }

@@ -9,7 +9,7 @@ function createNamedBlob(name: string, text = '{}'): Blob & { name: string } {
   return blob;
 }
 
-test('project file service prefers canonical async ingress before legacy runtime handleFileLoad', async () => {
+test('project file service uses the canonical async ingress and loadProjectData service seam', async () => {
   const file = createNamedBlob('project.json', '{"settings":{}}');
   const calls: string[] = [];
   const App = {
@@ -20,7 +20,7 @@ test('project file service prefers canonical async ingress before legacy runtime
           return { ok: true, restoreGen: 11 };
         },
         handleFileLoad() {
-          calls.push('legacy');
+          calls.push('raw-file-handler');
           return { ok: true, pending: true };
         },
       },
@@ -34,14 +34,14 @@ test('project file service prefers canonical async ingress before legacy runtime
   assert.match(calls[0], /"source":"load\.file"/);
 });
 
-test('project file service falls back to legacy runtime handleFileLoad when canonical ingress is not installed', async () => {
+test('project file service does not fall back to raw handleFileLoad when canonical loadProjectData is missing', async () => {
   const file = createNamedBlob('project.json', '{"settings":{}}');
   const calls: string[] = [];
   const App = {
     services: {
       projectIO: {
         handleFileLoad() {
-          calls.push('legacy');
+          calls.push('raw-file-handler');
           return { ok: true, pending: true };
         },
       },
@@ -49,26 +49,29 @@ test('project file service falls back to legacy runtime handleFileLoad when cano
   } as any;
 
   const result = await handleProjectFileLoadViaService(App, file);
-  assert.deepEqual(result, { ok: true, pending: true });
-  assert.deepEqual(calls, ['legacy']);
+  assert.deepEqual(result, { ok: false, reason: 'not-installed' });
+  assert.deepEqual(calls, []);
 });
 
-test('project file service preserves legacy runtime handleFileLoad throw messages when canonical ingress is unavailable', async () => {
-  const file = createNamedBlob('project.json', '{"settings":{}}');
+test('project file service reports canonical file parse/read failures before service dispatch', async () => {
+  const invalidJsonFile = createNamedBlob('project.json', '{bad-json');
+  const calls: string[] = [];
   const App = {
     services: {
       projectIO: {
-        async handleFileLoad() {
-          throw new Error('legacy file load exploded');
+        loadProjectData() {
+          calls.push('canonical');
+          return { ok: true };
+        },
+        handleFileLoad() {
+          calls.push('raw-file-handler');
+          return { ok: true, pending: true };
         },
       },
     },
   } as any;
 
-  const result = await handleProjectFileLoadViaService(App, file);
-  assert.deepEqual(result, {
-    ok: false,
-    reason: 'error',
-    message: 'legacy file load exploded',
-  });
+  const result = await handleProjectFileLoadViaService(App, invalidJsonFile);
+  assert.deepEqual(result, { ok: false, reason: 'invalid' });
+  assert.deepEqual(calls, []);
 });
