@@ -6,6 +6,10 @@ import { fileURLToPath } from 'node:url';
 const root = process.cwd();
 const importPattern = /(?:import|export)\s+(?:[^;'\"]*?\s+from\s+)?['\"]([^'\"]*\/features\/[^'\"]+)['\"]/gs;
 
+function compareCodePoints(left, right) {
+  return left < right ? -1 : left > right ? 1 : 0;
+}
+
 function readJson(file) {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
 }
@@ -17,6 +21,7 @@ function walk(dir, out = []) {
   } catch {
     return out;
   }
+  entries.sort((left, right) => compareCodePoints(left.name, right.name));
   for (const entry of entries) {
     const abs = path.join(dir, entry.name);
     if (entry.isDirectory()) {
@@ -57,7 +62,9 @@ function buildMarkdownReport(result) {
   lines.push('');
   lines.push('## Public entries by family');
   lines.push('');
-  for (const [family, entries] of Object.entries(result.byFamily).sort(([a], [b]) => a.localeCompare(b))) {
+  for (const [family, entries] of Object.entries(result.byFamily).sort(([a], [b]) =>
+    compareCodePoints(a, b)
+  )) {
     lines.push(`### ${family}`);
     lines.push('');
     for (const entry of entries) lines.push(`- \`${entry}\``);
@@ -69,7 +76,7 @@ function buildMarkdownReport(result) {
     for (const violation of result.violations) lines.push(`- ${violation}`);
     lines.push('');
   }
-  return `${lines.join('\n')}\n`;
+  return lines.join('\n');
 }
 
 function resolveProjectPath(projectRoot, file) {
@@ -101,7 +108,7 @@ function normalizeJsonForCompare(value) {
   if (!value || typeof value !== 'object') return value;
   return Object.fromEntries(
     Object.entries(value)
-      .sort(([a], [b]) => a.localeCompare(b))
+      .sort(([a], [b]) => compareCodePoints(a, b))
       .map(([key, entry]) => [key, normalizeJsonForCompare(entry)])
   );
 }
@@ -168,6 +175,9 @@ export function runFeaturesPublicApiContract(projectRoot = root) {
       }
     }
   }
+
+  importSites.sort((left, right) => compareCodePoints(left.file, right.file));
+  violations.sort(compareCodePoints);
 
   return {
     ok: violations.length === 0,

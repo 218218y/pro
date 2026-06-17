@@ -20,6 +20,15 @@ test('feature imports outside features use only the public manifest surface', ()
   runNodeScript('tools/wp_features_public_api_contract.mjs');
 });
 
+test('features public API reports use platform-independent ordering', () => {
+  const source = readSourceText('tools/wp_features_public_api_contract.mjs');
+
+  assert.match(source, /entries\.sort\(\(left, right\) => compareCodePoints\(left\.name, right\.name\)\)/);
+  assert.match(source, /importSites\.sort\(/);
+  assert.match(source, /violations\.sort\(compareCodePoints\)/);
+  assert.doesNotMatch(source, /localeCompare\(/);
+});
+
 test('production source does not use unsafe any casts', () => {
   runNodeScript('tools/wp_type_hardening_audit.mjs');
 });
