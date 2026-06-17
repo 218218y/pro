@@ -24,9 +24,6 @@ const kernelBundle = bundleSources(
     '../esm/native/kernel/kernel_state_kernel_config_maps_patch.ts',
     '../esm/native/kernel/kernel_state_kernel_config_maps_patch_shared.ts',
     '../esm/native/kernel/kernel_state_kernel_config_maps_patch_ops.ts',
-    '../esm/native/kernel/kernel_state_kernel_config_modules_corner.ts',
-    '../esm/native/kernel/kernel_state_kernel_config_modules_corner_ensure.ts',
-    '../esm/native/kernel/kernel_state_kernel_config_modules_corner_patch.ts',
   ],
   import.meta.url
 );
@@ -55,8 +52,6 @@ const domainBundle = bundleSources(
     '../esm/native/kernel/domain_api_modules_corner_recompute_template.ts',
     '../esm/native/kernel/domain_api_modules_corner_shared.ts',
     '../esm/native/kernel/domain_api_modules_corner_selectors.ts',
-    '../esm/native/kernel/domain_api_modules_corner_module_patch.ts',
-    '../esm/native/kernel/domain_api_modules_corner_corner_patch.ts',
   ],
   import.meta.url
 );
@@ -114,10 +109,8 @@ test('[kernel-di] stateKernel DI stays centralized under services.stateKernel an
     [
       /export function installKernelStateKernelConfigSurface\(/,
       /installKernelStateKernelConfigMapsSurface\(helpers\);/,
-      /installKernelStateKernelConfigModulesCornerSurface\(helpers\);/,
       /__sk\.captureConfig = function/,
       /__sk\.patchConfigMaps = function/,
-      /__sk\.patchSplitLowerCornerCellConfig = function/,
     ],
     'kernel bundle'
   );
@@ -166,8 +159,8 @@ test('[kernel-owner] state, domain, room, and colors owners delegate to focused 
     [
       /export function installDomainApiModulesCorner\(/,
       /modulesActions\.recomputeFromUi =/,
-      /modulesActions\.patchAt =/,
-      /cornerActions\.patchCellAt =/,
+      /delete modulesActions\[key\]/,
+      /delete cornerActions\[key\]/,
     ],
     'domain bundle'
   );
@@ -177,7 +170,12 @@ test('[kernel-owner] state, domain, room, and colors owners delegate to focused 
     [/modulesActions\.patch\s*=(?!=)/, /domain_module_stack_patch\.js/, /__patchModuleListForStack/],
     'domain modules canonical public API'
   );
-  assert.match(domainBundle, /delete modulesActions\.patch;/);
+  assertLacksAll(
+    assert,
+    domainBundle,
+    [/modulesActions\.patchAt\s*=/, /cornerActions\.patchCellAt\s*=/, /ensureLowerCellAt\s*=/],
+    'retired domain stack aliases'
+  );
   assertLacksAll(
     assert,
     buildTypes,

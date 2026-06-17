@@ -135,8 +135,8 @@ test('[stageJ] domain api stack/textures/doors writes mutate canonical config sl
   installStateApi(App);
   installDomainApi(App);
 
-  App.actions.modules.patchAt(1, { width: 55 }, { source: 'domain:top' });
-  App.actions.modules.patchLowerAt(0, { width: 30 }, { source: 'domain:bottom' });
+  App.actions.modules.patchForStack('top', 1, { width: 55 }, { source: 'domain:top' });
+  App.actions.modules.patchForStack('bottom', 0, { width: 30 }, { source: 'domain:bottom' });
   App.actions.doors.setGlobalHandleType('line', { source: 'domain:handleType' });
   App.actions.textures.setCustomUploadedDataURL('data:image/png;base64,abc', { source: 'domain:texture' });
 

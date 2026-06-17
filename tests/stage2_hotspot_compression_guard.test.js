@@ -62,14 +62,15 @@ const canvasBundle = bundleSources(
   import.meta.url
 );
 
-test('[stage2-hotspots] state-kernel DI helper hides legacy compat method names behind normalized key list', () => {
+test('[stage2-hotspots] state-kernel DI helper no longer installs legacy module/corner patch stubs', () => {
   assertLacksAll(
     assert,
     stateKernel,
     [/patchModuleConfig/, /patchSplitLowerModuleConfig/, /patchSplitLowerCornerCellConfig/],
     'stateKernel'
   );
-  assert.match(stateKernel, /__STATE_KERNEL_METHOD_KEYS/);
+  assertLacksAll(assert, stateKernel, [/__STATE_KERNEL_METHOD_KEYS/, /NOOP_PATCH/], 'stateKernel');
+  assert.match(stateKernel, /ensureServiceSlot<MutableStateKernelShape>\(app, 'stateKernel'\)/);
 });
 
 test('[stage2-hotspots] render bundle keeps a thin owner and preserves canonical door/drawer render seams', () => {

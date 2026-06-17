@@ -14,13 +14,6 @@ import type {
 import type { RootStateLike } from './store_state';
 import type { ThreeLike } from './three';
 import type { WardrobeProRuntimeConfig, WardrobeProRuntimeFlags } from './runtime';
-import type {
-  CornerConfigurationLike,
-  ModuleConfigLike,
-  ModuleConfigPatchLike,
-  NormalizedTopModuleConfigLike,
-  ModulesConfigurationLike,
-} from './modules_configuration';
 
 export interface StoreSourceDebugStat {
   source: string;
@@ -142,31 +135,6 @@ export interface StateKernelLike extends UnknownRecord {
   patchConfigMaps?: (patchObj: unknown, meta?: ActionMetaLike) => unknown;
   commit?: (meta?: ActionMetaLike) => unknown;
 
-  // Module config patch helpers (used by domain APIs; avoids unsafe stateKernel casts everywhere).
-  patchModuleConfig: (
-    indexOrKey: number | string,
-    patch: ModuleConfigPatchLike,
-    meta?: ActionMetaLike
-  ) => unknown;
-  /**
-   * Split-lower module key is historically overloaded in the codebase:
-   * - numeric module index (most common)
-   * - string keys coming from UI / picking code (e.g. `corner:${n}` or stringified numbers)
-   *
-   * Keep the surface permissive here to avoid forcing unsafe casts at call-sites.
-   */
-  patchSplitLowerModuleConfig: (
-    indexOrKey: number | string,
-    patch: ModuleConfigPatchLike,
-    meta?: ActionMetaLike
-  ) => unknown;
-
-  patchSplitLowerCornerCellConfig: (
-    indexOrKey: number | string,
-    patch: ModuleConfigPatchLike,
-    meta?: ActionMetaLike
-  ) => unknown;
-
   // Common kernel APIs used across builder/services.
   getStoreConfig?: () => UnknownRecord;
   applyConfig?: (cfgIn: unknown, metaIn?: ActionMetaLike) => unknown;
@@ -174,29 +142,6 @@ export interface StateKernelLike extends UnknownRecord {
   commitFromSnapshot?: (snapshot: unknown, meta?: ActionMetaLike) => unknown;
   setDirty?: (isDirty: boolean, meta?: ActionMetaLike) => unknown;
   touch?: (meta?: ActionMetaLike) => unknown;
-
-  // Config ref helpers used by canvas picking / UI.
-  ensureModuleConfig?: (indexOrKey: number | string) => NormalizedTopModuleConfigLike | null;
-  ensureSplitLowerModuleConfig?: (indexOrKey: number | string) => ModuleConfigLike | null;
-  ensureCornerConfig?: () => CornerConfigurationLike | null;
-  ensureCornerCellConfig?: (indexOrKey: number | string) => NormalizedTopModuleConfigLike | null;
-  ensureSplitLowerCornerConfig?: () => CornerConfigurationLike | null;
-
-  // Stack-aware variants used by newer picking code.
-  ensureModuleConfigForStack?: (
-    stackKey: 'top' | 'bottom',
-    indexOrKey: number | string | 'corner'
-  ) => ModuleConfigLike | CornerConfigurationLike | null;
-  patchModuleConfigForStack?: (
-    stackKey: 'top' | 'bottom',
-    indexOrKey: number | string | 'corner',
-    patch: ModuleConfigPatchLike,
-    meta?: ActionMetaLike
-  ) => unknown;
-
-  // Bulk replace helpers used by domain API (optional).
-  replaceModulesConfiguration?: (next: ModulesConfigurationLike, meta?: ActionMetaLike) => unknown;
-  replaceSplitLowerModulesConfiguration?: (next: ModulesConfigurationLike, meta?: ActionMetaLike) => unknown;
 
   // Optional batching helper used by cfg.batch().
   __cfgBatch?: {

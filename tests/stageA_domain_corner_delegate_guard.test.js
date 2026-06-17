@@ -8,8 +8,6 @@ const domainBundle = bundleSources(
     '../esm/native/kernel/domain_api.ts',
     '../esm/native/kernel/domain_api_modules_corner.ts',
     '../esm/native/kernel/domain_api_modules_corner_selectors.ts',
-    '../esm/native/kernel/domain_api_modules_corner_module_patch.ts',
-    '../esm/native/kernel/domain_api_modules_corner_corner_patch.ts',
   ],
   import.meta.url
 );
@@ -23,14 +21,7 @@ const stackRouter = bundleSources(
   import.meta.url
 );
 
-test('[stageA] domain aliases delegate one-way into the canonical stack router without marker cycles', () => {
-  assertMatchesAll(
-    assert,
-    domainBundle,
-    [/requireEnsureForStack/, /patchCanonicalStack/, /patchCornerForStack/],
-    'domainBundle'
-  );
-
+test('[stageA] canonical stack routing has no domain aliases, reverse lookup, or marker cycles', () => {
   assertMatchesAll(
     assert,
     stackRouter,
@@ -45,9 +36,18 @@ test('[stageA] domain aliases delegate one-way into the canonical stack router w
       /__wp_delegatesStackPatch/,
       /markDelegatesStackPatch/,
       /isDelegatingStackPatchFn/,
+      /requireEnsureForStack/,
+      /patchCanonicalStack/,
+      /patchCornerForStack/,
       /cornerNs\[/,
       /modulesNs\['ensure/,
     ],
     'one-way stack routing'
+  );
+  assertLacksAll(
+    assert,
+    domainBundle,
+    [/ensureAt\s*=/, /ensureLowerAt\s*=/, /modulesActions\.patchAt\s*=/, /cornerActions\.patchCellAt\s*=/],
+    'retired domain aliases'
   );
 });

@@ -71,12 +71,7 @@ const ALLOW__REPLACE = new Set([
   'esm/native/runtime/cfg_access.js',
 ]);
 
-const ALLOW_STATEKERNEL_STACK_METHODS = new Set([
-  // Kernel owns these compat seams; other layers must use App.actions.modules/corner.
-  'esm/native/kernel/kernel.ts',
-  // state_api intentionally owns the stack router surface and contains explicit, audited wrappers.
-  'esm/native/kernel/state_api.ts',
-]);
+const ALLOW_STATEKERNEL_STACK_METHODS = new Set();
 
 const ALLOW_UI_RUNTIME_PATCH = new Set([
   // Store owns patch application.

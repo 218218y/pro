@@ -19,6 +19,7 @@ Use this map to find the owner before editing. The goal is to prevent “just on
 | Stable surface install/healing         | `esm/native/runtime/*install*`, relevant service owner                      |
 | Store setup and platform orchestration | `esm/native/platform/*`                                                     |
 | Domain state/API sections              | `esm/native/kernel/domain_api_surface_sections.ts` and nearby domain owners |
+| Stack-aware module/corner writes       | `esm/native/kernel/state_api_stack_router.ts`                               |
 | Build state derivation                 | `esm/native/kernel/*`, builder state resolver surfaces                      |
 
 ## Builder/render

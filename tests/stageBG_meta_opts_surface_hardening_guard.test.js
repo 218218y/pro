@@ -65,11 +65,8 @@ test('[stageBG] residual meta/opts seams use shared typed contracts instead of r
     historyAccessServices,
     /export type HistoryServiceMethodArg = ActionMetaLike \| HistoryPushRequestLike \| undefined;/
   );
-  assert.match(stateTypes, /patchModuleConfigForStack\?: \([\s\S]*meta\?: ActionMetaLike/);
-  assert.match(
-    stateKernelService,
-    /type StateKernelPatchFn = \(indexOrKey: number \| string, patch: ModuleConfigPatchLike, meta\?: ActionMetaLike\) => unknown;/
-  );
+  assert.doesNotMatch(stateTypes, /patchModuleConfigForStack/);
+  assert.doesNotMatch(stateKernelService, /StateKernelPatchFn|ModuleConfigPatchLike|NOOP_PATCH/);
   assert.match(
     cloudSyncRealtime,
     /function getRealtimeChannel\(client: CloudSyncRealtimeClientLike \| null, name: string, opts\?: CloudSyncRealtimeChannelOptionsLike\): CloudSyncRealtimeChannelLike \| null \{/

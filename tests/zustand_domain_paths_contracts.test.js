@@ -52,8 +52,6 @@ const domainModulesCorner = bundleSources(
   [
     '../esm/native/kernel/domain_api_modules_corner.ts',
     '../esm/native/kernel/domain_api_modules_corner_selectors.ts',
-    '../esm/native/kernel/domain_api_modules_corner_module_patch.ts',
-    '../esm/native/kernel/domain_api_modules_corner_corner_patch.ts',
     '../esm/native/kernel/domain_api_modules_corner_recompute.ts',
     '../esm/native/kernel/domain_api_modules_corner_recompute_shared.ts',
     '../esm/native/kernel/domain_api_modules_corner_recompute_no_main.ts',
@@ -133,8 +131,6 @@ const runtimeBundle = bundleSources(
     '../esm/native/kernel/domain_api_surface_sections_bindings.ts',
     '../esm/native/kernel/domain_api_modules_corner.ts',
     '../esm/native/kernel/domain_api_modules_corner_selectors.ts',
-    '../esm/native/kernel/domain_api_modules_corner_module_patch.ts',
-    '../esm/native/kernel/domain_api_modules_corner_corner_patch.ts',
     '../esm/native/kernel/domain_api_room_section.ts',
     '../esm/native/kernel/domain_api_room_section_shared.ts',
     '../esm/native/kernel/domain_api_room_section_wardrobe.ts',
@@ -189,21 +185,15 @@ test('[zustand-domain] module/corner stack and config paths stay on canonical ac
   assert.doesNotMatch(canvasPicking, /App\?\.stateKernel\?\.ensureCornerCellConfig/);
   assert.doesNotMatch(canvasPicking, /sk\.ensureModuleConfigForStack\(__activeStack, mk\)/);
   assert.doesNotMatch(canvasPicking, /sk\.patchModuleConfigForStack\(__activeStack, mk, patchFn, meta\)/);
+  assert.match(cellDimsCornerEffects, /getModulesActions\(App\)/);
+  assert.match(cellDimsCornerEffects, /patchForStack\(stackKey, 'corner', nextCornerCfg, meta\)/);
+  assert.doesNotMatch(cellDimsCornerEffects, /setCfgCornerConfiguration|patchCornerConfigurationForStack/);
 
-  assert.match(domainModulesCorner, /const patchCanonicalStack = \(/);
-  assert.match(
-    domainModulesCorner,
-    /modulesActions\.patchAt[\s\S]*patchCanonicalStack\('top', i, patch, m\)/
-  );
-  assert.match(
-    domainModulesCorner,
-    /modulesActions\.patchLowerAt[\s\S]*patchCanonicalStack\('bottom', i, patch, m\)/
-  );
-  assert.match(
-    domainModulesCorner,
-    /actions\.modules\.patchForStack is required before stack patch delegation/
-  );
-  assert.doesNotMatch(domainModulesCorner, /modulesActions\.patch\s*=/);
+  assert.match(domainModulesCorner, /delete modulesActions\[key\]/);
+  assert.match(domainModulesCorner, /delete cornerActions\[key\]/);
+  assert.doesNotMatch(domainModulesCorner, /patchCanonicalStack|patchCornerForStack/);
+  assert.doesNotMatch(domainModulesCorner, /modulesActions\.patchAt\s*=/);
+  assert.doesNotMatch(domainModulesCorner, /cornerActions\.patchCellAt\s*=/);
   assert.doesNotMatch(domainModulesCorner, /__patchModuleListForStack/);
   assert.doesNotMatch(domainModulesCorner, /catch \(_error\) \{\}\s*return __patchModuleListForStack/);
   assert.doesNotMatch(stateStackRouterPatch, /modulesNs\['patchAt'\]/);

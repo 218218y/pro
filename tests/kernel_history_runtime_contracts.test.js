@@ -151,13 +151,14 @@ test('[history-types] history, state, build, and app surfaces keep explicit Acti
     assert,
     stateTypes,
     [
-      /patchModuleConfig: \(indexOrKey: number \| string, patch: ModuleConfigPatchLike, meta\?: ActionMetaLike\) => unknown;/,
-      /patchSplitLowerModuleConfig: \(indexOrKey: number \| string, patch: ModuleConfigPatchLike, meta\?: ActionMetaLike\) => unknown;/,
+      /patchConfigScalar\?: \(key: string, valueOrFn: unknown, meta\?: ActionMetaLike\) => unknown;/,
+      /patchConfigMaps\?: \(patchObj: unknown, meta\?: ActionMetaLike\) => unknown;/,
       /commitFromSnapshot\?: \(snapshot: unknown, meta\?: ActionMetaLike\) => unknown;/,
       /touch\?: \(meta\?: ActionMetaLike\) => unknown;/,
     ],
     'state types'
   );
+  assert.doesNotMatch(stateTypes, /patchModuleConfig|patchSplitLowerModuleConfig/);
   assertMatchesAll(
     assert,
     buildTypes,

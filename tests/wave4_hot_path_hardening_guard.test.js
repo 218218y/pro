@@ -48,9 +48,6 @@ const kernelConfig = [
   read('esm/native/kernel/kernel_state_kernel_config_maps_patch.ts'),
   read('esm/native/kernel/kernel_state_kernel_config_maps_patch_shared.ts'),
   read('esm/native/kernel/kernel_state_kernel_config_maps_patch_ops.ts'),
-  read('esm/native/kernel/kernel_state_kernel_config_modules_corner.ts'),
-  read('esm/native/kernel/kernel_state_kernel_config_modules_corner_ensure.ts'),
-  read('esm/native/kernel/kernel_state_kernel_config_modules_corner_patch.ts'),
 ].join('\n');
 const canvasPicking = [
   read('esm/native/services/canvas_picking_core.ts'),
@@ -116,7 +113,7 @@ test('[wave4] kernel centralizes store/stateKernel plumbing behind helper seams'
   assert.match(kernelProjectCapture, /buildKernelProjectCaptureData\(/);
   assert.match(kernelProjectCapture, /buildKernelProjectCaptureCanonicalConfigLists\(/);
   assert.match(kernelConfigOwner, /kernel_state_kernel_config_maps\.js/);
-  assert.match(kernelConfigOwner, /kernel_state_kernel_config_modules_corner\.js/);
+  assert.doesNotMatch(kernelConfigOwner, /kernel_state_kernel_config_modules_corner\.js/);
   assert.match(kernelConfig, /const patchFixed = cfgPatchWithReplaceKeys\(patch, rep\);/);
   assert.match(kernelConfig, /const metaFixed = metaRestore\(App, base, 'kernel\.applyConfig'\);/);
   assert.match(kernelConfig, /setStoreConfigPatch\(App,\s*patchFixed,\s*metaFixed\);/);

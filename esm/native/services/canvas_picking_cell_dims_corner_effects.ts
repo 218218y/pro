@@ -1,15 +1,12 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
 
 import { getUiFeedback } from '../runtime/service_access.js';
-import { setCfgCornerConfiguration } from '../runtime/cfg_access.js';
-import { getCfg } from '../kernel/api.js';
+import { getModulesActions } from '../runtime/actions_access.js';
 import { patchUiSoft } from '../runtime/ui_write_access.js';
 import { __wp_commitHistoryTouch } from './canvas_picking_core_helpers.js';
 import { requestCanvasPickingCommitStructuralRefresh } from './canvas_picking_structural_refresh.js';
 import { createCanvasPickingCellDimsRefreshGatedMeta } from './canvas_picking_cell_dims_meta.js';
 import {
-  patchCornerConfigurationForStack,
-  readCornerConfigurationFromConfigSnapshot,
   sanitizeCornerCellListForPatch,
   sanitizeLowerCornerCellListForPatch,
 } from '../features/modules_configuration/corner_cells_api.js';
@@ -53,19 +50,12 @@ export function patchCornerConfigForStack(
 ): void {
   try {
     const meta = createCanvasPickingCellDimsRefreshGatedMeta(App, source);
-    if (stackKey === 'bottom') {
-      const cfg = getCfg(App);
-      const currentCorner = readCornerConfigurationFromConfigSnapshot(cfg) || {};
-      const nextCorner = patchCornerConfigurationForStack(
-        currentCorner,
-        currentCorner,
-        'bottom',
-        nextCornerCfg
-      );
-      setCfgCornerConfiguration(App, nextCorner, meta);
-      return;
+    const modulesActions = getModulesActions(App);
+    const patchForStack = modulesActions?.patchForStack;
+    if (typeof patchForStack !== 'function') {
+      throw new Error('[WardrobePro][canvas_picking_cell_dims] actions.modules.patchForStack is required.');
     }
-    setCfgCornerConfiguration(App, nextCornerCfg, meta);
+    patchForStack(stackKey, 'corner', nextCornerCfg, meta);
   } catch (_e) {
     reportCornerDimsIssue(App, _e, op);
   }

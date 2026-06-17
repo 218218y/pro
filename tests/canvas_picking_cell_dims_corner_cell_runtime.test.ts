@@ -19,10 +19,12 @@ function createAppHarness() {
 
   const App = {
     actions: {
-      config: {
-        setCornerConfiguration(next: unknown) {
-          calls.cornerConfigs.push(cloneJson(next));
-          return next;
+      modules: {
+        patchForStack(stack: unknown, moduleKey: unknown, patch: unknown) {
+          assert.equal(stack, 'top');
+          assert.equal(moduleKey, 'corner');
+          calls.cornerConfigs.push(cloneJson(patch));
+          return patch;
         },
       },
       ui: {

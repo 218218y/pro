@@ -13,8 +13,7 @@ import type {
 import { shouldFailFast } from '../runtime/api.js';
 import { cloneViaPlatform } from '../runtime/platform_access.js';
 import { reportError } from '../runtime/errors.js';
-import { readCornerConfigurationFromConfigSnapshot } from '../features/modules_configuration/corner_cells_api.js';
-import { asRecord, asRecordOrNull, isRecord } from './kernel_shared.js';
+import { isRecord } from './kernel_shared.js';
 
 const kernelCatchTs: Record<string, number> = Object.create(null);
 
@@ -96,8 +95,6 @@ export type KernelInstallSupport = {
   cloneKernelValue: (value: unknown, defaultValue?: unknown) => unknown;
   reportKernelError: (error: unknown, ctx: unknown) => boolean;
   reportNonFatal: (op: string, error: unknown, opts?: { throttleMs?: number; failFast?: boolean }) => void;
-  readCornerCfgFromStoreConfig: (cfg: unknown) => UnknownRecord;
-  readLowerCornerCfgFromCornerCfg: (cornerCfg: UnknownRecord) => UnknownRecord | null;
 };
 
 export function createKernelInstallSupport(App: AppContainer): KernelInstallSupport {
@@ -178,16 +175,6 @@ export function createKernelInstallSupport(App: AppContainer): KernelInstallSupp
     if (opts && opts.failFast && kernelShouldFailFast(App)) throw error;
   };
 
-  const readCornerCfgFromStoreConfig = (cfg: unknown): UnknownRecord => {
-    const cornerConfig = readCornerConfigurationFromConfigSnapshot(cfg);
-    return asRecord(cornerConfig, {});
-  };
-
-  const readLowerCornerCfgFromCornerCfg = (cornerCfg: UnknownRecord): UnknownRecord | null => {
-    const value = cornerCfg['stackSplitLower'];
-    return asRecordOrNull(value);
-  };
-
   return {
     setStoreConfigPatch,
     setStoreUiSnapshot,
@@ -195,7 +182,5 @@ export function createKernelInstallSupport(App: AppContainer): KernelInstallSupp
     cloneKernelValue,
     reportKernelError,
     reportNonFatal,
-    readCornerCfgFromStoreConfig,
-    readLowerCornerCfgFromCornerCfg,
   };
 }

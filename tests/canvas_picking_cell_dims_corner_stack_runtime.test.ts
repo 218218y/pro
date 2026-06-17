@@ -72,11 +72,17 @@ function createCornerStackHarness() {
   const App = {
     store: createStore(state),
     actions: {
-      config: {
-        setCornerConfiguration(next: unknown, meta?: unknown) {
+      modules: {
+        patchForStack(stack: 'top' | 'bottom', moduleKey: unknown, patch: unknown, meta?: unknown) {
+          assert.equal(moduleKey, 'corner');
+          const current = state.config.cornerConfiguration;
+          const next =
+            stack === 'bottom'
+              ? { ...current, stackSplitLower: { ...current.stackSplitLower, ...(patch as object) } }
+              : { ...current, ...(patch as object) };
           calls.cornerConfigurations.push({ next: cloneJson(next), meta: cloneJson(meta) });
           state.config.cornerConfiguration = cloneJson(next);
-          return next;
+          return stack === 'bottom' ? next.stackSplitLower : next;
         },
       },
       ui: {

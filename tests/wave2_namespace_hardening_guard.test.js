@@ -30,11 +30,7 @@ const storeActions = [
   read('esm/native/ui/react/actions/store_actions_runtime.ts'),
 ].join('\n');
 const actionsRoot = read('esm/native/kernel/actions_root.ts');
-const domainModulesCorner = [
-  read('esm/native/kernel/domain_api_modules_corner.ts'),
-  read('esm/native/kernel/domain_api_modules_corner_corner_patch.ts'),
-  read('esm/native/kernel/domain_api_modules_corner_module_patch.ts'),
-].join('\n');
+const domainModulesCorner = read('esm/native/kernel/domain_api_modules_corner.ts');
 
 test('[wave2] typed namespaces cover React wrapper seams and state/domain installers stay canonical via shared helpers', () => {
   assert.match(kernelTypes, /setActiveTab\?: \(next: string, meta\?: ActionMetaLike\) => unknown;/);
@@ -43,8 +39,8 @@ test('[wave2] typed namespaces cover React wrapper seams and state/domain instal
     kernelTypes,
     /setExtDrawerSelection\?: \(drawerType: string \| null, count: number \| null, meta\?: ActionMetaLike\) => unknown;/
   );
-  assert.match(kernelTypes, /ensureAt\?: \(index: number \| string\) => ModuleConfigLike \| null;/);
-  assert.match(kernelTypes, /ensureLowerAt\?: \(index: number \| string\) => ModuleConfigLike \| null;/);
+  assert.match(kernelTypes, /ensureForStack\?: ModulesEnsureForStackFn;/);
+  assert.doesNotMatch(kernelTypes, /ensureAt\?:|ensureLowerAt\?:|patchAt\?:|patchLowerAt\?:/);
 
   assert.match(storeActions, /type StoreReader = \{\s*getState: \(\) => unknown;\s*\}/s);
   assert.match(storeActions, /type PartialUiActions = Partial<UiActionsNamespaceLike> & UnknownRecord;/);
@@ -79,7 +75,9 @@ test('[wave2] typed namespaces cover React wrapper seams and state/domain instal
     /import \{ installDomainApiModulesCorner \} from '\.\/domain_api_modules_corner\.js';/
   );
   assert.match(domainApi, /installDomainApiModulesCorner\(\{/);
-  assert.match(domainModulesCorner, /const patchCornerCellForStack = \(/);
+  assert.match(domainModulesCorner, /delete modulesActions\[key\]/);
+  assert.match(domainModulesCorner, /delete cornerActions\[key\]/);
+  assert.doesNotMatch(domainModulesCorner, /patchCornerCellForStack|patchCanonicalStack/);
   assert.match(domainApi, /texturesActions\.setCustomUploadedDataURL =/);
   assert.doesNotMatch(domainApi, /const modsNs = actions\.modules as AnyRecord;/);
 

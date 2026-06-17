@@ -24,7 +24,7 @@ import { createKernelHistorySystem, type KernelHistorySystem } from './kernel_hi
 import { createKernelSnapshotStoreSystem } from './kernel_snapshot_store_system.js';
 import { createKernelProjectCapture } from './kernel_project_capture.js';
 import { createKernelEditStateSystem } from './kernel_edit_state_system.js';
-import { asMeta, asRecord, asRecordOrNull, asString, isFn, isRecord } from './kernel_shared.js';
+import { asMeta, asRecord, asRecordOrNull, isFn, isRecord } from './kernel_shared.js';
 import { createKernelInstallSupport } from './kernel_install_support.js';
 
 function ensureStateKernel(App: AppContainer): StateKernelLike {
@@ -47,8 +47,6 @@ export function installKernel(App: AppContainer | null | undefined): void {
     cloneKernelValue,
     reportKernelError,
     reportNonFatal,
-    readCornerCfgFromStoreConfig,
-    readLowerCornerCfgFromCornerCfg,
   } = createKernelInstallSupport(App);
 
   const defaultBatchFlags = (): UnknownRecord => ({
@@ -87,9 +85,6 @@ export function installKernel(App: AppContainer | null | undefined): void {
     isFn,
     cloneKernelValue,
     setStoreConfigPatch,
-    asString,
-    readCornerCfgFromStoreConfig,
-    readLowerCornerCfgFromCornerCfg,
   });
 
   const editStateSystem = createKernelEditStateSystem({

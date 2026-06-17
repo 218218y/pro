@@ -826,10 +826,6 @@
       "entry": "project_config/project_config_lists_canonical.js"
     },
     {
-      "file": "esm/native/kernel/kernel_install_support.ts",
-      "entry": "modules_configuration/corner_cells_api.js"
-    },
-    {
       "file": "esm/native/kernel/kernel_project_capture_config_lists.ts",
       "entry": "modules_configuration/modules_config_api.js"
     },
@@ -886,48 +882,8 @@
       "entry": "modules_configuration/corner_cells_api.js"
     },
     {
-      "file": "esm/native/kernel/kernel_state_kernel_config_modules_corner_ensure.ts",
-      "entry": "stack_split/module_config.js"
-    },
-    {
-      "file": "esm/native/kernel/kernel_state_kernel_config_modules_corner_ensure.ts",
-      "entry": "modules_configuration/modules_config_api.js"
-    },
-    {
-      "file": "esm/native/kernel/kernel_state_kernel_config_modules_corner_ensure.ts",
-      "entry": "modules_configuration/modules_config_contracts.js"
-    },
-    {
-      "file": "esm/native/kernel/kernel_state_kernel_config_modules_corner_ensure.ts",
-      "entry": "modules_configuration/corner_cells_api.js"
-    },
-    {
-      "file": "esm/native/kernel/kernel_state_kernel_config_modules_corner_patch.ts",
-      "entry": "stack_split/module_config.js"
-    },
-    {
-      "file": "esm/native/kernel/kernel_state_kernel_config_modules_corner_patch.ts",
-      "entry": "modules_configuration/modules_config_api.js"
-    },
-    {
-      "file": "esm/native/kernel/kernel_state_kernel_config_modules_corner_patch.ts",
-      "entry": "modules_configuration/corner_cells_api.js"
-    },
-    {
-      "file": "esm/native/kernel/kernel_state_kernel_config_shared.ts",
-      "entry": "stack_split/module_config.js"
-    },
-    {
       "file": "esm/native/kernel/kernel_state_kernel_config_shared.ts",
       "entry": "modules_configuration/modules_config_api.js"
-    },
-    {
-      "file": "esm/native/kernel/kernel_state_kernel_config_shared.ts",
-      "entry": "modules_configuration/modules_config_api.js"
-    },
-    {
-      "file": "esm/native/kernel/kernel_state_kernel_config_shared.ts",
-      "entry": "modules_configuration/corner_cells_api.js"
     },
     {
       "file": "esm/native/kernel/state_api_config_namespace_core.ts",

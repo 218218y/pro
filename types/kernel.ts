@@ -15,9 +15,7 @@ import type { ProjectPreChestStateLike, ProjectSavedNotesLike } from './project'
 import type { UiRawScalarKey, UiRawScalarValueMap } from './ui_raw';
 import type {
   CornerConfigurationLike,
-  CornerConfigurationPatchLike,
   ModuleConfigLike,
-  ModuleConfigPatchLike,
   ModulesConfigurationLike,
 } from './modules_configuration';
 
@@ -429,12 +427,8 @@ export interface ModulesActionsLike extends UnknownRecord {
     meta?: ActionMetaLike
   ) => unknown;
   ensureForStack?: ModulesEnsureForStackFn;
-  ensureAt?: (index: number | string) => ModuleConfigLike | null;
-  ensureLowerAt?: (index: number | string) => ModuleConfigLike | null;
   replaceAll?: (list: ModulesConfigurationLike, meta?: ActionMetaLike) => unknown;
   setAll?: (list: ModulesConfigurationLike, meta?: ActionMetaLike) => unknown;
-  patchAt?: (index: number | string, patch: ModuleConfigPatchLike, meta?: ActionMetaLike) => unknown;
-  patchLowerAt?: (index: number | string, patch: ModuleConfigPatchLike, meta?: ActionMetaLike) => unknown;
   [k: string]: unknown;
 }
 
@@ -444,15 +438,7 @@ export interface ModulesEnsureForStackFn {
 }
 
 export interface CornerActionsLike extends UnknownRecord {
-  ensureConfig?: () => CornerConfigurationLike | null;
-  ensureLowerConfig?: () => CornerConfigurationLike | null;
-  ensureCellAt?: (index: number | string) => ModuleConfigLike | null;
-  ensureLowerCellAt?: (index: number | string) => ModuleConfigLike | null;
   setConfig?: (cfg: CornerConfigurationLike, meta?: ActionMetaLike) => unknown;
-  patch?: (patch: CornerConfigurationPatchLike, meta?: ActionMetaLike) => unknown;
-  patchLower?: (patch: CornerConfigurationPatchLike, meta?: ActionMetaLike) => unknown;
-  patchCellAt?: (index: number | string, patch: ModuleConfigPatchLike, meta?: ActionMetaLike) => unknown;
-  patchLowerCellAt?: (index: number | string, patch: ModuleConfigPatchLike, meta?: ActionMetaLike) => unknown;
   [k: string]: unknown;
 }
 
