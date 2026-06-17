@@ -62,7 +62,7 @@ export function createManualLayoutSketchPlacementMetricsResolver(
     const selectorMetrics = resolveSelectorInternalMetrics({
       info: gridInfo,
       selectorEnvelope: selectorBox,
-      woodThickFallback: woodThick,
+      woodThickDefault: woodThick,
     });
     return {
       innerW: selectorMetrics.innerW,

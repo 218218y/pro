@@ -69,12 +69,6 @@
         "compat-boundary": 3
       }
     },
-    "esm/native/io/project_schema_shared.ts": {
-      "total": 8,
-      "categories": {
-        "project-migration": 8
-      }
-    },
     "esm/native/kernel/cfg_meta.ts": {
       "total": 5,
       "categories": {
@@ -223,72 +217,6 @@
       "total": 4,
       "categories": {
         "domain-default": 4
-      }
-    },
-    "esm/native/services/canvas_picking_click_hit_flow_shared.ts": {
-      "total": 1,
-      "categories": {
-        "domain-default": 1
-      }
-    },
-    "esm/native/services/canvas_picking_click_hit_flow_stack_runtime.ts": {
-      "total": 2,
-      "categories": {
-        "domain-default": 2
-      }
-    },
-    "esm/native/services/canvas_picking_click_hit_flow_state.ts": {
-      "total": 1,
-      "categories": {
-        "domain-default": 1
-      }
-    },
-    "esm/native/services/canvas_picking_generic_paint_hover_preview_bounds.ts": {
-      "total": 1,
-      "categories": {
-        "domain-default": 1
-      }
-    },
-    "esm/native/services/canvas_picking_generic_paint_hover_preview_objects.ts": {
-      "total": 2,
-      "categories": {
-        "domain-default": 2
-      }
-    },
-    "esm/native/services/canvas_picking_generic_paint_hover_preview.ts": {
-      "total": 2,
-      "categories": {
-        "domain-default": 2
-      }
-    },
-    "esm/native/services/canvas_picking_generic_paint_hover_shared.ts": {
-      "total": 2,
-      "categories": {
-        "compat-boundary": 2
-      }
-    },
-    "esm/native/services/canvas_picking_hover_targets_interior_scan.ts": {
-      "total": 5,
-      "categories": {
-        "domain-default": 5
-      }
-    },
-    "esm/native/services/canvas_picking_hover_targets_interior_target.ts": {
-      "total": 4,
-      "categories": {
-        "domain-default": 4
-      }
-    },
-    "esm/native/services/canvas_picking_manual_layout_sketch_click_box_metrics.ts": {
-      "total": 1,
-      "categories": {
-        "domain-default": 1
-      }
-    },
-    "esm/native/services/canvas_picking_selector_internal_metrics.ts": {
-      "total": 5,
-      "categories": {
-        "domain-default": 5
       }
     },
     "esm/native/services/canvas_picking_sketch_free_box_gap.ts": {

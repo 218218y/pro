@@ -8,7 +8,7 @@ import {
   resolveCornerCorniceGroupObjectPreview,
 } from '../esm/native/services/canvas_picking_generic_paint_hover_preview_corner.ts';
 import {
-  resolvePaintPreviewGroupBoxFromFallback,
+  resolvePaintPreviewGroupBoxFromAnchor,
   resolvePaintPreviewGroupBoxFromObjects,
 } from '../esm/native/services/canvas_picking_generic_paint_hover_preview_bounds.ts';
 
@@ -56,7 +56,7 @@ function createAppWithRegistry(registryMap: Record<string, unknown>) {
   };
 }
 
-test('paint preview object collection flattens registry arrays and deduplicates fallback scene matches', () => {
+test('paint preview object collection flattens registry arrays and deduplicates secondary scene matches', () => {
   const front = makeBoxObject('corner_cornice_front', { width: 0.6, height: 0.08, depth: 0.02, x: 0.2 });
   const left = makeBoxObject('corner_cornice_side_left', { width: 0.4, height: 0.08, depth: 0.02, x: -0.2 });
   const wardrobeGroup = {
@@ -113,8 +113,8 @@ test('stack split decorative separator hover falls back to scene objects and pre
     App: App as never,
     wardrobeGroup: wardrobeGroup as never,
     partKeys: ['stack_split_separator'],
-    fallbackObject: slab as never,
-    fallbackParent: wardrobeGroup as never,
+    anchorObject: slab as never,
+    anchorParent: wardrobeGroup as never,
   });
 
   assert.equal(preview?.kind, 'object_boxes');
@@ -123,8 +123,8 @@ test('stack split decorative separator hover falls back to scene objects and pre
   assert.ok((preview?.depth || 0) >= 0.63);
 });
 
-test('corner cornice front preview picks the nearest registered object to the clicked fallback object', () => {
-  const fallbackObject = makeBoxObject('corner_cornice_front', {
+test('corner cornice front preview picks the nearest registered object to the clicked anchor object', () => {
+  const anchorObject = makeBoxObject('corner_cornice_front', {
     width: 0.3,
     height: 0.08,
     depth: 0.02,
@@ -138,7 +138,7 @@ test('corner cornice front preview picks the nearest registered object to the cl
     wardrobeGroup: { children: [] } as never,
     partKeys: ['corner_cornice_front'],
     objects: [far as never, near as never],
-    fallbackObject: fallbackObject as never,
+    anchorObject: anchorObject as never,
   });
 
   assert.ok(preview);
@@ -155,7 +155,7 @@ test('corner cornice group preview uses oriented object-box mode across all visi
     wardrobeGroup: wardrobeGroup as never,
     partKeys: ['corner_cornice_front', 'corner_cornice_side_right'],
     objects: [front as never, right as never],
-    fallbackObject: front as never,
+    anchorObject: front as never,
   });
 
   assert.equal(preview?.kind, 'object_boxes');
@@ -163,7 +163,7 @@ test('corner cornice group preview uses oriented object-box mode across all visi
   assert.ok(Math.abs((preview?.woodThick || 0) - 0.018) <= 1e-9);
 });
 
-test('paint preview bounds resolve grouped object extents and fallback object boxes through the canonical owners', () => {
+test('paint preview bounds resolve grouped object extents and anchor object boxes through the canonical owners', () => {
   const left = makeBoxObject('body_left', { width: 0.2, height: 1.8, depth: 0.55, x: -0.5 });
   const right = makeBoxObject('body_right', { width: 0.2, height: 1.8, depth: 0.55, x: 0.5 });
   const wardrobeGroup = { children: [] };
@@ -173,11 +173,11 @@ test('paint preview bounds resolve grouped object extents and fallback object bo
     wardrobeGroup: wardrobeGroup as never,
     objects: [left as never, right as never],
   });
-  const fallback = resolvePaintPreviewGroupBoxFromFallback({
+  const fallback = resolvePaintPreviewGroupBoxFromAnchor({
     App: {} as never,
     wardrobeGroup: wardrobeGroup as never,
-    fallbackObject: left as never,
-    fallbackParent: wardrobeGroup as never,
+    anchorObject: left as never,
+    anchorParent: wardrobeGroup as never,
   });
 
   assert.ok(grouped);
@@ -223,15 +223,15 @@ test('paint preview uses oriented object boxes for corner wing and pentagon plin
     App: App as never,
     wardrobeGroup: wardrobeGroup as never,
     partKeys: ['corner_plinth'],
-    fallbackObject: wingPlinth as never,
-    fallbackParent: wardrobeGroup as never,
+    anchorObject: wingPlinth as never,
+    anchorParent: wardrobeGroup as never,
   });
   const pentagonPreview = resolvePaintPreviewGroupBox({
     App: App as never,
     wardrobeGroup: wardrobeGroup as never,
     partKeys: ['corner_pent_plinth'],
-    fallbackObject: pentagonPlinth as never,
-    fallbackParent: wardrobeGroup as never,
+    anchorObject: pentagonPlinth as never,
+    anchorParent: wardrobeGroup as never,
   });
 
   assert.equal(wingPreview?.kind, 'object_boxes');

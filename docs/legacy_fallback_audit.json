@@ -1,18 +1,18 @@
 {
-  "generatedAt": "2026-06-16T20:36:47.180Z",
+  "generatedAt": "2026-06-16T21:01:09.550Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 169,
-    "totalFiles": 88,
+    "totalOccurrences": 135,
+    "totalFiles": 76,
     "byCategory": {
       "runtime-default": 0,
-      "domain-default": 119,
+      "domain-default": 95,
       "error-message-default": 11,
       "framework-default": 2,
       "browser-adapter": 2,
-      "project-migration": 10,
+      "project-migration": 2,
       "external-api-compat": 0,
-      "compat-boundary": 19,
+      "compat-boundary": 17,
       "test-fixture": 6,
       "legacy-runtime-risk": 0,
       "unknown": 0
@@ -82,12 +82,6 @@
         "total": 3,
         "categories": {
           "compat-boundary": 3
-        }
-      },
-      "esm/native/io/project_schema_shared.ts": {
-        "total": 8,
-        "categories": {
-          "project-migration": 8
         }
       },
       "esm/native/kernel/cfg_meta.ts": {
@@ -238,72 +232,6 @@
         "total": 4,
         "categories": {
           "domain-default": 4
-        }
-      },
-      "esm/native/services/canvas_picking_click_hit_flow_shared.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      "esm/native/services/canvas_picking_click_hit_flow_stack_runtime.ts": {
-        "total": 2,
-        "categories": {
-          "domain-default": 2
-        }
-      },
-      "esm/native/services/canvas_picking_click_hit_flow_state.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      "esm/native/services/canvas_picking_generic_paint_hover_preview_bounds.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      "esm/native/services/canvas_picking_generic_paint_hover_preview_objects.ts": {
-        "total": 2,
-        "categories": {
-          "domain-default": 2
-        }
-      },
-      "esm/native/services/canvas_picking_generic_paint_hover_preview.ts": {
-        "total": 2,
-        "categories": {
-          "domain-default": 2
-        }
-      },
-      "esm/native/services/canvas_picking_generic_paint_hover_shared.ts": {
-        "total": 2,
-        "categories": {
-          "compat-boundary": 2
-        }
-      },
-      "esm/native/services/canvas_picking_hover_targets_interior_scan.ts": {
-        "total": 5,
-        "categories": {
-          "domain-default": 5
-        }
-      },
-      "esm/native/services/canvas_picking_hover_targets_interior_target.ts": {
-        "total": 4,
-        "categories": {
-          "domain-default": 4
-        }
-      },
-      "esm/native/services/canvas_picking_manual_layout_sketch_click_box_metrics.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      "esm/native/services/canvas_picking_selector_internal_metrics.ts": {
-        "total": 5,
-        "categories": {
-          "domain-default": 5
         }
       },
       "esm/native/services/canvas_picking_sketch_free_box_gap.ts": {
@@ -551,28 +479,7 @@
     },
     "hotFiles": [
       {
-        "file": "esm/native/io/project_schema_shared.ts",
-        "total": 8,
-        "categories": {
-          "project-migration": 8
-        }
-      },
-      {
         "file": "esm/native/kernel/cfg_meta.ts",
-        "total": 5,
-        "categories": {
-          "domain-default": 5
-        }
-      },
-      {
-        "file": "esm/native/services/canvas_picking_hover_targets_interior_scan.ts",
-        "total": 5,
-        "categories": {
-          "domain-default": 5
-        }
-      },
-      {
-        "file": "esm/native/services/canvas_picking_selector_internal_metrics.ts",
         "total": 5,
         "categories": {
           "domain-default": 5
@@ -616,13 +523,6 @@
       },
       {
         "file": "esm/native/services/canvas_picking_cell_dims_linear_context_modules.ts",
-        "total": 4,
-        "categories": {
-          "domain-default": 4
-        }
-      },
-      {
-        "file": "esm/native/services/canvas_picking_hover_targets_interior_target.ts",
         "total": 4,
         "categories": {
           "domain-default": 4
@@ -742,24 +642,52 @@
         }
       },
       {
-        "file": "esm/native/services/canvas_picking_click_hit_flow_stack_runtime.ts",
+        "file": "esm/native/services/cloud_sync_status_install_runtime.ts",
         "total": 2,
         "categories": {
           "domain-default": 2
         }
       },
       {
-        "file": "esm/native/services/canvas_picking_generic_paint_hover_preview_objects.ts",
+        "file": "esm/native/ui/errors_install_surface.ts",
+        "total": 2,
+        "categories": {
+          "error-message-default": 2
+        }
+      },
+      {
+        "file": "esm/native/ui/export/export_order_pdf_capture_open_closed.ts",
         "total": 2,
         "categories": {
           "domain-default": 2
         }
       },
       {
-        "file": "esm/native/services/canvas_picking_generic_paint_hover_preview.ts",
+        "file": "esm/native/ui/export/export_order_pdf_capture_render_sketch.ts",
         "total": 2,
         "categories": {
           "domain-default": 2
+        }
+      },
+      {
+        "file": "esm/native/ui/project_load_runtime_action.ts",
+        "total": 2,
+        "categories": {
+          "error-message-default": 2
+        }
+      },
+      {
+        "file": "esm/native/ui/react/boot_react_ui.tsx",
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      {
+        "file": "esm/native/builder/build_state_resolver.ts",
+        "total": 1,
+        "categories": {
+          "compat-boundary": 1
         }
       }
     ]
@@ -884,62 +812,6 @@
       "term": "lowerWidthFallbackCm",
       "category": "compat-boundary",
       "text": "defaultOverallWidth || WARDROBE_DEFAULTS.stackSplit.lowerWidthFallbackCm"
-    },
-    {
-      "file": "esm/native/io/project_schema_shared.ts",
-      "line": 89,
-      "term": "cloneJsonFallbackArray",
-      "category": "project-migration",
-      "text": "function cloneJsonFallbackArray(value: readonly unknown[], seen: JsonCloneCache): unknown[] {"
-    },
-    {
-      "file": "esm/native/io/project_schema_shared.ts",
-      "line": 96,
-      "term": "cloneJsonFallback",
-      "category": "project-migration",
-      "text": "const next = cloneJsonFallback(value[i], seen);"
-    },
-    {
-      "file": "esm/native/io/project_schema_shared.ts",
-      "line": 102,
-      "term": "cloneJsonFallbackRecord",
-      "category": "project-migration",
-      "text": "function cloneJsonFallbackRecord(value: UnknownRecord, seen: JsonCloneCache): UnknownRecord {"
-    },
-    {
-      "file": "esm/native/io/project_schema_shared.ts",
-      "line": 109,
-      "term": "cloneJsonFallback",
-      "category": "project-migration",
-      "text": "const next = cloneJsonFallback(raw, seen);"
-    },
-    {
-      "file": "esm/native/io/project_schema_shared.ts",
-      "line": 115,
-      "term": "cloneJsonFallback",
-      "category": "project-migration",
-      "text": "function cloneJsonFallback(value: unknown, seen: JsonCloneCache): unknown {"
-    },
-    {
-      "file": "esm/native/io/project_schema_shared.ts",
-      "line": 129,
-      "term": "cloneJsonFallbackArray",
-      "category": "project-migration",
-      "text": "if (Array.isArray(value)) return cloneJsonFallbackArray(value, seen);"
-    },
-    {
-      "file": "esm/native/io/project_schema_shared.ts",
-      "line": 130,
-      "term": "cloneJsonFallbackRecord",
-      "category": "project-migration",
-      "text": "return isObjectRecord(value) ? cloneJsonFallbackRecord(value, seen) : undefined;"
-    },
-    {
-      "file": "esm/native/io/project_schema_shared.ts",
-      "line": 145,
-      "term": "cloneJsonFallback",
-      "category": "project-migration",
-      "text": "return cloneJsonFallback(value, new Map<object, unknown[] | UnknownRecord>());"
     },
     {
       "file": "esm/native/kernel/cfg_meta.ts",
@@ -1276,188 +1148,6 @@
       "term": "fallback",
       "category": "domain-default",
       "text": "return raw[manualKey] ? readPositiveNumber(raw[valueKey], fallback) : fallback;"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_click_hit_flow_shared.ts",
-      "line": 12,
-      "term": "readFallbackPrimaryHitY",
-      "category": "domain-default",
-      "text": "readFallbackPrimaryHitY,"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_click_hit_flow_stack_runtime.ts",
-      "line": 10,
-      "term": "readFallbackPrimaryHitY",
-      "category": "domain-default",
-      "text": "import { readFallbackPrimaryHitY, readUiStackSplitEnabled } from './canvas_picking_click_hit_flow_shared.js';"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_click_hit_flow_stack_runtime.ts",
-      "line": 99,
-      "term": "readFallbackPrimaryHitY",
-      "category": "domain-default",
-      "text": "fallbackHitWorldY: readFallbackPrimaryHitY(state, intersects),"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_click_hit_flow_state.ts",
-      "line": 36,
-      "term": "readFallbackPrimaryHitY",
-      "category": "domain-default",
-      "text": "export function readFallbackPrimaryHitY("
-    },
-    {
-      "file": "esm/native/services/canvas_picking_generic_paint_hover_preview_bounds.ts",
-      "line": 14,
-      "term": "resolvePaintPreviewGroupBoxFromFallback",
-      "category": "domain-default",
-      "text": "export function resolvePaintPreviewGroupBoxFromFallback(args: {"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_generic_paint_hover_preview_objects.ts",
-      "line": 110,
-      "term": "appendFallbackPartObjectsFromScene",
-      "category": "domain-default",
-      "text": "export function appendFallbackPartObjectsFromScene("
-    },
-    {
-      "file": "esm/native/services/canvas_picking_generic_paint_hover_preview_objects.ts",
-      "line": 144,
-      "term": "appendFallbackPartObjectsFromScene",
-      "category": "domain-default",
-      "text": "appendFallbackPartObjectsFromScene(objects, wardrobeGroup, partKeys);"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_generic_paint_hover_preview.ts",
-      "line": 12,
-      "term": "resolvePaintPreviewGroupBoxFromFallback",
-      "category": "domain-default",
-      "text": "resolvePaintPreviewGroupBoxFromFallback,"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_generic_paint_hover_preview.ts",
-      "line": 83,
-      "term": "resolvePaintPreviewGroupBoxFromFallback",
-      "category": "domain-default",
-      "text": "return resolvePaintPreviewGroupBoxFromFallback({"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_generic_paint_hover_shared.ts",
-      "line": 168,
-      "term": "segmentOverridesCompatible",
-      "category": "compat-boundary",
-      "text": "const segmentOverridesCompatible = effectiveKeys.every(partKey => {"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_generic_paint_hover_shared.ts",
-      "line": 173,
-      "term": "segmentOverridesCompatible",
-      "category": "compat-boundary",
-      "text": "return baseColor === selection && segmentOverridesCompatible ? 'remove' : 'add';"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_hover_targets_interior_scan.ts",
-      "line": 21,
-      "term": "hitFallbackObj",
-      "category": "domain-default",
-      "text": "hitFallbackObj: import('./canvas_picking_engine.js').HitObjectLike | null;"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_hover_targets_interior_scan.ts",
-      "line": 59,
-      "term": "hitFallbackObj",
-      "category": "domain-default",
-      "text": "let hitFallbackObj: import('./canvas_picking_engine.js').HitObjectLike | null = null;"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_hover_targets_interior_scan.ts",
-      "line": 68,
-      "term": "hitFallbackObj",
-      "category": "domain-default",
-      "text": "hitFallbackObj = hitSelectorObj;"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_hover_targets_interior_scan.ts",
-      "line": 94,
-      "term": "hitFallbackObj",
-      "category": "domain-default",
-      "text": "hitFallbackObj = candidate.object;"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_hover_targets_interior_scan.ts",
-      "line": 113,
-      "term": "hitFallbackObj",
-      "category": "domain-default",
-      "text": "hitFallbackObj,"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_hover_targets_interior_target.ts",
-      "line": 5,
-      "term": "applySelectorVerticalBoundsFallback",
-      "category": "domain-default",
-      "text": "applySelectorVerticalBoundsFallback,"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_hover_targets_interior_target.ts",
-      "line": 26,
-      "term": "hitFallbackObj",
-      "category": "domain-default",
-      "text": "const { intersects, hitModuleKey, hitFallbackObj, hitStack } = scan;"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_hover_targets_interior_target.ts",
-      "line": 37,
-      "term": "hitFallbackObj",
-      "category": "domain-default",
-      "text": "hitFallbackObj ||"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_hover_targets_interior_target.ts",
-      "line": 62,
-      "term": "applySelectorVerticalBoundsFallback",
-      "category": "domain-default",
-      "text": "({ bottomY, topY } = applySelectorVerticalBoundsFallback({"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_manual_layout_sketch_click_box_metrics.ts",
-      "line": 65,
-      "term": "woodThickFallback",
-      "category": "domain-default",
-      "text": "woodThickFallback: woodThick,"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_selector_internal_metrics.ts",
-      "line": 74,
-      "term": "applySelectorVerticalBoundsFallback",
-      "category": "domain-default",
-      "text": "export function applySelectorVerticalBoundsFallback(args: {"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_selector_internal_metrics.ts",
-      "line": 101,
-      "term": "woodThickFallback",
-      "category": "domain-default",
-      "text": "woodThickFallback?: number;"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_selector_internal_metrics.ts",
-      "line": 109,
-      "term": "woodThickFallback",
-      "category": "domain-default",
-      "text": "woodThickFallback = MATERIAL_DIMENSIONS.wood.thicknessM,"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_selector_internal_metrics.ts",
-      "line": 115,
-      "term": "woodThickFallback",
-      "category": "domain-default",
-      "text": "let woodThick = readFiniteNumber(info, 'woodThick') ?? woodThickFallback;"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_selector_internal_metrics.ts",
-      "line": 122,
-      "term": "woodThickFallback",
-      "category": "domain-default",
-      "text": "if (!Number.isFinite(woodThick) || woodThick <= 0) woodThick = woodThickFallback;"
     },
     {
       "file": "esm/native/services/canvas_picking_sketch_free_box_gap.ts",

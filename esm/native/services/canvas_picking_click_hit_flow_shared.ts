@@ -9,7 +9,7 @@ export {
   asHitObject,
   createMutableCanvasPickingClickHitState,
   finalizeCanvasPickingClickHitState,
-  readFallbackPrimaryHitY,
+  readPrimaryHitYForStackRepair,
   readObjectChildren,
   readUiStackSplitEnabled,
 } from './canvas_picking_click_hit_flow_state.js';

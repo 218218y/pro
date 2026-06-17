@@ -71,7 +71,7 @@ export function readSelectorEnvelopeFromObject(value: unknown): SelectorEnvelope
   return Object.keys(envelope).length > 0 ? envelope : null;
 }
 
-export function applySelectorVerticalBoundsFallback(args: {
+export function applySelectorVerticalBoundsFromEnvelope(args: {
   bottomY: number;
   topY: number;
   selectorEnvelope?: SelectorEnvelopeLike | null;
@@ -98,7 +98,7 @@ export function applySelectorVerticalBoundsFallback(args: {
 export function resolveSelectorInternalMetrics(args: {
   info: unknown;
   selectorEnvelope?: SelectorEnvelopeLike | null;
-  woodThickFallback?: number;
+  woodThickDefault?: number;
   minInnerSize?: number;
   depthClearance?: number;
   centerZInset?: number;
@@ -106,20 +106,20 @@ export function resolveSelectorInternalMetrics(args: {
   const {
     info,
     selectorEnvelope = null,
-    woodThickFallback = MATERIAL_DIMENSIONS.wood.thicknessM,
+    woodThickDefault = MATERIAL_DIMENSIONS.wood.thicknessM,
     minInnerSize = SKETCH_BOX_DIMENSIONS.geometry.selectorInnerMinM,
     depthClearance = SKETCH_BOX_DIMENSIONS.geometry.selectorDepthClearanceM,
     centerZInset = SKETCH_BOX_DIMENSIONS.geometry.selectorCenterZInsetM,
   } = args;
 
-  let woodThick = readFiniteNumber(info, 'woodThick') ?? woodThickFallback;
+  let woodThick = readFiniteNumber(info, 'woodThick') ?? woodThickDefault;
   let innerW = readFiniteNumber(info, 'innerW') ?? Number.NaN;
   let internalCenterX = readFiniteNumber(info, 'internalCenterX') ?? Number.NaN;
   let internalDepth = readFiniteNumber(info, 'internalDepth') ?? Number.NaN;
   let internalZ = readFiniteNumber(info, 'internalZ') ?? Number.NaN;
 
   if (selectorEnvelope) {
-    if (!Number.isFinite(woodThick) || woodThick <= 0) woodThick = woodThickFallback;
+    if (!Number.isFinite(woodThick) || woodThick <= 0) woodThick = woodThickDefault;
 
     const centerX =
       readFiniteNumber(selectorEnvelope, 'centerX') ?? readFiniteNumber(selectorEnvelope, 'positionX');

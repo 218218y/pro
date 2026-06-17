@@ -165,12 +165,12 @@ export function __readPaintHoverOp(
         ? 'corner_cornice'
         : 'cornice_color';
     const baseColor = typeof colors[baseCorniceKey] === 'string' ? String(colors[baseCorniceKey]) : '';
-    const segmentOverridesCompatible = effectiveKeys.every(partKey => {
+    const segmentOverridesMatch = effectiveKeys.every(partKey => {
       if (!__isCornicePaintKey(partKey) || partKey === baseCorniceKey) return true;
       const value = colors[partKey];
       return value == null || String(value) === selection;
     });
-    return baseColor === selection && segmentOverridesCompatible ? 'remove' : 'add';
+    return baseColor === selection && segmentOverridesMatch ? 'remove' : 'add';
   }
   return __readDirectTargetPaintHoverOp(colors, effectiveKeys, selection);
 }

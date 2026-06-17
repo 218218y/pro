@@ -86,33 +86,33 @@ function readCachedRecordClone(value: UnknownRecord, seen: JsonCloneCache): Unkn
   return isObjectRecord(cached) ? cached : null;
 }
 
-function cloneJsonFallbackArray(value: readonly unknown[], seen: JsonCloneCache): unknown[] {
+function cloneJsonPortableArray(value: readonly unknown[], seen: JsonCloneCache): unknown[] {
   const cached = readCachedArrayClone(value, seen);
   if (cached) return cached;
 
   const out: unknown[] = [];
   seen.set(value, out);
   for (let i = 0; i < value.length; i += 1) {
-    const next = cloneJsonFallback(value[i], seen);
+    const next = cloneJsonPortableValue(value[i], seen);
     out[i] = next === undefined ? null : next;
   }
   return out;
 }
 
-function cloneJsonFallbackRecord(value: UnknownRecord, seen: JsonCloneCache): UnknownRecord {
+function cloneJsonPortableRecord(value: UnknownRecord, seen: JsonCloneCache): UnknownRecord {
   const cached = readCachedRecordClone(value, seen);
   if (cached) return cached;
 
   const out: UnknownRecord = {};
   seen.set(value, out);
   for (const [key, raw] of Object.entries(value)) {
-    const next = cloneJsonFallback(raw, seen);
+    const next = cloneJsonPortableValue(raw, seen);
     if (typeof next !== 'undefined') out[key] = next;
   }
   return out;
 }
 
-function cloneJsonFallback(value: unknown, seen: JsonCloneCache): unknown {
+function cloneJsonPortableValue(value: unknown, seen: JsonCloneCache): unknown {
   if (value == null) return value;
   switch (typeof value) {
     case 'string':
@@ -126,8 +126,8 @@ function cloneJsonFallback(value: unknown, seen: JsonCloneCache): unknown {
     case 'undefined':
       return undefined;
     case 'object':
-      if (Array.isArray(value)) return cloneJsonFallbackArray(value, seen);
-      return isObjectRecord(value) ? cloneJsonFallbackRecord(value, seen) : undefined;
+      if (Array.isArray(value)) return cloneJsonPortableArray(value, seen);
+      return isObjectRecord(value) ? cloneJsonPortableRecord(value, seen) : undefined;
     default:
       return value;
   }
@@ -142,7 +142,7 @@ function deepCloneProjectJsonUnknown(value: unknown): unknown {
   try {
     return JSON.parse(JSON.stringify(value));
   } catch {
-    return cloneJsonFallback(value, new Map<object, unknown[] | UnknownRecord>());
+    return cloneJsonPortableValue(value, new Map<object, unknown[] | UnknownRecord>());
   }
 }
 

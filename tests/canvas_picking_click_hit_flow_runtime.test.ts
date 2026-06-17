@@ -94,7 +94,7 @@ test('click hit flow promotes generic bottom corner hits to a specific corner ce
   assert.deepEqual(raycaster.lastMouse, { x: 0.1, y: 0.2 });
 });
 
-test('click hit flow repairs stack choice from fallback hit y and promotes the matching selector candidate', () => {
+test('click hit flow repairs stack choice from secondary hit y and promotes the matching selector candidate', () => {
   const selectorTop = {
     type: 'Mesh',
     userData: { isModuleSelector: true, moduleIndex: 5, __wpStack: 'top' },

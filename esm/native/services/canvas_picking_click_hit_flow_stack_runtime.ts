@@ -7,7 +7,10 @@ import { getThreeMaybe } from '../runtime/three_access.js';
 import { __wp_reportPickingIssue, __wp_toModuleKey, __wp_ui } from './canvas_picking_core_helpers.js';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
 import type { MutableCanvasPickingClickHitState } from './canvas_picking_click_hit_flow_state.js';
-import { readFallbackPrimaryHitY, readUiStackSplitEnabled } from './canvas_picking_click_hit_flow_shared.js';
+import {
+  readPrimaryHitYForStackRepair,
+  readUiStackSplitEnabled,
+} from './canvas_picking_click_hit_flow_shared.js';
 import { findModuleCandidateForStack } from './canvas_picking_module_selector_hits.js';
 
 export function readStackBoundaryY(App: AppContainer): number | null {
@@ -96,7 +99,7 @@ export function repairCanvasPickingClickStack(args: {
         camera: readStackSplitCameraLike(cam),
         boundaryWorldY: boundaryY ?? NaN,
         ndcY: typeof ndcY === 'number' && Number.isFinite(ndcY) ? ndcY : null,
-        fallbackHitWorldY: readFallbackPrimaryHitY(state, intersects),
+        secondaryHitWorldY: readPrimaryHitYForStackRepair(state, intersects),
       });
     } catch (err) {
       __wp_reportPickingIssue(App, err, {

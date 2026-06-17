@@ -11,14 +11,14 @@ function readPreviewBoxThickness(
   return Math.max(0.004, Math.min(0.05, Math.min(box.width, box.height, box.depth)));
 }
 
-export function resolvePaintPreviewGroupBoxFromFallback(args: {
+export function resolvePaintPreviewGroupBoxFromAnchor(args: {
   App: AppContainer;
   wardrobeGroup: UnknownRecord;
-  fallbackObject: UnknownRecord;
-  fallbackParent: UnknownRecord | null;
+  anchorObject: UnknownRecord;
+  anchorParent: UnknownRecord | null;
 }): PaintPreviewGroupBox | null {
-  const { App, wardrobeGroup, fallbackObject, fallbackParent } = args;
-  const box = __wp_measureObjectLocalBox(App, fallbackObject, fallbackParent || undefined);
+  const { App, wardrobeGroup, anchorObject, anchorParent } = args;
+  const box = __wp_measureObjectLocalBox(App, anchorObject, anchorParent || undefined);
   const woodThick = readPreviewBoxThickness(box);
   if (!box || !woodThick) return null;
   return {
@@ -29,8 +29,8 @@ export function resolvePaintPreviewGroupBoxFromFallback(args: {
     height: box.height,
     depth: box.depth,
     woodThick,
-    anchor: fallbackObject,
-    anchorParent: fallbackParent || wardrobeGroup,
+    anchor: anchorObject,
+    anchorParent: anchorParent || wardrobeGroup,
   };
 }
 

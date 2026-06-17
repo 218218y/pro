@@ -193,7 +193,7 @@ test('corner and pentagon cornice hover now follows the shared paint group by pr
   );
   assert.match(
     genericPaintHoverPreviewObjectsNorm,
-    /export function appendFallbackPartObjectsFromScene\(out: UnknownRecord\[\], wardrobeGroup: UnknownRecord, partKeys: string\[\]\): void \{/
+    /export function appendScenePartObjects\(out: UnknownRecord\[\], wardrobeGroup: UnknownRecord, partKeys: string\[\]\): void \{/
   );
   assert.match(
     genericPaintHoverPreviewObjects,

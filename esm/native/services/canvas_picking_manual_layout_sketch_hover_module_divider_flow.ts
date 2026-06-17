@@ -46,11 +46,11 @@ export function tryHandleManualLayoutSketchHoverModuleDividerFlow(
       const boxCenterY = Number(args.boxCenterY);
       const innerH = Number(args.innerH);
       const cursorY = Number(args.cursorY);
-      const fallbackNorm = Number(args.dividerYNorm);
+      const defaultNorm = Number(args.dividerYNorm);
       const minY = boxCenterY - innerH / 2;
       const centerY = Number.isFinite(cursorY)
         ? cursorY
-        : minY + (Number.isFinite(fallbackNorm) ? fallbackNorm : 0.5) * innerH;
+        : minY + (Number.isFinite(defaultNorm) ? defaultNorm : 0.5) * innerH;
       const yNorm = innerH > 0 ? Math.max(0, Math.min(1, (centerY - minY) / innerH)) : 0.5;
       return {
         yNorm,

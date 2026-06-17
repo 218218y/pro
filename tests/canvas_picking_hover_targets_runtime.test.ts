@@ -93,10 +93,10 @@ test('interior hover target resolves selector hits into canonical bounds and int
   assert.equal(target?.regularDepth, 0.45);
 });
 
-test('interior hover target recovers the selector object from the wardrobe tree for fallback hits', () => {
+test('interior hover target recovers the selector object from the wardrobe tree for anchor hits', () => {
   const App = createApp();
   const selectorObj = createSelectorObject('corner:3', 'bottom');
-  const fallbackObj = {
+  const anchorObj = {
     userData: {
       moduleIndex: 'corner:3',
       __wpStack: 'bottom',
@@ -124,7 +124,7 @@ test('interior hover target recovers the selector object from the wardrobe tree 
     ndcX: -0.1,
     ndcY: 0.3,
     getViewportRoots: () => ({ camera: {}, wardrobeGroup }),
-    raycastReuse: () => [{ object: fallbackObj, point: { x: -0.2, y: 0.75, z: 0.05 } } as any],
+    raycastReuse: () => [{ object: anchorObj, point: { x: -0.2, y: 0.75, z: 0.05 } } as any],
     isViewportRoot: (_App, node) => node === wardrobeGroup,
     toModuleKey,
     projectWorldPointToLocal: (_App, point) => ({ x: -0.2, y: Number((point as any)?.y ?? 0), z: 0.05 }),

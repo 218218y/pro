@@ -142,10 +142,10 @@ export function readLocalHitY(args: {
   hitPoint: unknown;
   parent: unknown;
   projectWorldPointToLocal: ProjectWorldPointToLocalFn;
-  fallbackY: number | null;
+  defaultY: number | null;
 }): number | null {
-  const { App, hitPoint, parent, projectWorldPointToLocal, fallbackY } = args;
-  let hitY = fallbackY;
+  const { App, hitPoint, parent, projectWorldPointToLocal, defaultY } = args;
+  let hitY = defaultY;
   try {
     const localPoint = projectWorldPointToLocal(App, hitPoint || null, parent || null);
     if (localPoint && Number.isFinite(localPoint.y)) hitY = Number(localPoint.y);

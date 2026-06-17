@@ -38,7 +38,7 @@ function createApp(stateOverrides: Record<string, unknown> = {}, runtimeCache: R
   } as any;
 }
 
-test('projection box measures geometry parameters with local scale before any world bounds fallback', () => {
+test('projection box measures geometry parameters with local scale before any world bounds secondary path', () => {
   const App = {} as any;
   const obj = {
     geometry: { parameters: { width: 0.8, height: 2, depth: 0.6 } },
@@ -56,7 +56,7 @@ test('projection box measures geometry parameters with local scale before any wo
   assert.ok(Math.abs((box?.depth ?? 0) - 0.9) < 1e-9);
 });
 
-test('projection box uses cached no-main workspace metrics before raw ui fallback widths', () => {
+test('projection box uses cached no-main workspace metrics before raw ui default widths', () => {
   const App = createApp(
     {},
     {

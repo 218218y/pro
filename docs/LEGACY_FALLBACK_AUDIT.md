@@ -1,21 +1,21 @@
 # Legacy / fallback audit
 
-Generated at: 2026-06-16T20:36:47.180Z
+Generated at: 2026-06-16T21:01:09.550Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **169**
-- Files with occurrences: **88**
+- Total categorized occurrences: **135**
+- Files with occurrences: **76**
 - Category counts:
   - `runtime-default`: **0**
-  - `domain-default`: **119**
+  - `domain-default`: **95**
   - `error-message-default`: **11**
   - `framework-default`: **2**
   - `browser-adapter`: **2**
-  - `project-migration`: **10**
+  - `project-migration`: **2**
   - `external-api-compat`: **0**
-  - `compat-boundary`: **19**
+  - `compat-boundary`: **17**
   - `test-fixture`: **6**
   - `legacy-runtime-risk`: **0**
   - `unknown`: **0**
@@ -35,17 +35,13 @@ Generated at: 2026-06-16T20:36:47.180Z
 
 ## Hot files
 
-- `esm/native/io/project_schema_shared.ts` - **8** (project-migration: 8)
 - `esm/native/kernel/cfg_meta.ts` - **5** (domain-default: 5)
-- `esm/native/services/canvas_picking_hover_targets_interior_scan.ts` - **5** (domain-default: 5)
-- `esm/native/services/canvas_picking_selector_internal_metrics.ts` - **5** (domain-default: 5)
 - `esm/shared/wardrobe_dimension_tokens_shared.ts` - **5** (compat-boundary: 2, domain-default: 3)
 - `esm/test_no_side_effects_on_import.mjs` - **5** (test-fixture: 5)
 - `esm/native/features/door_trim_map.ts` - **4** (domain-default: 4)
 - `esm/native/platform/dirty_flag.ts` - **4** (domain-default: 4)
 - `esm/native/runtime/meta_actions_namespace.ts` - **4** (domain-default: 4)
 - `esm/native/services/canvas_picking_cell_dims_linear_context_modules.ts` - **4** (domain-default: 4)
-- `esm/native/services/canvas_picking_hover_targets_interior_target.ts` - **4** (domain-default: 4)
 - `esm/native/services/render_surface_runtime_support_readers.ts` - **4** (compat-boundary: 4)
 - `esm/native/ui/html_sanitize_runtime.ts` - **4** (domain-default: 4)
 - `esm/native/ui/notes_service_shared.ts` - **4** (domain-default: 4)
@@ -62,9 +58,13 @@ Generated at: 2026-06-16T20:36:47.180Z
 - `esm/native/runtime/platform_access_ops.ts` - **2** (domain-default: 2)
 - `esm/native/services/app_start.ts` - **2** (compat-boundary: 2)
 - `esm/native/services/camera_shared.ts` - **2** (domain-default: 2)
-- `esm/native/services/canvas_picking_click_hit_flow_stack_runtime.ts` - **2** (domain-default: 2)
-- `esm/native/services/canvas_picking_generic_paint_hover_preview_objects.ts` - **2** (domain-default: 2)
-- `esm/native/services/canvas_picking_generic_paint_hover_preview.ts` - **2** (domain-default: 2)
+- `esm/native/services/cloud_sync_status_install_runtime.ts` - **2** (domain-default: 2)
+- `esm/native/ui/errors_install_surface.ts` - **2** (error-message-default: 2)
+- `esm/native/ui/export/export_order_pdf_capture_open_closed.ts` - **2** (domain-default: 2)
+- `esm/native/ui/export/export_order_pdf_capture_render_sketch.ts` - **2** (domain-default: 2)
+- `esm/native/ui/project_load_runtime_action.ts` - **2** (error-message-default: 2)
+- `esm/native/ui/react/boot_react_ui.tsx` - **2** (domain-default: 2)
+- `esm/native/builder/build_state_resolver.ts` - **1** (compat-boundary: 1)
 
 ## Allowlist check
 

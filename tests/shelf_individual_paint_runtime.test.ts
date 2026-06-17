@@ -224,8 +224,8 @@ test('external drawer brace shelf remains a separate click target and thin-board
     App: {} as never,
     wardrobeGroup: wardrobeGroup as never,
     partKeys: [shelfPartId],
-    fallbackObject: board as never,
-    fallbackParent: wardrobeGroup as never,
+    anchorObject: board as never,
+    anchorParent: wardrobeGroup as never,
   });
 
   assert.equal(preview?.kind, 'object_boxes');
@@ -257,8 +257,8 @@ test('paint hover preview uses object-box mode for individual shelves so thin bo
     App: {} as never,
     wardrobeGroup: wardrobeGroup as never,
     partKeys: [shelfPartId],
-    fallbackObject: board as never,
-    fallbackParent: wardrobeGroup as never,
+    anchorObject: board as never,
+    anchorParent: wardrobeGroup as never,
   });
 
   assert.equal(preview?.kind, 'object_boxes');

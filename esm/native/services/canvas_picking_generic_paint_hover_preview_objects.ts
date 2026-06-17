@@ -107,7 +107,7 @@ function appendScenePartObjectsByKeySet(
   }
 }
 
-export function appendFallbackPartObjectsFromScene(
+export function appendScenePartObjects(
   out: UnknownRecord[],
   wardrobeGroup: UnknownRecord,
   partKeys: string[]
@@ -141,6 +141,6 @@ export function collectPaintPreviewPartObjects(args: {
       }
     }
   }
-  appendFallbackPartObjectsFromScene(objects, wardrobeGroup, partKeys);
+  appendScenePartObjects(objects, wardrobeGroup, partKeys);
   return objects;
 }

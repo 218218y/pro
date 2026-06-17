@@ -46,9 +46,9 @@ export function computeDesiredStackSplit(args: {
   camera: StackSplitCameraLike | null | undefined;
   boundaryWorldY: number;
   ndcY: number | null;
-  fallbackHitWorldY: number | null;
+  secondaryHitWorldY: number | null;
 }): StackKey | null {
-  const { THREE, camera, boundaryWorldY, ndcY, fallbackHitWorldY } = args;
+  const { THREE, camera, boundaryWorldY, ndcY, secondaryHitWorldY } = args;
 
   if (typeof boundaryWorldY !== 'number' || !Number.isFinite(boundaryWorldY)) return null;
 
@@ -57,8 +57,8 @@ export function computeDesiredStackSplit(args: {
     if (typeof boundaryNdcY === 'number') return desiredStackFromNdcY(ndcY, boundaryNdcY);
   }
 
-  if (typeof fallbackHitWorldY === 'number' && Number.isFinite(fallbackHitWorldY)) {
-    return desiredStackFromWorldY(fallbackHitWorldY, boundaryWorldY);
+  if (typeof secondaryHitWorldY === 'number' && Number.isFinite(secondaryHitWorldY)) {
+    return desiredStackFromWorldY(secondaryHitWorldY, boundaryWorldY);
   }
 
   return null;

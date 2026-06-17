@@ -105,10 +105,10 @@ export function validateCanvasDoorCustomSplitAdd(args: {
   const maxY = Number(bounds.maxY);
   const { height: H, padAbs, minSegmentHeight, duplicateTolerance } = readCanvasDoorCustomSplitPolicy(bounds);
   const rawY = Number(pointerY);
-  const fallbackY = Number.isFinite(rawY) ? rawY : minY;
+  const defaultY = Number.isFinite(rawY) ? rawY : minY;
   const invalidResult: CanvasDoorCustomSplitAddValidation = {
     canAdd: false,
-    yAbs: fallbackY,
+    yAbs: defaultY,
     yNorm: 0,
     reason: 'invalid-bounds',
     nearestDistanceAbs: null,

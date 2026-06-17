@@ -81,8 +81,8 @@ export function tryHandleCanvasRemovablePartHover(args: {
     App,
     wardrobeGroup,
     partKeys: [partId],
-    fallbackObject: resolvedTarget.object,
-    fallbackParent: resolvedTarget.parent,
+    anchorObject: resolvedTarget.object,
+    anchorParent: resolvedTarget.parent,
   });
   if (!previewGroup) return false;
 

@@ -2,7 +2,7 @@ import { getInternalGridMap } from '../runtime/cache_access.js';
 import { getWardrobeGroup } from '../runtime/render_access.js';
 import { asRecord } from '../runtime/record.js';
 import {
-  applySelectorVerticalBoundsFallback,
+  applySelectorVerticalBoundsFromEnvelope,
   resolveSelectorInternalMetrics,
 } from './canvas_picking_selector_internal_metrics.js';
 import { findModuleSelectorObject } from './canvas_picking_module_selector_hits.js';
@@ -23,7 +23,7 @@ export function buildInteriorHoverTarget(
   }
 ): InteriorHoverTarget | null {
   const { App, measureObjectLocalBox, projectWorldPointToLocal, toModuleKey, scan } = args;
-  const { intersects, hitModuleKey, hitFallbackObj, hitStack } = scan;
+  const { intersects, hitModuleKey, hitAnchorObj, hitStack } = scan;
   let { hitSelectorObj, hitPoint, hitY } = scan;
 
   if (!hitSelectorObj) {
@@ -34,7 +34,7 @@ export function buildInteriorHoverTarget(
         stackKey: hitStack,
         toModuleKey,
       }) ||
-      hitFallbackObj ||
+      hitAnchorObj ||
       null;
     if (hitSelectorObj && hitPoint) {
       const nextHitY = readLocalHitY({
@@ -42,7 +42,7 @@ export function buildInteriorHoverTarget(
         hitPoint,
         parent: readParent(hitSelectorObj),
         projectWorldPointToLocal,
-        fallbackY: hitY,
+        defaultY: hitY,
       });
       if (typeof nextHitY === 'number') hitY = nextHitY;
     }
@@ -59,7 +59,7 @@ export function buildInteriorHoverTarget(
 
   let bottomY = typeof info.effectiveBottomY === 'number' ? Number(info.effectiveBottomY) : NaN;
   let topY = typeof info.effectiveTopY === 'number' ? Number(info.effectiveTopY) : NaN;
-  ({ bottomY, topY } = applySelectorVerticalBoundsFallback({
+  ({ bottomY, topY } = applySelectorVerticalBoundsFromEnvelope({
     bottomY,
     topY,
     selectorEnvelope: selectorBox,

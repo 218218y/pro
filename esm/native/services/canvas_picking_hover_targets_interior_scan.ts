@@ -18,7 +18,7 @@ export type InteriorHoverScanResult = {
   intersects: ReturnType<ResolveInteriorHoverTargetArgs['raycastReuse']>;
   hitModuleKey: ModuleKey;
   hitSelectorObj: import('./canvas_picking_engine.js').HitObjectLike | null;
-  hitFallbackObj: import('./canvas_picking_engine.js').HitObjectLike | null;
+  hitAnchorObj: import('./canvas_picking_engine.js').HitObjectLike | null;
   hitStack: 'top' | 'bottom';
   hitY: number;
   hitPoint: UnknownRecord | null;
@@ -56,7 +56,7 @@ export function scanInteriorHoverHit(args: ResolveInteriorHoverTargetArgs): Inte
 
   let hitModuleKey: ModuleKey | null = null;
   let hitSelectorObj: import('./canvas_picking_engine.js').HitObjectLike | null = null;
-  let hitFallbackObj: import('./canvas_picking_engine.js').HitObjectLike | null = null;
+  let hitAnchorObj: import('./canvas_picking_engine.js').HitObjectLike | null = null;
   let hitStack: 'top' | 'bottom' = 'top';
   let hitY: number | null = null;
   let hitPoint: UnknownRecord | null = null;
@@ -65,7 +65,7 @@ export function scanInteriorHoverHit(args: ResolveInteriorHoverTargetArgs): Inte
   if (selectorHit) {
     hitModuleKey = selectorHit.moduleKey;
     hitSelectorObj = selectorHit.object;
-    hitFallbackObj = hitSelectorObj;
+    hitAnchorObj = hitSelectorObj;
     hitStack = selectorHit.stack;
     hitPoint = readPointRecord(selectorHit.hit) || null;
     hitY = readLocalHitY({
@@ -73,7 +73,7 @@ export function scanInteriorHoverHit(args: ResolveInteriorHoverTargetArgs): Inte
       hitPoint: selectorHit.hit.point || null,
       parent: readParent(selectorHit.object),
       projectWorldPointToLocal,
-      fallbackY: selectorHit.hitY,
+      defaultY: selectorHit.hitY,
     });
   }
 
@@ -91,7 +91,7 @@ export function scanInteriorHoverHit(args: ResolveInteriorHoverTargetArgs): Inte
       if (!candidate) continue;
 
       hitModuleKey = candidate.moduleKey;
-      hitFallbackObj = candidate.object;
+      hitAnchorObj = candidate.object;
       hitStack = candidate.stackHint === 'bottom' ? 'bottom' : 'top';
       hitPoint = readPointRecord(hit) || null;
       hitY = readLocalHitY({
@@ -99,7 +99,7 @@ export function scanInteriorHoverHit(args: ResolveInteriorHoverTargetArgs): Inte
         hitPoint: hit.point || null,
         parent: readParent(candidate.object),
         projectWorldPointToLocal,
-        fallbackY: candidate.hitY,
+        defaultY: candidate.hitY,
       });
     }
   }
@@ -110,7 +110,7 @@ export function scanInteriorHoverHit(args: ResolveInteriorHoverTargetArgs): Inte
     intersects,
     hitModuleKey,
     hitSelectorObj,
-    hitFallbackObj,
+    hitAnchorObj,
     hitStack,
     hitY,
     hitPoint,

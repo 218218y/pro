@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  applySelectorVerticalBoundsFallback,
+  applySelectorVerticalBoundsFromEnvelope,
   readSelectorEnvelopeFromObject,
   resolveSelectorInternalMetrics,
 } from '../esm/native/services/canvas_picking_selector_internal_metrics.ts';
@@ -27,10 +27,10 @@ test('selector-envelope reader lifts geometry and position fields into a canonic
   assert.equal(readSelectorEnvelopeFromObject({ geometry: {}, position: {} }), null);
 });
 
-test('selector vertical-bounds fallback reconstructs bounds from envelope center/height only when existing bounds are invalid', () => {
+test('selector vertical-bounds envelope repair reconstructs bounds from envelope center/height only when existing bounds are invalid', () => {
   const envelope = { centerY: 1.4, height: 0.8 };
 
-  const repaired = applySelectorVerticalBoundsFallback({
+  const repaired = applySelectorVerticalBoundsFromEnvelope({
     bottomY: Number.NaN,
     topY: Number.NaN,
     selectorEnvelope: envelope,
@@ -39,7 +39,7 @@ test('selector vertical-bounds fallback reconstructs bounds from envelope center
   assert.ok(Math.abs(repaired.topY - 1.8) < 1e-9);
 
   assert.deepEqual(
-    applySelectorVerticalBoundsFallback({
+    applySelectorVerticalBoundsFromEnvelope({
       bottomY: 0.2,
       topY: 0.9,
       selectorEnvelope: envelope,

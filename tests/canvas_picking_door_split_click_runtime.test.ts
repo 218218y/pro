@@ -839,7 +839,7 @@ test('custom split click blocks edge-clamped add attempts instead of auto-moving
   ]);
 });
 
-test('custom split hover does not use a remembered post-click fallback when the fresh raycast misses', () => {
+test('custom split hover does not use a remembered post-click cached hit when the fresh raycast misses', () => {
   class Vec3 {
     x = 0;
     y = 0;

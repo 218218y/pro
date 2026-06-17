@@ -33,7 +33,7 @@ export function readUiStackSplitEnabled(ui: unknown): boolean {
   return !!(rec && rec.stackSplitEnabled);
 }
 
-export function readFallbackPrimaryHitY(
+export function readPrimaryHitYForStackRepair(
   state: MutableCanvasPickingClickHitState,
   intersects: Array<{ point?: { y?: number } | null }>
 ): number | null {

@@ -111,8 +111,8 @@ export function tryHandleGenericPartPaintHover(args: {
     App,
     wardrobeGroup,
     partKeys: previewTargetKeys,
-    fallbackObject: resolvedTarget.object,
-    fallbackParent: resolvedTarget.parent,
+    anchorObject: resolvedTarget.object,
+    anchorParent: resolvedTarget.parent,
   });
   if (!previewGroupRaw) {
     try {

@@ -20,16 +20,16 @@ export function resolveNearestPreviewObject(args: {
   App: AppContainer;
   wardrobeGroup: UnknownRecord;
   objects: UnknownRecord[];
-  fallbackObject: UnknownRecord;
+  anchorObject: UnknownRecord;
 }): UnknownRecord | null {
-  const { App, wardrobeGroup, objects, fallbackObject } = args;
-  if (!objects.length) return fallbackObject;
+  const { App, wardrobeGroup, objects, anchorObject } = args;
+  if (!objects.length) return anchorObject;
   for (let i = 0; i < objects.length; i += 1) {
-    if (objects[i] === fallbackObject) return fallbackObject;
+    if (objects[i] === anchorObject) return anchorObject;
   }
 
-  const referenceBox = __wp_measureObjectLocalBox(App, fallbackObject, wardrobeGroup);
-  if (!referenceBox) return objects[0] || fallbackObject;
+  const referenceBox = __wp_measureObjectLocalBox(App, anchorObject, wardrobeGroup);
+  if (!referenceBox) return objects[0] || anchorObject;
 
   let bestObject: UnknownRecord | null = objects[0] || null;
   let bestDist = Infinity;
@@ -54,11 +54,11 @@ export function resolveCornerCorniceFrontObjectLocalPreview(args: {
   wardrobeGroup: UnknownRecord;
   partKeys: string[];
   objects: UnknownRecord[];
-  fallbackObject: UnknownRecord;
+  anchorObject: UnknownRecord;
 }): PaintPreviewGroupBox | null {
-  const { App, wardrobeGroup, partKeys, objects, fallbackObject } = args;
+  const { App, wardrobeGroup, partKeys, objects, anchorObject } = args;
   if (partKeys.length !== 1 || !__isCornerCorniceFrontPreviewKey(partKeys[0])) return null;
-  const previewObject = resolveNearestPreviewObject({ App, wardrobeGroup, objects, fallbackObject });
+  const previewObject = resolveNearestPreviewObject({ App, wardrobeGroup, objects, anchorObject });
   const localBox = __readObjectLocalGeometryBox(previewObject);
   const woodThick = readPreviewBoxThickness(localBox);
   if (!previewObject || !localBox || !woodThick) return null;
@@ -74,13 +74,13 @@ export function resolveCornerCorniceGroupObjectPreview(args: {
   wardrobeGroup: UnknownRecord;
   partKeys: string[];
   objects: UnknownRecord[];
-  fallbackObject: UnknownRecord;
+  anchorObject: UnknownRecord;
 }): PaintPreviewGroupBox | null {
-  const { wardrobeGroup, partKeys, objects, fallbackObject } = args;
+  const { wardrobeGroup, partKeys, objects, anchorObject } = args;
   if (!__isScopedCornerCornicePreviewKeyList(partKeys)) return null;
   const previewObjects: UnknownRecord[] = [];
   appendUniquePartObjects(previewObjects, objects);
-  appendUniquePartObjects(previewObjects, fallbackObject);
+  appendUniquePartObjects(previewObjects, anchorObject);
   if (!previewObjects.length) return null;
 
   let minThickness = Infinity;

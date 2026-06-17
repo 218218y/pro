@@ -9,7 +9,7 @@ import {
   resolveCornerCorniceGroupObjectPreview,
 } from './canvas_picking_generic_paint_hover_preview_corner.js';
 import {
-  resolvePaintPreviewGroupBoxFromFallback,
+  resolvePaintPreviewGroupBoxFromAnchor,
   resolvePaintPreviewGroupBoxFromObjects,
   resolvePaintPreviewObjectBoxesFromAnchor,
 } from './canvas_picking_generic_paint_hover_preview_bounds.js';
@@ -46,17 +46,17 @@ export function resolvePaintPreviewGroupBox(args: {
   App: AppContainer;
   wardrobeGroup: UnknownRecord;
   partKeys: string[];
-  fallbackObject: UnknownRecord;
-  fallbackParent: UnknownRecord | null;
+  anchorObject: UnknownRecord;
+  anchorParent: UnknownRecord | null;
 }): PaintPreviewGroupBox | null {
-  const { App, wardrobeGroup, partKeys, fallbackObject, fallbackParent } = args;
+  const { App, wardrobeGroup, partKeys, anchorObject, anchorParent } = args;
   const objects = collectPaintPreviewPartObjects({ App, wardrobeGroup, partKeys });
 
   const cornerCorniceObjectPreview = resolveCornerCorniceGroupObjectPreview({
     wardrobeGroup,
     partKeys,
     objects,
-    fallbackObject,
+    anchorObject,
   });
   if (cornerCorniceObjectPreview) return cornerCorniceObjectPreview;
 
@@ -65,7 +65,7 @@ export function resolvePaintPreviewGroupBox(args: {
     wardrobeGroup,
     partKeys,
     objects,
-    fallbackObject,
+    anchorObject,
   });
   if (cornerCorniceFrontPreview) return cornerCorniceFrontPreview;
 
@@ -75,16 +75,16 @@ export function resolvePaintPreviewGroupBox(args: {
     if (useObjectBoxesPreview) {
       const anchorObjectBoxesPreview = resolvePaintPreviewObjectBoxesFromAnchor({
         wardrobeGroup,
-        anchorObject: fallbackObject,
-        anchorParent: fallbackParent,
+        anchorObject: anchorObject,
+        anchorParent: anchorParent,
       });
       if (anchorObjectBoxesPreview) return anchorObjectBoxesPreview;
     }
-    return resolvePaintPreviewGroupBoxFromFallback({
+    return resolvePaintPreviewGroupBoxFromAnchor({
       App,
       wardrobeGroup,
-      fallbackObject,
-      fallbackParent,
+      anchorObject,
+      anchorParent,
     });
   }
 
