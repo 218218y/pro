@@ -47,6 +47,7 @@ const mapsApi = bundleSources(
 );
 const domainApi = read('esm/native/kernel/domain_api.ts');
 const domainApiColors = read('esm/native/kernel/domain_api_colors_section.ts');
+const stateStackRouterPatch = read('esm/native/kernel/state_api_stack_router_patch.ts');
 const domainModulesCorner = bundleSources(
   [
     '../esm/native/kernel/domain_api_modules_corner.ts',
@@ -203,6 +204,11 @@ test('[zustand-domain] module/corner stack and config paths stay on canonical ac
     domainModulesCorner,
     /actions\.modules\.patchForStack is required before stack patch delegation/
   );
+  assert.doesNotMatch(domainModulesCorner, /modulesActions\.patch\s*=/);
+  assert.doesNotMatch(domainModulesCorner, /__patchModuleListForStack/);
+  assert.doesNotMatch(domainModulesCorner, /catch \(_error\) \{\}\s*return __patchModuleListForStack/);
+  assert.doesNotMatch(stateStackRouterPatch, /modulesNs\['patchAt'\]/);
+  assert.doesNotMatch(stateStackRouterPatch, /modulesNs\['patchLowerAt'\]/);
 });
 
 test('[zustand-domain] history, config scalar, and applyPaint flows stay centralized', () => {

@@ -38,9 +38,12 @@ test('installDomainApi heals missing methods in place without replacing intact a
   const setOpenRef = App.actions.doors.setOpen;
   const setFloorTypeRef = App.actions.room.setFloorType;
   const recomputeRef = App.actions.modules.recompute;
+  const patchAtRef = App.actions.modules.patchAt;
+  const patchLowerAtRef = App.actions.modules.patchLowerAt;
 
   delete App.actions.colors.setSavedColors;
   delete App.actions.textures.setCustomUploadedDataURL;
+  App.actions.modules.patch = () => 'legacy';
 
   installDomainApi(App);
 
@@ -48,6 +51,9 @@ test('installDomainApi heals missing methods in place without replacing intact a
   assert.equal(App.actions.doors.setOpen, setOpenRef);
   assert.equal(App.actions.room.setFloorType, setFloorTypeRef);
   assert.equal(App.actions.modules.recompute, recomputeRef);
+  assert.equal(App.actions.modules.patchAt, patchAtRef);
+  assert.equal(App.actions.modules.patchLowerAt, patchLowerAtRef);
+  assert.equal(App.actions.modules.patch, undefined);
   assert.equal(typeof App.actions.colors.setSavedColors, 'function');
   assert.equal(typeof App.actions.textures.setCustomUploadedDataURL, 'function');
 });

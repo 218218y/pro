@@ -9,12 +9,6 @@
         "project-migration": 1
       }
     },
-    "esm/native/kernel/domain_module_stack_patch.ts": {
-      "total": 1,
-      "categories": {
-        "project-migration": 1
-      }
-    },
     "esm/native/ui/react/overlay_pdf_host.tsx": {
       "total": 1,
       "categories": {

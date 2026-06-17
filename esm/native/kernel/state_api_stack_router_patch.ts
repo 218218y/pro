@@ -111,21 +111,6 @@ export function installStateApiStackRouterPatch(ctx: StateApiStackRouterContext)
           if (typeof fnTop === 'function' && !isDelegatingStackPatchFn(fnTop)) {
             return fnTop(asCornerPatchLike(patchOrPatchFn), commitMeta);
           }
-        } else {
-          const moduleIndex = readModuleIndex(moduleKey);
-          if (moduleIndex != null) {
-            if (stackNorm === 'bottom') {
-              const patchLowerAt = asPatchAt(modulesNs['patchLowerAt']);
-              if (patchLowerAt && !isDelegatingStackPatchFn(patchLowerAt)) {
-                return patchLowerAt(moduleIndex, asModulePatchLike(patchOrPatchFn), commitMeta);
-              }
-            } else {
-              const patchAt = asPatchAt(modulesNs['patchAt']);
-              if (patchAt && !isDelegatingStackPatchFn(patchAt)) {
-                return patchAt(moduleIndex, asModulePatchLike(patchOrPatchFn), commitMeta);
-              }
-            }
-          }
         }
 
         if (cornerCellIdx != null) {

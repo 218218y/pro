@@ -208,8 +208,9 @@ test('modules stack surface: store-backed top-corner ensure/patch keep left-corn
   assert.equal((((cells[1] as AnyRecord).customData as AnyRecord) || {}).storage, true);
 });
 
-test('modules stack surface: canonical stack/domain surfaces win before kernel stack compat when both exist', () => {
+test('modules stack surface: canonical ensure/corner surfaces remain while numeric patches write through the store router', () => {
   const calls: AnyRecord[] = [];
+  const store = createStoreStub();
   const App: AnyRecord = {
     actions: {
       modules: {
@@ -233,7 +234,7 @@ test('modules stack surface: canonical stack/domain surfaces win before kernel s
         },
       },
     },
-    store: createStoreStub(),
+    store,
     stateKernel: {
       ensureModuleConfigForStack(stack: string, key: unknown) {
         calls.push({ op: 'ensureModuleConfigForStack', stack, key });
@@ -251,10 +252,14 @@ test('modules stack surface: canonical stack/domain surfaces win before kernel s
   const mods = App.actions.modules as AnyRecord;
   assert.deepEqual(mods.ensureForStack('bottom', 3), { via: 'ensureLowerAt', index: 3 });
   assert.deepEqual(mods.ensureForStack('top', 'corner:2'), { via: 'ensureCellAt', index: 2 });
-  assert.deepEqual(mods.patchForStack('bottom', 3, { width: 55 }, { source: 'm1' }), { via: 'patchLowerAt' });
+  mods.patchForStack('bottom', 3, { width: 55 }, { source: 'm1' });
   assert.deepEqual(mods.patchForStack('top', 'corner', { depth: 9 }, { source: 'm2' }), {
     via: 'corner.patch',
   });
+
+  const cfg = (store.getState() as AnyRecord).config as AnyRecord;
+  const lowerModules = cfg.stackSplitLowerModulesConfiguration as AnyRecord[];
+  assert.equal(lowerModules[3]?.width, 55);
 
   assert.equal(
     calls.some(c => c.op === 'ensureModuleConfigForStack'),
@@ -264,12 +269,16 @@ test('modules stack surface: canonical stack/domain surfaces win before kernel s
     calls.some(c => c.op === 'patchModuleConfigForStack'),
     false
   );
-  assert.equal((calls.find(c => c.op === 'patchLowerAt')?.meta as AnyRecord).source, 'm1');
+  assert.equal(
+    calls.some(c => c.op === 'patchLowerAt'),
+    false
+  );
   assert.equal((calls.find(c => c.op === 'corner.patch')?.meta as AnyRecord).source, 'm2');
 });
 
-test('modules stack surface: patchForStack routes bottom/top/corner writes to canonical namespaces (no kernel fallbacks)', () => {
+test('modules stack surface: patchForStack owns numeric writes and ignores preinstalled patchAt aliases', () => {
   const calls: AnyRecord[] = [];
+  const store = createStoreStub();
   const App: AnyRecord = {
     actions: {
       modules: {
@@ -293,7 +302,7 @@ test('modules stack surface: patchForStack routes bottom/top/corner writes to ca
         },
       },
     },
-    store: createStoreStub(),
+    store,
     stateKernel: {
       patchModuleConfig(_key: unknown, _patch: unknown, _meta: AnyRecord) {
         calls.push({ op: 'kernel.patchModuleConfig' });
@@ -312,16 +321,18 @@ test('modules stack surface: patchForStack routes bottom/top/corner writes to ca
   mods.patchForStack('top', 'corner', { x: 1 }, { source: 't4' });
 
   const ops = calls.map(c => c.op);
-  assert.ok(ops.includes('patchLowerAt'));
-  assert.ok(ops.includes('patchAt'));
+  assert.equal(ops.includes('patchLowerAt'), false);
+  assert.equal(ops.includes('patchAt'), false);
   assert.ok(ops.includes('patchCellAt'));
   assert.ok(ops.includes('corner.patch'));
+
+  const cfg = (store.getState() as AnyRecord).config as AnyRecord;
+  assert.equal((cfg.stackSplitLowerModulesConfiguration as AnyRecord[])[5]?.width, 60);
+  assert.equal((cfg.modulesConfiguration as AnyRecord[])[6]?.width, 70);
 
   // Delete-pass: no kernel patch fallbacks.
   assert.equal(ops.includes('kernel.patchModuleConfig'), false);
 
-  assert.equal((calls.find(c => c.op === 'patchLowerAt')?.meta as AnyRecord).source, 't1');
-  assert.equal((calls.find(c => c.op === 'patchAt')?.meta as AnyRecord).source, 't2');
   assert.equal((calls.find(c => c.op === 'patchCellAt')?.meta as AnyRecord).source, 't3');
   assert.equal((calls.find(c => c.op === 'corner.patch')?.meta as AnyRecord).source, 't4');
 });

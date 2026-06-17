@@ -404,32 +404,6 @@ export interface UtilNamespaceLike extends UnknownRecord {
 export type ModuleStackName = 'top' | 'bottom';
 export type ModuleStackPatchKey = number | string;
 
-export interface ModuleStackPatchDescriptor {
-  stack: ModuleStackName;
-  moduleKey: ModuleStackPatchKey;
-  patch: ModuleConfigPatchLike;
-}
-
-export interface ModuleStackPatchInput extends UnknownRecord {
-  stack?: ModuleStackName | 'lower' | 'bottom' | 'top' | string;
-  side?: string;
-  layer?: string;
-  lower?: boolean;
-  bottom?: boolean;
-  index?: number;
-  moduleKey?: ModuleStackPatchKey;
-  module?: ModuleStackPatchKey;
-  key?: ModuleStackPatchKey;
-  patch?: unknown;
-  list?: ModulesConfigurationLike;
-}
-
-export interface ModulesPatchFn {
-  (index: number, patch: ModuleConfigPatchLike, meta?: ActionMetaLike): unknown;
-  (descriptor: ModuleStackPatchInput, meta?: ActionMetaLike): unknown;
-  (list: ModulesConfigurationLike, meta?: ActionMetaLike): unknown;
-}
-
 export interface DoorsActionsLike extends UnknownRecord {
   setOpen?: (open: boolean, meta?: ActionMetaLike) => unknown;
   toggle?: (meta?: ActionMetaLike) => unknown;
@@ -465,7 +439,6 @@ export interface ModulesActionsLike extends UnknownRecord {
   setAll?: (list: ModulesConfigurationLike, meta?: ActionMetaLike) => unknown;
   patchAt?: (index: number | string, patch: ModuleConfigPatchLike, meta?: ActionMetaLike) => unknown;
   patchLowerAt?: (index: number | string, patch: ModuleConfigPatchLike, meta?: ActionMetaLike) => unknown;
-  patch?: ModulesPatchFn;
   [k: string]: unknown;
 }
 

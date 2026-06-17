@@ -144,7 +144,7 @@ function renderMarkdown(report) {
     'This audit is intentionally a portfolio map, not a brittle snapshot of every assertion. It protects against stale package references and unnamed legacy runtime coverage while allowing the test suite to keep evolving.',
     ''
   );
-  return `${lines.join('\n')}\n`;
+  return lines.join('\n');
 }
 
 const report = buildReport();

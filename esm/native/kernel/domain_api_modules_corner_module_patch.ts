@@ -1,25 +1,12 @@
-import type {
-  ActionMetaLike,
-  ModuleConfigPatchLike,
-  ModuleStackName,
-  ModuleStackPatchKey,
-  UnknownRecord,
-} from '../../../types';
+import type { ActionMetaLike, ModuleStackName } from '../../../types';
 
-import { cfgSetScalar, setCfgModulesConfiguration } from '../runtime/cfg_access.js';
-import { patchModulesConfigurationListAtForPatch } from '../features/modules_configuration/modules_config_api.js';
-import { asRecordOrEmpty } from './domain_api_modules_corner_shared.js';
-import {
-  normalizeModuleStackPatchKey,
-  resolveModuleStackPatchDescriptor,
-} from './domain_module_stack_patch.js';
+import { setCfgModulesConfiguration } from '../runtime/cfg_access.js';
 import type { DomainApiModulesCornerContext } from './domain_api_modules_corner_contracts.js';
 
 export function installDomainApiModulesCornerModulePatch(ctx: DomainApiModulesCornerContext): void {
-  const { App, modulesActions, _asMeta, _isRecord, _meta, _markDelegatesStackPatch } = ctx;
+  const { App, modulesActions, _meta, _markDelegatesStackPatch } = ctx;
 
-  const asMetaInput = (meta: unknown): ActionMetaLike | UnknownRecord | null | undefined =>
-    _isRecord(meta) ? meta : undefined;
+  delete modulesActions.patch;
 
   modulesActions.setAll =
     modulesActions.setAll ||
@@ -36,7 +23,7 @@ export function installDomainApiModulesCornerModulePatch(ctx: DomainApiModulesCo
 
   const __tryCanonicalStackPatch = (
     stack: ModuleStackName,
-    moduleKey: ModuleStackPatchKey,
+    moduleIndex: number,
     patch: unknown,
     meta: ActionMetaLike
   ): unknown => {
@@ -48,117 +35,42 @@ export function installDomainApiModulesCornerModulePatch(ctx: DomainApiModulesCo
       );
     }
 
-    const moduleRef = normalizeModuleStackPatchKey(moduleKey);
-    if (moduleRef == null) return null;
-
     if (__domainCanonicalStackPatchDepth > 0) {
       throw new Error('[WardrobePro][domain_api] recursive canonical stack patch delegation detected.');
     }
 
     __domainCanonicalStackPatchDepth += 1;
     try {
-      return patchForStack(stack, moduleRef, patch, meta);
+      return patchForStack(stack, moduleIndex, patch, meta);
     } finally {
       __domainCanonicalStackPatchDepth -= 1;
     }
   };
 
-  const __patchModuleListForStack = (
-    stack: ModuleStackName,
-    index: number,
-    patch: unknown,
-    meta: ActionMetaLike
-  ): unknown => {
-    const i = Number.isFinite(index) && index >= 0 ? Math.floor(index) : -1;
-    if (i < 0) return null;
+  const isCanonicalStackAlias = (value: unknown): boolean =>
+    typeof value === 'function' && Reflect.get(value, '__wp_delegatesStackPatch') === true;
 
-    if (stack === 'bottom') {
-      return cfgSetScalar(
-        App,
-        'stackSplitLowerModulesConfiguration',
-        function (prev: unknown) {
-          return patchModulesConfigurationListAtForPatch(
-            'stackSplitLowerModulesConfiguration',
-            prev,
-            prev,
-            i,
-            patch
-          );
-        },
-        meta
-      );
-    }
-
-    return cfgSetScalar(
-      App,
-      'modulesConfiguration',
-      function (prev: unknown) {
-        return patchModulesConfigurationListAtForPatch('modulesConfiguration', prev, prev, i, patch, {
-          uiSnapshot: ctx._ui(),
-          cfgSnapshot: ctx._cfg(),
-        });
-      },
-      meta
-    );
-  };
-
-  modulesActions.patchAt =
-    modulesActions.patchAt ||
-    function (index: unknown, patch: unknown, meta: ActionMetaLike | undefined) {
+  if (!isCanonicalStackAlias(modulesActions.patchAt)) {
+    modulesActions.patchAt = function (index: unknown, patch: unknown, meta: ActionMetaLike | undefined) {
       const m = _meta(meta, 'actions:modules:patchAt');
       const i = parseInt(String(index), 10);
       if (!Number.isFinite(i) || i < 0) return null;
-      try {
-        const out = __tryCanonicalStackPatch('top', i, patch, m);
-        if (out !== undefined) return out;
-      } catch (_error) {}
-      return __patchModuleListForStack('top', i, patch, m);
+      return __tryCanonicalStackPatch('top', i, patch, m);
     };
+    _markDelegatesStackPatch(modulesActions.patchAt);
+  }
 
-  modulesActions.patchLowerAt =
-    modulesActions.patchLowerAt ||
-    function (index: unknown, patch: unknown, meta: ActionMetaLike | undefined) {
+  if (!isCanonicalStackAlias(modulesActions.patchLowerAt)) {
+    modulesActions.patchLowerAt = function (
+      index: unknown,
+      patch: unknown,
+      meta: ActionMetaLike | undefined
+    ) {
       const m = _meta(meta, 'actions:modules:patchLowerAt');
       const i = parseInt(String(index), 10);
       if (!Number.isFinite(i) || i < 0) return null;
-      try {
-        const out = __tryCanonicalStackPatch('bottom', i, patch, m);
-        if (out !== undefined) return out;
-      } catch (_error) {}
-      return __patchModuleListForStack('bottom', i, patch, m);
+      return __tryCanonicalStackPatch('bottom', i, patch, m);
     };
-
-  try {
-    _markDelegatesStackPatch(modulesActions.patchAt);
     _markDelegatesStackPatch(modulesActions.patchLowerAt);
-  } catch (_error) {}
-
-  modulesActions.patch =
-    modulesActions.patch ||
-    function (arg1: unknown, arg2: unknown, arg3?: unknown) {
-      if (typeof arg1 === 'number') {
-        const patch: ModuleConfigPatchLike = asRecordOrEmpty(arg2);
-        return modulesActions.patchAt?.(arg1, patch, _asMeta(asMetaInput(arg3)));
-      }
-
-      const desc = resolveModuleStackPatchDescriptor(arg1);
-      if (desc) {
-        const meta = _meta(asMetaInput(arg2), 'actions:modules:patch');
-        if (typeof desc.moduleKey === 'number') {
-          try {
-            const out = __tryCanonicalStackPatch(desc.stack, desc.moduleKey, desc.patch, meta);
-            if (out !== undefined) return out;
-          } catch (_error) {}
-          return __patchModuleListForStack(desc.stack, desc.moduleKey, desc.patch, meta);
-        }
-        return __tryCanonicalStackPatch(desc.stack, desc.moduleKey, desc.patch, meta);
-      }
-
-      if (Array.isArray(arg1)) return modulesActions.setAll?.(arg1, _asMeta(asMetaInput(arg2)));
-      if (arg1 && typeof arg1 === 'object') {
-        const obj = asRecordOrEmpty(arg1);
-        if (Array.isArray(obj.list)) return modulesActions.setAll?.(obj.list, _asMeta(asMetaInput(arg2)));
-      }
-      return undefined;
-    };
+  }
 }

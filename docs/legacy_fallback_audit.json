@@ -1,16 +1,16 @@
 {
-  "generatedAt": "2026-06-17T06:40:31.934Z",
+  "generatedAt": "2026-06-17T07:35:36.069Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 10,
-    "totalFiles": 6,
+    "totalOccurrences": 9,
+    "totalFiles": 5,
     "byCategory": {
       "runtime-default": 0,
       "domain-default": 0,
       "error-message-default": 0,
       "framework-default": 2,
       "browser-adapter": 0,
-      "project-migration": 2,
+      "project-migration": 1,
       "external-api-compat": 0,
       "compat-boundary": 0,
       "test-fixture": 6,
@@ -19,12 +19,6 @@
     },
     "byFile": {
       "esm/native/features/project_config/project_config_persisted_payload_shared.ts": {
-        "total": 1,
-        "categories": {
-          "project-migration": 1
-        }
-      },
-      "esm/native/kernel/domain_module_stack_patch.ts": {
         "total": 1,
         "categories": {
           "project-migration": 1
@@ -71,13 +65,6 @@
         }
       },
       {
-        "file": "esm/native/kernel/domain_module_stack_patch.ts",
-        "total": 1,
-        "categories": {
-          "project-migration": 1
-        }
-      },
-      {
         "file": "esm/native/ui/react/overlay_pdf_host.tsx",
         "total": 1,
         "categories": {
@@ -108,13 +95,6 @@
       "term": "legacy",
       "category": "project-migration",
       "text": "// ignore malformed legacy payloads"
-    },
-    {
-      "file": "esm/native/kernel/domain_module_stack_patch.ts",
-      "line": 6,
-      "term": "compat",
-      "category": "project-migration",
-      "text": "// - keeping the compat parser separate makes the canonical patch seam easier to reason about"
     },
     {
       "file": "esm/native/ui/react/overlay_pdf_host.tsx",

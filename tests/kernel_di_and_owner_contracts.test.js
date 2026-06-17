@@ -171,6 +171,19 @@ test('[kernel-owner] state, domain, room, and colors owners delegate to focused 
     ],
     'domain bundle'
   );
+  assertLacksAll(
+    assert,
+    domainBundle,
+    [/modulesActions\.patch\s*=(?!=)/, /domain_module_stack_patch\.js/, /__patchModuleListForStack/],
+    'domain modules canonical public API'
+  );
+  assert.match(domainBundle, /delete modulesActions\.patch;/);
+  assertLacksAll(
+    assert,
+    buildTypes,
+    [/interface ModuleStackPatchInput/, /interface ModulesPatchFn/, /patch\?: ModulesPatchFn/],
+    'domain modules public types'
+  );
 
   assertMatchesAll(
     assert,

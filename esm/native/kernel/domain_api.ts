@@ -57,6 +57,11 @@ function hasInstalledDomainApiSurface(app: AppContainer): boolean {
     typeof roomActions.setFloorType === 'function' &&
     typeof colorsActions.setSavedColors === 'function' &&
     typeof modulesActions.recompute === 'function' &&
+    typeof modulesActions.setAll === 'function' &&
+    typeof modulesActions.patchForStack === 'function' &&
+    typeof modulesActions.patchAt === 'function' &&
+    typeof modulesActions.patchLowerAt === 'function' &&
+    modulesActions.patch === undefined &&
     typeof cornerActions.patch === 'function' &&
     typeof texturesActions.setCustomUploadedDataURL === 'function'
   );
