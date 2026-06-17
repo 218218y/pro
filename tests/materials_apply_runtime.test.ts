@@ -295,6 +295,112 @@ test('materials apply color policy inherits free-box full-door paint for split s
   );
 });
 
+test('materials apply color policy maps corner wing roof meshes to the canonical wing ceiling color only', () => {
+  const colors = {
+    corner_ceil: 'oak',
+    lower_corner_ceil: 'walnut',
+    corner_pent_ceil: 'pentagon-red',
+  };
+
+  assert.equal(
+    readPartColorEntry({
+      individualColors: colors,
+      isMulti: true,
+      partId: 'corner_wing_ceil',
+      stackKey: 'top',
+    }),
+    'oak'
+  );
+  assert.equal(
+    readPartColorEntry({
+      individualColors: colors,
+      isMulti: true,
+      partId: 'corner_cell_top_c1',
+      stackKey: 'top',
+    }),
+    'oak'
+  );
+  assert.equal(
+    readPartColorEntry({
+      individualColors: colors,
+      isMulti: true,
+      partId: 'corner_wing_ceil',
+      stackKey: 'bottom',
+    }),
+    'walnut'
+  );
+  assert.equal(
+    readPartColorEntry({
+      individualColors: colors,
+      isMulti: true,
+      partId: 'corner_pent_ceil',
+      stackKey: 'top',
+    }),
+    'pentagon-red'
+  );
+});
+
+test('materials apply runtime refreshes the visible corner wing roof from corner_ceil without painting the pentagon roof', () => {
+  const calls: unknown[] = [];
+  const wingRoofMat = { id: 'front:wing-roof' };
+  const pentagonRoofMat = { id: 'front:pentagon-roof' };
+  const globalMat = { id: 'front:white' };
+  const wingRoofMesh = {
+    isMesh: true,
+    userData: { partId: 'corner_wing_ceil' },
+    material: { id: 'old-wing-roof' },
+    children: [],
+  };
+  const pentagonRoofMesh = {
+    isMesh: true,
+    userData: { partId: 'corner_pent_ceil' },
+    material: { id: 'old-pentagon-roof' },
+    children: [],
+  };
+  const App: any = {
+    services: {
+      builder: {
+        materials: {
+          getMaterial(color: string) {
+            calls.push(['getMaterial', color]);
+            if (color === '#aa5500') return wingRoofMat;
+            if (color === '#cc0000') return pentagonRoofMat;
+            return globalMat;
+          },
+        },
+        handles: { applyHandles() {} },
+      },
+      platform: { triggerRender() {} },
+    },
+    store: {
+      getState() {
+        return {
+          ui: { colorChoice: 'white', customColor: '#ffffff', raw: {} },
+          config: {
+            isMultiColorMode: true,
+            individualColors: {
+              corner_ceil: '#aa5500',
+              corner_pent_ceil: '#cc0000',
+            },
+          },
+          runtime: {},
+          mode: {},
+          meta: {},
+        };
+      },
+    },
+    render: { wardrobeGroup: { children: [wingRoofMesh, pentagonRoofMesh] } },
+  };
+
+  assert.equal(applyMaterials(App), true);
+  assert.equal(wingRoofMesh.material, wingRoofMat);
+  assert.equal(pentagonRoofMesh.material, pentagonRoofMat);
+  assert.equal(
+    calls.some(call => Array.isArray(call) && call[0] === 'getMaterial' && call[1] === '#aa5500'),
+    true
+  );
+});
+
 test('materials apply runtime keeps inherited full-door paint on split segment meshes after another color refresh', () => {
   const calls: unknown[] = [];
   const oakMat = { id: 'front:oak' };
