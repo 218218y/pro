@@ -24,11 +24,9 @@ test('state_api stack router materializes missing top modules with structure-awa
   };
 
   const modulesNs: AnyRec = {};
-  const cornerNs: AnyRec = {};
 
   const ctx = {
     modulesNs,
-    cornerNs,
     getSetCfgScalar: () =>
       ((key: string, valueOrFn: unknown) => {
         const prev = state.config[key];
@@ -53,7 +51,6 @@ test('state_api stack router materializes missing top modules with structure-awa
       return Array.isArray(next) ? (next[2] ?? next) : next;
     },
     shallowCloneObj: (value: unknown) => clone((value && typeof value === 'object' ? value : {}) as AnyRec),
-    safeCall: (fn: () => unknown) => fn(),
   };
 
   installStateApiStackRouterEnsure(ctx);

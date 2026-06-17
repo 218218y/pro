@@ -51,17 +51,19 @@ test('[corner-stack-ext-drawers] post-build drawer extras recognize lower-scoped
   assert.match(EXTRAS_BUNDLE, /\^\(\?:lower_\)\?corner_c\\d\+_draw_\(\?:shoe\|\\d\+\)\$/);
 });
 
-test('[corner-stack-ext-drawers] lower stack fallback never reuses top ensureCornerCellAt when a lower cell is still missing', () => {
+test('[corner-stack-ext-drawers] missing cells materialize through the stack-aware canonical ensure router', () => {
   const src = fs.readFileSync(
     path.resolve(process.cwd(), 'esm/native/builder/corner_wing_extension_cells_config.ts'),
     'utf8'
   );
   assert.match(
     src,
-    /function readEnsureLowerCornerCellAt\(value: unknown\): \(\(index: number\) => unknown\) \| null \{/
+    /function readEnsureCornerCellForStack\([\s\S]*stack: 'top' \| 'bottom'[\s\S]*\): \(\(index: number\) => unknown\) \| null \{/
   );
   assert.match(
     src,
-    /args\.__stackSplitEnabled && args\.__stackKey === 'bottom'[\s\S]*\?[\s\S]*readEnsureLowerCornerCellAt\(modulesRec\)[\s\S]*:[\s\S]*readEnsureCornerCellAt\(modulesRec\)/
+    /readEnsureCornerCellForStack\([\s\S]*args\.__stackSplitEnabled && args\.__stackKey === 'bottom' \? 'bottom' : 'top'/
   );
+  assert.match(src, /value\.ensureForStack\(stack, `corner:\$\{index\}`\)/);
+  assert.doesNotMatch(src, /ensureLowerCellAt|ensureCornerCellAt/);
 });

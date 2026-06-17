@@ -208,7 +208,7 @@ test('modules stack surface: store-backed top-corner ensure/patch keep left-corn
   assert.equal((((cells[1] as AnyRecord).customData as AnyRecord) || {}).storage, true);
 });
 
-test('modules stack surface: canonical ensure/corner surfaces remain while numeric patches write through the store router', () => {
+test('modules stack surface: preinstalled module/corner aliases cannot override canonical stack routing', () => {
   const calls: AnyRecord[] = [];
   const store = createStoreStub();
   const App: AnyRecord = {
@@ -250,30 +250,16 @@ test('modules stack surface: canonical ensure/corner surfaces remain while numer
   installStateApi(App as any);
 
   const mods = App.actions.modules as AnyRecord;
-  assert.deepEqual(mods.ensureForStack('bottom', 3), { via: 'ensureLowerAt', index: 3 });
-  assert.deepEqual(mods.ensureForStack('top', 'corner:2'), { via: 'ensureCellAt', index: 2 });
+  assert.deepEqual(mods.ensureForStack('bottom', 3), expectedLowerModuleConfig());
+  assert.equal((mods.ensureForStack('top', 'corner:2') as AnyRecord).layout, 'shelves');
   mods.patchForStack('bottom', 3, { width: 55 }, { source: 'm1' });
-  assert.deepEqual(mods.patchForStack('top', 'corner', { depth: 9 }, { source: 'm2' }), {
-    via: 'corner.patch',
-  });
+  mods.patchForStack('top', 'corner', { depth: 9 }, { source: 'm2' });
 
   const cfg = (store.getState() as AnyRecord).config as AnyRecord;
   const lowerModules = cfg.stackSplitLowerModulesConfiguration as AnyRecord[];
   assert.equal(lowerModules[3]?.width, 55);
-
-  assert.equal(
-    calls.some(c => c.op === 'ensureModuleConfigForStack'),
-    false
-  );
-  assert.equal(
-    calls.some(c => c.op === 'patchModuleConfigForStack'),
-    false
-  );
-  assert.equal(
-    calls.some(c => c.op === 'patchLowerAt'),
-    false
-  );
-  assert.equal((calls.find(c => c.op === 'corner.patch')?.meta as AnyRecord).source, 'm2');
+  assert.equal((cfg.cornerConfiguration as AnyRecord).depth, 9);
+  assert.deepEqual(calls, []);
 });
 
 test('modules stack surface: patchForStack owns numeric writes and ignores preinstalled patchAt aliases', () => {
@@ -318,27 +304,39 @@ test('modules stack surface: patchForStack owns numeric writes and ignores prein
   mods.patchForStack('bottom', 5, { width: 60 }, { source: 't1' });
   mods.patchForStack('top', 6, { width: 70 }, { source: 't2' });
   mods.patchForStack('top', 'corner:1', { width: 20 }, { source: 't3' });
+  const cfgAfterCellPatch = (store.getState() as AnyRecord).config as AnyRecord;
+  assert.equal(
+    Array.isArray((cfgAfterCellPatch.cornerConfiguration as AnyRecord)?.modulesConfiguration),
+    true,
+    `top corner cell patch did not persist ${JSON.stringify(cfgAfterCellPatch.cornerConfiguration)}`
+  );
   mods.patchForStack('top', 'corner', { x: 1 }, { source: 't4' });
 
   const ops = calls.map(c => c.op);
   assert.equal(ops.includes('patchLowerAt'), false);
   assert.equal(ops.includes('patchAt'), false);
-  assert.ok(ops.includes('patchCellAt'));
-  assert.ok(ops.includes('corner.patch'));
+  assert.equal(ops.includes('patchCellAt'), false);
+  assert.equal(ops.includes('corner.patch'), false);
 
   const cfg = (store.getState() as AnyRecord).config as AnyRecord;
   assert.equal((cfg.stackSplitLowerModulesConfiguration as AnyRecord[])[5]?.width, 60);
   assert.equal((cfg.modulesConfiguration as AnyRecord[])[6]?.width, 70);
+  const cornerCfg = cfg.cornerConfiguration as AnyRecord;
+  assert.equal(
+    Array.isArray(cornerCfg.modulesConfiguration),
+    true,
+    `top corner cells missing from ${JSON.stringify(cornerCfg)}`
+  );
+  assert.equal((cornerCfg.modulesConfiguration as AnyRecord[])[1]?.width, 20);
+  assert.equal(cornerCfg.x, 1);
 
   // Delete-pass: no kernel patch fallbacks.
   assert.equal(ops.includes('kernel.patchModuleConfig'), false);
-
-  assert.equal((calls.find(c => c.op === 'patchCellAt')?.meta as AnyRecord).source, 't3');
-  assert.equal((calls.find(c => c.op === 'corner.patch')?.meta as AnyRecord).source, 't4');
 });
 
-test('modules stack surface: legacy bottom-corner fallbacks prefer canonical corner lower surfaces when installed', () => {
+test('modules stack surface: bottom-corner routing ignores preinstalled lower aliases', () => {
   const calls: AnyRecord[] = [];
+  const store = createStoreStub();
   const App: AnyRecord = {
     actions: {
       modules: {},
@@ -353,7 +351,7 @@ test('modules stack surface: legacy bottom-corner fallbacks prefer canonical cor
         },
       },
     },
-    store: createStoreStub(),
+    store,
     stateKernel: {},
   };
 
@@ -361,15 +359,16 @@ test('modules stack surface: legacy bottom-corner fallbacks prefer canonical cor
 
   const mods = App.actions.modules as AnyRecord;
 
-  assert.deepEqual(mods.ensureForStack('bottom', 'corner'), { kind: 'canonLowerCorner' });
-  assert.deepEqual(mods.patchForStack('bottom', 'corner', { x: 9 }, { source: 'lc' }), { via: 'patchLower' });
+  assert.deepEqual(mods.ensureForStack('bottom', 'corner'), expectedLowerCornerConfig());
+  mods.patchForStack('bottom', 'corner', { x: 9 }, { source: 'lc' });
 
-  assert.equal(calls[0]?.op, 'ensureLowerConfig');
-  assert.equal(calls[1]?.op, 'patchLower');
-  assert.equal((calls[1]?.meta as AnyRecord).source, 'lc');
+  const cfg = (store.getState() as AnyRecord).config as AnyRecord;
+  const lower = (cfg.cornerConfiguration as AnyRecord).stackSplitLower as AnyRecord;
+  assert.equal(lower.x, 9);
+  assert.deepEqual(calls, []);
 });
 
-test('modules stack surface: bottom-corner ensure stays stack-aware while root patches still fall back to store when no canonical lower-root patch exists', () => {
+test('modules stack surface: bottom-corner ensure and patch always use the store-backed router', () => {
   const calls: AnyRecord[] = [];
   const store = createStoreStub();
 
@@ -420,11 +419,15 @@ test('modules stack surface: bottom-corner ensure stays stack-aware while root p
   const cells = (lower.modulesConfiguration as unknown[]) || [];
   assert.deepEqual(cells[2], expectedLowerModuleConfig());
 
-  // Cell patches use canonical corner.lower cell surface when present.
-  assert.deepEqual(mods.patchForStack('bottom', 'corner:2', { w: 1 }, { source: 'c1' }), {
-    via: 'patchLowerCellAt',
-    index: 2,
-  });
+  mods.patchForStack('bottom', 'corner:2', { w: 1 }, { source: 'c1' });
+  const cfgAfterCellPatch = (store.getState() as AnyRecord).config as AnyRecord;
+  const lowerAfterCellPatch = (cfgAfterCellPatch.cornerConfiguration as AnyRecord)
+    .stackSplitLower as AnyRecord;
+  assert.equal(
+    Array.isArray(lowerAfterCellPatch.modulesConfiguration),
+    true,
+    `lower corner cell patch did not persist ${JSON.stringify(lowerAfterCellPatch)}`
+  );
 
   // Root patches fall back to store-backed cornerConfiguration.stackSplitLower when no canonical lower patch exists.
   mods.patchForStack('bottom', 'corner', { x: 1 }, { source: 'c2' });
@@ -433,6 +436,12 @@ test('modules stack surface: bottom-corner ensure stays stack-aware while root p
   const cc2 = (cfg2.cornerConfiguration as AnyRecord) || {};
   const lower2 = (cc2.stackSplitLower as AnyRecord) || {};
   assert.equal(lower2.x, 1);
+  assert.equal(
+    Array.isArray(lower2.modulesConfiguration),
+    true,
+    `lower corner cells missing from ${JSON.stringify(lower2)}`
+  );
+  assert.equal((lower2.modulesConfiguration as AnyRecord[])[2]?.w, 1);
 
   // Delete-pass: no kernel calls.
   assert.equal(
@@ -448,13 +457,15 @@ test('modules stack surface: bottom-corner ensure stays stack-aware while root p
     false
   );
 
-  const lowerCellPatch = calls.find(c => c.op === 'patchLowerCellAt');
-  assert.equal(lowerCellPatch?.index, 2);
-  assert.equal((lowerCellPatch?.meta as AnyRecord).source, 'c1');
+  assert.equal(
+    calls.some(c => c.op === 'patchLowerCellAt'),
+    false
+  );
 });
 
-test('modules stack surface: top corner fallbacks prefer canonical corner ensure/patch surfaces before kernel compat', () => {
+test('modules stack surface: top-corner routing ignores action aliases and kernel compatibility surfaces', () => {
   const calls: AnyRecord[] = [];
+  const store = createStoreStub();
   const App: AnyRecord = {
     actions: {
       modules: {},
@@ -469,7 +480,7 @@ test('modules stack surface: top corner fallbacks prefer canonical corner ensure
         },
       },
     },
-    store: createStoreStub(),
+    store,
     stateKernel: {
       ensureCornerCellConfig(index: number) {
         calls.push({ op: 'ensureCornerCellConfig', index });
@@ -485,10 +496,8 @@ test('modules stack surface: top corner fallbacks prefer canonical corner ensure
   installStateApi(App as any);
 
   const mods = App.actions.modules as AnyRecord;
-  assert.deepEqual(mods.ensureForStack('top', 'corner:4'), { via: 'ensureCellAt', index: 4 });
-  assert.deepEqual(mods.patchForStack('top', 'corner', { depth: 7 }, { source: 'tp' }), {
-    via: 'corner.patch',
-  });
+  assert.equal((mods.ensureForStack('top', 'corner:4') as AnyRecord).layout, 'shelves');
+  mods.patchForStack('top', 'corner', { depth: 7 }, { source: 'tp' });
 
   assert.equal(
     calls.some(c => c.op === 'ensureCornerCellConfig'),
@@ -498,6 +507,10 @@ test('modules stack surface: top corner fallbacks prefer canonical corner ensure
     calls.some(c => c.op === 'patchModuleConfig'),
     false
   );
-  const topCornerPatch = calls.find(c => c.op === 'corner.patch');
-  assert.equal((topCornerPatch?.meta as AnyRecord).source, 'tp');
+  assert.equal(
+    calls.some(c => c.op === 'corner.patch'),
+    false
+  );
+  const cfg = (store.getState() as AnyRecord).config as AnyRecord;
+  assert.equal((cfg.cornerConfiguration as AnyRecord).depth, 7);
 });

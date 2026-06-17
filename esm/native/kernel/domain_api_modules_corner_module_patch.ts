@@ -3,8 +3,10 @@ import type { ActionMetaLike, ModuleStackName } from '../../../types';
 import { setCfgModulesConfiguration } from '../runtime/cfg_access.js';
 import type { DomainApiModulesCornerContext } from './domain_api_modules_corner_contracts.js';
 
+const canonicalModulePatchAliases = new WeakSet<object>();
+
 export function installDomainApiModulesCornerModulePatch(ctx: DomainApiModulesCornerContext): void {
-  const { App, modulesActions, _meta, _markDelegatesStackPatch } = ctx;
+  const { App, modulesActions, _meta } = ctx;
 
   delete modulesActions.patch;
 
@@ -19,9 +21,7 @@ export function installDomainApiModulesCornerModulePatch(ctx: DomainApiModulesCo
       return setCfgModulesConfiguration(App, next, m);
     };
 
-  let __domainCanonicalStackPatchDepth = 0;
-
-  const __tryCanonicalStackPatch = (
+  const patchCanonicalStack = (
     stack: ModuleStackName,
     moduleIndex: number,
     patch: unknown,
@@ -35,42 +35,31 @@ export function installDomainApiModulesCornerModulePatch(ctx: DomainApiModulesCo
       );
     }
 
-    if (__domainCanonicalStackPatchDepth > 0) {
-      throw new Error('[WardrobePro][domain_api] recursive canonical stack patch delegation detected.');
-    }
-
-    __domainCanonicalStackPatchDepth += 1;
-    try {
-      return patchForStack(stack, moduleIndex, patch, meta);
-    } finally {
-      __domainCanonicalStackPatchDepth -= 1;
-    }
+    return patchForStack(stack, moduleIndex, patch, meta);
   };
 
   const isCanonicalStackAlias = (value: unknown): boolean =>
-    typeof value === 'function' && Reflect.get(value, '__wp_delegatesStackPatch') === true;
+    typeof value === 'function' && canonicalModulePatchAliases.has(value);
 
   if (!isCanonicalStackAlias(modulesActions.patchAt)) {
-    modulesActions.patchAt = function (index: unknown, patch: unknown, meta: ActionMetaLike | undefined) {
+    const patchAt = function (index: unknown, patch: unknown, meta: ActionMetaLike | undefined) {
       const m = _meta(meta, 'actions:modules:patchAt');
       const i = parseInt(String(index), 10);
       if (!Number.isFinite(i) || i < 0) return null;
-      return __tryCanonicalStackPatch('top', i, patch, m);
+      return patchCanonicalStack('top', i, patch, m);
     };
-    _markDelegatesStackPatch(modulesActions.patchAt);
+    modulesActions.patchAt = patchAt;
+    canonicalModulePatchAliases.add(patchAt);
   }
 
   if (!isCanonicalStackAlias(modulesActions.patchLowerAt)) {
-    modulesActions.patchLowerAt = function (
-      index: unknown,
-      patch: unknown,
-      meta: ActionMetaLike | undefined
-    ) {
+    const patchLowerAt = function (index: unknown, patch: unknown, meta: ActionMetaLike | undefined) {
       const m = _meta(meta, 'actions:modules:patchLowerAt');
       const i = parseInt(String(index), 10);
       if (!Number.isFinite(i) || i < 0) return null;
-      return __tryCanonicalStackPatch('bottom', i, patch, m);
+      return patchCanonicalStack('bottom', i, patch, m);
     };
-    _markDelegatesStackPatch(modulesActions.patchLowerAt);
+    modulesActions.patchLowerAt = patchLowerAt;
+    canonicalModulePatchAliases.add(patchLowerAt);
   }
 }

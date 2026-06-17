@@ -66,7 +66,6 @@ test('library mode recompute seeds added modules with library shelves while pres
     _domainApiReportNonFatal: (_app, op, err) => {
       reports.push([op, err]);
     },
-    _markDelegatesStackPatch: () => undefined,
   });
 
   const result = modulesActions.recomputeFromUi(
@@ -188,7 +187,6 @@ test('structure recompute requests a builder rebuild when UI changes but modules
     _asMeta: (meta: unknown) => (isRecord(meta) ? meta : undefined),
     _meta: (meta: unknown, source: string) => ({ ...(isRecord(meta) ? meta : {}), source }),
     _domainApiReportNonFatal: () => undefined,
-    _markDelegatesStackPatch: () => undefined,
   });
 
   const uiOverride = {
@@ -263,7 +261,6 @@ test('structure recompute respects meta noBuild for no-change follow-through unl
     _asMeta: (meta: unknown) => (isRecord(meta) ? meta : undefined),
     _meta: (meta: unknown, source: string) => ({ ...(isRecord(meta) ? meta : {}), source }),
     _domainApiReportNonFatal: () => undefined,
-    _markDelegatesStackPatch: () => undefined,
   });
 
   const uiOverride = {
@@ -356,7 +353,6 @@ test('structure recompute skipBuild suppresses no-change follow-through rebuilds
     _asMeta: (meta: unknown) => (isRecord(meta) ? meta : undefined),
     _meta: (meta: unknown, source: string) => ({ ...(isRecord(meta) ? meta : {}), source }),
     _domainApiReportNonFatal: () => undefined,
-    _markDelegatesStackPatch: () => undefined,
   });
 
   const uiOverride = {

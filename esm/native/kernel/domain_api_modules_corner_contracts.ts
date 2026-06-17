@@ -27,5 +27,4 @@ export interface DomainApiModulesCornerContext {
   _asMeta: (meta: ActionMetaLike | UnknownRecord | null | undefined) => ActionMetaLike | undefined;
   _meta: (meta: ActionMetaLike | UnknownRecord | null | undefined, source: string) => ActionMetaLike;
   _domainApiReportNonFatal: DomainCornerReportNonFatal;
-  _markDelegatesStackPatch: (fn: unknown) => void;
 }

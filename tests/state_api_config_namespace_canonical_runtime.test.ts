@@ -421,3 +421,32 @@ test('[state-api.config] applyPaintSnapshot commits door style with special glas
   assert.equal(replace.doorSpecialMap, true);
   assert.equal(replace.doorStyleMap, true);
 });
+
+test('[state-api.config] structural scalar writes retain full branch values under replace semantics', () => {
+  const store = createStoreStub({
+    ui: {},
+    config: {
+      cornerConfiguration: {
+        layout: 'shelves',
+        modulesConfiguration: [{ width: 31 }],
+      },
+    },
+    runtime: {},
+    mode: { primary: 'none', opts: {} },
+    meta: {},
+  });
+  const App: AnyRecord = { actions: {}, store };
+  installStateApi(App as any);
+
+  (App.actions as any).setCfgScalar(
+    'cornerConfiguration',
+    (previous: unknown) => ({ ...asRec(previous), depth: 62 }),
+    { source: 'test:structural-scalar-replace' }
+  );
+
+  const committedPatch = asRec(store.commits[0]?.patch);
+  const committedCorner = asRec(committedPatch.cornerConfiguration);
+  assert.equal(asRec(committedPatch.__replace).cornerConfiguration, true);
+  assert.equal((committedCorner.modulesConfiguration as AnyRecord[])[0]?.width, 31);
+  assert.equal(committedCorner.depth, 62);
+});

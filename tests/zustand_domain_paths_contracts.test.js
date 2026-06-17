@@ -181,24 +181,23 @@ test('[zustand-domain] module/corner stack and config paths stay on canonical ac
     clickModuleRefs,
     /const __ensureCornerCellConfigRef = \(cellIdx: number\): ModuleConfigLike \| null => \{/
   );
-  assert.match(clickModuleRefs, /typeof mods\.ensureCornerCellAt === 'function'/);
-  assert.match(clickModuleRefs, /mods\.ensureCornerCellAt\(cellIdx\)/);
   assert.match(clickModuleRefs, /typeof mods\.ensureForStack === 'function'/);
   assert.match(clickModuleRefs, /mods\.ensureForStack\('top', `corner:\$\{cellIdx\}`\)/);
+  assert.doesNotMatch(clickModuleRefs, /ensureCornerCellAt/);
   assert.match(clickModuleRefs, /mods\.patchForStack\(__activeStack, mk, patchFn, meta\)/);
   assert.doesNotMatch(canvasPicking, /if \(App\.stateKernel\) \{\s*__patchConfigForKey\(/);
   assert.doesNotMatch(canvasPicking, /App\?\.stateKernel\?\.ensureCornerCellConfig/);
   assert.doesNotMatch(canvasPicking, /sk\.ensureModuleConfigForStack\(__activeStack, mk\)/);
   assert.doesNotMatch(canvasPicking, /sk\.patchModuleConfigForStack\(__activeStack, mk, patchFn, meta\)/);
 
-  assert.match(domainModulesCorner, /const __tryCanonicalStackPatch = \(/);
+  assert.match(domainModulesCorner, /const patchCanonicalStack = \(/);
   assert.match(
     domainModulesCorner,
-    /modulesActions\.patchAt[\s\S]*__tryCanonicalStackPatch\('top', i, patch, m\)/
+    /modulesActions\.patchAt[\s\S]*patchCanonicalStack\('top', i, patch, m\)/
   );
   assert.match(
     domainModulesCorner,
-    /modulesActions\.patchLowerAt[\s\S]*__tryCanonicalStackPatch\('bottom', i, patch, m\)/
+    /modulesActions\.patchLowerAt[\s\S]*patchCanonicalStack\('bottom', i, patch, m\)/
   );
   assert.match(
     domainModulesCorner,
