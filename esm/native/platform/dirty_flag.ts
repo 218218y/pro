@@ -40,12 +40,7 @@ function readSetDirtyFn(obj: UnknownRecord | null): DirtySetter | null {
 }
 
 function reportDirtyFlagNonFatal(App: UnknownRecord, op: string, err: unknown): void {
-  reportError(
-    App,
-    err,
-    { where: 'native/platform/dirty_flag', op, fatal: false },
-    { consoleFallback: false }
-  );
+  reportError(App, err, { where: 'native/platform/dirty_flag', op, fatal: false }, { consoleOutput: false });
 }
 
 function createCanonicalSetDirty(A: UnknownRecord): DirtySetter {

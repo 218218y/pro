@@ -5,7 +5,7 @@ import type { InstallableCloudSyncRuntimeStatus } from './cloud_sync_status_inst
 import {
   asInstallableCloudSyncRuntimeStatus,
   defineStatusMeta,
-  getFallbackRuntimeStatus,
+  getUnavailableRuntimeStatus,
   CLOUD_SYNC_STATUS_ACTIVE_KEY,
 } from './cloud_sync_status_install_shared.js';
 import { isCloudSyncStatusSurfaceFresh } from './cloud_sync_status_install_freshness_runtime.js';
@@ -16,7 +16,7 @@ export { isCloudSyncStatusSurfaceFresh } from './cloud_sync_status_install_fresh
 export function deactivateCloudSyncStatusSurface(current: unknown): void {
   const status = asInstallableCloudSyncRuntimeStatus(current);
   if (!status) return;
-  syncRuntimeStatusInPlace(status, getFallbackRuntimeStatus());
+  syncRuntimeStatusInPlace(status, getUnavailableRuntimeStatus());
   defineStatusMeta(status as Record<string, unknown>, CLOUD_SYNC_STATUS_ACTIVE_KEY, false);
 }
 

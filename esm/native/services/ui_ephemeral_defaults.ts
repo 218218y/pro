@@ -24,7 +24,7 @@ function reportUiEphemeralDefaultsFailure(app: AppContainer, op: string, error: 
       app,
       error,
       { where: 'native/services/ui_ephemeral_defaults', op, fatal: false },
-      { consoleFallback: false }
+      { consoleOutput: false }
     );
   } catch {
     // UI defaults are boot helpers; diagnostics must not make boot fail.

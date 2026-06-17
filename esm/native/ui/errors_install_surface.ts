@@ -13,7 +13,7 @@ import {
 } from './errors_install_support.js';
 import { getWindowMaybe, getDocumentMaybe, setErrorsFatalShown } from '../services/api.js';
 import type { AppErrorsSurface, ErrorContext, ErrorHistoryEntry } from './errors_install_shared.js';
-import { buildErrorsDebugSnapshotFallback } from './errors_install_shared.js';
+import { buildEmptyErrorsDebugSnapshot } from './errors_install_shared.js';
 
 const HISTORY_MAX = 30;
 
@@ -38,7 +38,7 @@ export function installErrorsSurfaceMethods(
       snap.history = errors.getHistory ? errors.getHistory() : history.slice();
       return snap;
     } catch {
-      return buildErrorsDebugSnapshotFallback(ctx);
+      return buildEmptyErrorsDebugSnapshot(ctx);
     }
   };
 

@@ -1,16 +1,16 @@
 # Legacy / fallback audit
 
-Generated at: 2026-06-17T03:51:06.388Z
+Generated at: 2026-06-17T04:22:17.177Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **73**
-- Files with occurrences: **50**
+- Total categorized occurrences: **28**
+- Files with occurrences: **20**
 - Category counts:
   - `runtime-default`: **0**
-  - `domain-default`: **51**
-  - `error-message-default`: **8**
+  - `domain-default`: **14**
+  - `error-message-default`: **0**
   - `framework-default`: **2**
   - `browser-adapter`: **0**
   - `project-migration`: **2**
@@ -36,15 +36,7 @@ Generated at: 2026-06-17T03:51:06.388Z
 ## Hot files
 
 - `esm/test_no_side_effects_on_import.mjs` - **5** (test-fixture: 5)
-- `esm/native/services/canvas_picking_cell_dims_linear_context_modules.ts` - **4** (domain-default: 4)
-- `esm/native/ui/html_sanitize_runtime.ts` - **4** (domain-default: 4)
-- `esm/native/ui/notes_service_shared.ts` - **4** (domain-default: 4)
-- `esm/native/services/cloud_sync_delete_temp_runtime.ts` - **3** (error-message-default: 3)
-- `esm/native/runtime/errors.ts` - **2** (domain-default: 2)
-- `esm/native/runtime/platform_access_ops.ts` - **2** (domain-default: 2)
 - `esm/native/services/app_start.ts` - **2** (compat-boundary: 2)
-- `esm/native/services/cloud_sync_status_install_runtime.ts` - **2** (domain-default: 2)
-- `esm/native/ui/errors_install_surface.ts` - **2** (error-message-default: 2)
 - `esm/native/ui/export/export_order_pdf_capture_open_closed.ts` - **2** (domain-default: 2)
 - `esm/native/ui/export/export_order_pdf_capture_render_sketch.ts` - **2** (domain-default: 2)
 - `esm/native/ui/react/boot_react_ui.tsx` - **2** (domain-default: 2)
@@ -53,18 +45,16 @@ Generated at: 2026-06-17T03:51:06.388Z
 - `esm/native/builder/provide.ts` - **1** (compat-boundary: 1)
 - `esm/native/features/project_config/project_config_persisted_payload_shared.ts` - **1** (project-migration: 1)
 - `esm/native/kernel/domain_module_stack_patch.ts` - **1** (project-migration: 1)
-- `esm/native/platform/dirty_flag.ts` - **1** (domain-default: 1)
 - `esm/native/platform/render_loop_impl_front_overlay.ts` - **1** (domain-default: 1)
-- `esm/native/runtime/browser_clipboard.ts` - **1** (domain-default: 1)
-- `esm/native/runtime/browser_download.ts` - **1** (domain-default: 1)
-- `esm/native/runtime/browser_file_read.ts` - **1** (domain-default: 1)
-- `esm/native/runtime/commands_access.ts` - **1** (domain-default: 1)
-- `esm/native/runtime/history_system_access_shared.ts` - **1** (domain-default: 1)
 - `esm/native/runtime/platform_access_debug_stats.ts` - **1** (domain-default: 1)
-- `esm/native/runtime/storage_access.ts` - **1** (domain-default: 1)
-- `esm/native/services/autosave_runtime.ts` - **1** (domain-default: 1)
-- `esm/native/services/cloud_sync_lifecycle_realtime_runtime_start.ts` - **1** (error-message-default: 1)
-- `esm/native/services/cloud_sync_status_install_shared.ts` - **1** (domain-default: 1)
+- `esm/native/ui/export/export_order_pdf_builder_fields_text.ts` - **1** (domain-default: 1)
+- `esm/native/ui/export/export_order_pdf_builder_template.ts` - **1** (domain-default: 1)
+- `esm/native/ui/export/export_order_pdf_capture_composite_shared.ts` - **1** (domain-default: 1)
+- `esm/native/ui/modes_transition_policy.ts` - **1** (domain-default: 1)
+- `esm/native/ui/react/overlay_pdf_host.tsx` - **1** (framework-default: 1)
+- `esm/native/ui/react/pdf/order_pdf_overlay_shell_interactions_runtime.ts` - **1** (domain-default: 1)
+- `esm/native/ui/react/sidebar_app.tsx` - **1** (framework-default: 1)
+- `esm/test_imports.mjs` - **1** (test-fixture: 1)
 
 ## Allowlist check
 

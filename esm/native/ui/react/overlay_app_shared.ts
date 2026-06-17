@@ -113,7 +113,7 @@ export function reportOverlayAppNonFatal(...args: OverlayAppReportNonFatalArgs):
       app,
       err,
       { where: 'native/ui/react/overlay_app', op, fatal: false },
-      { consoleFallback: false }
+      { consoleOutput: false }
     );
     return;
   }

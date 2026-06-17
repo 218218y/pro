@@ -66,7 +66,7 @@ function reportBrowserFileReadFailure(App: unknown, error: unknown, op: string):
     error,
     { where: 'native/runtime/browser_file_read', op, fatal: false },
     {
-      consoleFallback: false,
+      consoleOutput: false,
     }
   );
 }

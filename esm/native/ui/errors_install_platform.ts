@@ -40,8 +40,8 @@ export function installPlatformReportErrorBridge(
       plat.reportError = function (err: unknown, ctx?: ErrorContext): void {
         try {
           errors.report?.(err, ctx);
-        } catch (fallbackErr) {
-          reportNonFatal('platform.reportError.installFallback', fallbackErr, 6000);
+        } catch (recoveryErr) {
+          reportNonFatal('platform.reportError.installBridge', recoveryErr, 6000);
         }
       };
     }

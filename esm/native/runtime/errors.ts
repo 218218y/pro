@@ -15,7 +15,7 @@ export type ReportErrorOptions = {
    * Keep true for unexpected internal failures. Set false for expected browser/user-operation
    * failures where diagnostics should be captured when a reporter exists, without noisy console output.
    */
-  consoleFallback?: boolean;
+  consoleOutput?: boolean;
 };
 
 const DEFAULT_VERBOSE_CONSOLE_ERRORS = true;
@@ -123,7 +123,7 @@ export function reportError(
       }
     }
 
-    if (opts?.consoleFallback === false) return;
+    if (opts?.consoleOutput === false) return;
 
     const verbose = !!readRuntimeScalarOrDefaultFromApp(
       App,

@@ -79,7 +79,7 @@ export function cloneCanonicalCloudSyncRuntimeStatus(source: CloudSyncRuntimeSta
   return cloneRuntimeStatus(source);
 }
 
-export function getFallbackRuntimeStatus(): CloudSyncRuntimeStatus {
+export function getUnavailableRuntimeStatus(): CloudSyncRuntimeStatus {
   return getUnavailableCloudSyncRuntimeStatus();
 }
 

@@ -10,7 +10,7 @@ import {
 } from './cloud_sync_delete_temp_shared.js';
 import { writeDeleteTempPayloadAndApplyLocally } from './cloud_sync_delete_temp_write.js';
 
-function readDeleteTempErrorFallback(kind: DeleteTempKind): string {
+function readDeleteTempDefaultErrorMessage(kind: DeleteTempKind): string {
   return kind === 'models' ? 'מחיקת דגמים זמניים נכשלה' : 'מחיקת צבעים זמניים נכשלה';
 }
 
@@ -38,7 +38,7 @@ function deleteTemporaryItemsInCloud(
         });
         collections = readDeleteTempCollections((row && row.payload) || null);
       } catch (err) {
-        return buildDeleteTempErrorResult(args, kind, err, readDeleteTempErrorFallback(kind));
+        return buildDeleteTempErrorResult(args, kind, err, readDeleteTempDefaultErrorMessage(kind));
       }
 
       const { nextPayload, removed } = resolveDeleteTempPayload({ kind, collections });
@@ -52,7 +52,7 @@ function deleteTemporaryItemsInCloud(
         });
         return ok ? { ok: true, removed } : { ok: false, removed: 0, reason: 'write' };
       } catch (err) {
-        return buildDeleteTempErrorResult(args, kind, err, readDeleteTempErrorFallback(kind));
+        return buildDeleteTempErrorResult(args, kind, err, readDeleteTempDefaultErrorMessage(kind));
       }
     },
     () => ({ ok: false, removed: 0, reason: 'busy' })

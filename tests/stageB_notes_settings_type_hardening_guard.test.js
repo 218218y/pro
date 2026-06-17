@@ -90,7 +90,7 @@ test('[stageB] notes service seam uses shared typed notes surfaces', () => {
       /(?:MetaActionsNamespaceLike|NotesMetaActionsLike)/,
       /(?:const notesMeta = createNotesMetaBuilder\(App\);|const build = \(source: string, metaIn\?: ActionMetaLike\): ActionMetaLike => \{)/,
       /typeof metaNs\.noBuild === 'function' && typeof metaNs\.noHistory === 'function'/,
-      /const seed = buildFallback\(source, metaIn\);/,
+      /const seed = buildDefaultMeta\(source, metaIn\);/,
       /return metaNs\.noBuild\(metaNs\.noHistory\(seed,\s*source\),\s*source\);/,
       /notesNs\.persist = \(meta\?: (?:ActionMetaLike \| UnknownRecord|AnyRecord)\) => \{/,
       /const payload = notesMeta\.build\('notes:react',/,

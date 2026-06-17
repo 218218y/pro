@@ -48,12 +48,12 @@ export type PlatformActivityRenderTouchOpts = PlatformRenderFollowThroughOpts & 
   ensureRenderLoopAfterTrigger?: boolean;
 };
 
-function reportPlatformOpRejected(App: unknown, error: unknown, op: string, consoleFallback = true): void {
+function reportPlatformOpRejected(App: unknown, error: unknown, op: string, consoleOutput = true): void {
   reportError(
     App,
     error,
     { where: 'native/runtime/platform_access', op, fatal: false },
-    consoleFallback ? undefined : { consoleFallback: false }
+    consoleOutput ? undefined : { consoleOutput: false }
   );
 }
 

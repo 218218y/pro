@@ -53,7 +53,7 @@ export async function ensureExportApiReady(app: unknown): Promise<ExportApiBindi
       app,
       __wpErr,
       { where: 'native/ui/react/pdf/order_pdf_overlay', op: 'exportCanvas.module', nonFatal: true },
-      { consoleFallback: false }
+      { consoleOutput: false }
     );
     return null;
   }

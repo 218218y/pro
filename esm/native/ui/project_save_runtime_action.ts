@@ -33,7 +33,7 @@ function reportProjectSaveRuntimeNonFatal(App: AppContainer, op: string, error: 
     App,
     error,
     { where: 'native/ui/project_save_runtime_action', op, fatal: false },
-    { consoleFallback: false }
+    { consoleOutput: false }
   );
 }
 

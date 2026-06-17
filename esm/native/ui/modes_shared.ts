@@ -256,7 +256,7 @@ export function modesReportNonFatal(App: AppLike, op: string, err: unknown, thro
     // ignore dedupe bookkeeping failures
   }
   try {
-    reportError(App, err, { where: 'native/ui/modes', op, fatal: false }, { consoleFallback: false });
+    reportError(App, err, { where: 'native/ui/modes', op, fatal: false }, { consoleOutput: false });
   } catch (_e) {
     // ignore reporting failures
   }

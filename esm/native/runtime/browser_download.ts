@@ -42,7 +42,7 @@ function reportBrowserDownloadError(appOrCtx: unknown, op: string, error: unknow
     appOrCtx,
     error,
     { where: 'native/runtime/browser_download', op, fatal: false },
-    { consoleFallback: false }
+    { consoleOutput: false }
   );
 }
 

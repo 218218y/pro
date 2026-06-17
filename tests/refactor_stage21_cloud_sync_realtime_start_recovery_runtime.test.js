@@ -26,13 +26,13 @@ test('stage 21 realtime start/restart failures stay non-fatal and keep polling f
   const raceContract = read('tools/wp_cloud_sync_race_contract.mjs');
 
   assert.match(startRuntime, /realtime\.startFlight/);
-  assert.match(startRuntime, /realtime\.startFlightFallback/);
+  assert.match(startRuntime, /realtime\.startFlightRecovery/);
   assert.match(startRuntime, /realtime:start-flight-error/);
   assert.match(startRuntime, /transport\.setRealtimeFailure\(/);
   assert.match(cleanupRuntime, /`\$\{op\}\.clearHints`/);
   assert.match(cleanupRuntime, /mutableState\.sentAtByKey\.clear\(\)/);
   assert.match(startTest, /reports unexpected setup failures and falls back to polling/);
-  assert.match(startTest, /reports fallback transition failures without rejecting/);
+  assert.match(startTest, /reports recovery transition failures without rejecting/);
   assert.match(transportTest, /reports hint clearing failures and still clears transport refs/);
-  assert.match(raceContract, /realtime\.startFlightFallback/);
+  assert.match(raceContract, /realtime\.startFlightRecovery/);
 });

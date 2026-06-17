@@ -19,7 +19,7 @@ function reportStorageAccessIssue(App: unknown, op: string, error: unknown): voi
     error,
     { where: 'native/runtime/storage_access', op, fatal: false },
     {
-      consoleFallback: false,
+      consoleOutput: false,
     }
   );
 }

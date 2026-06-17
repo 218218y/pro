@@ -19,7 +19,7 @@ function reportCommandsAccessIssue(App: unknown, op: string, error: unknown): vo
     error,
     { where: 'native/runtime/commands_access', op, fatal: false },
     {
-      consoleFallback: false,
+      consoleOutput: false,
     }
   );
 }

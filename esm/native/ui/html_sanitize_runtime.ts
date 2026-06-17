@@ -160,7 +160,7 @@ function sanitizeDomTree(policy: HtmlSanitizePolicy, root: Element): string {
   return readInnerHtml(root);
 }
 
-function sanitizeTagMarkupFallback(
+function sanitizeTagMarkupText(
   policy: HtmlSanitizePolicy,
   tagName: string,
   attrsChunk: string,
@@ -184,7 +184,7 @@ function sanitizeTagMarkupFallback(
   return `<${tag.toLowerCase()}${attrs}${VOID_TAGS.has(tag) ? '>' : '>'}`;
 }
 
-function sanitizeHtmlFallback(policy: HtmlSanitizePolicy, html: string): string {
+function sanitizeHtmlTextOnly(policy: HtmlSanitizePolicy, html: string): string {
   const source = String(html || '')
     .replace(/<!--[\s\S]*?-->/g, '')
     .replace(/<\/?(?:iframe|object|embed|template|meta|link)\b[^>]*>/gi, '')
@@ -195,7 +195,7 @@ function sanitizeHtmlFallback(policy: HtmlSanitizePolicy, html: string): string 
   let match: RegExpExecArray | null = null;
   while ((match = tagRe.exec(source))) {
     out += source.slice(lastIndex, match.index);
-    out += sanitizeTagMarkupFallback(policy, match[2] || '', match[3] || '', !!match[1]);
+    out += sanitizeTagMarkupText(policy, match[2] || '', match[3] || '', !!match[1]);
     lastIndex = match.index + match[0].length;
   }
   out += source.slice(lastIndex);
@@ -211,7 +211,7 @@ export function sanitizeHtmlByPolicy(
   if (!raw) return '';
   const root = createDetachedHtmlRoot(doc, raw);
   if (root) return sanitizeDomTree(policy, root);
-  return sanitizeHtmlFallback(policy, raw);
+  return sanitizeHtmlTextOnly(policy, raw);
 }
 
 export function setSanitizedElementHtmlIfChanged(args: {

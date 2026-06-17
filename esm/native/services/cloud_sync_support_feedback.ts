@@ -47,7 +47,7 @@ export function _cloudSyncReportNonFatal(
     App || null,
     error,
     { where: 'services/cloud_sync', op, nonFatal: true },
-    { consoleFallback: !(opts && opts.noConsole) }
+    { consoleOutput: !(opts && opts.noConsole) }
   );
 }
 

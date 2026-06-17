@@ -68,8 +68,8 @@ export function installErrorsWindowRuntime(
         reportNonFatal('window.error.primaryFatal', fatalErr, 6000);
         try {
           errors.fatal?.(ev, fatalCtx('window.error'));
-        } catch (fallbackErr) {
-          reportNonFatal('window.error.fallbackFatal', fallbackErr, 6000);
+        } catch (recoveryErr) {
+          reportNonFatal('window.error.fallbackFatal', recoveryErr, 6000);
         }
       }
     };

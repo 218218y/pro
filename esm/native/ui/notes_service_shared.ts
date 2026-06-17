@@ -135,7 +135,7 @@ export function wireUiNotesService(App: NotesServiceApp, notesNs: NotesNamespace
 }
 
 export function createNotesMetaBuilder(App: NotesServiceApp) {
-  const buildFallback = (source: string, metaIn?: ActionMetaLike): ActionMetaLike => {
+  const buildDefaultMeta = (source: string, metaIn?: ActionMetaLike): ActionMetaLike => {
     const meta = cloneMeta(metaIn);
     if (!meta.source) meta.source = source;
     if (typeof meta.immediate === 'undefined') meta.immediate = true;
@@ -147,13 +147,13 @@ export function createNotesMetaBuilder(App: NotesServiceApp) {
   const build = (source: string, metaIn?: ActionMetaLike): ActionMetaLike => {
     const metaNs = getMetaActions(App);
     if (metaNs && typeof metaNs.noBuild === 'function' && typeof metaNs.noHistory === 'function') {
-      const seed = buildFallback(source, metaIn);
+      const seed = buildDefaultMeta(source, metaIn);
       return metaNs.noBuild(metaNs.noHistory(seed, source), source);
     }
-    return buildFallback(source, metaIn);
+    return buildDefaultMeta(source, metaIn);
   };
 
-  return { build, buildFallback };
+  return { build, buildDefaultMeta };
 }
 
 export function ensureInstalledNotesService(App: NotesServiceApp): NotesNamespace {

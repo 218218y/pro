@@ -62,7 +62,7 @@ export function _reportExportRecovery(
       expected: true,
       ...(extra && typeof extra === 'object' ? extra : {}),
     },
-    { consoleFallback: false }
+    { consoleOutput: false }
   );
 }
 

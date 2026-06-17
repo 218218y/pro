@@ -41,7 +41,7 @@ function reportBrowserClipboardError(appOrCtx: unknown, op: string, error: unkno
     appOrCtx,
     error,
     { where: 'native/runtime/browser_clipboard', op, fatal: false },
-    { consoleFallback: false }
+    { consoleOutput: false }
   );
 }
 

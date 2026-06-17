@@ -33,49 +33,7 @@
         "project-migration": 1
       }
     },
-    "esm/native/platform/dirty_flag.ts": {
-      "total": 1,
-      "categories": {
-        "domain-default": 1
-      }
-    },
     "esm/native/platform/render_loop_impl_front_overlay.ts": {
-      "total": 1,
-      "categories": {
-        "domain-default": 1
-      }
-    },
-    "esm/native/runtime/browser_clipboard.ts": {
-      "total": 1,
-      "categories": {
-        "domain-default": 1
-      }
-    },
-    "esm/native/runtime/browser_download.ts": {
-      "total": 1,
-      "categories": {
-        "domain-default": 1
-      }
-    },
-    "esm/native/runtime/browser_file_read.ts": {
-      "total": 1,
-      "categories": {
-        "domain-default": 1
-      }
-    },
-    "esm/native/runtime/commands_access.ts": {
-      "total": 1,
-      "categories": {
-        "domain-default": 1
-      }
-    },
-    "esm/native/runtime/errors.ts": {
-      "total": 2,
-      "categories": {
-        "domain-default": 2
-      }
-    },
-    "esm/native/runtime/history_system_access_shared.ts": {
       "total": 1,
       "categories": {
         "domain-default": 1
@@ -87,100 +45,10 @@
         "domain-default": 1
       }
     },
-    "esm/native/runtime/platform_access_ops.ts": {
-      "total": 2,
-      "categories": {
-        "domain-default": 2
-      }
-    },
-    "esm/native/runtime/storage_access.ts": {
-      "total": 1,
-      "categories": {
-        "domain-default": 1
-      }
-    },
     "esm/native/services/app_start.ts": {
       "total": 2,
       "categories": {
         "compat-boundary": 2
-      }
-    },
-    "esm/native/services/autosave_runtime.ts": {
-      "total": 1,
-      "categories": {
-        "domain-default": 1
-      }
-    },
-    "esm/native/services/canvas_picking_cell_dims_linear_context_modules.ts": {
-      "total": 4,
-      "categories": {
-        "domain-default": 4
-      }
-    },
-    "esm/native/services/cloud_sync_delete_temp_runtime.ts": {
-      "total": 3,
-      "categories": {
-        "error-message-default": 3
-      }
-    },
-    "esm/native/services/cloud_sync_lifecycle_realtime_runtime_start.ts": {
-      "total": 1,
-      "categories": {
-        "error-message-default": 1
-      }
-    },
-    "esm/native/services/cloud_sync_status_install_runtime.ts": {
-      "total": 2,
-      "categories": {
-        "domain-default": 2
-      }
-    },
-    "esm/native/services/cloud_sync_status_install_shared.ts": {
-      "total": 1,
-      "categories": {
-        "domain-default": 1
-      }
-    },
-    "esm/native/services/cloud_sync_support_feedback.ts": {
-      "total": 1,
-      "categories": {
-        "domain-default": 1
-      }
-    },
-    "esm/native/services/ui_ephemeral_defaults.ts": {
-      "total": 1,
-      "categories": {
-        "domain-default": 1
-      }
-    },
-    "esm/native/ui/browser_file_download.ts": {
-      "total": 1,
-      "categories": {
-        "domain-default": 1
-      }
-    },
-    "esm/native/ui/errors_install_platform.ts": {
-      "total": 1,
-      "categories": {
-        "error-message-default": 1
-      }
-    },
-    "esm/native/ui/errors_install_shared.ts": {
-      "total": 1,
-      "categories": {
-        "error-message-default": 1
-      }
-    },
-    "esm/native/ui/errors_install_surface.ts": {
-      "total": 2,
-      "categories": {
-        "error-message-default": 2
-      }
-    },
-    "esm/native/ui/export/export_canvas_core_feedback.ts": {
-      "total": 1,
-      "categories": {
-        "domain-default": 1
       }
     },
     "esm/native/ui/export/export_order_pdf_builder_fields_text.ts": {
@@ -213,31 +81,7 @@
         "domain-default": 2
       }
     },
-    "esm/native/ui/html_sanitize_runtime.ts": {
-      "total": 4,
-      "categories": {
-        "domain-default": 4
-      }
-    },
-    "esm/native/ui/modes_shared.ts": {
-      "total": 1,
-      "categories": {
-        "domain-default": 1
-      }
-    },
     "esm/native/ui/modes_transition_policy.ts": {
-      "total": 1,
-      "categories": {
-        "domain-default": 1
-      }
-    },
-    "esm/native/ui/notes_service_shared.ts": {
-      "total": 4,
-      "categories": {
-        "domain-default": 4
-      }
-    },
-    "esm/native/ui/project_save_runtime_action.ts": {
       "total": 1,
       "categories": {
         "domain-default": 1
@@ -249,22 +93,10 @@
         "domain-default": 2
       }
     },
-    "esm/native/ui/react/overlay_app_shared.ts": {
-      "total": 1,
-      "categories": {
-        "domain-default": 1
-      }
-    },
     "esm/native/ui/react/overlay_pdf_host.tsx": {
       "total": 1,
       "categories": {
         "framework-default": 1
-      }
-    },
-    "esm/native/ui/react/pdf/order_pdf_overlay_runtime_export_loader.ts": {
-      "total": 1,
-      "categories": {
-        "domain-default": 1
       }
     },
     "esm/native/ui/react/pdf/order_pdf_overlay_shell_interactions_runtime.ts": {
@@ -277,18 +109,6 @@
       "total": 1,
       "categories": {
         "framework-default": 1
-      }
-    },
-    "esm/native/ui/react/tabs/design_tab_multicolor_shared.ts": {
-      "total": 1,
-      "categories": {
-        "domain-default": 1
-      }
-    },
-    "esm/native/ui/react/tabs/structure_tab_core_edit_mode.ts": {
-      "total": 1,
-      "categories": {
-        "domain-default": 1
       }
     },
     "esm/test_imports.mjs": {

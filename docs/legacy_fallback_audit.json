@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-06-17T03:51:06.388Z",
+  "generatedAt": "2026-06-17T04:22:17.177Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 73,
-    "totalFiles": 50,
+    "totalOccurrences": 28,
+    "totalFiles": 20,
     "byCategory": {
       "runtime-default": 0,
-      "domain-default": 51,
-      "error-message-default": 8,
+      "domain-default": 14,
+      "error-message-default": 0,
       "framework-default": 2,
       "browser-adapter": 0,
       "project-migration": 2,
@@ -48,49 +48,7 @@
           "project-migration": 1
         }
       },
-      "esm/native/platform/dirty_flag.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
       "esm/native/platform/render_loop_impl_front_overlay.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      "esm/native/runtime/browser_clipboard.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      "esm/native/runtime/browser_download.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      "esm/native/runtime/browser_file_read.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      "esm/native/runtime/commands_access.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      "esm/native/runtime/errors.ts": {
-        "total": 2,
-        "categories": {
-          "domain-default": 2
-        }
-      },
-      "esm/native/runtime/history_system_access_shared.ts": {
         "total": 1,
         "categories": {
           "domain-default": 1
@@ -102,100 +60,10 @@
           "domain-default": 1
         }
       },
-      "esm/native/runtime/platform_access_ops.ts": {
-        "total": 2,
-        "categories": {
-          "domain-default": 2
-        }
-      },
-      "esm/native/runtime/storage_access.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
       "esm/native/services/app_start.ts": {
         "total": 2,
         "categories": {
           "compat-boundary": 2
-        }
-      },
-      "esm/native/services/autosave_runtime.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      "esm/native/services/canvas_picking_cell_dims_linear_context_modules.ts": {
-        "total": 4,
-        "categories": {
-          "domain-default": 4
-        }
-      },
-      "esm/native/services/cloud_sync_delete_temp_runtime.ts": {
-        "total": 3,
-        "categories": {
-          "error-message-default": 3
-        }
-      },
-      "esm/native/services/cloud_sync_lifecycle_realtime_runtime_start.ts": {
-        "total": 1,
-        "categories": {
-          "error-message-default": 1
-        }
-      },
-      "esm/native/services/cloud_sync_status_install_runtime.ts": {
-        "total": 2,
-        "categories": {
-          "domain-default": 2
-        }
-      },
-      "esm/native/services/cloud_sync_status_install_shared.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      "esm/native/services/cloud_sync_support_feedback.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      "esm/native/services/ui_ephemeral_defaults.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      "esm/native/ui/browser_file_download.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      "esm/native/ui/errors_install_platform.ts": {
-        "total": 1,
-        "categories": {
-          "error-message-default": 1
-        }
-      },
-      "esm/native/ui/errors_install_shared.ts": {
-        "total": 1,
-        "categories": {
-          "error-message-default": 1
-        }
-      },
-      "esm/native/ui/errors_install_surface.ts": {
-        "total": 2,
-        "categories": {
-          "error-message-default": 2
-        }
-      },
-      "esm/native/ui/export/export_canvas_core_feedback.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
         }
       },
       "esm/native/ui/export/export_order_pdf_builder_fields_text.ts": {
@@ -228,31 +96,7 @@
           "domain-default": 2
         }
       },
-      "esm/native/ui/html_sanitize_runtime.ts": {
-        "total": 4,
-        "categories": {
-          "domain-default": 4
-        }
-      },
-      "esm/native/ui/modes_shared.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
       "esm/native/ui/modes_transition_policy.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      "esm/native/ui/notes_service_shared.ts": {
-        "total": 4,
-        "categories": {
-          "domain-default": 4
-        }
-      },
-      "esm/native/ui/project_save_runtime_action.ts": {
         "total": 1,
         "categories": {
           "domain-default": 1
@@ -264,22 +108,10 @@
           "domain-default": 2
         }
       },
-      "esm/native/ui/react/overlay_app_shared.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
       "esm/native/ui/react/overlay_pdf_host.tsx": {
         "total": 1,
         "categories": {
           "framework-default": 1
-        }
-      },
-      "esm/native/ui/react/pdf/order_pdf_overlay_runtime_export_loader.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
         }
       },
       "esm/native/ui/react/pdf/order_pdf_overlay_shell_interactions_runtime.ts": {
@@ -292,18 +124,6 @@
         "total": 1,
         "categories": {
           "framework-default": 1
-        }
-      },
-      "esm/native/ui/react/tabs/design_tab_multicolor_shared.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      "esm/native/ui/react/tabs/structure_tab_core_edit_mode.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
         }
       },
       "esm/test_imports.mjs": {
@@ -328,66 +148,10 @@
         }
       },
       {
-        "file": "esm/native/services/canvas_picking_cell_dims_linear_context_modules.ts",
-        "total": 4,
-        "categories": {
-          "domain-default": 4
-        }
-      },
-      {
-        "file": "esm/native/ui/html_sanitize_runtime.ts",
-        "total": 4,
-        "categories": {
-          "domain-default": 4
-        }
-      },
-      {
-        "file": "esm/native/ui/notes_service_shared.ts",
-        "total": 4,
-        "categories": {
-          "domain-default": 4
-        }
-      },
-      {
-        "file": "esm/native/services/cloud_sync_delete_temp_runtime.ts",
-        "total": 3,
-        "categories": {
-          "error-message-default": 3
-        }
-      },
-      {
-        "file": "esm/native/runtime/errors.ts",
-        "total": 2,
-        "categories": {
-          "domain-default": 2
-        }
-      },
-      {
-        "file": "esm/native/runtime/platform_access_ops.ts",
-        "total": 2,
-        "categories": {
-          "domain-default": 2
-        }
-      },
-      {
         "file": "esm/native/services/app_start.ts",
         "total": 2,
         "categories": {
           "compat-boundary": 2
-        }
-      },
-      {
-        "file": "esm/native/services/cloud_sync_status_install_runtime.ts",
-        "total": 2,
-        "categories": {
-          "domain-default": 2
-        }
-      },
-      {
-        "file": "esm/native/ui/errors_install_surface.ts",
-        "total": 2,
-        "categories": {
-          "error-message-default": 2
         }
       },
       {
@@ -447,49 +211,7 @@
         }
       },
       {
-        "file": "esm/native/platform/dirty_flag.ts",
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      {
         "file": "esm/native/platform/render_loop_impl_front_overlay.ts",
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      {
-        "file": "esm/native/runtime/browser_clipboard.ts",
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      {
-        "file": "esm/native/runtime/browser_download.ts",
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      {
-        "file": "esm/native/runtime/browser_file_read.ts",
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      {
-        "file": "esm/native/runtime/commands_access.ts",
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      {
-        "file": "esm/native/runtime/history_system_access_shared.ts",
         "total": 1,
         "categories": {
           "domain-default": 1
@@ -503,31 +225,59 @@
         }
       },
       {
-        "file": "esm/native/runtime/storage_access.ts",
+        "file": "esm/native/ui/export/export_order_pdf_builder_fields_text.ts",
         "total": 1,
         "categories": {
           "domain-default": 1
         }
       },
       {
-        "file": "esm/native/services/autosave_runtime.ts",
+        "file": "esm/native/ui/export/export_order_pdf_builder_template.ts",
         "total": 1,
         "categories": {
           "domain-default": 1
         }
       },
       {
-        "file": "esm/native/services/cloud_sync_lifecycle_realtime_runtime_start.ts",
-        "total": 1,
-        "categories": {
-          "error-message-default": 1
-        }
-      },
-      {
-        "file": "esm/native/services/cloud_sync_status_install_shared.ts",
+        "file": "esm/native/ui/export/export_order_pdf_capture_composite_shared.ts",
         "total": 1,
         "categories": {
           "domain-default": 1
+        }
+      },
+      {
+        "file": "esm/native/ui/modes_transition_policy.ts",
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      {
+        "file": "esm/native/ui/react/overlay_pdf_host.tsx",
+        "total": 1,
+        "categories": {
+          "framework-default": 1
+        }
+      },
+      {
+        "file": "esm/native/ui/react/pdf/order_pdf_overlay_shell_interactions_runtime.ts",
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      {
+        "file": "esm/native/ui/react/sidebar_app.tsx",
+        "total": 1,
+        "categories": {
+          "framework-default": 1
+        }
+      },
+      {
+        "file": "esm/test_imports.mjs",
+        "total": 1,
+        "categories": {
+          "test-fixture": 1
         }
       }
     ]
@@ -570,13 +320,6 @@
       "text": "// - keeping the compat parser separate makes the canonical patch seam easier to reason about"
     },
     {
-      "file": "esm/native/platform/dirty_flag.ts",
-      "line": 47,
-      "term": "consoleFallback",
-      "category": "domain-default",
-      "text": "{ consoleFallback: false }"
-    },
-    {
       "file": "esm/native/platform/render_loop_impl_front_overlay.ts",
       "line": 104,
       "term": "applyOpacityScaleFallback",
@@ -584,81 +327,11 @@
       "text": "report('frontSeams.applyOpacityScaleFallback', _e2, { throttleMs: 5000 });"
     },
     {
-      "file": "esm/native/runtime/browser_clipboard.ts",
-      "line": 44,
-      "term": "consoleFallback",
-      "category": "domain-default",
-      "text": "{ consoleFallback: false }"
-    },
-    {
-      "file": "esm/native/runtime/browser_download.ts",
-      "line": 45,
-      "term": "consoleFallback",
-      "category": "domain-default",
-      "text": "{ consoleFallback: false }"
-    },
-    {
-      "file": "esm/native/runtime/browser_file_read.ts",
-      "line": 69,
-      "term": "consoleFallback",
-      "category": "domain-default",
-      "text": "consoleFallback: false,"
-    },
-    {
-      "file": "esm/native/runtime/commands_access.ts",
-      "line": 22,
-      "term": "consoleFallback",
-      "category": "domain-default",
-      "text": "consoleFallback: false,"
-    },
-    {
-      "file": "esm/native/runtime/errors.ts",
-      "line": 18,
-      "term": "consoleFallback",
-      "category": "domain-default",
-      "text": "consoleFallback?: boolean;"
-    },
-    {
-      "file": "esm/native/runtime/errors.ts",
-      "line": 126,
-      "term": "consoleFallback",
-      "category": "domain-default",
-      "text": "if (opts?.consoleFallback === false) return;"
-    },
-    {
-      "file": "esm/native/runtime/history_system_access_shared.ts",
-      "line": 67,
-      "term": "consoleFallback",
-      "category": "domain-default",
-      "text": "{ consoleFallback: false }"
-    },
-    {
       "file": "esm/native/runtime/platform_access_debug_stats.ts",
       "line": 108,
       "term": "renderEnsureFallbackRate",
       "category": "domain-default",
       "text": "renderEnsureFallbackRate: ratio(ensureRenderLoopCount, renderRequestCount),"
-    },
-    {
-      "file": "esm/native/runtime/platform_access_ops.ts",
-      "line": 51,
-      "term": "consoleFallback",
-      "category": "domain-default",
-      "text": "function reportPlatformOpRejected(App: unknown, error: unknown, op: string, consoleFallback = true): void {"
-    },
-    {
-      "file": "esm/native/runtime/platform_access_ops.ts",
-      "line": 56,
-      "term": "consoleFallback",
-      "category": "domain-default",
-      "text": "consoleFallback ? undefined : { consoleFallback: false }"
-    },
-    {
-      "file": "esm/native/runtime/storage_access.ts",
-      "line": 22,
-      "term": "consoleFallback",
-      "category": "domain-default",
-      "text": "consoleFallback: false,"
     },
     {
       "file": "esm/native/services/app_start.ts",
@@ -673,146 +346,6 @@
       "term": "ensureUiCompatAlias",
       "category": "compat-boundary",
       "text": "if (typeof svc.start === 'function') ensureUiCompatAlias(app, svc.start);"
-    },
-    {
-      "file": "esm/native/services/autosave_runtime.ts",
-      "line": 34,
-      "term": "consoleFallback",
-      "category": "domain-default",
-      "text": "{ consoleFallback: false }"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_cell_dims_linear_context_modules.ts",
-      "line": 24,
-      "term": "fallback",
-      "category": "domain-default",
-      "text": "function readPositiveNumber(value: unknown, fallback: number): number {"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_cell_dims_linear_context_modules.ts",
-      "line": 26,
-      "term": "fallback",
-      "category": "domain-default",
-      "text": "return Number.isFinite(n) && n > 0 ? n : fallback;"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_cell_dims_linear_context_modules.ts",
-      "line": 33,
-      "term": "fallback",
-      "category": "domain-default",
-      "text": "fallback: number"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_cell_dims_linear_context_modules.ts",
-      "line": 35,
-      "term": "fallback",
-      "category": "domain-default",
-      "text": "return raw[manualKey] ? readPositiveNumber(raw[valueKey], fallback) : fallback;"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_delete_temp_runtime.ts",
-      "line": 13,
-      "term": "readDeleteTempErrorFallback",
-      "category": "error-message-default",
-      "text": "function readDeleteTempErrorFallback(kind: DeleteTempKind): string {"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_delete_temp_runtime.ts",
-      "line": 41,
-      "term": "readDeleteTempErrorFallback",
-      "category": "error-message-default",
-      "text": "return buildDeleteTempErrorResult(args, kind, err, readDeleteTempErrorFallback(kind));"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_delete_temp_runtime.ts",
-      "line": 55,
-      "term": "readDeleteTempErrorFallback",
-      "category": "error-message-default",
-      "text": "return buildDeleteTempErrorResult(args, kind, err, readDeleteTempErrorFallback(kind));"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_lifecycle_realtime_runtime_start.ts",
-      "line": 82,
-      "term": "startFlightFallback",
-      "category": "error-message-default",
-      "text": "_cloudSyncReportNonFatal(App, 'realtime.startFlightFallback', fallbackErr, {"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_status_install_runtime.ts",
-      "line": 8,
-      "term": "getFallbackRuntimeStatus",
-      "category": "domain-default",
-      "text": "getFallbackRuntimeStatus,"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_status_install_runtime.ts",
-      "line": 19,
-      "term": "getFallbackRuntimeStatus",
-      "category": "domain-default",
-      "text": "syncRuntimeStatusInPlace(status, getFallbackRuntimeStatus());"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_status_install_shared.ts",
-      "line": 82,
-      "term": "getFallbackRuntimeStatus",
-      "category": "domain-default",
-      "text": "export function getFallbackRuntimeStatus(): CloudSyncRuntimeStatus {"
-    },
-    {
-      "file": "esm/native/services/cloud_sync_support_feedback.ts",
-      "line": 50,
-      "term": "consoleFallback",
-      "category": "domain-default",
-      "text": "{ consoleFallback: !(opts && opts.noConsole) }"
-    },
-    {
-      "file": "esm/native/services/ui_ephemeral_defaults.ts",
-      "line": 27,
-      "term": "consoleFallback",
-      "category": "domain-default",
-      "text": "{ consoleFallback: false }"
-    },
-    {
-      "file": "esm/native/ui/browser_file_download.ts",
-      "line": 30,
-      "term": "consoleFallback",
-      "category": "domain-default",
-      "text": "{ consoleFallback: false }"
-    },
-    {
-      "file": "esm/native/ui/errors_install_platform.ts",
-      "line": 44,
-      "term": "installFallback",
-      "category": "error-message-default",
-      "text": "reportNonFatal('platform.reportError.installFallback', fallbackErr, 6000);"
-    },
-    {
-      "file": "esm/native/ui/errors_install_shared.ts",
-      "line": 58,
-      "term": "buildErrorsDebugSnapshotFallback",
-      "category": "error-message-default",
-      "text": "export function buildErrorsDebugSnapshotFallback(ctx?: ErrorContext) {"
-    },
-    {
-      "file": "esm/native/ui/errors_install_surface.ts",
-      "line": 16,
-      "term": "buildErrorsDebugSnapshotFallback",
-      "category": "error-message-default",
-      "text": "import { buildErrorsDebugSnapshotFallback } from './errors_install_shared.js';"
-    },
-    {
-      "file": "esm/native/ui/errors_install_surface.ts",
-      "line": 41,
-      "term": "buildErrorsDebugSnapshotFallback",
-      "category": "error-message-default",
-      "text": "return buildErrorsDebugSnapshotFallback(ctx);"
-    },
-    {
-      "file": "esm/native/ui/export/export_canvas_core_feedback.ts",
-      "line": 65,
-      "term": "consoleFallback",
-      "category": "domain-default",
-      "text": "{ consoleFallback: false }"
     },
     {
       "file": "esm/native/ui/export/export_order_pdf_builder_fields_text.ts",
@@ -864,81 +397,11 @@
       "text": "return await captureCompositeWithLogoFallback("
     },
     {
-      "file": "esm/native/ui/html_sanitize_runtime.ts",
-      "line": 163,
-      "term": "sanitizeTagMarkupFallback",
-      "category": "domain-default",
-      "text": "function sanitizeTagMarkupFallback("
-    },
-    {
-      "file": "esm/native/ui/html_sanitize_runtime.ts",
-      "line": 187,
-      "term": "sanitizeHtmlFallback",
-      "category": "domain-default",
-      "text": "function sanitizeHtmlFallback(policy: HtmlSanitizePolicy, html: string): string {"
-    },
-    {
-      "file": "esm/native/ui/html_sanitize_runtime.ts",
-      "line": 198,
-      "term": "sanitizeTagMarkupFallback",
-      "category": "domain-default",
-      "text": "out += sanitizeTagMarkupFallback(policy, match[2] || '', match[3] || '', !!match[1]);"
-    },
-    {
-      "file": "esm/native/ui/html_sanitize_runtime.ts",
-      "line": 214,
-      "term": "sanitizeHtmlFallback",
-      "category": "domain-default",
-      "text": "return sanitizeHtmlFallback(policy, raw);"
-    },
-    {
-      "file": "esm/native/ui/modes_shared.ts",
-      "line": 259,
-      "term": "consoleFallback",
-      "category": "domain-default",
-      "text": "reportError(App, err, { where: 'native/ui/modes', op, fatal: false }, { consoleFallback: false });"
-    },
-    {
       "file": "esm/native/ui/modes_transition_policy.ts",
       "line": 352,
       "term": "defaultCloseDoorsFallback",
       "category": "domain-default",
       "text": "modesReportNonFatal(App, 'esm/native/ui/modes_transition_policy.ts:defaultCloseDoorsFallback', err);"
-    },
-    {
-      "file": "esm/native/ui/notes_service_shared.ts",
-      "line": 138,
-      "term": "buildFallback",
-      "category": "domain-default",
-      "text": "const buildFallback = (source: string, metaIn?: ActionMetaLike): ActionMetaLike => {"
-    },
-    {
-      "file": "esm/native/ui/notes_service_shared.ts",
-      "line": 150,
-      "term": "buildFallback",
-      "category": "domain-default",
-      "text": "const seed = buildFallback(source, metaIn);"
-    },
-    {
-      "file": "esm/native/ui/notes_service_shared.ts",
-      "line": 153,
-      "term": "buildFallback",
-      "category": "domain-default",
-      "text": "return buildFallback(source, metaIn);"
-    },
-    {
-      "file": "esm/native/ui/notes_service_shared.ts",
-      "line": 156,
-      "term": "buildFallback",
-      "category": "domain-default",
-      "text": "return { build, buildFallback };"
-    },
-    {
-      "file": "esm/native/ui/project_save_runtime_action.ts",
-      "line": 36,
-      "term": "consoleFallback",
-      "category": "domain-default",
-      "text": "{ consoleFallback: false }"
     },
     {
       "file": "esm/native/ui/react/boot_react_ui.tsx",
@@ -955,25 +418,11 @@
       "text": ": createToastFallback();"
     },
     {
-      "file": "esm/native/ui/react/overlay_app_shared.ts",
-      "line": 116,
-      "term": "consoleFallback",
-      "category": "domain-default",
-      "text": "{ consoleFallback: false }"
-    },
-    {
       "file": "esm/native/ui/react/overlay_pdf_host.tsx",
       "line": 55,
       "term": "fallback",
       "category": "framework-default",
       "text": "<Suspense fallback={<PdfEditorLoadingOverlay />}>"
-    },
-    {
-      "file": "esm/native/ui/react/pdf/order_pdf_overlay_runtime_export_loader.ts",
-      "line": 56,
-      "term": "consoleFallback",
-      "category": "domain-default",
-      "text": "{ consoleFallback: false }"
     },
     {
       "file": "esm/native/ui/react/pdf/order_pdf_overlay_shell_interactions_runtime.ts",
@@ -988,20 +437,6 @@
       "term": "fallback",
       "category": "framework-default",
       "text": "fallback={"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/design_tab_multicolor_shared.ts",
-      "line": 60,
-      "term": "consoleFallback",
-      "category": "domain-default",
-      "text": "{ consoleFallback: false }"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/structure_tab_core_edit_mode.ts",
-      "line": 98,
-      "term": "consoleFallback",
-      "category": "domain-default",
-      "text": "{ consoleFallback: false }"
     },
     {
       "file": "esm/test_imports.mjs",

@@ -21,18 +21,18 @@ export interface ResolvedLinearModules {
   sumDoors: number;
 }
 
-function readPositiveNumber(value: unknown, fallback: number): number {
+function readPositiveNumber(value: unknown, defaultValue: number): number {
   const n = Number(value);
-  return Number.isFinite(n) && n > 0 ? n : fallback;
+  return Number.isFinite(n) && n > 0 ? n : defaultValue;
 }
 
 function readBottomScalar(
   raw: Record<string, unknown>,
   valueKey: string,
   manualKey: string,
-  fallback: number
+  defaultValue: number
 ): number {
-  return raw[manualKey] ? readPositiveNumber(raw[valueKey], fallback) : fallback;
+  return raw[manualKey] ? readPositiveNumber(raw[valueKey], defaultValue) : defaultValue;
 }
 
 export function readLinearCellDimsTotals(args: CanvasLinearCellDimsArgs): {

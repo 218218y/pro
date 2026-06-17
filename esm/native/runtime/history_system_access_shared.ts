@@ -64,7 +64,7 @@ export function reportHistoryAccessOwnerRejection(App: unknown, op: string, erro
       App,
       error,
       { where: 'native/runtime/history_system_access', op, fatal: false },
-      { consoleFallback: false }
+      { consoleOutput: false }
     );
   } catch {
     // Diagnostics must never make fail-soft history access fail.

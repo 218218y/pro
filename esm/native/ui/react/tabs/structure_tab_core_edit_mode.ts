@@ -95,7 +95,7 @@ export function structureTabReportNonFatal(...args: StructureTabReportNonFatalAr
       app,
       err,
       { where: 'native/ui/react/structure_tab', op, fatal: false },
-      { consoleFallback: false }
+      { consoleOutput: false }
     );
     return;
   }

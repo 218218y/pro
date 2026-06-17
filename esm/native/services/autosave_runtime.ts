@@ -31,7 +31,7 @@ export function commitAutosaveNow(App: AppContainer): boolean {
       App,
       new Error('Autosave storage write failed'),
       { where: 'services/autosave', op: 'commitAutosaveNow.writeStorage', storageKey, nonFatal: true },
-      { consoleFallback: false }
+      { consoleOutput: false }
     );
   }
 

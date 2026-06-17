@@ -6,7 +6,7 @@ import { createCloudSyncRealtimeRuntimeMutableState } from '../esm/native/servic
 
 test('cloud sync realtime start flight reports unexpected setup failures and falls back to polling', async () => {
   const reported: Array<{ error: unknown; ctx: any }> = [];
-  const fallbackCalls: Array<{
+  const recoveryCalls: Array<{
     state: string;
     lastError: string;
     diagEvent: string;
@@ -61,7 +61,7 @@ test('cloud sync realtime start flight reports unexpected setup failures and fal
           throw new Error('pre-start cleanup failed');
         },
         setRealtimeFailure: (state, lastError, diagEvent, pollingReason) => {
-          fallbackCalls.push({
+          recoveryCalls.push({
             state: String(state),
             lastError,
             diagEvent,
@@ -76,7 +76,7 @@ test('cloud sync realtime start flight reports unexpected setup failures and fal
   assert.equal(reported.length, 1);
   assert.equal((reported[0]?.error as Error).message, 'pre-start cleanup failed');
   assert.equal(reported[0]?.ctx?.op, 'realtime.startFlight');
-  assert.deepEqual(fallbackCalls, [
+  assert.deepEqual(recoveryCalls, [
     {
       state: 'error',
       lastError: 'pre-start cleanup failed',
@@ -86,7 +86,7 @@ test('cloud sync realtime start flight reports unexpected setup failures and fal
   ]);
 });
 
-test('cloud sync realtime start flight reports fallback transition failures without rejecting', async () => {
+test('cloud sync realtime start flight reports recovery transition failures without rejecting', async () => {
   const reported: Array<{ error: unknown; ctx: any }> = [];
 
   await assert.doesNotReject(
@@ -137,7 +137,7 @@ test('cloud sync realtime start flight reports fallback transition failures with
           throw new Error('pre-start cleanup failed');
         },
         setRealtimeFailure: () => {
-          throw new Error('fallback transition failed');
+          throw new Error('recovery transition failed');
         },
         handleRealtimeDisconnect: () => undefined,
       } as any,
@@ -147,6 +147,6 @@ test('cloud sync realtime start flight reports fallback transition failures with
   assert.equal(reported.length, 2);
   assert.equal((reported[0]?.error as Error).message, 'pre-start cleanup failed');
   assert.equal(reported[0]?.ctx?.op, 'realtime.startFlight');
-  assert.equal((reported[1]?.error as Error).message, 'fallback transition failed');
-  assert.equal(reported[1]?.ctx?.op, 'realtime.startFlightFallback');
+  assert.equal((reported[1]?.error as Error).message, 'recovery transition failed');
+  assert.equal(reported[1]?.ctx?.op, 'realtime.startFlightRecovery');
 });

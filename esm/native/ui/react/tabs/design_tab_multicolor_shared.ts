@@ -57,7 +57,7 @@ export function __designTabReportNonFatal(...args: DesignTabReportNonFatalArgs):
       app,
       err,
       { where: 'native/ui/react/design_tab', op, fatal: false },
-      { consoleFallback: false }
+      { consoleOutput: false }
     );
     return;
   }

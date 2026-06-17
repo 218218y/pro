@@ -55,7 +55,7 @@ export function platformSurface(App: AppContainer): PlatformSurfaceLike | null {
   }
 }
 
-export function buildErrorsDebugSnapshotFallback(ctx?: ErrorContext) {
+export function buildEmptyErrorsDebugSnapshot(ctx?: ErrorContext) {
   return {
     ts: '',
     where: ctxToLabel(ctx),

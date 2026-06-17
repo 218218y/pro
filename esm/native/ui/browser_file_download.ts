@@ -27,7 +27,7 @@ function reportBrowserFileDownloadError(appOrCtx: unknown, op: string, error: un
     appOrCtx,
     error,
     { where: 'native/ui/browser_file_download', op, fatal: false },
-    { consoleFallback: false }
+    { consoleOutput: false }
   );
 }
 

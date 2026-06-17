@@ -187,7 +187,7 @@ requireNeedle('cloud_sync_lifecycle_realtime_runtime_start.ts', realtimeStartRun
 requireNeedle(
   'cloud_sync_lifecycle_realtime_runtime_start.ts',
   realtimeStartRuntime,
-  'realtime.startFlightFallback'
+  'realtime.startFlightRecovery'
 );
 requireNeedle(
   'cloud_sync_lifecycle_realtime_runtime_start.ts',

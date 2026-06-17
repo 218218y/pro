@@ -78,8 +78,8 @@ export function startCloudSyncRealtimeLifecycle(
           'realtime:start-flight-error',
           'realtime-start-error'
         );
-      } catch (fallbackErr) {
-        _cloudSyncReportNonFatal(App, 'realtime.startFlightFallback', fallbackErr, {
+      } catch (recoveryErr) {
+        _cloudSyncReportNonFatal(App, 'realtime.startFlightRecovery', recoveryErr, {
           throttleMs: 6000,
         });
       }

@@ -39,7 +39,7 @@ function makeApp(sceneView: Record<string, unknown> = {}) {
   return { App, reports };
 }
 
-test('scene view nonfatal reporting goes through platform diagnostics before console fallback', () => {
+test('scene view nonfatal reporting goes through platform diagnostics before console output', () => {
   const { App, reports } = makeApp();
   const err = new Error('scene-view-report-test');
 
