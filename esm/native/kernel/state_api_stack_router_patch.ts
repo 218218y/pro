@@ -14,6 +14,9 @@ import type {
 import {
   asCornerPatchLike,
   asModulePatchLike,
+  asPatchAt,
+  asPatchRoot,
+  isDelegatingStackPatchFn,
   normalizeModuleStack,
   parseCornerCellIndex,
   readModuleIndex,
@@ -22,13 +25,11 @@ import {
   topCornerCellNormalizeOptions,
 } from './state_api_stack_router_shared.js';
 
-const canonicalPatchRouters = new WeakSet<object>();
-
 export function installStateApiStackRouterPatch(ctx: StateApiStackRouterContext): void {
-  const { modulesNs } = ctx;
+  const { modulesNs, cornerNs, safeCall } = ctx;
 
-  if (typeof modulesNs.patchForStack !== 'function' || !canonicalPatchRouters.has(modulesNs.patchForStack)) {
-    const patchForStack = function patchForStack(
+  if (typeof modulesNs.patchForStack !== 'function') {
+    modulesNs.patchForStack = function patchForStack(
       stack: unknown,
       moduleKey: unknown,
       patchOrPatchFn: unknown,
@@ -55,13 +56,12 @@ export function installStateApiStackRouterPatch(ctx: StateApiStackRouterContext)
         if (!ctx.getSetCfgScalar()) return undefined;
         return ctx.callSetCfgScalar(
           'cornerConfiguration',
-          function patchCornerCell(_prev: unknown) {
-            const previous = ctx.readCfgSnapshot().cornerConfiguration;
-            const base = cloneCornerConfigurationSnapshot(previous);
+          function patchCornerCell(prev: unknown) {
+            const base = cloneCornerConfigurationSnapshot(prev);
             const seeded = seedLowerCornerSnapshotForSplit(splitOnNow, base);
             return patchCornerConfigurationCellForStack(
               seeded,
-              previous,
+              prev,
               stackNorm,
               idx,
               patch,
@@ -76,31 +76,54 @@ export function installStateApiStackRouterPatch(ctx: StateApiStackRouterContext)
         if (!ctx.getSetCfgScalar()) return undefined;
         return ctx.callSetCfgScalar(
           'cornerConfiguration',
-          function patchCornerRoot(_prev: unknown) {
-            const previous = ctx.readCfgSnapshot().cornerConfiguration;
-            const base = cloneCornerConfigurationSnapshot(previous);
+          function patchCornerRoot(prev: unknown) {
+            const base = cloneCornerConfigurationSnapshot(prev);
             const seeded = seedLowerCornerSnapshotForSplit(splitOnNow, base);
-            return patchCornerConfigurationForStack(seeded, previous, stackNorm, patch);
+            return patchCornerConfigurationForStack(seeded, prev, stackNorm, patch);
           },
           commitMeta
         );
       };
 
-      const stackNorm = normalizeModuleStack(stack);
-      const cornerCellIdx = parseCornerCellIndex(moduleKey);
+      return safeCall(() => {
+        const stackNorm = normalizeModuleStack(stack);
+        const cornerCellIdx = parseCornerCellIndex(moduleKey);
 
-      if (cornerCellIdx != null) {
-        return patchCornerCellDirect(stackNorm, cornerCellIdx, asModulePatchLike(patchOrPatchFn));
-      }
-      if (moduleKey === 'corner') {
-        return patchCornerRootDirect(stackNorm, asCornerPatchLike(patchOrPatchFn));
-      }
+        if (cornerCellIdx != null) {
+          if (stackNorm === 'bottom') {
+            const fnLower = asPatchAt(cornerNs['patchLowerCellAt']);
+            if (typeof fnLower === 'function' && !isDelegatingStackPatchFn(fnLower)) {
+              return fnLower(cornerCellIdx, asModulePatchLike(patchOrPatchFn), commitMeta);
+            }
+          }
+          const fnTop = asPatchAt(cornerNs['patchCellAt']);
+          if (typeof fnTop === 'function' && !isDelegatingStackPatchFn(fnTop)) {
+            return fnTop(cornerCellIdx, asModulePatchLike(patchOrPatchFn), commitMeta);
+          }
+        } else if (moduleKey === 'corner') {
+          if (stackNorm === 'bottom') {
+            const fnLower = asPatchRoot(cornerNs['patchLower']);
+            if (typeof fnLower === 'function' && !isDelegatingStackPatchFn(fnLower)) {
+              return fnLower(asCornerPatchLike(patchOrPatchFn), commitMeta);
+            }
+          }
+          const fnTop = asPatchRoot(cornerNs['patch']);
+          if (typeof fnTop === 'function' && !isDelegatingStackPatchFn(fnTop)) {
+            return fnTop(asCornerPatchLike(patchOrPatchFn), commitMeta);
+          }
+        }
 
-      const moduleIndex = readModuleIndex(moduleKey);
-      if (moduleIndex == null) return null;
-      return patchListCell(readModulesBucketKey(stackNorm), moduleIndex, asModulePatchLike(patchOrPatchFn));
+        if (cornerCellIdx != null) {
+          return patchCornerCellDirect(stackNorm, cornerCellIdx, asModulePatchLike(patchOrPatchFn));
+        }
+        if (moduleKey === 'corner') {
+          return patchCornerRootDirect(stackNorm, asCornerPatchLike(patchOrPatchFn));
+        }
+
+        const moduleIndex = readModuleIndex(moduleKey);
+        if (moduleIndex == null) return null;
+        return patchListCell(readModulesBucketKey(stackNorm), moduleIndex, asModulePatchLike(patchOrPatchFn));
+      });
     };
-    modulesNs.patchForStack = patchForStack;
-    canonicalPatchRouters.add(patchForStack);
   }
 }

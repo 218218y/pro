@@ -6,6 +6,7 @@ import type {
   HandleType,
   MetaActionsNamespaceLike,
   RuntimeScalarKey,
+  UnknownCallable,
   UnknownRecord,
 } from '../../../types';
 import { reportErrorThrottled, shouldFailFast } from '../runtime/api.js';
@@ -62,6 +63,7 @@ export type DomainSelectSurface = UnknownRecord & {
   textures: DomainTexturesSelect;
 };
 export type RuntimeFlagKey = Extract<RuntimeScalarKey, 'sketchMode' | 'globalClickMode' | 'restoring'>;
+type DelegateMarkedFn = UnknownCallable & { __wp_delegatesStackPatch?: boolean };
 export function isDomainObject<T extends object = UnknownRecord>(value: unknown): value is T {
   return !!value && typeof value === 'object' && !Array.isArray(value);
 }
@@ -85,6 +87,10 @@ export function asActionMeta(
   meta: ActionMetaLike | UnknownRecord | null | undefined
 ): ActionMetaLike | undefined {
   return isDomainRecord(meta) ? { ...meta } : undefined;
+}
+export function markDelegatesStackPatch(fn: unknown): void {
+  if (typeof fn === 'function')
+    Object.assign(fn, { __wp_delegatesStackPatch: true } satisfies Partial<DelegateMarkedFn>);
 }
 function metaNs(actions: ActionsNamespaceLike): MetaActionsNamespaceLike | null {
   return asDomainObject<MetaActionsNamespaceLike>(actions.meta);

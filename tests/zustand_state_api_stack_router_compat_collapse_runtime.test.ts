@@ -67,26 +67,7 @@ test('[state-api] stack router compat collapse: state_api ignores stateKernel st
   const store = createStoreStub();
 
   const App: AnyRecord = {
-    actions: {
-      modules: {
-        ensureForStack: () => (calls.push({ via: 'legacy.actions.ensureForStack' }), null),
-        patchForStack: () => (calls.push({ via: 'legacy.actions.patchForStack' }), null),
-        ensureAt: () => (calls.push({ via: 'legacy.actions.ensureAt' }), null),
-        ensureLowerAt: () => (calls.push({ via: 'legacy.actions.ensureLowerAt' }), null),
-        patchAt: () => (calls.push({ via: 'legacy.actions.patchAt' }), null),
-        patchLowerAt: () => (calls.push({ via: 'legacy.actions.patchLowerAt' }), null),
-      },
-      corner: {
-        ensureConfig: () => (calls.push({ via: 'legacy.actions.corner.ensureConfig' }), null),
-        ensureLowerConfig: () => (calls.push({ via: 'legacy.actions.corner.ensureLowerConfig' }), null),
-        ensureCellAt: () => (calls.push({ via: 'legacy.actions.corner.ensureCellAt' }), null),
-        ensureLowerCellAt: () => (calls.push({ via: 'legacy.actions.corner.ensureLowerCellAt' }), null),
-        patch: () => (calls.push({ via: 'legacy.actions.corner.patch' }), null),
-        patchLower: () => (calls.push({ via: 'legacy.actions.corner.patchLower' }), null),
-        patchCellAt: () => (calls.push({ via: 'legacy.actions.corner.patchCellAt' }), null),
-        patchLowerCellAt: () => (calls.push({ via: 'legacy.actions.corner.patchLowerCellAt' }), null),
-      },
-    },
+    actions: {},
     store,
     stateKernel: {
       // These must be ignored by delete-pass state_api.

@@ -1,6 +1,7 @@
 import type {
   ActionMetaLike,
   UnknownRecord,
+  CornerActionsLike,
   ModulesActionsLike,
   ModuleConfigLike,
   ModuleConfigPatchLike,
@@ -38,9 +39,15 @@ export type NormMetaFn = (
   meta: ActionMetaLike | UnknownRecord | null | undefined,
   source: string
 ) => ActionMetaLike;
+export type SafeCallFn = (fn: () => unknown) => unknown;
+export type EnsureAtFn = (idx: number) => ModuleConfigLike | null;
+export type EnsureRootFn = () => UnknownRecord | null;
+export type PatchAtFn = (idx: number, patch: ModulePatchLike, meta: ActionMetaLike) => unknown;
+export type PatchRootFn = (patch: CornerPatchLike, meta: ActionMetaLike) => unknown;
 
 export interface StateApiStackRouterContext {
   modulesNs: ModulesActionsLike;
+  cornerNs: CornerActionsLike;
   getSetCfgScalar: () => SetCfgScalarFn | null;
   mergeMeta: MergeMetaFn;
   normMeta: NormMetaFn;
@@ -48,6 +55,7 @@ export interface StateApiStackRouterContext {
   readUiSnapshot: () => UnknownRecord;
   callSetCfgScalar: (key: string, valueOrFn: unknown, meta?: ActionMetaLike) => unknown;
   shallowCloneObj: (v: unknown) => UnknownRecord;
+  safeCall: SafeCallFn;
 }
 
 export function normalizeModuleStack(stack: unknown): ModuleStackName {
@@ -176,13 +184,12 @@ export function ensureCornerRootDirect(
 
   setCfgScalar(
     'cornerConfiguration',
-    function ensureCornerRoot(_prev: unknown) {
-      const previous = ctx.readCfgSnapshot().cornerConfiguration;
+    function ensureCornerRoot(prev: unknown) {
       const base = seedLowerCornerSnapshotForSplit(
         !!ctx.readUiSnapshot().stackSplitEnabled,
-        cloneRecord(ctx, previous)
+        cloneRecord(ctx, prev)
       );
-      return ensureCornerConfigurationForStack(base, previous, stack);
+      return ensureCornerConfigurationForStack(base, prev, stack);
     },
     quietMeta(ctx, 'actions:corner:ensureForStack')
   );
@@ -210,15 +217,14 @@ export function ensureCornerCellDirect(
 
   setCfgScalar(
     'cornerConfiguration',
-    function ensureCornerCell(_prev: unknown) {
-      const previous = ctx.readCfgSnapshot().cornerConfiguration;
+    function ensureCornerCell(prev: unknown) {
       const base = seedLowerCornerSnapshotForSplit(
         !!ctx.readUiSnapshot().stackSplitEnabled,
-        cloneRecord(ctx, previous)
+        cloneRecord(ctx, prev)
       );
       return ensureCornerConfigurationCellForStack(
         base,
-        previous,
+        prev,
         stack,
         idx,
         stack === 'top' ? topCornerCellNormalizeOptions(ctx) : undefined
@@ -235,6 +241,26 @@ export function isCallable<T>(value: unknown): value is T {
   return typeof value === 'function';
 }
 
+export function asCallable<T>(value: unknown): T | null {
+  return isCallable<T>(value) ? value : null;
+}
+
+export function asEnsureAt(value: unknown): EnsureAtFn | null {
+  return asCallable<EnsureAtFn>(value);
+}
+
+export function asEnsureRoot(value: unknown): EnsureRootFn | null {
+  return asCallable<EnsureRootFn>(value);
+}
+
+export function asPatchAt(value: unknown): PatchAtFn | null {
+  return asCallable<PatchAtFn>(value);
+}
+
+export function asPatchRoot(value: unknown): PatchRootFn | null {
+  return asCallable<PatchRootFn>(value);
+}
+
 export function asModulePatchLike(value: unknown): ModulePatchLike {
   if (isCallable<ModuleConfigPatchFn>(value)) return value;
   return asRecord<ModuleConfigPatchLike>(value) ?? {};
@@ -243,6 +269,10 @@ export function asModulePatchLike(value: unknown): ModulePatchLike {
 export function asCornerPatchLike(value: unknown): CornerPatchLike {
   if (isCallable<CornerConfigPatchFn>(value)) return value;
   return asRecord(value) ?? {};
+}
+
+export function isDelegatingStackPatchFn(fn: unknown): boolean {
+  return typeof fn === 'function' && Reflect.get(fn, '__wp_delegatesStackPatch') === true;
 }
 
 export function readModuleIndex(moduleKey: unknown): number | null {

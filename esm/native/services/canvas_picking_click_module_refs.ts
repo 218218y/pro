@@ -61,9 +61,11 @@ export function createCanvasPickingClickModuleRefs(args: {
     try {
       const mods = __getModulesActionsMaybe();
       const viaActions =
-        mods && typeof mods.ensureForStack === 'function'
-          ? mods.ensureForStack('top', `corner:${cellIdx}`)
-          : null;
+        mods && typeof mods.ensureCornerCellAt === 'function'
+          ? mods.ensureCornerCellAt(cellIdx)
+          : mods && typeof mods.ensureForStack === 'function'
+            ? mods.ensureForStack('top', `corner:${cellIdx}`)
+            : null;
       if (isModuleConfigLike(viaActions)) return viaActions;
     } catch (_e) {
       // Canonical surface missing/failed: keep canvas resilient by treating as no-op.

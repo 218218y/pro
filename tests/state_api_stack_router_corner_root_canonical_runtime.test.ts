@@ -15,6 +15,7 @@ function clone<T>(value: T): T {
 
 function createCtx(state: { config: AnyRec; ui: AnyRec }): StateApiStackRouterContext {
   const modulesNs: AnyRec = {};
+  const cornerNs: AnyRec = {};
   const setCfgScalar = ((key: string, valueOrFn: unknown) => {
     const prev = state.config[key];
     const next = typeof valueOrFn === 'function' ? valueOrFn(prev) : valueOrFn;
@@ -24,6 +25,7 @@ function createCtx(state: { config: AnyRec; ui: AnyRec }): StateApiStackRouterCo
 
   return {
     modulesNs,
+    cornerNs,
     getSetCfgScalar: () => setCfgScalar,
     mergeMeta: (_meta: unknown, defaults: AnyRec, defaultSource: string) => ({
       ...defaults,
@@ -37,6 +39,7 @@ function createCtx(state: { config: AnyRec; ui: AnyRec }): StateApiStackRouterCo
     readUiSnapshot: () => state.ui,
     callSetCfgScalar: (key: string, valueOrFn: unknown) => setCfgScalar(key, valueOrFn),
     shallowCloneObj: (value: unknown) => clone((value && typeof value === 'object' ? value : {}) as AnyRec),
+    safeCall: (fn: () => unknown) => fn(),
   };
 }
 

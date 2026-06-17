@@ -1,7 +1,6 @@
 import type { ActionMetaLike, ActionsNamespaceLike, ConfigActionsNamespaceLike } from '../../../types';
 
 import { asRecord } from '../runtime/record.js';
-import { cfgPatchWithReplaceKeys } from '../runtime/cfg_access.js';
 import type { MetaNs } from './state_api_shared.js';
 import {
   commitConfigWrite,
@@ -9,7 +8,6 @@ import {
   readActionMeta,
   readConfigScalarResolver,
   reuseEquivalentValue,
-  toConfigPatch,
 } from './state_api_config_namespace_shared.js';
 
 interface StateApiConfigNamespaceScalarsContext {
@@ -19,19 +17,10 @@ interface StateApiConfigNamespaceScalarsContext {
   normMeta(meta: unknown, source: string): ActionMetaLike;
   safeCall(fn: () => unknown): unknown;
   commitConfigPatch(patch: Record<string, unknown>, meta: ActionMetaLike): unknown;
-  projectConfigReplaceKeys: Record<string, true>;
 }
 
 export function installStateApiConfigNamespaceScalars(ctx: StateApiConfigNamespaceScalarsContext): void {
-  const {
-    actions,
-    configNs,
-    metaActionsNs,
-    normMeta,
-    safeCall,
-    commitConfigPatch,
-    projectConfigReplaceKeys,
-  } = ctx;
+  const { actions, configNs, metaActionsNs, normMeta, safeCall, commitConfigPatch } = ctx;
 
   if (typeof configNs.setScalar !== 'function') {
     configNs.setScalar = function setScalar(key: string, valueOrFn: unknown, meta?: ActionMetaLike) {
@@ -116,9 +105,7 @@ export function installStateApiConfigNamespaceScalars(ctx: StateApiConfigNamespa
       }
       nextVal = reuseEquivalentValue(prev, nextVal);
       if (Object.is(prev, nextVal)) return prev;
-      const o = projectConfigReplaceKeys[k]
-        ? toConfigPatch(cfgPatchWithReplaceKeys({ [k]: nextVal }, { [k]: true }))
-        : configSlicePatchFromKey(k, nextVal);
+      const o = configSlicePatchFromKey(k, nextVal);
       return commitConfigWrite(commitConfigPatch, o, meta);
     };
   }

@@ -38,6 +38,7 @@ export function installDomainApiModulesCorner(ctx: DomainApiModulesCornerContext
     modulesActions,
     cornerActions,
     _cfg,
+    _ui: ctx._ui,
     _isRecord,
     sanitizeCorner,
   });

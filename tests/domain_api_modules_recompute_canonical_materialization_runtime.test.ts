@@ -63,6 +63,7 @@ test('non-library recompute canonicalizes preserved modules through the top-modu
     _asMeta: (meta: unknown) => (isRecord(meta) ? meta : undefined),
     _meta: (meta: unknown, source: string) => ({ ...(isRecord(meta) ? meta : {}), source }),
     _domainApiReportNonFatal: () => undefined,
+    _markDelegatesStackPatch: () => undefined,
   });
 
   const result = modulesActions.recomputeFromUi(
@@ -142,6 +143,7 @@ test('modules recompute runtime derives structure from ui.raw before stale mirro
     _asMeta: (meta: unknown) => (isRecord(meta) ? meta : undefined),
     _meta: (meta: unknown, source: string) => ({ ...(isRecord(meta) ? meta : {}), source }),
     _domainApiReportNonFatal: () => undefined,
+    _markDelegatesStackPatch: () => undefined,
   });
 
   const result = modulesActions.recomputeFromUi(
@@ -207,6 +209,7 @@ test('modules recompute runtime: failed derived write returns canonical writeFai
     _domainApiReportNonFatal: (_app, op, err, meta) => {
       reports.push([op, err, meta]);
     },
+    _markDelegatesStackPatch: () => undefined,
   });
 
   const result = modulesActions.recomputeFromUi(

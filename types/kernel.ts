@@ -428,7 +428,11 @@ export interface ModulesActionsLike extends UnknownRecord {
     patchOrPatchFn: unknown,
     meta?: ActionMetaLike
   ) => unknown;
-  ensureForStack?: ModulesEnsureForStackFn;
+  ensureForStack?: (
+    stack: ModuleStackName | string,
+    moduleKey: ModuleStackPatchKey
+  ) => ModuleConfigLike | null;
+  ensureCornerCellAt?: (cellIndex: number) => ModuleConfigLike | null;
   ensureAt?: (index: number | string) => ModuleConfigLike | null;
   ensureLowerAt?: (index: number | string) => ModuleConfigLike | null;
   replaceAll?: (list: ModulesConfigurationLike, meta?: ActionMetaLike) => unknown;
@@ -436,11 +440,6 @@ export interface ModulesActionsLike extends UnknownRecord {
   patchAt?: (index: number | string, patch: ModuleConfigPatchLike, meta?: ActionMetaLike) => unknown;
   patchLowerAt?: (index: number | string, patch: ModuleConfigPatchLike, meta?: ActionMetaLike) => unknown;
   [k: string]: unknown;
-}
-
-export interface ModulesEnsureForStackFn {
-  (stack: ModuleStackName | string, moduleKey: 'corner'): CornerConfigurationLike | null;
-  (stack: ModuleStackName | string, moduleKey: ModuleStackPatchKey): ModuleConfigLike | null;
 }
 
 export interface CornerActionsLike extends UnknownRecord {

@@ -26,10 +26,10 @@ export function createCornerWingCellCfgResolver(
       if (isValueRecord(raw)) return normalizeModuleCfg(raw, idx);
 
       const modulesRec = getModulesActions(args.App);
-      const ensureCell = readEnsureCornerCellForStack(
-        modulesRec,
-        args.__stackSplitEnabled && args.__stackKey === 'bottom' ? 'bottom' : 'top'
-      );
+      const ensureCell =
+        args.__stackSplitEnabled && args.__stackKey === 'bottom'
+          ? readEnsureLowerCornerCellAt(modulesRec)
+          : readEnsureCornerCellAt(modulesRec);
       const fromCanonical = ensureCell ? ensureCell(idx) : null;
       if (isValueRecord(fromCanonical)) return normalizeModuleCfg(fromCanonical, idx);
       return normalizeModuleCfg({}, idx);
@@ -177,18 +177,23 @@ function readCornerCellCustomData(value: unknown): CornerCellCustomData {
   };
 }
 
-type CornerCellStackEnsurerRecord = RecordBag & {
-  ensureForStack: (stack: 'top' | 'bottom', moduleKey: string) => unknown;
-};
+type CornerCellEnsurerRecord = RecordBag & { ensureCornerCellAt: (index: number) => unknown };
+type LowerCornerCellEnsurerRecord = RecordBag & { ensureLowerCellAt: (index: number) => unknown };
 
-function isCornerCellStackEnsurerRecord(value: unknown): value is CornerCellStackEnsurerRecord {
-  return isValueRecord(value) && typeof value.ensureForStack === 'function';
+function isCornerCellEnsurerRecord(value: unknown): value is CornerCellEnsurerRecord {
+  return isValueRecord(value) && typeof value.ensureCornerCellAt === 'function';
 }
 
-function readEnsureCornerCellForStack(
-  value: unknown,
-  stack: 'top' | 'bottom'
-): ((index: number) => unknown) | null {
-  if (!isCornerCellStackEnsurerRecord(value)) return null;
-  return index => value.ensureForStack(stack, `corner:${index}`);
+function isLowerCornerCellEnsurerRecord(value: unknown): value is LowerCornerCellEnsurerRecord {
+  return isValueRecord(value) && typeof value.ensureLowerCellAt === 'function';
+}
+
+function readEnsureCornerCellAt(value: unknown): ((index: number) => unknown) | null {
+  if (!isCornerCellEnsurerRecord(value)) return null;
+  return index => value.ensureCornerCellAt(index);
+}
+
+function readEnsureLowerCornerCellAt(value: unknown): ((index: number) => unknown) | null {
+  if (!isLowerCornerCellEnsurerRecord(value)) return null;
+  return index => value.ensureLowerCellAt(index);
 }

@@ -72,7 +72,7 @@ function getCornerPentSharedRawCellCfgs(ctx: CornerConnectorDoorContext): ValueR
       if (!raw || typeof raw !== 'object') {
         try {
           const modulesRec = getModulesActions(ctx.App);
-          const ensureCell = readEnsureCornerCellForStack(modulesRec);
+          const ensureCell = readEnsureCornerCellAt(modulesRec);
           if (ensureCell) raw = ensureCell(cellIndex);
         } catch (error) {
           ctx.reportErrorThrottled(ctx.App, error, {
@@ -112,10 +112,10 @@ function readConfigRecord(value: unknown): ValueRecord | null {
   return isRecord(value) ? value : null;
 }
 
-function readEnsureCornerCellForStack(value: unknown): ((index: number) => unknown) | null {
+function readEnsureCornerCellAt(value: unknown): ((index: number) => unknown) | null {
   const modulesRec = readConfigRecord(value);
-  const fn = modulesRec ? modulesRec.ensureForStack : null;
-  return typeof fn === 'function' ? (index: number) => fn('top', `corner:${index}`) : null;
+  const fn = modulesRec ? modulesRec.ensureCornerCellAt : null;
+  return typeof fn === 'function' ? (index: number) => fn(index) : null;
 }
 
 function isRecord(value: unknown): value is ValueRecord {
