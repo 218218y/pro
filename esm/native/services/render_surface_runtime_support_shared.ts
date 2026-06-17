@@ -80,7 +80,7 @@ export type Object3DWritable = {
   getObjectByName?: Object3DLike['getObjectByName'];
   traverse?: Object3DLike['traverse'];
 };
-export type Object3DCompatible = Object3DWritable & {
+export type Object3DRuntimeLike = Object3DWritable & {
   parent: Object3DLike | null;
   children: Object3DLike[];
   position: Object3DLike['position'];

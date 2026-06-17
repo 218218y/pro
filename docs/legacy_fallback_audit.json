@@ -1,18 +1,18 @@
 {
-  "generatedAt": "2026-06-16T21:01:09.550Z",
+  "generatedAt": "2026-06-17T03:29:08.086Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 135,
-    "totalFiles": 76,
+    "totalOccurrences": 110,
+    "totalFiles": 64,
     "byCategory": {
       "runtime-default": 0,
-      "domain-default": 95,
+      "domain-default": 83,
       "error-message-default": 11,
       "framework-default": 2,
       "browser-adapter": 2,
       "project-migration": 2,
       "external-api-compat": 0,
-      "compat-boundary": 17,
+      "compat-boundary": 4,
       "test-fixture": 6,
       "legacy-runtime-risk": 0,
       "unknown": 0
@@ -22,30 +22,6 @@
         "total": 1,
         "categories": {
           "compat-boundary": 1
-        }
-      },
-      "esm/native/builder/core_carcass_cornice.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      "esm/native/builder/corner_connector_cornice_profile.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      "esm/native/builder/corner_wing_cornice_profile.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      "esm/native/builder/module_loop_pipeline_runtime_shared.ts": {
-        "total": 2,
-        "categories": {
-          "compat-boundary": 2
         }
       },
       "esm/native/builder/post_build_front_reveal_frames_doors.ts": {
@@ -60,28 +36,10 @@
           "compat-boundary": 1
         }
       },
-      "esm/native/builder/render_preview_sketch_pipeline_box_content_drawers.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      "esm/native/features/door_trim_map.ts": {
-        "total": 4,
-        "categories": {
-          "domain-default": 4
-        }
-      },
       "esm/native/features/project_config/project_config_persisted_payload_shared.ts": {
         "total": 1,
         "categories": {
           "project-migration": 1
-        }
-      },
-      "esm/native/features/stack_split/stack_split.ts": {
-        "total": 3,
-        "categories": {
-          "compat-boundary": 3
         }
       },
       "esm/native/kernel/cfg_meta.ts": {
@@ -234,12 +192,6 @@
           "domain-default": 4
         }
       },
-      "esm/native/services/canvas_picking_sketch_free_box_gap.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
       "esm/native/services/cloud_sync_delete_temp_runtime.ts": {
         "total": 3,
         "categories": {
@@ -268,24 +220,6 @@
         "total": 1,
         "categories": {
           "domain-default": 1
-        }
-      },
-      "esm/native/services/render_surface_runtime_support_readers.ts": {
-        "total": 4,
-        "categories": {
-          "compat-boundary": 4
-        }
-      },
-      "esm/native/services/render_surface_runtime_support_shared.ts": {
-        "total": 1,
-        "categories": {
-          "compat-boundary": 1
-        }
-      },
-      "esm/native/services/render_surface_runtime_support.ts": {
-        "total": 1,
-        "categories": {
-          "compat-boundary": 1
         }
       },
       "esm/native/services/ui_ephemeral_defaults.ts": {
@@ -457,13 +391,6 @@
           "domain-default": 1
         }
       },
-      "esm/shared/wardrobe_dimension_tokens_shared.ts": {
-        "total": 5,
-        "categories": {
-          "compat-boundary": 2,
-          "domain-default": 3
-        }
-      },
       "esm/test_imports.mjs": {
         "total": 1,
         "categories": {
@@ -486,25 +413,10 @@
         }
       },
       {
-        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-        "total": 5,
-        "categories": {
-          "compat-boundary": 2,
-          "domain-default": 3
-        }
-      },
-      {
         "file": "esm/test_no_side_effects_on_import.mjs",
         "total": 5,
         "categories": {
           "test-fixture": 5
-        }
-      },
-      {
-        "file": "esm/native/features/door_trim_map.ts",
-        "total": 4,
-        "categories": {
-          "domain-default": 4
         }
       },
       {
@@ -529,13 +441,6 @@
         }
       },
       {
-        "file": "esm/native/services/render_surface_runtime_support_readers.ts",
-        "total": 4,
-        "categories": {
-          "compat-boundary": 4
-        }
-      },
-      {
         "file": "esm/native/ui/html_sanitize_runtime.ts",
         "total": 4,
         "categories": {
@@ -555,13 +460,6 @@
         "categories": {
           "browser-adapter": 1,
           "domain-default": 3
-        }
-      },
-      {
-        "file": "esm/native/features/stack_split/stack_split.ts",
-        "total": 3,
-        "categories": {
-          "compat-boundary": 3
         }
       },
       {
@@ -590,13 +488,6 @@
         "total": 3,
         "categories": {
           "domain-default": 3
-        }
-      },
-      {
-        "file": "esm/native/builder/module_loop_pipeline_runtime_shared.ts",
-        "total": 2,
-        "categories": {
-          "compat-boundary": 2
         }
       },
       {
@@ -689,6 +580,41 @@
         "categories": {
           "compat-boundary": 1
         }
+      },
+      {
+        "file": "esm/native/builder/post_build_front_reveal_frames_doors.ts",
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      {
+        "file": "esm/native/builder/provide.ts",
+        "total": 1,
+        "categories": {
+          "compat-boundary": 1
+        }
+      },
+      {
+        "file": "esm/native/features/project_config/project_config_persisted_payload_shared.ts",
+        "total": 1,
+        "categories": {
+          "project-migration": 1
+        }
+      },
+      {
+        "file": "esm/native/kernel/domain_module_stack_patch.ts",
+        "total": 1,
+        "categories": {
+          "project-migration": 1
+        }
+      },
+      {
+        "file": "esm/native/kernel/state_api_history_meta_reactivity_contracts.ts",
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
       }
     ]
   },
@@ -700,41 +626,6 @@
       "term": "compat",
       "category": "compat-boundary",
       "text": "// - or a compat build-state override resolver (via centralized store_access seams)"
-    },
-    {
-      "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 885,
-      "term": "xMaxFallbackM",
-      "category": "domain-default",
-      "text": "xMaxBase = CORNICE_PROFILE.xMaxFallbackM;"
-    },
-    {
-      "file": "esm/native/builder/corner_connector_cornice_profile.ts",
-      "line": 51,
-      "term": "xMaxFallbackM",
-      "category": "domain-default",
-      "text": "xMaxBase = corniceProfile.xMaxFallbackM;"
-    },
-    {
-      "file": "esm/native/builder/corner_wing_cornice_profile.ts",
-      "line": 110,
-      "term": "xMaxFallbackM",
-      "category": "domain-default",
-      "text": "xMaxBase = corniceProfile.xMaxFallbackM;"
-    },
-    {
-      "file": "esm/native/builder/module_loop_pipeline_runtime_shared.ts",
-      "line": 19,
-      "term": "CreateBoardCompat",
-      "category": "compat-boundary",
-      "text": "type CreateBoardCompat = {"
-    },
-    {
-      "file": "esm/native/builder/module_loop_pipeline_runtime_shared.ts",
-      "line": 33,
-      "term": "CreateBoardCompat",
-      "category": "compat-boundary",
-      "text": "const createBoard: CreateBoardCompat = (...args: readonly unknown[]) =>"
     },
     {
       "file": "esm/native/builder/post_build_front_reveal_frames_doors.ts",
@@ -751,67 +642,11 @@
       "text": "// Any remaining compat probing is centralized in builder/store_access helpers."
     },
     {
-      "file": "esm/native/builder/render_preview_sketch_pipeline_box_content_drawers.ts",
-      "line": 103,
-      "term": "previewExternalFallbackHeightM",
-      "category": "domain-default",
-      "text": ": DRAWER_DIMENSIONS.sketch.previewExternalFallbackHeightM;"
-    },
-    {
-      "file": "esm/native/features/door_trim_map.ts",
-      "line": 97,
-      "term": "allowLowerFallback",
-      "category": "domain-default",
-      "text": "options?: { allowLowerFallback?: boolean }"
-    },
-    {
-      "file": "esm/native/features/door_trim_map.ts",
-      "line": 101,
-      "term": "allowLowerFallback",
-      "category": "domain-default",
-      "text": "const allowLowerFallback = options?.allowLowerFallback !== false;"
-    },
-    {
-      "file": "esm/native/features/door_trim_map.ts",
-      "line": 103,
-      "term": "allowLowerFallback",
-      "category": "domain-default",
-      "text": "if (key.startsWith('lower_') && allowLowerFallback)"
-    },
-    {
-      "file": "esm/native/features/door_trim_map.ts",
-      "line": 118,
-      "term": "allowLowerFallback",
-      "category": "domain-default",
-      "text": "allowLowerFallback: !args.preferScopedOnly,"
-    },
-    {
       "file": "esm/native/features/project_config/project_config_persisted_payload_shared.ts",
       "line": 271,
       "term": "legacy",
       "category": "project-migration",
       "text": "// ignore malformed legacy payloads"
-    },
-    {
-      "file": "esm/native/features/stack_split/stack_split.ts",
-      "line": 130,
-      "term": "lowerWidthFallbackCm",
-      "category": "compat-boundary",
-      "text": "defaultOverallWidth || WARDROBE_DEFAULTS.stackSplit.lowerWidthFallbackCm"
-    },
-    {
-      "file": "esm/native/features/stack_split/stack_split.ts",
-      "line": 133,
-      "term": "lowerWidthFallbackCm",
-      "category": "compat-boundary",
-      "text": "defaultOverallWidth || WARDROBE_DEFAULTS.stackSplit.lowerWidthFallbackCm,"
-    },
-    {
-      "file": "esm/native/features/stack_split/stack_split.ts",
-      "line": 134,
-      "term": "lowerWidthFallbackCm",
-      "category": "compat-boundary",
-      "text": "defaultOverallWidth || WARDROBE_DEFAULTS.stackSplit.lowerWidthFallbackCm"
     },
     {
       "file": "esm/native/kernel/cfg_meta.ts",
@@ -1150,13 +985,6 @@
       "text": "return raw[manualKey] ? readPositiveNumber(raw[valueKey], fallback) : fallback;"
     },
     {
-      "file": "esm/native/services/canvas_picking_sketch_free_box_gap.ts",
-      "line": 10,
-      "term": "placementGapFallbackM",
-      "category": "domain-default",
-      "text": "if (!Number.isFinite(minSpan) || !(minSpan > 0)) return dims.placementGapFallbackM;"
-    },
-    {
       "file": "esm/native/services/cloud_sync_delete_temp_runtime.ts",
       "line": 13,
       "term": "readDeleteTempErrorFallback",
@@ -1211,48 +1039,6 @@
       "term": "consoleFallback",
       "category": "domain-default",
       "text": "{ consoleFallback: !(opts && opts.noConsole) }"
-    },
-    {
-      "file": "esm/native/services/render_surface_runtime_support_readers.ts",
-      "line": 4,
-      "term": "Object3DCompatible",
-      "category": "compat-boundary",
-      "text": "type Object3DCompatible,"
-    },
-    {
-      "file": "esm/native/services/render_surface_runtime_support_readers.ts",
-      "line": 68,
-      "term": "isObject3DCompatible",
-      "category": "compat-boundary",
-      "text": "function isObject3DCompatible(value: unknown): value is Object3DCompatible {"
-    },
-    {
-      "file": "esm/native/services/render_surface_runtime_support_readers.ts",
-      "line": 68,
-      "term": "Object3DCompatible",
-      "category": "compat-boundary",
-      "text": "function isObject3DCompatible(value: unknown): value is Object3DCompatible {"
-    },
-    {
-      "file": "esm/native/services/render_surface_runtime_support_readers.ts",
-      "line": 98,
-      "term": "isObject3DCompatible",
-      "category": "compat-boundary",
-      "text": "return isObject3DCompatible(value) ? value : null;"
-    },
-    {
-      "file": "esm/native/services/render_surface_runtime_support_shared.ts",
-      "line": 83,
-      "term": "Object3DCompatible",
-      "category": "compat-boundary",
-      "text": "export type Object3DCompatible = Object3DWritable & {"
-    },
-    {
-      "file": "esm/native/services/render_surface_runtime_support.ts",
-      "line": 8,
-      "term": "Object3DCompatible",
-      "category": "compat-boundary",
-      "text": "Object3DCompatible,"
     },
     {
       "file": "esm/native/services/ui_ephemeral_defaults.ts",
@@ -1561,41 +1347,6 @@
       "term": "consoleFallback",
       "category": "domain-default",
       "text": "{ consoleFallback: false }"
-    },
-    {
-      "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-      "line": 57,
-      "term": "lowerWidthFallbackCm",
-      "category": "compat-boundary",
-      "text": "lowerWidthFallbackCm: 50,"
-    },
-    {
-      "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-      "line": 379,
-      "term": "xMaxFallbackM",
-      "category": "domain-default",
-      "text": "xMaxFallbackM: 1,"
-    },
-    {
-      "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-      "line": 974,
-      "term": "previewExternalFallbackHeightM",
-      "category": "domain-default",
-      "text": "previewExternalFallbackHeightM: 0.08,"
-    },
-    {
-      "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-      "line": 1002,
-      "term": "internalPreviewGridDivisionsFallback",
-      "category": "compat-boundary",
-      "text": "internalPreviewGridDivisionsFallback: INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault,"
-    },
-    {
-      "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-      "line": 1343,
-      "term": "placementGapFallbackM",
-      "category": "domain-default",
-      "text": "placementGapFallbackM: 0.002,"
     },
     {
       "file": "esm/test_imports.mjs",

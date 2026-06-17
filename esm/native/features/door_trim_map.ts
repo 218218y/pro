@@ -94,13 +94,13 @@ function pushDoorTrimKeyVariants(
   out: string[],
   seen: Record<string, true>,
   value: unknown,
-  options?: { allowLowerFallback?: boolean }
+  options?: { allowBaseKeyLookup?: boolean }
 ): void {
   const key = typeof value === 'string' ? value : String(value ?? '');
   if (!key) return;
-  const allowLowerFallback = options?.allowLowerFallback !== false;
+  const allowBaseKeyLookup = options?.allowBaseKeyLookup !== false;
   pushDoorTrimCandidate(out, seen, key);
-  if (key.startsWith('lower_') && allowLowerFallback)
+  if (key.startsWith('lower_') && allowBaseKeyLookup)
     pushDoorTrimCandidate(out, seen, key.slice('lower_'.length));
   if (isSegmentedDoorBaseKey(key)) pushDoorTrimCandidate(out, seen, `${key}_full`);
 }
@@ -115,7 +115,7 @@ export function readDoorTrimListForPart(args: {
   const candidates: string[] = [];
   const seen: Record<string, true> = Object.create(null);
   pushDoorTrimKeyVariants(candidates, seen, args.scopedPartId, {
-    allowLowerFallback: !args.preferScopedOnly,
+    allowBaseKeyLookup: !args.preferScopedOnly,
   });
   if (!args.preferScopedOnly) pushDoorTrimKeyVariants(candidates, seen, args.partId);
 

@@ -305,7 +305,7 @@ const families = [
         rel: '../esm/native/services/render_surface_runtime_support_readers.ts',
         patterns: [
           /function isVec3LikeValue\(/,
-          /function isObject3DCompatible\(/,
+          /function isObject3DRuntimeLike\(/,
           /export function readCameraLike\(/,
           /export function readControlsLike\(/,
           /export function readObject3DLike\(/,

@@ -5,7 +5,7 @@ export type {
   CameraWritable,
   ControlsLike,
   ControlsWritable,
-  Object3DCompatible,
+  Object3DRuntimeLike,
   Object3DLike,
   Object3DWritable,
   RenderBag,

@@ -127,11 +127,11 @@ export function normalizeStackSplit(args: {
   let lowerWidthCm = lowerWidthManual
     ? asFinitePositiveNumber(
         args.rawLowerWidthCm,
-        defaultOverallWidth || WARDROBE_DEFAULTS.stackSplit.lowerWidthFallbackCm
+        defaultOverallWidth || WARDROBE_DEFAULTS.stackSplit.lowerWidthDefaultCm
       )
     : asFinitePositiveNumber(
-        defaultOverallWidth || WARDROBE_DEFAULTS.stackSplit.lowerWidthFallbackCm,
-        defaultOverallWidth || WARDROBE_DEFAULTS.stackSplit.lowerWidthFallbackCm
+        defaultOverallWidth || WARDROBE_DEFAULTS.stackSplit.lowerWidthDefaultCm,
+        defaultOverallWidth || WARDROBE_DEFAULTS.stackSplit.lowerWidthDefaultCm
       );
 
   let lowerDoorsCount = lowerDoorsManual

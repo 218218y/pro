@@ -7,6 +7,6 @@ export function resolveSketchFreeBoxPlacementGap(args: { boxW: number; boxH: num
   const boxH = Number(args.boxH);
   const minSpan = Math.min(boxW, boxH);
   const dims = SKETCH_BOX_DIMENSIONS.freePlacement;
-  if (!Number.isFinite(minSpan) || !(minSpan > 0)) return dims.placementGapFallbackM;
+  if (!Number.isFinite(minSpan) || !(minSpan > 0)) return dims.placementGapDefaultM;
   return Math.max(dims.placementGapMinM, Math.min(dims.placementGapMaxM, minSpan * dims.placementGapRatio));
 }

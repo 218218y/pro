@@ -100,7 +100,7 @@ function applyExternalDrawersPreview(ctx: SketchPlacementPreviewContext): boolea
   const overlayH = drawerHeights.length
     ? drawerHeights.reduce((sum, entryH) => sum + entryH, 0) +
       DRAWER_DIMENSIONS.sketch.previewStackExtraHeightM
-    : DRAWER_DIMENSIONS.sketch.previewExternalFallbackHeightM;
+    : DRAWER_DIMENSIONS.sketch.previewExternalDefaultHeightM;
   const frontOverlay = ctx.readFrontOverlay(
     ctx.x,
     ctx.y + overlayH / 2,

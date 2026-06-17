@@ -16,7 +16,7 @@ function isRuntimeFn<TResult = unknown>(value: unknown): value is UnknownRuntime
 
 export function readCreateBoard(value: unknown): BuilderCreateBoardFn | undefined {
   if (!isRuntimeFn<ReturnType<BuilderCreateBoardFn>>(value)) return undefined;
-  type CreateBoardCompat = {
+  type CreateBoardRuntimeCallable = {
     (args: BuilderCreateBoardArgsLike): ReturnType<BuilderCreateBoardFn>;
     (
       w: number,
@@ -30,7 +30,7 @@ export function readCreateBoard(value: unknown): BuilderCreateBoardFn | undefine
       options?: BuilderCreateBoardOptions | null
     ): ReturnType<BuilderCreateBoardFn>;
   };
-  const createBoard: CreateBoardCompat = (...args: readonly unknown[]) =>
+  const createBoard: CreateBoardRuntimeCallable = (...args: readonly unknown[]) =>
     Reflect.apply(value, undefined, args);
   return createBoard;
 }

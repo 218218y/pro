@@ -100,7 +100,7 @@ test('[dimension tokens] sketch divider, attachment, and free-box measurement ov
   assert.match(tokens, /dividers: Object\.freeze\(\{/);
   assert.match(tokens, /dimensionOverlay: Object\.freeze\(\{/);
   assert.match(tokens, /attachIntentMinOverlapMinM:/);
-  assert.match(tokens, /placementGapFallbackM:/);
+  assert.match(tokens, /placementGapDefaultM:/);
 
   for (const rel of [
     'esm/native/builder/render_interior_sketch_layout_dividers.ts',

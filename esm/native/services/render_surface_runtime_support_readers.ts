@@ -1,7 +1,7 @@
 import type { CameraLike, ControlsLike, Object3DLike, RendererLike } from '../../../types';
 
 import {
-  type Object3DCompatible,
+  type Object3DRuntimeLike,
   readCameraWritable,
   readControlsWritable,
   readObject3DWritable,
@@ -65,7 +65,7 @@ function isRendererLikeValue(value: unknown): value is RendererLike {
   );
 }
 
-function isObject3DCompatible(value: unknown): value is Object3DCompatible {
+function isObject3DRuntimeLike(value: unknown): value is Object3DRuntimeLike {
   const rec = readObject3DWritable(value);
   return (
     !!rec &&
@@ -95,7 +95,7 @@ export function readControlsLike(value: unknown): ControlsLike | null {
 }
 
 export function readObject3DLike(value: unknown): Object3DLike | null {
-  return isObject3DCompatible(value) ? value : null;
+  return isObject3DRuntimeLike(value) ? value : null;
 }
 
 export function readCameraPosition(camera: unknown): unknown {

@@ -48,7 +48,7 @@ export function applyCornerConnectorProfileCornice(args: {
 
     let xMaxBase = step1Base + slopeBase + step2Base + capBase + lipBase;
     if (!Number.isFinite(xMaxBase) || xMaxBase < corniceCommon.epsilonM)
-      xMaxBase = corniceProfile.xMaxFallbackM;
+      xMaxBase = corniceProfile.xMaxDefaultM;
     const sx = oh / xMaxBase;
 
     const step1 = step1Base * sx;

@@ -1,21 +1,21 @@
 # Legacy / fallback audit
 
-Generated at: 2026-06-16T21:01:09.550Z
+Generated at: 2026-06-17T03:29:08.086Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **135**
-- Files with occurrences: **76**
+- Total categorized occurrences: **110**
+- Files with occurrences: **64**
 - Category counts:
   - `runtime-default`: **0**
-  - `domain-default`: **95**
+  - `domain-default`: **83**
   - `error-message-default`: **11**
   - `framework-default`: **2**
   - `browser-adapter`: **2**
   - `project-migration`: **2**
   - `external-api-compat`: **0**
-  - `compat-boundary`: **17**
+  - `compat-boundary`: **4**
   - `test-fixture`: **6**
   - `legacy-runtime-risk`: **0**
   - `unknown`: **0**
@@ -36,22 +36,17 @@ Generated at: 2026-06-16T21:01:09.550Z
 ## Hot files
 
 - `esm/native/kernel/cfg_meta.ts` - **5** (domain-default: 5)
-- `esm/shared/wardrobe_dimension_tokens_shared.ts` - **5** (compat-boundary: 2, domain-default: 3)
 - `esm/test_no_side_effects_on_import.mjs` - **5** (test-fixture: 5)
-- `esm/native/features/door_trim_map.ts` - **4** (domain-default: 4)
 - `esm/native/platform/dirty_flag.ts` - **4** (domain-default: 4)
 - `esm/native/runtime/meta_actions_namespace.ts` - **4** (domain-default: 4)
 - `esm/native/services/canvas_picking_cell_dims_linear_context_modules.ts` - **4** (domain-default: 4)
-- `esm/native/services/render_surface_runtime_support_readers.ts` - **4** (compat-boundary: 4)
 - `esm/native/ui/html_sanitize_runtime.ts` - **4** (domain-default: 4)
 - `esm/native/ui/notes_service_shared.ts` - **4** (domain-default: 4)
 - `esm/native/ui/project_save_runtime.ts` - **4** (browser-adapter: 1, domain-default: 3)
-- `esm/native/features/stack_split/stack_split.ts` - **3** (compat-boundary: 3)
 - `esm/native/kernel/domain_api_modules_corner_recompute_policy.ts` - **3** (domain-default: 3)
 - `esm/native/kernel/state_api_meta_namespace.ts` - **3** (domain-default: 3)
 - `esm/native/services/cloud_sync_delete_temp_runtime.ts` - **3** (error-message-default: 3)
 - `esm/native/ui/project_save_runtime_action.ts` - **3** (domain-default: 3)
-- `esm/native/builder/module_loop_pipeline_runtime_shared.ts` - **2** (compat-boundary: 2)
 - `esm/native/kernel/state_api_shared.ts` - **2** (domain-default: 2)
 - `esm/native/kernel/state_api.ts` - **2** (domain-default: 2)
 - `esm/native/runtime/errors.ts` - **2** (domain-default: 2)
@@ -65,6 +60,11 @@ Generated at: 2026-06-16T21:01:09.550Z
 - `esm/native/ui/project_load_runtime_action.ts` - **2** (error-message-default: 2)
 - `esm/native/ui/react/boot_react_ui.tsx` - **2** (domain-default: 2)
 - `esm/native/builder/build_state_resolver.ts` - **1** (compat-boundary: 1)
+- `esm/native/builder/post_build_front_reveal_frames_doors.ts` - **1** (domain-default: 1)
+- `esm/native/builder/provide.ts` - **1** (compat-boundary: 1)
+- `esm/native/features/project_config/project_config_persisted_payload_shared.ts` - **1** (project-migration: 1)
+- `esm/native/kernel/domain_module_stack_patch.ts` - **1** (project-migration: 1)
+- `esm/native/kernel/state_api_history_meta_reactivity_contracts.ts` - **1** (domain-default: 1)
 
 ## Allowlist check
 

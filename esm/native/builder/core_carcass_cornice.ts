@@ -882,7 +882,7 @@ function makeCorniceProfile(overhang: number): MutableRecord[] {
 
   let xMaxBase = step1Base + slopeBase + step2Base + capBase + lipBase;
   if (!Number.isFinite(xMaxBase) || xMaxBase < CORNICE_COMMON.epsilonM)
-    xMaxBase = CORNICE_PROFILE.xMaxFallbackM;
+    xMaxBase = CORNICE_PROFILE.xMaxDefaultM;
   const sx = oh / xMaxBase;
 
   const step1 = step1Base * sx;

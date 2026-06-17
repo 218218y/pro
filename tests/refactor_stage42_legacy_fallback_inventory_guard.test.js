@@ -29,15 +29,24 @@ test('stage 42 legacy fallback inventory closeout is anchored', () => {
     );
   }
 
-  for (const entry of [
-    ['esm/native/builder/core_carcass_cornice.ts', 'domain-default'],
-    ['esm/native/services/render_surface_runtime_support_readers.ts', 'compat-boundary'],
-    ['esm/shared/wardrobe_dimension_tokens_shared.ts', 'domain-default'],
+  for (const file of [
+    'esm/native/builder/core_carcass_cornice.ts',
+    'esm/native/builder/corner_connector_cornice_profile.ts',
+    'esm/native/builder/corner_wing_cornice_profile.ts',
+    'esm/native/builder/render_preview_sketch_pipeline_box_content_drawers.ts',
+    'esm/native/builder/module_loop_pipeline_runtime_shared.ts',
+    'esm/native/features/door_trim_map.ts',
+    'esm/native/features/stack_split/stack_split.ts',
+    'esm/native/services/canvas_picking_sketch_free_box_gap.ts',
+    'esm/native/services/render_surface_runtime_support.ts',
+    'esm/native/services/render_surface_runtime_support_readers.ts',
+    'esm/native/services/render_surface_runtime_support_shared.ts',
+    'esm/shared/wardrobe_dimension_tokens_shared.ts',
   ]) {
-    const [file, category] = entry;
-    assert.ok(
-      audit.summary.byFile[file]?.categories?.[category] > 0,
-      `${file} must be categorized as ${category}`
+    assert.equal(
+      audit.summary.byFile[file]?.total || 0,
+      0,
+      `${file} should use current default/runtime naming without fallback or compat vocabulary`
     );
   }
 
