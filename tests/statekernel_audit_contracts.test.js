@@ -130,7 +130,7 @@ test('[statekernel audit] notes, boot, and canvas writers stay on canonical acti
     [
       /getModulesActions\(App\)/,
       /mods\.patchForStack\(__activeStack, mk, patchFn, meta\)/,
-      /mods\.ensureCornerCellAt\(cellIdx\)/,
+      /mods\.ensureForStack\('top', `corner:\$\{cellIdx\}`\)/,
     ],
     'canvas picking bundle'
   );

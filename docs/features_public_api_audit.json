@@ -790,10 +790,6 @@
       "entry": "modules_configuration/calc_module_structure.js"
     },
     {
-      "file": "esm/native/kernel/domain_api_modules_corner_corner_patch.ts",
-      "entry": "modules_configuration/corner_cells_api.js"
-    },
-    {
       "file": "esm/native/kernel/domain_api_modules_corner_recompute_shared.ts",
       "entry": "modules_configuration/modules_config_api.js"
     },
@@ -808,10 +804,6 @@
     {
       "file": "esm/native/kernel/domain_api_modules_corner_selectors.ts",
       "entry": "modules_configuration/modules_config_api.js"
-    },
-    {
-      "file": "esm/native/kernel/domain_api_modules_corner_selectors.ts",
-      "entry": "modules_configuration/corner_cells_api.js"
     },
     {
       "file": "esm/native/kernel/domain_api_modules_corner_shared.ts",

@@ -14,7 +14,6 @@ import {
   ensureDomainNamespace,
   ensureDomainRecord,
   isDomainRecord,
-  markDelegatesStackPatch,
   metaNoBuild,
   metaNoBuildNoHistory,
   readNumberOrNull,
@@ -59,10 +58,21 @@ function hasInstalledDomainApiSurface(app: AppContainer): boolean {
     typeof modulesActions.recompute === 'function' &&
     typeof modulesActions.setAll === 'function' &&
     typeof modulesActions.patchForStack === 'function' &&
+    typeof modulesActions.ensureForStack === 'function' &&
+    typeof modulesActions.ensureAt === 'function' &&
+    typeof modulesActions.ensureLowerAt === 'function' &&
     typeof modulesActions.patchAt === 'function' &&
     typeof modulesActions.patchLowerAt === 'function' &&
     modulesActions.patch === undefined &&
+    typeof cornerActions.ensureConfig === 'function' &&
+    typeof cornerActions.ensureLowerConfig === 'function' &&
+    typeof cornerActions.ensureCellAt === 'function' &&
+    typeof cornerActions.ensureLowerCellAt === 'function' &&
+    typeof cornerActions.setConfig === 'function' &&
     typeof cornerActions.patch === 'function' &&
+    typeof cornerActions.patchLower === 'function' &&
+    typeof cornerActions.patchCellAt === 'function' &&
+    typeof cornerActions.patchLowerCellAt === 'function' &&
     typeof texturesActions.setCustomUploadedDataURL === 'function'
   );
 }
@@ -123,7 +133,6 @@ export function installDomainApi(app: unknown): AppContainer {
     _asMeta: asActionMeta,
     _meta: createMeta,
     _domainApiReportNonFatal: (app0, op, error, opts) => reportNonFatal(op, error, opts),
-    _markDelegatesStackPatch: markDelegatesStackPatch,
   });
 
   installDomainApiSurfaceSections({
@@ -174,15 +183,6 @@ export function installDomainApi(app: unknown): AppContainer {
     _meta: createMeta,
     _cfgMapPatch: patchConfigMapValue,
   });
-
-  try {
-    markDelegatesStackPatch(cornerActions.patch);
-    markDelegatesStackPatch(cornerActions.patchLower);
-    markDelegatesStackPatch(cornerActions.patchCellAt);
-    markDelegatesStackPatch(cornerActions.patchLowerCellAt);
-  } catch {
-    // ignore optional delegate marks
-  }
 
   ensureDomainApiInstallState(App).installed = true;
   return App;

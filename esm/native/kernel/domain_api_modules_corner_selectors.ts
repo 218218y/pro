@@ -1,21 +1,11 @@
 import type { CornerActionsLike, ModulesActionsLike } from '../../../types';
 
-import {
-  ensureModulesConfigurationItemFromConfigSnapshot,
-  readModulesConfigurationListFromConfigSnapshot,
-} from '../features/modules_configuration/modules_config_api.js';
-import {
-  readCornerConfigurationCellForStack,
-  readCornerConfigurationCellListForStack,
-  ensureCornerConfigurationCellForStack,
-  resolveTopCornerCellDefaultLayoutFromUi,
-} from '../features/modules_configuration/corner_cells_api.js';
+import { readModulesConfigurationListFromConfigSnapshot } from '../features/modules_configuration/modules_config_api.js';
 import {
   asRecord,
   asRecordOrEmpty,
   readCornerConfig,
   readCornerConfiguration,
-  readLowerCornerConfig,
   readModulesList,
   sanitizeLowerCornerCfg,
   type DomainModulesCornerSelectRoot,
@@ -27,10 +17,11 @@ export interface InstallDomainApiModulesCornerSelectorsArgs {
   modulesActions: ModulesActionsLike;
   cornerActions: CornerActionsLike;
   _cfg: () => unknown;
-  _ui: () => unknown;
   _isRecord?: (v: unknown) => boolean;
   sanitizeCorner: (value: unknown) => NormalizedCornerConfigurationLike;
 }
+
+const canonicalEnsureAliases = new WeakSet<object>();
 
 function hasSketchInternalDrawerData(value: unknown): boolean {
   const rec = asRecord(value);
@@ -48,9 +39,26 @@ export function installDomainApiModulesCornerSelectors({
   modulesActions,
   cornerActions,
   _cfg,
-  _ui,
   sanitizeCorner,
 }: InstallDomainApiModulesCornerSelectorsArgs): void {
+  const requireEnsureForStack = () => {
+    const ensureForStack = modulesActions.ensureForStack;
+    if (typeof ensureForStack !== 'function') {
+      throw new Error(
+        '[WardrobePro][domain_api] actions.modules.ensureForStack is required before stack ensure delegation.'
+      );
+    }
+    return ensureForStack;
+  };
+
+  const readIndex = (index: unknown): number | null => {
+    const parsed = parseInt(String(index), 10);
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+  };
+
+  const isCanonicalEnsureAlias = (value: unknown): boolean =>
+    typeof value === 'function' && canonicalEnsureAliases.has(value);
+
   select.modules.list =
     select.modules.list ||
     function () {
@@ -73,30 +81,23 @@ export function installDomainApiModulesCornerSelectors({
       return list[i] || null;
     };
 
-  modulesActions.ensureAt =
-    modulesActions.ensureAt ||
-    function (index: unknown) {
-      const i = parseInt(String(index), 10);
-      if (!Number.isFinite(i) || i < 0) return null;
-
-      return ensureModulesConfigurationItemFromConfigSnapshot(_cfg(), 'modulesConfiguration', i, {
-        uiSnapshot: _ui(),
-        cfgSnapshot: _cfg(),
-      });
+  if (!isCanonicalEnsureAlias(modulesActions.ensureAt)) {
+    const ensureAt = function (index: unknown) {
+      const i = readIndex(index);
+      return i == null ? null : requireEnsureForStack()('top', i);
     };
+    modulesActions.ensureAt = ensureAt;
+    canonicalEnsureAliases.add(ensureAt);
+  }
 
-  modulesActions.ensureLowerAt =
-    modulesActions.ensureLowerAt ||
-    function (index: unknown) {
-      const i = parseInt(String(index), 10);
-      if (!Number.isFinite(i) || i < 0) return null;
-
-      return ensureModulesConfigurationItemFromConfigSnapshot(
-        _cfg(),
-        'stackSplitLowerModulesConfiguration',
-        i
-      );
+  if (!isCanonicalEnsureAlias(modulesActions.ensureLowerAt)) {
+    const ensureLowerAt = function (index: unknown) {
+      const i = readIndex(index);
+      return i == null ? null : requireEnsureForStack()('bottom', i);
     };
+    modulesActions.ensureLowerAt = ensureLowerAt;
+    canonicalEnsureAliases.add(ensureLowerAt);
+  }
 
   select.modules.hasInternalDrawers =
     select.modules.hasInternalDrawers ||
@@ -121,11 +122,13 @@ export function installDomainApiModulesCornerSelectors({
       );
     };
 
-  cornerActions.ensureConfig =
-    cornerActions.ensureConfig ||
-    function () {
-      return readCornerConfig(select);
+  if (!isCanonicalEnsureAlias(cornerActions.ensureConfig)) {
+    const ensureConfig = function () {
+      return requireEnsureForStack()('top', 'corner');
     };
+    cornerActions.ensureConfig = ensureConfig;
+    canonicalEnsureAliases.add(ensureConfig);
+  }
 
   select.corner.lowerConfig =
     select.corner.lowerConfig ||
@@ -135,36 +138,29 @@ export function installDomainApiModulesCornerSelectors({
       return sanitizeLowerCornerCfg(asRecordOrEmpty(cornerCfg.stackSplitLower));
     };
 
-  cornerActions.ensureLowerConfig =
-    cornerActions.ensureLowerConfig ||
-    function () {
-      return readLowerCornerConfig(select);
+  if (!isCanonicalEnsureAlias(cornerActions.ensureLowerConfig)) {
+    const ensureLowerConfig = function () {
+      return requireEnsureForStack()('bottom', 'corner');
     };
+    cornerActions.ensureLowerConfig = ensureLowerConfig;
+    canonicalEnsureAliases.add(ensureLowerConfig);
+  }
 
-  cornerActions.ensureCellAt =
-    cornerActions.ensureCellAt ||
-    function (index: unknown) {
-      const i = parseInt(String(index), 10);
-      if (!Number.isFinite(i) || i < 0) return null;
-
-      const cfg = _cfg();
-      const cornerCfg = readCornerConfiguration(cfg);
-      const ensured = ensureCornerConfigurationCellForStack(cornerCfg, cornerCfg, 'top', i, {
-        defaultLayout: index => resolveTopCornerCellDefaultLayoutFromUi(_ui(), index),
-      });
-      return asRecord(readCornerConfigurationCellForStack(ensured, 'top', i)) || null;
+  if (!isCanonicalEnsureAlias(cornerActions.ensureCellAt)) {
+    const ensureCellAt = function (index: unknown) {
+      const i = readIndex(index);
+      return i == null ? null : requireEnsureForStack()('top', `corner:${i}`);
     };
+    cornerActions.ensureCellAt = ensureCellAt;
+    canonicalEnsureAliases.add(ensureCellAt);
+  }
 
-  cornerActions.ensureLowerCellAt =
-    cornerActions.ensureLowerCellAt ||
-    function (index: unknown) {
-      const i = parseInt(String(index), 10);
-      if (!Number.isFinite(i) || i < 0) return null;
-
-      const cfg = _cfg();
-      const cornerCfg = readCornerConfiguration(cfg);
-      const ensured = ensureCornerConfigurationCellForStack(cornerCfg, cornerCfg, 'bottom', i);
-      const cells = readCornerConfigurationCellListForStack(ensured, 'bottom');
-      return asRecord(cells[i]) || null;
+  if (!isCanonicalEnsureAlias(cornerActions.ensureLowerCellAt)) {
+    const ensureLowerCellAt = function (index: unknown) {
+      const i = readIndex(index);
+      return i == null ? null : requireEnsureForStack()('bottom', `corner:${i}`);
     };
+    cornerActions.ensureLowerCellAt = ensureLowerCellAt;
+    canonicalEnsureAliases.add(ensureLowerCellAt);
+  }
 }

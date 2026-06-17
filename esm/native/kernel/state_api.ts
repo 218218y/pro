@@ -47,7 +47,6 @@ export function installStateApi(App: AppContainer): void {
     mode: modeNs,
     builder: builderNs,
     modules: modulesNs,
-    corner: cornerNs,
     history: historyNs,
     store: storeNs,
   } = ensureStateApiNamespaces(App);
@@ -85,7 +84,6 @@ export function installStateApi(App: AppContainer): void {
 
   installStateApiStackRouter({
     modulesNs,
-    cornerNs,
     getSetCfgScalar,
     mergeMeta,
     normMeta,
@@ -93,7 +91,6 @@ export function installStateApi(App: AppContainer): void {
     readUiSnapshot,
     callSetCfgScalar,
     shallowCloneObj,
-    safeCall,
   });
 
   installStateApiSurfaceNamespaces({

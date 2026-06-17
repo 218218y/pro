@@ -89,10 +89,9 @@ test('canvas picking click owner stays thin and routes edit families through foc
     clickModuleRefs,
     /const __ensureCornerCellConfigRef = \(cellIdx: number\): ModuleConfigLike \| null => \{/
   );
-  assert.match(clickModuleRefs, /typeof mods\.ensureCornerCellAt === 'function'/);
-  assert.match(clickModuleRefs, /mods\.ensureCornerCellAt\(cellIdx\)/);
   assert.match(clickModuleRefs, /typeof mods\.ensureForStack === 'function'/);
   assert.match(clickModuleRefs, /mods\.ensureForStack\('top', `corner:\$\{cellIdx\}`\)/);
+  assert.doesNotMatch(clickModuleRefs, /ensureCornerCellAt/);
   assert.match(clickModuleRefs, /mods\.patchForStack\(__activeStack, mk, patchFn, meta\)/);
   assert.match(
     modulesPatchMeta,
