@@ -19,8 +19,8 @@ import { readRootState } from '../runtime/root_state_access.js';
 
 export type AppLike = AppContainer | (UnknownRecord & { services?: unknown }) | null | undefined;
 export type AppStateWithGetLike = { get?: () => unknown };
-export type TimeoutFallbackHandle = ReturnType<typeof setTimeout> | number;
-export type RafLike = (cb: (t?: number) => void) => number | TimeoutFallbackHandle;
+export type TimeoutHandle = ReturnType<typeof setTimeout> | number;
+export type RafLike = (cb: (t?: number) => void) => number | TimeoutHandle;
 export type VectorLike = Pick<Vector3Like, 'x' | 'y' | 'z'>;
 export type VectorCtorLike = new (x?: number, y?: number, z?: number) => Vector3Like;
 export type ThreeLike = { Vector3: VectorCtorLike };

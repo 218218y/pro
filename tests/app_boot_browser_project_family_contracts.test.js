@@ -548,7 +548,7 @@ import {
       projectSaveRuntimeBundle,
       [
         /export function asUiFeedbackPrompt\(/,
-        /export function createProjectSavePromptFallback\(/,
+        /export function createProjectSaveBrowserPrompt\(/,
         /export function buildProjectSaveExportFailureResult\(/,
         /export function scheduleSaveResultToast\(/,
         /export function runEnsureSaveProjectAction\(/,

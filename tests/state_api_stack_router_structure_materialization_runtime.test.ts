@@ -10,7 +10,7 @@ function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value));
 }
 
-test('state_api stack router materializes missing top modules with structure-aware doors for ensure and patch fallbacks', () => {
+test('state_api stack router materializes missing top modules with structure-aware doors for ensure and patch defaults', () => {
   const state: { config: AnyRec; ui: AnyRec } = {
     config: {
       wardrobeType: 'hinged',
@@ -36,9 +36,9 @@ test('state_api stack router materializes missing top modules with structure-awa
         state.config[key] = next;
         return Array.isArray(next) ? (next[2] ?? next) : next;
       }) as (key: string, valueOrFn: unknown) => unknown,
-    mergeMeta: (_meta: unknown, defaults: AnyRec, sourceFallback: string) => ({
+    mergeMeta: (_meta: unknown, defaults: AnyRec, defaultSource: string) => ({
       ...defaults,
-      source: sourceFallback,
+      source: defaultSource,
     }),
     normMeta: (meta: unknown, source: string) => ({
       ...(meta && typeof meta === 'object' ? (meta as AnyRec) : {}),

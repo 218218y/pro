@@ -21,8 +21,8 @@ test('modules recompute build policy: derived write meta preserves existing sour
     immediate: true,
   });
 
-  const fallbackMeta = createDerivedModulesWriteMeta({});
-  assert.deepEqual(fallbackMeta, {
+  const defaultMeta = createDerivedModulesWriteMeta({});
+  assert.deepEqual(defaultMeta, {
     source: 'derived:modules',
     immediate: true,
   });
@@ -37,8 +37,8 @@ test('modules recompute build policy: no-main cleanup meta stays no-build while 
     noBuild: true,
   });
 
-  const fallback = createNoMainModulesCleanupMeta(null);
-  assert.deepEqual(fallback, {
+  const defaultMeta = createNoMainModulesCleanupMeta(null);
+  assert.deepEqual(defaultMeta, {
     source: 'derived:modules:noMainCleanup',
     immediate: true,
     noBuild: true,
@@ -142,7 +142,7 @@ test('modules recompute build policy: write owner prefers modulesActions.setAll 
     actions: {
       config: {
         setModulesConfiguration() {
-          throw new Error('cfg fallback should not run when setAll exists');
+          throw new Error('cfg write should not run when setAll exists');
         },
       },
     },
@@ -178,7 +178,7 @@ test('modules recompute build policy: write owner prefers modulesActions.setAll 
   assert.deepEqual(setAllCalls[0].meta, result.writeMeta);
 });
 
-test('modules recompute build policy: write owner falls back to config writes and reports cfg failures canonically', () => {
+test('modules recompute build policy: write owner uses config writes when modulesActions.setAll is absent and reports cfg failures canonically', () => {
   const reports: Array<{ where: string; meta: unknown }> = [];
   const App = {
     actions: {
@@ -209,7 +209,7 @@ test('modules recompute build policy: write owner falls back to config writes an
     },
   });
   assert.deepEqual(reports, [
-    { where: 'actions.modules.recomputeFromUi.cfgSetScalarFallback', meta: { throttleMs: 6000 } },
+    { where: 'actions.modules.recomputeFromUi.cfgSetScalarWrite', meta: { throttleMs: 6000 } },
   ]);
   assert.equal(getModulesRecomputeWriteSource('derived'), 'derived:modules');
 });

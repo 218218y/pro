@@ -19,7 +19,7 @@ import { runProjectLoadActionSingleFlight } from './project_load_action_singlefl
 import {
   asProjectFileLoadEvent,
   readProjectLoadFlightKey,
-  resolveProjectLoadFallbackMessage,
+  resolveProjectLoadDefaultMessage,
 } from './project_load_runtime_shared.js';
 
 export async function runProjectLoadActionResult(
@@ -38,7 +38,7 @@ export async function runProjectLoadActionResult(
     run,
     report: reportProjectLoadResult,
     buildError: buildProjectActionErrorResult,
-    fallbackMessage: resolveProjectLoadFallbackMessage(options?.fallbackMessage),
+    fallbackMessage: resolveProjectLoadDefaultMessage(options?.fallbackMessage),
     finally: () => clearProjectLoadInputEventTarget(options?.clearInputTargetFrom),
   });
 }

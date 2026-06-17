@@ -1,6 +1,6 @@
 import {
   asUiFeedbackPrompt as asUiFeedbackPromptImpl,
-  createProjectSavePromptFallback as createProjectSavePromptFallbackImpl,
+  createProjectSaveBrowserPrompt as createProjectSaveBrowserPromptImpl,
 } from './project_save_runtime_prompt.js';
 import { runEnsureSaveProjectAction as runEnsureSaveProjectActionImpl } from './project_save_runtime_action.js';
 import type {
@@ -16,8 +16,8 @@ export function asUiFeedbackPrompt(value: unknown): UiFeedbackPromptLike | null 
   return asUiFeedbackPromptImpl(value);
 }
 
-export function createProjectSavePromptFallback(win: Window | null): PromptFnLike {
-  return createProjectSavePromptFallbackImpl(win);
+export function createProjectSaveBrowserPrompt(win: Window | null): PromptFnLike {
+  return createProjectSaveBrowserPromptImpl(win);
 }
 
 export function runEnsureSaveProjectAction(

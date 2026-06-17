@@ -114,12 +114,12 @@ function createHarness() {
         source: typeof base.source === 'string' && base.source ? base.source : source,
       };
     },
-    mergeMeta(meta: AnyRecord | null | undefined, defaults: AnyRecord, sourceFallback: string) {
+    mergeMeta(meta: AnyRecord | null | undefined, defaults: AnyRecord, defaultSource: string) {
       const base = asObj(meta) || {};
       return {
         ...(defaults || {}),
         ...base,
-        source: typeof base.source === 'string' && base.source ? base.source : sourceFallback,
+        source: typeof base.source === 'string' && base.source ? base.source : defaultSource,
       };
     },
     isObj: (value: unknown): value is AnyRecord =>

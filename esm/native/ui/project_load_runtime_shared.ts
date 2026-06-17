@@ -49,7 +49,7 @@ export function openProjectLoadInputTarget(input: unknown): void {
   }
 }
 
-export function resolveProjectLoadFallbackMessage(fallbackMessage?: string | null): string {
+export function resolveProjectLoadDefaultMessage(fallbackMessage?: string | null): string {
   return typeof fallbackMessage === 'string' && fallbackMessage.trim() ? fallbackMessage : 'טעינת קובץ נכשלה';
 }
 

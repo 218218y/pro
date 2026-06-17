@@ -45,7 +45,7 @@ test('installDirtyFlag heals a drifted public setDirty seam back to the canonica
 
   assert.equal(App.actions.meta.setDirty, firstSetDirty);
   App.actions.meta.setDirty(true, { source: 'test:dirty' });
-  assert.equal(App.__dirtyFallback, true);
+  assert.equal(App.__dirtyMirror, true);
   assert.equal(metaCalls.length, 1);
   assert.equal(metaCalls[0].value, true);
   assert.equal(metaCalls[0].meta?.source, 'test:dirty');

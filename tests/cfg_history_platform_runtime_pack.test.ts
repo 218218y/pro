@@ -62,11 +62,11 @@ test('cfg access runtime pack: canonical config/history namespaces own map write
         },
       },
       meta: {
-        merge(meta?: AnyRecord, defaults?: AnyRecord, sourceFallback?: string) {
+        merge(meta?: AnyRecord, defaults?: AnyRecord, defaultSource?: string) {
           return {
             ...(defaults || {}),
             ...(meta || {}),
-            source: meta?.source || defaults?.source || sourceFallback || 'config',
+            source: meta?.source || defaults?.source || defaultSource || 'config',
           };
         },
       },

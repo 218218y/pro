@@ -60,8 +60,8 @@ export function installStateApi(App: AppContainer): void {
   const mergeMeta = (
     meta: ActionMetaLike | UnknownRecord | null | undefined,
     defaults: ActionMetaLike,
-    sourceFallback: string
-  ): ActionMetaLike => mergeMetaWithDefaults(meta, defaults, sourceFallback);
+    defaultSource: string
+  ): ActionMetaLike => mergeMetaWithDefaults(meta, defaults, defaultSource);
 
   const store = assertStore(App, 'kernel/state_api');
   const {

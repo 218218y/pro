@@ -25,7 +25,7 @@ export function asUiFeedbackPrompt(value: unknown): UiFeedbackPromptLike | null 
     : null;
 }
 
-export function createProjectSavePromptFallback(win: Window | null): PromptFnLike {
+export function createProjectSaveBrowserPrompt(win: Window | null): PromptFnLike {
   return function (title: string, def: string, cb: (v: string | null) => void) {
     if (!win || typeof win.prompt !== 'function') {
       throw new Error('שמירה לא זמינה כרגע (prompt)');

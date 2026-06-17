@@ -51,7 +51,7 @@ function reportDirtyFlagNonFatal(App: UnknownRecord, op: string, err: unknown): 
 function createCanonicalSetDirty(A: UnknownRecord): DirtySetter {
   return function setDirty(isDirty: boolean, meta: ActionMetaLike) {
     try {
-      A.__dirtyFallback = !!isDirty;
+      A.__dirtyMirror = !!isDirty;
 
       const mm = asObject(meta) || null;
       const src = mm && mm.source != null ? String(mm.source) : 'dirty';
@@ -74,8 +74,8 @@ export function installDirtyFlag(app: unknown) {
   const metaNs = readDirtyMetaNamespace(ensureMetaActions(A));
   if (!metaNs) return false;
 
-  if (typeof A.__dirtyFallback !== 'boolean') {
-    A.__dirtyFallback = false;
+  if (typeof A.__dirtyMirror !== 'boolean') {
+    A.__dirtyMirror = false;
   }
 
   installStableSurfaceSlot<DirtySetter>(

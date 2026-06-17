@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-06-17T03:29:08.086Z",
+  "generatedAt": "2026-06-17T03:51:06.388Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 110,
-    "totalFiles": 64,
+    "totalOccurrences": 73,
+    "totalFiles": 50,
     "byCategory": {
       "runtime-default": 0,
-      "domain-default": 83,
-      "error-message-default": 11,
+      "domain-default": 51,
+      "error-message-default": 8,
       "framework-default": 2,
-      "browser-adapter": 2,
+      "browser-adapter": 0,
       "project-migration": 2,
       "external-api-compat": 0,
       "compat-boundary": 4,
@@ -42,58 +42,16 @@
           "project-migration": 1
         }
       },
-      "esm/native/kernel/cfg_meta.ts": {
-        "total": 5,
-        "categories": {
-          "domain-default": 5
-        }
-      },
-      "esm/native/kernel/domain_api_modules_corner_recompute_policy.ts": {
-        "total": 3,
-        "categories": {
-          "domain-default": 3
-        }
-      },
       "esm/native/kernel/domain_module_stack_patch.ts": {
         "total": 1,
         "categories": {
           "project-migration": 1
         }
       },
-      "esm/native/kernel/state_api_history_meta_reactivity_contracts.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      "esm/native/kernel/state_api_meta_namespace.ts": {
-        "total": 3,
-        "categories": {
-          "domain-default": 3
-        }
-      },
-      "esm/native/kernel/state_api_shared.ts": {
-        "total": 2,
-        "categories": {
-          "domain-default": 2
-        }
-      },
-      "esm/native/kernel/state_api_stack_router_shared.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      "esm/native/kernel/state_api.ts": {
-        "total": 2,
-        "categories": {
-          "domain-default": 2
-        }
-      },
       "esm/native/platform/dirty_flag.ts": {
-        "total": 4,
+        "total": 1,
         "categories": {
-          "domain-default": 4
+          "domain-default": 1
         }
       },
       "esm/native/platform/render_loop_impl_front_overlay.ts": {
@@ -120,12 +78,6 @@
           "domain-default": 1
         }
       },
-      "esm/native/runtime/cfg_access_shared.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
       "esm/native/runtime/commands_access.ts": {
         "total": 1,
         "categories": {
@@ -142,12 +94,6 @@
         "total": 1,
         "categories": {
           "domain-default": 1
-        }
-      },
-      "esm/native/runtime/meta_actions_namespace.ts": {
-        "total": 4,
-        "categories": {
-          "domain-default": 4
         }
       },
       "esm/native/runtime/platform_access_debug_stats.ts": {
@@ -178,12 +124,6 @@
         "total": 1,
         "categories": {
           "domain-default": 1
-        }
-      },
-      "esm/native/services/camera_shared.ts": {
-        "total": 2,
-        "categories": {
-          "domain-default": 2
         }
       },
       "esm/native/services/canvas_picking_cell_dims_linear_context_modules.ts": {
@@ -312,35 +252,10 @@
           "domain-default": 4
         }
       },
-      "esm/native/ui/project_load_runtime_action.ts": {
-        "total": 2,
-        "categories": {
-          "error-message-default": 2
-        }
-      },
-      "esm/native/ui/project_load_runtime_shared.ts": {
-        "total": 1,
-        "categories": {
-          "error-message-default": 1
-        }
-      },
       "esm/native/ui/project_save_runtime_action.ts": {
-        "total": 3,
-        "categories": {
-          "domain-default": 3
-        }
-      },
-      "esm/native/ui/project_save_runtime_prompt.ts": {
         "total": 1,
         "categories": {
-          "browser-adapter": 1
-        }
-      },
-      "esm/native/ui/project_save_runtime.ts": {
-        "total": 4,
-        "categories": {
-          "browser-adapter": 1,
-          "domain-default": 3
+          "domain-default": 1
         }
       },
       "esm/native/ui/react/boot_react_ui.tsx": {
@@ -406,31 +321,10 @@
     },
     "hotFiles": [
       {
-        "file": "esm/native/kernel/cfg_meta.ts",
-        "total": 5,
-        "categories": {
-          "domain-default": 5
-        }
-      },
-      {
         "file": "esm/test_no_side_effects_on_import.mjs",
         "total": 5,
         "categories": {
           "test-fixture": 5
-        }
-      },
-      {
-        "file": "esm/native/platform/dirty_flag.ts",
-        "total": 4,
-        "categories": {
-          "domain-default": 4
-        }
-      },
-      {
-        "file": "esm/native/runtime/meta_actions_namespace.ts",
-        "total": 4,
-        "categories": {
-          "domain-default": 4
         }
       },
       {
@@ -455,53 +349,10 @@
         }
       },
       {
-        "file": "esm/native/ui/project_save_runtime.ts",
-        "total": 4,
-        "categories": {
-          "browser-adapter": 1,
-          "domain-default": 3
-        }
-      },
-      {
-        "file": "esm/native/kernel/domain_api_modules_corner_recompute_policy.ts",
-        "total": 3,
-        "categories": {
-          "domain-default": 3
-        }
-      },
-      {
-        "file": "esm/native/kernel/state_api_meta_namespace.ts",
-        "total": 3,
-        "categories": {
-          "domain-default": 3
-        }
-      },
-      {
         "file": "esm/native/services/cloud_sync_delete_temp_runtime.ts",
         "total": 3,
         "categories": {
           "error-message-default": 3
-        }
-      },
-      {
-        "file": "esm/native/ui/project_save_runtime_action.ts",
-        "total": 3,
-        "categories": {
-          "domain-default": 3
-        }
-      },
-      {
-        "file": "esm/native/kernel/state_api_shared.ts",
-        "total": 2,
-        "categories": {
-          "domain-default": 2
-        }
-      },
-      {
-        "file": "esm/native/kernel/state_api.ts",
-        "total": 2,
-        "categories": {
-          "domain-default": 2
         }
       },
       {
@@ -523,13 +374,6 @@
         "total": 2,
         "categories": {
           "compat-boundary": 2
-        }
-      },
-      {
-        "file": "esm/native/services/camera_shared.ts",
-        "total": 2,
-        "categories": {
-          "domain-default": 2
         }
       },
       {
@@ -558,13 +402,6 @@
         "total": 2,
         "categories": {
           "domain-default": 2
-        }
-      },
-      {
-        "file": "esm/native/ui/project_load_runtime_action.ts",
-        "total": 2,
-        "categories": {
-          "error-message-default": 2
         }
       },
       {
@@ -610,7 +447,84 @@
         }
       },
       {
-        "file": "esm/native/kernel/state_api_history_meta_reactivity_contracts.ts",
+        "file": "esm/native/platform/dirty_flag.ts",
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      {
+        "file": "esm/native/platform/render_loop_impl_front_overlay.ts",
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      {
+        "file": "esm/native/runtime/browser_clipboard.ts",
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      {
+        "file": "esm/native/runtime/browser_download.ts",
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      {
+        "file": "esm/native/runtime/browser_file_read.ts",
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      {
+        "file": "esm/native/runtime/commands_access.ts",
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      {
+        "file": "esm/native/runtime/history_system_access_shared.ts",
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      {
+        "file": "esm/native/runtime/platform_access_debug_stats.ts",
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      {
+        "file": "esm/native/runtime/storage_access.ts",
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      {
+        "file": "esm/native/services/autosave_runtime.ts",
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      {
+        "file": "esm/native/services/cloud_sync_lifecycle_realtime_runtime_start.ts",
+        "total": 1,
+        "categories": {
+          "error-message-default": 1
+        }
+      },
+      {
+        "file": "esm/native/services/cloud_sync_status_install_shared.ts",
         "total": 1,
         "categories": {
           "domain-default": 1
@@ -649,62 +563,6 @@
       "text": "// ignore malformed legacy payloads"
     },
     {
-      "file": "esm/native/kernel/cfg_meta.ts",
-      "line": 13,
-      "term": "sourceFallback",
-      "category": "domain-default",
-      "text": "type MetaMergeFn = (meta?: MetaInput, defaults?: ActionMetaLike, sourceFallback?: string) => ActionMetaLike;"
-    },
-    {
-      "file": "esm/native/kernel/cfg_meta.ts",
-      "line": 70,
-      "term": "sourceFallback",
-      "category": "domain-default",
-      "text": "sourceFallback?: string"
-    },
-    {
-      "file": "esm/native/kernel/cfg_meta.ts",
-      "line": 76,
-      "term": "sourceFallback",
-      "category": "domain-default",
-      "text": "if (sourceFallback && !out.source) out.source = sourceFallback;"
-    },
-    {
-      "file": "esm/native/kernel/cfg_meta.ts",
-      "line": 83,
-      "term": "sourceFallback",
-      "category": "domain-default",
-      "text": ": (meta?: MetaInput, defaults?: ActionMetaLike, sourceFallback?: string) => {"
-    },
-    {
-      "file": "esm/native/kernel/cfg_meta.ts",
-      "line": 88,
-      "term": "sourceFallback",
-      "category": "domain-default",
-      "text": "if (sourceFallback && !out.source) out.source = sourceFallback;"
-    },
-    {
-      "file": "esm/native/kernel/domain_api_modules_corner_recompute_policy.ts",
-      "line": 30,
-      "term": "cfgSetScalarFallback",
-      "category": "domain-default",
-      "text": "derived: 'actions.modules.recomputeFromUi.cfgSetScalarFallback',"
-    },
-    {
-      "file": "esm/native/kernel/domain_api_modules_corner_recompute_policy.ts",
-      "line": 37,
-      "term": "cfgFallback",
-      "category": "domain-default",
-      "text": "via: 'setAll' | 'cfgFallback';"
-    },
-    {
-      "file": "esm/native/kernel/domain_api_modules_corner_recompute_policy.ts",
-      "line": 219,
-      "term": "cfgFallback",
-      "category": "domain-default",
-      "text": "return { ok: true, via: 'cfgFallback', writeMeta };"
-    },
-    {
       "file": "esm/native/kernel/domain_module_stack_patch.ts",
       "line": 6,
       "term": "compat",
@@ -712,95 +570,11 @@
       "text": "// - keeping the compat parser separate makes the canonical patch seam easier to reason about"
     },
     {
-      "file": "esm/native/kernel/state_api_history_meta_reactivity_contracts.ts",
-      "line": 25,
-      "term": "sourceFallback",
-      "category": "domain-default",
-      "text": "sourceFallback: string"
-    },
-    {
-      "file": "esm/native/kernel/state_api_meta_namespace.ts",
-      "line": 164,
-      "term": "dirtyFallback",
-      "category": "domain-default",
-      "text": "let dirtyFallback = false;"
-    },
-    {
-      "file": "esm/native/kernel/state_api_meta_namespace.ts",
-      "line": 166,
-      "term": "dirtyFallback",
-      "category": "domain-default",
-      "text": "dirtyFallback = !!isDirty;"
-    },
-    {
-      "file": "esm/native/kernel/state_api_meta_namespace.ts",
-      "line": 177,
-      "term": "dirtyFallback",
-      "category": "domain-default",
-      "text": "return dirtyFallback;"
-    },
-    {
-      "file": "esm/native/kernel/state_api_shared.ts",
-      "line": 71,
-      "term": "sourceFallback",
-      "category": "domain-default",
-      "text": "sourceFallback: string"
-    },
-    {
-      "file": "esm/native/kernel/state_api_shared.ts",
-      "line": 74,
-      "term": "sourceFallback",
-      "category": "domain-default",
-      "text": "if (sourceFallback && !next.source) next.source = sourceFallback;"
-    },
-    {
-      "file": "esm/native/kernel/state_api_stack_router_shared.ts",
-      "line": 36,
-      "term": "sourceFallback",
-      "category": "domain-default",
-      "text": "sourceFallback: string"
-    },
-    {
-      "file": "esm/native/kernel/state_api.ts",
-      "line": 63,
-      "term": "sourceFallback",
-      "category": "domain-default",
-      "text": "sourceFallback: string"
-    },
-    {
-      "file": "esm/native/kernel/state_api.ts",
-      "line": 64,
-      "term": "sourceFallback",
-      "category": "domain-default",
-      "text": "): ActionMetaLike => mergeMetaWithDefaults(meta, defaults, sourceFallback);"
-    },
-    {
       "file": "esm/native/platform/dirty_flag.ts",
       "line": 47,
       "term": "consoleFallback",
       "category": "domain-default",
       "text": "{ consoleFallback: false }"
-    },
-    {
-      "file": "esm/native/platform/dirty_flag.ts",
-      "line": 54,
-      "term": "__dirtyFallback",
-      "category": "domain-default",
-      "text": "A.__dirtyFallback = !!isDirty;"
-    },
-    {
-      "file": "esm/native/platform/dirty_flag.ts",
-      "line": 77,
-      "term": "__dirtyFallback",
-      "category": "domain-default",
-      "text": "if (typeof A.__dirtyFallback !== 'boolean') {"
-    },
-    {
-      "file": "esm/native/platform/dirty_flag.ts",
-      "line": 78,
-      "term": "__dirtyFallback",
-      "category": "domain-default",
-      "text": "A.__dirtyFallback = false;"
     },
     {
       "file": "esm/native/platform/render_loop_impl_front_overlay.ts",
@@ -831,13 +605,6 @@
       "text": "consoleFallback: false,"
     },
     {
-      "file": "esm/native/runtime/cfg_access_shared.ts",
-      "line": 39,
-      "term": "sourceFallback",
-      "category": "domain-default",
-      "text": "sourceFallback?: string"
-    },
-    {
       "file": "esm/native/runtime/commands_access.ts",
       "line": 22,
       "term": "consoleFallback",
@@ -864,34 +631,6 @@
       "term": "consoleFallback",
       "category": "domain-default",
       "text": "{ consoleFallback: false }"
-    },
-    {
-      "file": "esm/native/runtime/meta_actions_namespace.ts",
-      "line": 39,
-      "term": "sourceFallback",
-      "category": "domain-default",
-      "text": "sourceFallback?: string"
-    },
-    {
-      "file": "esm/native/runtime/meta_actions_namespace.ts",
-      "line": 41,
-      "term": "sourceFallback",
-      "category": "domain-default",
-      "text": "return mergeMetaProfileDefaults(meta, defaults, sourceFallback);"
-    },
-    {
-      "file": "esm/native/runtime/meta_actions_namespace.ts",
-      "line": 84,
-      "term": "sourceFallback",
-      "category": "domain-default",
-      "text": "merge(meta?: ActionMetaLike, defaults?: ActionMetaLike, sourceFallback?: string): ActionMetaLike {"
-    },
-    {
-      "file": "esm/native/runtime/meta_actions_namespace.ts",
-      "line": 85,
-      "term": "sourceFallback",
-      "category": "domain-default",
-      "text": "return mergeMetaProfile(meta, defaults, sourceFallback);"
     },
     {
       "file": "esm/native/runtime/platform_access_debug_stats.ts",
@@ -941,20 +680,6 @@
       "term": "consoleFallback",
       "category": "domain-default",
       "text": "{ consoleFallback: false }"
-    },
-    {
-      "file": "esm/native/services/camera_shared.ts",
-      "line": 22,
-      "term": "TimeoutFallbackHandle",
-      "category": "domain-default",
-      "text": "export type TimeoutFallbackHandle = ReturnType<typeof setTimeout> | number;"
-    },
-    {
-      "file": "esm/native/services/camera_shared.ts",
-      "line": 23,
-      "term": "TimeoutFallbackHandle",
-      "category": "domain-default",
-      "text": "export type RafLike = (cb: (t?: number) => void) => number | TimeoutFallbackHandle;"
     },
     {
       "file": "esm/native/services/canvas_picking_cell_dims_linear_context_modules.ts",
@@ -1209,81 +934,11 @@
       "text": "return { build, buildFallback };"
     },
     {
-      "file": "esm/native/ui/project_load_runtime_action.ts",
-      "line": 22,
-      "term": "resolveProjectLoadFallbackMessage",
-      "category": "error-message-default",
-      "text": "resolveProjectLoadFallbackMessage,"
-    },
-    {
-      "file": "esm/native/ui/project_load_runtime_action.ts",
-      "line": 41,
-      "term": "resolveProjectLoadFallbackMessage",
-      "category": "error-message-default",
-      "text": "fallbackMessage: resolveProjectLoadFallbackMessage(options?.fallbackMessage),"
-    },
-    {
-      "file": "esm/native/ui/project_load_runtime_shared.ts",
-      "line": 52,
-      "term": "resolveProjectLoadFallbackMessage",
-      "category": "error-message-default",
-      "text": "export function resolveProjectLoadFallbackMessage(fallbackMessage?: string | null): string {"
-    },
-    {
-      "file": "esm/native/ui/project_save_runtime_action.ts",
-      "line": 14,
-      "term": "createProjectSavePromptFallback",
-      "category": "domain-default",
-      "text": "import { asUiFeedbackPrompt, createProjectSavePromptFallback } from './project_save_runtime_prompt.js';"
-    },
-    {
       "file": "esm/native/ui/project_save_runtime_action.ts",
       "line": 36,
       "term": "consoleFallback",
       "category": "domain-default",
       "text": "{ consoleFallback: false }"
-    },
-    {
-      "file": "esm/native/ui/project_save_runtime_action.ts",
-      "line": 64,
-      "term": "createProjectSavePromptFallback",
-      "category": "domain-default",
-      "text": "const fallbackPrompt = createProjectSavePromptFallback(win);"
-    },
-    {
-      "file": "esm/native/ui/project_save_runtime_prompt.ts",
-      "line": 28,
-      "term": "createProjectSavePromptFallback",
-      "category": "browser-adapter",
-      "text": "export function createProjectSavePromptFallback(win: Window | null): PromptFnLike {"
-    },
-    {
-      "file": "esm/native/ui/project_save_runtime.ts",
-      "line": 3,
-      "term": "createProjectSavePromptFallback",
-      "category": "domain-default",
-      "text": "createProjectSavePromptFallback as createProjectSavePromptFallbackImpl,"
-    },
-    {
-      "file": "esm/native/ui/project_save_runtime.ts",
-      "line": 3,
-      "term": "createProjectSavePromptFallbackImpl",
-      "category": "domain-default",
-      "text": "createProjectSavePromptFallback as createProjectSavePromptFallbackImpl,"
-    },
-    {
-      "file": "esm/native/ui/project_save_runtime.ts",
-      "line": 19,
-      "term": "createProjectSavePromptFallback",
-      "category": "browser-adapter",
-      "text": "export function createProjectSavePromptFallback(win: Window | null): PromptFnLike {"
-    },
-    {
-      "file": "esm/native/ui/project_save_runtime.ts",
-      "line": 20,
-      "term": "createProjectSavePromptFallbackImpl",
-      "category": "domain-default",
-      "text": "return createProjectSavePromptFallbackImpl(win);"
     },
     {
       "file": "esm/native/ui/react/boot_react_ui.tsx",

@@ -33,7 +33,7 @@ export type SetCfgScalarFn = (key: string, valueOrFn: unknown, meta?: ActionMeta
 export type MergeMetaFn = (
   meta: ActionMetaLike | UnknownRecord | null | undefined,
   defaults: ActionMetaLike,
-  sourceFallback: string
+  defaultSource: string
 ) => ActionMetaLike;
 export type NormMetaFn = (
   meta: ActionMetaLike | UnknownRecord | null | undefined,

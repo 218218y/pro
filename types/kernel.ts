@@ -47,7 +47,7 @@ export interface MetaActionsNamespaceLike extends UnknownRecord {
   restore: (meta?: ActionMetaLike, source?: string) => ActionMetaLike;
   interactive: (meta?: ActionMetaLike, source?: string) => ActionMetaLike;
   transient: (meta?: ActionMetaLike, source?: string) => ActionMetaLike;
-  merge: (meta?: ActionMetaLike, defaults?: ActionMetaLike, sourceFallback?: string) => ActionMetaLike;
+  merge: (meta?: ActionMetaLike, defaults?: ActionMetaLike, defaultSource?: string) => ActionMetaLike;
 
   // Lightweight profile shorthands (also installed by kernel/state_api.ts).
   noBuild: (meta?: ActionMetaLike, source?: string) => ActionMetaLike;
@@ -376,7 +376,7 @@ export interface KernelNamespaceLike extends UnknownRecord {
   cfgMetaMerge?: (
     meta?: ActionMetaLike | UnknownRecord,
     defaults?: ActionMetaLike,
-    sourceFallback?: string
+    defaultSource?: string
   ) => ActionMetaLike;
   cfgMetaInteractive?: (meta?: ActionMetaLike | UnknownRecord, source?: string) => ActionMetaLike;
   cfgMetaUiOnly?: (meta?: ActionMetaLike | UnknownRecord, source?: string) => ActionMetaLike;

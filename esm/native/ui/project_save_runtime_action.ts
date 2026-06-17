@@ -11,7 +11,7 @@ import {
 import { downloadJsonTextResultViaBrowser, normalizeDownloadFilename } from './browser_file_download.js';
 import type { ProjectSaveActionResult } from './project_action_feedback.js';
 import type { ProjectSaveRuntimeDeps } from './project_save_runtime_contracts.js';
-import { asUiFeedbackPrompt, createProjectSavePromptFallback } from './project_save_runtime_prompt.js';
+import { asUiFeedbackPrompt, createProjectSaveBrowserPrompt } from './project_save_runtime_prompt.js';
 import { runPromptedAction } from './feedback_action_runtime.js';
 import { requestPromptFromFeedback } from './feedback_prompt_runtime.js';
 import { beginProjectActionFamily } from './project_action_family_shared.js';
@@ -61,8 +61,8 @@ function runPreparedProjectSaveFlow(
   prepared: Extract<PreparedProjectSaveExport, { ok: true }>
 ): Promise<ProjectSaveActionResult> {
   const { win, doc } = deps;
-  const fallbackPrompt = createProjectSavePromptFallback(win);
-  const promptDeps = promptHost || { prompt: fallbackPrompt };
+  const browserPrompt = createProjectSaveBrowserPrompt(win);
+  const promptDeps = promptHost || { prompt: browserPrompt };
 
   return runPromptedAction<ProjectSaveActionResult>({
     request: () =>

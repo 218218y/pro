@@ -373,7 +373,7 @@ test('project load/save helpers preserve semantic load flags, UI ephemera, and b
       /handleProjectSaveLoadInputChange\(App, toast, evt\)|openProjectSaveLoadInput\(input\)|runProjectUiLoadInputChange\(args, evt\)/,
       /reportProjectSaveResult\(\{ toast \}, result\)|reportProjectSaveResult\(fb, result\)/,
       /setDirtyViaActions\(App, false, meta\)/,
-      /normalizeDownloadFilename\(|createProjectSavePromptFallback\(/,
+      /normalizeDownloadFilename\(|createProjectSaveBrowserPrompt\(/,
       /downloadJsonTextViaBrowser\(/,
     ],
     'projectSaveLoadBundle'

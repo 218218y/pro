@@ -36,7 +36,7 @@ export type BatchFn = () => unknown;
 type MetaMergeFn = (
   meta?: ActionMetaLike,
   defaults?: ActionMetaLike,
-  sourceFallback?: string
+  defaultSource?: string
 ) => ActionMetaLike;
 
 type ConfigAccessAppLike = {

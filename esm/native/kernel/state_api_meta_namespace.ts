@@ -161,9 +161,9 @@ export function installStateApiMetaNamespace(ctx: StateApiHistoryMetaReactivityC
   }
 
   if (typeof metaNs.setDirty !== 'function' || isActionStubFn(metaNs.setDirty, 'meta:setDirty')) {
-    let dirtyFallback = false;
+    let dirtyMirror = false;
     metaNs.setDirty = function setDirty(isDirty: boolean, meta?: ActionMetaLike) {
-      dirtyFallback = !!isDirty;
+      dirtyMirror = !!isDirty;
 
       const metaIn = asMeta(meta);
       const src = typeof metaIn.source === 'string' && metaIn.source ? metaIn.source : 'dirty';
@@ -174,7 +174,7 @@ export function installStateApiMetaNamespace(ctx: StateApiHistoryMetaReactivityC
           : normMeta(metaWithSource, 'meta:setDirty');
 
       commitMetaPatch({ dirty: !!isDirty }, setDirtyMeta);
-      return dirtyFallback;
+      return dirtyMirror;
     };
   }
 }

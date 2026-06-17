@@ -22,7 +22,7 @@ export interface StateApiHistoryMetaReactivityContext {
   mergeMeta: (
     meta: ActionMetaLike | UnknownRecord | null | undefined,
     defaults: ActionMetaLike,
-    sourceFallback: string
+    defaultSource: string
   ) => ActionMetaLike;
   isObj: (v: unknown) => v is UnknownRecord;
   commitMetaTouch: (meta?: ActionMetaLike) => unknown;

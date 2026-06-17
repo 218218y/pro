@@ -68,10 +68,10 @@ export function normMeta(
 export function mergeMetaWithDefaults(
   meta: ActionMetaLike | UnknownRecord | null | undefined,
   defaults: ActionMetaLike,
-  sourceFallback: string
+  defaultSource: string
 ): ActionMetaLike {
   const next = cloneMetaObject(meta);
-  if (sourceFallback && !next.source) next.source = sourceFallback;
+  if (defaultSource && !next.source) next.source = defaultSource;
   for (const key in defaults) {
     if (!Object.prototype.hasOwnProperty.call(defaults, key)) continue;
     if (typeof next[key] === 'undefined') next[key] = defaults[key];

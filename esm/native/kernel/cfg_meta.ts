@@ -10,7 +10,7 @@ type ConfigMetaNamespaceLike = MetaActionsNamespaceLike & {
   CFG_META_DEFAULTS?: ActionMetaLike;
 };
 
-type MetaMergeFn = (meta?: MetaInput, defaults?: ActionMetaLike, sourceFallback?: string) => ActionMetaLike;
+type MetaMergeFn = (meta?: MetaInput, defaults?: ActionMetaLike, defaultSource?: string) => ActionMetaLike;
 
 function asRecord(value: unknown): UnknownRecord {
   return asUnknownRecord(value) || {};
@@ -67,25 +67,25 @@ export function installCfgMeta(App: AppContainer): void {
     function cfgMetaMerge(
       meta?: MetaInput,
       defaults?: ActionMetaLike,
-      sourceFallback?: string
+      defaultSource?: string
     ): ActionMetaLike {
       const metaRecord = asRecord(meta);
       const defaultsRecord = asRecord(defaults);
       const out: ActionMetaLike = Object.assign({}, asRecord(metaNs.CFG_META_DEFAULTS), defaultsRecord);
       for (const key of Object.keys(metaRecord)) out[key] = metaRecord[key];
-      if (sourceFallback && !out.source) out.source = sourceFallback;
+      if (defaultSource && !out.source) out.source = defaultSource;
       return out;
     };
 
   const cfgMetaMerge: MetaMergeFn =
     typeof metaNs.merge === 'function'
       ? metaNs.merge
-      : (meta?: MetaInput, defaults?: ActionMetaLike, sourceFallback?: string) => {
+      : (meta?: MetaInput, defaults?: ActionMetaLike, defaultSource?: string) => {
           const metaRecord = asRecord(meta);
           const defaultsRecord = asRecord(defaults);
           const out: ActionMetaLike = Object.assign({}, asRecord(metaNs.CFG_META_DEFAULTS), defaultsRecord);
           for (const key of Object.keys(metaRecord)) out[key] = metaRecord[key];
-          if (sourceFallback && !out.source) out.source = sourceFallback;
+          if (defaultSource && !out.source) out.source = defaultSource;
           return out;
         };
 

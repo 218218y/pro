@@ -36,9 +36,9 @@ type ActionStubMeta = {
 function mergeMetaProfile(
   meta?: ActionMetaLike,
   defaults?: ActionMetaLike,
-  sourceFallback?: string
+  defaultSource?: string
 ): ActionMetaLike {
-  return mergeMetaProfileDefaults(meta, defaults, sourceFallback);
+  return mergeMetaProfileDefaults(meta, defaults, defaultSource);
 }
 
 export function readActionStubMeta(value: unknown): ActionStubMeta | null {
@@ -81,8 +81,8 @@ const META_ACTIONS_STUB = {
   transient(meta?: ActionMetaLike, source?: string): ActionMetaLike {
     return mergeMetaProfile(meta, META_STUB_TRANSIENT, source);
   },
-  merge(meta?: ActionMetaLike, defaults?: ActionMetaLike, sourceFallback?: string): ActionMetaLike {
-    return mergeMetaProfile(meta, defaults, sourceFallback);
+  merge(meta?: ActionMetaLike, defaults?: ActionMetaLike, defaultSource?: string): ActionMetaLike {
+    return mergeMetaProfile(meta, defaults, defaultSource);
   },
   noBuild(meta?: ActionMetaLike, source?: string): ActionMetaLike {
     return mergeMetaProfile(meta, META_STUB_NO_BUILD, source);

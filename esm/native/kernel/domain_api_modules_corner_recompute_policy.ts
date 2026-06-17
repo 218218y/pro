@@ -27,14 +27,14 @@ const MODULES_RECOMPUTE_WRITE_SOURCE_BY_REASON: Record<ModulesRecomputeWriteReas
 };
 
 const MODULES_RECOMPUTE_REPORT_OP_BY_REASON: Record<ModulesRecomputeWriteReason, string> = {
-  derived: 'actions.modules.recomputeFromUi.cfgSetScalarFallback',
+  derived: 'actions.modules.recomputeFromUi.cfgSetScalarWrite',
   noMainCleanup: 'actions.modules.recomputeFromUi.noMainCleanup',
 };
 
 export type ModulesRecomputeWriteResult =
   | {
       ok: true;
-      via: 'setAll' | 'cfgFallback';
+      via: 'setAll' | 'cfgWrite';
       writeMeta: ActionMetaLike;
     }
   | {
@@ -216,7 +216,7 @@ export function applyModulesRecomputeWrite(args: {
     }
 
     setCfgModulesConfiguration(App, nextModules, writeMeta);
-    return { ok: true, via: 'cfgFallback', writeMeta };
+    return { ok: true, via: 'cfgWrite', writeMeta };
   } catch (error) {
     reportNonFatal(App, readModulesRecomputeReportOp(reason), error, { throttleMs: 6000 });
     return { ok: false, reason: 'writeFailed', writeMeta };

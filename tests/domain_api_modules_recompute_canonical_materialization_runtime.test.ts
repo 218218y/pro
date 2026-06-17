@@ -223,6 +223,6 @@ test('modules recompute runtime: failed derived write returns canonical writeFai
 
   assert.deepEqual(result, { ok: false, reason: 'writeFailed' });
   assert.equal(reports.length, 1);
-  assert.equal(reports[0][0], 'actions.modules.recomputeFromUi.cfgSetScalarFallback');
+  assert.equal(reports[0][0], 'actions.modules.recomputeFromUi.cfgSetScalarWrite');
   assert.deepEqual(reports[0][2], { throttleMs: 6000 });
 });

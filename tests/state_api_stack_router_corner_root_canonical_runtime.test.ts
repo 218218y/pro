@@ -27,9 +27,9 @@ function createCtx(state: { config: AnyRec; ui: AnyRec }): StateApiStackRouterCo
     modulesNs,
     cornerNs,
     getSetCfgScalar: () => setCfgScalar,
-    mergeMeta: (_meta: unknown, defaults: AnyRec, sourceFallback: string) => ({
+    mergeMeta: (_meta: unknown, defaults: AnyRec, defaultSource: string) => ({
       ...defaults,
-      source: sourceFallback,
+      source: defaultSource,
     }),
     normMeta: (meta: unknown, source: string) => ({
       ...(meta && typeof meta === 'object' ? (meta as AnyRec) : {}),
