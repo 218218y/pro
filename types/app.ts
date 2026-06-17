@@ -70,7 +70,7 @@ export interface RenderFollowThroughBudgetSummaryLike extends UnknownRecord {
   ensureRenderLoopAfterTriggerCount: number;
   renderNoOpRate: number;
   wakeupNoOpRate: number;
-  renderEnsureFallbackRate: number;
+  renderEnsureFollowThroughRate: number;
 }
 
 export interface PlatformUtilNamespaceLike extends UnknownRecord {

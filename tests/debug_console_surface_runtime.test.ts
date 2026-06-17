@@ -42,7 +42,7 @@ test('debug console surface runtime: render debug helpers expose canonical rende
     ensureRenderLoopAfterTriggerCount: 0,
     renderNoOpRate: 0.5,
     wakeupNoOpRate: 0,
-    renderEnsureFallbackRate: 0.5,
+    renderEnsureFollowThroughRate: 0.5,
   });
 
   assert.deepEqual(surface.render.resetStats(), {

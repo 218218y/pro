@@ -85,7 +85,7 @@ function ensureCanonicalStart(context: InstallContext<AppContainer>, svc: AppSta
   );
 }
 
-function ensureUiCompatAlias(App: AppContainer, startFn: () => unknown): void {
+function ensureUiBootStartAlias(App: AppContainer, startFn: () => unknown): void {
   try {
     const uiBoot = ensureUiBootService(App);
     installStableSurfaceMethod(uiBoot, 'start', UI_BOOT_START_CANONICAL_KEY, () => startFn);
@@ -106,6 +106,6 @@ export function installAppStartService(App: AppContainer): AppStartService {
   fillAppStartSurface(context, svc);
 
   if (!isAppStartInstalled(app)) markAppStartInstalled(app);
-  if (typeof svc.start === 'function') ensureUiCompatAlias(app, svc.start);
+  if (typeof svc.start === 'function') ensureUiBootStartAlias(app, svc.start);
   return svc;
 }

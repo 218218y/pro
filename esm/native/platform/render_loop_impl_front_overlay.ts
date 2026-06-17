@@ -101,7 +101,7 @@ export function createRenderLoopFrontOverlayHelpers(
       try {
         applyOpacityScaleToNode(obj, alpha);
       } catch (_e2) {
-        report('frontSeams.applyOpacityScaleFallback', _e2, { throttleMs: 5000 });
+        report('frontSeams.applyOpacityScaleDirectNode', _e2, { throttleMs: 5000 });
       }
     }
   }

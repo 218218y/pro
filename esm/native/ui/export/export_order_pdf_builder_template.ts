@@ -166,7 +166,7 @@ export function createOrderPdfBuilderTemplateOps(
         dictSet.call(acroDict, PDFName.of('NeedAppearances'), PDFBool.True);
       }
     } catch (e) {
-      _exportReportThrottled(App, 'buildOrderPdfInteractive.setNeedAppearancesFallback', e, {
+      _exportReportThrottled(App, 'buildOrderPdfInteractive.setNeedAppearancesDict', e, {
         throttleMs: 1500,
       });
     }

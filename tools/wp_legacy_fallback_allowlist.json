@@ -3,24 +3,6 @@
   "sourceRoot": "esm",
   "policy": "Every existing legacy/fallback occurrence is categorized and count-locked by file. New or moved occurrences must be reviewed and the allowlist regenerated deliberately.",
   "entries": {
-    "esm/native/builder/build_state_resolver.ts": {
-      "total": 1,
-      "categories": {
-        "compat-boundary": 1
-      }
-    },
-    "esm/native/builder/post_build_front_reveal_frames_doors.ts": {
-      "total": 1,
-      "categories": {
-        "domain-default": 1
-      }
-    },
-    "esm/native/builder/provide.ts": {
-      "total": 1,
-      "categories": {
-        "compat-boundary": 1
-      }
-    },
     "esm/native/features/project_config/project_config_persisted_payload_shared.ts": {
       "total": 1,
       "categories": {
@@ -33,76 +15,10 @@
         "project-migration": 1
       }
     },
-    "esm/native/platform/render_loop_impl_front_overlay.ts": {
-      "total": 1,
-      "categories": {
-        "domain-default": 1
-      }
-    },
-    "esm/native/runtime/platform_access_debug_stats.ts": {
-      "total": 1,
-      "categories": {
-        "domain-default": 1
-      }
-    },
-    "esm/native/services/app_start.ts": {
-      "total": 2,
-      "categories": {
-        "compat-boundary": 2
-      }
-    },
-    "esm/native/ui/export/export_order_pdf_builder_fields_text.ts": {
-      "total": 1,
-      "categories": {
-        "domain-default": 1
-      }
-    },
-    "esm/native/ui/export/export_order_pdf_builder_template.ts": {
-      "total": 1,
-      "categories": {
-        "domain-default": 1
-      }
-    },
-    "esm/native/ui/export/export_order_pdf_capture_composite_shared.ts": {
-      "total": 1,
-      "categories": {
-        "domain-default": 1
-      }
-    },
-    "esm/native/ui/export/export_order_pdf_capture_open_closed.ts": {
-      "total": 2,
-      "categories": {
-        "domain-default": 2
-      }
-    },
-    "esm/native/ui/export/export_order_pdf_capture_render_sketch.ts": {
-      "total": 2,
-      "categories": {
-        "domain-default": 2
-      }
-    },
-    "esm/native/ui/modes_transition_policy.ts": {
-      "total": 1,
-      "categories": {
-        "domain-default": 1
-      }
-    },
-    "esm/native/ui/react/boot_react_ui.tsx": {
-      "total": 2,
-      "categories": {
-        "domain-default": 2
-      }
-    },
     "esm/native/ui/react/overlay_pdf_host.tsx": {
       "total": 1,
       "categories": {
         "framework-default": 1
-      }
-    },
-    "esm/native/ui/react/pdf/order_pdf_overlay_shell_interactions_runtime.ts": {
-      "total": 1,
-      "categories": {
-        "domain-default": 1
       }
     },
     "esm/native/ui/react/sidebar_app.tsx": {

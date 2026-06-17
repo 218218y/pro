@@ -22,7 +22,7 @@ export function applyFrontRevealDoorFrames(ctx: BuildContextLike, runtime: Front
   const { App, THREE, wardrobeGroup } = runtime;
   const doorsArr = getDoorsArray(App);
 
-  const fallbackDoorGroups: Object3DLike[] = [];
+  const scannedDoorGroups: Object3DLike[] = [];
   if (doorsArr.length === 0) {
     try {
       if (wardrobeGroup.traverse) {
@@ -35,15 +35,15 @@ export function applyFrontRevealDoorFrames(ctx: BuildContextLike, runtime: Front
           const w = Number(ud.__doorWidth);
           const h = Number(ud.__doorHeight);
           if (!Number.isFinite(w) || !Number.isFinite(h) || w <= 0 || h <= 0) return;
-          fallbackDoorGroups.push(obj);
+          scannedDoorGroups.push(obj);
         });
       }
     } catch (error) {
-      runtime.reportSoft('applyFrontRevealFrames.collectFallbackDoors', error);
+      runtime.reportSoft('applyFrontRevealFrames.collectSceneDoors', error);
     }
   }
 
-  const doorEntries: DoorRuntimeEntryLike[] = doorsArr.length > 0 ? doorsArr : fallbackDoorGroups;
+  const doorEntries: DoorRuntimeEntryLike[] = doorsArr.length > 0 ? doorsArr : scannedDoorGroups;
 
   for (let i = 0; i < doorEntries.length; i++) {
     const entry = doorEntries[i];

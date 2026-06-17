@@ -1,21 +1,21 @@
 # Legacy / fallback audit
 
-Generated at: 2026-06-17T04:22:17.177Z
+Generated at: 2026-06-17T06:40:31.934Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **28**
-- Files with occurrences: **20**
+- Total categorized occurrences: **10**
+- Files with occurrences: **6**
 - Category counts:
   - `runtime-default`: **0**
-  - `domain-default`: **14**
+  - `domain-default`: **0**
   - `error-message-default`: **0**
   - `framework-default`: **2**
   - `browser-adapter`: **0**
   - `project-migration`: **2**
   - `external-api-compat`: **0**
-  - `compat-boundary`: **4**
+  - `compat-boundary`: **0**
   - `test-fixture`: **6**
   - `legacy-runtime-risk`: **0**
   - `unknown`: **0**
@@ -36,23 +36,9 @@ Generated at: 2026-06-17T04:22:17.177Z
 ## Hot files
 
 - `esm/test_no_side_effects_on_import.mjs` - **5** (test-fixture: 5)
-- `esm/native/services/app_start.ts` - **2** (compat-boundary: 2)
-- `esm/native/ui/export/export_order_pdf_capture_open_closed.ts` - **2** (domain-default: 2)
-- `esm/native/ui/export/export_order_pdf_capture_render_sketch.ts` - **2** (domain-default: 2)
-- `esm/native/ui/react/boot_react_ui.tsx` - **2** (domain-default: 2)
-- `esm/native/builder/build_state_resolver.ts` - **1** (compat-boundary: 1)
-- `esm/native/builder/post_build_front_reveal_frames_doors.ts` - **1** (domain-default: 1)
-- `esm/native/builder/provide.ts` - **1** (compat-boundary: 1)
 - `esm/native/features/project_config/project_config_persisted_payload_shared.ts` - **1** (project-migration: 1)
 - `esm/native/kernel/domain_module_stack_patch.ts` - **1** (project-migration: 1)
-- `esm/native/platform/render_loop_impl_front_overlay.ts` - **1** (domain-default: 1)
-- `esm/native/runtime/platform_access_debug_stats.ts` - **1** (domain-default: 1)
-- `esm/native/ui/export/export_order_pdf_builder_fields_text.ts` - **1** (domain-default: 1)
-- `esm/native/ui/export/export_order_pdf_builder_template.ts` - **1** (domain-default: 1)
-- `esm/native/ui/export/export_order_pdf_capture_composite_shared.ts` - **1** (domain-default: 1)
-- `esm/native/ui/modes_transition_policy.ts` - **1** (domain-default: 1)
 - `esm/native/ui/react/overlay_pdf_host.tsx` - **1** (framework-default: 1)
-- `esm/native/ui/react/pdf/order_pdf_overlay_shell_interactions_runtime.ts` - **1** (domain-default: 1)
 - `esm/native/ui/react/sidebar_app.tsx` - **1** (framework-default: 1)
 - `esm/test_imports.mjs` - **1** (test-fixture: 1)
 

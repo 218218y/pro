@@ -143,7 +143,7 @@ export function createOrderPdfCompositeCanvas(
   return compositeCanvas;
 }
 
-export async function captureCompositeWithLogoFallback(
+export async function captureCompositeWithLogoRecovery(
   App: AppContainer,
   deps: ExportOrderPdfDeps,
   opBase: string,

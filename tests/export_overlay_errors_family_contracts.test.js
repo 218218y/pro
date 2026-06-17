@@ -289,7 +289,7 @@ test('[overlay-export-family] export/capture owners stay thin while composite be
     compositeBundle,
     [
       /export function readOrderPdfCompositeBase\(/,
-      /export async function captureCompositeWithLogoFallback\(/,
+      /export async function captureCompositeWithLogoRecovery\(/,
       /export function _getRendererCanvasSource\(/,
       /export function getExportLogoImage\(/,
       /renderSceneForExport\(/,

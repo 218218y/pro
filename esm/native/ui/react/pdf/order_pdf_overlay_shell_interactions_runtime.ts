@@ -202,7 +202,7 @@ export function trapOrderPdfOverlayTabKey(args: {
       try {
         first.focus();
       } catch (__wpErr) {
-        reportNonFatal('orderPdfFocusTrap:focusFallback', __wpErr);
+        reportNonFatal('orderPdfFocusTrap:focusFirstFocusable', __wpErr);
       }
     }
     return true;

@@ -1,41 +1,23 @@
 {
-  "generatedAt": "2026-06-17T04:22:17.177Z",
+  "generatedAt": "2026-06-17T06:40:31.934Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 28,
-    "totalFiles": 20,
+    "totalOccurrences": 10,
+    "totalFiles": 6,
     "byCategory": {
       "runtime-default": 0,
-      "domain-default": 14,
+      "domain-default": 0,
       "error-message-default": 0,
       "framework-default": 2,
       "browser-adapter": 0,
       "project-migration": 2,
       "external-api-compat": 0,
-      "compat-boundary": 4,
+      "compat-boundary": 0,
       "test-fixture": 6,
       "legacy-runtime-risk": 0,
       "unknown": 0
     },
     "byFile": {
-      "esm/native/builder/build_state_resolver.ts": {
-        "total": 1,
-        "categories": {
-          "compat-boundary": 1
-        }
-      },
-      "esm/native/builder/post_build_front_reveal_frames_doors.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      "esm/native/builder/provide.ts": {
-        "total": 1,
-        "categories": {
-          "compat-boundary": 1
-        }
-      },
       "esm/native/features/project_config/project_config_persisted_payload_shared.ts": {
         "total": 1,
         "categories": {
@@ -48,76 +30,10 @@
           "project-migration": 1
         }
       },
-      "esm/native/platform/render_loop_impl_front_overlay.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      "esm/native/runtime/platform_access_debug_stats.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      "esm/native/services/app_start.ts": {
-        "total": 2,
-        "categories": {
-          "compat-boundary": 2
-        }
-      },
-      "esm/native/ui/export/export_order_pdf_builder_fields_text.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      "esm/native/ui/export/export_order_pdf_builder_template.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      "esm/native/ui/export/export_order_pdf_capture_composite_shared.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      "esm/native/ui/export/export_order_pdf_capture_open_closed.ts": {
-        "total": 2,
-        "categories": {
-          "domain-default": 2
-        }
-      },
-      "esm/native/ui/export/export_order_pdf_capture_render_sketch.ts": {
-        "total": 2,
-        "categories": {
-          "domain-default": 2
-        }
-      },
-      "esm/native/ui/modes_transition_policy.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      "esm/native/ui/react/boot_react_ui.tsx": {
-        "total": 2,
-        "categories": {
-          "domain-default": 2
-        }
-      },
       "esm/native/ui/react/overlay_pdf_host.tsx": {
         "total": 1,
         "categories": {
           "framework-default": 1
-        }
-      },
-      "esm/native/ui/react/pdf/order_pdf_overlay_shell_interactions_runtime.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
         }
       },
       "esm/native/ui/react/sidebar_app.tsx": {
@@ -148,55 +64,6 @@
         }
       },
       {
-        "file": "esm/native/services/app_start.ts",
-        "total": 2,
-        "categories": {
-          "compat-boundary": 2
-        }
-      },
-      {
-        "file": "esm/native/ui/export/export_order_pdf_capture_open_closed.ts",
-        "total": 2,
-        "categories": {
-          "domain-default": 2
-        }
-      },
-      {
-        "file": "esm/native/ui/export/export_order_pdf_capture_render_sketch.ts",
-        "total": 2,
-        "categories": {
-          "domain-default": 2
-        }
-      },
-      {
-        "file": "esm/native/ui/react/boot_react_ui.tsx",
-        "total": 2,
-        "categories": {
-          "domain-default": 2
-        }
-      },
-      {
-        "file": "esm/native/builder/build_state_resolver.ts",
-        "total": 1,
-        "categories": {
-          "compat-boundary": 1
-        }
-      },
-      {
-        "file": "esm/native/builder/post_build_front_reveal_frames_doors.ts",
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      {
-        "file": "esm/native/builder/provide.ts",
-        "total": 1,
-        "categories": {
-          "compat-boundary": 1
-        }
-      },
-      {
         "file": "esm/native/features/project_config/project_config_persisted_payload_shared.ts",
         "total": 1,
         "categories": {
@@ -211,59 +78,10 @@
         }
       },
       {
-        "file": "esm/native/platform/render_loop_impl_front_overlay.ts",
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      {
-        "file": "esm/native/runtime/platform_access_debug_stats.ts",
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      {
-        "file": "esm/native/ui/export/export_order_pdf_builder_fields_text.ts",
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      {
-        "file": "esm/native/ui/export/export_order_pdf_builder_template.ts",
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      {
-        "file": "esm/native/ui/export/export_order_pdf_capture_composite_shared.ts",
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      {
-        "file": "esm/native/ui/modes_transition_policy.ts",
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      {
         "file": "esm/native/ui/react/overlay_pdf_host.tsx",
         "total": 1,
         "categories": {
           "framework-default": 1
-        }
-      },
-      {
-        "file": "esm/native/ui/react/pdf/order_pdf_overlay_shell_interactions_runtime.ts",
-        "total": 1,
-        "categories": {
-          "domain-default": 1
         }
       },
       {
@@ -285,27 +103,6 @@
   "allowlistComparison": null,
   "occurrences": [
     {
-      "file": "esm/native/builder/build_state_resolver.ts",
-      "line": 5,
-      "term": "compat",
-      "category": "compat-boundary",
-      "text": "// - or a compat build-state override resolver (via centralized store_access seams)"
-    },
-    {
-      "file": "esm/native/builder/post_build_front_reveal_frames_doors.ts",
-      "line": 42,
-      "term": "collectFallbackDoors",
-      "category": "domain-default",
-      "text": "runtime.reportSoft('applyFrontRevealFrames.collectFallbackDoors', error);"
-    },
-    {
-      "file": "esm/native/builder/provide.ts",
-      "line": 81,
-      "term": "compat",
-      "category": "compat-boundary",
-      "text": "// Any remaining compat probing is centralized in builder/store_access helpers."
-    },
-    {
       "file": "esm/native/features/project_config/project_config_persisted_payload_shared.ts",
       "line": 271,
       "term": "legacy",
@@ -320,116 +117,11 @@
       "text": "// - keeping the compat parser separate makes the canonical patch seam easier to reason about"
     },
     {
-      "file": "esm/native/platform/render_loop_impl_front_overlay.ts",
-      "line": 104,
-      "term": "applyOpacityScaleFallback",
-      "category": "domain-default",
-      "text": "report('frontSeams.applyOpacityScaleFallback', _e2, { throttleMs: 5000 });"
-    },
-    {
-      "file": "esm/native/runtime/platform_access_debug_stats.ts",
-      "line": 108,
-      "term": "renderEnsureFallbackRate",
-      "category": "domain-default",
-      "text": "renderEnsureFallbackRate: ratio(ensureRenderLoopCount, renderRequestCount),"
-    },
-    {
-      "file": "esm/native/services/app_start.ts",
-      "line": 88,
-      "term": "ensureUiCompatAlias",
-      "category": "compat-boundary",
-      "text": "function ensureUiCompatAlias(App: AppContainer, startFn: () => unknown): void {"
-    },
-    {
-      "file": "esm/native/services/app_start.ts",
-      "line": 109,
-      "term": "ensureUiCompatAlias",
-      "category": "compat-boundary",
-      "text": "if (typeof svc.start === 'function') ensureUiCompatAlias(app, svc.start);"
-    },
-    {
-      "file": "esm/native/ui/export/export_order_pdf_builder_fields_text.ts",
-      "line": 80,
-      "term": "createFallbackField",
-      "category": "domain-default",
-      "text": "reportOrderPdfBuilderFieldError(ctx, 'buildOrderPdfInteractive.setFieldText.createFallbackField', e);"
-    },
-    {
-      "file": "esm/native/ui/export/export_order_pdf_builder_template.ts",
-      "line": 169,
-      "term": "setNeedAppearancesFallback",
-      "category": "domain-default",
-      "text": "_exportReportThrottled(App, 'buildOrderPdfInteractive.setNeedAppearancesFallback', e, {"
-    },
-    {
-      "file": "esm/native/ui/export/export_order_pdf_capture_composite_shared.ts",
-      "line": 146,
-      "term": "captureCompositeWithLogoFallback",
-      "category": "domain-default",
-      "text": "export async function captureCompositeWithLogoFallback("
-    },
-    {
-      "file": "esm/native/ui/export/export_order_pdf_capture_open_closed.ts",
-      "line": 16,
-      "term": "captureCompositeWithLogoFallback",
-      "category": "domain-default",
-      "text": "captureCompositeWithLogoFallback,"
-    },
-    {
-      "file": "esm/native/ui/export/export_order_pdf_capture_open_closed.ts",
-      "line": 86,
-      "term": "captureCompositeWithLogoFallback",
-      "category": "domain-default",
-      "text": "return await captureCompositeWithLogoFallback("
-    },
-    {
-      "file": "esm/native/ui/export/export_order_pdf_capture_render_sketch.ts",
-      "line": 10,
-      "term": "captureCompositeWithLogoFallback",
-      "category": "domain-default",
-      "text": "captureCompositeWithLogoFallback,"
-    },
-    {
-      "file": "esm/native/ui/export/export_order_pdf_capture_render_sketch.ts",
-      "line": 100,
-      "term": "captureCompositeWithLogoFallback",
-      "category": "domain-default",
-      "text": "return await captureCompositeWithLogoFallback("
-    },
-    {
-      "file": "esm/native/ui/modes_transition_policy.ts",
-      "line": 352,
-      "term": "defaultCloseDoorsFallback",
-      "category": "domain-default",
-      "text": "modesReportNonFatal(App, 'esm/native/ui/modes_transition_policy.ts:defaultCloseDoorsFallback', err);"
-    },
-    {
-      "file": "esm/native/ui/react/boot_react_ui.tsx",
-      "line": 45,
-      "term": "createToastFallback",
-      "category": "domain-default",
-      "text": "function createToastFallback(): (msg: string, type?: string) => void {"
-    },
-    {
-      "file": "esm/native/ui/react/boot_react_ui.tsx",
-      "line": 77,
-      "term": "createToastFallback",
-      "category": "domain-default",
-      "text": ": createToastFallback();"
-    },
-    {
       "file": "esm/native/ui/react/overlay_pdf_host.tsx",
       "line": 55,
       "term": "fallback",
       "category": "framework-default",
       "text": "<Suspense fallback={<PdfEditorLoadingOverlay />}>"
-    },
-    {
-      "file": "esm/native/ui/react/pdf/order_pdf_overlay_shell_interactions_runtime.ts",
-      "line": 205,
-      "term": "focusFallback",
-      "category": "domain-default",
-      "text": "reportNonFatal('orderPdfFocusTrap:focusFallback', __wpErr);"
     },
     {
       "file": "esm/native/ui/react/sidebar_app.tsx",

@@ -7,7 +7,7 @@ import {
 } from './export_canvas_workflow_viewport_policy.js';
 import {
   buildOrderPdfNotesTransform,
-  captureCompositeWithLogoFallback,
+  captureCompositeWithLogoRecovery,
   createOrderPdfCompositeCanvas,
   readOrderPdfCompositeBase,
   restoreOrderPdfCompositeCamera,
@@ -97,7 +97,7 @@ export function createOrderPdfCaptureRenderSketchOp(
     };
 
     try {
-      return await captureCompositeWithLogoFallback(
+      return await captureCompositeWithLogoRecovery(
         App,
         deps,
         'captureCompositeRenderSketch.createComposite',

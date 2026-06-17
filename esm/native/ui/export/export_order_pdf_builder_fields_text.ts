@@ -77,7 +77,7 @@ export function createOrderPdfBuilderFieldTextOps(
           borderWidth: 0,
         });
       } catch (e) {
-        reportOrderPdfBuilderFieldError(ctx, 'buildOrderPdfInteractive.setFieldText.createFallbackField', e);
+        reportOrderPdfBuilderFieldError(ctx, 'buildOrderPdfInteractive.setFieldText.createSecondaryField', e);
         field = null;
       }
     }

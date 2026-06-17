@@ -105,7 +105,7 @@ export function summarizeRenderFollowThroughBudget(
     ensureRenderLoopAfterTriggerCount,
     renderNoOpRate: ratio(noOpRenderRequestCount, renderRequestCount),
     wakeupNoOpRate: ratio(noOpWakeupCount, wakeupRequestCount),
-    renderEnsureFallbackRate: ratio(ensureRenderLoopCount, renderRequestCount),
+    renderEnsureFollowThroughRate: ratio(ensureRenderLoopCount, renderRequestCount),
   };
 }
 

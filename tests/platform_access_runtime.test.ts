@@ -334,7 +334,7 @@ test('platform access runtime: render follow-through telemetry tracks trigger, e
     ensureRenderLoopAfterTriggerCount: 0,
     renderNoOpRate: 0.25,
     wakeupNoOpRate: 1,
-    renderEnsureFallbackRate: 0.5,
+    renderEnsureFollowThroughRate: 0.5,
   });
   assert.deepEqual(resetPlatformRenderDebugStats(App), {
     renderRequestCount: 4,

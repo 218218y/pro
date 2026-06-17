@@ -78,7 +78,7 @@ export function provideBuilder(App: AppContainer): BuilderServiceLike {
   const A: AppWithDeps = assertApp(App, 'native/builder/provide');
 
   // No hard kernel dependency here: plan/scheduler prefer canonical store/actions seams.
-  // Any remaining compat probing is centralized in builder/store_access helpers.
+  // Any remaining store-shape probing is centralized in builder/store_access helpers.
 
   // Canonical namespace:
   // - Builder is a service: `App.services.builder`.

@@ -2,7 +2,7 @@
 //
 // Normalizes the entry inputs for builder/core:
 // - accepts either a full state snapshot (state.ui/state.config/state.mode)
-// - or a compat build-state override resolver (via centralized store_access seams)
+// - or a build-state override resolver (via centralized store_access seams)
 //
 // Also derives runtime flags that affect post-build behavior.
 // In Stage 21 this module also becomes the single place that:

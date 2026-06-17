@@ -349,7 +349,7 @@ export function exitPrimaryModeImpl(
       opts.closeDoors = true;
     }
   } catch (err) {
-    modesReportNonFatal(App, 'esm/native/ui/modes_transition_policy.ts:defaultCloseDoorsFallback', err);
+    modesReportNonFatal(App, 'esm/native/ui/modes_transition_policy.ts:defaultCloseDoorsError', err);
   }
 
   try {

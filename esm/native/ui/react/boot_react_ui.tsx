@@ -42,7 +42,7 @@ function readBrowserDocProvider(app: AppContainer): BrowserDocProviderLike | nul
   }
 }
 
-function createToastFallback(): (msg: string, type?: string) => void {
+function createConsoleToast(): (msg: string, type?: string) => void {
   return (msg: string, type?: string) => {
     try {
       console.log('[toast]', type || 'info', msg);
@@ -74,7 +74,7 @@ export function bootReactUi(opts: BootReactUiOpts): void {
   const toast =
     typeof fb?.toast === 'function'
       ? (msg: string, type?: string) => fb.toast?.(msg, type)
-      : createToastFallback();
+      : createConsoleToast();
 
   const __reportBoot = (op: string, err: unknown) => {
     reportError(app, err, { where: 'ui/react/boot_react_ui', op });
