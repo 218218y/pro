@@ -154,15 +154,15 @@ test('corner wing grid shelves keep brace shelves full-width and regular shelves
 });
 
 test('corner wing extension-cell config runtime: bottom stack defaults stay shelf-scoped and use lower-cell canonical actions when present', () => {
-  const calls: number[] = [];
+  const calls: Array<{ stack: string; moduleKey: string }> = [];
   const resolver = createCornerWingCellCfgResolver(
     {
       App: {
         actions: {
           modules: {
-            ensureLowerCellAt(index: number) {
-              calls.push(index);
-              return index === 0
+            ensureForStack(stack: string, moduleKey: string) {
+              calls.push({ stack, moduleKey });
+              return stack === 'bottom' && moduleKey === 'corner:0'
                 ? {
                     layout: 'hanging_top2',
                     customData: { shelves: [], rods: [true, false], storage: false },
@@ -185,7 +185,7 @@ test('corner wing extension-cell config runtime: bottom stack defaults stay shel
   const first = resolver(0);
   const second = resolver(1);
 
-  assert.deepEqual(calls, [1]);
+  assert.deepEqual(calls, [{ stack: 'bottom', moduleKey: 'corner:1' }]);
   assert.equal(first.layout, 'shelves');
   assert.equal(first.isCustom, true);
   assert.deepEqual(first.customData?.shelves, [false, true, false, true, false, false]);
