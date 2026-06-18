@@ -3,7 +3,10 @@
 // Keep the public connector cornice owner focused on orchestration while wave /
 // profile / hitbox details consume a shared typed contract.
 
-import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  CARCASS_CORNICE_DIMENSIONS,
+  CORNER_WING_DIMENSIONS,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { BufferAttrLike } from './corner_geometry_plan.js';
 import type { UnknownRecord } from '../../../types';
 import type { ThrottleOpts } from '../runtime/throttled_errors.js';
@@ -56,6 +59,7 @@ export type CornerConnectorCorniceCtx = {
   woodThick: number;
   startY: number;
   wingH: number;
+  mainH?: number;
   __stackOffsetZ: number;
   __stackKey: string;
   hasCorniceEnabled?: boolean;
@@ -76,6 +80,8 @@ export type CornerConnectorCorniceLocals = {
   panelThick?: number;
   backPanelThick?: number;
   showFrontPanel?: boolean;
+  adjacentWingBodyHeight?: number | null;
+  adjacentMainBodyHeight?: number | null;
 };
 export type CornerConnectorCorniceHelpers = {
   readNumFrom: (obj: unknown, key: string, defaultValue: number) => number;
@@ -115,6 +121,62 @@ export function isBufferAttrLike(value: unknown): value is BufferAttrLike {
 
 export function readBufferAttribute(value: unknown): BufferAttrLike | null {
   return isBufferAttrLike(value) ? value : null;
+}
+
+export type CornerConnectorCorniceSideReturn = {
+  side: 'wing' | 'main';
+  partId: 'corner_cornice_side_left' | 'corner_cornice_side_right';
+  a: CornerPointLike;
+  b: CornerPointLike;
+};
+
+function finitePositiveOrNull(value: unknown): number | null {
+  const n = typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : NaN;
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+function readOptionalNeighborBodyHeight(value: unknown, fallback: number): number | null {
+  if (value === null) return null;
+  const n = finitePositiveOrNull(value);
+  return n == null ? fallback : n;
+}
+
+function isConnectorTallerThanNeighbor(
+  connectorBodyHeight: number,
+  neighborBodyHeight: number | null
+): boolean {
+  if (!Number.isFinite(connectorBodyHeight) || connectorBodyHeight <= 0) return false;
+  if (neighborBodyHeight == null) return true;
+  return connectorBodyHeight > neighborBodyHeight + CARCASS_CORNICE_DIMENSIONS.common.epsilonM;
+}
+
+export function resolveCornerConnectorCorniceSideReturns(args: {
+  ctx: Pick<CornerConnectorCorniceCtx, 'wingH' | 'mainH'>;
+  locals: Pick<CornerConnectorCorniceLocals, 'pts' | 'adjacentWingBodyHeight' | 'adjacentMainBodyHeight'>;
+}): CornerConnectorCorniceSideReturn[] {
+  const { ctx, locals } = args;
+  const pts = Array.isArray(locals.pts) ? locals.pts : [];
+  if (pts.length < 5) return [];
+
+  const connectorBodyHeight = finitePositiveOrNull(ctx.wingH) ?? 0;
+  const wingNeighborBodyHeight = readOptionalNeighborBodyHeight(
+    locals.adjacentWingBodyHeight,
+    connectorBodyHeight
+  );
+  const mainNeighborBodyHeight = readOptionalNeighborBodyHeight(
+    locals.adjacentMainBodyHeight,
+    readOptionalNeighborBodyHeight(ctx.mainH, connectorBodyHeight) ?? connectorBodyHeight
+  );
+
+  const out: CornerConnectorCorniceSideReturn[] = [];
+  if (isConnectorTallerThanNeighbor(connectorBodyHeight, wingNeighborBodyHeight)) {
+    out.push({ side: 'wing', partId: 'corner_cornice_side_left', a: pts[1], b: pts[2] });
+  }
+  if (isConnectorTallerThanNeighbor(connectorBodyHeight, mainNeighborBodyHeight)) {
+    // Use a back-to-front path so the visible miter is on the diagonal/front joint.
+    out.push({ side: 'main', partId: 'corner_cornice_side_right', a: pts[4], b: pts[3] });
+  }
+  return out;
 }
 
 export function appendCornerConnectorCorniceHitArea(args: {

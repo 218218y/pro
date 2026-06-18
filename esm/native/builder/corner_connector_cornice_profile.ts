@@ -4,7 +4,11 @@ import type {
   CornerConnectorCorniceHelpers,
   CornerConnectorCorniceLocals,
 } from './corner_connector_cornice_shared.js';
-import { hasCorniceExtrusionSupport, readBufferAttribute } from './corner_connector_cornice_shared.js';
+import {
+  hasCorniceExtrusionSupport,
+  readBufferAttribute,
+  resolveCornerConnectorCorniceSideReturns,
+} from './corner_connector_cornice_shared.js';
 
 export function applyCornerConnectorProfileCornice(args: {
   ctx: CornerConnectorCorniceCtx;
@@ -20,6 +24,7 @@ export function applyCornerConnectorProfileCornice(args: {
   const cHeight = corniceProfile.heightM;
 
   const overhang = corniceProfile.overhangZM;
+  const sideOverhang = corniceProfile.overhangXM;
   const insetOnRoof = corniceProfile.insetOnRoofM;
   const backStep = corniceProfile.backStepM;
 
@@ -83,6 +88,70 @@ export function applyCornerConnectorProfileCornice(args: {
   };
 
   const profile = makeCorniceProfile(overhang);
+  const sideProfile = makeCorniceProfile(sideOverhang);
+
+  const buildSideProfileSegMesh = (
+    aSide: { x: number; z: number },
+    bSide: { x: number; z: number },
+    partId: 'corner_cornice_side_left' | 'corner_cornice_side_right'
+  ) => {
+    if (!hasCorniceExtrusionSupport(THREE)) return null;
+
+    const dx = bSide.x - aSide.x;
+    const dz = bSide.z - aSide.z;
+    const segLen = Math.sqrt(dx * dx + dz * dz);
+    if (!Number.isFinite(segLen) || segLen <= corniceCommon.minSegmentLengthM) return null;
+
+    const p0 = asRecord(sideProfile[0]);
+    const x0 = readNumFrom(p0, 'x', NaN);
+    const y0 = readNumFrom(p0, 'y', NaN);
+    if (!Number.isFinite(x0) || !Number.isFinite(y0)) return null;
+
+    const shape = new THREE.Shape();
+    shape.moveTo(x0, y0);
+    for (let i = 1; i < sideProfile.length; i++) {
+      const p = asRecord(sideProfile[i]);
+      const px = readNumFrom(p, 'x', NaN);
+      const py = readNumFrom(p, 'y', NaN);
+      if (!Number.isFinite(px) || !Number.isFinite(py)) continue;
+      shape.lineTo(px, py);
+    }
+    shape.lineTo(x0, y0);
+
+    const geo = new THREE.ExtrudeGeometry(shape, { depth: segLen, bevelEnabled: false, steps: 1 });
+    if (typeof geo.translate === 'function') geo.translate(0, 0, -segLen / 2);
+    if (typeof geo.computeVertexNormals === 'function') geo.computeVertexNormals();
+
+    let nx = -dz / segLen;
+    let nz = dx / segLen;
+    const midX = (aSide.x + bSide.x) / 2;
+    const midZ = (aSide.z + bSide.z) / 2;
+    const toInteriorX = interiorX - midX;
+    const toInteriorZ = interiorZ - midZ;
+    if (nx * toInteriorX + nz * toInteriorZ > 0) {
+      nx = -nx;
+      nz = -nz;
+    }
+
+    const yaw = Math.atan2(dx, dz);
+    const localXWorldX = Math.cos(yaw);
+    const localXWorldZ = -Math.sin(yaw);
+    const flipX = localXWorldX * nx + localXWorldZ * nz < 0;
+
+    const baseCorniceMat = getCornerMat('corner_cornice', bodyMat);
+    const corniceMat = getCornerMat(partId, baseCorniceMat);
+    const m = new THREE.Mesh(geo, corniceMat);
+    if (flipX) m.scale.x *= -1;
+    m.rotation.y = yaw;
+    m.position.set(midX, yPlace, midZ);
+    m.userData = { partId };
+    if (!__sketchMode) {
+      m.castShadow = true;
+      m.receiveShadow = true;
+    }
+    addOutlines(m);
+    return m;
+  };
 
   // Visible diagonal edge (doors face): pts[2] -> pts[3]
   const a = pts[2];
@@ -220,6 +289,12 @@ export function applyCornerConnectorProfileCornice(args: {
     };
 
     const m = buildProfileSegMesh();
+    if (m) cornerGroup.add(m);
+  }
+
+  const exposedSides = resolveCornerConnectorCorniceSideReturns({ ctx, locals });
+  for (const side of exposedSides) {
+    const m = buildSideProfileSegMesh(side.a, side.b, side.partId);
     if (m) cornerGroup.add(m);
   }
 }

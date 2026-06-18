@@ -18,6 +18,10 @@ import {
   __wp_toast,
 } from './canvas_picking_core_helpers.js';
 import { requestDoorAuthoringBurstRefresh } from './canvas_picking_door_authoring_burst.js';
+import {
+  readRemovablePartRemovalBlockReason,
+  toastRemovablePartRemovalBlock,
+} from './canvas_picking_removable_part_remove_constraints.js';
 
 export interface CanvasRemovablePartRemoveClickArgs {
   App: AppContainer;
@@ -68,6 +72,13 @@ export function handleCanvasRemovablePartRemoveClick(args: CanvasRemovablePartRe
   };
 
   const nextRemoved = !hasRemoved(partId);
+  if (nextRemoved) {
+    const blockReason = readRemovablePartRemovalBlockReason({ App, partId, hasRemoved });
+    if (blockReason) {
+      toastRemovablePartRemovalBlock(App, blockReason);
+      return true;
+    }
+  }
 
   __wp_historyBatch(App, structuralMeta, () => {
     setRemoved(partId, nextRemoved);

@@ -3,7 +3,44 @@ import type {
   CornerConnectorCorniceCtx,
   CornerConnectorCorniceLocals,
 } from './corner_connector_cornice_shared.js';
-import { hasCorniceExtrusionSupport } from './corner_connector_cornice_shared.js';
+import {
+  hasCorniceExtrusionSupport,
+  resolveCornerConnectorCorniceSideReturns,
+} from './corner_connector_cornice_shared.js';
+
+function connectorPathSegmentLength(a: { x: number; z: number }, b: { x: number; z: number }): number {
+  const dx = b.x - a.x;
+  const dz = b.z - a.z;
+  const len = Math.sqrt(dx * dx + dz * dz);
+  return Number.isFinite(len) ? len : 0;
+}
+
+function connectorProfileRotationForPath(a: { x: number; z: number }, b: { x: number; z: number }): number {
+  return Math.atan2(-(b.x - a.x), -(b.z - a.z));
+}
+
+function inwardConnectorCenterForPath(args: {
+  a: { x: number; z: number };
+  b: { x: number; z: number };
+  interiorX: number;
+  interiorZ: number;
+  inset: number;
+}): { x: number; z: number } {
+  const { a, b, interiorX, interiorZ, inset } = args;
+  const midX = (a.x + b.x) / 2;
+  const midZ = (a.z + b.z) / 2;
+  const len = connectorPathSegmentLength(a, b);
+  if (!(len > 0) || !(inset > 0)) return { x: midX, z: midZ };
+  let nx = -(b.z - a.z) / len;
+  let nz = (b.x - a.x) / len;
+  const toInteriorX = interiorX - midX;
+  const toInteriorZ = interiorZ - midZ;
+  if (nx * toInteriorX + nz * toInteriorZ > 0) {
+    nx = -nx;
+    nz = -nz;
+  }
+  return { x: midX - nx * inset, z: midZ - nz * inset };
+}
 
 export function applyCornerConnectorWaveCornice(args: {
   ctx: CornerConnectorCorniceCtx;
@@ -128,5 +165,30 @@ export function applyCornerConnectorWaveCornice(args: {
       addOutlines(m);
       cornerGroup.add(m);
     }
+  }
+
+  const exposedSides = resolveCornerConnectorCorniceSideReturns({ ctx, locals });
+  for (const side of exposedSides) {
+    const sideLen = connectorPathSegmentLength(side.a, side.b);
+    if (!(Number.isFinite(sideLen) && sideLen > corniceCommon.minSegmentLengthM)) continue;
+    const center = inwardConnectorCenterForPath({
+      a: side.a,
+      b: side.b,
+      interiorX,
+      interiorZ,
+      inset: frameT / 2,
+    });
+    const baseCorniceMat = getCornerMat('corner_cornice', bodyMat);
+    const sideMat = getCornerMat(side.partId, baseCorniceMat);
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(frameT, maxH, sideLen), sideMat);
+    mesh.rotation.y = connectorProfileRotationForPath(side.a, side.b);
+    mesh.position.set(center.x, yPlace + maxH / 2, center.z);
+    mesh.userData = { partId: side.partId };
+    if (!__sketchMode) {
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+    }
+    addOutlines(mesh);
+    cornerGroup.add(mesh);
   }
 }

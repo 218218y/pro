@@ -196,3 +196,105 @@ test('removing a sketch-box side stores a removable side key and explains brace 
   assert.match(toasts[0]?.message || '', /דופן הקופסא הוסרה/);
   assert.match(toasts[0]?.message || '', /הפכו למדפי קושרת/);
 });
+
+function createRemovableSideGuardApp(
+  config: Record<string, unknown>,
+  removedDoorsMap: Record<string, unknown> = {}
+) {
+  const toasts: Array<{ message: string; type: string | undefined }> = [];
+  const App = {
+    store: {
+      getState() {
+        return { config, ui: {}, runtime: {}, mode: {}, meta: {} };
+      },
+      patch() {
+        return undefined;
+      },
+    },
+    maps: {
+      getMap(name: string) {
+        return name === 'removedDoorsMap' ? removedDoorsMap : {};
+      },
+    },
+    services: {
+      uiFeedback: {
+        toast(message: string, type?: string) {
+          toasts.push({ message, type });
+        },
+      },
+    },
+    actions: {
+      doors: {
+        setRemoved(partId: string, on: boolean) {
+          removedDoorsMap[`removed_${partId}`] = on ? true : null;
+        },
+      },
+    },
+  } as any;
+
+  return { App, removedDoorsMap, toasts };
+}
+
+test('removing a frame side is blocked when the adjacent cell has drawers', () => {
+  const { App, removedDoorsMap, toasts } = createRemovableSideGuardApp({
+    modulesConfiguration: [{ layout: 'shelves', extDrawersCount: 2 }],
+  });
+
+  assert.equal(handleCanvasRemovablePartRemoveClick({ App, partId: 'body_left' }), true);
+
+  assert.equal(removedDoorsMap.removed_body_left, undefined);
+  assert.equal(toasts.length, 1);
+  assert.equal(toasts[0]?.type, 'error');
+  assert.match(toasts[0]?.message || '', /תלייה או מגירות/);
+});
+
+test('removing a frame side is blocked when the adjacent cell has hanging', () => {
+  const { App, removedDoorsMap, toasts } = createRemovableSideGuardApp({
+    modulesConfiguration: [{ layout: 'hanging_top2', extDrawersCount: 0 }],
+  });
+
+  assert.equal(handleCanvasRemovablePartRemoveClick({ App, partId: 'body_right' }), true);
+
+  assert.equal(removedDoorsMap.removed_body_right, undefined);
+  assert.equal(toasts.length, 1);
+  assert.equal(toasts[0]?.type, 'error');
+  assert.match(toasts[0]?.message || '', /תלייה או מגירות/);
+});
+
+test('removing both frame sides of a single cell is blocked', () => {
+  const { App, removedDoorsMap, toasts } = createRemovableSideGuardApp(
+    { modulesConfiguration: [{ layout: 'shelves', customData: { rods: [false, false] } }] },
+    { removed_body_left: true }
+  );
+
+  assert.equal(handleCanvasRemovablePartRemoveClick({ App, partId: 'body_right' }), true);
+
+  assert.equal(removedDoorsMap.removed_body_right, undefined);
+  assert.equal(toasts.length, 1);
+  assert.equal(toasts[0]?.type, 'error');
+  assert.match(toasts[0]?.message || '', /שתי הדפנות/);
+});
+
+test('removing both sides of the same sketch box is blocked', () => {
+  const { App, removedDoorsMap, toasts } = createRemovableSideGuardApp(
+    {
+      modulesConfiguration: [
+        {
+          layout: 'shelves',
+          sketchExtras: { boxes: [{ id: 'box-1', freePlacement: true }] },
+        },
+      ],
+    },
+    { 'removed_sketch_box_free_0_box-1_side_left': true }
+  );
+
+  assert.equal(
+    handleCanvasRemovablePartRemoveClick({ App, partId: 'sketch_box_free_0_box-1_side_right' }),
+    true
+  );
+
+  assert.equal(removedDoorsMap['removed_sketch_box_free_0_box-1_side_right'], undefined);
+  assert.equal(toasts.length, 1);
+  assert.equal(toasts[0]?.type, 'error');
+  assert.match(toasts[0]?.message || '', /שתי הדפנות/);
+});

@@ -13,8 +13,10 @@ export function applyCornerConnectorCornice(params: CornerConnectorCorniceFlowPa
   const { App, hasCorniceEnabled = true, __corniceAllowedForThisStack, __corniceTypeNorm } = ctx;
   const { reportErrorThrottled } = helpers;
 
-  // --- Corner connector (pentagon) cornice: upgraded profile on the VISIBLE front diagonal only ---
-  // (We do NOT add cornice on the connector's attach edges to the wing/main, because those are internal seams.)
+  // --- Corner connector (pentagon) cornice ---
+  // The front diagonal is always visible. Attach-edge side returns are emitted only
+  // when the neighboring main/wing cell is lower (or missing), matching regular
+  // segmented carcass cornice behavior for stepped heights.
   if (hasCorniceEnabled && __corniceAllowedForThisStack) {
     try {
       if (__corniceTypeNorm === 'wave') {

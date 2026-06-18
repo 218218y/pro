@@ -21,6 +21,8 @@ type ShadowNodeLike = Object3DLike & {
 export interface CornerOpsEmitContext extends UnknownRecord {
   App: AppContainer;
   THREE: ThreeLike;
+  mainW: number;
+  mainH: number;
   mainD: number;
   woodThick: number;
   shelfThick: number;
