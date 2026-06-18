@@ -26,8 +26,14 @@ test('[stageO] react/browser seams use explicit surfaces instead of AnyRecord ba
     /const api: CloudSyncServiceLike \| undefined = getCloudSyncServiceMaybe\(app\) \|\| undefined;/
   );
   assert.match(bundle, /const meta: MetaActionsNamespaceLike = useMeta\(\);/);
-  assert.match(bundle, /import \{ refreshBuilderHandles \} from '\.\.\/\.\.\/\.\.\/services\/api\.js';/);
-  assert.match(bundle, /refreshBuilderHandles\(app, \{ purgeRemovedDoors: true \}\);/);
+  assert.match(
+    bundle,
+    /import \{ readConfigStateFromApp, refreshBuilderHandles \} from '\.\.\/\.\.\/\.\.\/services\/api\.js';/
+  );
+  assert.match(
+    bundle,
+    /refreshBuilderHandles\(app, \{\s*cfgSnapshot: readConfigStateFromApp\(app\),\s*purgeRemovedDoors: true,\s*\}\);/
+  );
   assert.match(bundle, /function readExportAction<K extends keyof ExportCanvasModuleLike>\(/);
   assert.doesNotMatch(bundle, /\bAnyRecord\b/);
 });

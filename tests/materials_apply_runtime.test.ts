@@ -23,7 +23,7 @@ function createApp(triggerRenderAvailable = true) {
           },
         },
         handles: {
-          applyHandles(opts?: { triggerRender?: boolean }) {
+          applyHandles(opts?: { triggerRender?: boolean; cfgSnapshot?: Record<string, unknown> }) {
             calls.push(['handles', opts ?? null]);
           },
         },
@@ -70,7 +70,7 @@ test('materials apply runtime: changed materials route handle/render follow-thro
   assert.equal(targetMesh.material, appliedMaterial);
   assert.deepEqual(calls, [
     ['getMaterial', 'white'],
-    ['handles', { triggerRender: false }],
+    ['handles', { triggerRender: false, cfgSnapshot: {} }],
     ['platform-render', false],
   ]);
 });
@@ -82,7 +82,7 @@ test('materials apply runtime: changed materials fall back to ensureRenderLoop w
   assert.equal(targetMesh.material, appliedMaterial);
   assert.deepEqual(calls, [
     ['getMaterial', 'white'],
-    ['handles', { triggerRender: false }],
+    ['handles', { triggerRender: false, cfgSnapshot: {} }],
     ['ensureRenderLoop'],
   ]);
 });
