@@ -23,6 +23,68 @@ import {
 } from './canvas_picking_paint_flow_shared.js';
 import type { PaintFlowMutableState } from './canvas_picking_paint_flow_apply_state.js';
 
+function readOwnPaintValue(map: Record<string, unknown>, key: string): unknown {
+  return Object.prototype.hasOwnProperty.call(map, key) ? map[key] : undefined;
+}
+
+function readUniformLegacyUnifiedColor(
+  colors: Record<string, unknown>,
+  requiredKeys: string[],
+  absentKeys: string[]
+): unknown {
+  for (let i = 0; i < absentKeys.length; i += 1) {
+    if (typeof readOwnPaintValue(colors, absentKeys[i]) !== 'undefined') return undefined;
+  }
+  let color: unknown;
+  for (let i = 0; i < requiredKeys.length; i += 1) {
+    const value = readOwnPaintValue(colors, requiredKeys[i]);
+    if (typeof value !== 'string' || !value) return undefined;
+    if (i === 0) color = value;
+    else if (value !== color) return undefined;
+  }
+  return color;
+}
+
+function pruneLegacyUnifiedCornerFrameLowerKeys(colors: Record<string, unknown>): void {
+  const wingColor = readUniformLegacyUnifiedColor(
+    colors,
+    [
+      'corner_ceil',
+      'corner_wing_side_left',
+      'corner_wing_side_right',
+      'lower_corner_wing_side_left',
+      'lower_corner_wing_side_right',
+      'lower_corner_floor',
+    ],
+    ['corner_floor', 'lower_corner_ceil']
+  );
+  if (typeof wingColor !== 'undefined') {
+    colors.corner_floor = wingColor;
+    delete colors.lower_corner_wing_side_left;
+    delete colors.lower_corner_wing_side_right;
+    delete colors.lower_corner_floor;
+  }
+
+  const pentagonColor = readUniformLegacyUnifiedColor(
+    colors,
+    [
+      'corner_pent_ceil',
+      'corner_pent_attach_main',
+      'corner_pent_attach_wing',
+      'lower_corner_pent_attach_main',
+      'lower_corner_pent_attach_wing',
+      'lower_corner_pent_floor',
+    ],
+    ['corner_pent_floor', 'lower_corner_pent_ceil']
+  );
+  if (typeof pentagonColor !== 'undefined') {
+    colors.corner_pent_floor = pentagonColor;
+    delete colors.lower_corner_pent_attach_main;
+    delete colors.lower_corner_pent_attach_wing;
+    delete colors.lower_corner_pent_floor;
+  }
+}
+
 export function applyGroupedOrCornerPaintTarget(args: {
   state: PaintFlowMutableState;
   foundPartId: string;
@@ -37,8 +99,10 @@ export function applyGroupedOrCornerPaintTarget(args: {
     targetScope
   );
   if (unifiedCornerFrameKeys !== null) {
+    const colors = state.ensureColors();
+    pruneLegacyUnifiedCornerFrameLowerKeys(colors);
     if (unifiedCornerFrameKeys.length) {
-      toggleGroupedPaint(state.ensureColors(), unifiedCornerFrameKeys, paintSelection);
+      toggleGroupedPaint(colors, unifiedCornerFrameKeys, paintSelection);
     }
     return true;
   }
@@ -74,8 +138,10 @@ export function applyGroupedOrCornerPaintTarget(args: {
     foundPartId === 'corner_floor_blind' ||
     foundPartId.startsWith('corner_floor_c')
   ) {
+    const colors = state.ensureColors();
+    pruneLegacyUnifiedCornerFrameLowerKeys(colors);
     toggleGroupedPaint(
-      state.ensureColors(),
+      colors,
       __wp_scopeCornerPartKeysForStack(CORNER_WING_FRAME_PARTS, activeStack),
       paintSelection
     );
@@ -90,8 +156,10 @@ export function applyGroupedOrCornerPaintTarget(args: {
     return true;
   }
   if (CORNER_PENTAGON_FRAME_PARTS.includes(foundPartId)) {
+    const colors = state.ensureColors();
+    pruneLegacyUnifiedCornerFrameLowerKeys(colors);
     toggleGroupedPaint(
-      state.ensureColors(),
+      colors,
       __wp_scopeCornerPartKeysForStack(CORNER_PENTAGON_FRAME_PARTS, activeStack),
       paintSelection
     );

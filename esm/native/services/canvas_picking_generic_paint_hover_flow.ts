@@ -1,6 +1,6 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
 import { __wp_map } from './canvas_picking_core_helpers.js';
-import { resolvePaintTargetKeys } from './canvas_picking_paint_flow.js';
+import { resolvePaintPreviewKeysForTarget, resolvePaintTargetKeys } from './canvas_picking_paint_flow.js';
 import { resolveCanvasPickingClickHitState } from './canvas_picking_click_hit_flow.js';
 import { __wp_getViewportRoots } from './canvas_picking_local_helpers.js';
 import {
@@ -115,10 +115,16 @@ export function tryHandleGenericPartPaintHover(args: {
     }
     return false;
   }
+  const groupedPreviewKeys = resolvePaintPreviewKeysForTarget(
+    resolvedTarget.partId,
+    resolvedTarget.stackKey,
+    targetKeys,
+    resolvedTarget.targetScope
+  );
   const previewTargetKeys = __resolvePaintPreviewTargetKeys(
     resolvedTarget.partId,
     resolvedTarget.stackKey,
-    targetKeys
+    groupedPreviewKeys
   );
   const previewGroupRaw = resolvePaintPreviewGroupBox({
     App,

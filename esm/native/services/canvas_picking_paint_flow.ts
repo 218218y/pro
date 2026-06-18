@@ -5,4 +5,4 @@
 // live in focused paint-flow owners.
 export type { CanvasPaintClickArgs } from './canvas_picking_paint_flow_contracts.js';
 export { tryHandleCanvasPaintClick } from './canvas_picking_paint_flow_apply.js';
-export { resolvePaintTargetKeys } from './canvas_picking_paint_targets.js';
+export { resolvePaintTargetKeys, resolvePaintPreviewKeysForTarget } from './canvas_picking_paint_targets.js';

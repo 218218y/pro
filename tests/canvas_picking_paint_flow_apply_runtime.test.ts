@@ -182,9 +182,7 @@ test('paint grouped/corner target keeps a unified stack-split corner wing frame 
     corner_ceil: 'walnut',
     corner_wing_side_left: 'walnut',
     corner_wing_side_right: 'walnut',
-    lower_corner_wing_side_left: 'walnut',
-    lower_corner_wing_side_right: 'walnut',
-    lower_corner_floor: 'walnut',
+    corner_floor: 'walnut',
   };
   const targetScope = { stackSplitUnifiedFrame: true };
 
@@ -239,9 +237,7 @@ test('paint grouped/corner target keeps a unified stack-split pentagon frame as 
     corner_pent_ceil: 'walnut',
     corner_pent_attach_main: 'walnut',
     corner_pent_attach_wing: 'walnut',
-    lower_corner_pent_attach_main: 'walnut',
-    lower_corner_pent_attach_wing: 'walnut',
-    lower_corner_pent_floor: 'walnut',
+    corner_pent_floor: 'walnut',
   };
   const targetScope = { stackSplitUnifiedFrame: true };
 
@@ -286,6 +282,34 @@ test('paint grouped/corner target keeps a unified stack-split pentagon frame as 
     assert.deepEqual(state.colors, {}, `${activeStack}:${foundPartId}`);
     assert.deepEqual(resolvePaintTargetKeys(foundPartId, activeStack, targetScope), []);
   }
+});
+
+test('paint grouped/corner target migrates legacy unified corner frame colors back to the upper split frame', () => {
+  const state = createManualState({
+    colors0: {
+      corner_ceil: 'walnut',
+      corner_wing_side_left: 'walnut',
+      corner_wing_side_right: 'walnut',
+      lower_corner_wing_side_left: 'walnut',
+      lower_corner_wing_side_right: 'walnut',
+      lower_corner_floor: 'walnut',
+    },
+  });
+
+  const handled = applyGroupedOrCornerPaintTarget({
+    state,
+    foundPartId: 'corner_wing_side_right',
+    activeStack: 'top',
+    paintSelection: 'oak',
+  });
+
+  assert.equal(handled, true);
+  assert.deepEqual(state.colors, {
+    corner_ceil: 'oak',
+    corner_wing_side_left: 'oak',
+    corner_wing_side_right: 'oak',
+    corner_floor: 'oak',
+  });
 });
 
 test('paint click ignores corner back-panel hit ids because those meshes are not individual-color paint targets', () => {

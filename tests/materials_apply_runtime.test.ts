@@ -340,6 +340,132 @@ test('materials apply color policy maps corner wing roof meshes to the canonical
   );
 });
 
+test('materials apply color policy keeps unified corner frame paint canonical while previewing lower outer boards', () => {
+  const colors = {
+    corner_ceil: 'oak',
+    corner_wing_side_left: 'oak',
+    corner_wing_side_right: 'oak',
+    corner_floor: 'oak',
+    lower_corner_wing_side_left: 'wrong',
+    lower_corner_floor: 'wrong',
+  };
+
+  assert.equal(
+    readPartColorEntry({
+      individualColors: colors,
+      isMulti: true,
+      partId: 'corner_wing_side_left',
+      stackKey: 'bottom',
+      stackSplitUnifiedFrame: true,
+    }),
+    'oak'
+  );
+  assert.equal(
+    readPartColorEntry({
+      individualColors: colors,
+      isMulti: true,
+      partId: 'corner_floor',
+      stackKey: 'bottom',
+      stackSplitUnifiedFrame: true,
+    }),
+    'oak'
+  );
+  assert.equal(
+    readPartColorEntry({
+      individualColors: colors,
+      isMulti: true,
+      partId: 'corner_floor',
+      stackKey: 'top',
+      stackSplitUnifiedFrame: true,
+    }),
+    undefined
+  );
+});
+
+test('materials apply color policy treats legacy unified corner paint as upper split-frame paint after frame split', () => {
+  const colors = {
+    corner_ceil: 'oak',
+    corner_wing_side_left: 'oak',
+    corner_wing_side_right: 'oak',
+    lower_corner_wing_side_left: 'oak',
+    lower_corner_wing_side_right: 'oak',
+    lower_corner_floor: 'oak',
+  };
+
+  assert.equal(
+    readPartColorEntry({
+      individualColors: colors,
+      isMulti: true,
+      partId: 'corner_floor',
+      stackKey: 'top',
+      stackSplitUnifiedFrame: false,
+    }),
+    'oak'
+  );
+  assert.equal(
+    readPartColorEntry({
+      individualColors: colors,
+      isMulti: true,
+      partId: 'corner_wing_side_left',
+      stackKey: 'bottom',
+      stackSplitUnifiedFrame: false,
+    }),
+    undefined
+  );
+  assert.equal(
+    readPartColorEntry({
+      individualColors: colors,
+      isMulti: true,
+      partId: 'corner_floor',
+      stackKey: 'bottom',
+      stackSplitUnifiedFrame: false,
+    }),
+    undefined
+  );
+});
+
+test('materials apply color policy treats legacy unified pentagon paint as upper split-frame paint after frame split', () => {
+  const colors = {
+    corner_pent_ceil: 'oak',
+    corner_pent_attach_main: 'oak',
+    corner_pent_attach_wing: 'oak',
+    lower_corner_pent_attach_main: 'oak',
+    lower_corner_pent_attach_wing: 'oak',
+    lower_corner_pent_floor: 'oak',
+  };
+
+  assert.equal(
+    readPartColorEntry({
+      individualColors: colors,
+      isMulti: true,
+      partId: 'corner_pent_floor',
+      stackKey: 'top',
+      stackSplitUnifiedFrame: false,
+    }),
+    'oak'
+  );
+  assert.equal(
+    readPartColorEntry({
+      individualColors: colors,
+      isMulti: true,
+      partId: 'corner_pent_attach_main',
+      stackKey: 'bottom',
+      stackSplitUnifiedFrame: false,
+    }),
+    undefined
+  );
+  assert.equal(
+    readPartColorEntry({
+      individualColors: colors,
+      isMulti: true,
+      partId: 'corner_pent_floor',
+      stackKey: 'bottom',
+      stackSplitUnifiedFrame: false,
+    }),
+    undefined
+  );
+});
+
 test('materials apply runtime refreshes the visible corner wing roof from corner_ceil without painting the pentagon roof', () => {
   const calls: unknown[] = [];
   const wingRoofMat = { id: 'front:wing-roof' };

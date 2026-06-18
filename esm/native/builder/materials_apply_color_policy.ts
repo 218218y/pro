@@ -47,6 +47,10 @@ function isShelfLikePart(partId: string, userData?: ValueRecord | null): boolean
   return groupPartId === SHELF_GROUP_PART_ID || groupPartId === CORNER_SHELF_GROUP_PART_ID;
 }
 
+function readStackSplitUnifiedFrameFromUserData(userData?: ValueRecord | null): boolean {
+  return userData?.__wpStackSplitUnifiedFrame === true;
+}
+
 function resolveShelfGroupFromUserData(partId: string, userData?: ValueRecord | null): string | null {
   const groupPartId = typeof userData?.__wpShelfGroupPartId === 'string' ? userData.__wpShelfGroupPartId : '';
   if (groupPartId === SHELF_GROUP_PART_ID || groupPartId === CORNER_SHELF_GROUP_PART_ID) return groupPartId;
@@ -100,6 +104,7 @@ export function createPartMaterialResolver(args: {
       isMulti,
       partId,
       stackKey,
+      stackSplitUnifiedFrame: readStackSplitUnifiedFrameFromUserData(userData),
     });
     const groupEntry =
       typeof entry === 'undefined' && shelfGroupPartId
@@ -108,6 +113,7 @@ export function createPartMaterialResolver(args: {
             isMulti,
             partId: shelfGroupPartId,
             stackKey,
+            stackSplitUnifiedFrame: readStackSplitUnifiedFrameFromUserData(userData),
           })
         : undefined;
     const effectiveEntry = typeof entry === 'undefined' ? groupEntry : entry;

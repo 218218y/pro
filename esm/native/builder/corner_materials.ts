@@ -79,6 +79,83 @@ function readDoorSpecialValue(value: unknown): DoorSpecialValue {
   return null;
 }
 
+function isCornerWingFloorPartId(partId: string): boolean {
+  return partId === 'corner_floor' || partId === 'corner_floor_blind' || /^corner_floor_c\d+$/.test(partId);
+}
+
+function isCornerWingSidePartId(partId: string): boolean {
+  return partId === 'corner_wing_side_left' || partId === 'corner_wing_side_right';
+}
+
+function isCornerPentagonAttachPartId(partId: string): boolean {
+  return partId === 'corner_pent_attach_main' || partId === 'corner_pent_attach_wing';
+}
+
+function readOwnMapValue(map: PartMap, partId: string): unknown {
+  return Object.prototype.hasOwnProperty.call(map, partId) ? map[partId] : undefined;
+}
+
+function readUniformLegacyUnifiedColor(map: PartMap, requiredKeys: string[], absentKeys: string[]): unknown {
+  for (let i = 0; i < absentKeys.length; i += 1) {
+    if (typeof readOwnMapValue(map, absentKeys[i]) !== 'undefined') return undefined;
+  }
+  let color: unknown;
+  for (let i = 0; i < requiredKeys.length; i += 1) {
+    const value = readOwnMapValue(map, requiredKeys[i]);
+    if (typeof value !== 'string' || !value) return undefined;
+    if (i === 0) color = value;
+    else if (value !== color) return undefined;
+  }
+  return color;
+}
+
+function readLegacyUnifiedCornerWingColor(map: PartMap): unknown {
+  return readUniformLegacyUnifiedColor(
+    map,
+    [
+      'corner_ceil',
+      'corner_wing_side_left',
+      'corner_wing_side_right',
+      'lower_corner_wing_side_left',
+      'lower_corner_wing_side_right',
+      'lower_corner_floor',
+    ],
+    ['corner_floor', 'lower_corner_ceil']
+  );
+}
+
+function readLegacyUnifiedCornerPentagonColor(map: PartMap): unknown {
+  return readUniformLegacyUnifiedColor(
+    map,
+    [
+      'corner_pent_ceil',
+      'corner_pent_attach_main',
+      'corner_pent_attach_wing',
+      'lower_corner_pent_attach_main',
+      'lower_corner_pent_attach_wing',
+      'lower_corner_pent_floor',
+    ],
+    ['corner_pent_floor', 'lower_corner_pent_ceil']
+  );
+}
+
+function readUnifiedCornerBaseKeyForLowerOuterBoard(partId: string): string | null {
+  if (isCornerWingSidePartId(partId)) return partId;
+  if (isCornerWingFloorPartId(partId)) return 'corner_floor';
+  if (isCornerPentagonAttachPartId(partId)) return partId;
+  if (partId === 'corner_pent_floor') return 'corner_pent_floor';
+  return null;
+}
+
+function shouldSuppressUnifiedTopMiddleBoard(
+  partId: string,
+  stackKey: 'top' | 'bottom',
+  unifiedFrame: boolean
+): boolean {
+  if (!unifiedFrame || stackKey !== 'top') return false;
+  return isCornerWingFloorPartId(partId) || partId === 'corner_pent_floor';
+}
+
 function __appUtilStr(App: AppContainer, value: unknown): string {
   const util = App.util;
   return util && typeof util.str === 'function' ? String(util.str(value)) : String(value ?? '');
@@ -94,10 +171,12 @@ export function createCornerWingMaterials(args: {
   readMap: (name: string) => unknown;
   stackKey: 'top' | 'bottom';
   stackSplitEnabled: boolean;
+  stackSplitUnifiedFrame?: boolean;
   stackScopePartKey?: (partId: unknown) => string;
 }): CornerWingMaterialsResult {
   const { App, THREE, ro, materials, getMaterial, readMap, stackKey, stackSplitEnabled, stackScopePartKey } =
     args;
+  const stackSplitUnifiedFrame = !!args.stackSplitUnifiedFrame;
 
   const cfg = requireConfigSnapshot(args.cfgSnapshot);
   const commonMats = getCommonMatsOrThrow({ App, THREE });
@@ -128,17 +207,60 @@ export function createCornerWingMaterials(args: {
     if (!rec) return undefined;
     const baseId = String(partId || '');
     if (!baseId) return undefined;
+    const isIndividualColorsMap = rec === individualColors;
+    if (
+      isIndividualColorsMap &&
+      shouldSuppressUnifiedTopMiddleBoard(baseId, stackKey, stackSplitUnifiedFrame)
+    ) {
+      return undefined;
+    }
     const useScopedNamespace =
       stackSplitEnabled && stackKey === 'bottom' && typeof stackScopePartKey === 'function';
     const scopedId = useScopedNamespace ? String(stackScopePartKey(baseId) || '') : baseId;
-    const scopedEntry = scopedId ? readDoorVisualMapEntry(rec, scopedId) : null;
+    const legacyWingColor = isIndividualColorsMap ? readLegacyUnifiedCornerWingColor(rec) : undefined;
+    const legacyPentagonColor = isIndividualColorsMap ? readLegacyUnifiedCornerPentagonColor(rec) : undefined;
+    const unifiedBaseKey =
+      isIndividualColorsMap && stackSplitUnifiedFrame && useScopedNamespace
+        ? readUnifiedCornerBaseKeyForLowerOuterBoard(baseId)
+        : null;
+    const ignoreLegacyScopedUnifiedFrameColor =
+      isIndividualColorsMap &&
+      !stackSplitUnifiedFrame &&
+      useScopedNamespace &&
+      ((typeof legacyWingColor !== 'undefined' &&
+        (isCornerWingSidePartId(baseId) || isCornerWingFloorPartId(baseId))) ||
+        (typeof legacyPentagonColor !== 'undefined' &&
+          (isCornerPentagonAttachPartId(baseId) || baseId === 'corner_pent_floor')));
+    const ignoreScopedUnifiedFrameColor =
+      (!!unifiedBaseKey || ignoreLegacyScopedUnifiedFrameColor) && scopedId !== baseId;
+    const scopedEntry =
+      scopedId && !ignoreScopedUnifiedFrameColor ? readDoorVisualMapEntry(rec, scopedId) : null;
     if (scopedEntry) return scopedEntry.value;
+    if (scopedId && !ignoreScopedUnifiedFrameColor && Object.prototype.hasOwnProperty.call(rec, scopedId)) {
+      return rec[scopedId];
+    }
+    if (unifiedBaseKey) {
+      const unifiedBaseEntry = readDoorVisualMapEntry(rec, unifiedBaseKey);
+      if (unifiedBaseEntry) return unifiedBaseEntry.value;
+      if (Object.prototype.hasOwnProperty.call(rec, unifiedBaseKey)) return rec[unifiedBaseKey];
+      if (typeof legacyWingColor !== 'undefined' && isCornerWingFloorPartId(baseId)) return legacyWingColor;
+      if (typeof legacyPentagonColor !== 'undefined' && baseId === 'corner_pent_floor') {
+        return legacyPentagonColor;
+      }
+    }
     // Root fix for stacked corner wardrobes:
     // when the lower unit has its own lower_* namespace, it must NOT silently inherit
     // upper-unit per-part overrides (paint / mirror / glass / curtain) from the unscoped key.
     if (useScopedNamespace && scopedId && scopedId !== baseId) return undefined;
     const baseEntry = readDoorVisualMapEntry(rec, baseId);
-    return baseEntry ? baseEntry.value : undefined;
+    if (baseEntry) return baseEntry.value;
+    if (isIndividualColorsMap && !stackSplitUnifiedFrame && stackKey === 'top') {
+      if (typeof legacyWingColor !== 'undefined' && isCornerWingFloorPartId(baseId)) return legacyWingColor;
+      if (typeof legacyPentagonColor !== 'undefined' && baseId === 'corner_pent_floor') {
+        return legacyPentagonColor;
+      }
+    }
+    return undefined;
   };
 
   const readScopedReader = (reader: ScopedReaderLike, partId: unknown): unknown => {

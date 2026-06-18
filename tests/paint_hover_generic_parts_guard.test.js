@@ -141,13 +141,17 @@ test('generic part paint hover resolves shared paint groups and previews grouped
   assert.match(genericPaintHover, /canvas_picking_generic_paint_hover_flow/);
   assert.match(
     genericPaintHoverFlow,
-    /resolvePaintTargetKeys\(resolvedTarget\.partId, resolvedTarget\.stackKey\)/
+    /resolvePaintTargetKeys\([\s\S]*resolvedTarget\.partId,[\s\S]*resolvedTarget\.stackKey,[\s\S]*resolvedTarget\.targetScope[\s\S]*\)/
   );
   assert.match(
     genericPaintHoverFlowNorm,
-    /__resolvePaintPreviewTargetKeys\(resolvedTarget\.partId, resolvedTarget\.stackKey, targetKeys\)/
+    /resolvePaintPreviewKeysForTarget\(resolvedTarget\.partId, resolvedTarget\.stackKey, targetKeys, resolvedTarget\.targetScope\)/
   );
   assert.match(genericPaintHoverFlow, /partKeys: previewTargetKeys,/);
+  assert.match(
+    genericPaintHoverFlow,
+    /__resolvePaintPreviewTargetKeys\([\s\S]*resolvedTarget\.partId,[\s\S]*resolvedTarget\.stackKey,[\s\S]*groupedPreviewKeys[\s\S]*\)/
+  );
   assert.match(genericPaintHoverFlow, /const isCornicePreview = effectiveKeys\.some\(__isCornicePaintKey\);/);
   assert.match(
     genericPaintHoverFlow,
@@ -184,12 +188,12 @@ test('corner and pentagon cornice hover now follows the shared paint group by pr
   );
   assert.match(
     genericPaintHoverPreviewObjectsNorm,
-    /function appendScenePartObjectsByKeySet\(out: UnknownRecord\[\], node: unknown, partKeySet: Set<string>, inheritedDrawerBoxPartId: string \| null = null\): void \{/
+    /function appendScenePartObjectsByKeySet\([\s\S]*out: UnknownRecord\[\],[\s\S]*node: unknown,[\s\S]*partKeySet: Set<string>,[\s\S]*inheritedDrawerBoxPartId: string \| null = null,[\s\S]*inheritedStackKey: PreviewStackKey = null[\s\S]*\): void \{/
   );
   assert.match(genericPaintHoverPreviewObjects, /isDrawerBoxPartId\(partId\)/);
   assert.match(
     genericPaintHoverPreviewObjectsNorm,
-    /appendScenePartObjectsByKeySet\(out, children\[i\], partKeySet, nextInheritedDrawerBoxPartId\);/
+    /appendScenePartObjectsByKeySet\([\s\S]*out,[\s\S]*children\[i\],[\s\S]*partKeySet,[\s\S]*nextInheritedDrawerBoxPartId,[\s\S]*objectStackKey[\s\S]*\);/
   );
   assert.match(
     genericPaintHoverPreviewObjectsNorm,

@@ -38,8 +38,9 @@ export function applyMaterialsToWardrobeTree(args: {
     obj: WardrobeMeshLike;
     partId: string | null;
     stackKey: PartStackKey;
+    stackSplitUnifiedFrame: boolean;
     skip: boolean;
-  }> = [{ obj: wardrobeGroup, partId: null, stackKey: null, skip: false }];
+  }> = [{ obj: wardrobeGroup, partId: null, stackKey: null, stackSplitUnifiedFrame: false, skip: false }];
 
   while (stack.length) {
     const current = stack.pop();
@@ -48,11 +49,22 @@ export function applyMaterialsToWardrobeTree(args: {
 
     const parentPartId = current.partId;
     const parentStackKey = current.stackKey;
+    const parentStackSplitUnifiedFrame = current.stackSplitUnifiedFrame;
     const skipParent = current.skip;
 
     const userData = asObject<ValueRecord>(obj.userData) || {};
     const ownPartId = readPartId(userData.partId) || parentPartId;
     const ownStackKey = readStackKey(userData.__wpStack) || parentStackKey;
+    const ownStackSplitUnifiedFrame =
+      userData.__wpStackSplitUnifiedFrame === true
+        ? true
+        : userData.__wpStackSplitUnifiedFrame === false
+          ? false
+          : parentStackSplitUnifiedFrame;
+    const effectiveUserData =
+      userData.__wpStackSplitUnifiedFrame === ownStackSplitUnifiedFrame
+        ? userData
+        : { ...userData, __wpStackSplitUnifiedFrame: ownStackSplitUnifiedFrame };
     const skipSubtree = !!skipParent || !!userData.__keepMaterialSubtree;
 
     if (obj.isMesh) {
@@ -69,9 +81,9 @@ export function applyMaterialsToWardrobeTree(args: {
             ? 'brace'
             : 'regular'
           : '';
-        const cacheKey = `${ownPartId}::${ownStackKey || ''}::${shelfDefaultKey}`;
+        const cacheKey = `${ownPartId}::${ownStackKey || ''}::${ownStackSplitUnifiedFrame ? 'unified' : 'split'}::${shelfDefaultKey}`;
         if (!materialCache.has(cacheKey)) {
-          const material = getPartMat(ownPartId, ownStackKey, userData);
+          const material = getPartMat(ownPartId, ownStackKey, effectiveUserData);
           materialCache.set(cacheKey, material);
           if (material && obj.material !== material) {
             obj.material = material;
@@ -91,7 +103,13 @@ export function applyMaterialsToWardrobeTree(args: {
     for (let i = children.length - 1; i >= 0; i -= 1) {
       const child = asObject<WardrobeMeshLike>(children[i]);
       if (child) {
-        stack.push({ obj: child, partId: ownPartId, stackKey: ownStackKey, skip: skipSubtree });
+        stack.push({
+          obj: child,
+          partId: ownPartId,
+          stackKey: ownStackKey,
+          stackSplitUnifiedFrame: ownStackSplitUnifiedFrame,
+          skip: skipSubtree,
+        });
       }
     }
   }

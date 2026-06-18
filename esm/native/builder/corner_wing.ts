@@ -67,6 +67,7 @@ export const buildCornerWing: BuilderBuildCornerWingFn = (
     readMap: readers.getMap,
     stackKey: state.__stackKey,
     stackSplitEnabled: state.__stackSplitEnabled,
+    stackSplitUnifiedFrame: state.__stackSplitUnifiedFrame,
     stackScopePartKey: state.__stackScopePartKey,
   });
 

@@ -24,6 +24,12 @@ export const CORNER_STACK_UNIFIED_WING_FRAME_PARTS = [
   'corner_ceil',
   'corner_wing_side_left',
   'corner_wing_side_right',
+  'corner_floor',
+];
+export const CORNER_STACK_UNIFIED_WING_FRAME_PREVIEW_PARTS = [
+  'corner_ceil',
+  'corner_wing_side_left',
+  'corner_wing_side_right',
   'lower_corner_wing_side_left',
   'lower_corner_wing_side_right',
   'lower_corner_floor',
@@ -35,6 +41,12 @@ export const CORNER_PENTAGON_FRAME_PARTS = [
   'corner_pent_attach_wing',
 ];
 export const CORNER_STACK_UNIFIED_PENTAGON_FRAME_PARTS = [
+  'corner_pent_ceil',
+  'corner_pent_attach_main',
+  'corner_pent_attach_wing',
+  'corner_pent_floor',
+];
+export const CORNER_STACK_UNIFIED_PENTAGON_FRAME_PREVIEW_PARTS = [
   'corner_pent_ceil',
   'corner_pent_attach_main',
   'corner_pent_attach_wing',
@@ -107,7 +119,8 @@ function isCornerWingSideHitPart(partId: string): boolean {
 function resolveUnifiedCornerWingFrameKeys(
   partIdRaw: string,
   activeStack: 'top' | 'bottom',
-  targetScope?: CanvasPaintTargetScope | null
+  targetScope?: CanvasPaintTargetScope | null,
+  preview = false
 ): string[] | null {
   if (!targetScope?.stackSplitUnifiedFrame) return null;
   const normalized = unscopedLowerPartId(partIdRaw);
@@ -120,7 +133,10 @@ function resolveUnifiedCornerWingFrameKeys(
     (hitStack === 'top' && isCornerWingCeilingHitPart(partId)) ||
     (hitStack === 'bottom' && isCornerWingFloorHitPart(partId));
 
-  return isOuterFrameBoard ? [...CORNER_STACK_UNIFIED_WING_FRAME_PARTS] : [];
+  if (!isOuterFrameBoard) return [];
+  return preview
+    ? [...CORNER_STACK_UNIFIED_WING_FRAME_PREVIEW_PARTS]
+    : [...CORNER_STACK_UNIFIED_WING_FRAME_PARTS];
 }
 
 function isCornerPentagonAttachHitPart(partId: string): boolean {
@@ -130,7 +146,8 @@ function isCornerPentagonAttachHitPart(partId: string): boolean {
 function resolveUnifiedCornerPentagonFrameKeys(
   partIdRaw: string,
   activeStack: 'top' | 'bottom',
-  targetScope?: CanvasPaintTargetScope | null
+  targetScope?: CanvasPaintTargetScope | null,
+  preview = false
 ): string[] | null {
   if (!targetScope?.stackSplitUnifiedFrame) return null;
   const normalized = unscopedLowerPartId(partIdRaw);
@@ -143,7 +160,10 @@ function resolveUnifiedCornerPentagonFrameKeys(
     (hitStack === 'top' && partId === 'corner_pent_ceil') ||
     (hitStack === 'bottom' && partId === 'corner_pent_floor');
 
-  return isOuterFrameBoard ? [...CORNER_STACK_UNIFIED_PENTAGON_FRAME_PARTS] : [];
+  if (!isOuterFrameBoard) return [];
+  return preview
+    ? [...CORNER_STACK_UNIFIED_PENTAGON_FRAME_PREVIEW_PARTS]
+    : [...CORNER_STACK_UNIFIED_PENTAGON_FRAME_PARTS];
 }
 
 export function resolveUnifiedCornerFramePaintTargetKeys(
@@ -153,11 +173,39 @@ export function resolveUnifiedCornerFramePaintTargetKeys(
 ): string[] | null {
   const partId = typeof foundPartId === 'string' ? String(foundPartId) : '';
   if (!partId) return null;
-  const wingKeys = resolveUnifiedCornerWingFrameKeys(partId, activeStack, targetScope);
+  const wingKeys = resolveUnifiedCornerWingFrameKeys(partId, activeStack, targetScope, false);
   if (wingKeys !== null) return wingKeys;
-  const pentagonKeys = resolveUnifiedCornerPentagonFrameKeys(partId, activeStack, targetScope);
+  const pentagonKeys = resolveUnifiedCornerPentagonFrameKeys(partId, activeStack, targetScope, false);
   if (pentagonKeys !== null) return pentagonKeys;
   return null;
+}
+
+export function resolveUnifiedCornerFramePaintPreviewKeys(
+  foundPartId: string | null | undefined,
+  activeStack: 'top' | 'bottom',
+  targetScope?: CanvasPaintTargetScope | null
+): string[] | null {
+  const partId = typeof foundPartId === 'string' ? String(foundPartId) : '';
+  if (!partId) return null;
+  const wingKeys = resolveUnifiedCornerWingFrameKeys(partId, activeStack, targetScope, true);
+  if (wingKeys !== null) return wingKeys;
+  const pentagonKeys = resolveUnifiedCornerPentagonFrameKeys(partId, activeStack, targetScope, true);
+  if (pentagonKeys !== null) return pentagonKeys;
+  return null;
+}
+
+export function resolvePaintPreviewKeysForTarget(
+  foundPartId: string | null | undefined,
+  activeStack: 'top' | 'bottom',
+  targetKeys: string[],
+  targetScope?: CanvasPaintTargetScope | null
+): string[] {
+  const unifiedCornerFramePreviewKeys = resolveUnifiedCornerFramePaintPreviewKeys(
+    foundPartId,
+    activeStack,
+    targetScope
+  );
+  return unifiedCornerFramePreviewKeys !== null ? unifiedCornerFramePreviewKeys : targetKeys;
 }
 
 export function resolvePaintTargetKeys(
