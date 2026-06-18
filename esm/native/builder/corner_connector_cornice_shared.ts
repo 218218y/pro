@@ -135,10 +135,10 @@ function finitePositiveOrNull(value: unknown): number | null {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
-function readOptionalNeighborBodyHeight(value: unknown, fallback: number): number | null {
+function readOptionalNeighborBodyHeight(value: unknown, defaultHeight: number): number | null {
   if (value === null) return null;
   const n = finitePositiveOrNull(value);
-  return n == null ? fallback : n;
+  return n == null ? defaultHeight : n;
 }
 
 function isConnectorTallerThanNeighbor(

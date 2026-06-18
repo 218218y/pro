@@ -1354,6 +1354,14 @@
       "entry": "removable_parts.js"
     },
     {
+      "file": "esm/native/services/canvas_picking_removable_part_remove_constraints.ts",
+      "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_removable_part_remove_constraints.ts",
+      "entry": "removable_parts.js"
+    },
+    {
       "file": "esm/native/services/canvas_picking_shelf_hit_targets.ts",
       "entry": "shelf_part_identity.js"
     },
