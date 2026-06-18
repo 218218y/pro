@@ -97,6 +97,7 @@ function appendCornerConnectorBase(setup: CornerConnectorSetup, metrics: CornerC
       bodyMat,
       __individualColors,
       __cfg,
+      __stackKey,
       getCornerMat,
       addOutlines,
       getMaterial,
@@ -120,7 +121,7 @@ function appendCornerConnectorBase(setup: CornerConnectorSetup, metrics: CornerC
     );
     plinth.rotation.x = Math.PI / 2;
     plinth.position.y = stackOffsetY + baseH;
-    plinth.userData = { partId: 'corner_pent_plinth' };
+    plinth.userData = { partId: 'corner_pent_plinth', __wpStack: __stackKey };
     addOutlines(plinth);
     cornerGroup.add(plinth);
   } else if (baseType === 'legs' && baseH > 0.001) {
@@ -155,7 +156,7 @@ function appendCornerConnectorBase(setup: CornerConnectorSetup, metrics: CornerC
     );
     mesh.rotation.x = Math.PI / 2;
     mesh.position.y = y + woodThick;
-    mesh.userData = { partId };
+    mesh.userData = { partId, __wpStack: __stackKey };
     addOutlines(mesh);
     cornerGroup.add(mesh);
   };

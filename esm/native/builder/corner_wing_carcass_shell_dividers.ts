@@ -10,7 +10,7 @@ export function applyCornerWingCarcassDividers(
   metrics: CornerWingCarcassShellMetrics
 ): void {
   const { ctx, locals } = params;
-  const { THREE, woodThick, startY, bodyMat, getCornerMat, addOutlines, wingGroup } = ctx;
+  const { THREE, woodThick, startY, __stackKey, bodyMat, getCornerMat, addOutlines, wingGroup } = ctx;
   const { cornerCells } = locals;
 
   if (cornerCells.length <= 1) return;
@@ -66,7 +66,12 @@ export function applyCornerWingCarcassDividers(
         getCornerMat(divId, bodyMat)
       );
       div.position.set(x, startY + divH / 2, __dt.z);
-      div.userData = { partId: divId, moduleIndex: `corner:${leftIdx}`, kind: 'bodyDivider' };
+      div.userData = {
+        partId: divId,
+        moduleIndex: `corner:${leftIdx}`,
+        kind: 'bodyDivider',
+        __wpStack: __stackKey,
+      };
       addOutlines(div);
       wingGroup.add(div);
       continue;
@@ -88,7 +93,12 @@ export function applyCornerWingCarcassDividers(
     const lId = `corner_divider_${ci}_L`;
     const lDiv = new THREE.Mesh(new THREE.BoxGeometry(fullT, leftH, __ldt.depth), getCornerMat(lId, bodyMat));
     lDiv.position.set(x - fullT / 2, startY + leftH / 2, __ldt.z);
-    lDiv.userData = { partId: lId, moduleIndex: `corner:${leftIdx}`, kind: 'bodyDividerOwn' };
+    lDiv.userData = {
+      partId: lId,
+      moduleIndex: `corner:${leftIdx}`,
+      kind: 'bodyDividerOwn',
+      __wpStack: __stackKey,
+    };
     addOutlines(lDiv);
     wingGroup.add(lDiv);
 
@@ -98,7 +108,12 @@ export function applyCornerWingCarcassDividers(
       getCornerMat(rId, bodyMat)
     );
     rDiv.position.set(x + fullT / 2, startY + rightH / 2, __rdt.z);
-    rDiv.userData = { partId: rId, moduleIndex: `corner:${ci}`, kind: 'bodyDividerOwn' };
+    rDiv.userData = {
+      partId: rId,
+      moduleIndex: `corner:${ci}`,
+      kind: 'bodyDividerOwn',
+      __wpStack: __stackKey,
+    };
     addOutlines(rDiv);
     wingGroup.add(rDiv);
   }

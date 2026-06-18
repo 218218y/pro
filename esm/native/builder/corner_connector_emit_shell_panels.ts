@@ -19,7 +19,7 @@ export function createCornerConnectorEdgePanelAdder(
     interiorX,
     interiorZ,
     cornerGroup,
-    ctx: { startY, wingH, getCornerMat, bodyMat, addOutlines },
+    ctx: { startY, wingH, __stackKey, getCornerMat, bodyMat, addOutlines },
   } = setup;
 
   return (a: P2, b: P2, partId: string, enabled: boolean, opts?: EdgePanelOpts): void => {
@@ -78,7 +78,7 @@ export function createCornerConnectorEdgePanelAdder(
 
     mesh.position.set(midX + offX, startY + wingH / 2, midZ + offZ);
     mesh.rotation.y = -Math.atan2(dz, dx);
-    mesh.userData = { partId };
+    mesh.userData = { partId, __wpStack: __stackKey };
     addOutlines(mesh);
     cornerGroup.add(mesh);
   };
@@ -100,7 +100,7 @@ function appendCornerConnectorBackEdgePanel(
     interiorX,
     interiorZ,
     cornerGroup,
-    ctx: { startY, wingH },
+    ctx: { startY, wingH, __stackKey },
   } = setup;
   const junctionInset = CORNER_WING_DIMENSIONS.connector.shellBackJunctionInsetM;
   const startInset =
@@ -148,7 +148,7 @@ function appendCornerConnectorBackEdgePanel(
   const midZ = mid0z + nuz * sign * (metrics.backPanelThick / 2 + normalInset);
   mesh.position.set(midX, startY + wingH / 2, midZ);
   mesh.rotation.y = -Math.atan2(dz, dx) + (sign < 0 ? Math.PI : 0);
-  mesh.userData = { partId };
+  mesh.userData = { partId, __wpStack: __stackKey };
   cornerGroup.add(mesh);
 }
 

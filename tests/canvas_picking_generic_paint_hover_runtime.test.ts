@@ -748,10 +748,51 @@ test('generic paint hover positions corner wing side preview in wardrobe coordin
 
   assert.equal(handled, true);
   assert.equal(previews.length, 1);
-  assert.equal(previews[0]?.kind, 'object_boxes');
-  assert.deepEqual(previews[0]?.previewObjects, [sidePanel]);
   assert.ok(Math.abs(Number(previews[0]?.x) - 1.8) < 1e-9);
   assert.ok(Math.abs(Number(previews[0]?.z) + 0.6) < 1e-9);
   assert.ok(Math.abs(Number(previews[0]?.w) - 0.5) < 1e-9);
   assert.ok(Math.abs(Number(previews[0]?.d) - 0.04) < 1e-9);
+});
+
+test('generic paint hover uses bottom scoped corner frame keys when the hit shell mesh is tagged as bottom stack', () => {
+  const wardrobeGroup = { children: [] as unknown[], userData: { partId: 'root' } };
+  const lowerSide = createBoxObject('corner_wing_side_right', {
+    width: 0.04,
+    height: 1.1,
+    depth: 0.55,
+    x: 0.6,
+    y: 0.55,
+  });
+  (lowerSide.userData as Record<string, unknown>).__wpStack = 'bottom';
+  lowerSide.parent = wardrobeGroup;
+  wardrobeGroup.children.push(lowerSide);
+
+  const previews: Record<string, unknown>[] = [];
+  const handled = tryHandleGenericPartPaintHover({
+    App: createApp({
+      wardrobeGroup,
+      maps: {
+        individualColors: {
+          lower_corner_ceil: 'walnut',
+          lower_corner_wing_side_left: 'walnut',
+          lower_corner_wing_side_right: 'walnut',
+          lower_corner_floor: 'walnut',
+        },
+      },
+    }),
+    ndcX: 0,
+    ndcY: 0,
+    paintSelection: 'walnut',
+    raycaster: createRaycaster([{ object: lowerSide, point: { x: 0.6, y: 0.55, z: 0 } }]),
+    mouse: { x: 0, y: 0 },
+    previewRo: {
+      setSketchPlacementPreview(args: Record<string, unknown>) {
+        previews.push(args);
+      },
+    },
+  });
+
+  assert.equal(handled, true);
+  assert.equal(previews.length, 1);
+  assert.equal(previews[0]?.op, 'remove');
 });

@@ -8,13 +8,49 @@ import {
   asRecordMap,
 } from './canvas_picking_generic_paint_hover_shared.js';
 
-function appendRegisteredPartObjects(out: UnknownRecord[], value: unknown): void {
+type PreviewStackKey = 'top' | 'bottom' | null;
+
+function readPreviewStackKey(value: unknown): PreviewStackKey {
+  return value === 'top' || value === 'bottom' ? value : null;
+}
+
+function resolvePreviewTargetStack(partKeys: string[]): PreviewStackKey {
+  let hasTopCornerKey = false;
+  let hasBottomCornerKey = false;
+
+  for (let i = 0; i < partKeys.length; i += 1) {
+    const key = typeof partKeys[i] === 'string' ? String(partKeys[i]) : '';
+    if (key.startsWith('lower_corner_')) {
+      hasBottomCornerKey = true;
+    } else if (key.startsWith('corner_')) {
+      hasTopCornerKey = true;
+    }
+  }
+
+  if (hasBottomCornerKey && !hasTopCornerKey) return 'bottom';
+  if (hasTopCornerKey && !hasBottomCornerKey) return 'top';
+  return null;
+}
+
+function matchesPreviewTargetStack(targetStack: PreviewStackKey, objectStack: PreviewStackKey): boolean {
+  if (!targetStack || !objectStack) return true;
+  return targetStack === objectStack;
+}
+
+function appendRegisteredPartObjects(
+  out: UnknownRecord[],
+  value: unknown,
+  targetStack: PreviewStackKey = null
+): void {
   if (Array.isArray(value)) {
-    for (let i = 0; i < value.length; i += 1) appendRegisteredPartObjects(out, value[i]);
+    for (let i = 0; i < value.length; i += 1) appendRegisteredPartObjects(out, value[i], targetStack);
     return;
   }
   const obj = asObject3DRecord(value);
-  if (obj) out.push(obj);
+  if (!obj) return;
+  const userData = asRecordMap(obj.userData);
+  const objectStack = readPreviewStackKey(userData?.__wpStack);
+  if (matchesPreviewTargetStack(targetStack, objectStack)) out.push(obj);
 }
 
 export function appendUniquePartObjects(out: UnknownRecord[], value: unknown): void {
@@ -80,17 +116,21 @@ function appendScenePartObjectsByKeySet(
   out: UnknownRecord[],
   node: unknown,
   partKeySet: Set<string>,
-  inheritedDrawerBoxPartId: string | null = null
+  inheritedDrawerBoxPartId: string | null = null,
+  targetStack: PreviewStackKey = null,
+  inheritedStack: PreviewStackKey = null
 ): void {
   const obj = asObject3DRecord(node);
   if (!obj) return;
   const userData = asRecordMap(obj.userData);
+  const objectStack = readPreviewStackKey(userData?.__wpStack) || inheritedStack;
   const partId = typeof userData?.partId === 'string' ? String(userData.partId) : '';
   const kind = typeof userData?.__kind === 'string' ? String(userData.__kind) : '';
   const effectivePartId = partId || inheritedDrawerBoxPartId || '';
   if (
     effectivePartId &&
     matchesPaintPreviewPartKey(effectivePartId, partKeySet) &&
+    matchesPreviewTargetStack(targetStack, objectStack) &&
     !isSkippedPaintPreviewKind(kind) &&
     __readObjectLocalGeometryBox(obj)
   ) {
@@ -103,7 +143,14 @@ function appendScenePartObjectsByKeySet(
     : inheritedDrawerBoxPartId;
   const children = Array.isArray(obj.children) ? obj.children : [];
   for (let i = 0; i < children.length; i += 1) {
-    appendScenePartObjectsByKeySet(out, children[i], partKeySet, nextInheritedDrawerBoxPartId);
+    appendScenePartObjectsByKeySet(
+      out,
+      children[i],
+      partKeySet,
+      nextInheritedDrawerBoxPartId,
+      targetStack,
+      objectStack
+    );
   }
 }
 
@@ -119,7 +166,7 @@ export function appendScenePartObjects(
     if (key) partKeySet.add(key);
   }
   if (!partKeySet.size) return;
-  appendScenePartObjectsByKeySet(out, wardrobeGroup, partKeySet);
+  appendScenePartObjectsByKeySet(out, wardrobeGroup, partKeySet, null, resolvePreviewTargetStack(partKeys));
 }
 
 export function collectPaintPreviewPartObjects(args: {
@@ -130,12 +177,13 @@ export function collectPaintPreviewPartObjects(args: {
   const { App, wardrobeGroup, partKeys } = args;
   const registry = getBuilderRegistry(App);
   const objects: UnknownRecord[] = [];
+  const targetStack = resolvePreviewTargetStack(partKeys);
   if (registry && typeof registry.get === 'function') {
     for (let i = 0; i < partKeys.length; i += 1) {
       const key = typeof partKeys[i] === 'string' ? String(partKeys[i]) : '';
       if (!key) continue;
       try {
-        appendRegisteredPartObjects(objects, registry.get(key));
+        appendRegisteredPartObjects(objects, registry.get(key), targetStack);
       } catch {
         // ignore registry lookup failures
       }

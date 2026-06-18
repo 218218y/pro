@@ -26,6 +26,7 @@ export function applyCornerWingCarcassPanels(
     cornerConnectorEnabled,
     __mirrorX,
     cabinetBodyHeight,
+    __stackKey,
     getCornerMat,
     bodyMat,
     backPanelMaterialArray,
@@ -84,7 +85,7 @@ export function applyCornerWingCarcassPanels(
       bp.receiveShadow = false;
     }
 
-    bp.userData = { partId, moduleIndex: moduleIndex || 'corner', kind: 'backPanel' };
+    bp.userData = { partId, moduleIndex: moduleIndex || 'corner', kind: 'backPanel', __wpStack: __stackKey };
     wingGroup.add(bp);
   };
 
@@ -145,6 +146,7 @@ export function applyCornerWingCarcassPanels(
     partId: __rightId,
     moduleIndex: __lastCell ? __lastCell.key : 'corner',
     kind: 'side',
+    __wpStack: __stackKey,
   };
   addOutlines(rightPanel);
   wingGroup.add(rightPanel);
@@ -181,6 +183,7 @@ export function applyCornerWingCarcassPanels(
     partId: __leftId,
     moduleIndex: __leftCell ? __leftCell.key : 'corner:0',
     kind: 'side',
+    __wpStack: __stackKey,
   };
   addOutlines(leftPanel);
   wingGroup.add(leftPanel);

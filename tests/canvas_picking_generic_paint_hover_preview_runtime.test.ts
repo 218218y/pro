@@ -266,24 +266,57 @@ test('paint preview object collection maps corner shell material keys back to vi
   assert.deepEqual(objects, [roof, cellRoof, floor, side]);
 });
 
-test('paint preview uses oriented object boxes for the full corner wing frame group', () => {
-  const roof = makeBoxObject('corner_wing_ceil', { width: 1.2, height: 0.04, depth: 0.55, y: 2 });
-  const floor = makeBoxObject('corner_floor_c1', { width: 0.6, height: 0.04, depth: 0.5, x: 0.3 });
-  const leftSide = makeBoxObject('corner_wing_side_left', { width: 0.04, height: 2, depth: 0.55, x: 0.02 });
-  const rightSide = makeBoxObject('corner_wing_side_right', { width: 0.04, height: 2, depth: 0.55, x: 0.6 });
-  const wardrobeGroup = {
-    userData: { partId: 'root' },
-    children: [roof, floor, leftSide, rightSide],
-  };
-
-  const preview = resolvePaintPreviewGroupBox({
-    App: createAppWithRegistry({}) as never,
-    wardrobeGroup: wardrobeGroup as never,
-    partKeys: ['corner_ceil', 'corner_wing_side_left', 'corner_wing_side_right', 'corner_floor'],
-    anchorObject: rightSide as never,
-    anchorParent: wardrobeGroup as never,
+test('paint preview object collection keeps stacked corner shell frames scoped to the requested stack', () => {
+  const topRoof = makeBoxObject('corner_wing_ceil', { width: 1.2, height: 0.04, depth: 0.55, y: 2.2 });
+  const bottomRoof = makeBoxObject('corner_wing_ceil', {
+    width: 1.2,
+    height: 0.04,
+    depth: 0.55,
+    y: 1.0,
+  });
+  const topFloor = makeBoxObject('corner_floor_c1', { width: 0.6, height: 0.04, depth: 0.5, y: 1.2 });
+  const bottomFloor = makeBoxObject('corner_floor_c1', {
+    width: 0.6,
+    height: 0.04,
+    depth: 0.5,
+    y: 0.02,
+  });
+  const topSide = makeBoxObject('corner_wing_side_right', {
+    width: 0.04,
+    height: 1,
+    depth: 0.55,
+    y: 1.7,
+  });
+  const bottomSide = makeBoxObject('corner_wing_side_right', {
+    width: 0.04,
+    height: 1,
+    depth: 0.55,
+    y: 0.5,
   });
 
-  assert.equal(preview?.kind, 'object_boxes');
-  assert.deepEqual(preview?.previewObjects, [roof, floor, leftSide, rightSide]);
+  (topRoof.userData as Record<string, unknown>).__wpStack = 'top';
+  (topFloor.userData as Record<string, unknown>).__wpStack = 'top';
+  (topSide.userData as Record<string, unknown>).__wpStack = 'top';
+  (bottomRoof.userData as Record<string, unknown>).__wpStack = 'bottom';
+  (bottomFloor.userData as Record<string, unknown>).__wpStack = 'bottom';
+  (bottomSide.userData as Record<string, unknown>).__wpStack = 'bottom';
+
+  const wardrobeGroup = {
+    userData: { partId: 'root' },
+    children: [topRoof, bottomRoof, topFloor, bottomFloor, topSide, bottomSide],
+  };
+
+  const topObjects = collectPaintPreviewPartObjects({
+    App: createAppWithRegistry({}) as never,
+    wardrobeGroup: wardrobeGroup as never,
+    partKeys: ['corner_ceil', 'corner_floor', 'corner_wing_side_right'],
+  });
+  const bottomObjects = collectPaintPreviewPartObjects({
+    App: createAppWithRegistry({}) as never,
+    wardrobeGroup: wardrobeGroup as never,
+    partKeys: ['lower_corner_ceil', 'lower_corner_floor', 'lower_corner_wing_side_right'],
+  });
+
+  assert.deepEqual(topObjects, [topRoof, topFloor, topSide]);
+  assert.deepEqual(bottomObjects, [bottomRoof, bottomFloor, bottomSide]);
 });

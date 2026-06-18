@@ -20,6 +20,7 @@ export function applyCornerWingCarcassCeiling(
     blindWidth,
     cornerConnectorEnabled,
     cabinetBodyHeight,
+    __stackKey,
     getCornerMat,
     bodyMat,
     addOutlines,
@@ -54,7 +55,12 @@ export function applyCornerWingCarcassCeiling(
     const topY = startY + cabinetBodyHeight - woodThick / 2;
     const top = new THREE.Mesh(new THREE.BoxGeometry(topW, woodThick, __hz.depth), __wingCeilMat);
     top.position.set(topX, topY, __hz.z);
-    top.userData = { partId: 'corner_wing_ceil', moduleIndex: 'corner', kind: 'bodyCeil' };
+    top.userData = {
+      partId: 'corner_wing_ceil',
+      moduleIndex: 'corner',
+      kind: 'bodyCeil',
+      __wpStack: __stackKey,
+    };
     addOutlines(top);
     wingGroup.add(top);
     return;
@@ -108,6 +114,7 @@ export function applyCornerWingCarcassCeiling(
       partId,
       moduleIndex: cell.key,
       kind: 'cellTop',
+      __wpStack: __stackKey,
     };
     addOutlines(top);
     wingGroup.add(top);

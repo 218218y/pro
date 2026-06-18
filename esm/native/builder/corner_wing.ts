@@ -74,6 +74,11 @@ export const buildCornerWing: BuilderBuildCornerWingFn = (
   wingGroup.position.set(state.wingStartX, 0, state.wingStartZ + state.__stackOffsetZ);
   wingGroup.rotation.y = state.wingRotationY;
   wingGroup.scale.set(state.wingScaleX, 1, 1);
+  wingGroup.userData = {
+    moduleIndex: 'corner',
+    __wpCornerWing: true,
+    __wpStack: state.__stackKey,
+  };
 
   const emitCtx = createCornerWingEmitContext({
     App,

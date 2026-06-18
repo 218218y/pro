@@ -28,6 +28,7 @@ export function applyCornerWingCarcassFloorAndBase(
     stackOffsetY,
     baseType,
     baseH,
+    __stackKey,
     __individualColors,
     __cfg,
     getCornerMat,
@@ -59,7 +60,7 @@ export function applyCornerWingCarcassFloorAndBase(
     const w = Math.max(PLINTH_DIMENSIONS.minSegmentWidthM, segW + PLINTH_DIMENSIONS.segmentWidthEpsilonM);
     const f = new THREE.Mesh(new THREE.BoxGeometry(w, woodThick, floorD), __floorMat);
     f.position.set(centerX, __floorY, __hz.z);
-    f.userData = { partId, moduleIndex: moduleIndex || 'corner', kind: 'floorSeg' };
+    f.userData = { partId, moduleIndex: moduleIndex || 'corner', kind: 'floorSeg', __wpStack: __stackKey };
     wingGroup.add(f);
   };
 
@@ -128,7 +129,7 @@ export function applyCornerWingCarcassFloorAndBase(
     const z = -wingD + d / 2 - PLINTH_DIMENSIONS.frontInsetM;
     const pl = new THREE.Mesh(new THREE.BoxGeometry(w, baseH, plinthD), __plinthMat);
     pl.position.set(centerX, __plinthY, z);
-    pl.userData = { partId, moduleIndex: moduleIndex || 'corner', kind: 'plinthSeg' };
+    pl.userData = { partId, moduleIndex: moduleIndex || 'corner', kind: 'plinthSeg', __wpStack: __stackKey };
     addOutlines(pl);
     wingGroup.add(pl);
   };
