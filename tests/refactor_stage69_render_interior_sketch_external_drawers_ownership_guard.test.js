@@ -57,8 +57,8 @@ test('stage 69 render interior sketch external drawers ownership split is anchor
   assert.match(context, /export function createSketchExternalDrawerRenderContext\(/);
   assert.match(context, /getDrawersArray\(App\)/);
   assert.match(context, /resolveBuilderMirrorMaterial\(/);
-  assert.match(context, /const doorStyle = resolveSketchDoorStyle\(App, input\);/);
-  assert.match(context, /const doorStyleMap = resolveSketchDoorStyleMap\(App, input\);/);
+  assert.match(context, /const doorStyle = resolveSketchDoorStyle\(input\);/);
+  assert.match(context, /const doorStyleMap = resolveSketchDoorStyleMap\(input\);/);
   assert.match(context, /const resolvePartMaterial = \(partId: string\): unknown => \{/);
   assert.doesNotMatch(
     context,

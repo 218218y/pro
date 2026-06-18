@@ -36,7 +36,7 @@ test('[sketch free box] dimension overlay is rendered from sketch box geometry a
   );
   assert.match(
     srcNorm,
-    /const showDimensions = !!(?:asRecord|asValueRecord)\(resolved\.input\.cfg\)\?\.showDimensions;/
+    /const showDimensions = !!(?:asRecord|asValueRecord)\(resolved\.input\.cfgSnapshot\)\?\.showDimensions;/
   );
   assert.match(
     srcNorm,

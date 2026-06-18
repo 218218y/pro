@@ -55,14 +55,15 @@ test('interior sketch extras builder forwards cfg for sketch box door special pa
   const noMainHost = read('esm/native/builder/build_no_main_sketch_host.ts');
 
   assert.match(interiorPipeline, /cfg:\s*input\.cfg/);
-  assert.match(interiorPipeline, /config:\s*input\.config/);
-  assert.match(interiorPipeline, /doorStyle:\s*input\.doorStyle/);
+  assert.match(interiorPipeline, /const config = readConfig\(input\.config\);/);
+  assert.match(interiorPipeline, /const doorStyle = requireInteriorSketchDoorStyle\(input\.doorStyle,/);
   assert.match(moduleLoop, /doorStyle:\s*runtime\.doorStyle/);
   assert.match(noMainHost, /doorStyle:\s*readStringProp\(readRecord\(args\.ui\), 'doorStyle'\) \|\| ''/);
-  assert.match(sketchVisuals, /const cfg = (?:asRecord|asValueRecord)\(input\.cfg\);/);
+  assert.match(sketchVisuals, /const cfg = requireInteriorSketchConfigSnapshot\(input\.cfgSnapshot,/);
   assert.match(sketchVisuals, /const doorSpecialMap = readNullableStringMap\(cfg\?\.doorSpecialMap\);/);
   assert.match(sketchVisuals, /const curtainMap = readUnknownMap\(cfg\?\.curtainMap\);/);
   assert.match(sketchVisuals, /const mirrorLayoutMap = readUnknownMap\(cfg\?\.mirrorLayoutMap\);/);
   const sketchFronts = readSketchBoxFrontsBundle();
-  assert.match(sketchFronts, /inputRec\?\.doorStyle \\?\\?/);
+  assert.match(sketchFronts, /const doorStyle = resolveSketchDoorStyle\(input\);/);
+  assert.match(sketchFronts, /const doorStyleMap = resolveSketchDoorStyleMap\(input\);/);
 });

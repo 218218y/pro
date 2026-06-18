@@ -15,7 +15,7 @@ const cornerSrc = bundleSources(
 test('corner sketch external drawers carry scoped module metadata and reuse real corner door face spans', async () => {
   assert.match(cornerSrc, /cfg: runtime\.__cfg,/);
   assert.match(cornerSrc, /cfg,/);
-  assert.match(cornerSrc, /config: cfgCell,/);
+  assert.match(cornerSrc, /cfgSnapshot: cfg,/);
   assert.match(cornerSrc, /moduleIndex: cellIdx,/);
   assert.match(cornerSrc, /moduleKey: cellKey,/);
   assert.match(cornerSrc, /stackKey,|stackKey: __stackKey,/);
@@ -58,7 +58,7 @@ test('corner sketch external drawers carry scoped module metadata and reuse real
   );
   assert.match(sketchDrawersSrc, /groupUd\.moduleIndex = resolvedModuleIndex \|\| context\.moduleIndex;/);
   assert.match(sketchDrawersSrc, /groupUd\.__wpStack = resolvedStackKey;/);
-  assert.match(sketchDrawersSrc, /const doorStyle = resolveSketchDoorStyle\(App, input\);/);
+  assert.match(sketchDrawersSrc, /const doorStyle = resolveSketchDoorStyle\(input\);/);
   const normalizedSketchDrawersSrc = normalizeWhitespace(sketchDrawersSrc);
   assert.match(
     normalizedSketchDrawersSrc,
