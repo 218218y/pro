@@ -272,6 +272,7 @@ export function renderSketchBoxDrawerContents(args: RenderSketchBoxContentsArgs)
       addOutlines,
       getPartMaterial,
       bodyMat: boxMat,
+      cfg: input.cfgSnapshot,
       showContentsEnabled,
       addFoldedClothes,
     });

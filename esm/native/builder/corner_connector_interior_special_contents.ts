@@ -17,11 +17,21 @@ function emitFoldedClothesPlan(
   parentGroup: CornerConnectorInteriorFlowParams['locals']['cornerGroup'],
   emitFoldedClothes: CornerConnectorInteriorEmitters['emitFoldedClothes'],
   reportErrorThrottled: CornerConnectorInteriorFlowParams['helpers']['reportErrorThrottled'],
-  App: unknown
+  App: unknown,
+  cfgSnapshot: CornerConnectorInteriorFlowParams['cfgSnapshot']
 ): void {
   if (!emitFoldedClothes) return;
   try {
-    emitFoldedClothes(plan.x, plan.y, plan.z, plan.width, parentGroup, plan.maxHeight, plan.maxDepth);
+    emitFoldedClothes(
+      plan.x,
+      plan.y,
+      plan.z,
+      plan.width,
+      parentGroup,
+      plan.maxHeight,
+      plan.maxDepth,
+      cfgSnapshot
+    );
   } catch (error) {
     reportErrorThrottled(App, error, { where: 'corner_ops_emit', op: plan.op, throttleMs: 4000 });
   }
@@ -32,10 +42,11 @@ export function emitFoldedClothesPlans(
   parentGroup: CornerConnectorInteriorFlowParams['locals']['cornerGroup'],
   emitFoldedClothes: CornerConnectorInteriorEmitters['emitFoldedClothes'],
   reportErrorThrottled: CornerConnectorInteriorFlowParams['helpers']['reportErrorThrottled'],
-  App: unknown
+  App: unknown,
+  cfgSnapshot: CornerConnectorInteriorFlowParams['cfgSnapshot']
 ): void {
   for (const plan of plans) {
-    emitFoldedClothesPlan(plan, parentGroup, emitFoldedClothes, reportErrorThrottled, App);
+    emitFoldedClothesPlan(plan, parentGroup, emitFoldedClothes, reportErrorThrottled, App, cfgSnapshot);
   }
 }
 

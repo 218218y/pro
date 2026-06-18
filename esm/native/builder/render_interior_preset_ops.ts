@@ -137,6 +137,7 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
       group,
       createBoard,
       addFoldedClothes,
+      cfgSnapshot: input.cfg,
       currentShelfMat,
       currentBraceShelfMat,
       moduleKey,

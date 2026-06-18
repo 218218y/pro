@@ -10,6 +10,7 @@ import {
   getCachedBoxGeometry,
   getCachedExtrudeGeometry,
   getCachedRoundedBoxGeometry,
+  resolveLibraryContents,
 } from '../esm/native/builder/visuals_contents_shared.ts';
 import { CONTENT_VISUAL_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
 
@@ -191,6 +192,15 @@ function createApp(overrides: Record<string, unknown> = {}) {
   return { App, outlined };
 }
 
+test('visuals_contents library policy requires and reads only the explicit config snapshot', () => {
+  assert.equal(resolveLibraryContents({ isLibraryMode: true }), true);
+  assert.equal(resolveLibraryContents({ isLibraryMode: false }), false);
+  assert.throws(
+    () => resolveLibraryContents(undefined as never),
+    /\[visuals_contents\] cfgSnapshot is required/
+  );
+});
+
 test('visuals_contents hanging clothes honor showContents, style depth, and outline only cloth meshes', () => {
   const { App, outlined } = createApp({ buildUI: { showContents: true, doorStyle: 'profile' } });
   const parent = new FakeGroup();
@@ -222,7 +232,7 @@ test('visuals_contents folded clothes clamp depth inside shelf bounds and outlin
   const { App, outlined } = createApp({ buildUI: { showContents: true }, runtime: { sketchMode: true } });
   const parent = new FakeGroup();
 
-  addFoldedClothes(App, 0, 0.2, 0, 0.6, parent as any, 0.25, 0.2);
+  addFoldedClothes(App, 0, 0.2, 0, 0.6, parent as any, 0.25, 0.2, { isLibraryMode: false });
 
   assert.ok(parent.children.length > 0);
   assert.equal(outlined.length, parent.children.length);
@@ -246,12 +256,12 @@ test('visuals_contents folded clothes clamp depth inside shelf bounds and outlin
 test('visuals_contents folded shelf renders books instead of clothes in library mode', () => {
   const { App, outlined } = createApp({
     buildUI: { showContents: true },
-    config: { isLibraryMode: true },
+    config: { isLibraryMode: false },
     runtime: { sketchMode: true },
   });
   const parent = new FakeGroup();
 
-  addFoldedClothes(App, 0, 0.2, 0, 0.6, parent as any, 0.25, 0.2);
+  addFoldedClothes(App, 0, 0.2, 0, 0.6, parent as any, 0.25, 0.2, { isLibraryMode: true });
 
   assert.ok(parent.children.length > 0);
   assert.equal(outlined.length, parent.children.length);
@@ -269,7 +279,7 @@ test('visuals_contents library books render as aligned holy-book sets instead of
   });
   const parent = new FakeGroup();
 
-  addFoldedClothes(App, 0, 0.2, 0, 1.2, parent as any, 0.34, 0.24);
+  addFoldedClothes(App, 0, 0.2, 0, 1.2, parent as any, 0.34, 0.24, { isLibraryMode: true });
 
   const uprightBooks = parent.children.filter(child => child.userData.__kind === 'library_book');
   assert.ok(
@@ -315,7 +325,9 @@ test('visuals_contents library books avoid tiny decorative slabs and keep depth 
   const shelfZ = 0;
   const maxDepth = 0.55;
 
-  addFoldedClothes(App, 0, 0.2, shelfZ, 1.1, parent as any, 0.42, maxDepth);
+  addFoldedClothes(App, 0, 0.2, shelfZ, 1.1, parent as any, 0.42, maxDepth, {
+    isLibraryMode: true,
+  });
 
   const dims = CONTENT_VISUAL_DIMENSIONS.books;
   const books = parent.children.filter(child => child.userData.__kind === 'library_book');
@@ -350,7 +362,7 @@ test('visuals_contents library books keep tight packing without mesh collisions'
   });
   const parent = new FakeGroup();
 
-  addFoldedClothes(App, 0, 0.2, 0, 1.1, parent as any, 0.42, 0.55);
+  addFoldedClothes(App, 0, 0.2, 0, 1.1, parent as any, 0.42, 0.55, { isLibraryMode: true });
 
   const shelfItems = parent.children.filter(child => child.userData.__kind === 'library_book');
   assert.ok(shelfItems.length > 0, 'library mode should render shelf book visuals');
@@ -379,7 +391,7 @@ test('visuals_contents library books fit small shelf clearance and disappear whe
   const shelfY = 0.2;
   const maxHeight = 0.1;
 
-  addFoldedClothes(App, 0, shelfY, 0, 0.6, parent as any, maxHeight, 0.2);
+  addFoldedClothes(App, 0, shelfY, 0, 0.6, parent as any, maxHeight, 0.2, { isLibraryMode: true });
 
   assert.ok(parent.children.length > 0);
   for (const child of parent.children) {
@@ -393,7 +405,9 @@ test('visuals_contents library books fit small shelf clearance and disappear whe
   }
 
   const tinyParent = new FakeGroup();
-  addFoldedClothes(App, 0, shelfY, 0, 0.6, tinyParent as any, 0.075, 0.2);
+  addFoldedClothes(App, 0, shelfY, 0, 0.6, tinyParent as any, 0.075, 0.2, {
+    isLibraryMode: true,
+  });
   assert.equal(tinyParent.children.length, 0);
 });
 
@@ -405,8 +419,8 @@ test('visuals_contents reuse content geometries and materials across determinist
   const firstShelf = new FakeGroup();
   const secondShelf = new FakeGroup();
 
-  addFoldedClothes(App, 0, 0.2, 0, 0.8, firstShelf as any, 0.28, 0.22);
-  addFoldedClothes(App, 0, 0.2, 0, 0.8, secondShelf as any, 0.28, 0.22);
+  addFoldedClothes(App, 0, 0.2, 0, 0.8, firstShelf as any, 0.28, 0.22, { isLibraryMode: true });
+  addFoldedClothes(App, 0, 0.2, 0, 0.8, secondShelf as any, 0.28, 0.22, { isLibraryMode: true });
 
   assert.ok(firstShelf.children.length > 0);
   assert.equal(firstShelf.children.length, secondShelf.children.length);

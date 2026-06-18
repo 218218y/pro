@@ -37,6 +37,7 @@ export function readDrawerConfig(value: unknown): DrawerConfig {
     doorStyleMap: readDoorStyleMap(value.doorStyleMap),
     curtainMap: readObjectMap(value.curtainMap),
     isMultiColorMode: value.isMultiColorMode === true,
+    isLibraryMode: value.isLibraryMode === true,
   };
 }
 
@@ -107,6 +108,6 @@ export function readCreateInternalDrawerBox(value: unknown): BuilderCreateIntern
 
 export function readAddFoldedClothes(value: unknown): BuilderAddFoldedClothesFn | null {
   if (!isFunction(value)) return null;
-  return (shelfX, shelfY, shelfZ, width, parentGroup, maxHeight, maxDepth) =>
-    value(shelfX, shelfY, shelfZ, width, parentGroup, maxHeight, maxDepth);
+  return (shelfX, shelfY, shelfZ, width, parentGroup, maxHeight, maxDepth, cfgSnapshot) =>
+    value(shelfX, shelfY, shelfZ, width, parentGroup, maxHeight, maxDepth, cfgSnapshot);
 }

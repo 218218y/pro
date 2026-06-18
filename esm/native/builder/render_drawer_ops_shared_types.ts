@@ -27,6 +27,7 @@ export type DrawerConfig = {
   doorStyleMap?: ReturnType<typeof readDoorStyleMap>;
   curtainMap?: Record<string, unknown>;
   isMultiColorMode?: boolean;
+  isLibraryMode?: boolean;
 };
 
 export type ExternalDrawerOpLike = {

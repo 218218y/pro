@@ -78,6 +78,7 @@ export function buildSketchInternalDrawerRuntimeArgs(
     addOutlines,
     getPartMaterial: input.getPartMaterial,
     bodyMat,
+    cfg: input.cfgSnapshot,
     showContentsEnabled,
     addFoldedClothes,
   };

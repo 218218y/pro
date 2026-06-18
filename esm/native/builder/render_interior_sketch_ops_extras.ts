@@ -65,6 +65,7 @@ export function applyInteriorSketchOwnedShelves(args: {
     effectiveTopY: resolved.effectiveTopY,
     showContentsEnabled: resolved.input.showContentsEnabled === true,
     addFoldedClothes: resolved.input.addFoldedClothes,
+    cfgSnapshot: resolved.input.cfgSnapshot,
     currentShelfMat: resolved.currentShelfMat,
     currentBraceShelfMat: resolved.currentBraceShelfMat,
     moduleKeyStr: resolved.moduleKeyStr,

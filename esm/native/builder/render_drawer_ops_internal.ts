@@ -4,6 +4,7 @@ import {
   isRecord,
   readAddFoldedClothes,
   readCreateInternalDrawerBox,
+  readDrawerConfig,
   readGetPartMaterial,
   readInternalDrawerOp,
   readObject3D,
@@ -29,6 +30,7 @@ export function createApplyInternalDrawersOps(deps: BuilderRenderDrawerDeps) {
     if (!createInternalDrawerBox) return false;
 
     const getPartMaterial = readGetPartMaterial(args?.getPartMaterial);
+    const cfg = readDrawerConfig(args?.cfg);
     const bodyMat = args?.bodyMat;
     const addOutlines = readOutlineFn(args?.addOutlines);
     const showContentsEnabled = args?.showContentsEnabled === true;
@@ -98,7 +100,8 @@ export function createApplyInternalDrawersOps(deps: BuilderRenderDrawerDeps) {
           (drawerOp.width || 0) - DRAWER_DIMENSIONS.internal.contentsWidthClearanceM,
           intBox,
           Math.max(0, (drawerOp.height || 0) - DRAWER_DIMENSIONS.internal.contentsHeightClearanceM),
-          drawerOp.depth
+          drawerOp.depth,
+          { isLibraryMode: cfg.isLibraryMode === true }
         );
       }
     }

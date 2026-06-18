@@ -61,8 +61,9 @@ export type AddFoldedClothesLike = (
   shelfZ: number,
   width: number,
   parentGroup: GroupLike,
-  maxHeight?: number,
-  maxDepth?: number
+  maxHeight: number | undefined,
+  maxDepth: number | undefined,
+  cfgSnapshot: ValueRecord
 ) => unknown;
 
 export type ThreeCornerCellLike = {

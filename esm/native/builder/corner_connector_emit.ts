@@ -140,6 +140,7 @@ export function emitCornerConnector(ctx: CornerOpsEmitContext): void {
 
   applyCornerConnectorInteriorFlow({
     ctx,
+    cfgSnapshot: asRecord(__cfg),
     locals: {
       mx,
       L,

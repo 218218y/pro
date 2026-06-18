@@ -3,7 +3,7 @@ import { getBuildUIFromPlatform } from '../runtime/platform_access.js';
 import { ensureBuilderService, getBuilderAddOutlines } from '../runtime/builder_service_access.js';
 import { readRuntimeScalarOrDefaultFromApp } from '../runtime/runtime_selectors.js';
 import { assertThreeViaDeps } from '../runtime/three_access.js';
-import { getCfg, getUi } from './store_access.js';
+import { getUi } from './store_access.js';
 
 import type {
   AppContainer,
@@ -11,6 +11,7 @@ import type {
   BuilderAddFoldedClothesFn,
   BuilderAddHangingClothesFn,
   BuilderAddRealisticHangerFn,
+  ConfigStateLike,
   GeometryLike,
   MaterialLike,
   ThreeLike,
@@ -91,16 +92,11 @@ export function resolveShowContents(buildUI: UnknownRecord, showContentsOverride
   return false;
 }
 
-export function resolveLibraryContents(buildUI: UnknownRecord, passedApp: unknown): boolean {
-  if (buildUI && typeof buildUI.isLibraryMode !== 'undefined') return !!buildUI.isLibraryMode;
-  try {
-    const App = asObject(passedApp) ? ensureVisualsContentsApp(passedApp) : null;
-    if (!App) return false;
-    const cfg = getCfg(App) || {};
-    return !!cfg.isLibraryMode;
-  } catch {
-    return false;
+export function resolveLibraryContents(cfgSnapshot: ConfigStateLike): boolean {
+  if (!isRecord(cfgSnapshot)) {
+    throw new TypeError('[visuals_contents] cfgSnapshot is required');
   }
+  return cfgSnapshot.isLibraryMode === true;
 }
 
 export function resolveShowHanger(App: AppContainer): boolean {

@@ -32,6 +32,7 @@ export function createAddGridShelf(args: {
   group: InteriorGroupLike;
   createBoard: InteriorOpsCallable;
   addFoldedClothes?: InteriorOpsCallable;
+  cfgSnapshot: unknown;
   currentShelfMat: unknown;
   currentBraceShelfMat?: unknown;
   moduleKey: string;
@@ -65,6 +66,7 @@ export function createAddGridShelf(args: {
     group,
     createBoard,
     addFoldedClothes,
+    cfgSnapshot,
     currentShelfMat,
     currentBraceShelfMat,
     moduleKey,
@@ -200,7 +202,8 @@ export function createAddGridShelf(args: {
       innerW - INTERIOR_FITTINGS_DIMENSIONS.shelves.contentsWidthClearanceM,
       group,
       maxHeight,
-      shelfDepth
+      shelfDepth,
+      cfgSnapshot
     );
   }
 
@@ -272,7 +275,8 @@ export function createAddGridShelf(args: {
         innerW - INTERIOR_FITTINGS_DIMENSIONS.shelves.contentsWidthClearanceM,
         group,
         resolveShelfContentsMaxHeight(Number(gridIndex || 0), y, shelfThick),
-        shelfDepth
+        shelfDepth,
+        cfgSnapshot
       );
     }
   };

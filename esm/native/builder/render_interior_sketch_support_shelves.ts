@@ -65,6 +65,7 @@ export function applySketchShelves(args: ApplySketchShelvesArgs): void {
     effectiveTopY,
     showContentsEnabled,
     addFoldedClothes,
+    cfgSnapshot,
     currentShelfMat,
     currentBraceShelfMat,
     moduleKeyStr,
@@ -208,7 +209,16 @@ export function applySketchShelves(args: ApplySketchShelvesArgs): void {
       const contentsWidth = shelfW - INTERIOR_FITTINGS_DIMENSIONS.shelves.contentsWidthClearanceM;
       const maxHeight = resolveShelfContentsMaxHeight(y, shelfH);
       if (contentsWidth > 0 && maxHeight > 0) {
-        addFoldedClothes(shelfX, y + shelfH / 2, shelfZ, contentsWidth, group, maxHeight, shelfDepth);
+        addFoldedClothes(
+          shelfX,
+          y + shelfH / 2,
+          shelfZ,
+          contentsWidth,
+          group,
+          maxHeight,
+          shelfDepth,
+          cfgSnapshot
+        );
       }
     }
   }

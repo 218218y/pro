@@ -104,6 +104,7 @@ export type ApplySketchShelvesArgs = {
   effectiveTopY: number;
   showContentsEnabled: boolean;
   addFoldedClothes?: InteriorOpsCallable;
+  cfgSnapshot: InteriorValueRecord;
   currentShelfMat: unknown;
   currentBraceShelfMat: unknown;
   moduleKeyStr: string;

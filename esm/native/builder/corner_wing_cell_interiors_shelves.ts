@@ -271,7 +271,8 @@ export function addCornerWingGridShelf(
       ),
       runtime.wingGroup,
       resolveCornerShelfContentsMaxHeight(cellRuntime, shelfRuntime, gridIndex, y, shelfH),
-      shelfDepth
+      shelfDepth,
+      runtime.__cfg
     );
   }
 }

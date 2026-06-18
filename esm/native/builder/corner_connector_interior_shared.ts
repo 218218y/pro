@@ -41,8 +41,9 @@ export type AddFoldedClothesLike = (
   shelfZ: number,
   width: number,
   parentGroup: GroupLike,
-  maxHeight?: number,
-  maxDepth?: number
+  maxHeight: number | undefined,
+  maxDepth: number | undefined,
+  cfgSnapshot: UnknownRecord
 ) => unknown;
 export type ShapeLike = { moveTo(x: number, y: number): void; lineTo(x: number, y: number): void };
 export type ThreeInteriorLike = {
@@ -98,6 +99,7 @@ export type CornerConnectorInteriorHelpers = {
 };
 export type CornerConnectorInteriorFlowParams = {
   ctx: CornerConnectorInteriorCtx;
+  cfgSnapshot: UnknownRecord;
   locals: CornerConnectorInteriorLocals;
   helpers: CornerConnectorInteriorHelpers;
 };

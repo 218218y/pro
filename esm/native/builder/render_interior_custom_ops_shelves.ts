@@ -56,6 +56,7 @@ export function createAddCustomGridShelf(args: {
     options?: RoundedShelfBoardOptions | null
   ) => unknown;
   addFoldedClothes: unknown;
+  cfgSnapshot: unknown;
   currentShelfMat: unknown;
   currentBraceShelfMat?: unknown;
   moduleKey: string;
@@ -85,6 +86,7 @@ export function createAddCustomGridShelf(args: {
     group,
     createBoard,
     addFoldedClothes,
+    cfgSnapshot,
     currentShelfMat,
     currentBraceShelfMat,
     moduleKey,
@@ -262,7 +264,8 @@ export function createAddCustomGridShelf(args: {
         innerW - INTERIOR_FITTINGS_DIMENSIONS.shelves.contentsWidthClearanceM,
         group,
         resolveShelfContentsMaxHeight(gridIndex, shelfY, shelfH),
-        shelfDepth
+        shelfDepth,
+        cfgSnapshot
       );
     }
   };
@@ -271,6 +274,7 @@ export function createAddCustomGridShelf(args: {
 export function addCustomBaseShelfContents(args: {
   group: InteriorGroupLike;
   addFoldedClothes: unknown;
+  cfgSnapshot: unknown;
   braceSet: Record<number, true>;
   shelfSet: Record<number, true>;
   shelfVariantByIndex: Record<number, ShelfVariant>;
@@ -289,6 +293,7 @@ export function addCustomBaseShelfContents(args: {
   const {
     group,
     addFoldedClothes,
+    cfgSnapshot,
     braceSet,
     shelfSet,
     shelfVariantByIndex,
@@ -331,6 +336,7 @@ export function addCustomBaseShelfContents(args: {
     innerW - INTERIOR_FITTINGS_DIMENSIONS.shelves.contentsWidthClearanceM,
     group,
     maxHeight,
-    shelfDepth
+    shelfDepth,
+    cfgSnapshot
   );
 }

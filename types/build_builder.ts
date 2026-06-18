@@ -337,8 +337,9 @@ export type BuilderAddFoldedClothesFn = (
   shelfZ: number,
   width: number,
   parentGroup: Object3DLike,
-  maxHeight?: number,
-  maxDepth?: number
+  maxHeight: number | undefined,
+  maxDepth: number | undefined,
+  cfgSnapshot: ConfigStateLike
 ) => unknown;
 export type BuilderAddRealisticHangerFn = (
   rodX: number,

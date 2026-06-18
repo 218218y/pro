@@ -198,7 +198,8 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
           contentsWidth,
           args.args.group,
           maxHeight,
-          shelfDepth
+          shelfDepth,
+          args.args.input.cfgSnapshot
         );
       }
     }

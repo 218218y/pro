@@ -19,7 +19,7 @@ import {
 } from './corner_connector_interior_special_metrics.js';
 
 export function applyCornerConnectorSpecialInterior(params: CornerConnectorSpecialInteriorFlowParams): void {
-  const { ctx, locals, helpers, emitters } = params;
+  const { ctx, cfgSnapshot, locals, helpers, emitters } = params;
   const {
     App,
     THREE,
@@ -193,7 +193,7 @@ export function applyCornerConnectorSpecialInterior(params: CornerConnectorSpeci
       woodThick: shelfThick,
       leftShelfBottomYs,
     });
-    emitFoldedClothesPlans(plans, cornerGroup, emitFoldedClothes, reportErrorThrottled, App);
+    emitFoldedClothesPlans(plans, cornerGroup, emitFoldedClothes, reportErrorThrottled, App, cfgSnapshot);
   }
 
   const shelf1Added = shelf1BottomY + shelfThick <= ceilBottomY - specialPostDims.shelfCeilingClearanceM;
@@ -215,6 +215,6 @@ export function applyCornerConnectorSpecialInterior(params: CornerConnectorSpeci
       woodThick: shelfThick,
       ceilBottomY,
     });
-    emitFoldedClothesPlans(plans, cornerGroup, emitFoldedClothes, reportErrorThrottled, App);
+    emitFoldedClothesPlans(plans, cornerGroup, emitFoldedClothes, reportErrorThrottled, App, cfgSnapshot);
   }
 }

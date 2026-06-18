@@ -366,7 +366,8 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
   width,
   parentGroup,
   maxHeight,
-  maxDepth
+  maxDepth,
+  cfgSnapshot
 ) => {
   App = ensureVisualsContentsApp(App);
   const THREE = ensureVisualsContentsTHREE(App);
@@ -382,7 +383,7 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
   const seedVal = Math.floor(shelfX * 123 + shelfY * 456 + shelfZ * 789 + width * 1000);
   seededRandom.setSeed(Math.abs(seedVal) + 55);
 
-  if (resolveLibraryContents(buildUI, App)) {
+  if (resolveLibraryContents(cfgSnapshot)) {
     addShelfBooks({
       THREE,
       shelfX,

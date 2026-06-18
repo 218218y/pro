@@ -71,7 +71,8 @@ function addSketchExternalDrawerBox(
       opPlan.boxW - DRAWER_DIMENSIONS.external.contentsWidthClearanceM,
       drawerBoxObj,
       Math.max(0, opPlan.boxH - DRAWER_DIMENSIONS.external.contentsHeightClearanceM),
-      opPlan.boxD
+      opPlan.boxD,
+      context.input.cfgSnapshot
     );
   }
 
