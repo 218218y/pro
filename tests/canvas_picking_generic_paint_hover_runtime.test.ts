@@ -748,6 +748,8 @@ test('generic paint hover positions corner wing side preview in wardrobe coordin
 
   assert.equal(handled, true);
   assert.equal(previews.length, 1);
+  assert.equal(previews[0]?.kind, 'object_boxes');
+  assert.deepEqual(previews[0]?.previewObjects, [sidePanel]);
   assert.ok(Math.abs(Number(previews[0]?.x) - 1.8) < 1e-9);
   assert.ok(Math.abs(Number(previews[0]?.z) + 0.6) < 1e-9);
   assert.ok(Math.abs(Number(previews[0]?.w) - 0.5) < 1e-9);

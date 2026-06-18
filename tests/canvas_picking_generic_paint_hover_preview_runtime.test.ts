@@ -265,3 +265,25 @@ test('paint preview object collection maps corner shell material keys back to vi
 
   assert.deepEqual(objects, [roof, cellRoof, floor, side]);
 });
+
+test('paint preview uses oriented object boxes for the full corner wing frame group', () => {
+  const roof = makeBoxObject('corner_wing_ceil', { width: 1.2, height: 0.04, depth: 0.55, y: 2 });
+  const floor = makeBoxObject('corner_floor_c1', { width: 0.6, height: 0.04, depth: 0.5, x: 0.3 });
+  const leftSide = makeBoxObject('corner_wing_side_left', { width: 0.04, height: 2, depth: 0.55, x: 0.02 });
+  const rightSide = makeBoxObject('corner_wing_side_right', { width: 0.04, height: 2, depth: 0.55, x: 0.6 });
+  const wardrobeGroup = {
+    userData: { partId: 'root' },
+    children: [roof, floor, leftSide, rightSide],
+  };
+
+  const preview = resolvePaintPreviewGroupBox({
+    App: createAppWithRegistry({}) as never,
+    wardrobeGroup: wardrobeGroup as never,
+    partKeys: ['corner_ceil', 'corner_wing_side_left', 'corner_wing_side_right', 'corner_floor'],
+    anchorObject: rightSide as never,
+    anchorParent: wardrobeGroup as never,
+  });
+
+  assert.equal(preview?.kind, 'object_boxes');
+  assert.deepEqual(preview?.previewObjects, [roof, floor, leftSide, rightSide]);
+});

@@ -23,6 +23,16 @@ function isCornerPentagonThinBoardPaintKey(partKey: string): boolean {
   return key === 'corner_pent_floor' || key === 'corner_pent_ceil';
 }
 
+function isCornerWingFramePaintKey(partKey: string): boolean {
+  const key = unscopedPaintPreviewPartKey(partKey);
+  return (
+    key === 'corner_ceil' ||
+    key === 'corner_floor' ||
+    key === 'corner_wing_side_left' ||
+    key === 'corner_wing_side_right'
+  );
+}
+
 function isCornerPlinthPaintKey(partKey: string): boolean {
   const key = unscopedPaintPreviewPartKey(partKey);
   return key === 'corner_plinth' || key === 'corner_pent_plinth';
@@ -38,6 +48,7 @@ function shouldUseObjectBoxesPaintPreview(partKeys: string[]): boolean {
       isDrawerBoxPartId(key) ||
       isShelfBoardPartId(key) ||
       isCornerPentagonThinBoardPaintKey(key) ||
+      isCornerWingFramePaintKey(key) ||
       isCornerPlinthPaintKey(key)
   );
 }
