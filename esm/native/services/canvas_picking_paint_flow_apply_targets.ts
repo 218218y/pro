@@ -6,6 +6,8 @@ import {
   CHEST_BODY_PARTS,
   CORNER_BODY_PARTS,
   CORNER_CORNICE_PARTS,
+  CORNER_PENTAGON_FRAME_PARTS,
+  CORNER_WING_FRAME_PARTS,
   LOWER_MAIN_BODY_PARTS,
   MAIN_BODY_PARTS,
   __isCornicePart,
@@ -51,6 +53,20 @@ export function applyGroupedOrCornerPaintTarget(args: {
     );
     return true;
   }
+  if (
+    CORNER_WING_FRAME_PARTS.includes(foundPartId) ||
+    foundPartId === 'corner_wing_ceil' ||
+    foundPartId.startsWith('corner_cell_top_') ||
+    foundPartId === 'corner_floor_blind' ||
+    foundPartId.startsWith('corner_floor_c')
+  ) {
+    toggleGroupedPaint(
+      state.ensureColors(),
+      __wp_scopeCornerPartKeysForStack(CORNER_WING_FRAME_PARTS, activeStack),
+      paintSelection
+    );
+    return true;
+  }
   if (CORNER_BODY_PARTS.includes(foundPartId)) {
     toggleGroupedPaint(
       state.ensureColors(),
@@ -59,21 +75,10 @@ export function applyGroupedOrCornerPaintTarget(args: {
     );
     return true;
   }
-  if (foundPartId === 'corner_wing_ceil' || foundPartId.startsWith('corner_cell_top_')) {
+  if (CORNER_PENTAGON_FRAME_PARTS.includes(foundPartId)) {
     toggleGroupedPaint(
       state.ensureColors(),
-      __wp_scopeCornerPartKeysForStack(
-        ['corner_ceil', 'corner_wing_side_left', 'corner_wing_side_right', 'corner_floor'],
-        activeStack
-      ),
-      paintSelection
-    );
-    return true;
-  }
-  if (foundPartId === 'corner_pent_ceil') {
-    toggleSinglePaintTarget(
-      state.ensureColors(),
-      __wp_scopeCornerPartKeyForStack('corner_pent_ceil', activeStack),
+      __wp_scopeCornerPartKeysForStack(CORNER_PENTAGON_FRAME_PARTS, activeStack),
       paintSelection
     );
     return true;

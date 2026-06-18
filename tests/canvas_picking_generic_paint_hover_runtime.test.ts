@@ -614,6 +614,60 @@ test('generic paint hover shows object-box feedback for pentagon shelves, floor,
   runHover('corner_pent_ceil');
 });
 
+test('generic paint hover previews the full pentagon frame from roof, floor, or attach side hits', () => {
+  const runHover = (hitPartId: string) => {
+    const wardrobeGroup = { children: [] as any[], userData: { partId: 'root' } };
+    const parts = [
+      createBoxObject('corner_pent_ceil', { width: 0.9, height: 0.018, depth: 0.55, y: 2 }),
+      createBoxObject('corner_pent_floor', { width: 0.9, height: 0.018, depth: 0.55, y: 0 }),
+      createBoxObject('corner_pent_attach_main', { width: 0.04, height: 2, depth: 0.55, x: -0.4 }),
+      createBoxObject('corner_pent_attach_wing', { width: 0.04, height: 2, depth: 0.55, x: 0.4 }),
+    ];
+    for (const part of parts) {
+      part.parent = wardrobeGroup;
+      wardrobeGroup.children.push(part);
+    }
+    const target = parts.find(part => part.userData.partId === hitPartId);
+    assert.ok(target, hitPartId);
+
+    const previews: Record<string, unknown>[] = [];
+    const handled = tryHandleGenericPartPaintHover({
+      App: createApp({
+        wardrobeGroup,
+        maps: {
+          individualColors: {
+            corner_pent_ceil: 'walnut',
+            corner_pent_floor: 'walnut',
+            corner_pent_attach_main: 'walnut',
+            corner_pent_attach_wing: 'walnut',
+          },
+        },
+      }),
+      ndcX: 0,
+      ndcY: 0,
+      paintSelection: 'walnut',
+      raycaster: createRaycaster([{ object: target, point: { x: 0, y: 0.8, z: 0.1 } }]),
+      mouse: { x: 0, y: 0 },
+      previewRo: {
+        setSketchPlacementPreview(args: Record<string, unknown>) {
+          previews.push(args);
+        },
+      },
+    });
+
+    assert.equal(handled, true, hitPartId);
+    assert.equal(previews.length, 1, hitPartId);
+    assert.equal(previews[0]?.kind, 'object_boxes', hitPartId);
+    assert.deepEqual(previews[0]?.previewObjects, parts, hitPartId);
+    assert.equal(previews[0]?.op, 'remove', hitPartId);
+  };
+
+  runHover('corner_pent_ceil');
+  runHover('corner_pent_floor');
+  runHover('corner_pent_attach_main');
+  runHover('corner_pent_attach_wing');
+});
+
 test('generic paint hover inherits bottom stack from the pentagon parent for thin-board previews', () => {
   const wardrobeGroup = { children: [] as unknown[], userData: { partId: 'root' } };
   const cornerGroup = {

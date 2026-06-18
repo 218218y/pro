@@ -13,6 +13,18 @@ export const LOWER_MAIN_BODY_PARTS = [
 ];
 export const CHEST_BODY_PARTS = ['chest_left', 'chest_right', 'chest_ceil', 'chest_floor'];
 export const CORNER_BODY_PARTS = ['corner_body', 'corner_floor', 'corner_ceil', 'corner_side_far'];
+export const CORNER_WING_FRAME_PARTS = [
+  'corner_ceil',
+  'corner_wing_side_left',
+  'corner_wing_side_right',
+  'corner_floor',
+];
+export const CORNER_PENTAGON_FRAME_PARTS = [
+  'corner_pent_ceil',
+  'corner_pent_floor',
+  'corner_pent_attach_main',
+  'corner_pent_attach_wing',
+];
 export const CORNICE_PARTS = [
   'cornice_color',
   'cornice_wave_front',
@@ -56,16 +68,19 @@ export function resolvePaintTargetKeys(
   if (__isCornicePart(partId)) return ['cornice_color'];
   if (__isCornerCornicePart(partId))
     return __wp_scopeCornerPartKeysForStack(CORNER_CORNICE_PARTS, activeStack);
+  if (
+    CORNER_WING_FRAME_PARTS.includes(partId) ||
+    partId === 'corner_wing_ceil' ||
+    partId.startsWith('corner_cell_top_') ||
+    partId === 'corner_floor_blind' ||
+    partId.startsWith('corner_floor_c')
+  ) {
+    return __wp_scopeCornerPartKeysForStack(CORNER_WING_FRAME_PARTS, activeStack);
+  }
   if (CORNER_BODY_PARTS.includes(partId))
     return __wp_scopeCornerPartKeysForStack(CORNER_BODY_PARTS, activeStack);
-  if (partId === 'corner_wing_ceil' || partId.startsWith('corner_cell_top_')) {
-    return __wp_scopeCornerPartKeysForStack(
-      ['corner_ceil', 'corner_wing_side_left', 'corner_wing_side_right', 'corner_floor'],
-      activeStack
-    );
-  }
-  if (partId === 'corner_pent_ceil')
-    return [__wp_scopeCornerPartKeyForStack('corner_pent_ceil', activeStack)];
+  if (CORNER_PENTAGON_FRAME_PARTS.includes(partId))
+    return __wp_scopeCornerPartKeysForStack(CORNER_PENTAGON_FRAME_PARTS, activeStack);
   if (partId.startsWith('corner_floor_'))
     return [__wp_scopeCornerPartKeyForStack('corner_floor', activeStack)];
   if (partId.startsWith('corner_plinth_'))

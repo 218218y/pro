@@ -106,21 +106,74 @@ function createManualState(overrides: Partial<PaintFlowMutableState> = {}): Pain
   };
 }
 
-test('paint grouped/corner target applies the full scoped shell set for corner wing ceil clicks', () => {
+test('paint grouped/corner target applies the full scoped shell set for corner wing frame clicks', () => {
+  const expected = {
+    lower_corner_ceil: 'walnut',
+    lower_corner_wing_side_left: 'walnut',
+    lower_corner_wing_side_right: 'walnut',
+    lower_corner_floor: 'walnut',
+  };
+
+  for (const foundPartId of [
+    'corner_wing_ceil',
+    'corner_cell_top_c2',
+    'corner_floor_c2',
+    'corner_floor_blind',
+    'corner_wing_side_left',
+    'corner_wing_side_right',
+  ]) {
+    const state = createManualState();
+    const handled = applyGroupedOrCornerPaintTarget({
+      state,
+      foundPartId,
+      activeStack: 'bottom',
+      paintSelection: 'walnut',
+    });
+
+    assert.equal(handled, true, foundPartId);
+    assert.deepEqual(state.colors, expected, foundPartId);
+    assert.deepEqual(resolvePaintTargetKeys(foundPartId, 'bottom'), Object.keys(expected), foundPartId);
+  }
+});
+
+test('paint grouped/corner target treats the pentagon floor, roof, and attach sides as one frame', () => {
+  const expected = {
+    corner_pent_ceil: 'walnut',
+    corner_pent_floor: 'walnut',
+    corner_pent_attach_main: 'walnut',
+    corner_pent_attach_wing: 'walnut',
+  };
+
+  for (const foundPartId of Object.keys(expected)) {
+    const state = createManualState();
+    const handled = applyGroupedOrCornerPaintTarget({
+      state,
+      foundPartId,
+      activeStack: 'top',
+      paintSelection: 'walnut',
+    });
+
+    assert.equal(handled, true, foundPartId);
+    assert.deepEqual(state.colors, expected, foundPartId);
+    assert.deepEqual(resolvePaintTargetKeys(foundPartId, 'top'), Object.keys(expected), foundPartId);
+  }
+});
+
+test('paint grouped/corner target scopes the pentagon frame to the lower stack', () => {
   const state = createManualState();
   const handled = applyGroupedOrCornerPaintTarget({
     state,
-    foundPartId: 'corner_wing_ceil',
+    foundPartId: 'corner_pent_attach_main',
     activeStack: 'bottom',
     paintSelection: 'walnut',
   });
 
   assert.equal(handled, true);
   assert.deepEqual(state.colors, {
-    lower_corner_ceil: 'walnut',
-    lower_corner_wing_side_left: 'walnut',
-    lower_corner_wing_side_right: 'walnut',
-    lower_corner_floor: 'walnut',
+    lower_corner_pent_ceil: 'walnut',
+    lower_corner_pent_floor: 'walnut',
+    lower_corner_pent_attach_main: 'walnut',
+    lower_corner_pent_attach_wing: 'walnut',
   });
 });
 
