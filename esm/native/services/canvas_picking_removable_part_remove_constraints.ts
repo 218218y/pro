@@ -183,7 +183,7 @@ export function readSketchBoxPartIdCandidatesForRecord(args: {
     pushPrefix(`sketch_box_${rawBoxId}`);
   }
 
-  // Imported/legacy snapshots may miss the freePlacement marker while rendered ids already carry it.
+  // Imported snapshots may miss the freePlacement marker while rendered ids already carry it.
   pushPrefix(moduleKey ? `sketch_box_free_${moduleKey}_${rawBoxId}` : `sketch_box_free_${rawBoxId}`);
   pushPrefix(`sketch_box_free_${rawBoxId}`);
 
