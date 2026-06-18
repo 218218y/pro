@@ -49,13 +49,14 @@ function createArgs() {
       args: {
         App: {},
         input: {
-          cfg: {
+          cfgSnapshot: {
             isMultiColorMode: true,
             doorSpecialMap: { sketch_box_free_alpha_door_left: 'mirror' },
             mirrorLayoutMap: {
               sketch_box_free_alpha_door_left: [{ faceSign: -1, widthCm: 40, heightCm: 90 }],
             },
           },
+          isGroovesEnabled: true,
           addOutlines: (node: unknown) => {
             outlines.push(node);
           },
@@ -134,7 +135,7 @@ test('sketch-box door visuals use styled profile visuals for in-cabinet whole bo
   const { doorGroup, renderArgs, layout, visualCalls, outlines } = createArgs();
 
   renderArgs.frontsArgs.shell = { boxId: 'box-7', isFreePlacement: false };
-  renderArgs.frontsArgs.args.input.cfg = { isMultiColorMode: true };
+  renderArgs.frontsArgs.args.input.cfgSnapshot = { isMultiColorMode: true };
   renderArgs.frontsArgs.args.input.getPartColorValue = () => null;
   layout.doorPid = 'sketch_box_0_alpha_door_left';
   renderArgs.doorStyle = 'flat';

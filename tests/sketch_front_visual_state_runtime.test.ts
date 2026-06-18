@@ -5,7 +5,7 @@ import { resolveSketchFrontVisualState } from '../esm/native/builder/render_inte
 
 test('sketch front visual state reuses canonical full-door mirror/glass maps for split door segments', () => {
   const input = {
-    cfg: {
+    cfgSnapshot: {
       isMultiColorMode: true,
       doorSpecialMap: { d1_full: 'mirror', d2_full: 'glass' },
       mirrorLayoutMap: { d1_full: [{ faceSign: -1 }] },

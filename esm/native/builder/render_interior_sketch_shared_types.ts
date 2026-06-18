@@ -1,5 +1,6 @@
 import type {
   AppContainer,
+  BuilderInteriorSketchArgsLike,
   BuilderDimensionLineScaleSpec,
   BuilderPreviewScalar,
   BuilderSketchBoxDoorLike,
@@ -84,48 +85,46 @@ export type InteriorDimensionLineFn = (
   labelShift?: InteriorVector3Like
 ) => unknown;
 
-export type RenderInteriorSketchInput = InteriorValueRecord & {
-  sketchExtras?: SketchExtrasConfig | null;
-  cfg?: InteriorValueRecord | null;
-  config?: (InteriorValueRecord & { sketchExtras?: SketchExtrasConfig | null }) | null;
-  createBoard?: InteriorOpsCallable;
-  createRod?: InteriorOpsCallable;
-  wardrobeGroup?: InteriorGroupLike | null;
-  effectiveBottomY?: BuilderPreviewScalar;
-  effectiveTopY?: BuilderPreviewScalar;
-  innerW?: BuilderPreviewScalar;
-  woodThick?: BuilderPreviewScalar;
-  shelfThick?: BuilderPreviewScalar;
-  internalDepth?: BuilderPreviewScalar;
-  internalCenterX?: BuilderPreviewScalar;
-  internalZ?: BuilderPreviewScalar;
-  moduleIndex?: BuilderSketchIdLike;
-  modulesLength?: BuilderPreviewScalar;
-  moduleKey?: BuilderSketchIdLike;
-  frameSidePartIdPrefix?: BuilderSketchIdLike;
-  stackKey?: BuilderSketchIdLike;
-  startY?: BuilderPreviewScalar;
-  startDoorId?: BuilderSketchIdLike;
-  moduleDoors?: unknown;
-  hingedDoorPivotMap?: unknown;
-  externalW?: BuilderPreviewScalar;
-  externalCenterX?: BuilderPreviewScalar;
-  currentShelfMat?: unknown;
-  currentBraceShelfMat?: unknown;
-  bodyMat?: unknown;
-  getPartMaterial?: InteriorOpsCallable;
-  getPartColorValue?: InteriorOpsCallable;
-  createDoorVisual?: InteriorOpsCallable;
-  THREE?: unknown;
-  createInternalDrawerBox?: InteriorOpsCallable;
-  addOutlines?: InteriorOpsCallable;
-  showContentsEnabled?: boolean | null;
-  isGroovesEnabled?: unknown;
-  groovesEnabled?: unknown;
-  isInternalDrawersEnabled?: unknown;
-  internalDrawersEnabled?: unknown;
-  addFoldedClothes?: InteriorOpsCallable;
-};
+export type RenderInteriorSketchInput = BuilderInteriorSketchArgsLike &
+  InteriorValueRecord & {
+    sketchExtras: SketchExtrasConfig;
+    cfgSnapshot: InteriorValueRecord;
+    createBoard?: InteriorOpsCallable;
+    createRod?: InteriorOpsCallable;
+    wardrobeGroup?: InteriorGroupLike | null;
+    effectiveBottomY?: BuilderPreviewScalar;
+    effectiveTopY?: BuilderPreviewScalar;
+    innerW?: BuilderPreviewScalar;
+    woodThick?: BuilderPreviewScalar;
+    shelfThick?: BuilderPreviewScalar;
+    internalDepth?: BuilderPreviewScalar;
+    internalCenterX?: BuilderPreviewScalar;
+    internalZ?: BuilderPreviewScalar;
+    moduleIndex?: BuilderSketchIdLike;
+    modulesLength?: BuilderPreviewScalar;
+    moduleKey?: BuilderSketchIdLike;
+    frameSidePartIdPrefix?: BuilderSketchIdLike;
+    stackKey?: BuilderSketchIdLike;
+    startY?: BuilderPreviewScalar;
+    startDoorId?: BuilderSketchIdLike;
+    moduleDoors?: unknown;
+    hingedDoorPivotMap?: unknown;
+    externalW?: BuilderPreviewScalar;
+    externalCenterX?: BuilderPreviewScalar;
+    currentShelfMat?: unknown;
+    currentBraceShelfMat?: unknown;
+    bodyMat?: unknown;
+    getPartMaterial?: InteriorOpsCallable;
+    getPartColorValue?: InteriorOpsCallable;
+    createDoorVisual?: InteriorOpsCallable;
+    THREE?: unknown;
+    createInternalDrawerBox?: InteriorOpsCallable;
+    addOutlines?: InteriorOpsCallable;
+    showContentsEnabled?: boolean | null;
+    isGroovesEnabled: boolean;
+    isInternalDrawersEnabled: boolean;
+    addFoldedClothes?: InteriorOpsCallable;
+  };
 
 export type RenderInteriorSketchOpsDeps = {
   app: (ctx: unknown) => AppContainer;

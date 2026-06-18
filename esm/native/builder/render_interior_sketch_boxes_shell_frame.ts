@@ -268,7 +268,7 @@ export function renderSketchBoxShellFrame(args: {
   const yBot = centerY - halfH + renderArgs.woodThick / 2;
   const capSpan = resolveSketchBoxHorizontalCapSpan({
     state,
-    cfg: input.cfg || input.config,
+    cfg: input.cfgSnapshot,
     woodThick: renderArgs.woodThick,
   });
   const xL = geometry.centerX - geometry.outerW / 2 + renderArgs.woodThick / 2;

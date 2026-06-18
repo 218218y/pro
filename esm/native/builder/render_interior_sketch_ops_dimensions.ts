@@ -14,7 +14,7 @@ export function resolveInteriorSketchThreeAndDimensions(
 ): InteriorSketchResolvedThree {
   let THREE = owner.asObject<InteriorTHREESurface>(resolved.input.THREE);
   const addDimensionLine = asDimensionLineFn(resolved.renderOps?.addDimensionLine);
-  const showDimensions = !!asValueRecord(resolved.input.cfg)?.showDimensions;
+  const showDimensions = !!asValueRecord(resolved.input.cfgSnapshot)?.showDimensions;
   if (!THREE) {
     try {
       THREE = owner.asObject<InteriorTHREESurface>(

@@ -95,6 +95,8 @@ function createBaseArgs() {
     args: {
       App: {},
       input: {
+        cfgSnapshot: {},
+        isInternalDrawersEnabled: true,
         moduleKey: 'm1',
         createInternalDrawerBox: () => ({}),
         addOutlines: () => {},
@@ -222,7 +224,7 @@ test('removed sketch-box side forces adjacent box shelves to brace and applies r
   const boxPid = 'sketch_box_free_0_sbf_1';
   const leftSidePartId = `${boxPid}_side_left`;
   args.shell.boxPid = boxPid;
-  args.args.input.cfg = {
+  args.args.input.cfgSnapshot = {
     removedDoorsMap: { [`removed_${leftSidePartId}`]: true },
     roundedFrameSideShelvesMap: { [leftSidePartId]: true },
   };

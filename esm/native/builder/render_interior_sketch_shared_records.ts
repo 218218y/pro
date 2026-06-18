@@ -17,8 +17,8 @@ export function readObject<T extends object>(value: unknown): T | null {
   return readRecord<T>(value);
 }
 
-export function asSketchInput(value: unknown): RenderInteriorSketchInput {
-  return readObject<RenderInteriorSketchInput>(value) || {};
+export function asSketchInput(value: unknown): RenderInteriorSketchInput | null {
+  return readObject<RenderInteriorSketchInput>(value);
 }
 
 export function asValueRecord(value: unknown): InteriorValueRecord | null {

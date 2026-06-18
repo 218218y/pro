@@ -127,7 +127,7 @@ test('styled sketch-box profile doors forward the stored per-box groove count in
           moduleKeyStr: 'module-A',
           bodyMat: { kind: 'body' },
           currentShelfMat: { kind: 'shelf' },
-          input: {},
+          input: { isGroovesEnabled: true },
           isFn: (value: unknown) => typeof value === 'function',
         },
         shell: {

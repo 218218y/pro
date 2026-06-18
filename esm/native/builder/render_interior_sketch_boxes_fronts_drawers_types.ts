@@ -6,11 +6,8 @@ import type {
   InteriorValueRecord,
 } from './render_interior_ops_contracts.js';
 import type { RenderSketchBoxFrontsArgs } from './render_interior_sketch_boxes_shared.js';
-import type {
-  SketchBoxPartMaterialResolver,
-  SketchDoorStyle,
-  SketchDoorStyleMap,
-} from './render_interior_sketch_boxes_fronts_support.js';
+import type { SketchBoxPartMaterialResolver } from './render_interior_sketch_boxes_fronts_support.js';
+import type { SketchDoorStyle, SketchDoorStyleMap } from './render_interior_sketch_input_contract.js';
 
 export type RenderSketchBoxExternalDrawersArgs = {
   frontsArgs: RenderSketchBoxFrontsArgs;

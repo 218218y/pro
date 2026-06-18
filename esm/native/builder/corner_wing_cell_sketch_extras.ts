@@ -11,6 +11,7 @@ import type {
   ValueRecord,
 } from './corner_wing_cell_shared.js';
 import type { CornerCellCfg } from './corner_geometry_plan.js';
+import { requireInteriorSketchDoorStyle } from './render_interior_sketch_input_contract.js';
 
 type CreateRodLike = (yPos: number, limitHeight?: number | null) => void;
 
@@ -26,6 +27,9 @@ type CornerWingCellSketchExtrasParams = {
   cellD: number;
   shelfMat: unknown;
   bodyMat: unknown;
+  doorStyle: unknown;
+  isGroovesEnabled: boolean;
+  isInternalDrawersEnabled: boolean;
   effectiveBottomY: number;
   effectiveTopY: number;
   localGridStep: number;
@@ -59,6 +63,9 @@ export function applyCornerWingCellSketchExtras(params: CornerWingCellSketchExtr
     cellD,
     shelfMat,
     bodyMat,
+    doorStyle,
+    isGroovesEnabled,
+    isInternalDrawersEnabled,
     effectiveBottomY,
     effectiveTopY,
     localGridStep,
@@ -123,8 +130,7 @@ export function applyCornerWingCellSketchExtras(params: CornerWingCellSketchExtr
       App,
       THREE,
       wardrobeGroup: wingGroup,
-      cfg,
-      config: cfgCell,
+      cfgSnapshot: cfg,
       createBoard,
       createRod,
       currentShelfMat: shelfMat,
@@ -152,6 +158,9 @@ export function applyCornerWingCellSketchExtras(params: CornerWingCellSketchExtr
       createInternalDrawerBox,
       addOutlines,
       showContentsEnabled,
+      doorStyle: requireInteriorSketchDoorStyle(doorStyle, 'corner_wing_cell.sketchExtras'),
+      isGroovesEnabled,
+      isInternalDrawersEnabled,
       addFoldedClothes,
       sketchExtras: extra,
     };

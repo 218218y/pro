@@ -30,7 +30,6 @@ function addSketchExternalDrawerBox(
   groupNode: InteriorGroupLike
 ): void {
   const hasDivider = hasSketchDrawerDivider({
-    App: context.App,
     input: context.input,
     partId: opPlan.partId,
   });

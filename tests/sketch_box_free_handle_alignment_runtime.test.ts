@@ -62,7 +62,7 @@ function createRenderArgs(
       }),
       args: {
         App: {},
-        input: { cfg: options.cfg || {} },
+        input: { cfgSnapshot: options.cfg || {} },
         group: { add() {} },
         woodThick,
         moduleIndex: 0,

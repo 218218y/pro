@@ -796,7 +796,8 @@ test('sketch external drawers source keeps module faces aligned to real door spa
   );
   assert.doesNotMatch(src, /const faceW = Math\.max\(0\.05, toFiniteNumber\(op\.faceW\) \?\? visualW\);/);
   assert.match(src, /visualObj\.position\?\.set\?\.\(opPlan\.faceOffsetX, opPlan\.faceOffsetY, 0\);/);
-  assert.match(src, /const doorStyle = resolveSketchDoorStyle\(App, input\);/);
+  assert.match(src, /const doorStyle = resolveSketchDoorStyle\(input\);/);
+  assert.doesNotMatch(src, /resolveSketchDoorStyle\(App, input\)/);
   const normalizedSrc = normalizeSource(src);
   assert.match(
     normalizedSrc,
@@ -959,7 +960,7 @@ test('free-placement sketch box inset doors reserve front depth for shelves', ()
 
   const ok = applyInteriorSketchExtras(
     makeArgs({
-      cfg: { doorMountMode: 'inset' },
+      cfgSnapshot: { doorMountMode: 'inset' },
       doorStyle: 'profile',
       woodThick: 0.036,
       sketchExtras: {
@@ -1010,7 +1011,7 @@ test('free-placement sketch box inset doors reserve front depth for internal dra
 
   const ok = applyInteriorSketchExtras(
     makeArgs({
-      cfg: { doorMountMode: 'inset' },
+      cfgSnapshot: { doorMountMode: 'inset' },
       woodThick: 0.036,
       sketchExtras: {
         boxes: [

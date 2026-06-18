@@ -95,13 +95,16 @@ function createExternalDrawerArgs() {
   const args: any = {
     App,
     input: {
-      cfg: {
+      cfgSnapshot: {
         isMultiColorMode: true,
         doorSpecialMap: {
           sketch_ext_drawers_module_2_left_1: 'mirror',
           sketch_ext_drawers_module_2_right_1: 'mirror',
         },
       },
+      doorStyle: 'flat',
+      isGroovesEnabled: true,
+      isInternalDrawersEnabled: true,
       addOutlines: () => {},
       createInternalDrawerBox: (...callArgs: unknown[]) => {
         drawerBoxCalls.push(callArgs);
@@ -306,13 +309,13 @@ test('render sketch external drawers skips exact custom-height stacks that do no
 
 test('render sketch glass drawers keep the selected frame style and remove hidden wood parts behind the glass', () => {
   const { args, doorVisualCalls, drawerBoxCalls, App } = createExternalDrawerArgs();
-  args.input.cfg.doorSpecialMap = {
+  args.input.cfgSnapshot.doorSpecialMap = {
     sketch_ext_drawers_module_2_left_1: 'glass',
   };
-  args.input.cfg.curtainMap = {
+  args.input.cfgSnapshot.curtainMap = {
     sketch_ext_drawers_module_2_left_1: 'white',
   };
-  args.input.cfg.doorStyleMap = {
+  args.input.cfgSnapshot.doorStyleMap = {
     sketch_ext_drawers_module_2_left_1: 'double_profile',
   };
   args.extDrawers = [{ id: 'left', count: 1, yNormC: 0.5 }];
@@ -338,7 +341,7 @@ test('render sketch glass drawers keep the selected frame style and remove hidde
 test('render sketch internal drawers keeps the default sketch height independent of local span', () => {
   const ops = buildSketchInternalDrawerOps({
     drawers: [{ id: 'default', yNormC: 0.5 }],
-    input: {},
+    input: { cfgSnapshot: {} },
     moduleIndex: 1,
     moduleKeyStr: 'module_1',
     effectiveBottomY: 0,
@@ -359,7 +362,7 @@ test('render sketch internal drawers keeps the default sketch height independent
 test('render sketch internal drawers skips exact custom-height stacks that do not fit', () => {
   const ops = buildSketchInternalDrawerOps({
     drawers: [{ id: 'tooTall', yNormC: 0.5, drawerHeightM: 0.3 }],
-    input: {},
+    input: { cfgSnapshot: {} },
     moduleIndex: 1,
     moduleKeyStr: 'module_1',
     effectiveBottomY: 0,
@@ -379,7 +382,7 @@ test('render sketch internal drawers skip stacks that collide with sketch extern
   const ops = buildSketchInternalDrawerOps({
     drawers: [{ id: 'internal', yNormC: 0.5, yNorm: 0.15, drawerHeightM: 0.3 }],
     extDrawers: [{ id: 'external', yNormC: 0.5, yNorm: 0.17, count: 2, drawerHeightM: 0.3 }],
-    input: {},
+    input: { cfgSnapshot: {} },
     moduleIndex: 1,
     moduleKeyStr: 'module_1',
     effectiveBottomY: 0,
@@ -397,7 +400,7 @@ test('render sketch internal drawers skip stacks that collide with sketch extern
 
 test('render sketch external drawers applies drawer divider state from canonical divider map', () => {
   const { args, drawerBoxCalls, App } = createExternalDrawerArgs();
-  args.input.cfg.drawerDividersMap = {
+  args.input.cfgSnapshot.drawerDividersMap = {
     sketch_ext_drawers_module_2_left_1: true,
   };
   args.extDrawers = [{ id: 'left', count: 1, yNormC: 0.5 }];
@@ -414,7 +417,7 @@ test('render sketch internal drawer ops use independent divider keys for each ph
   const ops = buildSketchInternalDrawerOps({
     drawers: [{ id: 'default', yNormC: 0.5 }],
     input: {
-      cfg: {
+      cfgSnapshot: {
         drawerDividersMap: { div_int_sketch_module_1_default_upper: true },
       },
     },
@@ -441,7 +444,7 @@ test('render sketch internal drawer ops use independent divider keys for each ph
 
 test('render sketch external drawers follow inset door mount depth', () => {
   const { args, App } = createExternalDrawerArgs();
-  args.input.cfg.doorMountMode = 'inset';
+  args.input.cfgSnapshot.doorMountMode = 'inset';
   args.extDrawers = [{ id: 'inset', count: 1, yNormC: 0.5 }];
 
   applySketchExternalDrawers(args);

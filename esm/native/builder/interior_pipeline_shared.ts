@@ -5,12 +5,20 @@ import type {
   AppContainer,
   BuilderAddFoldedClothesFn,
   BuilderCreateBoardFn,
+  BuilderCreateDoorVisualFn,
+  BuilderCreateInternalDrawerBoxFn,
+  BuilderDoorVisualFrameStyle,
+  BuilderInteriorSketchArgsLike,
   BuilderInteriorRodCreator,
   BuilderOutlineFn,
   BuilderPartColorResolver,
   BuilderPartMaterialResolver,
   RenderOpsLike,
 } from '../../../types';
+import {
+  requireInteriorSketchConfigSnapshot,
+  requireInteriorSketchDoorStyle,
+} from './render_interior_sketch_input_contract.js';
 
 export type ValueRecord = Record<string, unknown>;
 
@@ -47,7 +55,7 @@ export type InteriorLayoutParams = ValueRecord & {
   bodyMat?: unknown;
   moduleIndex?: number;
   modulesLength?: number;
-  moduleKey?: unknown;
+  moduleKey?: string | number | null;
   frameSidePartIdPrefix?: string;
   startY?: number;
   startDoorId?: number;
@@ -58,18 +66,18 @@ export type InteriorLayoutParams = ValueRecord & {
   getPartMaterial?: BuilderPartMaterialResolver | null;
   getPartColorValue?: BuilderPartColorResolver | null;
   addOutlines?: BuilderOutlineFn | null;
-  showContentsEnabled?: unknown;
-  isGroovesEnabled?: unknown;
-  groovesEnabled?: unknown;
-  isInternalDrawersEnabled?: unknown;
-  createDoorVisual?: unknown;
-  doorStyle?: unknown;
+  showContentsEnabled?: boolean;
+  isGroovesEnabled?: boolean;
+  isInternalDrawersEnabled?: boolean;
+  createDoorVisual?: BuilderCreateDoorVisualFn | null;
+  doorStyle?: BuilderDoorVisualFrameStyle;
+  createInternalDrawerBox?: BuilderCreateInternalDrawerBoxFn | null;
 };
 
 export type BuilderRenderOpsLocal = RenderOpsLike & {
   applyInteriorCustomOps?: (args: ValueRecord) => boolean;
   applyInteriorPresetOps?: (args: ValueRecord) => boolean;
-  applyInteriorSketchExtras?: (args: ValueRecord) => unknown;
+  applyInteriorSketchExtras?: (args: BuilderInteriorSketchArgsLike) => unknown;
 };
 
 export function asObject<T extends object>(value: unknown): T | null {
@@ -112,12 +120,21 @@ export function getInteriorSketchExtrasFn(App: AppContainer | undefined | null) 
 export function buildSketchExtrasArgs(
   input: InteriorLayoutParams,
   config: InteriorLayoutConfig
-): ValueRecord {
+): BuilderInteriorSketchArgsLike {
+  const App = requireApp(input.App, 'builder/interior_pipeline.sketchExtras');
+  const cfgSnapshot = requireInteriorSketchConfigSnapshot(
+    input.cfg,
+    'builder/interior_pipeline.sketchExtras'
+  );
+  const doorStyle = requireInteriorSketchDoorStyle(input.doorStyle, 'builder/interior_pipeline.sketchExtras');
+  const sketchExtras = asObject<BuilderInteriorSketchArgsLike['sketchExtras']>(config.sketchExtras);
+  if (!sketchExtras) {
+    throw new TypeError('[builder/interior_pipeline.sketchExtras] sketchExtras must be an object');
+  }
   return {
-    App: input.App,
+    App,
     THREE: input.THREE,
-    cfg: input.cfg,
-    config: input.config,
+    cfgSnapshot,
     wardrobeGroup: input.wardrobeGroup,
     createBoard: input.createBoard,
     createRod: input.createRod,
@@ -147,15 +164,14 @@ export function buildSketchExtrasArgs(
     getPartMaterial: input.getPartMaterial,
     getPartColorValue: input.getPartColorValue,
     createDoorVisual: input.createDoorVisual,
-    doorStyle: input.doorStyle,
+    doorStyle,
     createInternalDrawerBox: input.createInternalDrawerBox,
     addOutlines: input.addOutlines,
     showContentsEnabled: input.showContentsEnabled,
-    isGroovesEnabled: input.isGroovesEnabled,
-    groovesEnabled: input.groovesEnabled,
-    isInternalDrawersEnabled: input.isInternalDrawersEnabled,
+    isGroovesEnabled: input.isGroovesEnabled === true,
+    isInternalDrawersEnabled: input.isInternalDrawersEnabled === true,
     addFoldedClothes: input.addFoldedClothes,
-    sketchExtras: config.sketchExtras,
+    sketchExtras,
   };
 }
 

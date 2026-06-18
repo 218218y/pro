@@ -2,9 +2,8 @@ import type { RenderSketchBoxFrontsArgs } from './render_interior_sketch_boxes_s
 import type {
   SketchBoxDoorPlacement,
   SketchBoxPartMaterialResolver,
-  SketchDoorStyle,
-  SketchDoorStyleMap,
 } from './render_interior_sketch_boxes_fronts_support.js';
+import type { SketchDoorStyle, SketchDoorStyleMap } from './render_interior_sketch_input_contract.js';
 import type { InteriorValueRecord } from './render_interior_ops_contracts.js';
 
 export type RenderSketchBoxDoorFrontsArgs = {

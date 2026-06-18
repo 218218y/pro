@@ -22,6 +22,11 @@ import {
   getRoundedShelfSideForRemovedFrameSide,
   shouldForceBraceShelvesForRemovedFrameSide,
 } from './removed_frame_side_brace_shelves.js';
+import {
+  requireInteriorSketchBooleanFlag,
+  requireInteriorSketchConfigSnapshot,
+  requireInteriorSketchDoorStyle,
+} from './render_interior_sketch_input_contract.js';
 
 import type {
   InteriorSketchExtrasInput,
@@ -31,14 +36,13 @@ import type {
 const REGULAR_SHELF_DEPTH = INTERIOR_FITTINGS_DIMENSIONS.shelves.regularDepthM;
 const BRACE_WIDTH_CLEARANCE = INTERIOR_FITTINGS_DIMENSIONS.shelves.braceWidthClearanceM;
 
-function isExplicitFalse(value: unknown): boolean {
-  return value === false || value === 0 || value === '0' || value === 'false';
-}
-
 function resolveInternalDrawersEnabled(input: ReturnType<typeof asSketchInput>): boolean {
-  if (isExplicitFalse(input.isInternalDrawersEnabled)) return false;
-  if (isExplicitFalse(input.internalDrawersEnabled)) return false;
-  return true;
+  if (!input) throw new TypeError('[render_interior_sketch] input is required');
+  return requireInteriorSketchBooleanFlag(
+    input.isInternalDrawersEnabled,
+    'isInternalDrawersEnabled',
+    'render_interior_sketch'
+  );
 }
 
 export function resolveInteriorSketchExtrasInput(
@@ -48,9 +52,13 @@ export function resolveInteriorSketchExtrasInput(
   const App = owner.app(args);
   const renderOps = asValueRecord(owner.ops(App));
   const input = asSketchInput(args);
+  if (!input) throw new TypeError('[render_interior_sketch] input is required');
 
-  const extra = input.sketchExtras || input.config?.sketchExtras;
+  const extra = input.sketchExtras;
   if (!extra || typeof extra !== 'object') return null;
+  const cfgSnapshot = requireInteriorSketchConfigSnapshot(input.cfgSnapshot, 'render_interior_sketch');
+  requireInteriorSketchDoorStyle(input.doorStyle, 'render_interior_sketch');
+  requireInteriorSketchBooleanFlag(input.isGroovesEnabled, 'isGroovesEnabled', 'render_interior_sketch');
 
   const shelves = asRecordArray<SketchShelfExtra>(extra.shelves);
   const boxes = asRecordArray<SketchBoxExtra>(extra.boxes);
@@ -129,13 +137,13 @@ export function resolveInteriorSketchExtrasInput(
   const braceCenterX = faces ? (faces.leftX + faces.rightX) / 2 : internalCenterX;
   const braceShelfWidth = braceInnerW > 0 ? Math.max(0, braceInnerW - BRACE_WIDTH_CLEARANCE) : innerW;
   const forceBraceShelves = shouldForceBraceShelvesForRemovedFrameSide({
-    cfg: input.cfg,
+    cfg: cfgSnapshot,
     moduleIndex,
     modulesLength,
     frameSidePartIdPrefix: input.frameSidePartIdPrefix,
   });
   const roundedShelfSide = getRoundedShelfSideForRemovedFrameSide({
-    cfg: input.cfg,
+    cfg: cfgSnapshot,
     moduleIndex,
     modulesLength,
     frameSidePartIdPrefix: input.frameSidePartIdPrefix,

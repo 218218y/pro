@@ -37,15 +37,8 @@ function readFiniteNumber(value: unknown): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-function isExplicitInternalDrawersOff(value: unknown): boolean {
-  return value === false || value === 0 || value === '0' || value === 'false';
-}
-
 function shouldRenderBoxInternalDrawers(input: RenderSketchBoxContentsArgs['args']['input']): boolean {
-  const rec = input as Record<string, unknown>;
-  if (isExplicitInternalDrawersOff(rec.isInternalDrawersEnabled)) return false;
-  if (isExplicitInternalDrawersOff(rec.internalDrawersEnabled)) return false;
-  return true;
+  return input.isInternalDrawersEnabled;
 }
 
 function readDrawerCenterNorm(item: unknown): number | null {
@@ -241,7 +234,7 @@ export function renderSketchBoxDrawerContents(args: RenderSketchBoxContentsArgs)
       for (let stackIndex = 0; stackIndex < 2; stackIndex++) {
         const drawerSlot = stackIndex === 0 ? 'lower' : 'upper';
         const partId = `${stackPartId}_${drawerSlot}`;
-        const hasDivider = hasSketchDrawerDivider({ App, input, partId });
+        const hasDivider = hasSketchDrawerDivider({ input, partId });
         const yFinal =
           stackIndex === 0
             ? baseY + singleDrawerH / 2 + drawerBottomLift

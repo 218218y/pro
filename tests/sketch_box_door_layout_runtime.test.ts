@@ -29,7 +29,7 @@ function createRenderArgs(doorMountMode: 'overlay' | 'inset') {
       boxDividers: [],
       boxHorizontalDividers: [],
       args: {
-        input: { cfg: { doorMountMode } },
+        input: { cfgSnapshot: { doorMountMode } },
         woodThick,
         moduleKeyStr: '0',
       },

@@ -10,7 +10,7 @@ test('render interior sketch visuals resolve mirror state ahead of curtain and k
   const mirrorLayout = [{ widthCm: 30, heightCm: 80 }];
   const state = resolveSketchFrontVisualState(
     {
-      cfg: {
+      cfgSnapshot: {
         isMultiColorMode: true,
         doorSpecialMap: { drawer_1: 'mirror' },
         curtainMap: { drawer_1: 'linen' },
@@ -32,7 +32,7 @@ test('render interior sketch visuals resolve mirror state ahead of curtain and k
 test('render interior sketch visuals fall back to glass + curtain from part colors when no mirror override exists', () => {
   const state = resolveSketchFrontVisualState(
     {
-      cfg: {
+      cfgSnapshot: {
         isMultiColorMode: true,
         doorSpecialMap: {},
         curtainMap: { drawer_2: 'linen' },

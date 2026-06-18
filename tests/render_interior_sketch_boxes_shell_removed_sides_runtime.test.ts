@@ -66,7 +66,7 @@ function createFrameHarness(removedDoorsMap: Record<string, unknown> = {}) {
     },
     group: {},
     moduleKeyStr: '0',
-    input: { cfg: { removedDoorsMap } },
+    input: { cfgSnapshot: { removedDoorsMap } },
     getPartMaterial: null,
     THREE: null,
     addDimensionLine: null,

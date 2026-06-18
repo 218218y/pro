@@ -19,12 +19,15 @@ function createContext(groovesMap: Record<string, unknown> | null, extraCfg: Rec
   return {
     context: {
       input: {
-        cfg: {
+        cfgSnapshot: {
           groovesMap,
           ...extraCfg,
         },
         addOutlines: null,
         createDoorVisual,
+        doorStyle: 'flat',
+        isGroovesEnabled: true,
+        isInternalDrawersEnabled: true,
       },
       shell: {
         boxId: 'box-a',

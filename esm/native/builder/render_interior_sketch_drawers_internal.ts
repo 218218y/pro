@@ -204,7 +204,7 @@ export function buildSketchInternalDrawerOps(args: {
     for (let j = 0; j < 2; j++) {
       const drawerSlot = j === 0 ? 'lower' : 'upper';
       const partId = `${stackPartId}_${drawerSlot}`;
-      const hasDivider = hasSketchDrawerDivider({ App: args.App || null, input, partId });
+      const hasDivider = hasSketchDrawerDivider({ input, partId });
       const yFinal =
         j === 0
           ? baseY + singleDrawerH / 2 + drawerBottomLift

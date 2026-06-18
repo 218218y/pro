@@ -25,11 +25,15 @@ test('interior pipeline routes custom layouts through the canonical custom owner
   assert.equal(
     applyInteriorLayout({
       App,
+      cfg: {},
+      doorStyle: 'flat',
+      isGroovesEnabled: false,
+      isInternalDrawersEnabled: false,
       config: {
         isCustom: true,
         customData: { shelves: [true, false], rods: [false, true], storage: false },
         braceShelves: [2],
-        sketchExtras: [{ kind: 'shelf' }],
+        sketchExtras: { shelves: [{ id: 'shelf-1', yNorm: 0.5 }] },
       },
       gridDivisions: 3,
       effectiveBottomY: 10,
@@ -61,7 +65,12 @@ test('interior pipeline routes custom layouts through the canonical custom owner
   assert.equal(sketchExtraCalls[0].moduleKey, 'm-4');
   assert.equal(sketchExtraCalls[0].moduleIndex, 4);
   assert.equal(sketchExtraCalls[0].startDoorId, 12);
-  assert.deepEqual(sketchExtraCalls[0].sketchExtras, [{ kind: 'shelf' }]);
+  assert.deepEqual(sketchExtraCalls[0].sketchExtras, {
+    shelves: [{ id: 'shelf-1', yNorm: 0.5 }],
+  });
+  assert.deepEqual(sketchExtraCalls[0].cfgSnapshot, {});
+  assert.equal('cfg' in sketchExtraCalls[0], false);
+  assert.equal('config' in sketchExtraCalls[0], false);
 });
 
 test('interior pipeline routes preset layouts through the canonical preset owner through sketch drawer extras only', () => {

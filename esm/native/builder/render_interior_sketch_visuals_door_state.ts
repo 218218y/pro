@@ -2,13 +2,9 @@ import type { MirrorLayoutList } from '../../../types';
 import type { InteriorOpsCallable } from './render_interior_ops_contracts.js';
 import type { RenderInteriorSketchInput } from './render_interior_sketch_shared.js';
 
-import {
-  asValueRecord,
-  isCallable,
-  readNullableStringMap,
-  readUnknownMap,
-} from './render_interior_sketch_shared.js';
+import { isCallable, readNullableStringMap, readUnknownMap } from './render_interior_sketch_shared.js';
 import { readDoorVisualMapValue, readDoorVisualMirrorLayout } from './door_visual_lookup_state.js';
+import { requireInteriorSketchConfigSnapshot } from './render_interior_sketch_input_contract.js';
 
 export function resolveSketchFrontVisualState(
   input: RenderInteriorSketchInput,
@@ -19,7 +15,7 @@ export function resolveSketchFrontVisualState(
   curtainType: string | null;
   mirrorLayout: MirrorLayoutList | null;
 } {
-  const cfg = asValueRecord(input.cfg);
+  const cfg = requireInteriorSketchConfigSnapshot(input.cfgSnapshot, 'render_interior_sketch.visualState');
   const doorSpecialMap = readNullableStringMap(cfg?.doorSpecialMap);
   const curtainMap = readUnknownMap(cfg?.curtainMap);
   const mirrorLayoutMap = readUnknownMap(cfg?.mirrorLayoutMap);

@@ -6,7 +6,7 @@ import type {
   ResolvedSketchBoxDoorLayout,
 } from './render_interior_sketch_boxes_fronts_door_contracts.js';
 import type { SketchBoxDoorVisualState } from './render_interior_sketch_boxes_fronts_door_visual_materials.js';
-import type { SketchDoorStyle } from './render_interior_sketch_boxes_fronts_support.js';
+import type { SketchDoorStyle } from './render_interior_sketch_input_contract.js';
 
 export type SketchBoxDoorVisualRoute = 'special' | 'styled' | 'slab';
 

@@ -1,8 +1,3 @@
-import { readDoorStyleMap } from '../features/door_style_overrides.js';
-import { readUiStateFromApp } from '../runtime/root_state_access.js';
-import { getCfg } from './store_access.js';
-
-import type { InteriorValueRecord } from './render_interior_ops_contracts.js';
 import type { RenderSketchBoxFrontsArgs } from './render_interior_sketch_boxes_shared.js';
 import type { SketchBoxDoorExtra } from './render_interior_sketch_shared.js';
 import type {
@@ -12,15 +7,12 @@ import type {
   SketchBoxVerticalSegment,
 } from './render_interior_sketch_layout.js';
 
-import { asValueRecord, readObject, readSketchBoxDoors } from './render_interior_sketch_shared.js';
+import { readSketchBoxDoors } from './render_interior_sketch_shared.js';
 import {
   pickSketchBoxVerticalSegment,
   resolveSketchBoxSegmentForContent,
   resolveSketchBoxVerticalSegments,
 } from './render_interior_sketch_layout.js';
-
-export type SketchDoorStyle = 'flat' | 'profile' | 'double_profile';
-export type SketchDoorStyleMap = ReturnType<typeof readDoorStyleMap>;
 
 export type SketchBoxPartMaterialResolver = (partId: string, defaultMaterial: unknown) => unknown;
 
@@ -47,45 +39,6 @@ export function createSketchBoxPartMaterialResolver(args: {
     }
     return defaultMaterial;
   };
-}
-
-export function normalizeSketchDoorStyle(value: unknown): SketchDoorStyle {
-  const raw = String(value == null ? '' : value)
-    .trim()
-    .toLowerCase();
-  return raw === 'profile' || raw === 'double_profile' || raw === 'flat' ? raw : 'flat';
-}
-
-export function resolveSketchDoorStyle(
-  App: RenderSketchBoxFrontsArgs['args']['App'],
-  input: RenderSketchBoxFrontsArgs['args']['input']
-): SketchDoorStyle {
-  const inputRec = asValueRecord(input);
-  const inputUi = asValueRecord(inputRec?.ui);
-  const configRec = asValueRecord(inputRec?.config);
-  const cfgRec = asValueRecord(inputRec?.cfg);
-  const appUi = asValueRecord(readUiStateFromApp(App));
-  return normalizeSketchDoorStyle(
-    inputRec?.doorStyle ??
-      inputUi?.doorStyle ??
-      appUi?.doorStyle ??
-      configRec?.doorStyle ??
-      cfgRec?.doorStyle ??
-      'flat'
-  );
-}
-
-export function resolveSketchDoorStyleMap(
-  App: RenderSketchBoxFrontsArgs['args']['App'],
-  input: RenderSketchBoxFrontsArgs['args']['input']
-) {
-  const inputRec = asValueRecord(input);
-  const configRec = asValueRecord(inputRec?.config);
-  const cfgRec = asValueRecord(inputRec?.cfg);
-  const appCfg = readObject<InteriorValueRecord>(getCfg(App));
-  return readDoorStyleMap(
-    inputRec?.doorStyleMap ?? configRec?.doorStyleMap ?? cfgRec?.doorStyleMap ?? appCfg?.doorStyleMap
-  );
 }
 
 export function readSketchBoxDoorPlacements(args: {

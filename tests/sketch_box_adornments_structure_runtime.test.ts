@@ -104,7 +104,7 @@ test('adjacent free-placement sketch boxes collapse to one connected dimension g
 
   const ok = applyInteriorSketchExtras(
     makeArgs({
-      cfg: { showDimensions: true },
+      cfgSnapshot: { showDimensions: true },
       sketchExtras: {
         boxes: [
           { id: 'lb', freePlacement: true, absX: -0.375, absY: 0.3, heightM: 0.6, widthM: 0.55, depthM: 0.6 },
@@ -451,7 +451,7 @@ test('free-placement sketch box doors honor explicit global and per-door door-st
 
   const okOverride = applyInteriorSketchExtras(
     makeArgs({
-      cfg: {
+      cfgSnapshot: {
         doorStyleMap: {
           sketch_box_free_0_freeStyleOverride_door_doorB: 'double_profile',
         },

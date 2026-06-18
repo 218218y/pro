@@ -1,7 +1,3 @@
-import { readUiStateFromApp } from '../runtime/root_state_access.js';
-import { getCfg } from './store_access.js';
-import { readDoorStyleMap } from '../features/door_style_overrides.js';
-
 import type { AppContainer, DrawerVisualEntryLike, UnknownCallable } from '../../../types';
 
 import type {
@@ -18,8 +14,6 @@ import type {
   SketchExternalDrawerExtra,
 } from './render_interior_sketch_shared.js';
 import type { SketchModuleDoorFaceSpan } from './render_interior_sketch_module_geometry.js';
-
-import { asValueRecord, readObject } from './render_interior_sketch_shared.js';
 
 export type SketchDrawersCatchReporter = (
   App: AppContainer | null | undefined,
@@ -94,35 +88,6 @@ export type ApplySketchInternalDrawersRuntimeArgs = ApplyInternalSketchDrawersAr
   internalZ: number;
   drawers: SketchDrawerExtra[];
 };
-
-export function normalizeSketchDoorStyle(value: unknown): 'flat' | 'profile' | 'double_profile' {
-  const raw = String(value == null ? '' : value)
-    .trim()
-    .toLowerCase();
-  return raw === 'profile' || raw === 'double_profile' || raw === 'flat' ? raw : 'flat';
-}
-
-export function resolveSketchDoorStyle(
-  App: AppContainer,
-  input: RenderInteriorSketchInput
-): 'flat' | 'profile' | 'double_profile' {
-  const inputRec = asValueRecord(input);
-  const inputUi = asValueRecord(inputRec?.ui);
-  const configRec = asValueRecord(inputRec?.config);
-  const cfgRec = asValueRecord(inputRec?.cfg);
-  const appUi = asValueRecord(readUiStateFromApp(App));
-  return normalizeSketchDoorStyle(
-    inputUi?.doorStyle ?? appUi?.doorStyle ?? configRec?.doorStyle ?? cfgRec?.doorStyle ?? 'flat'
-  );
-}
-
-export function resolveSketchDoorStyleMap(App: AppContainer, input: RenderInteriorSketchInput) {
-  const inputRec = asValueRecord(input);
-  const configRec = asValueRecord(inputRec?.config);
-  const cfgRec = asValueRecord(inputRec?.cfg);
-  const appCfg = readObject<InteriorValueRecord>(getCfg(App));
-  return readDoorStyleMap(configRec?.doorStyleMap ?? cfgRec?.doorStyleMap ?? appCfg?.doorStyleMap);
-}
 
 export function createSketchDrawerMotionPoint(
   THREE: InteriorTHREESurface,

@@ -340,7 +340,10 @@ export function createSketchInteriorHarness(options: HarnessOptions = {}) {
     return {
       App: {},
       THREE,
-      cfg: {},
+      cfgSnapshot: {},
+      doorStyle: 'flat',
+      isGroovesEnabled: true,
+      isInternalDrawersEnabled: true,
       createBoard,
       wardrobeGroup,
       effectiveBottomY: 0,

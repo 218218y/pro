@@ -15,7 +15,7 @@ import {
 import {
   resolveSketchDoorStyle,
   resolveSketchDoorStyleMap,
-} from './render_interior_sketch_drawers_shared.js';
+} from './render_interior_sketch_input_contract.js';
 
 export function createSketchExternalDrawerRenderContext(
   args: ApplySketchExternalDrawersArgs
@@ -45,8 +45,8 @@ export function createSketchExternalDrawerRenderContext(
   const frontZ =
     toFiniteNumber(readObject<InteriorValueRecord>(input)?.externalFrontZ) ?? Math.max(0, outerD / 2);
   const outlineFn = isFn(input.addOutlines) ? input.addOutlines : null;
-  const doorStyle = resolveSketchDoorStyle(App, input);
-  const doorStyleMap = resolveSketchDoorStyleMap(App, input);
+  const doorStyle = resolveSketchDoorStyle(input);
+  const doorStyleMap = resolveSketchDoorStyleMap(input);
   const drawersArray = getDrawersArray(App);
   const doorFaceTopY = resolveSketchExternalDrawerDoorFaceTopY(effectiveTopY, woodThick);
 

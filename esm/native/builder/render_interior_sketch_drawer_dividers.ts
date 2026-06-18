@@ -1,9 +1,8 @@
-import type { AppContainer, UnknownRecord } from '../../../types';
+import type { UnknownRecord } from '../../../types';
 
-import { readMapOrEmpty } from '../runtime/maps_access.js';
-import { getCfg } from './store_access.js';
 import type { RenderInteriorSketchInput } from './render_interior_sketch_shared.js';
 import { readObject } from './render_interior_sketch_shared.js';
+import { requireInteriorSketchConfigSnapshot } from './render_interior_sketch_input_contract.js';
 
 function readDividerMapCandidate(value: unknown): UnknownRecord | null {
   const rec = readObject<UnknownRecord>(value);
@@ -30,8 +29,7 @@ function readFromCandidate(map: UnknownRecord | null, keys: string[]): boolean |
 }
 
 export function hasSketchDrawerDivider(args: {
-  App?: AppContainer | null;
-  input?: RenderInteriorSketchInput | null;
+  input: RenderInteriorSketchInput;
   partId: string;
   dividerKey?: string | null;
 }): boolean {
@@ -40,27 +38,9 @@ export function hasSketchDrawerDivider(args: {
   const keys = dividerKey && dividerKey !== partId ? [dividerKey, partId] : [partId];
   if (!partId && !dividerKey) return false;
 
-  const input = readObject<RenderInteriorSketchInput>(args.input) || null;
-  const candidates: Array<UnknownRecord | null> = [];
-  if (args.App) {
-    try {
-      candidates.push(readDividerMapCandidate(getCfg(args.App)));
-    } catch {
-      candidates.push(null);
-    }
-    try {
-      candidates.push(readMapOrEmpty(args.App, 'drawerDividersMap') as UnknownRecord);
-    } catch {
-      candidates.push(null);
-    }
-  }
-  candidates.push(readDividerMapCandidate(input?.cfg));
-  candidates.push(readDividerMapCandidate(input?.config));
-  candidates.push(readDividerMapCandidate(input));
-
-  for (let i = 0; i < candidates.length; i++) {
-    const state = readFromCandidate(candidates[i], keys);
-    if (state !== null) return state;
-  }
-  return false;
+  const cfgSnapshot = requireInteriorSketchConfigSnapshot(
+    args.input.cfgSnapshot,
+    'render_interior_sketch.drawerDividers'
+  );
+  return readFromCandidate(readDividerMapCandidate(cfgSnapshot), keys) === true;
 }

@@ -524,6 +524,52 @@ export type BuilderInternalDrawerCreator = (
 export type BuilderPartMaterialResolver = (partId: string) => unknown;
 export type BuilderPartColorValue = string | null | undefined;
 export type BuilderPartColorResolver = (partId: string) => BuilderPartColorValue;
+
+/** Canonical public input for RenderOps.applyInteriorSketchExtras. */
+export interface BuilderInteriorSketchArgsLike extends UnknownRecord {
+  App: AppContainer;
+  cfgSnapshot: ConfigStateLike | UnknownRecord;
+  sketchExtras: BuilderSketchExtrasLike;
+  doorStyle: BuilderDoorVisualFrameStyle;
+  isGroovesEnabled: boolean;
+  isInternalDrawersEnabled: boolean;
+  THREE?: unknown;
+  wardrobeGroup?: unknown;
+  createBoard?: BuilderCreateBoardFn | null;
+  createRod?: BuilderInteriorRodCreator | null;
+  currentShelfMat?: unknown;
+  currentBraceShelfMat?: unknown;
+  bodyMat?: unknown;
+  effectiveBottomY?: BuilderPreviewScalar;
+  effectiveTopY?: BuilderPreviewScalar;
+  localGridStep?: BuilderPreviewScalar;
+  innerW?: BuilderPreviewScalar;
+  woodThick?: BuilderPreviewScalar;
+  shelfThick?: BuilderPreviewScalar;
+  internalDepth?: BuilderPreviewScalar;
+  internalCenterX?: BuilderPreviewScalar;
+  internalZ?: BuilderPreviewScalar;
+  D?: BuilderPreviewScalar;
+  moduleIndex?: BuilderSketchIdLike;
+  modulesLength?: BuilderPreviewScalar;
+  moduleKey?: BuilderSketchIdLike;
+  frameSidePartIdPrefix?: BuilderSketchIdLike;
+  stackKey?: BuilderSketchIdLike;
+  startY?: BuilderPreviewScalar;
+  startDoorId?: BuilderSketchIdLike;
+  moduleDoors?: BuilderPreviewScalar;
+  hingedDoorPivotMap?: unknown;
+  externalW?: BuilderPreviewScalar;
+  externalCenterX?: BuilderPreviewScalar;
+  getPartMaterial?: BuilderPartMaterialResolver | null;
+  getPartColorValue?: BuilderPartColorResolver | null;
+  createDoorVisual?: BuilderCreateDoorVisualFn | null;
+  createInternalDrawerBox?: BuilderCreateInternalDrawerBoxFn | null;
+  addOutlines?: BuilderOutlineFn | null;
+  showContentsEnabled?: boolean;
+  addFoldedClothes?: BuilderAddFoldedClothesFn | null;
+}
+
 export type BuilderHandleTypeResolver = (partId: unknown) => unknown;
 export type BuilderDoorRemovedResolver = (partId: string) => boolean;
 export type BuilderHingeDirResolver = (hingeKey: string, fallback: HingeDir) => HingeDir;
@@ -709,7 +755,7 @@ export interface RenderOpsLike extends UnknownRecord {
 
   // Common ops used across builder pipelines.
   // Most functions are implemented as `fn(args)` objects (single-arg bags),
-  // except `applyCarcassOps(ops, ctx)` which follows the legacy signature.
+  // except `applyCarcassOps(ops, ctx)` which uses a two-argument contract.
   applyCarcassOps?: (ops: CarcassOpsLike, ctx?: BuilderApplyCarcassContextLike) => unknown;
 
   applyDimensions?: (args: UnknownRecord) => unknown;
@@ -722,7 +768,7 @@ export interface RenderOpsLike extends UnknownRecord {
 
   applyInteriorPresetOps?: (args: UnknownRecord) => boolean;
   applyInteriorCustomOps?: (args: UnknownRecord) => boolean;
-  applyInteriorSketchExtras?: (args: UnknownRecord) => boolean;
+  applyInteriorSketchExtras?: (args: BuilderInteriorSketchArgsLike) => boolean;
 
   // Canonical shared helpers (render surface / previews)
   getCommonMats?: (args?: BuilderRenderCommonArgsLike | null) => unknown;

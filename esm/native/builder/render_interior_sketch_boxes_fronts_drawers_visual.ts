@@ -20,9 +20,8 @@ export function addSketchBoxExternalDrawerFrontVisual(
   const { shell } = context;
   const { boxId: bid, isFreePlacement } = shell;
   const frontVisualState = resolveSketchFrontVisualState(context.input, opPlan.partId);
-  const cfg = asValueRecord(context.input.cfg);
-  const fallbackConfig = asValueRecord(context.input.config);
-  const groovesMap = readUnknownMap(cfg?.groovesMap) || readUnknownMap(fallbackConfig?.groovesMap);
+  const cfgSnapshot = asValueRecord(context.input.cfgSnapshot);
+  const groovesMap = readUnknownMap(cfgSnapshot?.groovesMap);
   const hasGroove = !!(
     resolveSketchGroovesEnabled(context.input) &&
     groovesMap &&
@@ -58,7 +57,7 @@ export function addSketchBoxExternalDrawerFrontVisual(
   });
   if (context.isFn(context.input.addOutlines)) context.input.addOutlines(visualObj);
   groupNode.add?.(visualObj);
-  const doorTrimMap = asValueRecord(cfg?.doorTrimMap) || asValueRecord(fallbackConfig?.doorTrimMap);
+  const doorTrimMap = asValueRecord(cfgSnapshot?.doorTrimMap);
   appendDoorTrimVisuals({
     App: context.App,
     THREE: context.THREE,

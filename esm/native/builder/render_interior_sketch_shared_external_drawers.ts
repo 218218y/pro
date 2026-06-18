@@ -6,13 +6,8 @@ import { asValueRecord } from './render_interior_sketch_shared_records.js';
 
 export function resolveSketchExternalDrawerDoorMountMode(input: unknown): 'overlay' | 'inset' {
   const root = asValueRecord(input);
-  const cfg = asValueRecord(root?.cfg);
-  const config = asValueRecord(root?.config);
-  return root?.doorMountMode === 'inset' ||
-    cfg?.doorMountMode === 'inset' ||
-    config?.doorMountMode === 'inset'
-    ? 'inset'
-    : 'overlay';
+  const cfgSnapshot = asValueRecord(root?.cfgSnapshot);
+  return cfgSnapshot?.doorMountMode === 'inset' ? 'inset' : 'overlay';
 }
 
 export function applySketchExternalDrawerFaceOverrides(

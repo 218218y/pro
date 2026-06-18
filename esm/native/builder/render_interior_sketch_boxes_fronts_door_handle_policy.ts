@@ -82,7 +82,7 @@ export function resolveSketchFreeBoxDoorHandleAbsY(args: {
   const { shell } = frontsArgs;
   if (shell.isFreePlacement !== true) return null;
 
-  const inputCfg = asValueRecord(asValueRecord(frontsArgs.args.input)?.cfg);
+  const inputCfg = asValueRecord(asValueRecord(frontsArgs.args.input)?.cfgSnapshot);
   const hasVerticalSegment =
     args.placement.verticalSegment != null &&
     Number.isFinite(args.placement.verticalSegment.bottomY) &&
@@ -135,7 +135,7 @@ export function resolveSketchFreeBoxSharedHandleAbsY(args: RenderSketchBoxDoorFr
 
   if (!Number.isFinite(maxDrawerTopY)) return null;
 
-  const inputCfg = asValueRecord(asValueRecord(frontsArgs.args.input)?.cfg);
+  const inputCfg = asValueRecord(asValueRecord(frontsArgs.args.input)?.cfgSnapshot);
   const extraLongEdgeLift =
     maxDrawerCount >= HANDLE_DIMENSIONS.edge.longLiftDrawerCountThreshold &&
     hasLongEdgeHandleVariant(inputCfg)

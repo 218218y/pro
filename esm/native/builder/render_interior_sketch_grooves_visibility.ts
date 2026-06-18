@@ -1,4 +1,6 @@
 import type { InteriorValueRecord } from './render_interior_ops_contracts.js';
+import type { BuilderInteriorSketchArgsLike } from '../../../types';
+import { requireInteriorSketchBooleanFlag } from './render_interior_sketch_input_contract.js';
 
 function asRecord(value: unknown): InteriorValueRecord | null {
   return value && typeof value === 'object' ? (value as InteriorValueRecord) : null;
@@ -10,16 +12,12 @@ function readBooleanToggle(value: unknown): boolean | null {
   return null;
 }
 
-export function resolveSketchGroovesEnabled(input: unknown): boolean {
-  const inputRecord = asRecord(input);
-  const direct = readBooleanToggle(inputRecord?.isGroovesEnabled ?? inputRecord?.groovesEnabled);
-  if (direct !== null) return direct;
-
-  const uiRecord = asRecord(inputRecord?.ui);
-  const uiDirect = readBooleanToggle(uiRecord?.groovesEnabled);
-  if (uiDirect !== null) return uiDirect;
-
-  return true;
+export function resolveSketchGroovesEnabled(input: BuilderInteriorSketchArgsLike): boolean {
+  return requireInteriorSketchBooleanFlag(
+    input.isGroovesEnabled,
+    'isGroovesEnabled',
+    'render_interior_sketch'
+  );
 }
 
 export function resolveSketchGroovesEnabledFromBuildContext(ctx: unknown): boolean {

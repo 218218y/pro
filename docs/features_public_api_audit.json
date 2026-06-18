@@ -586,10 +586,6 @@
       "entry": "door_style_overrides.js"
     },
     {
-      "file": "esm/native/builder/render_interior_sketch_boxes_fronts_support.ts",
-      "entry": "door_style_overrides.js"
-    },
-    {
       "file": "esm/native/builder/render_interior_sketch_boxes_shared.ts",
       "entry": "hex_cell/index.js"
     },
@@ -634,7 +630,7 @@
       "entry": "sketch_stack_positioning.js"
     },
     {
-      "file": "esm/native/builder/render_interior_sketch_drawers_shared.ts",
+      "file": "esm/native/builder/render_interior_sketch_input_contract.ts",
       "entry": "door_style_overrides.js"
     },
     {

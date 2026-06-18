@@ -121,7 +121,10 @@ test('sketch box render stays alive when special door helpers are enabled', () =
   const ok = applyInteriorSketchExtras({
     App,
     THREE,
-    cfg: { isMultiColorMode: true },
+    cfgSnapshot: { isMultiColorMode: true },
+    doorStyle: 'flat',
+    isGroovesEnabled: true,
+    isInternalDrawersEnabled: true,
     sketchExtras: {
       boxes: [
         {

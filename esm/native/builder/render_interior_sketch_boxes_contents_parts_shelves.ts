@@ -45,10 +45,7 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
     woodThick,
   });
   const usableRegularDepth = Math.min(regularDepth, usableContentDepth);
-  const removedSideState = readSketchBoxRemovedSideShelfState(
-    args.args.input.cfg || args.args.input.config,
-    boxPid
-  );
+  const removedSideState = readSketchBoxRemovedSideShelfState(args.args.input.cfgSnapshot, boxPid);
   const innerLeftX = geometry.centerX - geometry.innerW / 2;
   const innerRightX = geometry.centerX + geometry.innerW / 2;
   const sideEdgeEpsilon = SKETCH_BOX_DIMENSIONS.preview.doorEdgeEpsilonM;

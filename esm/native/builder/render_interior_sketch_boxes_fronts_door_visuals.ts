@@ -52,7 +52,7 @@ export function appendSketchBoxDoorVisuals(args: {
     doorVisualState,
   });
 
-  const doorTrimMap = asValueRecord(asValueRecord(input.cfg)?.doorTrimMap);
+  const doorTrimMap = asValueRecord(asValueRecord(input.cfgSnapshot)?.doorTrimMap);
   appendDoorTrimVisuals({
     App,
     THREE,

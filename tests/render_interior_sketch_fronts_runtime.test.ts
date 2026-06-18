@@ -126,13 +126,16 @@ function createFrontsArgs() {
     args: {
       App,
       input: {
-        cfg: {
+        cfgSnapshot: {
           isMultiColorMode: true,
           doorSpecialMap: {
             box_0_ext_drawers_left_1: 'mirror',
             box_0_ext_drawers_right_1: 'mirror',
           },
         },
+        doorStyle: 'flat',
+        isGroovesEnabled: true,
+        isInternalDrawersEnabled: true,
         addOutlines: () => {},
         createInternalDrawerBox: () => new FakeMesh(new FakeBoxGeometry(1, 1, 1), { id: 'drawer-box-mat' }),
       },
