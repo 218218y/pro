@@ -10,7 +10,6 @@ import {
   getRandomBookSetPalette,
   getRandomBookSpineBandColor,
   getRandomClothColor,
-  getVisualsContentsBuildUI,
   quantizeVisualContentMetric,
   readVisualsContentsSketchMode,
   resolveLibraryContents,
@@ -367,7 +366,7 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
   parentGroup,
   maxHeight,
   maxDepth,
-  cfgSnapshot
+  policy
 ) => {
   App = ensureVisualsContentsApp(App);
   const THREE = ensureVisualsContentsTHREE(App);
@@ -377,13 +376,13 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
     maxHeight = CONTENT_VISUAL_DIMENSIONS.foldedClothes.defaultMaxHeightM;
   }
 
-  const buildUI = getVisualsContentsBuildUI(App);
-  if (!resolveShowContents(buildUI)) return;
+  const isLibraryContents = resolveLibraryContents(policy);
+  if (!resolveShowContents(policy)) return;
 
   const seedVal = Math.floor(shelfX * 123 + shelfY * 456 + shelfZ * 789 + width * 1000);
   seededRandom.setSeed(Math.abs(seedVal) + 55);
 
-  if (resolveLibraryContents(cfgSnapshot)) {
+  if (isLibraryContents) {
     addShelfBooks({
       THREE,
       shelfX,

@@ -193,7 +193,10 @@ export function applyCornerConnectorSpecialInterior(params: CornerConnectorSpeci
       woodThick: shelfThick,
       leftShelfBottomYs,
     });
-    emitFoldedClothesPlans(plans, cornerGroup, emitFoldedClothes, reportErrorThrottled, App, cfgSnapshot);
+    emitFoldedClothesPlans(plans, cornerGroup, emitFoldedClothes, reportErrorThrottled, App, {
+      showContentsEnabled: showContentsEnabled === true,
+      cfgSnapshot,
+    });
   }
 
   const shelf1Added = shelf1BottomY + shelfThick <= ceilBottomY - specialPostDims.shelfCeilingClearanceM;
@@ -215,6 +218,9 @@ export function applyCornerConnectorSpecialInterior(params: CornerConnectorSpeci
       woodThick: shelfThick,
       ceilBottomY,
     });
-    emitFoldedClothesPlans(plans, cornerGroup, emitFoldedClothes, reportErrorThrottled, App, cfgSnapshot);
+    emitFoldedClothesPlans(plans, cornerGroup, emitFoldedClothes, reportErrorThrottled, App, {
+      showContentsEnabled: showContentsEnabled === true,
+      cfgSnapshot,
+    });
   }
 }

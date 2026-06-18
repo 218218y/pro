@@ -169,6 +169,7 @@ test('render interior sketch shelves emit folded contents with measured shelf cl
     effectiveTopY: 1.8,
     showContentsEnabled: true,
     addFoldedClothes: (...call: any[]) => folded.push(call),
+    contentsPolicy: { showContentsEnabled: true, cfgSnapshot: { isLibraryMode: true } },
     currentShelfMat: { id: 'shelf' },
     currentBraceShelfMat: { id: 'brace-shelf' },
     glassMat: null,
@@ -188,6 +189,8 @@ test('render interior sketch shelves emit folded contents with measured shelf cl
   assert.equal(Number(folded[0][1].toFixed(3)), 0.51);
   assert.equal(Number(folded[0][5].toFixed(3)), 0.464);
   assert.equal(Number(folded[1][5].toFixed(3)), 0.774);
+  assert.equal(folded[0][7].showContentsEnabled, true);
+  assert.equal(folded[0][7].cfgSnapshot.isLibraryMode, true);
 });
 
 test('removed frame side sketch shelves preserve glass and double variants on forced brace geometry', () => {
@@ -218,6 +221,7 @@ test('removed frame side sketch shelves preserve glass and double variants on fo
     effectiveTopY: 1.8,
     showContentsEnabled: false,
     addFoldedClothes: () => undefined,
+    contentsPolicy: { showContentsEnabled: false, cfgSnapshot: { isLibraryMode: false } },
     currentShelfMat: { id: 'regular-shelf' },
     currentBraceShelfMat: { id: 'brace-shelf' },
     glassMat,

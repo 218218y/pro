@@ -217,6 +217,8 @@ test('render sketch box shelves emit folded contents inside divider-aware shelf 
   assert.ok(folded[0][3] < 0.8, 'contents width should follow the resolved shelf segment');
   assert.ok(folded[0][5] > 0);
   assert.ok(folded[1][5] > folded[0][5]);
+  assert.equal(folded[0][7].showContentsEnabled, true);
+  assert.equal(folded[0][7].cfgSnapshot, args.args.input.cfgSnapshot);
 });
 
 test('removed sketch-box side forces adjacent box shelves to brace and applies rounded shelf option', () => {

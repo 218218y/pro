@@ -82,7 +82,8 @@ test('visuals_and_contents install keeps stable content refs live across root re
 
   const parentA = createParentGroup();
   heldAddFoldedClothes?.(0.5, 1, 0.2, 0.9, parentA as never, 0.5, 0.4, {
-    isLibraryMode: false,
+    showContentsEnabled: false,
+    cfgSnapshot: { isLibraryMode: false },
   });
   assert.equal(parentA.children.length, 0);
 
@@ -97,7 +98,8 @@ test('visuals_and_contents install keeps stable content refs live across root re
 
   const parentB = createParentGroup();
   heldAddFoldedClothes?.(0.5, 1, 0.2, 0.9, parentB as never, 0.5, 0.4, {
-    isLibraryMode: false,
+    showContentsEnabled: true,
+    cfgSnapshot: { isLibraryMode: false },
   });
   assert.ok(parentB.children.length > 0);
 });

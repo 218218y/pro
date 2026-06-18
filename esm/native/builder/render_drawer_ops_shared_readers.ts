@@ -108,6 +108,6 @@ export function readCreateInternalDrawerBox(value: unknown): BuilderCreateIntern
 
 export function readAddFoldedClothes(value: unknown): BuilderAddFoldedClothesFn | null {
   if (!isFunction(value)) return null;
-  return (shelfX, shelfY, shelfZ, width, parentGroup, maxHeight, maxDepth, cfgSnapshot) =>
-    value(shelfX, shelfY, shelfZ, width, parentGroup, maxHeight, maxDepth, cfgSnapshot);
+  return (shelfX, shelfY, shelfZ, width, parentGroup, maxHeight, maxDepth, policy) =>
+    value(shelfX, shelfY, shelfZ, width, parentGroup, maxHeight, maxDepth, policy);
 }

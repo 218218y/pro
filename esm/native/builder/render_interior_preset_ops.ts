@@ -137,7 +137,10 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
       group,
       createBoard,
       addFoldedClothes,
-      cfgSnapshot: input.cfg,
+      contentsPolicy: {
+        showContentsEnabled: input.showContentsEnabled === true,
+        cfgSnapshot: input.cfg,
+      },
       currentShelfMat,
       currentBraceShelfMat,
       moduleKey,

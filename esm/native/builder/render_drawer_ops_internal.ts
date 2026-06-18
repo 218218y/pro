@@ -101,7 +101,10 @@ export function createApplyInternalDrawersOps(deps: BuilderRenderDrawerDeps) {
           intBox,
           Math.max(0, (drawerOp.height || 0) - DRAWER_DIMENSIONS.internal.contentsHeightClearanceM),
           drawerOp.depth,
-          { isLibraryMode: cfg.isLibraryMode === true }
+          {
+            showContentsEnabled,
+            cfgSnapshot: { isLibraryMode: cfg.isLibraryMode === true },
+          }
         );
       }
     }

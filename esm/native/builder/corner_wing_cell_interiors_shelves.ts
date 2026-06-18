@@ -272,7 +272,10 @@ export function addCornerWingGridShelf(
       runtime.wingGroup,
       resolveCornerShelfContentsMaxHeight(cellRuntime, shelfRuntime, gridIndex, y, shelfH),
       shelfDepth,
-      runtime.__cfg
+      {
+        showContentsEnabled: runtime.showContentsEnabled,
+        cfgSnapshot: runtime.__cfg,
+      }
     );
   }
 }

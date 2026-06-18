@@ -38,6 +38,7 @@ export type InteriorCustomInput = InteriorValueRecord & {
   bodyMat?: unknown;
   braceShelves?: unknown;
   isInternalDrawersEnabled?: unknown;
+  showContentsEnabled?: unknown;
   cfg?: InteriorValueRecord;
   getPartMaterial?: InteriorOpsCallable;
   getPartColorValue?: InteriorOpsCallable;

@@ -51,6 +51,18 @@ export type BuilderOutlineFn = (mesh: unknown) => unknown;
 export type NullableBuilderOutlineFn = BuilderOutlineFn | null;
 export type BuilderDoorVisualFrameStyle = 'flat' | 'profile' | 'double_profile';
 
+export type BuilderContentsVisibilityPolicy = Readonly<{
+  showContentsEnabled: boolean;
+}>;
+export type BuilderHangingContentsPolicy = BuilderContentsVisibilityPolicy &
+  Readonly<{
+    doorStyle: string;
+  }>;
+export type BuilderFoldedContentsPolicy = BuilderContentsVisibilityPolicy &
+  Readonly<{
+    cfgSnapshot: ConfigStateLike;
+  }>;
+
 export type BuilderDoorVisualOptions = {
   glassFrameStyle?: BuilderDoorVisualFrameStyle | null;
   grooveLinesCount?: number | null;
@@ -327,9 +339,8 @@ export type BuilderAddHangingClothesFn = (
   width: number,
   parentGroup: Object3DLike,
   maxHeight: number,
-  isRestrictedDepth?: boolean | number,
-  showContentsOverride?: boolean,
-  doorStyleOverride?: unknown
+  isRestrictedDepth: boolean | number | undefined,
+  policy: BuilderHangingContentsPolicy
 ) => unknown;
 export type BuilderAddFoldedClothesFn = (
   shelfX: number,
@@ -339,7 +350,7 @@ export type BuilderAddFoldedClothesFn = (
   parentGroup: Object3DLike,
   maxHeight: number | undefined,
   maxDepth: number | undefined,
-  cfgSnapshot: ConfigStateLike
+  policy: BuilderFoldedContentsPolicy
 ) => unknown;
 export type BuilderAddRealisticHangerFn = (
   rodX: number,

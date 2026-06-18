@@ -10,7 +10,7 @@ import {
   getCachedTorusGeometry,
   getRandomClothColor,
   quantizeVisualContentMetric,
-  getVisualsContentsBuildUI,
+  resolveContentsDoorStyle,
   resolveShowContents,
   seededRandom,
   type AppAwareAddHangingClothesFn,
@@ -276,8 +276,7 @@ export const addHangingClothes: AppAwareAddHangingClothesFn = (
   parentGroup,
   maxHeight,
   isRestrictedDepth = false,
-  showContentsOverride,
-  doorStyleOverride
+  policy
 ) => {
   App = ensureVisualsContentsApp(App);
   const THREE = ensureVisualsContentsTHREE(App);
@@ -285,20 +284,13 @@ export const addHangingClothes: AppAwareAddHangingClothesFn = (
   const dims = CONTENT_VISUAL_DIMENSIONS.hangingClothes;
   if (maxHeight < dims.minAvailableHeightM) return;
 
-  const buildUI = getVisualsContentsBuildUI(App);
-  if (!resolveShowContents(buildUI, showContentsOverride)) return;
+  const currentStyle = resolveContentsDoorStyle(policy);
+  if (!resolveShowContents(policy)) return;
 
   const seedVal = Math.floor(rodX * 1000 + rodY * 1000 + rodZ * 1000 + width * 1000);
   seededRandom.setSeed(Math.abs(seedVal) + 1);
 
   const count = Math.max(1, Math.floor(width / dims.spacingM));
-  const currentStyle =
-    typeof doorStyleOverride !== 'undefined' && doorStyleOverride !== null
-      ? String(doorStyleOverride)
-      : buildUI && buildUI.doorStyle != null
-        ? String(buildUI.doorStyle)
-        : '';
-
   let baseClothDepth: number = dims.defaultDepthM;
   if (currentStyle === 'profile' || currentStyle === 'double_profile') baseClothDepth = dims.framedDoorDepthM;
   if (typeof isRestrictedDepth === 'number' && Number.isFinite(isRestrictedDepth) && isRestrictedDepth > 0) {

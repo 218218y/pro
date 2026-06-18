@@ -90,6 +90,7 @@ export function applyPresetInteriorLayout(
         createBoard: input.createBoard,
         createRod: input.createRod,
         addFoldedClothes: input.addFoldedClothes,
+        showContentsEnabled: input.showContentsEnabled === true,
       }) === true;
   } catch (error) {
     reportInteriorLayoutError(input.App, error, {

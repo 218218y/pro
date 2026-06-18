@@ -535,6 +535,7 @@ test('sketch external drawers emit folded contents when show contents is enabled
   assert.equal(foldedCalls.length, 2);
   assert.ok(foldedCalls.every(call => call[4]?.userData?.__wpSketchExtDrawer === true));
   assert.ok(foldedCalls.every(call => Number(call[5]) > 0));
+  assert.ok(foldedCalls.every(call => call[7]?.showContentsEnabled === true));
 });
 
 test('sketch external drawer fronts and boxes keep separate paint identities after group metadata is applied', () => {
@@ -647,6 +648,7 @@ test('sketch box external drawers emit folded contents inside their drawer boxes
   assert.equal(foldedCalls.length, 2);
   assert.ok(foldedCalls.every(call => call[4]?.userData?.__wpSketchExtDrawer === true));
   assert.ok(foldedCalls.every(call => Number(call[3]) > 0));
+  assert.ok(foldedCalls.every(call => call[7]?.showContentsEnabled === true));
 });
 
 test('sketch box external drawer fronts and boxes keep separate paint identities after group metadata is applied', () => {

@@ -1,5 +1,4 @@
 import { assertApp } from '../runtime/api.js';
-import { getBuildUIFromPlatform } from '../runtime/platform_access.js';
 import { ensureBuilderService, getBuilderAddOutlines } from '../runtime/builder_service_access.js';
 import { readRuntimeScalarOrDefaultFromApp } from '../runtime/runtime_selectors.js';
 import { assertThreeViaDeps } from '../runtime/three_access.js';
@@ -10,7 +9,9 @@ import type {
   BuilderAddFoldedClothesFn,
   BuilderAddHangingClothesFn,
   BuilderAddRealisticHangerFn,
-  ConfigStateLike,
+  BuilderContentsVisibilityPolicy,
+  BuilderFoldedContentsPolicy,
+  BuilderHangingContentsPolicy,
   GeometryLike,
   MaterialLike,
   ThreeLike,
@@ -57,16 +58,6 @@ export function ensureVisualsContentsTHREE(passedApp: unknown): ThreeLike {
   return assertThreeViaDeps(App, 'native/builder/visuals_contents.THREE');
 }
 
-export function getVisualsContentsBuildUI(passedApp: unknown): UnknownRecord {
-  try {
-    const App = asObject(passedApp) ? ensureVisualsContentsApp(passedApp) : null;
-    if (!App) return {};
-    return getBuildUIFromPlatform(App);
-  } catch {
-    return {};
-  }
-}
-
 export function getVisualsContentsAddOutlines(passedApp: unknown): BuilderOutlineFn | null {
   try {
     const App = asObject(passedApp) ? ensureVisualsContentsApp(passedApp) : null;
@@ -85,17 +76,34 @@ export function readVisualsContentsSketchMode(App: AppContainer): boolean {
   return !!readRuntimeScalarOrDefaultFromApp(App, 'sketchMode', false);
 }
 
-export function resolveShowContents(buildUI: UnknownRecord, showContentsOverride?: unknown): boolean {
-  if (typeof showContentsOverride !== 'undefined') return !!showContentsOverride;
-  if (buildUI && typeof buildUI.showContents !== 'undefined') return !!buildUI.showContents;
-  return false;
+function requireContentsVisibilityPolicy(
+  policy: BuilderContentsVisibilityPolicy
+): BuilderContentsVisibilityPolicy {
+  if (!isRecord(policy) || typeof policy.showContentsEnabled !== 'boolean') {
+    throw new TypeError('[visuals_contents] showContentsEnabled policy is required');
+  }
+  return policy;
 }
 
-export function resolveLibraryContents(cfgSnapshot: ConfigStateLike): boolean {
+export function resolveShowContents(policy: BuilderContentsVisibilityPolicy): boolean {
+  return requireContentsVisibilityPolicy(policy).showContentsEnabled;
+}
+
+export function resolveLibraryContents(policy: BuilderFoldedContentsPolicy): boolean {
+  requireContentsVisibilityPolicy(policy);
+  const cfgSnapshot = policy.cfgSnapshot;
   if (!isRecord(cfgSnapshot)) {
     throw new TypeError('[visuals_contents] cfgSnapshot is required');
   }
   return cfgSnapshot.isLibraryMode === true;
+}
+
+export function resolveContentsDoorStyle(policy: BuilderHangingContentsPolicy): string {
+  requireContentsVisibilityPolicy(policy);
+  if (typeof policy.doorStyle !== 'string') {
+    throw new TypeError('[visuals_contents] doorStyle policy is required');
+  }
+  return policy.doorStyle;
 }
 
 export function resolveShowHanger(showHangerEnabled: boolean): boolean {

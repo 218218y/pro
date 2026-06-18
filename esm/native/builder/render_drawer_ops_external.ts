@@ -173,7 +173,10 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
           drawerBox,
           Math.max(0, (drawerOp.boxH || 0) - DRAWER_DIMENSIONS.external.contentsHeightClearanceM),
           drawerOp.boxD,
-          { isLibraryMode: cfg.isLibraryMode === true }
+          {
+            showContentsEnabled,
+            cfgSnapshot: { isLibraryMode: cfg.isLibraryMode === true },
+          }
         );
       }
 

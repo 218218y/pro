@@ -140,7 +140,10 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
       group,
       createBoard,
       addFoldedClothes: input.addFoldedClothes,
-      cfgSnapshot: input.cfg,
+      contentsPolicy: {
+        showContentsEnabled: input.showContentsEnabled === true,
+        cfgSnapshot: input.cfg,
+      },
       currentShelfMat,
       currentBraceShelfMat,
       moduleKey,
@@ -176,7 +179,10 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
     addCustomBaseShelfContents({
       group,
       addFoldedClothes: input.addFoldedClothes,
-      cfgSnapshot: input.cfg,
+      contentsPolicy: {
+        showContentsEnabled: input.showContentsEnabled === true,
+        cfgSnapshot: input.cfg,
+      },
       braceSet,
       shelfSet,
       shelfVariantByIndex,

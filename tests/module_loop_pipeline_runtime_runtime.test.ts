@@ -309,19 +309,27 @@ test('module loop runtime resolvers fail fast when createBoard is missing', () =
 test('module loop runtime resolvers preserve explicit content snapshots and hanger flags', () => {
   const foldedCalls: unknown[][] = [];
   const hangerCalls: unknown[][] = [];
+  const hangingClothesCalls: unknown[][] = [];
   const ctx = createCtx({
     fns: {
       addFoldedClothes: (...args: unknown[]) => foldedCalls.push(args),
       addRealisticHanger: (...args: unknown[]) => hangerCalls.push(args),
+      addHangingClothes: (...args: unknown[]) => hangingClothesCalls.push(args),
     },
   });
   const runtime = resolveModuleLoopRuntimeResolvers(ctx);
   const parentGroup = {} as any;
-  const cfgSnapshot = { isLibraryMode: true };
+  const contentsPolicy = {
+    showContentsEnabled: true,
+    cfgSnapshot: { isLibraryMode: true },
+  };
+  const hangingPolicy = { showContentsEnabled: true, doorStyle: 'profile' };
 
-  runtime.addFoldedClothes?.(1, 2, 3, 4, parentGroup, 5, 6, cfgSnapshot);
+  runtime.addFoldedClothes?.(1, 2, 3, 4, parentGroup, 5, 6, contentsPolicy);
   runtime.addRealisticHanger?.(1, 2, 3, parentGroup, 4, false);
+  runtime.addHangingClothes?.(1, 2, 3, 4, parentGroup, 5, 6, hangingPolicy);
 
-  assert.equal(foldedCalls[0]?.[7], cfgSnapshot);
+  assert.equal(foldedCalls[0]?.[7], contentsPolicy);
   assert.equal(hangerCalls[0]?.[5], false);
+  assert.equal(hangingClothesCalls[0]?.[7], hangingPolicy);
 });

@@ -141,6 +141,7 @@ test('render interior rod sends hanging clothes through default hanging_top2 cle
     internalZ: 0,
     wardrobeGroup: group,
     showContentsEnabled: true,
+    doorStyle: 'flat',
     addHangingClothes(...args: any[]) {
       clothesCalls.push(args);
     },
@@ -195,6 +196,7 @@ test('render interior rod recomputes edited custom hanging clearance instead of 
     internalZ: 0,
     wardrobeGroup: group,
     showContentsEnabled: true,
+    doorStyle: 'flat',
     addHangingClothes(...args: any[]) {
       clothesCalls.push(args);
     },
@@ -228,6 +230,7 @@ test('render interior rod shortens hanging clothes above sketch drawer stacks', 
     internalZ: 0,
     wardrobeGroup: group,
     showContentsEnabled: true,
+    doorStyle: 'flat',
     addHangingClothes(...args: any[]) {
       clothesCalls.push(args);
     },
@@ -266,6 +269,7 @@ test('render interior rod reserves folded clothes above shelf blockers', () => {
     internalZ: 0,
     wardrobeGroup: group,
     showContentsEnabled: true,
+    doorStyle: 'flat',
     addHangingClothes(...args: any[]) {
       clothesCalls.push(args);
     },

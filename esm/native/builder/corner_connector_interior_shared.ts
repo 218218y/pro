@@ -31,9 +31,8 @@ export type AddHangingClothesLike = (
   width: number,
   parentGroup: GroupLike,
   maxHeight: number,
-  isRestrictedDepth?: boolean | number,
-  showContentsOverride?: boolean,
-  doorStyleOverride?: unknown
+  isRestrictedDepth: boolean | number | undefined,
+  policy: { showContentsEnabled: boolean; doorStyle: string }
 ) => unknown;
 export type AddFoldedClothesLike = (
   shelfX: number,
@@ -43,7 +42,7 @@ export type AddFoldedClothesLike = (
   parentGroup: GroupLike,
   maxHeight: number | undefined,
   maxDepth: number | undefined,
-  cfgSnapshot: UnknownRecord
+  policy: { showContentsEnabled: boolean; cfgSnapshot: UnknownRecord }
 ) => unknown;
 export type ShapeLike = { moveTo(x: number, y: number): void; lineTo(x: number, y: number): void };
 export type ThreeInteriorLike = {
@@ -70,6 +69,7 @@ export type CornerConnectorInteriorCtx = {
   startY: number;
   wingH: number;
   uiAny: UnknownRecord;
+  doorStyle: string;
   showHangerEnabled?: boolean;
   showContentsEnabled?: boolean;
   addOutlines: (mesh: unknown) => void;

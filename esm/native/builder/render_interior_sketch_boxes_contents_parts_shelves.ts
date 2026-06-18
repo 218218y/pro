@@ -199,7 +199,10 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
           args.args.group,
           maxHeight,
           shelfDepth,
-          args.args.input.cfgSnapshot
+          {
+            showContentsEnabled: args.args.input.showContentsEnabled === true,
+            cfgSnapshot: args.args.input.cfgSnapshot,
+          }
         );
       }
     }

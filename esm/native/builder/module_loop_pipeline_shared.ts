@@ -210,8 +210,7 @@ export function readAddHangingClothes(value: unknown): BuilderAddHangingClothesF
     parentGroup,
     maxHeight,
     isRestrictedDepth,
-    showContentsOverride,
-    doorStyleOverride
+    policy
   ) =>
     Reflect.apply(value, undefined, [
       rodX,
@@ -221,8 +220,7 @@ export function readAddHangingClothes(value: unknown): BuilderAddHangingClothesF
       parentGroup,
       maxHeight,
       isRestrictedDepth,
-      showContentsOverride,
-      doorStyleOverride,
+      policy,
     ]);
   return addHangingClothes;
 }
@@ -237,7 +235,7 @@ export function readAddFoldedClothes(value: unknown): BuilderAddFoldedClothesFn 
     parentGroup,
     maxHeight,
     maxDepth,
-    cfgSnapshot
+    policy
   ) =>
     Reflect.apply(value, undefined, [
       shelfX,
@@ -247,7 +245,7 @@ export function readAddFoldedClothes(value: unknown): BuilderAddFoldedClothesFn 
       parentGroup,
       maxHeight,
       maxDepth,
-      cfgSnapshot,
+      policy,
     ]);
   return addFoldedClothes;
 }

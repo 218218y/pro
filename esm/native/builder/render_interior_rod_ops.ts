@@ -26,8 +26,7 @@ type AddHangingClothesFn = (
   group: InteriorObjectLike,
   availableHeight: number,
   depthHint: HangingClothesDepthHint,
-  showContentsEnabled: boolean,
-  doorStyle: string | null | undefined
+  policy: { showContentsEnabled: boolean; doorStyle: string }
 ) => unknown;
 
 type RodConfigLike = {
@@ -204,6 +203,9 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
     }
 
     if (showContentsEnabled && enableHangingClothes && typeof addHangingClothes === 'function') {
+      if (typeof doorStyle !== 'string') {
+        throw new TypeError('[render_interior_rod_ops] doorStyle is required for hanging contents');
+      }
       let depthHint: HangingClothesDepthHint = hasStorageBarrier;
       let depthLimit = Infinity;
 
@@ -237,8 +239,10 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
         group,
         availableHeight,
         depthHint,
-        showContentsEnabled,
-        doorStyle
+        {
+          showContentsEnabled,
+          doorStyle,
+        }
       );
     }
 

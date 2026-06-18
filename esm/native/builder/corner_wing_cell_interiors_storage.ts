@@ -64,7 +64,12 @@ export function createCornerWingInteriorLayoutOps(
           cellRuntime.cellInnerW - CORNER_WING_DIMENSIONS.drawers.hangingClothesWidthClearanceM
         ),
         runtime.wingGroup,
-        distToBottom
+        distToBottom,
+        undefined,
+        {
+          showContentsEnabled: runtime.showContentsEnabled,
+          doorStyle: runtime.doorStyle,
+        }
       );
     }
   };

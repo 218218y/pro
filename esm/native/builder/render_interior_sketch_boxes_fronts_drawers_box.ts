@@ -63,7 +63,10 @@ function addSketchBoxExternalDrawerBox(
       drawerBoxObj,
       Math.max(0, opPlan.boxH - DRAWER_DIMENSIONS.external.contentsHeightClearanceM),
       opPlan.boxD,
-      context.input.cfgSnapshot
+      {
+        showContentsEnabled: context.input.showContentsEnabled === true,
+        cfgSnapshot: context.input.cfgSnapshot,
+      }
     );
   }
   groupNode.add?.(drawerBoxObj);

@@ -65,7 +65,7 @@ export function applySketchShelves(args: ApplySketchShelvesArgs): void {
     effectiveTopY,
     showContentsEnabled,
     addFoldedClothes,
-    cfgSnapshot,
+    contentsPolicy,
     currentShelfMat,
     currentBraceShelfMat,
     moduleKeyStr,
@@ -217,7 +217,7 @@ export function applySketchShelves(args: ApplySketchShelvesArgs): void {
           group,
           maxHeight,
           shelfDepth,
-          cfgSnapshot
+          contentsPolicy
         );
       }
     }

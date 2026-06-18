@@ -1097,10 +1097,17 @@ test('[builder-surface-family] visuals/module seams stay consolidated behind can
     /seededRandom|getRandomClothColor|showContents|showHanger|TorusGeometry|ExtrudeGeometry/
   );
   assert.match(contentsShared, /export function ensureVisualsContentsApp\(/);
-  assert.match(contentsShared, /export function resolveLibraryContents\(cfgSnapshot/);
+  assert.match(contentsShared, /export function resolveLibraryContents\(policy/);
   assert.match(contentsShared, /cfgSnapshot is required/);
   assert.doesNotMatch(contentsShared, /getCfg\(/);
-  assert.match(contentsFolded, /resolveLibraryContents\(cfgSnapshot\)/);
+  assert.match(contentsFolded, /resolveLibraryContents\(policy\)/);
+  assert.match(contentsShared, /export function resolveShowContents\(policy/);
+  assert.match(contentsShared, /export function resolveContentsDoorStyle\(policy/);
+  assert.match(contentsShared, /showContentsEnabled policy is required/);
+  assert.match(contentsShared, /doorStyle policy is required/);
+  assert.doesNotMatch(contentsShared, /getVisualsContentsBuildUI|getBuildUIFromPlatform/);
+  assert.match(contentsHanging, /resolveContentsDoorStyle\(policy\)/);
+  assert.match(contentsHanging, /resolveShowContents\(policy\)/);
   assert.match(contentsShared, /export function resolveShowHanger\(showHangerEnabled/);
   assert.match(contentsShared, /showHangerEnabled is required/);
   assert.doesNotMatch(contentsShared, /getUi\(/);

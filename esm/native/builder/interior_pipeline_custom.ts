@@ -66,6 +66,7 @@ export function applyCustomInteriorLayout(
         createBoard: input.createBoard,
         createRod: input.createRod,
         addFoldedClothes: input.addFoldedClothes,
+        showContentsEnabled: input.showContentsEnabled === true,
         effectiveBottomY: readNumber(input.effectiveBottomY, 0),
         effectiveTopY: readNumber(input.effectiveTopY, 0),
         localGridStep: readNumber(input.localGridStep, 0),

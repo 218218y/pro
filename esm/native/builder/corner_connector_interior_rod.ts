@@ -26,6 +26,7 @@ export function applyCornerConnectorAttachRod(params: CornerConnectorAttachRodFl
     startY,
     wingH,
     uiAny,
+    doorStyle,
     showHangerEnabled,
     showContentsEnabled,
     addOutlines,
@@ -132,7 +133,8 @@ export function applyCornerConnectorAttachRod(params: CornerConnectorAttachRodFl
           usableW,
           clothesGroup,
           distToBottom,
-          CORNER_CONNECTOR_INTERIOR_DIMENSIONS.attachRod.contentsDepthHintM
+          CORNER_CONNECTOR_INTERIOR_DIMENSIONS.attachRod.contentsDepthHintM,
+          { showContentsEnabled, doorStyle }
         );
       } catch (_) {
         reportErrorThrottled(App, _, { where: 'corner_ops_emit', op: 'L1775', throttleMs: 4000 });

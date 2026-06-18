@@ -59,6 +59,7 @@ export interface CornerOpsEmitContext extends UnknownRecord {
   __handlesMap: unknown;
   __doorSpecialMap: unknown;
   __individualColors: Record<string, unknown>;
+  doorStyle: string;
   getMap: (name: string) => unknown;
   getGroove: (partId: string) => unknown;
   getCurtain: (partId: string) => unknown;

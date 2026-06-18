@@ -5,7 +5,13 @@ import { createBuilderRenderInteriorCustomOps } from '../esm/native/builder/rend
 import { createBuilderRenderInteriorPresetOps } from '../esm/native/builder/render_interior_preset_ops.js';
 import { INTERIOR_FITTINGS_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
 
-type FoldedCall = { shelfY: number; maxHeight: number; maxDepth: number };
+type FoldedCall = {
+  shelfY: number;
+  maxHeight: number;
+  maxDepth: number;
+  showContentsEnabled: boolean;
+  isLibraryMode: boolean;
+};
 type BoardCall = {
   width: number;
   height: number;
@@ -50,11 +56,20 @@ function commonInput(calls: FoldedCall[], boardCalls: BoardCall[] = []) {
       _width: unknown,
       _group: unknown,
       maxHeight: unknown,
-      maxDepth: unknown
+      maxDepth: unknown,
+      policy: any
     ) => {
-      calls.push({ shelfY: Number(shelfY), maxHeight: Number(maxHeight), maxDepth: Number(maxDepth) });
+      calls.push({
+        shelfY: Number(shelfY),
+        maxHeight: Number(maxHeight),
+        maxDepth: Number(maxDepth),
+        showContentsEnabled: policy?.showContentsEnabled === true,
+        isLibraryMode: policy?.cfgSnapshot?.isLibraryMode === true,
+      });
       return null;
     },
+    cfg: { isLibraryMode: true },
+    showContentsEnabled: true,
     wardrobeGroup: { children: [] },
     gridDivisions: 6,
     effectiveBottomY: 0,
@@ -112,6 +127,8 @@ test('renderInteriorPresetOps passes real shelf-space clearance to folded/librar
   assert.equal(Number(firstShelfCall.maxHeight.toFixed(3)), 0.376);
   assert.ok(firstShelfCall.maxHeight < 0.5, 'first shelf should not fall back to the oversized default');
   assert.equal(Number(firstShelfCall.maxDepth.toFixed(2)), 0.45);
+  assert.equal(firstShelfCall.showContentsEnabled, true);
+  assert.equal(firstShelfCall.isLibraryMode, true);
 });
 
 test('renderInteriorPresetOps emits folded/library contents on the bottom base shelf', () => {
@@ -191,6 +208,8 @@ test('renderInteriorCustomOps accounts for the next custom shelf thickness in co
   assert.equal(Number(firstShelfCall.maxHeight.toFixed(3)), 0.367);
   assert.ok(firstShelfCall.maxHeight < 0.5, 'custom shelf contents should use measured clearance');
   assert.equal(Number(firstShelfCall.maxDepth.toFixed(2)), 0.45);
+  assert.equal(firstShelfCall.showContentsEnabled, true);
+  assert.equal(firstShelfCall.isLibraryMode, true);
 });
 
 test('renderInteriorCustomOps emits folded/library contents on the bottom base shelf', () => {
