@@ -23,10 +23,10 @@ This file is intentionally compact. It keeps only current decomposition guard fa
 - `canvas_picking_click_flow.ts` handle-assign flows now live in `services/canvas_picking_handle_assign_flow.ts`
 - `canvas_picking_click_flow.ts` none/screen-note door toggle flows now live in `services/canvas_picking_toggle_flow.ts`
 - `builder/build_visible_config_gates.ts` owns build-visible UI gates for persisted door-authoring config maps so resolver snapshots and scheduler fingerprints agree when groove/split/remove/hinge toggles are off
-- `builder/corner_config_readers.ts` owns corner-wing snapshot-backed config/map readers so wing, connector, carcass, door, drawer, and cornice corner flows consume the build `cfgSnapshot` instead of live `App.maps`
+- `builder/corner_config_readers.ts` owns corner-wing snapshot-backed config/map readers so wing, connector, carcass, door, drawer, and cornice corner flows require the build `cfgSnapshot` and never fall back to live builder/store config
 - `builder/corner_materials.ts` requires the corner build `cfgSnapshot` for material/color policy and no longer reads live builder config as a missing-snapshot fallback
 - `builder/visuals_chest_mode_config.ts` owns Chest Mode `cfgSnapshot` enforcement so `visuals_chest_mode_build.ts` and `visuals_chest_mode_materials.ts` consume the build snapshot instead of live `App.store`/map reads
-- `builder/handles_config_snapshot.ts` owns handle map snapshots so `handles_apply_shared.ts` and `handles_purge.ts` run a single config snapshot per handle pass instead of repeated live map reads
+- `builder/handles_config_snapshot.ts` owns required handle map snapshots so `handles_apply_shared.ts` and `handles_purge.ts` accept one explicit `cfgSnapshot` per handle pass, with no `cfg` alias, build-state lookup, or live-store fallback
 - `builder/material_color_lookup.ts` owns shared per-part color lookup for full builds and no-build material refreshes so split-door, corner-stack, shelf-group, and cornice paint policy stays aligned
 - `builder/material_selection.ts` owns global and per-part front material selection for full builds, no-build material refreshes, Chest Mode, and corner materials so saved/custom texture data comes from canonical config snapshots and is passed explicitly into material creation
 - `builder/material_selection.ts` and Design Tab saved-swatch selection resolve saved colors by canonical `savedColors` membership rather than the legacy `saved_` id prefix, so imported saved texture/color IDs stay build-visible and UI-actionable

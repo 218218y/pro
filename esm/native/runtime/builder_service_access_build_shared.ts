@@ -4,10 +4,11 @@ import type { BuildRequestMeta } from './builder_service_access_shared.js';
 
 export type ApplyBuilderHandlesOpts = {
   triggerRender?: boolean;
-  cfgSnapshot?: ConfigStateLike | UnknownRecord | null;
+  cfgSnapshot: ConfigStateLike | UnknownRecord;
 };
 
 export type RefreshBuilderHandlesOpts = {
+  cfgSnapshot: ConfigStateLike | UnknownRecord;
   purgeRemovedDoors?: boolean;
   triggerRender?: boolean;
   updateShadows?: boolean;
@@ -99,7 +100,12 @@ export type BuilderBuildProfileOpts = {
   force?: boolean;
 };
 
-const BUILDER_FOLLOW_THROUGH_META_KEYS = new Set(['purgeRemovedDoors', 'triggerRender', 'updateShadows']);
+const BUILDER_FOLLOW_THROUGH_META_KEYS = new Set([
+  'cfgSnapshot',
+  'purgeRemovedDoors',
+  'triggerRender',
+  'updateShadows',
+]);
 
 export function readBuilderBuildProfileValue(value: unknown): string | undefined {
   return typeof value === 'string' && value ? value : undefined;

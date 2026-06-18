@@ -523,7 +523,7 @@ test('[platform-runtime] app start and major callsites prefer canonical boot ent
   assert.match(threeTargets.handles, /runPlatformRenderFollowThrough\(App, \{ updateShadows: false \}\)/);
   assert.match(
     threeTargets.materialsApply,
-    /refreshBuilderHandles\(App, \{ triggerRender: true, updateShadows: false \}\)/
+    /refreshBuilderHandles\(App, \{[\s\S]*cfgSnapshot: colorContext\.cfg,[\s\S]*triggerRender: true,[\s\S]*updateShadows: false/
   );
   assert.match(threeTargets.finalize, /runBuilderPostBuildFollowThrough\((?:App|resolved\.App), \{/);
   assert.match(threeTargets.kernel, /createKernelInstallSupport\(App\)/);

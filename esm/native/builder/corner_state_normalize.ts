@@ -40,7 +40,6 @@ export function normalizeCornerWingState(args: {
   const __sketchMode = !!readRuntimeScalarOrDefaultFromApp(App, 'sketchMode', false);
   const stackMeta = resolveCornerWingStackMeta(meta);
   const configState = createCornerNormalizedConfigState({
-    App,
     cfgSnapshot: meta?.cfgSnapshot,
     uiAny,
     __stackKey: stackMeta.__stackKey,

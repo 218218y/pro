@@ -96,7 +96,7 @@ export function requestBuilderBuild(App: unknown, meta?: UnknownRecord): boolean
 
 export function refreshBuilderAfterDoorOps(
   App: unknown,
-  opts?: RefreshBuilderAfterDoorOpsOpts
+  opts: RefreshBuilderAfterDoorOpsOpts
 ): BuilderHandleRefreshResult {
   return refreshBuilderAfterDoorOpsRuntime(App, {
     ...opts,

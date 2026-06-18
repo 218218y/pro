@@ -82,7 +82,8 @@ function createSetup(overrides: Record<string, unknown> = {}) {
   const cornerGroup = new Group();
   const outlined: unknown[] = [];
   const ctx: any = {
-    App: { cfg: { isMultiColorMode: true } },
+    App: {},
+    __cfg: { isMultiColorMode: true },
     woodThick: 0.018,
     startY: 0.1,
     wingH: 2.1,

@@ -28,7 +28,7 @@ export type HandlesCacheLike = ValueRecord & {
 
 export type HandlesApplyOptions = {
   triggerRender?: boolean;
-  cfgSnapshot?: ConfigStateLike | null;
+  cfgSnapshot: ConfigStateLike;
 };
 
 export type HandlesSurfaceLike = ValueRecord & {
@@ -42,8 +42,8 @@ export type HandlesSurfaceLike = ValueRecord & {
     isDrawer: boolean,
     ctx?: CreateHandleMeshCtx
   ) => Object3DLike | null;
-  applyHandles?: (opts?: HandlesApplyOptions) => void;
-  purgeHandlesForRemovedDoors?: (forceEnabled: boolean) => void;
+  applyHandles?: (opts: HandlesApplyOptions) => void;
+  purgeHandlesForRemovedDoors?: (forceEnabled: boolean, cfgSnapshot: ConfigStateLike) => void;
 };
 
 export type RemoveDoorsFlagsLike = {

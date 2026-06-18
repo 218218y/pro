@@ -35,11 +35,11 @@ function hasDirtyTrackedMirrorSurfaces(App: unknown): boolean {
 function createFollowThroughHandleApplyOpts(
   opts?: BuilderPostBuildFollowThroughOpts | BuilderChestModeFollowThroughOpts | null
 ): ApplyBuilderHandlesOpts {
-  const out: ApplyBuilderHandlesOpts = { triggerRender: false };
-  if (opts && Object.prototype.hasOwnProperty.call(opts, 'cfgSnapshot')) {
-    out.cfgSnapshot = opts.cfgSnapshot;
+  const cfgSnapshot = opts?.cfgSnapshot;
+  if (!cfgSnapshot) {
+    throw new TypeError('[builder_service_access] cfgSnapshot is required when applying handles');
   }
-  return out;
+  return { triggerRender: false, cfgSnapshot };
 }
 
 export function runBuilderPostBuildFollowThroughRuntime(

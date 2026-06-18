@@ -2,7 +2,6 @@ import type { AppContainer, ConfigStateLike, KnownMapName, MapsByName } from '..
 import { buildDoorVisualLookupKeys, readDoorVisualMapValue } from '../features/door_visual_map_lookup.js';
 import { normalizeKnownMapSnapshot } from '../runtime/maps_access.js';
 import { asRecord } from '../runtime/record.js';
-import { getCfg } from './store_access.js';
 
 type ReadMapFn = typeof import('../runtime/maps_access.js').readMap;
 type ReadMapOrEmptyFn = typeof import('../runtime/maps_access.js').readMapOrEmpty;
@@ -46,14 +45,16 @@ function readScopedSnapshotValue(reader: SnapshotReader, partId: string): unknow
   return typeof scoped !== 'undefined' ? scoped : undefined;
 }
 
-export function readCornerConfigSnapshot(App: AppContainer, cfgSnapshot: unknown): ConfigStateLike {
-  return toConfigState(cfgSnapshot) || getCfg(App);
+export function requireCornerConfigSnapshot(cfgSnapshot: unknown): ConfigStateLike {
+  const cfg = toConfigState(cfgSnapshot);
+  if (!cfg) throw new TypeError('[corner_config_readers] cfgSnapshot is required');
+  return cfg;
 }
 
 export function readCornerConfigMap(cfgSnapshot: unknown, mapName: string): CornerConfigMap {
-  const cfg = toConfigState(cfgSnapshot);
+  const cfg = requireCornerConfigSnapshot(cfgSnapshot);
   const name = String(mapName || '');
-  if (!cfg || !isCornerConfigMapName(name)) return {};
+  if (!isCornerConfigMapName(name)) return {};
   return readMapValue(cfg, name) as CornerConfigMap;
 }
 
@@ -62,7 +63,7 @@ export function createCornerConfigMapReader(cfgSnapshot: unknown): (mapName: str
 }
 
 export function createCornerConfigGetter(cfgSnapshot: unknown): (App: AppContainer) => ConfigStateLike {
-  const cfg = toConfigState(cfgSnapshot) || ({} as ConfigStateLike);
+  const cfg = requireCornerConfigSnapshot(cfgSnapshot);
   return () => cfg;
 }
 
@@ -99,5 +100,5 @@ export function createCornerCurtainReader(cfgSnapshot: unknown): SnapshotReader 
 }
 
 export function isCornerMultiColorModeEnabled(cfgSnapshot: unknown): boolean {
-  return toConfigState(cfgSnapshot)?.isMultiColorMode === true;
+  return requireCornerConfigSnapshot(cfgSnapshot).isMultiColorMode === true;
 }

@@ -66,7 +66,11 @@ export function applyMaterials(appIn: unknown) {
   if (!changed) return true;
 
   try {
-    refreshBuilderHandles(App, { triggerRender: true, updateShadows: false });
+    refreshBuilderHandles(App, {
+      cfgSnapshot: colorContext.cfg,
+      triggerRender: true,
+      updateShadows: false,
+    });
   } catch (error) {
     reportMaterialsApplySoft(App, 'applyMaterials.refreshHandles', error);
   }

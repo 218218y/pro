@@ -213,7 +213,10 @@ function enterHandleEditMode(app: AppContainer, modeOpts: UnknownRecord, cursor 
 
 function applyHandlesBestEffort(app: AppContainer): void {
   try {
-    refreshBuilderHandles(app, { purgeRemovedDoors: true });
+    refreshBuilderHandles(app, {
+      cfgSnapshot: getCfgSnap(app),
+      purgeRemovedDoors: true,
+    });
   } catch {
     // ignore
   }

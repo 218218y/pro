@@ -58,20 +58,12 @@ export function installBuilderCornerWing(App: unknown) {
       woodThick,
       startY,
       materials,
-      metaOrCtx,
-      ctxMaybe
+      meta
     ) => {
       const installContext = readInstallContext(modules);
-      return buildCornerWing(
-        mainW,
-        mainH,
-        mainD,
-        woodThick,
-        startY,
-        materials,
-        metaOrCtx,
-        ctxMaybe ?? { App: installContext.App }
-      );
+      return buildCornerWing(mainW, mainH, mainD, woodThick, startY, materials, meta, {
+        App: installContext.App,
+      });
     };
     return stableBuildCornerWing;
   });

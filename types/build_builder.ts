@@ -306,7 +306,7 @@ export interface BuilderCornerBuildMetaLike extends UnknownRecord {
   stackSplitEnabled?: boolean;
   stackOffsetZ?: number;
   shelfThick?: unknown;
-  cfgSnapshot?: ConfigStateLike | UnknownRecord | null;
+  cfgSnapshot: ConfigStateLike | UnknownRecord;
 }
 export interface BuilderBuildCornerWingCtxLike extends UnknownRecord {
   App?: unknown;
@@ -318,8 +318,7 @@ export type BuilderBuildCornerWingFn = (
   woodThick: number,
   startY: number,
   materials: BuilderBuildCornerWingMaterialsLike,
-  metaOrCtx?: BuilderCornerBuildMetaLike | BuilderBuildCornerWingCtxLike | null,
-  ctxMaybe?: BuilderBuildCornerWingCtxLike | null
+  meta: BuilderCornerBuildMetaLike
 ) => unknown;
 export type BuilderAddHangingClothesFn = (
   rodX: number,
@@ -808,7 +807,7 @@ export interface BuilderMaterialsServiceLike extends UnknownRecord {
 
 export interface BuilderHandlesApplyOptionsLike extends UnknownRecord {
   triggerRender?: boolean;
-  cfgSnapshot?: ConfigStateLike | UnknownRecord | null;
+  cfgSnapshot: ConfigStateLike | UnknownRecord;
 }
 
 export interface BuilderHandlesServiceLike extends UnknownRecord {
@@ -819,8 +818,11 @@ export interface BuilderHandlesServiceLike extends UnknownRecord {
     isLeftHinge: boolean,
     isDrawer: boolean
   ) => unknown;
-  applyHandles?: (opts?: BuilderHandlesApplyOptionsLike) => unknown;
-  purgeHandlesForRemovedDoors?: (forceEnabled: boolean) => unknown;
+  applyHandles?: (opts: BuilderHandlesApplyOptionsLike) => unknown;
+  purgeHandlesForRemovedDoors?: (
+    forceEnabled: boolean,
+    cfgSnapshot: ConfigStateLike | UnknownRecord
+  ) => unknown;
 }
 
 export interface BuilderRenderAdapterServiceLike extends UnknownRecord {}

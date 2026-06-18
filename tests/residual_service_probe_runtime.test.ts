@@ -50,9 +50,9 @@ test('residual slot access runtime: scene/project seams and chest-mode builder h
 
   assert.equal(getSceneViewServiceMaybe(App), sceneView);
   assert.equal(getProjectIoServiceMaybe(App), projectIO);
-  assert.equal(applyBuilderHandles(App), true);
+  assert.equal(applyBuilderHandles(App, { cfgSnapshot: {} }), true);
   assert.equal(finalizeBuilderRegistry(App), true);
-  assert.deepEqual(calls, [['handles', null], 'finalize']);
+  assert.deepEqual(calls, [['handles', { cfgSnapshot: {} }], 'finalize']);
 
   calls.length = 0;
   const built: unknown[] = [];
@@ -96,8 +96,8 @@ test('residual slot access runtime: applyBuilderHandles forwards render suppress
     },
   };
 
-  assert.equal(applyBuilderHandles(App, { triggerRender: false }), true);
-  assert.deepEqual(calls, [{ triggerRender: false }]);
+  assert.equal(applyBuilderHandles(App, { cfgSnapshot: {}, triggerRender: false }), true);
+  assert.deepEqual(calls, [{ cfgSnapshot: {}, triggerRender: false }]);
 });
 
 test('residual slot access runtime: post-build finalize uses canonical builder/platform seams and ignores legacy builder root aliases', () => {
@@ -150,13 +150,7 @@ test('residual slot access runtime: post-build finalize uses canonical builder/p
   });
 
   assert.equal(App.services.builder.buildUi, null);
-  assert.deepEqual(calls, [
-    'finalize',
-    'rebuildDrawerMeta',
-    ['handles', { triggerRender: false }],
-    ['prune', scene],
-    ['platform-render', true],
-  ]);
+  assert.deepEqual(calls, ['finalize', 'rebuildDrawerMeta', ['prune', scene], ['platform-render', true]]);
 });
 
 test('residual slot access runtime: materials apply uses canonical builder handles and platform render seams', () => {
@@ -220,7 +214,7 @@ test('residual slot access runtime: materials apply uses canonical builder handl
   assert.equal(targetMesh.material, appliedMaterial);
   assert.deepEqual(calls, [
     ['getMaterial', 'white'],
-    ['handles', { triggerRender: false }],
+    ['handles', { triggerRender: false, cfgSnapshot: {} }],
     ['platform-render', false],
   ]);
 });

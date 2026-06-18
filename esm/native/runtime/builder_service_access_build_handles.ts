@@ -13,13 +13,12 @@ import {
 } from './builder_service_access_build_shared.js';
 import { runBuilderRenderFollowThroughWhen } from './builder_service_access_build_render.js';
 
-export function applyBuilderHandles(App: unknown, opts?: ApplyBuilderHandlesOpts): boolean {
+export function applyBuilderHandles(App: unknown, opts: ApplyBuilderHandlesOpts): boolean {
   try {
     const handles = getBuilderHandlesService(App);
     const fn = handles && typeof handles.applyHandles === 'function' ? handles.applyHandles : null;
     if (!fn) return false;
-    if (opts && Object.keys(opts).length > 0) fn.call(handles, opts);
-    else fn.call(handles);
+    fn.call(handles, opts);
     return true;
   } catch (error) {
     reportError(App, error, {
@@ -31,7 +30,11 @@ export function applyBuilderHandles(App: unknown, opts?: ApplyBuilderHandlesOpts
   }
 }
 
-export function purgeBuilderHandlesForRemovedDoors(App: unknown, forceEnabled = true): boolean {
+export function purgeBuilderHandlesForRemovedDoors(
+  App: unknown,
+  forceEnabled: boolean,
+  cfgSnapshot: ApplyBuilderHandlesOpts['cfgSnapshot']
+): boolean {
   try {
     const handles = getBuilderHandlesService(App);
     const fn =
@@ -39,7 +42,7 @@ export function purgeBuilderHandlesForRemovedDoors(App: unknown, forceEnabled = 
         ? handles.purgeHandlesForRemovedDoors
         : null;
     if (!fn) return false;
-    fn.call(handles, !!forceEnabled);
+    fn.call(handles, !!forceEnabled, cfgSnapshot);
     return true;
   } catch (error) {
     reportError(App, error, {
@@ -53,11 +56,14 @@ export function purgeBuilderHandlesForRemovedDoors(App: unknown, forceEnabled = 
 
 export function refreshBuilderHandles(
   App: unknown,
-  opts?: RefreshBuilderHandlesOpts
+  opts: RefreshBuilderHandlesOpts
 ): BuilderHandleRefreshResult {
-  const appliedHandles = applyBuilderHandles(App, { triggerRender: false });
+  const appliedHandles = applyBuilderHandles(App, {
+    triggerRender: false,
+    cfgSnapshot: opts.cfgSnapshot,
+  });
   const purgedRemovedDoors = shouldPurgeRemovedDoors(opts)
-    ? purgeBuilderHandlesForRemovedDoors(App, true)
+    ? purgeBuilderHandlesForRemovedDoors(App, true, opts.cfgSnapshot)
     : false;
 
   const renderResult = runBuilderRenderFollowThroughWhen(

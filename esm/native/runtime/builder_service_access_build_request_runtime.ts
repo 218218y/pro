@@ -38,11 +38,11 @@ function readBuilderRequestBuildCallable(App: unknown): {
 }
 
 function createDoorOpsRefreshOpts(
-  opts: RefreshBuilderAfterDoorOpsOpts | undefined,
+  opts: RefreshBuilderAfterDoorOpsOpts,
   deferRenderFollowThrough: boolean
-): RefreshBuilderAfterDoorOpsOpts | undefined {
+): RefreshBuilderAfterDoorOpsOpts {
   if (!deferRenderFollowThrough) return opts;
-  return { ...(opts || {}), triggerRender: false };
+  return { ...opts, triggerRender: false };
 }
 
 export function readBuilderRequestBuildFn(App: unknown): RequestBuildCallable | null {
@@ -102,7 +102,7 @@ export function resolveBuilderBuildFollowThroughDecision(
 
 export function refreshBuilderAfterDoorOpsRuntime(
   App: unknown,
-  opts?: RefreshBuilderAfterDoorOpsOpts
+  opts: RefreshBuilderAfterDoorOpsOpts
 ): BuilderHandleRefreshResult & { requestedBuild: boolean } {
   const decision = resolveBuilderBuildFollowThroughDecision(App, opts, opts?.immediate);
   const refresh = refreshBuilderHandles(

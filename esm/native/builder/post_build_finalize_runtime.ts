@@ -87,7 +87,7 @@ export function runFinalizeBuildBestEffort(args: FinalizeBestEffortArgs): { App:
     clearBuildUi: true,
     triggerPlatformRender: true,
     updateShadows: true,
-    applyHandles: true,
+    applyHandles: resolved.cfgSnapshot !== null,
   });
   return { App: resolved.App };
 }

@@ -49,8 +49,8 @@ test('builder service access reports owner rejection without changing recovery r
 
   assert.equal(runBuilderBuildWardrobe(App, { ui: {} }), false);
   assert.equal(requestBuilderBuild(App, { source: 'unit' }), false);
-  assert.equal(applyBuilderHandles(App, { triggerRender: false }), false);
-  assert.equal(purgeBuilderHandlesForRemovedDoors(App, true), false);
+  assert.equal(applyBuilderHandles(App, { cfgSnapshot: {}, triggerRender: false }), false);
+  assert.equal(purgeBuilderHandlesForRemovedDoors(App, true, {}), false);
   assert.equal(finalizeBuilderRegistry(App), false);
 
   assert.deepEqual(

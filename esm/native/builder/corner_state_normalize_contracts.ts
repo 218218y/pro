@@ -13,7 +13,7 @@ export type CornerBuildMeta = {
   stackSplitUnifiedFrame?: boolean;
   stackOffsetZ?: number;
   shelfThick?: unknown;
-  cfgSnapshot?: ConfigStateLike | UnknownRecord | null;
+  cfgSnapshot: ConfigStateLike | UnknownRecord;
   [k: string]: unknown;
 };
 

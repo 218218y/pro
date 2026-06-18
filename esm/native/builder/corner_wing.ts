@@ -21,7 +21,6 @@ import {
   createCornerGrooveReader,
 } from './corner_config_readers.js';
 import {
-  hasAppCtx,
   resolveCornerWingServices,
   resolveCornerWingTHREE,
   type CornerBuildCtx,
@@ -29,26 +28,33 @@ import {
 } from './corner_wing_runtime.js';
 import { createCornerWingStableShadowApplier } from './corner_wing_shadows.js';
 
-import type { BuilderBuildCornerWingFn, BuilderCornerBuildMetaLike } from '../../../types';
+import type { BuilderCornerBuildMetaLike } from '../../../types';
 
-export const buildCornerWing: BuilderBuildCornerWingFn = (
+export const buildCornerWing = (
   mainW: number,
   mainH: number,
   mainD: number,
   woodThick: number,
   startY: number,
   materials: MaterialsLike,
-  metaOrCtx?: BuilderCornerBuildMetaLike | CornerBuildCtx | null,
+  meta: BuilderCornerBuildMetaLike,
   ctxMaybe?: CornerBuildCtx | null | undefined
-) => {
-  const ctx = hasAppCtx(metaOrCtx) ? metaOrCtx : ctxMaybe;
-  const meta: CornerBuildMeta | null = hasAppCtx(metaOrCtx) ? null : (metaOrCtx ?? null);
+): void => {
+  const ctx = ctxMaybe;
 
   const App = assertApp(ctx?.App ?? null, 'native/builder/corner_wing');
   const THREE = resolveCornerWingTHREE(App);
   const services = resolveCornerWingServices(App);
 
-  const state = normalizeCornerWingState({ App, mainW, mainH, mainD, woodThick, startY, meta });
+  const state = normalizeCornerWingState({
+    App,
+    mainW,
+    mainH,
+    mainD,
+    woodThick,
+    startY,
+    meta: meta as CornerBuildMeta,
+  });
   const readCornerMap = createCornerConfigMapReader(state.__cfg);
 
   const readers = {

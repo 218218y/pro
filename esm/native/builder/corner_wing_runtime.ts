@@ -38,10 +38,6 @@ export function asObj(v: unknown): ValueRecord | null {
   return isObj(v) ? v : null;
 }
 
-export function hasAppCtx(v: unknown): v is CornerBuildCtx {
-  return isObj(v) && Object.prototype.hasOwnProperty.call(v, 'App');
-}
-
 function isObject3DLike(value: unknown): value is Object3DLike {
   return (
     isObj(value) &&

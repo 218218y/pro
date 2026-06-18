@@ -216,7 +216,7 @@ export function createHandlesApplyRuntime(ctx: unknown): HandlesApplyRuntime {
 
   const __st = getBuildStateMaybe(App) || getState(App) || {};
   const __mode = (__st && __st.mode) || getMode(App) || { primary: 'none', opts: {} };
-  const handlesCfg = captureHandlesConfigSnapshot(App, ctx, __st);
+  const handlesCfg = captureHandlesConfigSnapshot(asRecord<ValueRecord>(ctx)?.cfgSnapshot);
   const __removeDoorModeId = getModeId('REMOVE_DOOR') || 'remove_door';
   const __isRemoveDoorMode = !!(__mode && __mode.primary === __removeDoorModeId);
   const __ui = (__st && __st.ui && typeof __st.ui === 'object' ? __st.ui : null) || getUi(App) || {};

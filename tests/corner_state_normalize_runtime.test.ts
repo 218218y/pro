@@ -65,7 +65,21 @@ test('normalizeCornerWingState seeds lower split config and scopes bottom remova
     mainD: 0.6,
     woodThick: 0.018,
     startY: 1.05,
-    meta: { stackKey: 'bottom', stackSplitEnabled: true, stackOffsetZ: 0.11 },
+    meta: {
+      stackKey: 'bottom',
+      stackSplitEnabled: true,
+      stackOffsetZ: 0.11,
+      cfgSnapshot: {
+        removedDoorsMap: {
+          removed_corner_pent_door_1_full: true,
+          removed_lower_corner_pent_door_2_full: true,
+        },
+        corner: {
+          layout: 'storage',
+          customData: { shelves: [true], rods: [true], storage: true },
+        },
+      },
+    },
   });
 
   assert.equal(state.__stackKey, 'bottom');
@@ -109,7 +123,18 @@ test('normalizeCornerWingState does not let top corner special width seed a miss
     mainD: 0.55,
     woodThick: 0.017,
     startY: 0,
-    meta: { stackKey: 'bottom', stackSplitEnabled: true },
+    meta: {
+      stackKey: 'bottom',
+      stackSplitEnabled: true,
+      cfgSnapshot: {
+        cornerConfiguration: {
+          layout: 'shelves',
+          specialDims: { baseWidthCm: 140, widthCm: 140, depthCm: 70 },
+          connectorSpecialDims: { widthCm: 115 },
+          modulesConfiguration: [{ specialDims: { baseWidthCm: 80, widthCm: 80 } }],
+        },
+      },
+    },
   });
 
   assert.equal(state.wingLengthCM, 120);
@@ -197,7 +222,7 @@ test('normalizeCornerWingState forces top split stack to drop the base and honor
     mainD: 0.55,
     woodThick: 0.018,
     startY: 1.2,
-    meta: { stackKey: 'top', stackSplitEnabled: true },
+    meta: { stackKey: 'top', stackSplitEnabled: true, cfgSnapshot: {} },
   });
 
   assert.equal(state.__sketchMode, true);
@@ -210,4 +235,22 @@ test('normalizeCornerWingState forces top split stack to drop the base and honor
   assert.ok(state.wingH >= 1.19);
   assert.equal(Array.isArray((App as any).render?.doorsArray), true);
   assert.equal(Array.isArray((App as any).render?.drawersArray), true);
+});
+
+test('normalizeCornerWingState rejects a missing config snapshot instead of reading App.store', () => {
+  const App = createApp({ config: { cornerConfiguration: { layout: 'storage' } } });
+
+  assert.throws(
+    () =>
+      normalizeCornerWingState({
+        App,
+        mainW: 2,
+        mainH: 2.2,
+        mainD: 0.6,
+        woodThick: 0.018,
+        startY: 0,
+        meta: null,
+      }),
+    /cfgSnapshot is required/
+  );
 });

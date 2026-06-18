@@ -1,7 +1,15 @@
 import { getModeId } from '../runtime/api.js';
 import { getScene, getWardrobeGroup } from '../runtime/render_access.js';
+import { asRecord } from '../runtime/record.js';
 import { getBuildStateMaybe, getMode, getState, getUi } from './store_access.js';
-import { appFromCtx, asNode, ensureHandlesSurface, getViewFlags, type NodeLike } from './handles_shared.js';
+import {
+  appFromCtx,
+  asNode,
+  ensureHandlesSurface,
+  getViewFlags,
+  type NodeLike,
+  type ValueRecord,
+} from './handles_shared.js';
 import { captureHandlesConfigSnapshot, createHandlesDoorRemovedReader } from './handles_config_snapshot.js';
 
 export function purgeHandlesForRemovedDoors(forceEnabled: boolean | unknown, ctx: unknown): void {
@@ -10,7 +18,7 @@ export function purgeHandlesForRemovedDoors(forceEnabled: boolean | unknown, ctx
 
   const __st = getBuildStateMaybe(App) || getState(App) || {};
   const __mode = (__st && __st.mode) || getMode(App) || { primary: 'none', opts: {} };
-  const handlesCfg = captureHandlesConfigSnapshot(App, ctx, __st);
+  const handlesCfg = captureHandlesConfigSnapshot(asRecord<ValueRecord>(ctx)?.cfgSnapshot);
   const __removeDoorModeId = getModeId('REMOVE_DOOR') || 'remove_door';
   const __isRemoveDoorMode = !!(__mode && __mode.primary === __removeDoorModeId);
   const __ui = (__st && __st.ui && typeof __st.ui === 'object' ? __st.ui : null) || getUi(App) || {};

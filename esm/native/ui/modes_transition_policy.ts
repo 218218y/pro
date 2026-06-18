@@ -18,6 +18,7 @@ import {
   setHardCloseUntil,
   setModePrimary,
   readConfigLooseScalarFromApp,
+  readConfigStateFromApp,
 } from '../services/api.js';
 
 import type {
@@ -221,6 +222,7 @@ function scheduleRemoveDoorRefresh(App: AppLike, nextMode: string): void {
     if (nextMode !== removeDoorModeId) return;
     getBrowserTimers(App).setTimeout(() => {
       refreshBuilderAfterDoorOps(App, {
+        cfgSnapshot: readConfigStateFromApp(App),
         source: 'ui.enterPrimaryMode:removeDoor',
         immediate: true,
         force: true,

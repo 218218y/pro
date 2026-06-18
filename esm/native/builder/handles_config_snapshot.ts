@@ -1,9 +1,7 @@
 import { normalizeKnownMapSnapshot, isSplitBottomEnabledInMap } from '../runtime/maps_access.js';
-import { asRecord } from '../runtime/record.js';
-import { getBuildStateMaybe, getCfg } from './store_access.js';
 import { readConfigState, type ValueRecord } from './handles_shared.js';
 
-import type { AppContainer, BuildStateLike, ConfigStateLike } from '../../../types';
+import type { ConfigStateLike } from '../../../types';
 
 export type HandlesConfigSnapshot = {
   cfg: ConfigStateLike;
@@ -11,16 +9,6 @@ export type HandlesConfigSnapshot = {
   removedDoorsMap: ValueRecord;
   splitDoorsBottomMap: ValueRecord;
 };
-
-function readContextConfigSnapshot(ctx: unknown): ConfigStateLike | null {
-  const rec = asRecord<ValueRecord>(ctx);
-  return readConfigState(rec?.cfgSnapshot) || readConfigState(rec?.cfg) || null;
-}
-
-function readBuildStateConfigSnapshot(state: unknown): ConfigStateLike | null {
-  const rec = asRecord<BuildStateLike>(state);
-  return readConfigState(rec?.config);
-}
 
 function normalizeHandlesMap(value: unknown): ValueRecord {
   return normalizeKnownMapSnapshot('handlesMap', value) as ValueRecord;
@@ -34,16 +22,9 @@ function normalizeSplitDoorsBottomMap(value: unknown): ValueRecord {
   return normalizeKnownMapSnapshot('splitDoorsBottomMap', value) as ValueRecord;
 }
 
-export function captureHandlesConfigSnapshot(
-  App: AppContainer,
-  ctx?: unknown,
-  buildState?: unknown
-): HandlesConfigSnapshot {
-  const cfg =
-    readContextConfigSnapshot(ctx) ||
-    readBuildStateConfigSnapshot(buildState) ||
-    readBuildStateConfigSnapshot(getBuildStateMaybe(App)) ||
-    getCfg(App);
+export function captureHandlesConfigSnapshot(cfgSnapshot: unknown): HandlesConfigSnapshot {
+  const cfg = readConfigState(cfgSnapshot);
+  if (!cfg) throw new TypeError('[handles_config_snapshot] cfgSnapshot is required');
 
   return {
     cfg,

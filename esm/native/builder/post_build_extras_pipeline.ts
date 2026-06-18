@@ -16,7 +16,7 @@ import { reportError } from '../runtime/api.js';
 import { readRuntimeScalarOrDefault } from '../runtime/runtime_selectors.js';
 import { getStackKeyFromFlags, getStackSplitFromFlags } from '../features/stack_split/index.js';
 
-import type { BuildContextLike } from '../../../types/index.js';
+import type { BuildContextLike, BuilderCornerBuildMetaLike } from '../../../types/index.js';
 
 import { applyPostBuildDimensions } from './post_build_dimensions.js';
 import {
@@ -188,7 +188,7 @@ export function applyPostBuildExtras(input: BuildContextLike) {
       );
     }
     const resolvedShelfThick = Number(shelfThick);
-    const __cornerWingMeta = stackSplitActive
+    const __cornerWingMeta: BuilderCornerBuildMetaLike | null = stackSplitActive
       ? __stackKey === 'top'
         ? {
             stackKey: 'top',

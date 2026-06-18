@@ -36,15 +36,19 @@ function createApp() {
   return { App, calls };
 }
 
+function readConfigSnapshot(App: any): Record<string, unknown> {
+  return App.store.getState().config;
+}
+
 test('handles apply triggers a platform render by default', () => {
   const { App, calls } = createApp();
-  applyHandles({ App });
+  applyHandles({ App, cfgSnapshot: readConfigSnapshot(App) });
   assert.deepEqual(calls, [['platform-render', false]]);
 });
 
 test('handles apply can suppress the trailing platform render for batched callers', () => {
   const { App, calls } = createApp();
-  applyHandles({ App, triggerRender: false });
+  applyHandles({ App, cfgSnapshot: readConfigSnapshot(App), triggerRender: false });
   assert.deepEqual(calls, []);
 });
 
@@ -77,7 +81,7 @@ test('handles apply falls back to ensureRenderLoop when triggerRender is unavail
     },
   };
 
-  applyHandles({ App });
+  applyHandles({ App, cfgSnapshot: readConfigSnapshot(App) });
   assert.deepEqual(calls, [['ensureRenderLoop']]);
 });
 
@@ -213,7 +217,7 @@ test('handles apply uses stored manual positions when placing external drawer ha
     meta: {},
   });
 
-  applyHandles({ App, triggerRender: false });
+  applyHandles({ App, cfgSnapshot: readConfigSnapshot(App), triggerRender: false });
 
   const drawerGroup = App.render.drawersArray[0].group as FakeGroup3D;
   const handleGroup = drawerGroup.children.find(child => child.userData.__kind === 'handle');
@@ -241,7 +245,7 @@ test('handles apply runtime captures one canonical config snapshot for handle ma
     meta: {},
   });
 
-  const runtime = createHandlesApplyRuntime({ App });
+  const runtime = createHandlesApplyRuntime({ App, cfgSnapshot: readConfigSnapshot(App) });
   handlesMap.d1 = 'none';
 
   assert.equal(runtime.getHandleType('d1'), 'standard');
@@ -317,7 +321,7 @@ test('handles apply does not treat external drawer boxes as separate drawer fron
     meta: {},
   });
 
-  applyHandles({ App, triggerRender: false });
+  applyHandles({ App, cfgSnapshot: readConfigSnapshot(App), triggerRender: false });
 
   const handleHosts: FakeGroup3D[] = [];
   wardrobeGroup.traverse(node => {
@@ -330,4 +334,9 @@ test('handles apply does not treat external drawer boxes as separate drawer fron
     ['d1_draw_0'],
     'only the drawer-front owner should receive a handle; the drawer box must stay handle-free'
   );
+});
+
+test('handles apply rejects a missing config snapshot instead of reading live build/store state', () => {
+  const { App } = createApp();
+  assert.throws(() => applyHandles({ App }), /cfgSnapshot is required/);
 });

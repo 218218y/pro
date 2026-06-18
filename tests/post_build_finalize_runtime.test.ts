@@ -37,7 +37,7 @@ test('post-build finalize runtime: best-effort normalization strips non-function
   assert.equal(normalized.rebuildDrawerMeta, null);
 });
 
-test('post-build finalize runtime: best-effort follow-through keeps canonical builder seams', () => {
+test('post-build finalize runtime: best-effort follow-through skips handles when no build snapshot exists', () => {
   const calls: unknown[] = [];
   const scene = { tag: 'scene' };
   const App: any = {
@@ -81,11 +81,5 @@ test('post-build finalize runtime: best-effort follow-through keeps canonical bu
   });
 
   assert.equal(App.services.builder.buildUi, null);
-  assert.deepEqual(calls, [
-    'finalize',
-    'rebuildDrawerMeta',
-    ['handles', { triggerRender: false }],
-    ['prune', scene],
-    ['platform-render', true],
-  ]);
+  assert.deepEqual(calls, ['finalize', 'rebuildDrawerMeta', ['prune', scene], ['platform-render', true]]);
 });

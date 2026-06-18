@@ -1,4 +1,4 @@
-import type { AppContainer, ConfigStateLike, RemovedDoorsMap } from '../../../types/index.js';
+import type { ConfigStateLike, RemovedDoorsMap } from '../../../types/index.js';
 import {
   cloneCornerConfigurationForLowerSnapshot,
   readCornerConfigurationFromConfigSnapshot,
@@ -7,7 +7,7 @@ import {
 import type { CornerBuildUI, CornerConfigRecord } from './corner_state_normalize_contracts.js';
 import { asRemovedDoorsMap, ensureCornerConfigRecord } from './corner_state_normalize_shared.js';
 import { isRecord } from './corner_geometry_plan.js';
-import { readCornerConfigSnapshot } from './corner_config_readers.js';
+import { requireCornerConfigSnapshot } from './corner_config_readers.js';
 
 export type CornerNormalizedConfigState = {
   __cfg: ConfigStateLike;
@@ -18,14 +18,13 @@ export type CornerNormalizedConfigState = {
 };
 
 export function createCornerNormalizedConfigState(args: {
-  App: AppContainer;
-  cfgSnapshot?: ConfigStateLike | null | undefined;
+  cfgSnapshot: unknown;
   uiAny: CornerBuildUI;
   __stackKey: 'top' | 'bottom';
   __stackSplitEnabled: boolean;
 }): CornerNormalizedConfigState {
-  const { App, cfgSnapshot, __stackKey, __stackSplitEnabled } = args;
-  const __cfg = readCornerConfigSnapshot(App, cfgSnapshot);
+  const { cfgSnapshot, __stackKey, __stackSplitEnabled } = args;
+  const __cfg = requireCornerConfigSnapshot(cfgSnapshot);
 
   const __stackScopePartKey = (partId: unknown): string => {
     const pid = String(partId || '');

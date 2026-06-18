@@ -294,7 +294,9 @@ test('[builder-surface-family] orchestration owners stay named-only and request-
   assertMatchesAll(
     assert,
     materialsApplyOwner,
-    [/refreshBuilderHandles\(App, \{ triggerRender: true, updateShadows: false \}\)/],
+    [
+      /refreshBuilderHandles\(App, \{[\s\S]*cfgSnapshot: colorContext\.cfg,[\s\S]*triggerRender: true,[\s\S]*updateShadows: false/,
+    ],
     'materials apply canonical handle/render follow-through'
   );
   assertLacksAll(
@@ -929,6 +931,7 @@ test('[builder-surface-family] corner owners stay thin and delegate to dedicated
   const cornerOpsOwner = read('esm/native/builder/corner_ops_emit.ts');
   const connectorOwner = read('esm/native/builder/corner_connector_emit.ts');
   const wingOwner = read('esm/native/builder/corner_wing.ts');
+  const cornerConfigReaders = read('esm/native/builder/corner_config_readers.ts');
   const wingExtensionOwner = read('esm/native/builder/corner_wing_extension_emit.ts');
   const connectorSpecial = read('esm/native/builder/corner_connector_interior_special.ts');
 
@@ -947,6 +950,8 @@ test('[builder-surface-family] corner owners stay thin and delegate to dedicated
   assert.match(wingOwner, /corner_wing_shadows\.js/);
   assert.match(wingOwner, /corner_wing_install\.js/);
   assert.doesNotMatch(wingOwner, /export default\s+/);
+  assert.match(cornerConfigReaders, /cfgSnapshot is required/);
+  assert.doesNotMatch(cornerConfigReaders, /getCfg\(/);
 
   assert.match(wingExtensionOwner, /corner_wing_carcass_emit\.js/);
   assert.match(wingExtensionOwner, /corner_wing_extension_cells\.js/);
@@ -986,6 +991,8 @@ test('[builder-surface-family] visuals/module seams stay consolidated behind can
   assert.match(handlesOwner, /handles_apply_drawers\.js/);
   assert.match(handlesConfig, /export function captureHandlesConfigSnapshot\(/);
   assert.match(handlesConfig, /export function createHandlesDoorRemovedReader\(/);
+  assert.match(handlesConfig, /cfgSnapshot is required/);
+  assert.doesNotMatch(handlesConfig, /getBuildStateMaybe|getCfg\(|rec\?\.cfg\b/);
   assert.match(handlesShared, /handles_config_snapshot\.js/);
   assert.doesNotMatch(handlesShared, /readMapOrEmpty\(/);
   assert.doesNotMatch(handlesShared, /getCfg\(/);

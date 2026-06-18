@@ -53,10 +53,11 @@ export function installBuilderHandlesV7(App: unknown) {
       createHandleMeshV7(type, w, hh, isLeftHinge, isDrawer, { App: A });
   });
   installStableSurfaceMethod(h, 'applyHandles', HANDLES_APPLY_CANONICAL_KEY, () => {
-    return (opts?: HandlesApplyOptions) => applyHandles({ App: A, ...(opts || {}) });
+    return (opts: HandlesApplyOptions) => applyHandles({ App: A, ...opts });
   });
   installStableSurfaceMethod(h, 'purgeHandlesForRemovedDoors', HANDLES_PURGE_CANONICAL_KEY, () => {
-    return (forceEnabled: boolean) => purgeHandlesForRemovedDoors(forceEnabled, { App: A });
+    return (forceEnabled: boolean, cfgSnapshot: HandlesApplyOptions['cfgSnapshot']) =>
+      purgeHandlesForRemovedDoors(forceEnabled, { App: A, cfgSnapshot });
   });
 
   try {
