@@ -32,6 +32,7 @@ export type CornerWingCarcassCtx = {
   cornerConnectorEnabled: boolean;
   __mirrorX: number;
   __stackKey: string;
+  __stackSplitUnifiedFrame: boolean;
   stackOffsetY: number;
   baseType: string;
   baseH: number;

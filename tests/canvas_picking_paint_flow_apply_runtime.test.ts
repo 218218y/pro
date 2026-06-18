@@ -214,8 +214,6 @@ test('paint grouped/corner target keeps a unified stack-split corner wing frame 
   for (const [foundPartId, activeStack] of [
     ['corner_wing_ceil', 'bottom'],
     ['corner_cell_top_c1', 'bottom'],
-    ['corner_floor', 'top'],
-    ['corner_floor_c1', 'top'],
   ] as const) {
     const state = createManualState();
     const handled = applyGroupedOrCornerPaintTarget({
@@ -229,6 +227,25 @@ test('paint grouped/corner target keeps a unified stack-split corner wing frame 
     assert.equal(handled, true, `${activeStack}:${foundPartId}`);
     assert.deepEqual(state.colors, {}, `${activeStack}:${foundPartId}`);
     assert.deepEqual(resolvePaintTargetKeys(foundPartId, activeStack, targetScope), []);
+  }
+
+  for (const [foundPartId, expectedKey] of [
+    ['corner_floor', 'corner_stack_mid_floor'],
+    ['corner_floor_blind', 'corner_stack_mid_floor_blind'],
+    ['corner_floor_c1', 'corner_stack_mid_floor_c1'],
+  ] as const) {
+    const state = createManualState();
+    const handled = applyGroupedOrCornerPaintTarget({
+      state,
+      foundPartId,
+      activeStack: 'top',
+      paintSelection: 'walnut',
+      targetScope,
+    });
+
+    assert.equal(handled, true, `top:${foundPartId}`);
+    assert.deepEqual(state.colors, { [expectedKey]: 'walnut' }, `top:${foundPartId}`);
+    assert.deepEqual(resolvePaintTargetKeys(foundPartId, 'top', targetScope), [expectedKey]);
   }
 });
 

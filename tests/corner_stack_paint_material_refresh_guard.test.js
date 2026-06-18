@@ -20,10 +20,9 @@ test('corner no-build paint refresh is stack-aware for bottom stack materials', 
 
 test('corner no-build paint refresh inherits __wpStack through the traversal so child meshes use the right scoped material key', () => {
   assert.match(traversal, /const ownStackKey = readStackKey\(userData\.__wpStack\) \|\| parentStackKey;/);
-  assert.match(
-    traversal,
-    /stack\.push\(\{ obj: child, partId: ownPartId, stackKey: ownStackKey, skip: skipSubtree \}\);/
-  );
+  assert.match(traversal, /const ownStackSplitUnifiedFrame =/);
+  assert.match(traversal, /const effectiveUserData =/);
+  assert.match(traversal, /stackSplitUnifiedFrame: ownStackSplitUnifiedFrame,/);
   assert.match(traversal, /const shelfDefaultKey = userData\.__wpShelfGroupPartId/);
-  assert.match(traversal, /const material = getPartMat\(ownPartId, ownStackKey, userData\);/);
+  assert.match(traversal, /const material = getPartMat\(ownPartId, ownStackKey, effectiveUserData\);/);
 });

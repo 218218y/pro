@@ -138,7 +138,13 @@ export function addCornerHexHorizontalBoard(args: {
   const board = new three.Mesh(geometry, args.material);
   board.position.set(0, args.y, 0);
   board.rotation.x = Math.PI / 2;
-  board.userData = { partId: args.partId, moduleIndex: args.cell.key, kind: 'hexCellHorizontal' };
+  board.userData = {
+    partId: args.partId,
+    moduleIndex: args.cell.key,
+    kind: 'hexCellHorizontal',
+    __wpStack: ctx.__stackKey,
+    __wpStackSplitUnifiedFrame: ctx.__stackSplitUnifiedFrame,
+  };
   board.castShadow = true;
   board.receiveShadow = true;
   ctx.addOutlines(board);

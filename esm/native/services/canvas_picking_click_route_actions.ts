@@ -4,6 +4,7 @@ import { tryHandleCanvasDoorCustomSplitScreenRemoveClick } from './canvas_pickin
 import { tryHandleCanvasPaintClick } from './canvas_picking_paint_flow.js';
 import { tryHandleCanvasHandleAssignClick } from './canvas_picking_handle_assign_flow.js';
 import { resolveNearbyShelfPaintTarget } from './canvas_picking_shelf_paint_proximity.js';
+import { resolveNonDoorHoverTargetFromObject } from './canvas_picking_generic_paint_hover_target.js';
 import { handleCanvasDoorToggleClick } from './canvas_picking_toggle_flow.js';
 import { getCamera, getWardrobeGroup } from '../runtime/render_access.js';
 import type { CanvasPickingClickRouteArgs } from './canvas_picking_click_route_shared.js';
@@ -73,6 +74,10 @@ export function tryHandleCanvasPickingActionRoute(args: CanvasPickingClickRouteA
   }
 
   const wardrobeGroup = __isPaintMode ? getWardrobeGroup(App) : null;
+  const directPartPaintTarget =
+    __isPaintMode && foundPartId
+      ? resolveNonDoorHoverTargetFromObject(App, primaryHitObject, foundPartId)
+      : null;
   const nearbyShelfPaintTarget =
     __isPaintMode && !foundPartId && wardrobeGroup
       ? resolveNearbyShelfPaintTarget({
@@ -82,16 +87,17 @@ export function tryHandleCanvasPickingActionRoute(args: CanvasPickingClickRouteA
           primaryHitPoint: primaryHitPoint || null,
         })
       : null;
-  const paintFoundPartId = nearbyShelfPaintTarget?.partId || foundPartId;
+  const paintHitTarget = nearbyShelfPaintTarget || directPartPaintTarget;
+  const paintFoundPartId = paintHitTarget?.partId || foundPartId;
 
   if (
     tryHandleCanvasPaintClick({
       App,
       foundPartId: paintFoundPartId,
       effectiveDoorId,
-      activeStack: nearbyShelfPaintTarget?.stackKey || __activeStack,
+      activeStack: paintHitTarget?.stackKey || __activeStack,
       isPaintMode: __isPaintMode,
-      primaryHitObject: nearbyShelfPaintTarget?.object || primaryHitObject,
+      primaryHitObject: paintHitTarget?.object || primaryHitObject,
       doorHitObject,
       primaryHitPoint,
       doorHitPoint,

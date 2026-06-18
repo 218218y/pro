@@ -116,6 +116,23 @@ function isCornerWingSideHitPart(partId: string): boolean {
   return partId === 'corner_wing_side_left' || partId === 'corner_wing_side_right';
 }
 
+function resolveUnifiedCornerWingMiddleFloorKey(
+  partIdRaw: string,
+  activeStack: 'top' | 'bottom',
+  targetScope?: CanvasPaintTargetScope | null
+): string[] | null {
+  if (!targetScope?.stackSplitUnifiedFrame || activeStack !== 'top') return null;
+  const normalized = unscopedLowerPartId(partIdRaw);
+  const partId = normalized.partId;
+  if (partId === 'corner_stack_mid_floor') return [partIdRaw];
+  if (partId === 'corner_stack_mid_floor_blind') return [partIdRaw];
+  if (/^corner_stack_mid_floor_c\d+$/.test(partId)) return [partIdRaw];
+  if (partId === 'corner_floor') return ['corner_stack_mid_floor'];
+  if (partId === 'corner_floor_blind') return ['corner_stack_mid_floor_blind'];
+  const cellMatch = /^corner_floor_c(\d+)$/.exec(partId);
+  return cellMatch?.[1] ? [`corner_stack_mid_floor_c${cellMatch[1]}`] : null;
+}
+
 function resolveUnifiedCornerWingFrameKeys(
   partIdRaw: string,
   activeStack: 'top' | 'bottom',
@@ -173,6 +190,8 @@ export function resolveUnifiedCornerFramePaintTargetKeys(
 ): string[] | null {
   const partId = typeof foundPartId === 'string' ? String(foundPartId) : '';
   if (!partId) return null;
+  const middleFloorKeys = resolveUnifiedCornerWingMiddleFloorKey(partId, activeStack, targetScope);
+  if (middleFloorKeys !== null) return middleFloorKeys;
   const wingKeys = resolveUnifiedCornerWingFrameKeys(partId, activeStack, targetScope, false);
   if (wingKeys !== null) return wingKeys;
   const pentagonKeys = resolveUnifiedCornerPentagonFrameKeys(partId, activeStack, targetScope, false);
@@ -187,6 +206,8 @@ export function resolveUnifiedCornerFramePaintPreviewKeys(
 ): string[] | null {
   const partId = typeof foundPartId === 'string' ? String(foundPartId) : '';
   if (!partId) return null;
+  const middleFloorKeys = resolveUnifiedCornerWingMiddleFloorKey(partId, activeStack, targetScope);
+  if (middleFloorKeys !== null) return middleFloorKeys;
   const wingKeys = resolveUnifiedCornerWingFrameKeys(partId, activeStack, targetScope, true);
   if (wingKeys !== null) return wingKeys;
   const pentagonKeys = resolveUnifiedCornerPentagonFrameKeys(partId, activeStack, targetScope, true);

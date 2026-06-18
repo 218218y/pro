@@ -148,3 +148,101 @@ test('paint click snaps to a nearby thin shelf when the direct hit is only the m
   assert.equal(applied.length, 1);
   assert.equal(applied[0]?.[shelfPartId], '#775533');
 });
+
+test('paint click uses the directly hit object stack instead of the globally active stack', () => {
+  const applied: Record<string, unknown>[] = [];
+  const maps: Record<string, Record<string, unknown>> = {
+    individualColors: {},
+    curtainMap: {},
+    doorSpecialMap: {},
+    doorStyleMap: {},
+    mirrorLayoutMap: {},
+  };
+
+  const wardrobeGroup = { children: [] as unknown[], userData: { partId: 'root' } };
+  const upperFloor = createBoxObject('corner_floor', { width: 1.1, height: 0.018, depth: 0.45, y: 1.8 });
+  (upperFloor.userData as Record<string, unknown>).__wpStack = 'top';
+  (upperFloor.userData as Record<string, unknown>).__wpStackSplitUnifiedFrame = false;
+  upperFloor.parent = wardrobeGroup;
+  wardrobeGroup.children.push(upperFloor);
+
+  const App = {
+    store: {
+      getState() {
+        return { config: {}, ui: {}, mode: { primary: 'paint' }, runtime: {}, meta: {} };
+      },
+      patch() {
+        return undefined;
+      },
+    },
+    render: {
+      camera: {},
+      wardrobeGroup,
+    },
+    services: {
+      tools: {
+        getPaintColor() {
+          return '#445566';
+        },
+      },
+    },
+    actions: {
+      colors: {
+        applyPaint(nextColors: Record<string, unknown>) {
+          maps.individualColors = { ...nextColors };
+          applied.push({ ...nextColors });
+        },
+      },
+    },
+    maps: {
+      getMap(name: string) {
+        return maps[name] || {};
+      },
+    },
+  } as any;
+
+  const handled = tryHandleCanvasPickingActionRoute({
+    App,
+    ndcX: 0,
+    ndcY: 0,
+    raycaster: {} as never,
+    mouse: {} as never,
+    modeState: createModeState(),
+    hitState: {
+      intersects: [{ object: upperFloor as never, point: { x: 0.1, y: 1.8, z: 0.03 } }],
+      foundPartId: 'corner_floor',
+      foundModuleIndex: null,
+      foundModuleStack: 'top',
+      effectiveDoorId: null,
+      foundDrawerId: null,
+      primaryHitObject: upperFloor as never,
+      doorHitObject: null,
+      doorHitGroup: null,
+      primaryHitPoint: { x: 0.1, y: 1.8, z: 0.03 },
+      doorHitPoint: null,
+      moduleHitY: null,
+      doorHitY: null,
+      primaryHitY: 1.8,
+      hitIdentity: null,
+    },
+    moduleRefs: {
+      __activeModuleKey: 0,
+      __activeStack: 'bottom',
+      __isBottomStack: true,
+      __ensureConfigRefForKey: () => null,
+      __patchConfigForKey: () => undefined,
+      __getActiveConfigRef: () => null,
+      __ensureCornerCellConfigRef: () => null,
+    },
+  });
+
+  assert.equal(handled, true);
+  assert.equal(applied.length, 1);
+  assert.deepEqual(applied[0], {
+    corner_ceil: '#445566',
+    corner_wing_side_left: '#445566',
+    corner_wing_side_right: '#445566',
+    corner_floor: '#445566',
+  });
+  assert.equal(applied[0]?.lower_corner_floor, undefined);
+});

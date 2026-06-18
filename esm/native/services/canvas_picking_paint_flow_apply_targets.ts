@@ -27,7 +27,7 @@ function readOwnPaintValue(map: Record<string, unknown>, key: string): unknown {
   return Object.prototype.hasOwnProperty.call(map, key) ? map[key] : undefined;
 }
 
-function readUniformLegacyUnifiedColor(
+function readUniformArchivedUnifiedColor(
   colors: Record<string, unknown>,
   requiredKeys: string[],
   absentKeys: string[]
@@ -45,8 +45,8 @@ function readUniformLegacyUnifiedColor(
   return color;
 }
 
-function pruneLegacyUnifiedCornerFrameLowerKeys(colors: Record<string, unknown>): void {
-  const wingColor = readUniformLegacyUnifiedColor(
+function pruneArchivedUnifiedCornerFrameLowerKeys(colors: Record<string, unknown>): void {
+  const wingColor = readUniformArchivedUnifiedColor(
     colors,
     [
       'corner_ceil',
@@ -65,7 +65,7 @@ function pruneLegacyUnifiedCornerFrameLowerKeys(colors: Record<string, unknown>)
     delete colors.lower_corner_floor;
   }
 
-  const pentagonColor = readUniformLegacyUnifiedColor(
+  const pentagonColor = readUniformArchivedUnifiedColor(
     colors,
     [
       'corner_pent_ceil',
@@ -100,7 +100,7 @@ export function applyGroupedOrCornerPaintTarget(args: {
   );
   if (unifiedCornerFrameKeys !== null) {
     const colors = state.ensureColors();
-    pruneLegacyUnifiedCornerFrameLowerKeys(colors);
+    pruneArchivedUnifiedCornerFrameLowerKeys(colors);
     if (unifiedCornerFrameKeys.length) {
       toggleGroupedPaint(colors, unifiedCornerFrameKeys, paintSelection);
     }
@@ -139,7 +139,7 @@ export function applyGroupedOrCornerPaintTarget(args: {
     foundPartId.startsWith('corner_floor_c')
   ) {
     const colors = state.ensureColors();
-    pruneLegacyUnifiedCornerFrameLowerKeys(colors);
+    pruneArchivedUnifiedCornerFrameLowerKeys(colors);
     toggleGroupedPaint(
       colors,
       __wp_scopeCornerPartKeysForStack(CORNER_WING_FRAME_PARTS, activeStack),
@@ -157,7 +157,7 @@ export function applyGroupedOrCornerPaintTarget(args: {
   }
   if (CORNER_PENTAGON_FRAME_PARTS.includes(foundPartId)) {
     const colors = state.ensureColors();
-    pruneLegacyUnifiedCornerFrameLowerKeys(colors);
+    pruneArchivedUnifiedCornerFrameLowerKeys(colors);
     toggleGroupedPaint(
       colors,
       __wp_scopeCornerPartKeysForStack(CORNER_PENTAGON_FRAME_PARTS, activeStack),

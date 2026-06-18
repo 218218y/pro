@@ -29,6 +29,7 @@ export function applyCornerWingCarcassFloorAndBase(
     baseType,
     baseH,
     __stackKey,
+    __stackSplitUnifiedFrame,
     __individualColors,
     __cfg,
     getCornerMat,
@@ -39,8 +40,17 @@ export function applyCornerWingCarcassFloorAndBase(
   const { cornerCells } = locals;
   const { readNumFrom, readStrFrom } = helpers;
 
-  const __floorMat = getCornerMat('corner_floor', bodyMat);
+  const __frameFloorMat = getCornerMat('corner_floor', bodyMat);
+  const __useUnifiedTopMiddleFloorKey = __stackSplitUnifiedFrame && __stackKey === 'top';
   const __floorY = startY + woodThick / 2 + CORNER_WING_DIMENSIONS.connector.shellWallHeightClearanceM;
+
+  const __resolveFloorPartId = (partId: string): string => {
+    if (!__useUnifiedTopMiddleFloorKey) return partId;
+    if (partId === 'corner_floor') return 'corner_stack_mid_floor';
+    if (partId === 'corner_floor_blind') return 'corner_stack_mid_floor_blind';
+    const cellMatch = /^corner_floor_c(\d+)$/.exec(partId);
+    return cellMatch?.[1] ? `corner_stack_mid_floor_c${cellMatch[1]}` : partId;
+  };
 
   const __addFloorSeg = (
     segW: number,
@@ -58,9 +68,17 @@ export function applyCornerWingCarcassFloorAndBase(
     );
     const floorD = __hz.depth;
     const w = Math.max(PLINTH_DIMENSIONS.minSegmentWidthM, segW + PLINTH_DIMENSIONS.segmentWidthEpsilonM);
-    const f = new THREE.Mesh(new THREE.BoxGeometry(w, woodThick, floorD), __floorMat);
+    const paintPartId = __resolveFloorPartId(partId);
+    const floorMat = paintPartId === partId ? __frameFloorMat : getCornerMat(paintPartId, bodyMat);
+    const f = new THREE.Mesh(new THREE.BoxGeometry(w, woodThick, floorD), floorMat);
     f.position.set(centerX, __floorY, __hz.z);
-    f.userData = { partId, moduleIndex: moduleIndex || 'corner', kind: 'floorSeg', __wpStack: __stackKey };
+    f.userData = {
+      partId: paintPartId,
+      moduleIndex: moduleIndex || 'corner',
+      kind: 'floorSeg',
+      __wpStack: __stackKey,
+      __wpStackSplitUnifiedFrame: __stackSplitUnifiedFrame,
+    };
     wingGroup.add(f);
   };
 
@@ -79,15 +97,17 @@ export function applyCornerWingCarcassFloorAndBase(
         const idx = Math.floor(readNumFrom(cell, 'idx', 0));
         const pid = `corner_floor_c${idx}`;
         const key = readStrFrom(cell, 'key', 'corner');
+        const paintPartId = __resolveFloorPartId(pid);
+        const floorMat = paintPartId === pid ? __frameFloorMat : getCornerMat(paintPartId, bodyMat);
         if (
           !cell.__hexCellGeometry ||
           !addCornerHexHorizontalBoard({
             params,
             metrics,
             cell,
-            partId: pid,
+            partId: paintPartId,
             y: __floorY,
-            material: __floorMat,
+            material: floorMat,
           })
         ) {
           __addFloorSeg(w, cx, d, pid, key);
@@ -102,8 +122,17 @@ export function applyCornerWingCarcassFloorAndBase(
       wingD,
       CORNER_WING_DIMENSIONS.panels.minWallDepthM
     );
-    const floor = new THREE.Mesh(new THREE.BoxGeometry(floorW, woodThick, __hz.depth), __floorMat);
+    const paintPartId = __resolveFloorPartId('corner_floor');
+    const floorMat = paintPartId === 'corner_floor' ? __frameFloorMat : getCornerMat(paintPartId, bodyMat);
+    const floor = new THREE.Mesh(new THREE.BoxGeometry(floorW, woodThick, __hz.depth), floorMat);
     floor.position.set(floorW / 2, __floorY, __hz.z);
+    floor.userData = {
+      partId: paintPartId,
+      moduleIndex: 'corner',
+      kind: 'floorSeg',
+      __wpStack: __stackKey,
+      __wpStackSplitUnifiedFrame: __stackSplitUnifiedFrame,
+    };
     wingGroup.add(floor);
   }
 
