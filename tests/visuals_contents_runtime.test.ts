@@ -11,6 +11,7 @@ import {
   getCachedExtrudeGeometry,
   getCachedRoundedBoxGeometry,
   resolveLibraryContents,
+  resolveShowHanger,
 } from '../esm/native/builder/visuals_contents_shared.ts';
 import { CONTENT_VISUAL_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
 
@@ -198,6 +199,15 @@ test('visuals_contents library policy requires and reads only the explicit confi
   assert.throws(
     () => resolveLibraryContents(undefined as never),
     /\[visuals_contents\] cfgSnapshot is required/
+  );
+});
+
+test('visuals_contents hanger policy requires and reads only the explicit build flag', () => {
+  assert.equal(resolveShowHanger(true), true);
+  assert.equal(resolveShowHanger(false), false);
+  assert.throws(
+    () => resolveShowHanger(undefined as never),
+    /\[visuals_contents\] showHangerEnabled is required/
   );
 });
 
@@ -471,11 +481,11 @@ test('visuals_contents geometry cache absorbs sub-millimeter decorative jitter',
   assert.equal(firstBox.userData.__sharedVisualContentGeometry, true);
 });
 
-test('visuals_contents realistic hanger respects showHanger override and scales to narrow modules', () => {
-  const { App, outlined } = createApp({ buildUI: { showHanger: false }, ui: { showHanger: true } });
+test('visuals_contents realistic hanger consumes the explicit showHanger flag and scales to narrow modules', () => {
+  const { App, outlined } = createApp({ buildUI: { showHanger: false }, ui: { showHanger: false } });
   const parent = new FakeGroup();
 
-  addRealisticHanger(App, 0.1, 1.0, -0.1, parent as any, 0.18);
+  addRealisticHanger(App, 0.1, 1.0, -0.1, parent as any, 0.18, true);
 
   assert.equal(parent.children.length, 1);
   const hangerGroup = parent.children[0];
@@ -487,4 +497,8 @@ test('visuals_contents realistic hanger respects showHanger override and scales 
   assert.equal(hangerGroup.position.x, 0.1);
   assert.equal(hangerGroup.position.y, 0.945);
   assert.equal(hangerGroup.position.z, -0.1);
+
+  const disabledParent = new FakeGroup();
+  addRealisticHanger(App, 0, 1, 0, disabledParent as any, 0.18, false);
+  assert.equal(disabledParent.children.length, 0);
 });

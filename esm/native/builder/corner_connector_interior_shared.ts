@@ -21,8 +21,8 @@ export type AddRealisticHangerLike = (
   rodY: number,
   rodZ: number,
   parentGroup: GroupLike,
-  moduleWidth?: number,
-  enabledOverride?: boolean
+  moduleWidth: number | undefined,
+  showHangerEnabled: boolean
 ) => unknown;
 export type AddHangingClothesLike = (
   rodX: number,

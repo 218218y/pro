@@ -3,7 +3,6 @@ import { getBuildUIFromPlatform } from '../runtime/platform_access.js';
 import { ensureBuilderService, getBuilderAddOutlines } from '../runtime/builder_service_access.js';
 import { readRuntimeScalarOrDefaultFromApp } from '../runtime/runtime_selectors.js';
 import { assertThreeViaDeps } from '../runtime/three_access.js';
-import { getUi } from './store_access.js';
 
 import type {
   AppContainer,
@@ -99,15 +98,11 @@ export function resolveLibraryContents(cfgSnapshot: ConfigStateLike): boolean {
   return cfgSnapshot.isLibraryMode === true;
 }
 
-export function resolveShowHanger(App: AppContainer): boolean {
-  try {
-    const ui = getUi(App) || {};
-    if (typeof ui.showHanger !== 'undefined') return !!ui.showHanger;
-    const buildUI = getVisualsContentsBuildUI(App);
-    return buildUI && typeof buildUI.showHanger !== 'undefined' ? !!buildUI.showHanger : false;
-  } catch {
-    return false;
+export function resolveShowHanger(showHangerEnabled: boolean): boolean {
+  if (typeof showHangerEnabled !== 'boolean') {
+    throw new TypeError('[visuals_contents] showHangerEnabled is required');
   }
+  return showHangerEnabled;
 }
 
 export const seededRandom = (function () {

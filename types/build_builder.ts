@@ -346,8 +346,8 @@ export type BuilderAddRealisticHangerFn = (
   rodY: number,
   rodZ: number,
   parentGroup: Object3DLike,
-  moduleWidth?: number,
-  enabledOverride?: boolean
+  moduleWidth: number | undefined,
+  showHangerEnabled: boolean
 ) => unknown;
 export type BuilderCalculateModuleStructureFn = (
   doorsCount: unknown,

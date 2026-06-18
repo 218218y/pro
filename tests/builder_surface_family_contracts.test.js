@@ -1101,6 +1101,10 @@ test('[builder-surface-family] visuals/module seams stay consolidated behind can
   assert.match(contentsShared, /cfgSnapshot is required/);
   assert.doesNotMatch(contentsShared, /getCfg\(/);
   assert.match(contentsFolded, /resolveLibraryContents\(cfgSnapshot\)/);
+  assert.match(contentsShared, /export function resolveShowHanger\(showHangerEnabled/);
+  assert.match(contentsShared, /showHangerEnabled is required/);
+  assert.doesNotMatch(contentsShared, /getUi\(/);
+  assert.match(contentsHanger, /resolveShowHanger\(showHangerEnabled\)/);
   assert.match(contentsHanging, /export const addHangingClothes/);
   assert.match(contentsFolded, /export const addFoldedClothes/);
   assert.match(contentsHanger, /export const addRealisticHanger/);

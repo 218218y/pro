@@ -305,3 +305,23 @@ test('module loop runtime resolvers fail fast when createBoard is missing', () =
 
   assert.throws(() => resolveModuleLoopRuntimeResolvers(ctx), /\[builder\/module_loop\] Missing createBoard/);
 });
+
+test('module loop runtime resolvers preserve explicit content snapshots and hanger flags', () => {
+  const foldedCalls: unknown[][] = [];
+  const hangerCalls: unknown[][] = [];
+  const ctx = createCtx({
+    fns: {
+      addFoldedClothes: (...args: unknown[]) => foldedCalls.push(args),
+      addRealisticHanger: (...args: unknown[]) => hangerCalls.push(args),
+    },
+  });
+  const runtime = resolveModuleLoopRuntimeResolvers(ctx);
+  const parentGroup = {} as any;
+  const cfgSnapshot = { isLibraryMode: true };
+
+  runtime.addFoldedClothes?.(1, 2, 3, 4, parentGroup, 5, 6, cfgSnapshot);
+  runtime.addRealisticHanger?.(1, 2, 3, parentGroup, 4, false);
+
+  assert.equal(foldedCalls[0]?.[7], cfgSnapshot);
+  assert.equal(hangerCalls[0]?.[5], false);
+});

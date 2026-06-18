@@ -14,14 +14,13 @@ export const addRealisticHanger: AppAwareAddRealisticHangerFn = (
   rodZ,
   parentGroup,
   moduleWidth,
-  enabledOverride
+  showHangerEnabled
 ) => {
   App = ensureVisualsContentsApp(App);
   const THREE = ensureVisualsContentsTHREE(App);
   const addOutlines = (mesh: unknown) => addVisualsContentsOutlines(mesh, App);
 
-  if (enabledOverride === false) return;
-  if (enabledOverride !== true && !resolveShowHanger(App)) return;
+  if (!resolveShowHanger(showHangerEnabled)) return;
 
   const dims = CONTENT_VISUAL_DIMENSIONS.hanger;
   const hangerGroup = new THREE.Group();

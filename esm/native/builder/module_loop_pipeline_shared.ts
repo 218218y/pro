@@ -195,8 +195,8 @@ export function readAddRealisticHanger(value: unknown): BuilderAddRealisticHange
     rodZ,
     parentGroup,
     moduleWidth,
-    enabledOverride
-  ) => Reflect.apply(value, undefined, [rodX, rodY, rodZ, parentGroup, moduleWidth, enabledOverride]);
+    showHangerEnabled
+  ) => Reflect.apply(value, undefined, [rodX, rodY, rodZ, parentGroup, moduleWidth, showHangerEnabled]);
   return addRealisticHanger;
 }
 
@@ -236,8 +236,19 @@ export function readAddFoldedClothes(value: unknown): BuilderAddFoldedClothesFn 
     width,
     parentGroup,
     maxHeight,
-    maxDepth
-  ) => Reflect.apply(value, undefined, [shelfX, shelfY, shelfZ, width, parentGroup, maxHeight, maxDepth]);
+    maxDepth,
+    cfgSnapshot
+  ) =>
+    Reflect.apply(value, undefined, [
+      shelfX,
+      shelfY,
+      shelfZ,
+      width,
+      parentGroup,
+      maxHeight,
+      maxDepth,
+      cfgSnapshot,
+    ]);
   return addFoldedClothes;
 }
 

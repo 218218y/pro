@@ -47,7 +47,9 @@ export function createCornerWingInteriorLayoutOps(
         cellRuntime.cellInnerCenterX,
         yPos,
         cellRuntime.__fullDepthCenterZ,
-        runtime.wingGroup
+        runtime.wingGroup,
+        cellRuntime.cellInnerW,
+        runtime.showHangerEnabled
       );
     }
 

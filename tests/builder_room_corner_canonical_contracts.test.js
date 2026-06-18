@@ -70,7 +70,7 @@ test('corner special interior owner derives folded-clothes placement from canoni
   assert.match(apply, /const plans = createPentagonTopContentsPlan\(\{/);
   assert.match(
     apply,
-    /emitFoldedClothesPlans\(plans, cornerGroup, emitFoldedClothes, reportErrorThrottled, App\);/
+    /emitFoldedClothesPlans\(plans, cornerGroup, emitFoldedClothes, reportErrorThrottled, App, cfgSnapshot\);/
   );
 });
 

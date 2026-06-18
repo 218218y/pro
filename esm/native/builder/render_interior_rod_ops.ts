@@ -200,7 +200,7 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
     group.add(rod);
 
     if (showHangerEnabled && enableSingleHanger && typeof addRealisticHanger === 'function') {
-      addRealisticHanger(internalCenterX, yPos, internalZ, group, innerW, true);
+      addRealisticHanger(internalCenterX, yPos, internalZ, group, innerW, showHangerEnabled);
     }
 
     if (showContentsEnabled && enableHangingClothes && typeof addHangingClothes === 'function') {
