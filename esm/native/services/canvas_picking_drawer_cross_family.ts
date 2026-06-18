@@ -278,6 +278,54 @@ function coerceCrossDrawerModuleKey(value: unknown): ModuleKey | 'corner' | null
   return null;
 }
 
+function readSketchInternalDrawerIdFromPartId(partId: string, moduleKey: unknown): string {
+  const prefix = `div_int_sketch_${String(moduleKey)}_`;
+  if (partId.startsWith(prefix)) return partId.slice(prefix.length);
+  const shortPrefix = 'div_int_sketch_';
+  if (!partId.startsWith(shortPrefix)) return '';
+  const suffix = partId.slice(shortPrefix.length);
+  const splitAt = suffix.indexOf('_');
+  return splitAt >= 0 ? suffix.slice(splitAt + 1) : suffix;
+}
+
+function readHoverModuleKey(
+  hover: UnknownRecord | null,
+  toModuleKey: (value: unknown) => ModuleKey | 'corner' | null
+) {
+  if (!hover) return null;
+  return toModuleKey(hover.hostModuleKey ?? hover.moduleKey);
+}
+
+function readHoverIsBottom(hover: UnknownRecord | null): boolean {
+  if (!hover) return false;
+  return hover.hostIsBottom != null ? !!hover.hostIsBottom : !!hover.isBottom;
+}
+
+function isMatchingRecentSketchInternalRemoveHover(args: {
+  hover: UnknownRecord | null;
+  tool: string;
+  moduleKey: ModuleKey | 'corner' | null;
+  isBottom: boolean;
+  drawerId: string;
+  toModuleKey: (value: unknown) => ModuleKey | 'corner' | null;
+  now?: number;
+  maxAgeMs?: number;
+}): boolean {
+  const hover = args.hover;
+  if (!hover || !args.tool || !args.drawerId) return false;
+  if (readString(hover.tool) !== args.tool) return false;
+  if (readString(hover.kind) !== 'drawers') return false;
+  if (readString(hover.op) !== 'remove') return false;
+  if (readString(hover.removeId) !== args.drawerId) return false;
+  if (readHoverModuleKey(hover, args.toModuleKey) !== args.moduleKey) return false;
+  if (readHoverIsBottom(hover) !== !!args.isBottom) return false;
+
+  const tsRaw = hover.ts;
+  const ts = typeof tsRaw === 'number' ? tsRaw : Number(tsRaw);
+  if (!Number.isFinite(ts)) return false;
+  return (args.now ?? Date.now()) - ts <= (args.maxAgeMs ?? 900);
+}
+
 export function tryRemoveSketchExternalDrawerByDirectHit(args: {
   App: AppContainer;
   intersects: RaycastHitLike[];
@@ -309,6 +357,56 @@ export function tryRemoveSketchExternalDrawerByDirectHit(args: {
         hit.sketchBoxId || undefined,
         hit.partId
       );
+    },
+    createCanvasPickingConfigStructuralPatchMeta(args.source)
+  );
+  return true;
+}
+
+export function tryRemoveSketchInternalDrawerByMatchingHoverDirectHit(args: {
+  App: AppContainer;
+  intersects: RaycastHitLike[];
+  activeModuleKey: ModuleKey | 'corner' | null;
+  isBottom: boolean;
+  tool: string;
+  hover: UnknownRecord | null;
+  toModuleKey: (value: unknown) => ModuleKey | 'corner' | null;
+  patchConfigForKey: PatchConfigForKeyFn;
+  source: string;
+}): boolean {
+  const hit = findDirectCrossDrawerHitInIntersects(args.App, args.intersects || [], 'sketch_internal');
+  if (!hit) return false;
+
+  if (
+    hit.moduleIndex &&
+    args.activeModuleKey != null &&
+    !sameModuleKey(hit.moduleIndex, args.activeModuleKey)
+  ) {
+    return false;
+  }
+
+  const targetModuleKey = args.activeModuleKey ?? coerceCrossDrawerModuleKey(hit.moduleIndex);
+  if (targetModuleKey == null) return false;
+
+  const drawerId = readSketchInternalDrawerIdFromPartId(hit.partId, targetModuleKey);
+  if (!drawerId) return false;
+  if (
+    !isMatchingRecentSketchInternalRemoveHover({
+      hover: args.hover,
+      tool: args.tool,
+      moduleKey: targetModuleKey,
+      isBottom: args.isBottom,
+      drawerId,
+      toModuleKey: args.toModuleKey,
+    })
+  ) {
+    return false;
+  }
+
+  args.patchConfigForKey(
+    targetModuleKey,
+    (cfg: ModuleConfigLike) => {
+      removeSketchInternalDrawerFromConfig(cfg, hit.partId);
     },
     createCanvasPickingConfigStructuralPatchMeta(args.source)
   );

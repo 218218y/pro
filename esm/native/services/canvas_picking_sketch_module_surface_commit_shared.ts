@@ -28,6 +28,8 @@ export type ResolveSketchBoxGeometryFn = (args: SketchBoxGeometryArgs) => Sketch
 export type CommitSketchModuleSurfaceToolArgs = {
   App?: AppContainer;
   cfg: RecordMap;
+  moduleKey?: unknown;
+  isBottomStack?: boolean;
   tool: string;
   hoverOk: boolean;
   hoverRec: RecordMap;

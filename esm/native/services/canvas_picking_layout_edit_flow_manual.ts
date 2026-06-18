@@ -14,6 +14,7 @@ import { tryHandleManualLayoutSketchToolClick } from './canvas_picking_manual_la
 import { readActiveManualTool } from './canvas_picking_manual_tool_access.js';
 import { firstRenderableHitIsSketchFreeBox } from './canvas_picking_sketch_free_box_hit_policy.js';
 import { createCanvasPickingConfigStructuralPatchMeta } from './canvas_picking_config_patch_meta.js';
+import { blockRemovableSideContentBuildIfModuleSideMissing } from './canvas_picking_removable_part_remove_constraints.js';
 import {
   fillManualLayoutShelves,
   type ManualLayoutShelfFillPlan,
@@ -25,6 +26,7 @@ import {
 } from './canvas_picking_manual_layout_config_ops.js';
 import {
   type CanvasLayoutEditClickArgs,
+  asRecord,
   readGridBounds,
   readGridInfo,
   readHitPointY,
@@ -81,6 +83,18 @@ function toastManualLayoutSkippedShelves(App: CanvasLayoutEditClickArgs['App'], 
 
 function toastManualLayoutShelfCollision(App: CanvasLayoutEditClickArgs['App']): void {
   __wp_toast(App, 'לא ניתן לבנות מדף במיקום זה, כי הוא מתנגש במגירות לפי סקיצה קיימות.', 'error');
+}
+
+function willManualRodClickAdd(args: {
+  configRef: Record<string, unknown> | null | undefined;
+  savedDivs: number;
+  currentToolDivs: number;
+  arrayIdx: number;
+}): boolean {
+  if (!args.configRef?.isCustom || args.savedDivs !== args.currentToolDivs) return true;
+  const customData = asRecord(args.configRef.customData);
+  const rods = Array.isArray(customData?.rods) ? customData.rods : [];
+  return !rods[args.arrayIdx];
 }
 
 export function tryHandleCanvasManualLayoutClick(args: CanvasLayoutEditClickArgs): boolean {
@@ -180,6 +194,18 @@ export function tryHandleCanvasManualLayoutClick(args: CanvasLayoutEditClickArgs
       divisions: currentToolDivs,
     });
     if (arrayIdx == null) return;
+
+    if (
+      manualTool === 'rod' &&
+      willManualRodClickAdd({ configRef, savedDivs, currentToolDivs, arrayIdx }) &&
+      blockRemovableSideContentBuildIfModuleSideMissing({
+        App,
+        moduleKey: __activeModuleKey ?? foundModuleIndex,
+        isBottomStack: __isBottomStack,
+      })
+    ) {
+      return;
+    }
 
     const shelfResultRef: { current: ManualLayoutShelfToggleResult | null } = { current: null };
     __patchConfigForKey(

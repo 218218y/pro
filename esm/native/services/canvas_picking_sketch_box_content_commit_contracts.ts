@@ -1,4 +1,4 @@
-import type { UnknownRecord } from '../../../types';
+import type { AppContainer, UnknownRecord } from '../../../types';
 import type { SketchModuleBoxLike } from './canvas_picking_manual_layout_sketch_contracts.js';
 import type { ManualLayoutSketchHoverHost } from './canvas_picking_manual_layout_sketch_hover_state.js';
 
@@ -7,6 +7,7 @@ export type SketchBoxToggleHoverMode = 'none' | 'free-toggle' | 'manual-toggle';
 export type SketchBoxToggleContentKind = 'drawers' | 'ext_drawers' | 'regular_ext_drawers';
 
 export type CommitSketchModuleBoxContentArgs = {
+  App?: AppContainer | null;
   cfg?: RecordMap | null;
   box: SketchModuleBoxLike;
   boxId?: string | null;

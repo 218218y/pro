@@ -45,6 +45,7 @@ import {
   resolveSketchFreeBoxGeometry,
 } from './canvas_picking_sketch_free_boxes.js';
 import { createCanvasPickingModulesStructuralPatchMeta } from './canvas_picking_modules_patch_meta.js';
+import { blockRemovableSideContentBuildIfSketchBoxSideMissing } from './canvas_picking_removable_part_remove_constraints.js';
 import {
   pickSketchBoxSegment,
   pickSketchBoxVerticalSegment,
@@ -1240,6 +1241,20 @@ function commitPresetLayoutHover(args: {
     (cfg: RecordMap) => {
       const box = findSketchModuleBoxById(ensureSketchModuleBoxes(cfg), boxId, { freePlacement: true });
       if (!box) return;
+      if (
+        rodYNorms.length > 0 &&
+        blockRemovableSideContentBuildIfSketchBoxSideMissing({
+          App: args.App,
+          cfg,
+          box,
+          moduleKey: args.host.moduleKey,
+          isBottomStack: args.host.isBottom,
+          freePlacement: true,
+        })
+      ) {
+        return;
+      }
+
       const shelves = ensureSketchBoxContentList(box, 'shelves') as RecordMap[];
       const rods = ensureSketchBoxContentList(box, 'rods') as RecordMap[];
       const storageBarriers = ensureSketchBoxContentList(box, 'storageBarriers') as RecordMap[];

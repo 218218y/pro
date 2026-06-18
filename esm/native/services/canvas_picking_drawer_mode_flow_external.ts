@@ -12,6 +12,7 @@ import type { ModuleKey, PatchConfigForKeyFn } from './canvas_picking_drawer_mod
 import { asInternalGridInfo } from './canvas_picking_drawer_mode_flow_shared.js';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
 import { tryCommitSketchBoxRegularExternalDrawersHover } from './canvas_picking_regular_ext_drawers_free_box.js';
+import { blockRemovableSideContentBuildIfModuleSideMissing } from './canvas_picking_removable_part_remove_constraints.js';
 
 export function tryHandleExternalDrawerModeClick(args: {
   App: AppContainer;
@@ -51,6 +52,15 @@ export function tryHandleExternalDrawerModeClick(args: {
 
       if (drawerType === 'shoe') {
         const targetHasShoe = !cfg.hasShoeDrawer;
+        if (
+          targetHasShoe &&
+          blockRemovableSideContentBuildIfModuleSideMissing({
+            App,
+            moduleKey: targetModuleKey,
+            isBottomStack: !!args.isBottomStack,
+          })
+        )
+          return;
         if (targetHasShoe && blockDrawerBuildInHexCell(App, cfg)) return;
         if (
           targetHasShoe &&
@@ -70,6 +80,15 @@ export function tryHandleExternalDrawerModeClick(args: {
         const currentCount = cfg.extDrawersCount || 0;
         const target = drawerCount >= 1 && drawerCount <= 5 ? drawerCount : 1;
         const nextCount = currentCount === target ? 0 : target;
+        if (
+          nextCount > 0 &&
+          blockRemovableSideContentBuildIfModuleSideMissing({
+            App,
+            moduleKey: targetModuleKey,
+            isBottomStack: !!args.isBottomStack,
+          })
+        )
+          return;
         if (nextCount > 0 && blockDrawerBuildInHexCell(App, cfg)) return;
         if (
           nextCount > 0 &&

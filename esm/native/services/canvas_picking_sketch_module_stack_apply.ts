@@ -6,6 +6,10 @@ import {
 } from './canvas_picking_manual_layout_sketch_hover_intent.js';
 import { __wp_toast } from './canvas_picking_core_helpers.js';
 import {
+  blockRemovableSideContentBuildIfModuleSideMissing,
+  blockRemovableSideContentBuildIfSketchBoxSideMissing,
+} from './canvas_picking_removable_part_remove_constraints.js';
+import {
   HEX_CELL_DRAWER_ADD_BLOCKED_MESSAGE,
   shouldBlockDrawerBuildInHexCell,
 } from '../features/hex_cell/index.js';
@@ -106,6 +110,47 @@ function sketchStackFitsTarget(args: {
   }).fits;
 }
 
+function blockSketchBoxStackCommitIfRemovedSide(args: {
+  App: AppContainer;
+  cfg: RecordMap;
+  box: RecordMap;
+  hoverHost: ManualLayoutSketchHoverHost;
+  writeSketchHover: CommitSketchModuleStackToolArgs['writeSketchHover'];
+}): boolean {
+  if (
+    !blockRemovableSideContentBuildIfSketchBoxSideMissing({
+      App: args.App,
+      cfg: args.cfg,
+      box: args.box,
+      moduleKey: args.hoverHost.moduleKey,
+      isBottomStack: args.hoverHost.isBottom,
+      freePlacement: false,
+    })
+  ) {
+    return false;
+  }
+  args.writeSketchHover(args.App, null);
+  return true;
+}
+
+function blockSketchStackCommitIfRemovedFrameSide(args: {
+  App: AppContainer;
+  hoverHost: ManualLayoutSketchHoverHost;
+  writeSketchHover: CommitSketchModuleStackToolArgs['writeSketchHover'];
+}): boolean {
+  if (
+    !blockRemovableSideContentBuildIfModuleSideMissing({
+      App: args.App,
+      moduleKey: args.hoverHost.moduleKey,
+      isBottomStack: args.hoverHost.isBottom,
+    })
+  ) {
+    return false;
+  }
+  args.writeSketchHover(args.App, null);
+  return true;
+}
+
 function blockSketchStackCommitIfHexCell(args: {
   App: AppContainer;
   cfg: RecordMap;
@@ -173,6 +218,30 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
     if (!box) return true;
     if (
       boxContentHover?.op !== 'remove' &&
+      blockSketchBoxStackCommitIfRemovedSide({
+        App: args.App,
+        cfg: args.cfg,
+        box,
+        hoverHost: args.hoverHost,
+        writeSketchHover: args.writeSketchHover,
+      })
+    ) {
+      return true;
+    }
+    if (
+      boxContentHover?.op !== 'remove' &&
+      blockSketchBoxStackCommitIfRemovedSide({
+        App: args.App,
+        cfg: args.cfg,
+        box,
+        hoverHost: args.hoverHost,
+        writeSketchHover: args.writeSketchHover,
+      })
+    ) {
+      return true;
+    }
+    if (
+      boxContentHover?.op !== 'remove' &&
       blockSketchStackCommitIfHexCell({
         App: args.App,
         cfg: args.cfg,
@@ -206,6 +275,7 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
       return true;
     }
     const nextHover = commitSketchModuleBoxContent({
+      App: args.App,
       cfg: args.cfg,
       box,
       boxId: hoverBoxId,
@@ -257,6 +327,7 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
       return true;
     }
     const nextHover = commitSketchModuleBoxContent({
+      App: args.App,
       cfg: args.cfg,
       box,
       boxId: hoverBoxId,
@@ -272,6 +343,16 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
   if (isDrawers) {
     const stackHover = args.hoverOk ? readManualLayoutSketchStackHoverIntent(args.hoverRec) : null;
     const drawerHeightM = parseSketchIntDrawerHeightM(args.tool);
+    if (
+      stackHover?.op !== 'remove' &&
+      blockSketchStackCommitIfRemovedFrameSide({
+        App: args.App,
+        hoverHost: args.hoverHost,
+        writeSketchHover: args.writeSketchHover,
+      })
+    ) {
+      return true;
+    }
     if (
       stackHover?.op !== 'remove' &&
       blockSketchStackCommitIfHexCell({
@@ -329,6 +410,16 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
   const stackHover = args.hoverOk ? readManualLayoutSketchStackHoverIntent(args.hoverRec) : null;
   const drawerHeightM = parseSketchExtDrawerHeightM(args.tool);
   const requestedDrawerCount = parseSketchExtDrawerCount(args.tool);
+  if (
+    stackHover?.op !== 'remove' &&
+    blockSketchStackCommitIfRemovedFrameSide({
+      App: args.App,
+      hoverHost: args.hoverHost,
+      writeSketchHover: args.writeSketchHover,
+    })
+  ) {
+    return true;
+  }
   if (
     stackHover?.op !== 'remove' &&
     blockSketchStackCommitIfHexCell({

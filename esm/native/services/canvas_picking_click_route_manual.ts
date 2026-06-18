@@ -3,8 +3,13 @@ import {
   tryHandleCanvasManualSketchFreeClick,
 } from './canvas_picking_click_manual_sketch_free_flow.js';
 import type { CanvasPickingClickRouteArgs } from './canvas_picking_click_route_shared.js';
-import { tryRemoveSketchExternalDrawerByDirectHit } from './canvas_picking_drawer_cross_family.js';
+import {
+  tryRemoveSketchExternalDrawerByDirectHit,
+  tryRemoveSketchInternalDrawerByMatchingHoverDirectHit,
+} from './canvas_picking_drawer_cross_family.js';
 import { readActiveManualTool } from './canvas_picking_manual_tool_access.js';
+import { __wp_toModuleKey } from './canvas_picking_core_helpers.js';
+import { __wp_readSketchHover } from './canvas_picking_local_helpers.js';
 
 export function tryHandleCanvasPickingManualOrEmptyRoute(args: CanvasPickingClickRouteArgs): boolean {
   const { App, ndcX, ndcY, raycaster, mouse, modeState, hitState } = args;
@@ -27,17 +32,34 @@ export function tryHandleCanvasPickingManualOrEmptyRoute(args: CanvasPickingClic
   if (__isManualLayoutMode) {
     const manualTool = readActiveManualTool(App);
     const manualToolKey = typeof manualTool === 'string' ? manualTool : '';
-    if (
-      manualToolKey.startsWith('sketch_ext_drawers:') &&
-      tryRemoveSketchExternalDrawerByDirectHit({
-        App,
-        intersects: hitState.intersects || [],
-        activeModuleKey: args.moduleRefs.__activeModuleKey,
-        patchConfigForKey: args.moduleRefs.__patchConfigForKey,
-        source: 'sketch.removeExternalDrawerByHit',
-      })
-    ) {
-      return true;
+    if (manualToolKey.startsWith('sketch_ext_drawers:')) {
+      if (
+        tryRemoveSketchExternalDrawerByDirectHit({
+          App,
+          intersects: hitState.intersects || [],
+          activeModuleKey: args.moduleRefs.__activeModuleKey,
+          patchConfigForKey: args.moduleRefs.__patchConfigForKey,
+          source: 'sketch.removeExternalDrawerByHit',
+        })
+      ) {
+        return true;
+      }
+
+      if (
+        tryRemoveSketchInternalDrawerByMatchingHoverDirectHit({
+          App,
+          intersects: hitState.intersects || [],
+          activeModuleKey: args.moduleRefs.__activeModuleKey,
+          isBottom: args.moduleRefs.__isBottomStack,
+          tool: manualToolKey,
+          hover: __wp_readSketchHover(App),
+          toModuleKey: __wp_toModuleKey,
+          patchConfigForKey: args.moduleRefs.__patchConfigForKey,
+          source: 'sketch.removeInternalDrawerByHoverDirectHit',
+        })
+      ) {
+        return true;
+      }
     }
 
     if (

@@ -6,15 +6,19 @@ import {
   sketchBoxSideToPartId,
   readRemovableFrameSideFromPartId,
   readRemovableSketchBoxSideFromPartId,
+  canonicalRemovablePartKey,
 } from '../features/removable_parts.js';
 import { readStoreStateMaybe } from '../runtime/store_surface_access.js';
-import { __wp_toast } from './canvas_picking_core_helpers.js';
+import { __wp_isRemoved, __wp_toast } from './canvas_picking_core_helpers.js';
 
 const REMOVABLE_SIDE_WITH_FITTINGS_BLOCK_MESSAGE =
   'אי אפשר להסיר דופן בתא שיש בו תלייה או מגירות. הסר קודם את התלייה או המגירות מהתא.';
 
 const REMOVABLE_SIDE_DOUBLE_REMOVAL_BLOCK_MESSAGE =
   'אי אפשר להסיר את שתי הדפנות של אותו תא. תא חייב להישאר עם דופן אחת לפחות.';
+
+const REMOVABLE_SIDE_CONTENT_BUILD_BLOCK_MESSAGE =
+  'אי אפשר לבנות תלייה או מגירות בתא שדופן שלו הוסרה. החזר קודם את הדופן לתא.';
 
 export type RemovableSideRemovalBlockReason = 'fittings' | 'double-side-removal';
 
@@ -110,6 +114,127 @@ function recordHasHangingContent(record: unknown): boolean {
 
 function recordHasSideBlockingFittings(record: unknown): boolean {
   return recordHasDrawerContent(record) || recordHasHangingContent(record);
+}
+
+function readRemovedDoorsMapFromConfig(cfg: unknown): UnknownRecord {
+  return asRecord(asRecord(cfg)?.removedDoorsMap) || {};
+}
+
+function isRemovedPartIdOn(App: AppContainer, cfg: unknown, partId: string): boolean {
+  if (!partId) return false;
+  if (__wp_isRemoved(App, partId)) return true;
+  return readRemovedDoorsMapFromConfig(cfg)[`removed_${canonicalRemovablePartKey(partId)}`] === true;
+}
+
+function readModuleIndex(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isInteger(value) && value >= 0) return value;
+  if (typeof value === 'string' && /^\d+$/.test(value)) return Number(value);
+  return null;
+}
+
+export function isRemovableFrameSideMissingForModuleContentBuild(args: {
+  App: AppContainer;
+  moduleKey: unknown;
+  isBottomStack?: boolean;
+}): boolean {
+  const moduleIndex = readModuleIndex(args.moduleKey);
+  if (moduleIndex == null) return false;
+
+  const cfg = readRemovablePartConfigSnapshot(args.App);
+  const prefix = args.isBottomStack ? 'lower_' : '';
+  const modules = readFrameSideModules(cfg, `${prefix}body_left`);
+  if (!modules.length || moduleIndex >= modules.length) return false;
+
+  if (moduleIndex === 0 && isRemovedPartIdOn(args.App, cfg, frameSideToPartId('left', prefix))) return true;
+  return (
+    moduleIndex === modules.length - 1 && isRemovedPartIdOn(args.App, cfg, frameSideToPartId('right', prefix))
+  );
+}
+
+export function readSketchBoxPartIdCandidatesForRecord(args: {
+  box: unknown;
+  boxIndex?: number;
+  moduleKey?: unknown;
+  isBottomStack?: boolean;
+  freePlacement?: boolean;
+}): string[] {
+  const box = asRecord(args.box) || {};
+  const rawBoxId =
+    box.id != null && String(box.id).trim()
+      ? String(box.id).trim()
+      : args.boxIndex != null
+        ? String(args.boxIndex)
+        : '';
+  if (!rawBoxId) return [];
+
+  const moduleIndex = readModuleIndex(args.moduleKey);
+  const moduleKey = moduleIndex == null ? '' : `${args.isBottomStack ? 'lower_' : ''}${moduleIndex}`;
+  const freePlacement = args.freePlacement === true || box.freePlacement === true;
+  const candidates = new Set<string>();
+  const pushPrefix = (prefix: string): void => {
+    if (prefix) candidates.add(prefix);
+  };
+
+  if (freePlacement) {
+    pushPrefix(moduleKey ? `sketch_box_free_${moduleKey}_${rawBoxId}` : `sketch_box_free_${rawBoxId}`);
+    pushPrefix(`sketch_box_free_${rawBoxId}`);
+  } else {
+    pushPrefix(moduleKey ? `sketch_box_${moduleKey}_${rawBoxId}` : `sketch_box_${rawBoxId}`);
+    pushPrefix(`sketch_box_${rawBoxId}`);
+  }
+
+  // Imported/legacy snapshots may miss the freePlacement marker while rendered ids already carry it.
+  pushPrefix(moduleKey ? `sketch_box_free_${moduleKey}_${rawBoxId}` : `sketch_box_free_${rawBoxId}`);
+  pushPrefix(`sketch_box_free_${rawBoxId}`);
+
+  return Array.from(candidates);
+}
+
+export function isRemovableSketchBoxSideMissingForContentBuild(args: {
+  App: AppContainer;
+  cfg: unknown;
+  box: unknown;
+  boxIndex?: number;
+  moduleKey?: unknown;
+  isBottomStack?: boolean;
+  freePlacement?: boolean;
+}): boolean {
+  const candidates = readSketchBoxPartIdCandidatesForRecord(args);
+  return candidates.some(boxPartId => {
+    const leftPartId = sketchBoxSideToPartId(boxPartId, 'left');
+    const rightPartId = sketchBoxSideToPartId(boxPartId, 'right');
+    return (
+      isRemovedPartIdOn(args.App, args.cfg, leftPartId) || isRemovedPartIdOn(args.App, args.cfg, rightPartId)
+    );
+  });
+}
+
+export function toastRemovableSideContentBuildBlock(App: AppContainer): void {
+  __wp_toast(App, REMOVABLE_SIDE_CONTENT_BUILD_BLOCK_MESSAGE, 'error');
+}
+
+export function blockRemovableSideContentBuildIfModuleSideMissing(args: {
+  App: AppContainer;
+  moduleKey: unknown;
+  isBottomStack?: boolean;
+}): boolean {
+  if (!isRemovableFrameSideMissingForModuleContentBuild(args)) return false;
+  toastRemovableSideContentBuildBlock(args.App);
+  return true;
+}
+
+export function blockRemovableSideContentBuildIfSketchBoxSideMissing(args: {
+  App: AppContainer;
+  cfg: unknown;
+  box: unknown;
+  boxIndex?: number;
+  moduleKey?: unknown;
+  isBottomStack?: boolean;
+  freePlacement?: boolean;
+}): boolean {
+  if (!isRemovableSketchBoxSideMissingForContentBuild(args)) return false;
+  toastRemovableSideContentBuildBlock(args.App);
+  return true;
 }
 
 function readFrameSidePartIdPrefixFromPartId(partId: string): '' | 'lower_' {

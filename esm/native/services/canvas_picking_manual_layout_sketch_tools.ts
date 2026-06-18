@@ -122,6 +122,7 @@ export function tryHandleManualLayoutSketchToolClick(args: ManualLayoutSketchToo
     tryApplyManualLayoutSketchHoverClick({
       App,
       __activeModuleKey,
+      __isBottomStack,
       topY,
       bottomY,
       __gridInfo,

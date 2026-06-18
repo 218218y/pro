@@ -27,6 +27,7 @@ type ModuleKey = number | 'corner' | `corner:${number}` | null;
 type ManualLayoutSketchClickHoverApplyArgs = {
   App: AppContainer;
   __activeModuleKey: ModuleKey;
+  __isBottomStack?: boolean;
   topY: number;
   bottomY: number;
   __gridInfo: RecordMap | null;
@@ -46,6 +47,7 @@ export function tryApplyManualLayoutSketchHoverClick(args: ManualLayoutSketchCli
   const {
     App,
     __activeModuleKey,
+    __isBottomStack,
     topY,
     bottomY,
     __gridInfo,
@@ -80,10 +82,17 @@ export function tryApplyManualLayoutSketchHoverClick(args: ManualLayoutSketchCli
           const box = findSketchModuleBoxById(boxes, boxId, { freePlacement: false });
           if (!box) return;
           commitSketchModuleBoxContent({
+            App,
+            cfg,
             box,
             boxId,
             contentKind,
             hoverRec: __hoverRec,
+            hoverHost: {
+              tool: String(__hoverRec.tool || ''),
+              moduleKey: __activeModuleKey,
+              isBottom: !!__isBottomStack,
+            },
           });
         },
         createCanvasPickingConfigStructuralPatchMeta(getSketchModuleBoxContentSource(contentKind))

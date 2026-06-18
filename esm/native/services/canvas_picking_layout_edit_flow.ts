@@ -5,6 +5,7 @@ import { createCanvasPickingConfigStructuralPatchMeta } from './canvas_picking_c
 import { tryHandleCanvasBraceShelvesClick } from './canvas_picking_layout_edit_flow_brace.js';
 import { tryHandleCanvasManualLayoutClick } from './canvas_picking_layout_edit_flow_manual.js';
 import { tryCommitPresetLayoutFreeBoxFromHover } from './canvas_picking_manual_layout_free_box_content.js';
+import { blockRemovableSideContentBuildIfModuleSideMissing } from './canvas_picking_removable_part_remove_constraints.js';
 import type {
   CanvasLayoutEditClickArgs,
   LayoutConfigRecordLike,
@@ -26,6 +27,17 @@ function tryHandleCanvasLayoutPresetClick(args: CanvasLayoutEditClickArgs): bool
   const __ui_s3a = __wp_ui(App);
   const __layoutType =
     __ui_s3a && typeof __ui_s3a.currentLayoutType === 'string' ? __ui_s3a.currentLayoutType : 'shelves';
+
+  if (
+    __layoutType.startsWith('hanging') &&
+    blockRemovableSideContentBuildIfModuleSideMissing({
+      App,
+      moduleKey: __activeModuleKey ?? foundModuleIndex,
+      isBottomStack: args.__isBottomStack,
+    })
+  ) {
+    return true;
+  }
 
   __patchConfigForKey(
     __activeModuleKey,

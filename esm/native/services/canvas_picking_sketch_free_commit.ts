@@ -75,6 +75,8 @@ function createRandomId(prefix: string): string {
 }
 
 function commitSketchFreePlacementContent(args: {
+  App: AppContainer;
+  host: SketchFreePlacementHostLike;
   cfg: RecordMap;
   boxId: string;
   contentKind: string;
@@ -86,6 +88,7 @@ function commitSketchFreePlacementContent(args: {
   if (!box) return null;
 
   return commitSketchModuleBoxContent({
+    App: args.App,
     cfg: args.cfg,
     box,
     boxId: args.boxId,
@@ -93,6 +96,7 @@ function commitSketchFreePlacementContent(args: {
     hoverRec: args.hoverRec,
     floorY: args.floorY,
     hoverMode: 'free-toggle',
+    hoverHost: { tool: readRecordString(args.hoverRec, 'tool') || '', ...args.host },
   });
 }
 
@@ -193,6 +197,8 @@ export function commitSketchFreePlacementHoverRecord(
       args.host.moduleKey,
       (cfg: RecordMap) => {
         nextHover = commitSketchFreePlacementContent({
+          App: args.App,
+          host: args.host,
           cfg,
           boxId: String(args.hoverRec.boxId),
           contentKind,

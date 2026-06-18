@@ -236,6 +236,175 @@ test('manual free-box route removes regular external drawers before stale hover 
   assert.deepEqual(regularIds, ['sbrd-2']);
 });
 
+function createSketchInternalDrawerHit(moduleKey = 2, drawerId = 'sid-1') {
+  return {
+    type: 'Mesh',
+    userData: {
+      partId: `div_int_sketch_${moduleKey}_${drawerId}`,
+      moduleIndex: String(moduleKey),
+      __wpSketchModuleKey: String(moduleKey),
+    },
+    parent: null,
+  };
+}
+
+function createManualRouteState() {
+  return {
+    __pm: null,
+    __isPaintMode: false,
+    __isGrooveEditMode: false,
+    __isSplitEditMode: false,
+    __isLayoutEditMode: false,
+    __isManualLayoutMode: true,
+    __isBraceShelvesMode: false,
+    __isExtDrawerEditMode: false,
+    __isIntDrawerEditMode: false,
+    __isDividerEditMode: false,
+    __isHandleEditMode: false,
+    __isHingeEditMode: false,
+    __isRemoveDoorMode: false,
+    __isDoorTrimMode: false,
+    __isCellDimsMode: false,
+  };
+}
+
+function createManualRouteHitState(drawerGroup: Record<string, unknown>) {
+  return {
+    intersects: [{ object: drawerGroup, point: { x: 0, y: 0.4, z: 0 } }] as never,
+    foundPartId: null,
+    foundModuleIndex: null,
+    foundModuleStack: 'top' as const,
+    effectiveDoorId: null,
+    foundDrawerId: null,
+    primaryHitObject: drawerGroup as never,
+    doorHitObject: null,
+    doorHitGroup: null,
+    primaryHitPoint: null,
+    doorHitPoint: null,
+    moduleHitY: null,
+    doorHitY: null,
+    primaryHitY: null,
+  };
+}
+
+test('manual sketch external drawer route removes an internal sketch drawer when the active hover is the same drawer', () => {
+  const cfg: Record<string, unknown> = {
+    sketchExtras: {
+      drawers: [
+        { id: 'sid-1', yNorm: 0.35 },
+        { id: 'sid-2', yNorm: 0.65 },
+      ],
+    },
+  };
+  const drawerGroup = createSketchInternalDrawerHit(2, 'sid-1');
+  const App = {
+    render: {
+      cache: {
+        __lastSketchHover: {
+          ts: Date.now(),
+          tool: 'sketch_ext_drawers:3',
+          moduleKey: 2,
+          isBottom: false,
+          hostModuleKey: 2,
+          hostIsBottom: false,
+          kind: 'drawers',
+          op: 'remove',
+          removeId: 'sid-1',
+        },
+      },
+    },
+    store: {
+      getState: () => ({ mode: { opts: { manualTool: 'sketch_ext_drawers:3' } } }),
+    },
+  } as never;
+  let patchMeta: Record<string, unknown> | null = null;
+
+  const handled = tryHandleCanvasPickingManualOrEmptyRoute({
+    App,
+    ndcX: 0,
+    ndcY: 0,
+    raycaster: null as never,
+    mouse: null as never,
+    modeState: createManualRouteState(),
+    hitState: createManualRouteHitState(drawerGroup),
+    moduleRefs: {
+      __activeModuleKey: 2,
+      __activeStack: 'top',
+      __isBottomStack: false,
+      __ensureConfigRefForKey: () => cfg as never,
+      __patchConfigForKey: (_key, patchFn, meta) => {
+        patchMeta = { ...meta };
+        patchFn(cfg as never);
+      },
+      __getActiveConfigRef: () => cfg as never,
+      __ensureCornerCellConfigRef: () => null,
+    },
+  });
+
+  const drawers = (((cfg.sketchExtras as any).drawers as any[]) || []).map(item => item.id);
+  assert.equal(handled, true);
+  assert.deepEqual(patchMeta, { source: 'sketch.removeInternalDrawerByHoverDirectHit', immediate: true });
+  assert.deepEqual(drawers, ['sid-2']);
+});
+
+test('manual sketch external drawer route does not remove an internal drawer when hover is an add preview above it', () => {
+  const cfg: Record<string, unknown> = {
+    sketchExtras: {
+      drawers: [{ id: 'sid-1', yNorm: 0.35 }],
+      extDrawers: [],
+    },
+  };
+  const drawerGroup = createSketchInternalDrawerHit(2, 'sid-1');
+  const App = {
+    render: {
+      cache: {
+        __lastSketchHover: {
+          ts: Date.now(),
+          tool: 'sketch_ext_drawers:3',
+          moduleKey: 2,
+          isBottom: false,
+          hostModuleKey: 2,
+          hostIsBottom: false,
+          kind: 'ext_drawers',
+          op: 'add',
+          yCenter: 1.2,
+        },
+      },
+    },
+    store: {
+      getState: () => ({ mode: { opts: { manualTool: 'sketch_ext_drawers:3' } } }),
+    },
+  } as never;
+  let patched = false;
+
+  const handled = tryHandleCanvasPickingManualOrEmptyRoute({
+    App,
+    ndcX: 0,
+    ndcY: 0,
+    raycaster: null as never,
+    mouse: null as never,
+    modeState: createManualRouteState(),
+    hitState: createManualRouteHitState(drawerGroup),
+    moduleRefs: {
+      __activeModuleKey: 2,
+      __activeStack: 'top',
+      __isBottomStack: false,
+      __ensureConfigRefForKey: () => cfg as never,
+      __patchConfigForKey: (_key, patchFn) => {
+        patched = true;
+        patchFn(cfg as never);
+      },
+      __getActiveConfigRef: () => cfg as never,
+      __ensureCornerCellConfigRef: () => null,
+    },
+  });
+
+  const drawers = (((cfg.sketchExtras as any).drawers as any[]) || []).map(item => item.id);
+  assert.equal(handled, false);
+  assert.equal(patched, false);
+  assert.deepEqual(drawers, ['sid-1']);
+});
+
 test('free-box shell hit policy does not swallow actionable drawer fronts', () => {
   assert.equal(
     firstRenderableHitIsSketchFreeBox([

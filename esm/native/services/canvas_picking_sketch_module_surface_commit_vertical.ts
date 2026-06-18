@@ -1,6 +1,7 @@
 import type { AppContainer } from '../../../types';
 import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { __wp_toast } from './canvas_picking_core_helpers.js';
+import { blockRemovableSideContentBuildIfModuleSideMissing } from './canvas_picking_removable_part_remove_constraints.js';
 import {
   clampSketchModuleStorageCenterY,
   commitSketchModuleRod,
@@ -80,6 +81,17 @@ function isShelfCommitBlockedBySketchDrawers(
   });
 }
 
+function isSketchRodCommitRemovingExistingRod(args: CommitSketchModuleSurfaceToolArgs): boolean {
+  const rods = readSketchExtrasList(args.cfg, 'rods');
+  const match = findNearestSketchModuleRod({
+    rods,
+    bottomY: args.bottomY,
+    totalHeight: args.totalHeight,
+    pointerY: args.hitY0,
+  });
+  return !!(match && match.dy <= SKETCH_BOX_DIMENSIONS.preview.removeEpsShelfM);
+}
+
 function isRodCommitBlockedBySketchDrawers(args: CommitSketchModuleSurfaceToolArgs): boolean {
   const rods = readSketchExtrasList(args.cfg, 'rods');
   const match = findNearestSketchModuleRod({
@@ -155,6 +167,17 @@ export function tryCommitSketchModuleVerticalContentTool(args: CommitSketchModul
   }
 
   if (args.tool === 'sketch_rod') {
+    if (
+      args.App &&
+      !isSketchRodCommitRemovingExistingRod(args) &&
+      blockRemovableSideContentBuildIfModuleSideMissing({
+        App: args.App,
+        moduleKey: args.moduleKey,
+        isBottomStack: args.isBottomStack,
+      })
+    ) {
+      return true;
+    }
     if (isRodCommitBlockedBySketchDrawers(args)) {
       toastSketchVerticalContentCollisionFailure({ App: args.App, kind: 'rod' });
       return true;
