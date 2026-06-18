@@ -2,6 +2,7 @@ import {
   __wp_scopeCornerPartKeyForStack,
   __wp_scopeCornerPartKeysForStack,
 } from './canvas_picking_core_helpers.js';
+import type { CanvasPaintTargetScope } from './canvas_picking_paint_target_scope.js';
 import {
   CHEST_BODY_PARTS,
   CORNER_BODY_PARTS,
@@ -13,6 +14,7 @@ import {
   __isCornicePart,
   __isCorniceWavePart,
   __isCornerCornicePart,
+  resolveUnifiedCornerFramePaintTargetKeys,
 } from './canvas_picking_paint_targets.js';
 import {
   toggleCorniceGroupPaint,
@@ -26,8 +28,20 @@ export function applyGroupedOrCornerPaintTarget(args: {
   foundPartId: string;
   activeStack: 'top' | 'bottom';
   paintSelection: string;
+  targetScope?: CanvasPaintTargetScope | null;
 }): boolean {
-  const { state, foundPartId, activeStack, paintSelection } = args;
+  const { state, foundPartId, activeStack, paintSelection, targetScope } = args;
+  const unifiedCornerFrameKeys = resolveUnifiedCornerFramePaintTargetKeys(
+    foundPartId,
+    activeStack,
+    targetScope
+  );
+  if (unifiedCornerFrameKeys !== null) {
+    if (unifiedCornerFrameKeys.length) {
+      toggleGroupedPaint(state.ensureColors(), unifiedCornerFrameKeys, paintSelection);
+    }
+    return true;
+  }
   if (MAIN_BODY_PARTS.includes(foundPartId)) {
     toggleGroupedPaint(state.ensureColors(), MAIN_BODY_PARTS, paintSelection);
     return true;

@@ -203,6 +203,7 @@ export function createCornerConnectorSetup(ctx: CornerOpsEmitContext): CornerCon
     moduleIndex: 'corner_pentagon',
     __wpCornerPentagon: true,
     __wpStack: __stackKey,
+    __wpStackSplitUnifiedFrame: !!ctx.__stackSplitUnifiedFrame,
   };
 
   const pts: P2[] = [

@@ -90,6 +90,7 @@ function resolveBottomCornerWidthBase(
 export type CornerWingStackMetaState = {
   __stackKey: 'top' | 'bottom';
   __stackSplitEnabled: boolean;
+  __stackSplitUnifiedFrame: boolean;
   __stackOffsetZ: number;
   __baseTypeOverride: unknown;
   __baseLegStyleOverride: unknown;
@@ -153,6 +154,7 @@ export function resolveCornerWingStackMeta(
   return {
     __stackKey: metaRec && metaRec.stackKey === 'bottom' ? 'bottom' : 'top',
     __stackSplitEnabled: !!(metaRec && metaRec.stackSplitEnabled),
+    __stackSplitUnifiedFrame: !!(metaRec && metaRec.stackSplitUnifiedFrame),
     __stackOffsetZ:
       metaRec && typeof metaRec.stackOffsetZ === 'number' && Number.isFinite(metaRec.stackOffsetZ)
         ? Number(metaRec.stackOffsetZ)

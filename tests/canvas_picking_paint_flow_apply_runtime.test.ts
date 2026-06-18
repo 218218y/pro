@@ -177,6 +177,117 @@ test('paint grouped/corner target scopes the pentagon frame to the lower stack',
   });
 });
 
+test('paint grouped/corner target keeps a unified stack-split corner wing frame as one outer shell', () => {
+  const expected = {
+    corner_ceil: 'walnut',
+    corner_wing_side_left: 'walnut',
+    corner_wing_side_right: 'walnut',
+    lower_corner_wing_side_left: 'walnut',
+    lower_corner_wing_side_right: 'walnut',
+    lower_corner_floor: 'walnut',
+  };
+  const targetScope = { stackSplitUnifiedFrame: true };
+
+  for (const [foundPartId, activeStack] of [
+    ['corner_wing_side_left', 'bottom'],
+    ['corner_wing_side_right', 'top'],
+    ['corner_wing_ceil', 'top'],
+    ['corner_floor', 'bottom'],
+    ['corner_floor_c1', 'bottom'],
+  ] as const) {
+    const state = createManualState();
+    const handled = applyGroupedOrCornerPaintTarget({
+      state,
+      foundPartId,
+      activeStack,
+      paintSelection: 'walnut',
+      targetScope,
+    });
+
+    assert.equal(handled, true, `${activeStack}:${foundPartId}`);
+    assert.deepEqual(state.colors, expected, `${activeStack}:${foundPartId}`);
+    assert.deepEqual(
+      resolvePaintTargetKeys(foundPartId, activeStack, targetScope),
+      Object.keys(expected),
+      `${activeStack}:${foundPartId}`
+    );
+  }
+
+  for (const [foundPartId, activeStack] of [
+    ['corner_wing_ceil', 'bottom'],
+    ['corner_cell_top_c1', 'bottom'],
+    ['corner_floor', 'top'],
+    ['corner_floor_c1', 'top'],
+  ] as const) {
+    const state = createManualState();
+    const handled = applyGroupedOrCornerPaintTarget({
+      state,
+      foundPartId,
+      activeStack,
+      paintSelection: 'walnut',
+      targetScope,
+    });
+
+    assert.equal(handled, true, `${activeStack}:${foundPartId}`);
+    assert.deepEqual(state.colors, {}, `${activeStack}:${foundPartId}`);
+    assert.deepEqual(resolvePaintTargetKeys(foundPartId, activeStack, targetScope), []);
+  }
+});
+
+test('paint grouped/corner target keeps a unified stack-split pentagon frame as one outer shell', () => {
+  const expected = {
+    corner_pent_ceil: 'walnut',
+    corner_pent_attach_main: 'walnut',
+    corner_pent_attach_wing: 'walnut',
+    lower_corner_pent_attach_main: 'walnut',
+    lower_corner_pent_attach_wing: 'walnut',
+    lower_corner_pent_floor: 'walnut',
+  };
+  const targetScope = { stackSplitUnifiedFrame: true };
+
+  for (const [foundPartId, activeStack] of [
+    ['corner_pent_attach_main', 'bottom'],
+    ['corner_pent_attach_wing', 'top'],
+    ['corner_pent_ceil', 'top'],
+    ['corner_pent_floor', 'bottom'],
+  ] as const) {
+    const state = createManualState();
+    const handled = applyGroupedOrCornerPaintTarget({
+      state,
+      foundPartId,
+      activeStack,
+      paintSelection: 'walnut',
+      targetScope,
+    });
+
+    assert.equal(handled, true, `${activeStack}:${foundPartId}`);
+    assert.deepEqual(state.colors, expected, `${activeStack}:${foundPartId}`);
+    assert.deepEqual(
+      resolvePaintTargetKeys(foundPartId, activeStack, targetScope),
+      Object.keys(expected),
+      `${activeStack}:${foundPartId}`
+    );
+  }
+
+  for (const [foundPartId, activeStack] of [
+    ['corner_pent_ceil', 'bottom'],
+    ['corner_pent_floor', 'top'],
+  ] as const) {
+    const state = createManualState();
+    const handled = applyGroupedOrCornerPaintTarget({
+      state,
+      foundPartId,
+      activeStack,
+      paintSelection: 'walnut',
+      targetScope,
+    });
+
+    assert.equal(handled, true, `${activeStack}:${foundPartId}`);
+    assert.deepEqual(state.colors, {}, `${activeStack}:${foundPartId}`);
+    assert.deepEqual(resolvePaintTargetKeys(foundPartId, activeStack, targetScope), []);
+  }
+});
+
 test('paint click ignores corner back-panel hit ids because those meshes are not individual-color paint targets', () => {
   const App = createApp({
     maps: {

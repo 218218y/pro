@@ -37,6 +37,7 @@ export interface CornerOpsEmitContext extends UnknownRecord {
   __mirrorX: number;
   __stackKey: string;
   __stackSplitEnabled: boolean;
+  __stackSplitUnifiedFrame: boolean;
   __stackOffsetZ: number;
   stackOffsetY: number;
   baseType: string;

@@ -143,6 +143,7 @@ export function applyPostBuildExtras(input: BuildContextLike) {
   // Stack-split context (shared by dimensions + corner wing)
   const __stackSplit = getStackSplitFromFlags(ctx.flags);
   const stackSplitActive = __stackSplit.active;
+  const stackSplitUnifiedFrame = !!(ctx.flags && ctx.flags.stackSplitUnifiedFrame);
   const splitBottomHeightCm = __stackSplit.lowerHeightCm;
   const splitBottomDepthCm = __stackSplit.lowerDepthCm;
   const __stackKey = getStackKeyFromFlags(ctx.flags);
@@ -193,6 +194,7 @@ export function applyPostBuildExtras(input: BuildContextLike) {
             stackKey: 'top',
             baseType: 'none',
             stackSplitEnabled: true,
+            stackSplitUnifiedFrame,
             stackOffsetZ: 0,
             shelfThick: resolvedShelfThick,
             cfgSnapshot: cfg,
@@ -200,6 +202,7 @@ export function applyPostBuildExtras(input: BuildContextLike) {
         : {
             stackKey: 'bottom',
             stackSplitEnabled: true,
+            stackSplitUnifiedFrame,
             stackOffsetZ: 0,
             baseLegStyle: ctx.strings?.baseLegStyle,
             baseLegColor: ctx.strings?.baseLegColor,

@@ -4,12 +4,17 @@ import { __wp_isDoorOrDrawerLikePartId } from './canvas_picking_core_helpers.js'
 import { __wp_isViewportRoot } from './canvas_picking_local_helpers.js';
 import { asRecordMap } from './canvas_picking_generic_paint_hover_shared.js';
 import { isNonPaintableCanvasPaintPartId } from './canvas_picking_paint_part_eligibility.js';
+import {
+  readCanvasPaintTargetScopeFromObject,
+  type CanvasPaintTargetScope,
+} from './canvas_picking_paint_target_scope.js';
 
 export type GenericPartPaintHoverTarget = {
   object: UnknownRecord;
   parent: UnknownRecord | null;
   partId: string;
   stackKey: 'top' | 'bottom';
+  targetScope: CanvasPaintTargetScope;
 };
 
 function readStackKeyFromSelfOrAncestors(App: AppContainer, start: UnknownRecord | null): 'top' | 'bottom' {
@@ -41,6 +46,7 @@ export function resolveNonDoorHoverTargetFromObject(
           parent: asRecordMap(curr.parent),
           partId: pidRaw,
           stackKey: readStackKeyFromSelfOrAncestors(App, curr),
+          targetScope: readCanvasPaintTargetScopeFromObject(App, curr),
         };
       }
     }

@@ -10,6 +10,7 @@ export type CornerBuildMeta = {
   baseLegHeightCm?: unknown;
   baseLegWidthCm?: unknown;
   stackSplitEnabled?: boolean;
+  stackSplitUnifiedFrame?: boolean;
   stackOffsetZ?: number;
   shelfThick?: unknown;
   cfgSnapshot?: ConfigStateLike | UnknownRecord | null;
@@ -67,6 +68,7 @@ export type NormalizedCornerWingState = {
   __sketchMode: boolean;
   __stackKey: 'top' | 'bottom';
   __stackSplitEnabled: boolean;
+  __stackSplitUnifiedFrame: boolean;
   __stackOffsetZ: number;
   __mirrorX: 1 | -1;
   cornerSide: 'left' | 'right';

@@ -10,47 +10,65 @@ import {
 
 type PreviewStackKey = 'top' | 'bottom' | null;
 
-function readPreviewStackKey(value: unknown): PreviewStackKey {
-  return value === 'top' || value === 'bottom' ? value : null;
+type PreviewPartKeyMatch = {
+  key: string;
+  stackKey: PreviewStackKey;
+};
+
+function readStackKey(value: unknown): PreviewStackKey {
+  return value === 'bottom' ? 'bottom' : value === 'top' ? 'top' : null;
 }
 
-function resolvePreviewTargetStack(partKeys: string[]): PreviewStackKey {
-  let hasTopCornerKey = false;
-  let hasBottomCornerKey = false;
-
-  for (let i = 0; i < partKeys.length; i += 1) {
-    const key = typeof partKeys[i] === 'string' ? String(partKeys[i]) : '';
-    if (key.startsWith('lower_corner_')) {
-      hasBottomCornerKey = true;
-    } else if (key.startsWith('corner_')) {
-      hasTopCornerKey = true;
-    }
+function readObjectStackKeyFromSelfOrAncestors(value: unknown): PreviewStackKey {
+  let obj = asObject3DRecord(value);
+  while (obj) {
+    const ud = asRecordMap(obj.userData);
+    const stack = readStackKey(ud?.__wpStack);
+    if (stack) return stack;
+    obj = asObject3DRecord(obj.parent);
   }
-
-  if (hasBottomCornerKey && !hasTopCornerKey) return 'bottom';
-  if (hasTopCornerKey && !hasBottomCornerKey) return 'top';
   return null;
 }
 
-function matchesPreviewTargetStack(targetStack: PreviewStackKey, objectStack: PreviewStackKey): boolean {
-  if (!targetStack || !objectStack) return true;
-  return targetStack === objectStack;
+function readScopedCornerPartKeyStack(partKey: string): PreviewStackKey {
+  if (partKey.startsWith('lower_corner_')) return 'bottom';
+  if (partKey.startsWith('corner_')) return 'top';
+  return null;
 }
 
-function appendRegisteredPartObjects(
-  out: UnknownRecord[],
-  value: unknown,
-  targetStack: PreviewStackKey = null
-): void {
+function readScopedCornerPartIdStack(partId: string): PreviewStackKey {
+  if (partId.startsWith('lower_corner_')) return 'bottom';
+  if (partId.startsWith('corner_')) return null;
+  return null;
+}
+
+function cornerPartKeyMatchesObjectStack(
+  partKey: string,
+  effectivePartId: string,
+  objectStackKey: PreviewStackKey
+): boolean {
+  const keyStack = readScopedCornerPartKeyStack(partKey);
+  if (!keyStack) return true;
+
+  const explicitPartStack = readScopedCornerPartIdStack(effectivePartId);
+  if (keyStack === 'bottom') return objectStackKey === 'bottom' || explicitPartStack === 'bottom';
+  return objectStackKey !== 'bottom' && explicitPartStack !== 'bottom';
+}
+
+function appendRegisteredPartObjects(out: UnknownRecord[], value: unknown, partKey?: string): void {
   if (Array.isArray(value)) {
-    for (let i = 0; i < value.length; i += 1) appendRegisteredPartObjects(out, value[i], targetStack);
+    for (let i = 0; i < value.length; i += 1) appendRegisteredPartObjects(out, value[i], partKey);
     return;
   }
   const obj = asObject3DRecord(value);
   if (!obj) return;
-  const userData = asRecordMap(obj.userData);
-  const objectStack = readPreviewStackKey(userData?.__wpStack);
-  if (matchesPreviewTargetStack(targetStack, objectStack)) out.push(obj);
+  if (partKey) {
+    const userData = asRecordMap(obj.userData);
+    const partId = typeof userData?.partId === 'string' ? String(userData.partId) : '';
+    const objectStackKey = readObjectStackKeyFromSelfOrAncestors(obj);
+    if (!cornerPartKeyMatchesObjectStack(partKey, partId, objectStackKey)) return;
+  }
+  out.push(obj);
 }
 
 export function appendUniquePartObjects(out: UnknownRecord[], value: unknown): void {
@@ -93,13 +111,27 @@ function isCornerShellPaintPreviewMatch(partId: string, partKey: string): boolea
   return false;
 }
 
-function matchesPaintPreviewPartKey(effectivePartId: string, partKeySet: Set<string>): boolean {
-  if (!effectivePartId) return false;
-  if (partKeySet.has(effectivePartId)) return true;
+function findPaintPreviewPartKeyMatch(
+  effectivePartId: string,
+  partKeySet: Set<string>,
+  objectStackKey: PreviewStackKey
+): PreviewPartKeyMatch | null {
+  if (!effectivePartId) return null;
   for (const partKey of partKeySet) {
-    if (isCornerShellPaintPreviewMatch(effectivePartId, partKey)) return true;
+    const matches = partKey === effectivePartId || isCornerShellPaintPreviewMatch(effectivePartId, partKey);
+    if (!matches) continue;
+    if (!cornerPartKeyMatchesObjectStack(partKey, effectivePartId, objectStackKey)) continue;
+    return { key: partKey, stackKey: readScopedCornerPartKeyStack(partKey) };
   }
-  return false;
+  return null;
+}
+
+function matchesPaintPreviewPartKey(
+  effectivePartId: string,
+  partKeySet: Set<string>,
+  objectStackKey: PreviewStackKey
+): boolean {
+  return !!findPaintPreviewPartKeyMatch(effectivePartId, partKeySet, objectStackKey);
 }
 
 function isSkippedPaintPreviewKind(kind: string): boolean {
@@ -117,27 +149,25 @@ function appendScenePartObjectsByKeySet(
   node: unknown,
   partKeySet: Set<string>,
   inheritedDrawerBoxPartId: string | null = null,
-  targetStack: PreviewStackKey = null,
-  inheritedStack: PreviewStackKey = null
+  inheritedStackKey: PreviewStackKey = null
 ): void {
   const obj = asObject3DRecord(node);
   if (!obj) return;
   const userData = asRecordMap(obj.userData);
-  const objectStack = readPreviewStackKey(userData?.__wpStack) || inheritedStack;
   const partId = typeof userData?.partId === 'string' ? String(userData.partId) : '';
   const kind = typeof userData?.__kind === 'string' ? String(userData.__kind) : '';
+  const objectStackKey = readStackKey(userData?.__wpStack) || inheritedStackKey;
   const effectivePartId = partId || inheritedDrawerBoxPartId || '';
   if (
     effectivePartId &&
-    matchesPaintPreviewPartKey(effectivePartId, partKeySet) &&
-    matchesPreviewTargetStack(targetStack, objectStack) &&
+    matchesPaintPreviewPartKey(effectivePartId, partKeySet, objectStackKey) &&
     !isSkippedPaintPreviewKind(kind) &&
     __readObjectLocalGeometryBox(obj)
   ) {
     appendUniquePartObjects(out, obj);
   }
   const nextInheritedDrawerBoxPartId = partId
-    ? matchesPaintPreviewPartKey(partId, partKeySet) && isDrawerBoxPartId(partId)
+    ? matchesPaintPreviewPartKey(partId, partKeySet, objectStackKey) && isDrawerBoxPartId(partId)
       ? partId
       : null
     : inheritedDrawerBoxPartId;
@@ -148,8 +178,7 @@ function appendScenePartObjectsByKeySet(
       children[i],
       partKeySet,
       nextInheritedDrawerBoxPartId,
-      targetStack,
-      objectStack
+      objectStackKey
     );
   }
 }
@@ -166,7 +195,7 @@ export function appendScenePartObjects(
     if (key) partKeySet.add(key);
   }
   if (!partKeySet.size) return;
-  appendScenePartObjectsByKeySet(out, wardrobeGroup, partKeySet, null, resolvePreviewTargetStack(partKeys));
+  appendScenePartObjectsByKeySet(out, wardrobeGroup, partKeySet);
 }
 
 export function collectPaintPreviewPartObjects(args: {
@@ -177,13 +206,12 @@ export function collectPaintPreviewPartObjects(args: {
   const { App, wardrobeGroup, partKeys } = args;
   const registry = getBuilderRegistry(App);
   const objects: UnknownRecord[] = [];
-  const targetStack = resolvePreviewTargetStack(partKeys);
   if (registry && typeof registry.get === 'function') {
     for (let i = 0; i < partKeys.length; i += 1) {
       const key = typeof partKeys[i] === 'string' ? String(partKeys[i]) : '';
       if (!key) continue;
       try {
-        appendRegisteredPartObjects(objects, registry.get(key), targetStack);
+        appendRegisteredPartObjects(objects, registry.get(key), key);
       } catch {
         // ignore registry lookup failures
       }

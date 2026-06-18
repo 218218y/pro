@@ -714,6 +714,91 @@ test('generic paint hover inherits bottom stack from the pentagon parent for thi
   assert.equal(previews[0]?.op, 'remove');
 });
 
+test('generic paint hover previews one unified stack-split corner wing outer frame without the middle boards', () => {
+  const wardrobeGroup = { children: [] as any[], userData: { partId: 'root' } };
+  const topGroup = {
+    children: [] as any[],
+    userData: { __wpCornerWing: true, __wpStack: 'top', __wpStackSplitUnifiedFrame: true },
+    parent: wardrobeGroup,
+  };
+  const bottomGroup = {
+    children: [] as any[],
+    userData: { __wpCornerWing: true, __wpStack: 'bottom', __wpStackSplitUnifiedFrame: true },
+    parent: wardrobeGroup,
+  };
+  wardrobeGroup.children.push(bottomGroup, topGroup);
+
+  const topCeil = createBoxObject('corner_wing_ceil', { width: 0.8, height: 0.018, depth: 0.55, y: 2.4 });
+  const topFloorMiddle = createBoxObject('corner_floor', { width: 0.8, height: 0.018, depth: 0.55, y: 1.1 });
+  const topLeft = createBoxObject('corner_wing_side_left', {
+    width: 0.018,
+    height: 1.2,
+    depth: 0.55,
+    y: 1.8,
+  });
+  const topRight = createBoxObject('corner_wing_side_right', {
+    width: 0.018,
+    height: 1.2,
+    depth: 0.55,
+    y: 1.8,
+  });
+  const bottomCeilMiddle = createBoxObject('corner_wing_ceil', {
+    width: 0.8,
+    height: 0.018,
+    depth: 0.55,
+    y: 1.08,
+  });
+  const bottomFloor = createBoxObject('corner_floor', { width: 0.8, height: 0.018, depth: 0.55, y: 0 });
+  const bottomLeft = createBoxObject('corner_wing_side_left', {
+    width: 0.018,
+    height: 1.1,
+    depth: 0.55,
+    y: 0.55,
+  });
+  const bottomRight = createBoxObject('corner_wing_side_right', {
+    width: 0.018,
+    height: 1.1,
+    depth: 0.55,
+    y: 0.55,
+  });
+
+  for (const part of [topCeil, topFloorMiddle, topLeft, topRight]) {
+    part.parent = topGroup;
+    topGroup.children.push(part);
+  }
+  for (const part of [bottomCeilMiddle, bottomFloor, bottomLeft, bottomRight]) {
+    part.parent = bottomGroup;
+    bottomGroup.children.push(part);
+  }
+
+  const previews: Record<string, unknown>[] = [];
+  const handled = tryHandleGenericPartPaintHover({
+    App: createApp({ wardrobeGroup }),
+    ndcX: 0,
+    ndcY: 0,
+    paintSelection: 'walnut',
+    raycaster: createRaycaster([{ object: bottomRight, point: { x: 0.4, y: 0.5, z: 0.1 } }]),
+    mouse: { x: 0, y: 0 },
+    previewRo: {
+      setSketchPlacementPreview(args: Record<string, unknown>) {
+        previews.push(args);
+      },
+    },
+  });
+
+  assert.equal(handled, true);
+  assert.equal(previews.length, 1);
+  assert.equal(previews[0]?.kind, 'object_boxes');
+  assert.deepEqual(previews[0]?.previewObjects, [
+    bottomFloor,
+    bottomLeft,
+    bottomRight,
+    topCeil,
+    topLeft,
+    topRight,
+  ]);
+});
+
 test('generic paint hover positions corner wing side preview in wardrobe coordinates, not wing-local coordinates', () => {
   const wardrobeGroup = new THREE.Group() as any;
   wardrobeGroup.userData = { partId: 'root' };
@@ -748,51 +833,10 @@ test('generic paint hover positions corner wing side preview in wardrobe coordin
 
   assert.equal(handled, true);
   assert.equal(previews.length, 1);
+  assert.equal(previews[0]?.kind, 'object_boxes');
+  assert.deepEqual(previews[0]?.previewObjects, [sidePanel]);
   assert.ok(Math.abs(Number(previews[0]?.x) - 1.8) < 1e-9);
   assert.ok(Math.abs(Number(previews[0]?.z) + 0.6) < 1e-9);
   assert.ok(Math.abs(Number(previews[0]?.w) - 0.5) < 1e-9);
   assert.ok(Math.abs(Number(previews[0]?.d) - 0.04) < 1e-9);
-});
-
-test('generic paint hover uses bottom scoped corner frame keys when the hit shell mesh is tagged as bottom stack', () => {
-  const wardrobeGroup = { children: [] as unknown[], userData: { partId: 'root' } };
-  const lowerSide = createBoxObject('corner_wing_side_right', {
-    width: 0.04,
-    height: 1.1,
-    depth: 0.55,
-    x: 0.6,
-    y: 0.55,
-  });
-  (lowerSide.userData as Record<string, unknown>).__wpStack = 'bottom';
-  lowerSide.parent = wardrobeGroup;
-  wardrobeGroup.children.push(lowerSide);
-
-  const previews: Record<string, unknown>[] = [];
-  const handled = tryHandleGenericPartPaintHover({
-    App: createApp({
-      wardrobeGroup,
-      maps: {
-        individualColors: {
-          lower_corner_ceil: 'walnut',
-          lower_corner_wing_side_left: 'walnut',
-          lower_corner_wing_side_right: 'walnut',
-          lower_corner_floor: 'walnut',
-        },
-      },
-    }),
-    ndcX: 0,
-    ndcY: 0,
-    paintSelection: 'walnut',
-    raycaster: createRaycaster([{ object: lowerSide, point: { x: 0.6, y: 0.55, z: 0 } }]),
-    mouse: { x: 0, y: 0 },
-    previewRo: {
-      setSketchPlacementPreview(args: Record<string, unknown>) {
-        previews.push(args);
-      },
-    },
-  });
-
-  assert.equal(handled, true);
-  assert.equal(previews.length, 1);
-  assert.equal(previews[0]?.op, 'remove');
 });

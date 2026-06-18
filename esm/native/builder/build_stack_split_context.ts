@@ -188,6 +188,7 @@ export function applyStackSplitLowerCornerWingIfNeeded(args: {
       baseLegHeightCm: buildArgs.baseLegHeightCm,
       baseLegWidthCm: buildArgs.baseLegWidthCm,
       stackSplitEnabled: true,
+      stackSplitUnifiedFrame: !!buildArgs.stackSplitUnifiedFrame,
       stackOffsetZ: Number.isFinite(Number(lowerDims.startZ)) ? Number(lowerDims.startZ) : 0,
       shelfThick: buildArgs.shelfThick,
       cfgSnapshot: buildArgs.cfg,

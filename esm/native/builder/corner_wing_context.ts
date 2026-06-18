@@ -40,6 +40,7 @@ export function createCornerWingEmitContext(args: {
     __sketchMode: state.__sketchMode,
     __stackKey: state.__stackKey,
     __stackSplitEnabled: state.__stackSplitEnabled,
+    __stackSplitUnifiedFrame: state.__stackSplitUnifiedFrame,
     __stackOffsetZ: state.__stackOffsetZ,
     __mirrorX: state.__mirrorX,
     cornerSide: state.cornerSide,

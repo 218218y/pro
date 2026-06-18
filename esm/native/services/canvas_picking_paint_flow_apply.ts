@@ -14,6 +14,7 @@ import {
 import { tryHandleDoorStyleOverridePaintClick } from './canvas_picking_paint_flow_apply_door_style.js';
 import { commitPaintFlowState } from './canvas_picking_paint_flow_apply_commit.js';
 import { isNonPaintableCanvasPaintPartId } from './canvas_picking_paint_part_eligibility.js';
+import { readCanvasPaintTargetScopeFromObject } from './canvas_picking_paint_target_scope.js';
 
 export function tryHandleCanvasPaintClick(args: CanvasPaintClickArgs): boolean {
   const { App, foundPartId, effectiveDoorId, foundDrawerId, activeStack: paintStackKey, isPaintMode } = args;
@@ -38,11 +39,13 @@ export function tryHandleCanvasPaintClick(args: CanvasPaintClickArgs): boolean {
   if (handledDoorStyle !== null) return handledDoorStyle;
 
   const state = createPaintFlowMutableState(App);
+  const targetScope = readCanvasPaintTargetScopeFromObject(App, args.primaryHitObject || args.doorHitObject);
   const handledGroupedTarget = applyGroupedOrCornerPaintTarget({
     state,
     foundPartId,
     activeStack: paintStackKey,
     paintSelection,
+    targetScope,
   });
 
   if (!handledGroupedTarget) {

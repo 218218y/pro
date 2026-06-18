@@ -101,7 +101,20 @@ export function tryHandleGenericPartPaintHover(args: {
     return false;
   }
 
-  const targetKeys = resolvePaintTargetKeys(resolvedTarget.partId, resolvedTarget.stackKey);
+  const targetKeys = resolvePaintTargetKeys(
+    resolvedTarget.partId,
+    resolvedTarget.stackKey,
+    resolvedTarget.targetScope
+  );
+  if (!targetKeys.length) {
+    try {
+      if (typeof hideLayoutPreview === 'function') hideLayoutPreview(createPreviewOpsArgs(App));
+      if (typeof hideSketchPreview === 'function') hideSketchPreview(createPreviewOpsArgs(App));
+    } catch {
+      // ignore
+    }
+    return false;
+  }
   const previewTargetKeys = __resolvePaintPreviewTargetKeys(
     resolvedTarget.partId,
     resolvedTarget.stackKey,

@@ -90,6 +90,7 @@ export function normalizeCornerWingState(args: {
     __sketchMode,
     __stackKey: stackMeta.__stackKey,
     __stackSplitEnabled: stackMeta.__stackSplitEnabled,
+    __stackSplitUnifiedFrame: stackMeta.__stackSplitUnifiedFrame,
     __stackOffsetZ: stackMeta.__stackOffsetZ,
     __mirrorX: metrics.__mirrorX,
     cornerSide: metrics.cornerSide,

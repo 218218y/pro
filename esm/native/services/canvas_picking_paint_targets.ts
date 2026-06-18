@@ -3,6 +3,7 @@ import {
   __wp_scopeCornerPartKeyForStack,
   __wp_scopeCornerPartKeysForStack,
 } from './canvas_picking_core_helpers.js';
+import type { CanvasPaintTargetScope } from './canvas_picking_paint_target_scope.js';
 
 export const MAIN_BODY_PARTS = ['body_left', 'body_right', 'body_ceil', 'body_floor'];
 export const LOWER_MAIN_BODY_PARTS = [
@@ -19,11 +20,27 @@ export const CORNER_WING_FRAME_PARTS = [
   'corner_wing_side_right',
   'corner_floor',
 ];
+export const CORNER_STACK_UNIFIED_WING_FRAME_PARTS = [
+  'corner_ceil',
+  'corner_wing_side_left',
+  'corner_wing_side_right',
+  'lower_corner_wing_side_left',
+  'lower_corner_wing_side_right',
+  'lower_corner_floor',
+];
 export const CORNER_PENTAGON_FRAME_PARTS = [
   'corner_pent_ceil',
   'corner_pent_floor',
   'corner_pent_attach_main',
   'corner_pent_attach_wing',
+];
+export const CORNER_STACK_UNIFIED_PENTAGON_FRAME_PARTS = [
+  'corner_pent_ceil',
+  'corner_pent_attach_main',
+  'corner_pent_attach_wing',
+  'lower_corner_pent_attach_main',
+  'lower_corner_pent_attach_wing',
+  'lower_corner_pent_floor',
 ];
 export const CORNICE_PARTS = [
   'cornice_color',
@@ -55,12 +72,103 @@ export function __isAnyCornicePart(partId: string): boolean {
   return __isCornicePart(partId) || __isCornerCornicePart(partId);
 }
 
+function unscopedLowerPartId(partId: string): { partId: string; stack: 'top' | 'bottom' | null } {
+  if (partId.startsWith('lower_')) return { partId: partId.slice('lower_'.length), stack: 'bottom' };
+  return { partId, stack: null };
+}
+
+function resolveHitStack(partId: string, activeStack: 'top' | 'bottom'): 'top' | 'bottom' {
+  const normalized = unscopedLowerPartId(partId);
+  return normalized.stack || activeStack;
+}
+
+function isCornerWingFrameHitPart(partId: string): boolean {
+  return (
+    CORNER_WING_FRAME_PARTS.includes(partId) ||
+    partId === 'corner_wing_ceil' ||
+    partId.startsWith('corner_cell_top_') ||
+    partId === 'corner_floor_blind' ||
+    partId.startsWith('corner_floor_c')
+  );
+}
+
+function isCornerWingCeilingHitPart(partId: string): boolean {
+  return partId === 'corner_ceil' || partId === 'corner_wing_ceil' || partId.startsWith('corner_cell_top_');
+}
+
+function isCornerWingFloorHitPart(partId: string): boolean {
+  return partId === 'corner_floor' || partId === 'corner_floor_blind' || partId.startsWith('corner_floor_c');
+}
+
+function isCornerWingSideHitPart(partId: string): boolean {
+  return partId === 'corner_wing_side_left' || partId === 'corner_wing_side_right';
+}
+
+function resolveUnifiedCornerWingFrameKeys(
+  partIdRaw: string,
+  activeStack: 'top' | 'bottom',
+  targetScope?: CanvasPaintTargetScope | null
+): string[] | null {
+  if (!targetScope?.stackSplitUnifiedFrame) return null;
+  const normalized = unscopedLowerPartId(partIdRaw);
+  const partId = normalized.partId;
+  if (!isCornerWingFrameHitPart(partId)) return null;
+
+  const hitStack = resolveHitStack(partIdRaw, activeStack);
+  const isOuterFrameBoard =
+    isCornerWingSideHitPart(partId) ||
+    (hitStack === 'top' && isCornerWingCeilingHitPart(partId)) ||
+    (hitStack === 'bottom' && isCornerWingFloorHitPart(partId));
+
+  return isOuterFrameBoard ? [...CORNER_STACK_UNIFIED_WING_FRAME_PARTS] : [];
+}
+
+function isCornerPentagonAttachHitPart(partId: string): boolean {
+  return partId === 'corner_pent_attach_main' || partId === 'corner_pent_attach_wing';
+}
+
+function resolveUnifiedCornerPentagonFrameKeys(
+  partIdRaw: string,
+  activeStack: 'top' | 'bottom',
+  targetScope?: CanvasPaintTargetScope | null
+): string[] | null {
+  if (!targetScope?.stackSplitUnifiedFrame) return null;
+  const normalized = unscopedLowerPartId(partIdRaw);
+  const partId = normalized.partId;
+  if (!CORNER_PENTAGON_FRAME_PARTS.includes(partId)) return null;
+
+  const hitStack = resolveHitStack(partIdRaw, activeStack);
+  const isOuterFrameBoard =
+    isCornerPentagonAttachHitPart(partId) ||
+    (hitStack === 'top' && partId === 'corner_pent_ceil') ||
+    (hitStack === 'bottom' && partId === 'corner_pent_floor');
+
+  return isOuterFrameBoard ? [...CORNER_STACK_UNIFIED_PENTAGON_FRAME_PARTS] : [];
+}
+
+export function resolveUnifiedCornerFramePaintTargetKeys(
+  foundPartId: string | null | undefined,
+  activeStack: 'top' | 'bottom',
+  targetScope?: CanvasPaintTargetScope | null
+): string[] | null {
+  const partId = typeof foundPartId === 'string' ? String(foundPartId) : '';
+  if (!partId) return null;
+  const wingKeys = resolveUnifiedCornerWingFrameKeys(partId, activeStack, targetScope);
+  if (wingKeys !== null) return wingKeys;
+  const pentagonKeys = resolveUnifiedCornerPentagonFrameKeys(partId, activeStack, targetScope);
+  if (pentagonKeys !== null) return pentagonKeys;
+  return null;
+}
+
 export function resolvePaintTargetKeys(
   foundPartId: string | null | undefined,
-  activeStack: 'top' | 'bottom'
+  activeStack: 'top' | 'bottom',
+  targetScope?: CanvasPaintTargetScope | null
 ): string[] {
   const partId = typeof foundPartId === 'string' ? String(foundPartId) : '';
   if (!partId) return [];
+  const unifiedCornerFrameKeys = resolveUnifiedCornerFramePaintTargetKeys(partId, activeStack, targetScope);
+  if (unifiedCornerFrameKeys !== null) return unifiedCornerFrameKeys;
   if (MAIN_BODY_PARTS.includes(partId)) return [...MAIN_BODY_PARTS];
   if (LOWER_MAIN_BODY_PARTS.includes(partId)) return [...LOWER_MAIN_BODY_PARTS];
   if (CHEST_BODY_PARTS.includes(partId)) return [...CHEST_BODY_PARTS];
@@ -68,13 +176,7 @@ export function resolvePaintTargetKeys(
   if (__isCornicePart(partId)) return ['cornice_color'];
   if (__isCornerCornicePart(partId))
     return __wp_scopeCornerPartKeysForStack(CORNER_CORNICE_PARTS, activeStack);
-  if (
-    CORNER_WING_FRAME_PARTS.includes(partId) ||
-    partId === 'corner_wing_ceil' ||
-    partId.startsWith('corner_cell_top_') ||
-    partId === 'corner_floor_blind' ||
-    partId.startsWith('corner_floor_c')
-  ) {
+  if (isCornerWingFrameHitPart(partId)) {
     return __wp_scopeCornerPartKeysForStack(CORNER_WING_FRAME_PARTS, activeStack);
   }
   if (CORNER_BODY_PARTS.includes(partId))

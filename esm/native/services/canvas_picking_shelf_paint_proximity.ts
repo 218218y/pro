@@ -5,12 +5,14 @@ import { __wp_measureObjectLocalBox } from './canvas_picking_local_helpers.js';
 import { __wp_projectWorldPointToLocal } from './canvas_picking_projection_runtime_plane.js';
 import { asRecordMap } from './canvas_picking_generic_paint_hover_shared.js';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
+import type { CanvasPaintTargetScope } from './canvas_picking_paint_target_scope.js';
 
 export type ShelfPaintProximityTarget = {
   object: UnknownRecord;
   parent: UnknownRecord | null;
   partId: string;
   stackKey: 'top' | 'bottom';
+  targetScope?: CanvasPaintTargetScope;
 };
 
 type LocalPoint = { x: number; y: number; z: number };
