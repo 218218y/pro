@@ -21,6 +21,7 @@ function createProjectIoApp(overrides?: {
   resetBaseline?: ((meta?: Record<string, unknown>) => unknown) | null;
   resetAllEditModes?: (() => void) | null;
   autosaveData?: string | null;
+  flushAutosaveResult?: boolean;
   confirmOpen?:
     | ((title: unknown, message: unknown, onYes?: (() => void) | null, onNo?: (() => void) | null) => void)
     | null;
@@ -86,6 +87,10 @@ function createProjectIoApp(overrides?: {
         cancelPending() {
           autosaveCalls.push('cancel');
           return true;
+        },
+        flushPending() {
+          autosaveCalls.push('flush');
+          return overrides?.flushAutosaveResult !== false;
         },
         forceSaveNow() {
           autosaveCalls.push('force');
@@ -273,6 +278,36 @@ test('project io restoreLastSession reports invalid autosave payloads as immedia
   const result = orchestrator.restoreLastSession();
   assert.deepEqual(result, { ok: false, reason: 'invalid' });
   assert.deepEqual(toasts, [{ message: 'נתוני השחזור לא תקינים', type: 'error' }]);
+});
+
+test('project io reset-default loads preserve last-session autosave instead of overwriting it', () => {
+  const { orchestrator, autosaveCalls, calls } = createProjectIoApp();
+
+  const result = orchestrator.loadProjectData(VALID_PROJECT as never, {
+    toast: false,
+    meta: { source: 'react:header:resetDefault', preserveAutosave: true },
+  });
+
+  assert.deepEqual(result, { ok: true, restoreGen: 1 });
+  assert.deepEqual(autosaveCalls, ['flush']);
+  assert.deepEqual(calls, [
+    'config:project.load',
+    'commit:project.load',
+    'dirty:false:project.load',
+    'history:project.load',
+  ]);
+});
+
+test('project io reset-default falls back to cancelling pending autosave when preserve flush is unavailable', () => {
+  const { orchestrator, autosaveCalls } = createProjectIoApp({ flushAutosaveResult: false });
+
+  const result = orchestrator.loadProjectData(VALID_PROJECT as never, {
+    toast: false,
+    meta: { source: 'react:header:resetDefault', preserveAutosave: true },
+  });
+
+  assert.deepEqual(result, { ok: true, restoreGen: 1 });
+  assert.deepEqual(autosaveCalls, ['flush', 'cancel']);
 });
 
 test('project io handleFileLoad now delegates through canonical project file ingress and preserves final success semantics', async () => {

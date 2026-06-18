@@ -18,6 +18,7 @@ import {
   captureProjectLoadSourceFlags as captureProjectLoadSourceFlagsImpl,
   captureProjectPrevUiMode as captureProjectPrevUiModeImpl,
   preserveUiEphemeral as preserveUiEphemeralImpl,
+  shouldPreserveProjectAutosaveOnLoad as shouldPreserveProjectAutosaveOnLoadImpl,
   readProjectSettings,
   readProjectToggles,
 } from './project_io_load_helpers_shared.js';
@@ -66,6 +67,10 @@ export function captureProjectPrevUiMode(uiState: UiStateLike | null | undefined
 
 export function captureProjectLoadSourceFlags(opts?: ProjectLoadOpts) {
   return captureProjectLoadSourceFlagsImpl(opts);
+}
+
+export function shouldPreserveProjectAutosaveOnLoad(opts?: ProjectLoadOpts): boolean {
+  return shouldPreserveProjectAutosaveOnLoadImpl(opts);
 }
 
 export function buildProjectConfigSnapshot(

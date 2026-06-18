@@ -110,6 +110,18 @@ export function captureProjectLoadSourceFlags(opts?: ProjectLoadOpts): ProjectIo
   };
 }
 
+export function shouldPreserveProjectAutosaveOnLoad(opts?: ProjectLoadOpts): boolean {
+  const optsRec = asRecord(opts);
+  const metaRec = asRecord(optsRec?.meta);
+  return (
+    optsRec?.preserveAutosave === true ||
+    optsRec?.preserveAutosaveOnLoad === true ||
+    metaRec?.preserveAutosave === true ||
+    metaRec?.preserveAutosaveOnLoad === true ||
+    metaRec?.autosavePolicy === 'preserve-existing'
+  );
+}
+
 export function preserveUiEphemeral(uiSnap: UiStateLike, uiNow: UiStateLike | null | undefined): UiStateLike {
   const next = (() => {
     const snap = asRecord(uiSnap);
@@ -126,5 +138,6 @@ export function preserveUiEphemeral(uiSnap: UiStateLike, uiNow: UiStateLike | nu
   preserveIfMissing('site2TabsGateOpen');
   preserveIfMissing('site2TabsGateUntil');
   preserveIfMissing('site2TabsGateBy');
+  preserveIfMissing('autosaveInfo');
   return next;
 }

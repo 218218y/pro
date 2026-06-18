@@ -5,6 +5,7 @@ import {
   buildProjectUiSnapshot,
   captureProjectLoadSourceFlags,
   captureProjectPrevUiMode,
+  shouldPreserveProjectAutosaveOnLoad,
   preserveUiEphemeral,
 } from './project_io_load_helpers.js';
 import { requestBuilderForcedBuild } from '../runtime/builder_service_access.js';
@@ -52,7 +53,7 @@ import {
   type ProjectPdfPatchLike,
 } from './project_io_orchestrator_shared.js';
 import {
-  cancelProjectIoAutosavePending,
+  prepareProjectIoAutosaveBeforeLoad,
   refreshProjectIoAutosaveAfterLoad,
 } from './project_io_orchestrator_autosave.js';
 
@@ -131,15 +132,18 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
       prevCornerSide = 'right';
     }
 
+    const { isHistoryApply, isModelApply, isCloudApply } = captureProjectLoadSourceFlags(opts);
+    const preserveAutosave = shouldPreserveProjectAutosaveOnLoad(opts);
+
     let restoreGen = 0;
+
+    prepareProjectIoAutosaveBeforeLoad({ App, preserveAutosave, reportNonFatal });
 
     try {
       setProjectIoRestoring(true, metaRestore('project.load', { silent: false }));
     } catch (err) {
       reportNonFatal('project.load.setRestoring.true', err);
     }
-
-    cancelProjectIoAutosavePending(App, reportNonFatal);
 
     restoreGen = nextProjectIoRestoreGeneration(App);
 
@@ -148,7 +152,6 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
       const metaNoBuild = metaRestore('project.load', { silent: false });
 
       const { uiState, savedNotes } = loadSnapshot;
-      const { isHistoryApply, isModelApply, isCloudApply } = captureProjectLoadSourceFlags(opts);
 
       try {
         const nextChestMode = !!uiState.isChestMode;
@@ -266,6 +269,7 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
         isHistoryApply,
         isModelApply,
         isCloudApply,
+        preserveAutosave,
         reportNonFatal,
       });
 

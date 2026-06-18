@@ -42,7 +42,10 @@ export function applyCornerWingCarcassCeiling(
       CORNER_WING_DIMENSIONS.ceiling.minDepthM
     );
     const __leftInsetX = woodThick + __wingAttachNoZFightingInsetX;
-    const __rightInsetX = woodThick;
+    // activeWidth is already measured up to the inside face of the right side panel.
+    // Do not subtract the outer side thickness again, otherwise the roof stops one
+    // board-thickness before the right side and leaves a visible air strip.
+    const __rightInsetX = 0;
     const topW = Math.max(
       CORNER_WING_DIMENSIONS.ceiling.minWidthM,
       activeWidth - __leftInsetX - __rightInsetX - CORNER_WING_DIMENSIONS.ceiling.widthClearanceM
@@ -74,7 +77,10 @@ export function applyCornerWingCarcassCeiling(
     const __isLast = __idx === cornerCells.length - 1;
 
     const __leftInsetX = __isFirst ? woodThick + __wingAttachNoZFightingInsetX : woodThick / 2;
-    const __rightInsetX = __isLast ? woodThick : woodThick / 2;
+    // Cell spans are derived from activeWidth, whose right boundary is the inside
+    // face of the right side panel. Internal seams still stop at the divider face,
+    // but the last roof segment must continue all the way to that side panel.
+    const __rightInsetX = __isLast ? 0 : woodThick / 2;
 
     const topW = Math.max(
       CORNER_WING_DIMENSIONS.ceiling.minWidthM,

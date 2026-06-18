@@ -49,6 +49,8 @@ export function buildResetDefaultProjectLoadOpts(opts?: ProjectLoadOpts | null):
   const nextMeta = opts?.meta && typeof opts.meta === 'object' ? { ...opts.meta } : {};
   if (typeof nextMeta.source !== 'string' || !nextMeta.source.trim())
     nextMeta.source = 'react:header:resetDefault';
+  nextMeta.resetDefault = true;
+  nextMeta.preserveAutosave = true;
   return {
     ...(opts && typeof opts === 'object' ? opts : {}),
     toast: typeof opts?.toast === 'boolean' ? opts.toast : false,

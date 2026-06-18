@@ -114,7 +114,7 @@ test('reset default payload reader returns canonical payload/load opts and preci
     assert.deepEqual(payload.opts, {
       toast: false,
       toastMessage: 'הארון אופס לברירת המחדל',
-      meta: { source: 'react:header:resetDefault' },
+      meta: { source: 'react:header:resetDefault', resetDefault: true, preserveAutosave: true },
     });
   }
 
@@ -250,6 +250,8 @@ test('reset default action result keeps canonical defaults but allows explicit l
   assert.equal(calls[0].opts.toast, true);
   assert.equal(calls[0].opts.toastMessage, 'custom toast');
   assert.equal(calls[0].opts.meta.source, 'custom.reset');
+  assert.equal(calls[0].opts.meta.resetDefault, true);
+  assert.equal(calls[0].opts.meta.preserveAutosave, true);
 });
 
 test('reset default command routes the cleaned payload through canonical project io load semantics', () => {
@@ -298,6 +300,8 @@ test('reset default command routes the cleaned payload through canonical project
   assert.equal(calls[0].opts.toast, false);
   assert.equal(calls[0].opts.toastMessage, 'הארון אופס לברירת המחדל');
   assert.equal(calls[0].opts.meta.source, 'react:header:resetDefault');
+  assert.equal(calls[0].opts.meta.resetDefault, true);
+  assert.equal(calls[0].opts.meta.preserveAutosave, true);
 });
 
 test('reset default reports not-installed when project io default builder is unavailable', () => {
