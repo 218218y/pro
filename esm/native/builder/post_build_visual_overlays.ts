@@ -8,7 +8,10 @@ import type { AppContainer, BuildContextLike, ThreeLike } from '../../../types/i
 import { asRecord } from './post_build_extras_shared.js';
 import { notifyHandleFitSuppressions } from './handles_fit_suppression_feedback.js';
 import { applyFrontRevealFrames } from './post_build_front_reveal_frames.js';
-import { applyRemovedPartsAfterBuild } from './post_build_removed_parts.js';
+import {
+  applyRemovedPartsAfterBuild,
+  requireRemovedPartsConfigSnapshot,
+} from './post_build_removed_parts.js';
 import {
   SKETCH_BOX_DOOR_PENDING_STATE_KEY,
   getSketchBoxDoorPendingStateKey,
@@ -48,12 +51,13 @@ export function applyPostBuildSketchVisualOverlays(args: {
   App: AppContainer;
   THREE: ThreeLike;
   ctx: BuildContextLike;
-  cfg: unknown;
+  cfgSnapshot: unknown;
   bodyMat: unknown;
   globalFrontMat: unknown;
   stackKey: 'top' | 'bottom';
 }): void {
-  const { App, THREE, ctx, cfg, bodyMat, globalFrontMat, stackKey } = args;
+  const { App, THREE, ctx, bodyMat, globalFrontMat, stackKey } = args;
+  const cfgSnapshot = requireRemovedPartsConfigSnapshot(args.cfgSnapshot);
   const moduleCutStackKeys: Array<'top' | 'bottom'> =
     stackKey === 'bottom' ? ['bottom', 'top'] : ['top', 'bottom'];
   const suppressedHandlePartIds: string[] = [];
@@ -65,7 +69,7 @@ export function applyPostBuildSketchVisualOverlays(args: {
       App,
       THREE,
       ctx,
-      cfg: asRecord(cfg) || {},
+      cfg: cfgSnapshot,
       bodyMat,
       globalFrontMat,
       stackKey: moduleCutStackKeys[i],
@@ -77,7 +81,7 @@ export function applyPostBuildSketchVisualOverlays(args: {
     App,
     THREE,
     ctx,
-    cfg: asRecord(cfg) || {},
+    cfg: cfgSnapshot,
     bodyMat,
     globalFrontMat,
     collectSuppressedHandlePartIds,
@@ -87,5 +91,5 @@ export function applyPostBuildSketchVisualOverlays(args: {
     completePass: true,
   });
   applyFrontRevealFrames(ctx);
-  applyRemovedPartsAfterBuild({ App, THREE, cfgSnapshot: cfg });
+  applyRemovedPartsAfterBuild({ App, THREE, cfgSnapshot });
 }

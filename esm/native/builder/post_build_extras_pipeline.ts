@@ -274,7 +274,7 @@ export function applyPostBuildExtras(input: BuildContextLike) {
       App,
       THREE,
       ctx,
-      cfg,
+      cfgSnapshot: cfg,
       bodyMat,
       globalFrontMat,
       stackKey: __stackKey,

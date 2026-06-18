@@ -27,19 +27,14 @@ function isRemovePartsMode(App: AppContainer): boolean {
   return readModePrimary(App) === removeModeId;
 }
 
-function requireRemovedPartsConfigSnapshot(cfgSnapshot: unknown): UnknownRecord {
+export function requireRemovedPartsConfigSnapshot(cfgSnapshot: unknown): UnknownRecord {
   const cfg = asRecord(cfgSnapshot);
   if (!cfg) throw new TypeError('[post_build_removed_parts] cfgSnapshot is required');
   return cfg;
 }
 
-function readRemovedPartsMap(cfgSnapshot: unknown): UnknownRecord {
-  const cfg = requireRemovedPartsConfigSnapshot(cfgSnapshot);
-  try {
-    return readConfigMapFromSnapshot(cfg, 'removedDoorsMap', {});
-  } catch {
-    return {};
-  }
+function readRemovedPartsMap(cfgSnapshot: UnknownRecord): UnknownRecord {
+  return readConfigMapFromSnapshot(cfgSnapshot, 'removedDoorsMap', {});
 }
 
 function isRemovedPart(removedMap: UnknownRecord, partId: string): boolean {
@@ -108,9 +103,10 @@ export function applyRemovedPartsAfterBuild(args: {
   cfgSnapshot: unknown;
 }): void {
   const { App, THREE, cfgSnapshot } = args;
+  const cfg = requireRemovedPartsConfigSnapshot(cfgSnapshot);
+  const removedMap = readRemovedPartsMap(cfg);
   const wardrobeGroup = asRecord(getWardrobeGroup(App));
   if (!wardrobeGroup) return;
-  const removedMap = readRemovedPartsMap(cfgSnapshot);
   const removedKeys = Object.keys(removedMap).filter(
     key => key.startsWith('removed_') && removedMap[key] === true
   );
