@@ -23,6 +23,7 @@ import {
   applyPendingSketchBoxDoorStateAfterBuild,
   applyPostBuildSketchVisualOverlays,
 } from './post_build_visual_overlays.js';
+import { requireCornerConfigSnapshot } from './corner_config_readers.js';
 
 function isUnknownRecord(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object';
@@ -187,6 +188,7 @@ export function applyPostBuildExtras(input: BuildContextLike) {
         '[builder/post_build_extras] isCornerMode=true but modules.buildCornerWing is missing'
       );
     }
+    const cornerCfgSnapshot = requireCornerConfigSnapshot(cfg);
     const resolvedShelfThick = Number(shelfThick);
     const __cornerWingMeta: BuilderCornerBuildMetaLike | null = stackSplitActive
       ? __stackKey === 'top'
@@ -197,7 +199,7 @@ export function applyPostBuildExtras(input: BuildContextLike) {
             stackSplitUnifiedFrame,
             stackOffsetZ: 0,
             shelfThick: resolvedShelfThick,
-            cfgSnapshot: cfg,
+            cfgSnapshot: cornerCfgSnapshot,
           }
         : {
             stackKey: 'bottom',
@@ -210,7 +212,7 @@ export function applyPostBuildExtras(input: BuildContextLike) {
             baseLegHeightCm: ctx.strings?.baseLegHeightCm,
             baseLegWidthCm: ctx.strings?.baseLegWidthCm,
             shelfThick: resolvedShelfThick,
-            cfgSnapshot: cfg,
+            cfgSnapshot: cornerCfgSnapshot,
           }
       : null;
     if (__cornerWingMeta) {
@@ -241,7 +243,7 @@ export function applyPostBuildExtras(input: BuildContextLike) {
           defaultShelfMat,
           braceShelfMat,
         },
-        { shelfThick: resolvedShelfThick, cfgSnapshot: cfg }
+        { shelfThick: resolvedShelfThick, cfgSnapshot: cornerCfgSnapshot }
       );
     }
   }

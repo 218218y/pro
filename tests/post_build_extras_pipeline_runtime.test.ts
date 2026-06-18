@@ -155,6 +155,38 @@ test('post-build extras: missing required corner-wing builder is reported before
   assert.equal(reports[0].ctx?.fatal, true);
 });
 
+test('post-build extras: corner builds reject a missing config snapshot before invoking the builder', () => {
+  let buildCalls = 0;
+  const App: any = {};
+
+  assert.throws(
+    () =>
+      applyPostBuildExtras(
+        createPostBuildContext(App, {
+          cfg: undefined,
+          flags: { isCornerMode: true, globalClickMode: false },
+          dims: {
+            doorsCount: 2,
+            totalW: 100,
+            cabinetBodyHeight: 200,
+            D: 60,
+            woodThick: 1.7,
+            startY: 0,
+          },
+          materials: {},
+          fns: {
+            buildCornerWing() {
+              buildCalls += 1;
+            },
+          },
+        })
+      ),
+    /cfgSnapshot is required/
+  );
+
+  assert.equal(buildCalls, 0);
+});
+
 test('post-build extras: missing required notes restore owner is reported before throwing', () => {
   const reports: Array<{ error: unknown; ctx: any }> = [];
   const App: any = {
