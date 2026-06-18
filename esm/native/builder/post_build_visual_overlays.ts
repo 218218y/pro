@@ -87,5 +87,5 @@ export function applyPostBuildSketchVisualOverlays(args: {
     completePass: true,
   });
   applyFrontRevealFrames(ctx);
-  applyRemovedPartsAfterBuild({ App, THREE, cfg });
+  applyRemovedPartsAfterBuild({ App, THREE, cfgSnapshot: cfg });
 }

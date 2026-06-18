@@ -4,7 +4,7 @@ import { getModeId } from '../runtime/api.js';
 import { getWardrobeGroup } from '../runtime/render_access.js';
 import { readConfigMapFromSnapshot } from '../runtime/config_selectors.js';
 import { isCanvasRemovablePartId, canonicalRemovablePartKey } from '../features/removable_parts.js';
-import { getBuildStateMaybe, getCfg, getMode, getState } from './store_access.js';
+import { getBuildStateMaybe, getMode, getState } from './store_access.js';
 import { asRecord } from './post_build_extras_shared.js';
 
 function readModePrimary(App: AppContainer): unknown {
@@ -27,9 +27,16 @@ function isRemovePartsMode(App: AppContainer): boolean {
   return readModePrimary(App) === removeModeId;
 }
 
-function readRemovedPartsMap(App: AppContainer, cfgIn: unknown): UnknownRecord {
+function requireRemovedPartsConfigSnapshot(cfgSnapshot: unknown): UnknownRecord {
+  const cfg = asRecord(cfgSnapshot);
+  if (!cfg) throw new TypeError('[post_build_removed_parts] cfgSnapshot is required');
+  return cfg;
+}
+
+function readRemovedPartsMap(cfgSnapshot: unknown): UnknownRecord {
+  const cfg = requireRemovedPartsConfigSnapshot(cfgSnapshot);
   try {
-    return readConfigMapFromSnapshot(cfgIn || getCfg(App), 'removedDoorsMap', {});
+    return readConfigMapFromSnapshot(cfg, 'removedDoorsMap', {});
   } catch {
     return {};
   }
@@ -98,12 +105,12 @@ function applyTransparentRemovedMaterial(args: {
 export function applyRemovedPartsAfterBuild(args: {
   App: AppContainer;
   THREE: ThreeLike;
-  cfg: unknown;
+  cfgSnapshot: unknown;
 }): void {
-  const { App, THREE, cfg } = args;
+  const { App, THREE, cfgSnapshot } = args;
   const wardrobeGroup = asRecord(getWardrobeGroup(App));
   if (!wardrobeGroup) return;
-  const removedMap = readRemovedPartsMap(App, cfg);
+  const removedMap = readRemovedPartsMap(cfgSnapshot);
   const removedKeys = Object.keys(removedMap).filter(
     key => key.startsWith('removed_') && removedMap[key] === true
   );
