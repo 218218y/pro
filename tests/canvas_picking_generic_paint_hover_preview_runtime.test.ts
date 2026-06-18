@@ -320,3 +320,42 @@ test('paint preview object collection keeps stacked corner shell frames scoped t
   assert.deepEqual(topObjects, [topRoof, topFloor, topSide]);
   assert.deepEqual(bottomObjects, [bottomRoof, bottomFloor, bottomSide]);
 });
+
+test('paint preview treats the unified corner stack middle floor as a single thin-board object', () => {
+  const middleFloor = makeBoxObject('corner_stack_mid_floor', {
+    width: 0.9,
+    height: 0.018,
+    depth: 0.55,
+    y: 1.05,
+  });
+  const bottomFloor = makeBoxObject('corner_floor', {
+    width: 0.9,
+    height: 0.018,
+    depth: 0.55,
+    y: 0.01,
+  });
+  (middleFloor.userData as Record<string, unknown>).__wpStack = 'top';
+  (bottomFloor.userData as Record<string, unknown>).__wpStack = 'bottom';
+
+  const wardrobeGroup = {
+    userData: { partId: 'root' },
+    children: [middleFloor, bottomFloor],
+  };
+
+  const objects = collectPaintPreviewPartObjects({
+    App: createAppWithRegistry({}) as never,
+    wardrobeGroup: wardrobeGroup as never,
+    partKeys: ['corner_stack_mid_floor'],
+  });
+  const preview = resolvePaintPreviewGroupBox({
+    App: createAppWithRegistry({}) as never,
+    wardrobeGroup: wardrobeGroup as never,
+    partKeys: ['corner_stack_mid_floor'],
+    anchorObject: middleFloor as never,
+    anchorParent: wardrobeGroup as never,
+  });
+
+  assert.deepEqual(objects, [middleFloor]);
+  assert.equal(preview?.kind, 'object_boxes');
+  assert.deepEqual(preview?.previewObjects, [middleFloor]);
+});

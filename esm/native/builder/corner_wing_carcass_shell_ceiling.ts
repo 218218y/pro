@@ -21,6 +21,7 @@ export function applyCornerWingCarcassCeiling(
     cornerConnectorEnabled,
     cabinetBodyHeight,
     __stackKey,
+    __stackSplitUnifiedFrame,
     getCornerMat,
     bodyMat,
     addOutlines,
@@ -29,6 +30,13 @@ export function applyCornerWingCarcassCeiling(
   const { cornerCells } = locals;
 
   if (cornerCells.length <= 0) return;
+
+  // In a unified stack-split frame the physical board between the lower and
+  // upper corner cabinets is emitted by the upper stack as the paintable
+  // middle-floor board. Emitting the lower stack ceiling as well creates two
+  // coplanar boards at the seam, which causes z-fighting once only one of them
+  // receives an individual material.
+  if (__stackSplitUnifiedFrame && __stackKey === 'bottom') return;
 
   const __wingCeilMat = getCornerMat('corner_ceil', bodyMat);
   const __wingAttachNoZFightingInsetX = cornerConnectorEnabled

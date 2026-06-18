@@ -96,6 +96,23 @@ function isCornerFloorPreviewObjectPartId(partId: string): boolean {
   return partId === 'corner_floor' || partId === 'corner_floor_blind' || /^corner_floor_c\d+$/.test(partId);
 }
 
+function isUnifiedCornerMiddleFloorPreviewObjectPartId(partId: string): boolean {
+  return (
+    partId === 'corner_stack_mid_floor' ||
+    partId === 'corner_stack_mid_floor_blind' ||
+    /^corner_stack_mid_floor_c\d+$/.test(partId)
+  );
+}
+
+function isUnifiedCornerMiddleFloorPaintKey(partKey: string): boolean {
+  const key = unscopedCornerPreviewKey(partKey);
+  return (
+    key === 'corner_stack_mid_floor' ||
+    key === 'corner_stack_mid_floor_blind' ||
+    /^corner_stack_mid_floor_c\d+$/.test(key)
+  );
+}
+
 function isCornerPlinthPreviewObjectPartId(partId: string): boolean {
   return (
     partId === 'corner_plinth' || partId === 'corner_plinth_blind' || /^corner_plinth_c\d+$/.test(partId)
@@ -107,6 +124,9 @@ function isCornerShellPaintPreviewMatch(partId: string, partKey: string): boolea
   if (partId === key) return true;
   if (key === 'corner_ceil') return isCornerCeilingPreviewObjectPartId(partId);
   if (key === 'corner_floor') return isCornerFloorPreviewObjectPartId(partId);
+  if (isUnifiedCornerMiddleFloorPaintKey(key)) {
+    return isUnifiedCornerMiddleFloorPreviewObjectPartId(partId);
+  }
   if (key === 'corner_plinth') return isCornerPlinthPreviewObjectPartId(partId);
   return false;
 }

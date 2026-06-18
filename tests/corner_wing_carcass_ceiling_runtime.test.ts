@@ -40,6 +40,8 @@ function createCeilingHarness(options: {
   wingW?: number;
   woodThick?: number;
   unified?: boolean;
+  stackKey?: 'top' | 'bottom';
+  stackSplitUnifiedFrame?: boolean;
 }) {
   const woodThick = options.woodThick ?? 0.018;
   const wingW = options.wingW ?? 1.2;
@@ -58,6 +60,8 @@ function createCeilingHarness(options: {
       blindWidth: 0,
       cornerConnectorEnabled: true,
       cabinetBodyHeight: 2.1,
+      __stackKey: options.stackKey ?? 'top',
+      __stackSplitUnifiedFrame: options.stackSplitUnifiedFrame ?? false,
       getCornerMat: () => ({ material: 'body' }),
       bodyMat: { material: 'default' },
       addOutlines: () => undefined,
@@ -159,5 +163,22 @@ test('corner wing last segmented roof reaches the right side inner face', () => 
     findPart(harness.added, 'corner_cell_top_c1'),
     harness.wingW,
     harness.woodThick
+  );
+});
+
+test('corner wing unified stack-split lower stack does not emit a duplicate middle ceiling board', () => {
+  const harness = createCeilingHarness({
+    unified: true,
+    stackKey: 'bottom',
+    stackSplitUnifiedFrame: true,
+    cornerCells: [createCell(0, 0, 0.55), createCell(1, 0.55, 0.55)],
+  });
+
+  applyCornerWingCarcassCeiling(harness.params, harness.metrics);
+
+  assert.deepEqual(
+    harness.added.map(item => item.userData.partId),
+    [],
+    'unified frame should keep a single seam board from the upper floor, not a coplanar lower ceiling'
   );
 });

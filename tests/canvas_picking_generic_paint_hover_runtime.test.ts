@@ -714,6 +714,47 @@ test('generic paint hover inherits bottom stack from the pentagon parent for thi
   assert.equal(previews[0]?.op, 'remove');
 });
 
+test('generic paint hover previews the unified corner stack middle floor as its own thin board', () => {
+  const wardrobeGroup = { children: [] as any[], userData: { partId: 'root' } };
+  const topGroup = {
+    children: [] as any[],
+    userData: { __wpCornerWing: true, __wpStack: 'top', __wpStackSplitUnifiedFrame: true },
+    parent: wardrobeGroup,
+  };
+  wardrobeGroup.children.push(topGroup);
+
+  const middleFloor = createBoxObject('corner_stack_mid_floor', {
+    width: 0.8,
+    height: 0.018,
+    depth: 0.55,
+    y: 1.1,
+  });
+  middleFloor.parent = topGroup;
+  topGroup.children.push(middleFloor);
+
+  const previews: Record<string, unknown>[] = [];
+  const handled = tryHandleGenericPartPaintHover({
+    App: createApp({ wardrobeGroup }),
+    ndcX: 0,
+    ndcY: 0,
+    paintSelection: 'walnut',
+    raycaster: createRaycaster([{ object: middleFloor, point: { x: 0.1, y: 1.1, z: 0.1 } }]),
+    mouse: { x: 0, y: 0 },
+    previewRo: {
+      setSketchPlacementPreview(args: Record<string, unknown>) {
+        previews.push(args);
+      },
+    },
+  });
+
+  assert.equal(handled, true);
+  assert.equal(previews.length, 1);
+  assert.equal(previews[0]?.kind, 'object_boxes');
+  assert.deepEqual(previews[0]?.previewObjects, [middleFloor]);
+  assert.equal(previews[0]?.fillFront, true);
+  assert.equal(previews[0]?.fillBack, true);
+});
+
 test('generic paint hover previews one unified stack-split corner wing outer frame without the middle boards', () => {
   const wardrobeGroup = { children: [] as any[], userData: { partId: 'root' } };
   const topGroup = {
