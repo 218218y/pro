@@ -7,7 +7,11 @@ import {
   createCanvasPickingDoorAuthoringRefreshGatedMeta,
   createCanvasPickingDoorAuthoringStructuralMeta,
 } from './canvas_picking_door_authoring_meta.js';
-import { parseSketchBoxDoorTarget, patchSketchBoxDoor } from './canvas_picking_door_sketch_box_edit.js';
+import {
+  isSketchBoxDoorSegmentPartId,
+  parseSketchBoxDoorTarget,
+  patchSketchBoxDoor,
+} from './canvas_picking_door_sketch_box_edit.js';
 import { requestDoorAuthoringBurstRefresh } from './canvas_picking_door_authoring_burst.js';
 import {
   __wp_reportPickingIssue,
@@ -33,7 +37,10 @@ function isDoorVisualEntryLike(value: unknown): value is DoorVisualEntryLike {
 
 export function handleCanvasDoorRemoveClick(args: CanvasDoorRemoveClickArgs): boolean {
   const { App, effectiveDoorId, foundPartId, foundModuleStack } = args;
-  const sketchTarget = parseSketchBoxDoorTarget(effectiveDoorId || foundPartId);
+  const rawClickedPartId = String(effectiveDoorId || foundPartId || '');
+  const sketchTarget = isSketchBoxDoorSegmentPartId(rawClickedPartId)
+    ? null
+    : parseSketchBoxDoorTarget(rawClickedPartId);
   if (sketchTarget) {
     patchSketchBoxDoor(
       App,

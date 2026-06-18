@@ -118,6 +118,7 @@ export function applyFrontRevealDoorFrames(ctx: BuildContextLike, runtime: Front
         const segUd = asRecord(seg && seg.userData);
         if (!seg || !segUd || !segUd.__wpSketchDoorSegment) continue;
         runtime.removeLocalFrames(seg);
+        if (segUd.__wpDoorRemoved === true) continue;
         const segBounds = runtime.getObjectLocalBounds(seg);
         const segMinX = readBoundsAxis(segBounds, 'x', 'min');
         const segMaxX = readBoundsAxis(segBounds, 'x', 'max');

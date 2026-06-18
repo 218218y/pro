@@ -354,6 +354,67 @@ test('free sketch-box door remove click patches through the semantic remove sour
   assert.equal('noBuild' in patchCalls[0].meta, false);
 });
 
+test('free sketch-box segmented door remove click toggles only the clicked drawer-cut leaf', () => {
+  const { App, state } = createApp();
+  let patchCalls = 0;
+  state.config.removedDoorsMap = {};
+  state.modulesConfiguration = [
+    {
+      sketchExtras: {
+        boxes: [
+          {
+            id: 'sbf_alpha',
+            doors: [
+              {
+                id: 'sbdr_1',
+                xNorm: 0.5,
+                hinge: 'left',
+                enabled: true,
+                open: false,
+              },
+            ],
+          },
+        ],
+      },
+    },
+  ];
+  App.actions.modules = {
+    ensureForStack(stack: 'top' | 'bottom', moduleKey: string) {
+      return stack === 'top' ? state.modulesConfiguration[Number(moduleKey)] : null;
+    },
+    patchForStack(
+      _stack: 'top' | 'bottom',
+      _moduleKey: string,
+      mutate: (cfg: Record<string, unknown>) => void
+    ) {
+      patchCalls += 1;
+      mutate(state.modulesConfiguration[0]);
+    },
+  };
+  App.actions.doors = {
+    setRemoved(partId: string, on: boolean) {
+      const key = `removed_${partId}`;
+      if (on) state.config.removedDoorsMap[key] = true;
+      else delete state.config.removedDoorsMap[key];
+    },
+  };
+
+  const handled = handleCanvasDoorRemoveClick({
+    App,
+    effectiveDoorId: 'sketch_box_free_0_sbf_alpha_door_sbdr_1_bot',
+    foundPartId: null,
+    foundModuleStack: 'top',
+  });
+
+  const door = state.modulesConfiguration[0].sketchExtras.boxes[0].doors[0];
+  assert.equal(handled, true);
+  assert.equal(patchCalls, 0);
+  assert.equal(door.enabled, true);
+  assert.deepEqual(state.config.removedDoorsMap, {
+    removed_sketch_box_free_0_sbf_alpha_door_sbdr_1_bot: true,
+  });
+});
+
 test('sketch-box door target parser normalizes segmented door suffixes before patching door config', () => {
   assert.deepEqual(parseSketchBoxDoorTarget('sketch_box_free_7_sbf_alpha_door_sbdr_1_bot'), {
     moduleKey: '7',

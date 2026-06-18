@@ -121,8 +121,15 @@ export function applySketchSegmentPickMeta(node: SketchDoorNode, partId: string)
 }
 
 export function readSketchDoorBasePartId(partId: string): string {
-  if (!partId) return '';
-  return partId.replace(/_(?:full|top|bot|mid\d*)$/i, '');
+  const rawId = String(partId || '');
+  if (!rawId) return '';
+
+  // A *_full id is the canonical whole-door owner, so its drawer-cut leaves should
+  // use the regular *_bot/*_top map keys. A door that is already a split leaf
+  // (for example d1_bot) must remain the owner of its own drawer-cut leaves;
+  // otherwise the new leaf above the drawer becomes d1_top and collides with the
+  // real upper split door.
+  return rawId.replace(/_full$/i, '');
 }
 
 export function resolveSketchDoorSegmentPartId(

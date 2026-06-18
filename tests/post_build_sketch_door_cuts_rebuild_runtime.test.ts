@@ -286,6 +286,34 @@ test('segmented sketch door manual handle placement includes hinged parent mesh 
   }
 });
 
+test('segmented sketch door rebuild keeps drawer-cut ids scoped under an already split parent leaf', () => {
+  const doorGroup = new FakeGroup();
+  doorGroup.userData = {
+    partId: 'd25_bot',
+    __doorWidth: 1,
+    __doorHeight: 1.2,
+    __hingeLeft: false,
+  };
+  doorGroup.position.set(0, 0.6, 0);
+
+  rebuildSketchSegmentedDoor({
+    runtime: createBaseRuntime(),
+    g: doorGroup,
+    ud: doorGroup.userData,
+    visibleSegments: [
+      { yMin: 0, yMax: 0.45 },
+      { yMin: 0.75, yMax: 1.2 },
+    ],
+    basePartId: 'd25_bot',
+  });
+
+  const segmentLeaves = doorGroup.children.filter(child => child.userData.__wpSketchDoorLeaf === true);
+  assert.deepEqual(
+    segmentLeaves.map(child => child.userData.partId),
+    ['d25_bot_bot', 'd25_bot_top']
+  );
+});
+
 test('segmented sketch door rebuild keeps canonical segment ids for 4-way splits and removed restore targets', () => {
   const doorGroup = new FakeGroup();
   doorGroup.userData = {
