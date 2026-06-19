@@ -5,8 +5,15 @@ import { resolveBuilderDepsOrThrow } from './builder_deps_resolver.js';
 import { resolveBuildStateOrThrow } from './build_state_resolver.js';
 import { sanitizeBuildDimsAndSyncRuntime } from './state_sanitize_pipeline.js';
 import { resetEdgeHandleDefaultNoneCacheMaps } from './edge_handle_default_none_runtime.js';
+import { bindDoorVisualRenderPolicy } from './door_visual_render_policy.js';
 
-import type { AppContainer, BuilderDepsRootLike, BuildStateResolvedLike } from '../../../types';
+import type {
+  AppContainer,
+  BuilderContentsRenderPolicy,
+  BuilderCreateDoorVisualFn,
+  BuilderDepsRootLike,
+  BuildStateResolvedLike,
+} from '../../../types';
 
 function __builderGuardStrict<T>(
   _App: AppContainer,
@@ -35,6 +42,8 @@ export type PreparedBuildWardrobeFlow = {
   doorsCount: number;
   chestDrawersCount: number;
   sketchMode: boolean;
+  renderPolicy: BuilderContentsRenderPolicy;
+  createDoorVisual: BuilderCreateDoorVisualFn;
 };
 
 export function prepareBuildWardrobeFlow(
@@ -72,6 +81,13 @@ export function prepareBuildWardrobeFlow(
   const dims = sanitizeBuildDimsAndSyncRuntime({ App, ui, cfg: cfgSnapshot });
   if (dims && dims.skipBuild) return null;
 
+  const sketchMode = !!runtime.sketchMode;
+  const addOutlines = deps.createOutlineBinding({ sketchMode });
+  if (typeof addOutlines !== 'function') {
+    throw new Error('[WardrobePro] materials.createOutlineBinding must return an outline function');
+  }
+  const renderPolicy: BuilderContentsRenderPolicy = Object.freeze({ sketchMode, addOutlines });
+
   return {
     App,
     label,
@@ -82,6 +98,8 @@ export function prepareBuildWardrobeFlow(
     depthCm: dims.depthCm,
     doorsCount: dims.doorsCount,
     chestDrawersCount: dims.chestDrawersCount,
-    sketchMode: !!runtime.sketchMode,
+    sketchMode,
+    renderPolicy,
+    createDoorVisual: bindDoorVisualRenderPolicy(deps.createDoorVisual, renderPolicy),
   };
 }

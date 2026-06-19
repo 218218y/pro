@@ -8,7 +8,7 @@ import type {
   BuilderCreateDoorVisualFn,
   BuilderCreateInternalDrawerBoxFn,
   BuilderGetMaterialFn,
-  BuilderOutlineFn,
+  BuilderOutlineBindingFactory,
   ThreeLike,
 } from '../../../types';
 
@@ -25,11 +25,11 @@ import {
 
 export type MirrorMaterialFactory = (args: { App: AppContainer; THREE: ThreeLike }) => unknown;
 
-export function getBuilderAddOutlines(App: unknown): BuilderOutlineFn | null {
-  return bindBuilderMethod<Parameters<BuilderOutlineFn>, ReturnType<BuilderOutlineFn>>(
-    getBuilderRenderOps(App),
-    'addOutlines'
-  );
+export function getBuilderCreateOutlineBinding(App: unknown): BuilderOutlineBindingFactory | null {
+  return bindBuilderMethod<
+    Parameters<BuilderOutlineBindingFactory>,
+    ReturnType<BuilderOutlineBindingFactory>
+  >(getBuilderRenderOps(App), 'createOutlineBinding');
 }
 
 export function getBuilderGetMaterial(App: unknown): BuilderGetMaterialFn | null {

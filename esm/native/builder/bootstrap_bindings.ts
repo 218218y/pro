@@ -3,7 +3,7 @@ import { getNotesForSaveFn, getRestoreNotesFromSaveFn } from '../runtime/notes_a
 import {
   getBuilderAddFoldedClothes,
   getBuilderAddHangingClothes,
-  getBuilderAddOutlines,
+  getBuilderCreateOutlineBinding,
   getBuilderAddRealisticHanger,
   getBuilderBuildChestOnly,
   getBuilderBuildCornerWing,
@@ -52,11 +52,11 @@ export function createBuilderNamespaceBindingMap(): BuilderNamespaceBindingMap {
         bind: context => getBuilderGetMaterial(context.App),
       },
       {
-        key: 'addOutlines',
+        key: 'createOutlineBinding',
         mode: 'value',
         value: null,
-        stableKey: '__wpBuilderAddOutlines',
-        bind: context => getBuilderAddOutlines(context.App),
+        stableKey: '__wpBuilderCreateOutlineBinding',
+        bind: context => getBuilderCreateOutlineBinding(context.App),
       },
     ],
     modules: [

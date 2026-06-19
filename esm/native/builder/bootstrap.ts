@@ -21,6 +21,7 @@ import { ensureDepsRoot } from '../runtime/deps_access.js';
 import type { AppContainer, BuilderDepsRootLike } from '../../../types/index.js';
 import {
   createBuilderNamespaceRoots,
+  clearDeprecatedBuilderOutlineBindings,
   getBuilderDeps,
   installBuilderDepsNamespaces,
   pickBuilderApp,
@@ -44,6 +45,7 @@ export function installBuilderBootstrap(App: AppContainer): BuilderDepsRootLike 
   if (!depsRoot.__bootstrap_v1) depsRoot.__bootstrap_v1 = true;
 
   const namespaces = createBuilderNamespaceRoots(App);
+  clearDeprecatedBuilderOutlineBindings(namespaces);
   refreshBuilderNamespaceInstallContexts(namespaces, App);
   installBuilderDepsNamespaces(namespaces, createBuilderNamespaceBindingMap());
 

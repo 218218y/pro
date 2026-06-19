@@ -11,7 +11,7 @@ import {
   runBuilderChestModeFollowThrough,
   getBuilderAddFoldedClothes,
   getBuilderAddHangingClothes,
-  getBuilderAddOutlines,
+  getBuilderCreateOutlineBinding,
   getBuilderAddRealisticHanger,
   getBuilderBuildChestOnly,
   getBuilderBuildCornerWing,
@@ -136,9 +136,12 @@ function createHarness(): Harness {
       },
     },
     renderOps: {
-      addOutlines(group: unknown) {
-        calls.outlines.push({ self: this, group });
-        return { outlined: group };
+      createOutlineBinding(snapshot: unknown) {
+        const owner = this;
+        return (group: unknown) => {
+          calls.outlines.push({ self: owner, group, snapshot });
+          return { outlined: group, snapshot };
+        };
       },
       getMirrorMaterial(args: { App: unknown; THREE: unknown }) {
         calls.renderMirror.push({ self: this, args });
@@ -276,7 +279,10 @@ test('builder public surface runtime: service access binds canonical builder sea
   assert.equal(getBuilderGetMaterial(App)?.('oak'), 'material:oak');
   assert.equal(calls.materials[0]?.self, App.services.builder.materials);
 
-  assert.deepEqual(getBuilderAddOutlines(App)?.({ id: 'group-1' }), { outlined: { id: 'group-1' } });
+  assert.deepEqual(getBuilderCreateOutlineBinding(App)?.({ sketchMode: true })({ id: 'group-1' }), {
+    outlined: { id: 'group-1' },
+    snapshot: { sketchMode: true },
+  });
   assert.equal(calls.outlines[0]?.self, App.services.builder.renderOps);
 
   assert.deepEqual(getBuilderCreateDoorVisual(App)?.({ id: 'door-1' }), {
@@ -765,6 +771,9 @@ test('builder public surface runtime: bootstrap seeds canonical builder deps nam
 
   const preseededModules = ensureBuilderDepsNamespace(App, 'modules');
   preseededModules.calculateModuleStructure = customCalc;
+  const preseededMaterials = ensureBuilderDepsNamespace(App, 'materials');
+  preseededMaterials.addOutlines = () => 'legacy-outline';
+  preseededMaterials.__wpBuilderAddOutlines = () => 'legacy-stable-outline';
   const preseededRender = ensureBuilderDepsNamespace(App, 'render');
   preseededRender.showToast = customShowToast;
 
@@ -782,7 +791,7 @@ test('builder public surface runtime: bootstrap seeds canonical builder deps nam
   };
   const requiredBindings = {
     util: ['cleanGroup', 'pruneCachesSafe'],
-    materials: ['getMaterial', 'addOutlines'],
+    materials: ['getMaterial', 'createOutlineBinding'],
     modules: [
       'createDoorVisual',
       'createInternalDrawerBox',
@@ -807,6 +816,8 @@ test('builder public surface runtime: bootstrap seeds canonical builder deps nam
 
   assert.equal(namespaces.render.showToast, customShowToast);
   assert.equal(namespaces.modules.calculateModuleStructure, customCalc);
+  assert.equal(namespaces.materials.addOutlines, undefined);
+  assert.equal(namespaces.materials.__wpBuilderAddOutlines, undefined);
 
   assert.equal(namespaces.materials.getMaterial('birch'), 'material:birch');
   assert.equal(namespaces.modules.createDoorVisual('door-2').kind, 'door');

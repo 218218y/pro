@@ -14,16 +14,9 @@ export function runPreparedBuildWardrobePlan(
   execution: PreparedBuildWardrobeExecution
 ): void {
   const { buildCtx, plan } = execution;
-  const { App, deps, buildState } = prepared;
-  const {
-    THREE,
-    createDoorVisual,
-    createInternalDrawerBox,
-    addOutlines,
-    addHangingClothes,
-    addFoldedClothes,
-    addRealisticHanger,
-  } = deps;
+  const { App, deps, buildState, createDoorVisual, renderPolicy } = prepared;
+  const { THREE, createInternalDrawerBox, addHangingClothes, addFoldedClothes, addRealisticHanger } = deps;
+  const addOutlines = renderPolicy.addOutlines;
   const { cfgSnapshot: cfg, ui } = buildState;
 
   if (!plan.noMainWardrobe) {

@@ -1,6 +1,5 @@
 import { assertTHREE } from '../runtime/api.js';
 import {
-  getBuilderAddOutlines,
   requireBuilderAddFoldedClothes,
   requireBuilderAddHangingClothes,
   requireBuilderAddRealisticHanger,
@@ -15,9 +14,11 @@ import type {
   BuilderBuildCornerWingCtxLike,
   BuilderBuildCornerWingFn,
   BuilderBuildCornerWingMaterialsLike,
+  BuilderContentsRenderPolicy,
   BuilderCreateDoorVisualFn,
   BuilderCreateInternalDrawerBoxFn,
 } from '../../../types';
+import { bindDoorVisualRenderPolicy } from './door_visual_render_policy.js';
 import type { Object3DLike } from '../../../types/three_like';
 
 type ValueRecord = Record<string, unknown>;
@@ -53,9 +54,8 @@ export function resolveCornerWingTHREE(App: AppContainer) {
   return assertTHREE(App, 'native/builder/corner_wing.THREE');
 }
 
-export function resolveCornerWingServices(App: AppContainer) {
+export function resolveCornerWingServices(App: AppContainer, renderPolicy: BuilderContentsRenderPolicy) {
   const ro = requireBuilderRenderOps(App, 'native/builder/corner_wing.renderOps');
-  const addOutlinesFn = getBuilderAddOutlines(App);
   const getMaterial = requireBuilderGetMaterial(App, 'native/builder/corner_wing.materials.getMaterial');
   const createDoorVisualRaw = requireBuilderCreateDoorVisual(
     App,
@@ -78,9 +78,8 @@ export function resolveCornerWingServices(App: AppContainer) {
     'native/builder/corner_wing.contents.addFoldedClothes'
   );
 
-  function addOutlines(mesh: unknown) {
-    if (addOutlinesFn) return addOutlinesFn(mesh);
-  }
+  const addOutlines = renderPolicy.addOutlines || (() => undefined);
+  const createDoorVisualWithPolicy = bindDoorVisualRenderPolicy(createDoorVisualRaw, renderPolicy);
 
   const createDoorVisual: BuilderCreateDoorVisualFn = (
     w,
@@ -98,7 +97,7 @@ export function resolveCornerWingServices(App: AppContainer) {
     groovePartId,
     options
   ) => {
-    const out = createDoorVisualRaw(
+    const out = createDoorVisualWithPolicy(
       w,
       h,
       thickness,

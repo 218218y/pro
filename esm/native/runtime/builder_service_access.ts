@@ -30,7 +30,7 @@ export {
 } from './builder_service_access_slots.js';
 
 export {
-  getBuilderAddOutlines,
+  getBuilderCreateOutlineBinding,
   getBuilderGetMaterial,
   requireBuilderGetMaterial,
   getBuilderMirrorMaterialFactory,

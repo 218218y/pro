@@ -9,7 +9,7 @@ import { guardVoid } from '../runtime/api.js';
 import { runBuilderChestModeFollowThrough } from '../runtime/builder_service_access.js';
 import { requireChestModeConfigSnapshot } from './visuals_chest_mode_config.js';
 
-import type { ConfigStateLike, UnknownRecord } from '../../../types/index.js';
+import type { BuilderContentsRenderPolicy, ConfigStateLike, UnknownRecord } from '../../../types/index.js';
 
 function asFiniteNumber(v: unknown, name: string): number {
   const n = typeof v === 'number' ? v : Number(v);
@@ -42,6 +42,7 @@ type BuildChestModeIfNeededParams = {
   depthCm?: number | string;
   drawersCount?: number | string;
   cfgSnapshot?: ConfigStateLike | UnknownRecord | null;
+  renderPolicy?: BuilderContentsRenderPolicy;
   buildChestOnly?: (args: {
     H: number;
     totalW: number;
@@ -61,6 +62,7 @@ type BuildChestModeIfNeededParams = {
     chestCommodeMirrorHeightCm: number | string;
     chestCommodeMirrorWidthCm: number | string;
     cfgSnapshot: ConfigStateLike | UnknownRecord;
+    renderPolicy: BuilderContentsRenderPolicy;
   }) => void;
 };
 
@@ -83,6 +85,10 @@ export function buildChestModeIfNeeded(params: BuildChestModeIfNeededParams | nu
   }
 
   const cfgSnapshot = requireChestModeConfigSnapshot(p.cfgSnapshot, 'builder/chest_mode_pipeline');
+  const renderPolicy = p.renderPolicy;
+  if (!renderPolicy || typeof renderPolicy.sketchMode !== 'boolean') {
+    throw new Error('[WardrobePro] Chest mode: snapshot renderPolicy is required');
+  }
 
   buildChestOnly({
     H: heightCm / 100,
@@ -104,6 +110,7 @@ export function buildChestModeIfNeeded(params: BuildChestModeIfNeededParams | nu
       ui.chestCommodeMirrorHeightCm ?? CHEST_MODE_DIMENSIONS.commode.defaultMirrorHeightCm,
     chestCommodeMirrorWidthCm: ui.chestCommodeMirrorWidthCm ?? widthCm,
     cfgSnapshot,
+    renderPolicy,
   });
 
   const base = { where: 'builder/chest_mode_pipeline' };

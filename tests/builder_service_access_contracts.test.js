@@ -277,7 +277,7 @@ test('[builder-access] shared runtime access surfaces own builder, deps, and roo
     assert,
     runtimeBuilderAccessCalls,
     [
-      /export function getBuilderAddOutlines\(/,
+      /export function getBuilderCreateOutlineBinding\(/,
       /export function getBuilderGetMaterial\(/,
       /export function requireBuilderGetMaterial\(/,
       /export function getBuilderMirrorMaterialFactory\(/,
@@ -433,7 +433,7 @@ test('[builder-access] deleted helper duplicates stay removed and critical calls
     'expected corner wing install seam to stay split into corner_wing_install.js'
   );
   assert.match(cornerWing, /requireBuilderRenderOps\(App,/);
-  assert.match(cornerWing, /getBuilderAddOutlines\(App\)/);
+  assert.match(cornerWing, /renderPolicy\.addOutlines/);
   assert.match(cornerWing, /requireBuilderGetMaterial\(App,/);
   assert.match(cornerWing, /requireBuilderCreateDoorVisual\(\s*App,/);
   assert.match(cornerWing, /requireBuilderCreateInternalDrawerBox\(\s*App,/);

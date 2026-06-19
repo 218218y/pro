@@ -65,9 +65,9 @@ function createCompleteFixture() {
         calls.push(['materials.getMaterial', this, value]);
         return { value, owner: this.owner };
       },
-      addOutlines(value) {
-        calls.push(['materials.addOutlines', this, value]);
-        return 'outlined';
+      createOutlineBinding(snapshot) {
+        calls.push(['materials.createOutlineBinding', this, snapshot]);
+        return value => ({ snapshot, value, owner: this.owner });
       },
     },
     modules: {
@@ -160,6 +160,11 @@ test('stage17 builder deps resolver resolves required deps and preserves owner b
   assert.equal(resolved.THREE, fixture.THREE);
   assert.equal(resolved.cleanGroup('group'), 'cleaned');
   assert.deepEqual(resolved.getMaterial('oak'), { value: 'oak', owner: 'materials-owner' });
+  assert.deepEqual(resolved.createOutlineBinding({ sketchMode: true })('mesh'), {
+    snapshot: { sketchMode: true },
+    value: 'mesh',
+    owner: 'materials-owner',
+  });
   assert.deepEqual(resolved.createDoorVisual('door'), { value: 'door', owner: 'modules-owner' });
   assert.equal(resolved.pruneCachesSafe('root'), 'platform-pruned');
 
@@ -170,8 +175,13 @@ test('stage17 builder deps resolver resolves required deps and preserves owner b
   ]);
   assert.deepEqual(fixture.calls[1], ['util.cleanGroup', fixture.builderDeps.util, 'group']);
   assert.deepEqual(fixture.calls[2], ['materials.getMaterial', fixture.builderDeps.materials, 'oak']);
-  assert.deepEqual(fixture.calls[3], ['modules.createDoorVisual', fixture.builderDeps.modules, 'door']);
-  assert.equal(fixture.calls[4][0], 'platform.pruneCachesSafe');
+  assert.deepEqual(fixture.calls[3], [
+    'materials.createOutlineBinding',
+    fixture.builderDeps.materials,
+    { sketchMode: true },
+  ]);
+  assert.deepEqual(fixture.calls[4], ['modules.createDoorVisual', fixture.builderDeps.modules, 'door']);
+  assert.equal(fixture.calls[5][0], 'platform.pruneCachesSafe');
 });
 
 test('stage17 builder deps resolver fails at the resolver boundary for missing critical deps', async () => {
@@ -190,6 +200,11 @@ test('stage17 builder deps resolver fails at the resolver boundary for missing c
   const missingCases = [
     ['util.cleanGroup', deps => delete deps.util.cleanGroup, /util\.cleanGroup/],
     ['materials.getMaterial', deps => delete deps.materials.getMaterial, /materials\.getMaterial/],
+    [
+      'materials.createOutlineBinding',
+      deps => delete deps.materials.createOutlineBinding,
+      /materials\.createOutlineBinding/,
+    ],
     ['modules.createDoorVisual', deps => delete deps.modules.createDoorVisual, /modules\.createDoorVisual/],
     [
       'render.ensureWardrobeGroup',

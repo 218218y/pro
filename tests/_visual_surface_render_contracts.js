@@ -226,7 +226,7 @@ const CASES = [
       /render_ops_extras_shared\.js/,
       /render_ops_extras_dimensions\.js/,
       /render_ops_extras_outlines\.js/,
-      /export \{ getDimLabelEntry, addDimensionLine, addOutlines \};/,
+      /export \{ getDimLabelEntry, addDimensionLine, addOutlines, createOutlineBinding \};/,
     ],
     excludes: [/export function getDimLabelEntry\(/, /export function addOutlines\(/],
     helpers: [
@@ -235,7 +235,10 @@ const CASES = [
         'esm/native/builder/render_ops_extras_dimensions.ts',
         [/export function getDimLabelEntry\(/, /export function addDimensionLine\(/],
       ],
-      ['esm/native/builder/render_ops_extras_outlines.ts', [/export function addOutlines\(/]],
+      [
+        'esm/native/builder/render_ops_extras_outlines.ts',
+        [/export function addOutlines\(/, /export function createOutlineBinding\(/],
+      ],
     ],
   },
   {

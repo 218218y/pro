@@ -48,6 +48,7 @@ This file is intentionally compact. It keeps only current decomposition guard fa
 - `canvas_picking_core.ts` sketch free-box entrypoints still route through `services/canvas_picking_sketch_free_boxes.ts`, while the workflow seam now fans out to `services/canvas_picking_sketch_free_box_shared.ts`, a thin `services/canvas_picking_sketch_free_box_geometry.ts` seam over focused box-size, vertical-bounds, overlap, and remove-zone owners, a thin `services/canvas_picking_sketch_free_box_placement.ts` seam over focused attach/overlap helpers, and `services/canvas_picking_sketch_free_box_hover.ts` so host selection stays separate from geometry, placement, attach scoring, and hover resolution policy.
 - `canvas_picking_sketch_box_dividers.ts` is now a thin canonical seam over focused divider-state, segment, door, and shared tool helpers
 - `render_ops.ts` sketch extras + carcass flows extracted into helper modules
+- `builder/render_ops_extras_outlines.ts` owns snapshot-bound outline creation: each build captures `sketchMode` once, then propagates one binding through main/no-main, stack-split, corner, door/drawer, and Chest Mode flows without live runtime reads
 - `render_ops.ts` dimensions + interior preset/custom/rod flows now live in helper modules
 - `render_ops.ts` preview/hover helpers extracted into `builder/render_preview_ops.ts`
 - `services/models.ts` is now a small public service facade while stable surface installation, live App context refresh, and method-slot healing live in `services/models_surface_install.ts`

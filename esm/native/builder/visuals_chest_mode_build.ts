@@ -43,6 +43,7 @@ import {
   resolveCabinetBodyDoorTrimSurfaceInfo,
 } from '../features/door_trim.js';
 import { applyFrontRevealFrames } from './post_build_front_reveal_frames.js';
+import { requireContentsRenderPolicy } from './visuals_contents_shared.js';
 
 import type { BuildContextLike } from '../../../types/index.js';
 
@@ -73,7 +74,8 @@ export function buildChestOnly(App: AppContainer, opts?: UnknownRecord | null) {
     drawerBoxMat: palette.drawerBoxMat,
   });
   const renderOps = getBuilderRenderOps(App);
-  const addOutlines = renderOps && typeof renderOps.addOutlines === 'function' ? renderOps.addOutlines : null;
+  const renderPolicy = requireContentsRenderPolicy(opts?.renderPolicy);
+  const addOutlines = renderPolicy.addOutlines;
   const addDimensionLine =
     renderOps && typeof renderOps.addDimensionLine === 'function' ? renderOps.addDimensionLine : null;
 
@@ -230,6 +232,7 @@ export function buildChestOnly(App: AppContainer, opts?: UnknownRecord | null) {
       isGroovesEnabled: inputs.isGroovesEnabled,
       getPartColorValue,
       addOutlines,
+      renderPolicy,
     });
     const frontCenterZ = isInsetDrawerMount
       ? D / 2 - frontThickness / 2 - insetReveal

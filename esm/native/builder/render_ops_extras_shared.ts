@@ -15,6 +15,7 @@ import {
 
 import type {
   AppContainer,
+  BuilderOutlineBindingFactory,
   Object3DLike,
   RenderCacheMapsLike,
   RenderMaterialSlotsLike,
@@ -111,8 +112,7 @@ export type RenderOpsExtrasSurface = RenderOpsLike &
   ValueRecord & {
     __esm_extras_v1?: boolean;
     addDimensionLine?: import('../../../types/index.js').BuilderDimensionLineFn;
-    __addOutlinesImpl?: (mesh: unknown) => unknown;
-    addOutlines?: (mesh: unknown) => unknown;
+    createOutlineBinding?: BuilderOutlineBindingFactory;
   };
 
 export function isRecord(value: unknown): value is ValueRecord {

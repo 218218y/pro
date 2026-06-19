@@ -178,6 +178,11 @@ export function installBuilderDepsNamespaces(
   }
 }
 
+export function clearDeprecatedBuilderOutlineBindings(namespaces: BuilderNamespaceRoots): void {
+  delete namespaces.materials.addOutlines;
+  delete namespaces.materials.__wpBuilderAddOutlines;
+}
+
 export function createBuilderNamespaceRoots(App: AppContainer): BuilderNamespaceRoots {
   return {
     util: asBuilderNamespace(ensureBuilderDepsNamespace(App, 'util')),

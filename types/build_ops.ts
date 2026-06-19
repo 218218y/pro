@@ -16,9 +16,8 @@ import type {
   BuilderAddRealisticHangerFn,
   BuilderCallable,
   BuilderGetMaterialFn,
-  BuilderOutlineFn,
+  BuilderOutlineBindingFactory,
   NullableBuilderCallable,
-  NullableBuilderOutlineFn,
 } from './build_builder';
 
 export type Vec3Like = UnknownRecord & { x: number; y: number; z: number };
@@ -279,7 +278,11 @@ export interface BuilderContentsSurfaceLike extends UnknownRecord {
 
 export interface BuilderDepsRootLike extends UnknownRecord {
   util?: { cleanGroup?: BuilderCallable; pruneCachesSafe?: BuilderCallable; [k: string]: unknown };
-  materials?: { getMaterial?: BuilderGetMaterialFn; addOutlines?: BuilderOutlineFn; [k: string]: unknown };
+  materials?: {
+    getMaterial?: BuilderGetMaterialFn;
+    createOutlineBinding?: BuilderOutlineBindingFactory;
+    [k: string]: unknown;
+  };
   modules?: BuilderModulesSurfaceLike;
   contents?: BuilderContentsSurfaceLike;
   notes?: { getNotesForSave?: BuilderCallable; restoreNotesFromSave?: BuilderCallable; [k: string]: unknown };
@@ -299,7 +302,7 @@ export interface BuilderDepsResolvedLike extends UnknownRecord {
   triggerRender: NullableBuilderCallable;
   showToast: NullableBuilderCallable;
   getMaterial: BuilderGetMaterialFn;
-  addOutlines: NullableBuilderOutlineFn;
+  createOutlineBinding: BuilderOutlineBindingFactory;
   calculateModuleStructure: BuilderCalculateModuleStructureFn | null;
   createDoorVisual: BuilderCreateDoorVisualFn;
   createInternalDrawerBox: BuilderCreateInternalDrawerBoxFn | null;

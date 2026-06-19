@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { addOutlines } from '../esm/native/builder/render_ops_extras.ts';
+import { createOutlineBinding } from '../esm/native/builder/render_ops_extras.ts';
 import {
   ensureRenderCacheMaps,
   ensureRenderMaterialSlots,
@@ -54,10 +54,11 @@ function makeThreeStub() {
   };
 }
 
-test('render_ops_extras uses canonical render slots and caches even when legacy compat refs were never prebound', () => {
+test('render_ops_extras outline bindings use their captured sketch snapshot and canonical render slots', () => {
+  const runtime = { sketchMode: false };
   const App: AnyRecord = {
     deps: { THREE: makeThreeStub() },
-    store: makeStore({ sketchMode: true }),
+    store: makeStore(runtime),
   };
   const render = ensureRenderNamespace(App) as AnyRecord;
   render.wardrobeGroup = { add() {} };
@@ -71,7 +72,9 @@ test('render_ops_extras uses canonical render slots and caches even when legacy 
     },
   };
 
-  addOutlines(mesh, { App });
+  const sketchBinding = createOutlineBinding(App as never, { sketchMode: true });
+  runtime.sketchMode = false;
+  sketchBinding(mesh);
 
   const renderCache = ensureRenderCacheMaps(App);
   const renderMeta = ensureRenderMetaMaps(App);
@@ -85,4 +88,24 @@ test('render_ops_extras uses canonical render slots and caches even when legacy 
   assert.ok(renderMaterials.sketchFillMaterial);
   assert.ok(mesh.outline);
   assert.equal(mesh.material, renderMaterials.sketchFillMaterial);
+
+  const normalMesh: AnyRecord = {
+    geometry: { uuid: 'geo-normal', userData: {} },
+    material: { id: 'normal-material' },
+    userData: {},
+    add(node: unknown) {
+      this.outline = node;
+    },
+  };
+  const normalBinding = createOutlineBinding(App as never, { sketchMode: false });
+  runtime.sketchMode = true;
+  normalBinding(normalMesh);
+
+  assert.equal(normalMesh.outline, undefined);
+  assert.equal(normalMesh.material.id, 'normal-material');
+  assert.equal(renderCache.edgesGeometryCache.has('edges:geo-normal'), false);
+  assert.throws(
+    () => createOutlineBinding(App as never, { sketchMode: 'yes' }),
+    /outline snapshot with boolean sketchMode is required/
+  );
 });

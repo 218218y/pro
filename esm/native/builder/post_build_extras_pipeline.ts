@@ -200,6 +200,10 @@ export function applyPostBuildExtras(input: BuildContextLike) {
             stackOffsetZ: 0,
             shelfThick: resolvedShelfThick,
             cfgSnapshot: cornerCfgSnapshot,
+            renderPolicy: {
+              sketchMode: ctx.flags?.sketchMode === true,
+              addOutlines: typeof ctx.fns?.addOutlines === 'function' ? ctx.fns.addOutlines : null,
+            },
           }
         : {
             stackKey: 'bottom',
@@ -213,6 +217,10 @@ export function applyPostBuildExtras(input: BuildContextLike) {
             baseLegWidthCm: ctx.strings?.baseLegWidthCm,
             shelfThick: resolvedShelfThick,
             cfgSnapshot: cornerCfgSnapshot,
+            renderPolicy: {
+              sketchMode: ctx.flags?.sketchMode === true,
+              addOutlines: typeof ctx.fns?.addOutlines === 'function' ? ctx.fns.addOutlines : null,
+            },
           }
       : null;
     if (__cornerWingMeta) {
@@ -243,7 +251,14 @@ export function applyPostBuildExtras(input: BuildContextLike) {
           defaultShelfMat,
           braceShelfMat,
         },
-        { shelfThick: resolvedShelfThick, cfgSnapshot: cornerCfgSnapshot }
+        {
+          shelfThick: resolvedShelfThick,
+          cfgSnapshot: cornerCfgSnapshot,
+          renderPolicy: {
+            sketchMode: ctx.flags?.sketchMode === true,
+            addOutlines: typeof ctx.fns?.addOutlines === 'function' ? ctx.fns.addOutlines : null,
+          },
+        }
       );
     }
   }

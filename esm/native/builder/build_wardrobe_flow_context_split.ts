@@ -58,12 +58,21 @@ export function resolveBuildWardrobeSplitMetrics(args: {
     return createDefaultBuildWardrobeSplitMetrics();
   }
 
-  const { App, label, deps, buildState, widthCm, heightCm, depthCm, chestDrawersCount, sketchMode } =
-    prepared;
+  const {
+    App,
+    label,
+    deps,
+    buildState,
+    widthCm,
+    heightCm,
+    depthCm,
+    chestDrawersCount,
+    sketchMode,
+    renderPolicy,
+    createDoorVisual,
+  } = prepared;
   const {
     THREE,
-    addOutlines,
-    createDoorVisual,
     createInternalDrawerBox,
     buildCornerWing,
     rebuildDrawerMeta,
@@ -76,6 +85,7 @@ export function resolveBuildWardrobeSplitMetrics(args: {
     triggerRender,
     showToast,
   } = deps;
+  const addOutlines = renderPolicy.addOutlines;
   const { state, ui, runtime, globalClickMode, hadEditHold, cfgSnapshot: cfg } = buildState;
 
   const splitBuildArgs = {

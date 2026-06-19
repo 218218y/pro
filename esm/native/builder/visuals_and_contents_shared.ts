@@ -4,16 +4,11 @@
 
 import { assertApp } from '../runtime/api.js';
 import { trackMirrorSurface } from '../runtime/render_access.js';
-import {
-  ensureBuilderService,
-  getBuilderAddOutlines,
-  resolveBuilderMirrorMaterial,
-} from '../runtime/builder_service_access.js';
+import { ensureBuilderService, resolveBuilderMirrorMaterial } from '../runtime/builder_service_access.js';
 import { assertThreeViaDeps } from '../runtime/three_access.js';
 
 import type {
   AppContainer,
-  BuilderOutlineFn,
   UnknownRecord,
   BuilderContentsSurfaceLike,
   BuilderModulesSurfaceLike,
@@ -119,20 +114,6 @@ function __wp_resolveFn<TArgs extends unknown[], TResult>(
   return (...args: TArgs): TResult => Reflect.apply(fn, null, args);
 }
 
-function __wp_getAddOutlines(passedApp: unknown): BuilderOutlineFn | null {
-  try {
-    const A = _asObject(passedApp) ? __ensureApp(passedApp) : null;
-    return A ? getBuilderAddOutlines(A) : null;
-  } catch (_) {
-    return null;
-  }
-}
-
-function __addOutlines(mesh: unknown, passedApp: unknown) {
-  const fn = __wp_getAddOutlines(passedApp);
-  if (fn) return fn(mesh);
-}
-
 function __ensureBuilderModulesSlot(builder: UnknownRecord): BuilderModulesSurfaceLike & UnknownRecord {
   const current = _asObject(builder.modules);
   if (current) return current;
@@ -156,7 +137,6 @@ export {
   __asCanvas,
   __ensureApp,
   __ensureTHREE,
-  __addOutlines,
   __getMirrorMaterialFromServices,
   __markMirrorTracked,
   __bindWithApp,

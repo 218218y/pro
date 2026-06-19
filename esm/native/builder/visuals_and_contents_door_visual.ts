@@ -1,4 +1,3 @@
-import { readRuntimeScalarOrDefaultFromApp } from '../runtime/runtime_selectors.js';
 import { readMirrorLayoutFaceSign } from '../features/mirror_layout.js';
 import { createMirrorDoorVisual } from './visuals_and_contents_door_visual_mirror.js';
 import {
@@ -12,7 +11,8 @@ import {
   createProfileDoorVisual,
   createDoubleProfileDoorVisual,
 } from './visuals_and_contents_door_visual_styles.js';
-import { __ensureApp, __ensureTHREE, __addOutlines } from './visuals_and_contents_shared.js';
+import { __ensureApp, __ensureTHREE } from './visuals_and_contents_shared.js';
+import { requireContentsRenderPolicy } from './visuals_contents_shared.js';
 
 import type {
   AppContainer,
@@ -88,8 +88,9 @@ export function createDoorVisual(
 ): Object3DLike {
   App = __ensureApp(App);
   const THREE = __ensureTHREE(App);
-  const addOutlines = (mesh: Object3DLike) => __addOutlines(mesh, App);
-  const isSketch = !!readRuntimeScalarOrDefaultFromApp(App, 'sketchMode', false);
+  const renderPolicy = requireContentsRenderPolicy(options?.renderPolicy);
+  const addOutlines = (mesh: Object3DLike) => renderPolicy.addOutlines?.(mesh);
+  const isSketch = renderPolicy.sketchMode;
 
   const visualGroup = new THREE.Group();
 

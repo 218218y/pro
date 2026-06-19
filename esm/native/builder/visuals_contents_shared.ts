@@ -59,16 +59,14 @@ export function ensureVisualsContentsTHREE(passedApp: unknown): ThreeLike {
   return assertThreeViaDeps(App, 'native/builder/visuals_contents.THREE');
 }
 
-export function requireContentsRenderPolicy(
-  policy: BuilderContentsRenderPolicy
-): BuilderContentsRenderPolicy {
+export function requireContentsRenderPolicy(policy: unknown): BuilderContentsRenderPolicy {
   if (!isRecord(policy) || typeof policy.sketchMode !== 'boolean') {
     throw new TypeError('[visuals_contents] sketchMode policy is required');
   }
   if (policy.addOutlines !== null && typeof policy.addOutlines !== 'function') {
     throw new TypeError('[visuals_contents] addOutlines policy must be a function or null');
   }
-  return policy;
+  return policy as BuilderContentsRenderPolicy;
 }
 
 export function resolveContentsOutline(policy: BuilderContentsRenderPolicy): BuilderOutlineFn | null {

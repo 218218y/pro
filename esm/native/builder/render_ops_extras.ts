@@ -19,7 +19,7 @@ import {
   createAddDimensionLine,
   getDimLabelEntry,
 } from './render_ops_extras_dimensions.js';
-import { addOutlines, createAddOutlinesImpl } from './render_ops_extras_outlines.js';
+import { addOutlines, createOutlineBinding } from './render_ops_extras_outlines.js';
 
 import type { AppContainer } from '../../../types/index.js';
 import type { RenderOpsExtrasSurface } from './render_ops_extras_shared.js';
@@ -29,22 +29,21 @@ type RenderOpsExtrasInstallContext = {
   App: AppContainer;
 };
 
-type RenderOpsExtrasCallableKey = 'addDimensionLine' | '__addOutlinesImpl' | 'addOutlines';
+type RenderOpsExtrasCallableKey = 'addDimensionLine' | 'createOutlineBinding';
 
 const RENDER_OPS_EXTRAS_CANONICAL_KEYS: Record<RenderOpsExtrasCallableKey, string> = {
   addDimensionLine: '__wpRenderOpsExtrasAddDimensionLine',
-  __addOutlinesImpl: '__wpRenderOpsExtrasAddOutlinesImpl',
-  addOutlines: '__wpRenderOpsExtrasAddOutlines',
+  createOutlineBinding: '__wpRenderOpsExtrasCreateOutlineBinding',
 };
 
 const renderOpsExtrasInstallContexts = new WeakMap<object, RenderOpsExtrasInstallContext>();
 
-export { getDimLabelEntry, addDimensionLine, addOutlines };
+export { getDimLabelEntry, addDimensionLine, addOutlines, createOutlineBinding };
 
 export const builderRenderOpsExtras = {
   getDimLabelEntry,
   addDimensionLine,
-  addOutlines,
+  createOutlineBinding,
 };
 
 function createRenderOpsExtrasInstallContext(App: AppContainer): RenderOpsExtrasInstallContext {
@@ -73,6 +72,10 @@ function resolveRenderOpsExtrasInstallContext(
 }
 
 function clearDeprecatedInstalledRenderOpsExtrasDrift(renderOps: InstallableRenderOpsExtrasSurface): void {
+  delete renderOps.__addOutlinesImpl;
+  delete renderOps.addOutlines;
+  delete renderOps.__wpRenderOpsExtrasAddOutlinesImpl;
+  delete renderOps.__wpRenderOpsExtrasAddOutlines;
   if (renderOps.__esm_extras_v1 !== true) return;
   const keys = Object.keys(RENDER_OPS_EXTRAS_CANONICAL_KEYS) as RenderOpsExtrasCallableKey[];
   for (let i = 0; i < keys.length; i += 1) {
@@ -109,16 +112,10 @@ export function installBuilderRenderOpsExtras(appIn: unknown): RenderOpsExtrasSu
 
   installStableSurfaceMethod(
     renderOps,
-    '__addOutlinesImpl',
-    RENDER_OPS_EXTRAS_CANONICAL_KEYS.__addOutlinesImpl,
-    () => {
-      return (mesh: unknown) => createAddOutlinesImpl(context.App)(mesh);
-    }
+    'createOutlineBinding',
+    RENDER_OPS_EXTRAS_CANONICAL_KEYS.createOutlineBinding,
+    () => snapshot => createOutlineBinding(context.App, snapshot)
   );
-
-  installStableSurfaceMethod(renderOps, 'addOutlines', RENDER_OPS_EXTRAS_CANONICAL_KEYS.addOutlines, () => {
-    return (mesh: unknown) => renderOps.__addOutlinesImpl?.(mesh);
-  });
 
   renderOps.__esm_extras_v1 = true;
   return renderOps;

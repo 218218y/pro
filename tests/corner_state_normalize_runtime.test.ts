@@ -3,6 +3,9 @@ import assert from 'node:assert/strict';
 
 import { normalizeCornerWingState } from '../esm/native/builder/corner_state_normalize.js';
 
+const normalRenderPolicy = { sketchMode: false, addOutlines: () => undefined };
+const sketchRenderPolicy = { sketchMode: true, addOutlines: () => undefined };
+
 function createApp(args: {
   buildUi?: Record<string, unknown>;
   config?: Record<string, unknown>;
@@ -79,6 +82,7 @@ test('normalizeCornerWingState seeds lower split config and scopes bottom remova
           customData: { shelves: [true], rods: [true], storage: true },
         },
       },
+      renderPolicy: normalRenderPolicy,
     },
   });
 
@@ -134,6 +138,7 @@ test('normalizeCornerWingState does not let top corner special width seed a miss
           modulesConfiguration: [{ specialDims: { baseWidthCm: 80, widthCm: 80 } }],
         },
       },
+      renderPolicy: normalRenderPolicy,
     },
   });
 
@@ -190,6 +195,7 @@ test('normalizeCornerWingState reads corner config and removed doors from meta s
           },
         },
       },
+      renderPolicy: normalRenderPolicy,
     },
   });
 
@@ -222,7 +228,12 @@ test('normalizeCornerWingState forces top split stack to drop the base and honor
     mainD: 0.55,
     woodThick: 0.018,
     startY: 1.2,
-    meta: { stackKey: 'top', stackSplitEnabled: true, cfgSnapshot: {} },
+    meta: {
+      stackKey: 'top',
+      stackSplitEnabled: true,
+      cfgSnapshot: {},
+      renderPolicy: sketchRenderPolicy,
+    },
   });
 
   assert.equal(state.__sketchMode, true);
@@ -249,7 +260,7 @@ test('normalizeCornerWingState rejects a missing config snapshot instead of read
         mainD: 0.6,
         woodThick: 0.018,
         startY: 0,
-        meta: null,
+        meta: { cfgSnapshot: null as never, renderPolicy: normalRenderPolicy },
       }),
     /cfgSnapshot is required/
   );

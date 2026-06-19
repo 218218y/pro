@@ -49,6 +49,8 @@ export type NullableBuilderObject3DFn<Args extends BuilderArgs = BuilderArgs> =
   BuilderObject3DFn<Args> | null;
 export type BuilderOutlineFn = (mesh: unknown) => unknown;
 export type NullableBuilderOutlineFn = BuilderOutlineFn | null;
+export type BuilderOutlineSnapshot = Readonly<{ sketchMode: boolean }>;
+export type BuilderOutlineBindingFactory = (snapshot: BuilderOutlineSnapshot) => BuilderOutlineFn;
 export type BuilderDoorVisualFrameStyle = 'flat' | 'profile' | 'double_profile';
 
 export type BuilderContentsRenderPolicy = Readonly<{
@@ -75,6 +77,7 @@ export type BuilderHangerContentsPolicy = BuilderContentsRenderPolicy &
 export type BuilderDoorVisualOptions = {
   glassFrameStyle?: BuilderDoorVisualFrameStyle | null;
   grooveLinesCount?: number | null;
+  renderPolicy?: BuilderContentsRenderPolicy;
 };
 
 export type BuilderInternalDrawerBoxOptions = {
@@ -309,6 +312,7 @@ export interface BuilderBuildChestOnlyOptsLike extends UnknownRecord {
   chestCommodeMirrorHeightCm?: unknown;
   chestCommodeMirrorWidthCm?: unknown;
   cfgSnapshot?: ConfigStateLike | UnknownRecord | null;
+  renderPolicy?: BuilderContentsRenderPolicy;
 }
 export type BuilderBuildChestOnlyFn = (opts?: BuilderBuildChestOnlyOptsLike | null) => unknown;
 export interface BuilderBuildCornerWingMaterialsLike extends UnknownRecord {
@@ -328,6 +332,7 @@ export interface BuilderCornerBuildMetaLike extends UnknownRecord {
   stackOffsetZ?: number;
   shelfThick?: unknown;
   cfgSnapshot: ConfigStateLike | UnknownRecord;
+  renderPolicy: BuilderContentsRenderPolicy;
 }
 export interface BuilderBuildCornerWingCtxLike extends UnknownRecord {
   App?: unknown;
@@ -812,7 +817,7 @@ export interface RenderOpsLike extends UnknownRecord {
   createBoard?: (args: BuilderCreateBoardArgsLike) => unknown;
 
   // Visual helpers
-  addOutlines?: BuilderOutlineFn;
+  createOutlineBinding?: BuilderOutlineBindingFactory;
   addDimensionLine?: BuilderDimensionLineFn;
 }
 

@@ -10,6 +10,7 @@ import {
   resolveBuildWardrobeCarcassMetrics,
 } from '../esm/native/builder/build_wardrobe_flow_context_carcass.ts';
 import { resolveBuildWardrobeHingedContext } from '../esm/native/builder/build_wardrobe_flow_context_hinged.ts';
+import { bindDoorVisualRenderPolicy } from '../esm/native/builder/door_visual_render_policy.ts';
 
 test('build wardrobe context runtime: chest ui sanitizer keeps only canonical fields', () => {
   assert.equal(pickChestModeUi(null), null);
@@ -85,7 +86,9 @@ test('build wardrobe context runtime: chest-only path forwards the canonical cfg
       getMaterial() {
         return null;
       },
-      addOutlines() {},
+      createOutlineBinding() {
+        return () => undefined;
+      },
       buildChestOnly(args: any) {
         calls.push(['buildChestOnly', args]);
       },
@@ -109,12 +112,17 @@ test('build wardrobe context runtime: chest-only path forwards the canonical cfg
     doorsCount: 0,
     chestDrawersCount: 4,
     sketchMode: false,
+    renderPolicy: { sketchMode: false, addOutlines: () => undefined },
+    createDoorVisual() {
+      return {};
+    },
   } as any);
 
   assert.equal(result, null);
   const buildCall = calls.find(call => Array.isArray(call) && call[0] === 'buildChestOnly');
   assert.ok(buildCall);
   assert.equal(buildCall[1].cfgSnapshot, cfgSnapshot);
+  assert.equal(buildCall[1].renderPolicy.sketchMode, false);
   assert.deepEqual(calls.slice(-4), [
     ['handles', { triggerRender: false, cfgSnapshot }],
     'viewport.render',
@@ -146,6 +154,31 @@ test('build wardrobe context runtime: reader normalization keeps fallback getMat
   });
   assert.equal(nonSketch.addOutlinesMesh, null);
   assert.equal(nonSketch.getMaterialFn(null, 'body'), 'mat');
+});
+
+test('build wardrobe context runtime: rapid rebuild door bindings retain their own snapshot policy', () => {
+  const calls: any[] = [];
+  const createDoorVisual = ((...args: unknown[]) => {
+    calls.push(args);
+    return { args };
+  }) as any;
+  const normalOutline = () => 'normal';
+  const sketchOutline = () => 'sketch';
+  const normalPolicy = { sketchMode: false, addOutlines: normalOutline };
+  const sketchPolicy = { sketchMode: true, addOutlines: sketchOutline };
+  const normalDoorVisual = bindDoorVisualRenderPolicy(createDoorVisual, normalPolicy);
+  const sketchDoorVisual = bindDoorVisualRenderPolicy(createDoorVisual, sketchPolicy);
+
+  normalDoorVisual(1, 2, 0.02, null, 'flat', false, false, null, null, 1, false, null, 'd1', {
+    glassFrameStyle: 'profile',
+  });
+  sketchDoorVisual(1, 2, 0.02, null, 'flat', false, false, null, null, 1, false, null, 'd1');
+
+  assert.equal(calls[0][13].glassFrameStyle, 'profile');
+  assert.equal(calls[0][13].renderPolicy, normalPolicy);
+  assert.equal(calls[1][13].renderPolicy, sketchPolicy);
+  assert.equal(calls[0][13].renderPolicy.addOutlines, normalOutline);
+  assert.equal(calls[1][13].renderPolicy.addOutlines, sketchOutline);
 });
 
 test('build wardrobe context runtime: split metrics skip runner when stack split is inactive', () => {

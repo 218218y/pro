@@ -420,7 +420,8 @@ test('createDoorVisual routes default outside full mirror on a profile door thro
     1,
     false,
     null,
-    'd1_full'
+    'd1_full',
+    { renderPolicy: { sketchMode: false, addOutlines: null } }
   );
 
   const roles = collectRoles(visual);
@@ -451,7 +452,8 @@ test('createDoorVisual keeps profile styling when the only full mirror is on the
     1,
     false,
     [{ faceSign: -1 }],
-    'd1_full'
+    'd1_full',
+    { renderPolicy: { sketchMode: false, addOutlines: null } }
   );
 
   const roles = collectRoles(visual);
@@ -492,7 +494,8 @@ test('createDoorVisual keeps styled side profiles when mirror placements are exp
     1,
     false,
     [{ widthCm: 30, heightCm: 60 }],
-    'd1_full'
+    'd1_full',
+    { renderPolicy: { sketchMode: false, addOutlines: null } }
   );
 
   const roles = collectRoles(visual);
@@ -516,7 +519,8 @@ test('createDoorVisual mounts explicitly sized inside mirrors on the back side o
     1,
     false,
     [{ widthCm: 30, heightCm: 60, faceSign: -1 }],
-    'd1_full'
+    'd1_full',
+    { renderPolicy: { sketchMode: false, addOutlines: null } }
   );
 
   const center = findRole(visual, 'door_profile_center_panel');

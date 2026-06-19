@@ -192,6 +192,14 @@ export function applyStackSplitLowerCornerWingIfNeeded(args: {
       stackOffsetZ: Number.isFinite(Number(lowerDims.startZ)) ? Number(lowerDims.startZ) : 0,
       shelfThick: buildArgs.shelfThick,
       cfgSnapshot: buildArgs.cfg,
+      renderPolicy: {
+        sketchMode: buildArgs.sketchMode === true,
+        addOutlines:
+          typeof buildArgs.addOutlines === 'function'
+            ? mesh =>
+                Reflect.apply(buildArgs.addOutlines as (...args: unknown[]) => unknown, undefined, [mesh])
+            : null,
+      },
     }
   );
 }

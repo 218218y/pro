@@ -1,4 +1,9 @@
-import type { ConfigStateLike, RemovedDoorsMap, UnknownRecord } from '../../../types/index.js';
+import type {
+  BuilderContentsRenderPolicy,
+  ConfigStateLike,
+  RemovedDoorsMap,
+  UnknownRecord,
+} from '../../../types/index.js';
 import type { BaseLegColor, BaseLegStyle } from '../features/base_leg_support.js';
 
 export type CornerBuildMeta = {
@@ -14,6 +19,7 @@ export type CornerBuildMeta = {
   stackOffsetZ?: number;
   shelfThick?: unknown;
   cfgSnapshot: ConfigStateLike | UnknownRecord;
+  renderPolicy: BuilderContentsRenderPolicy;
   [k: string]: unknown;
 };
 

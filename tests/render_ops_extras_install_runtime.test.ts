@@ -81,46 +81,49 @@ function createMesh(id: string): AnyRecord {
 test('render_ops_extras install keeps stable refs live across root replacement installs', () => {
   const AppA = createApp('A');
   const installed = installBuilderRenderOpsExtras(AppA as never) as AnyRecord;
-  const heldAddOutlines = installed.addOutlines;
+  const heldCreateOutlineBinding = installed.createOutlineBinding;
   const heldAddDimensionLine = installed.addDimensionLine;
 
-  assert.equal(typeof heldAddOutlines, 'function');
+  assert.equal(typeof heldCreateOutlineBinding, 'function');
   assert.equal(typeof heldAddDimensionLine, 'function');
 
   const meshA = createMesh('geo-A');
-  heldAddOutlines(meshA);
+  heldCreateOutlineBinding({ sketchMode: true })(meshA);
   assert.equal(ensureRenderCacheMaps(AppA).edgesGeometryCache.has('edges:geo-A'), true);
 
   const AppB = createApp('B', installed);
   const reinstalled = installBuilderRenderOpsExtras(AppB as never) as AnyRecord;
 
   assert.equal(reinstalled, installed);
-  assert.equal(reinstalled.addOutlines, heldAddOutlines);
+  assert.equal(reinstalled.createOutlineBinding, heldCreateOutlineBinding);
   assert.equal(reinstalled.addDimensionLine, heldAddDimensionLine);
 
   const meshB = createMesh('geo-B');
-  heldAddOutlines(meshB);
+  heldCreateOutlineBinding({ sketchMode: true })(meshB);
 
   assert.equal(ensureRenderCacheMaps(AppA).edgesGeometryCache.has('edges:geo-B'), false);
   assert.equal(ensureRenderCacheMaps(AppB).edgesGeometryCache.has('edges:geo-B'), true);
 });
 
-test('render_ops_extras install heals drift even when the legacy marker is already set', () => {
-  const driftedAddOutlines = () => 'drifted';
+test('render_ops_extras install heals outline-binding drift even when the legacy marker is already set', () => {
+  const driftedCreateOutlineBinding = () => () => 'drifted';
   const App = createApp('A', {
     __esm_extras_v1: true,
-    addOutlines: driftedAddOutlines,
+    addOutlines: () => 'legacy-outline',
+    __addOutlinesImpl: () => 'legacy-outline-impl',
+    createOutlineBinding: driftedCreateOutlineBinding,
   });
 
   const installed = installBuilderRenderOpsExtras(App as never) as AnyRecord;
-  const canonicalAddOutlines = installed.addOutlines;
+  const canonicalCreateOutlineBinding = installed.createOutlineBinding;
 
-  assert.notEqual(canonicalAddOutlines, driftedAddOutlines);
+  assert.notEqual(canonicalCreateOutlineBinding, driftedCreateOutlineBinding);
   assert.equal(typeof installed.addDimensionLine, 'function');
-  assert.equal(typeof installed.__addOutlinesImpl, 'function');
+  assert.equal(installed.addOutlines, undefined);
+  assert.equal(installed.__addOutlinesImpl, undefined);
 
-  installed.addOutlines = () => 'drifted-again';
+  installed.createOutlineBinding = () => () => 'drifted-again';
   installBuilderRenderOpsExtras(App as never);
 
-  assert.equal(installed.addOutlines, canonicalAddOutlines);
+  assert.equal(installed.createOutlineBinding, canonicalCreateOutlineBinding);
 });

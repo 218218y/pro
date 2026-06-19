@@ -445,7 +445,8 @@ test('full mirror on a profile-styled door uses the flat full-door mirror route 
     1,
     false,
     [{ centerXNorm: 0.25 }],
-    'd1_full'
+    'd1_full',
+    { renderPolicy: { sketchMode: false, addOutlines: null } }
   );
 
   const roles = collectRoles(visual);

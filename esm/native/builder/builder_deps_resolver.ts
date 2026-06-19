@@ -21,7 +21,7 @@ import type {
   BuilderAddHangingClothesFn,
   BuilderAddFoldedClothesFn,
   BuilderAddRealisticHangerFn,
-  BuilderOutlineFn,
+  BuilderOutlineBindingFactory,
   BuilderCallable,
   BuilderArgs,
 } from '../../../types';
@@ -63,6 +63,10 @@ export function resolveBuilderDepsOrThrow(
 
   const createDoorVisual = bindCreateDoorVisualFn(modules, 'createDoorVisual');
   if (!createDoorVisual) throw new Error('Builder tools missing: modules.createDoorVisual');
+  const createOutlineBinding = bindOutlineBindingFactory(materials, 'createOutlineBinding');
+  if (!createOutlineBinding) {
+    throw new Error('Builder tools missing: materials.createOutlineBinding');
+  }
 
   // Pure ESM: THREE is injected via App.deps.THREE (not via builder deps).
   const THREE = assertTHREE(App, label);
@@ -89,7 +93,7 @@ export function resolveBuilderDepsOrThrow(
     triggerRender: bindCallable(render, 'triggerRender'),
     showToast: bindCallable(render, 'showToast'),
     getMaterial,
-    addOutlines: bindOutlineFn(materials, 'addOutlines'),
+    createOutlineBinding,
     calculateModuleStructure: bindCalculateModuleStructureFn(modules, 'calculateModuleStructure'),
     createDoorVisual,
     createInternalDrawerBox: bindCreateInternalDrawerBoxFn(modules, 'createInternalDrawerBox'),
@@ -124,8 +128,8 @@ function bindGetMaterialFn(owner: UnknownRecord, key: string): BuilderGetMateria
   return bindKnownFunction<BuilderGetMaterialFn>(owner, key);
 }
 
-function bindOutlineFn(owner: UnknownRecord, key: string): BuilderOutlineFn | null {
-  return bindKnownFunction<BuilderOutlineFn>(owner, key);
+function bindOutlineBindingFactory(owner: UnknownRecord, key: string): BuilderOutlineBindingFactory | null {
+  return bindKnownFunction<BuilderOutlineBindingFactory>(owner, key);
 }
 
 function bindCalculateModuleStructureFn(

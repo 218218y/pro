@@ -4,7 +4,6 @@
 // stack/config policy, and placement math live in dedicated helpers.
 
 import type { AppContainer } from '../../../types/index.js';
-import { readRuntimeScalarOrDefaultFromApp } from '../runtime/runtime_selectors.js';
 import { getDoorsArray, getDrawersArray } from '../runtime/render_access.js';
 import { getBuildUIFromPlatform } from '../runtime/platform_access.js';
 
@@ -37,7 +36,10 @@ export function normalizeCornerWingState(args: {
   const shelfThick = readPositiveThickness(meta?.shelfThick, woodThick);
 
   const uiAny = asCornerBuildUI(getBuildUIFromPlatform(App));
-  const __sketchMode = !!readRuntimeScalarOrDefaultFromApp(App, 'sketchMode', false);
+  if (!meta?.renderPolicy || typeof meta.renderPolicy.sketchMode !== 'boolean') {
+    throw new TypeError('[corner_state_normalize] snapshot renderPolicy is required');
+  }
+  const __sketchMode = meta.renderPolicy.sketchMode;
   const stackMeta = resolveCornerWingStackMeta(meta);
   const configState = createCornerNormalizedConfigState({
     cfgSnapshot: meta?.cfgSnapshot,

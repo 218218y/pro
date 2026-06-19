@@ -50,6 +50,8 @@ export function prepareBuildWardrobeExecution(
     doorsCount,
     chestDrawersCount,
     sketchMode,
+    renderPolicy,
+    createDoorVisual,
   } = prepared;
 
   const {
@@ -57,8 +59,6 @@ export function prepareBuildWardrobeExecution(
     pruneCachesSafe,
     triggerRender,
     showToast,
-    addOutlines,
-    createDoorVisual,
     createInternalDrawerBox,
     buildCornerWing,
     rebuildDrawerMeta,
@@ -68,6 +68,7 @@ export function prepareBuildWardrobeExecution(
     addRealisticHanger,
     restoreNotesFromSave,
   } = deps;
+  const addOutlines = renderPolicy.addOutlines;
 
   const { state, ui, runtime, globalClickMode, hadEditHold, cfgSnapshot: cfg } = buildState;
   const setup = prepareBuildWardrobeContextSetup(prepared);

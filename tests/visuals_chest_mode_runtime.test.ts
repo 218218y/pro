@@ -197,6 +197,12 @@ function createChestApp(opts: { createDoorVisual?: (...args: any[]) => unknown }
       },
     },
   };
+  App.__outlineRenderPolicy = {
+    sketchMode: true,
+    addOutlines(mesh: unknown) {
+      outlined.push(mesh);
+    },
+  };
   return {
     App,
     wardrobeGroup,
@@ -376,6 +382,7 @@ test('visuals chest mode drawer fronts consume door-special mirror and glass map
   });
 
   buildChestOnly(App, {
+    renderPolicy: App.__outlineRenderPolicy,
     H: 0.9,
     totalW: 1.6,
     D: 0.45,
@@ -403,12 +410,14 @@ test('visuals chest mode drawer fronts consume door-special mirror and glass map
   assert.equal(createDoorVisualCalls[1][6], false);
   assert.equal(createDoorVisualCalls[1][7], 'linen');
   assert.equal(createDoorVisualCalls[1][12], 'chest_drawer_1');
-  assert.deepEqual(createDoorVisualCalls[1][13], { glassFrameStyle: 'double_profile' });
+  assert.equal(createDoorVisualCalls[1][13].glassFrameStyle, 'double_profile');
+  assert.equal(createDoorVisualCalls[1][13].renderPolicy, App.__outlineRenderPolicy);
 });
 
 test('visuals chest mode build creates wide-leg chest drawers, mirror override, and dimensions via focused owners', () => {
   const { App, wardrobeGroup, dimensionCalls, outlined, getRenderCalls, getUpdateCalls } = createChestApp();
   buildChestOnly(App, {
+    renderPolicy: App.__outlineRenderPolicy,
     H: 0.9,
     totalW: 1.6,
     D: 0.45,
@@ -457,6 +466,7 @@ test('visuals chest mode build creates wide-leg chest drawers, mirror override, 
 test('visuals chest mode build adds commode back panel, tracked mirror surface, and commode dimensions', () => {
   const { App, wardrobeGroup, dimensionCalls } = createChestApp();
   buildChestOnly(App, {
+    renderPolicy: App.__outlineRenderPolicy,
     H: 0.9,
     totalW: 1.6,
     D: 0.45,
@@ -502,6 +512,7 @@ test('visuals chest mode build adds commode back panel, tracked mirror surface, 
 test('visuals chest mode commode dimensions do not duplicate mirror width when it follows the chest width', () => {
   const { App, dimensionCalls } = createChestApp();
   buildChestOnly(App, {
+    renderPolicy: App.__outlineRenderPolicy,
     H: 0.9,
     totalW: 1.6,
     D: 0.45,
@@ -543,6 +554,7 @@ test('visuals chest mode build keeps drawer boxes white unless the drawer box is
   });
 
   buildChestOnly(App, {
+    renderPolicy: App.__outlineRenderPolicy,
     H: 0.9,
     totalW: 1.6,
     D: 0.45,
@@ -639,6 +651,7 @@ test('visuals chest mode build routes chest drawer fronts through regular door v
   });
 
   buildChestOnly(App, {
+    renderPolicy: App.__outlineRenderPolicy,
     H: 0.9,
     totalW: 1.6,
     D: 0.45,
@@ -705,6 +718,7 @@ test('visuals chest mode renders saved door trims on chest drawer fronts', () =>
   });
 
   buildChestOnly(App, {
+    renderPolicy: App.__outlineRenderPolicy,
     H: 0.9,
     totalW: 1.6,
     D: 0.45,
@@ -772,6 +786,7 @@ test('visuals chest mode uses inset door mount thickness and sinks drawer fronts
   });
 
   buildChestOnly(App, {
+    renderPolicy: App.__outlineRenderPolicy,
     H: 0.9,
     totalW: 1.6,
     D: 0.45,

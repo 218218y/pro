@@ -1,11 +1,7 @@
 import { CHEST_MODE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { AppContainer, BuilderCreateInternalDrawerBoxFn } from '../../../types/index.js';
 
-import {
-  addChestModeOutlines,
-  ensureChestModeApp,
-  ensureChestModeTHREE,
-} from './visuals_chest_mode_runtime.js';
+import { ensureChestModeApp, ensureChestModeTHREE } from './visuals_chest_mode_runtime.js';
 
 type AppAwareCreateInternalDrawerBoxFn = (
   App: AppContainer,
@@ -27,8 +23,10 @@ export const createInternalDrawerBox: AppAwareCreateInternalDrawerBoxFn = (
   App = ensureChestModeApp(App);
   const THREE = ensureChestModeTHREE(App);
   const group = new THREE.Group();
-  const outline =
-    typeof outlineFunc === 'function' ? outlineFunc : (mesh: unknown) => addChestModeOutlines(mesh, App);
+  if (typeof outlineFunc !== 'function') {
+    throw new TypeError('[visuals_chest_mode] snapshot outline binding is required');
+  }
+  const outline = outlineFunc;
   const drawerBoxDimensions = CHEST_MODE_DIMENSIONS.drawerBox;
   const thickness = drawerBoxDimensions.panelThicknessM;
   const innerH = h;

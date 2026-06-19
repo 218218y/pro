@@ -65,6 +65,7 @@ test('residual slot access runtime: scene/project seams and chest-mode builder h
       depthCm: 50,
       drawersCount: 4,
       cfgSnapshot: { showDimensions: false },
+      renderPolicy: { sketchMode: false, addOutlines: () => undefined },
       buildChestOnly(args) {
         built.push(args);
       },

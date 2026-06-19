@@ -1,4 +1,5 @@
 import type { ThreeLike } from '../../../types/index.js';
+import type { BuilderOutlineFn, BuilderOutlineSnapshot } from '../../../types/index.js';
 import type { AppLike, GeometryLike, MaterialLike } from './render_ops_extras_shared.js';
 import {
   ensureRenderOpsExtrasRuntime,
@@ -8,7 +9,6 @@ import {
   readRecord,
   touchRenderOpsMeta,
 } from './render_ops_extras_shared.js';
-import { readRuntimeScalarOrDefaultFromApp } from '../runtime/runtime_selectors.js';
 
 type ThreeOutlineSurface = ThreeLike & {
   LineBasicMaterial: new (opts: Record<string, unknown>) => MaterialLike;
@@ -31,7 +31,6 @@ function isThreeOutlineSurface(value: unknown): value is ThreeOutlineSurface {
 export function addOutlines(mesh: unknown, ctx: unknown): void {
   const runtime = ensureRenderOpsExtrasRuntime(readRenderOpsExtrasContextApp(ctx));
   const { App, renderCache, renderMaterials, renderMeta } = runtime;
-  if (!readRuntimeScalarOrDefaultFromApp(App, 'sketchMode', false)) return;
 
   const target = readMeshLike(mesh);
   if (!target || !target.geometry) return;
@@ -86,6 +85,16 @@ export function addOutlines(mesh: unknown, ctx: unknown): void {
   else target.material = target.material.map(() => renderMaterials.sketchFillMaterial);
 }
 
-export function createAddOutlinesImpl(App: AppLike) {
+function requireOutlineSnapshot(value: unknown): BuilderOutlineSnapshot {
+  const snapshot = readRecord(value);
+  if (!snapshot || typeof snapshot.sketchMode !== 'boolean') {
+    throw new TypeError('[render_ops_extras] outline snapshot with boolean sketchMode is required');
+  }
+  return { sketchMode: snapshot.sketchMode };
+}
+
+export function createOutlineBinding(App: AppLike, snapshotIn: unknown): BuilderOutlineFn {
+  const snapshot = requireOutlineSnapshot(snapshotIn);
+  if (!snapshot.sketchMode) return () => undefined;
   return (mesh: unknown) => addOutlines(mesh, { App });
 }

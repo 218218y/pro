@@ -21,10 +21,19 @@ export type PreparedBuildWardrobeContextSetup = {
 export function prepareBuildWardrobeContextSetup(
   prepared: PreparedBuildWardrobeFlow
 ): PreparedBuildWardrobeContextSetup | null {
-  const { App, label, deps, buildState, widthCm, heightCm, depthCm, chestDrawersCount, sketchMode } =
-    prepared;
-  const { cleanGroup, getNotesForSave, calculateModuleStructure, getMaterial, addOutlines, buildChestOnly } =
-    deps;
+  const {
+    App,
+    label,
+    deps,
+    buildState,
+    widthCm,
+    heightCm,
+    depthCm,
+    chestDrawersCount,
+    sketchMode,
+    renderPolicy,
+  } = prepared;
+  const { cleanGroup, getNotesForSave, calculateModuleStructure, getMaterial, buildChestOnly } = deps;
   const { state, ui, cfgSnapshot } = buildState;
 
   const readers = resolveBuildWardrobeContextReaders({
@@ -32,7 +41,7 @@ export function prepareBuildWardrobeContextSetup(
     sketchMode,
     calculateModuleStructure,
     getMaterial,
-    addOutlines,
+    addOutlines: renderPolicy.addOutlines,
   });
 
   const pre = prepareBuildScene({
@@ -74,8 +83,10 @@ export function prepareBuildWardrobeContextSetup(
             chestCommodeMirrorHeightCm: number | string;
             chestCommodeMirrorWidthCm: number | string;
             cfgSnapshot: ConfigStateLike | UnknownRecord;
+            renderPolicy: typeof renderPolicy;
           }) => void
         >(buildChestOnly) || undefined,
+      renderPolicy,
     })
   ) {
     return null;

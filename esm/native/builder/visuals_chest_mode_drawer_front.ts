@@ -5,6 +5,7 @@ import { getMirrorMaterialFromServices } from './visuals_chest_mode_runtime.js';
 
 import type {
   AppContainer,
+  BuilderContentsRenderPolicy,
   BuilderCreateDoorVisualFn,
   ConfigStateLike,
   Object3DLike,
@@ -27,6 +28,7 @@ type ChestDrawerFrontVisualArgs = {
   isGroovesEnabled: boolean;
   getPartColorValue: (partId: string) => unknown;
   addOutlines?: ((mesh: unknown) => unknown) | null;
+  renderPolicy: BuilderContentsRenderPolicy;
 };
 
 function readUserData(node: Object3DLike): UnknownRecord {
@@ -113,7 +115,10 @@ export function createChestDrawerFrontVisual(args: ChestDrawerFrontVisualArgs): 
     false,
     null,
     args.drawerId,
-    drawerVisualState.isGlass ? { glassFrameStyle: effectiveDrawerFrameStyle } : null
+    {
+      ...(drawerVisualState.isGlass ? { glassFrameStyle: effectiveDrawerFrameStyle } : {}),
+      renderPolicy: args.renderPolicy,
+    }
   );
 
   tagChestDrawerFrontLeaf({

@@ -2,7 +2,6 @@ import { assertApp } from '../runtime/api.js';
 import { getBuildUIFromPlatform } from '../runtime/platform_access.js';
 import {
   ensureBuilderService,
-  getBuilderAddOutlines,
   requireBuilderGetMaterial,
   resolveBuilderMirrorMaterial,
 } from '../runtime/builder_service_access.js';
@@ -11,7 +10,6 @@ import { assertThreeViaDeps } from '../runtime/three_access.js';
 import type {
   AppContainer,
   BuilderGetMaterialFn,
-  BuilderOutlineFn,
   ControlsLike,
   IndividualColorsMap,
   Object3DLike,
@@ -89,21 +87,6 @@ export function getChestModeBuildUI(passedApp: unknown): UnknownRecord {
   } catch {
     return {};
   }
-}
-
-export function getChestModeAddOutlines(passedApp: unknown): BuilderOutlineFn | null {
-  try {
-    const App = asChestModeObject(passedApp) ? ensureChestModeApp(passedApp) : null;
-    return App ? getBuilderAddOutlines(App) : null;
-  } catch {
-    return null;
-  }
-}
-
-export function addChestModeOutlines(mesh: unknown, passedApp: unknown): unknown {
-  const fn = getChestModeAddOutlines(passedApp);
-  if (fn) return fn(mesh);
-  return undefined;
 }
 
 export function getChestModeMaterial(
