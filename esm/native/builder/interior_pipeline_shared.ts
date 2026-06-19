@@ -167,7 +167,7 @@ export function buildSketchExtrasArgs(
     createDoorVisual: input.createDoorVisual,
     doorStyle,
     createInternalDrawerBox: input.createInternalDrawerBox,
-    addOutlines: input.addOutlines,
+    addOutlines: input.addOutlines ?? null,
     sketchMode: input.sketchMode === true,
     showContentsEnabled: input.showContentsEnabled,
     isGroovesEnabled: input.isGroovesEnabled === true,
