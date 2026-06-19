@@ -27,6 +27,7 @@ export function applyCornerConnectorAttachRod(params: CornerConnectorAttachRodFl
     wingH,
     uiAny,
     doorStyle,
+    __sketchMode,
     showHangerEnabled,
     showContentsEnabled,
     addOutlines,
@@ -94,7 +95,11 @@ export function applyCornerConnectorAttachRod(params: CornerConnectorAttachRodFl
     // Single hanger visual (matches other rods with the global "showHanger" toggle).
     if (showHangerEnabled && emitRealisticHanger) {
       try {
-        emitRealisticHanger((ax + bx) / 2, yPos, (az + bz) / 2, cornerGroup, len, true);
+        emitRealisticHanger((ax + bx) / 2, yPos, (az + bz) / 2, cornerGroup, len, {
+          showHangerEnabled: true,
+          sketchMode: __sketchMode,
+          addOutlines,
+        });
       } catch (_) {
         reportErrorThrottled(App, _, { where: 'corner_ops_emit', op: 'L1752', throttleMs: 4000 });
       }
@@ -134,7 +139,12 @@ export function applyCornerConnectorAttachRod(params: CornerConnectorAttachRodFl
           clothesGroup,
           distToBottom,
           CORNER_CONNECTOR_INTERIOR_DIMENSIONS.attachRod.contentsDepthHintM,
-          { showContentsEnabled, doorStyle }
+          {
+            showContentsEnabled: showContentsEnabled === true,
+            doorStyle,
+            sketchMode: __sketchMode,
+            addOutlines,
+          }
         );
       } catch (_) {
         reportErrorThrottled(App, _, { where: 'corner_ops_emit', op: 'L1775', throttleMs: 4000 });

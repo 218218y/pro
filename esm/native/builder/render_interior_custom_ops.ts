@@ -142,6 +142,8 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
       addFoldedClothes: input.addFoldedClothes,
       contentsPolicy: {
         showContentsEnabled: input.showContentsEnabled === true,
+        sketchMode: input.sketchMode === true,
+        addOutlines: __isFn(input.addOutlines) ? input.addOutlines : null,
         cfgSnapshot: input.cfg,
       },
       currentShelfMat,
@@ -181,6 +183,8 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
       addFoldedClothes: input.addFoldedClothes,
       contentsPolicy: {
         showContentsEnabled: input.showContentsEnabled === true,
+        sketchMode: input.sketchMode === true,
+        addOutlines: __isFn(input.addOutlines) ? input.addOutlines : null,
         cfgSnapshot: input.cfg,
       },
       braceSet,

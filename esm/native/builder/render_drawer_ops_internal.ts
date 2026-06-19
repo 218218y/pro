@@ -33,6 +33,7 @@ export function createApplyInternalDrawersOps(deps: BuilderRenderDrawerDeps) {
     const cfg = readDrawerConfig(args?.cfg);
     const bodyMat = args?.bodyMat;
     const addOutlines = readOutlineFn(args?.addOutlines);
+    const sketchMode = args?.sketchMode === true;
     const showContentsEnabled = args?.showContentsEnabled === true;
     const addFoldedClothes = readAddFoldedClothes(args?.addFoldedClothes);
 
@@ -103,6 +104,8 @@ export function createApplyInternalDrawersOps(deps: BuilderRenderDrawerDeps) {
           drawerOp.depth,
           {
             showContentsEnabled,
+            sketchMode,
+            addOutlines: addOutlines || null,
             cfgSnapshot: { isLibraryMode: cfg.isLibraryMode === true },
           }
         );

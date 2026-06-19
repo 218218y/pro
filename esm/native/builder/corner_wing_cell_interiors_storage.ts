@@ -49,7 +49,11 @@ export function createCornerWingInteriorLayoutOps(
         cellRuntime.__fullDepthCenterZ,
         runtime.wingGroup,
         cellRuntime.cellInnerW,
-        runtime.showHangerEnabled
+        {
+          showHangerEnabled: runtime.showHangerEnabled,
+          sketchMode: runtime.__sketchMode === true,
+          addOutlines: runtime.addOutlines,
+        }
       );
     }
 
@@ -69,6 +73,8 @@ export function createCornerWingInteriorLayoutOps(
         {
           showContentsEnabled: runtime.showContentsEnabled,
           doorStyle: runtime.doorStyle,
+          sketchMode: runtime.__sketchMode === true,
+          addOutlines: runtime.addOutlines,
         }
       );
     }

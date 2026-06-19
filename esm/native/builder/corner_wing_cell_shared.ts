@@ -10,6 +10,9 @@ import type {
   AppContainer,
   BuilderCreateDoorVisualFn,
   BuilderCreateInternalDrawerBoxFn,
+  BuilderFoldedContentsPolicy,
+  BuilderHangerContentsPolicy,
+  BuilderHangingContentsPolicy,
 } from '../../../types';
 export type { MirrorLayoutList } from '../../../types';
 import type { CornerOpsEmitContext } from './corner_ops_emit_common.js';
@@ -42,7 +45,7 @@ export type AddRealisticHangerLike = (
   rodZ: number,
   parentGroup: GroupLike,
   moduleWidth: number | undefined,
-  showHangerEnabled: boolean
+  policy: BuilderHangerContentsPolicy
 ) => unknown;
 export type AddHangingClothesLike = (
   rodX: number,
@@ -52,7 +55,7 @@ export type AddHangingClothesLike = (
   parentGroup: GroupLike,
   maxHeight: number,
   isRestrictedDepth: boolean | number | undefined,
-  policy: { showContentsEnabled: boolean; doorStyle: string }
+  policy: BuilderHangingContentsPolicy
 ) => unknown;
 export type AddFoldedClothesLike = (
   shelfX: number,
@@ -62,7 +65,7 @@ export type AddFoldedClothesLike = (
   parentGroup: GroupLike,
   maxHeight: number | undefined,
   maxDepth: number | undefined,
-  policy: { showContentsEnabled: boolean; cfgSnapshot: ValueRecord }
+  policy: BuilderFoldedContentsPolicy
 ) => unknown;
 
 export type ThreeCornerCellLike = {

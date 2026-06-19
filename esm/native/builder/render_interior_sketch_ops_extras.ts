@@ -67,6 +67,8 @@ export function applyInteriorSketchOwnedShelves(args: {
     addFoldedClothes: resolved.input.addFoldedClothes,
     contentsPolicy: {
       showContentsEnabled: resolved.input.showContentsEnabled === true,
+      sketchMode: resolved.input.sketchMode === true,
+      addOutlines: resolved.input.addOutlines || null,
       cfgSnapshot: resolved.input.cfgSnapshot,
     },
     currentShelfMat: resolved.currentShelfMat,

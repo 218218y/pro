@@ -1105,13 +1105,22 @@ test('[builder-surface-family] visuals/module seams stay consolidated behind can
   assert.match(contentsShared, /export function resolveContentsDoorStyle\(policy/);
   assert.match(contentsShared, /showContentsEnabled policy is required/);
   assert.match(contentsShared, /doorStyle policy is required/);
-  assert.doesNotMatch(contentsShared, /getVisualsContentsBuildUI|getBuildUIFromPlatform/);
+  assert.match(contentsShared, /export function requireContentsRenderPolicy\(/);
+  assert.match(contentsShared, /sketchMode policy is required/);
+  assert.match(contentsShared, /addOutlines policy must be a function or null/);
+  assert.match(contentsShared, /export function resolveContentsOutline\(policy/);
+  assert.doesNotMatch(
+    contentsShared,
+    /getVisualsContentsBuildUI|getBuildUIFromPlatform|getVisualsContentsAddOutlines|getBuilderAddOutlines|readRuntimeScalarOrDefaultFromApp/
+  );
   assert.match(contentsHanging, /resolveContentsDoorStyle\(policy\)/);
   assert.match(contentsHanging, /resolveShowContents\(policy\)/);
-  assert.match(contentsShared, /export function resolveShowHanger\(showHangerEnabled/);
+  assert.match(contentsShared, /export function resolveShowHanger\(policy/);
   assert.match(contentsShared, /showHangerEnabled is required/);
   assert.doesNotMatch(contentsShared, /getUi\(/);
-  assert.match(contentsHanger, /resolveShowHanger\(showHangerEnabled\)/);
+  assert.match(contentsHanger, /resolveShowHanger\(policy\)/);
+  assert.match(contentsHanger, /resolveContentsOutline\(policy\)/);
+  assert.doesNotMatch(contentsFolded, /readVisualsContentsSketchMode/);
   assert.match(contentsHanging, /export const addHangingClothes/);
   assert.match(contentsFolded, /export const addFoldedClothes/);
   assert.match(contentsHanger, /export const addRealisticHanger/);

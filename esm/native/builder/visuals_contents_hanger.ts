@@ -1,8 +1,8 @@
 import { CONTENT_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
-  addVisualsContentsOutlines,
   ensureVisualsContentsApp,
   ensureVisualsContentsTHREE,
+  resolveContentsOutline,
   resolveShowHanger,
   type AppAwareAddRealisticHangerFn,
 } from './visuals_contents_shared.js';
@@ -14,13 +14,13 @@ export const addRealisticHanger: AppAwareAddRealisticHangerFn = (
   rodZ,
   parentGroup,
   moduleWidth,
-  showHangerEnabled
+  policy
 ) => {
   App = ensureVisualsContentsApp(App);
   const THREE = ensureVisualsContentsTHREE(App);
-  const addOutlines = (mesh: unknown) => addVisualsContentsOutlines(mesh, App);
 
-  if (!resolveShowHanger(showHangerEnabled)) return;
+  if (!resolveShowHanger(policy)) return;
+  const addOutlines = resolveContentsOutline(policy);
 
   const dims = CONTENT_VISUAL_DIMENSIONS.hanger;
   const hangerGroup = new THREE.Group();
@@ -77,7 +77,7 @@ export const addRealisticHanger: AppAwareAddRealisticHangerFn = (
     woodMat
   );
   body.position.set(0, 0, -dims.bodyBackOffsetM);
-  addOutlines(body);
+  addOutlines?.(body);
   hangerGroup.add(body);
 
   const bar = new THREE.Mesh(

@@ -1,6 +1,5 @@
 import { CONTENT_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
-  addVisualsContentsOutlines,
   ensureVisualsContentsApp,
   ensureVisualsContentsTHREE,
   getCachedBoxGeometry,
@@ -11,7 +10,7 @@ import {
   getRandomBookSpineBandColor,
   getRandomClothColor,
   quantizeVisualContentMetric,
-  readVisualsContentsSketchMode,
+  resolveContentsOutline,
   resolveLibraryContents,
   resolveShowContents,
   seededRandom,
@@ -370,14 +369,15 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
 ) => {
   App = ensureVisualsContentsApp(App);
   const THREE = ensureVisualsContentsTHREE(App);
-  const addOutlines = (mesh: unknown) => addVisualsContentsOutlines(mesh, App);
-  const isSketch = readVisualsContentsSketchMode(App);
   if (typeof maxHeight === 'undefined' || maxHeight === null) {
     maxHeight = CONTENT_VISUAL_DIMENSIONS.foldedClothes.defaultMaxHeightM;
   }
 
   const isLibraryContents = resolveLibraryContents(policy);
   if (!resolveShowContents(policy)) return;
+  const outline = resolveContentsOutline(policy);
+  const addOutlines = (mesh: unknown) => outline?.(mesh);
+  const isSketch = policy.sketchMode;
 
   const seedVal = Math.floor(shelfX * 123 + shelfY * 456 + shelfZ * 789 + width * 1000);
   seededRandom.setSeed(Math.abs(seedVal) + 55);

@@ -51,9 +51,14 @@ export type BuilderOutlineFn = (mesh: unknown) => unknown;
 export type NullableBuilderOutlineFn = BuilderOutlineFn | null;
 export type BuilderDoorVisualFrameStyle = 'flat' | 'profile' | 'double_profile';
 
-export type BuilderContentsVisibilityPolicy = Readonly<{
-  showContentsEnabled: boolean;
+export type BuilderContentsRenderPolicy = Readonly<{
+  sketchMode: boolean;
+  addOutlines: NullableBuilderOutlineFn;
 }>;
+export type BuilderContentsVisibilityPolicy = BuilderContentsRenderPolicy &
+  Readonly<{
+    showContentsEnabled: boolean;
+  }>;
 export type BuilderHangingContentsPolicy = BuilderContentsVisibilityPolicy &
   Readonly<{
     doorStyle: string;
@@ -61,6 +66,10 @@ export type BuilderHangingContentsPolicy = BuilderContentsVisibilityPolicy &
 export type BuilderFoldedContentsPolicy = BuilderContentsVisibilityPolicy &
   Readonly<{
     cfgSnapshot: ConfigStateLike;
+  }>;
+export type BuilderHangerContentsPolicy = BuilderContentsRenderPolicy &
+  Readonly<{
+    showHangerEnabled: boolean;
   }>;
 
 export type BuilderDoorVisualOptions = {
@@ -358,7 +367,7 @@ export type BuilderAddRealisticHangerFn = (
   rodZ: number,
   parentGroup: Object3DLike,
   moduleWidth: number | undefined,
-  showHangerEnabled: boolean
+  policy: BuilderHangerContentsPolicy
 ) => unknown;
 export type BuilderCalculateModuleStructureFn = (
   doorsCount: unknown,
@@ -544,6 +553,7 @@ export interface BuilderInteriorSketchArgsLike extends UnknownRecord {
   doorStyle: BuilderDoorVisualFrameStyle;
   isGroovesEnabled: boolean;
   isInternalDrawersEnabled: boolean;
+  sketchMode: boolean;
   THREE?: unknown;
   wardrobeGroup?: unknown;
   createBoard?: BuilderCreateBoardFn | null;
@@ -576,7 +586,7 @@ export interface BuilderInteriorSketchArgsLike extends UnknownRecord {
   getPartColorValue?: BuilderPartColorResolver | null;
   createDoorVisual?: BuilderCreateDoorVisualFn | null;
   createInternalDrawerBox?: BuilderCreateInternalDrawerBoxFn | null;
-  addOutlines?: BuilderOutlineFn | null;
+  addOutlines: BuilderOutlineFn | null;
   showContentsEnabled?: boolean;
   addFoldedClothes?: BuilderAddFoldedClothesFn | null;
 }

@@ -195,8 +195,8 @@ export function readAddRealisticHanger(value: unknown): BuilderAddRealisticHange
     rodZ,
     parentGroup,
     moduleWidth,
-    showHangerEnabled
-  ) => Reflect.apply(value, undefined, [rodX, rodY, rodZ, parentGroup, moduleWidth, showHangerEnabled]);
+    policy
+  ) => Reflect.apply(value, undefined, [rodX, rodY, rodZ, parentGroup, moduleWidth, policy]);
   return addRealisticHanger;
 }
 

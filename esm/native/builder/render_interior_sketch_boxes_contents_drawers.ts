@@ -270,6 +270,7 @@ export function renderSketchBoxDrawerContents(args: RenderSketchBoxContentsArgs)
       wardrobeGroup: group,
       createInternalDrawerBox,
       addOutlines,
+      sketchMode: input.sketchMode === true,
       getPartMaterial,
       bodyMat: boxMat,
       cfg: input.cfgSnapshot,

@@ -75,6 +75,7 @@ export function applyCornerWingCellInteriors(params: CornerWingCellFlowParams): 
       createDoorVisual: runtime.createDoorVisual,
       createInternalDrawerBox: runtime.createInternalDrawerBox,
       addOutlines: runtime.addOutlines,
+      __sketchMode: runtime.__sketchMode === true,
       showContentsEnabled: runtime.showContentsEnabled,
       addFoldedClothes: runtime.addFoldedClothes,
       createRod: layoutOps.createRod,

@@ -139,6 +139,8 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
       addFoldedClothes,
       contentsPolicy: {
         showContentsEnabled: input.showContentsEnabled === true,
+        sketchMode: input.sketchMode === true,
+        addOutlines: __isFn(input.addOutlines) ? input.addOutlines : null,
         cfgSnapshot: input.cfg,
       },
       currentShelfMat,

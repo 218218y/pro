@@ -140,6 +140,8 @@ test('render interior rod sends hanging clothes through default hanging_top2 cle
     internalCenterX: 0,
     internalZ: 0,
     wardrobeGroup: group,
+    sketchMode: true,
+    addOutlines: () => undefined,
     showContentsEnabled: true,
     doorStyle: 'flat',
     addHangingClothes(...args: any[]) {
@@ -149,6 +151,8 @@ test('render interior rod sends hanging clothes through default hanging_top2 cle
 
   assert.equal(clothesCalls.length, 1);
   assert.equal(Number(clothesCalls[0][5].toFixed(2)), 1.52);
+  assert.equal(clothesCalls[0][7].sketchMode, true);
+  assert.equal(typeof clothesCalls[0][7].addOutlines, 'function');
 });
 
 test('render interior rod recomputes edited custom hanging clearance instead of stale preset limits', () => {

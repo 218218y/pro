@@ -20,6 +20,8 @@ function emitFoldedClothesPlan(
   App: unknown,
   policy: {
     showContentsEnabled: boolean;
+    sketchMode: boolean;
+    addOutlines: CornerConnectorInteriorFlowParams['ctx']['addOutlines'];
     cfgSnapshot: CornerConnectorInteriorFlowParams['cfgSnapshot'];
   }
 ): void {
@@ -39,6 +41,8 @@ export function emitFoldedClothesPlans(
   App: unknown,
   policy: {
     showContentsEnabled: boolean;
+    sketchMode: boolean;
+    addOutlines: CornerConnectorInteriorFlowParams['ctx']['addOutlines'];
     cfgSnapshot: CornerConnectorInteriorFlowParams['cfgSnapshot'];
   }
 ): void {

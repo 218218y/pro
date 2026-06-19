@@ -15,6 +15,8 @@ export type InteriorPresetInput = InteriorValueRecord & {
   createBoard?: InteriorOpsCallable;
   createRod?: InteriorOpsCallable;
   addFoldedClothes?: InteriorOpsCallable;
+  addOutlines?: InteriorOpsCallable;
+  sketchMode?: unknown;
   wardrobeGroup?: InteriorGroupLike | null;
   effectiveBottomY?: unknown;
   effectiveTopY?: unknown;

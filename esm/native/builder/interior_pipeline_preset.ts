@@ -90,6 +90,8 @@ export function applyPresetInteriorLayout(
         createBoard: input.createBoard,
         createRod: input.createRod,
         addFoldedClothes: input.addFoldedClothes,
+        addOutlines: input.addOutlines,
+        sketchMode: input.sketchMode === true,
         showContentsEnabled: input.showContentsEnabled === true,
       }) === true;
   } catch (error) {

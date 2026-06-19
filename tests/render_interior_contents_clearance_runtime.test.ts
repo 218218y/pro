@@ -10,6 +10,8 @@ type FoldedCall = {
   maxHeight: number;
   maxDepth: number;
   showContentsEnabled: boolean;
+  sketchMode: boolean;
+  hasExplicitOutlineCallback: boolean;
   isLibraryMode: boolean;
 };
 type BoardCall = {
@@ -64,11 +66,15 @@ function commonInput(calls: FoldedCall[], boardCalls: BoardCall[] = []) {
         maxHeight: Number(maxHeight),
         maxDepth: Number(maxDepth),
         showContentsEnabled: policy?.showContentsEnabled === true,
+        sketchMode: policy?.sketchMode === true,
+        hasExplicitOutlineCallback: typeof policy?.addOutlines === 'function',
         isLibraryMode: policy?.cfgSnapshot?.isLibraryMode === true,
       });
       return null;
     },
     cfg: { isLibraryMode: true },
+    sketchMode: true,
+    addOutlines: () => undefined,
     showContentsEnabled: true,
     wardrobeGroup: { children: [] },
     gridDivisions: 6,
@@ -128,6 +134,8 @@ test('renderInteriorPresetOps passes real shelf-space clearance to folded/librar
   assert.ok(firstShelfCall.maxHeight < 0.5, 'first shelf should not fall back to the oversized default');
   assert.equal(Number(firstShelfCall.maxDepth.toFixed(2)), 0.45);
   assert.equal(firstShelfCall.showContentsEnabled, true);
+  assert.equal(firstShelfCall.sketchMode, true);
+  assert.equal(firstShelfCall.hasExplicitOutlineCallback, true);
   assert.equal(firstShelfCall.isLibraryMode, true);
 });
 
@@ -209,6 +217,8 @@ test('renderInteriorCustomOps accounts for the next custom shelf thickness in co
   assert.ok(firstShelfCall.maxHeight < 0.5, 'custom shelf contents should use measured clearance');
   assert.equal(Number(firstShelfCall.maxDepth.toFixed(2)), 0.45);
   assert.equal(firstShelfCall.showContentsEnabled, true);
+  assert.equal(firstShelfCall.sketchMode, true);
+  assert.equal(firstShelfCall.hasExplicitOutlineCallback, true);
   assert.equal(firstShelfCall.isLibraryMode, true);
 });
 

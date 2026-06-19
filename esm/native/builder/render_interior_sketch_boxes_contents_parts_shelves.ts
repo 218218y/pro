@@ -201,6 +201,8 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
           shelfDepth,
           {
             showContentsEnabled: args.args.input.showContentsEnabled === true,
+            sketchMode: args.args.input.sketchMode === true,
+            addOutlines: args.args.input.addOutlines || null,
             cfgSnapshot: args.args.input.cfgSnapshot,
           }
         );

@@ -76,6 +76,7 @@ export function buildSketchInternalDrawerRuntimeArgs(
     wardrobeGroup: group,
     createInternalDrawerBox,
     addOutlines,
+    sketchMode: input.sketchMode === true,
     getPartMaterial: input.getPartMaterial,
     bodyMat,
     cfg: input.cfgSnapshot,

@@ -70,6 +70,7 @@ export type ApplyInternalSketchDrawersArgs = InteriorValueRecord & {
   wardrobeGroup: InteriorGroupLike;
   createInternalDrawerBox?: InteriorOpsCallable;
   addOutlines?: InteriorOpsCallable;
+  sketchMode: boolean;
   getPartMaterial?: InteriorOpsCallable;
   bodyMat?: unknown;
   showContentsEnabled: boolean;
@@ -120,6 +121,7 @@ export type RenderInteriorSketchInput = BuilderInteriorSketchArgsLike &
     THREE?: unknown;
     createInternalDrawerBox?: InteriorOpsCallable;
     addOutlines?: InteriorOpsCallable;
+    sketchMode?: boolean;
     showContentsEnabled?: boolean | null;
     isGroovesEnabled: boolean;
     isInternalDrawersEnabled: boolean;

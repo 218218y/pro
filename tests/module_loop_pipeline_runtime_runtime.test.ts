@@ -321,15 +321,23 @@ test('module loop runtime resolvers preserve explicit content snapshots and hang
   const parentGroup = {} as any;
   const contentsPolicy = {
     showContentsEnabled: true,
+    sketchMode: false,
+    addOutlines: null,
     cfgSnapshot: { isLibraryMode: true },
   };
-  const hangingPolicy = { showContentsEnabled: true, doorStyle: 'profile' };
+  const hangingPolicy = {
+    showContentsEnabled: true,
+    doorStyle: 'profile',
+    sketchMode: false,
+    addOutlines: null,
+  };
+  const hangerPolicy = { showHangerEnabled: false, sketchMode: false, addOutlines: null };
 
   runtime.addFoldedClothes?.(1, 2, 3, 4, parentGroup, 5, 6, contentsPolicy);
-  runtime.addRealisticHanger?.(1, 2, 3, parentGroup, 4, false);
+  runtime.addRealisticHanger?.(1, 2, 3, parentGroup, 4, hangerPolicy);
   runtime.addHangingClothes?.(1, 2, 3, 4, parentGroup, 5, 6, hangingPolicy);
 
   assert.equal(foldedCalls[0]?.[7], contentsPolicy);
-  assert.equal(hangerCalls[0]?.[5], false);
+  assert.equal(hangerCalls[0]?.[5], hangerPolicy);
   assert.equal(hangingClothesCalls[0]?.[7], hangingPolicy);
 });

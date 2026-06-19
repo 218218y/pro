@@ -40,6 +40,7 @@ type MakeRodCreatorArgs = {
   legMat?: unknown;
   wardrobeGroup?: unknown;
   addOutlines?: BuilderOutlineFn | null;
+  sketchMode?: boolean;
   showHangerEnabled?: boolean;
   addRealisticHanger?: BuilderContentsSurfaceLike['addRealisticHanger'];
   showContentsEnabled?: boolean;
@@ -95,6 +96,7 @@ function createRodArgs(
     legMat: baseArgs.legMat,
     wardrobeGroup: baseArgs.wardrobeGroup,
     addOutlines: baseArgs.addOutlines,
+    sketchMode: baseArgs.sketchMode === true,
     showHangerEnabled: baseArgs.showHangerEnabled,
     addRealisticHanger: baseArgs.addRealisticHanger,
     showContentsEnabled: baseArgs.showContentsEnabled,

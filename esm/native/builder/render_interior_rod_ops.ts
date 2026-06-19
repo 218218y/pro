@@ -15,7 +15,7 @@ type AddRealisticHangerFn = (
   z: number,
   group: InteriorObjectLike,
   innerW: number,
-  single: boolean
+  policy: { showHangerEnabled: boolean; sketchMode: boolean; addOutlines: AddOutlinesFn | null }
 ) => unknown;
 type HangingClothesDepthHint = number | boolean;
 type AddHangingClothesFn = (
@@ -26,7 +26,12 @@ type AddHangingClothesFn = (
   group: InteriorObjectLike,
   availableHeight: number,
   depthHint: HangingClothesDepthHint,
-  policy: { showContentsEnabled: boolean; doorStyle: string }
+  policy: {
+    showContentsEnabled: boolean;
+    doorStyle: string;
+    sketchMode: boolean;
+    addOutlines: AddOutlinesFn | null;
+  }
 ) => unknown;
 
 type RodConfigLike = {
@@ -59,6 +64,7 @@ type RenderInteriorRodArgs = InteriorValueRecord & {
   doorFrontZ?: unknown;
   wardrobeGroup?: InteriorObjectLike | null;
   addOutlines?: AddOutlinesFn | null;
+  sketchMode?: boolean;
   showHangerEnabled?: unknown;
   addRealisticHanger?: AddRealisticHangerFn | null;
   showContentsEnabled?: unknown;
@@ -150,6 +156,7 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
     if (!group || typeof group.add !== 'function') return false;
 
     const addOutlines = safeArgs.addOutlines;
+    const sketchMode = safeArgs.sketchMode === true;
     const showHangerEnabled = !!safeArgs.showHangerEnabled;
     const showContentsEnabled = !!safeArgs.showContentsEnabled;
     const addRealisticHanger = safeArgs.addRealisticHanger;
@@ -199,7 +206,11 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
     group.add(rod);
 
     if (showHangerEnabled && enableSingleHanger && typeof addRealisticHanger === 'function') {
-      addRealisticHanger(internalCenterX, yPos, internalZ, group, innerW, showHangerEnabled);
+      addRealisticHanger(internalCenterX, yPos, internalZ, group, innerW, {
+        showHangerEnabled,
+        sketchMode,
+        addOutlines: typeof addOutlines === 'function' ? addOutlines : null,
+      });
     }
 
     if (showContentsEnabled && enableHangingClothes && typeof addHangingClothes === 'function') {
@@ -242,6 +253,8 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
         {
           showContentsEnabled,
           doorStyle,
+          sketchMode,
+          addOutlines: typeof addOutlines === 'function' ? addOutlines : null,
         }
       );
     }

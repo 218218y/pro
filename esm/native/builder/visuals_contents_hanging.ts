@@ -1,6 +1,5 @@
 import { CONTENT_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
-  addVisualsContentsOutlines,
   ensureVisualsContentsApp,
   ensureVisualsContentsTHREE,
   getCachedBoxGeometry,
@@ -11,6 +10,7 @@ import {
   getRandomClothColor,
   quantizeVisualContentMetric,
   resolveContentsDoorStyle,
+  resolveContentsOutline,
   resolveShowContents,
   seededRandom,
   type AppAwareAddHangingClothesFn,
@@ -280,12 +280,12 @@ export const addHangingClothes: AppAwareAddHangingClothesFn = (
 ) => {
   App = ensureVisualsContentsApp(App);
   const THREE = ensureVisualsContentsTHREE(App);
-  const addOutlines = (mesh: unknown) => addVisualsContentsOutlines(mesh, App);
   const dims = CONTENT_VISUAL_DIMENSIONS.hangingClothes;
   if (maxHeight < dims.minAvailableHeightM) return;
 
   const currentStyle = resolveContentsDoorStyle(policy);
   if (!resolveShowContents(policy)) return;
+  const addOutlines = resolveContentsOutline(policy);
 
   const seedVal = Math.floor(rodX * 1000 + rodY * 1000 + rodZ * 1000 + width * 1000);
   seededRandom.setSeed(Math.abs(seedVal) + 1);
@@ -355,7 +355,7 @@ export const addHangingClothes: AppAwareAddHangingClothesFn = (
       height: clothHeight,
       depth: baseClothDepth,
     });
-    addOutlines(cloth);
+    addOutlines?.(cloth);
     parentGroup.add(cloth);
   }
 };

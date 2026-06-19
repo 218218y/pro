@@ -10,7 +10,9 @@ import {
   getCachedBoxGeometry,
   getCachedExtrudeGeometry,
   getCachedRoundedBoxGeometry,
+  resolveContentsOutline,
   resolveContentsDoorStyle,
+  requireContentsRenderPolicy,
   resolveLibraryContents,
   resolveShowContents,
   resolveShowHanger,
@@ -195,12 +197,30 @@ function createApp(overrides: Record<string, unknown> = {}) {
   return { App, outlined };
 }
 
-function foldedContentsPolicy(isLibraryMode: boolean, showContentsEnabled = true) {
-  return { showContentsEnabled, cfgSnapshot: { isLibraryMode } };
+function foldedContentsPolicy(
+  isLibraryMode: boolean,
+  showContentsEnabled = true,
+  sketchMode = false,
+  addOutlines: ((mesh: unknown) => unknown) | null = null
+) {
+  return { showContentsEnabled, sketchMode, addOutlines, cfgSnapshot: { isLibraryMode } };
 }
 
-function hangingContentsPolicy(doorStyle: string, showContentsEnabled = true) {
-  return { showContentsEnabled, doorStyle };
+function hangingContentsPolicy(
+  doorStyle: string,
+  showContentsEnabled = true,
+  sketchMode = false,
+  addOutlines: ((mesh: unknown) => unknown) | null = null
+) {
+  return { showContentsEnabled, doorStyle, sketchMode, addOutlines };
+}
+
+function hangerContentsPolicy(
+  showHangerEnabled: boolean,
+  sketchMode = false,
+  addOutlines: ((mesh: unknown) => unknown) | null = null
+) {
+  return { showHangerEnabled, sketchMode, addOutlines };
 }
 
 test('visuals_contents library policy requires and reads only the explicit config snapshot', () => {
@@ -213,8 +233,8 @@ test('visuals_contents library policy requires and reads only the explicit confi
 });
 
 test('visuals_contents visibility and door-style policy are explicit and fail fast', () => {
-  assert.equal(resolveShowContents({ showContentsEnabled: true }), true);
-  assert.equal(resolveShowContents({ showContentsEnabled: false }), false);
+  assert.equal(resolveShowContents(foldedContentsPolicy(false, true)), true);
+  assert.equal(resolveShowContents(foldedContentsPolicy(false, false)), false);
   assert.equal(resolveContentsDoorStyle(hangingContentsPolicy('profile')), 'profile');
   assert.throws(
     () => resolveShowContents({} as never),
@@ -227,11 +247,29 @@ test('visuals_contents visibility and door-style policy are explicit and fail fa
 });
 
 test('visuals_contents hanger policy requires and reads only the explicit build flag', () => {
-  assert.equal(resolveShowHanger(true), true);
-  assert.equal(resolveShowHanger(false), false);
+  assert.equal(resolveShowHanger(hangerContentsPolicy(true)), true);
+  assert.equal(resolveShowHanger(hangerContentsPolicy(false)), false);
   assert.throws(
     () => resolveShowHanger(undefined as never),
     /\[visuals_contents\] showHangerEnabled is required/
+  );
+});
+
+test('visuals_contents render policy requires explicit sketch mode and outline callback state', () => {
+  const addOutlines = () => undefined;
+  assert.deepEqual(requireContentsRenderPolicy({ sketchMode: false, addOutlines: null }), {
+    sketchMode: false,
+    addOutlines: null,
+  });
+  assert.equal(resolveContentsOutline({ sketchMode: true, addOutlines }), addOutlines);
+  assert.equal(resolveContentsOutline({ sketchMode: false, addOutlines }), null);
+  assert.throws(
+    () => requireContentsRenderPolicy({ addOutlines: null } as never),
+    /\[visuals_contents\] sketchMode policy is required/
+  );
+  assert.throws(
+    () => requireContentsRenderPolicy({ sketchMode: true } as never),
+    /\[visuals_contents\] addOutlines policy must be a function or null/
   );
 });
 
@@ -239,7 +277,17 @@ test('visuals_contents hanging clothes honor showContents, style depth, and outl
   const { App, outlined } = createApp({ buildUI: { showContents: true, doorStyle: 'profile' } });
   const parent = new FakeGroup();
 
-  addHangingClothes(App, 0, 1.4, 0, 0.16, parent as any, 1.3, 0.2, hangingContentsPolicy('profile'));
+  addHangingClothes(
+    App,
+    0,
+    1.4,
+    0,
+    0.16,
+    parent as any,
+    1.3,
+    0.2,
+    hangingContentsPolicy('profile', true, true, mesh => outlined.push(mesh))
+  );
 
   const hangers = parent.children.filter(child => child.userData.__kind === 'hanging_hanger');
   const clothes = parent.children.filter(child => child.userData.__kind === 'hanging_cloth');
@@ -284,11 +332,21 @@ test('visuals_contents explicit visibility policy overrides contradictory live b
   assert.equal(foldedParent.children.length, 0);
 });
 
-test('visuals_contents folded clothes clamp depth inside shelf bounds and outline only in sketch mode', () => {
-  const { App, outlined } = createApp({ buildUI: { showContents: true }, runtime: { sketchMode: true } });
+test('visuals_contents folded clothes clamp depth and use only the explicit sketch policy', () => {
+  const { App, outlined } = createApp({ buildUI: { showContents: true }, runtime: { sketchMode: false } });
   const parent = new FakeGroup();
 
-  addFoldedClothes(App, 0, 0.2, 0, 0.6, parent as any, 0.25, 0.2, foldedContentsPolicy(false));
+  addFoldedClothes(
+    App,
+    0,
+    0.2,
+    0,
+    0.6,
+    parent as any,
+    0.25,
+    0.2,
+    foldedContentsPolicy(false, true, true, mesh => outlined.push(mesh))
+  );
 
   assert.ok(parent.children.length > 0);
   assert.equal(outlined.length, parent.children.length);
@@ -317,7 +375,17 @@ test('visuals_contents folded shelf renders books instead of clothes in library 
   });
   const parent = new FakeGroup();
 
-  addFoldedClothes(App, 0, 0.2, 0, 0.6, parent as any, 0.25, 0.2, foldedContentsPolicy(true));
+  addFoldedClothes(
+    App,
+    0,
+    0.2,
+    0,
+    0.6,
+    parent as any,
+    0.25,
+    0.2,
+    foldedContentsPolicy(true, true, true, mesh => outlined.push(mesh))
+  );
 
   assert.ok(parent.children.length > 0);
   assert.equal(outlined.length, parent.children.length);
@@ -527,7 +595,15 @@ test('visuals_contents realistic hanger consumes the explicit showHanger flag an
   const { App, outlined } = createApp({ buildUI: { showHanger: false }, ui: { showHanger: false } });
   const parent = new FakeGroup();
 
-  addRealisticHanger(App, 0.1, 1.0, -0.1, parent as any, 0.18, true);
+  addRealisticHanger(
+    App,
+    0.1,
+    1.0,
+    -0.1,
+    parent as any,
+    0.18,
+    hangerContentsPolicy(true, true, mesh => outlined.push(mesh))
+  );
 
   assert.equal(parent.children.length, 1);
   const hangerGroup = parent.children[0];
@@ -541,6 +617,6 @@ test('visuals_contents realistic hanger consumes the explicit showHanger flag an
   assert.equal(hangerGroup.position.z, -0.1);
 
   const disabledParent = new FakeGroup();
-  addRealisticHanger(App, 0, 1, 0, disabledParent as any, 0.18, false);
+  addRealisticHanger(App, 0, 1, 0, disabledParent as any, 0.18, hangerContentsPolicy(false));
   assert.equal(disabledParent.children.length, 0);
 });

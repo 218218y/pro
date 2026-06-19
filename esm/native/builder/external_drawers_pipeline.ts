@@ -63,6 +63,7 @@ type ApplyExternalDrawersForModuleParams = {
   whiteMat?: unknown;
   drawerBoxBaseMat?: unknown;
   addOutlines?: unknown;
+  sketchMode?: boolean;
   getPartMaterial?: (partId: string) => unknown;
   getPartColorValue?: (partId: string) => string | null | undefined;
   createDoorVisual?: BuilderCreateDoorVisualFn;
@@ -254,6 +255,7 @@ export function applyExternalDrawersForModule(
       whiteMat: params?.whiteMat,
       drawerBoxBaseMat: params?.drawerBoxBaseMat || params?.whiteMat,
       addOutlines: params?.addOutlines,
+      sketchMode: params?.sketchMode === true,
       getPartMaterial: params?.getPartMaterial,
       getPartColorValue: params?.getPartColorValue,
       createDoorVisual: params?.createDoorVisual,

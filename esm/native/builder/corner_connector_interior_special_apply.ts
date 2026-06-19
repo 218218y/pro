@@ -29,6 +29,7 @@ export function applyCornerConnectorSpecialInterior(params: CornerConnectorSpeci
     wingH,
     uiAny,
     showContentsEnabled,
+    __sketchMode,
     addOutlines,
     getCornerMat,
     getCornerShelfMat,
@@ -195,6 +196,8 @@ export function applyCornerConnectorSpecialInterior(params: CornerConnectorSpeci
     });
     emitFoldedClothesPlans(plans, cornerGroup, emitFoldedClothes, reportErrorThrottled, App, {
       showContentsEnabled: showContentsEnabled === true,
+      sketchMode: __sketchMode,
+      addOutlines,
       cfgSnapshot,
     });
   }
@@ -220,6 +223,8 @@ export function applyCornerConnectorSpecialInterior(params: CornerConnectorSpeci
     });
     emitFoldedClothesPlans(plans, cornerGroup, emitFoldedClothes, reportErrorThrottled, App, {
       showContentsEnabled: showContentsEnabled === true,
+      sketchMode: __sketchMode,
+      addOutlines,
       cfgSnapshot,
     });
   }

@@ -17,6 +17,8 @@ export type InteriorCustomInput = InteriorValueRecord & {
   createBoard?: InteriorOpsCallable;
   createRod?: InteriorOpsCallable;
   addFoldedClothes?: InteriorOpsCallable;
+  addOutlines?: InteriorOpsCallable;
+  sketchMode?: unknown;
   wardrobeGroup?: InteriorGroupLike | null;
   gridDivisions?: unknown;
   effectiveBottomY?: unknown;

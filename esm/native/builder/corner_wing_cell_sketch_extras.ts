@@ -44,6 +44,7 @@ type CornerWingCellSketchExtrasParams = {
   createDoorVisual: BuilderCreateDoorVisualFn;
   createInternalDrawerBox: BuilderCreateInternalDrawerBoxFn;
   addOutlines: (mesh: unknown) => void;
+  __sketchMode: boolean;
   showContentsEnabled: boolean;
   addFoldedClothes: AddFoldedClothesLike;
   createRod: CreateRodLike;
@@ -80,6 +81,7 @@ export function applyCornerWingCellSketchExtras(params: CornerWingCellSketchExtr
     createDoorVisual,
     createInternalDrawerBox,
     addOutlines,
+    __sketchMode,
     showContentsEnabled,
     addFoldedClothes,
     createRod,
@@ -157,6 +159,7 @@ export function applyCornerWingCellSketchExtras(params: CornerWingCellSketchExtr
       createDoorVisual,
       createInternalDrawerBox,
       addOutlines,
+      sketchMode: __sketchMode === true,
       showContentsEnabled,
       doorStyle: requireInteriorSketchDoorStyle(doorStyle, 'corner_wing_cell.sketchExtras'),
       isGroovesEnabled,

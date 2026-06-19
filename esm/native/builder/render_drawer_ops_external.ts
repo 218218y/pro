@@ -40,6 +40,7 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
     const bodyMat = args?.bodyMat;
     const drawerBoxBaseMat = args?.drawerBoxBaseMat || args?.whiteMat || bodyMat;
     const addOutlines = readOutlineFn(args?.addOutlines);
+    const sketchMode = args?.sketchMode === true;
     const getPartMaterial = readGetPartMaterial(args?.getPartMaterial);
     const getPartColorValue = readGetPartColorValue(args?.getPartColorValue);
     const createDoorVisual = readCreateDoorVisual(args?.createDoorVisual);
@@ -175,6 +176,8 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
           drawerOp.boxD,
           {
             showContentsEnabled,
+            sketchMode,
+            addOutlines: addOutlines || null,
             cfgSnapshot: { isLibraryMode: cfg.isLibraryMode === true },
           }
         );

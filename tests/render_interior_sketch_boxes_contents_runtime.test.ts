@@ -97,6 +97,7 @@ function createBaseArgs() {
       input: {
         cfgSnapshot: {},
         isInternalDrawersEnabled: true,
+        sketchMode: true,
         moduleKey: 'm1',
         createInternalDrawerBox: () => ({}),
         addOutlines: () => {},
@@ -218,6 +219,8 @@ test('render sketch box shelves emit folded contents inside divider-aware shelf 
   assert.ok(folded[0][5] > 0);
   assert.ok(folded[1][5] > folded[0][5]);
   assert.equal(folded[0][7].showContentsEnabled, true);
+  assert.equal(folded[0][7].sketchMode, true);
+  assert.equal(typeof folded[0][7].addOutlines, 'function');
   assert.equal(folded[0][7].cfgSnapshot, args.args.input.cfgSnapshot);
 });
 

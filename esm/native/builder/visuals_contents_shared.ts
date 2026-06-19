@@ -1,6 +1,5 @@
 import { assertApp } from '../runtime/api.js';
-import { ensureBuilderService, getBuilderAddOutlines } from '../runtime/builder_service_access.js';
-import { readRuntimeScalarOrDefaultFromApp } from '../runtime/runtime_selectors.js';
+import { ensureBuilderService } from '../runtime/builder_service_access.js';
 import { assertThreeViaDeps } from '../runtime/three_access.js';
 
 import type {
@@ -9,8 +8,10 @@ import type {
   BuilderAddFoldedClothesFn,
   BuilderAddHangingClothesFn,
   BuilderAddRealisticHangerFn,
+  BuilderContentsRenderPolicy,
   BuilderContentsVisibilityPolicy,
   BuilderFoldedContentsPolicy,
+  BuilderHangerContentsPolicy,
   BuilderHangingContentsPolicy,
   GeometryLike,
   MaterialLike,
@@ -58,22 +59,21 @@ export function ensureVisualsContentsTHREE(passedApp: unknown): ThreeLike {
   return assertThreeViaDeps(App, 'native/builder/visuals_contents.THREE');
 }
 
-export function getVisualsContentsAddOutlines(passedApp: unknown): BuilderOutlineFn | null {
-  try {
-    const App = asObject(passedApp) ? ensureVisualsContentsApp(passedApp) : null;
-    return App ? getBuilderAddOutlines(App) : null;
-  } catch {
-    return null;
+export function requireContentsRenderPolicy(
+  policy: BuilderContentsRenderPolicy
+): BuilderContentsRenderPolicy {
+  if (!isRecord(policy) || typeof policy.sketchMode !== 'boolean') {
+    throw new TypeError('[visuals_contents] sketchMode policy is required');
   }
+  if (policy.addOutlines !== null && typeof policy.addOutlines !== 'function') {
+    throw new TypeError('[visuals_contents] addOutlines policy must be a function or null');
+  }
+  return policy;
 }
 
-export function addVisualsContentsOutlines(mesh: unknown, passedApp: unknown) {
-  const fn = getVisualsContentsAddOutlines(passedApp);
-  if (fn) return fn(mesh);
-}
-
-export function readVisualsContentsSketchMode(App: AppContainer): boolean {
-  return !!readRuntimeScalarOrDefaultFromApp(App, 'sketchMode', false);
+export function resolveContentsOutline(policy: BuilderContentsRenderPolicy): BuilderOutlineFn | null {
+  const renderPolicy = requireContentsRenderPolicy(policy);
+  return renderPolicy.sketchMode ? renderPolicy.addOutlines : null;
 }
 
 function requireContentsVisibilityPolicy(
@@ -86,7 +86,9 @@ function requireContentsVisibilityPolicy(
 }
 
 export function resolveShowContents(policy: BuilderContentsVisibilityPolicy): boolean {
-  return requireContentsVisibilityPolicy(policy).showContentsEnabled;
+  const visibilityPolicy = requireContentsVisibilityPolicy(policy);
+  requireContentsRenderPolicy(policy);
+  return visibilityPolicy.showContentsEnabled;
 }
 
 export function resolveLibraryContents(policy: BuilderFoldedContentsPolicy): boolean {
@@ -106,11 +108,12 @@ export function resolveContentsDoorStyle(policy: BuilderHangingContentsPolicy): 
   return policy.doorStyle;
 }
 
-export function resolveShowHanger(showHangerEnabled: boolean): boolean {
-  if (typeof showHangerEnabled !== 'boolean') {
+export function resolveShowHanger(policy: BuilderHangerContentsPolicy): boolean {
+  if (!isRecord(policy) || typeof policy.showHangerEnabled !== 'boolean') {
     throw new TypeError('[visuals_contents] showHangerEnabled is required');
   }
-  return showHangerEnabled;
+  requireContentsRenderPolicy(policy);
+  return policy.showHangerEnabled;
 }
 
 export const seededRandom = (function () {

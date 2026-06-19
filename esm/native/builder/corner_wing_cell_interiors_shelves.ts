@@ -274,6 +274,8 @@ export function addCornerWingGridShelf(
       shelfDepth,
       {
         showContentsEnabled: runtime.showContentsEnabled,
+        sketchMode: runtime.__sketchMode === true,
+        addOutlines: runtime.addOutlines,
         cfgSnapshot: runtime.__cfg,
       }
     );

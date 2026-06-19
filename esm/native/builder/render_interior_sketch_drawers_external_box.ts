@@ -74,6 +74,8 @@ function addSketchExternalDrawerBox(
       opPlan.boxD,
       {
         showContentsEnabled: context.input.showContentsEnabled === true,
+        sketchMode: context.input.sketchMode === true,
+        addOutlines: context.input.addOutlines || null,
         cfgSnapshot: context.input.cfgSnapshot,
       }
     );

@@ -250,6 +250,7 @@ export function maybeRenderNoMainSketchHost(args: {
     legMat: args.legMat,
     wardrobeGroup,
     addOutlines: readFunction<BuilderOutlineFn>(args.addOutlines) || null,
+    sketchMode: true,
     showHangerEnabled: !!args.showHangerEnabled,
     addRealisticHanger:
       readFunction<NonNullable<BuilderContentsSurfaceLike['addRealisticHanger']>>(args.addRealisticHanger) ||
@@ -294,6 +295,7 @@ export function maybeRenderNoMainSketchHost(args: {
     doorStyle: readStringProp(readRecord(args.ui), 'doorStyle') || '',
     createInternalDrawerBox: args.createInternalDrawerBox,
     addOutlines: args.addOutlines,
+    sketchMode: true,
     showContentsEnabled: !!args.showContentsEnabled,
     isGroovesEnabled: readRecord(args.ui)?.groovesEnabled === true,
   });

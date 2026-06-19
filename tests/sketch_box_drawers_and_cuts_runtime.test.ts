@@ -536,6 +536,8 @@ test('sketch external drawers emit folded contents when show contents is enabled
   assert.ok(foldedCalls.every(call => call[4]?.userData?.__wpSketchExtDrawer === true));
   assert.ok(foldedCalls.every(call => Number(call[5]) > 0));
   assert.ok(foldedCalls.every(call => call[7]?.showContentsEnabled === true));
+  assert.ok(foldedCalls.every(call => call[7]?.sketchMode === true));
+  assert.ok(foldedCalls.every(call => typeof call[7]?.addOutlines === 'function'));
 });
 
 test('sketch external drawer fronts and boxes keep separate paint identities after group metadata is applied', () => {

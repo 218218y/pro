@@ -4,7 +4,12 @@
 // pentagon special-layout and attach-rod flows consume a shared typed runtime
 // contract.
 
-import type { UnknownRecord } from '../../../types';
+import type {
+  BuilderFoldedContentsPolicy,
+  BuilderHangerContentsPolicy,
+  BuilderHangingContentsPolicy,
+  UnknownRecord,
+} from '../../../types';
 import type { ThrottleOpts } from '../runtime/throttled_errors.js';
 
 export type P2 = { x: number; z: number };
@@ -22,7 +27,7 @@ export type AddRealisticHangerLike = (
   rodZ: number,
   parentGroup: GroupLike,
   moduleWidth: number | undefined,
-  showHangerEnabled: boolean
+  policy: BuilderHangerContentsPolicy
 ) => unknown;
 export type AddHangingClothesLike = (
   rodX: number,
@@ -32,7 +37,7 @@ export type AddHangingClothesLike = (
   parentGroup: GroupLike,
   maxHeight: number,
   isRestrictedDepth: boolean | number | undefined,
-  policy: { showContentsEnabled: boolean; doorStyle: string }
+  policy: BuilderHangingContentsPolicy
 ) => unknown;
 export type AddFoldedClothesLike = (
   shelfX: number,
@@ -42,7 +47,7 @@ export type AddFoldedClothesLike = (
   parentGroup: GroupLike,
   maxHeight: number | undefined,
   maxDepth: number | undefined,
-  policy: { showContentsEnabled: boolean; cfgSnapshot: UnknownRecord }
+  policy: BuilderFoldedContentsPolicy
 ) => unknown;
 export type ShapeLike = { moveTo(x: number, y: number): void; lineTo(x: number, y: number): void };
 export type ThreeInteriorLike = {
@@ -70,6 +75,7 @@ export type CornerConnectorInteriorCtx = {
   wingH: number;
   uiAny: UnknownRecord;
   doorStyle: string;
+  __sketchMode: boolean;
   showHangerEnabled?: boolean;
   showContentsEnabled?: boolean;
   addOutlines: (mesh: unknown) => void;
