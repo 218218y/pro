@@ -28,11 +28,11 @@ test('[stageO] react/browser seams use explicit surfaces instead of AnyRecord ba
   assert.match(bundle, /const meta: MetaActionsNamespaceLike = useMeta\(\);/);
   assert.match(
     bundle,
-    /import \{ readConfigStateFromApp, refreshBuilderHandles \} from '\.\.\/\.\.\/\.\.\/services\/api\.js';/
+    /import \{[\s\S]*?captureBuilderOutlineBinding,[\s\S]*?readConfigStateFromApp,[\s\S]*?refreshBuilderHandles,[\s\S]*?\} from '\.\.\/\.\.\/\.\.\/services\/api\.js';/
   );
   assert.match(
     bundle,
-    /refreshBuilderHandles\(app, \{\s*cfgSnapshot: readConfigStateFromApp\(app\),\s*purgeRemovedDoors: true,\s*\}\);/
+    /refreshBuilderHandles\(app, \{\s*cfgSnapshot: readConfigStateFromApp\(app\),\s*addOutlines: captureBuilderOutlineBinding\(app\),\s*purgeRemovedDoors: true,\s*\}\);/
   );
   assert.match(bundle, /function readExportAction<K extends keyof ExportCanvasModuleLike>\(/);
   assert.doesNotMatch(bundle, /\bAnyRecord\b/);

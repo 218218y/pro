@@ -8,6 +8,8 @@ import {
   resetEdgeHandleDefaultNoneCacheMaps,
 } from '../esm/native/builder/edge_handle_default_none_runtime.ts';
 
+const addOutlines = () => undefined;
+
 function createApp(): any {
   return {
     services: {},
@@ -76,7 +78,7 @@ test('builder edge-handle default-none runtime: handles apply runtime reads the 
   markEdgeHandleDefaultNone(App, 'top', 'd8');
   markEdgeHandleDefaultNone(App, 'bottom', 'corner_pent_door_3', 'pent');
 
-  const runtime = createHandlesApplyRuntime({ App, cfgSnapshot: readConfigSnapshot(App) });
+  const runtime = createHandlesApplyRuntime({ App, cfgSnapshot: readConfigSnapshot(App), addOutlines });
 
   assert.equal(runtime.getHandleType('d8_full', 'top'), 'none');
   assert.equal(runtime.getHandleType('corner_pent_door_3_bot', 'bottom'), 'none');
@@ -99,7 +101,7 @@ test('builder handle resolvers default sketch-box internal drawer handles to non
     },
   } as any;
 
-  const runtime = createHandlesApplyRuntime({ App, cfgSnapshot: readConfigSnapshot(App) });
+  const runtime = createHandlesApplyRuntime({ App, cfgSnapshot: readConfigSnapshot(App), addOutlines });
 
   assert.equal(runtime.getHandleType('div_int_sketch_0_d1_lower'), 'none');
   assert.equal(runtime.getHandleType('box_0_int_drawers_d1_lower'), 'none');
@@ -135,7 +137,7 @@ test('builder handle resolvers still honor explicit sketch-box internal drawer h
     },
   } as any;
 
-  const runtime = createHandlesApplyRuntime({ App, cfgSnapshot: readConfigSnapshot(App) });
+  const runtime = createHandlesApplyRuntime({ App, cfgSnapshot: readConfigSnapshot(App), addOutlines });
 
   assert.equal(runtime.getHandleType('box_0_int_drawers_d1_lower'), 'edge');
   assert.equal(runtime.getHandleType('sketch_box_free_0_freeDrawerBox_int_drawers_fd1_upper'), 'standard');
