@@ -5,6 +5,8 @@ import { applyHandles } from '../esm/native/builder/handles_apply.ts';
 import { createHandlesApplyRuntime } from '../esm/native/builder/handles_apply_shared.ts';
 import { purgeHandlesForRemovedDoors } from '../esm/native/builder/handles_purge.ts';
 
+const addOutlines = () => undefined;
+
 function createApp() {
   const calls: unknown[] = [];
   const App: any = {
@@ -42,13 +44,13 @@ function readConfigSnapshot(App: any): Record<string, unknown> {
 
 test('handles apply triggers a platform render by default', () => {
   const { App, calls } = createApp();
-  applyHandles({ App, cfgSnapshot: readConfigSnapshot(App) });
+  applyHandles({ App, cfgSnapshot: readConfigSnapshot(App), addOutlines });
   assert.deepEqual(calls, [['platform-render', false]]);
 });
 
 test('handles apply can suppress the trailing platform render for batched callers', () => {
   const { App, calls } = createApp();
-  applyHandles({ App, cfgSnapshot: readConfigSnapshot(App), triggerRender: false });
+  applyHandles({ App, cfgSnapshot: readConfigSnapshot(App), addOutlines, triggerRender: false });
   assert.deepEqual(calls, []);
 });
 
@@ -81,7 +83,7 @@ test('handles apply falls back to ensureRenderLoop when triggerRender is unavail
     },
   };
 
-  applyHandles({ App, cfgSnapshot: readConfigSnapshot(App) });
+  applyHandles({ App, cfgSnapshot: readConfigSnapshot(App), addOutlines });
   assert.deepEqual(calls, [['ensureRenderLoop']]);
 });
 
@@ -173,6 +175,7 @@ class FakeMatrix4D {
 
 test('handles apply uses stored manual positions when placing external drawer handles', () => {
   const { App } = createApp();
+  const outlined: unknown[] = [];
   App.deps = {
     THREE: {
       Group: FakeGroup3D,
@@ -217,13 +220,19 @@ test('handles apply uses stored manual positions when placing external drawer ha
     meta: {},
   });
 
-  applyHandles({ App, cfgSnapshot: readConfigSnapshot(App), triggerRender: false });
+  applyHandles({
+    App,
+    cfgSnapshot: readConfigSnapshot(App),
+    addOutlines: mesh => outlined.push(mesh),
+    triggerRender: false,
+  });
 
   const drawerGroup = App.render.drawersArray[0].group as FakeGroup3D;
   const handleGroup = drawerGroup.children.find(child => child.userData.__kind === 'handle');
   assert.ok(handleGroup);
   assert.ok(Math.abs(handleGroup.position.x - 0.3) < 1e-12);
   assert.ok(Math.abs(handleGroup.position.y - 0.04) < 1e-12);
+  assert.equal(outlined.length, 1);
 });
 
 test('handles apply runtime captures one canonical config snapshot for handle maps', () => {
@@ -245,10 +254,18 @@ test('handles apply runtime captures one canonical config snapshot for handle ma
     meta: {},
   });
 
-  const runtime = createHandlesApplyRuntime({ App, cfgSnapshot: readConfigSnapshot(App) });
+  const runtime = createHandlesApplyRuntime({ App, cfgSnapshot: readConfigSnapshot(App), addOutlines });
   handlesMap.d1 = 'none';
 
   assert.equal(runtime.getHandleType('d1'), 'standard');
+});
+
+test('handles apply runtime rejects a missing snapshot outline binding', () => {
+  const { App } = createApp();
+  assert.throws(
+    () => createHandlesApplyRuntime({ App, cfgSnapshot: readConfigSnapshot(App) }),
+    /snapshot outline binding is required/
+  );
 });
 
 test('handles purge reads removed-door state from the provided cfg snapshot', () => {
@@ -321,7 +338,7 @@ test('handles apply does not treat external drawer boxes as separate drawer fron
     meta: {},
   });
 
-  applyHandles({ App, cfgSnapshot: readConfigSnapshot(App), triggerRender: false });
+  applyHandles({ App, cfgSnapshot: readConfigSnapshot(App), addOutlines, triggerRender: false });
 
   const handleHosts: FakeGroup3D[] = [];
   wardrobeGroup.traverse(node => {

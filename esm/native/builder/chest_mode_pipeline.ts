@@ -121,6 +121,7 @@ export function buildChestModeIfNeeded(params: BuildChestModeIfNeededParams | nu
       renderViewport: true,
       finalizeRegistry: true,
       cfgSnapshot,
+      addOutlines: renderPolicy.addOutlines,
     });
   });
   return true;

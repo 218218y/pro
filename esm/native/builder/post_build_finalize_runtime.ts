@@ -5,6 +5,7 @@ import type {
   AppContainer,
   BuildContextLike,
   BuildCtxFnsLike,
+  BuilderOutlineFn,
   ConfigStateLike,
 } from '../../../types/index.js';
 
@@ -13,6 +14,7 @@ export type FinalizeBestEffortArgs = {
   cfgSnapshot?: ConfigStateLike | null;
   pruneCachesSafe?: ((scene: unknown) => void) | null;
   rebuildDrawerMeta?: (() => void) | null;
+  addOutlines?: BuilderOutlineFn | null;
 };
 
 export type FinalizeBestEffortArgsLike = FinalizeBestEffortArgs & Record<string, unknown>;
@@ -41,6 +43,11 @@ function readRebuildDrawerMetaArg(value: unknown): (() => void) | null {
   return typeof candidate === 'function' ? candidate : null;
 }
 
+function readAddOutlinesArg(value: unknown): BuilderOutlineFn | null {
+  const candidate = readFinalizeArgs(value)?.addOutlines;
+  return typeof candidate === 'function' ? candidate : null;
+}
+
 function readBuildCtxPruneCachesSafe(
   fns: BuildCtxFnsLike | null | undefined
 ): ((scene: unknown) => void) | null {
@@ -53,17 +60,24 @@ function readBuildCtxRebuildDrawerMeta(fns: BuildCtxFnsLike | null | undefined):
   return typeof candidate === 'function' ? candidate : null;
 }
 
+function readBuildCtxAddOutlines(fns: BuildCtxFnsLike | null | undefined): BuilderOutlineFn | null {
+  const candidate = fns?.addOutlines;
+  return typeof candidate === 'function' ? candidate : null;
+}
+
 export function resolveFinalizeBuildBestEffortArgs(args: FinalizeBestEffortArgs): {
   App: AppContainer | null;
   cfgSnapshot: ConfigStateLike | null;
   pruneCachesSafe: ((scene: unknown) => void) | null;
   rebuildDrawerMeta: (() => void) | null;
+  addOutlines: BuilderOutlineFn | null;
 } {
   return {
     App: readApp(args?.App),
     cfgSnapshot: readConfigState(readFinalizeArgs(args)?.cfgSnapshot),
     pruneCachesSafe: readPruneCachesSafeArg(args),
     rebuildDrawerMeta: readRebuildDrawerMetaArg(args),
+    addOutlines: readAddOutlinesArg(args),
   };
 }
 
@@ -72,6 +86,7 @@ export function resolveFinalizeBuildContextArgs(ctx: BuildContextLike): Finalize
     App: ctx.App,
     pruneCachesSafe: readBuildCtxPruneCachesSafe(ctx.fns),
     rebuildDrawerMeta: readBuildCtxRebuildDrawerMeta(ctx.fns),
+    addOutlines: readBuildCtxAddOutlines(ctx.fns),
   };
   if (ctx.cfg) out.cfgSnapshot = ctx.cfg;
   return out;
@@ -82,6 +97,7 @@ export function runFinalizeBuildBestEffort(args: FinalizeBestEffortArgs): { App:
   runBuilderPostBuildFollowThrough(resolved.App, {
     finalizeRegistry: true,
     ...(resolved.cfgSnapshot ? { cfgSnapshot: resolved.cfgSnapshot } : {}),
+    ...(resolved.addOutlines ? { addOutlines: resolved.addOutlines } : {}),
     rebuildDrawerMeta: resolved.rebuildDrawerMeta,
     pruneCachesSafe: resolved.pruneCachesSafe,
     clearBuildUi: true,

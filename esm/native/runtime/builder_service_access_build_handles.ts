@@ -58,9 +58,13 @@ export function refreshBuilderHandles(
   App: unknown,
   opts: RefreshBuilderHandlesOpts
 ): BuilderHandleRefreshResult {
+  if (typeof opts?.addOutlines !== 'function') {
+    throw new TypeError('[builder_service_access] snapshot outline binding is required for handle refresh');
+  }
   const appliedHandles = applyBuilderHandles(App, {
     triggerRender: false,
     cfgSnapshot: opts.cfgSnapshot,
+    addOutlines: opts.addOutlines,
   });
   const purgedRemovedDoors = shouldPurgeRemovedDoors(opts)
     ? purgeBuilderHandlesForRemovedDoors(App, true, opts.cfgSnapshot)

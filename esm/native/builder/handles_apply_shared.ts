@@ -20,7 +20,7 @@ import {
   type NodeLike,
   type ValueRecord,
 } from './handles_shared.js';
-import type { AppContainer, ThreeLike } from '../../../types';
+import type { AppContainer, BuilderOutlineFn, ThreeLike } from '../../../types';
 import {
   DEFAULT_HANDLE_FINISH_COLOR,
   HANDLE_COLOR_GLOBAL_KEY,
@@ -38,6 +38,7 @@ export type HandlesApplyRuntime = {
   App: AppContainer;
   THREE: ThreeLike | null;
   cfgSnapshot: HandlesConfigSnapshot['cfg'];
+  addOutlines: BuilderOutlineFn;
   removeDoorsEnabled: boolean;
   isDoorRemovedV7: (partId: unknown) => boolean;
   syncDoorVisibilityForRemovedDoors: () => void;
@@ -216,7 +217,12 @@ export function createHandlesApplyRuntime(ctx: unknown): HandlesApplyRuntime {
 
   const __st = getBuildStateMaybe(App) || getState(App) || {};
   const __mode = (__st && __st.mode) || getMode(App) || { primary: 'none', opts: {} };
-  const handlesCfg = captureHandlesConfigSnapshot(asRecord<ValueRecord>(ctx)?.cfgSnapshot);
+  const ctxRecord = asRecord<ValueRecord>(ctx);
+  const handlesCfg = captureHandlesConfigSnapshot(ctxRecord?.cfgSnapshot);
+  const addOutlines = ctxRecord?.addOutlines;
+  if (typeof addOutlines !== 'function') {
+    throw new TypeError('[handles_apply] snapshot outline binding is required');
+  }
   const __removeDoorModeId = getModeId('REMOVE_DOOR') || 'remove_door';
   const __isRemoveDoorMode = !!(__mode && __mode.primary === __removeDoorModeId);
   const __ui = (__st && __st.ui && typeof __st.ui === 'object' ? __st.ui : null) || getUi(App) || {};
@@ -240,6 +246,7 @@ export function createHandlesApplyRuntime(ctx: unknown): HandlesApplyRuntime {
     App,
     THREE,
     cfgSnapshot: handlesCfg.cfg,
+    addOutlines: addOutlines as BuilderOutlineFn,
     removeDoorsEnabled,
     isDoorRemovedV7,
     syncDoorVisibilityForRemovedDoors: syncDoorVisibility,

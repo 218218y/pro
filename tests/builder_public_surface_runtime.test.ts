@@ -339,7 +339,7 @@ test('builder public surface runtime: service access binds canonical builder sea
   assert.equal(clearBuilderBuildUi(App), true);
   assert.equal(App.services.builder.buildUi, null);
 
-  assert.equal(applyBuilderHandles(App, { cfgSnapshot: {} }), true);
+  assert.equal(applyBuilderHandles(App, { cfgSnapshot: {}, addOutlines: () => undefined }), true);
   assert.equal(purgeBuilderHandlesForRemovedDoors(App, false, {}), true);
   assert.equal(calls.applyHandles, 1);
   assert.equal(calls.purgeHandles[0]?.self, App.services.builder.handles);
@@ -614,6 +614,7 @@ test('builder public surface runtime: post-build follow-through keeps finalize/p
   assert.deepEqual(
     runBuilderPostBuildFollowThrough(App, {
       cfgSnapshot: {},
+      addOutlines: () => undefined,
       finalizeRegistry: true,
       rebuildDrawerMeta() {
         rebuilt += 1;
@@ -652,6 +653,7 @@ test('builder public surface runtime: chest-mode follow-through keeps viewport r
   assert.deepEqual(
     runBuilderChestModeFollowThrough(App, {
       cfgSnapshot: {},
+      addOutlines: () => undefined,
       applyHandles: true,
       renderViewport: true,
       finalizeRegistry: true,

@@ -13,6 +13,7 @@ import { getSceneViewServiceMaybe } from '../esm/native/services/scene_view_acce
 
 test('residual slot access runtime: scene/project seams and chest-mode builder helpers stay canonical', () => {
   const calls: unknown[] = [];
+  const addOutlines = () => undefined;
   const sceneView = { updateSceneMode: () => void 0 };
   const projectIO = { loadProjectData: () => 'loaded' };
   const App: any = {
@@ -50,9 +51,9 @@ test('residual slot access runtime: scene/project seams and chest-mode builder h
 
   assert.equal(getSceneViewServiceMaybe(App), sceneView);
   assert.equal(getProjectIoServiceMaybe(App), projectIO);
-  assert.equal(applyBuilderHandles(App, { cfgSnapshot: {} }), true);
+  assert.equal(applyBuilderHandles(App, { cfgSnapshot: {}, addOutlines }), true);
   assert.equal(finalizeBuilderRegistry(App), true);
-  assert.deepEqual(calls, [['handles', { cfgSnapshot: {} }], 'finalize']);
+  assert.deepEqual(calls, [['handles', { cfgSnapshot: {}, addOutlines }], 'finalize']);
 
   calls.length = 0;
   const built: unknown[] = [];
@@ -65,7 +66,7 @@ test('residual slot access runtime: scene/project seams and chest-mode builder h
       depthCm: 50,
       drawersCount: 4,
       cfgSnapshot: { showDimensions: false },
-      renderPolicy: { sketchMode: false, addOutlines: () => undefined },
+      renderPolicy: { sketchMode: false, addOutlines },
       buildChestOnly(args) {
         built.push(args);
       },
@@ -76,7 +77,7 @@ test('residual slot access runtime: scene/project seams and chest-mode builder h
   assert.equal(built.length, 1);
   assert.deepEqual((built[0] as { cfgSnapshot?: unknown }).cfgSnapshot, { showDimensions: false });
   assert.deepEqual(calls, [
-    ['handles', { triggerRender: false, cfgSnapshot: { showDimensions: false } }],
+    ['handles', { triggerRender: false, cfgSnapshot: { showDimensions: false }, addOutlines }],
     ['render', true, true],
     'controls',
     'finalize',
@@ -85,6 +86,7 @@ test('residual slot access runtime: scene/project seams and chest-mode builder h
 
 test('residual slot access runtime: applyBuilderHandles forwards render suppression opts to the canonical handles service', () => {
   const calls: unknown[] = [];
+  const addOutlines = () => undefined;
   const App: any = {
     services: {
       builder: {
@@ -97,8 +99,8 @@ test('residual slot access runtime: applyBuilderHandles forwards render suppress
     },
   };
 
-  assert.equal(applyBuilderHandles(App, { cfgSnapshot: {}, triggerRender: false }), true);
-  assert.deepEqual(calls, [{ cfgSnapshot: {}, triggerRender: false }]);
+  assert.equal(applyBuilderHandles(App, { cfgSnapshot: {}, addOutlines, triggerRender: false }), true);
+  assert.deepEqual(calls, [{ cfgSnapshot: {}, addOutlines, triggerRender: false }]);
 });
 
 test('residual slot access runtime: post-build finalize uses canonical builder/platform seams and ignores legacy builder root aliases', () => {
@@ -156,6 +158,7 @@ test('residual slot access runtime: post-build finalize uses canonical builder/p
 
 test('residual slot access runtime: materials apply uses canonical builder handles and platform render seams', () => {
   const calls: unknown[] = [];
+  const addOutlines = () => undefined;
   const appliedMaterial = { id: 'front:white' };
   const targetMesh = {
     isMesh: true,
@@ -170,6 +173,11 @@ test('residual slot access runtime: materials apply uses canonical builder handl
   const App: any = {
     services: {
       builder: {
+        renderOps: {
+          createOutlineBinding() {
+            return addOutlines;
+          },
+        },
         materials: {
           getMaterial(color: string) {
             calls.push(['getMaterial', color]);
@@ -215,7 +223,7 @@ test('residual slot access runtime: materials apply uses canonical builder handl
   assert.equal(targetMesh.material, appliedMaterial);
   assert.deepEqual(calls, [
     ['getMaterial', 'white'],
-    ['handles', { triggerRender: false, cfgSnapshot: {} }],
+    ['handles', { triggerRender: false, cfgSnapshot: {}, addOutlines }],
     ['platform-render', false],
   ]);
 });

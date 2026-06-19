@@ -34,6 +34,8 @@ test('build wardrobe context runtime: chest ui sanitizer keeps only canonical fi
 test('build wardrobe context runtime: chest-only path forwards the canonical cfg snapshot', () => {
   const cfgSnapshot = { showDimensions: false, doorMountMode: 'inset' };
   const calls: any[] = [];
+  const addOutlines = () => undefined;
+  const renderPolicy = { sketchMode: false, addOutlines };
   const App: any = {
     services: {
       builder: {
@@ -112,7 +114,7 @@ test('build wardrobe context runtime: chest-only path forwards the canonical cfg
     doorsCount: 0,
     chestDrawersCount: 4,
     sketchMode: false,
-    renderPolicy: { sketchMode: false, addOutlines: () => undefined },
+    renderPolicy,
     createDoorVisual() {
       return {};
     },
@@ -124,7 +126,7 @@ test('build wardrobe context runtime: chest-only path forwards the canonical cfg
   assert.equal(buildCall[1].cfgSnapshot, cfgSnapshot);
   assert.equal(buildCall[1].renderPolicy.sketchMode, false);
   assert.deepEqual(calls.slice(-4), [
-    ['handles', { triggerRender: false, cfgSnapshot }],
+    ['handles', { triggerRender: false, cfgSnapshot, addOutlines }],
     'viewport.render',
     'controls.update',
     'registry.finalize',

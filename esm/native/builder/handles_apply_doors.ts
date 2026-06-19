@@ -44,6 +44,7 @@ export function applyDoorHandles(runtime: HandlesApplyRuntime): void {
 
     const handle = createHandleMeshV7(hType, doorW, doorH, isLeftHinge, false, {
       App,
+      addOutlines: runtime.addOutlines,
       edgeHandleVariant,
       handleColor: getHandleColor(id),
     });
@@ -289,6 +290,7 @@ function refreshSketchSegmentedDoorHandles(
     const edgeHandleVariant = hType === 'edge' ? runtime.getEdgeHandleVariant(leaf.partId) : undefined;
     const handle = createHandleMeshV7(hType, leaf.rootWidth, leaf.height, leaf.isLeftHinge, false, {
       App: runtime.App,
+      addOutlines: runtime.addOutlines,
       edgeHandleVariant,
       handleColor: runtime.getHandleColor(leaf.partId),
     });

@@ -8,6 +8,7 @@
 import { installStableSurfaceMethod } from '../runtime/stable_surface_methods.js';
 import { getWardrobeGroup } from '../runtime/render_access.js';
 import {
+  captureBuilderOutlineBinding,
   ensureBuilderService,
   getBuilderService,
   refreshBuilderHandles,
@@ -68,6 +69,7 @@ export function applyMaterials(appIn: unknown) {
   try {
     refreshBuilderHandles(App, {
       cfgSnapshot: colorContext.cfg,
+      addOutlines: captureBuilderOutlineBinding(App),
       triggerRender: true,
       updateShadows: false,
     });

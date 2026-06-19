@@ -2,7 +2,7 @@ import { reportError } from '../runtime/api.js';
 import { createBuildContext } from './build_context.js';
 import { readBuildContext } from './build_flow_readers.js';
 
-import type { BuildContextLike } from '../../../types';
+import type { BuildContextLike, BuilderOutlineFn } from '../../../types';
 import type {
   BuildStackSplitLowerUnitArgs,
   PreparedStackSplitLowerSetup,
@@ -195,10 +195,7 @@ export function applyStackSplitLowerCornerWingIfNeeded(args: {
       renderPolicy: {
         sketchMode: buildArgs.sketchMode === true,
         addOutlines:
-          typeof buildArgs.addOutlines === 'function'
-            ? mesh =>
-                Reflect.apply(buildArgs.addOutlines as (...args: unknown[]) => unknown, undefined, [mesh])
-            : null,
+          typeof buildArgs.addOutlines === 'function' ? (buildArgs.addOutlines as BuilderOutlineFn) : null,
       },
     }
   );

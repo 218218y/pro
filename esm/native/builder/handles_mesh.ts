@@ -1,4 +1,3 @@
-import { addOutlines } from './render_ops_extras.js';
 import { createDoorEdgeHandleProfile, createDrawerEdgeHandleProfile } from './edge_handle_profile.js';
 import {
   appFromCtx,
@@ -102,7 +101,10 @@ export function createHandleMeshV7(
     const mesh = new THREE.Mesh(geo, stdMat);
     mesh.userData = { __keepMaterial: true };
     mesh.position.set(0, 0, HANDLE_DIMENSIONS.standard.frontZM);
-    if (typeof addOutlines === 'function') addOutlines(mesh, ctx);
+    if (typeof ctx?.addOutlines !== 'function') {
+      throw new TypeError('[handles_mesh] snapshot outline binding is required');
+    }
+    ctx.addOutlines(mesh);
     g.add(mesh);
   } else {
     const geo = new THREE.BoxGeometry(
@@ -115,7 +117,10 @@ export function createHandleMeshV7(
     const offset = HANDLE_DIMENSIONS.standard.doorOffsetM;
     const xPos = isLeftHinge ? w - offset : -w + offset;
     mesh.position.set(xPos, 0, HANDLE_DIMENSIONS.standard.frontZM);
-    if (typeof addOutlines === 'function') addOutlines(mesh, ctx);
+    if (typeof ctx?.addOutlines !== 'function') {
+      throw new TypeError('[handles_mesh] snapshot outline binding is required');
+    }
+    ctx.addOutlines(mesh);
     g.add(mesh);
   }
   return g;

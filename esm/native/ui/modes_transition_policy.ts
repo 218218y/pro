@@ -10,6 +10,7 @@ import {
   closeAllLocal,
   closeDrawerById,
   clearDrawerRebuildIntent,
+  captureBuilderOutlineBinding,
   refreshBuilderAfterDoorOps,
   resetAllEditModesViaService,
   reportError,
@@ -223,6 +224,7 @@ function scheduleRemoveDoorRefresh(App: AppLike, nextMode: string): void {
     getBrowserTimers(App).setTimeout(() => {
       refreshBuilderAfterDoorOps(App, {
         cfgSnapshot: readConfigStateFromApp(App),
+        addOutlines: captureBuilderOutlineBinding(App),
         source: 'ui.enterPrimaryMode:removeDoor',
         immediate: true,
         force: true,

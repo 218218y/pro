@@ -4,6 +4,7 @@ import { asRecord } from '../runtime/record.js';
 import type {
   AppContainer,
   Box3Like,
+  BuilderOutlineFn,
   BuildStateLike,
   ConfigStateLike,
   Matrix4Like,
@@ -29,6 +30,7 @@ export type HandlesCacheLike = ValueRecord & {
 export type HandlesApplyOptions = {
   triggerRender?: boolean;
   cfgSnapshot: ConfigStateLike;
+  addOutlines: BuilderOutlineFn;
 };
 
 export type HandlesSurfaceLike = ValueRecord & {
@@ -104,6 +106,7 @@ export type EdgeHandleVariant = 'short' | 'long';
 export type CreateHandleMeshCtx =
   | {
       App: AppContainer;
+      addOutlines: BuilderOutlineFn;
       edgeHandleVariant?: EdgeHandleVariant | string | null;
       handleColor?: HandleFinishColor | string | null;
     }

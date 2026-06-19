@@ -7,7 +7,7 @@
 // - Keep handle materials cached on the builder service (no global shims)
 
 import { assertApp } from '../runtime/api.js';
-import { ensureBuilderService } from '../runtime/builder_service_access.js';
+import { captureBuilderOutlineBinding, ensureBuilderService } from '../runtime/builder_service_access.js';
 import { asRecord } from '../runtime/record.js';
 import { installStableSurfaceMethod } from '../runtime/stable_surface_methods.js';
 import { applyHandles } from './handles_apply.js';
@@ -50,7 +50,10 @@ export function installBuilderHandlesV7(App: unknown) {
 
   installStableSurfaceMethod(h, 'createHandleMeshV7', HANDLES_CREATE_CANONICAL_KEY, () => {
     return (type: unknown, w: number, hh: number, isLeftHinge: boolean, isDrawer: boolean) =>
-      createHandleMeshV7(type, w, hh, isLeftHinge, isDrawer, { App: A });
+      createHandleMeshV7(type, w, hh, isLeftHinge, isDrawer, {
+        App: A,
+        addOutlines: captureBuilderOutlineBinding(A),
+      });
   });
   installStableSurfaceMethod(h, 'applyHandles', HANDLES_APPLY_CANONICAL_KEY, () => {
     return (opts: HandlesApplyOptions) => applyHandles({ App: A, ...opts });

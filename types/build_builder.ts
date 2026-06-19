@@ -835,6 +835,7 @@ export interface BuilderMaterialsServiceLike extends UnknownRecord {
 export interface BuilderHandlesApplyOptionsLike extends UnknownRecord {
   triggerRender?: boolean;
   cfgSnapshot: ConfigStateLike | UnknownRecord;
+  addOutlines: BuilderOutlineFn;
 }
 
 export interface BuilderHandlesServiceLike extends UnknownRecord {

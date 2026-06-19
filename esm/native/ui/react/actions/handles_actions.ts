@@ -11,7 +11,7 @@ import type {
 
 import { getPrimaryMode, getModeState, enterPrimaryMode, exitPrimaryMode } from './modes_actions.js';
 import { MODES, getBrowserTimers } from '../../../services/api.js';
-import { refreshBuilderHandles } from '../../../services/api.js';
+import { captureBuilderOutlineBinding, refreshBuilderHandles } from '../../../services/api.js';
 import { patchUiSoft, setCfgGlobalHandleType, setCfgHandlesMap, setUiFlag } from './store_actions.js';
 import { getDoorsActionFn, getMetaActionFn } from '../../../services/api.js';
 import { readStoreStateMaybe } from '../../../services/api.js';
@@ -215,6 +215,7 @@ function applyHandlesBestEffort(app: AppContainer): void {
   try {
     refreshBuilderHandles(app, {
       cfgSnapshot: getCfgSnap(app),
+      addOutlines: captureBuilderOutlineBinding(app),
       purgeRemovedDoors: true,
     });
   } catch {

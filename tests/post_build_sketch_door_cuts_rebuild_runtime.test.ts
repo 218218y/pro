@@ -562,6 +562,7 @@ test('segmented sketch handle suppressions are not reported again during generic
   applyDoorHandles({
     App,
     THREE: FakeTHREE as any,
+    addOutlines: () => undefined,
     removeDoorsEnabled: false,
     isDoorRemovedV7: () => false,
     syncDoorVisibilityForRemovedDoors: () => undefined,
@@ -639,6 +640,7 @@ test('handle refresh rebuilds custom sketch box segmented-door handles from curr
   applyDoorHandles({
     App,
     THREE: FakeTHREE as any,
+    addOutlines: () => undefined,
     removeDoorsEnabled: false,
     isDoorRemovedV7: () => false,
     syncDoorVisibilityForRemovedDoors: () => undefined,
@@ -718,6 +720,7 @@ test('handle refresh applies manual handle position to custom sketch box segment
   applyDoorHandles({
     App,
     THREE: FakeTHREE as any,
+    addOutlines: () => undefined,
     removeDoorsEnabled: false,
     isDoorRemovedV7: () => false,
     syncDoorVisibilityForRemovedDoors: () => undefined,

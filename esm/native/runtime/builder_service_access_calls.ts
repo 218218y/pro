@@ -13,6 +13,7 @@ import type {
 } from '../../../types';
 
 import { bindBuilderMethod, requireBuilderMethod } from './builder_service_access_shared.js';
+import { readRuntimeScalarOrDefaultFromApp } from './runtime_selectors.js';
 import {
   getBuilderContentsService,
   getBuilderMaterialsService,
@@ -30,6 +31,21 @@ export function getBuilderCreateOutlineBinding(App: unknown): BuilderOutlineBind
     Parameters<BuilderOutlineBindingFactory>,
     ReturnType<BuilderOutlineBindingFactory>
   >(getBuilderRenderOps(App), 'createOutlineBinding');
+}
+
+export function captureBuilderOutlineBinding(App: unknown): ReturnType<BuilderOutlineBindingFactory> {
+  const createOutlineBinding = getBuilderCreateOutlineBinding(App);
+  if (!createOutlineBinding) {
+    throw new Error(
+      '[WardrobePro] createOutlineBinding is not available (expected App.services.builder.renderOps.createOutlineBinding).'
+    );
+  }
+  const sketchMode = !!readRuntimeScalarOrDefaultFromApp(App, 'sketchMode', false);
+  const binding = createOutlineBinding({ sketchMode });
+  if (typeof binding !== 'function') {
+    throw new TypeError('[WardrobePro] createOutlineBinding must return an outline function');
+  }
+  return binding;
 }
 
 export function getBuilderGetMaterial(App: unknown): BuilderGetMaterialFn | null {

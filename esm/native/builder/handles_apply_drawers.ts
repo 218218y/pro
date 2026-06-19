@@ -26,6 +26,7 @@ export function applyDrawerHandles(runtime: HandlesApplyRuntime): void {
     const drawH = g.userData.__doorHeight || HANDLE_DIMENSIONS.placement.drawerDefaultHeightM;
     const handle = createHandleMeshV7(hType, drawW, drawH, true, true, {
       App: runtime.App,
+      addOutlines: runtime.addOutlines,
       edgeHandleVariant: hType === 'edge' ? runtime.getEdgeHandleVariant(id) : undefined,
       handleColor: runtime.getHandleColor(id),
     });

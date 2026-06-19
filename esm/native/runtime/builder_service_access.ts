@@ -31,6 +31,7 @@ export {
 
 export {
   getBuilderCreateOutlineBinding,
+  captureBuilderOutlineBinding,
   getBuilderGetMaterial,
   requireBuilderGetMaterial,
   getBuilderMirrorMaterialFactory,

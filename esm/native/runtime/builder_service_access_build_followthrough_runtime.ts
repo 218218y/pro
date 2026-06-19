@@ -39,7 +39,13 @@ function createFollowThroughHandleApplyOpts(
   if (!cfgSnapshot) {
     throw new TypeError('[builder_service_access] cfgSnapshot is required when applying handles');
   }
-  return { triggerRender: false, cfgSnapshot };
+  const addOutlines = opts?.addOutlines;
+  if (typeof addOutlines !== 'function') {
+    throw new TypeError(
+      '[builder_service_access] snapshot outline binding is required when applying handles'
+    );
+  }
+  return { triggerRender: false, cfgSnapshot, addOutlines };
 }
 
 export function runBuilderPostBuildFollowThroughRuntime(

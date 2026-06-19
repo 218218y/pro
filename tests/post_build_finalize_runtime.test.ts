@@ -10,16 +10,18 @@ import {
 test('post-build finalize runtime: resolves BuildContext follow-through functions canonically', () => {
   const pruneCachesSafe = () => void 0;
   const rebuildDrawerMeta = () => void 0;
+  const addOutlines = () => void 0;
 
   assert.deepEqual(
     resolveFinalizeBuildContextArgs({
       App: { id: 'app' },
-      fns: { pruneCachesSafe, rebuildDrawerMeta },
+      fns: { pruneCachesSafe, rebuildDrawerMeta, addOutlines },
     } as any),
     {
       App: { id: 'app' },
       pruneCachesSafe,
       rebuildDrawerMeta,
+      addOutlines,
     }
   );
 });
@@ -35,6 +37,7 @@ test('post-build finalize runtime: best-effort normalization strips non-function
   assert.equal(normalized.App, App);
   assert.equal(normalized.pruneCachesSafe, null);
   assert.equal(normalized.rebuildDrawerMeta, null);
+  assert.equal(normalized.addOutlines, null);
 });
 
 test('post-build finalize runtime: best-effort follow-through skips handles when no build snapshot exists', () => {

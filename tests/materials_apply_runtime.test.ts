@@ -6,6 +6,7 @@ import { makeDrawerBoxPartId } from '../esm/native/features/drawer_box_identity.
 import { readPartColorEntry } from '../esm/native/builder/material_color_lookup.ts';
 function createApp(triggerRenderAvailable = true) {
   const calls: unknown[] = [];
+  const addOutlines = () => undefined;
   const appliedMaterial = { id: 'front:white' };
   const targetMesh = {
     isMesh: true,
@@ -16,6 +17,11 @@ function createApp(triggerRenderAvailable = true) {
   const App: any = {
     services: {
       builder: {
+        renderOps: {
+          createOutlineBinding() {
+            return addOutlines;
+          },
+        },
         materials: {
           getMaterial(color: string) {
             calls.push(['getMaterial', color]);
@@ -60,29 +66,29 @@ function createApp(triggerRenderAvailable = true) {
       },
     },
   };
-  return { App, calls, targetMesh, appliedMaterial };
+  return { App, calls, targetMesh, appliedMaterial, addOutlines };
 }
 
 test('materials apply runtime: changed materials route handle/render follow-through through the canonical refresh seam', () => {
-  const { App, calls, targetMesh, appliedMaterial } = createApp(true);
+  const { App, calls, targetMesh, appliedMaterial, addOutlines } = createApp(true);
 
   assert.equal(applyMaterials(App), true);
   assert.equal(targetMesh.material, appliedMaterial);
   assert.deepEqual(calls, [
     ['getMaterial', 'white'],
-    ['handles', { triggerRender: false, cfgSnapshot: {} }],
+    ['handles', { triggerRender: false, cfgSnapshot: {}, addOutlines }],
     ['platform-render', false],
   ]);
 });
 
 test('materials apply runtime: changed materials fall back to ensureRenderLoop when platform triggerRender is unavailable', () => {
-  const { App, calls, targetMesh, appliedMaterial } = createApp(false);
+  const { App, calls, targetMesh, appliedMaterial, addOutlines } = createApp(false);
 
   assert.equal(applyMaterials(App), true);
   assert.equal(targetMesh.material, appliedMaterial);
   assert.deepEqual(calls, [
     ['getMaterial', 'white'],
-    ['handles', { triggerRender: false, cfgSnapshot: {} }],
+    ['handles', { triggerRender: false, cfgSnapshot: {}, addOutlines }],
     ['ensureRenderLoop'],
   ]);
 });
@@ -113,6 +119,11 @@ test('materials apply runtime: drawer boxes keep independent white material unle
   const App: any = {
     services: {
       builder: {
+        renderOps: {
+          createOutlineBinding() {
+            return () => undefined;
+          },
+        },
         materials: {
           getMaterial(color: string, part: string) {
             calls.push(['getMaterial', color, part]);

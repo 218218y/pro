@@ -67,6 +67,7 @@ export {
   requestBuilderStructuralRefresh,
   refreshBuilderHandles,
   refreshBuilderAfterDoorOps,
+  captureBuilderOutlineBinding,
 } from '../runtime/builder_service_access.js';
 export {
   ensureRoomDesignService,

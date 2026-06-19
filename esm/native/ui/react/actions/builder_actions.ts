@@ -2,12 +2,17 @@
 
 import type { AppContainer } from '../../../../../types';
 
-import { readConfigStateFromApp, refreshBuilderHandles } from '../../../services/api.js';
+import {
+  captureBuilderOutlineBinding,
+  readConfigStateFromApp,
+  refreshBuilderHandles,
+} from '../../../services/api.js';
 
 export function syncHandlesAfterDoorOps(app: AppContainer): void {
   try {
     refreshBuilderHandles(app, {
       cfgSnapshot: readConfigStateFromApp(app),
+      addOutlines: captureBuilderOutlineBinding(app),
       purgeRemovedDoors: true,
     });
   } catch {
