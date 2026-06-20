@@ -1,7 +1,7 @@
 // Shared corner-ops helpers.
 //
-// Keep tiny shared runtime seams here so the heavy connector/wing emitters can
-// stay focused on geometry/material policy rather than mode-store probing.
+// Keep the shared typed snapshot/render contract here so connector/wing emitters
+// stay focused on geometry and consume the captured build mode without store reads.
 
 import type { AppContainer, Object3DLike, ThreeLike, UnknownCallable, UnknownRecord } from '../../../types';
 

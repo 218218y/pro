@@ -29,6 +29,6 @@ test('[corner-helpers-type-hardening] normalization/material/cache helpers use r
   assert.match(cache, /const cache = asUnknownRecord\(getCacheBag\(App\)\);/);
   assert.match(cache, /const current = cache \? asUnknownRecord\(cache\[key\]\) : null;/);
 
-  assert.match(common, /function asModesLike\(value: unknown\): ModesLike \| null/);
-  assert.match(common, /const modeState = asModeStateLike\(readModeStateFromStore\(readStore\(app\)\)\);/);
+  assert.match(common, /__primaryMode: string;/);
+  assert.doesNotMatch(common, /readModeStateFromStore|readStore\(|asModesLike|ModeStateLike/);
 });

@@ -7,7 +7,6 @@
 import type { CornerCell } from './corner_geometry_plan.js';
 export type { CornerCell, CornerCellCfg } from './corner_geometry_plan.js';
 import type {
-  AppContainer,
   BuilderCreateDoorVisualFn,
   BuilderCreateInternalDrawerBoxFn,
   BuilderFoldedContentsPolicy,
