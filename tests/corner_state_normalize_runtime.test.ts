@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { normalizeCornerWingState } from '../esm/native/builder/corner_state_normalize.js';
+import { createCornerWingEmitContext } from '../esm/native/builder/corner_wing_context.js';
 
 const normalRenderPolicy = { sketchMode: false, addOutlines: () => undefined };
 const sketchRenderPolicy = { sketchMode: true, addOutlines: () => undefined };
@@ -286,6 +287,80 @@ test('normalizeCornerWingState forces top split stack to drop the base and honor
   assert.equal(state.__corniceAllowedForThisStack, true);
   assert.ok(state.wingH >= 1.19);
   assert.equal((App as any).render, undefined);
+});
+
+test('corner wing keeps the internal-drawers UI flag through normalize and emit context', () => {
+  const state = normalizeCornerWingState({
+    mainW: 2.0,
+    mainH: 2.2,
+    mainD: 0.6,
+    woodThick: 0.018,
+    startY: 0,
+    meta: {
+      snapshot: {
+        ui: {
+          cornerWidth: 160,
+          cornerHeight: 230,
+          cornerDepth: 60,
+          internalDrawersEnabled: true,
+        },
+        cfg: {},
+        primaryMode: 'none',
+        renderPolicy: sketchRenderPolicy,
+      },
+    },
+  });
+
+  assert.equal(state.internalDrawersEnabled, true);
+
+  const context = createCornerWingEmitContext({
+    App: {},
+    THREE: {},
+    mainW: 2.0,
+    mainH: 2.2,
+    mainD: 0.6,
+    woodThick: 0.018,
+    startY: 0,
+    state,
+    mats: {
+      masoniteMat: {},
+      whiteMat: {},
+      shadowMat: {},
+      backPanelMaterialArray: [],
+      ghostDoorMat: {},
+      individualColors: {},
+      handlesMap: {},
+      doorSpecialMap: {},
+      readScopedMapVal: () => undefined,
+      readScopedReader: () => undefined,
+      getMirrorMat: () => null,
+      resolveSpecial: () => null,
+      getCornerMat: (_partId: string, material: unknown) => material,
+      getCornerShelfMat: (_partId: string, _isBrace: boolean, material: unknown) => material,
+      defaultShelfMat: {},
+      braceShelfMat: {},
+      bodyMat: {},
+      frontMat: {},
+    } as any,
+    services: {
+      addOutlines: () => undefined,
+      createDoorVisual: () => ({}),
+      getMaterial: () => ({}),
+      createInternalDrawerBox: () => ({}),
+      addRealisticHanger: () => undefined,
+      addHangingClothes: () => undefined,
+      addFoldedClothes: () => undefined,
+      __applyStableShadowsToModule: () => undefined,
+    } as any,
+    readers: {
+      getMap: () => null,
+      getGroove: () => null,
+      getCurtain: () => null,
+    } as any,
+    wingGroup: {},
+  });
+
+  assert.equal(context.internalDrawersEnabled, true);
 });
 
 test('normalizeCornerWingState rejects a missing config snapshot instead of reading App.store', () => {

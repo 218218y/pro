@@ -265,7 +265,7 @@ export function resolveCornerWingFlags(args: {
     doorStyle: readStringValue(uiAny, 'doorStyle'),
     splitDoors: readBool(uiAny, 'splitDoors'),
     groovesEnabled: readBool(uiAny, 'groovesEnabled') || isMode(readModeConstant('GROOVE', 'groove')),
-    internalDrawersEnabled: false,
+    internalDrawersEnabled: readBool(uiAny, 'internalDrawersEnabled'),
     showHangerEnabled: readBool(uiAny, 'showHanger'),
     showContentsEnabled: readBool(uiAny, 'showContents'),
     hasCorniceEnabled: readBool(uiAny, 'hasCornice'),

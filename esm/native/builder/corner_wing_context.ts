@@ -57,7 +57,7 @@ export function createCornerWingEmitContext(args: {
     doorStyle: state.doorStyle,
     splitDoors: state.splitDoors,
     groovesEnabled: state.groovesEnabled,
-    internalDrawersEnabled: false,
+    internalDrawersEnabled: state.internalDrawersEnabled,
     showHangerEnabled: state.showHangerEnabled,
     showContentsEnabled: state.showContentsEnabled,
     hasCorniceEnabled: state.hasCorniceEnabled,

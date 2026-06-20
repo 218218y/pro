@@ -113,7 +113,7 @@ export function normalizeCornerWingState(args: {
     doorStyle: flags.doorStyle,
     splitDoors: flags.splitDoors,
     groovesEnabled: flags.groovesEnabled,
-    internalDrawersEnabled: false,
+    internalDrawersEnabled: flags.internalDrawersEnabled,
     showHangerEnabled: flags.showHangerEnabled,
     showContentsEnabled: flags.showContentsEnabled,
     hasCorniceEnabled: flags.hasCorniceEnabled,
