@@ -90,6 +90,7 @@ export interface ProjectSettingsLike extends UnknownRecord {
   baseLegColor?: string;
   basePlinthHeightCm?: number | string;
   baseLegHeightCm?: number | string;
+  baseLegWidthCm?: number | string;
   slidingTracksColor?: 'black' | 'nickel' | string;
   structureSelection?: string;
   singleDoorPos?: string;
