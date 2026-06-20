@@ -1,10 +1,8 @@
-import type { AppContainer, ConfigStateLike, KnownMapName, MapsByName } from '../../../types/index.js';
+import type { ConfigStateLike, KnownMapName, MapsByName } from '../../../types/index.js';
 import { buildDoorVisualLookupKeys, readDoorVisualMapValue } from '../features/door_visual_map_lookup.js';
 import { normalizeKnownMapSnapshot } from '../runtime/maps_access.js';
 import { asRecord } from '../runtime/record.js';
 
-type ReadMapFn = typeof import('../runtime/maps_access.js').readMap;
-type ReadMapOrEmptyFn = typeof import('../runtime/maps_access.js').readMapOrEmpty;
 type CornerConfigMap = Record<string, unknown>;
 type SnapshotReader = (key: string) => unknown;
 
@@ -60,19 +58,6 @@ export function readCornerConfigMap(cfgSnapshot: unknown, mapName: string): Corn
 
 export function createCornerConfigMapReader(cfgSnapshot: unknown): (mapName: string) => CornerConfigMap {
   return (mapName: string) => readCornerConfigMap(cfgSnapshot, mapName);
-}
-
-export function createCornerConfigGetter(cfgSnapshot: unknown): (App: AppContainer) => ConfigStateLike {
-  const cfg = requireCornerConfigSnapshot(cfgSnapshot);
-  return () => cfg;
-}
-
-export function createCornerConfigReadMap(cfgSnapshot: unknown): ReadMapFn {
-  return ((_App: unknown, mapName: string) => readCornerConfigMap(cfgSnapshot, mapName)) as ReadMapFn;
-}
-
-export function createCornerConfigReadMapOrEmpty(cfgSnapshot: unknown): ReadMapOrEmptyFn {
-  return ((_App: unknown, mapName: string) => readCornerConfigMap(cfgSnapshot, mapName)) as ReadMapOrEmptyFn;
 }
 
 export function createCornerGrooveReader(cfgSnapshot: unknown): SnapshotReader {

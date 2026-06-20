@@ -1,17 +1,8 @@
-import type { AppContainer, RemovedDoorsMap, UnknownRecord } from '../../../types/index.js';
-import { readModeStateFromApp } from '../runtime/root_state_access.js';
+import type { RemovedDoorsMap, UnknownRecord } from '../../../types/index.js';
 import { MODES } from '../runtime/api.js';
 
 import type { CornerBuildUI, CornerConfigRecord } from './corner_state_normalize_contracts.js';
 import { asRecord, isRecord } from './corner_geometry_plan.js';
-
-export function isAppContainer(value: unknown): value is AppContainer {
-  return isRecord(value);
-}
-
-export function asApp(App: unknown): AppContainer | null {
-  return isAppContainer(App) ? App : null;
-}
 
 export function asCornerBuildUI(value: unknown): CornerBuildUI {
   return isRecord(value) ? value : {};
@@ -70,18 +61,4 @@ export function ensureCornerConfigRecord(src: unknown): CornerConfigRecord {
   if (typeof customData.storage !== 'boolean') customData.storage = false;
   rec.customData = customData;
   return rec;
-}
-
-export function resolveCornerPrimaryMode(App: unknown): string {
-  let primaryMode = readModeConstant('NONE', 'none');
-  try {
-    const appRec = asApp(App);
-    const modeState = appRec ? readModeStateFromApp(appRec) : null;
-    if (modeState && typeof modeState.primary === 'string' && modeState.primary) {
-      primaryMode = modeState.primary;
-    }
-  } catch {
-    // keep default
-  }
-  return primaryMode;
 }

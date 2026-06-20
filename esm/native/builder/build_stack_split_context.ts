@@ -191,11 +191,18 @@ export function applyStackSplitLowerCornerWingIfNeeded(args: {
       stackSplitUnifiedFrame: !!buildArgs.stackSplitUnifiedFrame,
       stackOffsetZ: Number.isFinite(Number(lowerDims.startZ)) ? Number(lowerDims.startZ) : 0,
       shelfThick: buildArgs.shelfThick,
-      cfgSnapshot: buildArgs.cfg,
-      renderPolicy: {
-        sketchMode: buildArgs.sketchMode === true,
-        addOutlines:
-          typeof buildArgs.addOutlines === 'function' ? (buildArgs.addOutlines as BuilderOutlineFn) : null,
+      snapshot: {
+        ui: lowerCtx.ui || {},
+        cfg: buildArgs.cfg,
+        primaryMode:
+          typeof lowerCtx.state?.mode?.primary === 'string' && lowerCtx.state.mode.primary
+            ? lowerCtx.state.mode.primary
+            : 'none',
+        renderPolicy: {
+          sketchMode: buildArgs.sketchMode === true,
+          addOutlines:
+            typeof buildArgs.addOutlines === 'function' ? (buildArgs.addOutlines as BuilderOutlineFn) : null,
+        },
       },
     }
   );

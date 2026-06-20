@@ -59,7 +59,6 @@ export function createCornerWingInteriorRuntime(params: CornerWingCellFlowParams
   } = locals;
   const {
     readMap,
-    readMapOrEmpty,
     getOrCreateCacheRecord,
     __isLongEdgeHandleVariantForPart,
     __topSplitHandleInsetForPart,
@@ -80,7 +79,7 @@ export function createCornerWingInteriorRuntime(params: CornerWingCellFlowParams
   };
 
   const readMirrorLayout = (partId: string): MirrorLayoutList | null => {
-    const map = readMapOrEmpty(App, 'mirrorLayoutMap');
+    const map = readMap('mirrorLayoutMap');
     const scopedPartId = __stackKey === 'bottom' ? __stackScopePartKey(partId) : partId;
     const layouts = readMirrorLayoutListForPart({
       map,
@@ -149,7 +148,6 @@ export function createCornerWingInteriorRuntime(params: CornerWingCellFlowParams
     __cornerSharedLongEdgeHandleLiftAbsY,
     __cornerSharedAlignedEdgeHandleBaseAbsY,
     readMap,
-    readMapOrEmpty,
     getOrCreateCacheRecord,
     __isLongEdgeHandleVariantForPart,
     __topSplitHandleInsetForPart,

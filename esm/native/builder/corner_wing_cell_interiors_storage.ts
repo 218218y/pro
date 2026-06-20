@@ -139,7 +139,7 @@ export function emitCornerWingExternalDrawers(
       CORNER_WING_DIMENSIONS.drawers.internalMinWidthM,
       cellW - CORNER_WING_DIMENSIONS.drawers.externalBoxWidthClearanceM
     );
-    const divMap = runtime.readMapOrEmpty(runtime.App, 'drawerDividersMap');
+    const divMap = runtime.readMap('drawerDividersMap');
     const hasDivider = !!(divMap && (divMap[divId] || divMap[id]));
     const woodMat = runtime.getCornerMat(id, runtime.frontMat);
     const drawerBoxPartId = makeDrawerBoxPartId(id);
@@ -153,7 +153,7 @@ export function emitCornerWingExternalDrawers(
     const isGlass = special === 'glass';
     const hasGroove =
       runtime.groovesEnabled && !isMirror && !isGlass && !!runtime.readScopedReaderAny(runtime.getGroove, id);
-    const doorStyleMap = runtime.readMapOrEmpty(runtime.App, 'doorStyleMap');
+    const doorStyleMap = runtime.readMap('doorStyleMap');
     const effectiveFrameStyle = resolveEffectiveDoorStyle(runtime.doorStyle, doorStyleMap, id);
 
     const dGroup = new runtime.THREE.Group();
@@ -227,7 +227,7 @@ export function emitCornerWingExternalDrawers(
       group: dGroup,
       partId: id,
       trims: readDoorTrimListForPart({
-        map: runtime.readMapOrEmpty(runtime.App, 'doorTrimMap'),
+        map: runtime.readMap('doorTrimMap'),
         partId: idRaw,
         scopedPartId: id,
         preferScopedOnly: runtime.__stackSplitEnabled && runtime.__stackKey === 'bottom' && id !== idRaw,

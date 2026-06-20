@@ -62,7 +62,6 @@ test('normalizeCornerWingState seeds lower split config and scopes bottom remova
   });
 
   const state = normalizeCornerWingState({
-    App,
     mainW: 2.4,
     mainH: 2.2,
     mainD: 0.6,
@@ -72,17 +71,28 @@ test('normalizeCornerWingState seeds lower split config and scopes bottom remova
       stackKey: 'bottom',
       stackSplitEnabled: true,
       stackOffsetZ: 0.11,
-      cfgSnapshot: {
-        removedDoorsMap: {
-          removed_corner_pent_door_1_full: true,
-          removed_lower_corner_pent_door_2_full: true,
+      snapshot: {
+        ui: {
+          cornerWidth: '140',
+          cornerHeight: '230',
+          cornerDepth: '65',
+          cornerSide: 'right',
+          baseType: 'legs',
+          cornerCabinetWallLenCm: 120,
         },
-        corner: {
-          layout: 'storage',
-          customData: { shelves: [true], rods: [true], storage: true },
+        cfg: {
+          removedDoorsMap: {
+            removed_corner_pent_door_1_full: true,
+            removed_lower_corner_pent_door_2_full: true,
+          },
+          corner: {
+            layout: 'storage',
+            customData: { shelves: [true], rods: [true], storage: true },
+          },
         },
+        primaryMode: 'none',
+        renderPolicy: normalRenderPolicy,
       },
-      renderPolicy: normalRenderPolicy,
     },
   });
 
@@ -121,7 +131,6 @@ test('normalizeCornerWingState does not let top corner special width seed a miss
   });
 
   const state = normalizeCornerWingState({
-    App,
     mainW: 1.6,
     mainH: 0.8,
     mainD: 0.55,
@@ -130,15 +139,26 @@ test('normalizeCornerWingState does not let top corner special width seed a miss
     meta: {
       stackKey: 'bottom',
       stackSplitEnabled: true,
-      cfgSnapshot: {
-        cornerConfiguration: {
-          layout: 'shelves',
-          specialDims: { baseWidthCm: 140, widthCm: 140, depthCm: 70 },
-          connectorSpecialDims: { widthCm: 115 },
-          modulesConfiguration: [{ specialDims: { baseWidthCm: 80, widthCm: 80 } }],
+      snapshot: {
+        ui: {
+          cornerWidth: 140,
+          cornerHeight: 220,
+          cornerDepth: 65,
+          cornerDoors: 3,
+          cornerConnectorEnabled: true,
+          raw: { cornerDoors: 3, stackSplitLowerDepth: 55, stackSplitLowerWidth: 160 },
         },
+        cfg: {
+          cornerConfiguration: {
+            layout: 'shelves',
+            specialDims: { baseWidthCm: 140, widthCm: 140, depthCm: 70 },
+            connectorSpecialDims: { widthCm: 115 },
+            modulesConfiguration: [{ specialDims: { baseWidthCm: 80, widthCm: 80 } }],
+          },
+        },
+        primaryMode: 'none',
+        renderPolicy: normalRenderPolicy,
       },
-      renderPolicy: normalRenderPolicy,
     },
   });
 
@@ -177,7 +197,6 @@ test('normalizeCornerWingState reads corner config and removed doors from meta s
   });
 
   const state = normalizeCornerWingState({
-    App,
     mainW: 1.8,
     mainH: 1.0,
     mainD: 0.6,
@@ -186,16 +205,26 @@ test('normalizeCornerWingState reads corner config and removed doors from meta s
     meta: {
       stackKey: 'bottom',
       stackSplitEnabled: true,
-      cfgSnapshot: {
-        removedDoorsMap: {},
-        cornerConfiguration: {
-          stackSplitLower: {
-            layout: 'shelves',
-            specialDims: { widthCm: 130, depthCm: 55 },
+      snapshot: {
+        ui: {
+          cornerWidth: 180,
+          cornerHeight: 225,
+          cornerDepth: 70,
+          cornerDoors: 2,
+          cornerConnectorEnabled: true,
+        },
+        cfg: {
+          removedDoorsMap: {},
+          cornerConfiguration: {
+            stackSplitLower: {
+              layout: 'shelves',
+              specialDims: { widthCm: 130, depthCm: 55 },
+            },
           },
         },
+        primaryMode: 'none',
+        renderPolicy: normalRenderPolicy,
       },
-      renderPolicy: normalRenderPolicy,
     },
   });
 
@@ -222,7 +251,6 @@ test('normalizeCornerWingState forces top split stack to drop the base and honor
   });
 
   const state = normalizeCornerWingState({
-    App,
     mainW: 2.0,
     mainH: 1.4,
     mainD: 0.55,
@@ -231,8 +259,21 @@ test('normalizeCornerWingState forces top split stack to drop the base and honor
     meta: {
       stackKey: 'top',
       stackSplitEnabled: true,
-      cfgSnapshot: {},
-      renderPolicy: sketchRenderPolicy,
+      snapshot: {
+        ui: {
+          cornerWidth: 160,
+          cornerHeight: 240,
+          cornerDepth: 70,
+          cornerSide: 'left',
+          baseType: 'plinth',
+          groovesEnabled: false,
+          removeDoorsEnabled: false,
+          hasCornice: true,
+        },
+        cfg: {},
+        primaryMode: 'remove_door',
+        renderPolicy: sketchRenderPolicy,
+      },
     },
   });
 
@@ -244,8 +285,7 @@ test('normalizeCornerWingState forces top split stack to drop the base and honor
   assert.equal(state.removeDoorsEnabled, true);
   assert.equal(state.__corniceAllowedForThisStack, true);
   assert.ok(state.wingH >= 1.19);
-  assert.equal(Array.isArray((App as any).render?.doorsArray), true);
-  assert.equal(Array.isArray((App as any).render?.drawersArray), true);
+  assert.equal((App as any).render, undefined);
 });
 
 test('normalizeCornerWingState rejects a missing config snapshot instead of reading App.store', () => {
@@ -254,13 +294,19 @@ test('normalizeCornerWingState rejects a missing config snapshot instead of read
   assert.throws(
     () =>
       normalizeCornerWingState({
-        App,
         mainW: 2,
         mainH: 2.2,
         mainD: 0.6,
         woodThick: 0.018,
         startY: 0,
-        meta: { cfgSnapshot: null as never, renderPolicy: normalRenderPolicy },
+        meta: {
+          snapshot: {
+            ui: {},
+            cfg: null as never,
+            primaryMode: 'none',
+            renderPolicy: normalRenderPolicy,
+          },
+        },
       }),
     /cfgSnapshot is required/
   );

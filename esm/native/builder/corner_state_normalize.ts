@@ -3,10 +3,6 @@
 // The public owner now stays focused on orchestration while parsing,
 // stack/config policy, and placement math live in dedicated helpers.
 
-import type { AppContainer } from '../../../types/index.js';
-import { getDoorsArray, getDrawersArray } from '../runtime/render_access.js';
-import { getBuildUIFromPlatform } from '../runtime/platform_access.js';
-
 export type { CornerBuildMeta } from './corner_state_normalize_contracts.js';
 import type { CornerBuildMeta, NormalizedCornerWingState } from './corner_state_normalize_contracts.js';
 import { asCornerBuildUI } from './corner_state_normalize_shared.js';
@@ -24,7 +20,6 @@ function readPositiveThickness(value: unknown, defaultThickness: number): number
 }
 
 export function normalizeCornerWingState(args: {
-  App: AppContainer;
   mainW: number;
   mainH: number;
   mainD: number;
@@ -32,17 +27,28 @@ export function normalizeCornerWingState(args: {
   startY: number;
   meta: CornerBuildMeta | null | undefined;
 }): NormalizedCornerWingState {
-  const { App, mainW, mainH, mainD, woodThick, startY, meta } = args;
+  const { mainW, mainH, mainD, woodThick, startY, meta } = args;
   const shelfThick = readPositiveThickness(meta?.shelfThick, woodThick);
 
-  const uiAny = asCornerBuildUI(getBuildUIFromPlatform(App));
-  if (!meta?.renderPolicy || typeof meta.renderPolicy.sketchMode !== 'boolean') {
+  const snapshot = meta?.snapshot;
+  if (!snapshot || typeof snapshot !== 'object') {
+    throw new TypeError('[corner_state_normalize] build snapshot is required');
+  }
+  if (!snapshot.ui || typeof snapshot.ui !== 'object') {
+    throw new TypeError('[corner_state_normalize] snapshot ui is required');
+  }
+  if (!snapshot.renderPolicy || typeof snapshot.renderPolicy.sketchMode !== 'boolean') {
     throw new TypeError('[corner_state_normalize] snapshot renderPolicy is required');
   }
-  const __sketchMode = meta.renderPolicy.sketchMode;
+  if (typeof snapshot.primaryMode !== 'string') {
+    throw new TypeError('[corner_state_normalize] snapshot primaryMode is required');
+  }
+  const uiAny = asCornerBuildUI(snapshot.ui);
+  const __sketchMode = snapshot.renderPolicy.sketchMode;
+  const __primaryMode = snapshot.primaryMode;
   const stackMeta = resolveCornerWingStackMeta(meta);
   const configState = createCornerNormalizedConfigState({
-    cfgSnapshot: meta?.cfgSnapshot,
+    cfgSnapshot: snapshot.cfg,
     uiAny,
     __stackKey: stackMeta.__stackKey,
     __stackSplitEnabled: stackMeta.__stackSplitEnabled,
@@ -59,14 +65,12 @@ export function normalizeCornerWingState(args: {
     __stackSplitEnabled: stackMeta.__stackSplitEnabled,
   });
   const flags = resolveCornerWingFlags({
-    App,
     uiAny,
+    primaryMode: __primaryMode,
     __stackKey: stackMeta.__stackKey,
     __stackSplitEnabled: stackMeta.__stackSplitEnabled,
   });
 
-  getDrawersArray(App);
-  getDoorsArray(App);
   const placement = resolveCornerWingPlacement({
     uiAny,
     config: configState.config,
@@ -89,6 +93,7 @@ export function normalizeCornerWingState(args: {
   return {
     uiAny,
     __sketchMode,
+    __primaryMode,
     __stackKey: stackMeta.__stackKey,
     __stackSplitEnabled: stackMeta.__stackSplitEnabled,
     __stackSplitUnifiedFrame: stackMeta.__stackSplitUnifiedFrame,

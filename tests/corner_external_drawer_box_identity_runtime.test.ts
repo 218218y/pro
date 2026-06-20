@@ -128,7 +128,7 @@ function makeRuntime(options?: {
       if (partId === makeDrawerBoxPartId('lower_corner_c0_draw_1')) return boxOverrideMat || fallback;
       return fallback;
     },
-    readMapOrEmpty: (_app: unknown, key: string) => (key === 'doorTrimMap' ? options?.doorTrimMap || {} : {}),
+    readMap: (key: string) => (key === 'doorTrimMap' ? options?.doorTrimMap || {} : {}),
     readScopedReaderAny: () => undefined,
     __resolveSpecial: () => null,
     __getMirrorMat: () => ({ name: 'mirror' }),

@@ -30,12 +30,11 @@ export type CornerWingDoorContext = {
   doorCount: number;
   cornerSharedLongEdgeHandleLiftAbsY: number;
   cornerSharedAlignedEdgeHandleBaseAbsY: number;
-  readMapOrEmpty: CornerWingCellFlowParams['helpers']['readMapOrEmpty'];
+  readMap: CornerWingCellFlowParams['helpers']['readMap'];
   readSplitPosListFromMap: CornerWingCellFlowParams['helpers']['readSplitPosListFromMap'];
-  getCfg: CornerWingCellFlowParams['helpers']['getCfg'];
   MODES: CornerWingCellFlowParams['helpers']['MODES'];
   getOrCreateCacheRecord: CornerWingCellFlowParams['helpers']['getOrCreateCacheRecord'];
-  isPrimaryMode: CornerWingCellFlowParams['helpers']['isPrimaryMode'];
+  primaryMode: string;
   isLongEdgeHandleVariantForPart: CornerWingCellFlowParams['helpers']['__isLongEdgeHandleVariantForPart'];
   topSplitHandleInsetForPart: CornerWingCellFlowParams['helpers']['__topSplitHandleInsetForPart'];
   clampHandleAbsYForPart: CornerWingCellFlowParams['helpers']['__clampHandleAbsYForPart'];

@@ -83,8 +83,8 @@ export type CorniceLocalsLike = {
 };
 
 export type CorniceHelpersLike = {
-  getCfg: (app: unknown) => UnknownRecord;
-  readMap: (app: unknown, key: string) => unknown;
+  cfgSnapshot: UnknownRecord;
+  readMap: (key: string) => unknown;
   isRecord: (value: unknown) => value is UnknownRecord;
   asRecord: (value: unknown) => UnknownRecord;
   readNumFrom: (obj: unknown, key: string, defaultValue: number) => number;

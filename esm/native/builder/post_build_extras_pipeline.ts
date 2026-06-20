@@ -190,6 +190,18 @@ export function applyPostBuildExtras(input: BuildContextLike) {
     }
     const cornerCfgSnapshot = requireCornerConfigSnapshot(cfg);
     const resolvedShelfThick = Number(shelfThick);
+    const cornerBuildSnapshot = {
+      ui: ctx.ui || {},
+      cfg: cornerCfgSnapshot,
+      primaryMode:
+        typeof ctx.state?.mode?.primary === 'string' && ctx.state.mode.primary
+          ? ctx.state.mode.primary
+          : 'none',
+      renderPolicy: {
+        sketchMode: ctx.flags?.sketchMode === true,
+        addOutlines: typeof ctx.fns?.addOutlines === 'function' ? ctx.fns.addOutlines : null,
+      },
+    };
     const __cornerWingMeta: BuilderCornerBuildMetaLike | null = stackSplitActive
       ? __stackKey === 'top'
         ? {
@@ -199,11 +211,7 @@ export function applyPostBuildExtras(input: BuildContextLike) {
             stackSplitUnifiedFrame,
             stackOffsetZ: 0,
             shelfThick: resolvedShelfThick,
-            cfgSnapshot: cornerCfgSnapshot,
-            renderPolicy: {
-              sketchMode: ctx.flags?.sketchMode === true,
-              addOutlines: typeof ctx.fns?.addOutlines === 'function' ? ctx.fns.addOutlines : null,
-            },
+            snapshot: cornerBuildSnapshot,
           }
         : {
             stackKey: 'bottom',
@@ -216,11 +224,7 @@ export function applyPostBuildExtras(input: BuildContextLike) {
             baseLegHeightCm: ctx.strings?.baseLegHeightCm,
             baseLegWidthCm: ctx.strings?.baseLegWidthCm,
             shelfThick: resolvedShelfThick,
-            cfgSnapshot: cornerCfgSnapshot,
-            renderPolicy: {
-              sketchMode: ctx.flags?.sketchMode === true,
-              addOutlines: typeof ctx.fns?.addOutlines === 'function' ? ctx.fns.addOutlines : null,
-            },
+            snapshot: cornerBuildSnapshot,
           }
       : null;
     if (__cornerWingMeta) {
@@ -253,11 +257,7 @@ export function applyPostBuildExtras(input: BuildContextLike) {
         },
         {
           shelfThick: resolvedShelfThick,
-          cfgSnapshot: cornerCfgSnapshot,
-          renderPolicy: {
-            sketchMode: ctx.flags?.sketchMode === true,
-            addOutlines: typeof ctx.fns?.addOutlines === 'function' ? ctx.fns.addOutlines : null,
-          },
+          snapshot: cornerBuildSnapshot,
         }
       );
     }

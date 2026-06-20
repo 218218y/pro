@@ -27,14 +27,14 @@ import {
   cloneMaybe,
 } from './corner_geometry_plan.js';
 
-import { isPrimaryMode, type CornerOpsEmitContext } from './corner_ops_emit_common.js';
+import type { CornerOpsEmitContext } from './corner_ops_emit_common.js';
 import { createCornerConnectorSetup } from './corner_connector_emit_shared.js';
 import { buildCornerConnectorShell } from './corner_connector_emit_shell.js';
 import { applyCornerConnectorInteriorFlow } from './corner_connector_interior_emit.js';
 import { applyCornerConnectorDoorFlow } from './corner_connector_door_emit.js';
 import { applyCornerConnectorCornice } from './corner_connector_cornice_emit.js';
 import { deriveCornerWingCells } from './corner_wing_extension_cells.js';
-import { createCornerConfigGetter, createCornerConfigReadMapOrEmpty } from './corner_config_readers.js';
+import { createCornerConfigMapReader } from './corner_config_readers.js';
 
 function readPositiveNumber(value: unknown): number | null {
   const n = typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : NaN;
@@ -135,8 +135,7 @@ export function emitCornerConnector(ctx: CornerOpsEmitContext): void {
   const { App, wingGroup, __applyStableShadowsToModule, __cfg } = ctx;
   const { mx, L, Dmain, shape, pts, interiorX, interiorZ, cornerGroup, showFrontPanel } = setup;
   const { panelThick, backPanelThick, backPanelOutsideInsetZ, addEdgePanel } = shell;
-  const getCornerCfg = createCornerConfigGetter(__cfg);
-  const readCornerMapOrEmpty = createCornerConfigReadMapOrEmpty(__cfg);
+  const readCornerMap = createCornerConfigMapReader(__cfg);
 
   applyCornerConnectorInteriorFlow({
     ctx,
@@ -169,8 +168,8 @@ export function emitCornerConnector(ctx: CornerOpsEmitContext): void {
       addEdgePanel,
     },
     helpers: {
-      getCfg: getCornerCfg,
-      readMapOrEmpty: readCornerMapOrEmpty,
+      cfgSnapshot: asRecord(__cfg),
+      readMap: readCornerMap,
       isSplitEnabledInMap,
       isSplitExplicitInMap,
       isSplitBottomEnabledInMap,
@@ -178,7 +177,7 @@ export function emitCornerConnector(ctx: CornerOpsEmitContext): void {
       readModulesConfigurationListFromConfigSnapshot,
       getOrCreateCacheRecord,
       MODES,
-      isPrimaryMode,
+      primaryMode: ctx.__primaryMode,
       __isLongEdgeHandleVariantForPart,
       __topSplitHandleInsetForPart,
       __edgeHandleLongLiftAbsYForCell,

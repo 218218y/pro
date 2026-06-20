@@ -8,7 +8,6 @@ import {
   readModeConstant,
   readPositiveCm,
   readStringValue,
-  resolveCornerPrimaryMode,
 } from './corner_state_normalize_shared.js';
 
 const CORNER_WING = CORNER_WING_DIMENSIONS.wing;
@@ -247,13 +246,12 @@ export function resolveCornerWingMetrics(args: {
 }
 
 export function resolveCornerWingFlags(args: {
-  App: unknown;
   uiAny: CornerBuildUI;
+  primaryMode: string;
   __stackKey: 'top' | 'bottom';
   __stackSplitEnabled: boolean;
 }): CornerWingFlagsState {
-  const { App, uiAny, __stackKey, __stackSplitEnabled } = args;
-  const primaryMode = resolveCornerPrimaryMode(App);
+  const { uiAny, primaryMode, __stackKey, __stackSplitEnabled } = args;
   const isMode = (id: unknown): boolean => {
     const s = String(id || '');
     return !!s && primaryMode === s;

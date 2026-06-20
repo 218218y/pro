@@ -931,8 +931,11 @@ test('[builder-surface-family] corner owners stay thin and delegate to dedicated
   const cornerOpsOwner = read('esm/native/builder/corner_ops_emit.ts');
   const connectorOwner = read('esm/native/builder/corner_connector_emit.ts');
   const wingOwner = read('esm/native/builder/corner_wing.ts');
+  const normalizeOwner = read('esm/native/builder/corner_state_normalize.ts');
   const cornerConfigReaders = read('esm/native/builder/corner_config_readers.ts');
   const wingExtensionOwner = read('esm/native/builder/corner_wing_extension_emit.ts');
+  const wingDoorContext = read('esm/native/builder/corner_wing_cell_doors_context.ts');
+  const connectorDoorContext = read('esm/native/builder/corner_connector_door_emit_context.ts');
   const connectorSpecial = read('esm/native/builder/corner_connector_interior_special.ts');
 
   assert.match(cornerOpsOwner, /corner_connector_emit\.js/);
@@ -952,6 +955,21 @@ test('[builder-surface-family] corner owners stay thin and delegate to dedicated
   assert.doesNotMatch(wingOwner, /export default\s+/);
   assert.match(cornerConfigReaders, /cfgSnapshot is required/);
   assert.doesNotMatch(cornerConfigReaders, /getCfg\(/);
+  assert.match(normalizeOwner, /const snapshot = meta\?\.snapshot;/);
+  assertLacksAll(
+    assert,
+    normalizeOwner,
+    [/getBuildUIFromPlatform/, /readModeStateFromApp/, /getDoorsArray/, /getDrawersArray/],
+    'corner state normalization is snapshot-only'
+  );
+  assert.match(wingDoorContext, /cfg0: helpers\.cfgSnapshot/);
+  assert.match(connectorDoorContext, /const cfg0: ValueRecord = cfgSnapshot;/);
+  assertLacksAll(
+    assert,
+    `${wingDoorContext}\n${connectorDoorContext}`,
+    [/getCfg\(/, /readMapOrEmpty\([^,]+,/],
+    'corner door contexts use direct snapshot readers'
+  );
 
   assert.match(wingExtensionOwner, /corner_wing_carcass_emit\.js/);
   assert.match(wingExtensionOwner, /corner_wing_extension_cells\.js/);

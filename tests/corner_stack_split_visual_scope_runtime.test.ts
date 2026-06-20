@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import { processCornerDoorVisual } from '../esm/native/builder/corner_wing_cell_doors_rendering.ts';
 import { pushCornerConnectorDoorSegmentVisual } from '../esm/native/builder/corner_connector_door_emit_visuals.ts';
+import { applyStackSplitLowerCornerWingIfNeeded } from '../esm/native/builder/build_stack_split_context.ts';
 
 class FakeGroup {
   children: unknown[] = [];
@@ -56,10 +57,10 @@ function createSharedCtx(overrides: Record<string, unknown> = {}): Record<string
     removeDoorsEnabled: false,
     isDoorRemoved: () => false,
     MODES: { REMOVE_DOOR: 'remove_door' },
-    isPrimaryMode: () => false,
+    primaryMode: 'none',
     getCornerMat: () => ({}),
     frontMat: {},
-    getCfg: () => ({ isMultiColorMode: false, doorStyleMap: {} }),
+    cfg0: { isMultiColorMode: false, doorStyleMap: {} },
     getCurtain: null,
     getGroove: null,
     readScopedReader: () => null,
@@ -68,7 +69,7 @@ function createSharedCtx(overrides: Record<string, unknown> = {}): Record<string
     addOutlines: () => undefined,
     doorStyle: 'flat',
     groovesEnabled: false,
-    readMapOrEmpty: () => ({}),
+    readMap: () => ({}),
     doorTrimMap: {},
     asRecord: (value: unknown) => (value && typeof value === 'object' ? value : {}),
     render: { doorsArray: [] },
@@ -144,4 +145,43 @@ test('bottom corner-pentagon door visual children receive the scoped lower part 
   const hinge = mount.children[0] as FakeGroup;
   assert.equal(hinge.userData.partId, 'lower_corner_pent_door_1_full');
   assert.equal((hinge.children[0] as FakeGroup).userData.partId, 'lower_corner_pent_door_1_full');
+});
+
+test('stack-split lower corner build forwards the lower UI with the shared config/mode snapshot', () => {
+  const ui = { cornerWidth: 135, cornerDepth: 55 };
+  const cfg = { cornerConfiguration: { layout: 'shelves' } };
+  let receivedMeta: any = null;
+
+  applyStackSplitLowerCornerWingIfNeeded({
+    buildArgs: {
+      App: {},
+      isCornerMode: true,
+      woodThick: 0.018,
+      shelfThick: 0.018,
+      bodyMat: {},
+      globalFrontMat: {},
+      defaultShelfMat: {},
+      braceShelfMat: {},
+      baseTypeBottom: 'plinth',
+      stackSplitUnifiedFrame: true,
+      cfg,
+      sketchMode: false,
+      addOutlines: () => undefined,
+      buildCornerWing(...args: any[]) {
+        receivedMeta = args[6];
+      },
+    } as any,
+    lowerCtx: {
+      ui,
+      state: { mode: { primary: 'groove' } },
+      dims: { totalW: 1.4, cabinetBodyHeight: 0.9, D: 0.55, startY: 0, startZ: 0.12 },
+    } as any,
+  });
+
+  assert.equal(receivedMeta.snapshot.ui, ui);
+  assert.equal(receivedMeta.snapshot.cfg, cfg);
+  assert.equal(receivedMeta.snapshot.primaryMode, 'groove');
+  assert.equal(receivedMeta.snapshot.renderPolicy.sketchMode, false);
+  assert.equal(receivedMeta.stackSplitUnifiedFrame, true);
+  assert.equal(receivedMeta.stackOffsetZ, 0.12);
 });

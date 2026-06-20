@@ -36,7 +36,7 @@ function makeCorniceParams(kind: 'classic' | 'wave') {
         __wingBackPanelCenterZ: -0.3,
       },
       helpers: {
-        getCfg: () => ({}),
+        cfgSnapshot: {},
         readMap: () => ({}),
         isRecord: (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object',
         asRecord: (value: unknown): Record<string, unknown> =>

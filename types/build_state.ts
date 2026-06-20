@@ -128,6 +128,7 @@ export interface UiStateLike extends UiState {
   baseLegColor?: string;
   basePlinthHeightCm?: number | string;
   baseLegHeightCm?: number | string;
+  baseLegWidthCm?: number | string;
   slidingTracksColor?: 'black' | 'nickel' | string;
   corniceType?: string;
   color?: string;
@@ -404,6 +405,7 @@ export interface BuildCtxStringsLike extends UnknownRecord {
   baseLegColor?: string;
   basePlinthHeightCm?: number | string;
   baseLegHeightCm?: number | string;
+  baseLegWidthCm?: number | string;
   [k: string]: unknown;
 }
 

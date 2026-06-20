@@ -63,8 +63,8 @@ function createFlowParams() {
   };
 
   const helpers: any = {
-    getCfg: () => ({ customData: { storage: true }, doorTrimMap: { demo: true } }),
-    readMapOrEmpty: (_app: unknown, name: string) => App.maps.getMap(name) || {},
+    cfgSnapshot: { customData: { storage: true }, doorTrimMap: { demo: true } },
+    readMap: (name: string) => App.maps.getMap(name) || {},
     isSplitEnabledInMap: () => true,
     isSplitExplicitInMap: (_map: unknown, key: string) => key.startsWith('lower_'),
     isSplitBottomEnabledInMap: () => false,
@@ -72,7 +72,7 @@ function createFlowParams() {
     readModulesConfigurationListFromConfigSnapshot: () => [],
     getOrCreateCacheRecord: () => ({}),
     MODES: { REMOVE_DOOR: 'remove_door' },
-    isPrimaryMode: () => false,
+    primaryMode: 'none',
     __isLongEdgeHandleVariantForPart: () => false,
     __topSplitHandleInsetForPart: () => 0.09,
     __edgeHandleLongLiftAbsYForCornerCells: () => 0,

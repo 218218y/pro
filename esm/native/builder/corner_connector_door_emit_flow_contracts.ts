@@ -15,8 +15,8 @@ export type CornerConnectorDoorLocals = ValueRecord & {
 };
 
 export type CornerConnectorDoorHelpers = ValueRecord & {
-  getCfg: typeof import('./store_access.js').getCfg;
-  readMapOrEmpty: typeof import('../runtime/maps_access.js').readMapOrEmpty;
+  cfgSnapshot: ValueRecord;
+  readMap: (name: string) => ValueRecord;
   isSplitEnabledInMap: typeof import('../runtime/maps_access.js').isSplitEnabledInMap;
   isSplitExplicitInMap: typeof import('../runtime/maps_access.js').isSplitExplicitInMap;
   isSplitBottomEnabledInMap: typeof import('../runtime/maps_access.js').isSplitBottomEnabledInMap;
@@ -24,7 +24,7 @@ export type CornerConnectorDoorHelpers = ValueRecord & {
   readModulesConfigurationListFromConfigSnapshot: typeof import('../features/modules_configuration/modules_config_api.js').readModulesConfigurationListFromConfigSnapshot;
   getOrCreateCacheRecord: typeof import('./corner_cache.js').getOrCreateCacheRecord;
   MODES: ValueRecord & { REMOVE_DOOR?: string };
-  isPrimaryMode: typeof import('./corner_ops_emit_common.js').isPrimaryMode;
+  primaryMode: string;
   __isLongEdgeHandleVariantForPart: typeof import('./corner_geometry_plan.js').__isLongEdgeHandleVariantForPart;
   __topSplitHandleInsetForPart: typeof import('./corner_geometry_plan.js').__topSplitHandleInsetForPart;
   __edgeHandleLongLiftAbsYForCornerCells: typeof import('./corner_geometry_plan.js').__edgeHandleLongLiftAbsYForCornerCells;

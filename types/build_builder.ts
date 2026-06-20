@@ -321,6 +321,12 @@ export interface BuilderBuildCornerWingMaterialsLike extends UnknownRecord {
   defaultShelfMat?: unknown;
   braceShelfMat?: unknown;
 }
+export interface BuilderCornerBuildSnapshotLike extends UnknownRecord {
+  ui: UiSnapshotLike | UnknownRecord;
+  cfg: ConfigStateLike | UnknownRecord;
+  primaryMode: string;
+  renderPolicy: BuilderContentsRenderPolicy;
+}
 export interface BuilderCornerBuildMetaLike extends UnknownRecord {
   stackKey?: 'top' | 'bottom';
   baseType?: string;
@@ -328,11 +334,12 @@ export interface BuilderCornerBuildMetaLike extends UnknownRecord {
   baseLegColor?: string;
   basePlinthHeightCm?: number | string;
   baseLegHeightCm?: number | string;
+  baseLegWidthCm?: number | string;
   stackSplitEnabled?: boolean;
+  stackSplitUnifiedFrame?: boolean;
   stackOffsetZ?: number;
   shelfThick?: unknown;
-  cfgSnapshot: ConfigStateLike | UnknownRecord;
-  renderPolicy: BuilderContentsRenderPolicy;
+  snapshot: BuilderCornerBuildSnapshotLike;
 }
 export interface BuilderBuildCornerWingCtxLike extends UnknownRecord {
   App?: unknown;

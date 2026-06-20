@@ -69,7 +69,6 @@ export type CornerWingInteriorRuntime = {
   __cornerSharedLongEdgeHandleLiftAbsY: number;
   __cornerSharedAlignedEdgeHandleBaseAbsY: number;
   readMap: CornerWingCellFlowParams['helpers']['readMap'];
-  readMapOrEmpty: CornerWingCellFlowParams['helpers']['readMapOrEmpty'];
   getOrCreateCacheRecord: CornerWingCellFlowParams['helpers']['getOrCreateCacheRecord'];
   __isLongEdgeHandleVariantForPart: CornerWingCellFlowParams['helpers']['__isLongEdgeHandleVariantForPart'];
   __topSplitHandleInsetForPart: CornerWingCellFlowParams['helpers']['__topSplitHandleInsetForPart'];

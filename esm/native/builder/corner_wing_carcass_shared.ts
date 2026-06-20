@@ -57,7 +57,7 @@ export type CornerWingCarcassLocals = {
   activeFaceCenter: number;
 };
 export type CornerWingCarcassHelpers = {
-  getCfg: (app: AppContainer) => UnknownRecord;
+  cfgSnapshot: UnknownRecord;
   getInternalGridMap: (app: unknown, isBottomStack?: boolean) => UnknownRecord;
   asRecord: (value: unknown) => UnknownRecord;
   readNumFrom: (obj: unknown, key: string, defaultValue: number) => number;

@@ -54,18 +54,12 @@ export function pushCornerConnectorDoorSegmentVisual(
 
   const woodMat = ctx.getCornerMat(partId, ctx.frontMat);
   const curtain =
-    ctx.getCfg(ctx.App).isMultiColorMode && ctx.getCurtain
-      ? readScopedReaderAny(ctx, ctx.getCurtain, partId)
-      : null;
+    ctx.cfg0.isMultiColorMode && ctx.getCurtain ? readScopedReaderAny(ctx, ctx.getCurtain, partId) : null;
   const special = ctx.resolveSpecial(partId, curtain);
   const isMirror = special === 'mirror';
   const hasGroove = ctx.groovesEnabled && !isMirror && !!readScopedReaderAny(ctx, ctx.getGroove, partId);
   const style = special === 'glass' ? 'glass' : null;
-  const effectiveFrameStyle = resolveEffectiveDoorStyle(
-    ctx.doorStyle,
-    readDoorStyleMap(ctx.getCfg(ctx.App)),
-    partId
-  );
+  const effectiveFrameStyle = resolveEffectiveDoorStyle(ctx.doorStyle, readDoorStyleMap(ctx.cfg0), partId);
 
   const vis = ctx.createDoorVisual(
     Math.max(
@@ -123,7 +117,7 @@ function maybeAppendRemovedDoorHitbox(
   state: CornerConnectorDoorState,
   segH: number
 ): void {
-  if (!ctx.isPrimaryMode(ctx.App, ctx.MODES.REMOVE_DOOR || 'remove_door')) return;
+  if (ctx.primaryMode !== (ctx.MODES.REMOVE_DOOR || 'remove_door')) return;
   const box = new ctx.THREE.Mesh(
     new ctx.THREE.BoxGeometry(ctx.doorW, segH, CORNER_WING_DIMENSIONS.connector.hitboxThicknessM),
     new ctx.THREE.MeshBasicMaterial({
@@ -157,7 +151,7 @@ function readCornerConnectorMirrorLayout(
   ctx: CornerConnectorDoorContext,
   partId: string
 ): MirrorLayoutList | null {
-  const map = ctx.readMapOrEmpty(ctx.App, 'mirrorLayoutMap');
+  const map = ctx.readMap('mirrorLayoutMap');
   const scopedPartId = ctx.stackKey === 'bottom' ? ctx.stackScopePartKey(partId) : partId;
   const layouts = readMirrorLayoutListForPart({
     map,

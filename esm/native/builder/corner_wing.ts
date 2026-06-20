@@ -44,10 +44,9 @@ export const buildCornerWing = (
 
   const App = assertApp(ctx?.App ?? null, 'native/builder/corner_wing');
   const THREE = resolveCornerWingTHREE(App);
-  const services = resolveCornerWingServices(App, meta.renderPolicy);
+  const services = resolveCornerWingServices(App, meta.snapshot.renderPolicy);
 
   const state = normalizeCornerWingState({
-    App,
     mainW,
     mainH,
     mainD,

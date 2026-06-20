@@ -3,9 +3,6 @@
 // Keep tiny shared runtime seams here so the heavy connector/wing emitters can
 // stay focused on geometry/material policy rather than mode-store probing.
 
-import { readModeStateFromStore } from '../runtime/root_state_access.js';
-import { MODES } from '../runtime/api.js';
-
 import type { AppContainer, Object3DLike, ThreeLike, UnknownCallable, UnknownRecord } from '../../../types';
 
 type CornerWingMaterialsResult = ReturnType<typeof import('./corner_materials.js').createCornerWingMaterials>;
@@ -80,47 +77,6 @@ export interface CornerOpsEmitContext extends UnknownRecord {
   getMaterial: UnknownCallable;
   __applyStableShadowsToModule: (obj: ShadowNodeLike | null | undefined) => void;
   __sketchMode: boolean;
+  __primaryMode: string;
   [k: string]: unknown;
-}
-
-type AppWithStore = { store?: unknown };
-type ModeStateLike = { primary?: unknown };
-type ModesLike = { NONE?: unknown };
-
-function asModesLike(value: unknown): ModesLike | null {
-  return value && typeof value === 'object' ? value : null;
-}
-
-function asAppWithStore(value: unknown): AppWithStore | null {
-  return value && typeof value === 'object' ? value : null;
-}
-
-function asModeStateLike(value: unknown): ModeStateLike | null {
-  return value && typeof value === 'object' ? value : null;
-}
-
-function readNoneMode(): string {
-  const modes = asModesLike(MODES);
-  return typeof modes?.NONE === 'string' ? modes.NONE : 'none';
-}
-
-function readStore(app: unknown): unknown {
-  return asAppWithStore(app)?.store;
-}
-
-function readPrimaryMode(app: unknown): string | null {
-  const modeState = asModeStateLike(readModeStateFromStore(readStore(app)));
-  return typeof modeState?.primary === 'string' ? modeState.primary : null;
-}
-
-export function isPrimaryMode(App: unknown, modeId: unknown): boolean {
-  const NONE = readNoneMode();
-  const target = String(modeId || '');
-  if (!target) return false;
-  try {
-    const primary = readPrimaryMode(App) ?? NONE;
-    return String(primary || NONE) === target;
-  } catch {
-    return NONE === target;
-  }
 }

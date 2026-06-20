@@ -169,7 +169,7 @@ export function addCornerHexDiagonalPanels(args: {
   const panelBottomY = ctx.startY + ctx.woodThick;
   const panelHeight = Math.max(ctx.woodThick, args.cell.bodyHeight - 2 * ctx.woodThick);
 
-  const cfg = args.params.helpers.getCfg(args.params.locals.App) || {};
+  const cfg = args.params.helpers.cfgSnapshot;
   const addSegment = (a: P2, b: P2, partId: string): void => {
     const dx = b.x - a.x;
     const dz = b.z - a.z;

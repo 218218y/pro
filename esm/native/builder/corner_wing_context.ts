@@ -38,6 +38,7 @@ export function createCornerWingEmitContext(args: {
 
     uiAny: state.uiAny,
     __sketchMode: state.__sketchMode,
+    __primaryMode: state.__primaryMode,
     __stackKey: state.__stackKey,
     __stackSplitEnabled: state.__stackSplitEnabled,
     __stackSplitUnifiedFrame: state.__stackSplitUnifiedFrame,

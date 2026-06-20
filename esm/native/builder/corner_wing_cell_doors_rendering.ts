@@ -79,7 +79,7 @@ export function processCornerDoorVisual(
 ): boolean {
   if (ctx.removeDoorsEnabled && ctx.isDoorRemoved(id)) {
     const removeDoorMode = ctx.MODES.REMOVE_DOOR || 'remove_door';
-    if (removeDoorMode && ctx.isPrimaryMode(ctx.App, removeDoorMode)) {
+    if (removeDoorMode && ctx.primaryMode === removeDoorMode) {
       const box = new ctx.THREE.Mesh(
         new ctx.THREE.BoxGeometry(args.width, args.height, CORNER_WING_DIMENSIONS.connector.hitboxThicknessM),
         new ctx.THREE.MeshBasicMaterial({
@@ -97,9 +97,7 @@ export function processCornerDoorVisual(
 
   const woodMat = ctx.getCornerMat(id, ctx.frontMat);
   const curtain =
-    ctx.getCfg(ctx.App).isMultiColorMode && ctx.getCurtain
-      ? readScopedReaderAny(ctx, ctx.getCurtain, id)
-      : null;
+    ctx.cfg0.isMultiColorMode && ctx.getCurtain ? readScopedReaderAny(ctx, ctx.getCurtain, id) : null;
   const special = ctx.resolveSpecial(id, curtain);
   const isMirror = special === 'mirror';
   const hasGroove = ctx.groovesEnabled && !isMirror && !!readScopedReaderAny(ctx, ctx.getGroove, id);
@@ -109,7 +107,7 @@ export function processCornerDoorVisual(
   const groovePartId = ctx.stackKey === 'bottom' ? ctx.stackScopePartKey(rawVisualPartId) : rawVisualPartId;
   const frontSign = Number.isFinite(args.frontSign) ? Number(args.frontSign) : 1;
 
-  const cfgRecord = ctx.asRecord(ctx.getCfg(ctx.App));
+  const cfgRecord = ctx.cfg0;
   const doorStyleMap = isValueRecord(cfgRecord.doorStyleMap) ? cfgRecord.doorStyleMap : undefined;
   const effectiveFrameStyle = resolveEffectiveDoorStyle(ctx.doorStyle, doorStyleMap, id);
 
@@ -152,7 +150,7 @@ export function processCornerDoorVisual(
 }
 
 export function readMirrorLayout(ctx: CornerWingDoorContext, partId: string): MirrorLayoutList | null {
-  const map = ctx.readMapOrEmpty(ctx.App, 'mirrorLayoutMap');
+  const map = ctx.readMap('mirrorLayoutMap');
   const scopedPartId = ctx.stackKey === 'bottom' ? ctx.stackScopePartKey(partId) : partId;
   const layouts = readMirrorLayoutListForPart({
     map,

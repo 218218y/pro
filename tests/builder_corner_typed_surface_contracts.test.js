@@ -234,10 +234,8 @@ test('corner builders keep typed flow params, explicit nullish-string narrowing,
   );
   assert.match(cornerWingCellOwner, /applyCornerWingCellInteriors\(params\);/);
   assert.match(cornerWingCellOwner, /applyCornerWingCellDoors\(params\);/);
-  assert.match(
-    cornerWingCellDoors,
-    /readDoorTrimMap\(\(helpers\.getCfg\(ctx\.App\) \|\| \{\}\)\.doorTrimMap\)/
-  );
+  assert.match(cornerWingCellDoors, /readDoorTrimMap\(helpers\.cfgSnapshot\.doorTrimMap\)/);
+  assert.doesNotMatch(cornerWingCellDoors, /getCfg\(ctx\.App\)|readMapOrEmpty\(ctx\.App/);
   assert.match(
     cornerConnectorDoor,
     /type CornerWingMaterialsResult = ReturnType<typeof import\('\.\/corner_materials\.js'\)\.createCornerWingMaterials>;/

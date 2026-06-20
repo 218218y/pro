@@ -44,8 +44,8 @@ export function createCornerConnectorDoorContextInternal(
   } = ctx;
   const { pts, interiorX, interiorZ, panelThick, showFrontPanel, cornerGroup, addEdgePanel } = locals;
   const {
-    getCfg,
-    readMapOrEmpty,
+    cfgSnapshot,
+    readMap,
     readSplitPosListFromMap,
     isSplitEnabledInMap,
     isSplitExplicitInMap,
@@ -53,7 +53,7 @@ export function createCornerConnectorDoorContextInternal(
     readModulesConfigurationListFromConfigSnapshot,
     getOrCreateCacheRecord,
     MODES,
-    isPrimaryMode,
+    primaryMode,
     __isLongEdgeHandleVariantForPart,
     __topSplitHandleInsetForPart,
     __edgeHandleLongLiftAbsYForCornerCells,
@@ -110,10 +110,10 @@ export function createCornerConnectorDoorContextInternal(
   const outwardZSign: 1 | -1 = plusZ.dot(outwardN) >= 0 ? 1 : -1;
 
   const render: ValueRecord | null = readCornerConnectorRenderRecord(App, asRecord);
-  const cfg0: ValueRecord = getCfg(App) || {};
+  const cfg0: ValueRecord = cfgSnapshot;
   const doorTrimMap = readDoorTrimMap(cfg0.doorTrimMap);
-  const splitMap0 = readMapOrEmpty(App, 'splitDoorsMap');
-  const splitBottomMap0 = readMapOrEmpty(App, 'splitDoorsBottomMap');
+  const splitMap0 = readMap('splitDoorsMap');
+  const splitBottomMap0 = readMap('splitDoorsBottomMap');
   const splitGap = CORNER_WING_DIMENSIONS.connector.splitGapM;
   const splitLineY =
     startY +
@@ -162,15 +162,14 @@ export function createCornerConnectorDoorContextInternal(
     showFrontPanel,
     cornerGroup,
     addEdgePanel,
-    getCfg,
-    readMapOrEmpty,
+    readMap,
     readSplitPosListFromMap,
     isSplitEnabledInMap,
     isSplitExplicitInMap,
     isSplitBottomEnabledInMap,
     getOrCreateCacheRecord,
     MODES,
-    isPrimaryMode,
+    primaryMode,
     isLongEdgeHandleVariantForPart: __isLongEdgeHandleVariantForPart,
     topSplitHandleInsetForPart: __topSplitHandleInsetForPart,
     edgeHandleLongLiftAbsYForCornerCells: __edgeHandleLongLiftAbsYForCornerCells,

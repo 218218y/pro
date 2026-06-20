@@ -187,6 +187,48 @@ test('post-build extras: corner builds reject a missing config snapshot before i
   assert.equal(buildCalls, 0);
 });
 
+test('post-build extras: corner builder receives one canonical UI/config/mode/render snapshot', () => {
+  let receivedMeta: any = null;
+  const ui = { cornerWidth: 175, cornerSide: 'left' };
+  const cfg = { showDimensions: false, cornerConfiguration: { layout: 'shelves' } };
+
+  applyPostBuildExtras(
+    createPostBuildContext(
+      {},
+      {
+        state: { mode: { primary: 'remove_door' } },
+        ui,
+        cfg,
+        flags: { isCornerMode: true, globalClickMode: false, sketchMode: true },
+        dims: {
+          doorsCount: 2,
+          totalW: 1.8,
+          cabinetBodyHeight: 2.1,
+          D: 0.6,
+          woodThick: 0.018,
+          shelfThick: 0.018,
+          startY: 0,
+        },
+        materials: {},
+        fns: {
+          addOutlines: () => undefined,
+          buildCornerWing(...args: any[]) {
+            receivedMeta = args[6];
+          },
+        },
+      }
+    )
+  );
+
+  assert.equal(receivedMeta.snapshot.ui, ui);
+  assert.equal(receivedMeta.snapshot.cfg, cfg);
+  assert.equal(receivedMeta.snapshot.primaryMode, 'remove_door');
+  assert.equal(receivedMeta.snapshot.renderPolicy.sketchMode, true);
+  assert.equal(typeof receivedMeta.snapshot.renderPolicy.addOutlines, 'function');
+  assert.equal('cfgSnapshot' in receivedMeta, false);
+  assert.equal('renderPolicy' in receivedMeta, false);
+});
+
 test('post-build extras: missing required notes restore owner is reported before throwing', () => {
   const reports: Array<{ error: unknown; ctx: any }> = [];
   const App: any = {

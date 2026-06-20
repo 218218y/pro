@@ -18,8 +18,12 @@ export type CornerBuildMeta = {
   stackSplitUnifiedFrame?: boolean;
   stackOffsetZ?: number;
   shelfThick?: unknown;
-  cfgSnapshot: ConfigStateLike | UnknownRecord;
-  renderPolicy: BuilderContentsRenderPolicy;
+  snapshot: {
+    ui: UnknownRecord;
+    cfg: ConfigStateLike | UnknownRecord;
+    primaryMode: string;
+    renderPolicy: BuilderContentsRenderPolicy;
+  };
   [k: string]: unknown;
 };
 
@@ -72,6 +76,7 @@ export type CornerConfigRecord = UnknownRecord & {
 export type NormalizedCornerWingState = {
   uiAny: CornerBuildUI;
   __sketchMode: boolean;
+  __primaryMode: string;
   __stackKey: 'top' | 'bottom';
   __stackSplitEnabled: boolean;
   __stackSplitUnifiedFrame: boolean;
