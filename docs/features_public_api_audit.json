@@ -140,6 +140,10 @@
       "entry": "door_removal_visibility.js"
     },
     {
+      "file": "esm/native/builder/build_wardrobe_flow_context.ts",
+      "entry": "door_removal_visibility.js"
+    },
+    {
       "file": "esm/native/builder/build_wardrobe_flow_context_hinged.ts",
       "entry": "modules_configuration/modules_config_api.js"
     },
@@ -200,6 +204,10 @@
       "entry": "door_style_overrides.js"
     },
     {
+      "file": "esm/native/builder/corner_connector_door_emit_visuals.ts",
+      "entry": "door_removal_visibility.js"
+    },
+    {
       "file": "esm/native/builder/corner_connector_emit.ts",
       "entry": "modules_configuration/modules_config_api.js"
     },
@@ -240,6 +248,10 @@
       "entry": "base_plinth_support.js"
     },
     {
+      "file": "esm/native/builder/corner_state_normalize_layout.ts",
+      "entry": "door_removal_visibility.js"
+    },
+    {
       "file": "esm/native/builder/corner_wing_cell_doors_context.ts",
       "entry": "door_trim.js"
     },
@@ -258,6 +270,10 @@
     {
       "file": "esm/native/builder/corner_wing_cell_doors_rendering.ts",
       "entry": "door_style_overrides.js"
+    },
+    {
+      "file": "esm/native/builder/corner_wing_cell_doors_rendering.ts",
+      "entry": "door_removal_visibility.js"
     },
     {
       "file": "esm/native/builder/corner_wing_cell_interiors_runtime.ts",
@@ -442,6 +458,10 @@
     {
       "file": "esm/native/builder/post_build_extras_pipeline.ts",
       "entry": "stack_split/index.js"
+    },
+    {
+      "file": "esm/native/builder/post_build_removed_parts.ts",
+      "entry": "door_removal_visibility.js"
     },
     {
       "file": "esm/native/builder/post_build_removed_parts.ts",
