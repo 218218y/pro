@@ -53,7 +53,7 @@ test('project/model release regressions preserve UI ephemerals without mutating 
   assert.deepEqual(uiSnap, { projectName: 'Demo' });
 });
 
-test('project/model release regressions deep-clone the PDF overlay patch payload', () => {
+test('project/model release regressions deep-clone the PDF overlay patch payload from canonical data', () => {
   const sourceDraft = {
     notes: 'Hello',
     nested: { keep: 1 },
@@ -63,7 +63,7 @@ test('project/model release regressions deep-clone the PDF overlay patch payload
   const patch = buildProjectPdfUiPatch(
     {
       orderPdfEditorDraft: sourceDraft,
-      orderPdfEditorZoom: '2.5',
+      orderPdfEditorZoom: 2.5,
     },
     cloneJson
   );
@@ -77,6 +77,14 @@ test('project/model release regressions deep-clone the PDF overlay patch payload
   sourceDraft.nested.keep = 9;
   assert.equal(patch.orderPdfEditorDraft.nested.keep, 1);
   assert.equal(patch.orderPdfEditorZoom, 2.5);
+
+  const legacyZoomPatch = buildProjectPdfUiPatch(
+    {
+      orderPdfEditorZoom: '2.5',
+    },
+    cloneJson
+  );
+  assert.equal(legacyZoomPatch.orderPdfEditorZoom, 1);
 });
 
 test('project/model release regressions preserve current PDF draft, canonicalize config lists, and detach model payload slices during model apply payload build', () => {
