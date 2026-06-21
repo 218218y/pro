@@ -122,6 +122,12 @@ function loadHandlesActionsHarness(initial = {}) {
           isManualHandlePositionMode: value => value === 'manual',
         };
       }
+      if (spec === '../../../features/door_removal_visibility.js') {
+        return {
+          resolveRemoveDoorsEnabledFromSnapshots: (ui, mode) =>
+            ui?.removeDoorsEnabled === true || mode?.primary === 'remove_door',
+        };
+      }
       throw new Error(`Unexpected import: ${spec}`);
     },
     console,

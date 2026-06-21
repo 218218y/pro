@@ -4,6 +4,7 @@
   "publicEntries": [
     "base_leg_support.js",
     "base_plinth_support.js",
+    "door_removal_visibility.js",
     "door_style_overrides.js",
     "door_visual_map_lookup.js",
     "door_trim.js",
@@ -39,6 +40,7 @@
   "families": {
     "base_leg_support": ["base_leg_support.js"],
     "base_plinth_support": ["base_plinth_support.js"],
+    "door_removal_visibility": ["door_removal_visibility.js"],
     "door_style_overrides": ["door_style_overrides.js"],
     "door_visual_map_lookup": ["door_visual_map_lookup.js"],
     "door_trim": ["door_trim.js"],

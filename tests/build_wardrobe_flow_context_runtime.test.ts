@@ -126,7 +126,7 @@ test('build wardrobe context runtime: chest-only path forwards the canonical cfg
   assert.equal(buildCall[1].cfgSnapshot, cfgSnapshot);
   assert.equal(buildCall[1].renderPolicy.sketchMode, false);
   assert.deepEqual(calls.slice(-4), [
-    ['handles', { triggerRender: false, cfgSnapshot, addOutlines }],
+    ['handles', { triggerRender: false, cfgSnapshot, addOutlines, removeDoorsEnabled: false }],
     'viewport.render',
     'controls.update',
     'registry.finalize',

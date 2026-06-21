@@ -105,6 +105,28 @@ test('materials apply runtime: changed materials fall back to ensureRenderLoop w
   ]);
 });
 
+test('materials apply runtime forwards captured remove-door policy to handle refresh', () => {
+  const { App, calls, addOutlines } = createApp(true);
+  App.store.getState = () => ({
+    ui: { colorChoice: 'white', customColor: '#ffffff', removeDoorsEnabled: true, raw: {} },
+    config: { removedDoorsMap: { removed_d1_full: true } },
+    runtime: {},
+    mode: { primary: 'none' },
+    meta: {},
+  });
+
+  assert.equal(applyMaterialsFromState(App), true);
+  assert.deepEqual(calls[1], [
+    'handles',
+    {
+      triggerRender: false,
+      cfgSnapshot: { removedDoorsMap: { removed_d1_full: true } },
+      addOutlines,
+      removeDoorsEnabled: true,
+    },
+  ]);
+});
+
 test('materials apply runtime: drawer boxes keep independent white material unless directly painted', () => {
   const calls: unknown[] = [];
   const frontPaint = { id: 'front-paint' };

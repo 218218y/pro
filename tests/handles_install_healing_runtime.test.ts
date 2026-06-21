@@ -24,6 +24,20 @@ test('handles install keeps canonical method refs stable across repeated install
   assert.equal(typeof createRef, 'function');
   assert.equal(typeof applyRef, 'function');
   assert.equal(typeof purgeRef, 'function');
+  assert.doesNotThrow(() =>
+    applyRef?.({
+      cfgSnapshot: {},
+      addOutlines: () => undefined,
+      removeDoorsEnabled: false,
+      triggerRender: false,
+    })
+  );
+  assert.doesNotThrow(() =>
+    purgeRef?.({
+      cfgSnapshot: {},
+      removeDoorsEnabled: false,
+    })
+  );
 
   delete installed.applyHandles;
 

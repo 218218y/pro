@@ -4,6 +4,7 @@
   "publicEntries": [
     "base_leg_support.js",
     "base_plinth_support.js",
+    "door_removal_visibility.js",
     "door_style_overrides.js",
     "door_visual_map_lookup.js",
     "door_trim.js",
@@ -39,6 +40,7 @@
   "byFamily": {
     "base_leg_support": ["base_leg_support.js"],
     "base_plinth_support": ["base_plinth_support.js"],
+    "door_removal_visibility": ["door_removal_visibility.js"],
     "door_style_overrides": ["door_style_overrides.js"],
     "door_visual_map_lookup": ["door_visual_map_lookup.js"],
     "door_trim": ["door_trim.js"],
@@ -132,6 +134,10 @@
     {
       "file": "esm/native/builder/build_state_resolver.ts",
       "entry": "project_config/project_config_lists_canonical.js"
+    },
+    {
+      "file": "esm/native/builder/build_visible_config_gates.ts",
+      "entry": "door_removal_visibility.js"
     },
     {
       "file": "esm/native/builder/build_wardrobe_flow_context_hinged.ts",
@@ -384,6 +390,10 @@
     {
       "file": "esm/native/builder/materials_apply_color_policy.ts",
       "entry": "shelf_part_identity.js"
+    },
+    {
+      "file": "esm/native/builder/materials_apply_snapshot.ts",
+      "entry": "door_removal_visibility.js"
     },
     {
       "file": "esm/native/builder/module_custom_geometry_policy.ts",
@@ -1534,12 +1544,20 @@
       "entry": "modules_configuration/modules_config_api.js"
     },
     {
+      "file": "esm/native/ui/react/actions/builder_actions.ts",
+      "entry": "door_removal_visibility.js"
+    },
+    {
       "file": "esm/native/ui/react/actions/handles_actions.ts",
       "entry": "handle_finish_shared.js"
     },
     {
       "file": "esm/native/ui/react/actions/handles_actions.ts",
       "entry": "manual_handle_position.js"
+    },
+    {
+      "file": "esm/native/ui/react/actions/handles_actions.ts",
+      "entry": "door_removal_visibility.js"
     },
     {
       "file": "esm/native/ui/react/actions/store_actions_ui_structure.ts",

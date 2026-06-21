@@ -74,13 +74,12 @@ export function resolveFinalizeBuildBestEffortArgs(args: FinalizeBestEffortArgs)
   rebuildDrawerMeta: (() => void) | null;
   addOutlines: BuilderOutlineFn | null;
 } {
+  const argsRecord = readFinalizeArgs(args);
   return {
     App: readApp(args?.App),
-    cfgSnapshot: readConfigState(readFinalizeArgs(args)?.cfgSnapshot),
+    cfgSnapshot: readConfigState(argsRecord?.cfgSnapshot),
     removeDoorsEnabled:
-      typeof readFinalizeArgs(args)?.removeDoorsEnabled === 'boolean'
-        ? readFinalizeArgs(args)?.removeDoorsEnabled === true
-        : null,
+      typeof argsRecord?.removeDoorsEnabled === 'boolean' ? argsRecord.removeDoorsEnabled : null,
     pruneCachesSafe: readPruneCachesSafeArg(args),
     rebuildDrawerMeta: readRebuildDrawerMetaArg(args),
     addOutlines: readAddOutlinesArg(args),

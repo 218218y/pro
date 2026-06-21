@@ -15,10 +15,14 @@ test('post-build finalize runtime: resolves BuildContext follow-through function
   assert.deepEqual(
     resolveFinalizeBuildContextArgs({
       App: { id: 'app' },
+      cfg: { removedDoorsMap: {} },
+      resolvers: { removeDoorsEnabled: true },
       fns: { pruneCachesSafe, rebuildDrawerMeta, addOutlines },
     } as any),
     {
       App: { id: 'app' },
+      cfgSnapshot: { removedDoorsMap: {} },
+      removeDoorsEnabled: true,
       pruneCachesSafe,
       rebuildDrawerMeta,
       addOutlines,
@@ -38,6 +42,7 @@ test('post-build finalize runtime: best-effort normalization strips non-function
   assert.equal(normalized.pruneCachesSafe, null);
   assert.equal(normalized.rebuildDrawerMeta, null);
   assert.equal(normalized.addOutlines, null);
+  assert.equal(normalized.removeDoorsEnabled, null);
 });
 
 test('post-build finalize runtime: best-effort follow-through skips handles when no build snapshot exists', () => {
