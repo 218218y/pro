@@ -1,5 +1,3 @@
-import { normalizeSplitDoorsBottomMap, normalizeSplitDoorsMap } from './project_schema.js';
-
 import type {
   CurtainMap,
   DoorSpecialMap,
@@ -28,6 +26,8 @@ import {
   readHingeMap as readHingeMapShared,
   readIndividualColorsMap as readIndividualColorsMapShared,
   readMirrorLayoutConfigMap as readMirrorLayoutConfigMapShared,
+  readSplitDoorsBottomMapValue as readSplitDoorsBottomMapValueShared,
+  readSplitDoorsMapValue as readSplitDoorsMapValueShared,
   readToggleMap as readToggleMapShared,
 } from '../features/project_config/project_config_persisted_payload_shared.js';
 
@@ -56,11 +56,11 @@ export function readDrawerDividersMap(value: unknown): DrawerDividersMap {
 }
 
 export function readSplitDoorsMapValue(value: unknown): SplitDoorsMap {
-  return normalizeSplitDoorsMap(value);
+  return readSplitDoorsMapValueShared(value);
 }
 
 export function readSplitDoorsBottomMapValue(value: unknown): SplitDoorsBottomMap {
-  return normalizeSplitDoorsBottomMap(value);
+  return readSplitDoorsBottomMapValueShared(value);
 }
 
 export function readIndividualColorsMap(value: unknown): IndividualColorsMap {

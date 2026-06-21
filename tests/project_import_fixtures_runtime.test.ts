@@ -45,8 +45,8 @@ test('project import fixtures load only the current project schema and keep cano
   );
 
   assert.equal(normalized.__schema, 'wardrobepro.project');
-  assert.equal(normalized.__version, 2);
-  assert.equal(normalized.settings?.projectName, 'Empty Owned Branches Import');
+  assert.equal(normalized.__version, 3);
+  assert.equal(normalized.projectName, 'Empty Owned Branches Import');
 
   const loadSnapshot = buildProjectUiSnapshot(normalized, 'Fallback Project Name');
   const canonicalUi = buildCanonicalProjectUiSnapshot(loadSnapshot.uiState);

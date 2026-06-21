@@ -40,21 +40,10 @@ function cloneProjectJson(value: unknown): ProjectPdfDraftLike | null {
 }
 
 function readOptionalFiniteNumber(value: unknown): number | undefined {
-  const n = typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : NaN;
-  return Number.isFinite(n) ? n : undefined;
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
 }
 
-function readLoadedProjectName(
-  rec: UnknownRecord,
-  settings: UnknownRecord,
-  currentProjectName: string
-): string {
-  if (
-    Object.prototype.hasOwnProperty.call(settings, 'projectName') &&
-    typeof settings.projectName === 'string'
-  ) {
-    return settings.projectName;
-  }
+function readLoadedProjectName(rec: UnknownRecord, currentProjectName: string): string {
   if (Object.prototype.hasOwnProperty.call(rec, 'projectName') && typeof rec.projectName === 'string') {
     return rec.projectName;
   }
@@ -88,65 +77,19 @@ export function buildProjectUiSnapshot(
   const toggles = readProjectToggles(rec);
 
   const stackEnabled = !!settings.stackSplitEnabled;
-  const overallW = Number(settings.width);
-  const overallD = Number(settings.depth);
-  const overallDoors = Math.max(0, Math.round(Number(settings.doors) || 0));
-
-  const lowerW = Number(settings.stackSplitLowerWidth);
-  const lowerD = Number(settings.stackSplitLowerDepth);
-  const lowerDoors = Math.max(0, Math.round(Number(settings.stackSplitLowerDoors) || 0));
-
-  const lowerWidthManual =
-    typeof settings.stackSplitLowerWidthManual !== 'undefined'
-      ? !!settings.stackSplitLowerWidthManual
-      : stackEnabled &&
-        Number.isFinite(lowerW) &&
-        Number.isFinite(overallW) &&
-        Math.abs(lowerW - overallW) > 0.01;
-
-  const lowerDepthManual =
-    typeof settings.stackSplitLowerDepthManual !== 'undefined'
-      ? !!settings.stackSplitLowerDepthManual
-      : stackEnabled &&
-        Number.isFinite(lowerD) &&
-        Number.isFinite(overallD) &&
-        Math.abs(lowerD - overallD) > 0.01;
-
-  const lowerDoorsManual =
-    typeof settings.stackSplitLowerDoorsManual !== 'undefined'
-      ? !!settings.stackSplitLowerDoorsManual
-      : stackEnabled &&
-        Number.isFinite(lowerDoors) &&
-        Number.isFinite(overallDoors) &&
-        lowerDoors !== overallDoors;
+  const lowerWidthManual = settings.stackSplitLowerWidthManual === true;
+  const lowerDepthManual = settings.stackSplitLowerDepthManual === true;
+  const lowerDoorsManual = settings.stackSplitLowerDoorsManual === true;
 
   const cornerSide =
     settings.cornerSide === 'left' ? 'left' : settings.cornerSide === 'right' ? 'right' : 'right';
 
   const chestSettings = asRecord(rec.chestSettings) || {};
-  const chestCommodeMirrorHeightCm = readOptionalFiniteNumber(
-    typeof chestSettings.mirrorHeightCm !== 'undefined'
-      ? chestSettings.mirrorHeightCm
-      : settings.chestCommodeMirrorHeightCm
-  );
-  const chestCommodeMirrorWidthCm = readOptionalFiniteNumber(
-    typeof chestSettings.mirrorWidthCm !== 'undefined'
-      ? chestSettings.mirrorWidthCm
-      : settings.chestCommodeMirrorWidthCm
-  );
-  const chestCommodeMirrorWidthManual =
-    typeof chestSettings.mirrorWidthManual !== 'undefined'
-      ? !!chestSettings.mirrorWidthManual
-      : typeof settings.chestCommodeMirrorWidthManual !== 'undefined'
-        ? !!settings.chestCommodeMirrorWidthManual
-        : Number.isFinite(Number(chestCommodeMirrorWidthCm)) &&
-          Number.isFinite(Number(settings.width)) &&
-          Math.abs(Number(chestCommodeMirrorWidthCm) - Number(settings.width)) > 0.01;
+  const chestCommodeMirrorHeightCm = readOptionalFiniteNumber(chestSettings.mirrorHeightCm);
+  const chestCommodeMirrorWidthCm = readOptionalFiniteNumber(chestSettings.mirrorWidthCm);
+  const chestCommodeMirrorWidthManual = chestSettings.mirrorWidthManual === true;
 
-  const savedNotesSource = Array.isArray(rec.savedNotes) ? rec.savedNotes : rec.notes;
-  const savedNotes = readSavedNotes(savedNotesSource);
-  const notesEnabledInFile =
-    typeof toggles.notesEnabled !== 'undefined' ? !!toggles.notesEnabled : savedNotes.length > 0;
+  const savedNotes = readSavedNotes(rec.savedNotes);
 
   const uiState: UiStateLike = {
     raw: {
@@ -169,7 +112,7 @@ export function buildProjectUiSnapshot(
       structureSelect: settings.structureSelection,
       singleDoorPos: settings.singleDoorPos || 'left',
     },
-    projectName: readLoadedProjectName(rec, settings, currentProjectName),
+    projectName: readLoadedProjectName(rec, currentProjectName),
     doors: settings.doors,
     width: settings.width,
     height: settings.height,
@@ -200,8 +143,7 @@ export function buildProjectUiSnapshot(
     internalDrawersEnabled:
       typeof toggles.internalDrawers !== 'undefined' ? !!toggles.internalDrawers : false,
     isChestMode: !!toggles.chestMode,
-    chestCommodeEnabled:
-      typeof toggles.chestCommode !== 'undefined' ? !!toggles.chestCommode : !!chestSettings.commodeEnabled,
+    chestCommodeEnabled: !!toggles.chestCommode,
 
     splitDoors: !!toggles.splitDoors,
     handleControl: !!toggles.handleControl,
@@ -217,15 +159,15 @@ export function buildProjectUiSnapshot(
     showDimensions: typeof toggles.showDimensions !== 'undefined' ? toggles.showDimensions !== false : true,
     showHanger: typeof toggles.showHanger !== 'undefined' ? toggles.showHanger !== false : true,
     showContents: !!toggles.showContents,
-    notesEnabled: notesEnabledInFile,
+    notesEnabled: !!toggles.notesEnabled,
     globalClickMode: typeof toggles.globalClickMode !== 'undefined' ? !!toggles.globalClickMode : true,
     lightingControl: !!toggles.lightingControl,
 
-    lightAmb: typeof toggles.lightAmb !== 'undefined' ? toggles.lightAmb : settings.lightAmb || '',
-    lightDir: typeof toggles.lightDir !== 'undefined' ? toggles.lightDir : settings.lightDir || '',
-    lightX: typeof toggles.lightX !== 'undefined' ? toggles.lightX : settings.lightX || '',
-    lightY: typeof toggles.lightY !== 'undefined' ? toggles.lightY : settings.lightY || '',
-    lightZ: typeof toggles.lightZ !== 'undefined' ? toggles.lightZ : settings.lightZ || '',
+    lightAmb: typeof toggles.lightAmb !== 'undefined' ? toggles.lightAmb : '',
+    lightDir: typeof toggles.lightDir !== 'undefined' ? toggles.lightDir : '',
+    lightX: typeof toggles.lightX !== 'undefined' ? toggles.lightX : '',
+    lightY: typeof toggles.lightY !== 'undefined' ? toggles.lightY : '',
+    lightZ: typeof toggles.lightZ !== 'undefined' ? toggles.lightZ : '',
   };
 
   const cornerDoors = settings.cornerDoors;
@@ -239,8 +181,8 @@ export function buildProjectUiSnapshot(
   uiState.cornerDepth =
     typeof cornerDepth === 'number' ? cornerDepth : typeof rawDepth === 'number' ? rawDepth : undefined;
 
-  const chestCount = chestSettings.drawersCount || settings.chestDrawersCount || rec.chestDrawers || '';
-  if (chestCount !== '') {
+  const chestCount = chestSettings.drawersCount;
+  if (typeof chestCount === 'number') {
     uiState.chestDrawersCount = chestCount;
     const raw = asRecord(uiState.raw);
     if (raw) raw.chestDrawersCount = chestCount;
@@ -259,9 +201,9 @@ export function buildProjectPdfUiPatch(
 ): Pick<ProjectPdfStateLike, 'orderPdfEditorDraft' | 'orderPdfEditorZoom'> {
   const rec = asRecord(data) || {};
   const hasDraft = typeof rec.orderPdfEditorDraft !== 'undefined';
-  const zoom = Number(rec.orderPdfEditorZoom);
+  const zoom = rec.orderPdfEditorZoom;
   return {
     orderPdfEditorDraft: hasDraft ? cloneProjectJson(rec.orderPdfEditorDraft) : null,
-    orderPdfEditorZoom: Number.isFinite(zoom) && zoom > 0 ? zoom : 1,
+    orderPdfEditorZoom: typeof zoom === 'number' && Number.isFinite(zoom) && zoom > 0 ? zoom : 1,
   };
 }

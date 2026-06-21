@@ -55,11 +55,6 @@ export function ensureProjectDataRecord(value: unknown): ProjectDataLike {
   return readProjectDataRecord(value) ?? {};
 }
 
-export function asFiniteNumber(x: unknown): number | undefined {
-  const n = typeof x === 'number' ? x : Number(x);
-  return Number.isFinite(n) ? n : undefined;
-}
-
 export function detectProjectSchemaVersion(data: unknown): number {
   if (!data || typeof data !== 'object') return 0;
   const obj = asObjectRecord(data) ?? Object.create(null);

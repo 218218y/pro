@@ -6,7 +6,6 @@ import type {
   ProjectTogglesLike,
   UiStateLike,
   UnknownRecord,
-  ToggleValue,
 } from '../../../types/index.js';
 
 import { asObjectRecord } from './project_payload_shared.js';
@@ -25,7 +24,7 @@ export type ProjectIoSourceFlagsLike = {
 };
 
 export type ProjectTextMapLike = Record<string, string | null | undefined>;
-export type ProjectToggleMapLike = Record<string, ToggleValue | undefined>;
+export type ProjectToggleMapLike = Record<string, boolean | undefined>;
 
 export function asRecord(v: unknown): UnknownRecord | null {
   return asObjectRecord(v);
@@ -45,27 +44,12 @@ export function readProjectToggles(
   return toggles ? { ...toggles } : {};
 }
 
-export function readToggleValue(value: unknown): ToggleValue | undefined {
-  if (value === true) return true;
-  if (value === false) return false;
-  if (value === null) return null;
-  if (value === 1) return 1;
-  if (value === 0) return 0;
-  if (typeof value === 'string') {
-    const norm = value.trim().toLowerCase();
-    if (norm === 'true' || norm === '1') return true;
-    if (norm === 'false' || norm === '0') return false;
-  }
-  return undefined;
-}
-
 export function readToggleMap(value: unknown): ProjectToggleMapLike {
   const src = asRecord(value);
   if (!src) return {};
   const out: ProjectToggleMapLike = {};
   for (const [key, entry] of Object.entries(src)) {
-    const next = readToggleValue(entry);
-    if (typeof next !== 'undefined') out[key] = next;
+    if (typeof entry === 'boolean') out[key] = entry;
   }
   return out;
 }

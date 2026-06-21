@@ -52,10 +52,6 @@ function buildProjectCaptureSettings(
   overallWidth: unknown,
   overallHeight: unknown,
   overallDepth: unknown,
-  chestDrawersCount: unknown,
-  chestCommodeMirrorHeightCm: unknown,
-  chestCommodeMirrorWidthCm: unknown,
-  chestCommodeMirrorWidthManual: boolean,
   stackSplitLowerHeight: unknown,
   stackSplitLowerDepth: unknown,
   stackSplitLowerWidth: unknown,
@@ -82,13 +78,10 @@ function buildProjectCaptureSettings(
         ? 'wave'
         : 'classic',
     color: asString(uiRec.colorChoice, '') || asString(uiRec.color, ''),
+    customColor: asString(uiRec.customColor, ''),
     structureSelection: asString(uiRec.structureSelect, ''),
     wardrobeType: cfgRec.wardrobeType !== undefined ? asString(cfgRec.wardrobeType, 'hinged') : 'hinged',
     doorMountMode: cfgRec.doorMountMode === 'inset' ? 'inset' : 'overlay',
-    overlayFrameThicknessCm: normalizeDoorMountThicknessCm(cfgRec.overlayFrameThicknessCm),
-    overlayShelfThicknessCm: normalizeDoorMountThicknessCm(cfgRec.overlayShelfThicknessCm),
-    insetFrameThicknessCm: normalizeDoorMountThicknessCm(cfgRec.insetFrameThicknessCm),
-    insetShelfThicknessCm: normalizeDoorMountThicknessCm(cfgRec.insetShelfThicknessCm),
     boardMaterial:
       cfgRec.boardMaterial !== undefined ? asString(cfgRec.boardMaterial, 'sandwich') : 'sandwich',
     isManualWidth: cfgRec.isManualWidth !== undefined ? !!cfgRec.isManualWidth : false,
@@ -110,10 +103,6 @@ function buildProjectCaptureSettings(
         : typeof overallDepth !== 'undefined'
           ? overallDepth
           : uiRec.depth,
-    chestDrawersCount,
-    chestCommodeMirrorHeightCm,
-    chestCommodeMirrorWidthCm,
-    chestCommodeMirrorWidthManual,
     stackSplitEnabled: typeof uiRec.stackSplitEnabled !== 'undefined' ? !!uiRec.stackSplitEnabled : false,
     stackSplitDecorativeSeparatorEnabled:
       !!uiRec.stackSplitEnabled && !!uiRec.stackSplitDecorativeSeparatorEnabled,
@@ -154,6 +143,14 @@ function buildProjectCaptureToggles(uiRec: UnknownRecord, cfgRec: UnknownRecord)
           ? !!uiRec.showDimensions
           : true,
     addCornice: !!uiRec.hasCornice,
+    notesEnabled: !!uiRec.notesEnabled,
+    globalClickMode: typeof uiRec.globalClickMode === 'undefined' ? true : !!uiRec.globalClickMode,
+    lightingControl: !!uiRec.lightingControl,
+    lightAmb: uiRec.lightAmb,
+    lightDir: uiRec.lightDir,
+    lightX: uiRec.lightX,
+    lightY: uiRec.lightY,
+    lightZ: uiRec.lightZ,
   };
 }
 
@@ -213,10 +210,6 @@ export function buildKernelProjectCaptureData(args: BuildKernelProjectCaptureDat
       overallWidth,
       overallHeight,
       overallDepth,
-      chestDrawersCount,
-      chestCommodeMirrorHeightCm,
-      chestCommodeMirrorWidthCm,
-      chestCommodeMirrorWidthManual,
       stackSplitLowerHeight,
       stackSplitLowerDepth,
       stackSplitLowerWidth,

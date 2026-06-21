@@ -268,7 +268,7 @@ function parseSplitPositionList(raw: unknown): number[] {
       }
     }
   } catch {
-    // ignore malformed legacy payloads
+    // Invalid split-position data produces no canonical entries.
   }
 
   out.sort((a, b) => a - b);

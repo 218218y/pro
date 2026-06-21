@@ -25,7 +25,8 @@ test('project schema normalization detaches custom payload state when JSON clone
   const raw: any = {
     __schema: PROJECT_SCHEMA_ID,
     __version: PROJECT_SCHEMA_VERSION,
-    settings: { wardrobeType: 'sliding', projectName: 'Cycle demo' },
+    projectName: 'Cycle demo',
+    settings: { wardrobeType: 'sliding', width: 160, height: 240, depth: 55, doors: 4 },
     toggles: { multiColor: true },
     customMeta: { nested: { enabled: true } },
   };

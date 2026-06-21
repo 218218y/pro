@@ -1,8 +1,8 @@
 {
   "__schema": "wardrobepro.project",
-  "__version": 2,
+  "__version": 3,
+  "projectName": "Empty Owned Branches Import",
   "settings": {
-    "projectName": "Empty Owned Branches Import",
     "wardrobeType": "sliding",
     "boardMaterial": "sandwich",
     "width": 160,

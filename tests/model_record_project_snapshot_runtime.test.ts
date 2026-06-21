@@ -214,6 +214,6 @@ test('buildProjectStructureFromModel emits a current-schema project load payload
   const built = buildProjectStructureFromModel(App, model as never);
 
   assert.equal(built.__schema, 'wardrobepro.project');
-  assert.equal(built.__version, 2);
+  assert.equal(built.__version, 3);
   assert.ok(normalizeProjectData(built), 'model apply payload must satisfy current project schema');
 });

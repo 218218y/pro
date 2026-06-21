@@ -7,13 +7,13 @@ import type {
 } from '../../../types/index.js';
 
 import { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from './project_schema.js';
+import { validateProjectData } from './project_schema_validation.js';
 import { canonicalizeComparableProjectConfigSnapshot } from '../features/project_config/project_config_snapshot_canonical.js';
 import {
   buildStructureCfgSnapshot,
   buildStructureUiSnapshotFromUiState,
 } from '../features/project_config/project_config_lists_canonical.js';
 import { readPersistedProjectConfigSnapshot } from '../features/project_config/project_config_persisted_snapshot.js';
-import { normalizeDoorMountThicknessCm } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 type ReportNonFatalFn = (op: string, err: unknown, throttleMs?: number) => void;
 
@@ -83,8 +83,6 @@ export function finalizeProjectForSavePayload(
   const cloneJson = options.cloneJson;
   const reportNonFatal = options.reportNonFatal;
   const out = cloneJson(projectData || {});
-  delete out.version;
-  delete out.format;
 
   const canonicalCfg = readCanonicalProjectConfigForExportPayload(out);
   Object.assign(out, readPersistedProjectConfigSnapshot(canonicalCfg));
@@ -106,6 +104,11 @@ export function finalizeProjectForSavePayload(
     if (typeof reportNonFatal === 'function') {
       reportNonFatal('finalizeProjectForSavePayload.__app', _e);
     }
+  }
+
+  const validation = validateProjectData(out);
+  if (!validation.ok) {
+    throw new TypeError(`Project capture is not canonical: ${validation.errors.join('; ')}`);
   }
 
   return out;
@@ -135,11 +138,6 @@ export function buildDefaultProjectDataSnapshot(
       width: readFiniteNumber(raw.width),
       height: readFiniteNumber(raw.height),
       depth: readFiniteNumber(raw.depth),
-      chestDrawersCount: readFiniteNumber(raw.chestDrawersCount),
-      chestCommodeMirrorHeightCm: readFiniteNumber(raw.chestCommodeMirrorHeightCm),
-      chestCommodeMirrorWidthCm: readFiniteNumber(raw.chestCommodeMirrorWidthCm),
-      chestCommodeMirrorWidthManual: !!raw.chestCommodeMirrorWidthManual,
-
       baseType: ui.baseType,
       baseLegStyle: ui.baseLegStyle,
       baseLegColor: ui.baseLegColor,
@@ -154,10 +152,6 @@ export function buildDefaultProjectDataSnapshot(
       structureSelection: ui.structureSelect || '',
       wardrobeType: cfg.wardrobeType === 'sliding' ? 'sliding' : 'hinged',
       doorMountMode: cfg.doorMountMode === 'inset' ? 'inset' : 'overlay',
-      overlayFrameThicknessCm: normalizeDoorMountThicknessCm(cfg.overlayFrameThicknessCm),
-      overlayShelfThicknessCm: normalizeDoorMountThicknessCm(cfg.overlayShelfThicknessCm),
-      insetFrameThicknessCm: normalizeDoorMountThicknessCm(cfg.insetFrameThicknessCm),
-      insetShelfThicknessCm: normalizeDoorMountThicknessCm(cfg.insetShelfThicknessCm),
       isManualWidth: !!cfg.isManualWidth,
       singleDoorPos: ui.singleDoorPos || 'left',
       globalHandleType: cfg.globalHandleType || 'standard',
@@ -198,6 +192,11 @@ export function buildDefaultProjectDataSnapshot(
       showDimensions: typeof ui.showDimensions === 'undefined' ? true : !!ui.showDimensions,
       globalClickMode: typeof ui.globalClickMode === 'undefined' ? true : !!ui.globalClickMode,
       lightingControl: !!ui.lightingControl,
+      lightAmb: ui.lightAmb,
+      lightDir: ui.lightDir,
+      lightX: ui.lightX,
+      lightY: ui.lightY,
+      lightZ: ui.lightZ,
     },
 
     chestSettings: {

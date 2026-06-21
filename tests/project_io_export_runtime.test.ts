@@ -12,7 +12,10 @@ test('project io export falls back to history snapshot and preserves pdf draft p
       history: {
         system: {
           getCurrentSnapshot() {
-            return JSON.stringify({ settings: { wardrobeType: 'hinged', width: 180 } });
+            return JSON.stringify({
+              settings: { wardrobeType: 'hinged', width: 180, height: 240, depth: 60, doors: 4 },
+              toggles: {},
+            });
           },
         },
       },
@@ -84,7 +87,10 @@ test('project io export sanitizes toxic pdf draft branches instead of aliasing t
       history: {
         system: {
           getCurrentSnapshot() {
-            return JSON.stringify({ settings: { wardrobeType: 'hinged', width: 180 } });
+            return JSON.stringify({
+              settings: { wardrobeType: 'hinged', width: 180, height: 240, depth: 60, doors: 4 },
+              toggles: {},
+            });
           },
         },
       },
@@ -156,12 +162,16 @@ test('project io export preserves live door-mount thickness overrides through sa
             settings: {
               wardrobeType: 'hinged',
               width: 180,
+              height: 240,
+              depth: 60,
+              doors: 4,
               doorMountMode: 'inset',
-              overlayFrameThicknessCm: 2.4,
-              overlayShelfThicknessCm: 1.2,
-              insetFrameThicknessCm: 3.6,
-              insetShelfThicknessCm: 2.1,
             },
+            toggles: {},
+            overlayFrameThicknessCm: 2.4,
+            overlayShelfThicknessCm: 1.2,
+            insetFrameThicknessCm: 3.6,
+            insetShelfThicknessCm: 2.1,
           };
         },
       },
@@ -206,10 +216,14 @@ test('project io export preserves live door-mount thickness overrides through sa
   const exported = orchestrator.exportCurrentProject({ source: 'unit' });
   assert.ok(exported);
   assert.equal(exported?.projectData?.settings?.doorMountMode, 'inset');
-  assert.equal(exported?.projectData?.settings?.overlayFrameThicknessCm, 2.4);
-  assert.equal(exported?.projectData?.settings?.overlayShelfThicknessCm, 1.2);
-  assert.equal(exported?.projectData?.settings?.insetFrameThicknessCm, 3.6);
-  assert.equal(exported?.projectData?.settings?.insetShelfThicknessCm, 2.1);
+  assert.equal(exported?.projectData?.overlayFrameThicknessCm, 2.4);
+  assert.equal(exported?.projectData?.overlayShelfThicknessCm, 1.2);
+  assert.equal(exported?.projectData?.insetFrameThicknessCm, 3.6);
+  assert.equal(exported?.projectData?.insetShelfThicknessCm, 2.1);
+  assert.equal(
+    Object.prototype.hasOwnProperty.call(exported?.projectData?.settings || {}, 'overlayFrameThicknessCm'),
+    false
+  );
 
   const loadedCfg = buildProjectConfigSnapshot(exported?.projectData as never);
   assert.equal(loadedCfg.overlayFrameThicknessCm, 2.4);

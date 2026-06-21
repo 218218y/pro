@@ -48,14 +48,14 @@ The catalog also records post-closeout guardrails such as `check:import-cycles` 
 
 ## Project import fixture hardening
 
-The next product-risk hardening slice is complete: `npm run check:project-import-fixtures` now runs real JSON project fixtures through schema normalization, UI snapshot construction, canonical `ui.raw` migration, and canonical config snapshot materialization.
+The project-ingress hardening slice now uses schema v3 only. `npm run check:project-import-fixtures` runs a canonical JSON project through schema validation, UI snapshot construction, typed `ui.raw` materialization, and canonical config snapshot materialization.
 
-The fixtures cover two important import cases:
+The fixtures and runtime tests cover two important import cases:
 
-- an enveloped legacy project loaded from JSON text with numeric strings, split-door maps, removed-door maps, saved colors, notes, stack-split settings, and persisted config branches;
-- a minimal project envelope with empty replace-owned branches so project load proves those branches are explicit clears instead of accidental stale-state merges.
+- a canonical schema-v3 project with explicit empty replace-owned branches, proving that load clears stale live state;
+- hard rejection of older versions, envelopes, numeric-string dimensions, toggle coercion, retired notes/name/chest/thickness aliases, and map/list values that would require migration.
 
-This keeps project compatibility at the project ingress layer and gives future import work behavior coverage without adding runtime fallback paths.
+Kernel capture, export/default save, model application, Cloud Sync snapshots, and bundled presets now converge on that same contract; project ingress no longer owns historical compatibility behavior.
 
 ## Legacy/default vocabulary burn-down
 
@@ -67,7 +67,7 @@ The next legacy-risk slice is also complete: old base-key `doorStyleMap` payload
 
 The module-structure/runtime-selector slice is complete as well: `calculateModuleStructure` now rejects stale explicit structure signatures whose door-count sum no longer matches the current wardrobe door count, so builder/kernel/canvas-picking callers share one canonical rule instead of relying on local cleanup. The library-preset signature path reuses that same feature helper, and the `ui.raw` selector owners now use precise tolerant/canonical wording plus `defaultValue` parameter names so the legacy audit no longer misclassifies normal scalar defaults as live compatibility paths.
 
-The latest audit hygiene slice keeps the scanner broad enough to cover camelCase/PascalCase compatibility vocabulary, so the inventory stays honest rather than hiding stale seams. After the current front-reveal and renderer-lighting cleanup, the generated Stage 42 inventory is **420** categorized occurrences across **145** files, with the important queues still clean: `runtime-default: 0`, `legacy-runtime-risk: 0`, and `unknown: 0`.
+The latest audit hygiene slice keeps the scanner broad enough to cover camelCase/PascalCase compatibility vocabulary, so the inventory stays honest rather than hiding stale seams. After schema-v3 project cleanup, the generated Stage 42 inventory contains **8** categorized occurrences across **4** files, with `project-migration`, `runtime-default`, `legacy-runtime-risk`, and `unknown` all at 0.
 
 The second 2026-05-11 cleanup slice removed avoidable legacy vocabulary from live prefixed-map alias paths, cornice-envelope helpers, and internal renderer-lighting helper names without changing behavior. Split/groove map writers still clear unprefixed alias keys for persisted-data safety, but the code now names that seam as unprefixed-alias compatibility rather than a live legacy path. The cornice builder and dimension tokens likewise use current envelope naming; only normal cornice domain defaults remain in that file's audit inventory. The follow-up renderer-lighting cleanup removed the obsolete Three.js `useLegacyLights` seam entirely and renamed the runtime/default helpers to the current renderer-lighting contract.
 

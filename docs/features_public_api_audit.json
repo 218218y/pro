@@ -812,6 +812,10 @@
       "entry": "project_config/project_config_persisted_payload_shared.js"
     },
     {
+      "file": "esm/native/io/project_schema_validation.ts",
+      "entry": "project_config/project_config_persisted_snapshot.js"
+    },
+    {
       "file": "esm/native/kernel/domain_api.ts",
       "entry": "modules_configuration/calc_module_structure.js"
     },

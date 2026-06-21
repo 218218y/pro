@@ -17,12 +17,14 @@ export function normalizeProjectData(input: unknown, nowISO?: string): ProjectDa
   if (typeof input === 'string') input = safeJsonParse(input);
   if (!hasCurrentProjectSchema(input)) return null;
 
-  const cloned = ensureProjectDataRecord(deepCloneProjectJson(input));
+  const source = ensureProjectDataRecord(input);
+  const sourceValidation = validateProjectData(source);
+  if (!sourceValidation.ok) return null;
+
+  const cloned = ensureProjectDataRecord(deepCloneProjectJson(source));
   const normalized = normalizeCurrentProjectData(cloned, nowISO);
   if (Object.prototype.hasOwnProperty.call(normalized, 'savedNotes'))
     normalized.savedNotes = readSavedNotes(normalized.savedNotes);
-  if (Object.prototype.hasOwnProperty.call(normalized, 'notes'))
-    normalized.notes = readSavedNotes(normalized.notes);
   if (Object.prototype.hasOwnProperty.call(normalized, 'orderPdfEditorDraft')) {
     normalized.orderPdfEditorDraft = cloneProjectJson(normalized.orderPdfEditorDraft);
   }

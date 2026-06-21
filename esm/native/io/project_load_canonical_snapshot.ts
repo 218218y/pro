@@ -171,13 +171,6 @@ function cloneUiSnapshot(ui: unknown): MutableUiSnapshotLike {
 
 function coerceFiniteNumber(value: unknown): number | undefined {
   if (typeof value === 'number') return Number.isFinite(value) ? value : undefined;
-  if (typeof value === 'string') {
-    const text = value.trim();
-    if (!text) return undefined;
-    const parsed = Number.parseFloat(text);
-    return Number.isFinite(parsed) ? parsed : undefined;
-  }
-  if (typeof value === 'boolean') return value ? 1 : 0;
   return undefined;
 }
 

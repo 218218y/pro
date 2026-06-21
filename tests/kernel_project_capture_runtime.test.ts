@@ -55,10 +55,8 @@ test('kernel project capture canonicalizes config lists and detaches mutable sna
   const snapshot = capture('persist') as Record<string, any>;
 
   assert.equal(snapshot.settings.doorMountMode, 'inset');
-  assert.equal(snapshot.settings.overlayFrameThicknessCm, 2.4);
-  assert.equal(snapshot.settings.overlayShelfThicknessCm, 1.2);
-  assert.equal(snapshot.settings.insetFrameThicknessCm, 3.6);
-  assert.equal(snapshot.settings.insetShelfThicknessCm, 2.1);
+  assert.equal(Object.prototype.hasOwnProperty.call(snapshot.settings, 'overlayFrameThicknessCm'), false);
+  assert.equal(Object.prototype.hasOwnProperty.call(snapshot.settings, 'insetFrameThicknessCm'), false);
   assert.equal(snapshot.overlayFrameThicknessCm, 2.4);
   assert.equal(snapshot.overlayShelfThicknessCm, 1.2);
   assert.equal(snapshot.insetFrameThicknessCm, 3.6);
@@ -108,7 +106,7 @@ test('kernel project capture canonicalizes config lists and detaches mutable sna
   );
 });
 
-test('kernel project capture cloning preserves valid branches when legacy leaves are not JSON-stringifiable', () => {
+test('kernel project capture cloning preserves valid branches when unsupported leaves are not JSON-stringifiable', () => {
   const cyclic: Record<string, unknown> = { widthCm: 21 };
   cyclic.self = cyclic;
   const cloned = cloneProjectCaptureValue(

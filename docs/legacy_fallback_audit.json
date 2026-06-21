@@ -1,16 +1,16 @@
 {
-  "generatedAt": "2026-06-17T07:35:36.069Z",
+  "generatedAt": "2026-06-21T13:52:05.768Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 9,
-    "totalFiles": 5,
+    "totalOccurrences": 8,
+    "totalFiles": 4,
     "byCategory": {
       "runtime-default": 0,
       "domain-default": 0,
       "error-message-default": 0,
       "framework-default": 2,
       "browser-adapter": 0,
-      "project-migration": 1,
+      "project-migration": 0,
       "external-api-compat": 0,
       "compat-boundary": 0,
       "test-fixture": 6,
@@ -18,12 +18,6 @@
       "unknown": 0
     },
     "byFile": {
-      "esm/native/features/project_config/project_config_persisted_payload_shared.ts": {
-        "total": 1,
-        "categories": {
-          "project-migration": 1
-        }
-      },
       "esm/native/ui/react/overlay_pdf_host.tsx": {
         "total": 1,
         "categories": {
@@ -58,13 +52,6 @@
         }
       },
       {
-        "file": "esm/native/features/project_config/project_config_persisted_payload_shared.ts",
-        "total": 1,
-        "categories": {
-          "project-migration": 1
-        }
-      },
-      {
         "file": "esm/native/ui/react/overlay_pdf_host.tsx",
         "total": 1,
         "categories": {
@@ -89,13 +76,6 @@
   },
   "allowlistComparison": null,
   "occurrences": [
-    {
-      "file": "esm/native/features/project_config/project_config_persisted_payload_shared.ts",
-      "line": 271,
-      "term": "legacy",
-      "category": "project-migration",
-      "text": "// ignore malformed legacy payloads"
-    },
     {
       "file": "esm/native/ui/react/overlay_pdf_host.tsx",
       "line": 55,

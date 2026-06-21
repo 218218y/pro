@@ -8,6 +8,20 @@ import {
   finalizeProjectForSavePayload,
 } from '../esm/native/io/project_io_save_helpers.ts';
 
+function canonicalProjectSource(input: Record<string, any>): Record<string, any> {
+  return {
+    ...input,
+    settings: {
+      width: 180,
+      height: 240,
+      depth: 60,
+      doors: 2,
+      ...(input.settings || {}),
+    },
+    toggles: { ...(input.toggles || {}) },
+  };
+}
+
 test('project io load snapshot rematerializes top modules with structure-aware doors', () => {
   const cfg = buildProjectConfigSnapshot({
     settings: {
@@ -58,7 +72,7 @@ test('project io default snapshot rematerializes saved module lists before expor
 
 test('project save finalizer canonicalizes captured module lists from raw payload snapshots', () => {
   const finalized = finalizeProjectForSavePayload(
-    {
+    canonicalProjectSource({
       settings: {
         doors: 5,
         wardrobeType: 'hinged',
@@ -68,7 +82,7 @@ test('project save finalizer canonicalizes captured module lists from raw payloa
       modulesConfiguration: [{ layout: 'drawers', doors: '2' }, null, { customData: { storage: true } }],
       stackSplitLowerModulesConfiguration: [{ extDrawersCount: '2' }],
       cornerConfiguration: { modulesConfiguration: [{ doors: '5' }] },
-    },
+    }),
     {
       cloneJson: value => JSON.parse(JSON.stringify(value)),
       schemaId: 'wardrobepro.test',
@@ -81,6 +95,22 @@ test('project save finalizer canonicalizes captured module lists from raw payloa
   assert.equal(finalized.modulesConfiguration[2].doors, 1);
   assert.equal(finalized.stackSplitLowerModulesConfiguration[0].extDrawersCount, 2);
   assert.equal(finalized.cornerConfiguration.layout, 'shelves');
+});
+
+test('project save finalizer rejects retired project aliases instead of cleaning them silently', () => {
+  assert.throws(
+    () =>
+      finalizeProjectForSavePayload(
+        canonicalProjectSource({
+          settings: { projectName: 'retired location' },
+          notes: [{ id: 'retired-notes' }],
+        }),
+        {
+          cloneJson: value => JSON.parse(JSON.stringify(value)),
+        }
+      ),
+    /Project capture is not canonical:.*settings\.projectName.*notes/s
+  );
 });
 
 test('project io default snapshot canonicalizes persisted config maps while preserving mixed saved colors', () => {
@@ -120,7 +150,7 @@ test('project io default snapshot canonicalizes persisted config maps while pres
 
 test('project save finalizer detaches persisted notes and canonicalizes config maps without dropping mixed saved colors', () => {
   const sourceSavedNotes = [{ id: 'n1', blocks: [{ text: 'keep' }] }];
-  const sourceProject = {
+  const sourceProject = canonicalProjectSource({
     settings: {
       doors: 2,
       wardrobeType: 'hinged',
@@ -133,7 +163,7 @@ test('project save finalizer detaches persisted notes and canonicalizes config m
     mirrorLayoutMap: { d1: [{ widthCm: '55', heightCm: 88 }, { widthCm: 0 }] },
     doorTrimMap: { d1: [{ axis: 'vertical', color: 'gold', span: 'custom', sizeCm: '11' }, { bad: true }] },
     preChestState: { dims: { width: 55 } },
-  };
+  });
 
   const finalized = finalizeProjectForSavePayload(sourceProject as never, {
     cloneJson: value => JSON.parse(JSON.stringify(value)),
@@ -241,7 +271,7 @@ test('project io load snapshot canonicalizes direct current payloads without leg
 });
 
 test('project save/default helpers share the same persisted config projection for comparable branches', () => {
-  const source = {
+  const source = canonicalProjectSource({
     settings: {
       doors: 2,
       wardrobeType: 'hinged',
@@ -254,7 +284,7 @@ test('project save/default helpers share the same persisted config projection fo
     mirrorLayoutMap: { d1: [{ widthCm: '55', heightCm: 88 }] },
     doorTrimMap: { d1: [{ axis: 'vertical', color: 'gold' }] },
     preChestState: { dims: { width: 55 } },
-  };
+  });
 
   const finalized = finalizeProjectForSavePayload(source as never, {
     cloneJson: value => JSON.parse(JSON.stringify(value)),
@@ -299,7 +329,7 @@ test('project config comparable snapshot canonicalizes duplicate color swatch or
 });
 
 test('project io corner config tolerates sparse customData snapshots and rematerializes normalized shelves/rods arrays', () => {
-  const source = {
+  const source = canonicalProjectSource({
     settings: {
       doors: 2,
       wardrobeType: 'hinged',
@@ -314,7 +344,7 @@ test('project io corner config tolerates sparse customData snapshots and remater
         modulesConfiguration: [{ layout: 'shelves' }],
       },
     },
-  };
+  });
 
   const loaded = buildProjectConfigSnapshot(source as never);
   const finalized = finalizeProjectForSavePayload(source as never, {

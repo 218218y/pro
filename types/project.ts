@@ -8,7 +8,6 @@
 import type { UnknownRecord } from './common';
 import type { SavedNote } from './notes';
 import type { BoardMaterial, DoorMountMode, HandleType, WardrobeType } from './domain';
-import type { ToggleValue } from './maps';
 import type {
   CurtainMap,
   DoorSpecialMap,
@@ -62,11 +61,7 @@ export interface ProjectSettingsLike extends UnknownRecord {
 
   wardrobeType?: WardrobeType;
   boardMaterial?: BoardMaterial;
-  doorMountMode?: DoorMountMode | string;
-  overlayFrameThicknessCm?: number | null;
-  overlayShelfThicknessCm?: number | null;
-  insetFrameThicknessCm?: number | null;
-  insetShelfThicknessCm?: number | null;
+  doorMountMode?: DoorMountMode;
 
   stackSplitEnabled?: boolean;
   stackSplitDecorativeSeparatorEnabled?: boolean;
@@ -84,7 +79,6 @@ export interface ProjectSettingsLike extends UnknownRecord {
   cornerDoors?: number;
   cornerSide?: 'left' | 'right';
 
-  projectName?: string;
   baseType?: string;
   baseLegStyle?: string;
   baseLegColor?: string;
@@ -99,42 +93,28 @@ export interface ProjectSettingsLike extends UnknownRecord {
   color?: string;
   customColor?: string;
 
-  lightAmb?: number | string;
-  lightDir?: number | string;
-  lightX?: number | string;
-  lightY?: number | string;
-  lightZ?: number | string;
-
-  chestDrawersCount?: number | string;
-  chestCommodeMirrorHeightCm?: number | string;
-  chestCommodeMirrorWidthCm?: number | string;
-  chestCommodeMirrorWidthManual?: boolean;
-
-  globalHandleType?: HandleType | string | null;
-  isLibraryMode?: boolean;
-  preChestState?: ProjectPreChestStateLike;
-  grooveLinesCount?: number | null;
+  globalHandleType?: HandleType;
 }
 
 export interface ProjectTogglesLike extends UnknownRecord {
-  showContents?: ToggleValue;
-  showHanger?: ToggleValue;
-  showDimensions?: ToggleValue;
-  globalClickMode?: ToggleValue;
-  internalDrawers?: ToggleValue;
-  notesEnabled?: ToggleValue;
-  multiColor?: ToggleValue;
-  grooves?: ToggleValue;
-  chestMode?: ToggleValue;
-  chestCommode?: ToggleValue;
-  splitDoors?: ToggleValue;
-  handleControl?: ToggleValue;
-  cornerMode?: ToggleValue;
-  removeDoors?: ToggleValue;
-  addCornice?: ToggleValue;
-  sketchMode?: ToggleValue;
-  hingeDirection?: ToggleValue;
-  lightingControl?: ToggleValue;
+  showContents?: boolean;
+  showHanger?: boolean;
+  showDimensions?: boolean;
+  globalClickMode?: boolean;
+  internalDrawers?: boolean;
+  notesEnabled?: boolean;
+  multiColor?: boolean;
+  grooves?: boolean;
+  chestMode?: boolean;
+  chestCommode?: boolean;
+  splitDoors?: boolean;
+  handleControl?: boolean;
+  cornerMode?: boolean;
+  removeDoors?: boolean;
+  addCornice?: boolean;
+  sketchMode?: boolean;
+  hingeDirection?: boolean;
+  lightingControl?: boolean;
 
   lightAmb?: number | string;
   lightDir?: number | string;

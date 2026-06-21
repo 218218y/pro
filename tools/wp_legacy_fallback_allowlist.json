@@ -3,12 +3,6 @@
   "sourceRoot": "esm",
   "policy": "Every existing legacy/fallback occurrence is categorized and count-locked by file. New or moved occurrences must be reviewed and the allowlist regenerated deliberately.",
   "entries": {
-    "esm/native/features/project_config/project_config_persisted_payload_shared.ts": {
-      "total": 1,
-      "categories": {
-        "project-migration": 1
-      }
-    },
     "esm/native/ui/react/overlay_pdf_host.tsx": {
       "total": 1,
       "categories": {

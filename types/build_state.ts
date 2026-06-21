@@ -94,7 +94,6 @@ export interface ProjectDataLike extends UnknownRecord {
   orderPdfEditorDraft?: ProjectPdfDraftLike | null;
   orderPdfEditorZoom?: number;
   savedNotes?: ProjectSavedNotesLike;
-  notes?: ProjectSavedNotesLike;
   preChestState?: ProjectPreChestStateLike;
   grooveLinesCount?: number | null;
   __validation?: ProjectSchemaValidationResult;

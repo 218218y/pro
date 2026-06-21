@@ -295,17 +295,17 @@ test('runtime services parity: history undo/redo seam uses canonical stateKernel
   assert.equal(getHistorySystem({ deps: { historySystem: hs } } as any), null);
 });
 
-test('runtime services parity: import/load schema normalization preserves canonical payload shape', () => {
+test('runtime services parity: import/load schema accepts only canonical payload shape', () => {
   const raw = {
     __schema: PROJECT_SCHEMA_ID,
     __version: PROJECT_SCHEMA_VERSION,
-    settings: { width: 120 },
+    settings: { wardrobeType: 'hinged', width: 120, height: 240, depth: 60, doors: 3 },
+    toggles: {},
     splitDoorsMap: {
-      split_d3_full: true,
-      split_d3_bot: false,
+      split_d3: false,
     },
     splitDoorsBottomMap: {
-      splitBottom_d9_top: true,
+      splitb_d9: true,
     },
   };
 
@@ -333,9 +333,15 @@ test('runtime services parity: import/load schema normalization preserves canoni
     false
   );
 
-  // Key normalization is core import/load parity hardening (fixes runtime mismatches after project load).
   assert.equal((normalized?.splitDoorsMap as AnyRecord).split_d3, false);
   assert.equal((normalized?.splitDoorsBottomMap as AnyRecord).splitb_d9, true);
+  assert.equal(
+    normalizeProjectData({
+      ...raw,
+      splitDoorsBottomMap: { splitBottom_d9_top: true },
+    } as any),
+    null
+  );
 });
 
 test('runtime services parity: texture/custom-upload cfg write path uses canonical cfgSetScalar surface', () => {

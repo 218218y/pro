@@ -9,8 +9,6 @@ type SavedModelRecordLike = Record<string, unknown> & {
   settings?: unknown;
   toggles?: unknown;
   chestSettings?: unknown;
-  chest_settings?: unknown;
-  data?: unknown;
   modulesConfiguration?: unknown;
   stackSplitLowerModulesConfiguration?: unknown;
   cornerConfiguration?: unknown;
@@ -55,7 +53,7 @@ function normalizeWardrobeType(value: unknown): 'hinged' | 'sliding' {
 }
 
 function toIntMin(v: unknown, defaultValue: number, min: number): number {
-  const n = parseInt(String(v ?? ''), 10);
+  const n = typeof v === 'number' ? Math.floor(v) : NaN;
   return Number.isFinite(n) && n >= min ? n : defaultValue;
 }
 
@@ -85,14 +83,25 @@ export function normalizeModelRecord(model: SavedModelRecordLike): SavedModelLik
   out.toggles = model.toggles && typeof model.toggles === 'object' ? cloneJsonValue(model.toggles, {}) : {};
   if (model.chestSettings && typeof model.chestSettings === 'object') {
     out.chestSettings = cloneJsonValue(model.chestSettings, {});
-  } else if (model.chest_settings && typeof model.chest_settings === 'object') {
-    out.chestSettings = cloneJsonValue(model.chest_settings, {});
   }
 
-  delete out.data;
-  delete out.chest_settings;
-
   const settings = cloneRecord(model.settings) ?? {};
+  for (const key of [
+    'projectName',
+    'chestDrawersCount',
+    'chestCommodeMirrorHeightCm',
+    'chestCommodeMirrorWidthCm',
+    'chestCommodeMirrorWidthManual',
+    'overlayFrameThicknessCm',
+    'overlayShelfThicknessCm',
+    'insetFrameThicknessCm',
+    'insetShelfThicknessCm',
+    'isLibraryMode',
+    'preChestState',
+    'grooveLinesCount',
+  ]) {
+    delete settings[key];
+  }
   out.settings = settings;
   const canonicalConfigLists = canonicalizeProjectConfigListsForLoad(out, settings);
   out.modulesConfiguration = materializeTopModulesConfigurationForStructure(
@@ -135,8 +144,8 @@ export function normalizeModelRecord(model: SavedModelRecordLike): SavedModelLik
   }
 
   if (typeof out.orderPdfEditorZoom !== 'undefined') {
-    const zoom = Number(out.orderPdfEditorZoom);
-    out.orderPdfEditorZoom = Number.isFinite(zoom) && zoom > 0 ? zoom : 1;
+    const zoom = out.orderPdfEditorZoom;
+    out.orderPdfEditorZoom = typeof zoom === 'number' && Number.isFinite(zoom) && zoom > 0 ? zoom : 1;
   }
 
   const canonicalConfigSnapshot = canonicalizeComparableProjectConfigSnapshot(out, {

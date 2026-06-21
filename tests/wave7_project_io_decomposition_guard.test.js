@@ -23,8 +23,8 @@ function runTsModule(expr) {
 test('[wave7] project load helpers shape canonical config/ui snapshots instead of depending on owner-file text layout', () => {
   const result = runTsModule(`(() => {
     const projectData = {
+      projectName: 'Imported project',
       settings: {
-        projectName: 'Imported project',
         wardrobeType: 'sliding',
         boardMaterial: 'melamine',
         width: 240,
@@ -35,6 +35,9 @@ test('[wave7] project load helpers shape canonical config/ui snapshots instead o
         stackSplitLowerWidth: 180,
         stackSplitLowerDepth: 55,
         stackSplitLowerDoors: 4,
+        stackSplitLowerWidthManual: true,
+        stackSplitLowerDepthManual: true,
+        stackSplitLowerDoorsManual: true,
         cornerSide: 'left',
         structureSelection: 'grid',
         slidingTracksColor: 'black',
@@ -59,11 +62,10 @@ test('[wave7] project load helpers shape canonical config/ui snapshots instead o
     };
     const cfg = buildProjectConfigSnapshot(projectData);
     const uiSnap = buildProjectUiSnapshot(projectData, 'Current name');
-    const legacyOnlyNotes = buildProjectUiSnapshot({ settings: { projectName: 'Legacy notes project' }, notes: [{ id: 'legacy-note-1' }] }, 'Fallback name');
-    const legacyNotesProtectedFromInvalidSavedNotes = buildProjectUiSnapshot({ settings: { projectName: 'Legacy notes project' }, savedNotes: { bad: true }, notes: [{ id: 'legacy-note-2' }] }, 'Fallback name');
-    return { cfg, uiSnap, legacyOnlyNotes, legacyNotesProtectedFromInvalidSavedNotes };
+    const retiredAliases = buildProjectUiSnapshot({ settings: { projectName: 'Retired name' }, notes: [{ id: 'retired-note' }] }, 'Fallback name');
+    return { cfg, uiSnap, retiredAliases };
   })()`);
-  const { cfg, uiSnap, legacyOnlyNotes, legacyNotesProtectedFromInvalidSavedNotes } = result;
+  const { cfg, uiSnap, retiredAliases } = result;
   const { uiState, savedNotes } = uiSnap;
   assert.ok(Array.isArray(cfg.modulesConfiguration));
   assert.equal(cfg.modulesConfiguration[0].id, 'top-1');
@@ -100,10 +102,9 @@ test('[wave7] project load helpers shape canonical config/ui snapshots instead o
   assert.equal('cornerWidth' in uiState.raw, false);
   assert.equal('stackSplitLowerHeight' in uiState.raw, false);
   assert.deepEqual(savedNotes, [{ id: 'note-1' }]);
-  assert.deepEqual(legacyOnlyNotes.savedNotes, [{ id: 'legacy-note-1' }]);
-  assert.equal(legacyOnlyNotes.uiState.notesEnabled, true);
-  assert.deepEqual(legacyNotesProtectedFromInvalidSavedNotes.savedNotes, [{ id: 'legacy-note-2' }]);
-  assert.equal(legacyNotesProtectedFromInvalidSavedNotes.uiState.notesEnabled, true);
+  assert.deepEqual(retiredAliases.savedNotes, []);
+  assert.equal(retiredAliases.uiState.projectName, 'Fallback name');
+  assert.equal(retiredAliases.uiState.notesEnabled, false);
 });
 
 test('[wave7] project load helpers preserve runtime UI ephemera and capture source flags semantically', () => {
@@ -144,18 +145,18 @@ test('[wave7] project load helpers preserve runtime UI ephemera and capture sour
 
 test('[wave7] save helpers normalize persisted payloads and default project snapshots by data meaning, not file structure', () => {
   const result = runTsModule(`(() => {
-    const finalized = finalizeProjectForSavePayload(
-      {
-        hingeMap: { d1: 'left' },
+      const finalized = finalizeProjectForSavePayload(
+        {
+          settings: { wardrobeType: 'hinged', width: 180, height: 240, depth: 60, doors: 4 },
+          toggles: {},
+          hingeMap: { d1: 'left' },
         groovesMap: { groove_a: true },
         curtainMap: { d1_left: 'linen', d2_right: 'glass', other: null },
         splitDoorsMap: { d1: 2 },
         splitDoorsBottomMap: { d2: 3 },
         mirrorLayoutMap: { d1_full: [{ widthCm: 40, heightCm: 80 }, { widthCm: 0 }], bad: { nope: true } },
         doorTrimMap: { d1_full: [{ axis: 'vertical', span: 'half', color: 'gold' }, { axis: 'bad' }], bad: 7 },
-        version: '1.8-step7',
-        format: 'step7',
-        __app: {},
+          __app: {},
       },
       { cloneJson, schemaId: 'wardrobepro.test', schemaVersion: 77, buildTags: { channel: 'test' }, userAgent: 'node:test' }
     );

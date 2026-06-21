@@ -19,6 +19,7 @@ const projectSchema = bundleSources(
   ],
   import.meta.url
 );
+const projectSchemaValidation = readSource('../esm/native/io/project_schema_validation.ts', import.meta.url);
 const projectSaveLoad = readSource('../esm/native/ui/interactions/project_save_load.ts', import.meta.url);
 const projectSaveLoadController = readSource(
   '../esm/native/ui/interactions/project_save_load_controller_runtime.ts',
@@ -112,7 +113,6 @@ test('project payload/schema contracts stay typed across types, schema normaliza
       /individualColors\?: IndividualColorsMap;/,
       /doorSpecialMap\?: DoorSpecialMap;/,
       /savedNotes\?: ProjectSavedNotesLike;/,
-      /notes\?: ProjectSavedNotesLike;/,
       /preChestState\?: ProjectPreChestStateLike;/,
       /orderPdfEditorDraft\?: ProjectPdfDraftLike \| null;/,
       /export interface ProjectExportResultLike extends UnknownRecord/,
@@ -159,6 +159,26 @@ test('project payload/schema contracts stay typed across types, schema normaliza
     ],
     'projectSchema'
   );
+  assertMatchesAll(
+    assert,
+    projectSchemaValidation,
+    [
+      /Retired project field notes is not supported/,
+      /settings\.\$\{key\} must be a finite number/,
+      /Project field \$\{key\} is not canonical/,
+    ],
+    'projectSchemaValidation'
+  );
+  assertLacksAll(
+    assert,
+    projectSchema,
+    [
+      /export function asFiniteNumber\(/,
+      /export function normalizeSplitDoorsMap\(/,
+      /export function normalizeSplitDoorsBottomMap\(/,
+    ],
+    'projectSchema'
+  );
 });
 
 test('project payload-related bundles keep typed save/load and modes seams without legacy helper fallbacks', () => {
@@ -173,7 +193,7 @@ test('project payload-related bundles keep typed save/load and modes seams witho
       /const hasDraft = typeof rec\.orderPdfEditorDraft !== 'undefined';/,
       /orderPdfEditorDraft:/,
       /cloneProjectJson\(rec\.orderPdfEditorDraft\)/,
-      /orderPdfEditorZoom: Number\.isFinite\(zoom\) && zoom > 0 \? zoom : 1,/,
+      /orderPdfEditorZoom: typeof zoom === 'number' && Number\.isFinite\(zoom\) && zoom > 0 \? zoom : 1,/,
       /ensureSaveProjectAction\(/,
       /setSaveProjectAction\(/,
     ],
@@ -182,7 +202,7 @@ test('project payload-related bundles keep typed save/load and modes seams witho
   assertLacksAll(
     assert,
     projectBundle,
-    [/function __normalizeProjectData\(/, /function __safeJsonParse\(/],
+    [/function __normalizeProjectData\(/, /function __safeJsonParse\(/, /normalized\.notes\s*=/],
     'projectBundle'
   );
 

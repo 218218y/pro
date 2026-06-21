@@ -21,9 +21,9 @@ test('project schema source runtime accepts only current top-level schema data',
   const normalized = normalizeProjectData({
     __schema: PROJECT_SCHEMA_ID,
     __version: PROJECT_SCHEMA_VERSION,
-    settings: { wardrobeType: 'sliding' },
+    settings: { wardrobeType: 'sliding', width: 160, height: 240, depth: 55, doors: 4 },
     toggles: { multiColor: true },
-    orderPdfEditorZoom: '1.75',
+    orderPdfEditorZoom: 1.75,
   } as any);
 
   assert.equal((normalized as any)?.settings?.wardrobeType, 'sliding');

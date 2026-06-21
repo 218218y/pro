@@ -42,9 +42,8 @@ function readProjectConfigSource(data: ProjectDataLike | UnknownRecord | null | 
   return asObjectRecord(data) ?? {};
 }
 
-function readLoadedDoorMountThicknessCm(settingsValue: unknown, persistedValue: unknown): number | null {
-  const value = typeof settingsValue === 'undefined' ? persistedValue : settingsValue;
-  return normalizeDoorMountThicknessCm(value);
+function readLoadedDoorMountThicknessCm(persistedValue: unknown): number | null {
+  return normalizeDoorMountThicknessCm(persistedValue);
 }
 
 export function buildProjectConfigSnapshot(
@@ -62,22 +61,10 @@ export function buildProjectConfigSnapshot(
     savedColors: normalizeSavedColorObjectsSnapshot(persistedConfig.savedColors),
     wardrobeType: settings.wardrobeType || 'hinged',
     doorMountMode: settings.doorMountMode === 'inset' ? 'inset' : 'overlay',
-    overlayFrameThicknessCm: readLoadedDoorMountThicknessCm(
-      settings.overlayFrameThicknessCm,
-      persistedConfig.overlayFrameThicknessCm
-    ),
-    overlayShelfThicknessCm: readLoadedDoorMountThicknessCm(
-      settings.overlayShelfThicknessCm,
-      persistedConfig.overlayShelfThicknessCm
-    ),
-    insetFrameThicknessCm: readLoadedDoorMountThicknessCm(
-      settings.insetFrameThicknessCm,
-      persistedConfig.insetFrameThicknessCm
-    ),
-    insetShelfThicknessCm: readLoadedDoorMountThicknessCm(
-      settings.insetShelfThicknessCm,
-      persistedConfig.insetShelfThicknessCm
-    ),
+    overlayFrameThicknessCm: readLoadedDoorMountThicknessCm(persistedConfig.overlayFrameThicknessCm),
+    overlayShelfThicknessCm: readLoadedDoorMountThicknessCm(persistedConfig.overlayShelfThicknessCm),
+    insetFrameThicknessCm: readLoadedDoorMountThicknessCm(persistedConfig.insetFrameThicknessCm),
+    insetShelfThicknessCm: readLoadedDoorMountThicknessCm(persistedConfig.insetShelfThicknessCm),
     boardMaterial: settings.boardMaterial === 'melamine' ? 'melamine' : 'sandwich',
     isManualWidth: !!settings.isManualWidth,
     showDimensions: typeof toggles.showDimensions !== 'undefined' ? toggles.showDimensions !== false : true,

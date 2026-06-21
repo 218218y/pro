@@ -445,7 +445,7 @@ test('project io fail-fast: partial project payloads fail closed before mutating
   });
 });
 
-test('project io load accepts persisted numeric-string ui dims instead of rejecting saved-model snapshots as invalid', () => {
+test('project io load rejects numeric-string dimensions before mutating state', () => {
   const { orchestrator, calls, autosaveCalls } = createProjectIoApp();
 
   const result = orchestrator.loadProjectData(
@@ -464,12 +464,7 @@ test('project io load accepts persisted numeric-string ui dims instead of reject
     { toast: false }
   );
 
-  assert.deepEqual(result, { ok: true, restoreGen: 1 });
-  assert.deepEqual(autosaveCalls, ['cancel', 'force']);
-  assert.deepEqual(calls, [
-    'config:project.load',
-    'commit:project.load',
-    'dirty:false:project.load',
-    'history:project.load',
-  ]);
+  assert.deepEqual(result, { ok: false, reason: 'invalid' });
+  assert.deepEqual(autosaveCalls, []);
+  assert.deepEqual(calls, []);
 });

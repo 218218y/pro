@@ -353,7 +353,7 @@ test('project load/save helpers preserve semantic load flags, UI ephemera, and b
       /const hasDraft = typeof rec\.orderPdfEditorDraft !== 'undefined';/,
       /orderPdfEditorDraft:/,
       /cloneProjectJson\(rec\.orderPdfEditorDraft\)/,
-      /orderPdfEditorZoom: Number\.isFinite\(zoom\) && zoom > 0 \? zoom : 1/,
+      /orderPdfEditorZoom: typeof zoom === 'number' && Number\.isFinite\(zoom\) && zoom > 0 \? zoom : 1/,
     ],
     'projectLoadBundle'
   );

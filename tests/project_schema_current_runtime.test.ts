@@ -4,33 +4,34 @@ import assert from 'node:assert/strict';
 import { normalizeProjectData } from '../esm/native/io/project_schema_normalize.ts';
 import { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from '../esm/shared/project_schema_constants.ts';
 
-test('current project schema normalizes canonical maps without accepting old project envelopes', () => {
+test('current project schema accepts canonical maps without mutating their persisted shape', () => {
   const data: any = {
     __schema: PROJECT_SCHEMA_ID,
     __version: PROJECT_SCHEMA_VERSION,
     settings: {
       wardrobeType: 'hinged',
       width: 240,
+      height: 240,
       depth: 60,
       doors: 4,
-      globalHandleType: 'bad-shape',
+      globalHandleType: 'standard',
     },
     toggles: {
       showContents: false,
       showHanger: false,
       showDimensions: false,
     },
-    splitDoorsMap: { split_d1_full: true, splitpos_d1_top: ['0.2', 'bad', 2] },
-    splitDoorsBottomMap: { splitBottom_d1_full: 1 },
+    splitDoorsMap: { split_d1: true, splitpos_d1: [0.2, 1] },
+    splitDoorsBottomMap: { splitb_d1: true },
     removedDoorsMap: { removed_d1_full: true },
     roundedFrameSideShelvesMap: { body_left: true },
     individualColors: { d1_full: 'oak' },
     doorSpecialMap: { d1_full: 'mirror' },
     doorStyleMap: { d1_full: 'profile' },
     curtainMap: { d1_full: 'linen' },
-    mirrorLayoutMap: { d1_full: [{ x: 1, y: 2, width: 3, height: 4 }] },
-    groovesMap: 'bad-shape',
-    grooveLinesCount: '3.8',
+    mirrorLayoutMap: { d1_full: [{ widthCm: 3, heightCm: 4 }] },
+    groovesMap: {},
+    grooveLinesCount: 3,
   };
 
   const out = normalizeProjectData(data, '2026-02-04T00:00:00.000Z');
@@ -49,8 +50,22 @@ test('current project schema normalizes canonical maps without accepting old pro
   assert.equal(out.curtainMap.d1_full, 'linen');
   assert.deepEqual(out.groovesMap, {});
   assert.equal(out.grooveLinesCount, 3);
-  assert.equal('globalHandleType' in out.settings, false);
+  assert.equal(out.settings.globalHandleType, 'standard');
   assert.equal(out.__validation.ok, true);
+});
+
+test('current project schema rejects values that require historical migration', () => {
+  const base = {
+    __schema: PROJECT_SCHEMA_ID,
+    __version: PROJECT_SCHEMA_VERSION,
+    settings: { wardrobeType: 'hinged', width: 240, height: 240, depth: 60, doors: 4 },
+    toggles: {},
+  };
+
+  assert.equal(normalizeProjectData({ ...base, settings: { ...base.settings, projectName: 'old' } }), null);
+  assert.equal(normalizeProjectData({ ...base, notes: [{ text: 'old' }] }), null);
+  assert.equal(normalizeProjectData({ ...base, toggles: { showContents: 1 } }), null);
+  assert.equal(normalizeProjectData({ ...base, splitDoorsMap: { split_d1_full: true } }), null);
 });
 
 test('current project schema rejects missing schema metadata and old payload envelopes', () => {

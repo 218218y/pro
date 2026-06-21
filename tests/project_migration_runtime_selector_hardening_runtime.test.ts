@@ -15,17 +15,17 @@ import {
   readUiRawScalarFromCanonicalSnapshot,
 } from '../esm/native/runtime/ui_raw_selectors.ts';
 
-test('project UI raw canonical snapshot normalizes existing raw scalar values only', () => {
+test('project UI raw canonical snapshot preserves typed scalars and drops values that require coercion', () => {
   const snapshot = {
     width: '160',
     height: '240',
     depth: '55',
     doors: '4',
     raw: {
-      width: '180.5',
+      width: 180.5,
       height: 'not-a-number',
       depth: null,
-      doors: '3',
+      doors: 3,
       stackSplitLowerDepthManual: true,
       stackSplitLowerWidthManual: 'yes',
       customExperimentalKey: 'keep-me',
@@ -48,7 +48,7 @@ test('project UI raw canonical snapshot normalizes existing raw scalar values on
   assert.equal(canonicalized.raw.customExperimentalKey, 'keep-me');
 
   assert.deepEqual([...canonicalized.droppedKeys].sort(), ['height', 'stackSplitLowerWidthManual']);
-  assert.deepEqual([...canonicalized.normalizedKeys].sort(), ['doors', 'width']);
+  assert.deepEqual(canonicalized.normalizedKeys, []);
   assert.equal(Object.prototype.hasOwnProperty.call(canonicalized, 'filledKeys'), false);
 
   assert.equal(readUiRawScalarFromCanonicalSnapshot(canonicalSnapshot, 'width'), 180.5);
