@@ -28,7 +28,7 @@
         var img = nodes[i];
         img.setAttribute('src', uri);
         if (!img.getAttribute('alt')) img.setAttribute('alt', 'לוגו רהיטי ברגיג');
-        img.decoding = 'async';
+        img.setAttribute('decoding', 'async');
       }
     } catch (_e) {
       // silent
