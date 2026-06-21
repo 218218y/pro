@@ -1,5 +1,4 @@
 import { getMirrorRenderTarget } from '../runtime/render_access.js';
-import { readRuntimeScalarOrDefaultFromApp } from '../runtime/runtime_selectors.js';
 import { ensureBuilderService, getBuilderService } from '../runtime/builder_service_access.js';
 import type { AppContainer } from '../../../types';
 import {
@@ -11,6 +10,10 @@ import {
   type MirrorMaterialLike,
   type MirrorMaterialOpts,
 } from './materials_apply_shared.js';
+import {
+  createMaterialSnapshotBinding,
+  requireMaterialSnapshot,
+} from './materials_factory_material_policy.js';
 
 function readMirrorMaterial(value: unknown): MirrorMaterialLike | null {
   return asObject<MirrorMaterialLike>(value) || null;
@@ -22,21 +25,22 @@ function markKeepMaterial(material: MirrorMaterialLike | null | undefined): void
   material.userData.__keepMaterial = true;
 }
 
-export function getBuilderMirrorMaterial(App: AppContainer, opts?: MirrorMaterialOpts): unknown {
-  const safeOpts: MirrorMaterialOpts = opts || {};
+export function getBuilderMirrorMaterial(App: AppContainer, opts: MirrorMaterialOpts): unknown {
+  const safeOpts = opts;
+  const materialSnapshot = requireMaterialSnapshot(safeOpts.materialSnapshot);
   const THREE = getMaterialsTHREE(App, safeOpts.THREE);
   if (!THREE) return null;
 
-  try {
-    if (readRuntimeScalarOrDefaultFromApp(App, 'sketchMode', false)) {
-      const materials = getBuilderService(App)?.materials || null;
-      if (materials && typeof materials.getMaterial === 'function') {
-        return materials.getMaterial('#ffffff', 'front', false);
-      }
-      return null;
+  if (materialSnapshot.sketchMode) {
+    const materials = getBuilderService(App)?.materials || null;
+    if (materials && typeof materials.getMaterial === 'function') {
+      return createMaterialSnapshotBinding(materials.getMaterial, materialSnapshot)(
+        '#ffffff',
+        'front',
+        false
+      );
     }
-  } catch (error) {
-    reportMaterialsApplySoft(App, 'getMirrorMaterial.sketchMode', error);
+    return null;
   }
 
   const builder = ensureBuilderService(App, 'native/builder/materials_apply.mirrorCache');

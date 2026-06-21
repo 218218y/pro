@@ -118,7 +118,12 @@ export function applySketchBoxExternalDrawerDoorCuts(args: {
     cfg,
     bodyMat,
     globalFrontMat,
-    getMirrorMaterial: () => getMirrorMaterial({ App, THREE }),
+    getMirrorMaterial: () =>
+      getMirrorMaterial({
+        App,
+        THREE,
+        materialSnapshot: { cfgSnapshot: cfg, sketchMode: ctx.flags?.sketchMode === true },
+      }),
   });
   applySketchDrawerDoorCuts({
     App,

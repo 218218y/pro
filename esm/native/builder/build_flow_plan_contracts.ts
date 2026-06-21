@@ -170,6 +170,7 @@ export type BuildFlowPlanMaterialsArgs = {
   THREE: ThreeLike;
   ui: UnknownRecord;
   cfg: UnknownRecord;
+  sketchMode: boolean;
   toStr: Stringifier;
   getMaterialFn: GetMaterialFn;
 };

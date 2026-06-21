@@ -5,6 +5,7 @@ import type {
   BuilderCreateModuleHitBoxArgsLike,
   BuilderHandleMeshOptionsLike,
   BuilderRenderCommonArgsLike,
+  BuilderMaterialSnapshotLike,
   DoorVisualEntryLike,
   DrawerVisualEntryLike,
   Object3DLike,
@@ -34,6 +35,7 @@ export type RenderThreeLike = Pick<
 >;
 export type RenderCommonArgs = Omit<BuilderRenderCommonArgsLike, 'THREE'> & {
   THREE?: RenderThreeLike | null;
+  materialSnapshot?: BuilderMaterialSnapshotLike;
 };
 
 export type CommonMatsCache = AnyMap & {
@@ -41,6 +43,7 @@ export type CommonMatsCache = AnyMap & {
   whiteMat?: unknown;
   shadowMat?: unknown;
   realMirrorMat?: AnyMap | null;
+  sketchMirrorMat?: AnyMap | null;
 };
 
 export type BoardArgs = Omit<BuilderCreateBoardArgsLike, 'THREE'> & { THREE?: RenderThreeLike | null };

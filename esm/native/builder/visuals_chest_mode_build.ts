@@ -15,7 +15,7 @@ import {
 import { resolveBaseLegGeometrySpec } from '../features/base_leg_support.js';
 import { makeDrawerBoxPartId } from '../features/drawer_box_identity.js';
 
-import type { AppContainer, UnknownRecord } from '../../../types/index.js';
+import type { AppContainer, BuilderBuildChestOnlyOptsLike } from '../../../types/index.js';
 
 import {
   asChestModeControls,
@@ -51,30 +51,37 @@ const PLINTH_DIMENSIONS = CARCASS_BASE_DIMENSIONS.plinth;
 const BASE_LEG_LAYOUT_DIMENSIONS = CARCASS_BASE_DIMENSIONS.legs;
 const CHEST_DIMENSIONS = CARCASS_BASE_DIMENSIONS.chest;
 
-export function buildChestOnly(App: AppContainer, opts?: UnknownRecord | null) {
+export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOptsLike) {
   App = ensureChestModeApp(App);
+  const inputs = resolveChestModeBuildInputs(opts);
+  const cfg = readChestModeCfgSnapshotFromOpts(opts);
+  const renderPolicy = requireContentsRenderPolicy(opts.renderPolicy);
   const THREE = ensureChestModeTHREE(App);
   const wardrobeGroup = asChestModeObject3D(getWardrobeGroup(App));
   if (!wardrobeGroup) return;
 
-  const inputs = resolveChestModeBuildInputs(App, opts || null);
-  const cfg = readChestModeCfgSnapshotFromOpts(opts || null);
   const bodyState = resolveChestModeBodyMaterialState({
     App,
     cfg,
     colorChoice: inputs.colorChoice,
     customColor: inputs.customColor,
   });
-  const palette = resolveChestModeMaterialPalette({ App, bodyState, legColor: inputs.baseLegColor });
+  const palette = resolveChestModeMaterialPalette({
+    App,
+    bodyState,
+    legColor: inputs.baseLegColor,
+    cfg,
+    sketchMode: renderPolicy.sketchMode,
+  });
   const getChestPartMat = createChestModePartMaterialResolver({
     App,
     THREE,
     cfg,
+    sketchMode: renderPolicy.sketchMode,
     globalBodyMat: palette.globalBodyMat,
     drawerBoxMat: palette.drawerBoxMat,
   });
   const renderOps = getBuilderRenderOps(App);
-  const renderPolicy = requireContentsRenderPolicy(opts?.renderPolicy);
   const addOutlines = renderPolicy.addOutlines;
   const addDimensionLine =
     renderOps && typeof renderOps.addDimensionLine === 'function' ? renderOps.addDimensionLine : null;
@@ -338,7 +345,10 @@ export function buildChestOnly(App: AppContainer, opts?: UnknownRecord | null) {
     const mirrorThickness = commode.mirrorThicknessM;
     const mirror = new THREE.Mesh(
       new THREE.BoxGeometry(mirrorW, mirrorH, mirrorThickness),
-      getMirrorMaterialFromServices(App, THREE)
+      getMirrorMaterialFromServices(App, THREE, {
+        cfgSnapshot: cfg,
+        sketchMode: renderPolicy.sketchMode,
+      })
     );
     mirror.position.set(
       0,
@@ -361,6 +371,7 @@ export function buildChestOnly(App: AppContainer, opts?: UnknownRecord | null) {
     App,
     THREE,
     cfg,
+    flags: { sketchMode: renderPolicy.sketchMode },
   } as BuildContextLike);
 
   if (cfg.showDimensions && addDimensionLine) {

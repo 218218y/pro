@@ -1,5 +1,4 @@
 import { getStandardCabinetTextureKind } from '../../shared/standard_cabinet_textures_shared.js';
-import { readRuntimeScalarOrDefaultFromApp } from '../runtime/runtime_selectors.js';
 import {
   ensureMaterialsFactoryApp,
   ensureMaterialsRuntime,
@@ -11,6 +10,34 @@ import {
 } from './materials_factory_shared.js';
 import { generateTexture } from './materials_factory_texture_runtime.js';
 import { resolveFrontTexture } from './materials_factory_texture_policy.js';
+import type {
+  BuilderGetMaterialFactoryFn,
+  BuilderGetMaterialFn,
+  BuilderMaterialSnapshotLike,
+} from '../../../types';
+
+export function requireMaterialSnapshot(value: unknown): BuilderMaterialSnapshotLike {
+  if (!value || typeof value !== 'object') {
+    throw new TypeError('[materials_factory] materialSnapshot is required');
+  }
+  const snapshot = value as BuilderMaterialSnapshotLike;
+  if (!snapshot.cfgSnapshot || typeof snapshot.cfgSnapshot !== 'object') {
+    throw new TypeError('[materials_factory] materialSnapshot.cfgSnapshot is required');
+  }
+  if (typeof snapshot.sketchMode !== 'boolean') {
+    throw new TypeError('[materials_factory] materialSnapshot.sketchMode is required');
+  }
+  return snapshot;
+}
+
+export function createMaterialSnapshotBinding(
+  factory: BuilderGetMaterialFactoryFn,
+  materialSnapshot: BuilderMaterialSnapshotLike
+): BuilderGetMaterialFn {
+  const snapshot = requireMaterialSnapshot(materialSnapshot);
+  return (color, type, useCustomTexture, customTextureDataURL) =>
+    factory(color, type, useCustomTexture, customTextureDataURL, snapshot);
+}
 
 function getSketchMaterial(App: AppLike, cacheKey: string) {
   const runtime = ensureMaterialsRuntime(App);
@@ -61,20 +88,18 @@ export function getMaterial(
   appIn: unknown,
   color: unknown,
   type: unknown,
-  useCustomTexture?: unknown,
-  customTextureDataURL?: unknown
+  useCustomTexture: unknown,
+  customTextureDataURL: unknown,
+  materialSnapshot: BuilderMaterialSnapshotLike
 ) {
   const runtime = ensureMaterialsRuntime(ensureMaterialsFactoryApp(appIn));
   const { App, renderCache, renderMeta } = runtime;
   const THREE = getMaterialsTHREE(App);
 
-  try {
-    if (readRuntimeScalarOrDefaultFromApp(App, 'sketchMode', false)) {
-      return getSketchMaterial(App, 'sketch_white');
-    }
-  } catch {}
+  const snapshot = requireMaterialSnapshot(materialSnapshot);
+  if (snapshot.sketchMode) return getSketchMaterial(App, 'sketch_white');
 
-  const tex = resolveFrontTexture(App, useCustomTexture, customTextureDataURL);
+  const tex = resolveFrontTexture(App, snapshot, useCustomTexture, customTextureDataURL);
   const texSig = tex && typeof tex.uuid === 'string' ? tex.uuid : '';
   const cacheKey =
     'mat_' + String(type) + '_' + String(color) + '_' + String(!!useCustomTexture) + '_' + texSig;

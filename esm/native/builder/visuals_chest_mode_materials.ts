@@ -10,7 +10,7 @@ import type {
 } from '../../../types/index.js';
 
 import {
-  getChestModeMaterial,
+  createChestModeMaterialBinding,
   getMirrorMaterialFromServices,
   readChestModeIndividualColorsMap,
 } from './visuals_chest_mode_runtime.js';
@@ -59,11 +59,16 @@ export function resolveChestModeMaterialPalette(input: {
   App: AppContainer;
   bodyState: ChestModeBodyMaterialState;
   legColor?: BaseLegColor | string;
+  cfg: ConfigStateLike;
+  sketchMode: boolean;
   getMaterial?: BuilderGetMaterialFn | null;
 }): ChestModeMaterialPalette {
   const getMaterial =
     input.getMaterial ||
-    ((...args: Parameters<BuilderGetMaterialFn>) => getChestModeMaterial(input.App, ...args));
+    createChestModeMaterialBinding(input.App, {
+      cfgSnapshot: input.cfg,
+      sketchMode: input.sketchMode,
+    });
   const globalBodyMat = getMaterial(
     input.bodyState.colorHex,
     'front',
@@ -117,6 +122,7 @@ export function createChestModePartMaterialResolver(input: {
   globalBodyMat: unknown;
   drawerBoxMat?: unknown;
   cfg: ConfigStateLike;
+  sketchMode: boolean;
   getMaterial?: BuilderGetMaterialFn | null;
   individualColors?: IndividualColorsMap | null;
   resolveMirrorMaterial?: (() => unknown) | null;
@@ -125,14 +131,19 @@ export function createChestModePartMaterialResolver(input: {
   const THREE = input.THREE;
   const cfg = requireChestModeConfigSnapshot(input.cfg, 'visuals_chest_mode.materialResolver');
   const getMaterial =
-    input.getMaterial || ((...args: Parameters<BuilderGetMaterialFn>) => getChestModeMaterial(App, ...args));
+    input.getMaterial ||
+    createChestModeMaterialBinding(App, {
+      cfgSnapshot: cfg,
+      sketchMode: input.sketchMode,
+    });
   const getPartColorValue = createChestModePartColorValueResolver({
     App,
     cfg,
     individualColors: input.individualColors,
   });
   const resolveMirrorMaterial =
-    input.resolveMirrorMaterial || (() => getMirrorMaterialFromServices(App, THREE));
+    input.resolveMirrorMaterial ||
+    (() => getMirrorMaterialFromServices(App, THREE, { cfgSnapshot: cfg, sketchMode: input.sketchMode }));
 
   return (partId: string) => {
     const value = getPartColorValue(partId);

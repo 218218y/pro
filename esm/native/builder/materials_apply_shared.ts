@@ -1,9 +1,9 @@
 import { assertApp, assertTHREE, reportError, shouldFailFast } from '../runtime/api.js';
 import { ensureBuilderService } from '../runtime/builder_service_access.js';
 import { asRecord } from '../runtime/record.js';
-import { getBuildStateMaybe, getCfg as getCfgSlice, getUi as getUiSlice } from './store_access.js';
 import type {
   AppContainer,
+  BuilderMaterialSnapshotLike,
   BuilderMaterialsServiceLike,
   Object3DLike,
   RenderOpsLike,
@@ -36,6 +36,7 @@ export type MirrorMaterialLike = ValueRecord & {
 
 export type MirrorMaterialOpts = {
   THREE?: ThreeLike | null;
+  materialSnapshot: BuilderMaterialSnapshotLike;
 };
 
 export type WardrobeMeshLike = Object3DLike & {
@@ -49,7 +50,7 @@ export type MaterialsCacheLike = ValueRecord & {
 export type MaterialsApplyService = BuilderMaterialsServiceLike & {
   __cache?: MaterialsCacheLike;
   __esm_materials_apply_v1?: boolean;
-  getMirrorMaterial?: (opts?: MirrorMaterialOpts) => unknown;
+  getMirrorMaterial?: (opts: MirrorMaterialOpts) => unknown;
   applyMaterials?: () => unknown;
 };
 
@@ -78,26 +79,6 @@ export function ensureMaterialsApplySurface(App: AppContainer): AppContainer {
   return App;
 }
 
-function readStateUi(state: unknown): BuildUiLike | null {
-  const rec = asObject<{ ui?: unknown }>(state);
-  return asObject<BuildUiLike>(rec?.ui) || null;
-}
-
-export function getBuildUi(App: AppContainer): BuildUiLike {
-  try {
-    const stateUi = readStateUi(getBuildStateMaybe(App));
-    if (stateUi) return stateUi;
-  } catch (error) {
-    reportMaterialsApplySoft(App, 'getBuildUi.buildState', error);
-  }
-  try {
-    return asObject<BuildUiLike>(getUiSlice(App)) || {};
-  } catch (error) {
-    reportMaterialsApplySoft(App, 'getBuildUi.storeSlice', error);
-  }
-  return {};
-}
-
 export function getUiVal<T>(ui: BuildUiLike, id: string, defaultValue: T): unknown {
   const raw = asObject<ValueRecord>(ui.raw) || {};
   if (Object.prototype.hasOwnProperty.call(raw, id)) return raw[id];
@@ -107,10 +88,6 @@ export function getUiVal<T>(ui: BuildUiLike, id: string, defaultValue: T): unkno
   if (mapped && Object.prototype.hasOwnProperty.call(ui, mapped)) return ui[mapped];
   if (Object.prototype.hasOwnProperty.call(ui, id)) return ui[id];
   return defaultValue;
-}
-
-export function getMaterialsCfg(App: AppContainer): MaterialsCfgLike {
-  return asObject<MaterialsCfgLike>(getCfgSlice(App)) || {};
 }
 
 export function getMaterialsTHREE(App: AppContainer, preferred?: ThreeLike | null): ThreeLike {

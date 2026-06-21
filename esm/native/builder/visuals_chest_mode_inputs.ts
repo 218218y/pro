@@ -1,16 +1,12 @@
 import {
   CHEST_MODE_DIMENSIONS,
-  WARDROBE_DEFAULTS,
   clampDimension,
   cmToM,
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
-import { readUiRawDimsCmFromSnapshot, readUiRawNumberFromSnapshot } from '../runtime/ui_raw_selectors.js';
 import { readBaseLegOptions, type BaseLegColor, type BaseLegStyle } from '../features/base_leg_support.js';
 import { getBasePlinthHeightM, normalizeBasePlinthHeightCm } from '../features/base_plinth_support.js';
 
-import type { AppContainer, UnknownRecord } from '../../../types/index.js';
-
-import { getChestModeBuildUI } from './visuals_chest_mode_runtime.js';
+import type { BuilderBuildChestOnlyOptsLike } from '../../../types/index.js';
 
 export type ChestModeBuildInputs = {
   H: number;
@@ -46,71 +42,28 @@ function normalizeChestCommodeDimensionCm(
   return clampDimension(raw, bounds.min, bounds.max);
 }
 
-export function resolveChestModeBuildInputs(
-  App: AppContainer,
-  opts?: UnknownRecord | null
-): ChestModeBuildInputs {
-  let H: number;
-  let totalW: number;
-  let D: number;
-  let drawersCount: number;
-  let rawBaseType: unknown;
-  let legSource: unknown;
-  let plinthHeightSource: unknown;
-  let colorChoice: unknown;
-  let customColor: unknown;
-  let chestCommodeEnabled: boolean;
-  let chestCommodeMirrorHeightSource: unknown;
-  let chestCommodeMirrorWidthSource: unknown;
-  let doorStyle: unknown;
-  let isGroovesEnabled: boolean;
-
-  const ui = getChestModeBuildUI(App);
-  if (opts && typeof opts === 'object') {
-    H = Number(opts.H);
-    totalW = Number(opts.totalW);
-    D = Number(opts.D);
-    drawersCount = parseInt(String(opts.drawersCount ?? ''), 10);
-    rawBaseType = opts.baseType;
-    legSource = opts;
-    plinthHeightSource = opts.basePlinthHeightCm;
-    colorChoice = opts.colorChoice;
-    customColor = opts.customColor;
-    chestCommodeEnabled = !!opts.chestCommodeEnabled;
-    chestCommodeMirrorHeightSource = opts.chestCommodeMirrorHeightCm;
-    chestCommodeMirrorWidthSource = opts.chestCommodeMirrorWidthCm;
-    doorStyle = opts.doorStyle;
-    isGroovesEnabled = opts.isGroovesEnabled === true;
-  } else {
-    const dims = ui ? readUiRawDimsCmFromSnapshot(ui) : null;
-    const widthCm = dims ? dims.widthCm : WARDROBE_DEFAULTS.widthCm;
-    const heightCm = dims ? dims.heightCm : WARDROBE_DEFAULTS.heightCm;
-    const depthCm = dims ? dims.depthCm : WARDROBE_DEFAULTS.byType.hinged.depthCm;
-
-    H = Number(heightCm) / 100;
-    totalW = Number(widthCm) / 100;
-    D = Number(depthCm) / 100;
-
-    drawersCount = dims ? dims.chestDrawersCount : WARDROBE_DEFAULTS.chestDrawersCount;
-    rawBaseType = ui ? ui.baseType : '';
-    legSource = ui;
-    plinthHeightSource = ui ? ui.basePlinthHeightCm : undefined;
-    colorChoice = ui ? ui.colorChoice : '';
-    customColor = ui ? ui.customColor : '';
-    chestCommodeEnabled = !!(ui && ui.chestCommodeEnabled);
-    chestCommodeMirrorHeightSource = ui
-      ? readUiRawNumberFromSnapshot(
-          ui,
-          'chestCommodeMirrorHeightCm',
-          CHEST_MODE_DIMENSIONS.commode.defaultMirrorHeightCm
-        )
-      : CHEST_MODE_DIMENSIONS.commode.defaultMirrorHeightCm;
-    chestCommodeMirrorWidthSource = ui
-      ? readUiRawNumberFromSnapshot(ui, 'chestCommodeMirrorWidthCm', widthCm)
-      : widthCm;
-    doorStyle = ui ? ui.doorStyle : 'flat';
-    isGroovesEnabled = !!(ui && ui.groovesEnabled);
+export function resolveChestModeBuildInputs(opts: BuilderBuildChestOnlyOptsLike): ChestModeBuildInputs {
+  if (!opts || typeof opts !== 'object') {
+    throw new TypeError('[visuals_chest_mode] build options snapshot is required');
   }
+  const H = Number(opts.H);
+  const totalW = Number(opts.totalW);
+  const D = Number(opts.D);
+  const drawersCount = parseInt(String(opts.drawersCount), 10);
+  if (![H, totalW, D, drawersCount].every(value => Number.isFinite(value) && value > 0)) {
+    throw new TypeError('[visuals_chest_mode] positive finite dimensions and drawersCount are required');
+  }
+
+  const rawBaseType = opts.baseType;
+  const legSource = opts;
+  const plinthHeightSource = opts.basePlinthHeightCm;
+  const colorChoice = opts.colorChoice;
+  const customColor = opts.customColor;
+  const chestCommodeEnabled = !!opts.chestCommodeEnabled;
+  const chestCommodeMirrorHeightSource = opts.chestCommodeMirrorHeightCm;
+  const chestCommodeMirrorWidthSource = opts.chestCommodeMirrorWidthCm;
+  const doorStyle = opts.doorStyle;
+  const isGroovesEnabled = opts.isGroovesEnabled === true;
 
   const legOptions = readBaseLegOptions(legSource);
   const basePlinthHeightCm = normalizeBasePlinthHeightCm(plinthHeightSource);
@@ -134,7 +87,7 @@ export function resolveChestModeBuildInputs(
     H,
     totalW,
     D,
-    drawersCount: Number.isFinite(drawersCount) ? drawersCount : WARDROBE_DEFAULTS.chestDrawersCount,
+    drawersCount,
     effectiveBaseType: String(rawBaseType || '') === 'plinth' ? 'plinth' : 'legs',
     baseLegStyle: legOptions.style,
     baseLegColor: legOptions.color,

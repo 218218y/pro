@@ -215,29 +215,50 @@ function createChestApp(opts: { createDoorVisual?: (...args: any[]) => unknown }
 
 test('visuals chest mode input/material helpers normalize chest-only UI and texture state', () => {
   const { App } = createChestApp();
-  assert.deepEqual(resolveChestModeBuildInputs(App, null), {
-    H: 0.9,
-    totalW: 1.6,
-    D: 0.45,
-    drawersCount: 3,
-    effectiveBaseType: 'legs',
-    baseLegStyle: 'square',
-    baseLegColor: 'nickel',
-    basePlinthHeightCm: 8,
-    basePlinthHeightM: 0.08,
-    baseLegHeightCm: 16,
-    baseLegWidthCm: 6,
-    baseLegHeightM: 0.16,
-    colorChoice: '#cccccc',
-    customColor: '#00ff00',
-    chestCommodeEnabled: false,
-    chestCommodeMirrorHeightCm: 100,
-    chestCommodeMirrorWidthCm: 160,
-    chestCommodeMirrorHeightM: 1,
-    chestCommodeMirrorWidthM: 1.6,
-    doorStyle: 'flat',
-    isGroovesEnabled: false,
-  });
+  assert.deepEqual(
+    resolveChestModeBuildInputs({
+      H: 0.9,
+      totalW: 1.6,
+      D: 0.45,
+      drawersCount: 3,
+      baseType: 'legs',
+      baseLegStyle: 'square',
+      baseLegColor: 'nickel',
+      baseLegHeightCm: 16,
+      baseLegWidthCm: 6,
+      colorChoice: '#cccccc',
+      customColor: '#00ff00',
+      chestCommodeMirrorHeightCm: 100,
+      chestCommodeMirrorWidthCm: 160,
+      cfgSnapshot: createChestCfg(),
+      renderPolicy: App.__outlineRenderPolicy,
+    }),
+    {
+      H: 0.9,
+      totalW: 1.6,
+      D: 0.45,
+      drawersCount: 3,
+      effectiveBaseType: 'legs',
+      baseLegStyle: 'square',
+      baseLegColor: 'nickel',
+      basePlinthHeightCm: 8,
+      basePlinthHeightM: 0.08,
+      baseLegHeightCm: 16,
+      baseLegWidthCm: 6,
+      baseLegHeightM: 0.16,
+      colorChoice: '#cccccc',
+      customColor: '#00ff00',
+      chestCommodeEnabled: false,
+      chestCommodeMirrorHeightCm: 100,
+      chestCommodeMirrorWidthCm: 160,
+      chestCommodeMirrorHeightM: 1,
+      chestCommodeMirrorWidthM: 1.6,
+      doorStyle: 'flat',
+      isGroovesEnabled: false,
+    }
+  );
+
+  assert.throws(() => resolveChestModeBuildInputs(undefined as never), /build options snapshot is required/);
 
   assert.deepEqual(
     resolveChestModeBodyMaterialState({
@@ -299,6 +320,8 @@ test('visuals chest mode material palette keeps drawer boxes on independent whit
     App: {} as any,
     bodyState: { colorHex: '#445566', useTexture: false, textureDataURL: null },
     legColor: 'nickel',
+    cfg: createChestCfg() as any,
+    sketchMode: false,
     getMaterial(color: unknown, part: unknown, useTexture?: unknown) {
       const material = { color, part, useTexture: !!useTexture };
       calls.push(material);
@@ -325,6 +348,7 @@ test('visuals chest mode part material resolver passes saved texture data explic
     globalBodyMat: { id: 'global-body' },
     drawerBoxMat: { id: 'drawer-box' },
     cfg: cfg as any,
+    sketchMode: false,
     getMaterial(color: unknown, part: unknown, useTexture?: unknown, textureDataURL?: unknown) {
       const material = { color, part, useTexture: !!useTexture, textureDataURL: textureDataURL ?? null };
       calls.push([color, part, !!useTexture, textureDataURL ?? null]);

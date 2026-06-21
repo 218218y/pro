@@ -3,8 +3,10 @@ import { resolveDrawerBoxPaintMaterial } from '../features/drawer_box_identity.j
 import { getDrawersArray } from '../runtime/render_access.js';
 import { resolveBuilderMirrorMaterial } from '../runtime/builder_service_access.js';
 import { readSketchBoxRegularExternalDrawersForRender } from '../features/sketch_box_regular_external_drawers.js';
+import { createMaterialSnapshotBinding } from './materials_factory_material_policy.js';
 
 import type { InteriorValueRecord } from './render_interior_ops_contracts.js';
+import type { BuilderGetMaterialFactoryFn } from '../../../types';
 import type {
   RenderSketchBoxExternalDrawersArgs,
   SketchBoxExternalDrawersContext,
@@ -60,7 +62,13 @@ export function createSketchBoxExternalDrawersContext(
       const builder = readObject<InteriorValueRecord>(services?.builder);
       const materials = readObject<InteriorValueRecord>(builder?.materials);
       const getMaterial = materials?.getMaterial;
-      if (isFn(getMaterial)) cachedDrawerBoxBaseMaterial = getMaterial('#ffffff', 'body', false);
+      if (isFn(getMaterial)) {
+        const getMaterialFactory = getMaterial as BuilderGetMaterialFactoryFn;
+        cachedDrawerBoxBaseMaterial = createMaterialSnapshotBinding(getMaterialFactory, {
+          cfgSnapshot: input.cfgSnapshot,
+          sketchMode: input.sketchMode,
+        })('#ffffff', 'body', false);
+      }
     } catch {
       cachedDrawerBoxBaseMaterial = null;
     }
@@ -86,6 +94,7 @@ export function createSketchBoxExternalDrawersContext(
       cachedMirrorMaterial = resolveBuilderMirrorMaterial(
         App,
         THREE as never,
+        { cfgSnapshot: input.cfgSnapshot, sketchMode: input.sketchMode },
         () => new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 1.0, roughness: 0.01 })
       );
     } catch {

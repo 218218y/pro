@@ -1,5 +1,4 @@
 import { assertApp } from '../runtime/api.js';
-import { getBuildUIFromPlatform } from '../runtime/platform_access.js';
 import {
   ensureBuilderService,
   requireBuilderGetMaterial,
@@ -10,6 +9,7 @@ import { assertThreeViaDeps } from '../runtime/three_access.js';
 import type {
   AppContainer,
   BuilderGetMaterialFn,
+  BuilderMaterialSnapshotLike,
   ControlsLike,
   IndividualColorsMap,
   Object3DLike,
@@ -17,6 +17,7 @@ import type {
   ThreeLike,
   UnknownRecord,
 } from '../../../types/index.js';
+import { createMaterialSnapshotBinding } from './materials_factory_material_policy.js';
 
 function isRecord(value: unknown): value is UnknownRecord {
   return !!value && typeof value === 'object' && !Array.isArray(value);
@@ -79,28 +80,26 @@ export function ensureChestModeTHREE(passedApp: unknown): ThreeLike {
   return assertThreeViaDeps(App, 'native/builder/visuals_chest_mode.THREE');
 }
 
-export function getChestModeBuildUI(passedApp: unknown): UnknownRecord {
-  try {
-    const App = asChestModeObject(passedApp) ? ensureChestModeApp(passedApp) : null;
-    if (!App) return {};
-    return getBuildUIFromPlatform(App);
-  } catch {
-    return {};
-  }
-}
-
-export function getChestModeMaterial(
+export function createChestModeMaterialBinding(
   passedApp: AppContainer,
-  ...args: Parameters<BuilderGetMaterialFn>
-): ReturnType<BuilderGetMaterialFn> {
+  materialSnapshot: BuilderMaterialSnapshotLike
+): BuilderGetMaterialFn {
   const App = ensureChestModeApp(passedApp);
-  return requireBuilderGetMaterial(App, 'native/builder/visuals_chest_mode.materials.getMaterial')(...args);
+  return createMaterialSnapshotBinding(
+    requireBuilderGetMaterial(App, 'native/builder/visuals_chest_mode.materials.getMaterial'),
+    materialSnapshot
+  );
 }
 
-export function getMirrorMaterialFromServices(App: AppContainer, THREE: ThreeLike): unknown {
+export function getMirrorMaterialFromServices(
+  App: AppContainer,
+  THREE: ThreeLike,
+  materialSnapshot: BuilderMaterialSnapshotLike
+): unknown {
   return resolveBuilderMirrorMaterial(
     App,
     THREE,
+    materialSnapshot,
     () => new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 1.0, roughness: 0.01 })
   );
 }

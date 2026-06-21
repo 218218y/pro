@@ -99,7 +99,11 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
         const drawerWoodMat = specificMat || bodyMat;
         let drawerMirrorMat = null;
         if (drawerVisualState.isMirror) {
-          drawerMirrorMat = getMirrorMaterial({ App, THREE });
+          drawerMirrorMat = getMirrorMaterial({
+            App,
+            THREE,
+            materialSnapshot: { cfgSnapshot: cfg, sketchMode },
+          });
           if (!drawerMirrorMat) drawerMirrorMat = drawerWoodMat;
         }
         const effectiveDrawerFrameStyleRaw = resolveDoorVisualStyle(

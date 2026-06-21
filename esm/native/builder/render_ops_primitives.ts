@@ -12,6 +12,7 @@ import type {
   BuilderCreateDrawerShadowPlaneArgsLike,
   BuilderCreateModuleHitBoxArgsLike,
   BuilderHandleMeshOptionsLike,
+  BuilderMaterialSnapshotLike,
   ThreeLike,
 } from '../../../types';
 
@@ -36,12 +37,16 @@ type RenderThreeLike = Pick<
   | 'Shape'
   | 'ExtrudeGeometry'
 >;
-type RenderCommonArgs = Omit<BuilderCreateBoardArgsLike, 'THREE'> & { THREE?: RenderThreeLike | null };
+type RenderCommonArgs = Omit<BuilderCreateBoardArgsLike, 'THREE'> & {
+  THREE?: RenderThreeLike | null;
+  materialSnapshot?: BuilderMaterialSnapshotLike;
+};
 type CommonMatsCache = AnyMap & {
   masoniteMat?: unknown;
   whiteMat?: unknown;
   shadowMat?: unknown;
   realMirrorMat?: AnyMap | null;
+  sketchMirrorMat?: AnyMap | null;
 };
 type BoardArgs = Omit<BuilderCreateBoardArgsLike, 'THREE'> & { THREE?: RenderThreeLike | null };
 type ModuleHitBoxArgs = Omit<BuilderCreateModuleHitBoxArgsLike, 'THREE'> & { THREE?: RenderThreeLike | null };
@@ -123,8 +128,19 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
     const args = __commonArgs(argsIn);
     const THREE = args.THREE;
     if (!THREE) return null;
+    const materialSnapshot = args.materialSnapshot;
+    if (!materialSnapshot) {
+      throw new TypeError('[render_ops.getMirrorMaterial] materialSnapshot is required');
+    }
 
     const cache = __matCache(App);
+    if (materialSnapshot.sketchMode) {
+      if (!cache.sketchMirrorMat) {
+        cache.sketchMirrorMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        cache.sketchMirrorMat.userData = { __keepMaterial: true };
+      }
+      return cache.sketchMirrorMat;
+    }
     const rt = getMirrorRenderTarget(App);
     const tex = rt && rt.texture ? rt.texture : null;
 

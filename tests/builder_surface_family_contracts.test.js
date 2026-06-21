@@ -311,7 +311,7 @@ test('[builder-surface-family] orchestration owners stay named-only and request-
     [
       /from '\.\/material_color_lookup\.js';/,
       /from '\.\/material_selection\.js';/,
-      /const cfg = getMaterialsCfg\(App\);/,
+      /requireMaterialsApplySnapshot\(args\.snapshot\)/,
       /resolveGlobalFrontMaterialInput\(\{/,
       /resolveSelectionFrontMaterial\(\{/,
       /createPartMaterialResolver\(\{[\s\S]*cfg,[\s\S]*getMaterial/,
@@ -321,7 +321,15 @@ test('[builder-surface-family] orchestration owners stay named-only and request-
   assertLacksAll(
     assert,
     materialsApplyColorPolicy,
-    [/hasCustomUploadedTexture/, /findSavedColor/, /readMap\(/, /mapFromRuntime/, /effectiveCfg/],
+    [
+      /getMaterialsCfg\(/,
+      /getBuildUi\(/,
+      /hasCustomUploadedTexture/,
+      /findSavedColor/,
+      /readMap\(/,
+      /mapFromRuntime/,
+      /effectiveCfg/,
+    ],
     'materials apply color policy canonical config source'
   );
   assertMatchesAll(
@@ -891,20 +899,27 @@ test('[builder-surface-family] orchestration owners remain thin around canonical
     materialsFactoryMaterialPolicyOwner,
     [
       /from '\.\/materials_factory_texture_policy\.js';/,
-      /resolveFrontTexture\(App, useCustomTexture, customTextureDataURL\)/,
+      /requireMaterialSnapshot\(materialSnapshot\)/,
+      /resolveFrontTexture\(App, snapshot, useCustomTexture, customTextureDataURL\)/,
     ],
     'materials factory material policy delegates texture-source decisions'
   );
   assertLacksAll(
     assert,
     materialsFactoryMaterialPolicyOwner,
-    [/getCustomUploadedTextureMaybe/, /getCfg\(/, /customUploadedDataURL/],
+    [/readRuntimeScalarOrDefaultFromApp/, /getCustomUploadedTextureMaybe/, /getCfg\(/],
     'materials factory material policy delegates texture-source decisions'
   );
   assertLacksAll(
     assert,
     materialsFactoryTexturePolicyOwner,
-    [/getCustomUploadedTextureMaybe/, /customUploadedTexture/, /allowLiveCacheFallback/],
+    [
+      /from '\.\/store_access\.js'/,
+      /getCfg\(/,
+      /getCustomUploadedTextureMaybe/,
+      /customUploadedTexture/,
+      /allowLiveCacheFallback/,
+    ],
     'materials factory texture policy is data-url only'
   );
 
@@ -1082,6 +1097,9 @@ test('[builder-surface-family] visuals/module seams stay consolidated behind can
   assert.match(chestSeam, /visuals_chest_mode_build\.js/);
   assert.match(chestRuntime, /export function ensureChestModeApp\(/);
   assert.match(chestInputs, /export function resolveChestModeBuildInputs\(/);
+  assert.match(chestInputs, /build options snapshot is required/);
+  assert.doesNotMatch(chestInputs, /getChestModeBuildUI|getBuildUIFromPlatform|getBuildUI\(/);
+  assert.doesNotMatch(chestRuntime, /getChestModeBuildUI|getBuildUIFromPlatform/);
   assert.match(chestConfig, /export function requireChestModeConfigSnapshot\(/);
   assert.match(chestConfig, /cfgSnapshot is required/);
   assert.match(chestMaterials, /export function resolveChestModeBodyMaterialState\(/);

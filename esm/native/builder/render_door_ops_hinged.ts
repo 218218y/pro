@@ -125,7 +125,11 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
       const isMirrorDoor = doorOp.isMirror;
       let mirrorMat = null;
       if (isMirrorDoor) {
-        mirrorMat = getMirrorMaterial({ App, THREE });
+        mirrorMat = getMirrorMaterial({
+          App,
+          THREE,
+          materialSnapshot: { cfgSnapshot: cfg, sketchMode: args?.sketchMode === true },
+        });
         if (!mirrorMat) mirrorMat = woodMat;
         if (woodMat === mirrorMat) woodMat = globalFrontMat || woodMat;
       }

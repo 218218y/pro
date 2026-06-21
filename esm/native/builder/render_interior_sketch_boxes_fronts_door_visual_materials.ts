@@ -18,7 +18,7 @@ export function resolveSketchBoxDoorVisualMaterials(args: {
 }): ResolvedSketchBoxDoorVisualMaterials {
   const { renderArgs, doorPid, doorVisualState } = args;
   const { frontsArgs, resolvePartMaterial } = renderArgs;
-  const { App, currentShelfMat, bodyMat, THREE, ops } = frontsArgs.args;
+  const { App, input, currentShelfMat, bodyMat, THREE, ops } = frontsArgs.args;
 
   const doorMat = resolvePartMaterial(doorPid, bodyMat);
   let doorFaceMat = doorMat;
@@ -35,7 +35,13 @@ export function resolveSketchBoxDoorVisualMaterials(args: {
     : null;
 
   try {
-    const resolvedMirrorMat = getMirrorMaterial ? getMirrorMaterial({ App, THREE }) : null;
+    const resolvedMirrorMat = getMirrorMaterial
+      ? getMirrorMaterial({
+          App,
+          THREE,
+          materialSnapshot: { cfgSnapshot: input.cfgSnapshot, sketchMode: input.sketchMode },
+        })
+      : null;
     if (resolvedMirrorMat) {
       doorFaceMat = resolvedMirrorMat;
       if (doorBaseMat === doorFaceMat) {

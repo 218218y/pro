@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { buildChestModeIfNeeded } from '../esm/native/builder/chest_mode_pipeline.ts';
 import { applyMaterials } from '../esm/native/builder/materials_apply.ts';
+import { captureMaterialsApplySnapshot } from '../esm/native/builder/materials_apply_snapshot.ts';
 import { finalizeBuildBestEffort } from '../esm/native/builder/post_build_finalize.ts';
 import {
   applyBuilderHandles,
@@ -219,11 +220,12 @@ test('residual slot access runtime: materials apply uses canonical builder handl
     },
   };
 
-  assert.equal(applyMaterials(App), true);
+  const snapshot = captureMaterialsApplySnapshot(App);
+  assert.equal(applyMaterials(App, snapshot), true);
   assert.equal(targetMesh.material, appliedMaterial);
   assert.deepEqual(calls, [
     ['getMaterial', 'white'],
-    ['handles', { triggerRender: false, cfgSnapshot: {}, addOutlines }],
+    ['handles', { triggerRender: false, cfgSnapshot: snapshot.cfg, addOutlines }],
     ['platform-render', false],
   ]);
 });
@@ -278,7 +280,7 @@ test('residual slot access runtime: materials apply skips handles/render churn w
     },
   };
 
-  assert.equal(applyMaterials(App), true);
+  assert.equal(applyMaterials(App, captureMaterialsApplySnapshot(App)), true);
   assert.equal(targetMesh.material, appliedMaterial);
   assert.deepEqual(calls, [['getMaterial', 'white']]);
 });

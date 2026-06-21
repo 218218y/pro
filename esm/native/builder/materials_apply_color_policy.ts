@@ -6,22 +6,21 @@ import {
   isShelfBoardPartId,
   resolveShelfGroupPartId,
 } from '../features/shelf_part_identity.js';
-import type { AppContainer, BuilderMaterialsServiceLike } from '../../../types';
+import type { BuilderGetMaterialFn } from '../../../types';
 import type { IndividualColorsMap } from '../../../types/maps';
 import {
   asObject,
-  getBuildUi,
-  getMaterialsCfg,
   getUiVal,
   type BuildUiLike,
   type MaterialsCfgLike,
   type PartStackKey,
   type ValueRecord,
 } from './materials_apply_shared.js';
+import { requireMaterialsApplySnapshot, type MaterialsApplySnapshot } from './materials_apply_snapshot.js';
 import { readPartColorEntry } from './material_color_lookup.js';
 import { resolveGlobalFrontMaterialInput, resolveSelectionFrontMaterial } from './material_selection.js';
 
-export type MaterialGetter = NonNullable<BuilderMaterialsServiceLike['getMaterial']>;
+export type MaterialGetter = BuilderGetMaterialFn;
 
 export type MaterialsApplyColorContext = {
   ui: BuildUiLike;
@@ -144,12 +143,11 @@ export function createPartMaterialResolver(args: {
 }
 
 export function resolveMaterialsApplyColorContext(args: {
-  App: AppContainer;
   getMaterial: MaterialGetter;
+  snapshot: MaterialsApplySnapshot;
 }): MaterialsApplyColorContext | null {
-  const { App, getMaterial } = args;
-  const ui = getBuildUi(App);
-  const cfg = getMaterialsCfg(App);
+  const { getMaterial } = args;
+  const { ui, cfg } = requireMaterialsApplySnapshot(args.snapshot);
   const globalFrontMat = resolveGlobalFrontMaterial({ ui, cfg, getMaterial });
   if (!globalFrontMat) return null;
 

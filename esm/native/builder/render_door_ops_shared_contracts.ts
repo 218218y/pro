@@ -1,5 +1,6 @@
 import type {
   AppContainer,
+  BuilderGetMirrorMaterialFn,
   BuilderHandleMeshOptionsLike,
   DoorVisualEntryLike,
   Object3DLike,
@@ -18,10 +19,7 @@ export type WardrobeGroupFn = (App: AppContainer) => unknown;
 export type DoorsArrayFn = (App: AppContainer) => DoorVisualEntryLike[];
 export type MarkDirtyFn = (App: AppContainer) => void;
 export type TagMirrorSurfaceFn = (App: AppContainer, rootObj: unknown, mirrorMat: unknown) => number;
-export type GetMirrorMaterialFn = (args: {
-  App: AppContainer;
-  THREE: import('../../../types').ThreeLike;
-}) => unknown;
+export type GetMirrorMaterialFn = BuilderGetMirrorMaterialFn;
 export type GetMaterialFn = (partId: unknown, kind?: unknown) => unknown;
 export type GetPartMaterialFn = (partId: string) => unknown;
 export type GetPartColorValueFn = (partId: string) => unknown;

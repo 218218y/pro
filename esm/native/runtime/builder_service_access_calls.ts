@@ -7,7 +7,8 @@ import type {
   BuilderBuildCornerWingFn,
   BuilderCreateDoorVisualFn,
   BuilderCreateInternalDrawerBoxFn,
-  BuilderGetMaterialFn,
+  BuilderGetMaterialFactoryFn,
+  BuilderMaterialSnapshotLike,
   BuilderOutlineBindingFactory,
   ThreeLike,
 } from '../../../types';
@@ -24,7 +25,11 @@ import {
   requireBuilderModulesService,
 } from './builder_service_access_slots.js';
 
-export type MirrorMaterialFactory = (args: { App: AppContainer; THREE: ThreeLike }) => unknown;
+export type MirrorMaterialFactory = (args: {
+  App: AppContainer;
+  THREE: ThreeLike;
+  materialSnapshot: BuilderMaterialSnapshotLike;
+}) => unknown;
 
 export function getBuilderCreateOutlineBinding(App: unknown): BuilderOutlineBindingFactory | null {
   return bindBuilderMethod<
@@ -48,8 +53,8 @@ export function captureBuilderOutlineBinding(App: unknown): ReturnType<BuilderOu
   return binding;
 }
 
-export function getBuilderGetMaterial(App: unknown): BuilderGetMaterialFn | null {
-  return bindBuilderMethod<Parameters<BuilderGetMaterialFn>, ReturnType<BuilderGetMaterialFn>>(
+export function getBuilderGetMaterial(App: unknown): BuilderGetMaterialFactoryFn | null {
+  return bindBuilderMethod<Parameters<BuilderGetMaterialFactoryFn>, ReturnType<BuilderGetMaterialFactoryFn>>(
     getBuilderMaterialsService(App),
     'getMaterial'
   );
@@ -58,8 +63,11 @@ export function getBuilderGetMaterial(App: unknown): BuilderGetMaterialFn | null
 export function requireBuilderGetMaterial(
   App: AppContainer,
   label = 'runtime/builder_service_access.materials.getMaterial'
-): BuilderGetMaterialFn {
-  return requireBuilderMethod<Parameters<BuilderGetMaterialFn>, ReturnType<BuilderGetMaterialFn>>(
+): BuilderGetMaterialFactoryFn {
+  return requireBuilderMethod<
+    Parameters<BuilderGetMaterialFactoryFn>,
+    ReturnType<BuilderGetMaterialFactoryFn>
+  >(
     requireBuilderMaterialsService(App, label),
     'getMaterial',
     `[WardrobePro] getMaterial is not available (expected App.services.builder.materials.getMaterial).`
@@ -67,28 +75,32 @@ export function requireBuilderGetMaterial(
 }
 
 export function getBuilderMirrorMaterialFactory(App: unknown): MirrorMaterialFactory | null {
-  const materialFactory = bindBuilderMethod<[{ THREE: ThreeLike }], unknown>(
-    getBuilderMaterialsService(App),
-    'getMirrorMaterial'
-  );
+  const materialFactory = bindBuilderMethod<
+    [{ THREE: ThreeLike; materialSnapshot: BuilderMaterialSnapshotLike }],
+    unknown
+  >(getBuilderMaterialsService(App), 'getMirrorMaterial');
   if (materialFactory) {
-    return ({ App: _App, THREE }) => materialFactory({ THREE });
+    return ({ App: _App, THREE, materialSnapshot }) => materialFactory({ THREE, materialSnapshot });
   }
 
-  const renderFactory = bindBuilderMethod<[{ App: AppContainer; THREE: ThreeLike }], unknown>(
-    getBuilderRenderOps(App),
-    'getMirrorMaterial'
-  );
-  return renderFactory ? ({ App: currentApp, THREE }) => renderFactory({ App: currentApp, THREE }) : null;
+  const renderFactory = bindBuilderMethod<
+    [{ App: AppContainer; THREE: ThreeLike; materialSnapshot: BuilderMaterialSnapshotLike }],
+    unknown
+  >(getBuilderRenderOps(App), 'getMirrorMaterial');
+  return renderFactory
+    ? ({ App: currentApp, THREE, materialSnapshot }) =>
+        renderFactory({ App: currentApp, THREE, materialSnapshot })
+    : null;
 }
 
 export function resolveBuilderMirrorMaterial(
   App: AppContainer,
   THREE: ThreeLike,
+  materialSnapshot: BuilderMaterialSnapshotLike,
   fallbackFactory?: (() => unknown) | null
 ): unknown {
   const getMirrorMaterial = getBuilderMirrorMaterialFactory(App);
-  if (getMirrorMaterial) return getMirrorMaterial({ App, THREE });
+  if (getMirrorMaterial) return getMirrorMaterial({ App, THREE, materialSnapshot });
   return typeof fallbackFactory === 'function' ? fallbackFactory() : null;
 }
 

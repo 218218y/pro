@@ -15,7 +15,7 @@ import type {
   BuilderAddFoldedClothesFn,
   BuilderAddRealisticHangerFn,
   BuilderCallable,
-  BuilderGetMaterialFn,
+  BuilderGetMaterialFactoryFn,
   BuilderOutlineBindingFactory,
   NullableBuilderCallable,
 } from './build_builder';
@@ -279,7 +279,7 @@ export interface BuilderContentsSurfaceLike extends UnknownRecord {
 export interface BuilderDepsRootLike extends UnknownRecord {
   util?: { cleanGroup?: BuilderCallable; pruneCachesSafe?: BuilderCallable; [k: string]: unknown };
   materials?: {
-    getMaterial?: BuilderGetMaterialFn;
+    getMaterial?: BuilderGetMaterialFactoryFn;
     createOutlineBinding?: BuilderOutlineBindingFactory;
     [k: string]: unknown;
   };
@@ -301,7 +301,7 @@ export interface BuilderDepsResolvedLike extends UnknownRecord {
   pruneCachesSafe: NullableBuilderCallable;
   triggerRender: NullableBuilderCallable;
   showToast: NullableBuilderCallable;
-  getMaterial: BuilderGetMaterialFn;
+  getMaterial: BuilderGetMaterialFactoryFn;
   createOutlineBinding: BuilderOutlineBindingFactory;
   calculateModuleStructure: BuilderCalculateModuleStructureFn | null;
   createDoorVisual: BuilderCreateDoorVisualFn;

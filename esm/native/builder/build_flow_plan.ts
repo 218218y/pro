@@ -41,6 +41,7 @@ export function resolveBuildFlowPlan(args: BuildFlowPlanResolveArgs): BuildFlowP
     THREE,
     ui,
     cfg,
+    sketchMode,
     toStr,
     getMaterialFn,
   });

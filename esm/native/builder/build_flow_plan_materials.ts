@@ -7,7 +7,7 @@ import { isFrontColorBraceShelvesOnlyMode } from '../features/front_color_shelf_
 import type { BuildFlowPlanMaterials, BuildFlowPlanMaterialsArgs } from './build_flow_plan_contracts.js';
 
 export function resolveBuildFlowPlanMaterials(args: BuildFlowPlanMaterialsArgs): BuildFlowPlanMaterials {
-  const { App, THREE, ui, cfg, toStr, getMaterialFn } = args;
+  const { App, THREE, ui, cfg, sketchMode, toStr, getMaterialFn } = args;
 
   const {
     colorKey: colorHex,
@@ -32,6 +32,7 @@ export function resolveBuildFlowPlanMaterials(args: BuildFlowPlanMaterialsArgs):
     App,
     THREE,
     cfg,
+    materialSnapshot: { cfgSnapshot: cfg, sketchMode },
     getMaterial: getMaterialFn,
     globalFrontMat,
   });

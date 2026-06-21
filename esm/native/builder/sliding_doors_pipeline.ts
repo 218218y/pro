@@ -91,6 +91,7 @@ export function applySlidingDoorsIfNeeded(ctx: BuildContextLike) {
     !!ro.applySlidingDoorsOps({
       THREE: THREE,
       cfg: cfg,
+      sketchMode: ctx.flags?.sketchMode === true,
       ui: ui,
       isGroovesEnabled: !!(ui && ui.groovesEnabled),
       ops: ops,

@@ -2,8 +2,10 @@ import { DRAWER_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_
 import { getDrawersArray } from '../runtime/render_access.js';
 import { resolveDrawerBoxPaintMaterial } from '../features/drawer_box_identity.js';
 import { resolveBuilderMirrorMaterial } from '../runtime/builder_service_access.js';
+import { createMaterialSnapshotBinding } from './materials_factory_material_policy.js';
 
 import type { InteriorValueRecord } from './render_interior_ops_contracts.js';
+import type { BuilderGetMaterialFactoryFn } from '../../../types';
 import type { ApplySketchExternalDrawersArgs } from './render_interior_sketch_drawers_shared.js';
 import type { SketchExternalDrawerRenderContext } from './render_interior_sketch_drawers_external_types.js';
 
@@ -59,6 +61,7 @@ export function createSketchExternalDrawerRenderContext(
       cachedMirrorMaterial = resolveBuilderMirrorMaterial(
         App,
         THREE as never,
+        { cfgSnapshot: input.cfgSnapshot, sketchMode: input.sketchMode },
         () => new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 1.0, roughness: 0.01 })
       );
     } catch {
@@ -84,7 +87,11 @@ export function createSketchExternalDrawerRenderContext(
       const materials = readObject<InteriorValueRecord>(builder?.materials);
       const getMaterial = materials?.getMaterial;
       if (isFn(getMaterial)) {
-        cachedDrawerBoxBaseMaterial = getMaterial('#ffffff', 'body', false);
+        const getMaterialFactory = getMaterial as BuilderGetMaterialFactoryFn;
+        cachedDrawerBoxBaseMaterial = createMaterialSnapshotBinding(getMaterialFactory, {
+          cfgSnapshot: input.cfgSnapshot,
+          sketchMode: input.sketchMode,
+        })('#ffffff', 'body', false);
       }
     } catch {
       cachedDrawerBoxBaseMaterial = null;

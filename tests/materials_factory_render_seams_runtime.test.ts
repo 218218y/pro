@@ -59,6 +59,10 @@ function makeLiveTexture(uuid: string) {
   };
 }
 
+function materialSnapshot(sketchMode: boolean, cfgSnapshot: AnyRecord = {}) {
+  return { sketchMode, cfgSnapshot };
+}
+
 function withFakeImage(fn: () => void): void {
   type ImageHost = { Image?: unknown };
   const imageHost = globalThis as unknown as ImageHost;
@@ -77,13 +81,25 @@ function withFakeImage(fn: () => void): void {
   }
 }
 
+test('materials_factory rejects calls without a material snapshot', () => {
+  const App: AnyRecord = {
+    deps: { THREE: makeThreeStub() },
+    store: makeStore({ sketchMode: true }),
+  };
+
+  assert.throws(
+    () => getMaterial(App, '#ffffff', 'front', false, undefined, undefined as never),
+    /materialSnapshot is required/
+  );
+});
+
 test('materials_factory uses canonical render cache/meta seams without materializing compat refs on App', () => {
   const App: AnyRecord = {
     deps: { THREE: makeThreeStub() },
     store: makeStore({ sketchMode: true }),
   };
 
-  const material = getMaterial(App, '#ffffff', 'front');
+  const material = getMaterial(App, '#ffffff', 'front', false, undefined, materialSnapshot(true));
   assert.ok(material);
 
   const renderCache = ensureRenderCacheMaps(App);
@@ -104,7 +120,31 @@ test('materials_factory keeps front color albedo canonical instead of applying d
     store: makeStore({ sketchMode: false }),
   };
 
-  const material = getMaterial(App, '#336699', 'front') as AnyRecord;
+  const material = getMaterial(
+    App,
+    '#336699',
+    'front',
+    false,
+    undefined,
+    materialSnapshot(false)
+  ) as AnyRecord;
+  assert.equal((material.opts as AnyRecord).color, '#336699');
+});
+
+test('materials_factory uses snapshot sketch policy instead of live runtime state', () => {
+  const App: AnyRecord = {
+    deps: { THREE: makeThreeStub() },
+    store: makeStore({ sketchMode: true }),
+  };
+
+  const material = getMaterial(
+    App,
+    '#336699',
+    'front',
+    false,
+    undefined,
+    materialSnapshot(false)
+  ) as AnyRecord;
   assert.equal((material.opts as AnyRecord).color, '#336699');
 });
 
@@ -117,7 +157,14 @@ test('materials_factory resolves explicit texture data URL without falling back 
   };
 
   withFakeImage(() => {
-    const material = getMaterial(App, 'custom', 'front', true, 'data:explicit-texture') as AnyRecord;
+    const material = getMaterial(
+      App,
+      'custom',
+      'front',
+      true,
+      'data:explicit-texture',
+      materialSnapshot(false, { customUploadedDataURL: 'data:snapshot-texture' })
+    ) as AnyRecord;
     const opts = material.opts as AnyRecord;
     assert.ok(opts.map);
     assert.notEqual(opts.map, staleTexture);
@@ -134,7 +181,14 @@ test('materials_factory resolves config texture data URL without falling back to
   };
 
   withFakeImage(() => {
-    const material = getMaterial(App, 'custom', 'front', true) as AnyRecord;
+    const material = getMaterial(
+      App,
+      'custom',
+      'front',
+      true,
+      undefined,
+      materialSnapshot(false, { customUploadedDataURL: 'data:config-texture' })
+    ) as AnyRecord;
     const opts = material.opts as AnyRecord;
     assert.ok(opts.map);
     assert.notEqual(opts.map, staleTexture);
@@ -150,7 +204,7 @@ test('materials_factory ignores live texture cache when no canonical texture URL
     store: makeStore({ sketchMode: false }),
   };
 
-  const material = getMaterial(App, 'custom', 'front', true) as AnyRecord;
+  const material = getMaterial(App, 'custom', 'front', true, undefined, materialSnapshot(false)) as AnyRecord;
   const opts = material.opts as AnyRecord;
   assert.equal(opts.map, undefined);
   assert.equal(opts.color, '#ffffff');

@@ -39,6 +39,7 @@ export function prepareBuildWardrobeContextSetup(
   const readers = resolveBuildWardrobeContextReaders({
     label,
     sketchMode,
+    cfgSnapshot,
     calculateModuleStructure,
     getMaterial,
     addOutlines: renderPolicy.addOutlines,

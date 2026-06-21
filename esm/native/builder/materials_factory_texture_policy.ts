@@ -1,6 +1,6 @@
-import { getCfg } from './store_access.js';
 import { readTextureLike, type AppLike, type TextureLike } from './materials_factory_shared.js';
 import { getDataURLTexture } from './materials_factory_texture_runtime.js';
+import type { BuilderMaterialSnapshotLike } from '../../../types';
 
 export type FrontTextureSourceKind = 'none' | 'explicit-data-url' | 'config-data-url';
 
@@ -13,13 +13,12 @@ function readDataURL(value: unknown): string | null {
   return typeof value === 'string' && value ? value : null;
 }
 
-function readConfigCustomTextureDataURL(App: AppLike): string | null {
-  const cfg = getCfg(App);
-  return readDataURL(cfg.customUploadedDataURL);
+function readConfigCustomTextureDataURL(snapshot: BuilderMaterialSnapshotLike): string | null {
+  return readDataURL(snapshot.cfgSnapshot.customUploadedDataURL);
 }
 
 export function resolveFrontTextureSource(
-  App: AppLike,
+  snapshot: BuilderMaterialSnapshotLike,
   useCustomTexture: unknown,
   customTextureDataURL: unknown
 ): FrontTextureSource {
@@ -33,7 +32,7 @@ export function resolveFrontTextureSource(
     };
   }
 
-  const configDataURL = readConfigCustomTextureDataURL(App);
+  const configDataURL = readConfigCustomTextureDataURL(snapshot);
   if (configDataURL) {
     return {
       kind: 'config-data-url',
@@ -46,10 +45,11 @@ export function resolveFrontTextureSource(
 
 export function resolveFrontTexture(
   App: AppLike,
+  snapshot: BuilderMaterialSnapshotLike,
   useCustomTexture: unknown,
   customTextureDataURL: unknown
 ): TextureLike | null {
-  const source = resolveFrontTextureSource(App, useCustomTexture, customTextureDataURL);
+  const source = resolveFrontTextureSource(snapshot, useCustomTexture, customTextureDataURL);
   if (source.dataURL) {
     const texture = readTextureLike(getDataURLTexture(App, source.dataURL));
     if (texture) return texture;

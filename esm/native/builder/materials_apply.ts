@@ -21,6 +21,12 @@ import {
 } from './materials_apply_color_policy.js';
 import { applyMaterialsToWardrobeTree } from './materials_apply_traversal.js';
 import {
+  captureMaterialsApplySnapshot,
+  requireMaterialsApplySnapshot,
+  type MaterialsApplySnapshot,
+} from './materials_apply_snapshot.js';
+import { createMaterialSnapshotBinding } from './materials_factory_material_policy.js';
+import {
   asObject,
   ensureMaterialsApplySurface,
   maybeMaterialsApplyApp,
@@ -32,14 +38,14 @@ import {
   type WardrobeMeshLike,
 } from './materials_apply_shared.js';
 
-export function getMirrorMaterial(appIn: unknown, opts?: MirrorMaterialOpts) {
+export function getMirrorMaterial(appIn: unknown, opts: MirrorMaterialOpts) {
   const App = ensureMaterialsApplySurface(
     pickMaterialsApplyApp(appIn, 'native/builder/materials_apply.getMirrorMaterial')
   );
   return getBuilderMirrorMaterial(App, opts);
 }
 
-export function applyMaterials(appIn: unknown) {
+export function applyMaterials(appIn: unknown, snapshotIn: MaterialsApplySnapshot) {
   const maybeApp = maybeMaterialsApplyApp(appIn);
   if (!maybeApp) return false;
 
@@ -48,13 +54,16 @@ export function applyMaterials(appIn: unknown) {
   if (!wardrobeGroup) return false;
 
   const materialsService = getBuilderService(App)?.materials || null;
-  const getMaterial =
+  const getMaterialFactory =
     materialsService && typeof materialsService.getMaterial === 'function'
       ? materialsService.getMaterial
       : null;
-  if (typeof getMaterial !== 'function') return false;
+  if (typeof getMaterialFactory !== 'function') return false;
 
-  const colorContext = resolveMaterialsApplyColorContext({ App, getMaterial });
+  const snapshot = requireMaterialsApplySnapshot(snapshotIn);
+  const getMaterial = createMaterialSnapshotBinding(getMaterialFactory, snapshot.materialSnapshot);
+
+  const colorContext = resolveMaterialsApplyColorContext({ getMaterial, snapshot });
   if (!colorContext) return false;
 
   const changed = applyMaterialsToWardrobeTree({
@@ -104,10 +113,10 @@ export function installBuilderMaterialsApply(appIn: unknown) {
   }
 
   installStableSurfaceMethod(materials, 'getMirrorMaterial', MATERIALS_GET_MIRROR_CANONICAL_KEY, () => {
-    return (opts?: MirrorMaterialOpts) => getMirrorMaterial(App, opts);
+    return (opts: MirrorMaterialOpts) => getMirrorMaterial(App, opts);
   });
   installStableSurfaceMethod(materials, 'applyMaterials', MATERIALS_APPLY_CANONICAL_KEY, () => {
-    return () => applyMaterials(App);
+    return () => applyMaterials(App, captureMaterialsApplySnapshot(App));
   });
 
   installStableSurfaceMethod(
@@ -115,9 +124,10 @@ export function installBuilderMaterialsApply(appIn: unknown) {
     'getMirrorMaterial',
     MATERIALS_RENDER_GET_MIRROR_CANONICAL_KEY,
     () => {
-      return (args?: unknown) => {
-        const safeArgs = asObject<MirrorMaterialOpts>(args) || {};
-        return getMirrorMaterial(App, { THREE: safeArgs.THREE || null });
+      return (args: unknown) => {
+        const safeArgs = asObject<MirrorMaterialOpts>(args);
+        if (!safeArgs) throw new TypeError('[materials_apply] mirror material args are required');
+        return getMirrorMaterial(App, safeArgs);
       };
     }
   );

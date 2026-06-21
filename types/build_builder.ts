@@ -294,10 +294,10 @@ export interface BuilderSketchExtrasLike extends UnknownRecord {
 }
 
 export interface BuilderBuildChestOnlyOptsLike extends UnknownRecord {
-  H?: number;
-  totalW?: number;
-  D?: number;
-  drawersCount?: number | string;
+  H: number;
+  totalW: number;
+  D: number;
+  drawersCount: number | string;
   baseType?: unknown;
   baseLegStyle?: unknown;
   baseLegColor?: unknown;
@@ -311,10 +311,10 @@ export interface BuilderBuildChestOnlyOptsLike extends UnknownRecord {
   chestCommodeEnabled?: unknown;
   chestCommodeMirrorHeightCm?: unknown;
   chestCommodeMirrorWidthCm?: unknown;
-  cfgSnapshot?: ConfigStateLike | UnknownRecord | null;
-  renderPolicy?: BuilderContentsRenderPolicy;
+  cfgSnapshot: ConfigStateLike | UnknownRecord;
+  renderPolicy: BuilderContentsRenderPolicy;
 }
-export type BuilderBuildChestOnlyFn = (opts?: BuilderBuildChestOnlyOptsLike | null) => unknown;
+export type BuilderBuildChestOnlyFn = (opts: BuilderBuildChestOnlyOptsLike) => unknown;
 export interface BuilderBuildCornerWingMaterialsLike extends UnknownRecord {
   body: unknown;
   front: unknown;
@@ -438,7 +438,14 @@ export type BuilderCreateHandleMeshFn = (
   isLeftHinge: boolean,
   opts?: BuilderHandleMeshOptionsLike
 ) => Object3DLike | null;
-export type BuilderGetMirrorMaterialFn = (args?: BuilderRenderCommonArgsLike | null) => unknown;
+export interface BuilderMaterialSnapshotLike extends UnknownRecord {
+  cfgSnapshot: ConfigStateLike | UnknownRecord;
+  sketchMode: boolean;
+}
+export interface BuilderMirrorMaterialArgsLike extends BuilderRenderCommonArgsLike {
+  materialSnapshot: BuilderMaterialSnapshotLike;
+}
+export type BuilderGetMirrorMaterialFn = (args: BuilderMirrorMaterialArgsLike) => unknown;
 export type BuilderDebouncedBuildFn = () => unknown;
 export type BuilderDebounceFn<T extends BuilderCallable = BuilderCallable> = (fn: T, ms?: number) => T;
 export type BuilderGetMaterialFn = (
@@ -446,6 +453,13 @@ export type BuilderGetMaterialFn = (
   type: unknown,
   useCustomTexture?: unknown,
   customTextureDataURL?: unknown
+) => unknown;
+export type BuilderGetMaterialFactoryFn = (
+  color: unknown,
+  type: unknown,
+  useCustomTexture: unknown,
+  customTextureDataURL: unknown,
+  materialSnapshot: BuilderMaterialSnapshotLike
 ) => unknown;
 export interface BuilderRenderCommonArgsLike extends UnknownRecord {
   App?: AppContainer;
@@ -833,10 +847,7 @@ export interface BuilderMaterialsServiceLike extends UnknownRecord {
   __esm_materials_factory_v1?: boolean;
   getDataURLTexture?: (dataUrl: unknown) => unknown;
   generateTexture?: (colorHex: unknown, type: unknown) => unknown;
-  getMaterial?: {
-    (color: unknown, type: unknown, useCustomTexture?: unknown, customTextureDataURL?: unknown): unknown;
-    (...args: Parameters<BuilderGetMaterialFn>): ReturnType<BuilderGetMaterialFn>;
-  };
+  getMaterial?: BuilderGetMaterialFactoryFn;
 }
 
 export interface BuilderHandlesApplyOptionsLike extends UnknownRecord {

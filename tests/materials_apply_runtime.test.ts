@@ -4,6 +4,17 @@ import assert from 'node:assert/strict';
 import { applyMaterials } from '../esm/native/builder/materials_apply.ts';
 import { makeDrawerBoxPartId } from '../esm/native/features/drawer_box_identity.ts';
 import { readPartColorEntry } from '../esm/native/builder/material_color_lookup.ts';
+
+function applyMaterialsFromState(App: any) {
+  const state = App.store.getState();
+  const ui = state.ui || {};
+  const cfg = state.config || {};
+  return applyMaterials(App, {
+    ui,
+    cfg,
+    materialSnapshot: { cfgSnapshot: cfg, sketchMode: state.runtime?.sketchMode === true },
+  });
+}
 function createApp(triggerRenderAvailable = true) {
   const calls: unknown[] = [];
   const addOutlines = () => undefined;
@@ -72,7 +83,7 @@ function createApp(triggerRenderAvailable = true) {
 test('materials apply runtime: changed materials route handle/render follow-through through the canonical refresh seam', () => {
   const { App, calls, targetMesh, appliedMaterial, addOutlines } = createApp(true);
 
-  assert.equal(applyMaterials(App), true);
+  assert.equal(applyMaterialsFromState(App), true);
   assert.equal(targetMesh.material, appliedMaterial);
   assert.deepEqual(calls, [
     ['getMaterial', 'white'],
@@ -84,7 +95,7 @@ test('materials apply runtime: changed materials route handle/render follow-thro
 test('materials apply runtime: changed materials fall back to ensureRenderLoop when platform triggerRender is unavailable', () => {
   const { App, calls, targetMesh, appliedMaterial, addOutlines } = createApp(false);
 
-  assert.equal(applyMaterials(App), true);
+  assert.equal(applyMaterialsFromState(App), true);
   assert.equal(targetMesh.material, appliedMaterial);
   assert.deepEqual(calls, [
     ['getMaterial', 'white'],
@@ -154,7 +165,7 @@ test('materials apply runtime: drawer boxes keep independent white material unle
     render: { wardrobeGroup: { children: [frontMesh, drawerBoxGroup] } },
   };
 
-  assert.equal(applyMaterials(App), true);
+  assert.equal(applyMaterialsFromState(App), true);
   assert.equal(frontMesh.material, frontPaint);
   assert.equal(drawerBoxChild.material, whiteBox);
   assert.deepEqual(
@@ -172,7 +183,7 @@ test('materials apply runtime: drawer boxes keep independent white material unle
     mode: {},
     meta: {},
   });
-  assert.equal(applyMaterials(App), true);
+  assert.equal(applyMaterialsFromState(App), true);
   assert.equal(drawerBoxChild.material, boxPaint);
 });
 
@@ -216,7 +227,7 @@ test('materials apply runtime resolves global custom texture from canonical cfg 
     render: { wardrobeGroup: { children: [targetMesh] } },
   };
 
-  assert.equal(applyMaterials(App), true);
+  assert.equal(applyMaterialsFromState(App), true);
   assert.equal(targetMesh.material, textureMat);
   assert.deepEqual(calls[0], ['getMaterial', 'custom', 'front', true, 'data:cfg-texture']);
 });
@@ -260,7 +271,7 @@ test('materials apply runtime does not promote stale live custom texture cache w
     render: { wardrobeGroup: { children: [targetMesh] } },
   };
 
-  assert.equal(applyMaterials(App), true);
+  assert.equal(applyMaterialsFromState(App), true);
   assert.equal(targetMesh.material, colorMat);
   assert.deepEqual(calls[0], ['getMaterial', '#123456', 'front', false, null]);
 });
@@ -529,7 +540,7 @@ test('materials apply runtime refreshes the visible corner wing roof from corner
     render: { wardrobeGroup: { children: [wingRoofMesh, pentagonRoofMesh] } },
   };
 
-  assert.equal(applyMaterials(App), true);
+  assert.equal(applyMaterialsFromState(App), true);
   assert.equal(wingRoofMesh.material, wingRoofMat);
   assert.equal(pentagonRoofMesh.material, pentagonRoofMat);
   assert.equal(
@@ -578,7 +589,7 @@ test('materials apply runtime keeps inherited full-door paint on split segment m
     render: { wardrobeGroup: { children: [splitDoorMesh] } },
   };
 
-  assert.equal(applyMaterials(App), true);
+  assert.equal(applyMaterialsFromState(App), true);
   assert.equal(splitDoorMesh.material, oakMat);
   assert.equal(
     calls.some(call => Array.isArray(call) && call[0] === 'getMaterial' && call[1] === 'oak'),
@@ -634,7 +645,7 @@ test('materials apply runtime reads individual colors from canonical config inst
     render: { wardrobeGroup: { children: [targetMesh] } },
   };
 
-  assert.equal(applyMaterials(App), true);
+  assert.equal(applyMaterialsFromState(App), true);
   assert.equal(targetMesh.material, canonicalMat);
   assert.equal(
     calls.some(call => Array.isArray(call) && call[0] === 'getMaterial' && call[1] === '#654321'),

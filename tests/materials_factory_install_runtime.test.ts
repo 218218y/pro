@@ -131,7 +131,7 @@ test('materials factory install keeps stable refs live across root replacement i
   assert.equal(typeof heldGetMaterial, 'function');
   assert.equal(typeof heldGetTexture, 'function');
 
-  heldGetMaterial('#ffffff', 'front');
+  heldGetMaterial('#ffffff', 'front', false, undefined, { cfgSnapshot: {}, sketchMode: true });
   assert.deepEqual(AppA.touches, ['A:sketch_white']);
 
   const AppB = createApp('B', installed);
@@ -143,7 +143,7 @@ test('materials factory install keeps stable refs live across root replacement i
   assert.equal(AppB.deps.builder.materials.getMaterial, heldGetMaterial);
   assert.equal(AppB.deps.builder.materials.getDataURLTexture, heldGetTexture);
 
-  heldGetMaterial('#ffffff', 'front');
+  heldGetMaterial('#ffffff', 'front', false, undefined, { cfgSnapshot: {}, sketchMode: true });
   assert.deepEqual(AppA.touches, ['A:sketch_white']);
   assert.deepEqual(AppB.touches, ['B:sketch_white']);
 });
@@ -171,13 +171,14 @@ test('materials factory install heals drift even when the installed marker is al
 test('materials factory uses standard cabinet texture policy for catalog swatches', () => {
   const App = createApp('textures', undefined, false);
   const installed = installBuilderMaterialsFactory(App as never) as AnyMap;
+  const snapshot = { cfgSnapshot: {}, sketchMode: false };
 
-  const oakMaterial = installed.getMaterial('#c4935f', 'front') as AnyMap;
+  const oakMaterial = installed.getMaterial('#c4935f', 'front', false, undefined, snapshot) as AnyMap;
   assert.equal(oakMaterial.opts.color, 0xffffff);
   assert.ok(oakMaterial.opts.map, 'standard oak swatch should render with a generated material texture');
   assert.deepEqual(oakMaterial.opts.map.repeatCalls.at(-1), [2, 4]);
 
-  const graphiteMaterial = installed.getMaterial('#3f4245', 'front') as AnyMap;
+  const graphiteMaterial = installed.getMaterial('#3f4245', 'front', false, undefined, snapshot) as AnyMap;
   assert.equal(graphiteMaterial.opts.color, 0xffffff);
   assert.ok(
     graphiteMaterial.opts.map,
@@ -185,7 +186,7 @@ test('materials factory uses standard cabinet texture policy for catalog swatche
   );
   assert.deepEqual(graphiteMaterial.opts.map.repeatCalls.at(-1), [2, 2]);
 
-  const plainMaterial = installed.getMaterial('#123456', 'front') as AnyMap;
+  const plainMaterial = installed.getMaterial('#123456', 'front', false, undefined, snapshot) as AnyMap;
   assert.equal(plainMaterial.opts.color, '#123456');
   assert.equal(plainMaterial.opts.map, undefined);
 });

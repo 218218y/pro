@@ -138,6 +138,7 @@ test('build wardrobe context runtime: reader normalization keeps fallback getMat
   const readers = resolveBuildWardrobeContextReaders({
     label: 'unit',
     sketchMode: true,
+    cfgSnapshot: {},
     calculateModuleStructure: null,
     getMaterial: null,
     addOutlines,
@@ -150,6 +151,7 @@ test('build wardrobe context runtime: reader normalization keeps fallback getMat
   const nonSketch = resolveBuildWardrobeContextReaders({
     label: 'unit',
     sketchMode: false,
+    cfgSnapshot: {},
     calculateModuleStructure: null,
     getMaterial: () => 'mat',
     addOutlines,

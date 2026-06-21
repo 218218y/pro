@@ -152,7 +152,11 @@ export function createApplySlidingDoorsOps(deps: BuilderRenderDoorDeps) {
         const slideWoodMat = slideMat || globalFrontMat;
         let slideMirrorMat = null;
         if (visualState.isMirror) {
-          slideMirrorMat = getMirrorMaterial({ App, THREE });
+          slideMirrorMat = getMirrorMaterial({
+            App,
+            THREE,
+            materialSnapshot: { cfgSnapshot: cfg, sketchMode: args?.sketchMode === true },
+          });
           if (!slideMirrorMat) slideMirrorMat = slideWoodMat;
         }
         visual = createDoorVisual(

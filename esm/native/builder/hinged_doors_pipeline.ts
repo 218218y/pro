@@ -41,6 +41,7 @@ export function applyHingedDoorOpsAfterModules(ctx: unknown): boolean {
   ro.applyHingedDoorsOps({
     THREE: THREE,
     cfg: cfg,
+    sketchMode: bc.flags?.sketchMode === true,
     __wpStack: bc && bc.flags && typeof bc.flags.__wpStack === 'string' ? String(bc.flags.__wpStack) : 'top',
     ops: opsList,
     doorStyle: (bc.strings && bc.strings.doorStyle) || '',

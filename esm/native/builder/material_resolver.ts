@@ -9,7 +9,13 @@
 //   If a door becomes split (top/bot) after the user painted the full door, segments inherit the _full color.
 // - If 'mirror' is selected, RenderOps.getMirrorMaterial MUST exist (fail-fast).
 
-import type { AppContainer, RenderOpsLike, ThreeLike, UnknownRecord } from '../../../types';
+import type {
+  AppContainer,
+  BuilderMaterialSnapshotLike,
+  RenderOpsLike,
+  ThreeLike,
+  UnknownRecord,
+} from '../../../types';
 import type { IndividualColorsMap } from '../../../types/maps';
 import { getBuilderRenderOps } from '../runtime/builder_service_access.js';
 import { getPlatformReportError } from '../runtime/platform_access.js';
@@ -28,6 +34,7 @@ type MaterialResolverArgs = {
   App: AppContainer;
   THREE: ThreeLike;
   cfg?: UnknownRecord;
+  materialSnapshot: BuilderMaterialSnapshotLike;
   getMaterial: MaterialFactory;
   globalFrontMat: unknown;
 };
@@ -52,6 +59,7 @@ export function makeMaterialResolver(args: MaterialResolverArgs): {
   const cfg = _asObj(args.cfg) || {};
   const getMaterial = args.getMaterial;
   const globalFrontMat = args.globalFrontMat;
+  const materialSnapshot = args.materialSnapshot;
 
   const toColorKey = (value: unknown, defaultValue = ''): string => String(value ?? defaultValue);
 
@@ -111,7 +119,7 @@ export function makeMaterialResolver(args: MaterialResolverArgs): {
         }
         throw err;
       }
-      return getMirrorMaterial({ App, THREE });
+      return getMirrorMaterial({ App, THREE, materialSnapshot });
     }
 
     return resolveSelectionFrontMaterial({

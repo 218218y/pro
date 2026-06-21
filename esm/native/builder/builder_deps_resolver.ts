@@ -17,7 +17,7 @@ import type {
   BuilderBuildCornerWingFn,
   BuilderCalculateModuleStructureFn,
   BuilderRebuildDrawerMetaFn,
-  BuilderGetMaterialFn,
+  BuilderGetMaterialFactoryFn,
   BuilderAddHangingClothesFn,
   BuilderAddFoldedClothesFn,
   BuilderAddRealisticHangerFn,
@@ -124,8 +124,8 @@ function bindCallable(owner: UnknownRecord, key: string): BuilderCallable | null
   return bindKnownFunction<BuilderCallable>(owner, key);
 }
 
-function bindGetMaterialFn(owner: UnknownRecord, key: string): BuilderGetMaterialFn | null {
-  return bindKnownFunction<BuilderGetMaterialFn>(owner, key);
+function bindGetMaterialFn(owner: UnknownRecord, key: string): BuilderGetMaterialFactoryFn | null {
+  return bindKnownFunction<BuilderGetMaterialFactoryFn>(owner, key);
 }
 
 function bindOutlineBindingFactory(owner: UnknownRecord, key: string): BuilderOutlineBindingFactory | null {

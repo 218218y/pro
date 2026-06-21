@@ -143,7 +143,7 @@ function createHarness(): Harness {
           return { outlined: group, snapshot };
         };
       },
-      getMirrorMaterial(args: { App: unknown; THREE: unknown }) {
+      getMirrorMaterial(args: { App: unknown; THREE: unknown; materialSnapshot: unknown }) {
         calls.renderMirror.push({ self: this, args });
         return { via: 'renderOps', args };
       },
@@ -156,7 +156,7 @@ function createHarness(): Harness {
         calls.materials.push({ self: this, name });
         return `material:${name}`;
       },
-      getMirrorMaterial(args: { THREE: unknown }) {
+      getMirrorMaterial(args: { THREE: unknown; materialSnapshot: unknown }) {
         calls.materialMirror.push({ self: this, args });
         return { via: 'materials', args };
       },
@@ -317,18 +317,19 @@ test('builder public surface runtime: service access binds canonical builder sea
 
   const mirrorFactory = getBuilderMirrorMaterialFactory(App);
   assert.ok(mirrorFactory);
-  assert.deepEqual(mirrorFactory?.({ App, THREE: { revision: 1 } } as any), {
+  const materialSnapshot = { cfgSnapshot: {}, sketchMode: false };
+  assert.deepEqual(mirrorFactory?.({ App, THREE: { revision: 1 }, materialSnapshot } as any), {
     via: 'materials',
-    args: { THREE: { revision: 1 } },
+    args: { THREE: { revision: 1 }, materialSnapshot },
   });
   assert.equal(calls.materialMirror.length, 1);
   assert.equal(calls.renderMirror.length, 0);
 
   delete App.services.builder.materials.getMirrorMaterial;
   const fallbackMirrorFactory = getBuilderMirrorMaterialFactory(App);
-  assert.deepEqual(fallbackMirrorFactory?.({ App, THREE: { revision: 2 } } as any), {
+  assert.deepEqual(fallbackMirrorFactory?.({ App, THREE: { revision: 2 }, materialSnapshot } as any), {
     via: 'renderOps',
-    args: { App, THREE: { revision: 2 } },
+    args: { App, THREE: { revision: 2 }, materialSnapshot },
   });
   assert.equal(calls.renderMirror.length, 1);
 

@@ -4,7 +4,7 @@
 
 import { assertApp } from '../runtime/api.js';
 import { trackMirrorSurface } from '../runtime/render_access.js';
-import { ensureBuilderService, resolveBuilderMirrorMaterial } from '../runtime/builder_service_access.js';
+import { ensureBuilderService } from '../runtime/builder_service_access.js';
 import { assertThreeViaDeps } from '../runtime/three_access.js';
 
 import type {
@@ -70,14 +70,6 @@ function __asCanvas(value: unknown): CanvasLike | null {
   return __isCanvasLike(value) ? value : null;
 }
 
-function __getMirrorMaterialFromServices(App: AppContainer, THREE: ThreeLike): unknown {
-  return resolveBuilderMirrorMaterial(
-    App,
-    THREE,
-    () => new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 1.0, roughness: 0.01 })
-  );
-}
-
 function __markMirrorTracked(App: AppContainer, mirrorMesh: Object3DLike): void {
   trackMirrorSurface(App, mirrorMesh);
 }
@@ -137,7 +129,6 @@ export {
   __asCanvas,
   __ensureApp,
   __ensureTHREE,
-  __getMirrorMaterialFromServices,
   __markMirrorTracked,
   __bindWithApp,
   __ensureBuilderModulesSlot,

@@ -82,7 +82,10 @@ export function createChestDrawerFrontVisual(args: ChestDrawerFrontVisualArgs): 
   const drawerVisualState = resolveDrawerVisualState(cfg, args.drawerId, args.getPartColorValue);
   const drawerWoodMat = args.frontMaterial || args.bodyMaterial;
   const drawerMirrorMat = drawerVisualState.isMirror
-    ? getMirrorMaterialFromServices(args.App, args.THREE) || drawerWoodMat
+    ? getMirrorMaterialFromServices(args.App, args.THREE, {
+        cfgSnapshot: args.cfg,
+        sketchMode: args.renderPolicy.sketchMode,
+      }) || drawerWoodMat
     : drawerWoodMat;
   const effectiveDrawerFrameStyleRaw = resolveDoorVisualStyle(
     null,

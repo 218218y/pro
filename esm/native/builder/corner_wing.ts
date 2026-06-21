@@ -44,7 +44,7 @@ export const buildCornerWing = (
 
   const App = assertApp(ctx?.App ?? null, 'native/builder/corner_wing');
   const THREE = resolveCornerWingTHREE(App);
-  const services = resolveCornerWingServices(App, meta.snapshot.renderPolicy);
+  const services = resolveCornerWingServices(App, meta.snapshot.renderPolicy, meta.snapshot.cfg);
 
   const state = normalizeCornerWingState({
     mainW,
@@ -69,6 +69,7 @@ export const buildCornerWing = (
     materials,
     getMaterial: services.getMaterial,
     cfgSnapshot: state.__cfg,
+    sketchMode: state.__sketchMode,
     readMap: readers.getMap,
     stackKey: state.__stackKey,
     stackSplitEnabled: state.__stackSplitEnabled,

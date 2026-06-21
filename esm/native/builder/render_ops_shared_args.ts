@@ -47,6 +47,14 @@ export function __commonArgs(x: unknown): RenderCommonArgs {
   const next: RenderCommonArgs = {};
   if (map && 'App' in map) next.App = assertApp(map.App, 'native/builder/render_ops.commonArgs');
   if (map && 'THREE' in map) next.THREE = __three(map.THREE);
+  const materialSnapshot = __asMap(map?.materialSnapshot);
+  const cfgSnapshot = __asMap(materialSnapshot?.cfgSnapshot);
+  if (materialSnapshot && cfgSnapshot && typeof materialSnapshot.sketchMode === 'boolean') {
+    next.materialSnapshot = {
+      cfgSnapshot,
+      sketchMode: materialSnapshot.sketchMode,
+    };
+  }
   const addOutlines = map?.addOutlines;
   if (typeof addOutlines === 'function') next.addOutlines = (obj: unknown) => addOutlines(obj);
   return next;

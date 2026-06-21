@@ -1,11 +1,16 @@
-import type { AppContainer, DrawerVisualEntryLike, UnknownCallable, ThreeLike } from '../../../types';
+import type {
+  AppContainer,
+  BuilderGetMirrorMaterialFn,
+  DrawerVisualEntryLike,
+  UnknownCallable,
+} from '../../../types';
 import type { readDoorStyleMap } from '../features/door_style_overrides.js';
 
 export type FnLike = UnknownCallable;
 export type RegisterFn = (App: AppContainer, partId: unknown, obj: unknown, kind: unknown) => void;
 export type WardrobeGroupFn = (App: AppContainer) => unknown;
 export type DrawersArrayFn = (App: AppContainer) => DrawerVisualEntryLike[];
-export type GetMirrorMaterialFn = (args: { App: AppContainer; THREE: ThreeLike }) => unknown;
+export type GetMirrorMaterialFn = BuilderGetMirrorMaterialFn;
 export type GetPartMaterialFn = (partId: string) => unknown;
 export type GetPartColorValueFn = (partId: string) => unknown;
 

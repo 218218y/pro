@@ -101,8 +101,13 @@ export function installBuilderMaterialsFactory(appIn: unknown) {
     }
   );
   installStableSurfaceMethod(materials, 'getMaterial', MATERIALS_FACTORY_CANONICAL_KEYS.getMaterial, () => {
-    return (color: unknown, type: unknown, useCustomTexture?: unknown, customTextureDataURL?: unknown) =>
-      getMaterial(context.App, color, type, useCustomTexture, customTextureDataURL);
+    return (
+      color: unknown,
+      type: unknown,
+      useCustomTexture: unknown,
+      customTextureDataURL: unknown,
+      materialSnapshot: Parameters<NonNullable<BuilderMaterialsServiceLike['getMaterial']>>[4]
+    ) => getMaterial(context.App, color, type, useCustomTexture, customTextureDataURL, materialSnapshot);
   });
 
   try {

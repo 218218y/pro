@@ -8,6 +8,7 @@ import { asRecord, cloneRecord } from '../runtime/record.js';
 import type {
   AppContainer,
   BuilderGetMaterialFn,
+  BuilderGetMirrorMaterialFn,
   ConfigStateLike,
   DoorSpecialMap,
   DoorSpecialValue,
@@ -25,12 +26,8 @@ type MaterialsLike = {
   braceShelfMat?: unknown;
 };
 
-type ThreeCtorLike = Pick<ThreeLike, 'MeshBasicMaterial' | 'MeshStandardMaterial' | 'DoubleSide'>;
-
-type GetMirrorMaterialFn = (args: { App: unknown; THREE: unknown }) => unknown;
-
 type RenderOpsLike = {
-  getMirrorMaterial?: GetMirrorMaterialFn;
+  getMirrorMaterial?: BuilderGetMirrorMaterialFn;
 };
 
 type GetMaterialFn = BuilderGetMaterialFn;
@@ -183,11 +180,12 @@ function __appUtilStr(App: AppContainer, value: unknown): string {
 
 export function createCornerWingMaterials(args: {
   App: AppContainer;
-  THREE: ThreeCtorLike;
+  THREE: ThreeLike;
   ro: RenderOpsLike | UnknownRecord | null | undefined;
   materials: MaterialsLike;
   getMaterial: GetMaterialFn;
   cfgSnapshot: ConfigStateLike | UnknownRecord;
+  sketchMode: boolean;
   readMap: (name: string) => unknown;
   stackKey: 'top' | 'bottom';
   stackSplitEnabled: boolean;
@@ -314,7 +312,13 @@ export function createCornerWingMaterials(args: {
   const getMirrorMaterial =
     renderOps && typeof renderOps.getMirrorMaterial === 'function' ? renderOps.getMirrorMaterial : null;
   const getMirrorMat = () => {
-    if (getMirrorMaterial) return getMirrorMaterial({ App, THREE });
+    if (getMirrorMaterial) {
+      return getMirrorMaterial({
+        App,
+        THREE,
+        materialSnapshot: { cfgSnapshot: cfg, sketchMode: args.sketchMode },
+      });
+    }
     return new THREE.MeshStandardMaterial({
       color: 0xffffff,
       metalness: 1,
