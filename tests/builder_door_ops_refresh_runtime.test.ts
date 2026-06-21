@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  applyBuilderHandles,
+  purgeBuilderHandlesForRemovedDoors,
   refreshBuilderAfterDoorOps,
   refreshBuilderHandles,
 } from '../esm/native/runtime/builder_service_access.ts';
@@ -332,4 +334,41 @@ test('builder door-ops refresh runtime: structural refresh honors explicit reque
       },
     ],
   ]);
+});
+
+test('builder handles access rejects incomplete public snapshots before invoking or reporting an owner', () => {
+  const calls: string[] = [];
+  const App: any = {
+    services: {
+      errors: {
+        report() {
+          calls.push('report');
+        },
+      },
+      builder: {
+        handles: {
+          applyHandles() {
+            calls.push('apply');
+          },
+          purgeHandlesForRemovedDoors() {
+            calls.push('purge');
+          },
+        },
+      },
+    },
+  };
+
+  assert.throws(
+    () => refreshBuilderHandles(App, { addOutlines, removeDoorsEnabled: false } as any),
+    /cfgSnapshot is required for handle refresh/
+  );
+  assert.throws(
+    () => applyBuilderHandles(App, { cfgSnapshot: {}, removeDoorsEnabled: false } as any),
+    /snapshot outline binding is required for handle apply/
+  );
+  assert.throws(
+    () => purgeBuilderHandlesForRemovedDoors(App, { removeDoorsEnabled: true } as any),
+    /cfgSnapshot is required for removed-door handle purge/
+  );
+  assert.deepEqual(calls, []);
 });

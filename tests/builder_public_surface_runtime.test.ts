@@ -681,6 +681,23 @@ test('builder public surface runtime: drawer follow-through fails before finaliz
   assert.equal(calls.triggerRender.length, 0);
 });
 
+test('builder public surface runtime: invalid handle snapshots fail before post-build side effects', () => {
+  const { App, calls } = createHarness();
+
+  assert.throws(
+    () =>
+      runBuilderPostBuildFollowThrough(App, {
+        cfgSnapshot: [] as any,
+        addOutlines: () => undefined,
+        removeDoorsEnabled: false,
+      }),
+    /cfgSnapshot is required for build follow-through handle apply/
+  );
+  assert.equal(calls.finalizeRegistry, 0);
+  assert.equal(calls.applyHandles, 0);
+  assert.equal(calls.triggerRender.length, 0);
+});
+
 test('builder public surface runtime: chest-mode follow-through keeps viewport render and registry finalize on one seam', () => {
   const { App, calls } = createHarness();
 

@@ -1013,11 +1013,14 @@ test('[builder-surface-family] visuals/module seams stay consolidated behind can
   assert.match(carcassCornice, /export function buildCarcassCornice\(/);
 
   const handlesOwner = read('esm/native/builder/handles_apply.ts');
+  const handlesInstall = read('esm/native/builder/handles.ts');
+  const handlesSurface = read('esm/native/builder/handles_shared.ts');
   const handlesConfig = read('esm/native/builder/handles_config_snapshot.ts');
   const handlesShared = read('esm/native/builder/handles_apply_shared.ts');
   const handlesDoors = read('esm/native/builder/handles_apply_doors.ts');
   const handlesDrawers = read('esm/native/builder/handles_apply_drawers.ts');
   const handlesPurge = read('esm/native/builder/handles_purge.ts');
+  const handlesAccess = read('esm/native/runtime/builder_service_access_build_handles.ts');
 
   assert.match(handlesOwner, /handles_apply_shared\.js/);
   assert.match(handlesOwner, /handles_apply_doors\.js/);
@@ -1045,6 +1048,15 @@ test('[builder-surface-family] visuals/module seams stay consolidated behind can
     /const isDrawerLikeGroup = \(node: NodeLike \| null \| undefined\): boolean =>/
   );
   assert.doesNotMatch(handlesOwner, /const computeGroupMaxZLocal = \(\(\) =>/);
+  assert.match(handlesInstall, /resolveInstallContext\(handlesInstallContexts, h, A\)/);
+  assert.match(handlesInstall, /applyHandles\(\{ App: context\.App, \.\.\.opts \}\)/);
+  assert.match(handlesInstall, /purgeHandlesForRemovedDoors\(\{ App: context\.App, \.\.\.opts \}\)/);
+  assert.doesNotMatch(handlesInstall, /applyHandles\(\{ App: A, \.\.\.opts \}\)/);
+  assert.doesNotMatch(handlesInstall, /purgeHandlesForRemovedDoors\(\{ App: A, \.\.\.opts \}\)/);
+  assert.match(handlesSurface, /BuilderHandlesServiceLike/);
+  assert.doesNotMatch(handlesSurface, /isDrawer: boolean,\s*ctx\?: CreateHandleMeshCtx/);
+  assert.match(handlesAccess, /requireBuilderHandlesApplyOptions\(opts\);/);
+  assert.match(handlesAccess, /requireBuilderHandlesPurgeOptions\(opts\);/);
   assert.match(handlesShared, /export type HandlesApplyRuntime = \{/);
   assert.match(handlesDoors, /export function applyDoorHandles\(runtime: HandlesApplyRuntime\): void \{/);
   assert.match(handlesDrawers, /export function applyDrawerHandles\(runtime: HandlesApplyRuntime\): void \{/);

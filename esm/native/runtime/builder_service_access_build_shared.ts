@@ -1,6 +1,7 @@
 import type {
   BuilderHandlesApplyOptionsLike,
   BuilderHandlesPurgeOptionsLike,
+  BuilderHandlesSnapshotLike,
   BuilderOutlineFn,
   BuilderDrawerRebuildSnapshot,
   BuilderRebuildDrawerMetaFn,
@@ -13,14 +14,44 @@ import type { BuildRequestMeta } from './builder_service_access_shared.js';
 export type ApplyBuilderHandlesOpts = BuilderHandlesApplyOptionsLike;
 export type PurgeBuilderHandlesOpts = BuilderHandlesPurgeOptionsLike;
 
-export type RefreshBuilderHandlesOpts = {
-  cfgSnapshot: ConfigStateLike | UnknownRecord;
-  addOutlines: BuilderOutlineFn;
-  removeDoorsEnabled: boolean;
+export type RefreshBuilderHandlesOpts = BuilderHandlesSnapshotLike & {
   purgeRemovedDoors?: boolean;
   triggerRender?: boolean;
   updateShadows?: boolean;
 };
+
+function requireBuilderHandlesConfigSnapshot(value: unknown, operation: string): void {
+  if (!asRecord(value)) {
+    throw new TypeError(`[builder_service_access] cfgSnapshot is required for ${operation}`);
+  }
+}
+
+function requireBuilderHandlesRemoveDoorsEnabled(value: unknown, operation: string): void {
+  if (typeof value !== 'boolean') {
+    throw new TypeError(`[builder_service_access] snapshot removeDoorsEnabled is required for ${operation}`);
+  }
+}
+
+export function requireBuilderHandlesApplyOptions(
+  opts: unknown,
+  operation = 'handle apply'
+): asserts opts is ApplyBuilderHandlesOpts {
+  const options = asRecord<ApplyBuilderHandlesOpts>(opts);
+  requireBuilderHandlesConfigSnapshot(options?.cfgSnapshot, operation);
+  if (typeof options?.addOutlines !== 'function') {
+    throw new TypeError(`[builder_service_access] snapshot outline binding is required for ${operation}`);
+  }
+  requireBuilderHandlesRemoveDoorsEnabled(options?.removeDoorsEnabled, operation);
+}
+
+export function requireBuilderHandlesPurgeOptions(
+  opts: unknown,
+  operation = 'removed-door handle purge'
+): asserts opts is PurgeBuilderHandlesOpts {
+  const options = asRecord<PurgeBuilderHandlesOpts>(opts);
+  requireBuilderHandlesConfigSnapshot(options?.cfgSnapshot, operation);
+  requireBuilderHandlesRemoveDoorsEnabled(options?.removeDoorsEnabled, operation);
+}
 
 export type RefreshBuilderAfterDoorOpsOpts = RefreshBuilderHandlesOpts & {
   source?: string;

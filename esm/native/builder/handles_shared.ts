@@ -6,6 +6,7 @@ import type {
   Box3Like,
   BuilderHandlesApplyOptionsLike,
   BuilderHandlesPurgeOptionsLike,
+  BuilderHandlesServiceLike,
   BuilderOutlineFn,
   ConfigStateLike,
   Matrix4Like,
@@ -32,20 +33,11 @@ export type HandlesPurgeOptions = BuilderHandlesPurgeOptionsLike;
 export type HandlesApplyContext = HandlesApplyOptions & { App: AppContainer };
 export type HandlesPurgeContext = HandlesPurgeOptions & { App: AppContainer };
 
-export type HandlesSurfaceLike = ValueRecord & {
-  cache?: HandlesCacheLike;
-  __esm_builder_handles_v7_v1?: boolean;
-  createHandleMeshV7?: (
-    type: unknown,
-    w: number,
-    hh: number,
-    isLeftHinge: boolean,
-    isDrawer: boolean,
-    ctx?: CreateHandleMeshCtx
-  ) => Object3DLike | null;
-  applyHandles?: (opts: HandlesApplyOptions) => void;
-  purgeHandlesForRemovedDoors?: (opts: HandlesPurgeOptions) => void;
-};
+export type HandlesSurfaceLike = ValueRecord &
+  BuilderHandlesServiceLike & {
+    cache?: HandlesCacheLike;
+    __esm_builder_handles_v7_v1?: boolean;
+  };
 
 export type HandleUserDataLike = ValueRecord & {
   __kind?: string;

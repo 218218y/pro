@@ -8,6 +8,8 @@ import type {
 } from './builder_service_access_build_shared.js';
 import {
   readUpdateShadows,
+  requireBuilderHandlesApplyOptions,
+  requireBuilderHandlesPurgeOptions,
   shouldPurgeRemovedDoors,
   shouldRunBuilderFollowThroughRender,
   shouldTriggerHandlesRefreshRender,
@@ -15,6 +17,7 @@ import {
 import { runBuilderRenderFollowThroughWhen } from './builder_service_access_build_render.js';
 
 export function applyBuilderHandles(App: unknown, opts: ApplyBuilderHandlesOpts): boolean {
+  requireBuilderHandlesApplyOptions(opts);
   try {
     const handles = getBuilderHandlesService(App);
     const fn = handles && typeof handles.applyHandles === 'function' ? handles.applyHandles : null;
@@ -32,6 +35,7 @@ export function applyBuilderHandles(App: unknown, opts: ApplyBuilderHandlesOpts)
 }
 
 export function purgeBuilderHandlesForRemovedDoors(App: unknown, opts: PurgeBuilderHandlesOpts): boolean {
+  requireBuilderHandlesPurgeOptions(opts);
   try {
     const handles = getBuilderHandlesService(App);
     const fn =
@@ -55,14 +59,7 @@ export function refreshBuilderHandles(
   App: unknown,
   opts: RefreshBuilderHandlesOpts
 ): BuilderHandleRefreshResult {
-  if (typeof opts?.addOutlines !== 'function') {
-    throw new TypeError('[builder_service_access] snapshot outline binding is required for handle refresh');
-  }
-  if (typeof opts?.removeDoorsEnabled !== 'boolean') {
-    throw new TypeError(
-      '[builder_service_access] snapshot removeDoorsEnabled is required for handle refresh'
-    );
-  }
+  requireBuilderHandlesApplyOptions(opts, 'handle refresh');
   const appliedHandles = applyBuilderHandles(App, {
     triggerRender: false,
     cfgSnapshot: opts.cfgSnapshot,

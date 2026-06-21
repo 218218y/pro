@@ -3,6 +3,7 @@ import { finalizeBuilderRegistry } from './builder_service_access_slots.js';
 import { applyBuilderHandles } from './builder_service_access_build_handles.js';
 import {
   readPostBuildUpdateShadows,
+  requireBuilderHandlesApplyOptions,
   shouldApplyBuilderHandles,
   shouldClearBuilderBuildUi,
   shouldFinalizeBuilderRegistry,
@@ -35,27 +36,14 @@ function hasDirtyTrackedMirrorSurfaces(App: unknown): boolean {
 function createFollowThroughHandleApplyOpts(
   opts?: BuilderPostBuildFollowThroughOpts | BuilderChestModeFollowThroughOpts | null
 ): ApplyBuilderHandlesOpts {
-  const cfgSnapshot = opts?.cfgSnapshot;
-  if (!cfgSnapshot) {
-    throw new TypeError('[builder_service_access] cfgSnapshot is required when applying handles');
-  }
-  const addOutlines = opts?.addOutlines;
-  if (typeof addOutlines !== 'function') {
-    throw new TypeError(
-      '[builder_service_access] snapshot outline binding is required when applying handles'
-    );
-  }
-  if (typeof opts?.removeDoorsEnabled !== 'boolean') {
-    throw new TypeError(
-      '[builder_service_access] snapshot removeDoorsEnabled is required when applying handles'
-    );
-  }
-  return {
+  const handleApplyOpts = {
     triggerRender: false,
-    cfgSnapshot,
-    addOutlines,
-    removeDoorsEnabled: opts.removeDoorsEnabled,
+    cfgSnapshot: opts?.cfgSnapshot,
+    addOutlines: opts?.addOutlines,
+    removeDoorsEnabled: opts?.removeDoorsEnabled,
   };
+  requireBuilderHandlesApplyOptions(handleApplyOpts, 'build follow-through handle apply');
+  return handleApplyOpts;
 }
 
 export function runBuilderPostBuildFollowThroughRuntime(
@@ -71,15 +59,14 @@ export function runBuilderPostBuildFollowThroughRuntime(
   }
   const runDrawerMetaFollowThrough =
     rebuildDrawerMeta && drawerRebuildSnapshot ? () => rebuildDrawerMeta(drawerRebuildSnapshot) : null;
+  const handleApplyOpts = shouldApplyBuilderHandles(opts) ? createFollowThroughHandleApplyOpts(opts) : null;
   const finalizedRegistry = shouldFinalizeBuilderRegistry(opts) ? finalizeBuilderRegistry(App) : false;
   let rebuiltDrawerMeta = false;
   if (runDrawerMetaFollowThrough) {
     runDrawerMetaFollowThrough();
     rebuiltDrawerMeta = true;
   }
-  const appliedHandles = shouldApplyBuilderHandles(opts)
-    ? applyBuilderHandles(App, createFollowThroughHandleApplyOpts(opts))
-    : false;
+  const appliedHandles = handleApplyOpts ? applyBuilderHandles(App, handleApplyOpts) : false;
 
   let prunedCaches = false;
   if (typeof opts?.pruneCachesSafe === 'function') {
@@ -112,9 +99,8 @@ export function runBuilderChestModeFollowThroughRuntime(
   App: unknown,
   opts?: BuilderChestModeFollowThroughOpts | null
 ): BuilderChestModeFollowThroughResult {
-  const appliedHandles = shouldApplyBuilderHandles(opts)
-    ? applyBuilderHandles(App, createFollowThroughHandleApplyOpts(opts))
-    : false;
+  const handleApplyOpts = shouldApplyBuilderHandles(opts) ? createFollowThroughHandleApplyOpts(opts) : null;
+  const appliedHandles = handleApplyOpts ? applyBuilderHandles(App, handleApplyOpts) : false;
   const viewport =
     opts?.renderViewport === false
       ? { renderedViewport: false, updatedControls: false }
