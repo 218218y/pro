@@ -14,6 +14,7 @@ import {
   getDrawerMetaEntry,
   clearDrawerRebuildIntent,
   consumeDrawerRebuildIntent,
+  getDrawerRebuildIntentSnapshot,
   setDrawerRebuildIntent,
 } from '../esm/native/runtime/doors_access.ts';
 
@@ -75,6 +76,13 @@ test('runtime access hardening: doors/drawers helpers keep service routing and r
   clearDrawerRebuildIntent(App);
   assert.equal(consumeDrawerRebuildIntent(App), null);
   setDrawerRebuildIntent(App, 'drawer-1');
-  assert.equal(consumeDrawerRebuildIntent(App), 'drawer-1');
+  const firstIntent = getDrawerRebuildIntentSnapshot(App);
+  assert.deepEqual(firstIntent, { targetId: 'drawer-1', version: 2 });
+  setDrawerRebuildIntent(App, 'drawer-1');
+  const secondIntent = getDrawerRebuildIntentSnapshot(App);
+  assert.deepEqual(secondIntent, { targetId: 'drawer-1', version: 3 });
+  assert.equal(consumeDrawerRebuildIntent(App, firstIntent), null);
+  assert.deepEqual(getDrawerRebuildIntentSnapshot(App), secondIntent);
+  assert.equal(consumeDrawerRebuildIntent(App, secondIntent), 'drawer-1');
   assert.equal(consumeDrawerRebuildIntent(App), null);
 });

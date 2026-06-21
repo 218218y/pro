@@ -2,7 +2,11 @@ import { guardVoid, reportError } from '../runtime/api.js';
 import { finalizeBuild, finalizeBuildBestEffort } from './post_build_finalize.js';
 import { readFunction } from './build_flow_readers.js';
 
-import type { BuildContextLike } from '../../../types';
+import type {
+  BuildContextLike,
+  BuilderDrawerRebuildSnapshot,
+  BuilderRebuildDrawerMetaFn,
+} from '../../../types';
 import type { PreparedBuildWardrobeFlow } from './build_wardrobe_flow_prepare.js';
 
 type BuildWardrobeExecutor = (prepared: PreparedBuildWardrobeFlow) => BuildContextLike | null;
@@ -14,7 +18,8 @@ type BuildWardrobeRuntimeOptions = {
     App: unknown;
     cfgSnapshot?: unknown;
     pruneCachesSafe?: ((scene: unknown) => void) | null;
-    rebuildDrawerMeta?: (() => void) | null;
+    drawerRebuildSnapshot?: BuilderDrawerRebuildSnapshot | null;
+    rebuildDrawerMeta?: BuilderRebuildDrawerMetaFn | null;
   }) => void;
   reportBuildFailure?: (prepared: PreparedBuildWardrobeFlow, error: unknown) => void;
 };
@@ -48,7 +53,8 @@ function finalizePreparedBuildWardrobeFlow(
   (options.finalizeBuildBestEffort || finalizeBuildBestEffort)({
     App,
     pruneCachesSafe: readFunction<(scene: unknown) => void>(pruneCachesSafe),
-    rebuildDrawerMeta: readFunction<() => void>(rebuildDrawerMeta),
+    drawerRebuildSnapshot: prepared.buildState.drawerRebuildSnapshot,
+    rebuildDrawerMeta: readFunction<BuilderRebuildDrawerMetaFn>(rebuildDrawerMeta),
   });
 }
 

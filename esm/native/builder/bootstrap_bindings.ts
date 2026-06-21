@@ -20,7 +20,7 @@ import {
 } from '../runtime/platform_access.js';
 import { getUiFeedback } from '../runtime/service_access.js';
 
-import type { ThreeLike } from '../../../types/index.js';
+import type { BuilderDrawerRebuildSnapshot, ThreeLike } from '../../../types/index.js';
 import type { BuilderNamespaceBindingMap } from './bootstrap_shared.js';
 import { asRecord } from './bootstrap_shared.js';
 import { runRebuildDrawerMeta } from './bootstrap_drawer_meta.js';
@@ -94,7 +94,8 @@ export function createBuilderNamespaceBindingMap(): BuilderNamespaceBindingMap {
         mode: 'missing',
         value: null,
         stableKey: '__wpBuilderRebuildDrawerMeta',
-        bind: context => () => runRebuildDrawerMeta(context.App),
+        bind: context => (snapshot: BuilderDrawerRebuildSnapshot) =>
+          runRebuildDrawerMeta(context.App, snapshot),
       },
     ],
     contents: [

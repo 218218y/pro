@@ -59,8 +59,14 @@ test('[builder-bootstrap] binding map and drawer rebuild follow-through no longe
     bootstrapBindings,
     /export function createBuilderNamespaceBindingMap\(\): BuilderNamespaceBindingMap \{/
   );
-  assert.match(bootstrapBindings, /bind: context => \(\) => runRebuildDrawerMeta\(context\.App\),/);
-  assert.match(bootstrapDrawerMeta, /export function runRebuildDrawerMeta\(App: AppContainer\): void \{/);
+  assert.match(
+    bootstrapBindings,
+    /bind: context => \(snapshot: BuilderDrawerRebuildSnapshot\) =>[\s\S]*runRebuildDrawerMeta\(context\.App, snapshot\),/
+  );
+  assert.match(
+    bootstrapDrawerMeta,
+    /export function runRebuildDrawerMeta\([\s\S]*rawSnapshot: BuilderDrawerRebuildSnapshot[\s\S]*\): void \{/
+  );
   assert.doesNotMatch(bootstrap, /runRebuildDrawerMeta\(/);
   assert.doesNotMatch(bootstrap, /const bindingMap: BuilderNamespaceBindingMap = \{/);
 });

@@ -5,6 +5,8 @@ import type {
   AppContainer,
   BuildContextLike,
   BuildCtxFnsLike,
+  BuilderDrawerRebuildSnapshot,
+  BuilderRebuildDrawerMetaFn,
   BuilderOutlineFn,
   ConfigStateLike,
 } from '../../../types/index.js';
@@ -14,7 +16,8 @@ export type FinalizeBestEffortArgs = {
   cfgSnapshot?: ConfigStateLike | null;
   removeDoorsEnabled?: boolean;
   pruneCachesSafe?: ((scene: unknown) => void) | null;
-  rebuildDrawerMeta?: (() => void) | null;
+  drawerRebuildSnapshot?: BuilderDrawerRebuildSnapshot | null;
+  rebuildDrawerMeta?: BuilderRebuildDrawerMetaFn | null;
   addOutlines?: BuilderOutlineFn | null;
 };
 
@@ -32,13 +35,36 @@ function readFinalizeArgs(value: unknown): FinalizeBestEffortArgsLike | null {
   return asRecord<FinalizeBestEffortArgsLike>(value);
 }
 
+function readDrawerRebuildSnapshot(value: unknown): BuilderDrawerRebuildSnapshot | null {
+  const snapshot = asRecord<BuilderDrawerRebuildSnapshot>(value);
+  if (!snapshot || typeof snapshot.primaryMode !== 'string') return null;
+  const forcedOpenDrawerId = snapshot.forcedOpenDrawerId;
+  if (
+    forcedOpenDrawerId != null &&
+    typeof forcedOpenDrawerId !== 'string' &&
+    typeof forcedOpenDrawerId !== 'number'
+  ) {
+    return null;
+  }
+  const intent = snapshot.intent;
+  if (intent == null) return snapshot;
+  if (
+    (typeof intent.targetId !== 'string' && typeof intent.targetId !== 'number') ||
+    !Number.isSafeInteger(intent.version) ||
+    intent.version < 0
+  ) {
+    return null;
+  }
+  return snapshot;
+}
+
 function readPruneCachesSafeArg(value: unknown): ((scene: unknown) => void) | null {
   const argsRec = readFinalizeArgs(value);
   const candidate = argsRec?.pruneCachesSafe;
   return typeof candidate === 'function' ? candidate : null;
 }
 
-function readRebuildDrawerMetaArg(value: unknown): (() => void) | null {
+function readRebuildDrawerMetaArg(value: unknown): BuilderRebuildDrawerMetaFn | null {
   const argsRec = readFinalizeArgs(value);
   const candidate = argsRec?.rebuildDrawerMeta;
   return typeof candidate === 'function' ? candidate : null;
@@ -56,7 +82,9 @@ function readBuildCtxPruneCachesSafe(
   return typeof candidate === 'function' ? candidate : null;
 }
 
-function readBuildCtxRebuildDrawerMeta(fns: BuildCtxFnsLike | null | undefined): (() => void) | null {
+function readBuildCtxRebuildDrawerMeta(
+  fns: BuildCtxFnsLike | null | undefined
+): BuilderRebuildDrawerMetaFn | null {
   const candidate = fns?.rebuildDrawerMeta;
   return typeof candidate === 'function' ? candidate : null;
 }
@@ -71,7 +99,8 @@ export function resolveFinalizeBuildBestEffortArgs(args: FinalizeBestEffortArgs)
   cfgSnapshot: ConfigStateLike | null;
   removeDoorsEnabled: boolean | null;
   pruneCachesSafe: ((scene: unknown) => void) | null;
-  rebuildDrawerMeta: (() => void) | null;
+  drawerRebuildSnapshot: BuilderDrawerRebuildSnapshot | null;
+  rebuildDrawerMeta: BuilderRebuildDrawerMetaFn | null;
   addOutlines: BuilderOutlineFn | null;
 } {
   const argsRecord = readFinalizeArgs(args);
@@ -81,6 +110,7 @@ export function resolveFinalizeBuildBestEffortArgs(args: FinalizeBestEffortArgs)
     removeDoorsEnabled:
       typeof argsRecord?.removeDoorsEnabled === 'boolean' ? argsRecord.removeDoorsEnabled : null,
     pruneCachesSafe: readPruneCachesSafeArg(args),
+    drawerRebuildSnapshot: readDrawerRebuildSnapshot(argsRecord?.drawerRebuildSnapshot),
     rebuildDrawerMeta: readRebuildDrawerMetaArg(args),
     addOutlines: readAddOutlinesArg(args),
   };
@@ -90,6 +120,7 @@ export function resolveFinalizeBuildContextArgs(ctx: BuildContextLike): Finalize
   const out: FinalizeBestEffortArgs = {
     App: ctx.App,
     pruneCachesSafe: readBuildCtxPruneCachesSafe(ctx.fns),
+    drawerRebuildSnapshot: readDrawerRebuildSnapshot(ctx.drawerRebuildSnapshot),
     rebuildDrawerMeta: readBuildCtxRebuildDrawerMeta(ctx.fns),
     addOutlines: readBuildCtxAddOutlines(ctx.fns),
   };
@@ -107,6 +138,7 @@ export function runFinalizeBuildBestEffort(args: FinalizeBestEffortArgs): { App:
     ...(resolved.cfgSnapshot ? { cfgSnapshot: resolved.cfgSnapshot } : {}),
     ...(resolved.addOutlines ? { addOutlines: resolved.addOutlines } : {}),
     ...(resolved.removeDoorsEnabled !== null ? { removeDoorsEnabled: resolved.removeDoorsEnabled } : {}),
+    drawerRebuildSnapshot: resolved.drawerRebuildSnapshot,
     rebuildDrawerMeta: resolved.rebuildDrawerMeta,
     pruneCachesSafe: resolved.pruneCachesSafe,
     clearBuildUi: true,

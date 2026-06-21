@@ -28,7 +28,7 @@ import {
 import { asRecord } from '../runtime/record.js';
 import { captureConfigSnapshotMaybe, getBuildStateMaybe } from './store_access.js';
 import { applyBuildVisibleConfigMapGates } from './build_visible_config_gates.js';
-import { getDoorEditHoldActive } from '../runtime/doors_access.js';
+import { getDoorEditHoldActive, getDrawerRebuildIntentSnapshot } from '../runtime/doors_access.js';
 import { readRuntimeScalarOrDefault } from '../runtime/runtime_selectors.js';
 import { reportError } from '../runtime/errors.js';
 
@@ -182,6 +182,25 @@ export function resolveBuildStateOrThrow(args: {
   const globalClickMode = readRuntimeScalarOrDefault(runtime, 'globalClickMode', true);
   const hadEditHold = !globalClickMode && getDoorEditHoldActive(App);
   const cfgSnapshot = _captureAndNormalizeConfigSnapshot(App, state && state.config, ui, mode);
+  const primaryMode = typeof mode.primary === 'string' && mode.primary ? mode.primary : 'none';
+  const rawForcedOpenDrawerId = runtime.drawersOpenId;
+  const forcedOpenDrawerId =
+    typeof rawForcedOpenDrawerId === 'string' || typeof rawForcedOpenDrawerId === 'number'
+      ? rawForcedOpenDrawerId
+      : null;
+  const drawerRebuildSnapshot = Object.freeze({
+    primaryMode,
+    forcedOpenDrawerId,
+    intent: getDrawerRebuildIntentSnapshot(App),
+  });
 
-  return { state, ui, runtime, globalClickMode, hadEditHold, cfgSnapshot };
+  return {
+    state,
+    ui,
+    runtime,
+    globalClickMode,
+    hadEditHold,
+    cfgSnapshot,
+    drawerRebuildSnapshot,
+  };
 }

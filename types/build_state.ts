@@ -57,6 +57,7 @@ import type {
   BuilderAddFoldedClothesFn,
   BuilderAddRealisticHangerFn,
   BuilderRebuildDrawerMetaFn,
+  BuilderDrawerRebuildSnapshot,
   BuilderCallable,
   NullableBuilderOutlineFn,
   NullableBuilderCallable,
@@ -352,6 +353,7 @@ export interface BuildStateResolvedLike extends UnknownRecord {
   globalClickMode: boolean;
   hadEditHold: boolean;
   cfgSnapshot: ConfigStateLike;
+  drawerRebuildSnapshot: BuilderDrawerRebuildSnapshot;
 }
 
 export interface BuildCtxFlagsLike extends UnknownRecord {
@@ -509,6 +511,7 @@ export interface BuildContextLike extends UnknownRecord {
   state?: BuildStateLike;
   ui?: UiStateLike;
   runtime?: RuntimeStateLike;
+  drawerRebuildSnapshot?: BuilderDrawerRebuildSnapshot;
 
   deps?: BuilderDepsResolvedLike;
   label?: string;

@@ -388,7 +388,16 @@ export type BuilderCalculateModuleStructureFn = (
   wardrobeType: unknown,
   app?: unknown
 ) => ModulesStructureItemLike[];
-export type BuilderRebuildDrawerMetaFn = () => void;
+export type BuilderDrawerRebuildIntentSnapshot = Readonly<{
+  targetId: string | number;
+  version: number;
+}>;
+export type BuilderDrawerRebuildSnapshot = Readonly<{
+  primaryMode: string;
+  forcedOpenDrawerId: string | number | null;
+  intent: BuilderDrawerRebuildIntentSnapshot | null;
+}>;
+export type BuilderRebuildDrawerMetaFn = (snapshot: BuilderDrawerRebuildSnapshot) => void;
 export type BuilderVec3Like = { x: number; y: number; z: number };
 export type BuilderDimensionLineScaleSpec =
   | number

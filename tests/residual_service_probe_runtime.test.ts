@@ -12,6 +12,12 @@ import {
 import { getProjectIoServiceMaybe } from '../esm/native/runtime/project_io_access.ts';
 import { getSceneViewServiceMaybe } from '../esm/native/services/scene_view_access.ts';
 
+const drawerRebuildSnapshot = {
+  primaryMode: 'divider',
+  forcedOpenDrawerId: 'int_4',
+  intent: { targetId: 'int_4', version: 1 },
+} as const;
+
 test('residual slot access runtime: scene/project seams and chest-mode builder helpers stay canonical', () => {
   const calls: unknown[] = [];
   const addOutlines = () => undefined;
@@ -166,16 +172,22 @@ test('residual slot access runtime: post-build finalize uses canonical builder/p
 
   finalizeBuildBestEffort({
     App,
+    drawerRebuildSnapshot,
     pruneCachesSafe(root) {
       calls.push(['prune', root]);
     },
-    rebuildDrawerMeta() {
-      calls.push('rebuildDrawerMeta');
+    rebuildDrawerMeta(snapshot) {
+      calls.push(['rebuildDrawerMeta', snapshot]);
     },
   });
 
   assert.equal(App.services.builder.buildUi, null);
-  assert.deepEqual(calls, ['finalize', 'rebuildDrawerMeta', ['prune', scene], ['platform-render', true]]);
+  assert.deepEqual(calls, [
+    'finalize',
+    ['rebuildDrawerMeta', drawerRebuildSnapshot],
+    ['prune', scene],
+    ['platform-render', true],
+  ]);
 });
 
 test('residual slot access runtime: materials apply uses canonical builder handles and platform render seams', () => {

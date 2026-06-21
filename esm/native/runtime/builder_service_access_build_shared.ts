@@ -2,6 +2,8 @@ import type {
   BuilderHandlesApplyOptionsLike,
   BuilderHandlesPurgeOptionsLike,
   BuilderOutlineFn,
+  BuilderDrawerRebuildSnapshot,
+  BuilderRebuildDrawerMetaFn,
   ConfigStateLike,
   UnknownRecord,
 } from '../../../types';
@@ -65,7 +67,8 @@ export type BuilderPostBuildFollowThroughOpts = {
   cfgSnapshot?: ConfigStateLike | UnknownRecord | null;
   addOutlines?: BuilderOutlineFn | null;
   removeDoorsEnabled?: boolean;
-  rebuildDrawerMeta?: (() => void) | null;
+  drawerRebuildSnapshot?: BuilderDrawerRebuildSnapshot | null;
+  rebuildDrawerMeta?: BuilderRebuildDrawerMetaFn | null;
   pruneCachesSafe?: ((scene: unknown) => void) | null;
   triggerPlatformRender?: boolean;
   updateShadows?: boolean;

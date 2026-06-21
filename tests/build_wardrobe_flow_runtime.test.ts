@@ -11,8 +11,15 @@ function createPrepared() {
     label: 'native/builder/test',
     deps: {
       pruneCachesSafe() {},
-      rebuildDrawerMeta() {},
+      rebuildDrawerMeta(_snapshot: unknown) {},
       showToast() {},
+    },
+    buildState: {
+      drawerRebuildSnapshot: {
+        primaryMode: 'divider',
+        forcedOpenDrawerId: 'int_4',
+        intent: { targetId: 'int_4', version: 1 },
+      },
     },
   } as any;
 }

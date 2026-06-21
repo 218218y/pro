@@ -1,4 +1,5 @@
 import type { UnknownRecord } from '../../../types';
+import type { BuilderDrawerRebuildIntentSnapshot } from '../../../types';
 
 import { asRecord } from './record.js';
 import {
@@ -62,6 +63,8 @@ export function setDrawerMetaEntry(App: unknown, drawerId: unknown, value: unkno
 export function setDrawerRebuildIntent(App: unknown, drawerId: unknown): unknown {
   const targetId = drawerId == null ? null : typeof drawerId === 'number' ? drawerId : asKey(drawerId);
   const runtime = initDrawerRuntime(App);
+  const currentVersion = Number(runtime.rebuildIntentVersion);
+  runtime.rebuildIntentVersion = currentVersion >= Number.MAX_SAFE_INTEGER ? 1 : currentVersion + 1;
   runtime.snapAfterBuildId = targetId;
   runtime.openAfterBuildId = targetId;
   return targetId;
@@ -75,11 +78,41 @@ export function clearDrawerRebuildIntent(App: unknown): void {
 
 export function getDrawerRebuildIntent(App: unknown): unknown {
   const runtime = asRecord<DrawerRuntimeLike>(getDrawerService(App)?.runtime);
-  return runtime ? runtime.snapAfterBuildId || runtime.openAfterBuildId || null : null;
+  if (!runtime) return null;
+  const targetId = runtime.snapAfterBuildId ?? runtime.openAfterBuildId ?? null;
+  return typeof targetId === 'string' || typeof targetId === 'number' ? targetId : null;
 }
 
-export function consumeDrawerRebuildIntent(App: unknown): unknown {
+export function getDrawerRebuildIntentSnapshot(App: unknown): BuilderDrawerRebuildIntentSnapshot | null {
+  const runtime = asRecord<DrawerRuntimeLike>(getDrawerService(App)?.runtime);
   const targetId = getDrawerRebuildIntent(App);
+  if (!runtime || (typeof targetId !== 'string' && typeof targetId !== 'number')) return null;
+  const version = Number(runtime.rebuildIntentVersion);
+  return Object.freeze({
+    targetId,
+    version: Number.isSafeInteger(version) && version >= 0 ? version : 0,
+  });
+}
+
+function sameRebuildIntent(
+  current: BuilderDrawerRebuildIntentSnapshot | null,
+  expected: BuilderDrawerRebuildIntentSnapshot | null
+): boolean {
+  return !!(
+    current &&
+    expected &&
+    String(current.targetId) === String(expected.targetId) &&
+    current.version === expected.version
+  );
+}
+
+export function consumeDrawerRebuildIntent(
+  App: unknown,
+  expected?: BuilderDrawerRebuildIntentSnapshot | null
+): unknown {
+  const current = getDrawerRebuildIntentSnapshot(App);
+  if (expected !== undefined && !sameRebuildIntent(current, expected)) return null;
+  const targetId = current?.targetId ?? null;
   clearDrawerRebuildIntent(App);
   return targetId;
 }

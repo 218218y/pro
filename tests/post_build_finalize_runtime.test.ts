@@ -7,6 +7,12 @@ import {
   runFinalizeBuildBestEffort,
 } from '../esm/native/builder/post_build_finalize_runtime.ts';
 
+const drawerRebuildSnapshot = {
+  primaryMode: 'divider',
+  forcedOpenDrawerId: 'int_4',
+  intent: { targetId: 'int_4', version: 1 },
+} as const;
+
 test('post-build finalize runtime: resolves BuildContext follow-through functions canonically', () => {
   const pruneCachesSafe = () => void 0;
   const rebuildDrawerMeta = () => void 0;
@@ -16,6 +22,7 @@ test('post-build finalize runtime: resolves BuildContext follow-through function
     resolveFinalizeBuildContextArgs({
       App: { id: 'app' },
       cfg: { removedDoorsMap: {} },
+      drawerRebuildSnapshot,
       resolvers: { removeDoorsEnabled: true },
       fns: { pruneCachesSafe, rebuildDrawerMeta, addOutlines },
     } as any),
@@ -24,6 +31,7 @@ test('post-build finalize runtime: resolves BuildContext follow-through function
       cfgSnapshot: { removedDoorsMap: {} },
       removeDoorsEnabled: true,
       pruneCachesSafe,
+      drawerRebuildSnapshot,
       rebuildDrawerMeta,
       addOutlines,
     }
@@ -40,6 +48,7 @@ test('post-build finalize runtime: best-effort normalization strips non-function
 
   assert.equal(normalized.App, App);
   assert.equal(normalized.pruneCachesSafe, null);
+  assert.equal(normalized.drawerRebuildSnapshot, null);
   assert.equal(normalized.rebuildDrawerMeta, null);
   assert.equal(normalized.addOutlines, null);
   assert.equal(normalized.removeDoorsEnabled, null);
@@ -80,14 +89,20 @@ test('post-build finalize runtime: best-effort follow-through skips handles when
 
   runFinalizeBuildBestEffort({
     App,
+    drawerRebuildSnapshot,
     pruneCachesSafe(root) {
       calls.push(['prune', root]);
     },
-    rebuildDrawerMeta() {
-      calls.push('rebuildDrawerMeta');
+    rebuildDrawerMeta(snapshot) {
+      calls.push(['rebuildDrawerMeta', snapshot]);
     },
   });
 
   assert.equal(App.services.builder.buildUi, null);
-  assert.deepEqual(calls, ['finalize', 'rebuildDrawerMeta', ['prune', scene], ['platform-render', true]]);
+  assert.deepEqual(calls, [
+    'finalize',
+    ['rebuildDrawerMeta', drawerRebuildSnapshot],
+    ['prune', scene],
+    ['platform-render', true],
+  ]);
 });

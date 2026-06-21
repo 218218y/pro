@@ -50,13 +50,16 @@ test('[drawer-runtime-access] runtime helper exposes canonical drawer service/ru
   assert.match(doorsAccess, /export function setDrawerMetaEntry\(/);
   assert.match(doorsAccess, /export function setDrawerRebuildIntent\(/);
   assert.match(doorsAccess, /export function clearDrawerRebuildIntent\(/);
+  assert.match(doorsAccess, /export function getDrawerRebuildIntentSnapshot\(/);
   assert.match(doorsAccess, /export function consumeDrawerRebuildIntent\(/);
 });
 
 test('[drawer-runtime-access] hot-path callers go through runtime/doors_access helpers', () => {
   assert.match(canvasClickRaw, /tryHandleCanvasDrawerModeClick\(\{/);
   assert.match(drawerModeRaw, /setDrawerRebuildIntent\(App, targetDrawerId\)/);
-  assert.match(bootstrapDrawerMetaRaw, /consumeDrawerRebuildIntent\(App\)/);
+  assert.match(bootstrapDrawerMetaRaw, /consumeDrawerRebuildIntent\(App, snapshot\.intent\)/);
+  assert.doesNotMatch(bootstrapDrawerMetaRaw, /readModeStateFromApp/);
+  assert.doesNotMatch(bootstrapDrawerMetaRaw, /getDrawersOpenId/);
   assert.doesNotMatch(canvasBundle, /App\.services\.drawer\.runtime/);
   assert.doesNotMatch(bootstrap, /App\.services\.drawer\.runtime/);
   assert.doesNotMatch(bootstrapDrawerMeta, /App\.services\.drawer\.runtime/);

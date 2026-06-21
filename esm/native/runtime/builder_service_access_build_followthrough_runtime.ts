@@ -62,9 +62,17 @@ export function runBuilderPostBuildFollowThroughRuntime(
   App: unknown,
   opts?: BuilderPostBuildFollowThroughOpts | null
 ): BuilderPostBuildFollowThroughResult {
+  if (typeof opts?.rebuildDrawerMeta === 'function' && !opts.drawerRebuildSnapshot) {
+    throw new TypeError(
+      '[builder_service_access] drawerRebuildSnapshot is required when rebuilding drawer meta'
+    );
+  }
   const finalizedRegistry = shouldFinalizeBuilderRegistry(opts) ? finalizeBuilderRegistry(App) : false;
-  const rebuiltDrawerMeta =
-    typeof opts?.rebuildDrawerMeta === 'function' ? (opts.rebuildDrawerMeta(), true) : false;
+  let rebuiltDrawerMeta = false;
+  if (typeof opts?.rebuildDrawerMeta === 'function') {
+    opts.rebuildDrawerMeta(opts.drawerRebuildSnapshot);
+    rebuiltDrawerMeta = true;
+  }
   const appliedHandles = shouldApplyBuilderHandles(opts)
     ? applyBuilderHandles(App, createFollowThroughHandleApplyOpts(opts))
     : false;

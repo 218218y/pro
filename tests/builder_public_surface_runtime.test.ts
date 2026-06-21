@@ -621,6 +621,11 @@ test('builder public surface runtime: post-build follow-through keeps finalize/p
   ensureBuilderBuildUi(App as any).mode = 'busy';
   const pruned: unknown[] = [];
   let rebuilt = 0;
+  const drawerRebuildSnapshot = {
+    primaryMode: 'divider',
+    forcedOpenDrawerId: 'int_4',
+    intent: { targetId: 'int_4', version: 1 },
+  } as const;
 
   assert.deepEqual(
     runBuilderPostBuildFollowThrough(App, {
@@ -628,7 +633,9 @@ test('builder public surface runtime: post-build follow-through keeps finalize/p
       addOutlines: () => undefined,
       removeDoorsEnabled: false,
       finalizeRegistry: true,
-      rebuildDrawerMeta() {
+      drawerRebuildSnapshot,
+      rebuildDrawerMeta(snapshot) {
+        assert.equal(snapshot, drawerRebuildSnapshot);
         rebuilt += 1;
       },
       pruneCachesSafe(scene) {
@@ -657,6 +664,21 @@ test('builder public surface runtime: post-build follow-through keeps finalize/p
   assert.equal(App.services.builder.buildUi, null);
   assert.equal(calls.triggerRender.length, 1);
   assert.equal(calls.triggerRender[0]?.updateShadows, true);
+});
+
+test('builder public surface runtime: drawer follow-through fails before finalization without its snapshot', () => {
+  const { App, calls } = createHarness();
+
+  assert.throws(
+    () =>
+      runBuilderPostBuildFollowThrough(App, {
+        rebuildDrawerMeta() {},
+      }),
+    /drawerRebuildSnapshot is required/
+  );
+  assert.equal(calls.finalizeRegistry, 0);
+  assert.equal(calls.applyHandles, 0);
+  assert.equal(calls.triggerRender.length, 0);
 });
 
 test('builder public surface runtime: chest-mode follow-through keeps viewport render and registry finalize on one seam', () => {

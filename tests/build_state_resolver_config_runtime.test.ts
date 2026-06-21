@@ -2,6 +2,30 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { resolveBuildStateOrThrow } from '../esm/native/builder/build_state_resolver.ts';
+import { setDrawerRebuildIntent } from '../esm/native/runtime/doors_access.ts';
+
+test('build_state_resolver captures one coherent drawer rebuild mode/runtime/intent snapshot', () => {
+  const App: any = { services: {} };
+  setDrawerRebuildIntent(App, 'int_4');
+
+  const result = resolveBuildStateOrThrow({
+    App,
+    stateOrOverride: {
+      ui: {},
+      mode: { primary: 'divider' },
+      runtime: { drawersOpenId: 'int_4' },
+      config: { __snapshot: true },
+    },
+  });
+
+  assert.deepEqual(result.drawerRebuildSnapshot, {
+    primaryMode: 'divider',
+    forcedOpenDrawerId: 'int_4',
+    intent: { targetId: 'int_4', version: 1 },
+  });
+  assert.equal(Object.isFrozen(result.drawerRebuildSnapshot), true);
+  assert.equal(Object.isFrozen(result.drawerRebuildSnapshot.intent), true);
+});
 
 test('build_state_resolver normalizes config maps and persisted color arrays from snapshot overrides', () => {
   const App: any = {};

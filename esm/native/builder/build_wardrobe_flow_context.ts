@@ -70,7 +70,15 @@ export function prepareBuildWardrobeExecution(
   } = deps;
   const addOutlines = renderPolicy.addOutlines;
 
-  const { state, ui, runtime, globalClickMode, hadEditHold, cfgSnapshot: cfg } = buildState;
+  const {
+    state,
+    ui,
+    runtime,
+    globalClickMode,
+    hadEditHold,
+    cfgSnapshot: cfg,
+    drawerRebuildSnapshot,
+  } = buildState;
   const setup = prepareBuildWardrobeContextSetup(prepared);
   if (!setup) return null;
   const { notesToPreserve, calculateModuleStructureFn, getMaterialFn, addOutlinesMesh, toStr } = setup;
@@ -157,6 +165,7 @@ export function prepareBuildWardrobeExecution(
     state,
     ui,
     runtime,
+    drawerRebuildSnapshot,
     cfg,
     label,
     plan,

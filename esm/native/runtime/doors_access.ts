@@ -28,6 +28,7 @@ export {
   setDrawerRebuildIntent,
   clearDrawerRebuildIntent,
   getDrawerRebuildIntent,
+  getDrawerRebuildIntentSnapshot,
   consumeDrawerRebuildIntent,
 } from './doors_access_drawers.js';
 export {

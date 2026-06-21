@@ -3,14 +3,13 @@ import { getDrawersArray } from '../runtime/render_access.js';
 import { consumeDrawerRebuildIntent, getDrawerService } from '../runtime/doors_access.js';
 import { runPlatformWakeupFollowThrough } from '../runtime/platform_access.js';
 import { getTools } from '../runtime/service_access.js';
-import { readModeStateFromApp } from '../runtime/root_state_access.js';
 import { drawerVisualMatchesId, readDrawerVisualPrimaryId } from '../runtime/drawer_visual_identity.js';
 
 import type {
   AppContainer,
+  BuilderDrawerRebuildSnapshot,
   DrawerVisualEntryLike,
   DrawersOpenIdLike,
-  ModeStateLike,
   Vec3Like,
 } from '../../../types/index.js';
 import { asRecord } from './bootstrap_shared.js';
@@ -36,17 +35,27 @@ function asDrawerVisualEntry(value: unknown): DrawerVisualEntryLike | null {
   return rec && open && closed ? (value as DrawerVisualEntryLike) : null;
 }
 
-function isDividerModeActive(App: AppContainer): boolean {
-  const modeState: ModeStateLike = readModeStateFromApp(App);
-  const primaryMode = typeof modeState.primary === 'string' ? modeState.primary : null;
-  return (primaryMode || '') === String(readDividerModeKey());
-}
-
-function readForcedDrawerOpenId(App: AppContainer): DrawersOpenIdLike {
-  const tools = getTools(App);
-  if (typeof tools.getDrawersOpenId !== 'function') return null;
-  const id = tools.getDrawersOpenId();
-  return typeof id === 'string' || typeof id === 'number' ? id : null;
+function requireDrawerRebuildSnapshot(value: unknown): BuilderDrawerRebuildSnapshot {
+  const snapshot = asRecord(value);
+  const forcedOpenDrawerId = snapshot?.forcedOpenDrawerId;
+  const intent = snapshot?.intent;
+  const intentRecord = intent == null ? null : asRecord(intent);
+  const validForcedOpenId =
+    forcedOpenDrawerId == null ||
+    typeof forcedOpenDrawerId === 'string' ||
+    typeof forcedOpenDrawerId === 'number';
+  const validIntent =
+    intent == null ||
+    !!(
+      intentRecord &&
+      (typeof intentRecord.targetId === 'string' || typeof intentRecord.targetId === 'number') &&
+      Number.isSafeInteger(intentRecord.version) &&
+      Number(intentRecord.version) >= 0
+    );
+  if (!snapshot || typeof snapshot.primaryMode !== 'string' || !validForcedOpenId || !validIntent) {
+    throw new TypeError('[builder/bootstrap.__rebuildDrawerMeta] drawer rebuild snapshot is required');
+  }
+  return value as BuilderDrawerRebuildSnapshot;
 }
 
 function sameDrawerId(left: DrawersOpenIdLike, right: DrawersOpenIdLike): boolean {
@@ -105,15 +114,16 @@ function wakeupDrawerFollowThrough(App: AppContainer, targetId: DrawersOpenIdLik
   });
 }
 
-export function runRebuildDrawerMeta(App: AppContainer): void {
+export function runRebuildDrawerMeta(App: AppContainer, rawSnapshot: BuilderDrawerRebuildSnapshot): void {
   const base = { where: 'builder/bootstrap.__rebuildDrawerMeta' };
+  const snapshot = requireDrawerRebuildSnapshot(rawSnapshot);
 
   guardVoid(App, { ...base, op: 'drawer.rebuildMeta', failFast: true }, () => {
     const drawerSvc = getDrawerService(App);
     if (drawerSvc && typeof drawerSvc.rebuildMeta === 'function') drawerSvc.rebuildMeta();
   });
 
-  const rawTargetId = consumeDrawerRebuildIntent(App);
+  const rawTargetId = consumeDrawerRebuildIntent(App, snapshot.intent);
   const targetId: DrawersOpenIdLike =
     typeof rawTargetId === 'string' || typeof rawTargetId === 'number' ? rawTargetId : null;
   if (targetId == null) return;
@@ -122,8 +132,9 @@ export function runRebuildDrawerMeta(App: AppContainer): void {
   if (!Array.isArray(drawers)) return;
   const drawerEntries = drawers.map(asDrawerVisualEntry).filter((x): x is DrawerVisualEntryLike => !!x);
   const drawer = drawerEntries.find(x => drawerMatchesId(x, targetId));
-  const forcedOpenId = readForcedDrawerOpenId(App);
-  const keepDrawerForcedOpen = !!drawer && isDividerModeActive(App) && drawerMatchesId(drawer, forcedOpenId);
+  const forcedOpenId = snapshot.forcedOpenDrawerId;
+  const keepDrawerForcedOpen =
+    !!drawer && snapshot.primaryMode === readDividerModeKey() && drawerMatchesId(drawer, forcedOpenId);
   if (!drawer) {
     if (sameDrawerId(forcedOpenId, targetId)) setForcedDrawerOpenId(App, targetId, null);
     return;

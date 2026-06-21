@@ -57,6 +57,9 @@ export function initDrawerRuntime(App: unknown): DrawerRuntimeLike {
   const runtime = getDrawerRuntime(App);
   if (typeof runtime.snapAfterBuildId === 'undefined') runtime.snapAfterBuildId = null;
   if (typeof runtime.openAfterBuildId === 'undefined') runtime.openAfterBuildId = null;
+  if (!Number.isSafeInteger(runtime.rebuildIntentVersion) || Number(runtime.rebuildIntentVersion) < 0) {
+    runtime.rebuildIntentVersion = 0;
+  }
   return runtime;
 }
 

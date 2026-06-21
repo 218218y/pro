@@ -4,6 +4,7 @@ import type {
   AppContainer,
   BuildContextLike,
   BuilderCreateDoorVisualFn,
+  BuilderDrawerRebuildSnapshot,
   BuilderCreateInternalDrawerBoxFn,
   BuilderDoorStateAccessorsLike,
   BuilderCreateHandleMeshFn,
@@ -22,6 +23,7 @@ type BuildFlowContextFactoryArgs = {
   state: BuildStateLike;
   ui: UiStateLike | UnknownRecord;
   runtime: UnknownRecord;
+  drawerRebuildSnapshot: BuilderDrawerRebuildSnapshot;
   cfg: UnknownRecord;
   label: string;
   plan: BuildFlowPlan;
@@ -71,6 +73,7 @@ export function createBuildFlowContext(args: BuildFlowContextFactoryArgs): Build
     state,
     ui,
     runtime,
+    drawerRebuildSnapshot,
     cfg,
     label,
     plan,
@@ -119,6 +122,7 @@ export function createBuildFlowContext(args: BuildFlowContextFactoryArgs): Build
     state,
     ui,
     runtime,
+    drawerRebuildSnapshot,
     cfg,
     label,
 
