@@ -4,19 +4,17 @@ import assert from 'node:assert/strict';
 import { createProjectIoOrchestrator } from '../esm/native/io/project_io_orchestrator.ts';
 import { buildProjectConfigSnapshot } from '../esm/native/io/project_io_load_helpers.ts';
 
-test('project io export falls back to history snapshot and preserves pdf draft payloads from UI state', () => {
+test('project io export uses the canonical project capture and preserves pdf draft payloads from UI state', () => {
   const App = {
     actions: {},
     services: {
-      projectIO: { runtime: {} },
-      history: {
-        system: {
-          getCurrentSnapshot() {
-            return JSON.stringify({
-              settings: { wardrobeType: 'hinged', width: 180, height: 240, depth: 60, doors: 4 },
-              toggles: {},
-            });
-          },
+      project: {
+        capture(scope: unknown) {
+          assert.equal(scope, 'persist');
+          return {
+            settings: { wardrobeType: 'hinged', width: 180, height: 240, depth: 60, doors: 4 },
+            toggles: {},
+          };
         },
       },
       platform: {
@@ -83,15 +81,13 @@ test('project io export sanitizes toxic pdf draft branches instead of aliasing t
   const App = {
     actions: {},
     services: {
-      projectIO: { runtime: {} },
-      history: {
-        system: {
-          getCurrentSnapshot() {
-            return JSON.stringify({
-              settings: { wardrobeType: 'hinged', width: 180, height: 240, depth: 60, doors: 4 },
-              toggles: {},
-            });
-          },
+      project: {
+        capture(scope: unknown) {
+          assert.equal(scope, 'persist');
+          return {
+            settings: { wardrobeType: 'hinged', width: 180, height: 240, depth: 60, doors: 4 },
+            toggles: {},
+          };
         },
       },
       platform: {
@@ -175,13 +171,6 @@ test('project io export preserves live door-mount thickness overrides through sa
           };
         },
       },
-      history: {
-        system: {
-          getCurrentSnapshot() {
-            throw new Error('history fallback should not be used when project capture is available');
-          },
-        },
-      },
       platform: {
         util: {
           log() {},
@@ -231,4 +220,33 @@ test('project io export preserves live door-mount thickness overrides through sa
   assert.equal(loadedCfg.insetFrameThicknessCm, 3.6);
   assert.equal(loadedCfg.insetShelfThicknessCm, 2.1);
   assert.match(String(exported?.jsonStr || ''), /insetFrameThicknessCm/);
+});
+
+test('project io export fails visibly when canonical project capture is unavailable', () => {
+  const reports: Array<[string, unknown]> = [];
+  const App = {
+    services: {},
+    store: {
+      getState() {
+        return { ui: {}, config: {}, runtime: {}, mode: {}, meta: {} };
+      },
+    },
+  } as any;
+
+  const orchestrator = createProjectIoOrchestrator({
+    App,
+    showToast() {},
+    openCustomConfirm() {},
+    userAgent: 'node:test',
+    schemaId: 'schema:test',
+    schemaVersion: 123,
+    reportNonFatal(op, error) {
+      reports.push([op, error]);
+    },
+  });
+
+  assert.equal(orchestrator.exportCurrentProject({ source: 'unit' }), null);
+  assert.equal(reports.length, 1);
+  assert.equal(reports[0]?.[0], 'project.export.currentProject');
+  assert.match(String((reports[0]?.[1] as Error)?.message || ''), /Project capture is not canonical/);
 });

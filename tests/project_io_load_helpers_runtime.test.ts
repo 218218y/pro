@@ -6,9 +6,8 @@ import {
   getProjectIoServiceMaybe,
   nextProjectIoRestoreGeneration,
   isProjectIoRestoreGenerationCurrent,
-  loadProjectDataViaService,
+  loadProjectDataResultViaService,
   loadProjectDataResultViaServiceOrThrow,
-  exportProjectViaService,
   exportProjectResultViaService,
 } from '../esm/native/runtime/project_io_access.ts';
 
@@ -23,22 +22,21 @@ test('project io access runtime: canonical access helpers keep restore-generatio
   };
   (svc as Record<string, unknown>).exportCurrentProject = () => {
     calls.push('export');
-    return { payload: true };
+    return { jsonStr: '{"ok":true}', projectData: { ok: true } };
   };
 
   assert.equal(getProjectIoServiceMaybe(App), svc);
   const gen = nextProjectIoRestoreGeneration(App);
   assert.equal(gen, 1);
   assert.equal(isProjectIoRestoreGenerationCurrent(App, gen), true);
-  assert.deepEqual(loadProjectDataViaService(App, { ok: true }, { meta: { source: 'test' } } as any), {
+  assert.deepEqual(loadProjectDataResultViaService(App, { ok: true }, { meta: { source: 'test' } } as any), {
     ok: true,
   });
-  assert.deepEqual(exportProjectViaService(App, { source: 'test' }), { payload: true });
   assert.deepEqual(exportProjectResultViaService(App, { source: 'test' }), {
-    ok: false,
-    reason: 'invalid',
+    ok: true,
+    exported: { jsonStr: '{"ok":true}', projectData: { ok: true } },
   });
-  assert.deepEqual(calls, ['load', 'export', 'export']);
+  assert.deepEqual(calls, ['load', 'export']);
 });
 
 test('project io access runtime: export result seam preserves not-installed, invalid, and thrown-export outcomes', () => {

@@ -10,8 +10,6 @@ import type { ProjectLoadFailureReason } from './project_load_action_result.js';
 import {
   buildAutosaveRestoreLoadOpts,
   buildProjectIoLoadFailureMessage,
-  getProjectIoServiceMaybe,
-  reportProjectIoAccessNonFatal,
 } from './project_io_access_shared.js';
 import { loadProjectDataActionResultViaService } from './project_io_access_load.js';
 
@@ -99,15 +97,4 @@ export function restoreProjectSessionActionResultViaServiceOrThrow(
   );
   if (result.ok && result.pending !== true) return result;
   throw new Error(buildProjectIoLoadFailureMessage(result, label, defaultErrorMessage));
-}
-
-export function restoreProjectSessionViaService(App: unknown): unknown {
-  try {
-    const svc = getProjectIoServiceMaybe(App);
-    if (svc && typeof svc.restoreLastSession === 'function') return svc.restoreLastSession();
-    return restoreProjectSessionActionResultViaService(App);
-  } catch (error) {
-    reportProjectIoAccessNonFatal(App, 'projectIO.restoreLastSession.ownerRejected', error);
-    return undefined;
-  }
 }

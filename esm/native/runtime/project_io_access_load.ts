@@ -36,21 +36,6 @@ export function normalizeProjectExportResult(value: unknown): ProjectExportResul
   return { ...rec, jsonStr: rec.jsonStr };
 }
 
-export function exportProjectViaService(
-  App: unknown,
-  meta?: UnknownRecord | null
-): ProjectExportResultLike | null | undefined {
-  try {
-    const svc = getProjectIoServiceMaybe(App);
-    return svc && typeof svc.exportCurrentProject === 'function'
-      ? svc.exportCurrentProject(meta ?? undefined)
-      : undefined;
-  } catch (error) {
-    reportProjectIoAccessNonFatal(App, 'projectIO.exportCurrentProject.ownerRejected', error);
-    return undefined;
-  }
-}
-
 export function exportProjectResultViaService(
   App: unknown,
   meta?: UnknownRecord | null,
@@ -70,23 +55,9 @@ export function exportProjectResultViaService(
   }
 }
 
-export function getProjectIoLoadProjectDataFn(App: unknown): ProjectIoLoadDataFn | null {
+function getProjectIoLoadProjectDataFn(App: unknown): ProjectIoLoadDataFn | null {
   const svc = getProjectIoServiceMaybe(App);
   return svc && typeof svc.loadProjectData === 'function' ? svc.loadProjectData : null;
-}
-
-export function loadProjectDataViaService(
-  App: unknown,
-  data: ProjectLoadInputLike,
-  opts?: ProjectLoadOpts
-): unknown {
-  try {
-    const loadProjectData = getProjectIoLoadProjectDataFn(App);
-    return loadProjectData ? loadProjectData(data, opts) : undefined;
-  } catch (error) {
-    reportProjectIoAccessNonFatal(App, 'projectIO.loadProjectData.ownerRejected', error);
-    return undefined;
-  }
 }
 
 export function loadProjectDataResultViaService(
@@ -168,19 +139,9 @@ export function loadProjectDataViaServiceOrThrow(
   return loadProjectData(data, opts);
 }
 
-export function getProjectIoBuildDefaultProjectDataFn(App: unknown): ProjectIoBuildDefaultDataFn | null {
+function getProjectIoBuildDefaultProjectDataFn(App: unknown): ProjectIoBuildDefaultDataFn | null {
   const svc = getProjectIoServiceMaybe(App);
   return svc && typeof svc.buildDefaultProjectData === 'function' ? svc.buildDefaultProjectData : null;
-}
-
-export function buildDefaultProjectDataViaService(App: unknown): ProjectDataLike | null {
-  try {
-    const buildDefaultProjectData = getProjectIoBuildDefaultProjectDataFn(App);
-    return buildDefaultProjectData ? buildDefaultProjectData() || null : null;
-  } catch (error) {
-    reportProjectIoAccessNonFatal(App, 'projectIO.buildDefaultProjectData.ownerRejected', error);
-    return null;
-  }
 }
 
 export function buildDefaultProjectDataViaServiceOrThrow(

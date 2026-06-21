@@ -247,11 +247,12 @@ test('project-io access, restore-generation, and callers stay on canonical servi
       /export function getProjectIoRestoreGeneration\(/,
       /export function isProjectIoRestoreGenerationCurrent\(/,
       /export function normalizeProjectIoLoadResult\(/,
-      /export function exportProjectViaService\(\s*App: unknown,\s*meta\?: UnknownRecord \| null\s*\): ProjectExportResultLike \| null \| undefined/s,
       /export function exportProjectResultViaService\(/,
-      /export function loadProjectDataViaService\(\s*App: unknown,\s*data: ProjectLoadInputLike,/s,
-      /export function restoreProjectSessionViaService\(/,
-      /export function buildDefaultProjectDataViaService\(/,
+      /export function loadProjectDataResultViaService\(/,
+      /export function loadProjectDataActionResultViaService\(/,
+      /export function loadProjectDataResultViaServiceOrThrow\(/,
+      /export function restoreProjectSessionActionResultViaService\(/,
+      /export function buildDefaultProjectDataViaServiceOrThrow\(/,
       /getServiceSlotMaybe\(App, 'projectIO'\)/,
       /readAutosavePayloadFromStorageResult\(App\)/,
     ],
@@ -264,6 +265,10 @@ test('project-io access, restore-generation, and callers stay on canonical servi
       /handleProjectFileLoadViaService/,
       /handleProjectFileLoadResultViaService/,
       /getProjectIoHandleFileLoadFn/,
+      /export function exportProjectViaService\(/,
+      /export function loadProjectDataViaService\(/,
+      /export function restoreProjectSessionViaService\(/,
+      /export function buildDefaultProjectDataViaService\(/,
     ],
     'projectIoAccess'
   );
@@ -271,12 +276,12 @@ test('project-io access, restore-generation, and callers stay on canonical servi
     assert,
     servicesApi,
     [
-      /buildDefaultProjectDataViaService/,
       /buildResetDefaultProjectData/,
       /readResetDefaultProjectPayload/,
       /resetProjectToDefaultActionResult/,
       /resetProjectToDefault/,
-      /loadProjectDataViaService/,
+      /loadProjectDataResultViaService/,
+      /loadProjectDataActionResultViaService/,
       /loadProjectFileInputViaService/,
       /nextProjectIoRestoreGeneration/,
       /isProjectIoRestoreGenerationCurrent/,
@@ -290,8 +295,20 @@ test('project-io access, restore-generation, and callers stay on canonical servi
     projectIoOwner,
     [
       /ensureProjectIoService\(App\)/,
-      /export function exportCurrentProject\(App: AppContainer, meta\?: UnknownRecord \| null\): ProjectExportResultLike \| null \| undefined/,
+      /const installedRuntimes = new WeakMap</,
+      /Object\.assign\(ProjectIO, \{/,
+      /export function exportCurrentProject\(App: AppContainer, meta\?: UnknownRecord \| null\): ProjectExportResultLike \| null/,
       /export function loadProjectData\(\s*App: AppContainer,\s*data: ProjectLoadInputLike,/s,
+    ],
+    'projectIoOwner'
+  );
+  assertLacksAll(
+    assert,
+    projectIoOwner,
+    [
+      /ProjectIO\.[A-Za-z]+ = ProjectIO\.[A-Za-z]+ \|\| runtime\./,
+      /typeof api\.(?:exportCurrentProject|handleFileLoad|loadProjectData|restoreLastSession|buildDefaultProjectData)/,
+      /stage3_orchestration_cleanup/,
     ],
     'projectIoOwner'
   );
@@ -327,7 +344,13 @@ test('project-io access, restore-generation, and callers stay on canonical servi
   assertLacksAll(
     assert,
     projectIoBundle,
-    [/setRuntimeScalar\(App(?: as any)?, 'restoring',/, /ensureProjectIoRuntime\(App\)/, /pioRt\.restoreGen/],
+    [
+      /setRuntimeScalar\(App(?: as any)?, 'restoring',/,
+      /ensureProjectIoRuntime\(App\)/,
+      /pioRt\.restoreGen/,
+      /project\.export\.historySnapshot/,
+      /getCurrentSnapshot\(\)/,
+    ],
     'projectIoBundle'
   );
   assertLacksAll(assert, projectIoCallerBundle, [/services\.projectIO/], 'projectIoCallerBundle');

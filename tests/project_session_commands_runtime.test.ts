@@ -46,7 +46,7 @@ test('project session commands resolve final restore/reset results after confirm
   assert.equal((loadCalls[1] as any).opts?.toast, false);
 });
 
-test('project session commands report cancel, invalid autosave, and missing installs cleanly', async () => {
+test('project session commands report cancel, invalid autosave, and missing dependencies explicitly', async () => {
   let cancelledLoadCalls = 0;
   const cancelledApp = {
     services: {
@@ -113,7 +113,11 @@ test('project session commands report cancel, invalid autosave, and missing inst
         },
       },
     } as any),
-    { ok: false, reason: 'not-installed' }
+    {
+      ok: false,
+      reason: 'error',
+      message: '[WardrobePro] projectIO.buildDefaultProjectData is not installed.',
+    }
   );
 });
 

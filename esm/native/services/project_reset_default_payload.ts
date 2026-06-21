@@ -1,9 +1,6 @@
 import type { AppContainer, ProjectDataLike, ProjectLoadOpts } from '../../../types';
 
-import {
-  buildDefaultProjectDataViaService,
-  getProjectIoBuildDefaultProjectDataFn,
-} from '../runtime/project_io_access.js';
+import { buildDefaultProjectDataViaServiceOrThrow } from '../runtime/project_io_access.js';
 import {
   buildProjectResetDefaultActionErrorResult,
   buildProjectResetDefaultFailureResult,
@@ -38,7 +35,7 @@ export function normalizeResetDefaultProjectData(
 }
 
 export function buildResetDefaultProjectData(App: AppContainer): ProjectDataLike | null {
-  return normalizeResetDefaultProjectData(buildDefaultProjectDataViaService(App));
+  return normalizeResetDefaultProjectData(buildDefaultProjectDataViaServiceOrThrow(App));
 }
 
 export type ResetDefaultProjectPayloadReadResult =
@@ -66,13 +63,9 @@ export function readResetDefaultProjectPayload(
   App: AppContainer,
   opts?: ProjectLoadOpts | null
 ): ResetDefaultProjectPayloadReadResult {
-  const buildDefaultProjectData = getProjectIoBuildDefaultProjectDataFn(App);
-  if (typeof buildDefaultProjectData !== 'function')
-    return buildProjectResetDefaultFailureResult('not-installed');
-
   let payload: ProjectDataLike | null;
   try {
-    payload = normalizeResetDefaultProjectData(buildDefaultProjectData());
+    payload = normalizeResetDefaultProjectData(buildDefaultProjectDataViaServiceOrThrow(App));
   } catch (error) {
     return buildProjectResetDefaultActionErrorResult(
       error,

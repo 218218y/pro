@@ -13,8 +13,7 @@ import {
 export function createProjectIoExportOps(
   deps: ProjectIoOwnerDeps & { readUiStateRecord: ProjectIoRecordReader }
 ) {
-  const { App, reportNonFatal, deepCloneJson, getProjectNameFromState, getHistorySystem, readUiStateRecord } =
-    deps;
+  const { App, reportNonFatal, deepCloneJson, getProjectNameFromState, readUiStateRecord } = deps;
 
   function finalizeProjectForSave(projectData: UnknownRecord | null | undefined) {
     return finalizeProjectForSavePayload(projectData, {
@@ -35,19 +34,7 @@ export function createProjectIoExportOps(
         projectName ? projectName : 'wardrobe_project_' + new Date().toISOString().slice(0, 10)
       ).trim();
 
-      const projectDataRaw =
-        captureProjectSnapshotMaybe(App, 'persist') ||
-        (() => {
-          try {
-            const historySystem = getHistorySystem();
-            if (historySystem && typeof historySystem.getCurrentSnapshot === 'function') {
-              return JSON.parse(historySystem.getCurrentSnapshot());
-            }
-          } catch (err) {
-            reportNonFatal('project.export.historySnapshot', err);
-          }
-          return null;
-        })();
+      const projectDataRaw = captureProjectSnapshotMaybe(App, 'persist');
 
       const projectData = finalizeProjectForSave(projectDataRaw);
       if (!projectData || !projectData.settings) throw new Error('Project capture unavailable');

@@ -7,10 +7,7 @@ import { getUi, getRuntime } from './store_access.js';
 import { captureSavedNotesViaService } from '../runtime/notes_access.js';
 import { getHistorySystem, setHistorySystem } from './history_access.js';
 import { flushOrPushHistoryStateMaybe, scheduleHistoryPushMaybe } from '../runtime/history_system_access.js';
-import {
-  getProjectIoServiceMaybe,
-  loadProjectDataResultViaServiceOrThrow,
-} from '../runtime/project_io_access.js';
+import { loadProjectDataResultViaServiceOrThrow } from '../runtime/project_io_access.js';
 import {
   ensureProjectCaptureService,
   getProjectCaptureServiceMaybe,
@@ -149,27 +146,17 @@ export function installKernel(App: AppContainer | null | undefined): void {
     captureSavedNotes: () => captureSavedNotesViaService(App),
     getCurrentUiSnapshot: () => asRecord(getUi(App), {}),
     loadProjectSnapshot: (record: UnknownRecord) => {
-      try {
-        loadProjectDataResultViaServiceOrThrow(
-          App,
-          record,
-          {
-            toast: false,
-            meta: { source: 'history.undoRedo' },
-          },
-          'not-installed',
-          '[WardrobePro] Undo/Redo project load failed.',
-          'history.undoRedo loadProjectData'
-        );
-      } catch (error) {
-        const projectIO = getProjectIoServiceMaybe(App);
-        if (!projectIO || typeof projectIO.loadProjectData !== 'function') {
-          console.warn(
-            '[Undo/Redo] No project loader available (App.services.projectIO.loadProjectData / loadProjectData).'
-          );
-        }
-        throw error;
-      }
+      loadProjectDataResultViaServiceOrThrow(
+        App,
+        record,
+        {
+          toast: false,
+          meta: { source: 'history.undoRedo' },
+        },
+        'not-installed',
+        '[WardrobePro] Undo/Redo project load failed.',
+        'history.undoRedo loadProjectData'
+      );
     },
     flushPendingPushViaAccess: opts => flushOrPushHistoryStateMaybe(App, opts),
     schedulePushViaAccess: meta => scheduleHistoryPushMaybe(App, meta),

@@ -469,14 +469,20 @@ test('cloud sync family keeps project/browser/panel seams canonical without dire
     cloudSupportBundle,
     [
       /exportProjectResultViaService\(\s*App,\s*\{ source: 'cloudSketch\.capture' \}/,
-      /captureProjectSnapshotMaybe\(App, 'persist'\)/,
+      /ProjectIO export unavailable/,
+      /hashString32\(ex\.jsonStr\)/,
     ],
     'cloud sync support'
   );
   assertLacksAll(
     assert,
     cloudSupportBundle,
-    [/App\.services[\s\S]{0,120}projectIO/, /function getProjectIoService\(/],
+    [
+      /App\.services[\s\S]{0,120}projectIO/,
+      /function getProjectIoService\(/,
+      /captureProjectSnapshotMaybe/,
+      /getStoreSurfaceMaybe/,
+    ],
     'cloud sync support'
   );
 
@@ -501,7 +507,6 @@ test('cloud sync family keeps project/browser/panel seams canonical without dire
     kernelSrc,
     [
       /getProjectCaptureServiceMaybe\(App\)/,
-      /getProjectIoServiceMaybe\(App\)/,
       /loadProjectData(?:ResultViaServiceOrThrow|ViaService)\(\s*App,\s*(?:rec|record),\s*\{/,
     ],
     'kernel project access'
@@ -509,7 +514,11 @@ test('cloud sync family keeps project/browser/panel seams canonical without dire
   assertLacksAll(
     assert,
     kernelSrc,
-    [/App\?\.services\?\.projectIO/, /getServicesRecord\(App\)\?\.projectIO/],
+    [
+      /App\?\.services\?\.projectIO/,
+      /getServicesRecord\(App\)\?\.projectIO/,
+      /getProjectIoServiceMaybe\(App\)/,
+    ],
     'kernel project access'
   );
 

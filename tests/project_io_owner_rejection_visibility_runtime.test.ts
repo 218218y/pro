@@ -2,10 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  buildDefaultProjectDataViaService,
-  exportProjectViaService,
+  buildDefaultProjectDataViaServiceOrThrow,
+  exportProjectResultViaService,
   loadProjectDataResultViaService,
-  restoreProjectSessionViaService,
 } from '../esm/native/runtime/project_io_access.ts';
 
 type Report = { error: unknown; ctx: any };
@@ -54,7 +53,7 @@ test('project io access reports loadProjectData owner rejection while preserving
   );
 });
 
-test('project io access reports nullable recovery seams instead of swallowing owner rejection', () => {
+test('project io access returns explicit export failures and throws through strict default-data access', () => {
   const { App, reports } = createReportingProjectIoApp({
     exportCurrentProject() {
       throw new Error('installed export rejected');
@@ -62,29 +61,19 @@ test('project io access reports nullable recovery seams instead of swallowing ow
     buildDefaultProjectData() {
       throw new Error('installed default project rejected');
     },
-    restoreLastSession() {
-      throw new Error('installed restore rejected');
-    },
   });
 
-  assert.equal(exportProjectViaService(App), undefined);
-  assert.equal(buildDefaultProjectDataViaService(App), null);
-  assert.equal(restoreProjectSessionViaService(App), undefined);
+  assert.deepEqual(exportProjectResultViaService(App), {
+    ok: false,
+    reason: 'error',
+    message: 'installed export rejected',
+  });
+  assert.throws(() => buildDefaultProjectDataViaServiceOrThrow(App), /installed default project rejected/);
 
-  assert.equal(reports.length, 3);
+  assert.equal(reports.length, 1);
   assertProjectIoReport(
     reports[0],
     /installed export rejected/,
-    'projectIO.exportCurrentProject.ownerRejected'
-  );
-  assertProjectIoReport(
-    reports[1],
-    /installed default project rejected/,
-    'projectIO.buildDefaultProjectData.ownerRejected'
-  );
-  assertProjectIoReport(
-    reports[2],
-    /installed restore rejected/,
-    'projectIO.restoreLastSession.ownerRejected'
+    'projectIO.exportCurrentProject.resultOwnerRejected'
   );
 });

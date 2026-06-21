@@ -8,23 +8,23 @@ import {
 } from '../esm/native/services/cloud_sync_support.ts';
 import { withSuppressedConsole } from './_console_silence.ts';
 
-test('cloud sync support: capture sketch falls back to raw capture only when projectIO export is not installed', async () => {
-  const fallbackApp = {
+test('cloud sync support: capture sketch requires the canonical ProjectIO export', async () => {
+  let rawCaptureCalled = false;
+  const missingProjectIoApp = {
     services: {
       project: {
         capture() {
+          rawCaptureCalled = true;
           return { settings: { width: 120 } };
         },
       },
     },
   } as any;
 
-  const fallbackSnap = captureSketchSnapshot(fallbackApp);
-  assert.deepEqual(fallbackSnap, {
-    data: { settings: { width: 120 } },
-    jsonStr: '{"settings":{"width":120}}',
-    hash: '26:-1366663366',
+  await withSuppressedConsole(async () => {
+    assert.equal(captureSketchSnapshot(missingProjectIoApp), null);
   });
+  assert.equal(rawCaptureCalled, false);
 
   const brokenExportApp = {
     services: {
@@ -46,57 +46,21 @@ test('cloud sync support: capture sketch falls back to raw capture only when pro
   });
 });
 
-test('cloud sync support: fallback capture canonicalizes snapshot order and preserves valid draft branches', () => {
-  const circular: any = { keep: { html: '<p>kept</p>' } };
-  circular.self = circular;
-
-  const buildApp = (captureResult: Record<string, unknown>) =>
-    ({
-      services: {
-        project: {
-          capture() {
-            return captureResult;
-          },
+test('cloud sync support: capture sketch uses the canonical ProjectIO payload and hash', () => {
+  const projectData = { settings: { width: 120 }, projectName: 'canonical' };
+  const jsonStr = JSON.stringify(projectData);
+  const App = {
+    services: {
+      projectIO: {
+        exportCurrentProject() {
+          return { projectData, jsonStr };
         },
       },
-      store: {
-        getState() {
-          return {
-            ui: {
-              orderPdfEditorDraft: {
-                bad: circular,
-                createdAt: new Date('2026-01-02T03:04:05.000Z'),
-                pages: [{ html: '<p>page</p>', badLeaf: 7n }],
-              },
-              orderPdfEditorZoom: 1.25,
-            },
-          };
-        },
-      },
-    }) as any;
-
-  const first = captureSketchSnapshot(buildApp({ zebra: 1, alpha: { second: 2, first: 1 } }));
-  const second = captureSketchSnapshot(buildApp({ alpha: { first: 1, second: 2 }, zebra: 1 }));
-
-  assert.ok(first);
-  assert.ok(second);
-  assert.equal(first.jsonStr, second.jsonStr);
-  assert.equal(first.hash, second.hash);
-  assert.equal(first.hash, hashString32(first.jsonStr));
-  assert.deepEqual(first.data, {
-    alpha: { second: 2, first: 1 },
-    zebra: 1,
-    orderPdfEditorDraft: {
-      bad: { keep: { html: '<p>kept</p>' } },
-      createdAt: '2026-01-02T03:04:05.000Z',
-      pages: [{ html: '<p>page</p>' }],
     },
-    orderPdfEditorZoom: 1.25,
-  });
-  assert.equal(
-    first.jsonStr,
-    '{"alpha":{"first":1,"second":2},"orderPdfEditorDraft":{"bad":{"keep":{"html":"<p>kept</p>"}},"createdAt":"2026-01-02T03:04:05.000Z","pages":[{"html":"<p>page</p>"}]},"orderPdfEditorZoom":1.25,"zebra":1}'
-  );
+  } as any;
+
+  const snapshot = captureSketchSnapshot(App);
+  assert.deepEqual(snapshot, { data: projectData, jsonStr, hash: hashString32(jsonStr) });
 });
 
 test('cloud sync support reports non-fatal failures through canonical app diagnostics', () => {

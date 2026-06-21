@@ -120,7 +120,8 @@ test('reset default payload reader returns canonical payload/load opts and preci
 
   assert.deepEqual(readResetDefaultProjectPayload({ services: {} } as any), {
     ok: false,
-    reason: 'not-installed',
+    reason: 'error',
+    message: '[WardrobePro] projectIO.buildDefaultProjectData is not installed.',
   });
 
   const invalidApp = {
@@ -304,8 +305,12 @@ test('reset default command routes the cleaned payload through canonical project
   assert.equal(calls[0].opts.meta.preserveAutosave, true);
 });
 
-test('reset default reports not-installed when project io default builder is unavailable', () => {
-  assert.deepEqual(resetProjectToDefault({ services: {} } as any), { ok: false, reason: 'not-installed' });
+test('reset default exposes a missing canonical project io default builder as an error', () => {
+  assert.deepEqual(resetProjectToDefault({ services: {} } as any), {
+    ok: false,
+    reason: 'error',
+    message: '[WardrobePro] projectIO.buildDefaultProjectData is not installed.',
+  });
 });
 
 test('reset default preserves builder/load failure causes instead of flattening them', () => {

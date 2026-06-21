@@ -16,8 +16,7 @@ import type {
 } from '../../../types/index.js';
 
 import { reportErrorThrottled } from '../runtime/api.js';
-import { hasCallableContract } from '../runtime/install_idempotency_patterns.js';
-import { ensureProjectIoService, getProjectIoServiceMaybe } from '../runtime/project_io_access.js';
+import { ensureProjectIoService } from '../runtime/project_io_access.js';
 import { setBuildTag } from '../runtime/build_info_access.js';
 import { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from './project_schema.js';
 import { createProjectIoFeedbackBridge } from './project_io_feedback_bridge.js';
@@ -31,25 +30,14 @@ function readOptionsRecord(options: unknown): UnknownRecord {
   return isRecord(options) ? { ...options } : {};
 }
 
-function projectIoHasRuntimeContract(value: ProjectIoServiceLike): boolean {
-  return hasCallableContract<ProjectIoServiceLike>(value, [
-    'exportCurrentProject',
-    'handleFileLoad',
-    'loadProjectData',
-    'buildDefaultProjectData',
-    'restoreLastSession',
-  ]);
-}
+type ProjectIoRuntimeMethods = ReturnType<typeof createProjectIoOrchestrator>;
+type InstalledProjectIoService = Omit<ProjectIoServiceLike, keyof ProjectIoRuntimeMethods> &
+  ProjectIoRuntimeMethods;
 
-function isProjectIoRuntimeContract(value: unknown): value is ProjectIoServiceLike {
-  return hasCallableContract<ProjectIoServiceLike>(value, [
-    'exportCurrentProject',
-    'handleFileLoad',
-    'loadProjectData',
-    'buildDefaultProjectData',
-    'restoreLastSession',
-  ]);
-}
+const installedRuntimes = new WeakMap<
+  ProjectIoServiceLike,
+  { app: AppContainer; runtime: ProjectIoRuntimeMethods }
+>();
 
 function __projectIoReportNonFatal(
   App: AppContainer | null | undefined,
@@ -71,69 +59,69 @@ function __projectIoReportNonFatal(
 /**
  * @param {AppContainer} App
  * @param {UnknownRecord} [options]
- * @returns {ProjectIoServiceLike|null}
+ * @returns {InstalledProjectIoService}
  */
 export function installProjectIo(
   App: AppContainer,
   options: UnknownRecord | undefined = undefined
-): ProjectIoServiceLike | null {
+): InstalledProjectIoService {
   const opts = readOptionsRecord(options);
-  if (!App || typeof App !== 'object') return null;
+  if (!App || typeof App !== 'object') {
+    throw new Error('[WardrobePro][ProjectIO] App container is required.');
+  }
 
   const ProjectIO = ensureProjectIoService(App);
-  const hasCanonicalRuntime = projectIoHasRuntimeContract(ProjectIO);
 
   try {
-    setBuildTag(App, 'projectIO', 'stage3_orchestration_cleanup');
+    setBuildTag(App, 'projectIO', 'canonical_v3_runtime');
   } catch (err) {
     __projectIoReportNonFatal(App, 'services.buildInfo.projectIO', err);
   }
 
-  ProjectIO.SCHEMA_ID = PROJECT_SCHEMA_ID;
-  ProjectIO.SCHEMA_VERSION = PROJECT_SCHEMA_VERSION;
+  const installed = installedRuntimes.get(ProjectIO);
+  const runtime =
+    installed?.app === App
+      ? installed.runtime
+      : (() => {
+          const bridge = createProjectIoFeedbackBridge(App, opts, (op, err, throttleMs) =>
+            __projectIoReportNonFatal(App, op, err, throttleMs)
+          );
 
-  if (!hasCanonicalRuntime) {
-    const bridge = createProjectIoFeedbackBridge(App, opts, (op, err, throttleMs) =>
-      __projectIoReportNonFatal(App, op, err, throttleMs)
-    );
+          return createProjectIoOrchestrator({
+            App,
+            showToast: bridge.showToast,
+            openCustomConfirm: bridge.openCustomConfirm,
+            userAgent: bridge.userAgent,
+            schemaId: PROJECT_SCHEMA_ID,
+            schemaVersion: PROJECT_SCHEMA_VERSION,
+            reportNonFatal: (op, err, throttleMs) => __projectIoReportNonFatal(App, op, err, throttleMs),
+          });
+        })();
 
-    const runtime = createProjectIoOrchestrator({
-      App,
-      showToast: bridge.showToast,
-      openCustomConfirm: bridge.openCustomConfirm,
-      userAgent: bridge.userAgent,
-      schemaId: PROJECT_SCHEMA_ID,
-      schemaVersion: PROJECT_SCHEMA_VERSION,
-      reportNonFatal: (op, err, throttleMs) => __projectIoReportNonFatal(App, op, err, throttleMs),
-    });
+  Object.assign(ProjectIO, {
+    SCHEMA_ID: PROJECT_SCHEMA_ID,
+    SCHEMA_VERSION: PROJECT_SCHEMA_VERSION,
+    exportCurrentProject: runtime.exportCurrentProject,
+    handleFileLoad: runtime.handleFileLoad,
+    loadProjectData: runtime.loadProjectData,
+    buildDefaultProjectData: runtime.buildDefaultProjectData,
+    restoreLastSession: runtime.restoreLastSession,
+  });
+  installedRuntimes.set(ProjectIO, { app: App, runtime });
 
-    ProjectIO.exportCurrentProject = ProjectIO.exportCurrentProject || runtime.exportCurrentProject;
-    ProjectIO.handleFileLoad = ProjectIO.handleFileLoad || runtime.handleFileLoad;
-    ProjectIO.loadProjectData = ProjectIO.loadProjectData || runtime.loadProjectData;
-    ProjectIO.buildDefaultProjectData = ProjectIO.buildDefaultProjectData || runtime.buildDefaultProjectData;
-    ProjectIO.restoreLastSession = ProjectIO.restoreLastSession || runtime.restoreLastSession;
-  }
-
-  return ProjectIO;
+  return ProjectIO as InstalledProjectIoService;
 }
 
-export function ensureProjectIoInstalled(App: AppContainer): ProjectIoServiceLike {
-  installProjectIo(App);
-  const api = getProjectIoServiceMaybe(App) || undefined;
-  if (!isProjectIoRuntimeContract(api)) {
-    throw new Error('[WardrobePro][ESM] ProjectIO is not installed');
-  }
-  return api;
+export function ensureProjectIoInstalled(App: AppContainer): InstalledProjectIoService {
+  return installProjectIo(App);
 }
 
 export function exportCurrentProject(
   App: AppContainer,
   meta?: UnknownRecord | null
-): ProjectExportResultLike | null | undefined {
+): ProjectExportResultLike | null {
   const api = ensureProjectIoInstalled(App);
-  return typeof api.exportCurrentProject === 'function'
-    ? api.exportCurrentProject(meta ?? undefined)
-    : undefined;
+  return api.exportCurrentProject(meta ?? undefined);
 }
 
 /**
@@ -142,8 +130,7 @@ export function exportCurrentProject(
  * @returns {unknown}
  */
 export function handleFileLoad(App: AppContainer, eventOrFile: unknown) {
-  const api = ensureProjectIoInstalled(App);
-  return typeof api.handleFileLoad === 'function' ? api.handleFileLoad(eventOrFile) : undefined;
+  return ensureProjectIoInstalled(App).handleFileLoad(eventOrFile);
 }
 
 /**
@@ -153,16 +140,13 @@ export function handleFileLoad(App: AppContainer, eventOrFile: unknown) {
  * @returns {unknown}
  */
 export function loadProjectData(App: AppContainer, data: ProjectLoadInputLike, opts?: ProjectLoadOpts) {
-  const api = ensureProjectIoInstalled(App);
-  return typeof api.loadProjectData === 'function' ? api.loadProjectData(data, opts) : undefined;
+  return ensureProjectIoInstalled(App).loadProjectData(data, opts);
 }
 
 export function restoreLastSession(App: AppContainer) {
-  const api = ensureProjectIoInstalled(App);
-  return typeof api.restoreLastSession === 'function' ? api.restoreLastSession() : undefined;
+  return ensureProjectIoInstalled(App).restoreLastSession();
 }
 
 export function buildDefaultProjectData(App: AppContainer) {
-  const api = ensureProjectIoInstalled(App);
-  return typeof api.buildDefaultProjectData === 'function' ? api.buildDefaultProjectData() : undefined;
+  return ensureProjectIoInstalled(App).buildDefaultProjectData();
 }

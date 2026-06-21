@@ -98,10 +98,26 @@ test('structural installs remain idempotent without namespace install flags', ()
   assert.equal(typeof App.browser.getWindow, 'function');
   assert.equal(typeof App.browser.setDoorStatusCss, 'function');
 
+  const staleProjectIoMethod = () => 'stale';
+  App.services.projectIO = {
+    exportCurrentProject: staleProjectIoMethod,
+    handleFileLoad: staleProjectIoMethod,
+    loadProjectData: staleProjectIoMethod,
+    buildDefaultProjectData: staleProjectIoMethod,
+    restoreLastSession: staleProjectIoMethod,
+  };
   const projectIO1 = installProjectIo(App as never);
+  const canonicalExport = projectIO1.exportCurrentProject;
+  const canonicalLoad = projectIO1.loadProjectData;
+  assert.notEqual(canonicalExport, staleProjectIoMethod);
+  assert.notEqual(canonicalLoad, staleProjectIoMethod);
+
+  projectIO1.exportCurrentProject = staleProjectIoMethod as never;
   const projectIO2 = installProjectIo(App as never);
   assert.equal(projectIO1, projectIO2);
-  assert.equal(typeof projectIO1?.exportCurrentProject, 'function');
+  assert.equal(projectIO2.exportCurrentProject, canonicalExport);
+  assert.equal(projectIO2.loadProjectData, canonicalLoad);
+  assert.equal(projectIO2.SCHEMA_VERSION, 3);
 
   const storeNs: any = {};
   installStateApiHistoryMetaReactivity({
@@ -143,4 +159,8 @@ test('structural installs remain idempotent without namespace install flags', ()
   const doorsAfter = installDoorsRuntimeService(App as never);
   assert.equal(doorsBefore, doorsAfter);
   assert.equal(doorsAfter.getOpen, getOpenBefore);
+});
+
+test('ProjectIO install rejects a missing App container', () => {
+  assert.throws(() => installProjectIo(null as never), /App container is required/);
 });

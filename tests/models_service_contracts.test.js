@@ -299,7 +299,7 @@ test('models-related autosave and project-load flows keep command-like canonical
   assertMatchesAll(
     assert,
     projectLoadCommandBundle,
-    [/getProjectIoServiceMaybe\(App\)/, /loadProjectDataViaService\(/, /projectIO\.loadProjectData/],
+    [/loadProjectDataResultViaServiceOrThrow\(/, /loadProjectDataActionResultViaService\(/],
     'projectLoadCommandBundle'
   );
   const forbidden = [

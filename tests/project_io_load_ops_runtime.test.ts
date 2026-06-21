@@ -65,7 +65,7 @@ test('project io load ops normalize restore callback results before restore toas
   assert.deepEqual(toasts, [{ message: 'שחזור העריכה לא זמין כרגע', type: 'error' }]);
 });
 
-test('project io load ops use the shared autosave-restore seam for legacy restore failures', () => {
+test('project io load ops use the shared autosave-restore seam for concrete restore failures', () => {
   const toasts: Array<{ message: unknown; type: unknown }> = [];
   const App = {
     services: {
@@ -77,7 +77,7 @@ test('project io load ops use the shared autosave-restore seam for legacy restor
       },
       projectIO: {
         loadProjectData() {
-          return { ok: false, reason: 'load', message: 'legacy restore reason' };
+          return { ok: false, reason: 'load', message: 'restore failure reason' };
         },
       },
     },
@@ -118,5 +118,5 @@ test('project io load ops use the shared autosave-restore seam for legacy restor
   const pending = loadOps.restoreLastSession();
 
   assert.deepEqual(pending, { ok: true, pending: true });
-  assert.deepEqual(toasts, [{ message: 'legacy restore reason', type: 'error' }]);
+  assert.deepEqual(toasts, [{ message: 'restore failure reason', type: 'error' }]);
 });

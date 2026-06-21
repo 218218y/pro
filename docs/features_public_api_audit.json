@@ -1536,10 +1536,6 @@
       "entry": "modules_configuration/corner_cells_api.js"
     },
     {
-      "file": "esm/native/services/cloud_sync_support_capture.ts",
-      "entry": "project_config/project_config_persisted_payload_shared.js"
-    },
-    {
       "file": "esm/native/services/config_compounds_seed.ts",
       "entry": "modules_configuration/modules_config_api.js"
     },

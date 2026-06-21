@@ -11,17 +11,12 @@ import {
 } from './project_io_access_shared.js';
 import {
   type ProjectExportAccessResult,
-  buildDefaultProjectDataViaService,
   buildDefaultProjectDataViaServiceOrThrow,
   exportProjectResultViaService,
-  exportProjectViaService,
-  getProjectIoBuildDefaultProjectDataFn,
-  getProjectIoLoadProjectDataFn,
   loadProjectDataActionResultViaService,
   loadProjectDataActionResultViaServiceOrThrow,
   loadProjectDataResultViaService,
   loadProjectDataResultViaServiceOrThrow,
-  loadProjectDataViaService,
   loadProjectDataViaServiceOrThrow,
   normalizeProjectExportResult,
 } from './project_io_access_load.js';
@@ -32,7 +27,6 @@ import {
   restoreProjectAutosavePayloadActionResultViaService,
   restoreProjectSessionActionResultViaService,
   restoreProjectSessionActionResultViaServiceOrThrow,
-  restoreProjectSessionViaService,
 } from './project_io_access_restore.js';
 
 export type {
@@ -51,11 +45,8 @@ export {
   isProjectIoRestoreGenerationCurrent,
   normalizeProjectIoLoadResult,
   normalizeProjectLoadActionResultViaProjectIo,
-  exportProjectViaService,
   normalizeProjectExportResult,
   exportProjectResultViaService,
-  getProjectIoLoadProjectDataFn,
-  loadProjectDataViaService,
   loadProjectDataResultViaService,
   loadProjectDataActionResultViaService,
   loadProjectDataResultViaServiceOrThrow,
@@ -65,8 +56,5 @@ export {
   restoreProjectSessionActionResultViaService,
   restoreProjectSessionActionResultViaServiceOrThrow,
   loadProjectDataViaServiceOrThrow,
-  restoreProjectSessionViaService,
-  getProjectIoBuildDefaultProjectDataFn,
-  buildDefaultProjectDataViaService,
   buildDefaultProjectDataViaServiceOrThrow,
 };
