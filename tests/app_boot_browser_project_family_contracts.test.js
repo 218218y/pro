@@ -25,6 +25,16 @@ import {
   const mainOwner = readSource('../esm/main.ts', import.meta.url);
   const releaseMainOwner = readSource('../esm/release_main.ts', import.meta.url);
   const bootSequenceOwner = readSource('../esm/boot/boot_sequence.ts', import.meta.url);
+  const browserBootOwner = readSource('../esm/boot/boot_browser_runtime.ts', import.meta.url);
+  const reactBootOwner = readSource('../esm/native/ui/react/boot_react_ui.tsx', import.meta.url);
+  const reactStylesOwner = readSource('../css/react_styles.css', import.meta.url);
+  const reactTokensOwner = readSource('../css/react_tokens.css', import.meta.url);
+  const shellTemplates = [
+    '../index_pro.html',
+    '../index_site2.html',
+    '../tools/index_release_bundle.html',
+    '../tools/index_release_bundle_site2.html',
+  ].map(path => ({ path, source: readSource(path, import.meta.url) }));
 
   const entryMainOwner = readSource('../esm/entry_pro_main.ts', import.meta.url);
   const entryMainBundle = bundleSources(
@@ -256,6 +266,73 @@ import {
       [/export default\s+/],
       'entry/runtime boot surfaces named-only'
     );
+  });
+
+  test('[app-boot-project-family] React shell mounts are canonical, exclusive, and fail fast', () => {
+    for (const { path, source } of shellTemplates) {
+      assert.match(
+        source,
+        /<div id="sidebar">\s*<div id="reactSidebarRoot"><\/div>\s*<\/div>/,
+        `${path} must give React exclusive sidebar ownership`
+      );
+      assert.match(
+        source,
+        /<div id="viewer-container">\s*<div id="reactOverlayRoot"><\/div>/,
+        `${path} must expose the canonical overlay root`
+      );
+      assert.equal((source.match(/id="reactSidebarRoot"/g) || []).length, 1, path);
+      assert.equal((source.match(/id="reactOverlayRoot"/g) || []).length, 1, path);
+    }
+
+    assertMatchesAll(
+      assert,
+      reactBootOwner,
+      [
+        /const REACT_SIDEBAR_ROOT_ID = 'reactSidebarRoot';/,
+        /const REACT_OVERLAY_ROOT_ID = 'reactOverlayRoot';/,
+        /Required mount root #\$\{id\} is missing/,
+        /#sidebar must be owned exclusively by #reactSidebarRoot/,
+        /non-React\/pre-rendered DOM is unsupported/,
+        /mount\(mountHosts\.sidebar, REACT_SIDEBAR_ROOT_ID, 'Sidebar'/,
+        /mount\(mountHosts\.overlay, REACT_OVERLAY_ROOT_ID, 'Overlay'/,
+        /doc\.body\.classList\.add\('wp-ui-react'\)/,
+      ],
+      'reactBootOwner'
+    );
+    assert.ok(
+      reactBootOwner.indexOf("doc.body.classList.add('wp-ui-react')") >
+        reactBootOwner.indexOf('mount(mountHosts.overlay'),
+      'React body marker must follow both required mounts'
+    );
+    assertLacksAll(assert, reactBootOwner, [/mountId/, /Optional mount/], 'reactBootOwner');
+    assertLacksAll(
+      assert,
+      browserBootOwner,
+      [/addReactBodyClass/, /addBodyClassMaybe/, /markBodyClass/],
+      'browserBootOwner'
+    );
+    assert.match(
+      browserBootOwner,
+      /reportBrowserBoot\(report, err, \{ phase: 'reactUi', op: 'mount' \}\);\s*throw err;/
+    );
+    assertLacksAll(
+      assert,
+      `${entryMainBundle}\n${releaseMainOwner}`,
+      [/mountId:\s*'reactSidebarRoot'/, /addReactBodyClass:\s*true/],
+      'entry React boot callers'
+    );
+    assert.match(reactStylesOwner, /#reactSidebarRoot \{\s*display:\s*block;\s*height:\s*100%;\s*\}/);
+    assertLacksAll(
+      assert,
+      reactStylesOwner,
+      [
+        /#sidebar > :not\(#reactSidebarRoot\)/,
+        /#reactSidebarRoot \{\s*display:\s*none;/,
+        /body\.wp-ui-react #reactSidebarRoot/,
+      ],
+      'reactStylesOwner'
+    );
+    assert.doesNotMatch(reactTokensOwner, /body\.wp-ui-react #reactSidebarRoot/);
   });
 
   test('[app-boot-project-family] boot manifest and ui boot seams stay canonical', () => {

@@ -26,6 +26,13 @@ index_pro.html
 
 `esm/entry_*` owns browser dependency collection. `esm/main.ts` and deeper modules must stay import-safe.
 
+The browser shell is React-only. Every source and release HTML template must provide exactly one
+`#reactSidebarRoot` directly inside `#sidebar` and one `#reactOverlayRoot` directly inside
+`#viewer-container`. `bootReactUi` validates both hosts before installing UI interactions, rejects
+pre-rendered/legacy children, and treats the sidebar host as the sole element owned by `#sidebar`.
+The `wp-ui-react` body class is a post-mount marker for global overlay styling, not a compatibility
+switch; do not restore configurable mount ids, optional roots, or CSS rules that hide legacy siblings.
+
 ## Layer map
 
 - `esm/boot/*` — boot order and install manifests.

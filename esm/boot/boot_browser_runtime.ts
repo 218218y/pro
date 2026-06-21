@@ -14,7 +14,6 @@ type BrowserBootRuntimeOpts = {
   installBeforeUnloadGuard?: boolean;
   installDebugSurface?: BrowserBootSurfaceInstaller | null;
   beforeUnloadMessage?: string;
-  addReactBodyClass?: boolean;
   flushServices?: unknown[];
   getState?: () => unknown;
   hasDirtyState?: (state: unknown) => boolean;
@@ -44,16 +43,6 @@ function reportBrowserBoot(
 ): void {
   if (!report) return;
   report(err, meta);
-}
-
-export function addBodyClassMaybe(doc: Document | null, className: string): boolean {
-  try {
-    if (!doc?.body?.classList) return false;
-    doc.body.classList.add(className);
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 export function startBootUiMaybe(app: AppContainer): boolean {
@@ -154,7 +143,6 @@ export async function runBrowserBootRuntime(opts: BrowserBootRuntimeOpts): Promi
     installBeforeUnloadGuard = false,
     installDebugSurface,
     beforeUnloadMessage,
-    addReactBodyClass = false,
     flushServices,
     getState,
     hasDirtyState,
@@ -162,19 +150,12 @@ export async function runBrowserBootRuntime(opts: BrowserBootRuntimeOpts): Promi
 
   if (!win || !doc) return;
 
-  if (addReactBodyClass) {
-    try {
-      addBodyClassMaybe(doc, 'wp-ui-react');
-    } catch (err) {
-      reportBrowserBoot(report, err, { phase: 'reactUi', op: 'markBodyClass' });
-    }
-  }
-
   if (typeof mountReactUi === 'function') {
     try {
       await mountReactUi(app, win, doc);
     } catch (err) {
       reportBrowserBoot(report, err, { phase: 'reactUi', op: 'mount' });
+      throw err;
     }
   }
 

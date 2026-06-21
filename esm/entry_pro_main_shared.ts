@@ -12,9 +12,7 @@ type NoArgCallback = () => unknown;
 type OverlayFn = (opts: FatalOverlayShowOptionsLike) => unknown;
 export type BootReactUiOptsLike = {
   app: AppContainer;
-  window: Window;
   document: Document;
-  mountId: string;
 };
 type BootReactUiFn = (opts: BootReactUiOptsLike) => unknown;
 type MetaElementLike = Element & {

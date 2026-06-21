@@ -15,28 +15,12 @@ function createWindowHarness() {
   return { win, listeners };
 }
 
-function createDocumentHarness() {
-  const classNames = new Set<string>();
-  return {
-    doc: {
-      body: {
-        classList: {
-          add(name: string) {
-            classNames.add(name);
-          },
-        },
-      },
-    } as any,
-    classNames,
-  };
-}
-
 test('browser boot runtime orchestrates react mount, boot start, debug surface, and beforeunload guard', async () => {
   const calls: string[] = [];
   const flushes: string[] = [];
   const reports: string[] = [];
   const { win, listeners } = createWindowHarness();
-  const { doc, classNames } = createDocumentHarness();
+  const doc = {} as any;
   const app: any = {
     boot: {
       start() {
@@ -65,7 +49,6 @@ test('browser boot runtime orchestrates react mount, boot start, debug surface, 
     window: win,
     document: doc,
     report: (_err, meta) => reports.push(`${meta.phase}:${meta.op}`),
-    addReactBodyClass: true,
     mountReactUi() {
       calls.push('react.mount');
     },
@@ -76,7 +59,6 @@ test('browser boot runtime orchestrates react mount, boot start, debug surface, 
     installBeforeUnloadGuard: true,
   });
 
-  assert.equal(classNames.has('wp-ui-react'), true);
   assert.deepEqual(calls, ['react.mount', 'boot.start', 'debug.install']);
   assert.deepEqual(reports, []);
 
@@ -95,4 +77,26 @@ test('browser boot runtime orchestrates react mount, boot start, debug surface, 
   assert.equal(event.returnValue, 'יש שינויים שלא נשמרו. לצאת בכל זאת?');
   assert.equal(result, 'יש שינויים שלא נשמרו. לצאת בכל זאת?');
   assert.deepEqual(flushes, ['autosave', 'history']);
+});
+
+test('browser boot runtime reports and propagates a required React mount failure', async () => {
+  const expected = new Error('missing canonical React shell');
+  const reports: Array<{ error: unknown; phase?: string; op: string }> = [];
+  const { win } = createWindowHarness();
+
+  await assert.rejects(
+    runBrowserBootRuntime({
+      app: {} as any,
+      window: win,
+      document: {} as any,
+      report: (error, meta) => reports.push({ error, ...meta }),
+      mountReactUi() {
+        throw expected;
+      },
+      startBootUi: true,
+    }),
+    expected
+  );
+
+  assert.deepEqual(reports, [{ error: expected, phase: 'reactUi', op: 'mount' }]);
 });

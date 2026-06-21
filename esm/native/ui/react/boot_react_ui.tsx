@@ -22,12 +22,19 @@ import { endPerfSpan, markPerfPoint, startPerfSpan } from '../../services/api.js
 type BootReactUiOpts = {
   app: AppContainer;
   document?: Document | null;
-  mountId?: string;
 };
 
 type BrowserDocProviderLike = { getDocument?: () => Document | null };
 
 const mountedRoots = new WeakMap<Element, Root>();
+
+const REACT_SIDEBAR_ROOT_ID = 'reactSidebarRoot';
+const REACT_OVERLAY_ROOT_ID = 'reactOverlayRoot';
+
+type ReactMountHosts = {
+  sidebar: HTMLElement;
+  overlay: HTMLElement;
+};
 
 function isBrowserDocProviderLike(value: unknown): value is BrowserDocProviderLike {
   return !!value && typeof value === 'object';
@@ -61,13 +68,61 @@ function getDocumentFromApp(app: AppContainer): Document | null {
   }
 }
 
+function requireReactMountRoot(app: AppContainer, doc: Document, id: string): HTMLElement {
+  const el = getReactMountRootMaybe(app, id);
+  if (!el) {
+    throw new Error(`[WardrobePro][React] Required mount root #${id} is missing.`);
+  }
+  if (el.ownerDocument && el.ownerDocument !== doc) {
+    throw new Error(`[WardrobePro][React] Mount root #${id} belongs to a different document.`);
+  }
+  return el;
+}
+
+function requireDirectMountOwner(app: AppContainer, root: HTMLElement, ownerId: string): HTMLElement {
+  const owner = getReactMountRootMaybe(app, ownerId);
+  if (!owner || root.parentElement !== owner) {
+    throw new Error(`[WardrobePro][React] Mount root #${root.id} must be a direct child of #${ownerId}.`);
+  }
+  return owner;
+}
+
+function assertFreshMountRoot(root: HTMLElement): void {
+  if (mountedRoots.has(root)) return;
+  if (root.hasChildNodes()) {
+    throw new Error(
+      `[WardrobePro][React] Mount root #${root.id} must be empty; non-React/pre-rendered DOM is unsupported.`
+    );
+  }
+}
+
+function requireReactMountHosts(app: AppContainer, doc: Document): ReactMountHosts {
+  const sidebar = requireReactMountRoot(app, doc, REACT_SIDEBAR_ROOT_ID);
+  const overlay = requireReactMountRoot(app, doc, REACT_OVERLAY_ROOT_ID);
+  const sidebarOwner = requireDirectMountOwner(app, sidebar, 'sidebar');
+  requireDirectMountOwner(app, overlay, 'viewer-container');
+
+  if (sidebarOwner.childElementCount !== 1 || sidebarOwner.firstElementChild !== sidebar) {
+    throw new Error('[WardrobePro][React] #sidebar must be owned exclusively by #reactSidebarRoot.');
+  }
+
+  assertFreshMountRoot(sidebar);
+  assertFreshMountRoot(overlay);
+  return { sidebar, overlay };
+}
+
 export function bootReactUi(opts: BootReactUiOpts): void {
   // Do not touch browser globals here (eslint no-restricted-globals).
   // Prefer an injected Document (entry), but fall back to the browser env adapter.
   const doc = opts.document ?? getDocumentFromApp(opts.app);
-  if (!doc) return;
+  if (!doc) {
+    throw new Error('[WardrobePro][React] Browser document is required to mount the React UI.');
+  }
 
   const app = opts.app;
+  // Validate the complete shell before installing interactions or creating either root.
+  // This prevents a partial boot from silently taking over stale/non-React DOM.
+  const mountHosts = requireReactMountHosts(app, doc);
 
   // UI feedback surface (stable; never throws). Used by actions and interactions.
   const fb = getUiFeedback(app);
@@ -131,28 +186,31 @@ export function bootReactUi(opts: BootReactUiOpts): void {
     __reportBoot('installStyledTooltipViewportHost', e);
   }
 
-  const mount = (id: string, node: ReactNode): void => {
-    const el = getReactMountRootMaybe(app, id);
-    if (!el) return;
-
+  const mount = (el: HTMLElement, id: string, label: string, node: ReactNode): void => {
     // Idempotent mount
     if (mountedRoots.has(el)) return;
 
     const perfSpanId = startPerfSpan(app, `boot.react.mount.${id}`);
     const root = createRoot(el);
-    mountedRoots.set(el, root);
-
-    const label = id === 'reactOverlayRoot' ? 'Overlay' : 'Sidebar';
-
-    root.render(
-      <StrictMode>
-        <AppProvider app={app}>
-          <AppErrorBoundary app={app} label={label}>
-            {node}
-          </AppErrorBoundary>
-        </AppProvider>
-      </StrictMode>
-    );
+    try {
+      root.render(
+        <StrictMode>
+          <AppProvider app={app}>
+            <AppErrorBoundary app={app} label={label}>
+              {node}
+            </AppErrorBoundary>
+          </AppProvider>
+        </StrictMode>
+      );
+      mountedRoots.set(el, root);
+    } catch (error) {
+      try {
+        root.unmount();
+      } catch {
+        // Preserve the original mount failure.
+      }
+      throw error;
+    }
 
     const finalizeMount = () => {
       endPerfSpan(app, perfSpanId);
@@ -167,9 +225,9 @@ export function bootReactUi(opts: BootReactUiOpts): void {
     queueMicrotask(finalizeMount);
   };
 
-  const mountId = typeof opts.mountId === 'string' && opts.mountId ? opts.mountId : 'reactSidebarRoot';
-  mount(mountId, <ReactSidebarApp />);
+  mount(mountHosts.sidebar, REACT_SIDEBAR_ROOT_ID, 'Sidebar', <ReactSidebarApp />);
+  mount(mountHosts.overlay, REACT_OVERLAY_ROOT_ID, 'Overlay', <ReactOverlayApp />);
 
-  // Viewer overlay (camera controls + undo/redo). Optional mount.
-  mount('reactOverlayRoot', <ReactOverlayApp />);
+  // Global React overlay styles are enabled only after the complete shell mounted.
+  doc.body.classList.add('wp-ui-react');
 }

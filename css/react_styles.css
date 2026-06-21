@@ -370,17 +370,8 @@
  * -------------------------------------------------------------------------- */
 
 #reactSidebarRoot {
-  display: none;
-  height: 100%;
-}
-
-body.wp-ui-react #reactSidebarRoot {
   display: block;
   height: 100%;
-}
-
-body.wp-ui-react #sidebar > :not(#reactSidebarRoot) {
-  display: none !important;
 }
 
 #reactSidebarRoot .wp-react {
@@ -7572,7 +7563,7 @@ body.wp-ui-react .wp-pdf-page-annotation-tools .wp-pdf-sketch-toolbar--floating 
 }
 
 #reactSidebarRoot .wp-r-theme-dark .tab-content[data-tab='interior'] .wp-tool-card--extdrawer .btn.btn-count,
-body.wp-ui-react #reactSidebarRoot .wp-r-theme-dark .btn-count {
+#reactSidebarRoot .wp-r-theme-dark .btn-count {
   background: var(--wp-r-dark-control-bg);
   border-color: var(--wp-r-dark-card-border);
   color: #d9e0e6;
@@ -7583,7 +7574,7 @@ body.wp-ui-react #reactSidebarRoot .wp-r-theme-dark .btn-count {
   .tab-content[data-tab='interior']
   .wp-tool-card--extdrawer
   .btn.btn-count:hover,
-body.wp-ui-react #reactSidebarRoot .wp-r-theme-dark .btn-count:hover {
+#reactSidebarRoot .wp-r-theme-dark .btn-count:hover {
   background: var(--wp-r-dark-control-bg-hover);
   border-color: rgba(77, 182, 172, 0.48);
   color: var(--text-main);
@@ -7594,7 +7585,7 @@ body.wp-ui-react #reactSidebarRoot .wp-r-theme-dark .btn-count:hover {
   .tab-content[data-tab='interior']
   .wp-tool-card--extdrawer
   .btn.btn-count.is-selected,
-body.wp-ui-react #reactSidebarRoot .wp-r-theme-dark .btn-count.is-selected {
+#reactSidebarRoot .wp-r-theme-dark .btn-count.is-selected {
   background: rgba(77, 182, 172, 0.24);
   border-color: var(--wp-r-dark-card-border-active);
   color: #9ff2e8;

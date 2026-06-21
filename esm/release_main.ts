@@ -42,10 +42,8 @@ function ensureReactFlags(deps: Deps): Deps {
   return deps;
 }
 
-async function mountReactUi(app: AppContainer, win: Window, doc: Document): Promise<void> {
-  void win;
-  if (typeof bootReactUi !== 'function') return;
-  bootReactUi({ app, document: doc, mountId: 'reactSidebarRoot' });
+async function mountReactUi(app: AppContainer, _win: Window, doc: Document): Promise<void> {
+  bootReactUi({ app, document: doc });
 }
 
 export function createApp(opts: { deps?: Deps } = {}): AppContainer {
@@ -66,7 +64,6 @@ export async function boot(opts: { deps?: Deps } = {}): Promise<AppContainer> {
     app,
     window: win,
     document: doc,
-    addReactBodyClass: true,
     mountReactUi,
     startBootUi: true,
   });

@@ -18,15 +18,15 @@ type BrowserBootSetupOpts = {
   report: BootReporter;
 };
 
-async function mountReactUi(app: AppContainer, w: Window, doc: Document): Promise<void> {
+async function mountReactUi(app: AppContainer, _w: Window, doc: Document): Promise<void> {
   const reactMod = await import('./native/ui/react/boot_react_ui.js');
   const bootReactUi = getBootReactUiCallback(reactMod, 'bootReactUi');
-  if (!bootReactUi) return;
+  if (!bootReactUi) {
+    throw new Error('[WardrobePro][React] bootReactUi export is missing.');
+  }
   bootReactUi({
     app,
-    window: w,
     document: doc,
-    mountId: 'reactSidebarRoot',
   });
 }
 
@@ -40,7 +40,6 @@ export async function runBrowserBootSetup(opts: BrowserBootSetupOpts): Promise<v
       window: bootWindow,
       document: bootDocument,
       report,
-      addReactBodyClass: true,
       mountReactUi,
       startBootUi: true,
       installBeforeUnloadGuard: true,
