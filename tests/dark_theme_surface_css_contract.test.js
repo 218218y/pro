@@ -32,6 +32,37 @@ test('[dark-theme-css] card-like controls do not fall back to light surfaces', (
   assertContainsSelector('#reactSidebarRoot .wp-r-theme-dark .wp-r-note');
 });
 
+function extractRule(selector) {
+  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+');
+  const match = css.match(new RegExp(`${escaped}\\s*\\{([\\s\\S]*?)\\}`, 'm'));
+  return match ? match[1] : '';
+}
+
+test('[dark-theme-css] header logo keeps its embedded shape bright without dark-mode re-boxing', () => {
+  assertContainsSelector('#reactSidebarRoot .wp-r-header-logo {');
+  const logoRule = extractRule('#reactSidebarRoot .wp-r-header-logo');
+  assert.match(logoRule, /background:\s*var\(--wp-r-header-logo-surface,\s*transparent\);/);
+  assert.match(logoRule, /border-radius:\s*10px;/);
+  assert.match(logoRule, /overflow:\s*hidden;/);
+  assert.doesNotMatch(logoRule, /(?:^|;)\s*padding\s*:/, 'logo image must not be shrunk by padding');
+  assert.doesNotMatch(logoRule, /(?:^|;)\s*border\s*:/, 'logo image must not receive a separate border');
+  assert.doesNotMatch(
+    extractRule('#reactSidebarRoot .wp-r-header'),
+    /--wp-r-header-logo-surface:/,
+    'base header must not shadow the dark-theme logo surface token'
+  );
+  assert.match(
+    extractRule('#reactSidebarRoot .wp-r-theme-dark'),
+    /--wp-r-header-logo-surface:\s*#f8fafc;/,
+    'dark mode supplies only a same-shape backing surface so translucent logo pixels keep their light appearance'
+  );
+  assert.doesNotMatch(
+    css,
+    /#reactSidebarRoot\s+\.wp-r-theme-dark\s+\.wp-r-header-logo\s*\{/,
+    'dark mode must not add a separate logo box; the embedded logo asset already owns its rounded background'
+  );
+});
+
 test('[dark-theme-css] saved models panel keeps its surface class-owned', () => {
   assertContainsSelector('#reactSidebarRoot .wp-r-savedmodels {');
   assert.doesNotMatch(savedModelsView, /style=\{\{[^}]*background:\s*['"]#f8fafc/i);

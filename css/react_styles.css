@@ -19,7 +19,7 @@
   --wp-header-btn-icon-gap: 0px;
   --wp-header-logo-edge-gap: 12px;
   --wp-header-action-col-width: 50px;
-  --wp-header-btn-inline-pad: 6px;
+  --wp-header-btn-inline-pad: 6 px;
 
   /* In RTL, inline-start is the RIGHT side, so this pulls the logo closer to the right edge. */
   padding-inline-start: var(--wp-header-logo-edge-gap);
@@ -80,6 +80,9 @@
   max-height: 70px;
   width: auto;
   object-fit: contain;
+  background: var(--wp-r-header-logo-surface, transparent);
+  border-radius: 10px;
+  overflow: hidden;
 }
 
 /* Header button polish: consistent icon alignment + clear hover */
@@ -7096,22 +7099,13 @@ body.wp-ui-react .wp-pdf-page-annotation-tools .wp-pdf-sketch-toolbar--floating 
   --wp-r-dark-control-bg: #20262d;
   --wp-r-dark-control-bg-hover: #252b32;
   --wp-r-dark-control-bg-selected: rgba(77, 182, 172, 0.18);
+  --wp-r-header-logo-surface: #f8fafc;
 }
 
 #reactSidebarRoot .wp-r-theme-dark .header,
 #reactSidebarRoot .wp-r-theme-dark .tabs {
   background: var(--panel-bg);
   border-color: var(--border-color);
-}
-
-#reactSidebarRoot .wp-r-theme-dark .wp-r-header-logo {
-  box-sizing: border-box;
-  max-height: 70px;
-  padding: 7px 9px;
-  background: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.82);
-  border-radius: 8px;
-  filter: none;
 }
 
 #reactSidebarRoot .wp-r-theme-dark .scroll-content {
