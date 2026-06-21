@@ -44,13 +44,19 @@ function readConfigSnapshot(App: any): Record<string, unknown> {
 
 test('handles apply triggers a platform render by default', () => {
   const { App, calls } = createApp();
-  applyHandles({ App, cfgSnapshot: readConfigSnapshot(App), addOutlines });
+  applyHandles({ App, cfgSnapshot: readConfigSnapshot(App), addOutlines, removeDoorsEnabled: false });
   assert.deepEqual(calls, [['platform-render', false]]);
 });
 
 test('handles apply can suppress the trailing platform render for batched callers', () => {
   const { App, calls } = createApp();
-  applyHandles({ App, cfgSnapshot: readConfigSnapshot(App), addOutlines, triggerRender: false });
+  applyHandles({
+    App,
+    cfgSnapshot: readConfigSnapshot(App),
+    addOutlines,
+    removeDoorsEnabled: false,
+    triggerRender: false,
+  });
   assert.deepEqual(calls, []);
 });
 
@@ -83,7 +89,7 @@ test('handles apply falls back to ensureRenderLoop when triggerRender is unavail
     },
   };
 
-  applyHandles({ App, cfgSnapshot: readConfigSnapshot(App), addOutlines });
+  applyHandles({ App, cfgSnapshot: readConfigSnapshot(App), addOutlines, removeDoorsEnabled: false });
   assert.deepEqual(calls, [['ensureRenderLoop']]);
 });
 
@@ -224,6 +230,7 @@ test('handles apply uses stored manual positions when placing external drawer ha
     App,
     cfgSnapshot: readConfigSnapshot(App),
     addOutlines: mesh => outlined.push(mesh),
+    removeDoorsEnabled: false,
     triggerRender: false,
   });
 
@@ -254,7 +261,12 @@ test('handles apply runtime captures one canonical config snapshot for handle ma
     meta: {},
   });
 
-  const runtime = createHandlesApplyRuntime({ App, cfgSnapshot: readConfigSnapshot(App), addOutlines });
+  const runtime = createHandlesApplyRuntime({
+    App,
+    cfgSnapshot: readConfigSnapshot(App),
+    addOutlines,
+    removeDoorsEnabled: false,
+  });
   handlesMap.d1 = 'none';
 
   assert.equal(runtime.getHandleType('d1'), 'standard');
@@ -286,12 +298,51 @@ test('handles purge reads removed-door state from the provided cfg snapshot', ()
     meta: {},
   });
 
-  purgeHandlesForRemovedDoors(true, {
+  purgeHandlesForRemovedDoors({
     App,
     cfgSnapshot: { removedDoorsMap: { removed_d4_full: true } },
+    removeDoorsEnabled: true,
   });
 
   assert.equal(door.children.includes(handle), false);
+});
+
+test('handles runtime keeps remove-door policy isolated from stale live UI and mode state', () => {
+  const { App } = createApp();
+  const door = new FakeGroup3D();
+  door.visible = true;
+  door.userData.partId = 'd4_full';
+  const handle = new FakeGroup3D();
+  handle.name = 'handle_group_v7';
+  door.add(handle);
+  const wardrobeGroup = new FakeGroup3D();
+  wardrobeGroup.add(door);
+  App.render.doorsArray = [{ id: 'd4', group: door }];
+  App.render.wardrobeGroup = wardrobeGroup;
+  App.store.getState = () => ({
+    ui: { removeDoorsEnabled: true },
+    config: { removedDoorsMap: { removed_d4_full: true } },
+    runtime: {},
+    mode: { primary: 'remove_door' },
+    meta: {},
+  });
+
+  const runtime = createHandlesApplyRuntime({
+    App,
+    cfgSnapshot: { removedDoorsMap: { removed_d4_full: true } },
+    addOutlines,
+    removeDoorsEnabled: false,
+  });
+  runtime.syncDoorVisibilityForRemovedDoors();
+  purgeHandlesForRemovedDoors({
+    App,
+    cfgSnapshot: { removedDoorsMap: { removed_d4_full: true } },
+    removeDoorsEnabled: false,
+  });
+
+  assert.equal(runtime.removeDoorsEnabled, false);
+  assert.equal(door.visible, true);
+  assert.equal(door.children.includes(handle), true);
 });
 
 test('handles apply does not treat external drawer boxes as separate drawer fronts', () => {
@@ -338,7 +389,13 @@ test('handles apply does not treat external drawer boxes as separate drawer fron
     meta: {},
   });
 
-  applyHandles({ App, cfgSnapshot: readConfigSnapshot(App), addOutlines, triggerRender: false });
+  applyHandles({
+    App,
+    cfgSnapshot: readConfigSnapshot(App),
+    addOutlines,
+    removeDoorsEnabled: false,
+    triggerRender: false,
+  });
 
   const handleHosts: FakeGroup3D[] = [];
   wardrobeGroup.traverse(node => {
@@ -356,4 +413,25 @@ test('handles apply does not treat external drawer boxes as separate drawer fron
 test('handles apply rejects a missing config snapshot instead of reading live build/store state', () => {
   const { App } = createApp();
   assert.throws(() => applyHandles({ App }), /cfgSnapshot is required/);
+});
+
+test('handles apply rejects a missing remove-doors snapshot instead of reading live UI or mode', () => {
+  const { App } = createApp();
+  App.store.getState = () => ({
+    ui: { removeDoorsEnabled: true },
+    config: {},
+    runtime: {},
+    mode: { primary: 'remove_door' },
+    meta: {},
+  });
+
+  assert.throws(
+    () =>
+      createHandlesApplyRuntime({
+        App,
+        cfgSnapshot: readConfigSnapshot(App),
+        addOutlines,
+      } as never),
+    /snapshot removeDoorsEnabled is required/
+  );
 });

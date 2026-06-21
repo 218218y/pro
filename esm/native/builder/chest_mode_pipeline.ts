@@ -122,6 +122,7 @@ export function buildChestModeIfNeeded(params: BuildChestModeIfNeededParams | nu
       finalizeRegistry: true,
       cfgSnapshot,
       addOutlines: renderPolicy.addOutlines,
+      removeDoorsEnabled: false,
     });
   });
   return true;

@@ -52,9 +52,12 @@ test('residual slot access runtime: scene/project seams and chest-mode builder h
 
   assert.equal(getSceneViewServiceMaybe(App), sceneView);
   assert.equal(getProjectIoServiceMaybe(App), projectIO);
-  assert.equal(applyBuilderHandles(App, { cfgSnapshot: {}, addOutlines }), true);
+  assert.equal(applyBuilderHandles(App, { cfgSnapshot: {}, addOutlines, removeDoorsEnabled: false }), true);
   assert.equal(finalizeBuilderRegistry(App), true);
-  assert.deepEqual(calls, [['handles', { cfgSnapshot: {}, addOutlines }], 'finalize']);
+  assert.deepEqual(calls, [
+    ['handles', { cfgSnapshot: {}, addOutlines, removeDoorsEnabled: false }],
+    'finalize',
+  ]);
 
   calls.length = 0;
   const built: unknown[] = [];
@@ -78,7 +81,15 @@ test('residual slot access runtime: scene/project seams and chest-mode builder h
   assert.equal(built.length, 1);
   assert.deepEqual((built[0] as { cfgSnapshot?: unknown }).cfgSnapshot, { showDimensions: false });
   assert.deepEqual(calls, [
-    ['handles', { triggerRender: false, cfgSnapshot: { showDimensions: false }, addOutlines }],
+    [
+      'handles',
+      {
+        triggerRender: false,
+        cfgSnapshot: { showDimensions: false },
+        addOutlines,
+        removeDoorsEnabled: false,
+      },
+    ],
     ['render', true, true],
     'controls',
     'finalize',
@@ -100,8 +111,18 @@ test('residual slot access runtime: applyBuilderHandles forwards render suppress
     },
   };
 
-  assert.equal(applyBuilderHandles(App, { cfgSnapshot: {}, addOutlines, triggerRender: false }), true);
-  assert.deepEqual(calls, [{ cfgSnapshot: {}, addOutlines, triggerRender: false }]);
+  assert.equal(
+    applyBuilderHandles(App, {
+      cfgSnapshot: {},
+      addOutlines,
+      removeDoorsEnabled: false,
+      triggerRender: false,
+    }),
+    true
+  );
+  assert.deepEqual(calls, [
+    { cfgSnapshot: {}, addOutlines, removeDoorsEnabled: false, triggerRender: false },
+  ]);
 });
 
 test('residual slot access runtime: post-build finalize uses canonical builder/platform seams and ignores legacy builder root aliases', () => {
@@ -225,7 +246,15 @@ test('residual slot access runtime: materials apply uses canonical builder handl
   assert.equal(targetMesh.material, appliedMaterial);
   assert.deepEqual(calls, [
     ['getMaterial', 'white'],
-    ['handles', { triggerRender: false, cfgSnapshot: snapshot.cfg, addOutlines }],
+    [
+      'handles',
+      {
+        triggerRender: false,
+        cfgSnapshot: snapshot.cfg,
+        addOutlines,
+        removeDoorsEnabled: false,
+      },
+    ],
     ['platform-render', false],
   ]);
 });

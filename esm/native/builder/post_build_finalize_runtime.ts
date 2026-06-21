@@ -12,6 +12,7 @@ import type {
 export type FinalizeBestEffortArgs = {
   App: unknown;
   cfgSnapshot?: ConfigStateLike | null;
+  removeDoorsEnabled?: boolean;
   pruneCachesSafe?: ((scene: unknown) => void) | null;
   rebuildDrawerMeta?: (() => void) | null;
   addOutlines?: BuilderOutlineFn | null;
@@ -68,6 +69,7 @@ function readBuildCtxAddOutlines(fns: BuildCtxFnsLike | null | undefined): Build
 export function resolveFinalizeBuildBestEffortArgs(args: FinalizeBestEffortArgs): {
   App: AppContainer | null;
   cfgSnapshot: ConfigStateLike | null;
+  removeDoorsEnabled: boolean | null;
   pruneCachesSafe: ((scene: unknown) => void) | null;
   rebuildDrawerMeta: (() => void) | null;
   addOutlines: BuilderOutlineFn | null;
@@ -75,6 +77,10 @@ export function resolveFinalizeBuildBestEffortArgs(args: FinalizeBestEffortArgs)
   return {
     App: readApp(args?.App),
     cfgSnapshot: readConfigState(readFinalizeArgs(args)?.cfgSnapshot),
+    removeDoorsEnabled:
+      typeof readFinalizeArgs(args)?.removeDoorsEnabled === 'boolean'
+        ? readFinalizeArgs(args)?.removeDoorsEnabled === true
+        : null,
     pruneCachesSafe: readPruneCachesSafeArg(args),
     rebuildDrawerMeta: readRebuildDrawerMetaArg(args),
     addOutlines: readAddOutlinesArg(args),
@@ -89,6 +95,9 @@ export function resolveFinalizeBuildContextArgs(ctx: BuildContextLike): Finalize
     addOutlines: readBuildCtxAddOutlines(ctx.fns),
   };
   if (ctx.cfg) out.cfgSnapshot = ctx.cfg;
+  if (typeof ctx.resolvers?.removeDoorsEnabled === 'boolean') {
+    out.removeDoorsEnabled = ctx.resolvers.removeDoorsEnabled;
+  }
   return out;
 }
 
@@ -98,12 +107,13 @@ export function runFinalizeBuildBestEffort(args: FinalizeBestEffortArgs): { App:
     finalizeRegistry: true,
     ...(resolved.cfgSnapshot ? { cfgSnapshot: resolved.cfgSnapshot } : {}),
     ...(resolved.addOutlines ? { addOutlines: resolved.addOutlines } : {}),
+    ...(resolved.removeDoorsEnabled !== null ? { removeDoorsEnabled: resolved.removeDoorsEnabled } : {}),
     rebuildDrawerMeta: resolved.rebuildDrawerMeta,
     pruneCachesSafe: resolved.pruneCachesSafe,
     clearBuildUi: true,
     triggerPlatformRender: true,
     updateShadows: true,
-    applyHandles: resolved.cfgSnapshot !== null,
+    applyHandles: resolved.cfgSnapshot !== null && resolved.removeDoorsEnabled !== null,
   });
   return { App: resolved.App };
 }

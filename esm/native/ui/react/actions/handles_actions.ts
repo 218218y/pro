@@ -29,6 +29,7 @@ import {
   MANUAL_HANDLE_POSITION_MODE,
   isManualHandlePositionMode,
 } from '../../../features/manual_handle_position.js';
+import { resolveRemoveDoorsEnabledFromSnapshots } from '../../../features/door_removal_visibility.js';
 
 export const EDGE_HANDLE_VARIANT_GLOBAL_KEY = '__wp_edge_handle_variant_global';
 
@@ -216,6 +217,7 @@ function applyHandlesBestEffort(app: AppContainer): void {
     refreshBuilderHandles(app, {
       cfgSnapshot: getCfgSnap(app),
       addOutlines: captureBuilderOutlineBinding(app),
+      removeDoorsEnabled: resolveRemoveDoorsEnabledFromSnapshots(getUiSnap(app), getModeState(app)),
       purgeRemovedDoors: true,
     });
   } catch {

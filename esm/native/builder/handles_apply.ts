@@ -4,13 +4,14 @@ import { purgeHandlesForRemovedDoors } from './handles_purge.js';
 import { createHandlesApplyRuntime } from './handles_apply_shared.js';
 import { applyDoorHandles } from './handles_apply_doors.js';
 import { applyDrawerHandles } from './handles_apply_drawers.js';
+import type { HandlesApplyContext } from './handles_shared.js';
 
 function shouldTriggerHandlesRender(ctx: unknown): boolean {
   const rec = asRecord<Record<string, unknown>>(ctx);
   return rec?.triggerRender !== false;
 }
 
-export function applyHandles(ctx: unknown): void {
+export function applyHandles(ctx: HandlesApplyContext): void {
   const runtime = createHandlesApplyRuntime(ctx);
   const App = runtime.App;
 
@@ -18,8 +19,13 @@ export function applyHandles(ctx: unknown): void {
   applyDoorHandles(runtime);
   applyDrawerHandles(runtime);
 
-  if (runtime.removeDoorsEnabled)
-    purgeHandlesForRemovedDoors(true, { App, cfgSnapshot: runtime.cfgSnapshot });
+  if (runtime.removeDoorsEnabled) {
+    purgeHandlesForRemovedDoors({
+      App,
+      cfgSnapshot: runtime.cfgSnapshot,
+      removeDoorsEnabled: runtime.removeDoorsEnabled,
+    });
+  }
   if (shouldTriggerHandlesRender(ctx)) {
     runPlatformRenderFollowThrough(App, { updateShadows: false });
   }

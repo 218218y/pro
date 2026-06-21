@@ -1027,10 +1027,18 @@ test('[builder-surface-family] visuals/module seams stay consolidated behind can
   assert.match(handlesConfig, /cfgSnapshot is required/);
   assert.doesNotMatch(handlesConfig, /getBuildStateMaybe|getCfg\(|rec\?\.cfg\b/);
   assert.match(handlesShared, /handles_config_snapshot\.js/);
+  assert.match(handlesShared, /requireHandlesRemoveDoorsEnabled\(ctxRecord\?\.removeDoorsEnabled\)/);
   assert.doesNotMatch(handlesShared, /readMapOrEmpty\(/);
-  assert.doesNotMatch(handlesShared, /getCfg\(/);
+  assert.doesNotMatch(
+    handlesShared,
+    /getCfg\(|getBuildStateMaybe|getState\(|getUi\(|getMode\(|getViewFlags|getModeId/
+  );
   assert.match(handlesPurge, /handles_config_snapshot\.js/);
-  assert.doesNotMatch(handlesPurge, /readMapOrEmpty\(/);
+  assert.match(handlesPurge, /requireHandlesRemoveDoorsEnabled\(ctxRecord\?\.removeDoorsEnabled\)/);
+  assert.doesNotMatch(
+    handlesPurge,
+    /readMapOrEmpty\(|getBuildStateMaybe|getState\(|getUi\(|getMode\(|getViewFlags|getModeId/
+  );
   assert.doesNotMatch(handlesOwner, /const isDoorRemovedV7 = \(partId: unknown\): boolean =>/);
   assert.doesNotMatch(
     handlesOwner,

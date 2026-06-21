@@ -1,16 +1,20 @@
-import type { BuilderOutlineFn, ConfigStateLike, UnknownRecord } from '../../../types';
+import type {
+  BuilderHandlesApplyOptionsLike,
+  BuilderHandlesPurgeOptionsLike,
+  BuilderOutlineFn,
+  ConfigStateLike,
+  UnknownRecord,
+} from '../../../types';
 import { asRecord } from './record.js';
 import type { BuildRequestMeta } from './builder_service_access_shared.js';
 
-export type ApplyBuilderHandlesOpts = {
-  triggerRender?: boolean;
-  cfgSnapshot: ConfigStateLike | UnknownRecord;
-  addOutlines: BuilderOutlineFn;
-};
+export type ApplyBuilderHandlesOpts = BuilderHandlesApplyOptionsLike;
+export type PurgeBuilderHandlesOpts = BuilderHandlesPurgeOptionsLike;
 
 export type RefreshBuilderHandlesOpts = {
   cfgSnapshot: ConfigStateLike | UnknownRecord;
   addOutlines: BuilderOutlineFn;
+  removeDoorsEnabled: boolean;
   purgeRemovedDoors?: boolean;
   triggerRender?: boolean;
   updateShadows?: boolean;
@@ -60,6 +64,7 @@ export type BuilderPostBuildFollowThroughOpts = {
   applyHandles?: boolean;
   cfgSnapshot?: ConfigStateLike | UnknownRecord | null;
   addOutlines?: BuilderOutlineFn | null;
+  removeDoorsEnabled?: boolean;
   rebuildDrawerMeta?: (() => void) | null;
   pruneCachesSafe?: ((scene: unknown) => void) | null;
   triggerPlatformRender?: boolean;
@@ -87,6 +92,7 @@ export type BuilderChestModeFollowThroughOpts = {
   renderViewport?: boolean;
   cfgSnapshot?: ConfigStateLike | UnknownRecord | null;
   addOutlines?: BuilderOutlineFn | null;
+  removeDoorsEnabled?: boolean;
 };
 
 export type BuilderChestModeFollowThroughResult = BuilderPostBuildFollowThroughResult &
@@ -107,6 +113,7 @@ export type BuilderBuildProfileOpts = {
 const BUILDER_FOLLOW_THROUGH_META_KEYS = new Set([
   'cfgSnapshot',
   'addOutlines',
+  'removeDoorsEnabled',
   'purgeRemovedDoors',
   'triggerRender',
   'updateShadows',

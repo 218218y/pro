@@ -13,6 +13,7 @@ function applyMaterialsFromState(App: any) {
     ui,
     cfg,
     materialSnapshot: { cfgSnapshot: cfg, sketchMode: state.runtime?.sketchMode === true },
+    removeDoorsEnabled: state.ui?.removeDoorsEnabled === true || state.mode?.primary === 'remove_door',
   });
 }
 function createApp(triggerRenderAvailable = true) {
@@ -87,7 +88,7 @@ test('materials apply runtime: changed materials route handle/render follow-thro
   assert.equal(targetMesh.material, appliedMaterial);
   assert.deepEqual(calls, [
     ['getMaterial', 'white'],
-    ['handles', { triggerRender: false, cfgSnapshot: {}, addOutlines }],
+    ['handles', { triggerRender: false, cfgSnapshot: {}, addOutlines, removeDoorsEnabled: false }],
     ['platform-render', false],
   ]);
 });
@@ -99,7 +100,7 @@ test('materials apply runtime: changed materials fall back to ensureRenderLoop w
   assert.equal(targetMesh.material, appliedMaterial);
   assert.deepEqual(calls, [
     ['getMaterial', 'white'],
-    ['handles', { triggerRender: false, cfgSnapshot: {}, addOutlines }],
+    ['handles', { triggerRender: false, cfgSnapshot: {}, addOutlines, removeDoorsEnabled: false }],
     ['ensureRenderLoop'],
   ]);
 });

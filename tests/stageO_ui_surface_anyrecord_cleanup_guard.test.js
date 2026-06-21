@@ -28,11 +28,11 @@ test('[stageO] react/browser seams use explicit surfaces instead of AnyRecord ba
   assert.match(bundle, /const meta: MetaActionsNamespaceLike = useMeta\(\);/);
   assert.match(
     bundle,
-    /import \{[\s\S]*?captureBuilderOutlineBinding,[\s\S]*?readConfigStateFromApp,[\s\S]*?refreshBuilderHandles,[\s\S]*?\} from '\.\.\/\.\.\/\.\.\/services\/api\.js';/
+    /import \{[\s\S]*?captureBuilderOutlineBinding,[\s\S]*?readConfigStateFromApp,[\s\S]*?readModeStateFromApp,[\s\S]*?readUiStateFromApp,[\s\S]*?refreshBuilderHandles,[\s\S]*?\} from '\.\.\/\.\.\/\.\.\/services\/api\.js';/
   );
   assert.match(
     bundle,
-    /refreshBuilderHandles\(app, \{\s*cfgSnapshot: readConfigStateFromApp\(app\),\s*addOutlines: captureBuilderOutlineBinding\(app\),\s*purgeRemovedDoors: true,\s*\}\);/
+    /refreshBuilderHandles\(app, \{[\s\S]*cfgSnapshot: readConfigStateFromApp\(app\),[\s\S]*addOutlines: captureBuilderOutlineBinding\(app\),[\s\S]*removeDoorsEnabled: resolveRemoveDoorsEnabledFromSnapshots\([\s\S]*readUiStateFromApp\(app\),[\s\S]*readModeStateFromApp\(app\)[\s\S]*\),[\s\S]*purgeRemovedDoors: true,[\s\S]*\}\);/
   );
   assert.match(bundle, /function readExportAction<K extends keyof ExportCanvasModuleLike>\(/);
   assert.doesNotMatch(bundle, /\bAnyRecord\b/);

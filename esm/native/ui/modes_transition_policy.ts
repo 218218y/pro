@@ -225,6 +225,7 @@ function scheduleRemoveDoorRefresh(App: AppLike, nextMode: string): void {
       refreshBuilderAfterDoorOps(App, {
         cfgSnapshot: readConfigStateFromApp(App),
         addOutlines: captureBuilderOutlineBinding(App),
+        removeDoorsEnabled: true,
         source: 'ui.enterPrimaryMode:removeDoor',
         immediate: true,
         force: true,

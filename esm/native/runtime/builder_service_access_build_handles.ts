@@ -3,6 +3,7 @@ import { getBuilderHandlesService } from './builder_service_access_slots.js';
 import type {
   ApplyBuilderHandlesOpts,
   BuilderHandleRefreshResult,
+  PurgeBuilderHandlesOpts,
   RefreshBuilderHandlesOpts,
 } from './builder_service_access_build_shared.js';
 import {
@@ -30,11 +31,7 @@ export function applyBuilderHandles(App: unknown, opts: ApplyBuilderHandlesOpts)
   }
 }
 
-export function purgeBuilderHandlesForRemovedDoors(
-  App: unknown,
-  forceEnabled: boolean,
-  cfgSnapshot: ApplyBuilderHandlesOpts['cfgSnapshot']
-): boolean {
+export function purgeBuilderHandlesForRemovedDoors(App: unknown, opts: PurgeBuilderHandlesOpts): boolean {
   try {
     const handles = getBuilderHandlesService(App);
     const fn =
@@ -42,7 +39,7 @@ export function purgeBuilderHandlesForRemovedDoors(
         ? handles.purgeHandlesForRemovedDoors
         : null;
     if (!fn) return false;
-    fn.call(handles, !!forceEnabled, cfgSnapshot);
+    fn.call(handles, opts);
     return true;
   } catch (error) {
     reportError(App, error, {
@@ -61,14 +58,24 @@ export function refreshBuilderHandles(
   if (typeof opts?.addOutlines !== 'function') {
     throw new TypeError('[builder_service_access] snapshot outline binding is required for handle refresh');
   }
+  if (typeof opts?.removeDoorsEnabled !== 'boolean') {
+    throw new TypeError(
+      '[builder_service_access] snapshot removeDoorsEnabled is required for handle refresh'
+    );
+  }
   const appliedHandles = applyBuilderHandles(App, {
     triggerRender: false,
     cfgSnapshot: opts.cfgSnapshot,
     addOutlines: opts.addOutlines,
+    removeDoorsEnabled: opts.removeDoorsEnabled,
   });
-  const purgedRemovedDoors = shouldPurgeRemovedDoors(opts)
-    ? purgeBuilderHandlesForRemovedDoors(App, true, opts.cfgSnapshot)
-    : false;
+  const purgedRemovedDoors =
+    shouldPurgeRemovedDoors(opts) && opts.removeDoorsEnabled
+      ? purgeBuilderHandlesForRemovedDoors(App, {
+          cfgSnapshot: opts.cfgSnapshot,
+          removeDoorsEnabled: opts.removeDoorsEnabled,
+        })
+      : false;
 
   const renderResult = runBuilderRenderFollowThroughWhen(
     App,

@@ -850,10 +850,19 @@ export interface BuilderMaterialsServiceLike extends UnknownRecord {
   getMaterial?: BuilderGetMaterialFactoryFn;
 }
 
-export interface BuilderHandlesApplyOptionsLike extends UnknownRecord {
-  triggerRender?: boolean;
+export interface BuilderHandlesSnapshotLike extends UnknownRecord {
   cfgSnapshot: ConfigStateLike | UnknownRecord;
   addOutlines: BuilderOutlineFn;
+  removeDoorsEnabled: boolean;
+}
+
+export interface BuilderHandlesApplyOptionsLike extends BuilderHandlesSnapshotLike {
+  triggerRender?: boolean;
+}
+
+export interface BuilderHandlesPurgeOptionsLike extends UnknownRecord {
+  cfgSnapshot: ConfigStateLike | UnknownRecord;
+  removeDoorsEnabled: boolean;
 }
 
 export interface BuilderHandlesServiceLike extends UnknownRecord {
@@ -865,10 +874,7 @@ export interface BuilderHandlesServiceLike extends UnknownRecord {
     isDrawer: boolean
   ) => unknown;
   applyHandles?: (opts: BuilderHandlesApplyOptionsLike) => unknown;
-  purgeHandlesForRemovedDoors?: (
-    forceEnabled: boolean,
-    cfgSnapshot: ConfigStateLike | UnknownRecord
-  ) => unknown;
+  purgeHandlesForRemovedDoors?: (opts: BuilderHandlesPurgeOptionsLike) => unknown;
 }
 
 export interface BuilderRenderAdapterServiceLike extends UnknownRecord {}

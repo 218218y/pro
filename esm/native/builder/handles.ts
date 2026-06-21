@@ -14,7 +14,12 @@ import { applyHandles } from './handles_apply.js';
 import { createHandleMeshV7 } from './handles_mesh.js';
 import { purgeHandlesForRemovedDoors } from './handles_purge.js';
 import type { AppContainer } from '../../../types';
-import type { HandlesApplyOptions, HandlesCacheLike, HandlesSurfaceLike } from './handles_shared.js';
+import type {
+  HandlesApplyOptions,
+  HandlesCacheLike,
+  HandlesPurgeOptions,
+  HandlesSurfaceLike,
+} from './handles_shared.js';
 
 export { createHandleMeshV7 } from './handles_mesh.js';
 export { applyHandles } from './handles_apply.js';
@@ -23,6 +28,7 @@ export type {
   EdgeHandleVariant,
   HandlesApplyOptions,
   HandlesCacheLike,
+  HandlesPurgeOptions,
   HandlesSurfaceLike,
   NodeLike,
 } from './handles_shared.js';
@@ -59,8 +65,7 @@ export function installBuilderHandlesV7(App: unknown) {
     return (opts: HandlesApplyOptions) => applyHandles({ App: A, ...opts });
   });
   installStableSurfaceMethod(h, 'purgeHandlesForRemovedDoors', HANDLES_PURGE_CANONICAL_KEY, () => {
-    return (forceEnabled: boolean, cfgSnapshot: HandlesApplyOptions['cfgSnapshot']) =>
-      purgeHandlesForRemovedDoors(forceEnabled, { App: A, cfgSnapshot });
+    return (opts: HandlesPurgeOptions) => purgeHandlesForRemovedDoors({ App: A, ...opts });
   });
 
   try {

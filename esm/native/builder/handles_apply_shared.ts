@@ -1,8 +1,6 @@
-import { getModeId } from '../runtime/api.js';
 import { HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { getThreeMaybe } from '../runtime/three_access.js';
 import { getDoorsArray } from '../runtime/render_access.js';
-import { getBuildStateMaybe, getMode, getState, getUi } from './store_access.js';
 import { isEdgeHandleDefaultNone } from './edge_handle_default_none_runtime.js';
 import {
   readManualHandlePositionForPart,
@@ -14,9 +12,10 @@ import {
   edgeHandleVariantPartKey,
   EDGE_HANDLE_VARIANT_GLOBAL_KEY,
   ensureHandlesSurface,
-  getViewFlags,
   normEdgeHandleVariant,
+  requireHandlesRemoveDoorsEnabled,
   type EdgeHandleVariant,
+  type HandlesApplyContext,
   type NodeLike,
   type ValueRecord,
 } from './handles_shared.js';
@@ -210,29 +209,18 @@ function syncDoorVisibilityForRemovedDoors(
   }
 }
 
-export function createHandlesApplyRuntime(ctx: unknown): HandlesApplyRuntime {
+export function createHandlesApplyRuntime(ctx: HandlesApplyContext): HandlesApplyRuntime {
   const App = appFromCtx(ctx);
   ensureHandlesSurface(App);
   const THREE = getThreeMaybe(App);
 
-  const __st = getBuildStateMaybe(App) || getState(App) || {};
-  const __mode = (__st && __st.mode) || getMode(App) || { primary: 'none', opts: {} };
   const ctxRecord = asRecord<ValueRecord>(ctx);
   const handlesCfg = captureHandlesConfigSnapshot(ctxRecord?.cfgSnapshot);
   const addOutlines = ctxRecord?.addOutlines;
   if (typeof addOutlines !== 'function') {
     throw new TypeError('[handles_apply] snapshot outline binding is required');
   }
-  const __removeDoorModeId = getModeId('REMOVE_DOOR') || 'remove_door';
-  const __isRemoveDoorMode = !!(__mode && __mode.primary === __removeDoorModeId);
-  const __ui = (__st && __st.ui && typeof __st.ui === 'object' ? __st.ui : null) || getUi(App) || {};
-  const { uiView: __uiView, stateView: __stateView } = getViewFlags(__st, __ui);
-
-  const removeDoorsEnabled =
-    !!(__ui && (__ui.removeDoorsEnabled || __ui.removeDoors)) ||
-    !!(__uiView && (__uiView.removeDoorsEnabled || __uiView.removeDoors)) ||
-    !!(__stateView && (__stateView.removeDoorsEnabled || __stateView.removeDoors)) ||
-    __isRemoveDoorMode;
+  const removeDoorsEnabled = requireHandlesRemoveDoorsEnabled(ctxRecord?.removeDoorsEnabled);
 
   const isDoorRemovedV7 = createHandlesDoorRemovedReader(handlesCfg.removedDoorsMap);
   const getEdgeHandleVariant = createEdgeHandleVariantResolver(handlesCfg.handlesMap);

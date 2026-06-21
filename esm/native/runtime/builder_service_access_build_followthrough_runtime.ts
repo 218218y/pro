@@ -45,7 +45,17 @@ function createFollowThroughHandleApplyOpts(
       '[builder_service_access] snapshot outline binding is required when applying handles'
     );
   }
-  return { triggerRender: false, cfgSnapshot, addOutlines };
+  if (typeof opts?.removeDoorsEnabled !== 'boolean') {
+    throw new TypeError(
+      '[builder_service_access] snapshot removeDoorsEnabled is required when applying handles'
+    );
+  }
+  return {
+    triggerRender: false,
+    cfgSnapshot,
+    addOutlines,
+    removeDoorsEnabled: opts.removeDoorsEnabled,
+  };
 }
 
 export function runBuilderPostBuildFollowThroughRuntime(

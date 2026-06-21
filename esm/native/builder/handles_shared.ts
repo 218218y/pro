@@ -4,13 +4,13 @@ import { asRecord } from '../runtime/record.js';
 import type {
   AppContainer,
   Box3Like,
+  BuilderHandlesApplyOptionsLike,
+  BuilderHandlesPurgeOptionsLike,
   BuilderOutlineFn,
-  BuildStateLike,
   ConfigStateLike,
   Matrix4Like,
   Object3DLike,
   ThreeLike,
-  UiStateLike,
 } from '../../../types';
 import {
   HANDLE_COLOR_GLOBAL_KEY,
@@ -27,11 +27,10 @@ export type HandlesCacheLike = ValueRecord & {
   _stdHandleMatByColor?: Record<string, unknown>;
 };
 
-export type HandlesApplyOptions = {
-  triggerRender?: boolean;
-  cfgSnapshot: ConfigStateLike;
-  addOutlines: BuilderOutlineFn;
-};
+export type HandlesApplyOptions = BuilderHandlesApplyOptionsLike;
+export type HandlesPurgeOptions = BuilderHandlesPurgeOptionsLike;
+export type HandlesApplyContext = HandlesApplyOptions & { App: AppContainer };
+export type HandlesPurgeContext = HandlesPurgeOptions & { App: AppContainer };
 
 export type HandlesSurfaceLike = ValueRecord & {
   cache?: HandlesCacheLike;
@@ -45,12 +44,7 @@ export type HandlesSurfaceLike = ValueRecord & {
     ctx?: CreateHandleMeshCtx
   ) => Object3DLike | null;
   applyHandles?: (opts: HandlesApplyOptions) => void;
-  purgeHandlesForRemovedDoors?: (forceEnabled: boolean, cfgSnapshot: ConfigStateLike) => void;
-};
-
-export type RemoveDoorsFlagsLike = {
-  removeDoorsEnabled?: boolean;
-  removeDoors?: boolean;
+  purgeHandlesForRemovedDoors?: (opts: HandlesPurgeOptions) => void;
 };
 
 export type HandleUserDataLike = ValueRecord & {
@@ -122,10 +116,6 @@ export function asNode(x: unknown): NodeLike | null {
   return asRecord<NodeLike>(x);
 }
 
-export function asRemoveDoorsFlags(x: unknown): RemoveDoorsFlagsLike | null {
-  return asRecord<RemoveDoorsFlagsLike>(x);
-}
-
 export function readConfigState(value: unknown): ConfigStateLike | null {
   return asRecord<ConfigStateLike>(value);
 }
@@ -142,19 +132,11 @@ export function readMatrix4(value: unknown): Matrix4Like | null {
   return typeof matrix.copy === 'function' && typeof matrix.invert === 'function' ? matrix : null;
 }
 
-export function getViewFlags(
-  stateLike: unknown,
-  uiLike: unknown
-): {
-  uiView: RemoveDoorsFlagsLike | null;
-  stateView: RemoveDoorsFlagsLike | null;
-} {
-  const state = asRecord<BuildStateLike>(stateLike);
-  const ui = asRecord<UiStateLike>(uiLike);
-  return {
-    uiView: asRemoveDoorsFlags(ui?.view) || asRemoveDoorsFlags(state?.ui?.view),
-    stateView: asRemoveDoorsFlags(state?.view),
-  };
+export function requireHandlesRemoveDoorsEnabled(value: unknown): boolean {
+  if (typeof value !== 'boolean') {
+    throw new TypeError('[handles] snapshot removeDoorsEnabled is required');
+  }
+  return value;
 }
 
 export function appFromCtx(ctx: unknown): AppContainer {

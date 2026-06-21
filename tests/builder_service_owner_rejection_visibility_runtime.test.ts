@@ -53,11 +53,12 @@ test('builder service access reports owner rejection without changing recovery r
     applyBuilderHandles(App, {
       cfgSnapshot: {},
       addOutlines: () => undefined,
+      removeDoorsEnabled: false,
       triggerRender: false,
     }),
     false
   );
-  assert.equal(purgeBuilderHandlesForRemovedDoors(App, true, {}), false);
+  assert.equal(purgeBuilderHandlesForRemovedDoors(App, { cfgSnapshot: {}, removeDoorsEnabled: true }), false);
   assert.equal(finalizeBuilderRegistry(App), false);
 
   assert.deepEqual(

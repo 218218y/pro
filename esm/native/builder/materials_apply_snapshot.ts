@@ -1,5 +1,6 @@
 import type { AppContainer, BuilderMaterialSnapshotLike } from '../../../types';
 import { readRuntimeScalarOrDefault } from '../runtime/runtime_selectors.js';
+import { resolveRemoveDoorsEnabledFromSnapshots } from '../features/door_removal_visibility.js';
 import { asObject, type BuildUiLike, type MaterialsCfgLike } from './materials_apply_shared.js';
 import { getBuildStateMaybe } from './store_access.js';
 
@@ -7,6 +8,7 @@ export type MaterialsApplySnapshot = {
   ui: BuildUiLike;
   cfg: MaterialsCfgLike;
   materialSnapshot: BuilderMaterialSnapshotLike;
+  removeDoorsEnabled: boolean;
 };
 
 export function requireMaterialsApplySnapshot(value: unknown): MaterialsApplySnapshot {
@@ -22,7 +24,15 @@ export function requireMaterialsApplySnapshot(value: unknown): MaterialsApplySna
   if (typeof snapshot.materialSnapshot.sketchMode !== 'boolean') {
     throw new TypeError('[materials_apply] material snapshot sketchMode is required');
   }
-  return { ui, cfg, materialSnapshot: snapshot.materialSnapshot };
+  if (typeof snapshot.removeDoorsEnabled !== 'boolean') {
+    throw new TypeError('[materials_apply] snapshot removeDoorsEnabled is required');
+  }
+  return {
+    ui,
+    cfg,
+    materialSnapshot: snapshot.materialSnapshot,
+    removeDoorsEnabled: snapshot.removeDoorsEnabled,
+  };
 }
 
 export function captureMaterialsApplySnapshot(App: AppContainer): MaterialsApplySnapshot {
@@ -39,5 +49,6 @@ export function captureMaterialsApplySnapshot(App: AppContainer): MaterialsApply
       cfgSnapshot: cfg,
       sketchMode: readRuntimeScalarOrDefault(state?.runtime, 'sketchMode', false) === true,
     },
+    removeDoorsEnabled: resolveRemoveDoorsEnabledFromSnapshots(state?.ui, state?.mode),
   };
 }

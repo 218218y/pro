@@ -109,8 +109,8 @@ function createHarness(): Harness {
       applyHandles() {
         calls.applyHandles += 1;
       },
-      purgeHandlesForRemovedDoors(forceEnabled: boolean) {
-        calls.purgeHandles.push({ self: this, forceEnabled });
+      purgeHandlesForRemovedDoors(opts: unknown) {
+        calls.purgeHandles.push({ self: this, opts });
       },
     },
     plan: {
@@ -340,11 +340,21 @@ test('builder public surface runtime: service access binds canonical builder sea
   assert.equal(clearBuilderBuildUi(App), true);
   assert.equal(App.services.builder.buildUi, null);
 
-  assert.equal(applyBuilderHandles(App, { cfgSnapshot: {}, addOutlines: () => undefined }), true);
-  assert.equal(purgeBuilderHandlesForRemovedDoors(App, false, {}), true);
+  assert.equal(
+    applyBuilderHandles(App, {
+      cfgSnapshot: {},
+      addOutlines: () => undefined,
+      removeDoorsEnabled: false,
+    }),
+    true
+  );
+  assert.equal(purgeBuilderHandlesForRemovedDoors(App, { cfgSnapshot: {}, removeDoorsEnabled: false }), true);
   assert.equal(calls.applyHandles, 1);
   assert.equal(calls.purgeHandles[0]?.self, App.services.builder.handles);
-  assert.equal(calls.purgeHandles[0]?.forceEnabled, false);
+  assert.deepEqual(calls.purgeHandles[0]?.opts, {
+    cfgSnapshot: {},
+    removeDoorsEnabled: false,
+  });
 
   const buildWardrobe = getBuilderBuildWardrobe(App);
   assert.ok(buildWardrobe);
@@ -616,6 +626,7 @@ test('builder public surface runtime: post-build follow-through keeps finalize/p
     runBuilderPostBuildFollowThrough(App, {
       cfgSnapshot: {},
       addOutlines: () => undefined,
+      removeDoorsEnabled: false,
       finalizeRegistry: true,
       rebuildDrawerMeta() {
         rebuilt += 1;
@@ -655,6 +666,7 @@ test('builder public surface runtime: chest-mode follow-through keeps viewport r
     runBuilderChestModeFollowThrough(App, {
       cfgSnapshot: {},
       addOutlines: () => undefined,
+      removeDoorsEnabled: false,
       applyHandles: true,
       renderViewport: true,
       finalizeRegistry: true,

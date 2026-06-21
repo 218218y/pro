@@ -17,8 +17,8 @@ test('builder door-ops refresh runtime: canonical handles follow-through uses se
           applyHandles(opts?: { triggerRender?: boolean }) {
             calls.push(['handles', opts ?? null]);
           },
-          purgeHandlesForRemovedDoors(forceEnabled?: boolean) {
-            calls.push(['purge', !!forceEnabled]);
+          purgeHandlesForRemovedDoors(opts?: { removeDoorsEnabled?: boolean }) {
+            calls.push(['purge', opts ?? null]);
           },
         },
       },
@@ -28,8 +28,8 @@ test('builder door-ops refresh runtime: canonical handles follow-through uses se
         applyHandles(opts?: { triggerRender?: boolean }) {
           calls.push(['legacy-handles', opts ?? null]);
         },
-        purgeHandlesForRemovedDoors(forceEnabled?: boolean) {
-          calls.push(['legacy-purge', !!forceEnabled]);
+        purgeHandlesForRemovedDoors(opts?: { removeDoorsEnabled?: boolean }) {
+          calls.push(['legacy-purge', opts ?? null]);
         },
       },
     },
@@ -43,6 +43,7 @@ test('builder door-ops refresh runtime: canonical handles follow-through uses se
   const result = refreshBuilderHandles(App, {
     cfgSnapshot: {},
     addOutlines,
+    removeDoorsEnabled: true,
     purgeRemovedDoors: true,
     updateShadows: true,
   });
@@ -55,8 +56,8 @@ test('builder door-ops refresh runtime: canonical handles follow-through uses se
     ensuredRenderLoop: false,
   });
   assert.deepEqual(calls, [
-    ['handles', { triggerRender: false, cfgSnapshot: {}, addOutlines }],
-    ['purge', true],
+    ['handles', { triggerRender: false, cfgSnapshot: {}, addOutlines, removeDoorsEnabled: true }],
+    ['purge', { cfgSnapshot: {}, removeDoorsEnabled: true }],
     ['platform-render', true],
   ]);
 });
@@ -86,6 +87,7 @@ test('builder door-ops refresh runtime: build request + handle follow-through st
   const result = refreshBuilderAfterDoorOps(App, {
     cfgSnapshot: {},
     addOutlines,
+    removeDoorsEnabled: false,
     source: 'removeDoors:smart',
     immediate: true,
     force: false,
@@ -106,7 +108,7 @@ test('builder door-ops refresh runtime: build request + handle follow-through st
       null,
       { source: 'removeDoors:smart', reason: 'removeDoors:smart', immediate: true, force: false },
     ],
-    ['handles', { triggerRender: false, cfgSnapshot: {}, addOutlines }],
+    ['handles', { triggerRender: false, cfgSnapshot: {}, addOutlines, removeDoorsEnabled: false }],
     ['platform-render', false],
   ]);
 });
@@ -140,6 +142,7 @@ test('builder door-ops refresh runtime: canonical immediate scheduler-owned buil
   const result = refreshBuilderAfterDoorOps(App, {
     cfgSnapshot: {},
     addOutlines,
+    removeDoorsEnabled: false,
     source: 'removeDoors:owned-by-build',
     immediate: true,
     force: true,
@@ -165,7 +168,7 @@ test('builder door-ops refresh runtime: canonical immediate scheduler-owned buil
         force: true,
       },
     ],
-    ['handles', { triggerRender: false, cfgSnapshot: {}, addOutlines }],
+    ['handles', { triggerRender: false, cfgSnapshot: {}, addOutlines, removeDoorsEnabled: false }],
   ]);
 });
 
@@ -191,6 +194,7 @@ test('builder door-ops refresh runtime: missing triggerRender falls back to plat
   const result = refreshBuilderHandles(App, {
     cfgSnapshot: {},
     addOutlines,
+    removeDoorsEnabled: false,
     purgeRemovedDoors: false,
     updateShadows: true,
   });
@@ -203,7 +207,7 @@ test('builder door-ops refresh runtime: missing triggerRender falls back to plat
     ensuredRenderLoop: true,
   });
   assert.deepEqual(calls, [
-    ['handles', { triggerRender: false, cfgSnapshot: {}, addOutlines }],
+    ['handles', { triggerRender: false, cfgSnapshot: {}, addOutlines, removeDoorsEnabled: false }],
     'ensureRenderLoop',
   ]);
 });
@@ -226,6 +230,7 @@ test('builder door-ops refresh runtime: no-op handle refresh suppresses render f
   const result = refreshBuilderHandles(App, {
     cfgSnapshot: {},
     addOutlines,
+    removeDoorsEnabled: false,
     purgeRemovedDoors: false,
     updateShadows: true,
   });
@@ -258,6 +263,7 @@ test('builder door-ops refresh runtime: missing builder work does not render jus
   const result = refreshBuilderAfterDoorOps(App, {
     cfgSnapshot: {},
     addOutlines,
+    removeDoorsEnabled: false,
     source: 'removeDoors:no-builder',
     immediate: true,
     force: true,
@@ -299,6 +305,7 @@ test('builder door-ops refresh runtime: structural refresh honors explicit reque
   const result = refreshBuilderAfterDoorOps(App, {
     cfgSnapshot: {},
     addOutlines,
+    removeDoorsEnabled: false,
     source: 'removeDoors:builder-rejected',
     immediate: true,
     force: true,

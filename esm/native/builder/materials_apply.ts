@@ -79,6 +79,7 @@ export function applyMaterials(appIn: unknown, snapshotIn: MaterialsApplySnapsho
     refreshBuilderHandles(App, {
       cfgSnapshot: colorContext.cfg,
       addOutlines: captureBuilderOutlineBinding(App),
+      removeDoorsEnabled: snapshot.removeDoorsEnabled,
       triggerRender: true,
       updateShadows: false,
     });
