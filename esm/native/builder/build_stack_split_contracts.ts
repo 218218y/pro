@@ -6,6 +6,7 @@ import type {
   BuilderOutlineFn,
   BuilderPartColorResolver,
   BuilderPartMaterialResolver,
+  ConfigStateLike,
   ModuleConfigLike,
   ProjectSavedNotesLike,
   ThreeLike,
@@ -21,7 +22,7 @@ export type BuildStackSplitLowerUnitArgs = {
   state: unknown;
   ui: UiStateLike | null;
   runtime: unknown;
-  cfg: UnknownRecord;
+  cfg: ConfigStateLike;
   label: string;
 
   splitSeamGapM: number;

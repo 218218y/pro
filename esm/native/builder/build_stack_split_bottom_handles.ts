@@ -3,7 +3,13 @@ import { makeHandleTypeResolver } from './doors_state_utils.js';
 import { readRecord } from './build_flow_readers.js';
 import { moduleRequiresCustomBoundaryGeometry } from './module_custom_geometry_policy.js';
 
-import type { AppContainer, BuilderDoorStateAccessorsLike, UnknownRecord } from '../../../types';
+import type {
+  BuilderDoorMapsConfigLike,
+  BuilderDoorStateAccessorsLike,
+  BuilderEdgeHandleDefaultNoneReader,
+  BuilderHandleTypeResolver,
+  UnknownRecord,
+} from '../../../types';
 
 function buildLocalBottomHingeMap(args: { cfg: UnknownRecord; lowerDoorIdOffset: number }): UnknownRecord {
   const c = readRecord(args.cfg);
@@ -77,22 +83,20 @@ export function buildShiftedBottomHingedPivotMap(args: {
 }
 
 export function createBottomHandleTypeResolver(args: {
-  App: AppContainer;
-  cfg: UnknownRecord;
+  cfg: BuilderDoorMapsConfigLike;
   doorState: BuilderDoorStateAccessorsLike;
+  isEdgeHandleDefaultNone: BuilderEdgeHandleDefaultNoneReader;
   handleControlEnabled: boolean;
   bottomDoorsCount: number;
   topDoorsCount: number;
   lowerDoorIdStart: number;
   lowerDoorIdOffset: number;
-  getHandleTypeTop: (id: unknown) => unknown;
-}): (id: unknown) => unknown {
+  getHandleTypeTop: BuilderHandleTypeResolver;
+}): BuilderHandleTypeResolver {
   const baseGetHandleTypeBottom = makeHandleTypeResolver({
-    App: args.App,
     cfg: args.cfg,
     doorState: args.doorState,
-    handleControlEnabled: args.handleControlEnabled,
-    stackKey: 'bottom',
+    isEdgeHandleDefaultNone: args.isEdgeHandleDefaultNone,
   });
 
   const hm = (() => {

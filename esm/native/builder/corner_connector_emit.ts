@@ -11,7 +11,7 @@ import {
   readSplitPosListFromMap,
 } from '../runtime/maps_access.js';
 import { readModulesConfigurationListFromConfigSnapshot } from '../features/modules_configuration/modules_config_api.js';
-import { MODES, reportErrorThrottled } from '../runtime/api.js';
+import { reportErrorThrottled } from '../runtime/api.js';
 import { addToWardrobeGroup } from '../runtime/render_access.js';
 import { getOrCreateCacheRecord } from './corner_cache.js';
 import {
@@ -176,7 +176,6 @@ export function emitCornerConnector(ctx: CornerOpsEmitContext): void {
       readSplitPosListFromMap,
       readModulesConfigurationListFromConfigSnapshot,
       getOrCreateCacheRecord,
-      MODES,
       primaryMode: ctx.__primaryMode,
       __isLongEdgeHandleVariantForPart,
       __topSplitHandleInsetForPart,

@@ -33,7 +33,6 @@ type CornerConnectorDoorHelpers = ValueRecord & {
   readSplitPosListFromMap: typeof import('../runtime/maps_access.js').readSplitPosListFromMap;
   readModulesConfigurationListFromConfigSnapshot: typeof import('../features/modules_configuration/modules_config_api.js').readModulesConfigurationListFromConfigSnapshot;
   getOrCreateCacheRecord: typeof import('./corner_cache.js').getOrCreateCacheRecord;
-  MODES: ValueRecord & { REMOVE_DOOR?: string };
   primaryMode: string;
   __isLongEdgeHandleVariantForPart: typeof import('./corner_geometry_plan.js').__isLongEdgeHandleVariantForPart;
   __topSplitHandleInsetForPart: typeof import('./corner_geometry_plan.js').__topSplitHandleInsetForPart;
@@ -82,7 +81,6 @@ export type CornerConnectorDoorContext = {
   isSplitExplicitInMap: CornerConnectorDoorHelpers['isSplitExplicitInMap'];
   isSplitBottomEnabledInMap: CornerConnectorDoorHelpers['isSplitBottomEnabledInMap'];
   getOrCreateCacheRecord: CornerConnectorDoorHelpers['getOrCreateCacheRecord'];
-  MODES: CornerConnectorDoorHelpers['MODES'];
   primaryMode: string;
   isLongEdgeHandleVariantForPart: CornerConnectorDoorHelpers['__isLongEdgeHandleVariantForPart'];
   topSplitHandleInsetForPart: CornerConnectorDoorHelpers['__topSplitHandleInsetForPart'];

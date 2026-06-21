@@ -9,6 +9,20 @@ function cloneJson<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
 
+test('project payload runtime: persisted removeDoors toggle materializes canonical builder UI state', () => {
+  const normalized = normalizeProjectData({
+    __schema: PROJECT_SCHEMA_ID,
+    __version: PROJECT_SCHEMA_VERSION,
+    settings: { wardrobeType: 'hinged', projectName: 'Removed doors project' },
+    toggles: { removeDoors: true },
+  });
+
+  assert.ok(normalized);
+  const loadSnapshot = buildProjectUiSnapshot(normalized, 'Fallback Name');
+  assert.equal(loadSnapshot.uiState.removeDoorsEnabled, true);
+  assert.equal(Object.prototype.hasOwnProperty.call(loadSnapshot.uiState, 'removeDoors'), false);
+});
+
 test('project payload runtime: schema/load helpers normalize saved notes, pdf draft, and pre-chest state', () => {
   const normalized = normalizeProjectData({
     __schema: PROJECT_SCHEMA_ID,

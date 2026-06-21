@@ -21,6 +21,7 @@ import {
   buildShiftedBottomHingedPivotMap,
   createBottomHandleTypeResolver,
 } from './build_stack_split_bottom_handles.js';
+import { bindEdgeHandleDefaultNoneReader } from './edge_handle_default_none_runtime.js';
 
 import type {
   BuildStackSplitLowerUnitArgs,
@@ -167,9 +168,9 @@ export function prepareStackSplitLowerSetup(
   });
 
   const getHandleTypeBottom = createBottomHandleTypeResolver({
-    App: args.App,
     cfg: args.cfg,
     doorState: args.doorState,
+    isEdgeHandleDefaultNone: bindEdgeHandleDefaultNoneReader(args.App, 'bottom'),
     handleControlEnabled: args.handleControlEnabled,
     bottomDoorsCount,
     topDoorsCount: args.doorsCount,

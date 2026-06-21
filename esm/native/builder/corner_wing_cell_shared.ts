@@ -123,7 +123,6 @@ export type CornerWingCellHelpersLike = ValueRecord & {
   readMap: (key: string) => ValueRecord;
   readSplitPosListFromMap: (map: unknown, baseId: string) => number[];
   cfgSnapshot: ValueRecord;
-  MODES: ValueRecord & { REMOVE_DOOR?: string };
   getOrCreateCacheRecord: (app: unknown, key: string) => ValueRecord;
   primaryMode: string;
   __isLongEdgeHandleVariantForPart: (

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  bindEdgeHandleDefaultNoneReader,
   ensureEdgeHandleDefaultNoneCacheMap,
   isEdgeHandleDefaultNone,
   markEdgeHandleDefaultNone,
@@ -35,6 +36,8 @@ test('edge handle default-none runtime: reset creates canonical cache maps for a
 test('edge handle default-none runtime: mark/read stays unified across module, corner, and pent scopes per stack', () => {
   const App = createApp();
   resetEdgeHandleDefaultNoneCacheMaps(App);
+  const topReader = bindEdgeHandleDefaultNoneReader(App, 'top');
+  const bottomReader = bindEdgeHandleDefaultNoneReader(App, 'bottom');
 
   markEdgeHandleDefaultNone(App, 'top', 'd2');
   markEdgeHandleDefaultNone(App, 'top', 'corner_door_5', 'corner');
@@ -46,6 +49,8 @@ test('edge handle default-none runtime: mark/read stays unified across module, c
 
   assert.equal(isEdgeHandleDefaultNone(App, 'bottom', 'd2'), false);
   assert.equal(isEdgeHandleDefaultNone(App, 'top', 'corner_pent_door_7'), false);
+  assert.equal(topReader('corner_door_5'), true);
+  assert.equal(bottomReader('corner_pent_door_7'), true);
 });
 
 test('edge handle default-none runtime: cache-key helper stays canonical for each scope/stack combination', () => {

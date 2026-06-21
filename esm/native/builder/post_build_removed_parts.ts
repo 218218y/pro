@@ -1,15 +1,10 @@
 import type { AppContainer, ThreeLike, UnknownRecord } from '../../../types/index.js';
 
-import { getModeId } from '../runtime/api.js';
 import { getWardrobeGroup } from '../runtime/render_access.js';
 import { readConfigMapFromSnapshot } from '../runtime/config_selectors.js';
+import { isRemoveDoorModeFromSnapshot } from '../features/door_removal_visibility.js';
 import { isCanvasRemovablePartId, canonicalRemovablePartKey } from '../features/removable_parts.js';
 import { asRecord } from './post_build_extras_shared.js';
-
-function isRemovePartsMode(primaryMode: string): boolean {
-  const removeModeId = getModeId('REMOVE_DOOR') || 'remove_door';
-  return primaryMode === removeModeId;
-}
 
 export function requireRemovedPartsConfigSnapshot(cfgSnapshot: unknown): UnknownRecord {
   const cfg = asRecord(cfgSnapshot);
@@ -97,7 +92,7 @@ export function applyRemovedPartsAfterBuild(args: {
   );
   if (!removedKeys.length) return;
 
-  const removeMode = isRemovePartsMode(primaryMode);
+  const removeMode = isRemoveDoorModeFromSnapshot({ primary: primaryMode });
   const materialHolder = asRecord(App) || {};
   const visited = new Set<UnknownRecord>();
 

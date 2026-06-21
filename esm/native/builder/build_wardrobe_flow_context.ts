@@ -1,10 +1,13 @@
 import {
   makeDoorStateAccessors,
-  isRemoveDoorMode as isRemoveDoorModeFn,
-  isRemoveDoorsEnabled,
   makeDoorRemovalChecker,
   makeHandleTypeResolver,
 } from './doors_state_utils.js';
+import {
+  isRemoveDoorModeFromSnapshot,
+  resolveRemoveDoorsEnabledFromSnapshots,
+} from '../features/door_removal_visibility.js';
+import { bindEdgeHandleDefaultNoneReader } from './edge_handle_default_none_runtime.js';
 import { makeHandleCreator } from './handle_factory.js';
 import { resolveBuildFlowPlan } from './build_flow_plan.js';
 import { createBuildFlowContext } from './build_flow_context_factory.js';
@@ -102,15 +105,13 @@ export function prepareBuildWardrobeExecution(
     doorState,
   });
 
-  const isRemoveDoorMode = isRemoveDoorModeFn(App, state);
-  const removeDoorsEnabled = isRemoveDoorsEnabled(App, ui, state);
+  const isRemoveDoorMode = isRemoveDoorModeFromSnapshot(state.mode);
+  const removeDoorsEnabled = resolveRemoveDoorsEnabledFromSnapshots(ui, state.mode);
   const isDoorRemoved = makeDoorRemovalChecker(cfg);
   const getHandleType = makeHandleTypeResolver({
-    App,
     cfg,
     doorState,
-    handleControlEnabled: plan.handleControlEnabled,
-    stackKey: 'top',
+    isEdgeHandleDefaultNone: bindEdgeHandleDefaultNoneReader(App, 'top'),
   });
   const createHandleMesh = makeHandleCreator({ App, THREE, addOutlines });
 

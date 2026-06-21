@@ -45,12 +45,24 @@ const hingedDoorsNorm = normalizeWhitespace(hingedDoorsBundle);
 test('[hinged-doors-type-hardening] builder door resolvers flow through shared typed seams', () => {
   assert.match(buildTypesNorm, /export interface BuilderDoorStateAccessorsLike extends UnknownRecord/);
   assert.match(buildTypesNorm, /export interface BuilderDoorMapsConfigLike extends UnknownRecord/);
+  assert.match(
+    buildTypesNorm,
+    /export type BuilderEdgeHandleDefaultNoneReader = \(partId: unknown\) => boolean/
+  );
 
   assert.match(
     doorStateNorm,
     /makeDoorStateAccessors\(cfg: BuilderDoorMapsConfigLike \| unknown\): BuilderDoorStateAccessorsLike/
   );
   assert.match(doorStateNorm, /const curtainVal: BuilderDoorStateAccessorsLike\['curtainVal'\] = \(/);
+  assert.match(
+    doorStateNorm,
+    /isEdgeHandleDefaultNone: BuilderEdgeHandleDefaultNoneReader; \}\): BuilderHandleTypeResolver/
+  );
+  assert.doesNotMatch(doorState, /\bApp\??:\s*unknown/);
+  assert.doesNotMatch(doorState, /\bhandleControlEnabled\b/);
+  assert.doesNotMatch(doorState, /\bstackKey\b/);
+  assert.doesNotMatch(doorState, /getModeId|isRemoveDoorsEnabled|isRemoveDoorMode/);
 
   assert.match(moduleLoopNorm, /type DoorStateLike = BuilderDoorStateAccessorsLike;/);
   assert.match(

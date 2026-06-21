@@ -38,7 +38,6 @@ export function createCornerWingDoorContext(params: CornerWingCellFlowParams): C
     cornerSharedAlignedEdgeHandleBaseAbsY: locals.__cornerSharedAlignedEdgeHandleBaseAbsY,
     readMap: helpers.readMap,
     readSplitPosListFromMap: helpers.readSplitPosListFromMap,
-    MODES: helpers.MODES,
     getOrCreateCacheRecord: helpers.getOrCreateCacheRecord,
     primaryMode: helpers.primaryMode,
     isLongEdgeHandleVariantForPart: helpers.__isLongEdgeHandleVariantForPart,

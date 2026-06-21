@@ -8,7 +8,6 @@ import { getInternalGridMap } from '../runtime/cache_access.js';
 import { addToWardrobeGroup, getRenderNamespace } from '../runtime/render_access.js';
 import { readSplitPosListFromMap } from '../runtime/maps_access.js';
 import { readModulesConfigurationListFromConfigSnapshot } from '../features/modules_configuration/modules_config_api.js';
-import { MODES } from '../runtime/api.js';
 import { getBaseLegColorHex, resolveBaseLegGeometrySpec } from '../features/base_leg_support.js';
 import { getOrCreateCacheRecord } from './corner_cache.js';
 import {
@@ -173,7 +172,6 @@ export function emitCornerWingExtension(ctx: CornerOpsEmitContext): void {
       readSplitPosListFromMap,
       readModulesConfigurationListFromConfigSnapshot,
       cfgSnapshot,
-      MODES,
       getOrCreateCacheRecord,
       primaryMode: __primaryMode,
       __isLongEdgeHandleVariantForPart,

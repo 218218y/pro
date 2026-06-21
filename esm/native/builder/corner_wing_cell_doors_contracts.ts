@@ -32,7 +32,6 @@ export type CornerWingDoorContext = {
   cornerSharedAlignedEdgeHandleBaseAbsY: number;
   readMap: CornerWingCellFlowParams['helpers']['readMap'];
   readSplitPosListFromMap: CornerWingCellFlowParams['helpers']['readSplitPosListFromMap'];
-  MODES: CornerWingCellFlowParams['helpers']['MODES'];
   getOrCreateCacheRecord: CornerWingCellFlowParams['helpers']['getOrCreateCacheRecord'];
   primaryMode: string;
   isLongEdgeHandleVariantForPart: CornerWingCellFlowParams['helpers']['__isLongEdgeHandleVariantForPart'];

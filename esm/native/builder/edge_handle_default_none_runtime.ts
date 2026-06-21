@@ -1,7 +1,11 @@
 import { getCacheBag } from '../runtime/cache_access.js';
 import { asRecord, createNullRecord } from '../runtime/record.js';
 
-import type { AppContainer, UnknownRecord } from '../../../types/index.js';
+import type {
+  AppContainer,
+  BuilderEdgeHandleDefaultNoneReader,
+  UnknownRecord,
+} from '../../../types/index.js';
 
 export type EdgeHandleDefaultNoneScope = 'module' | 'corner' | 'pent';
 export type EdgeHandleDefaultNoneStackKey = 'top' | 'bottom';
@@ -101,6 +105,13 @@ export function isEdgeHandleDefaultNone(
     }
   }
   return false;
+}
+
+export function bindEdgeHandleDefaultNoneReader(
+  App: AppContainer | unknown,
+  stackKey: EdgeHandleDefaultNoneStackKey
+): BuilderEdgeHandleDefaultNoneReader {
+  return (partId: unknown): boolean => isEdgeHandleDefaultNone(App, stackKey, partId);
 }
 
 export function resetEdgeHandleDefaultNoneCacheMaps(

@@ -627,6 +627,7 @@ export interface BuilderInteriorSketchArgsLike extends UnknownRecord {
 }
 
 export type BuilderHandleTypeResolver = (partId: unknown) => unknown;
+export type BuilderEdgeHandleDefaultNoneReader = (partId: unknown) => boolean;
 export type BuilderDoorRemovedResolver = (partId: string) => boolean;
 export type BuilderHingeDirResolver = (hingeKey: string, fallback: HingeDir) => HingeDir;
 export type BuilderDoorSplitResolver = (

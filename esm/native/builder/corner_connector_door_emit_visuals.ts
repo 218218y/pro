@@ -3,6 +3,7 @@ import type { MirrorLayoutList } from '../../../types';
 import { readMirrorLayoutListForPart } from '../features/mirror_layout.js';
 import { readDoorTrimListForPart } from '../features/door_trim.js';
 import { resolveEffectiveDoorStyle } from '../features/door_style_overrides.js';
+import { isRemoveDoorModeFromSnapshot } from '../features/door_removal_visibility.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
 
 import type {
@@ -117,7 +118,7 @@ function maybeAppendRemovedDoorHitbox(
   state: CornerConnectorDoorState,
   segH: number
 ): void {
-  if (ctx.primaryMode !== (ctx.MODES.REMOVE_DOOR || 'remove_door')) return;
+  if (!isRemoveDoorModeFromSnapshot({ primary: ctx.primaryMode })) return;
   const box = new ctx.THREE.Mesh(
     new ctx.THREE.BoxGeometry(ctx.doorW, segH, CORNER_WING_DIMENSIONS.connector.hitboxThicknessM),
     new ctx.THREE.MeshBasicMaterial({

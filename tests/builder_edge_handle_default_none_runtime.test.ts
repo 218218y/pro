@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { makeDoorStateAccessors, makeHandleTypeResolver } from '../esm/native/builder/doors_state_utils.ts';
 import { createHandlesApplyRuntime } from '../esm/native/builder/handles_apply_shared.ts';
 import {
+  bindEdgeHandleDefaultNoneReader,
   markEdgeHandleDefaultNone,
   resetEdgeHandleDefaultNoneCacheMaps,
 } from '../esm/native/builder/edge_handle_default_none_runtime.ts';
@@ -47,29 +48,39 @@ function readConfigSnapshot(App: any): Record<string, unknown> {
 test('builder edge-handle default-none runtime: door-state handle resolver reads canonical module/corner/pent cache ownership', () => {
   const App = createApp();
   resetEdgeHandleDefaultNoneCacheMaps(App);
+  const topEdgePolicy = bindEdgeHandleDefaultNoneReader(App, 'top');
+  const bottomEdgePolicy = bindEdgeHandleDefaultNoneReader(App, 'bottom');
   markEdgeHandleDefaultNone(App, 'top', 'd2');
   markEdgeHandleDefaultNone(App, 'top', 'corner_door_4', 'corner');
   markEdgeHandleDefaultNone(App, 'bottom', 'corner_pent_door_6', 'pent');
 
   const topResolver = makeHandleTypeResolver({
-    App,
     cfg: { globalHandleType: 'edge', handlesMap: {} },
     doorState: makeDoorStateAccessors({}),
-    handleControlEnabled: true,
-    stackKey: 'top',
+    isEdgeHandleDefaultNone: topEdgePolicy,
   });
   const bottomResolver = makeHandleTypeResolver({
-    App,
     cfg: { globalHandleType: 'edge', handlesMap: {} },
     doorState: makeDoorStateAccessors({ splitDoorsBottomMap: {} }),
-    handleControlEnabled: true,
-    stackKey: 'bottom',
+    isEdgeHandleDefaultNone: bottomEdgePolicy,
   });
 
   assert.equal(topResolver('d2'), 'none');
   assert.equal(topResolver('corner_door_4_full'), 'none');
   assert.equal(bottomResolver('corner_pent_door_6_bot'), 'none');
   assert.equal(topResolver('d9'), 'edge');
+});
+
+test('builder edge-handle resolver fails fast without its explicit edge policy reader', () => {
+  assert.throws(
+    () =>
+      makeHandleTypeResolver({
+        cfg: { globalHandleType: 'edge', handlesMap: {} },
+        doorState: makeDoorStateAccessors({}),
+        isEdgeHandleDefaultNone: undefined as never,
+      }),
+    /isEdgeHandleDefaultNone reader is required/
+  );
 });
 
 test('builder edge-handle default-none runtime: handles apply runtime reads the same canonical cache ownership', () => {

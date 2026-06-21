@@ -2,13 +2,12 @@
 //
 // Centralizes per-door map lookups (hinge dir, split, bottom split, curtain, groove).
 
-import { getModeId } from '../runtime/api.js';
-
-import { isEdgeHandleDefaultNone } from './edge_handle_default_none_runtime.js';
-
 import type {
   BuilderDoorMapsConfigLike,
+  BuilderDoorRemovedResolver,
   BuilderDoorStateAccessorsLike,
+  BuilderEdgeHandleDefaultNoneReader,
+  BuilderHandleTypeResolver,
   BuilderPartColorValue,
   HandleType,
   HingeDir,
@@ -33,11 +32,11 @@ function readPartColorValue(value: unknown): BuilderPartColorValue {
   return String(value);
 }
 
-function _asObj(x: unknown): UnknownRecord | null {
+function asRecordOrNull(x: unknown): UnknownRecord | null {
   return isRecord(x) ? x : null;
 }
 
-const __hasOwn = Object.prototype.hasOwnProperty;
+const hasOwn = Object.prototype.hasOwnProperty;
 
 export function makeDoorStateAccessors(
   cfg: BuilderDoorMapsConfigLike | unknown
@@ -52,40 +51,40 @@ export function makeDoorStateAccessors(
 
   function isDoorSplit(map: unknown, doorIdNum: number): boolean {
     // When splitDoors is on: default TRUE unless explicitly disabled.
-    const m = _asObj(map);
+    const m = asRecordOrNull(map);
     if (!m) return true;
 
     const base = `split_d${doorIdNum}`;
-    if (__hasOwn.call(m, base)) return m[base] !== false;
+    if (hasOwn.call(m, base)) return m[base] !== false;
 
     const full = `${base}_full`;
-    if (__hasOwn.call(m, full)) return m[full] !== false;
+    if (hasOwn.call(m, full)) return m[full] !== false;
 
     const top = `${base}_top`;
-    if (__hasOwn.call(m, top)) return m[top] !== false;
+    if (hasOwn.call(m, top)) return m[top] !== false;
 
     const bot = `${base}_bot`;
-    if (__hasOwn.call(m, bot)) return m[bot] !== false;
+    if (hasOwn.call(m, bot)) return m[bot] !== false;
 
     return true;
   }
 
   function isDoorSplitBottom(map: unknown, doorIdNum: number): boolean {
     // Bottom split is opt-in: default FALSE unless key exists and is true.
-    const m = _asObj(map);
+    const m = asRecordOrNull(map);
     if (!m) return false;
 
     const base = `splitb_d${doorIdNum}`;
-    if (__hasOwn.call(m, base)) return m[base] === true;
+    if (hasOwn.call(m, base)) return m[base] === true;
 
     const full = `${base}_full`;
-    if (__hasOwn.call(m, full)) return m[full] === true;
+    if (hasOwn.call(m, full)) return m[full] === true;
 
     const top = `${base}_top`;
-    if (__hasOwn.call(m, top)) return m[top] === true;
+    if (hasOwn.call(m, top)) return m[top] === true;
 
     const bot = `${base}_bot`;
-    if (__hasOwn.call(m, bot)) return m[bot] === true;
+    if (hasOwn.call(m, bot)) return m[bot] === true;
 
     return false;
   }
@@ -98,10 +97,10 @@ export function makeDoorStateAccessors(
     const cm = asRecord(c['curtainMap']);
     if (typeof doorIdNumOrPartId === 'string') {
       const partId = doorIdNumOrPartId;
-      if (__hasOwn.call(cm, partId)) return readPartColorValue(cm[partId]);
+      if (hasOwn.call(cm, partId)) return readPartColorValue(cm[partId]);
       if (partId.endsWith('_top') || partId.endsWith('_mid') || partId.endsWith('_bot')) {
         const full = partId.replace(/_(top|mid|bot)$/i, '_full');
-        if (__hasOwn.call(cm, full)) return readPartColorValue(cm[full]);
+        if (hasOwn.call(cm, full)) return readPartColorValue(cm[full]);
       }
       return readPartColorValue(suffixOrDefaultValue);
     }
@@ -109,10 +108,10 @@ export function makeDoorStateAccessors(
     const doorIdNum = doorIdNumOrPartId;
     const suffix = typeof suffixOrDefaultValue === 'string' ? suffixOrDefaultValue : 'full';
     const key = `d${doorIdNum}_${suffix}`;
-    if (__hasOwn.call(cm, key)) return readPartColorValue(cm[key]);
+    if (hasOwn.call(cm, key)) return readPartColorValue(cm[key]);
     if (suffix === 'top' || suffix === 'mid' || suffix === 'bot') {
       const full = `d${doorIdNum}_full`;
-      if (__hasOwn.call(cm, full)) return readPartColorValue(cm[full]);
+      if (hasOwn.call(cm, full)) return readPartColorValue(cm[full]);
     }
     return readPartColorValue(defaultValue);
   };
@@ -120,7 +119,7 @@ export function makeDoorStateAccessors(
   function grooveVal(doorIdNum: number, suffix: string, fullDefault: boolean): boolean {
     const gm = asRecord(c['groovesMap']);
     const k = `groove_d${doorIdNum}_${suffix}`;
-    if (__hasOwn.call(gm, k)) return readBool(gm[k]);
+    if (hasOwn.call(gm, k)) return readBool(gm[k]);
     return readBool(fullDefault);
   }
 
@@ -134,40 +133,9 @@ export function makeDoorStateAccessors(
 }
 
 /**
- * Remove-doors mode utilities.
- *
- * These helpers were extracted from builder/core to keep orchestration lean.
- */
-
-function removeDoorModeId(): string {
-  // Canonical id is 'remove_door'.
-  return getModeId('REMOVE_DOOR') || 'remove_door';
-}
-
-/**
- * True when the current state is in REMOVE_DOOR mode.
- */
-const DEFAULT_MODE: UnknownRecord = { primary: 'none', opts: {} };
-
-export function isRemoveDoorMode(_App: unknown, state: unknown): boolean {
-  const st = _asObj(state);
-  const mode = st && isRecord(st['mode']) ? st['mode'] : DEFAULT_MODE;
-  const currentRemoveDoorModeId = removeDoorModeId();
-  return !!(mode && mode['primary'] === currentRemoveDoorModeId);
-}
-
-/**
- * True when doors should be removed (either by explicit toggle or by mode).
- */
-export function isRemoveDoorsEnabled(App: unknown, ui: unknown, state: unknown): boolean {
-  const u = _asObj(ui);
-  return !!(u && readBool(u['removeDoorsEnabled'])) || isRemoveDoorMode(App, state);
-}
-
-/**
  * Build a predicate that checks whether a door/drawer part should be removed.
  */
-export function makeDoorRemovalChecker(cfg: unknown): (partId: unknown) => boolean {
+export function makeDoorRemovalChecker(cfg: unknown): BuilderDoorRemovedResolver {
   const c = asRecord(cfg);
   const removedDoorsMap = asRecord(c['removedDoorsMap']);
 
@@ -197,7 +165,7 @@ export function makeDoorRemovalChecker(cfg: unknown): (partId: unknown) => boole
   };
 }
 
-function _isBottomSplitBotPart(
+function isBottomSplitBotPart(
   id: string,
   cfg: UnknownRecord,
   doorState: BuilderDoorStateAccessorsLike
@@ -217,14 +185,14 @@ function _isBottomSplitBotPart(
   }
 
   // Generic ids (e.g. corner_door_1_bot): bottom split is stored as `splitb_<baseId>` in the map.
-  const bm = _asObj(cfg['splitDoorsBottomMap']);
+  const bm = asRecordOrNull(cfg['splitDoorsBottomMap']);
   if (!bm) return false;
 
   const key = baseId.startsWith('splitb_') ? baseId : `splitb_${baseId}`;
-  if (__hasOwn.call(bm, key)) return bm[key] === true;
-  if (__hasOwn.call(bm, `${key}_full`)) return bm[`${key}_full`] === true;
-  if (__hasOwn.call(bm, `${key}_top`)) return bm[`${key}_top`] === true;
-  if (__hasOwn.call(bm, `${key}_bot`)) return bm[`${key}_bot`] === true;
+  if (hasOwn.call(bm, key)) return bm[key] === true;
+  if (hasOwn.call(bm, `${key}_full`)) return bm[`${key}_full`] === true;
+  if (hasOwn.call(bm, `${key}_top`)) return bm[`${key}_top`] === true;
+  if (hasOwn.call(bm, `${key}_bot`)) return bm[`${key}_bot`] === true;
 
   return false;
 }
@@ -232,60 +200,55 @@ function _isBottomSplitBotPart(
  * Create a handle-type resolver.
  */
 export function makeHandleTypeResolver(args: {
-  App?: unknown;
-  cfg: unknown;
+  cfg: BuilderDoorMapsConfigLike;
   doorState: BuilderDoorStateAccessorsLike;
-  handleControlEnabled: boolean;
-  stackKey?: 'top' | 'bottom';
-}): (id: unknown) => unknown {
-  const App = args && args.App;
-  const cfg = asRecord(args && args.cfg);
-  const doorState: BuilderDoorStateAccessorsLike | null = args?.doorState ?? null;
-
-  // `handleControlEnabled` is a UI concern (whether the user can edit per-door handles).
-  // The *result* should still honor explicit overrides from handlesMap regardless.
-  // (We keep the flag for compatibility and future logic.)
-  const handleControlEnabled = !!(args && args.handleControlEnabled);
-  void handleControlEnabled;
-
-  const stackKey = args && args.stackKey === 'bottom' ? 'bottom' : 'top';
+  isEdgeHandleDefaultNone: BuilderEdgeHandleDefaultNoneReader;
+}): BuilderHandleTypeResolver {
+  const cfg = asRecord(args.cfg);
+  const doorState = args.doorState;
+  const edgeHandleDefaultNone = args.isEdgeHandleDefaultNone;
+  if (typeof edgeHandleDefaultNone !== 'function') {
+    throw new TypeError('[doors_state_utils] isEdgeHandleDefaultNone reader is required');
+  }
 
   const hm = isRecord(cfg['handlesMap']) ? cfg['handlesMap'] : null;
 
-  const __global = cfg['globalHandleType'];
+  const globalValue = cfg['globalHandleType'];
   const globalHandleType: HandleType | string =
-    __global === undefined || __global === null || __global === '' ? 'standard' : String(__global);
+    globalValue === undefined || globalValue === null || globalValue === ''
+      ? 'standard'
+      : String(globalValue);
 
-  const __readOverride = (key: string): unknown => {
+  const readOverride = (key: string): unknown => {
     if (!hm || !key) return undefined;
-    if (!__hasOwn.call(hm, key)) return undefined;
+    if (!hasOwn.call(hm, key)) return undefined;
     const v = hm[key];
     // Empty/cleared values behave like "no override".
     if (v === undefined || v === null || v === '') return undefined;
     return v;
   };
 
-  const __stripSuffix = (id: string): string => {
+  const stripSuffix = (id: string): string => {
     return id.replace(/_(top|mid|bot|full)$/, '');
   };
 
   return function getHandleType(id: unknown): unknown {
     const sid = id == null ? '' : String(id);
-    const base = __stripSuffix(sid);
+    const base = stripSuffix(sid);
 
     // Bottom segment created by bottom-split: NO handle by default.
     // Allow handle only if user explicitly set one for that id (or for the base id).
-    if (doorState && _isBottomSplitBotPart(sid, cfg, doorState)) {
-      const ov = __readOverride(sid) ?? __readOverride(base);
+    if (isBottomSplitBotPart(sid, cfg, doorState)) {
+      const ov = readOverride(sid) ?? readOverride(base);
       return ov !== undefined ? ov : 'none';
     }
 
     // Explicit overrides always win.
-    const override = __readOverride(sid) ?? (__stripSuffix(sid) !== sid ? __readOverride(base) : undefined);
+    const override = readOverride(sid) ?? (stripSuffix(sid) !== sid ? readOverride(base) : undefined);
     if (override !== undefined) return override;
 
     // Global EDGE default: one handle per 2 adjacent doors (right door only).
-    if (globalHandleType === 'edge' && App && isEdgeHandleDefaultNone(App, stackKey, base)) return 'none';
+    if (globalHandleType === 'edge' && edgeHandleDefaultNone(base)) return 'none';
 
     return globalHandleType;
   };

@@ -45,7 +45,6 @@ export type CornerBuildUI = UnknownRecord & {
   cornerHeightCm?: number | string;
   cornerDepth?: number | string;
   cornerDepthCm?: number | string;
-  removeDoors?: boolean;
   removeDoorsEnabled?: boolean;
   corniceType?: string;
   baseType?: unknown;

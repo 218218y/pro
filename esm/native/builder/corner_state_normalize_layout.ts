@@ -2,6 +2,7 @@ import type { CornerBuildMeta, CornerBuildUI } from './corner_state_normalize_co
 import { CORNER_WING_DIMENSIONS, WARDROBE_DEFAULTS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { readBaseLegOptions, type BaseLegColor, type BaseLegStyle } from '../features/base_leg_support.js';
 import { getBasePlinthHeightM, normalizeBasePlinthHeightCm } from '../features/base_plinth_support.js';
+import { resolveRemoveDoorsEnabledFromSnapshots } from '../features/door_removal_visibility.js';
 import {
   readBool,
   readFiniteNumber,
@@ -258,10 +259,7 @@ export function resolveCornerWingFlags(args: {
   };
 
   return {
-    removeDoorsEnabled:
-      readBool(uiAny, 'removeDoorsEnabled') ||
-      (typeof uiAny.removeDoors !== 'undefined' ? !!uiAny.removeDoors : false) ||
-      isMode(readModeConstant('REMOVE_DOOR', 'remove_door')),
+    removeDoorsEnabled: resolveRemoveDoorsEnabledFromSnapshots(uiAny, { primary: primaryMode }),
     doorStyle: readStringValue(uiAny, 'doorStyle'),
     splitDoors: readBool(uiAny, 'splitDoors'),
     groovesEnabled: readBool(uiAny, 'groovesEnabled') || isMode(readModeConstant('GROOVE', 'groove')),

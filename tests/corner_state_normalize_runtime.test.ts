@@ -2,10 +2,29 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { normalizeCornerWingState } from '../esm/native/builder/corner_state_normalize.js';
+import { resolveCornerWingFlags } from '../esm/native/builder/corner_state_normalize_layout.ts';
 import { createCornerWingEmitContext } from '../esm/native/builder/corner_wing_context.js';
 
 const normalRenderPolicy = { sketchMode: false, addOutlines: () => undefined };
 const sketchRenderPolicy = { sketchMode: true, addOutlines: () => undefined };
+
+test('corner flags reject the retired removeDoors alias and use canonical UI/mode snapshots', () => {
+  const legacyOnly = resolveCornerWingFlags({
+    uiAny: { removeDoors: true } as any,
+    primaryMode: 'none',
+    __stackKey: 'top',
+    __stackSplitEnabled: false,
+  });
+  const canonical = resolveCornerWingFlags({
+    uiAny: { removeDoorsEnabled: '1' as any },
+    primaryMode: 'none',
+    __stackKey: 'top',
+    __stackSplitEnabled: false,
+  });
+
+  assert.equal(legacyOnly.removeDoorsEnabled, false);
+  assert.equal(canonical.removeDoorsEnabled, true);
+});
 
 function createApp(args: {
   buildUi?: Record<string, unknown>;

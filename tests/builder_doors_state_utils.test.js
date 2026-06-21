@@ -39,20 +39,6 @@ test('doors_state_utils: makeDoorStateAccessors resolves hinge, split, curtain a
   assert.equal(acc.grooveVal(9, 'full', true), true);
 });
 
-test('doors_state_utils: remove-doors helpers honor mode and ui toggle', async () => {
-  const { isRemoveDoorMode, isRemoveDoorsEnabled } = await mod();
-
-  const App = {};
-
-  assert.equal(isRemoveDoorMode(App, {}), false);
-  assert.equal(isRemoveDoorMode(App, { mode: { primary: 'remove_door' } }), true);
-
-  assert.equal(isRemoveDoorsEnabled(App, { removeDoorsEnabled: true }, {}), true);
-  assert.equal(isRemoveDoorsEnabled(App, { removeDoorsEnabled: '1' }, {}), true);
-  assert.equal(isRemoveDoorsEnabled(App, {}, { mode: { primary: 'remove_door' } }), true);
-  assert.equal(isRemoveDoorsEnabled(App, {}, {}), false);
-});
-
 test('doors_state_utils: makeDoorRemovalChecker supports canonical removed_* keys and _top/_bot full fallback', async () => {
   const { makeDoorRemovalChecker } = await mod();
 
@@ -122,7 +108,7 @@ test('doors_state_utils: full segmented removal still applies to top/mid/bot par
 
 test('doors_state_utils: edge default-none cache ownership stays canonical across module/corner/pent readers', async () => {
   const { makeDoorStateAccessors, makeHandleTypeResolver } = await mod();
-  const { resetEdgeHandleDefaultNoneCacheMaps, markEdgeHandleDefaultNone } =
+  const { bindEdgeHandleDefaultNoneReader, resetEdgeHandleDefaultNoneCacheMaps, markEdgeHandleDefaultNone } =
     await import('../dist/esm/native/builder/edge_handle_default_none_runtime.js');
 
   const App = { services: {} };
@@ -132,18 +118,14 @@ test('doors_state_utils: edge default-none cache ownership stays canonical acros
   markEdgeHandleDefaultNone(App, 'bottom', 'corner_pent_door_6', 'pent');
 
   const topResolver = makeHandleTypeResolver({
-    App,
     cfg: { globalHandleType: 'edge', handlesMap: {} },
     doorState: makeDoorStateAccessors({}),
-    handleControlEnabled: true,
-    stackKey: 'top',
+    isEdgeHandleDefaultNone: bindEdgeHandleDefaultNoneReader(App, 'top'),
   });
   const bottomResolver = makeHandleTypeResolver({
-    App,
     cfg: { globalHandleType: 'edge', handlesMap: {} },
     doorState: makeDoorStateAccessors({ splitDoorsBottomMap: {} }),
-    handleControlEnabled: true,
-    stackKey: 'bottom',
+    isEdgeHandleDefaultNone: bindEdgeHandleDefaultNoneReader(App, 'bottom'),
   });
 
   assert.equal(topResolver('d2'), 'none');
