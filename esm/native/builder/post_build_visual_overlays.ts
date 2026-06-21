@@ -91,5 +91,7 @@ export function applyPostBuildSketchVisualOverlays(args: {
     completePass: true,
   });
   applyFrontRevealFrames(ctx);
-  applyRemovedPartsAfterBuild({ App, THREE, cfgSnapshot });
+  const primaryMode =
+    typeof ctx.state?.mode?.primary === 'string' && ctx.state.mode.primary ? ctx.state.mode.primary : 'none';
+  applyRemovedPartsAfterBuild({ App, THREE, cfgSnapshot, primaryMode });
 }

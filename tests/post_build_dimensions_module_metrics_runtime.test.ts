@@ -3,6 +3,38 @@ import assert from 'node:assert/strict';
 
 import { derivePostBuildDimensionMetrics } from '../esm/native/builder/post_build_dimensions_module_metrics.ts';
 import { appendStackSplitDimensionLines } from '../esm/native/builder/post_build_dimensions_stack_split.ts';
+import { readPostBuildCornerDimensions } from '../esm/native/builder/post_build_dimensions_corner.ts';
+
+test('post-build corner dimensions use only the captured UI snapshot with canonical precedence', () => {
+  const dimensions = readPostBuildCornerDimensions({
+    uiSnapshot: {
+      cornerSide: 'left',
+      cornerDoors: '3',
+      cornerWidth: '150',
+      cornerHeight: 240,
+      cornerDepth: 70,
+      cornerCabinetWallLenCm: 125,
+      cornerCabinetOffsetXcm: 8,
+      cornerCabinetOffsetZcm: -4,
+      raw: {
+        cornerConnectorEnabled: false,
+        cornerWidth: 999,
+      },
+    },
+    dimH: 2.1,
+    dimD: 0.6,
+  });
+
+  assert.equal(dimensions.cornerSide, 'left');
+  assert.equal(dimensions.cornerDoorCount, 3);
+  assert.equal(dimensions.cornerConnectorEnabled, false);
+  assert.equal(dimensions.cornerWingLenM, 1.5);
+  assert.equal(dimensions.cornerWingHeightM, 2.4);
+  assert.equal(dimensions.cornerWingDepthM, 0.7);
+  assert.equal(dimensions.cornerWallLenM, 1.25);
+  assert.equal(dimensions.cornerOffsetXM, -0.08);
+  assert.equal(dimensions.cornerOffsetZM, -0.04);
+});
 
 test('post-build dimension metrics preserve fixed width overrides and add stack-split depth helper coverage', () => {
   const metrics = derivePostBuildDimensionMetrics({

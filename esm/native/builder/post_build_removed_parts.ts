@@ -4,27 +4,11 @@ import { getModeId } from '../runtime/api.js';
 import { getWardrobeGroup } from '../runtime/render_access.js';
 import { readConfigMapFromSnapshot } from '../runtime/config_selectors.js';
 import { isCanvasRemovablePartId, canonicalRemovablePartKey } from '../features/removable_parts.js';
-import { getBuildStateMaybe, getMode, getState } from './store_access.js';
 import { asRecord } from './post_build_extras_shared.js';
 
-function readModePrimary(App: AppContainer): unknown {
-  try {
-    const buildState = getBuildStateMaybe(App) || getState(App) || {};
-    const buildMode = asRecord(buildState.mode);
-    if (buildMode && typeof buildMode.primary !== 'undefined') return buildMode.primary;
-  } catch {
-    // ignore
-  }
-  try {
-    return getMode(App).primary;
-  } catch {
-    return null;
-  }
-}
-
-function isRemovePartsMode(App: AppContainer): boolean {
+function isRemovePartsMode(primaryMode: string): boolean {
   const removeModeId = getModeId('REMOVE_DOOR') || 'remove_door';
-  return readModePrimary(App) === removeModeId;
+  return primaryMode === removeModeId;
 }
 
 export function requireRemovedPartsConfigSnapshot(cfgSnapshot: unknown): UnknownRecord {
@@ -101,8 +85,9 @@ export function applyRemovedPartsAfterBuild(args: {
   App: AppContainer;
   THREE: ThreeLike;
   cfgSnapshot: unknown;
+  primaryMode: string;
 }): void {
-  const { App, THREE, cfgSnapshot } = args;
+  const { App, THREE, cfgSnapshot, primaryMode } = args;
   const cfg = requireRemovedPartsConfigSnapshot(cfgSnapshot);
   const removedMap = readRemovedPartsMap(cfg);
   const wardrobeGroup = asRecord(getWardrobeGroup(App));
@@ -112,7 +97,7 @@ export function applyRemovedPartsAfterBuild(args: {
   );
   if (!removedKeys.length) return;
 
-  const removeMode = isRemovePartsMode(App);
+  const removeMode = isRemovePartsMode(primaryMode);
   const materialHolder = asRecord(App) || {};
   const visited = new Set<UnknownRecord>();
 

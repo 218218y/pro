@@ -49,6 +49,8 @@ test('[corner-stack-ext-drawers] lower stack corner drawers are stack-scoped and
 
 test('[corner-stack-ext-drawers] post-build drawer extras recognize lower-scoped corner drawer ids', () => {
   assert.match(EXTRAS_BUNDLE, /\^\(\?:lower_\)\?corner_c\\d\+_draw_\(\?:shoe\|\\d\+\)\$/);
+  assert.match(EXTRAS_BUNDLE, /ctx\.flags\?\.sketchMode === true/);
+  assert.doesNotMatch(EXTRAS_BUNDLE, /readRuntimeScalarOrDefaultFromApp/);
 });
 
 test('[corner-stack-ext-drawers] missing cells materialize through the stack-aware canonical ensure router', () => {

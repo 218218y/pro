@@ -9,7 +9,6 @@ import {
   writeRenderMaterialSlot,
 } from '../runtime/render_access.js';
 import { getDocumentMaybe } from '../runtime/api.js';
-import { readRuntimeScalarOrDefaultFromApp } from '../runtime/runtime_selectors.js';
 import type { BuildContextLike } from '../../../types/index.js';
 import { FRONT_REVEAL_FRAME_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
@@ -21,10 +20,6 @@ import { createFrontRevealMaterialsRuntime } from './post_build_front_reveal_fra
 
 export type { FrontRevealFramesRuntime } from './post_build_front_reveal_frames_contracts.js';
 
-function isSketchMode(App: FrontRevealFramesRuntime['App'] | null): boolean {
-  return !!readRuntimeScalarOrDefaultFromApp(App, 'sketchMode', false);
-}
-
 export function createFrontRevealFramesRuntime(ctx: BuildContextLike): FrontRevealFramesRuntime | null {
   const App = ctx && ctx.App ? ctx.App : null;
   const THREE = ctx && ctx.THREE ? ctx.THREE : null;
@@ -34,7 +29,7 @@ export function createFrontRevealFramesRuntime(ctx: BuildContextLike): FrontReve
   if (!wardrobeGroup) return null;
 
   const docForTextureToneRead: Document | null = getDocumentMaybe(App);
-  const sketchMode = isSketchMode(App);
+  const sketchMode = ctx.flags?.sketchMode === true;
   const reportSoft = (op: string, error: unknown) => {
     reportPostBuildSoft(App, op, error);
   };

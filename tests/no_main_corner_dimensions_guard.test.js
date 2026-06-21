@@ -16,6 +16,12 @@ test('[no-main corner] standalone corner dimensions stay enabled and wing dimens
   assert.match(dimensionsOwner, /cornerWingLenM: corner\.cornerWingLenM,/);
   assert.match(dimensionsOwner, /noMainWardrobe,/);
   assert.match(dimensionsOwner, /cornerSide: corner\.cornerSide,/);
+  assert.match(dimensionsOwner, /uiSnapshot: ctx\.ui,/);
+  assert.match(dimensionsCorner, /uiSnapshot: unknown;/);
+  assert.doesNotMatch(
+    dimensionsCorner,
+    /getBuildUIFromPlatform|reportPostBuildSoft|dimensions\.cornerUiRead/
+  );
   assert.match(dimensionsCorner, /let cornerDoorCount: number = WARDROBE_DEFAULTS\.corner\.doorsCount;/);
   assert.match(
     dimensionsCorner,

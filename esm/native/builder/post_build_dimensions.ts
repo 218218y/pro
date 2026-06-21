@@ -53,7 +53,7 @@ export function applyPostBuildDimensions(args: PostBuildDimensionsArgs): void {
     splitBottomDepthCm,
   });
   const corner = readPostBuildCornerDimensions({
-    App,
+    uiSnapshot: ctx.ui,
     dimH: metrics.dimH,
     dimD: metrics.dimD,
   });
