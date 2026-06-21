@@ -17,7 +17,7 @@
    * --wp-header-logo-edge-gap: distance from the logo to the edge of the sidebar header
    */
   --wp-header-btn-icon-gap: 0px;
-  --wp-header-logo-edge-gap: 0px;
+  --wp-header-logo-edge-gap: 12px;
   --wp-header-action-col-width: 50px;
   --wp-header-btn-inline-pad: 6px;
 
