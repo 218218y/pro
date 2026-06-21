@@ -49,9 +49,15 @@ test('[stageBK] three/builder constructor seams use shared typed contracts inste
 
   assert.match(buildTypes, /export type BuilderCreateBoardFn = \{/);
   assert.match(buildTypes, /\(args: BuilderCreateBoardArgsLike\): Object3DLike;/);
+  assert.match(buildTypes, /export interface BuilderMaterialSnapshotLike extends UnknownRecord \{/);
   assert.match(
     buildTypes,
-    /export type BuilderGetMirrorMaterialFn = \(args\?: BuilderRenderCommonArgsLike \| null\) => unknown;/
+    /export interface BuilderMirrorMaterialArgsLike extends BuilderRenderCommonArgsLike \{/
+  );
+  assert.match(buildTypes, /materialSnapshot: BuilderMaterialSnapshotLike;/);
+  assert.match(
+    buildTypes,
+    /export type BuilderGetMirrorMaterialFn = \(args: BuilderMirrorMaterialArgsLike\) => unknown;/
   );
   assert.match(buildTypes, /createBoard\?: BuilderCreateBoardFn;/);
   assert.match(buildTypes, /getMirrorMaterial\?: BuilderGetMirrorMaterialFn;/);

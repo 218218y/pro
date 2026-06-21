@@ -66,7 +66,11 @@ test('stage 75 sketch box door visual ownership split is anchored', () => {
   assert.match(materials, /export function resolveSketchBoxDoorVisualMaterials\(/);
   assert.match(materials, /resolvePartMaterial\(doorPid, bodyMat\)/);
   assert.match(materials, /rawGetMirrorMaterial/);
-  assert.match(materials, /getMirrorMaterial\(\{ App, THREE \}\)/);
+  assert.match(materials, /getMirrorMaterial\(\{/);
+  assert.match(
+    materials,
+    /materialSnapshot: \{ cfgSnapshot: input\.cfgSnapshot, sketchMode: input\.sketchMode \}/
+  );
   assert.doesNotMatch(
     materials,
     /resolveEffectiveDoorStyle|createDoorVisual\(|new THREE\.Mesh\(|appendDoorTrimVisuals|appendClassicDoorAccentAndGrooves/,
