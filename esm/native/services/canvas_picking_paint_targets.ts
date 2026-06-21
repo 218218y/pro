@@ -12,7 +12,7 @@ export const LOWER_MAIN_BODY_PARTS = [
   'lower_body_ceil',
   'lower_body_floor',
 ];
-export const CHEST_BODY_PARTS = ['chest_left', 'chest_right', 'chest_ceil', 'chest_floor'];
+export const CHEST_BODY_PARTS = ['chest_left', 'chest_right', 'chest_ceil', 'chest_floor', 'chest_back'];
 export const CORNER_BODY_PARTS = ['corner_body', 'corner_floor', 'corner_ceil', 'corner_side_far'];
 export const CORNER_WING_FRAME_PARTS = [
   'corner_ceil',

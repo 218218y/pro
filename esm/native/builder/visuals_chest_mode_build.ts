@@ -149,13 +149,18 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
   createChestBoard(thick, sideH, D, -totalW / 2 + thick / 2, baseH + thick + sideH / 2, 0, 'chest_left');
   createChestBoard(thick, sideH, D, totalW / 2 - thick / 2, baseH + thick + sideH / 2, 0, 'chest_right');
 
-  const chestBodyHeight = H - baseH;
-  const back = new THREE.Mesh(
-    new THREE.BoxGeometry(totalW, chestBodyHeight, CHEST_DIMENSIONS.backThicknessM),
-    palette.globalBodyMat
+  const backPanelW = Math.max(0, totalW - 2 * thick - CHEST_DIMENSIONS.backPanelWidthClearanceM);
+  const backPanelH = Math.max(0, sideH - CHEST_DIMENSIONS.backPanelHeightClearanceM);
+  const backPanelY = baseH + thick + sideH / 2;
+  createChestBoard(
+    backPanelW,
+    backPanelH,
+    CHEST_DIMENSIONS.backThicknessM,
+    0,
+    backPanelY,
+    -D / 2 + CHEST_DIMENSIONS.backInsetM,
+    'chest_back'
   );
-  back.position.set(0, baseH + chestBodyHeight / 2, -D / 2 + CHEST_DIMENSIONS.backInsetM);
-  wardrobeGroup.add(back);
 
   if (effectiveBaseType === 'plinth') {
     createChestBoard(

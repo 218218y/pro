@@ -297,6 +297,8 @@ export const CARCASS_BASE_DIMENSIONS = Object.freeze({
   chest: Object.freeze({
     backThicknessM: 0.005,
     backInsetM: 0.005,
+    backPanelWidthClearanceM: 0.002,
+    backPanelHeightClearanceM: 0.002,
     drawerGapM: 0.004,
     drawerWidthClearanceM: 0.004,
     drawerFrontThicknessM: 0.018,

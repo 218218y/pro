@@ -14,6 +14,7 @@ import { resolveChestModeBuildInputs } from '../esm/native/builder/visuals_chest
 import {
   CARCASS_BASE_DIMENSIONS,
   CHEST_MODE_DIMENSIONS,
+  MATERIAL_DIMENSIONS,
 } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
 
 class FakeVector3 {
@@ -485,6 +486,49 @@ test('visuals chest mode build creates wide-leg chest drawers, mirror override, 
     'chest-only total width and height dimensions should use the compact black total style'
   );
   assert.ok(outlined.length >= 10);
+});
+
+test('visuals chest mode builds the rear panel as an inset paintable body board', () => {
+  const { App, wardrobeGroup } = createChestApp();
+  buildChestOnly(App, {
+    renderPolicy: App.__outlineRenderPolicy,
+    H: 0.9,
+    totalW: 1.6,
+    D: 0.45,
+    drawersCount: 3,
+    baseType: 'legs',
+    baseLegStyle: 'square',
+    baseLegColor: 'nickel',
+    baseLegHeightCm: 15,
+    baseLegWidthCm: 5,
+    colorChoice: '#cccccc',
+    cfgSnapshot: createChestCfg({
+      showDimensions: false,
+      isMultiColorMode: true,
+      individualColors: {
+        chest_left: '#224466',
+        chest_right: '#224466',
+        chest_ceil: '#224466',
+        chest_floor: '#224466',
+        chest_back: '#224466',
+      },
+    }),
+  });
+
+  const back = wardrobeGroup.children.find((child: any) => child?.userData?.partId === 'chest_back');
+  assert.ok(back);
+
+  const baseH = 0.15;
+  const thick = MATERIAL_DIMENSIONS.wood.thicknessM;
+  const sideH = 0.9 - baseH - 2 * thick;
+  assert.deepEqual(back.geometry.args, [
+    1.6 - 2 * thick - CARCASS_BASE_DIMENSIONS.chest.backPanelWidthClearanceM,
+    sideH - CARCASS_BASE_DIMENSIONS.chest.backPanelHeightClearanceM,
+    CARCASS_BASE_DIMENSIONS.chest.backThicknessM,
+  ]);
+  assert.equal(back.position.y, baseH + thick + sideH / 2);
+  assert.equal(back.position.z, -0.45 / 2 + CARCASS_BASE_DIMENSIONS.chest.backInsetM);
+  assert.deepEqual(back.material, { color: '#224466', part: 'front', useTexture: false });
 });
 
 test('visuals chest mode build adds commode back panel, tracked mirror surface, and commode dimensions', () => {

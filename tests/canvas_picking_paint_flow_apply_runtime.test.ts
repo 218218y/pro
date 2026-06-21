@@ -448,6 +448,34 @@ test('paint grouped target treats the stack-split lower carcass frame as one she
   assert.equal(getPaintSourceTag('walnut', 'lower_body_left'), 'paint.apply:group');
 });
 
+test('paint grouped target treats the chest rear board as part of the body shell', () => {
+  assert.deepEqual(resolvePaintTargetKeys('chest_back', 'top'), [
+    'chest_left',
+    'chest_right',
+    'chest_ceil',
+    'chest_floor',
+    'chest_back',
+  ]);
+
+  const state = createManualState();
+  const handled = applyGroupedOrCornerPaintTarget({
+    state,
+    foundPartId: 'chest_left',
+    activeStack: 'top',
+    paintSelection: 'walnut',
+  });
+
+  assert.equal(handled, true);
+  assert.deepEqual(state.colors, {
+    chest_left: 'walnut',
+    chest_right: 'walnut',
+    chest_ceil: 'walnut',
+    chest_floor: 'walnut',
+    chest_back: 'walnut',
+  });
+  assert.equal(getPaintSourceTag('walnut', 'chest_back'), 'paint.apply:group');
+});
+
 test('paint special mutation removes only the matched mirror layout while preserving unrelated placements', () => {
   const state = createManualState({
     App: createApp({ ui: { currentCurtainChoice: 'linen' } }),
