@@ -1,16 +1,17 @@
 import { getLocationSearchMaybe, getWindowMaybe } from '../runtime/api.js';
+import { getDepsNamespaceMaybe } from '../runtime/deps_access.js';
+import { getPlatformRootMaybe } from '../runtime/app_roots_access.js';
 import { patchRuntime } from '../runtime/runtime_write_access.js';
 
 import {
   readLocalStorage,
+  readPlatformReportError,
   readWindowSearch,
   type DepsFlagsLike,
   type PlatformReportErrorLike,
 } from './platform_shared.js';
 
 import type { AppContainer, UnknownRecord } from '../../../types';
-
-export type PlatformDepsFlagsReader = () => DepsFlagsLike | null;
 
 export function readBootFailFastFlag(App: AppContainer, reportError: PlatformReportErrorLike): boolean {
   try {
@@ -46,28 +47,31 @@ export function readBootFailFastFlag(App: AppContainer, reportError: PlatformRep
   }
 }
 
-export function applyPlatformBootFlagsToRuntime(
-  App: AppContainer,
-  bootFailFast: boolean,
-  getDepsFlags: PlatformDepsFlagsReader
-): void {
-  try {
-    const patch: UnknownRecord = {};
-    if (bootFailFast) patch.failFast = true;
+export function applyPlatformBootFlagsToRuntime(App: AppContainer): void {
+  const platform = getPlatformRootMaybe(App);
+  const reportError = readPlatformReportError(platform?.reportError) || (() => undefined);
+  const bootFailFast = readBootFailFastFlag(App, reportError);
+  const patch: UnknownRecord = {};
+  if (bootFailFast) patch.failFast = true;
 
-    const flags = getDepsFlags();
-    if (flags && typeof flags.verboseConsoleErrors === 'boolean') {
+  let flags: DepsFlagsLike | null = null;
+  try {
+    flags = getDepsNamespaceMaybe<DepsFlagsLike>(App, 'flags');
+  } catch (error) {
+    reportError(error, 'platform.bootFlags.deps');
+  }
+
+  if (flags) {
+    if (typeof flags.verboseConsoleErrors === 'boolean') {
       patch.verboseConsoleErrors = !!flags.verboseConsoleErrors;
     }
-    if (flags && typeof flags.verboseConsoleErrorsDedupeMs === 'number') {
+    if (typeof flags.verboseConsoleErrorsDedupeMs === 'number') {
       patch.verboseConsoleErrorsDedupeMs = Number(flags.verboseConsoleErrorsDedupeMs);
     }
-    if (flags && typeof flags.debug === 'boolean') patch.debug = !!flags.debug;
+    if (typeof flags.debug === 'boolean') patch.debug = !!flags.debug;
+  }
 
-    if (Object.keys(patch).length > 0) {
-      patchRuntime(App, patch, { source: 'platform:bootFlags' });
-    }
-  } catch {
-    // swallow
+  if (Object.keys(patch).length > 0) {
+    patchRuntime(App, patch, { source: 'platform:bootFlags' });
   }
 }

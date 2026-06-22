@@ -123,27 +123,27 @@ test('[stageB] tools/meta/config/cloud surfaces use explicit typed boundaries', 
     'actions_access should use the canonical unknown-callable contract'
   );
   assert.match(actionsAccess, /export function getActionFn<T extends ActionAccessFn>/);
+  assert.match(actionsAccess, /export function requireActionFn<T extends ActionAccessFn>/);
   assert.match(actionsAccess, /export function callMetaAction<T extends ActionAccessFn>/);
   assert.ok(!actionsAccess.includes('<T extends (...args: any[]) => any>'));
 
+  assert.match(runtimeWriteAccess, /import \{ requireActionFn \} from '\.\/actions_access_core\.js';/);
   assert.match(
     runtimeWriteAccess,
-    /import \{ asRecord, getSliceNamespace, patchSliceCanonical \} from '\.\/slice_write_access\.js';/
+    /type RuntimeSetScalarAction = NonNullable<RuntimeActionsNamespaceLike\['setScalar'\]>;/
   );
-  assert.match(
+  assert.match(runtimeWriteAccess, /requireActionFn<RuntimeSetScalarAction>/);
+  assert.doesNotMatch(
     runtimeWriteAccess,
-    /function getRuntimeNamespace\(App: unknown\): RuntimeActionsNamespaceLike \| null/
+    /patchSliceCanonical|allowRootStorePatch|getWriteStore|storeWriter:\s*'setRuntime'/
   );
-  assert.match(runtimeWriteAccess, /if \(typeof rtNs\?\.setScalar === 'function'\)/);
   assert.doesNotMatch(runtimeWriteAccess, /\(rtNs as AnyRecord\)\.setScalar/);
   assert.doesNotMatch(runtimeWriteAccess, /meta as any/);
 
   assert.match(modeWriteAccess, /type ModeWriteAppLike = \{/);
-  assert.match(
-    modeWriteAccess,
-    /function getModeNamespace\(App: unknown\): ModeActionsNamespaceLike \| null/
-  );
-  assert.match(modeWriteAccess, /if \(typeof modeNs\?\.set === 'function'\)/);
+  assert.match(modeWriteAccess, /type ModeSetAction = NonNullable<ModeActionsNamespaceLike\['set'\]>;/);
+  assert.match(modeWriteAccess, /requireActionFn<ModeSetAction>/);
+  assert.doesNotMatch(modeWriteAccess, /patchSliceCanonical|getWriteStore|setModePatch/);
   assert.doesNotMatch(modeWriteAccess, /\(modeNs as AnyRecord\)\.set/);
   assert.doesNotMatch(modeWriteAccess, /meta as any/);
 

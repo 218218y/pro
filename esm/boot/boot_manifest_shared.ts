@@ -162,8 +162,14 @@ export function assertCanonicalKernelActions(app: AppContainer): void {
   };
 
   requireFn('ui', 'patch');
+  requireFn('ui', 'patchSoft');
+  requireFn('ui', 'setScalar');
+  requireFn('ui', 'setScalarSoft');
+  requireFn('ui', 'setRawScalar');
   requireFn('runtime', 'patch');
+  requireFn('runtime', 'setScalar');
   requireFn('config', 'patch');
+  requireFn('mode', 'patch');
   requireFn('mode', 'set');
   requireFn('modules', 'patchForStack');
 }

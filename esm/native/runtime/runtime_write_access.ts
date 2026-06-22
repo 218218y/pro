@@ -1,15 +1,15 @@
-// Runtime write access helpers (Canonical-first, Store-backed)
+// Runtime write access helpers (canonical actions only)
 //
 // Goal:
 // - Centralize runtime write seams.
-// - Prefer App.actions.runtime.* surfaces when installed.
-// - Keep store-backed compatibility routes for minimal harnesses.
-// - Delete-pass: avoid generic root actions.patch routing for runtime updates.
+// - Require the installed App.actions.runtime.* surface.
+// - Fail fast when boot/integration code provides an incomplete action contract.
 
 import type { ActionMetaLike, RuntimeActionsNamespaceLike, RuntimeSlicePatch } from '../../../types';
 import type { RuntimeScalarKey, RuntimeScalarValue } from '../../../types/runtime_scalar';
+import { requireActionFn } from './actions_access_core.js';
 import { metaTransient } from './meta_profiles_access.js';
-import { asRecord, getSliceNamespace, patchSliceCanonical } from './slice_write_access.js';
+import { asRecord } from './record.js';
 
 function isRuntimeSlicePatch(value: unknown): value is RuntimeSlicePatch {
   return !!asRecord(value);
@@ -19,22 +19,14 @@ function asRuntimePatch(v: unknown): RuntimeSlicePatch {
   return isRuntimeSlicePatch(v) ? v : {};
 }
 
-function isRuntimeActionsNamespaceLike(value: unknown): value is RuntimeActionsNamespaceLike {
-  return !!asRecord(value);
-}
-
-function getRuntimeNamespace(App: unknown): RuntimeActionsNamespaceLike | null {
-  const namespace = getSliceNamespace(App, 'runtime');
-  return isRuntimeActionsNamespaceLike(namespace) ? namespace : null;
-}
+type RuntimePatchAction = NonNullable<RuntimeActionsNamespaceLike['patch']>;
+type RuntimeSetScalarAction = NonNullable<RuntimeActionsNamespaceLike['setScalar']>;
 
 export function patchRuntime(App: unknown, patch: unknown, meta?: ActionMetaLike): unknown {
   const rtPatch = asRuntimePatch(patch);
+  if (!Object.keys(rtPatch).length) return undefined;
   const m = metaTransient(App, meta, 'runtime:patch');
-  return patchSliceCanonical(App, 'runtime', rtPatch, m, {
-    storeWriter: 'setRuntime',
-    allowRootStorePatch: true,
-  });
+  return requireActionFn<RuntimePatchAction>(App, 'runtime.patch', 'runtime write access')(rtPatch, m);
 }
 
 type SetRuntimeScalar = {
@@ -61,13 +53,11 @@ export const setRuntimeScalar: SetRuntimeScalar = (
   if (typeof value === 'function') return undefined;
 
   const m = metaTransient(App, meta, 'runtime:setScalar');
-  const rtNs = getRuntimeNamespace(App);
-
-  if (typeof rtNs?.setScalar === 'function') {
-    return rtNs.setScalar(k, value, m);
-  }
-
-  return patchRuntime(App, { [k]: value }, m);
+  return requireActionFn<RuntimeSetScalarAction>(App, 'runtime.setScalar', 'runtime scalar write access')(
+    k,
+    value,
+    m
+  );
 };
 
 export function setRuntimeSketchMode(App: unknown, on: unknown, meta?: ActionMetaLike): unknown {

@@ -17,6 +17,7 @@ import {
   installBootMain,
   installRenderLoopImpl,
   installSmokeChecks,
+  applyPlatformBootFlagsToRuntime,
 } from '../native/platform/install.js';
 
 import {
@@ -147,6 +148,11 @@ export const BOOT_STEPS: BootStep[] = [
     id: 'kernel.assertCanonicalActions',
     phase: 'kernel',
     run: assertCanonicalKernelActions,
+  },
+  {
+    id: 'kernel.applyPlatformBootFlags',
+    phase: 'kernel',
+    run: requireBootInstaller(applyPlatformBootFlagsToRuntime, 'kernel.applyPlatformBootFlags'),
   },
   {
     id: 'kernel.domainApi',

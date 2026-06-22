@@ -22,3 +22,4 @@ export { installLifecycleVisibility } from './lifecycle_visibility.js';
 export { installBootMain } from './boot_main.js';
 export { installRenderLoopImpl } from './render_loop_impl.js';
 export { installSmokeChecks } from './smoke_checks.js';
+export { applyPlatformBootFlagsToRuntime } from './platform_boot.js';

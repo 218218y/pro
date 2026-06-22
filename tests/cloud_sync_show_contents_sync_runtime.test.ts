@@ -47,7 +47,14 @@ function createApp(showContents = false) {
       return () => subscribers.delete(entry);
     },
   };
-  return { store } as any;
+  const actions = {
+    ui: {
+      patch(patch: Record<string, unknown>, meta?: unknown) {
+        return store.setUi(patch, meta);
+      },
+    },
+  };
+  return { store, actions } as any;
 }
 
 async function flushMicrotasks() {

@@ -17,6 +17,7 @@ export {
   getAction,
   getActionNamespace,
   getActionFn,
+  requireActionFn,
   requireActionNamespace,
   hasAction,
   getNamespacedActionFn,

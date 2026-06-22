@@ -13,11 +13,7 @@ import { getBrowserTimers, requestIdleCallbackMaybe } from '../runtime/api.js';
 import { installToolsRuntimeState } from '../runtime/tools_runtime_state.js';
 import { readRuntimeStateFromApp } from '../runtime/root_state_access.js';
 import { setBuildTag } from '../runtime/build_info_access.js';
-import {
-  ensurePlatformRoot,
-  ensureRegistriesRoot,
-  getPlatformRootMaybe,
-} from '../runtime/app_roots_access.js';
+import { ensurePlatformRoot, ensureRegistriesRoot } from '../runtime/app_roots_access.js';
 import { ensureDepsRoot, getDepsNamespaceMaybe, hasDep } from '../runtime/deps_access.js';
 import { isPlatformInstalled, markPlatformInstalled } from '../runtime/install_state_access.js';
 import { installStoreSurface } from '../runtime/store_surface_access.js';
@@ -25,15 +21,11 @@ import { installStoreSurface } from '../runtime/store_surface_access.js';
 import {
   WP_DEFAULT_VERBOSE_CONSOLE_ERRORS,
   WP_DEFAULT_VERBOSE_CONSOLE_ERRORS_DEDUPE_MS,
-  getErrorStack,
   getModeConst,
-  isRecord,
-  readPlatformReportError,
 } from './platform_shared.js';
 import type { DepsFlagsLike } from './platform_shared.js';
 import { installPlatformUtilSurface } from './platform_util.js';
 import { installPlatformServiceSurface } from './platform_services.js';
-import { applyPlatformBootFlagsToRuntime, readBootFailFastFlag } from './platform_boot.js';
 
 import type { AppContainer } from '../../../types';
 
@@ -122,23 +114,6 @@ export function installPlatform(rootApp: AppContainer): AppContainer['platform']
     }
   };
 
-  const earlyReportError = function (err: unknown, ctx?: unknown) {
-    const currentPlatform = getPlatformRootMaybe(App);
-    const reporter = readPlatformReportError(
-      currentPlatform && isRecord(currentPlatform) ? currentPlatform.reportError : null
-    );
-    if (reporter) {
-      reporter(err, ctx);
-      return;
-    }
-    const verbose = getVerboseCfg();
-    if (!verbose.enabled) return;
-
-    const stack = getErrorStack(err);
-    const msg = stack ? String(stack) : String(err);
-    console.error('[Platform]', ctx ? `[${String(ctx)}]` : '', msg);
-  };
-
   // Canonical services install lazily through their explicit runtime seams (no top-level shims).
 
   // Canonical registries namespace (Pure ESM).
@@ -152,7 +127,6 @@ export function installPlatform(rootApp: AppContainer): AppContainer['platform']
   // Canonical: App.deps.THREE
   // ---------------------------------------------------------------------------
   ensureDepsRoot(App);
-  const bootFailFast = readBootFailFastFlag(App, earlyReportError);
 
   if (!hasDep(App, 'THREE')) {
     throw new Error(
@@ -199,8 +173,6 @@ export function installPlatform(rootApp: AppContainer): AppContainer['platform']
       },
     })
   );
-
-  applyPlatformBootFlagsToRuntime(App, bootFailFast, getDepsFlags);
 
   // ---------------------------------------------------------------------------
   // Storage + Dirty Flag (Phase 1): extracted into dedicated modules

@@ -5,6 +5,7 @@ import { assertLacksAll, assertMatchesAll, bundleSources, readSource } from './_
 import { bundleServicesApiPublicSources, readServicesApiEntrypoint } from './_services_api_bundle.js';
 
 const platformOwner = readSource('../esm/native/platform/platform.ts', import.meta.url);
+const bootManifestSteps = readSource('../esm/boot/boot_manifest_steps.ts', import.meta.url);
 const platformBundle = bundleSources(
   [
     '../esm/native/platform/platform.ts',
@@ -87,11 +88,8 @@ test('[runtime-platform-core-family] platform/kernel owners stay thin while inst
       /platform_shared\.js/,
       /platform_util\.js/,
       /platform_services\.js/,
-      /platform_boot\.js/,
       /installPlatformUtilSurface\(/,
       /installPlatformServiceSurface\(/,
-      /applyPlatformBootFlagsToRuntime\(/,
-      /readBootFailFastFlag\(/,
     ],
     'platformOwner'
   );
@@ -103,6 +101,8 @@ test('[runtime-platform-core-family] platform/kernel owners stay thin while inst
       /Platform\.getDimsM\s*=/,
       /Platform\.ensureRenderLoop\s*=/,
       /patchRuntime\(/,
+      /applyPlatformBootFlagsToRuntime\(/,
+      /readBootFailFastFlag\(/,
     ],
     'platformOwner'
   );
@@ -117,6 +117,10 @@ test('[runtime-platform-core-family] platform/kernel owners stay thin while inst
       /export function shouldConsoleLogOnce\(/,
     ],
     'platformBundle'
+  );
+  assert.match(
+    bootManifestSteps,
+    /id: 'kernel\.stateApi'[\s\S]*id: 'kernel\.assertCanonicalActions'[\s\S]*id: 'kernel\.applyPlatformBootFlags'/
   );
 
   assertMatchesAll(

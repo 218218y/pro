@@ -113,6 +113,26 @@ function createHarness(seed?: {
       return store.patch(patch);
     },
     room: {},
+    ui: {
+      patch: (patch: AnyRec) => {
+        state.ui = mergeSlice(state.ui, patch);
+        return patch;
+      },
+      patchSoft: (patch: AnyRec) => {
+        state.ui = mergeSlice(state.ui, patch);
+        return patch;
+      },
+    },
+    runtime: {
+      patch: (patch: AnyRec) => {
+        state.runtime = mergeSlice(state.runtime, patch);
+        return patch;
+      },
+      setScalar: (key: string, value: unknown) => {
+        state.runtime[key] = value;
+        return value;
+      },
+    },
     setCfgScalar: (key: string, value: unknown) => {
       state.config[key] = value;
       return value;

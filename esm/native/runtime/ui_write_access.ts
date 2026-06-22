@@ -1,20 +1,19 @@
-// UI write access helpers (Canonical-first, Store-backed)
+// UI write access helpers (canonical actions only)
 //
 // Goal:
 // - Centralize the UI write seams in one place.
-// - Prefer App.actions.ui.* surfaces when installed.
-// - Keep a small store-backed compatibility route for lightweight harnesses/tools.
-// - Delete-pass: avoid bouncing through generic root actions.patch when a UI seam exists.
+// - Require the installed App.actions.ui.* surface.
+// - Fail fast when boot/integration code provides an incomplete action contract.
 //
 // Notes:
 // - UI layer must consume this through services/api.js (public surface), not by importing runtime/* directly.
 
 import type { ActionMetaLike, UiActionsNamespaceLike, UiSlicePatch } from '../../../types';
 import type { UiRawScalarKey, UiRawScalarValueMap } from '../../../types/ui_raw';
-import { buildUiRawScalarPatch } from '../../../types/ui_raw.js';
+import { requireActionFn } from './actions_access_core.js';
 import { metaUiOnly } from './meta_profiles_access.js';
+import { asRecord } from './record.js';
 import { readUiStateFromApp } from './root_state_access.js';
-import { asRecord, getSliceNamespace, patchSliceCanonical } from './slice_write_access.js';
 
 function asUiPatch(v: unknown): UiSlicePatch {
   const rec = asRecord(v);
@@ -24,10 +23,6 @@ function asUiPatch(v: unknown): UiSlicePatch {
 function hasOwnKeys(v: unknown): boolean {
   const rec = asRecord(v);
   return !!rec && Object.keys(rec).length > 0;
-}
-
-function isUiActionsNamespaceLike(value: unknown): value is UiActionsNamespaceLike {
-  return !!asRecord(value);
 }
 
 function isPlainRecord(value: unknown): value is Record<string, unknown> {
@@ -107,35 +102,26 @@ function readCurrentUiRawValue(App: unknown, key: string): unknown {
   return raw[key];
 }
 
-function getUiNamespace(App: unknown): UiActionsNamespaceLike | null {
-  const ns = getSliceNamespace(App, 'ui');
-  return isUiActionsNamespaceLike(ns) ? ns : null;
-}
+type UiPatchAction = NonNullable<UiActionsNamespaceLike['patch']>;
+type UiPatchSoftAction = NonNullable<UiActionsNamespaceLike['patchSoft']>;
+type UiSetScalarAction = NonNullable<UiActionsNamespaceLike['setScalar']>;
+type UiSetScalarSoftAction = NonNullable<UiActionsNamespaceLike['setScalarSoft']>;
+type UiSetRawScalarAction = NonNullable<UiActionsNamespaceLike['setRawScalar']>;
 
-/** Patch UI slice through the canonical actions surface (preferred). */
+/** Patch UI slice through the canonical actions surface. */
 export function patchUi(App: unknown, patch: unknown, meta?: ActionMetaLike): unknown {
   const uiPatch = filterUiPatchAgainstCurrentState(App, asUiPatch(patch));
   if (!hasOwnKeys(uiPatch)) return undefined;
-  return patchSliceCanonical(App, 'ui', uiPatch, meta, {
-    storeWriter: 'setUi',
-    allowRootStorePatch: true,
-  });
+  return requireActionFn<UiPatchAction>(App, 'ui.patch', 'ui write access')(uiPatch, meta);
 }
 
-/** Patch UI slice with UI-only semantics by default (when the surface supports it). */
+/** Patch UI slice with UI-only semantics. */
 export function patchUiSoft(App: unknown, patch: unknown, meta?: ActionMetaLike): unknown {
   const uiPatch = filterUiPatchAgainstCurrentState(App, asUiPatch(patch));
   if (!hasOwnKeys(uiPatch)) return undefined;
 
   const m = metaUiOnly(App, meta, 'ui:patchSoft');
-  const uiNs = getUiNamespace(App);
-
-  if (typeof uiNs?.patchSoft === 'function') {
-    return uiNs.patchSoft(uiPatch, m);
-  }
-
-  // Fall back to plain UI patching while enforcing UI-only meta defaults.
-  return patchUi(App, uiPatch, m);
+  return requireActionFn<UiPatchSoftAction>(App, 'ui.patchSoft', 'soft UI write access')(uiPatch, m);
 }
 
 type SetUiScalar = {
@@ -153,12 +139,7 @@ export const setUiScalar: SetUiScalar = (
   if (typeof value === 'function') return undefined;
   if (areUiPatchValuesEquivalent(readCurrentUiValue(App, k), value)) return undefined;
 
-  const uiNs = getUiNamespace(App);
-  if (typeof uiNs?.setScalar === 'function') {
-    return uiNs.setScalar(k, value, meta);
-  }
-
-  return patchUi(App, { [k]: value }, meta);
+  return requireActionFn<UiSetScalarAction>(App, 'ui.setScalar', 'UI scalar write access')(k, value, meta);
 };
 
 type SetUiScalarSoft = {
@@ -177,20 +158,14 @@ export const setUiScalarSoft: SetUiScalarSoft = (
   if (areUiPatchValuesEquivalent(readCurrentUiValue(App, k), value)) return undefined;
 
   const m = metaUiOnly(App, meta, 'ui:setScalarSoft');
-  const uiNs = getUiNamespace(App);
-
-  if (typeof uiNs?.setScalarSoft === 'function') {
-    return uiNs.setScalarSoft(k, value, m);
-  }
-
-  if (typeof uiNs?.setScalar === 'function') {
-    return uiNs.setScalar(k, value, m);
-  }
-
-  return patchUiSoft(App, { [k]: value }, m);
+  return requireActionFn<UiSetScalarSoftAction>(App, 'ui.setScalarSoft', 'soft UI scalar write access')(
+    k,
+    value,
+    m
+  );
 };
 
-/** Patch UI raw scalars via the installed UI surface when available. */
+/** Patch UI raw scalars via the installed UI surface. */
 type SetUiRawScalar = {
   <K extends UiRawScalarKey>(
     App: unknown,
@@ -216,14 +191,11 @@ export const setUiRawScalar: SetUiRawScalar = (
   if (areUiPatchValuesEquivalent(readCurrentUiRawValue(App, k), value)) return undefined;
 
   const m = metaUiOnly(App, meta, 'ui:setRawScalar');
-  const uiNs = getUiNamespace(App);
-
-  if (typeof uiNs?.setRawScalar === 'function') {
-    return uiNs.setRawScalar(k, value, m);
-  }
-
-  // Raw scalar compatibility route: patch the raw object with UI-only meta.
-  return patchUiSoft(App, { raw: buildUiRawScalarPatch(k, value) }, m);
+  return requireActionFn<UiSetRawScalarAction>(App, 'ui.setRawScalar', 'UI raw scalar write access')(
+    k,
+    value,
+    m
+  );
 };
 
 export function setUiLastSelectedWallColor(App: unknown, value: unknown, meta?: ActionMetaLike): unknown {

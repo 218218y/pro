@@ -12,19 +12,38 @@ type AnyRecord = Record<string, unknown>;
 
 function createUiApp(ui: AnyRecord, uiActions: AnyRecord = {}) {
   const calls: Array<{ op: string; patch?: AnyRecord; key?: string; value?: unknown; meta?: AnyRecord }> = [];
+  const defaultUiActions = {
+    patch(patch: AnyRecord, meta?: AnyRecord) {
+      calls.push({ op: 'ui.patch', patch, meta });
+      return { via: 'ui.patch', patch };
+    },
+    patchSoft(patch: AnyRecord, meta?: AnyRecord) {
+      calls.push({ op: 'ui.patchSoft', patch, meta });
+      return { via: 'ui.patchSoft', patch };
+    },
+    setScalar(key: string, value: unknown, meta?: AnyRecord) {
+      calls.push({ op: 'ui.setScalar', key, value, meta });
+      return { via: 'ui.setScalar', key, value };
+    },
+    setScalarSoft(key: string, value: unknown, meta?: AnyRecord) {
+      calls.push({ op: 'ui.setScalarSoft', key, value, meta });
+      return { via: 'ui.setScalarSoft', key, value };
+    },
+    setRawScalar(key: string, value: unknown, meta?: AnyRecord) {
+      calls.push({ op: 'ui.setRawScalar', key, value, meta });
+      return { via: 'ui.setRawScalar', key, value };
+    },
+  };
   const App = {
     actions: {
       ui: {
+        ...defaultUiActions,
         ...uiActions,
       },
     },
     store: {
       getState() {
         return { ui };
-      },
-      setUi(patch: AnyRecord, meta?: AnyRecord) {
-        calls.push({ op: 'store.setUi', patch, meta });
-        return { via: 'store.setUi', patch };
       },
     },
   } satisfies AnyRecord;
@@ -142,4 +161,17 @@ test('[ui-write-access] setUiRawScalar skips unchanged raw values before touchin
   assert.equal(calls[0]?.key, 'doors');
   assert.equal(calls[0]?.value, 4);
   assert.match(String(calls[0]?.meta?.source || ''), /changed-raw/);
+});
+
+test('[ui-write-access] changed writes fail fast when the required canonical action is missing', () => {
+  const App = {
+    actions: { ui: {} },
+    store: { getState: () => ({ ui: { activeTab: 'structure' } }) },
+  };
+
+  assert.throws(() => patchUi(App, { activeTab: 'design' }), /Missing canonical action.*actions\.ui\.patch/);
+  assert.throws(
+    () => setUiScalarSoft(App, 'activeTab', 'design'),
+    /Missing canonical action.*actions\.ui\.setScalarSoft/
+  );
 });

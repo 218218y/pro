@@ -79,9 +79,6 @@ const ALLOW_UI_RUNTIME_PATCH = new Set([
   // Kernel/state_api owns canonical action surfaces.
   'esm/native/kernel/kernel.ts',
   'esm/native/kernel/state_api.ts',
-  // Canonical write access ladders.
-  'esm/native/runtime/ui_write_access.ts',
-  'esm/native/runtime/runtime_write_access.ts',
 ]);
 const ALLOW_MODE_PATCH = new Set([
   // Store owns patch application.
@@ -89,8 +86,6 @@ const ALLOW_MODE_PATCH = new Set([
   // Kernel/state_api owns canonical action surfaces.
   'esm/native/kernel/kernel.ts',
   'esm/native/kernel/state_api.ts',
-  // Canonical mode write access ladder.
-  'esm/native/runtime/mode_write_access.ts',
 ]);
 
 const violations = [];

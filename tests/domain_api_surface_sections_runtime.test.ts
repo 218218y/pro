@@ -380,10 +380,10 @@ test('domain api surface sections keep canonical public roots alive across root 
   ]);
 });
 
-test('domain api surface sections runtime door and drawer actions route through canonical runtime patch fallbacks', () => {
+test('domain api surface sections runtime door and drawer actions require the canonical runtime patch action', () => {
   const runtimePatches: Array<{ patch: Record<string, unknown>; meta: Record<string, unknown> }> = [];
   const h = createHarness();
-  h.App.store = {
+  h.App.actions.runtime = {
     patch(payload: Record<string, unknown>, meta?: Record<string, unknown>) {
       runtimePatches.push({ patch: payload, meta: meta || {} });
       return { ok: true };
@@ -401,7 +401,7 @@ test('domain api surface sections runtime door and drawer actions route through 
 
   assert.deepEqual(runtimePatches, [
     {
-      patch: { runtime: { doorsOpen: true, doorsLastToggleTime: 4242 } },
+      patch: { doorsOpen: true, doorsLastToggleTime: 4242 },
       meta: {
         source: 'actions:doors:setOpen',
         installVersion: 1,
@@ -413,7 +413,7 @@ test('domain api surface sections runtime door and drawer actions route through 
       },
     },
     {
-      patch: { runtime: { drawersOpenId: 'drawer-7' } },
+      patch: { drawersOpenId: 'drawer-7' },
       meta: {
         source: 'actions:drawers:setOpenId',
         installVersion: 1,

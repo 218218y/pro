@@ -20,9 +20,21 @@ test('[wave1] ui write seam prefers slice namespace patch and preserves UI-only 
           calls.push({ op: 'ui.patch', patch, meta });
           return { via: 'ui.patch' };
         },
+        patchSoft(patch, meta) {
+          calls.push({ op: 'ui.patchSoft', patch, meta });
+          return { via: 'ui.patchSoft' };
+        },
         setScalar(key, value, meta) {
           calls.push({ op: 'ui.setScalar', key, value, meta });
           return { via: 'ui.setScalar' };
+        },
+        setScalarSoft(key, value, meta) {
+          calls.push({ op: 'ui.setScalarSoft', key, value, meta });
+          return { via: 'ui.setScalarSoft' };
+        },
+        setRawScalar(key, value, meta) {
+          calls.push({ op: 'ui.setRawScalar', key, value, meta });
+          return { via: 'ui.setRawScalar' };
         },
       },
       patch(patch, meta) {
@@ -47,10 +59,10 @@ test('[wave1] ui write seam prefers slice namespace patch and preserves UI-only 
 
   calls.length = 0;
   assert.deepEqual(setUiScalarSoft(App, 'showContents', true, { source: 'ui:soft' }), {
-    via: 'ui.setScalar',
+    via: 'ui.setScalarSoft',
   });
   assert.equal(calls.length, 1);
-  assert.equal(calls[0].op, 'ui.setScalar');
+  assert.equal(calls[0].op, 'ui.setScalarSoft');
   assert.equal(calls[0].key, 'showContents');
   assert.equal(calls[0].value, true);
   assert.equal(calls[0].meta?.source, 'ui:soft');
@@ -62,14 +74,22 @@ test('[wave1] ui write seam prefers slice namespace patch and preserves UI-only 
   assert.equal(calls[0].meta?.noAutosave, true);
 });
 
-test('[wave1] runtime + mode write seams use canonical store-backed routes without touching legacy root aliases', () => {
+test('[wave1] runtime + mode write seams require canonical namespaced actions without touching store/root aliases', () => {
   const calls = createCallLog();
   const App = {
     modes: { NONE: 'none' },
     actions: {
-      setRuntimeScalar(key, value, meta) {
-        calls.push({ op: 'actions.setRuntimeScalar', key, value, meta });
-        return { via: 'actions.setRuntimeScalar' };
+      runtime: {
+        setScalar(key, value, meta) {
+          calls.push({ op: 'runtime.setScalar', key, value, meta });
+          return { via: 'runtime.setScalar' };
+        },
+      },
+      mode: {
+        set(primary, opts, meta) {
+          calls.push({ op: 'mode.set', primary, opts, meta });
+          return { via: 'mode.set' };
+        },
       },
     },
     store: {
@@ -88,10 +108,13 @@ test('[wave1] runtime + mode write seams use canonical store-backed routes witho
     },
   };
 
-  assert.deepEqual(setRuntimeSketchMode(App, 1, { source: 'runtime:sketch' }), { via: 'store.setRuntime' });
+  assert.deepEqual(setRuntimeSketchMode(App, 1, { source: 'runtime:sketch' }), {
+    via: 'runtime.setScalar',
+  });
   assert.deepEqual(calls[0], {
-    op: 'store.setRuntime',
-    patch: { sketchMode: true },
+    op: 'runtime.setScalar',
+    key: 'sketchMode',
+    value: true,
     meta: {
       source: 'runtime:sketch',
       noBuild: true,
@@ -102,18 +125,19 @@ test('[wave1] runtime + mode write seams use canonical store-backed routes witho
     },
   });
   assert.equal(
-    calls.some(call => call.op === 'actions.setRuntimeScalar'),
+    calls.some(call => call.op.startsWith('store.')),
     false
   );
 
   calls.length = 0;
   assert.deepEqual(setModePrimary(App, '', { slot: 'left' }, { source: 'mode:set' }), {
-    via: 'store.setModePatch',
+    via: 'mode.set',
   });
   assert.deepEqual(calls, [
     {
-      op: 'store.setModePatch',
-      patch: { primary: 'none', opts: { slot: 'left' } },
+      op: 'mode.set',
+      primary: 'none',
+      opts: { slot: 'left' },
       meta: {
         source: 'mode:set',
         noBuild: true,

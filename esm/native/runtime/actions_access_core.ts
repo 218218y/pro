@@ -114,6 +114,16 @@ export const getActionFn: GetActionFn = (App: unknown, path: string) => {
   return bindAction(binding.owner, binding.fn);
 };
 
+export function requireActionFn<T extends ActionAccessFn>(App: unknown, path: string, label?: string): T {
+  const fn = getActionFn<T>(App, path);
+  if (fn) return fn;
+
+  const cleanPath = String(path || '').trim();
+  throw new Error(
+    `[WardrobePro] Missing canonical action (${label || cleanPath || 'unknown'}): expected actions.${cleanPath}`
+  );
+}
+
 export function requireActionNamespace(App: unknown, path: string, label?: string): ActionNode {
   const ns = getActionNamespace(App, path);
   if (ns) return ns;

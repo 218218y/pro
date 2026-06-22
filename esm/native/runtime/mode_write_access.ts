@@ -1,13 +1,12 @@
-// Mode write access helpers (Canonical-first, Store-backed)
+// Mode write access helpers (canonical actions only)
 //
 // Goal:
 // - Centralize the mode write seams.
-// - Prefer App.actions.mode.* surfaces when installed (state_api/kernel install).
-// - Keep store-backed compatibility routes for minimal harnesses.
+// - Require the installed App.actions.mode.* surface.
+// - Fail fast when boot/integration code provides an incomplete action contract.
 //
 // Policy:
 // - Mode transitions are transient UI flow control (no history/autosave/persist/build by default).
-// - Delete-pass: avoid generic root actions.patch routing for mode updates.
 
 import type {
   ActionMetaLike,
@@ -15,8 +14,9 @@ import type {
   ModeActionsNamespaceLike,
   ModeSlicePatch,
 } from '../../../types';
+import { requireActionFn } from './actions_access_core.js';
 import { metaTransient } from './meta_profiles_access.js';
-import { asRecord, getSliceNamespace, getWriteStore, patchSliceCanonical } from './slice_write_access.js';
+import { asRecord } from './record.js';
 
 type ModeWriteAppLike = {
   modes?: Record<string, unknown>;
@@ -35,14 +35,8 @@ function getAppLike(App: unknown): ModeWriteAppLike | null {
   return isModeWriteAppLike(App) ? App : null;
 }
 
-function isModeActionsNamespaceLike(value: unknown): value is ModeActionsNamespaceLike {
-  return !!asRecord(value);
-}
-
-function getModeNamespace(App: unknown): ModeActionsNamespaceLike | null {
-  const ns = getSliceNamespace(App, 'mode');
-  return isModeActionsNamespaceLike(ns) ? ns : null;
-}
+type ModePatchAction = NonNullable<ModeActionsNamespaceLike['patch']>;
+type ModeSetAction = NonNullable<ModeActionsNamespaceLike['set']>;
 
 function normalizePrimary(App: unknown, primary: unknown): string {
   const modes = getAppLike(App)?.modes;
@@ -64,8 +58,9 @@ function normalizeOpts(opts: unknown): ModeActionOptsLike {
 
 export function patchMode(App: unknown, patch: unknown, meta?: ActionMetaLike): unknown {
   const mdPatch = asModePatch(patch);
+  if (!Object.keys(mdPatch).length) return undefined;
   const m = metaTransient(App, meta, 'mode:patch');
-  return patchSliceCanonical(App, 'mode', mdPatch, m, { storeWriter: 'setModePatch' });
+  return requireActionFn<ModePatchAction>(App, 'mode.patch', 'mode write access')(mdPatch, m);
 }
 
 export function setModePrimary(
@@ -78,16 +73,9 @@ export function setModePrimary(
 
   const nextPrimary = normalizePrimary(App, primary);
   const cleanOpts = normalizeOpts(opts);
-  const modeNs = getModeNamespace(App);
-
-  if (typeof modeNs?.set === 'function') {
-    return modeNs.set(nextPrimary, cleanOpts, m);
-  }
-
-  const store = getWriteStore(App);
-  if (typeof store?.setModePatch === 'function') {
-    return store.setModePatch({ primary: nextPrimary, opts: cleanOpts }, m);
-  }
-
-  return patchMode(App, { primary: nextPrimary, opts: cleanOpts }, m);
+  return requireActionFn<ModeSetAction>(App, 'mode.set', 'mode transition write access')(
+    nextPrimary,
+    cleanOpts,
+    m
+  );
 }
