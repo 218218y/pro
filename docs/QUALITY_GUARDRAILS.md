@@ -95,7 +95,7 @@ npm run contract:three-vendor
 - `esm/native/services/canvas_picking_hit_identity.ts` owns stable identity fields such as target kind, part id, door/drawer id, module index, stack, surface id, face side/sign, split part, and source.
 - Click finalization should preserve the strongest available object metadata instead of re-guessing from weaker ids.
 - Mirror hits that expose only `faceSign` must still resolve a canonical inside/outside face side.
-- Mirror paint commits must receive the finalized `hitIdentity`; full-door mirror fallback may use `faceSign` only when no sized mirror draft is active and must remove matching full-face layouts instead of duplicating them.
+- Mirror paint commits must receive the finalized `hitIdentity`; a resolved mirror click must carry an explicit `hitFaceSign` and full-door/sized-placement discriminator, while geometry-independent full-door resolution may read the matching face from canonical hit identity and must remove matching full-face layouts instead of duplicating them.
 - Split lower-stack door ids, sketch-box door metadata, and explicit object stack tags must flow through the same hit identity owner used by regular doors.
 - Split click commits must normalize effective top/bot/mid part ids through the same split map-key policy and split-hover base-key owner before reading family bounds or dispatching split actions.
 - Transparent removed-door restore hitboxes must be pickable only in remove-door mode and only when their owner carries removed-door metadata; transparent material arrays must not block normal clicks.

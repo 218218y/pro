@@ -117,7 +117,7 @@ function readDoorLeafRect(
   return readMirrorPlacementRectFromUserData(userData);
 }
 
-function resolveMirrorFaceSignFromLocalPoint(localPoint: UnknownRecord | null): number {
+function resolveMirrorFaceSignFromLocalPoint(localPoint: UnknownRecord | null): 1 | -1 {
   const localZ = localPoint && typeof localPoint.z === 'number' ? Number(localPoint.z) : NaN;
   return Number.isFinite(localZ) && localZ < 0 ? -1 : 1;
 }
@@ -148,26 +148,36 @@ export function resolveMirrorLayoutForPaintClick(
   const localPoint = __wp_projectWorldPointToLocal(args.App, hitPoint, owner);
   if (!localPoint) return identityResult() || emptyMirrorLayoutClickResult();
   const faceSign = resolveMirrorFaceSignFromLocalPoint(localPoint);
-  const nextLayout = hasSizedDraft
-    ? buildMirrorLayoutFromHit({
-        rect,
-        hitX: localPoint.x,
-        hitY: localPoint.y,
-        draft,
-        faceSign,
-      })
-    : null;
+  const removeMatch = findMirrorLayoutMatchInRect({
+    rect,
+    layouts,
+    hitX: localPoint.x,
+    hitY: localPoint.y,
+    faceSign,
+  });
+  if (!hasSizedDraft) {
+    return {
+      nextLayout: null,
+      removeMatch,
+      canApplyMirror: true,
+      hitFaceSign: faceSign,
+      isFullDoorMirror: true,
+    };
+  }
+
+  const nextLayout = buildMirrorLayoutFromHit({
+    rect,
+    hitX: localPoint.x,
+    hitY: localPoint.y,
+    draft,
+    faceSign,
+  });
+  if (!nextLayout) return emptyMirrorLayoutClickResult();
   return {
     nextLayout,
-    removeMatch: findMirrorLayoutMatchInRect({
-      rect,
-      layouts,
-      hitX: localPoint.x,
-      hitY: localPoint.y,
-      faceSign,
-    }),
+    removeMatch,
     canApplyMirror: true,
-    hitFaceSign: faceSign === -1 ? -1 : DEFAULT_FACE_SIGN,
-    isFullDoorMirror: !hasSizedDraft,
+    hitFaceSign: faceSign,
+    isFullDoorMirror: false,
   };
 }

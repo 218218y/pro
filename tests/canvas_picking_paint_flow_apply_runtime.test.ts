@@ -498,7 +498,13 @@ test('paint special mutation removes only the matched mirror layout while preser
       activeStack: 'top',
       isPaintMode: true,
     },
-    resolveMirrorLayout: () => ({ nextLayout: null, removeMatch: { index: 0 }, canApplyMirror: true }),
+    resolveMirrorLayout: () => ({
+      nextLayout: { widthCm: 50, heightCm: 70, centerXNorm: 0.45, faceSign: 1 },
+      removeMatch: { index: 0 },
+      canApplyMirror: true,
+      hitFaceSign: 1,
+      isFullDoorMirror: false,
+    }),
   });
 
   assert.equal(state.special.d1_left, 'mirror');
@@ -523,7 +529,13 @@ test('paint special mutation applies a canonical full mirror on the first click 
       activeStack: 'top',
       isPaintMode: true,
     },
-    resolveMirrorLayout: () => ({ nextLayout: null, removeMatch: null, canApplyMirror: true }),
+    resolveMirrorLayout: () => ({
+      nextLayout: null,
+      removeMatch: null,
+      canApplyMirror: true,
+      hitFaceSign: 1,
+      isFullDoorMirror: true,
+    }),
   });
 
   assert.equal(state.special.d3_full, 'mirror');
@@ -552,7 +564,13 @@ test('paint special mutation replaces glass with mirror on the first click and c
       activeStack: 'top',
       isPaintMode: true,
     },
-    resolveMirrorLayout: () => ({ nextLayout: null, removeMatch: null, canApplyMirror: true }),
+    resolveMirrorLayout: () => ({
+      nextLayout: null,
+      removeMatch: null,
+      canApplyMirror: true,
+      hitFaceSign: 1,
+      isFullDoorMirror: true,
+    }),
   });
 
   assert.equal(state.special.d3_full, 'mirror');
@@ -610,7 +628,13 @@ test('paint special mutation restores the pre-glass door style when glass is rep
       activeStack: 'top',
       isPaintMode: true,
     },
-    resolveMirrorLayout: () => ({ nextLayout: null, removeMatch: null, canApplyMirror: true }),
+    resolveMirrorLayout: () => ({
+      nextLayout: null,
+      removeMatch: null,
+      canApplyMirror: true,
+      hitFaceSign: 1,
+      isFullDoorMirror: true,
+    }),
   });
 
   assert.equal(state.special.d4_full, 'mirror');
@@ -706,7 +730,13 @@ test('paint special mutation treats chest drawer fronts like regular drawer fron
       activeStack: 'top',
       isPaintMode: true,
     },
-    resolveMirrorLayout: () => ({ nextLayout: null, removeMatch: null, canApplyMirror: true }),
+    resolveMirrorLayout: () => ({
+      nextLayout: null,
+      removeMatch: null,
+      canApplyMirror: true,
+      hitFaceSign: 1,
+      isFullDoorMirror: true,
+    }),
   });
 
   assert.equal(mirrorState.special.chest_drawer_0, 'mirror');
@@ -751,7 +781,13 @@ test('paint special mutation toggles off a canonical full mirror when the same m
       activeStack: 'top',
       isPaintMode: true,
     },
-    resolveMirrorLayout: () => ({ nextLayout: null, removeMatch: null, canApplyMirror: true }),
+    resolveMirrorLayout: () => ({
+      nextLayout: null,
+      removeMatch: null,
+      canApplyMirror: true,
+      hitFaceSign: 1,
+      isFullDoorMirror: true,
+    }),
   });
 
   assert.equal(state.special.d3_full, undefined);
@@ -1573,7 +1609,7 @@ test('mirror paint click treats blank mirror dimensions as a full-door mirror in
   assert.equal(result.nextLayout, null);
 });
 
-test('mirror paint click falls back to canonical hit identity for full-door face selection', () => {
+test('mirror paint click resolves full-door face selection from canonical hit identity without geometry', () => {
   const App = createApp({
     ui: { currentMirrorDraftWidthCm: '', currentMirrorDraftHeightCm: '' },
   });
@@ -1640,6 +1676,28 @@ test('mirror paint click uses hit identity to remove an existing full-face mirro
   assert.equal(result.isFullDoorMirror, true);
   assert.equal(result.removeMatch?.index, 0);
   assert.equal(result.nextLayout, null);
+});
+
+test('mirror paint click returns an explicit rejected result when neither geometry nor canonical face identity is available', () => {
+  const App = createApp({
+    ui: { currentMirrorDraftWidthCm: '', currentMirrorDraftHeightCm: '' },
+  });
+
+  const result = resolveMirrorLayoutForPaintClick({
+    App: App as never,
+    foundPartId: 'd9_full',
+    effectiveDoorId: 'd9_full',
+    activeStack: 'top',
+    isPaintMode: true,
+  });
+
+  assert.deepEqual(result, {
+    nextLayout: null,
+    removeMatch: null,
+    canApplyMirror: false,
+    hitFaceSign: null,
+    isFullDoorMirror: false,
+  });
 });
 
 test('paint flow commit skips no-op writes and tags canonical source families for mirror/glass/group/corner/color clicks', () => {
@@ -1782,7 +1840,7 @@ test('paint special mutation adds a full-door outside mirror without erasing an 
   assert.deepEqual(state.mirrorLayout.d5_full, [{ faceSign: -1 }, { faceSign: 1 }]);
 });
 
-test('paint special mutation preserves a legacy outside full mirror when adding a full-door inside mirror', () => {
+test('paint special mutation preserves the canonical implicit outside full mirror when adding an inside mirror', () => {
   const state = createManualState({ special0: { d5_full: 'mirror' } });
 
   applyPaintPartMutation({

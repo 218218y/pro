@@ -11,6 +11,7 @@ const files = {
   clickRouteActions: 'esm/native/services/canvas_picking_click_route_actions.ts',
   splitClickShared: 'esm/native/services/canvas_picking_door_split_click_shared.ts',
   paintContracts: 'esm/native/services/canvas_picking_paint_flow_contracts.ts',
+  paintShared: 'esm/native/services/canvas_picking_paint_flow_shared.ts',
   paintMirror: 'esm/native/services/canvas_picking_paint_flow_mirror.ts',
   paintApplySpecial: 'esm/native/services/canvas_picking_paint_flow_apply_special.ts',
   sketchHoverIntentSnapshot:
@@ -262,7 +263,33 @@ requireMatch(
   files.paintMirror,
   paintMirror,
   /findFullDoorMirrorFaceMatch/,
-  'mirror hitIdentity fallback must remove matching full-face layouts instead of duplicating them'
+  'mirror hitIdentity resolution must remove matching full-face layouts instead of duplicating them'
+);
+
+const paintShared = read(files.paintShared);
+requireMatch(
+  files.paintShared,
+  paintShared,
+  /export type RejectedMirrorLayoutClickResult = \{[\s\S]*canApplyMirror: false;[\s\S]*hitFaceSign: null;[\s\S]*isFullDoorMirror: false;[\s\S]*\};/,
+  'rejected mirror clicks must expose an explicit non-applicable result'
+);
+requireMatch(
+  files.paintShared,
+  paintShared,
+  /type ResolvedMirrorLayoutClickResultBase = \{[\s\S]*canApplyMirror: true;[\s\S]*hitFaceSign: 1 \| -1;[\s\S]*\};/,
+  'resolved mirror clicks must require an explicit face sign'
+);
+requireMatch(
+  files.paintShared,
+  paintShared,
+  /export type ResolvedFullDoorMirrorLayoutClickResult =[\s\S]*nextLayout: null;[\s\S]*isFullDoorMirror: true;/,
+  'full-door mirror clicks must use the explicit full-door result variant'
+);
+requireMatch(
+  files.paintShared,
+  paintShared,
+  /export type ResolvedSizedMirrorLayoutClickResult =[\s\S]*nextLayout: MirrorLayoutEntry;[\s\S]*isFullDoorMirror: false;/,
+  'sized mirror clicks must require a concrete layout result'
 );
 
 const paintApplySpecial = read(files.paintApplySpecial);
@@ -271,6 +298,12 @@ requireMatch(
   paintApplySpecial,
   /effectiveDoorId && \(!isSpecialPart\(foundPartId\) \|\| isSpecialPart\(effectiveDoorId\)\)/,
   'direct paint target resolution must not let canonical door ids override special sketch door part keys'
+);
+requireMatch(
+  files.paintApplySpecial,
+  paintApplySpecial,
+  /const faceSign = result\.hitFaceSign;/,
+  'mirror apply must consume the resolved face sign without a compatibility default'
 );
 
 const clickRuntimeTest = read(files.clickRuntimeTest);
@@ -356,14 +389,20 @@ const paintRuntimeTest = read(files.paintRuntimeTest);
 requireMatch(
   files.paintRuntimeTest,
   paintRuntimeTest,
-  /falls back to canonical hit identity for full-door face selection/,
+  /resolves full-door face selection from canonical hit identity without geometry/,
   'runtime test must cover mirror commit face selection from hitIdentity'
 );
 requireMatch(
   files.paintRuntimeTest,
   paintRuntimeTest,
   /uses hit identity to remove an existing full-face mirror without geometry/,
-  'runtime test must cover full-face mirror removal through hitIdentity fallback'
+  'runtime test must cover full-face mirror removal through hitIdentity'
+);
+requireMatch(
+  files.paintRuntimeTest,
+  paintRuntimeTest,
+  /returns an explicit rejected result when neither geometry nor canonical face identity is available/,
+  'runtime test must cover explicit rejection when mirror face identity cannot be resolved'
 );
 requireMatch(
   files.paintRuntimeTest,

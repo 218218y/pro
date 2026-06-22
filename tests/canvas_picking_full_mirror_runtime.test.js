@@ -75,7 +75,13 @@ const { applyPaintPartMutation } = loadTsModule(
     },
     './canvas_picking_paint_flow_mirror.js': {
       resolveMirrorLayoutForPaintClick() {
-        return { nextLayout: null, removeMatch: null, canApplyMirror: true };
+        return {
+          nextLayout: null,
+          removeMatch: null,
+          canApplyMirror: true,
+          hitFaceSign: 1,
+          isFullDoorMirror: true,
+        };
       },
     },
     './canvas_picking_paint_flow_shared.js': {

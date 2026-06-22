@@ -22,6 +22,7 @@ import {
   isSpecialPart,
   readCurtainChoice,
   type MirrorLayoutClickResult,
+  type ResolvedMirrorLayoutClickResult,
 } from './canvas_picking_paint_flow_shared.js';
 import {
   isDoorVisualInheritedOwner,
@@ -230,14 +231,6 @@ export function resolveDirectPaintTargetKey(args: {
   return resolvePaintPartKey(rawTarget, args.activeStack);
 }
 
-function normalizeMirrorClickFaceSign(value: unknown): 1 | -1 {
-  return typeof value === 'number' && Number.isFinite(value) && value < 0 ? -1 : 1;
-}
-
-function isFullDoorMirrorClick(result: MirrorLayoutClickResult): boolean {
-  return !result.nextLayout && result.isFullDoorMirror !== false;
-}
-
 function createFullDoorMirrorLayout(faceSign: 1 | -1): MirrorLayoutEntry {
   return { faceSign };
 }
@@ -245,18 +238,16 @@ function createFullDoorMirrorLayout(faceSign: 1 | -1): MirrorLayoutEntry {
 function resolveMirrorLayoutsAfterAdd(args: {
   existingSpecial: string | null;
   existingMirrorLayouts: MirrorLayoutList;
-  result: MirrorLayoutClickResult;
+  result: ResolvedMirrorLayoutClickResult;
 }): MirrorLayoutList | null {
   const { existingSpecial, existingMirrorLayouts, result } = args;
-  if (result.nextLayout) {
+  if (!result.isFullDoorMirror) {
     return existingSpecial === 'mirror'
       ? existingMirrorLayouts.concat([result.nextLayout])
       : [result.nextLayout];
   }
 
-  if (!isFullDoorMirrorClick(result)) return null;
-
-  const faceSign = normalizeMirrorClickFaceSign(result.hitFaceSign);
+  const faceSign = result.hitFaceSign;
   if (existingSpecial !== 'mirror') return faceSign === -1 ? [createFullDoorMirrorLayout(-1)] : null;
   if (existingMirrorLayouts.length)
     return existingMirrorLayouts.concat([createFullDoorMirrorLayout(faceSign)]);
@@ -341,8 +332,8 @@ export function applyPaintPartMutation(args: {
 
     const isTogglingCanonicalOutsideMirror =
       existingSpecial === 'mirror' &&
-      isFullDoorMirrorClick(mirrorResult) &&
-      normalizeMirrorClickFaceSign(mirrorResult.hitFaceSign) === 1 &&
+      mirrorResult.isFullDoorMirror &&
+      mirrorResult.hitFaceSign === 1 &&
       !existingMirrorLayouts.length;
     if (isTogglingCanonicalOutsideMirror) {
       const isInheritedSpecialOwner = isDoorVisualInheritedOwner({

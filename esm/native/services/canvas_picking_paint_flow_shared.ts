@@ -28,18 +28,39 @@ import {
   readMirrorLayoutMap,
 } from '../features/mirror_layout.js';
 
-export type MirrorLayoutClickResult = {
-  nextLayout: MirrorLayoutEntry | null;
+export type RejectedMirrorLayoutClickResult = {
+  nextLayout: null;
+  removeMatch: null;
+  canApplyMirror: false;
+  hitFaceSign: null;
+  isFullDoorMirror: false;
+};
+
+type ResolvedMirrorLayoutClickResultBase = {
   removeMatch: { index: number } | null;
-  canApplyMirror: boolean;
+  canApplyMirror: true;
   /**
    * The clicked face in the hit owner local Z axis. +1 is the canonical outside face;
-   * -1 is the inside/back face. Kept optional so old tests/injected resolvers stay compatible.
+   * -1 is the inside/back face.
    */
-  hitFaceSign?: number | null;
-  /** True when the click represents a full-door mirror request rather than a sized placement. */
-  isFullDoorMirror?: boolean;
+  hitFaceSign: 1 | -1;
 };
+
+export type ResolvedFullDoorMirrorLayoutClickResult = ResolvedMirrorLayoutClickResultBase & {
+  nextLayout: null;
+  isFullDoorMirror: true;
+};
+
+export type ResolvedSizedMirrorLayoutClickResult = ResolvedMirrorLayoutClickResultBase & {
+  nextLayout: MirrorLayoutEntry;
+  isFullDoorMirror: false;
+};
+
+export type ResolvedMirrorLayoutClickResult =
+  | ResolvedFullDoorMirrorLayoutClickResult
+  | ResolvedSizedMirrorLayoutClickResult;
+
+export type MirrorLayoutClickResult = RejectedMirrorLayoutClickResult | ResolvedMirrorLayoutClickResult;
 
 export function isRecord(value: unknown): value is UnknownRecord {
   return !!value && typeof value === 'object' && !Array.isArray(value);
