@@ -113,7 +113,16 @@ test('module-level sketch external drawer front appends configured door-trim vis
   const partId = 'sketch_ext_drawers_1_sed-1_1';
   const { context } = createContext(null, {
     doorTrimMap: {
-      [partId]: [{ id: 'trim-a', axis: 'horizontal', color: 'black', span: 'full', centerNorm: 0.5 }],
+      [partId]: [
+        {
+          id: 'trim-a',
+          axis: 'horizontal',
+          color: 'black',
+          span: 'full',
+          centerXNorm: 0.5,
+          centerYNorm: 0.5,
+        },
+      ],
     },
   });
   const groupNode = createGroupNode();
@@ -166,7 +175,16 @@ test('sketch-box external drawer front appends configured door-trim visuals', ()
   const partId = 'sketch_box_box-a_ext_drawers_sed-2_1';
   const { context } = createContext(null, {
     doorTrimMap: {
-      [partId]: [{ id: 'trim-b', axis: 'vertical', color: 'nickel', span: 'half', centerNorm: 0.5 }],
+      [partId]: [
+        {
+          id: 'trim-b',
+          axis: 'vertical',
+          color: 'nickel',
+          span: 'half',
+          centerXNorm: 0.5,
+          centerYNorm: 0.5,
+        },
+      ],
     },
   });
   const groupNode = createGroupNode();

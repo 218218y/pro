@@ -46,13 +46,8 @@ function normalizeDoorTrimEntry(value: unknown): DoorTrimEntry | null {
   const axis = normalizeDoorTrimAxis(rec.axis);
   const color = normalizeDoorTrimColor(rec.color);
   const span = normalizeDoorTrimSpan(rec.span);
-  const legacyCenterNorm = normalizeDoorTrimCenterNorm(rec.centerNorm);
-  const centerXNorm = normalizeDoorTrimCenterNorm(
-    rec.centerXNorm ?? (axis === 'vertical' ? legacyCenterNorm : 0.5)
-  );
-  const centerYNorm = normalizeDoorTrimCenterNorm(
-    rec.centerYNorm ?? (axis === 'horizontal' ? legacyCenterNorm : 0.5)
-  );
+  const centerXNorm = normalizeDoorTrimCenterNorm(rec.centerXNorm);
+  const centerYNorm = normalizeDoorTrimCenterNorm(rec.centerYNorm);
   const sizeCm = normalizeDoorTrimCustomSizeCm(rec.sizeCm);
   const crossSizeCm = normalizeDoorTrimCrossSizeCm(rec.crossSizeCm);
   const explicitId = typeof rec.id === 'string' && rec.id.trim() ? String(rec.id) : '';
@@ -63,7 +58,6 @@ function normalizeDoorTrimEntry(value: unknown): DoorTrimEntry | null {
     axis,
     color,
     span,
-    centerNorm: axis === 'vertical' ? centerXNorm : centerYNorm,
     centerXNorm,
     centerYNorm,
   };

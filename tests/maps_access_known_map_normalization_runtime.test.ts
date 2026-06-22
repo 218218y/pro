@@ -63,7 +63,6 @@ test('maps_access normalizes known maps and clones unknown maps without leaking 
     span: 'custom',
     sizeCm: 17,
     crossSizeCm: 6.5,
-    centerNorm: 0.25,
     centerXNorm: 0.25,
     centerYNorm: 0.75,
   });

@@ -27,7 +27,7 @@ export function readDoorTrimEntry(value: unknown): DoorTrimEntry | null {
   const axis = normalizeDoorTrimAxis(value.axis, DEFAULT_DOOR_TRIM_AXIS);
   const color = normalizeDoorTrimColor(value.color, DEFAULT_DOOR_TRIM_COLOR);
   const span = normalizeDoorTrimSpan(value.span, DEFAULT_DOOR_TRIM_SPAN);
-  const { centerNorm, centerXNorm, centerYNorm } = resolveDoorTrimCenterPair(value, axis);
+  const { centerXNorm, centerYNorm } = resolveDoorTrimCenterPair(value);
   const sizeCm = normalizeDoorTrimCustomSizeCm(value.sizeCm);
   const crossSizeCm = normalizeDoorTrimCrossSizeCm(value.crossSizeCm);
 
@@ -36,7 +36,6 @@ export function readDoorTrimEntry(value: unknown): DoorTrimEntry | null {
     axis,
     color,
     span,
-    centerNorm,
     centerXNorm,
     centerYNorm,
   };
@@ -133,7 +132,6 @@ export function createDoorTrimEntry(args: {
   span?: unknown;
   sizeCm?: unknown;
   crossSizeCm?: unknown;
-  centerNorm?: unknown;
   centerXNorm?: unknown;
   centerYNorm?: unknown;
 }): DoorTrimEntry {
@@ -149,7 +147,6 @@ export function createDoorTrimEntry(args: {
     span: args.span,
     sizeCm: args.sizeCm,
     crossSizeCm: args.crossSizeCm,
-    centerNorm: args.centerNorm,
     centerXNorm: args.centerXNorm,
     centerYNorm: args.centerYNorm,
   });
@@ -159,7 +156,6 @@ export function createDoorTrimEntry(args: {
       axis: DEFAULT_DOOR_TRIM_AXIS,
       color: DEFAULT_DOOR_TRIM_COLOR,
       span: DEFAULT_DOOR_TRIM_SPAN,
-      centerNorm: DEFAULT_DOOR_TRIM_CENTER_NORM,
       centerXNorm: DEFAULT_DOOR_TRIM_CENTER_NORM,
       centerYNorm: DEFAULT_DOOR_TRIM_CENTER_NORM,
     }

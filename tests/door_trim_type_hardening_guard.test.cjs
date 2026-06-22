@@ -11,6 +11,7 @@ test('[door-trim] type hardening keeps trim maps normalized and marker access nu
   const cornerConnector = [
     'esm/native/builder/corner_connector_door_emit.ts',
     'esm/native/builder/corner_connector_door_emit_shared.ts',
+    'esm/native/builder/corner_connector_door_emit_context.ts',
     'esm/native/builder/corner_connector_door_emit_split.ts',
     'esm/native/builder/corner_connector_door_emit_full.ts',
   ]
@@ -29,15 +30,26 @@ test('[door-trim] type hardening keeps trim maps normalized and marker access nu
   const resolver = read('esm/native/services/canvas_picking_door_trim_targets.ts');
   const interior = read('esm/native/ui/react/tabs/interior_tab_sections.tsx');
   const kernel = read('types/kernel.ts');
+  const canonicalCenterContracts = [
+    read('types/maps.ts'),
+    read('esm/native/features/door_trim_map.ts'),
+    read('esm/native/features/door_trim_placement_contracts.ts'),
+    read('esm/native/features/door_trim_placement_geometry.ts'),
+    read('esm/native/features/door_trim_placement_mirror.ts'),
+    read('esm/native/runtime/maps_access_normalizers_visuals.ts'),
+    edit,
+    read('esm/native/services/canvas_picking_door_action_hover_preview_trim.ts'),
+  ].join('\n');
+  const retiredCenterField = 'center' + 'Norm';
 
   assert.match(cornerConnector, /const doorTrimMap = readDoorTrimMap\(cfg0\.doorTrimMap\);/);
-  assert.match(cornerWing, /readDoorTrimMap\(\(helpers\.getCfg\(ctx\.App\) \|\| \{\}\)\.doorTrimMap\)/);
+  assert.match(cornerWing, /readDoorTrimMap\(helpers\.cfgSnapshot\.doorTrimMap\)/);
   assert.match(visuals, /mesh\.position\?\.set\?\.\(/);
   assert.match(edit, /resolveDoorTrimTargetFromHitObject/);
   assert.match(edit, /buildSnappedDoorTrimCenterFromLocal/);
   assert.match(
     hover,
-    /const markerUd = hoverArgs\.doorMarker \? __asObject<MarkerUserDataLike>\(hoverArgs\.doorMarker\.userData\) \|\| \{\} : \{\};/
+    /const markerUd = hoverArgs\.doorMarker\s*\?\s*__asObject<MarkerUserDataLike>\(hoverArgs\.doorMarker\.userData\)\s*\|\|\s*\{\}\s*:\s*\{\};/
   );
   assert.match(
     resolver,
@@ -45,4 +57,10 @@ test('[door-trim] type hardening keeps trim maps normalized and marker access nu
   );
   assert.doesNotMatch(interior, /<InlineNotice\s+tone=/);
   assert.doesNotMatch(kernel, /DoorTrimMap/);
+  assert.doesNotMatch(
+    canonicalCenterContracts,
+    new RegExp(`\\b${retiredCenterField}\\s*[:?]|\\.${retiredCenterField}\\b`)
+  );
+  assert.match(canonicalCenterContracts, /centerXNorm/);
+  assert.match(canonicalCenterContracts, /centerYNorm/);
 });

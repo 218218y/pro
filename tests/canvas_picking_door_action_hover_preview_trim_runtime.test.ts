@@ -47,7 +47,6 @@ function createStoreState() {
             span: 'custom',
             sizeCm: 40,
             crossSizeCm: 4,
-            centerNorm: 0.75,
             centerXNorm: 0.75,
             centerYNorm: 0.5,
           },

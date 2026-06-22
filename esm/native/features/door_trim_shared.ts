@@ -54,7 +54,6 @@ export type ResolvedDoorTrimPlacement = {
   span: DoorTrimSpan;
   sizeCm: number | null;
   crossSizeCm: number | null;
-  centerNorm: number;
   centerXNorm: number;
   centerYNorm: number;
   centerX: number;
@@ -142,23 +141,13 @@ export function normalizeDoorTrimCrossSizeCm(value: unknown): number | null {
   return clampDoorTrimNumber(Number(n), MIN_DOOR_TRIM_CROSS_SIZE_CM, MAX_DOOR_TRIM_CROSS_SIZE_CM);
 }
 
-export function resolveDoorTrimCenterPair(
-  value: UnknownRecord,
-  axis: DoorTrimAxis
-): {
-  centerNorm: number;
+export function resolveDoorTrimCenterPair(value: UnknownRecord): {
   centerXNorm: number;
   centerYNorm: number;
 } {
-  const legacyCenterNorm = normalizeDoorTrimCenterNorm(value.centerNorm);
-  const centerXNorm = normalizeDoorTrimCenterNorm(
-    value.centerXNorm ?? (axis === 'vertical' ? legacyCenterNorm : DEFAULT_DOOR_TRIM_CENTER_NORM)
-  );
-  const centerYNorm = normalizeDoorTrimCenterNorm(
-    value.centerYNorm ?? (axis === 'horizontal' ? legacyCenterNorm : DEFAULT_DOOR_TRIM_CENTER_NORM)
-  );
+  const centerXNorm = normalizeDoorTrimCenterNorm(value.centerXNorm);
+  const centerYNorm = normalizeDoorTrimCenterNorm(value.centerYNorm);
   return {
-    centerNorm: axis === 'vertical' ? centerXNorm : centerYNorm,
     centerXNorm,
     centerYNorm,
   };

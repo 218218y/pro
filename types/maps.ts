@@ -95,12 +95,10 @@ export interface DoorTrimEntry extends UnknownRecord {
   sizeCm?: number | null;
   /** Cross-axis breadth / face width of the trim (height for horizontal, width for vertical). */
   crossSizeCm?: number | null;
-  /** Legacy axis-specific center value kept for backward compatibility. */
-  centerNorm: number;
   /** Absolute normalized X position inside the door leaf (0..1). */
-  centerXNorm?: number | null;
+  centerXNorm: number;
   /** Absolute normalized Y position inside the door leaf (0..1). */
-  centerYNorm?: number | null;
+  centerYNorm: number;
 }
 export type DoorTrimList = DoorTrimEntry[];
 export type DoorTrimMap = Record<string, DoorTrimList | undefined>;

@@ -66,6 +66,23 @@ test('current project schema rejects values that require historical migration', 
   assert.equal(normalizeProjectData({ ...base, notes: [{ text: 'old' }] }), null);
   assert.equal(normalizeProjectData({ ...base, toggles: { showContents: 1 } }), null);
   assert.equal(normalizeProjectData({ ...base, splitDoorsMap: { split_d1_full: true } }), null);
+  assert.equal(
+    normalizeProjectData({
+      ...base,
+      doorTrimMap: {
+        d1_full: [
+          {
+            id: 'trim_old_center',
+            axis: 'horizontal',
+            color: 'nickel',
+            span: 'full',
+            ['center' + 'Norm']: 0.25,
+          },
+        ],
+      },
+    }),
+    null
+  );
 });
 
 test('current project schema rejects missing schema metadata and old payload envelopes', () => {

@@ -1,6 +1,5 @@
 import { readDoorTrimEntry } from './door_trim_map.js';
 import type {
-  DoorTrimAxis,
   DoorTrimCenterFromLocalArgs,
   DoorTrimPlacementArgs,
   DoorTrimRect,
@@ -30,7 +29,6 @@ import {
 import { DOOR_TRIM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 export function buildDoorTrimCenterFromLocal(args: DoorTrimCenterFromLocalArgs): {
-  centerNorm: number;
   centerXNorm: number;
   centerYNorm: number;
 } {
@@ -39,23 +37,19 @@ export function buildDoorTrimCenterFromLocal(args: DoorTrimCenterFromLocalArgs):
   const height = Math.max(DOOR_TRIM_DIMENSIONS.normalize.rectSpanMinM, rect.maxY - rect.minY);
   const centerXNorm = normalizeDoorTrimCenterNorm((localX - rect.minX) / width);
   const centerYNorm = normalizeDoorTrimCenterNorm((localY - rect.minY) / height);
-  const axis = normalizeDoorTrimAxis(args.axis, DEFAULT_DOOR_TRIM_AXIS);
   return {
-    centerNorm: axis === 'vertical' ? centerXNorm : centerYNorm,
     centerXNorm,
     centerYNorm,
   };
 }
 
 export function buildSnappedDoorTrimCenterFromLocal(args: DoorTrimSnappedCenterFromLocalArgs): {
-  centerNorm: number;
   centerXNorm: number;
   centerYNorm: number;
   snappedX: boolean;
   snappedY: boolean;
   isCentered: boolean;
 } {
-  const axis = normalizeDoorTrimAxis(args.axis, DEFAULT_DOOR_TRIM_AXIS);
   const thresholdNormRaw =
     typeof args.thresholdNorm === 'number' && Number.isFinite(args.thresholdNorm)
       ? Number(args.thresholdNorm)
@@ -68,14 +62,12 @@ export function buildSnappedDoorTrimCenterFromLocal(args: DoorTrimSnappedCenterF
     rect: args.rect,
     localX: args.localX,
     localY: args.localY,
-    axis,
   });
   const snappedX = Math.abs(base.centerXNorm - DEFAULT_DOOR_TRIM_CENTER_NORM) <= thresholdNorm;
   const snappedY = Math.abs(base.centerYNorm - DEFAULT_DOOR_TRIM_CENTER_NORM) <= thresholdNorm;
   const centerXNorm = snappedX ? DEFAULT_DOOR_TRIM_CENTER_NORM : base.centerXNorm;
   const centerYNorm = snappedY ? DEFAULT_DOOR_TRIM_CENTER_NORM : base.centerYNorm;
   return {
-    centerNorm: axis === 'vertical' ? centerXNorm : centerYNorm,
     centerXNorm,
     centerYNorm,
     snappedX,
@@ -111,16 +103,6 @@ export function resolveDoorTrimSpanM(span: DoorTrimSpan, sizeCm: unknown, fullSp
   return clampDoorTrimNumber(fullSpanM * resolveDoorTrimFraction(span), MIN_DOOR_TRIM_SPAN_M, fullSpanM);
 }
 
-export function buildDoorTrimCenterNormFromLocal(args: {
-  rect: DoorTrimRect;
-  axis: DoorTrimAxis;
-  localX: number;
-  localY: number;
-}): number {
-  const center = buildDoorTrimCenterFromLocal(args);
-  return args.axis === 'vertical' ? center.centerXNorm : center.centerYNorm;
-}
-
 export function resolveDoorTrimPlacement(args: DoorTrimPlacementArgs): ResolvedDoorTrimPlacement {
   const rect = args.rect;
   const entry = readDoorTrimEntry(args.entry);
@@ -129,14 +111,10 @@ export function resolveDoorTrimPlacement(args: DoorTrimPlacementArgs): ResolvedD
   const span = normalizeDoorTrimSpan(args.span ?? entry?.span, entry?.span || DEFAULT_DOOR_TRIM_SPAN);
   const sizeCm = normalizeDoorTrimCustomSizeCm(args.sizeCm ?? entry?.sizeCm);
   const crossSizeCm = normalizeDoorTrimCrossSizeCm(args.crossSizeCm ?? entry?.crossSizeCm);
-  const baseCenter = resolveDoorTrimCenterPair(
-    {
-      centerNorm: args.centerNorm ?? entry?.centerNorm,
-      centerXNorm: args.centerXNorm ?? entry?.centerXNorm,
-      centerYNorm: args.centerYNorm ?? entry?.centerYNorm,
-    },
-    axis
-  );
+  const baseCenter = resolveDoorTrimCenterPair({
+    centerXNorm: args.centerXNorm ?? entry?.centerXNorm,
+    centerYNorm: args.centerYNorm ?? entry?.centerYNorm,
+  });
 
   const fullWidth = Math.max(0, rect.maxX - rect.minX);
   const fullHeight = Math.max(0, rect.maxY - rect.minY);
@@ -155,7 +133,6 @@ export function resolveDoorTrimPlacement(args: DoorTrimPlacementArgs): ResolvedD
       span,
       sizeCm,
       crossSizeCm,
-      centerNorm: baseCenter.centerNorm,
       centerXNorm: baseCenter.centerXNorm,
       centerYNorm: baseCenter.centerYNorm,
       centerX,
@@ -178,7 +155,6 @@ export function resolveDoorTrimPlacement(args: DoorTrimPlacementArgs): ResolvedD
     span,
     sizeCm,
     crossSizeCm,
-    centerNorm: baseCenter.centerNorm,
     centerXNorm: baseCenter.centerXNorm,
     centerYNorm: baseCenter.centerYNorm,
     centerX,

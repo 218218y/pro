@@ -134,10 +134,6 @@ export function resolveDoorTrimPlacementAvoidingMirror(
     ...base,
     centerX: best.centerX,
     centerY: best.centerY,
-    centerNorm:
-      base.axis === 'vertical'
-        ? buildDoorTrimCenterNormFromResolvedCenter(best.centerX, args.rect.minX, args.rect.maxX)
-        : buildDoorTrimCenterNormFromResolvedCenter(best.centerY, args.rect.minY, args.rect.maxY),
     centerXNorm: buildDoorTrimCenterNormFromResolvedCenter(best.centerX, args.rect.minX, args.rect.maxX),
     centerYNorm: buildDoorTrimCenterNormFromResolvedCenter(best.centerY, args.rect.minY, args.rect.maxY),
     width: Math.min(base.width, width),

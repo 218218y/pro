@@ -89,16 +89,14 @@ export function tryHandleDoorTrimHoverPreview(args: DoorTrimHoverPreviewArgs): b
   });
   const center = match
     ? {
-        centerNorm: match.entry.centerNorm,
         centerXNorm: match.entry.centerXNorm,
         centerYNorm: match.entry.centerYNorm,
-        snappedX: Math.abs(Number(match.entry.centerXNorm ?? 0.5) - 0.5) <= 1e-4,
-        snappedY: Math.abs(Number(match.entry.centerYNorm ?? 0.5) - 0.5) <= 1e-4,
+        snappedX: Math.abs(match.entry.centerXNorm - 0.5) <= 1e-4,
+        snappedY: Math.abs(match.entry.centerYNorm - 0.5) <= 1e-4,
         isCentered:
-          Math.abs(Number(match.entry.centerXNorm ?? 0.5) - 0.5) <= 1e-4 &&
-          Math.abs(Number(match.entry.centerYNorm ?? 0.5) - 0.5) <= 1e-4,
+          Math.abs(match.entry.centerXNorm - 0.5) <= 1e-4 && Math.abs(match.entry.centerYNorm - 0.5) <= 1e-4,
       }
-    : buildSnappedDoorTrimCenterFromLocal({ rect: rect0, axis: trimDraft.axis, localX, localY });
+    : buildSnappedDoorTrimCenterFromLocal({ rect: rect0, localX, localY });
   const placement = match
     ? resolveDoorTrimPlacement({ rect: rect0, entry: match.entry })
     : resolveDoorTrimPlacementAvoidingMirror({
@@ -109,7 +107,6 @@ export function tryHandleDoorTrimHoverPreview(args: DoorTrimHoverPreviewArgs): b
         span: trimDraft.span,
         sizeCm: trimDraft.sizeCm,
         crossSizeCm: trimDraft.crossSizeCm,
-        centerNorm: center.centerNorm,
         centerXNorm: center.centerXNorm,
         centerYNorm: center.centerYNorm,
       });

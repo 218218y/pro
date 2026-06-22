@@ -131,6 +131,9 @@ test('door trim click writes canonical trim maps through history batch and toggl
   assert.equal(addedTrim.span, 'half');
   assert.equal(addedTrim.sizeCm, undefined);
   assert.equal(addedTrim.crossSizeCm, 8);
+  assert.equal(Object.prototype.hasOwnProperty.call(addedTrim, 'center' + 'Norm'), false);
+  assert.equal(addedTrim.centerXNorm, 0.5);
+  assert.equal(addedTrim.centerYNorm, 0.5);
 
   const second = handleCanvasDoorTrimClick({
     App: app,

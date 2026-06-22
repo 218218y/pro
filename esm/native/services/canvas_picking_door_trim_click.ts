@@ -86,7 +86,7 @@ export function handleCanvasDoorTrimClick(args: CanvasDoorTrimClickArgs): boolea
   const nextList = currentList.slice();
   if (match) nextList.splice(match.index, 1);
   else {
-    const center = buildSnappedDoorTrimCenterFromLocal({ rect, axis, localX, localY });
+    const center = buildSnappedDoorTrimCenterFromLocal({ rect, localX, localY });
     const placement = resolveDoorTrimPlacementAvoidingMirror({
       rect,
       mirrorLayouts: trimMirrorLayouts,
@@ -95,13 +95,11 @@ export function handleCanvasDoorTrimClick(args: CanvasDoorTrimClickArgs): boolea
       span,
       sizeCm: sizeCmRaw,
       crossSizeCm: crossSizeCmRaw,
-      centerNorm: center.centerNorm,
       centerXNorm: center.centerXNorm,
       centerYNorm: center.centerYNorm,
     });
     const adjustedCenter = buildDoorTrimCenterFromLocal({
       rect,
-      axis,
       localX: placement.centerX,
       localY: placement.centerY,
     });
@@ -112,7 +110,6 @@ export function handleCanvasDoorTrimClick(args: CanvasDoorTrimClickArgs): boolea
         span,
         sizeCm: sizeCmRaw,
         crossSizeCm: crossSizeCmRaw,
-        centerNorm: adjustedCenter.centerNorm,
         centerXNorm: adjustedCenter.centerXNorm,
         centerYNorm: adjustedCenter.centerYNorm,
       })

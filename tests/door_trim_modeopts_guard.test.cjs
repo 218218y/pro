@@ -73,7 +73,7 @@ assert.match(
 
 assert.match(
   clickFlow,
-  /const target = resolveDoorTrimTargetFromHitObject\(App, doorHitObject, clickedPartId\);/,
+  /const target = resolveDoorTrimTargetFromHitObject\(App, doorHitObject, clickedPartId, doorHitGroup\);/,
   'Door trim click must resolve the real door group from the hit object so add/remove uses the same target as hover.'
 );
 

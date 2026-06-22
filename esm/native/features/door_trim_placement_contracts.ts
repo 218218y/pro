@@ -20,7 +20,6 @@ export type DoorTrimCenterFromLocalArgs = {
   rect: DoorTrimRect;
   localX: number;
   localY: number;
-  axis?: DoorTrimAxis;
 };
 
 export type DoorTrimSnappedCenterFromLocalArgs = DoorTrimCenterFromLocalArgs & {
@@ -35,7 +34,6 @@ export type DoorTrimPlacementArgs = {
   span?: unknown;
   sizeCm?: unknown;
   crossSizeCm?: unknown;
-  centerNorm?: unknown;
   centerXNorm?: unknown;
   centerYNorm?: unknown;
 };
