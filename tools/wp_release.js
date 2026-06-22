@@ -181,7 +181,8 @@ async function main() {
   if (!exists(releaseAssetsDir) && exists(distAssetsSrc)) copyDir(distAssetsSrc, releaseAssetsDir);
 
   const supaCfgMjs = path.join(root, 'wp_runtime_config.mjs');
-  if (exists(supaCfgMjs)) copyFile(supaCfgMjs, path.join(releaseDir, 'wp_runtime_config.mjs'));
+  if (!exists(supaCfgMjs)) throw new Error('[WP Release] Missing required wp_runtime_config.mjs');
+  copyFile(supaCfgMjs, path.join(releaseDir, 'wp_runtime_config.mjs'));
 
   const hashed = config.hashAssets
     ? applyContentHashingToRelease({ releaseDirAbs: releaseDir, keepSourceMap: config.keepSourceMap })

@@ -320,7 +320,7 @@ export function writeReleaseMetadata({
       '',
       'Notes:',
       '  - Three.js + extras are bundled into libs/three.vendor*.js (no libs/three folder in release).',
-      '  - If you use Supabase cloud sync, keep wp_runtime_config.mjs next to index.html (loaded at boot by the ESM entry).',
+      '  - Keep the required wp_runtime_config.mjs next to index.html; use an empty canonical envelope when cloud sync is disabled.',
       '  - Cache: index.html should be served with NO-CACHE (no-store). Hashed JS/CSS can be served long-cache (immutable).',
       '  - By default release JS is built with Vite 8 native minification (Oxc).',
       '  - Sourcemaps are included only when --debug is set.',

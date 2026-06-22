@@ -29,5 +29,6 @@ export function copyStaticDistAssets({ root, distAbs }) {
   if (exists(logo)) copyFile(logo, path.join(distAbs, 'wp_logo_data.js'));
 
   const supaMjs = path.join(root, 'wp_runtime_config.mjs');
-  if (exists(supaMjs)) copyFile(supaMjs, path.join(distAbs, 'wp_runtime_config.mjs'));
+  if (!exists(supaMjs)) throw new Error('[build-dist] Missing required wp_runtime_config.mjs');
+  copyFile(supaMjs, path.join(distAbs, 'wp_runtime_config.mjs'));
 }

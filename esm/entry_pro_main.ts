@@ -8,14 +8,15 @@
 import { boot as bootEsm } from './main.js';
 
 import {
-  applyValidatedRuntimeFlags,
+  buildRuntimeConfig,
   bootReportBestEffort,
   classifyFailure,
   loadRuntimeConfigModule,
   loadThreeEsm,
+  mergeRuntimeFlags,
   reportOverlayFailurePreservingOriginal,
-  resolveRuntimeConfig,
   showFatalOverlayMaybe,
+  validateEntryRuntimeDeps,
 } from './entry_pro_main_boot_support.js';
 import { runBrowserBootSetup } from './entry_pro_main_browser_boot.js';
 import { bootProEntryRuntime } from './entry_pro_main_runtime.js';
@@ -29,8 +30,9 @@ export async function bootProEntry(env: BootEnv = {}): Promise<AppContainer> {
     bootEsm,
     loadThreeEsm,
     loadRuntimeConfigModule,
-    applyValidatedRuntimeFlags,
-    resolveRuntimeConfig,
+    mergeRuntimeFlags,
+    buildRuntimeConfig,
+    validateRuntimeDeps: validateEntryRuntimeDeps,
     runBrowserBootSetup,
     classifyFailure,
     showFatalOverlayMaybe,

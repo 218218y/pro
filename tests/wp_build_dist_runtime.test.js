@@ -82,6 +82,7 @@ test('static asset copy keeps repository tests out of dist outputs', () => {
   fs.mkdirSync(distAbs, { recursive: true });
 
   fs.writeFileSync(path.join(root, 'index_pro.html'), '<html></html>\n', 'utf8');
+  fs.writeFileSync(path.join(root, 'wp_runtime_config.mjs'), 'export default {};\n', 'utf8');
   fs.mkdirSync(path.join(root, 'tests', 'e2e', 'helpers'), { recursive: true });
   fs.writeFileSync(
     path.join(root, 'tests', 'e2e', 'authoring_builds.spec.ts'),
@@ -94,6 +95,15 @@ test('static asset copy keeps repository tests out of dist outputs', () => {
 
   assert.equal(fs.existsSync(path.join(distAbs, 'tests')), false);
   assert.equal(fs.existsSync(path.join(distAbs, 'e2e')), false);
+});
+
+test('static asset copy fails when the canonical runtime config module is missing', () => {
+  const root = tempDir();
+  const distAbs = path.join(root, 'dist');
+  fs.mkdirSync(distAbs, { recursive: true });
+  fs.writeFileSync(path.join(root, 'index_pro.html'), '<html></html>\n', 'utf8');
+
+  assert.throws(() => copyStaticDistAssets({ root, distAbs }), /Missing required wp_runtime_config\.mjs/);
 });
 
 test('build-dist retries once without tsbuildinfo when incremental build misses entry', () => {

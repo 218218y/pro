@@ -1,6 +1,5 @@
 import { createBootErrorPolicy } from './boot/boot_error_policy.js';
-import { ensureUiFrameworkFlag } from './native/runtime/runtime_globals.js';
-import { validateRuntimeConfig, validateRuntimeFlags } from './native/runtime/runtime_config_validation.js';
+import { validateReactBootDeps } from './native/runtime/runtime_boot_config.js';
 
 import type { Deps3D, WardrobeProRuntimeConfig, WardrobeProRuntimeFlags } from '../types';
 import type { ThreeLike } from '../types/three';
@@ -26,11 +25,7 @@ const __bootErrorPolicy = createBootErrorPolicy({
   formatSoftWarnMessage: (_group, op) => `[WardrobePro][entry_pro_main] ${op}`,
 });
 
-export function bootShouldFailFast(win: Window | null): boolean {
-  return __bootErrorPolicy.shouldFailFast(win);
-}
-
-export function bootSoftWarn(op: string, err: unknown, throttleMs = 1500): void {
+function bootSoftWarn(op: string, err: unknown, throttleMs = 1500): void {
   __bootErrorPolicy.softWarn(err, { op, throttleMs });
 }
 
@@ -147,60 +142,24 @@ export async function loadThreeEsm(): Promise<ThreeLike> {
   });
 }
 
-export async function loadRuntimeConfigModule(win: Window | null): Promise<RuntimeConfigModuleResult> {
-  try {
-    const url = new URL('../wp_runtime_config.mjs', import.meta.url).toString();
-    const mod: unknown = await import(/* @vite-ignore */ url);
-    const raw: unknown =
-      isRecord(mod) && Object.prototype.hasOwnProperty.call(mod, 'default') ? mod.default : mod;
-    return parseRuntimeConfigModule(raw);
-  } catch (err) {
-    // Missing file is a valid state for deployments without Cloud Sync.
-    // In QA/strict environments we still report best-effort so configuration mistakes are visible.
-    if (bootShouldFailFast(win)) {
-      bootReportBestEffort(win, err, { phase: 'boot', op: 'load.wp_runtime_config.mjs' });
-    }
-    return { config: null, flags: null };
+export async function loadRuntimeConfigModule(): Promise<RuntimeConfigModuleResult> {
+  const url = new URL('../wp_runtime_config.mjs', import.meta.url).toString();
+  const mod: unknown = await import(/* @vite-ignore */ url);
+  if (!isRecord(mod) || !Object.prototype.hasOwnProperty.call(mod, 'default')) {
+    throw new Error('[WardrobePro][runtime-config] wp_runtime_config.mjs must have a default export.');
   }
+  return parseRuntimeConfigModule(mod.default);
 }
 
-export function applyValidatedRuntimeFlags(
-  deps: Deps3D,
-  runtimeFlags: WardrobeProRuntimeFlags | null,
-  win: Window | null
-): void {
+export function mergeRuntimeFlags(deps: Deps3D, runtimeFlags: WardrobeProRuntimeFlags | null): void {
   if (runtimeFlags) {
     deps.flags = Object.assign({}, deps.flags || {}, runtimeFlags);
   }
-
-  // React-only build.
-  ensureUiFrameworkFlag(deps, 'react');
-
-  // Normalize runtime flags (P9).
-  try {
-    if (deps.flags && typeof deps.flags === 'object') {
-      const vFlags = validateRuntimeFlags(deps.flags, {
-        source: 'entry_pro_main',
-        failFast: bootShouldFailFast(win),
-      });
-      if (vFlags.issues && vFlags.issues.length) {
-        bootSoftWarn(
-          'runtimeFlags.validate',
-          new Error(vFlags.issues.map(x => (x.path ? `${x.path}: ${x.message}` : x.message)).join('; ')),
-          0
-        );
-      }
-      deps.flags = vFlags.flags;
-    }
-  } catch (err) {
-    bootSoftWarn('runtimeFlags.validate.crash', err, 0);
-  }
 }
 
-export function resolveRuntimeConfig(
+export function buildRuntimeConfig(
   doc: Document | null,
-  runtimeModule: RuntimeConfigModuleResult,
-  win: Window | null
+  runtimeModule: RuntimeConfigModuleResult
 ): WardrobeProRuntimeConfig {
   // Base config defaults (keep in sync with platform defaults as needed).
   const cfg: WardrobeProRuntimeConfig = {
@@ -216,51 +175,22 @@ export function resolveRuntimeConfig(
   // Example (site2):
   //   <meta name="wp-site-variant" content="site2" />
   //   <meta name="wp-site2-enabled-tabs" content="structure,design,interior,sketch,settings" />
-  try {
-    const siteVariant = parseSiteVariantFromMeta(readMetaContent(doc, 'wp-site-variant'));
-    if (siteVariant && typeof cfg.siteVariant === 'undefined') {
-      cfg.siteVariant = siteVariant;
-    }
+  const siteVariant = parseSiteVariantFromMeta(readMetaContent(doc, 'wp-site-variant'));
+  if (siteVariant && typeof cfg.siteVariant === 'undefined') {
+    cfg.siteVariant = siteVariant;
+  }
 
-    const enabledTabs = parseSite2EnabledTabs(readMetaContent(doc, 'wp-site2-enabled-tabs'));
-    if (enabledTabs && typeof cfg.site2EnabledTabs === 'undefined') {
-      cfg.site2EnabledTabs = enabledTabs;
-    }
-  } catch {
-    // ignore
+  const enabledTabs = parseSite2EnabledTabs(readMetaContent(doc, 'wp-site2-enabled-tabs'));
+  if (enabledTabs && typeof cfg.site2EnabledTabs === 'undefined') {
+    cfg.site2EnabledTabs = enabledTabs;
   }
 
   if (runtimeModule.config) Object.assign(cfg, runtimeModule.config);
+  return cfg;
+}
 
-  // Validate + normalize runtime config (P9).
-  // This prevents common deployment mistakes (wrong types / missing supabase keys)
-  // from crashing the app.
-  const failFastCfg = bootShouldFailFast(win);
-  const vCfg = validateRuntimeConfig(cfg, { source: 'entry_pro_main', failFast: failFastCfg });
-  if (vCfg.issues && vCfg.issues.length) {
-    const errs = vCfg.issues.filter(i => i && i.kind === 'error');
-    const warns = vCfg.issues.filter(i => !i || i.kind !== 'error');
-    if (warns.length) {
-      bootSoftWarn(
-        'runtimeConfig.validate',
-        new Error(warns.map(x => (x.path ? `${x.path}: ${x.message}` : x.message)).join('; ')),
-        0
-      );
-    }
-    if (errs.length) {
-      const e = new Error(errs.map(x => (x.path ? `${x.path}: ${x.message}` : x.message)).join('; '));
-      // Always report, and fail only in strict environments.
-      bootReportBestEffort(
-        win,
-        e,
-        { phase: 'boot', op: 'runtimeConfig.validate' },
-        { failFast: failFastCfg }
-      );
-      if (failFastCfg) throw e;
-    }
-  }
-
-  return vCfg.config || cfg;
+export function validateEntryRuntimeDeps(deps: Deps3D): void {
+  validateReactBootDeps(deps, 'entry_pro_main');
 }
 
 export async function showFatalOverlayMaybe(

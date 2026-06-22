@@ -204,7 +204,8 @@ import {
         /entry_pro_main_browser_boot\.js/,
         /entry_pro_main_runtime\.js/,
         /loadThreeEsm/,
-        /resolveRuntimeConfig/,
+        /buildRuntimeConfig/,
+        /validateEntryRuntimeDeps/,
         /runBrowserBootSetup/,
         /showFatalOverlayMaybe/,
       ],
@@ -223,7 +224,8 @@ import {
       [
         /export function parseRuntimeConfigModule\(/,
         /export async function loadThreeEsm\(/,
-        /export function resolveRuntimeConfig\(/,
+        /export function buildRuntimeConfig\(/,
+        /export function validateEntryRuntimeDeps\(/,
         /export async function runBrowserBootSetup\(/,
         /export async function bootProEntryRuntime\(/,
       ],
@@ -248,9 +250,17 @@ import {
         /createAppCore/,
         /bootCore/,
         /bootReactUi/,
+        /validateReactBootDeps/,
+        /requireReleaseDeps/,
         /export function createApp\(/,
         /export async function boot\(/,
       ],
+      'releaseMainOwner'
+    );
+    assertLacksAll(
+      assert,
+      releaseMainOwner,
+      [/catch\s*\{\s*\/\/ ignore/, /ensureReactFlags/, /deps\?: Deps/],
       'releaseMainOwner'
     );
     assertMatchesAll(

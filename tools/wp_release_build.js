@@ -197,9 +197,10 @@ export function prepareDistSite({ root, distDir, htmlTemplate }) {
     // Copy Vite-style public assets (served from site root)
     const publicSrc = path.join(root, 'public');
     if (exists(publicSrc)) copyDirContents(publicSrc, distDir);
-    // Supabase client config (optional)
+    // Canonical runtime config is required even when Cloud Sync is disabled.
     const supaCfgMjs = path.join(root, 'wp_runtime_config.mjs');
-    if (exists(supaCfgMjs)) copyFile(supaCfgMjs, path.join(distDir, 'wp_runtime_config.mjs'));
+    if (!exists(supaCfgMjs)) throw new Error('Missing required wp_runtime_config.mjs');
+    copyFile(supaCfgMjs, path.join(distDir, 'wp_runtime_config.mjs'));
 
     // Use a dedicated release HTML template that loads the local libs + single bundle.
     const html = htmlTemplate || buildReleaseHtml(root, null);
@@ -207,7 +208,10 @@ export function prepareDistSite({ root, distDir, htmlTemplate }) {
 
     console.log('[WP Release] Dist debug site ready:', distDir);
   } catch (e) {
-    console.warn('[WP Release] Could not prepare dist debug site:', String(e && e.message ? e.message : e));
+    throw new Error(
+      `[WP Release] Could not prepare dist debug site: ${String(e && e.message ? e.message : e)}`,
+      { cause: e }
+    );
   }
 }
 

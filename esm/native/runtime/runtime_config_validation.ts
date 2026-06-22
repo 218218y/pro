@@ -1,10 +1,9 @@
 // Runtime config validation + normalization (Pure ESM)
 //
 // Goals:
-// - Accept permissive runtime config objects (loaded from wp_runtime_config.mjs).
-// - Normalize common shapes (numbers/booleans/arrays) and clamp unsafe values.
-// - Fail-fast ONLY when requested by the boot entry (QA/strict environments).
-// - Preserve unknown keys (forward-compatible) while ensuring the known keys are safe.
+// - Accept only canonical typed values for known runtime fields.
+// - Preserve unknown keys for forward-compatible feature configuration.
+// - Return explicit issues; the boot boundary treats every issue as fatal.
 //
 // NOTE: This module must be side-effect free on import.
 

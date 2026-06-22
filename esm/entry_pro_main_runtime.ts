@@ -10,19 +10,16 @@ type BootReporter = (win: Window | null, err: unknown, meta: { op: string; phase
 type EntryProMainRuntimeOps = {
   bootEsm: (opts: { deps: Deps3D }) => Promise<AppContainer>;
   loadThreeEsm: () => Promise<ThreeLike>;
-  loadRuntimeConfigModule: (
-    win: Window | null
-  ) => Promise<{ config: Record<string, unknown> | null; flags: Record<string, unknown> | null }>;
-  applyValidatedRuntimeFlags: (
-    deps: Deps3D,
-    runtimeFlags: Record<string, unknown> | null,
-    win: Window | null
-  ) => void;
-  resolveRuntimeConfig: (
+  loadRuntimeConfigModule: () => Promise<{
+    config: Record<string, unknown> | null;
+    flags: Record<string, unknown> | null;
+  }>;
+  mergeRuntimeFlags: (deps: Deps3D, runtimeFlags: Record<string, unknown> | null) => void;
+  buildRuntimeConfig: (
     doc: Document | null,
-    runtimeModule: { config: Record<string, unknown> | null; flags: Record<string, unknown> | null },
-    win: Window | null
+    runtimeModule: { config: Record<string, unknown> | null; flags: Record<string, unknown> | null }
   ) => Record<string, unknown>;
+  validateRuntimeDeps: (deps: Deps3D) => void;
   runBrowserBootSetup: (opts: {
     app: AppContainer;
     window: Window | null;
@@ -115,11 +112,12 @@ export async function bootProEntryRuntime(
   }
 
   const deps = createEntryBrowserDeps(resolvedEnv, THREE);
-  const runtimeModule = await ops.loadRuntimeConfigModule(resolvedEnv.window);
-  ops.applyValidatedRuntimeFlags(deps, runtimeModule.flags, resolvedEnv.window);
-  deps.config = ops.resolveRuntimeConfig(resolvedEnv.document, runtimeModule, resolvedEnv.window);
-
   try {
+    const runtimeModule = await ops.loadRuntimeConfigModule();
+    ops.mergeRuntimeFlags(deps, runtimeModule.flags);
+    deps.config = ops.buildRuntimeConfig(resolvedEnv.document, runtimeModule);
+    ops.validateRuntimeDeps(deps);
+
     const app = await ops.bootEsm({ deps });
     await ops.runBrowserBootSetup({
       app,

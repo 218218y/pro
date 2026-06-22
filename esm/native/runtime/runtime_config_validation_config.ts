@@ -1,7 +1,6 @@
 import type { WardrobeProRuntimeConfig } from '../../../types';
 
 import {
-  clampNumber,
   cloneRuntimeConfig,
   isPlainObject,
   normalizeSiteVariant,
@@ -24,7 +23,7 @@ export function validateRuntimeConfig(
 
   if (!isPlainObject(cfgIn)) {
     if (typeof cfgIn !== 'undefined' && cfgIn !== null) {
-      issues.push({ kind: 'warn', path: 'config', message: 'config must be an object (using defaults)' });
+      issues.push({ kind: 'warn', path: 'config', message: 'config must be an object' });
     }
     return { config: {}, issues };
   }
@@ -37,11 +36,18 @@ export function validateRuntimeConfig(
       issues.push({
         kind: 'warn',
         path: 'cacheBudgetMb',
-        message: 'cacheBudgetMb must be a number (default used)',
+        message: 'cacheBudgetMb must be a number',
+      });
+      delete out.cacheBudgetMb;
+    } else if (n < 16 || n > 4096) {
+      issues.push({
+        kind: 'warn',
+        path: 'cacheBudgetMb',
+        message: 'cacheBudgetMb must be between 16 and 4096',
       });
       delete out.cacheBudgetMb;
     } else {
-      out.cacheBudgetMb = clampNumber(n, 16, 4096);
+      out.cacheBudgetMb = n;
     }
   }
 
@@ -51,11 +57,18 @@ export function validateRuntimeConfig(
       issues.push({
         kind: 'warn',
         path: 'cacheMaxItems',
-        message: 'cacheMaxItems must be a number (default used)',
+        message: 'cacheMaxItems must be a number',
+      });
+      delete out.cacheMaxItems;
+    } else if (!Number.isInteger(n) || n < 100 || n > 200000) {
+      issues.push({
+        kind: 'warn',
+        path: 'cacheMaxItems',
+        message: 'cacheMaxItems must be an integer between 100 and 200000',
       });
       delete out.cacheMaxItems;
     } else {
-      out.cacheMaxItems = Math.trunc(clampNumber(n, 100, 200000));
+      out.cacheMaxItems = n;
     }
   }
 
@@ -65,7 +78,7 @@ export function validateRuntimeConfig(
       issues.push({
         kind: 'warn',
         path: 'debugBootTimings',
-        message: 'debugBootTimings must be boolean (ignored)',
+        message: 'debugBootTimings must be boolean',
       });
       delete out.debugBootTimings;
     } else {
@@ -79,7 +92,7 @@ export function validateRuntimeConfig(
       issues.push({
         kind: 'warn',
         path: 'siteVariant',
-        message: 'siteVariant must be "main" or "site2" (ignored)',
+        message: 'siteVariant must be "main" or "site2"',
       });
       delete out.siteVariant;
     } else {
@@ -93,7 +106,7 @@ export function validateRuntimeConfig(
       issues.push({
         kind: 'warn',
         path: 'site2EnabledTabs',
-        message: 'site2EnabledTabs must be array/string (ignored)',
+        message: 'site2EnabledTabs must be an array of unique canonical tab ids',
       });
       delete out.site2EnabledTabs;
     } else {
@@ -106,7 +119,7 @@ export function validateRuntimeConfig(
       issues.push({
         kind: 'warn',
         path: 'storageNamespace',
-        message: 'storageNamespace must be a string (ignored)',
+        message: 'storageNamespace must be a string',
       });
       delete out.storageNamespace;
     } else {
@@ -119,7 +132,7 @@ export function validateRuntimeConfig(
       issues.push({
         kind: 'warn',
         path: 'orderPdf',
-        message: 'orderPdf must be an object (ignored)',
+        message: 'orderPdf must be an object',
       });
       delete out.orderPdf;
     } else {
@@ -129,7 +142,7 @@ export function validateRuntimeConfig(
           issues.push({
             kind: 'warn',
             path: 'orderPdf.templateUrl',
-            message: 'orderPdf.templateUrl must be a non-empty string (ignored)',
+            message: 'orderPdf.templateUrl must be a non-empty string',
           });
           delete orderPdf.templateUrl;
         } else {

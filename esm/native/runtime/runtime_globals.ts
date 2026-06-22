@@ -3,9 +3,7 @@
 // Goal: keep "browser environment" wiring in one place, without relying on
 // Window-global config surfaces.
 
-import type { BrowserDeps, Deps, WardrobeProRuntimeFlags } from '../../../types';
-
-import { cloneRecord } from './record.js';
+import type { BrowserDeps, Deps } from '../../../types';
 
 type BrowserWindowLike = Window & {
   queueMicrotask?: (cb: () => void) => void;
@@ -128,15 +126,6 @@ export function buildBrowserDeps(env: {
   }
 
   return browser;
-}
-
-/** Ensure deps.flags exists and enforce uiFramework to the requested value. */
-export function ensureUiFrameworkFlag(deps: Deps, value: WardrobeProRuntimeFlags['uiFramework']): void {
-  try {
-    deps.flags = { ...cloneRecord(deps.flags), uiFramework: value };
-  } catch {
-    // ignore
-  }
 }
 
 /** Safe read of injected browser document from deps (used by release entry). */

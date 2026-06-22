@@ -2,7 +2,6 @@ import type { WardrobeProSupabaseCloudSyncConfig } from '../../../types';
 
 import {
   asString,
-  clampNumber,
   cloneSupabaseCloudSync,
   deleteOwn,
   isPlainObject,
@@ -55,7 +54,7 @@ export function validateSupabaseCloudSync(
     issues.push({
       kind: 'warn',
       path: 'supabaseCloudSync',
-      message: 'supabaseCloudSync must be an object (ignored)',
+      message: 'supabaseCloudSync must be an object',
     });
     return null;
   }
@@ -85,7 +84,7 @@ export function validateSupabaseCloudSync(
       issues.push({
         kind: 'warn',
         path: `supabaseCloudSync.${key}`,
-        message: `${key} must be a string (ignored)`,
+        message: `${key} must be a string`,
       });
       deleteOwn(cfg, key);
       continue;
@@ -99,7 +98,7 @@ export function validateSupabaseCloudSync(
       issues.push({
         kind: 'warn',
         path: 'supabaseCloudSync.realtimeMode',
-        message: 'realtimeMode must be "broadcast" (ignored)',
+        message: 'realtimeMode must be "broadcast"',
       });
       deleteOwn(cfg, 'realtimeMode');
     } else {
@@ -115,7 +114,7 @@ export function validateSupabaseCloudSync(
       issues.push({
         kind: 'warn',
         path: `supabaseCloudSync.${key}`,
-        message: `${key} must be boolean (ignored)`,
+        message: `${key} must be boolean`,
       });
       deleteOwn(cfg, key);
       continue;
@@ -129,11 +128,18 @@ export function validateSupabaseCloudSync(
       issues.push({
         kind: 'warn',
         path: 'supabaseCloudSync.pollMs',
-        message: 'pollMs must be a number (ignored)',
+        message: 'pollMs must be a number',
+      });
+      delete cfg.pollMs;
+    } else if (!Number.isInteger(n) || n < 1000 || n > 60000) {
+      issues.push({
+        kind: 'warn',
+        path: 'supabaseCloudSync.pollMs',
+        message: 'pollMs must be an integer between 1000 and 60000',
       });
       delete cfg.pollMs;
     } else {
-      cfg.pollMs = clampNumber(n, 1000, 60000);
+      cfg.pollMs = n;
     }
   }
 
@@ -144,11 +150,18 @@ export function validateSupabaseCloudSync(
       issues.push({
         kind: 'warn',
         path: 'supabaseCloudSync.site2SketchInitialMaxAgeHours',
-        message: 'site2SketchInitialMaxAgeHours must be a number (ignored)',
+        message: 'site2SketchInitialMaxAgeHours must be a number',
+      });
+      deleteOwn(cfg, 'site2SketchInitialMaxAgeHours');
+    } else if (n < 1 || n > 168) {
+      issues.push({
+        kind: 'warn',
+        path: 'supabaseCloudSync.site2SketchInitialMaxAgeHours',
+        message: 'site2SketchInitialMaxAgeHours must be between 1 and 168',
       });
       deleteOwn(cfg, 'site2SketchInitialMaxAgeHours');
     } else {
-      writeOwn(cfg, 'site2SketchInitialMaxAgeHours', clampNumber(n, 1, 168));
+      writeOwn(cfg, 'site2SketchInitialMaxAgeHours', n);
     }
   }
 

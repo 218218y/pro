@@ -111,17 +111,27 @@ export function isThreeLikeNamespace(value: unknown): value is ThreeLike & Unkno
 }
 
 export function parseRuntimeConfigModule(raw: unknown): RuntimeConfigModuleResult {
-  if (!isRecord(raw)) return { config: null, flags: null };
+  if (!isRecord(raw)) {
+    throw new Error('[WardrobePro][runtime-config] Default export must be an object.');
+  }
+
+  const unexpectedKeys = Object.keys(raw).filter(key => key !== 'flags' && key !== 'config');
+  if (unexpectedKeys.length) {
+    throw new Error(
+      `[WardrobePro][runtime-config] Unexpected top-level key(s): ${unexpectedKeys.join(', ')}.`
+    );
+  }
+
+  if (typeof raw.flags !== 'undefined' && !isRecord(raw.flags)) {
+    throw new Error('[WardrobePro][runtime-config] flags must be an object.');
+  }
+  if (typeof raw.config !== 'undefined' && !isRecord(raw.config)) {
+    throw new Error('[WardrobePro][runtime-config] config must be an object.');
+  }
 
   const flags = isRecord(raw.flags) ? coerceRuntimeFlags(raw.flags) : null;
-  const cfgRaw: unknown = Object.prototype.hasOwnProperty.call(raw, 'config') ? raw.config : null;
-
-  // Canonical runtime module shape:
-  //   export default { flags?: {...}, config?: {...} }
-  // We intentionally ignore flat config exports so runtime config stays explicit.
-  // and never re-mixes flags/config payloads at the module root.
-  if (!isRecord(cfgRaw)) return { config: null, flags };
-  return { config: coerceRuntimeConfig(cfgRaw), flags };
+  const config = isRecord(raw.config) ? coerceRuntimeConfig(raw.config) : null;
+  return { config, flags };
 }
 
 export function parseSiteVariantFromMeta(

@@ -30,76 +30,43 @@ export function asString(v: unknown): string | null {
 }
 
 export function toBool(v: unknown): boolean | null {
-  if (typeof v === 'boolean') return v;
-  if (typeof v === 'number') return v !== 0;
-  if (typeof v !== 'string') return null;
-  const s = v.trim().toLowerCase();
-  if (!s) return null;
-  if (s === '1' || s === 'true' || s === 'yes' || s === 'y' || s === 'on') return true;
-  if (s === '0' || s === 'false' || s === 'no' || s === 'n' || s === 'off') return false;
-  return null;
+  return typeof v === 'boolean' ? v : null;
 }
 
 export function toFiniteNumber(v: unknown): number | null {
-  if (typeof v === 'number' && Number.isFinite(v)) return v;
-  if (typeof v === 'string' && v.trim()) {
-    const n = Number(v);
-    if (Number.isFinite(n)) return n;
-  }
-  return null;
-}
-
-export function clampNumber(n: number, min: number, max: number): number {
-  if (!Number.isFinite(n)) return min;
-  if (n < min) return min;
-  if (n > max) return max;
-  return n;
+  return typeof v === 'number' && Number.isFinite(v) ? v : null;
 }
 
 export function normalizeSiteVariant(v: unknown): 'main' | 'site2' | null {
   const s = asString(v);
-  if (!s) return null;
-  const low = s.toLowerCase();
-  if (!SITE_VARIANTS.has(low)) return null;
-  return low === 'site2' ? 'site2' : 'main';
+  if (!s || !SITE_VARIANTS.has(s)) return null;
+  return s === 'site2' ? 'site2' : 'main';
 }
 
 export function normalizeTabId(v: unknown): WardrobeProTabId | null {
   const s = asString(v);
   if (!s) return null;
-  const low = s.toLowerCase();
-  switch (low) {
+  switch (s) {
     case 'structure':
     case 'design':
     case 'interior':
     case 'sketch':
     case 'settings':
-      return low;
+      return s;
     default:
       return null;
   }
 }
 
 export function normalizeTabs(v: unknown): WardrobeProTabId[] | null {
-  const addTab = (out: WardrobeProTabId[], candidate: unknown): void => {
+  if (!Array.isArray(v)) return null;
+  const out: WardrobeProTabId[] = [];
+  for (const candidate of v) {
     const tab = normalizeTabId(candidate);
-    if (tab && !out.includes(tab)) out.push(tab);
-  };
-
-  if (Array.isArray(v)) {
-    const out: WardrobeProTabId[] = [];
-    for (const x of v) addTab(out, x);
-    return out;
+    if (!tab || out.includes(tab)) return null;
+    out.push(tab);
   }
-
-  const s = asString(v);
-  if (s) {
-    const out: WardrobeProTabId[] = [];
-    for (const part of s.split(',')) addTab(out, part);
-    return out;
-  }
-
-  return null;
+  return out;
 }
 
 export function readOwn(obj: UnknownRecord, key: string): unknown {

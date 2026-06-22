@@ -51,13 +51,17 @@ test('entry_pro_main_runtime wires boot deps and browser setup through canonical
         calls.push('loadRuntimeConfigModule');
         return { config: runtimeConfig as any, flags: runtimeFlags as any };
       },
-      applyValidatedRuntimeFlags: (deps, flags) => {
-        calls.push('applyValidatedRuntimeFlags');
+      mergeRuntimeFlags: (deps, flags) => {
+        calls.push('mergeRuntimeFlags');
         deps.flags = { ...(deps.flags || {}), ...(flags || {}) };
       },
-      resolveRuntimeConfig: (_doc, mod) => {
-        calls.push('resolveRuntimeConfig');
+      buildRuntimeConfig: (_doc, mod) => {
+        calls.push('buildRuntimeConfig');
         return (mod.config || {}) as any;
+      },
+      validateRuntimeDeps: deps => {
+        calls.push('validateRuntimeDeps');
+        assert.equal((deps.config as any).cacheBudgetMb, 256);
       },
       runBrowserBootSetup: async ({ app: runtimeApp, report }) => {
         calls.push('runBrowserBootSetup');
@@ -84,8 +88,9 @@ test('entry_pro_main_runtime wires boot deps and browser setup through canonical
   assert.deepEqual(calls, [
     'loadThreeEsm',
     'loadRuntimeConfigModule',
-    'applyValidatedRuntimeFlags',
-    'resolveRuntimeConfig',
+    'mergeRuntimeFlags',
+    'buildRuntimeConfig',
+    'validateRuntimeDeps',
     'bootEsm',
     'runBrowserBootSetup',
     'report:boot:setup',
@@ -104,8 +109,9 @@ test('entry_pro_main_runtime preserves original boot error when overlay reportin
           },
           loadThreeEsm: async () => THREE_NS as any,
           loadRuntimeConfigModule: async () => ({ config: null, flags: null }),
-          applyValidatedRuntimeFlags: () => {},
-          resolveRuntimeConfig: () => ({}) as any,
+          mergeRuntimeFlags: () => {},
+          buildRuntimeConfig: () => ({}) as any,
+          validateRuntimeDeps: () => {},
           runBrowserBootSetup: async () => {},
           classifyFailure: (_failure, ctx) => ({ kind: 'boot', message: 'boom', context: ctx }),
           showFatalOverlayMaybe: async () => {
@@ -120,4 +126,47 @@ test('entry_pro_main_runtime preserves original boot error when overlay reportin
       ),
     /boot crash/
   );
+});
+
+test('entry_pro_main_runtime routes runtime config validation failures through the boot overlay', async () => {
+  const validationError = new Error('invalid deployment config');
+  const calls: string[] = [];
+
+  await assert.rejects(
+    () =>
+      bootProEntryRuntime(
+        { window: null, document: null },
+        {
+          bootEsm: async () => {
+            calls.push('bootEsm');
+            return {} as any;
+          },
+          loadThreeEsm: async () => THREE_NS as any,
+          loadRuntimeConfigModule: async () => ({ config: {}, flags: {} }),
+          mergeRuntimeFlags: () => {},
+          buildRuntimeConfig: () => ({}),
+          validateRuntimeDeps: () => {
+            throw validationError;
+          },
+          runBrowserBootSetup: async () => {},
+          classifyFailure: (error, context) => ({
+            kind: 'boot',
+            message: String((error as Error).message),
+            error,
+            context,
+          }),
+          showFatalOverlayMaybe: async (_win, _doc, error) => {
+            calls.push(`overlay:${String((error as Error).message)}`);
+            return true;
+          },
+          reportOverlayFailurePreservingOriginal: (_win, _overlay, _meta, original) => {
+            throw original;
+          },
+          bootReportBestEffort: () => {},
+        }
+      ),
+    validationError
+  );
+
+  assert.deepEqual(calls, ['overlay:invalid deployment config']);
 });

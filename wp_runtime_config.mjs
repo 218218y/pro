@@ -4,8 +4,9 @@
 // Multi-store releases write a generated wp_runtime_config.mjs into each dist/sites/<store>/<variant> output
 // from sites/<store>/site.profile.mjs; do not edit generated release copies manually.
 //
-// This file is optional.
-// The Pro entry (esm/entry_pro_main.ts) loads it at boot (best-effort) and merges:
+// This file is required. Deployments without Cloud Sync should keep the canonical
+// default export and use empty `flags` / `config` objects.
+// The Pro entry (esm/entry_pro_main.ts) loads it at boot and merges:
 // - `default.flags`  -> deps.flags
 // - `default.config` -> deps.config
 //
@@ -34,7 +35,7 @@ export default {
       displayName: 'רהיטי ברגיג',
     },
 
-    // Keep empty for backward-compatible localStorage keys in the existing Bargig deployment.
+    // Empty keeps the canonical unprefixed storage namespace for the Bargig deployment.
     storageNamespace: '',
 
     orderPdf: {

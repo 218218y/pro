@@ -26,6 +26,12 @@ index_pro.html
 
 `esm/entry_*` owns browser dependency collection. `esm/main.ts` and deeper modules must stay import-safe.
 
+Browser and release boot require `wp_runtime_config.mjs` with one canonical default-export envelope:
+`{ flags?: object, config?: object }`. Entry and release paths validate the merged typed values through
+the same React boot contract and fail before application boot on missing modules, unknown top-level keys,
+invalid types, or out-of-range values. Do not restore flat config exports, string coercion, range clamping,
+or missing-file fallbacks.
+
 The browser shell is React-only. Every source and release HTML template must provide exactly one
 `#reactSidebarRoot` directly inside `#sidebar` and one `#reactOverlayRoot` directly inside
 `#viewer-container`. `bootReactUi` validates both hosts before installing UI interactions, rejects

@@ -140,39 +140,41 @@
             const THREE = await loadThreeVendor();
             const { boot } = await import('./wardrobepro.bundle.js');
 
-            // Runtime config module (optional):
-            // ./wp_runtime_config.mjs can export either:
-            //   export default { supabaseCloudSync: { ... } };
-            //   export default { config: { ... }, flags: { ... } };
+            // Required canonical runtime config module:
+            //   export default { config?: { ... }, flags?: { ... } };
             async function loadRuntimeModule() {
-              try {
-                const url = new URL('./wp_runtime_config.mjs', import.meta.url).toString();
-                const mod = await import(url);
-                const raw = mod && typeof mod === 'object' && 'default' in mod ? mod.default : mod;
-                if (!raw || typeof raw !== 'object') return { config: null, flags: null };
-
-                const flags = raw.flags && typeof raw.flags === 'object' ? raw.flags : null;
-                const cfgRaw = raw.config && typeof raw.config === 'object' ? raw.config : raw;
-                let cfg = cfgRaw && typeof cfgRaw === 'object' ? Object.assign({}, cfgRaw) : null;
-
-                // If the module exported url/anonKey directly, treat it as supabaseCloudSync.
-                if (cfg && !('supabaseCloudSync' in cfg) && ('url' in cfg || 'anonKey' in cfg)) {
-                  cfg = { supabaseCloudSync: cfg };
-                }
-                // If we used the flat shape and also got flags, avoid merging flags into config.
-                if (cfg && cfg === raw && flags) {
-                  cfg = Object.assign({}, raw);
-                  delete cfg.flags;
-                }
-                return { config: cfg, flags };
-              } catch (_) {
-                // Missing file is OK (Cloud Sync disabled unless env vars are provided).
-                return { config: null, flags: null };
+              const url = new URL('./wp_runtime_config.mjs', import.meta.url).toString();
+              const mod = await import(url);
+              if (!mod || typeof mod !== 'object' || !('default' in mod)) {
+                throw new Error('wp_runtime_config.mjs must have a default export');
               }
+              const raw = mod.default;
+              if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+                throw new Error('wp_runtime_config.mjs default export must be an object');
+              }
+              const unexpectedKeys = Object.keys(raw).filter(key => key !== 'flags' && key !== 'config');
+              if (unexpectedKeys.length) {
+                throw new Error(
+                  'wp_runtime_config.mjs has unexpected top-level key(s): ' + unexpectedKeys.join(', ')
+                );
+              }
+              if (
+                typeof raw.flags !== 'undefined' &&
+                (raw.flags === null || typeof raw.flags !== 'object' || Array.isArray(raw.flags))
+              ) {
+                throw new Error('wp_runtime_config.mjs flags must be an object');
+              }
+              if (
+                typeof raw.config !== 'undefined' &&
+                (raw.config === null || typeof raw.config !== 'object' || Array.isArray(raw.config))
+              ) {
+                throw new Error('wp_runtime_config.mjs config must be an object');
+              }
+              return { config: raw.config || {}, flags: raw.flags || {} };
             }
 
             const runtime = await loadRuntimeModule();
-            const flags = Object.assign({ uiFramework: 'react' }, runtime.flags || {});
+            const flags = runtime.flags;
             const config = Object.assign(
               {
                 cacheBudgetMb: 128,
@@ -183,7 +185,7 @@
                 siteVariant: 'site2',
                 site2EnabledTabs: ['structure', 'design', 'interior', 'sketch', 'settings'],
               },
-              runtime.config || {}
+              runtime.config
             );
 
             const app = await boot({

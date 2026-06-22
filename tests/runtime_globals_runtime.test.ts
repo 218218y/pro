@@ -1,13 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import {
-  buildBrowserDeps,
-  ensureUiFrameworkFlag,
-  getBrowserDocumentFromDeps,
-} from '../esm/native/runtime/runtime_globals.ts';
+import { buildBrowserDeps, getBrowserDocumentFromDeps } from '../esm/native/runtime/runtime_globals.ts';
 
-test('runtime globals bind browser deps to the injected window and preserve flags', () => {
+test('runtime globals bind browser deps to the injected window', () => {
   const events: string[] = [];
   const doc = { title: 'hello' } as Document;
   const browserWindow = {
@@ -62,9 +58,7 @@ test('runtime globals bind browser deps to the injected window and preserve flag
   assert.equal(browser.location?.pathname, '/x');
   assert.equal(browser.navigator?.userAgent, 'Agent/2.0');
 
-  const deps = { flags: { debugBoot: true }, browser };
-  ensureUiFrameworkFlag(deps as never, 'react');
-  assert.deepEqual(deps.flags, { debugBoot: true, uiFramework: 'react' });
+  const deps = { browser };
   assert.equal(getBrowserDocumentFromDeps(deps as never), doc);
   assert.deepEqual(events, [
     'timeout:5',

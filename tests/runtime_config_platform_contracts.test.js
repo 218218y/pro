@@ -30,6 +30,14 @@ function listFilesRec(dir, out = []) {
 }
 
 test('[runtime-config-platform] legacy injected config globals stay deleted and runtime validation stays file-based', () => {
+  const releaseMain = read('esm/release_main.ts');
+  const entryBootSupport = read('esm/entry_pro_main_boot_support.ts');
+  const runtimeBootConfig = read('esm/native/runtime/runtime_boot_config.ts');
+  const releaseTemplates = [
+    read('tools/index_release.html'),
+    read('tools/index_release_bundle.html'),
+    read('tools/index_release_bundle_site2.html'),
+  ].join('\n');
   const files = [
     'esm/entry_pro_main.ts',
     'esm/native/runtime/runtime_globals.ts',
@@ -110,6 +118,20 @@ test('[runtime-config-platform] legacy injected config globals stay deleted and 
     }
   }
   assert.equal(hits.length, 0, `forbidden Window-global config tokens remain:\n${hits.join('\n')}`);
+
+  assert.match(releaseMain, /validateReactBootDeps\(deps, 'release_main'\)/);
+  assert.match(entryBootSupport, /validateReactBootDeps\(deps, 'entry_pro_main'\)/);
+  assert.match(runtimeBootConfig, /if \(issues\.length\) \{/);
+  assert.match(runtimeBootConfig, /Invalid runtime configuration/);
+  assert.doesNotMatch(releaseMain, /catch\s*\{\s*\/\/ ignore/);
+  assert.doesNotMatch(entryBootSupport, /runtimeFlags\.validate\.crash|runtimeConfig\.validate/);
+
+  assert.match(releaseTemplates, /Required canonical runtime config module/);
+  assert.match(releaseTemplates, /wp_runtime_config\.mjs must have a default export/);
+  assert.match(releaseTemplates, /unexpected top-level key\(s\)/);
+  assert.doesNotMatch(releaseTemplates, /Runtime config module \(optional\)/);
+  assert.doesNotMatch(releaseTemplates, /Missing file is OK/);
+  assert.doesNotMatch(releaseTemplates, /supabaseCloudSync' in cfg/);
 });
 
 test('[runtime-config-platform] platform hot paths keep browser timers and fetch behind canonical seams', () => {

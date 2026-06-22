@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 import { parseSite2EnabledTabs } from '../esm/entry_pro_main_shared.js';
-import { resolveRuntimeConfig } from '../esm/entry_pro_main_boot_support.js';
+import { buildRuntimeConfig } from '../esm/entry_pro_main_boot_support.js';
 
 function makeDoc(metaContent: string): Document {
   return {
@@ -39,7 +39,7 @@ test('site2 meta parser accepts settings tab and ignores legacy export tab name'
 
 test('site2 runtime config keeps settings enabled from index_site2 meta', () => {
   const metaContent = readSite2EnabledTabsMetaFromHtml(readFileSync('index_site2.html', 'utf8'));
-  const cfg = resolveRuntimeConfig(makeDoc(metaContent), { config: null, flags: null }, null);
+  const cfg = buildRuntimeConfig(makeDoc(metaContent), { config: null, flags: null });
 
   assert.equal(cfg.siteVariant, 'site2');
   assert.deepEqual(cfg.site2EnabledTabs, ['structure', 'design', 'interior', 'sketch', 'settings']);

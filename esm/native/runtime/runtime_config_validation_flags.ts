@@ -18,7 +18,7 @@ export function validateRuntimeFlags(
   const issues: RuntimeConfigIssue[] = [];
   if (!isPlainObject(flagsIn)) {
     if (typeof flagsIn !== 'undefined' && flagsIn !== null) {
-      issues.push({ kind: 'warn', path: 'flags', message: 'flags must be an object (ignored)' });
+      issues.push({ kind: 'warn', path: 'flags', message: 'flags must be an object' });
     }
     return { flags: {}, issues };
   }
@@ -29,7 +29,7 @@ export function validateRuntimeFlags(
     issues.push({
       kind: 'warn',
       path: 'flags.uiFramework',
-      message: 'uiFramework must be "react" (ignored)',
+      message: 'uiFramework must be "react"',
     });
     delete out.uiFramework;
   }
@@ -40,7 +40,7 @@ export function validateRuntimeFlags(
       issues.push({
         kind: 'warn',
         path: 'flags.enableThreeGeometryCachePatch',
-        message: 'enableThreeGeometryCachePatch must be boolean (ignored)',
+        message: 'enableThreeGeometryCachePatch must be boolean',
       });
       delete out.enableThreeGeometryCachePatch;
     } else {

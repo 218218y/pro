@@ -13,53 +13,34 @@ import { boot as bootCore, createApp as createAppCore } from './main.js';
 import { runBrowserBootRuntime } from './boot/boot_browser_runtime.js';
 import { bootReactUi } from './native/ui/react/boot_react_ui.js';
 
-import {
-  ensureUiFrameworkFlag,
-  getBrowserDocumentFromDeps,
-  getBrowserWindowFromDeps,
-} from './native/runtime/runtime_globals.js';
-import { validateRuntimeConfig, validateRuntimeFlags } from './native/runtime/runtime_config_validation.js';
+import { getBrowserDocumentFromDeps, getBrowserWindowFromDeps } from './native/runtime/runtime_globals.js';
+import { validateReactBootDeps } from './native/runtime/runtime_boot_config.js';
 
 import type { AppContainer, Deps } from '../types';
 
-function ensureReactFlags(deps: Deps): Deps {
-  // React-only build.
-  ensureUiFrameworkFlag(deps, 'react');
-
-  // Normalize flags/config (P9): keep release entry resilient to deployment mistakes.
-  try {
-    if (deps.flags && typeof deps.flags === 'object') deps.flags = validateRuntimeFlags(deps.flags).flags;
-  } catch {
-    // ignore
-  }
-  try {
-    if (deps.config && typeof deps.config === 'object')
-      deps.config = validateRuntimeConfig(deps.config).config;
-  } catch {
-    // ignore
-  }
-
-  return deps;
+function requireReleaseDeps(deps: Deps | null | undefined): Deps {
+  if (!deps) throw new Error('[WardrobePro][release] boot deps are required.');
+  return validateReactBootDeps(deps, 'release_main');
 }
 
 async function mountReactUi(app: AppContainer, _win: Window, doc: Document): Promise<void> {
   bootReactUi({ app, document: doc });
 }
 
-export function createApp(opts: { deps?: Deps } = {}): AppContainer {
-  const deps = opts.deps;
-  if (deps) ensureReactFlags(deps);
+export function createApp(opts: { deps: Deps }): AppContainer {
+  const deps = requireReleaseDeps(opts.deps);
   return createAppCore({ deps });
 }
 
-export async function boot(opts: { deps?: Deps } = {}): Promise<AppContainer> {
-  const deps = opts.deps;
-  if (deps) ensureReactFlags(deps);
+export async function boot(opts: { deps: Deps }): Promise<AppContainer> {
+  const deps = requireReleaseDeps(opts.deps);
+  const doc = getBrowserDocumentFromDeps(deps);
+  const win = getBrowserWindowFromDeps(deps);
+  if (!win || !doc) {
+    throw new Error('[WardrobePro][release] Injected browser window and document are required.');
+  }
 
   const app = await bootCore({ deps });
-  const doc = deps ? getBrowserDocumentFromDeps(deps) : null;
-  const win = deps ? getBrowserWindowFromDeps(deps) : null;
-
   await runBrowserBootRuntime({
     app,
     window: win,
