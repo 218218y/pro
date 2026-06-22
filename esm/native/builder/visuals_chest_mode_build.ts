@@ -10,7 +10,7 @@ import {
   CARCASS_BASE_DIMENSIONS,
   CHEST_MODE_DIMENSIONS,
   DOOR_SYSTEM_DIMENSIONS,
-  MATERIAL_DIMENSIONS,
+  resolveDoorMountThicknessesFromConfig,
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { resolveBaseLegGeometrySpec } from '../features/base_leg_support.js';
 import { makeDrawerBoxPartId } from '../features/drawer_box_identity.js';
@@ -91,10 +91,9 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
   const D = inputs.D;
   const effectiveBaseType = inputs.effectiveBaseType;
   const drawersCount = inputs.drawersCount;
-  const isInsetDrawerMount = String(cfg?.doorMountMode || '') === 'inset';
-  const thick = isInsetDrawerMount
-    ? DOOR_SYSTEM_DIMENSIONS.hinged.insetFrameThicknessM
-    : MATERIAL_DIMENSIONS.wood.thicknessM;
+  const doorMountThicknesses = resolveDoorMountThicknessesFromConfig(cfg);
+  const isInsetDrawerMount = doorMountThicknesses.mode === 'inset';
+  const thick = doorMountThicknesses.frameThicknessM;
   const insetReveal = isInsetDrawerMount
     ? Math.min(DOOR_SYSTEM_DIMENSIONS.hinged.insetRevealM, Math.max(0, thick / 3))
     : 0;

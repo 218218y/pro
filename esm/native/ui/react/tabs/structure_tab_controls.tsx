@@ -68,7 +68,7 @@ function formatThicknessInputValue(value: number): string {
   return Number.isFinite(value) ? value.toFixed(1) : '';
 }
 
-export function TypeSelector(props: { hideTypeOptions?: boolean } = {}) {
+export function TypeSelector(props: { hideTypeOptions?: boolean; isChestMode?: boolean } = {}) {
   const app = useApp();
   const { wardrobeType, boardMaterial, doorMountMode } = useCfgSelectorShallow(cfg => ({
     wardrobeType: selectWardrobeType(cfg),
@@ -194,23 +194,25 @@ export function TypeSelector(props: { hideTypeOptions?: boolean } = {}) {
               );
             }}
           />
-          <DoorMountThicknessField
-            id="structure-shelf-thickness"
-            label="עובי מדפים"
-            valueCm={doorMountThickness.shelfThicknessCm}
-            isAutomatic={doorMountThickness.shelfOverrideCm == null}
-            resetLabel="איפוס המידה"
-            inputTestId="structure-shelf-thickness-input"
-            resetTestId="structure-shelf-thickness-reset"
-            onChange={value => {
-              applyImmediateStructuralScalarMutation(
-                app,
-                'react:doorMountThickness:shelf',
-                doorMountThickness.shelfKey,
-                value
-              );
-            }}
-          />
+          {!props.isChestMode ? (
+            <DoorMountThicknessField
+              id="structure-shelf-thickness"
+              label="עובי מדפים"
+              valueCm={doorMountThickness.shelfThicknessCm}
+              isAutomatic={doorMountThickness.shelfOverrideCm == null}
+              resetLabel="איפוס המידה"
+              inputTestId="structure-shelf-thickness-input"
+              resetTestId="structure-shelf-thickness-reset"
+              onChange={value => {
+                applyImmediateStructuralScalarMutation(
+                  app,
+                  'react:doorMountThickness:shelf',
+                  doorMountThickness.shelfKey,
+                  value
+                );
+              }}
+            />
+          ) : null}
         </div>
       </div>
     </div>

@@ -161,7 +161,7 @@ function StructureTabInner(props: { active: boolean }) {
       <ProjectPanel />
 
       <div className="control-section wp-r-section-transparent">
-        <TypeSelector hideTypeOptions={hideWardrobeTypeOptions} />
+        <TypeSelector hideTypeOptions={hideWardrobeTypeOptions} isChestMode={effectiveChestMode} />
       </div>
 
       <SavedModelsPanel />

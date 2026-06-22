@@ -838,13 +838,67 @@ test('visuals chest mode renders saved door trims on chest drawer fronts', () =>
   );
 });
 
-test('visuals chest mode uses inset door mount thickness and sinks drawer fronts inside the frame', () => {
+test('visuals chest mode applies custom overlay frame thickness to the chest carcass and drawers', () => {
+  const { App, wardrobeGroup } = createChestApp();
+  App.store.getState = () => ({
+    config: {
+      showDimensions: false,
+      isMultiColorMode: false,
+      doorMountMode: 'overlay',
+      overlayFrameThicknessCm: 2.6,
+      individualColors: {},
+    },
+    ui: {},
+    runtime: {},
+    mode: {},
+    meta: {},
+  });
+
+  buildChestOnly(App, {
+    renderPolicy: App.__outlineRenderPolicy,
+    H: 0.9,
+    totalW: 1.6,
+    D: 0.45,
+    drawersCount: 2,
+    baseType: 'legs',
+    baseLegStyle: 'square',
+    baseLegColor: 'nickel',
+    baseLegHeightCm: 15,
+    baseLegWidthCm: 5,
+    colorChoice: '#ffffff',
+    cfgSnapshot: createChestCfg({
+      showDimensions: false,
+      isMultiColorMode: false,
+      doorMountMode: 'overlay',
+      overlayFrameThicknessCm: 2.6,
+      individualColors: {},
+    }),
+  });
+
+  const leftSide = wardrobeGroup.children.find((child: any) => child?.userData?.partId === 'chest_left');
+  assert.ok(leftSide);
+  assert.ok(Math.abs(leftSide.geometry.args[0] - 0.026) < 1e-9);
+
+  const floor = wardrobeGroup.children.find((child: any) => child?.userData?.partId === 'chest_floor');
+  assert.ok(floor);
+  assert.ok(Math.abs(floor.geometry.args[1] - 0.026) < 1e-9);
+
+  const firstDrawer = wardrobeGroup.children.find(
+    (child: any) => child?.userData?.partId === 'chest_drawer_0'
+  );
+  assert.ok(firstDrawer);
+  assert.ok(Math.abs(Number(firstDrawer.userData.__doorWidth) - (1.6 - 2 * 0.026 - 0.004)) < 1e-9);
+  assert.equal(firstDrawer.userData.__frontMaxZ, 0.45 / 2 + 0.018);
+});
+
+test('visuals chest mode uses custom inset door mount thickness and sinks drawer fronts inside the frame', () => {
   const { App, wardrobeGroup } = createChestApp();
   App.store.getState = () => ({
     config: {
       showDimensions: false,
       isMultiColorMode: false,
       doorMountMode: 'inset',
+      insetFrameThicknessCm: 4.2,
       individualColors: {},
     },
     ui: {},
@@ -869,19 +923,20 @@ test('visuals chest mode uses inset door mount thickness and sinks drawer fronts
       showDimensions: false,
       isMultiColorMode: false,
       doorMountMode: 'inset',
+      insetFrameThicknessCm: 4.2,
       individualColors: {},
     }),
   });
 
   const leftSide = wardrobeGroup.children.find((child: any) => child?.userData?.partId === 'chest_left');
   assert.ok(leftSide);
-  assert.equal(leftSide.geometry.args[0], 0.036);
+  assert.equal(leftSide.geometry.args[0], 0.042);
 
   const firstDrawer = wardrobeGroup.children.find(
     (child: any) => child?.userData?.partId === 'chest_drawer_0'
   );
   assert.ok(firstDrawer);
-  assert.equal(firstDrawer.userData.__doorWidth, 1.6 - 2 * 0.036 - 0.004);
+  assert.equal(firstDrawer.userData.__doorWidth, 1.6 - 2 * 0.042 - 0.004);
   assert.equal(firstDrawer.userData.__frontMaxZ, 0.45 / 2 - 0.003);
   const front = firstDrawer.children[0];
   assert.equal(front.position.z, 0.45 / 2 - 0.018 / 2 - 0.003);

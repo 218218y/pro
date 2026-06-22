@@ -364,7 +364,7 @@ test('[structure-tab-controls] sliding wardrobes hide mount chooser but expose o
   );
 });
 
-test('[structure-tab-controls] chest mode hides wardrobe type buttons while leaving material and mount controls available', () => {
+test('[structure-tab-controls] chest mode hides wardrobe type and shelf thickness while keeping frame controls available', () => {
   const calls = [];
   const mod = loadStructureTabControlsModule({
     calls,
@@ -372,12 +372,18 @@ test('[structure-tab-controls] chest mode hides wardrobe type buttons while leav
     cfg: { wardrobeType: 'hinged', boardMaterial: 'sandwich', doorMountMode: 'overlay' },
     patchViaActions: () => true,
   });
-  const tree = mod.TypeSelector({ hideTypeOptions: true });
+  const tree = mod.TypeSelector({ hideTypeOptions: true, isChestMode: true });
   const buttons = flattenButtons(tree);
+  const inputs = flattenInputs(tree);
 
   assert.equal(buttons.filter(btn => btn.props?.['data-structure-type']).length, 0);
   assert.equal(buttons.filter(btn => btn.props?.['data-board-material']).length, 2);
   assert.equal(buttons.filter(btn => btn.props?.['data-door-mount-mode']).length, 2);
+  assert.ok(inputs.find(input => input.props?.['data-testid'] === 'structure-frame-thickness-input'));
+  assert.equal(
+    inputs.find(input => input.props?.['data-testid'] === 'structure-shelf-thickness-input'),
+    undefined
+  );
 });
 
 test('[structure-tab-controls] StructureTab gates type, corner, and library controls behind invalid wardrobe modes', () => {
@@ -392,7 +398,10 @@ test('[structure-tab-controls] StructureTab gates type, corner, and library cont
     src,
     /const\s+hideWardrobeTypeOptions\s*=\s*effectiveChestMode\s*\|\|\s*noMainWardrobeActive;/
   );
-  assert.match(src, /<TypeSelector hideTypeOptions=\{hideWardrobeTypeOptions\} \/>/);
+  assert.match(
+    src,
+    /<TypeSelector hideTypeOptions=\{hideWardrobeTypeOptions\} isChestMode=\{effectiveChestMode\} \/>/
+  );
   assert.match(src, /!noMainWardrobeActive\s*\? \(\s*<StructureBodySection/);
   assert.match(src, /hideBaseTypeControls=\{false\}/);
   assert.match(src, /!effectiveChestMode\s*&&\s*!noMainWardrobeActive\s*\? \(\s*<StructureCornerSection/);
