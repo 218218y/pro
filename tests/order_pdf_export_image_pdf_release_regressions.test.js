@@ -149,8 +149,7 @@ test('[order-pdf] image-pdf export appends a continuation page when details over
   const draft = {
     projectName: 'Overflow Demo',
     autoDetails: '',
-    manualDetails: Array.from({ length: 40 }, (_, i) => `שורת פירוט ${i + 1}`).join('\n'),
-    detailsFull: true,
+    detailsText: Array.from({ length: 40 }, (_, i) => `שורת פירוט ${i + 1}`).join('\n'),
     detailsTouched: true,
     notes: '',
     orderNumber: '42',
@@ -231,8 +230,7 @@ test('[order-pdf] image-pdf export bootstraps the font once per rasterization jo
     draft: {
       projectName: 'Two Pages',
       autoDetails: 'א',
-      manualDetails: '',
-      detailsFull: true,
+      detailsText: '',
       detailsTouched: false,
       notes: '',
       orderNumber: '11',

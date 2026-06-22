@@ -35,9 +35,9 @@ export type OrderPdfDraftSeed = {
   phone: string;
   mobile: string;
   autoDetails: string;
-  manualDetails: string;
-  manualDetailsHtml: string;
-  manualEnabled: boolean;
+  detailsText: string;
+  detailsHtml: string;
+  detailsTouched: boolean;
   notes: string;
   notesHtml: string;
 };
@@ -51,9 +51,9 @@ export function readOrderPdfDraftSeed(value: unknown): OrderPdfDraftSeed {
   return {
     ...readOrderPdfScalarFieldValues(rec),
     autoDetails: safeStr(rec?.autoDetails),
-    manualDetails: safeStr(rec?.manualDetails),
-    manualDetailsHtml: safeStr(rec?.manualDetailsHtml),
-    manualEnabled: !!rec?.manualEnabled,
+    detailsText: safeStr(rec?.detailsText),
+    detailsHtml: safeStr(rec?.detailsHtml),
+    detailsTouched: !!rec?.detailsTouched,
     notes: safeStr(rec?.notes),
     notesHtml: safeStr(rec?.notesHtml),
   };
@@ -65,9 +65,9 @@ export function createOrderPdfInitialDraft(seed: OrderPdfDraftSeed): {
 } {
   const initialDetails = createOrderPdfInitialDetailsFields({
     autoDetails: seed.autoDetails,
-    manualDetails: seed.manualDetails,
-    manualDetailsHtml: seed.manualDetailsHtml,
-    manualEnabled: seed.manualEnabled,
+    detailsText: seed.detailsText,
+    detailsHtml: seed.detailsHtml,
+    detailsTouched: seed.detailsTouched,
     textApi: { safeStr, textToHtml, buildDetailsHtmlWithMarkers, normalizeForCompare },
   });
 
@@ -125,9 +125,8 @@ export function buildUntouchedDetailsRefreshDraft(args: {
       detailsText: newAutoDetails,
       detailsSeed: newAutoDetails,
       detailsTouched: false,
-      manualEnabled: false,
       autoRegionTextForMarkers: newAutoDetails,
-      textApi: { safeStr, textToHtml, buildDetailsHtmlWithMarkers, normalizeForCompare },
+      textApi: { safeStr, textToHtml, buildDetailsHtmlWithMarkers },
     })
   );
   return next;
@@ -160,7 +159,6 @@ export function syncOrderPdfDraftFromRichEditors(args: {
       textToHtml,
       htmlToTextPreserveNewlines,
       buildDetailsHtmlWithMarkers,
-      normalizeForCompare,
     },
   });
 }
@@ -177,8 +175,8 @@ export function resolveOrderPdfRefreshAuto(args: {
   const prev = currentDraft || null;
   const prevSeed = prev ? safeStr(prev.detailsSeed) : '';
   const prevAuto = prev ? safeStr(prev.autoDetails) : '';
-  const prevHtml = detailsEl ? readInnerHtml(detailsEl) : prev ? safeStr(prev.manualDetailsHtml) : '';
-  const prevText = detailsEl ? richEditorToText(detailsEl) : prev ? safeStr(prev.manualDetails) : '';
+  const prevHtml = detailsEl ? readInnerHtml(detailsEl) : prev ? safeStr(prev.detailsHtml) : '';
+  const prevText = detailsEl ? richEditorToText(detailsEl) : prev ? safeStr(prev.detailsText) : '';
   const prevTouched = !!(prev && prev.detailsTouched) || !!detailsDirty;
 
   const buildNext = (detailsText: string, autoRegionForMarkers: string): OrderPdfDraft => {
@@ -196,9 +194,8 @@ export function resolveOrderPdfRefreshAuto(args: {
         detailsText,
         detailsSeed: newAutoDetails,
         detailsTouched,
-        manualEnabled: false,
         autoRegionTextForMarkers: autoRegionForMarkers,
-        textApi: { safeStr, textToHtml, buildDetailsHtmlWithMarkers, normalizeForCompare },
+        textApi: { safeStr, textToHtml, buildDetailsHtmlWithMarkers },
       }),
     };
   };

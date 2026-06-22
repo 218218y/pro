@@ -27,8 +27,8 @@ test('order pdf overlay draft-record runtime reads canonical draft fields with d
   const draft = readOrderPdfDraftRecord({
     rec: {
       autoDetails: 'Auto block',
-      manualDetailsHtml: '<div>הערה ידנית</div>',
-      detailsFull: true,
+      detailsText: 'canonical edit',
+      detailsHtml: '<div>הערה ידנית</div>',
       detailsTouched: true,
       notesHtml: '<div>הערה</div>',
     },
@@ -37,8 +37,7 @@ test('order pdf overlay draft-record runtime reads canonical draft fields with d
     reportNonFatal: () => undefined,
   });
 
-  assert.equal(draft.manualDetails, 'הערה ידנית\n');
-  assert.equal(draft.manualEnabled, true);
+  assert.equal(draft.detailsText, 'canonical edit');
   assert.equal(draft.notes, 'הערה\n');
   assert.equal(draft.includeRenderSketch, true);
   assert.equal(draft.includeOpenClosed, true);

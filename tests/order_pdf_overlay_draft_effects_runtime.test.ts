@@ -18,54 +18,48 @@ const textApi = {
   normalizeForCompare,
 };
 
-test('order pdf draft effects derives manual text from legacy manual HTML when detailsFull is false', () => {
+test('order pdf draft effects preserves a canonical edited details pair', () => {
   const detailsDirtyRef = { current: false };
   const reports: string[] = [];
 
   const draft = buildOrderPdfDraftFromUiRecord({
     rec: {
       autoDetails: 'Auto line',
-      manualDetails: '',
-      manualDetailsHtml: '<div>ידית שחורה</div><div>קומה 3</div>',
-      detailsFull: false,
-      detailsTouched: false,
-      manualEnabled: false,
+      detailsText: 'edited details',
+      detailsHtml: '<div>ידית שחורה</div><div>קומה 3</div>',
+      detailsTouched: true,
     },
     detailsDirtyRef,
     textApi,
     reportNonFatal: op => reports.push(op),
   });
 
-  assert.equal(draft.manualDetails, 'Auto line\n\nידית שחורה\nקומה 3\n');
-  assert.equal(draft.detailsSeed, 'Auto line\n\nידית שחורה\nקומה 3\n');
+  assert.equal(draft.detailsText.startsWith('Auto line'), false);
+  assert.equal(draft.detailsSeed, 'Auto line');
   assert.equal(draft.detailsTouched, true);
-  assert.equal(draft.manualEnabled, true);
   assert.equal(detailsDirtyRef.current, true);
   assert.deepEqual(reports, []);
 });
 
-test('order pdf draft effects derives text/seed from legacy manual HTML when detailsFull is already true', () => {
+test('order pdf draft effects derives the seed from canonical text when auto details are empty', () => {
   const detailsDirtyRef = { current: false };
   const reports: string[] = [];
 
   const draft = buildOrderPdfDraftFromUiRecord({
     rec: {
       autoDetails: '',
-      manualDetails: '',
-      manualDetailsHtml: '<div>שורת הערה</div><div>חזית לבנה</div>',
-      detailsFull: true,
+      detailsText: 'edited details',
+      detailsHtml: '<div>שורת הערה</div><div>חזית לבנה</div>',
       detailsTouched: true,
-      manualEnabled: false,
     },
     detailsDirtyRef,
     textApi,
     reportNonFatal: op => reports.push(op),
   });
 
-  assert.equal(draft.manualDetails, 'שורת הערה\nחזית לבנה\n');
-  assert.equal(draft.detailsSeed, 'שורת הערה\nחזית לבנה\n');
+  assert.equal(draft.detailsText, 'edited details');
+  assert.equal(draft.detailsSeed, 'edited details');
   assert.equal(draft.detailsTouched, true);
-  assert.equal(draft.manualEnabled, true);
   assert.equal(detailsDirtyRef.current, true);
   assert.deepEqual(reports, []);
 });

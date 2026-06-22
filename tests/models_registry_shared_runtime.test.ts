@@ -46,8 +46,7 @@ test('models registry shared: normalizeModel detaches nested payloads for cyclic
 test('models registry shared: attachPdfEditorDraft detaches nested draft payloads from UI state', () => {
   const draft: any = {
     detailsTouched: true,
-    manualEnabled: true,
-    manualDetails: 'A',
+    detailsText: 'A',
     notes: 'B',
     meta: { accent: 'red' },
   };

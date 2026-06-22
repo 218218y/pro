@@ -20,7 +20,7 @@ import {
 } from '../../pdf/order_pdf_document_fields_runtime.js';
 
 export type OrderPdfImportedRichDraftFieldValues = OrderPdfImportedDraftFieldValues & {
-  manualDetailsHtml?: string;
+  detailsHtml?: string;
   notesHtml?: string;
 };
 
@@ -40,7 +40,7 @@ export function hasAnyOrderPdfImportedRichDraftFieldValue(
   if (!extracted) return false;
   return (
     hasAnyOrderPdfImportedDraftFieldValue(extracted) ||
-    normalizeExtractedRichText(extracted.manualDetailsHtml).length > 0 ||
+    normalizeExtractedRichText(extracted.detailsHtml).length > 0 ||
     normalizeExtractedRichText(extracted.notesHtml).length > 0
   );
 }
@@ -75,21 +75,21 @@ export function applyOrderPdfImportedDraftFields(args: {
 
   applyNonEmptyOrderPdfScalarFieldValues({ target: next, source: extracted });
 
-  const manualDetails = readImportedRichTextAsPlainText({
-    text: extracted.manualDetails,
-    html: extracted.manualDetailsHtml,
-    reportOp: 'orderPdfImport:manualDetailsHtmlToText',
+  const detailsText = readImportedRichTextAsPlainText({
+    text: extracted.detailsText,
+    html: extracted.detailsHtml,
+    reportOp: 'orderPdfImport:detailsHtmlToText',
     reportNonFatal,
   });
-  const manualDetailsHtml = safeStr(extracted.manualDetailsHtml);
-  if (hasOrderPdfTextValue(manualDetails) || normalizeExtractedRichText(manualDetailsHtml).length > 0) {
+  const detailsHtml = safeStr(extracted.detailsHtml);
+  if (hasOrderPdfTextValue(detailsText) || normalizeExtractedRichText(detailsHtml).length > 0) {
     Object.assign(
       next,
       createOrderPdfInitialDetailsFields({
         autoDetails: next.autoDetails,
-        manualDetails,
-        manualDetailsHtml,
-        manualEnabled: true,
+        detailsText,
+        detailsHtml,
+        detailsTouched: true,
         textApi: { safeStr, textToHtml, buildDetailsHtmlWithMarkers, normalizeForCompare },
         reportNonFatal,
       }).fields

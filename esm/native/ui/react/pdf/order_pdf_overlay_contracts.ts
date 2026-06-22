@@ -60,21 +60,13 @@ export type OrderPdfDraft = {
 
   autoDetails: string;
   // "Details" (פרוט הזמנה) is now fully user-editable.
-  // For backward compatibility we keep the old field names (manualDetails/manualDetailsHtml)
-  // but they now represent the *entire* details box content.
-  manualDetails: string;
-  manualDetailsHtml?: string;
-
-  // When true, manualDetails contains the full details text (not just additions).
-  // Older drafts without this flag are treated as the previous "auto + additions" mode.
-  detailsFull?: boolean;
+  // The plain-text and sanitized rich-HTML forms represent the entire details box.
+  detailsText: string;
+  detailsHtml?: string;
 
   // Used to avoid overwriting the user's edits when refreshing auto data.
-  detailsTouched?: boolean;
+  detailsTouched: boolean;
   detailsSeed?: string;
-
-  // Kept for compatibility with older UI/state, but no longer required.
-  manualEnabled: boolean;
 
   notes: string; // הערות
   // Rich HTML for notes (optional). `notes` stays as plain text.

@@ -75,7 +75,6 @@ test('project recovery hardening also clears autosave payloads that parse to a n
 
 test('project recovery hardening clones preserved PDF draft during undo/redo apply and reports failures canonically', () => {
   const pdfDraft = {
-    manualEnabled: true,
     nested: { value: 1 },
     items: [1, { keep: true }],
   };
@@ -113,7 +112,6 @@ test('project recovery hardening clones preserved PDF draft during undo/redo app
   assert.deepEqual(seen[0].savedNotes, [{ id: 'n1', text: 'keep' }]);
   assert.notEqual(seen[0].orderPdfEditorDraft, pdfDraft);
   assert.deepEqual(seen[0].orderPdfEditorDraft, {
-    manualEnabled: true,
     nested: { value: 1 },
     items: [1, { keep: true }],
   });

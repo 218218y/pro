@@ -40,12 +40,10 @@ test('[order-pdf] draft rehydrate keeps sketch annotations and sketch include fl
       phone: '03-0000000',
       mobile: '050-0000000',
       autoDetails: 'פרט א',
-      manualDetails: 'פרט א',
-      manualDetailsHtml: '<div>פרט א</div>',
-      detailsFull: true,
+      detailsText: 'פרט א',
+      detailsHtml: '<div>פרט א</div>',
       detailsSeed: 'פרט א',
       detailsTouched: false,
-      manualEnabled: false,
       notes: 'הערה',
       notesHtml: '<div>הערה</div>',
       includeRenderSketch: false,
@@ -76,12 +74,10 @@ test('[order-pdf] refresh-auto preserves sketch annotations while refreshing pro
     phone: '03-1111111',
     mobile: '050-1111111',
     autoDetails: 'ישן',
-    manualDetails: 'ישן',
-    manualDetailsHtml: '<div>ישן</div>',
-    detailsFull: true,
+    detailsText: 'ישן',
+    detailsHtml: '<div>ישן</div>',
     detailsSeed: 'ישן',
     detailsTouched: false,
-    manualEnabled: false,
     notes: 'הערה קיימת',
     notesHtml: '<div>הערה קיימת</div>',
     includeRenderSketch: true,
@@ -98,9 +94,8 @@ test('[order-pdf] refresh-auto preserves sketch annotations while refreshing pro
       phone: '03-9999999',
       mobile: '050-9999999',
       autoDetails: 'חדש',
-      manualDetails: '',
-      manualDetailsHtml: '',
-      manualEnabled: false,
+      detailsText: '',
+      detailsHtml: '',
       notes: '',
       notesHtml: '',
     },
@@ -112,7 +107,7 @@ test('[order-pdf] refresh-auto preserves sketch annotations while refreshing pro
 
   assert.equal(resolved.kind, 'persist');
   if (resolved.kind !== 'persist') return;
-  assert.equal(resolved.next.manualDetails, 'חדש');
+  assert.equal(resolved.next.detailsText, 'חדש');
   assert.equal(resolved.next.includeOpenClosed, false);
   assert.deepEqual(resolved.next.sketchAnnotations, makeSketchAnnotations());
 });

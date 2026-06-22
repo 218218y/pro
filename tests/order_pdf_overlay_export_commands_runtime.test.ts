@@ -19,8 +19,7 @@ function createDraft(): OrderPdfDraft {
     phone: '',
     mobile: '',
     autoDetails: '',
-    manualDetails: '',
-    manualEnabled: false,
+    detailsText: '',
     notes: '',
     includeRenderSketch: true,
     includeOpenClosed: true,
@@ -181,19 +180,18 @@ test('exportOrderPdfInteractiveWithDeps preserves the real export failure detail
   });
 });
 
-test('loadOrderPdfIntoEditorWithDeps treats html-only extracted legacy details as found fields', async () => {
+test('loadOrderPdfIntoEditorWithDeps treats canonical html-only extracted details as found fields', async () => {
   const persisted: OrderPdfDraft[] = [];
   const result = await loadOrderPdfIntoEditorWithDeps({
-    file: { name: 'legacy.pdf', type: 'application/pdf' } as File,
+    file: { name: 'canonical.pdf', type: 'application/pdf' } as File,
     draft: createDraft(),
     pdfImportApi: {
       readPdfFileBytes: async () => new Uint8Array([7, 8, 9]),
       detectTrailingImportedImagePages: async () => [],
-      extractLoadedPdfDraftFields: async () => ({ manualDetailsHtml: '<div>הערת legacy</div>' }),
+      extractLoadedPdfDraftFields: async () => ({ detailsHtml: '<div>הערת PDF</div>' }),
       applyExtractedLoadedPdfDraft: draft => ({
         ...draft!,
-        manualDetails: 'הערת legacy',
-        manualEnabled: true,
+        detailsText: 'הערת PDF',
       }),
       cleanPdfForEditorBackground: async bytes => bytes,
     },
@@ -209,7 +207,7 @@ test('loadOrderPdfIntoEditorWithDeps treats html-only extracted legacy details a
   });
 
   assert.deepEqual(result, { ok: true, kind: 'load-pdf', fieldsFound: true });
-  assert.equal(persisted[0]?.manualDetails, 'הערת legacy');
+  assert.equal(persisted[0]?.detailsText, 'הערת PDF');
 });
 
 test('loadOrderPdfIntoEditorWithDeps does not partially commit refs or counters when cleanup fails late', async () => {

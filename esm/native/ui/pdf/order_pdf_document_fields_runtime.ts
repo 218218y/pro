@@ -11,7 +11,7 @@ export type OrderPdfScalarFieldValues = Record<OrderPdfScalarFieldKey, string>;
 
 export type OrderPdfImportedDraftFieldValues = Partial<
   OrderPdfScalarFieldValues & {
-    manualDetails: string;
+    detailsText: string;
     notes: string;
   }
 >;
@@ -125,7 +125,7 @@ export function readOrderPdfImportedDraftFieldValues(
 
   return {
     ...scalars,
-    manualDetails: detailsContinuation
+    detailsText: detailsContinuation
       ? detailsPage1
         ? `${detailsPage1}
 ${detailsContinuation}`
@@ -142,5 +142,5 @@ export function hasAnyOrderPdfImportedDraftFieldValue(
   for (const key of ORDER_PDF_SCALAR_FIELD_KEYS) {
     if (hasOrderPdfTextValue(extracted[key])) return true;
   }
-  return hasOrderPdfTextValue(extracted.manualDetails) || hasOrderPdfTextValue(extracted.notes);
+  return hasOrderPdfTextValue(extracted.detailsText) || hasOrderPdfTextValue(extracted.notes);
 }

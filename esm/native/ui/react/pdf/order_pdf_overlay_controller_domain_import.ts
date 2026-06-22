@@ -10,8 +10,8 @@ export type PdfImportApi = {
       deliveryAddress?: string;
       phone?: string;
       mobile?: string;
-      manualDetails?: string;
-      manualDetailsHtml?: string;
+      detailsText?: string;
+      detailsHtml?: string;
       notes?: string;
       notesHtml?: string;
     },
@@ -33,8 +33,8 @@ export type PdfImportApi = {
     deliveryAddress?: string;
     phone?: string;
     mobile?: string;
-    manualDetails?: string;
-    manualDetailsHtml?: string;
+    detailsText?: string;
+    detailsHtml?: string;
     notes?: string;
     notesHtml?: string;
   }>;

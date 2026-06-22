@@ -92,15 +92,13 @@ test('[order-pdf] prepared layout preserves wrapped lines and visible max-line w
   assert.equal(prepared.maxLines, 2);
 });
 
-test('[order-pdf] image-pdf details text uses the canonical full-details touched semantics', () => {
+test('[order-pdf] image-pdf details text uses the canonical touched semantics', () => {
   assert.equal(
     buildOrderPdfDetailsText({
       autoDetails: 'auto details',
-      manualDetails: 'manual details',
-      detailsFull: true,
-      detailsTouched: false,
-      manualEnabled: true,
+      detailsText: 'edited details',
+      detailsTouched: true,
     } as any),
-    'manual details'
+    'edited details'
   );
 });

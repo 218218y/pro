@@ -11,11 +11,7 @@ type ReportNonFatal = (op: string, err: unknown, dedupeMs?: number) => void;
 
 export type OrderPdfRichEditorTextApi = Pick<
   OrderPdfTextApi,
-  | 'safeStr'
-  | 'textToHtml'
-  | 'htmlToTextPreserveNewlines'
-  | 'buildDetailsHtmlWithMarkers'
-  | 'normalizeForCompare'
+  'safeStr' | 'textToHtml' | 'htmlToTextPreserveNewlines' | 'buildDetailsHtmlWithMarkers'
 >;
 
 export type OrderPdfRichEditorSnapshot = {
@@ -51,8 +47,8 @@ export function readOrderPdfRichEditorSnapshotFromDraft(args: {
   if (!draft) return { detailsHtml: '', notesHtml: '' };
 
   const detailsHtml = resolveOrderPdfRichTextHtml({
-    text: draft.manualDetails || '',
-    html: draft.manualDetailsHtml,
+    text: draft.detailsText || '',
+    html: draft.detailsHtml,
     textApi: { safeStr, textToHtml: textApi.textToHtml },
     reportNonFatal,
     reportOp: 'orderPdfShell:detailsHtml',
@@ -95,13 +91,11 @@ export function syncOrderPdfDraftFromRichEditorValues(args: {
       detailsHtml: details.html,
       detailsSeed: draft.detailsSeed || draft.autoDetails || details.text,
       detailsTouched: touchedNow,
-      manualEnabled: touchedNow,
       autoRegionTextForMarkers: touchedNow ? null : details.text,
       textApi: {
         safeStr: textApi.safeStr,
         textToHtml: textApi.textToHtml,
         buildDetailsHtmlWithMarkers: textApi.buildDetailsHtmlWithMarkers,
-        normalizeForCompare: textApi.normalizeForCompare,
       },
       reportNonFatal,
       markerReportOp: 'orderPdfRichEditorSync:detailsMarkers',
@@ -111,27 +105,20 @@ export function syncOrderPdfDraftFromRichEditorValues(args: {
     next = assignOrderPdfDraftFieldIfChanged({
       base: draft,
       next,
-      key: 'manualDetailsHtml',
-      value: nextDetails.manualDetailsHtml,
+      key: 'detailsHtml',
+      value: nextDetails.detailsHtml,
     });
     next = assignOrderPdfDraftFieldIfChanged({
       base: draft,
       next,
-      key: 'manualDetails',
-      value: nextDetails.manualDetails,
+      key: 'detailsText',
+      value: nextDetails.detailsText,
     });
-    next = assignOrderPdfDraftFieldIfChanged({ base: draft, next, key: 'detailsFull', value: true });
     next = assignOrderPdfDraftFieldIfChanged({
       base: draft,
       next,
       key: 'detailsTouched',
       value: nextDetails.detailsTouched,
-    });
-    next = assignOrderPdfDraftFieldIfChanged({
-      base: draft,
-      next,
-      key: 'manualEnabled',
-      value: nextDetails.manualEnabled,
     });
     next = assignOrderPdfDraftFieldIfChanged({
       base: draft,

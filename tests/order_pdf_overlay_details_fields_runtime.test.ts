@@ -22,69 +22,62 @@ const textApi = {
   normalizeForCompare,
 };
 
-test('order pdf details fields runtime collapses initial manualEnabled when manual text matches auto details', () => {
+test('order pdf details fields runtime collapses an edited marker when stored text matches auto details', () => {
   const result = createOrderPdfInitialDetailsFields({
     autoDetails: 'Auto line',
-    manualDetails: 'Auto line',
-    manualDetailsHtml: '',
-    manualEnabled: true,
+    detailsText: 'Auto line',
+    detailsHtml: '',
+    detailsTouched: true,
     textApi,
   });
 
-  assert.equal(result.fields.manualDetails, 'Auto line');
+  assert.equal(result.fields.detailsText, 'Auto line');
   assert.equal(result.fields.detailsTouched, false);
-  assert.equal(result.fields.manualEnabled, false);
   assert.equal(result.detailsDirty, false);
 });
 
-test('order pdf details fields runtime collapses stale manualEnabled/manual html drift when ui record already matches auto details', () => {
+test('order pdf details fields runtime collapses stale touched drift when ui record matches auto details', () => {
   const detailsDirtyRef = { current: true };
   const reports: string[] = [];
 
   const fields = buildOrderPdfDetailsFieldsFromUiRecord({
     rec: {
       autoDetails: 'Auto line',
-      manualDetails: 'Auto line',
-      manualDetailsHtml: '<div>Auto line</div>',
-      detailsFull: true,
+      detailsText: 'Auto line',
+      detailsHtml: '<div>Auto line</div>',
       detailsTouched: false,
-      manualEnabled: true,
     },
     detailsDirtyRef,
     textApi,
     reportNonFatal: op => reports.push(op),
   });
 
-  assert.equal(fields.manualDetails, 'Auto line');
+  assert.equal(fields.detailsText, 'Auto line');
   assert.equal(fields.detailsTouched, false);
-  assert.equal(fields.manualEnabled, false);
   assert.equal(detailsDirtyRef.current, false);
-  assert.equal(fields.manualDetailsHtml, '<div>Auto line</div>');
+  assert.equal(fields.detailsHtml, '<div>Auto line</div>');
   assert.deepEqual(reports, []);
 });
 
-test('order pdf details fields runtime preserves enabled stored rich details even when touched flag is missing', () => {
+test('order pdf details fields runtime preserves canonical rich details when touched', () => {
   const detailsDirtyRef = { current: false };
   const reports: string[] = [];
 
   const fields = buildOrderPdfDetailsFieldsFromUiRecord({
     rec: {
       autoDetails: 'Auto line',
-      manualDetails: '',
-      manualDetailsHtml: '<div>Manual line</div><div>Second line</div>',
-      detailsFull: true,
-      detailsTouched: false,
-      manualEnabled: true,
+      detailsText: 'Edited line\nSecond line\n',
+      detailsHtml: '<div>Edited line</div><div>Second line</div>',
+      detailsTouched: true,
     },
     detailsDirtyRef,
     textApi,
     reportNonFatal: op => reports.push(op),
   });
 
-  assert.equal(fields.manualDetails, 'Manual line\nSecond line\n');
-  assert.equal(fields.manualDetailsHtml, '<div>Manual line</div><div>Second line</div>');
+  assert.equal(fields.detailsText, 'Edited line\nSecond line\n');
+  assert.equal(fields.detailsHtml, '<div>Edited line</div><div>Second line</div>');
   assert.equal(fields.detailsTouched, true);
-  assert.equal(fields.manualEnabled, true);
   assert.equal(detailsDirtyRef.current, true);
   assert.deepEqual(reports, []);
 });

@@ -22,9 +22,8 @@ function createSeed(): OrderPdfDraftSeed {
     phone: '03',
     mobile: '050',
     autoDetails: 'פרטי הזמנה',
-    manualDetails: '',
-    manualDetailsHtml: '',
-    manualEnabled: false,
+    detailsText: '',
+    detailsHtml: '',
     notes: '',
     notesHtml: '',
   };
@@ -39,8 +38,7 @@ function createDraft(): OrderPdfDraft {
     phone: '',
     mobile: '',
     autoDetails: 'ישן',
-    manualDetails: 'ישן',
-    manualEnabled: false,
+    detailsText: 'ישן',
     notes: '',
     includeRenderSketch: true,
     includeOpenClosed: true,
@@ -68,7 +66,7 @@ test('loadOrderPdfInitialDraftWithDeps returns seeded draft and detailsDirty sta
       autoDetails: String((value as { autoDetails?: string }).autoDetails || ''),
     }),
     createOrderPdfInitialDraft: seed => ({
-      draft: { ...createDraft(), autoDetails: seed.autoDetails, manualDetails: seed.autoDetails },
+      draft: { ...createDraft(), autoDetails: seed.autoDetails, detailsText: seed.autoDetails },
       detailsDirty: false,
     }),
   });
@@ -85,8 +83,8 @@ test('refreshOrderPdfDraftFromProjectWithDeps returns pending confirm when merge
     title: 'עדכון',
     message: 'message',
     preview: 'preview',
-    nextOk: { ...createDraft(), manualDetails: 'ok' },
-    nextCancel: { ...createDraft(), manualDetails: 'cancel' },
+    nextOk: { ...createDraft(), detailsText: 'ok' },
+    nextCancel: { ...createDraft(), detailsText: 'cancel' },
   };
 
   const result = await refreshOrderPdfDraftFromProjectWithDeps({
@@ -116,8 +114,8 @@ test('resolveOrderPdfInlineConfirmAction returns the selected follow-up draft', 
     title: 'עדכון',
     message: 'message',
     preview: 'preview',
-    nextOk: { ...createDraft(), manualDetails: 'ok' },
-    nextCancel: { ...createDraft(), manualDetails: 'cancel' },
+    nextOk: { ...createDraft(), detailsText: 'ok' },
+    nextCancel: { ...createDraft(), detailsText: 'cancel' },
   };
 
   const okResult = resolveOrderPdfInlineConfirmAction({ inlineConfirm, mode: 'ok' });
@@ -125,9 +123,9 @@ test('resolveOrderPdfInlineConfirmAction returns the selected follow-up draft', 
 
   assert.equal(okResult.ok, true);
   assert.equal(okResult.kind, 'confirm-inline-ok');
-  assert.equal(okResult.next?.manualDetails, 'ok');
+  assert.equal(okResult.next?.detailsText, 'ok');
 
   assert.equal(cancelResult.ok, true);
   assert.equal(cancelResult.kind, 'confirm-inline-cancel');
-  assert.equal(cancelResult.next?.manualDetails, 'cancel');
+  assert.equal(cancelResult.next?.detailsText, 'cancel');
 });

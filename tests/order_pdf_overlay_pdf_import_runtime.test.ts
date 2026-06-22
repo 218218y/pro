@@ -155,19 +155,18 @@ test('order pdf pdf-import detects trailing non-form pages and keeps extracted d
     },
     {
       orderNumber: '1234',
-      manualDetails: 'שורת פרטים',
+      detailsText: 'שורת פרטים',
       notes: 'הערה',
     },
     [1, 2]
   );
 
   assert.equal(next.orderNumber, '1234');
-  assert.equal(next.manualDetails, 'שורת פרטים');
+  assert.equal(next.detailsText, 'שורת פרטים');
   assert.equal(next.detailsTouched, true);
-  assert.equal(next.manualEnabled, true);
   assert.equal(next.includeRenderSketch, false);
   assert.equal(next.includeOpenClosed, false);
-  assert.match(next.manualDetailsHtml, /שורת פרטים/);
+  assert.match(next.detailsHtml, /שורת פרטים/);
   assert.match(next.notesHtml, /הערה/);
 });
 
@@ -199,7 +198,7 @@ test('order pdf pdf-import extracts fallback field names through the canonical d
     deliveryAddress: '7 Shalom St',
     phone: '03-1111111',
     mobile: '050-2222222',
-    manualDetails: 'Base line\nOverflow line',
+    detailsText: 'Base line\nOverflow line',
     notes: 'Imported note',
   });
 });
@@ -250,23 +249,22 @@ test('order pdf pdf-import falls back to imported open-closed page when the buil
   ]);
 });
 
-test('order pdf pdf-import applies html-only legacy details and notes through the canonical imported-field runtime', () => {
+test('order pdf pdf-import applies canonical html-only details and notes through the imported-field runtime', () => {
   const next = applyExtractedLoadedPdfDraft(
     {
       ...makeEmptyDraft(),
       autoDetails: 'פרט מובנה',
     },
     {
-      manualDetailsHtml: '<div>שורה ידנית</div><div>עוד שורה</div>',
+      detailsHtml: '<div>שורה ידנית</div><div>עוד שורה</div>',
       notesHtml: '<div>הערה אחת</div><div>הערה שתיים</div>',
     },
     []
   );
 
-  assert.equal(next.manualDetails, 'שורה ידנית\nעוד שורה');
+  assert.equal(next.detailsText, 'שורה ידנית\nעוד שורה');
   assert.equal(next.detailsTouched, true);
-  assert.equal(next.manualEnabled, true);
-  assert.equal(next.manualDetailsHtml, '<div>שורה ידנית</div><div>עוד שורה</div>');
+  assert.equal(next.detailsHtml, '<div>שורה ידנית</div><div>עוד שורה</div>');
   assert.equal(next.notes, 'הערה אחת\nהערה שתיים');
   assert.equal(next.notesHtml, '<div>הערה אחת</div><div>הערה שתיים</div>');
 });
@@ -299,7 +297,7 @@ test('order pdf pdf-import extracts editor fields from an existing PDF text/OCR 
     deliveryAddress: 'רחוב שלום 7',
     phone: '03-1111111',
     mobile: '050-2222222',
-    manualDetails: 'שורת פרטים ראשונה\nשורת פרטים שניה',
+    detailsText: 'שורת פרטים ראשונה\nשורת פרטים שניה',
     notes: 'הערה חשובה',
   });
 });
@@ -318,8 +316,8 @@ test('order pdf image-pdf export writes hidden import fields that load back into
       deliveryAddress: 'כתובת בדיקה',
       phone: '03-3333333',
       mobile: '050-4444444',
-      manualDetails: 'פרטים מתוך PDF תמונה',
-      manualEnabled: true,
+      detailsText: 'פרטים מתוך PDF תמונה',
+      detailsTouched: true,
       notes: 'הערה מתוך PDF תמונה',
     },
   });
@@ -344,7 +342,7 @@ test('order pdf image-pdf export writes hidden import fields that load back into
   assert.equal(extracted.deliveryAddress, 'כתובת בדיקה');
   assert.equal(extracted.phone, '03-3333333');
   assert.equal(extracted.mobile, '050-4444444');
-  assert.equal(extracted.manualDetails, 'פרטים מתוך PDF תמונה');
+  assert.equal(extracted.detailsText, 'פרטים מתוך PDF תמונה');
   assert.equal(extracted.notes, 'הערה מתוך PDF תמונה');
 
   const cleaned = await cleanPdfForEditorBackground(loadedBytes);

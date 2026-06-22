@@ -21,12 +21,10 @@ import { makeEmptyDraft } from './order_pdf_overlay_text.js';
 export type OrderPdfDraftRecordFieldKey =
   | OrderPdfScalarFieldKey
   | 'autoDetails'
-  | 'manualDetails'
-  | 'manualDetailsHtml'
-  | 'detailsFull'
+  | 'detailsText'
+  | 'detailsHtml'
   | 'detailsSeed'
   | 'detailsTouched'
-  | 'manualEnabled'
   | 'notes'
   | 'notesHtml'
   | 'includeRenderSketch'
@@ -40,12 +38,10 @@ export const ORDER_PDF_DRAFT_RECORD_FIELD_KEYS: readonly OrderPdfDraftRecordFiel
   'phone',
   'mobile',
   'autoDetails',
-  'manualDetails',
-  'manualDetailsHtml',
-  'detailsFull',
+  'detailsText',
+  'detailsHtml',
   'detailsSeed',
   'detailsTouched',
-  'manualEnabled',
   'notes',
   'notesHtml',
   'includeRenderSketch',

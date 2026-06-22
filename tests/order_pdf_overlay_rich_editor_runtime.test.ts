@@ -27,8 +27,8 @@ test('order pdf rich-editor snapshot resolves details and html-only notes throug
     draft: {
       ...makeEmptyDraft(),
       autoDetails: 'פרט א',
-      manualDetails: 'פרט א',
-      manualDetailsHtml: '',
+      detailsText: 'פרט א',
+      detailsHtml: '',
       notes: '',
       notesHtml: '<div>שורה א<br>שורה ב</div>',
     },
@@ -43,8 +43,8 @@ test('order pdf rich-editor sync preserves reference on no-op editor snapshots',
   const draft = {
     ...makeEmptyDraft(),
     autoDetails: 'אותו טקסט',
-    manualDetails: 'אותו טקסט',
-    manualDetailsHtml: 'אותו טקסט',
+    detailsText: 'אותו טקסט',
+    detailsHtml: 'אותו טקסט',
     detailsSeed: 'אותו טקסט',
     notes: 'הערה',
     notesHtml: 'הערה',
@@ -65,8 +65,8 @@ test('order pdf rich-editor sync updates only the changed rich-editor fields', (
   const draft = {
     ...makeEmptyDraft(),
     autoDetails: 'פרט מובנה',
-    manualDetails: 'פרט מובנה',
-    manualDetailsHtml: 'פרט מובנה',
+    detailsText: 'פרט מובנה',
+    detailsHtml: 'פרט מובנה',
     detailsSeed: 'פרט מובנה',
     notes: 'הערה ישנה',
     notesHtml: 'הערה ישנה',
@@ -82,10 +82,9 @@ test('order pdf rich-editor sync updates only the changed rich-editor fields', (
 
   assert.ok(next);
   assert.notEqual(next, draft);
-  assert.equal(next?.manualDetails, 'פרט ידני חדש');
-  assert.equal(next?.manualDetailsHtml, '<div>פרט ידני חדש</div>');
+  assert.equal(next?.detailsText, 'פרט ידני חדש');
+  assert.equal(next?.detailsHtml, '<div>פרט ידני חדש</div>');
   assert.equal(next?.detailsTouched, true);
-  assert.equal(next?.manualEnabled, true);
   assert.equal(next?.notes, 'הערה ישנה');
   assert.equal(next?.notesHtml, 'הערה ישנה');
 });

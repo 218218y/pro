@@ -236,8 +236,8 @@ export function createOrderPdfTextDetailsOps(deps: ExportOrderPdfDeps) {
       phone: '',
       mobile: '',
       autoDetails,
-      manualDetails: '',
-      manualEnabled: false,
+      detailsText: autoDetails,
+      detailsTouched: false,
       notes: '',
     };
   }

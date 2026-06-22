@@ -91,7 +91,6 @@ test('project/model release regressions preserve current PDF draft, canonicalize
   const state = createStoreState({
     ui: {
       orderPdfEditorDraft: {
-        manualEnabled: true,
         notes: 'Keep me',
         nested: { value: 1 },
       },
@@ -137,7 +136,6 @@ test('project/model release regressions preserve current PDF draft, canonicalize
   assert.deepEqual(built.savedColors, [{ id: 'c1', hex: '#fff' }]);
   assert.notEqual(built.orderPdfEditorDraft, state.ui.orderPdfEditorDraft);
   assert.deepEqual(built.orderPdfEditorDraft, {
-    manualEnabled: true,
     notes: 'Keep me',
     nested: { value: 1 },
   });

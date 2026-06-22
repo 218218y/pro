@@ -4,22 +4,12 @@ import type { OrderPdfTextApi } from './order_pdf_overlay_text_api.js';
 
 export type OrderPdfDetailsFields = Pick<
   OrderPdfDraft,
-  | 'autoDetails'
-  | 'manualDetails'
-  | 'manualDetailsHtml'
-  | 'detailsFull'
-  | 'detailsSeed'
-  | 'detailsTouched'
-  | 'manualEnabled'
+  'autoDetails' | 'detailsText' | 'detailsHtml' | 'detailsSeed' | 'detailsTouched'
 >;
 
 export type OrderPdfDetailsTextApi = Pick<
   OrderPdfTextApi,
-  | 'safeStr'
-  | 'textToHtml'
-  | 'htmlToTextPreserveNewlines'
-  | 'buildDetailsHtmlWithMarkers'
-  | 'normalizeForCompare'
+  'safeStr' | 'textToHtml' | 'buildDetailsHtmlWithMarkers' | 'normalizeForCompare'
 >;
 
 type ReportNonFatal = (op: string, err: unknown, dedupeMs?: number) => void;
@@ -27,9 +17,6 @@ type ReportNonFatal = (op: string, err: unknown, dedupeMs?: number) => void;
 type StoredOrderPdfDetailsFields = {
   detailsText: string;
   detailsHtml: string;
-  hasDetailsValue: boolean;
-  detailsFull: boolean;
-  manualEnabled: boolean;
 };
 
 function trimTextValue(value: string): string {
@@ -85,32 +72,15 @@ function resolveOrderPdfDetailsMarkerHtml(args: {
 
 function readStoredOrderPdfDetailsFields(
   rec: Record<string, unknown>,
-  textApi: Pick<OrderPdfDetailsTextApi, 'safeStr' | 'htmlToTextPreserveNewlines'>
+  textApi: Pick<OrderPdfDetailsTextApi, 'safeStr'>
 ): StoredOrderPdfDetailsFields {
-  const manualText = textApi.safeStr(rec.manualDetails);
-  const manualHtml = textApi.safeStr(rec.manualDetailsHtml);
-  const textFromHtml = manualText
-    ? ''
-    : manualHtml
-      ? textApi.htmlToTextPreserveNewlines(null, manualHtml)
-      : '';
-  const detailsText = manualText || textFromHtml;
+  const detailsText = textApi.safeStr(rec.detailsText);
+  const detailsHtml = textApi.safeStr(rec.detailsHtml);
 
   return {
     detailsText,
-    detailsHtml: manualHtml,
-    hasDetailsValue: hasOrderPdfTextValue(detailsText) || hasOrderPdfTextValue(manualHtml),
-    detailsFull: !!rec.detailsFull,
-    manualEnabled: !!rec.manualEnabled,
+    detailsHtml,
   };
-}
-
-function mergeOrderPdfStoredInlineDetails(autoDetails: string, manualText: string): string {
-  if (!autoDetails) return manualText;
-  let out = autoDetails;
-  if (!out.endsWith('\n')) out += '\n';
-  if (!out.endsWith('\n\n')) out += '\n';
-  return `${out}${manualText}`;
 }
 
 export function createOrderPdfDetailsFields(args: {
@@ -119,12 +89,8 @@ export function createOrderPdfDetailsFields(args: {
   detailsHtml?: unknown;
   detailsSeed?: unknown;
   detailsTouched?: unknown;
-  manualEnabled?: unknown;
   autoRegionTextForMarkers?: unknown;
-  textApi: Pick<
-    OrderPdfDetailsTextApi,
-    'safeStr' | 'textToHtml' | 'buildDetailsHtmlWithMarkers' | 'normalizeForCompare'
-  >;
+  textApi: Pick<OrderPdfDetailsTextApi, 'safeStr' | 'textToHtml' | 'buildDetailsHtmlWithMarkers'>;
   reportNonFatal?: ReportNonFatal;
   markerReportOp?: string;
   htmlReportOp?: string;
@@ -135,11 +101,11 @@ export function createOrderPdfDetailsFields(args: {
   const detailsTouched = !!args.detailsTouched;
   const detailsSeed = textApi.safeStr(args.detailsSeed) || autoDetails || detailsText;
 
-  let manualDetailsHtml = sanitizeHtmlByPolicy(null, textApi.safeStr(args.detailsHtml), 'order-pdf-rich');
-  if (!manualDetailsHtml && detailsText) {
+  let detailsHtml = sanitizeHtmlByPolicy(null, textApi.safeStr(args.detailsHtml), 'order-pdf-rich');
+  if (!detailsHtml && detailsText) {
     const autoRegionTextRaw = textApi.safeStr(args.autoRegionTextForMarkers);
     const autoRegionText = autoRegionTextRaw || null;
-    manualDetailsHtml = resolveOrderPdfDetailsMarkerHtml({
+    detailsHtml = resolveOrderPdfDetailsMarkerHtml({
       detailsText,
       autoRegionText,
       textApi,
@@ -148,27 +114,20 @@ export function createOrderPdfDetailsFields(args: {
     });
   }
 
-  const manualEnabledRequested = !!args.manualEnabled;
-  const manualEnabled =
-    manualEnabledRequested &&
-    (detailsTouched || textApi.normalizeForCompare(detailsText) !== textApi.normalizeForCompare(autoDetails));
-
   return {
     autoDetails,
-    manualDetails: detailsText,
-    manualDetailsHtml,
-    detailsFull: true,
+    detailsText,
+    detailsHtml,
     detailsSeed,
     detailsTouched,
-    manualEnabled,
   };
 }
 
 export function createOrderPdfInitialDetailsFields(args: {
   autoDetails: unknown;
-  manualDetails?: unknown;
-  manualDetailsHtml?: unknown;
-  manualEnabled?: unknown;
+  detailsText?: unknown;
+  detailsHtml?: unknown;
+  detailsTouched?: unknown;
   textApi: Pick<
     OrderPdfDetailsTextApi,
     'safeStr' | 'textToHtml' | 'buildDetailsHtmlWithMarkers' | 'normalizeForCompare'
@@ -177,24 +136,20 @@ export function createOrderPdfInitialDetailsFields(args: {
 }): { fields: OrderPdfDetailsFields; detailsDirty: boolean } {
   const { textApi, reportNonFatal } = args;
   const autoDetails = textApi.safeStr(args.autoDetails);
-  const manualDetails = textApi.safeStr(args.manualDetails);
-  const manualDetailsHtml = textApi.safeStr(args.manualDetailsHtml);
-  const detailsText = manualDetails || autoDetails;
+  const storedDetailsText = textApi.safeStr(args.detailsText);
+  const storedDetailsHtml = textApi.safeStr(args.detailsHtml);
+  const detailsText = storedDetailsText || autoDetails;
   const detailsTouched =
-    !!manualDetails &&
-    textApi.normalizeForCompare(manualDetails) !== textApi.normalizeForCompare(autoDetails);
+    !!args.detailsTouched &&
+    textApi.normalizeForCompare(detailsText) !== textApi.normalizeForCompare(autoDetails);
 
   return {
     fields: createOrderPdfDetailsFields({
       autoDetails,
       detailsText,
-      detailsHtml: manualDetailsHtml,
+      detailsHtml: storedDetailsHtml,
       detailsSeed: autoDetails,
       detailsTouched,
-      manualEnabled:
-        !!args.manualEnabled ||
-        hasOrderPdfTextValue(manualDetails) ||
-        hasOrderPdfTextValue(manualDetailsHtml),
       textApi,
       reportNonFatal,
       htmlReportOp: 'orderPdfInitialDraft:detailsHtml',
@@ -212,7 +167,6 @@ export function buildOrderPdfDetailsFieldsFromUiRecord(args: {
   const { rec, detailsDirtyRef, textApi, reportNonFatal } = args;
   const autoDetails = textApi.safeStr(rec.autoDetails);
   const storedDetails = readStoredOrderPdfDetailsFields(rec, textApi);
-  const detailsFullRaw = storedDetails.detailsFull;
 
   let detailsText = storedDetails.detailsText;
   let detailsHtml = storedDetails.detailsHtml;
@@ -220,23 +174,11 @@ export function buildOrderPdfDetailsFieldsFromUiRecord(args: {
   let detailsTouched = !!rec.detailsTouched;
   let markerAutoRegionText: string | null = null;
 
-  if (!detailsFullRaw) {
-    const hasManual = storedDetails.hasDetailsValue || storedDetails.manualEnabled;
-    if (hasManual) {
-      detailsText = mergeOrderPdfStoredInlineDetails(autoDetails, storedDetails.detailsText);
-    } else {
-      detailsText = autoDetails || '';
-    }
+  if (!detailsText && autoDetails) {
+    detailsText = autoDetails;
     detailsHtml = '';
     detailsSeed = detailsText;
-    detailsTouched = hasManual;
-  } else {
-    if (!detailsText && autoDetails) {
-      detailsText = autoDetails;
-      detailsHtml = '';
-      detailsSeed = detailsText;
-      detailsTouched = false;
-    }
+    detailsTouched = false;
   }
 
   if (!detailsSeed) detailsSeed = autoDetails || detailsText || '';
@@ -244,16 +186,6 @@ export function buildOrderPdfDetailsFieldsFromUiRecord(args: {
   try {
     const autoCmp = textApi.normalizeForCompare(autoDetails || '');
     const curCmp = textApi.normalizeForCompare(detailsText || '');
-
-    if (
-      !detailsTouched &&
-      detailsFullRaw &&
-      storedDetails.manualEnabled &&
-      storedDetails.hasDetailsValue &&
-      autoCmp !== curCmp
-    ) {
-      detailsTouched = true;
-    }
 
     if (detailsTouched && autoCmp === curCmp) {
       detailsTouched = false;
@@ -280,7 +212,6 @@ export function buildOrderPdfDetailsFieldsFromUiRecord(args: {
     detailsHtml,
     detailsSeed,
     detailsTouched,
-    manualEnabled: storedDetails.manualEnabled || storedDetails.hasDetailsValue,
     autoRegionTextForMarkers: markerAutoRegionText,
     textApi,
     reportNonFatal,

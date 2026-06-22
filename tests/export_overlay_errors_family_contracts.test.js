@@ -110,6 +110,34 @@ test('doors/export/errors family stays consolidated behind dedicated owners', ()
   assert.match(errorsRuntime, /export function installErrorsWindowRuntime\(/);
 });
 
+test('[order-pdf-contract] source keeps one canonical full-details draft shape', () => {
+  const roots = [
+    new URL('../esm/native/ui/react/pdf/', import.meta.url),
+    new URL('../esm/native/ui/pdf/', import.meta.url),
+    new URL('../esm/native/ui/export/', import.meta.url),
+  ];
+  const files = [];
+  const visit = dir => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const target = new URL(entry.name + (entry.isDirectory() ? '/' : ''), dir);
+      if (entry.isDirectory()) visit(target);
+      else if (/\.(?:ts|tsx)$/.test(entry.name)) files.push(target);
+    }
+  };
+  for (const root of roots) visit(root);
+  files.push(new URL('../esm/native/services/models_registry_pdf_draft.ts', import.meta.url));
+  files.push(new URL('../types/build_runtime.ts', import.meta.url));
+
+  const source = files.map(file => fs.readFileSync(file, 'utf8')).join('\n');
+  const retired = ['manual' + 'Details', 'details' + 'Full', 'manual' + 'Enabled'];
+  const hits = retired.filter(name => source.includes(name));
+
+  assert.deepEqual(hits, []);
+  assert.match(source, /detailsText/);
+  assert.match(source, /detailsHtml/);
+  assert.match(source, /detailsTouched/);
+});
+
 const interactionsOwner = readSource('../esm/native/ui/interactions/canvas_interactions.ts', import.meta.url);
 const exportCoreOwner = readSource('../esm/native/ui/export/export_canvas_core.ts', import.meta.url);
 const exportDeliveryOwner = readSource('../esm/native/ui/export/export_canvas_delivery.ts', import.meta.url);

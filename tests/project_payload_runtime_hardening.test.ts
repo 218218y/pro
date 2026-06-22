@@ -48,7 +48,6 @@ test('project payload runtime: schema/load helpers normalize saved notes, pdf dr
       savedNotes: [{ text: 'A', style: { left: '10px', top: '20px' }, doorsOpen: true }],
       orderPdfEditorDraft: {
         notes: 'Hello',
-        manualEnabled: true,
         nested: { keep: 1, drop: undefined },
         items: [1, undefined, { ok: true, skip: undefined }],
         fn: () => 'nope',

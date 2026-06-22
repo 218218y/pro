@@ -8,8 +8,7 @@ import { _cloneJSON } from './models_registry_normalization.js';
 
 type OrderPdfMeaningfulFields = {
   detailsTouched?: unknown;
-  manualEnabled?: unknown;
-  manualDetails?: unknown;
+  detailsText?: unknown;
   notes?: unknown;
   orderNumber?: unknown;
   deliveryAddress?: unknown;
@@ -44,8 +43,7 @@ function asOrderPdfDraft(v: unknown): OrderPdfMeaningfulFields | null {
   if (!isObject(v)) return null;
   return {
     detailsTouched: v.detailsTouched,
-    manualEnabled: v.manualEnabled,
-    manualDetails: v.manualDetails,
+    detailsText: v.detailsText,
     notes: v.notes,
     orderNumber: v.orderNumber,
     deliveryAddress: v.deliveryAddress,
@@ -59,8 +57,7 @@ export function hasMeaningfulOrderPdfDraft(draft: unknown): boolean {
   if (!d) return false;
   return (
     Boolean(d.detailsTouched) ||
-    Boolean(d.manualEnabled) ||
-    Boolean(String(d.manualDetails || '').trim()) ||
+    Boolean(String(d.detailsText || '').trim()) ||
     Boolean(String(d.notes || '').trim()) ||
     Boolean(String(d.orderNumber || '').trim()) ||
     Boolean(String(d.deliveryAddress || '').trim()) ||

@@ -14,7 +14,7 @@ test('resolveOrderPdfString keeps strings but canonicalizes nullish and numeric 
   assert.equal(resolveOrderPdfString('abc'), 'abc');
 });
 
-test('resolveOrderPdfOrderDetails prefers manual details only when the draft semantics say so', () => {
+test('resolveOrderPdfOrderDetails uses edited details only when the canonical touched marker says so', () => {
   const textOps = {
     buildOrderDetailsText: () => 'auto details',
   } as any;
@@ -22,7 +22,11 @@ test('resolveOrderPdfOrderDetails prefers manual details only when the draft sem
   const App = {} as any;
 
   assert.equal(
-    resolveOrderPdfOrderDetails({ App, draft: { manualDetails: '', detailsFull: false } as any, textOps }),
+    resolveOrderPdfOrderDetails({
+      App,
+      draft: { detailsText: '', detailsTouched: false } as any,
+      textOps,
+    }),
     'auto details'
   );
 
@@ -30,28 +34,24 @@ test('resolveOrderPdfOrderDetails prefers manual details only when the draft sem
     resolveOrderPdfOrderDetails({
       App,
       draft: {
-        manualDetails: 'manual only',
-        manualEnabled: true,
+        detailsText: 'edited only',
         detailsTouched: true,
-        detailsFull: true,
       } as any,
       textOps,
     }),
-    'manual only'
+    'edited only'
   );
 
   assert.equal(
     resolveOrderPdfOrderDetails({
       App,
       draft: {
-        manualDetails: 'manual tail',
-        manualEnabled: false,
+        detailsText: 'stale details',
         detailsTouched: false,
-        detailsFull: false,
       } as any,
       textOps,
     }),
-    'auto details\n\nmanual tail'
+    'auto details'
   );
 });
 
@@ -89,7 +89,8 @@ test('resolveOrderPdfDraft keeps canonical defaults while honoring draft overrid
         phone: '03-5555555',
         mobile: '050-1234567',
         notes: 'שים לב',
-        manualDetails: 'manual tail',
+        detailsText: 'edited details',
+        detailsTouched: true,
         includeRenderSketch: false,
         includeOpenClosed: false,
       } as any,
@@ -104,7 +105,7 @@ test('resolveOrderPdfDraft keeps canonical defaults while honoring draft overrid
       phone: '03-5555555',
       mobile: '050-1234567',
       notes: 'שים לב',
-      orderDetails: 'manual tail',
+      orderDetails: 'edited details',
       includeRenderSketch: false,
       includeOpenClosed: false,
     }

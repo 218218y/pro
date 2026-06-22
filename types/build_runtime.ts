@@ -281,10 +281,10 @@ export interface OrderPdfDraftLike extends UnknownRecord {
   phone?: string;
   mobile?: string;
   autoDetails?: string;
-  manualDetails?: string;
-  detailsFull?: boolean;
+  detailsText?: string;
+  detailsHtml?: string;
   detailsTouched?: boolean;
-  manualEnabled?: boolean;
+  detailsSeed?: string;
   includeRenderSketch?: boolean;
   includeOpenClosed?: boolean;
   notes?: string;

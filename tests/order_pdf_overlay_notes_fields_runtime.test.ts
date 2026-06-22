@@ -20,7 +20,7 @@ const textApi = {
   normalizeForCompare,
 };
 
-test('order pdf notes fields runtime derives plain text from legacy html-only notes and preserves explicit html', () => {
+test('order pdf notes fields runtime derives plain text from canonical html-only notes and preserves explicit html', () => {
   const fields = createOrderPdfNotesFields({
     notes: '',
     notesHtml: '<div>הערה אחת</div><div>הערה שתיים</div>',
@@ -51,9 +51,8 @@ test('order pdf initial draft seeds canonical notes html from plain notes when h
     phone: '',
     mobile: '',
     autoDetails: 'פרטי הזמנה',
-    manualDetails: '',
-    manualDetailsHtml: '',
-    manualEnabled: false,
+    detailsText: '',
+    detailsHtml: '',
     notes: 'שורה א\nשורה ב',
     notesHtml: '',
   });
@@ -62,15 +61,13 @@ test('order pdf initial draft seeds canonical notes html from plain notes when h
   assert.equal(draft.notesHtml, 'שורה א<br>שורה ב');
 });
 
-test('order pdf draft effects hydrate canonical notes text/html from ui records with html-only legacy notes', () => {
+test('order pdf draft effects hydrate canonical notes text/html from ui records with html-only rich notes', () => {
   const draft = buildOrderPdfDraftFromUiRecord({
     rec: {
       autoDetails: 'Auto line',
-      manualDetails: 'Auto line',
-      manualDetailsHtml: '<div>Auto line</div>',
-      detailsFull: true,
+      detailsText: 'Auto line',
+      detailsHtml: '<div>Auto line</div>',
       detailsTouched: false,
-      manualEnabled: false,
       notes: '',
       notesHtml: '<div>הערה אחת</div><div>הערה שתיים</div>',
     },

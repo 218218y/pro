@@ -8,7 +8,7 @@ import {
 } from '../esm/native/ui/react/pdf/order_pdf_overlay_imported_draft_fields_runtime.js';
 
 test('order pdf imported draft fields detect html-only rich values but ignore blank html', () => {
-  assert.equal(hasAnyOrderPdfImportedRichDraftFieldValue({ manualDetailsHtml: '<div>ידני</div>' }), true);
+  assert.equal(hasAnyOrderPdfImportedRichDraftFieldValue({ detailsHtml: '<div>ידני</div>' }), true);
   assert.equal(hasAnyOrderPdfImportedRichDraftFieldValue({ notesHtml: '<div><br></div>' }), false);
 });
 
@@ -21,16 +21,15 @@ test('order pdf imported draft fields recover html-only details and notes into c
       includeOpenClosed: true,
     },
     extracted: {
-      manualDetailsHtml: '<div>שורה ידנית</div><div>תוספת</div>',
+      detailsHtml: '<div>שורה ידנית</div><div>תוספת</div>',
       notesHtml: '<div>הערה א</div><div>הערה ב</div>',
     },
     importedTailPages: [1],
   });
 
-  assert.equal(next.manualDetails, 'שורה ידנית\nתוספת');
-  assert.equal(next.manualDetailsHtml, '<div>שורה ידנית</div><div>תוספת</div>');
+  assert.equal(next.detailsText, 'שורה ידנית\nתוספת');
+  assert.equal(next.detailsHtml, '<div>שורה ידנית</div><div>תוספת</div>');
   assert.equal(next.detailsTouched, true);
-  assert.equal(next.manualEnabled, true);
   assert.equal(next.notes, 'הערה א\nהערה ב');
   assert.equal(next.notesHtml, '<div>הערה א</div><div>הערה ב</div>');
   assert.equal(next.includeRenderSketch, false);
@@ -41,16 +40,13 @@ test('order pdf imported draft fields sanitize rich html payloads before persist
   const next = applyOrderPdfImportedDraftFields({
     baseDraft: makeEmptyDraft(),
     extracted: {
-      manualDetailsHtml:
+      detailsHtml:
         '<div onclick="boom()"><span data-wp-auto="start" contenteditable="false"></span>פרט</div>',
       notesHtml:
         '<div><font color="#123456" size="5" onclick="boom()">הערה</font><script>alert(1)</script></div>',
     },
   });
 
-  assert.equal(
-    next.manualDetailsHtml,
-    '<div><span data-wp-auto="start" contenteditable="false"></span>פרט</div>'
-  );
+  assert.equal(next.detailsHtml, '<div><span data-wp-auto="start" contenteditable="false"></span>פרט</div>');
   assert.equal(next.notesHtml, '<div><font color="#123456" size="5">הערה</font>alert(1)</div>');
 });

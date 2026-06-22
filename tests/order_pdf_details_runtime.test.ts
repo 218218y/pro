@@ -4,7 +4,6 @@ import assert from 'node:assert/strict';
 import {
   coerceOrderPdfTextValue,
   hasOrderPdfTextValue,
-  joinOrderPdfAutoAndManualDetails,
   resolveOrderPdfDetailsText,
   resolveOrderPdfDetailsTextFromDraft,
 } from '../esm/native/ui/pdf/order_pdf_details_runtime.js';
@@ -16,34 +15,23 @@ test('order pdf details runtime coerces and detects text values consistently', (
   assert.equal(hasOrderPdfTextValue(' note '), true);
 });
 
-test('order pdf details runtime joins auto and manual blocks with one blank separator', () => {
-  assert.equal(joinOrderPdfAutoAndManualDetails('auto', ''), 'auto');
-  assert.equal(joinOrderPdfAutoAndManualDetails('', 'manual'), 'manual');
-  assert.equal(joinOrderPdfAutoAndManualDetails('auto', 'manual'), 'auto\n\nmanual');
-  assert.equal(joinOrderPdfAutoAndManualDetails('auto\n', 'manual'), 'auto\n\nmanual');
-});
-
-test('order pdf details runtime treats manualEnabled as part of full-details touched semantics', () => {
+test('order pdf details runtime selects the canonical full details text only after editing', () => {
   assert.equal(
     resolveOrderPdfDetailsText({
       autoDetails: 'auto details',
-      manualDetails: 'manual details',
-      detailsFull: true,
-      detailsTouched: false,
-      manualEnabled: true,
+      detailsText: 'edited details',
+      detailsTouched: true,
     }),
-    'manual details'
+    'edited details'
   );
 
   assert.equal(
     resolveOrderPdfDetailsText({
       autoDetails: 'auto details',
-      manualDetails: 'manual tail',
-      detailsFull: false,
+      detailsText: 'stale details',
       detailsTouched: false,
-      manualEnabled: false,
     }),
-    'auto details\n\nmanual tail'
+    'auto details'
   );
 });
 
@@ -51,22 +39,18 @@ test('order pdf details runtime resolves from draft shapes without requiring ful
   assert.equal(
     resolveOrderPdfDetailsTextFromDraft({
       autoDetails: 'auto details',
-      manualDetails: 'manual details',
-      detailsFull: true,
+      detailsText: 'edited details',
       detailsTouched: true,
-      manualEnabled: false,
     }),
-    'manual details'
+    'edited details'
   );
 
   assert.equal(
     resolveOrderPdfDetailsTextFromDraft(
       {
         autoDetails: 'stale auto',
-        manualDetails: '',
-        detailsFull: true,
+        detailsText: '',
         detailsTouched: false,
-        manualEnabled: false,
       },
       'fresh auto'
     ),

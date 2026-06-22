@@ -205,7 +205,7 @@ function assignExtractedField(
 ): void {
   if (!value) return;
   if (key === 'details') {
-    out.manualDetails = value;
+    out.detailsText = value;
   } else if (key === 'notes') {
     out.notes = value;
   } else {

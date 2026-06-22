@@ -50,8 +50,7 @@ test('[order-pdf] sketch panel runtime builds per-page stroke maps and counts ca
     phone: '',
     mobile: '',
     autoDetails: '',
-    manualDetails: '',
-    manualEnabled: false,
+    detailsText: '',
     notes: '',
     sketchAnnotations: {
       renderSketch: { strokes: [makeStroke('pen')] },
@@ -259,8 +258,7 @@ test('[order-pdf] sketch panel runtime builds per-page text-box maps and folds t
     phone: '',
     mobile: '',
     autoDetails: '',
-    manualDetails: '',
-    manualEnabled: false,
+    detailsText: '',
     notes: '',
     sketchAnnotations: {
       renderSketch: { strokes: [makeStroke('pen')], textBoxes: [makeTextBox('render')] },

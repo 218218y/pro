@@ -120,7 +120,7 @@ test('order pdf document fields runtime derives imported field names from canoni
     deliveryAddress: 'רחוב הדוגמה 5',
     phone: '03-5555555',
     mobile: '050-1234567',
-    manualDetails: 'פרט ראשון\nפרט המשך',
+    detailsText: 'פרט ראשון\nפרט המשך',
     notes: 'הערה חשובה',
   });
 
