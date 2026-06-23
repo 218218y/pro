@@ -212,6 +212,14 @@ test('exiting divider mode clears the forced drawer id and closes the visual dra
   const setOpenIdCalls: unknown[] = [];
 
   const App = {
+    actions: {
+      mode: {
+        set(primary: string, opts?: Record<string, unknown>) {
+          state.mode.primary = primary;
+          state.mode.opts = { ...(opts || {}) };
+        },
+      },
+    },
     services: {
       tools: {
         getDrawersOpenId: () => 'drawer-7',
@@ -223,9 +231,6 @@ test('exiting divider mode clears the forced drawer id and closes the visual dra
     store: {
       getState() {
         return state;
-      },
-      setModePatch(patch: Record<string, unknown>) {
-        Object.assign(state.mode, patch);
       },
     },
     render: {
@@ -254,6 +259,14 @@ test('entering a different primary mode clears any active divider drawer session
   const setOpenIdCalls: unknown[] = [];
 
   const App = {
+    actions: {
+      mode: {
+        set(primary: string, opts?: Record<string, unknown>) {
+          state.mode.primary = primary;
+          state.mode.opts = { ...(opts || {}) };
+        },
+      },
+    },
     services: {
       tools: {
         getDrawersOpenId: () => 'drawer-7',
@@ -265,9 +278,6 @@ test('entering a different primary mode clears any active divider drawer session
     store: {
       getState() {
         return state;
-      },
-      setModePatch(patch: Record<string, unknown>) {
-        Object.assign(state.mode, patch);
       },
     },
     render: {

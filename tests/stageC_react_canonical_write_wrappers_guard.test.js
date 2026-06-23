@@ -75,6 +75,51 @@ function createStoreRecorder(state) {
   };
 }
 
+function createCanonicalActionsRecorder(state) {
+  /** @type {Array<Record<string, unknown>>} */
+  const calls = [];
+
+  return {
+    calls,
+    actions: {
+      ui: {
+        patch(patch, meta) {
+          calls.push({ op: 'actions.ui.patch', patch, meta });
+          Object.assign(state.ui, patch || {});
+          return patch;
+        },
+        patchSoft(patch, meta) {
+          calls.push({ op: 'actions.ui.patchSoft', patch, meta });
+          Object.assign(state.ui, patch || {});
+          return patch;
+        },
+        setScalar(key, value, meta) {
+          calls.push({ op: 'actions.ui.setScalar', key, value, meta });
+          state.ui[key] = value;
+          return value;
+        },
+        setScalarSoft(key, value, meta) {
+          calls.push({ op: 'actions.ui.setScalarSoft', key, value, meta });
+          state.ui[key] = value;
+          return value;
+        },
+        setRawScalar(key, value, meta) {
+          calls.push({ op: 'actions.ui.setRawScalar', key, value, meta });
+          state.ui.raw = { ...(state.ui.raw || {}), [key]: value };
+          return value;
+        },
+      },
+      runtime: {
+        setScalar(key, value, meta) {
+          calls.push({ op: 'actions.runtime.setScalar', key, value, meta });
+          state.runtime[key] = value;
+          return value;
+        },
+      },
+    },
+  };
+}
+
 test('[stageC] react UI wrappers prefer semantic UI namespace methods when installed', () => {
   /** @type {Array<Record<string, unknown>>} */
   const calls = [];
@@ -123,8 +168,9 @@ test('[stageC] react UI wrappers prefer semantic UI namespace methods when insta
 
 test('[stageC] react UI/runtime wrappers use canonical slice writers with normalized patches', () => {
   const state = createStoreState();
-  const { calls, store } = createStoreRecorder(state);
-  const App = { actions: {}, store };
+  const store = createStoreRecorder(state).store;
+  const { actions, calls } = createCanonicalActionsRecorder(state);
+  const App = { actions, store };
 
   setUiActiveTab(App, 'design', { source: 'react:tab' });
   setUiFlag(App, 'notesEnabled', 1, { source: 'react:flag' });
@@ -149,21 +195,36 @@ test('[stageC] react UI/runtime wrappers use canonical slice writers with normal
   });
 
   assert.deepEqual(
-    calls.map(call => ({ op: call.op, payload: call.payload ?? call.patch })),
+    calls.map(call => ({
+      op: call.op,
+      key: call.key,
+      value: call.value,
+      patch: call.patch,
+    })),
     [
-      { op: 'store.setUi', payload: { activeTab: 'design' } },
-      { op: 'store.setUi', payload: { notesEnabled: true } },
-      { op: 'store.setUi', payload: { showContents: true, showHanger: false } },
-      { op: 'store.setUi', payload: { showHanger: true, showContents: false } },
-      { op: 'store.setUi', payload: { currentFloorType: 'tile' } },
-      { op: 'store.setUi', payload: { darkMode: true } },
-      { op: 'store.setRuntime', payload: { globalClickMode: true } },
-      { op: 'store.setRuntime', payload: { sketchMode: false } },
+      { op: 'actions.ui.setScalarSoft', key: 'activeTab', value: 'design', patch: undefined },
+      { op: 'actions.ui.setScalar', key: 'notesEnabled', value: true, patch: undefined },
+      {
+        op: 'actions.ui.patch',
+        key: undefined,
+        value: undefined,
+        patch: { showContents: true, showHanger: false },
+      },
+      {
+        op: 'actions.ui.patch',
+        key: undefined,
+        value: undefined,
+        patch: { showHanger: true, showContents: false },
+      },
+      { op: 'actions.ui.setScalarSoft', key: 'currentFloorType', value: 'tile', patch: undefined },
+      { op: 'actions.ui.setScalarSoft', key: 'darkMode', value: true, patch: undefined },
+      { op: 'actions.runtime.setScalar', key: 'globalClickMode', value: true, patch: undefined },
+      { op: 'actions.runtime.setScalar', key: 'sketchMode', value: false, patch: undefined },
     ]
   );
 });
 
-test('[stageC] react UI/runtime wrappers keep root store.patch fallback for minimal stores', () => {
+test('[stageC] react UI/runtime wrappers fail fast without canonical actions instead of root store.patch fallback', () => {
   const state = createStoreState();
   /** @type {Array<Record<string, unknown>>} */
   const calls = [];
@@ -185,18 +246,18 @@ test('[stageC] react UI/runtime wrappers keep root store.patch fallback for mini
     },
   };
 
-  setUiActiveTab(App, 'shop', { source: 'react:tab:minimal' });
-  setRuntimeSketchMode(App, true, { source: 'react:sketchMode:minimal' });
-
-  assert.deepEqual(state.ui, { activeTab: 'shop' });
-  assert.deepEqual(state.runtime, { sketchMode: true });
-  assert.deepEqual(
-    calls.map(call => ({ op: call.op, payload: call.payload })),
-    [
-      { op: 'store.patch', payload: { ui: { activeTab: 'shop' } } },
-      { op: 'store.patch', payload: { runtime: { sketchMode: true } } },
-    ]
+  assert.throws(
+    () => setUiActiveTab(App, 'shop', { source: 'react:tab:minimal' }),
+    /Missing canonical action.*actions\.ui\.setScalarSoft/
   );
+  assert.throws(
+    () => setRuntimeSketchMode(App, true, { source: 'react:sketchMode:minimal' }),
+    /Missing canonical action.*actions\.runtime\.setScalar/
+  );
+
+  assert.deepEqual(state.ui, {});
+  assert.deepEqual(state.runtime, {});
+  assert.deepEqual(calls, []);
 });
 
 test('[stageC] react config wrappers route through semantic config seams before generic scalar/map fallbacks', () => {

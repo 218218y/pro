@@ -29,6 +29,9 @@ test('viewport_runtime writes sketchMode, syncs scene view and rebuilds through 
     __runtime: { sketchMode: false },
     actions: {
       runtime: {
+        setScalar: (key: string, value: unknown) => {
+          App.__runtime = { ...(App.__runtime || {}), [key]: value };
+        },
         patch: (patch: any) => {
           App.__runtime = { ...(App.__runtime || {}), ...(patch || {}) };
         },

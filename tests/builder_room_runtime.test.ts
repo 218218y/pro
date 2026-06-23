@@ -49,6 +49,11 @@ function createThreeRoomHarness() {
   let renderCount = 0;
   let textureCreateCount = 0;
   const runtimeState = { roomDesignActive: true, sketchMode: false };
+  const uiState = {
+    currentFloorType: 'parquet',
+    lastSelectedFloorStyleIdByType: { parquet: 'oak_light' },
+    lastSelectedWallColor: '#ffffff',
+  };
 
   class Group {
     children: AnyRecord[] = [];
@@ -146,6 +151,14 @@ function createThreeRoomHarness() {
   };
 
   const App: AnyRecord = {
+    actions: {
+      ui: {
+        patchSoft(patch: AnyRecord) {
+          Object.assign(uiState, patch || {});
+          return patch;
+        },
+      },
+    },
     services: { roomDesign: {} },
     deps: {
       THREE: {
@@ -173,11 +186,7 @@ function createThreeRoomHarness() {
     store: {
       getState() {
         return {
-          ui: {
-            currentFloorType: 'parquet',
-            lastSelectedFloorStyleIdByType: { parquet: 'oak_light' },
-            lastSelectedWallColor: '#ffffff',
-          },
+          ui: uiState,
           runtime: runtimeState,
           config: {},
           mode: {},
@@ -205,6 +214,11 @@ function createRoomHarness() {
   let textureCreateCount = 0;
   let renderCount = 0;
   const runtimeState = { roomDesignActive: true, sketchMode: false };
+  const uiState = {
+    currentFloorType: 'parquet',
+    lastSelectedFloorStyleIdByType: { parquet: 'oak_light' },
+    lastSelectedWallColor: '#ffffff',
+  };
   const createdTextures: TextureRecord[] = [];
   const floorMaterial: AnyRecord = {
     color: {
@@ -246,6 +260,14 @@ function createRoomHarness() {
     },
   };
   const App: AnyRecord = {
+    actions: {
+      ui: {
+        patchSoft(patch: AnyRecord) {
+          Object.assign(uiState, patch || {});
+          return patch;
+        },
+      },
+    },
     services: { roomDesign: {} },
     deps: {
       THREE: {
@@ -277,11 +299,7 @@ function createRoomHarness() {
     store: {
       getState() {
         return {
-          ui: {
-            currentFloorType: 'parquet',
-            lastSelectedFloorStyleIdByType: { parquet: 'oak_light' },
-            lastSelectedWallColor: '#ffffff',
-          },
+          ui: uiState,
           runtime: runtimeState,
           config: {},
           mode: {},

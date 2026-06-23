@@ -17,8 +17,24 @@ function createAppForReset(primary = 'manual_layout') {
     createElement: () => ({ style: {}, appendChild() {}, classList: { add() {}, remove() {} } }),
     querySelector: () => null,
   };
+  const state = {
+    ui: {},
+    config: {},
+    runtime: { globalClickMode: true },
+    mode: { primary, opts: {} as Record<string, unknown> },
+    meta: {},
+  };
 
   const App = {
+    actions: {
+      mode: {
+        set(nextPrimary: string, opts: Record<string, unknown>) {
+          state.mode.primary = nextPrimary;
+          state.mode.opts = { ...(opts || {}) };
+          modePatches.push({ primary: nextPrimary, opts: { ...(opts || {}) } });
+        },
+      },
+    },
     services: {
       tools: {
         getDrawersOpenId: () => 'drawer-7',
@@ -65,16 +81,7 @@ function createAppForReset(primary = 'manual_layout') {
       },
     },
     store: {
-      getState: () => ({
-        ui: {},
-        config: {},
-        runtime: { globalClickMode: true },
-        mode: { primary },
-        meta: {},
-      }),
-      setModePatch: (patch: Record<string, unknown>) => {
-        modePatches.push(patch);
-      },
+      getState: () => state,
     },
   } as Record<string, unknown>;
 
@@ -97,6 +104,12 @@ function createAppForSync() {
       meta: {
         transient: (_meta?: unknown, source?: string) => ({ source, transient: true }),
       },
+      runtime: {
+        patch: (patch: Record<string, unknown>, meta?: unknown) => {
+          runtimePatches.push({ patch, meta });
+          return true;
+        },
+      },
     },
     store: {
       getState: () => ({
@@ -108,10 +121,6 @@ function createAppForSync() {
         mode: {},
         meta: {},
       }),
-      patch: (payload: Record<string, unknown>, meta?: unknown) => {
-        runtimePatches.push({ patch: payload, meta });
-        return true;
-      },
     },
   } as Record<string, unknown>;
 
@@ -197,12 +206,10 @@ test('syncWardrobeState refreshes builder buildUi + runtime dims through canonic
   for (const entry of runtimePatches) {
     assert.deepEqual(entry, {
       patch: {
-        runtime: {
-          wardrobeWidthM: 1.2,
-          wardrobeHeightM: 2.4,
-          wardrobeDepthM: 0.6,
-          wardrobeDoorsCount: 4,
-        },
+        wardrobeWidthM: 1.2,
+        wardrobeHeightM: 2.4,
+        wardrobeDepthM: 0.6,
+        wardrobeDoorsCount: 4,
       },
       meta: { source: 'runtime:patch', transient: true },
     });
@@ -256,12 +263,10 @@ test('syncWardrobeState coalesces buildUi and runtime dims while a dimension inp
   assert.deepEqual(runtimePatches, [
     {
       patch: {
-        runtime: {
-          wardrobeWidthM: 1.2,
-          wardrobeHeightM: 2.4,
-          wardrobeDepthM: 0.6,
-          wardrobeDoorsCount: 4,
-        },
+        wardrobeWidthM: 1.2,
+        wardrobeHeightM: 2.4,
+        wardrobeDepthM: 0.6,
+        wardrobeDoorsCount: 4,
       },
       meta: { source: 'runtime:patch', transient: true },
     },

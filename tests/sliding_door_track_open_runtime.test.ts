@@ -55,9 +55,13 @@ test('sliding track open handles three doors by moving side doors inward and the
 
 function makeAppWithSlidingDoors(doors: any[], state: any = { runtime: { doorsOpen: true } }) {
   const App: any = {
+    actions: {
+      runtime: {
+        patch: (patch: Record<string, unknown>) => Object.assign(state.runtime, patch),
+      },
+    },
     store: {
       getState: () => state,
-      setRuntime: (patch: Record<string, unknown>) => Object.assign(state.runtime, patch),
     },
     services: {
       doors: { runtime: {} },
