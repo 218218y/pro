@@ -81,8 +81,6 @@ export function SettingsTab(props: { active: boolean }): ReactElement {
       */}
       {props.active ? (
         <div className="wp-r-settings-layout">
-          <SettingsVisualDisplaySection model={visualController.displaySection} />
-
           <Section title="ייצוא תמונות" className="wp-r-settings-images">
             <div className="wp-r-settings-grid">
               <SettingsAction
@@ -148,6 +146,8 @@ export function SettingsTab(props: { active: boolean }): ReactElement {
               />
             </div>
           </Section>
+
+          <SettingsVisualDisplaySection model={visualController.displaySection} />
 
           <SettingsVisualRoomSection model={visualController.roomSection} />
           <SettingsVisualLightingSection model={visualController.lightingSection} />

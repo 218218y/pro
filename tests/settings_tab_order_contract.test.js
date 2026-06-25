@@ -7,7 +7,7 @@ import { dirname, resolve } from 'node:path';
 const here = dirname(fileURLToPath(import.meta.url));
 const readProjectSource = relativePath => readFileSync(resolve(here, '..', relativePath), 'utf8');
 
-test('[settings-tab-order-contract] display section is rendered before image export section', () => {
+test('[settings-tab-order-contract] image export section is rendered before display section', () => {
   const settingsTabSource = readProjectSource('esm/native/ui/react/tabs/SettingsTab.tsx');
 
   const displaySectionIndex = settingsTabSource.indexOf('<SettingsVisualDisplaySection');
@@ -15,5 +15,5 @@ test('[settings-tab-order-contract] display section is rendered before image exp
 
   assert.notEqual(displaySectionIndex, -1);
   assert.notEqual(imageExportSectionIndex, -1);
-  assert.ok(displaySectionIndex < imageExportSectionIndex);
+  assert.ok(imageExportSectionIndex < displaySectionIndex);
 });
