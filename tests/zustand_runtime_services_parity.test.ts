@@ -159,7 +159,7 @@ test('runtime services parity: autosave captures project snapshot + pdf draft an
   assert.equal(writes.length, 1);
   assert.equal(writes[0].key, 'wardrobe_autosave_latest');
   const parsed = JSON.parse(String(writes[0].value));
-  assert.equal(parsed.version, '2.1');
+  assert.equal(Object.prototype.hasOwnProperty.call(parsed, 'version'), false);
   assert.equal(parsed.mode, 'persist');
   assert.equal(parsed.orderPdfEditorZoom, 1.5);
 

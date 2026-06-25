@@ -19,7 +19,6 @@ export function commitAutosaveNow(App: AppContainer): boolean {
   const dataObj = captureAutosaveSnapshot(App);
   if (!dataObj) return false;
 
-  dataObj.version = '2.1';
   dataObj.timestamp = Date.now();
   dataObj.dateString = new Date().toLocaleTimeString();
 

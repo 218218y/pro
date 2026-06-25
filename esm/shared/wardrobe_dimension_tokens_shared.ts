@@ -294,7 +294,7 @@ export const CARCASS_BASE_DIMENSIONS = Object.freeze({
     connectorBackInsetM: 0.01,
     depthSteppedMinFrontBackGapM: 0.03,
     platform: Object.freeze({
-      heightM: 0.039,
+      heightM: 0.028,
       apronDepthM: 0.014,
       frontOverhangM: 0.02,
       sideOverhangM: 0.015,

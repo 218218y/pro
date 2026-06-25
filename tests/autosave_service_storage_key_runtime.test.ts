@@ -45,5 +45,5 @@ test('autosave service writes through canonical AUTOSAVE_LATEST storage key seam
   assert.equal(writes[0].key, 'autosave-custom-key');
   const parsed = JSON.parse(writes[0].value);
   assert.deepEqual(parsed.orderPdfEditorDraft, { pages: [{ id: 1 }] });
-  assert.equal(parsed.version, '2.1');
+  assert.equal(Object.prototype.hasOwnProperty.call(parsed, 'version'), false);
 });

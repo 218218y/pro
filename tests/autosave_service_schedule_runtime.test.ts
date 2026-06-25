@@ -116,7 +116,7 @@ test('autosave service: install exposes restore info immediately and schedule re
 
   assert.equal(storageWrites.length, 1);
   assert.equal(storageWrites[0].key, 'wardrobe_autosave_latest');
-  assert.equal(storageWrites[0].payload.version, '2.1');
+  assert.equal(Object.prototype.hasOwnProperty.call(storageWrites[0].payload, 'version'), false);
   assert.deepEqual(storageWrites[0].payload.orderPdfEditorDraft, { pages: [{ id: 1 }] });
   assert.equal(storageWrites[0].payload.orderPdfEditorZoom, 1.25);
   assert.equal(storageWrites[0].payload.scope, 'persist');

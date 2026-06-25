@@ -280,6 +280,30 @@ test('project io restoreLastSession reports invalid autosave payloads as immedia
   assert.deepEqual(toasts, [{ message: 'נתוני השחזור לא תקינים', type: 'error' }]);
 });
 
+test('project io restoreLastSession strips legacy autosave version metadata before load validation', () => {
+  const legacyAutosave = {
+    ...VALID_PROJECT,
+    version: '2.1',
+    timestamp: 123,
+    dateString: '18:00',
+  };
+  const { orchestrator, toasts, calls, autosaveCalls } = createProjectIoApp({
+    autosaveData: JSON.stringify(legacyAutosave),
+  });
+
+  const result = orchestrator.restoreLastSession();
+
+  assert.deepEqual(result, { ok: true, pending: true });
+  assert.deepEqual(toasts, [{ message: 'העריכה שוחזרה בהצלחה!', type: 'success' }]);
+  assert.deepEqual(autosaveCalls, ['cancel', 'force']);
+  assert.deepEqual(calls, [
+    'config:project.load',
+    'commit:project.load',
+    'dirty:false:project.load',
+    'history:project.load',
+  ]);
+});
+
 test('project io reset-default loads preserve last-session autosave instead of overwriting it', () => {
   const { orchestrator, autosaveCalls, calls } = createProjectIoApp();
 

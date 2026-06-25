@@ -61,6 +61,10 @@ test('autosave access: canonical autosave payload normalization keeps valid rest
     settings: { width: 120 },
     timestamp: 123,
   });
+  assert.deepEqual(normalizeAutosavePayload({ settings: { width: 120 }, version: '2.1', timestamp: 123 }), {
+    settings: { width: 120 },
+    timestamp: 123,
+  });
   assert.equal(normalizeAutosavePayload(null), null);
   assert.equal(normalizeAutosavePayload([]), null);
 });
@@ -73,7 +77,7 @@ test('autosave access: storage helpers share one canonical payload seam and self
         KEYS: { AUTOSAVE_LATEST: 'autosave-key' },
         getString(key: string) {
           if (key === 'autosave-key')
-            return JSON.stringify({ settings: {}, timestamp: 555, dateString: '17:30' });
+            return JSON.stringify({ settings: {}, version: '2.1', timestamp: 555, dateString: '17:30' });
           return null;
         },
         remove(key: string) {
