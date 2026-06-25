@@ -1,5 +1,9 @@
 import { getThreeMaybe } from '../runtime/three_access.js';
-import { __wp_resolveInteriorHoverTarget } from './canvas_picking_local_helpers.js';
+import {
+  __wp_clearSketchHover,
+  __wp_resolveInteriorHoverTarget,
+  __wp_writeSketchHover,
+} from './canvas_picking_local_helpers.js';
 import {
   resolveShelfBoardPick,
   resolveShelfPickVerticalToleranceM,
@@ -21,6 +25,11 @@ import {
   readExistingShelfVariant,
 } from './canvas_picking_interior_hover_layout_family_shared.js';
 import { tryHandleBraceShelvesFreeBoxHover } from './canvas_picking_manual_layout_free_box_content.js';
+import {
+  createBraceSketchShelfHoverRecord,
+  createBraceSketchShelfPreview,
+  resolveBraceSketchShelfMatch,
+} from './canvas_picking_brace_shelves_sketch_extras.js';
 
 export function tryHandleCanvasBraceShelvesHover(args: CanvasInteriorHoverFlowArgs): boolean {
   const {
@@ -51,6 +60,7 @@ export function tryHandleCanvasBraceShelvesHover(args: CanvasInteriorHoverFlowAr
     }
     const target = __wp_resolveInteriorHoverTarget(App, raycaster, mouse, ndcX, ndcY);
     if (!target || !setSketchPreview) {
+      __wp_clearSketchHover(App);
       hideSketchPreview({ App, hideSketchPreview: hideSketchPreviewFn });
       hideLayoutPreview({ App, hideLayoutPreview: hideLayoutPreviewFn });
       return false;
@@ -59,12 +69,46 @@ export function tryHandleCanvasBraceShelvesHover(args: CanvasInteriorHoverFlowAr
 
     const cfgRef = readHoverModuleConfig(App, target.hitModuleKey, target.isBottom);
     if (!cfgRef) {
+      __wp_clearSketchHover(App);
       hideSketchPreview({ App, hideSketchPreview: hideSketchPreviewFn });
       return false;
     }
 
+    const sketchShelfMatch = resolveBraceSketchShelfMatch({
+      cfgRef,
+      intersects: target.intersects,
+      selectorHitY: target.hitY,
+      bottomY: target.bottomY,
+      topY: target.topY,
+      toleranceM: resolveShelfPickVerticalToleranceM(target.woodThick, 2.75),
+    });
+    if (sketchShelfMatch) {
+      const hoverRecord = createBraceSketchShelfHoverRecord({
+        moduleKey: target.hitModuleKey,
+        isBottom: target.isBottom,
+        match: sketchShelfMatch,
+      });
+      __wp_writeSketchHover(App, hoverRecord);
+      return setPreview(setSketchPreview, {
+        App,
+        THREE: getThreeMaybe(App),
+        anchor: target.hitSelectorObj,
+        ...createBraceSketchShelfPreview({
+          match: sketchShelfMatch,
+          internalCenterX: target.internalCenterX,
+          innerW: target.innerW,
+          internalDepth: target.internalDepth,
+          backZ: target.backZ,
+          woodThick: target.woodThick,
+          regularDepth: target.regularDepth,
+        }),
+      });
+    }
+    __wp_clearSketchHover(App);
+
     const divisions = readGridDivisions(target.info.gridDivisions);
     if (divisions <= 1) {
+      __wp_clearSketchHover(App);
       hideSketchPreview({ App, hideSketchPreview: hideSketchPreviewFn });
       return false;
     }
@@ -80,12 +124,14 @@ export function tryHandleCanvasBraceShelvesHover(args: CanvasInteriorHoverFlowAr
       selectorHitToleranceM: resolveShelfSelectorPickToleranceM(step),
     });
     if (!shelfPick) {
+      __wp_clearSketchHover(App);
       hideSketchPreview({ App, hideSketchPreview: hideSketchPreviewFn });
       return false;
     }
 
     const { shelfIndex, shelfY } = shelfPick;
     if (!hasShelfAtIndex(cfgRef, shelfIndex)) {
+      __wp_clearSketchHover(App);
       hideSketchPreview({ App, hideSketchPreview: hideSketchPreviewFn });
       return false;
     }

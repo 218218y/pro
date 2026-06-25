@@ -78,6 +78,7 @@ export interface UiState extends UnknownRecord {
   baseLegStyle?: 'tapered' | 'round' | 'square' | string;
   baseLegColor?: 'black' | 'nickel' | 'gold' | string;
   baseLegPlatformMode?: 'stage' | 'plain' | string;
+  baseLegPlatformSideMode?: 'overhang' | 'flush' | string;
   basePlinthHeightCm?: number | string;
   baseLegHeightCm?: number | string;
   slidingTracksColor?: 'nickel' | 'black' | string;

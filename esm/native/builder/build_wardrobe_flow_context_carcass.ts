@@ -52,6 +52,7 @@ export function resolveBuildWardrobeCarcassMetrics(args: {
     baseType: plan.baseTypeTop,
     baseLegStyle: plan.baseLegStyle,
     baseLegPlatformMode: plan.baseLegPlatformMode,
+    baseLegPlatformSideMode: plan.baseLegPlatformSideMode,
     basePlinthHeightCm: plan.basePlinthHeightCm,
     baseLegHeightCm: plan.baseLegHeightCm,
     baseLegWidthCm: plan.baseLegWidthCm,

@@ -194,3 +194,56 @@ test('brace-shelves hover does not require a prior click in the other corner cel
   assert.equal(preview?.op, 'add');
   assert.equal(preview?.anchor, selector);
 });
+
+test('brace-shelves hover targets exact sketch shelves stored in sketchExtras', () => {
+  const selector = makeSelector('0', 1.21);
+  const shelfBoard = {
+    userData: { partId: 'sketch_shelf_0_1', moduleIndex: 0, __wpShelfIndex: 1 },
+    parent: null,
+  };
+  const intersects = [
+    { object: shelfBoard, point: { x: 0, y: 0.72, z: 0 } },
+    { object: selector, point: { x: 0, y: selector.__hitY, z: 0 } },
+  ];
+  const { App, raycaster, mouse } = createApp(intersects, {
+    config: {
+      modulesConfiguration: [
+        {
+          isCustom: true,
+          gridDivisions: 6,
+          customData: { shelves: [false, false, false, false, false], shelfVariants: [] },
+          braceShelves: [],
+          sketchExtras: { shelves: [{ id: 'exact-1', yNorm: 0.3, variant: 'regular', depthM: 0.4 }] },
+        },
+      ],
+    },
+  });
+  getInternalGridMap(App, false)['0'] = {
+    effectiveBottomY: 0,
+    effectiveTopY: 2.4,
+    gridDivisions: 6,
+    woodThick: 0.017,
+  };
+
+  let preview: AnyRecord | null = null;
+  const handled = tryHandleCanvasBraceShelvesHover({
+    App,
+    ndcX: 0,
+    ndcY: 0,
+    raycaster,
+    mouse,
+    previewRo: {
+      setSketchPlacementPreview: (_args: AnyRecord) => {
+        preview = _args;
+      },
+    },
+    hideLayoutPreview: () => undefined,
+    hideSketchPreview: () => undefined,
+  } as never);
+
+  assert.equal(handled, true);
+  assert.equal(preview?.kind, 'shelf');
+  assert.equal(preview?.variant, 'brace');
+  assert.equal(preview?.op, 'add');
+  assert.ok(preview && Math.abs(Number(preview.y) - 0.72) < 1e-9);
+});

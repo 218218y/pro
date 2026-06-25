@@ -40,6 +40,7 @@ type ApplyCarcassAndGetCabinetMetricsArgs = {
   baseType?: string;
   baseLegStyle?: string;
   baseLegPlatformMode?: string;
+  baseLegPlatformSideMode?: string;
   basePlinthHeightCm?: number | string;
   baseLegHeightCm?: number | string;
   baseLegWidthCm?: number | string;
@@ -246,6 +247,7 @@ export function applyCarcassAndGetCabinetMetrics(
     baseType: baseTypeStr,
     baseLegStyle: safeArgs.baseLegStyle,
     baseLegPlatformMode: safeArgs.baseLegPlatformMode,
+    baseLegPlatformSideMode: safeArgs.baseLegPlatformSideMode,
     basePlinthHeightCm: safeArgs.basePlinthHeightCm,
     baseLegHeightCm: safeArgs.baseLegHeightCm,
     baseLegWidthCm: safeArgs.baseLegWidthCm,

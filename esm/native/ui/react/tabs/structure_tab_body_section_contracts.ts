@@ -1,12 +1,18 @@
 import type { ReactNode } from 'react';
 
-import type { BaseLegColor, BaseLegPlatformMode, BaseLegStyle } from '../../../features/base_leg_support.js';
+import type {
+  BaseLegColor,
+  BaseLegPlatformMode,
+  BaseLegPlatformSideMode,
+  BaseLegStyle,
+} from '../../../features/base_leg_support.js';
 import type { StructurePattern } from './structure_tab_saved_models_patterns.js';
 
 export type BaseType = 'plinth' | 'legs' | 'none';
 export type StructureBaseLegStyle = BaseLegStyle;
 export type StructureBaseLegColor = BaseLegColor;
 export type StructureBaseLegPlatformMode = BaseLegPlatformMode;
+export type StructureBaseLegPlatformSideMode = BaseLegPlatformSideMode;
 export type SlidingTracksColor = 'nickel' | 'black';
 
 export type CommitStructural = (
@@ -19,6 +25,7 @@ export type StructureBodySectionProps = {
   baseLegStyle: StructureBaseLegStyle;
   baseLegColor: StructureBaseLegColor;
   baseLegPlatformMode: StructureBaseLegPlatformMode;
+  baseLegPlatformSideMode: StructureBaseLegPlatformSideMode;
   basePlinthHeightCm: number;
   baseLegHeightCm: number;
   baseLegWidthCm: number;
@@ -39,6 +46,7 @@ export type StructureBodySectionProps = {
   onSetBaseLegStyle: (value: StructureBaseLegStyle) => void;
   onSetBaseLegColor: (value: StructureBaseLegColor) => void;
   onSetBaseLegPlatformMode: (value: StructureBaseLegPlatformMode) => void;
+  onSetBaseLegPlatformSideMode: (value: StructureBaseLegPlatformSideMode) => void;
   onSetBasePlinthHeightCm: (value: number) => void;
   onSetBaseLegHeightCm: (value: number) => void;
   onSetBaseLegWidthCm: (value: number) => void;
@@ -84,6 +92,13 @@ export const BASE_LEG_PLATFORM_OPTIONS: ReadonlyArray<StructureBodyTypeOption<St
     { value: 'stage', label: 'עם במה', iconClass: 'fas fa-layer-group wp-r-type-icon' },
     { value: 'plain', label: 'בלי במה', iconClass: 'fas fa-minus wp-r-type-icon' },
   ];
+
+export const BASE_LEG_PLATFORM_SIDE_OPTIONS: ReadonlyArray<
+  StructureBodyTypeOption<StructureBaseLegPlatformSideMode>
+> = [
+  { value: 'overhang', label: 'במה בולטת', iconClass: 'fas fa-expand-arrows-alt wp-r-type-icon' },
+  { value: 'flush', label: 'במה אפס', iconClass: 'fas fa-compress-arrows-alt wp-r-type-icon' },
+];
 
 export function getSingleDoorPositionOptions(doors: number): ReadonlyArray<StructureBodyTypeOption<string>> {
   if (doors === 7) {

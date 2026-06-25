@@ -71,6 +71,7 @@ export const PROFILE_UI_RAW_KEYS = [
   'baseLegStyle',
   'baseLegColor',
   'baseLegPlatformMode',
+  'baseLegPlatformSideMode',
   'basePlinthHeightCm',
   'baseLegHeightCm',
   'baseLegWidthCm',

@@ -1,5 +1,10 @@
 import type { UnknownRecord } from '../../../../../types';
-import type { BaseLegColor, BaseLegPlatformMode, BaseLegStyle } from '../../../features/base_leg_support.js';
+import type {
+  BaseLegColor,
+  BaseLegPlatformMode,
+  BaseLegPlatformSideMode,
+  BaseLegStyle,
+} from '../../../features/base_leg_support.js';
 import type { StructurePattern } from './structure_tab_saved_models_patterns.js';
 
 export type StructureTabBaseUiState = {
@@ -16,6 +21,7 @@ export type StructureTabBaseUiState = {
   baseLegStyle: BaseLegStyle;
   baseLegColor: BaseLegColor;
   baseLegPlatformMode: BaseLegPlatformMode;
+  baseLegPlatformSideMode: BaseLegPlatformSideMode;
   basePlinthHeightCm: number;
   baseLegHeightCm: number;
   baseLegWidthCm: number;

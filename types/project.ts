@@ -83,6 +83,7 @@ export interface ProjectSettingsLike extends UnknownRecord {
   baseLegStyle?: string;
   baseLegColor?: string;
   baseLegPlatformMode?: string;
+  baseLegPlatformSideMode?: string;
   basePlinthHeightCm?: number | string;
   baseLegHeightCm?: number | string;
   baseLegWidthCm?: number | string;

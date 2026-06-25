@@ -6,6 +6,7 @@ import { METAL_FINISH_PALETTE_BY_COLOR } from './metal_finish_palette.js';
 export type BaseLegStyle = 'tapered' | 'round' | 'square';
 export type BaseLegColor = 'black' | 'nickel' | 'gold';
 export type BaseLegPlatformMode = 'stage' | 'plain';
+export type BaseLegPlatformSideMode = 'overhang' | 'flush';
 
 export type BaseLegGeometrySpec =
   | {
@@ -38,6 +39,7 @@ export const BASE_LEG_HEIGHT_MIN_CM: number = BASE_LEG_DIMENSIONS.limits.heightM
 export const BASE_LEG_HEIGHT_MAX_CM: number = BASE_LEG_DIMENSIONS.limits.heightMaxCm;
 export const DEFAULT_BASE_LEG_WIDTH_CM: number = BASE_LEG_DIMENSIONS.defaults.widthCm;
 export const DEFAULT_BASE_LEG_PLATFORM_MODE: BaseLegPlatformMode = 'stage';
+export const DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE: BaseLegPlatformSideMode = 'overhang';
 export const DEFAULT_TAPERED_BASE_LEG_WIDTH_CM: number = BASE_LEG_DIMENSIONS.defaults.taperedWidthCm;
 export const BASE_LEG_WIDTH_MIN_CM: number = BASE_LEG_DIMENSIONS.limits.widthMinCm;
 export const BASE_LEG_WIDTH_MAX_CM: number = BASE_LEG_DIMENSIONS.limits.widthMaxCm;
@@ -79,6 +81,33 @@ export function normalizeBaseLegPlatformMode(
     .toLowerCase();
   if (raw === 'plain' || raw === 'none' || raw === 'without' || raw === 'no-stage') return 'plain';
   if (raw === 'stage' || raw === 'platform' || raw === 'with' || raw === 'with-stage') return 'stage';
+  return defaultValue;
+}
+
+export function normalizeBaseLegPlatformSideMode(
+  value: unknown,
+  defaultValue: BaseLegPlatformSideMode = DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE
+): BaseLegPlatformSideMode {
+  const raw = String(value || '')
+    .trim()
+    .toLowerCase();
+  if (
+    raw === 'flush' ||
+    raw === 'zero' ||
+    raw === '0' ||
+    raw === 'none' ||
+    raw === 'no-side-overhang' ||
+    raw === 'side-flush'
+  )
+    return 'flush';
+  if (
+    raw === 'overhang' ||
+    raw === 'projecting' ||
+    raw === 'protruding' ||
+    raw === 'side-overhang' ||
+    raw === 'default'
+  )
+    return 'overhang';
   return defaultValue;
 }
 

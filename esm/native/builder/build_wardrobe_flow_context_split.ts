@@ -114,6 +114,7 @@ export function resolveBuildWardrobeSplitMetrics(args: {
     baseLegStyle: plan.baseLegStyle,
     baseLegColor: plan.baseLegColor,
     baseLegPlatformMode: plan.baseLegPlatformMode,
+    baseLegPlatformSideMode: plan.baseLegPlatformSideMode,
     basePlinthHeightCm: plan.basePlinthHeightCm,
     baseLegHeightCm: plan.baseLegHeightCm,
     baseLegWidthCm: plan.baseLegWidthCm,

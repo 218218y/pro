@@ -4,6 +4,7 @@ import {
   normalizeBaseLegColor,
   normalizeBaseLegHeightCm,
   normalizeBaseLegPlatformMode,
+  normalizeBaseLegPlatformSideMode,
   normalizeBaseLegStyle,
   normalizeBaseLegWidthCm,
 } from '../../../features/base_leg_support.js';
@@ -111,6 +112,7 @@ export function readStructureTabBaseUiState(ui: StructureTabUiSnapshot): Structu
     baseLegStyle: normalizeBaseLegStyle(ui.baseLegStyle),
     baseLegColor: normalizeBaseLegColor(ui.baseLegColor),
     baseLegPlatformMode: normalizeBaseLegPlatformMode(ui.baseLegPlatformMode),
+    baseLegPlatformSideMode: normalizeBaseLegPlatformSideMode(ui.baseLegPlatformSideMode),
     basePlinthHeightCm: normalizeBasePlinthHeightCm(ui.basePlinthHeightCm),
     baseLegHeightCm: normalizeBaseLegHeightCm(ui.baseLegHeightCm),
     baseLegWidthCm: normalizeBaseLegWidthCm(ui.baseLegWidthCm, getDefaultBaseLegWidthCm(ui.baseLegStyle)),

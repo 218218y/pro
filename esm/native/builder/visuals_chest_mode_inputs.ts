@@ -6,9 +6,11 @@ import {
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
   normalizeBaseLegPlatformMode,
+  normalizeBaseLegPlatformSideMode,
   readBaseLegOptions,
   type BaseLegColor,
   type BaseLegPlatformMode,
+  type BaseLegPlatformSideMode,
   type BaseLegStyle,
 } from '../features/base_leg_support.js';
 import { getBasePlinthHeightM, normalizeBasePlinthHeightCm } from '../features/base_plinth_support.js';
@@ -24,6 +26,7 @@ export type ChestModeBuildInputs = {
   baseLegStyle: BaseLegStyle;
   baseLegColor: BaseLegColor;
   baseLegPlatformMode: BaseLegPlatformMode;
+  baseLegPlatformSideMode: BaseLegPlatformSideMode;
   basePlinthHeightCm: number;
   basePlinthHeightM: number;
   baseLegHeightCm: number;
@@ -77,6 +80,7 @@ export function resolveChestModeBuildInputs(opts: BuilderBuildChestOnlyOptsLike)
 
   const legOptions = readBaseLegOptions(legSource);
   const baseLegPlatformMode = normalizeBaseLegPlatformMode(opts.baseLegPlatformMode);
+  const baseLegPlatformSideMode = normalizeBaseLegPlatformSideMode(opts.baseLegPlatformSideMode);
   const baseLegPlatformEnabled = String(rawBaseType || '') !== 'plinth' && baseLegPlatformMode === 'stage';
   const baseLegPlatformHeightM = baseLegPlatformEnabled ? CARCASS_BASE_DIMENSIONS.legs.platform.heightM : 0;
   const basePlinthHeightCm = normalizeBasePlinthHeightCm(plinthHeightSource);
@@ -110,6 +114,7 @@ export function resolveChestModeBuildInputs(opts: BuilderBuildChestOnlyOptsLike)
     baseLegWidthCm: legOptions.widthCm,
     baseLegHeightM: legOptions.heightM,
     baseLegPlatformMode,
+    baseLegPlatformSideMode,
     baseLegBottomPlatformHeightM: baseLegPlatformHeightM,
     baseLegTopPlatformHeightM: baseLegPlatformHeightM,
     colorChoice: String(colorChoice || '#ffffff'),

@@ -4,6 +4,7 @@ import {
   normalizeBaseLegColor,
   normalizeBaseLegHeightCm,
   normalizeBaseLegPlatformMode,
+  normalizeBaseLegPlatformSideMode,
   normalizeBaseLegWidthCm,
   normalizeBaseLegStyle,
 } from '../../../features/base_leg_support.js';
@@ -35,6 +36,10 @@ function setUiBaseLegColor(app: AppContainer, value: unknown, meta?: ActionMetaL
 
 function setUiBaseLegPlatformMode(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
   setUiScalar(app, 'baseLegPlatformMode', normalizeBaseLegPlatformMode(value), meta);
+}
+
+function setUiBaseLegPlatformSideMode(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
+  setUiScalar(app, 'baseLegPlatformSideMode', normalizeBaseLegPlatformSideMode(value), meta);
 }
 
 function setUiBaseLegHeightCm(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
@@ -234,6 +239,7 @@ function setUiFrontColorShelfInheritanceMode(app: AppContainer, value: unknown, 
 export {
   setUiBaseLegColor,
   setUiBaseLegPlatformMode,
+  setUiBaseLegPlatformSideMode,
   setUiBaseLegHeightCm,
   setUiBaseLegWidthCm,
   setUiBaseLegStyle,

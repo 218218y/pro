@@ -202,6 +202,20 @@ export function installStateApiUiSurface(ctx: StateApiSurfaceUiContext): void {
       );
     };
   }
+  if (typeof uiNs.setBaseLegPlatformSideMode !== 'function') {
+    uiNs.setBaseLegPlatformSideMode = function setBaseLegPlatformSideMode(
+      value: unknown,
+      meta?: ActionMetaLike
+    ) {
+      const raw = String(value || '')
+        .trim()
+        .toLowerCase();
+      return uiNs.patch?.(
+        { baseLegPlatformSideMode: raw === 'flush' || raw === 'zero' ? 'flush' : 'overhang' },
+        normMeta(meta, 'actions.ui:setBaseLegPlatformSideMode')
+      );
+    };
+  }
   if (typeof uiNs.setHingeDirection !== 'function') {
     uiNs.setHingeDirection = function setHingeDirection(on: unknown, meta?: ActionMetaLike) {
       return uiNs.patch?.({ hingeDirection: !!on }, uiOnlyMeta(meta, 'actions.ui:setHingeDirection'));

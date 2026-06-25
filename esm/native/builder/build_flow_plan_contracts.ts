@@ -49,6 +49,7 @@ export type BuildFlowPlan = {
   baseLegStyle: string;
   baseLegColor: string;
   baseLegPlatformMode: string;
+  baseLegPlatformSideMode: string;
   basePlinthHeightCm: number;
   baseLegHeightCm: number;
   baseLegWidthCm: number;
@@ -114,6 +115,7 @@ export type BuildFlowPlanInputs = Pick<
   | 'baseLegStyle'
   | 'baseLegColor'
   | 'baseLegPlatformMode'
+  | 'baseLegPlatformSideMode'
   | 'basePlinthHeightCm'
   | 'baseLegHeightCm'
   | 'baseLegWidthCm'

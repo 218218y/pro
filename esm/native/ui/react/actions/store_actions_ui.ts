@@ -20,6 +20,7 @@ export {
 export {
   setUiBaseLegColor,
   setUiBaseLegPlatformMode,
+  setUiBaseLegPlatformSideMode,
   setUiBaseLegHeightCm,
   setUiBaseLegWidthCm,
   setUiBaseLegStyle,

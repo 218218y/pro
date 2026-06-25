@@ -125,6 +125,7 @@ export function buildProjectUiSnapshot(
     baseLegStyle: settings.baseLegStyle,
     baseLegColor: settings.baseLegColor,
     baseLegPlatformMode: settings.baseLegPlatformMode === 'plain' ? 'plain' : 'stage',
+    baseLegPlatformSideMode: settings.baseLegPlatformSideMode === 'flush' ? 'flush' : 'overhang',
     basePlinthHeightCm: settings.basePlinthHeightCm,
     baseLegHeightCm: settings.baseLegHeightCm,
     baseLegWidthCm: settings.baseLegWidthCm,

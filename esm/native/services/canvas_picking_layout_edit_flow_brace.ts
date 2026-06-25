@@ -5,7 +5,7 @@ import {
   resolveShelfSelectorPickToleranceM,
 } from './canvas_picking_shelf_hit_targets.js';
 import { __wp_reportPickingIssue } from './canvas_picking_core_helpers.js';
-import { __wp_clearSketchHover } from './canvas_picking_local_helpers.js';
+import { __wp_clearSketchHover, __wp_readSketchHover } from './canvas_picking_local_helpers.js';
 import { firstRenderableHitIsSketchFreeBox } from './canvas_picking_sketch_free_box_hit_policy.js';
 import { createCanvasPickingConfigStructuralPatchMeta } from './canvas_picking_config_patch_meta.js';
 import {
@@ -20,6 +20,11 @@ import {
   removeBraceShelfIndex,
 } from './canvas_picking_manual_layout_config_ops_shared.js';
 import { tryCommitBraceShelvesFreeBoxFromHover } from './canvas_picking_manual_layout_free_box_content.js';
+import {
+  isFreshBraceSketchShelfHover,
+  resolveBraceSketchShelfMatch,
+  toggleBraceSketchShelfAtIndex,
+} from './canvas_picking_brace_shelves_sketch_extras.js';
 
 export function tryHandleCanvasBraceShelvesClick(args: CanvasLayoutEditClickArgs): boolean {
   const {
@@ -54,6 +59,50 @@ export function tryHandleCanvasBraceShelvesClick(args: CanvasLayoutEditClickArgs
     const bottomY = typeof info.effectiveBottomY === 'number' ? info.effectiveBottomY : null;
     const divisions = typeof info.gridDivisions === 'number' ? info.gridDivisions : 6;
     if (typeof topY !== 'number' || typeof bottomY !== 'number' || divisions <= 1) return;
+
+    const sketchHover = __wp_readSketchHover(App);
+    const freshSketchHover = isFreshBraceSketchShelfHover({
+      hover: sketchHover,
+      moduleKey: mapKey,
+      isBottom: __isBottomStack,
+      now: Date.now(),
+    })
+      ? asRecord(sketchHover)
+      : null;
+    if (freshSketchHover) {
+      __patchConfigForKey(
+        mapKey,
+        cfg => {
+          toggleBraceSketchShelfAtIndex(cfg, Number(freshSketchHover.removeIdx));
+        },
+        createCanvasPickingConfigStructuralPatchMeta('braceShelves.sketchExtraToggle')
+      );
+      __wp_clearSketchHover(App);
+      return;
+    }
+
+    const directSketchShelfMatch = resolveBraceSketchShelfMatch({
+      cfgRef: configRef,
+      intersects,
+      selectorHitY: moduleHitY !== null ? moduleHitY : readHitPointY(intersects[0]),
+      bottomY,
+      topY,
+      toleranceM: resolveShelfPickVerticalToleranceM(
+        typeof info.woodThick === 'number' ? info.woodThick : 0.017,
+        2.75
+      ),
+    });
+    if (directSketchShelfMatch) {
+      __patchConfigForKey(
+        mapKey,
+        cfg => {
+          toggleBraceSketchShelfAtIndex(cfg, directSketchShelfMatch.index);
+        },
+        createCanvasPickingConfigStructuralPatchMeta('braceShelves.sketchExtraToggle')
+      );
+      __wp_clearSketchHover(App);
+      return;
+    }
 
     const firstHitY = readHitPointY(intersects[0]);
     const totalHeight = topY - bottomY;

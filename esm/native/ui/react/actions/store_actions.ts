@@ -36,6 +36,7 @@ export {
   setUiActiveTab,
   setUiBaseLegColor,
   setUiBaseLegPlatformMode,
+  setUiBaseLegPlatformSideMode,
   setUiBaseLegHeightCm,
   setUiBaseLegWidthCm,
   setUiBaseLegStyle,

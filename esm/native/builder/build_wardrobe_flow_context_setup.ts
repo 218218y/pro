@@ -74,6 +74,7 @@ export function prepareBuildWardrobeContextSetup(
             baseLegStyle: string;
             baseLegColor: string;
             baseLegPlatformMode: string;
+            baseLegPlatformSideMode?: string;
             basePlinthHeightCm: number | string;
             baseLegHeightCm: number | string;
             baseLegWidthCm?: number | string;

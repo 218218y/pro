@@ -117,6 +117,7 @@ export function prepareStackSplitLowerSetup(
     baseType: args.baseTypeBottom,
     baseLegStyle: args.baseLegStyle,
     baseLegPlatformMode: args.baseLegPlatformMode,
+    baseLegPlatformSideMode: args.baseLegPlatformSideMode,
     basePlinthHeightCm: args.basePlinthHeightCm,
     baseLegHeightCm: args.baseLegHeightCm,
     baseLegWidthCm: args.baseLegWidthCm,

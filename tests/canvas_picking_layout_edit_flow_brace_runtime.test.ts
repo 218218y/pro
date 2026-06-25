@@ -85,3 +85,41 @@ test('brace-shelves click cancels a brace shelf stored as both brace metadata an
   assert.deepEqual(cfg.braceShelves, []);
   assert.deepEqual((cfg.customData as { shelfVariants: string[] }).shelfVariants, ['', '', '', '', '']);
 });
+
+test('brace-shelves click toggles an exact sketch shelf to brace and back to regular', () => {
+  const App = createApp();
+  getInternalGridMap(App, false)['0'] = {
+    effectiveTopY: 2.4,
+    effectiveBottomY: 0,
+    gridDivisions: 6,
+    woodThick: 0.017,
+  };
+  const cfg: Record<string, unknown> = {
+    isCustom: true,
+    customData: { shelves: [false, false, false, false, false], shelfVariants: [] },
+    braceShelves: [],
+    sketchExtras: { shelves: [{ id: 'exact-1', yNorm: 0.3, variant: 'regular', depthM: 0.4 }] },
+  };
+  const patchMetaRef: { current: Record<string, unknown> | null } = { current: null };
+  const args = {
+    ...baseArgs(App, cfg, patchMetaRef),
+    moduleHitY: 0.72,
+    intersects: [
+      {
+        object: { userData: { partId: 'sketch_shelf_0_1', moduleIndex: 0, __wpShelfIndex: 1 } },
+        point: { y: 0.72 },
+      },
+      { object: { userData: { isModuleSelector: true, moduleIndex: 0 } }, point: { y: 0.72 } },
+    ],
+  };
+
+  assert.equal(tryHandleCanvasBraceShelvesClick(args as never), true);
+  assert.deepEqual(patchMetaRef.current, { source: 'braceShelves.sketchExtraToggle', immediate: true });
+  const shelves = (cfg.sketchExtras as any).shelves as Array<Record<string, unknown>>;
+  assert.equal(shelves[0].variant, 'brace');
+  assert.deepEqual(cfg.braceShelves, []);
+
+  assert.equal(tryHandleCanvasBraceShelvesClick(args as never), true);
+  assert.equal(shelves[0].variant, 'regular');
+  assert.deepEqual(cfg.braceShelves, []);
+});

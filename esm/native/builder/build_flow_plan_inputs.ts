@@ -7,6 +7,7 @@ import {
   normalizeBaseLegColor,
   normalizeBaseLegHeightCm,
   normalizeBaseLegPlatformMode,
+  normalizeBaseLegPlatformSideMode,
   normalizeBaseLegStyle,
   normalizeBaseLegWidthCm,
 } from '../features/base_leg_support.js';
@@ -141,6 +142,7 @@ export function resolveBuildFlowPlanInputs(args: BuildFlowPlanInputsArgs): Build
   const baseLegStyle = normalizeBaseLegStyle(ui.baseLegStyle);
   const baseLegColor = normalizeBaseLegColor(ui.baseLegColor);
   const baseLegPlatformMode = normalizeBaseLegPlatformMode(ui.baseLegPlatformMode);
+  const baseLegPlatformSideMode = normalizeBaseLegPlatformSideMode(ui.baseLegPlatformSideMode);
   const basePlinthHeightCm = normalizeBasePlinthHeightCm(ui.basePlinthHeightCm);
   const baseLegHeightCm = normalizeBaseLegHeightCm(ui.baseLegHeightCm);
   const baseLegWidthCm = normalizeBaseLegWidthCm(ui.baseLegWidthCm, getDefaultBaseLegWidthCm(baseLegStyle));
@@ -176,6 +178,7 @@ export function resolveBuildFlowPlanInputs(args: BuildFlowPlanInputsArgs): Build
     baseLegStyle,
     baseLegColor,
     baseLegPlatformMode,
+    baseLegPlatformSideMode,
     basePlinthHeightCm,
     baseLegHeightCm,
     baseLegWidthCm,

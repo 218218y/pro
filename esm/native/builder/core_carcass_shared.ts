@@ -5,7 +5,11 @@ import {
   MATERIAL_DIMENSIONS,
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
-import { normalizeBaseLegPlatformMode, readBaseLegOptions } from '../features/base_leg_support.js';
+import {
+  normalizeBaseLegPlatformMode,
+  normalizeBaseLegPlatformSideMode,
+  readBaseLegOptions,
+} from '../features/base_leg_support.js';
 import { isRemovedFrameSideOn } from '../features/removable_parts.js';
 import { readModuleConfig } from './build_flow_readers.js';
 import { getBasePlinthHeightM } from '../features/base_plinth_support.js';
@@ -33,6 +37,7 @@ export type PreparedCarcassInput = {
   cabinetBodyHeight: number;
   base: MutableRecord | null;
   baseLegPlatformMode: 'stage' | 'plain';
+  baseLegPlatformSideMode: 'overhang' | 'flush';
   baseLegTopPlatformOnly: boolean;
   baseLegBottomPlatformHeight: number;
   baseLegTopPlatformHeight: number;
@@ -64,6 +69,7 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
     inp.baseLegPlatformMode,
     baseLegTopPlatformRequested ? 'stage' : 'plain'
   );
+  const baseLegPlatformSideMode = normalizeBaseLegPlatformSideMode(inp.baseLegPlatformSideMode);
   const baseLegPlatformEnabled = baseType === 'legs' && baseLegPlatformMode === 'stage';
   const baseLegTopPlatformOnly = baseLegTopPlatformRequested && baseLegPlatformMode === 'stage';
   const baseLegBottomPlatformHeight = baseLegPlatformEnabled ? BASE_LEG_PLATFORM_DIMENSIONS.heightM : 0;
@@ -125,9 +131,16 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
   const cabinetBodyHeight = H - baseHeight;
 
   if (baseLegPlatformEnabled && _asObject(base)?.kind === 'legs') {
-    attachBaseLegPlatformOps({ base, totalW, D, H, legHeight: readBaseLegOptions(inp).heightM });
+    attachBaseLegPlatformOps({
+      base,
+      totalW,
+      D,
+      H,
+      legHeight: readBaseLegOptions(inp).heightM,
+      sideMode: baseLegPlatformSideMode,
+    });
   } else if (baseLegTopPlatformOnly) {
-    base = makeTopOnlyBaseLegPlatformOps({ totalW, D, H });
+    base = makeTopOnlyBaseLegPlatformOps({ totalW, D, H, sideMode: baseLegPlatformSideMode });
   }
 
   const moduleWidthsRaw = Array.isArray(inp.moduleInternalWidths)
@@ -206,6 +219,7 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
     cabinetBodyHeight,
     base,
     baseLegPlatformMode,
+    baseLegPlatformSideMode,
     baseLegTopPlatformOnly,
     baseLegBottomPlatformHeight,
     baseLegTopPlatformHeight,
@@ -228,6 +242,7 @@ type BaseLegPlatformAttachParams = {
   D: number;
   H: number;
   legHeight: number;
+  sideMode: 'overhang' | 'flush';
 };
 
 function makeBaseLegPlatformOp(args: {
@@ -236,17 +251,16 @@ function makeBaseLegPlatformOp(args: {
   depth: number;
   y: number;
   partId: string;
+  sideMode: 'overhang' | 'flush';
 }): MutableRecord {
   const platformDepth = Math.max(
     BASE_LEG_PLATFORM_DIMENSIONS.minDepthM,
     args.depth + BASE_LEG_PLATFORM_DIMENSIONS.frontOverhangM
   );
+  const sideOverhang = args.sideMode === 'flush' ? 0 : BASE_LEG_PLATFORM_DIMENSIONS.sideOverhangM;
   return {
     kind: 'leg_platform',
-    width: Math.max(
-      BASE_LEG_PLATFORM_DIMENSIONS.minWidthM,
-      args.width + BASE_LEG_PLATFORM_DIMENSIONS.sideOverhangM * 2
-    ),
+    width: Math.max(BASE_LEG_PLATFORM_DIMENSIONS.minWidthM, args.width + sideOverhang * 2),
     height: args.height,
     depth: platformDepth,
     x: 0,
@@ -268,6 +282,7 @@ function attachBaseLegPlatformOps(params: BaseLegPlatformAttachParams): void {
       depth: params.D,
       y: params.legHeight + h / 2,
       partId: 'base_leg_platform_bottom',
+      sideMode: params.sideMode,
     }),
     makeBaseLegPlatformOp({
       width: params.totalW,
@@ -275,11 +290,17 @@ function attachBaseLegPlatformOps(params: BaseLegPlatformAttachParams): void {
       depth: params.D,
       y: params.H + h / 2,
       partId: 'base_leg_platform_top',
+      sideMode: params.sideMode,
     }),
   ];
 }
 
-function makeTopOnlyBaseLegPlatformOps(args: { totalW: number; D: number; H: number }): MutableRecord {
+function makeTopOnlyBaseLegPlatformOps(args: {
+  totalW: number;
+  D: number;
+  H: number;
+  sideMode: 'overhang' | 'flush';
+}): MutableRecord {
   const h = BASE_LEG_PLATFORM_DIMENSIONS.heightM;
   return {
     kind: 'leg_platforms',
@@ -292,6 +313,7 @@ function makeTopOnlyBaseLegPlatformOps(args: { totalW: number; D: number; H: num
               depth: args.D,
               y: args.H + h / 2,
               partId: 'base_leg_platform_top',
+              sideMode: args.sideMode,
             }),
           ]
         : [],

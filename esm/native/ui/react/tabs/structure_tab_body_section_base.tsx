@@ -3,12 +3,14 @@ import type { ReactElement } from 'react';
 import {
   BASE_LEG_COLOR_OPTIONS,
   BASE_LEG_PLATFORM_OPTIONS,
+  BASE_LEG_PLATFORM_SIDE_OPTIONS,
   BASE_LEG_STYLE_OPTIONS,
   BASE_TYPE_OPTIONS,
   SLIDING_TRACKS_OPTIONS,
   type BaseType,
   type StructureBaseLegColor,
   type StructureBaseLegPlatformMode,
+  type StructureBaseLegPlatformSideMode,
   type StructureBaseLegStyle,
   type SlidingTracksColor,
 } from './structure_tab_body_section_contracts.js';
@@ -38,6 +40,7 @@ export function StructureBodyBaseControls(props: {
   baseLegStyle: StructureBaseLegStyle;
   baseLegColor: StructureBaseLegColor;
   baseLegPlatformMode: StructureBaseLegPlatformMode;
+  baseLegPlatformSideMode: StructureBaseLegPlatformSideMode;
   basePlinthHeightCm: number;
   baseLegHeightCm: number;
   baseLegWidthCm: number;
@@ -49,6 +52,7 @@ export function StructureBodyBaseControls(props: {
   onSetBaseLegStyle: (value: StructureBaseLegStyle) => void;
   onSetBaseLegColor: (value: StructureBaseLegColor) => void;
   onSetBaseLegPlatformMode: (value: StructureBaseLegPlatformMode) => void;
+  onSetBaseLegPlatformSideMode: (value: StructureBaseLegPlatformSideMode) => void;
   onSetBasePlinthHeightCm: (value: number) => void;
   onSetBaseLegHeightCm: (value: number) => void;
   onSetBaseLegWidthCm: (value: number) => void;
@@ -130,6 +134,27 @@ export function StructureBodyBaseControls(props: {
               ))}
             </OptionButtonGroup>
           </div>
+
+          {props.baseLegPlatformMode === 'stage' ? (
+            <div className="wp-field">
+              <div className="wp-field-label">בליטת במה צדדית</div>
+              <OptionButtonGroup
+                columns={2}
+                density="micro"
+                className="wp-r-wardrobe-type-selector wp-r-base-leg-platform-side-selector"
+              >
+                {BASE_LEG_PLATFORM_SIDE_OPTIONS.map(option => (
+                  <StructureBodyTypeOptionButton
+                    key={option.value}
+                    selected={props.baseLegPlatformSideMode === option.value}
+                    label={option.label}
+                    iconClass={option.iconClass}
+                    onClick={() => props.onSetBaseLegPlatformSideMode(option.value)}
+                  />
+                ))}
+              </OptionButtonGroup>
+            </div>
+          ) : null}
 
           <div className="wp-field">
             <div className="wp-field-label">סוג רגליים</div>

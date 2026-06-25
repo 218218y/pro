@@ -88,6 +88,21 @@ test('carcass leg platform mode adds bottom and top stages without changing leg 
   assert.equal(top.z - top.depth / 2, -0.55 / 2, 'top stage should not protrude backward');
   assert.ok(stageOps.cornice.segments[0].y > 2.4, 'cornice should move above the top stage');
 
+  const flushOps = computeCarcassOps({
+    totalW: 1.6,
+    D: 0.55,
+    H: 2.4,
+    woodThick: 0.018,
+    baseType: 'legs',
+    baseLegPlatformMode: 'stage',
+    baseLegPlatformSideMode: 'flush',
+    baseLegHeightCm: 12,
+    doorsCount: 4,
+  }) as any;
+  assert.equal(flushOps.base.platforms[0].width, 1.6, 'flush stage should end at the side panels');
+  assert.equal(flushOps.base.platforms[1].width, 1.6, 'top flush stage should end at the side panels');
+  assert.ok(flushOps.base.platforms[0].depth > 0.55, 'flush stage should still protrude at the front');
+
   const plainOps = computeCarcassOps({
     totalW: 1.6,
     D: 0.55,
@@ -124,6 +139,23 @@ test('carcass can preserve only the top leg platform for split upper stacks', ()
   assert.equal(ops.base.platforms[0].partId, 'base_leg_platform_top');
   assert.equal(ops.base.platforms[0].y, 1.5 + platformH / 2);
   assert.ok(ops.cornice.segments[0].y > 1.5, 'cornice should move above the preserved top stage');
+
+  const flushOps = computeCarcassOps({
+    totalW: 1.6,
+    D: 0.55,
+    H: 1.5,
+    woodThick: 0.018,
+    baseType: '',
+    baseLegPlatformMode: 'stage',
+    baseLegPlatformSideMode: 'flush',
+    baseLegTopPlatformOnly: true,
+    doorsCount: 4,
+  }) as any;
+  assert.equal(flushOps.base.platforms[0].width, 1.6, 'top-only flush stage should end at the side panels');
+  assert.ok(
+    flushOps.base.platforms[0].depth > 0.55,
+    'top-only flush stage should still protrude at the front'
+  );
 });
 
 test('carcass top-only leg platform flag survives stripped top base without a duplicated mode value', () => {

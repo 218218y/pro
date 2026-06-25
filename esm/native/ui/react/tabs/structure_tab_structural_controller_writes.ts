@@ -2,6 +2,7 @@ import {
   setUiBaseLegColor,
   setUiBaseLegHeightCm,
   setUiBaseLegPlatformMode,
+  setUiBaseLegPlatformSideMode,
   setUiBaseLegWidthCm,
   setUiBaseLegStyle,
   setUiBasePlinthHeightCm,
@@ -14,6 +15,7 @@ import {
   normalizeBaseLegColor,
   normalizeBaseLegHeightCm,
   normalizeBaseLegPlatformMode,
+  normalizeBaseLegPlatformSideMode,
   normalizeBaseLegStyle,
   normalizeBaseLegWidthCm,
 } from '../../../features/base_leg_support.js';
@@ -45,7 +47,7 @@ function resolveImmediateStructureUiPatchDefaults(source: string, patch: Unknown
     patch.baseType === 'legs' &&
     !Object.prototype.hasOwnProperty.call(patch, 'baseLegPlatformMode')
   ) {
-    return { ...patch, baseLegPlatformMode: 'stage' };
+    return { ...patch, baseLegPlatformMode: 'stage', baseLegPlatformSideMode: 'overhang' };
   }
   return patch;
 }
@@ -76,6 +78,7 @@ export function createStructureTabStructuralWriteController(
   | 'setBaseLegStyle'
   | 'setBaseLegColor'
   | 'setBaseLegPlatformMode'
+  | 'setBaseLegPlatformSideMode'
   | 'setBasePlinthHeightCm'
   | 'setBaseLegHeightCm'
   | 'setBaseLegWidthCm'
@@ -179,7 +182,10 @@ export function createStructureTabStructuralWriteController(
       const nextBaseType = normalizeStructureBaseType(next);
       applyImmediateStructureUiPatch(args, 'react:structure:baseType', { baseType: nextBaseType }, meta => {
         setUiBaseType(args.app, nextBaseType, meta);
-        if (nextBaseType === 'legs') setUiBaseLegPlatformMode(args.app, 'stage', meta);
+        if (nextBaseType === 'legs') {
+          setUiBaseLegPlatformMode(args.app, 'stage', meta);
+          setUiBaseLegPlatformSideMode(args.app, 'overhang', meta);
+        }
       });
     },
 
@@ -215,6 +221,18 @@ export function createStructureTabStructuralWriteController(
         { baseLegPlatformMode: nextBaseLegPlatformMode },
         meta => {
           setUiBaseLegPlatformMode(args.app, nextBaseLegPlatformMode, meta);
+        }
+      );
+    },
+
+    setBaseLegPlatformSideMode(next) {
+      const nextBaseLegPlatformSideMode = normalizeBaseLegPlatformSideMode(next);
+      applyImmediateStructureUiPatch(
+        args,
+        'react:structure:baseLegPlatformSideMode',
+        { baseLegPlatformSideMode: nextBaseLegPlatformSideMode },
+        meta => {
+          setUiBaseLegPlatformSideMode(args.app, nextBaseLegPlatformSideMode, meta);
         }
       );
     },
