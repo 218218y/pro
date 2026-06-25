@@ -202,19 +202,6 @@ export function readHingeMap(value: unknown): HingeMap {
   return out;
 }
 
-function stripDoorSegmentSuffix(id0: string): string {
-  return String(id0 || '').replace(/_(full|top|bot|mid)$/i, '');
-}
-
-function isDoorIdLike(key: string): boolean {
-  return (
-    /^(?:lower_)?d\d+(?:_(?:full|top|bot|mid))?$/i.test(key) ||
-    /^(?:lower_)?corner_door_\d+(?:_(?:full|top|bot|mid))?$/i.test(key) ||
-    /^(?:lower_)?corner_pent_door_\d+(?:_(?:full|top|bot|mid))?$/i.test(key) ||
-    /^corner_pent_door_\d+(?:_(?:full|top|bot|mid))?$/i.test(key)
-  );
-}
-
 function readBoolish(value: unknown): boolean | null {
   if (value === true) return true;
   if (value === false) return false;
@@ -284,34 +271,15 @@ export function readSplitDoorsMapValue(value: unknown): SplitDoorsMap {
   const out: SplitDoorsMap = {};
   const hasOwn = Object.prototype.hasOwnProperty;
 
-  const assignPassthrough = (key: string, entry: unknown): void => {
-    if (entry == null) {
-      out[key] = null;
-      return;
-    }
-    if (typeof entry === 'boolean' || typeof entry === 'number' || typeof entry === 'string') {
-      out[key] = entry;
-      return;
-    }
-    if (Array.isArray(entry)) {
-      const list: number[] = [];
-      for (const part of entry) {
-        const num = typeof part === 'number' ? part : typeof part === 'string' ? Number(part) : NaN;
-        if (Number.isFinite(num)) list.push(num);
-      }
-      if (list.length) out[key] = list;
-    }
-  };
-
-  const mergeSplitToggle = (normalizedKey: string, entry: unknown) => {
+  const assignSplitToggle = (key: string, entry: unknown) => {
     const next = readBoolish(entry);
     if (next == null) return;
-    if (hasOwn.call(out, normalizedKey)) {
-      if (out[normalizedKey] === false || next === false) out[normalizedKey] = false;
-      else out[normalizedKey] = true;
+    if (hasOwn.call(out, key)) {
+      if (out[key] === false || next === false) out[key] = false;
+      else out[key] = true;
       return;
     }
-    out[normalizedKey] = next;
+    out[key] = next;
   };
 
   for (const rawKey in src) {
@@ -320,23 +288,14 @@ export function readSplitDoorsMapValue(value: unknown): SplitDoorsMap {
     const key = String(rawKey || '');
 
     if (key.startsWith('split_')) {
-      mergeSplitToggle('split_' + stripDoorSegmentSuffix(key.slice(6)), entry);
+      assignSplitToggle(key, entry);
       continue;
     }
 
-    if (!key.startsWith('split') && isDoorIdLike(key)) {
-      mergeSplitToggle('split_' + stripDoorSegmentSuffix(key), entry);
-      continue;
-    }
-
-    if (key.startsWith('splitpos_') || /^splitPos_/i.test(key)) {
-      const normalizedKey = key.replace(/^splitPos_/i, 'splitpos_');
+    if (key.startsWith('splitpos_')) {
       const list = parseSplitPositionList(entry);
-      if (list.length) out['splitpos_' + stripDoorSegmentSuffix(normalizedKey.slice(9))] = list;
-      continue;
+      if (list.length) out[key] = list;
     }
-
-    assignPassthrough(rawKey, entry);
   }
 
   return out;
@@ -357,32 +316,7 @@ export function readSplitDoorsBottomMapValue(value: unknown): SplitDoorsBottomMa
     const entry = src[rawKey];
     const key = String(rawKey || '');
 
-    if (key.startsWith('splitb_') || /^splitBottom_/i.test(key)) {
-      const prefixed = key.replace(/^splitBottom_/i, 'splitb_');
-      if (prefixed.startsWith('splitb_')) {
-        assignNormalizedToggle('splitb_' + stripDoorSegmentSuffix(prefixed.slice(7)), entry);
-      } else {
-        assignNormalizedToggle(rawKey, entry);
-      }
-      continue;
-    }
-
-    if (!key.startsWith('split') && isDoorIdLike(key)) {
-      const next = readNullableBoolish(entry);
-      if (typeof next !== 'undefined') {
-        out['splitb_' + stripDoorSegmentSuffix(key)] = next;
-        continue;
-      }
-    }
-
-    if (
-      typeof entry === 'boolean' ||
-      typeof entry === 'number' ||
-      typeof entry === 'string' ||
-      entry === null
-    ) {
-      assignNormalizedToggle(rawKey, entry);
-    }
+    if (key.startsWith('splitb_')) assignNormalizedToggle(key, entry);
   }
 
   return out;

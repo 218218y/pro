@@ -14,18 +14,10 @@ function normalizePrefixedMapKey(value: unknown, prefix: string): string {
   return key.indexOf(prefix) === 0 ? key : prefix + key;
 }
 
-function readUnprefixedAliasKey(value: unknown, prefix: string): string {
-  const key = readMapKey(value);
-  if (!key) return '';
-  return key.indexOf(prefix) === 0 ? key.slice(prefix.length) : key;
-}
-
 function readPrefixedMapFlag(map: Record<string, unknown>, value: unknown, prefix: string): boolean {
   const canonicalKey = normalizePrefixedMapKey(value, prefix);
   if (!canonicalKey) return false;
-  if (Object.prototype.hasOwnProperty.call(map, canonicalKey)) return map[canonicalKey] === true;
-  const aliasKey = readUnprefixedAliasKey(value, prefix);
-  return !!aliasKey && aliasKey !== canonicalKey && map[aliasKey] === true;
+  return Object.prototype.hasOwnProperty.call(map, canonicalKey) && map[canonicalKey] === true;
 }
 
 function patchCanonicalPrefixedMapEntry(
@@ -39,9 +31,7 @@ function patchCanonicalPrefixedMapEntry(
 ): unknown {
   const canonicalKey = normalizePrefixedMapKey(value, prefix);
   if (!canonicalKey) return undefined;
-  const aliasKey = readUnprefixedAliasKey(value, prefix);
   const patch: Record<string, unknown> = { [canonicalKey]: nextValue };
-  if (aliasKey && aliasKey !== canonicalKey) patch[aliasKey] = null;
   return patchConfigMap(App, mapName, patch, shared.metaNorm(meta, 'maps:' + mapName + ':canonical'));
 }
 

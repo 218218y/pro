@@ -11,11 +11,8 @@ export type {
 } from './domain_api_surface_sections_contracts.js';
 export {
   grooveMapSemantics,
-  listPrefixedMapCleanupKeys,
   normalizePrefixedMapKey,
-  readUnprefixedAliasKey,
   readMapKey,
-  readPrefixedMapLookupKeys,
   readPrefixedToggleMapFlag,
   readToggleMapFlagForKeys,
   splitDoorBottomMapSemantics,

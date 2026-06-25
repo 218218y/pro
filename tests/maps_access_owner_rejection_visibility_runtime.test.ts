@@ -62,7 +62,7 @@ test('maps access reports setKey owner rejection and preserves local raw-map wri
   assert.equal(reports[0].ctx.fatal, false);
 });
 
-test('maps access reports canonical split owner rejection and falls back through canonical setKey', () => {
+test('maps access reports canonical split owner rejection and falls back through canonical setKey only', () => {
   const writes: Array<{ mapName: string; key: string; value: unknown }> = [];
   const { App, reports } = createReportingApp({
     splitDoorsMap: { d3: true },
@@ -78,12 +78,9 @@ test('maps access reports canonical split owner rejection and falls back through
 
   assert.equal(writeSplit(App, 'd3', true, { source: 'test' }), true);
 
-  assert.deepEqual(writes, [
-    { mapName: 'splitDoorsMap', key: 'split_d3', value: true },
-    { mapName: 'splitDoorsMap', key: 'd3', value: null },
-  ]);
+  assert.deepEqual(writes, [{ mapName: 'splitDoorsMap', key: 'split_d3', value: true }]);
   assert.equal(App.maps.splitDoorsMap.split_d3, true);
-  assert.equal(App.maps.splitDoorsMap.d3, null);
+  assert.equal(App.maps.splitDoorsMap.d3, true);
   assert.equal(reports.length, 1);
   assert.match(messageOf(reports[0].error), /installed maps setSplit rejected/);
   assert.equal(reports[0].ctx.where, 'native/runtime/maps_access');

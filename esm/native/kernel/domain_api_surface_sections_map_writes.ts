@@ -2,7 +2,6 @@ import type { ActionMetaLike, AppContainer, UnknownRecord } from '../../../types
 import { writeMapKey } from '../runtime/maps_access.js';
 import type { DomainApiSurfaceSectionsState } from './domain_api_surface_sections_contracts.js';
 import {
-  listPrefixedMapCleanupKeys,
   normalizePrefixedMapKey,
   readMapKey,
   uniqueNonEmptyKeys,
@@ -92,13 +91,7 @@ export function shouldSkipCanonicalPrefixedMapCommit(
 ): boolean {
   const nextKey = canonicalKey || normalizePrefixedMapKey(valueOrKey, semantics.prefix);
   if (!nextKey) return true;
-  return shouldSkipCanonicalMapCommit(
-    state,
-    mapName,
-    nextKey,
-    value,
-    listPrefixedMapCleanupKeys(valueOrKey, semantics.prefix)
-  );
+  return shouldSkipCanonicalMapCommit(state, mapName, nextKey, value);
 }
 
 export function patchCanonicalMapValue(
@@ -158,13 +151,7 @@ export function patchCanonicalPrefixedMapViaCfg(
 ): unknown {
   const nextKey = canonicalKey || normalizePrefixedMapKey(valueOrKey, semantics.prefix);
   if (!nextKey) return undefined;
-  return state.patchCanonicalMapViaCfg(
-    mapName,
-    nextKey,
-    value,
-    meta,
-    listPrefixedMapCleanupKeys(valueOrKey, semantics.prefix)
-  );
+  return state.patchCanonicalMapViaCfg(mapName, nextKey, value, meta);
 }
 
 export function commitCanonicalPrefixedMapValue(
@@ -178,14 +165,7 @@ export function commitCanonicalPrefixedMapValue(
 ): unknown {
   const nextKey = canonicalKey || normalizePrefixedMapKey(valueOrKey, semantics.prefix);
   if (!nextKey) return undefined;
-  return commitCanonicalMapValue(
-    state,
-    mapName,
-    nextKey,
-    value,
-    meta,
-    listPrefixedMapCleanupKeys(valueOrKey, semantics.prefix)
-  );
+  return commitCanonicalMapValue(state, mapName, nextKey, value, meta);
 }
 
 export function writeSimpleMapValue(

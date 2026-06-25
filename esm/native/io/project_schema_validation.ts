@@ -92,6 +92,35 @@ function projectValuesEqual(left: unknown, right: unknown): boolean {
   return true;
 }
 
+function hasDoorSegmentSuffix(value: string): boolean {
+  return /_(?:full|top|bot|mid\d*)$/i.test(value);
+}
+
+function isCanonicalSplitDoorsMapKey(value: string): boolean {
+  return (value.startsWith('split_') || value.startsWith('splitpos_')) && !hasDoorSegmentSuffix(value);
+}
+
+function isCanonicalSplitDoorsBottomMapKey(value: string): boolean {
+  return value.startsWith('splitb_') && !hasDoorSegmentSuffix(value);
+}
+
+function isCanonicalGroovesMapKey(value: string): boolean {
+  return value.startsWith('groove_');
+}
+
+function validateMapKeys(
+  data: ProjectDataLike,
+  mapName: keyof Pick<ProjectDataLike, 'splitDoorsMap' | 'splitDoorsBottomMap' | 'groovesMap'>,
+  isCanonicalKey: (key: string) => boolean,
+  errors: string[]
+): void {
+  const map = data[mapName];
+  if (!isRecord(map)) return;
+  for (const key of Object.keys(map)) {
+    if (!isCanonicalKey(key)) errors.push(`Project field ${String(mapName)} has non-canonical key ${key}`);
+  }
+}
+
 export function validateProjectData(data: ProjectDataLike): ProjectSchemaValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
@@ -241,6 +270,10 @@ export function validateProjectData(data: ProjectDataLike): ProjectSchemaValidat
   ) {
     errors.push('"grooveLinesCount" must be a positive finite number or null');
   }
+
+  validateMapKeys(data, 'splitDoorsMap', isCanonicalSplitDoorsMapKey, errors);
+  validateMapKeys(data, 'splitDoorsBottomMap', isCanonicalSplitDoorsBottomMapKey, errors);
+  validateMapKeys(data, 'groovesMap', isCanonicalGroovesMapKey, errors);
 
   if (!errors.length) {
     const canonicalConfig = readPersistedProjectConfigSnapshot(data as UnknownRecord);

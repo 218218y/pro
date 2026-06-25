@@ -34,12 +34,6 @@ export function normalizePrefixedMapKey(value: unknown, prefix: string): string 
   return key.indexOf(prefix) === 0 ? key : prefix + key;
 }
 
-export function readUnprefixedAliasKey(value: unknown, prefix: string): string {
-  const key = readMapKey(value);
-  if (!key) return '';
-  return key.indexOf(prefix) === 0 ? key.slice(prefix.length) : key;
-}
-
 export function uniqueNonEmptyKeys(keys: Array<string | null | undefined>): string[] {
   const out: string[] = [];
   const seen = new Set<string>();
@@ -50,15 +44,6 @@ export function uniqueNonEmptyKeys(keys: Array<string | null | undefined>): stri
     out.push(next);
   }
   return out;
-}
-
-export function readPrefixedMapLookupKeys(value: unknown, prefix: string): string[] {
-  return uniqueNonEmptyKeys([normalizePrefixedMapKey(value, prefix), readUnprefixedAliasKey(value, prefix)]);
-}
-
-export function listPrefixedMapCleanupKeys(value: unknown, prefix: string): string[] {
-  const canonicalKey = normalizePrefixedMapKey(value, prefix);
-  return readPrefixedMapLookupKeys(value, prefix).filter(key => key !== canonicalKey);
 }
 
 export function readToggleMapFlagForKeys(
@@ -82,7 +67,7 @@ export function readPrefixedToggleMapFlag(
 ): boolean {
   return readToggleMapFlagForKeys(
     readMap(),
-    uniqueNonEmptyKeys([...(extraLookupKeys || []), ...readPrefixedMapLookupKeys(value, semantics.prefix)]),
+    uniqueNonEmptyKeys([...(extraLookupKeys || []), normalizePrefixedMapKey(value, semantics.prefix)]),
     semantics.whenMissing,
     semantics.expectExplicitTrue
   );

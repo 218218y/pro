@@ -114,25 +114,25 @@ function createHarness(overrides?: { maps?: Record<string, Record<string, unknow
   };
 }
 
-test('domain api surface sections read canonical prefixed ids through legacy alias keys', () => {
+test('domain api surface sections ignore legacy unprefixed aliases for prefixed split and groove maps', () => {
   const h = createHarness({
     maps: {
-      splitDoorsMap: { d2: true },
+      splitDoorsMap: { d2: false },
       splitDoorsBottomMap: { d3: true },
       groovesMap: { d4_full: true },
     },
   });
 
   assert.equal(h.select.doors.isSplit('split_d2'), true);
-  assert.equal(h.select.doors.isSplitBottom('splitb_d3'), true);
-  assert.equal(h.select.grooves.isOn('groove_d4_full'), true);
+  assert.equal(h.select.doors.isSplitBottom('splitb_d3'), false);
+  assert.equal(h.select.grooves.isOn('groove_d4_full'), false);
 });
 
 test('domain api surface sections read prefixed split and groove map semantics with sane defaults', () => {
   const h = createHarness({
     maps: {
-      splitDoorsMap: { split_d1: false, d2: true },
-      splitDoorsBottomMap: { splitb_d3: true, d4: false },
+      splitDoorsMap: { split_d1: false, d2: false },
+      splitDoorsBottomMap: { splitb_d3: true, d4: true },
       removedDoorsMap: { removed_d6_full: true, removed_d7_top: true },
       groovesMap: { groove_d5_full: true },
       curtainMap: { d6_full: '', d7_full: 'linen' },
@@ -170,14 +170,12 @@ test('domain api surface sections fallback writes normalize prefixed map keys ex
     h.mapPatchCalls.map(({ mapName, key, value }) => ({ mapName, key, value })),
     [
       { mapName: 'splitDoorsMap', key: 'split_d8', value: true },
-      { mapName: 'splitDoorsMap', key: 'd8', value: null },
       { mapName: 'groovesMap', key: 'groove_d10_full', value: true },
-      { mapName: 'groovesMap', key: 'd10_full', value: null },
     ]
   );
 });
 
-test('domain api surface sections fallback writes clear legacy aliases even when callers already use canonical prefixed ids', () => {
+test('domain api surface sections fallback writes canonical prefixed ids without legacy alias cleanup', () => {
   const h = createHarness();
 
   h.doorsActions.setSplit('split_d11', true, { source: 'test:split:canonical-clear' });
@@ -188,16 +186,13 @@ test('domain api surface sections fallback writes clear legacy aliases even when
     h.mapPatchCalls.map(({ mapName, key, value }) => ({ mapName, key, value })),
     [
       { mapName: 'splitDoorsMap', key: 'split_d11', value: true },
-      { mapName: 'splitDoorsMap', key: 'd11', value: null },
       { mapName: 'splitDoorsBottomMap', key: 'splitb_d12', value: true },
-      { mapName: 'splitDoorsBottomMap', key: 'd12', value: null },
       { mapName: 'groovesMap', key: 'groove_d13_full', value: true },
-      { mapName: 'groovesMap', key: 'd13_full', value: null },
     ]
   );
 });
 
-test('domain api surface sections direct map writes also clear groove legacy aliases through the canonical action path', () => {
+test('domain api surface sections direct map writes touch only the canonical groove key', () => {
   const h = createHarness();
   h.App.maps = {
     groovesMap: { d14_full: true },
@@ -206,7 +201,7 @@ test('domain api surface sections direct map writes also clear groove legacy ali
   h.groovesActions.set('groove_d14_full', true, { source: 'test:groove:direct-clear' });
 
   assert.deepEqual(h.App.maps.groovesMap, {
-    d14_full: null,
+    d14_full: true,
     groove_d14_full: true,
   });
   assert.deepEqual(h.mapPatchCalls, []);
@@ -243,7 +238,7 @@ test('domain api surface sections generic map fallback writers normalize keys on
   );
 });
 
-test('domain api surface sections fallback writes clear legacy split aliases and canonicalize removed door ids', () => {
+test('domain api surface sections fallback writes canonical split ids and canonicalizes removed door ids', () => {
   const h = createHarness();
 
   h.doorsActions.setSplit('d11', true, { source: 'test:split:legacy-clear' });
@@ -253,7 +248,6 @@ test('domain api surface sections fallback writes clear legacy split aliases and
     h.mapPatchCalls.map(({ mapName, key, value }) => ({ mapName, key, value })),
     [
       { mapName: 'splitDoorsMap', key: 'split_d11', value: true },
-      { mapName: 'splitDoorsMap', key: 'd11', value: null },
       { mapName: 'removedDoorsMap', key: 'removed_d12_full', value: true },
       { mapName: 'removedDoorsMap', key: 'd12', value: null },
       { mapName: 'removedDoorsMap', key: 'removed_d12', value: null },
@@ -311,17 +305,11 @@ test('domain api surface sections reinstall heals drifted public slots and keeps
   assert.equal(h.select.doors.isSplit('d21'), false);
 
   h.doorsActions.setSplit('d22', true, { source: 'test:split:healed' });
-  assert.deepEqual(h.mapPatchCalls.slice(-2), [
+  assert.deepEqual(h.mapPatchCalls.slice(-1), [
     {
       mapName: 'splitDoorsMap',
       key: 'split_d22',
       value: true,
-      meta: { source: 'actions:doors:setSplit', installVersion: 2 },
-    },
-    {
-      mapName: 'splitDoorsMap',
-      key: 'd22',
-      value: null,
       meta: { source: 'actions:doors:setSplit', installVersion: 2 },
     },
   ]);
@@ -364,17 +352,11 @@ test('domain api surface sections keep canonical public roots alive across root 
   assert.equal(h.select.doors.isSplit('d31'), false);
 
   staleDoorsActions.setSplit('d32', true, { source: 'test:split:stale-root-reused' });
-  assert.deepEqual(h.mapPatchCalls.slice(-2), [
+  assert.deepEqual(h.mapPatchCalls.slice(-1), [
     {
       mapName: 'splitDoorsMap',
       key: 'split_d32',
       value: true,
-      meta: { source: 'actions:doors:setSplit', installVersion: 2 },
-    },
-    {
-      mapName: 'splitDoorsMap',
-      key: 'd32',
-      value: null,
       meta: { source: 'actions:doors:setSplit', installVersion: 2 },
     },
   ]);
@@ -450,7 +432,7 @@ test('domain api surface sections semantic no-op map writes stay silent when the
   assert.deepEqual(h.mapPatchCalls, []);
 });
 
-test('domain api surface sections no-op suppression still clears legacy aliases when canonical prefixed values already match', () => {
+test('domain api surface sections no-op suppression ignores legacy aliases when canonical values already match', () => {
   const h = createHarness({
     maps: {
       splitDoorsMap: { split_d92: true, d92: true },
@@ -464,7 +446,7 @@ test('domain api surface sections no-op suppression still clears legacy aliases 
 
   assert.deepEqual(h.App.maps.splitDoorsMap, {
     split_d92: true,
-    d92: null,
+    d92: true,
   });
   assert.deepEqual(h.mapPatchCalls, []);
 });

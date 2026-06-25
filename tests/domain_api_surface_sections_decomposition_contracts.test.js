@@ -119,8 +119,14 @@ test('[domain-api-sections] shared facade delegates contracts, prefixed maps, ma
       /export interface PrefixedMapSemantics/,
       /export const splitDoorMapSemantics/,
       /export function readPrefixedToggleMapFlag\(/,
-      /export function listPrefixedMapCleanupKeys\(/,
+      /export function normalizePrefixedMapKey\(/,
     ],
+    'sectionsPrefixedMapsOwner'
+  );
+  assertLacksAll(
+    assert,
+    sectionsPrefixedMapsOwner,
+    [/readUnprefixedAliasKey/, /listPrefixedMapCleanupKeys/, /readPrefixedMapLookupKeys/],
     'sectionsPrefixedMapsOwner'
   );
   assertMatchesAll(
