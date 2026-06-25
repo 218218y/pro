@@ -184,3 +184,28 @@ test('materials apply traversal caches repeated part material resolution per par
   assert.equal(secondChanged, false);
   assert.equal(getPartMatCalls, 2);
 });
+
+test('materials apply traversal can replace shelf face material arrays', () => {
+  const edgeMaterials = ['white', 'white', 'white', 'white', 'front', 'white'];
+  const shelfMesh = {
+    isMesh: true,
+    material: [{ stale: true }],
+    userData: {
+      partId: 'module_shelf_main_g2',
+      __wpShelfGroupPartId: 'all_shelves',
+      __wpShelfVariant: 'brace',
+      __wpShelfIsBrace: true,
+    },
+    children: [],
+  } as any;
+
+  const changed = applyMaterialsToWardrobeTree({
+    wardrobeGroup: shelfMesh,
+    getPartMat: () => edgeMaterials,
+    readPartId: value => (typeof value === 'string' ? value : null),
+    readStackKey: () => null,
+  });
+
+  assert.equal(changed, true);
+  assert.equal(shelfMesh.material, edgeMaterials);
+});

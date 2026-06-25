@@ -12,7 +12,7 @@ export {
 } from '../../shared/front_color_shelf_inheritance_shared.js';
 
 export function normalizeFrontColorShelfInheritanceMode(value: unknown): FrontColorShelfInheritanceMode {
-  return value === FRONT_COLOR_SHELF_MODE_BRACE ? FRONT_COLOR_SHELF_MODE_BRACE : FRONT_COLOR_SHELF_MODE_ALL;
+  return value === FRONT_COLOR_SHELF_MODE_ALL ? FRONT_COLOR_SHELF_MODE_ALL : FRONT_COLOR_SHELF_MODE_BRACE;
 }
 
 export function isFrontColorBraceShelvesOnlyMode(value: unknown): boolean {

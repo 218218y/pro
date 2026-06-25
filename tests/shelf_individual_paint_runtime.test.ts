@@ -265,7 +265,7 @@ test('paint hover preview uses object-box mode for individual shelves so thin bo
   assert.deepEqual(preview?.previewObjects, [board]);
 });
 
-test('brace-only front color mode keeps regular shelves white while brace shelves inherit cabinet color until individually painted', () => {
+test('brace edge front color mode keeps regular shelves white while brace shelves keep a white shelf with cabinet-colored front edge until individually painted', () => {
   const shelfPartId = createModuleShelfPartId('1', 2);
   const requestedMaterials: string[] = [];
   const getMaterial = (color: string, kind = 'front', useTexture = false) => {
@@ -285,12 +285,19 @@ test('brace-only front color mode keeps regular shelves white while brace shelve
     resolveDefault(shelfPartId, null, { __wpShelfGroupPartId: SHELF_GROUP_PART_ID }),
     'body:#ffffff:flat'
   );
-  assert.equal(
+  assert.deepEqual(
     resolveDefault(shelfPartId, null, {
       __wpShelfGroupPartId: SHELF_GROUP_PART_ID,
       __wpShelfIsBrace: true,
     }),
-    'front:main'
+    [
+      'body:#ffffff:flat',
+      'body:#ffffff:flat',
+      'body:#ffffff:flat',
+      'body:#ffffff:flat',
+      'front:main',
+      'body:#ffffff:flat',
+    ]
   );
 
   const resolvePainted = createPartMaterialResolver({
@@ -342,7 +349,7 @@ test('full build material resolver uses the shared shelf and cornice color looku
   assert.deepEqual(requestedMaterials, ['front:#202020', 'front:#303030', 'front:#404040', 'front:#505050']);
 });
 
-test('corner wing shelf material policy keeps regular shelves on the shelf default while brace shelves inherit the cabinet color', () => {
+test('corner wing shelf material policy keeps regular shelves on the shelf default while brace shelves use the configured front-edge shelf material', () => {
   const { App, THREE, getMaterial } = makeCornerShelfPolicyTestRuntime();
   const mats = createCornerWingMaterials({
     App: App as never,
@@ -352,7 +359,14 @@ test('corner wing shelf material policy keeps regular shelves on the shelf defau
       body: 'front:main',
       front: 'front:main',
       defaultShelfMat: 'body:#ffffff:flat',
-      braceShelfMat: 'front:main',
+      braceShelfMat: [
+        'body:#ffffff:flat',
+        'body:#ffffff:flat',
+        'body:#ffffff:flat',
+        'body:#ffffff:flat',
+        'front:main',
+        'body:#ffffff:flat',
+      ],
     },
     getMaterial: getMaterial as never,
     cfgSnapshot: { isMultiColorMode: false },
@@ -363,7 +377,14 @@ test('corner wing shelf material policy keeps regular shelves on the shelf defau
   });
 
   assert.equal(mats.getCornerShelfMat('corner_shelf_cell_1_g2', false), 'body:#ffffff:flat');
-  assert.equal(mats.getCornerShelfMat('corner_shelf_cell_1_g2', true), 'front:main');
+  assert.deepEqual(mats.getCornerShelfMat('corner_shelf_cell_1_g2', true), [
+    'body:#ffffff:flat',
+    'body:#ffffff:flat',
+    'body:#ffffff:flat',
+    'body:#ffffff:flat',
+    'front:main',
+    'body:#ffffff:flat',
+  ]);
 });
 
 test('corner wing shelf group paint still overrides the brace-only shelf defaults', () => {

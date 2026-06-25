@@ -69,13 +69,7 @@ export function applyMaterialsToWardrobeTree(args: {
 
     if (obj.isMesh) {
       const keepOwnMaterial = shouldKeepMaterialsApplyMeshMaterial(obj);
-      if (
-        !skipSubtree &&
-        !keepOwnMaterial &&
-        ownPartId &&
-        !userData.__keepMaterial &&
-        !Array.isArray(obj.material)
-      ) {
+      if (!skipSubtree && !keepOwnMaterial && ownPartId && !userData.__keepMaterial) {
         const shelfDefaultKey = userData.__wpShelfGroupPartId
           ? userData.__wpShelfIsBrace === true || userData.__wpShelfVariant === 'brace'
             ? 'brace'

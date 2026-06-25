@@ -28,15 +28,15 @@ export function DesignTabColorSection(props: { model: DesignTabColorSectionModel
           data-tooltip={
             isAllShelfInheritanceMode
               ? 'צביעת כל המדפים יחד עם צבע הארון'
-              : 'צביעת מדפי קושרת בלבד יחד עם צבע הארון'
+              : 'מדף הקושרת נשאר לבן, ורק הקנט הקדמי מקבל את צבע הארון'
           }
           data-testid="design-front-color-shelf-mode-toggle"
         >
           <i
-            className={'fas ' + (isAllShelfInheritanceMode ? 'fa-layer-group' : 'fa-grip-lines')}
+            className={'fas ' + (isAllShelfInheritanceMode ? 'fa-layer-group' : 'fa-border-style')}
             aria-hidden="true"
           />
-          <span>{isAllShelfInheritanceMode ? 'כל המדפים' : 'קושרת בלבד'}</span>
+          <span>{isAllShelfInheritanceMode ? 'כל המדפים' : 'קנט קושרת'}</span>
         </button>
       </div>
 

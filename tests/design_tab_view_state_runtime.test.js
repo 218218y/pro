@@ -136,7 +136,7 @@ test('[design-tab-view-state-runtime] derives cfg/ui/design feature state throug
       noMainWardrobeActive: false,
       doorStyle: 'profile',
       colorChoice: '#111111',
-      frontColorShelfInheritanceMode: 'all',
+      frontColorShelfInheritanceMode: 'brace',
       isChestMode: false,
       groovesEnabled: true,
       splitDoors: false,
@@ -152,8 +152,13 @@ test('[design-tab-view-state-runtime] derives cfg/ui/design feature state throug
   );
 
   assert.equal(
-    mod.readDesignTabUiState({ frontColorShelfInheritanceMode: 'bad-value' }).frontColorShelfInheritanceMode,
+    mod.readDesignTabUiState({ frontColorShelfInheritanceMode: 'all' }).frontColorShelfInheritanceMode,
     'all'
+  );
+
+  assert.equal(
+    mod.readDesignTabUiState({ frontColorShelfInheritanceMode: 'bad-value' }).frontColorShelfInheritanceMode,
+    'brace'
   );
 
   assert.equal(mod.readDesignTabUiState({ doors: 0, hasCornice: true }).noMainWardrobeActive, true);
@@ -269,7 +274,7 @@ test('[design-tab-view-state-runtime] delegates selector and shared readers exac
       noMainWardrobeActive: false,
       doorStyle: 'double_profile',
       colorChoice: 'custom',
-      frontColorShelfInheritanceMode: 'all',
+      frontColorShelfInheritanceMode: 'brace',
       isChestMode: false,
       groovesEnabled: false,
       splitDoors: false,

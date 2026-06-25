@@ -1,5 +1,6 @@
 import { isDrawerBoxPartId } from '../features/drawer_box_identity.js';
 import { isFrontColorBraceShelvesOnlyMode } from '../features/front_color_shelf_inheritance.js';
+import { createShelfFrontEdgeMaterials } from '../features/shelf_front_edge_material.js';
 import {
   SHELF_GROUP_PART_ID,
   CORNER_SHELF_GROUP_PART_ID,
@@ -91,6 +92,16 @@ export function createPartMaterialResolver(args: {
     return whiteBodyMat || globalFrontMat;
   };
   const getDrawerBoxBaseMat = getWhiteBodyMat;
+  let braceFrontEdgeMat: unknown | undefined;
+  const getBraceFrontEdgeMat = () => {
+    if (!braceFrontEdgeMat) {
+      braceFrontEdgeMat = createShelfFrontEdgeMaterials({
+        shelfMaterial: getWhiteBodyMat(),
+        frontEdgeMaterial: globalFrontMat,
+      });
+    }
+    return braceFrontEdgeMat || globalFrontMat;
+  };
   const mapFromCfg = asObject<IndividualColorsMap>(cfg.individualColors);
   const frontColorBraceOnly = isFrontColorBraceShelvesOnlyMode(ui.frontColorShelfInheritanceMode);
 
@@ -127,7 +138,7 @@ export function createPartMaterialResolver(args: {
     }
     if (typeof effectiveEntry === 'undefined') {
       if (frontColorBraceOnly && shelfLike) {
-        return isBraceShelfUserData(userData) ? globalFrontMat : getWhiteBodyMat();
+        return isBraceShelfUserData(userData) ? getBraceFrontEdgeMat() : getWhiteBodyMat();
       }
       return globalFrontMat;
     }

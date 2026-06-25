@@ -67,7 +67,7 @@ function readBoolean(value: unknown): boolean {
 }
 
 function normalizeFrontColorShelfInheritanceMode(value: unknown): 'all' | 'brace' {
-  return value === 'brace' ? 'brace' : 'all';
+  return value === 'all' ? 'all' : 'brace';
 }
 
 export function readDesignTabCfgState(cfg: unknown): DesignTabCfgState {
