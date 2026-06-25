@@ -600,6 +600,8 @@ export interface BuilderInteriorSketchArgsLike extends UnknownRecord {
   currentShelfMat?: unknown;
   currentBraceShelfMat?: unknown;
   bodyMat?: unknown;
+  whiteMat?: unknown;
+  drawerBoxBaseMat?: unknown;
   effectiveBottomY?: BuilderPreviewScalar;
   effectiveTopY?: BuilderPreviewScalar;
   localGridStep?: BuilderPreviewScalar;

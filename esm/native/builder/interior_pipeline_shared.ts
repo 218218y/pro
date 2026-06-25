@@ -53,6 +53,8 @@ export type InteriorLayoutParams = ValueRecord & {
   currentShelfMat?: unknown;
   currentBraceShelfMat?: unknown;
   bodyMat?: unknown;
+  whiteMat?: unknown;
+  drawerBoxBaseMat?: unknown;
   moduleIndex?: number;
   modulesLength?: number;
   moduleKey?: string | number | null;
@@ -142,6 +144,8 @@ export function buildSketchExtrasArgs(
     currentShelfMat: input.currentShelfMat,
     currentBraceShelfMat: input.currentBraceShelfMat,
     bodyMat: input.bodyMat,
+    whiteMat: input.whiteMat,
+    drawerBoxBaseMat: input.drawerBoxBaseMat || input.whiteMat,
     effectiveBottomY: readNumber(input.effectiveBottomY, 0),
     effectiveTopY: readNumber(input.effectiveTopY, 0),
     localGridStep: readNumber(input.localGridStep, 0),

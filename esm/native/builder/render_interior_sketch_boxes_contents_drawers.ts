@@ -272,7 +272,12 @@ export function renderSketchBoxDrawerContents(args: RenderSketchBoxContentsArgs)
       addOutlines,
       sketchMode: input.sketchMode === true,
       getPartMaterial,
+      getPartColorValue: input.getPartColorValue,
       bodyMat: boxMat,
+      drawerBoxBaseMat:
+        (input as Record<string, unknown>).drawerBoxBaseMat ||
+        (input as Record<string, unknown>).drawerBoxMat ||
+        (input as Record<string, unknown>).whiteMat,
       cfg: input.cfgSnapshot,
       showContentsEnabled,
       addFoldedClothes,

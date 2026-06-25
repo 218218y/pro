@@ -72,7 +72,10 @@ export type ApplyInternalSketchDrawersArgs = InteriorValueRecord & {
   addOutlines?: InteriorOpsCallable;
   sketchMode: boolean;
   getPartMaterial?: InteriorOpsCallable;
+  getPartColorValue?: InteriorOpsCallable;
   bodyMat?: unknown;
+  whiteMat?: unknown;
+  drawerBoxBaseMat?: unknown;
   showContentsEnabled: boolean;
   addFoldedClothes?: InteriorOpsCallable;
 };
@@ -115,6 +118,8 @@ export type RenderInteriorSketchInput = BuilderInteriorSketchArgsLike &
     currentShelfMat?: unknown;
     currentBraceShelfMat?: unknown;
     bodyMat?: unknown;
+    whiteMat?: unknown;
+    drawerBoxBaseMat?: unknown;
     getPartMaterial?: InteriorOpsCallable;
     getPartColorValue?: InteriorOpsCallable;
     createDoorVisual?: InteriorOpsCallable;

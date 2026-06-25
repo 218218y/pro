@@ -78,7 +78,12 @@ export function buildSketchInternalDrawerRuntimeArgs(
     addOutlines,
     sketchMode: input.sketchMode === true,
     getPartMaterial: input.getPartMaterial,
+    getPartColorValue: input.getPartColorValue,
     bodyMat,
+    drawerBoxBaseMat:
+      (input as InteriorValueRecord).drawerBoxBaseMat ||
+      (input as InteriorValueRecord).drawerBoxMat ||
+      (input as InteriorValueRecord).whiteMat,
     cfg: input.cfgSnapshot,
     showContentsEnabled,
     addFoldedClothes,

@@ -1,10 +1,12 @@
 import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { makeDrawerBoxPartId, resolveDrawerBoxPaintMaterial } from '../features/drawer_box_identity.js';
 import type { BuilderRenderDrawerDeps } from './render_drawer_ops_shared.js';
 import {
   isRecord,
   readAddFoldedClothes,
   readCreateInternalDrawerBox,
   readDrawerConfig,
+  readGetPartColorValue,
   readGetPartMaterial,
   readInternalDrawerOp,
   readObject3D,
@@ -30,8 +32,10 @@ export function createApplyInternalDrawersOps(deps: BuilderRenderDrawerDeps) {
     if (!createInternalDrawerBox) return false;
 
     const getPartMaterial = readGetPartMaterial(args?.getPartMaterial);
+    const getPartColorValue = readGetPartColorValue(args?.getPartColorValue);
     const cfg = readDrawerConfig(args?.cfg);
     const bodyMat = args?.bodyMat;
+    const drawerBoxBaseMat = args?.drawerBoxBaseMat || args?.whiteMat || bodyMat;
     const addOutlines = readOutlineFn(args?.addOutlines);
     const sketchMode = args?.sketchMode === true;
     const showContentsEnabled = args?.showContentsEnabled === true;
@@ -42,13 +46,19 @@ export function createApplyInternalDrawersOps(deps: BuilderRenderDrawerDeps) {
       if (!drawerOp) continue;
 
       const partId = drawerOp.partId;
-      const mat = getPartMaterial ? getPartMaterial(partId) : bodyMat;
+      const drawerBoxPartId = makeDrawerBoxPartId(partId);
+      const drawerBoxMat = resolveDrawerBoxPaintMaterial({
+        drawerBoxPartId,
+        fallbackMaterial: drawerBoxBaseMat,
+        getPartColorValue,
+        getPartMaterial,
+      });
       const intBox = createInternalDrawerBox(
         drawerOp.width,
         drawerOp.height,
         drawerOp.depth,
-        mat,
-        bodyMat,
+        drawerBoxMat,
+        drawerBoxMat,
         addOutlines,
         drawerOp.hasDivider,
         false
@@ -56,9 +66,10 @@ export function createApplyInternalDrawersOps(deps: BuilderRenderDrawerDeps) {
       const sketchModuleKey = drawerOp.sketchModuleKey ?? drawerOp.moduleIndex;
       intBox.userData = {
         ...(intBox.userData || {}),
-        partId,
+        partId: drawerBoxPartId,
         drawerId: partId,
         moduleIndex: drawerOp.moduleIndex,
+        __wpDrawerBox: true,
         __wpDrawerId: partId,
         __wpDrawerOwnerPartId: partId,
       };

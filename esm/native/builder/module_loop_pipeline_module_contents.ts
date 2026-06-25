@@ -137,6 +137,8 @@ export function applyModuleContents(
     currentShelfMat,
     currentBraceShelfMat,
     bodyMat: runtime.bodyMat,
+    whiteMat: runtime.whiteMat,
+    drawerBoxBaseMat: runtime.whiteMat,
     getPartMaterial: runtime.getPartMaterial,
     getPartColorValue: runtime.getPartColorValue,
     createDoorVisual: runtime.createDoorVisual,
