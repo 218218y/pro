@@ -18,9 +18,9 @@ test('kernel project capture canonicalizes config lists and detaches mutable sna
     modulesConfiguration: [{ layout: 'drawers', doors: '2' }, null, { customData: { storage: true } }],
     stackSplitLowerModulesConfiguration: [{ extDrawersCount: '3' }],
     cornerConfiguration: { modulesConfiguration: [{ doors: '5' }] },
-    groovesMap: { g1: true, drop: 1n },
+    groovesMap: { groove_d1: true, g1: true, drop: 1n },
     roundedFrameSideShelvesMap: { body_left: true, drop: 1n },
-    splitDoorsBottomMap: { d1: 1, drop: 0 },
+    splitDoorsBottomMap: { splitb_d1: 1, d1: 1, drop: 0 },
     mirrorLayoutMap: { d1: [{ widthCm: '55', heightCm: 88 }, { widthCm: 0 }], d2: [cyclicMirrorLayout] },
     doorTrimMap: { d1: [{ axis: 'vertical', color: 'gold', span: 'custom', sizeCm: '11' }, { bad: true }] },
     preChestState: { dims: { width: 55 }, createdAt: new Date('2024-01-02T03:04:05.000Z') },
@@ -75,16 +75,16 @@ test('kernel project capture canonicalizes config lists and detaches mutable sna
 
   cfgSource.modulesConfiguration = [{ layout: 'mutated', doors: 99 }];
   cfgSource.stackSplitLowerModulesConfiguration = [{ extDrawersCount: 9 }];
-  (cfgSource.groovesMap as Record<string, unknown>).g1 = false;
+  (cfgSource.groovesMap as Record<string, unknown>).groove_d1 = false;
   (cfgSource.roundedFrameSideShelvesMap as Record<string, unknown>).body_left = false;
   ((savedNotesSource[0].blocks as Record<string, unknown>[])[0] as Record<string, unknown>).text = 'mutated';
   ((cfgSource.preChestState as Record<string, unknown>).dims as Record<string, unknown>).width = 99;
 
   assert.equal(snapshot.modulesConfiguration[0].layout, 'drawers');
   assert.equal(snapshot.stackSplitLowerModulesConfiguration[0].extDrawersCount, 3);
-  assert.deepEqual({ ...snapshot.groovesMap }, { g1: true });
+  assert.deepEqual({ ...snapshot.groovesMap }, { groove_d1: true });
   assert.deepEqual({ ...snapshot.roundedFrameSideShelvesMap }, { body_left: true });
-  assert.deepEqual({ ...snapshot.splitDoorsBottomMap }, { splitb_d1: true, drop: false });
+  assert.deepEqual({ ...snapshot.splitDoorsBottomMap }, { splitb_d1: true });
   assert.deepEqual(
     { ...snapshot.mirrorLayoutMap },
     { d1: [{ widthCm: 55, heightCm: 88 }], d2: [{ widthCm: 33 }] }

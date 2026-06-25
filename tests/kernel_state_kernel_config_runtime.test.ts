@@ -62,7 +62,7 @@ test('kernel_state_kernel_config captures and applies normalized config map snap
   });
 
   const captured = __sk.__captureConfigFromObject({
-    groovesMap: { groove_d1: 'yes', drop: 'wat' },
+    groovesMap: { groove_d1: true, drop: 'wat' },
     grooveLinesCountMap: { d1: '4', bad: 'x' },
     doorSpecialMap: { d1: 'glass', drop: 3 },
     mirrorLayoutMap: {
@@ -127,7 +127,7 @@ test('kernel_state_kernel_config captures and applies normalized config map snap
 
   __sk.applyConfig(
     {
-      groovesMap: { groove_d2: '1', drop: 'wat' },
+      groovesMap: { groove_d2: true, drop: 'wat' },
       doorSpecialMap: { d2: 'mirror', drop: 3 },
       mirrorLayoutMap: {
         d2: [{ widthCm: 60, heightCm: 90, faceSign: -1 }, { widthCm: 0 }],

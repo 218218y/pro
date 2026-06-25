@@ -1,7 +1,7 @@
 import type { ActionMetaLike, KnownMapName } from '../../../types';
 
 import { ensureMapRecord, mapsAccessReportNonFatal, readOwn, writeOwn } from './maps_access_shared.js';
-import type { HandleValue, HingeValue, KnownMapValue, MapsBagLike } from './maps_access_shared.js';
+import type { HandleValue, HingeValue, KnownMapValue } from './maps_access_shared.js';
 import { readMapsBagOrNull, trySetKey } from './maps_access_runtime.js';
 
 function readMapKey(value: unknown): string {

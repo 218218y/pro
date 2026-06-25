@@ -58,6 +58,29 @@ export function normalizeToggleMap(value: unknown): MapsByName['drawerDividersMa
   return out;
 }
 
+function normalizeCanonicalToggleMap(
+  value: unknown,
+  isCanonicalKey: (key: string) => boolean
+): MapsByName['groovesMap'] {
+  const rec = asMapRecord(value);
+  const out: MapsByName['groovesMap'] = Object.create(null);
+  if (!rec) return out;
+  for (const key of Object.keys(rec)) {
+    if (!isCanonicalKey(key)) continue;
+    const next = normalizeToggleValue(rec[key]);
+    if (typeof next !== 'undefined') out[key] = next;
+  }
+  return out;
+}
+
+export function normalizeGroovesMap(value: unknown): MapsByName['groovesMap'] {
+  return normalizeCanonicalToggleMap(value, key => key.startsWith('groove_'));
+}
+
+export function normalizeSplitDoorsBottomMap(value: unknown): MapsByName['splitDoorsBottomMap'] {
+  return normalizeCanonicalToggleMap(value, key => key.startsWith('splitb_'));
+}
+
 export function normalizeHandlesMap(value: unknown): MapsByName['handlesMap'] {
   const rec = asMapRecord(value);
   const out: MapsByName['handlesMap'] = Object.create(null);
@@ -120,26 +143,29 @@ export function normalizeSplitDoorsMap(value: unknown): MapsByName['splitDoorsMa
   const out: MapsByName['splitDoorsMap'] = Object.create(null);
   if (!rec) return out;
   for (const key of Object.keys(rec)) {
+    const isSplitToggleKey = key.startsWith('split_');
+    const isSplitPositionKey = key.startsWith('splitpos_');
+    if (!isSplitToggleKey && !isSplitPositionKey) continue;
     const entry = rec[key];
     if (entry === null) {
-      out[key] = null;
+      if (isSplitToggleKey) out[key] = null;
       continue;
     }
-    if (typeof entry === 'boolean' || typeof entry === 'string') {
+    if (isSplitToggleKey && (typeof entry === 'boolean' || typeof entry === 'string')) {
       out[key] = entry;
       continue;
     }
-    if (typeof entry === 'number' && Number.isFinite(entry)) {
+    if (isSplitToggleKey && typeof entry === 'number' && Number.isFinite(entry)) {
       out[key] = entry;
       continue;
     }
-    if (Array.isArray(entry)) {
+    if (isSplitPositionKey && Array.isArray(entry)) {
       const nums: number[] = [];
       for (const item of entry) {
         const num = typeof item === 'number' ? item : typeof item === 'string' ? Number(item) : NaN;
         if (Number.isFinite(num)) nums.push(num);
       }
-      out[key] = nums;
+      if (nums.length) out[key] = nums;
     }
   }
   return out;

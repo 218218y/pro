@@ -161,7 +161,12 @@ export function readCurtainMap(value: unknown): CurtainMap {
 }
 
 export function readGroovesMap(value: unknown): GroovesMap {
-  return readToggleMap(value);
+  const src = readToggleMap(value);
+  const out: GroovesMap = {};
+  for (const [key, entry] of Object.entries(src)) {
+    if (key.startsWith('groove_')) out[key] = entry;
+  }
+  return out;
 }
 
 export function readGrooveLinesCountMap(value: unknown): GrooveLinesCountMap {

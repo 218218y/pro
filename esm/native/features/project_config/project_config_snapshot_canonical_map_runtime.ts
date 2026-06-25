@@ -1,5 +1,6 @@
 import { readMirrorLayoutMap } from '../mirror_layout.js';
 import {
+  readGroovesMap,
   readSplitDoorsBottomMapValue,
   readSplitDoorsMapValue,
 } from './project_config_persisted_payload_shared.js';
@@ -117,7 +118,7 @@ const PROJECT_CONFIG_MAP_NORMALIZERS: Record<string, ProjectConfigMapNormalizer>
   splitDoorsMap: readSplitDoorsMapValue,
   splitDoorsBottomMap: readSplitDoorsBottomMapValue,
   drawerDividersMap: normalizeToggleMap,
-  groovesMap: normalizeToggleMap,
+  groovesMap: readGroovesMap,
   removedDoorsMap: normalizeToggleMap,
   roundedFrameSideShelvesMap: normalizeToggleMap,
   grooveLinesCountMap: normalizeNullablePositiveIntMap,

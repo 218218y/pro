@@ -123,8 +123,8 @@ test('project/model release regressions preserve current PDF draft, canonicalize
     ],
     stackSplitLowerModulesConfiguration: [{ id: 'lower-1', extDrawersCount: '3' }],
     cornerConfiguration: { modulesConfiguration: [{ doors: '5' }] },
-    splitDoorsMap: { main: ['1', 2, 'bad'] },
-    splitDoorsBottomMap: { lower: 1, off: 0 },
+    splitDoorsMap: { split_d1: true, splitpos_main: ['0.25', 0.75, 'bad'], main: ['0.5'] },
+    splitDoorsBottomMap: { splitb_lower: 1, splitb_off: 0, lower: 1 },
     doorTrimMap: { d1_full: [{ axis: 'vertical', color: 'gold' }] },
     savedNotes: [{ text: 'note' }],
     preChestState: { enabled: true },
@@ -140,8 +140,11 @@ test('project/model release regressions preserve current PDF draft, canonicalize
     nested: { value: 1 },
   });
   assert.equal(built.orderPdfEditorZoom, 1.75);
-  assert.deepEqual(asPlainRecord(built.splitDoorsMap), { main: [1, 2] });
-  assert.deepEqual(asPlainRecord(built.splitDoorsBottomMap), { lower: true, off: false });
+  assert.deepEqual(asPlainRecord(built.splitDoorsMap), { split_d1: true, splitpos_main: [0.25, 0.75] });
+  assert.deepEqual(asPlainRecord(built.splitDoorsBottomMap), {
+    splitb_lower: true,
+    splitb_off: false,
+  });
   assert.equal(built.modulesConfiguration[2].doors, 1);
   assert.equal(built.stackSplitLowerModulesConfiguration[0].extDrawersCount, 3);
   assert.equal(built.cornerConfiguration.layout, 'shelves');

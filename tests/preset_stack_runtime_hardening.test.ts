@@ -45,7 +45,7 @@ test('preset + stack runtime hardening: normalization stays useful without loose
   assert.deepEqual(lower.customData.shelves, [true]);
 
   const model = normalizeModelRecord({
-    groovesMap: { g1: true },
+    groovesMap: { groove_d1: true, g1: true },
     handlesMap: { h1: 'edge' },
     settings: { width: '180' },
     savedNotes: [1],
@@ -55,7 +55,7 @@ test('preset + stack runtime hardening: normalization stays useful without loose
     settings: Record<string, unknown>;
     savedNotes: unknown[];
   };
-  assert.deepEqual(asPlainRecord(model.groovesMap), { g1: true });
+  assert.deepEqual(asPlainRecord(model.groovesMap), { groove_d1: true });
   assert.deepEqual(asPlainRecord(model.handlesMap), { h1: 'edge' });
   assert.equal(model.settings.width, '180');
   assert.deepEqual(model.savedNotes, [1]);

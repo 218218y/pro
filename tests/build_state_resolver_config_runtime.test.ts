@@ -57,7 +57,7 @@ test('build_state_resolver normalizes config maps and persisted color arrays fro
         ],
         colorSwatchesOrder: [' c1 ', null, '', 9],
         individualColors: { d1: 'oak', d2: null, drop: 9 },
-        groovesMap: { groove_d1: 'on', groove_d2: 'off', drop: 'wat' },
+        groovesMap: { groove_d1: true, groove_d2: false, drop: 'wat' },
         grooveLinesCountMap: { d1: '3', d2: null, drop: 'bad' },
         splitDoorsMap: { split_d1: true, split_d2: false, splitpos_d3: ['0.25', 'bad', 0.75] },
         splitDoorsBottomMap: { splitb_d1: 'on', splitb_d2: 'off', drop: 'wat' },
