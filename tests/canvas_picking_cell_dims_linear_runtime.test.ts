@@ -201,6 +201,53 @@ test('linear cell-dims allows a 20cm width target instead of clamping to 40cm', 
   assert.deepEqual(calls.uiPatches[0].patch, { raw: { width: 20 } });
 });
 
+test('linear cell-dims blocks height/depth special cells while legs-with-stage is active', () => {
+  const { App, state, calls } = createAppHarness();
+  state.ui.baseType = 'legs';
+  state.ui.baseLegPlatformMode = 'stage';
+
+  handleCanvasLinearCellDimsClick({
+    App,
+    ui: state.ui,
+    cfg: state.config,
+    raw: state.ui.raw,
+    applyW: null,
+    applyH: 250,
+    applyD: null,
+    foundModuleIndex: 1,
+  });
+
+  assert.equal(calls.snapshots.length, 0);
+  assert.equal(calls.uiPatches.length, 0);
+  assert.equal(calls.builds.length, 0);
+  assert.equal(calls.touches.length, 0);
+  assert.equal(calls.toasts.length, 1);
+  assert.match(calls.toasts[0]?.message || '', /רגליים ובמה/);
+});
+
+test('linear cell-dims still allows width special cells while legs-with-stage is active', () => {
+  const { App, state, calls } = createAppHarness();
+  state.ui.baseType = 'legs';
+  state.ui.baseLegPlatformMode = 'stage';
+
+  handleCanvasLinearCellDimsClick({
+    App,
+    ui: state.ui,
+    cfg: state.config,
+    raw: state.ui.raw,
+    applyW: 90,
+    applyH: null,
+    applyD: null,
+    foundModuleIndex: 1,
+  });
+
+  assert.equal(calls.snapshots.length, 1);
+  assert.deepEqual(calls.snapshots[0].snapshot.modulesConfiguration[1].specialDims, {
+    baseWidthCm: 80,
+    widthCm: 90,
+  });
+});
+
 test('linear cell-dims applies lower-stack width/depth through lower configuration and ignores height', () => {
   const { App, state, calls } = createAppHarness();
   state.ui.doors = 2;

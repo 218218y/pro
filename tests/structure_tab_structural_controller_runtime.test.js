@@ -65,6 +65,16 @@ function loadTsModule(relPath, calls, stubs = {}, cache = new Map()) {
     }
     if (specifier === '../../../services/api.js') {
       return {
+        getUiFeedback:
+          stubs.getUiFeedback ||
+          (() => ({
+            toast: (...args) => calls.push(['toast', ...args]),
+          })),
+        readStoreStateMaybe:
+          stubs.readStoreStateMaybe ||
+          (() => ({
+            config: {},
+          })),
         patchViaActions:
           stubs.patchViaActions ||
           ((...args) => {
@@ -303,6 +313,30 @@ test('[structure-structural-controller] base and sliding build-visible writes us
           JSON.stringify({ source: 'react:structure:slidingTracksColor', immediate: true })
     )
   );
+});
+
+test('[structure-structural-controller] blocks legs-with-stage when height/depth special cells exist', () => {
+  const calls = [];
+  const mod = loadStructureStructuralControllerModule(calls, {
+    readStoreStateMaybe: () => ({
+      config: {
+        modulesConfiguration: [{ doors: 1, specialDims: { baseHeightCm: 240, heightCm: 250 } }, { doors: 1 }],
+      },
+    }),
+  });
+  const controller = mod.createStructureTabStructuralController(createArgs({ calls }));
+
+  controller.setBaseType('legs');
+  controller.setBaseLegPlatformMode('stage');
+  controller.setBaseLegPlatformMode('plain');
+
+  const structuralCalls = calls.filter(entry => entry[0] === 'applyImmediateStructuralUiMutation');
+  assert.equal(
+    JSON.stringify(structuralCalls.map(entry => [entry[2], entry[3]])),
+    JSON.stringify([['react:structure:baseLegPlatformMode', { baseLegPlatformMode: 'plain' }]])
+  );
+  assert.equal(calls.filter(entry => entry[0] === 'toast').length, 2);
+  assert.ok(calls.every(entry => !(entry[0] === 'setUiBaseType' && entry[2] === 'legs')));
 });
 
 test('[structure-structural-controller] commitStructural collapses to a canonical ui patch when patch actions exist', () => {

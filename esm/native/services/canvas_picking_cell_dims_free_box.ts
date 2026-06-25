@@ -18,6 +18,11 @@ import {
   type SpecialDimsBaseKey,
   type SpecialDimsKey,
 } from '../features/special_dims/index.js';
+import {
+  BASE_LEG_STAGE_SPECIAL_DIMS_APPLY_BLOCKED_MESSAGE,
+  isBaseLegStageUiState,
+  willHeightDepthTargetCreateActiveSpecialOverride,
+} from '../features/base_leg_stage_special_dims_guard.js';
 import { getModulesActions } from '../runtime/actions_access_domains.js';
 import {
   ensureSketchModuleBoxes,
@@ -34,6 +39,7 @@ export type CanvasFreeBoxCellDimsArgs = {
   foundPartId: string | null;
   isBottomStack?: boolean;
   hitUserData?: UnknownRecord | null;
+  ui?: UnknownRecord | null;
   applyW: number | null;
   applyH: number | null;
   applyD: number | null;
@@ -168,6 +174,44 @@ function isFreeBoxHit(args: CanvasFreeBoxCellDimsArgs): boolean {
   return !!partId && partId.startsWith('sketch_box_free_');
 }
 
+function wouldBoxDimensionCreateActiveSpecialOverride(box: SketchBoxLike, spec: DimSpec): boolean {
+  const target = spec.applyValueCm;
+  if (target == null || !Number.isFinite(target) || target <= 0) return false;
+
+  const current = readDimensionCm(box, spec);
+  if (current == null || !Number.isFinite(current) || current <= 0) return false;
+
+  const sd = cloneSpecialDims(box.specialDims);
+  const active = getActiveOverrideCm(sd, spec.specialKey, spec.baseKey);
+  const toggledBack = active != null && Math.abs(target - active) <= EPS_CM;
+  const baseValue = readPositiveSpecialBaseCm(sd, spec.baseKey) ?? current;
+
+  return willHeightDepthTargetCreateActiveSpecialOverride({
+    targetCm: target,
+    baseCm: baseValue,
+    toggledBack,
+  });
+}
+
+function readPositiveSpecialBaseCm(sd: unknown, key: SpecialDimsBaseKey): number | null {
+  const value = sd && typeof sd === 'object' && !Array.isArray(sd) ? (sd as UnknownRecord)[key] : undefined;
+  const n = typeof value === 'number' ? value : value != null ? Number(value) : NaN;
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+function shouldBlockFreeBoxHeightDepthByBaseLegStage(args: {
+  ui: unknown;
+  box: SketchBoxLike;
+  heightSpec: DimSpec;
+  depthSpec: DimSpec;
+}): boolean {
+  if (!isBaseLegStageUiState(args.ui)) return false;
+  return (
+    wouldBoxDimensionCreateActiveSpecialOverride(args.box, args.heightSpec) ||
+    wouldBoxDimensionCreateActiveSpecialOverride(args.box, args.depthSpec)
+  );
+}
+
 function applyBoxDimension(box: SketchBoxLike, spec: DimSpec): boolean {
   const target = spec.applyValueCm;
   if (target == null || !Number.isFinite(target) || target <= 0) return false;
@@ -256,6 +300,18 @@ function updateFreeBox(args: {
   const depthSpec = specs[2];
   const oldHeightM = readDimensionM(box, heightSpec);
   const oldDepthM = readDimensionM(box, depthSpec);
+
+  if (
+    shouldBlockFreeBoxHeightDepthByBaseLegStage({
+      ui: args.clickArgs.ui,
+      box,
+      heightSpec,
+      depthSpec,
+    })
+  ) {
+    __wp_toast(args.clickArgs.App, BASE_LEG_STAGE_SPECIAL_DIMS_APPLY_BLOCKED_MESSAGE, 'error');
+    return { changed: false, removedHex: false, appliedHex: false };
+  }
 
   const hasDimChange = hasDimensionDraftChange({ box, specs });
   let changed = false;

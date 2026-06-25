@@ -28,6 +28,7 @@ export function createCornerCellHeightDepthContext(
 
   return {
     App: ctx.App,
+    ui: ctx.ui,
     stackKey: ctx.stackKey,
     nextCornerCfg,
     cellIdx,

@@ -19,7 +19,12 @@ import {
   normalizeBaseLegStyle,
   normalizeBaseLegWidthCm,
 } from '../../../features/base_leg_support.js';
+import {
+  BASE_LEG_STAGE_SPECIAL_DIMS_SELECT_BLOCKED_MESSAGE,
+  configHasActiveHeightDepthSpecialDims,
+} from '../../../features/base_leg_stage_special_dims_guard.js';
 import { normalizeBasePlinthHeightCm } from '../../../features/base_plinth_support.js';
+import { getUiFeedback, readStoreStateMaybe } from '../../../services/api.js';
 import {
   commitStructureRawValue,
   setStackSplitLowerLinkModeValue,
@@ -32,6 +37,33 @@ import type {
 } from './structure_tab_structural_controller_contracts.js';
 import type { DisplayedValueReader } from './structure_tab_structure_mutations_shared.js';
 import { readUiRawNumberFromApp } from './structure_tab_structural_controller_shared.js';
+
+function isRecord(value: unknown): value is UnknownRecord {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
+function readAppConfigSnapshot(app: unknown): UnknownRecord {
+  const state = readStoreStateMaybe<UnknownRecord>(app);
+  return isRecord(state?.config) ? state.config : {};
+}
+
+function toastBaseLegStageSpecialDimsSelectBlocked(app: unknown): void {
+  try {
+    getUiFeedback(app).toast(BASE_LEG_STAGE_SPECIAL_DIMS_SELECT_BLOCKED_MESSAGE, 'error');
+  } catch {
+    // Feedback is secondary; the guard itself must remain fail-closed.
+  }
+}
+
+function shouldBlockSelectingBaseLegStage(app: unknown): boolean {
+  return configHasActiveHeightDepthSpecialDims(readAppConfigSnapshot(app));
+}
+
+function blockSelectingBaseLegStageIfNeeded(app: unknown): boolean {
+  if (!shouldBlockSelectingBaseLegStage(app)) return false;
+  toastBaseLegStageSpecialDimsSelectBlocked(app);
+  return true;
+}
 
 function normalizeStructureBaseType(value: unknown): 'plinth' | 'legs' | 'none' {
   return value === 'legs' || value === 'none' ? value : 'plinth';
@@ -180,6 +212,8 @@ export function createStructureTabStructuralWriteController(
 
     setBaseType(next: 'plinth' | 'legs' | 'none') {
       const nextBaseType = normalizeStructureBaseType(next);
+      if (nextBaseType === 'legs' && blockSelectingBaseLegStageIfNeeded(args.app)) return;
+
       applyImmediateStructureUiPatch(args, 'react:structure:baseType', { baseType: nextBaseType }, meta => {
         setUiBaseType(args.app, nextBaseType, meta);
         if (nextBaseType === 'legs') {
@@ -215,6 +249,8 @@ export function createStructureTabStructuralWriteController(
 
     setBaseLegPlatformMode(next) {
       const nextBaseLegPlatformMode = normalizeBaseLegPlatformMode(next);
+      if (nextBaseLegPlatformMode === 'stage' && blockSelectingBaseLegStageIfNeeded(args.app)) return;
+
       applyImmediateStructureUiPatch(
         args,
         'react:structure:baseLegPlatformMode',

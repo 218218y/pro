@@ -3,6 +3,7 @@ import type { SpecialDimsRecord } from '../features/special_dims/index.js';
 
 export interface CornerCellHeightDepthContext {
   App: AppContainer;
+  ui: UnknownRecord;
   stackKey: 'top' | 'bottom';
   nextCornerCfg: UnknownRecord;
   cellIdx: number;

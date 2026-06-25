@@ -1,5 +1,10 @@
 import { applyOverrideToSpecialDims, assignSpecialDimsToConfig } from '../features/special_dims/index.js';
 import {
+  BASE_LEG_STAGE_SPECIAL_DIMS_APPLY_BLOCKED_MESSAGE,
+  isBaseLegStageUiState,
+  willHeightDepthTargetCreateActiveSpecialOverride,
+} from '../features/base_leg_stage_special_dims_guard.js';
+import {
   patchCornerConfigForStack,
   commitCornerHistory,
   refreshCornerStructure,
@@ -12,6 +17,25 @@ import type {
   CornerCellHeightDepthState,
 } from './canvas_picking_cell_dims_corner_cell_height_depth_contracts.js';
 
+function shouldBlockCornerHeightDepthByBaseLegStage(
+  ctx: CornerCellHeightDepthContext,
+  state: CornerCellHeightDepthState
+): boolean {
+  if (!isBaseLegStageUiState(ctx.ui)) return false;
+  return (
+    willHeightDepthTargetCreateActiveSpecialOverride({
+      targetCm: ctx.applyH,
+      baseCm: state.cellBaseH,
+      toggledBack: state.toggledBackCellH,
+    }) ||
+    willHeightDepthTargetCreateActiveSpecialOverride({
+      targetCm: ctx.applyD,
+      baseCm: state.cellBaseD,
+      toggledBack: state.toggledBackCellD,
+    })
+  );
+}
+
 export function applyCornerCellHeightDepthSelection(
   ctx: CornerCellHeightDepthContext,
   state: CornerCellHeightDepthState
@@ -19,6 +43,15 @@ export function applyCornerCellHeightDepthSelection(
   const { App, stackKey, nextCornerCfg, cellIdx, applyH, applyD, modsPrev, modsNext, nextCellCfg, sdCell } =
     ctx;
   const { cellBaseH, cellBaseD, toggledBackCellH, toggledBackCellD, willChangeH, willChangeD } = state;
+
+  if (shouldBlockCornerHeightDepthByBaseLegStage(ctx, state)) {
+    showCornerToast(
+      App,
+      BASE_LEG_STAGE_SPECIAL_DIMS_APPLY_BLOCKED_MESSAGE,
+      'cellDims.corner.cell.baseLegStageBlockedToast'
+    );
+    return true;
+  }
 
   if (applyH != null) {
     applyOverrideToSpecialDims({

@@ -13,6 +13,11 @@ import {
   cloneSpecialDims,
 } from '../features/special_dims/index.js';
 import { readSpecialDimsRecord, readToastFn } from './canvas_picking_cell_dims_linear_shared.js';
+import {
+  BASE_LEG_STAGE_SPECIAL_DIMS_APPLY_BLOCKED_MESSAGE,
+  isBaseLegStageUiState,
+  willHeightDepthTargetCreateActiveSpecialOverride,
+} from '../features/base_leg_stage_special_dims_guard.js';
 import { createCanvasPickingCellDimsRefreshGatedMeta } from './canvas_picking_cell_dims_meta.js';
 import { buildMutableLinearModules } from './canvas_picking_cell_dims_linear_mutable.js';
 import { applyLinearCellDimsWidthPolicy } from './canvas_picking_cell_dims_linear_width.js';
@@ -49,6 +54,36 @@ function withoutLinearToggleBack(ctx: LinearCellDimsContext): LinearCellDimsCont
     toggledBackH: false,
     toggledBackD: false,
   };
+}
+
+function shouldBlockLinearHeightDepthSpecialDimsByBaseLegStage(ctx: LinearCellDimsContext): boolean {
+  if (!isBaseLegStageUiState(ctx.ui)) return false;
+  if (ctx.idx < 0 || ctx.idx >= ctx.moduleCount) return false;
+
+  return (
+    willHeightDepthTargetCreateActiveSpecialOverride({
+      targetCm: ctx.applyH,
+      baseCm: ctx.baseH[ctx.idx],
+      toggledBack: ctx.toggledBackH,
+    }) ||
+    willHeightDepthTargetCreateActiveSpecialOverride({
+      targetCm: ctx.applyD,
+      baseCm: ctx.baseD[ctx.idx],
+      toggledBack: ctx.toggledBackD,
+    })
+  );
+}
+
+function toastBaseLegStageSpecialDimsBlocked(ctx: LinearCellDimsContext): void {
+  try {
+    const fn = readToastFn(ctx.App);
+    if (typeof fn === 'function') fn(BASE_LEG_STAGE_SPECIAL_DIMS_APPLY_BLOCKED_MESSAGE, true);
+  } catch (err) {
+    __wp_reportPickingIssue(ctx.App, err, {
+      where: 'canvasPicking',
+      op: 'cellDims.baseLegStageSpecialDimsBlockedToast',
+    });
+  }
 }
 
 function applySelectedLinearOverrides(
@@ -92,8 +127,13 @@ export function applyCanvasLinearCellDimsContextWithOptions(
   const source = options.source || 'cellDims.apply';
   const applyCtx = options.disableToggleBack ? withoutLinearToggleBack(ctx) : ctx;
   const { App } = applyCtx;
-  const { nextModsCfg, ensureOwnModule } = buildMutableLinearModules(applyCtx);
   const skipDimensionMutations = options.skipDimensionMutations === true;
+  if (!skipDimensionMutations && shouldBlockLinearHeightDepthSpecialDimsByBaseLegStage(applyCtx)) {
+    toastBaseLegStageSpecialDimsBlocked(applyCtx);
+    return;
+  }
+
+  const { nextModsCfg, ensureOwnModule } = buildMutableLinearModules(applyCtx);
   if (!skipDimensionMutations) applySelectedLinearOverrides(applyCtx, ensureOwnModule);
   const mutationResult = options.mutateSelectedModule?.(applyCtx, ensureOwnModule);
   const extraMutation: LinearCellDimsSelectedModuleMutationResult | undefined =

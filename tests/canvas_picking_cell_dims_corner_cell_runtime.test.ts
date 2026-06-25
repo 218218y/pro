@@ -133,6 +133,24 @@ test('corner per-cell dims keeps height/depth-only overrides on the focused heig
   assert.match(calls.toasts[0]?.message || '', /עודכן עומק/);
 });
 
+test('corner per-cell dims blocks height/depth special cells while legs-with-stage is active', () => {
+  const { App, calls } = createAppHarness();
+  const ctx = createBaseContext(App, {
+    ui: { cornerDoors: 4, baseType: 'legs', baseLegPlatformMode: 'stage' },
+    applyH: 250,
+    applyD: null,
+  });
+
+  const handled = handleCornerPerCellDimsClick(ctx);
+  assert.equal(handled, true);
+  assert.equal(calls.cornerConfigs.length, 0);
+  assert.equal(calls.uiPatches.length, 0);
+  assert.equal(calls.builds.length, 0);
+  assert.equal(calls.renders, 0);
+  assert.equal(calls.toasts.length, 1);
+  assert.match(calls.toasts[0]?.message || '', /רגליים ובמה/);
+});
+
 test('corner per-cell dims keeps width redistribution and corner-width sync on the focused width owner', () => {
   const { App, calls } = createAppHarness();
   const ctx = createBaseContext(App, {

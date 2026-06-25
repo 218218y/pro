@@ -5,6 +5,11 @@ import {
   assignSpecialDimsToConfig,
   cloneSpecialDims,
 } from '../features/special_dims/index.js';
+import {
+  BASE_LEG_STAGE_SPECIAL_DIMS_APPLY_BLOCKED_MESSAGE,
+  isBaseLegStageUiState,
+  willHeightDepthTargetCreateActiveSpecialOverride,
+} from '../features/base_leg_stage_special_dims_guard.js';
 import { __asNum } from './canvas_picking_core_helpers.js';
 import type { CornerCellDimsContext } from './canvas_picking_cell_dims_corner_shared.js';
 import {
@@ -23,6 +28,25 @@ import type {
   CornerCellWidthDistribution,
   CornerCellWidthSelectionState,
 } from './canvas_picking_cell_dims_corner_cell_width_contracts.js';
+
+function shouldBlockCornerWidthHeightDepthByBaseLegStage(
+  ctx: CornerCellDimsContext,
+  selection: CornerCellWidthSelectionState
+): boolean {
+  if (!isBaseLegStageUiState(ctx.ui)) return false;
+  return (
+    willHeightDepthTargetCreateActiveSpecialOverride({
+      targetCm: ctx.applyH,
+      baseCm: selection.cellBaseH,
+      toggledBack: selection.toggledBackCellH,
+    }) ||
+    willHeightDepthTargetCreateActiveSpecialOverride({
+      targetCm: ctx.applyD,
+      baseCm: selection.cellBaseD,
+      toggledBack: selection.toggledBackCellD,
+    })
+  );
+}
 
 function needsLockWidth(App: CornerCellDimsContext['App'], cfgCell: UnknownRecord, widthCm: number): boolean {
   const eps = 1e-6;
@@ -47,6 +71,15 @@ export function applyCornerCellWidthSelection(
 ): boolean {
   const { App, stackKey, isBottomStack, applyH, applyD, cellIdx, nextCornerCfg, sd } = ctx;
   const modsOut = distribution.modsNext;
+
+  if (shouldBlockCornerWidthHeightDepthByBaseLegStage(ctx, selection)) {
+    showCornerToast(
+      App,
+      BASE_LEG_STAGE_SPECIAL_DIMS_APPLY_BLOCKED_MESSAGE,
+      'cellDims.corner.lockOthers.baseLegStageBlockedToast'
+    );
+    return true;
+  }
 
   for (let ci = 0; ci < distribution.cellCount; ci++) {
     const widthCm = selection.widthsNext[ci] || 0;
