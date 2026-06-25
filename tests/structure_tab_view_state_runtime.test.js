@@ -63,6 +63,7 @@ const sandbox = {
           return Number.isFinite(n) && n > 0 ? Math.round(n * 10) / 10 : fallback;
         },
         normalizeBaseLegPlatformMode: value => (value === 'plain' ? 'plain' : 'stage'),
+        normalizeBaseLegPlatformSideMode: value => (value === 'flush' ? 'flush' : 'overhang'),
       };
     }
     if (spec === '../../../features/base_plinth_support.js') {
@@ -147,6 +148,8 @@ test('structure tab view-state runtime normalizes base ui state', () => {
     baseType: 'legs',
     baseLegStyle: 'square',
     baseLegColor: 'gold',
+    baseLegPlatformMode: 'plain',
+    baseLegPlatformSideMode: 'flush',
     basePlinthHeightCm: '14.5',
     baseLegHeightCm: '18',
     baseLegWidthCm: '5.5',
@@ -167,6 +170,8 @@ test('structure tab view-state runtime normalizes base ui state', () => {
   assert.equal(state.baseType, 'legs');
   assert.equal(state.baseLegStyle, 'square');
   assert.equal(state.baseLegColor, 'gold');
+  assert.equal(state.baseLegPlatformMode, 'plain');
+  assert.equal(state.baseLegPlatformSideMode, 'flush');
   assert.equal(state.basePlinthHeightCm, 14.5);
   assert.equal(state.baseLegHeightCm, 18);
   assert.equal(state.baseLegWidthCm, 5.5);

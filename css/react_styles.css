@@ -6821,13 +6821,20 @@ body.wp-ui-react .wp-pdf-sketch-card-text-layer.is-text-mode .annotation-box .ed
  */
 #reactSidebarRoot
   .tab-content[data-tab='structure']
-  :is(.wp-r-base-leg-platform-selector, .wp-r-base-leg-style-selector, .wp-r-base-leg-color-selector) {
+  :is(
+    .wp-r-base-leg-platform-selector,
+    .wp-r-base-leg-platform-side-selector,
+    .wp-r-base-leg-style-selector,
+    .wp-r-base-leg-color-selector
+  ) {
   display: grid;
   gap: 6px;
   margin-bottom: 8px;
 }
 
-#reactSidebarRoot .tab-content[data-tab='structure'] .wp-r-base-leg-platform-selector {
+#reactSidebarRoot
+  .tab-content[data-tab='structure']
+  :is(.wp-r-base-leg-platform-selector, .wp-r-base-leg-platform-side-selector) {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
@@ -6839,7 +6846,12 @@ body.wp-ui-react .wp-pdf-sketch-card-text-layer.is-text-mode .annotation-box .ed
 
 #reactSidebarRoot
   .tab-content[data-tab='structure']
-  :is(.wp-r-base-leg-platform-selector, .wp-r-base-leg-style-selector, .wp-r-base-leg-color-selector)
+  :is(
+    .wp-r-base-leg-platform-selector,
+    .wp-r-base-leg-platform-side-selector,
+    .wp-r-base-leg-style-selector,
+    .wp-r-base-leg-color-selector
+  )
   .type-option {
   min-width: 0;
   min-height: 32px;

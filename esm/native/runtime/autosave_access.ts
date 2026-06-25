@@ -42,9 +42,9 @@ export function normalizeAutosavePayload(value: unknown): ProjectLoadInputLike |
   const payload = asRecord<ProjectLoadInputLike>(value);
   if (!payload) return null;
 
-  // Autosave used to stamp a legacy root `version` field for its own bookkeeping.
+  // Autosave used to stamp a retired root `version` field for its own bookkeeping.
   // Current project payloads use `__schema`/`__version`, and the project loader
-  // correctly rejects root `version` as retired import data.  Keep that strict
+  // correctly rejects root `version` as retired import data. Keep that strict
   // project-file validation intact, but sanitize this autosave-only seam so older
   // localStorage entries written by the autosave service remain restorable.
   if (!Object.prototype.hasOwnProperty.call(payload, 'version')) return payload;
