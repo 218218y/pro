@@ -1,9 +1,16 @@
 import {
+  CARCASS_BASE_DIMENSIONS,
   CHEST_MODE_DIMENSIONS,
   clampDimension,
   cmToM,
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
-import { readBaseLegOptions, type BaseLegColor, type BaseLegStyle } from '../features/base_leg_support.js';
+import {
+  normalizeBaseLegPlatformMode,
+  readBaseLegOptions,
+  type BaseLegColor,
+  type BaseLegPlatformMode,
+  type BaseLegStyle,
+} from '../features/base_leg_support.js';
 import { getBasePlinthHeightM, normalizeBasePlinthHeightCm } from '../features/base_plinth_support.js';
 
 import type { BuilderBuildChestOnlyOptsLike } from '../../../types/index.js';
@@ -16,11 +23,14 @@ export type ChestModeBuildInputs = {
   effectiveBaseType: 'plinth' | 'legs';
   baseLegStyle: BaseLegStyle;
   baseLegColor: BaseLegColor;
+  baseLegPlatformMode: BaseLegPlatformMode;
   basePlinthHeightCm: number;
   basePlinthHeightM: number;
   baseLegHeightCm: number;
   baseLegWidthCm: number;
   baseLegHeightM: number;
+  baseLegBottomPlatformHeightM: number;
+  baseLegTopPlatformHeightM: number;
   colorChoice: string;
   customColor: string;
   chestCommodeEnabled: boolean;
@@ -66,6 +76,9 @@ export function resolveChestModeBuildInputs(opts: BuilderBuildChestOnlyOptsLike)
   const isGroovesEnabled = opts.isGroovesEnabled === true;
 
   const legOptions = readBaseLegOptions(legSource);
+  const baseLegPlatformMode = normalizeBaseLegPlatformMode(opts.baseLegPlatformMode);
+  const baseLegPlatformEnabled = String(rawBaseType || '') !== 'plinth' && baseLegPlatformMode === 'stage';
+  const baseLegPlatformHeightM = baseLegPlatformEnabled ? CARCASS_BASE_DIMENSIONS.legs.platform.heightM : 0;
   const basePlinthHeightCm = normalizeBasePlinthHeightCm(plinthHeightSource);
   const chestCommodeMirrorHeightCm = normalizeChestCommodeDimensionCm(
     chestCommodeMirrorHeightSource,
@@ -96,6 +109,9 @@ export function resolveChestModeBuildInputs(opts: BuilderBuildChestOnlyOptsLike)
     baseLegHeightCm: legOptions.heightCm,
     baseLegWidthCm: legOptions.widthCm,
     baseLegHeightM: legOptions.heightM,
+    baseLegPlatformMode,
+    baseLegBottomPlatformHeightM: baseLegPlatformHeightM,
+    baseLegTopPlatformHeightM: baseLegPlatformHeightM,
     colorChoice: String(colorChoice || '#ffffff'),
     customColor: String(customColor || '#ffffff'),
     chestCommodeEnabled,

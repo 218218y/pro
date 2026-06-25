@@ -96,6 +96,11 @@ test('stack split decorative separator renders an overhanging slab plus front li
   assert.equal(calls[1][6], 'part-material:stack_split_separator');
   assert.ok(Number(calls[0][0]) > 1.8, 'separator slab should overhang the wider unit');
   assert.ok(Number(calls[0][2]) > 0.6, 'separator slab should protrude beyond the front depth');
+  assert.equal(
+    Number(calls[0][5]) - Number(calls[0][2]) / 2,
+    -0.3,
+    'separator slab should stay flush with the cabinet back and protrude only forward'
+  );
   assert.ok(Number(calls[1][5]) > Number(calls[0][5]), 'front lip should sit on the visible/front side');
   assert.ok(Number(calls[1][1]) > 0.038, 'front lip should be tall enough to make the separator visible');
   assert.equal(

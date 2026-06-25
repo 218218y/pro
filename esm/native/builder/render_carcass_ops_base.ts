@@ -12,6 +12,7 @@ import {
   __asString,
   __backPanelMaterial,
   __isBoardOp,
+  __isLegPlatformSegment,
   __isLegPosition,
   __isPlinthSegment,
   __isRecord,
@@ -138,7 +139,29 @@ export function createApplyCarcassBaseOps(deps: RenderCarcassBaseDeps) {
       return;
     }
 
-    if (baseKind === 'legs' && ctx.legMat) {
+    if (baseKind === 'legs' || baseKind === 'leg_platforms') {
+      const platforms = __readArray(baseRec.platforms, __isLegPlatformSegment) || [];
+      for (let i = 0; i < platforms.length; i += 1) {
+        const platform = platforms[i];
+        const width = __asFinite(platform.width);
+        const height = __asFinite(platform.height);
+        const depth = __asFinite(platform.depth);
+        if (!Number.isFinite(width) || !Number.isFinite(height) || !Number.isFinite(depth)) continue;
+
+        const x = __asFinite(platform.x, 0);
+        const y = __asFinite(platform.y, height / 2);
+        const z = __asFinite(platform.z, 0);
+        const pid = __asString(platform.partId, 'base_leg_platform');
+        const platformMat = (runtime.getPartMaterial ? runtime.getPartMaterial(pid) : null) || ctx.bodyMat;
+        const platformMesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), platformMat);
+        platformMesh.position.set(x, y, z);
+        platformMesh.userData = { partId: pid };
+        reg(App, pid, platformMesh, 'body');
+        addOutlines(platformMesh);
+        wardrobeGroup.add(platformMesh);
+      }
+      if (baseKind !== 'legs' || !ctx.legMat) return;
+
       const geo = readRecord(baseRec.geo);
       const height = __asFinite(baseRec.height, 0);
       const shape = __asString(geo?.shape, 'round');

@@ -48,11 +48,13 @@ export type BuildFlowPlan = {
   doorStyle: string;
   baseLegStyle: string;
   baseLegColor: string;
+  baseLegPlatformMode: string;
   basePlinthHeightCm: number;
   baseLegHeightCm: number;
   baseLegWidthCm: number;
   baseTypeBottom: string;
   baseTypeTop: string;
+  baseLegTopPlatformOnly: boolean;
   hasCornice: boolean;
   corniceType: string;
   splitDoors: boolean;
@@ -111,11 +113,13 @@ export type BuildFlowPlanInputs = Pick<
   | 'doorStyle'
   | 'baseLegStyle'
   | 'baseLegColor'
+  | 'baseLegPlatformMode'
   | 'basePlinthHeightCm'
   | 'baseLegHeightCm'
   | 'baseLegWidthCm'
   | 'baseTypeBottom'
   | 'baseTypeTop'
+  | 'baseLegTopPlatformOnly'
   | 'hasCornice'
   | 'corniceType'
   | 'splitDoors'

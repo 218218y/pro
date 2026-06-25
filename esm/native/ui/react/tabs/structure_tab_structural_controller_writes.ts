@@ -1,6 +1,7 @@
 import {
   setUiBaseLegColor,
   setUiBaseLegHeightCm,
+  setUiBaseLegPlatformMode,
   setUiBaseLegWidthCm,
   setUiBaseLegStyle,
   setUiBasePlinthHeightCm,
@@ -12,6 +13,7 @@ import type { ActionMetaLike, UnknownRecord } from '../../../../../types';
 import {
   normalizeBaseLegColor,
   normalizeBaseLegHeightCm,
+  normalizeBaseLegPlatformMode,
   normalizeBaseLegStyle,
   normalizeBaseLegWidthCm,
 } from '../../../features/base_leg_support.js';
@@ -37,13 +39,29 @@ function normalizeStructureSlidingTracksColor(value: unknown): 'nickel' | 'black
   return value === 'black' ? 'black' : 'nickel';
 }
 
+function resolveImmediateStructureUiPatchDefaults(source: string, patch: UnknownRecord): UnknownRecord {
+  if (
+    source === 'react:structure:baseType' &&
+    patch.baseType === 'legs' &&
+    !Object.prototype.hasOwnProperty.call(patch, 'baseLegPlatformMode')
+  ) {
+    return { ...patch, baseLegPlatformMode: 'stage' };
+  }
+  return patch;
+}
+
 function applyImmediateStructureUiPatch(
   args: CreateStructureTabStructuralControllerArgs,
   source: string,
   patch: UnknownRecord,
   applyDirectMutation: (meta: ActionMetaLike) => void
 ): void {
-  applyImmediateStructuralUiMutation(args.app, source, patch, applyDirectMutation);
+  applyImmediateStructuralUiMutation(
+    args.app,
+    source,
+    resolveImmediateStructureUiPatchDefaults(source, patch),
+    applyDirectMutation
+  );
 }
 
 export function createStructureTabStructuralWriteController(
@@ -57,6 +75,7 @@ export function createStructureTabStructuralWriteController(
   | 'setBaseType'
   | 'setBaseLegStyle'
   | 'setBaseLegColor'
+  | 'setBaseLegPlatformMode'
   | 'setBasePlinthHeightCm'
   | 'setBaseLegHeightCm'
   | 'setBaseLegWidthCm'
@@ -160,6 +179,7 @@ export function createStructureTabStructuralWriteController(
       const nextBaseType = normalizeStructureBaseType(next);
       applyImmediateStructureUiPatch(args, 'react:structure:baseType', { baseType: nextBaseType }, meta => {
         setUiBaseType(args.app, nextBaseType, meta);
+        if (nextBaseType === 'legs') setUiBaseLegPlatformMode(args.app, 'stage', meta);
       });
     },
 
@@ -183,6 +203,18 @@ export function createStructureTabStructuralWriteController(
         { baseLegColor: nextBaseLegColor },
         meta => {
           setUiBaseLegColor(args.app, nextBaseLegColor, meta);
+        }
+      );
+    },
+
+    setBaseLegPlatformMode(next) {
+      const nextBaseLegPlatformMode = normalizeBaseLegPlatformMode(next);
+      applyImmediateStructureUiPatch(
+        args,
+        'react:structure:baseLegPlatformMode',
+        { baseLegPlatformMode: nextBaseLegPlatformMode },
+        meta => {
+          setUiBaseLegPlatformMode(args.app, nextBaseLegPlatformMode, meta);
         }
       );
     },

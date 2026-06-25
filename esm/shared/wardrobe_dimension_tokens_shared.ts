@@ -58,8 +58,8 @@ export const WARDROBE_DEFAULTS = Object.freeze({
     decorativeSeparator: Object.freeze({
       visibleHeightM: 0.039,
       apronDepthM: 0.014,
-      frontOverhangM: 0.035,
-      sideOverhangM: 0.025,
+      frontOverhangM: 0.02,
+      sideOverhangM: 0.015,
       minWidthM: 0.2,
       minDepthM: 0.12,
       seamCoverDropM: 0.012,
@@ -293,6 +293,15 @@ export const CARCASS_BASE_DIMENSIONS = Object.freeze({
     connectorInsetM: 0.06,
     connectorBackInsetM: 0.01,
     depthSteppedMinFrontBackGapM: 0.03,
+    platform: Object.freeze({
+      heightM: 0.039,
+      apronDepthM: 0.014,
+      frontOverhangM: 0.02,
+      sideOverhangM: 0.015,
+      minWidthM: 0.2,
+      minDepthM: 0.12,
+      zFightLiftM: 0.001,
+    }),
   }),
   chest: Object.freeze({
     backThicknessM: 0.005,

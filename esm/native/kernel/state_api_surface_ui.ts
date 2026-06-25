@@ -191,6 +191,17 @@ export function installStateApiUiSurface(ctx: StateApiSurfaceUiContext): void {
       );
     };
   }
+  if (typeof uiNs.setBaseLegPlatformMode !== 'function') {
+    uiNs.setBaseLegPlatformMode = function setBaseLegPlatformMode(value: unknown, meta?: ActionMetaLike) {
+      const raw = String(value || '')
+        .trim()
+        .toLowerCase();
+      return uiNs.patch?.(
+        { baseLegPlatformMode: raw === 'plain' ? 'plain' : 'stage' },
+        normMeta(meta, 'actions.ui:setBaseLegPlatformMode')
+      );
+    };
+  }
   if (typeof uiNs.setHingeDirection !== 'function') {
     uiNs.setHingeDirection = function setHingeDirection(on: unknown, meta?: ActionMetaLike) {
       return uiNs.patch?.({ hingeDirection: !!on }, uiOnlyMeta(meta, 'actions.ui:setHingeDirection'));

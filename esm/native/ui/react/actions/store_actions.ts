@@ -35,6 +35,7 @@ export {
   patchUiSoft,
   setUiActiveTab,
   setUiBaseLegColor,
+  setUiBaseLegPlatformMode,
   setUiBaseLegHeightCm,
   setUiBaseLegWidthCm,
   setUiBaseLegStyle,

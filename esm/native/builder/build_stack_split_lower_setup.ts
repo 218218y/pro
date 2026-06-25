@@ -116,6 +116,7 @@ export function prepareStackSplitLowerSetup(
     woodThick: args.woodThick,
     baseType: args.baseTypeBottom,
     baseLegStyle: args.baseLegStyle,
+    baseLegPlatformMode: args.baseLegPlatformMode,
     basePlinthHeightCm: args.basePlinthHeightCm,
     baseLegHeightCm: args.baseLegHeightCm,
     baseLegWidthCm: args.baseLegWidthCm,

@@ -1,5 +1,5 @@
 import type { HingeMap, ProjectPreChestStateLike } from '../../../../../types';
-import type { BaseLegColor, BaseLegStyle } from '../../../features/base_leg_support.js';
+import type { BaseLegColor, BaseLegPlatformMode, BaseLegStyle } from '../../../features/base_leg_support.js';
 import type { StructurePattern } from './structure_tab_saved_models_patterns.js';
 
 export type StructureTabViewState = {
@@ -15,6 +15,7 @@ export type StructureTabViewState = {
   baseType: 'plinth' | 'legs' | 'none';
   baseLegStyle: BaseLegStyle;
   baseLegColor: BaseLegColor;
+  baseLegPlatformMode: BaseLegPlatformMode;
   basePlinthHeightCm: number;
   baseLegHeightCm: number;
   baseLegWidthCm: number;

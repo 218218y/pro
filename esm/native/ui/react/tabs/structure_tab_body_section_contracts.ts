@@ -1,11 +1,12 @@
 import type { ReactNode } from 'react';
 
-import type { BaseLegColor, BaseLegStyle } from '../../../features/base_leg_support.js';
+import type { BaseLegColor, BaseLegPlatformMode, BaseLegStyle } from '../../../features/base_leg_support.js';
 import type { StructurePattern } from './structure_tab_saved_models_patterns.js';
 
 export type BaseType = 'plinth' | 'legs' | 'none';
 export type StructureBaseLegStyle = BaseLegStyle;
 export type StructureBaseLegColor = BaseLegColor;
+export type StructureBaseLegPlatformMode = BaseLegPlatformMode;
 export type SlidingTracksColor = 'nickel' | 'black';
 
 export type CommitStructural = (
@@ -17,6 +18,7 @@ export type StructureBodySectionProps = {
   baseType: BaseType;
   baseLegStyle: StructureBaseLegStyle;
   baseLegColor: StructureBaseLegColor;
+  baseLegPlatformMode: StructureBaseLegPlatformMode;
   basePlinthHeightCm: number;
   baseLegHeightCm: number;
   baseLegWidthCm: number;
@@ -36,6 +38,7 @@ export type StructureBodySectionProps = {
   onSetBaseType: (value: BaseType) => void;
   onSetBaseLegStyle: (value: StructureBaseLegStyle) => void;
   onSetBaseLegColor: (value: StructureBaseLegColor) => void;
+  onSetBaseLegPlatformMode: (value: StructureBaseLegPlatformMode) => void;
   onSetBasePlinthHeightCm: (value: number) => void;
   onSetBaseLegHeightCm: (value: number) => void;
   onSetBaseLegWidthCm: (value: number) => void;
@@ -75,6 +78,12 @@ export const BASE_LEG_COLOR_OPTIONS: ReadonlyArray<StructureBodyTypeOption<Struc
   { value: 'nickel', label: 'ניקל' },
   { value: 'gold', label: 'זהב' },
 ];
+
+export const BASE_LEG_PLATFORM_OPTIONS: ReadonlyArray<StructureBodyTypeOption<StructureBaseLegPlatformMode>> =
+  [
+    { value: 'stage', label: 'עם במה', iconClass: 'fas fa-layer-group wp-r-type-icon' },
+    { value: 'plain', label: 'בלי במה', iconClass: 'fas fa-minus wp-r-type-icon' },
+  ];
 
 export function getSingleDoorPositionOptions(doors: number): ReadonlyArray<StructureBodyTypeOption<string>> {
   if (doors === 7) {

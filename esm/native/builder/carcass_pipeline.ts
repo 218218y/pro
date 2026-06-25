@@ -39,9 +39,11 @@ type ApplyCarcassAndGetCabinetMetricsArgs = {
   woodThick?: number;
   baseType?: string;
   baseLegStyle?: string;
+  baseLegPlatformMode?: string;
   basePlinthHeightCm?: number | string;
   baseLegHeightCm?: number | string;
   baseLegWidthCm?: number | string;
+  baseLegTopPlatformOnly?: boolean;
   doorsCount?: number;
   hasCornice?: boolean;
   corniceType?: string;
@@ -87,6 +89,13 @@ function applyPartIdPrefixToCarcassOps(carcassOps: CarcassOpsLike, prefix: strin
   const base = asRecord<PartIdLike>(carcassOps.base);
   if (typeof base?.partId === 'string') {
     base.partId = pref(base.partId);
+  }
+  const basePlatforms = Array.isArray((base as { platforms?: unknown } | null)?.platforms)
+    ? (base as { platforms?: unknown[] }).platforms || []
+    : [];
+  for (let i = 0; i < basePlatforms.length; i++) {
+    const platform = asRecord<PartIdLike>(basePlatforms[i]);
+    if (typeof platform?.partId === 'string' && platform.partId) platform.partId = pref(platform.partId);
   }
 
   const cornice = asRecord<PartIdLike>(carcassOps.cornice);
@@ -236,9 +245,11 @@ export function applyCarcassAndGetCabinetMetrics(
     woodThick: woodThickN,
     baseType: baseTypeStr,
     baseLegStyle: safeArgs.baseLegStyle,
+    baseLegPlatformMode: safeArgs.baseLegPlatformMode,
     basePlinthHeightCm: safeArgs.basePlinthHeightCm,
     baseLegHeightCm: safeArgs.baseLegHeightCm,
     baseLegWidthCm: safeArgs.baseLegWidthCm,
+    baseLegTopPlatformOnly: !!safeArgs.baseLegTopPlatformOnly,
     doorsCount: safeDoorsCount,
     hasCornice: !!safeArgs.hasCornice,
     corniceType: typeof safeArgs.corniceType === 'string' ? safeArgs.corniceType : undefined,

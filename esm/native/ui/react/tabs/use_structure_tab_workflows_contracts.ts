@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 
 import type { AppContainer, MetaActionsNamespaceLike, UiFeedbackNamespaceLike } from '../../../../../types';
-import type { BaseLegColor, BaseLegStyle } from '../../../features/base_leg_support.js';
+import type { BaseLegColor, BaseLegPlatformMode, BaseLegStyle } from '../../../features/base_leg_support.js';
 import type { StructureTabNumericKey } from './structure_tab_shared.js';
 import type { StructureUiPartial } from './structure_tab_structural_controller_contracts.js';
 import type { StructureTabViewState } from './use_structure_tab_view_state_contracts.js';
@@ -39,6 +39,7 @@ export type UseStructureTabWorkflowsResult = {
   setBaseType: (next: 'plinth' | 'legs' | 'none') => void;
   setBaseLegStyle: (next: BaseLegStyle) => void;
   setBaseLegColor: (next: BaseLegColor) => void;
+  setBaseLegPlatformMode: (next: BaseLegPlatformMode) => void;
   setBasePlinthHeightCm: (next: number) => void;
   setBaseLegHeightCm: (next: number) => void;
   setBaseLegWidthCm: (next: number) => void;

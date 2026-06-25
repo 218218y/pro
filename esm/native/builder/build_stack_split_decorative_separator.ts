@@ -145,7 +145,7 @@ export function addStackSplitDecorativeSeparatorIfNeeded(args: {
   const depth = Math.max(dims.minDepthM, totalD + frontOverhang);
   const seamY = prepared.bottomH + Math.max(0, Number(buildArgs.splitSeamGapM) || 0) / 2;
   const slabY = seamY + slabHeight / 2 - Math.max(0, dims.seamCoverDropM);
-  const slabZ = frontOverhang / 2;
+  const slabZ = -totalD / 2 + depth / 2;
 
   const slabObject = createBoard(
     width,

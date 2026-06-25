@@ -3,6 +3,7 @@ import type { ActionMetaLike, AppContainer } from '../../../../../types';
 import {
   normalizeBaseLegColor,
   normalizeBaseLegHeightCm,
+  normalizeBaseLegPlatformMode,
   normalizeBaseLegWidthCm,
   normalizeBaseLegStyle,
 } from '../../../features/base_leg_support.js';
@@ -30,6 +31,10 @@ function setUiBaseLegStyle(app: AppContainer, value: unknown, meta?: ActionMetaL
 
 function setUiBaseLegColor(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
   setUiScalar(app, 'baseLegColor', normalizeBaseLegColor(value), meta);
+}
+
+function setUiBaseLegPlatformMode(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
+  setUiScalar(app, 'baseLegPlatformMode', normalizeBaseLegPlatformMode(value), meta);
 }
 
 function setUiBaseLegHeightCm(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
@@ -228,6 +233,7 @@ function setUiFrontColorShelfInheritanceMode(app: AppContainer, value: unknown, 
 
 export {
   setUiBaseLegColor,
+  setUiBaseLegPlatformMode,
   setUiBaseLegHeightCm,
   setUiBaseLegWidthCm,
   setUiBaseLegStyle,

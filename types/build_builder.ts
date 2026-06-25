@@ -301,6 +301,7 @@ export interface BuilderBuildChestOnlyOptsLike extends UnknownRecord {
   baseType?: unknown;
   baseLegStyle?: unknown;
   baseLegColor?: unknown;
+  baseLegPlatformMode?: unknown;
   basePlinthHeightCm?: unknown;
   baseLegHeightCm?: unknown;
   baseLegWidthCm?: unknown;
@@ -332,6 +333,7 @@ export interface BuilderCornerBuildMetaLike extends UnknownRecord {
   baseType?: string;
   baseLegStyle?: string;
   baseLegColor?: string;
+  baseLegPlatformMode?: string;
   basePlinthHeightCm?: number | string;
   baseLegHeightCm?: number | string;
   baseLegWidthCm?: number | string;

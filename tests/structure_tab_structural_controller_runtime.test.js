@@ -34,6 +34,7 @@ function loadTsModule(relPath, calls, stubs = {}, cache = new Map()) {
         },
         recomputeFromUi: (...args) => calls.push(['recomputeFromUi', ...args]),
         setUiBaseLegColor: (...args) => calls.push(['setUiBaseLegColor', ...args]),
+        setUiBaseLegPlatformMode: (...args) => calls.push(['setUiBaseLegPlatformMode', ...args]),
         setUiBaseLegHeightCm: (...args) => calls.push(['setUiBaseLegHeightCm', ...args]),
         setUiBaseLegWidthCm: (...args) => calls.push(['setUiBaseLegWidthCm', ...args]),
         setUiBaseLegStyle: (...args) => calls.push(['setUiBaseLegStyle', ...args]),
@@ -244,6 +245,7 @@ test('[structure-structural-controller] commit + normalization + raw flows run t
   );
   assert.ok(calls.some(entry => entry[0] === 'toggleStackSplitState' && entry[1].height === 240));
   assert.ok(calls.some(entry => entry[0] === 'setUiBaseType' && entry[2] === 'legs'));
+  assert.ok(calls.some(entry => entry[0] === 'setUiBaseLegPlatformMode' && entry[2] === 'stage'));
   assert.ok(calls.some(entry => entry[0] === 'setUiSlidingTracksColor' && entry[2] === 'black'));
 });
 
@@ -255,6 +257,7 @@ test('[structure-structural-controller] base and sliding build-visible writes us
   controller.setBaseType('legs');
   controller.setBaseLegStyle('round');
   controller.setBaseLegColor('gold');
+  controller.setBaseLegPlatformMode('plain');
   controller.setBasePlinthHeightCm(12.3);
   controller.setBaseLegHeightCm(14);
   controller.setBaseLegWidthCm(4.5);
@@ -264,9 +267,10 @@ test('[structure-structural-controller] base and sliding build-visible writes us
   assert.equal(
     JSON.stringify(structuralCalls.map(entry => [entry[2], entry[3]])),
     JSON.stringify([
-      ['react:structure:baseType', { baseType: 'legs' }],
+      ['react:structure:baseType', { baseType: 'legs', baseLegPlatformMode: 'stage' }],
       ['react:structure:baseLegStyle', { baseLegStyle: 'round' }],
       ['react:structure:baseLegColor', { baseLegColor: 'gold' }],
+      ['react:structure:baseLegPlatformMode', { baseLegPlatformMode: 'plain' }],
       ['react:structure:basePlinthHeightCm', { basePlinthHeightCm: 12.3 }],
       ['react:structure:baseLegHeightCm', { baseLegHeightCm: 14 }],
       ['react:structure:baseLegWidthCm', { baseLegWidthCm: 4.5 }],

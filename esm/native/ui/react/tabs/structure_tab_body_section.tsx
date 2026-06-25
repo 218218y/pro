@@ -15,6 +15,7 @@ export function StructureBodySection(props: StructureBodySectionProps): ReactEle
         baseType={props.baseType}
         baseLegStyle={props.baseLegStyle}
         baseLegColor={props.baseLegColor}
+        baseLegPlatformMode={props.baseLegPlatformMode}
         basePlinthHeightCm={props.basePlinthHeightCm}
         baseLegHeightCm={props.baseLegHeightCm}
         baseLegWidthCm={props.baseLegWidthCm}
@@ -25,6 +26,7 @@ export function StructureBodySection(props: StructureBodySectionProps): ReactEle
         onSetBaseType={props.onSetBaseType}
         onSetBaseLegStyle={props.onSetBaseLegStyle}
         onSetBaseLegColor={props.onSetBaseLegColor}
+        onSetBaseLegPlatformMode={props.onSetBaseLegPlatformMode}
         onSetBasePlinthHeightCm={props.onSetBasePlinthHeightCm}
         onSetBaseLegHeightCm={props.onSetBaseLegHeightCm}
         onSetBaseLegWidthCm={props.onSetBaseLegWidthCm}

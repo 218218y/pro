@@ -10,6 +10,7 @@ import type {
   PlinthBaseOp,
   PlinthSegment,
   LegsBaseOp,
+  LegPlatformSegment,
   ProfilePoint,
   RenderCarcassContext,
   UnknownCallable,
@@ -118,6 +119,10 @@ function __isProfilePoint(value: unknown): value is ProfilePoint {
 }
 
 export function __isPlinthSegment(value: unknown): value is PlinthSegment {
+  return __isRecord(value);
+}
+
+export function __isLegPlatformSegment(value: unknown): value is LegPlatformSegment {
   return __isRecord(value);
 }
 

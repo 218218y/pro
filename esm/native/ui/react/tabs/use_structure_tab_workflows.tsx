@@ -229,6 +229,7 @@ export function useStructureTabWorkflows(args: UseStructureTabWorkflowsArgs): Us
     setBaseType: structuralController.setBaseType,
     setBaseLegStyle: structuralController.setBaseLegStyle,
     setBaseLegColor: structuralController.setBaseLegColor,
+    setBaseLegPlatformMode: structuralController.setBaseLegPlatformMode,
     setBasePlinthHeightCm: structuralController.setBasePlinthHeightCm,
     setBaseLegHeightCm: structuralController.setBaseLegHeightCm,
     setBaseLegWidthCm: structuralController.setBaseLegWidthCm,

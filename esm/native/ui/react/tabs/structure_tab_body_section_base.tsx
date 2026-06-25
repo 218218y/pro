@@ -2,11 +2,13 @@ import type { ReactElement } from 'react';
 
 import {
   BASE_LEG_COLOR_OPTIONS,
+  BASE_LEG_PLATFORM_OPTIONS,
   BASE_LEG_STYLE_OPTIONS,
   BASE_TYPE_OPTIONS,
   SLIDING_TRACKS_OPTIONS,
   type BaseType,
   type StructureBaseLegColor,
+  type StructureBaseLegPlatformMode,
   type StructureBaseLegStyle,
   type SlidingTracksColor,
 } from './structure_tab_body_section_contracts.js';
@@ -35,6 +37,7 @@ export function StructureBodyBaseControls(props: {
   baseType: BaseType;
   baseLegStyle: StructureBaseLegStyle;
   baseLegColor: StructureBaseLegColor;
+  baseLegPlatformMode: StructureBaseLegPlatformMode;
   basePlinthHeightCm: number;
   baseLegHeightCm: number;
   baseLegWidthCm: number;
@@ -45,6 +48,7 @@ export function StructureBodyBaseControls(props: {
   onSetBaseType: (value: BaseType) => void;
   onSetBaseLegStyle: (value: StructureBaseLegStyle) => void;
   onSetBaseLegColor: (value: StructureBaseLegColor) => void;
+  onSetBaseLegPlatformMode: (value: StructureBaseLegPlatformMode) => void;
   onSetBasePlinthHeightCm: (value: number) => void;
   onSetBaseLegHeightCm: (value: number) => void;
   onSetBaseLegWidthCm: (value: number) => void;
@@ -108,6 +112,25 @@ export function StructureBodyBaseControls(props: {
 
       {!props.hideBaseTypeControls && props.baseType === 'legs' ? (
         <>
+          <div className="wp-field">
+            <div className="wp-field-label">במת רגליים</div>
+            <OptionButtonGroup
+              columns={2}
+              density="micro"
+              className="wp-r-wardrobe-type-selector wp-r-base-leg-platform-selector"
+            >
+              {BASE_LEG_PLATFORM_OPTIONS.map(option => (
+                <StructureBodyTypeOptionButton
+                  key={option.value}
+                  selected={props.baseLegPlatformMode === option.value}
+                  label={option.label}
+                  iconClass={option.iconClass}
+                  onClick={() => props.onSetBaseLegPlatformMode(option.value)}
+                />
+              ))}
+            </OptionButtonGroup>
+          </div>
+
           <div className="wp-field">
             <div className="wp-field-label">סוג רגליים</div>
             <OptionButtonGroup

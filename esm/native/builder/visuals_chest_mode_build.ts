@@ -49,6 +49,7 @@ import type { BuildContextLike } from '../../../types/index.js';
 
 const PLINTH_DIMENSIONS = CARCASS_BASE_DIMENSIONS.plinth;
 const BASE_LEG_LAYOUT_DIMENSIONS = CARCASS_BASE_DIMENSIONS.legs;
+const BASE_LEG_PLATFORM_DIMENSIONS = CARCASS_BASE_DIMENSIONS.legs.platform;
 const CHEST_DIMENSIONS = CARCASS_BASE_DIMENSIONS.chest;
 
 export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOptsLike) {
@@ -97,7 +98,10 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
   const insetReveal = isInsetDrawerMount
     ? Math.min(DOOR_SYSTEM_DIMENSIONS.hinged.insetRevealM, Math.max(0, thick / 3))
     : 0;
-  const baseH = effectiveBaseType === 'plinth' ? inputs.basePlinthHeightM : inputs.baseLegHeightM;
+  const legH = inputs.baseLegHeightM;
+  const baseLegBottomPlatformH = inputs.baseLegBottomPlatformHeightM;
+  const baseLegTopPlatformH = inputs.baseLegTopPlatformHeightM;
+  const baseH = effectiveBaseType === 'plinth' ? inputs.basePlinthHeightM : legH + baseLegBottomPlatformH;
   const getPartColorValue = createChestModePartColorValueResolver({
     App,
     cfg,
@@ -172,11 +176,33 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
       'chest_plinth'
     );
   } else {
+    const createLegPlatform = (y: number, idName: string) => {
+      if (!(BASE_LEG_PLATFORM_DIMENSIONS.heightM > 0) || inputs.baseLegPlatformMode !== 'stage') return;
+      const platformDepth = Math.max(
+        BASE_LEG_PLATFORM_DIMENSIONS.minDepthM,
+        D + BASE_LEG_PLATFORM_DIMENSIONS.frontOverhangM
+      );
+      createChestBoard(
+        Math.max(
+          BASE_LEG_PLATFORM_DIMENSIONS.minWidthM,
+          totalW + BASE_LEG_PLATFORM_DIMENSIONS.sideOverhangM * 2
+        ),
+        BASE_LEG_PLATFORM_DIMENSIONS.heightM,
+        platformDepth,
+        0,
+        y,
+        -D / 2 + platformDepth / 2,
+        idName
+      );
+    };
+    createLegPlatform(legH + baseLegBottomPlatformH / 2, 'chest_leg_platform_bottom');
+    createLegPlatform(H + baseLegTopPlatformH / 2, 'chest_leg_platform_top');
+
     const legSpec = resolveBaseLegGeometrySpec(inputs.baseLegStyle, inputs.baseLegWidthCm);
     const legGeo =
       legSpec.shape === 'square'
-        ? new THREE.BoxGeometry(legSpec.width, baseH, legSpec.depth)
-        : new THREE.CylinderGeometry(legSpec.topRadius, legSpec.bottomRadius, baseH, legSpec.radialSegments);
+        ? new THREE.BoxGeometry(legSpec.width, legH, legSpec.depth)
+        : new THREE.CylinderGeometry(legSpec.topRadius, legSpec.bottomRadius, legH, legSpec.radialSegments);
     const positions = [
       {
         x: -totalW / 2 + BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM,
@@ -201,7 +227,7 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
     }
     positions.forEach(pos => {
       const leg = new THREE.Mesh(legGeo, palette.legMat);
-      leg.position.set(pos.x, baseH / 2, pos.z);
+      leg.position.set(pos.x, legH / 2, pos.z);
       if (addOutlines) addOutlines(leg);
       wardrobeGroup.add(leg);
     });

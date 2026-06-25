@@ -118,6 +118,7 @@ export interface UiActionsNamespaceLike extends UnknownRecord {
   setGridShelfVariantState?: (variant: string | null, meta?: ActionMetaLike) => unknown;
   setExtDrawerSelection?: (drawerType: string | null, count: number | null, meta?: ActionMetaLike) => unknown;
   setBaseType?: (value: string, meta?: ActionMetaLike) => unknown;
+  setBaseLegPlatformMode?: (value: string, meta?: ActionMetaLike) => unknown;
   setHingeDirection?: (on: boolean, meta?: ActionMetaLike) => unknown;
   setStructureSelect?: (value: string, meta?: ActionMetaLike) => unknown;
   setSingleDoorPos?: (value: string, meta?: ActionMetaLike) => unknown;

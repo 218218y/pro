@@ -1,5 +1,5 @@
 import type { AppContainer, MetaActionsNamespaceLike, UnknownRecord } from '../../../../../types';
-import type { BaseLegColor, BaseLegStyle } from '../../../features/base_leg_support.js';
+import type { BaseLegColor, BaseLegPlatformMode, BaseLegStyle } from '../../../features/base_leg_support.js';
 
 import type { StructureTabNumericKey } from './structure_tab_shared.js';
 
@@ -19,6 +19,7 @@ export type StructureTabStructuralController = {
   setBaseType: (next: 'plinth' | 'legs' | 'none') => void;
   setBaseLegStyle: (next: BaseLegStyle) => void;
   setBaseLegColor: (next: BaseLegColor) => void;
+  setBaseLegPlatformMode: (next: BaseLegPlatformMode) => void;
   setBasePlinthHeightCm: (next: number) => void;
   setBaseLegHeightCm: (next: number) => void;
   setBaseLegWidthCm: (next: number) => void;

@@ -173,6 +173,7 @@ function StructureTabInner(props: { active: boolean }) {
           baseType={state.baseType}
           baseLegStyle={state.baseLegStyle}
           baseLegColor={state.baseLegColor}
+          baseLegPlatformMode={state.baseLegPlatformMode}
           basePlinthHeightCm={state.basePlinthHeightCm}
           baseLegHeightCm={state.baseLegHeightCm}
           baseLegWidthCm={state.baseLegWidthCm}
@@ -192,6 +193,7 @@ function StructureTabInner(props: { active: boolean }) {
           onSetBaseType={workflows.setBaseType}
           onSetBaseLegStyle={workflows.setBaseLegStyle}
           onSetBaseLegColor={workflows.setBaseLegColor}
+          onSetBaseLegPlatformMode={workflows.setBaseLegPlatformMode}
           onSetBasePlinthHeightCm={workflows.setBasePlinthHeightCm}
           onSetBaseLegHeightCm={workflows.setBaseLegHeightCm}
           onSetBaseLegWidthCm={workflows.setBaseLegWidthCm}

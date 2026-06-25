@@ -26,6 +26,7 @@ type BuildChestModeIfNeededParams = {
     baseType?: string;
     baseLegStyle?: string;
     baseLegColor?: string;
+    baseLegPlatformMode?: string;
     basePlinthHeightCm?: number | string;
     baseLegHeightCm?: number | string;
     baseLegWidthCm?: number | string;
@@ -51,6 +52,7 @@ type BuildChestModeIfNeededParams = {
     baseType: string;
     baseLegStyle: string;
     baseLegColor: string;
+    baseLegPlatformMode: string;
     basePlinthHeightCm: number | string;
     baseLegHeightCm: number | string;
     baseLegWidthCm: number | string;
@@ -98,6 +100,7 @@ export function buildChestModeIfNeeded(params: BuildChestModeIfNeededParams | nu
     baseType: typeof ui.baseType === 'string' ? ui.baseType : '',
     baseLegStyle: typeof ui.baseLegStyle === 'string' ? ui.baseLegStyle : '',
     baseLegColor: typeof ui.baseLegColor === 'string' ? ui.baseLegColor : '',
+    baseLegPlatformMode: typeof ui.baseLegPlatformMode === 'string' ? ui.baseLegPlatformMode : 'stage',
     basePlinthHeightCm: ui.basePlinthHeightCm ?? '',
     baseLegHeightCm: ui.baseLegHeightCm ?? '',
     baseLegWidthCm: ui.baseLegWidthCm ?? '',

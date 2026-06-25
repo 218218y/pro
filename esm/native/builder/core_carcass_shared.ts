@@ -5,7 +5,7 @@ import {
   MATERIAL_DIMENSIONS,
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
-import { readBaseLegOptions } from '../features/base_leg_support.js';
+import { normalizeBaseLegPlatformMode, readBaseLegOptions } from '../features/base_leg_support.js';
 import { isRemovedFrameSideOn } from '../features/removable_parts.js';
 import { readModuleConfig } from './build_flow_readers.js';
 import { getBasePlinthHeightM } from '../features/base_plinth_support.js';
@@ -17,6 +17,7 @@ export const CARCASS_FRONT_INSET_Z: number = CARCASS_SHELL_DIMENSIONS.frontInset
 
 const PLINTH_DIMENSIONS = CARCASS_BASE_DIMENSIONS.plinth;
 const BASE_LEG_LAYOUT_DIMENSIONS = CARCASS_BASE_DIMENSIONS.legs;
+const BASE_LEG_PLATFORM_DIMENSIONS = CARCASS_BASE_DIMENSIONS.legs.platform;
 
 export type PreparedCarcassInput = {
   totalW: number;
@@ -31,6 +32,10 @@ export type PreparedCarcassInput = {
   startY: number;
   cabinetBodyHeight: number;
   base: MutableRecord | null;
+  baseLegPlatformMode: 'stage' | 'plain';
+  baseLegTopPlatformOnly: boolean;
+  baseLegBottomPlatformHeight: number;
+  baseLegTopPlatformHeight: number;
   moduleWidths: number[] | null;
   moduleHeightsRaw: unknown[] | null;
   moduleDepths: number[] | null;
@@ -54,6 +59,13 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
   const hasCornice = !!inp.hasCornice;
   const corniceType = String(inp.corniceType || 'classic');
   const cfg = _asObject(inp.cfg) || {};
+  const baseLegPlatformMode = normalizeBaseLegPlatformMode(inp.baseLegPlatformMode, 'plain');
+  const baseLegPlatformEnabled = baseType === 'legs' && baseLegPlatformMode === 'stage';
+  const baseLegTopPlatformOnly =
+    !!inp.baseLegTopPlatformOnly && baseType !== 'legs' && baseLegPlatformMode === 'stage';
+  const baseLegBottomPlatformHeight = baseLegPlatformEnabled ? BASE_LEG_PLATFORM_DIMENSIONS.heightM : 0;
+  const baseLegTopPlatformHeight =
+    baseLegPlatformEnabled || baseLegTopPlatformOnly ? BASE_LEG_PLATFORM_DIMENSIONS.heightM : 0;
 
   let baseHeight = 0;
   let startY = 0;
@@ -74,7 +86,7 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
     };
   } else if (baseType === 'legs') {
     const legOptions = readBaseLegOptions(inp);
-    baseHeight = legOptions.heightM;
+    baseHeight = legOptions.heightM + baseLegBottomPlatformHeight;
     startY = baseHeight;
     const pos: MutableRecord[] = [
       {
@@ -100,7 +112,7 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
     }
     base = {
       kind: 'legs',
-      height: baseHeight,
+      height: legOptions.heightM,
       style: legOptions.style,
       geo: legOptions.geometry,
       positions: pos,
@@ -108,6 +120,12 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
   }
 
   const cabinetBodyHeight = H - baseHeight;
+
+  if (baseLegPlatformEnabled && _asObject(base)?.kind === 'legs') {
+    attachBaseLegPlatformOps({ base, totalW, D, H, legHeight: readBaseLegOptions(inp).heightM });
+  } else if (baseLegTopPlatformOnly) {
+    base = makeTopOnlyBaseLegPlatformOps({ totalW, D, H });
+  }
 
   const moduleWidthsRaw = Array.isArray(inp.moduleInternalWidths)
     ? __asArray(inp.moduleInternalWidths)
@@ -184,6 +202,10 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
     startY,
     cabinetBodyHeight,
     base,
+    baseLegPlatformMode,
+    baseLegTopPlatformOnly,
+    baseLegBottomPlatformHeight,
+    baseLegTopPlatformHeight,
     moduleWidths,
     moduleHeightsRaw,
     moduleDepths,
@@ -194,6 +216,82 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
     isDepthStepped,
     removedLeftFrameSide: isRemovedFrameSideOn(cfg, 'left', inp.frameSidePartIdPrefix),
     removedRightFrameSide: isRemovedFrameSideOn(cfg, 'right', inp.frameSidePartIdPrefix),
+  };
+}
+
+type BaseLegPlatformAttachParams = {
+  base: MutableRecord | null;
+  totalW: number;
+  D: number;
+  H: number;
+  legHeight: number;
+};
+
+function makeBaseLegPlatformOp(args: {
+  width: number;
+  height: number;
+  depth: number;
+  y: number;
+  partId: string;
+}): MutableRecord {
+  const platformDepth = Math.max(
+    BASE_LEG_PLATFORM_DIMENSIONS.minDepthM,
+    args.depth + BASE_LEG_PLATFORM_DIMENSIONS.frontOverhangM
+  );
+  return {
+    kind: 'leg_platform',
+    width: Math.max(
+      BASE_LEG_PLATFORM_DIMENSIONS.minWidthM,
+      args.width + BASE_LEG_PLATFORM_DIMENSIONS.sideOverhangM * 2
+    ),
+    height: args.height,
+    depth: platformDepth,
+    x: 0,
+    y: args.y,
+    z: -args.depth / 2 + platformDepth / 2,
+    partId: args.partId,
+  };
+}
+
+function attachBaseLegPlatformOps(params: BaseLegPlatformAttachParams): void {
+  const baseRec = _asObject(params.base);
+  if (!baseRec) return;
+  const h = BASE_LEG_PLATFORM_DIMENSIONS.heightM;
+  if (!(h > 0)) return;
+  baseRec.platforms = [
+    makeBaseLegPlatformOp({
+      width: params.totalW,
+      height: h,
+      depth: params.D,
+      y: params.legHeight + h / 2,
+      partId: 'base_leg_platform_bottom',
+    }),
+    makeBaseLegPlatformOp({
+      width: params.totalW,
+      height: h,
+      depth: params.D,
+      y: params.H + h / 2,
+      partId: 'base_leg_platform_top',
+    }),
+  ];
+}
+
+function makeTopOnlyBaseLegPlatformOps(args: { totalW: number; D: number; H: number }): MutableRecord {
+  const h = BASE_LEG_PLATFORM_DIMENSIONS.heightM;
+  return {
+    kind: 'leg_platforms',
+    platforms:
+      h > 0
+        ? [
+            makeBaseLegPlatformOp({
+              width: args.totalW,
+              height: h,
+              depth: args.D,
+              y: args.H + h / 2,
+              partId: 'base_leg_platform_top',
+            }),
+          ]
+        : [],
   };
 }
 

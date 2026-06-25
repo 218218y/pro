@@ -62,6 +62,7 @@ const sandbox = {
           const n = Number(value);
           return Number.isFinite(n) && n > 0 ? Math.round(n * 10) / 10 : fallback;
         },
+        normalizeBaseLegPlatformMode: value => (value === 'plain' ? 'plain' : 'stage'),
       };
     }
     if (spec === '../../../features/base_plinth_support.js') {

@@ -126,6 +126,7 @@ export interface UiStateLike extends UiState {
   baseType?: string;
   baseLegStyle?: string;
   baseLegColor?: string;
+  baseLegPlatformMode?: string;
   basePlinthHeightCm?: number | string;
   baseLegHeightCm?: number | string;
   baseLegWidthCm?: number | string;
@@ -404,6 +405,7 @@ export interface BuildCtxStringsLike extends UnknownRecord {
   baseType?: string;
   baseLegStyle?: string;
   baseLegColor?: string;
+  baseLegPlatformMode?: string;
   basePlinthHeightCm?: number | string;
   baseLegHeightCm?: number | string;
   baseLegWidthCm?: number | string;

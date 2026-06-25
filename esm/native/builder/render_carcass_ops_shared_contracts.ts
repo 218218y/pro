@@ -79,6 +79,16 @@ export type PlinthSegment = {
   z?: number;
 };
 
+export type LegPlatformSegment = {
+  width?: number;
+  height?: number;
+  depth?: number;
+  x?: number;
+  y?: number;
+  z?: number;
+  partId?: unknown;
+};
+
 export type PlinthBaseOp = {
   kind: 'plinth';
   partId?: unknown;
@@ -103,6 +113,7 @@ export type LegsBaseOp = {
   };
   height?: number;
   positions?: Array<{ x?: number; z?: number } | null | undefined>;
+  platforms?: unknown;
 };
 
 export type BoardOp = {

@@ -85,7 +85,7 @@ test('build_flow_plan inputs ignore stale stack split flags in no-main wardrobe 
   assert.equal(plan.baseTypeTop, 'legs');
 });
 
-test('build_flow_plan inputs clear top base when stack split is active and sliding keeps main wardrobe depth reduction', () => {
+test('build_flow_plan inputs clear top base while preserving an upper leg platform for separate stack frames', () => {
   const plan = resolveBuildFlowPlanInputs({
     ui: {
       baseType: 'toeKick',
@@ -118,6 +118,7 @@ test('build_flow_plan inputs clear top base when stack split is active and slidi
   assert.equal(plan.lowerDepthCm, 55);
   assert.equal(plan.baseTypeBottom, 'toeKick');
   assert.equal(plan.baseTypeTop, '');
+  assert.equal(plan.baseLegTopPlatformOnly, false);
   assert.equal(plan.baseLegStyle, 'round');
   assert.equal(plan.baseLegColor, 'gold');
   assert.equal(plan.basePlinthHeightCm, 14.5);
@@ -192,6 +193,7 @@ test('build_flow_plan inputs force separate stack frames when decorative separat
   assert.equal(plan.splitSeamGapM, 0.002);
   assert.equal(plan.baseTypeBottom, 'legs');
   assert.equal(plan.baseTypeTop, '');
+  assert.equal(plan.baseLegTopPlatformOnly, true);
 });
 
 test('build_flow_plan inputs use separate stack frames when top per-cell depth differs', () => {
@@ -232,6 +234,7 @@ test('build_flow_plan inputs use separate stack frames when top per-cell depth d
   assert.equal(plan.splitSeamGapM, 0.002);
   assert.equal(plan.baseTypeBottom, 'legs');
   assert.equal(plan.baseTypeTop, '');
+  assert.equal(plan.baseLegTopPlatformOnly, true);
 });
 
 test('build_flow_plan inputs use separate stack frames when top per-cell height differs', () => {

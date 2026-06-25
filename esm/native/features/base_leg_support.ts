@@ -5,6 +5,7 @@ import { METAL_FINISH_PALETTE_BY_COLOR } from './metal_finish_palette.js';
 
 export type BaseLegStyle = 'tapered' | 'round' | 'square';
 export type BaseLegColor = 'black' | 'nickel' | 'gold';
+export type BaseLegPlatformMode = 'stage' | 'plain';
 
 export type BaseLegGeometrySpec =
   | {
@@ -36,6 +37,7 @@ export const DEFAULT_BASE_LEG_HEIGHT_CM: number = BASE_LEG_DIMENSIONS.defaults.h
 export const BASE_LEG_HEIGHT_MIN_CM: number = BASE_LEG_DIMENSIONS.limits.heightMinCm;
 export const BASE_LEG_HEIGHT_MAX_CM: number = BASE_LEG_DIMENSIONS.limits.heightMaxCm;
 export const DEFAULT_BASE_LEG_WIDTH_CM: number = BASE_LEG_DIMENSIONS.defaults.widthCm;
+export const DEFAULT_BASE_LEG_PLATFORM_MODE: BaseLegPlatformMode = 'stage';
 export const DEFAULT_TAPERED_BASE_LEG_WIDTH_CM: number = BASE_LEG_DIMENSIONS.defaults.taperedWidthCm;
 export const BASE_LEG_WIDTH_MIN_CM: number = BASE_LEG_DIMENSIONS.limits.widthMinCm;
 export const BASE_LEG_WIDTH_MAX_CM: number = BASE_LEG_DIMENSIONS.limits.widthMaxCm;
@@ -66,6 +68,18 @@ export function normalizeBaseLegColor(value: unknown): BaseLegColor {
   if (raw === 'nickel') return 'nickel';
   if (raw === 'gold') return 'gold';
   return DEFAULT_BASE_LEG_COLOR;
+}
+
+export function normalizeBaseLegPlatformMode(
+  value: unknown,
+  defaultValue: BaseLegPlatformMode = DEFAULT_BASE_LEG_PLATFORM_MODE
+): BaseLegPlatformMode {
+  const raw = String(value || '')
+    .trim()
+    .toLowerCase();
+  if (raw === 'plain' || raw === 'none' || raw === 'without' || raw === 'no-stage') return 'plain';
+  if (raw === 'stage' || raw === 'platform' || raw === 'with' || raw === 'with-stage') return 'stage';
+  return defaultValue;
 }
 
 function parseFiniteNumber(value: unknown): number {

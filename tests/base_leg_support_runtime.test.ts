@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { computeCarcassOps } from '../esm/native/builder/core_pure_compute.ts';
+import { CARCASS_BASE_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
 import { parseSketchBoxBaseToolSpec } from '../esm/native/services/canvas_picking_sketch_box_dividers.ts';
 
 test('carcass leg support keeps the tapered default and supports round and square legs', () => {
@@ -54,6 +55,75 @@ test('carcass leg support keeps the tapered default and supports round and squar
 
   assert.equal(squareOps.base.style, 'square');
   assert.deepEqual(squareOps.base.geo, { shape: 'square', width: 0.055, depth: 0.055 });
+});
+
+test('carcass leg platform mode adds bottom and top stages without changing leg height', () => {
+  const platformH = CARCASS_BASE_DIMENSIONS.legs.platform.heightM;
+  const stageOps = computeCarcassOps({
+    totalW: 1.6,
+    D: 0.55,
+    H: 2.4,
+    woodThick: 0.018,
+    baseType: 'legs',
+    baseLegPlatformMode: 'stage',
+    baseLegHeightCm: 12,
+    doorsCount: 4,
+    hasCornice: true,
+  }) as any;
+
+  assert.equal(stageOps.baseHeight, 0.12 + platformH);
+  assert.equal(stageOps.startY, 0.12 + platformH);
+  assert.equal(stageOps.base.height, 0.12);
+  assert.equal(stageOps.base.platforms.length, 2);
+
+  const bottom = stageOps.base.platforms[0];
+  const top = stageOps.base.platforms[1];
+  assert.equal(bottom.partId, 'base_leg_platform_bottom');
+  assert.equal(top.partId, 'base_leg_platform_top');
+  assert.equal(bottom.y, 0.12 + platformH / 2);
+  assert.equal(top.y, 2.4 + platformH / 2);
+  assert.ok(bottom.width > 1.6, 'bottom stage should protrude at the sides');
+  assert.ok(bottom.depth > 0.55, 'bottom stage should protrude at the front');
+  assert.equal(bottom.z - bottom.depth / 2, -0.55 / 2, 'bottom stage should not protrude backward');
+  assert.equal(top.z - top.depth / 2, -0.55 / 2, 'top stage should not protrude backward');
+  assert.ok(stageOps.cornice.segments[0].y > 2.4, 'cornice should move above the top stage');
+
+  const plainOps = computeCarcassOps({
+    totalW: 1.6,
+    D: 0.55,
+    H: 2.4,
+    woodThick: 0.018,
+    baseType: 'legs',
+    baseLegPlatformMode: 'plain',
+    baseLegHeightCm: 12,
+    doorsCount: 4,
+  }) as any;
+  assert.equal(plainOps.baseHeight, 0.12);
+  assert.equal(plainOps.base.platforms, undefined);
+});
+
+test('carcass can preserve only the top leg platform for split upper stacks', () => {
+  const platformH = CARCASS_BASE_DIMENSIONS.legs.platform.heightM;
+  const ops = computeCarcassOps({
+    totalW: 1.6,
+    D: 0.55,
+    H: 1.5,
+    woodThick: 0.018,
+    baseType: '',
+    baseLegPlatformMode: 'stage',
+    baseLegTopPlatformOnly: true,
+    doorsCount: 4,
+    hasCornice: true,
+  }) as any;
+
+  assert.equal(ops.baseHeight, 0);
+  assert.equal(ops.startY, 0);
+  assert.equal(ops.cabinetBodyHeight, 1.5);
+  assert.equal(ops.base.kind, 'leg_platforms');
+  assert.equal(ops.base.platforms.length, 1);
+  assert.equal(ops.base.platforms[0].partId, 'base_leg_platform_top');
+  assert.equal(ops.base.platforms[0].y, 1.5 + platformH / 2);
+  assert.ok(ops.cornice.segments[0].y > 1.5, 'cornice should move above the preserved top stage');
 });
 
 test('sketch box base tool parser keeps old legs syntax and reads explicit leg options', () => {

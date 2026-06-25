@@ -6,6 +6,7 @@ import {
   getDefaultBaseLegWidthCm,
   normalizeBaseLegColor,
   normalizeBaseLegHeightCm,
+  normalizeBaseLegPlatformMode,
   normalizeBaseLegStyle,
   normalizeBaseLegWidthCm,
 } from '../features/base_leg_support.js';
@@ -139,9 +140,15 @@ export function resolveBuildFlowPlanInputs(args: BuildFlowPlanInputsArgs): Build
   const baseType = toStr(ui.baseType, '');
   const baseLegStyle = normalizeBaseLegStyle(ui.baseLegStyle);
   const baseLegColor = normalizeBaseLegColor(ui.baseLegColor);
+  const baseLegPlatformMode = normalizeBaseLegPlatformMode(ui.baseLegPlatformMode);
   const basePlinthHeightCm = normalizeBasePlinthHeightCm(ui.basePlinthHeightCm);
   const baseLegHeightCm = normalizeBaseLegHeightCm(ui.baseLegHeightCm);
   const baseLegWidthCm = normalizeBaseLegWidthCm(ui.baseLegWidthCm, getDefaultBaseLegWidthCm(baseLegStyle));
+
+  const separateStackFrames = splitActiveForBuild && !stackSplitUnifiedFrame;
+  const baseTypeTop = separateStackFrames ? '' : baseType;
+  const baseLegTopPlatformOnly =
+    separateStackFrames && baseType === 'legs' && baseLegPlatformMode === 'stage';
 
   return {
     uiState,
@@ -168,11 +175,13 @@ export function resolveBuildFlowPlanInputs(args: BuildFlowPlanInputsArgs): Build
     doorStyle: toStr(ui.doorStyle, ''),
     baseLegStyle,
     baseLegColor,
+    baseLegPlatformMode,
     basePlinthHeightCm,
     baseLegHeightCm,
     baseLegWidthCm,
     baseTypeBottom: baseType,
-    baseTypeTop: splitActiveForBuild && !stackSplitUnifiedFrame ? '' : baseType,
+    baseTypeTop,
+    baseLegTopPlatformOnly,
     hasCornice: !!ui.hasCornice,
     corniceType: toStr(uiState?.corniceType, 'classic'),
     splitDoors: !!ui.splitDoors,

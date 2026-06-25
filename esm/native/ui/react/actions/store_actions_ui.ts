@@ -19,6 +19,7 @@ export {
 } from './store_actions_ui_project.js';
 export {
   setUiBaseLegColor,
+  setUiBaseLegPlatformMode,
   setUiBaseLegHeightCm,
   setUiBaseLegWidthCm,
   setUiBaseLegStyle,

@@ -141,6 +141,7 @@ export function buildDefaultProjectDataSnapshot(
       baseType: ui.baseType,
       baseLegStyle: ui.baseLegStyle,
       baseLegColor: ui.baseLegColor,
+      baseLegPlatformMode: ui.baseLegPlatformMode === 'plain' ? 'plain' : 'stage',
       basePlinthHeightCm: readFiniteNumber(ui.basePlinthHeightCm),
       baseLegHeightCm: readFiniteNumber(ui.baseLegHeightCm),
       baseLegWidthCm: readFiniteNumber(ui.baseLegWidthCm),

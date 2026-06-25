@@ -33,18 +33,20 @@ const PROFILE_CAP_OUT = CORNICE_PROFILE.capOutM;
 const PROFILE_TOP_LIP_OUT = CORNICE_PROFILE.topLipOutM;
 
 export function buildCarcassCornice(prepared: PreparedCarcassInput): MutableRecord | null {
-  const { totalW, D, startY, cabinetBodyHeight, hasCornice, corniceType } = prepared;
+  const { totalW, D, startY, cabinetBodyHeight, hasCornice, corniceType, baseLegTopPlatformHeight } =
+    prepared;
   if (!hasCornice) return null;
 
+  const topSurfaceY = startY + cabinetBodyHeight + baseLegTopPlatformHeight;
   const corniceTypeNorm = String(corniceType || 'classic').toLowerCase();
   if (shouldBuildSegmentedCornice(prepared)) {
     return buildSegmentedCornice(prepared, corniceTypeNorm);
   }
 
   if (corniceTypeNorm === 'wave') {
-    return buildWaveCornice({ totalW, D, woodThick: prepared.woodThick, topY: startY + cabinetBodyHeight });
+    return buildWaveCornice({ totalW, D, woodThick: prepared.woodThick, topY: topSurfaceY });
   }
-  return buildProfileCornice({ totalW, D, woodThick: prepared.woodThick, topY: startY + cabinetBodyHeight });
+  return buildProfileCornice({ totalW, D, woodThick: prepared.woodThick, topY: topSurfaceY });
 }
 
 type CorniceParams = {
@@ -177,7 +179,7 @@ function buildCorniceRuns(prepared: PreparedCarcassInput): CorniceRun[] {
     const rawHeight = moduleHeightsRaw ? moduleHeightsRaw[i] : H;
     const totalHeight = __asNum(rawHeight, H);
     const bodyHeight = Math.min(cabinetBodyHeight, Math.max(woodThick * 2, totalHeight - startY));
-    const topY = startY + bodyHeight;
+    const topY = startY + bodyHeight + prepared.baseLegTopPlatformHeight;
 
     const prev = runs[runs.length - 1];
     if (prev && sameCornicePlane(prev, { depth, topY })) {

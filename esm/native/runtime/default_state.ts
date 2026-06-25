@@ -66,6 +66,7 @@ export function createDefaultState(opts?: { noneMode?: string }): RootStateLike 
       baseType: 'plinth',
       baseLegStyle: 'tapered',
       baseLegColor: 'black',
+      baseLegPlatformMode: 'stage',
       basePlinthHeightCm: CARCASS_BASE_DIMENSIONS.plinth.heightM * 100,
       baseLegHeightCm: BASE_LEG_DIMENSIONS.defaults.heightCm,
       baseLegWidthCm: BASE_LEG_DIMENSIONS.defaults.taperedWidthCm,

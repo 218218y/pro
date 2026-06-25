@@ -247,6 +247,9 @@ test('visuals chest mode input/material helpers normalize chest-only UI and text
       baseLegHeightCm: 16,
       baseLegWidthCm: 6,
       baseLegHeightM: 0.16,
+      baseLegPlatformMode: 'stage',
+      baseLegBottomPlatformHeightM: CARCASS_BASE_DIMENSIONS.legs.platform.heightM,
+      baseLegTopPlatformHeightM: CARCASS_BASE_DIMENSIONS.legs.platform.heightM,
       colorChoice: '#cccccc',
       customColor: '#00ff00',
       chestCommodeEnabled: false,
@@ -518,7 +521,7 @@ test('visuals chest mode builds the rear panel as an inset paintable body board'
   const back = wardrobeGroup.children.find((child: any) => child?.userData?.partId === 'chest_back');
   assert.ok(back);
 
-  const baseH = 0.15;
+  const baseH = 0.15 + CARCASS_BASE_DIMENSIONS.legs.platform.heightM;
   const thick = MATERIAL_DIMENSIONS.wood.thicknessM;
   const sideH = 0.9 - baseH - 2 * thick;
   assert.deepEqual(back.geometry.args, [
@@ -529,6 +532,20 @@ test('visuals chest mode builds the rear panel as an inset paintable body board'
   assert.equal(back.position.y, baseH + thick + sideH / 2);
   assert.equal(back.position.z, -0.45 / 2 + CARCASS_BASE_DIMENSIONS.chest.backInsetM);
   assert.deepEqual(back.material, { color: '#224466', part: 'front', useTexture: false });
+
+  const bottomPlatform = wardrobeGroup.children.find(
+    (child: any) => child?.userData?.partId === 'chest_leg_platform_bottom'
+  );
+  const topPlatform = wardrobeGroup.children.find(
+    (child: any) => child?.userData?.partId === 'chest_leg_platform_top'
+  );
+  assert.ok(bottomPlatform);
+  assert.ok(topPlatform);
+  assert.equal(
+    bottomPlatform.position.z - bottomPlatform.geometry.args[2] / 2,
+    -0.45 / 2,
+    'chest leg platform should not protrude backward'
+  );
 });
 
 test('visuals chest mode build adds commode back panel, tracked mirror surface, and commode dimensions', () => {
