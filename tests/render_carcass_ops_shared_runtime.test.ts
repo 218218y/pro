@@ -41,6 +41,16 @@ test('render_carcass shared normalizes context and ops through focused readers',
   assert.equal(ops?.base?.kind, 'plinth');
   assert.equal(ops?.backPanel?.kind, 'back_panel');
   assert.equal(ops?.cornice?.kind, 'cornice');
+
+  const topOnlyPlatformOps = __asOps({
+    base: {
+      kind: 'leg_platforms',
+      platforms: [{ partId: 'base_leg_platform_top', width: 1, height: 0.04, depth: 0.6 }],
+    },
+    boards: [],
+    backPanel: { kind: 'back_panel', width: 1, height: 2, depth: 0.1, x: 0, y: 0, z: 0 },
+  });
+  assert.equal(topOnlyPlatformOps?.base?.kind, 'leg_platforms');
 });
 
 test('render_carcass shared keeps sketch back-panel material and strips selected miter caps', () => {

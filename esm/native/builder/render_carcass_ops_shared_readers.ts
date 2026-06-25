@@ -10,6 +10,7 @@ import type {
   PlinthBaseOp,
   PlinthSegment,
   LegsBaseOp,
+  LegPlatformsBaseOp,
   LegPlatformSegment,
   ProfilePoint,
   RenderCarcassContext,
@@ -32,9 +33,9 @@ function __readApp(v: unknown): AppContainer | undefined {
   return __isAppContainer(v) ? v : undefined;
 }
 
-function __isBaseOp(value: unknown): value is PlinthBaseOp | LegsBaseOp {
+function __isBaseOp(value: unknown): value is PlinthBaseOp | LegsBaseOp | LegPlatformsBaseOp {
   const rec = __asRecord(value);
-  return !!(rec && (rec.kind === 'plinth' || rec.kind === 'legs'));
+  return !!(rec && (rec.kind === 'plinth' || rec.kind === 'legs' || rec.kind === 'leg_platforms'));
 }
 
 function __isBackPanelSegRecord(value: unknown): value is BackPanelSeg {

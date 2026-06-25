@@ -126,6 +126,39 @@ test('carcass can preserve only the top leg platform for split upper stacks', ()
   assert.ok(ops.cornice.segments[0].y > 1.5, 'cornice should move above the preserved top stage');
 });
 
+test('carcass top-only leg platform flag survives stripped top base without a duplicated mode value', () => {
+  const platformH = CARCASS_BASE_DIMENSIONS.legs.platform.heightM;
+  const ops = computeCarcassOps({
+    totalW: 1.6,
+    D: 0.55,
+    H: 1.5,
+    woodThick: 0.018,
+    baseType: '',
+    baseLegTopPlatformOnly: true,
+    doorsCount: 4,
+  }) as any;
+
+  assert.equal(ops.baseHeight, 0);
+  assert.equal(ops.startY, 0);
+  assert.equal(ops.cabinetBodyHeight, 1.5);
+  assert.equal(ops.base.kind, 'leg_platforms');
+  assert.equal(ops.base.platforms.length, 1);
+  assert.equal(ops.base.platforms[0].partId, 'base_leg_platform_top');
+  assert.equal(ops.base.platforms[0].y, 1.5 + platformH / 2);
+
+  const explicitlyPlain = computeCarcassOps({
+    totalW: 1.6,
+    D: 0.55,
+    H: 1.5,
+    woodThick: 0.018,
+    baseType: '',
+    baseLegPlatformMode: 'plain',
+    baseLegTopPlatformOnly: true,
+    doorsCount: 4,
+  }) as any;
+  assert.equal(explicitlyPlain.base, null);
+});
+
 test('sketch box base tool parser keeps old legs syntax and reads explicit leg options', () => {
   assert.deepEqual(parseSketchBoxBaseToolSpec('sketch_box_base:legs'), {
     baseType: 'legs',

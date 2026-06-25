@@ -59,10 +59,13 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
   const hasCornice = !!inp.hasCornice;
   const corniceType = String(inp.corniceType || 'classic');
   const cfg = _asObject(inp.cfg) || {};
-  const baseLegPlatformMode = normalizeBaseLegPlatformMode(inp.baseLegPlatformMode, 'plain');
+  const baseLegTopPlatformRequested = !!inp.baseLegTopPlatformOnly && baseType !== 'legs';
+  const baseLegPlatformMode = normalizeBaseLegPlatformMode(
+    inp.baseLegPlatformMode,
+    baseLegTopPlatformRequested ? 'stage' : 'plain'
+  );
   const baseLegPlatformEnabled = baseType === 'legs' && baseLegPlatformMode === 'stage';
-  const baseLegTopPlatformOnly =
-    !!inp.baseLegTopPlatformOnly && baseType !== 'legs' && baseLegPlatformMode === 'stage';
+  const baseLegTopPlatformOnly = baseLegTopPlatformRequested && baseLegPlatformMode === 'stage';
   const baseLegBottomPlatformHeight = baseLegPlatformEnabled ? BASE_LEG_PLATFORM_DIMENSIONS.heightM : 0;
   const baseLegTopPlatformHeight =
     baseLegPlatformEnabled || baseLegTopPlatformOnly ? BASE_LEG_PLATFORM_DIMENSIONS.heightM : 0;

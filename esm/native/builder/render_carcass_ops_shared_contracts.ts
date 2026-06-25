@@ -116,6 +116,11 @@ export type LegsBaseOp = {
   platforms?: unknown;
 };
 
+export type LegPlatformsBaseOp = {
+  kind: 'leg_platforms';
+  platforms?: unknown;
+};
+
 export type BoardOp = {
   kind: 'board';
   width: number;
@@ -157,7 +162,7 @@ export type CorniceOp = {
 };
 
 export type CarcassOps = {
-  base?: PlinthBaseOp | LegsBaseOp | null;
+  base?: PlinthBaseOp | LegsBaseOp | LegPlatformsBaseOp | null;
   boards?: unknown;
   backPanels?: unknown;
   backPanel?: BackPanelSeg | null;
