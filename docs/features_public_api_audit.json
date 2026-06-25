@@ -1544,6 +1544,10 @@
       "entry": "modules_configuration/corner_cells_api.js"
     },
     {
+      "file": "esm/native/services/models_apply_project_contracts.ts",
+      "entry": "project_config/project_config_persisted_payload_shared.js"
+    },
+    {
       "file": "esm/native/services/models_apply_project_snapshot.ts",
       "entry": "model_record/model_record_normalizer.js"
     },
