@@ -16,6 +16,7 @@ import {
   __isCornerCornicePart,
   resolveUnifiedCornerFramePaintTargetKeys,
 } from './canvas_picking_paint_targets.js';
+import { resolveSketchInternalDrawerCassettePanelPaintTargetKeys } from '../features/sketch_internal_drawer_cassette.js';
 import {
   toggleCorniceGroupPaint,
   toggleGroupedPaint,
@@ -93,6 +94,11 @@ export function applyGroupedOrCornerPaintTarget(args: {
   targetScope?: CanvasPaintTargetScope | null;
 }): boolean {
   const { state, foundPartId, activeStack, paintSelection, targetScope } = args;
+  const cassetteKeys = resolveSketchInternalDrawerCassettePanelPaintTargetKeys(foundPartId);
+  if (cassetteKeys !== null) {
+    toggleGroupedPaint(state.ensureColors(), cassetteKeys, paintSelection);
+    return true;
+  }
   const unifiedCornerFrameKeys = resolveUnifiedCornerFramePaintTargetKeys(
     foundPartId,
     activeStack,

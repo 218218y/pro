@@ -280,9 +280,9 @@ export function buildSketchInternalDrawerBlockers<T extends Record<string, unkno
       return createVerticalOccupancyRange({
         id: idRaw != null && idRaw !== '' ? String(idRaw) : String(index),
         centerY: clampedCenterY,
-        minY: clampedCenterY - stackH / 2 - cassette.woodThick,
-        maxY: clampedCenterY + stackH / 2 + cassette.woodThick,
-        stackH: cassette.height,
+        minY: clampedCenterY - stackH / 2,
+        maxY: clampedCenterY + stackH / 2,
+        stackH,
       });
     })
     .filter((item): item is VerticalOccupancyRange => !!item)
