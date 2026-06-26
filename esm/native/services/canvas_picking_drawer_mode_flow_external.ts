@@ -6,6 +6,7 @@ import {
 } from '../features/hex_cell/index.js';
 import { getInternalGridMap } from '../runtime/cache_access.js';
 import { __wp_toast, __wp_ui } from './canvas_picking_core_helpers.js';
+import { applyShoeDrawerBaseAutoNoneIfNeeded } from './canvas_picking_shoe_drawer_base_auto_none.js';
 import { createCanvasPickingConfigStructuralPatchMeta } from './canvas_picking_config_patch_meta.js';
 import { tryRemoveSketchExternalDrawerByDirectHit } from './canvas_picking_drawer_cross_family.js';
 import type { ModuleKey, PatchConfigForKeyFn } from './canvas_picking_drawer_mode_flow_shared.js';
@@ -42,6 +43,7 @@ export function tryHandleExternalDrawerModeClick(args: {
   if (foundModuleIndex === null) return false;
 
   const targetModuleKey = activeModuleKey ?? foundModuleIndex;
+  let addedShoeDrawer = false;
   patchConfigForKey(
     activeModuleKey,
     (cfg: ModuleConfigLike) => {
@@ -76,6 +78,7 @@ export function tryHandleExternalDrawerModeClick(args: {
           return;
         }
         cfg.hasShoeDrawer = targetHasShoe;
+        addedShoeDrawer = targetHasShoe;
       } else {
         const currentCount = cfg.extDrawersCount || 0;
         const target = drawerCount >= 1 && drawerCount <= 5 ? drawerCount : 1;
@@ -108,6 +111,10 @@ export function tryHandleExternalDrawerModeClick(args: {
     },
     createCanvasPickingConfigStructuralPatchMeta('extDrawers.toggle')
   );
+
+  if (addedShoeDrawer) {
+    applyShoeDrawerBaseAutoNoneIfNeeded(App, 'extDrawers.shoe:autoBaseNone');
+  }
 
   return true;
 }
