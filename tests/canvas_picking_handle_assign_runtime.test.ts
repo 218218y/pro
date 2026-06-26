@@ -318,6 +318,75 @@ test('handle assignment treats chest drawers as drawers without targeting chest 
   ]);
 });
 
+test('handle assignment targets internal drawer owner ids from drawer-box hits', () => {
+  const calls: Array<{ op: string; args: unknown[] }> = [];
+  const App: any = {
+    store: {
+      getState() {
+        return {
+          ui: {},
+          config: {},
+          runtime: {},
+          mode: { opts: { handleColor: 'black' } },
+          meta: {},
+        };
+      },
+      patch() {
+        return undefined;
+      },
+    },
+    services: {
+      tools: {
+        getHandlesType() {
+          return 'standard';
+        },
+      },
+    },
+    maps: {
+      setHandle(partId: string, handleType: string, meta?: unknown) {
+        calls.push({ op: 'setHandle', args: [partId, handleType, meta] });
+      },
+      setKey(mapName: string, key: string, value: unknown, meta?: unknown) {
+        calls.push({ op: 'setKey', args: [mapName, key, value, meta] });
+      },
+    },
+  };
+
+  const internalDrawerBox = {
+    userData: {
+      partId: 'drawer_box__div_int_sketch_0_d1_lower',
+      __wpInternalDrawerBox: true,
+      __wpDrawerOwnerPartId: 'div_int_sketch_0_d1_lower',
+      __doorWidth: 0.68,
+      __doorHeight: 0.18,
+    },
+    parent: null,
+  };
+  const frontPanel = { userData: {}, parent: internalDrawerBox };
+
+  const handled = tryHandleCanvasHandleAssignClick({
+    App,
+    primaryHitObject: frontPanel,
+    foundDrawerId: 'div_int_sketch_0_d1_lower',
+    effectiveDoorId: null,
+    foundPartId: 'drawer_box__div_int_sketch_0_d1_lower',
+    isHandleEditMode: true,
+  });
+
+  assert.equal(handled, true);
+  assert.deepEqual(calls[0].args, [
+    'div_int_sketch_0_d1_lower',
+    'standard',
+    { source: 'handles:assign', immediate: true },
+  ]);
+  assert.deepEqual(calls[1].args, [
+    'handlesMap',
+    '__wp_handle_color:div_int_sketch_0_d1_lower',
+    'black',
+    { source: 'handles:assignColor', immediate: true },
+  ]);
+});
+
 test('normal handle assignment clears a previous manual door handle position', () => {
   const calls: Array<{ op: string; args: unknown[] }> = [];
   const App: any = {

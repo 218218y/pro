@@ -2,6 +2,7 @@ import type { AppContainer, UnknownRecord } from '../../../types';
 
 import { asRecord } from '../runtime/record.js';
 import { resolveDoorTrimTarget } from './canvas_picking_door_trim_targets.js';
+import { resolveDrawerBoxOwnerPartId } from '../features/drawer_box_identity.js';
 
 export type DoorHitNode = UnknownRecord & {
   userData?: UnknownRecord | null;
@@ -128,10 +129,11 @@ export function resolveDoorHitOwnerByPartId(
     walkDoorHitNode(doorHitObject, current => {
       const userData = asDoorRecord(current.userData);
       const partId = typeof userData?.partId === 'string' ? String(userData.partId) : '';
+      const ownerPartId = resolveDrawerBoxOwnerPartId(userData);
       const hasDoorLeafRect = !!readDoorLeafRectFromUserData(userData);
       if (!hasDoorLeafRect) return null;
       if (!firstDoorLeaf) firstDoorLeaf = current;
-      if (targetId && partId === targetId) return current;
+      if (targetId && (partId === targetId || ownerPartId === targetId)) return current;
       if (!targetId && partId) return current;
       return null;
     }) || firstDoorLeaf

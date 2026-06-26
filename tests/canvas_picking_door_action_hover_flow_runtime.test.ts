@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { tryHandleDoorActionHover } from '../esm/native/services/canvas_picking_door_action_hover_flow.ts';
+import { __resolveHoverHitFromRaycastHit } from '../esm/native/services/canvas_picking_door_hover_targets_hit_scan.ts';
 
 class Vec3 {
   x = 0;
@@ -576,6 +577,40 @@ test('groove hover centers sketch drawer fronts on their face offset instead of 
   assert.ok(markerScale);
   assert.ok(Math.abs(markerScale[0] - 0.73) < 1e-9);
   assert.ok(Math.abs(markerScale[1] - 0.21) < 1e-9);
+});
+
+test('door action hover resolves internal drawer-box hits to the owning drawer id for manual handles', () => {
+  const wardrobeGroup = { userData: { partId: 'root' } };
+  const internalDrawer = {
+    userData: {
+      partId: 'drawer_box__div_int_sketch_0_d1_lower',
+      drawerId: 'div_int_sketch_0_d1_lower',
+      __wpDrawerBox: true,
+      __wpInternalDrawerBox: true,
+      __wpDrawerOwnerPartId: 'div_int_sketch_0_d1_lower',
+      __doorWidth: 0.68,
+      __doorHeight: 0.18,
+    },
+    parent: wardrobeGroup,
+  };
+  const frontPanel = {
+    userData: {},
+    parent: internalDrawer,
+  };
+
+  const hit = __resolveHoverHitFromRaycastHit({
+    App: {} as never,
+    hit: { object: frontPanel, point: { x: 0.01, y: 0.02, z: 0.03 } } as never,
+    matchesPartId: partId =>
+      partId.includes('draw') || partId.includes('drawer') || partId.startsWith('div_int_'),
+    isViewportRoot: (_App, node) => node === wardrobeGroup,
+    str: (_App, value) => String(value || ''),
+    wardrobeGroup: wardrobeGroup as never,
+  });
+
+  assert.ok(hit);
+  assert.equal(hit.hitDoorPid, 'div_int_sketch_0_d1_lower');
+  assert.equal(hit.hitDoorGroup, internalDrawer);
 });
 
 test('groove hover ignores drawer-box body hits instead of promoting them to the drawer front', () => {

@@ -110,6 +110,10 @@ function isInternalDrawerDefaultNoHandleId(id: string): boolean {
   return id.startsWith('div_int_') || id.includes('_int_drawers_');
 }
 
+function isShoeDrawerDefaultNoHandleId(id: string): boolean {
+  return /(?:^|_)draw_shoe$/.test(id);
+}
+
 function createHandleTypeResolver(
   App: AppContainer,
   cfgSnapshot: HandlesConfigSnapshot,
@@ -136,7 +140,13 @@ function createHandleTypeResolver(
     const override = readOverride(hm, sid) ?? (stripSuffix(sid) !== sid ? readOverride(hm, base) : undefined);
     if (override !== undefined) return override;
 
-    if (isInternalDrawerDefaultNoHandleId(sid) || isInternalDrawerDefaultNoHandleId(base)) return 'none';
+    if (
+      isInternalDrawerDefaultNoHandleId(sid) ||
+      isInternalDrawerDefaultNoHandleId(base) ||
+      isShoeDrawerDefaultNoHandleId(sid) ||
+      isShoeDrawerDefaultNoHandleId(base)
+    )
+      return 'none';
 
     if (globalHandleType === 'edge' && isEdgeHandleDefaultNone(App, sk, base)) return 'none';
 

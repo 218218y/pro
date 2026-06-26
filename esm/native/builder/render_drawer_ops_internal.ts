@@ -73,6 +73,9 @@ export function createApplyInternalDrawersOps(deps: BuilderRenderDrawerDeps) {
         __wpInternalDrawerBox: true,
         __wpDrawerId: partId,
         __wpDrawerOwnerPartId: partId,
+        __doorWidth: drawerOp.width,
+        __doorHeight: drawerOp.height,
+        __wpFaceOffsetX: 0,
       };
       if (drawerOp.sketchBoxId) {
         intBox.userData.__wpSketchBoxId = drawerOp.sketchBoxId;

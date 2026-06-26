@@ -410,6 +410,97 @@ test('handles apply does not treat external drawer boxes as separate drawer fron
   );
 });
 
+test('handles apply keeps shoe drawers handle-free by default even when global handles are enabled', () => {
+  const { App } = createApp();
+  App.deps = {
+    THREE: {
+      Group: FakeGroup3D,
+      Mesh: FakeMesh3D,
+      BoxGeometry: FakeGeometry3D,
+      MeshStandardMaterial: class FakeMeshStandardMaterial {},
+      Box3: FakeBox3D,
+      Matrix4: FakeMatrix4D,
+    },
+  };
+
+  const shoeDrawer = new FakeGroup3D();
+  shoeDrawer.userData = {
+    partId: 'd1_draw_shoe',
+    __doorWidth: 0.7,
+    __doorHeight: 0.2,
+    __frontMaxZ: 0.018,
+    __wpType: 'extDrawer',
+  };
+  App.render.drawersArray = [{ id: 'd1_draw_shoe', group: shoeDrawer, isInternal: false }];
+  App.store.getState = () => ({
+    ui: { view: {} },
+    config: { globalHandleType: 'standard', handlesMap: {} },
+    runtime: {},
+    mode: { primary: 'none', opts: {} },
+    meta: {},
+  });
+
+  applyHandles({
+    App,
+    cfgSnapshot: readConfigSnapshot(App),
+    addOutlines,
+    removeDoorsEnabled: false,
+    triggerRender: false,
+  });
+
+  assert.equal(
+    shoeDrawer.children.some(child => child.userData.__kind === 'handle'),
+    false,
+    'shoe drawers must not inherit the global default handle type'
+  );
+});
+
+test('handles apply honors explicit advanced handle overrides on shoe drawers', () => {
+  const { App } = createApp();
+  const outlined: unknown[] = [];
+  App.deps = {
+    THREE: {
+      Group: FakeGroup3D,
+      Mesh: FakeMesh3D,
+      BoxGeometry: FakeGeometry3D,
+      MeshStandardMaterial: class FakeMeshStandardMaterial {},
+      Box3: FakeBox3D,
+      Matrix4: FakeMatrix4D,
+    },
+  };
+
+  const shoeDrawer = new FakeGroup3D();
+  shoeDrawer.userData = {
+    partId: 'd1_draw_shoe',
+    __doorWidth: 0.7,
+    __doorHeight: 0.2,
+    __frontMaxZ: 0.018,
+    __wpType: 'extDrawer',
+  };
+  App.render.drawersArray = [{ id: 'd1_draw_shoe', group: shoeDrawer, isInternal: false }];
+  App.store.getState = () => ({
+    ui: { view: {} },
+    config: { globalHandleType: 'none', handlesMap: { d1_draw_shoe: 'standard' } },
+    runtime: {},
+    mode: { primary: 'none', opts: {} },
+    meta: {},
+  });
+
+  applyHandles({
+    App,
+    cfgSnapshot: readConfigSnapshot(App),
+    addOutlines: mesh => outlined.push(mesh),
+    removeDoorsEnabled: false,
+    triggerRender: false,
+  });
+
+  assert.equal(
+    shoeDrawer.children.some(child => child.userData.__kind === 'handle'),
+    true
+  );
+  assert.equal(outlined.length, 1);
+});
+
 test('handles apply keeps sketch internal drawer boxes handle-free by default after drawer-box paint identity', () => {
   const { App } = createApp();
   App.deps = {

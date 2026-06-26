@@ -31,6 +31,7 @@
     "removable_parts.js",
     "shelf_front_edge_material.js",
     "shelf_part_identity.js",
+    "shoe_drawer_base_constraint.js",
     "sketch_box_regular_external_drawers.js",
     "sketch_drawer_sizing.js",
     "sketch_stack_positioning.js",
@@ -72,6 +73,7 @@
     "removable_parts": ["removable_parts.js"],
     "shelf_front_edge_material": ["shelf_front_edge_material.js"],
     "shelf_part_identity": ["shelf_part_identity.js"],
+    "shoe_drawer_base_constraint": ["shoe_drawer_base_constraint.js"],
     "sketch_box_regular_external_drawers": ["sketch_box_regular_external_drawers.js"],
     "sketch_drawer_sizing": ["sketch_drawer_sizing.js"],
     "sketch_stack_positioning": ["sketch_stack_positioning.js"],
@@ -800,6 +802,10 @@
       "entry": "project_config/project_config_snapshot_canonical.js"
     },
     {
+      "file": "esm/native/io/project_io_load_helpers.ts",
+      "entry": "shoe_drawer_base_constraint.js"
+    },
+    {
       "file": "esm/native/io/project_io_load_helpers_config.ts",
       "entry": "project_config/project_config_persisted_snapshot.js"
     },
@@ -818,6 +824,10 @@
     {
       "file": "esm/native/io/project_io_save_helpers.ts",
       "entry": "project_config/project_config_persisted_snapshot.js"
+    },
+    {
+      "file": "esm/native/io/project_io_save_helpers.ts",
+      "entry": "shoe_drawer_base_constraint.js"
     },
     {
       "file": "esm/native/io/project_payload_canonical.ts",
@@ -902,6 +912,10 @@
     {
       "file": "esm/native/kernel/kernel_project_capture_payload.ts",
       "entry": "door_trim.js"
+    },
+    {
+      "file": "esm/native/kernel/kernel_project_capture_payload.ts",
+      "entry": "shoe_drawer_base_constraint.js"
     },
     {
       "file": "esm/native/kernel/kernel_project_capture_shared.ts",
@@ -1460,6 +1474,10 @@
       "entry": "shelf_part_identity.js"
     },
     {
+      "file": "esm/native/services/canvas_picking_shoe_drawer_base_auto_none.ts",
+      "entry": "shoe_drawer_base_constraint.js"
+    },
+    {
       "file": "esm/native/services/canvas_picking_sketch_box_content_commit_adornments.ts",
       "entry": "base_leg_support.js"
     },
@@ -1818,6 +1836,10 @@
     {
       "file": "esm/native/ui/react/tabs/structure_tab_structural_controller_writes.ts",
       "entry": "base_plinth_support.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/structure_tab_structural_controller_writes.ts",
+      "entry": "shoe_drawer_base_constraint.js"
     },
     {
       "file": "esm/native/ui/react/tabs/structure_tab_view_state_contracts.ts",

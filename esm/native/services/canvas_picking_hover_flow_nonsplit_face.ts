@@ -1,4 +1,4 @@
-import { isDrawerBoxPartId } from '../features/drawer_box_identity.js';
+import { isDrawerBoxPartId, resolveDrawerBoxOwnerPartId } from '../features/drawer_box_identity.js';
 import { resolveCanvasPickingClickHitState } from './canvas_picking_click_hit_flow.js';
 import { __wp_isDoorOrDrawerLikePartId } from './canvas_picking_core_helpers.js';
 import { asRecordMap } from './canvas_picking_hover_flow_shared.js';
@@ -54,6 +54,10 @@ function normalizeActionableFacePreviewPartId(partId: unknown): string | null {
   return __wp_isDoorOrDrawerLikePartId(normalized) ? normalized : null;
 }
 
+function isManualHandleAllowedInternalDrawerBox(userData: Record<string, unknown> | null): boolean {
+  return userData?.__wpInternalDrawerBox === true && !!resolveDrawerBoxOwnerPartId(userData);
+}
+
 function isDrawerBoxBodyHitObject(hitObject: unknown): boolean {
   let current = asRecordMap(hitObject);
   let visited = 0;
@@ -61,7 +65,9 @@ function isDrawerBoxBodyHitObject(hitObject: unknown): boolean {
     visited += 1;
     const userData = asRecordMap(current.userData);
     const partId = typeof userData?.partId === 'string' ? userData.partId : String(userData?.partId ?? '');
-    if (userData?.__wpDrawerBox === true || isDrawerBoxPartId(partId)) return true;
+    if (userData?.__wpDrawerBox === true || isDrawerBoxPartId(partId)) {
+      return !isManualHandleAllowedInternalDrawerBox(userData);
+    }
     current = asRecordMap(current.parent);
   }
   return false;

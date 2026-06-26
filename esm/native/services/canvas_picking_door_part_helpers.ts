@@ -56,6 +56,7 @@ function __wp_isDrawerLikePartId(partId: unknown): boolean {
   if (/^(?:lower_)?d\d+_draw_/.test(pid)) return true;
   if (/^chest_drawer_\d+$/.test(pid)) return true;
   if (pid === 'internal_drawer_accent_line') return false;
+  if (pid.startsWith('div_int_')) return true;
   if (pid.includes('_draw_')) return true;
   if (pid.includes('drawer') || pid.includes('draw')) return true;
   return false;
