@@ -36,27 +36,28 @@ export function resolveSketchBoxDrawersPreview(
     localExtDrawers,
   } = ctx;
 
-  const placementBlockers = buildManualLayoutSketchExternalDrawerBlockers({
-    extDrawers: localExtDrawers,
-    bottomY: boxBottomY,
-    topY: boxTopY,
-    pad: woodThick,
-    readCenterY,
-  }).concat(
-    buildSketchBoxVerticalContentBlockers({
-      targetBox: args.targetBox,
-      targetGeo,
-      targetCenterY: args.targetCenterY,
-      targetHeight,
-      woodThick,
-      boxSegments,
-      activeSegment,
-      verticalSegments,
-      activeVerticalSegment,
-      pickSketchBoxSegment: args.pickSketchBoxSegment,
-      pickSketchBoxVerticalSegment: args.pickSketchBoxVerticalSegment,
-    })
-  );
+  const verticalContentBlockers = buildSketchBoxVerticalContentBlockers({
+    targetBox: args.targetBox,
+    targetGeo,
+    targetCenterY: args.targetCenterY,
+    targetHeight,
+    woodThick,
+    boxSegments,
+    activeSegment,
+    verticalSegments,
+    activeVerticalSegment,
+    pickSketchBoxSegment: args.pickSketchBoxSegment,
+    pickSketchBoxVerticalSegment: args.pickSketchBoxVerticalSegment,
+  });
+  const placementCollision = {
+    blockers: buildManualLayoutSketchExternalDrawerBlockers({
+      extDrawers: localExtDrawers,
+      bottomY: boxBottomY,
+      topY: boxTopY,
+      pad: woodThick,
+      readCenterY,
+    }).concat(verticalContentBlockers),
+  };
   let placement = resolveManualLayoutSketchInternalDrawerPlacement({
     desiredCenterY: pointerY,
     bottomY: boxBottomY,
@@ -66,7 +67,7 @@ export function resolveSketchBoxDrawersPreview(
     drawerHeightM: args.drawerHeightM,
     drawers: localDrawers,
     readCenterY,
-    blockers: placementBlockers,
+    blockers: placementCollision.blockers,
   });
   if (placement.op === 'blocked') {
     placement = resolveManualLayoutSketchInternalDrawerPlacement({
@@ -78,7 +79,7 @@ export function resolveSketchBoxDrawersPreview(
       drawerHeightM: args.drawerHeightM,
       drawers: localDrawers,
       readCenterY,
-      blockers: withoutInternalDrawerReplaceableShelfBlockers(placementBlockers),
+      blockers: withoutInternalDrawerReplaceableShelfBlockers(placementCollision.blockers),
     });
   }
   const baseY = placement.yCenter - placement.stackH / 2;
