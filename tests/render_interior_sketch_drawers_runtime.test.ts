@@ -442,39 +442,6 @@ test('render sketch internal drawer ops use independent divider keys for each ph
   assert.equal(ops[1]!.hasDivider, true);
 });
 
-test('render sketch internal drawers add a shared cassette while preserving drawer height', () => {
-  const woodThick = 0.02;
-  const innerW = 0.8;
-  const ops = buildSketchInternalDrawerOps({
-    drawers: [{ id: 'cassette', yNormC: 0.5 }],
-    input: { cfgSnapshot: {} },
-    moduleIndex: 1,
-    moduleKeyStr: 'module_1',
-    effectiveBottomY: 0,
-    effectiveTopY: 2.4,
-    spanH: 2.4,
-    woodThick,
-    innerW,
-    internalDepth: 0.5,
-    internalCenterX: 0,
-    internalZ: -0.1,
-  });
-
-  assert.equal(ops.length, 2);
-  const expectedCassetteWidth = Math.max(
-    DRAWER_DIMENSIONS.sketch.internalWidthMinM,
-    innerW - DRAWER_DIMENSIONS.sketch.internalWidthClearanceM
-  );
-  const cassette = ops[0]!.cassette!;
-  assert.ok(cassette);
-  assert.equal(ops[1]!.cassette, cassette);
-  assert.ok(Math.abs(ops[0]!.height - 0.165) < 1e-9);
-  assert.ok(Math.abs(ops[1]!.height - 0.165) < 1e-9);
-  assert.ok(Math.abs(cassette.width - expectedCassetteWidth) < 1e-9);
-  assert.ok(Math.abs(ops[0]!.width - (expectedCassetteWidth - woodThick * 2)) < 1e-9);
-  assert.ok(Math.abs(cassette.height - (cassette.drawerMaxY - cassette.drawerMinY + woodThick * 2)) < 1e-9);
-});
-
 test('render sketch external drawers follow inset door mount depth', () => {
   const { args, App } = createExternalDrawerArgs();
   args.input.cfgSnapshot.doorMountMode = 'inset';

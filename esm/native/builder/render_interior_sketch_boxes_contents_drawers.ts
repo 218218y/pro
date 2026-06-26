@@ -1,4 +1,8 @@
 import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  resolveSketchInternalDrawerCassetteDrawerWidth,
+  resolveSketchInternalDrawerCassetteRange,
+} from '../features/sketch_internal_drawer_cassette.js';
 import type { RenderSketchBoxContentsArgs } from './render_interior_sketch_boxes_shared.js';
 import type {
   SketchDrawerExtra,
@@ -17,12 +21,6 @@ import {
 } from '../features/sketch_drawer_sizing.js';
 import { resolveSketchStackCenterYFromNormalizedItem } from '../features/sketch_stack_positioning.js';
 import { hasSketchDrawerDivider } from './render_interior_sketch_drawer_dividers.js';
-import {
-  internalDrawerCassetteHasUsableWidth,
-  resolveInternalDrawerCassetteMetrics,
-  resolveInternalDrawerCassettePanelThickness,
-  resolveInternalDrawerWidthInsideCassette,
-} from '../features/sketch_internal_drawer_cassette.js';
 import {
   resolveSketchBoxUsableContentCenterZ,
   resolveSketchBoxUsableContentDepth,
@@ -127,6 +125,8 @@ export function renderSketchBoxDrawerContents(args: RenderSketchBoxContentsArgs)
     renderOpsHandleCatch,
     applyInternalDrawersOps,
     getPartMaterial,
+    createBoard,
+    currentShelfMat,
   } = args.args;
   const { box, boxPid, centerY, height, halfH, boxMat, innerBottomY, innerTopY } = shell;
   const usableContentDepth = resolveSketchBoxUsableContentDepth({
@@ -175,10 +175,15 @@ export function renderSketchBoxDrawerContents(args: RenderSketchBoxContentsArgs)
       const singleDrawerH = metrics.drawerH;
       const drawerGap = metrics.drawerGap;
       const stackH = metrics.stackH;
-      if (!sketchStackFitsAvailableHeight(stackH, availableStackHeightM)) continue;
+      const cassetteRangeForFit = resolveSketchInternalDrawerCassetteRange({
+        baseY: 0,
+        stackH,
+        woodThick,
+      });
+      if (!sketchStackFitsAvailableHeight(cassetteRangeForFit.height, availableStackHeightM)) continue;
       const clampBaseY = (y: number) => {
-        const lo = cellBottomY;
-        const hi = cellTopY - stackH;
+        const lo = cellBottomY + cassetteRangeForFit.woodThick;
+        const hi = cellTopY - cassetteRangeForFit.woodThick - stackH;
         return Math.max(lo, Math.min(hi, y));
       };
       const centerY0 = resolveSketchStackCenterYFromNormalizedItem({
@@ -214,8 +219,8 @@ export function renderSketchBoxDrawerContents(args: RenderSketchBoxContentsArgs)
         sketchStackRangeOverlaps(
           {
             id: drawer.id != null ? String(drawer.id) : String(drawerIndex),
-            minY: baseY,
-            maxY: baseY + stackH,
+            minY: baseY - cassetteRangeForFit.woodThick,
+            maxY: baseY + stackH + cassetteRangeForFit.woodThick,
           },
           externalBlockers
         )
@@ -227,23 +232,10 @@ export function renderSketchBoxDrawerContents(args: RenderSketchBoxContentsArgs)
       const stackPartId = `${boxPid}_int_drawers_${drawerId}`;
       const stackKey =
         typeof moduleKeyForUd === 'string' && moduleKeyForUd.startsWith('lower_') ? 'bottom' : 'top';
-      const cassettePanelT = resolveInternalDrawerCassettePanelThickness(woodThick);
-      const cassetteWidth = Math.max(
-        drawerDims.internalWidthMinM,
-        span.innerW - drawerDims.internalWidthClearanceM
-      );
-      if (
-        !internalDrawerCassetteHasUsableWidth({
-          outerWidth: cassetteWidth,
-          panelThicknessM: cassettePanelT,
-          minWidthM: drawerDims.internalWidthMinM,
-        })
-      ) {
-        continue;
-      }
-      const width = resolveInternalDrawerWidthInsideCassette({
-        outerWidth: cassetteWidth,
-        panelThicknessM: cassettePanelT,
+      const width = resolveSketchInternalDrawerCassetteDrawerWidth({
+        outerWidth: span.innerW,
+        woodThick,
+        clearanceM: drawerDims.internalWidthClearanceM,
         minWidthM: drawerDims.internalWidthMinM,
       });
       const depth = Math.min(
@@ -255,23 +247,6 @@ export function renderSketchBoxDrawerContents(args: RenderSketchBoxContentsArgs)
         drawerDims.internalBottomLiftMaxM,
         woodThick * drawerDims.internalBottomLiftWoodRatio
       );
-      const cassetteMetrics = resolveInternalDrawerCassetteMetrics({
-        baseY,
-        drawerStackH: stackH,
-        panelThicknessM: cassettePanelT,
-      });
-      const cassette = {
-        partId: `${stackPartId}_cassette`,
-        width: cassetteWidth,
-        height: cassetteMetrics.outerH,
-        depth,
-        panelThicknessM: cassetteMetrics.panelThicknessM,
-        x: span.innerCenterX,
-        y: cassetteMetrics.centerY,
-        z: drawerClosedZ,
-        drawerMinY: cassetteMetrics.drawerMinY,
-        drawerMaxY: cassetteMetrics.drawerMaxY,
-      };
       for (let stackIndex = 0; stackIndex < 2; stackIndex++) {
         const drawerSlot = stackIndex === 0 ? 'lower' : 'upper';
         const partId = `${stackPartId}_${drawerSlot}`;
@@ -283,6 +258,7 @@ export function renderSketchBoxDrawerContents(args: RenderSketchBoxContentsArgs)
         drawerOps.push({
           kind: 'internal_drawer',
           partId,
+          stackPartId,
           drawerIndex: stackIndex,
           moduleIndex: moduleKeyForUd,
           slotIndex: 0,
@@ -299,7 +275,13 @@ export function renderSketchBoxDrawerContents(args: RenderSketchBoxContentsArgs)
           sketchModuleKey: moduleKeyForUd,
           sketchFreePlacement: shell.isFreePlacement === true,
           sketchStack: stackKey,
-          cassette,
+          cassetteBaseY: baseY,
+          cassetteOuterWidth: span.innerW,
+          cassetteDepth: depth,
+          cassetteCenterX: span.innerCenterX,
+          cassetteCenterZ: drawerClosedZ,
+          cassetteStackH: stackH,
+          cassetteWoodThick: cassetteRangeForFit.woodThick,
         });
       }
     }
@@ -311,6 +293,7 @@ export function renderSketchBoxDrawerContents(args: RenderSketchBoxContentsArgs)
       ops: drawerOps,
       wardrobeGroup: group,
       createInternalDrawerBox,
+      createBoard,
       addOutlines,
       sketchMode: input.sketchMode === true,
       getPartMaterial,
@@ -320,6 +303,7 @@ export function renderSketchBoxDrawerContents(args: RenderSketchBoxContentsArgs)
         (input as Record<string, unknown>).drawerBoxBaseMat ||
         (input as Record<string, unknown>).drawerBoxMat ||
         (input as Record<string, unknown>).whiteMat,
+      currentShelfMat,
       cfg: input.cfgSnapshot,
       showContentsEnabled,
       addFoldedClothes,

@@ -305,53 +305,6 @@ test('render interior sketch module shelves keep brace shelves on the brace mate
   assert.equal(braceShelf?.geometry.parameters.width, 1.2);
 });
 
-test('render interior sketch module shelves are replaced by an internal drawer cassette overlap', () => {
-  const boards: any[] = [];
-  const group = { add() {} } as any;
-
-  applySketchShelves({
-    shelves: [
-      { id: 'cassette-collides', yNorm: 0.5758333333, variant: 'regular' } as any,
-      { id: 'keep', yNorm: 0.8, variant: 'regular' } as any,
-    ],
-    drawers: [{ id: 'drawer-stack', yNormC: 0.5 } as any],
-    yFromNorm(raw: unknown) {
-      return Number(raw) * 2.4;
-    },
-    findBoxAtY: () => null,
-    braceCenterX: 0,
-    braceShelfWidth: 0.9,
-    regularShelfWidth: 0.84,
-    internalCenterX: 0,
-    internalDepth: 0.55,
-    internalZ: 0,
-    regularDepth: 0.45,
-    backZ: -0.275,
-    woodThick: 0.018,
-    shelfThick: 0.018,
-    effectiveBottomY: 0,
-    effectiveTopY: 2.4,
-    spanH: 2.4,
-    showContentsEnabled: false,
-    addFoldedClothes: () => undefined,
-    contentsPolicy: { showContentsEnabled: false, sketchMode: true, addOutlines: null, cfgSnapshot: {} },
-    currentShelfMat: { id: 'shelf' },
-    currentBraceShelfMat: { id: 'brace-shelf' },
-    glassMat: null,
-    createBoard: (...call: any[]) => {
-      boards.push(call);
-      return { userData: {} };
-    },
-    group,
-    THREE: null,
-    addBraceDarkSeams: () => undefined,
-    addShelfPins: () => undefined,
-  });
-
-  assert.equal(boards.length, 1);
-  assert.equal(boards[0][7], 'sketch_shelf_main_2');
-});
-
 test('render interior sketch rods use the installed rod owner when it succeeds and local visual rod when it rejects', () => {
   const created: any[] = [];
   const added: any[] = [];

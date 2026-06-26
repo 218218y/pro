@@ -58,21 +58,9 @@ export type ExternalDrawerOpLike = {
   frontZ?: number;
 };
 
-export type InternalDrawerCassetteOpLike = {
-  partId: string;
-  width: number;
-  height: number;
-  depth: number;
-  panelThicknessM: number;
-  x: number;
-  y: number;
-  z: number;
-  drawerMinY: number;
-  drawerMaxY: number;
-};
-
 export type InternalDrawerOpLike = {
   partId: string;
+  stackPartId?: string;
   width: number;
   height: number;
   depth: number;
@@ -87,5 +75,11 @@ export type InternalDrawerOpLike = {
   sketchModuleKey?: unknown;
   sketchFreePlacement?: boolean;
   sketchStack?: 'top' | 'bottom';
-  cassette?: InternalDrawerCassetteOpLike;
+  cassetteBaseY?: number;
+  cassetteOuterWidth?: number;
+  cassetteDepth?: number;
+  cassetteCenterX?: number;
+  cassetteCenterZ?: number;
+  cassetteStackH?: number;
+  cassetteWoodThick?: number;
 };

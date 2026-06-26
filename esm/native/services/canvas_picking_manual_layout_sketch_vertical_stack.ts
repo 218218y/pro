@@ -10,6 +10,7 @@ import {
   resolveSketchInternalDrawerMetrics,
   sketchStackFitsAvailableHeight,
 } from '../features/sketch_drawer_sizing.js';
+import { resolveSketchInternalDrawerCassetteRange } from '../features/sketch_internal_drawer_cassette.js';
 
 export type VerticalOccupancyRange = {
   minY: number;
@@ -237,8 +238,13 @@ export function buildSketchInternalDrawerBlockers<T extends Record<string, unkno
   const innerTopY = args.boxCenterY + halfH - args.woodThick;
   const availableHeightM = Math.max(0, innerTopY - innerBottomY);
   const clampCenter = (centerY: number, stackH: number) => {
-    const lo = innerBottomY + stackH / 2;
-    const hi = innerTopY - stackH / 2;
+    const cassette = resolveSketchInternalDrawerCassetteRange({
+      baseY: 0,
+      stackH,
+      woodThick: args.woodThick,
+    });
+    const lo = innerBottomY + cassette.woodThick + stackH / 2;
+    const hi = innerTopY - cassette.woodThick - stackH / 2;
     if (!(hi > lo)) return Math.max(innerBottomY, Math.min(innerTopY, centerY));
     return Math.max(lo, Math.min(hi, centerY));
   };
@@ -248,7 +254,12 @@ export function buildSketchInternalDrawerBlockers<T extends Record<string, unkno
         drawerHeightM: readSketchDrawerHeightMFromItem(item, DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_M),
       });
       const stackH = metrics.stackH;
-      if (!sketchStackFitsAvailableHeight(stackH, availableHeightM)) return null;
+      const cassette = resolveSketchInternalDrawerCassetteRange({
+        baseY: 0,
+        stackH,
+        woodThick: args.woodThick,
+      });
+      if (!sketchStackFitsAvailableHeight(cassette.height, availableHeightM)) return null;
       const halfH = args.boxHeight / 2;
       const centerY = args.readCenterY
         ? args.readCenterY(item, stackH)
@@ -269,9 +280,9 @@ export function buildSketchInternalDrawerBlockers<T extends Record<string, unkno
       return createVerticalOccupancyRange({
         id: idRaw != null && idRaw !== '' ? String(idRaw) : String(index),
         centerY: clampedCenterY,
-        minY: clampedCenterY - stackH / 2,
-        maxY: clampedCenterY + stackH / 2,
-        stackH,
+        minY: clampedCenterY - stackH / 2 - cassette.woodThick,
+        maxY: clampedCenterY + stackH / 2 + cassette.woodThick,
+        stackH: cassette.height,
       });
     })
     .filter((item): item is VerticalOccupancyRange => !!item)

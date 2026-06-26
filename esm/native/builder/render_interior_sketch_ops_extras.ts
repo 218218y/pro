@@ -48,7 +48,6 @@ export function applyInteriorSketchOwnedShelves(args: {
 
   applySketchShelves({
     shelves: resolved.shelves,
-    drawers: resolved.drawers,
     yFromNorm: placementSupport.yFromNorm,
     findBoxAtY,
     braceCenterX: resolved.braceCenterX,
@@ -63,9 +62,7 @@ export function applyInteriorSketchOwnedShelves(args: {
     roundedShelfSide: resolved.roundedShelfSide,
     woodThick: resolved.woodThick,
     shelfThick: resolved.shelfThick,
-    effectiveBottomY: resolved.effectiveBottomY,
     effectiveTopY: resolved.effectiveTopY,
-    spanH: resolved.spanH,
     showContentsEnabled: resolved.input.showContentsEnabled === true,
     addFoldedClothes: resolved.input.addFoldedClothes,
     contentsPolicy: {
@@ -169,6 +166,10 @@ export function applyInteriorSketchOwnedDrawers(args: {
     moduleIndex: resolved.moduleIndex,
     moduleKeyStr: resolved.moduleKeyStr,
     bodyMat: resolved.bodyMat,
+    currentShelfMat: resolved.currentShelfMat,
+    createBoard: resolved.createBoard,
+    getPartMaterial: resolved.getPartMaterial,
+    getPartColorValue: resolved.getPartColorValue,
     applyInternalDrawersOps: owner.applyInternalDrawersOps,
     renderOpsHandleCatch: owner.renderOpsHandleCatch,
   });

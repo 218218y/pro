@@ -45,6 +45,7 @@ export type SketchExtrasConfig = BuilderSketchExtrasLike;
 export type SketchInternalDrawerOp = InteriorValueRecord & {
   kind: 'internal_drawer';
   partId: string;
+  stackPartId?: string;
   drawerIndex: number;
   moduleIndex: string | number;
   slotIndex: number;
@@ -61,6 +62,13 @@ export type SketchInternalDrawerOp = InteriorValueRecord & {
   sketchModuleKey?: string | number;
   sketchFreePlacement?: boolean;
   sketchStack?: 'top' | 'bottom';
+  cassetteBaseY?: number;
+  cassetteOuterWidth?: number;
+  cassetteDepth?: number;
+  cassetteCenterX?: number;
+  cassetteCenterZ?: number;
+  cassetteStackH?: number;
+  cassetteWoodThick?: number;
 };
 
 export type ApplyInternalSketchDrawersArgs = InteriorValueRecord & {
@@ -69,6 +77,7 @@ export type ApplyInternalSketchDrawersArgs = InteriorValueRecord & {
   ops: SketchInternalDrawerOp[];
   wardrobeGroup: InteriorGroupLike;
   createInternalDrawerBox?: InteriorOpsCallable;
+  createBoard?: InteriorOpsCallable;
   addOutlines?: InteriorOpsCallable;
   sketchMode: boolean;
   getPartMaterial?: InteriorOpsCallable;
@@ -76,6 +85,7 @@ export type ApplyInternalSketchDrawersArgs = InteriorValueRecord & {
   bodyMat?: unknown;
   whiteMat?: unknown;
   drawerBoxBaseMat?: unknown;
+  currentShelfMat?: unknown;
   showContentsEnabled: boolean;
   addFoldedClothes?: InteriorOpsCallable;
 };

@@ -3,8 +3,12 @@ import {
   createManualLayoutSketchNormalizedCenterReader,
   resolveManualLayoutSketchInternalDrawerPlacement,
 } from './canvas_picking_manual_layout_sketch_stack_placement.js';
-import { buildManualLayoutVerticalContentBlockers } from './canvas_picking_manual_layout_vertical_blockers.js';
+import {
+  buildManualLayoutVerticalContentBlockers,
+  type ManualLayoutVerticalContentBlocker,
+} from './canvas_picking_manual_layout_vertical_blockers.js';
 import { buildSketchModuleBoxVerticalBlockers } from './canvas_picking_sketch_module_box_blockers.js';
+import { removeManualLayoutBaseShelf } from './canvas_picking_manual_layout_config_ops_shelf.js';
 import { createManualLayoutSketchStackHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import type {
   CommitSketchModuleInternalDrawerArgs,
@@ -15,18 +19,114 @@ import {
   removeStackItemById,
 } from './canvas_picking_sketch_module_stack_commit_mutation.js';
 import { resolveInternalDrawerHoverIntent } from './canvas_picking_sketch_module_stack_commit_hover.js';
+import { INTERIOR_FITTINGS_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { resolveSketchInternalDrawerMetrics } from '../features/sketch_drawer_sizing.js';
 import { markSketchInternalDrawersDirty } from '../features/sketch_drawer_sizing.js';
 import {
-  removeSketchShelvesOverlappingInternalDrawerCassette,
-  resolveInternalDrawerCassetteMetrics,
-  resolveInternalDrawerCassettePanelThickness,
+  resolveSketchInternalDrawerCassetteRange,
+  verticalRangesTouchOrOverlap,
 } from '../features/sketch_internal_drawer_cassette.js';
 import {
   createRandomId,
   ensureRecord,
   ensureRecordList,
 } from './canvas_picking_sketch_module_stack_commit_shared.js';
+
+function readGridDivisions(cfg: RecordMap): number {
+  const raw = cfg.gridDivisions;
+  const value = typeof raw === 'number' ? raw : raw != null ? Number(raw) : NaN;
+  return Number.isFinite(value) && value > 1
+    ? Math.floor(value)
+    : INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault;
+}
+
+function removeSketchShelfByBlocker(args: {
+  extra: RecordMap;
+  shelves: RecordMap[];
+  blocker: ManualLayoutVerticalContentBlocker;
+}): boolean {
+  const mutableShelves = ensureRecordList(args.extra, 'shelves');
+  const id = args.blocker.id != null ? String(args.blocker.id) : '';
+  if (id && !id.startsWith('sketch_shelf_')) {
+    const byId = mutableShelves.findIndex(shelf => shelf && shelf.id != null && String(shelf.id) === id);
+    if (byId >= 0) {
+      mutableShelves.splice(byId, 1);
+      return true;
+    }
+  }
+  const index =
+    typeof args.blocker.index === 'number' && Number.isFinite(args.blocker.index)
+      ? Math.round(args.blocker.index)
+      : -1;
+  if (index >= 0 && index < mutableShelves.length) {
+    mutableShelves.splice(index, 1);
+    return true;
+  }
+  return false;
+}
+
+function removeShelvesTouchingInternalDrawerCassette(args: {
+  cfg: RecordMap;
+  extra: RecordMap;
+  shelves: RecordMap[];
+  verticalContentBlockers: ManualLayoutVerticalContentBlocker[];
+  baseY: number;
+  stackH: number;
+  bottomY: number;
+  topY: number;
+  woodThick?: unknown;
+}): void {
+  const cassette = resolveSketchInternalDrawerCassetteRange({
+    baseY: args.baseY,
+    stackH: args.stackH,
+    woodThick: args.woodThick,
+  });
+  const shelfBlockers = args.verticalContentBlockers.filter(blocker => blocker.kind === 'shelf');
+  if (!shelfBlockers.length) return;
+
+  const baseShelfIndexes = new Set<number>();
+  const sketchShelfBlockers: ManualLayoutVerticalContentBlocker[] = [];
+  for (const blocker of shelfBlockers) {
+    if (
+      !verticalRangesTouchOrOverlap({
+        minY: cassette.minY,
+        maxY: cassette.maxY,
+        otherMinY: blocker.minY,
+        otherMaxY: blocker.maxY,
+      })
+    ) {
+      continue;
+    }
+    if (blocker.source === 'base') {
+      const index =
+        typeof blocker.index === 'number' && Number.isFinite(blocker.index) ? Math.round(blocker.index) : NaN;
+      if (Number.isFinite(index) && index > 0) baseShelfIndexes.add(index);
+    } else if (blocker.source === 'sketch') {
+      sketchShelfBlockers.push(blocker);
+    }
+  }
+
+  if (baseShelfIndexes.size) {
+    const divs = readGridDivisions(args.cfg);
+    for (const shelfIndex of Array.from(baseShelfIndexes).sort((a, b) => a - b)) {
+      removeManualLayoutBaseShelf(args.cfg, {
+        divs,
+        shelfIndex,
+        topY: args.topY,
+        bottomY: args.bottomY,
+      });
+    }
+  }
+
+  if (sketchShelfBlockers.length) {
+    sketchShelfBlockers
+      .slice()
+      .sort((a, b) => (Number(b.index) || 0) - (Number(a.index) || 0))
+      .forEach(blocker => {
+        removeSketchShelfByBlocker({ extra: args.extra, shelves: args.shelves, blocker });
+      });
+  }
+}
 
 export function commitSketchModuleInternalDrawers(
   args: CommitSketchModuleInternalDrawerArgs
@@ -80,6 +180,18 @@ export function commitSketchModuleInternalDrawers(
     });
   }
 
+  const verticalContentBlockers = buildManualLayoutVerticalContentBlockers({
+    cfgRef: args.cfg,
+    shelves,
+    rods: Array.isArray(existingExtra?.rods) ? (existingExtra.rods as RecordMap[]) : [],
+    storageBarriers,
+    bottomY: args.bottomY,
+    topY: args.topY,
+    totalHeight: args.totalHeight,
+    pad: args.pad,
+    woodThick: args.woodThick,
+  });
+
   const placement = resolveManualLayoutSketchInternalDrawerPlacement({
     desiredCenterY: hover.yCenterAbs,
     bottomY: args.bottomY,
@@ -97,17 +209,7 @@ export function commitSketchModuleInternalDrawers(
         pad: args.pad,
         readCenterY: readNormalizedCenterY,
       }),
-      ...buildManualLayoutVerticalContentBlockers({
-        cfgRef: args.cfg,
-        shelves,
-        rods: Array.isArray(existingExtra?.rods) ? (existingExtra.rods as RecordMap[]) : [],
-        storageBarriers,
-        bottomY: args.bottomY,
-        topY: args.topY,
-        totalHeight: args.totalHeight,
-        pad: args.pad,
-        woodThick: args.woodThick,
-      }),
+      ...verticalContentBlockers,
       ...buildSketchModuleBoxVerticalBlockers({
         cfgRef: args.cfg,
         boxes,
@@ -146,21 +248,6 @@ export function commitSketchModuleInternalDrawers(
     totalHeight: args.totalHeight,
     pad: args.pad,
   });
-  const cassetteMetrics = resolveInternalDrawerCassetteMetrics({
-    baseY: normalized.baseYAbs,
-    drawerStackH: placement.stackH,
-    panelThicknessM: resolveInternalDrawerCassettePanelThickness(args.woodThick),
-  });
-  if (Array.isArray(extra.shelves)) {
-    removeSketchShelvesOverlappingInternalDrawerCassette({
-      shelves: extra.shelves,
-      cassetteMinY: cassetteMetrics.minY,
-      cassetteMaxY: cassetteMetrics.maxY,
-      bottomY: args.bottomY,
-      spanH: args.totalHeight,
-      woodThick: args.woodThick,
-    });
-  }
   const item = {
     id: createRandomId('sd'),
     yNormC: normalized.yNormC,
@@ -169,6 +256,17 @@ export function commitSketchModuleInternalDrawers(
     drawerHeightM: args.drawerHeightM,
   };
   mutableList.push(item);
+  removeShelvesTouchingInternalDrawerCassette({
+    cfg: args.cfg,
+    extra,
+    shelves,
+    verticalContentBlockers,
+    baseY: normalized.baseYAbs,
+    stackH: placement.stackH,
+    bottomY: args.bottomY,
+    topY: args.topY,
+    woodThick: args.woodThick,
+  });
   markSketchInternalDrawersDirty(args.cfg);
   return createManualLayoutSketchStackHoverRecord({
     host: args.hoverHost,

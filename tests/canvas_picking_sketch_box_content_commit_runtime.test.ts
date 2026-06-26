@@ -79,41 +79,6 @@ test('sketch-box content commit keeps free ext-drawer toggle semantics and clamp
   assert.equal(nextHover?.drawerCount, 5);
 });
 
-test('sketch-box internal drawer commit removes shelves that only collide with the cassette frame', () => {
-  const box = createBox({
-    shelves: [
-      { id: 'cassette-collides', yNorm: 0.6835, variant: 'regular', xNorm: 0.4 },
-      { id: 'keep', yNorm: 0.9, variant: 'regular', xNorm: 0.4 },
-    ],
-  });
-
-  commitSketchModuleBoxContent({
-    box,
-    boxId: 'sb1',
-    contentKind: 'drawers',
-    hoverMode: 'manual-toggle',
-    hoverHost: { tool: 'sketch_drawers', moduleKey: 2, isBottom: false } as any,
-    hoverRec: {
-      kind: 'box_content',
-      contentKind: 'drawers',
-      boxId: 'sb1',
-      op: 'add',
-      boxYNorm: 0.5,
-      boxBaseYNorm: 0.3275,
-      contentXNorm: 0.4,
-      stackH: 0.345,
-      drawerHeightM: 0.165,
-      woodThick: 0.02,
-    },
-  });
-
-  assert.equal(box.drawers.length, 1);
-  assert.deepEqual(
-    box.shelves.map((shelf: any) => shelf.id),
-    ['keep']
-  );
-});
-
 test('sketch-box divider commit preserves free-placement divider front depth from hover', () => {
   const box = createBox({ freePlacement: true });
 
@@ -399,4 +364,29 @@ test('sketch-box base commit does not move elevated free boxes when changing bas
 
   assert.equal(box.baseType, 'plinth');
   assert.equal(box.absY, 1.45);
+});
+
+test('sketch-box drawer commit removes shelf replaced by the internal drawer cassette', () => {
+  const box = createBox({ shelves: [{ id: 'sh1', yNorm: 0.4 }] });
+
+  commitSketchModuleBoxContent({
+    box,
+    boxId: 'sb1',
+    contentKind: 'drawers',
+    woodThick: 0.02,
+    hoverRec: {
+      kind: 'box_content',
+      contentKind: 'drawers',
+      boxId: 'sb1',
+      op: 'add',
+      boxYNorm: 0.6,
+      boxBaseYNorm: 0.42,
+      stackH: 0.36,
+      drawerH: 0.165,
+      drawerGap: 0.03,
+    },
+  });
+
+  assert.deepEqual(box.shelves, []);
+  assert.equal(box.drawers.length, 1);
 });

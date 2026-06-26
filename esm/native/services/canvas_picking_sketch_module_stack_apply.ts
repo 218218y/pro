@@ -281,6 +281,7 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
       boxId: hoverBoxId,
       contentKind: 'drawers',
       hoverRec: args.hoverRec,
+      woodThick: args.woodThick,
       hoverMode: 'manual-toggle',
       hoverHost: args.hoverHost,
     });
@@ -333,6 +334,7 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
       boxId: hoverBoxId,
       contentKind: 'ext_drawers',
       hoverRec: args.hoverRec,
+      woodThick: args.woodThick,
       hoverMode: 'manual-toggle',
       hoverHost: args.hoverHost,
     });

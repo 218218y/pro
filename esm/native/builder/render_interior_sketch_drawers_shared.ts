@@ -70,6 +70,10 @@ export type ApplySketchInternalDrawersOwnerArgs = {
   moduleIndex: number;
   moduleKeyStr: string;
   bodyMat: unknown;
+  currentShelfMat?: unknown;
+  createBoard?: InteriorOpsCallable;
+  getPartMaterial?: InteriorOpsCallable;
+  getPartColorValue?: InteriorOpsCallable;
   applyInternalDrawersOps: (args: InteriorValueRecord) => unknown;
   renderOpsHandleCatch: SketchDrawersCatchReporter;
 };

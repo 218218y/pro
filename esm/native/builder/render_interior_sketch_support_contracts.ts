@@ -8,7 +8,6 @@ import type {
   InteriorValueRecord,
 } from './render_interior_ops_contracts.js';
 import type {
-  SketchDrawerExtra,
   SketchRodExtra,
   SketchShelfExtra,
   SketchStorageBarrierExtra,
@@ -90,7 +89,6 @@ export type ApplySketchStorageBarriersArgs = {
 
 export type ApplySketchShelvesArgs = {
   shelves: SketchShelfExtra[];
-  drawers?: SketchDrawerExtra[];
   yFromNorm: (yNorm: unknown) => number | null;
   findBoxAtY: (y: number) => SketchBoxLocatorResult | null;
   braceCenterX: number;
@@ -103,9 +101,7 @@ export type ApplySketchShelvesArgs = {
   backZ: number;
   woodThick: number;
   shelfThick: number;
-  effectiveBottomY?: number;
   effectiveTopY: number;
-  spanH?: number;
   showContentsEnabled: boolean;
   addFoldedClothes?: InteriorOpsCallable;
   contentsPolicy: InteriorValueRecord;

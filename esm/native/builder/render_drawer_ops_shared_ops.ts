@@ -1,38 +1,5 @@
 import { isRecord, readFinite } from './render_drawer_ops_shared_guards.js';
-import type {
-  ExternalDrawerOpLike,
-  InternalDrawerCassetteOpLike,
-  InternalDrawerOpLike,
-} from './render_drawer_ops_shared_types.js';
-
-function readInternalDrawerCassetteOp(value: unknown): InternalDrawerCassetteOpLike | undefined {
-  if (!isRecord(value)) return undefined;
-  const partId = typeof value.partId === 'string' ? value.partId : '';
-  const width = readFinite(value.width, Number.NaN);
-  const height = readFinite(value.height, Number.NaN);
-  const depth = readFinite(value.depth, Number.NaN);
-  const panelThicknessM = readFinite(value.panelThicknessM, Number.NaN);
-  const x = readFinite(value.x, Number.NaN);
-  const y = readFinite(value.y, Number.NaN);
-  const z = readFinite(value.z, Number.NaN);
-  const drawerMinY = readFinite(value.drawerMinY, Number.NaN);
-  const drawerMaxY = readFinite(value.drawerMaxY, Number.NaN);
-  if (
-    !partId ||
-    !Number.isFinite(width) ||
-    !Number.isFinite(height) ||
-    !Number.isFinite(depth) ||
-    !Number.isFinite(panelThicknessM) ||
-    !Number.isFinite(x) ||
-    !Number.isFinite(y) ||
-    !Number.isFinite(z) ||
-    !Number.isFinite(drawerMinY) ||
-    !Number.isFinite(drawerMaxY)
-  ) {
-    return undefined;
-  }
-  return { partId, width, height, depth, panelThicknessM, x, y, z, drawerMinY, drawerMaxY };
-}
+import type { ExternalDrawerOpLike, InternalDrawerOpLike } from './render_drawer_ops_shared_types.js';
 
 function readPositionTriplet(value: unknown): { x?: number; y?: number; z?: number } | undefined {
   if (!isRecord(value)) return undefined;
@@ -104,6 +71,10 @@ export function readInternalDrawerOp(value: unknown): InternalDrawerOpLike | nul
   if (!partId || !Number.isFinite(width) || !Number.isFinite(height) || !Number.isFinite(depth)) return null;
   return {
     partId,
+    stackPartId:
+      typeof value.stackPartId === 'string' && value.stackPartId.trim()
+        ? value.stackPartId.trim()
+        : undefined,
     width,
     height,
     depth,
@@ -121,6 +92,33 @@ export function readInternalDrawerOp(value: unknown): InternalDrawerOpLike | nul
     sketchModuleKey: value.sketchModuleKey,
     sketchFreePlacement: value.sketchFreePlacement === true,
     sketchStack: value.sketchStack === 'bottom' ? 'bottom' : value.sketchStack === 'top' ? 'top' : undefined,
-    cassette: readInternalDrawerCassetteOp(value.cassette),
+    cassetteBaseY:
+      typeof value.cassetteBaseY === 'number' && Number.isFinite(value.cassetteBaseY)
+        ? value.cassetteBaseY
+        : undefined,
+    cassetteOuterWidth:
+      typeof value.cassetteOuterWidth === 'number' && Number.isFinite(value.cassetteOuterWidth)
+        ? value.cassetteOuterWidth
+        : undefined,
+    cassetteDepth:
+      typeof value.cassetteDepth === 'number' && Number.isFinite(value.cassetteDepth)
+        ? value.cassetteDepth
+        : undefined,
+    cassetteCenterX:
+      typeof value.cassetteCenterX === 'number' && Number.isFinite(value.cassetteCenterX)
+        ? value.cassetteCenterX
+        : undefined,
+    cassetteCenterZ:
+      typeof value.cassetteCenterZ === 'number' && Number.isFinite(value.cassetteCenterZ)
+        ? value.cassetteCenterZ
+        : undefined,
+    cassetteStackH:
+      typeof value.cassetteStackH === 'number' && Number.isFinite(value.cassetteStackH)
+        ? value.cassetteStackH
+        : undefined,
+    cassetteWoodThick:
+      typeof value.cassetteWoodThick === 'number' && Number.isFinite(value.cassetteWoodThick)
+        ? value.cassetteWoodThick
+        : undefined,
   };
 }

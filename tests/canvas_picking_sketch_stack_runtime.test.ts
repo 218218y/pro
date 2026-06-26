@@ -1258,3 +1258,68 @@ test('stack tool rejects sketch internal drawers in a hex cell with a clear toas
   assert.match(toasts[0]![0], /אי אפשר לבנות מגירות בתא משושה/);
   assert.equal(toasts[0]![1], 'error');
 });
+
+test('stack tool removes base shelf when an internal drawer cassette replaces the shelf plane', () => {
+  const cfg: Record<string, unknown> = {
+    isCustom: true,
+    gridDivisions: 5,
+    customData: {
+      shelves: [false, true, false, false],
+      shelfVariants: ['', 'regular', '', ''],
+    },
+  };
+  let nextHover: Record<string, unknown> | null = null;
+
+  const handled = tryCommitSketchModuleStackTool({
+    App: { services: { uiFeedback: { toast: () => {} } } } as any,
+    cfg,
+    tool: 'sketch_int_drawers',
+    hoverOk: false,
+    hoverRec: {},
+    bottomY: 0,
+    topY: 1,
+    totalHeight: 1,
+    pad: 0.02,
+    woodThick: 0.02,
+    hitYClamped: 0.6,
+    hoverHost: { tool: 'sketch_int_drawers', moduleKey: 2, isBottom: false },
+    writeSketchHover: (_app, hover) => {
+      nextHover = hover as Record<string, unknown> | null;
+    },
+  });
+
+  assert.equal(handled, true);
+  assert.equal((cfg.customData as Record<string, unknown>).shelves?.[1], false);
+  assert.equal((cfg.customData as Record<string, unknown>).shelfVariants?.[1], '');
+  assert.equal(Array.isArray((cfg.sketchExtras as Record<string, unknown>).drawers), true);
+  assert.equal(nextHover?.op, 'remove');
+});
+
+test('stack tool removes sketch shelf when an internal drawer cassette touches it', () => {
+  const cfg: Record<string, unknown> = {
+    sketchExtras: {
+      shelves: [{ id: 'sh1', yNorm: 0.4 }],
+    },
+  };
+
+  const handled = tryCommitSketchModuleStackTool({
+    App: { services: { uiFeedback: { toast: () => {} } } } as any,
+    cfg,
+    tool: 'sketch_int_drawers',
+    hoverOk: false,
+    hoverRec: {},
+    bottomY: 0,
+    topY: 1,
+    totalHeight: 1,
+    pad: 0.02,
+    woodThick: 0.02,
+    hitYClamped: 0.6,
+    hoverHost: { tool: 'sketch_int_drawers', moduleKey: 2, isBottom: false },
+    writeSketchHover: () => {},
+  });
+
+  assert.equal(handled, true);
+  const extras = cfg.sketchExtras as Record<string, unknown>;
+  assert.deepEqual(extras.shelves, []);
+  assert.equal(Array.isArray(extras.drawers), true);
+});

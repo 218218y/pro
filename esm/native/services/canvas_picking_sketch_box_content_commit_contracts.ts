@@ -14,6 +14,7 @@ export type CommitSketchModuleBoxContentArgs = {
   contentKind: string;
   hoverRec: RecordMap;
   floorY?: number;
+  woodThick?: number;
   hoverMode?: SketchBoxToggleHoverMode;
   hoverHost?: ManualLayoutSketchHoverHost | null;
 };

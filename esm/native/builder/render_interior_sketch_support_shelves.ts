@@ -1,5 +1,4 @@
 import {
-  DRAWER_DIMENSIONS,
   INTERIOR_FITTINGS_DIMENSIONS,
   MATERIAL_DIMENSIONS,
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
@@ -14,17 +13,6 @@ import type { ApplySketchShelvesArgs } from './render_interior_sketch_support_co
 
 import { readObject } from './render_interior_sketch_shared.js';
 import { normalizeSketchShelfVariant } from './render_interior_sketch_layout.js';
-import {
-  DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_M,
-  readSketchDrawerHeightMFromItem,
-  resolveSketchInternalDrawerMetrics,
-} from '../features/sketch_drawer_sizing.js';
-import { resolveSketchStackCenterYFromNormalizedItem } from '../features/sketch_stack_positioning.js';
-import {
-  resolveInternalDrawerCassetteMetrics,
-  resolveInternalDrawerCassettePanelThickness,
-  verticalRangesOverlap,
-} from '../features/sketch_internal_drawer_cassette.js';
 import type { RemovedFrameSideShelfRounding } from './removed_frame_side_brace_shelves.js';
 
 type RoundedShelfBoardOptions = {
@@ -62,7 +50,6 @@ function resolveShelfDepth(args: {
 export function applySketchShelves(args: ApplySketchShelvesArgs): void {
   const {
     shelves,
-    drawers = [],
     yFromNorm,
     findBoxAtY,
     braceCenterX,
@@ -75,9 +62,7 @@ export function applySketchShelves(args: ApplySketchShelvesArgs): void {
     backZ,
     woodThick,
     shelfThick,
-    effectiveBottomY,
     effectiveTopY,
-    spanH,
     showContentsEnabled,
     addFoldedClothes,
     contentsPolicy,
@@ -94,42 +79,6 @@ export function applySketchShelves(args: ApplySketchShelvesArgs): void {
   const forceBraceShelves = args.forceBraceShelves === true;
   const roundedShelfSide = args.roundedShelfSide || null;
 
-  const moduleBottomY =
-    typeof effectiveBottomY === 'number' && Number.isFinite(effectiveBottomY) ? effectiveBottomY : 0;
-  const moduleSpanH =
-    typeof spanH === 'number' && Number.isFinite(spanH) && spanH > 0
-      ? spanH
-      : Math.max(0, effectiveTopY - moduleBottomY);
-  const cassettePanelT = resolveInternalDrawerCassettePanelThickness(woodThick);
-  const padDrawer = Math.min(
-    DRAWER_DIMENSIONS.sketch.internalClampPadMaxM,
-    Math.max(
-      DRAWER_DIMENSIONS.sketch.internalClampPadMinM,
-      woodThick * DRAWER_DIMENSIONS.sketch.internalClampPadWoodRatio
-    )
-  );
-  const internalDrawerCassetteRanges = (Array.isArray(drawers) ? drawers : [])
-    .map(drawer => {
-      const metrics = resolveSketchInternalDrawerMetrics({
-        drawerHeightM: readSketchDrawerHeightMFromItem(drawer, DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_M),
-      });
-      const centerY = resolveSketchStackCenterYFromNormalizedItem({
-        item: drawer,
-        bottomY: moduleBottomY,
-        topY: effectiveTopY,
-        totalHeight: moduleSpanH,
-        stackH: metrics.stackH,
-        pad: padDrawer,
-      });
-      if (centerY == null) return null;
-      return resolveInternalDrawerCassetteMetrics({
-        baseY: centerY - metrics.stackH / 2,
-        drawerStackH: metrics.stackH,
-        panelThicknessM: cassettePanelT,
-      });
-    })
-    .filter((range): range is NonNullable<typeof range> => !!range);
-
   function shelfHeightForVariant(variant: ReturnType<typeof normalizeSketchShelfVariant>): number {
     if (variant === 'glass') return MATERIAL_DIMENSIONS.glassShelf.thicknessM;
     if (variant === 'double') {
@@ -139,15 +88,6 @@ export function applySketchShelves(args: ApplySketchShelvesArgs): void {
       );
     }
     return shelfThick;
-  }
-
-  function isShelfSuppressedByInternalDrawerCassette(shelfY: number, shelfH: number): boolean {
-    if (!internalDrawerCassetteRanges.length) return false;
-    const minY = shelfY - shelfH / 2;
-    const maxY = shelfY + shelfH / 2;
-    return internalDrawerCassetteRanges.some(range =>
-      verticalRangesOverlap({ minA: minY, maxA: maxY, minB: range.minY, maxB: range.maxY })
-    );
   }
 
   function resolveNextShelfBottomY(currentY: number): number {
@@ -164,10 +104,7 @@ export function applySketchShelves(args: ApplySketchShelvesArgs): void {
         continue;
       }
 
-      const nextShelfH = shelfHeightForVariant(normalizeSketchShelfVariant(nextShelf.variant));
-      if (isShelfSuppressedByInternalDrawerCassette(nextY, nextShelfH)) continue;
-
-      const nextBottomY = nextY - nextShelfH / 2;
+      const nextBottomY = nextY - shelfHeightForVariant(normalizeSketchShelfVariant(nextShelf.variant)) / 2;
       if (nextBottomY < topLimitY) topLimitY = nextBottomY;
     }
     return topLimitY;
@@ -218,7 +155,6 @@ export function applySketchShelves(args: ApplySketchShelvesArgs): void {
     const backZ0 = boxHere ? boxHere.innerBackZ : internalDepth > 0 ? backZ : internalZ;
     const shelfZ = backZ0 + shelfDepth / 2;
     const shelfH = shelfHeightForVariant(variant);
-    if (isShelfSuppressedByInternalDrawerCassette(y, shelfH)) continue;
     const shelfPartId = createSketchShelfPartId(moduleKeyStr, i + 1);
     const mat =
       isGlass && glassMat

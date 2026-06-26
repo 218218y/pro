@@ -10,13 +10,6 @@ class FakeVector3 {
     public z = 0
   ) {}
 
-  set(x = 0, y = 0, z = 0) {
-    this.x = x;
-    this.y = y;
-    this.z = z;
-    return this;
-  }
-
   copy(value: FakeVector3) {
     this.x = value.x;
     this.y = value.y;
@@ -186,32 +179,20 @@ test('internal drawer body accepts explicit drawer-box paint only on its own box
   assert.equal(internalDrawer.userData.partId, 'drawer_box__drawer_1');
 });
 
-test('internal drawer cassette frame renders once around paired internal drawer ops', () => {
+test('internal drawer cassette panels use shelf paint identity and render once per stack', () => {
   const wardrobeGroup = new FakeGroup();
   const drawers: unknown[] = [];
-  const registered: Array<{ partId: unknown; kind: unknown }> = [];
-  const outlined: unknown[] = [];
+  const boardCalls: unknown[][] = [];
+  const shelfPaint = { id: 'all-shelves-paint' };
+  const bodyMat = { id: 'body' };
   const renderDrawerOps = createBuilderRenderDrawerOps({
     __app: input => (input as { App: never }).App,
     __ops: () => undefined,
     __wardrobeGroup: () => wardrobeGroup as never,
-    __reg: (_App, partId, _obj, kind) => registered.push({ partId, kind }),
+    __reg: () => undefined,
     __drawers: () => drawers as never[],
     getMirrorMaterial: () => null,
   });
-
-  const cassette = {
-    partId: 'stack_1_cassette',
-    width: 0.7,
-    height: 0.38,
-    depth: 0.44,
-    panelThicknessM: 0.02,
-    x: 0.1,
-    y: 1,
-    z: -0.08,
-    drawerMinY: 0.82,
-    drawerMaxY: 1.16,
-  };
 
   const result = renderDrawerOps.applyInternalDrawersOps({
     App: {},
@@ -222,27 +203,58 @@ test('internal drawer cassette frame renders once around paired internal drawer 
       BoxGeometry: FakeBoxGeometry,
     },
     ops: [
-      { partId: 'drawer_lower', width: 0.66, height: 0.16, depth: 0.4, y: 0.9, cassette },
-      { partId: 'drawer_upper', width: 0.66, height: 0.16, depth: 0.4, y: 1.08, cassette },
+      {
+        partId: 'stack_1_lower',
+        stackPartId: 'stack_1',
+        width: 0.5,
+        height: 0.165,
+        depth: 0.4,
+        cassetteBaseY: 0.42,
+        cassetteOuterWidth: 0.7,
+        cassetteDepth: 0.45,
+        cassetteCenterX: 0.1,
+        cassetteCenterZ: -0.2,
+        cassetteStackH: 0.36,
+        cassetteWoodThick: 0.02,
+      },
+      {
+        partId: 'stack_1_upper',
+        stackPartId: 'stack_1',
+        width: 0.5,
+        height: 0.165,
+        depth: 0.4,
+        cassetteBaseY: 0.42,
+        cassetteOuterWidth: 0.7,
+        cassetteDepth: 0.45,
+        cassetteCenterX: 0.1,
+        cassetteCenterZ: -0.2,
+        cassetteStackH: 0.36,
+        cassetteWoodThick: 0.02,
+      },
     ],
     wardrobeGroup,
     createInternalDrawerBox: () => new FakeGroup(),
-    addOutlines: (mesh: unknown) => outlined.push(mesh),
-    whiteMat: { id: 'drawer-box' },
+    createBoard: (...args: unknown[]) => {
+      boardCalls.push(args);
+      return new FakeGroup();
+    },
+    getPartColorValue: (partId: string) => (partId === 'all_shelves' ? '#2277aa' : undefined),
+    getPartMaterial: (partId: string) => (partId === 'all_shelves' ? shelfPaint : bodyMat),
+    bodyMat,
+    currentShelfMat: bodyMat,
+    sketchMode: true,
+    showContentsEnabled: false,
   });
 
   assert.equal(result, true);
-  assert.equal(drawers.length, 2);
-  assert.equal(wardrobeGroup.children.length, 6);
+  assert.equal(boardCalls.length, 4);
   assert.deepEqual(
-    registered.filter(entry => entry.kind === 'intDrawerCassette').map(entry => entry.partId),
+    boardCalls.map(call => call[7]),
     ['stack_1_cassette_bottom', 'stack_1_cassette_top', 'stack_1_cassette_left', 'stack_1_cassette_right']
   );
-  assert.equal(outlined.length, 4);
-  const bottom = wardrobeGroup.children[0] as FakeMesh;
-  const top = wardrobeGroup.children[1] as FakeMesh;
-  assert.equal(bottom.userData.__wpInternalDrawerCassettePart, 'bottom');
-  assert.equal(top.userData.__wpInternalDrawerCassettePart, 'top');
-  assert.ok(Math.abs(bottom.position.y - 0.81) < 1e-9);
-  assert.ok(Math.abs(top.position.y - 1.17) < 1e-9);
+  assert.equal(
+    boardCalls.every(call => call[6] === shelfPaint),
+    true
+  );
+  assert.equal(drawers.length, 2);
 });
