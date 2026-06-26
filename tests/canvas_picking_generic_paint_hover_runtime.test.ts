@@ -580,6 +580,43 @@ test('generic paint hover shows object-box feedback for plinth targets', () => {
   assert.deepEqual(previews[0]?.previewObjects, [plinth]);
 });
 
+test('generic paint hover shows object-box feedback for leg platform stage targets', () => {
+  const runHover = (partId: 'base_leg_platform_bottom' | 'base_leg_platform_top') => {
+    const wardrobeGroup = { children: [] as unknown[], userData: { partId: 'root' } };
+    const platform = createBoxObject(partId, {
+      width: 1.4,
+      height: 0.028,
+      depth: 0.58,
+      y: partId === 'base_leg_platform_top' ? 2.414 : 0.134,
+    });
+    platform.parent = wardrobeGroup;
+    wardrobeGroup.children.push(platform);
+
+    const previews: Record<string, unknown>[] = [];
+    const handled = tryHandleGenericPartPaintHover({
+      App: createApp({ wardrobeGroup }),
+      ndcX: 0,
+      ndcY: 0,
+      paintSelection: 'walnut',
+      raycaster: createRaycaster([{ object: platform, point: { x: 0, y: platform.position.y, z: 0.02 } }]),
+      mouse: { x: 0, y: 0 },
+      previewRo: {
+        setSketchPlacementPreview(args: Record<string, unknown>) {
+          previews.push(args);
+        },
+      },
+    });
+
+    assert.equal(handled, true, partId);
+    assert.equal(previews.length, 1, partId);
+    assert.equal(previews[0]?.kind, 'object_boxes', partId);
+    assert.deepEqual(previews[0]?.previewObjects, [platform], partId);
+  };
+
+  runHover('base_leg_platform_bottom');
+  runHover('base_leg_platform_top');
+});
+
 test('generic paint hover shows object-box feedback for pentagon shelves, floor, and ceiling thin boards', () => {
   const runHover = (partId: string) => {
     const wardrobeGroup = { children: [] as unknown[], userData: { partId: 'root' } };

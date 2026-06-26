@@ -47,6 +47,14 @@ function isCornerPlinthPaintKey(partKey: string): boolean {
   return key === 'corner_plinth' || key === 'corner_pent_plinth';
 }
 
+function isBaseLegPlatformPaintKey(partKey: string): boolean {
+  return (
+    partKey === 'base_leg_platform' ||
+    partKey === 'base_leg_platform_bottom' ||
+    partKey === 'base_leg_platform_top'
+  );
+}
+
 function shouldUseObjectBoxesPaintPreview(partKeys: string[]): boolean {
   return partKeys.some(
     key =>
@@ -54,6 +62,7 @@ function shouldUseObjectBoxesPaintPreview(partKeys: string[]): boolean {
       key === 'body_stack_split_divider' ||
       key === 'plinth_color' ||
       key === 'lower_plinth_color' ||
+      isBaseLegPlatformPaintKey(key) ||
       isDrawerBoxPartId(key) ||
       isShelfBoardPartId(key) ||
       isCornerPentagonThinBoardPaintKey(key) ||
