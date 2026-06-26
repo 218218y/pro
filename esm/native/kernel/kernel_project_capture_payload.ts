@@ -4,6 +4,7 @@ import { readUiRawScalarFromSnapshot } from '../runtime/ui_raw_selectors.js';
 import { readMirrorLayoutMap } from '../features/mirror_layout.js';
 import { readDoorTrimMap } from '../features/door_trim.js';
 import { normalizeDoorMountThicknessCm } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY } from '../features/shoe_drawer_base_constraint.js';
 
 import { asString } from './kernel_shared.js';
 import {
@@ -66,6 +67,10 @@ function buildProjectCaptureSettings(
     height: overallHeight,
     depth: overallDepth,
     baseType: asString(uiRec.baseType, ''),
+    [SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY]:
+      typeof uiRec[SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY] === 'string'
+        ? uiRec[SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY]
+        : null,
     baseLegStyle: asString(uiRec.baseLegStyle, 'tapered'),
     baseLegColor: asString(uiRec.baseLegColor, 'black'),
     baseLegPlatformMode: asString(uiRec.baseLegPlatformMode, 'stage') === 'plain' ? 'plain' : 'stage',

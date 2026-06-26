@@ -33,7 +33,10 @@ import {
   __wp_writeSketchHover,
 } from './canvas_picking_local_helpers.js';
 import { __wp_toModuleKey, __wp_toast } from './canvas_picking_core_helpers.js';
-import { applyShoeDrawerBaseAutoNoneIfNeeded } from './canvas_picking_shoe_drawer_base_auto_none.js';
+import {
+  applyShoeDrawerBaseAutoNoneIfNeeded,
+  restoreShoeDrawerBaseIfNoShoeDrawersRemain,
+} from './canvas_picking_shoe_drawer_base_auto_none.js';
 import { commitSketchFreePlacementHoverRecord } from './canvas_picking_sketch_free_commit.js';
 import { resolveSketchBoxStackPreviewContext } from './canvas_picking_sketch_box_stack_preview_context.js';
 import { createManualLayoutSketchBoxContentHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
@@ -338,6 +341,7 @@ export function tryCommitSketchBoxRegularExternalDrawersHover(App: AppContainer)
   if (moduleKey == null) return false;
   const host = { moduleKey, isBottom: hover.hostIsBottom === true || hover.isBottom === true };
   const addingShoeDrawer = hover.op === 'add' && hover.hasShoeDrawer === true;
+  const removingShoeDrawer = hover.op === 'remove' && hover.hasShoeDrawer === false;
   const commit = commitSketchFreePlacementHoverRecord({
     App,
     host,
@@ -349,6 +353,8 @@ export function tryCommitSketchBoxRegularExternalDrawersHover(App: AppContainer)
   if (!commit.committed) return false;
   if (addingShoeDrawer) {
     applyShoeDrawerBaseAutoNoneIfNeeded(App, 'extDrawers.freeBoxRegular.shoe:autoBaseNone');
+  } else if (removingShoeDrawer) {
+    restoreShoeDrawerBaseIfNoShoeDrawersRemain(App, 'extDrawers.freeBoxRegular.shoe:autoBaseRestore');
   }
   if (commit.nextHover) __wp_writeSketchHover(App, commit.nextHover);
   else __wp_clearSketchHover(App);

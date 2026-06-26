@@ -315,6 +315,27 @@ test('[structure-structural-controller] base and sliding build-visible writes us
   );
 });
 
+test('[structure-structural-controller] blocks base type selection when shoe drawers exist', () => {
+  const calls = [];
+  const mod = loadStructureStructuralControllerModule(calls, {
+    readStoreStateMaybe: () => ({
+      config: {
+        modulesConfiguration: [{ hasShoeDrawer: true }],
+      },
+    }),
+  });
+  const controller = mod.createStructureTabStructuralController(createArgs({ calls }));
+
+  controller.setBaseType('plinth');
+  controller.setBaseType('legs');
+  controller.setBaseType('none');
+
+  assert.equal(calls.filter(entry => entry[0] === 'toast').length, 2);
+  assert.ok(calls.every(entry => !(entry[0] === 'setUiBaseType' && entry[2] === 'plinth')));
+  assert.ok(calls.every(entry => !(entry[0] === 'setUiBaseType' && entry[2] === 'legs')));
+  assert.ok(calls.some(entry => entry[0] === 'setUiBaseType' && entry[2] === 'none'));
+});
+
 test('[structure-structural-controller] blocks legs-with-stage when height/depth special cells exist', () => {
   const calls = [];
   const mod = loadStructureStructuralControllerModule(calls, {

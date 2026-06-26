@@ -6,7 +6,10 @@ import { tryCommitSketchBoxRegularExternalDrawersHover } from '../esm/native/ser
 import {
   SHOE_DRAWER_BASE_AUTO_NONE_MESSAGE,
   applyShoeDrawerBaseAutoNoneIfNeeded,
+  getShoeDrawerBaseAutoRestoreMessage,
+  restoreShoeDrawerBaseIfNoShoeDrawersRemain,
 } from '../esm/native/services/canvas_picking_shoe_drawer_base_auto_none.ts';
+import { SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY } from '../esm/native/features/shoe_drawer_base_constraint.ts';
 
 function createAppHarness(baseType = 'plinth') {
   const state: Record<string, any> = {
@@ -79,13 +82,19 @@ test('shoe drawer auto-base helper switches cabinet base to none and notifies on
   assert.equal(applyShoeDrawerBaseAutoNoneIfNeeded(App, 'test.shoe'), true);
 
   assert.equal(state.ui.baseType, 'none');
-  assert.deepEqual(calls.setBaseType, [{ value: 'none', meta: { source: 'test.shoe', immediate: true } }]);
+  assert.equal(state.ui[SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY], 'legs');
+  assert.deepEqual(calls.uiPatches, [
+    {
+      patch: { baseType: 'none', [SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY]: 'legs' },
+      meta: { source: 'test.shoe', immediate: true },
+    },
+  ]);
   assert.equal(calls.toasts.length, 1);
   assert.equal(calls.toasts[0]?.message, SHOE_DRAWER_BASE_AUTO_NONE_MESSAGE);
   assert.equal(calls.toasts[0]?.type, 'info');
 
   assert.equal(applyShoeDrawerBaseAutoNoneIfNeeded(App, 'test.shoe.again'), false);
-  assert.equal(calls.setBaseType.length, 1);
+  assert.equal(calls.uiPatches.length, 1);
   assert.equal(calls.toasts.length, 1);
 });
 
@@ -108,8 +117,9 @@ test('module shoe drawer click applies hasShoeDrawer and auto-selects base none'
   assert.equal(state.config.hasShoeDrawer, true);
   assert.equal(state.ui.baseType, 'none');
   assert.deepEqual(patchCalls[0], { mk: 1, meta: { source: 'extDrawers.toggle', immediate: true } });
-  assert.equal(calls.setBaseType[0]?.value, 'none');
-  assert.equal(calls.setBaseType[0]?.meta?.source, 'extDrawers.shoe:autoBaseNone');
+  assert.equal(calls.uiPatches[0]?.patch?.baseType, 'none');
+  assert.equal(calls.uiPatches[0]?.patch?.[SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY], 'plinth');
+  assert.equal(calls.uiPatches[0]?.meta?.source, 'extDrawers.shoe:autoBaseNone');
   assert.equal(calls.toasts[0]?.message, SHOE_DRAWER_BASE_AUTO_NONE_MESSAGE);
 });
 
@@ -128,7 +138,7 @@ test('removing an existing module shoe drawer does not auto-change or notify bas
   assert.equal(handled, true);
   assert.equal(state.config.hasShoeDrawer, false);
   assert.equal(state.ui.baseType, 'legs');
-  assert.equal(calls.setBaseType.length, 0);
+  assert.equal(calls.uiPatches.length, 0);
   assert.equal(calls.toasts.length, 0);
 });
 
@@ -174,8 +184,133 @@ test('free-box regular external shoe drawer commit also auto-selects base none',
   assert.equal(state.ui.baseType, 'none');
   assert.equal(calls.modulePatches[0]?.side, 'top');
   assert.equal(calls.modulePatches[0]?.moduleKey, 2);
-  assert.equal(calls.setBaseType[0]?.meta?.source, 'extDrawers.freeBoxRegular.shoe:autoBaseNone');
+  assert.equal(calls.uiPatches[0]?.meta?.source, 'extDrawers.freeBoxRegular.shoe:autoBaseNone');
+  assert.equal(calls.uiPatches[0]?.patch?.[SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY], 'plinth');
   assert.equal(calls.toasts[0]?.message, SHOE_DRAWER_BASE_AUTO_NONE_MESSAGE);
   const boxes = (state.config.sketchExtras.boxes || []) as Array<Record<string, any>>;
   assert.equal(boxes[0]?.regularExtDrawers?.[0]?.hasShoeDrawer, true);
+});
+
+test('auto-base helper restores the previous forced base only after all shoe drawers are gone', () => {
+  const { App, state, calls } = createAppHarness('none');
+  state.ui[SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY] = 'plinth';
+  state.config.modulesConfiguration = [{ hasShoeDrawer: true }];
+
+  assert.equal(restoreShoeDrawerBaseIfNoShoeDrawersRemain(App, 'test.restore.blocked'), false);
+  assert.equal(state.ui.baseType, 'none');
+  assert.equal(calls.uiPatches.length, 0);
+
+  state.config.modulesConfiguration[0].hasShoeDrawer = false;
+  assert.equal(restoreShoeDrawerBaseIfNoShoeDrawersRemain(App, 'test.restore'), true);
+
+  assert.equal(state.ui.baseType, 'plinth');
+  assert.equal(state.ui[SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY], null);
+  assert.deepEqual(calls.uiPatches[0], {
+    patch: { baseType: 'plinth', [SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY]: null },
+    meta: { source: 'test.restore', immediate: true },
+  });
+  assert.equal(calls.toasts[0]?.message, getShoeDrawerBaseAutoRestoreMessage('plinth'));
+  assert.equal(calls.toasts[0]?.type, 'info');
+});
+
+test('removing the final module shoe drawer restores the base selected before the forced none', () => {
+  const { App, state, calls } = createAppHarness('none');
+  state.ui[SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY] = 'legs';
+  state.config.hasShoeDrawer = true;
+
+  const handled = tryHandleExternalDrawerModeClick({
+    App,
+    foundModuleIndex: 1,
+    activeModuleKey: 1,
+    isExtDrawerEditMode: true,
+    patchConfigForKey: (_mk, patcher) => patcher(state.config as never),
+  });
+
+  assert.equal(handled, true);
+  assert.equal(state.config.hasShoeDrawer, false);
+  assert.equal(state.ui.baseType, 'legs');
+  assert.equal(state.ui[SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY], null);
+  assert.equal(calls.uiPatches[0]?.meta?.source, 'extDrawers.shoe:autoBaseRestore');
+  assert.equal(calls.toasts[0]?.message, getShoeDrawerBaseAutoRestoreMessage('legs'));
+});
+
+test('removing one shoe drawer does not restore the base while another shoe drawer still exists', () => {
+  const { App, state, calls } = createAppHarness('none');
+  state.ui[SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY] = 'plinth';
+  state.config.hasShoeDrawer = true;
+  state.config.modulesConfiguration = [{ hasShoeDrawer: true }];
+
+  const handled = tryHandleExternalDrawerModeClick({
+    App,
+    foundModuleIndex: 1,
+    activeModuleKey: 1,
+    isExtDrawerEditMode: true,
+    patchConfigForKey: (_mk, patcher) => patcher(state.config as never),
+  });
+
+  assert.equal(handled, true);
+  assert.equal(state.config.hasShoeDrawer, false);
+  assert.equal(state.config.modulesConfiguration[0].hasShoeDrawer, true);
+  assert.equal(state.ui.baseType, 'none');
+  assert.equal(state.ui[SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY], 'plinth');
+  assert.equal(calls.uiPatches.length, 0);
+  assert.equal(calls.toasts.length, 0);
+});
+
+test('removing the final free-box shoe drawer restores the previous forced base', () => {
+  const { App, state, calls } = createAppHarness('none');
+  state.ui[SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY] = 'plinth';
+  state.config.sketchExtras = {
+    boxes: [
+      {
+        id: 'free-shoe-box',
+        freePlacement: true,
+        absX: 0,
+        absY: 1,
+        widthM: 0.8,
+        depthM: 0.4,
+        heightM: 1,
+        regularExtDrawers: [
+          {
+            id: 'drawer-with-shoe',
+            xNorm: 0.5,
+            yNormC: 0.5,
+            yNorm: 0,
+            count: 0,
+            hasShoeDrawer: true,
+          },
+        ],
+      },
+    ],
+  };
+  App.render.cache.__lastSketchHover = {
+    ts: Date.now(),
+    tool: 'ext_drawers_regular_free_box',
+    moduleKey: 2,
+    isBottom: false,
+    hostModuleKey: 2,
+    hostIsBottom: false,
+    kind: 'box_content',
+    contentKind: 'regular_ext_drawers',
+    freePlacement: true,
+    boxId: 'free-shoe-box',
+    op: 'remove',
+    removeId: 'drawer-with-shoe',
+    contentXNorm: 0.5,
+    boxYNorm: 0.5,
+    boxBaseYNorm: 0,
+    drawerCount: 0,
+    hasShoeDrawer: false,
+    drawerHeightM: 0.2,
+  };
+
+  const handled = tryCommitSketchBoxRegularExternalDrawersHover(App);
+
+  assert.equal(handled, true);
+  assert.equal(state.ui.baseType, 'plinth');
+  assert.equal(state.ui[SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY], null);
+  assert.equal(calls.uiPatches[0]?.meta?.source, 'extDrawers.freeBoxRegular.shoe:autoBaseRestore');
+  assert.equal(calls.toasts[0]?.message, getShoeDrawerBaseAutoRestoreMessage('plinth'));
+  const boxes = (state.config.sketchExtras.boxes || []) as Array<Record<string, any>>;
+  assert.equal(boxes[0]?.regularExtDrawers?.length, 0);
 });

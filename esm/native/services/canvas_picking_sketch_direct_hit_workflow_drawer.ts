@@ -22,6 +22,7 @@ import {
   removeSketchDrawerById,
   removeSketchExternalDrawerById,
 } from './canvas_picking_sketch_direct_hit_workflow_drawers_shared.js';
+import { restoreShoeDrawerBaseIfNoShoeDrawersRemain } from './canvas_picking_shoe_drawer_base_auto_none.js';
 
 function readSketchInternalDrawerIdFromPartId(partId: string, moduleKey: unknown): string {
   const prefix = `div_int_sketch_${String(moduleKey)}_`;
@@ -131,6 +132,7 @@ export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDir
             },
             createCanvasPickingConfigStructuralPatchMeta('sketch.removeExternalDrawerByCrossHit')
           );
+          restoreShoeDrawerBaseIfNoShoeDrawersRemain(App, 'sketch.removeExternalDrawerByHit:autoBaseRestore');
           return true;
         }
       }
@@ -267,6 +269,10 @@ export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDir
         },
         createCanvasPickingConfigStructuralPatchMeta('sketch.removeStandardExternalDrawerByHit')
       );
+      restoreShoeDrawerBaseIfNoShoeDrawersRemain(
+        App,
+        'sketch.removeStandardExternalDrawerByHit:autoBaseRestore'
+      );
       return true;
     }
 
@@ -351,6 +357,7 @@ export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDir
             },
             createCanvasPickingConfigStructuralPatchMeta('sketch.removeExternalDrawerByHit')
           );
+          restoreShoeDrawerBaseIfNoShoeDrawersRemain(App, 'sketch.removeExternalDrawerByHit:autoBaseRestore');
           return true;
         }
       }

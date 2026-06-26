@@ -24,6 +24,11 @@ import {
   configHasActiveHeightDepthSpecialDims,
 } from '../../../features/base_leg_stage_special_dims_guard.js';
 import { normalizeBasePlinthHeightCm } from '../../../features/base_plinth_support.js';
+import {
+  SHOE_DRAWER_BASE_BLOCKED_MESSAGE,
+  configHasShoeDrawers,
+  isBlockingShoeDrawerBaseType,
+} from '../../../features/shoe_drawer_base_constraint.js';
 import { getUiFeedback, readStoreStateMaybe } from '../../../services/api.js';
 import {
   commitStructureRawValue,
@@ -47,12 +52,20 @@ function readAppConfigSnapshot(app: unknown): UnknownRecord {
   return isRecord(state?.config) ? state.config : {};
 }
 
-function toastBaseLegStageSpecialDimsSelectBlocked(app: unknown): void {
+function toastStructureGuardMessage(app: unknown, message: string): void {
   try {
-    getUiFeedback(app).toast(BASE_LEG_STAGE_SPECIAL_DIMS_SELECT_BLOCKED_MESSAGE, 'error');
+    getUiFeedback(app).toast(message, 'error');
   } catch {
     // Feedback is secondary; the guard itself must remain fail-closed.
   }
+}
+
+function toastBaseLegStageSpecialDimsSelectBlocked(app: unknown): void {
+  toastStructureGuardMessage(app, BASE_LEG_STAGE_SPECIAL_DIMS_SELECT_BLOCKED_MESSAGE);
+}
+
+function toastShoeDrawerBaseSelectBlocked(app: unknown): void {
+  toastStructureGuardMessage(app, SHOE_DRAWER_BASE_BLOCKED_MESSAGE);
 }
 
 function shouldBlockSelectingBaseLegStage(app: unknown): boolean {
@@ -62,6 +75,16 @@ function shouldBlockSelectingBaseLegStage(app: unknown): boolean {
 function blockSelectingBaseLegStageIfNeeded(app: unknown): boolean {
   if (!shouldBlockSelectingBaseLegStage(app)) return false;
   toastBaseLegStageSpecialDimsSelectBlocked(app);
+  return true;
+}
+
+function shouldBlockSelectingBaseBecauseOfShoeDrawers(app: unknown, nextBaseType: unknown): boolean {
+  return isBlockingShoeDrawerBaseType(nextBaseType) && configHasShoeDrawers(readAppConfigSnapshot(app));
+}
+
+function blockSelectingBaseBecauseOfShoeDrawersIfNeeded(app: unknown, nextBaseType: unknown): boolean {
+  if (!shouldBlockSelectingBaseBecauseOfShoeDrawers(app, nextBaseType)) return false;
+  toastShoeDrawerBaseSelectBlocked(app);
   return true;
 }
 
@@ -212,6 +235,7 @@ export function createStructureTabStructuralWriteController(
 
     setBaseType(next: 'plinth' | 'legs' | 'none') {
       const nextBaseType = normalizeStructureBaseType(next);
+      if (blockSelectingBaseBecauseOfShoeDrawersIfNeeded(args.app, nextBaseType)) return;
       if (nextBaseType === 'legs' && blockSelectingBaseLegStageIfNeeded(args.app)) return;
 
       applyImmediateStructureUiPatch(args, 'react:structure:baseType', { baseType: nextBaseType }, meta => {

@@ -23,6 +23,7 @@ import {
   readProjectToggles,
 } from './project_io_load_helpers_shared.js';
 import { buildProjectConfigSnapshot as buildProjectConfigSnapshotImpl } from './project_io_load_helpers_config.js';
+import { SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY } from '../features/shoe_drawer_base_constraint.js';
 
 export type {
   ProjectIoPrevUiModeLike,
@@ -122,6 +123,10 @@ export function buildProjectUiSnapshot(
 
     wardrobeType: settings.wardrobeType || 'hinged',
     baseType: settings.baseType,
+    [SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY]:
+      typeof settings[SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY] === 'string'
+        ? settings[SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY]
+        : null,
     baseLegStyle: settings.baseLegStyle,
     baseLegColor: settings.baseLegColor,
     baseLegPlatformMode: settings.baseLegPlatformMode === 'plain' ? 'plain' : 'stage',
