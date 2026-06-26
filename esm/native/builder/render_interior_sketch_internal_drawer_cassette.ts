@@ -4,24 +4,14 @@ import {
   resolveShelfPartMaterial,
 } from '../features/shelf_part_identity.js';
 import {
-  createSketchInternalDrawerCassettePanelPartId,
+  createSketchInternalDrawerCassettePartId,
   resolveSketchInternalDrawerCassetteWoodThick,
 } from '../features/sketch_internal_drawer_cassette.js';
+import type { BuilderCreateBoardFn } from '../../../types';
 import type { InteriorValueRecord } from './render_interior_ops_contracts.js';
 
-type CreateBoardFn = (
-  width: number,
-  height: number,
-  depth: number,
-  x: number,
-  y: number,
-  z: number,
-  material: unknown,
-  partId: string
-) => unknown;
-
 export type SketchInternalDrawerCassettePanelArgs = {
-  createBoard?: CreateBoardFn | null;
+  createBoard?: BuilderCreateBoardFn | null;
   stackPartId: string;
   centerX: number;
   baseY: number;
@@ -104,13 +94,11 @@ export function emitSketchInternalDrawerCassettePanels(args: SketchInternalDrawe
     },
   ];
 
+  const cassettePartId = createSketchInternalDrawerCassettePartId(args.stackPartId);
   let emitted = false;
   for (let i = 0; i < panels.length; i += 1) {
     const panel = panels[i];
-    const partId = createSketchInternalDrawerCassettePanelPartId({
-      stackPartId: args.stackPartId,
-      panel: panel.suffix,
-    });
+    const partId = cassettePartId;
     const mesh = args.createBoard(
       panel.w,
       panel.h,

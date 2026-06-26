@@ -195,7 +195,15 @@ export function resolveSketchModuleVerticalRangePlacementAgainstDrawers(args: {
     const stackGap = readStackGap(stack);
     const stackMinY = Math.min(stack.minY, stack.maxY) - stackGap;
     const stackMaxY = Math.max(stack.minY, stack.maxY) + stackGap;
-    if (pointerY >= stackMinY - TOUCH_EPSILON_M && pointerY <= stackMaxY + TOUCH_EPSILON_M) {
+    const pointerMinY =
+      typeof stack.pointerMinY === 'number' && Number.isFinite(stack.pointerMinY)
+        ? stack.pointerMinY
+        : stackMinY;
+    const pointerMaxY =
+      typeof stack.pointerMaxY === 'number' && Number.isFinite(stack.pointerMaxY)
+        ? stack.pointerMaxY
+        : stackMaxY;
+    if (pointerY >= pointerMinY - TOUCH_EPSILON_M && pointerY <= pointerMaxY + TOUCH_EPSILON_M) {
       return { centerY, blocked: true };
     }
     if (pointerY < stackMinY) {

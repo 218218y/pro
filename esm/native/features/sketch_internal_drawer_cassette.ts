@@ -1,10 +1,21 @@
 import { DRAWER_DIMENSIONS, MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 export const SKETCH_INTERNAL_DRAWER_CASSETTE_TOUCH_EPSILON_M = 1e-6;
-export const SKETCH_INTERNAL_DRAWER_CASSETTE_PANEL_SUFFIXES = ['bottom', 'top', 'left', 'right'] as const;
 
-export type SketchInternalDrawerCassettePanelSuffix =
-  (typeof SKETCH_INTERNAL_DRAWER_CASSETTE_PANEL_SUFFIXES)[number];
+export const SKETCH_INTERNAL_DRAWER_CASSETTE_PART_SUFFIX = '_cassette';
+
+export function createSketchInternalDrawerCassettePartId(stackPartId: unknown): string {
+  const raw =
+    typeof stackPartId === 'string' || typeof stackPartId === 'number' ? String(stackPartId).trim() : '';
+  return raw
+    ? `${raw}${SKETCH_INTERNAL_DRAWER_CASSETTE_PART_SUFFIX}`
+    : `internal_drawer${SKETCH_INTERNAL_DRAWER_CASSETTE_PART_SUFFIX}`;
+}
+
+export function isSketchInternalDrawerCassettePartId(partId: unknown): boolean {
+  const raw = typeof partId === 'string' ? partId.trim() : '';
+  return !!raw && raw.endsWith(SKETCH_INTERNAL_DRAWER_CASSETTE_PART_SUFFIX);
+}
 
 type DrawerCassetteRangeArgs = {
   baseY: number;
@@ -22,44 +33,6 @@ export type SketchInternalDrawerCassetteRange = {
 function readPositiveFinite(value: unknown): number | null {
   const n = typeof value === 'number' ? value : value != null && value !== '' ? Number(value) : NaN;
   return Number.isFinite(n) && n > 0 ? n : null;
-}
-
-function isCassettePanelSuffix(value: string): value is SketchInternalDrawerCassettePanelSuffix {
-  return (SKETCH_INTERNAL_DRAWER_CASSETTE_PANEL_SUFFIXES as readonly string[]).includes(value);
-}
-
-export function createSketchInternalDrawerCassettePanelPartId(args: {
-  stackPartId: string;
-  panel: SketchInternalDrawerCassettePanelSuffix;
-}): string {
-  return `${args.stackPartId}_cassette_${args.panel}`;
-}
-
-export function readSketchInternalDrawerCassettePanelPartId(partId: unknown): {
-  stackPartId: string;
-  panel: SketchInternalDrawerCassettePanelSuffix;
-} | null {
-  const text = typeof partId === 'string' ? String(partId) : '';
-  if (!text) return null;
-  const marker = '_cassette_';
-  const at = text.lastIndexOf(marker);
-  if (at <= 0) return null;
-  const stackPartId = text.slice(0, at);
-  const panel = text.slice(at + marker.length);
-  if (!stackPartId || !isCassettePanelSuffix(panel)) return null;
-  return { stackPartId, panel };
-}
-
-export function isSketchInternalDrawerCassettePanelPartId(partId: unknown): boolean {
-  return !!readSketchInternalDrawerCassettePanelPartId(partId);
-}
-
-export function resolveSketchInternalDrawerCassettePanelPaintTargetKeys(partId: unknown): string[] | null {
-  const parsed = readSketchInternalDrawerCassettePanelPartId(partId);
-  if (!parsed) return null;
-  return SKETCH_INTERNAL_DRAWER_CASSETTE_PANEL_SUFFIXES.map(panel =>
-    createSketchInternalDrawerCassettePanelPartId({ stackPartId: parsed.stackPartId, panel })
-  );
 }
 
 export function resolveSketchInternalDrawerCassetteWoodThick(value: unknown): number {

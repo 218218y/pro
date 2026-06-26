@@ -3,7 +3,6 @@ import {
   __wp_scopeCornerPartKeyForStack,
   __wp_scopeCornerPartKeysForStack,
 } from './canvas_picking_core_helpers.js';
-import { resolveSketchInternalDrawerCassettePanelPaintTargetKeys } from '../features/sketch_internal_drawer_cassette.js';
 import type { CanvasPaintTargetScope } from './canvas_picking_paint_target_scope.js';
 
 export const MAIN_BODY_PARTS = ['body_left', 'body_right', 'body_ceil', 'body_floor'];
@@ -191,8 +190,6 @@ export function resolveUnifiedCornerFramePaintTargetKeys(
 ): string[] | null {
   const partId = typeof foundPartId === 'string' ? String(foundPartId) : '';
   if (!partId) return null;
-  const cassetteKeys = resolveSketchInternalDrawerCassettePanelPaintTargetKeys(partId);
-  if (cassetteKeys !== null) return cassetteKeys;
   const middleFloorKeys = resolveUnifiedCornerWingMiddleFloorKey(partId, activeStack, targetScope);
   if (middleFloorKeys !== null) return middleFloorKeys;
   const wingKeys = resolveUnifiedCornerWingFrameKeys(partId, activeStack, targetScope, false);
@@ -239,8 +236,6 @@ export function resolvePaintTargetKeys(
 ): string[] {
   const partId = typeof foundPartId === 'string' ? String(foundPartId) : '';
   if (!partId) return [];
-  const cassetteKeys = resolveSketchInternalDrawerCassettePanelPaintTargetKeys(partId);
-  if (cassetteKeys !== null) return cassetteKeys;
   const unifiedCornerFrameKeys = resolveUnifiedCornerFramePaintTargetKeys(partId, activeStack, targetScope);
   if (unifiedCornerFrameKeys !== null) return unifiedCornerFrameKeys;
   if (MAIN_BODY_PARTS.includes(partId)) return [...MAIN_BODY_PARTS];

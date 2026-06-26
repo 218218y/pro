@@ -257,7 +257,7 @@ test('internal drawer cassette panels use shelf paint identity and render once p
   assert.equal(boardCalls.length, 4);
   assert.deepEqual(
     boardCalls.map(call => call[7]),
-    ['stack_1_cassette_bottom', 'stack_1_cassette_top', 'stack_1_cassette_left', 'stack_1_cassette_right']
+    ['stack_1_cassette', 'stack_1_cassette', 'stack_1_cassette', 'stack_1_cassette']
   );
   assert.equal(
     boardCalls.every(call => call[6] === shelfPaint),

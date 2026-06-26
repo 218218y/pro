@@ -39,7 +39,11 @@ export function resolveNonDoorHoverTargetFromObject(
     const userData = asRecordMap(curr.userData);
     const pidRaw = typeof userData?.partId === 'string' ? String(userData.partId) : '';
     if (pidRaw && isNonPaintableCanvasPaintPartId(pidRaw)) return null;
-    if (pidRaw && (!__wp_isDoorOrDrawerLikePartId(pidRaw) || isDrawerBoxPartId(pidRaw))) {
+    const isInternalDrawerCassette = userData?.__wpInternalDrawerCassette === true;
+    if (
+      pidRaw &&
+      (isInternalDrawerCassette || !__wp_isDoorOrDrawerLikePartId(pidRaw) || isDrawerBoxPartId(pidRaw))
+    ) {
       if (!preferredPartId || preferredPartId === pidRaw) {
         return {
           object: curr,

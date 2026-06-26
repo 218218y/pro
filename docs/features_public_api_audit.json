@@ -2,13 +2,13 @@
   "ok": true,
   "policy": "Only feature entries listed here are public to layers outside esm/native/features. Add new entries deliberately with owner documentation; do not import feature internals ad-hoc.",
   "publicEntries": [
-    "base_leg_stage_special_dims_guard.js",
     "base_leg_support.js",
+    "base_leg_stage_special_dims_guard.js",
     "base_plinth_support.js",
     "door_removal_visibility.js",
     "door_style_overrides.js",
-    "door_trim.js",
     "door_visual_map_lookup.js",
+    "door_trim.js",
     "drawer_box_identity.js",
     "front_color_shelf_inheritance.js",
     "handle_finish_shared.js",
@@ -42,13 +42,13 @@
     "stack_split/module_config.js"
   ],
   "byFamily": {
-    "base_leg_stage_special_dims_guard": ["base_leg_stage_special_dims_guard.js"],
     "base_leg_support": ["base_leg_support.js"],
+    "base_leg_stage_special_dims_guard": ["base_leg_stage_special_dims_guard.js"],
     "base_plinth_support": ["base_plinth_support.js"],
     "door_removal_visibility": ["door_removal_visibility.js"],
     "door_style_overrides": ["door_style_overrides.js"],
-    "door_trim": ["door_trim.js"],
     "door_visual_map_lookup": ["door_visual_map_lookup.js"],
+    "door_trim": ["door_trim.js"],
     "drawer_box_identity": ["drawer_box_identity.js"],
     "front_color_shelf_inheritance": ["front_color_shelf_inheritance.js"],
     "handle_finish_shared": ["handle_finish_shared.js"],
@@ -1305,11 +1305,11 @@
     },
     {
       "file": "esm/native/services/canvas_picking_generic_paint_hover_preview.ts",
-      "entry": "sketch_internal_drawer_cassette.js"
+      "entry": "shelf_part_identity.js"
     },
     {
       "file": "esm/native/services/canvas_picking_generic_paint_hover_preview.ts",
-      "entry": "shelf_part_identity.js"
+      "entry": "sketch_internal_drawer_cassette.js"
     },
     {
       "file": "esm/native/services/canvas_picking_generic_paint_hover_preview_objects.ts",
@@ -1464,10 +1464,6 @@
       "entry": "hex_cell/index.js"
     },
     {
-      "file": "esm/native/services/canvas_picking_paint_flow_apply_targets.ts",
-      "entry": "sketch_internal_drawer_cassette.js"
-    },
-    {
       "file": "esm/native/services/canvas_picking_paint_flow_mirror.ts",
       "entry": "mirror_layout.js"
     },
@@ -1478,10 +1474,6 @@
     {
       "file": "esm/native/services/canvas_picking_paint_flow_shared.ts",
       "entry": "mirror_layout.js"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_paint_targets.ts",
-      "entry": "sketch_internal_drawer_cassette.js"
     },
     {
       "file": "esm/native/services/canvas_picking_projection_runtime_box_no_main_workspace.ts",

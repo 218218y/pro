@@ -477,6 +477,55 @@ test('generic paint hover previews drawer boxes with their real panel objects', 
   assert.deepEqual(previews[0]?.previewObjects, [sidePanel]);
 });
 
+test('generic paint hover treats an internal drawer cassette frame as one paint target', () => {
+  const cassettePartId = 'div_int_sketch_0_drawers-1_cassette';
+  const wardrobeGroup = { children: [] as unknown[], userData: { partId: 'root' } };
+  const makePanel = (
+    suffix: string,
+    args: { width: number; height: number; depth: number; x?: number; y?: number }
+  ) => {
+    const panel = createBoxObject(cassettePartId, {
+      width: args.width,
+      height: args.height,
+      depth: args.depth,
+      x: args.x ?? 0,
+      y: args.y ?? 0,
+    });
+    panel.userData = {
+      partId: cassettePartId,
+      __wpInternalDrawerCassette: true,
+      __wpInternalDrawerCassettePanel: suffix,
+    } as any;
+    panel.parent = wardrobeGroup;
+    return panel;
+  };
+  const bottom = makePanel('bottom', { width: 0.7, height: 0.018, depth: 0.45, y: 0.4 });
+  const top = makePanel('top', { width: 0.7, height: 0.018, depth: 0.45, y: 0.8 });
+  const left = makePanel('left', { width: 0.018, height: 0.418, depth: 0.45, x: -0.34, y: 0.6 });
+  const right = makePanel('right', { width: 0.018, height: 0.418, depth: 0.45, x: 0.34, y: 0.6 });
+  wardrobeGroup.children.push(bottom, top, left, right);
+
+  const previews: Record<string, unknown>[] = [];
+  const handled = tryHandleGenericPartPaintHover({
+    App: createApp({ wardrobeGroup }),
+    ndcX: 0,
+    ndcY: 0,
+    paintSelection: 'walnut',
+    raycaster: createRaycaster([{ object: left, point: { x: -0.34, y: 0.6, z: 0.02 } }]),
+    mouse: { x: 0, y: 0 },
+    previewRo: {
+      setSketchPlacementPreview(args: Record<string, unknown>) {
+        previews.push(args);
+      },
+    },
+  });
+
+  assert.equal(handled, true);
+  assert.equal(previews.length, 1);
+  assert.equal(previews[0]?.kind, 'object_boxes');
+  assert.deepEqual(previews[0]?.previewObjects, [bottom, top, left, right]);
+});
+
 test('generic paint hover treats the stack-split unified divider as a thin board hover target', () => {
   const wardrobeGroup = { children: [] as unknown[], userData: { partId: 'root' } };
   const divider = createBoxObject('body_stack_split_divider', {

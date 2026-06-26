@@ -22,6 +22,8 @@ export type VerticalOccupancyRange = {
   collisionGapM?: number;
   hardCollision?: boolean;
   kind?: string;
+  pointerMinY?: number;
+  pointerMaxY?: number;
 };
 
 function readNumber(value: unknown): number | null {
@@ -280,9 +282,12 @@ export function buildSketchInternalDrawerBlockers<T extends Record<string, unkno
       return createVerticalOccupancyRange({
         id: idRaw != null && idRaw !== '' ? String(idRaw) : String(index),
         centerY: clampedCenterY,
-        minY: clampedCenterY - stackH / 2,
-        maxY: clampedCenterY + stackH / 2,
-        stackH,
+        minY: clampedCenterY - stackH / 2 - cassette.woodThick,
+        maxY: clampedCenterY + stackH / 2 + cassette.woodThick,
+        stackH: cassette.height,
+        collisionGapM: 0,
+        pointerMinY: clampedCenterY - stackH / 2,
+        pointerMaxY: clampedCenterY + stackH / 2,
       });
     })
     .filter((item): item is VerticalOccupancyRange => !!item)
