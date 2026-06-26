@@ -13,9 +13,9 @@ import { __asCanvas, __markMirrorTracked } from './visuals_and_contents_shared.j
 
 import type { AppContainer, MirrorLayoutList, Object3DLike, ThreeLike } from '../../../types/index.js';
 import type { CanvasLike } from './visuals_and_contents_shared.js';
+import type { TagDoorVisualPartFn } from './visuals_and_contents_door_visual_support_contracts.js';
 
 type AddOutlinesFn = (mesh: Object3DLike) => void;
-type TagDoorVisualPartFn = (node: Object3DLike, role: string) => void;
 
 type MirrorDoorVisualArgs = {
   App: AppContainer;
@@ -101,8 +101,8 @@ function resolveMirrorDoorDepthLayout(thickness: number): MirrorDoorDepthLayout 
 
 export function createMirrorDoorVisual(args: MirrorDoorVisualArgs): Object3DLike {
   const { App, THREE, w, h, thickness, mat, baseMaterial, zSign, isSketch, mirrorLayout, addOutlines } = args;
-  const tagDoorVisualPart =
-    typeof args.tagDoorVisualPart === 'function' ? args.tagDoorVisualPart : () => undefined;
+  const tagDoorVisualPart: TagDoorVisualPartFn =
+    typeof args.tagDoorVisualPart === 'function' ? args.tagDoorVisualPart : (_node, _visualRole) => undefined;
 
   const visualGroup = new THREE.Group();
   const woodMat = baseMaterial || new THREE.MeshStandardMaterial({ color: 0xe0e0e0 });

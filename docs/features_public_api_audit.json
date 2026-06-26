@@ -301,6 +301,10 @@
     },
     {
       "file": "esm/native/builder/corner_wing_cell_interiors_storage.ts",
+      "entry": "mirror_layout.js"
+    },
+    {
+      "file": "esm/native/builder/corner_wing_cell_interiors_storage.ts",
       "entry": "drawer_box_identity.js"
     },
     {
@@ -388,8 +392,16 @@
       "entry": "door_visual_map_lookup.js"
     },
     {
+      "file": "esm/native/builder/hinged_doors_module_ops_full.ts",
+      "entry": "mirror_layout.js"
+    },
+    {
       "file": "esm/native/builder/hinged_doors_module_ops_handle_policy.ts",
       "entry": "modules_configuration/modules_config_api.js"
+    },
+    {
+      "file": "esm/native/builder/hinged_doors_module_ops_segments.ts",
+      "entry": "mirror_layout.js"
     },
     {
       "file": "esm/native/builder/material_color_lookup.ts",
@@ -546,6 +558,10 @@
     {
       "file": "esm/native/builder/render_door_ops_sliding.ts",
       "entry": "door_style_overrides.js"
+    },
+    {
+      "file": "esm/native/builder/render_door_ops_sliding.ts",
+      "entry": "mirror_layout.js"
     },
     {
       "file": "esm/native/builder/render_drawer_ops_external.ts",
@@ -1181,6 +1197,14 @@
     },
     {
       "file": "esm/native/services/canvas_picking_door_groove_segments.ts",
+      "entry": "door_visual_map_lookup.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_hinge_groove_click.ts",
+      "entry": "mirror_layout.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_hinge_groove_click.ts",
       "entry": "door_visual_map_lookup.js"
     },
     {
