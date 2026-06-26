@@ -11,15 +11,99 @@ import {
   restoreShoeDrawerBaseIfNoShoeDrawersRemain,
 } from './canvas_picking_shoe_drawer_base_auto_none.js';
 import { createCanvasPickingConfigStructuralPatchMeta } from './canvas_picking_config_patch_meta.js';
+import { markSketchInternalDrawersDirty } from '../features/sketch_drawer_sizing.js';
 import {
+  removeSketchExternalDrawerFromConfig,
+  removeSketchInternalDrawerFromConfig,
+  removeStandardExternalDrawerFromConfig,
   tryRemoveSketchExternalDrawerByDirectHit,
   tryRemoveSketchInternalDrawerByDirectHit,
 } from './canvas_picking_drawer_cross_family.js';
 import type { ModuleKey, PatchConfigForKeyFn } from './canvas_picking_drawer_mode_flow_shared.js';
 import { asInternalGridInfo } from './canvas_picking_drawer_mode_flow_shared.js';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
+import {
+  extDrawerModeHoverMatchesModule,
+  readRecentExtDrawerModeHover,
+  type ExtDrawerModeHoverRecord,
+} from './canvas_picking_ext_drawer_mode_hover.js';
 import { tryCommitSketchBoxRegularExternalDrawersHover } from './canvas_picking_regular_ext_drawers_free_box.js';
 import { blockRemovableSideContentBuildIfModuleSideMissing } from './canvas_picking_removable_part_remove_constraints.js';
+
+function readString(value: unknown): string {
+  return typeof value === 'string' ? value : value == null ? '' : String(value);
+}
+
+function readHoverRemoveId(hover: ExtDrawerModeHoverRecord | null): string {
+  return readString(hover?.removeId);
+}
+
+function readHoverRemovePid(hover: ExtDrawerModeHoverRecord | null): string {
+  return readString(hover?.removePid);
+}
+
+function createInternalDrawerPartId(moduleKey: ModuleKey | 'corner' | null, drawerId: string): string {
+  return `div_int_sketch_${String(moduleKey)}_${drawerId}`;
+}
+
+function tryApplyExtDrawerModeHoverRemoval(args: {
+  App: AppContainer;
+  hover: ExtDrawerModeHoverRecord | null;
+  activeModuleKey: ModuleKey | 'corner' | null;
+  foundModuleIndex: ModuleKey | 'corner' | null;
+  patchConfigForKey: PatchConfigForKeyFn;
+}): boolean {
+  const { hover } = args;
+  if (!hover || hover.op !== 'remove') return false;
+  const targetModuleKey = args.activeModuleKey ?? args.foundModuleIndex;
+  if (!extDrawerModeHoverMatchesModule(hover, targetModuleKey)) return false;
+
+  if (hover.kind === 'drawers') {
+    const removeId = readHoverRemoveId(hover);
+    if (!removeId || targetModuleKey == null) return false;
+    args.patchConfigForKey(
+      targetModuleKey,
+      cfg => {
+        removeSketchInternalDrawerFromConfig(cfg, createInternalDrawerPartId(targetModuleKey, removeId));
+        markSketchInternalDrawersDirty(cfg);
+      },
+      createCanvasPickingConfigStructuralPatchMeta('extDrawers.hoverRemoveSketchInternal')
+    );
+    return true;
+  }
+
+  if (hover.kind === 'ext_drawers') {
+    const removeId = readHoverRemoveId(hover);
+    const removePid = readHoverRemovePid(hover);
+    if (!removeId && !removePid) return false;
+    args.patchConfigForKey(
+      targetModuleKey,
+      cfg => {
+        if (removeId) removeSketchExternalDrawerFromConfig(cfg, removeId, undefined, removePid || undefined);
+        else if (removePid) removeStandardExternalDrawerFromConfig(cfg, removePid);
+      },
+      createCanvasPickingConfigStructuralPatchMeta('extDrawers.hoverRemoveSketchExternal')
+    );
+    restoreShoeDrawerBaseIfNoShoeDrawersRemain(
+      args.App,
+      'extDrawers.hoverRemoveSketchExternal:autoBaseRestore'
+    );
+    return true;
+  }
+
+  return false;
+}
+
+function shouldSkipExtDrawerModeDirectRemoval(args: {
+  hover: ExtDrawerModeHoverRecord | null;
+  activeModuleKey: ModuleKey | 'corner' | null;
+  foundModuleIndex: ModuleKey | 'corner' | null;
+}): boolean {
+  const { hover } = args;
+  if (!hover || hover.op !== 'add') return false;
+  const targetModuleKey = args.activeModuleKey ?? args.foundModuleIndex;
+  return extDrawerModeHoverMatchesModule(hover, targetModuleKey);
+}
 
 export function tryHandleExternalDrawerModeClick(args: {
   App: AppContainer;
@@ -33,29 +117,50 @@ export function tryHandleExternalDrawerModeClick(args: {
   const { App, foundModuleIndex, activeModuleKey, isExtDrawerEditMode, patchConfigForKey } = args;
   if (!isExtDrawerEditMode) return false;
 
+  const hover = readRecentExtDrawerModeHover(App);
   if (
-    tryRemoveSketchExternalDrawerByDirectHit({
+    tryApplyExtDrawerModeHoverRemoval({
       App,
-      intersects: args.intersects || [],
+      hover,
       activeModuleKey,
+      foundModuleIndex,
       patchConfigForKey,
-      source: 'extDrawers.removeSketchExternalByHit',
     })
   ) {
-    restoreShoeDrawerBaseIfNoShoeDrawersRemain(App, 'extDrawers.removeSketchExternalByHit:autoBaseRestore');
     return true;
   }
 
-  if (
-    tryRemoveSketchInternalDrawerByDirectHit({
-      App,
-      intersects: args.intersects || [],
-      activeModuleKey,
-      patchConfigForKey,
-      source: 'extDrawers.removeSketchInternalByHit',
-    })
-  ) {
-    return true;
+  const skipDirectRemoval = shouldSkipExtDrawerModeDirectRemoval({
+    hover,
+    activeModuleKey,
+    foundModuleIndex,
+  });
+
+  if (!skipDirectRemoval) {
+    if (
+      tryRemoveSketchExternalDrawerByDirectHit({
+        App,
+        intersects: args.intersects || [],
+        activeModuleKey,
+        patchConfigForKey,
+        source: 'extDrawers.removeSketchExternalByHit',
+      })
+    ) {
+      restoreShoeDrawerBaseIfNoShoeDrawersRemain(App, 'extDrawers.removeSketchExternalByHit:autoBaseRestore');
+      return true;
+    }
+
+    if (
+      tryRemoveSketchInternalDrawerByDirectHit({
+        App,
+        intersects: args.intersects || [],
+        activeModuleKey,
+        patchConfigForKey,
+        source: 'extDrawers.removeSketchInternalByHit',
+      })
+    ) {
+      return true;
+    }
   }
 
   if (tryCommitSketchBoxRegularExternalDrawersHover(App)) return true;

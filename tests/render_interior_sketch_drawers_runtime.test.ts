@@ -398,6 +398,52 @@ test('render sketch internal drawers skip stacks that collide with sketch extern
   assert.equal(ops.length, 0);
 });
 
+test('render sketch internal drawers stay visible when external sketch drawers only sit next to the cassette', () => {
+  const bottomY = 0;
+  const topY = 2.4;
+  const spanH = topY - bottomY;
+  const woodThick = 0.018;
+  const internalDrawerHeightM = 0.3;
+  const externalDrawerHeightM = 0.3;
+  const internalCenterY = 1.2;
+  const internalStackH = internalDrawerHeightM * 2 + DRAWER_DIMENSIONS.sketch.internalGapM;
+  const internalCassetteMinY = internalCenterY - internalStackH / 2 - woodThick;
+  const externalStackH = externalDrawerHeightM * 2;
+  const visualClearanceM = DRAWER_DIMENSIONS.sketch.verticalStackCollisionGapM / 2;
+  const externalCenterY = internalCassetteMinY - visualClearanceM - externalStackH / 2;
+
+  const ops = buildSketchInternalDrawerOps({
+    drawers: [
+      {
+        id: 'internal',
+        yNormC: internalCenterY / spanH,
+        drawerHeightM: internalDrawerHeightM,
+      },
+    ],
+    extDrawers: [
+      {
+        id: 'external-adjacent',
+        yNormC: externalCenterY / spanH,
+        count: 2,
+        drawerHeightM: externalDrawerHeightM,
+      },
+    ],
+    input: { cfgSnapshot: {} },
+    moduleIndex: 1,
+    moduleKeyStr: 'module_1',
+    effectiveBottomY: bottomY,
+    effectiveTopY: topY,
+    spanH,
+    woodThick,
+    innerW: 0.8,
+    internalDepth: 0.5,
+    internalCenterX: 0,
+    internalZ: -0.1,
+  });
+
+  assert.equal(ops.length, 2);
+});
+
 test('render sketch external drawers applies drawer divider state from canonical divider map', () => {
   const { args, drawerBoxCalls, App } = createExternalDrawerArgs();
   args.input.cfgSnapshot.drawerDividersMap = {

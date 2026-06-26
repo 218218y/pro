@@ -3,8 +3,11 @@ import {
   markShelfBoardUserData,
   resolveShelfPartMaterial,
 } from '../features/shelf_part_identity.js';
+import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
   createSketchInternalDrawerCassettePartId,
+  resolveSketchInternalDrawerCassetteFrameOuterWidth,
+  resolveSketchInternalDrawerCassetteSideFillerWidth,
   resolveSketchInternalDrawerCassetteWoodThick,
 } from '../features/sketch_internal_drawer_cassette.js';
 import type { BuilderCreateBoardFn } from '../../../types';
@@ -27,7 +30,7 @@ export type SketchInternalDrawerCassettePanelArgs = {
 };
 
 type CassettePanelSpec = {
-  suffix: 'bottom' | 'top' | 'left' | 'right';
+  suffix: 'bottom' | 'top' | 'left' | 'right' | 'side_filler_left' | 'side_filler_right';
   w: number;
   h: number;
   d: number;
@@ -55,7 +58,15 @@ export function emitSketchInternalDrawerCassettePanels(args: SketchInternalDrawe
   const stackH = readFinitePositive(args.stackH);
   if (outerWidth == null || depth == null || stackH == null) return false;
   const woodThick = resolveSketchInternalDrawerCassetteWoodThick(args.woodThick);
-  if (!(outerWidth > woodThick * 2)) return false;
+  const sideFillerWidth = resolveSketchInternalDrawerCassetteSideFillerWidth({
+    outerWidth,
+    woodThick,
+  });
+  const frameOuterWidth = resolveSketchInternalDrawerCassetteFrameOuterWidth({
+    outerWidth,
+    woodThick,
+  });
+  if (!(frameOuterWidth > woodThick * 2)) return false;
 
   const panelMat = (partId: string) =>
     resolveShelfPartMaterial({
@@ -69,18 +80,35 @@ export function emitSketchInternalDrawerCassettePanels(args: SketchInternalDrawe
   const fullH = stackH + woodThick * 2;
   const bottomY = args.baseY - woodThick / 2;
   const topY = args.baseY + stackH + woodThick / 2;
-  const leftX = args.centerX - outerWidth / 2 + woodThick / 2;
-  const rightX = args.centerX + outerWidth / 2 - woodThick / 2;
+  const midY = args.baseY + stackH / 2;
+  const leftX = args.centerX - frameOuterWidth / 2 + woodThick / 2;
+  const rightX = args.centerX + frameOuterWidth / 2 - woodThick / 2;
   const panels: CassettePanelSpec[] = [
-    { suffix: 'bottom', w: outerWidth, h: woodThick, d: depth, x: args.centerX, y: bottomY, z: args.centerZ },
-    { suffix: 'top', w: outerWidth, h: woodThick, d: depth, x: args.centerX, y: topY, z: args.centerZ },
+    {
+      suffix: 'bottom',
+      w: frameOuterWidth,
+      h: woodThick,
+      d: depth,
+      x: args.centerX,
+      y: bottomY,
+      z: args.centerZ,
+    },
+    {
+      suffix: 'top',
+      w: frameOuterWidth,
+      h: woodThick,
+      d: depth,
+      x: args.centerX,
+      y: topY,
+      z: args.centerZ,
+    },
     {
       suffix: 'left',
       w: woodThick,
       h: fullH,
       d: depth,
       x: leftX,
-      y: args.baseY + stackH / 2,
+      y: midY,
       z: args.centerZ,
     },
     {
@@ -89,10 +117,39 @@ export function emitSketchInternalDrawerCassettePanels(args: SketchInternalDrawe
       h: fullH,
       d: depth,
       x: rightX,
-      y: args.baseY + stackH / 2,
+      y: midY,
       z: args.centerZ,
     },
   ];
+
+  if (sideFillerWidth > 0) {
+    const frontInset = Math.min(
+      Math.max(0, depth - DRAWER_DIMENSIONS.sketch.internalDepthMinM),
+      DRAWER_DIMENSIONS.sketch.internalSideFillerFrontInsetM
+    );
+    const sideFillerDepth = Math.max(DRAWER_DIMENSIONS.sketch.internalDepthMinM, depth - frontInset);
+    const sideFillerZ = args.centerZ - (depth - sideFillerDepth) / 2;
+    panels.push(
+      {
+        suffix: 'side_filler_left',
+        w: sideFillerWidth,
+        h: fullH,
+        d: sideFillerDepth,
+        x: args.centerX - outerWidth / 2 + sideFillerWidth / 2,
+        y: midY,
+        z: sideFillerZ,
+      },
+      {
+        suffix: 'side_filler_right',
+        w: sideFillerWidth,
+        h: fullH,
+        d: sideFillerDepth,
+        x: args.centerX + outerWidth / 2 - sideFillerWidth / 2,
+        y: midY,
+        z: sideFillerZ,
+      }
+    );
+  }
 
   const cassettePartId = createSketchInternalDrawerCassettePartId(args.stackPartId);
   let emitted = false;

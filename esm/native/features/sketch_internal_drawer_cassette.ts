@@ -35,6 +35,30 @@ function readPositiveFinite(value: unknown): number | null {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
+function readNonNegativeFinite(value: unknown): number | null {
+  const n = typeof value === 'number' ? value : value != null && value !== '' ? Number(value) : NaN;
+  return Number.isFinite(n) && n >= 0 ? n : null;
+}
+
+function resolveCassetteDrawerWidthInputs(args: {
+  outerWidth: number;
+  woodThick?: unknown;
+  clearanceM?: number;
+  minWidthM?: number;
+}) {
+  const outerWidth = Number.isFinite(args.outerWidth) && args.outerWidth > 0 ? args.outerWidth : 0;
+  const woodThick = resolveSketchInternalDrawerCassetteWoodThick(args.woodThick);
+  const clearanceM =
+    typeof args.clearanceM === 'number' && Number.isFinite(args.clearanceM) && args.clearanceM >= 0
+      ? args.clearanceM
+      : DRAWER_DIMENSIONS.sketch.internalWidthClearanceM;
+  const minWidthM =
+    typeof args.minWidthM === 'number' && Number.isFinite(args.minWidthM) && args.minWidthM > 0
+      ? args.minWidthM
+      : DRAWER_DIMENSIONS.sketch.internalWidthMinM;
+  return { outerWidth, woodThick, clearanceM, minWidthM };
+}
+
 export function resolveSketchInternalDrawerCassetteWoodThick(value: unknown): number {
   return readPositiveFinite(value) ?? MATERIAL_DIMENSIONS.wood.thicknessM;
 }
@@ -71,21 +95,48 @@ export function verticalRangesTouchOrOverlap(args: {
   return aMax >= bMin - epsilonM && aMin <= bMax + epsilonM;
 }
 
+export function resolveSketchInternalDrawerCassetteSideFillerWidth(args: {
+  outerWidth: number;
+  woodThick?: unknown;
+  clearanceM?: number;
+  minWidthM?: number;
+  requestedWidthM?: unknown;
+}): number {
+  const { outerWidth, woodThick, clearanceM, minWidthM } = resolveCassetteDrawerWidthInputs(args);
+  if (!(outerWidth > 0)) return 0;
+
+  const requestedWidthM =
+    readNonNegativeFinite(args.requestedWidthM) ?? DRAWER_DIMENSIONS.sketch.internalSideFillerWidthM;
+  if (!(requestedWidthM > 0)) return 0;
+
+  const minFrameOuterWidth = woodThick * 2 + clearanceM + minWidthM;
+  const maxWidthPerSide = Math.max(0, (outerWidth - minFrameOuterWidth) / 2);
+  return Math.min(requestedWidthM, maxWidthPerSide);
+}
+
+export function resolveSketchInternalDrawerCassetteFrameOuterWidth(args: {
+  outerWidth: number;
+  woodThick?: unknown;
+  clearanceM?: number;
+  minWidthM?: number;
+  requestedSideFillerWidthM?: unknown;
+}): number {
+  const { outerWidth } = resolveCassetteDrawerWidthInputs(args);
+  if (!(outerWidth > 0)) return 0;
+  const sideFillerWidth = resolveSketchInternalDrawerCassetteSideFillerWidth({
+    ...args,
+    requestedWidthM: args.requestedSideFillerWidthM,
+  });
+  return Math.max(0, outerWidth - sideFillerWidth * 2);
+}
+
 export function resolveSketchInternalDrawerCassetteDrawerWidth(args: {
   outerWidth: number;
   woodThick?: unknown;
   clearanceM?: number;
   minWidthM?: number;
 }): number {
-  const outerWidth = Number.isFinite(args.outerWidth) && args.outerWidth > 0 ? args.outerWidth : 0;
-  const woodThick = resolveSketchInternalDrawerCassetteWoodThick(args.woodThick);
-  const clearanceM =
-    typeof args.clearanceM === 'number' && Number.isFinite(args.clearanceM) && args.clearanceM >= 0
-      ? args.clearanceM
-      : DRAWER_DIMENSIONS.sketch.internalWidthClearanceM;
-  const minWidthM =
-    typeof args.minWidthM === 'number' && Number.isFinite(args.minWidthM) && args.minWidthM > 0
-      ? args.minWidthM
-      : DRAWER_DIMENSIONS.sketch.internalWidthMinM;
-  return Math.max(minWidthM, outerWidth - woodThick * 2 - clearanceM);
+  const { woodThick, clearanceM, minWidthM } = resolveCassetteDrawerWidthInputs(args);
+  const frameOuterWidth = resolveSketchInternalDrawerCassetteFrameOuterWidth(args);
+  return Math.max(minWidthM, frameOuterWidth - woodThick * 2 - clearanceM);
 }

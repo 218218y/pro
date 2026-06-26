@@ -24,12 +24,17 @@ import {
 } from './canvas_picking_sketch_direct_hit_workflow_drawers_shared.js';
 import { restoreShoeDrawerBaseIfNoShoeDrawersRemain } from './canvas_picking_shoe_drawer_base_auto_none.js';
 
+function stripSketchInternalDrawerSlotSuffix(partId: string): string {
+  return partId.replace(/_(?:lower|upper)$/u, '');
+}
+
 function readSketchInternalDrawerIdFromPartId(partId: string, moduleKey: unknown): string {
+  const normalizedPartId = stripSketchInternalDrawerSlotSuffix(partId);
   const prefix = `div_int_sketch_${String(moduleKey)}_`;
-  if (partId.startsWith(prefix)) return partId.slice(prefix.length);
+  if (normalizedPartId.startsWith(prefix)) return normalizedPartId.slice(prefix.length);
   const shortPrefix = 'div_int_sketch_';
-  if (!partId.startsWith(shortPrefix)) return '';
-  const suffix = partId.slice(shortPrefix.length);
+  if (!normalizedPartId.startsWith(shortPrefix)) return '';
+  const suffix = normalizedPartId.slice(shortPrefix.length);
   const splitAt = suffix.indexOf('_');
   return splitAt >= 0 ? suffix.slice(splitAt + 1) : suffix;
 }
@@ -46,8 +51,7 @@ function hoverAllowsSketchExternalRemoval(args: {
   drawerId: string;
   boxId?: string;
 }): boolean {
-  if (args.hoverOp === 'add') return false;
-  if (!args.hoverOk) return true;
+  if (!args.hoverOk) return false;
   if (args.hoverOp !== 'remove') return false;
 
   const hoverRemoveId = readRecordString(args.hoverRec, 'removeId');
@@ -70,8 +74,7 @@ function hoverAllowsSketchInternalRemoval(args: {
   hoverRec: unknown;
   drawerId: string;
 }): boolean {
-  if (args.hoverOp === 'add') return false;
-  if (!args.hoverOk) return true;
+  if (!args.hoverOk) return false;
   if (args.hoverOp !== 'remove') return false;
   if (args.hoverKind !== 'drawers') return false;
   return readRecordString(args.hoverRec, 'removeId') === args.drawerId;

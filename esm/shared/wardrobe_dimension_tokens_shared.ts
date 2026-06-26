@@ -1025,6 +1025,8 @@ export const DRAWER_DIMENSIONS = Object.freeze({
     internalDepthMinM: 0.05,
     internalWidthClearanceM: 0.03,
     internalDepthClearanceM: 0.02,
+    internalSideFillerWidthM: 0.05,
+    internalSideFillerFrontInsetM: 0.03,
     internalOpenOffsetZM: 0.25,
     internalBottomLiftMaxM: 0.002,
     internalBottomLiftWoodRatio: 0.15,

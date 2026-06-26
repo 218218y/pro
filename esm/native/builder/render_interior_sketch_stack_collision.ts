@@ -34,7 +34,7 @@ function rangeFromCenter(centerY: number, stackH: number, id: string): SketchSta
 export function sketchStackRangeOverlaps(
   range: SketchStackCollisionRange,
   blockers: SketchStackCollisionRange[],
-  gap = DRAWER_DIMENSIONS.sketch.verticalStackCollisionGapM
+  gap: number = DRAWER_DIMENSIONS.sketch.verticalStackCollisionGapM
 ): boolean {
   return blockers.some(blocker => range.maxY > blocker.minY - gap && range.minY < blocker.maxY + gap);
 }

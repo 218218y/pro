@@ -1,11 +1,28 @@
 import { getDrawersArray } from '../runtime/render_access.js';
 import {
+  classifyCrossDrawerPart,
+  readCrossDrawerCanonicalPartId,
+} from './canvas_picking_drawer_cross_family.js';
+import {
   asHitObject,
   type DrawerHoverPreviewTarget,
   isRenderableHitObject,
   type ResolveDrawerHoverPreviewTargetArgs,
   readParent,
+  readUserData,
 } from './canvas_picking_hover_targets_shared.js';
+
+function readString(value: unknown): string {
+  return typeof value === 'string' ? value : value == null ? '' : String(value);
+}
+
+function readInternalModuleKeyFromPartId(partId: string): string {
+  const prefix = 'div_int_sketch_';
+  if (!partId.startsWith(prefix)) return '';
+  const suffix = partId.slice(prefix.length);
+  const splitAt = suffix.indexOf('_');
+  return splitAt > 0 ? suffix.slice(0, splitAt) : '';
+}
 
 export function resolveDrawerHoverPreviewTarget(
   args: ResolveDrawerHoverPreviewTargetArgs
@@ -42,14 +59,33 @@ export function resolveDrawerHoverPreviewTarget(
 
       let curr = obj;
       let foundDrawer = null;
+      let fallbackDrawer = null;
       while (curr) {
         const match = drawersArray.find(d => d && d.group === curr);
         if (match) {
           foundDrawer = match || null;
           break;
         }
+
+        if (!fallbackDrawer) {
+          const userData = readUserData(curr);
+          const canonicalPartId = readCrossDrawerCanonicalPartId(userData?.partId, userData);
+          const family = classifyCrossDrawerPart(canonicalPartId, userData);
+          if (family !== 'other') {
+            fallbackDrawer = {
+              id: canonicalPartId,
+              partId: canonicalPartId,
+              group: curr,
+              moduleIndex:
+                readString(userData?.moduleIndex ?? userData?.__wpSketchModuleKey) ||
+                readInternalModuleKeyFromPartId(canonicalPartId),
+            };
+          }
+        }
+
         curr = curr.parent || null;
       }
+      foundDrawer = foundDrawer || fallbackDrawer;
       if (!foundDrawer || !foundDrawer.group) continue;
 
       const parent = readParent(foundDrawer.group) || wardrobeGroup;

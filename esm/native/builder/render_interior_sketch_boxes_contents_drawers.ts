@@ -29,12 +29,15 @@ import {
   buildSketchExternalDrawerCollisionRanges,
   sketchStackRangeOverlaps,
 } from './render_interior_sketch_stack_collision.js';
+
 import {
   pickSketchBoxVerticalSegment,
   resolveSketchBoxVerticalSegments,
   type SketchBoxSegment,
   type SketchBoxVerticalSegment,
 } from './render_interior_sketch_layout.js';
+
+const SKETCH_DRAWER_RENDER_PHYSICAL_OVERLAP_GAP_M = 0;
 
 function readFiniteNumber(value: unknown): number | null {
   const n = Number(value);
@@ -222,7 +225,8 @@ export function renderSketchBoxDrawerContents(args: RenderSketchBoxContentsArgs)
             minY: baseY - cassetteRangeForFit.woodThick,
             maxY: baseY + stackH + cassetteRangeForFit.woodThick,
           },
-          externalBlockers
+          externalBlockers,
+          SKETCH_DRAWER_RENDER_PHYSICAL_OVERLAP_GAP_M
         )
       ) {
         continue;

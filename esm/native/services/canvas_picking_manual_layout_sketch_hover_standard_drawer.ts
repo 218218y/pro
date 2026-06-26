@@ -1,10 +1,11 @@
-import type { AppContainer, UnknownRecord } from '../../../types';
+import type { UnknownRecord } from '../../../types';
 import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { getThreeMaybe } from '../runtime/three_access.js';
 import { isSketchInternalDrawersTool } from '../features/sketch_drawer_sizing.js';
 import { __wp_measureObjectLocalBox } from './canvas_picking_local_helpers.js';
 import {
   classifyCrossDrawerPart,
+  readCrossDrawerCanonicalPartId,
   resolveExternalCrossDrawerStackPreview,
   resolveInternalCrossDrawerStackPreview,
 } from './canvas_picking_drawer_cross_family.js';
@@ -38,12 +39,17 @@ function isCrossDrawerFamilyForSketchTool(tool: string, family: string): boolean
   return isSketchInternalDrawersTool(tool) && family === 'sketch_external';
 }
 
+function stripSketchInternalDrawerSlotSuffix(partId: string): string {
+  return partId.replace(/_(?:lower|upper)$/u, '');
+}
+
 function readSketchInternalDrawerId(partId: string, moduleKey: unknown): string {
+  const normalizedPartId = stripSketchInternalDrawerSlotSuffix(partId);
   const prefix = `div_int_sketch_${String(moduleKey)}_`;
-  if (partId.startsWith(prefix)) return partId.slice(prefix.length);
+  if (normalizedPartId.startsWith(prefix)) return normalizedPartId.slice(prefix.length);
   const shortPrefix = 'div_int_sketch_';
-  if (!partId.startsWith(shortPrefix)) return '';
-  const suffix = partId.slice(shortPrefix.length);
+  if (!normalizedPartId.startsWith(shortPrefix)) return '';
+  const suffix = normalizedPartId.slice(shortPrefix.length);
   const splitAt = suffix.indexOf('_');
   return splitAt >= 0 ? suffix.slice(splitAt + 1) : suffix;
 }
@@ -68,7 +74,7 @@ export function tryHandleSketchHoverOverStandardDrawer(args: SketchStandardDrawe
   const userData = asRecord(group?.userData);
   const parent = target ? asRecord(target.parent) : null;
   const box = target?.box || null;
-  const partId = readString(userData?.partId ?? drawer?.id);
+  const partId = readCrossDrawerCanonicalPartId(userData?.partId ?? drawer?.id, userData);
   const family = classifyCrossDrawerPart(partId, userData);
   if (!target || !drawer || !group || !parent || !box || !isCrossDrawerFamilyForSketchTool(tool, family)) {
     return false;

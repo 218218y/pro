@@ -1,4 +1,9 @@
 import type { AppContainer, ModuleConfigLike, UnknownRecord } from '../../../types';
+import { resolveDrawerBoxOwnerPartId } from '../features/drawer_box_identity.js';
+import {
+  isSketchInternalDrawerCassettePartId,
+  SKETCH_INTERNAL_DRAWER_CASSETTE_PART_SUFFIX,
+} from '../features/sketch_internal_drawer_cassette.js';
 import type { ModuleKey, PatchConfigForKeyFn } from './canvas_picking_drawer_mode_flow_shared.js';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
 import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
@@ -79,6 +84,7 @@ export function resolveInternalCrossDrawerStackPreview(args: {
   if (!targetParent || !targetGroup || !args.targetPartId) return null;
 
   const measureObjectLocalBox = args.measureObjectLocalBox || __wp_measureObjectLocalBox;
+  const targetPartId = readCrossDrawerCanonicalPartId(args.targetPartId, readUserData(targetGroup));
   const boxes: CrossDrawerPreviewBox[] = [];
   const entries = getDrawersArray(args.App);
   for (let i = 0; i < entries.length; i++) {
@@ -87,9 +93,11 @@ export function resolveInternalCrossDrawerStackPreview(args: {
     if (!group) continue;
     const userData = readUserData(group);
     const entryRecord = asNode(entry);
-    const partId = readString(userData?.partId ?? entryRecord?.id);
-    if (partId !== args.targetPartId) continue;
-    const moduleKey = readString(userData?.moduleIndex ?? userData?.__wpSketchModuleKey);
+    const partId = readCrossDrawerCanonicalPartId(userData?.partId ?? entryRecord?.id, userData);
+    if (partId !== targetPartId) continue;
+    const moduleKey =
+      readString(userData?.moduleIndex ?? userData?.__wpSketchModuleKey) ||
+      readModuleKeyFromInternalPartId(partId);
     if (args.targetModuleKey && moduleKey && moduleKey !== args.targetModuleKey) continue;
     let box = measureObjectLocalBox(args.App, group, targetParent);
     if (!box && group === targetGroup) box = args.targetBox;
@@ -185,9 +193,40 @@ function readString(value: unknown): string {
   return typeof value === 'string' ? value : value == null ? '' : String(value);
 }
 
-export function classifyCrossDrawerPart(partId: unknown, userData?: UnknownRecord | null): CrossDrawerFamily {
-  const pid = readString(partId);
+function stripSketchInternalDrawerSlotSuffix(partId: string): string {
+  return partId.replace(/_(?:lower|upper)$/u, '');
+}
+
+function readSketchInternalDrawerStackPartId(partId: string): string {
+  return partId.startsWith('div_int_sketch_') ? stripSketchInternalDrawerSlotSuffix(partId) : partId;
+}
+
+function readCanonicalInternalCassettePartId(partId: string, userData: UnknownRecord | null): string {
+  const stackPartId = readString(userData?.__wpInternalDrawerCassetteStackPartId);
+  if (stackPartId) return stackPartId;
+  if (!isSketchInternalDrawerCassettePartId(partId)) return partId;
+  return partId.slice(0, -SKETCH_INTERNAL_DRAWER_CASSETTE_PART_SUFFIX.length);
+}
+
+export function readCrossDrawerCanonicalPartId(partId: unknown, userData?: UnknownRecord | null): string {
+  const raw = readString(partId);
   const ud = userData || null;
+  const owner = resolveDrawerBoxOwnerPartId(ud);
+  const pid = readCanonicalInternalCassettePartId(owner || raw, ud);
+  return readSketchInternalDrawerStackPartId(pid);
+}
+
+function readModuleKeyFromInternalPartId(partId: string): string {
+  const prefix = 'div_int_sketch_';
+  if (!partId.startsWith(prefix)) return '';
+  const suffix = partId.slice(prefix.length);
+  const splitAt = suffix.indexOf('_');
+  return splitAt > 0 ? suffix.slice(0, splitAt) : '';
+}
+
+export function classifyCrossDrawerPart(partId: unknown, userData?: UnknownRecord | null): CrossDrawerFamily {
+  const ud = userData || null;
+  const pid = readCrossDrawerCanonicalPartId(partId, ud);
   if (!pid) return 'other';
 
   if (
@@ -211,14 +250,16 @@ function findCrossDrawerHitOnObject(
   let node = asNode(object);
   while (node && !__wp_isViewportRoot(App, node)) {
     const ud = readUserData(node);
-    const pid = readString(ud?.partId);
+    const rawPartId = readString(ud?.partId);
+    const pid = readCrossDrawerCanonicalPartId(rawPartId, ud);
     const detected = classifyCrossDrawerPart(pid, ud);
     if (pid && allowed.includes(detected)) {
       return {
         object: node,
         partId: pid,
         family: detected,
-        moduleIndex: readString(ud?.moduleIndex ?? ud?.__wpSketchModuleKey),
+        moduleIndex:
+          readString(ud?.moduleIndex ?? ud?.__wpSketchModuleKey) || readModuleKeyFromInternalPartId(pid),
         sketchExtDrawerId: readString(ud?.__wpSketchExtDrawerId),
         sketchBoxId: readString(ud?.__wpSketchBoxId),
       };
@@ -387,11 +428,12 @@ function coerceCrossDrawerModuleKey(value: unknown): ModuleKey | 'corner' | null
 }
 
 function readSketchInternalDrawerIdFromPartId(partId: string, moduleKey: unknown): string {
+  const normalizedPartId = readSketchInternalDrawerStackPartId(partId);
   const prefix = `div_int_sketch_${String(moduleKey)}_`;
-  if (partId.startsWith(prefix)) return partId.slice(prefix.length);
+  if (normalizedPartId.startsWith(prefix)) return normalizedPartId.slice(prefix.length);
   const shortPrefix = 'div_int_sketch_';
-  if (!partId.startsWith(shortPrefix)) return '';
-  const suffix = partId.slice(shortPrefix.length);
+  if (!normalizedPartId.startsWith(shortPrefix)) return '';
+  const suffix = normalizedPartId.slice(shortPrefix.length);
   const splitAt = suffix.indexOf('_');
   return splitAt >= 0 ? suffix.slice(splitAt + 1) : suffix;
 }

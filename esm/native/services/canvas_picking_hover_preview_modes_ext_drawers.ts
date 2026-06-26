@@ -3,11 +3,17 @@ import { shouldBlockDrawerBuildInHexCell } from '../features/hex_cell/index.js';
 import { resolveExternalDrawerFitFromBounds } from '../../shared/wardrobe_construction_validation_shared.js';
 import {
   classifyCrossDrawerPart,
+  readCrossDrawerCanonicalPartId,
   resolveExternalCrossDrawerStackPreview,
   resolveInternalCrossDrawerStackPreview,
 } from './canvas_picking_drawer_cross_family.js';
 import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { tryHandleSketchBoxRegularExternalDrawersHoverPreview } from './canvas_picking_regular_ext_drawers_free_box.js';
+import {
+  clearExtDrawerModeHover,
+  coerceExtDrawerModeHoverModuleKey,
+  writeExtDrawerModeHover,
+} from './canvas_picking_ext_drawer_mode_hover.js';
 import {
   __callMaybe,
   __getSketchPlacementPreviewFns,
@@ -17,6 +23,40 @@ import {
   __withAppThree,
   type ExtDrawersHoverPreviewArgs,
 } from './canvas_picking_hover_preview_modes_shared.js';
+
+function readInternalModuleKeyFromPartId(partId: string): string {
+  const prefix = 'div_int_sketch_';
+  if (!partId.startsWith(prefix)) return '';
+  const suffix = partId.slice(prefix.length);
+  const splitAt = suffix.indexOf('_');
+  return splitAt > 0 ? suffix.slice(0, splitAt) : '';
+}
+
+function readSketchInternalDrawerIdFromPartId(partId: string, moduleKey: unknown): string {
+  const normalizedPartId = partId.replace(/_(?:lower|upper)$/u, '');
+  const prefix = `div_int_sketch_${String(moduleKey)}_`;
+  if (normalizedPartId.startsWith(prefix)) return normalizedPartId.slice(prefix.length);
+  const shortPrefix = 'div_int_sketch_';
+  if (!normalizedPartId.startsWith(shortPrefix)) return '';
+  const suffix = normalizedPartId.slice(shortPrefix.length);
+  const splitAt = suffix.indexOf('_');
+  return splitAt >= 0 ? suffix.slice(splitAt + 1) : suffix;
+}
+
+function readDrawerModeModuleKey(
+  userData: Record<string, unknown> | null,
+  canonicalPartId: string
+): number | 'corner' | `corner:${number}` | null {
+  return coerceExtDrawerModeHoverModuleKey(
+    __readString(userData, 'moduleIndex', '') ||
+      __readString(userData, '__wpSketchModuleKey', '') ||
+      readInternalModuleKeyFromPartId(canonicalPartId)
+  );
+}
+
+function readDrawerModeIsBottom(userData: Record<string, unknown> | null): boolean {
+  return userData?.__wpStack === 'bottom' || userData?.stack === 'bottom' || userData?.isBottom === true;
+}
 
 function readFiniteFromRecord(rec: Record<string, unknown> | null | undefined, key: string): number | null {
   const value = rec ? rec[key] : null;
@@ -84,7 +124,11 @@ export function tryHandleExtDrawersHoverPreview(args: ExtDrawersHoverPreviewArgs
       : null;
     const drawerGroup = __readRecord(drawerTarget?.drawer)?.group;
     const drawerUserData = __readRecord(__readRecord(drawerGroup)?.userData);
-    const drawerPartId = __readString(drawerUserData, 'partId', '');
+    const drawerPartId = readCrossDrawerCanonicalPartId(
+      __readString(drawerUserData, 'partId', '') ||
+        __readString(__readRecord(drawerTarget?.drawer), 'id', ''),
+      drawerUserData
+    );
     const drawerFamily = classifyCrossDrawerPart(drawerPartId, drawerUserData);
     if (drawerTarget && drawerFamily === 'sketch_external') {
       const visualT = DRAWER_DIMENSIONS.external.visualThicknessM;
@@ -122,6 +166,22 @@ export function tryHandleExtDrawersHoverPreview(args: ExtDrawersHoverPreviewArgs
         ],
         op: 'remove',
       });
+      writeExtDrawerModeHover(App, {
+        moduleKey: readDrawerModeModuleKey(drawerUserData, drawerPartId),
+        isBottom: readDrawerModeIsBottom(drawerUserData),
+        kind: 'ext_drawers',
+        op: 'remove',
+        yCenter:
+          stackPreview?.y != null && stackPreview?.stackH != null
+            ? stackPreview.y + stackPreview.stackH / 2
+            : box.centerY,
+        baseY: stackPreview?.y ?? box.centerY - box.height / 2,
+        removeId: __readString(drawerUserData, '__wpSketchExtDrawerId', ''),
+        removeKind: 'sketch',
+        drawerCount: stackPreview?.drawerCount,
+        drawerH: stackPreview?.drawerH,
+        stackH: stackPreview?.stackH,
+      });
       return true;
     }
 
@@ -129,7 +189,7 @@ export function tryHandleExtDrawersHoverPreview(args: ExtDrawersHoverPreviewArgs
       const drawerGroupRecord = __readRecord(drawerGroup);
       const drawerParent = __readRecord(drawerTarget.parent);
       const box = drawerTarget.box;
-      const moduleKey =
+      const moduleKeyRaw =
         __readString(drawerUserData, 'moduleIndex', '') ||
         __readString(drawerUserData, '__wpSketchModuleKey', '');
       const stackPreview =
@@ -140,11 +200,12 @@ export function tryHandleExtDrawersHoverPreview(args: ExtDrawersHoverPreviewArgs
               targetParent: drawerParent,
               targetBox: box,
               targetPartId: drawerPartId,
-              targetModuleKey: moduleKey,
+              targetModuleKey: moduleKeyRaw,
               measureObjectLocalBox,
             })
           : null;
       const previewBaseY = stackPreview?.y ?? box.centerY - box.height / 2;
+      const previewStackH = stackPreview?.stackH ?? box.height;
       const previewDrawerH = stackPreview?.drawerH ?? box.height;
       const previewDrawerGap = stackPreview?.drawerGap ?? DRAWER_DIMENSIONS.sketch.internalGapM;
       setPreview({
@@ -163,6 +224,20 @@ export function tryHandleExtDrawersHoverPreview(args: ExtDrawersHoverPreviewArgs
         woodThick: DRAWER_DIMENSIONS.external.visualThicknessM,
         op: 'remove',
       });
+      const moduleKey = readDrawerModeModuleKey(drawerUserData, drawerPartId);
+      writeExtDrawerModeHover(App, {
+        moduleKey,
+        isBottom: readDrawerModeIsBottom(drawerUserData),
+        kind: 'drawers',
+        op: 'remove',
+        yCenter: previewBaseY + previewStackH / 2,
+        baseY: previewBaseY,
+        removeId: readSketchInternalDrawerIdFromPartId(drawerPartId, moduleKey),
+        removeKind: 'sketch',
+        drawerH: previewDrawerH,
+        drawerGap: previewDrawerGap,
+        stackH: previewStackH,
+      });
       return true;
     }
 
@@ -179,6 +254,7 @@ export function tryHandleExtDrawersHoverPreview(args: ExtDrawersHoverPreviewArgs
     const target = resolveInteriorHoverTarget(App, raycaster, mouse, ndcX, ndcY);
     if (!target) {
       __callMaybe(hidePreview, __withAppThree(App, THREE));
+      clearExtDrawerModeHover(App);
       return false;
     }
 
@@ -275,6 +351,18 @@ export function tryHandleExtDrawersHoverPreview(args: ExtDrawersHoverPreviewArgs
       drawers,
       op: previewOp,
       blockedReason: blockedByHexCell ? 'hex-cell' : blockedByFit ? 'no-room' : undefined,
+    });
+    writeExtDrawerModeHover(App, {
+      moduleKey: target.hitModuleKey,
+      isBottom: !!target.isBottom,
+      kind: 'ext_drawers',
+      op: previewOp === 'remove' ? 'remove' : 'add',
+      yCenter: baseY + (drawerType === 'shoe' ? shoeH : drawerCount * regH) / 2,
+      baseY,
+      drawerCount,
+      drawerH: drawerType === 'shoe' ? shoeH : regH,
+      stackH: drawerType === 'shoe' ? shoeH : drawerCount * regH,
+      blockedReason: blockedByHexCell ? 'hex-cell' : blockedByFit ? 'no-room' : null,
     });
     return true;
   } catch {

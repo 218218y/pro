@@ -254,13 +254,33 @@ test('internal drawer cassette panels use shelf paint identity and render once p
   });
 
   assert.equal(result, true);
-  assert.equal(boardCalls.length, 4);
+  assert.equal(boardCalls.length, 6);
   assert.deepEqual(
     boardCalls.map(call => call[7]),
-    ['stack_1_cassette', 'stack_1_cassette', 'stack_1_cassette', 'stack_1_cassette']
+    [
+      'stack_1_cassette',
+      'stack_1_cassette',
+      'stack_1_cassette',
+      'stack_1_cassette',
+      'stack_1_cassette',
+      'stack_1_cassette',
+    ]
   );
   assert.equal(
     boardCalls.every(call => call[6] === shelfPaint),
+    true
+  );
+  const sideFillers = boardCalls.slice(4);
+  assert.deepEqual(
+    sideFillers.map(call => call[0]),
+    [0.05, 0.05]
+  );
+  assert.equal(
+    sideFillers.every(call => Math.abs(Number(call[2]) - 0.42) < 1e-9),
+    true
+  );
+  assert.equal(
+    sideFillers.every(call => Math.abs(Number(call[5]) - -0.215) < 1e-9),
     true
   );
   assert.equal(drawers.length, 2);

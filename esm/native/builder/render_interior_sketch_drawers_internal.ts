@@ -25,6 +25,8 @@ import {
   sketchStackRangeOverlaps,
 } from './render_interior_sketch_stack_collision.js';
 
+const SKETCH_DRAWER_RENDER_PHYSICAL_OVERLAP_GAP_M = 0;
+
 export function buildSketchInternalDrawerRuntimeArgs(
   args: ApplySketchInternalDrawersOwnerArgs
 ): ApplySketchInternalDrawersRuntimeArgs | null {
@@ -215,7 +217,8 @@ export function buildSketchInternalDrawerOps(args: {
           minY: baseY - cassetteRangeForFit.woodThick,
           maxY: baseY + stackH + cassetteRangeForFit.woodThick,
         },
-        externalBlockers
+        externalBlockers,
+        SKETCH_DRAWER_RENDER_PHYSICAL_OVERLAP_GAP_M
       )
     ) {
       continue;

@@ -5,6 +5,7 @@ import { tryHandleExternalDrawerModeClick } from '../esm/native/services/canvas_
 import { tryApplyManualLayoutSketchDirectHitActions } from '../esm/native/services/canvas_picking_manual_layout_sketch_click_direct_hit_actions.ts';
 import { tryHandleCanvasPickingManualOrEmptyRoute } from '../esm/native/services/canvas_picking_click_route_manual.ts';
 import { firstRenderableHitIsSketchFreeBox } from '../esm/native/services/canvas_picking_sketch_free_box_hit_policy.ts';
+import { EXT_DRAWER_MODE_HOVER_TOOL } from '../esm/native/services/canvas_picking_ext_drawer_mode_hover.ts';
 
 function createRegularFreeBoxDrawerHit(boxId = 'free-1', drawerId = 'sbrd-1') {
   return {
@@ -89,6 +90,102 @@ test('regular external drawer edit mode direct hit removes sketch internal drawe
   assert.equal(handled, true);
   assert.deepEqual(patchMeta, { source: 'extDrawers.removeSketchInternalByHit', immediate: true });
   assert.deepEqual(drawerIds, ['sid-2']);
+});
+
+test('regular external drawer edit mode removes sketch internal drawers from the active remove hover even when direct hit misses the drawer mesh', () => {
+  const cfg: Record<string, unknown> = {
+    sketchExtras: {
+      drawers: [
+        { id: 'sid-1', yNormC: 0.25 },
+        { id: 'sid-2', yNormC: 0.55 },
+      ],
+      extDrawers: [],
+    },
+  };
+  const App = {
+    render: {
+      cache: {
+        __lastSketchHover: {
+          ts: Date.now(),
+          tool: EXT_DRAWER_MODE_HOVER_TOOL,
+          moduleKey: 2,
+          isBottom: false,
+          hostModuleKey: 2,
+          hostIsBottom: false,
+          kind: 'drawers',
+          op: 'remove',
+          removeKind: 'sketch',
+          removeId: 'sid-1',
+        },
+      },
+    },
+  } as never;
+  let patchMeta: Record<string, unknown> | null = null;
+
+  const handled = tryHandleExternalDrawerModeClick({
+    App,
+    foundModuleIndex: 2,
+    activeModuleKey: 2,
+    isExtDrawerEditMode: true,
+    intersects: [{ object: { userData: { partId: 'module_selector_2' } }, point: { y: 0.4 } }] as never,
+    patchConfigForKey: (_key, patchFn, meta) => {
+      patchMeta = { ...meta };
+      patchFn(cfg as never);
+      return null;
+    },
+  });
+
+  const drawerIds = (((cfg.sketchExtras as any).drawers as any[]) || []).map(item => item.id);
+  assert.equal(handled, true);
+  assert.deepEqual(patchMeta, { source: 'extDrawers.hoverRemoveSketchInternal', immediate: true });
+  assert.deepEqual(drawerIds, ['sid-2']);
+});
+
+test('regular external drawer edit mode respects an add hover beside sketch internal drawers instead of direct-hit removing them', () => {
+  const cfg: Record<string, unknown> = {
+    sketchExtras: {
+      drawers: [{ id: 'sid-1', yNormC: 0.25 }],
+      extDrawers: [],
+    },
+  };
+  const App = {
+    render: {
+      cache: {
+        __lastSketchHover: {
+          ts: Date.now(),
+          tool: EXT_DRAWER_MODE_HOVER_TOOL,
+          moduleKey: 2,
+          isBottom: false,
+          hostModuleKey: 2,
+          hostIsBottom: false,
+          kind: 'ext_drawers',
+          op: 'add',
+          yCenter: 0.8,
+        },
+      },
+    },
+  } as never;
+  let patched = false;
+
+  const handled = tryHandleExternalDrawerModeClick({
+    App,
+    foundModuleIndex: null,
+    activeModuleKey: 2,
+    isExtDrawerEditMode: true,
+    intersects: [
+      { object: createSketchInternalDrawerHit(2, 'sid-1'), point: { x: 0, y: 0.4, z: 0 } },
+    ] as never,
+    patchConfigForKey: (_key, patchFn) => {
+      patched = true;
+      patchFn(cfg as never);
+      return null;
+    },
+  });
+
+  const drawerIds = (((cfg.sketchExtras as any).drawers as any[]) || []).map(item => item.id);
+  assert.equal(handled, false);
+  assert.equal(patched, false);
+  assert.deepEqual(drawerIds, ['sid-1']);
 });
 
 test('manual sketch external drawer tool direct hit removes regularExtDrawers in a free box', () => {

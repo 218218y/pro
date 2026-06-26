@@ -501,9 +501,23 @@ test('generic paint hover treats an internal drawer cassette frame as one paint 
   };
   const bottom = makePanel('bottom', { width: 0.7, height: 0.018, depth: 0.45, y: 0.4 });
   const top = makePanel('top', { width: 0.7, height: 0.018, depth: 0.45, y: 0.8 });
-  const left = makePanel('left', { width: 0.018, height: 0.418, depth: 0.45, x: -0.34, y: 0.6 });
-  const right = makePanel('right', { width: 0.018, height: 0.418, depth: 0.45, x: 0.34, y: 0.6 });
-  wardrobeGroup.children.push(bottom, top, left, right);
+  const left = makePanel('left', { width: 0.018, height: 0.418, depth: 0.45, x: -0.29, y: 0.6 });
+  const right = makePanel('right', { width: 0.018, height: 0.418, depth: 0.45, x: 0.29, y: 0.6 });
+  const leftFiller = makePanel('side_filler_left', {
+    width: 0.05,
+    height: 0.418,
+    depth: 0.42,
+    x: -0.325,
+    y: 0.6,
+  });
+  const rightFiller = makePanel('side_filler_right', {
+    width: 0.05,
+    height: 0.418,
+    depth: 0.42,
+    x: 0.325,
+    y: 0.6,
+  });
+  wardrobeGroup.children.push(bottom, top, left, right, leftFiller, rightFiller);
 
   const previews: Record<string, unknown>[] = [];
   const handled = tryHandleGenericPartPaintHover({
@@ -523,7 +537,7 @@ test('generic paint hover treats an internal drawer cassette frame as one paint 
   assert.equal(handled, true);
   assert.equal(previews.length, 1);
   assert.equal(previews[0]?.kind, 'object_boxes');
-  assert.deepEqual(previews[0]?.previewObjects, [bottom, top, left, right]);
+  assert.deepEqual(previews[0]?.previewObjects, [bottom, top, left, right, leftFiller, rightFiller]);
 });
 
 test('generic paint hover treats the stack-split unified divider as a thin board hover target', () => {

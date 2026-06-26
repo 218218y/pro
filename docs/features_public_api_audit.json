@@ -1289,11 +1289,23 @@
     },
     {
       "file": "esm/native/services/canvas_picking_drawer_cross_family.ts",
+      "entry": "drawer_box_identity.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_drawer_cross_family.ts",
+      "entry": "sketch_internal_drawer_cassette.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_drawer_cross_family.ts",
       "entry": "sketch_box_regular_external_drawers.js"
     },
     {
       "file": "esm/native/services/canvas_picking_drawer_mode_flow_external.ts",
       "entry": "hex_cell/index.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_drawer_mode_flow_external.ts",
+      "entry": "sketch_drawer_sizing.js"
     },
     {
       "file": "esm/native/services/canvas_picking_generic_paint_hover_flow.ts",

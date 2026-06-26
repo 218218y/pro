@@ -166,3 +166,96 @@ test('sketch external drawer tool hovering a sketch internal drawer shows remova
   assert.equal(previews[0].kind, 'drawers');
   assert.equal(previews[0].op, 'remove');
 });
+
+test('sketch external drawer tool hovering an internal drawer box maps to the whole internal drawer stack', () => {
+  const parent = { id: 'wardrobe-parent' };
+  const lower = makeExternalDrawerGroup('drawer_box__div_int_sketch_1_sid-box_lower', 0.35, parent);
+  const upper = makeExternalDrawerGroup('drawer_box__div_int_sketch_1_sid-box_upper', 0.55, parent);
+  lower.userData = {
+    ...lower.userData,
+    partId: 'drawer_box__div_int_sketch_1_sid-box_lower',
+    __wpDrawerOwnerPartId: 'div_int_sketch_1_sid-box_lower',
+    moduleIndex: '1',
+  };
+  upper.userData = {
+    ...upper.userData,
+    partId: 'drawer_box__div_int_sketch_1_sid-box_upper',
+    __wpDrawerOwnerPartId: 'div_int_sketch_1_sid-box_upper',
+    moduleIndex: '1',
+  };
+  const previews: any[] = [];
+  const hoverRecords: any[] = [];
+  const App = {
+    render: {
+      drawersArray: [
+        { id: 'div_int_sketch_1_sid-box_lower', group: lower },
+        { id: 'div_int_sketch_1_sid-box_upper', group: upper },
+      ],
+    },
+  } as any;
+
+  const handled = tryHandleSketchHoverOverStandardDrawer({
+    App,
+    tool: 'sketch_ext_drawers:3',
+    ndcX: 0,
+    ndcY: 0,
+    __wpRaycaster: {},
+    __wpMouse: {},
+    __wp_toModuleKey: (value: unknown) => String(value),
+    __wp_writeSketchHover: (_App: unknown, hover: unknown) => hoverRecords.push(hover),
+    __wp_resolveDrawerHoverPreviewTarget: () => ({
+      drawer: { id: 'drawer_box__div_int_sketch_1_sid-box_upper', group: upper },
+      parent,
+      box: { centerX: 0.1, centerY: 0.55, centerZ: 0.25, width: 0.82, height: 0.18, depth: 0.08 },
+    }),
+    setPreview: (preview: unknown) => previews.push(preview),
+  } as any);
+
+  assert.equal(handled, true);
+  assert.equal(hoverRecords.length, 1);
+  assert.equal(hoverRecords[0].kind, 'drawers');
+  assert.equal(hoverRecords[0].op, 'remove');
+  assert.equal(hoverRecords[0].removeId, 'sid-box');
+  assert.equal(previews.length, 1);
+  assert.equal(previews[0].kind, 'drawers');
+  assert.equal(previews[0].op, 'remove');
+  assert.ok(Math.abs(Number(hoverRecords[0].stackH) - 0.38) < 1e-9);
+});
+
+test('sketch external drawer tool hovering an internal drawer cassette maps to the internal drawer id', () => {
+  const parent = { id: 'wardrobe-parent' };
+  const cassette = makeExternalDrawerGroup('div_int_sketch_1_sid-cassette_cassette', 0.45, parent);
+  cassette.userData = {
+    ...cassette.userData,
+    partId: 'div_int_sketch_1_sid-cassette_cassette',
+    __wpInternalDrawerCassette: true,
+    __wpInternalDrawerCassetteStackPartId: 'div_int_sketch_1_sid-cassette',
+  };
+  const previews: any[] = [];
+  const hoverRecords: any[] = [];
+  const App = { render: { drawersArray: [] } } as any;
+
+  const handled = tryHandleSketchHoverOverStandardDrawer({
+    App,
+    tool: 'sketch_ext_drawers:3',
+    ndcX: 0,
+    ndcY: 0,
+    __wpRaycaster: {},
+    __wpMouse: {},
+    __wp_toModuleKey: (value: unknown) => String(value),
+    __wp_writeSketchHover: (_App: unknown, hover: unknown) => hoverRecords.push(hover),
+    __wp_resolveDrawerHoverPreviewTarget: () => ({
+      drawer: { id: 'div_int_sketch_1_sid-cassette_cassette', group: cassette, moduleIndex: '1' },
+      parent,
+      box: { centerX: 0.1, centerY: 0.45, centerZ: 0.25, width: 0.9, height: 0.42, depth: 0.38 },
+    }),
+    setPreview: (preview: unknown) => previews.push(preview),
+  } as any);
+
+  assert.equal(handled, true);
+  assert.equal(hoverRecords[0].kind, 'drawers');
+  assert.equal(hoverRecords[0].op, 'remove');
+  assert.equal(hoverRecords[0].removeId, 'sid-cassette');
+  assert.equal(previews[0].kind, 'drawers');
+  assert.equal(previews[0].op, 'remove');
+});

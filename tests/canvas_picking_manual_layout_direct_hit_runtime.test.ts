@@ -247,7 +247,7 @@ test('manual-layout sketch external direct-hit action ignores standard external 
   assert.equal(cfg.extDrawersCount, 3);
 });
 
-test('manual-layout internal sketch drawer tool removes a sketch external drawer by direct cross hit', () => {
+test('manual-layout internal sketch drawer tool removes a sketch external drawer only when the remove hover matches', () => {
   const cfg: Record<string, unknown> = {
     sketchExtras: {
       extDrawers: [
@@ -286,10 +286,15 @@ test('manual-layout internal sketch drawer tool removes a sketch external drawer
       return null;
     },
     __wp_isViewportRoot: () => false,
-    __hoverOk: false,
-    __hoverKind: '',
-    __hoverOp: '',
-    __hoverRec: null,
+    __hoverOk: true,
+    __hoverKind: 'ext_drawers',
+    __hoverOp: 'remove',
+    __hoverRec: {
+      kind: 'ext_drawers',
+      op: 'remove',
+      removeKind: 'sketch',
+      removeId: 'sed-1',
+    },
   });
 
   const extDrawers = (
@@ -300,7 +305,7 @@ test('manual-layout internal sketch drawer tool removes a sketch external drawer
   assert.deepEqual(extDrawers, ['sed-2']);
 });
 
-test('manual-layout external sketch drawer tool removes a sketch internal drawer by direct cross hit', () => {
+test('manual-layout external sketch drawer tool removes a sketch internal drawer only when the remove hover matches', () => {
   const cfg: Record<string, unknown> = {
     sketchExtras: {
       drawers: [
@@ -337,10 +342,15 @@ test('manual-layout external sketch drawer tool removes a sketch internal drawer
       return null;
     },
     __wp_isViewportRoot: () => false,
-    __hoverOk: false,
-    __hoverKind: '',
-    __hoverOp: '',
-    __hoverRec: null,
+    __hoverOk: true,
+    __hoverKind: 'drawers',
+    __hoverOp: 'remove',
+    __hoverRec: {
+      kind: 'drawers',
+      op: 'remove',
+      removeKind: 'sketch',
+      removeId: 'sid-1',
+    },
   });
 
   const drawers = (((cfg.sketchExtras as { drawers?: Array<{ id: string }> }) || {}).drawers ?? []).map(
@@ -497,4 +507,61 @@ test('manual-layout shelf direct hit respects add hover instead of deleting an a
   assert.equal(applied, false);
   assert.equal(patched, false);
   assert.deepEqual(shelves, ['existing']);
+});
+
+test('manual-layout external sketch drawer tool removes an internal drawer box via canonical owner id', () => {
+  const cfg: Record<string, unknown> = {
+    sketchExtras: {
+      drawers: [
+        { id: 'sid-1', yNorm: 0.35 },
+        { id: 'sid-2', yNorm: 0.65 },
+      ],
+    },
+  };
+  let patchMeta: Record<string, unknown> | null = null;
+
+  const drawerBoxGroup = {
+    userData: {
+      partId: 'drawer_box__div_int_sketch_2_sid-1_lower',
+      __wpDrawerOwnerPartId: 'div_int_sketch_2_sid-1_lower',
+      moduleIndex: '2',
+    },
+    parent: null,
+  };
+
+  const applied = tryApplyManualLayoutSketchDirectHitActions({
+    App: {} as never,
+    __mt: 'sketch_ext_drawers:3',
+    __activeModuleKey: 2,
+    topY: 2.4,
+    bottomY: 0,
+    mapKey: 2,
+    __gridMap: { '2': { gridDivisions: 6 } },
+    totalHeight: 2.4,
+    hitY0: 1.0,
+    pad: 0,
+    intersects: [{ object: drawerBoxGroup, point: { y: 1.0 } }] as any,
+    __patchConfigForKey: (_mk, patchFn, meta) => {
+      patchMeta = { ...meta };
+      patchFn(cfg);
+      return null;
+    },
+    __wp_isViewportRoot: () => false,
+    __hoverOk: true,
+    __hoverKind: 'drawers',
+    __hoverOp: 'remove',
+    __hoverRec: {
+      kind: 'drawers',
+      op: 'remove',
+      removeKind: 'sketch',
+      removeId: 'sid-1',
+    },
+  });
+
+  const drawers = (((cfg.sketchExtras as { drawers?: Array<{ id: string }> }) || {}).drawers ?? []).map(
+    entry => entry.id
+  );
+  assert.equal(applied, true);
+  assert.deepEqual(patchMeta, { source: 'sketch.removeInternalDrawerByCrossHit', immediate: true });
+  assert.deepEqual(drawers, ['sid-2']);
 });
