@@ -55,6 +55,10 @@ const genericPaintHoverTarget = readFileSync(
   'esm/native/services/canvas_picking_generic_paint_hover_target.ts',
   'utf8'
 );
+const genericPaintTargetResolution = readFileSync(
+  'esm/native/services/canvas_picking_generic_paint_target_resolution.ts',
+  'utf8'
+);
 const materialsApply = [
   readFileSync('esm/native/builder/materials_apply.ts', 'utf8'),
   readFileSync('esm/native/builder/material_color_lookup.ts', 'utf8'),
@@ -342,9 +346,11 @@ test('cornice paint keeps classic group paint while wave fascia click, hover, re
 test('generic part paint hover resolves the same primary hit target as click flow before building grouped previews', () => {
   assert.match(genericPaintHoverFlow, /resolveCanvasPickingClickHitState\(\{/);
   assert.match(genericPaintHoverFlow, /const foundPartId = typeof hitState\?\.foundPartId === 'string'/);
+  assert.match(genericPaintHoverFlow, /resolveGenericPartPaintTarget\(\{/);
+  assert.match(genericPaintHoverTarget, /export function resolveNonDoorHoverTargetFromObject\(/);
+  assert.match(genericPaintTargetResolution, /export function resolveGenericPartPaintTarget\(/);
   assert.match(
-    genericPaintHoverFlow,
+    genericPaintTargetResolution,
     /resolveNonDoorHoverTargetFromObject\(App, primaryHitObject, foundPartId\)/
   );
-  assert.match(genericPaintHoverTarget, /export function resolveNonDoorHoverTargetFromObject\(/);
 });

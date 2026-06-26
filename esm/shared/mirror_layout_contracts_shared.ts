@@ -129,14 +129,15 @@ export function cloneMirrorLayoutList(value: unknown): MirrorLayoutList {
 export function hasMirrorSurfaceOnFace(
   layouts: unknown,
   faceSign: unknown,
-  fallbackFaceSign: number = DEFAULT_FACE_SIGN
+  defaultSurfaceFaceSign: number = DEFAULT_FACE_SIGN
 ): boolean {
-  const normalizedFaceSign = normalizeMirrorFaceSign(faceSign, fallbackFaceSign);
-  const normalizedFallbackFaceSign = normalizeMirrorFaceSign(fallbackFaceSign, DEFAULT_FACE_SIGN);
+  const normalizedFaceSign = normalizeMirrorFaceSign(faceSign, defaultSurfaceFaceSign);
+  const normalizedDefaultSurfaceFaceSign = normalizeMirrorFaceSign(defaultSurfaceFaceSign, DEFAULT_FACE_SIGN);
   const list = readMirrorLayoutList(layouts);
-  if (!list.length) return normalizedFaceSign === normalizedFallbackFaceSign;
+  if (!list.length) return normalizedFaceSign === normalizedDefaultSurfaceFaceSign;
   for (let i = 0; i < list.length; i += 1) {
-    if (readMirrorLayoutFaceSign(list[i], normalizedFallbackFaceSign) === normalizedFaceSign) return true;
+    if (readMirrorLayoutFaceSign(list[i], normalizedDefaultSurfaceFaceSign) === normalizedFaceSign)
+      return true;
   }
   return false;
 }
