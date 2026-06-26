@@ -3,6 +3,7 @@
   "policy": "Only feature entries listed here are public to layers outside esm/native/features. Add new entries deliberately with owner documentation; do not import feature internals ad-hoc.",
   "publicEntries": [
     "base_leg_support.js",
+    "base_leg_stage_special_dims_guard.js",
     "base_plinth_support.js",
     "door_removal_visibility.js",
     "door_style_overrides.js",
@@ -28,6 +29,7 @@
     "project_config/project_config_persisted_snapshot.js",
     "project_config/project_config_snapshot_canonical.js",
     "removable_parts.js",
+    "shelf_front_edge_material.js",
     "shelf_part_identity.js",
     "sketch_box_regular_external_drawers.js",
     "sketch_drawer_sizing.js",
@@ -39,6 +41,7 @@
   ],
   "families": {
     "base_leg_support": ["base_leg_support.js"],
+    "base_leg_stage_special_dims_guard": ["base_leg_stage_special_dims_guard.js"],
     "base_plinth_support": ["base_plinth_support.js"],
     "door_removal_visibility": ["door_removal_visibility.js"],
     "door_style_overrides": ["door_style_overrides.js"],
@@ -67,6 +70,7 @@
       "project_config/project_config_snapshot_canonical.js"
     ],
     "removable_parts": ["removable_parts.js"],
+    "shelf_front_edge_material": ["shelf_front_edge_material.js"],
     "shelf_part_identity": ["shelf_part_identity.js"],
     "sketch_box_regular_external_drawers": ["sketch_box_regular_external_drawers.js"],
     "sketch_drawer_sizing": ["sketch_drawer_sizing.js"],
