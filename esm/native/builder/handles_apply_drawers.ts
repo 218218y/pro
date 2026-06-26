@@ -1,5 +1,5 @@
 import { getDrawersArray, getWardrobeGroup } from '../runtime/render_access.js';
-import { isDrawerBoxPartId } from '../features/drawer_box_identity.js';
+import { isDrawerBoxPartId, resolveDrawerBoxOwnerPartId } from '../features/drawer_box_identity.js';
 import { HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { resolveManualHandleLocalPosition } from '../features/manual_handle_position.js';
 import { createHandleMeshV7 } from './handles_mesh.js';
@@ -16,7 +16,7 @@ export function applyDrawerHandles(runtime: HandlesApplyRuntime): void {
     if (processedUUIDs.has(g.uuid)) continue;
     processedUUIDs.add(g.uuid);
 
-    const id = g.userData.partId;
+    const id = resolveDrawerHandlePartId(g);
     runtime.removeExistingHandleChildren(g);
 
     const hType = runtime.getHandleType(id);
@@ -96,15 +96,19 @@ function positionDrawerHandleManual(
 
 function collectSafeDrawers(runtime: HandlesApplyRuntime): NodeLike[] {
   const safeDrawers: NodeLike[] = [];
-  const pushSafeDrawer = (node: NodeLike | null | undefined): void => {
+  const pushSafeDrawer = (
+    node: NodeLike | null | undefined,
+    options: { allowDrawerBoxHost?: boolean } = {}
+  ): void => {
     if (!node || safeDrawers.includes(node)) return;
+    if (isDrawerBoxGroup(node) && options.allowDrawerBoxHost !== true) return;
     safeDrawers.push(node);
   };
 
   const drawersArray = getDrawersArray(runtime.App);
   if (Array.isArray(drawersArray)) {
     drawersArray.forEach((d: DrawerVisualEntryLike) => {
-      pushSafeDrawer(asNode(d && d.group));
+      pushSafeDrawer(asNode(d && d.group), { allowDrawerBoxHost: d?.isInternal === true });
     });
   }
 
@@ -119,11 +123,25 @@ function collectSafeDrawers(runtime: HandlesApplyRuntime): NodeLike[] {
   return safeDrawers;
 }
 
+function resolveDrawerHandlePartId(node: NodeLike | null | undefined): string {
+  const userData = node?.userData || {};
+  const ownerPartId = resolveDrawerBoxOwnerPartId(userData);
+  if (ownerPartId) return ownerPartId;
+  return userData.partId == null ? '' : String(userData.partId);
+}
+
+function isDrawerBoxGroup(node: NodeLike | null | undefined): boolean {
+  if (!node) return false;
+  const userData = node.userData || {};
+  const partId = userData.partId ? String(userData.partId) : '';
+  return userData.__wpDrawerBox === true || isDrawerBoxPartId(partId);
+}
+
 function isDrawerLikeGroup(node: NodeLike | null | undefined): boolean {
   if (!node || node.isGroup !== true) return false;
   const userData = node.userData || {};
   const partId = userData.partId ? String(userData.partId) : '';
-  if (userData.__wpDrawerBox === true || isDrawerBoxPartId(partId)) return false;
+  if (isDrawerBoxGroup(node)) return false;
   if (!partId || !partId.includes('drawer')) return false;
   const doorW = Number(userData.__doorWidth);
   const doorH = Number(userData.__doorHeight);

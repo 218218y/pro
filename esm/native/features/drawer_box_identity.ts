@@ -20,6 +20,29 @@ export function isDrawerBoxPartId(partId: unknown): boolean {
   return typeof partId === 'string' && partId.startsWith(DRAWER_BOX_PART_ID_PREFIX);
 }
 
+export type DrawerBoxOwnerUserDataLike = {
+  __wpDrawerOwnerPartId?: unknown;
+  __wpDrawerId?: unknown;
+  drawerId?: unknown;
+  partId?: unknown;
+};
+
+export function resolveDrawerBoxOwnerPartId(
+  userData: DrawerBoxOwnerUserDataLike | null | undefined
+): string | null {
+  const candidates = [userData?.__wpDrawerOwnerPartId, userData?.__wpDrawerId, userData?.drawerId];
+  for (const value of candidates) {
+    if (value == null) continue;
+    const sid = String(value).trim();
+    if (sid) return sid;
+  }
+
+  const partId = userData?.partId;
+  if (!isDrawerBoxPartId(partId)) return null;
+  const rawOwner = String(partId).slice(DRAWER_BOX_PART_ID_PREFIX.length).trim();
+  return rawOwner || null;
+}
+
 export function hasExplicitDrawerBoxPaint(value: unknown): boolean {
   if (typeof value !== 'string') return false;
   return !!value && value !== 'mirror' && value !== 'glass';

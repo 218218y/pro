@@ -70,6 +70,7 @@ export function createApplyInternalDrawersOps(deps: BuilderRenderDrawerDeps) {
         drawerId: partId,
         moduleIndex: drawerOp.moduleIndex,
         __wpDrawerBox: true,
+        __wpInternalDrawerBox: true,
         __wpDrawerId: partId,
         __wpDrawerOwnerPartId: partId,
       };

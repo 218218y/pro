@@ -410,6 +410,120 @@ test('handles apply does not treat external drawer boxes as separate drawer fron
   );
 });
 
+test('handles apply keeps sketch internal drawer boxes handle-free by default after drawer-box paint identity', () => {
+  const { App } = createApp();
+  App.deps = {
+    THREE: {
+      Group: FakeGroup3D,
+      Mesh: FakeMesh3D,
+      BoxGeometry: FakeGeometry3D,
+      MeshStandardMaterial: class FakeMeshStandardMaterial {},
+      Box3: FakeBox3D,
+      Matrix4: FakeMatrix4D,
+    },
+  };
+
+  const internalDrawerBox = new FakeGroup3D();
+  internalDrawerBox.userData = {
+    partId: 'drawer_box__div_int_sketch_0_d1_lower',
+    drawerId: 'div_int_sketch_0_d1_lower',
+    __wpDrawerBox: true,
+    __wpInternalDrawerBox: true,
+    __wpDrawerOwnerPartId: 'div_int_sketch_0_d1_lower',
+    __doorWidth: 0.68,
+    __doorHeight: 0.18,
+    __frontMaxZ: 0.018,
+  };
+
+  App.render.drawersArray = [
+    {
+      id: 'div_int_sketch_0_d1_lower',
+      group: internalDrawerBox,
+      isInternal: true,
+    },
+  ];
+  App.store.getState = () => ({
+    ui: { view: {} },
+    config: { globalHandleType: 'standard', handlesMap: {} },
+    runtime: {},
+    mode: { primary: 'none', opts: {} },
+    meta: {},
+  });
+
+  applyHandles({
+    App,
+    cfgSnapshot: readConfigSnapshot(App),
+    addOutlines,
+    removeDoorsEnabled: false,
+    triggerRender: false,
+  });
+
+  assert.equal(
+    internalDrawerBox.children.some(child => child.userData.__kind === 'handle'),
+    false,
+    'internal drawer boxes must resolve handle policy through the original internal drawer id, not drawer_box__*'
+  );
+});
+
+test('handles apply still honors explicit advanced handle overrides on sketch internal drawer boxes', () => {
+  const { App } = createApp();
+  const outlined: unknown[] = [];
+  App.deps = {
+    THREE: {
+      Group: FakeGroup3D,
+      Mesh: FakeMesh3D,
+      BoxGeometry: FakeGeometry3D,
+      MeshStandardMaterial: class FakeMeshStandardMaterial {},
+      Box3: FakeBox3D,
+      Matrix4: FakeMatrix4D,
+    },
+  };
+
+  const internalDrawerBox = new FakeGroup3D();
+  internalDrawerBox.userData = {
+    partId: 'drawer_box__div_int_sketch_0_d1_lower',
+    drawerId: 'div_int_sketch_0_d1_lower',
+    __wpDrawerBox: true,
+    __wpInternalDrawerBox: true,
+    __wpDrawerOwnerPartId: 'div_int_sketch_0_d1_lower',
+    __doorWidth: 0.68,
+    __doorHeight: 0.18,
+    __frontMaxZ: 0.018,
+  };
+
+  App.render.drawersArray = [
+    {
+      id: 'div_int_sketch_0_d1_lower',
+      group: internalDrawerBox,
+      isInternal: true,
+    },
+  ];
+  App.store.getState = () => ({
+    ui: { view: {} },
+    config: {
+      globalHandleType: 'none',
+      handlesMap: { div_int_sketch_0_d1_lower: 'standard' },
+    },
+    runtime: {},
+    mode: { primary: 'none', opts: {} },
+    meta: {},
+  });
+
+  applyHandles({
+    App,
+    cfgSnapshot: readConfigSnapshot(App),
+    addOutlines: mesh => outlined.push(mesh),
+    removeDoorsEnabled: false,
+    triggerRender: false,
+  });
+
+  assert.equal(
+    internalDrawerBox.children.some(child => child.userData.__kind === 'handle'),
+    true
+  );
+  assert.equal(outlined.length, 1);
+});
+
 test('handles apply rejects a missing config snapshot instead of reading live build/store state', () => {
   const { App } = createApp();
   assert.throws(() => applyHandles({ App }), /cfgSnapshot is required/);
