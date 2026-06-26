@@ -5,6 +5,7 @@ import {
 } from './canvas_picking_manual_layout_sketch_stack_placement.js';
 import { buildSketchBoxStackAwareMeasurementEntries } from './canvas_picking_sketch_neighbor_measurements.js';
 import { buildSketchBoxVerticalContentBlockers } from './canvas_picking_sketch_box_vertical_content_blockers.js';
+import { withoutInternalDrawerReplaceableShelfBlockers } from './canvas_picking_internal_drawer_shelf_replacement.js';
 import { createManualLayoutSketchBoxContentHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import type {
   ResolveSketchBoxStackPreviewArgs,
@@ -35,7 +36,28 @@ export function resolveSketchBoxDrawersPreview(
     localExtDrawers,
   } = ctx;
 
-  const placement = resolveManualLayoutSketchInternalDrawerPlacement({
+  const placementBlockers = buildManualLayoutSketchExternalDrawerBlockers({
+    extDrawers: localExtDrawers,
+    bottomY: boxBottomY,
+    topY: boxTopY,
+    pad: woodThick,
+    readCenterY,
+  }).concat(
+    buildSketchBoxVerticalContentBlockers({
+      targetBox: args.targetBox,
+      targetGeo,
+      targetCenterY: args.targetCenterY,
+      targetHeight,
+      woodThick,
+      boxSegments,
+      activeSegment,
+      verticalSegments,
+      activeVerticalSegment,
+      pickSketchBoxSegment: args.pickSketchBoxSegment,
+      pickSketchBoxVerticalSegment: args.pickSketchBoxVerticalSegment,
+    })
+  );
+  let placement = resolveManualLayoutSketchInternalDrawerPlacement({
     desiredCenterY: pointerY,
     bottomY: boxBottomY,
     topY: boxTopY,
@@ -44,28 +66,21 @@ export function resolveSketchBoxDrawersPreview(
     drawerHeightM: args.drawerHeightM,
     drawers: localDrawers,
     readCenterY,
-    blockers: buildManualLayoutSketchExternalDrawerBlockers({
-      extDrawers: localExtDrawers,
+    blockers: placementBlockers,
+  });
+  if (placement.op === 'blocked') {
+    placement = resolveManualLayoutSketchInternalDrawerPlacement({
+      desiredCenterY: pointerY,
       bottomY: boxBottomY,
       topY: boxTopY,
+      totalHeight: cellHeight,
       pad: woodThick,
+      drawerHeightM: args.drawerHeightM,
+      drawers: localDrawers,
       readCenterY,
-    }).concat(
-      buildSketchBoxVerticalContentBlockers({
-        targetBox: args.targetBox,
-        targetGeo,
-        targetCenterY: args.targetCenterY,
-        targetHeight,
-        woodThick,
-        boxSegments,
-        activeSegment,
-        verticalSegments,
-        activeVerticalSegment,
-        pickSketchBoxSegment: args.pickSketchBoxSegment,
-        pickSketchBoxVerticalSegment: args.pickSketchBoxVerticalSegment,
-      })
-    ),
-  });
+      blockers: withoutInternalDrawerReplaceableShelfBlockers(placementBlockers),
+    });
+  }
   const baseY = placement.yCenter - placement.stackH / 2;
   const blockedReason =
     placement.op === 'blocked'

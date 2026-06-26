@@ -401,6 +401,28 @@ test('manual-layout module sketch internal drawer preview marks collision with b
   assert.equal(calls.previews[0]?.blockedReason, 'collision');
 });
 
+test('manual-layout module sketch internal drawer preview allows add when only shelves will be replaced', () => {
+  const { ctx, calls } = createModuleStackContext({
+    tool: 'sketch_int_drawers@20',
+    isDrawers: true,
+    isExtDrawers: false,
+    topY: 0.9,
+    spanH: 0.9,
+    yClamped: 0.45,
+    shelves: [{ id: 'shelf-blocker', yNorm: 0.5, variant: 'regular' }],
+  });
+
+  const handled = tryHandleManualLayoutSketchHoverModuleStackPreview(ctx);
+
+  assert.equal(handled, true);
+  assert.equal(calls.hover[0]?.kind, 'drawers');
+  assert.equal(calls.hover[0]?.op, 'add');
+  assert.equal(calls.hover[0]?.__wpBlockedReason, undefined);
+  assert.equal(calls.previews[0]?.kind, 'drawers');
+  assert.equal(calls.previews[0]?.op, 'add');
+  assert.equal(calls.previews[0]?.blockedReason, undefined);
+});
+
 test('manual-layout focused box sketch internal drawer preview marks no-room hover red when it cannot fit', () => {
   const { ctx, calls } = createModuleStackContext({
     tool: 'sketch_int_drawers@30',
@@ -843,7 +865,9 @@ test('stack tool commits module sketch internal drawers snapped inside the cross
   assert.ok(Math.abs(Number(drawer.yNormC) - 0.24541666666666667) < 1e-9);
   assert.equal(nextHover?.kind, 'drawers');
   assert.equal(nextHover?.op, 'remove');
-  assert.equal(toasts.length, 0);
+  assert.equal(toasts.length, 1);
+  assert.match(toasts[0]![0], /מדף הוסר בעקבות הוספת מגירות פנימיות/);
+  assert.equal(toasts[0]![1], 'info');
 });
 
 test('stack tool rejects module sketch internal drawers instead of shrinking exact custom heights', () => {
@@ -1056,6 +1080,92 @@ test('stack tool rejects module sketch external drawers that collide with existi
   assert.equal(toasts.length, 1);
   assert.match(toasts[0]![0], /פריטים קיימים/);
   assert.equal(toasts[0]![1], 'error');
+});
+
+test('stack tool replaces colliding sketch shelves when committing module sketch internal drawers', () => {
+  const cfg: Record<string, unknown> = {
+    sketchExtras: {
+      shelves: [{ id: 'shelf-blocker', yNorm: 0.5, variant: 'regular' }],
+    },
+  };
+  const toasts: Array<[string, string | undefined]> = [];
+  let nextHover: Record<string, unknown> | null = null;
+  const App: any = {
+    services: {
+      uiFeedback: {
+        toast: (message: string, type?: string) => {
+          toasts.push([message, type]);
+        },
+      },
+    },
+  };
+
+  const handled = tryCommitSketchModuleStackTool({
+    App,
+    cfg,
+    tool: 'sketch_int_drawers@20',
+    hoverOk: false,
+    hoverRec: {},
+    bottomY: 0,
+    topY: 0.9,
+    totalHeight: 0.9,
+    pad: 0.02,
+    hitYClamped: 0.45,
+    hoverHost: { tool: 'sketch_int_drawers@20', moduleKey: 2, isBottom: true },
+    writeSketchHover: (_app, hover) => {
+      nextHover = hover as Record<string, unknown> | null;
+    },
+  });
+
+  assert.equal(handled, true);
+  assert.equal(Array.isArray((cfg.sketchExtras as any).drawers), true);
+  assert.equal(((cfg.sketchExtras as any).drawers as any[]).length, 1);
+  assert.deepEqual((cfg.sketchExtras as any).shelves, []);
+  assert.equal(nextHover?.kind, 'drawers');
+  assert.equal(nextHover?.op, 'remove');
+  assert.equal(toasts.length, 1);
+  assert.match(toasts[0]![0], /מדף הוסר בעקבות הוספת מגירות פנימיות/);
+  assert.equal(toasts[0]![1], 'info');
+});
+
+test('stack tool replaces colliding preset shelves when committing module sketch internal drawers', () => {
+  const cfg: Record<string, unknown> = { layout: 'shelves', isCustom: false, gridDivisions: 3 };
+  const toasts: Array<[string, string | undefined]> = [];
+  const App: any = {
+    services: {
+      uiFeedback: {
+        toast: (message: string, type?: string) => {
+          toasts.push([message, type]);
+        },
+      },
+    },
+  };
+
+  const handled = tryCommitSketchModuleStackTool({
+    App,
+    cfg,
+    tool: 'sketch_int_drawers@20',
+    hoverOk: false,
+    hoverRec: {},
+    bottomY: 0,
+    topY: 0.9,
+    totalHeight: 0.9,
+    pad: 0.02,
+    woodThick: 0.02,
+    hitYClamped: 0.45,
+    hoverHost: { tool: 'sketch_int_drawers@20', moduleKey: 2, isBottom: true },
+    writeSketchHover: () => {},
+  });
+
+  assert.equal(handled, true);
+  assert.equal(Array.isArray((cfg.sketchExtras as any).drawers), true);
+  assert.equal(
+    (cfg.customData as any).shelves.every((value: unknown) => value === false),
+    true
+  );
+  assert.equal(toasts.length, 1);
+  assert.match(toasts[0]![0], /מדפים הוסרו בעקבות הוספת מגירות פנימיות/);
+  assert.equal(toasts[0]![1], 'info');
 });
 
 test('stack tool rejects module sketch internal drawers that collide with existing external sketch drawers', () => {

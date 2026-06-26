@@ -9,6 +9,7 @@ import {
   ensureSketchBoxContentList,
 } from './canvas_picking_sketch_box_content_commit_boxes.js';
 import type { CommitSketchModuleBoxContentArgs } from './canvas_picking_sketch_box_content_commit_contracts.js';
+import { toastInternalDrawerRemovedShelves } from './canvas_picking_internal_drawer_shelf_replacement.js';
 import { buildToggleHoverRecord } from './canvas_picking_sketch_box_content_commit_toggle.js';
 import { inferSketchStackVerticalAnchorFromNormalizedItem } from '../features/sketch_stack_positioning.js';
 import { markSketchInternalDrawersDirty } from '../features/sketch_drawer_sizing.js';
@@ -61,18 +62,18 @@ function removeBoxShelvesTouchingInternalDrawerCassette(args: {
   stackH: number | null;
   contentXNorm: number | null;
   woodThick?: unknown;
-}): void {
+}): number {
   const shelves = Array.isArray(args.box.shelves) ? (args.box.shelves as SketchModuleBoxContentLike[]) : null;
-  if (!shelves?.length) return;
+  if (!shelves?.length) return 0;
   const boxHeight = readPositiveNumber(args.box.heightM ?? args.box.height);
-  if (boxHeight == null) return;
+  if (boxHeight == null) return 0;
   const baseNorm = readNumber(args.item.yNorm);
   const centerNorm = readNumber(args.item.yNormC);
   const stackH = readPositiveNumber(args.stackH);
-  if (stackH == null) return;
+  if (stackH == null) return 0;
   const stackBaseY =
     baseNorm != null ? baseNorm * boxHeight : centerNorm != null ? centerNorm * boxHeight - stackH / 2 : null;
-  if (stackBaseY == null) return;
+  if (stackBaseY == null) return 0;
   const woodThick = readPositiveNumber(args.woodThick) ?? MATERIAL_DIMENSIONS.wood.thicknessM;
   const cassette = resolveSketchInternalDrawerCassetteRange({
     baseY: stackBaseY,
@@ -80,6 +81,7 @@ function removeBoxShelvesTouchingInternalDrawerCassette(args: {
     woodThick,
   });
 
+  let removedCount = 0;
   for (let i = shelves.length - 1; i >= 0; i -= 1) {
     const shelf = shelves[i];
     if (!shelf || !boxShelfMatchesDrawerColumn({ shelf, contentXNorm: args.contentXNorm })) continue;
@@ -96,8 +98,10 @@ function removeBoxShelvesTouchingInternalDrawerCassette(args: {
       })
     ) {
       shelves.splice(i, 1);
+      removedCount += 1;
     }
   }
+  return removedCount;
 }
 
 function clampNorm(value: number | null, defaultValue: number): number {
@@ -266,13 +270,14 @@ export function tryCommitSketchBoxDrawerContent(args: {
       stackH,
     });
     list.push(item);
-    removeBoxShelvesTouchingInternalDrawerCassette({
+    const removedShelfCount = removeBoxShelvesTouchingInternalDrawerCassette({
       box: commitArgs.box as Record<string, unknown>,
       item,
       stackH,
       contentXNorm,
       woodThick: commitArgs.woodThick,
     });
+    toastInternalDrawerRemovedShelves(commitArgs.App, removedShelfCount);
     if (commitArgs.cfg) markSketchInternalDrawersDirty(commitArgs.cfg);
     return {
       handled: true,

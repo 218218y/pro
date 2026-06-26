@@ -392,6 +392,7 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
       return true;
     }
     const nextHover = commitSketchModuleInternalDrawerStack({
+      App: args.App,
       cfg: args.cfg,
       hoverRec: args.hoverRec,
       hoverOk: args.hoverOk,

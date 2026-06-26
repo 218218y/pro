@@ -5,6 +5,7 @@ import {
   resolveManualLayoutSketchInternalDrawerPlacement,
 } from './canvas_picking_manual_layout_sketch_stack_placement.js';
 import { buildManualLayoutVerticalContentBlockers } from './canvas_picking_manual_layout_vertical_blockers.js';
+import { withoutInternalDrawerReplaceableShelfBlockers } from './canvas_picking_internal_drawer_shelf_replacement.js';
 import { buildSketchModuleBoxVerticalBlockers } from './canvas_picking_sketch_module_box_blockers.js';
 import { buildSketchModuleStackAwareMeasurementEntries } from './canvas_picking_sketch_neighbor_measurements.js';
 import { createManualLayoutSketchStackHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
@@ -46,7 +47,26 @@ export function resolveSketchModuleDrawersPreview(
     pad,
     woodThick,
   });
-  const placement = resolveManualLayoutSketchInternalDrawerPlacement({
+  const placementBlockers = [
+    ...buildManualLayoutSketchExternalDrawerBlockers({
+      extDrawers,
+      bottomY,
+      topY,
+      pad,
+      readCenterY,
+    }),
+    ...verticalContentBlockers,
+    ...buildSketchModuleBoxVerticalBlockers({
+      cfgRef,
+      boxes: args.boxes,
+      bottomY,
+      topY,
+      totalHeight,
+      pad,
+      woodThick,
+    }),
+  ];
+  let placement = resolveManualLayoutSketchInternalDrawerPlacement({
     desiredCenterY,
     bottomY,
     topY,
@@ -56,26 +76,22 @@ export function resolveSketchModuleDrawersPreview(
     drawers,
     readCenterY,
     woodThick,
-    blockers: [
-      ...buildManualLayoutSketchExternalDrawerBlockers({
-        extDrawers,
-        bottomY,
-        topY,
-        pad,
-        readCenterY,
-      }),
-      ...verticalContentBlockers,
-      ...buildSketchModuleBoxVerticalBlockers({
-        cfgRef,
-        boxes: args.boxes,
-        bottomY,
-        topY,
-        totalHeight,
-        pad,
-        woodThick,
-      }),
-    ],
+    blockers: placementBlockers,
   });
+  if (placement.op === 'blocked') {
+    placement = resolveManualLayoutSketchInternalDrawerPlacement({
+      desiredCenterY,
+      bottomY,
+      topY,
+      totalHeight,
+      pad,
+      drawerHeightM: args.drawerHeightM,
+      drawers,
+      readCenterY,
+      woodThick,
+      blockers: withoutInternalDrawerReplaceableShelfBlockers(placementBlockers),
+    });
+  }
   const blockedReason =
     placement.op === 'blocked'
       ? 'collision'

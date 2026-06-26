@@ -1,9 +1,10 @@
-import type { UnknownRecord } from '../../../types';
+import type { AppContainer, UnknownRecord } from '../../../types';
 import type { ManualLayoutSketchHoverHost } from './canvas_picking_manual_layout_sketch_hover_state.js';
 
 export type RecordMap = UnknownRecord;
 
 export type CommitSketchModuleInternalDrawerArgs = {
+  App?: AppContainer | null;
   cfg: RecordMap;
   hoverRec: RecordMap;
   hoverOk: boolean;

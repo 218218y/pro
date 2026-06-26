@@ -8,6 +8,10 @@ import {
   type ManualLayoutVerticalContentBlocker,
 } from './canvas_picking_manual_layout_vertical_blockers.js';
 import { buildSketchModuleBoxVerticalBlockers } from './canvas_picking_sketch_module_box_blockers.js';
+import {
+  toastInternalDrawerRemovedShelves,
+  withoutInternalDrawerReplaceableShelfBlockers,
+} from './canvas_picking_internal_drawer_shelf_replacement.js';
 import { removeManualLayoutBaseShelf } from './canvas_picking_manual_layout_config_ops_shelf.js';
 import { createManualLayoutSketchStackHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import type {
@@ -75,14 +79,14 @@ function removeShelvesTouchingInternalDrawerCassette(args: {
   bottomY: number;
   topY: number;
   woodThick?: unknown;
-}): void {
+}): number {
   const cassette = resolveSketchInternalDrawerCassetteRange({
     baseY: args.baseY,
     stackH: args.stackH,
     woodThick: args.woodThick,
   });
   const shelfBlockers = args.verticalContentBlockers.filter(blocker => blocker.kind === 'shelf');
-  if (!shelfBlockers.length) return;
+  if (!shelfBlockers.length) return 0;
 
   const baseShelfIndexes = new Set<number>();
   const sketchShelfBlockers: ManualLayoutVerticalContentBlocker[] = [];
@@ -106,6 +110,7 @@ function removeShelvesTouchingInternalDrawerCassette(args: {
     }
   }
 
+  let removedCount = 0;
   if (baseShelfIndexes.size) {
     const divs = readGridDivisions(args.cfg);
     for (const shelfIndex of Array.from(baseShelfIndexes).sort((a, b) => a - b)) {
@@ -115,6 +120,7 @@ function removeShelvesTouchingInternalDrawerCassette(args: {
         topY: args.topY,
         bottomY: args.bottomY,
       });
+      removedCount += 1;
     }
   }
 
@@ -123,9 +129,12 @@ function removeShelvesTouchingInternalDrawerCassette(args: {
       .slice()
       .sort((a, b) => (Number(b.index) || 0) - (Number(a.index) || 0))
       .forEach(blocker => {
-        removeSketchShelfByBlocker({ extra: args.extra, shelves: args.shelves, blocker });
+        if (removeSketchShelfByBlocker({ extra: args.extra, shelves: args.shelves, blocker })) {
+          removedCount += 1;
+        }
       });
   }
+  return removedCount;
 }
 
 export function commitSketchModuleInternalDrawers(
@@ -192,7 +201,26 @@ export function commitSketchModuleInternalDrawers(
     woodThick: args.woodThick,
   });
 
-  const placement = resolveManualLayoutSketchInternalDrawerPlacement({
+  const placementBlockers = [
+    ...buildManualLayoutSketchExternalDrawerBlockers({
+      extDrawers: externalDrawers,
+      bottomY: args.bottomY,
+      topY: args.topY,
+      pad: args.pad,
+      readCenterY: readNormalizedCenterY,
+    }),
+    ...verticalContentBlockers,
+    ...buildSketchModuleBoxVerticalBlockers({
+      cfgRef: args.cfg,
+      boxes,
+      bottomY: args.bottomY,
+      topY: args.topY,
+      totalHeight: args.totalHeight,
+      pad: args.pad,
+      woodThick: args.woodThick,
+    }),
+  ];
+  let placement = resolveManualLayoutSketchInternalDrawerPlacement({
     desiredCenterY: hover.yCenterAbs,
     bottomY: args.bottomY,
     topY: args.topY,
@@ -202,26 +230,22 @@ export function commitSketchModuleInternalDrawers(
     drawers: list,
     readCenterY: readNormalizedCenterY,
     woodThick: args.woodThick,
-    blockers: [
-      ...buildManualLayoutSketchExternalDrawerBlockers({
-        extDrawers: externalDrawers,
-        bottomY: args.bottomY,
-        topY: args.topY,
-        pad: args.pad,
-        readCenterY: readNormalizedCenterY,
-      }),
-      ...verticalContentBlockers,
-      ...buildSketchModuleBoxVerticalBlockers({
-        cfgRef: args.cfg,
-        boxes,
-        bottomY: args.bottomY,
-        topY: args.topY,
-        totalHeight: args.totalHeight,
-        pad: args.pad,
-        woodThick: args.woodThick,
-      }),
-    ],
+    blockers: placementBlockers,
   });
+  if (placement.op === 'blocked') {
+    placement = resolveManualLayoutSketchInternalDrawerPlacement({
+      desiredCenterY: hover.yCenterAbs,
+      bottomY: args.bottomY,
+      topY: args.topY,
+      totalHeight: args.totalHeight,
+      pad: args.pad,
+      drawerHeightM: args.drawerHeightM,
+      drawers: list,
+      readCenterY: readNormalizedCenterY,
+      woodThick: args.woodThick,
+      blockers: withoutInternalDrawerReplaceableShelfBlockers(placementBlockers),
+    });
+  }
   if (placement.op === 'blocked') return null;
   const extra = ensureRecord(args.cfg, 'sketchExtras');
   const mutableList = ensureRecordList(extra, 'drawers');
@@ -257,7 +281,7 @@ export function commitSketchModuleInternalDrawers(
     drawerHeightM: args.drawerHeightM,
   };
   mutableList.push(item);
-  removeShelvesTouchingInternalDrawerCassette({
+  const removedShelfCount = removeShelvesTouchingInternalDrawerCassette({
     cfg: args.cfg,
     extra,
     shelves,
@@ -268,6 +292,7 @@ export function commitSketchModuleInternalDrawers(
     topY: args.topY,
     woodThick: args.woodThick,
   });
+  toastInternalDrawerRemovedShelves(args.App, removedShelfCount);
   markSketchInternalDrawersDirty(args.cfg);
   return createManualLayoutSketchStackHoverRecord({
     host: args.hoverHost,
