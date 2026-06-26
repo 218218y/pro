@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createBuilderRenderDrawerOps } from '../esm/native/builder/render_drawer_ops.ts';
+import { CHEST_MODE_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
 
 class FakeVector3 {
   constructor(
@@ -128,6 +129,12 @@ test('internal drawer body uses separate drawer-box identity and stays white by 
   assert.equal(internalDrawer.userData.partId, 'drawer_box__drawer_1');
   assert.equal(internalDrawer.userData.drawerId, 'drawer_1');
   assert.equal(internalDrawer.userData.__wpDrawerBox, true);
+  assert.equal(
+    internalDrawer.userData.__frontMaxZ,
+    0.4 / 2 +
+      CHEST_MODE_DIMENSIONS.drawerBox.accentZOffsetM +
+      CHEST_MODE_DIMENSIONS.drawerBox.accentStripDepthM / 2
+  );
   assert.equal((drawers[0] as Record<string, unknown>).id, 'drawer_1');
   assert.equal((drawers[0] as Record<string, unknown>).partId, 'drawer_1');
 });

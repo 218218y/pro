@@ -1,4 +1,4 @@
-import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CHEST_MODE_DIMENSIONS, DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { makeDrawerBoxPartId, resolveDrawerBoxPaintMaterial } from '../features/drawer_box_identity.js';
 import { emitSketchInternalDrawerCassettePanels } from './render_interior_sketch_internal_drawer_cassette.js';
 import type { BuilderRenderDrawerDeps } from './render_drawer_ops_shared.js';
@@ -113,6 +113,7 @@ export function createApplyInternalDrawersOps(deps: BuilderRenderDrawerDeps) {
         __wpDrawerOwnerPartId: partId,
         __doorWidth: drawerOp.width,
         __doorHeight: drawerOp.height,
+        __frontMaxZ: resolveInternalDrawerFrontMaxZ(drawerOp.depth),
         __wpFaceOffsetX: 0,
       };
       if (drawerOp.sketchBoxId) {
@@ -167,4 +168,14 @@ export function createApplyInternalDrawersOps(deps: BuilderRenderDrawerDeps) {
 
     return true;
   };
+}
+
+function resolveInternalDrawerFrontMaxZ(depth: number): number {
+  const d = Number(depth);
+  if (!Number.isFinite(d) || d <= 0) return 0;
+
+  const drawerBoxDimensions = CHEST_MODE_DIMENSIONS.drawerBox;
+  const accentFrontLift = drawerBoxDimensions.accentZOffsetM + drawerBoxDimensions.accentStripDepthM / 2;
+
+  return d / 2 + Math.max(0, accentFrontLift);
 }
