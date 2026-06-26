@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { tryHandleManualLayoutSketchHoverModuleStackPreview } from '../esm/native/services/canvas_picking_manual_layout_sketch_hover_module_preview_stack.ts';
+import { buildManualLayoutSketchInternalDrawerBlockers } from '../esm/native/services/canvas_picking_manual_layout_sketch_stack_placement.ts';
 import { resolveSketchFreeStackContentPreview } from '../esm/native/services/canvas_picking_sketch_free_box_content_preview_stack.ts';
 import { tryCommitSketchModuleStackTool } from '../esm/native/services/canvas_picking_sketch_module_stack_apply.ts';
 
@@ -206,6 +207,26 @@ test('manual-layout module sketch external drawer preview keeps exact size and m
   assert.equal(calls.previews[0]?.op, 'blocked');
   assert.equal(calls.previews[0]?.blockedReason, 'no-room');
   assert.equal(calls.previews[0]?.drawers.length, 4);
+});
+
+test('sketch internal drawer blockers reserve the cassette frame using real wood thickness', () => {
+  const woodThick = 0.018;
+  const pad = 0.006;
+  const blockers = buildManualLayoutSketchInternalDrawerBlockers({
+    drawers: [{ id: 'sid-1', drawerHeightM: 0.2 }],
+    bottomY: 0,
+    topY: 2.4,
+    pad,
+    woodThick,
+    readCenterY: () => 1.2,
+  });
+
+  assert.equal(blockers.length, 1);
+  const blocker = blockers[0];
+  assert.ok(blocker.pointerMinY != null);
+  assert.ok(blocker.pointerMaxY != null);
+  assert.ok(Math.abs(blocker.pointerMinY - blocker.minY - woodThick) < 1e-9);
+  assert.ok(Math.abs(blocker.maxY - blocker.pointerMaxY - woodThick) < 1e-9);
 });
 
 test('manual-layout module sketch internal drawer preview snaps into the crossed shelf cell without jumping to another cell', () => {
@@ -417,6 +438,86 @@ test('manual-layout focused box sketch internal drawer preview marks no-room hov
   assert.equal(calls.previews[0]?.kind, 'drawers');
   assert.equal(calls.previews[0]?.op, 'blocked');
   assert.equal(calls.previews[0]?.blockedReason, 'no-room');
+});
+
+test('stack tool consumes opposite-family remove hover without adding internal drawers', () => {
+  const cfg: Record<string, unknown> = {
+    sketchExtras: {
+      drawers: [],
+      extDrawers: [{ id: 'sed-1', count: 2, yNormC: 0.5 }],
+    },
+  };
+  const writes: Array<Record<string, unknown> | null> = [];
+
+  const handled = tryCommitSketchModuleStackTool({
+    App: {},
+    cfg,
+    tool: 'sketch_int_drawers',
+    hoverOk: true,
+    hoverRec: {
+      kind: 'ext_drawers',
+      op: 'remove',
+      removeId: 'sed-1',
+      yCenter: 1.2,
+      baseY: 0.9,
+      stackH: 0.4,
+      drawerH: 0.2,
+    },
+    bottomY: 0,
+    topY: 2.4,
+    totalHeight: 2.4,
+    pad: 0.006,
+    woodThick: 0.018,
+    hitYClamped: 1.2,
+    hoverHost: { tool: 'sketch_int_drawers', moduleKey: 2, isBottom: false },
+    writeSketchHover: (_app, hover) => {
+      writes.push(hover as Record<string, unknown> | null);
+    },
+  });
+
+  assert.equal(handled, true);
+  assert.deepEqual((cfg.sketchExtras as any).drawers, []);
+  assert.equal(writes.length, 0);
+});
+
+test('stack tool consumes opposite-family remove hover without adding external drawers', () => {
+  const cfg: Record<string, unknown> = {
+    sketchExtras: {
+      drawers: [{ id: 'sid-1', yNormC: 0.5 }],
+      extDrawers: [],
+    },
+  };
+  const writes: Array<Record<string, unknown> | null> = [];
+
+  const handled = tryCommitSketchModuleStackTool({
+    App: {},
+    cfg,
+    tool: 'sketch_ext_drawers:2',
+    hoverOk: true,
+    hoverRec: {
+      kind: 'drawers',
+      op: 'remove',
+      removeId: 'sid-1',
+      yCenter: 1.2,
+      baseY: 0.9,
+      stackH: 0.4,
+      drawerH: 0.2,
+    },
+    bottomY: 0,
+    topY: 2.4,
+    totalHeight: 2.4,
+    pad: 0.006,
+    woodThick: 0.018,
+    hitYClamped: 1.2,
+    hoverHost: { tool: 'sketch_ext_drawers:2', moduleKey: 2, isBottom: false },
+    writeSketchHover: (_app, hover) => {
+      writes.push(hover as Record<string, unknown> | null);
+    },
+  });
+
+  assert.equal(handled, true);
+  assert.deepEqual((cfg.sketchExtras as any).extDrawers, []);
+  assert.equal(writes.length, 0);
 });
 
 test('stack tool toggles focused box drawers through the box-content owner', () => {

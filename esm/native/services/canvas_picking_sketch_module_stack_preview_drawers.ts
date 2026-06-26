@@ -55,6 +55,7 @@ export function resolveSketchModuleDrawersPreview(
     drawerHeightM: args.drawerHeightM,
     drawers,
     readCenterY,
+    woodThick,
     blockers: [
       ...buildManualLayoutSketchExternalDrawerBlockers({
         extDrawers,

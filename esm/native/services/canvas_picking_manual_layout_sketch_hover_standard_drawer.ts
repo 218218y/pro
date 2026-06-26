@@ -1,12 +1,12 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
 import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { getThreeMaybe } from '../runtime/three_access.js';
-import { getDrawersArray } from '../runtime/render_access.js';
 import { isSketchInternalDrawersTool } from '../features/sketch_drawer_sizing.js';
 import { __wp_measureObjectLocalBox } from './canvas_picking_local_helpers.js';
 import {
   classifyCrossDrawerPart,
   resolveExternalCrossDrawerStackPreview,
+  resolveInternalCrossDrawerStackPreview,
 } from './canvas_picking_drawer_cross_family.js';
 import { createManualLayoutSketchStackHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import type { ManualLayoutSketchHoverPreviewArgs } from './canvas_picking_manual_layout_sketch_hover_tools_shared.js';
@@ -38,18 +38,6 @@ function isCrossDrawerFamilyForSketchTool(tool: string, family: string): boolean
   return isSketchInternalDrawersTool(tool) && family === 'sketch_external';
 }
 
-function readEntryGroup(entry: unknown): UnknownRecord | null {
-  const rec = asRecord(entry);
-  const directGroup = asRecord(rec?.group);
-  if (directGroup) return directGroup;
-  const userData = asRecord(rec?.userData);
-  return asRecord(userData?.group);
-}
-
-function readModuleKeyFromRecord(record: UnknownRecord | null): string {
-  return readString(record?.moduleIndex ?? record?.__wpSketchModuleKey);
-}
-
 function readSketchInternalDrawerId(partId: string, moduleKey: unknown): string {
   const prefix = `div_int_sketch_${String(moduleKey)}_`;
   if (partId.startsWith(prefix)) return partId.slice(prefix.length);
@@ -58,110 +46,6 @@ function readSketchInternalDrawerId(partId: string, moduleKey: unknown): string 
   const suffix = partId.slice(shortPrefix.length);
   const splitAt = suffix.indexOf('_');
   return splitAt >= 0 ? suffix.slice(splitAt + 1) : suffix;
-}
-
-function resolveInternalCrossDrawerStackPreview(args: {
-  App: AppContainer;
-  targetGroup: UnknownRecord;
-  targetParent: UnknownRecord;
-  targetBox: {
-    centerX: number;
-    centerY: number;
-    centerZ: number;
-    width: number;
-    height: number;
-    depth: number;
-  };
-  targetPartId: string;
-  targetModuleKey: string;
-}): {
-  anchor: unknown;
-  anchorParent: unknown;
-  x: number;
-  y: number;
-  z: number;
-  w: number;
-  d: number;
-  stackH: number;
-  drawerH: number;
-  drawerGap: number;
-} | null {
-  const boxes: Array<{
-    centerX: number;
-    centerY: number;
-    centerZ: number;
-    width: number;
-    height: number;
-    depth: number;
-  }> = [];
-  const entries = getDrawersArray(args.App);
-  for (let i = 0; i < entries.length; i++) {
-    const entry = entries[i];
-    const group = readEntryGroup(entry);
-    if (!group) continue;
-    const userData = asRecord(group.userData);
-    const partId = readString(userData?.partId ?? asRecord(entry)?.id);
-    if (partId !== args.targetPartId) continue;
-    const moduleKey = readModuleKeyFromRecord(userData);
-    if (args.targetModuleKey && moduleKey && moduleKey !== args.targetModuleKey) continue;
-    let box = __wp_measureObjectLocalBox(args.App, group, args.targetParent);
-    if (!box && group === args.targetGroup) box = args.targetBox;
-    if (!box || !(box.width > 0) || !(box.height > 0) || !(box.depth > 0)) continue;
-    boxes.push(box);
-  }
-
-  if (!boxes.length) boxes.push(args.targetBox);
-  boxes.sort((a, b) => a.centerY - b.centerY);
-
-  let minX = Infinity;
-  let maxX = -Infinity;
-  let minY = Infinity;
-  let maxY = -Infinity;
-  let minZ = Infinity;
-  let maxZ = -Infinity;
-  let drawerH = 0;
-  let drawerGap: number = DRAWER_DIMENSIONS.sketch.internalGapM;
-  for (let i = 0; i < boxes.length; i++) {
-    const box = boxes[i];
-    minX = Math.min(minX, box.centerX - box.width / 2);
-    maxX = Math.max(maxX, box.centerX + box.width / 2);
-    minY = Math.min(minY, box.centerY - box.height / 2);
-    maxY = Math.max(maxY, box.centerY + box.height / 2);
-    minZ = Math.min(minZ, box.centerZ - box.depth / 2);
-    maxZ = Math.max(maxZ, box.centerZ + box.depth / 2);
-    drawerH = Math.max(drawerH, box.height);
-  }
-
-  if (!Number.isFinite(minX) || !Number.isFinite(maxX) || !Number.isFinite(minY) || !Number.isFinite(maxY)) {
-    return null;
-  }
-
-  if (boxes.length > 1) {
-    const measuredGaps: number[] = [];
-    for (let i = 1; i < boxes.length; i++) {
-      const prev = boxes[i - 1];
-      const curr = boxes[i];
-      const gap = curr.centerY - curr.height / 2 - (prev.centerY + prev.height / 2);
-      if (Number.isFinite(gap) && gap >= 0) measuredGaps.push(gap);
-    }
-    if (measuredGaps.length) drawerGap = Math.max(0, Math.min(...measuredGaps));
-  }
-
-  return {
-    anchor: args.targetGroup,
-    anchorParent: args.targetParent,
-    x: (minX + maxX) / 2,
-    y: minY,
-    z: (minZ + maxZ) / 2,
-    w: Math.max(DRAWER_DIMENSIONS.sketch.internalWidthMinM, maxX - minX),
-    d: Math.max(DRAWER_DIMENSIONS.sketch.internalDepthMinM, maxZ - minZ),
-    stackH: Math.max(0, maxY - minY),
-    drawerH: Math.max(
-      DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinHeightM,
-      drawerH || args.targetBox.height
-    ),
-    drawerGap,
-  };
 }
 
 export function tryHandleSketchHoverOverStandardDrawer(args: SketchStandardDrawerHoverArgs): boolean {
@@ -333,6 +217,7 @@ export function tryHandleSketchHoverOverStandardDrawer(args: SketchStandardDrawe
       targetBox: box,
       targetPartId: partId,
       targetModuleKey: String(moduleKey),
+      measureObjectLocalBox: __wp_measureObjectLocalBox,
     });
     const previewBaseY = stackPreview?.y ?? baseY;
     const previewStackH = stackPreview?.stackH ?? box.height;

@@ -46,6 +46,7 @@ function hoverAllowsSketchExternalRemoval(args: {
   drawerId: string;
   boxId?: string;
 }): boolean {
+  if (args.hoverOp === 'add') return false;
   if (!args.hoverOk) return true;
   if (args.hoverOp !== 'remove') return false;
 
@@ -69,6 +70,7 @@ function hoverAllowsSketchInternalRemoval(args: {
   hoverRec: unknown;
   drawerId: string;
 }): boolean {
+  if (args.hoverOp === 'add') return false;
   if (!args.hoverOk) return true;
   if (args.hoverOp !== 'remove') return false;
   if (args.hoverKind !== 'drawers') return false;

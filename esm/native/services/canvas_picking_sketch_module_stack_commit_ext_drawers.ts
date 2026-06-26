@@ -49,6 +49,7 @@ export function commitSketchModuleExternalDrawers(
       bottomY: args.bottomY,
       topY: args.topY,
       pad: args.pad,
+      woodThick: args.woodThick,
       readCenterY: readNormalizedCenterY,
     }),
     ...buildManualLayoutStandardInternalDrawerBlockers({

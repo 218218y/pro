@@ -56,13 +56,18 @@ export function buildManualLayoutSketchInternalDrawerBlockers(args: {
   bottomY: number;
   topY: number;
   pad: number;
+  woodThick?: number | null;
   readCenterY: ManualLayoutSketchCenterReader;
 }): VerticalOccupancyRange[] {
+  const blockerWoodThick =
+    typeof args.woodThick === 'number' && Number.isFinite(args.woodThick) && args.woodThick > 0
+      ? args.woodThick
+      : args.pad;
   return buildSketchInternalDrawerBlockers({
     drawers: args.drawers,
     boxCenterY: (args.bottomY + args.topY) / 2,
     boxHeight: Math.max(0, args.topY - args.bottomY),
-    woodThick: args.pad,
+    woodThick: blockerWoodThick,
     readCenterY: args.readCenterY,
   });
 }
@@ -106,6 +111,7 @@ export function resolveManualLayoutSketchInternalDrawerPlacement(args: {
   drawerHeightM?: number | null;
   drawers: UnknownRecord[];
   readCenterY: ManualLayoutSketchCenterReader;
+  woodThick?: number | null;
   blockers?: VerticalOccupancyRange[];
   gap?: number;
 }): {
@@ -138,6 +144,7 @@ export function resolveManualLayoutSketchInternalDrawerPlacement(args: {
       bottomY: args.bottomY,
       topY: args.topY,
       pad: args.pad,
+      woodThick: args.woodThick,
       readCenterY: args.readCenterY,
     }),
     blockers: args.blockers,

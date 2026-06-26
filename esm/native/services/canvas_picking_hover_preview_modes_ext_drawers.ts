@@ -4,6 +4,7 @@ import { resolveExternalDrawerFitFromBounds } from '../../shared/wardrobe_constr
 import {
   classifyCrossDrawerPart,
   resolveExternalCrossDrawerStackPreview,
+  resolveInternalCrossDrawerStackPreview,
 } from './canvas_picking_drawer_cross_family.js';
 import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { tryHandleSketchBoxRegularExternalDrawersHoverPreview } from './canvas_picking_regular_ext_drawers_free_box.js';
@@ -84,7 +85,8 @@ export function tryHandleExtDrawersHoverPreview(args: ExtDrawersHoverPreviewArgs
     const drawerGroup = __readRecord(drawerTarget?.drawer)?.group;
     const drawerUserData = __readRecord(__readRecord(drawerGroup)?.userData);
     const drawerPartId = __readString(drawerUserData, 'partId', '');
-    if (drawerTarget && classifyCrossDrawerPart(drawerPartId, drawerUserData) === 'sketch_external') {
+    const drawerFamily = classifyCrossDrawerPart(drawerPartId, drawerUserData);
+    if (drawerTarget && drawerFamily === 'sketch_external') {
       const visualT = DRAWER_DIMENSIONS.external.visualThicknessM;
       const stackPreview = resolveExternalCrossDrawerStackPreview({
         App,
@@ -118,6 +120,47 @@ export function tryHandleExtDrawersHoverPreview(args: ExtDrawersHoverPreviewArgs
             h: Math.max(DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinHeightM, box.height),
           },
         ],
+        op: 'remove',
+      });
+      return true;
+    }
+
+    if (drawerTarget && drawerFamily === 'sketch_internal') {
+      const drawerGroupRecord = __readRecord(drawerGroup);
+      const drawerParent = __readRecord(drawerTarget.parent);
+      const box = drawerTarget.box;
+      const moduleKey =
+        __readString(drawerUserData, 'moduleIndex', '') ||
+        __readString(drawerUserData, '__wpSketchModuleKey', '');
+      const stackPreview =
+        drawerGroupRecord && drawerParent && box && drawerPartId
+          ? resolveInternalCrossDrawerStackPreview({
+              App,
+              targetGroup: drawerGroupRecord,
+              targetParent: drawerParent,
+              targetBox: box,
+              targetPartId: drawerPartId,
+              targetModuleKey: moduleKey,
+              measureObjectLocalBox,
+            })
+          : null;
+      const previewBaseY = stackPreview?.y ?? box.centerY - box.height / 2;
+      const previewDrawerH = stackPreview?.drawerH ?? box.height;
+      const previewDrawerGap = stackPreview?.drawerGap ?? DRAWER_DIMENSIONS.sketch.internalGapM;
+      setPreview({
+        App,
+        THREE,
+        anchor: stackPreview?.anchor || drawerGroup || null,
+        anchorParent: stackPreview?.anchorParent || drawerParent,
+        kind: 'drawers',
+        x: stackPreview?.x ?? box.centerX,
+        y: previewBaseY,
+        z: stackPreview?.z ?? box.centerZ,
+        w: stackPreview?.w ?? Math.max(DRAWER_DIMENSIONS.sketch.internalWidthMinM, box.width),
+        d: stackPreview?.d ?? Math.max(DRAWER_DIMENSIONS.sketch.internalDepthMinM, box.depth),
+        drawerH: previewDrawerH,
+        drawerGap: previewDrawerGap,
+        woodThick: DRAWER_DIMENSIONS.external.visualThicknessM,
         op: 'remove',
       });
       return true;

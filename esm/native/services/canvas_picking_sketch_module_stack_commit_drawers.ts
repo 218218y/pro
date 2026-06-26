@@ -201,6 +201,7 @@ export function commitSketchModuleInternalDrawers(
     drawerHeightM: args.drawerHeightM,
     drawers: list,
     readCenterY: readNormalizedCenterY,
+    woodThick: args.woodThick,
     blockers: [
       ...buildManualLayoutSketchExternalDrawerBlockers({
         extDrawers: externalDrawers,

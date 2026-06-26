@@ -344,9 +344,11 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
 
   if (isDrawers) {
     const stackHover = args.hoverOk ? readManualLayoutSketchStackHoverIntent(args.hoverRec) : null;
+    if (stackHover?.op === 'remove' && stackHover.kind !== 'drawers') return true;
+    const drawerStackHover = stackHover?.kind === 'drawers' ? stackHover : null;
     const drawerHeightM = parseSketchIntDrawerHeightM(args.tool);
     if (
-      stackHover?.op !== 'remove' &&
+      drawerStackHover?.op !== 'remove' &&
       blockSketchStackCommitIfRemovedFrameSide({
         App: args.App,
         hoverHost: args.hoverHost,
@@ -356,7 +358,7 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
       return true;
     }
     if (
-      stackHover?.op !== 'remove' &&
+      drawerStackHover?.op !== 'remove' &&
       blockSketchStackCommitIfHexCell({
         App: args.App,
         cfg: args.cfg,
@@ -366,18 +368,18 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
       return true;
     }
     if (
-      stackHover?.op !== 'remove' &&
+      drawerStackHover?.op !== 'remove' &&
       blockSketchStackCommitIfCollision({
         App: args.App,
         contentKind: 'drawers',
-        blockedReason: stackHover?.blockedReason,
+        blockedReason: drawerStackHover?.blockedReason,
         writeSketchHover: args.writeSketchHover,
       })
     ) {
       return true;
     }
     if (
-      stackHover?.op !== 'remove' &&
+      drawerStackHover?.op !== 'remove' &&
       blockSketchStackCommitIfNoRoom({
         App: args.App,
         contentKind: 'drawers',
@@ -402,7 +404,7 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
       hitYClamped: args.hitYClamped,
       hoverHost: args.hoverHost,
     });
-    if (stackHover?.op !== 'remove' && nextHover == null) {
+    if (drawerStackHover?.op !== 'remove' && nextHover == null) {
       toastSketchDrawerCollisionFailure({ App: args.App, contentKind: 'drawers' });
     }
     args.writeSketchHover(args.App, nextHover);
@@ -410,10 +412,12 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
   }
 
   const stackHover = args.hoverOk ? readManualLayoutSketchStackHoverIntent(args.hoverRec) : null;
+  if (stackHover?.op === 'remove' && stackHover.kind !== 'ext_drawers') return true;
+  const extStackHover = stackHover?.kind === 'ext_drawers' ? stackHover : null;
   const drawerHeightM = parseSketchExtDrawerHeightM(args.tool);
   const requestedDrawerCount = parseSketchExtDrawerCount(args.tool);
   if (
-    stackHover?.op !== 'remove' &&
+    extStackHover?.op !== 'remove' &&
     blockSketchStackCommitIfRemovedFrameSide({
       App: args.App,
       hoverHost: args.hoverHost,
@@ -423,7 +427,7 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
     return true;
   }
   if (
-    stackHover?.op !== 'remove' &&
+    extStackHover?.op !== 'remove' &&
     blockSketchStackCommitIfHexCell({
       App: args.App,
       cfg: args.cfg,
@@ -433,18 +437,18 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
     return true;
   }
   if (
-    stackHover?.op !== 'remove' &&
+    extStackHover?.op !== 'remove' &&
     blockSketchStackCommitIfCollision({
       App: args.App,
       contentKind: 'ext_drawers',
-      blockedReason: stackHover?.blockedReason,
+      blockedReason: extStackHover?.blockedReason,
       writeSketchHover: args.writeSketchHover,
     })
   ) {
     return true;
   }
   if (
-    stackHover?.op !== 'remove' &&
+    extStackHover?.op !== 'remove' &&
     blockSketchStackCommitIfNoRoom({
       App: args.App,
       contentKind: 'ext_drawers',
@@ -470,7 +474,7 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
     hitYClamped: args.hitYClamped,
     hoverHost: args.hoverHost,
   });
-  if (stackHover?.op !== 'remove' && nextHover == null) {
+  if (extStackHover?.op !== 'remove' && nextHover == null) {
     toastSketchDrawerCollisionFailure({ App: args.App, contentKind: 'ext_drawers' });
   }
   args.writeSketchHover(args.App, nextHover);

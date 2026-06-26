@@ -60,6 +60,37 @@ test('free-box regular external drawer mode direct hit removes regularExtDrawers
   assert.deepEqual(regularIds, ['sbrd-2']);
 });
 
+test('regular external drawer edit mode direct hit removes sketch internal drawers', () => {
+  const cfg: Record<string, unknown> = {
+    sketchExtras: {
+      drawers: [
+        { id: 'sid-1', yNormC: 0.25 },
+        { id: 'sid-2', yNormC: 0.55 },
+      ],
+      extDrawers: [],
+    },
+  };
+  let patchMeta: Record<string, unknown> | null = null;
+
+  const handled = tryHandleExternalDrawerModeClick({
+    App: {} as never,
+    foundModuleIndex: 2,
+    activeModuleKey: 2,
+    isExtDrawerEditMode: true,
+    intersects: [{ object: createSketchInternalDrawerHit(), point: { x: 0, y: 0.4, z: 0 } }] as never,
+    patchConfigForKey: (_key, patchFn, meta) => {
+      patchMeta = { ...meta };
+      patchFn(cfg as never);
+      return null;
+    },
+  });
+
+  const drawerIds = (((cfg.sketchExtras as any).drawers as any[]) || []).map(item => item.id);
+  assert.equal(handled, true);
+  assert.deepEqual(patchMeta, { source: 'extDrawers.removeSketchInternalByHit', immediate: true });
+  assert.deepEqual(drawerIds, ['sid-2']);
+});
+
 test('manual sketch external drawer tool direct hit removes regularExtDrawers in a free box', () => {
   const cfg: Record<string, unknown> = {
     sketchExtras: {

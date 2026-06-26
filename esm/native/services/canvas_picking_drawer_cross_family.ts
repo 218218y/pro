@@ -1,6 +1,7 @@
 import type { AppContainer, ModuleConfigLike, UnknownRecord } from '../../../types';
 import type { ModuleKey, PatchConfigForKeyFn } from './canvas_picking_drawer_mode_flow_shared.js';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
+import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_KEY } from '../features/sketch_box_regular_external_drawers.js';
 import { getDrawersArray } from '../runtime/render_access.js';
 import { createCanvasPickingConfigStructuralPatchMeta } from './canvas_picking_config_patch_meta.js';
@@ -46,6 +47,113 @@ export type CrossDrawerMeasureObjectLocalBoxFn = (
   obj: unknown,
   parentOverride?: unknown
 ) => CrossDrawerPreviewBox | null;
+
+export type CrossInternalDrawerStackPreview = {
+  anchor: unknown;
+  anchorParent: unknown;
+  x: number;
+  y: number;
+  z: number;
+  w: number;
+  d: number;
+  stackH: number;
+  drawerH: number;
+  drawerGap: number;
+};
+
+export function resolveInternalCrossDrawerStackPreview(args: {
+  App: AppContainer;
+  targetGroup: unknown;
+  targetParent: unknown;
+  targetBox: CrossDrawerPreviewBox;
+  targetPartId: string;
+  targetModuleKey?: string;
+  measureObjectLocalBox?: CrossDrawerMeasureObjectLocalBoxFn;
+  minWidth?: number;
+  minDepth?: number;
+  minHeight?: number;
+  drawerGap?: number;
+}): CrossInternalDrawerStackPreview | null {
+  const targetParent = asNode(args.targetParent);
+  const targetGroup = asNode(args.targetGroup);
+  if (!targetParent || !targetGroup || !args.targetPartId) return null;
+
+  const measureObjectLocalBox = args.measureObjectLocalBox || __wp_measureObjectLocalBox;
+  const boxes: CrossDrawerPreviewBox[] = [];
+  const entries = getDrawersArray(args.App);
+  for (let i = 0; i < entries.length; i++) {
+    const entry = entries[i];
+    const group = readEntryGroup(entry);
+    if (!group) continue;
+    const userData = readUserData(group);
+    const entryRecord = asNode(entry);
+    const partId = readString(userData?.partId ?? entryRecord?.id);
+    if (partId !== args.targetPartId) continue;
+    const moduleKey = readString(userData?.moduleIndex ?? userData?.__wpSketchModuleKey);
+    if (args.targetModuleKey && moduleKey && moduleKey !== args.targetModuleKey) continue;
+    let box = measureObjectLocalBox(args.App, group, targetParent);
+    if (!box && group === targetGroup) box = args.targetBox;
+    if (!box || !(box.width > 0) || !(box.height > 0) || !(box.depth > 0)) continue;
+    boxes.push(box);
+  }
+
+  if (!boxes.length) boxes.push(args.targetBox);
+  boxes.sort((a, b) => a.centerY - b.centerY);
+
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  let minZ = Infinity;
+  let maxZ = -Infinity;
+  let drawerH = 0;
+  let drawerGap =
+    typeof args.drawerGap === 'number' && Number.isFinite(args.drawerGap) && args.drawerGap >= 0
+      ? args.drawerGap
+      : DRAWER_DIMENSIONS.sketch.internalGapM;
+
+  for (let i = 0; i < boxes.length; i++) {
+    const box = boxes[i];
+    minX = Math.min(minX, box.centerX - box.width / 2);
+    maxX = Math.max(maxX, box.centerX + box.width / 2);
+    minY = Math.min(minY, box.centerY - box.height / 2);
+    maxY = Math.max(maxY, box.centerY + box.height / 2);
+    minZ = Math.min(minZ, box.centerZ - box.depth / 2);
+    maxZ = Math.max(maxZ, box.centerZ + box.depth / 2);
+    drawerH = Math.max(drawerH, box.height);
+  }
+
+  if (!Number.isFinite(minX) || !Number.isFinite(maxX) || !Number.isFinite(minY) || !Number.isFinite(maxY)) {
+    return null;
+  }
+
+  if (boxes.length > 1) {
+    const measuredGaps: number[] = [];
+    for (let i = 1; i < boxes.length; i++) {
+      const prev = boxes[i - 1];
+      const curr = boxes[i];
+      const gap = curr.centerY - curr.height / 2 - (prev.centerY + prev.height / 2);
+      if (Number.isFinite(gap) && gap >= 0) measuredGaps.push(gap);
+    }
+    if (measuredGaps.length) drawerGap = Math.max(0, Math.min(...measuredGaps));
+  }
+
+  return {
+    anchor: targetGroup,
+    anchorParent: targetParent,
+    x: (minX + maxX) / 2,
+    y: minY,
+    z: (minZ + maxZ) / 2,
+    w: Math.max(args.minWidth ?? DRAWER_DIMENSIONS.sketch.internalWidthMinM, maxX - minX),
+    d: Math.max(args.minDepth ?? DRAWER_DIMENSIONS.sketch.internalDepthMinM, maxZ - minZ),
+    stackH: Math.max(0, maxY - minY),
+    drawerH: Math.max(
+      args.minHeight ?? DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinHeightM,
+      drawerH || args.targetBox.height
+    ),
+    drawerGap,
+  };
+}
 
 export type CrossDrawerHit = {
   object: Record<string, unknown>;
@@ -357,6 +465,40 @@ export function tryRemoveSketchExternalDrawerByDirectHit(args: {
         hit.sketchBoxId || undefined,
         hit.partId
       );
+    },
+    createCanvasPickingConfigStructuralPatchMeta(args.source)
+  );
+  return true;
+}
+
+export function tryRemoveSketchInternalDrawerByDirectHit(args: {
+  App: AppContainer;
+  intersects: RaycastHitLike[];
+  activeModuleKey: ModuleKey | 'corner' | null;
+  patchConfigForKey: PatchConfigForKeyFn;
+  source: string;
+}): boolean {
+  const hit = findDirectCrossDrawerHitInIntersects(args.App, args.intersects || [], 'sketch_internal');
+  if (!hit) return false;
+
+  if (
+    hit.moduleIndex &&
+    args.activeModuleKey != null &&
+    !sameModuleKey(hit.moduleIndex, args.activeModuleKey)
+  ) {
+    return false;
+  }
+
+  const targetModuleKey = args.activeModuleKey ?? coerceCrossDrawerModuleKey(hit.moduleIndex);
+  if (targetModuleKey == null) return false;
+
+  const drawerId = readSketchInternalDrawerIdFromPartId(hit.partId, targetModuleKey);
+  if (!drawerId) return false;
+
+  args.patchConfigForKey(
+    targetModuleKey,
+    (cfg: ModuleConfigLike) => {
+      removeSketchInternalDrawerFromConfig(cfg, hit.partId);
     },
     createCanvasPickingConfigStructuralPatchMeta(args.source)
   );

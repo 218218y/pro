@@ -11,7 +11,10 @@ import {
   restoreShoeDrawerBaseIfNoShoeDrawersRemain,
 } from './canvas_picking_shoe_drawer_base_auto_none.js';
 import { createCanvasPickingConfigStructuralPatchMeta } from './canvas_picking_config_patch_meta.js';
-import { tryRemoveSketchExternalDrawerByDirectHit } from './canvas_picking_drawer_cross_family.js';
+import {
+  tryRemoveSketchExternalDrawerByDirectHit,
+  tryRemoveSketchInternalDrawerByDirectHit,
+} from './canvas_picking_drawer_cross_family.js';
 import type { ModuleKey, PatchConfigForKeyFn } from './canvas_picking_drawer_mode_flow_shared.js';
 import { asInternalGridInfo } from './canvas_picking_drawer_mode_flow_shared.js';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
@@ -40,6 +43,18 @@ export function tryHandleExternalDrawerModeClick(args: {
     })
   ) {
     restoreShoeDrawerBaseIfNoShoeDrawersRemain(App, 'extDrawers.removeSketchExternalByHit:autoBaseRestore');
+    return true;
+  }
+
+  if (
+    tryRemoveSketchInternalDrawerByDirectHit({
+      App,
+      intersects: args.intersects || [],
+      activeModuleKey,
+      patchConfigForKey,
+      source: 'extDrawers.removeSketchInternalByHit',
+    })
+  ) {
     return true;
   }
 

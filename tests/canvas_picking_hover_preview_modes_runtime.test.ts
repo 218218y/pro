@@ -299,6 +299,71 @@ test('regular external drawer hover removal previews the entire sketch external 
   );
 });
 
+test('regular external drawer hover removal previews sketch internal drawers instead of add hover', () => {
+  const previews: any[] = [];
+  const parent = { id: 'wardrobe-parent' };
+  const makeGroup = (y: number) => ({
+    id: 'div_int_sketch_1_sid-1',
+    parent,
+    userData: { partId: 'div_int_sketch_1_sid-1', moduleIndex: '1' },
+    geometry: { parameters: { width: 0.82, height: 0.16, depth: 0.38 } },
+    position: { x: 0.1, y, z: 0.05 },
+    scale: { x: 1, y: 1, z: 1 },
+  });
+  const bottom = makeGroup(0.35);
+  const top = makeGroup(0.55);
+  const App = createApp({
+    render: {
+      drawersArray: [
+        { id: 'div_int_sketch_1_sid-1', group: bottom },
+        { id: 'div_int_sketch_1_sid-1', group: top },
+      ],
+    },
+    renderOps: {
+      setSketchPlacementPreview(args: unknown) {
+        previews.push(args);
+      },
+    },
+  });
+
+  const handled = tryHandleExtDrawersHoverPreview({
+    App,
+    ndcX: 0,
+    ndcY: 0,
+    raycaster: {},
+    mouse: {},
+    isExtDrawerEditMode: true,
+    readUi: () => ({ currentExtDrawerType: 'regular', currentExtDrawerCount: 3 }),
+    resolveDrawerHoverPreviewTarget: () => ({
+      drawer: { id: 'div_int_sketch_1_sid-1', group: top },
+      parent,
+      box: { centerX: 0.1, centerY: 0.55, centerZ: 0.05, width: 0.82, height: 0.16, depth: 0.38 },
+    }),
+    resolveInteriorHoverTarget: () => {
+      throw new Error('internal drawer direct hover should be handled before add-preview routing');
+    },
+    measureObjectLocalBox: (_App, obj) => {
+      const rec = obj as any;
+      return {
+        centerX: rec.position.x,
+        centerY: rec.position.y,
+        centerZ: rec.position.z,
+        width: rec.geometry.parameters.width,
+        height: rec.geometry.parameters.height,
+        depth: rec.geometry.parameters.depth,
+      };
+    },
+    readInteriorModuleConfigRef: () => ({}),
+  });
+
+  assert.equal(handled, true);
+  assert.equal(previews.length, 1);
+  assert.equal(previews[0].kind, 'drawers');
+  assert.equal(previews[0].op, 'remove');
+  assert.ok(Math.abs(Number(previews[0].y) - 0.27) < 1e-9);
+  assert.ok(Math.abs(Number(previews[0].drawerGap) - 0.04) < 1e-9);
+});
+
 test('drawer-divider hover preview resolves add/remove directly from canonical config state', () => {
   const previews: any[] = [];
   const hidden: any[] = [];

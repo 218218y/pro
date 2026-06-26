@@ -72,6 +72,7 @@ export function resolveSketchModuleExternalDrawersPreview(
       bottomY,
       topY,
       pad,
+      woodThick,
       readCenterY,
     }),
     ...buildManualLayoutStandardInternalDrawerBlockers({
