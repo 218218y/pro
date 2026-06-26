@@ -246,3 +246,114 @@ test('paint click uses the directly hit object stack instead of the globally act
   });
   assert.equal(applied[0]?.lower_corner_floor, undefined);
 });
+
+test('paint click uses the same non-door object target as hover when the ray also finds a door behind a thin leg platform', () => {
+  const applied: Record<string, unknown>[] = [];
+  const maps: Record<string, Record<string, unknown>> = {
+    individualColors: {},
+    curtainMap: {},
+    doorSpecialMap: {},
+    doorStyleMap: {},
+    mirrorLayoutMap: {},
+  };
+
+  const wardrobeGroup = { children: [] as unknown[], userData: { partId: 'root' } };
+  const platform = createBoxObject('base_leg_platform_bottom', {
+    width: 1.7,
+    height: 0.035,
+    depth: 0.62,
+    y: 0.14,
+  });
+  const platformFace = {
+    type: 'Mesh',
+    userData: {},
+    material: { visible: true, opacity: 1 },
+    children: [],
+    parent: platform,
+    geometry: platform.geometry,
+    position: { x: 0, y: 0.14, z: 0 },
+    scale: { x: 1, y: 1, z: 1 },
+  };
+  const door = createBoxObject('d1_full', { width: 0.8, height: 1.9, depth: 0.018, y: 1 });
+  platform.parent = wardrobeGroup;
+  door.parent = wardrobeGroup;
+  wardrobeGroup.children.push(platform, door);
+
+  const App = {
+    store: {
+      getState() {
+        return { config: {}, ui: {}, mode: { primary: 'paint' }, runtime: {}, meta: {} };
+      },
+      patch() {
+        return undefined;
+      },
+    },
+    render: {
+      camera: {},
+      wardrobeGroup,
+    },
+    services: {
+      tools: {
+        getPaintColor() {
+          return '#aa7733';
+        },
+      },
+    },
+    actions: {
+      colors: {
+        applyPaint(nextColors: Record<string, unknown>) {
+          maps.individualColors = { ...nextColors };
+          applied.push({ ...nextColors });
+        },
+      },
+    },
+    maps: {
+      getMap(name: string) {
+        return maps[name] || {};
+      },
+    },
+  } as any;
+
+  const handled = tryHandleCanvasPickingActionRoute({
+    App,
+    ndcX: 0,
+    ndcY: 0,
+    raycaster: {} as never,
+    mouse: {} as never,
+    modeState: createModeState(),
+    hitState: {
+      intersects: [
+        { object: platformFace as never, point: { x: 0.1, y: 0.15, z: 0.05 } },
+        { object: door as never, point: { x: 0.1, y: 0.7, z: -0.25 } },
+      ],
+      foundPartId: 'd1_full',
+      foundModuleIndex: null,
+      foundModuleStack: 'top',
+      effectiveDoorId: 'd1_full',
+      foundDrawerId: null,
+      primaryHitObject: platformFace as never,
+      doorHitObject: door as never,
+      doorHitGroup: door as never,
+      primaryHitPoint: { x: 0.1, y: 0.15, z: 0.05 },
+      doorHitPoint: { x: 0.1, y: 0.7, z: -0.25 },
+      moduleHitY: null,
+      doorHitY: 0.7,
+      primaryHitY: 0.15,
+      hitIdentity: null,
+    },
+    moduleRefs: {
+      __activeModuleKey: 0,
+      __activeStack: 'top',
+      __isBottomStack: false,
+      __ensureConfigRefForKey: () => null,
+      __patchConfigForKey: () => undefined,
+      __getActiveConfigRef: () => null,
+      __ensureCornerCellConfigRef: () => null,
+    },
+  });
+
+  assert.equal(handled, true);
+  assert.equal(applied.length, 1);
+  assert.equal(applied[0]?.base_leg_platform_bottom, '#aa7733');
+  assert.equal(applied[0]?.d1_full, undefined);
+});

@@ -3,8 +3,7 @@ import { readSplitVariant } from './canvas_picking_door_edit_shared.js';
 import { tryHandleCanvasDoorCustomSplitScreenRemoveClick } from './canvas_picking_door_split_click_custom.js';
 import { tryHandleCanvasPaintClick } from './canvas_picking_paint_flow.js';
 import { tryHandleCanvasHandleAssignClick } from './canvas_picking_handle_assign_flow.js';
-import { resolveNearbyShelfPaintTarget } from './canvas_picking_shelf_paint_proximity.js';
-import { resolveNonDoorHoverTargetFromObject } from './canvas_picking_generic_paint_hover_target.js';
+import { resolveGenericPartPaintTarget } from './canvas_picking_generic_paint_target_resolution.js';
 import { handleCanvasDoorToggleClick } from './canvas_picking_toggle_flow.js';
 import { getCamera, getWardrobeGroup } from '../runtime/render_access.js';
 import type { CanvasPickingClickRouteArgs } from './canvas_picking_click_route_shared.js';
@@ -74,27 +73,26 @@ export function tryHandleCanvasPickingActionRoute(args: CanvasPickingClickRouteA
   }
 
   const wardrobeGroup = __isPaintMode ? getWardrobeGroup(App) : null;
-  const directPartPaintTarget =
-    __isPaintMode && foundPartId
-      ? resolveNonDoorHoverTargetFromObject(App, primaryHitObject, foundPartId)
-      : null;
-  const nearbyShelfPaintTarget =
-    __isPaintMode && !foundPartId && wardrobeGroup
-      ? resolveNearbyShelfPaintTarget({
-          App,
-          wardrobeGroup: wardrobeGroup as never,
-          intersects: hitState.intersects,
-          primaryHitPoint: primaryHitPoint || null,
-        })
-      : null;
-  const paintHitTarget = nearbyShelfPaintTarget || directPartPaintTarget;
+  const paintHitTarget = __isPaintMode
+    ? resolveGenericPartPaintTarget({
+        App,
+        wardrobeGroup: wardrobeGroup as never,
+        primaryHitObject,
+        foundPartId,
+        intersects: hitState.intersects,
+        primaryHitPoint: primaryHitPoint || null,
+      })
+    : null;
   const paintFoundPartId = paintHitTarget?.partId || foundPartId;
+  const paintEffectiveDoorId = paintHitTarget ? null : effectiveDoorId;
+  const paintFoundDrawerId = paintHitTarget ? null : hitState.foundDrawerId;
 
   if (
     tryHandleCanvasPaintClick({
       App,
       foundPartId: paintFoundPartId,
-      effectiveDoorId,
+      effectiveDoorId: paintEffectiveDoorId,
+      foundDrawerId: paintFoundDrawerId,
       activeStack: paintHitTarget?.stackKey || __activeStack,
       isPaintMode: __isPaintMode,
       primaryHitObject: paintHitTarget?.object || primaryHitObject,

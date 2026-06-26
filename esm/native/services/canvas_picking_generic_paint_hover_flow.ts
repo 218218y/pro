@@ -13,10 +13,9 @@ import {
   asRecordMap,
   createPreviewOpsArgs,
 } from './canvas_picking_generic_paint_hover_shared.js';
-import { resolveNonDoorHoverTargetFromObject } from './canvas_picking_generic_paint_hover_target.js';
+import { resolveGenericPartPaintTarget } from './canvas_picking_generic_paint_target_resolution.js';
 import { isDoorStyleOverridePaintToken, isGlassPaintSelection } from '../features/door_style_overrides.js';
 import { resolvePaintPreviewGroupBox } from './canvas_picking_generic_paint_hover_preview.js';
-import { resolveNearbyShelfPaintTarget } from './canvas_picking_shelf_paint_proximity.js';
 import { isNonPaintableCanvasPaintPartId } from './canvas_picking_paint_part_eligibility.js';
 
 export function tryHandleGenericPartPaintHover(args: {
@@ -83,15 +82,14 @@ export function tryHandleGenericPartPaintHover(args: {
     return false;
   }
 
-  const resolvedTarget =
-    resolveNonDoorHoverTargetFromObject(App, primaryHitObject, foundPartId) ||
-    resolveNonDoorHoverTargetFromObject(App, primaryHitObject, null) ||
-    resolveNearbyShelfPaintTarget({
-      App,
-      wardrobeGroup,
-      intersects: hitState?.intersects,
-      primaryHitPoint: hitState?.primaryHitPoint || null,
-    });
+  const resolvedTarget = resolveGenericPartPaintTarget({
+    App,
+    wardrobeGroup,
+    primaryHitObject,
+    foundPartId,
+    intersects: hitState?.intersects,
+    primaryHitPoint: hitState?.primaryHitPoint || null,
+  });
   if (!resolvedTarget) {
     try {
       if (typeof hideSketchPreview === 'function') hideSketchPreview(createPreviewOpsArgs(App));
