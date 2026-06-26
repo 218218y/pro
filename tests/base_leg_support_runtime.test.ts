@@ -117,6 +117,28 @@ test('carcass leg platform mode adds bottom and top stages without changing leg 
   assert.equal(plainOps.base.platforms, undefined);
 });
 
+test('carcass leg platform mode can suppress only the upper stage for decorative stack separators', () => {
+  const platformH = CARCASS_BASE_DIMENSIONS.legs.platform.heightM;
+  const ops = computeCarcassOps({
+    totalW: 1.6,
+    D: 0.55,
+    H: 1.2,
+    woodThick: 0.018,
+    baseType: 'legs',
+    baseLegPlatformMode: 'stage',
+    baseLegSuppressTopPlatform: true,
+    baseLegHeightCm: 12,
+    doorsCount: 4,
+  }) as any;
+
+  assert.equal(ops.baseHeight, 0.12 + platformH);
+  assert.equal(ops.startY, 0.12 + platformH);
+  assert.equal(ops.base.kind, 'legs');
+  assert.equal(ops.base.platforms.length, 1);
+  assert.equal(ops.base.platforms[0].partId, 'base_leg_platform_bottom');
+  assert.equal(ops.base.platforms[0].y, 0.12 + platformH / 2);
+});
+
 test('carcass can preserve only the top leg platform for split upper stacks', () => {
   const platformH = CARCASS_BASE_DIMENSIONS.legs.platform.heightM;
   const ops = computeCarcassOps({

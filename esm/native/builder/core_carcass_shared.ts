@@ -39,6 +39,7 @@ export type PreparedCarcassInput = {
   baseLegPlatformMode: 'stage' | 'plain';
   baseLegPlatformSideMode: 'overhang' | 'flush';
   baseLegTopPlatformOnly: boolean;
+  baseLegSuppressTopPlatform: boolean;
   baseLegBottomPlatformHeight: number;
   baseLegTopPlatformHeight: number;
   moduleWidths: number[] | null;
@@ -72,9 +73,12 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
   const baseLegPlatformSideMode = normalizeBaseLegPlatformSideMode(inp.baseLegPlatformSideMode);
   const baseLegPlatformEnabled = baseType === 'legs' && baseLegPlatformMode === 'stage';
   const baseLegTopPlatformOnly = baseLegTopPlatformRequested && baseLegPlatformMode === 'stage';
+  const baseLegSuppressTopPlatform = !!inp.baseLegSuppressTopPlatform && baseLegPlatformEnabled;
   const baseLegBottomPlatformHeight = baseLegPlatformEnabled ? BASE_LEG_PLATFORM_DIMENSIONS.heightM : 0;
   const baseLegTopPlatformHeight =
-    baseLegPlatformEnabled || baseLegTopPlatformOnly ? BASE_LEG_PLATFORM_DIMENSIONS.heightM : 0;
+    (baseLegPlatformEnabled && !baseLegSuppressTopPlatform) || baseLegTopPlatformOnly
+      ? BASE_LEG_PLATFORM_DIMENSIONS.heightM
+      : 0;
 
   let baseHeight = 0;
   let startY = 0;
@@ -138,6 +142,7 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
       H,
       legHeight: readBaseLegOptions(inp).heightM,
       sideMode: baseLegPlatformSideMode,
+      includeTop: !baseLegSuppressTopPlatform,
     });
   } else if (baseLegTopPlatformOnly) {
     base = makeTopOnlyBaseLegPlatformOps({ totalW, D, H, sideMode: baseLegPlatformSideMode });
@@ -221,6 +226,7 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
     baseLegPlatformMode,
     baseLegPlatformSideMode,
     baseLegTopPlatformOnly,
+    baseLegSuppressTopPlatform,
     baseLegBottomPlatformHeight,
     baseLegTopPlatformHeight,
     moduleWidths,
@@ -243,6 +249,7 @@ type BaseLegPlatformAttachParams = {
   H: number;
   legHeight: number;
   sideMode: 'overhang' | 'flush';
+  includeTop?: boolean;
 };
 
 function makeBaseLegPlatformOp(args: {
@@ -275,7 +282,7 @@ function attachBaseLegPlatformOps(params: BaseLegPlatformAttachParams): void {
   if (!baseRec) return;
   const h = BASE_LEG_PLATFORM_DIMENSIONS.heightM;
   if (!(h > 0)) return;
-  baseRec.platforms = [
+  const platforms: MutableRecord[] = [
     makeBaseLegPlatformOp({
       width: params.totalW,
       height: h,
@@ -284,15 +291,20 @@ function attachBaseLegPlatformOps(params: BaseLegPlatformAttachParams): void {
       partId: 'base_leg_platform_bottom',
       sideMode: params.sideMode,
     }),
-    makeBaseLegPlatformOp({
-      width: params.totalW,
-      height: h,
-      depth: params.D,
-      y: params.H + h / 2,
-      partId: 'base_leg_platform_top',
-      sideMode: params.sideMode,
-    }),
   ];
+  if (params.includeTop !== false) {
+    platforms.push(
+      makeBaseLegPlatformOp({
+        width: params.totalW,
+        height: h,
+        depth: params.D,
+        y: params.H + h / 2,
+        partId: 'base_leg_platform_top',
+        sideMode: params.sideMode,
+      })
+    );
+  }
+  baseRec.platforms = platforms;
 }
 
 function makeTopOnlyBaseLegPlatformOps(args: {

@@ -45,6 +45,7 @@ type ApplyCarcassAndGetCabinetMetricsArgs = {
   baseLegHeightCm?: number | string;
   baseLegWidthCm?: number | string;
   baseLegTopPlatformOnly?: boolean;
+  baseLegSuppressTopPlatform?: boolean;
   doorsCount?: number;
   hasCornice?: boolean;
   corniceType?: string;
@@ -252,6 +253,7 @@ export function applyCarcassAndGetCabinetMetrics(
     baseLegHeightCm: safeArgs.baseLegHeightCm,
     baseLegWidthCm: safeArgs.baseLegWidthCm,
     baseLegTopPlatformOnly: !!safeArgs.baseLegTopPlatformOnly,
+    baseLegSuppressTopPlatform: !!safeArgs.baseLegSuppressTopPlatform,
     doorsCount: safeDoorsCount,
     hasCornice: !!safeArgs.hasCornice,
     corniceType: typeof safeArgs.corniceType === 'string' ? safeArgs.corniceType : undefined,

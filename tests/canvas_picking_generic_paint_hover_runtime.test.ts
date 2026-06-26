@@ -581,13 +581,19 @@ test('generic paint hover shows object-box feedback for plinth targets', () => {
 });
 
 test('generic paint hover shows object-box feedback for leg platform stage targets', () => {
-  const runHover = (partId: 'base_leg_platform_bottom' | 'base_leg_platform_top') => {
+  const runHover = (
+    partId:
+      | 'base_leg_platform_bottom'
+      | 'base_leg_platform_top'
+      | 'lower_base_leg_platform_bottom'
+      | 'lower_base_leg_platform_top'
+  ) => {
     const wardrobeGroup = { children: [] as unknown[], userData: { partId: 'root' } };
     const platform = createBoxObject(partId, {
       width: 1.4,
       height: 0.028,
       depth: 0.58,
-      y: partId === 'base_leg_platform_top' ? 2.414 : 0.134,
+      y: partId.endsWith('_top') ? 2.414 : 0.134,
     });
     platform.parent = wardrobeGroup;
     wardrobeGroup.children.push(platform);
@@ -615,6 +621,8 @@ test('generic paint hover shows object-box feedback for leg platform stage targe
 
   runHover('base_leg_platform_bottom');
   runHover('base_leg_platform_top');
+  runHover('lower_base_leg_platform_bottom');
+  runHover('lower_base_leg_platform_top');
 });
 
 test('generic paint hover shows object-box feedback for pentagon shelves, floor, and ceiling thin boards', () => {

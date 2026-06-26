@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { addStackSplitDecorativeSeparatorIfNeeded } from '../esm/native/builder/build_stack_split_decorative_separator.ts';
+import { prepareStackSplitLowerSetup } from '../esm/native/builder/build_stack_split_lower_setup.ts';
 
 class FakeMeshBasicMaterial {
   userData: Record<string, unknown> = {};
@@ -133,6 +134,117 @@ test('stack split decorative separator renders an overhanging slab plus front li
       'separator accent strips should sit on the outer separator face edges, not as an inset inner rectangle'
     );
   }
+});
+
+test('decorative stack split lower carcass keeps the bottom leg stage and suppresses the seam top stage', () => {
+  const renderedOps: any[] = [];
+  const wardrobeGroup = { children: [] as unknown[] };
+  const App = {
+    render: { wardrobeGroup },
+    services: {
+      builder: {
+        renderOps: {
+          applyCarcassOps(ops: unknown) {
+            renderedOps.push(ops);
+            return true;
+          },
+        },
+      },
+    },
+  } as any;
+
+  prepareStackSplitLowerSetup({
+    App,
+    THREE: FAKE_THREE,
+    state: {},
+    ui: { singleDoorPos: 'center' },
+    runtime: {},
+    cfg: { wardrobeType: 'hinged', stackSplitLowerModulesConfiguration: [{}, {}] },
+    label: 'test',
+    splitSeamGapM: 0.002,
+    carcassDepthM: 0.6,
+    lowerHeightCm: 100,
+    lowerDepthCm: 60,
+    lowerWidthCm: 180,
+    lowerDoorsCount: 4,
+    widthCm: 180,
+    heightCm: 240,
+    depthCm: 60,
+    doorsCount: 4,
+    chestDrawersCount: 0,
+    woodThick: 0.018,
+    shelfThick: 0.018,
+    depthReduction: 0.07,
+    baseTypeBottom: 'legs',
+    baseLegStyle: 'round',
+    baseLegColor: 'metal',
+    baseLegPlatformMode: 'stage',
+    baseLegPlatformSideMode: 'overhang',
+    basePlinthHeightCm: 10,
+    baseLegHeightCm: 12,
+    baseLegWidthCm: 5,
+    doorStyle: 'flat',
+    stackSplitEnabled: true,
+    stackSplitDecorativeSeparatorEnabled: true,
+    stackSplitUnifiedFrame: false,
+    handleControlEnabled: false,
+    showHangerEnabled: false,
+    showContentsEnabled: false,
+    splitDoors: false,
+    isGroovesEnabled: false,
+    isInternalDrawersEnabled: false,
+    isCornerMode: false,
+    sketchMode: false,
+    globalClickMode: false,
+    hadEditHold: false,
+    hasCornice: false,
+    colorHex: null,
+    useTexture: false,
+    textureDataURL: null,
+    globalFrontMat: 'front',
+    bodyMat: 'body',
+    masoniteMat: 'masonite',
+    whiteMat: 'white',
+    shadowMat: 'shadow',
+    legMat: 'leg',
+    defaultShelfMat: 'shelf',
+    braceShelfMat: 'brace',
+    createBoard: () => ({}),
+    createDoorVisual: () => ({}),
+    createInternalDrawerBox: () => ({}),
+    createHandleMesh: () => ({}),
+    doorState: {},
+    getPartMaterial: (partId: string) => `mat:${partId}`,
+    getPartColorValue: () => null,
+    getHandleType: () => 'bar',
+    isDoorRemoved: () => false,
+    isRemoveDoorMode: false,
+    removeDoorsEnabled: false,
+    getMaterial: () => null,
+    addOutlines: null,
+    addOutlinesMesh: null,
+    buildCornerWing: null,
+    addDimensionLine: null,
+    restoreNotesFromSave: null,
+    addHangingClothes: null,
+    addFoldedClothes: null,
+    addRealisticHanger: null,
+    rebuildDrawerMeta: null,
+    pruneCachesSafe: null,
+    triggerRender: null,
+    showToast: null,
+    calculateModuleStructure: (doorsCount: number) => [{ doors: doorsCount / 2 }, { doors: doorsCount / 2 }],
+    notesToPreserve: null,
+  } as any);
+
+  assert.equal(renderedOps.length, 1);
+  const platforms = renderedOps[0]?.base?.platforms || [];
+  assert.equal(platforms.length, 1);
+  assert.equal(platforms[0]?.partId, 'lower_base_leg_platform_bottom');
+  assert.equal(
+    platforms.some((platform: any) => platform?.partId === 'lower_base_leg_platform_top'),
+    false
+  );
 });
 
 test('stack split decorative separator is a no-op while disabled', () => {

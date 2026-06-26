@@ -48,11 +48,8 @@ function isCornerPlinthPaintKey(partKey: string): boolean {
 }
 
 function isBaseLegPlatformPaintKey(partKey: string): boolean {
-  return (
-    partKey === 'base_leg_platform' ||
-    partKey === 'base_leg_platform_bottom' ||
-    partKey === 'base_leg_platform_top'
-  );
+  const key = unscopedPaintPreviewPartKey(partKey);
+  return key === 'base_leg_platform' || key === 'base_leg_platform_bottom' || key === 'base_leg_platform_top';
 }
 
 function shouldUseObjectBoxesPaintPreview(partKeys: string[]): boolean {
