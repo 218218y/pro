@@ -15,6 +15,12 @@ import {
   sketchStackFitsAvailableHeight,
 } from '../features/sketch_drawer_sizing.js';
 import { resolveSketchStackCenterYFromNormalizedItem } from '../features/sketch_stack_positioning.js';
+import {
+  internalDrawerCassetteHasUsableWidth,
+  resolveInternalDrawerCassetteMetrics,
+  resolveInternalDrawerCassettePanelThickness,
+  resolveInternalDrawerWidthInsideCassette,
+} from '../features/sketch_internal_drawer_cassette.js';
 import { hasSketchDrawerDivider } from './render_interior_sketch_drawer_dividers.js';
 import {
   buildSketchExternalDrawerCollisionRanges,
@@ -148,10 +154,25 @@ export function buildSketchInternalDrawerOps(args: {
 
   const ops: SketchInternalDrawerOp[] = [];
   const moduleKeyForUd: string | number = input.moduleKey != null ? String(input.moduleKey) : moduleIndex;
-  const width = Math.max(
+  const cassettePanelT = resolveInternalDrawerCassettePanelThickness(woodThick);
+  const cassetteWidth = Math.max(
     DRAWER_DIMENSIONS.sketch.internalWidthMinM,
     innerW - DRAWER_DIMENSIONS.sketch.internalWidthClearanceM
   );
+  if (
+    !internalDrawerCassetteHasUsableWidth({
+      outerWidth: cassetteWidth,
+      panelThicknessM: cassettePanelT,
+      minWidthM: DRAWER_DIMENSIONS.sketch.internalWidthMinM,
+    })
+  ) {
+    return ops;
+  }
+  const width = resolveInternalDrawerWidthInsideCassette({
+    outerWidth: cassetteWidth,
+    panelThicknessM: cassettePanelT,
+    minWidthM: DRAWER_DIMENSIONS.sketch.internalWidthMinM,
+  });
   const depth = Math.max(
     DRAWER_DIMENSIONS.sketch.internalDepthMinM,
     internalDepth - DRAWER_DIMENSIONS.sketch.internalDepthClearanceM
@@ -207,6 +228,23 @@ export function buildSketchInternalDrawerOps(args: {
       DRAWER_DIMENSIONS.sketch.internalBottomLiftMaxM,
       woodThick * DRAWER_DIMENSIONS.sketch.internalBottomLiftWoodRatio
     );
+    const cassetteMetrics = resolveInternalDrawerCassetteMetrics({
+      baseY,
+      drawerStackH: stackH,
+      panelThicknessM: cassettePanelT,
+    });
+    const cassette = {
+      partId: `${stackPartId}_cassette`,
+      width: cassetteWidth,
+      height: cassetteMetrics.outerH,
+      depth,
+      panelThicknessM: cassetteMetrics.panelThicknessM,
+      x: internalCenterX,
+      y: cassetteMetrics.centerY,
+      z: internalZ,
+      drawerMinY: cassetteMetrics.drawerMinY,
+      drawerMaxY: cassetteMetrics.drawerMaxY,
+    };
 
     for (let j = 0; j < 2; j++) {
       const drawerSlot = j === 0 ? 'lower' : 'upper';
@@ -231,6 +269,7 @@ export function buildSketchInternalDrawerOps(args: {
         openZ: internalZ + DRAWER_DIMENSIONS.sketch.internalOpenOffsetZM,
         hasDivider,
         dividerKey: partId,
+        cassette,
       });
     }
   }

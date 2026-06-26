@@ -18,6 +18,12 @@ import {
 import { resolveSketchStackCenterYFromNormalizedItem } from '../features/sketch_stack_positioning.js';
 import { hasSketchDrawerDivider } from './render_interior_sketch_drawer_dividers.js';
 import {
+  internalDrawerCassetteHasUsableWidth,
+  resolveInternalDrawerCassetteMetrics,
+  resolveInternalDrawerCassettePanelThickness,
+  resolveInternalDrawerWidthInsideCassette,
+} from '../features/sketch_internal_drawer_cassette.js';
+import {
   resolveSketchBoxUsableContentCenterZ,
   resolveSketchBoxUsableContentDepth,
 } from './render_interior_sketch_boxes_contents_depth.js';
@@ -221,7 +227,25 @@ export function renderSketchBoxDrawerContents(args: RenderSketchBoxContentsArgs)
       const stackPartId = `${boxPid}_int_drawers_${drawerId}`;
       const stackKey =
         typeof moduleKeyForUd === 'string' && moduleKeyForUd.startsWith('lower_') ? 'bottom' : 'top';
-      const width = Math.max(drawerDims.internalWidthMinM, span.innerW - drawerDims.internalWidthClearanceM);
+      const cassettePanelT = resolveInternalDrawerCassettePanelThickness(woodThick);
+      const cassetteWidth = Math.max(
+        drawerDims.internalWidthMinM,
+        span.innerW - drawerDims.internalWidthClearanceM
+      );
+      if (
+        !internalDrawerCassetteHasUsableWidth({
+          outerWidth: cassetteWidth,
+          panelThicknessM: cassettePanelT,
+          minWidthM: drawerDims.internalWidthMinM,
+        })
+      ) {
+        continue;
+      }
+      const width = resolveInternalDrawerWidthInsideCassette({
+        outerWidth: cassetteWidth,
+        panelThicknessM: cassettePanelT,
+        minWidthM: drawerDims.internalWidthMinM,
+      });
       const depth = Math.min(
         usableContentDepth,
         Math.max(drawerDims.internalDepthMinM, usableContentDepth - drawerDims.internalDepthClearanceM)
@@ -231,6 +255,23 @@ export function renderSketchBoxDrawerContents(args: RenderSketchBoxContentsArgs)
         drawerDims.internalBottomLiftMaxM,
         woodThick * drawerDims.internalBottomLiftWoodRatio
       );
+      const cassetteMetrics = resolveInternalDrawerCassetteMetrics({
+        baseY,
+        drawerStackH: stackH,
+        panelThicknessM: cassettePanelT,
+      });
+      const cassette = {
+        partId: `${stackPartId}_cassette`,
+        width: cassetteWidth,
+        height: cassetteMetrics.outerH,
+        depth,
+        panelThicknessM: cassetteMetrics.panelThicknessM,
+        x: span.innerCenterX,
+        y: cassetteMetrics.centerY,
+        z: drawerClosedZ,
+        drawerMinY: cassetteMetrics.drawerMinY,
+        drawerMaxY: cassetteMetrics.drawerMaxY,
+      };
       for (let stackIndex = 0; stackIndex < 2; stackIndex++) {
         const drawerSlot = stackIndex === 0 ? 'lower' : 'upper';
         const partId = `${stackPartId}_${drawerSlot}`;
@@ -258,6 +299,7 @@ export function renderSketchBoxDrawerContents(args: RenderSketchBoxContentsArgs)
           sketchModuleKey: moduleKeyForUd,
           sketchFreePlacement: shell.isFreePlacement === true,
           sketchStack: stackKey,
+          cassette,
         });
       }
     }

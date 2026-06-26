@@ -48,6 +48,7 @@ export function applyInteriorSketchOwnedShelves(args: {
 
   applySketchShelves({
     shelves: resolved.shelves,
+    drawers: resolved.drawers,
     yFromNorm: placementSupport.yFromNorm,
     findBoxAtY,
     braceCenterX: resolved.braceCenterX,
@@ -62,7 +63,9 @@ export function applyInteriorSketchOwnedShelves(args: {
     roundedShelfSide: resolved.roundedShelfSide,
     woodThick: resolved.woodThick,
     shelfThick: resolved.shelfThick,
+    effectiveBottomY: resolved.effectiveBottomY,
     effectiveTopY: resolved.effectiveTopY,
+    spanH: resolved.spanH,
     showContentsEnabled: resolved.input.showContentsEnabled === true,
     addFoldedClothes: resolved.input.addFoldedClothes,
     contentsPolicy: {

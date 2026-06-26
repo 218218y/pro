@@ -187,6 +187,40 @@ test('module external drawer preview clamps below existing boxes instead of over
   assert.ok(stackTopY <= boxMinY - 0.007);
 });
 
+test('module internal drawer commit removes shelves that only collide with the cassette frame', () => {
+  const cfg: Record<string, unknown> = {
+    sketchExtras: {
+      shelves: [
+        { id: 'cassette-collides', yNorm: 0.5758333333, variant: 'regular' },
+        { id: 'keep', yNorm: 0.8, variant: 'regular' },
+      ],
+      drawers: [],
+    },
+  };
+
+  const result = commitSketchModuleInternalDrawerStack({
+    cfg,
+    hoverRec: {},
+    hoverOk: false,
+    bottomY: 0,
+    topY: 2.4,
+    totalHeight: 2.4,
+    pad: 0.018,
+    woodThick: 0.018,
+    drawerHeightM: 0.165,
+    hitYClamped: 1.2,
+    hoverHost: host,
+  });
+
+  assert.ok(result);
+  const extra = cfg.sketchExtras as { shelves: Array<{ id: string }>; drawers: unknown[] };
+  assert.deepEqual(
+    extra.shelves.map(shelf => shelf.id),
+    ['keep']
+  );
+  assert.equal(extra.drawers.length, 1);
+});
+
 test('module internal drawer commit rejects placement that would overlap an existing module box', () => {
   const cfg: Record<string, unknown> = {
     sketchExtras: {

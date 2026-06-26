@@ -7,7 +7,15 @@ import {
 import type { CommitSketchModuleBoxContentArgs } from './canvas_picking_sketch_box_content_commit_contracts.js';
 import { buildToggleHoverRecord } from './canvas_picking_sketch_box_content_commit_toggle.js';
 import { inferSketchStackVerticalAnchorFromNormalizedItem } from '../features/sketch_stack_positioning.js';
-import { markSketchInternalDrawersDirty } from '../features/sketch_drawer_sizing.js';
+import {
+  markSketchInternalDrawersDirty,
+  resolveSketchInternalDrawerMetrics,
+} from '../features/sketch_drawer_sizing.js';
+import {
+  removeSketchShelvesOverlappingInternalDrawerCassette,
+  resolveInternalDrawerCassetteMetrics,
+  resolveInternalDrawerCassettePanelThickness,
+} from '../features/sketch_internal_drawer_cassette.js';
 import {
   SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_CONTENT_KIND,
   SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_KEY,
@@ -16,6 +24,63 @@ import {
   normalizeStoredSketchBoxRegularExternalDrawerCount,
   removeSketchBoxRegularExternalDrawersInCell,
 } from '../features/sketch_box_regular_external_drawers.js';
+
+function readPositiveNumber(value: unknown): number | null {
+  if (typeof value === 'number') return Number.isFinite(value) && value > 0 ? value : null;
+  if (typeof value === 'string' && value.trim()) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  }
+  return null;
+}
+
+function readFiniteNumber(value: unknown): number | null {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+  if (typeof value === 'string' && value.trim()) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+
+function removeBoxShelvesForInternalDrawerCassette(args: {
+  box: Record<string, unknown>;
+  item: SketchModuleBoxContentLike;
+  stackH: number | null;
+  drawerHeightM: number | null;
+  woodThick: unknown;
+}): void {
+  const shelves = Array.isArray(args.box.shelves) ? args.box.shelves : null;
+  if (!shelves?.length) return;
+  const boxH = readPositiveNumber(args.box.heightM);
+  if (boxH == null) return;
+  const stackH =
+    readPositiveNumber(args.stackH) ??
+    resolveSketchInternalDrawerMetrics({
+      drawerHeightM: args.drawerHeightM ?? undefined,
+      availableHeightM: boxH,
+    }).stackH;
+  if (!(stackH > 0)) return;
+  const centerNorm = readFiniteNumber(args.item.yNormC);
+  const baseNorm = readFiniteNumber(args.item.yNorm);
+  const baseY =
+    baseNorm != null ? Math.max(0, Math.min(1, baseNorm)) * boxH : (centerNorm ?? 0.5) * boxH - stackH / 2;
+  const cassetteMetrics = resolveInternalDrawerCassetteMetrics({
+    baseY,
+    drawerStackH: stackH,
+    panelThicknessM: resolveInternalDrawerCassettePanelThickness(args.woodThick),
+  });
+  removeSketchShelvesOverlappingInternalDrawerCassette({
+    shelves,
+    cassetteMinY: cassetteMetrics.minY,
+    cassetteMaxY: cassetteMetrics.maxY,
+    bottomY: 0,
+    spanH: boxH,
+    woodThick: args.woodThick,
+    xNorm: readFiniteNumber(args.item.xNorm),
+    matchXNorm: true,
+  });
+}
 
 function clampNorm(value: number | null, defaultValue: number): number {
   return value != null ? Math.max(0, Math.min(1, value)) : defaultValue;
@@ -181,6 +246,13 @@ export function tryCommitSketchBoxDrawerContent(args: {
       contentXNorm,
       drawerHeightM,
       stackH,
+    });
+    removeBoxShelvesForInternalDrawerCassette({
+      box: commitArgs.box as Record<string, unknown>,
+      item,
+      stackH,
+      drawerHeightM,
+      woodThick: (commitArgs.hoverRec as Record<string, unknown>).woodThick,
     });
     list.push(item);
     if (commitArgs.cfg) markSketchInternalDrawersDirty(commitArgs.cfg);

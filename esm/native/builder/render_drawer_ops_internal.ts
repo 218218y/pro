@@ -14,6 +14,18 @@ import {
   readThreeLike,
 } from './render_drawer_ops_shared.js';
 
+function setPartUserData(obj: unknown, data: Record<string, unknown>): void {
+  if (!obj || typeof obj !== 'object') return;
+  const rec = obj as { userData?: Record<string, unknown> };
+  rec.userData = { ...(rec.userData || {}), ...data };
+}
+
+function setPosition(obj: unknown, x: number, y: number, z: number): void {
+  if (!obj || typeof obj !== 'object') return;
+  const rec = obj as { position?: { set?: (x: number, y: number, z: number) => void } };
+  if (typeof rec.position?.set === 'function') rec.position.set(x, y, z);
+}
+
 export function createApplyInternalDrawersOps(deps: BuilderRenderDrawerDeps) {
   const { __app, __ops, __wardrobeGroup, __reg, __drawers } = deps;
 
@@ -41,6 +53,8 @@ export function createApplyInternalDrawersOps(deps: BuilderRenderDrawerDeps) {
     const showContentsEnabled = args?.showContentsEnabled === true;
     const addFoldedClothes = readAddFoldedClothes(args?.addFoldedClothes);
 
+    const renderedCassettes = new Set<string>();
+
     for (let i = 0; i < ops.length; i++) {
       const drawerOp = readInternalDrawerOp(ops[i]);
       if (!drawerOp) continue;
@@ -53,6 +67,79 @@ export function createApplyInternalDrawersOps(deps: BuilderRenderDrawerDeps) {
         getPartColorValue,
         getPartMaterial,
       });
+      const sketchModuleKey = drawerOp.sketchModuleKey ?? drawerOp.moduleIndex;
+      const cassette = drawerOp.cassette;
+      if (cassette && !renderedCassettes.has(cassette.partId)) {
+        renderedCassettes.add(cassette.partId);
+        const panelT = Math.max(0.001, cassette.panelThicknessM);
+        const frameParts = [
+          {
+            suffix: 'bottom',
+            w: cassette.width,
+            h: panelT,
+            d: cassette.depth,
+            x: cassette.x,
+            y: cassette.drawerMinY - panelT / 2,
+            z: cassette.z,
+          },
+          {
+            suffix: 'top',
+            w: cassette.width,
+            h: panelT,
+            d: cassette.depth,
+            x: cassette.x,
+            y: cassette.drawerMaxY + panelT / 2,
+            z: cassette.z,
+          },
+          {
+            suffix: 'left',
+            w: panelT,
+            h: cassette.height,
+            d: cassette.depth,
+            x: cassette.x - cassette.width / 2 + panelT / 2,
+            y: cassette.y,
+            z: cassette.z,
+          },
+          {
+            suffix: 'right',
+            w: panelT,
+            h: cassette.height,
+            d: cassette.depth,
+            x: cassette.x + cassette.width / 2 - panelT / 2,
+            y: cassette.y,
+            z: cassette.z,
+          },
+        ];
+        for (const part of frameParts) {
+          if (!(part.w > 0) || !(part.h > 0) || !(part.d > 0)) continue;
+          const framePartId = `${cassette.partId}_${part.suffix}`;
+          const mesh = new THREE.Mesh(new THREE.BoxGeometry(part.w, part.h, part.d), drawerBoxMat);
+          setPosition(mesh, part.x, part.y, part.z);
+          setPartUserData(mesh, {
+            partId: framePartId,
+            cassettePartId: cassette.partId,
+            drawerId: partId,
+            moduleIndex: drawerOp.moduleIndex,
+            __wpInternalDrawerCassette: true,
+            __wpInternalDrawerCassettePart: part.suffix,
+            __wpDrawerOwnerPartId: partId,
+            __doorWidth: cassette.width,
+            __doorHeight: cassette.height,
+          });
+          if (drawerOp.sketchBoxId) {
+            setPartUserData(mesh, {
+              __wpSketchBoxId: drawerOp.sketchBoxId,
+              __wpSketchModuleKey: sketchModuleKey,
+              __wpSketchFreePlacement: drawerOp.sketchFreePlacement === true,
+              ...(drawerOp.sketchStack ? { __wpStack: drawerOp.sketchStack } : {}),
+            });
+          }
+          if (addOutlines) addOutlines(mesh);
+          __reg(App, framePartId, mesh, 'intDrawerCassette');
+          drawerGroup.add(mesh);
+        }
+      }
+
       const intBox = createInternalDrawerBox(
         drawerOp.width,
         drawerOp.height,
@@ -63,7 +150,6 @@ export function createApplyInternalDrawersOps(deps: BuilderRenderDrawerDeps) {
         drawerOp.hasDivider,
         false
       );
-      const sketchModuleKey = drawerOp.sketchModuleKey ?? drawerOp.moduleIndex;
       intBox.userData = {
         ...(intBox.userData || {}),
         partId: drawerBoxPartId,

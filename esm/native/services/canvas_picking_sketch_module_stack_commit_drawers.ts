@@ -18,6 +18,11 @@ import { resolveInternalDrawerHoverIntent } from './canvas_picking_sketch_module
 import { resolveSketchInternalDrawerMetrics } from '../features/sketch_drawer_sizing.js';
 import { markSketchInternalDrawersDirty } from '../features/sketch_drawer_sizing.js';
 import {
+  removeSketchShelvesOverlappingInternalDrawerCassette,
+  resolveInternalDrawerCassetteMetrics,
+  resolveInternalDrawerCassettePanelThickness,
+} from '../features/sketch_internal_drawer_cassette.js';
+import {
   createRandomId,
   ensureRecord,
   ensureRecordList,
@@ -141,6 +146,21 @@ export function commitSketchModuleInternalDrawers(
     totalHeight: args.totalHeight,
     pad: args.pad,
   });
+  const cassetteMetrics = resolveInternalDrawerCassetteMetrics({
+    baseY: normalized.baseYAbs,
+    drawerStackH: placement.stackH,
+    panelThicknessM: resolveInternalDrawerCassettePanelThickness(args.woodThick),
+  });
+  if (Array.isArray(extra.shelves)) {
+    removeSketchShelvesOverlappingInternalDrawerCassette({
+      shelves: extra.shelves,
+      cassetteMinY: cassetteMetrics.minY,
+      cassetteMaxY: cassetteMetrics.maxY,
+      bottomY: args.bottomY,
+      spanH: args.totalHeight,
+      woodThick: args.woodThick,
+    });
+  }
   const item = {
     id: createRandomId('sd'),
     yNormC: normalized.yNormC,

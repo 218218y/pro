@@ -1,5 +1,38 @@
 import { isRecord, readFinite } from './render_drawer_ops_shared_guards.js';
-import type { ExternalDrawerOpLike, InternalDrawerOpLike } from './render_drawer_ops_shared_types.js';
+import type {
+  ExternalDrawerOpLike,
+  InternalDrawerCassetteOpLike,
+  InternalDrawerOpLike,
+} from './render_drawer_ops_shared_types.js';
+
+function readInternalDrawerCassetteOp(value: unknown): InternalDrawerCassetteOpLike | undefined {
+  if (!isRecord(value)) return undefined;
+  const partId = typeof value.partId === 'string' ? value.partId : '';
+  const width = readFinite(value.width, Number.NaN);
+  const height = readFinite(value.height, Number.NaN);
+  const depth = readFinite(value.depth, Number.NaN);
+  const panelThicknessM = readFinite(value.panelThicknessM, Number.NaN);
+  const x = readFinite(value.x, Number.NaN);
+  const y = readFinite(value.y, Number.NaN);
+  const z = readFinite(value.z, Number.NaN);
+  const drawerMinY = readFinite(value.drawerMinY, Number.NaN);
+  const drawerMaxY = readFinite(value.drawerMaxY, Number.NaN);
+  if (
+    !partId ||
+    !Number.isFinite(width) ||
+    !Number.isFinite(height) ||
+    !Number.isFinite(depth) ||
+    !Number.isFinite(panelThicknessM) ||
+    !Number.isFinite(x) ||
+    !Number.isFinite(y) ||
+    !Number.isFinite(z) ||
+    !Number.isFinite(drawerMinY) ||
+    !Number.isFinite(drawerMaxY)
+  ) {
+    return undefined;
+  }
+  return { partId, width, height, depth, panelThicknessM, x, y, z, drawerMinY, drawerMaxY };
+}
 
 function readPositionTriplet(value: unknown): { x?: number; y?: number; z?: number } | undefined {
   if (!isRecord(value)) return undefined;
@@ -88,5 +121,6 @@ export function readInternalDrawerOp(value: unknown): InternalDrawerOpLike | nul
     sketchModuleKey: value.sketchModuleKey,
     sketchFreePlacement: value.sketchFreePlacement === true,
     sketchStack: value.sketchStack === 'bottom' ? 'bottom' : value.sketchStack === 'top' ? 'top' : undefined,
+    cassette: readInternalDrawerCassetteOp(value.cassette),
   };
 }

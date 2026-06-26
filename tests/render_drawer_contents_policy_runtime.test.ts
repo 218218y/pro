@@ -10,6 +10,13 @@ class FakeVector3 {
     public z = 0
   ) {}
 
+  set(x = 0, y = 0, z = 0) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    return this;
+  }
+
   copy(value: FakeVector3) {
     this.x = value.x;
     this.y = value.y;
@@ -177,4 +184,65 @@ test('internal drawer body accepts explicit drawer-box paint only on its own box
   assert.equal(boxCalls[0]?.[4], boxPaint);
   const internalDrawer = wardrobeGroup.children[0] as FakeGroup;
   assert.equal(internalDrawer.userData.partId, 'drawer_box__drawer_1');
+});
+
+test('internal drawer cassette frame renders once around paired internal drawer ops', () => {
+  const wardrobeGroup = new FakeGroup();
+  const drawers: unknown[] = [];
+  const registered: Array<{ partId: unknown; kind: unknown }> = [];
+  const outlined: unknown[] = [];
+  const renderDrawerOps = createBuilderRenderDrawerOps({
+    __app: input => (input as { App: never }).App,
+    __ops: () => undefined,
+    __wardrobeGroup: () => wardrobeGroup as never,
+    __reg: (_App, partId, _obj, kind) => registered.push({ partId, kind }),
+    __drawers: () => drawers as never[],
+    getMirrorMaterial: () => null,
+  });
+
+  const cassette = {
+    partId: 'stack_1_cassette',
+    width: 0.7,
+    height: 0.38,
+    depth: 0.44,
+    panelThicknessM: 0.02,
+    x: 0.1,
+    y: 1,
+    z: -0.08,
+    drawerMinY: 0.82,
+    drawerMaxY: 1.16,
+  };
+
+  const result = renderDrawerOps.applyInternalDrawersOps({
+    App: {},
+    THREE: {
+      Group: FakeGroup,
+      Mesh: FakeMesh,
+      Vector3: FakeVector3,
+      BoxGeometry: FakeBoxGeometry,
+    },
+    ops: [
+      { partId: 'drawer_lower', width: 0.66, height: 0.16, depth: 0.4, y: 0.9, cassette },
+      { partId: 'drawer_upper', width: 0.66, height: 0.16, depth: 0.4, y: 1.08, cassette },
+    ],
+    wardrobeGroup,
+    createInternalDrawerBox: () => new FakeGroup(),
+    addOutlines: (mesh: unknown) => outlined.push(mesh),
+    whiteMat: { id: 'drawer-box' },
+  });
+
+  assert.equal(result, true);
+  assert.equal(drawers.length, 2);
+  assert.equal(wardrobeGroup.children.length, 6);
+  assert.deepEqual(
+    registered.filter(entry => entry.kind === 'intDrawerCassette').map(entry => entry.partId),
+    ['stack_1_cassette_bottom', 'stack_1_cassette_top', 'stack_1_cassette_left', 'stack_1_cassette_right']
+  );
+  assert.equal(outlined.length, 4);
+  const bottom = wardrobeGroup.children[0] as FakeMesh;
+  const top = wardrobeGroup.children[1] as FakeMesh;
+  assert.equal(bottom.userData.__wpInternalDrawerCassettePart, 'bottom');
+  assert.equal(top.userData.__wpInternalDrawerCassettePart, 'top');
+  assert.ok(Math.abs(bottom.position.y - 0.81) < 1e-9);
+  assert.ok(Math.abs(top.position.y - 1.17) < 1e-9);
 });

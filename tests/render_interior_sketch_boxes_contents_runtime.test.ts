@@ -224,6 +224,26 @@ test('render sketch box shelves emit folded contents inside divider-aware shelf 
   assert.equal(folded[0][7].cfgSnapshot, args.args.input.cfgSnapshot);
 });
 
+test('render sketch box shelves are replaced by the internal drawer cassette in the same box span', () => {
+  const { args, boards, drawerRuns } = createBaseArgs();
+  args.shell.box = {
+    shelves: [
+      { id: 'cassette-collides', yNorm: 0.6568, variant: 'regular' },
+      { id: 'keep', yNorm: 0.9, variant: 'regular' },
+    ],
+    storageBarriers: [],
+    rods: [],
+    drawers: [{ id: 'd1', yNormC: 0.5 }],
+  };
+
+  renderSketchBoxContents(args);
+
+  const shelfBoards = boards.filter(entry => String(entry.args[7]).includes('_shelf_'));
+  assert.equal(shelfBoards.length, 1);
+  assert.equal(shelfBoards[0].args[7], 'box_0_shelf_keep');
+  assert.equal(drawerRuns.length, 1);
+});
+
 test('removed sketch-box side forces adjacent box shelves to brace and applies rounded shelf option', () => {
   const { args, boards, shelfPins } = createBaseArgs();
   const boxPid = 'sketch_box_free_0_sbf_1';
