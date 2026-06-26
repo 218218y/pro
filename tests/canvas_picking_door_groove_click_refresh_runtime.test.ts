@@ -23,6 +23,7 @@ type BuildRequest = {
 
 function createApp() {
   const buildRequests: BuildRequest[] = [];
+  const feedbackToasts: Array<{ message: string; type?: string }> = [];
   const state: Record<string, any> = {
     config: {
       groovesMap: {},
@@ -79,6 +80,11 @@ function createApp() {
       drawersArray: [],
     },
     services: {
+      uiFeedback: {
+        toast(message: string, type?: string) {
+          feedbackToasts.push({ message, type });
+        },
+      },
       builder: {
         __scheduler: { __esm_v1: true },
         requestBuild(uiOverride: unknown, meta: Record<string, unknown>) {
@@ -89,7 +95,7 @@ function createApp() {
     },
   };
 
-  return { App, state, buildRequests };
+  return { App, state, buildRequests, feedbackToasts };
 }
 
 test('door authoring burst refresh stays debounced for coalesced structural edits', () => {
@@ -154,6 +160,58 @@ test('regular door groove click toggles the groove and requests an immediate reb
   assert.equal(buildRequests[0].meta.source, 'groove:click');
   assert.equal(buildRequests[0].meta.immediate, true);
   assert.equal(buildRequests[0].meta.force, false);
+});
+
+test('regular door groove click allows outside grooves when the mirror is only on the inside face', () => {
+  const { App, state, buildRequests, feedbackToasts } = createApp();
+  state.config.isMultiColorMode = true;
+  state.config.doorSpecialMap = { d1_left: 'mirror' };
+  state.config.mirrorLayoutMap = { d1_left: [{ faceSign: -1 }] };
+
+  const handled = handleCanvasDoorGrooveClick({
+    App,
+    effectiveDoorId: 'd1_left',
+    foundPartId: null,
+    activeStack: 'top',
+    foundModuleStack: 'top',
+    doorHitObject: {
+      userData: {
+        partId: 'd1_left',
+        __doorWidth: 0.45,
+      },
+    },
+  });
+
+  assert.equal(handled, true);
+  assert.equal(state.config.groovesMap.groove_d1_left, true);
+  assert.equal(feedbackToasts.length, 0);
+  assert.equal(buildRequests.length, 1);
+});
+
+test('regular door groove click still blocks when the mirror is on the outside face', () => {
+  const { App, state, buildRequests, feedbackToasts } = createApp();
+  state.config.isMultiColorMode = true;
+  state.config.doorSpecialMap = { d1_left: 'mirror' };
+
+  const handled = handleCanvasDoorGrooveClick({
+    App,
+    effectiveDoorId: 'd1_left',
+    foundPartId: null,
+    activeStack: 'top',
+    foundModuleStack: 'top',
+    doorHitObject: {
+      userData: {
+        partId: 'd1_left',
+        __doorWidth: 0.45,
+      },
+    },
+  });
+
+  assert.equal(handled, true);
+  assert.equal(state.config.groovesMap.groove_d1_left, undefined);
+  assert.equal(feedbackToasts.length, 1);
+  assert.match(feedbackToasts[0].message, /זכוכית או מראה/);
+  assert.equal(buildRequests.length, 0);
 });
 
 test('regular door groove click updates an existing grooved door count instead of toggling it off', () => {

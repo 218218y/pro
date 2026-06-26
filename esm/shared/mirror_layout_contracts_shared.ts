@@ -126,6 +126,21 @@ export function cloneMirrorLayoutList(value: unknown): MirrorLayoutList {
   return out;
 }
 
+export function hasMirrorSurfaceOnFace(
+  layouts: unknown,
+  faceSign: unknown,
+  fallbackFaceSign: number = DEFAULT_FACE_SIGN
+): boolean {
+  const normalizedFaceSign = normalizeMirrorFaceSign(faceSign, fallbackFaceSign);
+  const normalizedFallbackFaceSign = normalizeMirrorFaceSign(fallbackFaceSign, DEFAULT_FACE_SIGN);
+  const list = readMirrorLayoutList(layouts);
+  if (!list.length) return normalizedFaceSign === normalizedFallbackFaceSign;
+  for (let i = 0; i < list.length; i += 1) {
+    if (readMirrorLayoutFaceSign(list[i], normalizedFallbackFaceSign) === normalizedFaceSign) return true;
+  }
+  return false;
+}
+
 export function readMirrorLayoutMap(value: unknown): MirrorLayoutMap {
   const out: MirrorLayoutMap = Object.create(null);
   if (!isRecord(value)) return out;

@@ -45,7 +45,7 @@ export function appendSketchBoxDoorCoreVisual(args: {
       doorD,
       materials.doorFaceMat,
       specialDoorStyle,
-      false,
+      resolveSketchGroovesEnabled(input) && boxDoor.groove === true && !doorVisualState.isGlass,
       doorVisualState.isMirror,
       doorVisualState.curtainType,
       materials.doorBaseMat,
@@ -53,7 +53,9 @@ export function appendSketchBoxDoorCoreVisual(args: {
       false,
       doorVisualState.mirrorLayout,
       doorPid,
-      doorVisualState.isGlass ? { glassFrameStyle: visualRoute.effectiveDoorStyle } : null
+      doorVisualState.isGlass
+        ? { glassFrameStyle: visualRoute.effectiveDoorStyle }
+        : { grooveLinesCount: boxDoor.grooveLinesCount ?? null }
     );
     const specialVisualObj = readObject<InteriorGroupLike>(specialVisual) || asMesh(specialVisual);
     if (specialVisualObj) {

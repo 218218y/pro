@@ -7,6 +7,7 @@ import { createCanvasViaPlatform } from '../runtime/platform_access.js';
 import { DOOR_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { getCacheBag } from '../runtime/cache_access.js';
 import { readMirrorLayoutFaceSign, resolveMirrorPlacementListInRect } from '../features/mirror_layout.js';
+import { appendGrooveStrips } from './visuals_and_contents_door_visual_grooves.js';
 import { applyDoorFaceIdentityMetadata } from './visuals_and_contents_door_visual_tagging.js';
 import { __asCanvas, __markMirrorTracked } from './visuals_and_contents_shared.js';
 
@@ -14,6 +15,7 @@ import type { AppContainer, MirrorLayoutList, Object3DLike, ThreeLike } from '..
 import type { CanvasLike } from './visuals_and_contents_shared.js';
 
 type AddOutlinesFn = (mesh: Object3DLike) => void;
+type TagDoorVisualPartFn = (node: Object3DLike, role: string) => void;
 
 type MirrorDoorVisualArgs = {
   App: AppContainer;
@@ -27,6 +29,10 @@ type MirrorDoorVisualArgs = {
   isSketch: boolean;
   mirrorLayout: MirrorLayoutList | null;
   addOutlines: AddOutlinesFn;
+  hasGrooves?: boolean;
+  groovePartId?: string | null;
+  grooveLinesCount?: number | null;
+  tagDoorVisualPart?: TagDoorVisualPartFn | null;
 };
 
 function getOrCreateSketchPatternCanvas(App: AppContainer, _THREE: ThreeLike): CanvasLike | null {
@@ -95,6 +101,8 @@ function resolveMirrorDoorDepthLayout(thickness: number): MirrorDoorDepthLayout 
 
 export function createMirrorDoorVisual(args: MirrorDoorVisualArgs): Object3DLike {
   const { App, THREE, w, h, thickness, mat, baseMaterial, zSign, isSketch, mirrorLayout, addOutlines } = args;
+  const tagDoorVisualPart =
+    typeof args.tagDoorVisualPart === 'function' ? args.tagDoorVisualPart : () => undefined;
 
   const visualGroup = new THREE.Group();
   const woodMat = baseMaterial || new THREE.MeshStandardMaterial({ color: 0xe0e0e0 });
@@ -109,6 +117,20 @@ export function createMirrorDoorVisual(args: MirrorDoorVisualArgs): Object3DLike
   woodMesh.position.z = 0;
   if (typeof addOutlines === 'function') addOutlines(woodMesh);
   visualGroup.add(woodMesh);
+  appendGrooveStrips({
+    App,
+    THREE,
+    visualGroup,
+    tagDoorVisualPart,
+    hasGrooves: args.hasGrooves === true,
+    isSketch,
+    groovePartId: args.groovePartId ?? null,
+    zSign,
+    targetW: w,
+    targetH: h,
+    zOffset: (depthLayout.baseDoorThick / 2) * zSign,
+    linesCountOverride: args.grooveLinesCount ?? null,
+  });
 
   // Sketch-only: a subtle diagonal pattern overlay to distinguish mirrors.
   const sketchCanvas = isSketch ? getOrCreateSketchPatternCanvas(App, THREE) : null;

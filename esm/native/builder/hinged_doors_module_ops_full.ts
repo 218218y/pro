@@ -1,4 +1,6 @@
 import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { hasMirrorSurfaceOnFace } from '../features/mirror_layout.js';
+import { readDoorVisualMirrorLayout } from './door_visual_lookup_state.js';
 import { clampHandleAbsY } from './hinged_doors_module_ops_shared.js';
 import { attachHiddenModuleDoors } from './hinged_doors_module_ops_metadata.js';
 import type {
@@ -21,6 +23,11 @@ function readFullDoorGrooveEnabled(
   return ctx.grooveValSafe(state.currentDoorId, 'full', mapGrooveOn);
 }
 
+function hasOutsideMirrorSurface(ctx: HingedDoorModuleOpsContext, partId: string): boolean {
+  const mirrorLayout = readDoorVisualMirrorLayout(ctx.cfg.mirrorLayoutMap, partId);
+  return hasMirrorSurfaceOnFace(mirrorLayout, 1, 1);
+}
+
 export function appendFullHingedDoorOps(
   ctx: HingedDoorModuleOpsContext,
   state: HingedDoorIterationState
@@ -37,7 +44,8 @@ export function appendFullHingedDoorOps(
   const special = ctx.cfg.isMultiColorMode ? ctx.resolveSpecialForPart(colorKey, curtain) : null;
   const isMirror = special === 'mirror';
   const doorGrooveOn = readFullDoorGrooveEnabled(ctx, state);
-  const hasGroove = ctx.isGroovesEnabled && doorGrooveOn && !isMirror;
+  const hasGroove =
+    ctx.isGroovesEnabled && doorGrooveOn && !(isMirror && hasOutsideMirrorSurface(ctx, colorKey));
   const style = special === 'glass' ? 'glass' : null;
   const fullDoorTopY = ctx.doorBottomY + doorHeight;
   const fullHandleAbsY = clampHandleAbsY(ctx, ctx.globalHandleAbsY, ctx.doorBottomY, fullDoorTopY, colorKey);

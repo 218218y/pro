@@ -1,5 +1,7 @@
 import type { AppContainer, DoorVisualEntryLike } from '../../../types';
 
+import { hasMirrorSurfaceOnFace } from '../features/mirror_layout.js';
+import { readDoorVisualMirrorLayout } from '../features/door_visual_map_lookup.js';
 import { setDoorsOpenViaService } from '../runtime/doors_access.js';
 import { getDoorsArray } from '../runtime/render_access.js';
 import { toggleGrooveKey, writeHinge } from '../runtime/maps_access.js';
@@ -167,6 +169,21 @@ function isHitYInsideBounds(hitY: number, bounds: { minY: number; maxY: number }
   return hitY >= bounds.minY - epsilon && hitY <= bounds.maxY + epsilon;
 }
 
+function hasOutsideMirrorSurfaceForGroove(App: AppContainer, partId: string): boolean {
+  const mirrorLayout = readDoorVisualMirrorLayout(__wp_map(App, 'mirrorLayoutMap'), partId);
+  return hasMirrorSurfaceOnFace(mirrorLayout, 1, 1);
+}
+
+function blocksOutsideGrooveForPart(App: AppContainer, partId: string): boolean {
+  if (!__wp_isMultiMode(App)) return false;
+  const matType = __wp_colorGet(App, partId);
+  return matType === 'glass' || (matType === 'mirror' && hasOutsideMirrorSurfaceForGroove(App, partId));
+}
+
+function toastOutsideGrooveBlocked(App: AppContainer): void {
+  __wp_toast(App, 'לא ניתן לבצע חריטה על זכוכית או מראה', 'error');
+}
+
 function resolveSketchBoxSegmentTargetFromHitY(args: {
   App: AppContainer;
   targetId: string;
@@ -236,6 +253,10 @@ export function handleCanvasDoorGrooveClick(args: CanvasDoorGrooveClickArgs): bo
   const sketchTarget = parseSketchBoxDoorTarget(targetId || effectiveDoorId || foundPartId);
   const isSketchBoxSegmentTarget = isSketchBoxDoorSegmentPartId(targetId || effectiveDoorId || foundPartId);
   if (sketchTarget && !isSketchBoxSegmentTarget) {
+    if (targetId && blocksOutsideGrooveForPart(App, targetId)) {
+      toastOutsideGrooveBlocked(App);
+      return true;
+    }
     const patchedSketchDoor = patchSketchBoxDoor(
       App,
       sketchTarget,
@@ -269,12 +290,9 @@ export function handleCanvasDoorGrooveClick(args: CanvasDoorGrooveClickArgs): bo
   }
 
   if (targetId) {
-    if (__wp_isMultiMode(App)) {
-      const matType = __wp_colorGet(App, targetId);
-      if (matType === 'mirror' || matType === 'glass') {
-        __wp_toast(App, 'לא ניתן לבצע חריטה על זכוכית או מראה', 'error');
-        return true;
-      }
+    if (blocksOutsideGrooveForPart(App, targetId)) {
+      toastOutsideGrooveBlocked(App);
+      return true;
     }
 
     const grooveKey = `groove_${targetId}`;

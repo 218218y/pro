@@ -4,6 +4,7 @@ export {
   DEFAULT_FACE_SIGN,
   MIRROR_CENTER_SNAP_NORM_THRESHOLD,
   cloneMirrorLayoutList,
+  hasMirrorSurfaceOnFace,
   mirrorLayoutEquals,
   mirrorLayoutListEquals,
   normalizeMirrorDraftInput,

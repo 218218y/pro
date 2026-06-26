@@ -4,7 +4,7 @@
 // split/full emitters can focus on segment sizing only.
 
 import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
-import { readMirrorLayoutListForPart } from '../features/mirror_layout.js';
+import { hasMirrorSurfaceOnFace, readMirrorLayoutListForPart } from '../features/mirror_layout.js';
 import { readDoorTrimListForPart } from '../features/door_trim.js';
 import { resolveEffectiveDoorStyle } from '../features/door_style_overrides.js';
 import { isRemoveDoorModeFromSnapshot } from '../features/door_removal_visibility.js';
@@ -100,12 +100,14 @@ export function processCornerDoorVisual(
     ctx.cfg0.isMultiColorMode && ctx.getCurtain ? readScopedReaderAny(ctx, ctx.getCurtain, id) : null;
   const special = ctx.resolveSpecial(id, curtain);
   const isMirror = special === 'mirror';
-  const hasGroove = ctx.groovesEnabled && !isMirror && !!readScopedReaderAny(ctx, ctx.getGroove, id);
   const style = special === 'glass' ? 'glass' : null;
   const mirrorLayout = args.mirrorLayout ?? readMirrorLayout(ctx, id);
+  const frontSign = Number.isFinite(args.frontSign) ? Number(args.frontSign) : 1;
+  const hasOutsideMirrorSurface = isMirror && hasMirrorSurfaceOnFace(mirrorLayout, frontSign, frontSign);
+  const hasGroove =
+    ctx.groovesEnabled && !hasOutsideMirrorSurface && !!readScopedReaderAny(ctx, ctx.getGroove, id);
   const rawVisualPartId = args.groovePartId ?? id;
   const groovePartId = ctx.stackKey === 'bottom' ? ctx.stackScopePartKey(rawVisualPartId) : rawVisualPartId;
-  const frontSign = Number.isFinite(args.frontSign) ? Number(args.frontSign) : 1;
 
   const cfgRecord = ctx.cfg0;
   const doorStyleMap = isValueRecord(cfgRecord.doorStyleMap) ? cfgRecord.doorStyleMap : undefined;
@@ -117,7 +119,7 @@ export function processCornerDoorVisual(
     CORNER_WING_DIMENSIONS.connector.frontThicknessM,
     isMirror ? ctx.getMirrorMat() : woodMat,
     style || effectiveFrameStyle,
-    hasGroove && !isMirror,
+    hasGroove,
     isMirror,
     readCurtainType(curtain),
     isMirror ? woodMat : ctx.frontMat,

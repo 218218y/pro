@@ -34,6 +34,9 @@ type CreateStyledMirrorDoorVisualArgs = {
   mirrorLayout: MirrorLayoutList | null;
   addOutlines: StyledDoorVisualArgs['addOutlines'];
   tagDoorVisualPart: StyledDoorVisualArgs['tagDoorVisualPart'];
+  hasGrooves?: boolean;
+  groovePartId?: string | null;
+  grooveLinesCount?: number | null;
 };
 
 type CenterPanelMetrics = {
@@ -159,8 +162,9 @@ function buildStyledDoorFrame(args: CreateStyledMirrorDoorVisualArgs): {
     h: args.h,
     thickness: args.thickness,
     mat: frameMaterial,
-    hasGrooves: false,
-    groovePartId: null,
+    hasGrooves: args.hasGrooves === true,
+    groovePartId: args.groovePartId ?? null,
+    grooveLinesCount: args.grooveLinesCount ?? null,
     isSketch: args.isSketch,
     zSign: args.zSign,
   } as const;
@@ -189,6 +193,10 @@ export function createStyledMirrorDoorVisual(args: CreateStyledMirrorDoorVisualA
       isSketch: args.isSketch,
       mirrorLayout: args.mirrorLayout,
       addOutlines: args.addOutlines,
+      hasGrooves: args.hasGrooves === true,
+      groovePartId: args.groovePartId ?? null,
+      grooveLinesCount: args.grooveLinesCount ?? null,
+      tagDoorVisualPart: args.tagDoorVisualPart,
     });
   }
 

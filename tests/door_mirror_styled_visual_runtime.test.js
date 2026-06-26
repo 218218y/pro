@@ -536,3 +536,65 @@ test('createDoorVisual mounts explicitly sized inside mirrors on the back side o
     'sized inside mirror should be mounted outside the center panel back face'
   );
 });
+
+test('flat mirror door with an inside-only mirror keeps outside groove strips visible', () => {
+  const THREE = createThree();
+  const visual = createDoorVisual(
+    createDoorVisualApp(THREE),
+    0.7,
+    1.9,
+    0.02,
+    { kind: 'mirror' },
+    'flat',
+    true,
+    true,
+    null,
+    { kind: 'wood' },
+    1,
+    false,
+    [{ faceSign: -1 }],
+    'd1_left',
+    { grooveLinesCount: 2, renderPolicy: { sketchMode: false, addOutlines: null } }
+  );
+
+  const roles = collectRoles(visual);
+  const grooveRoles = roles.filter(role => role === 'door_groove_strip');
+  const mirrorPane = visual.children.find(child => child.userData?.__wpMirrorSurface === true);
+  const groovePanes = visual.children.filter(
+    child => child.userData?.__doorVisualRole === 'door_groove_strip'
+  );
+
+  assert.equal(grooveRoles.length, 2);
+  assert.ok(mirrorPane);
+  assert.equal(mirrorPane.userData.faceSign, -1);
+  assert.equal(mirrorPane.userData.faceSide, 'inside');
+  assert.ok(groovePanes.every(child => Number(child.position?.z || 0) > 0));
+});
+
+test('flat mirror door with an outside mirror keeps groove strips suppressed', () => {
+  const THREE = createThree();
+  const visual = createDoorVisual(
+    createDoorVisualApp(THREE),
+    0.7,
+    1.9,
+    0.02,
+    { kind: 'mirror' },
+    'flat',
+    true,
+    true,
+    null,
+    { kind: 'wood' },
+    1,
+    false,
+    null,
+    'd1_left',
+    { grooveLinesCount: 2, renderPolicy: { sketchMode: false, addOutlines: null } }
+  );
+
+  const roles = collectRoles(visual);
+  assert.equal(roles.filter(role => role === 'door_groove_strip').length, 0);
+  const mirrorPane = visual.children.find(child => child.userData?.__wpMirrorSurface === true);
+  assert.ok(mirrorPane);
+  assert.equal(mirrorPane.userData.faceSign, 1);
+  assert.equal(mirrorPane.userData.faceSide, 'outside');
+});

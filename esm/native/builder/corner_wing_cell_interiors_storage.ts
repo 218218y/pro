@@ -4,6 +4,7 @@ import {
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { resolveEffectiveDoorStyle } from '../features/door_style_overrides.js';
 import { readDoorTrimListForPart } from '../features/door_trim.js';
+import { hasMirrorSurfaceOnFace } from '../features/mirror_layout.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
 import { makeDrawerBoxPartId } from '../features/drawer_box_identity.js';
 import { CORNER_SHELF_GROUP_PART_ID, markShelfBoardUserData } from '../features/shelf_part_identity.js';
@@ -151,8 +152,13 @@ export function emitCornerWingExternalDrawers(
     const special = runtime.__resolveSpecial(id, curtain);
     const isMirror = special === 'mirror';
     const isGlass = special === 'glass';
+    const mirrorLayout = runtime.readMirrorLayout(id);
+    const hasOutsideMirrorSurface = isMirror && hasMirrorSurfaceOnFace(mirrorLayout, 1, 1);
     const hasGroove =
-      runtime.groovesEnabled && !isMirror && !isGlass && !!runtime.readScopedReaderAny(runtime.getGroove, id);
+      runtime.groovesEnabled &&
+      !hasOutsideMirrorSurface &&
+      !isGlass &&
+      !!runtime.readScopedReaderAny(runtime.getGroove, id);
     const doorStyleMap = runtime.readMap('doorStyleMap');
     const effectiveFrameStyle = resolveEffectiveDoorStyle(runtime.doorStyle, doorStyleMap, id);
 
@@ -185,7 +191,7 @@ export function emitCornerWingExternalDrawers(
       isMirror ? woodMat : runtime.materials.front,
       1,
       false,
-      runtime.readMirrorLayout(id),
+      mirrorLayout,
       id,
       isGlass ? { glassFrameStyle: effectiveFrameStyle } : null
     );

@@ -1,4 +1,4 @@
-import { readMirrorLayoutFaceSign } from '../features/mirror_layout.js';
+import { hasMirrorSurfaceOnFace, readMirrorLayoutFaceSign } from '../features/mirror_layout.js';
 import { createMirrorDoorVisual } from './visuals_and_contents_door_visual_mirror.js';
 import {
   createStyledFullMirrorDoorVisual,
@@ -106,6 +106,8 @@ export function createDoorVisual(
   const { tagDoorVisualPart } = createDoorVisualPartTagger({ groovePartId });
 
   if (isMirror) {
+    const hasOutsideMirrorSurface = hasMirrorSurfaceOnFace(mirrorLayout, zSign, zSign);
+    const hasOutsideGrooves = hasGrooves && !hasOutsideMirrorSurface;
     if (style === 'profile' || style === 'double_profile') {
       if (hasExplicitMirrorLayout(mirrorLayout)) {
         return createStyledMirrorDoorVisual({
@@ -122,6 +124,9 @@ export function createDoorVisual(
           mirrorLayout,
           addOutlines,
           tagDoorVisualPart,
+          hasGrooves: hasOutsideGrooves,
+          groovePartId,
+          grooveLinesCount: options?.grooveLinesCount ?? null,
         });
       }
 
@@ -143,6 +148,9 @@ export function createDoorVisual(
           mirrorLayout,
           addOutlines,
           tagDoorVisualPart,
+          hasGrooves: hasOutsideGrooves,
+          groovePartId,
+          grooveLinesCount: options?.grooveLinesCount ?? null,
         });
       }
     }
@@ -159,6 +167,10 @@ export function createDoorVisual(
       isSketch,
       mirrorLayout,
       addOutlines,
+      hasGrooves: hasOutsideGrooves,
+      groovePartId,
+      grooveLinesCount: options?.grooveLinesCount ?? null,
+      tagDoorVisualPart,
     });
   }
 

@@ -3,6 +3,7 @@ import { resolveConfiguredHandleColor } from './handle_finish_runtime.js';
 import { resolveHandleFinishPalette } from '../features/handle_finish_shared.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
 import { resolveEffectiveDoorStyle } from '../features/door_style_overrides.js';
+import { hasMirrorSurfaceOnFace } from '../features/mirror_layout.js';
 import type { BuilderRenderDoorDeps } from './render_door_ops_shared.js';
 import {
   buildRailGroup,
@@ -141,9 +142,11 @@ export function createApplySlidingDoorsOps(deps: BuilderRenderDoorDeps) {
       }
 
       const visualState = resolveSlidingDoorVisualState(cfg, slideID, getPartColorValue);
+      const mirrorLayout = resolveMirrorLayout(cfg, slideID);
+      const hasOutsideMirrorSurface = visualState.isMirror && hasMirrorSurfaceOnFace(mirrorLayout, 1, 1);
       const grooveKey = `groove_${slideID}`;
       const hasSlideGrooves =
-        isGroovesEnabled && !visualState.isMirror && !visualState.isGlass && groovesMap[grooveKey] != null;
+        isGroovesEnabled && !hasOutsideMirrorSurface && !visualState.isGlass && groovesMap[grooveKey] != null;
       const effectiveDoorStyleBase = resolveEffectiveDoorStyle(doorStyle, cfg.doorStyleMap, slideID);
       const effectiveDoorStyle = visualState.isGlass ? 'glass' : effectiveDoorStyleBase;
 
@@ -171,7 +174,7 @@ export function createApplySlidingDoorsOps(deps: BuilderRenderDoorDeps) {
           visualState.isMirror ? slideWoodMat : globalFrontMat,
           1,
           false,
-          resolveMirrorLayout(cfg, slideID),
+          mirrorLayout,
           slideID,
           visualState.isGlass ? { glassFrameStyle: effectiveDoorStyleBase } : null
         );

@@ -1,6 +1,6 @@
 import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { MirrorLayoutList } from '../../../types';
-import { readMirrorLayoutListForPart } from '../features/mirror_layout.js';
+import { hasMirrorSurfaceOnFace, readMirrorLayoutListForPart } from '../features/mirror_layout.js';
 import { readDoorTrimListForPart } from '../features/door_trim.js';
 import { resolveEffectiveDoorStyle } from '../features/door_style_overrides.js';
 import { isRemoveDoorModeFromSnapshot } from '../features/door_removal_visibility.js';
@@ -58,7 +58,11 @@ export function pushCornerConnectorDoorSegmentVisual(
     ctx.cfg0.isMultiColorMode && ctx.getCurtain ? readScopedReaderAny(ctx, ctx.getCurtain, partId) : null;
   const special = ctx.resolveSpecial(partId, curtain);
   const isMirror = special === 'mirror';
-  const hasGroove = ctx.groovesEnabled && !isMirror && !!readScopedReaderAny(ctx, ctx.getGroove, partId);
+  const mirrorLayout = readCornerConnectorMirrorLayout(ctx, partId);
+  const hasOutsideMirrorSurface =
+    isMirror && hasMirrorSurfaceOnFace(mirrorLayout, ctx.outwardZSign, ctx.outwardZSign);
+  const hasGroove =
+    ctx.groovesEnabled && !hasOutsideMirrorSurface && !!readScopedReaderAny(ctx, ctx.getGroove, partId);
   const style = special === 'glass' ? 'glass' : null;
   const effectiveFrameStyle = resolveEffectiveDoorStyle(ctx.doorStyle, readDoorStyleMap(ctx.cfg0), partId);
 
@@ -80,7 +84,7 @@ export function pushCornerConnectorDoorSegmentVisual(
     isMirror ? woodMat : ctx.frontMat,
     ctx.outwardZSign,
     true,
-    readCornerConnectorMirrorLayout(ctx, partId),
+    mirrorLayout,
     scopedPartId,
     special === 'glass' ? { glassFrameStyle: effectiveFrameStyle } : null
   );
