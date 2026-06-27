@@ -1692,6 +1692,10 @@
       "entry": "model_record/model_record_normalizer.js"
     },
     {
+      "file": "esm/native/services/viewer_measurement_tool.ts",
+      "entry": "shelf_part_identity.js"
+    },
+    {
       "file": "esm/native/ui/export_canvas.ts",
       "entry": "modules_configuration/modules_config_api.js"
     },

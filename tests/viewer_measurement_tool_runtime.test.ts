@@ -423,7 +423,15 @@ test('viewer measurement overlay is pushed to the camera-facing front plane and 
   assert.ok(frame);
   assert.equal(frame.material.depthTest, false);
   assert.equal(frame.material.depthWrite, false);
-  assert.ok(Math.abs(frame.geometry.points[0].z - 0.085) < 1e-9);
+  assert.ok(Math.abs(frame.geometry.points[0].z - 0.016) < 1e-9);
+  assert.equal(
+    wardrobe.children.filter(child => child.name === 'wp-viewer-measurement-selection-frame').length,
+    1
+  );
+  assert.equal(
+    wardrobe.children.filter(child => child.name === 'wp-viewer-measurement-selection-corner-ticks').length,
+    0
+  );
 
   const dimensionLine = wardrobe.children.find(
     child =>
@@ -432,4 +440,79 @@ test('viewer measurement overlay is pushed to the camera-facing front plane and 
   assert.ok(dimensionLine);
   assert.equal(dimensionLine.material.depthTest, false);
   assert.equal(dimensionLine.material.depthWrite, false);
+});
+
+test('viewer measurement ignores hangers, clothes, and rods as cavity split boundaries', () => {
+  const wardrobe = createGroup();
+  const selector = createMesh({
+    width: 1,
+    height: 2,
+    depth: 0.55,
+    userData: { isModuleSelector: true, moduleIndex: 0, __wpStack: 'top' },
+    opacity: 0,
+  });
+  const upperShelf = createMesh({
+    width: 0.9,
+    height: 0.02,
+    depth: 0.45,
+    y: 1.3,
+    userData: { partId: 'module_shelf_0_g2', __wpShelfGroupPartId: 'all_shelves' },
+  });
+  const hangerContent = createMesh({
+    width: 0.65,
+    height: 0.04,
+    depth: 0.45,
+    y: 0.62,
+    userData: { __kind: 'hanging_hanger', __wpMeasurementIgnoreInteriorBoundary: true },
+  });
+  const clothesContent = createMesh({
+    width: 0.7,
+    height: 0.05,
+    depth: 0.43,
+    y: 0.86,
+    userData: { __kind: 'hanging_cloth' },
+  });
+  const rod = createMesh({
+    width: 0.85,
+    height: 0.035,
+    depth: 0.42,
+    y: 0.95,
+    userData: { __kind: 'wardrobe_rod' },
+  });
+  wardrobe.add(selector);
+  wardrobe.add(upperShelf);
+  wardrobe.add(hangerContent);
+  wardrobe.add(clothesContent);
+  wardrobe.add(rod);
+  const labels: string[] = [];
+  const App = createApp(wardrobe, labels);
+
+  tryHandleViewerMeasurementClick({
+    App,
+    hitState: {
+      intersects: [
+        { object: selector, point: { x: 0, y: 0.55, z: 0.2 } },
+        { object: hangerContent, point: { x: 0, y: 0.55, z: 0.2 } },
+      ],
+      foundPartId: null,
+      foundModuleIndex: 0,
+      foundModuleStack: 'top',
+      effectiveDoorId: null,
+      foundDrawerId: null,
+      primaryHitObject: hangerContent,
+      doorHitObject: null,
+      doorHitGroup: null,
+      primaryHitPoint: { x: 0, y: 0.55, z: 0.2 },
+      doorHitPoint: null,
+      moduleHitY: 0.55,
+      doorHitY: null,
+      primaryHitY: 0.55,
+      hitIdentity: { moduleIndex: 0 } as any,
+      hitUserData: hangerContent.userData,
+    },
+  });
+
+  assert.ok(labels.includes('129'));
+  assert.ok(!labels.includes('24'));
+  assert.ok(!labels.includes('32'));
 });

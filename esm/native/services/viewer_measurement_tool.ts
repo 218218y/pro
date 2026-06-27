@@ -28,9 +28,6 @@ export const VIEWER_MEASUREMENT_MODE_ID = 'measure';
 const VIEWER_MEASUREMENT_CACHE_KEY = '__wpViewerMeasurementOverlay';
 const MIN_MEASURABLE_EDGE_M = 0.005;
 const FRONT_Z_EPSILON_M = 0.006;
-const FRONT_OUTSET_MIN_M = 0.075;
-const FRONT_OUTSET_MAX_M = 0.14;
-const FRONT_OUTSET_DEPTH_RATIO = 0.18;
 const OVERLAY_RENDER_ORDER = 10040;
 const GUIDE_OFFSET_M = 0.045;
 const SIDE_GUIDE_OFFSET_M = 0.055;
@@ -134,7 +131,7 @@ function isShelfLikeObject(value: unknown): boolean {
 
 function shouldSkipDirectIntersectionObject(value: unknown): boolean {
   const obj = asMeasurableObject(value);
-  if (!obj || isDecorativeObject(obj)) return true;
+  if (!obj || isDecorativeObject(obj) || isMeasurementPassiveFittingObject(obj)) return true;
   const ud = readUserData(obj);
   if (ud?.isModuleSelector || ud?.__ignoreRaycast) return true;
   return isFullyTransparentMaterialObject(obj);
@@ -156,6 +153,68 @@ function sameModuleKey(a: unknown, b: unknown): boolean {
 function isDecorativeObject(value: unknown): boolean {
   const rec = asMeasurableObject(value);
   return !!rec && (rec.type === 'LineSegments' || rec.type === 'Line' || rec.type === 'Sprite');
+}
+
+function readUserDataKind(userData: UnknownRecord | null): string {
+  const raw = userData?.__kind ?? userData?.kind ?? userData?.type;
+  return raw == null ? '' : String(raw).trim().toLowerCase();
+}
+
+function isMeasurementPassiveFittingUserData(userData: UnknownRecord | null): boolean {
+  if (!userData) return false;
+  if (userData.__wpMeasurementIgnoreInteriorBoundary === true) return true;
+
+  const kind = readUserDataKind(userData);
+  if (
+    kind.startsWith('hanging_') ||
+    kind.includes('hanger') ||
+    kind.includes('cloth') ||
+    kind.includes('clothes') ||
+    kind.includes('wardrobe_rod') ||
+    kind.includes('closet_rod') ||
+    kind === 'rod'
+  ) {
+    return true;
+  }
+
+  const partId = readPartIdFromUserData(userData)?.toLowerCase() || '';
+  return (
+    partId.includes('hanger') ||
+    partId.includes('hanging') ||
+    partId.includes('clothes') ||
+    partId.includes('cloth') ||
+    /(^|[_-])rod($|[_-])/.test(partId) ||
+    partId.endsWith('_rod') ||
+    partId.startsWith('rod_')
+  );
+}
+
+function hasPassiveFittingAncestor(value: unknown): boolean {
+  let current = asMeasurableObject(value);
+  while (current) {
+    if (isMeasurementPassiveFittingUserData(readUserData(current))) return true;
+    current = asMeasurableObject(current.parent);
+  }
+  return false;
+}
+
+function hasCylinderGeometryParameters(value: unknown): boolean {
+  const geometry = isRecord(value) ? value.geometry : null;
+  const params = isRecord(geometry) && isRecord(geometry.parameters) ? geometry.parameters : null;
+  if (!params) return false;
+  return (
+    (readFiniteNumber(params, 'radiusTop') != null ||
+      readFiniteNumber(params, 'radiusBottom') != null ||
+      readFiniteNumber(params, 'radius') != null) &&
+    readFiniteNumber(params, 'height') != null
+  );
+}
+
+function isMeasurementPassiveFittingObject(value: unknown): boolean {
+  if (hasPassiveFittingAncestor(value)) return true;
+  const obj = asMeasurableObject(value);
+  if (!obj) return false;
+  return hasCylinderGeometryParameters(obj) && !isShelfLikeObject(obj);
 }
 
 function readOverlayState(App: AppContainer): MeasurementOverlayState | null {
@@ -408,7 +467,7 @@ function readModuleInteriorBox(args: {
     const objModule = ud?.moduleIndex ?? ud?.__wpSketchModuleKey;
     if (objModule != null && !sameModuleKey(objModule, moduleKey)) return;
     if (ud?.isModuleSelector || ud?.__wpViewerMeasurementOverlay || ud?.__ignoreRaycast) return;
-    if (isBackPanelLike(obj)) return;
+    if (isBackPanelLike(obj) || isMeasurementPassiveFittingObject(obj)) return;
 
     const box = __wp_measureObjectLocalBox(App, obj, wardrobeGroup);
     if (!box) return;
@@ -549,11 +608,7 @@ function readMeasurementFace(args: {
   }
 
   const faceZ = sign >= 0 ? maxZ : minZ;
-  const frontOutset = Math.min(
-    FRONT_OUTSET_MAX_M,
-    Math.max(FRONT_OUTSET_MIN_M, Math.abs(box.depth) * FRONT_OUTSET_DEPTH_RATIO, FRONT_Z_EPSILON_M)
-  );
-  return { z: faceZ + sign * frontOutset, sign };
+  return { z: faceZ + sign * FRONT_Z_EPSILON_M, sign };
 }
 
 function addTrackedLine(args: {
@@ -724,32 +779,6 @@ function addSelectionFrame(args: {
       vector(THREE, maxX, maxY, z),
       vector(THREE, minX, maxY, z),
       vector(THREE, minX, minY, z),
-    ],
-  });
-
-  const tick = Math.min(0.045, Math.max(0.016, Math.min(box.width, box.height) * 0.08));
-  addTrackedLine({
-    THREE,
-    wardrobeGroup,
-    objects,
-    name: 'wp-viewer-measurement-selection-corner-ticks',
-    points: [
-      vector(THREE, minX, minY, z),
-      vector(THREE, minX + tick, minY, z),
-      vector(THREE, minX, minY, z),
-      vector(THREE, minX, minY + tick, z),
-      vector(THREE, maxX, minY, z),
-      vector(THREE, maxX - tick, minY, z),
-      vector(THREE, maxX, minY, z),
-      vector(THREE, maxX, minY + tick, z),
-      vector(THREE, maxX, maxY, z),
-      vector(THREE, maxX - tick, maxY, z),
-      vector(THREE, maxX, maxY, z),
-      vector(THREE, maxX, maxY - tick, z),
-      vector(THREE, minX, maxY, z),
-      vector(THREE, minX + tick, maxY, z),
-      vector(THREE, minX, maxY, z),
-      vector(THREE, minX, maxY - tick, z),
     ],
   });
 }

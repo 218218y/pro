@@ -7,6 +7,16 @@ import {
   type AppAwareAddRealisticHangerFn,
 } from './visuals_contents_shared.js';
 
+function markHangerFitting(obj: unknown, kind: string): void {
+  if (!obj || typeof obj !== 'object') return;
+  const rec = obj as { userData?: Record<string, unknown> };
+  rec.userData = {
+    ...(rec.userData || {}),
+    __kind: kind,
+    __wpMeasurementIgnoreInteriorBoundary: true,
+  };
+}
+
 export const addRealisticHanger: AppAwareAddRealisticHangerFn = (
   App,
   rodX,
@@ -24,6 +34,7 @@ export const addRealisticHanger: AppAwareAddRealisticHangerFn = (
 
   const dims = CONTENT_VISUAL_DIMENSIONS.hanger;
   const hangerGroup = new THREE.Group();
+  markHangerFitting(hangerGroup, 'single_hanger_group');
   const woodMat = new THREE.MeshStandardMaterial({ color: 0xeaddcf, roughness: 0.7, metalness: 0.1 });
   const metalMat = new THREE.MeshStandardMaterial({ color: 0xc0c0c0, roughness: 0.3, metalness: 0.9 });
 
@@ -35,6 +46,7 @@ export const addRealisticHanger: AppAwareAddRealisticHangerFn = (
     Math.PI * dims.hookArcMultiplier
   );
   const hook = new THREE.Mesh(hookGeo, metalMat);
+  markHangerFitting(hook, 'single_hanger_hook');
   hook.rotation.y = Math.PI;
   hook.position.set(0, dims.hookYOffsetM, 0);
   hangerGroup.add(hook);
@@ -43,6 +55,7 @@ export const addRealisticHanger: AppAwareAddRealisticHangerFn = (
     new THREE.CylinderGeometry(dims.stemRadiusM, dims.stemRadiusM, dims.stemHeightM, 8),
     metalMat
   );
+  markHangerFitting(stem, 'single_hanger_stem');
   stem.position.set(0, dims.stemYOffsetM, 0);
   hangerGroup.add(stem);
 
@@ -76,6 +89,7 @@ export const addRealisticHanger: AppAwareAddRealisticHangerFn = (
     }),
     woodMat
   );
+  markHangerFitting(body, 'single_hanger_body');
   body.position.set(0, 0, -dims.bodyBackOffsetM);
   addOutlines?.(body);
   hangerGroup.add(body);
@@ -89,6 +103,7 @@ export const addRealisticHanger: AppAwareAddRealisticHangerFn = (
     ),
     woodMat
   );
+  markHangerFitting(bar, 'single_hanger_bar');
   bar.rotation.z = Math.PI / 2;
   bar.position.set(0, -shoulderHeight - dims.barYOffsetM, 0);
   hangerGroup.add(bar);

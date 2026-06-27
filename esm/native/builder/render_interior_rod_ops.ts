@@ -200,6 +200,11 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
     if (!rod.position || !rod.rotation || typeof rod.position.set !== 'function') return false;
     rod.rotation.z = Math.PI / 2;
     rod.position.set(internalCenterX, yPos, internalZ);
+    rod.userData = {
+      ...(rod.userData || {}),
+      __kind: 'wardrobe_rod',
+      __wpMeasurementIgnoreInteriorBoundary: true,
+    };
     if (typeof addOutlines === 'function') {
       addOutlines(rod);
     }

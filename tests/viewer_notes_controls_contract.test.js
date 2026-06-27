@@ -21,9 +21,11 @@ test('viewer overlay exposes notes edit and visibility controls without duplicat
   assert.match(controls, /viewer\.notes\.drawMode\.toggle/);
   assert.match(controls, /viewer\.notes\.visibility\.toggle/);
   assert.match(controls, /viewer\.contents\.visibility\.toggle/);
+  assert.match(controls, /viewer\.measurement\.mode\.toggle/);
   assert.match(controls, /data-testid="viewer-note-draw-mode-button"/);
   assert.match(controls, /data-testid="viewer-notes-visibility-button"/);
   assert.match(controls, /data-testid="viewer-contents-toggle-button"/);
+  assert.match(controls, /data-testid="viewer-measurement-toggle-button"/);
   assert.match(
     controls,
     /setUiShowContents\(app, next, \{ source: 'react:viewerContentsControls:visibility', immediate: true \}\)/
@@ -34,7 +36,9 @@ test('viewer overlay exposes notes edit and visibility controls without duplicat
     'notes button group must be first in the RTL row so it stays on the top-right and contents stays to its left'
   );
   assert.match(controls, /wp-viewer-contents-btn/);
+  assert.match(controls, /wp-viewer-measurement-btn/);
   assert.match(controls, /fa-tshirt/);
+  assert.match(controls, /fa-ruler-combined/);
 
   assert.match(
     css,
@@ -46,9 +50,10 @@ test('viewer overlay exposes notes edit and visibility controls without duplicat
   );
   assert.match(
     css,
-    /body\.wp-ui-react \.cam-btn\.wp-viewer-note-btn,\s*body\.wp-ui-react \.cam-btn\.wp-viewer-contents-btn \{[\s\S]*?width:\s*42px;[\s\S]*?height:\s*42px;[\s\S]*?box-sizing:\s*border-box;[\s\S]*?padding:\s*0;[\s\S]*?border-radius:\s*50%;/
+    /body\.wp-ui-react \.cam-btn\.wp-viewer-note-btn,\s*body\.wp-ui-react \.cam-btn\.wp-viewer-contents-btn,\s*body\.wp-ui-react \.cam-btn\.wp-viewer-measurement-btn \{[\s\S]*?width:\s*42px;[\s\S]*?height:\s*42px;[\s\S]*?box-sizing:\s*border-box;[\s\S]*?padding:\s*0;[\s\S]*?border-radius:\s*50%;/
   );
   assert.match(css, /body\.wp-ui-react \.cam-btn\.wp-viewer-contents-btn\.is-on/);
+  assert.match(css, /body\.wp-ui-react \.cam-btn\.wp-viewer-measurement-btn\.is-on/);
   assert.match(css, /background:\s*#eff6ff;/);
   assert.match(
     css,
