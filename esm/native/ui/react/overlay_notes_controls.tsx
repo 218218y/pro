@@ -2,14 +2,18 @@ import { useCallback, useEffect, useState } from 'react';
 import type { MouseEvent as ReactMouseEvent, ReactElement } from 'react';
 
 import {
+  VIEWER_MEASUREMENT_MODE_ID,
+  clearViewerMeasurementOverlay,
   getUiNotesServiceMaybe,
+  getModeId,
   isNotesScreenDrawMode,
   runPerfAction,
   subscribeNotesDrawMode,
 } from '../../services/api.js';
 
+import { enterPrimaryMode, exitPrimaryMode } from './actions/modes_actions.js';
 import { setUiNotesEnabled, setUiShowContents } from './actions/store_actions.js';
-import { useApp, useMeta, useUiFeedback, useUiSelector } from './hooks.js';
+import { useApp, useMeta, useModeSelector, useUiFeedback, useUiSelector } from './hooks.js';
 import { reportOverlayAppNonFatal } from './overlay_app_shared.js';
 
 type UiNotesControlsLike = {
@@ -66,7 +70,14 @@ export function ViewerNotesControls(): ReactElement {
   const fb = useUiFeedback();
   const notesEnabled = useUiSelector(ui => !!ui.notesEnabled);
   const showContents = useUiSelector(ui => !!ui.showContents);
+  const measurementModeId = getModeId('MEASURE') || VIEWER_MEASUREMENT_MODE_ID;
+  const primaryMode = useModeSelector(mode => String(mode.primary || 'none'));
+  const measurementMode = primaryMode === measurementModeId;
   const notesDrawMode = useViewerNotesDrawMode();
+
+  useEffect(() => {
+    if (!measurementMode) clearViewerMeasurementOverlay(app, true);
+  }, [app, measurementMode]);
 
   const setNotesVisible = useCallback(
     (on: boolean) => {
@@ -109,6 +120,34 @@ export function ViewerNotesControls(): ReactElement {
       { detail: { checked: next } }
     );
   }, [app, showContents]);
+
+  const toggleMeasurementMode = useCallback(() => {
+    const next = !measurementMode;
+    runPerfAction(
+      app,
+      'viewer.measurement.mode.toggle',
+      () => {
+        if (next) {
+          enterPrimaryMode(app, measurementModeId, {
+            preserveDoors: true,
+            cursor: 'crosshair',
+            toast: 'מצב מדידה: לחץ על חלק או חלל בארון כדי לראות רוחב וגובה',
+            source: 'react:viewerMeasurementControls:enter',
+            immediate: true,
+          });
+          return;
+        }
+
+        exitPrimaryMode(app, measurementModeId, {
+          preserveDoors: true,
+          source: 'react:viewerMeasurementControls:exit',
+          immediate: true,
+        });
+        clearViewerMeasurementOverlay(app, true);
+      },
+      { detail: { checked: next } }
+    );
+  }, [app, measurementMode, measurementModeId]);
 
   const toggleNotesVisibility = useCallback(() => {
     const next = !notesEnabled;
@@ -176,6 +215,21 @@ export function ViewerNotesControls(): ReactElement {
           }}
         >
           <i className="fas fa-tshirt" aria-hidden="true" />
+        </button>
+
+        <button
+          type="button"
+          className={`cam-btn wp-viewer-measurement-btn hint-bottom${measurementMode ? ' is-on' : ''}`}
+          data-tooltip={measurementMode ? 'סיום סרגל מדידה' : 'סרגל מדידה'}
+          aria-label={measurementMode ? 'סיום סרגל מדידה' : 'סרגל מדידה'}
+          aria-pressed={measurementMode}
+          data-testid="viewer-measurement-toggle-button"
+          onClick={(event: ReactMouseEvent<HTMLButtonElement>) => {
+            stopViewerNotesControlEvent(event);
+            toggleMeasurementMode();
+          }}
+        >
+          <i className="fas fa-ruler-combined" aria-hidden="true" />
         </button>
       </div>
     </div>

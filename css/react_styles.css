@@ -4306,7 +4306,8 @@ body.wp-ui-react .wp-viewer-notes-wrap {
 }
 
 body.wp-ui-react .cam-btn.wp-viewer-note-btn,
-body.wp-ui-react .cam-btn.wp-viewer-contents-btn {
+body.wp-ui-react .cam-btn.wp-viewer-contents-btn,
+body.wp-ui-react .cam-btn.wp-viewer-measurement-btn {
   width: 42px;
   min-width: 42px;
   max-width: 42px;
@@ -4324,7 +4325,8 @@ body.wp-ui-react .cam-btn.wp-viewer-contents-btn {
 }
 
 body.wp-ui-react .cam-btn.wp-viewer-note-btn.is-on,
-body.wp-ui-react .cam-btn.wp-viewer-contents-btn.is-on {
+body.wp-ui-react .cam-btn.wp-viewer-contents-btn.is-on,
+body.wp-ui-react .cam-btn.wp-viewer-measurement-btn.is-on {
   background: #eff6ff;
   border-color: #3b82f6;
   color: #1d4ed8;
@@ -4332,7 +4334,8 @@ body.wp-ui-react .cam-btn.wp-viewer-contents-btn.is-on {
 }
 
 body.wp-ui-react .cam-btn.wp-viewer-note-btn.is-on:hover,
-body.wp-ui-react .cam-btn.wp-viewer-contents-btn.is-on:hover {
+body.wp-ui-react .cam-btn.wp-viewer-contents-btn.is-on:hover,
+body.wp-ui-react .cam-btn.wp-viewer-measurement-btn.is-on:hover {
   background: #dbeafe;
   border-color: #3b82f6;
   color: #1d4ed8;

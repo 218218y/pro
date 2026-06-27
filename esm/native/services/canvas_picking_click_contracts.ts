@@ -55,6 +55,7 @@ export type CanvasPickingClickModeState = {
   __isManualLayoutMode: boolean;
   __isBraceShelvesMode: boolean;
   __isCellDimsMode: boolean;
+  __isMeasureMode: boolean;
   __isExtDrawerEditMode: boolean;
   __isIntDrawerEditMode: boolean;
   __isDividerEditMode: boolean;

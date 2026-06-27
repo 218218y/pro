@@ -14,6 +14,7 @@ export function resolveCanvasPickingClickModeState(App: AppContainer): CanvasPic
     __isManualLayoutMode: __pm === (getModeId('MANUAL_LAYOUT') || 'manual_layout'),
     __isBraceShelvesMode: __pm === (getModeId('BRACE_SHELVES') || 'brace_shelves'),
     __isCellDimsMode: __pm === (getModeId('CELL_DIMS') || 'cell_dims'),
+    __isMeasureMode: __pm === (getModeId('MEASURE') || 'measure'),
     __isExtDrawerEditMode: __pm === (getModeId('EXT_DRAWER') || 'ext_drawer'),
     __isIntDrawerEditMode: false,
     __isDividerEditMode: __pm === (getModeId('DIVIDER') || 'divider'),

@@ -12,6 +12,7 @@ import { routeCanvasPickingClick } from './canvas_picking_click_route.js';
 import { syncCanvasPickingViewportMatrices } from './canvas_picking_viewport_matrices.js';
 import { readSplitVariant } from './canvas_picking_door_edit_shared.js';
 import { tryHandleCanvasDoorCustomSplitScreenRemoveClick } from './canvas_picking_door_split_click_custom.js';
+import { tryHandleViewerMeasurementClick } from './viewer_measurement_tool.js';
 
 export function __coreHandleCanvasClickNDC(App: AppContainer, ndcX: number, ndcY: number): void {
   const { raycaster: __wpRaycaster, mouse: __wpMouse } = __wp_ensurePickingRefs(App);
@@ -38,6 +39,10 @@ export function __coreHandleCanvasClickNDC(App: AppContainer, ndcX: number, ndcY
     mouse: __wpMouse,
   });
   if (!hitState) {
+    if (modeState.__isMeasureMode) {
+      tryHandleViewerMeasurementClick({ App, hitState: null });
+      return;
+    }
     if (
       modeState.__isSplitEditMode &&
       readSplitVariant(App) === 'custom' &&

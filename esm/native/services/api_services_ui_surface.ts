@@ -82,3 +82,9 @@ export {
 } from '../runtime/notes_access.js';
 
 export { beginUiBootSession, clearUiBootRuntimeState, installUiBootReadyTimers } from './ui_boot_runtime.js';
+
+export {
+  VIEWER_MEASUREMENT_MODE_ID,
+  clearViewerMeasurementOverlay,
+  tryHandleViewerMeasurementClick,
+} from './viewer_measurement_tool.js';
