@@ -8,12 +8,18 @@ import type {
 import type { Vector3Like } from '../../../types/three_like.js';
 
 import { getBuilderRenderOps } from '../runtime/builder_service_access.js';
+import { isShelfBoardPartId } from '../features/shelf_part_identity.js';
 import { getInternalGridMap } from '../runtime/cache_access.js';
 import { runPlatformActivityRenderTouch } from '../runtime/platform_access.js';
-import { getWardrobeGroup, readRenderCacheValue, writeRenderCacheValue } from '../runtime/render_access.js';
+import {
+  getCamera,
+  getWardrobeGroup,
+  readRenderCacheValue,
+  writeRenderCacheValue,
+} from '../runtime/render_access.js';
 import { getThreeMaybe } from '../runtime/three_access.js';
 import type { CanvasPickingClickHitState } from './canvas_picking_click_contracts.js';
-import { __wp_reportPickingIssue } from './canvas_picking_core_helpers.js';
+import { __wp_isDoorOrDrawerLikePartId, __wp_reportPickingIssue } from './canvas_picking_core_helpers.js';
 import { __wp_measureObjectLocalBox, __wp_projectWorldPointToLocal } from './canvas_picking_local_helpers.js';
 import type { HitObjectLike } from './canvas_picking_engine.js';
 
@@ -22,6 +28,10 @@ export const VIEWER_MEASUREMENT_MODE_ID = 'measure';
 const VIEWER_MEASUREMENT_CACHE_KEY = '__wpViewerMeasurementOverlay';
 const MIN_MEASURABLE_EDGE_M = 0.005;
 const FRONT_Z_EPSILON_M = 0.006;
+const FRONT_OUTSET_MIN_M = 0.075;
+const FRONT_OUTSET_MAX_M = 0.14;
+const FRONT_OUTSET_DEPTH_RATIO = 0.18;
+const OVERLAY_RENDER_ORDER = 10040;
 const GUIDE_OFFSET_M = 0.045;
 const SIDE_GUIDE_OFFSET_M = 0.055;
 
@@ -74,6 +84,68 @@ function readFiniteNumber(value: unknown, key: string): number | null {
   const rec = isRecord(value) ? value : null;
   const raw = rec ? rec[key] : null;
   return typeof raw === 'number' && Number.isFinite(raw) ? raw : null;
+}
+
+function readPartIdFromUserData(userData: UnknownRecord | null): string | null {
+  const raw = userData?.partId ?? userData?.pid;
+  if (raw == null) return null;
+  const text = String(raw).trim();
+  return text || null;
+}
+
+function readObjectPartId(value: unknown): string | null {
+  return readPartIdFromUserData(readUserData(value));
+}
+
+function hasDirectMeasurableUserData(userData: UnknownRecord | null): boolean {
+  if (!userData || userData.isModuleSelector || userData.__ignoreRaycast) return false;
+  return !!(userData.partId ?? userData.pid ?? userData.surfaceId ?? userData.drawerId);
+}
+
+function readMaterialRecords(value: unknown): UnknownRecord[] {
+  if (Array.isArray(value)) return value.filter(isRecord) as UnknownRecord[];
+  return isRecord(value) ? [value] : [];
+}
+
+function isFullyTransparentMaterialObject(value: unknown): boolean {
+  const rec = isRecord(value) ? value : null;
+  const materials = readMaterialRecords(rec?.material);
+  if (!materials.length) return false;
+  const visible = materials.filter(material => material.visible !== false);
+  return visible.length > 0 && visible.every(material => material.opacity === 0);
+}
+
+function isBackPanelLike(value: unknown): boolean {
+  const ud = readUserData(value);
+  if (!ud) return false;
+  if (ud.kind === 'backPanel' || ud.__wpWoodBackPanel === true) return true;
+  return false;
+}
+
+function isShelfLikeUserData(userData: UnknownRecord | null): boolean {
+  if (!userData) return false;
+  const partId = readPartIdFromUserData(userData);
+  return !!userData.__wpShelfGroupPartId || (partId != null && isShelfBoardPartId(partId));
+}
+
+function isShelfLikeObject(value: unknown): boolean {
+  return isShelfLikeUserData(readUserData(value));
+}
+
+function shouldSkipDirectIntersectionObject(value: unknown): boolean {
+  const obj = asMeasurableObject(value);
+  if (!obj || isDecorativeObject(obj)) return true;
+  const ud = readUserData(obj);
+  if (ud?.isModuleSelector || ud?.__ignoreRaycast) return true;
+  return isFullyTransparentMaterialObject(obj);
+}
+
+function hasCavityBackgroundTarget(value: unknown): boolean {
+  const ud = readUserData(value);
+  if (!ud) return true;
+  if (isBackPanelLike(value)) return true;
+  if (ud.isModuleSelector) return true;
+  return !hasDirectMeasurableUserData(ud);
 }
 
 function sameModuleKey(a: unknown, b: unknown): boolean {
@@ -210,25 +282,68 @@ function findTaggedAncestor(start: unknown, predicate: (userData: UnknownRecord)
   return null;
 }
 
+function findModuleSelectorTarget(hitState: CanvasPickingClickHitState): unknown | null {
+  for (let i = 0; i < hitState.intersects.length; i += 1) {
+    const obj = asMeasurableObject(hitState.intersects[i]?.object);
+    if (!obj || !isModuleSelector(obj)) continue;
+    const ud = readUserData(obj);
+    if (hitState.foundModuleIndex == null || sameModuleKey(ud?.moduleIndex, hitState.foundModuleIndex)) {
+      return obj;
+    }
+  }
+  return null;
+}
+
+function findNearestDirectPartTarget(hitState: CanvasPickingClickHitState): unknown | null {
+  if (hitState.doorHitGroup) return hitState.doorHitGroup;
+
+  for (let i = 0; i < hitState.intersects.length; i += 1) {
+    const hitObj = asMeasurableObject(hitState.intersects[i]?.object);
+    if (shouldSkipDirectIntersectionObject(hitObj)) continue;
+
+    if (hitState.foundDrawerId) {
+      const drawerOwner = findTaggedAncestor(hitObj, ud => {
+        const id = ud.drawerId ?? ud.partId ?? ud.pid;
+        return id != null && String(id) === String(hitState.foundDrawerId);
+      });
+      if (drawerOwner) return drawerOwner;
+    }
+
+    const taggedOwner = findTaggedAncestor(hitObj, hasDirectMeasurableUserData);
+    if (!taggedOwner) continue;
+    if (isBackPanelLike(taggedOwner)) continue;
+
+    const partId = readObjectPartId(taggedOwner);
+    if (partId && (__wp_isDoorOrDrawerLikePartId(partId) || isShelfBoardPartId(partId))) {
+      return taggedOwner;
+    }
+
+    if (isShelfLikeObject(taggedOwner)) return taggedOwner;
+
+    const taggedUd = readUserData(taggedOwner);
+    if (taggedUd?.surfaceId || taggedUd?.partId || taggedUd?.pid) return taggedOwner;
+  }
+
+  return null;
+}
+
 function resolveMeasurementTarget(hitState: CanvasPickingClickHitState): unknown | null {
+  const directTarget = findNearestDirectPartTarget(hitState);
+  if (directTarget) return directTarget;
+
   const primary = asMeasurableObject(hitState.primaryHitObject);
-  if (!primary || isDecorativeObject(primary)) return null;
+  if (!primary || isDecorativeObject(primary)) return findModuleSelectorTarget(hitState);
 
   const primaryUd = readUserData(primary);
   if (primaryUd?.isModuleSelector) return primary;
 
-  if (hitState.doorHitGroup) return hitState.doorHitGroup;
-
-  if (hitState.foundDrawerId) {
-    const drawerOwner = findTaggedAncestor(primary, ud => {
-      const id = ud.drawerId ?? ud.partId ?? ud.pid;
-      return id != null && String(id) === String(hitState.foundDrawerId);
-    });
-    if (drawerOwner) return drawerOwner;
+  if (hitState.foundModuleIndex != null && hasCavityBackgroundTarget(primary)) {
+    return findModuleSelectorTarget(hitState) || primary;
   }
 
   const taggedOwner = findTaggedAncestor(primary, ud => !!(ud.partId ?? ud.pid ?? ud.surfaceId));
-  return taggedOwner || primary;
+  if (taggedOwner && !isBackPanelLike(taggedOwner)) return taggedOwner;
+  return findModuleSelectorTarget(hitState) || taggedOwner || primary;
 }
 
 function isModuleSelector(value: unknown): boolean {
@@ -243,21 +358,24 @@ function readModuleInteriorBox(args: {
   wardrobeGroup: Object3DLike;
 }): LocalMeasurementBox | null {
   const { App, target, hitState, wardrobeGroup } = args;
-  if (!isModuleSelector(target) || hitState.foundModuleIndex == null) return null;
+  if (hitState.foundModuleIndex == null) return null;
 
-  const selectorBox = readMeasuredBox(App, target, wardrobeGroup);
-  if (!selectorBox) return null;
+  const selectorTarget = isModuleSelector(target) ? target : findModuleSelectorTarget(hitState);
+  const selectorBox = selectorTarget ? readMeasuredBox(App, selectorTarget, wardrobeGroup) : null;
+  const fallbackBox = selectorBox || readMeasuredBox(App, target, wardrobeGroup);
 
   const grid = getInternalGridMap(App, hitState.foundModuleStack === 'bottom');
   const info = isRecord(grid) ? grid[String(hitState.foundModuleIndex)] : null;
-  if (!isRecord(info)) return selectorBox;
+  const gridInfo = isRecord(info) ? info : null;
 
-  const bottomY = readFiniteNumber(info, 'effectiveBottomY');
-  const topY = readFiniteNumber(info, 'effectiveTopY');
-  const innerW = readFiniteNumber(info, 'innerW') ?? Math.max(0, selectorBox.width);
-  const internalCenterX = readFiniteNumber(info, 'internalCenterX') ?? selectorBox.centerX;
-  const internalDepth = readFiniteNumber(info, 'internalDepth') ?? selectorBox.depth;
-  const internalZ = readFiniteNumber(info, 'internalZ') ?? selectorBox.centerZ;
+  const fallbackBottomY = fallbackBox ? fallbackBox.centerY - fallbackBox.height / 2 : null;
+  const fallbackTopY = fallbackBox ? fallbackBox.centerY + fallbackBox.height / 2 : null;
+  const bottomY = readFiniteNumber(gridInfo, 'effectiveBottomY') ?? fallbackBottomY;
+  const topY = readFiniteNumber(gridInfo, 'effectiveTopY') ?? fallbackTopY;
+  const innerW = readFiniteNumber(gridInfo, 'innerW') ?? Math.max(0, fallbackBox?.width ?? 0);
+  const internalCenterX = readFiniteNumber(gridInfo, 'internalCenterX') ?? fallbackBox?.centerX ?? 0;
+  const internalDepth = readFiniteNumber(gridInfo, 'internalDepth') ?? Math.max(0, fallbackBox?.depth ?? 0);
+  const internalZ = readFiniteNumber(gridInfo, 'internalZ') ?? fallbackBox?.centerZ ?? 0;
   if (bottomY == null || topY == null || !(topY > bottomY) || !(innerW > 0) || !(internalDepth > 0)) {
     return selectorBox;
   }
@@ -275,21 +393,22 @@ function readModuleInteriorBox(args: {
     };
   }
 
-  const woodThick = readFiniteNumber(info, 'woodThick') ?? 0.017;
-  const minShelfWidth = Math.max(0.02, innerW * 0.45);
-  const minShelfDepth = Math.max(0.02, internalDepth * 0.2);
-  const maxShelfHeight = Math.max(0.085, woodThick * 3.2);
+  const woodThick = readFiniteNumber(gridInfo, 'woodThick') ?? 0.017;
+  const minShelfWidth = Math.max(0.02, innerW * 0.35);
+  const minShelfDepth = Math.max(0.015, internalDepth * 0.12);
+  const maxShelfHeight = Math.max(0.09, woodThick * 4.2);
   const moduleKey = hitState.foundModuleIndex;
   const moduleMinX = internalCenterX - innerW / 2;
   const moduleMaxX = internalCenterX + innerW / 2;
   const bounds: number[] = [bottomY, topY];
 
   const visit = (obj: Object3DLike): void => {
-    if (!obj || obj === target || isDecorativeObject(obj)) return;
+    if (!obj || obj === target || obj === selectorTarget || isDecorativeObject(obj)) return;
     const ud = readUserData(obj);
-    const objModule = ud?.moduleIndex;
+    const objModule = ud?.moduleIndex ?? ud?.__wpSketchModuleKey;
     if (objModule != null && !sameModuleKey(objModule, moduleKey)) return;
     if (ud?.isModuleSelector || ud?.__wpViewerMeasurementOverlay || ud?.__ignoreRaycast) return;
+    if (isBackPanelLike(obj)) return;
 
     const box = __wp_measureObjectLocalBox(App, obj, wardrobeGroup);
     if (!box) return;
@@ -299,8 +418,15 @@ function readModuleInteriorBox(args: {
     const minX = box.centerX - box.width / 2;
     const maxX = box.centerX + box.width / 2;
     const overlapX = Math.max(0, Math.min(moduleMaxX, maxX) - Math.max(moduleMinX, minX));
-    if (overlapX < innerW * 0.35) return;
-    if (box.width < minShelfWidth || box.depth < minShelfDepth || box.height > maxShelfHeight) return;
+    if (overlapX < innerW * 0.2) return;
+
+    const shelfLike = isShelfLikeUserData(ud);
+    if (!shelfLike) {
+      if (box.width < minShelfWidth || box.depth < minShelfDepth || box.height > maxShelfHeight) return;
+    } else if (box.height > Math.max(maxShelfHeight, woodThick * 5.5)) {
+      return;
+    }
+
     bounds.push(Math.max(bottomY, minY), Math.min(topY, maxY));
   };
 
@@ -367,24 +493,67 @@ function readMeasuredBox(
   return { centerX, centerY, centerZ, width, height, depth };
 }
 
-function readFrontZ(args: {
+function readVectorPosition(value: unknown): { x: number; y: number; z: number } | null {
+  const rec = isRecord(value) ? value : null;
+  const x = readFiniteNumber(rec, 'x');
+  const y = readFiniteNumber(rec, 'y');
+  const z = readFiniteNumber(rec, 'z');
+  return x == null || y == null || z == null ? null : { x, y, z };
+}
+
+function readCameraWorldPosition(args: { App: AppContainer; THREE: OverlayThree }): Vector3Like | null {
+  const { App, THREE } = args;
+  const camera = getCamera(App);
+  const cameraRec = isRecord(camera) ? camera : null;
+  if (!cameraRec) return null;
+
+  const worldTarget = new THREE.Vector3(0, 0, 0);
+  const getWorldPosition = cameraRec.getWorldPosition;
+  if (typeof getWorldPosition === 'function') {
+    try {
+      const returned = Reflect.apply(getWorldPosition, cameraRec, [worldTarget]);
+      const returnedPosition = readVectorPosition(returned);
+      if (returnedPosition) return vector(THREE, returnedPosition.x, returnedPosition.y, returnedPosition.z);
+      const targetPosition = readVectorPosition(worldTarget);
+      if (targetPosition) return vector(THREE, targetPosition.x, targetPosition.y, targetPosition.z);
+    } catch {
+      // fall through to camera.position
+    }
+  }
+
+  const position = readVectorPosition(cameraRec.position);
+  return position ? vector(THREE, position.x, position.y, position.z) : null;
+}
+
+function readMeasurementFace(args: {
   App: AppContainer;
+  THREE: OverlayThree;
   hitState: CanvasPickingClickHitState;
   wardrobeGroup: Object3DLike;
   box: LocalMeasurementBox;
 }): { z: number; sign: number } {
-  const { App, hitState, wardrobeGroup, box } = args;
+  const { App, THREE, hitState, wardrobeGroup, box } = args;
   const minZ = box.centerZ - box.depth / 2;
   const maxZ = box.centerZ + box.depth / 2;
   let sign = 1;
 
-  const localHit = __wp_projectWorldPointToLocal(App, hitState.primaryHitPoint, wardrobeGroup);
-  if (localHit && Number.isFinite(localHit.z)) {
-    sign = Math.abs(localHit.z - minZ) < Math.abs(localHit.z - maxZ) ? -1 : 1;
+  const cameraWorld = readCameraWorldPosition({ App, THREE });
+  const cameraLocal = cameraWorld ? __wp_projectWorldPointToLocal(App, cameraWorld, wardrobeGroup) : null;
+  if (cameraLocal && Number.isFinite(cameraLocal.z)) {
+    sign = Number(cameraLocal.z) >= box.centerZ ? 1 : -1;
+  } else {
+    const localHit = __wp_projectWorldPointToLocal(App, hitState.primaryHitPoint, wardrobeGroup);
+    if (localHit && Number.isFinite(localHit.z)) {
+      sign = Math.abs(localHit.z - minZ) < Math.abs(localHit.z - maxZ) ? -1 : 1;
+    }
   }
 
   const faceZ = sign >= 0 ? maxZ : minZ;
-  return { z: faceZ + sign * FRONT_Z_EPSILON_M, sign };
+  const frontOutset = Math.min(
+    FRONT_OUTSET_MAX_M,
+    Math.max(FRONT_OUTSET_MIN_M, Math.abs(box.depth) * FRONT_OUTSET_DEPTH_RATIO, FRONT_Z_EPSILON_M)
+  );
+  return { z: faceZ + sign * frontOutset, sign };
 }
 
 function addTrackedLine(args: {
@@ -407,6 +576,7 @@ function addTrackedLine(args: {
   const line = asObject3D(new THREE.Line(geometry, material));
   if (!line) return;
   line.name = name;
+  line.renderOrder = OVERLAY_RENDER_ORDER;
   line.userData = {
     ...(line.userData || {}),
     __wpViewerMeasurementOverlay: true,
@@ -415,6 +585,50 @@ function addTrackedLine(args: {
   };
   wardrobeGroup.add(line);
   objects.push(line);
+}
+
+function tuneOverlayMaterial(material: unknown): unknown {
+  const rec = isRecord(material) ? material : null;
+  if (!rec) return material;
+
+  let writable = rec;
+  const clone = rec.clone;
+  if (typeof clone === 'function') {
+    try {
+      const cloned = Reflect.apply(clone, rec, []);
+      if (isRecord(cloned)) writable = cloned;
+    } catch {
+      writable = rec;
+    }
+  }
+
+  try {
+    writable.depthTest = false;
+    writable.depthWrite = false;
+    writable.transparent = true;
+    writable.needsUpdate = true;
+  } catch {
+    // ignore material write failures
+  }
+
+  return writable;
+}
+
+function tuneOverlayObject(obj: Object3DLike): void {
+  const rec = isRecord(obj) ? obj : null;
+  if (!rec) return;
+  try {
+    rec.renderOrder = OVERLAY_RENDER_ORDER;
+  } catch {
+    // ignore
+  }
+  const material = rec.material;
+  try {
+    if (Array.isArray(material)) rec.material = material.map(tuneOverlayMaterial);
+    else if (material) rec.material = tuneOverlayMaterial(material);
+  } catch {
+    // ignore
+  }
 }
 
 function readCreatedDimensionObjects(value: unknown): Object3DLike[] {
@@ -426,16 +640,20 @@ function readCreatedDimensionObjects(value: unknown): Object3DLike[] {
     line.userData = {
       ...(line.userData || {}),
       __wpViewerMeasurementOverlay: true,
+      __wpExcludeWardrobeBounds: true,
       __ignoreRaycast: true,
     };
+    tuneOverlayObject(line);
     out.push(line);
   }
   if (sprite) {
     sprite.userData = {
       ...(sprite.userData || {}),
       __wpViewerMeasurementOverlay: true,
+      __wpExcludeWardrobeBounds: true,
       __ignoreRaycast: true,
     };
+    tuneOverlayObject(sprite);
     out.push(sprite);
   }
   return out;
@@ -547,12 +765,14 @@ function renderMeasurementOverlay(args: {
   const addDimensionLine = readAddDimensionLine(App);
   if (!THREE || !wardrobeGroup || !addDimensionLine) return false;
 
+  const shouldMeasureInterior =
+    hitState.foundModuleIndex != null && (isModuleSelector(target) || hasCavityBackgroundTarget(target));
   const box =
-    readModuleInteriorBox({ App, target, hitState, wardrobeGroup }) ||
+    (shouldMeasureInterior ? readModuleInteriorBox({ App, target, hitState, wardrobeGroup }) : null) ||
     readMeasuredBox(App, target, wardrobeGroup);
   if (!box) return false;
 
-  const { z, sign } = readFrontZ({ App, hitState, wardrobeGroup, box });
+  const { z, sign } = readMeasurementFace({ App, THREE, hitState, wardrobeGroup, box });
   const objects: Object3DLike[] = [];
   addSelectionFrame({ THREE, wardrobeGroup, box, z, objects });
   addDimensionGuides({ THREE, addDimensionLine, box, z, sign, objects });
