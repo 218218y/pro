@@ -28,7 +28,7 @@ export function SidebarHeader() {
         : 'סגור טאבים באתר 2'
       : 'פתח טאבים באתר 2 (90 דקות)'
     : 'פתיחה/סגירה של טאבים באתר 2';
-  const sketchTooltip = sketch ? 'מצב סקיצה פעיל' : 'מצב סקיצה';
+  const sketchTooltip = sketch ? 'תצוגת סקיצה פעילה' : 'תצוגת סקיצה';
 
   return (
     <div className="header wp-r-header">
