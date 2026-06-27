@@ -44,6 +44,10 @@ export type BuildStackSplitLowerUnitArgs = {
   baseLegColor?: string;
   baseLegPlatformMode?: string;
   baseLegPlatformSideMode?: string;
+  baseLegPlatformSideOverhangCm?: number | string;
+  baseLegPlatformFrontOverhangCm?: number | string;
+  stackSplitDecorativeSeparatorSideOverhangCm?: number | string;
+  stackSplitDecorativeSeparatorFrontOverhangCm?: number | string;
   basePlinthHeightCm?: number | string;
   baseLegHeightCm?: number | string;
   baseLegWidthCm?: number | string;

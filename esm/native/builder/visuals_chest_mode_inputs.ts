@@ -14,6 +14,11 @@ import {
   type BaseLegStyle,
 } from '../features/base_leg_support.js';
 import { getBasePlinthHeightM, normalizeBasePlinthHeightCm } from '../features/base_plinth_support.js';
+import {
+  DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM,
+  DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM,
+  platformOverhangCmToM,
+} from '../features/platform_overhang_support.js';
 
 import type { BuilderBuildChestOnlyOptsLike } from '../../../types/index.js';
 
@@ -34,6 +39,8 @@ export type ChestModeBuildInputs = {
   baseLegHeightM: number;
   baseLegBottomPlatformHeightM: number;
   baseLegTopPlatformHeightM: number;
+  baseLegPlatformSideOverhangM: number;
+  baseLegPlatformFrontOverhangM: number;
   colorChoice: string;
   customColor: string;
   chestCommodeEnabled: boolean;
@@ -81,6 +88,14 @@ export function resolveChestModeBuildInputs(opts: BuilderBuildChestOnlyOptsLike)
   const legOptions = readBaseLegOptions(legSource);
   const baseLegPlatformMode = normalizeBaseLegPlatformMode(opts.baseLegPlatformMode);
   const baseLegPlatformSideMode = normalizeBaseLegPlatformSideMode(opts.baseLegPlatformSideMode);
+  const baseLegPlatformSideOverhangM = platformOverhangCmToM(
+    opts.baseLegPlatformSideOverhangCm,
+    DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM
+  );
+  const baseLegPlatformFrontOverhangM = platformOverhangCmToM(
+    opts.baseLegPlatformFrontOverhangCm,
+    DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM
+  );
   const baseLegPlatformEnabled = String(rawBaseType || '') !== 'plinth' && baseLegPlatformMode === 'stage';
   const baseLegPlatformHeightM = baseLegPlatformEnabled ? CARCASS_BASE_DIMENSIONS.legs.platform.heightM : 0;
   const basePlinthHeightCm = normalizeBasePlinthHeightCm(plinthHeightSource);
@@ -117,6 +132,8 @@ export function resolveChestModeBuildInputs(opts: BuilderBuildChestOnlyOptsLike)
     baseLegPlatformSideMode,
     baseLegBottomPlatformHeightM: baseLegPlatformHeightM,
     baseLegTopPlatformHeightM: baseLegPlatformHeightM,
+    baseLegPlatformSideOverhangM,
+    baseLegPlatformFrontOverhangM,
     colorChoice: String(colorChoice || '#ffffff'),
     customColor: String(customColor || '#ffffff'),
     chestCommodeEnabled,

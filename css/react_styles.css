@@ -3166,6 +3166,14 @@ body.wp-ui-react .btn-cancel:hover {
   font-size: 0.76rem;
 }
 
+#reactSidebarRoot .wp-r-groove-reset-btn.wp-r-platform-overhang-reset-btn {
+  width: var(--wp-r-input-h);
+  min-width: var(--wp-r-input-h);
+  max-width: var(--wp-r-input-h);
+  padding: 0;
+  gap: 0;
+}
+
 #reactSidebarRoot .wp-r-sketch-drawer-height-field {
   margin-top: 8px;
   margin-bottom: 10px;
@@ -3178,6 +3186,10 @@ body.wp-ui-react .btn-cancel:hover {
   align-items: end;
   gap: 8px;
   direction: ltr;
+}
+
+#reactSidebarRoot .wp-r-platform-overhang-row {
+  grid-template-columns: var(--wp-r-input-h) minmax(72px, 1fr);
 }
 
 #reactSidebarRoot .wp-r-sketch-drawer-height-control {

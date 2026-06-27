@@ -180,10 +180,10 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
       if (!(BASE_LEG_PLATFORM_DIMENSIONS.heightM > 0) || inputs.baseLegPlatformMode !== 'stage') return;
       const platformDepth = Math.max(
         BASE_LEG_PLATFORM_DIMENSIONS.minDepthM,
-        D + BASE_LEG_PLATFORM_DIMENSIONS.frontOverhangM
+        D + Math.max(0, inputs.baseLegPlatformFrontOverhangM)
       );
       const sideOverhang =
-        inputs.baseLegPlatformSideMode === 'flush' ? 0 : BASE_LEG_PLATFORM_DIMENSIONS.sideOverhangM;
+        inputs.baseLegPlatformSideMode === 'flush' ? 0 : Math.max(0, inputs.baseLegPlatformSideOverhangM);
       createChestBoard(
         Math.max(BASE_LEG_PLATFORM_DIMENSIONS.minWidthM, totalW + sideOverhang * 2),
         BASE_LEG_PLATFORM_DIMENSIONS.heightM,

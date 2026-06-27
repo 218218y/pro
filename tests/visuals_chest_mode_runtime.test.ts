@@ -249,6 +249,8 @@ test('visuals chest mode input/material helpers normalize chest-only UI and text
       baseLegHeightM: 0.16,
       baseLegPlatformMode: 'stage',
       baseLegPlatformSideMode: 'overhang',
+      baseLegPlatformSideOverhangM: CARCASS_BASE_DIMENSIONS.legs.platform.sideOverhangM,
+      baseLegPlatformFrontOverhangM: CARCASS_BASE_DIMENSIONS.legs.platform.frontOverhangM,
       baseLegBottomPlatformHeightM: CARCASS_BASE_DIMENSIONS.legs.platform.heightM,
       baseLegTopPlatformHeightM: CARCASS_BASE_DIMENSIONS.legs.platform.heightM,
       colorChoice: '#cccccc',

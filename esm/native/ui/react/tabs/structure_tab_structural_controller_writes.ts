@@ -3,11 +3,15 @@ import {
   setUiBaseLegHeightCm,
   setUiBaseLegPlatformMode,
   setUiBaseLegPlatformSideMode,
+  setUiBaseLegPlatformSideOverhangCm,
+  setUiBaseLegPlatformFrontOverhangCm,
   setUiBaseLegWidthCm,
   setUiBaseLegStyle,
   setUiBasePlinthHeightCm,
   setUiBaseType,
   setUiSlidingTracksColor,
+  setUiStackSplitDecorativeSeparatorSideOverhangCm,
+  setUiStackSplitDecorativeSeparatorFrontOverhangCm,
 } from '../actions/store_actions.js';
 import { applyImmediateStructuralUiMutation } from '../actions/structural_build_refresh_actions.js';
 import type { ActionMetaLike, UnknownRecord } from '../../../../../types';
@@ -24,6 +28,12 @@ import {
   configHasActiveHeightDepthSpecialDims,
 } from '../../../features/base_leg_stage_special_dims_guard.js';
 import { normalizeBasePlinthHeightCm } from '../../../features/base_plinth_support.js';
+import {
+  normalizeBaseLegPlatformFrontOverhangCm,
+  normalizeBaseLegPlatformSideOverhangCm,
+  normalizeStackSplitDecorativeSeparatorFrontOverhangCm,
+  normalizeStackSplitDecorativeSeparatorSideOverhangCm,
+} from '../../../features/platform_overhang_support.js';
 import {
   SHOE_DRAWER_BASE_BLOCKED_MESSAGE,
   configHasShoeDrawers,
@@ -134,6 +144,10 @@ export function createStructureTabStructuralWriteController(
   | 'setBaseLegColor'
   | 'setBaseLegPlatformMode'
   | 'setBaseLegPlatformSideMode'
+  | 'setBaseLegPlatformSideOverhangCm'
+  | 'setBaseLegPlatformFrontOverhangCm'
+  | 'setStackSplitDecorativeSeparatorSideOverhangCm'
+  | 'setStackSplitDecorativeSeparatorFrontOverhangCm'
   | 'setBasePlinthHeightCm'
   | 'setBaseLegHeightCm'
   | 'setBaseLegWidthCm'
@@ -293,6 +307,54 @@ export function createStructureTabStructuralWriteController(
         { baseLegPlatformSideMode: nextBaseLegPlatformSideMode },
         meta => {
           setUiBaseLegPlatformSideMode(args.app, nextBaseLegPlatformSideMode, meta);
+        }
+      );
+    },
+
+    setBaseLegPlatformSideOverhangCm(next) {
+      const value = normalizeBaseLegPlatformSideOverhangCm(next);
+      applyImmediateStructureUiPatch(
+        args,
+        'react:structure:baseLegPlatformSideOverhangCm',
+        { baseLegPlatformSideOverhangCm: value },
+        meta => {
+          setUiBaseLegPlatformSideOverhangCm(args.app, value, meta);
+        }
+      );
+    },
+
+    setBaseLegPlatformFrontOverhangCm(next) {
+      const value = normalizeBaseLegPlatformFrontOverhangCm(next);
+      applyImmediateStructureUiPatch(
+        args,
+        'react:structure:baseLegPlatformFrontOverhangCm',
+        { baseLegPlatformFrontOverhangCm: value },
+        meta => {
+          setUiBaseLegPlatformFrontOverhangCm(args.app, value, meta);
+        }
+      );
+    },
+
+    setStackSplitDecorativeSeparatorSideOverhangCm(next) {
+      const value = normalizeStackSplitDecorativeSeparatorSideOverhangCm(next);
+      applyImmediateStructureUiPatch(
+        args,
+        'react:structure:stackSplitDecorativeSeparatorSideOverhangCm',
+        { stackSplitDecorativeSeparatorSideOverhangCm: value },
+        meta => {
+          setUiStackSplitDecorativeSeparatorSideOverhangCm(args.app, value, meta);
+        }
+      );
+    },
+
+    setStackSplitDecorativeSeparatorFrontOverhangCm(next) {
+      const value = normalizeStackSplitDecorativeSeparatorFrontOverhangCm(next);
+      applyImmediateStructureUiPatch(
+        args,
+        'react:structure:stackSplitDecorativeSeparatorFrontOverhangCm',
+        { stackSplitDecorativeSeparatorFrontOverhangCm: value },
+        meta => {
+          setUiStackSplitDecorativeSeparatorFrontOverhangCm(args.app, value, meta);
         }
       );
     },

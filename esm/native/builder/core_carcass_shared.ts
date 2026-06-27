@@ -10,6 +10,11 @@ import {
   normalizeBaseLegPlatformSideMode,
   readBaseLegOptions,
 } from '../features/base_leg_support.js';
+import {
+  DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM,
+  DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM,
+  platformOverhangCmToM,
+} from '../features/platform_overhang_support.js';
 import { isRemovedFrameSideOn } from '../features/removable_parts.js';
 import { readModuleConfig } from './build_flow_readers.js';
 import { getBasePlinthHeightM } from '../features/base_plinth_support.js';
@@ -38,6 +43,8 @@ export type PreparedCarcassInput = {
   base: MutableRecord | null;
   baseLegPlatformMode: 'stage' | 'plain';
   baseLegPlatformSideMode: 'overhang' | 'flush';
+  baseLegPlatformSideOverhangM: number;
+  baseLegPlatformFrontOverhangM: number;
   baseLegTopPlatformOnly: boolean;
   baseLegSuppressTopPlatform: boolean;
   baseLegBottomPlatformHeight: number;
@@ -71,6 +78,14 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
     baseLegTopPlatformRequested ? 'stage' : 'plain'
   );
   const baseLegPlatformSideMode = normalizeBaseLegPlatformSideMode(inp.baseLegPlatformSideMode);
+  const baseLegPlatformSideOverhangM = platformOverhangCmToM(
+    inp.baseLegPlatformSideOverhangCm,
+    DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM
+  );
+  const baseLegPlatformFrontOverhangM = platformOverhangCmToM(
+    inp.baseLegPlatformFrontOverhangCm,
+    DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM
+  );
   const baseLegPlatformEnabled = baseType === 'legs' && baseLegPlatformMode === 'stage';
   const baseLegTopPlatformOnly = baseLegTopPlatformRequested && baseLegPlatformMode === 'stage';
   const baseLegSuppressTopPlatform = !!inp.baseLegSuppressTopPlatform && baseLegPlatformEnabled;
@@ -142,10 +157,19 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
       H,
       legHeight: readBaseLegOptions(inp).heightM,
       sideMode: baseLegPlatformSideMode,
+      sideOverhangM: baseLegPlatformSideOverhangM,
+      frontOverhangM: baseLegPlatformFrontOverhangM,
       includeTop: !baseLegSuppressTopPlatform,
     });
   } else if (baseLegTopPlatformOnly) {
-    base = makeTopOnlyBaseLegPlatformOps({ totalW, D, H, sideMode: baseLegPlatformSideMode });
+    base = makeTopOnlyBaseLegPlatformOps({
+      totalW,
+      D,
+      H,
+      sideMode: baseLegPlatformSideMode,
+      sideOverhangM: baseLegPlatformSideOverhangM,
+      frontOverhangM: baseLegPlatformFrontOverhangM,
+    });
   }
 
   const moduleWidthsRaw = Array.isArray(inp.moduleInternalWidths)
@@ -225,6 +249,8 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
     base,
     baseLegPlatformMode,
     baseLegPlatformSideMode,
+    baseLegPlatformSideOverhangM,
+    baseLegPlatformFrontOverhangM,
     baseLegTopPlatformOnly,
     baseLegSuppressTopPlatform,
     baseLegBottomPlatformHeight,
@@ -249,6 +275,8 @@ type BaseLegPlatformAttachParams = {
   H: number;
   legHeight: number;
   sideMode: 'overhang' | 'flush';
+  sideOverhangM: number;
+  frontOverhangM: number;
   includeTop?: boolean;
 };
 
@@ -259,12 +287,12 @@ function makeBaseLegPlatformOp(args: {
   y: number;
   partId: string;
   sideMode: 'overhang' | 'flush';
+  sideOverhangM: number;
+  frontOverhangM: number;
 }): MutableRecord {
-  const platformDepth = Math.max(
-    BASE_LEG_PLATFORM_DIMENSIONS.minDepthM,
-    args.depth + BASE_LEG_PLATFORM_DIMENSIONS.frontOverhangM
-  );
-  const sideOverhang = args.sideMode === 'flush' ? 0 : BASE_LEG_PLATFORM_DIMENSIONS.sideOverhangM;
+  const frontOverhang = Math.max(0, Number(args.frontOverhangM) || 0);
+  const platformDepth = Math.max(BASE_LEG_PLATFORM_DIMENSIONS.minDepthM, args.depth + frontOverhang);
+  const sideOverhang = args.sideMode === 'flush' ? 0 : Math.max(0, Number(args.sideOverhangM) || 0);
   return {
     kind: 'leg_platform',
     width: Math.max(BASE_LEG_PLATFORM_DIMENSIONS.minWidthM, args.width + sideOverhang * 2),
@@ -290,6 +318,8 @@ function attachBaseLegPlatformOps(params: BaseLegPlatformAttachParams): void {
       y: params.legHeight + h / 2,
       partId: 'base_leg_platform_bottom',
       sideMode: params.sideMode,
+      sideOverhangM: params.sideOverhangM,
+      frontOverhangM: params.frontOverhangM,
     }),
   ];
   if (params.includeTop !== false) {
@@ -301,6 +331,8 @@ function attachBaseLegPlatformOps(params: BaseLegPlatformAttachParams): void {
         y: params.H + h / 2,
         partId: 'base_leg_platform_top',
         sideMode: params.sideMode,
+        sideOverhangM: params.sideOverhangM,
+        frontOverhangM: params.frontOverhangM,
       })
     );
   }
@@ -312,6 +344,8 @@ function makeTopOnlyBaseLegPlatformOps(args: {
   D: number;
   H: number;
   sideMode: 'overhang' | 'flush';
+  sideOverhangM: number;
+  frontOverhangM: number;
 }): MutableRecord {
   const h = BASE_LEG_PLATFORM_DIMENSIONS.heightM;
   return {
@@ -326,6 +360,8 @@ function makeTopOnlyBaseLegPlatformOps(args: {
               y: args.H + h / 2,
               partId: 'base_leg_platform_top',
               sideMode: args.sideMode,
+              sideOverhangM: args.sideOverhangM,
+              frontOverhangM: args.frontOverhangM,
             }),
           ]
         : [],

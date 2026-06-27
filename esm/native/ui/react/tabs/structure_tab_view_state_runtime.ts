@@ -10,6 +10,12 @@ import {
 } from '../../../features/base_leg_support.js';
 import { normalizeBasePlinthHeightCm } from '../../../features/base_plinth_support.js';
 import {
+  normalizeBaseLegPlatformFrontOverhangCm,
+  normalizeBaseLegPlatformSideOverhangCm,
+  normalizeStackSplitDecorativeSeparatorFrontOverhangCm,
+  normalizeStackSplitDecorativeSeparatorSideOverhangCm,
+} from '../../../features/platform_overhang_support.js';
+import {
   DEFAULT_CHEST_DRAWERS_COUNT,
   CHEST_MODE_DIMENSIONS,
   DEFAULT_CORNER_DOORS,
@@ -113,6 +119,10 @@ export function readStructureTabBaseUiState(ui: StructureTabUiSnapshot): Structu
     baseLegColor: normalizeBaseLegColor(ui.baseLegColor),
     baseLegPlatformMode: normalizeBaseLegPlatformMode(ui.baseLegPlatformMode),
     baseLegPlatformSideMode: normalizeBaseLegPlatformSideMode(ui.baseLegPlatformSideMode),
+    baseLegPlatformSideOverhangCm: normalizeBaseLegPlatformSideOverhangCm(ui.baseLegPlatformSideOverhangCm),
+    baseLegPlatformFrontOverhangCm: normalizeBaseLegPlatformFrontOverhangCm(
+      ui.baseLegPlatformFrontOverhangCm
+    ),
     basePlinthHeightCm: normalizeBasePlinthHeightCm(ui.basePlinthHeightCm),
     baseLegHeightCm: normalizeBaseLegHeightCm(ui.baseLegHeightCm),
     baseLegWidthCm: normalizeBaseLegWidthCm(ui.baseLegWidthCm, getDefaultBaseLegWidthCm(ui.baseLegStyle)),
@@ -138,6 +148,12 @@ export function readStructureTabStackSplitUiState(
   return {
     stackSplitEnabled: !!ui.stackSplitEnabled,
     stackSplitDecorativeSeparatorEnabled: !!ui.stackSplitEnabled && !!ui.stackSplitDecorativeSeparatorEnabled,
+    stackSplitDecorativeSeparatorSideOverhangCm: normalizeStackSplitDecorativeSeparatorSideOverhangCm(
+      ui.stackSplitDecorativeSeparatorSideOverhangCm
+    ),
+    stackSplitDecorativeSeparatorFrontOverhangCm: normalizeStackSplitDecorativeSeparatorFrontOverhangCm(
+      ui.stackSplitDecorativeSeparatorFrontOverhangCm
+    ),
     stackSplitLowerHeight: readUiRawNumberFromSnapshot(
       ui,
       'stackSplitLowerHeight',

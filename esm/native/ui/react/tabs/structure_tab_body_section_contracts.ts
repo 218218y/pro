@@ -26,6 +26,8 @@ export type StructureBodySectionProps = {
   baseLegColor: StructureBaseLegColor;
   baseLegPlatformMode: StructureBaseLegPlatformMode;
   baseLegPlatformSideMode: StructureBaseLegPlatformSideMode;
+  baseLegPlatformSideOverhangCm: number;
+  baseLegPlatformFrontOverhangCm: number;
   basePlinthHeightCm: number;
   baseLegHeightCm: number;
   baseLegWidthCm: number;
@@ -47,6 +49,8 @@ export type StructureBodySectionProps = {
   onSetBaseLegColor: (value: StructureBaseLegColor) => void;
   onSetBaseLegPlatformMode: (value: StructureBaseLegPlatformMode) => void;
   onSetBaseLegPlatformSideMode: (value: StructureBaseLegPlatformSideMode) => void;
+  onSetBaseLegPlatformSideOverhangCm: (value: number) => void;
+  onSetBaseLegPlatformFrontOverhangCm: (value: number) => void;
   onSetBasePlinthHeightCm: (value: number) => void;
   onSetBaseLegHeightCm: (value: number) => void;
   onSetBaseLegWidthCm: (value: number) => void;

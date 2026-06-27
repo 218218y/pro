@@ -126,6 +126,8 @@ function StructureTabInner(props: { active: boolean }) {
     cellDimsHexDoorWidth: state.cellDimsHexDoorWidth,
     stackSplitEnabled: state.stackSplitEnabled,
     stackSplitDecorativeSeparatorEnabled: state.stackSplitDecorativeSeparatorEnabled,
+    stackSplitDecorativeSeparatorSideOverhangCm: state.stackSplitDecorativeSeparatorSideOverhangCm,
+    stackSplitDecorativeSeparatorFrontOverhangCm: state.stackSplitDecorativeSeparatorFrontOverhangCm,
     stackSplitLowerHeight: state.stackSplitLowerHeight,
     stackSplitLowerDepth: state.stackSplitLowerDepth,
     stackSplitLowerWidth: state.stackSplitLowerWidth,
@@ -146,6 +148,10 @@ function StructureTabInner(props: { active: boolean }) {
     onClearCellDimsHexDoorWidth: workflows.clearCellDimsHexDoorWidth,
     onToggleStackSplit: workflows.toggleStackSplit,
     onToggleStackSplitDecorativeSeparator: workflows.toggleStackSplitDecorativeSeparator,
+    onSetStackSplitDecorativeSeparatorSideOverhangCm:
+      workflows.setStackSplitDecorativeSeparatorSideOverhangCm,
+    onSetStackSplitDecorativeSeparatorFrontOverhangCm:
+      workflows.setStackSplitDecorativeSeparatorFrontOverhangCm,
     onToggleLibraryUpperDoors: workflows.toggleLibraryUpperDoors,
     onPickLibraryGlass: workflows.pickLibraryGlass,
     renderStackLinkBadge: workflows.renderStackLinkBadge,
@@ -175,6 +181,8 @@ function StructureTabInner(props: { active: boolean }) {
           baseLegColor={state.baseLegColor}
           baseLegPlatformMode={state.baseLegPlatformMode}
           baseLegPlatformSideMode={state.baseLegPlatformSideMode}
+          baseLegPlatformSideOverhangCm={state.baseLegPlatformSideOverhangCm}
+          baseLegPlatformFrontOverhangCm={state.baseLegPlatformFrontOverhangCm}
           basePlinthHeightCm={state.basePlinthHeightCm}
           baseLegHeightCm={state.baseLegHeightCm}
           baseLegWidthCm={state.baseLegWidthCm}
@@ -196,6 +204,8 @@ function StructureTabInner(props: { active: boolean }) {
           onSetBaseLegColor={workflows.setBaseLegColor}
           onSetBaseLegPlatformMode={workflows.setBaseLegPlatformMode}
           onSetBaseLegPlatformSideMode={workflows.setBaseLegPlatformSideMode}
+          onSetBaseLegPlatformSideOverhangCm={workflows.setBaseLegPlatformSideOverhangCm}
+          onSetBaseLegPlatformFrontOverhangCm={workflows.setBaseLegPlatformFrontOverhangCm}
           onSetBasePlinthHeightCm={workflows.setBasePlinthHeightCm}
           onSetBaseLegHeightCm={workflows.setBaseLegHeightCm}
           onSetBaseLegWidthCm={workflows.setBaseLegWidthCm}

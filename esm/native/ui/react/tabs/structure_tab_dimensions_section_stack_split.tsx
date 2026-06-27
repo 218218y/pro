@@ -9,11 +9,59 @@ import {
   STRUCTURE_STACK_SPLIT_SECTION_TEST_ID,
   type StructureDimensionsContentProps,
 } from './structure_tab_dimensions_section_contracts.js';
+import {
+  DEFAULT_STACK_SPLIT_DECORATIVE_SEPARATOR_FRONT_OVERHANG_CM,
+  DEFAULT_STACK_SPLIT_DECORATIVE_SEPARATOR_SIDE_OVERHANG_CM,
+  PLATFORM_OVERHANG_MAX_CM,
+  PLATFORM_OVERHANG_MIN_CM,
+} from '../../../features/platform_overhang_support.js';
+
+function StackSplitSeparatorOverhangField(props: {
+  label: string;
+  value: number;
+  defaultValue: number;
+  onChange: (value: number) => void;
+  resetTitle: string;
+}): ReactElement {
+  return (
+    <div className="wp-field wp-r-leg-size-field wp-r-platform-overhang-field">
+      <div className="wp-field-label">{props.label}</div>
+      <div className="wp-r-sketch-drawer-height-row wp-r-platform-overhang-row">
+        <button
+          type="button"
+          className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-platform-overhang-reset-btn"
+          title={props.resetTitle}
+          aria-label={props.resetTitle}
+          onClick={() => props.onChange(props.defaultValue)}
+        >
+          <i className="fas fa-undo-alt" aria-hidden="true" />
+        </button>
+        <input
+          type="number"
+          className="wp-r-input"
+          min={PLATFORM_OVERHANG_MIN_CM}
+          max={PLATFORM_OVERHANG_MAX_CM}
+          step={0.5}
+          value={props.value}
+          onFocus={(event: import('react').FocusEvent<HTMLInputElement>) => {
+            event.target.select();
+          }}
+          onChange={(event: import('react').ChangeEvent<HTMLInputElement>) => {
+            const next = Number(event.target.value);
+            if (Number.isFinite(next)) props.onChange(next);
+          }}
+        />
+      </div>
+    </div>
+  );
+}
 
 export function StructureStackSplitControls(props: {
   isSliding: StructureDimensionsContentProps['isSliding'];
   stackSplitEnabled: StructureDimensionsContentProps['stackSplitEnabled'];
   stackSplitDecorativeSeparatorEnabled: StructureDimensionsContentProps['stackSplitDecorativeSeparatorEnabled'];
+  stackSplitDecorativeSeparatorSideOverhangCm: StructureDimensionsContentProps['stackSplitDecorativeSeparatorSideOverhangCm'];
+  stackSplitDecorativeSeparatorFrontOverhangCm: StructureDimensionsContentProps['stackSplitDecorativeSeparatorFrontOverhangCm'];
   stackSplitLowerHeight: StructureDimensionsContentProps['stackSplitLowerHeight'];
   stackSplitLowerDepth: StructureDimensionsContentProps['stackSplitLowerDepth'];
   stackSplitLowerWidth: StructureDimensionsContentProps['stackSplitLowerWidth'];
@@ -25,6 +73,8 @@ export function StructureStackSplitControls(props: {
   onSetRaw: StructureDimensionsContentProps['onSetRaw'];
   onToggleStackSplit: StructureDimensionsContentProps['onToggleStackSplit'];
   onToggleStackSplitDecorativeSeparator: StructureDimensionsContentProps['onToggleStackSplitDecorativeSeparator'];
+  onSetStackSplitDecorativeSeparatorSideOverhangCm: StructureDimensionsContentProps['onSetStackSplitDecorativeSeparatorSideOverhangCm'];
+  onSetStackSplitDecorativeSeparatorFrontOverhangCm: StructureDimensionsContentProps['onSetStackSplitDecorativeSeparatorFrontOverhangCm'];
   renderStackLinkBadge: StructureDimensionsContentProps['renderStackLinkBadge'];
 }): ReactElement | null {
   return (
@@ -48,6 +98,25 @@ export function StructureStackSplitControls(props: {
           >
             הפרדה מעוצבת בין ארון עליון לארון תחתון
           </ModeToggleButton>
+
+          {props.stackSplitDecorativeSeparatorEnabled ? (
+            <div className="wp-r-leg-size-fields wp-r-platform-overhang-fields" style={{ marginTop: 10 }}>
+              <StackSplitSeparatorOverhangField
+                label="בליטה מהצדדים (ס״מ)"
+                value={props.stackSplitDecorativeSeparatorSideOverhangCm}
+                defaultValue={DEFAULT_STACK_SPLIT_DECORATIVE_SEPARATOR_SIDE_OVERHANG_CM}
+                resetTitle="איפוס בליטת הפרדה מהצדדים לברירת מחדל"
+                onChange={props.onSetStackSplitDecorativeSeparatorSideOverhangCm}
+              />
+              <StackSplitSeparatorOverhangField
+                label="בליטה מהחזית (ס״מ)"
+                value={props.stackSplitDecorativeSeparatorFrontOverhangCm}
+                defaultValue={DEFAULT_STACK_SPLIT_DECORATIVE_SEPARATOR_FRONT_OVERHANG_CM}
+                resetTitle="איפוס בליטת הפרדה מהחזית לברירת מחדל"
+                onChange={props.onSetStackSplitDecorativeSeparatorFrontOverhangCm}
+              />
+            </div>
+          ) : null}
 
           <div className="wp-r-cell-dims-row wp-r-stack-split-dims-row" style={{ marginTop: 10 }}>
             <div className="wp-r-dims-height">

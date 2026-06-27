@@ -231,6 +231,12 @@ export function useStructureTabWorkflows(args: UseStructureTabWorkflowsArgs): Us
     setBaseLegColor: structuralController.setBaseLegColor,
     setBaseLegPlatformMode: structuralController.setBaseLegPlatformMode,
     setBaseLegPlatformSideMode: structuralController.setBaseLegPlatformSideMode,
+    setBaseLegPlatformSideOverhangCm: structuralController.setBaseLegPlatformSideOverhangCm,
+    setBaseLegPlatformFrontOverhangCm: structuralController.setBaseLegPlatformFrontOverhangCm,
+    setStackSplitDecorativeSeparatorSideOverhangCm:
+      structuralController.setStackSplitDecorativeSeparatorSideOverhangCm,
+    setStackSplitDecorativeSeparatorFrontOverhangCm:
+      structuralController.setStackSplitDecorativeSeparatorFrontOverhangCm,
     setBasePlinthHeightCm: structuralController.setBasePlinthHeightCm,
     setBaseLegHeightCm: structuralController.setBaseLegHeightCm,
     setBaseLegWidthCm: structuralController.setBaseLegWidthCm,

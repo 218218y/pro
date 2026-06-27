@@ -79,6 +79,8 @@ export interface UiState extends UnknownRecord {
   baseLegColor?: 'black' | 'nickel' | 'gold' | string;
   baseLegPlatformMode?: 'stage' | 'plain' | string;
   baseLegPlatformSideMode?: 'overhang' | 'flush' | string;
+  baseLegPlatformSideOverhangCm?: number | string;
+  baseLegPlatformFrontOverhangCm?: number | string;
   basePlinthHeightCm?: number | string;
   baseLegHeightCm?: number | string;
   slidingTracksColor?: 'nickel' | 'black' | string;
@@ -99,6 +101,8 @@ export interface UiState extends UnknownRecord {
 
   // Stack split
   stackSplitEnabled?: boolean;
+  stackSplitDecorativeSeparatorSideOverhangCm?: number | string;
+  stackSplitDecorativeSeparatorFrontOverhangCm?: number | string;
 
   // Per-cell dimensions / hex-cell panel disclosure state
   cellDimsPanelOpen?: boolean;

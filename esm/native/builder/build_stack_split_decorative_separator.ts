@@ -1,4 +1,9 @@
 import { WARDROBE_DEFAULTS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  DEFAULT_STACK_SPLIT_DECORATIVE_SEPARATOR_FRONT_OVERHANG_CM,
+  DEFAULT_STACK_SPLIT_DECORATIVE_SEPARATOR_SIDE_OVERHANG_CM,
+  platformOverhangCmToM,
+} from '../features/platform_overhang_support.js';
 
 import type {
   BuildStackSplitLowerUnitArgs,
@@ -138,8 +143,14 @@ export function addStackSplitDecorativeSeparatorIfNeeded(args: {
   const slabHeight = visibleHeight;
   const apronHeight = visibleHeight;
   const apronDepth = Math.max(dims.zFightLiftM, dims.apronDepthM);
-  const frontOverhang = Math.max(0, dims.frontOverhangM);
-  const sideOverhang = Math.max(0, dims.sideOverhangM);
+  const frontOverhang = platformOverhangCmToM(
+    buildArgs.stackSplitDecorativeSeparatorFrontOverhangCm,
+    DEFAULT_STACK_SPLIT_DECORATIVE_SEPARATOR_FRONT_OVERHANG_CM
+  );
+  const sideOverhang = platformOverhangCmToM(
+    buildArgs.stackSplitDecorativeSeparatorSideOverhangCm,
+    DEFAULT_STACK_SPLIT_DECORATIVE_SEPARATOR_SIDE_OVERHANG_CM
+  );
 
   const width = Math.max(dims.minWidthM, totalW + sideOverhang * 2);
   const depth = Math.max(dims.minDepthM, totalD + frontOverhang);

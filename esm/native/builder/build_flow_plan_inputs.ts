@@ -12,6 +12,12 @@ import {
   normalizeBaseLegWidthCm,
 } from '../features/base_leg_support.js';
 import { normalizeBasePlinthHeightCm } from '../features/base_plinth_support.js';
+import {
+  normalizeBaseLegPlatformFrontOverhangCm,
+  normalizeBaseLegPlatformSideOverhangCm,
+  normalizeStackSplitDecorativeSeparatorFrontOverhangCm,
+  normalizeStackSplitDecorativeSeparatorSideOverhangCm,
+} from '../features/platform_overhang_support.js';
 import { readUiState } from './build_flow_readers.js';
 import {
   CARCASS_INTERIOR_DIMENSIONS,
@@ -143,6 +149,18 @@ export function resolveBuildFlowPlanInputs(args: BuildFlowPlanInputsArgs): Build
   const baseLegColor = normalizeBaseLegColor(ui.baseLegColor);
   const baseLegPlatformMode = normalizeBaseLegPlatformMode(ui.baseLegPlatformMode);
   const baseLegPlatformSideMode = normalizeBaseLegPlatformSideMode(ui.baseLegPlatformSideMode);
+  const baseLegPlatformSideOverhangCm = normalizeBaseLegPlatformSideOverhangCm(
+    ui.baseLegPlatformSideOverhangCm
+  );
+  const baseLegPlatformFrontOverhangCm = normalizeBaseLegPlatformFrontOverhangCm(
+    ui.baseLegPlatformFrontOverhangCm
+  );
+  const stackSplitDecorativeSeparatorSideOverhangCm = normalizeStackSplitDecorativeSeparatorSideOverhangCm(
+    ui.stackSplitDecorativeSeparatorSideOverhangCm
+  );
+  const stackSplitDecorativeSeparatorFrontOverhangCm = normalizeStackSplitDecorativeSeparatorFrontOverhangCm(
+    ui.stackSplitDecorativeSeparatorFrontOverhangCm
+  );
   const basePlinthHeightCm = normalizeBasePlinthHeightCm(ui.basePlinthHeightCm);
   const baseLegHeightCm = normalizeBaseLegHeightCm(ui.baseLegHeightCm);
   const baseLegWidthCm = normalizeBaseLegWidthCm(ui.baseLegWidthCm, getDefaultBaseLegWidthCm(baseLegStyle));
@@ -179,6 +197,10 @@ export function resolveBuildFlowPlanInputs(args: BuildFlowPlanInputsArgs): Build
     baseLegColor,
     baseLegPlatformMode,
     baseLegPlatformSideMode,
+    baseLegPlatformSideOverhangCm,
+    baseLegPlatformFrontOverhangCm,
+    stackSplitDecorativeSeparatorSideOverhangCm,
+    stackSplitDecorativeSeparatorFrontOverhangCm,
     basePlinthHeightCm,
     baseLegHeightCm,
     baseLegWidthCm,

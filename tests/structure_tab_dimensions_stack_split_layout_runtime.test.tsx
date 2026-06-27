@@ -17,6 +17,8 @@ const renderStackSplitControls = (overrides = {}) => {
       isSliding: false,
       stackSplitEnabled: true,
       stackSplitDecorativeSeparatorEnabled: false,
+      stackSplitDecorativeSeparatorSideOverhangCm: 1.5,
+      stackSplitDecorativeSeparatorFrontOverhangCm: 2,
       stackSplitLowerHeight: 100,
       stackSplitLowerDepth: 55,
       stackSplitLowerWidth: 160,
@@ -28,6 +30,8 @@ const renderStackSplitControls = (overrides = {}) => {
       onSetRaw: noop,
       onToggleStackSplit: noop,
       onToggleStackSplitDecorativeSeparator: noop,
+      onSetStackSplitDecorativeSeparatorSideOverhangCm: noop,
+      onSetStackSplitDecorativeSeparatorFrontOverhangCm: noop,
       renderStackLinkBadge: (_field: string, isManual: boolean) =>
         React.createElement(
           'button',
@@ -71,6 +75,8 @@ const renderDimensionsContent = (overrides = {}) => {
       cellDimsHexDoorWidth: '',
       stackSplitEnabled: false,
       stackSplitDecorativeSeparatorEnabled: false,
+      stackSplitDecorativeSeparatorSideOverhangCm: 1.5,
+      stackSplitDecorativeSeparatorFrontOverhangCm: 2,
       stackSplitLowerHeight: 100,
       stackSplitLowerDepth: 55,
       stackSplitLowerWidth: 160,
@@ -91,6 +97,8 @@ const renderDimensionsContent = (overrides = {}) => {
       onClearCellDimsHexDoorWidth: noop,
       onToggleStackSplit: noop,
       onToggleStackSplitDecorativeSeparator: noop,
+      onSetStackSplitDecorativeSeparatorSideOverhangCm: noop,
+      onSetStackSplitDecorativeSeparatorFrontOverhangCm: noop,
       onToggleLibraryUpperDoors: noop,
       onPickLibraryGlass: noop,
       renderStackLinkBadge: (_field: string, isManual: boolean) =>
@@ -125,6 +133,8 @@ const renderDimensionsSection = (overrides = {}) => {
       cellDimsHexDoorWidth: '',
       stackSplitEnabled: false,
       stackSplitDecorativeSeparatorEnabled: false,
+      stackSplitDecorativeSeparatorSideOverhangCm: 1.5,
+      stackSplitDecorativeSeparatorFrontOverhangCm: 2,
       stackSplitLowerHeight: 100,
       stackSplitLowerDepth: 55,
       stackSplitLowerWidth: 160,
@@ -145,6 +155,8 @@ const renderDimensionsSection = (overrides = {}) => {
       onClearCellDimsHexDoorWidth: noop,
       onToggleStackSplit: noop,
       onToggleStackSplitDecorativeSeparator: noop,
+      onSetStackSplitDecorativeSeparatorSideOverhangCm: noop,
+      onSetStackSplitDecorativeSeparatorFrontOverhangCm: noop,
       onToggleLibraryUpperDoors: noop,
       onPickLibraryGlass: noop,
       renderStackLinkBadge: (_field: string, isManual: boolean) =>
@@ -204,4 +216,16 @@ test('[structure-dimensions] no-main restore action does not keep the dimensions
     css,
     /\.tab-content\[data-tab='structure'\] \.wp-r-no-main-restore-button \{[\s\S]*?width:\s*100%/
   );
+});
+
+test('[structure-stack-split] decorative separator exposes side and front overhang controls only when enabled', () => {
+  const disabledHtml = renderStackSplitControls({ stackSplitDecorativeSeparatorEnabled: false });
+  assert.doesNotMatch(disabledHtml, /בליטה מהצדדים/);
+  assert.doesNotMatch(disabledHtml, /בליטה מהחזית/);
+
+  const enabledHtml = renderStackSplitControls({ stackSplitDecorativeSeparatorEnabled: true });
+  assert.match(enabledHtml, /בליטה מהצדדים/);
+  assert.match(enabledHtml, /בליטה מהחזית/);
+  assert.match(enabledHtml, /איפוס בליטת הפרדה מהצדדים לברירת מחדל/);
+  assert.match(enabledHtml, /איפוס בליטת הפרדה מהחזית לברירת מחדל/);
 });

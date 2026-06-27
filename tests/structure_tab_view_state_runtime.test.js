@@ -74,6 +74,19 @@ const sandbox = {
         },
       };
     }
+    if (spec === '../../../features/platform_overhang_support.js') {
+      const normalize = (value, fallback) => {
+        const n = Number(value);
+        const raw = Number.isFinite(n) ? n : fallback;
+        return Math.round(Math.max(0, Math.min(20, raw)) * 10) / 10;
+      };
+      return {
+        normalizeBaseLegPlatformSideOverhangCm: value => normalize(value, 1.5),
+        normalizeBaseLegPlatformFrontOverhangCm: value => normalize(value, 2),
+        normalizeStackSplitDecorativeSeparatorSideOverhangCm: value => normalize(value, 1.5),
+        normalizeStackSplitDecorativeSeparatorFrontOverhangCm: value => normalize(value, 2),
+      };
+    }
     if (spec === '../../../services/api.js') {
       return {
         DEFAULT_CHEST_DRAWERS_COUNT: 4,
@@ -150,6 +163,8 @@ test('structure tab view-state runtime normalizes base ui state', () => {
     baseLegColor: 'gold',
     baseLegPlatformMode: 'plain',
     baseLegPlatformSideMode: 'flush',
+    baseLegPlatformSideOverhangCm: '4.5',
+    baseLegPlatformFrontOverhangCm: '7',
     basePlinthHeightCm: '14.5',
     baseLegHeightCm: '18',
     baseLegWidthCm: '5.5',
@@ -172,6 +187,8 @@ test('structure tab view-state runtime normalizes base ui state', () => {
   assert.equal(state.baseLegColor, 'gold');
   assert.equal(state.baseLegPlatformMode, 'plain');
   assert.equal(state.baseLegPlatformSideMode, 'flush');
+  assert.equal(state.baseLegPlatformSideOverhangCm, 4.5);
+  assert.equal(state.baseLegPlatformFrontOverhangCm, 7);
   assert.equal(state.basePlinthHeightCm, 14.5);
   assert.equal(state.baseLegHeightCm, 18);
   assert.equal(state.baseLegWidthCm, 5.5);

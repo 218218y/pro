@@ -76,6 +76,8 @@ export type StructureDimensionsContentProps = {
   cellDimsHexDoorWidth: number | '';
   stackSplitEnabled: boolean;
   stackSplitDecorativeSeparatorEnabled: boolean;
+  stackSplitDecorativeSeparatorSideOverhangCm: number;
+  stackSplitDecorativeSeparatorFrontOverhangCm: number;
   stackSplitLowerHeight: number;
   stackSplitLowerDepth: number;
   stackSplitLowerWidth: number;
@@ -96,6 +98,8 @@ export type StructureDimensionsContentProps = {
   onClearCellDimsHexDoorWidth: () => void;
   onToggleStackSplit: () => void;
   onToggleStackSplitDecorativeSeparator: () => void;
+  onSetStackSplitDecorativeSeparatorSideOverhangCm: (value: number) => void;
+  onSetStackSplitDecorativeSeparatorFrontOverhangCm: (value: number) => void;
   onToggleLibraryUpperDoors: () => void;
   onPickLibraryGlass: (paintId: string) => void;
   renderStackLinkBadge: (field: StructureStackLinkField, isManual: boolean) => ReactNode;

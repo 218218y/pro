@@ -117,6 +117,42 @@ test('carcass leg platform mode adds bottom and top stages without changing leg 
   assert.equal(plainOps.base.platforms, undefined);
 });
 
+test('carcass leg platform uses custom side/front overhang values and keeps flush side at zero', () => {
+  const customOps = computeCarcassOps({
+    totalW: 1.6,
+    D: 0.55,
+    H: 2.4,
+    woodThick: 0.018,
+    baseType: 'legs',
+    baseLegPlatformMode: 'stage',
+    baseLegPlatformSideMode: 'overhang',
+    baseLegPlatformSideOverhangCm: 4,
+    baseLegPlatformFrontOverhangCm: 6,
+    doorsCount: 4,
+  }) as any;
+
+  const bottom = customOps.base.platforms[0];
+  assert.ok(Math.abs(bottom.width - 1.68) < 0.000001, 'custom side overhang should widen both sides');
+  assert.ok(Math.abs(bottom.depth - 0.61) < 0.000001, 'custom front overhang should deepen only the front');
+  assert.ok(Math.abs(bottom.z - (-0.55 / 2 + 0.61 / 2)) < 0.000001);
+
+  const flushOps = computeCarcassOps({
+    totalW: 1.6,
+    D: 0.55,
+    H: 2.4,
+    woodThick: 0.018,
+    baseType: 'legs',
+    baseLegPlatformMode: 'stage',
+    baseLegPlatformSideMode: 'flush',
+    baseLegPlatformSideOverhangCm: 4,
+    baseLegPlatformFrontOverhangCm: 6,
+    doorsCount: 4,
+  }) as any;
+
+  assert.equal(flushOps.base.platforms[0].width, 1.6);
+  assert.ok(Math.abs(flushOps.base.platforms[0].depth - 0.61) < 0.000001);
+});
+
 test('carcass leg platform mode can suppress only the upper stage for decorative stack separators', () => {
   const platformH = CARCASS_BASE_DIMENSIONS.legs.platform.heightM;
   const ops = computeCarcassOps({

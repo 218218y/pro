@@ -24,6 +24,12 @@ import {
 } from '../../../features/base_leg_support.js';
 import { METAL_FINISH_PALETTE_BY_COLOR } from '../../../features/metal_finish_palette.js';
 import {
+  DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM,
+  DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM,
+  PLATFORM_OVERHANG_MAX_CM,
+  PLATFORM_OVERHANG_MIN_CM,
+} from '../../../features/platform_overhang_support.js';
+import {
   BASE_PLINTH_HEIGHT_MAX_CM,
   BASE_PLINTH_HEIGHT_MIN_CM,
   DEFAULT_BASE_PLINTH_HEIGHT_CM,
@@ -35,12 +41,54 @@ const LEG_COLOR_SWATCH_BY_COLOR: Record<StructureBaseLegColor, string> = {
   gold: '#d4af37',
 };
 
+function OverhangNumberField(props: {
+  label: string;
+  value: number;
+  defaultValue: number;
+  onChange: (value: number) => void;
+  resetTitle: string;
+}): ReactElement {
+  return (
+    <div className="wp-field wp-r-leg-size-field wp-r-platform-overhang-field">
+      <div className="wp-field-label">{props.label}</div>
+      <div className="wp-r-sketch-drawer-height-row wp-r-platform-overhang-row">
+        <button
+          type="button"
+          className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-platform-overhang-reset-btn"
+          title={props.resetTitle}
+          aria-label={props.resetTitle}
+          onClick={() => props.onChange(props.defaultValue)}
+        >
+          <i className="fas fa-undo-alt" aria-hidden="true" />
+        </button>
+        <input
+          type="number"
+          className="wp-r-input"
+          min={PLATFORM_OVERHANG_MIN_CM}
+          max={PLATFORM_OVERHANG_MAX_CM}
+          step={0.5}
+          value={props.value}
+          onFocus={(event: import('react').FocusEvent<HTMLInputElement>) => {
+            event.target.select();
+          }}
+          onChange={(event: import('react').ChangeEvent<HTMLInputElement>) => {
+            const next = Number(event.target.value);
+            if (Number.isFinite(next)) props.onChange(next);
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export function StructureBodyBaseControls(props: {
   baseType: BaseType;
   baseLegStyle: StructureBaseLegStyle;
   baseLegColor: StructureBaseLegColor;
   baseLegPlatformMode: StructureBaseLegPlatformMode;
   baseLegPlatformSideMode: StructureBaseLegPlatformSideMode;
+  baseLegPlatformSideOverhangCm: number;
+  baseLegPlatformFrontOverhangCm: number;
   basePlinthHeightCm: number;
   baseLegHeightCm: number;
   baseLegWidthCm: number;
@@ -53,6 +101,8 @@ export function StructureBodyBaseControls(props: {
   onSetBaseLegColor: (value: StructureBaseLegColor) => void;
   onSetBaseLegPlatformMode: (value: StructureBaseLegPlatformMode) => void;
   onSetBaseLegPlatformSideMode: (value: StructureBaseLegPlatformSideMode) => void;
+  onSetBaseLegPlatformSideOverhangCm: (value: number) => void;
+  onSetBaseLegPlatformFrontOverhangCm: (value: number) => void;
   onSetBasePlinthHeightCm: (value: number) => void;
   onSetBaseLegHeightCm: (value: number) => void;
   onSetBaseLegWidthCm: (value: number) => void;
@@ -153,6 +203,27 @@ export function StructureBodyBaseControls(props: {
                   />
                 ))}
               </OptionButtonGroup>
+            </div>
+          ) : null}
+
+          {props.baseLegPlatformMode === 'stage' ? (
+            <div className="wp-r-leg-size-fields wp-r-platform-overhang-fields">
+              {props.baseLegPlatformSideMode === 'overhang' ? (
+                <OverhangNumberField
+                  label="בליטה מהצדדים (ס״מ)"
+                  value={props.baseLegPlatformSideOverhangCm}
+                  defaultValue={DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM}
+                  resetTitle="איפוס בליטה מהצדדים לברירת מחדל"
+                  onChange={props.onSetBaseLegPlatformSideOverhangCm}
+                />
+              ) : null}
+              <OverhangNumberField
+                label="בליטה מהחזית (ס״מ)"
+                value={props.baseLegPlatformFrontOverhangCm}
+                defaultValue={DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM}
+                resetTitle="איפוס בליטה מהחזית לברירת מחדל"
+                onChange={props.onSetBaseLegPlatformFrontOverhangCm}
+              />
             </div>
           ) : null}
 

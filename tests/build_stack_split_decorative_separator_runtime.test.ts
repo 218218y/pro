@@ -136,6 +136,26 @@ test('stack split decorative separator renders an overhanging slab plus front li
   }
 });
 
+test('stack split decorative separator uses custom side and front overhang values', () => {
+  const calls: unknown[][] = [];
+  const args = makeArgs(true, calls) as any;
+  args.buildArgs.stackSplitDecorativeSeparatorSideOverhangCm = 4;
+  args.buildArgs.stackSplitDecorativeSeparatorFrontOverhangCm = 6;
+
+  addStackSplitDecorativeSeparatorIfNeeded(args);
+
+  assert.equal(calls.length, 2);
+  assert.ok(
+    Math.abs(Number(calls[0][0]) - 1.88) < 0.000001,
+    'custom side overhang should apply to both sides'
+  );
+  assert.ok(
+    Math.abs(Number(calls[0][2]) - 0.66) < 0.000001,
+    'custom front overhang should apply to the front'
+  );
+  assert.ok(Math.abs(Number(calls[0][5]) - (-0.6 / 2 + 0.66 / 2)) < 0.000001);
+});
+
 test('decorative stack split lower carcass keeps the bottom leg stage and suppresses the seam top stage', () => {
   const renderedOps: any[] = [];
   const wardrobeGroup = { children: [] as unknown[] };

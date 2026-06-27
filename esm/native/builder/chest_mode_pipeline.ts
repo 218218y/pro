@@ -28,6 +28,8 @@ type BuildChestModeIfNeededParams = {
     baseLegColor?: string;
     baseLegPlatformMode?: string;
     baseLegPlatformSideMode?: string;
+    baseLegPlatformSideOverhangCm?: number | string;
+    baseLegPlatformFrontOverhangCm?: number | string;
     basePlinthHeightCm?: number | string;
     baseLegHeightCm?: number | string;
     baseLegWidthCm?: number | string;
@@ -55,6 +57,8 @@ type BuildChestModeIfNeededParams = {
     baseLegColor: string;
     baseLegPlatformMode: string;
     baseLegPlatformSideMode: string;
+    baseLegPlatformSideOverhangCm: number | string;
+    baseLegPlatformFrontOverhangCm: number | string;
     basePlinthHeightCm: number | string;
     baseLegHeightCm: number | string;
     baseLegWidthCm: number | string;
@@ -105,6 +109,8 @@ export function buildChestModeIfNeeded(params: BuildChestModeIfNeededParams | nu
     baseLegPlatformMode: typeof ui.baseLegPlatformMode === 'string' ? ui.baseLegPlatformMode : 'stage',
     baseLegPlatformSideMode:
       typeof ui.baseLegPlatformSideMode === 'string' ? ui.baseLegPlatformSideMode : 'overhang',
+    baseLegPlatformSideOverhangCm: ui.baseLegPlatformSideOverhangCm ?? '',
+    baseLegPlatformFrontOverhangCm: ui.baseLegPlatformFrontOverhangCm ?? '',
     basePlinthHeightCm: ui.basePlinthHeightCm ?? '',
     baseLegHeightCm: ui.baseLegHeightCm ?? '',
     baseLegWidthCm: ui.baseLegWidthCm ?? '',

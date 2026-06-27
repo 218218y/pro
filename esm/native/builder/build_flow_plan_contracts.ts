@@ -50,6 +50,10 @@ export type BuildFlowPlan = {
   baseLegColor: string;
   baseLegPlatformMode: string;
   baseLegPlatformSideMode: string;
+  baseLegPlatformSideOverhangCm: number;
+  baseLegPlatformFrontOverhangCm: number;
+  stackSplitDecorativeSeparatorSideOverhangCm: number;
+  stackSplitDecorativeSeparatorFrontOverhangCm: number;
   basePlinthHeightCm: number;
   baseLegHeightCm: number;
   baseLegWidthCm: number;
@@ -116,6 +120,10 @@ export type BuildFlowPlanInputs = Pick<
   | 'baseLegColor'
   | 'baseLegPlatformMode'
   | 'baseLegPlatformSideMode'
+  | 'baseLegPlatformSideOverhangCm'
+  | 'baseLegPlatformFrontOverhangCm'
+  | 'stackSplitDecorativeSeparatorSideOverhangCm'
+  | 'stackSplitDecorativeSeparatorFrontOverhangCm'
   | 'basePlinthHeightCm'
   | 'baseLegHeightCm'
   | 'baseLegWidthCm'

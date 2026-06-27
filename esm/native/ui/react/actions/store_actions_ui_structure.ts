@@ -9,6 +9,12 @@ import {
   normalizeBaseLegStyle,
 } from '../../../features/base_leg_support.js';
 import { normalizeBasePlinthHeightCm } from '../../../features/base_plinth_support.js';
+import {
+  normalizeBaseLegPlatformFrontOverhangCm,
+  normalizeBaseLegPlatformSideOverhangCm,
+  normalizeStackSplitDecorativeSeparatorFrontOverhangCm,
+  normalizeStackSplitDecorativeSeparatorSideOverhangCm,
+} from '../../../features/platform_overhang_support.js';
 import { normalizeFrontColorShelfInheritanceMode } from '../../../features/front_color_shelf_inheritance.js';
 import { asStringValue, getUiNamespace } from './store_actions_state.js';
 import { setUiFlag, setUiRawScalar, setUiScalar, setUiScalarSoft } from './store_actions_ui_writes.js';
@@ -40,6 +46,14 @@ function setUiBaseLegPlatformMode(app: AppContainer, value: unknown, meta?: Acti
 
 function setUiBaseLegPlatformSideMode(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
   setUiScalar(app, 'baseLegPlatformSideMode', normalizeBaseLegPlatformSideMode(value), meta);
+}
+
+function setUiBaseLegPlatformSideOverhangCm(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
+  setUiScalar(app, 'baseLegPlatformSideOverhangCm', normalizeBaseLegPlatformSideOverhangCm(value), meta);
+}
+
+function setUiBaseLegPlatformFrontOverhangCm(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
+  setUiScalar(app, 'baseLegPlatformFrontOverhangCm', normalizeBaseLegPlatformFrontOverhangCm(value), meta);
 }
 
 function setUiBaseLegHeightCm(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
@@ -183,6 +197,32 @@ function setUiStackSplitEnabled(app: AppContainer, on: unknown, meta?: ActionMet
   setUiFlag(app, 'stackSplitEnabled', !!on, meta);
 }
 
+function setUiStackSplitDecorativeSeparatorSideOverhangCm(
+  app: AppContainer,
+  value: unknown,
+  meta?: ActionMetaLike
+): void {
+  setUiScalar(
+    app,
+    'stackSplitDecorativeSeparatorSideOverhangCm',
+    normalizeStackSplitDecorativeSeparatorSideOverhangCm(value),
+    meta
+  );
+}
+
+function setUiStackSplitDecorativeSeparatorFrontOverhangCm(
+  app: AppContainer,
+  value: unknown,
+  meta?: ActionMetaLike
+): void {
+  setUiScalar(
+    app,
+    'stackSplitDecorativeSeparatorFrontOverhangCm',
+    normalizeStackSplitDecorativeSeparatorFrontOverhangCm(value),
+    meta
+  );
+}
+
 function setUiStackSplitLowerHeight(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
   setUiRawScalar(app, 'stackSplitLowerHeight', value, meta);
 }
@@ -240,6 +280,8 @@ export {
   setUiBaseLegColor,
   setUiBaseLegPlatformMode,
   setUiBaseLegPlatformSideMode,
+  setUiBaseLegPlatformSideOverhangCm,
+  setUiBaseLegPlatformFrontOverhangCm,
   setUiBaseLegHeightCm,
   setUiBaseLegWidthCm,
   setUiBaseLegStyle,
@@ -273,6 +315,8 @@ export {
   setUiHingeDirection,
   setUiSingleDoorPos,
   setUiSlidingTracksColor,
+  setUiStackSplitDecorativeSeparatorSideOverhangCm,
+  setUiStackSplitDecorativeSeparatorFrontOverhangCm,
   setUiStackSplitEnabled,
   setUiStackSplitLowerDepth,
   setUiStackSplitLowerDepthManual,

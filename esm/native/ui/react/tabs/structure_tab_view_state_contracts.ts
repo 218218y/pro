@@ -22,6 +22,8 @@ export type StructureTabBaseUiState = {
   baseLegColor: BaseLegColor;
   baseLegPlatformMode: BaseLegPlatformMode;
   baseLegPlatformSideMode: BaseLegPlatformSideMode;
+  baseLegPlatformSideOverhangCm: number;
+  baseLegPlatformFrontOverhangCm: number;
   basePlinthHeightCm: number;
   baseLegHeightCm: number;
   baseLegWidthCm: number;
@@ -41,6 +43,8 @@ export type StructureTabBaseUiState = {
 export type StructureTabStackSplitUiState = {
   stackSplitEnabled: boolean;
   stackSplitDecorativeSeparatorEnabled: boolean;
+  stackSplitDecorativeSeparatorSideOverhangCm: number;
+  stackSplitDecorativeSeparatorFrontOverhangCm: number;
   stackSplitLowerHeight: number;
   stackSplitLowerDepthRaw: number;
   stackSplitLowerWidthRaw: number;

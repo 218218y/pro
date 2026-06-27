@@ -22,6 +22,8 @@ export type StructureTabViewState = {
   baseLegColor: BaseLegColor;
   baseLegPlatformMode: BaseLegPlatformMode;
   baseLegPlatformSideMode: BaseLegPlatformSideMode;
+  baseLegPlatformSideOverhangCm: number;
+  baseLegPlatformFrontOverhangCm: number;
   basePlinthHeightCm: number;
   baseLegHeightCm: number;
   baseLegWidthCm: number;
@@ -51,6 +53,8 @@ export type StructureTabViewState = {
   cellDimsHexPanelOpen: boolean;
   stackSplitEnabled: boolean;
   stackSplitDecorativeSeparatorEnabled: boolean;
+  stackSplitDecorativeSeparatorSideOverhangCm: number;
+  stackSplitDecorativeSeparatorFrontOverhangCm: number;
   stackSplitLowerHeight: number;
   stackSplitLowerDepthManual: boolean;
   stackSplitLowerWidthManual: boolean;
