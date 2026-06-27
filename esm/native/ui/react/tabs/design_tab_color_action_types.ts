@@ -77,17 +77,9 @@ export type DesignTabColorActionSuccessResult =
 
 export type DesignTabColorToggleLockFailureReason = 'missing' | 'missing-selection' | 'error';
 export type DesignTabColorDeleteFailureReason =
-  | 'busy'
-  | 'cancelled'
-  | 'error'
-  | 'locked'
-  | 'missing'
-  | 'missing-selection';
+  'busy' | 'cancelled' | 'error' | 'locked' | 'missing' | 'missing-selection';
 export type DesignTabColorUploadTextureFailureReason =
-  | 'busy'
-  | 'missing-file'
-  | 'read-failed'
-  | 'unavailable';
+  'busy' | 'missing-file' | 'read-failed' | 'unavailable';
 export type DesignTabColorSaveCustomColorFailureReason = 'busy' | 'cancelled' | 'error' | 'missing-input';
 
 export type DesignTabColorToggleLockFailureResult = DesignTabColorActionBase & {
@@ -121,8 +113,7 @@ export type DesignTabColorActionFailureResult =
   | DesignTabColorSaveCustomColorFailureResult;
 
 export type DesignTabColorActionResult =
-  | DesignTabColorActionSuccessResult
-  | DesignTabColorActionFailureResult;
+  DesignTabColorActionSuccessResult | DesignTabColorActionFailureResult;
 
 export type DesignTabColorSuccessKind = DesignTabColorActionSuccessResult['kind'];
 export type DesignTabColorFailureKind = DesignTabColorActionFailureResult['kind'];

@@ -36,8 +36,7 @@ export type CreateCloudSyncUiActionControllerArgs = {
   deleteTemporaryModelsWithConfirm?: ((app: AppContainer) => Promise<CloudSyncDeleteTempResult>) | null;
   deleteTemporaryColorsWithConfirm?: ((app: AppContainer) => Promise<CloudSyncDeleteTempResult>) | null;
   setFloatingSketchSyncEnabled?:
-    | ((app: AppContainer, enabled: boolean) => Promise<CloudSyncSyncPinCommandResult>)
-    | null;
+    ((app: AppContainer, enabled: boolean) => Promise<CloudSyncSyncPinCommandResult>) | null;
   toggleFloatingSketchSyncEnabled?: ((app: AppContainer) => Promise<CloudSyncSyncPinCommandResult>) | null;
   toggleSite2TabsGate?:
     | ((

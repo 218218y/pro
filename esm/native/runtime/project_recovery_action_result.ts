@@ -10,21 +10,10 @@ export type ProjectRecoverySuccessResult = {
 };
 
 export type ProjectRestoreFailureReason =
-  | 'busy'
-  | 'cancelled'
-  | 'missing-autosave'
-  | 'invalid'
-  | 'not-installed'
-  | 'superseded'
-  | 'error';
+  'busy' | 'cancelled' | 'missing-autosave' | 'invalid' | 'not-installed' | 'superseded' | 'error';
 
 export type ProjectResetDefaultFailureReason =
-  | 'busy'
-  | 'cancelled'
-  | 'invalid'
-  | 'not-installed'
-  | 'superseded'
-  | 'error';
+  'busy' | 'cancelled' | 'invalid' | 'not-installed' | 'superseded' | 'error';
 
 export type ProjectRestoreFailureResult = {
   ok: false;

@@ -138,8 +138,7 @@ test('order pdf pdf-import clears saved form text and stale widget appearances f
   assert.equal(widgets[0]?.dict?.get?.(PDFName.of('AP')), undefined);
 
   const acroForm = cleanedDoc.catalog.get(PDFName.of('AcroForm')) as
-    | { get?: (key: unknown) => unknown }
-    | undefined;
+    { get?: (key: unknown) => unknown } | undefined;
   assert.equal(acroForm?.get?.(PDFName.of('NeedAppearances')), undefined);
 });
 

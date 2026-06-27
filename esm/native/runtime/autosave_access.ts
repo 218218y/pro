@@ -10,8 +10,7 @@ export type AutosaveInfoLike = {
 };
 
 export type AutosavePayloadStorageReadResult =
-  | { ok: true; payload: ProjectLoadInputLike }
-  | { ok: false; reason: 'missing-autosave' | 'invalid' };
+  { ok: true; payload: ProjectLoadInputLike } | { ok: false; reason: 'missing-autosave' | 'invalid' };
 
 function asAutosaveService(value: unknown): AutosaveServiceLike | null {
   return asRecord<AutosaveServiceLike>(value);

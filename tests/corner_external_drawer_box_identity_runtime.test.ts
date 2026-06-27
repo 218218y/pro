@@ -214,8 +214,7 @@ test('corner regular external drawer box accepts its own explicit per-part paint
   emitCornerWingExternalDrawers(setup.runtime as any, setup.cellRuntime as any);
 
   const drawerBox = descendants(setup.wingGroup).find(node => node.userData?.__wpDrawerBox === true) as
-    | MeshStub
-    | undefined;
+    MeshStub | undefined;
   assert.ok(drawerBox, 'expected a separately tagged drawer box');
   assert.equal(drawerBox?.userData.partId, makeDrawerBoxPartId('corner_c0_draw_1'));
   assert.equal(drawerBox?.material, boxOverride);
@@ -227,8 +226,7 @@ test('corner lower-stack regular external drawer box uses a scoped owner id and 
   emitCornerWingExternalDrawers(setup.runtime as any, setup.cellRuntime as any);
 
   const drawerBox = descendants(setup.wingGroup).find(node => node.userData?.__wpDrawerBox === true) as
-    | MeshStub
-    | undefined;
+    MeshStub | undefined;
   assert.ok(drawerBox, 'expected lower corner drawer box to be emitted');
   assert.equal(drawerBox?.userData.partId, makeDrawerBoxPartId('lower_corner_c0_draw_1'));
   assert.equal(drawerBox?.userData.drawerId, 'lower_corner_c0_draw_1');
@@ -251,8 +249,7 @@ test('corner regular external drawer build appends configured door-trim visuals 
   );
   assert.ok(drawerGroup, 'expected the corner drawer group to be emitted');
   const trim = descendants(drawerGroup as Object3DStub).find(node => node.userData?.__wpDoorTrim === true) as
-    | MeshStub
-    | undefined;
+    MeshStub | undefined;
 
   assert.ok(trim, 'expected the corner drawer front to include the configured trim visual');
   assert.equal(trim?.userData.partId, 'corner_c0_draw_1');

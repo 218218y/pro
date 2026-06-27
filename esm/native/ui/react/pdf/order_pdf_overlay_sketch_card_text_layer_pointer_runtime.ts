@@ -27,8 +27,7 @@ export type OrderPdfSketchTextLayerCanvasPointerAction =
   | { kind: 'noop' };
 
 export type OrderPdfSketchTextLayerCreateCommitAction =
-  | { kind: 'noop' }
-  | { kind: 'create'; textBox: OrderPdfSketchTextBox };
+  { kind: 'noop' } | { kind: 'create'; textBox: OrderPdfSketchTextBox };
 
 function isElementLike(target: EventTarget | null): target is Element {
   if (!target || typeof target !== 'object') return false;

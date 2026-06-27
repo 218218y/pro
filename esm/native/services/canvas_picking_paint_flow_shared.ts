@@ -57,8 +57,7 @@ export type ResolvedSizedMirrorLayoutClickResult = ResolvedMirrorLayoutClickResu
 };
 
 export type ResolvedMirrorLayoutClickResult =
-  | ResolvedFullDoorMirrorLayoutClickResult
-  | ResolvedSizedMirrorLayoutClickResult;
+  ResolvedFullDoorMirrorLayoutClickResult | ResolvedSizedMirrorLayoutClickResult;
 
 export type MirrorLayoutClickResult = RejectedMirrorLayoutClickResult | ResolvedMirrorLayoutClickResult;
 

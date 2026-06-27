@@ -50,17 +50,10 @@ export type ModulesRecomputeBuildRequestPolicy = {
 
 type ModulesRecomputeMetaLike = ActionMetaLike | null | undefined;
 type ModulesRecomputeOptionsLike =
-  | ModulesRecomputeFromUiOptionsLike
-  | ModulesRecomputeBuildRequestPolicy
-  | null
-  | undefined;
+  ModulesRecomputeFromUiOptionsLike | ModulesRecomputeBuildRequestPolicy | null | undefined;
 
 type ModulesRecomputeSingleArgumentLike =
-  | ActionMetaLike
-  | ModulesRecomputeFromUiOptionsLike
-  | ModulesRecomputeBuildRequestPolicy
-  | null
-  | undefined;
+  ActionMetaLike | ModulesRecomputeFromUiOptionsLike | ModulesRecomputeBuildRequestPolicy | null | undefined;
 
 function isRecord(value: unknown): value is UnknownRecord {
   return !!value && typeof value === 'object';

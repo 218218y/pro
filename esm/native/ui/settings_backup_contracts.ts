@@ -3,13 +3,7 @@ export type SettingsBackupActionKind = 'export' | 'import';
 export type SettingsBackupExportFailureReason = 'download-unavailable' | 'busy' | 'error';
 
 export type SettingsBackupImportFailureReason =
-  | 'cancelled'
-  | 'invalid-json'
-  | 'invalid-backup'
-  | 'read-failed'
-  | 'models-unavailable'
-  | 'busy'
-  | 'error';
+  'cancelled' | 'invalid-json' | 'invalid-backup' | 'read-failed' | 'models-unavailable' | 'busy' | 'error';
 
 export type SettingsBackupExportSuccessResult = {
   ok: true;
@@ -26,8 +20,7 @@ export type SettingsBackupImportSuccessResult = {
 };
 
 export type SettingsBackupSuccessResult =
-  | SettingsBackupExportSuccessResult
-  | SettingsBackupImportSuccessResult;
+  SettingsBackupExportSuccessResult | SettingsBackupImportSuccessResult;
 
 export type SettingsBackupExportFailureResult = {
   ok: false;
@@ -44,7 +37,6 @@ export type SettingsBackupImportFailureResult = {
 };
 
 export type SettingsBackupFailureResult =
-  | SettingsBackupExportFailureResult
-  | SettingsBackupImportFailureResult;
+  SettingsBackupExportFailureResult | SettingsBackupImportFailureResult;
 
 export type SettingsBackupActionResult = SettingsBackupSuccessResult | SettingsBackupFailureResult;

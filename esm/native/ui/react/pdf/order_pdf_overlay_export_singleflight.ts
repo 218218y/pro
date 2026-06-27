@@ -6,11 +6,7 @@ import type { OrderPdfOverlayActionResult } from './order_pdf_overlay_contracts.
 
 export type OrderPdfOverlayActionKind = OrderPdfOverlayActionResult['kind'];
 export type OrderPdfOverlayActionFlightKey =
-  | `load-pdf:${string}`
-  | 'export-interactive'
-  | 'export-image-pdf'
-  | 'export-gmail'
-  | 'export-download-gmail';
+  `load-pdf:${string}` | 'export-interactive' | 'export-image-pdf' | 'export-gmail' | 'export-download-gmail';
 
 export type OrderPdfOverlayPendingFlight<T> = AppActionFamilyFlight<T, OrderPdfOverlayActionFlightKey>;
 

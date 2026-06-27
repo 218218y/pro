@@ -1,22 +1,8 @@
 export type OrderPdfFieldKey =
-  | 'orderNumber'
-  | 'orderDate'
-  | 'projectName'
-  | 'deliveryAddress'
-  | 'phone'
-  | 'mobile'
-  | 'details'
-  | 'notes';
+  'orderNumber' | 'orderDate' | 'projectName' | 'deliveryAddress' | 'phone' | 'mobile' | 'details' | 'notes';
 
 export type OrderPdfImageFieldKey =
-  | 'orderNo'
-  | 'date'
-  | 'name'
-  | 'address'
-  | 'phone'
-  | 'mobile'
-  | 'details'
-  | 'notes';
+  'orderNo' | 'date' | 'name' | 'address' | 'phone' | 'mobile' | 'details' | 'notes';
 
 export type OrderPdfOverlayFieldRectLike = { x: number; top: number; w: number; h: number };
 export type OrderPdfTemplateBoxLike = { x: number; y: number; w: number; h: number };

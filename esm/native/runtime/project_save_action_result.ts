@@ -2,13 +2,7 @@ import { normalizeUnknownError } from './error_normalization.js';
 import { asRecord } from './record.js';
 
 export type ProjectSaveFailureReason =
-  | 'cancelled'
-  | 'download-unavailable'
-  | 'not-installed'
-  | 'invalid'
-  | 'superseded'
-  | 'busy'
-  | 'error';
+  'cancelled' | 'download-unavailable' | 'not-installed' | 'invalid' | 'superseded' | 'busy' | 'error';
 
 export type ProjectSavePendingResult = {
   ok: true;
@@ -27,9 +21,7 @@ export type ProjectSaveFailureResult = {
 };
 
 export type ProjectSaveActionResult =
-  | ProjectSavePendingResult
-  | ProjectSaveSuccessResult
-  | ProjectSaveFailureResult;
+  ProjectSavePendingResult | ProjectSaveSuccessResult | ProjectSaveFailureResult;
 
 type ProjectSaveResultRecord = {
   ok?: unknown;

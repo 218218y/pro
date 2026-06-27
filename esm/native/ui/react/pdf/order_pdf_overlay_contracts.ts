@@ -94,10 +94,7 @@ export type InlineDetailsConfirmState = {
 };
 
 export type OrderPdfOverlayDraftActionKind =
-  | 'initial-load'
-  | 'refresh-auto'
-  | 'confirm-inline-ok'
-  | 'confirm-inline-cancel';
+  'initial-load' | 'refresh-auto' | 'confirm-inline-ok' | 'confirm-inline-cancel';
 
 export type OrderPdfOverlayDraftActionReason = 'not-ready' | 'cancelled' | 'error';
 
@@ -181,11 +178,7 @@ export type PdfJsLibLike = {
 export type InteractivePdfBuildResult = { blob: Blob; fileName: string; projectName: string };
 
 export type OrderPdfOverlayActionKind =
-  | 'load-pdf'
-  | 'export-interactive'
-  | 'export-image-pdf'
-  | 'export-gmail'
-  | 'export-download-gmail';
+  'load-pdf' | 'export-interactive' | 'export-image-pdf' | 'export-gmail' | 'export-download-gmail';
 
 export type OrderPdfOverlayActionReason = 'not-ready' | 'busy' | 'invalid-file' | 'error';
 

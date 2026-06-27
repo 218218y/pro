@@ -1516,8 +1516,7 @@ test('cloud sync main row preserves canonical main pull reasons when pull-all an
     await Promise.resolve();
 
     const payload = harness.diagCalls.find(([event]) => event === 'mainRow.pull:coalesced:run')?.[1] as
-      | { count?: number; reason?: string }
-      | undefined;
+      { count?: number; reason?: string } | undefined;
     assert.deepEqual(payload, {
       count: 2,
       reason: 'attention.main|realtime.main',
@@ -1612,8 +1611,7 @@ test('cloud sync main row keeps canonical main pull reasons across a push-blocke
   await Promise.resolve();
 
   const payload = harness.diagCalls.find(([event]) => event === 'mainRow.pull:coalesced:run')?.[1] as
-    | { count?: number; reason?: string }
-    | undefined;
+    { count?: number; reason?: string } | undefined;
   assert.deepEqual(payload, {
     count: 2,
     reason: 'poll.main|realtime.main',

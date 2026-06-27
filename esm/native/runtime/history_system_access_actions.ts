@@ -3,11 +3,7 @@ import { getHistoryActions } from './actions_access_domains.js';
 import { isCallable } from './history_system_access_shared.js';
 
 export type HistoryActionMethodName =
-  | 'getSystem'
-  | 'schedulePush'
-  | 'flushPendingPush'
-  | 'pushState'
-  | 'flushOrPush';
+  'getSystem' | 'schedulePush' | 'flushPendingPush' | 'pushState' | 'flushOrPush';
 export type HistoryActionArg = ActionMetaLike | HistoryPushRequestLike | undefined;
 export type HistoryActionInvoker = (arg?: HistoryActionArg) => unknown;
 

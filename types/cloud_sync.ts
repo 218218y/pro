@@ -52,13 +52,7 @@ export type CloudSyncSketchCommandResult =
   | { ok: false; reason: 'error'; message?: string };
 
 export type CloudSyncTabsGateCommandReason =
-  | 'controller-only'
-  | 'busy'
-  | 'room'
-  | 'write'
-  | 'sync-failed'
-  | 'error'
-  | 'not-installed';
+  'controller-only' | 'busy' | 'room' | 'write' | 'sync-failed' | 'error' | 'not-installed';
 
 export type CloudSyncTabsGateCommandResult =
   | { ok: true; changed?: boolean; open?: boolean; until?: number }
@@ -80,12 +74,7 @@ export type CloudSyncTabsGateCommandResult =
     };
 
 export type CloudSyncSyncPinCommandReason =
-  | 'busy'
-  | 'room'
-  | 'write'
-  | 'sync-failed'
-  | 'error'
-  | 'not-installed';
+  'busy' | 'room' | 'write' | 'sync-failed' | 'error' | 'not-installed';
 
 export type CloudSyncSyncPinCommandResult =
   | { ok: true; changed?: boolean; enabled?: boolean }
@@ -106,12 +95,7 @@ export type CloudSyncSyncPinCommandResult =
     };
 
 export type CloudSyncShareLinkCommandReason =
-  | 'missing-link'
-  | 'clipboard'
-  | 'unavailable'
-  | 'error'
-  | 'prompt'
-  | 'not-installed';
+  'missing-link' | 'clipboard' | 'unavailable' | 'error' | 'prompt' | 'not-installed';
 
 export type CloudSyncShareLinkCommandResult =
   | { ok: true; copied?: true; prompted?: true; link?: string }

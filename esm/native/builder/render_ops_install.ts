@@ -28,16 +28,10 @@ type ArgsBoundRenderOpKey =
   | 'createRodWithContents';
 
 type MaybeArgsBoundRenderOpKey =
-  | 'getCommonMats'
-  | 'getMirrorMaterial'
-  | 'hideInteriorLayoutHoverPreview'
-  | 'hideSketchPlacementPreview';
+  'getCommonMats' | 'getMirrorMaterial' | 'hideInteriorLayoutHoverPreview' | 'hideSketchPlacementPreview';
 
 type RenderOpsCallableKey =
-  | ArgsBoundRenderOpKey
-  | MaybeArgsBoundRenderOpKey
-  | 'createHandleMesh'
-  | 'applyCarcassOps';
+  ArgsBoundRenderOpKey | MaybeArgsBoundRenderOpKey | 'createHandleMesh' | 'applyCarcassOps';
 
 const ARGS_BOUND_RENDER_OP_KEYS: readonly ArgsBoundRenderOpKey[] = [
   'ensureSplitHoverMarker',

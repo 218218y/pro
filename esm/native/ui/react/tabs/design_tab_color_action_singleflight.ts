@@ -12,9 +12,7 @@ import {
 export const DESIGN_TAB_COLOR_ACTION_SAVE_KEY = 'save-custom-color';
 
 export type DesignTabColorActionFlightKey =
-  | typeof DESIGN_TAB_COLOR_ACTION_SAVE_KEY
-  | `upload-texture:${string}`
-  | `delete-color:${string}`;
+  typeof DESIGN_TAB_COLOR_ACTION_SAVE_KEY | `upload-texture:${string}` | `delete-color:${string}`;
 
 const designTabColorActionFlights = new WeakMap<
   object,

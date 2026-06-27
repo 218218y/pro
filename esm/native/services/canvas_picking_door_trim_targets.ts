@@ -5,10 +5,7 @@ import { isCabinetBodyDoorTrimSurfacePartId } from '../features/door_trim.js';
 import { asRecord } from '../runtime/record.js';
 
 type DoorGroupLike =
-  | (UnknownRecord & { userData?: UnknownRecord | null })
-  | DoorVisualEntryLike['group']
-  | null
-  | undefined;
+  (UnknownRecord & { userData?: UnknownRecord | null }) | DoorVisualEntryLike['group'] | null | undefined;
 
 type DoorTrimTarget = {
   partId: string;

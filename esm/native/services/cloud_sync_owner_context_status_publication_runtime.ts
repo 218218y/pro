@@ -8,11 +8,7 @@ import { installCloudSyncStatusSurface, isCloudSyncStatusSurfaceFresh } from './
 import type { CloudSyncReportNonFatal } from './cloud_sync_owner_context_runtime_shared.js';
 
 export type CloudSyncOwnerStatusPublicationReason =
-  | 'published'
-  | 'fresh-surface'
-  | 'healed-surface'
-  | 'stale-epoch'
-  | 'missing-state';
+  'published' | 'fresh-surface' | 'healed-surface' | 'stale-epoch' | 'missing-state';
 
 export type CloudSyncOwnerStatusPublicationResult = {
   published: boolean;

@@ -42,8 +42,7 @@ export type SettingsStorageKeys = {
 };
 
 export type ReadBackupFileTextResult =
-  | { ok: true; text: string }
-  | { ok: false; reason: 'read-failed'; message?: string };
+  { ok: true; text: string } | { ok: false; reason: 'read-failed'; message?: string };
 
 export type ParseSettingsBackupResult =
   | { ok: true; data: SettingsBackupData }

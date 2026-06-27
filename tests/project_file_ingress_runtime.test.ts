@@ -115,8 +115,7 @@ test('project drag-drop routes JSON files through canonical ProjectIO file ingre
     assert.equal(classNames.has('is-dragover'), false);
   } finally {
     (globalThis as { DragEvent?: typeof FakeDragEvent }).DragEvent = prevDragEvent as
-      | typeof DragEvent
-      | undefined;
+      typeof DragEvent | undefined;
   }
 });
 
@@ -159,7 +158,6 @@ test('project drag-drop rejects non-json files before touching ProjectIO', async
     assert.deepEqual(toasts, [{ msg: 'אנא גרור קובץ פרויקט (JSON) בלבד.', type: 'error' }]);
   } finally {
     (globalThis as { DragEvent?: typeof FakeDragEvent }).DragEvent = prevDragEvent as
-      | typeof DragEvent
-      | undefined;
+      typeof DragEvent | undefined;
   }
 });

@@ -117,16 +117,14 @@ function readCenterPanelMetrics(group: Object3DLike, role: string): CenterPanelM
     const height = readBoxGeometryDimension(geometry, 1, 'height');
     const depth = readBoxGeometryDimension(geometry, 2, 'depth');
     const centerZ = Number(child.position.z) || 0;
-    if (
-      !(
-        Number.isFinite(width) &&
-        width > 0 &&
-        Number.isFinite(height) &&
-        height > 0 &&
-        Number.isFinite(depth) &&
-        depth > 0
-      )
-    ) {
+    if (!(
+      Number.isFinite(width) &&
+      width > 0 &&
+      Number.isFinite(height) &&
+      height > 0 &&
+      Number.isFinite(depth) &&
+      depth > 0
+    )) {
       continue;
     }
     return {

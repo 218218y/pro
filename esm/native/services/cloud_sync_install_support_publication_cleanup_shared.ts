@@ -12,12 +12,7 @@ import { readCloudSyncPublishedPreservedState } from './cloud_sync_install_suppo
 
 type CloudSyncDeactivatablePublishedSlot = 'panelApi' | 'status';
 type CloudSyncRemovablePublishedSlot =
-  | 'panelApi'
-  | 'status'
-  | 'installedAt'
-  | 'dispose'
-  | '__disposePublicationEpoch'
-  | '__testHooks';
+  'panelApi' | 'status' | 'installedAt' | 'dispose' | '__disposePublicationEpoch' | '__testHooks';
 
 type CloudSyncPublishedDeactivationSpec = {
   deactivate: (current: unknown) => void;

@@ -80,19 +80,17 @@ export function resolvePaintPreviewGroupBoxFromObjects(args: {
     minThickness = Math.min(minThickness, woodThick);
   }
 
-  if (
-    !(
-      Number.isFinite(minX) &&
-      Number.isFinite(maxX) &&
-      maxX > minX &&
-      Number.isFinite(minY) &&
-      Number.isFinite(maxY) &&
-      maxY > minY &&
-      Number.isFinite(minZ) &&
-      Number.isFinite(maxZ) &&
-      maxZ > minZ
-    )
-  ) {
+  if (!(
+    Number.isFinite(minX) &&
+    Number.isFinite(maxX) &&
+    maxX > minX &&
+    Number.isFinite(minY) &&
+    Number.isFinite(maxY) &&
+    maxY > minY &&
+    Number.isFinite(minZ) &&
+    Number.isFinite(maxZ) &&
+    maxZ > minZ
+  )) {
     return null;
   }
 

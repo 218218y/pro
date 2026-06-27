@@ -124,15 +124,7 @@ declare module 'react' {
   }
   export interface DragDataTransferLike {
     effectAllowed:
-      | 'none'
-      | 'copy'
-      | 'copyLink'
-      | 'copyMove'
-      | 'link'
-      | 'linkMove'
-      | 'move'
-      | 'all'
-      | 'uninitialized';
+      'none' | 'copy' | 'copyLink' | 'copyMove' | 'link' | 'linkMove' | 'move' | 'all' | 'uninitialized';
     dropEffect?: string;
     files?: FileList;
     items?: DataTransferItemList;

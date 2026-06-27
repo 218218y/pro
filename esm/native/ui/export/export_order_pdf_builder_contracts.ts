@@ -101,8 +101,7 @@ export type OrderPdfBuilderRuntimeLike = {
   black: unknown;
   TextAlignment: Record<string, unknown>;
   updateDefaultAppearance:
-    | ((acroField: unknown, color: unknown, font: unknown, fontSize: number) => unknown)
-    | null;
+    ((acroField: unknown, color: unknown, font: unknown, fontSize: number) => unknown) | null;
   PDFName: { of: (name: string) => unknown };
   PDFNumber: { of: (n: number) => unknown };
   PDFBool: { True?: unknown } | null;

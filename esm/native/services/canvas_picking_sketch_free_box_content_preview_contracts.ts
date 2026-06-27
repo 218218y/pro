@@ -73,8 +73,7 @@ export type SketchFreeBoxContentPreviewArgs = {
 };
 
 export type SketchFreeBoxContentPreviewResult =
-  | { mode: 'preview'; hoverRecord: RecordMap; preview: RecordMap }
-  | { mode: 'hide' };
+  { mode: 'preview'; hoverRecord: RecordMap; preview: RecordMap } | { mode: 'hide' };
 
 export type SketchFreeBoxResolvedTarget = Pick<
   SketchFreeBoxTarget,

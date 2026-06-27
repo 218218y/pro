@@ -43,8 +43,7 @@ export type OrderPdfDraftSeed = {
 };
 
 export type OrderPdfRefreshAutoResult =
-  | { kind: 'persist'; next: OrderPdfDraft }
-  | { kind: 'confirm'; confirm: InlineDetailsConfirmState };
+  { kind: 'persist'; next: OrderPdfDraft } | { kind: 'confirm'; confirm: InlineDetailsConfirmState };
 
 export function readOrderPdfDraftSeed(value: unknown): OrderPdfDraftSeed {
   const rec = asRecord(value);

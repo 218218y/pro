@@ -2,8 +2,7 @@ import { triggerBlobDownloadResultViaBrowser } from '../services/api.js';
 import { normalizeUnknownError, reportError } from '../services/api.js';
 
 export type BrowserFileDownloadResult =
-  | { ok: true }
-  | { ok: false; reason: 'download-unavailable' | 'error'; message?: string };
+  { ok: true } | { ok: false; reason: 'download-unavailable' | 'error'; message?: string };
 
 type DownloadContextLike = {
   docMaybe?: Document | null;

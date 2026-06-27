@@ -47,8 +47,7 @@ export type ProjectConfigScalarRequiredKey =
   | 'insetShelfThicknessCm';
 
 export type ProjectConfigSnapshotRequiredKey =
-  | ProjectConfigScalarRequiredKey
-  | ProjectConfigSnapshotReplaceKey;
+  ProjectConfigScalarRequiredKey | ProjectConfigSnapshotReplaceKey;
 
 export interface ProjectConfigCanonicalSnapshotResult {
   config: ConfigStateLike;

@@ -157,8 +157,7 @@ function readSketchBoxInheritedGrooveStateFromHitObject(args: {
     }
 
     current = asRecord((current as { parent?: unknown }).parent) as
-      | (GrooveHitNode & { parent?: unknown })
-      | null;
+      (GrooveHitNode & { parent?: unknown }) | null;
   }
 
   return null;

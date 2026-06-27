@@ -39,8 +39,7 @@ export function buildResetDefaultProjectData(App: AppContainer): ProjectDataLike
 }
 
 export type ResetDefaultProjectPayloadReadResult =
-  | { ok: true; data: ProjectDataLike; opts: ProjectLoadOpts }
-  | ProjectResetDefaultFailureResult;
+  { ok: true; data: ProjectDataLike; opts: ProjectLoadOpts } | ProjectResetDefaultFailureResult;
 
 export function buildResetDefaultProjectLoadOpts(opts?: ProjectLoadOpts | null): ProjectLoadOpts {
   const nextMeta = opts?.meta && typeof opts.meta === 'object' ? { ...opts.meta } : {};

@@ -5,8 +5,7 @@ import { buildErrorResult as buildNormalizedErrorResult } from './error_normaliz
 import { reportError } from './errors.js';
 
 export type BrowserClipboardResult =
-  | { ok: true }
-  | { ok: false; reason: 'unavailable' | 'error'; message?: string };
+  { ok: true } | { ok: false; reason: 'unavailable' | 'error'; message?: string };
 
 type ClipboardTextWriterLike = {
   writeText?: (text: string) => Promise<unknown> | unknown;

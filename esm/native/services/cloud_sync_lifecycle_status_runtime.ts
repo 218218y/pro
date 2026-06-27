@@ -1,12 +1,7 @@
 import type { CloudSyncDiagFn, CloudSyncDiagPayload, CloudSyncRuntimeStatus } from '../../../types';
 
 export type CloudSyncLifecyclePhase =
-  | 'disabled'
-  | 'polling-only'
-  | 'realtime-connecting'
-  | 'realtime-live'
-  | 'realtime-recovering'
-  | 'idle';
+  'disabled' | 'polling-only' | 'realtime-connecting' | 'realtime-live' | 'realtime-recovering' | 'idle';
 
 export type CloudSyncLifecycleSnapshot = {
   phase: CloudSyncLifecyclePhase;

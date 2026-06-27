@@ -13,8 +13,7 @@ type ProjectIoTestApp = {
 
 function createProjectIoApp(overrides?: {
   applyProjectSnapshot?:
-    | ((snapshot: Record<string, unknown>, meta?: Record<string, unknown>) => unknown)
-    | null;
+    ((snapshot: Record<string, unknown>, meta?: Record<string, unknown>) => unknown) | null;
   patch?: ((patch: Record<string, unknown>, meta?: Record<string, unknown>) => unknown) | null;
   commitUiSnapshot?: ((snapshot: Record<string, unknown>, meta?: Record<string, unknown>) => unknown) | null;
   setDirty?: ((next: boolean, meta?: Record<string, unknown>) => unknown) | null;

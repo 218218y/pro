@@ -105,9 +105,5 @@ export type StructureTabSelectionArgs = {
 };
 
 export type StructureTabCellDimKey =
-  | 'cellDimsWidth'
-  | 'cellDimsHeight'
-  | 'cellDimsDepth'
-  | 'cellDimsHexProtrusion'
-  | 'cellDimsHexDoorWidth';
+  'cellDimsWidth' | 'cellDimsHeight' | 'cellDimsDepth' | 'cellDimsHexProtrusion' | 'cellDimsHexDoorWidth';
 export type StructureTabUiSnapshot = UnknownRecord;

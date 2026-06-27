@@ -13,22 +13,10 @@ import type { SavedModelsListType, SavedModelsMoveDir } from './structure_tab_sa
 import { getModelName, isLockedModel } from './structure_tab_saved_models_shared.js';
 
 export type SavedModelsActionKind =
-  | 'apply'
-  | 'save'
-  | 'overwrite'
-  | 'toggle-lock'
-  | 'delete'
-  | 'move'
-  | 'reorder'
-  | 'transfer';
+  'apply' | 'save' | 'overwrite' | 'toggle-lock' | 'delete' | 'move' | 'reorder' | 'transfer';
 
 export type SavedModelsActionFailureReason =
-  | ModelsCommandReason
-  | 'cancelled'
-  | 'duplicate-locked'
-  | 'missing-id'
-  | 'missing-selection'
-  | 'busy';
+  ModelsCommandReason | 'cancelled' | 'duplicate-locked' | 'missing-id' | 'missing-selection' | 'busy';
 
 export type SavedModelsActionBase = {
   kind: SavedModelsActionKind;

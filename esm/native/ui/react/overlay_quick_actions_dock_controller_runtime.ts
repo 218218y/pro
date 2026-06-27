@@ -6,8 +6,7 @@ export type QuickActionsDockApiLike = {
   getPanelSnapshot?: (() => QuickActionsDockPanelSnapshot | null | undefined) | null;
   isFloatingSketchSyncEnabled?: (() => unknown) | null;
   subscribePanelSnapshot?:
-    | ((fn: (snapshot: QuickActionsDockPanelSnapshot) => void) => (() => void) | void)
-    | null;
+    ((fn: (snapshot: QuickActionsDockPanelSnapshot) => void) => (() => void) | void) | null;
   subscribeFloatingSketchSyncEnabled?: ((fn: (value: boolean) => void) => (() => void) | void) | null;
 };
 

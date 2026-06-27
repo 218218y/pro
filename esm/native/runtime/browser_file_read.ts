@@ -2,8 +2,7 @@ import { buildErrorResult as buildNormalizedErrorResult } from './error_normaliz
 import { reportError } from './errors.js';
 
 export type BrowserFileReadResult<T> =
-  | { ok: true; value: T }
-  | { ok: false; reason: 'unavailable' | 'error'; message: string };
+  { ok: true; value: T } | { ok: false; reason: 'unavailable' | 'error'; message: string };
 
 export type FileReaderLike = {
   result: unknown;

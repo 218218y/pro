@@ -28,8 +28,7 @@ type CommitSketchFreePlacementHoverRecordArgs = {
 };
 
 export type CommitSketchFreePlacementHoverRecordResult =
-  | { committed: false }
-  | { committed: true; nextHover: RecordMap | null };
+  { committed: false } | { committed: true; nextHover: RecordMap | null };
 
 type CreateSketchFreePlacementBoxHoverRecordArgs = {
   tool: string;

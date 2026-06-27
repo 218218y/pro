@@ -197,15 +197,7 @@ export interface ViewportRuntimeApplySketchModeOptions extends UnknownRecord {
 }
 
 export type ExportCanvasAction =
-  | 'snapshot'
-  | 'save'
-  | 'dual'
-  | 'openclosed'
-  | 'rendersketch'
-  | 'sketch'
-  | 'autozoom'
-  | 'clipboard'
-  | 'copy';
+  'snapshot' | 'save' | 'dual' | 'openclosed' | 'rendersketch' | 'sketch' | 'autozoom' | 'clipboard' | 'copy';
 
 export interface ExportCanvasOptionsLike extends UnknownRecord {
   action?: ExportCanvasAction | string;

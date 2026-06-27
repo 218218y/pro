@@ -1,8 +1,7 @@
 import type { UnknownRecord } from '../../../types/index.js';
 
 export type BrowserDownloadResult =
-  | { ok: true }
-  | { ok: false; reason: 'unavailable' | 'error'; message?: string };
+  { ok: true } | { ok: false; reason: 'unavailable' | 'error'; message?: string };
 
 import { getDocumentMaybe, getWindowMaybe } from './browser_env.js';
 import { buildErrorResult as buildNormalizedErrorResult } from './error_normalization.js';

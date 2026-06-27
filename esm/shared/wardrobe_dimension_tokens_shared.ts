@@ -831,10 +831,7 @@ export const DOOR_VISUAL_DIMENSIONS = Object.freeze({
 export type DoorMountConstructionMode = 'overlay' | 'inset';
 export type DoorMountThicknessKind = 'frame' | 'shelf';
 export type DoorMountThicknessConfigKey =
-  | 'overlayFrameThicknessCm'
-  | 'overlayShelfThicknessCm'
-  | 'insetFrameThicknessCm'
-  | 'insetShelfThicknessCm';
+  'overlayFrameThicknessCm' | 'overlayShelfThicknessCm' | 'insetFrameThicknessCm' | 'insetShelfThicknessCm';
 
 export const DOOR_MOUNT_THICKNESS_DIMENSIONS = Object.freeze({
   stepCm: 0.1,

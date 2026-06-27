@@ -17,14 +17,9 @@ export type StructureDimInputBounds = {
   allowZero?: boolean;
 };
 export type StructureDraftCommitResult =
-  | { kind: 'pending' }
-  | { kind: 'invalid' }
-  | { kind: 'value'; value: number };
+  { kind: 'pending' } | { kind: 'invalid' } | { kind: 'value'; value: number };
 export type StructureOptionalDraftCommitResult =
-  | { kind: 'empty' }
-  | { kind: 'pending' }
-  | { kind: 'invalid' }
-  | { kind: 'value'; value: number };
+  { kind: 'empty' } | { kind: 'pending' } | { kind: 'invalid' } | { kind: 'value'; value: number };
 
 export function formatStructureDraftValue(value: StructureDraftSyncValue): string {
   return value === '' ? '' : String(value);

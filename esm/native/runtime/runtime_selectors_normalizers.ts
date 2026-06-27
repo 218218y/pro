@@ -18,10 +18,7 @@ type RuntimeBooleanKey =
   | 'debug';
 type RuntimeNumberKey = 'doorsLastToggleTime' | 'verboseConsoleErrorsDedupeMs';
 type RuntimeNullableNumberKey =
-  | 'wardrobeWidthM'
-  | 'wardrobeHeightM'
-  | 'wardrobeDepthM'
-  | 'wardrobeDoorsCount';
+  'wardrobeWidthM' | 'wardrobeHeightM' | 'wardrobeDepthM' | 'wardrobeDoorsCount';
 
 function isRuntimeBooleanKey(key: RuntimeScalarKey): key is RuntimeBooleanKey {
   return (

@@ -205,13 +205,7 @@ export function setUiLastSelectedWallColor(App: unknown, value: unknown, meta?: 
 }
 
 type UiLightingScalarKey =
-  | 'lightingControl'
-  | 'lastLightPreset'
-  | 'lightAmb'
-  | 'lightDir'
-  | 'lightX'
-  | 'lightY'
-  | 'lightZ';
+  'lightingControl' | 'lastLightPreset' | 'lightAmb' | 'lightDir' | 'lightX' | 'lightY' | 'lightZ';
 
 type UiLightingTextKey = 'lightAmb' | 'lightDir' | 'lightX' | 'lightY' | 'lightZ';
 

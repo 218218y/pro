@@ -94,16 +94,14 @@ export function applyObjectBoxesSketchPlacementPreview(ctx: SketchPlacementPrevi
     const maxX = typeof max?.x === 'number' ? Number(max.x) : NaN;
     const maxY = typeof max?.y === 'number' ? Number(max.y) : NaN;
     const maxZ = typeof max?.z === 'number' ? Number(max.z) : NaN;
-    if (
-      !(
-        Number.isFinite(minX) &&
-        Number.isFinite(minY) &&
-        Number.isFinite(minZ) &&
-        Number.isFinite(maxX) &&
-        Number.isFinite(maxY) &&
-        Number.isFinite(maxZ)
-      )
-    ) {
+    if (!(
+      Number.isFinite(minX) &&
+      Number.isFinite(minY) &&
+      Number.isFinite(minZ) &&
+      Number.isFinite(maxX) &&
+      Number.isFinite(maxY) &&
+      Number.isFinite(maxZ)
+    )) {
       ctx.setVisible(helper, false);
       continue;
     }

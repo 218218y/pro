@@ -38,9 +38,7 @@ export type CoalescedBuildOpts = {
 };
 
 export type CoalescedBuildDecision =
-  | { kind: 'skip' }
-  | { kind: 'queued' }
-  | { kind: 'run'; signature: unknown };
+  { kind: 'skip' } | { kind: 'queued' } | { kind: 'run'; signature: unknown };
 
 export type PendingCoalescedReplay = {
   args: readonly unknown[];

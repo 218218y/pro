@@ -2,12 +2,7 @@ import { normalizeUnknownError } from './error_normalization.js';
 import { asRecord } from './record.js';
 
 export type ProjectLoadFailureReason =
-  | 'missing-file'
-  | 'invalid'
-  | 'not-installed'
-  | 'superseded'
-  | 'busy'
-  | 'error';
+  'missing-file' | 'invalid' | 'not-installed' | 'superseded' | 'busy' | 'error';
 
 export type ProjectLoadSuccessResult = {
   ok: true;
