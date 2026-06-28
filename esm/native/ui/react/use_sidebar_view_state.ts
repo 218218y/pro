@@ -144,10 +144,20 @@ export function useSidebarViewState(): SidebarViewState {
   const setActiveTab = useCallback(
     (id: TabId) => {
       if (isSite2 && !enabledSet.has(id)) return;
+      if (primaryMode && primaryMode !== 'none') {
+        try {
+          exitPrimaryMode(app, undefined, {
+            closeDoors: true,
+            source: 'react:tabs:set:exitPrimaryMode',
+          });
+        } catch {
+          // ignore tab-level edit-mode exit failures; switching the tab should continue.
+        }
+      }
       prefetchSidebarTabIntent(id);
       setUiActiveTab(app, id, meta.uiOnlyImmediate('react:tabs:set'));
     },
-    [isSite2, enabledSet, app, meta]
+    [isSite2, enabledSet, primaryMode, app, meta]
   );
 
   const onSidebarBackgroundClick = useCallback(

@@ -516,3 +516,128 @@ test('viewer measurement ignores hangers, clothes, and rods as cavity split boun
   assert.ok(!labels.includes('24'));
   assert.ok(!labels.includes('32'));
 });
+
+test('viewer measurement exits primary mode when clicking an empty canvas area', () => {
+  const wardrobe = createGroup();
+  const labels: string[] = [];
+  const App = createApp(wardrobe, labels);
+  const modeCalls: Array<{ primary: string; opts: unknown; meta: Record<string, unknown> }> = [];
+  App.actions = {
+    mode: {
+      set(primary: string, opts: unknown, meta: Record<string, unknown>) {
+        modeCalls.push({ primary, opts, meta });
+      },
+    },
+  };
+  App.services.uiFeedback = {
+    updateEditStateToast(value: unknown, active: boolean) {
+      App.__lastToast = { value, active };
+    },
+  };
+
+  tryHandleViewerMeasurementClick({ App, hitState: null });
+
+  assert.equal(modeCalls.length, 1);
+  assert.equal(modeCalls[0]?.primary, 'none');
+  assert.equal(modeCalls[0]?.meta.source, 'viewerMeasurement:emptyClick');
+  assert.deepEqual(App.__lastToast, { value: null, active: false });
+});
+
+test('viewer measurement uses the side plane for thin side panels', () => {
+  const wardrobe = createGroup();
+  const sidePanel = createMesh({
+    width: 0.02,
+    height: 2,
+    depth: 0.58,
+    x: 0.51,
+    userData: { partId: 'right_side_panel' },
+  });
+  wardrobe.add(sidePanel);
+  const labels: string[] = [];
+  const App = createApp(wardrobe, labels);
+
+  tryHandleViewerMeasurementClick({
+    App,
+    hitState: {
+      intersects: [{ object: sidePanel, point: { x: 0.51, y: 1, z: 0.29 } }],
+      foundPartId: 'right_side_panel',
+      foundModuleIndex: null,
+      foundModuleStack: 'top',
+      effectiveDoorId: null,
+      foundDrawerId: null,
+      primaryHitObject: sidePanel,
+      doorHitObject: null,
+      doorHitGroup: null,
+      primaryHitPoint: { x: 0.51, y: 1, z: 0.29 },
+      doorHitPoint: null,
+      moduleHitY: null,
+      doorHitY: null,
+      primaryHitY: 1,
+      hitIdentity: { partId: 'right_side_panel' } as any,
+      hitUserData: sidePanel.userData,
+    },
+  });
+
+  const frame = wardrobe.children.find(child => child.name === 'wp-viewer-measurement-selection-frame');
+  assert.ok(frame);
+  assert.ok(labels.includes('58'));
+  assert.ok(labels.includes('200'));
+  assert.ok(!labels.includes('2'));
+  for (const point of frame.geometry.points) {
+    assert.ok(Math.abs(point.x - 0.526) < 1e-9);
+  }
+  const zs = frame.geometry.points.map((point: { z: number }) => point.z);
+  assert.ok(Math.abs(Math.min(...zs) + 0.29) < 1e-9);
+  assert.ok(Math.abs(Math.max(...zs) - 0.29) < 1e-9);
+});
+
+test('viewer measurement uses the top plane for thin horizontal boards', () => {
+  const wardrobe = createGroup();
+  const topPanel = createMesh({
+    width: 1.2,
+    height: 0.02,
+    depth: 0.55,
+    y: 2.01,
+    userData: { partId: 'top_panel' },
+  });
+  wardrobe.add(topPanel);
+  const labels: string[] = [];
+  const App = createApp(wardrobe, labels);
+
+  tryHandleViewerMeasurementClick({
+    App,
+    hitState: {
+      intersects: [{ object: topPanel, point: { x: 0, y: 2.02, z: 0 } }],
+      foundPartId: 'top_panel',
+      foundModuleIndex: null,
+      foundModuleStack: 'top',
+      effectiveDoorId: null,
+      foundDrawerId: null,
+      primaryHitObject: topPanel,
+      doorHitObject: null,
+      doorHitGroup: null,
+      primaryHitPoint: { x: 0, y: 2.02, z: 0 },
+      doorHitPoint: null,
+      moduleHitY: null,
+      doorHitY: null,
+      primaryHitY: 2.02,
+      hitIdentity: { partId: 'top_panel' } as any,
+      hitUserData: topPanel.userData,
+    },
+  });
+
+  const frame = wardrobe.children.find(child => child.name === 'wp-viewer-measurement-selection-frame');
+  assert.ok(frame);
+  assert.ok(labels.includes('120'));
+  assert.ok(labels.includes('55'));
+  assert.ok(!labels.includes('2'));
+  for (const point of frame.geometry.points) {
+    assert.ok(Math.abs(point.y - 2.026) < 1e-9);
+  }
+  const xs = frame.geometry.points.map((point: { x: number }) => point.x);
+  const zs = frame.geometry.points.map((point: { z: number }) => point.z);
+  assert.ok(Math.abs(Math.min(...xs) + 0.6) < 1e-9);
+  assert.ok(Math.abs(Math.max(...xs) - 0.6) < 1e-9);
+  assert.ok(Math.abs(Math.min(...zs) + 0.275) < 1e-9);
+  assert.ok(Math.abs(Math.max(...zs) - 0.275) < 1e-9);
+});

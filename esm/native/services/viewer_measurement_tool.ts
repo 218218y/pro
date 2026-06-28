@@ -10,6 +10,9 @@ import type { Vector3Like } from '../../../types/three_like.js';
 import { getBuilderRenderOps } from '../runtime/builder_service_access.js';
 import { isShelfBoardPartId } from '../features/shelf_part_identity.js';
 import { getInternalGridMap } from '../runtime/cache_access.js';
+import { getDocumentMaybe } from '../runtime/dom_access.js';
+import { setModePrimary } from '../runtime/mode_write_access.js';
+import { getUiFeedbackServiceMaybe } from '../runtime/service_access.js';
 import { runPlatformActivityRenderTouch } from '../runtime/platform_access.js';
 import {
   getCamera,
@@ -31,6 +34,25 @@ const FRONT_Z_EPSILON_M = 0.006;
 const OVERLAY_RENDER_ORDER = 10040;
 const GUIDE_OFFSET_M = 0.045;
 const SIDE_GUIDE_OFFSET_M = 0.055;
+
+type MeasurementAxis = 'x' | 'y' | 'z';
+
+type MeasurementPlaneKind = 'front' | 'side' | 'top';
+
+type MeasurementPlane = {
+  kind: MeasurementPlaneKind;
+  normalAxis: MeasurementAxis;
+  normalSign: number;
+  normalValue: number;
+  uAxis: MeasurementAxis;
+  vAxis: MeasurementAxis;
+  uMin: number;
+  uMax: number;
+  vMin: number;
+  vMax: number;
+  uLength: number;
+  vLength: number;
+};
 
 type LocalMeasurementBox = {
   centerX: number;
@@ -310,6 +332,212 @@ function formatCmLabel(valueM: number): string {
   return cm.toFixed(1).replace(/\.0$/, '');
 }
 
+function getBoxCenterAxis(box: LocalMeasurementBox, axis: MeasurementAxis): number {
+  if (axis === 'x') return box.centerX;
+  if (axis === 'y') return box.centerY;
+  return box.centerZ;
+}
+
+function getBoxLengthAxis(box: LocalMeasurementBox, axis: MeasurementAxis): number {
+  if (axis === 'x') return box.width;
+  if (axis === 'y') return box.height;
+  return box.depth;
+}
+
+function getBoxMinAxis(box: LocalMeasurementBox, axis: MeasurementAxis): number {
+  return getBoxCenterAxis(box, axis) - getBoxLengthAxis(box, axis) / 2;
+}
+
+function getBoxMaxAxis(box: LocalMeasurementBox, axis: MeasurementAxis): number {
+  return getBoxCenterAxis(box, axis) + getBoxLengthAxis(box, axis) / 2;
+}
+
+function readCoordinateAxis(value: unknown, axis: MeasurementAxis): number | null {
+  const rec = isRecord(value) ? value : null;
+  const n = readFiniteNumber(rec, axis);
+  return n == null || !Number.isFinite(n) ? null : n;
+}
+
+function axisVector(
+  THREE: Pick<ThreeLike, 'Vector3'>,
+  axis: MeasurementAxis,
+  amount: number,
+  base?: Partial<Record<MeasurementAxis, number>>
+): Vector3Like {
+  const coords = { x: base?.x ?? 0, y: base?.y ?? 0, z: base?.z ?? 0 };
+  coords[axis] = (coords[axis] || 0) + amount;
+  return vector(THREE, coords.x, coords.y, coords.z);
+}
+
+function pointOnMeasurementPlane(
+  THREE: Pick<ThreeLike, 'Vector3'>,
+  box: LocalMeasurementBox,
+  plane: MeasurementPlane,
+  u: number,
+  v: number,
+  normalOffset = 0
+): Vector3Like {
+  const coords = { x: box.centerX, y: box.centerY, z: box.centerZ };
+  coords[plane.uAxis] = u;
+  coords[plane.vAxis] = v;
+  coords[plane.normalAxis] = plane.normalValue + normalOffset;
+  return vector(THREE, coords.x, coords.y, coords.z);
+}
+
+function inferMeasurementPlaneKind(
+  box: LocalMeasurementBox,
+  forceInteriorFront: boolean
+): MeasurementPlaneKind {
+  if (forceInteriorFront) return 'front';
+
+  const { width, height, depth } = box;
+  const smallest = Math.min(width, height, depth);
+  const isThinX = width === smallest && width <= Math.min(height, depth) * 0.32;
+  const isThinY = height === smallest && height <= Math.min(width, depth) * 0.32;
+  const isThinZ = depth === smallest && depth <= Math.min(width, height) * 0.32;
+
+  if (isThinX) return 'side';
+  if (isThinY) return 'top';
+  if (isThinZ) return 'front';
+  return 'front';
+}
+
+function readClosestHitFaceSign(args: {
+  App: AppContainer;
+  hitState: CanvasPickingClickHitState;
+  wardrobeGroup: Object3DLike;
+  box: LocalMeasurementBox;
+  axis: MeasurementAxis;
+}): number | null {
+  const { App, hitState, wardrobeGroup, box, axis } = args;
+  const localHit = __wp_projectWorldPointToLocal(App, hitState.primaryHitPoint, wardrobeGroup);
+  const hitValue = readCoordinateAxis(localHit, axis);
+  if (hitValue == null) return null;
+
+  const min = getBoxMinAxis(box, axis);
+  const max = getBoxMaxAxis(box, axis);
+  const length = Math.max(MIN_MEASURABLE_EDGE_M, max - min);
+  const minDistance = Math.abs(hitValue - min);
+  const maxDistance = Math.abs(hitValue - max);
+  const closestDistance = Math.min(minDistance, maxDistance);
+  if (closestDistance > length * 0.35) return null;
+  return maxDistance <= minDistance ? 1 : -1;
+}
+
+function readCameraAxisSign(args: {
+  App: AppContainer;
+  THREE: OverlayThree;
+  wardrobeGroup: Object3DLike;
+  box: LocalMeasurementBox;
+  axis: MeasurementAxis;
+}): number | null {
+  const { App, THREE, wardrobeGroup, box, axis } = args;
+  const cameraWorld = readCameraWorldPosition({ App, THREE });
+  const cameraLocal = cameraWorld ? __wp_projectWorldPointToLocal(App, cameraWorld, wardrobeGroup) : null;
+  const cameraValue = readCoordinateAxis(cameraLocal, axis);
+  if (cameraValue == null) return null;
+  return cameraValue >= getBoxCenterAxis(box, axis) ? 1 : -1;
+}
+
+function readShapePlaneSign(
+  box: LocalMeasurementBox,
+  axis: MeasurementAxis,
+  kind: MeasurementPlaneKind
+): number | null {
+  if (kind === 'side' && axis === 'x' && Math.abs(box.centerX) > box.width * 1.5) {
+    return box.centerX >= 0 ? 1 : -1;
+  }
+  if (kind === 'top' && axis === 'y' && Math.abs(box.centerY) > box.height * 1.5) {
+    return box.centerY >= 0 ? 1 : -1;
+  }
+  return null;
+}
+
+function resolveMeasurementPlane(args: {
+  App: AppContainer;
+  THREE: OverlayThree;
+  hitState: CanvasPickingClickHitState;
+  wardrobeGroup: Object3DLike;
+  box: LocalMeasurementBox;
+  forceInteriorFront: boolean;
+}): MeasurementPlane {
+  const { App, THREE, hitState, wardrobeGroup, box, forceInteriorFront } = args;
+  const kind = inferMeasurementPlaneKind(box, forceInteriorFront);
+  const axesByKind: Record<
+    MeasurementPlaneKind,
+    { normal: MeasurementAxis; u: MeasurementAxis; v: MeasurementAxis }
+  > = {
+    front: { normal: 'z', u: 'x', v: 'y' },
+    side: { normal: 'x', u: 'z', v: 'y' },
+    top: { normal: 'y', u: 'x', v: 'z' },
+  };
+  const axes = axesByKind[kind];
+  const hitSign = readClosestHitFaceSign({ App, hitState, wardrobeGroup, box, axis: axes.normal });
+  const shapeSign = readShapePlaneSign(box, axes.normal, kind);
+  const cameraSign = readCameraAxisSign({ App, THREE, wardrobeGroup, box, axis: axes.normal });
+  const normalSign = hitSign ?? shapeSign ?? cameraSign ?? 1;
+  const normalFace = normalSign >= 0 ? getBoxMaxAxis(box, axes.normal) : getBoxMinAxis(box, axes.normal);
+
+  const uMin = getBoxMinAxis(box, axes.u);
+  const uMax = getBoxMaxAxis(box, axes.u);
+  const vMin = getBoxMinAxis(box, axes.v);
+  const vMax = getBoxMaxAxis(box, axes.v);
+
+  return {
+    kind,
+    normalAxis: axes.normal,
+    normalSign,
+    normalValue: normalFace + normalSign * FRONT_Z_EPSILON_M,
+    uAxis: axes.u,
+    vAxis: axes.v,
+    uMin,
+    uMax,
+    vMin,
+    vMax,
+    uLength: uMax - uMin,
+    vLength: vMax - vMin,
+  };
+}
+
+function clearMeasurementModeChrome(App: AppContainer): void {
+  try {
+    getUiFeedbackServiceMaybe(App)?.updateEditStateToast?.(null, false);
+  } catch {
+    // ignore UI feedback cleanup failures
+  }
+
+  try {
+    const doc = getDocumentMaybe(App);
+    if (doc?.body?.style) doc.body.style.cursor = 'default';
+  } catch {
+    // ignore document cleanup failures
+  }
+}
+
+function exitViewerMeasurementPrimaryMode(App: AppContainer): void {
+  try {
+    setModePrimary(
+      App,
+      'none',
+      {},
+      {
+        source: 'viewerMeasurement:emptyClick',
+        noBuild: true,
+        noHistory: true,
+        noAutosave: true,
+        noPersist: true,
+        noCapture: true,
+        immediate: true,
+      }
+    );
+  } catch {
+    // Some isolated tests or partial hosts do not install mode actions; clearing
+    // the overlay and chrome is still the correct local behavior.
+  }
+
+  clearMeasurementModeChrome(App);
+}
+
 function targetKeyForHit(hitState: CanvasPickingClickHitState, target: unknown): string | null {
   const ud = readUserData(target);
   const identity = hitState.hitIdentity;
@@ -584,33 +812,6 @@ function readCameraWorldPosition(args: { App: AppContainer; THREE: OverlayThree 
   return position ? vector(THREE, position.x, position.y, position.z) : null;
 }
 
-function readMeasurementFace(args: {
-  App: AppContainer;
-  THREE: OverlayThree;
-  hitState: CanvasPickingClickHitState;
-  wardrobeGroup: Object3DLike;
-  box: LocalMeasurementBox;
-}): { z: number; sign: number } {
-  const { App, THREE, hitState, wardrobeGroup, box } = args;
-  const minZ = box.centerZ - box.depth / 2;
-  const maxZ = box.centerZ + box.depth / 2;
-  let sign = 1;
-
-  const cameraWorld = readCameraWorldPosition({ App, THREE });
-  const cameraLocal = cameraWorld ? __wp_projectWorldPointToLocal(App, cameraWorld, wardrobeGroup) : null;
-  if (cameraLocal && Number.isFinite(cameraLocal.z)) {
-    sign = Number(cameraLocal.z) >= box.centerZ ? 1 : -1;
-  } else {
-    const localHit = __wp_projectWorldPointToLocal(App, hitState.primaryHitPoint, wardrobeGroup);
-    if (localHit && Number.isFinite(localHit.z)) {
-      sign = Math.abs(localHit.z - minZ) < Math.abs(localHit.z - maxZ) ? -1 : 1;
-    }
-  }
-
-  const faceZ = sign >= 0 ? maxZ : minZ;
-  return { z: faceZ + sign * FRONT_Z_EPSILON_M, sign };
-}
-
 function addTrackedLine(args: {
   THREE: OverlayThree;
   wardrobeGroup: Object3DLike;
@@ -718,38 +919,32 @@ function addDimensionGuides(args: {
   THREE: OverlayThree;
   addDimensionLine: BuilderDimensionLineFn;
   box: LocalMeasurementBox;
-  z: number;
-  sign: number;
+  plane: MeasurementPlane;
   objects: Object3DLike[];
 }): void {
-  const { THREE, addDimensionLine, box, z, sign, objects } = args;
-  const minX = box.centerX - box.width / 2;
-  const maxX = box.centerX + box.width / 2;
-  const minY = box.centerY - box.height / 2;
-  const maxY = box.centerY + box.height / 2;
+  const { THREE, addDimensionLine, box, plane, objects } = args;
   const sideOffset = SIDE_GUIDE_OFFSET_M;
-  const xSide = maxX + sideOffset;
-  const zBump = sign * FRONT_Z_EPSILON_M;
+  const normalBump = plane.normalSign * FRONT_Z_EPSILON_M;
   const labelScale = { textScale: 0.78, styleKey: 'cell' };
 
   const widthObjects = readCreatedDimensionObjects(
     addDimensionLine(
-      vector(THREE, minX, maxY, z),
-      vector(THREE, maxX, maxY, z),
-      vector(THREE, 0, GUIDE_OFFSET_M, zBump),
-      formatCmLabel(box.width),
+      pointOnMeasurementPlane(THREE, box, plane, plane.uMin, plane.vMax),
+      pointOnMeasurementPlane(THREE, box, plane, plane.uMax, plane.vMax),
+      axisVector(THREE, plane.vAxis, GUIDE_OFFSET_M, { [plane.normalAxis]: normalBump }),
+      formatCmLabel(plane.uLength),
       labelScale,
-      vector(THREE, 0, 0.012, 0)
+      axisVector(THREE, plane.vAxis, 0.012)
     )
   );
   objects.push(...widthObjects);
 
   const heightObjects = readCreatedDimensionObjects(
     addDimensionLine(
-      vector(THREE, xSide, minY, z),
-      vector(THREE, xSide, maxY, z),
-      vector(THREE, sideOffset, 0, zBump),
-      formatCmLabel(box.height),
+      pointOnMeasurementPlane(THREE, box, plane, plane.uMax + sideOffset, plane.vMin),
+      pointOnMeasurementPlane(THREE, box, plane, plane.uMax + sideOffset, plane.vMax),
+      axisVector(THREE, plane.uAxis, sideOffset, { [plane.normalAxis]: normalBump }),
+      formatCmLabel(plane.vLength),
       labelScale
     )
   );
@@ -760,25 +955,21 @@ function addSelectionFrame(args: {
   THREE: OverlayThree;
   wardrobeGroup: Object3DLike;
   box: LocalMeasurementBox;
-  z: number;
+  plane: MeasurementPlane;
   objects: Object3DLike[];
 }): void {
-  const { THREE, wardrobeGroup, box, z, objects } = args;
-  const minX = box.centerX - box.width / 2;
-  const maxX = box.centerX + box.width / 2;
-  const minY = box.centerY - box.height / 2;
-  const maxY = box.centerY + box.height / 2;
+  const { THREE, wardrobeGroup, box, plane, objects } = args;
   addTrackedLine({
     THREE,
     wardrobeGroup,
     objects,
     name: 'wp-viewer-measurement-selection-frame',
     points: [
-      vector(THREE, minX, minY, z),
-      vector(THREE, maxX, minY, z),
-      vector(THREE, maxX, maxY, z),
-      vector(THREE, minX, maxY, z),
-      vector(THREE, minX, minY, z),
+      pointOnMeasurementPlane(THREE, box, plane, plane.uMin, plane.vMin),
+      pointOnMeasurementPlane(THREE, box, plane, plane.uMax, plane.vMin),
+      pointOnMeasurementPlane(THREE, box, plane, plane.uMax, plane.vMax),
+      pointOnMeasurementPlane(THREE, box, plane, plane.uMin, plane.vMax),
+      pointOnMeasurementPlane(THREE, box, plane, plane.uMin, plane.vMin),
     ],
   });
 }
@@ -801,10 +992,17 @@ function renderMeasurementOverlay(args: {
     readMeasuredBox(App, target, wardrobeGroup);
   if (!box) return false;
 
-  const { z, sign } = readMeasurementFace({ App, THREE, hitState, wardrobeGroup, box });
+  const plane = resolveMeasurementPlane({
+    App,
+    THREE,
+    hitState,
+    wardrobeGroup,
+    box,
+    forceInteriorFront: shouldMeasureInterior,
+  });
   const objects: Object3DLike[] = [];
-  addSelectionFrame({ THREE, wardrobeGroup, box, z, objects });
-  addDimensionGuides({ THREE, addDimensionLine, box, z, sign, objects });
+  addSelectionFrame({ THREE, wardrobeGroup, box, plane, objects });
+  addDimensionGuides({ THREE, addDimensionLine, box, plane, objects });
 
   const key = targetKeyForHit(hitState, target);
   writeOverlayState(App, { objects, targetKey: key });
@@ -819,6 +1017,7 @@ export function tryHandleViewerMeasurementClick(args: {
   const { App, hitState } = args;
   clearViewerMeasurementOverlay(App, false);
   if (!hitState) {
+    exitViewerMeasurementPrimaryMode(App);
     touchRender(App);
     return true;
   }
@@ -826,6 +1025,7 @@ export function tryHandleViewerMeasurementClick(args: {
   try {
     const target = resolveMeasurementTarget(hitState);
     if (!target) {
+      exitViewerMeasurementPrimaryMode(App);
       touchRender(App);
       return true;
     }
