@@ -3,7 +3,7 @@ import {
   CARCASS_SHELL_DIMENSIONS,
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { CorniceCtxLike, CorniceLocalsLike } from './corner_wing_cornice_contracts.js';
-import { getThreeCornice } from './corner_wing_cornice_contracts.js';
+import { getThreeCornice, resolveCornerWingCorniceTopY } from './corner_wing_cornice_contracts.js';
 import {
   buildCornerWingCorniceRuns,
   cornerCornicePathSegmentLength,
@@ -21,7 +21,6 @@ export function applyCornerWingWaveCornice(args: { ctx: CorniceCtxLike; locals: 
   const {
     THREE,
     woodThick,
-    startY,
     wingH,
     wingD,
     wingW,
@@ -39,7 +38,7 @@ export function applyCornerWingWaveCornice(args: { ctx: CorniceCtxLike; locals: 
   // - No top cover (open from above).
   const corniceCommon = CARCASS_CORNICE_DIMENSIONS.common;
   const corniceWave = CARCASS_CORNICE_DIMENSIONS.wave;
-  const topY = startY + wingH;
+  const topY = resolveCornerWingCorniceTopY(ctx, wingH);
   const epsY = corniceCommon.yLiftM; // tiny lift to avoid z-fighting with the roof boards
   const yPlace = topY + epsY;
 

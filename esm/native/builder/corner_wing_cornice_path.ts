@@ -4,6 +4,7 @@ import {
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { CornerCell } from './corner_geometry_plan.js';
 import type { CorniceCtxLike, CorniceLocalsLike } from './corner_wing_cornice_contracts.js';
+import { resolveCornerWingCorniceTopY } from './corner_wing_cornice_contracts.js';
 
 const CORNICE_COMMON = CARCASS_CORNICE_DIMENSIONS.common;
 const CORNICE_PROFILE = CARCASS_CORNICE_DIMENSIONS.profile;
@@ -162,7 +163,7 @@ function buildCornerCorniceModules(ctx: CorniceCtxLike, locals: CorniceLocalsLik
       right: blindWidth,
       depth: Math.max(ctx.woodThick, ctx.wingD),
       maxDepth: Math.max(ctx.woodThick, ctx.wingD),
-      topY: ctx.startY + ctx.wingH,
+      topY: resolveCornerWingCorniceTopY(ctx, ctx.wingH),
       cell: null,
     });
     index += 1;
@@ -181,7 +182,10 @@ function buildCornerCorniceModules(ctx: CorniceCtxLike, locals: CorniceLocalsLik
       right: left + width,
       depth,
       maxDepth: hexDepth,
-      topY: ctx.startY + Math.max(ctx.woodThick * 2, positiveNumberOr(cell.bodyHeight, ctx.wingH)),
+      topY: resolveCornerWingCorniceTopY(
+        ctx,
+        Math.max(ctx.woodThick * 2, positiveNumberOr(cell.bodyHeight, ctx.wingH))
+      ),
       cell,
     });
     index += 1;

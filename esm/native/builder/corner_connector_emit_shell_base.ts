@@ -9,9 +9,9 @@ const PLINTH_DIMENSIONS = CARCASS_BASE_DIMENSIONS.plinth;
 const BASE_LEG_LAYOUT_DIMENSIONS = CARCASS_BASE_DIMENSIONS.legs;
 const LEG_PLATFORM_DIMENSIONS = CARCASS_BASE_DIMENSIONS.legs.platform;
 
-function readPositiveNumber(value: unknown, fallback = 0): number {
+function readPositiveNumber(value: unknown, defaultValue = 0): number {
   const n = Number(value);
-  return Number.isFinite(n) && n > 0 ? n : fallback;
+  return Number.isFinite(n) && n > 0 ? n : defaultValue;
 }
 
 export function createCornerConnectorPlinthShape(

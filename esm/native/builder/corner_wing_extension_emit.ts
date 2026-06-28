@@ -105,32 +105,38 @@ export function emitCornerWingExtension(ctx: CornerOpsEmitContext): void {
   const legSupportH =
     Number.isFinite(Number(baseLegHeightM)) && Number(baseLegHeightM) > 0 ? Number(baseLegHeightM) : baseH;
 
-  if (baseType === 'legs' && legSupportH > 0) {
-    const legSpec = resolveBaseLegGeometrySpec(baseLegStyle, baseLegWidthCm);
-    const legGeo =
-      legSpec.shape === 'square'
-        ? new THREE.BoxGeometry(legSpec.width, legSupportH, legSpec.depth)
-        : new THREE.CylinderGeometry(
-            legSpec.topRadius,
-            legSpec.bottomRadius,
-            legSupportH,
-            legSpec.radialSegments
-          );
-    const lMat = getMaterial(getBaseLegColorHex(baseLegColor), 'metal');
-    const legsCount = Math.max(
-      CORNER_WING_DIMENSIONS.baseLegs.minCount,
-      Math.ceil(wingW / CORNER_WING_DIMENSIONS.baseLegs.spacingM)
-    );
-    for (let i = 0; i <= legsCount; i++) {
-      const xPos =
-        i * ((wingW - CORNER_WING_DIMENSIONS.baseLegs.widthClearanceM) / legsCount) +
-        CORNER_WING_DIMENSIONS.baseLegs.insetM;
-      const l1 = new THREE.Mesh(legGeo, lMat);
-      l1.position.set(xPos, stackOffsetY + legSupportH / 2, -CORNER_WING_DIMENSIONS.baseLegs.insetM);
-      wingGroup.add(l1);
-      const l2 = new THREE.Mesh(legGeo, lMat);
-      l2.position.set(xPos, stackOffsetY + legSupportH / 2, -wingD + CORNER_WING_DIMENSIONS.baseLegs.insetM);
-      wingGroup.add(l2);
+  if (baseType === 'legs') {
+    if (legSupportH > 0) {
+      const legSpec = resolveBaseLegGeometrySpec(baseLegStyle, baseLegWidthCm);
+      const legGeo =
+        legSpec.shape === 'square'
+          ? new THREE.BoxGeometry(legSpec.width, legSupportH, legSpec.depth)
+          : new THREE.CylinderGeometry(
+              legSpec.topRadius,
+              legSpec.bottomRadius,
+              legSupportH,
+              legSpec.radialSegments
+            );
+      const lMat = getMaterial(getBaseLegColorHex(baseLegColor), 'metal');
+      const legsCount = Math.max(
+        CORNER_WING_DIMENSIONS.baseLegs.minCount,
+        Math.ceil(wingW / CORNER_WING_DIMENSIONS.baseLegs.spacingM)
+      );
+      for (let i = 0; i <= legsCount; i++) {
+        const xPos =
+          i * ((wingW - CORNER_WING_DIMENSIONS.baseLegs.widthClearanceM) / legsCount) +
+          CORNER_WING_DIMENSIONS.baseLegs.insetM;
+        const l1 = new THREE.Mesh(legGeo, lMat);
+        l1.position.set(xPos, stackOffsetY + legSupportH / 2, -CORNER_WING_DIMENSIONS.baseLegs.insetM);
+        wingGroup.add(l1);
+        const l2 = new THREE.Mesh(legGeo, lMat);
+        l2.position.set(
+          xPos,
+          stackOffsetY + legSupportH / 2,
+          -wingD + CORNER_WING_DIMENSIONS.baseLegs.insetM
+        );
+        wingGroup.add(l2);
+      }
     }
   }
 

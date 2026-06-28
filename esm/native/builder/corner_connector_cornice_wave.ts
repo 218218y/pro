@@ -6,6 +6,7 @@ import type {
 import {
   hasCorniceExtrusionSupport,
   resolveCornerConnectorCorniceSideReturns,
+  resolveCornerConnectorCorniceTopY,
 } from './corner_connector_cornice_shared.js';
 
 function connectorPathSegmentLength(a: { x: number; z: number }, b: { x: number; z: number }): number {
@@ -47,7 +48,7 @@ export function applyCornerConnectorWaveCornice(args: {
   locals: CornerConnectorCorniceLocals;
 }): void {
   const { ctx, locals } = args;
-  const { THREE, woodThick, startY, wingH, bodyMat, addOutlines, getCornerMat, __sketchMode } = ctx;
+  const { THREE, woodThick, bodyMat, addOutlines, getCornerMat, __sketchMode } = ctx;
   const { pts, cornerGroup, interiorX, interiorZ } = locals;
 
   // WAVE fascia on the visible front diagonal only:
@@ -56,7 +57,7 @@ export function applyCornerConnectorWaveCornice(args: {
   // - only the TOP edge is wavy (peaks at ends + center)
   const corniceCommon = CARCASS_CORNICE_DIMENSIONS.common;
   const corniceWave = CARCASS_CORNICE_DIMENSIONS.wave;
-  const topY = startY + wingH;
+  const topY = resolveCornerConnectorCorniceTopY(ctx);
   const epsY = corniceCommon.yLiftM;
   const yPlace = topY + epsY;
 

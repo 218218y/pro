@@ -3,6 +3,10 @@ import assert from 'node:assert/strict';
 import { createFakeThreeRuntime } from './_fake_three_runtime.ts';
 
 import { applyCornerConnectorCornice } from '../esm/native/builder/corner_connector_cornice_emit.ts';
+import {
+  CARCASS_BASE_DIMENSIONS,
+  CARCASS_CORNICE_DIMENSIONS,
+} from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
 
 const THREE = createFakeThreeRuntime();
 
@@ -41,6 +45,7 @@ function makeConnectorParams(args: {
       startY: 0.1,
       wingH: args.connectorBodyHeight ?? 2.4,
       mainH: args.mainBodyHeight ?? args.connectorBodyHeight ?? 2.4,
+      baseLegTopPlatformHeightM: 0,
       __stackOffsetZ: 0,
       __stackKey: 'top',
       hasCorniceEnabled: true,
@@ -92,6 +97,25 @@ test('pentagon wave cornice adds exposed side return on the main-cabinet seam wh
     'the taller pentagon needs a full side cornice return where it rises above the main cabinet'
   );
   assert.ok(!partIds.includes('corner_cornice_side_left'), 'equal-height wing seam must stay internal');
+});
+
+test('pentagon cornice sits above the upper leg stage like the regular wardrobe', () => {
+  const platformH = CARCASS_BASE_DIMENSIONS.legs.platform.heightM;
+  for (const type of ['classic', 'wave'] as const) {
+    const { ctx, locals, helpers, cornerGroup } = makeConnectorParams({ type });
+    ctx.baseLegTopPlatformHeightM = platformH;
+
+    applyCornerConnectorCornice({ ctx, locals, helpers } as never);
+
+    const front = cornerGroup.children.find(
+      child => String((child as { userData?: AnyRecord }).userData?.partId) === 'corner_cornice_front'
+    );
+    assert.ok(front, `${type} pentagon cornice should emit a front piece`);
+    assert.equal(
+      Number((front as { position: { y: number } }).position.y.toFixed(6)),
+      Number((ctx.startY + ctx.wingH + platformH + CARCASS_CORNICE_DIMENSIONS.common.yLiftM).toFixed(6))
+    );
+  }
 });
 
 test('pentagon side-return resolver uses the adjacent main cell height, not only the global main height', () => {

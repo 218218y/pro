@@ -11,7 +11,12 @@ import type {
   CornicePoint,
   MeshLike,
 } from './corner_wing_cornice_contracts.js';
-import { asBufferAttr, getThreeCornice, readCornicePoints } from './corner_wing_cornice_contracts.js';
+import {
+  asBufferAttr,
+  getThreeCornice,
+  readCornicePoints,
+  resolveCornerWingCorniceTopY,
+} from './corner_wing_cornice_contracts.js';
 import {
   buildCornerWingCorniceRuns,
   clampCornerMiterTrimForSegment,
@@ -40,7 +45,6 @@ export function applyCornerWingProfileCornice(args: {
   const { ctx, locals, helpers } = args;
   const {
     THREE,
-    startY,
     wingH,
     wingD,
     wingW,
@@ -70,7 +74,7 @@ export function applyCornerWingProfileCornice(args: {
   const seamEps = corniceProfile.miterEpsilonZM;
 
   // Roof plane for the wing (cornice must start here).
-  const topY = startY + wingH;
+  const topY = resolveCornerWingCorniceTopY(ctx, wingH);
   const epsY = corniceCommon.yLiftM; // tiny lift to avoid z-fighting with the roof boards
   const yPlace = topY + epsY;
 

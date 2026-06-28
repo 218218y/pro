@@ -8,6 +8,7 @@ import {
   hasCorniceExtrusionSupport,
   readBufferAttribute,
   resolveCornerConnectorCorniceSideReturns,
+  resolveCornerConnectorCorniceTopY,
 } from './corner_connector_cornice_shared.js';
 
 export function applyCornerConnectorProfileCornice(args: {
@@ -16,7 +17,7 @@ export function applyCornerConnectorProfileCornice(args: {
   helpers: CornerConnectorCorniceHelpers;
 }): void {
   const { ctx, locals, helpers } = args;
-  const { THREE, startY, wingH, bodyMat, addOutlines, getCornerMat, __sketchMode } = ctx;
+  const { THREE, bodyMat, addOutlines, getCornerMat, __sketchMode } = ctx;
   const { pts, cornerGroup, interiorX, interiorZ, mx } = locals;
   const { readNumFrom, asRecord } = helpers;
   const corniceCommon = CARCASS_CORNICE_DIMENSIONS.common;
@@ -28,7 +29,7 @@ export function applyCornerConnectorProfileCornice(args: {
   const insetOnRoof = corniceProfile.insetOnRoofM;
   const backStep = corniceProfile.backStepM;
 
-  const topY = startY + wingH;
+  const topY = resolveCornerConnectorCorniceTopY(ctx);
   const epsY = corniceCommon.yLiftM;
   const yPlace = topY + epsY;
 

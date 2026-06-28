@@ -65,6 +65,7 @@ export type CorniceCtxLike = {
   wingD: number;
   wingW: number;
   blindWidth: number;
+  baseLegTopPlatformHeightM?: number;
   cornerConnectorEnabled: boolean;
   hasCorniceEnabled: boolean;
   __corniceAllowedForThisStack: boolean;
@@ -132,6 +133,19 @@ export function isBufferAttrLike(value: unknown): value is BufferAttrLike {
 
 export function asBufferAttr(value: unknown): BufferAttrLike | null {
   return isBufferAttrLike(value) ? value : null;
+}
+
+export function positiveCorniceTopPlatformHeight(ctx: { baseLegTopPlatformHeightM?: unknown }): number {
+  const value = Number(ctx.baseLegTopPlatformHeightM);
+  return Number.isFinite(value) && value > 0 ? value : 0;
+}
+
+export function resolveCornerWingCorniceTopY(
+  ctx: { startY: number; baseLegTopPlatformHeightM?: unknown },
+  bodyHeight: number
+): number {
+  const safeBodyHeight = Number.isFinite(bodyHeight) && bodyHeight > 0 ? bodyHeight : 0;
+  return ctx.startY + safeBodyHeight + positiveCorniceTopPlatformHeight(ctx);
 }
 
 export function isGroupLike(value: unknown): value is GroupLike {

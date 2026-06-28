@@ -3,6 +3,10 @@ import assert from 'node:assert/strict';
 import { createFakeThreeRuntime } from './_fake_three_runtime.ts';
 
 import { applyCornerWingCornice } from '../esm/native/builder/corner_wing_cornice_emit.ts';
+import {
+  CARCASS_BASE_DIMENSIONS,
+  CARCASS_CORNICE_DIMENSIONS,
+} from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
 import type { CornerCell } from '../esm/native/builder/corner_geometry_plan.ts';
 
 const THREE = createFakeThreeRuntime();
@@ -21,6 +25,7 @@ function makeCorniceParams(kind: 'classic' | 'wave') {
         wingD: 0.6,
         wingW: 1.2,
         blindWidth: 0,
+        baseLegTopPlatformHeightM: 0,
         cornerConnectorEnabled: true,
         hasCorniceEnabled: true,
         __corniceAllowedForThisStack: true,
@@ -129,6 +134,27 @@ test('corner wing wave cornice builds with real THREE prototype objects when con
     ),
     ['corner_cornice_front', 'corner_cornice_side_right']
   );
+});
+
+test('corner wing cornice sits above the upper leg stage like the regular wardrobe', () => {
+  const platformH = CARCASS_BASE_DIMENSIONS.legs.platform.heightM;
+  for (const type of ['classic', 'wave'] as const) {
+    const { params, wingGroup } = makeCorniceParams(type);
+    params.ctx.baseLegTopPlatformHeightM = platformH;
+
+    applyCornerWingCornice(params as never);
+
+    const front = wingGroup.children.find(child => childPartId(child) === 'corner_cornice_front');
+    assert.ok(front, `${type} cornice should emit a front piece`);
+    assert.equal(
+      Number((front as { position: { y: number } }).position.y.toFixed(6)),
+      Number(
+        (params.ctx.startY + params.ctx.wingH + platformH + CARCASS_CORNICE_DIMENSIONS.common.yLiftM).toFixed(
+          6
+        )
+      )
+    );
+  }
 });
 
 test('corner wing classic cornice follows per-cell depth changes instead of one straight front', () => {

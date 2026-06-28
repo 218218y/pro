@@ -60,6 +60,7 @@ export type CornerConnectorCorniceCtx = {
   startY: number;
   wingH: number;
   mainH?: number;
+  baseLegTopPlatformHeightM?: number;
   __stackOffsetZ: number;
   __stackKey: string;
   hasCorniceEnabled?: boolean;
@@ -93,6 +94,20 @@ export type CornerConnectorCorniceFlowParams = {
   locals: CornerConnectorCorniceLocals;
   helpers: CornerConnectorCorniceHelpers;
 };
+
+export function positiveConnectorTopPlatformHeight(ctx: { baseLegTopPlatformHeightM?: unknown }): number {
+  const value = Number(ctx.baseLegTopPlatformHeightM);
+  return Number.isFinite(value) && value > 0 ? value : 0;
+}
+
+export function resolveCornerConnectorCorniceTopY(ctx: {
+  startY: number;
+  wingH: number;
+  baseLegTopPlatformHeightM?: unknown;
+}): number {
+  const bodyHeight = Number.isFinite(ctx.wingH) && ctx.wingH > 0 ? ctx.wingH : 0;
+  return ctx.startY + bodyHeight + positiveConnectorTopPlatformHeight(ctx);
+}
 
 export function isUnknownRecord(value: unknown): value is UnknownRecord {
   return !!value && typeof value === 'object' && !Array.isArray(value);
