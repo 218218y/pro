@@ -117,7 +117,14 @@ export function handleCanvasHoverNDCImpl(App: AppContainer, ndcX: number, ndcY: 
         raycaster: __wpRaycaster,
         mouse: __wpMouse,
       });
-      tryHandleViewerMeasurementHover({ App, hitState });
+      tryHandleViewerMeasurementHover({
+        App,
+        hitState,
+        ndcX,
+        ndcY,
+        raycaster: __wpRaycaster,
+        mouse: __wpMouse,
+      });
       return CANVAS_HOVER_CURSOR_PRESERVE as unknown as boolean;
     }
 

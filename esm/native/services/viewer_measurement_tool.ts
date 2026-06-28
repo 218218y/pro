@@ -24,7 +24,7 @@ import { getThreeMaybe } from '../runtime/three_access.js';
 import type { CanvasPickingClickHitState } from './canvas_picking_click_contracts.js';
 import { __wp_isDoorOrDrawerLikePartId, __wp_reportPickingIssue } from './canvas_picking_core_helpers.js';
 import { __wp_measureObjectLocalBox, __wp_projectWorldPointToLocal } from './canvas_picking_local_helpers.js';
-import type { HitObjectLike } from './canvas_picking_engine.js';
+import type { HitObjectLike, MouseVectorLike, RaycasterLike } from './canvas_picking_engine.js';
 
 export const VIEWER_MEASUREMENT_MODE_ID = 'measure';
 
@@ -38,6 +38,9 @@ const SIDE_GUIDE_OFFSET_M = 0.055;
 const REAR_SELECTION_FRAME_PULL_FORWARD_M = 0.012;
 const POINT_STRAIGHT_SNAP_MAX_ANGLE_DEG = 10;
 const POINT_STRAIGHT_SNAP_ABSOLUTE_TOLERANCE_M = 0.008;
+const POINT_EDGE_CLAMP_TOLERANCE_MIN_M = 0.02;
+const POINT_EDGE_CLAMP_TOLERANCE_MAX_M = 0.08;
+const POINT_EDGE_CLAMP_TOLERANCE_RATIO = 0.035;
 const POINT_STRAIGHT_SNAP_COLOR = 0x16a34a;
 const POINT_DEFAULT_COLOR = 0x2563eb;
 const POINT_MEASUREMENT_CURSOR = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='25' height='25' viewBox='0 0 25 25'%3E%3Cpath d='M6 6 L19 19 M19 6 L6 19' stroke='%23111827' stroke-width='2.2' stroke-linecap='round'/%3E%3Ccircle cx='12.5' cy='12.5' r='2.2' fill='none' stroke='%23ffffff' stroke-width='1.4'/%3E%3C/svg%3E") 12 12, crosshair`;
@@ -76,6 +79,33 @@ type PointMeasurementDraft = {
   point: { x: number; y: number; z: number };
   plane: MeasurementPlane;
   targetKey: string | null;
+};
+
+type PointMeasurementPointerContext = {
+  ndcX?: number;
+  ndcY?: number;
+  raycaster?: RaycasterLike | null;
+  mouse?: MouseVectorLike | null;
+};
+
+type LocalPlanePoint = { x: number; y: number; z: number };
+
+type PointClampResult = {
+  point: Vector3Like;
+  rawU: number;
+  rawV: number;
+  clampedU: number;
+  clampedV: number;
+  outsideU: boolean;
+  outsideV: boolean;
+  outsideDistance: number;
+};
+
+type RaycasterWithRay = RaycasterLike & {
+  ray?: {
+    origin?: { x?: number; y?: number; z?: number } | null;
+    direction?: { x?: number; y?: number; z?: number } | null;
+  } | null;
 };
 
 type MeasurementOverlayState = {
@@ -1121,9 +1151,10 @@ function addSelectionFrame(args: {
 
 function readHitLocalPoint(
   App: AppContainer,
-  hitState: CanvasPickingClickHitState,
+  hitState: CanvasPickingClickHitState | null | undefined,
   wardrobeGroup: Object3DLike
 ): { x: number; y: number; z: number } | null {
+  if (!hitState) return null;
   const candidates = [hitState.primaryHitPoint, hitState.doorHitPoint, hitState.intersects?.[0]?.point];
   for (let i = 0; i < candidates.length; i += 1) {
     const point = __wp_projectWorldPointToLocal(App, candidates[i], wardrobeGroup);
@@ -1149,6 +1180,221 @@ function makePointOnPlane(
   coords[plane.vAxis] = v;
   coords[plane.normalAxis] = plane.normalValue;
   return vector(THREE, coords.x, coords.y, coords.z);
+}
+
+function clampNumber(value: number, min: number, max: number): number {
+  if (value < min) return min;
+  if (value > max) return max;
+  return value;
+}
+
+function computePointEdgeClampTolerance(plane: MeasurementPlane): number {
+  const proportional = Math.max(plane.uLength, plane.vLength) * POINT_EDGE_CLAMP_TOLERANCE_RATIO;
+  return clampNumber(proportional, POINT_EDGE_CLAMP_TOLERANCE_MIN_M, POINT_EDGE_CLAMP_TOLERANCE_MAX_M);
+}
+
+function clampPointToMeasurementPlane(
+  THREE: Pick<ThreeLike, 'Vector3'>,
+  plane: MeasurementPlane,
+  localPoint: LocalPlanePoint
+): PointClampResult {
+  const rawU = readPointAxis(localPoint, plane.uAxis);
+  const rawV = readPointAxis(localPoint, plane.vAxis);
+  const clampedU = clampNumber(rawU, plane.uMin, plane.uMax);
+  const clampedV = clampNumber(rawV, plane.vMin, plane.vMax);
+  const outsideU = rawU < plane.uMin || rawU > plane.uMax;
+  const outsideV = rawV < plane.vMin || rawV > plane.vMax;
+  const outsideDistance = Math.hypot(rawU - clampedU, rawV - clampedV);
+  return {
+    point: makePointOnPlane(THREE, plane, clampedU, clampedV),
+    rawU,
+    rawV,
+    clampedU,
+    clampedV,
+    outsideU,
+    outsideV,
+    outsideDistance,
+  };
+}
+
+function measurementPlaneAxes(kind: MeasurementPlaneKind): {
+  normal: MeasurementAxis;
+  u: MeasurementAxis;
+  v: MeasurementAxis;
+} {
+  if (kind === 'side') return { normal: 'x', u: 'z', v: 'y' };
+  if (kind === 'top') return { normal: 'y', u: 'x', v: 'z' };
+  return { normal: 'z', u: 'x', v: 'y' };
+}
+
+function createMeasurementPlaneForBox(
+  box: LocalMeasurementBox,
+  kind: MeasurementPlaneKind,
+  normalSign: number
+): MeasurementPlane {
+  const axes = measurementPlaneAxes(kind);
+  const safeSign = normalSign >= 0 ? 1 : -1;
+  const normalFace = safeSign >= 0 ? getBoxMaxAxis(box, axes.normal) : getBoxMinAxis(box, axes.normal);
+  const uMin = getBoxMinAxis(box, axes.u);
+  const uMax = getBoxMaxAxis(box, axes.u);
+  const vMin = getBoxMinAxis(box, axes.v);
+  const vMax = getBoxMaxAxis(box, axes.v);
+
+  return {
+    kind,
+    normalAxis: axes.normal,
+    normalSign: safeSign,
+    normalValue: normalFace + safeSign * FRONT_Z_EPSILON_M,
+    uAxis: axes.u,
+    vAxis: axes.v,
+    uMin,
+    uMax,
+    vMin,
+    vMax,
+    uLength: uMax - uMin,
+    vLength: vMax - vMin,
+  };
+}
+
+function readObjectLocalPlanePoint(
+  App: AppContainer,
+  value: unknown,
+  wardrobeGroup: Object3DLike
+): LocalPlanePoint | null {
+  const point = __wp_projectWorldPointToLocal(App, value, wardrobeGroup);
+  if (!point) return null;
+  const x = readCoordinateAxis(point, 'x');
+  const y = readCoordinateAxis(point, 'y');
+  const z = readCoordinateAxis(point, 'z');
+  return x == null || y == null || z == null ? null : { x, y, z };
+}
+
+function readRayPlaneLocalPoint(args: {
+  App: AppContainer;
+  plane: MeasurementPlane;
+  wardrobeGroup: Object3DLike;
+  pointer?: PointMeasurementPointerContext | null;
+}): LocalPlanePoint | null {
+  const { App, plane, wardrobeGroup, pointer } = args;
+  const raycaster = pointer?.raycaster as RaycasterWithRay | null | undefined;
+  const ray = raycaster?.ray;
+  const originWorld = ray?.origin;
+  const directionWorld = ray?.direction;
+  const originLocal = readObjectLocalPlanePoint(App, originWorld, wardrobeGroup);
+  if (!originLocal || !directionWorld) return null;
+
+  const directionEndWorld = {
+    x: (originWorld?.x ?? 0) + (directionWorld.x ?? 0),
+    y: (originWorld?.y ?? 0) + (directionWorld.y ?? 0),
+    z: (originWorld?.z ?? 0) + (directionWorld.z ?? 0),
+  };
+  const directionEndLocal = readObjectLocalPlanePoint(App, directionEndWorld, wardrobeGroup);
+  if (!directionEndLocal) return null;
+
+  const directionLocal = {
+    x: directionEndLocal.x - originLocal.x,
+    y: directionEndLocal.y - originLocal.y,
+    z: directionEndLocal.z - originLocal.z,
+  };
+  const originAxis = readPointAxis(originLocal, plane.normalAxis);
+  const directionAxis = readPointAxis(directionLocal, plane.normalAxis);
+  if (!Number.isFinite(originAxis) || !Number.isFinite(directionAxis) || Math.abs(directionAxis) < 1e-9) {
+    return null;
+  }
+
+  const t = (plane.normalValue - originAxis) / directionAxis;
+  if (!Number.isFinite(t)) return null;
+  return {
+    x: originLocal.x + directionLocal.x * t,
+    y: originLocal.y + directionLocal.y * t,
+    z: originLocal.z + directionLocal.z * t,
+  };
+}
+
+function readPointMeasurementPointerLocalPoint(args: {
+  App: AppContainer;
+  hitState?: CanvasPickingClickHitState | null;
+  wardrobeGroup: Object3DLike;
+  plane: MeasurementPlane;
+  pointer?: PointMeasurementPointerContext | null;
+}): LocalPlanePoint | null {
+  const { App, hitState, wardrobeGroup, plane, pointer } = args;
+  return (
+    readHitLocalPoint(App, hitState, wardrobeGroup) ||
+    readRayPlaneLocalPoint({ App, plane, wardrobeGroup, pointer })
+  );
+}
+
+function shouldSkipAggregateWardrobeBoundsObject(value: unknown): boolean {
+  const obj = asMeasurableObject(value);
+  if (!obj || isDecorativeObject(obj) || isMeasurementPassiveFittingObject(obj)) return true;
+  const ud = readUserData(obj);
+  if (ud?.__wpViewerMeasurementOverlay || ud?.__wpExcludeWardrobeBounds || ud?.__ignoreRaycast) return true;
+  if (ud?.isModuleSelector) return true;
+  return isFullyTransparentMaterialObject(obj);
+}
+
+function readAggregateWardrobeBoundsBox(
+  App: AppContainer,
+  wardrobeGroup: Object3DLike
+): LocalMeasurementBox | null {
+  let minX = Infinity;
+  let minY = Infinity;
+  let minZ = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  let maxZ = -Infinity;
+  const includeBox = (box: LocalMeasurementBox): void => {
+    minX = Math.min(minX, box.centerX - box.width / 2);
+    maxX = Math.max(maxX, box.centerX + box.width / 2);
+    minY = Math.min(minY, box.centerY - box.height / 2);
+    maxY = Math.max(maxY, box.centerY + box.height / 2);
+    minZ = Math.min(minZ, box.centerZ - box.depth / 2);
+    maxZ = Math.max(maxZ, box.centerZ + box.depth / 2);
+  };
+  const visit = (obj: Object3DLike): void => {
+    if (!obj || obj === wardrobeGroup || shouldSkipAggregateWardrobeBoundsObject(obj)) return;
+    const box = readMeasuredBox(App, obj, wardrobeGroup);
+    if (box) includeBox(box);
+  };
+
+  try {
+    if (typeof wardrobeGroup.traverse === 'function') wardrobeGroup.traverse(visit);
+    else for (let i = 0; i < wardrobeGroup.children.length; i += 1) visit(wardrobeGroup.children[i]);
+  } catch {
+    return null;
+  }
+
+  if (
+    !Number.isFinite(minX) ||
+    !Number.isFinite(minY) ||
+    !Number.isFinite(minZ) ||
+    !Number.isFinite(maxX) ||
+    !Number.isFinite(maxY) ||
+    !Number.isFinite(maxZ) ||
+    maxX - minX < MIN_MEASURABLE_EDGE_M ||
+    maxY - minY < MIN_MEASURABLE_EDGE_M ||
+    maxZ - minZ < MIN_MEASURABLE_EDGE_M
+  ) {
+    return null;
+  }
+
+  return {
+    centerX: (minX + maxX) / 2,
+    centerY: (minY + maxY) / 2,
+    centerZ: (minZ + maxZ) / 2,
+    width: maxX - minX,
+    height: maxY - minY,
+    depth: maxZ - minZ,
+  };
+}
+
+function readPointMeasurementBoundsBox(args: {
+  App: AppContainer;
+  targetBox: LocalMeasurementBox;
+  wardrobeGroup: Object3DLike;
+}): LocalMeasurementBox {
+  return readAggregateWardrobeBoundsBox(args.App, args.wardrobeGroup) || args.targetBox;
 }
 
 function projectLocalPointToPlane(
@@ -1253,29 +1499,37 @@ function shouldSnapPointMeasurementToStraightAxis(deltaU: number, deltaV: number
 function resolvePointMeasurementEnd(args: {
   THREE: OverlayThree;
   draft: PointMeasurementDraft;
-  localEnd: { x: number; y: number; z: number };
+  localEnd: LocalPlanePoint;
 }): ResolvedPointMeasurement | null {
   const { THREE, draft, localEnd } = args;
   const plane = draft.plane;
   const startU = readPointAxis(draft.point, plane.uAxis);
   const startV = readPointAxis(draft.point, plane.vAxis);
-  const rawEndU = readPointAxis(localEnd, plane.uAxis);
-  const rawEndV = readPointAxis(localEnd, plane.vAxis);
-  const deltaU = rawEndU - startU;
-  const deltaV = rawEndV - startV;
-  const shouldSnap = shouldSnapPointMeasurementToStraightAxis(deltaU, deltaV);
+  const clampedEnd = clampPointToMeasurementPlane(THREE, plane, localEnd);
+  const deltaU = clampedEnd.rawU - startU;
+  const deltaV = clampedEnd.rawV - startV;
+  const shouldBoundaryLock = clampedEnd.outsideU || clampedEnd.outsideV;
+  const shouldSnap = !shouldBoundaryLock && shouldSnapPointMeasurementToStraightAxis(deltaU, deltaV);
 
   let axis: MeasurementAxis | 'free' = 'free';
   let snapAxis: MeasurementAxis | null = null;
-  let endU = rawEndU;
-  let endV = rawEndV;
-  let length = Math.hypot(deltaU, deltaV);
+  let endU = clampedEnd.clampedU;
+  let endV = clampedEnd.clampedV;
+  let length = Math.hypot(endU - startU, endV - startV);
 
-  if (shouldSnap) {
+  if (shouldBoundaryLock) {
+    if (clampedEnd.outsideU && !clampedEnd.outsideV) snapAxis = plane.uAxis;
+    else if (clampedEnd.outsideV && !clampedEnd.outsideU) snapAxis = plane.vAxis;
+    else snapAxis = Math.abs(deltaU) >= Math.abs(deltaV) ? plane.uAxis : plane.vAxis;
+    axis = snapAxis;
+    endU = snapAxis === plane.uAxis ? clampedEnd.clampedU : startU;
+    endV = snapAxis === plane.vAxis ? clampedEnd.clampedV : startV;
+    length = Math.abs(snapAxis === plane.uAxis ? endU - startU : endV - startV);
+  } else if (shouldSnap) {
     snapAxis = Math.abs(deltaU) >= Math.abs(deltaV) ? plane.uAxis : plane.vAxis;
     axis = snapAxis;
-    endU = snapAxis === plane.uAxis ? rawEndU : startU;
-    endV = snapAxis === plane.vAxis ? rawEndV : startV;
+    endU = snapAxis === plane.uAxis ? clampedEnd.rawU : startU;
+    endV = snapAxis === plane.vAxis ? clampedEnd.rawV : startV;
     length = Math.abs(snapAxis === plane.uAxis ? endU - startU : endV - startV);
   }
 
@@ -1283,7 +1537,7 @@ function resolvePointMeasurementEnd(args: {
   return {
     axis,
     snapAxis,
-    snapped: shouldSnap,
+    snapped: shouldSnap || shouldBoundaryLock,
     start: makePointOnPlane(THREE, plane, startU, startV),
     end: makePointOnPlane(THREE, plane, endU, endV),
     length,
@@ -1303,8 +1557,9 @@ function renderPointDraftOverlay(args: {
   draft: PointMeasurementDraft;
   hitState?: CanvasPickingClickHitState | null;
   includePreview: boolean;
+  pointer?: PointMeasurementPointerContext | null;
 }): boolean {
-  const { App, draft, hitState, includePreview } = args;
+  const { App, draft, hitState, includePreview, pointer } = args;
   applyMeasurementToolCursor(App, 'points');
   const THREE = readOverlayThree(App);
   const wardrobeGroup = getWardrobeGroup(App);
@@ -1321,8 +1576,14 @@ function renderPointDraftOverlay(args: {
     namePrefix: 'wp-viewer-measurement-point-draft-start',
   });
 
-  if (includePreview && hitState) {
-    const localEnd = readHitLocalPoint(App, hitState, wardrobeGroup);
+  if (includePreview) {
+    const localEnd = readPointMeasurementPointerLocalPoint({
+      App,
+      hitState,
+      wardrobeGroup,
+      plane: draft.plane,
+      pointer,
+    });
     const addDimensionLine = readAddDimensionLine(App);
     const resolved = localEnd ? resolvePointMeasurementEnd({ THREE, draft, localEnd }) : null;
     if (resolved) {
@@ -1390,27 +1651,66 @@ function resolvePointMeasurementStart(args: {
     box,
     forceInteriorFront: shouldMeasureInterior,
   });
+  const boundsBox = readPointMeasurementBoundsBox({ App, targetBox: box, wardrobeGroup });
+  const boundedPlane = createMeasurementPlaneForBox(boundsBox, plane.kind, plane.normalSign);
   const localPoint = readHitLocalPoint(App, hitState, wardrobeGroup);
   if (!localPoint) return null;
-  const point = projectLocalPointToPlane(THREE, plane, localPoint);
+  const point = clampPointToMeasurementPlane(THREE, boundedPlane, localPoint).point;
   return {
     point: { x: point.x, y: point.y, z: point.z },
-    plane,
+    plane: boundedPlane,
     targetKey: targetKeyForHit(hitState, target),
+  };
+}
+
+function resolvePointMeasurementStartFromPointer(args: {
+  App: AppContainer;
+  THREE: OverlayThree;
+  wardrobeGroup: Object3DLike;
+  pointer?: PointMeasurementPointerContext | null;
+}): PointMeasurementDraft | null {
+  const { App, THREE, wardrobeGroup, pointer } = args;
+  const boundsBox = readAggregateWardrobeBoundsBox(App, wardrobeGroup);
+  if (!boundsBox) return null;
+
+  const candidates: Array<{ plane: MeasurementPlane; clamp: PointClampResult }> = [];
+  const kinds: MeasurementPlaneKind[] = ['front', 'side', 'top'];
+  for (let i = 0; i < kinds.length; i += 1) {
+    const kind = kinds[i];
+    const axes = measurementPlaneAxes(kind);
+    const sign = readCameraAxisSign({ App, THREE, wardrobeGroup, box: boundsBox, axis: axes.normal }) ?? 1;
+    const plane = createMeasurementPlaneForBox(boundsBox, kind, sign);
+    const localPoint = readRayPlaneLocalPoint({ App, plane, wardrobeGroup, pointer });
+    if (!localPoint) continue;
+    const clamp = clampPointToMeasurementPlane(THREE, plane, localPoint);
+    if (clamp.outsideDistance <= computePointEdgeClampTolerance(plane)) candidates.push({ plane, clamp });
+  }
+
+  candidates.sort((a, b) => a.clamp.outsideDistance - b.clamp.outsideDistance);
+  const best = candidates[0];
+  if (!best) return null;
+  const point = best.clamp.point;
+  return {
+    point: { x: point.x, y: point.y, z: point.z },
+    plane: best.plane,
+    targetKey: 'wardrobe',
   };
 }
 
 function beginPointMeasurementDraft(args: {
   App: AppContainer;
-  hitState: CanvasPickingClickHitState;
+  hitState?: CanvasPickingClickHitState | null;
+  pointer?: PointMeasurementPointerContext | null;
 }): boolean {
-  const { App, hitState } = args;
+  const { App, hitState, pointer } = args;
   applyMeasurementToolCursor(App, 'points');
   const THREE = readOverlayThree(App);
   const wardrobeGroup = getWardrobeGroup(App);
   if (!THREE || !wardrobeGroup) return false;
 
-  const draft = resolvePointMeasurementStart({ App, THREE, hitState, wardrobeGroup });
+  const draft = hitState
+    ? resolvePointMeasurementStart({ App, THREE, hitState, wardrobeGroup })
+    : resolvePointMeasurementStartFromPointer({ App, THREE, wardrobeGroup, pointer });
   if (!draft) return false;
 
   if (!renderPointDraftOverlay({ App, draft, includePreview: false })) return false;
@@ -1429,22 +1729,29 @@ function beginPointMeasurementDraft(args: {
 function renderPointMeasurement(args: {
   App: AppContainer;
   draft: PointMeasurementDraft;
-  hitState: CanvasPickingClickHitState;
+  hitState?: CanvasPickingClickHitState | null;
+  pointer?: PointMeasurementPointerContext | null;
 }): boolean {
-  const { App, draft, hitState } = args;
+  const { App, draft, hitState, pointer } = args;
   applyMeasurementToolCursor(App, 'points');
   const THREE = readOverlayThree(App);
   const wardrobeGroup = getWardrobeGroup(App);
   const addDimensionLine = readAddDimensionLine(App);
   if (!THREE || !wardrobeGroup || !addDimensionLine) return false;
 
-  const localEnd = readHitLocalPoint(App, hitState, wardrobeGroup);
+  const localEnd = readPointMeasurementPointerLocalPoint({
+    App,
+    hitState,
+    wardrobeGroup,
+    plane: draft.plane,
+    pointer,
+  });
   if (!localEnd) return false;
 
   const plane = draft.plane;
   const resolved = resolvePointMeasurementEnd({ THREE, draft, localEnd });
   if (!resolved || !(resolved.length > MIN_MEASURABLE_EDGE_M)) {
-    return beginPointMeasurementDraft({ App, hitState });
+    return beginPointMeasurementDraft({ App, hitState, pointer });
   }
 
   const objects: Object3DLike[] = [];
@@ -1502,30 +1809,51 @@ function exitPointMeasurementOnEmptyClick(App: AppContainer): boolean {
 function tryHandleViewerPointMeasurementClick(args: {
   App: AppContainer;
   hitState: CanvasPickingClickHitState | null;
+  ndcX?: number;
+  ndcY?: number;
+  raycaster?: RaycasterLike | null;
+  mouse?: MouseVectorLike | null;
 }): boolean {
   const { App, hitState } = args;
+  const pointer: PointMeasurementPointerContext = {
+    ndcX: args.ndcX,
+    ndcY: args.ndcY,
+    raycaster: args.raycaster,
+    mouse: args.mouse,
+  };
   applyMeasurementToolCursor(App, 'points');
   const currentState = readOverlayState(App);
   const draft = currentState?.pointDraft || null;
 
   if (!isActionableMeasurementHitState(hitState)) {
+    if (draft) {
+      clearViewerMeasurementOverlay(App, false);
+      if (!renderPointMeasurement({ App, draft, hitState: null, pointer })) touchRender(App);
+      return true;
+    }
+    clearViewerMeasurementOverlay(App, false);
+    if (beginPointMeasurementDraft({ App, hitState: null, pointer })) return true;
     return exitPointMeasurementOnEmptyClick(App);
   }
 
   if (!draft) {
     clearViewerMeasurementOverlay(App, false);
-    if (!beginPointMeasurementDraft({ App, hitState })) touchRender(App);
+    if (!beginPointMeasurementDraft({ App, hitState, pointer })) touchRender(App);
     return true;
   }
 
   clearViewerMeasurementOverlay(App, false);
-  if (!renderPointMeasurement({ App, draft, hitState })) touchRender(App);
+  if (!renderPointMeasurement({ App, draft, hitState, pointer })) touchRender(App);
   return true;
 }
 
 export function tryHandleViewerMeasurementHover(args: {
   App: AppContainer;
   hitState: CanvasPickingClickHitState | null;
+  ndcX?: number;
+  ndcY?: number;
+  raycaster?: RaycasterLike | null;
+  mouse?: MouseVectorLike | null;
 }): boolean {
   const { App, hitState } = args;
   if (getViewerMeasurementToolMode(App) !== 'points') return false;
@@ -1535,7 +1863,20 @@ export function tryHandleViewerMeasurementHover(args: {
   if (!draft) return false;
 
   removeOverlayStateObjects(state);
-  if (!renderPointDraftOverlay({ App, draft, hitState, includePreview: !!hitState })) {
+  if (
+    !renderPointDraftOverlay({
+      App,
+      draft,
+      hitState,
+      includePreview: true,
+      pointer: {
+        ndcX: args.ndcX,
+        ndcY: args.ndcY,
+        raycaster: args.raycaster,
+        mouse: args.mouse,
+      },
+    })
+  ) {
     writeOverlayState(App, { objects: [], targetKey: draft.targetKey, pointDraft: draft });
     touchRender(App);
   }
@@ -1581,12 +1922,23 @@ function renderMeasurementOverlay(args: {
 export function tryHandleViewerMeasurementClick(args: {
   App: AppContainer;
   hitState: CanvasPickingClickHitState | null;
+  ndcX?: number;
+  ndcY?: number;
+  raycaster?: RaycasterLike | null;
+  mouse?: MouseVectorLike | null;
 }): boolean {
   const { App, hitState } = args;
 
   try {
     if (getViewerMeasurementToolMode(App) === 'points') {
-      return tryHandleViewerPointMeasurementClick({ App, hitState });
+      return tryHandleViewerPointMeasurementClick({
+        App,
+        hitState,
+        ndcX: args.ndcX,
+        ndcY: args.ndcY,
+        raycaster: args.raycaster,
+        mouse: args.mouse,
+      });
     }
   } catch {
     // Fall back to the regular part measurement in partial hosts.

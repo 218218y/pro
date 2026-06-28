@@ -8,7 +8,14 @@ export type { CanvasPickingClickRouteArgs } from './canvas_picking_click_route_s
 
 export function routeCanvasPickingClick(args: CanvasPickingClickRouteArgs): void {
   if (args.modeState.__isMeasureMode) {
-    tryHandleViewerMeasurementClick({ App: args.App, hitState: args.hitState });
+    tryHandleViewerMeasurementClick({
+      App: args.App,
+      hitState: args.hitState,
+      ndcX: args.ndcX,
+      ndcY: args.ndcY,
+      raycaster: args.raycaster,
+      mouse: args.mouse,
+    });
     return;
   }
   if (tryHandleCanvasPickingManualOrEmptyRoute(args)) return;

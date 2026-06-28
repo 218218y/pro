@@ -40,7 +40,14 @@ export function __coreHandleCanvasClickNDC(App: AppContainer, ndcX: number, ndcY
   });
   if (!hitState) {
     if (modeState.__isMeasureMode) {
-      tryHandleViewerMeasurementClick({ App, hitState: null });
+      tryHandleViewerMeasurementClick({
+        App,
+        hitState: null,
+        ndcX,
+        ndcY,
+        raycaster: __wpRaycaster,
+        mouse: __wpMouse,
+      });
       return;
     }
     if (
