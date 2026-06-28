@@ -281,6 +281,7 @@ export function pickUiForWardrobeTypeProfile(uiIn: unknown): UiStateLike {
 
   for (const key of PROFILE_UI_RAW_KEYS) {
     if (raw0[key] !== undefined) outRaw[key] = raw0[key];
+    if (ui0[key] !== undefined) out[key] = ui0[key];
   }
 
   if (ui0.currentFloorType !== undefined) out.currentFloorType = ui0.currentFloorType;

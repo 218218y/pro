@@ -235,6 +235,43 @@ test('room wardrobe type runtime: switching a leg-base wardrobe to sliding reset
   assert.equal(h.state.ui.raw.doors, 2);
 });
 
+test('room wardrobe type runtime: leg platform selection is profiled separately for hinged and sliding wardrobes', () => {
+  const h = createHarness({
+    ui: {
+      raw: { width: 160, height: 240, depth: 55, doors: 4 },
+      baseType: 'legs',
+      baseLegPlatformMode: 'stage',
+      baseLegPlatformSideMode: 'overhang',
+    },
+    config: { wardrobeType: 'hinged', isManualWidth: true },
+  });
+
+  h.actions.room.setWardrobeType('sliding');
+
+  assert.equal(h.state.config.wardrobeType, 'sliding');
+  assert.equal(h.state.ui.baseType, 'legs');
+  assert.equal(h.state.ui.baseLegPlatformMode, 'plain');
+  assert.equal(h.state.runtime.wardrobeTypeProfiles.hinged.ui.baseLegPlatformMode, 'stage');
+
+  h.actions.room.setWardrobeType('hinged');
+
+  assert.equal(h.state.config.wardrobeType, 'hinged');
+  assert.equal(h.state.ui.baseType, 'legs');
+  assert.equal(h.state.ui.baseLegPlatformMode, 'stage');
+  assert.equal(h.state.runtime.wardrobeTypeProfiles.sliding.ui.baseLegPlatformMode, 'plain');
+
+  h.state.ui.baseLegPlatformMode = 'plain';
+  h.actions.room.setWardrobeType('sliding');
+
+  assert.equal(h.state.config.wardrobeType, 'sliding');
+  assert.equal(h.state.ui.baseLegPlatformMode, 'plain');
+
+  h.actions.room.setWardrobeType('hinged');
+
+  assert.equal(h.state.config.wardrobeType, 'hinged');
+  assert.equal(h.state.ui.baseLegPlatformMode, 'plain');
+});
+
 test('room wardrobe type runtime: undefined recompute results stay handled and do not force a recovery build', () => {
   const h = createHarness({
     ui: { raw: { width: 160, height: 240, depth: 55, doors: 4 } },
