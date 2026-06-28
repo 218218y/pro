@@ -86,7 +86,7 @@ export function SettingsTab(props: { active: boolean }): ReactElement {
               <SettingsAction
                 icon="fas fa-camera"
                 title="צילום"
-                subtitle="תמונה אחת להורדה"
+                subtitle="תמונה תצוגה נוכחית להורדה למחשב"
                 variant="primary"
                 testId="export-snapshot-button"
                 onClick={() => {
@@ -97,7 +97,7 @@ export function SettingsTab(props: { active: boolean }): ReactElement {
               <SettingsAction
                 icon="fas fa-copy"
                 title="העתק ללוח"
-                subtitle="תמונה אחת העתקה ללוח"
+                subtitle="תמונה תצוגה נוכחית - להעתקה ללוח"
                 variant="accent"
                 testId="export-copy-button"
                 onClick={() => {
@@ -108,7 +108,7 @@ export function SettingsTab(props: { active: boolean }): ReactElement {
               <SettingsAction
                 icon="fas fa-images"
                 title="סקיצה/הדמיה"
-                subtitle="תמונה משולבת אחת"
+                subtitle="תמונה מזווית קבועה משולבת משתי תמונות"
                 titleAttr="ייצוא הדמיה + סקיצה"
                 testId="export-render-sketch-button"
                 onClick={() => {
@@ -119,7 +119,7 @@ export function SettingsTab(props: { active: boolean }): ReactElement {
               <SettingsAction
                 icon="fas fa-columns"
                 title="פתוח/סגור"
-                subtitle="תמונה משולבת אחת"
+                subtitle="תמונה מזווית קבועה משולבת משתי תמונות"
                 titleAttr="פתוח סגור"
                 testId="export-dual-image-button"
                 onClick={() => {
