@@ -51,7 +51,11 @@ test('canonical ui.raw selector is raw-only and old fail-soft helpers remain qua
   assert.doesNotMatch(canonicalBody, /readUiDirectScalar/);
   assert.match(canonicalBody, /getRawFromUiSnapshot\(ui\)/);
   assert.match(canonicalBody, /hasOwnProperty\.call\(raw, key\)/);
-  assert.match(assertBody, /missingEssentialUiRawDims\(ui\)/);
+  assert.match(canonicalBody, /readCanonicalUiScalarValue\(key, raw\[key\]\)/);
+  assert.match(source, /function missingCanonicalEssentialUiRawDims\(ui: unknown\)/);
+  assert.match(assertBody, /missingCanonicalEssentialUiRawDims\(ui\)/);
+  assert.doesNotMatch(source, /missingEssentialUiRawDims/);
+  assert.doesNotMatch(source, /readUiScalarValue/);
   assert.match(tolerantSource, /export function ensureUiRawDimsFromSnapshot/);
   assert.match(facade, /readUiRawScalarFromCanonicalSnapshot/);
   assert.match(facade, /ensureUiRawDimsFromSnapshot/);
