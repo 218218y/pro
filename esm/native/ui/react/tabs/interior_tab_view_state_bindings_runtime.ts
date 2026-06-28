@@ -37,6 +37,10 @@ export type InteriorTabViewStateControllerBindings = Pick<
   | 'setSketchBoxLegWidthDraft'
   | 'setSketchBoxLegStyle'
   | 'setSketchBoxLegColor'
+  | 'setSketchBoxLegPlatformMode'
+  | 'setSketchBoxLegPlatformSideMode'
+  | 'setSketchBoxLegPlatformSideOverhangCm'
+  | 'setSketchBoxLegPlatformFrontOverhangCm'
   | 'setSketchBoxLegHeightCm'
   | 'setSketchBoxLegHeightDraft'
   | 'setSketchExtDrawerCount'
@@ -88,6 +92,10 @@ export function createInteriorTabViewStateControllerMemoDeps(
     bindings.setSketchBoxLegWidthDraft,
     bindings.setSketchBoxLegStyle,
     bindings.setSketchBoxLegColor,
+    bindings.setSketchBoxLegPlatformMode,
+    bindings.setSketchBoxLegPlatformSideMode,
+    bindings.setSketchBoxLegPlatformSideOverhangCm,
+    bindings.setSketchBoxLegPlatformFrontOverhangCm,
     bindings.setSketchBoxLegHeightCm,
     bindings.setSketchBoxLegHeightDraft,
     bindings.setSketchExtDrawerCount,
@@ -140,6 +148,10 @@ export function createInteriorTabViewStateControllerArgs(
     setSketchBoxLegWidthDraft: bindings.setSketchBoxLegWidthDraft,
     setSketchBoxLegStyle: bindings.setSketchBoxLegStyle,
     setSketchBoxLegColor: bindings.setSketchBoxLegColor,
+    setSketchBoxLegPlatformMode: bindings.setSketchBoxLegPlatformMode,
+    setSketchBoxLegPlatformSideMode: bindings.setSketchBoxLegPlatformSideMode,
+    setSketchBoxLegPlatformSideOverhangCm: bindings.setSketchBoxLegPlatformSideOverhangCm,
+    setSketchBoxLegPlatformFrontOverhangCm: bindings.setSketchBoxLegPlatformFrontOverhangCm,
     setSketchBoxLegHeightCm: bindings.setSketchBoxLegHeightCm,
     setSketchBoxLegHeightDraft: bindings.setSketchBoxLegHeightDraft,
     setSketchExtDrawerCount: bindings.setSketchExtDrawerCount,

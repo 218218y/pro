@@ -70,6 +70,16 @@ function createLayoutProps(overrides = {}) {
     sketchBoxBaseType: 'plinth',
     sketchBoxPlinthHeightCm: 8,
     sketchBoxPlinthHeightDraft: '8',
+    sketchBoxLegStyle: 'tapered',
+    sketchBoxLegColor: 'black',
+    sketchBoxLegPlatformMode: 'stage',
+    sketchBoxLegPlatformSideMode: 'overhang',
+    sketchBoxLegPlatformSideOverhangCm: 1.5,
+    sketchBoxLegPlatformFrontOverhangCm: 2,
+    sketchBoxLegHeightCm: 12,
+    sketchBoxLegHeightDraft: '12',
+    sketchBoxLegWidthCm: 4,
+    sketchBoxLegWidthDraft: '4',
     sketchExtDrawersPanelOpen: false,
     sketchExtDrawerCount: 3,
     sketchExtDrawerHeightCm: 22,
@@ -121,6 +131,16 @@ function createLayoutProps(overrides = {}) {
     setSketchBoxBaseType: setStateNoop,
     setSketchBoxPlinthHeightCm: setStateNoop,
     setSketchBoxPlinthHeightDraft: setStateNoop,
+    setSketchBoxLegStyle: setStateNoop,
+    setSketchBoxLegColor: setStateNoop,
+    setSketchBoxLegPlatformMode: setStateNoop,
+    setSketchBoxLegPlatformSideMode: setStateNoop,
+    setSketchBoxLegPlatformSideOverhangCm: setStateNoop,
+    setSketchBoxLegPlatformFrontOverhangCm: setStateNoop,
+    setSketchBoxLegHeightCm: setStateNoop,
+    setSketchBoxLegHeightDraft: setStateNoop,
+    setSketchBoxLegWidthCm: setStateNoop,
+    setSketchBoxLegWidthDraft: setStateNoop,
     setSketchExtDrawersPanelOpen: setStateNoop,
     setSketchExtDrawerCount: setStateNoop,
     setSketchExtDrawerHeightCm: setStateNoop,
@@ -290,6 +310,50 @@ test('[interior-tab-sections-runtime] sketch tools panel renders the moved sketc
   assert.match(html, /interior-sketch-storage-height-reset-button/);
   assert.ok((html.match(/wp-r-sketch-drawer-height-reset-btn/g) || []).length >= 4);
   assert.ok((html.match(/type="button"/g) || []).length >= 11);
+});
+
+test('[interior-tab-sections-runtime] free box legs expose the same platform controls as regular cabinet legs', () => {
+  const html = renderToStaticMarkup(
+    React.createElement(
+      InteriorLayoutSketchToolsPanel,
+      createLayoutProps({
+        isSketchToolActive: true,
+        manualToolRaw: 'sketch_box_base:legs',
+        sketchBoxBasePanelOpen: true,
+        sketchBoxBaseType: 'legs',
+      })
+    )
+  );
+
+  assert.match(html, /במת רגליים/);
+  assert.match(html, /עם במה/);
+  assert.match(html, /בלי במה/);
+  assert.match(html, /בליטת במה צדדית/);
+  assert.match(html, /במה בולטת/);
+  assert.match(html, /במה אפס/);
+  assert.match(html, /בליטה מהצדדים/);
+  assert.match(html, /בליטה מהחזית/);
+  assert.match(html, /data-tooltip="איפוס בליטה מהצדדים לברירת מחדל"/);
+  assert.match(html, /step="0\.1"/);
+});
+
+test('[interior-tab-sections-runtime] free box flush platform keeps only the front overhang field', () => {
+  const html = renderToStaticMarkup(
+    React.createElement(
+      InteriorLayoutSketchToolsPanel,
+      createLayoutProps({
+        isSketchToolActive: true,
+        manualToolRaw: 'sketch_box_base:legs@tapered@black@12@4@stage@flush@1.5@2',
+        sketchBoxBasePanelOpen: true,
+        sketchBoxBaseType: 'legs',
+        sketchBoxLegPlatformMode: 'stage',
+        sketchBoxLegPlatformSideMode: 'flush',
+      })
+    )
+  );
+
+  assert.doesNotMatch(html, /בליטה מהצדדים/);
+  assert.match(html, /בליטה מהחזית/);
 });
 
 test('[interior-tab-sections-runtime] sliding wardrobe hides sketch external drawer controls', () => {

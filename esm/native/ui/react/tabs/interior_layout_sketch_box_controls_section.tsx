@@ -22,12 +22,17 @@ import {
   BASE_LEG_WIDTH_MIN_CM,
 } from '../../../features/base_leg_support.js';
 import {
+  DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM,
+  DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM,
+} from '../../../features/platform_overhang_support.js';
+import {
   BASE_PLINTH_HEIGHT_MAX_CM,
   BASE_PLINTH_HEIGHT_MIN_CM,
 } from '../../../features/base_plinth_support.js';
 import {
   SketchBoxChoicePanel,
   SketchBoxNumericField,
+  SketchBoxPlatformOverhangField,
   SketchBoxToolButton,
   SketchBoxToolRow,
 } from './interior_layout_sketch_box_controls_components.js';
@@ -35,6 +40,8 @@ import {
   SKETCH_BOX_BASE_OPTIONS,
   SKETCH_BOX_CORNICE_OPTIONS,
   SKETCH_BOX_LEG_COLOR_OPTIONS,
+  SKETCH_BOX_LEG_PLATFORM_OPTIONS,
+  SKETCH_BOX_LEG_PLATFORM_SIDE_OPTIONS,
   SKETCH_BOX_LEG_STYLE_OPTIONS,
 } from './interior_layout_sketch_box_controls_options.js';
 import { readSketchBoxControlsViewState } from './interior_layout_sketch_box_controls_state.js';
@@ -49,6 +56,8 @@ import {
   selectSketchBoxLegColor,
   selectSketchBoxLegStyle,
   resetSketchBoxPlinthHeight,
+  selectSketchBoxLegPlatformMode,
+  selectSketchBoxLegPlatformSideMode,
   selectSketchBoxBaseType,
   selectSketchBoxCorniceType,
   toggleSketchBoxBasePanel,
@@ -58,6 +67,8 @@ import {
   updateSketchBoxHeightDraft,
   updateSketchBoxLegHeightDraft,
   updateSketchBoxLegWidthDraft,
+  setSketchBoxLegPlatformFrontOverhang,
+  setSketchBoxLegPlatformSideOverhang,
   updateSketchBoxPlinthHeightDraft,
   updateSketchBoxOptionalDimensionDraft,
 } from './interior_layout_sketch_box_controls_runtime.js';
@@ -313,6 +324,55 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
 
             {props.sketchBoxBaseType === 'legs' && (props.sketchBoxBasePanelOpen || isBaseToolActive) ? (
               <>
+                <SketchBoxChoicePanel
+                  title="במת רגליים"
+                  open
+                  value={props.sketchBoxLegPlatformMode}
+                  options={SKETCH_BOX_LEG_PLATFORM_OPTIONS}
+                  onSelect={next => {
+                    selectSketchBoxLegPlatformMode(props, next);
+                  }}
+                />
+
+                {props.sketchBoxLegPlatformMode === 'stage' ? (
+                  <>
+                    <SketchBoxChoicePanel
+                      title="בליטת במה צדדית"
+                      open
+                      value={props.sketchBoxLegPlatformSideMode}
+                      options={SKETCH_BOX_LEG_PLATFORM_SIDE_OPTIONS}
+                      onSelect={next => {
+                        selectSketchBoxLegPlatformSideMode(props, next);
+                      }}
+                    />
+
+                    <div className="wp-sketch-box-cell" style={{ gridColumn: '1 / -1' }}>
+                      <div className="wp-r-leg-size-fields wp-r-platform-overhang-fields wp-r-sketch-box-platform-overhang-fields">
+                        {props.sketchBoxLegPlatformSideMode === 'overhang' ? (
+                          <SketchBoxPlatformOverhangField
+                            label="בליטה מהצדדים (ס״מ)"
+                            value={props.sketchBoxLegPlatformSideOverhangCm}
+                            defaultValue={DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM}
+                            resetTitle="איפוס בליטה מהצדדים לברירת מחדל"
+                            onChange={value => {
+                              setSketchBoxLegPlatformSideOverhang(props, value);
+                            }}
+                          />
+                        ) : null}
+                        <SketchBoxPlatformOverhangField
+                          label="בליטה מהחזית (ס״מ)"
+                          value={props.sketchBoxLegPlatformFrontOverhangCm}
+                          defaultValue={DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM}
+                          resetTitle="איפוס בליטה מהחזית לברירת מחדל"
+                          onChange={value => {
+                            setSketchBoxLegPlatformFrontOverhang(props, value);
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </>
+                ) : null}
+
                 <SketchBoxChoicePanel
                   title="סוג רגליים"
                   open

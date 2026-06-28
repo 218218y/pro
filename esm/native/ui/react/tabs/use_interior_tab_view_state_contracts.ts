@@ -13,6 +13,8 @@ import type {
   SketchBoxBaseType,
   SketchBoxCorniceType,
   SketchBoxLegColor,
+  SketchBoxLegPlatformMode,
+  SketchBoxLegPlatformSideMode,
   SketchBoxLegStyle,
 } from './interior_tab_helpers.js';
 import type {
@@ -82,6 +84,10 @@ export type InteriorTabViewState = {
   sketchBoxPlinthHeightDraft: string;
   sketchBoxLegStyle: SketchBoxLegStyle;
   sketchBoxLegColor: SketchBoxLegColor;
+  sketchBoxLegPlatformMode: SketchBoxLegPlatformMode;
+  sketchBoxLegPlatformSideMode: SketchBoxLegPlatformSideMode;
+  sketchBoxLegPlatformSideOverhangCm: number;
+  sketchBoxLegPlatformFrontOverhangCm: number;
   sketchBoxLegHeightCm: number;
   sketchBoxLegHeightDraft: string;
   sketchBoxLegWidthCm: number;
@@ -132,6 +138,10 @@ export type InteriorTabViewState = {
   setSketchBoxPlinthHeightDraft: Dispatch<SetStateAction<string>>;
   setSketchBoxLegStyle: Dispatch<SetStateAction<SketchBoxLegStyle>>;
   setSketchBoxLegColor: Dispatch<SetStateAction<SketchBoxLegColor>>;
+  setSketchBoxLegPlatformMode: Dispatch<SetStateAction<SketchBoxLegPlatformMode>>;
+  setSketchBoxLegPlatformSideMode: Dispatch<SetStateAction<SketchBoxLegPlatformSideMode>>;
+  setSketchBoxLegPlatformSideOverhangCm: Dispatch<SetStateAction<number>>;
+  setSketchBoxLegPlatformFrontOverhangCm: Dispatch<SetStateAction<number>>;
   setSketchBoxLegHeightCm: Dispatch<SetStateAction<number>>;
   setSketchBoxLegHeightDraft: Dispatch<SetStateAction<string>>;
   setSketchBoxLegWidthCm: Dispatch<SetStateAction<number>>;

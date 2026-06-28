@@ -38,6 +38,18 @@ const sandbox = {
         DEFAULT_BASE_PLINTH_HEIGHT_CM: 8,
       };
     }
+    if (spec === '../../../features/base_leg_support.js') {
+      return {
+        DEFAULT_BASE_LEG_PLATFORM_MODE: 'stage',
+        DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE: 'overhang',
+      };
+    }
+    if (spec === '../../../features/platform_overhang_support.js') {
+      return {
+        DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM: 1.5,
+        DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM: 2,
+      };
+    }
     return require(spec);
   },
 };
@@ -70,6 +82,10 @@ test('[interior-local-state-runtime] defaults stay canonical for drafts/options'
   assert.equal(defaults.sketchBoxPlinthHeightDraft, '8');
   assert.equal(defaults.sketchBoxLegWidthCm, 4);
   assert.equal(defaults.sketchBoxLegWidthDraft, '4');
+  assert.equal(defaults.sketchBoxLegPlatformMode, 'stage');
+  assert.equal(defaults.sketchBoxLegPlatformSideMode, 'overhang');
+  assert.equal(defaults.sketchBoxLegPlatformSideOverhangCm, 1.5);
+  assert.equal(defaults.sketchBoxLegPlatformFrontOverhangCm, 2);
   assert.equal(defaults.sketchExtDrawerCount, 1);
   assert.equal(defaults.sketchExtDrawerHeightCm, 22);
   assert.equal(defaults.sketchExtDrawerHeightDraft, '22');

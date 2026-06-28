@@ -27,6 +27,8 @@ import type {
   SketchBoxBaseType,
   SketchBoxCorniceType,
   SketchBoxLegColor,
+  SketchBoxLegPlatformMode,
+  SketchBoxLegPlatformSideMode,
   SketchBoxLegStyle,
 } from './interior_tab_helpers.js';
 import {
@@ -121,9 +123,27 @@ export function createInteriorTabManualWorkflowController(
       color: SketchBoxLegColor,
       heightCm: number,
       widthCm: number,
-      plinthHeightCm?: number
+      plinthHeightCm?: number,
+      platformMode?: SketchBoxLegPlatformMode,
+      platformSideMode?: SketchBoxLegPlatformSideMode,
+      platformSideOverhangCm?: number,
+      platformFrontOverhangCm?: number
     ) {
-      enterManualLayoutMode(app, mkSketchBoxBaseTool(type, style, color, heightCm, widthCm, plinthHeightCm));
+      enterManualLayoutMode(
+        app,
+        mkSketchBoxBaseTool(
+          type,
+          style,
+          color,
+          heightCm,
+          widthCm,
+          plinthHeightCm,
+          platformMode,
+          platformSideMode,
+          platformSideOverhangCm,
+          platformFrontOverhangCm
+        )
+      );
     },
 
     enterSketchExtDrawersTool(count: number, drawerHeightCm: number) {

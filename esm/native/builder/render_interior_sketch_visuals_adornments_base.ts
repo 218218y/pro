@@ -47,6 +47,26 @@ export function renderSketchBoxAdornmentBase(args: {
   }
 
   if (baseRec?.kind !== 'legs') return;
+  const platforms = Array.isArray(baseRec.platforms) ? baseRec.platforms : [];
+  for (let i = 0; i < platforms.length; i++) {
+    const platform = asValueRecord(platforms[i]);
+    if (!platform) continue;
+    const w = toPositiveNumber(platform.width);
+    const h = toPositiveNumber(platform.height);
+    const d = toPositiveNumber(platform.depth);
+    const x = toFiniteNumber(platform.x);
+    const y = toFiniteNumber(platform.y);
+    const z = toFiniteNumber(platform.z);
+    if (!(w && h && d && x != null && y != null && z != null)) continue;
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), bodyMat);
+    runtime.placeMesh(
+      mesh,
+      typeof platform.partId === 'string' ? platform.partId : `${boxPid}_base_leg_platform_${i}`,
+      x,
+      y,
+      z
+    );
+  }
   const legHeight = Math.max(0.02, toFiniteNumber(baseRec.height) ?? 0.12);
   const geoRec = asValueRecord(baseRec.geo);
   const shape = String(geoRec?.shape || 'round');

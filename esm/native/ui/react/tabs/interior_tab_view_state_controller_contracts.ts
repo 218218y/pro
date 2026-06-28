@@ -6,6 +6,8 @@ import type {
   SketchBoxBaseType,
   SketchBoxCorniceType,
   SketchBoxLegColor,
+  SketchBoxLegPlatformMode,
+  SketchBoxLegPlatformSideMode,
   SketchBoxLegStyle,
 } from './interior_tab_helpers.js';
 
@@ -86,6 +88,10 @@ export type CreateInteriorTabViewStateControllerArgs = {
   setSketchBoxLegWidthDraft: (next: string) => void;
   setSketchBoxLegStyle: (next: SketchBoxLegStyle) => void;
   setSketchBoxLegColor: (next: SketchBoxLegColor) => void;
+  setSketchBoxLegPlatformMode: (next: SketchBoxLegPlatformMode) => void;
+  setSketchBoxLegPlatformSideMode: (next: SketchBoxLegPlatformSideMode) => void;
+  setSketchBoxLegPlatformSideOverhangCm: (next: number) => void;
+  setSketchBoxLegPlatformFrontOverhangCm: (next: number) => void;
   setSketchBoxLegHeightCm: (next: number) => void;
   setSketchBoxLegHeightDraft: (next: string) => void;
   setSketchExtDrawerCount: (next: number) => void;

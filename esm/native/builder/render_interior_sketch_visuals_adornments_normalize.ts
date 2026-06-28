@@ -1,4 +1,5 @@
-import { readBaseLegOptions } from '../features/base_leg_support.js';
+import { CARCASS_BASE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { normalizeBaseLegPlatformMode, readBaseLegOptions } from '../features/base_leg_support.js';
 import { getBasePlinthHeightM } from '../features/base_plinth_support.js';
 
 export function normalizeSketchBoxAdornmentBaseType(value: unknown): 'plinth' | 'legs' | 'none' {
@@ -25,7 +26,14 @@ function readSupportHeightCm(source: unknown, key: 'basePlinthHeightCm'): unknow
 
 export function getSketchBoxAdornmentBaseHeight(baseType: unknown, source?: unknown): number {
   const normalized = normalizeSketchBoxAdornmentBaseType(baseType);
-  if (normalized === 'legs') return readBaseLegOptions(source).heightM;
+  if (normalized === 'legs') {
+    const bottomPlatformHeight =
+      normalizeBaseLegPlatformMode((source as Record<string, unknown> | null)?.baseLegPlatformMode) ===
+      'stage'
+        ? CARCASS_BASE_DIMENSIONS.legs.platform.heightM
+        : 0;
+    return readBaseLegOptions(source).heightM + bottomPlatformHeight;
+  }
   if (normalized === 'plinth') return getBasePlinthHeightM(readSupportHeightCm(source, 'basePlinthHeightCm'));
   return 0;
 }

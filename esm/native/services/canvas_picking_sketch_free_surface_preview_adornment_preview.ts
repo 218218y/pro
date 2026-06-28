@@ -1,6 +1,14 @@
 import type { SketchBoxDividerState, SketchBoxSegmentState } from './canvas_picking_sketch_box_dividers.js';
-import { readBaseLegOptions } from '../features/base_leg_support.js';
+import {
+  DEFAULT_BASE_LEG_PLATFORM_MODE,
+  DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE,
+  readBaseLegOptions,
+} from '../features/base_leg_support.js';
 import { normalizeBasePlinthHeightCm } from '../features/base_plinth_support.js';
+import {
+  DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM,
+  DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM,
+} from '../features/platform_overhang_support.js';
 import { MATERIAL_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { resolveSketchBoxVisibleFrontOverlay } from './canvas_picking_manual_layout_sketch_front_overlay.js';
 import {
@@ -89,6 +97,22 @@ export function resolveSketchFreeSurfaceAdornmentPreview(args: {
   const sameLegOptions =
     currentLegOptions.style === selectedLegOptions.style &&
     currentLegOptions.color === selectedLegOptions.color &&
+    String(readRecordValue(targetBox, 'baseLegPlatformMode') || DEFAULT_BASE_LEG_PLATFORM_MODE) ===
+      String(selectedBaseSpec?.baseLegPlatformMode || DEFAULT_BASE_LEG_PLATFORM_MODE) &&
+    String(readRecordValue(targetBox, 'baseLegPlatformSideMode') || DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE) ===
+      String(selectedBaseSpec?.baseLegPlatformSideMode || DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE) &&
+    Number(
+      readRecordValue(targetBox, 'baseLegPlatformSideOverhangCm') ||
+        DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM
+    ) ===
+      Number(selectedBaseSpec?.baseLegPlatformSideOverhangCm || DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM) &&
+    Number(
+      readRecordValue(targetBox, 'baseLegPlatformFrontOverhangCm') ||
+        DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM
+    ) ===
+      Number(
+        selectedBaseSpec?.baseLegPlatformFrontOverhangCm || DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM
+      ) &&
     currentLegOptions.heightCm === selectedLegOptions.heightCm &&
     currentLegOptions.widthCm === selectedLegOptions.widthCm;
   const sameBaseOptions =
@@ -114,7 +138,10 @@ export function resolveSketchFreeSurfaceAdornmentPreview(args: {
           selectedBase,
           selectedBase === 'plinth'
             ? { basePlinthHeightCm: selectedPlinthHeightCm }
-            : { baseLegHeightCm: selectedLegOptions.heightCm }
+            : {
+                baseLegHeightCm: selectedLegOptions.heightCm,
+                baseLegPlatformMode: selectedBaseSpec?.baseLegPlatformMode,
+              }
         );
   const actualCenterY = targetCenterY - targetHeight / 2 - previewH / 2;
   const visibleCenterY =
@@ -152,6 +179,13 @@ export function resolveSketchFreeSurfaceAdornmentPreview(args: {
       baseType: selectedBase,
       baseLegStyle: selectedLegOptions.style,
       baseLegColor: selectedLegOptions.color,
+      baseLegPlatformMode: selectedBaseSpec?.baseLegPlatformMode || DEFAULT_BASE_LEG_PLATFORM_MODE,
+      baseLegPlatformSideMode:
+        selectedBaseSpec?.baseLegPlatformSideMode || DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE,
+      baseLegPlatformSideOverhangCm:
+        selectedBaseSpec?.baseLegPlatformSideOverhangCm || DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM,
+      baseLegPlatformFrontOverhangCm:
+        selectedBaseSpec?.baseLegPlatformFrontOverhangCm || DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM,
       baseLegHeightCm: selectedLegOptions.heightCm,
       baseLegWidthCm: selectedLegOptions.widthCm,
       basePlinthHeightCm: selectedPlinthHeightCm,

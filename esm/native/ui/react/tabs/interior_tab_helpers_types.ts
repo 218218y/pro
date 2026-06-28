@@ -1,6 +1,11 @@
 import type { ReactNode } from 'react';
 
-import type { BaseLegColor, BaseLegStyle } from '../../../features/base_leg_support.js';
+import type {
+  BaseLegColor,
+  BaseLegPlatformMode,
+  BaseLegPlatformSideMode,
+  BaseLegStyle,
+} from '../../../features/base_leg_support.js';
 import type { HandleFinishColor } from '../../../features/handle_finish_shared.js';
 
 export type LayoutTypeId = 'shelves' | 'hanging' | 'hanging_split' | 'mixed' | 'storage' | 'brace_shelves';
@@ -9,6 +14,8 @@ export type SketchBoxCorniceType = 'classic' | 'wave';
 export type SketchBoxBaseType = 'plinth' | 'legs' | 'none';
 export type SketchBoxLegStyle = BaseLegStyle;
 export type SketchBoxLegColor = BaseLegColor;
+export type SketchBoxLegPlatformMode = BaseLegPlatformMode;
+export type SketchBoxLegPlatformSideMode = BaseLegPlatformSideMode;
 
 export type HandleType = 'standard' | 'edge' | 'none';
 export type EdgeHandleVariant = 'short' | 'long';

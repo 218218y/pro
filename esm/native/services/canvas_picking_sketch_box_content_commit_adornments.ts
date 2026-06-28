@@ -1,6 +1,15 @@
 import type { ManualLayoutSketchBoxContentHoverIntent } from './canvas_picking_manual_layout_sketch_hover_intent.js';
-import { readBaseLegOptions } from '../features/base_leg_support.js';
+import { CARCASS_BASE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  normalizeBaseLegPlatformMode,
+  normalizeBaseLegPlatformSideMode,
+  readBaseLegOptions,
+} from '../features/base_leg_support.js';
 import { getBasePlinthHeightM, normalizeBasePlinthHeightCm } from '../features/base_plinth_support.js';
+import {
+  normalizeBaseLegPlatformFrontOverhangCm,
+  normalizeBaseLegPlatformSideOverhangCm,
+} from '../features/platform_overhang_support.js';
 import {
   addSketchBoxDividerState,
   addSketchBoxHorizontalDividerState,
@@ -22,9 +31,20 @@ function getSketchBoxAdornmentBaseHeight(baseType: unknown, source?: unknown): n
   if (normalized === 'legs') {
     if (source && typeof source === 'object') {
       const heightCm = Number(readSupportHeightCm(source, 'heightCm'));
-      if (Number.isFinite(heightCm) && heightCm > 0) return Math.max(0.01, heightCm / 100);
+      if (Number.isFinite(heightCm) && heightCm > 0) {
+        const bottomPlatformHeight =
+          normalizeBaseLegPlatformMode((source as Record<string, unknown>).baseLegPlatformMode) === 'stage'
+            ? CARCASS_BASE_DIMENSIONS.legs.platform.heightM
+            : 0;
+        return Math.max(0.01, heightCm / 100) + bottomPlatformHeight;
+      }
     }
-    return readBaseLegOptions(source).heightM;
+    const bottomPlatformHeight =
+      normalizeBaseLegPlatformMode((source as Record<string, unknown> | null)?.baseLegPlatformMode) ===
+      'stage'
+        ? CARCASS_BASE_DIMENSIONS.legs.platform.heightM
+        : 0;
+    return readBaseLegOptions(source).heightM + bottomPlatformHeight;
   }
   if (normalized === 'plinth') return getBasePlinthHeightM(readSupportHeightCm(source, 'basePlinthHeightCm'));
   return 0;
@@ -119,9 +139,28 @@ export function tryCommitSketchBoxAdornment(args: {
     const nextBaseOptions = readBaseLegOptions({
       baseLegStyle: hoverIntent?.baseLegStyle ?? commitArgs.hoverRec.baseLegStyle,
       baseLegColor: hoverIntent?.baseLegColor ?? commitArgs.hoverRec.baseLegColor,
+      baseLegPlatformMode: hoverIntent?.baseLegPlatformMode ?? commitArgs.hoverRec.baseLegPlatformMode,
+      baseLegPlatformSideMode:
+        hoverIntent?.baseLegPlatformSideMode ?? commitArgs.hoverRec.baseLegPlatformSideMode,
+      baseLegPlatformSideOverhangCm:
+        hoverIntent?.baseLegPlatformSideOverhangCm ?? commitArgs.hoverRec.baseLegPlatformSideOverhangCm,
+      baseLegPlatformFrontOverhangCm:
+        hoverIntent?.baseLegPlatformFrontOverhangCm ?? commitArgs.hoverRec.baseLegPlatformFrontOverhangCm,
       baseLegHeightCm: hoverIntent?.baseLegHeightCm ?? commitArgs.hoverRec.baseLegHeightCm,
       baseLegWidthCm: hoverIntent?.baseLegWidthCm ?? commitArgs.hoverRec.baseLegWidthCm,
     });
+    const nextBasePlatformMode = normalizeBaseLegPlatformMode(
+      hoverIntent?.baseLegPlatformMode ?? commitArgs.hoverRec.baseLegPlatformMode
+    );
+    const nextBasePlatformSideMode = normalizeBaseLegPlatformSideMode(
+      hoverIntent?.baseLegPlatformSideMode ?? commitArgs.hoverRec.baseLegPlatformSideMode
+    );
+    const nextBasePlatformSideOverhangCm = normalizeBaseLegPlatformSideOverhangCm(
+      hoverIntent?.baseLegPlatformSideOverhangCm ?? commitArgs.hoverRec.baseLegPlatformSideOverhangCm
+    );
+    const nextBasePlatformFrontOverhangCm = normalizeBaseLegPlatformFrontOverhangCm(
+      hoverIntent?.baseLegPlatformFrontOverhangCm ?? commitArgs.hoverRec.baseLegPlatformFrontOverhangCm
+    );
     const nextBasePlinthHeightCm = normalizeBasePlinthHeightCm(
       hoverIntent?.basePlinthHeightCm ?? commitArgs.hoverRec.basePlinthHeightCm
     );
@@ -129,19 +168,32 @@ export function tryCommitSketchBoxAdornment(args: {
       box: commitArgs.box,
       nextBaseType: appliedBaseType,
       nextBaseOptions:
-        appliedBaseType === 'plinth' ? { basePlinthHeightCm: nextBasePlinthHeightCm } : nextBaseOptions,
+        appliedBaseType === 'plinth'
+          ? { basePlinthHeightCm: nextBasePlinthHeightCm }
+          : {
+              heightCm: nextBaseOptions.heightCm,
+              baseLegPlatformMode: nextBasePlatformMode,
+            },
       floorY,
     });
     commitArgs.box.baseType = appliedBaseType;
     if (appliedBaseType === 'legs') {
       commitArgs.box.baseLegStyle = nextBaseOptions.style;
       commitArgs.box.baseLegColor = nextBaseOptions.color;
+      commitArgs.box.baseLegPlatformMode = nextBasePlatformMode;
+      commitArgs.box.baseLegPlatformSideMode = nextBasePlatformSideMode;
+      commitArgs.box.baseLegPlatformSideOverhangCm = nextBasePlatformSideOverhangCm;
+      commitArgs.box.baseLegPlatformFrontOverhangCm = nextBasePlatformFrontOverhangCm;
       commitArgs.box.baseLegHeightCm = nextBaseOptions.heightCm;
       commitArgs.box.baseLegWidthCm = nextBaseOptions.widthCm;
       delete commitArgs.box.basePlinthHeightCm;
     } else {
       delete commitArgs.box.baseLegStyle;
       delete commitArgs.box.baseLegColor;
+      delete commitArgs.box.baseLegPlatformMode;
+      delete commitArgs.box.baseLegPlatformSideMode;
+      delete commitArgs.box.baseLegPlatformSideOverhangCm;
+      delete commitArgs.box.baseLegPlatformFrontOverhangCm;
       delete commitArgs.box.baseLegHeightCm;
       delete commitArgs.box.baseLegWidthCm;
       if (appliedBaseType === 'plinth') {

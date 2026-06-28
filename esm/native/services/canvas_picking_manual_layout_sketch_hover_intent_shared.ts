@@ -84,6 +84,10 @@ export type ManualLayoutSketchBoxContentHoverIntent = {
   baseType: string | null;
   baseLegStyle: string | null;
   baseLegColor: string | null;
+  baseLegPlatformMode: string | null;
+  baseLegPlatformSideMode: string | null;
+  baseLegPlatformSideOverhangCm: number | null;
+  baseLegPlatformFrontOverhangCm: number | null;
   baseLegHeightCm: number | null;
   baseLegWidthCm: number | null;
   basePlinthHeightCm: number | null;

@@ -7,6 +7,8 @@ import type {
   SketchBoxBaseType,
   SketchBoxCorniceType,
   SketchBoxLegColor,
+  SketchBoxLegPlatformMode,
+  SketchBoxLegPlatformSideMode,
   SketchBoxLegStyle,
 } from './interior_tab_helpers.js';
 import {
@@ -73,6 +75,17 @@ export function useInteriorTabLocalState() {
   );
   const [sketchBoxLegColor, setSketchBoxLegColor] = useState<SketchBoxLegColor>(
     () => defaults.sketchBoxLegColor
+  );
+  const [sketchBoxLegPlatformMode, setSketchBoxLegPlatformMode] = useState<SketchBoxLegPlatformMode>(
+    () => defaults.sketchBoxLegPlatformMode
+  );
+  const [sketchBoxLegPlatformSideMode, setSketchBoxLegPlatformSideMode] =
+    useState<SketchBoxLegPlatformSideMode>(() => defaults.sketchBoxLegPlatformSideMode);
+  const [sketchBoxLegPlatformSideOverhangCm, setSketchBoxLegPlatformSideOverhangCm] = useState<number>(
+    () => defaults.sketchBoxLegPlatformSideOverhangCm
+  );
+  const [sketchBoxLegPlatformFrontOverhangCm, setSketchBoxLegPlatformFrontOverhangCm] = useState<number>(
+    () => defaults.sketchBoxLegPlatformFrontOverhangCm
   );
   const [sketchBoxLegHeightCm, setSketchBoxLegHeightCm] = useState<number>(
     () => defaults.sketchBoxLegHeightCm
@@ -163,6 +176,10 @@ export function useInteriorTabLocalState() {
     sketchBoxPlinthHeightDraft,
     sketchBoxLegStyle,
     sketchBoxLegColor,
+    sketchBoxLegPlatformMode,
+    sketchBoxLegPlatformSideMode,
+    sketchBoxLegPlatformSideOverhangCm,
+    sketchBoxLegPlatformFrontOverhangCm,
     sketchBoxLegHeightCm,
     sketchBoxLegHeightDraft,
     sketchBoxLegWidthCm,
@@ -207,6 +224,10 @@ export function useInteriorTabLocalState() {
     setSketchBoxPlinthHeightDraft,
     setSketchBoxLegStyle,
     setSketchBoxLegColor,
+    setSketchBoxLegPlatformMode,
+    setSketchBoxLegPlatformSideMode,
+    setSketchBoxLegPlatformSideOverhangCm,
+    setSketchBoxLegPlatformFrontOverhangCm,
     setSketchBoxLegHeightCm,
     setSketchBoxLegHeightDraft,
     setSketchBoxLegWidthCm,

@@ -76,6 +76,10 @@ test('[interior-view-state-controller] centralizes sketch and door-trim sync sid
       ['setSketchBoxBaseType', 'legs'],
       ['setSketchBoxLegStyle', 'tapered'],
       ['setSketchBoxLegColor', 'black'],
+      ['setSketchBoxLegPlatformMode', 'stage'],
+      ['setSketchBoxLegPlatformSideMode', 'overhang'],
+      ['setSketchBoxLegPlatformSideOverhangCm', 1.5],
+      ['setSketchBoxLegPlatformFrontOverhangCm', 2],
       ['setSketchBoxLegHeightCm', 12],
       ['setSketchBoxLegHeightDraft', '12'],
       ['setSketchBoxLegWidthCm', 4],
@@ -102,10 +106,35 @@ test('[interior-view-state-controller] syncs sketch box plinth height from the a
     ['setSketchBoxPlinthHeightDraft', '14.5'],
     ['setSketchBoxLegStyle', 'tapered'],
     ['setSketchBoxLegColor', 'black'],
+    ['setSketchBoxLegPlatformMode', 'stage'],
+    ['setSketchBoxLegPlatformSideMode', 'overhang'],
+    ['setSketchBoxLegPlatformSideOverhangCm', 1.5],
+    ['setSketchBoxLegPlatformFrontOverhangCm', 2],
     ['setSketchBoxLegHeightCm', 12],
     ['setSketchBoxLegHeightDraft', '12'],
     ['setSketchBoxLegWidthCm', 4],
     ['setSketchBoxLegWidthDraft', '4'],
+    ['setSketchBoxBasePanelOpen', true],
+  ]);
+});
+
+test('[interior-view-state-controller] syncs sketch box leg platform options from the active base tool', () => {
+  const { calls, controller } = createInteriorViewStateControllerHarness();
+
+  controller.syncSketchBoxBaseState(true, 'sketch_box_base:legs@square@gold@18@6@plain@flush@0@4.2');
+
+  assert.deepEqual(calls, [
+    ['setSketchBoxBaseType', 'legs'],
+    ['setSketchBoxLegStyle', 'square'],
+    ['setSketchBoxLegColor', 'gold'],
+    ['setSketchBoxLegPlatformMode', 'plain'],
+    ['setSketchBoxLegPlatformSideMode', 'flush'],
+    ['setSketchBoxLegPlatformSideOverhangCm', 0],
+    ['setSketchBoxLegPlatformFrontOverhangCm', 4.2],
+    ['setSketchBoxLegHeightCm', 18],
+    ['setSketchBoxLegHeightDraft', '18'],
+    ['setSketchBoxLegWidthCm', 6],
+    ['setSketchBoxLegWidthDraft', '6'],
     ['setSketchBoxBasePanelOpen', true],
   ]);
 });

@@ -12,6 +12,8 @@ import type {
   SketchBoxBaseType,
   SketchBoxCorniceType,
   SketchBoxLegColor,
+  SketchBoxLegPlatformMode,
+  SketchBoxLegPlatformSideMode,
   SketchBoxLegStyle,
 } from './interior_tab_helpers.js';
 
@@ -79,7 +81,11 @@ export type InteriorTabWorkflowController = {
     color: SketchBoxLegColor,
     heightCm: number,
     widthCm: number,
-    plinthHeightCm?: number
+    plinthHeightCm?: number,
+    platformMode?: SketchBoxLegPlatformMode,
+    platformSideMode?: SketchBoxLegPlatformSideMode,
+    platformSideOverhangCm?: number,
+    platformFrontOverhangCm?: number
   ) => void;
   enterSketchExtDrawersTool: (count: number, drawerHeightCm: number) => void;
   enterSketchIntDrawersTool: (drawerHeightCm: number) => void;

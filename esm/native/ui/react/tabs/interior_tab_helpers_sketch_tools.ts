@@ -2,10 +2,14 @@ import { SKETCH_BOX_DIMENSIONS, mToCm } from '../../../../shared/wardrobe_dimens
 import {
   DEFAULT_BASE_LEG_COLOR,
   DEFAULT_BASE_LEG_HEIGHT_CM,
+  DEFAULT_BASE_LEG_PLATFORM_MODE,
+  DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE,
   DEFAULT_BASE_LEG_STYLE,
   getDefaultBaseLegWidthCm,
   normalizeBaseLegColor,
   normalizeBaseLegHeightCm,
+  normalizeBaseLegPlatformMode,
+  normalizeBaseLegPlatformSideMode,
   normalizeBaseLegStyle,
   normalizeBaseLegWidthCm,
 } from '../../../features/base_leg_support.js';
@@ -13,6 +17,12 @@ import {
   DEFAULT_BASE_PLINTH_HEIGHT_CM,
   normalizeBasePlinthHeightCm,
 } from '../../../features/base_plinth_support.js';
+import {
+  DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM,
+  DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM,
+  normalizeBaseLegPlatformFrontOverhangCm,
+  normalizeBaseLegPlatformSideOverhangCm,
+} from '../../../features/platform_overhang_support.js';
 import {
   DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM,
   DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_CM,
@@ -33,6 +43,8 @@ import type {
   SketchBoxBaseType,
   SketchBoxCorniceType,
   SketchBoxLegColor,
+  SketchBoxLegPlatformMode,
+  SketchBoxLegPlatformSideMode,
   SketchBoxLegStyle,
 } from './interior_tab_helpers_types.js';
 
@@ -90,6 +102,10 @@ export type SketchBoxBaseToolSpec = {
   baseType: SketchBoxBaseType;
   baseLegStyle: SketchBoxLegStyle;
   baseLegColor: SketchBoxLegColor;
+  baseLegPlatformMode: SketchBoxLegPlatformMode;
+  baseLegPlatformSideMode: SketchBoxLegPlatformSideMode;
+  baseLegPlatformSideOverhangCm: number;
+  baseLegPlatformFrontOverhangCm: number;
   baseLegHeightCm: number;
   baseLegWidthCm: number;
   basePlinthHeightCm: number;
@@ -149,8 +165,17 @@ export function readSketchBoxBaseType(tool: string): SketchBoxBaseType | null {
 export function readSketchBoxBaseToolSpec(tool: string): SketchBoxBaseToolSpec | null {
   if (!tool || !tool.startsWith(SKETCH_TOOL_BOX_BASE_PREFIX)) return null;
   const rawFull = tool.slice(SKETCH_TOOL_BOX_BASE_PREFIX.length).trim();
-  const [rawType = '', rawStyle = '', rawColor = '', rawHeight = '', rawWidth = ''] =
-    rawFull.split(SKETCH_BOX_DIM_SEP);
+  const [
+    rawType = '',
+    rawStyle = '',
+    rawColor = '',
+    rawHeight = '',
+    rawWidth = '',
+    rawPlatformMode = '',
+    rawPlatformSideMode = '',
+    rawPlatformSideOverhang = '',
+    rawPlatformFrontOverhang = '',
+  ] = rawFull.split(SKETCH_BOX_DIM_SEP);
   const raw = rawType.trim().toLowerCase();
   const baseType: SketchBoxBaseType | null =
     raw === 'legs' ? 'legs' : raw === 'none' ? 'none' : raw === 'plinth' ? 'plinth' : null;
@@ -160,6 +185,10 @@ export function readSketchBoxBaseToolSpec(tool: string): SketchBoxBaseToolSpec |
     baseType,
     baseLegStyle,
     baseLegColor: normalizeBaseLegColor(rawColor),
+    baseLegPlatformMode: normalizeBaseLegPlatformMode(rawPlatformMode),
+    baseLegPlatformSideMode: normalizeBaseLegPlatformSideMode(rawPlatformSideMode),
+    baseLegPlatformSideOverhangCm: normalizeBaseLegPlatformSideOverhangCm(rawPlatformSideOverhang),
+    baseLegPlatformFrontOverhangCm: normalizeBaseLegPlatformFrontOverhangCm(rawPlatformFrontOverhang),
     baseLegHeightCm: normalizeBaseLegHeightCm(rawHeight),
     baseLegWidthCm: normalizeBaseLegWidthCm(rawWidth, getDefaultBaseLegWidthCm(baseLegStyle)),
     basePlinthHeightCm: normalizeBasePlinthHeightCm(baseType === 'plinth' ? rawStyle : undefined),
@@ -174,6 +203,10 @@ export function readSketchBoxBaseLegOptions(
   return {
     baseLegStyle: spec.baseLegStyle,
     baseLegColor: spec.baseLegColor,
+    baseLegPlatformMode: spec.baseLegPlatformMode,
+    baseLegPlatformSideMode: spec.baseLegPlatformSideMode,
+    baseLegPlatformSideOverhangCm: spec.baseLegPlatformSideOverhangCm,
+    baseLegPlatformFrontOverhangCm: spec.baseLegPlatformFrontOverhangCm,
     baseLegHeightCm: spec.baseLegHeightCm,
     baseLegWidthCm: spec.baseLegWidthCm,
   };
@@ -185,7 +218,11 @@ export function mkSketchBoxBaseTool(
   color: SketchBoxLegColor = DEFAULT_BASE_LEG_COLOR,
   heightCm: number = DEFAULT_BASE_LEG_HEIGHT_CM,
   widthCm?: number,
-  plinthHeightCm: number = DEFAULT_BASE_PLINTH_HEIGHT_CM
+  plinthHeightCm: number = DEFAULT_BASE_PLINTH_HEIGHT_CM,
+  platformMode: SketchBoxLegPlatformMode = DEFAULT_BASE_LEG_PLATFORM_MODE,
+  platformSideMode: SketchBoxLegPlatformSideMode = DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE,
+  platformSideOverhangCm: number = DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM,
+  platformFrontOverhangCm: number = DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM
 ): string {
   const normalizedType = type === 'legs' ? 'legs' : type === 'none' ? 'none' : 'plinth';
   if (normalizedType === 'none') return `${SKETCH_TOOL_BOX_BASE_PREFIX}none`;
@@ -200,16 +237,24 @@ export function mkSketchBoxBaseTool(
   const normalizedColor = normalizeBaseLegColor(color);
   const normalizedHeight = normalizeBaseLegHeightCm(heightCm);
   const normalizedWidth = normalizeBaseLegWidthCm(widthCm, getDefaultBaseLegWidthCm(normalizedStyle));
+  const normalizedPlatformMode = normalizeBaseLegPlatformMode(platformMode);
+  const normalizedPlatformSideMode = normalizeBaseLegPlatformSideMode(platformSideMode);
+  const normalizedPlatformSideOverhang = normalizeBaseLegPlatformSideOverhangCm(platformSideOverhangCm);
+  const normalizedPlatformFrontOverhang = normalizeBaseLegPlatformFrontOverhangCm(platformFrontOverhangCm);
   const defaultWidth = getDefaultBaseLegWidthCm(DEFAULT_BASE_LEG_STYLE);
   if (
     normalizedStyle === DEFAULT_BASE_LEG_STYLE &&
     normalizedColor === DEFAULT_BASE_LEG_COLOR &&
     normalizedHeight === DEFAULT_BASE_LEG_HEIGHT_CM &&
-    normalizedWidth === defaultWidth
+    normalizedWidth === defaultWidth &&
+    normalizedPlatformMode === DEFAULT_BASE_LEG_PLATFORM_MODE &&
+    normalizedPlatformSideMode === DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE &&
+    normalizedPlatformSideOverhang === DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM &&
+    normalizedPlatformFrontOverhang === DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM
   ) {
     return `${SKETCH_TOOL_BOX_BASE_PREFIX}legs`;
   }
-  return `${SKETCH_TOOL_BOX_BASE_PREFIX}legs${SKETCH_BOX_DIM_SEP}${normalizedStyle}${SKETCH_BOX_DIM_SEP}${normalizedColor}${SKETCH_BOX_DIM_SEP}${normalizedHeight}${SKETCH_BOX_DIM_SEP}${normalizedWidth}`;
+  return `${SKETCH_TOOL_BOX_BASE_PREFIX}legs${SKETCH_BOX_DIM_SEP}${normalizedStyle}${SKETCH_BOX_DIM_SEP}${normalizedColor}${SKETCH_BOX_DIM_SEP}${normalizedHeight}${SKETCH_BOX_DIM_SEP}${normalizedWidth}${SKETCH_BOX_DIM_SEP}${normalizedPlatformMode}${SKETCH_BOX_DIM_SEP}${normalizedPlatformSideMode}${SKETCH_BOX_DIM_SEP}${normalizedPlatformSideOverhang}${SKETCH_BOX_DIM_SEP}${normalizedPlatformFrontOverhang}`;
 }
 
 export function isSketchBoxTool(tool: string): boolean {

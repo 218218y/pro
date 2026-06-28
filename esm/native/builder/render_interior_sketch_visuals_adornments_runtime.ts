@@ -24,6 +24,11 @@ export function prefixSketchBoxAdornmentOpsPartIds(
 
   const baseRec = asValueRecord(opsRec?.base);
   if (baseRec && typeof baseRec.partId === 'string') baseRec.partId = prefixPartId(baseRec.partId);
+  const basePlatforms = Array.isArray(baseRec?.platforms) ? baseRec.platforms : [];
+  for (let i = 0; i < basePlatforms.length; i++) {
+    const platform = asValueRecord(basePlatforms[i]);
+    if (platform && typeof platform.partId === 'string') platform.partId = prefixPartId(platform.partId);
+  }
   const corniceRec = asValueRecord(opsRec?.cornice);
   if (corniceRec && typeof corniceRec.partId === 'string') {
     corniceRec.partId = prefixPartId(corniceRec.partId);

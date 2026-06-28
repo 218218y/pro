@@ -63,6 +63,10 @@ export interface SketchModuleBoxLike extends UnknownRecord {
   baseType?: string | null;
   baseLegStyle?: string | null;
   baseLegColor?: string | null;
+  baseLegPlatformMode?: string | null;
+  baseLegPlatformSideMode?: string | null;
+  baseLegPlatformSideOverhangCm?: number | string | null;
+  baseLegPlatformFrontOverhangCm?: number | string | null;
   baseLegHeightCm?: number | string | null;
   baseLegWidthCm?: number | string | null;
   basePlinthHeightCm?: number | string | null;

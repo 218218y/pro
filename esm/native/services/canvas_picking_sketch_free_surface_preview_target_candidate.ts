@@ -113,7 +113,10 @@ export function resolveSketchFreeHoverTargetCandidate(args: {
           selectedBaseSpec?.baseType || parseSketchBoxBaseTool(tool) || 'plinth',
           selectedBaseSpec?.baseType === 'plinth'
             ? { basePlinthHeightCm: selectedBaseSpec.basePlinthHeightCm }
-            : { baseLegHeightCm: selectedBaseSpec?.baseLegHeightCm }
+            : {
+                baseLegHeightCm: selectedBaseSpec?.baseLegHeightCm,
+                baseLegPlatformMode: selectedBaseSpec?.baseLegPlatformMode,
+              }
         )
       : 0;
   const currentBaseHeight = getSketchBoxAdornmentBaseHeight(readRecordValue(box, 'baseType'), box);

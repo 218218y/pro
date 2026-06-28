@@ -271,6 +271,10 @@ export interface BuilderSketchBoxLike extends UnknownRecord {
   baseType?: BuilderSketchAdornmentBaseTypeLike;
   baseLegStyle?: string | null;
   baseLegColor?: string | null;
+  baseLegPlatformMode?: string | null;
+  baseLegPlatformSideMode?: string | null;
+  baseLegPlatformSideOverhangCm?: BuilderSketchScalar;
+  baseLegPlatformFrontOverhangCm?: BuilderSketchScalar;
   basePlinthHeightCm?: BuilderSketchScalar;
   baseLegHeightCm?: BuilderSketchScalar;
   dividers?: BuilderSketchDividerLike[] | null;

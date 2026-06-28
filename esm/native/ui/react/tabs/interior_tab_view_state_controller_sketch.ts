@@ -67,6 +67,10 @@ export function createInteriorTabSketchViewStateController(
     | 'setSketchBoxLegWidthDraft'
     | 'setSketchBoxLegStyle'
     | 'setSketchBoxLegColor'
+    | 'setSketchBoxLegPlatformMode'
+    | 'setSketchBoxLegPlatformSideMode'
+    | 'setSketchBoxLegPlatformSideOverhangCm'
+    | 'setSketchBoxLegPlatformFrontOverhangCm'
     | 'setSketchBoxLegHeightCm'
     | 'setSketchBoxLegHeightDraft'
     | 'setSketchExtDrawerCount'
@@ -102,6 +106,10 @@ export function createInteriorTabSketchViewStateController(
     setSketchBoxLegWidthDraft,
     setSketchBoxLegStyle,
     setSketchBoxLegColor,
+    setSketchBoxLegPlatformMode,
+    setSketchBoxLegPlatformSideMode,
+    setSketchBoxLegPlatformSideOverhangCm,
+    setSketchBoxLegPlatformFrontOverhangCm,
     setSketchBoxLegHeightCm,
     setSketchBoxLegHeightDraft,
     setSketchExtDrawerCount,
@@ -195,6 +203,10 @@ export function createInteriorTabSketchViewStateController(
       }
       setSketchBoxLegStyle(spec.baseLegStyle);
       setSketchBoxLegColor(spec.baseLegColor);
+      setSketchBoxLegPlatformMode(spec.baseLegPlatformMode);
+      setSketchBoxLegPlatformSideMode(spec.baseLegPlatformSideMode);
+      setSketchBoxLegPlatformSideOverhangCm(spec.baseLegPlatformSideOverhangCm);
+      setSketchBoxLegPlatformFrontOverhangCm(spec.baseLegPlatformFrontOverhangCm);
       setSketchBoxLegHeightCm(spec.baseLegHeightCm);
       setSketchBoxLegHeightDraft(String(spec.baseLegHeightCm));
       setSketchBoxLegWidthCm(spec.baseLegWidthCm);

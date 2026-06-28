@@ -127,9 +127,28 @@ export function loadInteriorTabWorkflowControllerModule(calls, options = {}) {
           SKETCH_BOX_OPTIONAL_DIM_MIN_CM: 5,
           asStr: (value, fallback) => String(value ?? fallback ?? ''),
           clampSketch: (value, min, max) => Math.min(max, Math.max(min, Number(value))),
-          mkSketchBoxBaseTool: (type, style = 'tapered', color = 'black', heightCm = 12, widthCm = 4) =>
-            type === 'legs' && (style !== 'tapered' || color !== 'black' || heightCm !== 12 || widthCm !== 4)
-              ? `sketch_box_base:${type}@${style}@${color}@${heightCm}@${widthCm}`
+          mkSketchBoxBaseTool: (
+            type,
+            style = 'tapered',
+            color = 'black',
+            heightCm = 12,
+            widthCm = 4,
+            _plinthHeightCm = 8,
+            platformMode = 'stage',
+            platformSideMode = 'overhang',
+            platformSideOverhangCm = 1.5,
+            platformFrontOverhangCm = 2
+          ) =>
+            type === 'legs' &&
+            (style !== 'tapered' ||
+              color !== 'black' ||
+              heightCm !== 12 ||
+              widthCm !== 4 ||
+              platformMode !== 'stage' ||
+              platformSideMode !== 'overhang' ||
+              platformSideOverhangCm !== 1.5 ||
+              platformFrontOverhangCm !== 2)
+              ? `sketch_box_base:${type}@${style}@${color}@${heightCm}@${widthCm}@${platformMode}@${platformSideMode}@${platformSideOverhangCm}@${platformFrontOverhangCm}`
               : `sketch_box_base:${type}`,
           mkSketchBoxCorniceTool: type => `sketch_box_cornice:${type === 'wave' ? 'wave' : 'classic'}`,
           mkSketchBoxTool: (h, w, d) =>
@@ -239,15 +258,33 @@ export function loadInteriorTabViewStateControllerModule(calls, options = {}) {
             String(value).startsWith('sketch_box_cornice:') ? String(value).split(':')[1] : null,
           readSketchBoxBaseToolSpec: value => {
             if (!String(value).startsWith('sketch_box_base:')) return null;
-            const [type = '', style = '', color = '', height = '', width = ''] = String(value)
-              .slice('sketch_box_base:'.length)
-              .split('@');
+            const [
+              type = '',
+              style = '',
+              color = '',
+              height = '',
+              width = '',
+              platformMode = '',
+              platformSideMode = '',
+              platformSideOverhang = '',
+              platformFrontOverhang = '',
+            ] = String(value).slice('sketch_box_base:'.length).split('@');
             if (!['plinth', 'legs', 'none'].includes(type)) return null;
             const baseLegStyle = ['tapered', 'round', 'square'].includes(style) ? style : 'tapered';
             return {
               baseType: type,
               baseLegStyle,
               baseLegColor: ['black', 'nickel', 'gold'].includes(color) ? color : 'black',
+              baseLegPlatformMode: platformMode === 'plain' ? 'plain' : 'stage',
+              baseLegPlatformSideMode: platformSideMode === 'flush' ? 'flush' : 'overhang',
+              baseLegPlatformSideOverhangCm:
+                Number.isFinite(Number(platformSideOverhang)) && platformSideOverhang !== ''
+                  ? Number(platformSideOverhang)
+                  : 1.5,
+              baseLegPlatformFrontOverhangCm:
+                Number.isFinite(Number(platformFrontOverhang)) && platformFrontOverhang !== ''
+                  ? Number(platformFrontOverhang)
+                  : 2,
               baseLegHeightCm: Number.isFinite(Number(height)) && height !== '' ? Number(height) : 12,
               baseLegWidthCm:
                 Number.isFinite(Number(width)) && width !== ''
@@ -340,6 +377,12 @@ export function createInteriorViewStateControllerHarness(options = {}) {
     setSketchBoxPlinthHeightDraft: value => calls.push(['setSketchBoxPlinthHeightDraft', value]),
     setSketchBoxLegStyle: value => calls.push(['setSketchBoxLegStyle', value]),
     setSketchBoxLegColor: value => calls.push(['setSketchBoxLegColor', value]),
+    setSketchBoxLegPlatformMode: value => calls.push(['setSketchBoxLegPlatformMode', value]),
+    setSketchBoxLegPlatformSideMode: value => calls.push(['setSketchBoxLegPlatformSideMode', value]),
+    setSketchBoxLegPlatformSideOverhangCm: value =>
+      calls.push(['setSketchBoxLegPlatformSideOverhangCm', value]),
+    setSketchBoxLegPlatformFrontOverhangCm: value =>
+      calls.push(['setSketchBoxLegPlatformFrontOverhangCm', value]),
     setSketchBoxLegHeightCm: value => calls.push(['setSketchBoxLegHeightCm', value]),
     setSketchBoxLegHeightDraft: value => calls.push(['setSketchBoxLegHeightDraft', value]),
     setSketchBoxLegWidthCm: value => calls.push(['setSketchBoxLegWidthCm', value]),

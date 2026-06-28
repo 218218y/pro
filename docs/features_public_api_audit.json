@@ -1550,6 +1550,10 @@
       "entry": "base_plinth_support.js"
     },
     {
+      "file": "esm/native/services/canvas_picking_sketch_box_content_commit_adornments.ts",
+      "entry": "platform_overhang_support.js"
+    },
+    {
       "file": "esm/native/services/canvas_picking_sketch_box_content_commit_drawers.ts",
       "entry": "sketch_stack_positioning.js"
     },
@@ -1576,6 +1580,10 @@
     {
       "file": "esm/native/services/canvas_picking_sketch_box_dividers_shared.ts",
       "entry": "base_plinth_support.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_sketch_box_dividers_shared.ts",
+      "entry": "platform_overhang_support.js"
     },
     {
       "file": "esm/native/services/canvas_picking_sketch_box_stack_preview_context.ts",
@@ -1622,8 +1630,16 @@
       "entry": "base_plinth_support.js"
     },
     {
+      "file": "esm/native/services/canvas_picking_sketch_free_surface_preview_adornment_preview.ts",
+      "entry": "platform_overhang_support.js"
+    },
+    {
       "file": "esm/native/services/canvas_picking_sketch_free_surface_preview_adornments.ts",
       "entry": "sketch_drawer_sizing.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_sketch_free_surface_preview_adornments.ts",
+      "entry": "base_leg_support.js"
     },
     {
       "file": "esm/native/services/canvas_picking_sketch_free_surface_preview_adornments.ts",
@@ -1802,6 +1818,10 @@
       "entry": "door_trim.js"
     },
     {
+      "file": "esm/native/ui/react/tabs/interior_layout_sketch_box_controls_components.tsx",
+      "entry": "platform_overhang_support.js"
+    },
+    {
       "file": "esm/native/ui/react/tabs/interior_layout_sketch_box_controls_runtime_base.ts",
       "entry": "base_leg_support.js"
     },
@@ -1810,8 +1830,16 @@
       "entry": "base_plinth_support.js"
     },
     {
+      "file": "esm/native/ui/react/tabs/interior_layout_sketch_box_controls_runtime_base.ts",
+      "entry": "platform_overhang_support.js"
+    },
+    {
       "file": "esm/native/ui/react/tabs/interior_layout_sketch_box_controls_section.tsx",
       "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/interior_layout_sketch_box_controls_section.tsx",
+      "entry": "platform_overhang_support.js"
     },
     {
       "file": "esm/native/ui/react/tabs/interior_layout_sketch_box_controls_section.tsx",
@@ -1828,6 +1856,10 @@
     {
       "file": "esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts",
       "entry": "base_plinth_support.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts",
+      "entry": "platform_overhang_support.js"
     },
     {
       "file": "esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts",
@@ -1848,6 +1880,14 @@
     {
       "file": "esm/native/ui/react/tabs/interior_tab_local_state_shared.ts",
       "entry": "base_plinth_support.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/interior_tab_local_state_shared.ts",
+      "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/interior_tab_local_state_shared.ts",
+      "entry": "platform_overhang_support.js"
     },
     {
       "file": "esm/native/ui/react/tabs/interior_tab_sections_handles.tsx",

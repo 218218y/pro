@@ -826,7 +826,7 @@ function addTrackedLine(args: {
     color: 0x2563eb,
     transparent: true,
     opacity: 0.98,
-    depthTest: false,
+    depthTest: true,
     depthWrite: false,
   });
   const line = asObject3D(new THREE.Line(geometry, material));
@@ -843,7 +843,7 @@ function addTrackedLine(args: {
   objects.push(line);
 }
 
-function tuneOverlayMaterial(material: unknown): unknown {
+function tuneOverlayMaterial(material: unknown, options: { depthTest: boolean }): unknown {
   const rec = isRecord(material) ? material : null;
   if (!rec) return material;
 
@@ -859,7 +859,7 @@ function tuneOverlayMaterial(material: unknown): unknown {
   }
 
   try {
-    writable.depthTest = false;
+    writable.depthTest = options.depthTest;
     writable.depthWrite = false;
     writable.transparent = true;
     writable.needsUpdate = true;
@@ -870,7 +870,7 @@ function tuneOverlayMaterial(material: unknown): unknown {
   return writable;
 }
 
-function tuneOverlayObject(obj: Object3DLike): void {
+function tuneOverlayObject(obj: Object3DLike, options: { depthTest: boolean }): void {
   const rec = isRecord(obj) ? obj : null;
   if (!rec) return;
   try {
@@ -880,8 +880,8 @@ function tuneOverlayObject(obj: Object3DLike): void {
   }
   const material = rec.material;
   try {
-    if (Array.isArray(material)) rec.material = material.map(tuneOverlayMaterial);
-    else if (material) rec.material = tuneOverlayMaterial(material);
+    if (Array.isArray(material)) rec.material = material.map(item => tuneOverlayMaterial(item, options));
+    else if (material) rec.material = tuneOverlayMaterial(material, options);
   } catch {
     // ignore
   }
@@ -899,7 +899,7 @@ function readCreatedDimensionObjects(value: unknown): Object3DLike[] {
       __wpExcludeWardrobeBounds: true,
       __ignoreRaycast: true,
     };
-    tuneOverlayObject(line);
+    tuneOverlayObject(line, { depthTest: true });
     out.push(line);
   }
   if (sprite) {
@@ -909,7 +909,7 @@ function readCreatedDimensionObjects(value: unknown): Object3DLike[] {
       __wpExcludeWardrobeBounds: true,
       __ignoreRaycast: true,
     };
-    tuneOverlayObject(sprite);
+    tuneOverlayObject(sprite, { depthTest: false });
     out.push(sprite);
   }
   return out;

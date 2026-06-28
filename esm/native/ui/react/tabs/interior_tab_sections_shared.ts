@@ -11,6 +11,8 @@ import type {
   SketchBoxBaseType,
   SketchBoxCorniceType,
   SketchBoxLegColor,
+  SketchBoxLegPlatformMode,
+  SketchBoxLegPlatformSideMode,
   SketchBoxLegStyle,
 } from './interior_tab_helpers.js';
 
@@ -118,6 +120,10 @@ export type InteriorLayoutSectionProps = {
   sketchBoxPlinthHeightDraft: string;
   sketchBoxLegStyle: SketchBoxLegStyle;
   sketchBoxLegColor: SketchBoxLegColor;
+  sketchBoxLegPlatformMode: SketchBoxLegPlatformMode;
+  sketchBoxLegPlatformSideMode: SketchBoxLegPlatformSideMode;
+  sketchBoxLegPlatformSideOverhangCm: number;
+  sketchBoxLegPlatformFrontOverhangCm: number;
   sketchBoxLegHeightCm: number;
   sketchBoxLegHeightDraft: string;
   sketchBoxLegWidthCm: number;
@@ -167,6 +173,10 @@ export type InteriorLayoutSectionProps = {
   setSketchBoxPlinthHeightDraft: Dispatch<SetStateAction<string>>;
   setSketchBoxLegStyle: Dispatch<SetStateAction<SketchBoxLegStyle>>;
   setSketchBoxLegColor: Dispatch<SetStateAction<SketchBoxLegColor>>;
+  setSketchBoxLegPlatformMode: Dispatch<SetStateAction<SketchBoxLegPlatformMode>>;
+  setSketchBoxLegPlatformSideMode: Dispatch<SetStateAction<SketchBoxLegPlatformSideMode>>;
+  setSketchBoxLegPlatformSideOverhangCm: Dispatch<SetStateAction<number>>;
+  setSketchBoxLegPlatformFrontOverhangCm: Dispatch<SetStateAction<number>>;
   setSketchBoxLegHeightCm: Dispatch<SetStateAction<number>>;
   setSketchBoxLegHeightDraft: Dispatch<SetStateAction<string>>;
   setSketchBoxLegWidthCm: Dispatch<SetStateAction<number>>;
@@ -214,7 +224,11 @@ export type InteriorLayoutSectionProps = {
     color: SketchBoxLegColor,
     heightCm: number,
     widthCm: number,
-    plinthHeightCm?: number
+    plinthHeightCm?: number,
+    platformMode?: SketchBoxLegPlatformMode,
+    platformSideMode?: SketchBoxLegPlatformSideMode,
+    platformSideOverhangCm?: number,
+    platformFrontOverhangCm?: number
   ) => void;
   enterSketchExtDrawersTool: (count: number, drawerHeightCm: number) => void;
   enterSketchIntDrawersTool: (drawerHeightCm: number) => void;

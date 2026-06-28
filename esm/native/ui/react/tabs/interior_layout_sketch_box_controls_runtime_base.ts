@@ -5,6 +5,8 @@ import {
   BASE_LEG_WIDTH_MAX_CM,
   BASE_LEG_WIDTH_MIN_CM,
   normalizeBaseLegHeightCm,
+  normalizeBaseLegPlatformMode,
+  normalizeBaseLegPlatformSideMode,
   normalizeBaseLegWidthCm,
 } from '../../../features/base_leg_support.js';
 import {
@@ -13,6 +15,10 @@ import {
   DEFAULT_BASE_PLINTH_HEIGHT_CM,
   normalizeBasePlinthHeightCm,
 } from '../../../features/base_plinth_support.js';
+import {
+  normalizeBaseLegPlatformFrontOverhangCm,
+  normalizeBaseLegPlatformSideOverhangCm,
+} from '../../../features/platform_overhang_support.js';
 import type { InteriorSketchBoxControlsSectionProps } from './interior_layout_sketch_section_types.js';
 import { syncSketchBoxBaseTool } from './interior_layout_sketch_box_controls_runtime_sync.js';
 
@@ -43,6 +49,83 @@ export function selectSketchBoxLegColor(
   props.setSketchBoxBaseType('legs');
   props.setSketchBoxLegColor(color);
   syncSketchBoxBaseTool(props, 'legs', undefined, color);
+}
+
+export function selectSketchBoxLegPlatformMode(
+  props: InteriorSketchBoxControlsSectionProps,
+  mode: InteriorSketchBoxControlsSectionProps['sketchBoxLegPlatformMode']
+): void {
+  const normalized = normalizeBaseLegPlatformMode(mode);
+  props.setSketchBoxPanelOpen(true);
+  props.setSketchBoxBaseType('legs');
+  props.setSketchBoxLegPlatformMode(normalized);
+  syncSketchBoxBaseTool(props, 'legs', undefined, undefined, undefined, undefined, undefined, normalized);
+}
+
+export function selectSketchBoxLegPlatformSideMode(
+  props: InteriorSketchBoxControlsSectionProps,
+  mode: InteriorSketchBoxControlsSectionProps['sketchBoxLegPlatformSideMode']
+): void {
+  const normalized = normalizeBaseLegPlatformSideMode(mode);
+  props.setSketchBoxPanelOpen(true);
+  props.setSketchBoxBaseType('legs');
+  props.setSketchBoxLegPlatformSideMode(normalized);
+  syncSketchBoxBaseTool(
+    props,
+    'legs',
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    normalized
+  );
+}
+
+export function setSketchBoxLegPlatformSideOverhang(
+  props: InteriorSketchBoxControlsSectionProps,
+  value: number
+): void {
+  const normalized = normalizeBaseLegPlatformSideOverhangCm(value);
+  props.setSketchBoxPanelOpen(true);
+  props.setSketchBoxBaseType('legs');
+  props.setSketchBoxLegPlatformSideOverhangCm(normalized);
+  syncSketchBoxBaseTool(
+    props,
+    'legs',
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    normalized
+  );
+}
+
+export function setSketchBoxLegPlatformFrontOverhang(
+  props: InteriorSketchBoxControlsSectionProps,
+  value: number
+): void {
+  const normalized = normalizeBaseLegPlatformFrontOverhangCm(value);
+  props.setSketchBoxPanelOpen(true);
+  props.setSketchBoxBaseType('legs');
+  props.setSketchBoxLegPlatformFrontOverhangCm(normalized);
+  syncSketchBoxBaseTool(
+    props,
+    'legs',
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    normalized
+  );
 }
 
 export function updateSketchBoxPlinthHeightDraft(

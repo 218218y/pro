@@ -7,6 +7,8 @@ import type {
   SketchBoxBaseType,
   SketchBoxCorniceType,
   SketchBoxLegColor,
+  SketchBoxLegPlatformMode,
+  SketchBoxLegPlatformSideMode,
   SketchBoxLegStyle,
 } from './interior_tab_helpers.js';
 import { INTERIOR_FITTINGS_DIMENSIONS, mToCm } from '../../../../shared/wardrobe_dimension_tokens_shared.js';
@@ -15,6 +17,14 @@ import {
   DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_CM,
 } from '../../../features/sketch_drawer_sizing.js';
 import { DEFAULT_BASE_PLINTH_HEIGHT_CM } from '../../../features/base_plinth_support.js';
+import {
+  DEFAULT_BASE_LEG_PLATFORM_MODE,
+  DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE,
+} from '../../../features/base_leg_support.js';
+import {
+  DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM,
+  DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM,
+} from '../../../features/platform_overhang_support.js';
 
 export type LayoutTypeOption = { id: LayoutTypeId; label: string; icon: string };
 export type ManualToolOption = { id: ManualToolId; label: string };
@@ -67,6 +77,10 @@ export type InteriorTabLocalStateDefaults = {
   sketchBoxPlinthHeightDraft: string;
   sketchBoxLegStyle: SketchBoxLegStyle;
   sketchBoxLegColor: SketchBoxLegColor;
+  sketchBoxLegPlatformMode: SketchBoxLegPlatformMode;
+  sketchBoxLegPlatformSideMode: SketchBoxLegPlatformSideMode;
+  sketchBoxLegPlatformSideOverhangCm: number;
+  sketchBoxLegPlatformFrontOverhangCm: number;
   sketchBoxLegHeightCm: number;
   sketchBoxLegHeightDraft: string;
   sketchBoxLegWidthCm: number;
@@ -121,6 +135,10 @@ export function createInteriorTabLocalStateDefaults(): InteriorTabLocalStateDefa
     sketchBoxPlinthHeightDraft: String(DEFAULT_BASE_PLINTH_HEIGHT_CM),
     sketchBoxLegStyle: 'tapered',
     sketchBoxLegColor: 'black',
+    sketchBoxLegPlatformMode: DEFAULT_BASE_LEG_PLATFORM_MODE,
+    sketchBoxLegPlatformSideMode: DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE,
+    sketchBoxLegPlatformSideOverhangCm: DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM,
+    sketchBoxLegPlatformFrontOverhangCm: DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM,
     sketchBoxLegHeightCm: 12,
     sketchBoxLegHeightDraft: '12',
     sketchBoxLegWidthCm: 4,

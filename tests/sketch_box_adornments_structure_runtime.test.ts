@@ -196,6 +196,56 @@ test('free-placement sketch box plinth renders below the box body instead of ins
   );
 });
 
+test('free-placement sketch box legs render configurable top and bottom platforms', () => {
+  const { wardrobeGroup, applyInteriorSketchExtras, makeArgs } = createSketchInteriorHarness();
+
+  const ok = applyInteriorSketchExtras(
+    makeArgs({
+      sketchExtras: {
+        boxes: [
+          {
+            id: 'platformBox',
+            freePlacement: true,
+            absX: 0,
+            absY: 1.1,
+            heightM: 0.62,
+            widthM: 0.72,
+            depthM: 0.45,
+            baseType: 'legs',
+            baseLegPlatformMode: 'stage',
+            baseLegPlatformSideMode: 'overhang',
+            baseLegPlatformSideOverhangCm: 4,
+            baseLegPlatformFrontOverhangCm: 6,
+          },
+        ],
+      },
+    })
+  );
+
+  assert.equal(ok, true);
+  const platforms: FakeMesh[] = [];
+  wardrobeGroup.traverse(node => {
+    const rec = node as FakeMesh;
+    const partId = String(rec.userData?.partId || '');
+    if (partId.includes('base_leg_platform')) platforms.push(rec);
+  });
+
+  assert.equal(platforms.length, 2, 'expected top and bottom platform meshes');
+  for (const platform of platforms) {
+    assert.equal(platform.userData.__wpSketchFreePlacement, true);
+    assert.equal(platform.userData.__wpSketchBoxId, 'platformBox');
+    assert.equal(platform.userData.__wpSketchModuleKey, '0');
+    assert.ok(
+      platform.geometry.parameters.width > 0.72,
+      `expected custom side overhang to widen platform, got ${platform.geometry.parameters.width}`
+    );
+    assert.ok(
+      platform.geometry.parameters.depth > 0.45,
+      `expected custom front overhang to deepen platform, got ${platform.geometry.parameters.depth}`
+    );
+  }
+});
+
 test('free-placement classic sketch box cornice applies miter trims like the regular wardrobe cornice', () => {
   const { wardrobeGroup, applyInteriorSketchExtras, makeArgs } = createSketchInteriorHarness();
 

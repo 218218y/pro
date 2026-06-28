@@ -221,6 +221,7 @@ function createApp(wardrobeGroup: any, labels: string[]) {
           addDimensionLine(_from: any, _to: any, _offset: any, label: string) {
             labels.push(label);
             const line = {
+              type: 'Line',
               parent: null as any,
               children: [] as any[],
               userData: {} as Record<string, unknown>,
@@ -234,6 +235,7 @@ function createApp(wardrobeGroup: any, labels: string[]) {
               },
             };
             const sprite = {
+              type: 'Sprite',
               parent: null as any,
               children: [] as any[],
               userData: {} as Record<string, unknown>,
@@ -385,7 +387,7 @@ test('viewer measurement resolves the shelf-to-shelf cavity instead of the full 
   assert.ok(!labels.includes('200'));
 });
 
-test('viewer measurement overlay is pushed to the camera-facing front plane and ignores depth', () => {
+test('viewer measurement frame and guide lines are depth-tested while label boxes stay above parts', () => {
   const wardrobe = createGroup();
   const door = createMesh({
     width: 0.7,
@@ -421,7 +423,7 @@ test('viewer measurement overlay is pushed to the camera-facing front plane and 
 
   const frame = wardrobe.children.find(child => child.name === 'wp-viewer-measurement-selection-frame');
   assert.ok(frame);
-  assert.equal(frame.material.depthTest, false);
+  assert.equal(frame.material.depthTest, true);
   assert.equal(frame.material.depthWrite, false);
   assert.ok(Math.abs(frame.geometry.points[0].z - 0.016) < 1e-9);
   assert.equal(
@@ -435,11 +437,21 @@ test('viewer measurement overlay is pushed to the camera-facing front plane and 
 
   const dimensionLine = wardrobe.children.find(
     child =>
-      child.userData?.__wpViewerMeasurementOverlay && child.material && child.material !== frame.material
+      child.type === 'Line' &&
+      child.name !== 'wp-viewer-measurement-selection-frame' &&
+      child.userData?.__wpViewerMeasurementOverlay &&
+      child.material
   );
   assert.ok(dimensionLine);
-  assert.equal(dimensionLine.material.depthTest, false);
+  assert.equal(dimensionLine.material.depthTest, true);
   assert.equal(dimensionLine.material.depthWrite, false);
+
+  const labelSprite = wardrobe.children.find(
+    child => child.type === 'Sprite' && child.userData?.__wpViewerMeasurementOverlay && child.material
+  );
+  assert.ok(labelSprite);
+  assert.equal(labelSprite.material.depthTest, false);
+  assert.equal(labelSprite.material.depthWrite, false);
 });
 
 test('viewer measurement ignores hangers, clothes, and rods as cavity split boundaries', () => {

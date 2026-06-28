@@ -4,12 +4,20 @@ import {
   getDefaultBaseLegWidthCm,
   normalizeBaseLegColor,
   normalizeBaseLegHeightCm,
+  normalizeBaseLegPlatformMode,
+  normalizeBaseLegPlatformSideMode,
   normalizeBaseLegStyle,
   normalizeBaseLegWidthCm,
+  type BaseLegPlatformMode,
+  type BaseLegPlatformSideMode,
   type BaseLegColor,
   type BaseLegStyle,
 } from '../features/base_leg_support.js';
 import { normalizeBasePlinthHeightCm } from '../features/base_plinth_support.js';
+import {
+  normalizeBaseLegPlatformFrontOverhangCm,
+  normalizeBaseLegPlatformSideOverhangCm,
+} from '../features/platform_overhang_support.js';
 import { asRecord, isRecord } from '../runtime/record.js';
 
 export type SketchBoxDividerState = {
@@ -54,6 +62,10 @@ export type SketchBoxAdornmentBaseToolSpec = {
   baseType: SketchBoxAdornmentBaseType;
   baseLegStyle: BaseLegStyle;
   baseLegColor: BaseLegColor;
+  baseLegPlatformMode: BaseLegPlatformMode;
+  baseLegPlatformSideMode: BaseLegPlatformSideMode;
+  baseLegPlatformSideOverhangCm: number;
+  baseLegPlatformFrontOverhangCm: number;
   baseLegHeightCm: number;
   baseLegWidthCm: number;
   basePlinthHeightCm: number;
@@ -128,7 +140,17 @@ export function parseSketchBoxBaseTool(tool: string): SketchBoxAdornmentBaseType
 export function parseSketchBoxBaseToolSpec(tool: string): SketchBoxAdornmentBaseToolSpec | null {
   if (!tool || !tool.startsWith('sketch_box_base:')) return null;
   const rawFull = tool.slice('sketch_box_base:'.length).trim();
-  const [rawType = '', rawStyle = '', rawColor = '', rawHeight = '', rawWidth = ''] = rawFull.split('@');
+  const [
+    rawType = '',
+    rawStyle = '',
+    rawColor = '',
+    rawHeight = '',
+    rawWidth = '',
+    rawPlatformMode = '',
+    rawPlatformSideMode = '',
+    rawPlatformSideOverhang = '',
+    rawPlatformFrontOverhang = '',
+  ] = rawFull.split('@');
   const raw = rawType.trim().toLowerCase();
   if (!raw) return null;
   if (raw !== 'legs' && raw !== 'plinth' && raw !== 'none') return null;
@@ -137,6 +159,10 @@ export function parseSketchBoxBaseToolSpec(tool: string): SketchBoxAdornmentBase
     baseType: normalizeSketchBoxBaseType(raw),
     baseLegStyle,
     baseLegColor: normalizeBaseLegColor(rawColor),
+    baseLegPlatformMode: normalizeBaseLegPlatformMode(rawPlatformMode),
+    baseLegPlatformSideMode: normalizeBaseLegPlatformSideMode(rawPlatformSideMode),
+    baseLegPlatformSideOverhangCm: normalizeBaseLegPlatformSideOverhangCm(rawPlatformSideOverhang),
+    baseLegPlatformFrontOverhangCm: normalizeBaseLegPlatformFrontOverhangCm(rawPlatformFrontOverhang),
     baseLegHeightCm: normalizeBaseLegHeightCm(rawHeight),
     baseLegWidthCm: normalizeBaseLegWidthCm(rawWidth, getDefaultBaseLegWidthCm(baseLegStyle)),
     basePlinthHeightCm: normalizeBasePlinthHeightCm(raw === 'plinth' ? rawStyle : undefined),

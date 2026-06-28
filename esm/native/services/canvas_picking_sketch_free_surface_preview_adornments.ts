@@ -6,6 +6,8 @@ import {
   parseSketchBoxCorniceTool,
 } from './canvas_picking_sketch_box_dividers.js';
 import { isSketchInternalDrawersTool } from '../features/sketch_drawer_sizing.js';
+import { CARCASS_BASE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { normalizeBaseLegPlatformMode } from '../features/base_leg_support.js';
 import { getBasePlinthHeightM } from '../features/base_plinth_support.js';
 import type { SketchFreeHoverContentKind } from './canvas_picking_sketch_free_surface_preview_contracts.js';
 
@@ -18,7 +20,13 @@ export function getSketchBoxAdornmentBaseHeight(baseType: unknown, source?: unkn
   const normalized = normalizeSketchBoxBaseType(baseType);
   if (normalized === 'legs') {
     const heightCm = Number(readSupportHeightCm(source, 'baseLegHeightCm'));
-    return Number.isFinite(heightCm) && heightCm > 0 ? Math.max(0.01, heightCm / 100) : 0.12;
+    const legHeight = Number.isFinite(heightCm) && heightCm > 0 ? Math.max(0.01, heightCm / 100) : 0.12;
+    const bottomPlatformHeight =
+      normalizeBaseLegPlatformMode((source as Record<string, unknown> | null)?.baseLegPlatformMode) ===
+      'stage'
+        ? CARCASS_BASE_DIMENSIONS.legs.platform.heightM
+        : 0;
+    return legHeight + bottomPlatformHeight;
   }
   if (normalized === 'plinth') return getBasePlinthHeightM(readSupportHeightCm(source, 'basePlinthHeightCm'));
   return 0;
