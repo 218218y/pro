@@ -1217,6 +1217,38 @@ function clampPointToMeasurementPlane(
   };
 }
 
+function clipPointRayToMeasurementBounds(args: {
+  plane: MeasurementPlane;
+  startU: number;
+  startV: number;
+  rawU: number;
+  rawV: number;
+}): { u: number; v: number; clipped: boolean } {
+  const { plane, startU, startV, rawU, rawV } = args;
+  const clampedU = clampNumber(rawU, plane.uMin, plane.uMax);
+  const clampedV = clampNumber(rawV, plane.vMin, plane.vMax);
+  const outsideU = rawU < plane.uMin || rawU > plane.uMax;
+  const outsideV = rawV < plane.vMin || rawV > plane.vMax;
+  if (!outsideU && !outsideV) return { u: rawU, v: rawV, clipped: false };
+
+  const deltaU = rawU - startU;
+  const deltaV = rawV - startV;
+  const candidates: number[] = [];
+  if (deltaU > 1e-9) candidates.push((plane.uMax - startU) / deltaU);
+  else if (deltaU < -1e-9) candidates.push((plane.uMin - startU) / deltaU);
+  if (deltaV > 1e-9) candidates.push((plane.vMax - startV) / deltaV);
+  else if (deltaV < -1e-9) candidates.push((plane.vMin - startV) / deltaV);
+
+  const bestT = candidates.filter(t => Number.isFinite(t) && t >= 0 && t <= 1).sort((a, b) => a - b)[0];
+  if (bestT == null) return { u: clampedU, v: clampedV, clipped: true };
+
+  return {
+    u: clampNumber(startU + deltaU * bestT, plane.uMin, plane.uMax),
+    v: clampNumber(startV + deltaV * bestT, plane.vMin, plane.vMax),
+    clipped: true,
+  };
+}
+
 function measurementPlaneAxes(kind: MeasurementPlaneKind): {
   normal: MeasurementAxis;
   u: MeasurementAxis;
@@ -1320,8 +1352,8 @@ function readPointMeasurementPointerLocalPoint(args: {
 }): LocalPlanePoint | null {
   const { App, hitState, wardrobeGroup, plane, pointer } = args;
   return (
-    readHitLocalPoint(App, hitState, wardrobeGroup) ||
-    readRayPlaneLocalPoint({ App, plane, wardrobeGroup, pointer })
+    readRayPlaneLocalPoint({ App, plane, wardrobeGroup, pointer }) ||
+    readHitLocalPoint(App, hitState, wardrobeGroup)
   );
 }
 
@@ -1395,6 +1427,59 @@ function readPointMeasurementBoundsBox(args: {
   wardrobeGroup: Object3DLike;
 }): LocalMeasurementBox {
   return readAggregateWardrobeBoundsBox(args.App, args.wardrobeGroup) || args.targetBox;
+}
+
+function readCameraLocalPoint(args: {
+  App: AppContainer;
+  THREE: OverlayThree;
+  wardrobeGroup: Object3DLike;
+}): LocalPlanePoint | null {
+  const cameraWorld = readCameraWorldPosition({ App: args.App, THREE: args.THREE });
+  return cameraWorld ? readObjectLocalPlanePoint(args.App, cameraWorld, args.wardrobeGroup) : null;
+}
+
+function isCameraMostlyViewingWardrobeFront(args: {
+  App: AppContainer;
+  THREE: OverlayThree;
+  wardrobeGroup: Object3DLike;
+  boundsBox: LocalMeasurementBox;
+}): boolean {
+  const cameraLocal = readCameraLocalPoint(args);
+  if (!cameraLocal) return false;
+  const zDistance = Math.abs(cameraLocal.z - args.boundsBox.centerZ);
+  const xDistance = Math.abs(cameraLocal.x - args.boundsBox.centerX);
+  const yDistance = Math.abs(cameraLocal.y - args.boundsBox.centerY);
+  return zDistance >= xDistance * 1.1 && zDistance >= yDistance * 0.55;
+}
+
+function shouldUseWardrobeFrontPlaneForPointStart(args: {
+  App: AppContainer;
+  THREE: OverlayThree;
+  hitState: CanvasPickingClickHitState;
+  wardrobeGroup: Object3DLike;
+  targetBox: LocalMeasurementBox;
+  boundsBox: LocalMeasurementBox;
+  resolvedPlane: MeasurementPlane;
+  forceInteriorFront: boolean;
+}): boolean {
+  const { App, THREE, hitState, wardrobeGroup, targetBox, boundsBox, resolvedPlane, forceInteriorFront } =
+    args;
+  if (forceInteriorFront || resolvedPlane.kind === 'front') return false;
+  if (!isCameraMostlyViewingWardrobeFront({ App, THREE, wardrobeGroup, boundsBox })) return false;
+
+  const localPoint = readHitLocalPoint(App, hitState, wardrobeGroup);
+  const hitZ = localPoint ? readCoordinateAxis(localPoint, 'z') : null;
+  if (hitZ == null) return false;
+
+  const cameraSign = readCameraAxisSign({ App, THREE, wardrobeGroup, box: boundsBox, axis: 'z' }) ?? 1;
+  const boundsFrontZ = cameraSign >= 0 ? getBoxMaxAxis(boundsBox, 'z') : getBoxMinAxis(boundsBox, 'z');
+  const targetFrontZ = cameraSign >= 0 ? getBoxMaxAxis(targetBox, 'z') : getBoxMinAxis(targetBox, 'z');
+  const tolerance = clampNumber(
+    Math.max(boundsBox.depth, targetBox.depth) * 0.05,
+    FRONT_Z_EPSILON_M * 2,
+    0.035
+  );
+  return Math.min(Math.abs(hitZ - boundsFrontZ), Math.abs(hitZ - targetFrontZ)) <= tolerance;
 }
 
 function projectLocalPointToPlane(
@@ -1505,31 +1590,24 @@ function resolvePointMeasurementEnd(args: {
   const plane = draft.plane;
   const startU = readPointAxis(draft.point, plane.uAxis);
   const startV = readPointAxis(draft.point, plane.vAxis);
-  const clampedEnd = clampPointToMeasurementPlane(THREE, plane, localEnd);
-  const deltaU = clampedEnd.rawU - startU;
-  const deltaV = clampedEnd.rawV - startV;
-  const shouldBoundaryLock = clampedEnd.outsideU || clampedEnd.outsideV;
-  const shouldSnap = !shouldBoundaryLock && shouldSnapPointMeasurementToStraightAxis(deltaU, deltaV);
+  const rawU = readPointAxis(localEnd, plane.uAxis);
+  const rawV = readPointAxis(localEnd, plane.vAxis);
+  const clippedEnd = clipPointRayToMeasurementBounds({ plane, startU, startV, rawU, rawV });
+  const rawDeltaU = rawU - startU;
+  const rawDeltaV = rawV - startV;
+  const shouldSnap = !clippedEnd.clipped && shouldSnapPointMeasurementToStraightAxis(rawDeltaU, rawDeltaV);
 
   let axis: MeasurementAxis | 'free' = 'free';
   let snapAxis: MeasurementAxis | null = null;
-  let endU = clampedEnd.clampedU;
-  let endV = clampedEnd.clampedV;
+  let endU = clippedEnd.u;
+  let endV = clippedEnd.v;
   let length = Math.hypot(endU - startU, endV - startV);
 
-  if (shouldBoundaryLock) {
-    if (clampedEnd.outsideU && !clampedEnd.outsideV) snapAxis = plane.uAxis;
-    else if (clampedEnd.outsideV && !clampedEnd.outsideU) snapAxis = plane.vAxis;
-    else snapAxis = Math.abs(deltaU) >= Math.abs(deltaV) ? plane.uAxis : plane.vAxis;
+  if (shouldSnap) {
+    snapAxis = Math.abs(rawDeltaU) >= Math.abs(rawDeltaV) ? plane.uAxis : plane.vAxis;
     axis = snapAxis;
-    endU = snapAxis === plane.uAxis ? clampedEnd.clampedU : startU;
-    endV = snapAxis === plane.vAxis ? clampedEnd.clampedV : startV;
-    length = Math.abs(snapAxis === plane.uAxis ? endU - startU : endV - startV);
-  } else if (shouldSnap) {
-    snapAxis = Math.abs(deltaU) >= Math.abs(deltaV) ? plane.uAxis : plane.vAxis;
-    axis = snapAxis;
-    endU = snapAxis === plane.uAxis ? clampedEnd.rawU : startU;
-    endV = snapAxis === plane.vAxis ? clampedEnd.rawV : startV;
+    endU = snapAxis === plane.uAxis ? rawU : startU;
+    endV = snapAxis === plane.vAxis ? rawV : startV;
     length = Math.abs(snapAxis === plane.uAxis ? endU - startU : endV - startV);
   }
 
@@ -1537,7 +1615,7 @@ function resolvePointMeasurementEnd(args: {
   return {
     axis,
     snapAxis,
-    snapped: shouldSnap || shouldBoundaryLock,
+    snapped: shouldSnap,
     start: makePointOnPlane(THREE, plane, startU, startV),
     end: makePointOnPlane(THREE, plane, endU, endV),
     length,
@@ -1652,7 +1730,23 @@ function resolvePointMeasurementStart(args: {
     forceInteriorFront: shouldMeasureInterior,
   });
   const boundsBox = readPointMeasurementBoundsBox({ App, targetBox: box, wardrobeGroup });
-  const boundedPlane = createMeasurementPlaneForBox(boundsBox, plane.kind, plane.normalSign);
+  const shouldUseFrontPlane = shouldUseWardrobeFrontPlaneForPointStart({
+    App,
+    THREE,
+    hitState,
+    wardrobeGroup,
+    targetBox: box,
+    boundsBox,
+    resolvedPlane: plane,
+    forceInteriorFront: shouldMeasureInterior,
+  });
+  const boundedPlane = shouldUseFrontPlane
+    ? createMeasurementPlaneForBox(
+        boundsBox,
+        'front',
+        readCameraAxisSign({ App, THREE, wardrobeGroup, box: boundsBox, axis: 'z' }) ?? 1
+      )
+    : createMeasurementPlaneForBox(boundsBox, plane.kind, plane.normalSign);
   const localPoint = readHitLocalPoint(App, hitState, wardrobeGroup);
   if (!localPoint) return null;
   const point = clampPointToMeasurementPlane(THREE, boundedPlane, localPoint).point;
