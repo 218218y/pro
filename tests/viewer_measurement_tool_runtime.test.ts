@@ -310,6 +310,27 @@ function createRaycasterAt(pointOnFrontPlane: { x: number; y: number; z?: number
   };
 }
 
+function createDoorPointHit(door: any, point: { x: number; y: number; z: number }) {
+  return {
+    intersects: [{ object: door, point }],
+    foundPartId: 'door_1_full',
+    foundModuleIndex: null,
+    foundModuleStack: 'top' as const,
+    effectiveDoorId: 'door_1_full',
+    foundDrawerId: null,
+    primaryHitObject: door,
+    doorHitObject: door,
+    doorHitGroup: door,
+    primaryHitPoint: point,
+    doorHitPoint: point,
+    moduleHitY: null,
+    doorHitY: point.y,
+    primaryHitY: point.y,
+    hitIdentity: { partId: 'door_1_full', doorId: 'door_1_full' } as any,
+    hitUserData: door.userData,
+  };
+}
+
 test('viewer measurement picks a real shelf over the transparent module selector', () => {
   const wardrobe = createGroup();
   const selector = createMesh({
@@ -1066,6 +1087,84 @@ test('viewer point measurement previews against the wardrobe edge while hovering
   assert.ok(Math.abs(points[0].y - points[1].y) > 0.2);
 });
 
+test('viewer point measurement keeps straight snap while previewing beyond wardrobe bounds', () => {
+  const wardrobe = createGroup();
+  const door = createMesh({
+    width: 1,
+    height: 2,
+    depth: 0.02,
+    userData: { partId: 'door_1_full' },
+  });
+  wardrobe.add(door);
+  const labels: string[] = [];
+  const App = createApp(wardrobe, labels);
+  setViewerMeasurementToolMode(App, 'points', false);
+
+  tryHandleViewerMeasurementClick({
+    App,
+    hitState: createDoorPointHit(door, { x: -0.1, y: 0.4, z: 0.01 }),
+  });
+
+  const handled = tryHandleViewerMeasurementHover({
+    App,
+    hitState: null,
+    raycaster: createRaycasterAt({ x: -0.7, y: 0.405 }),
+    mouse: { x: 0, y: 0 },
+    ndcX: -1.05,
+    ndcY: 0,
+  });
+
+  assert.equal(handled, true);
+  assert.ok(labels.includes('40'));
+  const previewLine = wardrobe.children.find(
+    child => child.type === 'Line' && child.userData?.__wpViewerMeasurementOverlay && !child.name
+  );
+  assert.ok(previewLine);
+  const points = previewLine.geometry.points;
+  assert.equal(points.length, 2);
+  assert.ok(Math.abs(points[1].x + 0.5) < 1e-9);
+  assert.ok(Math.abs(points[0].y - points[1].y) < 1e-9);
+  assert.equal(previewLine.material.color, 0x16a34a);
+});
+
+test('viewer point measurement keeps straight snap for an outside final click', () => {
+  const wardrobe = createGroup();
+  const door = createMesh({
+    width: 1,
+    height: 2,
+    depth: 0.02,
+    userData: { partId: 'door_1_full' },
+  });
+  wardrobe.add(door);
+  const labels: string[] = [];
+  const App = createApp(wardrobe, labels);
+  setViewerMeasurementToolMode(App, 'points', false);
+
+  tryHandleViewerMeasurementClick({
+    App,
+    hitState: createDoorPointHit(door, { x: -0.1, y: 0.4, z: 0.01 }),
+  });
+  tryHandleViewerMeasurementClick({
+    App,
+    hitState: null,
+    raycaster: createRaycasterAt({ x: -0.7, y: 0.405 }),
+    mouse: { x: 0, y: 0 },
+    ndcX: -1.05,
+    ndcY: 0,
+  });
+
+  assert.ok(labels.includes('40'));
+  const dimensionLine = wardrobe.children.find(
+    child => child.type === 'Line' && child.userData?.__wpViewerMeasurementOverlay && !child.name
+  );
+  assert.ok(dimensionLine);
+  const points = dimensionLine.geometry.points;
+  assert.equal(points.length, 2);
+  assert.ok(Math.abs(points[1].x + 0.5) < 1e-9);
+  assert.ok(Math.abs(points[0].y - points[1].y) < 1e-9);
+  assert.equal(dimensionLine.material.color, 0x16a34a);
+});
+
 test('viewer point measurement preview uses the fixed plane ray instead of side hits', () => {
   const wardrobe = createGroup();
   const door = createMesh({
@@ -1388,6 +1487,40 @@ test('viewer point measurement starts on the wardrobe edge from a near-empty out
   assert.ok(marker);
   const points = marker.geometry.points;
   assert.ok(points.every((point: { x: number }) => Math.abs(point.x + 0.5) < 0.02));
+});
+
+test('viewer point measurement snaps an inside-near-edge start click to the wardrobe edge', () => {
+  const wardrobe = createGroup();
+  const door = createMesh({
+    width: 1,
+    height: 2,
+    depth: 0.02,
+    userData: { partId: 'door_1_full' },
+  });
+  wardrobe.add(door);
+  const labels: string[] = [];
+  const App = createApp(wardrobe, labels);
+  setViewerMeasurementToolMode(App, 'points', false);
+
+  tryHandleViewerMeasurementClick({
+    App,
+    hitState: createDoorPointHit(door, { x: -0.47, y: 0.4, z: 0.01 }),
+  });
+  tryHandleViewerMeasurementClick({
+    App,
+    hitState: createDoorPointHit(door, { x: 0, y: 0.4, z: 0.01 }),
+  });
+
+  assert.ok(labels.includes('50'));
+  const dimensionLine = wardrobe.children.find(
+    child => child.type === 'Line' && child.userData?.__wpViewerMeasurementOverlay && !child.name
+  );
+  assert.ok(dimensionLine);
+  const points = dimensionLine.geometry.points;
+  assert.equal(points.length, 2);
+  assert.ok(Math.abs(points[0].x + 0.5) < 1e-9);
+  assert.ok(Math.abs(points[1].x) < 1e-9);
+  assert.ok(Math.abs(points[0].y - points[1].y) < 1e-9);
 });
 
 test('viewer point measurement allows diagonal distances when they are not close to straight', () => {

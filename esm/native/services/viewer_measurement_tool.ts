@@ -1193,6 +1193,14 @@ function computePointEdgeClampTolerance(plane: MeasurementPlane): number {
   return clampNumber(proportional, POINT_EDGE_CLAMP_TOLERANCE_MIN_M, POINT_EDGE_CLAMP_TOLERANCE_MAX_M);
 }
 
+function snapCoordinateToMeasurementEdge(value: number, min: number, max: number, tolerance: number): number {
+  const clamped = clampNumber(value, min, max);
+  if (clamped !== value) return clamped;
+  if (value - min <= tolerance) return min;
+  if (max - value <= tolerance) return max;
+  return value;
+}
+
 function clampPointToMeasurementPlane(
   THREE: Pick<ThreeLike, 'Vector3'>,
   plane: MeasurementPlane,
@@ -1214,6 +1222,24 @@ function clampPointToMeasurementPlane(
     outsideU,
     outsideV,
     outsideDistance,
+  };
+}
+
+function snapPointToMeasurementPlaneEdges(
+  THREE: Pick<ThreeLike, 'Vector3'>,
+  plane: MeasurementPlane,
+  localPoint: LocalPlanePoint
+): PointClampResult {
+  const base = clampPointToMeasurementPlane(THREE, plane, localPoint);
+  const tolerance = computePointEdgeClampTolerance(plane);
+  const clampedU = snapCoordinateToMeasurementEdge(base.rawU, plane.uMin, plane.uMax, tolerance);
+  const clampedV = snapCoordinateToMeasurementEdge(base.rawV, plane.vMin, plane.vMax, tolerance);
+  return {
+    ...base,
+    point: makePointOnPlane(THREE, plane, clampedU, clampedV),
+    clampedU,
+    clampedV,
+    outsideDistance: Math.hypot(base.rawU - clampedU, base.rawV - clampedV),
   };
 }
 
@@ -1482,19 +1508,6 @@ function shouldUseWardrobeFrontPlaneForPointStart(args: {
   return Math.min(Math.abs(hitZ - boundsFrontZ), Math.abs(hitZ - targetFrontZ)) <= tolerance;
 }
 
-function projectLocalPointToPlane(
-  THREE: Pick<ThreeLike, 'Vector3'>,
-  plane: MeasurementPlane,
-  localPoint: { x: number; y: number; z: number }
-): Vector3Like {
-  return makePointOnPlane(
-    THREE,
-    plane,
-    readPointAxis(localPoint, plane.uAxis),
-    readPointAxis(localPoint, plane.vAxis)
-  );
-}
-
 function offsetPointOnMeasurementPlane(
   THREE: Pick<ThreeLike, 'Vector3'>,
   plane: MeasurementPlane,
@@ -1581,6 +1594,14 @@ function shouldSnapPointMeasurementToStraightAxis(deltaU: number, deltaV: number
   return minor <= tolerance;
 }
 
+function shouldSnapClippedPointMeasurementToStraightAxis(deltaU: number, deltaV: number): boolean {
+  const absU = Math.abs(deltaU);
+  const absV = Math.abs(deltaV);
+  const major = Math.max(absU, absV);
+  const minor = Math.min(absU, absV);
+  return major > MIN_MEASURABLE_EDGE_M && minor <= POINT_STRAIGHT_SNAP_ABSOLUTE_TOLERANCE_M;
+}
+
 function resolvePointMeasurementEnd(args: {
   THREE: OverlayThree;
   draft: PointMeasurementDraft;
@@ -1595,20 +1616,26 @@ function resolvePointMeasurementEnd(args: {
   const clippedEnd = clipPointRayToMeasurementBounds({ plane, startU, startV, rawU, rawV });
   const rawDeltaU = rawU - startU;
   const rawDeltaV = rawV - startV;
-  const shouldSnap = !clippedEnd.clipped && shouldSnapPointMeasurementToStraightAxis(rawDeltaU, rawDeltaV);
+  const shouldSnap = clippedEnd.clipped
+    ? shouldSnapClippedPointMeasurementToStraightAxis(rawDeltaU, rawDeltaV)
+    : shouldSnapPointMeasurementToStraightAxis(rawDeltaU, rawDeltaV);
 
   let axis: MeasurementAxis | 'free' = 'free';
   let snapAxis: MeasurementAxis | null = null;
-  let endU = clippedEnd.u;
-  let endV = clippedEnd.v;
-  let length = Math.hypot(endU - startU, endV - startV);
+  let endU: number;
+  let endV: number;
+  let length: number;
 
   if (shouldSnap) {
     snapAxis = Math.abs(rawDeltaU) >= Math.abs(rawDeltaV) ? plane.uAxis : plane.vAxis;
     axis = snapAxis;
-    endU = snapAxis === plane.uAxis ? rawU : startU;
-    endV = snapAxis === plane.vAxis ? rawV : startV;
+    endU = snapAxis === plane.uAxis ? clampNumber(rawU, plane.uMin, plane.uMax) : startU;
+    endV = snapAxis === plane.vAxis ? clampNumber(rawV, plane.vMin, plane.vMax) : startV;
     length = Math.abs(snapAxis === plane.uAxis ? endU - startU : endV - startV);
+  } else {
+    endU = clippedEnd.u;
+    endV = clippedEnd.v;
+    length = Math.hypot(endU - startU, endV - startV);
   }
 
   if (!Number.isFinite(length)) return null;
@@ -1749,7 +1776,7 @@ function resolvePointMeasurementStart(args: {
     : createMeasurementPlaneForBox(boundsBox, plane.kind, plane.normalSign);
   const localPoint = readHitLocalPoint(App, hitState, wardrobeGroup);
   if (!localPoint) return null;
-  const point = clampPointToMeasurementPlane(THREE, boundedPlane, localPoint).point;
+  const point = snapPointToMeasurementPlaneEdges(THREE, boundedPlane, localPoint).point;
   return {
     point: { x: point.x, y: point.y, z: point.z },
     plane: boundedPlane,
@@ -1776,7 +1803,7 @@ function resolvePointMeasurementStartFromPointer(args: {
     const plane = createMeasurementPlaneForBox(boundsBox, kind, sign);
     const localPoint = readRayPlaneLocalPoint({ App, plane, wardrobeGroup, pointer });
     if (!localPoint) continue;
-    const clamp = clampPointToMeasurementPlane(THREE, plane, localPoint);
+    const clamp = snapPointToMeasurementPlaneEdges(THREE, plane, localPoint);
     if (clamp.outsideDistance <= computePointEdgeClampTolerance(plane)) candidates.push({ plane, clamp });
   }
 
