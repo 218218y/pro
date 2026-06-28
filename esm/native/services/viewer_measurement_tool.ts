@@ -36,6 +36,10 @@ const OVERLAY_RENDER_ORDER = 10040;
 const GUIDE_OFFSET_M = 0.045;
 const SIDE_GUIDE_OFFSET_M = 0.055;
 const REAR_SELECTION_FRAME_PULL_FORWARD_M = 0.012;
+const POINT_STRAIGHT_SNAP_MAX_ANGLE_DEG = 10;
+const POINT_STRAIGHT_SNAP_ABSOLUTE_TOLERANCE_M = 0.008;
+const POINT_STRAIGHT_SNAP_COLOR = 0x16a34a;
+const POINT_DEFAULT_COLOR = 0x2563eb;
 const POINT_MEASUREMENT_CURSOR = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='25' height='25' viewBox='0 0 25 25'%3E%3Cpath d='M6 6 L19 19 M19 6 L6 19' stroke='%23111827' stroke-width='2.2' stroke-linecap='round'/%3E%3Ccircle cx='12.5' cy='12.5' r='2.2' fill='none' stroke='%23ffffff' stroke-width='1.4'/%3E%3C/svg%3E") 12 12, crosshair`;
 
 export type ViewerMeasurementToolMode = 'part' | 'points';
@@ -267,9 +271,10 @@ function writeMeasurementCursor(App: AppContainer, cursor: string): void {
     const querySelectorAll = isRecord(doc) ? doc.querySelectorAll : null;
     if (typeof querySelectorAll !== 'function') return;
     const canvases = Reflect.apply(querySelectorAll, doc, ['canvas']);
-    const length = isRecord(canvases) && typeof canvases.length === 'number' ? canvases.length : 0;
+    const listLike = canvases && typeof canvases === 'object' ? (canvases as { length?: unknown }) : null;
+    const length = typeof listLike?.length === 'number' ? listLike.length : 0;
     for (let i = 0; i < length; i += 1) {
-      const canvas = canvases[i];
+      const canvas = (canvases as { [index: number]: unknown })[i];
       if (isRecord(canvas) && isRecord(canvas.style)) {
         canvas.style.cursor = cursor === 'default' ? '' : cursor;
       }
@@ -866,12 +871,14 @@ function addTrackedLine(args: {
   objects: Object3DLike[];
   points: Vector3Like[];
   name: string;
+  color?: number;
 }): void {
   const { THREE, wardrobeGroup, objects, points, name } = args;
+  const color = args.color ?? POINT_DEFAULT_COLOR;
   const geometry = new THREE.BufferGeometry();
   if (typeof geometry.setFromPoints === 'function') geometry.setFromPoints(points);
   const material = new THREE.LineBasicMaterial({
-    color: 0x2563eb,
+    color,
     transparent: true,
     opacity: 0.98,
     depthTest: true,
@@ -932,6 +939,35 @@ function tuneOverlayObject(obj: Object3DLike, options: { depthTest: boolean }): 
     else if (material) rec.material = tuneOverlayMaterial(material, options);
   } catch {
     // ignore
+  }
+}
+
+function writeMaterialColor(material: unknown, color: number): void {
+  const rec = isRecord(material) ? material : null;
+  if (!rec) return;
+  try {
+    const colorValue = rec.color;
+    if (isRecord(colorValue) && typeof colorValue.set === 'function') {
+      Reflect.apply(colorValue.set, colorValue, [color]);
+    } else {
+      rec.color = color;
+    }
+    rec.needsUpdate = true;
+  } catch {
+    // A color hint is a visual affordance; keep the measurement usable if the
+    // host material is immutable or custom.
+  }
+}
+
+function tintOverlayObjects(objects: Object3DLike[], color: number, includeSprites = false): void {
+  for (let i = 0; i < objects.length; i += 1) {
+    const obj = objects[i];
+    const rec = isRecord(obj) ? obj : null;
+    if (!rec) continue;
+    if (!includeSprites && rec.type === 'Sprite') continue;
+    const material = rec.material;
+    if (Array.isArray(material)) material.forEach(item => writeMaterialColor(item, color));
+    else writeMaterialColor(material, color);
   }
 }
 
@@ -1107,9 +1143,11 @@ function addPointCrossMarker(args: {
   point: Vector3Like;
   namePrefix: string;
   half?: number;
+  color?: number;
 }): void {
   const { THREE, wardrobeGroup, objects, plane, point, namePrefix } = args;
   const half = args.half ?? 0.014;
+  const color = args.color ?? POINT_DEFAULT_COLOR;
   addTrackedLine({
     THREE,
     wardrobeGroup,
@@ -1119,6 +1157,7 @@ function addPointCrossMarker(args: {
       offsetPointOnMeasurementPlane(THREE, plane, point, -half, -half),
       offsetPointOnMeasurementPlane(THREE, plane, point, half, half),
     ],
+    color,
   });
   addTrackedLine({
     THREE,
@@ -1129,6 +1168,7 @@ function addPointCrossMarker(args: {
       offsetPointOnMeasurementPlane(THREE, plane, point, -half, half),
       offsetPointOnMeasurementPlane(THREE, plane, point, half, -half),
     ],
+    color,
   });
 }
 
@@ -1139,19 +1179,34 @@ function addDraftPointMarker(args: {
   plane: MeasurementPlane;
   point: Vector3Like;
   namePrefix?: string;
+  color?: number;
 }): void {
   addPointCrossMarker({
     ...args,
     namePrefix: args.namePrefix || 'wp-viewer-measurement-point-draft-marker',
+    color: args.color,
   });
 }
 
 type ResolvedPointMeasurement = {
-  axis: MeasurementAxis;
+  axis: MeasurementAxis | 'free';
+  snapAxis: MeasurementAxis | null;
+  snapped: boolean;
   start: Vector3Like;
   end: Vector3Like;
   length: number;
 };
+
+function shouldSnapPointMeasurementToStraightAxis(deltaU: number, deltaV: number): boolean {
+  const absU = Math.abs(deltaU);
+  const absV = Math.abs(deltaV);
+  const major = Math.max(absU, absV);
+  const minor = Math.min(absU, absV);
+  if (!(major > MIN_MEASURABLE_EDGE_M)) return false;
+  const angleRad = (POINT_STRAIGHT_SNAP_MAX_ANGLE_DEG * Math.PI) / 180;
+  const tolerance = Math.max(POINT_STRAIGHT_SNAP_ABSOLUTE_TOLERANCE_M, major * Math.tan(angleRad));
+  return minor <= tolerance;
+}
 
 function resolvePointMeasurementEnd(args: {
   THREE: OverlayThree;
@@ -1166,13 +1221,27 @@ function resolvePointMeasurementEnd(args: {
   const rawEndV = readPointAxis(localEnd, plane.vAxis);
   const deltaU = rawEndU - startU;
   const deltaV = rawEndV - startV;
-  const axis: MeasurementAxis = Math.abs(deltaU) >= Math.abs(deltaV) ? plane.uAxis : plane.vAxis;
-  const endU = axis === plane.uAxis ? rawEndU : startU;
-  const endV = axis === plane.vAxis ? rawEndV : startV;
-  const length = Math.abs(axis === plane.uAxis ? endU - startU : endV - startV);
+  const shouldSnap = shouldSnapPointMeasurementToStraightAxis(deltaU, deltaV);
+
+  let axis: MeasurementAxis | 'free' = 'free';
+  let snapAxis: MeasurementAxis | null = null;
+  let endU = rawEndU;
+  let endV = rawEndV;
+  let length = Math.hypot(deltaU, deltaV);
+
+  if (shouldSnap) {
+    snapAxis = Math.abs(deltaU) >= Math.abs(deltaV) ? plane.uAxis : plane.vAxis;
+    axis = snapAxis;
+    endU = snapAxis === plane.uAxis ? rawEndU : startU;
+    endV = snapAxis === plane.vAxis ? rawEndV : startV;
+    length = Math.abs(snapAxis === plane.uAxis ? endU - startU : endV - startV);
+  }
+
   if (!Number.isFinite(length)) return null;
   return {
     axis,
+    snapAxis,
+    snapped: shouldSnap,
     start: makePointOnPlane(THREE, plane, startU, startV),
     end: makePointOnPlane(THREE, plane, endU, endV),
     length,
@@ -1194,6 +1263,7 @@ function renderPointDraftOverlay(args: {
   includePreview: boolean;
 }): boolean {
   const { App, draft, hitState, includePreview } = args;
+  applyMeasurementToolCursor(App, 'points');
   const THREE = readOverlayThree(App);
   const wardrobeGroup = getWardrobeGroup(App);
   if (!THREE || !wardrobeGroup) return false;
@@ -1221,19 +1291,20 @@ function renderPointDraftOverlay(args: {
         plane: draft.plane,
         point: resolved.end,
         namePrefix: 'wp-viewer-measurement-point-draft-cursor',
+        color: resolved.snapped ? POINT_STRAIGHT_SNAP_COLOR : POINT_DEFAULT_COLOR,
       });
       if (resolved.length > MIN_MEASURABLE_EDGE_M && addDimensionLine) {
-        objects.push(
-          ...readCreatedDimensionObjects(
-            addDimensionLine(
-              resolved.start,
-              resolved.end,
-              axisVector(THREE, draft.plane.normalAxis, 0),
-              formatCmLabel(resolved.length),
-              { textScale: 0.82, styleKey: 'cell' }
-            )
+        const dimensionObjects = readCreatedDimensionObjects(
+          addDimensionLine(
+            resolved.start,
+            resolved.end,
+            axisVector(THREE, draft.plane.normalAxis, 0),
+            formatCmLabel(resolved.length),
+            { textScale: 0.82, styleKey: 'cell' }
           )
         );
+        if (resolved.snapped) tintOverlayObjects(dimensionObjects, POINT_STRAIGHT_SNAP_COLOR);
+        objects.push(...dimensionObjects);
       } else {
         addTrackedLine({
           THREE,
@@ -1241,6 +1312,7 @@ function renderPointDraftOverlay(args: {
           objects,
           name: 'wp-viewer-measurement-point-draft-preview-line',
           points: [resolved.start, resolved.end],
+          color: resolved.snapped ? POINT_STRAIGHT_SNAP_COLOR : POINT_DEFAULT_COLOR,
         });
       }
     }
@@ -1291,6 +1363,7 @@ function beginPointMeasurementDraft(args: {
   hitState: CanvasPickingClickHitState;
 }): boolean {
   const { App, hitState } = args;
+  applyMeasurementToolCursor(App, 'points');
   const THREE = readOverlayThree(App);
   const wardrobeGroup = getWardrobeGroup(App);
   if (!THREE || !wardrobeGroup) return false;
@@ -1302,7 +1375,7 @@ function beginPointMeasurementDraft(args: {
 
   try {
     getUiFeedbackServiceMaybe(App)?.updateEditStateToast?.(
-      'מצב מדידה מדוייק: לחץ נקודה שנייה בקו ישר הקרוב ביותר',
+      'מצב מדידה מדוייק: לחץ נקודה שנייה; קרוב לאופקי/אנכי יינעל בירוק',
       true
     );
   } catch {
@@ -1317,6 +1390,7 @@ function renderPointMeasurement(args: {
   hitState: CanvasPickingClickHitState;
 }): boolean {
   const { App, draft, hitState } = args;
+  applyMeasurementToolCursor(App, 'points');
   const THREE = readOverlayThree(App);
   const wardrobeGroup = getWardrobeGroup(App);
   const addDimensionLine = readAddDimensionLine(App);
@@ -1342,6 +1416,7 @@ function renderPointMeasurement(args: {
       { textScale: 0.82, styleKey: 'cell' }
     )
   );
+  if (resolved.snapped) tintOverlayObjects(lineObjects, POINT_STRAIGHT_SNAP_COLOR);
   objects.push(...lineObjects);
   addDraftPointMarker({
     THREE,
@@ -1350,6 +1425,7 @@ function renderPointMeasurement(args: {
     plane,
     point: resolved.start,
     namePrefix: 'wp-viewer-measurement-point-start',
+    color: resolved.snapped ? POINT_STRAIGHT_SNAP_COLOR : POINT_DEFAULT_COLOR,
   });
   addDraftPointMarker({
     THREE,
@@ -1358,6 +1434,7 @@ function renderPointMeasurement(args: {
     plane,
     point: resolved.end,
     namePrefix: 'wp-viewer-measurement-point-end',
+    color: resolved.snapped ? POINT_STRAIGHT_SNAP_COLOR : POINT_DEFAULT_COLOR,
   });
 
   writeOverlayState(App, { objects, targetKey: draft.targetKey, pointDraft: null });
@@ -1383,6 +1460,7 @@ function tryHandleViewerPointMeasurementClick(args: {
   hitState: CanvasPickingClickHitState | null;
 }): boolean {
   const { App, hitState } = args;
+  applyMeasurementToolCursor(App, 'points');
   const currentState = readOverlayState(App);
   const draft = currentState?.pointDraft || null;
 
@@ -1407,6 +1485,7 @@ export function tryHandleViewerMeasurementHover(args: {
 }): boolean {
   const { App, hitState } = args;
   if (getViewerMeasurementToolMode(App) !== 'points') return false;
+  applyMeasurementToolCursor(App, 'points');
   const state = readOverlayState(App);
   const draft = state?.pointDraft || null;
   if (!draft) return false;

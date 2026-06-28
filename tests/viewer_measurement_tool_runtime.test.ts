@@ -206,8 +206,23 @@ function createMesh(args: {
 
 function createApp(wardrobeGroup: any, labels: string[]) {
   const THREE = createFakeThree();
+  const canvas = { style: { cursor: '' } };
+  const document = {
+    body: { style: { cursor: '' } },
+    createElement() {
+      return { style: {}, classList: { add() {}, remove() {} }, appendChild() {} };
+    },
+    querySelector() {
+      return null;
+    },
+    querySelectorAll(selector: string) {
+      return selector === 'canvas' ? [canvas] : [];
+    },
+  };
   const App: any = {
-    deps: { THREE },
+    deps: { THREE, browser: { document } },
+    __canvas: canvas,
+    __document: document,
     render: {
       camera: {
         position: new FakeVector3(0, 0, 3),
@@ -793,6 +808,7 @@ test('viewer point measurement snaps the second click to the nearest straight ax
   assert.ok(Math.abs(points[0].y - points[1].y) < 1e-9);
   assert.ok(Math.abs(points[0].x + 0.25) < 1e-9);
   assert.ok(Math.abs(points[1].x - 0.45) < 1e-9);
+  assert.equal(dimensionLine.material.color, 0x16a34a);
 });
 
 test('viewer point measurement keeps vertical point distances vertical when that delta is dominant', () => {
@@ -910,6 +926,125 @@ test('viewer point measurement previews a locked line and cursor X after the fir
   const points = previewLine.geometry.points;
   assert.equal(points.length, 2);
   assert.ok(Math.abs(points[0].y - points[1].y) < 1e-9);
+});
+
+test('viewer point measurement allows diagonal distances when they are not close to straight', () => {
+  const wardrobe = createGroup();
+  const door = createMesh({
+    width: 1,
+    height: 2,
+    depth: 0.02,
+    userData: { partId: 'door_1_full' },
+  });
+  wardrobe.add(door);
+  const labels: string[] = [];
+  const App = createApp(wardrobe, labels);
+  setViewerMeasurementToolMode(App, 'points', false);
+
+  const firstHit = {
+    intersects: [{ object: door, point: { x: -0.25, y: 0.4, z: 0.01 } }],
+    foundPartId: 'door_1_full',
+    foundModuleIndex: null,
+    foundModuleStack: 'top' as const,
+    effectiveDoorId: 'door_1_full',
+    foundDrawerId: null,
+    primaryHitObject: door,
+    doorHitObject: door,
+    doorHitGroup: door,
+    primaryHitPoint: { x: -0.25, y: 0.4, z: 0.01 },
+    doorHitPoint: { x: -0.25, y: 0.4, z: 0.01 },
+    moduleHitY: null,
+    doorHitY: 0.4,
+    primaryHitY: 0.4,
+    hitIdentity: { partId: 'door_1_full', doorId: 'door_1_full' } as any,
+    hitUserData: door.userData,
+  };
+  tryHandleViewerMeasurementClick({ App, hitState: firstHit });
+  tryHandleViewerMeasurementClick({
+    App,
+    hitState: {
+      ...firstHit,
+      intersects: [{ object: door, point: { x: 0.15, y: 0.7, z: 0.01 } }],
+      primaryHitPoint: { x: 0.15, y: 0.7, z: 0.01 },
+      doorHitPoint: { x: 0.15, y: 0.7, z: 0.01 },
+      doorHitY: 0.7,
+      primaryHitY: 0.7,
+    },
+  });
+
+  assert.ok(labels.includes('50'));
+  const dimensionLine = wardrobe.children.find(
+    child => child.type === 'Line' && child.userData?.__wpViewerMeasurementOverlay && !child.name
+  );
+  assert.ok(dimensionLine);
+  const points = dimensionLine.geometry.points;
+  assert.ok(Math.abs(points[0].x - points[1].x) > 0.39);
+  assert.ok(Math.abs(points[0].y - points[1].y) > 0.29);
+  assert.notEqual(dimensionLine.material.color, 0x16a34a);
+});
+
+test('viewer point measurement keeps the precision cursor for every click and hover cycle', () => {
+  const wardrobe = createGroup();
+  const door = createMesh({
+    width: 1,
+    height: 2,
+    depth: 0.02,
+    userData: { partId: 'door_1_full' },
+  });
+  wardrobe.add(door);
+  const labels: string[] = [];
+  const App = createApp(wardrobe, labels);
+  setViewerMeasurementToolMode(App, 'points', false);
+
+  const firstHit = {
+    intersects: [{ object: door, point: { x: -0.25, y: 0.4, z: 0.01 } }],
+    foundPartId: 'door_1_full',
+    foundModuleIndex: null,
+    foundModuleStack: 'top' as const,
+    effectiveDoorId: 'door_1_full',
+    foundDrawerId: null,
+    primaryHitObject: door,
+    doorHitObject: door,
+    doorHitGroup: door,
+    primaryHitPoint: { x: -0.25, y: 0.4, z: 0.01 },
+    doorHitPoint: { x: -0.25, y: 0.4, z: 0.01 },
+    moduleHitY: null,
+    doorHitY: 0.4,
+    primaryHitY: 0.4,
+    hitIdentity: { partId: 'door_1_full', doorId: 'door_1_full' } as any,
+    hitUserData: door.userData,
+  };
+
+  assert.match(App.__canvas.style.cursor, /crosshair/);
+  tryHandleViewerMeasurementClick({ App, hitState: firstHit });
+  App.__canvas.style.cursor = 'grab';
+  tryHandleViewerMeasurementHover({
+    App,
+    hitState: {
+      ...firstHit,
+      intersects: [{ object: door, point: { x: 0.45, y: 0.47, z: 0.01 } }],
+      primaryHitPoint: { x: 0.45, y: 0.47, z: 0.01 },
+      doorHitPoint: { x: 0.45, y: 0.47, z: 0.01 },
+      doorHitY: 0.47,
+      primaryHitY: 0.47,
+    },
+  });
+  assert.match(App.__canvas.style.cursor, /crosshair/);
+
+  tryHandleViewerMeasurementClick({
+    App,
+    hitState: {
+      ...firstHit,
+      intersects: [{ object: door, point: { x: 0.45, y: 0.47, z: 0.01 } }],
+      primaryHitPoint: { x: 0.45, y: 0.47, z: 0.01 },
+      doorHitPoint: { x: 0.45, y: 0.47, z: 0.01 },
+      doorHitY: 0.47,
+      primaryHitY: 0.47,
+    },
+  });
+  App.__canvas.style.cursor = 'grab';
+  tryHandleViewerMeasurementHover({ App, hitState: firstHit });
+  assert.match(App.__canvas.style.cursor, /crosshair/);
 });
 
 test('viewer measurement tool mode is cached and defaults back to part when invalid', () => {
