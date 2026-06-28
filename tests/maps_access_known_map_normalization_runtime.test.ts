@@ -19,7 +19,7 @@ test('maps_access normalizes known maps and clones unknown maps without leaking 
     maps: {
       handlesMap: { d1: 'bar', d2: null, drop: 123 },
       hingeMap: { d1: 'left', d2: hingeObj, bad: 7 },
-      splitDoorsMap: { split_d1: true, splitpos_d1: ['0.25', 0.75, 'bad'], skip: { nope: true } },
+      splitDoorsMap: { split_d1: true, splitpos_d1: [0.25, 0.75, 'bad'], skip: { nope: true } },
       removedDoorsMap: { d1: '1', d2: 'off', d3: 'null', bad: 'wat' },
       roundedFrameSideShelvesMap: { body_left: 'on', body_right: '0', bad: 'wat' },
       customMap: { nested: customNested },
