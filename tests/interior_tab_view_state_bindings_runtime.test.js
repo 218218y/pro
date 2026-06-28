@@ -71,6 +71,10 @@ test('[interior-view-state-bindings] maps local setters into controller args onc
     setSketchBoxLegWidthDraft: () => 'legWidthDraft',
     setSketchBoxLegStyle: () => 'legStyle',
     setSketchBoxLegColor: () => 'legColor',
+    setSketchBoxLegPlatformMode: () => 'legPlatformMode',
+    setSketchBoxLegPlatformSideMode: () => 'legPlatformSideMode',
+    setSketchBoxLegPlatformSideOverhangCm: () => 'legPlatformSideOverhangCm',
+    setSketchBoxLegPlatformFrontOverhangCm: () => 'legPlatformFrontOverhangCm',
     setSketchBoxLegHeightCm: () => 'legHeightCm',
     setSketchBoxLegHeightDraft: () => 'legHeightDraft',
     setSketchExtDrawerCount: () => 'extDrawerCount',
@@ -94,6 +98,10 @@ test('[interior-view-state-bindings] maps local setters into controller args onc
   assert.equal(args.setSketchBoxPlinthHeightDraft, bindings.setSketchBoxPlinthHeightDraft);
   assert.equal(args.setSketchBoxLegStyle, bindings.setSketchBoxLegStyle);
   assert.equal(args.setSketchBoxLegColor, bindings.setSketchBoxLegColor);
+  assert.equal(args.setSketchBoxLegPlatformMode, bindings.setSketchBoxLegPlatformMode);
+  assert.equal(args.setSketchBoxLegPlatformSideMode, bindings.setSketchBoxLegPlatformSideMode);
+  assert.equal(args.setSketchBoxLegPlatformSideOverhangCm, bindings.setSketchBoxLegPlatformSideOverhangCm);
+  assert.equal(args.setSketchBoxLegPlatformFrontOverhangCm, bindings.setSketchBoxLegPlatformFrontOverhangCm);
   assert.equal(args.setSketchBoxLegHeightCm, bindings.setSketchBoxLegHeightCm);
   assert.equal(args.setSketchBoxLegWidthCm, bindings.setSketchBoxLegWidthCm);
   assert.equal(args.setSketchBoxLegWidthDraft, bindings.setSketchBoxLegWidthDraft);
@@ -104,8 +112,8 @@ test('[interior-view-state-bindings] maps local setters into controller args onc
   assert.equal(args.setSketchIntDrawerHeightDraft, bindings.setSketchIntDrawerHeightDraft);
   assert.equal(args.setSketchExtDrawersPanelOpen, bindings.setSketchExtDrawersPanelOpen);
   assert.equal(args.setManualUiTool, bindings.setManualUiTool);
-  assert.equal(Object.keys(args).length, 44);
-  assert.equal(deps.length, 44);
+  assert.equal(Object.keys(args).length, 48);
+  assert.equal(deps.length, 48);
   assert.equal(deps[0].id, 'app');
   assert.equal(deps.at(-1), bindings.setManualUiTool);
   assert.equal(deps[1], bindings.setSketchShelvesOpen);

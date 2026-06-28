@@ -217,6 +217,24 @@ test('room wardrobe type runtime: first switch to sliding uses sliding defaults 
   assert.equal(h.builderCalls.length, 0);
 });
 
+test('room wardrobe type runtime: switching a leg-base wardrobe to sliding resets platform mode to plain', () => {
+  const h = createHarness({
+    ui: {
+      raw: { width: 160, height: 240, depth: 55, doors: 4 },
+      baseType: 'legs',
+      baseLegPlatformMode: 'stage',
+    },
+    config: { wardrobeType: 'hinged', isManualWidth: true },
+  });
+
+  h.actions.room.setWardrobeType('sliding');
+
+  assert.equal(h.state.config.wardrobeType, 'sliding');
+  assert.equal(h.state.ui.baseType, 'legs');
+  assert.equal(h.state.ui.baseLegPlatformMode, 'plain');
+  assert.equal(h.state.ui.raw.doors, 2);
+});
+
 test('room wardrobe type runtime: undefined recompute results stay handled and do not force a recovery build', () => {
   const h = createHarness({
     ui: { raw: { width: 160, height: 240, depth: 55, doors: 4 } },

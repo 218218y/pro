@@ -2,6 +2,7 @@ import type { UnknownRecord } from '../../../../../types';
 import { setManualWidth } from '../actions/room_actions.js';
 import {
   setCfgPreChestState,
+  setUiBaseLegPlatformMode,
   setUiBaseType,
   setUiChestCommodeEnabled,
   setUiChestCommodeMirrorHeightCm,
@@ -24,6 +25,7 @@ import {
   adjustCameraForChest,
   resetCameraPreset,
 } from '../../../services/api.js';
+import { normalizeBaseLegPlatformMode } from '../../../features/base_leg_support.js';
 import { asFiniteInt, asFiniteNumber, structureTabReportNonFatal } from './structure_tab_shared.js';
 import {
   commitStructureStatePatchWithRecompute,
@@ -51,6 +53,11 @@ function readDefaultCommodeMirrorHeightCm(value: unknown): number {
   );
 }
 
+function readPreChestBaseLegPlatformMode(pre: UnknownRecord | null): 'stage' | 'plain' | null {
+  if (!pre || !Object.prototype.hasOwnProperty.call(pre, 'baseLegPlatformMode')) return null;
+  return normalizeBaseLegPlatformMode(pre.baseLegPlatformMode);
+}
+
 export function createStructureTabChestActionsController(args: StructureTabCornerChestActionsArgs) {
   const toggleChestMode = (next: boolean) => {
     const app = args.app;
@@ -72,6 +79,7 @@ export function createStructureTabChestActionsController(args: StructureTabCorne
       const uiPatch: UnknownRecord = {
         isChestMode: true,
         baseType: 'legs',
+        baseLegPlatformMode: 'plain',
         raw: chestRawPatch,
       };
       commitStructureStatePatchWithRecompute({
@@ -88,6 +96,7 @@ export function createStructureTabChestActionsController(args: StructureTabCorne
               depth: args.depth,
               isManual: args.isManualWidth,
               base: args.baseType,
+              baseLegPlatformMode: normalizeBaseLegPlatformMode(args.baseLegPlatformMode),
             },
           },
           ui: uiPatch,
@@ -102,11 +111,13 @@ export function createStructureTabChestActionsController(args: StructureTabCorne
               depth: args.depth,
               isManual: args.isManualWidth,
               base: args.baseType,
+              baseLegPlatformMode: normalizeBaseLegPlatformMode(args.baseLegPlatformMode),
             },
             metaOn
           );
           setUiChestMode(args.app, true, metaOn);
           setUiBaseType(args.app, CHEST_MODE_DIMENSIONS.activeDefaults.baseType, metaOn);
+          setUiBaseLegPlatformMode(args.app, 'plain', metaOn);
           setUiDoors(args.app, CHEST_MODE_DIMENSIONS.activeDefaults.doorsCount, metaOn);
           setUiWidth(args.app, CHEST_MODE_DIMENSIONS.activeDefaults.widthCm, metaOn);
           setUiHeight(args.app, CHEST_MODE_DIMENSIONS.activeDefaults.heightCm, metaOn);
@@ -141,12 +152,15 @@ export function createStructureTabChestActionsController(args: StructureTabCorne
       : asFiniteNumber(args.depth, HINGED_DEFAULT_DEPTH);
     const baseR =
       pre && typeof pre.base === 'string' && pre.base ? pre.base : String(args.baseType || 'plinth');
+    const baseLegPlatformModeR =
+      readPreChestBaseLegPlatformMode(pre) || normalizeBaseLegPlatformMode(args.baseLegPlatformMode);
 
     const source = 'react:structure:chest:off';
     const metaOff = createStructureTabRecomputeWriteMeta(source);
     const uiPatch: UnknownRecord = {
       isChestMode: false,
       baseType: baseR,
+      ...(baseR === 'legs' ? { baseLegPlatformMode: baseLegPlatformModeR } : {}),
       raw: { doors: doorsR, width: widthR, height: heightR, depth: depthR },
     };
     const configPatch: UnknownRecord = { preChestState: null };
@@ -164,6 +178,7 @@ export function createStructureTabChestActionsController(args: StructureTabCorne
         }
         setUiChestMode(args.app, false, metaOff);
         setUiBaseType(args.app, baseR, metaOff);
+        if (baseR === 'legs') setUiBaseLegPlatformMode(args.app, baseLegPlatformModeR, metaOff);
         setUiDoors(args.app, doorsR, metaOff);
         setUiWidth(args.app, widthR, metaOff);
         setUiHeight(args.app, heightR, metaOff);

@@ -116,12 +116,13 @@ export function installRoomWardrobeTypeSurface(args: InstallDomainApiRoomSection
               _domainApiReportNonFatal,
               saved.cfg,
               saved.ui,
-              next
+              next,
+              _ui()
             );
             return result;
           }
 
-          initWardrobeTypeDefaults(App, actions, _metaNoBuild, next, meta);
+          initWardrobeTypeDefaults(App, actions, _metaNoBuild, next, meta, _ui());
         } catch (_eRestoreAll) {
           _domainApiReportNonFatal(App, 'domain_api_room:setWardrobeType:restore', _eRestoreAll, {
             throttleMs: 6000,
@@ -380,6 +381,25 @@ function withWardrobeTypeProfileStructuralReplaceKeys(configPatch: UnknownRecord
     : configPatch;
 }
 
+function readUiTransitionScalar(uiPatch: UiStateLike, currentUi: unknown, key: string): unknown {
+  if (hasOwnKey(uiPatch, key)) return (uiPatch as UnknownRecord)[key];
+  const current = asRecord(currentUi);
+  if (current && hasOwnKey(current, key)) return current[key];
+  const raw = asRecord(current?.raw);
+  return raw && hasOwnKey(raw, key) ? raw[key] : undefined;
+}
+
+function applyWardrobeTypeBaseLegPlatformTransitionDefaults(
+  next: WardrobeType,
+  uiPatch: UiStateLike,
+  currentUi: unknown
+): UiStateLike {
+  if (next !== 'sliding' || hasOwnKey(uiPatch, 'baseLegPlatformMode')) return uiPatch;
+  return readUiTransitionScalar(uiPatch, currentUi, 'baseType') === 'legs'
+    ? { ...uiPatch, baseLegPlatformMode: 'plain' }
+    : uiPatch;
+}
+
 function patchWardrobeTypeCanonicalState(
   App: AppContainer,
   actions: ActionsNamespaceLike,
@@ -409,9 +429,14 @@ function restoreWardrobeTypeProfile(
   _domainApiReportNonFatal: InstallDomainApiRoomSectionArgs['_domainApiReportNonFatal'],
   cfgSaved: unknown,
   uiSaved: unknown,
-  next: WardrobeType
+  next: WardrobeType,
+  currentUi?: unknown
 ): void {
-  const uiPatch = ensureUiStatePatch(_ensureObj(uiSaved));
+  const uiPatch = applyWardrobeTypeBaseLegPlatformTransitionDefaults(
+    next,
+    ensureUiStatePatch(_ensureObj(uiSaved)),
+    currentUi
+  );
   const cfgPatch = canonicalizeWardrobeTypeProfileConfigSnapshot(
     App,
     _ensureObj,
@@ -485,7 +510,8 @@ function initWardrobeTypeDefaults(
   actions: ActionsNamespaceLike,
   _metaNoBuild: MetaNoBuildFn,
   next: WardrobeType,
-  meta: ActionMetaLike | UnknownRecord | null | undefined
+  meta: ActionMetaLike | UnknownRecord | null | undefined,
+  currentUi?: unknown
 ): void {
   const rawPatch: Record<string, unknown> = {};
   const doorsI = getDefaultDoorsForWardrobeType(next);
@@ -495,7 +521,11 @@ function initWardrobeTypeDefaults(
   rawPatch.width = doorsI * perDoor;
   rawPatch.depth = getDefaultDepthForWardrobeType(next);
 
-  const uiPatch: UiStateLike = { raw: rawPatch };
+  const uiPatch: UiStateLike = applyWardrobeTypeBaseLegPlatformTransitionDefaults(
+    next,
+    { raw: rawPatch },
+    currentUi
+  );
   const configPatch = {
     wardrobeType: next,
     isManualWidth: false,

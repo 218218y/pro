@@ -22,6 +22,7 @@ import {
   normalizeBaseLegPlatformSideMode,
   normalizeBaseLegStyle,
   normalizeBaseLegWidthCm,
+  resolveDefaultBaseLegPlatformModeForContext,
 } from '../../../features/base_leg_support.js';
 import {
   BASE_LEG_STAGE_SPECIAL_DIMS_SELECT_BLOCKED_MESSAGE,
@@ -106,13 +107,24 @@ function normalizeStructureSlidingTracksColor(value: unknown): 'nickel' | 'black
   return value === 'black' ? 'black' : 'nickel';
 }
 
-function resolveImmediateStructureUiPatchDefaults(source: string, patch: UnknownRecord): UnknownRecord {
+function resolveImmediateStructureUiPatchDefaults(
+  args: CreateStructureTabStructuralControllerArgs,
+  source: string,
+  patch: UnknownRecord
+): UnknownRecord {
   if (
     source === 'react:structure:baseType' &&
     patch.baseType === 'legs' &&
     !Object.prototype.hasOwnProperty.call(patch, 'baseLegPlatformMode')
   ) {
-    return { ...patch, baseLegPlatformMode: 'stage', baseLegPlatformSideMode: 'overhang' };
+    return {
+      ...patch,
+      baseLegPlatformMode: resolveDefaultBaseLegPlatformModeForContext({
+        wardrobeType: args.wardrobeType,
+        isChestMode: args.isChestMode,
+      }),
+      baseLegPlatformSideMode: 'overhang',
+    };
   }
   return patch;
 }
@@ -126,7 +138,7 @@ function applyImmediateStructureUiPatch(
   applyImmediateStructuralUiMutation(
     args.app,
     source,
-    resolveImmediateStructureUiPatchDefaults(source, patch),
+    resolveImmediateStructureUiPatchDefaults(args, source, patch),
     applyDirectMutation
   );
 }
@@ -250,12 +262,24 @@ export function createStructureTabStructuralWriteController(
     setBaseType(next: 'plinth' | 'legs' | 'none') {
       const nextBaseType = normalizeStructureBaseType(next);
       if (blockSelectingBaseBecauseOfShoeDrawersIfNeeded(args.app, nextBaseType)) return;
-      if (nextBaseType === 'legs' && blockSelectingBaseLegStageIfNeeded(args.app)) return;
+      const defaultPlatformMode =
+        nextBaseType === 'legs'
+          ? resolveDefaultBaseLegPlatformModeForContext({
+              wardrobeType: args.wardrobeType,
+              isChestMode: args.isChestMode,
+            })
+          : 'stage';
+      if (
+        nextBaseType === 'legs' &&
+        defaultPlatformMode === 'stage' &&
+        blockSelectingBaseLegStageIfNeeded(args.app)
+      )
+        return;
 
       applyImmediateStructureUiPatch(args, 'react:structure:baseType', { baseType: nextBaseType }, meta => {
         setUiBaseType(args.app, nextBaseType, meta);
         if (nextBaseType === 'legs') {
-          setUiBaseLegPlatformMode(args.app, 'stage', meta);
+          setUiBaseLegPlatformMode(args.app, defaultPlatformMode, meta);
           setUiBaseLegPlatformSideMode(args.app, 'overhang', meta);
         }
       });

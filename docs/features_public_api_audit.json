@@ -1934,6 +1934,10 @@
       "entry": "base_leg_support.js"
     },
     {
+      "file": "esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_chest.ts",
+      "entry": "base_leg_support.js"
+    },
+    {
       "file": "esm/native/ui/react/tabs/structure_tab_dimensions_section_cell_dims.tsx",
       "entry": "hex_cell/index.js"
     },

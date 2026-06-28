@@ -315,6 +315,49 @@ test('[structure-structural-controller] base and sliding build-visible writes us
   );
 });
 
+test('[structure-structural-controller] defaults leg platforms to plain in sliding and chest contexts', () => {
+  const slidingCalls = [];
+  const slidingMod = loadStructureStructuralControllerModule(slidingCalls);
+  const slidingController = slidingMod.createStructureTabStructuralController(
+    createArgs({ calls: slidingCalls, wardrobeType: 'sliding' })
+  );
+
+  slidingController.setBaseType('legs');
+
+  assert.ok(slidingCalls.some(entry => entry[0] === 'setUiBaseType' && entry[2] === 'legs'));
+  assert.ok(slidingCalls.some(entry => entry[0] === 'setUiBaseLegPlatformMode' && entry[2] === 'plain'));
+  assert.ok(
+    slidingCalls.some(
+      entry =>
+        entry[0] === 'applyImmediateStructuralUiMutation' &&
+        entry[2] === 'react:structure:baseType' &&
+        JSON.stringify(entry[3]) ===
+          JSON.stringify({
+            baseType: 'legs',
+            baseLegPlatformMode: 'plain',
+            baseLegPlatformSideMode: 'overhang',
+          })
+    )
+  );
+
+  const chestCalls = [];
+  const chestMod = loadStructureStructuralControllerModule(chestCalls, {
+    readStoreStateMaybe: () => ({
+      config: {
+        modulesConfiguration: [{ doors: 1, specialDims: { baseHeightCm: 240, heightCm: 250 } }],
+      },
+    }),
+  });
+  const chestController = chestMod.createStructureTabStructuralController(
+    createArgs({ calls: chestCalls, isChestMode: true })
+  );
+
+  chestController.setBaseType('legs');
+
+  assert.equal(chestCalls.filter(entry => entry[0] === 'toast').length, 0);
+  assert.ok(chestCalls.some(entry => entry[0] === 'setUiBaseLegPlatformMode' && entry[2] === 'plain'));
+});
+
 test('[structure-structural-controller] blocks base type selection when shoe drawers exist', () => {
   const calls = [];
   const mod = loadStructureStructuralControllerModule(calls, {

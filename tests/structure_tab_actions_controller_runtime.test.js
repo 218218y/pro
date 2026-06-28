@@ -88,6 +88,7 @@ function loadStructureActionsControllerModule(calls, overrides = {}) {
         },
         setCfgHingeMap: (...args) => calls.push(['setCfgHingeMap', ...args]),
         setCfgPreChestState: (...args) => calls.push(['setCfgPreChestState', ...args]),
+        setUiBaseLegPlatformMode: (...args) => calls.push(['setUiBaseLegPlatformMode', ...args]),
         setUiBaseType: (...args) => calls.push(['setUiBaseType', ...args]),
         setUiChestDrawersCount: (...args) => calls.push(['setUiChestDrawersCount', ...args]),
         setUiChestCommodeEnabled: (...args) => calls.push(['setUiChestCommodeEnabled', ...args]),
@@ -130,6 +131,11 @@ function loadStructureActionsControllerModule(calls, overrides = {}) {
             applyDirectMutation(meta);
             return { appliedViaActions: false, requestedBuild: false };
           }),
+      };
+    }
+    if (specifier === '../../../features/base_leg_support.js') {
+      return {
+        normalizeBaseLegPlatformMode: value => (value === 'plain' ? 'plain' : 'stage'),
       };
     }
     if (specifier === '../../../services/api.js') {
@@ -449,6 +455,7 @@ test('[structure-actions-controller] chest and corner controller runs recompute/
     height: 240,
     isManualWidth: true,
     baseType: 'plinth',
+    baseLegPlatformMode: 'stage',
     preChestState: { doors: 5, width: 180, height: 230, depth: 60, isManual: false, base: 'legs' },
   });
 
@@ -506,6 +513,7 @@ test('[structure-actions-controller] corner/chest canonical patches collapse ui/
     height: 240,
     isManualWidth: true,
     baseType: 'plinth',
+    baseLegPlatformMode: 'stage',
     preChestState: { doors: 5, width: 180, height: 230, depth: 60, isManual: false, base: 'legs' },
   });
 
@@ -537,11 +545,20 @@ test('[structure-actions-controller] corner/chest canonical patches collapse ui/
         JSON.stringify(entry[2]) ===
         JSON.stringify({
           config: {
-            preChestState: { doors: 4, width: 160, height: 240, depth: 55, isManual: true, base: 'plinth' },
+            preChestState: {
+              doors: 4,
+              width: 160,
+              height: 240,
+              depth: 55,
+              isManual: true,
+              base: 'plinth',
+              baseLegPlatformMode: 'stage',
+            },
           },
           ui: {
             isChestMode: true,
             baseType: 'legs',
+            baseLegPlatformMode: 'plain',
             raw: { doors: 0, width: 50, height: 50, depth: 40, chestDrawersCount: 2 },
           },
         })
@@ -557,6 +574,7 @@ test('[structure-actions-controller] corner/chest canonical patches collapse ui/
           ui: {
             isChestMode: false,
             baseType: 'legs',
+            baseLegPlatformMode: 'stage',
             raw: { doors: 5, width: 180, height: 230, depth: 60 },
           },
         })

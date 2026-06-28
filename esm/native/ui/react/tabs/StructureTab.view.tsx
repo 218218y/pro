@@ -77,6 +77,7 @@ function StructureTabInner(props: { active: boolean }) {
     height: state.height,
     isManualWidth: state.isManualWidth,
     baseType: state.baseType,
+    baseLegPlatformMode: state.baseLegPlatformMode,
     preChestState: state.preChestState,
     chestCommodeEnabled: state.chestCommodeEnabled,
     chestCommodeMirrorHeightCm: state.chestCommodeMirrorHeightCm,

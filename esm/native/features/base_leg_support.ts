@@ -41,6 +41,17 @@ export const DEFAULT_BASE_LEG_WIDTH_CM: number = BASE_LEG_DIMENSIONS.defaults.wi
 export const DEFAULT_BASE_LEG_PLATFORM_MODE: BaseLegPlatformMode = 'stage';
 export const DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE: BaseLegPlatformSideMode = 'overhang';
 export const DEFAULT_TAPERED_BASE_LEG_WIDTH_CM: number = BASE_LEG_DIMENSIONS.defaults.taperedWidthCm;
+
+export function resolveDefaultBaseLegPlatformModeForContext(
+  args: {
+    wardrobeType?: unknown;
+    isChestMode?: unknown;
+  } = {}
+): BaseLegPlatformMode {
+  return args.isChestMode === true || args.wardrobeType === 'sliding'
+    ? 'plain'
+    : DEFAULT_BASE_LEG_PLATFORM_MODE;
+}
 export const BASE_LEG_WIDTH_MIN_CM: number = BASE_LEG_DIMENSIONS.limits.widthMinCm;
 export const BASE_LEG_WIDTH_MAX_CM: number = BASE_LEG_DIMENSIONS.limits.widthMaxCm;
 
