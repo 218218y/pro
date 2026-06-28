@@ -122,12 +122,7 @@ export function createHingedDoorModuleOpsContext(
     const m = readRecord(map);
     if (!m) return false;
     const base = `split_d${doorIdNum}`;
-    const keys = [base, `${base}_full`, `${base}_top`, `${base}_bot`];
-    for (let i = 0; i < keys.length; i++) {
-      const k = keys[i];
-      if (Object.prototype.hasOwnProperty.call(m, k)) return m[k] !== false;
-    }
-    return false;
+    return Object.prototype.hasOwnProperty.call(m, base) ? m[base] !== false : false;
   };
 
   const getHingeDirSafe = (doorKey: string, defaultDir: 'left' | 'right'): 'left' | 'right' => {

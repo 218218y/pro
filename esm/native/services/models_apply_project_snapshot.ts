@@ -13,11 +13,10 @@ import {
   _attachPdfEditorDraft,
   _modelsReportNonFatal,
   getHistorySystem,
-  getUtil,
   hasMeaningfulOrderPdfDraft,
   readUiPdfState,
 } from './models_registry.js';
-import { asProjectData, normalizeSplitDoorsMap } from './models_apply_project_contracts.js';
+import { asProjectData } from './models_apply_project_contracts.js';
 
 function cloneObjectSnapshot(value: unknown): UnknownRecord {
   const cloned = cloneProjectJson(value);
@@ -59,21 +58,6 @@ function preserveOrderPdfEditorDraft(App: AppContainer, projectStructure: Projec
     projectStructure.orderPdfEditorZoom = Number.isFinite(zoomNumber) && zoomNumber > 0 ? zoomNumber : 1;
   } catch (e) {
     _modelsReportNonFatal(App, 'applyModel.preservePdfDraft', e, 1500);
-  }
-}
-
-function normalizeProjectStructureSplitDoors(App: AppContainer, projectStructure: ProjectDataLike): void {
-  try {
-    const normalizeSplitDoorsMapWithDoors = getUtil(App)?.normalizeSplitDoorsMapWithDoors;
-    if (projectStructure.splitDoorsMap && typeof normalizeSplitDoorsMapWithDoors === 'function') {
-      const normalizedSplitDoorsMap = normalizeSplitDoorsMap(
-        normalizeSplitDoorsMapWithDoors(projectStructure.splitDoorsMap, projectStructure.settings?.doors)
-      );
-      if (normalizedSplitDoorsMap) projectStructure.splitDoorsMap = normalizedSplitDoorsMap;
-      else delete projectStructure.splitDoorsMap;
-    }
-  } catch (e) {
-    _modelsReportNonFatal(App, 'applyModel.normalizeSplitDoors', e, 1500);
   }
 }
 
@@ -130,7 +114,6 @@ export function buildProjectStructureFromModel(
 
   stampCurrentProjectSchema(projectStructure);
   preserveOrderPdfEditorDraft(App, projectStructure);
-  normalizeProjectStructureSplitDoors(App, projectStructure);
 
   return projectStructure;
 }

@@ -21,13 +21,15 @@ test('doors_state_utils: makeDoorStateAccessors resolves hinge, split, curtain a
   assert.equal(acc.isDoorSplit(null, 1), true);
   assert.equal(acc.isDoorSplit({}, 1), true);
   assert.equal(acc.isDoorSplit({ split_d1: false }, 1), false);
-  assert.equal(acc.isDoorSplit({ split_d2_top: false }, 2), false);
+  assert.equal(acc.isDoorSplit({ split_d2_top: false }, 2), true);
+  assert.equal(acc.isDoorSplit({ split_d2_full: false }, 2), true);
 
   // bottom split: default false
   assert.equal(acc.isDoorSplitBottom(null, 1), false);
   assert.equal(acc.isDoorSplitBottom({}, 1), false);
   assert.equal(acc.isDoorSplitBottom({ splitb_d1: true }, 1), true);
-  assert.equal(acc.isDoorSplitBottom({ splitb_d2_full: true }, 2), true);
+  assert.equal(acc.isDoorSplitBottom({ splitb_d2_full: true }, 2), false);
+  assert.equal(acc.isDoorSplitBottom({ splitb_d2_top: true }, 2), false);
 
   // curtain
   assert.equal(acc.curtainVal(7, 'mid', 'none'), 'fabric');

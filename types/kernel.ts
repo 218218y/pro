@@ -386,11 +386,7 @@ export interface KernelNamespaceLike extends UnknownRecord {
   [k: string]: unknown;
 }
 
-export interface UtilNamespaceLike extends UnknownRecord {
-  normalizeSplitDoorsMap?: (map: UnknownRecord) => UnknownRecord;
-  normalizeSplitDoorsMapWithDoors?: (map: UnknownRecord, doorsCount?: number) => UnknownRecord;
-  [k: string]: unknown;
-}
+export type UtilNamespaceLike = UnknownRecord;
 
 // ---------------------------------------------------------------------------
 // High-value domain action surfaces (optional, gradually tightened).

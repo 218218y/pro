@@ -62,3 +62,27 @@ test('maps access normalizers keep hinge entries detached and door trim ids stab
   });
   assert.deepEqual({ ...doorStyleMap }, { d1_full: 'double_profile', d2_full: 'flat', drawer_1: 'profile' });
 });
+
+test('maps access normalizers keep split maps on canonical keys and values only', () => {
+  const splitDoorsMap = normalizeKnownMapSnapshot('splitDoorsMap', {
+    split_d1: true,
+    split_d2_full: false,
+    split_d3: 'true',
+    split_d4: 1,
+    splitpos_d1: [0.25, '0.5', 0.75],
+    splitpos_d2: '0.4',
+    d5: true,
+  });
+
+  assert.deepEqual({ ...splitDoorsMap }, { split_d1: true, splitpos_d1: [0.25, 0.75] });
+
+  const splitDoorsBottomMap = normalizeKnownMapSnapshot('splitDoorsBottomMap', {
+    splitb_d1: true,
+    splitb_d2_full: true,
+    splitb_d3: 1,
+    splitb_d4: 'true',
+    d5: true,
+  });
+
+  assert.deepEqual({ ...splitDoorsBottomMap }, { splitb_d1: true });
+});

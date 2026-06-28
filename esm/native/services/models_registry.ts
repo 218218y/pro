@@ -29,7 +29,6 @@ import type {
   MutableSavedModel,
   PdfDraftSnapshotLike,
   StorageLike,
-  UtilLike,
 } from './models_registry_contracts.js';
 
 export type {
@@ -40,7 +39,6 @@ export type {
   MutableSavedModel,
   PdfDraftSnapshotLike,
   StorageLike,
-  UtilLike,
 };
 
 export {
@@ -90,7 +88,6 @@ export {
   getAppModels,
   getHistorySystem,
   getStorage,
-  getUtil,
   syncModelsStateToApp,
 } from './models_registry_storage.js';
 

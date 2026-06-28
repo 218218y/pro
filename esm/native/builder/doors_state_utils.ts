@@ -57,15 +57,6 @@ export function makeDoorStateAccessors(
     const base = `split_d${doorIdNum}`;
     if (hasOwn.call(m, base)) return m[base] !== false;
 
-    const full = `${base}_full`;
-    if (hasOwn.call(m, full)) return m[full] !== false;
-
-    const top = `${base}_top`;
-    if (hasOwn.call(m, top)) return m[top] !== false;
-
-    const bot = `${base}_bot`;
-    if (hasOwn.call(m, bot)) return m[bot] !== false;
-
     return true;
   }
 
@@ -76,15 +67,6 @@ export function makeDoorStateAccessors(
 
     const base = `splitb_d${doorIdNum}`;
     if (hasOwn.call(m, base)) return m[base] === true;
-
-    const full = `${base}_full`;
-    if (hasOwn.call(m, full)) return m[full] === true;
-
-    const top = `${base}_top`;
-    if (hasOwn.call(m, top)) return m[top] === true;
-
-    const bot = `${base}_bot`;
-    if (hasOwn.call(m, bot)) return m[bot] === true;
 
     return false;
   }
@@ -184,15 +166,12 @@ function isBottomSplitBotPart(
     return Number.isFinite(n) && !!doorState.isDoorSplitBottom(cfg['splitDoorsBottomMap'], n);
   }
 
-  // Generic ids (e.g. corner_door_1_bot): bottom split is stored as `splitb_<baseId>` in the map.
+  // Generic ids (e.g. corner_door_1_bot): bottom split is stored as `splitb_<baseId>`.
   const bm = asRecordOrNull(cfg['splitDoorsBottomMap']);
   if (!bm) return false;
 
   const key = baseId.startsWith('splitb_') ? baseId : `splitb_${baseId}`;
   if (hasOwn.call(bm, key)) return bm[key] === true;
-  if (hasOwn.call(bm, `${key}_full`)) return bm[`${key}_full`] === true;
-  if (hasOwn.call(bm, `${key}_top`)) return bm[`${key}_top`] === true;
-  if (hasOwn.call(bm, `${key}_bot`)) return bm[`${key}_bot`] === true;
 
   return false;
 }

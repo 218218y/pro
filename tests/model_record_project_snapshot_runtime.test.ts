@@ -13,7 +13,7 @@ test('normalizeModelRecord canonicalizes persisted model config maps and detache
     modulesConfiguration: [{ layout: 'drawers', doors: '2' }, { doors: '2' }, { doors: '2' }],
     stackSplitLowerModulesConfiguration: [{ extDrawersCount: '3' }],
     cornerConfiguration: { modulesConfiguration: [{ doors: '5' }] },
-    splitDoorsBottomMap: { splitb_lower: 1, splitb_off: 0, lower: 1, junk: 'maybe' },
+    splitDoorsBottomMap: { splitb_lower: true, splitb_off: false, lower: true, junk: 'maybe' },
     mirrorLayoutMap: { d1_full: [{ widthCm: '55', heightCm: 88 }, { widthCm: 0 }] },
     doorTrimMap: {
       d1_full: [{ axis: 'vertical', span: 'custom', sizeCm: '11', color: 'gold' }, { bad: true }],
@@ -66,11 +66,6 @@ test('buildProjectStructureFromModel keeps canonical mirror/layout payloads and 
       getState: () => appState,
       patch: () => true,
     },
-    util: {
-      normalizeSplitDoorsMapWithDoors(map: unknown) {
-        return map;
-      },
-    },
   } as never;
 
   const model: Record<string, any> = {
@@ -80,8 +75,8 @@ test('buildProjectStructureFromModel keeps canonical mirror/layout payloads and 
     modulesConfiguration: [{ doors: '2' }, { doors: '2' }, { doors: '2' }],
     stackSplitLowerModulesConfiguration: [{ extDrawersCount: '3' }],
     cornerConfiguration: { modulesConfiguration: [{ doors: '5' }] },
-    splitDoorsMap: { split_d1: true, splitpos_main: ['0.25', 0.75, 'bad'], main: ['0.5'] },
-    splitDoorsBottomMap: { splitb_lower: 1, splitb_off: 0, lower: 1 },
+    splitDoorsMap: { split_d1: true, splitpos_main: [0.25, 0.75, NaN], main: [0.5] },
+    splitDoorsBottomMap: { splitb_lower: true, splitb_off: false, lower: true },
     mirrorLayoutMap: { d1_full: [{ widthCm: '55', heightCm: 88 }, { widthCm: 0 }] },
     doorTrimMap: { d1_full: [{ axis: 'vertical', color: 'gold' }] },
     savedNotes: [{ blocks: [{ text: 'note' }] }],

@@ -73,12 +73,27 @@ function normalizeCanonicalToggleMap(
   return out;
 }
 
+function hasDoorSegmentSuffix(value: string): boolean {
+  return /_(?:full|top|bot|mid\d*)$/i.test(value);
+}
+
 export function normalizeGroovesMap(value: unknown): MapsByName['groovesMap'] {
   return normalizeCanonicalToggleMap(value, key => key.startsWith('groove_'));
 }
 
 export function normalizeSplitDoorsBottomMap(value: unknown): MapsByName['splitDoorsBottomMap'] {
-  return normalizeCanonicalToggleMap(value, key => key.startsWith('splitb_'));
+  const rec = asMapRecord(value);
+  const out: MapsByName['splitDoorsBottomMap'] = Object.create(null);
+  if (!rec) return out;
+  for (const key of Object.keys(rec)) {
+    if (!key.startsWith('splitb_')) continue;
+    if (hasDoorSegmentSuffix(key)) continue;
+    const entry = rec[key];
+    if (entry === true) out[key] = true;
+    else if (entry === false) out[key] = false;
+    else if (entry === null) out[key] = null;
+  }
+  return out;
 }
 
 export function normalizeHandlesMap(value: unknown): MapsByName['handlesMap'] {
@@ -146,23 +161,20 @@ export function normalizeSplitDoorsMap(value: unknown): MapsByName['splitDoorsMa
     const isSplitToggleKey = key.startsWith('split_');
     const isSplitPositionKey = key.startsWith('splitpos_');
     if (!isSplitToggleKey && !isSplitPositionKey) continue;
+    if (hasDoorSegmentSuffix(key)) continue;
     const entry = rec[key];
     if (entry === null) {
       if (isSplitToggleKey) out[key] = null;
       continue;
     }
-    if (isSplitToggleKey && (typeof entry === 'boolean' || typeof entry === 'string')) {
-      out[key] = entry;
-      continue;
-    }
-    if (isSplitToggleKey && typeof entry === 'number' && Number.isFinite(entry)) {
+    if (isSplitToggleKey && typeof entry === 'boolean') {
       out[key] = entry;
       continue;
     }
     if (isSplitPositionKey && Array.isArray(entry)) {
       const nums: number[] = [];
       for (const item of entry) {
-        const num = typeof item === 'number' ? item : typeof item === 'string' ? Number(item) : NaN;
+        const num = typeof item === 'number' ? item : NaN;
         if (Number.isFinite(num)) nums.push(num);
       }
       if (nums.length) out[key] = nums;

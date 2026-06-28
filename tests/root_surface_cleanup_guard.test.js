@@ -75,10 +75,9 @@ test('residual root-surface hotspots route through canonical access helpers', ()
   assert.match(actionsRoot, /ensureActionsRootSlot\(app\)/);
   assert.doesNotMatch(actionsRoot, /app\.actions\s*=/);
 
-  const splitDoors = read('esm/native/kernel/splitdoors_normalizer.ts');
-  assert.match(splitDoors, /from '\.\.\/runtime\/platform_access\.js';/);
-  assert.match(splitDoors, /const util = ensurePlatformUtil\(App\);/);
-  assert.doesNotMatch(splitDoors, /app\.platform/);
+  const bootManifestSteps = read('esm/boot/boot_manifest_steps.ts');
+  assert.throws(() => read('esm/native/kernel/splitdoors_normalizer.ts'), /ENOENT/);
+  assert.doesNotMatch(bootManifestSteps, /installSplitDoorsNormalizers|splitDoorNormalizers/);
 
   const cachePruning = [
     read('esm/native/platform/cache_pruning.ts'),

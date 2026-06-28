@@ -8,10 +8,8 @@ import {
   type AppModelsState,
   type HistorySystemLike,
   type StorageLike,
-  type UtilLike,
   isAppModelsState,
   isStorageLike,
-  isUtilLike,
 } from './models_registry_contracts.js';
 import { _modelsReportNonFatal } from './models_registry_nonfatal.js';
 
@@ -24,10 +22,6 @@ export function getAppModels(App: AppContainer): AppModelsState {
 export function getStorage(App: AppContainer): StorageLike | null {
   const storage = getStorageServiceMaybe(App);
   return isStorageLike(storage) ? storage : null;
-}
-
-export function getUtil(App: AppContainer): UtilLike | null {
-  return isUtilLike(App.util) ? App.util : null;
 }
 
 export function getHistorySystem(App: AppContainer): HistorySystemLike | null {

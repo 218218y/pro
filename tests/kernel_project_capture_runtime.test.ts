@@ -20,7 +20,7 @@ test('kernel project capture canonicalizes config lists and detaches mutable sna
     cornerConfiguration: { modulesConfiguration: [{ doors: '5' }] },
     groovesMap: { groove_d1: true, g1: true, drop: 1n },
     roundedFrameSideShelvesMap: { body_left: true, drop: 1n },
-    splitDoorsBottomMap: { splitb_d1: 1, d1: 1, drop: 0 },
+    splitDoorsBottomMap: { splitb_d1: true, d1: true, drop: false },
     mirrorLayoutMap: { d1: [{ widthCm: '55', heightCm: 88 }, { widthCm: 0 }], d2: [cyclicMirrorLayout] },
     doorTrimMap: { d1: [{ axis: 'vertical', color: 'gold', span: 'custom', sizeCm: '11' }, { bad: true }] },
     preChestState: { dims: { width: 55 }, createdAt: new Date('2024-01-02T03:04:05.000Z') },

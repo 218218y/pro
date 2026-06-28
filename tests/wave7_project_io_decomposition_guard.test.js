@@ -153,7 +153,7 @@ test('[wave7] save helpers normalize persisted payloads and default project snap
         groovesMap: { groove_a: true },
         curtainMap: { d1_left: 'linen', d2_right: 'glass', other: null },
         splitDoorsMap: { split_d1: true, splitpos_d1: [0.5], d1: 2 },
-        splitDoorsBottomMap: { splitb_d2: 1, d2: 3 },
+        splitDoorsBottomMap: { splitb_d2: true, d2: true },
         mirrorLayoutMap: { d1_full: [{ widthCm: 40, heightCm: 80 }, { widthCm: 0 }], bad: { nope: true } },
         doorTrimMap: { d1_full: [{ axis: 'vertical', span: 'half', color: 'gold' }, { axis: 'bad' }], bad: 7 },
           __app: {},

@@ -22,7 +22,6 @@ import {
 
 import {
   installCfgMeta,
-  installSplitDoorsNormalizers,
   installKernel,
   installStateApi,
   installDomainApi,
@@ -132,11 +131,6 @@ export const BOOT_STEPS: BootStep[] = [
     run: requireBootInstaller(installThreeGeometryCachePatch, 'platform.threeGeometryCachePatch'),
   },
   { id: 'kernel.cfgMeta', phase: 'kernel', run: requireBootInstaller(installCfgMeta, 'kernel.cfgMeta') },
-  {
-    id: 'kernel.splitDoorNormalizers',
-    phase: 'kernel',
-    run: requireBootInstaller(installSplitDoorsNormalizers, 'kernel.splitDoorNormalizers'),
-  },
   { id: 'kernel.install', phase: 'kernel', run: requireBootInstaller(installKernel, 'kernel.install') },
   {
     id: 'kernel.assertStateKernel',

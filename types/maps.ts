@@ -25,7 +25,7 @@ export type RemovedDoorKey = `removed_${PartId}`;
 
 // --- Common value domains ----------------------------------------------------
 
-/** Toggle-like map values as seen in legacy payloads and canonical writes. */
+/** Shared toggle-like map values for runtime map surfaces. */
 export type ToggleValue = true | false | null | 1 | 0;
 
 /** Generic toggle map (presence/true means ON, null/false means OFF). */
@@ -37,11 +37,11 @@ export type HandlesMap = Record<string, HandleType | string | null | undefined>;
 /** Hinges: hinge direction or a legacy object payload. */
 export type HingeMap = Record<string, HingeDir | string | UnknownRecord | null | undefined>;
 
-/** Split doors: toggles + split positions (pos is canonical number[] but legacy can be number/string). */
-export type SplitDoorsMap = Record<string, boolean | number[] | number | string | null | undefined>;
+/** Split doors: canonical boolean toggles plus numeric split-position lists. */
+export type SplitDoorsMap = Record<string, boolean | number[] | null | undefined>;
 
 /** Bottom split: toggle surface. */
-export type SplitDoorsBottomMap = ToggleMap;
+export type SplitDoorsBottomMap = Record<string, boolean | null | undefined>;
 
 /** Drawer dividers: toggle surface. */
 export type DrawerDividersMap = ToggleMap;

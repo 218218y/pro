@@ -28,10 +28,6 @@ export type StorageLike = StorageNamespaceLike & {
   setString?(key: string, value: string): unknown;
 };
 
-export type UtilLike = {
-  normalizeSplitDoorsMapWithDoors?: (splitDoorsMap: unknown, doors: unknown) => unknown;
-};
-
 export type HistorySystemLike = {
   getCurrentSnapshot?: () => unknown;
 };
@@ -91,15 +87,6 @@ export function isStorageLike(value: unknown): value is StorageLike {
     (typeof rec.getString === 'function' || typeof rec.getString === 'undefined') &&
     (typeof rec.setJSON === 'function' || typeof rec.setJSON === 'undefined') &&
     (typeof rec.setString === 'function' || typeof rec.setString === 'undefined')
-  );
-}
-
-export function isUtilLike(value: unknown): value is UtilLike {
-  const rec = isObject(value) ? value : null;
-  return (
-    !!rec &&
-    (typeof rec.normalizeSplitDoorsMapWithDoors === 'function' ||
-      typeof rec.normalizeSplitDoorsMapWithDoors === 'undefined')
   );
 }
 

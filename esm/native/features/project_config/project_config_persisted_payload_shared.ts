@@ -207,29 +207,25 @@ export function readHingeMap(value: unknown): HingeMap {
   return out;
 }
 
-function readBoolish(value: unknown): boolean | null {
+function readBoolean(value: unknown): boolean | undefined {
   if (value === true) return true;
   if (value === false) return false;
-  if (typeof value === 'number') return value === 1 ? true : value === 0 ? false : null;
-  if (typeof value === 'string') {
-    const norm = value.trim().toLowerCase();
-    if (norm === 'true' || norm === '1') return true;
-    if (norm === 'false' || norm === '0') return false;
-  }
-  return null;
+  return undefined;
 }
 
-function readNullableBoolish(value: unknown): boolean | null | undefined {
+function readNullableBoolean(value: unknown): boolean | null | undefined {
   if (value === null) return null;
-  if (typeof value === 'string' && !value.trim()) return null;
-  const next = readBoolish(value);
-  return next == null ? undefined : next;
+  return readBoolean(value);
+}
+
+function hasDoorSegmentSuffix(value: string): boolean {
+  return /_(?:full|top|bot|mid\d*)$/i.test(value);
 }
 
 function parseSplitPositionList(raw: unknown): number[] {
   const out: number[] = [];
   const push = (value: unknown) => {
-    const n = typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : NaN;
+    const n = typeof value === 'number' ? value : NaN;
     if (!Number.isFinite(n)) return;
     out.push(Math.max(0, Math.min(1, n)));
   };
@@ -237,27 +233,6 @@ function parseSplitPositionList(raw: unknown): number[] {
   try {
     if (Array.isArray(raw)) {
       for (const entry of raw) push(entry);
-    } else if (typeof raw === 'number') {
-      push(raw);
-    } else if (typeof raw === 'string') {
-      const s = raw.trim();
-      if (!s) return out;
-      if (s.startsWith('[')) {
-        try {
-          const parsed = JSON.parse(s);
-          if (Array.isArray(parsed)) {
-            for (const entry of parsed) push(entry);
-          } else {
-            push(parsed);
-          }
-        } catch {
-          push(s);
-        }
-      } else if (s.includes(',')) {
-        for (const part of s.split(',')) push(part);
-      } else {
-        push(s);
-      }
     }
   } catch {
     // Invalid split-position data produces no canonical entries.
@@ -277,8 +252,8 @@ export function readSplitDoorsMapValue(value: unknown): SplitDoorsMap {
   const hasOwn = Object.prototype.hasOwnProperty;
 
   const assignSplitToggle = (key: string, entry: unknown) => {
-    const next = readBoolish(entry);
-    if (next == null) return;
+    const next = readBoolean(entry);
+    if (typeof next === 'undefined') return;
     if (hasOwn.call(out, key)) {
       if (out[key] === false || next === false) out[key] = false;
       else out[key] = true;
@@ -291,6 +266,7 @@ export function readSplitDoorsMapValue(value: unknown): SplitDoorsMap {
     if (!hasOwn.call(src, rawKey)) continue;
     const entry = src[rawKey];
     const key = String(rawKey || '');
+    if (hasDoorSegmentSuffix(key)) continue;
 
     if (key.startsWith('split_')) {
       assignSplitToggle(key, entry);
@@ -312,7 +288,7 @@ export function readSplitDoorsBottomMapValue(value: unknown): SplitDoorsBottomMa
   const hasOwn = Object.prototype.hasOwnProperty;
 
   const assignNormalizedToggle = (key: string, entry: unknown): void => {
-    const next = readNullableBoolish(entry);
+    const next = readNullableBoolean(entry);
     if (typeof next !== 'undefined') out[key] = next;
   };
 
@@ -320,6 +296,7 @@ export function readSplitDoorsBottomMapValue(value: unknown): SplitDoorsBottomMa
     if (!hasOwn.call(src, rawKey)) continue;
     const entry = src[rawKey];
     const key = String(rawKey || '');
+    if (hasDoorSegmentSuffix(key)) continue;
 
     if (key.startsWith('splitb_')) assignNormalizedToggle(key, entry);
   }

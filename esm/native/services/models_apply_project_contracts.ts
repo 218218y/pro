@@ -2,11 +2,8 @@ import type {
   ModelsCommandReason,
   ModelsCommandResult,
   ProjectDataLike,
-  SplitDoorsMap,
   UnknownRecord,
 } from '../../../types';
-
-import { readSplitDoorsMapValue } from '../features/project_config/project_config_persisted_payload_shared.js';
 
 export function isRecord(value: unknown): value is UnknownRecord {
   return !!value && typeof value === 'object' && !Array.isArray(value);
@@ -14,11 +11,6 @@ export function isRecord(value: unknown): value is UnknownRecord {
 
 export function asProjectData(value: unknown): ProjectDataLike | null {
   return isRecord(value) ? value : null;
-}
-
-export function normalizeSplitDoorsMap(value: unknown): SplitDoorsMap | undefined {
-  if (!isRecord(value)) return undefined;
-  return readSplitDoorsMapValue(value);
 }
 
 export function normalizeModelLoadReason(value: unknown): ModelsCommandReason {

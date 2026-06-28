@@ -13,18 +13,6 @@ function canonDoorBaseId(id0: unknown): string {
   return stripDoorSuffix(id);
 }
 
-function boolish(v: unknown): boolean | null {
-  if (v === true) return true;
-  if (v === false) return false;
-  if (typeof v === 'number') return v === 1 ? true : v === 0 ? false : null;
-  if (typeof v === 'string') {
-    const s = v.trim().toLowerCase();
-    if (s === 'true' || s === '1') return true;
-    if (s === 'false' || s === '0') return false;
-  }
-  return null;
-}
-
 export function splitKey(doorId: unknown): string {
   const base = canonDoorBaseId(doorId);
   return base ? 'split_' + base : '';
@@ -45,7 +33,11 @@ export function isSplitEnabledInMap(map: unknown, doorId: unknown, defaultOn = t
   if (!m) return !!defaultOn;
   const k = splitKey(doorId);
   if (!k) return !!defaultOn;
-  if (Object.prototype.hasOwnProperty.call(m, k)) return readOwn(m, k) !== false;
+  if (Object.prototype.hasOwnProperty.call(m, k)) {
+    const value = readOwn(m, k);
+    if (value === true) return true;
+    if (value === false) return false;
+  }
   return !!defaultOn;
 }
 
@@ -55,8 +47,7 @@ export function isSplitExplicitInMap(map: unknown, doorId: unknown): boolean {
   const k = splitKey(doorId);
   if (!k) return false;
   if (!Object.prototype.hasOwnProperty.call(m, k)) return false;
-  const b = boolish(readOwn(m, k));
-  return b === true;
+  return readOwn(m, k) === true;
 }
 
 export function isSplitBottomEnabledInMap(map: unknown, doorId: unknown): boolean {
@@ -65,8 +56,7 @@ export function isSplitBottomEnabledInMap(map: unknown, doorId: unknown): boolea
   const k = splitBottomKey(doorId);
   if (!k) return false;
   if (!Object.prototype.hasOwnProperty.call(m, k)) return false;
-  const b = boolish(readOwn(m, k));
-  return b === true;
+  return readOwn(m, k) === true;
 }
 
 export function readSplitPosListFromMap(map: unknown, doorId: unknown): number[] {
@@ -80,7 +70,7 @@ export function readSplitPosListFromMap(map: unknown, doorId: unknown): number[]
   const outNums: number[] = [];
 
   const push = (v: unknown) => {
-    const n = typeof v === 'number' ? v : typeof v === 'string' ? Number(v) : NaN;
+    const n = typeof v === 'number' ? v : NaN;
     if (Number.isFinite(n)) outNums.push(Math.max(0, Math.min(1, n)));
   };
 
@@ -88,29 +78,6 @@ export function readSplitPosListFromMap(map: unknown, doorId: unknown): number[]
     if (raw == null) return [];
     if (Array.isArray(raw)) {
       for (let i = 0; i < raw.length; i++) push(raw[i]);
-    } else if (typeof raw === 'number') {
-      push(raw);
-    } else if (typeof raw === 'string') {
-      const s = raw.trim();
-      if (!s) return [];
-      if (s.startsWith('[')) {
-        try {
-          const j = JSON.parse(s);
-          if (Array.isArray(j)) {
-            for (let i = 0; i < j.length; i++) push(j[i]);
-          } else {
-            push(j);
-          }
-        } catch {
-          const parts = s.split(',');
-          for (let i = 0; i < parts.length; i++) push(parts[i]);
-        }
-      } else if (s.indexOf(',') >= 0) {
-        const parts = s.split(',');
-        for (let i = 0; i < parts.length; i++) push(parts[i]);
-      } else {
-        push(s);
-      }
     }
   } catch {
     return [];

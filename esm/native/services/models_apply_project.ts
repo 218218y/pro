@@ -3,7 +3,6 @@ export {
   buildModelLoadFailureResult,
   isRecord,
   normalizeModelLoadReason,
-  normalizeSplitDoorsMap,
 } from './models_apply_project_contracts.js';
 
 export { buildProjectStructureFromModel, captureCurrentSnapshot } from './models_apply_project_snapshot.js';

@@ -6,7 +6,6 @@ export type {
   MutableSavedModel,
   PdfDraftSnapshotLike,
   StorageLike,
-  UtilLike,
 } from './models_registry_contracts.js';
 
 export {
@@ -19,7 +18,6 @@ export {
   isModelsNormalizer,
   isObject,
   isStorageLike,
-  isUtilLike,
   markModelAsCorePreset,
   markModelAsSavedModel,
   markModelAsUserPreset,

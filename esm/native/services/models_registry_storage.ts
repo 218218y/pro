@@ -1,7 +1,6 @@
 export {
   getAppModels,
   getStorage,
-  getUtil,
   getHistorySystem,
   _key,
   _keyPresetOrder,
