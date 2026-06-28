@@ -28,8 +28,7 @@ function readString(value: unknown): string {
 }
 
 function readNumber(value: unknown): number | null {
-  const n = typeof value === 'number' ? value : Number(value);
-  return Number.isFinite(n) ? n : null;
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
 function isCrossDrawerFamilyForSketchTool(tool: string, family: string): boolean {

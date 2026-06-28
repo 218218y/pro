@@ -66,9 +66,13 @@ function readArray(value: unknown): RecordMap[] {
     : [];
 }
 
-function readNumber(value: unknown, defaultValue = NaN): number {
-  const n = typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : NaN;
-  return Number.isFinite(n) ? n : defaultValue;
+function readNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function readNumberOrDefault(value: unknown, defaultValue = NaN): number {
+  const n = readNumber(value);
+  return n == null ? defaultValue : n;
 }
 
 function clampUnit(value: number): number {
@@ -104,7 +108,10 @@ function resolveFreeBoxHoverContext(args: ExtDrawersHoverPreviewArgs): {
 
   const host = pickSketchFreeBoxHost(App);
   const wardrobeBox = __wp_measureWardrobeLocalBox(App) as SelectorLocalBox | null;
-  const wardrobeBackZ = wardrobeBox ? Number(wardrobeBox.centerZ) - Number(wardrobeBox.depth) / 2 : NaN;
+  const wardrobeCenterZ = readNumber(wardrobeBox?.centerZ);
+  const wardrobeDepth = readNumber(wardrobeBox?.depth);
+  const wardrobeBackZ =
+    wardrobeCenterZ != null && wardrobeDepth != null ? wardrobeCenterZ - wardrobeDepth / 2 : NaN;
   if (!host || !wardrobeBox || !Number.isFinite(wardrobeBackZ)) return null;
 
   const planeHit = __wp_intersectScreenWithLocalZPlane({
@@ -326,7 +333,7 @@ export function tryHandleSketchBoxRegularExternalDrawersHoverPreview(
 function readRecentRegularFreeBoxHover(App: AppContainer): RecordMap | null {
   const hover = asRecord(__wp_readSketchHover(App));
   if (!hover) return null;
-  const ts = readNumber(hover.ts, 0);
+  const ts = readNumberOrDefault(hover.ts, 0);
   if (!Number.isFinite(ts) || Date.now() - ts > HOVER_MAX_AGE_MS) return null;
   if (hover.kind !== 'box_content') return null;
   if (hover.contentKind !== SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_CONTENT_KIND) return null;

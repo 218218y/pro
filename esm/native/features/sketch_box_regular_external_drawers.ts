@@ -19,6 +19,11 @@ function readArray(value: unknown): RecordMap[] {
 
 function readNumber(value: unknown): number | null {
   if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+  return null;
+}
+
+function parseNumberToken(value: unknown): number | null {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
   if (typeof value === 'string' && value.trim()) {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : null;
@@ -32,8 +37,15 @@ function clampUnit(value: unknown, defaultValue: number): number {
   return Math.max(0, Math.min(1, n));
 }
 
-export function normalizeSketchBoxRegularExternalDrawerCount(value: unknown): number {
+function readCellUnit(value: unknown, defaultValue: number): number | null {
+  if (value == null) return defaultValue;
   const n = readNumber(value);
+  if (n == null) return null;
+  return Math.max(0, Math.min(1, n));
+}
+
+export function normalizeSketchBoxRegularExternalDrawerCount(value: unknown): number {
+  const n = parseNumberToken(value);
   if (n == null) return DRAWER_DIMENSIONS.sketch.externalCountMin;
   return Math.max(
     DRAWER_DIMENSIONS.sketch.externalCountMin,
@@ -125,11 +137,13 @@ export function sketchBoxRegularExternalDrawerMatchesCell(
 ): boolean {
   const rec = asRecord(item);
   if (!rec) return false;
-  const itemXNorm = clampUnit(rec.xNorm, 0.5);
-  const cellXNorm = clampUnit(cell.xNorm, 0.5);
+  const itemXNorm = readCellUnit(rec.xNorm, 0.5);
+  const cellXNorm = readCellUnit(cell.xNorm, 0.5);
+  if (itemXNorm == null || cellXNorm == null) return false;
   if (Math.abs(itemXNorm - cellXNorm) > CELL_NORM_EPSILON) return false;
-  const itemYNorm = clampUnit(rec.yNormC ?? rec.yNorm, 0.5);
-  const cellYNorm = clampUnit(cell.yNormC, 0.5);
+  const itemYNorm = readCellUnit(rec.yNormC ?? rec.yNorm, 0.5);
+  const cellYNorm = readCellUnit(cell.yNormC, 0.5);
+  if (itemYNorm == null || cellYNorm == null) return false;
   return Math.abs(itemYNorm - cellYNorm) <= CELL_NORM_EPSILON;
 }
 

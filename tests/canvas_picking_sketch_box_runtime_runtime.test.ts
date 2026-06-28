@@ -40,6 +40,25 @@ test('sketch-box runtime geometry center-snaps and width-clamps inside the modul
   assert.ok(geo.innerD > 0.02);
 });
 
+test('sketch-box runtime geometry rejects string-encoded live overrides', () => {
+  const geo = __wp_resolveSketchBoxGeometry({
+    innerW: 1.2,
+    internalCenterX: 0,
+    internalDepth: 0.6,
+    internalZ: 0,
+    woodThick: 0.018,
+    widthM: '0.4' as any,
+    depthM: '0.3' as any,
+    xNorm: '1' as any,
+    centerXHint: '0.4' as any,
+  });
+
+  assert.equal(geo.outerW, 1.2);
+  assert.equal(geo.outerD, 0.6);
+  assert.equal(geo.centerX, 0);
+  assert.equal(geo.xNorm, 0.5);
+});
+
 test('sketch-box runtime hit scan ignores free-placement boxes and prefers the nearest centered match', () => {
   const hit = __wp_findSketchModuleBoxAtPoint({
     boxes: [
@@ -60,6 +79,23 @@ test('sketch-box runtime hit scan ignores free-placement boxes and prefers the n
 
   assert.equal(hit?.boxId, 'center');
   assert.ok(Math.abs((hit?.geo.centerX || 0) - 0) <= 1e-9);
+});
+
+test('sketch-box runtime hit scan rejects string-encoded live box geometry', () => {
+  const hit = __wp_findSketchModuleBoxAtPoint({
+    boxes: [{ id: 'string-box', yNorm: '0.5', heightM: '0.4', widthM: '0.4', xNorm: '0.5' }],
+    cursorY: 0,
+    cursorX: 0,
+    bottomY: -1,
+    spanH: 2,
+    innerW: 1,
+    internalCenterX: 0,
+    internalDepth: 0.55,
+    internalZ: 0,
+    woodThick: 0.018,
+  });
+
+  assert.equal(hit, null);
 });
 
 test('sketch-box free-placement commit keeps matching/commit/hover mutation policy centralized', () => {
@@ -85,6 +121,29 @@ test('sketch-box free-placement commit keeps matching/commit/hover mutation poli
   assert.equal(committed, true);
   assert.deepEqual(writes, [{ persisted: true }]);
   assert.equal(cleared, 0);
+});
+
+test('sketch-box free-placement commit does not derive floorY from string measurements', () => {
+  let floorY: number | undefined;
+  const committed = tryCommitSketchFreePlacementFromHoverWithDeps({} as never, 'sketch_box:60', {
+    pickSketchFreeBoxHost: () => ({ moduleKey: 3, hostBottom: false }) as never,
+    readSketchHover: () => ({ ts: Date.now() }) as never,
+    matchRecentSketchHover: () => ({ op: 'add', hostModuleKey: 3 }) as never,
+    commitSketchFreePlacementHoverRecord: args => {
+      floorY = args.floorY;
+      return { committed: true, nextHover: null } as never;
+    },
+    getSketchFreeBoxContentKind: () => 'box' as never,
+    measureWardrobeLocalBox: () => ({ centerY: '2', height: '6' }) as never,
+    writeSketchHover: () => {
+      throw new Error('commit returns no next hover');
+    },
+    clearSketchHover: () => {},
+    toModuleKey: key => key as never,
+  });
+
+  assert.equal(committed, true);
+  assert.equal(Number.isNaN(floorY), true);
 });
 
 test('sketch-box free-placement commit clears and rejects stale add-hover under the wardrobe column', () => {

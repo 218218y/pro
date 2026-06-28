@@ -15,10 +15,6 @@ import {
 
 function readNumber(value: unknown): number | null {
   if (typeof value === 'number') return Number.isFinite(value) ? value : null;
-  if (typeof value === 'string' && value.trim()) {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : null;
-  }
   return null;
 }
 
@@ -81,9 +77,12 @@ export function tryCommitSketchFreePlacementFromHoverWithDeps(
   if (!host || !hoverRec) return false;
 
   const wardrobeBox = deps.measureWardrobeLocalBox(App);
-  const floorY = wardrobeBox
-    ? Math.max(0, Number(wardrobeBox.centerY) - Number(wardrobeBox.height) / 2)
-    : NaN;
+  const wardrobeCenterY = readNumber(readRecordValue(wardrobeBox, 'centerY'));
+  const wardrobeHeight = readNumber(readRecordValue(wardrobeBox, 'height'));
+  const floorY =
+    wardrobeCenterY != null && wardrobeHeight != null
+      ? Math.max(0, wardrobeCenterY - wardrobeHeight / 2)
+      : NaN;
   if (!isNoMainWardrobeSketchMode(App) && isBlockedFreeBoxAddHover(hoverRec, wardrobeBox)) {
     deps.clearSketchHover(App);
     return false;
