@@ -9,7 +9,10 @@ import {
 import { syncVisualsNow } from '../esm/native/services/doors_runtime_visuals_doors.js';
 import { snapDrawersToTargets } from '../esm/native/services/doors_runtime_visuals_drawers.js';
 import { updateRenderLoopDoorMotions } from '../esm/native/platform/render_loop_motion_doors.js';
-import { recordSketchFreeBoxMotionToggle } from '../esm/native/runtime/sketch_free_box_motion_state.js';
+import {
+  readSketchFreeBoxMotionState,
+  recordSketchFreeBoxMotionToggle,
+} from '../esm/native/runtime/sketch_free_box_motion_state.js';
 
 function makeStore(state: Record<string, unknown>) {
   return {
@@ -368,6 +371,33 @@ test('free box internal drawer delay is scoped per free box toggle', () => {
 
   assert.equal(freeAlphaInternalGroup.position.z, 5);
   assert.equal(freeBetaInternalGroup.position.z, 0);
+});
+
+test('free box motion state rejects string-encoded runtime fields', () => {
+  const scope = { boxId: 'freeAlpha', moduleKey: '0', prefix: 'sketch_box_free_0_freeAlpha' };
+  const app: Record<string, unknown> = {
+    services: {
+      doors: {
+        runtime: {
+          sketchFreeBoxMotionScopes: {
+            'sketch_box_free_0_freeAlpha|0|freeAlpha': {
+              lastToggleTime: '100',
+              targetOpen: 'true',
+              hasInternalDrawers: 'true',
+              doorHoldUntil: '200',
+            },
+          },
+        },
+      },
+    },
+  };
+
+  assert.deepEqual(readSketchFreeBoxMotionState(app as never, scope), {
+    lastToggleTime: 0,
+    targetOpen: false,
+    hasInternalDrawers: false,
+    doorHoldUntil: 0,
+  });
 });
 
 test('free box close holds doors until internal drawers have had the delay window to close', () => {

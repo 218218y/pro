@@ -149,6 +149,71 @@ test('[cell-dims/free-box-hover] shell hit previews the free-standing box itself
   assert.ok(Math.abs(previews[0].d - 0.4) <= 1e-9);
 });
 
+test('[cell-dims/free-box-hover] rejects string-encoded free-box geometry from live state', () => {
+  const shellObject = {
+    type: 'Mesh',
+    userData: {
+      partId: 'sketch_box_free_0_free-1',
+      __wpSketchBoxId: 'free-1',
+      __wpSketchModuleKey: 0,
+      moduleIndex: 0,
+    },
+    material: {},
+  };
+  const mainObject = {
+    type: 'Mesh',
+    userData: { isModuleSelector: true, moduleIndex: 0 },
+    material: {},
+  };
+  const { App, freeBox } = createAppWithFreeBox(shellObject, mainObject);
+  (freeBox as any).absX = '0.25';
+  (freeBox as any).absY = '0.5';
+  (freeBox as any).widthM = '0.6';
+  (freeBox as any).heightM = '0.8';
+  (freeBox as any).depthM = '0.35';
+  const previews: any[] = [];
+  let interiorCalls = 0;
+  let hiddenSketch = 0;
+
+  const handled = tryHandleCellDimsHoverPreview({
+    App,
+    ndcX: 0.1,
+    ndcY: -0.2,
+    raycaster: createRaycaster([{ object: shellObject, point: {} }]),
+    mouse: { x: 0, y: 0 },
+    isCellDimsMode: true,
+    previewRo: {
+      setSketchPlacementPreview(args: unknown) {
+        previews.push(args);
+      },
+    },
+    hideSketchPreview() {
+      hiddenSketch += 1;
+    },
+    resolveInteriorHoverTarget() {
+      interiorCalls += 1;
+      return null;
+    },
+    readCellDimsDraft() {
+      return { applyW: 80, applyH: 90, applyD: 40 };
+    },
+    measureObjectLocalBox() {
+      throw new Error('legacy string free-box geometry must not reach selector measurement');
+    },
+    estimateVisibleModuleFrontZ() {
+      return 0;
+    },
+    getCellDimsHoverOp() {
+      throw new Error('legacy string free-box geometry must not produce a hover op');
+    },
+  });
+
+  assert.equal(handled, false);
+  assert.equal(interiorCalls, 1);
+  assert.equal(previews.length, 0);
+  assert.equal(hiddenSketch, 1);
+});
+
 test('[cell-dims/free-box-hover] door hit in front of a main selector stays routed to the free box', () => {
   const doorObject = {
     type: 'Mesh',

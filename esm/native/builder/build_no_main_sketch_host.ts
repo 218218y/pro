@@ -31,6 +31,20 @@ function isFreePlacementSketchBox(value: unknown): value is BuilderSketchBoxLike
   return !!rec && rec.freePlacement === true;
 }
 
+function readFiniteNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function readNumberOrDefault(value: unknown, defaultValue: number): number {
+  const n = readFiniteNumber(value);
+  return n == null ? defaultValue : n;
+}
+
+function readPositiveNumber(value: unknown): number | null {
+  const n = readFiniteNumber(value);
+  return n != null && n > 0 ? n : null;
+}
+
 function cloneSketchExtrasForNoMain(source: unknown): BuilderSketchExtrasLike {
   const extra = readRecord(source);
   if (!extra) return { boxes: [] };
@@ -117,9 +131,9 @@ function estimateNoMainWorkspaceWidthM(config: ModuleConfigLike | null | undefin
     const box = readRecord(entry);
     if (!box || box.freePlacement !== true) continue;
 
-    const centerX = Number(box.absX);
-    const widthM = Number(box.widthM);
-    if (!Number.isFinite(centerX) || !Number.isFinite(widthM) || !(widthM > 0)) continue;
+    const centerX = readFiniteNumber(box.absX);
+    const widthM = readPositiveNumber(box.widthM);
+    if (centerX == null || widthM == null) continue;
 
     const halfW = widthM / 2;
     minX = Math.min(minX, centerX - halfW);
@@ -151,22 +165,26 @@ export function syncNoMainSketchWorkspaceMetrics(args: {
     const cfg = readRecord(args.cfg);
     const list = cfg ? readModulesConfigurationListFromConfigSnapshot(cfg, 'modulesConfiguration') : [];
     const moduleCfg = createNoMainSketchModuleConfig(list[0]);
+    const totalW = Math.max(0, readNumberOrDefault(args.totalW, 0));
+    const outerHInput = readNumberOrDefault(args.H, 0);
+    const woodThick = Math.max(0, readNumberOrDefault(args.woodThick, 0));
+    const internalDepth = Math.max(0, readNumberOrDefault(args.internalDepth, 0));
+    const internalZ = readNumberOrDefault(args.internalZ, 0);
     const workspaceWidthM = Math.max(
-      Number(args.totalW) || 0,
+      totalW,
       estimateNoMainWorkspaceWidthM(moduleCfg) || 0,
       NO_MAIN_SKETCH_DIMENSIONS.defaultWorkspaceWidthM
     );
-    const outerH = Math.max(NO_MAIN_SKETCH_DIMENSIONS.minHostHeightM, Number(args.H) || 0);
-    const depth = Math.max(Number(args.woodThick) || 0, Number(args.internalDepth) || 0);
-    const centerZ = Number(args.internalZ) || 0;
+    const outerH = Math.max(NO_MAIN_SKETCH_DIMENSIONS.minHostHeightM, outerHInput);
+    const depth = Math.max(woodThick, internalDepth);
     cache.noMainSketchWorkspaceMetrics = {
       centerX: 0,
       centerY: outerH / 2,
-      centerZ,
+      centerZ: internalZ,
       width: workspaceWidthM,
       height: outerH,
       depth,
-      backZ: centerZ - depth / 2,
+      backZ: internalZ - depth / 2,
     };
   } catch {
     // ignore cache sync failures
@@ -205,23 +223,24 @@ export function maybeRenderNoMainSketchHost(args: {
   const list = cfg ? readModulesConfigurationListFromConfigSnapshot(cfg, 'modulesConfiguration') : [];
   const moduleCfg = createNoMainSketchModuleConfig(list[0]);
 
+  const totalW = Math.max(0, readNumberOrDefault(args.totalW, 0));
+  const H = readNumberOrDefault(args.H, 0);
+  const D = readNumberOrDefault(args.D, 0);
+  const woodThick = Math.max(0, readNumberOrDefault(args.woodThick, 0));
+  const shelfThick = Math.max(0, readNumberOrDefault(args.shelfThick, 0));
+  const internalDepth = Math.max(0, readNumberOrDefault(args.internalDepth, 0));
+  const internalZ = readNumberOrDefault(args.internalZ, 0);
   const hostHasAnything = hasMeaningfulNoMainModuleContent(moduleCfg);
   if (!hostHasAnything) return false;
 
   const workspaceWidthM = Math.max(
-    Number(args.totalW) || 0,
+    totalW,
     estimateNoMainWorkspaceWidthM(moduleCfg) || 0,
     NO_MAIN_SKETCH_DIMENSIONS.defaultWorkspaceWidthM
   );
-  const innerW = Math.max(
-    NO_MAIN_SKETCH_DIMENSIONS.minInnerWidthM,
-    workspaceWidthM - 2 * Number(args.woodThick)
-  );
-  const effectiveBottomY = Number(args.woodThick);
-  const effectiveTopY = Math.max(
-    effectiveBottomY + NO_MAIN_SKETCH_DIMENSIONS.minGridSpanM,
-    Number(args.H) - Number(args.woodThick)
-  );
+  const innerW = Math.max(NO_MAIN_SKETCH_DIMENSIONS.minInnerWidthM, workspaceWidthM - 2 * woodThick);
+  const effectiveBottomY = woodThick;
+  const effectiveTopY = Math.max(effectiveBottomY + NO_MAIN_SKETCH_DIMENSIONS.minGridSpanM, H - woodThick);
   const localGridStep = Math.max(
     NO_MAIN_SKETCH_DIMENSIONS.minGridSpanM,
     (effectiveTopY - effectiveBottomY) / NO_MAIN_SKETCH_DIMENSIONS.defaultGridDivisions
@@ -240,22 +259,22 @@ export function maybeRenderNoMainSketchHost(args: {
     effectiveTopY,
     gridDivisions: NO_MAIN_SKETCH_DIMENSIONS.defaultGridDivisions,
     localGridStep,
-    woodThick: Number(args.woodThick),
-    shelfThick: Number(args.shelfThick),
+    woodThick,
+    shelfThick,
     innerW,
     internalCenterX: 0,
-    internalZ: Number(args.internalZ),
-    internalDepth: Math.max(Number(args.woodThick), Number(args.internalDepth)),
-    doorFrontZ: Number(args.D) / 2,
+    internalZ,
+    internalDepth: Math.max(woodThick, internalDepth),
+    doorFrontZ: D / 2,
     legMat: args.legMat,
     wardrobeGroup,
     addOutlines: readFunction<BuilderOutlineFn>(args.addOutlines) || null,
     sketchMode: true,
-    showHangerEnabled: !!args.showHangerEnabled,
+    showHangerEnabled: args.showHangerEnabled === true,
     addRealisticHanger:
       readFunction<NonNullable<BuilderContentsSurfaceLike['addRealisticHanger']>>(args.addRealisticHanger) ||
       undefined,
-    showContentsEnabled: !!args.showContentsEnabled,
+    showContentsEnabled: args.showContentsEnabled === true,
     addHangingClothes:
       readFunction<NonNullable<BuilderContentsSurfaceLike['addHangingClothes']>>(args.addHangingClothes) ||
       undefined,
@@ -277,18 +296,18 @@ export function maybeRenderNoMainSketchHost(args: {
     effectiveTopY,
     localGridStep,
     innerW,
-    woodThick: args.woodThick,
-    shelfThick: args.shelfThick,
-    internalDepth: Math.max(Number(args.woodThick), Number(args.internalDepth)),
+    woodThick,
+    shelfThick,
+    internalDepth: Math.max(woodThick, internalDepth),
     internalCenterX: 0,
-    internalZ: Number(args.internalZ),
-    D: Number(args.D),
+    internalZ,
+    D,
     moduleIndex: 0,
     modulesLength: 1,
     currentShelfMat: args.bodyMat,
     currentBraceShelfMat: args.bodyMat,
     bodyMat: args.bodyMat,
-    isInternalDrawersEnabled: !!args.isInternalDrawersEnabled,
+    isInternalDrawersEnabled: args.isInternalDrawersEnabled === true,
     getPartMaterial: args.getPartMaterial,
     getPartColorValue: args.getPartColorValue,
     createDoorVisual: args.createDoorVisual,
@@ -296,7 +315,7 @@ export function maybeRenderNoMainSketchHost(args: {
     createInternalDrawerBox: args.createInternalDrawerBox,
     addOutlines: args.addOutlines,
     sketchMode: true,
-    showContentsEnabled: !!args.showContentsEnabled,
+    showContentsEnabled: args.showContentsEnabled === true,
     isGroovesEnabled: readRecord(args.ui)?.groovesEnabled === true,
   });
 }

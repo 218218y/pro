@@ -44,14 +44,45 @@ function readString(value: unknown): string | null {
   return trimmed ? trimmed : null;
 }
 
-function readFiniteNumber(value: unknown): number | null {
-  const n = typeof value === 'number' ? value : value != null ? Number(value) : NaN;
-  return Number.isFinite(n) ? n : null;
+type SelectorBoxMetrics = {
+  centerX: number;
+  centerY: number;
+  centerZ: number;
+  width: number;
+  height: number;
+  depth: number;
+};
+
+function readCanonicalNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
 function readPositiveM(record: UnknownRecord | null, key: string): number | null {
-  const n = readFiniteNumber(record ? record[key] : null);
+  const n = readCanonicalNumber(record ? record[key] : null);
   return n != null && n > 0 ? n : null;
+}
+
+function readSelectorBoxMetrics(selectorBox: SelectorLocalBox): SelectorBoxMetrics | null {
+  const centerX = readCanonicalNumber(selectorBox.centerX);
+  const centerY = readCanonicalNumber(selectorBox.centerY);
+  const centerZ = readCanonicalNumber(selectorBox.centerZ);
+  const width = readCanonicalNumber(selectorBox.width);
+  const height = readCanonicalNumber(selectorBox.height);
+  const depth = readCanonicalNumber(selectorBox.depth);
+  if (
+    centerX == null ||
+    centerY == null ||
+    centerZ == null ||
+    width == null ||
+    height == null ||
+    depth == null ||
+    !(width > 0) ||
+    !(height > 0) ||
+    !(depth > 0)
+  ) {
+    return null;
+  }
+  return { centerX, centerY, centerZ, width, height, depth };
 }
 
 function readUserData(value: unknown): UnknownRecord | null {
@@ -146,16 +177,19 @@ function resolveFreeBoxSelectorBox(args: { App: AppContainer; box: UnknownRecord
   const { App, box } = args;
   const wardrobeBox = __wp_measureWardrobeLocalBox(App);
   if (!wardrobeBox) return null;
-  const centerX = readFiniteNumber(box.absX);
-  const centerY = readFiniteNumber(box.absY);
+  const centerX = readCanonicalNumber(box.absX);
+  const centerY = readCanonicalNumber(box.absY);
   const heightM = readPositiveM(box, 'heightM') ?? readPositiveM(box, 'hM');
   if (centerX == null || centerY == null || heightM == null) return null;
 
-  const wardrobeBackZ = Number(wardrobeBox.centerZ) - Number(wardrobeBox.depth) / 2;
-  if (!Number.isFinite(wardrobeBackZ)) return null;
+  const wardrobeWidth = readCanonicalNumber(wardrobeBox.width);
+  const wardrobeDepth = readCanonicalNumber(wardrobeBox.depth);
+  const wardrobeCenterZ = readCanonicalNumber(wardrobeBox.centerZ);
+  if (wardrobeWidth == null || wardrobeDepth == null || wardrobeCenterZ == null) return null;
+  const wardrobeBackZ = wardrobeCenterZ - wardrobeDepth / 2;
   const geo = resolveSketchFreeBoxGeometry({
-    wardrobeWidth: Number(wardrobeBox.width) || 0,
-    wardrobeDepth: Number(wardrobeBox.depth) || 0,
+    wardrobeWidth,
+    wardrobeDepth,
     backZ: wardrobeBackZ,
     centerX,
     woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
@@ -184,30 +218,32 @@ function buildFreeBoxHoverTarget(args: {
   if (!box) return null;
   const selectorBox = resolveFreeBoxSelectorBox({ App, box });
   if (!selectorBox) return null;
+  const metrics = readSelectorBoxMetrics(selectorBox);
+  if (!metrics) return null;
   const woodThick = MATERIAL_DIMENSIONS.wood.thicknessM;
-  const currentBackZ = Number(selectorBox.centerZ) - Number(selectorBox.depth) / 2;
+  const currentBackZ = metrics.centerZ - metrics.depth / 2;
   const target: InteriorHoverTarget = {
     intersects,
     hitModuleKey: candidate.moduleKey,
     hitSelectorObj: (candidate.anchor as never) || null,
     isBottom: candidate.stackKey === 'bottom',
-    hitY: Number(selectorBox.centerY),
+    hitY: metrics.centerY,
     info: {
       __wpCellDimsFreeBox: true,
       __wpCellDimsFreeBoxId: candidate.boxId,
       __wpCellDimsFreeBoxRecord: box,
       __wpCellDimsFreeBoxSelectorBox: selectorBox,
     },
-    bottomY: Number(selectorBox.centerY) - Number(selectorBox.height) / 2,
-    topY: Number(selectorBox.centerY) + Number(selectorBox.height) / 2,
-    spanH: Number(selectorBox.height),
+    bottomY: metrics.centerY - metrics.height / 2,
+    topY: metrics.centerY + metrics.height / 2,
+    spanH: metrics.height,
     woodThick,
-    innerW: Math.max(0.03, Number(selectorBox.width) - woodThick * 2),
-    internalCenterX: Number(selectorBox.centerX),
-    internalDepth: Math.max(0.03, Number(selectorBox.depth) - woodThick),
-    internalZ: Number(selectorBox.centerZ),
+    innerW: Math.max(0.03, metrics.width - woodThick * 2),
+    internalCenterX: metrics.centerX,
+    internalDepth: Math.max(0.03, metrics.depth - woodThick),
+    internalZ: metrics.centerZ,
     backZ: currentBackZ,
-    regularDepth: Number(selectorBox.depth),
+    regularDepth: metrics.depth,
   };
   return { target, selectorBox, anchorParent };
 }
@@ -310,7 +346,7 @@ function resolveTargetDimensionCm(args: {
   const sd = readSpecialDims(target);
   const active = getActiveOverrideCm(sd, specialKey, baseKey);
   if (active != null && Math.abs(applyCm - active) <= EPS_CM) {
-    const base = readFiniteNumber(sd?.[baseKey]);
+    const base = readCanonicalNumber(sd?.[baseKey]);
     return base != null && base > 0 ? base : currentCm;
   }
   return applyCm;
@@ -324,12 +360,8 @@ function resolveFreeBoxWorkspacePad(boxHeightM: number): number {
   );
 }
 
-function resolveTargetCenterY(selectorBox: SelectorLocalBox, targetHeightM: number): number {
-  const centerY = Number(selectorBox.centerY);
-  const currentHeightM = Number(selectorBox.height);
-  if (!Number.isFinite(centerY) || !Number.isFinite(currentHeightM) || !(currentHeightM > 0)) {
-    return centerY;
-  }
+function resolveTargetCenterY(current: SelectorBoxMetrics, targetHeightM: number): number {
+  const { centerY, height: currentHeightM } = current;
   const roomFloorY = SKETCH_BOX_DIMENSIONS.freePlacement.roomFloorY;
   const oldPad = resolveFreeBoxWorkspacePad(currentHeightM);
   const newPad = resolveFreeBoxWorkspacePad(targetHeightM);
@@ -348,9 +380,11 @@ export function resolveCellDimsFreeBoxPreviewTargetBox(
   applyD: number | null | undefined
 ): SelectorLocalBox | null {
   if (asRecord(target.info)?.__wpCellDimsFreeBox !== true) return null;
-  const currentWcm = Math.max(0, Number(selectorBox.width) * 100);
-  const currentHcm = Math.max(0, Number(selectorBox.height) * 100);
-  const currentDcm = Math.max(0, Number(selectorBox.depth) * 100);
+  const current = readSelectorBoxMetrics(selectorBox);
+  if (!current) return null;
+  const currentWcm = Math.max(0, current.width * 100);
+  const currentHcm = Math.max(0, current.height * 100);
+  const currentDcm = Math.max(0, current.depth * 100);
   const targetWm = Math.max(
     0.03,
     resolveTargetDimensionCm({
@@ -381,10 +415,10 @@ export function resolveCellDimsFreeBoxPreviewTargetBox(
       baseKey: 'baseDepthCm',
     }) / 100
   );
-  const currentBackZ = Number(selectorBox.centerZ) - Number(selectorBox.depth) / 2;
+  const currentBackZ = current.centerZ - current.depth / 2;
   return {
-    centerX: Number(selectorBox.centerX),
-    centerY: resolveTargetCenterY(selectorBox, targetHm),
+    centerX: current.centerX,
+    centerY: resolveTargetCenterY(current, targetHm),
     centerZ: currentBackZ + targetDm / 2,
     width: targetWm,
     height: targetHm,
@@ -401,11 +435,13 @@ function hasFreeBoxDimChange(args: {
 }): boolean {
   const { target, selectorBox, applyW, applyH, applyD } = args;
   const next = resolveCellDimsFreeBoxPreviewTargetBox(target, selectorBox, applyW, applyH, applyD);
+  const current = readSelectorBoxMetrics(selectorBox);
   if (!next) return false;
+  if (!current) return false;
   return (
-    Math.abs(Number(next.width) - Number(selectorBox.width)) > EPS_M ||
-    Math.abs(Number(next.height) - Number(selectorBox.height)) > EPS_M ||
-    Math.abs(Number(next.depth) - Number(selectorBox.depth)) > EPS_M
+    Math.abs(next.width - current.width) > EPS_M ||
+    Math.abs(next.height - current.height) > EPS_M ||
+    Math.abs(next.depth - current.depth) > EPS_M
   );
 }
 
@@ -433,24 +469,26 @@ function resolveFreeBoxDimsIntent(args: {
   applyH?: number | null;
   applyD?: number | null;
 }): FreeBoxDimIntent {
+  const current = readSelectorBoxMetrics(args.selectorBox);
+  if (!current) return null;
   const intents = [
     resolveFreeBoxDimIntent({
       target: args.target,
-      currentCm: Math.max(0, Number(args.selectorBox.width) * 100),
+      currentCm: Math.max(0, current.width * 100),
       applyCm: args.applyW,
       specialKey: 'widthCm',
       baseKey: 'baseWidthCm',
     }),
     resolveFreeBoxDimIntent({
       target: args.target,
-      currentCm: Math.max(0, Number(args.selectorBox.height) * 100),
+      currentCm: Math.max(0, current.height * 100),
       applyCm: args.applyH,
       specialKey: 'heightCm',
       baseKey: 'baseHeightCm',
     }),
     resolveFreeBoxDimIntent({
       target: args.target,
-      currentCm: Math.max(0, Number(args.selectorBox.depth) * 100),
+      currentCm: Math.max(0, current.depth * 100),
       applyCm: args.applyD,
       specialKey: 'depthCm',
       baseKey: 'baseDepthCm',
@@ -473,14 +511,14 @@ export function resolveCellDimsFreeBoxHoverOp(args: {
 }): 'add' | 'remove' | null {
   const box = asRecord(asRecord(args.target.info)?.__wpCellDimsFreeBoxRecord);
   if (!box) return null;
+  const current = readSelectorBoxMetrics(args.selectorBox);
+  if (!current) return null;
   const dimChange = hasFreeBoxDimChange(args);
   const dimIntent = resolveFreeBoxDimsIntent(args);
   if (args.hexCellMode) {
     if (!moduleHasHexCell(box)) return 'add';
     const moduleWidthCm =
-      args.applyW != null && Number.isFinite(args.applyW)
-        ? args.applyW
-        : Number(args.selectorBox.width) * 100;
+      args.applyW != null && Number.isFinite(args.applyW) ? args.applyW : current.width * 100;
     const hexChange = hasHexCellDraftConfigChange({
       cfgMod: box,
       protrusionCm: args.hexCellProtrusionCm,

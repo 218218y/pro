@@ -94,6 +94,7 @@ test('no-main sketch workspace runtime: cache metrics and no-main workspace box 
                 { id: 'free-a', freePlacement: true, absX: -0.5, widthM: 0.6 },
                 { id: 'module-a', absX: 0.1, widthM: 0.8 },
                 { id: 'free-b', freePlacement: true, absX: 0.7, widthM: 0.4 },
+                { id: 'legacy-string-box', freePlacement: true, absX: '5', widthM: '3' },
               ],
             },
           },

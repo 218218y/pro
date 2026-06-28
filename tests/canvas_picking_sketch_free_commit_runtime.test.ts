@@ -92,6 +92,48 @@ test('sketch-free placement commit adds a free-placement box through the canonic
   assert.match(String(boxes[0]?.id || ''), /^sbf_/);
 });
 
+test('sketch-free placement commit rejects string-encoded internal hover geometry', () => {
+  const cfg: Record<string, unknown> = {};
+
+  const result = commitSketchFreePlacementHoverRecord({
+    App: {
+      actions: {
+        modules: {
+          patchForStack: (
+            _side: string,
+            _moduleKey: unknown,
+            patcher: (cfgRef: Record<string, unknown>) => void
+          ) => patcher(cfg),
+        },
+      },
+    } as never,
+    host: { moduleKey: 7, isBottom: false },
+    hoverRec: {
+      ts: 1,
+      tool: 'sketch_box_free',
+      moduleKey: 7,
+      isBottom: false,
+      hostModuleKey: 7,
+      hostIsBottom: false,
+      kind: 'box',
+      op: 'add',
+      freePlacement: true,
+      xCenter: '0.15',
+      yCenter: '0.95',
+      heightM: '0.9',
+      widthM: '0.72',
+      depthM: '0.42',
+      removeId: null,
+    } as never,
+  });
+
+  assert.deepEqual(result, { committed: false });
+  const boxes =
+    ((cfg.sketchExtras as Record<string, unknown> | undefined)?.boxes as Array<Record<string, unknown>>) ||
+    [];
+  assert.equal(boxes.length, 0);
+});
+
 test('sketch-free placement content commit routes free-placement door removal through the canonical content seam', () => {
   const cfg: Record<string, unknown> = {
     sketchExtras: {

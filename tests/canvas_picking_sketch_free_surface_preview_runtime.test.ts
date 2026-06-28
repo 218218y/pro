@@ -107,6 +107,36 @@ test('sketch free divider target scan projects fallback pointer to the box front
   assert.ok(Math.abs(projectedPlanes[0] - 0.2) < 1e-9);
 });
 
+test('sketch free surface target scan rejects string-encoded free-box geometry', () => {
+  const target = findSketchFreeHoverTargetBox({
+    App: {} as never,
+    tool: 'sketch_box_divider',
+    contentKind: 'divider',
+    hostModuleKey: 0,
+    freeBoxes: [
+      {
+        id: 'legacy-string-box',
+        freePlacement: true,
+        absX: '0.2',
+        absY: '1',
+        heightM: '1',
+        widthM: '0.8',
+        depthM: '0.4',
+      },
+    ] as any,
+    planeHit: { x: 0.2, y: 1, z: -0.3 },
+    wardrobeBox: wardrobeBox as any,
+    wardrobeBackZ: -0.3,
+    intersects: [],
+    localParent: null,
+    resolveSketchFreeBoxGeometry: resolveSketchFreeBoxGeometry as never,
+    getSketchFreeBoxPartPrefix: (_moduleKey, boxId) => `prefix:${String(boxId)}`,
+    findSketchFreeBoxLocalHit: () => ({ x: 0.2, y: 1, z: 0.2 }) as any,
+  });
+
+  assert.equal(target, null);
+});
+
 test('sketch free content target scan projects profile-door hits to the canonical box front plane', () => {
   const box = {
     id: 'profile-door-box',

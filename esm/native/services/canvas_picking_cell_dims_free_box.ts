@@ -219,7 +219,7 @@ function applyBoxDimension(box: SketchBoxLike, spec: DimSpec): boolean {
   const sd = cloneSpecialDims(box.specialDims);
   const active = getActiveOverrideCm(sd, spec.specialKey, spec.baseKey);
   const toggledBack = active != null && Math.abs(target - active) <= EPS_CM;
-  const nextValue = toggledBack ? Number(sd[spec.baseKey]) || current : target;
+  const nextValue = toggledBack ? (readPositiveSpecialBaseCm(sd, spec.baseKey) ?? current) : target;
 
   applyOverrideToSpecialDims({
     sd,

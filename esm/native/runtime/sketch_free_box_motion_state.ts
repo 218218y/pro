@@ -18,12 +18,11 @@ function readRecord(value: unknown): UnknownRecord | null {
 }
 
 function readFiniteNumber(value: unknown, defaultValue = 0): number {
-  const n = typeof value === 'number' ? value : value != null ? Number(value) : NaN;
-  return Number.isFinite(n) ? n : defaultValue;
+  return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
 }
 
 function readBool(value: unknown, defaultValue = false): boolean {
-  return typeof value === 'boolean' ? value : typeof value === 'undefined' ? defaultValue : !!value;
+  return typeof value === 'boolean' ? value : defaultValue;
 }
 
 export function getSketchFreeBoxMotionStateKey(
@@ -78,12 +77,13 @@ export function recordSketchFreeBoxMotionToggle(
   if (!map) return;
   const now = readFiniteNumber(opts?.now, doorsRuntimeNow());
   const delayMs = Math.max(0, readFiniteNumber(opts?.delayMs, 0));
-  const hasInternalDrawers = !!opts?.hasInternalDrawers;
+  const nextOpen = readBool(targetOpen, false);
+  const hasInternalDrawers = readBool(opts?.hasInternalDrawers, false);
   map[key] = {
     lastToggleTime: now,
-    targetOpen: !!targetOpen,
+    targetOpen: nextOpen,
     hasInternalDrawers,
-    doorHoldUntil: !targetOpen && hasInternalDrawers ? now + delayMs : 0,
+    doorHoldUntil: !nextOpen && hasInternalDrawers ? now + delayMs : 0,
   } satisfies SketchFreeBoxMotionState;
 }
 

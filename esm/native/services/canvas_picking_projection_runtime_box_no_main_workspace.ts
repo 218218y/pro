@@ -21,27 +21,36 @@ import type {
 } from './canvas_picking_projection_runtime_box_shared.js';
 import { __asNum } from './canvas_picking_core_helpers.js';
 
+function readFiniteNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function readPositiveNumber(value: unknown): number | null {
+  const n = readFiniteNumber(value);
+  return n != null && n > 0 ? n : null;
+}
+
 function __readNoMainSketchWorkspaceMetrics(App: AppContainer): __ProjectionLocalBoxWithBackZ | null {
   try {
     const raw = asRecord(getCacheBag(App).noMainSketchWorkspaceMetrics);
     if (!raw) return null;
-    const centerX = __asNum(raw.centerX, NaN);
-    const centerY = __asNum(raw.centerY, NaN);
-    const centerZ = __asNum(raw.centerZ, NaN);
-    const width = __asNum(raw.width, NaN);
-    const height = __asNum(raw.height, NaN);
-    const depth = __asNum(raw.depth, NaN);
+    const centerX = readFiniteNumber(raw.centerX);
+    const centerY = readFiniteNumber(raw.centerY);
+    const centerZ = readFiniteNumber(raw.centerZ);
+    const width = readPositiveNumber(raw.width);
+    const height = readPositiveNumber(raw.height);
+    const depth = readPositiveNumber(raw.depth);
     if (
-      !Number.isFinite(centerX) ||
-      !Number.isFinite(centerY) ||
-      !Number.isFinite(centerZ) ||
-      !(width > 0) ||
-      !(height > 0) ||
-      !(depth > 0)
+      centerX == null ||
+      centerY == null ||
+      centerZ == null ||
+      width == null ||
+      height == null ||
+      depth == null
     ) {
       return null;
     }
-    const backZRaw = __asNum(raw.backZ, NaN);
+    const backZRaw = readFiniteNumber(raw.backZ);
     return {
       centerX,
       centerY,
@@ -49,7 +58,7 @@ function __readNoMainSketchWorkspaceMetrics(App: AppContainer): __ProjectionLoca
       width,
       height,
       depth,
-      backZ: Number.isFinite(backZRaw) ? backZRaw : undefined,
+      backZ: backZRaw ?? undefined,
     };
   } catch {
     return null;
@@ -82,9 +91,9 @@ function __readNoMainWorkspaceWidthCm(App: AppContainer): number | null {
       const rec = asRecord(boxes[i]);
       if (!rec || rec.freePlacement !== true) continue;
 
-      const centerX = __asNum(rec.absX, NaN);
-      const widthM = __asNum(rec.widthM, NaN);
-      if (!Number.isFinite(centerX) || !Number.isFinite(widthM) || !(widthM > 0)) continue;
+      const centerX = readFiniteNumber(rec.absX);
+      const widthM = readPositiveNumber(rec.widthM);
+      if (centerX == null || widthM == null) continue;
 
       const halfW = widthM / 2;
       minX = Math.min(minX, centerX - halfW);

@@ -10,10 +10,7 @@ export function readRecordString(record: unknown, key: string): string | null {
 }
 
 export function readNumber(value: unknown): number | null {
-  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
-  if (value == null || value === '') return null;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
 export function readRecordNumber(record: unknown, key: string): number | null {
