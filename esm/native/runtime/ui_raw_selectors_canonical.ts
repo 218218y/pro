@@ -27,9 +27,8 @@ function readCanonicalUiScalarValue<K extends UiRawScalarKey>(
     return (typeof value === 'boolean' ? value : undefined) as UiRawScalarValueMap[K] | undefined;
   }
   if (isUiRawNumericKey(key)) {
-    return (value === null || (typeof value === 'number' && Number.isFinite(value))
-      ? value
-      : undefined) as UiRawScalarValueMap[K] | undefined;
+    return (value === null || (typeof value === 'number' && Number.isFinite(value)) ? value : undefined) as
+      UiRawScalarValueMap[K] | undefined;
   }
   return undefined;
 }
