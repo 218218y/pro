@@ -62,7 +62,7 @@ test('[structure-cell-dims] per-dimension reset buttons stay compact, icon-only,
   assert.match(html, new RegExp(`data-testid="${STRUCTURE_CELL_DIMS_RESET_DEPTH_BUTTON_TEST_ID}"`));
   assert.match(html, /aria-label="איפוס רוחב התא"/);
   assert.match(html, /aria-label="איפוס גובה התא"/);
-  assert.match(html, /aria-label="איפוס המידה"/);
+  assert.match(html, /aria-label="איפוס עומק התא"/);
   assert.ok(
     resetButtons.every(button =>
       /^<button[^>]*><i class="fas fa-undo-alt" aria-hidden="true"><\/i><\/button>$/.test(button)

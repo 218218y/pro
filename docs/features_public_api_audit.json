@@ -24,6 +24,7 @@
     "modules_configuration/corner_cells_api.js",
     "modules_configuration/modules_config_api.js",
     "modules_configuration/modules_config_contracts.js",
+    "platform_overhang_support.js",
     "project_config/project_config_lists_canonical.js",
     "project_config/project_config_persisted_payload_shared.js",
     "project_config/project_config_persisted_snapshot.js",
@@ -65,6 +66,7 @@
       "modules_configuration/modules_config_api.js",
       "modules_configuration/modules_config_contracts.js"
     ],
+    "platform_overhang_support": ["platform_overhang_support.js"],
     "project_config": [
       "project_config/project_config_lists_canonical.js",
       "project_config/project_config_persisted_payload_shared.js",
@@ -120,6 +122,10 @@
       "entry": "base_plinth_support.js"
     },
     {
+      "file": "esm/native/builder/build_flow_plan_inputs.ts",
+      "entry": "platform_overhang_support.js"
+    },
+    {
       "file": "esm/native/builder/build_flow_plan_materials.ts",
       "entry": "base_leg_support.js"
     },
@@ -144,6 +150,10 @@
       "entry": "modules_configuration/modules_config_api.js"
     },
     {
+      "file": "esm/native/builder/build_stack_split_decorative_separator.ts",
+      "entry": "platform_overhang_support.js"
+    },
+    {
       "file": "esm/native/builder/build_state_resolver.ts",
       "entry": "project_config/project_config_lists_canonical.js"
     },
@@ -166,6 +176,10 @@
     {
       "file": "esm/native/builder/core_carcass_shared.ts",
       "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/builder/core_carcass_shared.ts",
+      "entry": "platform_overhang_support.js"
     },
     {
       "file": "esm/native/builder/core_carcass_shared.ts",
@@ -790,6 +804,10 @@
     {
       "file": "esm/native/builder/visuals_chest_mode_inputs.ts",
       "entry": "base_plinth_support.js"
+    },
+    {
+      "file": "esm/native/builder/visuals_chest_mode_inputs.ts",
+      "entry": "platform_overhang_support.js"
     },
     {
       "file": "esm/native/builder/visuals_chest_mode_materials.ts",
@@ -1725,6 +1743,10 @@
     },
     {
       "file": "esm/native/ui/react/actions/store_actions_ui_structure.ts",
+      "entry": "platform_overhang_support.js"
+    },
+    {
+      "file": "esm/native/ui/react/actions/store_actions_ui_structure.ts",
       "entry": "front_color_shelf_inheritance.js"
     },
     {
@@ -1861,6 +1883,10 @@
     },
     {
       "file": "esm/native/ui/react/tabs/structure_tab_body_section_base.tsx",
+      "entry": "platform_overhang_support.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/structure_tab_body_section_base.tsx",
       "entry": "base_plinth_support.js"
     },
     {
@@ -1876,8 +1902,16 @@
       "entry": "door_style_overrides.js"
     },
     {
+      "file": "esm/native/ui/react/tabs/structure_tab_dimensions_section_stack_split.tsx",
+      "entry": "platform_overhang_support.js"
+    },
+    {
       "file": "esm/native/ui/react/tabs/structure_tab_library_helpers.ts",
       "entry": "library_preset/library_preset.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/structure_tab_platform_overhang_field.tsx",
+      "entry": "platform_overhang_support.js"
     },
     {
       "file": "esm/native/ui/react/tabs/structure_tab_structural_controller_contracts.ts",
@@ -1897,6 +1931,10 @@
     },
     {
       "file": "esm/native/ui/react/tabs/structure_tab_structural_controller_writes.ts",
+      "entry": "platform_overhang_support.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/structure_tab_structural_controller_writes.ts",
       "entry": "shoe_drawer_base_constraint.js"
     },
     {
@@ -1910,6 +1948,10 @@
     {
       "file": "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts",
       "entry": "base_plinth_support.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts",
+      "entry": "platform_overhang_support.js"
     },
     {
       "file": "esm/native/ui/react/tabs/structure_tab_workflows_controller_contracts.ts",

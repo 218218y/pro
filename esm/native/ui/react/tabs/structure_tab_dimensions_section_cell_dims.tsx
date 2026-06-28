@@ -271,7 +271,7 @@ export function StructureCellDimsControls(props: StructureCellDimsControlsProps)
                 }}
                 inputAddon={
                   <CellDimResetButton
-                    title={labels.resetDepthTitle || 'איפוס המידה'}
+                    title={labels.resetDepthTitle || 'איפוס עומק התא'}
                     disabled={props.cellDimsDepth === ''}
                     onClick={() => clearCellDim(props.onClearCellDimsDepth)}
                     testId={testIds.resetDepthButton}

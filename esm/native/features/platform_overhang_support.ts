@@ -2,6 +2,7 @@ import { CARCASS_BASE_DIMENSIONS, WARDROBE_DEFAULTS } from '../../shared/wardrob
 
 export const PLATFORM_OVERHANG_MIN_CM = 0;
 export const PLATFORM_OVERHANG_MAX_CM = 20;
+export const PLATFORM_OVERHANG_STEP_CM = 0.1;
 
 export const DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM =
   Math.round(CARCASS_BASE_DIMENSIONS.legs.platform.sideOverhangM * 1000) / 10;

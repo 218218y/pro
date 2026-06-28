@@ -64,6 +64,13 @@ test('[structure-base] stage platform renders side and front overhang controls',
   assert.match(html, /בליטה מהחזית/);
   assert.match(html, /איפוס בליטה מהצדדים לברירת מחדל/);
   assert.match(html, /איפוס בליטה מהחזית לברירת מחדל/);
+  assert.match(html, /data-tooltip="איפוס בליטה מהצדדים לברירת מחדל"/);
+  assert.match(html, /wp-r-styled-tooltip hint-bottom/);
+  assert.match(html, /step="0\.1"/);
+  assert.match(
+    html,
+    /wp-r-platform-overhang-input-row"><input[^>]*class="wp-r-door-thickness-input wp-r-platform-overhang-input"[^>]*step="0\.1"[^>]*\/><button/
+  );
 });
 
 test('[structure-base] flush platform keeps only the front overhang control', () => {

@@ -24,6 +24,7 @@
     "modules_configuration/corner_cells_api.js",
     "modules_configuration/modules_config_api.js",
     "modules_configuration/modules_config_contracts.js",
+    "platform_overhang_support.js",
     "project_config/project_config_lists_canonical.js",
     "project_config/project_config_persisted_payload_shared.js",
     "project_config/project_config_persisted_snapshot.js",
@@ -80,6 +81,7 @@
     "sketch_stack_positioning": ["sketch_stack_positioning.js"],
     "special_dims": ["special_dims/index.js", "special_dims/special_dims.js"],
     "stack_split": ["stack_split/index.js", "stack_split/module_config.js"],
-    "sketch_internal_drawer_cassette": ["sketch_internal_drawer_cassette.js"]
+    "sketch_internal_drawer_cassette": ["sketch_internal_drawer_cassette.js"],
+    "platform_overhang_support": ["platform_overhang_support.js"]
   }
 }

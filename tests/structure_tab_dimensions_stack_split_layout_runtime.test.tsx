@@ -228,4 +228,11 @@ test('[structure-stack-split] decorative separator exposes side and front overha
   assert.match(enabledHtml, /בליטה מהחזית/);
   assert.match(enabledHtml, /איפוס בליטת הפרדה מהצדדים לברירת מחדל/);
   assert.match(enabledHtml, /איפוס בליטת הפרדה מהחזית לברירת מחדל/);
+  assert.match(enabledHtml, /data-tooltip="איפוס בליטת הפרדה מהצדדים לברירת מחדל"/);
+  assert.match(enabledHtml, /wp-r-styled-tooltip hint-bottom/);
+  assert.match(enabledHtml, /step="0\.1"/);
+  assert.match(
+    enabledHtml,
+    /wp-r-platform-overhang-input-row"><input[^>]*class="wp-r-door-thickness-input wp-r-platform-overhang-input"[^>]*step="0\.1"[^>]*\/><button/
+  );
 });

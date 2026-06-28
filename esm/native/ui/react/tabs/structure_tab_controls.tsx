@@ -200,7 +200,7 @@ export function TypeSelector(props: { hideTypeOptions?: boolean; isChestMode?: b
               label="עובי מדפים"
               valueCm={doorMountThickness.shelfThicknessCm}
               isAutomatic={doorMountThickness.shelfOverrideCm == null}
-              resetLabel="איפוס המידה"
+              resetLabel="איפוס עובי מדפים"
               inputTestId="structure-shelf-thickness-input"
               resetTestId="structure-shelf-thickness-reset"
               onChange={value => {

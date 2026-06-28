@@ -126,7 +126,7 @@ function SketchTabInner(props: { active: boolean }): ReactElement {
                 depthField: 'עומק קופסא/(ס"מ)',
                 resetWidthTitle: 'איפוס רוחב הקופסא',
                 resetHeightTitle: 'איפוס גובה הקופסא',
-                resetDepthTitle: 'איפוס המידה',
+                resetDepthTitle: 'איפוס עומק הקופסא',
                 hexModeButton: 'צורה משושה',
                 hexProtrusionField: 'בליטה ישרה משושה',
                 hexDoorWidthField: 'רוחב דלת משושה',
