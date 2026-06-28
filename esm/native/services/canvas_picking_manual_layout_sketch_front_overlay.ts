@@ -28,9 +28,9 @@ function readRecordValue(obj: unknown, key: string): unknown {
   return rec ? rec[key] : undefined;
 }
 
-function readRecordNumber(obj: unknown, key: string): number {
+function readRecordNumber(obj: unknown, key: string): number | null {
   const value = readRecordValue(obj, key);
-  return typeof value === 'number' ? value : Number(value);
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
 function readRecordArray(obj: unknown, key: string): Record<string, unknown>[] {
@@ -179,11 +179,10 @@ export function resolveSketchBoxVisibleFrontOverlay(args: {
   const segmentExtDrawers = readRecordArray(args.box, 'extDrawers').filter(item => {
     if (!args.segment) return true;
     const itemXNorm = readRecordNumber(item, 'xNorm');
-    if (!Number.isFinite(itemXNorm) || !args.segments.length) return false;
+    if (itemXNorm == null || !args.segments.length) return false;
     const itemSegment =
       args.segments.find(
-        segment =>
-          Math.abs(segment.xNorm - Number(itemXNorm)) <= SKETCH_BOX_DIMENSIONS.preview.doorEdgeEpsilonM
+        segment => Math.abs(segment.xNorm - itemXNorm) <= SKETCH_BOX_DIMENSIONS.preview.doorEdgeEpsilonM
       ) || null;
     return !!itemSegment && itemSegment.index === args.segment.index;
   });

@@ -1,4 +1,5 @@
 import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { asFiniteNumberOrNaN, asNumberOrNull } from './canvas_picking_sketch_free_box_shared.js';
 import {
   resolveSketchFreeBoxNonOverlappingPlacement,
   resolveSketchFreeBoxOutsideWardrobePlacement,
@@ -51,10 +52,10 @@ export function finalizeSketchFreeBoxHoverPlacement(args: {
     centerY: previewY,
     boxW: context.previewW,
     boxH: context.previewH,
-    wardrobeCenterY: Number(context.wardrobeBox.centerY),
-    wardrobeHeight: Number(context.wardrobeBox.height),
-    wardrobeWidth: Number(context.wardrobeBox.width) || 0,
-    wardrobeDepth: Number(context.wardrobeBox.depth) || 0,
+    wardrobeCenterY: asFiniteNumberOrNaN(context.wardrobeBox.centerY),
+    wardrobeHeight: asFiniteNumberOrNaN(context.wardrobeBox.height),
+    wardrobeWidth: asNumberOrNull(context.wardrobeBox.width) ?? 0,
+    wardrobeDepth: asNumberOrNull(context.wardrobeBox.depth) ?? 0,
     backZ: context.wardrobeBackZ,
     woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
     freeBoxes: context.freeBoxes,
@@ -78,10 +79,10 @@ export function finalizeSketchFreeBoxHoverPlacement(args: {
         centerY: previewY,
         boxW: context.previewW,
         boxH: context.previewH,
-        wardrobeCenterX: Number(context.wardrobeBox.centerX),
-        wardrobeCenterY: Number(context.wardrobeBox.centerY),
-        wardrobeWidth: Number(context.wardrobeBox.width),
-        wardrobeHeight: Number(context.wardrobeBox.height),
+        wardrobeCenterX: asFiniteNumberOrNaN(context.wardrobeBox.centerX),
+        wardrobeCenterY: asFiniteNumberOrNaN(context.wardrobeBox.centerY),
+        wardrobeWidth: asFiniteNumberOrNaN(context.wardrobeBox.width),
+        wardrobeHeight: asFiniteNumberOrNaN(context.wardrobeBox.height),
         roomFloorY: context.roomFloorY,
       });
   if (finalOutsidePlacement) {

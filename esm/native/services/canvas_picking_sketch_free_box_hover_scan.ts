@@ -52,8 +52,8 @@ export function scanSketchFreeBoxHoverPlacements(args: {
     if (cx == null || cy == null || hM == null || !(hM > 0)) continue;
 
     const hitGeo = resolveSketchFreeBoxGeometry({
-      wardrobeWidth: Number(context.wardrobeBox.width) || 0,
-      wardrobeDepth: Number(context.wardrobeBox.depth) || 0,
+      wardrobeWidth: asNumberOrNull(context.wardrobeBox.width) ?? 0,
+      wardrobeDepth: asNumberOrNull(context.wardrobeBox.depth) ?? 0,
       backZ: context.wardrobeBackZ,
       centerX: cx,
       woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
@@ -71,9 +71,11 @@ export function scanSketchFreeBoxHoverPlacements(args: {
         partPrefix: getSketchFreeBoxPartPrefix(hoverArgs.hostModuleKey, it.id ?? i),
         projectWorldPointToLocal: hoverArgs.projectWorldPointToLocal,
       });
-      if (localHit && Number.isFinite(localHit.x) && Number.isFinite(localHit.y)) {
-        surfaceHitX = Number(localHit.x);
-        surfaceHitY = Number(localHit.y);
+      const localHitX = asNumberOrNull(localHit?.x);
+      const localHitY = asNumberOrNull(localHit?.y);
+      if (localHitX != null && localHitY != null) {
+        surfaceHitX = localHitX;
+        surfaceHitY = localHitY;
       }
     }
 
@@ -131,8 +133,8 @@ export function scanSketchFreeBoxHoverPlacements(args: {
       gap: context.gap,
       freeBoxes: context.freeBoxes,
       ignoreBoxId: it.id ?? i,
-      wardrobeWidth: Number(context.wardrobeBox.width) || 0,
-      wardrobeDepth: Number(context.wardrobeBox.depth) || 0,
+      wardrobeWidth: asNumberOrNull(context.wardrobeBox.width) ?? 0,
+      wardrobeDepth: asNumberOrNull(context.wardrobeBox.depth) ?? 0,
       backZ: context.wardrobeBackZ,
       woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
     });

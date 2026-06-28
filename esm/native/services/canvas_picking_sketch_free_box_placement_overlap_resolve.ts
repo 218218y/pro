@@ -1,4 +1,5 @@
 import {
+  asFiniteNumberOrNaN,
   asNumberOrNull,
   asSketchFreePlacementBox,
   clampSketchFreeBoxCenterYToWorkspace,
@@ -27,20 +28,20 @@ export function resolveSketchFreeBoxNonOverlappingPlacement(args: {
     anchorY: number;
   } | null;
 }): { centerX: number; centerY: number } {
-  let centerX = Number(args.centerX);
+  let centerX = asFiniteNumberOrNaN(args.centerX);
   let centerY = clampSketchFreeBoxCenterYToWorkspace({
-    centerY: Number(args.centerY),
-    boxH: Number(args.boxH),
-    wardrobeCenterY: Number(args.wardrobeCenterY),
-    wardrobeHeight: Number(args.wardrobeHeight),
+    centerY: asFiniteNumberOrNaN(args.centerY),
+    boxH: asFiniteNumberOrNaN(args.boxH),
+    wardrobeCenterY: asFiniteNumberOrNaN(args.wardrobeCenterY),
+    wardrobeHeight: asFiniteNumberOrNaN(args.wardrobeHeight),
     pad: args.pad,
   });
-  const boxW = Number(args.boxW);
-  const boxH = Number(args.boxH);
-  const wardrobeWidth = Number(args.wardrobeWidth);
-  const wardrobeDepth = Number(args.wardrobeDepth);
-  const backZ = Number(args.backZ);
-  const woodThick = Number(args.woodThick);
+  const boxW = asFiniteNumberOrNaN(args.boxW);
+  const boxH = asFiniteNumberOrNaN(args.boxH);
+  const wardrobeWidth = asFiniteNumberOrNaN(args.wardrobeWidth);
+  const wardrobeDepth = asFiniteNumberOrNaN(args.wardrobeDepth);
+  const backZ = asFiniteNumberOrNaN(args.backZ);
+  const woodThick = asFiniteNumberOrNaN(args.woodThick);
   const pad = asNumberOrNull(args.pad) ?? 0;
   const freeBoxes = Array.isArray(args.freeBoxes) ? args.freeBoxes : [];
   const ignoreBoxId = args.ignoreBoxId != null ? String(args.ignoreBoxId) : '';
@@ -49,10 +50,8 @@ export function resolveSketchFreeBoxNonOverlappingPlacement(args: {
     attachment?.fixedAxis === 'x' || attachment?.fixedAxis === 'y' ? attachment.fixedAxis : null;
   const attachmentDirection =
     attachment?.direction === -1 || attachment?.direction === 1 ? attachment.direction : null;
-  const attachmentAnchorX =
-    attachment && Number.isFinite(Number(attachment.anchorX)) ? Number(attachment.anchorX) : centerX;
-  const attachmentAnchorY =
-    attachment && Number.isFinite(Number(attachment.anchorY)) ? Number(attachment.anchorY) : centerY;
+  const attachmentAnchorX = asNumberOrNull(attachment?.anchorX) ?? centerX;
+  const attachmentAnchorY = asNumberOrNull(attachment?.anchorY) ?? centerY;
   if (
     !Number.isFinite(centerX) ||
     !Number.isFinite(centerY) ||
@@ -115,8 +114,8 @@ export function resolveSketchFreeBoxNonOverlappingPlacement(args: {
         centerY: clampSketchFreeBoxCenterYToWorkspace({
           centerY: cy + (startY >= cy ? 1 : -1) * (otherHalfH + halfH + gap),
           boxH,
-          wardrobeCenterY: Number(args.wardrobeCenterY),
-          wardrobeHeight: Number(args.wardrobeHeight),
+          wardrobeCenterY: asFiniteNumberOrNaN(args.wardrobeCenterY),
+          wardrobeHeight: asFiniteNumberOrNaN(args.wardrobeHeight),
           pad,
         }),
       };
@@ -125,8 +124,8 @@ export function resolveSketchFreeBoxNonOverlappingPlacement(args: {
         centerY: clampSketchFreeBoxCenterYToWorkspace({
           centerY: cy + (startY >= cy ? -1 : 1) * (otherHalfH + halfH + gap),
           boxH,
-          wardrobeCenterY: Number(args.wardrobeCenterY),
-          wardrobeHeight: Number(args.wardrobeHeight),
+          wardrobeCenterY: asFiniteNumberOrNaN(args.wardrobeCenterY),
+          wardrobeHeight: asFiniteNumberOrNaN(args.wardrobeHeight),
           pad,
         }),
       };
@@ -144,8 +143,8 @@ export function resolveSketchFreeBoxNonOverlappingPlacement(args: {
               centerY: clampSketchFreeBoxCenterYToWorkspace({
                 centerY: cy + attachmentDirection * (otherHalfH + halfH + gap),
                 boxH,
-                wardrobeCenterY: Number(args.wardrobeCenterY),
-                wardrobeHeight: Number(args.wardrobeHeight),
+                wardrobeCenterY: asFiniteNumberOrNaN(args.wardrobeCenterY),
+                wardrobeHeight: asFiniteNumberOrNaN(args.wardrobeHeight),
                 pad,
               }),
             }

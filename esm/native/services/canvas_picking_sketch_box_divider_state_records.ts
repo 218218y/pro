@@ -28,13 +28,13 @@ export function readSketchBoxDividers(box: unknown): SketchBoxDividerState[] {
     const it = dividersRaw[i];
     const xNorm = normalizeSketchBoxDividerXNorm(it?.xNorm);
     if (xNorm == null) continue;
-    const frontZ = Number(it?.frontZ);
+    const frontZ = typeof it?.frontZ === 'number' && Number.isFinite(it.frontZ) ? it.frontZ : null;
     const yNorm = normalizeSketchBoxDividerYNorm(it?.yNorm);
     dividers.push({
       id: it?.id != null && String(it.id) ? String(it.id) : `sbd_${i}`,
       xNorm,
       centered: Math.abs(xNorm - 0.5) <= 0.001,
-      ...(Number.isFinite(frontZ) ? { frontZ } : {}),
+      ...(frontZ != null ? { frontZ } : {}),
       ...(yNorm != null ? { yNorm } : {}),
     });
   }
@@ -52,12 +52,12 @@ export function readSketchBoxHorizontalDividers(box: unknown): SketchBoxHorizont
     const yNorm = normalizeSketchBoxDividerYNorm(it?.yNorm);
     if (yNorm == null) continue;
     const xNorm = normalizeSketchBoxDividerXNorm(it?.xNorm);
-    const frontZ = Number(it?.frontZ);
+    const frontZ = typeof it?.frontZ === 'number' && Number.isFinite(it.frontZ) ? it.frontZ : null;
     dividers.push({
       id: it?.id != null && String(it.id) ? String(it.id) : `sbh_${i}`,
       yNorm,
       centered: Math.abs(yNorm - 0.5) <= 0.001,
-      ...(Number.isFinite(frontZ) ? { frontZ } : {}),
+      ...(frontZ != null ? { frontZ } : {}),
       ...(xNorm != null ? { xNorm } : {}),
     });
   }
@@ -77,8 +77,12 @@ export function writeSketchBoxDividers(box: unknown, dividers: SketchBoxDividerS
       .map(divider => ({
         id: divider.id,
         xNorm: normalizeSketchBoxDividerXNorm(divider.xNorm) ?? 0.5,
-        ...(Number.isFinite(Number(divider.frontZ)) ? { frontZ: Number(divider.frontZ) } : {}),
-        ...(Number.isFinite(Number(divider.yNorm)) ? { yNorm: Number(divider.yNorm) } : {}),
+        ...(typeof divider.frontZ === 'number' && Number.isFinite(divider.frontZ)
+          ? { frontZ: divider.frontZ }
+          : {}),
+        ...(typeof divider.yNorm === 'number' && Number.isFinite(divider.yNorm)
+          ? { yNorm: divider.yNorm }
+          : {}),
       }));
   } else {
     delete rec.dividers;
@@ -103,8 +107,12 @@ export function writeSketchBoxHorizontalDividers(
       .map(divider => ({
         id: divider.id,
         yNorm: normalizeSketchBoxDividerYNorm(divider.yNorm) ?? 0.5,
-        ...(Number.isFinite(Number(divider.frontZ)) ? { frontZ: Number(divider.frontZ) } : {}),
-        ...(Number.isFinite(Number(divider.xNorm)) ? { xNorm: Number(divider.xNorm) } : {}),
+        ...(typeof divider.frontZ === 'number' && Number.isFinite(divider.frontZ)
+          ? { frontZ: divider.frontZ }
+          : {}),
+        ...(typeof divider.xNorm === 'number' && Number.isFinite(divider.xNorm)
+          ? { xNorm: divider.xNorm }
+          : {}),
       }));
   } else {
     delete rec.horizontalDividers;

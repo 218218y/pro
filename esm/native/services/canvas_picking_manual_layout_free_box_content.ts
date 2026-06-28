@@ -151,10 +151,7 @@ type ManualLayoutFreeBoxHoverArgs = {
 };
 
 function readNumber(value: unknown): number | null {
-  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
-  if (value == null || value === '') return null;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
 function readString(value: unknown): string | null {
@@ -390,17 +387,12 @@ export function resolveManualLayoutFreeBoxShelfGridPlan(args: {
 
   const activeSegment = state.activeSegment;
   const boxLeftX = args.targetGeo.centerX - args.targetGeo.innerW / 2;
-  const segLeftX = readNumber((activeSegment as Record<string, unknown> | null)?.leftX) ?? boxLeftX;
-  const segRightX =
-    readNumber((activeSegment as Record<string, unknown> | null)?.rightX) ??
-    args.targetGeo.centerX + args.targetGeo.innerW / 2;
-  const previewX =
-    readNumber((activeSegment as Record<string, unknown> | null)?.centerX) ?? args.targetGeo.centerX;
-  const previewW =
-    readNumber((activeSegment as Record<string, unknown> | null)?.width) ?? args.targetGeo.innerW;
+  const segLeftX = readNumber(activeSegment?.leftX) ?? boxLeftX;
+  const segRightX = readNumber(activeSegment?.rightX) ?? args.targetGeo.centerX + args.targetGeo.innerW / 2;
+  const previewX = readNumber(activeSegment?.centerX) ?? args.targetGeo.centerX;
+  const previewW = readNumber(activeSegment?.width) ?? args.targetGeo.innerW;
   const contentXNorm =
-    readNumber((activeSegment as Record<string, unknown> | null)?.xNorm) ??
-    clampUnit((previewX - boxLeftX) / args.targetGeo.innerW);
+    readNumber(activeSegment?.xNorm) ?? clampUnit((previewX - boxLeftX) / args.targetGeo.innerW);
   const depthM = resolveShelfDepth({ variant, innerD: args.targetGeo.innerD, woodThick });
   if (!blockedReason && shelfYs.length) {
     const blockers = buildSketchBoxVerticalContentBlockers({
@@ -479,17 +471,12 @@ function resolveFreeBoxCellMetrics(args: {
 
   const activeSegment = state.activeSegment;
   const boxLeftX = args.targetGeo.centerX - args.targetGeo.innerW / 2;
-  const segLeftX = readNumber((activeSegment as Record<string, unknown> | null)?.leftX) ?? boxLeftX;
-  const segRightX =
-    readNumber((activeSegment as Record<string, unknown> | null)?.rightX) ??
-    args.targetGeo.centerX + args.targetGeo.innerW / 2;
-  const previewX =
-    readNumber((activeSegment as Record<string, unknown> | null)?.centerX) ?? args.targetGeo.centerX;
-  const previewW =
-    readNumber((activeSegment as Record<string, unknown> | null)?.width) ?? args.targetGeo.innerW;
+  const segLeftX = readNumber(activeSegment?.leftX) ?? boxLeftX;
+  const segRightX = readNumber(activeSegment?.rightX) ?? args.targetGeo.centerX + args.targetGeo.innerW / 2;
+  const previewX = readNumber(activeSegment?.centerX) ?? args.targetGeo.centerX;
+  const previewW = readNumber(activeSegment?.width) ?? args.targetGeo.innerW;
   const contentXNorm =
-    readNumber((activeSegment as Record<string, unknown> | null)?.xNorm) ??
-    clampUnit((previewX - boxLeftX) / args.targetGeo.innerW);
+    readNumber(activeSegment?.xNorm) ?? clampUnit((previewX - boxLeftX) / args.targetGeo.innerW);
 
   return {
     state,
@@ -541,8 +528,8 @@ export function resolvePresetLayoutFreeBoxPlan(args: {
 
   const rows = Array.isArray(ops.shelves) ? ops.shelves : [];
   for (let i = 0; i < rows.length; i += 1) {
-    const row = Number(rows[i]);
-    if (!Number.isFinite(row) || row <= 0 || row >= divs) continue;
+    const row = readNumber(rows[i]);
+    if (row == null || row <= 0 || row >= divs) continue;
     const y = state.cellBottomY + row * step;
     shelfYs.push(y);
     shelfYNorms.push(state.boxYNormFromCenter(y));

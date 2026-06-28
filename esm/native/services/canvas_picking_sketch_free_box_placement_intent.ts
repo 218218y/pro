@@ -1,4 +1,5 @@
 import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { asFiniteNumberOrNaN } from './canvas_picking_sketch_free_box_contracts.js';
 
 export function resolveSketchFreeAttachIntent(args: {
   dx: number;
@@ -8,12 +9,12 @@ export function resolveSketchFreeAttachIntent(args: {
   previewW: number;
   previewH: number;
 }): 'x' | 'y' | null {
-  const dx = Math.abs(Number(args.dx));
-  const dy = Math.abs(Number(args.dy));
-  const targetHalfW = Number(args.targetHalfW);
-  const targetHalfH = Number(args.targetHalfH);
-  const previewW = Number(args.previewW);
-  const previewH = Number(args.previewH);
+  const dx = Math.abs(asFiniteNumberOrNaN(args.dx));
+  const dy = Math.abs(asFiniteNumberOrNaN(args.dy));
+  const targetHalfW = asFiniteNumberOrNaN(args.targetHalfW);
+  const targetHalfH = asFiniteNumberOrNaN(args.targetHalfH);
+  const previewW = asFiniteNumberOrNaN(args.previewW);
+  const previewH = asFiniteNumberOrNaN(args.previewH);
   if (
     !Number.isFinite(dx) ||
     !Number.isFinite(dy) ||
@@ -98,11 +99,11 @@ export function addSketchFreeAttachIntentBias(args: {
   previewW: number;
   previewH: number;
 }): number {
-  const score = Number(args.score);
+  const score = asFiniteNumberOrNaN(args.score);
   const preferredFixedAxis = args.preferredFixedAxis;
   if (!Number.isFinite(score) || !preferredFixedAxis || args.fixedAxis === preferredFixedAxis) return score;
-  const previewW = Number(args.previewW);
-  const previewH = Number(args.previewH);
+  const previewW = asFiniteNumberOrNaN(args.previewW);
+  const previewH = asFiniteNumberOrNaN(args.previewH);
   const dims = SKETCH_BOX_DIMENSIONS.freePlacement;
   const bias = Math.max(
     dims.attachIntentScoreBiasMinM,

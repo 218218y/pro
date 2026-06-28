@@ -40,24 +40,24 @@ export interface CanvasPickingGridInfoLike extends UnknownRecord {
 
 export interface SketchModuleBoxContentLike extends UnknownRecord {
   id?: string | number | null;
-  yNorm?: number | string | null;
-  yNormC?: number | string | null;
-  heightM?: number | string | null;
-  depthM?: number | string | null;
-  xNorm?: number | string | null;
+  yNorm?: number | null;
+  yNormC?: number | null;
+  heightM?: number | null;
+  depthM?: number | null;
+  xNorm?: number | null;
   variant?: string | null;
 }
 
 export interface SketchModuleBoxLike extends UnknownRecord {
   id?: string | number | null;
   freePlacement?: boolean;
-  yNorm?: number | string | null;
-  heightM?: number | string | null;
-  widthM?: number | string | null;
-  depthM?: number | string | null;
-  xNorm?: number | string | null;
-  absX?: number | string | null;
-  absY?: number | string | null;
+  yNorm?: number | null;
+  heightM?: number | null;
+  widthM?: number | null;
+  depthM?: number | null;
+  xNorm?: number | null;
+  absX?: number | null;
+  absY?: number | null;
   hasCornice?: boolean;
   corniceType?: string | null;
   baseType?: string | null;
@@ -65,11 +65,11 @@ export interface SketchModuleBoxLike extends UnknownRecord {
   baseLegColor?: string | null;
   baseLegPlatformMode?: string | null;
   baseLegPlatformSideMode?: string | null;
-  baseLegPlatformSideOverhangCm?: number | string | null;
-  baseLegPlatformFrontOverhangCm?: number | string | null;
-  baseLegHeightCm?: number | string | null;
-  baseLegWidthCm?: number | string | null;
-  basePlinthHeightCm?: number | string | null;
+  baseLegPlatformSideOverhangCm?: number | null;
+  baseLegPlatformFrontOverhangCm?: number | null;
+  baseLegHeightCm?: number | null;
+  baseLegWidthCm?: number | null;
+  basePlinthHeightCm?: number | null;
   shelves?: SketchModuleBoxContentLike[];
   rods?: SketchModuleBoxContentLike[];
   storageBarriers?: SketchModuleBoxContentLike[];

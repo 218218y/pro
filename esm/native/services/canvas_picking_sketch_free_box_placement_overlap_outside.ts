@@ -1,4 +1,5 @@
 import { doAxisIntervalsOverlap } from './canvas_picking_sketch_free_box_shared.js';
+import { asFiniteNumberOrNaN } from './canvas_picking_sketch_free_box_contracts.js';
 
 export function resolveSketchFreeBoxOutsideWardrobePlacement(args: {
   centerX: number;
@@ -11,15 +12,15 @@ export function resolveSketchFreeBoxOutsideWardrobePlacement(args: {
   wardrobeHeight: number;
   roomFloorY: number;
 }): { centerX: number; centerY: number; axis: 'x' | 'y' } | null {
-  const centerX = Number(args.centerX);
-  const centerY = Number(args.centerY);
-  const boxW = Number(args.boxW);
-  const boxH = Number(args.boxH);
-  const wardrobeCenterX = Number(args.wardrobeCenterX);
-  const wardrobeCenterY = Number(args.wardrobeCenterY);
-  const wardrobeWidth = Number(args.wardrobeWidth);
-  const wardrobeHeight = Number(args.wardrobeHeight);
-  const roomFloorY = Number(args.roomFloorY);
+  const centerX = asFiniteNumberOrNaN(args.centerX);
+  const centerY = asFiniteNumberOrNaN(args.centerY);
+  const boxW = asFiniteNumberOrNaN(args.boxW);
+  const boxH = asFiniteNumberOrNaN(args.boxH);
+  const wardrobeCenterX = asFiniteNumberOrNaN(args.wardrobeCenterX);
+  const wardrobeCenterY = asFiniteNumberOrNaN(args.wardrobeCenterY);
+  const wardrobeWidth = asFiniteNumberOrNaN(args.wardrobeWidth);
+  const wardrobeHeight = asFiniteNumberOrNaN(args.wardrobeHeight);
+  const roomFloorY = asFiniteNumberOrNaN(args.roomFloorY);
   if (
     !Number.isFinite(centerX) ||
     !Number.isFinite(centerY) ||

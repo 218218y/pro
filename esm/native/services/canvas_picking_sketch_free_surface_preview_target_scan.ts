@@ -4,6 +4,7 @@ import type {
   SketchFreeBoxGeometry,
   SketchFreeBoxGeometryArgs,
 } from './canvas_picking_manual_layout_sketch_contracts.js';
+import { asNumberOrNull } from './canvas_picking_sketch_free_box_shared.js';
 import {
   type LocalPoint,
   type SelectorLocalBox,
@@ -35,9 +36,9 @@ export function findSketchFreeHoverTargetBox(args: {
   projectPointerToLocalZPlane?: ((planeZ: number) => LocalPoint | null) | null;
 }): SketchFreeBoxTarget | null {
   const { freeBoxes, planeHit } = args;
-  const planeHitX = Number(planeHit.x);
-  const planeHitY = Number(planeHit.y);
-  if (!Number.isFinite(planeHitX) || !Number.isFinite(planeHitY)) return null;
+  const planeHitX = asNumberOrNull(planeHit.x);
+  const planeHitY = asNumberOrNull(planeHit.y);
+  if (planeHitX == null || planeHitY == null) return null;
   let bestDist = Infinity;
   let bestTarget: SketchFreeBoxTarget | null = null;
   for (let i = 0; i < freeBoxes.length; i++) {

@@ -270,3 +270,31 @@ test('no-main free-box hover keeps side attachment flush instead of repelling fr
   assert.ok(Math.abs(placement.previewY - 0.6) <= 1e-9);
   assert.equal(placement.snapToCenter, true);
 });
+
+test('free-box hover ignores string-encoded existing box geometry for remove or attach', () => {
+  const placement = resolveSketchFreeBoxHoverPlacement(
+    makeArgs({
+      App: makeNoMainApp() as never,
+      planeX: 0,
+      planeY: 0,
+      freeBoxes: [
+        {
+          id: 'string-box',
+          freePlacement: true,
+          absX: '0' as any,
+          absY: '0' as any,
+          widthM: '0.6' as any,
+          depthM: '0.5' as any,
+          heightM: '0.4' as any,
+        },
+      ],
+      intersects: [],
+      localParent: null,
+    })
+  );
+
+  assert.ok(placement);
+  assert.equal(placement.op, 'add');
+  assert.equal(placement.removeId, null);
+  assert.equal(placement.snapToCenter, false);
+});

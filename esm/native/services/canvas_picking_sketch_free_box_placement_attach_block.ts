@@ -1,4 +1,5 @@
 import {
+  asFiniteNumberOrNaN,
   asNumberOrNull,
   asSketchFreePlacementBox,
   resolveSketchFreeBoxGeometry,
@@ -24,13 +25,13 @@ export function isSketchFreeInwardSideAttachmentBlocked(args: {
   const candidate = args.candidate;
   if (!candidate || candidate.fixedAxis !== 'x') return false;
 
-  const targetCenterX = Number(args.targetCenterX);
-  const targetCenterY = Number(args.targetCenterY);
-  const targetW = Number(args.targetW);
-  const targetH = Number(args.targetH);
-  const previewW = Number(args.previewW);
-  const pointX = Number(args.pointX);
-  const pointY = Number(args.pointY);
+  const targetCenterX = asFiniteNumberOrNaN(args.targetCenterX);
+  const targetCenterY = asFiniteNumberOrNaN(args.targetCenterY);
+  const targetW = asFiniteNumberOrNaN(args.targetW);
+  const targetH = asFiniteNumberOrNaN(args.targetH);
+  const previewW = asFiniteNumberOrNaN(args.previewW);
+  const pointX = asFiniteNumberOrNaN(args.pointX);
+  const pointY = asFiniteNumberOrNaN(args.pointY);
   const direction = candidate.direction;
   const ignoreBoxId = args.ignoreBoxId != null ? String(args.ignoreBoxId) : '';
   if (
@@ -74,11 +75,11 @@ export function isSketchFreeInwardSideAttachmentBlocked(args: {
     if ((direction === 1 && !(cx > targetCenterX)) || (direction === -1 && !(cx < targetCenterX))) continue;
 
     const geo = resolveSketchFreeBoxGeometry({
-      wardrobeWidth: Number(args.wardrobeWidth),
-      wardrobeDepth: Number(args.wardrobeDepth),
-      backZ: Number(args.backZ),
+      wardrobeWidth: asFiniteNumberOrNaN(args.wardrobeWidth),
+      wardrobeDepth: asFiniteNumberOrNaN(args.wardrobeDepth),
+      backZ: asFiniteNumberOrNaN(args.backZ),
       centerX: cx,
-      woodThick: Number(args.woodThick),
+      woodThick: asFiniteNumberOrNaN(args.woodThick),
       widthM: wM != null && wM > 0 ? wM : null,
       depthM: dM != null && dM > 0 ? dM : null,
     });

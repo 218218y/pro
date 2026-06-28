@@ -1,5 +1,5 @@
 import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
-import { asNumberOrNull } from './canvas_picking_sketch_free_box_contracts.js';
+import { asFiniteNumberOrNaN, asNumberOrNull } from './canvas_picking_sketch_free_box_contracts.js';
 
 export function clampSketchFreeBoxCenterY(args: {
   centerY: number;
@@ -8,10 +8,10 @@ export function clampSketchFreeBoxCenterY(args: {
   wardrobeHeight: number;
   pad?: number;
 }): number {
-  const centerY = Number(args.centerY);
-  const boxH = Number(args.boxH);
-  const wardrobeCenterY = Number(args.wardrobeCenterY);
-  const wardrobeHeight = Number(args.wardrobeHeight);
+  const centerY = asFiniteNumberOrNaN(args.centerY);
+  const boxH = asFiniteNumberOrNaN(args.boxH);
+  const wardrobeCenterY = asFiniteNumberOrNaN(args.wardrobeCenterY);
+  const wardrobeHeight = asFiniteNumberOrNaN(args.wardrobeHeight);
   const pad = asNumberOrNull(args.pad) ?? 0;
   if (!Number.isFinite(centerY) || !Number.isFinite(boxH) || !(boxH > 0)) return centerY;
   if (!Number.isFinite(wardrobeCenterY) || !Number.isFinite(wardrobeHeight) || !(wardrobeHeight > 0)) {
@@ -28,7 +28,7 @@ export function clampSketchFreeBoxCenterY(args: {
 }
 
 export function getSketchFreePlacementVerticalSlack(wardrobeHeight: number): number {
-  const height = Number(wardrobeHeight);
+  const height = asFiniteNumberOrNaN(wardrobeHeight);
   const dims = SKETCH_BOX_DIMENSIONS.freePlacement;
   if (!Number.isFinite(height) || !(height > 0)) return dims.verticalSlackDefaultM;
   return Math.max(
@@ -41,10 +41,6 @@ export function getSketchFreePlacementRoomFloorY(): number {
   return SKETCH_BOX_DIMENSIONS.freePlacement.roomFloorY;
 }
 
-function readFiniteNumber(value: unknown): number | null {
-  return typeof value === 'number' && Number.isFinite(value) ? value : null;
-}
-
 export function clampSketchFreeBoxCenterYToWorkspace(args: {
   centerY: number;
   boxH: number;
@@ -52,10 +48,10 @@ export function clampSketchFreeBoxCenterYToWorkspace(args: {
   wardrobeHeight: number;
   pad?: number;
 }): number {
-  const centerY = Number(args.centerY);
-  const boxH = Number(args.boxH);
-  const wardrobeCenterY = Number(args.wardrobeCenterY);
-  const wardrobeHeight = Number(args.wardrobeHeight);
+  const centerY = asFiniteNumberOrNaN(args.centerY);
+  const boxH = asFiniteNumberOrNaN(args.boxH);
+  const wardrobeCenterY = asFiniteNumberOrNaN(args.wardrobeCenterY);
+  const wardrobeHeight = asFiniteNumberOrNaN(args.wardrobeHeight);
   const pad = asNumberOrNull(args.pad) ?? 0;
   if (!Number.isFinite(centerY) || !Number.isFinite(boxH) || !(boxH > 0)) return centerY;
   if (!Number.isFinite(wardrobeCenterY) || !Number.isFinite(wardrobeHeight) || !(wardrobeHeight > 0)) {
@@ -79,14 +75,14 @@ export function isSketchFreeBoxUnderWardrobeColumn(args: {
   boxH: number;
   wardrobeBox: { centerX: number; centerY: number; width: number; height: number };
 }): boolean {
-  const planeX = readFiniteNumber(args.planeX);
-  const planeY = readFiniteNumber(args.planeY);
-  const boxH = readFiniteNumber(args.boxH);
+  const planeX = asNumberOrNull(args.planeX);
+  const planeY = asNumberOrNull(args.planeY);
+  const boxH = asNumberOrNull(args.boxH);
   const wardrobeBox = args.wardrobeBox;
-  const wardrobeCenterX = readFiniteNumber(wardrobeBox?.centerX);
-  const wardrobeCenterY = readFiniteNumber(wardrobeBox?.centerY);
-  const wardrobeWidth = readFiniteNumber(wardrobeBox?.width);
-  const wardrobeHeight = readFiniteNumber(wardrobeBox?.height);
+  const wardrobeCenterX = asNumberOrNull(wardrobeBox?.centerX);
+  const wardrobeCenterY = asNumberOrNull(wardrobeBox?.centerY);
+  const wardrobeWidth = asNumberOrNull(wardrobeBox?.width);
+  const wardrobeHeight = asNumberOrNull(wardrobeBox?.height);
   if (
     planeX == null ||
     planeY == null ||
@@ -115,13 +111,13 @@ export function isWithinSketchFreePlacementBounds(args: {
   previewW: number;
   previewH: number;
 }): boolean {
-  const planeX = readFiniteNumber(args.planeX);
-  const planeY = readFiniteNumber(args.planeY);
-  const previewW = readFiniteNumber(args.previewW);
-  const previewH = readFiniteNumber(args.previewH);
+  const planeX = asNumberOrNull(args.planeX);
+  const planeY = asNumberOrNull(args.planeY);
+  const previewW = asNumberOrNull(args.previewW);
+  const previewH = asNumberOrNull(args.previewH);
   const wardrobeBox = args.wardrobeBox;
-  const centerY = readFiniteNumber(wardrobeBox.centerY);
-  const height = readFiniteNumber(wardrobeBox.height);
+  const centerY = asNumberOrNull(wardrobeBox.centerY);
+  const height = asNumberOrNull(wardrobeBox.height);
   if (
     planeX == null ||
     planeY == null ||

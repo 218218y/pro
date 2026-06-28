@@ -1,5 +1,7 @@
 import { MATERIAL_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
+  asFiniteNumberOrNaN,
+  asNumberOrNull,
   clampSketchFreeBoxCenterYToWorkspace,
   getSketchFreePlacementRoomFloorY,
   isWithinSketchFreePlacementBounds,
@@ -31,10 +33,10 @@ export type SketchFreeBoxHoverContext = {
 export function createSketchFreeBoxHoverContext(
   args: ResolveSketchFreeBoxHoverPlacementArgs
 ): SketchFreeBoxHoverContext | null {
-  const planeX = Number(args.planeX);
-  const planeY = Number(args.planeY);
-  const boxH = Number(args.boxH);
-  const wardrobeBackZ = Number(args.wardrobeBackZ);
+  const planeX = asFiniteNumberOrNaN(args.planeX);
+  const planeY = asFiniteNumberOrNaN(args.planeY);
+  const boxH = asFiniteNumberOrNaN(args.boxH);
+  const wardrobeBackZ = asFiniteNumberOrNaN(args.wardrobeBackZ);
   const wardrobeBox = args.wardrobeBox;
   const freeBoxes = Array.isArray(args.freeBoxes) ? args.freeBoxes : [];
   if (
@@ -50,8 +52,8 @@ export function createSketchFreeBoxHoverContext(
   }
 
   const previewGeo = resolveSketchFreeBoxGeometry({
-    wardrobeWidth: Number(wardrobeBox.width) || 0,
-    wardrobeDepth: Number(wardrobeBox.depth) || 0,
+    wardrobeWidth: asNumberOrNull(wardrobeBox.width) ?? 0,
+    wardrobeDepth: asNumberOrNull(wardrobeBox.depth) ?? 0,
     backZ: wardrobeBackZ,
     centerX: planeX,
     woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
@@ -79,8 +81,8 @@ export function createSketchFreeBoxHoverContext(
   const previewY = clampSketchFreeBoxCenterYToWorkspace({
     centerY: planeY,
     boxH,
-    wardrobeCenterY: Number(wardrobeBox.centerY),
-    wardrobeHeight: Number(wardrobeBox.height),
+    wardrobeCenterY: asFiniteNumberOrNaN(wardrobeBox.centerY),
+    wardrobeHeight: asFiniteNumberOrNaN(wardrobeBox.height),
     pad: workspacePad,
   });
   const previewW = previewGeo.outerW;

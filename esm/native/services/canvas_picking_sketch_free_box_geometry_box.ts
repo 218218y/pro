@@ -1,5 +1,5 @@
 import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
-import { asNumberOrNull } from './canvas_picking_sketch_free_box_contracts.js';
+import { asFiniteNumberOrNaN, asNumberOrNull } from './canvas_picking_sketch_free_box_contracts.js';
 
 export function resolveSketchFreeBoxGeometry(args: {
   wardrobeWidth: number;
@@ -18,11 +18,11 @@ export function resolveSketchFreeBoxGeometry(args: {
   centerZ: number;
   innerBackZ: number;
 } {
-  const wardrobeWidth = Number(args.wardrobeWidth);
-  const wardrobeDepth = Number(args.wardrobeDepth);
-  const backZ = Number(args.backZ);
-  const centerX = Number(args.centerX);
-  const woodThick = Number(args.woodThick);
+  const wardrobeWidth = asFiniteNumberOrNaN(args.wardrobeWidth);
+  const wardrobeDepth = asFiniteNumberOrNaN(args.wardrobeDepth);
+  const backZ = asFiniteNumberOrNaN(args.backZ);
+  const centerX = asFiniteNumberOrNaN(args.centerX);
+  const woodThick = asFiniteNumberOrNaN(args.woodThick);
   const widthM = args.widthM;
   const depthM = args.depthM;
   const dims = SKETCH_BOX_DIMENSIONS.geometry;

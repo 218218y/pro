@@ -1,3 +1,5 @@
+import { asFiniteNumberOrNaN } from './canvas_picking_sketch_free_box_contracts.js';
+
 function clampToRange(value: number, min: number, max: number): number {
   if (!Number.isFinite(value)) return value;
   if (!Number.isFinite(min) || !Number.isFinite(max)) return value;
@@ -11,10 +13,10 @@ export function resolveSketchFreeSoftAttachAxisCenter(args: {
   targetSpan: number;
   previewSpan: number;
 }): { center: number; snapped: boolean } {
-  const rawCenter = Number(args.rawCenter);
-  const targetCenter = Number(args.targetCenter);
-  const targetSpan = Number(args.targetSpan);
-  const previewSpan = Number(args.previewSpan);
+  const rawCenter = asFiniteNumberOrNaN(args.rawCenter);
+  const targetCenter = asFiniteNumberOrNaN(args.targetCenter);
+  const targetSpan = asFiniteNumberOrNaN(args.targetSpan);
+  const previewSpan = asFiniteNumberOrNaN(args.previewSpan);
   if (
     !Number.isFinite(rawCenter) ||
     !Number.isFinite(targetCenter) ||

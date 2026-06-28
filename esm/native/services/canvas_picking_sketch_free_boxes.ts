@@ -86,7 +86,7 @@ export function pickSketchFreeBoxHost(App: AppContainer): { moduleKey: ModuleKey
     const ui = asRecord(getUi(App));
     const raw = asRecord(ui?.raw);
     const doorsRaw = raw?.doors ?? ui?.doors;
-    const doors = Number(doorsRaw);
+    const doors = typeof doorsRaw === 'number' && Number.isFinite(doorsRaw) ? doorsRaw : NaN;
     const wardrobeType = cfg && cfg.wardrobeType === 'sliding' ? 'sliding' : 'hinged';
     if (wardrobeType !== 'sliding' && Number.isFinite(doors) && Math.round(doors) === 0) {
       return { moduleKey: 0, isBottom: false };

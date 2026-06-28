@@ -1,3 +1,5 @@
+import { asFiniteNumberOrNaN } from './canvas_picking_sketch_free_box_contracts.js';
+
 export function doAxisIntervalsOverlap(minA: number, maxA: number, minB: number, maxB: number): boolean {
   return maxA > minB && minA < maxB;
 }
@@ -12,10 +14,10 @@ export function doesSketchFreeBoxPartiallyOverlapWardrobe(args: {
   wardrobeCenterY?: number;
   wardrobeHeight?: number;
 }): boolean {
-  const centerX = Number(args.centerX);
-  const boxW = Number(args.boxW);
-  const wardrobeCenterX = Number(args.wardrobeCenterX);
-  const wardrobeWidth = Number(args.wardrobeWidth);
+  const centerX = asFiniteNumberOrNaN(args.centerX);
+  const boxW = asFiniteNumberOrNaN(args.boxW);
+  const wardrobeCenterX = asFiniteNumberOrNaN(args.wardrobeCenterX);
+  const wardrobeWidth = asFiniteNumberOrNaN(args.wardrobeWidth);
   if (
     !Number.isFinite(centerX) ||
     !Number.isFinite(boxW) ||
@@ -34,10 +36,10 @@ export function doesSketchFreeBoxPartiallyOverlapWardrobe(args: {
   const overlapsWardrobeX = doAxisIntervalsOverlap(boxMinX, boxMaxX, wardrobeMinX, wardrobeMaxX);
   if (!overlapsWardrobeX) return false;
 
-  const boxH = Number(args.boxH);
-  const centerY = Number(args.centerY);
-  const wardrobeCenterY = Number(args.wardrobeCenterY);
-  const wardrobeHeight = Number(args.wardrobeHeight);
+  const boxH = asFiniteNumberOrNaN(args.boxH);
+  const centerY = asFiniteNumberOrNaN(args.centerY);
+  const wardrobeCenterY = asFiniteNumberOrNaN(args.wardrobeCenterY);
+  const wardrobeHeight = asFiniteNumberOrNaN(args.wardrobeHeight);
   if (
     !Number.isFinite(boxH) ||
     !(boxH > 0) ||

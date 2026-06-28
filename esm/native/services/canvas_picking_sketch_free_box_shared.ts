@@ -4,7 +4,11 @@ export type {
   ResolveSketchFreeBoxHoverPlacementArgs,
   SketchFreePlacementBoxLike,
 } from './canvas_picking_sketch_free_box_contracts.js';
-export { asNumberOrNull, asSketchFreePlacementBox } from './canvas_picking_sketch_free_box_contracts.js';
+export {
+  asFiniteNumberOrNaN,
+  asNumberOrNull,
+  asSketchFreePlacementBox,
+} from './canvas_picking_sketch_free_box_contracts.js';
 export {
   getSketchFreeBoxPartPrefix,
   findSketchFreeBoxLocalHit,

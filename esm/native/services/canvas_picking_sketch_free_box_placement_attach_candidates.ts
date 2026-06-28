@@ -1,4 +1,5 @@
 import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { asFiniteNumberOrNaN } from './canvas_picking_sketch_free_box_contracts.js';
 import {
   addSketchFreeAttachIntentBias,
   resolveSketchFreeAttachIntent,
@@ -20,15 +21,15 @@ export function resolveSketchFreeBoxAttachPlacementCandidates(args: {
   horizontal: SketchFreeBoxAttachPlacement | null;
   vertical: SketchFreeBoxAttachPlacement | null;
 } {
-  const pointX = Number(args.pointX);
-  const pointY = Number(args.pointY);
-  const targetCenterX = Number(args.targetCenterX);
-  const targetCenterY = Number(args.targetCenterY);
-  const targetW = Number(args.targetW);
-  const targetH = Number(args.targetH);
-  const previewW = Number(args.previewW);
-  const previewH = Number(args.previewH);
-  const gap = Number(args.gap);
+  const pointX = asFiniteNumberOrNaN(args.pointX);
+  const pointY = asFiniteNumberOrNaN(args.pointY);
+  const targetCenterX = asFiniteNumberOrNaN(args.targetCenterX);
+  const targetCenterY = asFiniteNumberOrNaN(args.targetCenterY);
+  const targetW = asFiniteNumberOrNaN(args.targetW);
+  const targetH = asFiniteNumberOrNaN(args.targetH);
+  const previewW = asFiniteNumberOrNaN(args.previewW);
+  const previewH = asFiniteNumberOrNaN(args.previewH);
+  const gap = asFiniteNumberOrNaN(args.gap);
   if (
     !Number.isFinite(pointX) ||
     !Number.isFinite(pointY) ||

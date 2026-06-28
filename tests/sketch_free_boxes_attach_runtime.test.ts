@@ -121,3 +121,19 @@ test('free-box attach still prefers side attachment when the cursor is clearly o
   assert.ok(Math.abs(placement.centerX - 0.606) <= 1e-9);
   assert.ok(Math.abs(placement.centerY - 0) <= 1e-9);
 });
+
+test('free-box attach rejects string-encoded geometry inputs', () => {
+  const placement = resolveSketchFreeBoxAttachPlacement({
+    pointX: '0.68' as any,
+    pointY: 0,
+    targetCenterX: 0,
+    targetCenterY: 0,
+    targetW: 0.6,
+    targetH: 0.4,
+    previewW: 0.6,
+    previewH: 0.3,
+    gap: 0.006,
+  });
+
+  assert.equal(placement, null);
+});

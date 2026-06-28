@@ -1,14 +1,16 @@
 import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { asFiniteNumberOrNaN } from './canvas_picking_sketch_free_box_contracts.js';
+
 export function resolveSketchFreeBoxOutsideWardrobeSnapX(args: {
   planeX: number;
   previewW: number;
   wardrobeCenterX: number;
   wardrobeWidth: number;
 }): number | null {
-  const planeX = Number(args.planeX);
-  const previewW = Number(args.previewW);
-  const wardrobeCenterX = Number(args.wardrobeCenterX);
-  const wardrobeWidth = Number(args.wardrobeWidth);
+  const planeX = asFiniteNumberOrNaN(args.planeX);
+  const previewW = asFiniteNumberOrNaN(args.previewW);
+  const wardrobeCenterX = asFiniteNumberOrNaN(args.wardrobeCenterX);
+  const wardrobeWidth = asFiniteNumberOrNaN(args.wardrobeWidth);
   if (
     !Number.isFinite(planeX) ||
     !Number.isFinite(previewW) ||
@@ -42,12 +44,12 @@ export function isWithinSketchFreeBoxRemoveZone(args: {
   boxW: number;
   boxH: number;
 }): boolean {
-  const pointX = Number(args.pointX);
-  const pointY = Number(args.pointY);
-  const boxCenterX = Number(args.boxCenterX);
-  const boxCenterY = Number(args.boxCenterY);
-  const boxW = Number(args.boxW);
-  const boxH = Number(args.boxH);
+  const pointX = asFiniteNumberOrNaN(args.pointX);
+  const pointY = asFiniteNumberOrNaN(args.pointY);
+  const boxCenterX = asFiniteNumberOrNaN(args.boxCenterX);
+  const boxCenterY = asFiniteNumberOrNaN(args.boxCenterY);
+  const boxW = asFiniteNumberOrNaN(args.boxW);
+  const boxH = asFiniteNumberOrNaN(args.boxH);
   if (
     !Number.isFinite(pointX) ||
     !Number.isFinite(pointY) ||

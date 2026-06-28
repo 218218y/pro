@@ -1,6 +1,7 @@
 import {
   normalizeSketchBoxDividerXNorm,
   normalizeSketchBoxDividerYNorm,
+  readFiniteNumber,
 } from './canvas_picking_sketch_box_dividers_shared.js';
 import {
   readSketchBoxDividers,
@@ -24,13 +25,13 @@ export function addSketchBoxDividerState(
   const norm = normalizeSketchBoxDividerXNorm(dividerXNorm);
   if (norm == null) return;
   const yNorm = normalizeSketchBoxDividerYNorm(options?.yNorm);
-  const frontZ = Number(options?.frontZ);
+  const frontZ = readFiniteNumber(options?.frontZ);
   const dividers = readSketchBoxDividers(box);
   dividers.push({
     id: createDividerId('sbd', dividerId),
     xNorm: norm,
     centered: Math.abs(norm - 0.5) <= 0.001,
-    ...(Number.isFinite(frontZ) ? { frontZ } : {}),
+    ...(frontZ != null ? { frontZ } : {}),
     ...(yNorm != null ? { yNorm } : {}),
   });
   writeSketchBoxDividers(box, dividers);
@@ -87,13 +88,13 @@ export function addSketchBoxHorizontalDividerState(
   const norm = normalizeSketchBoxDividerYNorm(dividerYNorm);
   if (norm == null) return;
   const xNorm = normalizeSketchBoxDividerXNorm(options?.xNorm);
-  const frontZ = Number(options?.frontZ);
+  const frontZ = readFiniteNumber(options?.frontZ);
   const dividers = readSketchBoxHorizontalDividers(box);
   dividers.push({
     id: createDividerId('sbh', dividerId),
     yNorm: norm,
     centered: Math.abs(norm - 0.5) <= 0.001,
-    ...(Number.isFinite(frontZ) ? { frontZ } : {}),
+    ...(frontZ != null ? { frontZ } : {}),
     ...(xNorm != null ? { xNorm } : {}),
   });
   writeSketchBoxHorizontalDividers(box, dividers);

@@ -99,14 +99,14 @@ export function readDividerRecordList(value: unknown): UnknownRecord[] {
 }
 
 export function normalizeSketchBoxDividerXNorm(dividerXNorm: unknown): number | null {
-  const n = Number(dividerXNorm);
-  if (!Number.isFinite(n)) return null;
+  const n = readFiniteNumber(dividerXNorm);
+  if (n == null) return null;
   return Math.max(0, Math.min(1, n));
 }
 
 export function normalizeSketchBoxDividerYNorm(dividerYNorm: unknown): number | null {
-  const n = Number(dividerYNorm);
-  if (!Number.isFinite(n)) return null;
+  const n = readFiniteNumber(dividerYNorm);
+  if (n == null) return null;
   return Math.max(0, Math.min(1, n));
 }
 

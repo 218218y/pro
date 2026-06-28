@@ -5,6 +5,7 @@ import type {
   SketchFreeBoxGeometry,
   SketchFreeBoxGeometryArgs,
 } from './canvas_picking_manual_layout_sketch_contracts.js';
+import { asFiniteNumberOrNaN, asNumberOrNull } from './canvas_picking_sketch_free_box_shared.js';
 import {
   getSketchBoxAdornmentBaseHeight,
   parseSketchBoxBaseTool,
@@ -71,8 +72,8 @@ export function resolveSketchFreeHoverTargetCandidate(args: {
   const widthM = readRecordNumber(box, 'widthM');
   const depthM = readRecordNumber(box, 'depthM');
   const geo = resolveSketchFreeBoxGeometry({
-    wardrobeWidth: Number(wardrobeBox.width) || 0,
-    wardrobeDepth: Number(wardrobeBox.depth) || 0,
+    wardrobeWidth: asNumberOrNull(wardrobeBox.width) ?? 0,
+    wardrobeDepth: asNumberOrNull(wardrobeBox.depth) ?? 0,
     backZ: wardrobeBackZ,
     centerX,
     woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
@@ -92,17 +93,12 @@ export function resolveSketchFreeHoverTargetCandidate(args: {
   // Project to the canonical box front plane whenever the caller can provide it,
   // while still using the concrete local hit to choose which free box wins.
   const pointerHit = frontPlaneHit || localHit;
-  const planeHitX = Number(planeHit.x);
-  const planeHitY = Number(planeHit.y);
-  const hitX = pointerHit && Number.isFinite(Number(pointerHit.x)) ? Number(pointerHit.x) : planeHitX;
-  const hitY = pointerHit && Number.isFinite(Number(pointerHit.y)) ? Number(pointerHit.y) : planeHitY;
-  const planeHitZ = Number(planeHit.z);
-  const hitZ =
-    pointerHit && Number.isFinite(Number(pointerHit.z))
-      ? Number(pointerHit.z)
-      : Number.isFinite(planeHitZ)
-        ? planeHitZ
-        : undefined;
+  const planeHitX = asFiniteNumberOrNaN(planeHit.x);
+  const planeHitY = asFiniteNumberOrNaN(planeHit.y);
+  const hitX = asNumberOrNull(pointerHit?.x) ?? planeHitX;
+  const hitY = asNumberOrNull(pointerHit?.y) ?? planeHitY;
+  const planeHitZ = asFiniteNumberOrNaN(planeHit.z);
+  const hitZ = asNumberOrNull(pointerHit?.z) ?? (Number.isFinite(planeHitZ) ? planeHitZ : undefined);
   const dx = Math.abs(hitX - centerX);
   const tolX = Math.max(0.02, Math.min(0.06, geo.outerW * 0.16));
   const tolY = Math.max(0.02, Math.min(0.06, heightM * 0.16));
