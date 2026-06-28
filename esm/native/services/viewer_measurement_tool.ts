@@ -436,6 +436,18 @@ function pointOnMeasurementPlane(
   return vector(THREE, coords.x, coords.y, coords.z);
 }
 
+function pointOnBoxAxisLine(
+  THREE: Pick<ThreeLike, 'Vector3'>,
+  box: LocalMeasurementBox,
+  values: Partial<Record<MeasurementAxis, number>>
+): Vector3Like {
+  const coords = { x: box.centerX, y: box.centerY, z: box.centerZ };
+  if (values.x != null) coords.x = values.x;
+  if (values.y != null) coords.y = values.y;
+  if (values.z != null) coords.z = values.z;
+  return vector(THREE, coords.x, coords.y, coords.z);
+}
+
 function inferMeasurementPlaneKind(
   box: LocalMeasurementBox,
   forceInteriorFront: boolean
@@ -1033,6 +1045,36 @@ function addDimensionGuides(args: {
     )
   );
   objects.push(...heightObjects);
+
+  const normalLength = getBoxLengthAxis(box, plane.normalAxis);
+  if (!(normalLength > MIN_MEASURABLE_EDGE_M)) return;
+
+  const normalMin = getBoxMinAxis(box, plane.normalAxis);
+  const normalMax = getBoxMaxAxis(box, plane.normalAxis);
+  const anchorU = plane.uMin - sideOffset;
+  const anchorV = (plane.vMin + plane.vMax) / 2;
+  const startValues: Partial<Record<MeasurementAxis, number>> = {
+    [plane.uAxis]: anchorU,
+    [plane.vAxis]: anchorV,
+    [plane.normalAxis]: normalMin,
+  };
+  const endValues: Partial<Record<MeasurementAxis, number>> = {
+    [plane.uAxis]: anchorU,
+    [plane.vAxis]: anchorV,
+    [plane.normalAxis]: normalMax,
+  };
+
+  const depthObjects = readCreatedDimensionObjects(
+    addDimensionLine(
+      pointOnBoxAxisLine(THREE, box, startValues),
+      pointOnBoxAxisLine(THREE, box, endValues),
+      axisVector(THREE, plane.uAxis, -sideOffset),
+      formatCmLabel(normalLength),
+      labelScale,
+      axisVector(THREE, plane.uAxis, -0.012)
+    )
+  );
+  objects.push(...depthObjects);
 }
 
 function resolveSelectionFrameAxisMin(

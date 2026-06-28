@@ -410,6 +410,7 @@ test('viewer measurement resolves the shelf-to-shelf cavity instead of the full 
   });
 
   assert.ok(labels.includes('58'));
+  assert.ok(labels.includes('55'));
   assert.ok(!labels.includes('200'));
   const frame = wardrobe.children.find(child => child.name === 'wp-viewer-measurement-selection-frame');
   assert.ok(frame);
@@ -456,6 +457,7 @@ test('viewer measurement frame and guide lines are depth-tested while label boxe
   assert.ok(frame);
   assert.equal(frame.material.depthTest, true);
   assert.equal(frame.material.depthWrite, false);
+  assert.deepEqual(labels, ['70', '200', '2']);
   assert.ok(Math.abs(frame.geometry.points[0].z - 0.016) < 1e-9);
   assert.equal(
     wardrobe.children.filter(child => child.name === 'wp-viewer-measurement-selection-frame').length,
@@ -476,6 +478,20 @@ test('viewer measurement frame and guide lines are depth-tested while label boxe
   assert.ok(dimensionLine);
   assert.equal(dimensionLine.material.depthTest, true);
   assert.equal(dimensionLine.material.depthWrite, false);
+
+  const dimensionLines = wardrobe.children.filter(
+    child =>
+      child.type === 'Line' &&
+      child.name !== 'wp-viewer-measurement-selection-frame' &&
+      child.userData?.__wpViewerMeasurementOverlay
+  );
+  assert.equal(dimensionLines.length, 3);
+  const depthLine = dimensionLines[2];
+  assert.ok(depthLine.geometry.points.every((point: { x: number }) => Math.abs(point.x + 0.46) < 1e-9));
+  assert.deepEqual(
+    depthLine.geometry.points.map((point: { z: number }) => Number(point.z.toFixed(2))),
+    [-0.01, 0.01]
+  );
 
   const labelSprite = wardrobe.children.find(
     child => child.type === 'Sprite' && child.userData?.__wpViewerMeasurementOverlay && child.material
@@ -670,9 +686,7 @@ test('viewer measurement uses the side plane for thin side panels', () => {
 
   const frame = wardrobe.children.find(child => child.name === 'wp-viewer-measurement-selection-frame');
   assert.ok(frame);
-  assert.ok(labels.includes('58'));
-  assert.ok(labels.includes('200'));
-  assert.ok(!labels.includes('2'));
+  assert.deepEqual(labels, ['58', '200', '2']);
   for (const point of frame.geometry.points) {
     assert.ok(Math.abs(point.x - 0.526) < 1e-9);
   }
@@ -718,9 +732,7 @@ test('viewer measurement uses the top plane for thin horizontal boards', () => {
 
   const frame = wardrobe.children.find(child => child.name === 'wp-viewer-measurement-selection-frame');
   assert.ok(frame);
-  assert.ok(labels.includes('120'));
-  assert.ok(labels.includes('55'));
-  assert.ok(!labels.includes('2'));
+  assert.deepEqual(labels, ['120', '55', '2']);
   for (const point of frame.geometry.points) {
     assert.ok(Math.abs(point.y - 2.026) < 1e-9);
   }
