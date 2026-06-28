@@ -1,6 +1,23 @@
 import type { CornerBuildMeta, CornerBuildUI } from './corner_state_normalize_contracts.js';
-import { CORNER_WING_DIMENSIONS, WARDROBE_DEFAULTS } from '../../shared/wardrobe_dimension_tokens_shared.js';
-import { readBaseLegOptions, type BaseLegColor, type BaseLegStyle } from '../features/base_leg_support.js';
+import {
+  CARCASS_BASE_DIMENSIONS,
+  CORNER_WING_DIMENSIONS,
+  WARDROBE_DEFAULTS,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  normalizeBaseLegPlatformMode,
+  normalizeBaseLegPlatformSideMode,
+  readBaseLegOptions,
+  type BaseLegColor,
+  type BaseLegPlatformMode,
+  type BaseLegPlatformSideMode,
+  type BaseLegStyle,
+} from '../features/base_leg_support.js';
+import {
+  DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM,
+  DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM,
+  platformOverhangCmToM,
+} from '../features/platform_overhang_support.js';
 import { getBasePlinthHeightM, normalizeBasePlinthHeightCm } from '../features/base_plinth_support.js';
 import { resolveRemoveDoorsEnabledFromSnapshots } from '../features/door_removal_visibility.js';
 import {
@@ -98,6 +115,10 @@ export type CornerWingStackMetaState = {
   __basePlinthHeightCmOverride: unknown;
   __baseLegHeightCmOverride: unknown;
   __baseLegWidthCmOverride: unknown;
+  __baseLegPlatformModeOverride: unknown;
+  __baseLegPlatformSideModeOverride: unknown;
+  __baseLegPlatformSideOverhangCmOverride: unknown;
+  __baseLegPlatformFrontOverhangCmOverride: unknown;
 };
 
 export type CornerWingMetricsState = {
@@ -133,6 +154,13 @@ export type CornerWingPlacementState = {
   basePlinthHeightCm: number;
   baseLegHeightCm: number;
   baseLegWidthCm: number;
+  baseLegHeightM: number;
+  baseLegPlatformMode: BaseLegPlatformMode;
+  baseLegPlatformSideMode: BaseLegPlatformSideMode;
+  baseLegPlatformSideOverhangM: number;
+  baseLegPlatformFrontOverhangM: number;
+  baseLegBottomPlatformHeightM: number;
+  baseLegTopPlatformHeightM: number;
   baseH: number;
   stackOffsetY: number;
   cabinetBodyHeight: number;
@@ -165,6 +193,10 @@ export function resolveCornerWingStackMeta(
     __basePlinthHeightCmOverride: metaRec ? metaRec.basePlinthHeightCm : undefined,
     __baseLegHeightCmOverride: metaRec ? metaRec.baseLegHeightCm : undefined,
     __baseLegWidthCmOverride: metaRec ? metaRec.baseLegWidthCm : undefined,
+    __baseLegPlatformModeOverride: metaRec ? metaRec.baseLegPlatformMode : undefined,
+    __baseLegPlatformSideModeOverride: metaRec ? metaRec.baseLegPlatformSideMode : undefined,
+    __baseLegPlatformSideOverhangCmOverride: metaRec ? metaRec.baseLegPlatformSideOverhangCm : undefined,
+    __baseLegPlatformFrontOverhangCmOverride: metaRec ? metaRec.baseLegPlatformFrontOverhangCm : undefined,
   };
 }
 
@@ -287,6 +319,10 @@ export function resolveCornerWingPlacement(args: {
   __basePlinthHeightCmOverride: unknown;
   __baseLegHeightCmOverride: unknown;
   __baseLegWidthCmOverride: unknown;
+  __baseLegPlatformModeOverride: unknown;
+  __baseLegPlatformSideModeOverride: unknown;
+  __baseLegPlatformSideOverhangCmOverride: unknown;
+  __baseLegPlatformFrontOverhangCmOverride: unknown;
   __stackKey: 'top' | 'bottom';
   __stackSplitEnabled: boolean;
 }): CornerWingPlacementState {
@@ -305,6 +341,10 @@ export function resolveCornerWingPlacement(args: {
     __basePlinthHeightCmOverride,
     __baseLegHeightCmOverride,
     __baseLegWidthCmOverride,
+    __baseLegPlatformModeOverride,
+    __baseLegPlatformSideModeOverride,
+    __baseLegPlatformSideOverhangCmOverride,
+    __baseLegPlatformFrontOverhangCmOverride,
     __stackKey,
     __stackSplitEnabled,
   } = args;
@@ -347,13 +387,50 @@ export function resolveCornerWingPlacement(args: {
         : uiAny.baseLegWidthCm,
   });
 
+  const baseLegPlatformMode = normalizeBaseLegPlatformMode(
+    __baseLegPlatformModeOverride != null && String(__baseLegPlatformModeOverride).trim() !== ''
+      ? __baseLegPlatformModeOverride
+      : uiAny.baseLegPlatformMode,
+    'plain'
+  );
+  const baseLegPlatformSideMode = normalizeBaseLegPlatformSideMode(
+    __baseLegPlatformSideModeOverride != null && String(__baseLegPlatformSideModeOverride).trim() !== ''
+      ? __baseLegPlatformSideModeOverride
+      : uiAny.baseLegPlatformSideMode
+  );
+  const baseLegPlatformSideOverhangM = platformOverhangCmToM(
+    __baseLegPlatformSideOverhangCmOverride != null &&
+      String(__baseLegPlatformSideOverhangCmOverride).trim() !== ''
+      ? __baseLegPlatformSideOverhangCmOverride
+      : uiAny.baseLegPlatformSideOverhangCm,
+    DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM
+  );
+  const baseLegPlatformFrontOverhangM = platformOverhangCmToM(
+    __baseLegPlatformFrontOverhangCmOverride != null &&
+      String(__baseLegPlatformFrontOverhangCmOverride).trim() !== ''
+      ? __baseLegPlatformFrontOverhangCmOverride
+      : uiAny.baseLegPlatformFrontOverhangCm,
+    DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM
+  );
+  const requestedLegPlatformHeightM =
+    baseType === 'legs' && baseLegPlatformMode === 'stage'
+      ? CARCASS_BASE_DIMENSIONS.legs.platform.heightM
+      : 0;
+
   let baseH =
     baseType === 'plinth'
       ? getBasePlinthHeightM(basePlinthHeightCm)
       : baseType === 'legs'
-        ? legOptions.heightM
+        ? legOptions.heightM + requestedLegPlatformHeightM
         : 0;
   if (startY < CORNER_CONNECTOR.doorMinHeightM && baseH > startY) baseH = Math.max(0, startY);
+
+  const baseLegBottomPlatformHeightM = baseType === 'legs' ? Math.min(requestedLegPlatformHeightM, baseH) : 0;
+  const baseLegHeightM = baseType === 'legs' ? Math.max(0, baseH - baseLegBottomPlatformHeightM) : 0;
+  const baseLegTopPlatformHeightM =
+    baseType === 'legs' && baseLegPlatformMode === 'stage' && baseLegHeightM > 0
+      ? CARCASS_BASE_DIMENSIONS.legs.platform.heightM
+      : 0;
 
   const stackOffsetY = Math.max(0, startY - baseH);
   const cabinetBodyHeight = wingH;
@@ -394,6 +471,13 @@ export function resolveCornerWingPlacement(args: {
     basePlinthHeightCm,
     baseLegHeightCm: legOptions.heightCm,
     baseLegWidthCm: legOptions.widthCm,
+    baseLegHeightM,
+    baseLegPlatformMode,
+    baseLegPlatformSideMode,
+    baseLegPlatformSideOverhangM,
+    baseLegPlatformFrontOverhangM,
+    baseLegBottomPlatformHeightM,
+    baseLegTopPlatformHeightM,
     baseH,
     stackOffsetY,
     cabinetBodyHeight,

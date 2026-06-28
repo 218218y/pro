@@ -177,6 +177,31 @@ test('paint grouped/corner target scopes the pentagon frame to the lower stack',
   });
 });
 
+test('paint grouped/corner target treats corner leg platforms as scoped single paint targets', () => {
+  const cases = [
+    ['corner_leg_platform_bottom', 'bottom', 'lower_corner_leg_platform_bottom'],
+    ['corner_leg_platform_top', 'top', 'corner_leg_platform_top'],
+    ['corner_leg_platform_bottom_c2', 'bottom', 'lower_corner_leg_platform_bottom'],
+    ['corner_leg_platform_top_blind', 'top', 'corner_leg_platform_top'],
+    ['corner_pent_leg_platform_bottom', 'bottom', 'lower_corner_pent_leg_platform_bottom'],
+    ['corner_pent_leg_platform_top', 'top', 'corner_pent_leg_platform_top'],
+  ] as const;
+
+  for (const [foundPartId, activeStack, expectedKey] of cases) {
+    const state = createManualState();
+    const handled = applyGroupedOrCornerPaintTarget({
+      state,
+      foundPartId,
+      activeStack,
+      paintSelection: 'walnut',
+    });
+
+    assert.equal(handled, true, foundPartId);
+    assert.deepEqual(state.colors, { [expectedKey]: 'walnut' }, foundPartId);
+    assert.deepEqual(resolvePaintTargetKeys(foundPartId, activeStack), [expectedKey], foundPartId);
+  }
+});
+
 test('paint grouped/corner target keeps a unified stack-split corner wing frame as one outer shell', () => {
   const expected = {
     corner_ceil: 'walnut',

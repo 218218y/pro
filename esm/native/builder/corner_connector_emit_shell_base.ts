@@ -7,6 +7,12 @@ import type { CornerConnectorShellMetrics } from './corner_connector_emit_shell_
 
 const PLINTH_DIMENSIONS = CARCASS_BASE_DIMENSIONS.plinth;
 const BASE_LEG_LAYOUT_DIMENSIONS = CARCASS_BASE_DIMENSIONS.legs;
+const LEG_PLATFORM_DIMENSIONS = CARCASS_BASE_DIMENSIONS.legs.platform;
+
+function readPositiveNumber(value: unknown, fallback = 0): number {
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+}
 
 export function createCornerConnectorPlinthShape(
   setup: CornerConnectorSetup,
@@ -93,6 +99,10 @@ function appendCornerConnectorBase(setup: CornerConnectorSetup, metrics: CornerC
       baseLegStyle,
       baseLegColor,
       baseLegWidthCm,
+      baseLegHeightM,
+      baseLegPlatformMode,
+      baseLegBottomPlatformHeightM,
+      baseLegTopPlatformHeightM,
       baseH,
       bodyMat,
       __individualColors,
@@ -125,11 +135,17 @@ function appendCornerConnectorBase(setup: CornerConnectorSetup, metrics: CornerC
     addOutlines(plinth);
     cornerGroup.add(plinth);
   } else if (baseType === 'legs' && baseH > 0.001) {
+    const legSupportH = readPositiveNumber(baseLegHeightM, baseH);
     const legSpec = resolveBaseLegGeometrySpec(baseLegStyle, baseLegWidthCm);
     const legGeo =
       legSpec.shape === 'square'
-        ? new THREE.BoxGeometry(legSpec.width, baseH, legSpec.depth)
-        : new THREE.CylinderGeometry(legSpec.topRadius, legSpec.bottomRadius, baseH, legSpec.radialSegments);
+        ? new THREE.BoxGeometry(legSpec.width, legSupportH, legSpec.depth)
+        : new THREE.CylinderGeometry(
+            legSpec.topRadius,
+            legSpec.bottomRadius,
+            legSupportH,
+            legSpec.radialSegments
+          );
     const legMat = getMaterial(getBaseLegColorHex(baseLegColor), 'metal');
     const inset = BASE_LEG_LAYOUT_DIMENSIONS.connectorInsetM;
     const legPts = [
@@ -144,9 +160,43 @@ function appendCornerConnectorBase(setup: CornerConnectorSetup, metrics: CornerC
     ];
     for (const point of legPts) {
       const leg = new THREE.Mesh(legGeo, legMat);
-      leg.position.set(point.x, stackOffsetY + baseH / 2, point.z);
+      leg.position.set(point.x, stackOffsetY + legSupportH / 2, point.z);
       cornerGroup.add(leg);
     }
+  }
+
+  const appendLegPlatform = (partId: string, y: number, height: number): void => {
+    const platformH = readPositiveNumber(height);
+    if (!(platformH > 0)) return;
+    const mesh = new THREE.Mesh(
+      new THREE.ExtrudeGeometry(setup.shape, {
+        depth: platformH,
+        bevelEnabled: false,
+      }),
+      getCornerMat(partId, bodyMat)
+    );
+    mesh.rotation.x = Math.PI / 2;
+    mesh.position.y = y + platformH;
+    mesh.userData = { partId, __wpStack: __stackKey, kind: 'legPlatformSeg' };
+    addOutlines(mesh);
+    cornerGroup.add(mesh);
+  };
+
+  if (baseType === 'legs' && baseLegPlatformMode === 'stage') {
+    const legSupportH = readPositiveNumber(
+      baseLegHeightM,
+      Math.max(0, baseH - LEG_PLATFORM_DIMENSIONS.heightM)
+    );
+    appendLegPlatform(
+      'corner_pent_leg_platform_bottom',
+      stackOffsetY + legSupportH,
+      readPositiveNumber(baseLegBottomPlatformHeightM)
+    );
+    appendLegPlatform(
+      'corner_pent_leg_platform_top',
+      startY + wingH,
+      readPositiveNumber(baseLegTopPlatformHeightM)
+    );
   }
 
   const appendPlate = (partId: string, y: number, shp: ShapeInputLike = setup.shape): void => {

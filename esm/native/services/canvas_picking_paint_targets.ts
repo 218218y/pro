@@ -229,6 +229,15 @@ export function resolvePaintPreviewKeysForTarget(
   return unifiedCornerFramePreviewKeys !== null ? unifiedCornerFramePreviewKeys : targetKeys;
 }
 
+function resolveCornerLegPlatformPaintTargetKey(partId: string): string | null {
+  const raw = partId.startsWith('lower_') ? partId.slice('lower_'.length) : partId;
+  const wingMatch = /^corner_leg_platform_(bottom|top)(?:_c\d+|_blind)?$/.exec(raw);
+  if (wingMatch?.[1]) return `corner_leg_platform_${wingMatch[1]}`;
+  const pentMatch = /^corner_pent_leg_platform_(bottom|top)$/.exec(raw);
+  if (pentMatch?.[1]) return `corner_pent_leg_platform_${pentMatch[1]}`;
+  return null;
+}
+
 export function resolvePaintTargetKeys(
   foundPartId: string | null | undefined,
   activeStack: 'top' | 'bottom',
@@ -258,5 +267,7 @@ export function resolvePaintTargetKeys(
     return [__wp_scopeCornerPartKeyForStack('corner_plinth', activeStack)];
   if (partId === 'corner_pent_plinth')
     return [__wp_scopeCornerPartKeyForStack('corner_pent_plinth', activeStack)];
+  const cornerLegPlatformKey = resolveCornerLegPlatformPaintTargetKey(partId);
+  if (cornerLegPlatformKey) return [__wp_scopeCornerPartKeyForStack(cornerLegPlatformKey, activeStack)];
   return [__wp_canonDoorPartKeyForMaps(__wp_scopeCornerPartKeyForStack(partId, activeStack))];
 }

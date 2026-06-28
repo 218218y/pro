@@ -11,6 +11,26 @@ import {
 } from './corner_wing_carcass_shell_metrics.js';
 
 const PLINTH_DIMENSIONS = CARCASS_BASE_DIMENSIONS.plinth;
+const LEG_PLATFORM_DIMENSIONS = CARCASS_BASE_DIMENSIONS.legs.platform;
+
+function asFinitePositive(value: unknown, fallback = 0): number {
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+}
+
+function resolvePlatformSideOverhang(
+  sideMode: unknown,
+  sideOverhangM: unknown,
+  isLeftEdge: boolean,
+  isRightEdge: boolean
+): { left: number; right: number } {
+  if (sideMode === 'flush') return { left: 0, right: 0 };
+  const side = asFinitePositive(sideOverhangM, LEG_PLATFORM_DIMENSIONS.sideOverhangM);
+  return {
+    left: isLeftEdge ? side : 0,
+    right: isRightEdge ? side : 0,
+  };
+}
 
 export function applyCornerWingCarcassFloorAndBase(
   params: CornerWingCarcassFlowParams,
@@ -27,7 +47,15 @@ export function applyCornerWingCarcassFloorAndBase(
     blindWidth,
     stackOffsetY,
     baseType,
+    baseLegHeightM,
+    baseLegPlatformMode,
+    baseLegPlatformSideMode,
+    baseLegPlatformSideOverhangM,
+    baseLegPlatformFrontOverhangM,
+    baseLegBottomPlatformHeightM,
+    baseLegTopPlatformHeightM,
     baseH,
+    cabinetBodyHeight,
     __stackKey,
     __stackSplitUnifiedFrame,
     __individualColors,
@@ -134,6 +162,115 @@ export function applyCornerWingCarcassFloorAndBase(
       __wpStackSplitUnifiedFrame: __stackSplitUnifiedFrame,
     };
     wingGroup.add(floor);
+  }
+
+  const __addLegPlatformSeg = (
+    segW: number,
+    centerX: number,
+    depth: number,
+    partId: string,
+    y: number,
+    moduleIndex: string | undefined,
+    isLeftEdge: boolean,
+    isRightEdge: boolean
+  ) => {
+    const h = partId.endsWith('_top')
+      ? asFinitePositive(baseLegTopPlatformHeightM)
+      : asFinitePositive(baseLegBottomPlatformHeightM);
+    if (!(h > 0)) return;
+    const d = Number.isFinite(depth) && depth > 0 ? depth : wingD;
+    const frontOverhang = asFinitePositive(
+      baseLegPlatformFrontOverhangM,
+      LEG_PLATFORM_DIMENSIONS.frontOverhangM
+    );
+    const platformD = Math.max(LEG_PLATFORM_DIMENSIONS.minDepthM, d + frontOverhang);
+    const sideOverhang = resolvePlatformSideOverhang(
+      baseLegPlatformSideMode,
+      baseLegPlatformSideOverhangM,
+      isLeftEdge,
+      isRightEdge
+    );
+    const left = centerX - segW / 2 - sideOverhang.left;
+    const right = centerX + segW / 2 + sideOverhang.right;
+    const platformW = Math.max(LEG_PLATFORM_DIMENSIONS.minWidthM, right - left);
+    const platform = new THREE.Mesh(
+      new THREE.BoxGeometry(platformW, h, platformD),
+      getCornerMat(partId, bodyMat)
+    );
+    platform.position.set((left + right) / 2, y, -wingD + platformD / 2);
+    platform.userData = {
+      partId,
+      moduleIndex: moduleIndex || 'corner',
+      kind: 'legPlatformSeg',
+      __wpStack: __stackKey,
+    };
+    addOutlines(platform);
+    wingGroup.add(platform);
+  };
+
+  const __addLegPlatformPair = (
+    segW: number,
+    centerX: number,
+    depth: number,
+    moduleIndex: string | undefined,
+    isLeftEdge: boolean,
+    isRightEdge: boolean
+  ) => {
+    const legHeight = asFinitePositive(
+      baseLegHeightM,
+      Math.max(0, baseH - asFinitePositive(baseLegBottomPlatformHeightM))
+    );
+    const bottomH = asFinitePositive(baseLegBottomPlatformHeightM);
+    const topH = asFinitePositive(baseLegTopPlatformHeightM);
+    if (bottomH > 0) {
+      __addLegPlatformSeg(
+        segW,
+        centerX,
+        depth,
+        'corner_leg_platform_bottom',
+        stackOffsetY + legHeight + bottomH / 2,
+        moduleIndex,
+        isLeftEdge,
+        isRightEdge
+      );
+    }
+    if (topH > 0) {
+      __addLegPlatformSeg(
+        segW,
+        centerX,
+        depth,
+        'corner_leg_platform_top',
+        startY + cabinetBodyHeight + topH / 2,
+        moduleIndex,
+        isLeftEdge,
+        isRightEdge
+      );
+    }
+  };
+
+  if (baseType === 'legs' && baseLegPlatformMode === 'stage') {
+    if (cornerCells.length > 0) {
+      const hasBlind = blindWidth > CORNER_WING_DIMENSIONS.panels.minBlindWidthM;
+      if (hasBlind) {
+        __addLegPlatformPair(blindWidth, blindWidth / 2, wingD, 'corner', true, false);
+      }
+      if (metrics.__wingIsUnifiedCabinet) {
+        __addLegPlatformPair(activeWidth, blindWidth + activeWidth / 2, wingD, 'corner', !hasBlind, true);
+      } else {
+        for (let i = 0; i < cornerCells.length; i += 1) {
+          const cell = cornerCells[i];
+          const cx = readNumFrom(cell, 'centerX', 0);
+          const w = readNumFrom(cell, 'width', 0);
+          const d0 = readNumFrom(cell, 'depth', NaN);
+          const d = Number.isFinite(d0) ? Math.max(CORNER_WING_DIMENSIONS.panels.minCellDepthM, d0) : wingD;
+          const key = readStrFrom(cell, 'key', 'corner');
+          __addLegPlatformPair(w, cx, d, key, !hasBlind && i === 0, i === cornerCells.length - 1);
+        }
+      }
+    } else {
+      const platformW = Math.max(CORNER_WING_DIMENSIONS.selector.fallbackMinWidthM, wingW - woodThick);
+      __addLegPlatformPair(platformW, platformW / 2, wingD, 'corner', true, true);
+    }
   }
 
   if (baseType !== 'plinth' || baseH <= CORNER_WING_DIMENSIONS.panels.minBlindWidthM) return;

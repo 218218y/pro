@@ -45,6 +45,13 @@ export interface CornerOpsEmitContext extends UnknownRecord {
   basePlinthHeightCm: number;
   baseLegHeightCm: number;
   baseLegWidthCm: number;
+  baseLegHeightM: number;
+  baseLegPlatformMode: string;
+  baseLegPlatformSideMode: string;
+  baseLegPlatformSideOverhangM: number;
+  baseLegPlatformFrontOverhangM: number;
+  baseLegBottomPlatformHeightM: number;
+  baseLegTopPlatformHeightM: number;
   baseH: number;
   cabinetBodyHeight: number;
   cornerConnectorEnabled: boolean;

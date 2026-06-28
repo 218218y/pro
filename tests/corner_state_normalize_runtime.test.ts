@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { normalizeCornerWingState } from '../esm/native/builder/corner_state_normalize.js';
 import { resolveCornerWingFlags } from '../esm/native/builder/corner_state_normalize_layout.ts';
 import { createCornerWingEmitContext } from '../esm/native/builder/corner_wing_context.js';
+import { CARCASS_BASE_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
 
 const normalRenderPolicy = { sketchMode: false, addOutlines: () => undefined };
 const sketchRenderPolicy = { sketchMode: true, addOutlines: () => undefined };
@@ -404,4 +405,42 @@ test('normalizeCornerWingState rejects a missing config snapshot instead of read
       }),
     /cfgSnapshot is required/
   );
+});
+
+test('normalizeCornerWingState carries leg platform stage dimensions for corner wardrobes', () => {
+  const platformH = CARCASS_BASE_DIMENSIONS.legs.platform.heightM;
+  const state = normalizeCornerWingState({
+    mainW: 2.0,
+    mainH: 2.2,
+    mainD: 0.6,
+    woodThick: 0.018,
+    startY: 0.12 + platformH,
+    meta: {
+      snapshot: {
+        ui: {
+          cornerWidth: 160,
+          cornerHeight: 230,
+          cornerDepth: 60,
+          baseType: 'legs',
+          baseLegHeightCm: 12,
+          baseLegPlatformMode: 'stage',
+          baseLegPlatformSideMode: 'flush',
+          baseLegPlatformFrontOverhangCm: 4,
+        },
+        cfg: {},
+        primaryMode: 'none',
+        renderPolicy: normalRenderPolicy,
+      },
+    },
+  });
+
+  assert.equal(state.baseType, 'legs');
+  assert.equal(state.baseLegPlatformMode, 'stage');
+  assert.equal(state.baseLegPlatformSideMode, 'flush');
+  assert.equal(state.baseH, 0.12 + platformH);
+  assert.equal(state.stackOffsetY, 0);
+  assert.equal(state.baseLegHeightM, 0.12);
+  assert.equal(state.baseLegBottomPlatformHeightM, platformH);
+  assert.equal(state.baseLegTopPlatformHeightM, platformH);
+  assert.ok(Math.abs(state.baseLegPlatformFrontOverhangM - 0.04) < 1e-9);
 });

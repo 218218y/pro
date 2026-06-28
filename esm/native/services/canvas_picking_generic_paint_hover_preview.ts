@@ -55,7 +55,11 @@ function isBaseLegPlatformPaintKey(partKey: string): boolean {
     key === 'base_leg_platform_bottom' ||
     key === 'base_leg_platform_top' ||
     key === 'chest_leg_platform_bottom' ||
-    key === 'chest_leg_platform_top'
+    key === 'chest_leg_platform_top' ||
+    key === 'corner_leg_platform_bottom' ||
+    key === 'corner_leg_platform_top' ||
+    key === 'corner_pent_leg_platform_bottom' ||
+    key === 'corner_pent_leg_platform_top'
   );
 }
 

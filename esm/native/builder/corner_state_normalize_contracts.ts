@@ -4,7 +4,12 @@ import type {
   RemovedDoorsMap,
   UnknownRecord,
 } from '../../../types/index.js';
-import type { BaseLegColor, BaseLegStyle } from '../features/base_leg_support.js';
+import type {
+  BaseLegColor,
+  BaseLegPlatformMode,
+  BaseLegPlatformSideMode,
+  BaseLegStyle,
+} from '../features/base_leg_support.js';
 
 export type CornerBuildMeta = {
   stackKey?: 'top' | 'bottom';
@@ -14,6 +19,10 @@ export type CornerBuildMeta = {
   basePlinthHeightCm?: unknown;
   baseLegHeightCm?: unknown;
   baseLegWidthCm?: unknown;
+  baseLegPlatformMode?: unknown;
+  baseLegPlatformSideMode?: unknown;
+  baseLegPlatformSideOverhangCm?: unknown;
+  baseLegPlatformFrontOverhangCm?: unknown;
   stackSplitEnabled?: boolean;
   stackSplitUnifiedFrame?: boolean;
   stackOffsetZ?: number;
@@ -53,6 +62,10 @@ export type CornerBuildUI = UnknownRecord & {
   basePlinthHeightCm?: unknown;
   baseLegHeightCm?: unknown;
   baseLegWidthCm?: unknown;
+  baseLegPlatformMode?: unknown;
+  baseLegPlatformSideMode?: unknown;
+  baseLegPlatformSideOverhangCm?: unknown;
+  baseLegPlatformFrontOverhangCm?: unknown;
   layout?: unknown;
   doorStyle?: string;
   splitDoors?: boolean;
@@ -112,6 +125,13 @@ export type NormalizedCornerWingState = {
   basePlinthHeightCm: number;
   baseLegHeightCm: number;
   baseLegWidthCm: number;
+  baseLegHeightM: number;
+  baseLegPlatformMode: BaseLegPlatformMode;
+  baseLegPlatformSideMode: BaseLegPlatformSideMode;
+  baseLegPlatformSideOverhangM: number;
+  baseLegPlatformFrontOverhangM: number;
+  baseLegBottomPlatformHeightM: number;
+  baseLegTopPlatformHeightM: number;
   baseH: number;
   stackOffsetY: number;
   cabinetBodyHeight: number;

@@ -52,6 +52,7 @@ export function emitCornerWingExtension(ctx: CornerOpsEmitContext): void {
     baseLegStyle,
     baseLegColor,
     baseLegWidthCm,
+    baseLegHeightM,
     baseH,
     cabinetBodyHeight,
     __corniceAllowedForThisStack,
@@ -101,12 +102,20 @@ export function emitCornerWingExtension(ctx: CornerOpsEmitContext): void {
   // The wing carcass walls/ceiling are constructed AFTER we derive per-cell widths/heights.
   // This allows stepped tops when the user applies per-cell height overrides (like a regular wardrobe).
 
-  if (baseType === 'legs') {
+  const legSupportH =
+    Number.isFinite(Number(baseLegHeightM)) && Number(baseLegHeightM) > 0 ? Number(baseLegHeightM) : baseH;
+
+  if (baseType === 'legs' && legSupportH > 0) {
     const legSpec = resolveBaseLegGeometrySpec(baseLegStyle, baseLegWidthCm);
     const legGeo =
       legSpec.shape === 'square'
-        ? new THREE.BoxGeometry(legSpec.width, baseH, legSpec.depth)
-        : new THREE.CylinderGeometry(legSpec.topRadius, legSpec.bottomRadius, baseH, legSpec.radialSegments);
+        ? new THREE.BoxGeometry(legSpec.width, legSupportH, legSpec.depth)
+        : new THREE.CylinderGeometry(
+            legSpec.topRadius,
+            legSpec.bottomRadius,
+            legSupportH,
+            legSpec.radialSegments
+          );
     const lMat = getMaterial(getBaseLegColorHex(baseLegColor), 'metal');
     const legsCount = Math.max(
       CORNER_WING_DIMENSIONS.baseLegs.minCount,
@@ -117,10 +126,10 @@ export function emitCornerWingExtension(ctx: CornerOpsEmitContext): void {
         i * ((wingW - CORNER_WING_DIMENSIONS.baseLegs.widthClearanceM) / legsCount) +
         CORNER_WING_DIMENSIONS.baseLegs.insetM;
       const l1 = new THREE.Mesh(legGeo, lMat);
-      l1.position.set(xPos, stackOffsetY + baseH / 2, -CORNER_WING_DIMENSIONS.baseLegs.insetM);
+      l1.position.set(xPos, stackOffsetY + legSupportH / 2, -CORNER_WING_DIMENSIONS.baseLegs.insetM);
       wingGroup.add(l1);
       const l2 = new THREE.Mesh(legGeo, lMat);
-      l2.position.set(xPos, stackOffsetY + baseH / 2, -wingD + CORNER_WING_DIMENSIONS.baseLegs.insetM);
+      l2.position.set(xPos, stackOffsetY + legSupportH / 2, -wingD + CORNER_WING_DIMENSIONS.baseLegs.insetM);
       wingGroup.add(l2);
     }
   }

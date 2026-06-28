@@ -5,6 +5,7 @@ import { createCornerConnectorShellMetrics } from '../esm/native/builder/corner_
 import { createCornerConnectorPlinthShape } from '../esm/native/builder/corner_connector_emit_shell_base.ts';
 import { applyCornerConnectorShellPanels } from '../esm/native/builder/corner_connector_emit_shell_panels.ts';
 import { buildCornerConnectorShell } from '../esm/native/builder/corner_connector_emit_shell.ts';
+import { CARCASS_BASE_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
 
 class Shape {
   points: Array<[string, number, number]> = [];
@@ -186,4 +187,37 @@ test('buildCornerConnectorShell orchestrates base plates and panel flows through
   assert.ok(partIds.includes('corner_pent_back_side'));
   assert.ok(partIds.includes('corner_pent_attach_main'));
   assert.ok(outlined.length >= 4);
+});
+
+test('corner connector legs stage adds matching bottom and top pentagon platforms', () => {
+  const platformH = CARCASS_BASE_DIMENSIONS.legs.platform.heightM;
+  const { setup, cornerGroup } = createSetup();
+  Object.assign(setup.ctx, {
+    baseType: 'legs',
+    baseH: 0.12 + platformH,
+    baseLegHeightM: 0.12,
+    baseLegPlatformMode: 'stage',
+    baseLegBottomPlatformHeightM: platformH,
+    baseLegTopPlatformHeightM: platformH,
+    baseLegStyle: 'round',
+    baseLegColor: 'black',
+    baseLegWidthCm: 4,
+    stackOffsetY: 0,
+    startY: 0.12 + platformH,
+    wingH: 2.0,
+  });
+
+  buildCornerConnectorShell(setup);
+
+  const meshes = cornerGroup.children as Mesh[];
+  const partIds = meshes.map(child => child.userData.partId).filter(Boolean);
+  assert.ok(partIds.includes('corner_pent_leg_platform_bottom'));
+  assert.ok(partIds.includes('corner_pent_leg_platform_top'));
+
+  const bottom = meshes.find(child => child.userData.partId === 'corner_pent_leg_platform_bottom');
+  const top = meshes.find(child => child.userData.partId === 'corner_pent_leg_platform_top');
+  assert.equal((bottom?.geometry as ExtrudeGeometry | undefined)?.opts.depth, platformH);
+  assert.equal((top?.geometry as ExtrudeGeometry | undefined)?.opts.depth, platformH);
+  assert.equal(bottom?.position.y, 0.12 + platformH);
+  assert.equal(top?.position.y, 0.12 + platformH + 2.0 + platformH);
 });

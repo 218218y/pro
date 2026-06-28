@@ -85,6 +85,15 @@ function pruneArchivedUnifiedCornerFrameLowerKeys(colors: Record<string, unknown
   }
 }
 
+function resolveCornerLegPlatformPaintTargetKey(partId: string): string | null {
+  const raw = partId.startsWith('lower_') ? partId.slice('lower_'.length) : partId;
+  const wingMatch = /^corner_leg_platform_(bottom|top)(?:_c\d+|_blind)?$/.exec(raw);
+  if (wingMatch?.[1]) return `corner_leg_platform_${wingMatch[1]}`;
+  const pentMatch = /^corner_pent_leg_platform_(bottom|top)$/.exec(raw);
+  if (pentMatch?.[1]) return `corner_pent_leg_platform_${pentMatch[1]}`;
+  return null;
+}
+
 export function applyGroupedOrCornerPaintTarget(args: {
   state: PaintFlowMutableState;
   foundPartId: string;
@@ -185,6 +194,15 @@ export function applyGroupedOrCornerPaintTarget(args: {
     toggleSinglePaintTarget(
       state.ensureColors(),
       __wp_scopeCornerPartKeyForStack('corner_pent_plinth', activeStack),
+      paintSelection
+    );
+    return true;
+  }
+  const cornerLegPlatformKey = resolveCornerLegPlatformPaintTargetKey(foundPartId);
+  if (cornerLegPlatformKey) {
+    toggleSinglePaintTarget(
+      state.ensureColors(),
+      __wp_scopeCornerPartKeyForStack(cornerLegPlatformKey, activeStack),
       paintSelection
     );
     return true;

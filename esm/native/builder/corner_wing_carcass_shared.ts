@@ -35,6 +35,13 @@ export type CornerWingCarcassCtx = {
   __stackSplitUnifiedFrame: boolean;
   stackOffsetY: number;
   baseType: string;
+  baseLegHeightM?: number;
+  baseLegPlatformMode?: string;
+  baseLegPlatformSideMode?: string;
+  baseLegPlatformSideOverhangM?: number;
+  baseLegPlatformFrontOverhangM?: number;
+  baseLegBottomPlatformHeightM?: number;
+  baseLegTopPlatformHeightM?: number;
   baseH: number;
   cabinetBodyHeight: number;
   __cfg?: unknown;
