@@ -27,8 +27,7 @@ function readRecord(value: unknown): UnknownRecord | null {
 }
 
 function readPositiveFinite(value: unknown): number | null {
-  const n = Number(value);
-  return Number.isFinite(n) && n > 0 ? n : null;
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : null;
 }
 
 function readPartId(value: unknown): string {
@@ -110,9 +109,8 @@ function readActiveGroovePartIds(App: AppContainer): string[] {
 }
 
 export function normalizeGrooveLinesCount(value: unknown): number | null {
-  if (value == null || value === '') return null;
-  const n = Number(value);
-  if (!Number.isFinite(n)) return null;
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 1) return null;
+  const n = value;
   return Math.max(1, Math.floor(n));
 }
 

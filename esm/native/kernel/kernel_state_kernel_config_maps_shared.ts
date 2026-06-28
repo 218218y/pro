@@ -146,7 +146,7 @@ export function createKernelStateKernelConfigMapsTools(
       case 'isMultiColorMode':
       case 'showDimensions':
       case 'isManualWidth':
-        return !!value;
+        return value === true;
       case 'wardrobeType':
       case 'boardMaterial':
       case 'doorMountMode':
@@ -155,11 +155,10 @@ export function createKernelStateKernelConfigMapsTools(
       case 'customUploadedDataURL':
         return value == null ? null : String(value);
       case 'grooveLinesCount': {
-        const grooveLinesCount = Number(value);
-        return value == null || value === ''
+        return value == null
           ? null
-          : Number.isFinite(grooveLinesCount)
-            ? Math.max(1, Math.floor(grooveLinesCount))
+          : typeof value === 'number' && Number.isFinite(value) && value >= 1
+            ? Math.max(1, Math.floor(value))
             : null;
       }
       default:

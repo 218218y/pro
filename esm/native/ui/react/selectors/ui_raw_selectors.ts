@@ -45,12 +45,6 @@ function coerceFiniteInt(v: unknown): number | undefined {
 
 function coerceBoolean(v: unknown): boolean | undefined {
   if (typeof v === 'boolean') return v;
-  if (typeof v === 'number') return !!v;
-  if (typeof v !== 'string') return undefined;
-  const s = v.trim().toLowerCase();
-  if (!s) return undefined;
-  if (s === 'true' || s === '1' || s === 'yes' || s === 'on') return true;
-  if (s === 'false' || s === '0' || s === 'no' || s === 'off') return false;
   return undefined;
 }
 

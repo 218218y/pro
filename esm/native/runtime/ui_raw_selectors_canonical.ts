@@ -4,13 +4,12 @@
 // It reads only `ui.raw`, never direct `ui.*` scalar fields.
 
 import type { UiRawInputsLike, UiRawScalarKey, UiRawScalarValueMap } from '../../../types/index.js';
+import { isUiRawBooleanKey, isUiRawNumericKey } from '../../../types/ui_raw.js';
 import {
   coerceFiniteInt,
   coerceFiniteNumber,
   getRawFromUiSnapshot,
   isUiSnapshot,
-  missingEssentialUiRawDims,
-  readUiScalarValue,
 } from './ui_raw_selectors_shared.js';
 import {
   DEFAULT_CHEST_DRAWERS_COUNT,
@@ -19,6 +18,34 @@ import {
   DEFAULT_WIDTH,
   HINGED_DEFAULT_DEPTH,
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
+
+function readCanonicalUiScalarValue<K extends UiRawScalarKey>(
+  key: K,
+  value: unknown
+): UiRawScalarValueMap[K] | undefined {
+  if (isUiRawBooleanKey(key)) {
+    return (typeof value === 'boolean' ? value : undefined) as UiRawScalarValueMap[K] | undefined;
+  }
+  if (isUiRawNumericKey(key)) {
+    return (value === null || (typeof value === 'number' && Number.isFinite(value))
+      ? value
+      : undefined) as UiRawScalarValueMap[K] | undefined;
+  }
+  return undefined;
+}
+
+function missingCanonicalEssentialUiRawDims(ui: unknown): Array<'doors' | 'width' | 'height' | 'depth'> {
+  const missing: Array<'doors' | 'width' | 'height' | 'depth'> = [];
+  const raw = getRawFromUiSnapshot(ui);
+  for (const key of ['doors', 'width', 'height', 'depth'] as const) {
+    if (!Object.prototype.hasOwnProperty.call(raw, key)) {
+      missing.push(key);
+      continue;
+    }
+    if (typeof readCanonicalUiScalarValue(key, raw[key]) === 'undefined') missing.push(key);
+  }
+  return missing;
+}
 
 /**
  * Read a canonical `ui.raw` scalar without direct `ui.*` scalar reads.
@@ -32,7 +59,7 @@ export function readUiRawScalarFromCanonicalSnapshot<K extends UiRawScalarKey>(
     if (!isUiSnapshot(ui)) return undefined;
     const raw = getRawFromUiSnapshot(ui);
     if (!Object.prototype.hasOwnProperty.call(raw, key)) return undefined;
-    return readUiScalarValue(key, raw[key]);
+    return readCanonicalUiScalarValue(key, raw[key]);
   } catch {
     return undefined;
   }
@@ -40,14 +67,14 @@ export function readUiRawScalarFromCanonicalSnapshot<K extends UiRawScalarKey>(
 
 export function hasCanonicalEssentialUiRawDimsFromSnapshot(ui: unknown): boolean {
   try {
-    return missingEssentialUiRawDims(ui).length === 0;
+    return missingCanonicalEssentialUiRawDims(ui).length === 0;
   } catch {
     return false;
   }
 }
 
 export function assertCanonicalUiRawDims(ui: unknown, context = 'ui.raw'): UiRawInputsLike {
-  const missing = missingEssentialUiRawDims(ui);
+  const missing = missingCanonicalEssentialUiRawDims(ui);
   if (missing.length) {
     throw new Error(`${context} missing canonical ui.raw dimension(s): ${missing.join(', ')}`);
   }

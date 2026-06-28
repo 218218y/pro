@@ -134,12 +134,7 @@ export function getCfgRecord(cfg: unknown): UnknownRecord {
 export function normalizeBoolean(value: unknown, defaultValue: boolean): boolean {
   if (value === undefined || value === null) return defaultValue;
   if (typeof value === 'boolean') return value;
-  if (typeof value === 'number') return !!value;
-  const s = typeof value === 'string' ? value.trim().toLowerCase() : '';
-  if (!s) return defaultValue;
-  if (s === 'true' || s === '1' || s === 'yes' || s === 'on') return true;
-  if (s === 'false' || s === '0' || s === 'no' || s === 'off') return false;
-  return !!value;
+  return defaultValue;
 }
 
 export function normalizeBoardMaterial(value: unknown, defaultValue: BoardMaterialValue): BoardMaterialValue {
@@ -170,10 +165,9 @@ export function normalizeNullableGrooveLinesCount(
   defaultValue: number | null
 ): number | null {
   if (value === null) return null;
-  if (typeof value === 'undefined' || value === '') return defaultValue;
-  const n = Number(value);
-  if (!Number.isFinite(n)) return defaultValue;
-  return Math.max(1, Math.floor(n));
+  if (typeof value === 'undefined') return defaultValue;
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 1) return defaultValue;
+  return Math.max(1, Math.floor(value));
 }
 
 export function normalizeNullableConfigNumber(

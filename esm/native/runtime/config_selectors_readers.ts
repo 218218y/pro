@@ -5,17 +5,12 @@ import { getCfgRecord } from './config_selectors_shared.js';
 import { readConfigStateFromApp } from './config_selectors_scalars.js';
 import { asRecord as asUnknownRecord } from './record.js';
 
-/** Read a boolean config key (supports persisted string values). */
+/** Read a boolean config key from a canonical config snapshot. */
 export function readConfigBoolFromSnapshot(cfg: unknown, key: string, defaultValue: boolean): boolean {
   const value = getCfgRecord(cfg)[key];
   if (value === undefined || value === null) return defaultValue;
   if (typeof value === 'boolean') return value;
-  if (typeof value === 'number') return !!value;
-  const s = typeof value === 'string' ? value.trim().toLowerCase() : '';
-  if (!s) return defaultValue;
-  if (s === 'true' || s === '1' || s === 'yes' || s === 'on') return true;
-  if (s === 'false' || s === '0' || s === 'no' || s === 'off') return false;
-  return !!value;
+  return defaultValue;
 }
 
 export function readConfigBoolFromStore(store: unknown, key: string, defaultValue: boolean): boolean {

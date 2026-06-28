@@ -27,22 +27,22 @@ function makeApp(cfg: Record<string, unknown>) {
   };
 }
 
-test('groove line count config scalar normalizes nullable/project values safely', () => {
+test('groove line count config scalar keeps typed numbers and rejects legacy strings', () => {
   assert.equal(readConfigScalarOrDefault({}, 'grooveLinesCount', null), null);
-  assert.equal(readConfigScalarOrDefault({ grooveLinesCount: '20.9' }, 'grooveLinesCount', null), 20);
-  assert.equal(readConfigScalarOrDefault({ grooveLinesCount: 0 }, 'grooveLinesCount', null), 1);
-  assert.equal(readConfigScalarOrDefault({ grooveLinesCount: 'bad' }, 'grooveLinesCount', null), null);
+  assert.equal(readConfigScalarOrDefault({ grooveLinesCount: 20.9 }, 'grooveLinesCount', null), 20);
+  assert.equal(readConfigScalarOrDefault({ grooveLinesCount: 0 }, 'grooveLinesCount', null), null);
+  assert.equal(readConfigScalarOrDefault({ grooveLinesCount: '20.9' }, 'grooveLinesCount', null), null);
 });
 
-test('project io load snapshot keeps groove line count and per-door groove map when present', () => {
+test('project io load snapshot keeps typed groove line counts and drops legacy string counts', () => {
   const cfg = buildProjectConfigSnapshot({
-    grooveLinesCount: '12.8',
-    grooveLinesCountMap: { d1_full: '15.2', bad: 'x' },
+    grooveLinesCount: 12.8,
+    grooveLinesCountMap: { d1_full: 15.2, legacy: '15.2', bad: 'x' },
   });
   assert.equal(cfg.grooveLinesCount, 12);
   assert.deepEqual(asPlainRecord(cfg.grooveLinesCountMap as Record<string, unknown>), { d1_full: 15 });
 
-  const fallbackCfg = buildProjectConfigSnapshot({ grooveLinesCount: 'bad' });
+  const fallbackCfg = buildProjectConfigSnapshot({ grooveLinesCount: '12.8' });
   assert.equal(fallbackCfg.grooveLinesCount, null);
 });
 

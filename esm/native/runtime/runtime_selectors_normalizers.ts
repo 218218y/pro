@@ -1,6 +1,6 @@
 // Runtime scalar normalizers (ESM)
 //
-// Keeps string/number normalization in one audited table instead of spreading
+// Keeps typed runtime normalization in one audited table instead of spreading
 // per-key casts through runtime access surfaces.
 
 import type { RuntimeScalarKey, RuntimeScalarValueMap } from '../../../types/index.js';
@@ -68,30 +68,17 @@ export function isRuntimeScalarValue<K extends RuntimeScalarKey>(
 export function readBooleanLike(value: unknown, defaultValue: boolean): boolean {
   if (value === undefined || value === null) return defaultValue;
   if (typeof value === 'boolean') return value;
-  if (typeof value === 'number') return !!value;
-  const s = typeof value === 'string' ? value.trim().toLowerCase() : '';
-  if (!s) return defaultValue;
-  if (s === 'true' || s === '1' || s === 'yes' || s === 'on') return true;
-  if (s === 'false' || s === '0' || s === 'no' || s === 'off') return false;
-  return !!value;
+  return defaultValue;
 }
 
 export function readFiniteNumberLike(value: unknown, defaultValue: number): number {
   if (typeof value === 'number' && Number.isFinite(value)) return value;
-  if (typeof value === 'string') {
-    const n = Number(value);
-    if (Number.isFinite(n)) return n;
-  }
   return defaultValue;
 }
 
 export function readFiniteNullableNumberLike(value: unknown, defaultValue: number | null): number | null {
   if (value === null) return null;
   if (typeof value === 'number' && Number.isFinite(value)) return value;
-  if (typeof value === 'string') {
-    const n = Number(value);
-    if (Number.isFinite(n)) return n;
-  }
   return defaultValue;
 }
 

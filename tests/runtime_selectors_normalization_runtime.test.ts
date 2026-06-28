@@ -8,11 +8,11 @@ import {
   readRuntimeNumberFromSnapshot,
 } from '../esm/native/runtime/runtime_selectors.ts';
 
-test('runtime selectors normalize legacy scalar values with typed defaults', () => {
+test('runtime selectors keep canonical typed values and reject legacy scalar coercion', () => {
   const rt = {
-    sketchMode: '1',
-    doorsLastToggleTime: '42',
-    wardrobeDepthM: '0.61',
+    sketchMode: true,
+    doorsLastToggleTime: 42,
+    wardrobeDepthM: 0.61,
     drawersOpenId: '',
   };
 
@@ -24,4 +24,17 @@ test('runtime selectors normalize legacy scalar values with typed defaults', () 
   assert.equal(readRuntimeScalarOrDefault(rt, 'doorsLastToggleTime', 0), 42);
   assert.equal(readRuntimeScalarOrDefault(rt, 'wardrobeDepthM', null), 0.61);
   assert.equal(readRuntimeScalarOrDefault(rt, 'drawersOpenId', 'fallback'), null);
+
+  const legacyRt = {
+    sketchMode: '1',
+    doorsLastToggleTime: '42',
+    wardrobeDepthM: '0.61',
+  };
+
+  assert.equal(readRuntimeBoolFromSnapshot(legacyRt, 'sketchMode', false), false);
+  assert.equal(readRuntimeNumberFromSnapshot(legacyRt, 'doorsLastToggleTime', 0), 0);
+  assert.equal(readRuntimeNullableNumberFromSnapshot(legacyRt, 'wardrobeDepthM', null), null);
+  assert.equal(readRuntimeScalarOrDefault(legacyRt, 'sketchMode', false), false);
+  assert.equal(readRuntimeScalarOrDefault(legacyRt, 'doorsLastToggleTime', 0), 0);
+  assert.equal(readRuntimeScalarOrDefault(legacyRt, 'wardrobeDepthM', null), null);
 });

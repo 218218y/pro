@@ -258,8 +258,11 @@ export function buildKernelProjectCaptureData(args: BuildKernelProjectCaptureDat
     overlayShelfThicknessCm: normalizeDoorMountThicknessCm(canonicalCfg.overlayShelfThicknessCm),
     insetFrameThicknessCm: normalizeDoorMountThicknessCm(canonicalCfg.insetFrameThicknessCm),
     insetShelfThicknessCm: normalizeDoorMountThicknessCm(canonicalCfg.insetShelfThicknessCm),
-    grooveLinesCount: canonicalCfg.grooveLinesCount == null ? null : Number(canonicalCfg.grooveLinesCount),
-    isLibraryMode: typeof canonicalCfg.isLibraryMode !== 'undefined' ? !!canonicalCfg.isLibraryMode : false,
+    grooveLinesCount:
+      typeof canonicalCfg.grooveLinesCount === 'number' && Number.isFinite(canonicalCfg.grooveLinesCount)
+        ? canonicalCfg.grooveLinesCount
+        : null,
+    isLibraryMode: canonicalCfg.isLibraryMode === true,
     savedNotes: cloneProjectCaptureValue(savedNotes, []),
     projectName: asString(uiRec.projectName, ''),
   };

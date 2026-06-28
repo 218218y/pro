@@ -26,7 +26,7 @@ export function readRuntimeScalarFromSnapshot<K extends RuntimeScalarKey>(
   }
 }
 
-/** Read a boolean runtime key (supports persisted string values). */
+/** Read a boolean runtime key from a canonical runtime snapshot. */
 export function readRuntimeBoolFromSnapshot(rt: unknown, key: string, defaultValue: boolean): boolean {
   try {
     return readBooleanLike(readRuntimeValue(rt, key), defaultValue);
@@ -35,7 +35,7 @@ export function readRuntimeBoolFromSnapshot(rt: unknown, key: string, defaultVal
   }
 }
 
-/** Read a finite number runtime key (supports numeric strings). */
+/** Read a finite number runtime key from a canonical runtime snapshot. */
 export function readRuntimeNumberFromSnapshot(rt: unknown, key: string, defaultValue: number): number {
   try {
     return readFiniteNumberLike(readRuntimeValue(rt, key), defaultValue);
@@ -44,7 +44,7 @@ export function readRuntimeNumberFromSnapshot(rt: unknown, key: string, defaultV
   }
 }
 
-/** Read a nullable finite number runtime key (supports numeric strings). */
+/** Read a nullable finite number runtime key from a canonical runtime snapshot. */
 export function readRuntimeNullableNumberFromSnapshot(
   rt: unknown,
   key: string,

@@ -156,9 +156,13 @@ export function readGrooveLinesCountMap(value: unknown): GrooveLinesCountMap {
   const out: GrooveLinesCountMap = {};
   if (!src) return out;
   for (const [key, entry] of Object.entries(src)) {
-    if (entry == null || entry === '') continue;
-    const n = Number(entry);
-    if (Number.isFinite(n) && n >= 1) out[key] = Math.max(1, Math.floor(n));
+    if (entry === null) {
+      out[key] = null;
+      continue;
+    }
+    if (typeof entry === 'number' && Number.isFinite(entry) && entry >= 1) {
+      out[key] = Math.max(1, Math.floor(entry));
+    }
   }
   return out;
 }

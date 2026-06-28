@@ -40,7 +40,7 @@ export function installKernelStateKernelConfigApplySurface(
       }
 
       function setBool(key: string, val: unknown) {
-        setValue(key, !!val);
+        setValue(key, val === true);
       }
 
       function setStr(key: string, val: unknown, allowNull: boolean) {
@@ -85,13 +85,14 @@ export function installKernelStateKernelConfigApplySurface(
       if (cfg.customUploadedDataURL !== undefined)
         setStr('customUploadedDataURL', cfg.customUploadedDataURL, true);
       if (cfg.grooveLinesCount !== undefined) {
-        const grooveLinesCount = Number(cfg.grooveLinesCount);
         setValue(
           'grooveLinesCount',
           cfg.grooveLinesCount == null
             ? null
-            : Number.isFinite(grooveLinesCount)
-              ? Math.max(1, Math.floor(grooveLinesCount))
+            : typeof cfg.grooveLinesCount === 'number' &&
+                Number.isFinite(cfg.grooveLinesCount) &&
+                cfg.grooveLinesCount >= 1
+              ? Math.max(1, Math.floor(cfg.grooveLinesCount))
               : null,
           false
         );

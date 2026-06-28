@@ -70,8 +70,7 @@ function readString(value: unknown): string | null {
 
 function readPositiveM(record: UnknownRecord, key: string): number | null {
   const value = record[key];
-  const n = typeof value === 'number' ? value : value != null ? Number(value) : NaN;
-  return Number.isFinite(n) && n > 0 ? n : null;
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : null;
 }
 
 function readDimensionCm(box: SketchBoxLike, spec: DimSpec): number | null {
@@ -87,8 +86,7 @@ function writeDimensionCm(box: SketchBoxLike, spec: DimSpec, valueCm: number): v
 }
 
 function readNumberValue(value: unknown): number | null {
-  const n = typeof value === 'number' ? value : value != null ? Number(value) : NaN;
-  return Number.isFinite(n) ? n : null;
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
 function readDimensionM(box: SketchBoxLike, spec: DimSpec): number | null {
@@ -195,8 +193,7 @@ function wouldBoxDimensionCreateActiveSpecialOverride(box: SketchBoxLike, spec: 
 
 function readPositiveSpecialBaseCm(sd: unknown, key: SpecialDimsBaseKey): number | null {
   const value = sd && typeof sd === 'object' && !Array.isArray(sd) ? (sd as UnknownRecord)[key] : undefined;
-  const n = typeof value === 'number' ? value : value != null ? Number(value) : NaN;
-  return Number.isFinite(n) && n > 0 ? n : null;
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : null;
 }
 
 function shouldBlockFreeBoxHeightDepthByBaseLegStage(args: {

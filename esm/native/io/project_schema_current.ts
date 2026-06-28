@@ -28,9 +28,10 @@ import {
 } from './project_schema_shared.js';
 
 function normalizeGrooveLinesCount(value: unknown): number | null {
-  if (value == null || value === '') return null;
-  const grooveLinesCount = Number(value);
-  return Number.isFinite(grooveLinesCount) ? Math.max(1, Math.floor(grooveLinesCount)) : null;
+  if (value == null) return null;
+  return typeof value === 'number' && Number.isFinite(value) && value >= 1
+    ? Math.max(1, Math.floor(value))
+    : null;
 }
 
 function normalizeGlobalHandleType(settings: Record<string, unknown>): void {

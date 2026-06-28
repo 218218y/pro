@@ -33,8 +33,7 @@ function isRecord(v: unknown): v is UnknownBag {
 }
 
 function asNum(v: unknown): number {
-  const n = Number(v);
-  return Number.isFinite(n) ? n : NaN;
+  return typeof v === 'number' && Number.isFinite(v) ? v : NaN;
 }
 
 function readSpecialDimsBag(cfgMod: unknown): UnknownBag | null {

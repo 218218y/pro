@@ -24,8 +24,7 @@ function readList(value: unknown): unknown[] {
 }
 
 function readPositiveNumber(value: unknown): number | null {
-  const n = typeof value === 'number' ? value : value != null ? Number(value) : NaN;
-  return Number.isFinite(n) && n > 0 ? n : null;
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : null;
 }
 
 export function isBaseLegStageUiState(ui: unknown): boolean {

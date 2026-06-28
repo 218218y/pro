@@ -197,8 +197,9 @@ export function normalizeNullablePositiveIntMap(value: unknown): MapsByName['gro
       out[key] = null;
       continue;
     }
-    const n = Number(entry);
-    if (Number.isFinite(n) && n >= 1) out[key] = Math.max(1, Math.floor(n));
+    if (typeof entry === 'number' && Number.isFinite(entry) && entry >= 1) {
+      out[key] = Math.max(1, Math.floor(entry));
+    }
   }
   return out;
 }

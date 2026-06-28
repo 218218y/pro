@@ -217,8 +217,10 @@ export function normalizeSketchBoxDoorState(raw: unknown, fallbackId: string): S
     open: rec.open === true,
     groove: rec.groove === true,
     grooveLinesCount:
-      Number.isFinite(Number(rec.grooveLinesCount)) && Number(rec.grooveLinesCount) >= 1
-        ? Math.max(1, Math.floor(Number(rec.grooveLinesCount)))
+      typeof rec.grooveLinesCount === 'number' &&
+      Number.isFinite(rec.grooveLinesCount) &&
+      rec.grooveLinesCount >= 1
+        ? Math.max(1, Math.floor(rec.grooveLinesCount))
         : null,
   };
 }

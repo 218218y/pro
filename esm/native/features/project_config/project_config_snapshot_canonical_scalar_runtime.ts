@@ -27,12 +27,13 @@ function normalizeColorSwatchesOrderSnapshot(value: unknown): string[] {
 }
 
 function normalizeGrooveLinesCount(value: unknown): number | null {
-  const grooveLinesCount = Number(value);
-  return value == null || value === ''
-    ? null
-    : Number.isFinite(grooveLinesCount)
-      ? Math.max(1, Math.floor(grooveLinesCount))
-      : null;
+  if (value == null) return null;
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 1) return null;
+  return Math.max(1, Math.floor(value));
+}
+
+function normalizeBooleanScalar(value: unknown): boolean {
+  return value === true;
 }
 
 type ProjectConfigScalarNormalizer = (
@@ -48,10 +49,10 @@ const PROJECT_CONFIG_SCALAR_NORMALIZERS: Record<string, ProjectConfigScalarNorma
   colorSwatchesOrder: normalizeColorSwatchesOrderSnapshot,
   savedNotes: value => cloneComparableProjectConfigValue(Array.isArray(value) ? value : []),
   preChestState: value => cloneComparableProjectConfigValue(value !== undefined ? value : null),
-  isLibraryMode: value => !!value,
-  isMultiColorMode: value => !!value,
-  showDimensions: value => !!value,
-  isManualWidth: value => !!value,
+  isLibraryMode: normalizeBooleanScalar,
+  isMultiColorMode: normalizeBooleanScalar,
+  showDimensions: normalizeBooleanScalar,
+  isManualWidth: normalizeBooleanScalar,
   wardrobeType: value => (value == null ? '' : String(value)),
   boardMaterial: value => (value == null ? '' : String(value)),
   doorMountMode: value => (value == null ? '' : String(value)),

@@ -39,8 +39,7 @@ function isRecord(value: unknown): value is UnknownRecord {
 }
 
 function toFiniteNumber(value: unknown): number | null {
-  const n = typeof value === 'number' ? value : Number(value);
-  return Number.isFinite(n) ? n : null;
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
 function positiveCmOrNull(value: unknown): number | null {

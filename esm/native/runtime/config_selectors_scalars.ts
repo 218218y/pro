@@ -82,8 +82,7 @@ export function readConfigLooseScalarFromApp(App: unknown, key: string, defaultV
 
 export function readConfigNumberLooseFromApp(App: unknown, key: string, defaultValue: number): number {
   const value = readConfigLooseScalarFromApp(App, key, defaultValue);
-  const num = typeof value === 'number' ? value : Number(value);
-  return Number.isFinite(num) ? num : defaultValue;
+  return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
 }
 
 /** Convenience: read scalar keys with safe defaults (typed). */

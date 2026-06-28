@@ -27,10 +27,11 @@ export function writeSketchBoxDoors(box: unknown, doors: SketchBoxDoorState[]): 
       .slice()
       .sort((a, b) => (a.yNorm ?? -1) - (b.yNorm ?? -1) || a.xNorm - b.xNorm || a.id.localeCompare(b.id))
       .map(door => {
-        const grooveLinesCount = Number(door.grooveLinesCount);
         const normalizedGrooveLinesCount =
-          Number.isFinite(grooveLinesCount) && grooveLinesCount >= 1
-            ? Math.max(1, Math.floor(grooveLinesCount))
+          typeof door.grooveLinesCount === 'number' &&
+          Number.isFinite(door.grooveLinesCount) &&
+          door.grooveLinesCount >= 1
+            ? Math.max(1, Math.floor(door.grooveLinesCount))
             : null;
         return {
           id: door.id,

@@ -1,11 +1,11 @@
 // Numeric coercion helpers (ESM)
 //
 // Shared by:
-// - platform selectors (ui.raw parsing)
+// - ui.raw selectors that may receive numeric input drafts before commit canonicalization
 // - builder sanitize pipeline (canonical dimension bounds)
 //
 // Goals:
-// - Accept older persisted values (string, '', null, boolean)
+// - Accept live numeric input text while rejecting non-numeric scalar kinds
 // - Fail-soft: never throw
 // - Keep rules consistent across the codebase
 
@@ -17,7 +17,6 @@ export function coerceFiniteNumber(v: unknown): number | undefined {
     const n = parseFloat(s);
     return Number.isFinite(n) ? n : undefined;
   }
-  if (typeof v === 'boolean') return v ? 1 : 0;
   return undefined;
 }
 

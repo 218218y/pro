@@ -51,8 +51,12 @@ function readConfigState(value: unknown): ConfigStateLike {
 }
 
 function readFiniteNumber(value: unknown): number | undefined {
-  const num = typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : NaN;
-  return Number.isFinite(num) ? num : undefined;
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+}
+
+function readBoolean(value: unknown, defaultValue = false): boolean {
+  if (typeof value === 'boolean') return value;
+  return defaultValue;
 }
 
 function readCanonicalProjectConfigForExportPayload(
@@ -159,7 +163,7 @@ export function buildDefaultProjectDataSnapshot(
       structureSelection: ui.structureSelect || '',
       wardrobeType: cfg.wardrobeType === 'sliding' ? 'sliding' : 'hinged',
       doorMountMode: cfg.doorMountMode === 'inset' ? 'inset' : 'overlay',
-      isManualWidth: !!cfg.isManualWidth,
+      isManualWidth: readBoolean(cfg.isManualWidth),
       singleDoorPos: ui.singleDoorPos || 'left',
       globalHandleType: cfg.globalHandleType || 'standard',
 
@@ -168,37 +172,37 @@ export function buildDefaultProjectDataSnapshot(
       cornerHeight: ui.cornerHeight,
       cornerDepth: ui.cornerDepth,
 
-      stackSplitEnabled: !!ui.stackSplitEnabled,
+      stackSplitEnabled: readBoolean(ui.stackSplitEnabled),
       stackSplitDecorativeSeparatorEnabled:
-        !!ui.stackSplitEnabled && !!ui.stackSplitDecorativeSeparatorEnabled,
+        readBoolean(ui.stackSplitEnabled) && readBoolean(ui.stackSplitDecorativeSeparatorEnabled),
       stackSplitLowerHeight: readFiniteNumber(raw.stackSplitLowerHeight),
       stackSplitLowerDepth: readFiniteNumber(raw.stackSplitLowerDepth),
       stackSplitLowerWidth: readFiniteNumber(raw.stackSplitLowerWidth),
       stackSplitLowerDoors: readFiniteNumber(raw.stackSplitLowerDoors),
-      stackSplitLowerDepthManual: !!raw.stackSplitLowerDepthManual,
-      stackSplitLowerWidthManual: !!raw.stackSplitLowerWidthManual,
-      stackSplitLowerDoorsManual: !!raw.stackSplitLowerDoorsManual,
+      stackSplitLowerDepthManual: readBoolean(raw.stackSplitLowerDepthManual),
+      stackSplitLowerWidthManual: readBoolean(raw.stackSplitLowerWidthManual),
+      stackSplitLowerDoorsManual: readBoolean(raw.stackSplitLowerDoorsManual),
     },
 
     toggles: {
-      sketchMode: !!ui.sketchMode,
-      addCornice: !!ui.hasCornice,
-      splitDoors: !!ui.splitDoors,
-      grooves: !!ui.groovesEnabled,
-      internalDrawers: !!ui.internalDrawersEnabled,
-      multiColor: !!ui.multiColorEnabled,
-      handleControl: !!ui.handleControl,
-      chestMode: !!ui.isChestMode,
-      chestCommode: !!ui.chestCommodeEnabled,
-      cornerMode: !!ui.cornerMode,
-      removeDoors: !!ui.removeDoorsEnabled,
-      hingeDirection: !!ui.hingeDirection,
-      notesEnabled: !!ui.notesEnabled,
-      showContents: !!ui.showContents,
-      showHanger: !!ui.showHanger,
-      showDimensions: typeof ui.showDimensions === 'undefined' ? true : !!ui.showDimensions,
-      globalClickMode: typeof ui.globalClickMode === 'undefined' ? true : !!ui.globalClickMode,
-      lightingControl: !!ui.lightingControl,
+      sketchMode: readBoolean(ui.sketchMode),
+      addCornice: readBoolean(ui.hasCornice),
+      splitDoors: readBoolean(ui.splitDoors),
+      grooves: readBoolean(ui.groovesEnabled),
+      internalDrawers: readBoolean(ui.internalDrawersEnabled),
+      multiColor: readBoolean(ui.multiColorEnabled),
+      handleControl: readBoolean(ui.handleControl),
+      chestMode: readBoolean(ui.isChestMode),
+      chestCommode: readBoolean(ui.chestCommodeEnabled),
+      cornerMode: readBoolean(ui.cornerMode),
+      removeDoors: readBoolean(ui.removeDoorsEnabled),
+      hingeDirection: readBoolean(ui.hingeDirection),
+      notesEnabled: readBoolean(ui.notesEnabled),
+      showContents: readBoolean(ui.showContents),
+      showHanger: readBoolean(ui.showHanger),
+      showDimensions: readBoolean(ui.showDimensions, true),
+      globalClickMode: readBoolean(ui.globalClickMode, true),
+      lightingControl: readBoolean(ui.lightingControl),
       lightAmb: ui.lightAmb,
       lightDir: ui.lightDir,
       lightX: ui.lightX,
@@ -208,10 +212,10 @@ export function buildDefaultProjectDataSnapshot(
 
     chestSettings: {
       drawersCount: readFiniteNumber(raw.chestDrawersCount),
-      commodeEnabled: !!ui.chestCommodeEnabled,
+      commodeEnabled: readBoolean(ui.chestCommodeEnabled),
       mirrorHeightCm: readFiniteNumber(raw.chestCommodeMirrorHeightCm),
       mirrorWidthCm: readFiniteNumber(raw.chestCommodeMirrorWidthCm),
-      mirrorWidthManual: !!raw.chestCommodeMirrorWidthManual,
+      mirrorWidthManual: readBoolean(raw.chestCommodeMirrorWidthManual),
       bodyColor: color,
     },
 

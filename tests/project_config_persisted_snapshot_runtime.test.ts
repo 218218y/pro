@@ -61,7 +61,7 @@ test('project config persisted snapshot readers share a canonical branch list an
       doorTrimMap: { d1: [{ axis: 'vertical', color: 'gold', span: 'custom', sizeCm: '11' }, { bad: true }] },
       preChestState: { dims: { width: 55 } },
       isLibraryMode: true,
-      grooveLinesCount: '4',
+      grooveLinesCount: 4.8,
       customMeta: { should: 'drop' },
     } as never,
     { savedColorsMode: 'mixed' }

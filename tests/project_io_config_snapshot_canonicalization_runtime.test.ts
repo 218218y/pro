@@ -260,7 +260,7 @@ test('project io load snapshot canonicalizes direct current payloads without leg
       structureSelection: '[1,1]',
     },
     savedColors: ['legacy-oak', { id: 'c2', value: '#222' }],
-    grooveLinesCount: '5',
+    grooveLinesCount: 5.8,
     isLibraryMode: true,
   } as never);
 

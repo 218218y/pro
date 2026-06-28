@@ -78,6 +78,12 @@ test('canonical runtime selector stays raw-only and project ingress does not mat
     'canonical runtime selector must not read legacy ui.width directly'
   );
 
+  assert.equal(
+    readUiRawScalarFromCanonicalSnapshot({ raw: { width: '160' } }, 'width'),
+    undefined,
+    'canonical runtime selector must not coerce numeric-string ui.raw dimensions'
+  );
+
   const canonicalSnapshot = buildCanonicalProjectUiSnapshot(oldSnapshot);
 
   assert.equal(readUiRawScalarFromCanonicalSnapshot(canonicalSnapshot, 'width'), undefined);
