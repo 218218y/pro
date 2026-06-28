@@ -21,6 +21,8 @@ import {
 import { tryHandleCanvasNonSplitHover } from './canvas_picking_hover_flow_nonsplit.js';
 import { tryHandleCanvasSplitHover } from './canvas_picking_hover_flow_split.js';
 import { syncCanvasPickingViewportMatrices } from './canvas_picking_viewport_matrices.js';
+import { resolveCanvasPickingClickHitState } from './canvas_picking_click_hit_flow.js';
+import { tryHandleViewerMeasurementHover, VIEWER_MEASUREMENT_MODE_ID } from './viewer_measurement_tool.js';
 
 function ensureSplitHoverMarker(App: AppContainer) {
   try {
@@ -99,9 +101,22 @@ export function handleCanvasHoverNDCImpl(App: AppContainer, ndcX: number, ndcY: 
     const __isExtDrawerEditMode = __pm === (getModeId('EXT_DRAWER') || 'ext_drawer');
     const __isDividerEditMode = __pm === (getModeId('DIVIDER') || 'divider');
     const __isCellDimsMode = __pm === (getModeId('CELL_DIMS') || 'cell_dims');
+    const __isMeasureMode = __pm === (getModeId('MEASURE') || VIEWER_MEASUREMENT_MODE_ID);
     const __splitVariant = readSplitVariant(App);
     const __paintSelection = readPaintSelection(App, __pm);
     const __isMirrorPaintMode = __paintSelection === 'mirror';
+
+    if (__isMeasureMode) {
+      const hitState = resolveCanvasPickingClickHitState({
+        App,
+        ndcX,
+        ndcY,
+        isRemoveDoorMode: false,
+        raycaster: __wpRaycaster,
+        mouse: __wpMouse,
+      });
+      return tryHandleViewerMeasurementHover({ App, hitState });
+    }
 
     const marker = ensureSplitHoverMarker(App);
     const doorMarker = ensureDoorActionHoverMarker(App);

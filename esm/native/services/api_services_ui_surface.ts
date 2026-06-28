@@ -86,5 +86,7 @@ export { beginUiBootSession, clearUiBootRuntimeState, installUiBootReadyTimers }
 export {
   VIEWER_MEASUREMENT_MODE_ID,
   clearViewerMeasurementOverlay,
+  getViewerMeasurementToolMode,
+  setViewerMeasurementToolMode,
   tryHandleViewerMeasurementClick,
 } from './viewer_measurement_tool.js';

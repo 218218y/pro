@@ -3,7 +3,12 @@ import type { MouseEvent, MutableRefObject } from 'react';
 
 import type { AppContainer, TabId } from '../../../../types';
 import { useApp, useMeta, useModeSelector, useUiSelectorShallow } from './hooks.js';
-import { isSite2Variant } from '../../services/api.js';
+import {
+  VIEWER_MEASUREMENT_MODE_ID,
+  clearViewerMeasurementOverlay,
+  getModeId,
+  isSite2Variant,
+} from '../../services/api.js';
 import { selectActiveTabId, selectSite2GateState } from './selectors/ui_selectors.js';
 import { setUiActiveTab } from './actions/store_actions.js';
 import { exitPrimaryMode } from './actions/modes_actions.js';
@@ -43,6 +48,19 @@ function prefetchSidebarTabIntent(tabId: TabId | null | undefined): void {
   prefetchDeferredSidebarTabs(tabId);
   if (tabId === 'settings') {
     void warmExportCanvasModule().catch(() => undefined);
+  }
+}
+
+function isViewerMeasurementPrimaryMode(primaryMode: string): boolean {
+  return primaryMode === (getModeId('MEASURE') || VIEWER_MEASUREMENT_MODE_ID);
+}
+
+function clearViewerMeasurementOnSidebarExit(app: AppContainer, primaryMode: string): void {
+  if (!isViewerMeasurementPrimaryMode(primaryMode)) return;
+  try {
+    clearViewerMeasurementOverlay(app, true);
+  } catch {
+    // ignore measurement overlay cleanup failures; the primary mode transition still owns the exit.
   }
 }
 
@@ -146,8 +164,10 @@ export function useSidebarViewState(): SidebarViewState {
       if (isSite2 && !enabledSet.has(id)) return;
       if (primaryMode && primaryMode !== 'none') {
         try {
+          clearViewerMeasurementOnSidebarExit(app, primaryMode);
           exitPrimaryMode(app, undefined, {
             closeDoors: true,
+            cursor: 'default',
             source: 'react:tabs:set:exitPrimaryMode',
           });
         } catch {
@@ -178,8 +198,10 @@ export function useSidebarViewState(): SidebarViewState {
           state: backgroundExitStateRef.current,
           exitPrimaryMode: () => {
             try {
+              clearViewerMeasurementOnSidebarExit(app, primaryMode);
               exitPrimaryMode(app, undefined, {
                 closeDoors: true,
+                cursor: 'default',
                 source: 'react:sidebar:bgclick',
               });
             } catch {

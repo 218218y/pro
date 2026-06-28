@@ -5,9 +5,11 @@ import {
   VIEWER_MEASUREMENT_MODE_ID,
   clearViewerMeasurementOverlay,
   getUiNotesServiceMaybe,
+  getViewerMeasurementToolMode,
   getModeId,
   isNotesScreenDrawMode,
   runPerfAction,
+  setViewerMeasurementToolMode,
   subscribeNotesDrawMode,
 } from '../../services/api.js';
 
@@ -73,7 +75,14 @@ export function ViewerNotesControls(): ReactElement {
   const measurementModeId = getModeId('MEASURE') || VIEWER_MEASUREMENT_MODE_ID;
   const primaryMode = useModeSelector(mode => String(mode.primary || 'none'));
   const measurementMode = primaryMode === measurementModeId;
+  const [measurementToolMode, setMeasurementToolModeState] = useState(() =>
+    getViewerMeasurementToolMode(app)
+  );
   const notesDrawMode = useViewerNotesDrawMode();
+
+  useEffect(() => {
+    setMeasurementToolModeState(getViewerMeasurementToolMode(app));
+  }, [app]);
 
   useEffect(() => {
     if (!measurementMode) clearViewerMeasurementOverlay(app, true);
@@ -128,10 +137,12 @@ export function ViewerNotesControls(): ReactElement {
       'viewer.measurement.mode.toggle',
       () => {
         if (next) {
+          setViewerMeasurementToolMode(app, 'part', false);
+          setMeasurementToolModeState('part');
           enterPrimaryMode(app, measurementModeId, {
             preserveDoors: true,
             cursor: 'crosshair',
-            toast: 'מצב מדידה: לחץ על חלק או חלל בארון כדי לראות רוחב וגובה',
+            toast: 'מצב מדידה: בחר סוג מדידה, או לחץ על חלק/חלל למדידה לפי חלק',
             source: 'react:viewerMeasurementControls:enter',
             immediate: true,
           });
@@ -148,6 +159,27 @@ export function ViewerNotesControls(): ReactElement {
       { detail: { checked: next } }
     );
   }, [app, measurementMode, measurementModeId]);
+
+  const selectMeasurementToolMode = useCallback(
+    (mode: 'part' | 'points') => {
+      runPerfAction(
+        app,
+        'viewer.measurement.toolMode.select',
+        () => {
+          setViewerMeasurementToolMode(app, mode, true);
+          setMeasurementToolModeState(mode);
+          fb.toast(
+            mode === 'points'
+              ? 'מדידה מדוייקת: לחץ נקודה ראשונה ואז נקודה שנייה'
+              : 'מדידה לפי חלק: לחץ על חלק או חלל בארון',
+            'info'
+          );
+        },
+        { detail: { mode } }
+      );
+    },
+    [app, fb]
+  );
 
   const toggleNotesVisibility = useCallback(() => {
     const next = !notesEnabled;
@@ -217,20 +249,64 @@ export function ViewerNotesControls(): ReactElement {
           <i className="fas fa-tshirt" aria-hidden="true" />
         </button>
 
-        <button
-          type="button"
-          className={`cam-btn wp-viewer-measurement-btn hint-bottom${measurementMode ? ' is-on' : ''}`}
-          data-tooltip={measurementMode ? 'סיום סרגל מדידה' : 'סרגל מדידה'}
-          aria-label={measurementMode ? 'סיום סרגל מדידה' : 'סרגל מדידה'}
-          aria-pressed={measurementMode}
-          data-testid="viewer-measurement-toggle-button"
-          onClick={(event: ReactMouseEvent<HTMLButtonElement>) => {
-            stopViewerNotesControlEvent(event);
-            toggleMeasurementMode();
-          }}
-        >
-          <i className="fas fa-ruler-combined" aria-hidden="true" />
-        </button>
+        <div className="wp-viewer-measurement-wrap">
+          <button
+            type="button"
+            className={`cam-btn wp-viewer-measurement-btn hint-bottom${measurementMode ? ' is-on' : ''}`}
+            data-tooltip={measurementMode ? 'סיום סרגל מדידה' : 'סרגל מדידה'}
+            aria-label={measurementMode ? 'סיום סרגל מדידה' : 'סרגל מדידה'}
+            aria-pressed={measurementMode}
+            data-testid="viewer-measurement-toggle-button"
+            onClick={(event: ReactMouseEvent<HTMLButtonElement>) => {
+              stopViewerNotesControlEvent(event);
+              toggleMeasurementMode();
+            }}
+          >
+            <i className="fas fa-ruler-combined" aria-hidden="true" />
+          </button>
+
+          {measurementMode ? (
+            <div
+              className="wp-viewer-measurement-mode-menu"
+              role="group"
+              aria-label="בחירת סוג מדידה"
+              data-testid="viewer-measurement-mode-menu"
+            >
+              <button
+                type="button"
+                className={`cam-btn wp-viewer-measurement-mode-btn hint-bottom${
+                  measurementToolMode === 'part' ? ' is-on' : ''
+                }`}
+                data-tooltip="מדידה לפי חלק"
+                aria-label="מדידה לפי חלק"
+                aria-pressed={measurementToolMode === 'part'}
+                data-testid="viewer-measurement-mode-part-button"
+                onClick={(event: ReactMouseEvent<HTMLButtonElement>) => {
+                  stopViewerNotesControlEvent(event);
+                  selectMeasurementToolMode('part');
+                }}
+              >
+                <i className="fas fa-vector-square" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                className={`cam-btn wp-viewer-measurement-mode-btn hint-bottom${
+                  measurementToolMode === 'points' ? ' is-on' : ''
+                }`}
+                data-tooltip="מדידה לפי מיקום מדוייק"
+                aria-label="מדידה לפי מיקום מדוייק"
+                aria-pressed={measurementToolMode === 'points'}
+                data-testid="viewer-measurement-mode-points-button"
+                onClick={(event: ReactMouseEvent<HTMLButtonElement>) => {
+                  stopViewerNotesControlEvent(event);
+                  selectMeasurementToolMode('points');
+                }}
+              >
+                <i className="fas fa-crosshairs" aria-hidden="true" />
+              </button>
+            </div>
+          ) : null}
+        </div>
       </div>
     </div>
   );

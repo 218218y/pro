@@ -22,10 +22,16 @@ test('viewer overlay exposes notes edit and visibility controls without duplicat
   assert.match(controls, /viewer\.notes\.visibility\.toggle/);
   assert.match(controls, /viewer\.contents\.visibility\.toggle/);
   assert.match(controls, /viewer\.measurement\.mode\.toggle/);
+  assert.match(controls, /viewer\.measurement\.toolMode\.select/);
+  assert.match(controls, /getViewerMeasurementToolMode/);
+  assert.match(controls, /setViewerMeasurementToolMode/);
   assert.match(controls, /data-testid="viewer-note-draw-mode-button"/);
   assert.match(controls, /data-testid="viewer-notes-visibility-button"/);
   assert.match(controls, /data-testid="viewer-contents-toggle-button"/);
   assert.match(controls, /data-testid="viewer-measurement-toggle-button"/);
+  assert.match(controls, /data-testid="viewer-measurement-mode-menu"/);
+  assert.match(controls, /data-testid="viewer-measurement-mode-part-button"/);
+  assert.match(controls, /data-testid="viewer-measurement-mode-points-button"/);
   assert.match(
     controls,
     /setUiShowContents\(app, next, \{ source: 'react:viewerContentsControls:visibility', immediate: true \}\)/
@@ -39,6 +45,10 @@ test('viewer overlay exposes notes edit and visibility controls without duplicat
   assert.match(controls, /wp-viewer-measurement-btn/);
   assert.match(controls, /fa-tshirt/);
   assert.match(controls, /fa-ruler-combined/);
+  assert.match(controls, /fa-vector-square/);
+  assert.match(controls, /fa-crosshairs/);
+  assert.doesNotMatch(controls, />\s*לפי חלק\s*</);
+  assert.doesNotMatch(controls, />\s*לפי מיקום מדוייק\s*</);
 
   assert.match(
     css,
@@ -54,6 +64,15 @@ test('viewer overlay exposes notes edit and visibility controls without duplicat
   );
   assert.match(css, /body\.wp-ui-react \.cam-btn\.wp-viewer-contents-btn\.is-on/);
   assert.match(css, /body\.wp-ui-react \.cam-btn\.wp-viewer-measurement-btn\.is-on/);
+  assert.match(
+    css,
+    /body\.wp-ui-react \.wp-viewer-measurement-mode-menu \{[\s\S]*?position:\s*absolute;[\s\S]*?top:\s*calc\(100% \+ 8px\);[\s\S]*?right:\s*0;/
+  );
+  assert.match(
+    css,
+    /body\.wp-ui-react \.cam-btn\.wp-viewer-measurement-mode-btn \{[\s\S]*?width:\s*42px;[\s\S]*?height:\s*42px;[\s\S]*?border-radius:\s*50%;/
+  );
+  assert.match(css, /body\.wp-ui-react \.cam-btn\.wp-viewer-measurement-mode-btn\.is-on/);
   assert.match(css, /background:\s*#eff6ff;/);
   assert.match(
     css,

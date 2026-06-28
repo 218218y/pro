@@ -1,7 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { tryHandleViewerMeasurementClick } from '../esm/native/services/viewer_measurement_tool.ts';
+import {
+  getViewerMeasurementToolMode,
+  setViewerMeasurementToolMode,
+  tryHandleViewerMeasurementClick,
+  tryHandleViewerMeasurementHover,
+} from '../esm/native/services/viewer_measurement_tool.ts';
 
 class FakeVector3 {
   x: number;
@@ -225,7 +230,13 @@ function createApp(wardrobeGroup: any, labels: string[]) {
               parent: null as any,
               children: [] as any[],
               userData: {} as Record<string, unknown>,
-              geometry: { dispose() {} },
+              geometry: {
+                points: [
+                  { x: _from.x + _offset.x, y: _from.y + _offset.y, z: _from.z + _offset.z },
+                  { x: _to.x + _offset.x, y: _to.y + _offset.y, z: _to.z + _offset.z },
+                ],
+                dispose() {},
+              },
               material: {
                 depthTest: true,
                 depthWrite: true,
@@ -657,4 +668,211 @@ test('viewer measurement uses the top plane for thin horizontal boards', () => {
   assert.ok(Math.abs(Math.max(...xs) - 0.6) < 1e-9);
   assert.ok(Math.abs(Math.min(...zs) + 0.263) < 1e-9);
   assert.ok(Math.abs(Math.max(...zs) - 0.275) < 1e-9);
+});
+
+test('viewer point measurement snaps the second click to the nearest straight axis', () => {
+  const wardrobe = createGroup();
+  const door = createMesh({
+    width: 1,
+    height: 2,
+    depth: 0.02,
+    userData: { partId: 'door_1_full' },
+  });
+  wardrobe.add(door);
+  const labels: string[] = [];
+  const App = createApp(wardrobe, labels);
+  setViewerMeasurementToolMode(App, 'points', false);
+
+  tryHandleViewerMeasurementClick({
+    App,
+    hitState: {
+      intersects: [{ object: door, point: { x: -0.25, y: 0.4, z: 0.01 } }],
+      foundPartId: 'door_1_full',
+      foundModuleIndex: null,
+      foundModuleStack: 'top',
+      effectiveDoorId: 'door_1_full',
+      foundDrawerId: null,
+      primaryHitObject: door,
+      doorHitObject: door,
+      doorHitGroup: door,
+      primaryHitPoint: { x: -0.25, y: 0.4, z: 0.01 },
+      doorHitPoint: { x: -0.25, y: 0.4, z: 0.01 },
+      moduleHitY: null,
+      doorHitY: 0.4,
+      primaryHitY: 0.4,
+      hitIdentity: { partId: 'door_1_full', doorId: 'door_1_full' } as any,
+      hitUserData: door.userData,
+    },
+  });
+
+  assert.equal(labels.length, 0);
+  assert.equal(
+    wardrobe.children.filter(child =>
+      String(child.name || '').startsWith('wp-viewer-measurement-point-draft-start')
+    ).length,
+    2
+  );
+
+  tryHandleViewerMeasurementClick({
+    App,
+    hitState: {
+      intersects: [{ object: door, point: { x: 0.45, y: 0.5, z: 0.01 } }],
+      foundPartId: 'door_1_full',
+      foundModuleIndex: null,
+      foundModuleStack: 'top',
+      effectiveDoorId: 'door_1_full',
+      foundDrawerId: null,
+      primaryHitObject: door,
+      doorHitObject: door,
+      doorHitGroup: door,
+      primaryHitPoint: { x: 0.45, y: 0.5, z: 0.01 },
+      doorHitPoint: { x: 0.45, y: 0.5, z: 0.01 },
+      moduleHitY: null,
+      doorHitY: 0.5,
+      primaryHitY: 0.5,
+      hitIdentity: { partId: 'door_1_full', doorId: 'door_1_full' } as any,
+      hitUserData: door.userData,
+    },
+  });
+
+  assert.ok(labels.includes('70'));
+  assert.ok(!labels.includes('10'));
+  const dimensionLine = wardrobe.children.find(
+    child => child.type === 'Line' && child.userData?.__wpViewerMeasurementOverlay && !child.name
+  );
+  assert.ok(dimensionLine);
+  const points = dimensionLine.geometry.points;
+  assert.equal(points.length, 2);
+  assert.ok(Math.abs(points[0].y - points[1].y) < 1e-9);
+  assert.ok(Math.abs(points[0].x + 0.25) < 1e-9);
+  assert.ok(Math.abs(points[1].x - 0.45) < 1e-9);
+});
+
+test('viewer point measurement keeps vertical point distances vertical when that delta is dominant', () => {
+  const wardrobe = createGroup();
+  const sidePanel = createMesh({
+    width: 0.02,
+    height: 2,
+    depth: 0.58,
+    x: 0.51,
+    userData: { partId: 'right_side_panel' },
+  });
+  wardrobe.add(sidePanel);
+  const labels: string[] = [];
+  const App = createApp(wardrobe, labels);
+  setViewerMeasurementToolMode(App, 'points', false);
+
+  const firstHit = {
+    intersects: [{ object: sidePanel, point: { x: 0.51, y: 0.25, z: -0.2 } }],
+    foundPartId: 'right_side_panel',
+    foundModuleIndex: null,
+    foundModuleStack: 'top' as const,
+    effectiveDoorId: null,
+    foundDrawerId: null,
+    primaryHitObject: sidePanel,
+    doorHitObject: null,
+    doorHitGroup: null,
+    primaryHitPoint: { x: 0.51, y: 0.25, z: -0.2 },
+    doorHitPoint: null,
+    moduleHitY: null,
+    doorHitY: null,
+    primaryHitY: 0.25,
+    hitIdentity: { partId: 'right_side_panel' } as any,
+    hitUserData: sidePanel.userData,
+  };
+  tryHandleViewerMeasurementClick({ App, hitState: firstHit });
+  tryHandleViewerMeasurementClick({
+    App,
+    hitState: {
+      ...firstHit,
+      intersects: [{ object: sidePanel, point: { x: 0.51, y: 1.45, z: -0.05 } }],
+      primaryHitPoint: { x: 0.51, y: 1.45, z: -0.05 },
+      primaryHitY: 1.45,
+    },
+  });
+
+  assert.ok(labels.includes('120'));
+  assert.ok(!labels.includes('15'));
+  const dimensionLine = wardrobe.children.find(
+    child => child.type === 'Line' && child.userData?.__wpViewerMeasurementOverlay && !child.name
+  );
+  assert.ok(dimensionLine);
+  const points = dimensionLine.geometry.points;
+  assert.ok(Math.abs(points[0].z - points[1].z) < 1e-9);
+  assert.ok(Math.abs(points[0].y - 0.25) < 1e-9);
+  assert.ok(Math.abs(points[1].y - 1.45) < 1e-9);
+});
+
+test('viewer point measurement previews a locked line and cursor X after the first click', () => {
+  const wardrobe = createGroup();
+  const door = createMesh({
+    width: 1,
+    height: 2,
+    depth: 0.02,
+    userData: { partId: 'door_1_full' },
+  });
+  wardrobe.add(door);
+  const labels: string[] = [];
+  const App = createApp(wardrobe, labels);
+  setViewerMeasurementToolMode(App, 'points', false);
+
+  const firstHit = {
+    intersects: [{ object: door, point: { x: -0.25, y: 0.4, z: 0.01 } }],
+    foundPartId: 'door_1_full',
+    foundModuleIndex: null,
+    foundModuleStack: 'top' as const,
+    effectiveDoorId: 'door_1_full',
+    foundDrawerId: null,
+    primaryHitObject: door,
+    doorHitObject: door,
+    doorHitGroup: door,
+    primaryHitPoint: { x: -0.25, y: 0.4, z: 0.01 },
+    doorHitPoint: { x: -0.25, y: 0.4, z: 0.01 },
+    moduleHitY: null,
+    doorHitY: 0.4,
+    primaryHitY: 0.4,
+    hitIdentity: { partId: 'door_1_full', doorId: 'door_1_full' } as any,
+    hitUserData: door.userData,
+  };
+  tryHandleViewerMeasurementClick({ App, hitState: firstHit });
+
+  const previewHandled = tryHandleViewerMeasurementHover({
+    App,
+    hitState: {
+      ...firstHit,
+      intersects: [{ object: door, point: { x: 0.45, y: 0.5, z: 0.01 } }],
+      primaryHitPoint: { x: 0.45, y: 0.5, z: 0.01 },
+      doorHitPoint: { x: 0.45, y: 0.5, z: 0.01 },
+      doorHitY: 0.5,
+      primaryHitY: 0.5,
+    },
+  });
+
+  assert.equal(previewHandled, true);
+  assert.ok(labels.includes('70'));
+  assert.equal(
+    wardrobe.children.filter(child =>
+      String(child.name || '').startsWith('wp-viewer-measurement-point-draft-cursor')
+    ).length,
+    2
+  );
+  const previewLine = wardrobe.children.find(
+    child => child.type === 'Line' && child.userData?.__wpViewerMeasurementOverlay && !child.name
+  );
+  assert.ok(previewLine);
+  const points = previewLine.geometry.points;
+  assert.equal(points.length, 2);
+  assert.ok(Math.abs(points[0].y - points[1].y) < 1e-9);
+});
+
+test('viewer measurement tool mode is cached and defaults back to part when invalid', () => {
+  const wardrobe = createGroup();
+  const labels: string[] = [];
+  const App = createApp(wardrobe, labels);
+
+  assert.equal(getViewerMeasurementToolMode(App), 'part');
+  setViewerMeasurementToolMode(App, 'points', false);
+  assert.equal(getViewerMeasurementToolMode(App), 'points');
+  App.render.cache.__wpViewerMeasurementToolMode = 'bad-value';
+  assert.equal(getViewerMeasurementToolMode(App), 'part');
 });
