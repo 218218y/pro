@@ -61,8 +61,8 @@ test('build_state_resolver normalizes config maps and persisted color arrays fro
         grooveLinesCountMap: { d1: '3', d2: null, drop: 'bad' },
         splitDoorsMap: { split_d1: true, split_d2: false, splitpos_d3: [0.25, 'bad', 0.75] },
         splitDoorsBottomMap: { splitb_d1: true, splitb_d2: false, drop: 'wat' },
-        removedDoorsMap: { removed_d1: 'on', removed_d2: 'off', drop: 'wat' },
-        roundedFrameSideShelvesMap: { body_left: 'on', body_right: 'off', drop: 'wat' },
+        removedDoorsMap: { removed_d1: true, removed_d2: false, removed_d3: 'on', drop: 'wat' },
+        roundedFrameSideShelvesMap: { body_left: true, body_right: false, body_legacy: 1, drop: 'wat' },
         doorSpecialMap: { d1: 'mirror', d2: null, drop: 7 },
         mirrorLayoutMap: {
           d1: [{ widthCm: 40, heightCm: 80, faceSign: -1 }, { widthCm: 0 }],

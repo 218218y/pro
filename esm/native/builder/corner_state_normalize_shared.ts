@@ -22,7 +22,7 @@ export function asCornerConfigRecord(value: unknown): CornerConfigRecord | null 
 }
 
 export function isRemovedDoorToggleValue(value: unknown): value is RemovedDoorsMap[string] {
-  return value === true || value === false || value === null || value === 1 || value === 0;
+  return value === true || value === false || value === null;
 }
 
 export function readFiniteNumber(v: unknown): number | null {

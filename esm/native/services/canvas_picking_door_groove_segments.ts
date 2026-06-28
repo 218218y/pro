@@ -20,7 +20,7 @@ function readOwnMapValue(map: Record<string, unknown> | null | undefined, key: s
 }
 
 function readGrooveBooleanValue(value: unknown): boolean {
-  return value === true || value === 'true' || value === 1 || value === '1';
+  return value === true;
 }
 
 function readNodePartId(node: unknown): string {

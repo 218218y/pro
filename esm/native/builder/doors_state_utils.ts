@@ -23,7 +23,7 @@ function asRecord(x: unknown): UnknownRecord {
 }
 
 function readBool(v: unknown): boolean {
-  return v === true || v === 'true' || v === 1 || v === '1';
+  return v === true;
 }
 
 function readPartColorValue(value: unknown): BuilderPartColorValue {

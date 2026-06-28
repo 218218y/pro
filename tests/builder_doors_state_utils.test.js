@@ -1,8 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-// NOTE: We import from dist/esm because the repo is TS-first and runtime lives under ./dist.
-const mod = async () => await import('../dist/esm/native/builder/doors_state_utils.js');
+const mod = async () => await import('../esm/native/builder/doors_state_utils.ts');
 
 test('doors_state_utils: makeDoorStateAccessors resolves hinge, split, curtain and groove maps', async () => {
   const { makeDoorStateAccessors } = await mod();
@@ -11,7 +10,7 @@ test('doors_state_utils: makeDoorStateAccessors resolves hinge, split, curtain a
     hingeMap: { hinge_d1: 'left' },
     // Canonical since stage4: curtain keys are door-part ids (no "curtain_" prefix)
     curtainMap: { d7_mid: 'fabric' },
-    groovesMap: { groove_d3_full: '1', groove_d4_full: 0 },
+    groovesMap: { groove_d3_full: true, groove_d4_full: false },
   });
 
   assert.equal(acc.getHingeDir('hinge_d1', 'right'), 'left');
@@ -50,9 +49,9 @@ test('doors_state_utils: makeDoorRemovalChecker supports canonical removed_* key
       // - map keys are always "removed_<doorPartId>"
       // - base ids (d1) canonicalize to d1_full at read/write
       removed_d1_full: true,
-      removed_d2_full: 1,
+      removed_d2_full: true,
       removed_d3_full: true,
-      removed_d4_full: '1',
+      removed_d4_full: true,
     },
   });
 
@@ -69,8 +68,8 @@ test('doors_state_utils: partial segmented removal does not promote full door to
   const isRemoved = makeDoorRemovalChecker({
     removedDoorsMap: {
       removed_d12_top: true,
-      removed_d20_bot: 1,
-      removed_d30_mid: '1',
+      removed_d20_bot: true,
+      removed_d30_mid: true,
     },
   });
 
@@ -93,8 +92,8 @@ test('doors_state_utils: full segmented removal still applies to top/mid/bot par
   const isRemoved = makeDoorRemovalChecker({
     removedDoorsMap: {
       removed_d14_full: true,
-      removed_d24_full: 1,
-      removed_d34_full: '1',
+      removed_d24_full: true,
+      removed_d34_full: true,
     },
   });
 
@@ -111,7 +110,7 @@ test('doors_state_utils: full segmented removal still applies to top/mid/bot par
 test('doors_state_utils: edge default-none cache ownership stays canonical across module/corner/pent readers', async () => {
   const { makeDoorStateAccessors, makeHandleTypeResolver } = await mod();
   const { bindEdgeHandleDefaultNoneReader, resetEdgeHandleDefaultNoneCacheMaps, markEdgeHandleDefaultNone } =
-    await import('../dist/esm/native/builder/edge_handle_default_none_runtime.js');
+    await import('../esm/native/builder/edge_handle_default_none_runtime.ts');
 
   const App = { services: {} };
   resetEdgeHandleDefaultNoneCacheMaps(App);

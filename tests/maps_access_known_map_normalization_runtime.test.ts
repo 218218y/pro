@@ -20,8 +20,14 @@ test('maps_access normalizes known maps and clones unknown maps without leaking 
       handlesMap: { d1: 'bar', d2: null, drop: 123 },
       hingeMap: { d1: 'left', d2: hingeObj, bad: 7 },
       splitDoorsMap: { split_d1: true, splitpos_d1: [0.25, 0.75, 'bad'], skip: { nope: true } },
-      removedDoorsMap: { d1: '1', d2: 'off', d3: 'null', bad: 'wat' },
-      roundedFrameSideShelvesMap: { body_left: 'on', body_right: '0', bad: 'wat' },
+      removedDoorsMap: { removed_d1: true, removed_d2: false, removed_d3: null, legacy: 'on', bad: 'wat' },
+      roundedFrameSideShelvesMap: {
+        body_left: true,
+        body_right: false,
+        body_null: null,
+        legacy: 1,
+        bad: 'wat',
+      },
       customMap: { nested: customNested },
       doorTrimMap: { d1: [doorTrimRawEntry, { axis: 'bad', color: 'oops', span: 'half' }] },
     },
@@ -44,14 +50,17 @@ test('maps_access normalizes known maps and clones unknown maps without leaking 
   assert.equal('skip' in (splits || {}), false);
 
   const removed = readMap(App, 'removedDoorsMap');
-  assert.equal(removed?.d1, true);
-  assert.equal(removed?.d2, false);
-  assert.equal(removed?.d3, null);
+  assert.equal(removed?.removed_d1, true);
+  assert.equal(removed?.removed_d2, false);
+  assert.equal(removed?.removed_d3, null);
+  assert.equal('legacy' in (removed || {}), false);
   assert.equal('bad' in (removed || {}), false);
 
   const roundedFrameSides = readMap(App, 'roundedFrameSideShelvesMap');
   assert.equal(roundedFrameSides?.body_left, true);
   assert.equal(roundedFrameSides?.body_right, false);
+  assert.equal(roundedFrameSides?.body_null, null);
+  assert.equal('legacy' in (roundedFrameSides || {}), false);
   assert.equal('bad' in (roundedFrameSides || {}), false);
 
   const trims = readMap(App, 'doorTrimMap');

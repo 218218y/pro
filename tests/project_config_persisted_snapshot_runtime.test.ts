@@ -56,7 +56,7 @@ test('project config persisted snapshot readers share a canonical branch list an
       savedNotes: [{ id: 'n1', blocks: [{ text: 'keep' }] }],
       splitDoorsMap: { d2_top: true, split_d2: false, splitpos_d4: [0.25, 0.75] },
       splitDoorsBottomMap: { splitb_d1: true, drop: false },
-      roundedFrameSideShelvesMap: { body_left: 1, body_right: 0, junk: 'bad' },
+      roundedFrameSideShelvesMap: { body_left: true, body_right: false, legacy: 1, junk: 'bad' },
       mirrorLayoutMap: { d1: [{ widthCm: '55', heightCm: 88 }, { widthCm: 0 }] },
       doorTrimMap: { d1: [{ axis: 'vertical', color: 'gold', span: 'custom', sizeCm: '11' }, { bad: true }] },
       preChestState: { dims: { width: 55 } },

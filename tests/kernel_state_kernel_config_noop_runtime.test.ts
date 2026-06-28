@@ -204,14 +204,17 @@ test('kernel_state_kernel_config scalar patch returns the canonical persisted va
   assert.deepEqual(h.writes[0]?.patch.savedColors, [{ id: 'c2', value: '#222' }]);
 });
 
-test('kernel_state_kernel_config map entry patch returns the canonical persisted entry value instead of raw caller input', () => {
+test('kernel_state_kernel_config map entry patch rejects non-canonical toggle entry values', () => {
   const h = createHarness({ groovesMap: {} });
 
   const next = h.__sk.patchConfigEntry('groovesMap', 'groove_d7', '1', {
-    source: 'test:entry-canonical-return',
+    source: 'test:entry-rejects-legacy-toggle',
   });
 
-  assert.equal(next, true);
-  assert.deepEqual({ ...asRecord(h.state.config.groovesMap) }, { groove_d7: true });
-  assert.deepEqual({ ...asRecord(h.writes[0]?.patch.groovesMap) }, { groove_d7: true });
+  assert.equal(next, undefined);
+  assert.deepEqual({ ...asRecord(h.state.config.groovesMap) }, {});
+  assert.equal(h.writes.length, 0);
+  assert.equal(h.commits.length, 0);
+  assert.equal(h.buildCalls.length, 0);
+  assert.equal(h.autosaveCalls, 0);
 });

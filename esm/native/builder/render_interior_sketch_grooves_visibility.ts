@@ -7,8 +7,8 @@ function asRecord(value: unknown): InteriorValueRecord | null {
 }
 
 function readBooleanToggle(value: unknown): boolean | null {
-  if (value === true || value === 1 || value === '1' || value === 'true') return true;
-  if (value === false || value === 0 || value === '0' || value === 'false') return false;
+  if (value === true) return true;
+  if (value === false) return false;
   return null;
 }
 

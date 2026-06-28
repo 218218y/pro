@@ -6,9 +6,8 @@
 //   without forcing a full rewrite of internal values.
 //
 // Notes:
-// - Values are intentionally permissive (unknown unions) because legacy payloads can
-//   still contain historical encodings. Canonical parsing/normalization lives in
-//   runtime helpers (e.g. maps_access.ts + project_schema.ts).
+// - Toggle maps are canonical boolean/null surfaces. Historical string/numeric toggle
+//   encodings are rejected by the runtime/project normalizers instead of migrated.
 
 import type { UnknownRecord } from './common';
 import type { HandleType, HingeDir } from './domain';
@@ -25,8 +24,8 @@ export type RemovedDoorKey = `removed_${PartId}`;
 
 // --- Common value domains ----------------------------------------------------
 
-/** Shared toggle-like map values for runtime map surfaces. */
-export type ToggleValue = true | false | null | 1 | 0;
+/** Shared canonical toggle-like map values for runtime map surfaces. */
+export type ToggleValue = true | false | null;
 
 /** Generic toggle map (presence/true means ON, null/false means OFF). */
 export type ToggleMap = Record<string, ToggleValue | undefined>;

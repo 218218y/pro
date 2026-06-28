@@ -28,7 +28,7 @@ export type SketchSegmentVisualFlags = {
 const GROOVE_MAP_PREFIX = 'groove_';
 
 function readGrooveBooleanValue(value: unknown): boolean {
-  return value === true || value === 'true' || value === 1 || value === '1';
+  return value === true;
 }
 
 function readSketchSegmentGrooveMapFlag(map: ValueRecord | null | undefined, partId: string): boolean | null {

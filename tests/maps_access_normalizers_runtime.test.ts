@@ -86,3 +86,33 @@ test('maps access normalizers keep split maps on canonical keys and values only'
 
   assert.deepEqual({ ...splitDoorsBottomMap }, { splitb_d1: true });
 });
+
+test('maps access normalizers keep generic toggle maps on canonical boolean/null values', () => {
+  const removedDoorsMap = normalizeKnownMapSnapshot('removedDoorsMap', {
+    removed_d1: true,
+    removed_d2: false,
+    removed_d3: null,
+    removed_d4: 1,
+    removed_d5: 'on',
+  });
+  assert.deepEqual({ ...removedDoorsMap }, { removed_d1: true, removed_d2: false, removed_d3: null });
+
+  const groovesMap = normalizeKnownMapSnapshot('groovesMap', {
+    groove_d1_full: true,
+    groove_d2_full: false,
+    groove_d3_full: null,
+    groove_d4_full: 1,
+    groove_d5_full: 'true',
+    d6_full: true,
+  });
+  assert.deepEqual({ ...groovesMap }, { groove_d1_full: true, groove_d2_full: false, groove_d3_full: null });
+
+  const drawerDividersMap = normalizeKnownMapSnapshot('drawerDividersMap', {
+    'div:int_1': true,
+    'div:int_2': false,
+    'div:int_3': null,
+    'div:int_4': 0,
+    'div:int_5': 'off',
+  });
+  assert.deepEqual({ ...drawerDividersMap }, { 'div:int_1': true, 'div:int_2': false, 'div:int_3': null });
+});

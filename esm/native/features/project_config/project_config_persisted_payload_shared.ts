@@ -113,14 +113,7 @@ export function readStringMap(value: unknown): Record<string, string | null | un
 }
 
 export function isToggleValue(value: unknown): value is ToggleValue | undefined {
-  return (
-    value === true ||
-    value === false ||
-    value === null ||
-    value === 1 ||
-    value === 0 ||
-    typeof value === 'undefined'
-  );
+  return value === true || value === false || value === null || typeof value === 'undefined';
 }
 
 export function readToggleMap(value: unknown): Record<string, ToggleValue | undefined> {
@@ -129,17 +122,6 @@ export function readToggleMap(value: unknown): Record<string, ToggleValue | unde
   const out: Record<string, ToggleValue | undefined> = {};
   for (const [key, entry] of Object.entries(src)) {
     if (isToggleValue(entry)) out[key] = entry;
-  }
-  return out;
-}
-
-export function readBooleanToggleMap(value: unknown): Record<string, true | false | null | undefined> {
-  const src = readToggleMap(value);
-  const out: Record<string, true | false | null | undefined> = {};
-  for (const [key, entry] of Object.entries(src)) {
-    if (entry === 1) out[key] = true;
-    else if (entry === 0) out[key] = false;
-    else out[key] = entry;
   }
   return out;
 }
@@ -153,7 +135,7 @@ export function readRemovedDoorsMap(value: unknown): RemovedDoorsMap {
 }
 
 export function readRoundedFrameSideShelvesMap(value: unknown): RoundedFrameSideShelvesMap {
-  return readBooleanToggleMap(value);
+  return readToggleMap(value);
 }
 
 export function readCurtainMap(value: unknown): CurtainMap {

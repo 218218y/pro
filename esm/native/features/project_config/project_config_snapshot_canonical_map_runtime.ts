@@ -16,21 +16,10 @@ function asMapRecord(value: unknown): Record<string, unknown> | null {
   return isComparableRecord(value) ? value : null;
 }
 
-function normalizeToggleValue(value: unknown): true | false | null | 1 | 0 | undefined {
+function normalizeToggleValue(value: unknown): true | false | null | undefined {
   if (value === true) return true;
   if (value === false) return false;
   if (value === null) return null;
-  if (value === 1) return 1;
-  if (value === 0) return 0;
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return value === 0 ? false : value === 1 ? true : undefined;
-  }
-  if (typeof value === 'string') {
-    const s = value.trim().toLowerCase();
-    if (!s || s === 'null') return null;
-    if (s === 'true' || s === '1' || s === 'yes' || s === 'on') return true;
-    if (s === 'false' || s === '0' || s === 'no' || s === 'off') return false;
-  }
   return undefined;
 }
 

@@ -4,7 +4,7 @@ import { normalizeKnownMapSnapshot } from '../runtime/maps_access.js';
 import { resolveRemoveDoorsEnabledFromSnapshots } from '../features/door_removal_visibility.js';
 
 function readBuildUiToggle(value: unknown): boolean {
-  return value === true || value === 1 || value === '1' || value === 'true';
+  return value === true;
 }
 
 export function applyBuildVisibleConfigMapGates(
