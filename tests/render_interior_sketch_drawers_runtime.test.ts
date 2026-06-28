@@ -253,6 +253,26 @@ test('render sketch external drawers honors per-stack custom drawer height', () 
   assert.ok(Math.abs(Number(secondGroup.userData.__doorHeight) - 0.292) < 1e-9);
 });
 
+test('render sketch external drawers reject string-encoded live stack positions', () => {
+  const { args, App } = createExternalDrawerArgs();
+  args.extDrawers = [{ id: 'string-y', count: 1, yNormC: '0.5' }];
+
+  applySketchExternalDrawers(args);
+
+  assert.equal((App.render?.drawersArray || []).length, 0);
+});
+
+test('render sketch external drawers do not parse string-encoded live count or height', () => {
+  const { args, App } = createExternalDrawerArgs();
+  args.extDrawers = [{ id: 'string-values', count: '2', yNormC: 0.5, drawerHeightM: '0.3' }];
+
+  applySketchExternalDrawers(args);
+
+  const drawers = App.render?.drawersArray || [];
+  assert.equal(drawers.length, 1);
+  assert.ok(Math.abs(Number(drawers[0]?.group.userData.__doorHeight) - 0.212) < 1e-9);
+});
+
 test('render sketch external drawers emit one individually paintable brace shelf per stack', () => {
   const { args, shelfBoards, braceShelfMat } = createExternalDrawerArgs();
   args.extDrawers = [{ id: 'paintable', count: 2, yNormC: 0.5 }];

@@ -10,6 +10,7 @@ import {
 } from '../esm/native/builder/render_interior_sketch_layout.ts';
 import { resolveSketchBoxHeight } from '../esm/native/builder/render_interior_sketch_boxes_shell_height.ts';
 import { resolveSketchBoxShellGeometry } from '../esm/native/builder/render_interior_sketch_boxes_shell_geometry.ts';
+import { SKETCH_BOX_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
 
 test('render interior sketch layout geometry clamps box size and center inside the internal span', () => {
   const geometry = resolveSketchBoxGeometry({
@@ -74,6 +75,47 @@ test('render sketch box shell geometry rejects string-encoded live box dimension
       freeWardrobeBox: { centerX: 0, centerY: 1, centerZ: 0, width: 1, height: 2, depth: 0.55 },
     }),
     null
+  );
+});
+
+test('render interior sketch layout geometry rejects string-encoded live numeric overrides', () => {
+  const geometry = resolveSketchBoxGeometry({
+    innerW: 0.8,
+    internalCenterX: 0,
+    internalDepth: 0.5,
+    internalZ: 0.1,
+    woodThick: 0.02,
+    widthM: '0.4' as any,
+    depthM: '0.3' as any,
+    xNorm: '1' as any,
+  });
+
+  assert.equal(geometry.outerW, 0.8);
+  assert.equal(geometry.outerD, 0.5);
+  assert.equal(geometry.centerX, 0);
+
+  const freeGeometry = resolveSketchFreeBoxGeometry({
+    wardrobeWidth: 1.4,
+    wardrobeDepth: 0.55,
+    backZ: -0.25,
+    centerX: 0.4,
+    woodThick: 0.02,
+    widthM: '0.7' as any,
+    depthM: '0.35' as any,
+  });
+
+  assert.equal(freeGeometry.outerW, SKETCH_BOX_DIMENSIONS.geometry.defaultOuterWidthM);
+  assert.equal(freeGeometry.outerD, SKETCH_BOX_DIMENSIONS.geometry.defaultOuterDepthM);
+
+  assert.equal(
+    clampSketchFreeBoxCenterY({
+      centerY: -1,
+      boxH: 0.6,
+      wardrobeCenterY: 1,
+      wardrobeHeight: 2,
+      pad: '0.05' as any,
+    }),
+    0.3
   );
 });
 

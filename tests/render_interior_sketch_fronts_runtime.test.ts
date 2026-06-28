@@ -211,6 +211,27 @@ test('render sketch box fronts reuses one mirror material across mirrored extern
   assert.equal(group.children.length, 4);
 });
 
+test('render sketch box fronts reject string-encoded live external drawer positions', () => {
+  const { args, App, group, shelfBoards, doorVisualCalls } = createFrontsArgs();
+  args.shell.box.extDrawers = [{ id: 'string-y', count: 1, yNormC: '0.5' }];
+
+  renderSketchBoxFronts(args);
+
+  assert.equal((App.render?.drawersArray || []).length, 0);
+  assert.equal(doorVisualCalls.length, 0);
+  assert.equal(shelfBoards.length, 0);
+  assert.equal(group.children.length, 0);
+});
+
+test('render sketch box fronts do not parse string-encoded live external drawer counts', () => {
+  const { args, App } = createFrontsArgs();
+  args.shell.box.extDrawers = [{ id: 'string-count', count: '2', yNormC: 0.5 }];
+
+  renderSketchBoxFronts(args);
+
+  assert.equal((App.render?.drawersArray || []).length, 1);
+});
+
 test('render sketch box external drawers flush a top-anchored free-box stack to the box face edge', () => {
   const { args, App } = createFrontsArgs();
   args.shell.box = {

@@ -32,8 +32,17 @@ import {
 } from '../esm/native/features/door_trim_shared.ts';
 import {
   DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM,
+  DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M,
+  createSketchExternalDrawersTool,
+  parseSketchExternalDrawersTool,
+  readSketchDrawerHeightMFromItem,
+  resolveSketchExternalDrawerMetrics,
   SKETCH_EXTERNAL_DRAWER_COUNT_MAX,
 } from '../esm/native/features/sketch_drawer_sizing.ts';
+import {
+  resolveSketchInternalDrawerCassetteSideFillerWidth,
+  resolveSketchInternalDrawerCassetteWoodThick,
+} from '../esm/native/features/sketch_internal_drawer_cassette.ts';
 import { computeExternalDrawersOpsForModule } from '../esm/native/builder/core_storage_compute_external_drawers.ts';
 
 test('wardrobe default tokens preserve hinged and sliding business defaults', () => {
@@ -113,6 +122,38 @@ test('external drawer compute and fallback geometry share the same dimensional p
   assert.equal(drawer.connectZ, geom.connectZ);
   assert.equal(drawer.closed.z, geom.zClosed);
   assert.equal(drawer.open.z, geom.zOpen);
+});
+
+test('sketch drawer tools parse numeric tokens while live state readers reject numeric strings', () => {
+  const parsed = parseSketchExternalDrawersTool('sketch_ext_drawers:3@24');
+
+  assert.equal(parsed?.count, 3);
+  assert.equal(parsed?.drawerHeightCm, 24);
+  assert.ok(Math.abs((parsed?.drawerHeightM ?? 0) - 0.24) < 1e-9);
+  assert.equal(createSketchExternalDrawersTool('3', '24'), 'sketch_ext_drawers:3@24');
+
+  const metrics = resolveSketchExternalDrawerMetrics({
+    drawerCount: '3',
+    drawerHeightM: '0.24',
+  } as any);
+  assert.equal(metrics.drawerCount, 1);
+  assert.equal(metrics.drawerH, DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M);
+  assert.equal(
+    readSketchDrawerHeightMFromItem({ drawerHeightM: '0.24' }, DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M),
+    DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M
+  );
+});
+
+test('sketch internal drawer cassette sizing rejects string-encoded live dimensions', () => {
+  assert.equal(resolveSketchInternalDrawerCassetteWoodThick('0.02'), MATERIAL_DIMENSIONS.wood.thicknessM);
+  assert.equal(
+    resolveSketchInternalDrawerCassetteSideFillerWidth({
+      outerWidth: 0.8,
+      woodThick: 0.02,
+      requestedWidthM: '0.08',
+    }),
+    DRAWER_DIMENSIONS.sketch.internalSideFillerWidthM
+  );
 });
 
 test('inset external drawer geometry places the face inside the front frame', () => {

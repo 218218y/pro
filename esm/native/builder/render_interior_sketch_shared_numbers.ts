@@ -1,6 +1,5 @@
 export function toFiniteNumber(value: unknown): number | null {
-  const num = typeof value === 'number' ? value : value != null ? Number(value) : NaN;
-  return Number.isFinite(num) ? num : null;
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
 export function toPositiveNumber(value: unknown): number | null {

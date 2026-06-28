@@ -23,8 +23,7 @@ function hasLongEdgeHandleVariant(cfg: InteriorValueRecord | null): boolean {
 }
 
 function readFiniteNumber(value: unknown): number | null {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : null;
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
 function resolveSketchFreeBoxHandleClampPadding(cfg: InteriorValueRecord | null): number {
@@ -142,11 +141,8 @@ export function resolveSketchFreeBoxSharedHandleAbsY(args: RenderSketchBoxDoorFr
       ? HANDLE_DIMENSIONS.edge.longLiftExtraM
       : 0;
   const liftedHandleAbsY = maxDrawerTopY + HANDLE_DIMENSIONS.edge.drawerLiftClearanceM + extraLongEdgeLift;
-  const currentCenteredAbsY = Number(shell.centerY);
-  const sharedAbsY = Math.max(
-    Number.isFinite(currentCenteredAbsY) ? currentCenteredAbsY : liftedHandleAbsY,
-    liftedHandleAbsY
-  );
+  const currentCenteredAbsY = readFiniteNumber(shell.centerY);
+  const sharedAbsY = Math.max(currentCenteredAbsY ?? liftedHandleAbsY, liftedHandleAbsY);
 
   return Number.isFinite(sharedAbsY) ? sharedAbsY : null;
 }

@@ -93,6 +93,11 @@ export type SketchDrawerFitResult<TMetrics> = {
 
 function readFiniteNumber(value: unknown): number | null {
   if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+  return null;
+}
+
+function parseFiniteNumberToken(value: unknown): number | null {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
   if (typeof value === 'string' && value.trim()) {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : null;
@@ -125,8 +130,8 @@ function readAvailableHeightM(value: unknown): number {
 }
 
 export function normalizeSketchDrawerHeightCm(value: unknown, defaultCm: number): number {
-  const defaultHeight = readFiniteNumber(defaultCm) ?? DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM;
-  const raw = readFiniteNumber(value);
+  const defaultHeight = parseFiniteNumberToken(defaultCm) ?? DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM;
+  const raw = parseFiniteNumberToken(value);
   const source = raw != null ? raw : defaultHeight;
   const clamped = Math.max(SKETCH_DRAWER_HEIGHT_MIN_CM, Math.min(SKETCH_DRAWER_HEIGHT_MAX_CM, source));
   return roundHeightCm(clamped);
@@ -176,7 +181,7 @@ export function parseSketchExternalDrawersTool(tool: unknown): SketchExternalDra
   if (!isSketchExternalDrawersTool(tool)) return null;
   const raw = String(tool).slice(SKETCH_EXTERNAL_DRAWERS_TOOL_PREFIX.length).trim();
   const [countRaw = '', heightRaw = ''] = raw.split(SKETCH_DRAWER_HEIGHT_TOOL_SEPARATOR);
-  const countNum = readFiniteNumber(countRaw);
+  const countNum = parseFiniteNumberToken(countRaw);
   if (countNum == null) return null;
   const count = Math.max(
     SKETCH_EXTERNAL_DRAWER_COUNT_MIN,
@@ -201,7 +206,7 @@ export function createSketchInternalDrawersTool(heightCm: unknown): string {
 }
 
 export function createSketchExternalDrawersTool(count: unknown, heightCm: unknown): string {
-  const countNum = readFiniteNumber(count);
+  const countNum = parseFiniteNumberToken(count);
   const safeCount =
     countNum != null
       ? Math.max(

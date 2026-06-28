@@ -120,6 +120,32 @@ test('free-placement sketch-box doors share the lifted handle height from box ex
   assert.equal(layout?.groupUserData.__handleAbsY, sharedHandleAbsY);
 });
 
+test('free-placement shared handle height does not parse string-encoded shell center', () => {
+  const numericRenderArgs = createRenderArgs({
+    freePlacement: true,
+    cfg: {
+      globalHandleType: 'edge',
+      handlesMap: { __wp_edge_handle_variant_global: 'long' },
+    },
+  });
+  const stringRenderArgs = createRenderArgs({
+    freePlacement: true,
+    cfg: {
+      globalHandleType: 'edge',
+      handlesMap: { __wp_edge_handle_variant_global: 'long' },
+    },
+  });
+  stringRenderArgs.frontsArgs.shell.centerY = '9';
+
+  const numeric = resolveSketchFreeBoxSharedHandleAbsY(numericRenderArgs);
+  const fromStringCenter = resolveSketchFreeBoxSharedHandleAbsY(stringRenderArgs);
+
+  assert.ok(numeric != null);
+  assert.ok(fromStringCenter != null);
+  assert.ok(fromStringCenter < 2);
+  assert.ok(Math.abs(fromStringCenter - numeric) < 1e-9);
+});
+
 test('free-placement sketch-box row doors clamp handles like lower and upper hinged cabinets', () => {
   const renderArgs = createRenderArgs({
     freePlacement: true,

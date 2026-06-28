@@ -31,13 +31,11 @@ export type SketchInternalDrawerCassetteRange = {
 };
 
 function readPositiveFinite(value: unknown): number | null {
-  const n = typeof value === 'number' ? value : value != null && value !== '' ? Number(value) : NaN;
-  return Number.isFinite(n) && n > 0 ? n : null;
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : null;
 }
 
 function readNonNegativeFinite(value: unknown): number | null {
-  const n = typeof value === 'number' ? value : value != null && value !== '' ? Number(value) : NaN;
-  return Number.isFinite(n) && n >= 0 ? n : null;
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : null;
 }
 
 function resolveCassetteDrawerWidthInputs(args: {
