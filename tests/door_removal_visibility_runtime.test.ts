@@ -12,7 +12,7 @@ test('door removal visibility resolves only canonical UI and primary-mode snapsh
   assert.equal(isRemoveDoorModeFromSnapshot(null), false);
 
   assert.equal(resolveRemoveDoorsEnabledFromSnapshots({ removeDoorsEnabled: true }, null), true);
-  assert.equal(resolveRemoveDoorsEnabledFromSnapshots({ removeDoorsEnabled: '1' }, null), true);
+  assert.equal(resolveRemoveDoorsEnabledFromSnapshots({ removeDoorsEnabled: '1' }, null), false);
   assert.equal(resolveRemoveDoorsEnabledFromSnapshots({}, { primary: 'remove_door' }), true);
   assert.equal(resolveRemoveDoorsEnabledFromSnapshots({}, { primary: 'none' }), false);
   assert.equal(

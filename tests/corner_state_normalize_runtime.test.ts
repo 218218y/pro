@@ -17,6 +17,12 @@ test('corner flags reject the retired removeDoors alias and use canonical UI/mod
     __stackSplitEnabled: false,
   });
   const canonical = resolveCornerWingFlags({
+    uiAny: { removeDoorsEnabled: true },
+    primaryMode: 'none',
+    __stackKey: 'top',
+    __stackSplitEnabled: false,
+  });
+  const legacyStringToggle = resolveCornerWingFlags({
     uiAny: { removeDoorsEnabled: '1' as any },
     primaryMode: 'none',
     __stackKey: 'top',
@@ -25,6 +31,7 @@ test('corner flags reject the retired removeDoors alias and use canonical UI/mod
 
   assert.equal(legacyOnly.removeDoorsEnabled, false);
   assert.equal(canonical.removeDoorsEnabled, true);
+  assert.equal(legacyStringToggle.removeDoorsEnabled, false);
 });
 
 function createApp(args: {
