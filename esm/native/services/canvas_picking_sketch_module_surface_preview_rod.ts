@@ -73,8 +73,8 @@ function resolvePresetRodPreviewMatch(args: {
     for (let i = 0; i < rodOps.length; i += 1) {
       const rodOp = readRecordEntry(rodOps[i]);
       if (!rodOp) continue;
-      const rawYFactor = Number(rodOp.yFactor);
-      if (!Number.isFinite(rawYFactor)) continue;
+      const rawYFactor = readRecordNumber(rodOp, 'yFactor');
+      if (rawYFactor == null) continue;
       const rawGridIndex = readRecordNumber(rodOp, 'gridIndex');
       const gridIndex =
         rawGridIndex != null

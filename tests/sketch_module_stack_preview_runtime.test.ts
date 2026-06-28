@@ -155,6 +155,33 @@ test('module internal drawer preview blocks against existing module boxes using 
   assert.equal(result.preview.op, 'blocked');
 });
 
+test('module drawer preview ignores string-encoded module boxes when building blockers', () => {
+  const result = resolveSketchModuleStackPreview({
+    host,
+    contentKind: 'drawers',
+    moduleKey: 2,
+    cfgRef: null,
+    bottomY: 0,
+    topY: 2.4,
+    totalHeight: 2.4,
+    pad: 0.018,
+    desiredCenterY: 0.2,
+    innerW: 0.9,
+    internalCenterX: 0,
+    internalDepth: 0.55,
+    internalZ: 0,
+    drawers: [],
+    extDrawers: [],
+    boxes: [{ id: 'legacy-box-low', yNorm: '0.23', heightM: '0.6' }] as any,
+    woodThick: 0.018,
+    isCornerKey: () => false,
+  });
+
+  assert.equal(result.hoverRecord.kind, 'drawers');
+  assert.notEqual(result.hoverRecord.__wpBlockedReason, 'collision');
+  assert.notEqual(result.preview.op, 'blocked');
+});
+
 test('module external drawer preview clamps below existing boxes instead of overlapping their top half', () => {
   const result = resolveSketchModuleStackPreview({
     host: { tool: 'sketch_ext_drawers:2', moduleKey: 2, isBottom: false, ts: 4 },

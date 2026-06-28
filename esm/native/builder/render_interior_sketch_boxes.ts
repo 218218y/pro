@@ -23,8 +23,8 @@ import {
 
 function createSketchBoxYFromNorm(state: ResolvedSketchBoxState): SketchBoxYFromNorm {
   return (rawNorm: unknown, itemHalfH: number) => {
-    const norm = typeof rawNorm === 'number' ? rawNorm : Number(rawNorm);
-    if (!Number.isFinite(norm)) return null;
+    const norm = typeof rawNorm === 'number' && Number.isFinite(rawNorm) ? rawNorm : null;
+    if (norm == null) return null;
     const y0 = state.centerY - state.halfH + Math.max(0, Math.min(1, norm)) * state.height;
     const lo = state.innerBottomY + itemHalfH;
     const hi = state.innerTopY - itemHalfH;

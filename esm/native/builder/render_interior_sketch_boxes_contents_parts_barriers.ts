@@ -9,6 +9,10 @@ import { asRecordArray } from './render_interior_sketch_shared.js';
 import { resolveSketchBoxSegmentForContent } from './render_interior_sketch_layout.js';
 import { resolveSketchBoxContentPartMaterial } from './render_interior_sketch_boxes_contents_parts_materials.js';
 
+function readPositiveNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : null;
+}
+
 export function renderSketchBoxContentStorageBarriers(args: RenderSketchBoxStaticContentsArgs): void {
   const { shell, boxDividers, boxHorizontalDividers, yFromBoxNorm } = args;
   const { createBoard, woodThick, bodyMat, getPartMaterial, isFn } = args.args;
@@ -20,9 +24,8 @@ export function renderSketchBoxContentStorageBarriers(args: RenderSketchBoxStati
   for (let barrierIndex = 0; barrierIndex < boxStorageBarriers.length; barrierIndex++) {
     const barrier = boxStorageBarriers[barrierIndex] || null;
     if (!barrier) continue;
-    let barrierH = Number(barrier.heightM);
-    if (!Number.isFinite(barrierH)) barrierH = Number(barrier.hM);
-    if (!Number.isFinite(barrierH)) continue;
+    let barrierH = readPositiveNumber(barrier.heightM) ?? readPositiveNumber(barrier.hM);
+    if (barrierH == null) continue;
     const minBarrierH = woodThick * storageDims.minHeightWoodMultiplier + storageDims.minHeightExtraM;
     barrierH = Math.max(minBarrierH, Math.min(barrierH, Math.max(minBarrierH, sideH)));
     const barrierY = yFromBoxNorm(barrier.yNorm, barrierH / 2);

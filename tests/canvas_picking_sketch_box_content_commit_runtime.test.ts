@@ -427,3 +427,31 @@ test('sketch-box drawer commit removes shelf replaced by the internal drawer cas
   assert.deepEqual(box.shelves, []);
   assert.equal(box.drawers.length, 1);
 });
+
+test('sketch-box drawer commit ignores string-encoded existing shelf geometry during cassette cleanup', () => {
+  const box = createBox({
+    heightM: '1',
+    shelves: [{ id: 'legacy-string-shelf', yNorm: '0.4' }],
+  });
+
+  commitSketchModuleBoxContent({
+    box,
+    boxId: 'sb1',
+    contentKind: 'drawers',
+    woodThick: 0.02,
+    hoverRec: {
+      kind: 'box_content',
+      contentKind: 'drawers',
+      boxId: 'sb1',
+      op: 'add',
+      boxYNorm: 0.6,
+      boxBaseYNorm: 0.42,
+      stackH: 0.36,
+      drawerH: 0.165,
+      drawerGap: 0.03,
+    },
+  });
+
+  assert.deepEqual(box.shelves, [{ id: 'legacy-string-shelf', yNorm: '0.4' }]);
+  assert.equal(box.drawers.length, 1);
+});

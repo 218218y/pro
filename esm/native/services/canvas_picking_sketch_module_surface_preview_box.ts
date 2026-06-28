@@ -169,7 +169,7 @@ export function resolveSketchModuleBoxPreviewState(args: {
         yCenter: resolvedBoxAction.centerY,
         xCenter: resolvedBoxAction.centerX,
         xNorm: resolvedBoxAction.xNorm,
-        removeId: resolvedBoxAction.removeId,
+        removeId: resolvedBoxAction.op === 'remove' ? resolvedBoxAction.removeId : null,
         blockedReason,
       }),
       preview: {

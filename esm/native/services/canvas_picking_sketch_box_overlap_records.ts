@@ -13,10 +13,7 @@ export function isPlacementBoxLike(value: unknown): value is PlacementBoxLike & 
 }
 
 export function readNumber(value: unknown): number | null {
-  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
-  if (value == null || value === '') return null;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
 export function readRecordValue(record: unknown, key: string): unknown {

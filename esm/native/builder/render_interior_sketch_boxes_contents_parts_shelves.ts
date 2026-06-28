@@ -25,6 +25,10 @@ type RoundedShelfBoardOptions = {
   roundedShelfSide: RemovedFrameSideShelfRounding;
 };
 
+function readPositiveNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : null;
+}
+
 export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContentsArgs): void {
   const { shell, boxDividers, boxHorizontalDividers, yFromBoxNorm } = args;
   const {
@@ -123,10 +127,8 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
       roundedLeft && roundedRight ? 'both' : roundedLeft ? 'left' : roundedRight ? 'right' : null;
 
     let shelfDepth = isBrace ? usableContentDepth : usableRegularDepth;
-    const depthRaw = shelf.depthM;
-    const depthM = typeof depthRaw === 'number' ? depthRaw : depthRaw != null ? Number(depthRaw) : NaN;
-    if (Number.isFinite(depthM) && depthM > 0)
-      shelfDepth = Math.min(usableContentDepth, Math.max(woodThick, depthM));
+    const depthM = readPositiveNumber(shelf.depthM);
+    if (depthM != null) shelfDepth = Math.min(usableContentDepth, Math.max(woodThick, depthM));
     const shelfPid = `${boxPid}_shelf_${String(shelf.id ?? si)}`;
     const shelfMat = resolveSketchBoxShelfMaterial({
       getPartMaterial,

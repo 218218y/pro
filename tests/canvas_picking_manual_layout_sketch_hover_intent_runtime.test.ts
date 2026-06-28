@@ -133,34 +133,34 @@ test('manual-layout hover intent readers normalize box-content and vertical remo
     contentKind: 'door',
     boxId: 'box-7',
     freePlacement: true,
-    boxYNorm: '0.2',
-    boxBaseYNorm: '0.1',
-    contentXNorm: '0.6',
-    dividerXNorm: '0.3',
-    dividerFrontZ: '0.14',
-    removeIdx: '2',
-    drawerCount: '4',
+    boxYNorm: 0.2,
+    boxBaseYNorm: 0.1,
+    contentXNorm: 0.6,
+    dividerXNorm: 0.3,
+    dividerFrontZ: 0.14,
+    removeIdx: 2,
+    drawerCount: 4,
     hinge: 'RIGHT',
     baseType: 'plinth',
     baseLegStyle: 'square',
     baseLegColor: 'gold',
-    baseLegHeightCm: '14',
-    baseLegWidthCm: '5.5',
-    basePlinthHeightCm: '14.5',
+    baseLegHeightCm: 14,
+    baseLegWidthCm: 5.5,
+    basePlinthHeightCm: 14.5,
     corniceType: 'flat',
   });
   const stack = readManualLayoutSketchStackHoverIntent({
     kind: 'ext_drawers',
     removeKind: 'std',
-    removeSlot: '3',
-    drawerCount: '5',
+    removeSlot: 3,
+    drawerCount: 5,
   });
   const rod = readManualLayoutSketchRodHoverIntent({
     kind: 'rod',
     op: 'remove',
     removeKind: 'base',
-    removeIdx: '1',
-    rodIndex: '4',
+    removeIdx: 1,
+    rodIndex: 4,
   });
 
   assert.deepEqual(boxContent, {
@@ -227,4 +227,52 @@ test('manual-layout hover intent readers normalize box-content and vertical remo
     removeIdx: 1,
     rodIndex: 4,
   });
+});
+
+test('manual-layout hover intent readers reject string-encoded numeric state', () => {
+  const boxContent = readManualLayoutSketchBoxContentHoverIntent({
+    kind: 'box_content',
+    op: 'remove',
+    contentKind: 'door',
+    boxId: 'box-7',
+    freePlacement: true,
+    boxYNorm: '0.2',
+    boxBaseYNorm: '0.1',
+    contentXNorm: '0.6',
+    dividerXNorm: '0.3',
+    dividerFrontZ: '0.14',
+    removeIdx: '2',
+    drawerCount: '4',
+    baseLegHeightCm: '14',
+    baseLegWidthCm: '5.5',
+    basePlinthHeightCm: '14.5',
+  });
+  const stack = readManualLayoutSketchStackHoverIntent({
+    kind: 'ext_drawers',
+    removeKind: 'std',
+    removeSlot: '3',
+    drawerCount: '5',
+  });
+  const rod = readManualLayoutSketchRodHoverIntent({
+    kind: 'rod',
+    op: 'remove',
+    removeKind: 'base',
+    removeIdx: '1',
+    rodIndex: '4',
+  });
+
+  assert.equal(boxContent?.boxYNorm, null);
+  assert.equal(boxContent?.boxBaseYNorm, null);
+  assert.equal(boxContent?.contentXNorm, null);
+  assert.equal(boxContent?.dividerXNorm, null);
+  assert.equal(boxContent?.dividerFrontZ, null);
+  assert.equal(boxContent?.removeIdx, null);
+  assert.equal(boxContent?.drawerCount, null);
+  assert.equal(boxContent?.baseLegHeightCm, null);
+  assert.equal(boxContent?.baseLegWidthCm, null);
+  assert.equal(boxContent?.basePlinthHeightCm, null);
+  assert.equal(stack?.removeSlot, null);
+  assert.equal(stack?.drawerCount, null);
+  assert.equal(rod?.removeIdx, null);
+  assert.equal(rod?.rodIndex, null);
 });

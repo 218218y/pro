@@ -37,9 +37,23 @@ function toastSketchModuleBoxCollisionFailure(args: {
 export function tryCommitSketchModuleSurfaceBoxTool(args: CommitSketchModuleSurfaceToolArgs): boolean {
   if (!args.tool.startsWith(args.sketchBoxToolPrefix)) return false;
 
+  const placement = args.resolveSketchBoxPlacementMetrics();
+  const placementInnerW = readRecordNumber(placement, 'innerW');
+  const placementInternalCenterX = readRecordNumber(placement, 'internalCenterX');
+  const placementInternalDepth = readRecordNumber(placement, 'internalDepth');
+  const placementInternalZ = readRecordNumber(placement, 'internalZ');
+  const placementHitLocalX = readRecordNumber(placement, 'hitLocalX');
+  if (
+    placementInnerW == null ||
+    placementInternalCenterX == null ||
+    placementInternalDepth == null ||
+    placementInternalZ == null
+  ) {
+    return true;
+  }
+
   const extra = ensureRecord(args.cfg, 'sketchExtras');
   const boxes = ensureRecordList(extra, 'boxes');
-  const placement = args.resolveSketchBoxPlacementMetrics();
   const boxHover = args.hoverOk ? readManualLayoutSketchBoxHoverIntent(args.hoverRec) : null;
   const hoverBoxX = boxHover?.xCenter ?? NaN;
   const hoverBoxY = boxHover?.yCenter ?? NaN;
@@ -70,7 +84,7 @@ export function tryCommitSketchModuleSurfaceBoxTool(args: CommitSketchModuleSurf
   });
   const resolvedBoxAction = resolveSketchModuleBoxAction({
     boxes,
-    cursorXHint: Number.isFinite(hoverBoxX) ? hoverBoxX : readRecordNumber(placement, 'hitLocalX'),
+    cursorXHint: Number.isFinite(hoverBoxX) ? hoverBoxX : placementHitLocalX,
     cursorY: Number.isFinite(hoverBoxY) ? hoverBoxY : args.hitYClamped,
     boxH: boxTool.boxH,
     widthM: boxTool.boxWM,
@@ -79,10 +93,10 @@ export function tryCommitSketchModuleSurfaceBoxTool(args: CommitSketchModuleSurf
     topY: args.topY,
     spanH: args.totalHeight,
     pad: args.pad,
-    innerW: readRecordNumber(placement, 'innerW') ?? NaN,
-    internalCenterX: readRecordNumber(placement, 'internalCenterX') ?? NaN,
-    internalDepth: readRecordNumber(placement, 'internalDepth') ?? NaN,
-    internalZ: readRecordNumber(placement, 'internalZ') ?? NaN,
+    innerW: placementInnerW,
+    internalCenterX: placementInternalCenterX,
+    internalDepth: placementInternalDepth,
+    internalZ: placementInternalZ,
     woodThick: args.woodThick,
     resolveSketchBoxGeometry: args.resolveSketchBoxGeometry,
     enableCenterSnap: !Number.isFinite(hoverBoxX),

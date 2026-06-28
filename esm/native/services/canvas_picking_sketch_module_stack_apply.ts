@@ -52,8 +52,7 @@ type CommitSketchModuleStackToolArgs = {
 };
 
 function readPositiveNumber(value: unknown): number | null {
-  const n = typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : NaN;
-  return Number.isFinite(n) && n > 0 ? n : null;
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : null;
 }
 
 function formatHeightCm(heightM: number): string {

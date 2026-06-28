@@ -96,6 +96,28 @@ test('resolveSketchModuleBoxAction rebuilds remove state from removeIdHint befor
   assert.ok(action.sourceBox);
 });
 
+test('resolveSketchModuleBoxAction rejects string-encoded existing box geometry', () => {
+  const action = resolveSketchModuleBoxAction(
+    makeArgs({
+      boxes: [
+        {
+          id: 'legacy_box',
+          yNorm: '0.7',
+          heightM: '0.55',
+          widthM: '0.36',
+          depthM: '0.3',
+          xNorm: '0.8',
+        },
+      ],
+      removeIdHint: 'legacy_box',
+    })
+  );
+
+  assert.equal(action.op, 'add');
+  assert.notEqual(action.removeId, 'legacy_box');
+  assert.equal(action.sourceBox, null);
+});
+
 test('createSketchModuleBoxConfigItem persists normalized y/width/depth/x position for added boxes', () => {
   const action = resolveSketchModuleBoxAction(makeArgs());
   assert.equal(action.op, 'add');

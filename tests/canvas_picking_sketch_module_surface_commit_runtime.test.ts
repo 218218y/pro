@@ -91,6 +91,35 @@ test('tryCommitSketchModuleSurfaceTool adds a module sketch box through the focu
   assert.equal(boxes?.boxes?.[0]?.depthM, 0.32);
 });
 
+test('tryCommitSketchModuleSurfaceTool rejects string-encoded box specs and placement metrics', () => {
+  const stringSpecArgs = makeArgs({
+    parseSketchBoxToolSpec: () => ({ heightCm: '90', widthCm: '36', depthCm: '32' }),
+  });
+  const stringSpecHandled = tryCommitSketchModuleSurfaceTool(stringSpecArgs as never);
+  assert.equal(stringSpecHandled, true);
+
+  const stringSpecBoxes = (
+    (stringSpecArgs.cfg as Record<string, unknown>).sketchExtras as { boxes?: Array<Record<string, unknown>> }
+  )?.boxes;
+  assert.equal(stringSpecBoxes?.length, 1);
+  assert.equal(stringSpecBoxes?.[0]?.heightM, 0.4);
+  assert.equal(stringSpecBoxes?.[0]?.widthM, undefined);
+  assert.equal(stringSpecBoxes?.[0]?.depthM, undefined);
+
+  const stringPlacementArgs = makeArgs({
+    resolveSketchBoxPlacementMetrics: () => ({
+      innerW: '1.2',
+      internalCenterX: '0',
+      internalDepth: '0.55',
+      internalZ: '0',
+      hitLocalX: '0.18',
+    }),
+  });
+  const stringPlacementHandled = tryCommitSketchModuleSurfaceTool(stringPlacementArgs as never);
+  assert.equal(stringPlacementHandled, true);
+  assert.equal((stringPlacementArgs.cfg as Record<string, unknown>).sketchExtras, undefined);
+});
+
 test('tryCommitSketchModuleSurfaceTool removes a hovered module sketch box by removeId intent', () => {
   const cfg = {
     sketchExtras: {

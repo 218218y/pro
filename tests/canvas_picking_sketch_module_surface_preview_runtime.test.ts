@@ -97,6 +97,63 @@ test('module surface preview returns add box preview through the canonical seam'
   );
 });
 
+test('module surface preview ignores string-encoded existing box geometry while adding a box', () => {
+  const result = resolveSketchModuleSurfacePreview({
+    host: { tool: 'sketch_box:40', moduleKey: 0, isBottom: false, ts: 1 },
+    tool: 'sketch_box:40',
+    hitModuleKey: 0,
+    intersects: [],
+    info: { gridDivisions: 6 },
+    cfgRef: { layout: 'shelves', isCustom: true },
+    hitLocalX: 0.18,
+    yClamped: 0.2,
+    bottomY: -1,
+    topY: 1,
+    spanH: 2,
+    pad: 0.02,
+    woodThick: 0.018,
+    innerW: 1.2,
+    internalCenterX: 0,
+    internalDepth: 0.55,
+    internalZ: 0,
+    isBox: true,
+    isStorage: false,
+    isShelf: false,
+    isRod: false,
+    allowExistingShelfRemove: false,
+    allowExistingRodRemove: false,
+    variant: 'regular',
+    shelfDepthOverrideM: null,
+    boxH: 0.4,
+    boxWidthOverrideM: 0.36,
+    boxDepthOverrideM: 0.32,
+    storageH: 0.5,
+    boxes: [
+      {
+        id: 'legacy-string-box',
+        yNorm: '0.6',
+        heightM: '0.4',
+        widthM: '0.36',
+        depthM: '0.32',
+        xNorm: '0.65',
+      },
+    ] as any,
+    storageBarriers: [],
+    shelves: [],
+    rods: [],
+    isCornerKey: () => false,
+    resolveSketchBoxGeometry,
+    readSketchBoxDividers: () => [],
+    resolveSketchBoxSegments: () => [],
+  });
+
+  assert.equal(result.handled, true);
+  assert.equal(result.hoverRecord?.kind, 'box');
+  assert.equal(result.hoverRecord?.op, 'add');
+  assert.equal(result.hoverRecord?.removeId, undefined);
+  assert.equal(result.preview?.op, 'add');
+});
+
 test('module surface preview stays unhandled when no content kind or removal probe is active', () => {
   const result = resolveSketchModuleSurfacePreview({
     host: { tool: 'sketch_box:40', moduleKey: 0, isBottom: false, ts: 1 },
@@ -130,6 +187,51 @@ test('module surface preview stays unhandled when no content kind or removal pro
     storageH: 0.5,
     boxes: [],
     storageBarriers: [],
+    shelves: [],
+    rods: [],
+    isCornerKey: () => false,
+    resolveSketchBoxGeometry,
+    readSketchBoxDividers: () => [],
+    resolveSketchBoxSegments: () => [],
+  });
+
+  assert.deepEqual(result, { handled: false });
+});
+
+test('module surface storage remove probe rejects string-encoded sketch barrier geometry', () => {
+  const result = resolveSketchModuleSurfacePreview({
+    host: { tool: 'sketch_int_drawers', moduleKey: 1, isBottom: false, ts: 3 },
+    tool: 'sketch_int_drawers',
+    hitModuleKey: 1,
+    intersects: [],
+    info: { gridDivisions: 6 },
+    cfgRef: { layout: 'shelves', isCustom: true, customData: { storage: false } },
+    hitLocalX: 0,
+    yClamped: 0.72,
+    bottomY: 0,
+    topY: 1.2,
+    spanH: 1.2,
+    pad: 0.003,
+    woodThick: 0.018,
+    innerW: 1,
+    internalCenterX: 0,
+    internalDepth: 0.55,
+    internalZ: 0,
+    isBox: false,
+    isStorage: false,
+    isShelf: false,
+    isRod: false,
+    allowExistingShelfRemove: false,
+    allowExistingRodRemove: false,
+    allowExistingStorageRemove: true,
+    variant: 'regular',
+    shelfDepthOverrideM: null,
+    boxH: 0.4,
+    boxWidthOverrideM: null,
+    boxDepthOverrideM: null,
+    storageH: 0.5,
+    boxes: [],
+    storageBarriers: [{ yNorm: '0.6', heightM: '0.32' }] as any,
     shelves: [],
     rods: [],
     isCornerKey: () => false,
@@ -297,6 +399,58 @@ test('module surface preview resolves base shelf hover remove while sketch exter
   assert.equal(result.hoverRecord?.kind, 'shelf');
   assert.equal(result.hoverRecord?.removeKind, 'base');
   assert.equal(result.hoverRecord?.shelfIndex, 1);
+});
+
+test('module surface rod remove probe rejects string-encoded custom rod geometry', () => {
+  const result = resolveSketchModuleSurfacePreview({
+    host: { tool: 'sketch_ext_drawers:3', moduleKey: 1, isBottom: false, ts: 4 },
+    tool: 'sketch_ext_drawers:3',
+    hitModuleKey: 1,
+    intersects: [],
+    info: { gridDivisions: 6 },
+    cfgRef: {
+      layout: 'shelves',
+      isCustom: true,
+      customData: {
+        rods: [],
+        rodOps: [{ yFactor: '3', gridIndex: '3', yAdd: '0' }],
+      },
+    },
+    hitLocalX: 0,
+    yClamped: 0.6,
+    bottomY: 0,
+    topY: 1.2,
+    spanH: 1.2,
+    pad: 0.003,
+    woodThick: 0.018,
+    innerW: 1,
+    internalCenterX: 0,
+    internalDepth: 0.55,
+    internalZ: 0,
+    isBox: false,
+    isStorage: false,
+    isShelf: false,
+    isRod: false,
+    allowExistingShelfRemove: false,
+    allowExistingRodRemove: true,
+    allowExistingStorageRemove: false,
+    variant: 'regular',
+    shelfDepthOverrideM: null,
+    boxH: 0.4,
+    boxWidthOverrideM: null,
+    boxDepthOverrideM: null,
+    storageH: 0.5,
+    boxes: [],
+    storageBarriers: [],
+    shelves: [],
+    rods: [],
+    isCornerKey: () => false,
+    resolveSketchBoxGeometry,
+    readSketchBoxDividers: () => [],
+    resolveSketchBoxSegments: () => [],
+  });
+
+  assert.deepEqual(result, { handled: false });
 });
 
 test('module surface preview snaps sketch storage above internal drawer stacks after the pointer leaves the stack', () => {

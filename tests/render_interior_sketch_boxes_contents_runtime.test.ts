@@ -224,6 +224,26 @@ test('render sketch box shelves emit folded contents inside divider-aware shelf 
   assert.equal(folded[0][7].cfgSnapshot, args.args.input.cfgSnapshot);
 });
 
+test('render sketch box contents rejects string-encoded shelf and storage dimensions', () => {
+  const { args, boards } = createBaseArgs();
+  args.shell.box = {
+    shelves: [{ id: 'string-depth', yNorm: 0.25, variant: 'regular', depthM: '0.2' }],
+    storageBarriers: [{ id: 'string-height', yNorm: 0.5, heightM: '0.3', xNorm: 0.75 }],
+    rods: [],
+    drawers: [],
+  };
+
+  renderSketchBoxContents(args);
+
+  const shelfBoard = boards.find(entry => String(entry.args[7]).endsWith('_shelf_string-depth'));
+  assert.ok(shelfBoard);
+  assert.equal(shelfBoard.args[2], args.shell.regularDepth);
+  assert.equal(
+    boards.some(entry => String(entry.args[7]).endsWith('_storage_string-height')),
+    false
+  );
+});
+
 test('removed sketch-box side forces adjacent box shelves to brace and applies rounded shelf option', () => {
   const { args, boards, shelfPins } = createBaseArgs();
   const boxPid = 'sketch_box_free_0_sbf_1';

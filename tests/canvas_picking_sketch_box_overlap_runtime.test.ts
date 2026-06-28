@@ -41,6 +41,23 @@ test('resolved module boxes ignore free-placement items and the requested ignore
   assert.ok(Math.abs(resolved[0].centerY - 0) <= 1e-9);
 });
 
+test('resolved module boxes reject string-encoded live geometry', () => {
+  const resolved = resolveModuleBoxes({
+    boxes: [
+      {
+        id: 'string_box',
+        yNorm: '0.5',
+        heightM: '0.4',
+        widthM: '0.5',
+        xNorm: '0.4',
+      },
+    ],
+    ...moduleArgs,
+  });
+
+  assert.deepEqual(resolved, []);
+});
+
 test('vertical center clamp respects module bounds even when desired center is far outside range', () => {
   const clamped = clampSketchModuleBoxCenterY({
     centerY: 3,

@@ -83,6 +83,26 @@ test('module box hit keeps shifted boxes removable when pointer is inside their 
   assert.ok(Math.abs(hit.centerX - 0.36) <= 1e-9);
 });
 
+test('module box hit rejects string-encoded live box geometry', () => {
+  const hit = findSketchModuleBoxHit(
+    makeArgs({
+      boxes: [
+        {
+          id: 'string_box',
+          yNorm: '0.5',
+          heightM: '0.6',
+          widthM: '0.36',
+          xNorm: '0.8',
+        },
+      ],
+      cursorX: 0.22,
+      cursorY: 0.12,
+    })
+  );
+
+  assert.equal(hit, null);
+});
+
 test('module box hit ignores pointer positions outside the box footprint', () => {
   const hit = findSketchModuleBoxHit(
     makeArgs({

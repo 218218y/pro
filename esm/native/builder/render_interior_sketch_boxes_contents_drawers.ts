@@ -40,8 +40,7 @@ import {
 const SKETCH_DRAWER_RENDER_PHYSICAL_OVERLAP_GAP_M = 0;
 
 function readFiniteNumber(value: unknown): number | null {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : null;
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
 function shouldRenderBoxInternalDrawers(input: RenderSketchBoxContentsArgs['args']['input']): boolean {

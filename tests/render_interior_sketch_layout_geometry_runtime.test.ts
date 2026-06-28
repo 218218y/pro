@@ -8,6 +8,8 @@ import {
   resolveSketchBoxSegmentForContent,
   resolveSketchFreeBoxGeometry,
 } from '../esm/native/builder/render_interior_sketch_layout.ts';
+import { resolveSketchBoxHeight } from '../esm/native/builder/render_interior_sketch_boxes_shell_height.ts';
+import { resolveSketchBoxShellGeometry } from '../esm/native/builder/render_interior_sketch_boxes_shell_geometry.ts';
 
 test('render interior sketch layout geometry clamps box size and center inside the internal span', () => {
   const geometry = resolveSketchBoxGeometry({
@@ -26,6 +28,53 @@ test('render interior sketch layout geometry clamps box size and center inside t
   assert.equal(geometry.centerX, 0);
   assert.ok(Math.abs(geometry.innerW - 0.76) < 1e-9);
   assert.ok(Math.abs(geometry.innerD - 0.03) < 1e-9);
+});
+
+test('render sketch box shell geometry rejects string-encoded live box dimensions', () => {
+  assert.equal(
+    resolveSketchBoxHeight({
+      rawHeight: '0.8',
+      defaultHeight: null,
+      woodThick: 0.02,
+      spanH: 2,
+      isFreePlacement: false,
+    }),
+    null
+  );
+
+  const renderArgs = {
+    effectiveBottomY: 0,
+    effectiveTopY: 2,
+    spanH: 2,
+    innerW: 1,
+    woodThick: 0.02,
+    internalDepth: 0.55,
+    internalCenterX: 0,
+    internalZ: 0,
+    clampY: (y: number) => y,
+  } as any;
+
+  assert.equal(
+    resolveSketchBoxShellGeometry({
+      box: { yNorm: '0.5', heightM: 0.8, widthM: '0.4', depthM: '0.3' } as any,
+      isFreePlacement: false,
+      height: 0.8,
+      renderArgs,
+      freeWardrobeBox: null,
+    }),
+    null
+  );
+
+  assert.equal(
+    resolveSketchBoxShellGeometry({
+      box: { freePlacement: true, absX: '0.2', absY: 0.8, heightM: 0.8, widthM: 0.4 } as any,
+      isFreePlacement: true,
+      height: 0.8,
+      renderArgs,
+      freeWardrobeBox: { centerX: 0, centerY: 1, centerZ: 0, width: 1, height: 2, depth: 0.55 },
+    }),
+    null
+  );
 });
 
 test('render interior sketch layout geometry keeps free-box vertical slack and normalized inner geometry', () => {

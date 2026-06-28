@@ -84,6 +84,24 @@ test('sketch module shelf commits toggle the nearest shelf and preserve explicit
   assert.equal(match?.depthM, 0.33);
 });
 
+test('sketch module vertical content matching rejects string-encoded shelf and storage geometry', () => {
+  const shelfMatch = findNearestSketchModuleShelf({
+    shelves: [{ yNorm: '0.3', variant: 'glass', depthM: '0.22' }],
+    bottomY: 0,
+    totalHeight: 1,
+    pointerY: 0.3,
+  });
+  const storageMatch = findNearestSketchModuleStorageBarrier({
+    storageBarriers: [{ yNorm: '0.5', heightM: '0.6' }],
+    bottomY: 0,
+    totalHeight: 2,
+    pointerY: 1,
+  });
+
+  assert.equal(shelfMatch, null);
+  assert.equal(storageMatch, null);
+});
+
 test('sketch module rod commits toggle the nearest rod instead of duplicating it', () => {
   const cfg: Record<string, unknown> = {
     sketchExtras: {

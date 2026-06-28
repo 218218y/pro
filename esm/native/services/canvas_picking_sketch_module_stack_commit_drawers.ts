@@ -38,7 +38,7 @@ import {
 
 function readGridDivisions(cfg: RecordMap): number {
   const raw = cfg.gridDivisions;
-  const value = typeof raw === 'number' ? raw : raw != null ? Number(raw) : NaN;
+  const value = typeof raw === 'number' && Number.isFinite(raw) ? raw : NaN;
   return Number.isFinite(value) && value > 1
     ? Math.floor(value)
     : INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault;

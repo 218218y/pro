@@ -18,6 +18,15 @@ function resolveSketchBoxPlacementClampPad(woodThick: number): number {
   );
 }
 
+function readFiniteNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function readPositiveNumber(value: unknown): number | null {
+  const n = readFiniteNumber(value);
+  return n != null && n > 0 ? n : null;
+}
+
 export function resolveSketchBoxShellGeometry(
   args: ResolveSketchBoxShellGeometryArgs
 ): ResolvedSketchBoxShellGeometry | null {
@@ -34,46 +43,56 @@ export function resolveSketchBoxShellGeometry(
     clampY,
   } = renderArgs;
   const halfH = height / 2;
-  const wRaw = box.widthM;
-  const dRaw = box.depthM;
-  const widthM = typeof wRaw === 'number' ? wRaw : wRaw != null ? Number(wRaw) : NaN;
-  const depthM = typeof dRaw === 'number' ? dRaw : dRaw != null ? Number(dRaw) : NaN;
+  const widthM = readPositiveNumber(box.widthM);
+  const depthM = readPositiveNumber(box.depthM);
 
   if (isFreePlacement) {
-    const absX = Number(box.absX);
-    const absY = Number(box.absY);
+    const absX = readFiniteNumber(box.absX);
+    const absY = readFiniteNumber(box.absY);
+    if (absX == null || absY == null) return null;
+    const freeCenterY = freeWardrobeBox ? readFiniteNumber(freeWardrobeBox.centerY) : null;
+    const freeCenterZ = freeWardrobeBox ? readFiniteNumber(freeWardrobeBox.centerZ) : null;
+    const freeWidth = freeWardrobeBox ? readPositiveNumber(freeWardrobeBox.width) : null;
+    const freeHeight = freeWardrobeBox ? readPositiveNumber(freeWardrobeBox.height) : null;
+    const freeDepth = freeWardrobeBox ? readPositiveNumber(freeWardrobeBox.depth) : null;
+    if (
+      freeWardrobeBox &&
+      (freeCenterY == null ||
+        freeCenterZ == null ||
+        freeWidth == null ||
+        freeHeight == null ||
+        freeDepth == null)
+    ) {
+      return null;
+    }
     const freeBackZ =
-      freeWardrobeBox && Number.isFinite(freeWardrobeBox.centerZ) && Number.isFinite(freeWardrobeBox.depth)
-        ? Number(freeWardrobeBox.centerZ) - Number(freeWardrobeBox.depth) / 2
-        : internalZ - internalDepth / 2;
-    if (!Number.isFinite(absX) || !Number.isFinite(absY) || !Number.isFinite(freeBackZ)) return null;
+      freeCenterZ != null && freeDepth != null ? freeCenterZ - freeDepth / 2 : internalZ - internalDepth / 2;
+    if (!Number.isFinite(freeBackZ)) return null;
     const centerY =
-      freeWardrobeBox && Number.isFinite(freeWardrobeBox.centerY) && Number.isFinite(freeWardrobeBox.height)
+      freeCenterY != null && freeHeight != null
         ? clampSketchFreeBoxCenterY({
             centerY: absY,
             boxH: height,
-            wardrobeCenterY: Number(freeWardrobeBox.centerY),
-            wardrobeHeight: Number(freeWardrobeBox.height),
+            wardrobeCenterY: freeCenterY,
+            wardrobeHeight: freeHeight,
             pad: resolveSketchBoxPlacementClampPad(woodThick),
           })
         : absY;
     const geometry = resolveSketchFreeBoxGeometry({
-      wardrobeWidth: freeWardrobeBox ? Number(freeWardrobeBox.width) : innerW,
-      wardrobeDepth: freeWardrobeBox ? Number(freeWardrobeBox.depth) : internalDepth,
+      wardrobeWidth: freeWidth ?? innerW,
+      wardrobeDepth: freeDepth ?? internalDepth,
       backZ: freeBackZ,
       centerX: absX,
       woodThick,
-      widthM: Number.isFinite(widthM) && widthM > 0 ? widthM : null,
-      depthM: Number.isFinite(depthM) && depthM > 0 ? depthM : null,
+      widthM,
+      depthM,
     });
     return { centerY, geometry, absEntry: null };
   }
 
-  const yNormRaw = box.yNorm;
-  const xNormRaw = box.xNorm;
-  const yNorm = typeof yNormRaw === 'number' ? yNormRaw : Number(yNormRaw);
-  const xNorm = typeof xNormRaw === 'number' ? xNormRaw : xNormRaw != null ? Number(xNormRaw) : NaN;
-  if (!Number.isFinite(yNorm)) return null;
+  const yNorm = readFiniteNumber(box.yNorm);
+  const xNorm = readFiniteNumber(box.xNorm);
+  if (yNorm == null) return null;
 
   const centerYBase = effectiveBottomY + Math.max(0, Math.min(1, yNorm)) * spanH;
   const padBox = resolveSketchBoxPlacementClampPad(woodThick);
@@ -86,9 +105,9 @@ export function resolveSketchBoxShellGeometry(
     internalDepth,
     internalZ,
     woodThick,
-    widthM: Number.isFinite(widthM) && widthM > 0 ? widthM : null,
-    depthM: Number.isFinite(depthM) && depthM > 0 ? depthM : null,
-    xNorm: Number.isFinite(xNorm) ? xNorm : null,
+    widthM,
+    depthM,
+    xNorm,
   });
   return {
     centerY,
