@@ -210,6 +210,8 @@ export function createClearTransientHoverPreview(
   };
 }
 
+export const CANVAS_HOVER_CURSOR_PRESERVE = '__wp_canvas_hover_cursor_preserve';
+
 export function createHoverCursorApplier(
   App: AppContainer,
   domEl: HTMLElement,
@@ -217,6 +219,7 @@ export function createHoverCursorApplier(
 ) {
   return (hoverRes: unknown): void => {
     try {
+      if (hoverRes === CANVAS_HOVER_CURSOR_PRESERVE) return;
       if (typeof hoverRes === 'boolean') {
         safeSetCursor(domEl, hoverRes ? 'pointer' : '', App);
         state.cursorManaged = true;

@@ -4331,7 +4331,8 @@ body.wp-ui-react .wp-viewer-measurement-wrap {
 body.wp-ui-react .wp-viewer-measurement-mode-menu {
   position: absolute;
   top: calc(100% + 8px);
-  right: 0;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
   gap: 8px;

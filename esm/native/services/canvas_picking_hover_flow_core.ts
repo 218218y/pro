@@ -24,6 +24,8 @@ import { syncCanvasPickingViewportMatrices } from './canvas_picking_viewport_mat
 import { resolveCanvasPickingClickHitState } from './canvas_picking_click_hit_flow.js';
 import { tryHandleViewerMeasurementHover, VIEWER_MEASUREMENT_MODE_ID } from './viewer_measurement_tool.js';
 
+const CANVAS_HOVER_CURSOR_PRESERVE = '__wp_canvas_hover_cursor_preserve';
+
 function ensureSplitHoverMarker(App: AppContainer) {
   try {
     const ro = getBuilderRenderOps(App);
@@ -115,7 +117,8 @@ export function handleCanvasHoverNDCImpl(App: AppContainer, ndcX: number, ndcY: 
         raycaster: __wpRaycaster,
         mouse: __wpMouse,
       });
-      return tryHandleViewerMeasurementHover({ App, hitState });
+      tryHandleViewerMeasurementHover({ App, hitState });
+      return CANVAS_HOVER_CURSOR_PRESERVE as unknown as boolean;
     }
 
     const marker = ensureSplitHoverMarker(App);

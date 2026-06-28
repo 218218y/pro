@@ -66,7 +66,7 @@ test('viewer overlay exposes notes edit and visibility controls without duplicat
   assert.match(css, /body\.wp-ui-react \.cam-btn\.wp-viewer-measurement-btn\.is-on/);
   assert.match(
     css,
-    /body\.wp-ui-react \.wp-viewer-measurement-mode-menu \{[\s\S]*?position:\s*absolute;[\s\S]*?top:\s*calc\(100% \+ 8px\);[\s\S]*?right:\s*0;/
+    /body\.wp-ui-react \.wp-viewer-measurement-mode-menu \{[\s\S]*?position:\s*absolute;[\s\S]*?top:\s*calc\(100% \+ 8px\);[\s\S]*?left:\s*50%;[\s\S]*?transform:\s*translateX\(-50%\);/
   );
   assert.match(
     css,

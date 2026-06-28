@@ -1365,6 +1365,19 @@ function renderPointMeasurement(args: {
   return true;
 }
 
+function isEmptyMeasurementHitState(hitState: CanvasPickingClickHitState | null): boolean {
+  if (!hitState) return true;
+  if (!Array.isArray(hitState.intersects) || hitState.intersects.length === 0) return true;
+  return !resolveMeasurementTarget(hitState);
+}
+
+function exitPointMeasurementOnEmptyClick(App: AppContainer): boolean {
+  clearViewerMeasurementOverlay(App, false);
+  exitViewerMeasurementPrimaryMode(App);
+  touchRender(App);
+  return true;
+}
+
 function tryHandleViewerPointMeasurementClick(args: {
   App: AppContainer;
   hitState: CanvasPickingClickHitState | null;
@@ -1373,11 +1386,8 @@ function tryHandleViewerPointMeasurementClick(args: {
   const currentState = readOverlayState(App);
   const draft = currentState?.pointDraft || null;
 
-  if (!hitState) {
-    clearViewerMeasurementOverlay(App, false);
-    exitViewerMeasurementPrimaryMode(App);
-    touchRender(App);
-    return true;
+  if (isEmptyMeasurementHitState(hitState)) {
+    return exitPointMeasurementOnEmptyClick(App);
   }
 
   if (!draft) {

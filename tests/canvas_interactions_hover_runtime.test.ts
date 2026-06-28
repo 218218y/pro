@@ -2,7 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  CANVAS_HOVER_CURSOR_PRESERVE,
   createCanvasInteractionState,
+  createHoverCursorApplier,
   createRectCacheOps,
 } from '../esm/native/ui/interactions/canvas_interactions_shared.ts';
 import { createCanvasHoverInteractionOps } from '../esm/native/ui/interactions/canvas_interactions_hover.ts';
@@ -168,4 +170,18 @@ test('canvas hover pointerleave cancels queued hover work, clears previews, and 
   assert.equal(domEl.style.cursor, '');
   assert.deepEqual(hideCalls, ['sketch', 'layout']);
   assert.deepEqual(renderCalls, [false]);
+});
+
+test('canvas hover cursor applier can preserve a precision edit cursor', () => {
+  const domEl = createDomEl();
+  domEl.style.cursor = 'url(point-cross.svg) 12 12, crosshair';
+  const state = createCanvasInteractionState();
+  state.cursorManaged = true;
+  const { App } = createApp();
+
+  const applyHoverCursor = createHoverCursorApplier(App, domEl, state);
+  applyHoverCursor(CANVAS_HOVER_CURSOR_PRESERVE);
+
+  assert.equal(domEl.style.cursor, 'url(point-cross.svg) 12 12, crosshair');
+  assert.equal(state.cursorManaged, true);
 });

@@ -571,6 +571,53 @@ test('viewer measurement exits primary mode when clicking an empty canvas area',
   assert.deepEqual(App.__lastToast, { value: null, active: false });
 });
 
+test('viewer point measurement exits when the canvas click has no measurement target', () => {
+  const wardrobe = createGroup();
+  const labels: string[] = [];
+  const App = createApp(wardrobe, labels);
+  const modeCalls: Array<{ primary: string; opts: unknown; meta: Record<string, unknown> }> = [];
+  App.actions = {
+    mode: {
+      set(primary: string, opts: unknown, meta: Record<string, unknown>) {
+        modeCalls.push({ primary, opts, meta });
+      },
+    },
+  };
+  App.services.uiFeedback = {
+    updateEditStateToast(value: unknown, active: boolean) {
+      App.__lastToast = { value, active };
+    },
+  };
+  setViewerMeasurementToolMode(App, 'points', false);
+
+  tryHandleViewerMeasurementClick({
+    App,
+    hitState: {
+      intersects: [],
+      foundPartId: null,
+      foundModuleIndex: null,
+      foundModuleStack: 'top',
+      effectiveDoorId: null,
+      foundDrawerId: null,
+      primaryHitObject: null,
+      doorHitObject: null,
+      doorHitGroup: null,
+      primaryHitPoint: null,
+      doorHitPoint: null,
+      moduleHitY: null,
+      doorHitY: null,
+      primaryHitY: null,
+      hitIdentity: null,
+      hitUserData: null,
+    },
+  });
+
+  assert.equal(modeCalls.length, 1);
+  assert.equal(modeCalls[0]?.primary, 'none');
+  assert.equal(modeCalls[0]?.meta.source, 'viewerMeasurement:emptyClick');
+  assert.deepEqual(App.__lastToast, { value: null, active: false });
+});
+
 test('viewer measurement uses the side plane for thin side panels', () => {
   const wardrobe = createGroup();
   const sidePanel = createMesh({
