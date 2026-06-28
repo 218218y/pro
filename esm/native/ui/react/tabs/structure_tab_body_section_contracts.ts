@@ -9,6 +9,7 @@ import type {
 import type { StructurePattern } from './structure_tab_saved_models_patterns.js';
 
 export type BaseType = 'plinth' | 'legs' | 'none';
+export type ChestBaseTypeOptionValue = BaseType | 'wheels';
 export type StructureBaseLegStyle = BaseLegStyle;
 export type StructureBaseLegColor = BaseLegColor;
 export type StructureBaseLegPlatformMode = BaseLegPlatformMode;
@@ -72,6 +73,12 @@ export const BASE_TYPE_OPTIONS: ReadonlyArray<StructureBodyTypeOption<BaseType>>
   { value: 'plinth', label: 'צוקל', iconClass: 'fas fa-border-all wp-r-type-icon' },
   { value: 'legs', label: 'רגליים', iconClass: 'fas fa-chair wp-r-type-icon' },
   { value: 'none', label: 'ללא', iconClass: 'fas fa-ban wp-r-type-icon' },
+];
+
+export const CHEST_BASE_TYPE_OPTIONS: ReadonlyArray<StructureBodyTypeOption<ChestBaseTypeOptionValue>> = [
+  { value: 'plinth', label: 'צוקל', iconClass: 'fas fa-border-all wp-r-type-icon' },
+  { value: 'legs', label: 'רגליים', iconClass: 'fas fa-chair wp-r-type-icon' },
+  { value: 'wheels', label: 'גלגלים', iconClass: 'fas fa-circle-notch wp-r-type-icon' },
 ];
 
 export const SLIDING_TRACKS_OPTIONS: ReadonlyArray<StructureBodyTypeOption<SlidingTracksColor>> = [

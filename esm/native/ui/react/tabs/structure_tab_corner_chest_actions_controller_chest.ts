@@ -3,6 +3,7 @@ import { setManualWidth } from '../actions/room_actions.js';
 import {
   setCfgPreChestState,
   setUiBaseLegPlatformMode,
+  setUiBaseLegStyle,
   setUiBaseType,
   setUiChestCommodeEnabled,
   setUiChestCommodeMirrorHeightCm,
@@ -25,7 +26,7 @@ import {
   adjustCameraForChest,
   resetCameraPreset,
 } from '../../../services/api.js';
-import { normalizeBaseLegPlatformMode } from '../../../features/base_leg_support.js';
+import { normalizeBaseLegPlatformMode, normalizeBaseLegStyle } from '../../../features/base_leg_support.js';
 import { asFiniteInt, asFiniteNumber, structureTabReportNonFatal } from './structure_tab_shared.js';
 import {
   commitStructureStatePatchWithRecompute,
@@ -56,6 +57,11 @@ function readDefaultCommodeMirrorHeightCm(value: unknown): number {
 function readPreChestBaseLegPlatformMode(pre: UnknownRecord | null): 'stage' | 'plain' | null {
   if (!pre || !Object.prototype.hasOwnProperty.call(pre, 'baseLegPlatformMode')) return null;
   return normalizeBaseLegPlatformMode(pre.baseLegPlatformMode);
+}
+
+function readPreChestBaseLegStyle(pre: UnknownRecord | null): string | null {
+  if (!pre || !Object.prototype.hasOwnProperty.call(pre, 'baseLegStyle')) return null;
+  return normalizeBaseLegStyle(pre.baseLegStyle);
 }
 
 export function createStructureTabChestActionsController(args: StructureTabCornerChestActionsArgs) {
@@ -96,6 +102,7 @@ export function createStructureTabChestActionsController(args: StructureTabCorne
               depth: args.depth,
               isManual: args.isManualWidth,
               base: args.baseType,
+              baseLegStyle: normalizeBaseLegStyle(args.baseLegStyle),
               baseLegPlatformMode: normalizeBaseLegPlatformMode(args.baseLegPlatformMode),
             },
           },
@@ -111,6 +118,7 @@ export function createStructureTabChestActionsController(args: StructureTabCorne
               depth: args.depth,
               isManual: args.isManualWidth,
               base: args.baseType,
+              baseLegStyle: normalizeBaseLegStyle(args.baseLegStyle),
               baseLegPlatformMode: normalizeBaseLegPlatformMode(args.baseLegPlatformMode),
             },
             metaOn
@@ -154,12 +162,14 @@ export function createStructureTabChestActionsController(args: StructureTabCorne
       pre && typeof pre.base === 'string' && pre.base ? pre.base : String(args.baseType || 'plinth');
     const baseLegPlatformModeR =
       readPreChestBaseLegPlatformMode(pre) || normalizeBaseLegPlatformMode(args.baseLegPlatformMode);
+    const baseLegStyleR = readPreChestBaseLegStyle(pre) || normalizeBaseLegStyle(args.baseLegStyle);
 
     const source = 'react:structure:chest:off';
     const metaOff = createStructureTabRecomputeWriteMeta(source);
     const uiPatch: UnknownRecord = {
       isChestMode: false,
       baseType: baseR,
+      baseLegStyle: baseLegStyleR,
       ...(baseR === 'legs' ? { baseLegPlatformMode: baseLegPlatformModeR } : {}),
       raw: { doors: doorsR, width: widthR, height: heightR, depth: depthR },
     };
@@ -178,6 +188,7 @@ export function createStructureTabChestActionsController(args: StructureTabCorne
         }
         setUiChestMode(args.app, false, metaOff);
         setUiBaseType(args.app, baseR, metaOff);
+        setUiBaseLegStyle(args.app, baseLegStyleR, metaOff);
         if (baseR === 'legs') setUiBaseLegPlatformMode(args.app, baseLegPlatformModeR, metaOff);
         setUiDoors(args.app, doorsR, metaOff);
         setUiWidth(args.app, widthR, metaOff);

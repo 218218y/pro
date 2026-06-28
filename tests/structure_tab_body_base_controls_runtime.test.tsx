@@ -83,3 +83,11 @@ test('[structure-base] flush platform keeps only the front overhang control', ()
   assert.doesNotMatch(html, /בליטה מהצדדים/);
   assert.match(html, /בליטה מהחזית/);
 });
+
+test('[structure-base] chest base selector hides none and exposes wheels', () => {
+  const html = renderBaseControls({ isChestMode: true, baseType: 'legs', baseLegStyle: 'wheels' });
+
+  assert.match(html, /גלגלים/);
+  assert.doesNotMatch(html, /ללא/);
+  assert.doesNotMatch(html, /במת רגליים/);
+});

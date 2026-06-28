@@ -320,6 +320,17 @@ export const CARCASS_BASE_DIMENSIONS = Object.freeze({
     connectorWidthClearanceM: 0.08,
     connectorHeightClearanceM: 0.02,
     openOffsetZM: 0.35,
+    wheels: Object.freeze({
+      heightM: 0.07,
+      radiusM: 0.025,
+      thicknessM: 0.018,
+      plateWidthM: 0.06,
+      plateHeightM: 0.006,
+      plateDepthM: 0.05,
+      forkWidthM: 0.008,
+      forkHeightM: 0.032,
+      forkDepthM: 0.006,
+    }),
   }),
 });
 
@@ -339,6 +350,7 @@ export const BASE_LEG_DIMENSIONS = Object.freeze({
     heightCm: 12,
     widthCm: 3.5,
     taperedWidthCm: 4,
+    wheelWidthCm: 5,
   }),
   limits: Object.freeze({
     heightMinCm: 1,

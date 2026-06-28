@@ -12,7 +12,7 @@ import {
   DOOR_SYSTEM_DIMENSIONS,
   resolveDoorMountThicknessesFromConfig,
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
-import { resolveBaseLegGeometrySpec } from '../features/base_leg_support.js';
+import { isBaseLegWheelsStyle, resolveBaseLegGeometrySpec } from '../features/base_leg_support.js';
 import { makeDrawerBoxPartId } from '../features/drawer_box_identity.js';
 
 import type { AppContainer, BuilderBuildChestOnlyOptsLike } from '../../../types/index.js';
@@ -99,6 +99,7 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
     ? Math.min(DOOR_SYSTEM_DIMENSIONS.hinged.insetRevealM, Math.max(0, thick / 3))
     : 0;
   const legH = inputs.baseLegHeightM;
+  const isWheelsBase = isBaseLegWheelsStyle(inputs.baseLegStyle);
   const baseLegBottomPlatformH = inputs.baseLegBottomPlatformHeightM;
   const baseLegTopPlatformH = inputs.baseLegTopPlatformHeightM;
   const baseH = effectiveBaseType === 'plinth' ? inputs.basePlinthHeightM : legH + baseLegBottomPlatformH;
@@ -197,11 +198,6 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
     createLegPlatform(legH + baseLegBottomPlatformH / 2, 'chest_leg_platform_bottom');
     createLegPlatform(H + baseLegTopPlatformH / 2, 'chest_leg_platform_top');
 
-    const legSpec = resolveBaseLegGeometrySpec(inputs.baseLegStyle, inputs.baseLegWidthCm);
-    const legGeo =
-      legSpec.shape === 'square'
-        ? new THREE.BoxGeometry(legSpec.width, legH, legSpec.depth)
-        : new THREE.CylinderGeometry(legSpec.topRadius, legSpec.bottomRadius, legH, legSpec.radialSegments);
     const positions = [
       {
         x: -totalW / 2 + BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM,
@@ -220,16 +216,71 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
         z: -D / 2 + BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM,
       },
     ];
-    if (totalW > BASE_LEG_LAYOUT_DIMENSIONS.chestCenterSupportWidthThresholdM) {
-      positions.push({ x: 0, z: D / 2 - BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM });
-      positions.push({ x: 0, z: -D / 2 + BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM });
+
+    if (isWheelsBase) {
+      const wheelDims = CHEST_DIMENSIONS.wheels;
+      const wheelGeo = new THREE.CylinderGeometry(
+        wheelDims.radiusM,
+        wheelDims.radiusM,
+        wheelDims.thicknessM,
+        24
+      );
+      const plateGeo = new THREE.BoxGeometry(
+        wheelDims.plateWidthM,
+        wheelDims.plateHeightM,
+        wheelDims.plateDepthM
+      );
+      const forkGeo = new THREE.BoxGeometry(
+        wheelDims.forkWidthM,
+        wheelDims.forkHeightM,
+        wheelDims.forkDepthM
+      );
+      const wheelCenterY = Math.max(wheelDims.radiusM, legH - wheelDims.plateHeightM - wheelDims.forkHeightM);
+      const plateY = legH - wheelDims.plateHeightM / 2;
+      const forkY = legH - wheelDims.plateHeightM - wheelDims.forkHeightM / 2;
+      positions.forEach((pos, index) => {
+        const plate = new THREE.Mesh(plateGeo, palette.legMat);
+        plate.position.set(pos.x, plateY, pos.z);
+        plate.userData = { __kind: 'chest_caster_plate', casterIndex: index };
+        if (addOutlines) addOutlines(plate);
+        wardrobeGroup.add(plate);
+
+        const wheel = new THREE.Mesh(wheelGeo, palette.legMat);
+        wheel.position.set(pos.x, wheelCenterY, pos.z);
+        wheel.rotation.z = Math.PI / 2;
+        wheel.userData = { __kind: 'chest_caster_wheel', casterIndex: index };
+        if (addOutlines) addOutlines(wheel);
+        wardrobeGroup.add(wheel);
+
+        [-1, 1].forEach(side => {
+          const fork = new THREE.Mesh(forkGeo, palette.legMat);
+          fork.position.set(
+            pos.x + side * (wheelDims.thicknessM / 2 + wheelDims.forkWidthM / 2),
+            forkY,
+            pos.z
+          );
+          fork.userData = { __kind: 'chest_caster_fork', casterIndex: index };
+          if (addOutlines) addOutlines(fork);
+          wardrobeGroup.add(fork);
+        });
+      });
+    } else {
+      const legSpec = resolveBaseLegGeometrySpec(inputs.baseLegStyle, inputs.baseLegWidthCm);
+      const legGeo =
+        legSpec.shape === 'square'
+          ? new THREE.BoxGeometry(legSpec.width, legH, legSpec.depth)
+          : new THREE.CylinderGeometry(legSpec.topRadius, legSpec.bottomRadius, legH, legSpec.radialSegments);
+      if (totalW > BASE_LEG_LAYOUT_DIMENSIONS.chestCenterSupportWidthThresholdM) {
+        positions.push({ x: 0, z: D / 2 - BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM });
+        positions.push({ x: 0, z: -D / 2 + BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM });
+      }
+      positions.forEach(pos => {
+        const leg = new THREE.Mesh(legGeo, palette.legMat);
+        leg.position.set(pos.x, legH / 2, pos.z);
+        if (addOutlines) addOutlines(leg);
+        wardrobeGroup.add(leg);
+      });
     }
-    positions.forEach(pos => {
-      const leg = new THREE.Mesh(legGeo, palette.legMat);
-      leg.position.set(pos.x, legH / 2, pos.z);
-      if (addOutlines) addOutlines(leg);
-      wardrobeGroup.add(leg);
-    });
   }
 
   const innerH = sideH;

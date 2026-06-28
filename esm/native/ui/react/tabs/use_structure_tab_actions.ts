@@ -53,6 +53,7 @@ export function useStructureTabCornerChestActions(args: {
   height: number;
   isManualWidth: boolean;
   baseType: string;
+  baseLegStyle: string;
   baseLegPlatformMode: string;
   preChestState: ProjectPreChestStateLike;
   chestCommodeEnabled: boolean;
@@ -76,6 +77,7 @@ export function useStructureTabCornerChestActions(args: {
         height: args.height,
         isManualWidth: args.isManualWidth,
         baseType: args.baseType,
+        baseLegStyle: args.baseLegStyle,
         baseLegPlatformMode: args.baseLegPlatformMode,
         preChestState: args.preChestState,
         chestCommodeEnabled: args.chestCommodeEnabled,
@@ -97,6 +99,7 @@ export function useStructureTabCornerChestActions(args: {
       args.height,
       args.isManualWidth,
       args.baseType,
+      args.baseLegStyle,
       args.baseLegPlatformMode,
       args.preChestState,
       args.chestCommodeEnabled,

@@ -3,7 +3,7 @@ import type { UnknownRecord } from '../../../types/index.js';
 import { BASE_LEG_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { METAL_FINISH_PALETTE_BY_COLOR } from './metal_finish_palette.js';
 
-export type BaseLegStyle = 'tapered' | 'round' | 'square';
+export type BaseLegStyle = 'tapered' | 'round' | 'square' | 'wheels';
 export type BaseLegColor = 'black' | 'nickel' | 'gold';
 export type BaseLegPlatformMode = 'stage' | 'plain';
 export type BaseLegPlatformSideMode = 'overhang' | 'flush';
@@ -41,6 +41,7 @@ export const DEFAULT_BASE_LEG_WIDTH_CM: number = BASE_LEG_DIMENSIONS.defaults.wi
 export const DEFAULT_BASE_LEG_PLATFORM_MODE: BaseLegPlatformMode = 'stage';
 export const DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE: BaseLegPlatformSideMode = 'overhang';
 export const DEFAULT_TAPERED_BASE_LEG_WIDTH_CM: number = BASE_LEG_DIMENSIONS.defaults.taperedWidthCm;
+export const DEFAULT_WHEEL_BASE_LEG_WIDTH_CM: number = BASE_LEG_DIMENSIONS.defaults.wheelWidthCm;
 
 export function resolveDefaultBaseLegPlatformModeForContext(
   args: {
@@ -71,6 +72,7 @@ export function normalizeBaseLegStyle(value: unknown): BaseLegStyle {
     .toLowerCase();
   if (raw === 'round') return 'round';
   if (raw === 'square') return 'square';
+  if (raw === 'wheels' || raw === 'wheel' || raw === 'casters' || raw === 'caster') return 'wheels';
   return DEFAULT_BASE_LEG_STYLE;
 }
 
@@ -133,9 +135,14 @@ function parseFiniteNumber(value: unknown): number {
 }
 
 export function getDefaultBaseLegWidthCm(style: unknown = DEFAULT_BASE_LEG_STYLE): number {
-  return normalizeBaseLegStyle(style) === 'tapered'
-    ? DEFAULT_TAPERED_BASE_LEG_WIDTH_CM
-    : DEFAULT_BASE_LEG_WIDTH_CM;
+  const normalizedStyle = normalizeBaseLegStyle(style);
+  if (normalizedStyle === 'tapered') return DEFAULT_TAPERED_BASE_LEG_WIDTH_CM;
+  if (normalizedStyle === 'wheels') return DEFAULT_WHEEL_BASE_LEG_WIDTH_CM;
+  return DEFAULT_BASE_LEG_WIDTH_CM;
+}
+
+export function isBaseLegWheelsStyle(value: unknown): boolean {
+  return normalizeBaseLegStyle(value) === 'wheels';
 }
 
 export function normalizeBaseLegHeightCm(value: unknown, defaultValue = DEFAULT_BASE_LEG_HEIGHT_CM): number {
@@ -170,6 +177,8 @@ export function resolveBaseLegGeometrySpec(value: unknown, widthCm?: unknown): B
   const style = normalizeBaseLegStyle(value);
   const widthM = normalizeBaseLegWidthCm(widthCm, getDefaultBaseLegWidthCm(style)) / 100;
   if (style === 'square') return { shape: 'square', width: widthM, depth: widthM };
+  if (style === 'wheels')
+    return { shape: 'round', topRadius: widthM / 2, bottomRadius: widthM / 2, radialSegments: 24 };
   const radius = Math.max(0.001, widthM / 2);
   if (style === 'round') {
     return { shape: 'round', topRadius: radius, bottomRadius: radius, radialSegments: 16 };

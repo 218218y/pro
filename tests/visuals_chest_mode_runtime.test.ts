@@ -973,3 +973,62 @@ test('visuals chest mode uses custom inset door mount thickness and sinks drawer
     true
   );
 });
+
+test('visuals chest mode wheels base creates four compact casters without leg platforms', () => {
+  const { App, wardrobeGroup } = createChestApp();
+  const inputs = resolveChestModeBuildInputs({
+    H: 0.9,
+    totalW: 1.2,
+    D: 0.45,
+    drawersCount: 3,
+    baseType: 'legs',
+    baseLegStyle: 'wheels',
+    baseLegColor: 'black',
+    baseLegHeightCm: 15,
+    baseLegWidthCm: 5,
+    baseLegPlatformMode: 'stage',
+    colorChoice: '#ffffff',
+    cfgSnapshot: createChestCfg(),
+    renderPolicy: App.__outlineRenderPolicy,
+  });
+
+  assert.equal(inputs.baseLegStyle, 'wheels');
+  assert.equal(inputs.baseLegPlatformMode, 'plain');
+  assert.equal(inputs.baseLegBottomPlatformHeightM, 0);
+  assert.equal(inputs.baseLegHeightM, CARCASS_BASE_DIMENSIONS.chest.wheels.heightM);
+
+  buildChestOnly(App, {
+    renderPolicy: App.__outlineRenderPolicy,
+    H: 0.9,
+    totalW: 1.2,
+    D: 0.45,
+    drawersCount: 3,
+    baseType: 'legs',
+    baseLegStyle: 'wheels',
+    baseLegColor: 'black',
+    baseLegHeightCm: 15,
+    baseLegWidthCm: 5,
+    baseLegPlatformMode: 'stage',
+    colorChoice: '#ffffff',
+    cfgSnapshot: createChestCfg(),
+  });
+
+  const wheels = wardrobeGroup.children.filter(
+    (child: any) => child?.userData?.__kind === 'chest_caster_wheel'
+  );
+  const plates = wardrobeGroup.children.filter(
+    (child: any) => child?.userData?.__kind === 'chest_caster_plate'
+  );
+  const forks = wardrobeGroup.children.filter(
+    (child: any) => child?.userData?.__kind === 'chest_caster_fork'
+  );
+  const platforms = wardrobeGroup.children.filter((child: any) =>
+    String(child?.userData?.partId || '').startsWith('chest_leg_platform')
+  );
+
+  assert.equal(wheels.length, 4);
+  assert.equal(plates.length, 4);
+  assert.equal(forks.length, 8);
+  assert.equal(platforms.length, 0);
+  assert.ok(wheels.every((wheel: any) => wheel?.geometry?.type === 'CylinderGeometry'));
+});

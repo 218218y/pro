@@ -650,6 +650,8 @@ test('generic paint hover shows object-box feedback for leg platform stage targe
       | 'base_leg_platform_top'
       | 'lower_base_leg_platform_bottom'
       | 'lower_base_leg_platform_top'
+      | 'chest_leg_platform_bottom'
+      | 'chest_leg_platform_top'
   ) => {
     const wardrobeGroup = { children: [] as unknown[], userData: { partId: 'root' } };
     const platform = createBoxObject(partId, {
@@ -686,6 +688,8 @@ test('generic paint hover shows object-box feedback for leg platform stage targe
   runHover('base_leg_platform_top');
   runHover('lower_base_leg_platform_bottom');
   runHover('lower_base_leg_platform_top');
+  runHover('chest_leg_platform_bottom');
+  runHover('chest_leg_platform_top');
 });
 
 test('generic paint hover shows object-box feedback for pentagon shelves, floor, and ceiling thin boards', () => {

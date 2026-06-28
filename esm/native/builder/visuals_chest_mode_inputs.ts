@@ -5,6 +5,7 @@ import {
   cmToM,
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
+  isBaseLegWheelsStyle,
   normalizeBaseLegPlatformMode,
   normalizeBaseLegPlatformSideMode,
   readBaseLegOptions,
@@ -86,7 +87,8 @@ export function resolveChestModeBuildInputs(opts: BuilderBuildChestOnlyOptsLike)
   const isGroovesEnabled = opts.isGroovesEnabled === true;
 
   const legOptions = readBaseLegOptions(legSource);
-  const baseLegPlatformMode = normalizeBaseLegPlatformMode(opts.baseLegPlatformMode);
+  const isWheelsBase = isBaseLegWheelsStyle(legOptions.style);
+  const baseLegPlatformMode = isWheelsBase ? 'plain' : normalizeBaseLegPlatformMode(opts.baseLegPlatformMode);
   const baseLegPlatformSideMode = normalizeBaseLegPlatformSideMode(opts.baseLegPlatformSideMode);
   const baseLegPlatformSideOverhangM = platformOverhangCmToM(
     opts.baseLegPlatformSideOverhangCm,
@@ -96,9 +98,14 @@ export function resolveChestModeBuildInputs(opts: BuilderBuildChestOnlyOptsLike)
     opts.baseLegPlatformFrontOverhangCm,
     DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM
   );
-  const baseLegPlatformEnabled = String(rawBaseType || '') !== 'plinth' && baseLegPlatformMode === 'stage';
+  const baseLegPlatformEnabled =
+    !isWheelsBase && String(rawBaseType || '') !== 'plinth' && baseLegPlatformMode === 'stage';
   const baseLegPlatformHeightM = baseLegPlatformEnabled ? CARCASS_BASE_DIMENSIONS.legs.platform.heightM : 0;
   const basePlinthHeightCm = normalizeBasePlinthHeightCm(plinthHeightSource);
+  const effectiveBaseLegHeightM = isWheelsBase
+    ? CARCASS_BASE_DIMENSIONS.chest.wheels.heightM
+    : legOptions.heightM;
+  const effectiveBaseLegHeightCm = Math.round(effectiveBaseLegHeightM * 1000) / 10;
   const chestCommodeMirrorHeightCm = normalizeChestCommodeDimensionCm(
     chestCommodeMirrorHeightSource,
     CHEST_MODE_DIMENSIONS.commode.defaultMirrorHeightCm,
@@ -125,9 +132,9 @@ export function resolveChestModeBuildInputs(opts: BuilderBuildChestOnlyOptsLike)
     baseLegColor: legOptions.color,
     basePlinthHeightCm,
     basePlinthHeightM: getBasePlinthHeightM(basePlinthHeightCm),
-    baseLegHeightCm: legOptions.heightCm,
+    baseLegHeightCm: effectiveBaseLegHeightCm,
     baseLegWidthCm: legOptions.widthCm,
-    baseLegHeightM: legOptions.heightM,
+    baseLegHeightM: effectiveBaseLegHeightM,
     baseLegPlatformMode,
     baseLegPlatformSideMode,
     baseLegBottomPlatformHeightM: baseLegPlatformHeightM,

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   BASE_TYPE_OPTIONS,
+  CHEST_BASE_TYPE_OPTIONS,
   SLIDING_TRACKS_OPTIONS,
   getSingleDoorPositionOptions,
   getSingleDoorSelectorClassName,
@@ -12,6 +13,10 @@ test('structure body section contracts expose canonical base, tracks, and single
   assert.deepEqual(
     BASE_TYPE_OPTIONS.map(option => option.value),
     ['plinth', 'legs', 'none']
+  );
+  assert.deepEqual(
+    CHEST_BASE_TYPE_OPTIONS.map(option => option.value),
+    ['plinth', 'legs', 'wheels']
   );
   assert.deepEqual(
     SLIDING_TRACKS_OPTIONS.map(option => option.value),

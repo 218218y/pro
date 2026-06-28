@@ -14,6 +14,7 @@ export type StructureTabCornerChestActionsArgs = {
   height: number;
   isManualWidth: boolean;
   baseType: string;
+  baseLegStyle: string;
   baseLegPlatformMode: string;
   preChestState: ProjectPreChestStateLike;
   chestCommodeEnabled: boolean;

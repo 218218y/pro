@@ -6,6 +6,7 @@ import {
   BASE_LEG_PLATFORM_SIDE_OPTIONS,
   BASE_LEG_STYLE_OPTIONS,
   BASE_TYPE_OPTIONS,
+  CHEST_BASE_TYPE_OPTIONS,
   SLIDING_TRACKS_OPTIONS,
   type BaseType,
   type StructureBaseLegColor,
@@ -21,6 +22,8 @@ import {
   BASE_LEG_HEIGHT_MIN_CM,
   BASE_LEG_WIDTH_MAX_CM,
   BASE_LEG_WIDTH_MIN_CM,
+  DEFAULT_BASE_LEG_STYLE,
+  isBaseLegWheelsStyle,
 } from '../../../features/base_leg_support.js';
 import { METAL_FINISH_PALETTE_BY_COLOR } from '../../../features/metal_finish_palette.js';
 import {
@@ -39,6 +42,14 @@ const LEG_COLOR_SWATCH_BY_COLOR: Record<StructureBaseLegColor, string> = {
   nickel: METAL_FINISH_PALETTE_BY_COLOR.nickel.cssHex,
   gold: '#d4af37',
 };
+
+function isChestWheelsSelected(props: {
+  isChestMode: boolean;
+  baseType: BaseType;
+  baseLegStyle: StructureBaseLegStyle;
+}): boolean {
+  return props.isChestMode && props.baseType === 'legs' && isBaseLegWheelsStyle(props.baseLegStyle);
+}
 
 export function StructureBodyBaseControls(props: {
   baseType: BaseType;
@@ -73,17 +84,37 @@ export function StructureBodyBaseControls(props: {
         <div className="wp-field">
           <div className="wp-field-label">סוג בסיס</div>
           <OptionButtonGroup columns={3} density="compact" className="wp-r-wardrobe-type-selector">
-            {BASE_TYPE_OPTIONS.map(option => (
-              <StructureBodyTypeOptionButton
-                key={option.value}
-                selected={props.baseType === option.value}
-                label={option.label}
-                iconClass={option.iconClass}
-                onClick={() =>
-                  props.onSetBaseType(option.value === 'none' && props.isChestMode ? 'legs' : option.value)
+            {(props.isChestMode ? CHEST_BASE_TYPE_OPTIONS : BASE_TYPE_OPTIONS).map(option => {
+              const wheelsSelected = isChestWheelsSelected(props);
+              const selected =
+                option.value === 'wheels'
+                  ? wheelsSelected
+                  : props.baseType === option.value && (option.value !== 'legs' || !wheelsSelected);
+              const handleClick = () => {
+                if (option.value === 'wheels') {
+                  props.onSetBaseType('legs');
+                  props.onSetBaseLegStyle('wheels');
+                  return;
                 }
-              />
-            ))}
+                props.onSetBaseType(option.value);
+                if (
+                  props.isChestMode &&
+                  option.value === 'legs' &&
+                  isBaseLegWheelsStyle(props.baseLegStyle)
+                ) {
+                  props.onSetBaseLegStyle(DEFAULT_BASE_LEG_STYLE);
+                }
+              };
+              return (
+                <StructureBodyTypeOptionButton
+                  key={option.value}
+                  selected={selected}
+                  label={option.label}
+                  iconClass={option.iconClass}
+                  onClick={handleClick}
+                />
+              );
+            })}
           </OptionButtonGroup>
         </div>
       ) : null}
@@ -123,7 +154,7 @@ export function StructureBodyBaseControls(props: {
         </div>
       ) : null}
 
-      {!props.hideBaseTypeControls && props.baseType === 'legs' ? (
+      {!props.hideBaseTypeControls && props.baseType === 'legs' && !isChestWheelsSelected(props) ? (
         <>
           <div className="wp-field">
             <div className="wp-field-label">במת רגליים</div>

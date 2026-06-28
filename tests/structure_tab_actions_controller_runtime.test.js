@@ -89,6 +89,7 @@ function loadStructureActionsControllerModule(calls, overrides = {}) {
         setCfgHingeMap: (...args) => calls.push(['setCfgHingeMap', ...args]),
         setCfgPreChestState: (...args) => calls.push(['setCfgPreChestState', ...args]),
         setUiBaseLegPlatformMode: (...args) => calls.push(['setUiBaseLegPlatformMode', ...args]),
+        setUiBaseLegStyle: (...args) => calls.push(['setUiBaseLegStyle', ...args]),
         setUiBaseType: (...args) => calls.push(['setUiBaseType', ...args]),
         setUiChestDrawersCount: (...args) => calls.push(['setUiChestDrawersCount', ...args]),
         setUiChestCommodeEnabled: (...args) => calls.push(['setUiChestCommodeEnabled', ...args]),
@@ -136,6 +137,8 @@ function loadStructureActionsControllerModule(calls, overrides = {}) {
     if (specifier === '../../../features/base_leg_support.js') {
       return {
         normalizeBaseLegPlatformMode: value => (value === 'plain' ? 'plain' : 'stage'),
+        normalizeBaseLegStyle: value =>
+          value === 'round' || value === 'square' || value === 'wheels' ? value : 'tapered',
       };
     }
     if (specifier === '../../../services/api.js') {
@@ -552,6 +555,7 @@ test('[structure-actions-controller] corner/chest canonical patches collapse ui/
               depth: 55,
               isManual: true,
               base: 'plinth',
+              baseLegStyle: 'tapered',
               baseLegPlatformMode: 'stage',
             },
           },
@@ -574,6 +578,7 @@ test('[structure-actions-controller] corner/chest canonical patches collapse ui/
           ui: {
             isChestMode: false,
             baseType: 'legs',
+            baseLegStyle: 'tapered',
             baseLegPlatformMode: 'stage',
             raw: { doors: 5, width: 180, height: 230, depth: 60 },
           },
