@@ -34,6 +34,7 @@ const FRONT_Z_EPSILON_M = 0.006;
 const OVERLAY_RENDER_ORDER = 10040;
 const GUIDE_OFFSET_M = 0.045;
 const SIDE_GUIDE_OFFSET_M = 0.055;
+const REAR_SELECTION_FRAME_PULL_FORWARD_M = 0.012;
 
 type MeasurementAxis = 'x' | 'y' | 'z';
 
@@ -472,10 +473,12 @@ function resolveMeasurementPlane(args: {
     top: { normal: 'y', u: 'x', v: 'z' },
   };
   const axes = axesByKind[kind];
-  const hitSign = readClosestHitFaceSign({ App, hitState, wardrobeGroup, box, axis: axes.normal });
-  const shapeSign = readShapePlaneSign(box, axes.normal, kind);
   const cameraSign = readCameraAxisSign({ App, THREE, wardrobeGroup, box, axis: axes.normal });
-  const normalSign = hitSign ?? shapeSign ?? cameraSign ?? 1;
+  const hitSign = forceInteriorFront
+    ? null
+    : readClosestHitFaceSign({ App, hitState, wardrobeGroup, box, axis: axes.normal });
+  const shapeSign = forceInteriorFront ? null : readShapePlaneSign(box, axes.normal, kind);
+  const normalSign = forceInteriorFront ? (cameraSign ?? 1) : (hitSign ?? shapeSign ?? cameraSign ?? 1);
   const normalFace = normalSign >= 0 ? getBoxMaxAxis(box, axes.normal) : getBoxMinAxis(box, axes.normal);
 
   const uMin = getBoxMinAxis(box, axes.u);
@@ -951,6 +954,23 @@ function addDimensionGuides(args: {
   objects.push(...heightObjects);
 }
 
+function resolveSelectionFrameAxisMin(
+  plane: MeasurementPlane,
+  axis: MeasurementAxis,
+  min: number,
+  max: number
+): number {
+  if (plane.kind !== 'top' || axis !== 'z') return min;
+  const length = max - min;
+  if (!(length > MIN_MEASURABLE_EDGE_M)) return min;
+  const pull = Math.min(
+    REAR_SELECTION_FRAME_PULL_FORWARD_M,
+    Math.max(0, length - MIN_MEASURABLE_EDGE_M) * 0.25
+  );
+  if (!(pull > 0)) return min;
+  return Math.min(max - MIN_MEASURABLE_EDGE_M, min + pull);
+}
+
 function addSelectionFrame(args: {
   THREE: OverlayThree;
   wardrobeGroup: Object3DLike;
@@ -959,17 +979,19 @@ function addSelectionFrame(args: {
   objects: Object3DLike[];
 }): void {
   const { THREE, wardrobeGroup, box, plane, objects } = args;
+  const frameUMin = resolveSelectionFrameAxisMin(plane, plane.uAxis, plane.uMin, plane.uMax);
+  const frameVMin = resolveSelectionFrameAxisMin(plane, plane.vAxis, plane.vMin, plane.vMax);
   addTrackedLine({
     THREE,
     wardrobeGroup,
     objects,
     name: 'wp-viewer-measurement-selection-frame',
     points: [
-      pointOnMeasurementPlane(THREE, box, plane, plane.uMin, plane.vMin),
-      pointOnMeasurementPlane(THREE, box, plane, plane.uMax, plane.vMin),
+      pointOnMeasurementPlane(THREE, box, plane, frameUMin, frameVMin),
+      pointOnMeasurementPlane(THREE, box, plane, plane.uMax, frameVMin),
       pointOnMeasurementPlane(THREE, box, plane, plane.uMax, plane.vMax),
-      pointOnMeasurementPlane(THREE, box, plane, plane.uMin, plane.vMax),
-      pointOnMeasurementPlane(THREE, box, plane, plane.uMin, plane.vMin),
+      pointOnMeasurementPlane(THREE, box, plane, frameUMin, plane.vMax),
+      pointOnMeasurementPlane(THREE, box, plane, frameUMin, frameVMin),
     ],
   });
 }

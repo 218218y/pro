@@ -385,6 +385,11 @@ test('viewer measurement resolves the shelf-to-shelf cavity instead of the full 
 
   assert.ok(labels.includes('58'));
   assert.ok(!labels.includes('200'));
+  const frame = wardrobe.children.find(child => child.name === 'wp-viewer-measurement-selection-frame');
+  assert.ok(frame);
+  for (const point of frame.geometry.points) {
+    assert.ok(Math.abs(point.z - 0.281) < 1e-9);
+  }
 });
 
 test('viewer measurement frame and guide lines are depth-tested while label boxes stay above parts', () => {
@@ -650,6 +655,6 @@ test('viewer measurement uses the top plane for thin horizontal boards', () => {
   const zs = frame.geometry.points.map((point: { z: number }) => point.z);
   assert.ok(Math.abs(Math.min(...xs) + 0.6) < 1e-9);
   assert.ok(Math.abs(Math.max(...xs) - 0.6) < 1e-9);
-  assert.ok(Math.abs(Math.min(...zs) + 0.275) < 1e-9);
+  assert.ok(Math.abs(Math.min(...zs) + 0.263) < 1e-9);
   assert.ok(Math.abs(Math.max(...zs) - 0.275) < 1e-9);
 });
