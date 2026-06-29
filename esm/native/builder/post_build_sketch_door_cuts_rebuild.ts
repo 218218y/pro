@@ -2,7 +2,7 @@
 //
 // Owns segmented sketch-door rebuild orchestration while focused helpers own segment meta, visuals, and handles.
 
-import { parseNum, readKey } from './post_build_extras_shared.js';
+import { readKey } from './post_build_extras_shared.js';
 import { MATERIAL_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 import type { RebuildSketchSegmentedDoorArgs } from './post_build_sketch_door_cuts_contracts.js';
@@ -24,11 +24,15 @@ import {
   readSegmentMaterial,
   resolveSketchSegmentVisualFlags,
 } from './post_build_sketch_door_cuts_rebuild_visual.js';
+import {
+  readGeometryUserDataNumber,
+  readGeometryUserDataNumberKey,
+  readGeometryUserDataPositiveNumberKey,
+} from './geometry_user_data_contracts.js';
 
 function resolveOriginalDoorHandleAbsY(ud: Record<string, unknown>, doorCenterAbsY: number): number {
-  const raw = readKey(ud, '__handleAbsY');
-  const explicitAbsY = raw == null || raw === '' ? NaN : parseNum(raw);
-  if (Number.isFinite(explicitAbsY)) return explicitAbsY;
+  const explicitAbsY = readGeometryUserDataNumberKey(ud, '__handleAbsY');
+  if (explicitAbsY != null) return explicitAbsY;
 
   // A door without an absolute handle anchor is rendered by the generic door-handle pass
   // at the door leaf's local center. Keep that original full-door anchor when the door is
@@ -38,9 +42,9 @@ function resolveOriginalDoorHandleAbsY(ud: Record<string, unknown>, doorCenterAb
 
 export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs): void {
   const { runtime, g, ud, visibleSegments, basePartId } = args;
-  const width = parseNum(readKey(ud, '__doorWidth'));
-  const height = parseNum(readKey(ud, '__doorHeight'));
-  const centerY = parseNum(g.position?.y);
+  const width = readGeometryUserDataPositiveNumberKey(ud, '__doorWidth') ?? NaN;
+  const height = readGeometryUserDataPositiveNumberKey(ud, '__doorHeight') ?? NaN;
+  const centerY = readGeometryUserDataNumber(g.position?.y) ?? NaN;
   if (
     !Number.isFinite(width) ||
     width <= 0 ||
@@ -51,13 +55,11 @@ export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs)
     return;
 
   const partId = typeof ud.partId === 'string' ? String(ud.partId) : basePartId;
-  const meshOffsetX = parseNum(readKey(ud, '__doorMeshOffsetX'));
-  const doorMeshOffsetX = Number.isFinite(meshOffsetX) ? meshOffsetX : 0;
+  const doorMeshOffsetX = readGeometryUserDataNumberKey(ud, '__doorMeshOffsetX') ?? 0;
   const isLeftHinge = !!readKey(ud, '__hingeLeft');
   const handleAbsY = resolveOriginalDoorHandleAbsY(ud, centerY);
-  const thicknessRaw = parseNum(readKey(ud, '__wpFrontThickness'));
   const thickness =
-    Number.isFinite(thicknessRaw) && thicknessRaw > 0 ? thicknessRaw : MATERIAL_DIMENSIONS.wood.thicknessM;
+    readGeometryUserDataPositiveNumberKey(ud, '__wpFrontThickness') ?? MATERIAL_DIMENSIONS.wood.thicknessM;
   const suppressedHandlePartIds: string[] = [];
 
   removeAllChildren(g);

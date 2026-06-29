@@ -12,6 +12,7 @@ import {
   type LineMaterialLike,
   type ValueRecord,
 } from './post_build_extras_shared.js';
+import { readGeometryUserDataSign } from './geometry_user_data_contracts.js';
 
 export type FrontRevealGeometryRuntime = {
   getRevealZSignOverride: (ud: ValueRecord | null) => number | null;
@@ -40,8 +41,7 @@ export function createFrontRevealGeometryRuntime(
 
   const getRevealZSignOverride = (ud: ValueRecord | null): number | null => {
     const raw = ud?.__wpRevealZSign ?? ud?.__wpDoorOpenZSign ?? ud?.__handleZSign ?? ud?.__wpDoorOpenDirSign;
-    const ov = Number(raw);
-    return Number.isFinite(ov) && (ov === 1 || ov === -1) ? ov : null;
+    return readGeometryUserDataSign(raw);
   };
 
   const getObjectLocalBounds = (root: Object3DLike | null): Box3Like | null => {

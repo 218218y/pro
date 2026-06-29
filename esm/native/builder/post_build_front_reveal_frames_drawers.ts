@@ -14,6 +14,11 @@ import {
   type DrawerRuntimeEntryLike,
 } from './post_build_extras_shared.js';
 import type { FrontRevealFramesRuntime } from './post_build_front_reveal_frames_runtime.js';
+import {
+  readGeometryUserDataNumber,
+  readGeometryUserDataNumberKey,
+  readGeometryUserDataPositiveNumberKey,
+} from './geometry_user_data_contracts.js';
 
 export function applyFrontRevealDrawerFrames(runtime: FrontRevealFramesRuntime): void {
   const { App, wardrobeGroup } = runtime;
@@ -57,8 +62,8 @@ export function applyFrontRevealDrawerFrames(runtime: FrontRevealFramesRuntime):
     if (!isDrawerLike) continue;
 
     const ud = g.userData || {};
-    let w = Number(ud.__doorWidth);
-    let h = Number(ud.__doorHeight);
+    let w = readGeometryUserDataPositiveNumberKey(ud, '__doorWidth') ?? NaN;
+    let h = readGeometryUserDataPositiveNumberKey(ud, '__doorHeight') ?? NaN;
     let localBounds: Box3Like | null = null;
 
     if (!Number.isFinite(w) || !Number.isFinite(h) || w <= 0 || h <= 0) {
@@ -66,24 +71,22 @@ export function applyFrontRevealDrawerFrames(runtime: FrontRevealFramesRuntime):
       if (localBounds) {
         const sz = new runtime.THREE.Vector3();
         localBounds.getSize(sz);
-        if (!Number.isFinite(w) || w <= 0) w = Number(sz.x);
-        if (!Number.isFinite(h) || h <= 0) h = Number(sz.y);
+        if (!Number.isFinite(w) || w <= 0) w = readGeometryUserDataNumber(sz.x) ?? NaN;
+        if (!Number.isFinite(h) || h <= 0) h = readGeometryUserDataNumber(sz.y) ?? NaN;
       }
     }
 
     if (!Number.isFinite(w) || !Number.isFinite(h) || w <= 0 || h <= 0) continue;
 
-    const faceOffsetX = Number(ud.__wpFaceOffsetX || 0);
-    const faceOffsetY = Number(ud.__wpFaceOffsetY || 0);
-    const offsetX = Number.isFinite(faceOffsetX) ? faceOffsetX : 0;
-    const offsetY = Number.isFinite(faceOffsetY) ? faceOffsetY : 0;
+    const offsetX = readGeometryUserDataNumberKey(ud, '__wpFaceOffsetX') ?? 0;
+    const offsetY = readGeometryUserDataNumberKey(ud, '__wpFaceOffsetY') ?? 0;
     const xLeft = -w / 2 + offsetX;
     const xRight = w / 2 + offsetX;
     const yMin = -h / 2 + offsetY;
     const yMax = h / 2 + offsetY;
 
     let z: number | null = null;
-    const explicitFrontMax = Number(ud.__frontMaxZ);
+    const explicitFrontMax = readGeometryUserDataNumberKey(ud, '__frontMaxZ') ?? NaN;
     if (
       Number.isFinite(explicitFrontMax) &&
       Math.abs(explicitFrontMax) > FRONT_REVEAL_FRAME_DIMENSIONS.frontZPresenceEpsilonM
@@ -93,7 +96,7 @@ export function applyFrontRevealDrawerFrames(runtime: FrontRevealFramesRuntime):
 
     if (z == null) {
       if (!localBounds) localBounds = runtime.getObjectLocalBounds(g);
-      const localFrontMax = Number(localBounds?.max?.z ?? NaN);
+      const localFrontMax = readGeometryUserDataNumber(localBounds?.max?.z) ?? NaN;
       if (
         Number.isFinite(localFrontMax) &&
         Math.abs(localFrontMax) > FRONT_REVEAL_FRAME_DIMENSIONS.frontZPresenceEpsilonM
@@ -103,9 +106,9 @@ export function applyFrontRevealDrawerFrames(runtime: FrontRevealFramesRuntime):
     }
 
     if (z == null) {
-      const t = Number(ud.__wpFrontThickness);
-      const thickness = Number.isFinite(t) && t > 0 ? t : FRONT_REVEAL_FRAME_DIMENSIONS.drawerFrontThicknessM;
-      let sign = Number(g.position.z) >= 0 ? 1 : -1;
+      const t = readGeometryUserDataPositiveNumberKey(ud, '__wpFrontThickness');
+      const thickness = t != null ? t : FRONT_REVEAL_FRAME_DIMENSIONS.drawerFrontThicknessM;
+      let sign = (readGeometryUserDataNumber(g.position.z) ?? 0) >= 0 ? 1 : -1;
       const ov = runtime.getRevealZSignOverride(asRecord(ud));
       if (ov != null) sign = ov;
       z = sign * (thickness / 2 + runtime.zNudge);

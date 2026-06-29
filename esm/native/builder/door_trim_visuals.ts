@@ -8,6 +8,11 @@ import { DOOR_TRIM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_sha
 import { ensureDoorTrimMaterialCache } from '../runtime/door_trim_visuals_access.js';
 import { resolveMetalFinishPalette } from '../features/metal_finish_palette.js';
 import type { DoorTrimSurfacePlane } from '../features/door_trim.js';
+import {
+  readGeometryUserDataNumber,
+  readGeometryUserDataPositiveNumber,
+  readGeometryUserDataSign,
+} from './geometry_user_data_contracts.js';
 
 type DoorTrimColorPalette = {
   hex: number;
@@ -78,8 +83,7 @@ function normalizeSurfacePlane(value: unknown): DoorTrimSurfacePlane {
 }
 
 function readFinite(value: unknown, defaultValue: number): number {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : defaultValue;
+  return readGeometryUserDataNumber(value) ?? defaultValue;
 }
 
 function resolveSurfaceCenterCoord(args: {
@@ -166,16 +170,25 @@ export function appendDoorTrimVisuals(args: DoorTrimVisualArgs): void {
   if (!three || !groupObj) return;
   const trimList = readDoorTrimList(trims);
   if (!trimList.length) return;
-  if (!(doorWidth > 0) || !(doorHeight > 0)) return;
+  const width = readGeometryUserDataPositiveNumber(doorWidth);
+  const height = readGeometryUserDataPositiveNumber(doorHeight);
+  if (width == null || height == null) return;
+  const meshOffsetX = readGeometryUserDataNumber(doorMeshOffsetX) ?? 0;
+  const resolvedFrontZ = readGeometryUserDataNumber(frontZ) ?? DOOR_TRIM_DIMENSIONS.defaults.frontZM;
   const rect = {
-    minX: doorMeshOffsetX - doorWidth / 2,
-    maxX: doorMeshOffsetX + doorWidth / 2,
-    minY: -doorHeight / 2,
-    maxY: doorHeight / 2,
+    minX: meshOffsetX - width / 2,
+    maxX: meshOffsetX + width / 2,
+    minY: -height / 2,
+    maxY: height / 2,
   };
   const plane = normalizeSurfacePlane(surfacePlane);
-  const face = faceSign < 0 ? -1 : 1;
-  const faceCoord = resolveSurfaceCenterCoord({ plane, frontZ, faceSign: face, surfaceFaceCoord });
+  const face = readGeometryUserDataSign(faceSign, 1) ?? 1;
+  const faceCoord = resolveSurfaceCenterCoord({
+    plane,
+    frontZ: resolvedFrontZ,
+    faceSign: face,
+    surfaceFaceCoord,
+  });
   const renderOrder = readRenderOrder(groupObj);
 
   for (let i = 0; i < trimList.length; i += 1) {

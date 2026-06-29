@@ -24,6 +24,11 @@ import {
   readKey,
   type ValueRecord,
 } from './post_build_extras_shared.js';
+import {
+  readGeometryUserDataNumber,
+  readGeometryUserDataNumberKey,
+  readGeometryUserDataPositiveNumberKey,
+} from './geometry_user_data_contracts.js';
 import { readStringOrNull } from './post_build_visual_overlay_keys.js';
 import {
   applySketchDrawerDoorCuts,
@@ -110,21 +115,19 @@ function collectSketchModuleExternalDrawerStackBounds(App: AppContainer): Sketch
     const moduleKey = normalizeSketchModuleCutKey(moduleKeyRaw, stackKey);
     if (!moduleKey) continue;
     const drawerId = readStringOrNull(ud.__wpSketchExtDrawerId) || readStringOrNull(ud.partId) || String(i);
-    const width = parseNum(readKey(ud, '__doorWidth'));
-    const height = parseNum(readKey(ud, '__doorHeight'));
-    const centerYBase = parseNum(g.position?.y);
-    const faceOffsetY = parseNum(readKey(ud, '__wpFaceOffsetY'));
-    const centerY =
-      (Number.isFinite(centerYBase) ? centerYBase : NaN) + (Number.isFinite(faceOffsetY) ? faceOffsetY : 0);
-    const faceMinY = parseNum(readKey(ud, '__wpFaceMinY'));
-    const faceMaxY = parseNum(readKey(ud, '__wpFaceMaxY'));
+    const width = readGeometryUserDataPositiveNumberKey(ud, '__doorWidth') ?? NaN;
+    const height = readGeometryUserDataPositiveNumberKey(ud, '__doorHeight') ?? NaN;
+    const centerYBase = readGeometryUserDataNumber(g.position?.y) ?? NaN;
+    const faceOffsetY = readGeometryUserDataNumberKey(ud, '__wpFaceOffsetY') ?? 0;
+    const centerY = centerYBase + faceOffsetY;
+    const faceMinY = readGeometryUserDataNumberKey(ud, '__wpFaceMinY') ?? NaN;
+    const faceMaxY = readGeometryUserDataNumberKey(ud, '__wpFaceMaxY') ?? NaN;
     const faceMetaValid = Number.isFinite(faceMinY) && Number.isFinite(faceMaxY) && faceMaxY > faceMinY;
     const effectiveHeight = faceMetaValid ? faceMaxY - faceMinY : height;
     const effectiveCenterY = faceMetaValid ? (faceMinY + faceMaxY) / 2 : centerY;
-    const faceOffsetX = parseNum(readKey(ud, '__wpFaceOffsetX'));
-    const centerXBase = parseNum(g.position?.x);
-    const centerX =
-      (Number.isFinite(centerXBase) ? centerXBase : 0) + (Number.isFinite(faceOffsetX) ? faceOffsetX : 0);
+    const faceOffsetX = readGeometryUserDataNumberKey(ud, '__wpFaceOffsetX') ?? 0;
+    const centerXBase = readGeometryUserDataNumber(g.position?.x) ?? 0;
+    const centerX = centerXBase + faceOffsetX;
     if (
       !Number.isFinite(width) ||
       width <= 0 ||

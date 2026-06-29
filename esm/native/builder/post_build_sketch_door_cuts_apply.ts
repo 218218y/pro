@@ -5,7 +5,7 @@
 import { getDoorsArray } from '../runtime/render_access.js';
 import { DOOR_SYSTEM_DIMENSIONS, DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
-import { asRecord, getDoorEntryGroup, parseNum, readKey } from './post_build_extras_shared.js';
+import { asRecord, getDoorEntryGroup, readKey } from './post_build_extras_shared.js';
 import type {
   ApplySketchDrawerDoorCutsArgs,
   SketchDrawerCutSegment,
@@ -16,6 +16,11 @@ import {
 } from './post_build_sketch_door_cuts_intervals.js';
 import { rebuildSketchSegmentedDoor } from './post_build_sketch_door_cuts_rebuild.js';
 import { notifyHandleFitSuppressions } from './handles_fit_suppression_feedback.js';
+import {
+  readGeometryUserDataNumber,
+  readGeometryUserDataNumberKey,
+  readGeometryUserDataPositiveNumberKey,
+} from './geometry_user_data_contracts.js';
 
 function clampSketchDoorCutValue(value: number, min: number, max: number): number {
   if (value < min) return min;
@@ -123,13 +128,12 @@ export function applySketchDrawerDoorCuts(args: ApplySketchDrawerDoorCutsArgs): 
     const splitPosList = Array.isArray(selection.splitPosList) ? selection.splitPosList : [];
     if (!selectedStacks.length && !splitPosList.length) continue;
 
-    const width = parseNum(readKey(ud, '__doorWidth'));
-    const height = parseNum(readKey(ud, '__doorHeight'));
-    const centerY = parseNum(g.position?.y);
-    const centerXBase = parseNum(g.position?.x);
-    const meshOffsetX = parseNum(readKey(ud, '__doorMeshOffsetX'));
-    const centerX =
-      (Number.isFinite(centerXBase) ? centerXBase : 0) + (Number.isFinite(meshOffsetX) ? meshOffsetX : 0);
+    const width = readGeometryUserDataPositiveNumberKey(ud, '__doorWidth') ?? NaN;
+    const height = readGeometryUserDataPositiveNumberKey(ud, '__doorHeight') ?? NaN;
+    const centerY = readGeometryUserDataNumber(g.position?.y) ?? NaN;
+    const centerXBase = readGeometryUserDataNumber(g.position?.x) ?? 0;
+    const meshOffsetX = readGeometryUserDataNumberKey(ud, '__doorMeshOffsetX') ?? 0;
+    const centerX = centerXBase + meshOffsetX;
     if (
       !Number.isFinite(width) ||
       width <= 0 ||

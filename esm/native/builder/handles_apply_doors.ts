@@ -9,6 +9,13 @@ import { createHandleMeshV7 } from './handles_mesh.js';
 import { notifyHandleFitSuppressions } from './handles_fit_suppression_feedback.js';
 import type { HandlesApplyRuntime } from './handles_apply_shared.js';
 import type { NodeLike } from './handles_shared.js';
+import {
+  readDoorLeafRectFromGeometryUserData,
+  readGeometryUserDataNumber,
+  readGeometryUserDataNumberKey,
+  readGeometryUserDataPositiveNumberKey,
+  readGeometryUserDataSignKey,
+} from './geometry_user_data_contracts.js';
 
 export function applyDoorHandles(runtime: HandlesApplyRuntime): void {
   const { App, removeDoorsEnabled, isDoorRemovedV7, getHandleType, getEdgeHandleVariant, getHandleColor } =
@@ -37,8 +44,8 @@ export function applyDoorHandles(runtime: HandlesApplyRuntime): void {
     const hType = getHandleType(id, __sk);
     if (!hType || hType === 'none') continue;
 
-    const doorW = typeof g.userData.__doorWidth === 'number' ? g.userData.__doorWidth : 0;
-    const doorH = typeof g.userData.__doorHeight === 'number' ? g.userData.__doorHeight : 0;
+    const doorW = readGeometryUserDataPositiveNumberKey(g.userData, '__doorWidth') ?? 0;
+    const doorH = readGeometryUserDataPositiveNumberKey(g.userData, '__doorHeight') ?? 0;
     const isLeftHinge = !!g.userData.__hingeLeft;
     const edgeHandleVariant = hType === 'edge' ? getEdgeHandleVariant(id) : undefined;
 
@@ -83,11 +90,8 @@ export function applyDoorHandles(runtime: HandlesApplyRuntime): void {
 }
 
 function applyDoorHandleZFlip(group: NodeLike, handle: NodeLike): void {
-  const __hz =
-    group.userData && typeof group.userData.__handleZSign === 'number'
-      ? Number(group.userData.__handleZSign)
-      : 1;
-  if (__hz !== -1) return;
+  const handleZSign = readGeometryUserDataSignKey(group.userData, '__handleZSign', 1);
+  if (handleZSign !== -1) return;
 
   try {
     handle.traverse?.((ch: NodeLike) => {
@@ -98,22 +102,8 @@ function applyDoorHandleZFlip(group: NodeLike, handle: NodeLike): void {
   }
 }
 
-function readFinite(value: unknown): number | null {
-  const n = typeof value === 'number' ? value : Number(value);
-  return Number.isFinite(n) ? n : null;
-}
-
 function readDoorLeafRectFromUserData(userData: NodeLike['userData'] | null | undefined) {
-  const width = readFinite(userData?.__doorWidth);
-  const height = readFinite(userData?.__doorHeight);
-  const meshOffsetX = readFinite(userData?.__doorMeshOffsetX) ?? 0;
-  if (width == null || height == null || !(width > 0) || !(height > 0)) return null;
-  return {
-    minX: meshOffsetX - width / 2,
-    maxX: meshOffsetX + width / 2,
-    minY: -height / 2,
-    maxY: height / 2,
-  };
+  return readDoorLeafRectFromGeometryUserData(userData);
 }
 
 type SketchSegmentHandleLeaf = {
@@ -136,8 +126,8 @@ function isHandleNode(node: NodeLike | null | undefined): boolean {
 }
 
 function readOptionalFinite(value: unknown): number | null {
-  if (value === undefined || value === null || value === '') return null;
-  return readFinite(value);
+  if (value === undefined || value === null) return null;
+  return readGeometryUserDataNumber(value);
 }
 
 function collectSketchSegmentHandleLeaves(root: NodeLike): SketchSegmentHandleLeaf[] {
@@ -347,7 +337,7 @@ function applyDoorHandleManualPlacement(
   const local = resolveManualHandleLocalPosition({ rect, position: manualPosition });
   if (!local) return false;
 
-  const defaultAnchorX = resolveDefaultHandleAnchorX(hType, Number(doorW) || 0, isLeftHinge);
+  const defaultAnchorX = resolveDefaultHandleAnchorX(hType, doorW, isLeftHinge);
   handle.position.x = local.x - defaultAnchorX;
   handle.position.y = local.y;
   return true;
@@ -359,10 +349,11 @@ function applyDoorHandleVerticalPlacement(
   handle: NodeLike,
   doorH: number
 ): void {
-  const absY = group.userData.__handleAbsY;
-  if (!Number.isFinite(absY)) return;
-  const targetAbsY = runtime.clampAbsYToGroup(Number(absY), Number(group.position?.y), Number(doorH));
-  handle.position.y = targetAbsY - group.position.y;
+  const absY = readGeometryUserDataNumberKey(group.userData, '__handleAbsY');
+  if (absY == null) return;
+  const groupY = readGeometryUserDataNumber(group.position?.y) ?? 0;
+  const targetAbsY = runtime.clampAbsYToGroup(absY, groupY, doorH);
+  handle.position.y = targetAbsY - groupY;
 }
 
 function ensureDoorHandleFitsLeaf(args: {
@@ -376,7 +367,7 @@ function ensureDoorHandleFitsLeaf(args: {
     handleType: args.hType,
     edgeHandleVariant: args.edgeHandleVariant,
     doorHeightM: args.doorH,
-    localCenterYM: Number(args.handle.position?.y) || 0,
+    localCenterYM: readGeometryUserDataNumber(args.handle.position?.y) ?? 0,
   };
 
   if (args.isManualPlacement) {

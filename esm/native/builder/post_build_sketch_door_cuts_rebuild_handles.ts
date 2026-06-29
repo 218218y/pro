@@ -6,6 +6,7 @@ import { DRAWER_DIMENSIONS, HANDLE_DIMENSIONS } from '../../shared/wardrobe_dime
 import { clampDoorHandleLocalCenterYToFit } from '../../shared/wardrobe_construction_validation_shared.js';
 import { resolveManualHandleLocalPosition } from '../features/manual_handle_position.js';
 import { asObject3D, asRecord } from './post_build_extras_shared.js';
+import { readGeometryUserDataNumber } from './geometry_user_data_contracts.js';
 
 import type {
   SketchDoorCutsRuntime,
@@ -32,7 +33,7 @@ export function maybeAttachSegmentHandle(args: {
   doorMeshOffsetX?: number;
 }): 'attached' | 'suppressed' | 'skipped' {
   const { runtime, g, width, seg, segHeight, centerY, handleAbsY, isLeftHinge, segmentPartId } = args;
-  const doorMeshOffsetX = Number.isFinite(Number(args.doorMeshOffsetX)) ? Number(args.doorMeshOffsetX) : 0;
+  const doorMeshOffsetX = readGeometryUserDataNumber(args.doorMeshOffsetX) ?? 0;
   const { createHandleMesh, resolveHandleType } = runtime;
   const resolveHandleColor =
     typeof runtime.resolveHandleColor === 'function' ? runtime.resolveHandleColor : null;
@@ -142,11 +143,7 @@ function placeSegmentHandleFromManualPosition(args: {
   });
   if (clampedLocalY == null) return 'suppressed';
 
-  const defaultAnchorX = resolveDefaultSegmentHandleAnchorX(
-    args.handleType,
-    Number(args.width) || 0,
-    args.isLeftHinge
-  );
+  const defaultAnchorX = resolveDefaultSegmentHandleAnchorX(args.handleType, args.width, args.isLeftHinge);
   if (args.handleObj.position) {
     args.handleObj.position.x = args.doorMeshOffsetX + local.x - defaultAnchorX;
     args.handleObj.position.y = args.segCenterY + clampedLocalY - args.centerY;

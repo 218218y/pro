@@ -17,6 +17,11 @@ import {
   type DoorRuntimeEntryLike,
 } from './post_build_extras_shared.js';
 import type { FrontRevealFramesRuntime } from './post_build_front_reveal_frames_runtime.js';
+import {
+  readGeometryUserDataNumber,
+  readGeometryUserDataPositiveNumber,
+  readGeometryUserDataPositiveNumberKey,
+} from './geometry_user_data_contracts.js';
 
 export function applyFrontRevealDoorFrames(ctx: BuildContextLike, runtime: FrontRevealFramesRuntime): void {
   const { App, THREE, wardrobeGroup } = runtime;
@@ -32,9 +37,9 @@ export function applyFrontRevealDoorFrames(ctx: BuildContextLike, runtime: Front
           const pid = ud.partId ? String(ud.partId) : '';
           if (!pid) return;
           if (!/^d\d+_/.test(pid)) return;
-          const w = Number(ud.__doorWidth);
-          const h = Number(ud.__doorHeight);
-          if (!Number.isFinite(w) || !Number.isFinite(h) || w <= 0 || h <= 0) return;
+          const w = readGeometryUserDataPositiveNumberKey(ud, '__doorWidth');
+          const h = readGeometryUserDataPositiveNumberKey(ud, '__doorHeight');
+          if (w == null || h == null) return;
           scannedDoorGroups.push(obj);
         });
       }
@@ -67,11 +72,11 @@ export function applyFrontRevealDoorFrames(ctx: BuildContextLike, runtime: Front
       if (isDoorRemoved(partId)) continue;
     }
 
-    let w = Number(g.userData.__doorWidth);
-    let h = Number(g.userData.__doorHeight);
+    let w = readGeometryUserDataPositiveNumberKey(g.userData, '__doorWidth') ?? NaN;
+    let h = readGeometryUserDataPositiveNumberKey(g.userData, '__doorHeight') ?? NaN;
     if (!Number.isFinite(w) || w <= 0) {
-      const ew = Number(readKey(asRecord(entry), 'width'));
-      if (Number.isFinite(ew) && ew > 0) w = ew;
+      const ew = readGeometryUserDataPositiveNumber(readKey(asRecord(entry), 'width'));
+      if (ew != null) w = ew;
     }
     if (!Number.isFinite(h) || h <= 0) {
       try {
@@ -95,9 +100,9 @@ export function applyFrontRevealDoorFrames(ctx: BuildContextLike, runtime: Front
     const yMin = -h / 2;
     const yMax = h / 2;
 
-    const t = Number(g.userData.__wpFrontThickness);
+    const t = readGeometryUserDataPositiveNumberKey(g.userData, '__wpFrontThickness');
     const thickness =
-      Number.isFinite(t) && t > 0
+      t != null
         ? t
         : type === 'sliding'
           ? FRONT_REVEAL_FRAME_DIMENSIONS.slidingFrontThicknessM
@@ -105,7 +110,7 @@ export function applyFrontRevealDoorFrames(ctx: BuildContextLike, runtime: Front
 
     let sign = 1;
     if (type === 'hinged') {
-      sign = Number(g.position.z) >= 0 ? 1 : -1;
+      sign = (readGeometryUserDataNumber(g.position.z) ?? 0) >= 0 ? 1 : -1;
       const ov = runtime.getRevealZSignOverride(asRecord(g.userData));
       if (ov != null) sign = ov;
     }

@@ -5,6 +5,13 @@ import { resolveManualHandleLocalPosition } from '../features/manual_handle_posi
 import { createHandleMeshV7 } from './handles_mesh.js';
 import type { HandlesApplyRuntime } from './handles_apply_shared.js';
 import { asNode, readBox3, readMatrix4, type NodeLike } from './handles_shared.js';
+import {
+  readDoorLeafRectFromGeometryUserData,
+  readExplicitDoorRectFromGeometryUserData,
+  readGeometryUserDataNumber,
+  readGeometryUserDataNumberKey,
+  readGeometryUserDataPositiveNumberKey,
+} from './geometry_user_data_contracts.js';
 import type { DrawerVisualEntryLike } from '../../../types';
 
 export function applyDrawerHandles(runtime: HandlesApplyRuntime): void {
@@ -22,8 +29,12 @@ export function applyDrawerHandles(runtime: HandlesApplyRuntime): void {
     const hType = runtime.getHandleType(id);
     if (!hType || hType === 'none') continue;
 
-    const drawW = g.userData.__doorWidth || HANDLE_DIMENSIONS.placement.drawerDefaultWidthM;
-    const drawH = g.userData.__doorHeight || HANDLE_DIMENSIONS.placement.drawerDefaultHeightM;
+    const drawW =
+      readGeometryUserDataPositiveNumberKey(g.userData, '__doorWidth') ??
+      HANDLE_DIMENSIONS.placement.drawerDefaultWidthM;
+    const drawH =
+      readGeometryUserDataPositiveNumberKey(g.userData, '__doorHeight') ??
+      HANDLE_DIMENSIONS.placement.drawerDefaultHeightM;
     const handle = createHandleMeshV7(hType, drawW, drawH, true, true, {
       App: runtime.App,
       addOutlines: runtime.addOutlines,
@@ -40,40 +51,13 @@ export function applyDrawerHandles(runtime: HandlesApplyRuntime): void {
   }
 }
 
-function readFinite(value: unknown): number | null {
-  const n = typeof value === 'number' ? value : Number(value);
-  return Number.isFinite(n) ? n : null;
-}
-
 function readDrawerHandleRectFromUserData(
   userData: NodeLike['userData'] | null | undefined
 ): { minX: number; maxX: number; minY: number; maxY: number } | null {
-  const explicitMinX = readFinite(userData?.__doorRectMinX);
-  const explicitMaxX = readFinite(userData?.__doorRectMaxX);
-  const explicitMinY = readFinite(userData?.__doorRectMinY);
-  const explicitMaxY = readFinite(userData?.__doorRectMaxY);
-  if (
-    explicitMinX != null &&
-    explicitMaxX != null &&
-    explicitMinY != null &&
-    explicitMaxY != null &&
-    explicitMaxX > explicitMinX &&
-    explicitMaxY > explicitMinY
-  ) {
-    return { minX: explicitMinX, maxX: explicitMaxX, minY: explicitMinY, maxY: explicitMaxY };
-  }
-
-  const width = readFinite(userData?.__doorWidth);
-  const height = readFinite(userData?.__doorHeight);
-  if (width == null || height == null || !(width > 0) || !(height > 0)) return null;
-
-  const offsetX = readFinite(userData?.__doorMeshOffsetX) ?? readFinite(userData?.__wpFaceOffsetX) ?? 0;
-  return {
-    minX: offsetX - width / 2,
-    maxX: offsetX + width / 2,
-    minY: -height / 2,
-    maxY: height / 2,
-  };
+  return (
+    readExplicitDoorRectFromGeometryUserData(userData) ??
+    readDoorLeafRectFromGeometryUserData(userData, { offsetKeys: ['__doorMeshOffsetX', '__wpFaceOffsetX'] })
+  );
 }
 
 function positionDrawerHandleManual(
@@ -143,9 +127,10 @@ function isDrawerLikeGroup(node: NodeLike | null | undefined): boolean {
   const partId = userData.partId ? String(userData.partId) : '';
   if (isDrawerBoxGroup(node)) return false;
   if (!partId || !partId.includes('drawer')) return false;
-  const doorW = Number(userData.__doorWidth);
-  const doorH = Number(userData.__doorHeight);
-  return Number.isFinite(doorW) && doorW > 0 && Number.isFinite(doorH) && doorH > 0;
+  return (
+    readGeometryUserDataPositiveNumberKey(userData, '__doorWidth') != null &&
+    readGeometryUserDataPositiveNumberKey(userData, '__doorHeight') != null
+  );
 }
 
 function hasDrawerAncestor(node: NodeLike | null | undefined): boolean {
@@ -208,8 +193,9 @@ function positionDrawerHandleZ(
   computeGroupMaxZLocal: (root: NodeLike) => number
 ): void {
   let maxZ = 0;
-  if (group.userData && Number.isFinite(group.userData.__frontMaxZ)) {
-    maxZ = Number(group.userData.__frontMaxZ);
+  const explicitFrontMaxZ = readGeometryUserDataNumberKey(group.userData, '__frontMaxZ');
+  if (explicitFrontMaxZ != null) {
+    maxZ = explicitFrontMaxZ;
   } else {
     maxZ = computeGroupMaxZLocal(group);
   }
@@ -250,8 +236,9 @@ function positionDrawerHandleY(
 ): void {
   const eps = HANDLE_DIMENSIONS.placement.zPositionEpsilonM;
   if (hType === 'edge') {
-    if (group.userData && Number.isFinite(group.userData.__doorHeight)) {
-      handle.position.y = Number(group.userData.__doorHeight) / 2 + eps;
+    const doorHeight = readGeometryUserDataPositiveNumberKey(group.userData, '__doorHeight');
+    if (doorHeight != null) {
+      handle.position.y = doorHeight / 2 + eps;
       return;
     }
 
@@ -275,13 +262,11 @@ function positionDrawerHandleY(
     return;
   }
 
-  if (Number.isFinite(group.userData.__handleAbsY)) {
-    const targetAbsY = runtime.clampAbsYToGroup(
-      Number(group.userData.__handleAbsY),
-      Number(group.position?.y),
-      Number(drawH)
-    );
-    handle.position.y = targetAbsY - group.position.y;
+  const handleAbsY = readGeometryUserDataNumberKey(group.userData, '__handleAbsY');
+  if (handleAbsY != null) {
+    const groupY = readGeometryUserDataNumber(group.position?.y) ?? 0;
+    const targetAbsY = runtime.clampAbsYToGroup(handleAbsY, groupY, drawH);
+    handle.position.y = targetAbsY - groupY;
     return;
   }
 
