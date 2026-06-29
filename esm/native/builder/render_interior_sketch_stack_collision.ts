@@ -18,9 +18,7 @@ export type SketchStackCollisionRange = {
 
 function readFiniteNumber(value: unknown): number | null {
   if (typeof value === 'number') return Number.isFinite(value) ? value : null;
-  if (value == null || value === '') return null;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
+  return null;
 }
 
 function rangeFromCenter(centerY: number, stackH: number, id: string): SketchStackCollisionRange {

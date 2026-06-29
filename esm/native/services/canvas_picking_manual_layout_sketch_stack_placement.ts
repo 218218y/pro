@@ -15,6 +15,10 @@ import { resolveSketchStackCenterYFromNormalizedItem } from '../features/sketch_
 type UnknownRecord = Record<string, unknown>;
 export type ManualLayoutSketchCenterReader = (item: UnknownRecord, stackH: number) => number | null;
 
+function readFiniteNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
 export function readManualLayoutSketchNormalizedCenterY(args: {
   item: UnknownRecord;
   bottomY: number;
@@ -218,9 +222,10 @@ export function resolveManualLayoutSketchExternalDrawerPlacement(args: {
     snapToAvailableSlot: true,
   });
   const match = placement.range;
-  const drawerCount =
-    placement.op === 'remove' && match?.count != null ? Number(match.count) : metrics.drawerCount;
-  const stackH = placement.op === 'remove' && match?.stackH != null ? Number(match.stackH) : metrics.stackH;
+  const matchCount = readFiniteNumber(match?.count);
+  const matchStackH = readFiniteNumber(match?.stackH);
+  const drawerCount = placement.op === 'remove' && matchCount != null ? matchCount : metrics.drawerCount;
+  const stackH = placement.op === 'remove' && matchStackH != null ? matchStackH : metrics.stackH;
   const drawerH = drawerCount > 0 ? stackH / drawerCount : metrics.drawerH;
   return {
     op: placement.op,

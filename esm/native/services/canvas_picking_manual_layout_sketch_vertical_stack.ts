@@ -100,7 +100,7 @@ export function resolveSketchVerticalStackPlacement(args: {
     return {
       op: 'remove',
       removeId: stack?.id != null ? String(stack.id) : null,
-      centerY: stack?.centerY != null ? Number(stack.centerY) : pointerCenterY,
+      centerY: readNumber(stack?.centerY) ?? pointerCenterY,
       range: stack,
     };
   }
@@ -218,7 +218,7 @@ export function resolveSketchVerticalStackPlacement(args: {
     return {
       op: 'remove',
       removeId: nearest.id != null ? String(nearest.id) : null,
-      centerY: nearest.centerY != null ? Number(nearest.centerY) : desiredCenterY,
+      centerY: readNumber(nearest.centerY) ?? desiredCenterY,
       range: nearest,
     };
   }

@@ -38,9 +38,7 @@ function readValue(record: unknown, key: string): unknown {
 
 function readNumber(value: unknown): number | null {
   if (typeof value === 'number') return Number.isFinite(value) ? value : null;
-  if (value == null || value === '') return null;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
+  return null;
 }
 
 function readRecordNumber(record: unknown, key: string): number | null {
@@ -70,7 +68,7 @@ function resolveGridDivisions(cfgRef: RecordMap | null, info: RecordMap | null):
 function readBraceShelfSet(cfgRef: RecordMap | null): Set<number> {
   const raw = readValue(cfgRef, 'braceShelves');
   return Array.isArray(raw)
-    ? new Set(raw.map(value => Number(value)).filter(value => Number.isFinite(value)))
+    ? new Set(raw.filter((value): value is number => typeof value === 'number' && Number.isFinite(value)))
     : new Set<number>();
 }
 
@@ -381,9 +379,10 @@ function buildSketchRodBlockers(args: RangeContext): ManualLayoutVerticalContent
   return ranges;
 }
 
-function normalizeStorageHeight(heightRaw: unknown, spanH: number, woodThick: number): number {
+function normalizeStorageHeight(heightRaw: unknown, spanH: number, woodThick: number): number | null {
   const storageDims = INTERIOR_FITTINGS_DIMENSIONS.storage;
-  const parsed = readNumber(heightRaw) ?? storageDims.barrierHeightM;
+  const parsed = readNumber(heightRaw);
+  if (parsed == null) return null;
   const minHeight = woodThick * storageDims.minHeightWoodMultiplier + storageDims.minHeightExtraM;
   const maxHeight = Math.max(minHeight, spanH);
   return Math.max(minHeight, Math.min(parsed, maxHeight));
@@ -422,6 +421,7 @@ function buildSketchStorageBlockers(args: RangeContext): ManualLayoutVerticalCon
       args.totalHeight,
       woodThick
     );
+    if (heightM == null) continue;
     const centerY = clampStorageCenter({
       bottomY: args.bottomY,
       topY: args.topY,

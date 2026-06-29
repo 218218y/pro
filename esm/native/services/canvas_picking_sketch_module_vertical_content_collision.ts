@@ -27,6 +27,10 @@ function readRecordArray(record: unknown, key: string): RecordMap[] {
   return Array.isArray(value) ? value.filter(isRecord) : [];
 }
 
+function readFiniteNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
 function readSketchExtras(cfgRef: RecordMap | null | undefined): RecordMap | null {
   const extras = readRecordValue(cfgRef, 'sketchExtras');
   return isRecord(extras) ? extras : null;
@@ -102,14 +106,14 @@ function clampSketchModuleVerticalContentCenterY(args: {
   heightM: number;
   centerY: number;
 }): number {
-  const heightM = Number(args.heightM);
-  const centerY = Number(args.centerY);
-  const half = Number.isFinite(heightM) && heightM > 0 ? heightM / 2 : 0;
-  const bottomY = Number(args.bottomY);
-  const topY = Number(args.topY);
-  const pad = Number.isFinite(Number(args.pad)) ? Math.max(0, Number(args.pad)) : 0;
-  if (!Number.isFinite(centerY)) return centerY;
-  if (!Number.isFinite(bottomY) || !Number.isFinite(topY) || !(topY > bottomY)) return centerY;
+  const heightM = readFiniteNumber(args.heightM);
+  const centerY = readFiniteNumber(args.centerY);
+  const half = heightM != null && heightM > 0 ? heightM / 2 : 0;
+  const bottomY = readFiniteNumber(args.bottomY);
+  const topY = readFiniteNumber(args.topY);
+  const pad = Math.max(0, readFiniteNumber(args.pad) ?? 0);
+  if (centerY == null) return Number.NaN;
+  if (bottomY == null || topY == null || !(topY > bottomY)) return centerY;
 
   const lo = bottomY + pad + half;
   const hi = topY - pad - half;
@@ -128,8 +132,11 @@ export function resolveSketchModuleVerticalRangePlacementAgainstDrawers(args: {
   desiredCenterY: number;
   heightM: number;
 }): { centerY: number; blocked: boolean } {
-  const desiredCenterY = Number(args.desiredCenterY);
-  const heightM = Number(args.heightM);
+  const desiredCenterY = readFiniteNumber(args.desiredCenterY);
+  const heightM = readFiniteNumber(args.heightM);
+  if (desiredCenterY == null || heightM == null || !(heightM > 0)) {
+    return { centerY: desiredCenterY ?? Number.NaN, blocked: false };
+  }
   const centerY = clampSketchModuleVerticalContentCenterY({
     bottomY: args.bottomY,
     topY: args.topY,
@@ -137,7 +144,7 @@ export function resolveSketchModuleVerticalRangePlacementAgainstDrawers(args: {
     heightM,
     centerY: desiredCenterY,
   });
-  if (!Number.isFinite(centerY) || !Number.isFinite(heightM) || !(heightM > 0)) {
+  if (!Number.isFinite(centerY)) {
     return { centerY, blocked: false };
   }
 
@@ -230,9 +237,9 @@ export function doesSketchModuleVerticalRangeCollideWithDrawers(args: {
   centerY: number;
   heightM: number;
 }): boolean {
-  const centerY = Number(args.centerY);
-  const heightM = Number(args.heightM);
-  if (!Number.isFinite(centerY) || !Number.isFinite(heightM) || !(heightM > 0)) return false;
+  const centerY = readFiniteNumber(args.centerY);
+  const heightM = readFiniteNumber(args.heightM);
+  if (centerY == null || heightM == null || !(heightM > 0)) return false;
   const minY = centerY - heightM / 2;
   const maxY = centerY + heightM / 2;
   const blockers = buildSketchModuleDrawerVerticalBlockers(args);
