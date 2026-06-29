@@ -8,6 +8,10 @@ import { __asFinite, __asString, __stripMiterCaps } from './render_carcass_ops_s
 
 type CorniceMiterMode = 'inner_trim' | 'outer_extend';
 
+function readGeometryAttrNumber(value: unknown): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : NaN;
+}
+
 function readCorniceMiterMode(seg: CorniceSegment): CorniceMiterMode {
   return __asString(seg.miterMode) === 'outer_extend' ? 'outer_extend' : 'inner_trim';
 }
@@ -58,9 +62,10 @@ export function applyMiterTrims(
   const baseSealEps = 0.003;
 
   for (let vi = 0; vi < pos.count; vi++) {
-    const vx = Number(pos.getX(vi));
-    const vy = typeof pos.getY === 'function' ? Number(pos.getY(vi)) : NaN;
-    const vz = Number(pos.getZ(vi));
+    const vx = readGeometryAttrNumber(pos.getX(vi));
+    const vy = typeof pos.getY === 'function' ? readGeometryAttrNumber(pos.getY(vi)) : NaN;
+    const vz = readGeometryAttrNumber(pos.getZ(vi));
+    if (!Number.isFinite(vx) || !Number.isFinite(vz)) continue;
     const innerTrimT = clamp01(1 - vx / xOuter);
     const outerExtendT = clamp01(vx / xOuter);
     const sealBase = Number.isFinite(vy) && vy <= profileBaseY && Number.isFinite(vx) && vx <= 0;

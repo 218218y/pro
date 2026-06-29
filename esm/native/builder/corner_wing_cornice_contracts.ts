@@ -135,6 +135,10 @@ export function asBufferAttr(value: unknown): BufferAttrLike | null {
   return isBufferAttrLike(value) ? value : null;
 }
 
+export function readCorniceRuntimeNumber(value: unknown, defaultValue = NaN): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
+}
+
 export function positiveCorniceTopPlatformHeight(ctx: { baseLegTopPlatformHeightM?: unknown }): number {
   const value = ctx.baseLegTopPlatformHeightM;
   return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : 0;

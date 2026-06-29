@@ -1,4 +1,5 @@
 import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { readFiniteNumber } from './corner_geometry_plan.js';
 
 // Corner wing door scoping + split policy helpers.
 //
@@ -92,9 +93,11 @@ export function maybeSeedEdgeHandleDefaultNone(
   let within = doorIdx;
   const cell = state.geom ? state.geom.cell : null;
   if (cell) {
-    doorsInCell = Math.max(1, Number(cell.doorsInCell) || 1);
-    const doorStart = Number(cell.doorStart);
-    if (Number.isFinite(doorStart)) within = doorIdx - doorStart;
+    const doorsInCellNumber = readFiniteNumber(cell.doorsInCell);
+    doorsInCell =
+      doorsInCellNumber != null && doorsInCellNumber > 0 ? Math.max(1, Math.floor(doorsInCellNumber)) : 1;
+    const doorStart = readFiniteNumber(cell.doorStart);
+    if (doorStart != null) within = doorIdx - Math.floor(doorStart);
   }
   if (!doorsInCell) doorsInCell = Math.max(1, ctx.doorCount);
 

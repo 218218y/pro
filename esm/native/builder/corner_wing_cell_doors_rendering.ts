@@ -102,7 +102,7 @@ export function processCornerDoorVisual(
   const isMirror = special === 'mirror';
   const style = special === 'glass' ? 'glass' : null;
   const mirrorLayout = args.mirrorLayout ?? readMirrorLayout(ctx, id);
-  const frontSign = Number.isFinite(args.frontSign) ? Number(args.frontSign) : 1;
+  const frontSign = args.frontSign === -1 ? -1 : 1;
   const hasOutsideMirrorSurface = isMirror && hasMirrorSurfaceOnFace(mirrorLayout, frontSign, frontSign);
   const hasGroove =
     ctx.groovesEnabled && !hasOutsideMirrorSurface && !!readScopedReaderAny(ctx, ctx.getGroove, id);

@@ -1,4 +1,5 @@
 import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { readFiniteNumber } from './corner_geometry_plan.js';
 import { getCornerHexDoorDepth } from './corner_wing_hex_cell_geometry.js';
 
 // Corner wing door state derivation.
@@ -21,15 +22,12 @@ export function createCornerWingDoorState(ctx: CornerWingDoorContext, doorIdx: n
   const cell = getCellForDoor(ctx, doorIdx);
   const cellKey = cell && cell.key ? String(cell.key) : 'corner';
   const cellCfg = cell && cell.cfg ? cell.cfg : null;
-  const cellEffBottomY =
-    cell && Number.isFinite(cell.effectiveBottomY) ? cell.effectiveBottomY : ctx.startY + ctx.woodThick;
-  const cellDrawerH = cell && Number.isFinite(cell.drawerHeightTotal) ? cell.drawerHeightTotal : 0;
+  const cellEffBottomY = readCellNumber(ctx, cell, 'effectiveBottomY') ?? ctx.startY + ctx.woodThick;
+  const cellDrawerH = Math.max(0, readCellNumber(ctx, cell, 'drawerHeightTotal') ?? 0);
   const doorBottomY =
     cellEffBottomY + (cellDrawerH > 0 ? CORNER_WING_DIMENSIONS.connector.doorBottomOffsetM : 0);
-  const cellD =
-    cell && Number.isFinite(ctx.asRecord(cell).depth)
-      ? Math.max(CORNER_WING_DIMENSIONS.wing.minDepthM, Number(ctx.asRecord(cell).depth))
-      : ctx.wingD;
+  const cellDepth = readCellNumber(ctx, cell, 'depth');
+  const cellD = cellDepth != null ? Math.max(CORNER_WING_DIMENSIONS.wing.minDepthM, cellDepth) : ctx.wingD;
   const doorDepth = cell ? getCornerHexDoorDepth(cell, cellD) : cellD;
   const doorZShift = doorDepth - ctx.wingD;
   const effectiveTopLimit = getEffectiveTopLimitForDoor(ctx, doorIdx);
@@ -117,31 +115,54 @@ function getCellForDoor(ctx: CornerWingDoorContext, doorIdx: number) {
 
 function getEffectiveTopLimitForDoor(ctx: CornerWingDoorContext, doorIdx: number): number {
   const cell = getCellForDoor(ctx, doorIdx);
-  const bodyHeight = cell && Number.isFinite(cell.bodyHeight) ? Number(cell.bodyHeight) : ctx.wingH;
+  const bodyHeight = readCellNumber(ctx, cell, 'bodyHeight') ?? ctx.wingH;
   return ctx.startY + bodyHeight - ctx.woodThick / 2;
 }
 
 function getDoorGeom(ctx: CornerWingDoorContext, doorIdx: number): DoorGeomLike {
   const cell = getCellForDoor(ctx, doorIdx);
-  if (cell && Number.isFinite(ctx.asRecord(cell).startX) && Number.isFinite(ctx.asRecord(cell).width)) {
-    const doorsInCell = Math.max(1, Number(ctx.asRecord(cell).doorsInCell) || 1);
-    const doorStart = Number(ctx.asRecord(cell).doorStart);
-    const within = Number.isFinite(doorStart)
-      ? doorIdx - doorStart
-      : doorIdx % CORNER_WING_DIMENSIONS.cells.doorsPerCell;
+  const startX = readCellNumber(ctx, cell, 'startX');
+  const width = readCellNumber(ctx, cell, 'width');
+  if (cell && startX != null && width != null) {
+    const doorsInCell = readPositiveIntFromCell(ctx, cell, 'doorsInCell', 1);
+    const doorStart = readCellNumber(ctx, cell, 'doorStart');
+    const within =
+      doorStart != null
+        ? doorIdx - Math.floor(doorStart)
+        : doorIdx % CORNER_WING_DIMENSIONS.cells.doorsPerCell;
     const hexGeometry = cell.__hexCellGeometry;
-    if (hexGeometry) {
-      const doorSpanW = Math.max(ctx.woodThick, hexGeometry.doorWidthM);
+    const hexDoorWidth = hexGeometry ? readFiniteNumber(hexGeometry.doorWidthM) : null;
+    if (hexGeometry && hexDoorWidth != null) {
+      const centerX = readCellNumber(ctx, cell, 'centerX');
+      const doorSpanW = Math.max(ctx.woodThick, hexDoorWidth);
       const doorW = doorSpanW / doorsInCell;
-      const doorLeftX = Number(ctx.asRecord(cell).centerX) - doorSpanW / 2;
+      const doorLeftX = (centerX ?? startX + width / 2) - doorSpanW / 2;
       const dX = doorLeftX + within * doorW + doorW / 2;
       return { cell, doorW, dX };
     }
-    const doorW = Number(ctx.asRecord(cell).width) / doorsInCell;
-    const dX = Number(ctx.asRecord(cell).startX) + within * doorW + doorW / 2;
+    const doorW = width / doorsInCell;
+    const dX = startX + within * doorW + doorW / 2;
     return { cell, doorW, dX };
   }
   const doorW = ctx.fallbackDoorW;
   const dX = ctx.blindWidth + doorIdx * doorW + doorW / 2;
   return { cell: null, doorW, dX };
+}
+
+function readCellNumber(
+  ctx: CornerWingDoorContext,
+  cell: ReturnType<typeof getCellForDoor>,
+  key: string
+): number | null {
+  return readFiniteNumber(cell ? ctx.asRecord(cell)[key] : undefined);
+}
+
+function readPositiveIntFromCell(
+  ctx: CornerWingDoorContext,
+  cell: ReturnType<typeof getCellForDoor>,
+  key: string,
+  defaultValue: number
+): number {
+  const value = readCellNumber(ctx, cell, key);
+  return value != null && value > 0 ? Math.max(1, Math.floor(value)) : defaultValue;
 }

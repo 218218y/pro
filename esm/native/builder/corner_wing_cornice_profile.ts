@@ -15,6 +15,7 @@ import {
   asBufferAttr,
   getThreeCornice,
   readCornicePoints,
+  readCorniceRuntimeNumber,
   resolveCornerWingCorniceTopY,
 } from './corner_wing_cornice_contracts.js';
 import {
@@ -187,7 +188,7 @@ export function applyCornerWingProfileCornice(args: {
   // Build meshes locally (we can't call render_ops.applyCarcassOps because the wingGroup is rotated).
   const buildProfileSegMesh = (seg: CorniceSegment): MeshLike | null => {
     const profile = readCornicePoints(seg.profile, readNumFrom);
-    const segLen = Number(seg.length);
+    const segLen = readCorniceRuntimeNumber(seg.length);
     if (profile.length < 3 || !Number.isFinite(segLen) || segLen <= 0) return null;
 
     const p0 = profile[0];
@@ -206,8 +207,8 @@ export function applyCornerWingProfileCornice(args: {
     geo.translate(0, 0, -segLen / 2);
 
     // Optional: miter-cut ends (same math as render_ops.ts)
-    const miterStartTrim = Number(seg.miterStartTrim);
-    const miterEndTrim = Number(seg.miterEndTrim);
+    const miterStartTrim = readCorniceRuntimeNumber(seg.miterStartTrim);
+    const miterEndTrim = readCorniceRuntimeNumber(seg.miterEndTrim);
 
     if (
       (Number.isFinite(miterStartTrim) && miterStartTrim > 0) ||
@@ -231,16 +232,17 @@ export function applyCornerWingProfileCornice(args: {
       const profileBaseY = (() => {
         let minPositiveY = Infinity;
         for (let pi = 0; pi < profile.length; pi += 1) {
-          const py = Number(profile[pi].y);
+          const py = readCorniceRuntimeNumber(profile[pi].y);
           if (Number.isFinite(py) && py > 0) minPositiveY = Math.min(minPositiveY, py);
         }
         return Number.isFinite(minPositiveY) ? minPositiveY + corniceProfile.baseBandEpsilonM : 1e-6;
       })();
 
       for (let vi = 0; vi < pos.count; vi++) {
-        const vx = Number(pos.getX(vi));
-        const vy = typeof pos.getY === 'function' ? Number(pos.getY(vi)) : NaN;
-        const vz = Number(pos.getZ(vi));
+        const vx = readCorniceRuntimeNumber(pos.getX(vi));
+        const vy = typeof pos.getY === 'function' ? readCorniceRuntimeNumber(pos.getY(vi)) : NaN;
+        const vz = readCorniceRuntimeNumber(pos.getZ(vi));
+        if (!Number.isFinite(vx) || !Number.isFinite(vz)) continue;
         const innerTrimT = clamp01(1 - vx / xOuter);
         const outerExtendT = clamp01(vx / xOuter);
         const sealBase = Number.isFinite(vy) && vy <= profileBaseY && Number.isFinite(vx) && vx <= 0;
@@ -273,9 +275,14 @@ export function applyCornerWingProfileCornice(args: {
 
     const mesh = new threeCornice.Mesh(geo, corniceMatFor(seg.partId));
     if (seg.flipX) mesh.scale.x *= -1;
-    if (Number.isFinite(seg.rotationY) && seg.rotationY !== 0) mesh.rotation.y = Number(seg.rotationY);
+    const rotationY = readCorniceRuntimeNumber(seg.rotationY, 0);
+    if (rotationY !== 0) mesh.rotation.y = rotationY;
 
-    mesh.position.set(Number(seg.x) || 0, Number(seg.y) || 0, Number(seg.z) || 0);
+    mesh.position.set(
+      readCorniceRuntimeNumber(seg.x, 0),
+      readCorniceRuntimeNumber(seg.y, 0),
+      readCorniceRuntimeNumber(seg.z, 0)
+    );
     mesh.userData = { partId: seg.partId };
     if (!__sketchMode) {
       mesh.castShadow = true;

@@ -3,7 +3,11 @@ import assert from 'node:assert/strict';
 import { createFakeThreeRuntime } from './_fake_three_runtime.ts';
 
 import { applyCornerWingCornice } from '../esm/native/builder/corner_wing_cornice_emit.ts';
-import { positiveCorniceTopPlatformHeight } from '../esm/native/builder/corner_wing_cornice_contracts.ts';
+import {
+  positiveCorniceTopPlatformHeight,
+  readCornicePoints,
+  readCorniceRuntimeNumber,
+} from '../esm/native/builder/corner_wing_cornice_contracts.ts';
 import { shouldBuildSegmentedCornerWingCornice } from '../esm/native/builder/corner_wing_cornice_path.ts';
 import {
   CARCASS_BASE_DIMENSIONS,
@@ -111,6 +115,29 @@ function geometryDepth(child: unknown): number {
 function childRotationY(child: unknown): number {
   return Number((child as { rotation?: { y?: unknown } }).rotation?.y || 0);
 }
+
+test('corner wing cornice profile readers reject string-encoded internal segment numbers', () => {
+  assert.equal(readCorniceRuntimeNumber('0.42', 7), 7);
+  assert.equal(readCorniceRuntimeNumber(0.42, 7), 0.42);
+
+  const points = readCornicePoints(
+    [
+      { x: 0, y: 0 },
+      { x: '0.1', y: 0.03 },
+      { x: 0.2, y: '0.05' },
+      { x: 0.25, y: 0.06 },
+    ],
+    (obj, key, defaultValue) => {
+      const value = obj && typeof obj === 'object' ? (obj as Record<string, unknown>)[key] : undefined;
+      return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
+    }
+  );
+
+  assert.deepEqual(points, [
+    { x: 0, y: 0 },
+    { x: 0.25, y: 0.06 },
+  ]);
+});
 
 test('corner wing classic cornice builds with real THREE prototype objects when connector exists', () => {
   const { params, wingGroup } = makeCorniceParams('classic');

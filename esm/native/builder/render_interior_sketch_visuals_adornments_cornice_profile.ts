@@ -16,6 +16,10 @@ import type {
   SketchCorniceShapeLike,
 } from './render_interior_sketch_visuals_adornments_contracts.js';
 
+function readGeometryAttrNumber(value: unknown): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : NaN;
+}
+
 function readProfilePoints(seg: InteriorValueRecord): InteriorValueRecord[] {
   const rawProfile = Array.isArray(seg.profilePoints)
     ? seg.profilePoints
@@ -74,8 +78,9 @@ function applyProfileSegmentMiterTrims(args: {
   const zPos = segLen / 2;
   const epsZ = 5e-4;
   for (let vi = 0; vi < position.count; vi++) {
-    const vx = Number(position.getX(vi));
-    const vz = Number(position.getZ(vi));
+    const vx = readGeometryAttrNumber(position.getX(vi));
+    const vz = readGeometryAttrNumber(position.getZ(vi));
+    if (!Number.isFinite(vx) || !Number.isFinite(vz)) continue;
     const tRaw = 1 - vx / xOuter;
     const t = vx < 0 ? Math.min(3, Math.max(0, tRaw)) : Math.min(1, Math.max(0, tRaw));
     if (miterEndTrim != null && miterEndTrim > 0 && Math.abs(vz - zPos) < epsZ) {
