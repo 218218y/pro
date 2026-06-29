@@ -185,3 +185,64 @@ test('hinged_doors_module_ops_shared derives default handle height and emits seg
     isRemoved: true,
   });
 });
+
+test('hinged door module ops read only canonical pivot-map ids', () => {
+  const ctx = createHingedDoorModuleOpsContext({
+    cfg: { wardrobeType: 'hinged' },
+    moduleIndex: 0,
+    modulesLength: 1,
+    moduleDoors: 1,
+    modWidth: 0.8,
+    currentX: 0,
+    effectiveBottomY: 0.018,
+    startY: 0,
+    woodThick: 0.018,
+    cabinetBodyHeight: 2.4,
+    D: 0.55,
+    opsList: [],
+    hingedDoorPivotMap: {
+      '03': { pivotX: 9, meshOffsetX: 9, isLeftHinge: false, doorWidth: 9 },
+      3: { pivotX: 1.1, meshOffsetX: -0.45, isLeftHinge: false, doorWidth: 0.92 },
+    } as unknown as Record<
+      number,
+      { pivotX: number; meshOffsetX: number; isLeftHinge: boolean; doorWidth: number }
+    >,
+  });
+
+  assert.ok(ctx);
+  const state = createHingedDoorIterationState(ctx!, 0, 3);
+  assert.equal(state.pivotX, 1.1);
+  assert.equal(state.meshOffsetX, -0.45);
+  assert.equal(state.isLeftHinge, false);
+  assert.equal(state.doorWidth, 0.92);
+});
+
+test('hinged door curtain resolver skips non-canonical part ids for numeric resolver calls', () => {
+  const seen: unknown[] = [];
+  const ctx = createHingedDoorModuleOpsContext({
+    cfg: { wardrobeType: 'hinged' },
+    moduleIndex: 0,
+    modulesLength: 1,
+    moduleDoors: 1,
+    modWidth: 0.8,
+    currentX: 0,
+    effectiveBottomY: 0.018,
+    startY: 0,
+    woodThick: 0.018,
+    cabinetBodyHeight: 2.4,
+    D: 0.55,
+    opsList: [],
+    curtainVal: (doorId: unknown, suffixOrDefault: unknown, maybeDefault?: unknown) => {
+      seen.push([doorId, suffixOrDefault, maybeDefault]);
+      return doorId === 3 && suffixOrDefault === 'top' ? 'linen' : null;
+    },
+  });
+
+  assert.ok(ctx);
+  assert.equal(ctx!.resolveCurtainForPart('d3_top', null), 'linen');
+  assert.equal(ctx!.resolveCurtainForPart('d03_top', null), null);
+  assert.deepEqual(seen, [
+    [3, 'top', null],
+    ['d03_top', null, undefined],
+  ]);
+});

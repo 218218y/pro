@@ -11,6 +11,25 @@ import type {
 export type ValueRecord = UnknownRecord;
 export type UnknownFn = (...args: never[]) => unknown;
 
+const MAX_SAFE_INTEGER_TEXT = String(Number.MAX_SAFE_INTEGER);
+
+export function readCanonicalNonNegativeIntegerText(value: unknown): number | null {
+  if (typeof value !== 'string' || !/^(0|[1-9]\d*)$/.test(value)) return null;
+  if (value.length > MAX_SAFE_INTEGER_TEXT.length) return null;
+  if (value.length === MAX_SAFE_INTEGER_TEXT.length && value > MAX_SAFE_INTEGER_TEXT) return null;
+
+  let out = 0;
+  for (let i = 0; i < value.length; i += 1) {
+    out = out * 10 + (value.charCodeAt(i) - 48);
+  }
+  return Number.isSafeInteger(out) ? out : null;
+}
+
+export function readCanonicalPositiveIntegerText(value: unknown): number | null {
+  const n = readCanonicalNonNegativeIntegerText(value);
+  return n != null && n > 0 ? n : null;
+}
+
 export type GetMaterialFn = (
   color: string | null,
   kind: string,

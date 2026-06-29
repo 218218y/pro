@@ -2,6 +2,8 @@
 //
 // Centralizes per-door map lookups (hinge dir, split, bottom split, curtain, groove).
 
+import { readCanonicalPositiveIntegerText } from './build_flow_readers.js';
+
 import type {
   BuilderDoorMapsConfigLike,
   BuilderDoorRemovedResolver,
@@ -162,8 +164,8 @@ function isBottomSplitBotPart(
   // Numeric door ids (d1_bot): use the canonical numeric split-bottom resolver.
   const m = /^d(\d+)$/.exec(baseId);
   if (m) {
-    const n = parseInt(m[1], 10);
-    return Number.isFinite(n) && !!doorState.isDoorSplitBottom(cfg['splitDoorsBottomMap'], n);
+    const n = readCanonicalPositiveIntegerText(m[1]);
+    return n != null && !!doorState.isDoorSplitBottom(cfg['splitDoorsBottomMap'], n);
   }
 
   // Generic ids (e.g. corner_door_1_bot): bottom split is stored as `splitb_<baseId>`.

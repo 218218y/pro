@@ -1,5 +1,6 @@
 import { reportError, shouldFailFast } from '../runtime/api.js';
 import { readDoorVisualMapValue } from '../features/door_visual_map_lookup.js';
+import { readCanonicalPositiveIntegerText } from './build_flow_readers.js';
 import {
   DOOR_SYSTEM_DIMENSIONS,
   DRAWER_DIMENSIONS,
@@ -32,8 +33,8 @@ function readHingedDoorPivotMap(value: unknown): Record<number, HingedDoorPivotS
   if (!rec) return null;
   const out: Record<number, HingedDoorPivotSpec> = {};
   for (const key of Object.keys(rec)) {
-    const index = Number(key);
-    if (!Number.isInteger(index)) continue;
+    const index = readCanonicalPositiveIntegerText(key);
+    if (index == null) continue;
     const spec = readHingedDoorPivotSpec(rec[key]);
     if (spec) out[index] = spec;
   }
@@ -157,10 +158,12 @@ export function createHingedDoorModuleOpsContext(
       if (typeof curtainVal === 'function') {
         const m = /^d(\d+)_([a-z]+)$/i.exec(partId);
         if (m && m[1] && m[2]) {
-          const n = parseInt(m[1], 10);
-          const suf = String(m[2]);
-          const v = curtainVal(n, suf, defaultCurtain);
-          if (v != null) return String(v);
+          const n = readCanonicalPositiveIntegerText(m[1]);
+          if (n != null) {
+            const suf = String(m[2]);
+            const v = curtainVal(n, suf, defaultCurtain);
+            if (v != null) return String(v);
+          }
         }
         const v2 = curtainVal(partId, defaultCurtain);
         if (v2 != null) return String(v2);

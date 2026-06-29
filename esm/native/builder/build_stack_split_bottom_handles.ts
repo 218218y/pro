@@ -1,6 +1,6 @@
 import { computeHingedDoorPivotMap } from './pure_api.js';
 import { makeHandleTypeResolver } from './doors_state_utils.js';
-import { readRecord } from './build_flow_readers.js';
+import { readCanonicalPositiveIntegerText, readRecord } from './build_flow_readers.js';
 import { moduleRequiresCustomBoundaryGeometry } from './module_custom_geometry_policy.js';
 
 import type {
@@ -21,8 +21,8 @@ function buildLocalBottomHingeMap(args: { cfg: UnknownRecord; lowerDoorIdOffset:
     const m = /^door_hinge_(\d+)$/.exec(key);
     if (!m || !m[1]) continue;
 
-    const globalDoorId = Number(m[1]);
-    if (!Number.isFinite(globalDoorId) || globalDoorId <= args.lowerDoorIdOffset) continue;
+    const globalDoorId = readCanonicalPositiveIntegerText(m[1]);
+    if (globalDoorId == null || globalDoorId <= args.lowerDoorIdOffset) continue;
 
     const localDoorId = globalDoorId - args.lowerDoorIdOffset;
     if (!Number.isInteger(localDoorId) || localDoorId < 1) continue;
@@ -75,8 +75,8 @@ export function buildShiftedBottomHingedPivotMap(args: {
   const baseMap = readRecord(baseMap0);
   if (!baseMap) return shifted;
   for (const k of Object.keys(baseMap)) {
-    const n = Number(k);
-    if (!Number.isFinite(n) || n < 1) continue;
+    const n = readCanonicalPositiveIntegerText(k);
+    if (n == null) continue;
     shifted[String(n + args.lowerDoorIdOffset)] = baseMap[k];
   }
   return shifted;
@@ -141,8 +141,8 @@ export function createBottomHandleTypeResolver(args: {
     if (args.handleControlEnabled && args.bottomDoorsCount === args.topDoorsCount) {
       const m = /^d(\d+)(_.+)$/.exec(sid);
       if (m && m[1] && m[2]) {
-        const dn = Number(m[1]);
-        if (Number.isFinite(dn) && dn >= args.lowerDoorIdStart) {
+        const dn = readCanonicalPositiveIntegerText(m[1]);
+        if (dn != null && dn >= args.lowerDoorIdStart) {
           const topId = dn - args.lowerDoorIdOffset;
           if (topId >= 1) {
             const mapped = `d${topId}${m[2]}`;

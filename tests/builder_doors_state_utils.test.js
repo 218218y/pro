@@ -134,3 +134,20 @@ test('doors_state_utils: edge default-none cache ownership stays canonical acros
   assert.equal(bottomResolver('corner_pent_door_6_bot'), 'none');
   assert.equal(topResolver('d9'), 'edge');
 });
+
+test('doors_state_utils: bottom split handle policy rejects non-canonical numeric door ids', async () => {
+  const { makeDoorStateAccessors, makeHandleTypeResolver } = await mod();
+
+  const resolver = makeHandleTypeResolver({
+    cfg: {
+      globalHandleType: 'standard',
+      splitDoorsBottomMap: { splitb_d1: true },
+      handlesMap: {},
+    },
+    doorState: makeDoorStateAccessors({}),
+    isEdgeHandleDefaultNone: () => false,
+  });
+
+  assert.equal(resolver('d1_bot'), 'none');
+  assert.equal(resolver('d01_bot'), 'standard');
+});

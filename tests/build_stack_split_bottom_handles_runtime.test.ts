@@ -40,3 +40,20 @@ test('bottom handle resolver preserves canonical top override mapping for equal 
 
   assert.equal(resolver('d1000_full'), 'edge');
 });
+
+test('bottom handle resolver only maps canonical lower door ids', () => {
+  const resolver = createBottomHandleTypeResolver({
+    cfg: { globalHandleType: 'standard', handlesMap: { d1_full: 'edge' } },
+    doorState: makeDoorStateAccessors({}),
+    isEdgeHandleDefaultNone: () => false,
+    handleControlEnabled: true,
+    bottomDoorsCount: 2,
+    topDoorsCount: 2,
+    lowerDoorIdStart: 1000,
+    lowerDoorIdOffset: 999,
+    getHandleTypeTop: partId => (partId === 'd1_full' ? 'edge' : 'standard'),
+  });
+
+  assert.equal(resolver('d1000_full'), 'edge');
+  assert.equal(resolver('d01000_full'), 'standard');
+});
