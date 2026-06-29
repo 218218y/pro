@@ -6,7 +6,7 @@ import type {
   SketchBoxExternalDrawersContext,
 } from './render_interior_sketch_boxes_fronts_drawers_types.js';
 
-import { toFiniteNumber } from './render_interior_sketch_shared.js';
+import { readGeometryRuntimeNumber } from './geometry_runtime_contracts.js';
 
 export function registerSketchBoxExternalDrawerMotionEntry(
   context: SketchBoxExternalDrawersContext,
@@ -16,9 +16,9 @@ export function registerSketchBoxExternalDrawerMotionEntry(
   const closedPos = makeSketchBoxDrawerMotionPoint(context, opPlan.px, opPlan.py, opPlan.pz);
   const openPos = makeSketchBoxDrawerMotionPoint(
     context,
-    toFiniteNumber(opPlan.open?.x) ?? opPlan.px,
-    toFiniteNumber(opPlan.open?.y) ?? opPlan.py,
-    toFiniteNumber(opPlan.open?.z) ?? opPlan.pz + 0.35
+    readGeometryRuntimeNumber(opPlan.open?.x) ?? opPlan.px,
+    readGeometryRuntimeNumber(opPlan.open?.y) ?? opPlan.py,
+    readGeometryRuntimeNumber(opPlan.open?.z) ?? opPlan.pz + 0.35
   );
   const drawerEntry: DrawerVisualEntryLike = {
     group: groupNode,

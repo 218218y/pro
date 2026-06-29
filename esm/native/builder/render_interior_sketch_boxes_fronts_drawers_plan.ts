@@ -1,4 +1,5 @@
 import { makeDrawerBoxPartId } from '../features/drawer_box_identity.js';
+import { readGeometryRuntimeNumber } from './geometry_runtime_contracts.js';
 import { computeExternalDrawersOpsForModule } from './pure_api.js';
 import {
   DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M,
@@ -202,22 +203,25 @@ export function createSketchBoxExternalDrawerOpPlan(
     drawerHeightM: stack.drawerH,
     doorMountMode: resolveSketchExternalDrawerDoorMountMode(context.input),
   });
-  const px = toFiniteNumber(closed?.x) ?? boxGeo.centerX;
-  const py = toFiniteNumber(closed?.y) ?? stack.centerY;
-  const pz = toFiniteNumber(closed?.z) ?? fallbackGeom.zClosed;
+  const px = readGeometryRuntimeNumber(closed?.x) ?? boxGeo.centerX;
+  const py = readGeometryRuntimeNumber(closed?.y) ?? stack.centerY;
+  const pz = readGeometryRuntimeNumber(closed?.z) ?? fallbackGeom.zClosed;
   const partId = `${stack.keyPrefix}${opIndex + 1}`;
   const boxPartId = makeDrawerBoxPartId(partId);
   const frontMat = context.resolvePartMaterial(partId, boxMat);
   const boxDrawerMat = context.resolveDrawerBoxMaterial(boxPartId);
   const visualW = Math.max(
     drawerDims.externalPreviewVisualMinWidthM,
-    toFiniteNumber(op.visualW) ?? fallbackGeom.visualW
+    readGeometryRuntimeNumber(op.visualW) ?? fallbackGeom.visualW
   );
-  const faceW = Math.max(drawerDims.externalPreviewVisualMinWidthM, toFiniteNumber(op.faceW) ?? visualW);
-  const faceOffsetX = toFiniteNumber(op.faceOffsetX) ?? 0;
+  const faceW = Math.max(
+    drawerDims.externalPreviewVisualMinWidthM,
+    readGeometryRuntimeNumber(op.faceW) ?? visualW
+  );
+  const faceOffsetX = readGeometryRuntimeNumber(op.faceOffsetX) ?? 0;
   const visualHRaw = Math.max(
     drawerDims.externalPreviewVisualMinHeightM,
-    toFiniteNumber(op.visualH) ?? fallbackGeom.visualH
+    readGeometryRuntimeNumber(op.visualH) ?? fallbackGeom.visualH
   );
   const faceVertical = resolveSketchExternalDrawerFaceVerticalAlignment({
     drawerIndex: opIndex,
@@ -255,16 +259,25 @@ export function createSketchBoxExternalDrawerOpPlan(
     faceMaxY: faceVertical.maxY,
     visualD: Math.max(
       drawerDims.externalPreviewVisualMinDepthM,
-      toFiniteNumber(op.visualT) ?? context.visualT
+      readGeometryRuntimeNumber(op.visualT) ?? context.visualT
     ),
-    boxW: Math.max(drawerDims.externalPreviewBoxMinDimensionM, toFiniteNumber(op.boxW) ?? fallbackGeom.boxW),
-    boxH: Math.max(drawerDims.externalPreviewBoxMinDimensionM, toFiniteNumber(op.boxH) ?? fallbackGeom.boxH),
-    boxD: Math.max(drawerDims.externalPreviewBoxMinDimensionM, toFiniteNumber(op.boxD) ?? fallbackGeom.boxD),
-    boxOffsetZ: toFiniteNumber(op.boxOffsetZ) ?? fallbackGeom.boxOffsetZ,
-    connectorW: toFiniteNumber(op.connectW),
-    connectorH: toFiniteNumber(op.connectH),
-    connectorD: toFiniteNumber(op.connectD),
-    connectorZ: toFiniteNumber(op.connectZ) ?? fallbackGeom.connectZ,
+    boxW: Math.max(
+      drawerDims.externalPreviewBoxMinDimensionM,
+      readGeometryRuntimeNumber(op.boxW) ?? fallbackGeom.boxW
+    ),
+    boxH: Math.max(
+      drawerDims.externalPreviewBoxMinDimensionM,
+      readGeometryRuntimeNumber(op.boxH) ?? fallbackGeom.boxH
+    ),
+    boxD: Math.max(
+      drawerDims.externalPreviewBoxMinDimensionM,
+      readGeometryRuntimeNumber(op.boxD) ?? fallbackGeom.boxD
+    ),
+    boxOffsetZ: readGeometryRuntimeNumber(op.boxOffsetZ) ?? fallbackGeom.boxOffsetZ,
+    connectorW: readGeometryRuntimeNumber(op.connectW),
+    connectorH: readGeometryRuntimeNumber(op.connectH),
+    connectorD: readGeometryRuntimeNumber(op.connectD),
+    connectorZ: readGeometryRuntimeNumber(op.connectZ) ?? fallbackGeom.connectZ,
   };
 }
 

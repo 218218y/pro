@@ -1,4 +1,5 @@
 import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { readGeometryRuntimeNumber } from './geometry_runtime_contracts.js';
 import type { SketchPlacementPreviewContext } from './render_preview_sketch_pipeline_shared.js';
 
 export function applyObjectBoxesSketchPlacementPreview(ctx: SketchPlacementPreviewContext): boolean {
@@ -88,20 +89,13 @@ export function applyObjectBoxesSketchPlacementPreview(ctx: SketchPlacementPrevi
     const boundingBox = ctx.readValueRecord(geomRec.boundingBox);
     const min = ctx.readValueRecord(boundingBox?.min);
     const max = ctx.readValueRecord(boundingBox?.max);
-    const minX = typeof min?.x === 'number' ? Number(min.x) : NaN;
-    const minY = typeof min?.y === 'number' ? Number(min.y) : NaN;
-    const minZ = typeof min?.z === 'number' ? Number(min.z) : NaN;
-    const maxX = typeof max?.x === 'number' ? Number(max.x) : NaN;
-    const maxY = typeof max?.y === 'number' ? Number(max.y) : NaN;
-    const maxZ = typeof max?.z === 'number' ? Number(max.z) : NaN;
-    if (!(
-      Number.isFinite(minX) &&
-      Number.isFinite(minY) &&
-      Number.isFinite(minZ) &&
-      Number.isFinite(maxX) &&
-      Number.isFinite(maxY) &&
-      Number.isFinite(maxZ)
-    )) {
+    const minX = readGeometryRuntimeNumber(min?.x);
+    const minY = readGeometryRuntimeNumber(min?.y);
+    const minZ = readGeometryRuntimeNumber(min?.z);
+    const maxX = readGeometryRuntimeNumber(max?.x);
+    const maxY = readGeometryRuntimeNumber(max?.y);
+    const maxZ = readGeometryRuntimeNumber(max?.z);
+    if (minX == null || minY == null || minZ == null || maxX == null || maxY == null || maxZ == null) {
       ctx.setVisible(helper, false);
       continue;
     }
@@ -152,17 +146,24 @@ export function applyObjectBoxesSketchPlacementPreview(ctx: SketchPlacementPrevi
     );
     if (typeof helper.position?.set === 'function') helper.position.set(center.x, center.y, center.z);
     if (typeof helperQuat?.copy === 'function') helperQuat.copy(quat);
+    const scaleXValue = readGeometryRuntimeNumber(scale.x);
+    const scaleYValue = readGeometryRuntimeNumber(scale.y);
+    const scaleZValue = readGeometryRuntimeNumber(scale.z);
+    if (scaleXValue == null || scaleYValue == null || scaleZValue == null) {
+      ctx.setVisible(helper, false);
+      continue;
+    }
     const scaleX = Math.max(
       SKETCH_BOX_DIMENSIONS.preview.minScaleM,
-      Math.abs((Number(scale.x) || 1) * (width0 + padXY * 2))
+      Math.abs(scaleXValue * (width0 + padXY * 2))
     );
     const scaleY = Math.max(
       SKETCH_BOX_DIMENSIONS.preview.minScaleM,
-      Math.abs((Number(scale.y) || 1) * (height0 + padXY * 2))
+      Math.abs(scaleYValue * (height0 + padXY * 2))
     );
     const scaleZ = Math.max(
       SKETCH_BOX_DIMENSIONS.preview.minScaleM,
-      Math.abs((Number(scale.z) || 1) * (depth0 + padZ * 2))
+      Math.abs(scaleZValue * (depth0 + padZ * 2))
     );
     if (typeof helper.scale?.set === 'function') helper.scale.set(scaleX, scaleY, scaleZ);
   }

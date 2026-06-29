@@ -7,7 +7,8 @@ import type {
   SketchBoxVerticalSegment,
 } from './render_interior_sketch_layout.js';
 
-import { readSketchBoxDoors, toFiniteNumber } from './render_interior_sketch_shared.js';
+import { readGeometryRuntimeNumber } from './geometry_runtime_contracts.js';
+import { readSketchBoxDoors } from './render_interior_sketch_shared.js';
 import {
   pickSketchBoxVerticalSegment,
   resolveSketchBoxSegmentForContent,
@@ -52,8 +53,8 @@ export function readSketchBoxDoorPlacements(args: {
   woodThick: number;
 }): SketchBoxDoorPlacement[] {
   const { box, dividers, horizontalDividers, boxCenterX, boxCenterY, innerW, innerH, woodThick } = args;
-  const verticalBoxCenterY = toFiniteNumber(boxCenterY);
-  const verticalInnerH = toFiniteNumber(innerH);
+  const verticalBoxCenterY = readGeometryRuntimeNumber(boxCenterY);
+  const verticalInnerH = readGeometryRuntimeNumber(innerH);
   const canResolveVerticalSegments =
     !!horizontalDividers?.length && verticalBoxCenterY != null && verticalInnerH != null;
   const boxDoors = readSketchBoxDoors(box);

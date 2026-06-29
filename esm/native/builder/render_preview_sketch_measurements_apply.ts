@@ -6,7 +6,7 @@ import type { RenderPreviewSketchShared } from './render_preview_sketch_shared.j
 import {
   mapMeasurementPointToSurface,
   normalizeMeasurementSurfacePlane,
-  readFinite,
+  readMeasurementNumber,
   readMeasurementEntries,
   resolveMeasurementLabelFaceSign,
 } from './render_preview_sketch_measurements_input.js';
@@ -46,14 +46,14 @@ export function applySketchPlacementMeasurements(args: {
   let used = 0;
   for (let i = 0; i < measurementEntries.length; i += 1) {
     const entry = measurementEntries[i];
-    const startX = readFinite(entry.startX);
-    const startY = readFinite(entry.startY);
-    const endX = readFinite(entry.endX);
-    const endY = readFinite(entry.endY);
+    const startX = readMeasurementNumber(entry.startX);
+    const startY = readMeasurementNumber(entry.startY);
+    const endX = readMeasurementNumber(entry.endX);
+    const endY = readMeasurementNumber(entry.endY);
     const label = typeof entry.label === 'string' ? entry.label.trim() : '';
     if (startX == null || startY == null || endX == null || endY == null || !label) continue;
 
-    const z = readFinite(entry.z) ?? 0;
+    const z = readMeasurementNumber(entry.z) ?? 0;
     const styleKey =
       entry.styleKey === 'cell'
         ? 'cell'
@@ -103,8 +103,8 @@ export function applySketchPlacementMeasurements(args: {
     );
     slot.label.visible = true;
     slot.label.renderOrder = 10032;
-    const labelX = readFinite(entry.labelX) ?? (startX + endX) / 2;
-    const labelY = readFinite(entry.labelY) ?? (startY + endY) / 2;
+    const labelX = readMeasurementNumber(entry.labelX) ?? (startX + endX) / 2;
+    const labelY = readMeasurementNumber(entry.labelY) ?? (startY + endY) / 2;
     const labelFaceSign = resolveMeasurementLabelFaceSign(entry, input, z);
     const labelZ =
       z +
@@ -118,7 +118,7 @@ export function applySketchPlacementMeasurements(args: {
 
     const textScale = Math.max(
       SKETCH_BOX_DIMENSIONS.preview.measurementTextScaleMin,
-      readFinite(entry.textScale) ?? SKETCH_BOX_DIMENSIONS.preview.measurementTextScaleDefault
+      readMeasurementNumber(entry.textScale) ?? SKETCH_BOX_DIMENSIONS.preview.measurementTextScaleDefault
     );
     if (styleKey === 'cell' || styleKey === 'center') {
       slot.label.scale?.set?.(

@@ -2,6 +2,7 @@ import { HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared
 import type { RenderSketchBoxDoorFrontsArgs } from './render_interior_sketch_boxes_fronts_door_contracts.js';
 import type { SketchBoxDoorPlacement } from './render_interior_sketch_boxes_fronts_support.js';
 import type { InteriorValueRecord } from './render_interior_ops_contracts.js';
+import { readGeometryRuntimeNumber } from './geometry_runtime_contracts.js';
 import { createSketchBoxExternalDrawersContext } from './render_interior_sketch_boxes_fronts_drawers_context.js';
 import {
   createSketchBoxExternalDrawerOpPlan,
@@ -20,10 +21,6 @@ function hasLongEdgeHandleVariant(cfg: InteriorValueRecord | null): boolean {
     if (key.startsWith('__wp_edge_handle_variant:') && handlesMap[key] === 'long') return true;
   }
   return false;
-}
-
-function readFiniteNumber(value: unknown): number | null {
-  return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
 function resolveSketchFreeBoxHandleClampPadding(cfg: InteriorValueRecord | null): number {
@@ -47,14 +44,14 @@ function resolveSketchFreeBoxDoorBoundsY(
     return { bottomY: verticalSegment.bottomY, topY: verticalSegment.topY };
   }
 
-  const innerBottomY = readFiniteNumber(shell.innerBottomY);
-  const innerTopY = readFiniteNumber(shell.innerTopY);
+  const innerBottomY = readGeometryRuntimeNumber(shell.innerBottomY);
+  const innerTopY = readGeometryRuntimeNumber(shell.innerTopY);
   if (innerBottomY != null && innerTopY != null && innerTopY > innerBottomY) {
     return { bottomY: innerBottomY, topY: innerTopY };
   }
 
-  const centerY = readFiniteNumber(shell.centerY);
-  const sideH = readFiniteNumber(shell.sideH);
+  const centerY = readGeometryRuntimeNumber(shell.centerY);
+  const sideH = readGeometryRuntimeNumber(shell.sideH);
   if (centerY != null && sideH != null && sideH > 0) {
     return { bottomY: centerY - sideH / 2, topY: centerY + sideH / 2 };
   }
@@ -141,7 +138,7 @@ export function resolveSketchFreeBoxSharedHandleAbsY(args: RenderSketchBoxDoorFr
       ? HANDLE_DIMENSIONS.edge.longLiftExtraM
       : 0;
   const liftedHandleAbsY = maxDrawerTopY + HANDLE_DIMENSIONS.edge.drawerLiftClearanceM + extraLongEdgeLift;
-  const currentCenteredAbsY = readFiniteNumber(shell.centerY);
+  const currentCenteredAbsY = readGeometryRuntimeNumber(shell.centerY);
   const sharedAbsY = Math.max(currentCenteredAbsY ?? liftedHandleAbsY, liftedHandleAbsY);
 
   return Number.isFinite(sharedAbsY) ? sharedAbsY : null;

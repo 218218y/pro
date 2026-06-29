@@ -1,3 +1,4 @@
+import { readPreviewNumber } from './render_preview_number_contracts.js';
 import type { SketchPlacementPreviewArgs } from './render_preview_ops_contracts.js';
 import type {
   MeasurementEntryLike,
@@ -15,13 +16,12 @@ export function readMeasurementEntries(input: SketchPlacementPreviewArgs): Measu
   return out;
 }
 
-export function readFinite(value: unknown): number | null {
-  const n = typeof value === 'number' ? value : Number(value);
-  return Number.isFinite(n) ? n : null;
+export function readMeasurementNumber(value: unknown): number | null {
+  return readPreviewNumber(value);
 }
 
 export function normalizeMeasurementFaceSign(value: unknown): number | null {
-  const n = readFinite(value);
+  const n = readMeasurementNumber(value);
   if (n == null) return null;
   return n < 0 ? -1 : 1;
 }
