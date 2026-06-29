@@ -2,6 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { installBuildReactionsService } from '../esm/native/services/build_reactions.ts';
+import {
+  getBuildReactionsCameraKey,
+  getBuildReactionsCornerKey,
+} from '../esm/native/services/build_reactions_shared.ts';
 
 type AnyRecord = Record<string, unknown>;
 
@@ -100,4 +104,30 @@ test('build reactions keeps corner side specific camera presets after build', ()
 
   assert.equal(position.x > 0, true);
   assert.equal(target.x < 0, true);
+});
+
+test('build reactions camera keys ignore retired UI aliases and raw mode flags', () => {
+  const retiredAliases = {
+    chestMode: true,
+    isCornerMode: true,
+    cornerConnectorEnabled: true,
+    cornerDirection: 'left',
+    raw: {
+      isChestMode: true,
+      cornerMode: true,
+      cornerSide: 'left',
+    },
+  };
+
+  assert.equal(getBuildReactionsCameraKey(retiredAliases), 'normal');
+  assert.equal(getBuildReactionsCornerKey(retiredAliases), 'normal');
+  assert.equal(
+    getBuildReactionsCameraKey({
+      isChestMode: true,
+      cornerMode: true,
+      cornerSide: 'left',
+    }),
+    'chest'
+  );
+  assert.equal(getBuildReactionsCornerKey({ cornerMode: true, cornerSide: 'left' }), 'corner:left');
 });

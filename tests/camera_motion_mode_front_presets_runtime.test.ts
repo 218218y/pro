@@ -119,3 +119,26 @@ test('camera motion front preset uses the active corner default angle and side',
   assertClose(App.render.controls.target.y, 1.4, 'corner front target y');
   assertClose(App.render.controls.target.z, 0, 'corner front target z');
 });
+
+test('camera motion front preset ignores retired UI mode aliases', () => {
+  const { App } = createCameraApp({
+    chestMode: true,
+    isCornerMode: true,
+    cornerConnectorEnabled: true,
+    cornerDirection: 'left',
+    raw: {
+      isChestMode: true,
+      cornerMode: true,
+      cornerSide: 'left',
+    },
+  });
+
+  moveCamera(App, 'front');
+
+  assertClose(App.render.camera.position.x, 0, 'alias-only front camera x');
+  assertClose(App.render.camera.position.y, 2.2, 'alias-only front camera y');
+  assertClose(App.render.camera.position.z, 5.5, 'alias-only front camera z');
+  assertClose(App.render.controls.target.x, 0, 'alias-only front target x');
+  assertClose(App.render.controls.target.y, 1.4, 'alias-only front target y');
+  assertClose(App.render.controls.target.z, 0, 'alias-only front target z');
+});

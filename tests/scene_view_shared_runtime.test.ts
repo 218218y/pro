@@ -16,7 +16,7 @@ test('scene view shared snapshot defaults corner side and derives stable sync ke
       lightX: 7,
       lightY: 9,
       lightZ: 10,
-      raw: { cornerMode: true },
+      cornerMode: true,
     },
     runtime: { sketchMode: true },
   });
@@ -32,10 +32,23 @@ test('scene view shared snapshot defaults corner side and derives stable sync ke
     cornerKey: 'corner:right',
   });
 
-  assert.deepEqual(getCornerLighting({ raw: { isCornerMode: true, cornerDirection: 'left' } } as any), {
+  assert.deepEqual(getCornerLighting({ cornerMode: true, cornerSide: 'left' } as any), {
     cornerMode: true,
     cornerSide: 'left',
   });
+
+  assert.deepEqual(
+    getCornerLighting({
+      isCornerMode: true,
+      cornerConnectorEnabled: true,
+      cornerDirection: 'left',
+      raw: { cornerMode: true, cornerSide: 'left' },
+    } as any),
+    {
+      cornerMode: false,
+      cornerSide: null,
+    }
+  );
 });
 
 test('scene view store sync state reuses app-scoped state through service slot', () => {

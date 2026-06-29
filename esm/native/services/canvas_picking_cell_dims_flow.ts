@@ -47,8 +47,7 @@ export function handleCanvasCellDimsClick(args: CanvasCellDimsClickArgs): void {
     const draftD = __asNum(raw.cellDimsDepth, NaN);
     const draftHexProtrusion = __asNum(raw.cellDimsHexProtrusion, NaN);
     const draftHexDoorWidth = __asNum(raw.cellDimsHexDoorWidth, NaN);
-    const hexCellMode =
-      raw.cellDimsHexMode === true || raw.cellDimsHexMode === 'true' || raw.cellDimsHexMode === 1;
+    const hexCellMode = raw.cellDimsHexMode === true;
 
     const applyW = Number.isFinite(draftW) && draftW > 0 ? draftW : null;
     const applyH = !__isBottomStack && Number.isFinite(draftH) && draftH > 0 ? draftH : null;

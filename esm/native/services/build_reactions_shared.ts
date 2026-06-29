@@ -35,22 +35,8 @@ export function readBuildReactionsBoolean(
 }
 
 export function getBuildReactionsCornerKey(ui: BuildReactionsRecord): string {
-  const raw = isBuildReactionsRecord(ui.raw) ? ui.raw : null;
-
-  const cornerMode = !!(
-    readBuildReactionsBoolean(ui, 'cornerMode') ??
-    readBuildReactionsBoolean(ui, 'isCornerMode') ??
-    readBuildReactionsBoolean(raw, 'cornerMode') ??
-    readBuildReactionsBoolean(raw, 'isCornerMode') ??
-    readBuildReactionsBoolean(ui, 'cornerConnectorEnabled') ??
-    readBuildReactionsBoolean(raw, 'cornerConnectorEnabled')
-  );
-
-  const sideValue =
-    readBuildReactionsString(ui, 'cornerSide') ??
-    readBuildReactionsString(raw, 'cornerSide') ??
-    readBuildReactionsString(ui, 'cornerDirection') ??
-    readBuildReactionsString(raw, 'cornerDirection');
+  const cornerMode = readBuildReactionsBoolean(ui, 'cornerMode') === true;
+  const sideValue = readBuildReactionsString(ui, 'cornerSide');
 
   let cornerSide: 'left' | 'right' | null =
     sideValue === 'left' ? 'left' : sideValue === 'right' ? 'right' : null;
@@ -61,15 +47,9 @@ export function getBuildReactionsCornerKey(ui: BuildReactionsRecord): string {
 }
 
 export function getBuildReactionsCameraKey(ui: BuildReactionsRecord): string {
-  const raw = isBuildReactionsRecord(ui.raw) ? ui.raw : null;
-  const chestMode = !!(
-    readBuildReactionsBoolean(ui, 'isChestMode') ??
-    readBuildReactionsBoolean(ui, 'chestMode') ??
-    readBuildReactionsBoolean(raw, 'isChestMode') ??
-    readBuildReactionsBoolean(raw, 'chestMode')
-  );
+  const isChestMode = readBuildReactionsBoolean(ui, 'isChestMode') === true;
 
-  if (chestMode) return 'chest';
+  if (isChestMode) return 'chest';
   return getBuildReactionsCornerKey(ui);
 }
 

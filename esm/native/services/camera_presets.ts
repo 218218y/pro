@@ -140,44 +140,21 @@ function cloneCameraPose(pose: CameraPresetPose): CameraPresetPose {
   };
 }
 
-function readBool(record: UnknownRecord | null | undefined, key: string): boolean | null {
-  const value = record ? record[key] : null;
-  return typeof value === 'boolean' ? value : null;
-}
-
 function readString(record: UnknownRecord | null | undefined, key: string): string | null {
   const value = record ? record[key] : null;
   return typeof value === 'string' && value ? value : null;
 }
 
 function isChestUiSnapshot(ui: UiSnapshotLike): boolean {
-  const raw = ui.raw && typeof ui.raw === 'object' ? ui.raw : null;
-  return !!(
-    readBool(ui, 'isChestMode') ??
-    readBool(ui, 'chestMode') ??
-    readBool(raw, 'isChestMode') ??
-    readBool(raw, 'chestMode')
-  );
+  return ui.isChestMode === true;
 }
 
 function readCornerSideFromUiSnapshot(ui: UiSnapshotLike): 'left' | 'right' | null {
-  const raw = ui.raw && typeof ui.raw === 'object' ? ui.raw : null;
-  const cornerMode = !!(
-    readBool(ui, 'cornerMode') ??
-    readBool(ui, 'isCornerMode') ??
-    readBool(raw, 'cornerMode') ??
-    readBool(raw, 'isCornerMode') ??
-    readBool(ui, 'cornerConnectorEnabled') ??
-    readBool(raw, 'cornerConnectorEnabled')
-  );
+  const cornerMode = ui.cornerMode === true;
 
   if (!cornerMode) return null;
 
-  const sideValue =
-    readString(ui, 'cornerSide') ??
-    readString(raw, 'cornerSide') ??
-    readString(ui, 'cornerDirection') ??
-    readString(raw, 'cornerDirection');
+  const sideValue = readString(ui, 'cornerSide');
 
   return sideValue === 'left' ? 'left' : 'right';
 }

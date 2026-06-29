@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { handleCanvasCellDimsClick } from '../esm/native/services/canvas_picking_cell_dims_flow.ts';
+import { __wp_readCellDimsDraft } from '../esm/native/services/canvas_picking_local_helpers_cell_dims.ts';
 
 function cloneJson<T>(value: T): T {
   return JSON.parse(JSON.stringify(value));
@@ -269,6 +270,36 @@ test('[cell-dims/free-box] blocks hex-cell conversion when the free-standing box
   assert.equal(calls.toasts.length, 0);
   assert.equal(calls.feedbackToasts.length, 1);
   assert.match(calls.feedbackToasts[0]?.message || '', /אי אפשר לשנות תא עם מגירות/);
+});
+
+test('[cell-dims/free-box] ignores string and numeric hex-mode raw values', () => {
+  const { App, state, calls, freeBox } = createFreeBoxHarness();
+  state.ui.raw.cellDimsWidth = '';
+  state.ui.raw.cellDimsHeight = '';
+  state.ui.raw.cellDimsDepth = '';
+  state.ui.raw.cellDimsHexMode = 'true';
+
+  assert.equal(__wp_readCellDimsDraft(App).hexCellMode, undefined);
+
+  handleCanvasCellDimsClick({
+    App,
+    foundModuleIndex: 0,
+    foundPartId: 'sketch_box_free_0_free-1_hex_diag_left',
+    hitUserData: {
+      __wpSketchFreePlacement: true,
+      __wpSketchBoxId: 'free-1',
+      __wpSketchModuleKey: 0,
+    },
+    isBottomStack: false,
+    ensureCornerCellConfigRef: () => null,
+  });
+
+  assert.equal(freeBox.hexCell, undefined);
+  assert.equal(calls.patches.length, 0);
+  assert.equal(calls.toasts.length, 0);
+
+  state.ui.raw.cellDimsHexMode = 1;
+  assert.equal(__wp_readCellDimsDraft(App).hexCellMode, undefined);
 });
 
 test('[cell-dims/free-box] applies from an internal drawer hit that only carries the free-box part id', () => {

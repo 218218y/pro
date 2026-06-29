@@ -38,8 +38,7 @@ export function __wp_readCellDimsDraft(App: AppContainer): {
     const draftD = readRawNumber(raw, 'cellDimsDepth', NaN);
     const draftHexProtrusion = readRawNumber(raw, 'cellDimsHexProtrusion', NaN);
     const draftHexDoorWidth = readRawNumber(raw, 'cellDimsHexDoorWidth', NaN);
-    const hexCellMode =
-      raw.cellDimsHexMode === true || raw.cellDimsHexMode === 'true' || raw.cellDimsHexMode === 1;
+    const hexCellMode = raw.cellDimsHexMode === true;
     const result: {
       applyW: number | null;
       applyH: number | null;

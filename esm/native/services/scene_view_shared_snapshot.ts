@@ -15,18 +15,9 @@ export function getCornerLighting(ui: UiSnapshotLike): {
   cornerSide: 'left' | 'right' | null;
 } {
   const u = isRecord(ui) ? ui : null;
-  const raw = u && isRecord(u.raw) ? u.raw : null;
+  const cornerMode = u?.cornerMode === true;
 
-  const cornerMode = !!(
-    u?.cornerMode ??
-    u?.isCornerMode ??
-    raw?.cornerMode ??
-    raw?.isCornerMode ??
-    u?.cornerConnectorEnabled ??
-    raw?.cornerConnectorEnabled
-  );
-
-  const sideVal = u?.cornerSide ?? raw?.cornerSide ?? u?.cornerDirection ?? raw?.cornerDirection;
+  const sideVal = u?.cornerSide;
   let cornerSide: 'left' | 'right' | null =
     sideVal === 'left' ? 'left' : sideVal === 'right' ? 'right' : null;
   if (cornerMode && !cornerSide) cornerSide = 'right';
