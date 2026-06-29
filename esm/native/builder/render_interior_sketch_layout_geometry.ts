@@ -17,19 +17,19 @@ export const resolveSketchBoxGeometry = (args: {
   depthM?: number | null;
   xNorm?: number | null;
 }) => {
-  const innerW = Number(args.innerW);
-  const internalDepth = Number(args.internalDepth);
-  const internalCenterX = Number(args.internalCenterX);
-  const internalZ = Number(args.internalZ);
-  const woodThick = Number(args.woodThick);
+  const innerW = toFiniteNumber(args.innerW);
+  const internalDepth = toFiniteNumber(args.internalDepth);
+  const internalCenterX = toFiniteNumber(args.internalCenterX) ?? 0;
+  const internalZ = toFiniteNumber(args.internalZ) ?? 0;
+  const woodThick = toFiniteNumber(args.woodThick);
   const widthM = args.widthM;
   const depthM = args.depthM;
   const xNormArg = args.xNorm;
 
-  const t = Number.isFinite(woodThick) && woodThick > 0 ? woodThick : MATERIAL_DIMENSIONS.wood.thicknessM;
-  const maxW = Number.isFinite(innerW) && innerW > 0 ? innerW : SKETCH_BOX_DIMENSIONS.geometry.minOuterWidthM;
+  const t = woodThick != null && woodThick > 0 ? woodThick : MATERIAL_DIMENSIONS.wood.thicknessM;
+  const maxW = innerW != null && innerW > 0 ? innerW : SKETCH_BOX_DIMENSIONS.geometry.minOuterWidthM;
   const baseDepth =
-    Number.isFinite(internalDepth) && internalDepth > 0
+    internalDepth != null && internalDepth > 0
       ? internalDepth
       : SKETCH_BOX_DIMENSIONS.geometry.minOuterDepthM;
   const minW = Math.min(
@@ -70,7 +70,7 @@ export const resolveSketchBoxGeometry = (args: {
   return {
     outerW,
     innerW: innerWidth,
-    centerX: Number.isFinite(centerX) ? centerX : Number.isFinite(internalCenterX) ? internalCenterX : 0,
+    centerX: Number.isFinite(centerX) ? centerX : internalCenterX,
     outerD,
     centerZ,
     innerBackZ,
@@ -87,15 +87,15 @@ export const resolveSketchFreeBoxGeometry = (args: {
   widthM?: number | null;
   depthM?: number | null;
 }) => {
-  const wardrobeWidth = Number(args.wardrobeWidth);
-  const wardrobeDepth = Number(args.wardrobeDepth);
-  const backZ = Number(args.backZ);
-  const centerX = Number(args.centerX);
-  const woodThick = Number(args.woodThick);
+  const wardrobeWidth = toFiniteNumber(args.wardrobeWidth) ?? 0;
+  const wardrobeDepth = toFiniteNumber(args.wardrobeDepth) ?? 0;
+  const backZ = toFiniteNumber(args.backZ) ?? 0;
+  const centerX = toFiniteNumber(args.centerX) ?? 0;
+  const woodThick = toFiniteNumber(args.woodThick);
   const widthM = args.widthM;
   const depthM = args.depthM;
 
-  const t = Number.isFinite(woodThick) && woodThick > 0 ? woodThick : MATERIAL_DIMENSIONS.wood.thicknessM;
+  const t = woodThick != null && woodThick > 0 ? woodThick : MATERIAL_DIMENSIONS.wood.thicknessM;
   const minW = Math.max(
     SKETCH_BOX_DIMENSIONS.geometry.minOuterWidthM,
     t * 2 + SKETCH_BOX_DIMENSIONS.geometry.minInnerAdditiveClearanceM
@@ -132,7 +132,7 @@ export const resolveSketchFreeBoxGeometry = (args: {
   return {
     outerW,
     innerW: innerWidth,
-    centerX: Number.isFinite(centerX) ? centerX : 0,
+    centerX,
     outerD,
     centerZ: backZ + outerD / 2,
     innerBackZ,
@@ -141,9 +141,8 @@ export const resolveSketchFreeBoxGeometry = (args: {
 };
 
 export const getSketchFreePlacementVerticalSlack = (wardrobeHeight: number) => {
-  const height = Number(wardrobeHeight);
-  if (!Number.isFinite(height) || !(height > 0))
-    return SKETCH_BOX_DIMENSIONS.freePlacement.verticalSlackDefaultM;
+  const height = toFiniteNumber(wardrobeHeight);
+  if (height == null || !(height > 0)) return SKETCH_BOX_DIMENSIONS.freePlacement.verticalSlackDefaultM;
   return Math.max(
     SKETCH_BOX_DIMENSIONS.freePlacement.verticalSlackMinM,
     Math.min(
@@ -160,14 +159,14 @@ export const clampSketchFreeBoxCenterY = (args: {
   wardrobeHeight: number;
   pad?: number;
 }) => {
-  const centerY = Number(args.centerY);
-  const boxH = Number(args.boxH);
-  const wardrobeCenterY = Number(args.wardrobeCenterY);
-  const wardrobeHeight = Number(args.wardrobeHeight);
+  const centerY = toFiniteNumber(args.centerY);
+  const boxH = toFiniteNumber(args.boxH);
+  const wardrobeCenterY = toFiniteNumber(args.wardrobeCenterY);
+  const wardrobeHeight = toFiniteNumber(args.wardrobeHeight);
   const pad = toFiniteNumber(args.pad) ?? 0;
-  if (!Number.isFinite(centerY) || !Number.isFinite(boxH) || !(boxH > 0)) return centerY;
-  if (!Number.isFinite(wardrobeCenterY) || !Number.isFinite(wardrobeHeight) || !(wardrobeHeight > 0))
-    return centerY;
+  if (centerY == null) return 0;
+  if (boxH == null || !(boxH > 0)) return centerY;
+  if (wardrobeCenterY == null || wardrobeHeight == null || !(wardrobeHeight > 0)) return centerY;
 
   const halfH = boxH / 2;
   const roomFloorY = SKETCH_BOX_DIMENSIONS.freePlacement.roomFloorY;

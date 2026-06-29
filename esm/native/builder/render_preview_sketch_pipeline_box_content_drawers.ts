@@ -1,6 +1,11 @@
 import type { PreviewDrawerEntry, PreviewMaterialLike } from './render_preview_ops_contracts.js';
 import type { SketchPlacementPreviewContext } from './render_preview_sketch_pipeline_shared.js';
 import { DRAWER_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  readPreviewNumber,
+  readPreviewNumberOr,
+  readPreviewPositiveNumber,
+} from './render_preview_number_contracts.js';
 
 function resolvePreviewBodyMaterials(ctx: SketchPlacementPreviewContext) {
   return {
@@ -39,9 +44,9 @@ function placeFrontOverlay(
 function applyDrawersPreview(ctx: SketchPlacementPreviewContext): boolean {
   if (ctx.kind !== 'drawers') return false;
 
-  const drawerH = Number(ctx.input.drawerH);
-  const gap = Number(ctx.input.drawerGap || DRAWER_DIMENSIONS.sketch.internalGapM);
-  if (!(drawerH > 0)) {
+  const drawerH = readPreviewPositiveNumber(ctx.input.drawerH);
+  const gap = readPreviewNumberOr(ctx.input.drawerGap, DRAWER_DIMENSIONS.sketch.internalGapM);
+  if (drawerH == null) {
     ctx.g.visible = false;
     return true;
   }
@@ -57,7 +62,7 @@ function applyDrawersPreview(ctx: SketchPlacementPreviewContext): boolean {
       drawerH * DRAWER_DIMENSIONS.sketch.internalStackCount +
         gap +
         DRAWER_DIMENSIONS.sketch.previewStackExtraHeightM,
-      Number(ctx.input.frontOverlayH) || 0
+      readPreviewPositiveNumber(ctx.input.frontOverlayH) ?? 0
     ),
     Math.max(
       DRAWER_DIMENSIONS.sketch.previewOverlayThicknessMinM,
@@ -95,8 +100,8 @@ function applyExternalDrawersPreview(ctx: SketchPlacementPreviewContext): boolea
   const drawerMeshes = [ctx.boxTop, ctx.boxBottom, ctx.boxLeft, ctx.boxRight, ctx.boxBack];
   const { material, lineMaterial } = resolvePreviewBodyMaterials(ctx);
   const drawerHeights = drawerList
-    .map(entry => Number(ctx.asObject<PreviewDrawerEntry>(entry)?.h))
-    .filter(entryH => Number.isFinite(entryH) && entryH > 0);
+    .map(entry => readPreviewPositiveNumber(ctx.asObject<PreviewDrawerEntry>(entry)?.h))
+    .filter((entryH): entryH is number => entryH != null);
   const overlayH = drawerHeights.length
     ? drawerHeights.reduce((sum, entryH) => sum + entryH, 0) +
       DRAWER_DIMENSIONS.sketch.previewStackExtraHeightM
@@ -121,9 +126,9 @@ function applyExternalDrawersPreview(ctx: SketchPlacementPreviewContext): boolea
       ctx.setVisible(mesh, false);
       continue;
     }
-    const py = Number(drawer.y);
-    const ph = Number(drawer.h);
-    if (!Number.isFinite(py) || !(ph > 0)) {
+    const py = readPreviewNumber(drawer.y);
+    const ph = readPreviewPositiveNumber(drawer.h);
+    if (py == null || ph == null) {
       ctx.setVisible(mesh, false);
       continue;
     }
@@ -141,11 +146,6 @@ function applyExternalDrawersPreview(ctx: SketchPlacementPreviewContext): boolea
   }
 
   return true;
-}
-
-function readFinitePreviewNumber(value: unknown): number | null {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : null;
 }
 
 function clearDrawerDividerMotionPreview(ctx: SketchPlacementPreviewContext): void {
@@ -173,12 +173,12 @@ function rememberDrawerDividerMotionPreview(
     return;
   }
 
-  const closedX = readFinitePreviewNumber(ctx.input.drawerMotionClosedX);
-  const closedY = readFinitePreviewNumber(ctx.input.drawerMotionClosedY);
-  const closedZ = readFinitePreviewNumber(ctx.input.drawerMotionClosedZ);
-  const offsetX = readFinitePreviewNumber(ctx.input.drawerMotionOffsetX) || 0;
-  const offsetY = readFinitePreviewNumber(ctx.input.drawerMotionOffsetY) || 0;
-  const offsetZ = readFinitePreviewNumber(ctx.input.drawerMotionOffsetZ) || 0;
+  const closedX = readPreviewNumber(ctx.input.drawerMotionClosedX);
+  const closedY = readPreviewNumber(ctx.input.drawerMotionClosedY);
+  const closedZ = readPreviewNumber(ctx.input.drawerMotionClosedZ);
+  const offsetX = readPreviewNumber(ctx.input.drawerMotionOffsetX) ?? 0;
+  const offsetY = readPreviewNumber(ctx.input.drawerMotionOffsetY) ?? 0;
+  const offsetZ = readPreviewNumber(ctx.input.drawerMotionOffsetZ) ?? 0;
   const drawerId =
     typeof args.drawerId === 'string' || typeof args.drawerId === 'number' ? args.drawerId : null;
 
@@ -205,11 +205,11 @@ function applyDrawerDividerPreview(ctx: SketchPlacementPreviewContext): boolean 
   if (ctx.kind !== 'drawer_divider') return false;
 
   const axis = String(ctx.input.dividerAxis || 'vertical') === 'horizontal' ? 'horizontal' : 'vertical';
-  const highlightX = Number(ctx.input.highlightX);
-  const highlightY = Number(ctx.input.highlightY);
+  const highlightX = readPreviewNumber(ctx.input.highlightX);
+  const highlightY = readPreviewNumber(ctx.input.highlightY);
   const snapToCenter = ctx.input.snapToCenter === true;
-  const boxX = Number.isFinite(highlightX) ? highlightX : ctx.x;
-  const boxY = Number.isFinite(highlightY) ? highlightY : ctx.y;
+  const boxX = highlightX != null ? highlightX : ctx.x;
+  const boxY = highlightY != null ? highlightY : ctx.y;
   const highlightMat = ctx.ud.__matShelf || ctx.ud.__matBox;
   const highlightLine = ctx.ud.__lineShelf || ctx.ud.__lineBox;
   const dividerMat = ctx.isRemove

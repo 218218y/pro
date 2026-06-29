@@ -7,7 +7,7 @@ import type {
   SketchBoxVerticalSegment,
 } from './render_interior_sketch_layout.js';
 
-import { readSketchBoxDoors } from './render_interior_sketch_shared.js';
+import { readSketchBoxDoors, toFiniteNumber } from './render_interior_sketch_shared.js';
 import {
   pickSketchBoxVerticalSegment,
   resolveSketchBoxSegmentForContent,
@@ -52,21 +52,24 @@ export function readSketchBoxDoorPlacements(args: {
   woodThick: number;
 }): SketchBoxDoorPlacement[] {
   const { box, dividers, horizontalDividers, boxCenterX, boxCenterY, innerW, innerH, woodThick } = args;
+  const verticalBoxCenterY = toFiniteNumber(boxCenterY);
+  const verticalInnerH = toFiniteNumber(innerH);
+  const canResolveVerticalSegments =
+    !!horizontalDividers?.length && verticalBoxCenterY != null && verticalInnerH != null;
   const boxDoors = readSketchBoxDoors(box);
   return boxDoors.map((door, index) => {
-    const verticalSegments =
-      horizontalDividers?.length && Number.isFinite(Number(boxCenterY)) && Number.isFinite(Number(innerH))
-        ? resolveSketchBoxVerticalSegments({
-            dividers: horizontalDividers,
-            verticalDividers: dividers,
-            boxCenterX,
-            innerW,
-            boxCenterY: Number(boxCenterY),
-            innerH: Number(innerH),
-            woodThick,
-            xNorm: door.xNorm,
-          })
-        : [];
+    const verticalSegments = canResolveVerticalSegments
+      ? resolveSketchBoxVerticalSegments({
+          dividers: horizontalDividers || [],
+          verticalDividers: dividers,
+          boxCenterX,
+          innerW,
+          boxCenterY: verticalBoxCenterY,
+          innerH: verticalInnerH,
+          woodThick,
+          xNorm: door.xNorm,
+        })
+      : [];
     return {
       door,
       index,
@@ -85,8 +88,8 @@ export function readSketchBoxDoorPlacements(args: {
         door.yNorm != null && verticalSegments.length
           ? pickSketchBoxVerticalSegment({
               segments: verticalSegments,
-              boxCenterY: Number(boxCenterY),
-              innerH: Number(innerH),
+              boxCenterY: verticalBoxCenterY as number,
+              innerH: verticalInnerH as number,
               yNorm: door.yNorm,
             })
           : null,

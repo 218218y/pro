@@ -1,11 +1,12 @@
 import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { readPreviewPositiveNumber } from './render_preview_number_contracts.js';
 import type { PreviewMeshLike } from './render_preview_ops_contracts.js';
 import type { SketchPlacementPreviewContext } from './render_preview_sketch_pipeline_shared.js';
 
 export function applyBoxVolumeSketchPlacementPreview(ctx: SketchPlacementPreviewContext): boolean {
   if (ctx.kind !== 'box') return false;
 
-  const boxH = Number(ctx.input.boxH);
+  const boxH = readPreviewPositiveNumber(ctx.input.boxH) ?? 0;
   const fillFront = ctx.input.fillFront === true;
   const fillBack = ctx.input.fillBack === true;
   const snapToCenter = ctx.input.snapToCenter === true;

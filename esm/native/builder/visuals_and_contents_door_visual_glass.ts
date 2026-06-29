@@ -12,7 +12,7 @@ import {
   readMirrorPlacementRectMetadata,
 } from './visuals_and_contents_door_visual_tagging.js';
 
-import type { BuilderDoorVisualFrameStyle, Object3DLike, UnknownRecord } from '../../../types/index.js';
+import type { BuilderDoorVisualFrameStyle, Object3DLike } from '../../../types/index.js';
 import type { GlassDoorVisualArgs } from './visuals_and_contents_door_visual_style_contracts.js';
 
 type CenterPanelMetrics = {
@@ -23,10 +23,6 @@ type CenterPanelMetrics = {
   faceZ: number;
   node: Object3DLike;
 };
-
-function isRecord(value: unknown): value is UnknownRecord {
-  return !!value && typeof value === 'object' && !Array.isArray(value);
-}
 
 function normalizeGlassFrameStyle(value: unknown): BuilderDoorVisualFrameStyle {
   const style = typeof value === 'string' ? value.trim().toLowerCase() : '';

@@ -7,7 +7,7 @@ import type {
   ResolvedSketchBoxDoorLayout,
 } from './render_interior_sketch_boxes_fronts_door_contracts.js';
 
-import { readSketchBoxDoorId } from './render_interior_sketch_shared.js';
+import { readSketchBoxDoorId, toFiniteNumber } from './render_interior_sketch_shared.js';
 import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
   resolveSketchBoxDoorMountMode,
@@ -70,7 +70,7 @@ export function resolveSketchBoxDoorLayout(args: {
   let doorSpanLeft = isInsetDoorMount ? segmentLeft : segmentFrameLeft;
   let doorSpanRight = isInsetDoorMount ? segmentRight : segmentFrameRight;
   if (isFreePlacement && shell.hexGeometry) {
-    const halfHexDoorW = Math.max(woodThick, Number(shell.hexGeometry.doorWidthM) || 0) / 2;
+    const halfHexDoorW = Math.max(woodThick, toFiniteNumber(shell.hexGeometry.doorWidthM) ?? 0) / 2;
     const hexDoorLeft = boxGeo.centerX - halfHexDoorW;
     const hexDoorRight = boxGeo.centerX + halfHexDoorW;
     doorSpanLeft = Math.max(doorSpanLeft, hexDoorLeft);

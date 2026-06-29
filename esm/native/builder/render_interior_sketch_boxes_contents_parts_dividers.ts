@@ -1,4 +1,5 @@
 import type { RenderSketchBoxStaticContentsArgs } from './render_interior_sketch_boxes_contents_parts_types.js';
+import { toFiniteNumber } from './render_interior_sketch_shared.js';
 import {
   pickSketchBoxVerticalSegment,
   resolveSketchBoxDividerPlacement,
@@ -13,10 +14,10 @@ function resolveDividerCenterZ(args: {
   dividerDepth: number;
   frontZ?: unknown;
 }): number {
-  const frontZ = Number(args.frontZ);
-  if (!Number.isFinite(frontZ)) return args.defaultCenterZ;
-  const dividerDepth = Number(args.dividerDepth);
-  if (!Number.isFinite(dividerDepth) || !(dividerDepth > 0)) return args.defaultCenterZ;
+  const frontZ = toFiniteNumber(args.frontZ);
+  if (frontZ == null) return args.defaultCenterZ;
+  const dividerDepth = toFiniteNumber(args.dividerDepth);
+  if (dividerDepth == null || !(dividerDepth > 0)) return args.defaultCenterZ;
   return frontZ - dividerDepth / 2;
 }
 

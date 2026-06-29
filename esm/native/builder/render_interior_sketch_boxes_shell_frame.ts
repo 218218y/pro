@@ -4,7 +4,7 @@ import type {
   ResolvedSketchBoxState,
 } from './render_interior_sketch_boxes_shared.js';
 
-import { asMesh } from './render_interior_sketch_shared.js';
+import { asMesh, toFiniteNumber } from './render_interior_sketch_shared.js';
 import { applySketchBoxPickMeta } from './render_interior_sketch_pick_meta.js';
 import { renderSketchFreeBoxDimensions } from './render_interior_sketch_layout.js';
 import { renderSketchBoxCarcassAdornment } from './render_interior_sketch_visuals.js';
@@ -26,9 +26,9 @@ function resolveSketchBoxDimensionEnvelope(state: ResolvedSketchBoxState): Sketc
   const regularEnvelope = { centerZ: state.geometry.centerZ, depth: state.geometry.outerD };
   if (!state.hexGeometry) return regularEnvelope;
 
-  const fullDepth = Number(state.fullDepth);
-  const backZ = Number(state.backZ);
-  if (!Number.isFinite(fullDepth) || !(fullDepth > state.geometry.outerD) || !Number.isFinite(backZ)) {
+  const fullDepth = toFiniteNumber(state.fullDepth);
+  const backZ = toFiniteNumber(state.backZ);
+  if (fullDepth == null || !(fullDepth > state.geometry.outerD) || backZ == null) {
     return regularEnvelope;
   }
 

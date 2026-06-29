@@ -1,4 +1,9 @@
 import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  readPreviewNumber,
+  readPreviewPositiveNumber,
+  readPreviewPositiveNumberOr,
+} from './render_preview_number_contracts.js';
 import type { AppContainer } from '../../../types';
 import type {
   PreviewGroupLike,
@@ -83,14 +88,20 @@ export function createSketchPlacementPreviewContext(args: ApplySketchPlacementPr
   const isBlocked = op === 'blocked' || input.isBlocked === true || typeof input.blockedReason === 'string';
   const isRemove = op === 'remove' || input.isRemove === true || isBlocked;
 
-  const x = Number(input.x);
-  const y = Number(input.y);
-  const z = Number(input.z);
-  const w = Number(input.w);
-  const h = Number(input.h);
-  const d = Number(input.d);
-  const woodThick = Number(input.woodThick || MATERIAL_DIMENSIONS.wood.thicknessM);
-  const hasFinitePlacement = Number.isFinite(x) && Number.isFinite(y) && Number.isFinite(z) && w > 0 && d > 0;
+  const rawX = readPreviewNumber(input.x);
+  const rawY = readPreviewNumber(input.y);
+  const rawZ = readPreviewNumber(input.z);
+  const rawW = readPreviewPositiveNumber(input.w);
+  const rawH = readPreviewNumber(input.h);
+  const rawD = readPreviewPositiveNumber(input.d);
+  const x = rawX ?? 0;
+  const y = rawY ?? 0;
+  const z = rawZ ?? 0;
+  const w = rawW ?? 0;
+  const h = rawH ?? 0;
+  const d = rawD ?? 0;
+  const woodThick = readPreviewPositiveNumberOr(input.woodThick, MATERIAL_DIMENSIONS.wood.thicknessM);
+  const hasFinitePlacement = rawX != null && rawY != null && rawZ != null && rawW != null && rawD != null;
 
   const setVisible = (m: PreviewMeshLike | null, on: boolean) => {
     if (!m) return;
@@ -118,20 +129,20 @@ export function createSketchPlacementPreviewContext(args: ApplySketchPlacementPr
     fallbackH: number,
     fallbackT: number
   ): FrontOverlay | null => {
-    const overlayZ = Number(input.frontOverlayZ);
-    if (!Number.isFinite(overlayZ)) return null;
-    const overlayX = Number(input.frontOverlayX);
-    const overlayY = Number(input.frontOverlayY);
-    const overlayW = Number(input.frontOverlayW);
-    const overlayH = Number(input.frontOverlayH);
-    const overlayT = Number(input.frontOverlayThickness);
+    const overlayZ = readPreviewNumber(input.frontOverlayZ);
+    if (overlayZ == null) return null;
+    const overlayX = readPreviewNumber(input.frontOverlayX);
+    const overlayY = readPreviewNumber(input.frontOverlayY);
+    const overlayW = readPreviewPositiveNumber(input.frontOverlayW);
+    const overlayH = readPreviewPositiveNumber(input.frontOverlayH);
+    const overlayT = readPreviewPositiveNumber(input.frontOverlayThickness);
     return {
-      x: Number.isFinite(overlayX) ? overlayX : fallbackX,
-      y: Number.isFinite(overlayY) ? overlayY : fallbackY,
+      x: overlayX != null ? overlayX : fallbackX,
+      y: overlayY != null ? overlayY : fallbackY,
       z: overlayZ,
-      w: Number.isFinite(overlayW) && overlayW > 0 ? overlayW : fallbackW,
-      h: Number.isFinite(overlayH) && overlayH > 0 ? overlayH : fallbackH,
-      t: Number.isFinite(overlayT) && overlayT > 0 ? overlayT : fallbackT,
+      w: overlayW != null ? overlayW : fallbackW,
+      h: overlayH != null ? overlayH : fallbackH,
+      t: overlayT != null ? overlayT : fallbackT,
     };
   };
 

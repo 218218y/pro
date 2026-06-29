@@ -1,7 +1,7 @@
 import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { ResolvedSketchBoxState } from './render_interior_sketch_boxes_shared.js';
 
-import { readSketchBoxDoors } from './render_interior_sketch_shared.js';
+import { readSketchBoxDoors, toFiniteNumber } from './render_interior_sketch_shared.js';
 import {
   resolveSketchBoxClosedInsetDoorBackZ,
   resolveSketchBoxDoorMountMode,
@@ -13,8 +13,8 @@ export function resolveSketchBoxUsableContentDepth(args: {
   woodThick: number;
 }): number {
   const { shell, input, woodThick } = args;
-  const innerD = Number(shell.geometry.innerD);
-  if (!Number.isFinite(innerD) || !(innerD > 0)) return 0;
+  const innerD = toFiniteNumber(shell.geometry.innerD);
+  if (innerD == null || !(innerD > 0)) return 0;
   if (resolveSketchBoxDoorMountMode(input) !== 'inset') return innerD;
   if (!readSketchBoxDoors(shell.box).length) return innerD;
 

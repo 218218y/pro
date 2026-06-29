@@ -11,7 +11,10 @@ import {
 } from '../esm/native/builder/render_interior_sketch_layout.ts';
 import { resolveSketchBoxHeight } from '../esm/native/builder/render_interior_sketch_boxes_shell_height.ts';
 import { resolveSketchBoxShellGeometry } from '../esm/native/builder/render_interior_sketch_boxes_shell_geometry.ts';
-import { SKETCH_BOX_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
+import {
+  MATERIAL_DIMENSIONS,
+  SKETCH_BOX_DIMENSIONS,
+} from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
 
 test('render interior sketch layout geometry clamps box size and center inside the internal span', () => {
   const geometry = resolveSketchBoxGeometry({
@@ -117,6 +120,50 @@ test('render interior sketch layout geometry rejects string-encoded live numeric
       pad: '0.05' as any,
     }),
     0.3
+  );
+});
+
+test('render interior sketch layout geometry rejects string-encoded runtime placement args', () => {
+  const geometry = resolveSketchBoxGeometry({
+    innerW: '0.8' as any,
+    internalCenterX: '0.4' as any,
+    internalDepth: '0.5' as any,
+    internalZ: '0.1' as any,
+    woodThick: '0.02' as any,
+    widthM: null,
+    depthM: null,
+    xNorm: 1,
+  });
+
+  assert.equal(geometry.outerW, SKETCH_BOX_DIMENSIONS.geometry.minOuterWidthM);
+  assert.equal(geometry.outerD, SKETCH_BOX_DIMENSIONS.geometry.minOuterDepthM);
+  assert.equal(geometry.centerX, 0);
+  assert.equal(geometry.centerZ, 0);
+
+  const freeGeometry = resolveSketchFreeBoxGeometry({
+    wardrobeWidth: '1.4' as any,
+    wardrobeDepth: '0.55' as any,
+    backZ: '-0.25' as any,
+    centerX: '0.4' as any,
+    woodThick: '0.02' as any,
+    widthM: null,
+    depthM: null,
+  });
+
+  assert.equal(freeGeometry.outerW, SKETCH_BOX_DIMENSIONS.geometry.defaultOuterWidthM);
+  assert.equal(freeGeometry.outerD, SKETCH_BOX_DIMENSIONS.geometry.defaultOuterDepthM);
+  assert.equal(freeGeometry.centerX, 0);
+  assert.equal(freeGeometry.innerBackZ, MATERIAL_DIMENSIONS.wood.thicknessM);
+
+  assert.equal(
+    clampSketchFreeBoxCenterY({
+      centerY: '1' as any,
+      boxH: 0.6,
+      wardrobeCenterY: 1,
+      wardrobeHeight: 2,
+      pad: 0.05,
+    }),
+    0
   );
 });
 

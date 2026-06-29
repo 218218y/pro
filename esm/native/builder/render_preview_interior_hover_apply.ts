@@ -11,6 +11,11 @@ import type {
 } from './render_preview_ops_contracts.js';
 import type { RenderPreviewInteriorHoverShared } from './render_preview_interior_hover_shared.js';
 import { ensureInteriorLayoutHoverPreview } from './render_preview_interior_hover_cache.js';
+import {
+  readPreviewNumber,
+  readPreviewPositiveNumber,
+  readPreviewPositiveNumberOr,
+} from './render_preview_number_contracts.js';
 
 export function hideInteriorLayoutHoverPreview(
   shared: RenderPreviewInteriorHoverShared,
@@ -81,17 +86,17 @@ export function setInteriorLayoutHoverPreview(
   const rodList = shared.readMeshList(ud.__rodList);
   const storage = shared.asPreviewMesh(ud.__storage);
 
-  const x = Number(input.x);
-  const internalZ = Number(input.internalZ);
-  const internalDepth = Number(input.internalDepth);
-  const innerW = Number(input.innerW);
-  const woodThick = Number(input.woodThick || MATERIAL_DIMENSIONS.wood.thicknessM);
-  const backZ = internalZ - internalDepth / 2;
+  const x = readPreviewNumber(input.x);
+  const internalZ = readPreviewNumber(input.internalZ);
+  const internalDepth = readPreviewPositiveNumber(input.internalDepth);
+  const innerW = readPreviewPositiveNumber(input.innerW);
+  const woodThick = readPreviewPositiveNumberOr(input.woodThick, MATERIAL_DIMENSIONS.wood.thicknessM);
+  const backZ = internalZ != null && internalDepth != null ? internalZ - internalDepth / 2 : 0;
   const shelvesDims = INTERIOR_FITTINGS_DIMENSIONS.shelves;
   const storageDims = INTERIOR_FITTINGS_DIMENSIONS.storage;
   const previewDims = SKETCH_BOX_DIMENSIONS.preview;
   const regularDepth =
-    internalDepth > 0 ? Math.min(internalDepth, shelvesDims.regularDepthM) : shelvesDims.regularDepthM;
+    internalDepth != null ? Math.min(internalDepth, shelvesDims.regularDepthM) : shelvesDims.regularDepthM;
   const shelfVariant = typeof input.shelfVariant === 'string' ? String(input.shelfVariant) : '';
   const isBlocked =
     input.op === 'blocked' || input.isBlocked === true || typeof input.blockedReason === 'string';
@@ -128,7 +133,7 @@ export function setInteriorLayoutHoverPreview(
     setVisible(storage, false);
   };
 
-  if (!Number.isFinite(x) || !Number.isFinite(internalZ) || !(innerW > 0) || !(internalDepth > 0)) {
+  if (x == null || internalZ == null || innerW == null || internalDepth == null) {
     group.visible = false;
     hideAll();
     return group;
@@ -179,8 +184,8 @@ export function setInteriorLayoutHoverPreview(
 
   for (let i = 0; i < shelfList.length; i++) {
     const mesh = shared.asPreviewMesh(shelfList[i]);
-    const y0 = Number(shelfYs[i]);
-    if (!mesh || !Number.isFinite(y0)) {
+    const y0 = readPreviewNumber(shelfYs[i]);
+    if (!mesh || y0 == null) {
       setVisible(mesh, false);
       continue;
     }
@@ -194,8 +199,8 @@ export function setInteriorLayoutHoverPreview(
 
   for (let i = 0; i < rodList.length; i++) {
     const mesh = shared.asPreviewMesh(rodList[i]);
-    const y0 = Number(rodYs[i]);
-    if (!mesh || !Number.isFinite(y0)) {
+    const y0 = readPreviewNumber(rodYs[i]);
+    if (!mesh || y0 == null) {
       setVisible(mesh, false);
       continue;
     }
@@ -212,10 +217,10 @@ export function setInteriorLayoutHoverPreview(
   }
 
   if (storage && storageRec) {
-    const y0 = Number(storageRec.y);
-    const h0 = Number(storageRec.h);
-    const z0 = Number(storageRec.z);
-    if (Number.isFinite(y0) && Number.isFinite(h0) && h0 > 0 && Number.isFinite(z0)) {
+    const y0 = readPreviewNumber(storageRec.y);
+    const h0 = readPreviewPositiveNumber(storageRec.h);
+    const z0 = readPreviewNumber(storageRec.z);
+    if (y0 != null && h0 != null && z0 != null) {
       setVisible(storage, true);
       applyStyle(storage, storageMat, storageLine);
       if (storage.position && typeof storage.position.set === 'function') storage.position.set(x, y0, z0);
