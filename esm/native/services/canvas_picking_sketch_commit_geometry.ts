@@ -27,8 +27,8 @@ export function readSketchCommitInteger(value: unknown): number | null {
   return n != null && Number.isInteger(n) ? n : null;
 }
 
-export function clampSketchCommitUnitNumber(value: unknown, fallback: number): number {
-  const n = readSketchCommitNumber(value) ?? readSketchCommitNumber(fallback) ?? 0.5;
+export function clampSketchCommitUnitNumber(value: unknown, defaultValue: number): number {
+  const n = readSketchCommitNumber(value) ?? readSketchCommitNumber(defaultValue) ?? 0.5;
   return Math.max(0, Math.min(1, n));
 }
 
@@ -65,9 +65,9 @@ export function writeSketchCommitClampedUnitNumber(
   target: SketchCommitRecord,
   key: string,
   value: unknown,
-  fallback: number
+  defaultValue: number
 ): number {
-  const n = clampSketchCommitUnitNumber(value, fallback);
+  const n = clampSketchCommitUnitNumber(value, defaultValue);
   target[key] = n;
   return n;
 }
