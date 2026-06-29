@@ -19,6 +19,10 @@ import {
   requireInteriorSketchConfigSnapshot,
   requireInteriorSketchDoorStyle,
 } from './render_interior_sketch_input_contract.js';
+import {
+  normalizeBuilderSketchExtrasGeometry,
+  readBuilderRuntimeGeometryNumber,
+} from './render_interior_sketch_geometry_normalizer.js';
 
 export type ValueRecord = Record<string, unknown>;
 
@@ -96,7 +100,7 @@ export function readConfig(config: unknown): InteriorLayoutConfig {
 }
 
 export function readNumber(value: unknown, defaultValue: number): number {
-  return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
+  return readBuilderRuntimeGeometryNumber(value, defaultValue);
 }
 
 export function readBraceShelves(config: InteriorLayoutConfig): unknown[] {
@@ -130,7 +134,7 @@ export function buildSketchExtrasArgs(
     'builder/interior_pipeline.sketchExtras'
   );
   const doorStyle = requireInteriorSketchDoorStyle(input.doorStyle, 'builder/interior_pipeline.sketchExtras');
-  const sketchExtras = asObject<BuilderInteriorSketchArgsLike['sketchExtras']>(config.sketchExtras);
+  const sketchExtras = normalizeBuilderSketchExtrasGeometry(config.sketchExtras);
   if (!sketchExtras) {
     throw new TypeError('[builder/interior_pipeline.sketchExtras] sketchExtras must be an object');
   }

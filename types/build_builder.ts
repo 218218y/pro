@@ -112,7 +112,11 @@ export type BuilderCreateInternalDrawerBoxFn = (
   options?: BuilderInternalDrawerBoxOptions | null
 ) => Object3DLike;
 
-export type BuilderPreviewScalar = number | string | null | undefined;
+export type BuilderDraftScalar = number | string | null | undefined;
+export type BuilderRuntimeGeometryScalar = number | null | undefined;
+export type BuilderPreviewScalar = BuilderDraftScalar;
+export type BuilderSketchDraftScalar = BuilderDraftScalar;
+export type BuilderSketchScalar = BuilderRuntimeGeometryScalar;
 export type BuilderPreviewBool = boolean | null | undefined;
 export interface PreviewDrawerEntryLike extends UnknownRecord {
   y?: BuilderPreviewScalar;
@@ -192,7 +196,6 @@ export interface InteriorLayoutHoverPreviewArgsLike extends UnknownRecord {
 }
 
 export type BuilderSketchIdLike = string | number | null | undefined;
-export type BuilderSketchScalar = BuilderPreviewScalar;
 export type BuilderSketchAdornmentBaseTypeLike = 'plinth' | 'legs' | 'none' | string | null | undefined;
 export type BuilderSketchCorniceTypeLike = 'classic' | 'wave' | string | null | undefined;
 
@@ -277,6 +280,7 @@ export interface BuilderSketchBoxLike extends UnknownRecord {
   baseLegPlatformFrontOverhangCm?: BuilderSketchScalar;
   basePlinthHeightCm?: BuilderSketchScalar;
   baseLegHeightCm?: BuilderSketchScalar;
+  baseLegWidthCm?: BuilderSketchScalar;
   dividers?: BuilderSketchDividerLike[] | null;
   horizontalDividers?: BuilderSketchHorizontalDividerLike[] | null;
   shelves?: BuilderSketchShelfLike[] | null;
@@ -610,27 +614,27 @@ export interface BuilderInteriorSketchArgsLike extends UnknownRecord {
   bodyMat?: unknown;
   whiteMat?: unknown;
   drawerBoxBaseMat?: unknown;
-  effectiveBottomY?: BuilderPreviewScalar;
-  effectiveTopY?: BuilderPreviewScalar;
-  localGridStep?: BuilderPreviewScalar;
-  innerW?: BuilderPreviewScalar;
-  woodThick?: BuilderPreviewScalar;
-  shelfThick?: BuilderPreviewScalar;
-  internalDepth?: BuilderPreviewScalar;
-  internalCenterX?: BuilderPreviewScalar;
-  internalZ?: BuilderPreviewScalar;
-  D?: BuilderPreviewScalar;
+  effectiveBottomY?: BuilderRuntimeGeometryScalar;
+  effectiveTopY?: BuilderRuntimeGeometryScalar;
+  localGridStep?: BuilderRuntimeGeometryScalar;
+  innerW?: BuilderRuntimeGeometryScalar;
+  woodThick?: BuilderRuntimeGeometryScalar;
+  shelfThick?: BuilderRuntimeGeometryScalar;
+  internalDepth?: BuilderRuntimeGeometryScalar;
+  internalCenterX?: BuilderRuntimeGeometryScalar;
+  internalZ?: BuilderRuntimeGeometryScalar;
+  D?: BuilderRuntimeGeometryScalar;
   moduleIndex?: BuilderSketchIdLike;
-  modulesLength?: BuilderPreviewScalar;
+  modulesLength?: BuilderRuntimeGeometryScalar;
   moduleKey?: BuilderSketchIdLike;
   frameSidePartIdPrefix?: BuilderSketchIdLike;
   stackKey?: BuilderSketchIdLike;
-  startY?: BuilderPreviewScalar;
+  startY?: BuilderRuntimeGeometryScalar;
   startDoorId?: BuilderSketchIdLike;
-  moduleDoors?: BuilderPreviewScalar;
+  moduleDoors?: BuilderRuntimeGeometryScalar;
   hingedDoorPivotMap?: unknown;
-  externalW?: BuilderPreviewScalar;
-  externalCenterX?: BuilderPreviewScalar;
+  externalW?: BuilderRuntimeGeometryScalar;
+  externalCenterX?: BuilderRuntimeGeometryScalar;
   getPartMaterial?: BuilderPartMaterialResolver | null;
   getPartColorValue?: BuilderPartColorResolver | null;
   createDoorVisual?: BuilderCreateDoorVisualFn | null;

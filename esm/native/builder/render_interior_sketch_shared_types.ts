@@ -2,7 +2,7 @@ import type {
   AppContainer,
   BuilderInteriorSketchArgsLike,
   BuilderDimensionLineScaleSpec,
-  BuilderPreviewScalar,
+  BuilderRuntimeGeometryScalar,
   BuilderSketchBoxDoorLike,
   BuilderSketchBoxLike,
   BuilderSketchDividerLike,
@@ -106,25 +106,25 @@ export type RenderInteriorSketchInput = BuilderInteriorSketchArgsLike &
     createBoard?: InteriorOpsCallable;
     createRod?: InteriorOpsCallable;
     wardrobeGroup?: InteriorGroupLike | null;
-    effectiveBottomY?: BuilderPreviewScalar;
-    effectiveTopY?: BuilderPreviewScalar;
-    innerW?: BuilderPreviewScalar;
-    woodThick?: BuilderPreviewScalar;
-    shelfThick?: BuilderPreviewScalar;
-    internalDepth?: BuilderPreviewScalar;
-    internalCenterX?: BuilderPreviewScalar;
-    internalZ?: BuilderPreviewScalar;
+    effectiveBottomY?: BuilderRuntimeGeometryScalar;
+    effectiveTopY?: BuilderRuntimeGeometryScalar;
+    innerW?: BuilderRuntimeGeometryScalar;
+    woodThick?: BuilderRuntimeGeometryScalar;
+    shelfThick?: BuilderRuntimeGeometryScalar;
+    internalDepth?: BuilderRuntimeGeometryScalar;
+    internalCenterX?: BuilderRuntimeGeometryScalar;
+    internalZ?: BuilderRuntimeGeometryScalar;
     moduleIndex?: BuilderSketchIdLike;
-    modulesLength?: BuilderPreviewScalar;
+    modulesLength?: BuilderRuntimeGeometryScalar;
     moduleKey?: BuilderSketchIdLike;
     frameSidePartIdPrefix?: BuilderSketchIdLike;
     stackKey?: BuilderSketchIdLike;
-    startY?: BuilderPreviewScalar;
+    startY?: BuilderRuntimeGeometryScalar;
     startDoorId?: BuilderSketchIdLike;
-    moduleDoors?: unknown;
+    moduleDoors?: BuilderRuntimeGeometryScalar;
     hingedDoorPivotMap?: unknown;
-    externalW?: BuilderPreviewScalar;
-    externalCenterX?: BuilderPreviewScalar;
+    externalW?: BuilderRuntimeGeometryScalar;
+    externalCenterX?: BuilderRuntimeGeometryScalar;
     currentShelfMat?: unknown;
     currentBraceShelfMat?: unknown;
     bodyMat?: unknown;

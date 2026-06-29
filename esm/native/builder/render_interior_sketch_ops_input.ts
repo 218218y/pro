@@ -27,6 +27,10 @@ import {
   requireInteriorSketchConfigSnapshot,
   requireInteriorSketchDoorStyle,
 } from './render_interior_sketch_input_contract.js';
+import {
+  normalizeInteriorSketchRuntimeGeometryArgs,
+  readBuilderRuntimeGeometryNumber,
+} from './render_interior_sketch_geometry_normalizer.js';
 
 import type {
   InteriorSketchExtrasInput,
@@ -51,8 +55,9 @@ export function resolveInteriorSketchExtrasInput(
 ): InteriorSketchExtrasInput | null {
   const App = owner.app(args);
   const renderOps = asValueRecord(owner.ops(App));
-  const input = asSketchInput(args);
-  if (!input) throw new TypeError('[render_interior_sketch] input is required');
+  const rawInput = asSketchInput(args);
+  if (!rawInput) throw new TypeError('[render_interior_sketch] input is required');
+  const input = normalizeInteriorSketchRuntimeGeometryArgs(rawInput);
 
   const extra = input.sketchExtras;
   if (!extra || typeof extra !== 'object') return null;
@@ -84,20 +89,20 @@ export function resolveInteriorSketchExtrasInput(
   const group = input.wardrobeGroup || owner.wardrobeGroup(App);
   if (!group) return null;
 
-  const effectiveBottomY = Number(input.effectiveBottomY || 0);
-  const effectiveTopY = Number(input.effectiveTopY || 0);
+  const effectiveBottomY = readBuilderRuntimeGeometryNumber(input.effectiveBottomY, 0);
+  const effectiveTopY = readBuilderRuntimeGeometryNumber(input.effectiveTopY, 0);
   const spanH = effectiveTopY - effectiveBottomY;
   if (!(spanH > INTERIOR_FITTINGS_DIMENSIONS.shelves.spanMinHeightM)) return null;
 
-  const innerW = Number(input.innerW || 0);
-  const woodThick = Number(input.woodThick || MATERIAL_DIMENSIONS.wood.thicknessM);
-  const shelfThick = Number(input.shelfThick || woodThick);
-  const internalDepth = Number(input.internalDepth || 0);
-  const internalCenterX = Number(input.internalCenterX || 0);
-  const internalZ = Number(input.internalZ || 0);
-  const moduleDepth = Number(input.D || 0);
-  const moduleIndex = typeof input.moduleIndex === 'number' ? Number(input.moduleIndex) : -1;
-  const modulesLength = typeof input.modulesLength === 'number' ? Number(input.modulesLength) : -1;
+  const innerW = readBuilderRuntimeGeometryNumber(input.innerW, 0);
+  const woodThick = readBuilderRuntimeGeometryNumber(input.woodThick, MATERIAL_DIMENSIONS.wood.thicknessM);
+  const shelfThick = readBuilderRuntimeGeometryNumber(input.shelfThick, woodThick);
+  const internalDepth = readBuilderRuntimeGeometryNumber(input.internalDepth, 0);
+  const internalCenterX = readBuilderRuntimeGeometryNumber(input.internalCenterX, 0);
+  const internalZ = readBuilderRuntimeGeometryNumber(input.internalZ, 0);
+  const moduleDepth = readBuilderRuntimeGeometryNumber(input.D, 0);
+  const moduleIndex = readBuilderRuntimeGeometryNumber(input.moduleIndex, -1);
+  const modulesLength = readBuilderRuntimeGeometryNumber(input.modulesLength, -1);
   const moduleKeyStr =
     input.moduleKey != null ? String(input.moduleKey) : moduleIndex >= 0 ? String(moduleIndex) : '';
 
