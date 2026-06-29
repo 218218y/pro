@@ -30,6 +30,19 @@ import {
 import { renderSketchBoxAdornmentBase } from './render_interior_sketch_visuals_adornments_base.js';
 import { renderSketchBoxAdornmentCornice } from './render_interior_sketch_visuals_adornments_cornice.js';
 
+function readFiniteStateNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function readBaseLegOptionsFromState(box: SketchBoxExtra): ReturnType<typeof readBaseLegOptions> {
+  return readBaseLegOptions({
+    baseLegStyle: box.baseLegStyle,
+    baseLegColor: box.baseLegColor,
+    baseLegHeightCm: readFiniteStateNumber(box.baseLegHeightCm),
+    baseLegWidthCm: readFiniteStateNumber(box.baseLegWidthCm),
+  });
+}
+
 export function renderSketchBoxCarcassAdornment(args: {
   THREE: InteriorTHREESurface;
   group: InteriorGroupLike;
@@ -63,7 +76,7 @@ export function renderSketchBoxCarcassAdornment(args: {
     isFreePlacement,
   } = args;
   const baseType = normalizeSketchBoxAdornmentBaseType(box.baseType);
-  const legOptions = readBaseLegOptions(box);
+  const legOptions = readBaseLegOptionsFromState(box);
   const hasCornice = box.hasCornice === true;
   const corniceType = normalizeSketchBoxAdornmentCorniceType(box.corniceType);
   if (baseType === 'none' && !hasCornice) return;
@@ -80,9 +93,9 @@ export function renderSketchBoxCarcassAdornment(args: {
     baseLegWidthCm: legOptions.widthCm,
     baseLegPlatformMode: box.baseLegPlatformMode,
     baseLegPlatformSideMode: box.baseLegPlatformSideMode,
-    baseLegPlatformSideOverhangCm: box.baseLegPlatformSideOverhangCm,
-    baseLegPlatformFrontOverhangCm: box.baseLegPlatformFrontOverhangCm,
-    basePlinthHeightCm: normalizeBasePlinthHeightCm(box.basePlinthHeightCm),
+    baseLegPlatformSideOverhangCm: readFiniteStateNumber(box.baseLegPlatformSideOverhangCm),
+    baseLegPlatformFrontOverhangCm: readFiniteStateNumber(box.baseLegPlatformFrontOverhangCm),
+    basePlinthHeightCm: normalizeBasePlinthHeightCm(readFiniteStateNumber(box.basePlinthHeightCm)),
     doorsCount: 2,
     hasCornice,
     corniceType,

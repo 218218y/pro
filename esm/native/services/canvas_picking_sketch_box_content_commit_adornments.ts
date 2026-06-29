@@ -21,32 +21,43 @@ import {
 import type { CommitSketchModuleBoxContentArgs } from './canvas_picking_sketch_box_content_commit_contracts.js';
 import { readNumber } from './canvas_picking_sketch_box_content_commit_records.js';
 
-function readSupportHeightCm(source: unknown, key: 'heightCm' | 'basePlinthHeightCm'): unknown {
-  if (source && typeof source === 'object') return (source as Record<string, unknown>)[key];
-  return source;
+function readRecordNumber(source: unknown, key: string): number | null {
+  if (!source || typeof source !== 'object') return readNumber(source);
+  return readNumber((source as Record<string, unknown>)[key]);
+}
+
+function readBaseLegOptionsFromState(source: unknown): ReturnType<typeof readBaseLegOptions> {
+  const rec = source && typeof source === 'object' ? (source as Record<string, unknown>) : {};
+  return readBaseLegOptions({
+    baseLegStyle: rec.baseLegStyle,
+    baseLegColor: rec.baseLegColor,
+    baseLegHeightCm: readNumber(rec.baseLegHeightCm),
+    baseLegWidthCm: readNumber(rec.baseLegWidthCm),
+  });
+}
+
+function readHoverNumber(
+  hoverIntent: ManualLayoutSketchBoxContentHoverIntent | null,
+  hoverRec: Record<string, unknown>,
+  key: string
+): number | null {
+  const source = hoverIntent ? (hoverIntent as unknown as Record<string, unknown>)[key] : hoverRec[key];
+  return readNumber(source);
 }
 
 function getSketchBoxAdornmentBaseHeight(baseType: unknown, source?: unknown): number {
   const normalized = normalizeSketchBoxBaseType(baseType);
   if (normalized === 'legs') {
-    if (source && typeof source === 'object') {
-      const heightCm = Number(readSupportHeightCm(source, 'heightCm'));
-      if (Number.isFinite(heightCm) && heightCm > 0) {
-        const bottomPlatformHeight =
-          normalizeBaseLegPlatformMode((source as Record<string, unknown>).baseLegPlatformMode) === 'stage'
-            ? CARCASS_BASE_DIMENSIONS.legs.platform.heightM
-            : 0;
-        return Math.max(0.01, heightCm / 100) + bottomPlatformHeight;
-      }
-    }
+    const heightCm = readRecordNumber(source, 'heightCm') ?? readRecordNumber(source, 'baseLegHeightCm');
     const bottomPlatformHeight =
       normalizeBaseLegPlatformMode((source as Record<string, unknown> | null)?.baseLegPlatformMode) ===
       'stage'
         ? CARCASS_BASE_DIMENSIONS.legs.platform.heightM
         : 0;
-    return readBaseLegOptions(source).heightM + bottomPlatformHeight;
+    if (heightCm != null && heightCm > 0) return Math.max(0.01, heightCm / 100) + bottomPlatformHeight;
+    return readBaseLegOptionsFromState(source).heightM + bottomPlatformHeight;
   }
-  if (normalized === 'plinth') return getBasePlinthHeightM(readSupportHeightCm(source, 'basePlinthHeightCm'));
+  if (normalized === 'plinth') return getBasePlinthHeightM(readRecordNumber(source, 'basePlinthHeightCm'));
   return 0;
 }
 
@@ -139,15 +150,8 @@ export function tryCommitSketchBoxAdornment(args: {
     const nextBaseOptions = readBaseLegOptions({
       baseLegStyle: hoverIntent?.baseLegStyle ?? commitArgs.hoverRec.baseLegStyle,
       baseLegColor: hoverIntent?.baseLegColor ?? commitArgs.hoverRec.baseLegColor,
-      baseLegPlatformMode: hoverIntent?.baseLegPlatformMode ?? commitArgs.hoverRec.baseLegPlatformMode,
-      baseLegPlatformSideMode:
-        hoverIntent?.baseLegPlatformSideMode ?? commitArgs.hoverRec.baseLegPlatformSideMode,
-      baseLegPlatformSideOverhangCm:
-        hoverIntent?.baseLegPlatformSideOverhangCm ?? commitArgs.hoverRec.baseLegPlatformSideOverhangCm,
-      baseLegPlatformFrontOverhangCm:
-        hoverIntent?.baseLegPlatformFrontOverhangCm ?? commitArgs.hoverRec.baseLegPlatformFrontOverhangCm,
-      baseLegHeightCm: hoverIntent?.baseLegHeightCm ?? commitArgs.hoverRec.baseLegHeightCm,
-      baseLegWidthCm: hoverIntent?.baseLegWidthCm ?? commitArgs.hoverRec.baseLegWidthCm,
+      baseLegHeightCm: readHoverNumber(hoverIntent, commitArgs.hoverRec, 'baseLegHeightCm'),
+      baseLegWidthCm: readHoverNumber(hoverIntent, commitArgs.hoverRec, 'baseLegWidthCm'),
     });
     const nextBasePlatformMode = normalizeBaseLegPlatformMode(
       hoverIntent?.baseLegPlatformMode ?? commitArgs.hoverRec.baseLegPlatformMode
@@ -156,13 +160,13 @@ export function tryCommitSketchBoxAdornment(args: {
       hoverIntent?.baseLegPlatformSideMode ?? commitArgs.hoverRec.baseLegPlatformSideMode
     );
     const nextBasePlatformSideOverhangCm = normalizeBaseLegPlatformSideOverhangCm(
-      hoverIntent?.baseLegPlatformSideOverhangCm ?? commitArgs.hoverRec.baseLegPlatformSideOverhangCm
+      readHoverNumber(hoverIntent, commitArgs.hoverRec, 'baseLegPlatformSideOverhangCm')
     );
     const nextBasePlatformFrontOverhangCm = normalizeBaseLegPlatformFrontOverhangCm(
-      hoverIntent?.baseLegPlatformFrontOverhangCm ?? commitArgs.hoverRec.baseLegPlatformFrontOverhangCm
+      readHoverNumber(hoverIntent, commitArgs.hoverRec, 'baseLegPlatformFrontOverhangCm')
     );
     const nextBasePlinthHeightCm = normalizeBasePlinthHeightCm(
-      hoverIntent?.basePlinthHeightCm ?? commitArgs.hoverRec.basePlinthHeightCm
+      readHoverNumber(hoverIntent, commitArgs.hoverRec, 'basePlinthHeightCm')
     );
     adjustSketchBoxCenterYForBaseSupport({
       box: commitArgs.box,

@@ -98,10 +98,15 @@ export function ensureCustomData(cfg: LayoutConfigRecordLike): LayoutConfigCusto
   return next;
 }
 
-export function ensureBraceShelves(cfg: LayoutConfigRecordLike): unknown[] {
+function isCanonicalBraceShelfIndex(value: unknown): value is number {
+  return typeof value === 'number' && Number.isInteger(value) && value > 0;
+}
+
+export function ensureBraceShelves(cfg: LayoutConfigRecordLike): number[] {
   const existing = Array.isArray(cfg.braceShelves) ? cfg.braceShelves : [];
-  cfg.braceShelves = existing;
-  return existing;
+  const next = existing.filter(isCanonicalBraceShelfIndex);
+  cfg.braceShelves = next;
+  return next;
 }
 
 export function readGridInfo(gridMap: unknown, mapKey: ModuleKey | 'corner'): GridInfoLike | null {

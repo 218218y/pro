@@ -42,9 +42,7 @@ export type ManualLayoutShelfToggleResult = {
 
 function readFiniteNumber(value: unknown): number | null {
   if (typeof value === 'number') return Number.isFinite(value) ? value : null;
-  if (value == null || value === '') return null;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
+  return null;
 }
 
 function resolveCollisionWoodThick(value: unknown): number {
@@ -181,7 +179,7 @@ export function toggleManualLayoutShelf(
     typeof customData.shelfVariants[args.arrayIdx] === 'string'
       ? String(customData.shelfVariants[args.arrayIdx])
       : '';
-  const isBraceExisting = braceShelves.some(value => Number(value) === shelfIndex);
+  const isBraceExisting = braceShelves.includes(shelfIndex);
   const existingVariant =
     isBraceExisting || currentVariantRaw === 'brace'
       ? 'brace'

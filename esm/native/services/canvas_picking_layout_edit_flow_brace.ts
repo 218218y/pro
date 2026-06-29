@@ -70,10 +70,15 @@ export function tryHandleCanvasBraceShelvesClick(args: CanvasLayoutEditClickArgs
       ? asRecord(sketchHover)
       : null;
     if (freshSketchHover) {
+      const removeIdx =
+        typeof freshSketchHover.removeIdx === 'number' && Number.isFinite(freshSketchHover.removeIdx)
+          ? freshSketchHover.removeIdx
+          : null;
+      if (removeIdx == null) return;
       __patchConfigForKey(
         mapKey,
         cfg => {
-          toggleBraceSketchShelfAtIndex(cfg, Number(freshSketchHover.removeIdx));
+          toggleBraceSketchShelfAtIndex(cfg, removeIdx);
         },
         createCanvasPickingConfigStructuralPatchMeta('braceShelves.sketchExtraToggle')
       );
@@ -160,7 +165,7 @@ export function tryHandleCanvasBraceShelvesClick(args: CanvasLayoutEditClickArgs
         const arrayIdx = shelfIndex - 1;
         const savedVariant =
           shelfVariants && typeof shelfVariants[arrayIdx] === 'string' ? String(shelfVariants[arrayIdx]) : '';
-        const isBrace = list.some(value => Number(value) === shelfIndex) || savedVariant === 'brace';
+        const isBrace = list.includes(shelfIndex) || savedVariant === 'brace';
 
         if (isBrace) {
           removeBraceShelfIndex(list, shelfIndex);
@@ -169,7 +174,7 @@ export function tryHandleCanvasBraceShelvesClick(args: CanvasLayoutEditClickArgs
           addBraceShelfIndex(list, shelfIndex);
         }
         try {
-          list.sort((a, b) => Number(a) - Number(b));
+          list.sort((a, b) => a - b);
         } catch (err) {
           __wp_reportPickingIssue(App, err, {
             where: 'canvasPicking',

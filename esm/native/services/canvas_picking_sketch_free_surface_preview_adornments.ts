@@ -11,16 +11,20 @@ import { normalizeBaseLegPlatformMode } from '../features/base_leg_support.js';
 import { getBasePlinthHeightM } from '../features/base_plinth_support.js';
 import type { SketchFreeHoverContentKind } from './canvas_picking_sketch_free_surface_preview_contracts.js';
 
-function readSupportHeightCm(source: unknown, key: 'baseLegHeightCm' | 'basePlinthHeightCm'): unknown {
-  if (source && typeof source === 'object') return (source as Record<string, unknown>)[key];
-  return source;
+function readNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function readSupportHeightCm(source: unknown, key: 'baseLegHeightCm' | 'basePlinthHeightCm'): number | null {
+  if (source && typeof source === 'object') return readNumber((source as Record<string, unknown>)[key]);
+  return readNumber(source);
 }
 
 export function getSketchBoxAdornmentBaseHeight(baseType: unknown, source?: unknown): number {
   const normalized = normalizeSketchBoxBaseType(baseType);
   if (normalized === 'legs') {
-    const heightCm = Number(readSupportHeightCm(source, 'baseLegHeightCm'));
-    const legHeight = Number.isFinite(heightCm) && heightCm > 0 ? Math.max(0.01, heightCm / 100) : 0.12;
+    const heightCm = readSupportHeightCm(source, 'baseLegHeightCm');
+    const legHeight = heightCm != null && heightCm > 0 ? Math.max(0.01, heightCm / 100) : 0.12;
     const bottomPlatformHeight =
       normalizeBaseLegPlatformMode((source as Record<string, unknown> | null)?.baseLegPlatformMode) ===
       'stage'

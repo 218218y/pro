@@ -25,6 +25,23 @@ import {
   type SketchFreeSurfacePreviewResult,
 } from './canvas_picking_sketch_free_surface_preview_shared.js';
 
+function readFiniteStateNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function readRecordFiniteStateNumber(record: unknown, key: string): number | null {
+  return readFiniteStateNumber(readRecordValue(record, key));
+}
+
+function readBaseLegOptionsFromState(record: unknown): ReturnType<typeof readBaseLegOptions> {
+  return readBaseLegOptions({
+    baseLegStyle: readRecordValue(record, 'baseLegStyle'),
+    baseLegColor: readRecordValue(record, 'baseLegColor'),
+    baseLegHeightCm: readRecordFiniteStateNumber(record, 'baseLegHeightCm'),
+    baseLegWidthCm: readRecordFiniteStateNumber(record, 'baseLegWidthCm'),
+  });
+}
+
 export function resolveSketchFreeSurfaceAdornmentPreview(args: {
   tool: string;
   contentKind: 'cornice' | 'base';
@@ -90,9 +107,11 @@ export function resolveSketchFreeSurfaceAdornmentPreview(args: {
     baseLegWidthCm: selectedBaseSpec?.baseLegWidthCm,
   });
   const selectedPlinthHeightCm = normalizeBasePlinthHeightCm(selectedBaseSpec?.basePlinthHeightCm);
-  const currentLegOptions = readBaseLegOptions(targetBox);
+  const currentLegOptions = readBaseLegOptionsFromState(targetBox);
   const currentBase = normalizeSketchBoxBaseType(readRecordValue(targetBox, 'baseType'));
-  const currentPlinthHeightCm = normalizeBasePlinthHeightCm(readRecordValue(targetBox, 'basePlinthHeightCm'));
+  const currentPlinthHeightCm = normalizeBasePlinthHeightCm(
+    readRecordFiniteStateNumber(targetBox, 'basePlinthHeightCm')
+  );
   const hasVisibleBase = currentBase !== 'none';
   const sameLegOptions =
     currentLegOptions.style === selectedLegOptions.style &&
@@ -101,18 +120,12 @@ export function resolveSketchFreeSurfaceAdornmentPreview(args: {
       String(selectedBaseSpec?.baseLegPlatformMode || DEFAULT_BASE_LEG_PLATFORM_MODE) &&
     String(readRecordValue(targetBox, 'baseLegPlatformSideMode') || DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE) ===
       String(selectedBaseSpec?.baseLegPlatformSideMode || DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE) &&
-    Number(
-      readRecordValue(targetBox, 'baseLegPlatformSideOverhangCm') ||
-        DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM
-    ) ===
-      Number(selectedBaseSpec?.baseLegPlatformSideOverhangCm || DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM) &&
-    Number(
-      readRecordValue(targetBox, 'baseLegPlatformFrontOverhangCm') ||
-        DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM
-    ) ===
-      Number(
-        selectedBaseSpec?.baseLegPlatformFrontOverhangCm || DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM
-      ) &&
+    (readRecordFiniteStateNumber(targetBox, 'baseLegPlatformSideOverhangCm') ??
+      DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM) ===
+      (selectedBaseSpec?.baseLegPlatformSideOverhangCm ?? DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM) &&
+    (readRecordFiniteStateNumber(targetBox, 'baseLegPlatformFrontOverhangCm') ??
+      DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM) ===
+      (selectedBaseSpec?.baseLegPlatformFrontOverhangCm ?? DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM) &&
     currentLegOptions.heightCm === selectedLegOptions.heightCm &&
     currentLegOptions.widthCm === selectedLegOptions.widthCm;
   const sameBaseOptions =
@@ -129,7 +142,7 @@ export function resolveSketchFreeSurfaceAdornmentPreview(args: {
       : hasVisibleBase && currentBase === selectedBase && sameBaseOptions
         ? 'remove'
         : 'add';
-  const wardrobeFloorY = Number(wardrobeBox.centerY) - Number(wardrobeBox.height) / 2;
+  const wardrobeFloorY = wardrobeBox.centerY - wardrobeBox.height / 2;
   const previewH =
     selectedBase === 'none'
       ? getSketchBoxAdornmentBaseHeight(currentBase, targetBox) ||
@@ -183,9 +196,9 @@ export function resolveSketchFreeSurfaceAdornmentPreview(args: {
       baseLegPlatformSideMode:
         selectedBaseSpec?.baseLegPlatformSideMode || DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE,
       baseLegPlatformSideOverhangCm:
-        selectedBaseSpec?.baseLegPlatformSideOverhangCm || DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM,
+        selectedBaseSpec?.baseLegPlatformSideOverhangCm ?? DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM,
       baseLegPlatformFrontOverhangCm:
-        selectedBaseSpec?.baseLegPlatformFrontOverhangCm || DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM,
+        selectedBaseSpec?.baseLegPlatformFrontOverhangCm ?? DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM,
       baseLegHeightCm: selectedLegOptions.heightCm,
       baseLegWidthCm: selectedLegOptions.widthCm,
       basePlinthHeightCm: selectedPlinthHeightCm,

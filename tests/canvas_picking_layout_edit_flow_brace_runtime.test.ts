@@ -65,7 +65,7 @@ test('brace-shelves click toggles the shelf under the existing board hit, not on
   assert.deepEqual(cfg.braceShelves, [2]);
 });
 
-test('brace-shelves click cancels a brace shelf stored as both brace metadata and shelf variant', () => {
+test('brace-shelves click cancels a brace shelf stored as canonical brace metadata and shelf variant', () => {
   const App = createApp();
   getInternalGridMap(App, false)['0'] = {
     effectiveTopY: 2.4,
@@ -75,7 +75,7 @@ test('brace-shelves click cancels a brace shelf stored as both brace metadata an
   const cfg: Record<string, unknown> = {
     isCustom: true,
     customData: { shelves: [true, true, true, true, true], shelfVariants: ['', 'brace', '', '', ''] },
-    braceShelves: ['2'],
+    braceShelves: [2],
   };
   const patchMetaRef: { current: Record<string, unknown> | null } = { current: null };
 
@@ -83,6 +83,27 @@ test('brace-shelves click cancels a brace shelf stored as both brace metadata an
 
   assert.equal(handled, true);
   assert.deepEqual(cfg.braceShelves, []);
+  assert.deepEqual((cfg.customData as { shelfVariants: string[] }).shelfVariants, ['', '', '', '', '']);
+});
+
+test('brace-shelves click ignores string-encoded brace shelf metadata before toggling', () => {
+  const App = createApp();
+  getInternalGridMap(App, false)['0'] = {
+    effectiveTopY: 2.4,
+    effectiveBottomY: 0,
+    gridDivisions: 6,
+  };
+  const cfg: Record<string, unknown> = {
+    isCustom: true,
+    customData: { shelves: [true, true, true, true, true], shelfVariants: ['', '', '', '', ''] },
+    braceShelves: ['2'],
+  };
+  const patchMetaRef: { current: Record<string, unknown> | null } = { current: null };
+
+  const handled = tryHandleCanvasBraceShelvesClick(baseArgs(App, cfg, patchMetaRef) as never);
+
+  assert.equal(handled, true);
+  assert.deepEqual(cfg.braceShelves, [2]);
   assert.deepEqual((cfg.customData as { shelfVariants: string[] }).shelfVariants, ['', '', '', '', '']);
 });
 

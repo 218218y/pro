@@ -51,9 +51,7 @@ export type RemoveManualLayoutBaseStorageArgs = ManualLayoutGridMutationArgs;
 
 function readNumber(value: unknown): number | null {
   if (typeof value === 'number') return Number.isFinite(value) ? value : null;
-  if (value == null || value === '') return null;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
+  return null;
 }
 
 function readRecordNumber(record: unknown, key: string): number | null {
@@ -96,7 +94,7 @@ function ensureManualLayoutCustomData(cfg: ManualLayoutConfigRecord): ManualLayo
 export function prepareEditableManualLayoutGrid(
   cfg: ManualLayoutConfigRecord,
   args: ManualLayoutEditableGridArgs
-): { customData: ManualLayoutCustomData; braceShelves: unknown[] } {
+): { customData: ManualLayoutCustomData; braceShelves: number[] } {
   setManualLayoutFrame(cfg, args.divs, args.topY, args.bottomY);
   const customData = ensureManualLayoutCustomData(cfg);
   const braceShelves = ensureBraceShelves(cfg);
@@ -115,7 +113,7 @@ export function prepareEditableManualLayoutGrid(
 export function preparePresetBackedManualLayoutGrid(
   cfg: ManualLayoutConfigRecord,
   args: ManualLayoutGridMutationArgs
-): { customData: ManualLayoutCustomData; braceShelves: unknown[] } {
+): { customData: ManualLayoutCustomData; braceShelves: number[] } {
   const wasCustom = !!cfg.isCustom;
   setManualLayoutFrame(cfg, args.divs, args.topY, args.bottomY);
   if (!wasCustom) seedPresetBackedManualLayout(cfg, args.divs);
@@ -125,14 +123,15 @@ export function preparePresetBackedManualLayoutGrid(
   };
 }
 
-export function removeBraceShelfIndex(braceShelves: unknown[], shelfIndex: number): void {
+export function removeBraceShelfIndex(braceShelves: number[], shelfIndex: number): void {
   for (let i = braceShelves.length - 1; i >= 0; i -= 1) {
-    if (Number(braceShelves[i]) === shelfIndex) braceShelves.splice(i, 1);
+    if (braceShelves[i] === shelfIndex) braceShelves.splice(i, 1);
   }
 }
 
-export function addBraceShelfIndex(braceShelves: unknown[], shelfIndex: number): void {
-  if (!braceShelves.some(value => Number(value) === shelfIndex)) braceShelves.push(shelfIndex);
+export function addBraceShelfIndex(braceShelves: number[], shelfIndex: number): void {
+  if (!Number.isInteger(shelfIndex) || shelfIndex <= 0) return;
+  if (!braceShelves.includes(shelfIndex)) braceShelves.push(shelfIndex);
 }
 
 function derivePresetRodGridIndex(rodOp: Record<string, unknown>, divs: number): number | null {

@@ -5,6 +5,7 @@ import {
   findSketchFreeHoverTargetBox,
   resolveSketchFreePlacementBoxPreview,
 } from '../esm/native/services/canvas_picking_sketch_free_surface_preview.ts';
+import { resolveSketchFreeSurfaceAdornmentPreview } from '../esm/native/services/canvas_picking_sketch_free_surface_preview_adornment_preview.ts';
 
 const wardrobeBox = { centerX: 0, centerY: 1, centerZ: 0, width: 2, height: 2, depth: 0.6 } as const;
 
@@ -231,4 +232,43 @@ test('sketch free surface placement preview produces canonical remove hover meta
   assert.equal(preview?.preview.w, 0.8);
   assert.equal('clearanceMeasurements' in (preview?.preview ?? {}), false);
   assert.ok(Math.abs(Number(preview?.preview.frontOverlayW) - 0.832) < 1e-9);
+});
+
+test('sketch free base adornment preview rejects string-encoded current base dimensions', () => {
+  const targetBox = {
+    id: 'string-base',
+    freePlacement: true,
+    baseType: 'legs',
+    baseLegStyle: 'tapered',
+    baseLegColor: 'black',
+    baseLegPlatformMode: 'stage',
+    baseLegPlatformSideMode: 'overhang',
+    baseLegHeightCm: '24',
+    baseLegWidthCm: '7',
+    baseLegPlatformSideOverhangCm: '10',
+    baseLegPlatformFrontOverhangCm: '10',
+  };
+
+  const preview = resolveSketchFreeSurfaceAdornmentPreview({
+    tool: 'sketch_box_base:legs@tapered@black@24@7@stage@overhang@10@10',
+    contentKind: 'base',
+    host: { moduleKey: 0, isBottom: false },
+    target: {
+      boxId: 'string-base',
+      partPrefix: 'prefix:string-base',
+      targetBox,
+      targetGeo: resolveSketchFreeBoxGeometry({ centerX: 0, widthM: 0.8, depthM: 0.4 }),
+      targetCenterY: 1,
+      targetHeight: 0.8,
+      pointerX: 0,
+      pointerY: 1,
+    },
+    wardrobeBox: wardrobeBox as any,
+    readSketchBoxDividers: () => [],
+    resolveSketchBoxSegments: () => [],
+  });
+
+  assert.equal(preview.hoverRecord.op, 'add');
+  assert.equal(preview.hoverRecord.baseLegHeightCm, 24);
+  assert.equal(preview.hoverRecord.baseLegWidthCm, 7);
 });

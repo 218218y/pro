@@ -274,6 +274,52 @@ test('sketch-box base commit stores explicit leg platform mode and overhang valu
   assert.ok(Math.abs(box.absY - (floorY + 0.5 + 0.18)) < 1e-9);
 });
 
+test('sketch-box base commit rejects string-encoded base dimensions from raw hover records', () => {
+  const floorY = 0.08;
+  const legBox = createBox({ absY: floorY + 0.5, heightM: 1, baseType: 'none' });
+
+  commitSketchModuleBoxContent({
+    box: legBox,
+    contentKind: 'base',
+    floorY,
+    hoverRec: {
+      kind: 'box_content',
+      contentKind: 'base',
+      op: 'add',
+      baseType: 'legs',
+      baseLegHeightCm: '24',
+      baseLegWidthCm: '7',
+      baseLegPlatformSideOverhangCm: '10',
+      baseLegPlatformFrontOverhangCm: '10',
+    },
+  });
+
+  assert.equal(legBox.baseType, 'legs');
+  assert.equal(legBox.baseLegHeightCm, 12);
+  assert.equal(legBox.baseLegWidthCm, 4);
+  assert.equal(legBox.baseLegPlatformSideOverhangCm, 1.5);
+  assert.equal(legBox.baseLegPlatformFrontOverhangCm, 2);
+  assert.ok(Math.abs(legBox.absY - (floorY + 0.5 + 0.12 + LEG_PLATFORM_HEIGHT_M)) < 1e-9);
+
+  const plinthBox = createBox({ absY: floorY + 0.5, heightM: 1, baseType: 'none' });
+  commitSketchModuleBoxContent({
+    box: plinthBox,
+    contentKind: 'base',
+    floorY,
+    hoverRec: {
+      kind: 'box_content',
+      contentKind: 'base',
+      op: 'add',
+      baseType: 'plinth',
+      basePlinthHeightCm: '14.5',
+    },
+  });
+
+  assert.equal(plinthBox.baseType, 'plinth');
+  assert.equal(plinthBox.basePlinthHeightCm, 8);
+  assert.ok(Math.abs(plinthBox.absY - (floorY + 0.5 + 0.08)) < 1e-9);
+});
+
 test('sketch-box base commit stores custom plinth height and keeps floor anchor', () => {
   const floorY = 0.08;
   const box = createBox({ absY: floorY + 0.5, heightM: 1, baseType: 'none' });

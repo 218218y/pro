@@ -19,9 +19,23 @@ export function normalizeSketchBoxAdornmentCorniceType(value: unknown): 'classic
     : 'classic';
 }
 
-function readSupportHeightCm(source: unknown, key: 'basePlinthHeightCm'): unknown {
-  if (source && typeof source === 'object') return (source as Record<string, unknown>)[key];
-  return source;
+function readNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function readRecordNumber(source: unknown, key: string): number | null {
+  if (!source || typeof source !== 'object') return readNumber(source);
+  return readNumber((source as Record<string, unknown>)[key]);
+}
+
+function readBaseLegOptionsFromState(source: unknown): ReturnType<typeof readBaseLegOptions> {
+  const rec = source && typeof source === 'object' ? (source as Record<string, unknown>) : {};
+  return readBaseLegOptions({
+    baseLegStyle: rec.baseLegStyle,
+    baseLegColor: rec.baseLegColor,
+    baseLegHeightCm: readNumber(rec.baseLegHeightCm),
+    baseLegWidthCm: readNumber(rec.baseLegWidthCm),
+  });
 }
 
 export function getSketchBoxAdornmentBaseHeight(baseType: unknown, source?: unknown): number {
@@ -32,8 +46,8 @@ export function getSketchBoxAdornmentBaseHeight(baseType: unknown, source?: unkn
       'stage'
         ? CARCASS_BASE_DIMENSIONS.legs.platform.heightM
         : 0;
-    return readBaseLegOptions(source).heightM + bottomPlatformHeight;
+    return readBaseLegOptionsFromState(source).heightM + bottomPlatformHeight;
   }
-  if (normalized === 'plinth') return getBasePlinthHeightM(readSupportHeightCm(source, 'basePlinthHeightCm'));
+  if (normalized === 'plinth') return getBasePlinthHeightM(readRecordNumber(source, 'basePlinthHeightCm'));
   return 0;
 }

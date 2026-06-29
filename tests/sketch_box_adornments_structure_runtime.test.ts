@@ -196,6 +196,39 @@ test('free-placement sketch box plinth renders below the box body instead of ins
   );
 });
 
+test('free-placement sketch box render rejects string-encoded plinth height state', () => {
+  const { wardrobeGroup, applyInteriorSketchExtras, makeArgs } = createSketchInteriorHarness();
+
+  const ok = applyInteriorSketchExtras(
+    makeArgs({
+      sketchExtras: {
+        boxes: [
+          {
+            id: 'stringPlinth',
+            freePlacement: true,
+            absX: 0,
+            absY: 0.9,
+            heightM: 0.62,
+            widthM: 0.72,
+            depthM: 0.45,
+            baseType: 'plinth',
+            basePlinthHeightCm: '14.5',
+          },
+        ],
+      },
+    })
+  );
+
+  assert.equal(ok, true);
+  let plinthNode: FakeMesh | undefined;
+  wardrobeGroup.traverse(node => {
+    const rec = node as FakeMesh;
+    if (!plinthNode && String(rec.userData?.partId || '').includes('plinth')) plinthNode = rec;
+  });
+  assert.ok(plinthNode, 'expected plinth node');
+  assert.equal(plinthNode.geometry.parameters.height, 0.08);
+});
+
 test('free-placement sketch box legs render configurable top and bottom platforms', () => {
   const { wardrobeGroup, applyInteriorSketchExtras, makeArgs } = createSketchInteriorHarness();
 
@@ -243,6 +276,47 @@ test('free-placement sketch box legs render configurable top and bottom platform
       platform.geometry.parameters.depth > 0.45,
       `expected custom front overhang to deepen platform, got ${platform.geometry.parameters.depth}`
     );
+  }
+});
+
+test('free-placement sketch box render rejects string-encoded leg platform overhang state', () => {
+  const { wardrobeGroup, applyInteriorSketchExtras, makeArgs } = createSketchInteriorHarness();
+
+  const ok = applyInteriorSketchExtras(
+    makeArgs({
+      sketchExtras: {
+        boxes: [
+          {
+            id: 'stringLegOverhang',
+            freePlacement: true,
+            absX: 0,
+            absY: 1.1,
+            heightM: 0.62,
+            widthM: 0.72,
+            depthM: 0.45,
+            baseType: 'legs',
+            baseLegPlatformMode: 'stage',
+            baseLegPlatformSideMode: 'overhang',
+            baseLegPlatformSideOverhangCm: '10',
+            baseLegPlatformFrontOverhangCm: '10',
+          },
+        ],
+      },
+    })
+  );
+
+  assert.equal(ok, true);
+  const platforms: FakeMesh[] = [];
+  wardrobeGroup.traverse(node => {
+    const rec = node as FakeMesh;
+    const partId = String(rec.userData?.partId || '');
+    if (partId.includes('base_leg_platform')) platforms.push(rec);
+  });
+
+  assert.equal(platforms.length, 2, 'expected top and bottom platform meshes');
+  for (const platform of platforms) {
+    assert.ok(Math.abs(platform.geometry.parameters.width - 0.75) < 1e-9);
+    assert.ok(Math.abs(platform.geometry.parameters.depth - 0.47) < 1e-9);
   }
 });
 
