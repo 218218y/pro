@@ -19,8 +19,8 @@ function readBuildShape(state: unknown): BuildShapeLike | null {
 function readDoorsCount(moduleShape: unknown): number | null {
   const rec = readRecord(moduleShape);
   if (!rec || rec.doors == null) return null;
-  const parsed = Number.parseInt(String(rec.doors), 10);
-  return Number.isFinite(parsed) ? parsed : null;
+  const doors = rec.doors;
+  return typeof doors === 'number' && Number.isFinite(doors) && doors > 0 ? Math.trunc(doors) : null;
 }
 
 function normalizeSignatureArray(value: readonly unknown[]): number[] {

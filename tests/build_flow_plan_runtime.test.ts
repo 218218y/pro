@@ -393,7 +393,7 @@ test('build_flow_plan inputs use separate stack frames when lower module is hex 
   assert.equal(plan.baseTypeTop, '');
 });
 
-test('build_flow_plan layout filters moduleInternalWidths and keeps carcass depth at default in mixed manual-depth mode', () => {
+test('build_flow_plan layout rejects non-numeric moduleInternalWidths and keeps carcass depth at default in mixed manual-depth mode', () => {
   const layout = resolveBuildFlowPlanLayout({
     App: {} as any,
     state: {} as any,
@@ -427,7 +427,7 @@ test('build_flow_plan layout filters moduleInternalWidths and keeps carcass dept
       }) as any,
   });
 
-  assert.deepEqual(layout.moduleInternalWidths, [0.82, 0.79]);
+  assert.equal(layout.moduleInternalWidths, null);
   assert.deepEqual(layout.moduleHeightsTotal, [2.6, 2.4]);
   assert.equal(layout.carcassH, 2.6);
   assert.deepEqual(layout.moduleDepthsTotal, [0.45, 0.6]);

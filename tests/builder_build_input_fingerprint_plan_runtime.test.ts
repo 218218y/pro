@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createBuildPlan } from '../esm/native/builder/plan.ts';
+import { readBuildStructureSignature } from '../esm/native/builder/build_structure_signature.ts';
 import {
   readBuildInputFingerprintFromState,
   normalizeBuildInputFingerprintScalar,
@@ -85,6 +86,17 @@ test('builder plan runtime: modulesStructure fallback feeds the same structure s
     createDefaultBuildPlan(firstState).inputFingerprint,
     createDefaultBuildPlan(secondState).inputFingerprint
   );
+});
+
+test('builder plan runtime: modulesStructure signature reads only numeric door counts', () => {
+  const state = {
+    build: { modulesStructure: [{ doors: '3' }, { doors: 2.8 }, { doors: 0 }] },
+    ui: {},
+    config: {},
+  };
+
+  assert.deepEqual(readBuildStructureSignature(state), [1, 2, 1]);
+  assert.deepEqual(createBuildPlan(state).signature, [1, 2, 1]);
 });
 
 test('builder scheduler runtime: pending/fallback plans carry the canonical fingerprint instead of re-reading mutable state', () => {

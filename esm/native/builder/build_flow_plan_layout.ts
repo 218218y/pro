@@ -1,6 +1,7 @@
 import { computeModulesAndLayout } from './module_layout_pipeline.js';
 import { readRecord } from './build_flow_readers.js';
 import { collectModuleDepths, collectModuleHeights } from './build_flow_plan_dimensions.js';
+import { readCorePureNumberArray } from './core_pure_number_contracts.js';
 
 import type { BuildFlowPlanLayoutArgs, BuildFlowPlanLayoutMetrics } from './build_flow_plan_contracts.js';
 
@@ -38,12 +39,7 @@ export function resolveBuildFlowPlanLayout(
   });
 
   const moduleCfgList = moduleLayout.moduleCfgList;
-  const moduleInternalWidthsRaw = readRecord(moduleLayout)?.moduleInternalWidths;
-  const moduleInternalWidths = Array.isArray(moduleInternalWidthsRaw)
-    ? moduleInternalWidthsRaw.filter(
-        (value): value is number => typeof value === 'number' && Number.isFinite(value)
-      )
-    : null;
+  const moduleInternalWidths = readCorePureNumberArray(readRecord(moduleLayout)?.moduleInternalWidths);
 
   const { moduleHeightsTotal, carcassH: topCarcassH } = collectModuleHeights({
     moduleCfgList,

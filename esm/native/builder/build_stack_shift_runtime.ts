@@ -10,6 +10,11 @@ function isGlobalSketchFreePlacementObject(value: unknown): boolean {
   return partId.startsWith('sketch_box_free_');
 }
 
+function shiftFiniteNumberProperty(record: Record<string, unknown>, key: string, delta: number): void {
+  const value = record[key];
+  if (typeof value === 'number' && Number.isFinite(value)) record[key] = value + delta;
+}
+
 export function shiftWardrobeRange(args: {
   App: AppContainer;
   fromIdx: number;
@@ -107,8 +112,8 @@ export function syncShiftedBuildContextDims(
 ): void {
   const dims = ctx && ctx.dims ? ctx.dims : null;
   if (!dims) return;
-  dims.startY = Number(dims.startY || 0) + dy;
-  dims.cabinetTopY = Number(dims.cabinetTopY || 0) + dy;
-  dims.splitLineY = Number(dims.splitLineY || 0) + dy;
-  dims.internalZ = Number(dims.internalZ || 0) + dz;
+  shiftFiniteNumberProperty(dims, 'startY', dy);
+  shiftFiniteNumberProperty(dims, 'cabinetTopY', dy);
+  shiftFiniteNumberProperty(dims, 'splitLineY', dy);
+  shiftFiniteNumberProperty(dims, 'internalZ', dz);
 }

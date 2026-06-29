@@ -13,6 +13,11 @@ import { assertApp } from '../runtime/api.js';
 
 import type { BuildContextLike, SlidingDoorOpLike, SlidingDoorOpsLike } from '../../../types/index.js';
 
+function readSlidingBuildNumber(value: unknown, name: string): number {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  throw new Error(`[builder/sliding_doors] Missing numeric ${name}`);
+}
+
 export function scopeSlidingDoorPartIdForStack(partId: unknown, stackKey: unknown): string {
   const pid = typeof partId === 'string' ? partId : String(partId ?? '');
   if (!pid || stackKey !== 'bottom') return pid;
@@ -63,12 +68,13 @@ export function applySlidingDoorsIfNeeded(ctx: BuildContextLike) {
     throw new Error('[WardrobePro] Sliding ops missing: builderRenderOps.applySlidingDoorsOps');
   }
 
-  const totalW = Number(ctx.dims && ctx.dims.totalW);
-  const woodThick = Number(ctx.dims && ctx.dims.woodThick);
-  const depth = Number(ctx.dims && ctx.dims.D);
-  const cabinetBodyHeight = Number(ctx.dims && ctx.dims.cabinetBodyHeight);
-  const startY = Number(ctx.dims && ctx.dims.startY);
-  const numDoors = Number(ctx.dims && ctx.dims.doorsCount);
+  const dims = ctx.dims || {};
+  const totalW = readSlidingBuildNumber(dims.totalW, 'dims.totalW');
+  const woodThick = readSlidingBuildNumber(dims.woodThick, 'dims.woodThick');
+  const depth = readSlidingBuildNumber(dims.D, 'dims.D');
+  const cabinetBodyHeight = readSlidingBuildNumber(dims.cabinetBodyHeight, 'dims.cabinetBodyHeight');
+  const startY = readSlidingBuildNumber(dims.startY, 'dims.startY');
+  const numDoors = readSlidingBuildNumber(dims.doorsCount, 'dims.doorsCount');
 
   // Compute + apply ops (fail-fast).
   const rawOps: SlidingDoorOpsLike = computeSlidingDoorOps({

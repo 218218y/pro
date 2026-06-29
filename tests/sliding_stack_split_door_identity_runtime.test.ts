@@ -4,7 +4,9 @@ import assert from 'node:assert/strict';
 import {
   scopeSlidingDoorOpsForStack,
   scopeSlidingDoorPartIdForStack,
+  applySlidingDoorsIfNeeded,
 } from '../esm/native/builder/sliding_doors_pipeline.ts';
+import { BUILD_CTX_V1 } from '../esm/native/builder/build_context.ts';
 import { __wp_scopeCornerPartKeyForStack } from '../esm/native/services/canvas_picking_door_part_helpers.ts';
 import { __scopeCornerHoverPartKey } from '../esm/native/services/canvas_picking_door_hover_targets_policy.ts';
 
@@ -44,4 +46,43 @@ test('lower-stack hover and remove fallbacks scope stale sliding ids independent
   assert.equal(__scopeCornerHoverPartKey('sliding_door_2', 'bottom'), 'lower_sliding_door_2');
   assert.equal(__scopeCornerHoverPartKey('sliding_door_2', 'top'), 'sliding_door_2');
   assert.equal(__scopeCornerHoverPartKey('lower_sliding_door_2', 'bottom'), 'lower_sliding_door_2');
+});
+
+test('sliding door pipeline rejects string-encoded BuildContext dimensions', () => {
+  let rendered = false;
+  const ctx = {
+    __kind: BUILD_CTX_V1,
+    App: {
+      services: {
+        builder: {
+          renderOps: {
+            applySlidingDoorsOps: () => {
+              rendered = true;
+              return true;
+            },
+          },
+        },
+      },
+    },
+    THREE: {},
+    cfg: { wardrobeType: 'sliding' },
+    ui: {},
+    flags: {},
+    strings: {},
+    materials: {},
+    fns: {},
+    resolvers: {},
+    create: {},
+    dims: {
+      totalW: '1.8',
+      woodThick: 0.018,
+      D: 0.6,
+      cabinetBodyHeight: 2.4,
+      startY: 0,
+      doorsCount: 2,
+    },
+  } as any;
+
+  assert.throws(() => applySlidingDoorsIfNeeded(ctx), /Missing numeric dims\.totalW/);
+  assert.equal(rendered, false);
 });
