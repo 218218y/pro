@@ -39,8 +39,8 @@ export type DimensionArgs = {
   moduleHeightsAllManual?: boolean;
   moduleDepthsCm?: unknown;
   moduleDepthsAllManual?: boolean;
-  cornerConnectorEnabled?: boolean;
-  cornerDoorCount?: number;
+  cornerConnectorActive?: boolean;
+  cornerWingDoorCount?: number;
   cornerWallLenM?: number;
   cornerOffsetXM?: number;
   cornerOffsetZM?: number;
@@ -65,8 +65,8 @@ export type RenderDimensionContext = {
   moduleHeightsAllManual: boolean;
   moduleDepthsCm: number[] | null;
   moduleDepthsAllManual: boolean;
-  cornerConnectorEnabled: boolean;
-  cornerDoorCount: number;
+  cornerConnectorActive: boolean;
+  cornerWingDoorCount: number;
   cornerWingVisible: boolean;
   cornerWallLenM: number;
   cornerOffsetXM: number;
@@ -96,7 +96,7 @@ function asFiniteNumber(v: unknown, defaultValue = 0): number {
   return typeof v === 'number' && Number.isFinite(v) ? v : defaultValue;
 }
 
-function requireCornerModeBoolean(args: DimensionArgs, key: 'cornerConnectorEnabled'): boolean {
+function requireCornerModeBoolean(args: DimensionArgs, key: 'cornerConnectorActive'): boolean {
   const value = args[key];
   if (typeof value !== 'boolean') {
     throw new Error(`[builder/render_dimension_ops] corner mode requires boolean ${key}`);
@@ -107,7 +107,7 @@ function requireCornerModeBoolean(args: DimensionArgs, key: 'cornerConnectorEnab
 function requireCornerModeNumber(
   args: DimensionArgs,
   key:
-    | 'cornerDoorCount'
+    | 'cornerWingDoorCount'
     | 'cornerWallLenM'
     | 'cornerOffsetXM'
     | 'cornerOffsetZM'
@@ -170,16 +170,14 @@ export function createRenderDimensionContext(argsIn: unknown): RenderDimensionCo
   const moduleDepthsCm = asFiniteNumberArray(args.moduleDepthsCm);
   const moduleDepthsAllManual = !!args.moduleDepthsAllManual;
 
-  const cornerConnectorEnabled = isCornerMode
-    ? requireCornerModeBoolean(args, 'cornerConnectorEnabled')
-    : true;
-  const cornerDoorCountRaw = isCornerMode
-    ? requireCornerModeNumber(args, 'cornerDoorCount')
+  const cornerConnectorActive = isCornerMode ? requireCornerModeBoolean(args, 'cornerConnectorActive') : true;
+  const cornerWingDoorCountRaw = isCornerMode
+    ? requireCornerModeNumber(args, 'cornerWingDoorCount')
     : WARDROBE_DEFAULTS.corner.doorsCount;
-  const cornerDoorCount = Number.isFinite(cornerDoorCountRaw)
-    ? Math.max(0, Math.round(cornerDoorCountRaw))
+  const cornerWingDoorCount = Number.isFinite(cornerWingDoorCountRaw)
+    ? Math.max(0, Math.round(cornerWingDoorCountRaw))
     : WARDROBE_DEFAULTS.corner.doorsCount;
-  const cornerWingVisible = isCornerMode && cornerDoorCount > 0;
+  const cornerWingVisible = isCornerMode && cornerWingDoorCount > 0;
   const cornerWallLenM = isCornerMode ? requireCornerModeNumber(args, 'cornerWallLenM') : 0;
   const cornerOffsetXM = isCornerMode ? requireCornerModeNumber(args, 'cornerOffsetXM') : 0;
   const cornerOffsetZM = isCornerMode ? requireCornerModeNumber(args, 'cornerOffsetZM') : 0;
@@ -217,8 +215,8 @@ export function createRenderDimensionContext(argsIn: unknown): RenderDimensionCo
     moduleHeightsAllManual,
     moduleDepthsCm,
     moduleDepthsAllManual,
-    cornerConnectorEnabled,
-    cornerDoorCount,
+    cornerConnectorActive,
+    cornerWingDoorCount,
     cornerWingVisible,
     cornerWallLenM,
     cornerOffsetXM,

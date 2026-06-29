@@ -119,7 +119,7 @@ export type CornerWingStackMetaState = {
 };
 
 export type CornerWingMetricsState = {
-  cornerConnectorEnabled: boolean;
+  cornerConnectorActive: boolean;
   wingLengthCM: number;
   cornerSide: 'left' | 'right';
   __mirrorX: 1 | -1;
@@ -211,7 +211,7 @@ export function resolveCornerWingMetrics(args: {
   const { uiAny, config, rootConfig, mainH, mainD, startY, woodThick, __stackKey, __stackSplitEnabled } =
     args;
 
-  const cornerConnectorEnabled = true;
+  const cornerConnectorActive = true;
 
   let wingLengthCM = uiAny.cornerWidth != null ? readPositiveCm(uiAny.cornerWidth) : NaN;
   if (!Number.isFinite(wingLengthCM)) wingLengthCM = CORNER_WING.defaultWidthCm;
@@ -256,12 +256,12 @@ export function resolveCornerWingMetrics(args: {
     ? Math.max(CORNER_WING.minDepthM, __cornerDepthCM / 100)
     : mainD;
   const wingW = wingLengthCM / 100;
-  const blindWidth = cornerConnectorEnabled ? 0 : Math.max(mainD, wingD) + CORNER_WING.blindClearanceM;
+  const blindWidth = cornerConnectorActive ? 0 : Math.max(mainD, wingD) + CORNER_WING.blindClearanceM;
   const activeWidth = wingW - blindWidth - woodThick;
   const activeFaceCenter = blindWidth + activeWidth / 2;
 
   return {
-    cornerConnectorEnabled,
+    cornerConnectorActive,
     wingLengthCM,
     cornerSide,
     __mirrorX,

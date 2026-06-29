@@ -46,8 +46,8 @@ test('render_dimension_ops keeps only no-main corner depth outside the pentagon 
     isCornerMode: true,
     noMainWardrobe: true,
     cornerSide: 'right',
-    cornerConnectorEnabled: true,
-    cornerDoorCount: 2,
+    cornerConnectorActive: true,
+    cornerWingDoorCount: 2,
     cornerWallLenM: 0.9,
     cornerOffsetXM: 0,
     cornerOffsetZM: 0,
@@ -99,8 +99,8 @@ test('render_dimension_ops uses the pentagon-only side guide when the corner win
     isCornerMode: true,
     noMainWardrobe: true,
     cornerSide: 'right',
-    cornerConnectorEnabled: true,
-    cornerDoorCount: 0,
+    cornerConnectorActive: true,
+    cornerWingDoorCount: 0,
     cornerWallLenM: 0.9,
     cornerOffsetXM: 0,
     cornerOffsetZM: 0,
@@ -115,7 +115,7 @@ test('render_dimension_ops uses the pentagon-only side guide when the corner win
   assert.equal(
     calls.filter(call => call[3] === '120').length,
     0,
-    'corner wing-only width must stay hidden when corner door count is 0'
+    'corner wing-only width must stay hidden when corner wing door count is 0'
   );
   assert.ok(
     calls.some(call => call[3] === '90' && call[4] === 0.78),
@@ -144,8 +144,8 @@ test('render_dimension_ops keeps the pentagon-only side guide when zero corner d
     isCornerMode: true,
     noMainWardrobe: true,
     cornerSide: 'right',
-    cornerConnectorEnabled: true,
-    cornerDoorCount: 0,
+    cornerConnectorActive: true,
+    cornerWingDoorCount: 0,
     cornerWallLenM: 0.9,
     cornerOffsetXM: 0,
     cornerOffsetZM: 0,
@@ -160,7 +160,7 @@ test('render_dimension_ops keeps the pentagon-only side guide when zero corner d
   assert.equal(
     calls.filter(call => call[3] === '120' && call[4] === 1).length,
     0,
-    'corner wing-only width must stay hidden when corner door count is 0'
+    'corner wing-only width must stay hidden when corner wing door count is 0'
   );
   assert.ok(
     calls.some(call => call[3] === '90' && call[4] === 0.78),
@@ -182,6 +182,6 @@ test('render_dimension_ops fails fast when corner mode metrics are incomplete', 
         isCornerMode: true,
         cornerSide: 'right',
       }),
-    /corner mode requires boolean cornerConnectorEnabled/
+    /corner mode requires boolean cornerConnectorActive/
   );
 });

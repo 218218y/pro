@@ -40,7 +40,7 @@ test('scene view shared snapshot defaults corner side and derives stable sync ke
   assert.deepEqual(
     getCornerLighting({
       isCornerMode: true,
-      cornerConnectorEnabled: true,
+      cornerConnectorActive: true,
       cornerDirection: 'left',
       raw: { cornerMode: true, cornerSide: 'left' },
     } as any),

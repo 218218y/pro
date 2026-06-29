@@ -32,7 +32,7 @@ function makeCorniceParams(kind: 'classic' | 'wave') {
         wingW: 1.2,
         blindWidth: 0,
         baseLegTopPlatformHeightM: 0,
-        cornerConnectorEnabled: true,
+        cornerConnectorActive: true,
         hasCorniceEnabled: true,
         __corniceAllowedForThisStack: true,
         __corniceTypeNorm: kind,

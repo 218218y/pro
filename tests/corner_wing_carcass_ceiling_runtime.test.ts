@@ -58,7 +58,7 @@ function createCeilingHarness(options: {
       wingW,
       activeWidth,
       blindWidth: 0,
-      cornerConnectorEnabled: true,
+      cornerConnectorActive: true,
       cabinetBodyHeight: 2.1,
       __stackKey: options.stackKey ?? 'top',
       __stackSplitUnifiedFrame: options.stackSplitUnifiedFrame ?? false,

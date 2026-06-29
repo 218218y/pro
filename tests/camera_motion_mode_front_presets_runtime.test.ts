@@ -124,7 +124,7 @@ test('camera motion front preset ignores retired UI mode aliases', () => {
   const { App } = createCameraApp({
     chestMode: true,
     isCornerMode: true,
-    cornerConnectorEnabled: true,
+    cornerConnectorActive: true,
     cornerDirection: 'left',
     raw: {
       isChestMode: true,

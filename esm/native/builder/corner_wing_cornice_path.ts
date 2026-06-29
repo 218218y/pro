@@ -248,7 +248,7 @@ function resolveCornerRunSideClosure(
   backTrimZ: number
 ): CornerCorniceSideClosure | null {
   if (!neighbor) {
-    if (side === 'left' && ctx.cornerConnectorEnabled) {
+    if (side === 'left' && ctx.cornerConnectorActive) {
       const firstFrontZ = firstCornerRunFrontZ(run, side);
       const connectorFrontZ = CARCASS_SHELL_DIMENSIONS.frontInsetZM;
       if (Math.abs(firstFrontZ - connectorFrontZ) > CORNER_CORNICE_EPS) {

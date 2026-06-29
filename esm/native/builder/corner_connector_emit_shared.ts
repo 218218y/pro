@@ -175,9 +175,9 @@ export function createCornerConnectorSetup(ctx: CornerOpsEmitContext): CornerCon
     __mirrorX,
     __stackKey,
     __stackOffsetZ,
-    cornerConnectorEnabled,
+    cornerConnectorActive,
   } = ctx;
-  if (!cornerConnectorEnabled) return null;
+  if (!cornerConnectorActive) return null;
 
   const cornerConnectorAsStandaloneCabinet =
     typeof uiAny.cornerConnectorAsStandaloneCabinet !== 'undefined'

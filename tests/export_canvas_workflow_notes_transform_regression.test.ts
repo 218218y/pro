@@ -282,7 +282,7 @@ test('export live viewport policy ignores retired UI aliases and raw flags', () 
     ui: {
       chestMode: true,
       isCornerMode: true,
-      cornerConnectorEnabled: true,
+      cornerConnectorActive: true,
       raw: { isChestMode: true, cornerMode: true },
     },
   });

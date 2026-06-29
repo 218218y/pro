@@ -72,7 +72,7 @@ const runtimeGeometryScalarKeys = [
   'chestCommodeMirrorWidthCm',
   'cornerWidth',
   'cornerDoors',
-  'cornerDoorCount',
+  'cornerWingDoorCount',
   'cornerDoorsCount',
   'cornerHeight',
   'cornerHeightCm',

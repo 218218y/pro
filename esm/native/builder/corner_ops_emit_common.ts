@@ -54,7 +54,7 @@ export interface CornerOpsEmitContext extends UnknownRecord {
   baseLegTopPlatformHeightM: number;
   baseH: number;
   cabinetBodyHeight: number;
-  cornerConnectorEnabled: boolean;
+  cornerConnectorActive: boolean;
   __corniceAllowedForThisStack: boolean;
   __corniceTypeNorm: string;
   __cfg: unknown;

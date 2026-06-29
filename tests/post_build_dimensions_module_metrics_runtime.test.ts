@@ -17,7 +17,6 @@ test('post-build corner dimensions use only canonical captured UI snapshot field
       cornerCabinetOffsetXcm: 8,
       cornerCabinetOffsetZcm: -4,
       raw: {
-        cornerConnectorEnabled: false,
         cornerDoors: 9,
         cornerWidth: 999,
       },
@@ -27,8 +26,8 @@ test('post-build corner dimensions use only canonical captured UI snapshot field
   });
 
   assert.equal(dimensions.cornerSide, 'left');
-  assert.equal(dimensions.cornerDoorCount, 3);
-  assert.equal(dimensions.cornerConnectorEnabled, true);
+  assert.equal(dimensions.cornerWingDoorCount, 3);
+  assert.equal(dimensions.cornerConnectorActive, true);
   assert.equal(dimensions.cornerWingLenM, 1.5);
   assert.equal(dimensions.cornerWingHeightM, 2.4);
   assert.equal(dimensions.cornerWingDepthM, 0.7);
@@ -48,17 +47,15 @@ test('post-build corner dimensions reject string-encoded UI snapshot dimensions'
       cornerCabinetWallLenCm: '125',
       cornerCabinetOffsetXcm: '8',
       cornerCabinetOffsetZcm: '-4',
-      raw: {
-        cornerConnectorEnabled: false,
-      },
+      raw: {},
     },
     dimH: 2.1,
     dimD: 0.6,
   });
 
   assert.equal(dimensions.cornerSide, 'right');
-  assert.equal(dimensions.cornerDoorCount, 3);
-  assert.equal(dimensions.cornerConnectorEnabled, true);
+  assert.equal(dimensions.cornerWingDoorCount, 3);
+  assert.equal(dimensions.cornerConnectorActive, true);
   assert.equal(dimensions.cornerWingLenM, 1.2);
   assert.equal(dimensions.cornerWingHeightM, 2.1);
   assert.equal(dimensions.cornerWingDepthM, 0.6);

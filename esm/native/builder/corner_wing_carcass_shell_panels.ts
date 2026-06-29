@@ -23,7 +23,7 @@ export function applyCornerWingCarcassPanels(
     wingW,
     activeWidth,
     blindWidth,
-    cornerConnectorEnabled,
+    cornerConnectorActive,
     __mirrorX,
     cabinetBodyHeight,
     __stackKey,
@@ -171,7 +171,7 @@ export function applyCornerWingCarcassPanels(
     __leftMat = cloneMaterialWithSide(__leftMat, THREE.DoubleSide, cloneMaybe);
   }
   const leftPanel = new THREE.Mesh(new THREE.BoxGeometry(woodThick, __leftH, __lt.depth), __leftMat);
-  const __wingAttachNoZFightingInsetX = cornerConnectorEnabled
+  const __wingAttachNoZFightingInsetX = cornerConnectorActive
     ? CORNER_WING_DIMENSIONS.panels.noZFightAttachInsetM
     : 0;
   leftPanel.position.set(

@@ -24,7 +24,7 @@ export function applyCornerWingWaveCornice(args: { ctx: CorniceCtxLike; locals: 
     wingH,
     wingD,
     wingW,
-    cornerConnectorEnabled,
+    cornerConnectorActive,
     getCornerMat,
     bodyMat,
     addOutlines,
@@ -99,7 +99,7 @@ export function applyCornerWingWaveCornice(args: { ctx: CorniceCtxLike; locals: 
   if (threeCornice) {
     // Avoid overlap with side strips so "paint by part" can treat each piece separately.
     // When the corner connector exists, the attach-side strip is omitted.
-    const hasLeftSide = !cornerConnectorEnabled;
+    const hasLeftSide = !cornerConnectorActive;
     const leftInset = hasLeftSide ? frameT : 0;
     const rightInset = frameT; // right outer side always exists
 
@@ -166,7 +166,7 @@ export function applyCornerWingWaveCornice(args: { ctx: CorniceCtxLike; locals: 
   };
 
   // Omit the "attach side" piece when the corner connector (pentagon) exists.
-  if (!cornerConnectorEnabled) addSide(frameT / 2, 'corner_cornice_side_left');
+  if (!cornerConnectorActive) addSide(frameT / 2, 'corner_cornice_side_left');
   addSide(wingW - frameT / 2, 'corner_cornice_side_right');
 }
 

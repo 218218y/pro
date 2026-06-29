@@ -22,8 +22,8 @@ export function readPostBuildCornerDimensions(args: {
   let cornerWallLenM = CORNER_WING_DIMENSIONS.connector.defaultWallLengthM;
   let cornerOffsetXM = 0;
   let cornerOffsetZM = 0;
-  const cornerConnectorEnabled = true;
-  let cornerDoorCount: number = WARDROBE_DEFAULTS.corner.doorsCount;
+  const cornerConnectorActive = true;
+  let cornerWingDoorCount: number = WARDROBE_DEFAULTS.corner.doorsCount;
   let cornerWingLenM = CORNER_WING_DIMENSIONS.wing.defaultWidthCm / CM_PER_METER;
   let cornerWingHeightM = NaN;
   let cornerWingDepthM = NaN;
@@ -36,7 +36,7 @@ export function readPostBuildCornerDimensions(args: {
 
   const cornerDoorsRaw = readKey(ui, 'cornerDoors');
   const cornerDoorsNum = readSnapshotNumber(cornerDoorsRaw);
-  if (Number.isFinite(cornerDoorsNum)) cornerDoorCount = Math.max(0, Math.round(cornerDoorsNum));
+  if (Number.isFinite(cornerDoorsNum)) cornerWingDoorCount = Math.max(0, Math.round(cornerDoorsNum));
 
   const wingLenRaw = readKey(ui, 'cornerWidth');
   let wingLenCm = readSnapshotNumber(wingLenRaw);
@@ -80,8 +80,8 @@ export function readPostBuildCornerDimensions(args: {
     cornerWallLenM,
     cornerOffsetXM,
     cornerOffsetZM,
-    cornerConnectorEnabled,
-    cornerDoorCount,
+    cornerConnectorActive,
+    cornerWingDoorCount,
     cornerWingLenM,
     cornerWingHeightM,
     cornerWingDepthM,

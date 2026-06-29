@@ -23,7 +23,7 @@ type CornerWingDimensionGeometry = {
 function hasActiveCornerConnector(ctx: RenderDimensionContext, guide: CornerDimensionGuide): boolean {
   return (
     ctx.isCornerMode &&
-    ctx.cornerConnectorEnabled &&
+    ctx.cornerConnectorActive &&
     Number.isFinite(ctx.cornerWallLenM) &&
     ctx.cornerWallLenM > guide.connectorWallMinLengthM
   );
@@ -43,7 +43,7 @@ function resolveCornerWingDimensionGeometry(
     cornerWallLenM,
     cornerOffsetXM,
     cornerOffsetZM,
-    cornerDoorCount,
+    cornerWingDoorCount,
     cornerWingLenM,
     cornerWingHeightM,
     cornerWingDepthM,
@@ -53,7 +53,7 @@ function resolveCornerWingDimensionGeometry(
   if (!isCornerMode) return null;
 
   const connectorActive = hasActiveCornerConnector(ctx, guide);
-  const showPentagonOnlySideGuide = connectorActive && cornerDoorCount === 0;
+  const showPentagonOnlySideGuide = connectorActive && cornerWingDoorCount === 0;
   const dimensionWingLenM =
     Number.isFinite(cornerWingLenM) && cornerWingLenM > guide.wingMinLengthM ? cornerWingLenM : 0;
 
@@ -103,7 +103,7 @@ export function applyCornerDimensionOps(ctx: RenderDimensionContext): void {
     totalW,
     isCornerMode,
     cornerSide,
-    cornerConnectorEnabled,
+    cornerConnectorActive,
     cornerWingVisible,
     cornerWallLenM,
     cornerOffsetXM,
@@ -118,7 +118,7 @@ export function applyCornerDimensionOps(ctx: RenderDimensionContext): void {
   const showCornerWingCabinetWidth =
     cornerWingVisible && !!wingGeometry && wingGeometry.wingW > guide.wingMinLengthM;
 
-  if (isCornerMode && cornerConnectorEnabled && cornerWallLenM > guide.connectorWallMinLengthM) {
+  if (isCornerMode && cornerConnectorActive && cornerWallLenM > guide.connectorWallMinLengthM) {
     const minX = cornerSide === 'left' ? -totalW / 2 - cornerWallLenM + cornerOffsetXM : -totalW / 2;
     const maxX = cornerSide === 'right' ? totalW / 2 + cornerWallLenM + cornerOffsetXM : totalW / 2;
     const fullWm = maxX - minX;
@@ -160,7 +160,7 @@ export function applyCornerDimensionOps(ctx: RenderDimensionContext): void {
       );
     }
 
-    if (cornerConnectorEnabled && cornerWallLenM > guide.connectorWallMinLengthM) {
+    if (cornerConnectorActive && cornerWallLenM > guide.connectorWallMinLengthM) {
       addDimensionLine(
         vec(xCenter, yWingCells, roomCornerZ),
         vec(xCenter, yWingCells, zEnd),

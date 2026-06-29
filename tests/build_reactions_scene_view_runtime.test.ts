@@ -110,7 +110,7 @@ test('build reactions camera keys ignore retired UI aliases and raw mode flags',
   const retiredAliases = {
     chestMode: true,
     isCornerMode: true,
-    cornerConnectorEnabled: true,
+    cornerConnectorActive: true,
     cornerDirection: 'left',
     raw: {
       isChestMode: true,

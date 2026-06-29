@@ -7,7 +7,7 @@ export function applyMainWardrobeDimensionOps(ctx: RenderDimensionContext): void
     totalW,
     noMainWardrobe,
     isCornerMode,
-    cornerConnectorEnabled,
+    cornerConnectorActive,
     cornerWallLenM,
     yTotal,
     yCells,
@@ -25,13 +25,13 @@ export function applyMainWardrobeDimensionOps(ctx: RenderDimensionContext): void
   const guide = WARDROBE_DIMENSION_GUIDE_DIMENSIONS.main;
   const cornerGuide = WARDROBE_DIMENSION_GUIDE_DIMENSIONS.corner;
   const guideTextScale = WARDROBE_DIMENSION_GUIDE_DIMENSIONS.textScale;
-  const cornerConnectorActive =
+  const hasActiveCornerConnector =
     isCornerMode &&
-    cornerConnectorEnabled &&
+    cornerConnectorActive &&
     Number.isFinite(cornerWallLenM) &&
     cornerWallLenM > cornerGuide.connectorWallMinLengthM;
   const showMainHeight = !noMainWardrobe;
-  const showMainDepth = !noMainWardrobe || cornerConnectorActive;
+  const showMainDepth = !noMainWardrobe || hasActiveCornerConnector;
 
   if (!noMainWardrobe) {
     // Total width (raised slightly above the per-cell lines).

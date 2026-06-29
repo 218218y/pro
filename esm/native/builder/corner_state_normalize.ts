@@ -103,7 +103,7 @@ export function normalizeCornerWingState(args: {
     __stackOffsetZ: stackMeta.__stackOffsetZ,
     __mirrorX: metrics.__mirrorX,
     cornerSide: metrics.cornerSide,
-    cornerConnectorEnabled: metrics.cornerConnectorEnabled,
+    cornerConnectorActive: metrics.cornerConnectorActive,
     wingLengthCM: metrics.wingLengthCM,
     wingW: metrics.wingW,
     wingH: metrics.wingH,

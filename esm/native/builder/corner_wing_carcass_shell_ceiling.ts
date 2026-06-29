@@ -18,7 +18,7 @@ export function applyCornerWingCarcassCeiling(
     wingD,
     activeWidth,
     blindWidth,
-    cornerConnectorEnabled,
+    cornerConnectorActive,
     cabinetBodyHeight,
     __stackKey,
     __stackSplitUnifiedFrame,
@@ -39,7 +39,7 @@ export function applyCornerWingCarcassCeiling(
   if (__stackSplitUnifiedFrame && __stackKey === 'bottom') return;
 
   const __wingCeilMat = getCornerMat('corner_ceil', bodyMat);
-  const __wingAttachNoZFightingInsetX = cornerConnectorEnabled
+  const __wingAttachNoZFightingInsetX = cornerConnectorActive
     ? CORNER_WING_DIMENSIONS.ceiling.noZFightAttachInsetM
     : 0;
 

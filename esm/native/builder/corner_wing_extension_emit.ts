@@ -91,10 +91,10 @@ export function emitCornerWingExtension(ctx: CornerOpsEmitContext): void {
     return;
   }
 
-  const cornerDoorCount = resolveCornerWingDoorCount({ activeWidth, uiAny });
+  const cornerWingDoorCount = resolveCornerWingDoorCount({ activeWidth, uiAny });
 
-  // Corner door count 0 means: keep ONLY the pentagon connector and suppress the side wing entirely.
-  if (!(cornerDoorCount > 0)) return;
+  // Corner wing door count 0 means: keep ONLY the pentagon connector and suppress the side wing entirely.
+  if (!(cornerWingDoorCount > 0)) return;
 
   // Floor is built later (per-cell) to support per-cell depth overrides.
 

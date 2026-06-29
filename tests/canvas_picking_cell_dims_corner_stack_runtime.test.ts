@@ -28,7 +28,7 @@ function createCornerStackHarness() {
       cornerHeight: 220,
       cornerDepth: 55,
       cornerDoors: 4,
-      cornerConnectorEnabled: true,
+      cornerConnectorActive: true,
       raw: {
         width: 160,
         height: 220,

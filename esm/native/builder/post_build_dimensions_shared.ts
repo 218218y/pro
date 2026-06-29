@@ -33,8 +33,8 @@ export type CornerDimensionsState = {
   cornerWallLenM: number;
   cornerOffsetXM: number;
   cornerOffsetZM: number;
-  cornerConnectorEnabled: boolean;
-  cornerDoorCount: number;
+  cornerConnectorActive: boolean;
+  cornerWingDoorCount: number;
   cornerWingLenM: number;
   cornerWingHeightM: number;
   cornerWingDepthM: number;

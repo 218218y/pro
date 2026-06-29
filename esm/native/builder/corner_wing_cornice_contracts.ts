@@ -66,7 +66,7 @@ export type CorniceCtxLike = {
   wingW: number;
   blindWidth: number;
   baseLegTopPlatformHeightM?: number;
-  cornerConnectorEnabled: boolean;
+  cornerConnectorActive: boolean;
   hasCorniceEnabled: boolean;
   __corniceAllowedForThisStack: boolean;
   __corniceTypeNorm: string;

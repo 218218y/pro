@@ -88,7 +88,7 @@ export type NormalizedCornerWingState = {
   __stackOffsetZ: number;
   __mirrorX: 1 | -1;
   cornerSide: 'left' | 'right';
-  cornerConnectorEnabled: boolean;
+  cornerConnectorActive: boolean;
   wingLengthCM: number;
   wingW: number;
   wingH: number;

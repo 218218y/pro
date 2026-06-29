@@ -45,7 +45,7 @@ export function createCornerWingEmitContext(args: {
     __stackOffsetZ: state.__stackOffsetZ,
     __mirrorX: state.__mirrorX,
     cornerSide: state.cornerSide,
-    cornerConnectorEnabled: state.cornerConnectorEnabled,
+    cornerConnectorActive: state.cornerConnectorActive,
     wingLengthCM: state.wingLengthCM,
     wingW: state.wingW,
     wingH: state.wingH,

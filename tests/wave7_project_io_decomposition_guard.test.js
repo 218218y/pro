@@ -114,7 +114,7 @@ test('[wave7] project load helpers preserve runtime UI ephemera and capture sour
     resetPreservesAutosave: shouldPreserveProjectAutosaveOnLoad({ meta: { source: 'react:header:resetDefault', preserveAutosave: true } }),
     regularLoadPreservesAutosave: shouldPreserveProjectAutosaveOnLoad({ meta: { source: 'project.load' } }),
     canonicalPrevUiMode: captureProjectPrevUiMode({ isChestMode: true, cornerMode: true, cornerSide: 'left', raw: { cornerSide: 'right' } }),
-    retiredPrevUiAliases: captureProjectPrevUiMode({ isChestMode: 1, isCornerMode: true, cornerConnectorEnabled: true, raw: { cornerSide: 'left' } }),
+    retiredPrevUiAliases: captureProjectPrevUiMode({ isChestMode: 1, isCornerMode: true, raw: { cornerSide: 'left' } }),
     preserved: preserveUiEphemeral(
       { projectName: 'Imported project' },
       { activeTab: 'notes', selectedModelId: 'm-42', site2TabsGateOpen: true, site2TabsGateUntil: 1234, site2TabsGateBy: 'tester', autosaveInfo: { timestamp: 42, dateString: 'saved' } }

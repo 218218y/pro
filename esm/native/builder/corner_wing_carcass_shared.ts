@@ -29,7 +29,7 @@ export type CornerWingCarcassCtx = {
   wingW: number;
   activeWidth: number;
   blindWidth: number;
-  cornerConnectorEnabled: boolean;
+  cornerConnectorActive: boolean;
   __mirrorX: number;
   __stackKey: string;
   __stackSplitUnifiedFrame: boolean;

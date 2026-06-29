@@ -49,7 +49,7 @@ export function applyCornerWingProfileCornice(args: {
     wingH,
     wingD,
     wingW,
-    cornerConnectorEnabled,
+    cornerConnectorActive,
     getCornerMat,
     bodyMat,
     addOutlines,
@@ -170,7 +170,7 @@ export function applyCornerWingProfileCornice(args: {
       })
     : buildFlatCornerWingProfileSegments({
         wingW,
-        cornerConnectorEnabled,
+        cornerConnectorActive,
         profileFront,
         profileSide,
         frontPlaneZ,
@@ -300,7 +300,7 @@ export function applyCornerWingProfileCornice(args: {
 
 type FlatCornerWingProfileSegmentsArgs = {
   wingW: number;
-  cornerConnectorEnabled: boolean;
+  cornerConnectorActive: boolean;
   profileFront: CornicePoint[];
   profileSide: CornicePoint[];
   frontPlaneZ: number;
@@ -332,7 +332,7 @@ function buildFlatCornerWingProfileSegments(args: FlatCornerWingProfileSegmentsA
       y: args.yPlace,
       z: args.frontPlaneZ,
     },
-    ...(args.cornerConnectorEnabled
+    ...(args.cornerConnectorActive
       ? []
       : ([
           {
