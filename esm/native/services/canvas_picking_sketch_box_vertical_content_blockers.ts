@@ -78,11 +78,16 @@ function shelfThicknessForVariant(variant: unknown, woodThick: number): number {
 
 function normalizeStorageHeight(heightRaw: unknown, spanH: number, woodThick: number): number {
   const storageDims = INTERIOR_FITTINGS_DIMENSIONS.storage;
-  const parsed = typeof heightRaw === 'number' && Number.isFinite(heightRaw) ? heightRaw : Number(heightRaw);
-  const requested = Number.isFinite(parsed) && parsed > 0 ? parsed : storageDims.barrierHeightM;
+  const parsed = typeof heightRaw === 'number' && Number.isFinite(heightRaw) ? heightRaw : null;
+  const requested = parsed != null && parsed > 0 ? parsed : storageDims.barrierHeightM;
   const minHeight = woodThick * storageDims.minHeightWoodMultiplier + storageDims.minHeightExtraM;
   const maxHeight = Math.max(minHeight, spanH);
   return Math.max(minHeight, Math.min(requested, maxHeight));
+}
+
+function hasInvalidPresentNumber(item: RecordMap, key: string): boolean {
+  const raw = readRecordValue(item, key);
+  return raw != null && readRecordNumber(item, key) == null;
 }
 
 function clampStorageCenter(args: {
@@ -143,6 +148,7 @@ function itemMatchesActiveSegment(args: {
   pickSketchBoxSegment: (args: PickSketchBoxSegmentArgs) => SketchBoxSegmentLike | null;
 }): boolean {
   if (!args.activeSegment) return true;
+  if (hasInvalidPresentNumber(args.item, 'xNorm')) return false;
   const itemXNorm = readRecordNumber(args.item, 'xNorm');
   const itemSegment =
     itemXNorm != null && args.boxSegments.length
@@ -205,6 +211,7 @@ export function buildSketchBoxVerticalContentBlockers(
   const shelves = readRecordArray(args.targetBox, 'shelves');
   for (let i = 0; i < shelves.length; i += 1) {
     const shelf = shelves[i];
+    if (hasInvalidPresentNumber(shelf, 'xNorm')) continue;
     if (!itemMatchesActiveCell({ ...args, item: shelf })) continue;
     const yNorm = readRecordNumber(shelf, 'yNorm');
     if (yNorm == null) continue;
@@ -226,6 +233,7 @@ export function buildSketchBoxVerticalContentBlockers(
   const storageBarriers = readRecordArray(args.targetBox, 'storageBarriers');
   for (let i = 0; i < storageBarriers.length; i += 1) {
     const barrier = storageBarriers[i];
+    if (hasInvalidPresentNumber(barrier, 'xNorm')) continue;
     if (!itemMatchesActiveCell({ ...args, item: barrier })) continue;
     const yNorm = readRecordNumber(barrier, 'yNorm');
     if (yNorm == null) continue;
@@ -255,6 +263,7 @@ export function buildSketchBoxVerticalContentBlockers(
   const rods = readRecordArray(args.targetBox, 'rods');
   for (let i = 0; i < rods.length; i += 1) {
     const rod = rods[i];
+    if (hasInvalidPresentNumber(rod, 'xNorm')) continue;
     if (!itemMatchesActiveCell({ ...args, item: rod })) continue;
     const yNorm = readRecordNumber(rod, 'yNorm');
     if (yNorm == null) continue;

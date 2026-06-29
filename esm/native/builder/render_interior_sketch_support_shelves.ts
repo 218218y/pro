@@ -11,7 +11,7 @@ import {
 import type { InteriorValueRecord } from './render_interior_ops_contracts.js';
 import type { ApplySketchShelvesArgs } from './render_interior_sketch_support_contracts.js';
 
-import { readObject } from './render_interior_sketch_shared.js';
+import { readObject, toFiniteNumber } from './render_interior_sketch_shared.js';
 import { normalizeSketchShelfVariant } from './render_interior_sketch_layout.js';
 import type { RemovedFrameSideShelfRounding } from './removed_frame_side_brace_shelves.js';
 
@@ -29,13 +29,8 @@ function resolveShelfDepth(args: {
 }): number {
   const { requestedDepth, woodThick, internalDepth, fallbackDepth, boxInnerDepth } = args;
   let shelfDepth = fallbackDepth;
-  const depthM =
-    typeof requestedDepth === 'number'
-      ? requestedDepth
-      : requestedDepth != null
-        ? Number(requestedDepth)
-        : NaN;
-  if (Number.isFinite(depthM) && depthM > 0) {
+  const depthM = toFiniteNumber(requestedDepth);
+  if (depthM != null && depthM > 0) {
     let depth = depthM;
     if (depth < woodThick) depth = woodThick;
     if (internalDepth > 0) depth = Math.min(depth, internalDepth);

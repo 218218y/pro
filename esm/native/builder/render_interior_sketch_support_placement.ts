@@ -7,6 +7,7 @@ import type {
 import { createBraceDarkSeamAdder } from './render_interior_sketch_support_brace_seams.js';
 import { createSketchPlacementMaterialResources } from './render_interior_sketch_support_materials.js';
 import { createShelfPinAdder } from './render_interior_sketch_support_shelf_pins.js';
+import { toFiniteNumber } from './render_interior_sketch_shared.js';
 
 export function createInteriorSketchPlacementSupport(
   args: CreateInteriorSketchPlacementSupportArgs
@@ -37,8 +38,8 @@ export function createInteriorSketchPlacementSupport(
   };
 
   const yFromNorm = (yNorm: unknown): number | null => {
-    const n = typeof yNorm === 'number' ? yNorm : Number(yNorm);
-    if (!Number.isFinite(n)) return null;
+    const n = toFiniteNumber(yNorm);
+    if (n == null) return null;
     return clampY(effectiveBottomY + Math.max(0, Math.min(1, n)) * (effectiveTopY - effectiveBottomY));
   };
 

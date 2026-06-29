@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
   applySketchRods,
   applySketchShelves,
+  applySketchStorageBarriers,
   createInteriorSketchPlacementSupport,
   createSketchBoxLocator,
 } from '../esm/native/builder/render_interior_sketch_support.ts';
@@ -106,6 +107,7 @@ test('render interior sketch support clamps placement, emits shelf pins, and kee
   assert.ok(Math.abs(support.clampY(9) - 1.796) < 1e-9);
   assert.ok(Math.abs((support.yFromNorm(0) ?? 0) - 0.204) < 1e-9);
   assert.ok(Math.abs((support.yFromNorm(1) ?? 0) - 1.796) < 1e-9);
+  assert.equal(support.yFromNorm('0.5'), null);
 
   support.addShelfPins(0, 1, 0, 0.6, 0.02, 0.5, true);
   support.addBraceDarkSeams(1, 0, 0.5, true, {
@@ -198,6 +200,76 @@ test('render interior sketch shelves emit folded contents with measured shelf cl
   assert.equal(folded[0][7].sketchMode, true);
   assert.equal(typeof folded[0][7].addOutlines, 'function');
   assert.equal(folded[0][7].cfgSnapshot.isLibraryMode, true);
+});
+
+test('render interior sketch support rejects string-encoded shelf and storage geometry', () => {
+  const shelfBoards: any[] = [];
+  applySketchShelves({
+    shelves: [
+      { id: 'legacy-depth', yNorm: 0.25, variant: 'regular', depthM: '0.22' } as any,
+      { id: 'typed-depth', yNorm: 0.75, variant: 'regular', depthM: 0.22 } as any,
+    ],
+    yFromNorm(raw: unknown) {
+      return typeof raw === 'number' ? raw * 2 : null;
+    },
+    findBoxAtY: () => null,
+    braceCenterX: 0,
+    braceShelfWidth: 0.9,
+    regularShelfWidth: 0.84,
+    internalCenterX: 0,
+    internalDepth: 0.55,
+    internalZ: 0,
+    regularDepth: 0.45,
+    backZ: -0.275,
+    woodThick: 0.02,
+    shelfThick: 0.02,
+    effectiveTopY: 1.8,
+    showContentsEnabled: false,
+    addFoldedClothes: () => undefined,
+    contentsPolicy: {},
+    currentShelfMat: { id: 'shelf' },
+    currentBraceShelfMat: { id: 'brace-shelf' },
+    moduleKeyStr: 'm1',
+    glassMat: null,
+    createBoard: (...call: any[]) => {
+      shelfBoards.push(call);
+      return { userData: {} };
+    },
+    group: { add() {} } as any,
+    THREE: null,
+    addBraceDarkSeams: () => undefined,
+    addShelfPins: () => undefined,
+  });
+
+  assert.equal(shelfBoards.length, 2);
+  assert.equal(shelfBoards[0][2], 0.45);
+  assert.equal(shelfBoards[1][2], 0.22);
+
+  const storageBoards: any[] = [];
+  applySketchStorageBarriers({
+    storageBarriers: [
+      { id: 'legacy', yNorm: '0.5', heightM: '0.2' } as any,
+      { id: 'typed', yNorm: 0.5, heightM: 0.2 } as any,
+    ],
+    effectiveBottomY: 0,
+    effectiveTopY: 1,
+    spanH: 1,
+    woodThick: 0.02,
+    innerW: 0.8,
+    internalCenterX: 0,
+    internalDepth: 0.5,
+    internalZ: 0,
+    moduleKeyStr: 'm1',
+    bodyMat: { id: 'body' },
+    isFn: (value: unknown): value is (...args: unknown[]) => unknown => typeof value === 'function',
+    createBoard: (...call: any[]) => {
+      storageBoards.push(call);
+      return {};
+    },
+  });
+
+  assert.equal(storageBoards.length, 1);
+  assert.equal(storageBoards[0][7], 'sketch_storage_m1_typed');
 });
 
 test('removed frame side sketch shelves preserve glass and double variants on forced brace geometry', () => {

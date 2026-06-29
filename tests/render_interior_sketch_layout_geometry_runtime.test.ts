@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
   clampSketchFreeBoxCenterY,
   readSketchBoxDividers,
+  readSketchBoxHorizontalDividers,
   resolveSketchBoxGeometry,
   resolveSketchBoxSegmentForContent,
   resolveSketchFreeBoxGeometry,
@@ -160,14 +161,37 @@ test('render interior sketch layout dividers sort explicit dividers and ignore r
     dividers: [
       { id: 'right', xNorm: 0.8 },
       { id: 'left', xNorm: 0.2 },
+      { id: 'legacy-string', xNorm: '0.4' },
+      { id: 'typed-with-string-meta', xNorm: 0.4, yNorm: '0.5', frontZ: '0.2' },
     ],
   });
   assert.deepEqual(
-    explicit.map(divider => ({ id: divider.id, xNorm: divider.xNorm })),
+    explicit.map(divider => ({
+      id: divider.id,
+      xNorm: divider.xNorm,
+      yNorm: divider.yNorm,
+      frontZ: divider.frontZ,
+    })),
     [
-      { id: 'left', xNorm: 0.2 },
-      { id: 'right', xNorm: 0.8 },
+      { id: 'left', xNorm: 0.2, yNorm: undefined, frontZ: undefined },
+      { id: 'typed-with-string-meta', xNorm: 0.4, yNorm: undefined, frontZ: undefined },
+      { id: 'right', xNorm: 0.8, yNorm: undefined, frontZ: undefined },
     ]
+  );
+
+  assert.deepEqual(
+    readSketchBoxHorizontalDividers({
+      horizontalDividers: [
+        { id: 'legacy-string', yNorm: '0.4' },
+        { id: 'typed-with-string-meta', yNorm: 0.4, xNorm: '0.5', frontZ: '0.2' },
+      ],
+    }).map(divider => ({
+      id: divider.id,
+      yNorm: divider.yNorm,
+      xNorm: divider.xNorm,
+      frontZ: divider.frontZ,
+    })),
+    [{ id: 'typed-with-string-meta', yNorm: 0.4, xNorm: undefined, frontZ: undefined }]
   );
 
   assert.deepEqual(readSketchBoxDividers({ centerDivider: true, dividerXNorm: 0.5 }), []);
@@ -211,4 +235,15 @@ test('render interior sketch layout resolves content segments from divider-separ
   assert.ok((rightSegment?.centerX ?? 0) > 0);
   assert.ok((middleSegment?.width ?? 0) > (leftSegment?.width ?? 0));
   assert.ok((middleSegment?.width ?? 0) > (rightSegment?.width ?? 0));
+
+  assert.equal(
+    resolveSketchBoxSegmentForContent({
+      dividers,
+      boxCenterX: 0,
+      innerW: 0.8,
+      woodThick: 0.02,
+      xNorm: '0.5' as any,
+    }),
+    null
+  );
 });

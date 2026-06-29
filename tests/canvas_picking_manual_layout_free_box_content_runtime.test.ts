@@ -140,6 +140,7 @@ test('manual-layout free-box shelf grid commit writes shelves into the no-main f
           shelves: [
             { id: 'old-active', yNorm: 0.7, xNorm: 0.75, variant: 'regular' },
             { id: 'old-other-cell', yNorm: 0.25, xNorm: 0.25, variant: 'regular' },
+            { id: 'old-string-cell', yNorm: 0.7, xNorm: '0.75', variant: 'regular' },
           ],
         },
       ],
@@ -180,13 +181,17 @@ test('manual-layout free-box shelf grid commit writes shelves into the no-main f
 
   const box = (((cfg.sketchExtras as RecordMap).boxes as RecordMap[])[0] ?? {}) as RecordMap;
   const shelves = box.shelves as RecordMap[];
-  assert.equal(shelves.length, 6);
+  assert.equal(shelves.length, 7);
   assert.equal(
     shelves.some(shelf => shelf.id === 'old-active'),
     false
   );
   assert.equal(
     shelves.some(shelf => shelf.id === 'old-other-cell'),
+    true
+  );
+  assert.equal(
+    shelves.some(shelf => shelf.id === 'old-string-cell'),
     true
   );
   assert.equal(shelves.filter(shelf => String(shelf.id || '').startsWith('sbc_')).length, 5);

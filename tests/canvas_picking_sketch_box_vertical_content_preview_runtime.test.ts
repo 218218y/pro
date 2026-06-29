@@ -177,6 +177,48 @@ test('box shelf preview scopes hover to the active split cell after vertical and
   assert.ok(measurements.filter(entry => entry.role === 'cell').every(entry => Number(entry.labelY) > 1));
 });
 
+test('box shelf preview rejects string-encoded scoped content positions', () => {
+  const targetBox = {
+    id: 'box-string-scoped-content',
+    shelves: [{ id: 'legacy-shelf', yNorm: 0.75, xNorm: '0.25', variant: 'regular' }],
+    rods: [{ id: 'legacy-rod', yNorm: 0.75, xNorm: '0.25' }],
+    storageBarriers: [{ id: 'legacy-storage', yNorm: 0.75, xNorm: '0.25', heightM: 0.12 }],
+    dividers: [{ id: 'v1', xNorm: 0.5 }],
+  };
+  const result = resolveSketchBoxVerticalContentPreview({
+    host: { tool: 'sketch_shelf:regular', moduleKey: 2, isBottom: false, ts: 1 },
+    contentKind: 'shelf',
+    boxId: 'box-string-scoped-content',
+    freePlacement: true,
+    targetBox,
+    targetGeo: {
+      centerX: 0,
+      innerW: 1,
+      innerD: 0.5,
+      innerBackZ: -0.25,
+    },
+    targetCenterY: 1,
+    targetHeight: 1,
+    pointerX: -0.25,
+    pointerY: 1.25,
+    woodThick: 0.02,
+    shelfVariant: 'regular',
+    shelfDepthOverrideM: null,
+    readSketchBoxDividers,
+    readSketchBoxHorizontalDividers,
+    resolveSketchBoxSegments,
+    pickSketchBoxSegment,
+    resolveSketchBoxVerticalSegments,
+    pickSketchBoxVerticalSegment,
+  });
+
+  assert.ok(result);
+  assert.equal(result?.preview.kind, 'shelf');
+  assert.equal(result?.preview.op, 'add');
+  assert.equal(result?.hoverRecord.op, 'add');
+  assert.equal(result?.hoverRecord.removeId ?? null, null);
+});
+
 test('box shelf preview marks a too-short active cell as blocked with no-room metadata', () => {
   const result = resolveSketchBoxVerticalContentPreview({
     host: { tool: 'sketch_shelf:regular', moduleKey: 2, isBottom: false, ts: 1 },

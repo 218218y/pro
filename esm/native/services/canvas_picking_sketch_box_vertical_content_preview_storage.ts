@@ -70,9 +70,11 @@ export function resolveSketchBoxStoragePreview(
     if (n == null) continue;
     const hM = readRecordNumber(it, 'heightM');
     const itemH = hM != null && hM > 0 ? hM : barrierHeight;
+    const itemXNormRaw = readRecordValue(it, 'xNorm');
     const itemXNorm = readRecordNumber(it, 'xNorm');
+    if (itemXNormRaw != null && itemXNorm == null) continue;
     const itemSegment =
-      Number.isFinite(itemXNorm) && boxSegments.length
+      itemXNorm != null && boxSegments.length
         ? pickSketchBoxSegment({
             segments: boxSegments,
             boxCenterX: targetGeo.centerX,

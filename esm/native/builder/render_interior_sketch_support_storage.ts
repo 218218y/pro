@@ -1,5 +1,6 @@
 import { INTERIOR_FITTINGS_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { ApplySketchStorageBarriersArgs } from './render_interior_sketch_support_contracts.js';
+import { toFiniteNumber } from './render_interior_sketch_shared.js';
 
 export function applySketchStorageBarriers(args: ApplySketchStorageBarriersArgs): void {
   const {
@@ -34,18 +35,17 @@ export function applySketchStorageBarriers(args: ApplySketchStorageBarriersArgs)
     const barrier = storageBarriers[i] || null;
     if (!barrier) continue;
 
-    let heightM = Number(barrier.heightM);
-    if (!Number.isFinite(heightM)) heightM = Number(barrier.hM);
-    if (!Number.isFinite(heightM)) continue;
+    let heightM = toFiniteNumber(barrier.heightM);
+    if (heightM == null) heightM = toFiniteNumber(barrier.hM);
+    if (heightM == null) continue;
     if (heightM < woodThick * storageDims.minHeightWoodMultiplier + storageDims.minHeightExtraM) {
       heightM = woodThick * storageDims.minHeightWoodMultiplier + storageDims.minHeightExtraM;
     }
     if (heightM > spanH) heightM = spanH;
     const halfH = heightM / 2;
 
-    const yNormRaw = barrier.yNorm;
-    const yNorm = typeof yNormRaw === 'number' ? yNormRaw : Number(yNormRaw);
-    if (!Number.isFinite(yNorm)) continue;
+    const yNorm = toFiniteNumber(barrier.yNorm);
+    if (yNorm == null) continue;
 
     const cy0 = effectiveBottomY + Math.max(0, Math.min(1, yNorm)) * spanH;
     const loC = effectiveBottomY + padFront + halfH;

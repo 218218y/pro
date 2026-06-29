@@ -600,8 +600,11 @@ export function resolvePresetLayoutFreeBoxPlan(args: {
   };
 }
 
-function readContentItemXNorm(item: unknown): number {
-  return clampUnit(readRecordNumber(item, 'xNorm') ?? 0.5);
+function readContentItemXNorm(item: unknown): number | null {
+  const raw = readRecordValue(item, 'xNorm');
+  const xNorm = readRecordNumber(item, 'xNorm');
+  if (raw != null && xNorm == null) return null;
+  return clampUnit(xNorm ?? 0.5);
 }
 
 export function resolveBraceShelvesFreeBoxPlan(args: {
@@ -636,6 +639,7 @@ export function resolveBraceShelvesFreeBoxPlan(args: {
     const yNorm = readRecordNumber(shelf, 'yNorm');
     if (yNorm == null) continue;
     const xNorm = readContentItemXNorm(shelf);
+    if (xNorm == null) continue;
     if (xNorm < metrics.cellXNormMin - 1e-6 || xNorm > metrics.cellXNormMax + 1e-6) continue;
     if (yNorm < metrics.cellYNormMin - 1e-6 || yNorm > metrics.cellYNormMax + 1e-6) continue;
     const currentVariant = normalizeShelfVariant(readRecordValue(shelf, 'variant'));
@@ -1097,9 +1101,9 @@ function removeItemsInGridCell(args: {
   const eps = 1e-6;
   for (let i = args.list.length - 1; i >= 0; i -= 1) {
     const item = args.list[i];
-    const xNorm = readRecordNumber(item, 'xNorm') ?? 0.5;
+    const xNorm = readContentItemXNorm(item);
     const yNorm = readRecordNumber(item, 'yNorm');
-    if (yNorm == null) continue;
+    if (xNorm == null || yNorm == null) continue;
     if (
       xNorm >= args.cellXNormMin - eps &&
       xNorm <= args.cellXNormMax + eps &&

@@ -63,14 +63,16 @@ export function resolveSketchBoxRodPreview(
     const it = localRods[i];
     const n = readRecordNumber(it, 'yNorm');
     if (n == null) continue;
+    const itemXNormRaw = readRecordValue(it, 'xNorm');
     const itemXNorm = readRecordNumber(it, 'xNorm');
+    if (itemXNormRaw != null && itemXNorm == null) continue;
     const itemSegment =
-      Number.isFinite(itemXNorm) && boxSegments.length
+      itemXNorm != null && boxSegments.length
         ? pickSketchBoxSegment({
             segments: boxSegments,
             boxCenterX: targetGeo.centerX,
             innerW: targetGeo.innerW,
-            xNorm: itemXNorm ?? undefined,
+            xNorm: itemXNorm,
           })
         : null;
     if (activeSegment && itemSegment && itemSegment.index !== activeSegment.index) continue;
