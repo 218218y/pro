@@ -86,8 +86,7 @@ export function computeModuleLayout(input: unknown) {
   for (let i = 0; i < modules.length; i++) {
     const doors = Math.max(1, __asInt(modules[i]?.doors, 1));
     const mc = moduleConfigs[i] || __defaultModuleCfg(doors);
-    const wCm = getActiveWidthCmFromConfig(mc);
-    const activeWidthCm = Number(wCm);
+    const activeWidthCm = __asNum(getActiveWidthCmFromConfig(mc), NaN);
     const isActiveOverride = Number.isFinite(activeWidthCm) && activeWidthCm > 0;
 
     if (isActiveOverride) {
@@ -123,7 +122,10 @@ export function computeModuleLayout(input: unknown) {
   // Third pass: enforce tiling (sum of segment widths == totalWcm).
   // Prefer adjusting non-fixed ("missing") modules; only touch fixed modules if there's no other choice.
   let sumSegCm = 0;
-  for (let i = 0; i < moduleSegWidthsCm.length; i++) sumSegCm += Number(moduleSegWidthsCm[i]) || 0;
+  for (let i = 0; i < moduleSegWidthsCm.length; i++) {
+    const seg = __asNum(moduleSegWidthsCm[i], 0);
+    sumSegCm += Number.isFinite(seg) ? seg : 0;
+  }
   let deltaCm = totalWcm - sumSegCm;
 
   if (modules.length > 0 && Number.isFinite(deltaCm) && Math.abs(deltaCm) > 1e-6) {
@@ -133,7 +135,7 @@ export function computeModuleLayout(input: unknown) {
     const _adjust = (indices: number[]) => {
       for (let k = 0; k < indices.length && Math.abs(rem) > 1e-6; k++) {
         const i = indices[k];
-        const cur = Number(moduleSegWidthsCm[i]) || 0;
+        const cur = __asNum(moduleSegWidthsCm[i], 0);
         if (rem > 0) {
           moduleSegWidthsCm[i] = cur + rem;
           rem = 0;
@@ -165,7 +167,7 @@ export function computeModuleLayout(input: unknown) {
 
   // Final: compute clear internal openings in meters.
   for (let i = 0; i < modules.length; i++) {
-    const segCm = Number(moduleSegWidthsCm[i]) || 0;
+    const segCm = __asNum(moduleSegWidthsCm[i], 0);
 
     // Clear opening width: subtract boundary thickness (cm).
     const leftBoundCm =

@@ -1,40 +1,32 @@
 import { _asObject } from './core_pure_shared.js';
+import { readCorePureInteger, readCorePureNumber } from './core_pure_number_contracts.js';
 import {
   DRAWER_DIMENSIONS,
   MATERIAL_DIMENSIONS,
   resolveExternalDrawerGeometry,
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
-function readComputeNumber(value: unknown, defaultValue: number): number {
-  return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
-}
-
-function readComputeInt(value: unknown, defaultValue: number): number {
-  const n = readComputeNumber(value, defaultValue);
-  return Number.isFinite(n) ? Math.trunc(n) : defaultValue;
-}
-
 export function computeExternalDrawersOpsForModule(input: unknown) {
   const inp = _asObject(input) || {};
   const keyPrefix = typeof inp.keyPrefix === 'string' ? String(inp.keyPrefix) : '';
   const wardrobeType = typeof inp.wardrobeType === 'string' ? inp.wardrobeType : 'hinged';
   if (wardrobeType !== 'hinged')
-    return { moduleIndex: readComputeInt(inp.moduleIndex, 0), drawerHeightTotal: 0, drawers: [] };
+    return { moduleIndex: readCorePureInteger(inp.moduleIndex, 0), drawerHeightTotal: 0, drawers: [] };
 
-  let moduleIndex = readComputeInt(inp.moduleIndex, 0);
-  let startDoorId = readComputeInt(inp.startDoorId, 1);
-  let externalCenterX = readComputeNumber(inp.externalCenterX, 0);
-  let externalW = readComputeNumber(inp.externalW, 0);
-  let D = readComputeNumber(inp.depth, readComputeNumber(inp.D, 0));
-  let startY = readComputeNumber(inp.startY, 0);
-  let woodThick = readComputeNumber(inp.woodThick, MATERIAL_DIMENSIONS.wood.thicknessM);
+  let moduleIndex = readCorePureInteger(inp.moduleIndex, 0);
+  let startDoorId = readCorePureInteger(inp.startDoorId, 1);
+  let externalCenterX = readCorePureNumber(inp.externalCenterX, 0);
+  let externalW = readCorePureNumber(inp.externalW, 0);
+  let D = readCorePureNumber(inp.depth, readCorePureNumber(inp.D, 0));
+  let startY = readCorePureNumber(inp.startY, 0);
+  let woodThick = readCorePureNumber(inp.woodThick, MATERIAL_DIMENSIONS.wood.thicknessM);
   const doorMountMode = String(inp.doorMountMode || '') === 'inset' ? 'inset' : 'overlay';
 
-  let shoeDrawerHeight = readComputeNumber(inp.shoeDrawerHeight, DRAWER_DIMENSIONS.external.shoeHeightM);
-  let regDrawerHeight = readComputeNumber(inp.regDrawerHeight, DRAWER_DIMENSIONS.external.regularHeightM);
+  let shoeDrawerHeight = readCorePureNumber(inp.shoeDrawerHeight, DRAWER_DIMENSIONS.external.shoeHeightM);
+  let regDrawerHeight = readCorePureNumber(inp.regDrawerHeight, DRAWER_DIMENSIONS.external.regularHeightM);
 
   const hasShoe = !!inp.hasShoe;
-  let regCount = readComputeInt(inp.regCount, 0);
+  let regCount = readCorePureInteger(inp.regCount, 0);
   if (regCount < 0) regCount = 0;
 
   let drawerHeightTotal = 0;
@@ -46,7 +38,7 @@ export function computeExternalDrawersOpsForModule(input: unknown) {
     return { moduleIndex: moduleIndex, drawerHeightTotal: Math.max(0, drawerHeightTotal), drawers: [] };
   }
 
-  const frontZ = readComputeNumber(inp.frontZ, D / 2);
+  const frontZ = readCorePureNumber(inp.frontZ, D / 2);
   const geom = resolveExternalDrawerGeometry({
     externalWidthM: externalW,
     depthM: D,

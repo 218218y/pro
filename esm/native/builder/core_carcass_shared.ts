@@ -290,9 +290,9 @@ function makeBaseLegPlatformOp(args: {
   sideOverhangM: number;
   frontOverhangM: number;
 }): MutableRecord {
-  const frontOverhang = Math.max(0, Number(args.frontOverhangM) || 0);
+  const frontOverhang = Math.max(0, __asNum(args.frontOverhangM, 0));
   const platformDepth = Math.max(BASE_LEG_PLATFORM_DIMENSIONS.minDepthM, args.depth + frontOverhang);
-  const sideOverhang = args.sideMode === 'flush' ? 0 : Math.max(0, Number(args.sideOverhangM) || 0);
+  const sideOverhang = args.sideMode === 'flush' ? 0 : Math.max(0, __asNum(args.sideOverhangM, 0));
   return {
     kind: 'leg_platform',
     width: Math.max(BASE_LEG_PLATFORM_DIMENSIONS.minWidthM, args.width + sideOverhang * 2),

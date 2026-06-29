@@ -9,6 +9,7 @@ import type {
 } from '../../../types';
 
 import { asRecord } from '../runtime/record.js';
+import { readCorePureInteger, readCorePureNumber } from './core_pure_number_contracts.js';
 
 export type ModuleStructureItem = ModulesStructureItemLike;
 export type ModuleConfig = NormalizedTopModuleConfigLike;
@@ -37,14 +38,11 @@ export function __asArray(v: unknown): unknown[] {
 }
 
 export function __asInt(v: unknown, d: number) {
-  const s = typeof v === 'string' ? v : String(v ?? '');
-  const n = parseInt(s, 10);
-  return Number.isFinite(n) ? n : d;
+  return readCorePureInteger(v, d);
 }
 
 export function __asNum(v: unknown, d: number) {
-  const n = Number(v);
-  return Number.isFinite(n) ? n : d;
+  return readCorePureNumber(v, d);
 }
 
 export function __sumDoors(modulesStructure: unknown) {

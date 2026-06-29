@@ -6,6 +6,11 @@ import { computeHingedDoorPivotMap, computeModuleLayout } from './pure_api.js';
 import { stripWidthOverridesFromConfig } from '../features/special_dims/index.js';
 import { asRecord } from '../runtime/record.js';
 import { moduleRequiresCustomBoundaryGeometry } from './module_custom_geometry_policy.js';
+import {
+  readCorePureInteger,
+  readCorePureNumber,
+  readCorePureNumberArray,
+} from './core_pure_number_contracts.js';
 
 import type {
   AppContainer,
@@ -76,9 +81,7 @@ function readUiRawPreferredString(
 }
 
 function toDoorCount(m: ModuleLike | null | undefined): number {
-  if (!m) return 0;
-  const raw = m.doors;
-  return typeof raw === 'number' ? raw : Number(raw) || 0;
+  return readCorePureInteger(m?.doors, 0);
 }
 
 function isCoreLayoutLike(value: unknown): value is CoreLayoutLike {
@@ -143,19 +146,11 @@ function readHingeMap(value: unknown): HingeMap {
 }
 
 function readFiniteNumberList(value: unknown): number[] | null {
-  if (!Array.isArray(value)) return null;
-  const out = new Array<number>(value.length);
-  for (let i = 0; i < value.length; i++) {
-    const n = typeof value[i] === 'number' ? value[i] : Number(value[i]);
-    if (!Number.isFinite(n)) return null;
-    out[i] = n;
-  }
-  return out;
+  return readCorePureNumberArray(value);
 }
 
 function readFiniteNumberOrDefault(value: unknown, defaultValue: number): number {
-  const n = typeof value === 'number' ? value : Number(value);
-  return Number.isFinite(n) ? n : defaultValue;
+  return readCorePureNumber(value, defaultValue);
 }
 
 function readRequiredCoreLayout(
@@ -174,8 +169,8 @@ function readHingedDoorPivotMap(value: unknown): HingedDoorPivotMapLike | null {
   for (const key of Object.keys(rec)) {
     const entry = asRecord<BuildHingedDoorPivotEntryLike>(rec[key]);
     if (!entry) continue;
-    const doorId = Number(key);
-    if (!Number.isFinite(doorId)) continue;
+    if (!/^\d+$/.test(key)) continue;
+    const doorId = parseInt(key, 10);
     out[doorId] = { ...entry };
   }
   return out;
