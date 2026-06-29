@@ -7,7 +7,7 @@ const ROOT = process.cwd();
 
 function runTsModule(expr) {
   const script = [
-    "import { buildProjectConfigSnapshot, buildProjectUiSnapshot, captureProjectLoadSourceFlags, preserveUiEphemeral, shouldPreserveProjectAutosaveOnLoad } from './esm/native/io/project_io_load_helpers.ts';",
+    "import { buildProjectConfigSnapshot, buildProjectUiSnapshot, captureProjectLoadSourceFlags, captureProjectPrevUiMode, preserveUiEphemeral, shouldPreserveProjectAutosaveOnLoad } from './esm/native/io/project_io_load_helpers.ts';",
     "import { buildDefaultProjectDataSnapshot, finalizeProjectForSavePayload } from './esm/native/io/project_io_save_helpers.ts';",
     'const cloneJson = (value) => JSON.parse(JSON.stringify(value));',
     `const result = (${expr});`,
@@ -113,6 +113,8 @@ test('[wave7] project load helpers preserve runtime UI ephemera and capture sour
     cloudFlags: captureProjectLoadSourceFlags({ meta: { source: 'cloudSketch.restore' } }),
     resetPreservesAutosave: shouldPreserveProjectAutosaveOnLoad({ meta: { source: 'react:header:resetDefault', preserveAutosave: true } }),
     regularLoadPreservesAutosave: shouldPreserveProjectAutosaveOnLoad({ meta: { source: 'project.load' } }),
+    canonicalPrevUiMode: captureProjectPrevUiMode({ isChestMode: true, cornerMode: true, cornerSide: 'left', raw: { cornerSide: 'right' } }),
+    retiredPrevUiAliases: captureProjectPrevUiMode({ isChestMode: 1, isCornerMode: true, cornerConnectorEnabled: true, raw: { cornerSide: 'left' } }),
     preserved: preserveUiEphemeral(
       { projectName: 'Imported project' },
       { activeTab: 'notes', selectedModelId: 'm-42', site2TabsGateOpen: true, site2TabsGateUntil: 1234, site2TabsGateBy: 'tester', autosaveInfo: { timestamp: 42, dateString: 'saved' } }
@@ -129,6 +131,16 @@ test('[wave7] project load helpers preserve runtime UI ephemera and capture sour
     isHistoryApply: false,
     isModelApply: false,
     isCloudApply: true,
+  });
+  assert.deepEqual(result.canonicalPrevUiMode, {
+    prevChestMode: true,
+    prevCornerMode: true,
+    prevCornerSide: 'left',
+  });
+  assert.deepEqual(result.retiredPrevUiAliases, {
+    prevChestMode: false,
+    prevCornerMode: false,
+    prevCornerSide: 'right',
   });
   assert.deepEqual(result.preserved, {
     projectName: 'Imported project',

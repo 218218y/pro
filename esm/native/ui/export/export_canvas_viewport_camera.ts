@@ -6,24 +6,11 @@ import {
   getDimsMFromPlatform,
   shouldFailFast,
 } from '../../services/api.js';
-import { getBooleanProp } from './export_canvas_core_shared.js';
 import { _exportReportThrottled, _reportExportError } from './export_canvas_core_feedback.js';
 import { getCameraControlsOrNull } from './export_canvas_viewport_shared.js';
 
 function isChestModeEnabled(App: AppContainer): boolean {
-  try {
-    const ui = getUi(App) || {};
-    const vIsChestMode = getBooleanProp(ui, 'isChestMode');
-    const vChestMode = getBooleanProp(ui, 'chestMode');
-    return typeof vIsChestMode !== 'undefined'
-      ? !!vIsChestMode
-      : typeof vChestMode !== 'undefined'
-        ? !!vChestMode
-        : false;
-  } catch (e) {
-    _exportReportThrottled(App, 'exportViewport.readChestMode', e, { throttleMs: 2000 });
-    return false;
-  }
+  return getUi(App).isChestMode === true;
 }
 
 function adjustChestCameraBestEffort(App: AppContainer, op: string): boolean {

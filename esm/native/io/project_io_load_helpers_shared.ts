@@ -73,12 +73,10 @@ export function normalizeGlobalHandleType(value: unknown): HandleType | undefine
 
 export function captureProjectPrevUiMode(uiState: UiStateLike | null | undefined): ProjectIoPrevUiModeLike {
   const uiNow = asRecord(uiState) || {};
-  const rawNow = asRecord(uiNow.raw) || {};
-  const cornerModeVal = uiNow.cornerMode ?? uiNow.isCornerMode ?? uiNow.cornerConnectorEnabled;
-  const sideVal = uiNow.cornerSide ?? rawNow.cornerSide;
+  const sideVal = uiNow.cornerSide;
   return {
-    prevChestMode: !!uiNow.isChestMode,
-    prevCornerMode: !!cornerModeVal,
+    prevChestMode: uiNow.isChestMode === true,
+    prevCornerMode: uiNow.cornerMode === true,
     prevCornerSide: sideVal === 'left' ? 'left' : 'right',
   };
 }

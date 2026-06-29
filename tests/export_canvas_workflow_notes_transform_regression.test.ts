@@ -2,12 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createExportCanvasWorkflowOps } from '../esm/native/ui/export/export_canvas_workflows.ts';
+import { shouldPreserveLiveViewportForSketchImageExport } from '../esm/native/ui/export/export_canvas_workflow_viewport_policy.ts';
 
 type MutableApp = {
   sketchMode: boolean;
   doorsOpen: boolean;
   renderLog: unknown[];
-  ui?: Record<string, unknown>;
+  store: { getState: () => Record<string, unknown> };
 };
 
 function createVec3(x: number, y: number, z: number) {
@@ -90,7 +91,15 @@ function createWorkflowHarness(initial: {
     sketchMode: initial.sketchMode,
     doorsOpen: initial.doorsOpen,
     renderLog: [],
-    ui: initial.ui,
+    store: {
+      getState: () => ({
+        ui: initial.ui || {},
+        config: {},
+        runtime: {},
+        mode: {},
+        meta: {},
+      }),
+    },
   };
 
   const viewerRect = { left: 0, top: 0, width: 200, height: 100 } as DOMRectReadOnly;
@@ -264,6 +273,21 @@ test('chest render/sketch export preserves the live viewport and uses screenshot
     assert.deepEqual(transform?.sourceRect, { left: 0, top: 0, width: 200, height: 100 });
     assert.equal(transform?.kind, undefined);
   }
+});
+
+test('export live viewport policy ignores retired UI aliases and raw flags', () => {
+  const { App } = createWorkflowHarness({
+    sketchMode: false,
+    doorsOpen: false,
+    ui: {
+      chestMode: true,
+      isCornerMode: true,
+      cornerConnectorEnabled: true,
+      raw: { isChestMode: true, cornerMode: true },
+    },
+  });
+
+  assert.equal(shouldPreserveLiveViewportForSketchImageExport(App as any), false);
 });
 
 test('corner open/closed export preserves the live viewport and uses screenshot note mapping', async () => {

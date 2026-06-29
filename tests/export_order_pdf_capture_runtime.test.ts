@@ -91,7 +91,20 @@ test('export order pdf capture canvas helpers keep first successful fetch result
 });
 
 function createCompositeCaptureHarness(ui: Record<string, unknown>) {
-  const App: any = { ui, services: {}, sketchMode: true, doorsOpen: true };
+  const App: any = {
+    services: {},
+    sketchMode: true,
+    doorsOpen: true,
+    store: {
+      getState: () => ({
+        ui,
+        config: {},
+        runtime: {},
+        mode: {},
+        meta: {},
+      }),
+    },
+  };
   const cameraWorkflowCalls = { snap: 0, autoZoom: 0, scale: 0 };
   const notesTransforms: unknown[] = [];
   const { canvas } = createCanvasRecorder();
