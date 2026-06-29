@@ -1,4 +1,8 @@
 import { DOOR_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  readGeometryRuntimeNumber,
+  readGeometryRuntimePositiveBoxDimension,
+} from './geometry_runtime_contracts.js';
 import { __asBufferAttribute } from './visuals_and_contents_shared.js';
 import { appendProfileDoorFrame } from './visuals_and_contents_door_visual_profile_frame.js';
 import { createDoubleProfileDoorVisual } from './visuals_and_contents_door_visual_double_profile.js';
@@ -30,15 +34,12 @@ function normalizeGlassFrameStyle(value: unknown): BuilderDoorVisualFrameStyle {
   return 'profile';
 }
 
-function readBoxDimension(geometry: unknown, index: number, key: 'width' | 'height' | 'depth'): number {
-  const rec = isRecord(geometry) ? geometry : null;
-  const args = Array.isArray(rec?.args) ? rec.args : null;
-  const argValue = typeof args?.[index] === 'number' ? Number(args[index]) : NaN;
-  if (Number.isFinite(argValue) && argValue > 0) return argValue;
-
-  const parameters = isRecord(rec?.parameters) ? rec.parameters : null;
-  const parameterValue = typeof parameters?.[key] === 'number' ? Number(parameters[key]) : NaN;
-  return Number.isFinite(parameterValue) && parameterValue > 0 ? parameterValue : NaN;
+function readBoxDimension(
+  geometry: unknown,
+  index: number,
+  key: 'width' | 'height' | 'depth'
+): number | null {
+  return readGeometryRuntimePositiveBoxDimension(geometry, index, key);
 }
 
 function findCenterPanelMetrics(
@@ -55,15 +56,8 @@ function findCenterPanelMetrics(
       const width = readBoxDimension(geometry, 0, 'width');
       const height = readBoxDimension(geometry, 1, 'height');
       const depth = readBoxDimension(geometry, 2, 'depth');
-      if (
-        Number.isFinite(width) &&
-        width > 0 &&
-        Number.isFinite(height) &&
-        height > 0 &&
-        Number.isFinite(depth) &&
-        depth > 0
-      ) {
-        const centerZ = typeof node.position?.z === 'number' ? Number(node.position.z) : 0;
+      if (width != null && height != null && depth != null) {
+        const centerZ = readGeometryRuntimeNumber(node.position?.z) ?? 0;
         return {
           width,
           height,

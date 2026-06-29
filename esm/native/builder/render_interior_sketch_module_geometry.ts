@@ -10,6 +10,12 @@ import type {
 import type { RenderInteriorSketchInput } from './render_interior_sketch_shared.js';
 import type { RenderSketchFreeWardrobeBox } from './render_interior_sketch_boxes_shared.js';
 
+import { readGeometryRuntimeNumber } from './geometry_runtime_contracts.js';
+import {
+  asGeometryUserData,
+  readGeometryUserDataNumberKey,
+  readGeometryUserDataPositiveNumberKey,
+} from './geometry_user_data_contracts.js';
 import { asMesh, asValueRecord, readObject, toFiniteNumber } from './render_interior_sketch_shared.js';
 
 export type SketchModuleInnerFaces = {
@@ -79,12 +85,12 @@ export function createMeasureWardrobeLocalBox(args: CreateMeasureWardrobeLocalBo
           const min = tmp.min;
           const max = tmp.max;
           if (
-            !Number.isFinite(min.x) ||
-            !Number.isFinite(min.y) ||
-            !Number.isFinite(min.z) ||
-            !Number.isFinite(max.x) ||
-            !Number.isFinite(max.y) ||
-            !Number.isFinite(max.z)
+            readGeometryRuntimeNumber(min.x) == null ||
+            readGeometryRuntimeNumber(min.y) == null ||
+            readGeometryRuntimeNumber(min.z) == null ||
+            readGeometryRuntimeNumber(max.x) == null ||
+            readGeometryRuntimeNumber(max.y) == null ||
+            readGeometryRuntimeNumber(max.z) == null
           ) {
             return;
           }
@@ -101,22 +107,27 @@ export function createMeasureWardrobeLocalBox(args: CreateMeasureWardrobeLocalBo
       if (!hasAny) return null;
       const min = box.min;
       const max = box.max;
-      const center = new THREE.Vector3(
-        (Number(min.x) + Number(max.x)) / 2,
-        (Number(min.y) + Number(max.y)) / 2,
-        (Number(min.z) + Number(max.z)) / 2
-      );
+      const minX = readGeometryRuntimeNumber(min.x);
+      const minY = readGeometryRuntimeNumber(min.y);
+      const minZ = readGeometryRuntimeNumber(min.z);
+      const maxX = readGeometryRuntimeNumber(max.x);
+      const maxY = readGeometryRuntimeNumber(max.y);
+      const maxZ = readGeometryRuntimeNumber(max.z);
+      if (minX == null || minY == null || minZ == null || maxX == null || maxY == null || maxZ == null) {
+        return null;
+      }
+      const center = new THREE.Vector3((minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2);
       root.worldToLocal?.(center);
-      const centerX = Number(center.x);
-      const centerY = Number(center.y);
-      const centerZ = Number(center.z);
-      const width = Math.abs(Number(max.x) - Number(min.x));
-      const height = Math.abs(Number(max.y) - Number(min.y));
-      const depth = Math.abs(Number(max.z) - Number(min.z));
+      const centerX = readGeometryRuntimeNumber(center.x);
+      const centerY = readGeometryRuntimeNumber(center.y);
+      const centerZ = readGeometryRuntimeNumber(center.z);
+      const width = Math.abs(maxX - minX);
+      const height = Math.abs(maxY - minY);
+      const depth = Math.abs(maxZ - minZ);
       if (
-        !Number.isFinite(centerX) ||
-        !Number.isFinite(centerY) ||
-        !Number.isFinite(centerZ) ||
+        centerX == null ||
+        centerY == null ||
+        centerZ == null ||
         !(width > 0) ||
         !(height > 0) ||
         !(depth > 0)
@@ -143,9 +154,9 @@ export function resolveSketchModuleInnerFaces(
       geometry?.computeBoundingBox?.();
       const bb = geometry?.boundingBox;
       if (bb?.max && bb?.min) {
-        const maxX = Number(bb.max.x);
-        const minX = Number(bb.min.x);
-        if (Number.isFinite(maxX) && Number.isFinite(minX)) return Math.abs(maxX - minX);
+        const maxX = readGeometryRuntimeNumber(bb.max.x);
+        const minX = readGeometryRuntimeNumber(bb.min.x);
+        if (maxX != null && minX != null) return Math.abs(maxX - minX);
       }
     } catch {
       // ignore
@@ -171,9 +182,9 @@ export function resolveSketchModuleInnerFaces(
   if (!leftMesh || !rightMesh) return null;
   const leftW = getMeshW(leftMesh);
   const rightW = getMeshW(rightMesh);
-  const leftX = Number(leftMesh.position?.x);
-  const rightX = Number(rightMesh.position?.x);
-  if (!Number.isFinite(leftX) || !Number.isFinite(rightX) || !(leftW > 0) || !(rightW > 0)) return null;
+  const leftX = readGeometryRuntimeNumber(leftMesh.position?.x);
+  const rightX = readGeometryRuntimeNumber(rightMesh.position?.x);
+  if (leftX == null || rightX == null || !(leftW > 0) || !(rightW > 0)) return null;
   const leftInner = leftX + leftW / 2;
   const rightInner = rightX - rightW / 2;
   if (!Number.isFinite(leftInner) || !Number.isFinite(rightInner) || !(rightInner > leftInner)) return null;
@@ -230,23 +241,23 @@ export function resolveSketchModuleDoorFaceSpan(
   for (let i = 0; i < children.length; i++) {
     const child = readObject<InteriorGroupLike>(children[i]);
     if (!child) continue;
-    const ud = readObject<InteriorValueRecord>(child.userData);
+    const ud = asGeometryUserData(child.userData);
     if (!ud) continue;
-    const childModuleIndex = toFiniteNumber(ud.moduleIndex);
+    const childModuleIndex = readGeometryUserDataNumberKey(ud, 'moduleIndex');
     const childModuleKey = ud.moduleIndex != null ? String(ud.moduleIndex) : '';
     const matchesNumericModule =
       moduleIndex >= 0 && childModuleIndex != null && Math.floor(childModuleIndex) === moduleIndex;
     const matchesScopedModuleKey = !!wantModuleKey && childModuleKey === wantModuleKey;
     if (!matchesNumericModule && !matchesScopedModuleKey) continue;
     const partId = ud.partId != null ? String(ud.partId) : '';
-    const doorId = toFiniteNumber(ud.__wpDoorId);
+    const doorId = readGeometryUserDataNumberKey(ud, '__wpDoorId');
     if (doorId == null && !/^d\d+/.test(partId)) continue;
     const childStackRaw = ud.__wpStack;
     const childStack = typeof childStackRaw === 'string' ? String(childStackRaw) : '';
     if (childStack && childStack !== stackKey) continue;
-    const doorWidth = toFiniteNumber(ud.__doorWidth);
-    const pivotX = toFiniteNumber(readObject<InteriorValueRecord>(child.position)?.x);
-    const meshOffsetX = toFiniteNumber(ud.__doorMeshOffsetX) ?? 0;
+    const doorWidth = readGeometryUserDataPositiveNumberKey(ud, '__doorWidth');
+    const pivotX = readGeometryRuntimeNumber(readObject<InteriorValueRecord>(child.position)?.x);
+    const meshOffsetX = readGeometryUserDataNumberKey(ud, '__doorMeshOffsetX') ?? 0;
     if (doorWidth == null || !(doorWidth > 0) || pivotX == null) continue;
     const leftX = pivotX + meshOffsetX - doorWidth / 2;
     const rightX = pivotX + meshOffsetX + doorWidth / 2;

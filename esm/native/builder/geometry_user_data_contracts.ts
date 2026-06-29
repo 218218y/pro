@@ -5,6 +5,12 @@
 // be silently accepted here, because doing so hides stale runtime state and makes
 // downstream placement code depend on accidental coercion.
 
+import {
+  readGeometryRuntimeNumber,
+  readGeometryRuntimePositiveNumber,
+  readGeometryRuntimeSign,
+} from './geometry_runtime_contracts.js';
+
 export type GeometryUserDataRecord = Record<string, unknown>;
 
 export type DoorLeafRect = {
@@ -21,12 +27,11 @@ export function asGeometryUserData(value: unknown): GeometryUserDataRecord | nul
 }
 
 export function readGeometryUserDataNumber(value: unknown): number | null {
-  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+  return readGeometryRuntimeNumber(value);
 }
 
 export function readGeometryUserDataPositiveNumber(value: unknown): number | null {
-  const n = readGeometryUserDataNumber(value);
-  return n != null && n > 0 ? n : null;
+  return readGeometryRuntimePositiveNumber(value);
 }
 
 export function readGeometryUserDataNumberKey(
@@ -46,8 +51,7 @@ export function readGeometryUserDataPositiveNumberKey(
 }
 
 export function readGeometryUserDataSign(value: unknown, defaultValue: 1 | -1 | null = null): 1 | -1 | null {
-  if (value === 1 || value === -1) return value;
-  return defaultValue;
+  return readGeometryRuntimeSign(value, defaultValue);
 }
 
 export function readGeometryUserDataSignKey(
@@ -92,6 +96,18 @@ export function readExplicitDoorRectFromGeometryUserData(
   const maxX = readGeometryUserDataNumberKey(userData, '__doorRectMaxX');
   const minY = readGeometryUserDataNumberKey(userData, '__doorRectMinY');
   const maxY = readGeometryUserDataNumberKey(userData, '__doorRectMaxY');
+  if (minX == null || maxX == null || minY == null || maxY == null) return null;
+  if (!(maxX > minX) || !(maxY > minY)) return null;
+  return { minX, maxX, minY, maxY };
+}
+
+export function readMirrorPlacementRectFromGeometryUserData(
+  userData: GeometryUserDataRecord | null | undefined
+): DoorLeafRect | null {
+  const minX = readGeometryUserDataNumberKey(userData, '__mirrorRectMinX');
+  const maxX = readGeometryUserDataNumberKey(userData, '__mirrorRectMaxX');
+  const minY = readGeometryUserDataNumberKey(userData, '__mirrorRectMinY');
+  const maxY = readGeometryUserDataNumberKey(userData, '__mirrorRectMaxY');
   if (minX == null || maxX == null || minY == null || maxY == null) return null;
   if (!(maxX > minX) || !(maxY > minY)) return null;
   return { minX, maxX, minY, maxY };

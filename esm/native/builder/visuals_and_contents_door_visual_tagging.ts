@@ -1,3 +1,8 @@
+import { readGeometryRuntimePositiveNumber } from './geometry_runtime_contracts.js';
+import {
+  asGeometryUserData,
+  readMirrorPlacementRectFromGeometryUserData,
+} from './geometry_user_data_contracts.js';
 import { _asObject } from './visuals_and_contents_shared.js';
 
 import type { Object3DLike } from '../../../types/index.js';
@@ -34,9 +39,11 @@ export function applyDoorFaceIdentityMetadata(node: Object3DLike, faceSign: numb
 export function applyMirrorPlacementRectMetadata(node: Object3DLike, width: number, height: number): void {
   const rec = _asObject(node);
   if (!rec) return;
-  const halfW = Number(width) / 2;
-  const halfH = Number(height) / 2;
-  if (!(Number.isFinite(halfW) && halfW > 0 && Number.isFinite(halfH) && halfH > 0)) return;
+  const widthM = readGeometryRuntimePositiveNumber(width);
+  const heightM = readGeometryRuntimePositiveNumber(height);
+  if (widthM == null || heightM == null) return;
+  const halfW = widthM / 2;
+  const halfH = heightM / 2;
   const userData = _asObject(rec.userData) || {};
   rec.userData = userData;
   userData.__mirrorRectMinX = -halfW;
@@ -50,13 +57,6 @@ export function readMirrorPlacementRectMetadata(
 ): { minX: number; maxX: number; minY: number; maxY: number } | null {
   const rec = _asObject(node);
   if (!rec) return null;
-  const userData = _asObject(rec.userData);
-  if (!userData) return null;
-  const minX = typeof userData.__mirrorRectMinX === 'number' ? Number(userData.__mirrorRectMinX) : NaN;
-  const maxX = typeof userData.__mirrorRectMaxX === 'number' ? Number(userData.__mirrorRectMaxX) : NaN;
-  const minY = typeof userData.__mirrorRectMinY === 'number' ? Number(userData.__mirrorRectMinY) : NaN;
-  const maxY = typeof userData.__mirrorRectMaxY === 'number' ? Number(userData.__mirrorRectMaxY) : NaN;
-  return Number.isFinite(minX) && Number.isFinite(maxX) && Number.isFinite(minY) && Number.isFinite(maxY)
-    ? { minX, maxX, minY, maxY }
-    : null;
+  const userData = asGeometryUserData(rec.userData);
+  return readMirrorPlacementRectFromGeometryUserData(userData);
 }

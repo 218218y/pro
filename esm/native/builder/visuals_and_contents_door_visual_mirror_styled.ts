@@ -1,3 +1,7 @@
+import {
+  readGeometryRuntimeNumber,
+  readGeometryRuntimePositiveBoxDimension,
+} from './geometry_runtime_contracts.js';
 import { DOOR_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { createProfileDoorVisual } from './visuals_and_contents_door_visual_profile.js';
 import { createDoubleProfileDoorVisual } from './visuals_and_contents_door_visual_double_profile.js';
@@ -9,13 +13,7 @@ import {
 import { FULL_MIRROR_INSET_M } from '../../shared/mirror_layout_contracts_shared.js';
 import { readMirrorLayoutFaceSign, resolveMirrorPlacementListInRect } from '../features/mirror_layout.js';
 
-import type {
-  AppContainer,
-  MirrorLayoutList,
-  Object3DLike,
-  ThreeLike,
-  UnknownRecord,
-} from '../../../types/index.js';
+import type { AppContainer, MirrorLayoutList, Object3DLike, ThreeLike } from '../../../types/index.js';
 import type { StyledDoorVisualArgs } from './visuals_and_contents_door_visual_style_contracts.js';
 
 type MirrorStyledDoorStyle = 'profile' | 'double_profile';
@@ -59,22 +57,6 @@ type MirrorDepthLayout = {
 };
 
 type BoxGeometryDimensionKey = 'width' | 'height' | 'depth';
-type BoxGeometryLike = {
-  args?: unknown[];
-  parameters?: Partial<Record<BoxGeometryDimensionKey, unknown>>;
-};
-
-function isRecord(value: unknown): value is UnknownRecord {
-  return !!value && typeof value === 'object' && !Array.isArray(value);
-}
-
-function readBoxGeometryLike(value: unknown): BoxGeometryLike | null {
-  if (!isRecord(value)) return null;
-  const args = Array.isArray(value.args) ? value.args : undefined;
-  const parameters = isRecord(value.parameters) ? value.parameters : undefined;
-  return { args, parameters };
-}
-
 function readPanelGeometry(value: Object3DLike): unknown {
   return Reflect.get(value, 'geometry');
 }
@@ -98,13 +80,12 @@ function resolveMirrorDepthLayout(thickness: number): MirrorDepthLayout {
   return { mirrorThick, adhesiveGap };
 }
 
-function readBoxGeometryDimension(geometry: unknown, index: number, key: BoxGeometryDimensionKey): number {
-  const rec = readBoxGeometryLike(geometry);
-  const argsValue = typeof rec?.args?.[index] === 'number' ? Number(rec.args[index]) : NaN;
-  if (Number.isFinite(argsValue) && argsValue > 0) return argsValue;
-
-  const parameterValue = typeof rec?.parameters?.[key] === 'number' ? Number(rec.parameters[key]) : NaN;
-  return Number.isFinite(parameterValue) && parameterValue > 0 ? parameterValue : NaN;
+function readBoxGeometryDimension(
+  geometry: unknown,
+  index: number,
+  key: BoxGeometryDimensionKey
+): number | null {
+  return readGeometryRuntimePositiveBoxDimension(geometry, index, key);
 }
 
 function readCenterPanelMetrics(group: Object3DLike, role: string): CenterPanelMetrics | null {
@@ -116,15 +97,8 @@ function readCenterPanelMetrics(group: Object3DLike, role: string): CenterPanelM
     const width = readBoxGeometryDimension(geometry, 0, 'width');
     const height = readBoxGeometryDimension(geometry, 1, 'height');
     const depth = readBoxGeometryDimension(geometry, 2, 'depth');
-    const centerZ = Number(child.position.z) || 0;
-    if (!(
-      Number.isFinite(width) &&
-      width > 0 &&
-      Number.isFinite(height) &&
-      height > 0 &&
-      Number.isFinite(depth) &&
-      depth > 0
-    )) {
+    const centerZ = readGeometryRuntimeNumber(child.position?.z) ?? 0;
+    if (width == null || height == null || depth == null) {
       continue;
     }
     return {

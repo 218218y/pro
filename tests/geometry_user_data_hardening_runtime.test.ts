@@ -6,12 +6,22 @@ import {
   readGeometryUserDataNumber,
   readGeometryUserDataPositiveNumber,
   readGeometryUserDataSign,
+  readMirrorPlacementRectFromGeometryUserData,
 } from '../esm/native/builder/geometry_user_data_contracts.ts';
+import {
+  readGeometryRuntimeNumber,
+  readGeometryRuntimePositiveBoxDimension,
+} from '../esm/native/builder/geometry_runtime_contracts.ts';
 import { appendDoorTrimVisuals } from '../esm/native/builder/door_trim_visuals.ts';
+import {
+  applyMirrorPlacementRectMetadata,
+  readMirrorPlacementRectMetadata,
+} from '../esm/native/builder/visuals_and_contents_door_visual_tagging.ts';
 import { createFrontRevealGeometryRuntime } from '../esm/native/builder/post_build_front_reveal_frames_geometry.ts';
 import { applyFrontRevealDoorFrames } from '../esm/native/builder/post_build_front_reveal_frames_doors.ts';
 import { applyFrontRevealDrawerFrames } from '../esm/native/builder/post_build_front_reveal_frames_drawers.ts';
 import { rebuildSketchSegmentedDoor } from '../esm/native/builder/post_build_sketch_door_cuts_rebuild.ts';
+import { resolveSketchModuleDoorFaceSpan } from '../esm/native/builder/render_interior_sketch_module_geometry.ts';
 import { getDrawersArray } from '../esm/native/runtime/render_access.ts';
 
 class FakeBoxGeometry {
@@ -69,6 +79,91 @@ test('geometry userData readers reject numeric strings at the internal metadata 
     readDoorLeafRectFromGeometryUserData({ __doorWidth: 0.8, __doorHeight: 1.2, __doorMeshOffsetX: '0.1' }),
     { minX: -0.4, maxX: 0.4, minY: -0.6, maxY: 0.6 }
   );
+});
+
+test('geometry runtime readers reject numeric strings from object positions and box geometry dimensions', () => {
+  assert.equal(readGeometryRuntimeNumber('0.2'), null);
+  assert.equal(readGeometryRuntimeNumber(0.2), 0.2);
+  assert.equal(readGeometryRuntimePositiveBoxDimension({ args: ['0.8', 1.2, 0.02] }, 0, 'width'), null);
+  assert.equal(readGeometryRuntimePositiveBoxDimension({ parameters: { width: '0.8' } }, 0, 'width'), null);
+  assert.equal(readGeometryRuntimePositiveBoxDimension({ args: [0.8, 1.2, 0.02] }, 0, 'width'), 0.8);
+  assert.equal(readGeometryRuntimePositiveBoxDimension({ parameters: { width: 0.8 } }, 0, 'width'), 0.8);
+});
+
+test('mirror placement metadata uses strict runtime numbers and rejects string rect values', () => {
+  assert.equal(
+    readMirrorPlacementRectFromGeometryUserData({
+      __mirrorRectMinX: '-0.2',
+      __mirrorRectMaxX: 0.2,
+      __mirrorRectMinY: -0.4,
+      __mirrorRectMaxY: 0.4,
+    }),
+    null
+  );
+
+  const node = { userData: {} as Record<string, unknown> };
+  applyMirrorPlacementRectMetadata(node as never, '0.8' as never, 1.2);
+  assert.deepEqual(node.userData, {});
+
+  applyMirrorPlacementRectMetadata(node as never, 0.8, 1.2);
+  assert.deepEqual(readMirrorPlacementRectMetadata(node as never), {
+    minX: -0.4,
+    maxX: 0.4,
+    minY: -0.6,
+    maxY: 0.6,
+  });
+
+  node.userData.__mirrorRectMinX = '-0.4';
+  assert.equal(readMirrorPlacementRectMetadata(node as never), null);
+});
+
+test('sketch module door face span ignores scene door metadata stored as numeric strings', () => {
+  const baseArgs = {
+    group: {
+      children: [
+        {
+          userData: {
+            moduleIndex: 0,
+            partId: 'd1_full',
+            __wpDoorId: 1,
+            __wpStack: 'top',
+            __doorWidth: '0.8',
+          },
+          position: { x: 0 },
+        },
+      ],
+    },
+    input: { stackKey: 'top' },
+    moduleIndex: 0,
+    moduleKeyStr: '0',
+    modulesLength: 1,
+    innerW: 1,
+    internalCenterX: 0,
+    woodThick: 0.018,
+  };
+
+  assert.equal(resolveSketchModuleDoorFaceSpan(baseArgs as never), null);
+
+  const numericArgs = {
+    ...baseArgs,
+    group: {
+      children: [
+        {
+          userData: {
+            moduleIndex: 0,
+            partId: 'd1_full',
+            __wpDoorId: 1,
+            __wpStack: 'top',
+            __doorWidth: 0.8,
+            __doorMeshOffsetX: '0.1',
+          },
+          position: { x: 0 },
+        },
+      ],
+    },
+  };
+
+  assert.deepEqual(resolveSketchModuleDoorFaceSpan(numericArgs as never), { spanW: 0.8, centerX: 0 });
 });
 
 test('door trim visuals do not coerce string geometry args into valid trim placement', () => {
