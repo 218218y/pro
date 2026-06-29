@@ -2,7 +2,7 @@
 //
 // These helpers are intentionally strict: render-created Mesh/Group metadata is an
 // internal geometry contract, not a UI/import boundary.  Numeric strings must not
-// be silently accepted here, because doing so hides stale legacy state and makes
+// be silently accepted here, because doing so hides stale runtime state and makes
 // downstream placement code depend on accidental coercion.
 
 export type GeometryUserDataRecord = Record<string, unknown>;
