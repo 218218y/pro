@@ -2,11 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { resolveModuleLoopRuntime } from '../esm/native/builder/module_loop_pipeline_runtime.ts';
+import { resolveModuleFrame } from '../esm/native/builder/module_loop_pipeline_module_frame.ts';
 import { resolveModuleLoopRuntimeBase } from '../esm/native/builder/module_loop_pipeline_runtime_base.ts';
 import { resolveModuleLoopRuntimeResolvers } from '../esm/native/builder/module_loop_pipeline_runtime_resolvers.ts';
 import { createInterDivider } from '../esm/native/builder/module_loop_pipeline_module_dividers.ts';
 import { resolveModuleDepthProfile } from '../esm/native/builder/module_loop_pipeline_module_depth.ts';
 import { computeModulesAndLayout } from '../esm/native/builder/module_layout_pipeline.ts';
+import { asModuleList, asNumberList } from '../esm/native/builder/module_loop_pipeline_shared.ts';
 
 function closeTo(actual: number, expected: number, message: string): void {
   assert.ok(Math.abs(actual - expected) < 1e-9, `${message}: ${actual} !== ${expected}`);
@@ -159,6 +161,32 @@ test('module loop runtime resolves bottom-stack routing, bottom cache map, and p
   const span = runtime.computeModuleDoorSpan(1, 2, 9, 9);
   assert.ok(Math.abs(span.spanW - 1) < 1e-9);
   assert.ok(Math.abs(span.centerX - 0.6) < 1e-9);
+});
+
+test('module loop runtime readers do not coerce string-encoded module numbers', () => {
+  const modules = asModuleList([{ doors: '3' }, { doors: 2 }]);
+  assert.equal(modules[0]?.doors, undefined);
+  assert.equal(modules[1]?.doors, 2);
+  assert.equal(asNumberList([0.82, '0.79']), null);
+  assert.deepEqual(asNumberList([0.82, 0.79]), [0.82, 0.79]);
+
+  const runtime = resolveModuleLoopRuntimeBase(
+    createCtx({
+      layout: {
+        modules: [{ doors: '3' }],
+        moduleCfgList: [{}],
+        moduleInternalWidths: ['0.82'],
+        singleUnitWidth: 0.25,
+      },
+    })
+  );
+
+  assert.equal(runtime.modules[0]?.doors, undefined);
+  assert.equal(runtime.moduleInternalWidthsList, null);
+
+  const frame = resolveModuleFrame(runtime, { currentX: 0, globalDoorCounter: 1 }, 0, '3');
+  assert.equal(frame.modDoors, 1);
+  assert.equal(frame.modWidth, 0.25);
 });
 
 test('module loop runtime base applies top-stack height offset when deriving custom module heights', () => {

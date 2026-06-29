@@ -5,6 +5,7 @@ import {
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 import { readHexCellConfig, resolveDefaultHexDoorWidthCm } from '../features/hex_cell/index.js';
+import { readCorePureNumberArray, readCorePurePositiveNumber } from './core_pure_number_contracts.js';
 
 import {
   _asObject,
@@ -38,9 +39,7 @@ export function computeHingedDoorPivotMap(input: unknown) {
   const moduleConfigs = Array.isArray(inp.moduleConfigs) ? __asArray(inp.moduleConfigs) : null;
 
   let modules = __normalizeModulesStructure(inp.modulesStructure);
-  const moduleInternalWidths = Array.isArray(inp.moduleInternalWidths)
-    ? __asArray(inp.moduleInternalWidths).map(v => __asNum(v, NaN))
-    : null;
+  const moduleInternalWidths = readCorePureNumberArray(inp.moduleInternalWidths);
   const map: Record<number, HingedDoorPivotSpec> = {};
   let currentX = -totalW / 2 + woodThick;
   let doorId = 1;
@@ -63,11 +62,6 @@ export function computeHingedDoorPivotMap(input: unknown) {
   const OVERLAY_SPECIAL = woodThick / 2;
   const INSET_REVEAL = DOOR_SYSTEM_DIMENSIONS.hinged.insetRevealM;
 
-  const readPositiveCm = (value: unknown): number | null => {
-    const n = __asNum(value, NaN);
-    return Number.isFinite(n) && n > 0 ? n : null;
-  };
-
   for (let mi = 0; mi < modules.length; mi++) {
     const mod = modules[mi];
     let modDoors = __asInt(mod.doors, 1);
@@ -78,7 +72,7 @@ export function computeHingedDoorPivotMap(input: unknown) {
         : singleUnitWidth * modDoors;
     const hexCell = moduleConfigs ? readHexCellConfig(moduleConfigs[mi]) : null;
     const hexDoorWidthCm = hexCell
-      ? readPositiveCm(hexCell.doorWidthCm) || resolveDefaultHexDoorWidthCm(modWidth * 100)
+      ? readCorePurePositiveNumber(hexCell.doorWidthCm) || resolveDefaultHexDoorWidthCm(modWidth * 100)
       : null;
     const hexDoorWidthM =
       hexDoorWidthCm != null ? Math.min(modWidth - 2 * woodThick, hexDoorWidthCm / 100) : null;

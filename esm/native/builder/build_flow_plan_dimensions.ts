@@ -16,7 +16,10 @@ export function collectModuleHeights(args: {
   let allHeightManual = true;
 
   const list = Array.isArray(moduleCfgList) ? moduleCfgList : [];
-  const offHcm = splitActiveForBuild ? Number(lowerHeightCm) : 0;
+  const offHcm =
+    splitActiveForBuild && typeof lowerHeightCm === 'number' && Number.isFinite(lowerHeightCm)
+      ? lowerHeightCm
+      : 0;
   for (let i = 0; i < list.length; i++) {
     const m = readModuleConfig(list[i]);
     const hCmActive = getActiveHeightCmFromConfig(m, offHcm);
@@ -29,8 +32,8 @@ export function collectModuleHeights(args: {
   const carcassH = (() => {
     let maxH = 0;
     for (let i = 0; i < moduleHeightsTotal.length; i++) {
-      const v = Number(moduleHeightsTotal[i]);
-      if (Number.isFinite(v) && v > maxH) maxH = v;
+      const v = moduleHeightsTotal[i];
+      if (v > maxH) maxH = v;
     }
     if (!Number.isFinite(maxH) || maxH <= 0) maxH = H;
 
@@ -61,8 +64,10 @@ export function collectModuleDepths(args: {
     const hexGeometry = resolveHexCellGeometry({
       cfgMod: m,
       moduleWidthM:
-        Array.isArray(moduleInternalWidths) && Number.isFinite(moduleInternalWidths[i])
-          ? Math.max(woodThick * 2, Number(moduleInternalWidths[i]))
+        Array.isArray(moduleInternalWidths) &&
+        typeof moduleInternalWidths[i] === 'number' &&
+        Number.isFinite(moduleInternalWidths[i])
+          ? Math.max(woodThick * 2, moduleInternalWidths[i])
           : D,
       defaultDepthM: D,
       woodThickM: woodThick,
@@ -74,8 +79,8 @@ export function collectModuleDepths(args: {
     if (!allDepthManual) return D;
     let maxD = 0;
     for (let i = 0; i < moduleDepthsTotal.length; i++) {
-      const v = Number(moduleDepthsTotal[i]);
-      if (Number.isFinite(v) && v > maxD) maxD = v;
+      const v = moduleDepthsTotal[i];
+      if (v > maxD) maxD = v;
     }
     if (!Number.isFinite(maxD) || maxD <= 0) return D;
     return maxD;

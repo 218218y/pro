@@ -45,11 +45,15 @@ export function applyEdgeHandleDefaults(
   try {
     const globalHandleType = runtime.cfg.globalHandleType;
     if (globalHandleType !== 'edge' || !runtime.App) return;
-    const nDoors = Number(modDoors) || 0;
-    if (nDoors >= 2 && Number.isFinite(startDoorOfModule)) {
+    const nDoors = typeof modDoors === 'number' && Number.isFinite(modDoors) ? Math.trunc(modDoors) : 0;
+    const startDoor =
+      typeof startDoorOfModule === 'number' && Number.isFinite(startDoorOfModule)
+        ? Math.trunc(startDoorOfModule)
+        : 0;
+    if (nDoors >= 2 && startDoor > 0) {
       for (let di = 0; di + 1 < nDoors; di += 2) {
-        const doorNum = Number(startDoorOfModule) + di;
-        if (Number.isFinite(doorNum) && doorNum > 0) {
+        const doorNum = startDoor + di;
+        if (doorNum > 0) {
           markEdgeHandleDefaultNone(
             runtime.App,
             runtime.stackKey === 'bottom' ? 'bottom' : 'top',

@@ -2,7 +2,6 @@
 
 import { CARCASS_CORNICE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { MutableRecord } from './core_pure_shared.js';
-import { __asNum } from './core_pure_shared.js';
 import { CARCASS_BACK_INSET_Z, type PreparedCarcassInput } from './core_carcass_shared.js';
 import { resolveHexCellGeometry, type HexCellGeometry } from '../features/hex_cell/index.js';
 
@@ -173,11 +172,12 @@ function buildCorniceRuns(prepared: PreparedCarcassInput): CorniceRun[] {
     const moduleWidth = moduleWidths[i];
     const left = i === 0 ? -totalW / 2 : internalLeft;
     const right = i === moduleWidths.length - 1 ? totalW / 2 : internalLeft + moduleWidth + woodThick;
-    const fallbackDepth = Math.max(woodThick, moduleDepths ? __asNum(moduleDepths[i], D) : D);
+    const moduleDepth = moduleDepths ? moduleDepths[i] : D;
+    const fallbackDepth = Math.max(woodThick, typeof moduleDepth === 'number' ? moduleDepth : D);
     const footprint = buildModuleCorniceFootprint(prepared, i, left, right, fallbackDepth);
     const depth = footprint.edgeDepth;
     const rawHeight = moduleHeightsRaw ? moduleHeightsRaw[i] : H;
-    const totalHeight = __asNum(rawHeight, H);
+    const totalHeight = typeof rawHeight === 'number' && Number.isFinite(rawHeight) ? rawHeight : H;
     const bodyHeight = Math.min(cabinetBodyHeight, Math.max(woodThick * 2, totalHeight - startY));
     const topY = startY + bodyHeight + prepared.baseLegTopPlatformHeight;
 
@@ -870,7 +870,7 @@ function buildProfileCorniceSection(params: CorniceSectionParams): MutableRecord
 function makeInternalBoundaryCorniceProfile(overhang: number): MutableRecord[] {
   return makeCorniceProfile(overhang).map(point => ({
     ...point,
-    x: Math.max(0, __asNum(point.x, 0)),
+    x: Math.max(0, typeof point.x === 'number' && Number.isFinite(point.x) ? point.x : 0),
   }));
 }
 

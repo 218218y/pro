@@ -21,11 +21,11 @@ export function buildModulesLoop(ctx: unknown) {
   }
 
   const runtime = resolveModuleLoopRuntime(ctx);
+  const doorIdStart = runtime.flags.doorIdStart;
   const state = {
     currentX: -runtime.totalW / 2 + runtime.woodThick,
-    globalDoorCounter: Number.isFinite(Number(runtime.flags.doorIdStart))
-      ? Number(runtime.flags.doorIdStart)
-      : 1,
+    globalDoorCounter:
+      typeof doorIdStart === 'number' && Number.isFinite(doorIdStart) ? Math.trunc(doorIdStart) : 1,
   };
 
   runtime.modules.forEach((_module, index) => {

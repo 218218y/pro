@@ -80,8 +80,14 @@ export function asHinged(value: unknown): BuildCtxHingedLike {
 
 function readModuleItem(value: unknown): ModuleLike {
   if (!isValueRecord(value)) return {};
-  const doors = Number(value.doors);
-  return Number.isFinite(doors) && doors > 0 ? { ...value, doors } : { ...value };
+  const next: ModuleLike = { ...value };
+  const doors = value.doors;
+  if (typeof doors === 'number' && Number.isFinite(doors) && doors > 0) {
+    next.doors = doors;
+  } else {
+    delete next.doors;
+  }
+  return next;
 }
 
 export function asModuleList(value: unknown): ModuleLike[] {
@@ -99,7 +105,14 @@ export function asModuleConfigList(value: unknown): ModuleConfigLike[] {
 }
 
 export function asNumberList(value: unknown): number[] | null {
-  return Array.isArray(value) ? value.map(v => Number(v)) : null;
+  if (!Array.isArray(value)) return null;
+  const out = new Array<number>(value.length);
+  for (let i = 0; i < value.length; i += 1) {
+    const n = value[i];
+    if (typeof n !== 'number' || !Number.isFinite(n)) return null;
+    out[i] = n;
+  }
+  return out;
 }
 
 export function asDoorState(value: unknown): DoorStateLike | undefined {

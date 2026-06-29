@@ -57,10 +57,14 @@ export function resolveModuleFrame(
 ): ResolvedModuleFrame {
   const config = runtime.moduleCfgList[index] || DEFAULT_MODULE_CONFIG;
   const depth = resolveModuleDepthProfile(runtime, config);
-  const modDoors = typeof modDoorsRaw === 'number' ? modDoorsRaw : Number(modDoorsRaw) || 1;
+  const modDoors =
+    typeof modDoorsRaw === 'number' && Number.isFinite(modDoorsRaw) && modDoorsRaw > 0
+      ? Math.trunc(modDoorsRaw)
+      : 1;
+  const moduleWidthAtIndex = runtime.moduleInternalWidthsList?.[index];
   const modWidth =
-    runtime.moduleInternalWidthsList && Number.isFinite(runtime.moduleInternalWidthsList[index])
-      ? Number(runtime.moduleInternalWidthsList[index])
+    typeof moduleWidthAtIndex === 'number' && Number.isFinite(moduleWidthAtIndex)
+      ? moduleWidthAtIndex
       : runtime.singleUnitWidth * modDoors;
   const moduleCabinetBodyHeight = runtime.moduleBodyHeights[index] || runtime.cabinetBodyHeight;
   const moduleCabinetTopY = runtime.startY + moduleCabinetBodyHeight;

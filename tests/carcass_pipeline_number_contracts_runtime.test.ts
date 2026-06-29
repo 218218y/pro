@@ -8,6 +8,7 @@ import {
   readRequiredCarcassPipelineNumber,
 } from '../esm/native/builder/carcass_pipeline_number_contracts.ts';
 import { applyCarcassAndGetCabinetMetrics } from '../esm/native/builder/carcass_pipeline.ts';
+import { prepareCarcassInput } from '../esm/native/builder/core_carcass_shared.ts';
 
 test('carcass pipeline number contract accepts only finite numbers', () => {
   assert.equal(readRequiredCarcassPipelineNumber(1.25, 'x'), 1.25);
@@ -35,4 +36,35 @@ test('carcass pipeline rejects string-encoded required dimensions before core op
       }),
     /totalW must be a finite number/
   );
+});
+
+test('carcass core preparation rejects string-encoded stepped module metrics', () => {
+  const invalid = prepareCarcassInput({
+    totalW: 2,
+    D: 0.6,
+    H: 2.4,
+    woodThick: 0.018,
+    moduleInternalWidths: ['0.8'],
+    moduleHeightsTotal: [2.6],
+    moduleDepthsTotal: [0.5],
+  });
+
+  assert.equal(invalid.moduleWidths, null);
+  assert.equal(invalid.hasStepData, false);
+  assert.equal(invalid.hasDepthData, false);
+
+  const valid = prepareCarcassInput({
+    totalW: 2,
+    D: 0.6,
+    H: 2.4,
+    woodThick: 0.018,
+    moduleInternalWidths: [0.8],
+    moduleHeightsTotal: [2.6],
+    moduleDepthsTotal: [0.5],
+  });
+
+  assert.deepEqual(valid.moduleWidths, [0.8]);
+  assert.deepEqual(valid.moduleDepths, [0.5]);
+  assert.equal(valid.hasStepData, true);
+  assert.equal(valid.hasDepthData, true);
 });

@@ -18,6 +18,7 @@ import {
 import { isRemovedFrameSideOn } from '../features/removable_parts.js';
 import { readModuleConfig } from './build_flow_readers.js';
 import { getBasePlinthHeightM } from '../features/base_plinth_support.js';
+import { readCorePureNumberArray } from './core_pure_number_contracts.js';
 import { _asObject, __asArray, __asInt, __asNum } from './core_pure_shared.js';
 import type { MutableRecord } from './core_pure_shared.js';
 
@@ -50,7 +51,7 @@ export type PreparedCarcassInput = {
   baseLegBottomPlatformHeight: number;
   baseLegTopPlatformHeight: number;
   moduleWidths: number[] | null;
-  moduleHeightsRaw: unknown[] | null;
+  moduleHeightsRaw: number[] | null;
   moduleDepths: number[] | null;
   moduleConfigs: unknown[] | null;
   hasStepData: boolean;
@@ -172,11 +173,9 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
     });
   }
 
-  const moduleWidthsRaw = Array.isArray(inp.moduleInternalWidths)
-    ? __asArray(inp.moduleInternalWidths)
-    : null;
-  const moduleHeightsRaw = Array.isArray(inp.moduleHeightsTotal) ? __asArray(inp.moduleHeightsTotal) : null;
-  const moduleDepthsRaw = Array.isArray(inp.moduleDepthsTotal) ? __asArray(inp.moduleDepthsTotal) : null;
+  const moduleWidthsRaw = readCorePureNumberArray(inp.moduleInternalWidths);
+  const moduleHeightsRaw = readCorePureNumberArray(inp.moduleHeightsTotal);
+  const moduleDepthsRaw = readCorePureNumberArray(inp.moduleDepthsTotal);
   const moduleConfigsRaw = Array.isArray(inp.moduleCfgList)
     ? __asArray(inp.moduleCfgList)
     : Array.isArray(inp.moduleConfigs)
@@ -200,25 +199,18 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
   const isStepped =
     !!hasStepData &&
     moduleHeightsRaw.some(h => {
-      const n = __asNum(h, H);
-      return Number.isFinite(n) && Math.abs(n - H) > 1e-6;
+      return Math.abs(h - H) > 1e-6;
     });
 
   const isDepthStepped =
     !!hasDepthData &&
     moduleDepthsRaw.some(d => {
-      const n = __asNum(d, D);
-      return Number.isFinite(n) && Math.abs(n - D) > 1e-6;
+      return Math.abs(d - D) > 1e-6;
     });
 
-  const moduleWidths = moduleWidthsRaw ? moduleWidthsRaw.map(v => Math.max(0, __asNum(v, 0))) : null;
+  const moduleWidths = moduleWidthsRaw ? moduleWidthsRaw.map(v => Math.max(0, v)) : null;
   const moduleDepths =
-    hasDepthData && moduleDepthsRaw
-      ? moduleDepthsRaw.map(v => {
-          const n = __asNum(v, D);
-          return Math.max(woodThick, n);
-        })
-      : null;
+    hasDepthData && moduleDepthsRaw ? moduleDepthsRaw.map(v => Math.max(woodThick, v)) : null;
   const moduleConfigs =
     moduleConfigsRaw && moduleWidths && moduleConfigsRaw.length === moduleWidths.length
       ? moduleConfigsRaw.map(cfgMod => readModuleConfig(cfgMod))
