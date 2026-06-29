@@ -136,6 +136,24 @@ function requirePublicUiRawExports(rel, source) {
   }
 }
 
+function requireNoTolerantPublicUiRawExports(rel, source) {
+  for (const symbol of [
+    'readUiRawScalarFromSnapshot',
+    'hasEssentialUiDimsFromSnapshot',
+    'ensureUiRawDimsFromSnapshot',
+    'readUiRawNumberFromSnapshot',
+    'readUiRawIntFromSnapshot',
+    'readUiRawDimsCmFromSnapshot',
+  ]) {
+    requireNotIncludes(
+      rel,
+      source,
+      symbol,
+      `${rel} must not expose tolerant snapshot-level ui.raw selector ${symbol}`
+    );
+  }
+}
+
 const loaderRel = 'esm/native/io/project_io_orchestrator_project_load.ts';
 const uiSelectorsRel = 'esm/native/runtime/ui_raw_selectors.ts';
 const uiSnapshotSelectorsRel = 'esm/native/runtime/ui_raw_selectors_snapshot.ts';
@@ -314,6 +332,8 @@ requireFunctionNotIncludes(
 
 requirePublicUiRawExports(coreApiRel, coreApi);
 requirePublicUiRawExports(stateSurfaceRel, stateSurface);
+requireNoTolerantPublicUiRawExports(coreApiRel, coreApi);
+requireNoTolerantPublicUiRawExports(stateSurfaceRel, stateSurface);
 
 for (const [rel, source] of [
   [uiSelectorsRel, uiSelectors],
@@ -378,6 +398,12 @@ requireIncludes(
   runtimeSelectorTest,
   'tolerant store-level ui.raw readers are not exposed through public surfaces',
   'runtime selector tests must lock removal of tolerant store-level ui.raw public readers'
+);
+requireIncludes(
+  runtimeSelectorTestRel,
+  runtimeSelectorTest,
+  'tolerant snapshot-level ui.raw readers are not exposed through core/services public surfaces',
+  'runtime selector tests must lock removal of tolerant snapshot-level ui.raw public readers'
 );
 
 if (failures.length) {

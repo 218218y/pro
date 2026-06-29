@@ -234,7 +234,7 @@ function createBootApp(overrides?: {
     store: {
       getState() {
         return {
-          ui: overrides?.ui || { width: 240, height: 260, depth: 60, doors: 4 },
+          ui: overrides?.ui || { raw: { width: 240, height: 260, depth: 60, doors: 4 } },
           config: {},
           runtime: {},
           mode: {},
@@ -334,7 +334,11 @@ test('ui boot seeds the full store.ui snapshot and resets history baseline throu
   const commits: Array<{ ui: Record<string, unknown>; meta: Record<string, unknown> }> = [];
   const historyCalls: Record<string, unknown>[] = [];
   const { App } = createBootApp({
-    ui: { width: 240, height: 260, depth: 60, doors: 4, color: 'oak', customFlag: true },
+    ui: {
+      raw: { width: 240, height: 260, depth: 60, doors: 4 },
+      color: 'oak',
+      customFlag: true,
+    },
     historySystem: {
       resetBaseline(meta?: Record<string, unknown>) {
         historyCalls.push(meta || {});
@@ -349,10 +353,7 @@ test('ui boot seeds the full store.ui snapshot and resets history baseline throu
   assert.doesNotThrow(() => bootMain(App));
   assert.equal(commits.length, 1);
   assert.deepEqual(commits[0]?.ui, {
-    width: 240,
-    height: 260,
-    depth: 60,
-    doors: 4,
+    raw: { width: 240, height: 260, depth: 60, doors: 4 },
     color: 'oak',
     customFlag: true,
   });
@@ -362,9 +363,9 @@ test('ui boot seeds the full store.ui snapshot and resets history baseline throu
 
 test('ui boot fail-fast: missing essential store.ui dimensions now throw from the controller-owned boot seed seam', () => {
   const { App } = createBootApp({
-    ui: { width: 240, height: 260, depth: 60 },
+    ui: { raw: { width: 240, height: 260, depth: 60 } },
   });
 
-  assert.throws(() => bootMain(App), /boot seed requires essential ui fields/i);
+  assert.throws(() => bootMain(App), /boot seed requires canonical ui\.raw fields/i);
   assert.equal(getUiBootRuntimeState(App).booting, false);
 });

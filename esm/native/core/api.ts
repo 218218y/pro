@@ -67,18 +67,12 @@ export {
 } from '../runtime/runtime_selectors.js';
 
 export {
-  readUiRawScalarFromSnapshot,
   readUiRawScalarFromCanonicalSnapshot,
-  hasEssentialUiDimsFromSnapshot,
   hasCanonicalEssentialUiRawDimsFromSnapshot,
-  ensureUiRawDimsFromSnapshot,
   assertCanonicalUiRawDims,
-  readUiRawNumberFromSnapshot,
-  readUiRawIntFromSnapshot,
   readCanonicalUiRawNumberFromSnapshot,
   readCanonicalUiRawIntFromSnapshot,
   readCanonicalUiRawDimsCmFromSnapshot,
-  readUiRawDimsCmFromSnapshot,
   readCanonicalUiRawDimsCmFromStore,
 } from '../runtime/ui_raw_selectors.js';
 

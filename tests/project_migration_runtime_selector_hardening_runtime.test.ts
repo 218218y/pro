@@ -144,6 +144,36 @@ test('canonical ui.raw readers are exposed through public core and state surface
   }
 });
 
+test('tolerant snapshot-level ui.raw readers are not exposed through core/services public surfaces', () => {
+  const coreApi = readFileSync('esm/native/core/api.ts', 'utf8');
+  const stateSurface = readFileSync('esm/native/services/api_state_surface.ts', 'utf8');
+  const facade = readFileSync('esm/native/runtime/ui_raw_selectors.ts', 'utf8');
+  const snapshotOwner = readFileSync('esm/native/runtime/ui_raw_selectors_snapshot.ts', 'utf8');
+  const retiredPublicReaders = [
+    'readUiRawScalarFromSnapshot',
+    'hasEssentialUiDimsFromSnapshot',
+    'ensureUiRawDimsFromSnapshot',
+    'readUiRawNumberFromSnapshot',
+    'readUiRawIntFromSnapshot',
+    'readUiRawDimsCmFromSnapshot',
+  ];
+
+  for (const source of [coreApi, stateSurface]) {
+    for (const symbol of retiredPublicReaders) {
+      assert.doesNotMatch(source, new RegExp(`\\b${symbol}\\b`), `${symbol} should not be public`);
+    }
+  }
+
+  for (const symbol of retiredPublicReaders) {
+    assert.match(facade, new RegExp(`\\b${symbol}\\b`), `${symbol} should remain on the runtime facade`);
+    assert.match(
+      snapshotOwner,
+      new RegExp(`\\b${symbol}\\b`),
+      `${symbol} should remain owned by the tolerant snapshot selector`
+    );
+  }
+});
+
 test('tolerant store-level ui.raw readers are not exposed through public surfaces', () => {
   const facade = readFileSync('esm/native/runtime/ui_raw_selectors.ts', 'utf8');
   const coreApi = readFileSync('esm/native/core/api.ts', 'utf8');
