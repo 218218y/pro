@@ -99,3 +99,40 @@ test('manual-layout divider hover switches into remove mode when an existing div
   assert.equal(previews[0].kind, 'drawer_divider');
   assert.equal(previews[0].x, -0.11);
 });
+
+test('manual-layout divider hover rejects string-encoded module box geometry', () => {
+  const { ctx, previews, hovers } = createContext({
+    boxes: [
+      {
+        id: 'legacy-box',
+        yNorm: '0.5',
+        heightM: '0.8',
+        widthM: '0.7',
+        depthM: '0.45',
+        xNorm: '0.5',
+      },
+    ],
+  });
+
+  const handled = tryHandleManualLayoutSketchHoverModuleDividerFlow(ctx);
+
+  assert.equal(handled, false);
+  assert.equal(hovers.length, 0);
+  assert.equal(previews.length, 0);
+});
+
+test('manual-layout divider hover does not snap to string-encoded segment geometry', () => {
+  const { ctx, previews, hovers } = createContext({
+    __wp_resolveSketchBoxSegments: () => [{ index: 0, centerX: '0', width: '0.34', xNorm: '0.5' }] as any,
+    __wp_resolveSketchBoxDividerPlacement: () => ({ xNorm: 0.18, centerX: -0.12, centered: false }),
+  });
+
+  const handled = tryHandleManualLayoutSketchHoverModuleDividerFlow(ctx);
+
+  assert.equal(handled, true);
+  assert.equal(hovers.length, 1);
+  assert.equal(previews.length, 1);
+  assert.equal(hovers[0].dividerXNorm, 0.18);
+  assert.equal(hovers[0].snapToCenter, false);
+  assert.equal(previews[0].x, -0.12);
+});

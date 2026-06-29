@@ -23,6 +23,10 @@ function readRecordList(record: unknown, key: string): RecordMap[] {
   return Array.isArray(value) ? value.filter((entry): entry is RecordMap => !!asRecord(entry)) : [];
 }
 
+function readFiniteNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
 function readFinitePositiveNumber(spec: unknown, key: string): number | null {
   const rec = asRecord(spec);
   const value = rec ? rec[key] : null;
@@ -122,10 +126,10 @@ export function tryHandleCanvasManualSketchFreeBoxClick(
 
   if (!hasRecentFreePlacementHover) {
     const { camera, wardrobeGroup } = __wp_getViewportRoots(App);
+    const wardrobeCenterZ = readFiniteNumber(wardrobeBox?.centerZ);
+    const wardrobeDepth = readFinitePositiveNumber(wardrobeBox, 'depth');
     const wardrobeBackZ =
-      wardrobeBox && Number.isFinite(wardrobeBox.centerZ) && Number.isFinite(wardrobeBox.depth)
-        ? Number(wardrobeBox.centerZ) - Number(wardrobeBox.depth) / 2
-        : NaN;
+      wardrobeCenterZ != null && wardrobeDepth != null ? wardrobeCenterZ - wardrobeDepth / 2 : NaN;
     const heightCm = readFinitePositiveNumber(freeBoxSpec, 'heightCm');
     const widthCm = readFinitePositiveNumber(freeBoxSpec, 'widthCm');
     const depthCm = readFinitePositiveNumber(freeBoxSpec, 'depthCm');
@@ -145,13 +149,16 @@ export function tryHandleCanvasManualSketchFreeBoxClick(
         planeZ: wardrobeBackZ,
       });
       if (planeHit) {
+        const planeX = readFiniteNumber(planeHit.x);
+        const planeY = readFiniteNumber(planeHit.y);
+        if (planeX == null || planeY == null) return false;
         const cfgRef = __wp_readInteriorModuleConfigRef(App, host.moduleKey, host.isBottom);
         const extra = asRecord(readRecordValue(cfgRef, 'sketchExtras'));
         const boxes = readRecordList(extra, 'boxes');
         const hoverPlacement = __wp_resolveSketchFreeBoxHoverPlacement({
           App,
-          planeX: Number(planeHit.x),
-          planeY: Number(planeHit.y),
+          planeX,
+          planeY,
           boxH,
           widthOverrideM,
           depthOverrideM,

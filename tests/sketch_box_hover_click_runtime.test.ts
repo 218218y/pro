@@ -86,6 +86,19 @@ test('free-box click fallback still creates a free-placement box when no module 
   assert.equal(boxes[0]?.widthM, 0.45);
 });
 
+test('free-box click fallback rejects string-encoded plane-hit geometry', () => {
+  const { args, cfg, calls } = createFreeBoxClickHarness({
+    __wp_intersectScreenWithLocalZPlane: () => ({ x: '0.1', y: '0.7', z: -0.3 }),
+  });
+
+  const handled = tryHandleCanvasManualSketchFreeBoxClick(args);
+
+  assert.equal(handled, false);
+  assert.equal(calls.placements, 0);
+  assert.equal(calls.patches, 0);
+  assert.deepEqual(cfg, {});
+});
+
 test('free-box click preserves a real recent free-placement hover even when a module is behind it', () => {
   const { args, cfg, calls } = createFreeBoxClickHarness({
     foundModuleIndex: 0,

@@ -16,6 +16,41 @@ import {
 
 const __SKETCH_BOX_HORIZONTAL_DIVIDER_TOOL = 'sketch_box_divider_horizontal';
 
+function readPositiveNumber(value: unknown): number | null {
+  const n = readFiniteNumber(value);
+  return n != null && n > 0 ? n : null;
+}
+
+function readSegmentGeometry(segment: unknown): { centerX: number; width: number; xNorm: number } | null {
+  if (!segment || typeof segment !== 'object') return null;
+  const rec = segment as { centerX?: unknown; width?: unknown; xNorm?: unknown };
+  const centerX = readFiniteNumber(rec.centerX);
+  const width = readPositiveNumber(rec.width);
+  const xNorm = readFiniteNumber(rec.xNorm);
+  return centerX != null && width != null && xNorm != null ? { centerX, width, xNorm } : null;
+}
+
+function readVerticalSegmentGeometry(
+  segment: unknown
+): { centerY: number; height: number; yNorm: number } | null {
+  if (!segment || typeof segment !== 'object') return null;
+  const rec = segment as { centerY?: unknown; height?: unknown; yNorm?: unknown };
+  const centerY = readFiniteNumber(rec.centerY);
+  const height = readPositiveNumber(rec.height);
+  const yNorm = readFiniteNumber(rec.yNorm);
+  return centerY != null && height != null && yNorm != null ? { centerY, height, yNorm } : null;
+}
+
+function readDividerPlacement(
+  placement: unknown
+): { centerX: number; xNorm: number; centered: boolean } | null {
+  if (!placement || typeof placement !== 'object') return null;
+  const rec = placement as { centerX?: unknown; xNorm?: unknown; centered?: unknown };
+  const centerX = readFiniteNumber(rec.centerX);
+  const xNorm = readFiniteNumber(rec.xNorm);
+  return centerX != null && xNorm != null ? { centerX, xNorm, centered: rec.centered === true } : null;
+}
+
 export function tryHandleManualLayoutSketchHoverModuleDividerFlow(
   ctx: ManualLayoutSketchHoverModuleContext
 ): boolean {
@@ -43,18 +78,16 @@ export function tryHandleManualLayoutSketchHoverModuleDividerFlow(
     __wp_findNearestSketchBoxHorizontalDivider = () => null,
     __wp_resolveSketchBoxDividerPlacement,
     __wp_resolveSketchBoxHorizontalDividerPlacement = args => {
-      const boxCenterY = Number(args.boxCenterY);
-      const innerH = Number(args.innerH);
-      const cursorY = Number(args.cursorY);
-      const defaultNorm = Number(args.dividerYNorm);
+      const boxCenterY = readFiniteNumber(args.boxCenterY) ?? 0;
+      const innerH = readPositiveNumber(args.innerH) ?? 0;
+      const cursorY = readFiniteNumber(args.cursorY);
+      const defaultNorm = readFiniteNumber(args.dividerYNorm);
       const minY = boxCenterY - innerH / 2;
-      const centerY = Number.isFinite(cursorY)
-        ? cursorY
-        : minY + (Number.isFinite(defaultNorm) ? defaultNorm : 0.5) * innerH;
+      const centerY = cursorY ?? minY + (defaultNorm ?? 0.5) * innerH;
       const yNorm = innerH > 0 ? Math.max(0, Math.min(1, (centerY - minY) / innerH)) : 0.5;
       return {
         yNorm,
-        centerY: Number.isFinite(centerY) ? centerY : boxCenterY,
+        centerY,
         centered: Math.abs(yNorm - 0.5) <= 0.001,
       };
     },
@@ -72,23 +105,23 @@ export function tryHandleManualLayoutSketchHoverModuleDividerFlow(
   for (let i = 0; i < boxes.length; i++) {
     const box = readSketchDividerTargetBox(boxes[i]);
     if (!box || box.freePlacement === true) continue;
-    const yNorm = typeof box.yNorm === 'number' ? box.yNorm : Number(box.yNorm);
-    let hM = typeof box.heightM === 'number' ? box.heightM : Number(box.heightM);
-    if (!Number.isFinite(yNorm) || !Number.isFinite(hM) || !(hM > 0)) continue;
+    const yNorm = readFiniteNumber(box.yNorm);
+    let hM = readPositiveNumber(box.heightM);
+    if (yNorm == null || hM == null) continue;
     hM = Math.max(woodThick * 2 + 0.02, Math.min(spanH, hM));
     const cy = bottomY + Math.max(0, Math.min(1, yNorm)) * spanH;
-    const wM = typeof box.widthM === 'number' ? box.widthM : box.widthM != null ? Number(box.widthM) : NaN;
-    const dM = typeof box.depthM === 'number' ? box.depthM : box.depthM != null ? Number(box.depthM) : NaN;
-    const xNorm = typeof box.xNorm === 'number' ? box.xNorm : box.xNorm != null ? Number(box.xNorm) : NaN;
+    const wM = readPositiveNumber(box.widthM);
+    const dM = readPositiveNumber(box.depthM);
+    const xNorm = readFiniteNumber(box.xNorm);
     const geo = __wp_resolveSketchBoxGeometry({
       innerW,
       internalCenterX,
       internalDepth,
       internalZ,
       woodThick,
-      widthM: Number.isFinite(wM) && wM > 0 ? wM : null,
-      depthM: Number.isFinite(dM) && dM > 0 ? dM : null,
-      xNorm: Number.isFinite(xNorm) ? xNorm : null,
+      widthM: wM,
+      depthM: dM,
+      xNorm,
     });
     const dx = Math.abs(cursorX - geo.centerX);
     const dy = Math.abs(yClamped - cy);
@@ -132,6 +165,7 @@ export function tryHandleManualLayoutSketchHoverModuleDividerFlow(
       innerW: targetGeo.innerW,
       cursorX,
     });
+    const activeColumnSegmentGeometry = readSegmentGeometry(activeColumnSegment);
     const hoveredDivider = __wp_findNearestSketchBoxHorizontalDivider({
       dividers: existingHorizontalDividers,
       boxCenterY: targetCenterY,
@@ -153,16 +187,20 @@ export function tryHandleManualLayoutSketchHoverModuleDividerFlow(
     });
     const op: 'add' | 'remove' = hoveredDivider ? 'remove' : 'add';
     const dividerId = hoveredDivider ? hoveredDivider.dividerId : null;
-    const dividerYNorm = hoveredDivider ? hoveredDivider.yNorm : placement.yNorm;
+    const dividerYNorm = readFiniteNumber(hoveredDivider?.yNorm) ?? placement.yNorm;
     const dividerXNorm =
-      hoveredDivider?.xNorm ??
-      (existingDividers.length && activeColumnSegment ? activeColumnSegment.xNorm : null);
-    const dividerCenterY = hoveredDivider ? hoveredDivider.centerY : placement.centerY;
+      readFiniteNumber(hoveredDivider?.xNorm) ??
+      (existingDividers.length ? (activeColumnSegmentGeometry?.xNorm ?? null) : null);
+    const dividerCenterY = readFiniteNumber(hoveredDivider?.centerY) ?? placement.centerY;
     const snapToCenter = hoveredDivider ? hoveredDivider.centered : placement.centered;
     const dividerCenterX =
-      dividerXNorm != null && activeColumnSegment ? activeColumnSegment.centerX : targetGeo.centerX;
+      dividerXNorm != null && activeColumnSegmentGeometry
+        ? activeColumnSegmentGeometry.centerX
+        : targetGeo.centerX;
     const dividerWidth =
-      dividerXNorm != null && activeColumnSegment ? activeColumnSegment.width : targetGeo.innerW;
+      dividerXNorm != null && activeColumnSegmentGeometry
+        ? activeColumnSegmentGeometry.width
+        : targetGeo.innerW;
     const clearanceMeasurements = buildSketchBoxHorizontalDividerMeasurementEntries({
       dividers: existingHorizontalDividers,
       boxCenterY: targetCenterY,
@@ -226,7 +264,8 @@ export function tryHandleManualLayoutSketchHoverModuleDividerFlow(
         cursorY: yClamped,
       })
     : null;
-  const activeYNorm = activeVerticalSegment ? activeVerticalSegment.yNorm : null;
+  const activeVerticalSegmentGeometry = readVerticalSegmentGeometry(activeVerticalSegment);
+  const activeYNorm = activeVerticalSegmentGeometry ? activeVerticalSegmentGeometry.yNorm : null;
   const boxSegments = __wp_resolveSketchBoxSegments({
     dividers: existingDividers,
     boxCenterX: targetGeo.centerX,
@@ -245,6 +284,7 @@ export function tryHandleManualLayoutSketchHoverModuleDividerFlow(
     innerW: targetGeo.innerW,
     cursorX,
   });
+  const activeSegmentGeometry = readSegmentGeometry(activeSegment);
   const hoveredDivider = __wp_findNearestSketchBoxDivider({
     dividers: existingDividers,
     boxCenterX: targetGeo.centerX,
@@ -264,27 +304,35 @@ export function tryHandleManualLayoutSketchHoverModuleDividerFlow(
     dividerXNorm: __wp_readSketchBoxDividerXNorm(targetBox),
     enableCenterSnap: true,
   });
-  const segmentSnapEps = activeSegment
-    ? Math.min(0.035, Math.max(0.012, Number(activeSegment.width) * 0.07))
+  const freePlacementGeometry = readDividerPlacement(freePlacement) ?? {
+    xNorm: 0.5,
+    centerX: targetGeo.centerX,
+    centered: false,
+  };
+  const segmentSnapEps = activeSegmentGeometry
+    ? Math.min(0.035, Math.max(0.012, activeSegmentGeometry.width * 0.07))
     : 0;
   const snapToSegment =
-    !!activeSegment && Math.abs(cursorX - Number(activeSegment.centerX)) <= segmentSnapEps;
+    !!activeSegmentGeometry && Math.abs(cursorX - activeSegmentGeometry.centerX) <= segmentSnapEps;
   const dividerPlacement =
-    snapToSegment && activeSegment
+    snapToSegment && activeSegmentGeometry
       ? {
-          xNorm: activeSegment.xNorm,
-          centerX: activeSegment.centerX,
-          centered: Math.abs(activeSegment.centerX - targetGeo.centerX) <= 0.001,
+          xNorm: activeSegmentGeometry.xNorm,
+          centerX: activeSegmentGeometry.centerX,
+          centered: Math.abs(activeSegmentGeometry.centerX - targetGeo.centerX) <= 0.001,
         }
-      : freePlacement;
+      : freePlacementGeometry;
   const op: 'add' | 'remove' = hoveredDivider ? 'remove' : 'add';
   const dividerId = hoveredDivider ? hoveredDivider.dividerId : null;
-  const dividerXNorm = hoveredDivider ? hoveredDivider.xNorm : dividerPlacement.xNorm;
-  const dividerCenterX = hoveredDivider ? hoveredDivider.centerX : dividerPlacement.centerX;
+  const hoveredDividerXNorm = readFiniteNumber(hoveredDivider?.xNorm);
+  const hoveredDividerCenterX = readFiniteNumber(hoveredDivider?.centerX);
+  const dividerXNorm = hoveredDividerXNorm ?? dividerPlacement.xNorm;
+  const dividerCenterX = hoveredDividerCenterX ?? dividerPlacement.centerX;
   const dividerCentered = hoveredDivider
-    ? Math.abs(hoveredDivider.centerX - targetGeo.centerX) <= 0.001
+    ? hoveredDividerCenterX != null && Math.abs(hoveredDividerCenterX - targetGeo.centerX) <= 0.001
     : dividerPlacement.centered || snapToSegment;
-  const dividerYNorm = hoveredDivider?.yNorm ?? (existingHorizontalDividers.length ? activeYNorm : null);
+  const dividerYNorm =
+    readFiniteNumber(hoveredDivider?.yNorm) ?? (existingHorizontalDividers.length ? activeYNorm : null);
   const dividerRow =
     dividerYNorm != null && verticalSegments.length
       ? __wp_pickSketchBoxVerticalSegment({
@@ -294,12 +342,13 @@ export function tryHandleManualLayoutSketchHoverModuleDividerFlow(
           yNorm: dividerYNorm,
         })
       : activeVerticalSegment;
-  const dividerCenterY = dividerRow ? dividerRow.centerY : targetCenterY;
-  const dividerPreviewH = Math.max(0.0001, dividerRow ? dividerRow.height : targetInnerH);
+  const dividerRowGeometry = readVerticalSegmentGeometry(dividerRow);
+  const dividerCenterY = dividerRowGeometry ? dividerRowGeometry.centerY : targetCenterY;
+  const dividerPreviewH = Math.max(0.0001, dividerRowGeometry ? dividerRowGeometry.height : targetInnerH);
   const dividerPreviewW = hoveredDivider
     ? targetGeo.innerW
-    : snapToSegment && activeSegment
-      ? activeSegment.width
+    : snapToSegment && activeSegmentGeometry
+      ? activeSegmentGeometry.width
       : targetGeo.innerW;
   const clearanceMeasurements = buildSketchBoxDividerMeasurementEntries({
     dividers: existingDividers,
@@ -332,8 +381,8 @@ export function tryHandleManualLayoutSketchHoverModuleDividerFlow(
       x: dividerCenterX,
       highlightX: hoveredDivider
         ? targetGeo.centerX
-        : snapToSegment && activeSegment
-          ? activeSegment.centerX
+        : snapToSegment && activeSegmentGeometry
+          ? activeSegmentGeometry.centerX
           : targetGeo.centerX,
       y: dividerCenterY,
       z: dividerPreviewZ,
