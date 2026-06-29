@@ -37,23 +37,16 @@ export type CornerBuildMeta = {
 };
 
 export type CornerBuildUI = UnknownRecord & {
-  cornerConnectorEnabled?: boolean;
   cornerConnectorAsStandaloneCabinet?: boolean;
   cornerCabinetFrontPanel?: boolean;
   cornerCabinetOffsetXcm?: number;
   cornerCabinetOffsetZcm?: number;
   cornerCabinetWallLenCm?: number;
-  cornerCabinetWallLen?: number;
-  cornerConnectorWallLenCm?: number;
   cornerWidth?: unknown;
   cornerSide?: 'left' | 'right';
   cornerDoors?: unknown;
-  cornerDoorCount?: unknown;
-  cornerDoorsCount?: unknown;
   cornerHeight?: unknown;
-  cornerHeightCm?: unknown;
   cornerDepth?: unknown;
-  cornerDepthCm?: unknown;
   removeDoorsEnabled?: boolean;
   corniceType?: string;
   baseType?: unknown;

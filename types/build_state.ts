@@ -149,13 +149,8 @@ export interface UiStateLike extends UiState {
   cornerHeight?: number;
   cornerDepth?: number;
 
-  // Corner wardrobe orientation (some flows keep these on ui or ui.raw)
+  // Corner wardrobe orientation
   cornerSide?: 'left' | 'right' | string;
-  cornerDirection?: 'left' | 'right' | string;
-  cornerDoorCount?: number;
-  cornerDoorsCount?: number;
-  cornerWidthCm?: number;
-  cornerWingWidthCm?: number;
 
   // Feature toggles
   groovesEnabled?: boolean;

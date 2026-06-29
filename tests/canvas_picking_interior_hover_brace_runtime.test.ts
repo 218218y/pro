@@ -115,7 +115,7 @@ test('brace-shelves hover materializes a missing corner-cell config before the f
   const intersects = [{ object: selector, point: { x: 0, y: selector.__hitY, z: 0 } }];
   const { App, raycaster, mouse } = createApp(intersects, {
     config: { cornerConfiguration: {} },
-    ui: { cornerSide: 'left', cornerDoorsCount: 4 },
+    ui: { cornerSide: 'left', cornerDoors: 4 },
   });
   getInternalGridMap(App, false)['corner:0'] = {
     effectiveBottomY: 0,
@@ -163,7 +163,7 @@ test('brace-shelves hover does not require a prior click in the other corner cel
         ],
       },
     },
-    ui: { cornerSide: 'right', cornerDoorsCount: 4 },
+    ui: { cornerSide: 'right', cornerDoors: 4 },
   });
   getInternalGridMap(App, false)['corner:1'] = {
     effectiveBottomY: 0,

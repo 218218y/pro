@@ -65,13 +65,7 @@ function readPositiveUiRawCm(uiAny: CornerBuildUI, key: string): number | null {
 
 function readCornerDoorsCount(uiAny: CornerBuildUI): number {
   const rec = isRecord(uiAny) ? uiAny : {};
-  const raw = readUiRawRecord(uiAny);
-  const rawDoors = raw ? raw.cornerDoors : undefined;
-  const parsedRaw =
-    readFiniteNumber(rec.cornerDoors) ??
-    readFiniteNumber(rec.cornerDoorCount) ??
-    readFiniteNumber(rec.cornerDoorsCount) ??
-    readFiniteNumber(rawDoors);
+  const parsedRaw = readFiniteNumber(rec.cornerDoors);
   const parsed = parsedRaw != null ? Math.round(parsedRaw) : NaN;
   return Number.isFinite(parsed) && parsed > 0 ? parsed : WARDROBE_DEFAULTS.corner.doorsCount;
 }
@@ -217,8 +211,7 @@ export function resolveCornerWingMetrics(args: {
   const { uiAny, config, rootConfig, mainH, mainD, startY, woodThick, __stackKey, __stackSplitEnabled } =
     args;
 
-  const cornerConnectorEnabled =
-    typeof uiAny.cornerConnectorEnabled !== 'undefined' ? !!uiAny.cornerConnectorEnabled : true;
+  const cornerConnectorEnabled = true;
 
   let wingLengthCM = uiAny.cornerWidth != null ? readPositiveCm(uiAny.cornerWidth) : NaN;
   if (!Number.isFinite(wingLengthCM)) wingLengthCM = CORNER_WING.defaultWidthCm;
@@ -227,10 +220,10 @@ export function resolveCornerWingMetrics(args: {
   const cornerSide: 'left' | 'right' = uiAny.cornerSide === 'left' ? 'left' : 'right';
   const __mirrorX: 1 | -1 = cornerSide === 'left' ? -1 : 1;
 
-  let __cornerHeightCM = readPositiveCm(uiAny.cornerHeight ?? uiAny.cornerHeightCm);
+  let __cornerHeightCM = readPositiveCm(uiAny.cornerHeight);
   if (!Number.isFinite(__cornerHeightCM) || __cornerHeightCM <= 0) __cornerHeightCM = NaN;
 
-  let __cornerDepthCM = readPositiveCm(uiAny.cornerDepth ?? uiAny.cornerDepthCm);
+  let __cornerDepthCM = readPositiveCm(uiAny.cornerDepth);
   if (!Number.isFinite(__cornerDepthCM) || __cornerDepthCM <= 0) __cornerDepthCM = NaN;
 
   if (__stackSplitEnabled && __stackKey === 'bottom') {
@@ -438,8 +431,7 @@ export function resolveCornerWingPlacement(args: {
   const stackOffsetY = Math.max(0, startY - baseH);
   const cabinetBodyHeight = wingH;
 
-  const rawWallLen =
-    uiAny.cornerCabinetWallLenCm ?? uiAny.cornerCabinetWallLen ?? uiAny.cornerConnectorWallLenCm;
+  const rawWallLen = uiAny.cornerCabinetWallLenCm;
   const wallLenCm = readFiniteNumber(rawWallLen);
   let cornerWallL = wallLenCm != null ? wallLenCm / 100 : CORNER_CONNECTOR.defaultWallLengthM;
   if (!Number.isFinite(cornerWallL) || cornerWallL <= CORNER_CONNECTOR.minWallLengthM) {

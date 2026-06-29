@@ -177,10 +177,7 @@ export function buildCornerCellDimsContext(args: CanvasCornerCellDimsArgs): Corn
     : topCornerDepthBase;
   const wallLenBase = readCanonicalNumberOr(
     ui.cornerCabinetWallLenCm,
-    readCanonicalNumberOr(
-      ui.cornerCabinetWallLen,
-      CORNER_WING_DIMENSIONS.connector.defaultWallLengthM * CM_PER_METER
-    )
+    CORNER_WING_DIMENSIONS.connector.defaultWallLengthM * CM_PER_METER
   );
 
   const cornerCfg0 = asCornerConfig(readCornerConfigurationSnapshotForStack(cfg, stackKey));

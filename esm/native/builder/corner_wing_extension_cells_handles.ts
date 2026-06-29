@@ -15,10 +15,7 @@ import type {
 export function resolveCornerWingDoorCount(
   args: Pick<CornerWingCellDerivationArgs, 'activeWidth' | 'uiAny'>
 ): number {
-  const doorRaw =
-    asRecord(args.uiAny).cornerDoors ??
-    asRecord(args.uiAny).cornerDoorCount ??
-    asRecord(args.uiAny).cornerDoorsCount;
+  const doorRaw = asRecord(args.uiAny).cornerDoors;
   const parsed = readFiniteNumber(doorRaw);
   return parsed != null
     ? Math.max(0, Math.round(parsed))

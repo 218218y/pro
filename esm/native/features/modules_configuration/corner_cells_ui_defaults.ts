@@ -10,33 +10,17 @@ function readCornerUiRecord(value: unknown): UnknownRecord {
 
 function readCornerSideFromUi(uiSnapshot: unknown): 'left' | 'right' {
   const ui = readCornerUiRecord(uiSnapshot);
-  const raw = readCornerUiRecord(ui.raw);
-  const sideVal = ui.cornerSide ?? ui.cornerDirection ?? raw.cornerSide ?? raw.cornerDirection;
-  return sideVal === 'left' ? 'left' : 'right';
+  return ui.cornerSide === 'left' ? 'left' : 'right';
 }
 
 function readCornerDoorsCountFromUi(uiSnapshot: unknown): number {
   const ui = readCornerUiRecord(uiSnapshot);
-  const raw = readCornerUiRecord(ui.raw);
-  const doorsRaw =
-    ui.cornerDoors ??
-    ui.cornerDoorCount ??
-    ui.cornerDoorsCount ??
-    raw.cornerDoors ??
-    raw.cornerDoorCount ??
-    raw.cornerDoorsCount;
-  const parsedDoors = parseFloat(String(doorsRaw));
+  const parsedDoors = typeof ui.cornerDoors === 'number' ? ui.cornerDoors : NaN;
   const doors = Number.isFinite(parsedDoors) ? Math.round(parsedDoors) : NaN;
   if (Number.isFinite(doors) && doors >= 0) return doors;
 
-  const widthRaw =
-    ui.cornerWidth ??
-    ui.cornerWidthCm ??
-    ui.cornerWingWidthCm ??
-    raw.cornerWidth ??
-    raw.cornerWidthCm ??
-    raw.cornerWingWidthCm;
-  let wingLenCm = Number.isFinite(parseFloat(String(widthRaw))) ? parseFloat(String(widthRaw)) : NaN;
+  let wingLenCm =
+    typeof ui.cornerWidth === 'number' && Number.isFinite(ui.cornerWidth) ? ui.cornerWidth : NaN;
   if (!Number.isFinite(wingLenCm)) wingLenCm = CORNER_WING_DIMENSIONS.wing.defaultWidthCm;
   if (wingLenCm < 0) wingLenCm = 0;
   const wingLenM = wingLenCm / CM_PER_METER;

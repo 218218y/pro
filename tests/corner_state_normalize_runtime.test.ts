@@ -141,7 +141,6 @@ test('normalizeCornerWingState does not let top corner special width seed a miss
       cornerHeight: 220,
       cornerDepth: 65,
       cornerDoors: 3,
-      cornerConnectorEnabled: true,
       raw: {
         cornerDoors: 3,
         stackSplitLowerDepth: 55,
@@ -173,7 +172,6 @@ test('normalizeCornerWingState does not let top corner special width seed a miss
           cornerHeight: 220,
           cornerDepth: 65,
           cornerDoors: 3,
-          cornerConnectorEnabled: true,
           raw: { cornerDoors: 3, stackSplitLowerDepth: 55, stackSplitLowerWidth: 160 },
         },
         cfg: {
@@ -241,7 +239,6 @@ test('normalizeCornerWingState reads corner config and removed doors from meta s
       cornerHeight: 225,
       cornerDepth: 70,
       cornerDoors: 2,
-      cornerConnectorEnabled: true,
     },
     config: {
       removedDoorsMap: {
@@ -276,7 +273,6 @@ test('normalizeCornerWingState reads corner config and removed doors from meta s
           cornerHeight: 225,
           cornerDepth: 70,
           cornerDoors: 2,
-          cornerConnectorEnabled: true,
         },
         cfg: {
           removedDoorsMap: {},

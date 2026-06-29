@@ -96,6 +96,32 @@ function asFiniteNumber(v: unknown, defaultValue = 0): number {
   return typeof v === 'number' && Number.isFinite(v) ? v : defaultValue;
 }
 
+function requireCornerModeBoolean(args: DimensionArgs, key: 'cornerConnectorEnabled'): boolean {
+  const value = args[key];
+  if (typeof value !== 'boolean') {
+    throw new Error(`[builder/render_dimension_ops] corner mode requires boolean ${key}`);
+  }
+  return value;
+}
+
+function requireCornerModeNumber(
+  args: DimensionArgs,
+  key:
+    | 'cornerDoorCount'
+    | 'cornerWallLenM'
+    | 'cornerOffsetXM'
+    | 'cornerOffsetZM'
+    | 'cornerWingLenM'
+    | 'cornerWingHeightM'
+    | 'cornerWingDepthM'
+): number {
+  const value = args[key];
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    throw new Error(`[builder/render_dimension_ops] corner mode requires finite numeric ${key}`);
+  }
+  return value;
+}
+
 function asFiniteNumberArray(v: unknown): number[] | null {
   if (!Array.isArray(v)) return null;
   const out: number[] = [];
@@ -144,19 +170,22 @@ export function createRenderDimensionContext(argsIn: unknown): RenderDimensionCo
   const moduleDepthsCm = asFiniteNumberArray(args.moduleDepthsCm);
   const moduleDepthsAllManual = !!args.moduleDepthsAllManual;
 
-  const cornerConnectorEnabled =
-    typeof args.cornerConnectorEnabled === 'boolean' ? args.cornerConnectorEnabled : true;
-  const cornerDoorCountRaw = asFiniteNumber(args.cornerDoorCount, NaN);
+  const cornerConnectorEnabled = isCornerMode
+    ? requireCornerModeBoolean(args, 'cornerConnectorEnabled')
+    : true;
+  const cornerDoorCountRaw = isCornerMode
+    ? requireCornerModeNumber(args, 'cornerDoorCount')
+    : WARDROBE_DEFAULTS.corner.doorsCount;
   const cornerDoorCount = Number.isFinite(cornerDoorCountRaw)
     ? Math.max(0, Math.round(cornerDoorCountRaw))
     : WARDROBE_DEFAULTS.corner.doorsCount;
   const cornerWingVisible = isCornerMode && cornerDoorCount > 0;
-  const cornerWallLenM = asFiniteNumber(args.cornerWallLenM);
-  const cornerOffsetXM = asFiniteNumber(args.cornerOffsetXM);
-  const cornerOffsetZM = asFiniteNumber(args.cornerOffsetZM);
-  const cornerWingLenM = asFiniteNumber(args.cornerWingLenM);
-  const cornerWingHeightM = asFiniteNumber(args.cornerWingHeightM, NaN);
-  const cornerWingDepthM = asFiniteNumber(args.cornerWingDepthM, NaN);
+  const cornerWallLenM = isCornerMode ? requireCornerModeNumber(args, 'cornerWallLenM') : 0;
+  const cornerOffsetXM = isCornerMode ? requireCornerModeNumber(args, 'cornerOffsetXM') : 0;
+  const cornerOffsetZM = isCornerMode ? requireCornerModeNumber(args, 'cornerOffsetZM') : 0;
+  const cornerWingLenM = isCornerMode ? requireCornerModeNumber(args, 'cornerWingLenM') : 0;
+  const cornerWingHeightM = isCornerMode ? requireCornerModeNumber(args, 'cornerWingHeightM') : NaN;
+  const cornerWingDepthM = isCornerMode ? requireCornerModeNumber(args, 'cornerWingDepthM') : NaN;
 
   let displayH = H;
   const maxHcm = maxCm(moduleHeightsCm);

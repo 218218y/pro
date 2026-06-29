@@ -5,7 +5,7 @@ import { derivePostBuildDimensionMetrics } from '../esm/native/builder/post_buil
 import { appendStackSplitDimensionLines } from '../esm/native/builder/post_build_dimensions_stack_split.ts';
 import { readPostBuildCornerDimensions } from '../esm/native/builder/post_build_dimensions_corner.ts';
 
-test('post-build corner dimensions use only the captured UI snapshot with canonical precedence', () => {
+test('post-build corner dimensions use only canonical captured UI snapshot fields', () => {
   const dimensions = readPostBuildCornerDimensions({
     uiSnapshot: {
       cornerSide: 'left',
@@ -18,6 +18,7 @@ test('post-build corner dimensions use only the captured UI snapshot with canoni
       cornerCabinetOffsetZcm: -4,
       raw: {
         cornerConnectorEnabled: false,
+        cornerDoors: 9,
         cornerWidth: 999,
       },
     },
@@ -27,7 +28,7 @@ test('post-build corner dimensions use only the captured UI snapshot with canoni
 
   assert.equal(dimensions.cornerSide, 'left');
   assert.equal(dimensions.cornerDoorCount, 3);
-  assert.equal(dimensions.cornerConnectorEnabled, false);
+  assert.equal(dimensions.cornerConnectorEnabled, true);
   assert.equal(dimensions.cornerWingLenM, 1.5);
   assert.equal(dimensions.cornerWingHeightM, 2.4);
   assert.equal(dimensions.cornerWingDepthM, 0.7);
@@ -57,7 +58,7 @@ test('post-build corner dimensions reject string-encoded UI snapshot dimensions'
 
   assert.equal(dimensions.cornerSide, 'right');
   assert.equal(dimensions.cornerDoorCount, 3);
-  assert.equal(dimensions.cornerConnectorEnabled, false);
+  assert.equal(dimensions.cornerConnectorEnabled, true);
   assert.equal(dimensions.cornerWingLenM, 1.2);
   assert.equal(dimensions.cornerWingHeightM, 2.1);
   assert.equal(dimensions.cornerWingDepthM, 0.6);

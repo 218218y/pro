@@ -2,8 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const root = path.resolve(new URL('..', import.meta.url).pathname);
+const root = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const runtimeRoots = ['esm/native/builder', 'esm/native/services', 'esm/native/runtime', 'types'];
 const runtimeGeometryScalarKeys = [
   'baseLegPlatformSideOverhangCm',
@@ -18,11 +19,8 @@ const runtimeGeometryScalarKeys = [
   'cornerWidth',
   'cornerDoors',
   'cornerDoorCount',
-  'cornerDoorsCount',
   'cornerHeight',
-  'cornerHeightCm',
   'cornerDepth',
-  'cornerDepthCm',
 ];
 
 function read(rel) {

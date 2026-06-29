@@ -49,6 +49,8 @@ test('render_dimension_ops keeps only no-main corner depth outside the pentagon 
     cornerConnectorEnabled: true,
     cornerDoorCount: 2,
     cornerWallLenM: 0.9,
+    cornerOffsetXM: 0,
+    cornerOffsetZM: 0,
     cornerWingLenM: 1.2,
     cornerWingHeightM: 2.1,
     cornerWingDepthM: 0.4,
@@ -100,6 +102,8 @@ test('render_dimension_ops uses the pentagon-only side guide when the corner win
     cornerConnectorEnabled: true,
     cornerDoorCount: 0,
     cornerWallLenM: 0.9,
+    cornerOffsetXM: 0,
+    cornerOffsetZM: 0,
     cornerWingLenM: 1.2,
     cornerWingHeightM: 2.1,
     cornerWingDepthM: 0.4,
@@ -143,6 +147,8 @@ test('render_dimension_ops keeps the pentagon-only side guide when zero corner d
     cornerConnectorEnabled: true,
     cornerDoorCount: 0,
     cornerWallLenM: 0.9,
+    cornerOffsetXM: 0,
+    cornerOffsetZM: 0,
     cornerWingLenM: 0,
     cornerWingHeightM: 2.1,
     cornerWingDepthM: 0.4,
@@ -159,5 +165,23 @@ test('render_dimension_ops keeps the pentagon-only side guide when zero corner d
   assert.ok(
     calls.some(call => call[3] === '90' && call[4] === 0.78),
     'expected connector side guide to measure the pentagon only'
+  );
+});
+
+test('render_dimension_ops fails fast when corner mode metrics are incomplete', () => {
+  const ops = createBuilderRenderDimensionOps({ app: () => ({}) as any, ops: () => null });
+
+  assert.throws(
+    () =>
+      ops.applyDimensions({
+        THREE: { Vector3: FakeVector3 },
+        addDimensionLine: () => undefined,
+        totalW: 1.8,
+        H: 2.4,
+        D: 0.6,
+        isCornerMode: true,
+        cornerSide: 'right',
+      }),
+    /corner mode requires boolean cornerConnectorEnabled/
   );
 });

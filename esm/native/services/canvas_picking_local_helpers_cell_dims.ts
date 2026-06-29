@@ -162,7 +162,7 @@ export function __wp_getCellDimsHoverOp(
       if (target.hitModuleKey === 'corner') {
         curW =
           getActiveOverrideCm(connSd, 'widthCm', 'baseWidthCm') ??
-          readUiNumber(ui, 'cornerCabinetWallLenCm', readUiNumber(ui, 'cornerCabinetWallLen', curW));
+          readUiNumber(ui, 'cornerCabinetWallLenCm', curW);
         curH = globalCornerH;
         curD = globalCornerD;
         isCustomW = isOverrideActive(connSd, 'widthCm', 'baseWidthCm');

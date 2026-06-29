@@ -77,7 +77,6 @@ export function resolveCornerGlobalDimsTargetState(ctx: CornerCellDimsContext): 
   if (applyW != null) {
     if (isConnectorHit) {
       uiPatch.cornerCabinetWallLenCm = tgtW;
-      uiPatch.cornerCabinetWallLen = tgtW;
     } else {
       uiPatch.cornerWidth = tgtW;
       rawPatch.cornerWidth = tgtW;

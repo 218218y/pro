@@ -27,10 +27,7 @@ test('[no-main corner] standalone corner dimensions stay enabled and wing dimens
     dimensionsCorner,
     /let cornerWingLenM = CORNER_WING_DIMENSIONS\.wing\.defaultWidthCm \/ CM_PER_METER;/
   );
-  assert.match(
-    dimensionsCorner,
-    /const cornerDoorsRaw = pick\('ui', 'cornerDoors', \['cornerDoorCount', 'cornerDoorsCount'\]\);/
-  );
+  assert.match(dimensionsCorner, /const cornerDoorsRaw = readKey\(ui, 'cornerDoors'\);/);
 
   const renderDims = read('esm/native/builder/render_dimension_ops.ts');
   const renderDimsShared = read('esm/native/builder/render_dimension_ops_shared.ts');
@@ -41,8 +38,9 @@ test('[no-main corner] standalone corner dimensions stay enabled and wing dimens
   assert.match(renderDimsShared, /const\s+noMainWardrobe\s*=\s*!!args\.noMainWardrobe;/);
   assert.match(
     renderDimsShared,
-    /const\s+cornerDoorCount\s*=\s*Number\.isFinite\(cornerDoorCountRaw\)\s*\?\s*Math\.max\(0, Math\.round\(cornerDoorCountRaw\)\)\s*:\s*WARDROBE_DEFAULTS\.corner\.doorsCount;/
+    /const\s+cornerDoorCountRaw\s*=\s*isCornerMode\s*\?\s*requireCornerModeNumber\(args, 'cornerDoorCount'\)\s*:\s*WARDROBE_DEFAULTS\.corner\.doorsCount;/
   );
+  assert.match(renderDimsShared, /function\s+requireCornerModeBoolean\(/);
   assert.match(renderDimsShared, /const\s+cornerWingVisible\s*=\s*isCornerMode && cornerDoorCount > 0;/);
   assert.match(renderDimsMain, /const\s+cornerConnectorActive\s*=/);
   assert.match(renderDimsMain, /const\s+showMainHeight\s*=\s*!noMainWardrobe;/);
