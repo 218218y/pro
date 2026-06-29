@@ -75,8 +75,7 @@ export interface DomainApiSurfaceSectionsState extends DomainApiSurfaceSectionsC
     mapName: string,
     canonicalKey: string,
     value: unknown,
-    meta?: ActionMetaLike,
-    aliasesToClear?: Array<string | null | undefined>
+    meta?: ActionMetaLike
   ) => unknown;
 }
 

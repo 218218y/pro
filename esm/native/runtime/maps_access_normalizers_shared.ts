@@ -1,5 +1,6 @@
 import type { KnownMapName, MapsByName } from '../../../types';
 
+import { isCanonicalRemovedDoorsMapKey } from '../../shared/removed_doors_map_keys_shared.js';
 import { asMapRecord, asRecord, readFiniteNumber } from './maps_access_shared.js';
 
 export type KnownMapNormalizerMap = { [K in KnownMapName]: (value: unknown) => MapsByName[K] };
@@ -68,6 +69,18 @@ function hasDoorSegmentSuffix(value: string): boolean {
 
 export function normalizeGroovesMap(value: unknown): MapsByName['groovesMap'] {
   return normalizeCanonicalToggleMap(value, key => key.startsWith('groove_'));
+}
+
+export function normalizeRemovedDoorsMap(value: unknown): MapsByName['removedDoorsMap'] {
+  const rec = asMapRecord(value);
+  const out: MapsByName['removedDoorsMap'] = Object.create(null);
+  if (!rec) return out;
+  for (const key of Object.keys(rec)) {
+    if (!isCanonicalRemovedDoorsMapKey(key)) continue;
+    const next = normalizeToggleValue(rec[key]);
+    if (typeof next !== 'undefined') out[key] = next;
+  }
+  return out;
 }
 
 export function normalizeSplitDoorsBottomMap(value: unknown): MapsByName['splitDoorsBottomMap'] {

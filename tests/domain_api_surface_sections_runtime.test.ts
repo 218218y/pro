@@ -238,7 +238,7 @@ test('domain api surface sections generic map fallback writers normalize keys on
   );
 });
 
-test('domain api surface sections fallback writes canonical split ids and canonicalizes removed door ids', () => {
+test('domain api surface sections fallback writes canonical split ids and removed door keys only', () => {
   const h = createHarness();
 
   h.doorsActions.setSplit('d11', true, { source: 'test:split:legacy-clear' });
@@ -249,8 +249,6 @@ test('domain api surface sections fallback writes canonical split ids and canoni
     [
       { mapName: 'splitDoorsMap', key: 'split_d11', value: true },
       { mapName: 'removedDoorsMap', key: 'removed_d12_full', value: true },
-      { mapName: 'removedDoorsMap', key: 'd12', value: null },
-      { mapName: 'removedDoorsMap', key: 'removed_d12', value: null },
     ]
   );
 });

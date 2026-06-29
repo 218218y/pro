@@ -146,8 +146,14 @@ test('[domain-api-sections] shared facade delegates contracts, prefixed maps, ma
     [
       /export function canonicalRemovedDoorPartId\(/,
       /export function listRemovedDoorLookupKeys\(/,
-      /export function listRemovedDoorCleanupKeys\(/,
+      /listCanonicalRemovedDoorLookupKeys/,
     ],
+    'sectionsRemovedDoorsOwner'
+  );
+  assertLacksAll(
+    assert,
+    sectionsRemovedDoorsOwner,
+    [/listRemovedDoorCleanupKeys/, /removed_\s*\+\s*clean/],
     'sectionsRemovedDoorsOwner'
   );
 });

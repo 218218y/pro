@@ -4,7 +4,6 @@ import type { DomainApiSurfaceSectionsState } from './domain_api_surface_section
 import {
   normalizePrefixedMapKey,
   readMapKey,
-  uniqueNonEmptyKeys,
   type PrefixedMapSemantics,
 } from './domain_api_surface_sections_prefixed_maps.js';
 
@@ -70,15 +69,10 @@ export function shouldSkipCanonicalMapCommit(
   state: DomainApiSurfaceSectionsState,
   mapName: string,
   canonicalKey: string,
-  value: unknown,
-  aliasesToClear?: Array<string | null | undefined>
+  value: unknown
 ): boolean {
   if (!mapName || !canonicalKey) return true;
-  if (!areDomainMapValuesEquivalent(readDomainMapValue(state, mapName, canonicalKey), value)) return false;
-  for (const alias of uniqueNonEmptyKeys((aliasesToClear || []).filter(key => key && key !== canonicalKey))) {
-    if (!areDomainMapValuesEquivalent(readDomainMapValue(state, mapName, alias), null)) return false;
-  }
-  return true;
+  return areDomainMapValuesEquivalent(readDomainMapValue(state, mapName, canonicalKey), value);
 }
 
 export function shouldSkipCanonicalPrefixedMapCommit(
@@ -99,13 +93,10 @@ export function patchCanonicalMapValue(
   mapName: string,
   canonicalKey: string,
   value: unknown,
-  meta?: ActionMetaLike,
-  aliasesToClear?: Array<string | null | undefined>
+  meta?: ActionMetaLike
 ): unknown {
   if (!canonicalKey) return undefined;
-  const cleanupKeys = uniqueNonEmptyKeys((aliasesToClear || []).filter(key => key && key !== canonicalKey));
   patchMap(mapName, canonicalKey, value, meta);
-  for (const key of cleanupKeys) patchMap(mapName, key, null, meta);
   return undefined;
 }
 
@@ -114,14 +105,10 @@ export function writeCanonicalMapValueDirect(
   mapName: string,
   canonicalKey: string,
   value: unknown,
-  meta?: ActionMetaLike,
-  aliasesToClear?: Array<string | null | undefined>
+  meta?: ActionMetaLike
 ): boolean {
   if (!canonicalKey) return false;
-  const wrote = writeMapKey(App, mapName, canonicalKey, value, meta);
-  const cleanupKeys = uniqueNonEmptyKeys((aliasesToClear || []).filter(key => key && key !== canonicalKey));
-  for (const key of cleanupKeys) writeMapKey(App, mapName, key, null, meta);
-  return wrote;
+  return writeMapKey(App, mapName, canonicalKey, value, meta);
 }
 
 export function commitCanonicalMapValue(
@@ -129,15 +116,14 @@ export function commitCanonicalMapValue(
   mapName: string,
   canonicalKey: string,
   value: unknown,
-  meta?: ActionMetaLike,
-  aliasesToClear?: Array<string | null | undefined>
+  meta?: ActionMetaLike
 ): unknown {
   if (!canonicalKey) return undefined;
-  if (shouldSkipCanonicalMapCommit(state, mapName, canonicalKey, value, aliasesToClear)) return undefined;
-  if (writeCanonicalMapValueDirect(state.App, mapName, canonicalKey, value, meta, aliasesToClear)) {
+  if (shouldSkipCanonicalMapCommit(state, mapName, canonicalKey, value)) return undefined;
+  if (writeCanonicalMapValueDirect(state.App, mapName, canonicalKey, value, meta)) {
     return undefined;
   }
-  return state.patchCanonicalMapViaCfg(mapName, canonicalKey, value, meta, aliasesToClear);
+  return state.patchCanonicalMapViaCfg(mapName, canonicalKey, value, meta);
 }
 
 export function patchCanonicalPrefixedMapViaCfg(

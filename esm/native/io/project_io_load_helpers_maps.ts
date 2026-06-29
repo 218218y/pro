@@ -26,6 +26,7 @@ import {
   readHingeMap as readHingeMapShared,
   readIndividualColorsMap as readIndividualColorsMapShared,
   readMirrorLayoutConfigMap as readMirrorLayoutConfigMapShared,
+  readRemovedDoorsMap as readRemovedDoorsMapShared,
   readSplitDoorsBottomMapValue as readSplitDoorsBottomMapValueShared,
   readSplitDoorsMapValue as readSplitDoorsMapValueShared,
   readToggleMap as readToggleMapShared,
@@ -48,7 +49,7 @@ export function readGrooveLinesCountMap(value: unknown): GrooveLinesCountMap {
 }
 
 export function readRemovedDoorsMap(value: unknown): RemovedDoorsMap {
-  return readToggleMapShared(value);
+  return readRemovedDoorsMapShared(value);
 }
 
 export function readDrawerDividersMap(value: unknown): DrawerDividersMap {

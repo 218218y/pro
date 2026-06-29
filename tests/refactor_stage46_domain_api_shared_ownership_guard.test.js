@@ -68,7 +68,11 @@ test('stage 46 domain API shared ownership split is anchored', () => {
 
   assert.ok(removedDoors.includes('export function canonicalRemovedDoorPartId'));
   assert.ok(removedDoors.includes('export function listRemovedDoorLookupKeys'));
-  assert.ok(removedDoors.includes('export function listRemovedDoorCleanupKeys'));
+  assert.equal(
+    removedDoors.includes('listRemovedDoorCleanupKeys'),
+    false,
+    'removed-door owner must not restore write-time alias cleanup'
+  );
   assert.equal(
     removedDoors.includes('writeMapKey('),
     false,

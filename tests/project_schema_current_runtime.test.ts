@@ -70,6 +70,7 @@ test('current project schema rejects values that require historical migration', 
   assert.equal(normalizeProjectData({ ...base, splitDoorsMap: { splitpos_d1: '0.25,0.75' } }), null);
   assert.equal(normalizeProjectData({ ...base, splitDoorsBottomMap: { splitb_d1_full: true } }), null);
   assert.equal(normalizeProjectData({ ...base, splitDoorsBottomMap: { splitb_d1: 1 } }), null);
+  assert.equal(normalizeProjectData({ ...base, removedDoorsMap: { removed_d1: true } }), null);
   assert.equal(normalizeProjectData({ ...base, removedDoorsMap: { removed_d1_full: 1 } }), null);
   assert.equal(normalizeProjectData({ ...base, roundedFrameSideShelvesMap: { body_left: 'true' } }), null);
   assert.equal(normalizeProjectData({ ...base, groovesMap: { groove_d1_full: 'on' } }), null);

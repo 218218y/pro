@@ -68,7 +68,7 @@ test('perf runtime surface records marks, spans, summaries, and errors', async (
             grooveLinesCountMap: { groove_d1_full: 12, groove_d2_full: 8 },
             splitDoorsMap: { split_d1: true, split_d2: true },
             splitDoorsBottomMap: { splitb_d1: true },
-            removedDoorsMap: { d3: true, d4: true },
+            removedDoorsMap: { removed_d3_full: true, removed_d4_full: true },
             roundedFrameSideShelvesMap: { body_left: true },
             drawerDividersMap: { 'div:int_4': true, 'div:ext_2': true },
             doorTrimMap: {

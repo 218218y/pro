@@ -37,6 +37,5 @@ export {
 export {
   canonicalRemovedDoorPartId,
   isSegmentedDoorBaseId,
-  listRemovedDoorCleanupKeys,
   listRemovedDoorLookupKeys,
 } from './domain_api_surface_sections_removed_doors.js';

@@ -1,4 +1,5 @@
 import { readMirrorLayoutMap } from '../mirror_layout.js';
+import { isCanonicalRemovedDoorsMapKey } from '../../../shared/removed_doors_map_keys_shared.js';
 import {
   readGroovesMap,
   readSplitDoorsBottomMapValue,
@@ -28,6 +29,18 @@ function normalizeToggleMap(value: unknown): Record<string, unknown> {
   const out: Record<string, unknown> = Object.create(null);
   if (!rec) return out;
   for (const key of Object.keys(rec)) {
+    const next = normalizeToggleValue(rec[key]);
+    if (typeof next !== 'undefined') out[key] = next;
+  }
+  return out;
+}
+
+function normalizeRemovedDoorsMap(value: unknown): Record<string, unknown> {
+  const rec = asMapRecord(value);
+  const out: Record<string, unknown> = Object.create(null);
+  if (!rec) return out;
+  for (const key of Object.keys(rec)) {
+    if (!isCanonicalRemovedDoorsMapKey(key)) continue;
     const next = normalizeToggleValue(rec[key]);
     if (typeof next !== 'undefined') out[key] = next;
   }
@@ -109,7 +122,7 @@ const PROJECT_CONFIG_MAP_NORMALIZERS: Record<string, ProjectConfigMapNormalizer>
   splitDoorsBottomMap: readSplitDoorsBottomMapValue,
   drawerDividersMap: normalizeToggleMap,
   groovesMap: readGroovesMap,
-  removedDoorsMap: normalizeToggleMap,
+  removedDoorsMap: normalizeRemovedDoorsMap,
   roundedFrameSideShelvesMap: normalizeToggleMap,
   grooveLinesCountMap: normalizeNullablePositiveIntMap,
   curtainMap: normalizeNullableStringMap,

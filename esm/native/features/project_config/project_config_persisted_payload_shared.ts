@@ -19,6 +19,7 @@ import type {
   UnknownRecord,
 } from '../../../../types/index.js';
 
+import { isCanonicalRemovedDoorsMapKey } from '../../../shared/removed_doors_map_keys_shared.js';
 import { readDoorStyleMap as readCanonicalDoorStyleMap } from '../door_style_overrides.js';
 import { readDoorTrimMap } from '../door_trim.js';
 import { readMirrorLayoutMap } from '../mirror_layout.js';
@@ -131,7 +132,12 @@ export function readHandlesMap(value: unknown): HandlesMap {
 }
 
 export function readRemovedDoorsMap(value: unknown): RemovedDoorsMap {
-  return readToggleMap(value);
+  const src = readToggleMap(value);
+  const out: RemovedDoorsMap = {};
+  for (const [key, entry] of Object.entries(src)) {
+    if (isCanonicalRemovedDoorsMapKey(key)) out[key] = entry;
+  }
+  return out;
 }
 
 export function readRoundedFrameSideShelvesMap(value: unknown): RoundedFrameSideShelvesMap {

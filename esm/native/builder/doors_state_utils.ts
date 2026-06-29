@@ -3,6 +3,7 @@
 // Centralizes per-door map lookups (hinge dir, split, bottom split, curtain, groove).
 
 import { readCanonicalPositiveIntegerText } from './build_flow_readers.js';
+import { listCanonicalRemovedDoorLookupKeys } from '../../shared/removed_doors_map_keys_shared.js';
 
 import type {
   BuilderDoorMapsConfigLike,
@@ -125,27 +126,7 @@ export function makeDoorRemovalChecker(cfg: unknown): BuilderDoorRemovedResolver
 
   return function isDoorRemoved(partId: unknown): boolean {
     const m = removedDoorsMap;
-    if (!partId) return false;
-    let id = String(partId);
-    // Canonical segmented-door ids: treat base ids as *_full.
-    if (!/(?:_(?:full|top|bot|mid))$/i.test(id)) {
-      if (
-        /^(?:lower_)?d\d+$/.test(id) ||
-        /^(?:lower_)?corner_door_\d+$/.test(id) ||
-        /^(?:lower_)?corner_pent_door_\d+$/.test(id)
-      ) {
-        id = id + '_full';
-      }
-    }
-    if (readBool(m[`removed_${id}`])) return true;
-
-    // Segmented parts inherit from the full door key.
-    if (id.endsWith('_top') || id.endsWith('_bot') || id.endsWith('_mid')) {
-      const full = id.replace(/_(top|bot|mid)$/i, '_full');
-      if (readBool(m[`removed_${full}`])) return true;
-    }
-
-    return false;
+    return listCanonicalRemovedDoorLookupKeys(partId).some(key => readBool(m[key]));
   };
 }
 

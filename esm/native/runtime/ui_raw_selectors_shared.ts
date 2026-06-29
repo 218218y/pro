@@ -114,5 +114,4 @@ export function missingEssentialUiRawDims(ui: unknown): EssentialUiDimKey[] {
   return missing;
 }
 
-// Re-export shared coercion helpers for backwards compatibility through the facade.
 export { coerceFiniteNumber, coerceFiniteInt };

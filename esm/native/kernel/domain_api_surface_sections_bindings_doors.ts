@@ -19,7 +19,6 @@ import { readUiRawIntFromSnapshot } from '../runtime/ui_raw_selectors.js';
 import {
   canonicalRemovedDoorPartId,
   commitCanonicalMapValue,
-  listRemovedDoorCleanupKeys,
   listRemovedDoorLookupKeys,
   patchCanonicalPrefixedMapViaCfg,
   shouldSkipCanonicalPrefixedMapCommit,
@@ -106,8 +105,7 @@ function createDoorsActionBindings(state: DomainApiSurfaceSectionsState): Unknow
       if (!canonicalPartId) return;
       const removedKey = 'removed_' + canonicalPartId;
       const value = !!isRemoved ? true : null;
-      const cleanupKeys = listRemovedDoorCleanupKeys(doorId);
-      return commitCanonicalMapValue(state, 'removedDoorsMap', removedKey, value, nextMeta, cleanupKeys);
+      return commitCanonicalMapValue(state, 'removedDoorsMap', removedKey, value, nextMeta);
     },
     setSplit(doorId: unknown, isSplit: unknown, meta: ActionMetaLike | undefined) {
       const nextMeta = state._meta(meta, 'actions:doors:setSplit');

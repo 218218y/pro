@@ -89,13 +89,18 @@ test('maps access normalizers keep split maps on canonical keys and values only'
 
 test('maps access normalizers keep generic toggle maps on canonical boolean/null values', () => {
   const removedDoorsMap = normalizeKnownMapSnapshot('removedDoorsMap', {
-    removed_d1: true,
-    removed_d2: false,
-    removed_d3: null,
-    removed_d4: 1,
-    removed_d5: 'on',
+    removed_d1_full: true,
+    removed_d2_full: false,
+    removed_d3_full: null,
+    removed_d4: true,
+    removed_d5_full: 1,
+    removed_d6_full: 'on',
+    d7_full: true,
   });
-  assert.deepEqual({ ...removedDoorsMap }, { removed_d1: true, removed_d2: false, removed_d3: null });
+  assert.deepEqual(
+    { ...removedDoorsMap },
+    { removed_d1_full: true, removed_d2_full: false, removed_d3_full: null }
+  );
 
   const groovesMap = normalizeKnownMapSnapshot('groovesMap', {
     groove_d1_full: true,

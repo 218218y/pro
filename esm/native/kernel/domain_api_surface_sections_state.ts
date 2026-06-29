@@ -176,9 +176,8 @@ export function createDomainApiSurfaceSectionsState(
     mapName: string,
     canonicalKey: string,
     value: unknown,
-    meta?: ActionMetaLike,
-    aliasesToClear?: Array<string | null | undefined>
-  ) => patchCanonicalMapValue(ctx._cfgMapPatch, mapName, canonicalKey, value, meta, aliasesToClear);
+    meta?: ActionMetaLike
+  ) => patchCanonicalMapValue(ctx._cfgMapPatch, mapName, canonicalKey, value, meta);
 
   return {
     ...ctx,

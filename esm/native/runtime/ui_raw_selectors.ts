@@ -9,7 +9,6 @@
 // - No DOM access.
 // - Fail-soft except for explicit canonical assertions.
 
-export { coerceFiniteNumber, coerceFiniteInt } from './ui_raw_selectors_shared.js';
 export type { EssentialUiDimKey, MutableUiSnapshotLike } from './ui_raw_selectors_shared.js';
 export {
   ensureUiRawDimsFromSnapshot,

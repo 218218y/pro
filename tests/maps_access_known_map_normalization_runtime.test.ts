@@ -20,7 +20,14 @@ test('maps_access normalizes known maps and clones unknown maps without leaking 
       handlesMap: { d1: 'bar', d2: null, drop: 123 },
       hingeMap: { d1: 'left', d2: hingeObj, bad: 7 },
       splitDoorsMap: { split_d1: true, splitpos_d1: [0.25, 0.75, 'bad'], skip: { nope: true } },
-      removedDoorsMap: { removed_d1: true, removed_d2: false, removed_d3: null, legacy: 'on', bad: 'wat' },
+      removedDoorsMap: {
+        removed_d1_full: true,
+        removed_d2_full: false,
+        removed_d3_full: null,
+        removed_d4: true,
+        legacy: 'on',
+        bad: 'wat',
+      },
       roundedFrameSideShelvesMap: {
         body_left: true,
         body_right: false,
@@ -50,9 +57,10 @@ test('maps_access normalizes known maps and clones unknown maps without leaking 
   assert.equal('skip' in (splits || {}), false);
 
   const removed = readMap(App, 'removedDoorsMap');
-  assert.equal(removed?.removed_d1, true);
-  assert.equal(removed?.removed_d2, false);
-  assert.equal(removed?.removed_d3, null);
+  assert.equal(removed?.removed_d1_full, true);
+  assert.equal(removed?.removed_d2_full, false);
+  assert.equal(removed?.removed_d3_full, null);
+  assert.equal('removed_d4' in (removed || {}), false);
   assert.equal('legacy' in (removed || {}), false);
   assert.equal('bad' in (removed || {}), false);
 
