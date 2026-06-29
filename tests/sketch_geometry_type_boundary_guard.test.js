@@ -33,15 +33,24 @@ test('[sketch-geometry-boundary] services normalize draft strings before sketch 
   );
   assert.match(
     normalizer,
+    /normalizeBuilderDraftGeometryScalar\(value: unknown\): BuilderRuntimeGeometryScalar/
+  );
+  assert.match(
+    normalizer,
     /normalizeBuilderSketchExtrasGeometry\(value: unknown\): BuilderSketchExtrasLike \| null/
+  );
+  assert.match(
+    normalizer,
+    /normalizeBuilderDraftSketchExtrasGeometry\(value: unknown\): BuilderSketchExtrasLike \| null/
   );
   assert.match(
     normalizer,
     /normalizeInteriorSketchRuntimeGeometryArgs<T extends BuilderInteriorSketchArgsLike>/
   );
-  assert.match(interiorPipeline, /normalizeBuilderSketchExtrasGeometry\(config\.sketchExtras\)/);
-  assert.match(interiorPipeline, /readBuilderRuntimeGeometryNumber\(value, defaultValue\)/);
+  assert.match(interiorPipeline, /normalizeBuilderDraftSketchExtrasGeometry\(config\.sketchExtras\)/);
+  assert.match(interiorPipeline, /readBuilderDraftGeometryNumber\(value, defaultValue\)/);
   assert.match(opsInput, /normalizeInteriorSketchRuntimeGeometryArgs\(rawInput\)/);
+  assert.doesNotMatch(opsInput, /normalizeBuilderDraft/);
   assert.match(opsInput, /readBuilderRuntimeGeometryNumber\(input\.effectiveBottomY, 0\)/);
   assert.doesNotMatch(
     opsInput,

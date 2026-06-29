@@ -72,7 +72,7 @@ test('interior sketch pipeline normalizes draft string geometry before builder r
   assert.equal((box.doors as UnknownRecord[])[0].grooveLinesCount, 2);
 });
 
-test('direct render sketch resolver clamps string draft geometry at the runtime boundary', () => {
+test('direct render sketch resolver rejects string draft geometry at the runtime boundary', () => {
   const group: UnknownRecord = {};
   const resolved = resolveInteriorSketchExtrasInput(createResolverOwner(group), {
     App: {},
@@ -87,17 +87,17 @@ test('direct render sketch resolver clamps string draft geometry at the runtime 
     sketchMode: true,
     createBoard: () => ({}),
     wardrobeGroup: group,
-    effectiveBottomY: '0',
-    effectiveTopY: '2.4',
-    innerW: '1.5',
-    woodThick: '0.018',
-    shelfThick: '0.018',
-    internalDepth: '0.52',
-    internalCenterX: '0.1',
-    internalZ: '-0.26',
-    D: '0.6',
-    moduleIndex: '2',
-    modulesLength: '5',
+    effectiveBottomY: 0,
+    effectiveTopY: 2.4,
+    innerW: 1.5,
+    woodThick: 0.018,
+    shelfThick: 0.018,
+    internalDepth: 0.52,
+    internalCenterX: 0.1,
+    internalZ: -0.26,
+    D: 0.6,
+    moduleIndex: 2,
+    modulesLength: 5,
   });
 
   assert.ok(resolved);
@@ -107,8 +107,6 @@ test('direct render sketch resolver clamps string draft geometry at the runtime 
   assert.equal(resolved.internalDepth, 0.52);
   assert.equal(resolved.moduleIndex, 2);
   assert.equal(resolved.modulesLength, 5);
-  assert.equal(resolved.shelves[0]?.yNorm, 0.4);
-  assert.equal(resolved.drawers[0]?.drawerHeightM, 0.2);
-  assert.equal(typeof resolved.shelves[0]?.yNorm, 'number');
-  assert.equal(typeof resolved.drawers[0]?.drawerHeightM, 'number');
+  assert.equal(resolved.shelves[0]?.yNorm, null);
+  assert.equal(resolved.drawers[0]?.drawerHeightM, null);
 });

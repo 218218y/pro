@@ -64,17 +64,26 @@ type GeometryScalarKey =
   | (typeof SKETCH_BOX_DOOR_GEOMETRY_SCALAR_KEYS)[number]
   | (typeof SKETCH_BOX_GEOMETRY_SCALAR_KEYS)[number];
 
+type GeometryScalarNormalizer = (value: unknown) => BuilderRuntimeGeometryScalar;
+
+function hasOwn(source: UnknownRecord, key: string): boolean {
+  return Object.prototype.hasOwnProperty.call(source, key);
+}
+
 export function normalizeBuilderRuntimeGeometryScalar(value: unknown): BuilderRuntimeGeometryScalar {
   if (value === undefined) return undefined;
   if (value === null) return null;
-  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+export function normalizeBuilderDraftGeometryScalar(value: unknown): BuilderRuntimeGeometryScalar {
   if (typeof value === 'string') {
     const trimmed = value.trim();
     if (!trimmed) return null;
     const parsed = Number(trimmed);
     return Number.isFinite(parsed) ? parsed : null;
   }
-  return null;
+  return normalizeBuilderRuntimeGeometryScalar(value);
 }
 
 export function readBuilderRuntimeGeometryNumber(value: unknown, defaultValue: number): number {
@@ -82,65 +91,111 @@ export function readBuilderRuntimeGeometryNumber(value: unknown, defaultValue: n
   return typeof normalized === 'number' ? normalized : defaultValue;
 }
 
-function normalizeGeometryFields<T extends UnknownRecord>(source: T, keys: readonly GeometryScalarKey[]): T {
+export function readBuilderDraftGeometryNumber(value: unknown, defaultValue: number): number {
+  const normalized = normalizeBuilderDraftGeometryScalar(value);
+  return typeof normalized === 'number' ? normalized : defaultValue;
+}
+
+function normalizeGeometryFields<T extends UnknownRecord>(
+  source: T,
+  keys: readonly GeometryScalarKey[],
+  normalizeScalar: GeometryScalarNormalizer
+): T {
   const out: UnknownRecord = { ...source };
   for (const key of keys) {
-    if (Object.prototype.hasOwnProperty.call(out, key)) {
-      out[key] = normalizeBuilderRuntimeGeometryScalar(out[key]);
-    }
+    if (hasOwn(out, key)) out[key] = normalizeScalar(out[key]);
   }
   return out as T;
 }
 
-function normalizeRecordList(value: unknown, keys: readonly GeometryScalarKey[]): UnknownRecord[] {
+function normalizeRecordListValue(
+  value: unknown,
+  keys: readonly GeometryScalarKey[],
+  normalizeScalar: GeometryScalarNormalizer
+): UnknownRecord[] | null | undefined {
+  if (value === undefined) return undefined;
+  if (value === null) return null;
   if (!Array.isArray(value)) return [];
   const out: UnknownRecord[] = [];
   for (const item of value) {
     const rec = asRecord<UnknownRecord>(item);
-    if (rec) out.push(normalizeGeometryFields(rec, keys));
+    if (rec) out.push(normalizeGeometryFields(rec, keys, normalizeScalar));
   }
   return out;
 }
 
-function normalizeSketchBoxList(value: unknown): UnknownRecord[] {
+function normalizeRecordListField(
+  source: UnknownRecord,
+  key: string,
+  keys: readonly GeometryScalarKey[],
+  normalizeScalar: GeometryScalarNormalizer
+): void {
+  if (hasOwn(source, key)) source[key] = normalizeRecordListValue(source[key], keys, normalizeScalar);
+}
+
+function normalizeSketchBoxListValue(
+  value: unknown,
+  normalizeScalar: GeometryScalarNormalizer
+): UnknownRecord[] | null | undefined {
+  if (value === undefined) return undefined;
+  if (value === null) return null;
   if (!Array.isArray(value)) return [];
   const boxes: UnknownRecord[] = [];
   for (const item of value) {
     const rec = asRecord<UnknownRecord>(item);
     if (!rec) continue;
-    const box = normalizeGeometryFields(rec, SKETCH_BOX_GEOMETRY_SCALAR_KEYS);
-    box.dividers = normalizeRecordList(box.dividers, SKETCH_DIVIDER_GEOMETRY_SCALAR_KEYS);
-    box.horizontalDividers = normalizeRecordList(box.horizontalDividers, SKETCH_DIVIDER_GEOMETRY_SCALAR_KEYS);
-    box.shelves = normalizeRecordList(box.shelves, SKETCH_SHELF_GEOMETRY_SCALAR_KEYS);
-    box.storageBarriers = normalizeRecordList(
-      box.storageBarriers,
-      SKETCH_STORAGE_BARRIER_GEOMETRY_SCALAR_KEYS
+    const box = normalizeGeometryFields(rec, SKETCH_BOX_GEOMETRY_SCALAR_KEYS, normalizeScalar);
+    normalizeRecordListField(box, 'dividers', SKETCH_DIVIDER_GEOMETRY_SCALAR_KEYS, normalizeScalar);
+    normalizeRecordListField(box, 'horizontalDividers', SKETCH_DIVIDER_GEOMETRY_SCALAR_KEYS, normalizeScalar);
+    normalizeRecordListField(box, 'shelves', SKETCH_SHELF_GEOMETRY_SCALAR_KEYS, normalizeScalar);
+    normalizeRecordListField(
+      box,
+      'storageBarriers',
+      SKETCH_STORAGE_BARRIER_GEOMETRY_SCALAR_KEYS,
+      normalizeScalar
     );
-    box.rods = normalizeRecordList(box.rods, SKETCH_ROD_GEOMETRY_SCALAR_KEYS);
-    box.drawers = normalizeRecordList(box.drawers, SKETCH_DRAWER_GEOMETRY_SCALAR_KEYS);
-    box.extDrawers = normalizeRecordList(box.extDrawers, SKETCH_EXTERNAL_DRAWER_GEOMETRY_SCALAR_KEYS);
-    box.regularExtDrawers = normalizeRecordList(
-      box.regularExtDrawers,
-      SKETCH_EXTERNAL_DRAWER_GEOMETRY_SCALAR_KEYS
+    normalizeRecordListField(box, 'rods', SKETCH_ROD_GEOMETRY_SCALAR_KEYS, normalizeScalar);
+    normalizeRecordListField(box, 'drawers', SKETCH_DRAWER_GEOMETRY_SCALAR_KEYS, normalizeScalar);
+    normalizeRecordListField(box, 'extDrawers', SKETCH_EXTERNAL_DRAWER_GEOMETRY_SCALAR_KEYS, normalizeScalar);
+    normalizeRecordListField(
+      box,
+      'regularExtDrawers',
+      SKETCH_EXTERNAL_DRAWER_GEOMETRY_SCALAR_KEYS,
+      normalizeScalar
     );
-    box.doors = normalizeRecordList(box.doors, SKETCH_BOX_DOOR_GEOMETRY_SCALAR_KEYS);
+    normalizeRecordListField(box, 'doors', SKETCH_BOX_DOOR_GEOMETRY_SCALAR_KEYS, normalizeScalar);
     boxes.push(box);
   }
   return boxes;
 }
 
-export function normalizeBuilderSketchExtrasGeometry(value: unknown): BuilderSketchExtrasLike | null {
+function normalizeBuilderSketchExtrasGeometryWith(
+  value: unknown,
+  normalizeScalar: GeometryScalarNormalizer
+): BuilderSketchExtrasLike | null {
   const extra = asRecord<UnknownRecord>(value);
   if (!extra) return null;
-  return {
-    ...extra,
-    shelves: normalizeRecordList(extra.shelves, SKETCH_SHELF_GEOMETRY_SCALAR_KEYS),
-    boxes: normalizeSketchBoxList(extra.boxes),
-    storageBarriers: normalizeRecordList(extra.storageBarriers, SKETCH_STORAGE_BARRIER_GEOMETRY_SCALAR_KEYS),
-    rods: normalizeRecordList(extra.rods, SKETCH_ROD_GEOMETRY_SCALAR_KEYS),
-    drawers: normalizeRecordList(extra.drawers, SKETCH_DRAWER_GEOMETRY_SCALAR_KEYS),
-    extDrawers: normalizeRecordList(extra.extDrawers, SKETCH_EXTERNAL_DRAWER_GEOMETRY_SCALAR_KEYS),
-  } as BuilderSketchExtrasLike;
+  const out: UnknownRecord = { ...extra };
+  normalizeRecordListField(out, 'shelves', SKETCH_SHELF_GEOMETRY_SCALAR_KEYS, normalizeScalar);
+  if (hasOwn(out, 'boxes')) out.boxes = normalizeSketchBoxListValue(out.boxes, normalizeScalar);
+  normalizeRecordListField(
+    out,
+    'storageBarriers',
+    SKETCH_STORAGE_BARRIER_GEOMETRY_SCALAR_KEYS,
+    normalizeScalar
+  );
+  normalizeRecordListField(out, 'rods', SKETCH_ROD_GEOMETRY_SCALAR_KEYS, normalizeScalar);
+  normalizeRecordListField(out, 'drawers', SKETCH_DRAWER_GEOMETRY_SCALAR_KEYS, normalizeScalar);
+  normalizeRecordListField(out, 'extDrawers', SKETCH_EXTERNAL_DRAWER_GEOMETRY_SCALAR_KEYS, normalizeScalar);
+  return out as BuilderSketchExtrasLike;
+}
+
+export function normalizeBuilderSketchExtrasGeometry(value: unknown): BuilderSketchExtrasLike | null {
+  return normalizeBuilderSketchExtrasGeometryWith(value, normalizeBuilderRuntimeGeometryScalar);
+}
+
+export function normalizeBuilderDraftSketchExtrasGeometry(value: unknown): BuilderSketchExtrasLike | null {
+  return normalizeBuilderSketchExtrasGeometryWith(value, normalizeBuilderDraftGeometryScalar);
 }
 
 export function normalizeInteriorSketchRuntimeGeometryArgs<T extends BuilderInteriorSketchArgsLike>(
@@ -148,9 +203,7 @@ export function normalizeInteriorSketchRuntimeGeometryArgs<T extends BuilderInte
 ): T {
   const out: UnknownRecord = { ...value };
   for (const key of INTERIOR_SKETCH_INPUT_GEOMETRY_SCALAR_KEYS) {
-    if (Object.prototype.hasOwnProperty.call(out, key)) {
-      out[key] = normalizeBuilderRuntimeGeometryScalar(out[key]);
-    }
+    if (hasOwn(out, key)) out[key] = normalizeBuilderRuntimeGeometryScalar(out[key]);
   }
   const sketchExtras = normalizeBuilderSketchExtrasGeometry(out.sketchExtras);
   if (sketchExtras) out.sketchExtras = sketchExtras;
