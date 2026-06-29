@@ -1,4 +1,5 @@
 import type { ActionMetaLike, UnknownRecord } from '../../../types';
+import { UI_RAW_SCALAR_KEYS } from '../../../types/ui_raw.js';
 
 import type {
   CreateKernelSnapshotStoreSystemArgs,
@@ -120,11 +121,20 @@ export function mergeUiOverride(
 
   const br = asRecordOrNull(base.raw);
   const pr = asRecordOrNull(patch.raw);
-  if (br || pr) {
-    const rawOut: UnknownRecord = Object.assign({}, br || {});
-    if (pr) {
-      for (const key of Object.keys(pr)) rawOut[key] = cloneSnapshotComparableValue(pr[key]);
+  let rawOut: UnknownRecord | null = br || pr ? Object.assign({}, br || {}) : null;
+  const patchRawKeys = new Set<string>();
+  if (pr && rawOut) {
+    for (const key of Object.keys(pr)) {
+      patchRawKeys.add(key);
+      rawOut[key] = cloneSnapshotComparableValue(pr[key]);
     }
+  }
+  for (const key of UI_RAW_SCALAR_KEYS) {
+    if (!Object.prototype.hasOwnProperty.call(patch, key) || patchRawKeys.has(key)) continue;
+    if (!rawOut) rawOut = {};
+    rawOut[key] = cloneSnapshotComparableValue(patch[key]);
+  }
+  if (rawOut) {
     out.raw = rawOut;
   }
 

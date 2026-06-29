@@ -28,7 +28,7 @@ test('[regression] controller installs store reactivity before seed commit and s
     "commitBootSeedUiSnapshotOrThrow(App, seedUi, 'init:seed', 'UI boot seed snapshot')"
   );
   const getUiIdx = indexOfOrThrow(bootController, 'seedUi = readRecord(getUi(App)) || {};');
-  const essentialIdx = indexOfOrThrow(bootController, 'hasEssentialUiDimsFromSnapshot(seedUi)');
+  const essentialIdx = indexOfOrThrow(bootController, 'hasCanonicalEssentialUiRawDimsFromSnapshot(seedUi)');
 
   assert.ok(installIdx < commitIdx, 'store reactivity must install before the boot seed commit');
   assert.ok(

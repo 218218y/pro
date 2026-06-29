@@ -2,7 +2,7 @@ import {
   canCommitBootSeedUiSnapshot,
   commitBootSeedUiSnapshotOrThrow,
   resetHistoryBaselineOrThrow,
-  hasEssentialUiDimsFromSnapshot,
+  hasCanonicalEssentialUiRawDimsFromSnapshot,
   installStoreReactivityOrThrow,
 } from '../services/api.js';
 import { getUi } from './store_access.js';
@@ -36,10 +36,10 @@ export function installUiBootStoreSeedAndHistory(App: AppContainer, reporter: Ui
       );
     }
 
-    if (!hasEssentialUiDimsFromSnapshot(seedUi)) {
+    if (!hasCanonicalEssentialUiRawDimsFromSnapshot(seedUi)) {
       const err = reporter.toBootError(
         'store.seedUi.missingFields',
-        '[WardrobePro] Boot seed requires essential UI fields in store.ui (width/height/depth/doors). DOM seeding is not supported; fix the default store state or early UI init.'
+        '[WardrobePro] Boot seed requires canonical ui.raw fields in store.ui (width/height/depth/doors). DOM seeding is not supported; fix the default store state or early UI init.'
       );
       reportUiBootPlatformError(App, reporter, 'boot.seedUi', err);
       reporter.throwHard('store.seedUi.missingFields', err.message, err);

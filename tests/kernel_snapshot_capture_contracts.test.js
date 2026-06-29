@@ -135,6 +135,26 @@ test('[kernel-snapshot-store] snapshot/store seam stays typed and publicly compa
     /materializeTopModulesConfigurationFromUiConfig\(\s*cfg\.modulesConfiguration,\s*ui,\s*cfg\s*\)/,
     'snapshot/store should keep canonical top-module materialization from UI/config snapshots'
   );
+  assert.match(
+    snapshotBundle,
+    /UI_RAW_SCALAR_KEYS/,
+    'snapshot/store should materialize structural uiOverride scalar patches through typed ui.raw keys'
+  );
+  assert.match(
+    snapshotBundle,
+    /hasCanonicalEssentialUiRawDimsFromSnapshot/,
+    'snapshot/store build state should assert canonical ui.raw dimensions'
+  );
+  assert.match(
+    snapshotBundle,
+    /readCanonicalUiRawIntFromSnapshot/,
+    'snapshot/store build state should read build-driving numeric fields through canonical ui.raw readers'
+  );
+  assert.doesNotMatch(
+    snapshotBundle,
+    /hasEssentialUiDimsFromSnapshot|readUiRawIntFromSnapshot/,
+    'snapshot/store build state should not use tolerant direct ui.* readers'
+  );
 });
 
 test('[kernel-edit-state] kernel delegates edit-state capture/apply to dedicated seam', () => {

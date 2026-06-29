@@ -96,6 +96,63 @@ test('kernel snapshot build-state canonicalizes structural override config slice
   assert.equal((state.config.cornerConfiguration as AnyRecord).modulesConfiguration[0].doors, '9');
 });
 
+test('kernel snapshot build-state materializes structural uiOverride scalars into canonical raw before reads', () => {
+  const App: AnyRecord = {
+    store: {
+      patch: () => undefined,
+      getState: () => ({
+        ui: {
+          width: 240,
+          height: 220,
+          depth: 60,
+          doors: 5,
+          raw: { width: 240, height: 220, depth: 60, doors: 5 },
+          singleDoorPos: '',
+          structureSelect: '',
+        },
+        config: {
+          wardrobeType: 'hinged',
+          modulesConfiguration: [{ doors: '9', layout: 'drawers' }],
+        },
+        runtime: {},
+        mode: { primary: 'none', opts: {} },
+        meta: { dirty: false },
+      }),
+    },
+  };
+  const args = {
+    App: App as any,
+    asRecord,
+    asRecordOrNull,
+    isRecord: (value: unknown) => !!(value && typeof value === 'object' && !Array.isArray(value)),
+    reportNonFatal: () => undefined,
+    captureConfig: () => ({
+      wardrobeType: 'hinged',
+      modulesConfiguration: [{ doors: '9', layout: 'drawers' }],
+    }),
+  };
+
+  const state = readKernelSnapshotBuildState(args, { width: 180, doors: 0 });
+  const raw = state.ui.raw as AnyRecord;
+
+  assert.equal(raw.width, 180);
+  assert.equal(raw.height, 220);
+  assert.equal(raw.depth, 60);
+  assert.equal(raw.doors, 0);
+  assert.equal(state.build.doorsCount, 0);
+  assert.equal(state.config.modulesConfiguration[0].doors, 9);
+
+  const explicitRawState = readKernelSnapshotBuildState(args, {
+    width: 180,
+    doors: 0,
+    raw: { width: 190, height: 221, depth: 61, doors: 3 },
+  });
+
+  assert.equal((explicitRawState.ui.raw as AnyRecord).width, 190);
+  assert.equal((explicitRawState.ui.raw as AnyRecord).doors, 3);
+  assert.equal(explicitRawState.build.doorsCount, 3);
+});
+
 test('kernel snapshot build-state returns a detached ui snapshot even when store.ui is already a snapshot', () => {
   const storeUi = {
     width: 240,
@@ -104,6 +161,9 @@ test('kernel snapshot build-state returns a detached ui snapshot even when store
     doors: 5,
     raw: {
       width: 240,
+      height: 220,
+      depth: 60,
+      doors: 5,
       nested: { marker: 'keep' },
     },
     view: {

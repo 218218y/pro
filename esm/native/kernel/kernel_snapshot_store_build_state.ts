@@ -1,7 +1,10 @@
 import type { ModulesConfigurationLike, UnknownRecord } from '../../../types';
 
 import { getState, getRuntime } from './store_access.js';
-import { hasEssentialUiDimsFromSnapshot, readUiRawIntFromSnapshot } from '../runtime/ui_raw_selectors.js';
+import {
+  hasCanonicalEssentialUiRawDimsFromSnapshot,
+  readCanonicalUiRawIntFromSnapshot,
+} from '../runtime/ui_raw_selectors.js';
 import { calculateModuleStructure } from '../features/modules_configuration/calc_module_structure.js';
 import {
   cloneModulesConfigurationSnapshot,
@@ -29,7 +32,7 @@ export interface KernelSnapshotBuildStateArgs extends Pick<
 }
 
 function hasEssentialUi(uIn: unknown): boolean {
-  return hasEssentialUiDimsFromSnapshot(uIn);
+  return hasCanonicalEssentialUiRawDimsFromSnapshot(uIn);
 }
 
 function looksLikeBuildStateOptions(
@@ -66,7 +69,7 @@ function readModulesStructure(
   modulesStructure: ModulesStructureItem[] | null;
   signature: number[] | null;
 } {
-  let doorsCount = readUiRawIntFromSnapshot(ui, 'doors', 4);
+  let doorsCount = readCanonicalUiRawIntFromSnapshot(ui, 'doors', 4);
   if (!Number.isFinite(doorsCount) || doorsCount < 0) doorsCount = 4;
   const wardrobeType = cfg && cfg.wardrobeType != null ? String(cfg.wardrobeType) : 'hinged';
   const singleDoorPos = ui.singleDoorPos != null ? String(ui.singleDoorPos) : '';
@@ -98,9 +101,10 @@ export function readKernelSnapshotBuildState(
   args: KernelSnapshotBuildStateArgs,
   override?: unknown
 ): KernelBuildStateLike {
-  const ov = args.asRecord(override, {});
-  const isState = args.isRecord(override) && ('ui' in ov || 'config' in ov);
-  const uiOverride = isState ? args.asRecord(ov.ui, {}) : args.asRecord(override, {});
+  const hasOverride = typeof override !== 'undefined' && override !== null;
+  const ov = hasOverride ? args.asRecord(override, {}) : {};
+  const isState = hasOverride && args.isRecord(override) && ('ui' in ov || 'config' in ov);
+  const uiOverride = isState ? args.asRecord(ov.ui, {}) : hasOverride ? args.asRecord(override, {}) : null;
 
   let ui: UnknownRecord | null = null;
   if (uiOverride && typeof uiOverride === 'object') {
@@ -121,7 +125,7 @@ export function readKernelSnapshotBuildState(
     if (!hasEssentialUi(ui)) {
       throw new Error(
         '[WardrobePro] Missing essential UI fields in getBuildState(uiOverride). ' +
-          'Pass a full ui snapshot/patch with width/height/depth/doors.'
+          'Pass canonical ui.raw width/height/depth/doors, or structural scalar patch keys that can be materialized.'
       );
     }
   } else {
