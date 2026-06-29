@@ -40,7 +40,7 @@ export function getExtraLongEdgeHandleLiftAbsY(
         : typeof mm.extDrawers === 'number'
           ? mm.extDrawers
           : 0;
-    const count = Number.isFinite(v) ? Number(v) : 0;
+    const count = Number.isFinite(v) ? v : 0;
     if (count > maxExtDrawersCount) maxExtDrawersCount = count;
   }
 
@@ -60,8 +60,15 @@ export function getMaxGlobalExternalDrawerHeightM(moduleCfgList: unknown[] | nul
     if (!mm) continue;
     let h = 0;
     if (mm.hasShoeDrawer || mm.extDrawers === 'shoe') h += DRAWER_DIMENSIONS.external.shoeHeightM;
-    const c = Number(mm.extDrawersCount || (typeof mm.extDrawers === 'number' ? mm.extDrawers : 0));
-    if (c > 0) h += c * DRAWER_DIMENSIONS.external.regularHeightM;
+    const drawerCount =
+      typeof mm.extDrawersCount === 'number'
+        ? mm.extDrawersCount
+        : typeof mm.extDrawers === 'number'
+          ? mm.extDrawers
+          : 0;
+    if (Number.isFinite(drawerCount) && drawerCount > 0) {
+      h += drawerCount * DRAWER_DIMENSIONS.external.regularHeightM;
+    }
     if (h > maxGlobalDrawerH) maxGlobalDrawerH = h;
   }
   return maxGlobalDrawerH;

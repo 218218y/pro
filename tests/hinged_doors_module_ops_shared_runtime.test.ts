@@ -99,6 +99,31 @@ test('hinged_doors_module_ops_shared computes iteration overrides and clamps lon
   assert.equal(clampHandleAbsY(ctx!, 1.95, 0.02, 2.0, 'd3_full'), 1.8);
 });
 
+test('hinged_doors_module_ops_shared does not parse string drawer counts for handle lift', () => {
+  const ctx = createHingedDoorModuleOpsContext({
+    cfg: {
+      wardrobeType: 'hinged',
+      globalHandleType: 'edge',
+      handlesMap: { __wp_edge_handle_variant_global: 'long' },
+    },
+    moduleIndex: 0,
+    modulesLength: 1,
+    moduleDoors: 1,
+    modWidth: 0.8,
+    currentX: 0,
+    effectiveBottomY: 0.018,
+    startY: 0,
+    woodThick: 0.018,
+    cabinetBodyHeight: 2.4,
+    D: 0.55,
+    opsList: [],
+    moduleCfgList: [{ extDrawersCount: '4' }],
+  });
+
+  assert.ok(ctx);
+  assert.equal(computeDefaultHandleAbsY(ctx!, 1), 1.05);
+});
+
 test('hinged_doors_module_ops_shared derives default handle height and emits segment ops', () => {
   const opsList: unknown[] = [];
   const ctx = createHingedDoorModuleOpsContext({

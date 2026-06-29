@@ -214,8 +214,8 @@ export function applyExternalDrawersForModule(
   // Augment ops with visual-only drawer face width/offset, so the front can match the door span
   // without changing the internal drawer box dimensions.
   // Fail-fast on malformed ops/drawers data here (this is deterministic builder data, not optional IO).
-  const faceW = Number(drawerFaceW);
-  const faceOffsetX = Number(drawerFaceOffsetX);
+  const faceW = drawerFaceW;
+  const faceOffsetX = drawerFaceOffsetX;
   const fz = typeof frontZ === 'number' && Number.isFinite(frontZ) ? frontZ : null;
   const drawers = asMutableDrawerOpList(ops);
 

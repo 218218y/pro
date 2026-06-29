@@ -6,7 +6,7 @@ import type {
   SketchExternalDrawerRenderContext,
 } from './render_interior_sketch_drawers_external_types.js';
 
-import { toFiniteNumber } from './render_interior_sketch_shared.js';
+import { readRenderOpNumber } from './render_ops_number_contracts.js';
 import { createSketchDrawerMotionPoint } from './render_interior_sketch_drawers_shared.js';
 import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
@@ -18,9 +18,9 @@ export function registerSketchExternalDrawerMotionEntry(
   const closedPos = createSketchDrawerMotionPoint(context.THREE, opPlan.px, opPlan.py, opPlan.pz);
   const openPos = createSketchDrawerMotionPoint(
     context.THREE,
-    toFiniteNumber(opPlan.open?.x) ?? opPlan.px,
-    toFiniteNumber(opPlan.open?.y) ?? opPlan.py,
-    toFiniteNumber(opPlan.open?.z) ?? opPlan.pz + DRAWER_DIMENSIONS.external.openOffsetZM
+    readRenderOpNumber(opPlan.open?.x) ?? opPlan.px,
+    readRenderOpNumber(opPlan.open?.y) ?? opPlan.py,
+    readRenderOpNumber(opPlan.open?.z) ?? opPlan.pz + DRAWER_DIMENSIONS.external.openOffsetZM
   );
   const drawerEntry: DrawerVisualEntryLike = {
     group: groupNode,

@@ -1,4 +1,5 @@
 import { asPivotEntry, asPivotEntryMap, type PivotEntryLike } from './module_loop_pipeline_shared.js';
+import { readGeometryRuntimeNumber } from './geometry_runtime_contracts.js';
 
 import type {
   BuilderCreateBoardArgsLike,
@@ -66,11 +67,11 @@ export function createModuleDoorSpanResolver(hingedDoorPivotMap: unknown) {
 
       const spRec: PivotEntryLike | null = asPivotEntry(sp);
       if (!spRec) continue;
-      const w = Number(spRec.doorWidth);
-      const pivotX = Number(spRec.pivotX);
+      const w = readGeometryRuntimeNumber(spRec.doorWidth);
+      const pivotX = readGeometryRuntimeNumber(spRec.pivotX);
       const hingeLeft = !!spRec.isLeftHinge;
 
-      if (!Number.isFinite(w) || !Number.isFinite(pivotX) || w <= 0) continue;
+      if (w == null || pivotX == null || w <= 0) continue;
 
       const xLeft = hingeLeft ? pivotX : pivotX - w;
       const xRight = hingeLeft ? pivotX + w : pivotX;

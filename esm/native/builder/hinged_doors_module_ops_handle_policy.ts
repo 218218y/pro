@@ -22,8 +22,15 @@ export function computeDefaultHandleAbsY(ctx: HingedDoorModuleOpsContext, doorId
       if (!mm) return;
       let hh = 0;
       if (mm.hasShoeDrawer || mm.extDrawers === 'shoe') hh += DRAWER_DIMENSIONS.external.shoeHeightM;
-      const cc = Number(mm.extDrawersCount || (typeof mm.extDrawers === 'number' ? mm.extDrawers : 0));
-      if (cc > 0) hh += cc * DRAWER_DIMENSIONS.external.regularHeightM;
+      const drawerCount =
+        typeof mm.extDrawersCount === 'number'
+          ? mm.extDrawersCount
+          : typeof mm.extDrawers === 'number'
+            ? mm.extDrawers
+            : 0;
+      if (Number.isFinite(drawerCount) && drawerCount > 0) {
+        hh += drawerCount * DRAWER_DIMENSIONS.external.regularHeightM;
+      }
       if (hh > maxGlobalDrawerH) maxGlobalDrawerH = hh;
     });
   } catch (e) {
