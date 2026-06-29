@@ -11,22 +11,45 @@ import {
 } from '../esm/native/builder/build_wardrobe_flow_context_carcass.ts';
 import { resolveBuildWardrobeHingedContext } from '../esm/native/builder/build_wardrobe_flow_context_hinged.ts';
 import { bindDoorVisualRenderPolicy } from '../esm/native/builder/door_visual_render_policy.ts';
+import {
+  DEFAULT_BASE_LEG_HEIGHT_CM,
+  getDefaultBaseLegWidthCm,
+  normalizeBaseLegStyle,
+} from '../esm/native/features/base_leg_support.ts';
+import { DEFAULT_BASE_PLINTH_HEIGHT_CM } from '../esm/native/features/base_plinth_support.ts';
+import {
+  DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM,
+  DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM,
+} from '../esm/native/features/platform_overhang_support.ts';
 
 test('build wardrobe context runtime: chest ui sanitizer keeps only canonical fields', () => {
   assert.equal(pickChestModeUi(null), null);
+
+  const defaultBaseLegStyle = normalizeBaseLegStyle(undefined);
   assert.deepEqual(
     pickChestModeUi({
       isChestMode: true,
       baseType: 'legs',
       colorChoice: 'oak',
       customColor: '#fff',
+      raw: {
+        chestCommodeMirrorHeightCm: '88.5',
+      },
+      chestCommodeMirrorWidthCm: '91.25',
       extra: 123,
     }),
     {
       isChestMode: true,
       baseType: 'legs',
+      baseLegPlatformSideOverhangCm: DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM,
+      baseLegPlatformFrontOverhangCm: DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM,
+      basePlinthHeightCm: DEFAULT_BASE_PLINTH_HEIGHT_CM,
+      baseLegHeightCm: DEFAULT_BASE_LEG_HEIGHT_CM,
+      baseLegWidthCm: getDefaultBaseLegWidthCm(defaultBaseLegStyle),
       colorChoice: 'oak',
       customColor: '#fff',
+      chestCommodeMirrorHeightCm: 88.5,
+      chestCommodeMirrorWidthCm: 91.25,
     }
   );
 });

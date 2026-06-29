@@ -170,6 +170,30 @@
       "entry": "modules_configuration/modules_config_api.js"
     },
     {
+      "file": "esm/native/builder/build_wardrobe_flow_context_ui.ts",
+      "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/builder/build_wardrobe_flow_context_ui.ts",
+      "entry": "base_plinth_support.js"
+    },
+    {
+      "file": "esm/native/builder/build_wardrobe_flow_context_ui.ts",
+      "entry": "platform_overhang_support.js"
+    },
+    {
+      "file": "esm/native/builder/chest_mode_pipeline.ts",
+      "entry": "base_leg_support.js"
+    },
+    {
+      "file": "esm/native/builder/chest_mode_pipeline.ts",
+      "entry": "base_plinth_support.js"
+    },
+    {
+      "file": "esm/native/builder/chest_mode_pipeline.ts",
+      "entry": "platform_overhang_support.js"
+    },
+    {
       "file": "esm/native/builder/core_carcass_cornice.ts",
       "entry": "hex_cell/index.js"
     },
