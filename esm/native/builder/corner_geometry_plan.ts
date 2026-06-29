@@ -27,7 +27,7 @@ type CornerHandleCfgLike = ValueRecord & {
 
 type CornerCellInputLike = ValueRecord & {
   extDrawersCount?: number | null;
-  extDrawers?: number | string | null;
+  extDrawers?: number | 'shoe' | null;
   extDrawersType?: string | null;
   hasShoeDrawer?: boolean;
   shoeDrawer?: boolean;
@@ -49,9 +49,11 @@ function readCornerCellInput(cellCfg: ValueRecord | null | undefined): CornerCel
     ...cellCfg,
     extDrawersCount: typeof cellCfg.extDrawersCount === 'number' ? cellCfg.extDrawersCount : undefined,
     extDrawers:
-      typeof cellCfg.extDrawers === 'number' || typeof cellCfg.extDrawers === 'string'
+      typeof cellCfg.extDrawers === 'number'
         ? cellCfg.extDrawers
-        : undefined,
+        : cellCfg.extDrawers === 'shoe'
+          ? 'shoe'
+          : undefined,
     extDrawersType: typeof cellCfg.extDrawersType === 'string' ? cellCfg.extDrawersType : undefined,
     hasShoeDrawer: cellCfg.hasShoeDrawer === true,
     shoeDrawer: cellCfg.shoeDrawer === true,

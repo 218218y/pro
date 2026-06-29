@@ -41,11 +41,11 @@ type ApplyCarcassAndGetCabinetMetricsArgs = {
   baseLegStyle?: string;
   baseLegPlatformMode?: string;
   baseLegPlatformSideMode?: string;
-  baseLegPlatformSideOverhangCm?: number | string;
-  baseLegPlatformFrontOverhangCm?: number | string;
-  basePlinthHeightCm?: number | string;
-  baseLegHeightCm?: number | string;
-  baseLegWidthCm?: number | string;
+  baseLegPlatformSideOverhangCm?: number;
+  baseLegPlatformFrontOverhangCm?: number;
+  basePlinthHeightCm?: number;
+  baseLegHeightCm?: number;
+  baseLegWidthCm?: number;
   baseLegTopPlatformOnly?: boolean;
   baseLegSuppressTopPlatform?: boolean;
   doorsCount?: number;

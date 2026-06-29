@@ -301,7 +301,7 @@ export interface BuilderBuildChestOnlyOptsLike extends UnknownRecord {
   H: number;
   totalW: number;
   D: number;
-  drawersCount: number | string;
+  drawersCount: number;
   baseType?: unknown;
   baseLegStyle?: unknown;
   baseLegColor?: unknown;
@@ -342,11 +342,11 @@ export interface BuilderCornerBuildMetaLike extends UnknownRecord {
   baseLegColor?: string;
   baseLegPlatformMode?: string;
   baseLegPlatformSideMode?: string;
-  baseLegPlatformSideOverhangCm?: number | string;
-  baseLegPlatformFrontOverhangCm?: number | string;
-  basePlinthHeightCm?: number | string;
-  baseLegHeightCm?: number | string;
-  baseLegWidthCm?: number | string;
+  baseLegPlatformSideOverhangCm?: number;
+  baseLegPlatformFrontOverhangCm?: number;
+  basePlinthHeightCm?: number;
+  baseLegHeightCm?: number;
+  baseLegWidthCm?: number;
   stackSplitEnabled?: boolean;
   stackSplitUnifiedFrame?: boolean;
   stackOffsetZ?: number;

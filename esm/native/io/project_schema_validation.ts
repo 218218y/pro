@@ -15,6 +15,13 @@ const OPTIONAL_NUMERIC_SETTINGS_KEYS = [
   'stackSplitLowerWidth',
   'stackSplitLowerDepth',
   'stackSplitLowerDoors',
+  'baseLegPlatformSideOverhangCm',
+  'baseLegPlatformFrontOverhangCm',
+  'stackSplitDecorativeSeparatorSideOverhangCm',
+  'stackSplitDecorativeSeparatorFrontOverhangCm',
+  'basePlinthHeightCm',
+  'baseLegHeightCm',
+  'baseLegWidthCm',
 ] as const;
 const BOOLEAN_SETTINGS_KEYS = [
   'isManualWidth',

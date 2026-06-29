@@ -128,13 +128,13 @@ export interface UiStateLike extends UiState {
   baseLegColor?: string;
   baseLegPlatformMode?: string;
   baseLegPlatformSideMode?: string;
-  baseLegPlatformSideOverhangCm?: number | string;
-  baseLegPlatformFrontOverhangCm?: number | string;
-  stackSplitDecorativeSeparatorSideOverhangCm?: number | string;
-  stackSplitDecorativeSeparatorFrontOverhangCm?: number | string;
-  basePlinthHeightCm?: number | string;
-  baseLegHeightCm?: number | string;
-  baseLegWidthCm?: number | string;
+  baseLegPlatformSideOverhangCm?: number;
+  baseLegPlatformFrontOverhangCm?: number;
+  stackSplitDecorativeSeparatorSideOverhangCm?: number;
+  stackSplitDecorativeSeparatorFrontOverhangCm?: number;
+  basePlinthHeightCm?: number;
+  baseLegHeightCm?: number;
+  baseLegWidthCm?: number;
   slidingTracksColor?: 'black' | 'nickel' | string;
   corniceType?: string;
   color?: string;
@@ -412,13 +412,13 @@ export interface BuildCtxStringsLike extends UnknownRecord {
   baseLegColor?: string;
   baseLegPlatformMode?: string;
   baseLegPlatformSideMode?: string;
-  baseLegPlatformSideOverhangCm?: number | string;
-  baseLegPlatformFrontOverhangCm?: number | string;
-  stackSplitDecorativeSeparatorSideOverhangCm?: number | string;
-  stackSplitDecorativeSeparatorFrontOverhangCm?: number | string;
-  basePlinthHeightCm?: number | string;
-  baseLegHeightCm?: number | string;
-  baseLegWidthCm?: number | string;
+  baseLegPlatformSideOverhangCm?: number;
+  baseLegPlatformFrontOverhangCm?: number;
+  stackSplitDecorativeSeparatorSideOverhangCm?: number;
+  stackSplitDecorativeSeparatorFrontOverhangCm?: number;
+  basePlinthHeightCm?: number;
+  baseLegHeightCm?: number;
+  baseLegWidthCm?: number;
   [k: string]: unknown;
 }
 

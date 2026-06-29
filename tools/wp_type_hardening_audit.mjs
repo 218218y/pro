@@ -60,6 +60,53 @@ function collectTypeRuntimeStubViolations() {
   return violations;
 }
 
+const runtimeGeometryScalarKeys = [
+  'baseLegPlatformSideOverhangCm',
+  'baseLegPlatformFrontOverhangCm',
+  'stackSplitDecorativeSeparatorSideOverhangCm',
+  'stackSplitDecorativeSeparatorFrontOverhangCm',
+  'basePlinthHeightCm',
+  'baseLegHeightCm',
+  'baseLegWidthCm',
+  'chestCommodeMirrorHeightCm',
+  'chestCommodeMirrorWidthCm',
+  'cornerWidth',
+  'cornerDoors',
+  'cornerDoorCount',
+  'cornerDoorsCount',
+  'cornerHeight',
+  'cornerHeightCm',
+  'cornerDepth',
+  'cornerDepthCm',
+];
+const runtimeGeometryScalarRoots = [
+  'esm/native/builder',
+  'esm/native/services',
+  'esm/native/runtime',
+  'types',
+];
+
+function collectRuntimeGeometryScalarUnionViolations() {
+  const violations = [];
+  const keyPattern = runtimeGeometryScalarKeys.join('|');
+  const stringUnionPattern = new RegExp(
+    `\\b(?:${keyPattern})\\??\\s*:\\s*(?:number\\s*\\|\\s*string|string\\s*\\|\\s*number)`,
+    'g'
+  );
+  for (const rootName of runtimeGeometryScalarRoots) {
+    for (const abs of walk(path.join(root, rootName))) {
+      const rel = path.relative(root, abs).replace(/\\/g, '/');
+      const source = fs.readFileSync(abs, 'utf8');
+      stringUnionPattern.lastIndex = 0;
+      const matches = [...source.matchAll(stringUnionPattern)];
+      if (matches.length) {
+        violations.push(`${rel}: runtime geometry scalar string union (${matches.length})`);
+      }
+    }
+  }
+  return violations;
+}
+
 const violations = [];
 for (const rootName of scanRoots) {
   for (const abs of walk(path.join(root, rootName))) {
@@ -72,6 +119,7 @@ for (const rootName of scanRoots) {
 }
 
 violations.push(...collectTypeRuntimeStubViolations());
+violations.push(...collectRuntimeGeometryScalarUnionViolations());
 
 if (violations.length) {
   console.error('[type-hardening-audit] FAILED');
@@ -79,4 +127,6 @@ if (violations.length) {
   process.exit(1);
 }
 
-console.log('[type-hardening-audit] ok (0 `as any` casts in esm/types; types runtime stubs are paired)');
+console.log(
+  '[type-hardening-audit] ok (0 `as any` casts in esm/types; types runtime stubs are paired; runtime geometry scalars stay numeric)'
+);

@@ -75,18 +75,18 @@ export function prepareBuildWardrobeContextSetup(
             baseLegColor: string;
             baseLegPlatformMode: string;
             baseLegPlatformSideMode?: string;
-            baseLegPlatformSideOverhangCm?: number | string;
-            baseLegPlatformFrontOverhangCm?: number | string;
-            basePlinthHeightCm: number | string;
-            baseLegHeightCm: number | string;
-            baseLegWidthCm?: number | string;
+            baseLegPlatformSideOverhangCm?: number;
+            baseLegPlatformFrontOverhangCm?: number;
+            basePlinthHeightCm: number;
+            baseLegHeightCm: number;
+            baseLegWidthCm?: number;
             colorChoice: string;
             customColor: string;
             doorStyle: string;
             isGroovesEnabled: boolean;
             chestCommodeEnabled: boolean;
-            chestCommodeMirrorHeightCm: number | string;
-            chestCommodeMirrorWidthCm: number | string;
+            chestCommodeMirrorHeightCm: number;
+            chestCommodeMirrorWidthCm: number;
             cfgSnapshot: ConfigStateLike | UnknownRecord;
             renderPolicy: typeof renderPolicy;
           }) => void

@@ -6,17 +6,25 @@
 
 import { CHEST_MODE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { guardVoid } from '../runtime/api.js';
+import {
+  getDefaultBaseLegWidthCm,
+  normalizeBaseLegHeightCm,
+  normalizeBaseLegStyle,
+  normalizeBaseLegWidthCm,
+} from '../features/base_leg_support.js';
+import { normalizeBasePlinthHeightCm } from '../features/base_plinth_support.js';
+import {
+  normalizeBaseLegPlatformFrontOverhangCm,
+  normalizeBaseLegPlatformSideOverhangCm,
+} from '../features/platform_overhang_support.js';
 import { runBuilderChestModeFollowThrough } from '../runtime/builder_service_access.js';
 import { requireChestModeConfigSnapshot } from './visuals_chest_mode_config.js';
 
 import type { BuilderContentsRenderPolicy, ConfigStateLike, UnknownRecord } from '../../../types/index.js';
 
 function asFiniteNumber(v: unknown, name: string): number {
-  const n = typeof v === 'number' ? v : Number(v);
-  if (!Number.isFinite(n)) {
-    throw new Error(`[WardrobePro] Chest mode: ${name} must be a finite number`);
-  }
-  return n;
+  if (typeof v === 'number' && Number.isFinite(v)) return v;
+  throw new Error(`[WardrobePro] Chest mode: ${name} must be a finite number`);
 }
 
 type BuildChestModeIfNeededParams = {
@@ -28,23 +36,23 @@ type BuildChestModeIfNeededParams = {
     baseLegColor?: string;
     baseLegPlatformMode?: string;
     baseLegPlatformSideMode?: string;
-    baseLegPlatformSideOverhangCm?: number | string;
-    baseLegPlatformFrontOverhangCm?: number | string;
-    basePlinthHeightCm?: number | string;
-    baseLegHeightCm?: number | string;
-    baseLegWidthCm?: number | string;
+    baseLegPlatformSideOverhangCm?: number;
+    baseLegPlatformFrontOverhangCm?: number;
+    basePlinthHeightCm?: number;
+    baseLegHeightCm?: number;
+    baseLegWidthCm?: number;
     colorChoice?: string;
     customColor?: string;
     doorStyle?: string;
     groovesEnabled?: boolean;
     chestCommodeEnabled?: boolean;
-    chestCommodeMirrorHeightCm?: number | string;
-    chestCommodeMirrorWidthCm?: number | string;
+    chestCommodeMirrorHeightCm?: number;
+    chestCommodeMirrorWidthCm?: number;
   } | null;
-  widthCm?: number | string;
-  heightCm?: number | string;
-  depthCm?: number | string;
-  drawersCount?: number | string;
+  widthCm?: number;
+  heightCm?: number;
+  depthCm?: number;
+  drawersCount?: number;
   cfgSnapshot?: ConfigStateLike | UnknownRecord | null;
   renderPolicy?: BuilderContentsRenderPolicy;
   buildChestOnly?: (args: {
@@ -57,18 +65,18 @@ type BuildChestModeIfNeededParams = {
     baseLegColor: string;
     baseLegPlatformMode: string;
     baseLegPlatformSideMode: string;
-    baseLegPlatformSideOverhangCm: number | string;
-    baseLegPlatformFrontOverhangCm: number | string;
-    basePlinthHeightCm: number | string;
-    baseLegHeightCm: number | string;
-    baseLegWidthCm: number | string;
+    baseLegPlatformSideOverhangCm: number;
+    baseLegPlatformFrontOverhangCm: number;
+    basePlinthHeightCm: number;
+    baseLegHeightCm: number;
+    baseLegWidthCm: number;
     colorChoice: string;
     customColor: string;
     doorStyle: string;
     isGroovesEnabled: boolean;
     chestCommodeEnabled: boolean;
-    chestCommodeMirrorHeightCm: number | string;
-    chestCommodeMirrorWidthCm: number | string;
+    chestCommodeMirrorHeightCm: number;
+    chestCommodeMirrorWidthCm: number;
     cfgSnapshot: ConfigStateLike | UnknownRecord;
     renderPolicy: BuilderContentsRenderPolicy;
   }) => void;
@@ -84,8 +92,9 @@ export function buildChestModeIfNeeded(params: BuildChestModeIfNeededParams | nu
   const heightCm = asFiniteNumber(p.heightCm ?? 0, 'heightCm');
   const depthCm = asFiniteNumber(p.depthCm ?? 0, 'depthCm');
 
-  const drawersCountRaw = typeof p.drawersCount === 'number' ? p.drawersCount : Number(p.drawersCount ?? 0);
-  const drawersCount = Number.isFinite(drawersCountRaw) ? drawersCountRaw : 0;
+  const drawersCount = asFiniteNumber(p.drawersCount ?? 0, 'drawersCount');
+
+  const baseLegStyle = normalizeBaseLegStyle(ui.baseLegStyle);
 
   const buildChestOnly = p.buildChestOnly;
   if (typeof buildChestOnly !== 'function') {
@@ -109,11 +118,13 @@ export function buildChestModeIfNeeded(params: BuildChestModeIfNeededParams | nu
     baseLegPlatformMode: typeof ui.baseLegPlatformMode === 'string' ? ui.baseLegPlatformMode : 'stage',
     baseLegPlatformSideMode:
       typeof ui.baseLegPlatformSideMode === 'string' ? ui.baseLegPlatformSideMode : 'overhang',
-    baseLegPlatformSideOverhangCm: ui.baseLegPlatformSideOverhangCm ?? '',
-    baseLegPlatformFrontOverhangCm: ui.baseLegPlatformFrontOverhangCm ?? '',
-    basePlinthHeightCm: ui.basePlinthHeightCm ?? '',
-    baseLegHeightCm: ui.baseLegHeightCm ?? '',
-    baseLegWidthCm: ui.baseLegWidthCm ?? '',
+    baseLegPlatformSideOverhangCm: normalizeBaseLegPlatformSideOverhangCm(ui.baseLegPlatformSideOverhangCm),
+    baseLegPlatformFrontOverhangCm: normalizeBaseLegPlatformFrontOverhangCm(
+      ui.baseLegPlatformFrontOverhangCm
+    ),
+    basePlinthHeightCm: normalizeBasePlinthHeightCm(ui.basePlinthHeightCm),
+    baseLegHeightCm: normalizeBaseLegHeightCm(ui.baseLegHeightCm),
+    baseLegWidthCm: normalizeBaseLegWidthCm(ui.baseLegWidthCm, getDefaultBaseLegWidthCm(baseLegStyle)),
     colorChoice: typeof ui.colorChoice === 'string' ? ui.colorChoice : '',
     customColor: typeof ui.customColor === 'string' ? ui.customColor : '',
     doorStyle: typeof ui.doorStyle === 'string' ? ui.doorStyle : 'flat',
