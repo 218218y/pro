@@ -12,6 +12,11 @@ export function readCorePureInteger(value: unknown, defaultValue: number): numbe
   return Number.isFinite(n) ? Math.trunc(n) : defaultValue;
 }
 
+export function readCorePurePositiveInteger(value: unknown, defaultValue: number): number {
+  const n = readCorePureInteger(value, defaultValue);
+  return Number.isFinite(n) && n >= 1 ? n : defaultValue;
+}
+
 export function readCorePurePositiveNumber(value: unknown): number | null {
   const n = readCorePureNumber(value, NaN);
   return Number.isFinite(n) && n > 0 ? n : null;

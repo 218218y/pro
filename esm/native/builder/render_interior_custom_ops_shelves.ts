@@ -167,7 +167,7 @@ export function createAddCustomGridShelf(args: {
   function resolveShelfContentsMaxHeight(gridIndex: number, shelfY: number, shelfH: number): number {
     const shelfTopY = shelfY + shelfH / 2;
     let topLimitY = effectiveTopY;
-    const maxGrid = Math.max(0, Math.floor(Number(gridDivisions) || 0));
+    const maxGrid = Math.max(0, Math.floor(gridDivisions));
 
     for (let nextIndex = gridIndex + 1; nextIndex < maxGrid; nextIndex += 1) {
       if (shelfSet[nextIndex]) {

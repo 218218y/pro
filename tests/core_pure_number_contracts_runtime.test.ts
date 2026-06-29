@@ -5,6 +5,7 @@ import {
   readCorePureInteger,
   readCorePureNumber,
   readCorePureNumberArray,
+  readCorePurePositiveInteger,
   readCorePurePositiveNumber,
 } from '../esm/native/builder/core_pure_number_contracts.ts';
 import { __asInt, __asNum, __normalizeModulesStructure } from '../esm/native/builder/core_pure_shared.ts';
@@ -22,6 +23,9 @@ test('core-pure number contract accepts only finite numbers', () => {
 
   assert.equal(readCorePureInteger(3.9, 1), 3);
   assert.equal(readCorePureInteger('3', 1), 1);
+  assert.equal(readCorePurePositiveInteger(4.9, 6), 4);
+  assert.equal(readCorePurePositiveInteger('4', 6), 6);
+  assert.equal(readCorePurePositiveInteger(0, 6), 6);
   assert.equal(readCorePurePositiveNumber(0.5), 0.5);
   assert.equal(readCorePurePositiveNumber('0.5'), null);
 });

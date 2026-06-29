@@ -1,11 +1,30 @@
 import { INTERIOR_FITTINGS_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { _asObject, __asArray } from './core_pure_shared.js';
 import type { InteriorCustomOpsLike, InteriorRodOpLike } from './core_pure_shared.js';
+import { readCorePureNumber, readCorePurePositiveInteger } from './core_pure_number_contracts.js';
+
+function readCustomGridDivisions(value: unknown): number {
+  return readCorePurePositiveInteger(value, INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault);
+}
+
+function readOptionalCustomNumber(value: unknown): number | null {
+  const n = readCorePureNumber(value, NaN);
+  return Number.isFinite(n) ? n : null;
+}
+
+function writeOptionalCustomNumber(
+  target: InteriorRodOpLike,
+  key: 'yAdd' | 'limitFactor' | 'limitAdd',
+  value: unknown
+): void {
+  const n = readOptionalCustomNumber(value);
+  if (n == null) delete target[key];
+  else target[key] = n;
+}
 
 export function computeInteriorCustomOps(customData: unknown, gridDivisions: unknown): InteriorCustomOpsLike {
   const cd = _asObject(customData) || {};
-  let gd = parseInt(typeof gridDivisions === 'string' ? gridDivisions : String(gridDivisions ?? ''), 10);
-  if (!Number.isFinite(gd) || gd < 1) gd = INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault;
+  const gd = readCustomGridDivisions(gridDivisions);
 
   const shelvesArr = __asArray(cd.shelves);
   const rodsArr = __asArray(cd.rods);
@@ -13,19 +32,19 @@ export function computeInteriorCustomOps(customData: unknown, gridDivisions: unk
   const hasStorage = !!cd.storage;
   const shelfVariantsArr = __asArray(cd.shelfVariants);
 
-  let ops: InteriorCustomOpsLike = { shelves: [], rods: [] };
+  const ops: InteriorCustomOpsLike = { shelves: [], rods: [] };
 
   const shelfVariantsByIndex: Record<number, string> = Object.create(null);
   const explicitRodOpsByIndex: Record<number, InteriorRodOpLike> = Object.create(null);
   const deriveExplicitRodIndex = (rod: unknown): number | null => {
     const rec = _asObject(rod) || {};
-    const rawGridIndex = Number(rec.gridIndex);
-    if (Number.isFinite(rawGridIndex) && rawGridIndex >= 1) {
+    const rawGridIndex = readOptionalCustomNumber(rec.gridIndex);
+    if (rawGridIndex != null && rawGridIndex >= 1) {
       const gi = Math.max(1, Math.min(gd, Math.round(rawGridIndex)));
       return gi;
     }
-    const rawYFactor = Number(rec.yFactor);
-    if (!Number.isFinite(rawYFactor)) return null;
+    const rawYFactor = readOptionalCustomNumber(rec.yFactor);
+    if (rawYFactor == null) return null;
     const mapped = Math.round((rawYFactor * gd) / INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault);
     return Math.max(1, Math.min(gd, mapped));
   };
@@ -35,15 +54,19 @@ export function computeInteriorCustomOps(customData: unknown, gridDivisions: unk
     if (!rec) continue;
     const gridIndex = deriveExplicitRodIndex(rec);
     if (!(gridIndex && gridIndex >= 1 && gridIndex <= gd)) continue;
-    const yFactor = Number(rec.yFactor);
-    if (!Number.isFinite(yFactor)) continue;
-    explicitRodOpsByIndex[gridIndex] = {
+    const yFactor = readOptionalCustomNumber(rec.yFactor);
+    if (yFactor == null) continue;
+    const next: InteriorRodOpLike = {
       ...rec,
       gridIndex,
       yFactor,
       enableHangingClothes: rec.enableHangingClothes !== false,
       enableSingleHanger: rec.enableSingleHanger !== false,
     };
+    writeOptionalCustomNumber(next, 'yAdd', rec.yAdd);
+    writeOptionalCustomNumber(next, 'limitFactor', rec.limitFactor);
+    writeOptionalCustomNumber(next, 'limitAdd', rec.limitAdd);
+    explicitRodOpsByIndex[gridIndex] = next;
   }
 
   for (let i = 1; i <= gd; i++) {
@@ -62,7 +85,7 @@ export function computeInteriorCustomOps(customData: unknown, gridDivisions: unk
     }
 
     if (!!rodsArr[i - 1]) {
-      let rodOp: InteriorRodOpLike = {
+      const rodOp: InteriorRodOpLike = {
         gridIndex: i,
         yFactor: i,
         yAdd: INTERIOR_FITTINGS_DIMENSIONS.rods.defaultYOffsetM,
@@ -94,8 +117,8 @@ export function computeInteriorCustomOps(customData: unknown, gridDivisions: unk
         );
       }
 
-      if (Number.isFinite(Number(limitFactor))) rodOp.limitFactor = Number(limitFactor);
-      if (Number.isFinite(Number(limitAdd))) rodOp.limitAdd = Number(limitAdd);
+      if (limitFactor !== null) rodOp.limitFactor = limitFactor;
+      if (limitAdd !== null) rodOp.limitAdd = limitAdd;
 
       ops.rods.push(rodOp);
     }

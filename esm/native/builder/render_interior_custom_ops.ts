@@ -11,6 +11,8 @@ import {
   buildRodMap,
   buildShelfIndexSet,
   buildShelfVariantByIndex,
+  readCustomRenderInteger,
+  readCustomRenderNumber,
   readCustomThreeSurface,
   readGridDivisions,
   readModuleKeyString,
@@ -70,18 +72,18 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
       input.gridDivisions,
       INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault
     );
-    const effectiveBottomY = Number(input.effectiveBottomY || 0);
-    const effectiveTopY = Number(input.effectiveTopY || 0);
-    const localGridStep = Number(input.localGridStep || 0);
-    const innerW = Number(input.innerW || 0);
-    const woodThick = Number(input.woodThick || MATERIAL_DIMENSIONS.wood.thicknessM);
-    const shelfThick = Number(input.shelfThick || woodThick);
-    const internalDepth = Number(input.internalDepth || 0);
-    const internalCenterX = Number(input.internalCenterX || 0);
-    const internalZ = Number(input.internalZ || 0);
-    const D = Number(input.D || 0);
-    const moduleIndex = typeof input.moduleIndex === 'number' ? Number(input.moduleIndex) : -1;
-    const modulesLength = typeof input.modulesLength === 'number' ? Number(input.modulesLength) : -1;
+    const effectiveBottomY = readCustomRenderNumber(input.effectiveBottomY, 0);
+    const effectiveTopY = readCustomRenderNumber(input.effectiveTopY, 0);
+    const localGridStep = readCustomRenderNumber(input.localGridStep, 0);
+    const innerW = readCustomRenderNumber(input.innerW, 0);
+    const woodThick = readCustomRenderNumber(input.woodThick, MATERIAL_DIMENSIONS.wood.thicknessM);
+    const shelfThick = readCustomRenderNumber(input.shelfThick, woodThick);
+    const internalDepth = readCustomRenderNumber(input.internalDepth, 0);
+    const internalCenterX = readCustomRenderNumber(input.internalCenterX, 0);
+    const internalZ = readCustomRenderNumber(input.internalZ, 0);
+    const D = readCustomRenderNumber(input.D, 0);
+    const moduleIndex = readCustomRenderInteger(input.moduleIndex, -1);
+    const modulesLength = readCustomRenderInteger(input.modulesLength, -1);
     const moduleKey = readModuleKeyString(input, moduleIndex);
     const currentShelfMat = input.currentShelfMat;
     const currentBraceShelfMat = input.currentBraceShelfMat || currentShelfMat;

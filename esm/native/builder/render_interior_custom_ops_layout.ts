@@ -3,6 +3,7 @@ import { INTERIOR_FITTINGS_DIMENSIONS } from '../../shared/wardrobe_dimension_to
 import {
   __isFn,
   asRecord,
+  readCustomRenderNumber,
   type InteriorCustomInput,
   type InteriorRodMapEntry,
   type ShelfVariant,
@@ -42,14 +43,13 @@ export function applyCustomInteriorGridLayout(args: {
 
     const rodOp = rodMap[i];
     if (!rodOp) continue;
-    const yAdd = Number(rodOp.yAdd || 0);
-    const rawYFactor = Number(rodOp.yFactor);
-    const rodFactor = Number.isFinite(rawYFactor) ? rawYFactor : i;
+    const yAdd = readCustomRenderNumber(rodOp.yAdd, 0);
+    const rodFactor = readCustomRenderNumber(rodOp.yFactor, i);
     const rodY = effectiveBottomY + rodFactor * localGridStep + yAdd;
 
     let limit = null;
-    const limitFactor = Number(rodOp.limitFactor);
-    const limitAdd = Number(rodOp.limitAdd);
+    const limitFactor = readCustomRenderNumber(rodOp.limitFactor, NaN);
+    const limitAdd = readCustomRenderNumber(rodOp.limitAdd, NaN);
     if (Number.isFinite(limitFactor) || Number.isFinite(limitAdd)) {
       limit =
         (Number.isFinite(limitFactor) ? limitFactor : 0) * localGridStep +
@@ -97,11 +97,12 @@ export function applyCustomStorageBarrier(args: {
   const storageBarrier = asRecord(ops.storageBarrier);
   if (!storageBarrier || !storageBarrier.barrierH) return;
 
-  const barrierH = Number(storageBarrier.barrierH || 0);
-  const zOff =
-    storageBarrier.zFrontOffset != null
-      ? Number(storageBarrier.zFrontOffset)
-      : INTERIOR_FITTINGS_DIMENSIONS.storage.barrierFrontZOffsetM;
+  const barrierH = readCustomRenderNumber(storageBarrier.barrierH, 0);
+  if (!(barrierH > 0)) return;
+  const zOff = readCustomRenderNumber(
+    storageBarrier.zFrontOffset,
+    INTERIOR_FITTINGS_DIMENSIONS.storage.barrierFrontZOffsetM
+  );
   const partId = moduleKey ? `storage_barrier_${moduleKey}` : 'storage_barrier';
   let material = bodyMat;
   try {

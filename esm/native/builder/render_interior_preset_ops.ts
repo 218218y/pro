@@ -10,6 +10,9 @@ import {
   asRecord,
   buildBraceShelfIndexSet,
   readModuleKeyString,
+  readPresetGridIndex,
+  readPresetInteger,
+  readPresetNumber,
   readThreeSurface,
 } from './render_interior_preset_ops_shared.js';
 import { computePresetModuleInnerFaces } from './render_interior_preset_ops_wall_faces.js';
@@ -56,23 +59,24 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
     const group = input.wardrobeGroup || __wardrobeGroup(App);
     if (!group) return false;
 
-    const effectiveBottomY = Number(input.effectiveBottomY || 0);
-    const effectiveTopY = Number(input.effectiveTopY || 0);
-    const localGridStep = Number(input.localGridStep || 0);
-    const rawGridDivisions = Number(input.gridDivisions || 0);
+    const effectiveBottomY = readPresetNumber(input.effectiveBottomY, 0);
+    const effectiveTopY = readPresetNumber(input.effectiveTopY, 0);
+    const localGridStep = readPresetNumber(input.localGridStep, 0);
+    const rawGridDivisions = readPresetInteger(
+      input.gridDivisions,
+      INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault
+    );
     const gridDivisions =
-      Number.isFinite(rawGridDivisions) && rawGridDivisions > 0
-        ? rawGridDivisions
-        : INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault;
-    const innerW = Number(input.innerW || 0);
-    const woodThick = Number(input.woodThick || MATERIAL_DIMENSIONS.wood.thicknessM);
-    const shelfThick = Number(input.shelfThick || woodThick);
-    const internalDepth = Number(input.internalDepth || 0);
-    const internalCenterX = Number(input.internalCenterX || 0);
-    const internalZ = Number(input.internalZ || 0);
-    const D = Number(input.D || 0);
-    const moduleIndex = typeof input.moduleIndex === 'number' ? Number(input.moduleIndex) : -1;
-    const modulesLength = typeof input.modulesLength === 'number' ? Number(input.modulesLength) : -1;
+      rawGridDivisions > 0 ? rawGridDivisions : INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault;
+    const innerW = readPresetNumber(input.innerW, 0);
+    const woodThick = readPresetNumber(input.woodThick, MATERIAL_DIMENSIONS.wood.thicknessM);
+    const shelfThick = readPresetNumber(input.shelfThick, woodThick);
+    const internalDepth = readPresetNumber(input.internalDepth, 0);
+    const internalCenterX = readPresetNumber(input.internalCenterX, 0);
+    const internalZ = readPresetNumber(input.internalZ, 0);
+    const D = readPresetNumber(input.D, 0);
+    const moduleIndex = readPresetInteger(input.moduleIndex, -1);
+    const modulesLength = readPresetInteger(input.modulesLength, -1);
     const moduleKey = readModuleKeyString(input, moduleIndex);
     const currentShelfMat = input.currentShelfMat;
     const currentBraceShelfMat = input.currentBraceShelfMat || currentShelfMat;
@@ -81,8 +85,8 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
     const shelfSet: Record<number, true> = Object.create(null);
     if (Array.isArray(ops.shelves)) {
       for (const rawShelfIndex of ops.shelves) {
-        const shelfIndex = parseInt(String(rawShelfIndex), 10);
-        if (Number.isFinite(shelfIndex)) shelfSet[shelfIndex] = true;
+        const shelfIndex = readPresetGridIndex(rawShelfIndex);
+        if (shelfIndex != null) shelfSet[shelfIndex] = true;
       }
     }
     if (
@@ -179,10 +183,10 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
       for (let j = 0; j < ops.rods.length; j += 1) {
         const rod = asRecord(ops.rods[j]);
         if (!rod) continue;
-        const yRod = effectiveBottomY + Number(rod.yFactor || 0) * localGridStep;
+        const yRod = effectiveBottomY + readPresetNumber(rod.yFactor, 0) * localGridStep;
         let limit = null;
-        const limitFactor = Number(rod.limitFactor);
-        const limitAdd = Number(rod.limitAdd);
+        const limitFactor = readPresetNumber(rod.limitFactor, NaN);
+        const limitAdd = readPresetNumber(rod.limitAdd, NaN);
         if (Number.isFinite(limitFactor) || Number.isFinite(limitAdd)) {
           limit =
             (Number.isFinite(limitFactor) ? limitFactor : 0) * localGridStep +
@@ -194,11 +198,12 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
 
     const storageBarrier = asRecord(ops.storageBarrier);
     if (storageBarrier && storageBarrier.barrierH) {
-      const barrierH = Number(storageBarrier.barrierH || 0);
-      const zOff =
-        storageBarrier.zFrontOffset != null
-          ? Number(storageBarrier.zFrontOffset)
-          : INTERIOR_FITTINGS_DIMENSIONS.storage.barrierFrontZOffsetM;
+      const barrierH = readPresetNumber(storageBarrier.barrierH, 0);
+      if (!(barrierH > 0)) return false;
+      const zOff = readPresetNumber(
+        storageBarrier.zFrontOffset,
+        INTERIOR_FITTINGS_DIMENSIONS.storage.barrierFrontZOffsetM
+      );
       const partId = moduleKey ? `storage_barrier_${moduleKey}` : 'storage_barrier';
       let material = bodyMat;
       try {

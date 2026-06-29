@@ -9,6 +9,7 @@ import type {
   InteriorValueRecord,
   RenderInteriorOpsDeps,
 } from './render_interior_ops_contracts.js';
+import { readRenderOpNumber, readRenderOpNumberOr } from './render_ops_number_contracts.js';
 
 export type InteriorCustomInput = InteriorValueRecord & {
   THREE?: unknown;
@@ -127,17 +128,31 @@ export function readModuleKeyString(input: InteriorCustomInput, moduleIndex: num
   return input.moduleKey != null ? String(input.moduleKey) : moduleIndex >= 0 ? String(moduleIndex) : '';
 }
 
+export function readCustomRenderNumber(value: unknown, defaultValue: number): number {
+  return readRenderOpNumberOr(value, defaultValue);
+}
+
+export function readCustomRenderInteger(value: unknown, defaultValue: number): number {
+  const n = readRenderOpNumber(value);
+  return n != null ? Math.trunc(n) : defaultValue;
+}
+
+export function readCustomRenderGridIndex(value: unknown): number | null {
+  const n = readRenderOpNumber(value);
+  return n != null ? Math.trunc(n) : null;
+}
+
 export function readGridDivisions(value: unknown, defaultValue = 6): number {
-  const gridDivisions = parseInt(String(value ?? ''), 10);
-  return Number.isFinite(gridDivisions) && gridDivisions >= 1 ? gridDivisions : defaultValue;
+  const gridDivisions = readCustomRenderInteger(value, defaultValue);
+  return gridDivisions >= 1 ? gridDivisions : defaultValue;
 }
 
 export function buildBraceShelfIndexSet(input: InteriorCustomInput): Record<number, true> {
   const braceSet: Record<number, true> = Object.create(null);
   const braceShelves = Array.isArray(input.braceShelves) ? input.braceShelves : [];
   for (let i = 0; i < braceShelves.length; i += 1) {
-    const value = parseInt(String(braceShelves[i] ?? ''), 10);
-    if (Number.isFinite(value)) braceSet[value] = true;
+    const value = readCustomRenderGridIndex(braceShelves[i]);
+    if (value != null) braceSet[value] = true;
   }
   return braceSet;
 }
@@ -146,8 +161,8 @@ export function buildShelfIndexSet(ops: InteriorValueRecord): Record<number, tru
   const shelfSet: Record<number, true> = Object.create(null);
   if (!Array.isArray(ops.shelves)) return shelfSet;
   for (let i = 0; i < ops.shelves.length; i += 1) {
-    const idx = parseInt(String(ops.shelves[i] ?? ''), 10);
-    if (Number.isFinite(idx)) shelfSet[idx] = true;
+    const idx = readCustomRenderGridIndex(ops.shelves[i]);
+    if (idx != null) shelfSet[idx] = true;
   }
   return shelfSet;
 }
@@ -179,8 +194,8 @@ export function buildRodMap(ops: InteriorValueRecord): Record<number, InteriorRo
   for (let i = 0; i < ops.rods.length; i += 1) {
     const rod = readRodMapEntry(ops.rods[i]);
     if (!rod) continue;
-    const gridIndex = parseInt(String(rod.gridIndex != null ? rod.gridIndex : (rod.yFactor ?? '')), 10);
-    if (!Number.isFinite(gridIndex)) continue;
+    const gridIndex = readCustomRenderGridIndex(rod.gridIndex != null ? rod.gridIndex : rod.yFactor);
+    if (gridIndex == null) continue;
     rodMap[gridIndex] = rod;
   }
   return rodMap;

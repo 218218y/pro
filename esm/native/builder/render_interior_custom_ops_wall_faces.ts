@@ -1,4 +1,5 @@
 import type { AppContainer } from '../../../types';
+import { readGeometryRuntimeNumber } from './geometry_runtime_contracts.js';
 import type { InteriorGroupLike } from './render_interior_ops_contracts.js';
 import {
   asGeometry,
@@ -21,17 +22,16 @@ export function computeCustomModuleInnerFaces(args: {
   const readMeshWidth = (mesh: unknown): number => {
     const geometry = asGeometry(asMesh(mesh)?.geometry);
     const parameters = geometry?.parameters;
-    if (parameters && typeof parameters.width === 'number' && Number.isFinite(parameters.width)) {
-      return parameters.width;
-    }
+    const parameterWidth = readGeometryRuntimeNumber(parameters?.width);
+    if (parameterWidth != null) return parameterWidth;
     try {
       if (geometry) {
         geometry.computeBoundingBox?.();
         const bb = geometry.boundingBox;
         if (bb?.max && bb?.min) {
-          const maxX = Number(bb.max.x);
-          const minX = Number(bb.min.x);
-          if (Number.isFinite(maxX) && Number.isFinite(minX)) return Math.abs(maxX - minX);
+          const maxX = readGeometryRuntimeNumber(bb.max.x);
+          const minX = readGeometryRuntimeNumber(bb.min.x);
+          if (maxX != null && minX != null) return Math.abs(maxX - minX);
         }
       }
     } catch (err) {
@@ -59,10 +59,9 @@ export function computeCustomModuleInnerFaces(args: {
 
   const leftWidth = readMeshWidth(leftMesh);
   const rightWidth = readMeshWidth(rightMesh);
-  const leftX = Number(leftMesh.position?.x);
-  const rightX = Number(rightMesh.position?.x);
-  if (!Number.isFinite(leftX) || !Number.isFinite(rightX) || !(leftWidth > 0) || !(rightWidth > 0))
-    return null;
+  const leftX = readGeometryRuntimeNumber(leftMesh.position?.x);
+  const rightX = readGeometryRuntimeNumber(rightMesh.position?.x);
+  if (leftX == null || rightX == null || !(leftWidth > 0) || !(rightWidth > 0)) return null;
 
   const leftInner = leftX + leftWidth / 2;
   const rightInner = rightX - rightWidth / 2;

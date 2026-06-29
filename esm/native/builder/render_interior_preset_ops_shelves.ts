@@ -16,6 +16,7 @@ import {
 import {
   __isFn,
   asMaterial,
+  readPresetGridIndex,
   reportInteriorPresetSoft,
   type InteriorPresetHandleCatch,
 } from './render_interior_preset_ops_shared.js';
@@ -210,7 +211,7 @@ export function createAddGridShelf(args: {
   function resolveShelfContentsMaxHeight(gridIndex: number, shelfY: number, shelfH: number): number {
     const shelfTopY = shelfY + shelfH / 2;
     let topLimitY = effectiveTopY;
-    const maxGrid = Math.max(0, Math.floor(Number(gridDivisions) || 0));
+    const maxGrid = Math.max(0, Math.floor(gridDivisions));
 
     for (let nextIndex = gridIndex + 1; nextIndex < maxGrid; nextIndex += 1) {
       if (shelfSet[nextIndex]) {
@@ -225,10 +226,11 @@ export function createAddGridShelf(args: {
   addBaseShelfContents();
 
   return function addGridShelf(gridIndex: number): void {
-    const y = effectiveBottomY + Number(gridIndex || 0) * localGridStep;
+    const gridKey = readPresetGridIndex(gridIndex);
+    if (gridKey == null) return;
+    const y = effectiveBottomY + gridKey * localGridStep;
     if (!(y < effectiveTopY - 0.01)) return;
 
-    const gridKey = parseInt(String(gridIndex || 0), 10);
     const isBrace = !!braceSet[gridKey];
     const shelfDepth = isBrace ? internalDepth : regularDepth;
     const shelfZ = isBrace ? internalZ : regularZ;
@@ -274,7 +276,7 @@ export function createAddGridShelf(args: {
         shelfZ,
         innerW - INTERIOR_FITTINGS_DIMENSIONS.shelves.contentsWidthClearanceM,
         group,
-        resolveShelfContentsMaxHeight(Number(gridIndex || 0), y, shelfThick),
+        resolveShelfContentsMaxHeight(gridKey, y, shelfThick),
         shelfDepth,
         contentsPolicy
       );

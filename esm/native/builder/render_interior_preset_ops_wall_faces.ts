@@ -1,4 +1,5 @@
 import type { AppContainer } from '../../../types';
+import { readGeometryRuntimeNumber } from './geometry_runtime_contracts.js';
 import type { InteriorGroupLike, InteriorTHREESurface } from './render_interior_ops_contracts.js';
 import {
   asMesh,
@@ -65,7 +66,7 @@ export function computePresetModuleInnerFaces(args: {
       let width = NaN;
       try {
         const parameters = isMesh ? node.geometry?.parameters : null;
-        width = parameters && Number.isFinite(parameters.width) ? Number(parameters.width) : NaN;
+        width = readGeometryRuntimeNumber(parameters?.width) ?? NaN;
       } catch (err) {
         reportInteriorPresetSoft(
           App,
@@ -88,8 +89,8 @@ export function computePresetModuleInnerFaces(args: {
   const faceXFromMesh = (mesh: InteriorWallMesh | null, wantMaxX: boolean): number => {
     if (!mesh) return NaN;
     if (!threeSurface) {
-      const x = Number(mesh.position?.x);
-      if (!Number.isFinite(x)) return NaN;
+      const x = readGeometryRuntimeNumber(mesh.position?.x);
+      if (x == null) return NaN;
       return wantMaxX ? x + woodThick / 2 : x - woodThick / 2;
     }
 
@@ -100,11 +101,11 @@ export function computePresetModuleInnerFaces(args: {
       let halfWidth = NaN;
       try {
         const parameters = mesh.geometry?.parameters;
-        const widthParam = parameters && Number.isFinite(parameters.width) ? Number(parameters.width) : NaN;
-        if (Number.isFinite(widthParam)) {
+        const widthParam = readGeometryRuntimeNumber(parameters?.width);
+        if (widthParam != null) {
           const scale = new threeSurface.Vector3();
           mesh.getWorldScale?.(scale);
-          halfWidth = (widthParam * Math.abs(Number(scale.x) || 1)) / 2;
+          halfWidth = (widthParam * Math.abs(readGeometryRuntimeNumber(scale.x) ?? 1)) / 2;
         }
       } catch (err) {
         reportInteriorPresetSoft(
@@ -119,9 +120,12 @@ export function computePresetModuleInnerFaces(args: {
       mesh.getWorldPosition?.(worldPosition);
       if (!Number.isFinite(halfWidth)) {
         const box = new threeSurface.Box3().setFromObject(mesh);
-        return wantMaxX ? box.max.x : box.min.x;
+        const boxX = readGeometryRuntimeNumber(wantMaxX ? box.max.x : box.min.x);
+        return boxX ?? NaN;
       }
-      return wantMaxX ? Number(worldPosition.x) + halfWidth : Number(worldPosition.x) - halfWidth;
+      const worldX = readGeometryRuntimeNumber(worldPosition.x);
+      if (worldX == null) return NaN;
+      return wantMaxX ? worldX + halfWidth : worldX - halfWidth;
     } catch (err) {
       reportInteriorPresetSoft(App, renderOpsHandleCatch, 'applyInteriorPresetOps.faceXFromMesh.main', err);
       return NaN;
@@ -138,11 +142,10 @@ export function computePresetModuleInnerFaces(args: {
         const mesh = asMesh(node);
         if (mesh?.isMesh && mesh.geometry) {
           const parameters = mesh.geometry.parameters;
-          const width = parameters && Number.isFinite(parameters.width) ? Number(parameters.width) : NaN;
-          const height = parameters && Number.isFinite(parameters.height) ? Number(parameters.height) : NaN;
-          const depth = parameters && Number.isFinite(parameters.depth) ? Number(parameters.depth) : NaN;
-          const looksLikeWall =
-            Number.isFinite(width) && Number.isFinite(height) && Number.isFinite(depth) && width <= 0.05;
+          const width = readGeometryRuntimeNumber(parameters?.width);
+          const height = readGeometryRuntimeNumber(parameters?.height);
+          const depth = readGeometryRuntimeNumber(parameters?.depth);
+          const looksLikeWall = width != null && height != null && depth != null && width <= 0.05;
           if (looksLikeWall) out.push(mesh);
         }
         const children = asRecord(node)?.children;
