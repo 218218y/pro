@@ -5,10 +5,10 @@ import {
   ensureSketchBoxContentList,
 } from './canvas_picking_sketch_box_content_commit_boxes.js';
 import type { CommitSketchModuleBoxContentArgs } from './canvas_picking_sketch_box_content_commit_contracts.js';
-
-function clampNorm(value: number | null, defaultValue: number): number {
-  return value != null ? Math.max(0, Math.min(1, value)) : defaultValue;
-}
+import {
+  writeSketchCommitClampedUnitNumber,
+  writeSketchCommitPositiveNumber,
+} from './canvas_picking_sketch_commit_geometry.js';
 
 function resolveVerticalContentKey(contentKind: string): 'shelves' | 'rods' | 'storageBarriers' {
   return contentKind === 'shelf' ? 'shelves' : contentKind === 'rod' ? 'rods' : 'storageBarriers';
@@ -60,21 +60,19 @@ export function tryCommitSketchBoxVerticalContent(args: {
     return { handled: true, nextHover: null };
   }
 
-  const item: SketchModuleBoxContentLike = {
-    id: createRandomId('sbc'),
-    yNorm: clampNorm(boxYNorm, 0.5),
-  };
+  const item: SketchModuleBoxContentLike = { id: createRandomId('sbc') };
+  writeSketchCommitClampedUnitNumber(item, 'yNorm', boxYNorm, 0.5);
   if (commitArgs.contentKind === 'shelf') {
     item.variant = shelfVariant;
-    if (shelfDepthM != null && shelfDepthM > 0) item.depthM = shelfDepthM;
-    if (contentXNorm != null) item.xNorm = clampNorm(contentXNorm, 0.5);
+    writeSketchCommitPositiveNumber(item, 'depthM', shelfDepthM);
+    if (contentXNorm != null) writeSketchCommitClampedUnitNumber(item, 'xNorm', contentXNorm, 0.5);
   }
   if (commitArgs.contentKind === 'rod' && contentXNorm != null) {
-    item.xNorm = clampNorm(contentXNorm, 0.5);
+    writeSketchCommitClampedUnitNumber(item, 'xNorm', contentXNorm, 0.5);
   }
   if (commitArgs.contentKind === 'storage') {
-    item.heightM = storageHM != null && storageHM > 0 ? storageHM : 0.5;
-    if (contentXNorm != null) item.xNorm = clampNorm(contentXNorm, 0.5);
+    writeSketchCommitPositiveNumber(item, 'heightM', storageHM ?? 0.5);
+    if (contentXNorm != null) writeSketchCommitClampedUnitNumber(item, 'xNorm', contentXNorm, 0.5);
   }
   list.push(item);
   return { handled: true, nextHover: null };

@@ -3,23 +3,8 @@ import type {
   SketchModuleBoxLike,
 } from './canvas_picking_manual_layout_sketch_contracts.js';
 import type { RecordMap } from './canvas_picking_sketch_box_content_commit_contracts.js';
-import { asRecord, getProp, getRecordProp } from '../runtime/record.js';
-
-function isSketchModuleBox(value: unknown): value is SketchModuleBoxLike {
-  return !!asRecord(value);
-}
-
-function isSketchModuleBoxList(value: unknown): value is SketchModuleBoxLike[] {
-  return Array.isArray(value) && value.every(isSketchModuleBox);
-}
-
-function isSketchModuleBoxContent(value: unknown): value is SketchModuleBoxContentLike {
-  return !!asRecord(value);
-}
-
-function isSketchModuleBoxContentList(value: unknown): value is SketchModuleBoxContentLike[] {
-  return Array.isArray(value) && value.every(isSketchModuleBoxContent);
-}
+import { getRecordProp } from '../runtime/record.js';
+import { ensureSketchCommitRecordList } from './canvas_picking_sketch_commit_geometry.js';
 
 export function createRandomId(prefix: string): string {
   return `${prefix}_${Math.random().toString(36).slice(2, 9)}${Date.now().toString(36)}`;
@@ -29,11 +14,7 @@ export function ensureSketchBoxContentList(
   box: SketchModuleBoxLike,
   key: 'shelves' | 'rods' | 'storageBarriers' | 'drawers' | 'extDrawers' | 'regularExtDrawers'
 ): SketchModuleBoxContentLike[] {
-  const list = getProp(box, key);
-  if (isSketchModuleBoxContentList(list)) return list;
-  const next: SketchModuleBoxContentLike[] = [];
-  box[key] = next;
-  return next;
+  return ensureSketchCommitRecordList(box as RecordMap, key) as SketchModuleBoxContentLike[];
 }
 
 export function ensureSketchModuleBoxes(cfg: RecordMap): SketchModuleBoxLike[] {
@@ -44,11 +25,7 @@ export function ensureSketchModuleBoxes(cfg: RecordMap): SketchModuleBoxLike[] {
     cfg.sketchExtras = created;
     return created;
   })();
-  const boxes = getProp(extra, 'boxes');
-  if (isSketchModuleBoxList(boxes)) return boxes;
-  const next: SketchModuleBoxLike[] = [];
-  extra.boxes = next;
-  return next;
+  return ensureSketchCommitRecordList(extra as RecordMap, 'boxes') as SketchModuleBoxLike[];
 }
 
 export function findSketchModuleBoxById(

@@ -18,6 +18,11 @@ import {
   verticalRangesTouchOrOverlap,
 } from '../features/sketch_internal_drawer_cassette.js';
 import {
+  clampSketchCommitUnitNumber,
+  writeSketchCommitClampedUnitNumber,
+  writeSketchCommitPositiveNumber,
+} from './canvas_picking_sketch_commit_geometry.js';
+import {
   SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_CONTENT_KIND,
   SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_KEY,
   createSketchBoxRegularExternalDrawerItem,
@@ -102,7 +107,7 @@ function removeBoxShelvesTouchingInternalDrawerCassette(args: {
 }
 
 function clampNorm(value: number | null, defaultValue: number): number {
-  return value != null ? Math.max(0, Math.min(1, value)) : defaultValue;
+  return clampSketchCommitUnitNumber(value, defaultValue);
 }
 
 function removeBoxContentById(list: SketchModuleBoxContentLike[], removeId: string): boolean {
@@ -195,6 +200,10 @@ function inferCommittedBoxDrawerAnchor(args: {
   });
 }
 
+function writeSketchCommitOptionalDrawerXNorm(item: SketchModuleBoxContentLike, value: number | null): void {
+  if (value != null) writeSketchCommitClampedUnitNumber(item, 'xNorm', value, 0.5);
+}
+
 function buildDrawerItem(args: {
   idPrefix: string;
   boxYNorm: number | null;
@@ -209,14 +218,12 @@ function buildDrawerItem(args: {
   const item: SketchModuleBoxContentLike = {
     id: createRandomId(args.idPrefix),
     yNormC,
-    yNorm,
     yAnchor: inferCommittedBoxDrawerAnchor({ yNormC, yNorm }),
   };
-  if (args.contentXNorm != null) item.xNorm = clampNorm(args.contentXNorm, 0.5);
-  if (args.drawerCount != null) item.count = args.drawerCount;
-  if (args.drawerHeightM != null && Number.isFinite(args.drawerHeightM) && args.drawerHeightM > 0) {
-    item.drawerHeightM = args.drawerHeightM;
-  }
+  if (args.boxBaseYNorm != null) item.yNorm = yNorm;
+  writeSketchCommitOptionalDrawerXNorm(item, args.contentXNorm);
+  writeSketchCommitPositiveNumber(item, 'count', args.drawerCount);
+  writeSketchCommitPositiveNumber(item, 'drawerHeightM', args.drawerHeightM);
   return item;
 }
 

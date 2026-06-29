@@ -3,6 +3,11 @@ import type { ModuleKey } from './canvas_picking_manual_layout_sketch_contracts.
 import { getModulesActions } from '../runtime/actions_access_domains.js';
 import { asRecord } from '../runtime/record.js';
 import {
+  readSketchCommitNumber,
+  writeSketchCommitNumber,
+  writeSketchCommitPositiveNumber,
+} from './canvas_picking_sketch_commit_geometry.js';
+import {
   commitSketchModuleBoxContent,
   ensureSketchModuleBoxes,
   findSketchModuleBoxById,
@@ -44,7 +49,7 @@ type CreateSketchFreePlacementBoxHoverRecordArgs = {
 };
 
 function readNumber(value: unknown): number | null {
-  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+  return readSketchCommitNumber(value);
 }
 
 function readString(value: unknown): string | null {
@@ -125,15 +130,13 @@ function commitSketchFreePlacementBox(args: { cfg: RecordMap; hoverRec: RecordMa
     }
   }
 
-  list.push({
-    id: createRandomId('sbf'),
-    freePlacement: true,
-    absX: centerX,
-    absY: centerY,
-    heightM,
-    widthM,
-    depthM,
-  });
+  const item: RecordMap = { id: createRandomId('sbf'), freePlacement: true };
+  writeSketchCommitNumber(item, 'absX', centerX);
+  writeSketchCommitNumber(item, 'absY', centerY);
+  writeSketchCommitPositiveNumber(item, 'heightM', heightM);
+  writeSketchCommitPositiveNumber(item, 'widthM', widthM);
+  writeSketchCommitPositiveNumber(item, 'depthM', depthM);
+  list.push(item);
   return true;
 }
 

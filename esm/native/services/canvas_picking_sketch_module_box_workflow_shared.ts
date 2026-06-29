@@ -2,6 +2,12 @@ import type {
   SketchBoxGeometryArgs,
   SketchBoxGeometry,
 } from './canvas_picking_manual_layout_sketch_contracts.js';
+import {
+  readSketchCommitNumber,
+  writeSketchCommitClampedUnitNumber,
+  writeSketchCommitOptionalClampedUnitNumber,
+  writeSketchCommitPositiveNumber,
+} from './canvas_picking_sketch_commit_geometry.js';
 
 export type RecordMap = Record<string, unknown>;
 
@@ -32,7 +38,7 @@ export function asRecord(value: unknown): RecordMap | null {
 }
 
 export function readNumber(value: unknown): number | null {
-  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+  return readSketchCommitNumber(value);
 }
 
 export function readRecordValue(record: unknown, key: string): unknown {
@@ -162,21 +168,16 @@ export function createSketchModuleBoxConfigItem(args: {
   bottomY: number;
   spanH: number;
 }): RecordMap {
+  const spanH = readNumber(args.spanH);
+  const centerY = readNumber(args.state.centerY);
+  const bottomY = readNumber(args.bottomY);
   const yNorm =
-    Number(args.spanH) > 0
-      ? Math.max(0, Math.min(1, (Number(args.state.centerY) - Number(args.bottomY)) / Number(args.spanH)))
-      : 0.5;
-  const item: RecordMap = {
-    id: args.idFactory(),
-    yNorm,
-    heightM: Number(args.state.boxH),
-  };
-  if (args.state.widthM != null && Number.isFinite(args.state.widthM) && args.state.widthM > 0) {
-    item.widthM = args.state.widthM;
-  }
-  if (args.state.depthM != null && Number.isFinite(args.state.depthM) && args.state.depthM > 0) {
-    item.depthM = args.state.depthM;
-  }
-  if (args.state.xNorm != null && Number.isFinite(args.state.xNorm)) item.xNorm = args.state.xNorm;
+    spanH != null && spanH > 0 && centerY != null && bottomY != null ? (centerY - bottomY) / spanH : 0.5;
+  const item: RecordMap = { id: args.idFactory() };
+  writeSketchCommitClampedUnitNumber(item, 'yNorm', yNorm, 0.5);
+  writeSketchCommitPositiveNumber(item, 'heightM', args.state.boxH);
+  writeSketchCommitPositiveNumber(item, 'widthM', args.state.widthM);
+  writeSketchCommitPositiveNumber(item, 'depthM', args.state.depthM);
+  writeSketchCommitOptionalClampedUnitNumber(item, 'xNorm', args.state.xNorm);
   return item;
 }

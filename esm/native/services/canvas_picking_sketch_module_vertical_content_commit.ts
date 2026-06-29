@@ -4,6 +4,10 @@ import {
   type RecordMap,
 } from './canvas_picking_sketch_module_vertical_content_records.js';
 import {
+  writeSketchCommitClampedUnitNumber,
+  writeSketchCommitPositiveNumber,
+} from './canvas_picking_sketch_commit_geometry.js';
+import {
   clampSketchModuleStorageCenterY,
   findNearestSketchModuleRod,
   findNearestSketchModuleShelf,
@@ -33,8 +37,9 @@ export function commitSketchModuleShelf(args: {
     shelves.splice(match.index, 1);
     return;
   }
-  const next: RecordMap = { yNorm, variant: variant || 'double' };
-  if (shelfDepthM != null && Number.isFinite(shelfDepthM) && shelfDepthM > 0) next.depthM = shelfDepthM;
+  const next: RecordMap = { variant: variant || 'double' };
+  writeSketchCommitClampedUnitNumber(next, 'yNorm', yNorm, 0.5);
+  writeSketchCommitPositiveNumber(next, 'depthM', shelfDepthM);
   shelves.push(next);
 }
 
@@ -59,7 +64,9 @@ export function commitSketchModuleRod(args: {
     rods.splice(match.index, 1);
     return;
   }
-  rods.push({ yNorm });
+  const next: RecordMap = {};
+  writeSketchCommitClampedUnitNumber(next, 'yNorm', yNorm, 0.5);
+  rods.push(next);
 }
 
 export function commitSketchModuleStorageBarrier(args: {
@@ -94,5 +101,8 @@ export function commitSketchModuleStorageBarrier(args: {
     return;
   }
   const yNorm = Math.max(0, Math.min(1, (yCenterAbs - bottomY) / totalHeight));
-  barriers.push({ id: idFactory(), yNorm, heightM });
+  const next: RecordMap = { id: idFactory() };
+  writeSketchCommitClampedUnitNumber(next, 'yNorm', yNorm, 0.5);
+  writeSketchCommitPositiveNumber(next, 'heightM', heightM);
+  barriers.push(next);
 }
