@@ -13,3 +13,4 @@ coverage/
 .env
 .DS_Store
 *.log
+nodesource_setup.sh
