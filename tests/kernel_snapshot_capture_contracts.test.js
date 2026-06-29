@@ -55,7 +55,7 @@ test('[kernel-project-capture] kernel delegates project serialization to focused
     [
       /export function createKernelProjectCapture\(/,
       /stateKernel: StateKernelLike \| null \| undefined;/,
-      /hasEssentialUiDimsFromSnapshot\(/,
+      /hasCanonicalEssentialUiRawDimsFromSnapshot\(/,
       /from '\.\/kernel_project_capture_payload\.js';/,
       /buildKernelProjectCaptureData\(\{/,
       /savedNotes: args\.captureSavedNotes\(\),/,

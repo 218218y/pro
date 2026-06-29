@@ -10,7 +10,11 @@ type MapPatchCall = {
   meta: unknown;
 };
 
-function createHarness(overrides?: { maps?: Record<string, Record<string, unknown>> }) {
+function createHarness(overrides?: {
+  maps?: Record<string, Record<string, unknown>>;
+  ui?: Record<string, unknown>;
+  runtime?: Record<string, unknown>;
+}) {
   const mapPatchCalls: MapPatchCall[] = [];
   const env = {
     installVersion: 1,
@@ -49,8 +53,8 @@ function createHarness(overrides?: { maps?: Record<string, Record<string, unknow
       groovesActions,
       curtainsActions,
       _cfg: () => ({}) as any,
-      _ui: () => ({}) as any,
-      _rt: () => ({}) as any,
+      _ui: () => ({ ...(overrides?.ui || {}) }) as any,
+      _rt: () => ({ ...(overrides?.runtime || {}) }) as any,
       _meta: (meta, source) => ({ ...(meta || {}), installVersion: env.installVersion, source }),
       _map: mapName => ({ ...(env.maps[String(mapName)] || {}) }),
       _num: value => (typeof value === 'number' ? value : null),
@@ -157,6 +161,15 @@ test('domain api surface sections read prefixed split and groove map semantics w
   assert.equal(h.select.curtains.get('d6_full'), 'none');
   assert.equal(h.select.curtains.get('d7_full'), 'linen');
   assert.equal(h.select.curtains.get('missing'), 'none');
+});
+
+test('domain api surface sections door count ignores top-level-only UI door aliases', () => {
+  const h = createHarness({
+    ui: { doors: 9, raw: {} },
+    runtime: { wardrobeDoorsCount: 3 },
+  });
+
+  assert.equal(h.select.doors.count(), 3);
 });
 
 test('domain api surface sections fallback writes normalize prefixed map keys exactly once and suppress semantic no-op defaults', () => {

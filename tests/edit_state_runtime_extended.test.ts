@@ -88,8 +88,11 @@ function createAppForReset(primary = 'manual_layout') {
   return { App, bodyStyle, doorsActions, editToastCalls, modePatches, notesActions, renders, toolActions };
 }
 
-function createAppForSync() {
+function createAppForSync(uiOverride?: Record<string, unknown>) {
   const runtimePatches: Array<{ patch: Record<string, unknown>; meta?: unknown }> = [];
+  const ui = uiOverride || {
+    raw: { width: 120, height: 240, depth: 60, doors: 4 },
+  };
 
   const App = {
     services: {
@@ -113,9 +116,7 @@ function createAppForSync() {
     },
     store: {
       getState: () => ({
-        ui: {
-          raw: { width: 120, height: 240, depth: 60, doors: 4 },
-        },
+        ui,
         config: {},
         runtime: {},
         mode: {},
@@ -214,6 +215,34 @@ test('syncWardrobeState refreshes builder buildUi + runtime dims through canonic
       meta: { source: 'runtime:patch', transient: true },
     });
   }
+});
+
+test('syncWardrobeState ignores top-level-only door counts while preserving raw dimensions', () => {
+  const { App, runtimePatches } = createAppForSync({
+    doors: 9,
+    raw: { width: 120, height: 240, depth: 60 },
+  });
+
+  syncWardrobeState(App);
+
+  const buildUi = ((App.services as Record<string, unknown>).builder as Record<string, unknown>).buildUi as {
+    width?: number;
+    height?: number;
+    depth?: number;
+    doors?: number;
+    raw: Record<string, unknown>;
+  };
+
+  assert.deepEqual(
+    { width: buildUi.width, height: buildUi.height, depth: buildUi.depth, doors: buildUi.doors },
+    { width: 120, height: 240, depth: 60, doors: undefined }
+  );
+  assert.deepEqual(buildUi.raw, { width: 120, height: 240, depth: 60 });
+  assert.deepEqual(runtimePatches[0]?.patch, {
+    wardrobeWidthM: 1.2,
+    wardrobeHeightM: 2.4,
+    wardrobeDepthM: 0.6,
+  });
 });
 
 test('syncWardrobeState coalesces buildUi and runtime dims while a dimension input is active', () => {

@@ -164,6 +164,71 @@ test('modules recompute runtime derives structure from ui.raw before stale mirro
   assert.equal(state.config.modulesConfiguration[0].layout, 'legacy');
 });
 
+test('modules recompute runtime ignores top-level-only door counts on live kernel paths', () => {
+  const state: { config: AnyRec; ui: AnyRec } = {
+    config: {
+      wardrobeType: 'hinged',
+      isLibraryMode: false,
+      modulesConfiguration: [
+        { layout: 'preserve-a', doors: 1 },
+        { layout: 'preserve-b', doors: 1 },
+        { layout: 'drop-stale', doors: 1 },
+      ],
+    },
+    ui: {
+      doors: 5,
+      singleDoorPos: 'left',
+      structureSelect: '[2,2,1]',
+      raw: {},
+    },
+  };
+
+  const App: AnyRec = { services: {} };
+  const select: AnyRec = { modules: {}, corner: {} };
+  const setAllCalls: unknown[] = [];
+  const modulesActions: AnyRec = {
+    setAll(next: unknown) {
+      const list = Array.isArray(next) ? clone(next) : [];
+      state.config.modulesConfiguration = list;
+      setAllCalls.push(list);
+      return list;
+    },
+  };
+
+  installDomainApiModulesCorner({
+    App,
+    select,
+    modulesActions,
+    cornerActions: {},
+    _cfg: () => state.config,
+    _ui: () => state.ui,
+    _ensureObj: (value: unknown) => (isRecord(value) ? value : {}),
+    _isRecord: isRecord,
+    _asMeta: (meta: unknown) => (isRecord(meta) ? meta : undefined),
+    _meta: (meta: unknown, source: string) => ({ ...(isRecord(meta) ? meta : {}), source }),
+    _domainApiReportNonFatal: () => undefined,
+  });
+
+  const result = modulesActions.recomputeFromUi(
+    null,
+    { source: 'react:structure:doors' },
+    {
+      preserveTemplate: true,
+      structureChanged: true,
+      anchorSide: 'left',
+    }
+  );
+
+  assert.equal(result.ok, true);
+  assert.equal(result.updated, true);
+  assert.deepEqual(
+    state.config.modulesConfiguration.map((entry: AnyRec) => entry.doors),
+    [2]
+  );
+  assert.equal(state.config.modulesConfiguration[0].layout, 'preserve-a');
+  assert.equal(setAllCalls.length, 1);
+});
+
 test('modules recompute runtime: failed derived write returns canonical writeFailed result', () => {
   const state: { config: AnyRec; ui: AnyRec } = {
     config: {

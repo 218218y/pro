@@ -106,6 +106,30 @@ test('kernel project capture canonicalizes config lists and detaches mutable sna
   );
 });
 
+test('kernel project capture rejects top-level-only UI dimensions before serialization', () => {
+  const reports: unknown[] = [];
+  const capture = createKernelProjectCapture({
+    App: {} as never,
+    stateKernel: {
+      captureConfig: () => ({}),
+    } as never,
+    getUiSnapshot: () => ({
+      width: 240,
+      height: 260,
+      depth: 60,
+      doors: 5,
+    }),
+    captureSavedNotes: () => [],
+    reportKernelError: (_App, err, ctx) => {
+      reports.push({ err, ctx });
+      return false;
+    },
+  });
+
+  assert.throws(() => capture('persist'), /Project capture requires essential UI fields/);
+  assert.equal(reports.length, 1);
+});
+
 test('kernel project capture cloning preserves valid branches when unsupported leaves are not JSON-stringifiable', () => {
   const cyclic: Record<string, unknown> = { widthCm: 21 };
   cyclic.self = cyclic;

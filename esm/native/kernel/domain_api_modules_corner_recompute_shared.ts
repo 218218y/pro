@@ -7,7 +7,7 @@ import type {
   UnknownRecord,
 } from '../../../types';
 
-import { readUiRawIntFromSnapshot } from '../runtime/ui_raw_selectors.js';
+import { readCanonicalUiRawIntFromSnapshot } from '../runtime/ui_raw_selectors.js';
 import {
   materializeTopModulesConfigurationForStructure,
   readModulesConfigurationListFromConfigSnapshot,
@@ -64,7 +64,7 @@ export function createDomainApiModulesCornerRecomputeRuntime(args: {
   const options: ModulesRecomputeFromUiOptionsLike = _isRecord(opts) ? opts : {};
   const cfg = asRecordOrEmpty(_cfg());
   const ui = asRecordOrEmpty(uiOverride ?? _ui());
-  const doorsCount = readUiRawIntFromSnapshot(ui, 'doors', 2);
+  const doorsCount = readCanonicalUiRawIntFromSnapshot(ui, 'doors', 2);
   const singlePos = readUiRawPreferredString(ui, 'singleDoorPos');
   const structVal = readUiRawPreferredString(ui, 'structureSelect');
   const wardrobeType = cfg && cfg.wardrobeType ? String(cfg.wardrobeType) : 'hinged';

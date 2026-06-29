@@ -15,7 +15,7 @@ import {
   writeSplit,
   writeSplitBottom,
 } from '../runtime/maps_access.js';
-import { readUiRawIntFromSnapshot } from '../runtime/ui_raw_selectors.js';
+import { readCanonicalUiRawIntFromSnapshot } from '../runtime/ui_raw_selectors.js';
 import {
   canonicalRemovedDoorPartId,
   commitCanonicalMapValue,
@@ -36,7 +36,7 @@ function createDoorsSelectBindings(state: DomainApiSurfaceSectionsState): Unknow
   return {
     count() {
       let n: number | null = null;
-      const n0 = readUiRawIntFromSnapshot(state._ui(), 'doors', -999);
+      const n0 = readCanonicalUiRawIntFromSnapshot(state._ui(), 'doors', -999);
       if (Number.isFinite(n0) && n0 !== -999) n = n0;
       if (n == null) n = state._num(state._rt().wardrobeDoorsCount);
       if (n == null) n = 4;

@@ -7,7 +7,7 @@ import type {
   ActionMetaLike,
 } from '../../../types';
 
-import { readUiRawIntFromSnapshot } from '../runtime/ui_raw_selectors.js';
+import { readCanonicalUiRawIntFromSnapshot } from '../runtime/ui_raw_selectors.js';
 import { readUiStateFromStore, readModeStateFromStore } from '../runtime/root_state_access.js';
 import { getStoreSurfaceMaybe } from '../runtime/store_surface_access.js';
 import { asRecord } from '../runtime/record.js';
@@ -97,7 +97,7 @@ export function readWardrobeUiSnapshot(App: AppContainer): {
 
   let doors: number | null = null;
   try {
-    const nextDoors = readUiRawIntFromSnapshot(safeUi, 'doors', -999);
+    const nextDoors = readCanonicalUiRawIntFromSnapshot(safeUi, 'doors', -999);
     if (Number.isFinite(nextDoors) && nextDoors !== -999) doors = nextDoors;
   } catch {
     doors = null;

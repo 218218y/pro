@@ -1,6 +1,6 @@
 import type { UnknownRecord } from '../../../types';
 
-import { readUiRawScalarFromSnapshot } from '../runtime/ui_raw_selectors.js';
+import { readUiRawScalarFromCanonicalSnapshot } from '../runtime/ui_raw_selectors.js';
 import { readMirrorLayoutMap } from '../features/mirror_layout.js';
 import { readDoorTrimMap } from '../features/door_trim.js';
 import { normalizeDoorMountThicknessCm } from '../../shared/wardrobe_dimension_tokens_shared.js';
@@ -183,22 +183,28 @@ function readCurtainSnapshot(value: unknown): UnknownRecord {
 export function buildKernelProjectCaptureData(args: BuildKernelProjectCaptureDataArgs): UnknownRecord {
   const { uiRec, rawAny, cfgRec, savedNotes } = args;
 
-  const overallDoors = readUiRawScalarFromSnapshot(uiRec, 'doors');
-  const overallWidth = readUiRawScalarFromSnapshot(uiRec, 'width');
-  const overallHeight = readUiRawScalarFromSnapshot(uiRec, 'height');
-  const overallDepth = readUiRawScalarFromSnapshot(uiRec, 'depth');
-  const chestDrawersCount = readUiRawScalarFromSnapshot(uiRec, 'chestDrawersCount');
-  const chestCommodeMirrorHeightCm = readUiRawScalarFromSnapshot(uiRec, 'chestCommodeMirrorHeightCm');
-  const chestCommodeMirrorWidthCm = readUiRawScalarFromSnapshot(uiRec, 'chestCommodeMirrorWidthCm');
-  const chestCommodeMirrorWidthManual = !!readUiRawScalarFromSnapshot(uiRec, 'chestCommodeMirrorWidthManual');
+  const overallDoors = readUiRawScalarFromCanonicalSnapshot(uiRec, 'doors');
+  const overallWidth = readUiRawScalarFromCanonicalSnapshot(uiRec, 'width');
+  const overallHeight = readUiRawScalarFromCanonicalSnapshot(uiRec, 'height');
+  const overallDepth = readUiRawScalarFromCanonicalSnapshot(uiRec, 'depth');
+  const chestDrawersCount = readUiRawScalarFromCanonicalSnapshot(uiRec, 'chestDrawersCount');
+  const chestCommodeMirrorHeightCm = readUiRawScalarFromCanonicalSnapshot(
+    uiRec,
+    'chestCommodeMirrorHeightCm'
+  );
+  const chestCommodeMirrorWidthCm = readUiRawScalarFromCanonicalSnapshot(uiRec, 'chestCommodeMirrorWidthCm');
+  const chestCommodeMirrorWidthManual = !!readUiRawScalarFromCanonicalSnapshot(
+    uiRec,
+    'chestCommodeMirrorWidthManual'
+  );
 
-  const lowerDepthManual = !!readUiRawScalarFromSnapshot(uiRec, 'stackSplitLowerDepthManual');
-  const lowerWidthManual = !!readUiRawScalarFromSnapshot(uiRec, 'stackSplitLowerWidthManual');
-  const lowerDoorsManual = !!readUiRawScalarFromSnapshot(uiRec, 'stackSplitLowerDoorsManual');
-  const stackSplitLowerHeight = readUiRawScalarFromSnapshot(uiRec, 'stackSplitLowerHeight');
-  const stackSplitLowerDepth = readUiRawScalarFromSnapshot(uiRec, 'stackSplitLowerDepth');
-  const stackSplitLowerWidth = readUiRawScalarFromSnapshot(uiRec, 'stackSplitLowerWidth');
-  const stackSplitLowerDoors = readUiRawScalarFromSnapshot(uiRec, 'stackSplitLowerDoors');
+  const lowerDepthManual = !!readUiRawScalarFromCanonicalSnapshot(uiRec, 'stackSplitLowerDepthManual');
+  const lowerWidthManual = !!readUiRawScalarFromCanonicalSnapshot(uiRec, 'stackSplitLowerWidthManual');
+  const lowerDoorsManual = !!readUiRawScalarFromCanonicalSnapshot(uiRec, 'stackSplitLowerDoorsManual');
+  const stackSplitLowerHeight = readUiRawScalarFromCanonicalSnapshot(uiRec, 'stackSplitLowerHeight');
+  const stackSplitLowerDepth = readUiRawScalarFromCanonicalSnapshot(uiRec, 'stackSplitLowerDepth');
+  const stackSplitLowerWidth = readUiRawScalarFromCanonicalSnapshot(uiRec, 'stackSplitLowerWidth');
+  const stackSplitLowerDoors = readUiRawScalarFromCanonicalSnapshot(uiRec, 'stackSplitLowerDoors');
 
   const canonicalConfigLists = buildProjectCaptureLists(cfgRec, uiRec, rawAny);
   const canonicalCfg = canonicalizeComparableProjectConfigSnapshot(cfgRec, {

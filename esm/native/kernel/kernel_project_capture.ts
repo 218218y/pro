@@ -1,7 +1,7 @@
 import type { AppContainer, StateKernelLike, UnknownRecord } from '../../../types';
 
 import { readConfigLooseScalarFromApp } from '../runtime/config_selectors.js';
-import { hasEssentialUiDimsFromSnapshot } from '../runtime/ui_raw_selectors.js';
+import { hasCanonicalEssentialUiRawDimsFromSnapshot } from '../runtime/ui_raw_selectors.js';
 import { asRecord } from './kernel_shared.js';
 import { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from '../../shared/project_schema_constants.js';
 import { buildKernelProjectCaptureData } from './kernel_project_capture_payload.js';
@@ -21,7 +21,7 @@ export function createKernelProjectCapture(
     const scopeStr = typeof scope === 'string' && scope ? scope : 'persist';
     const ui = asRecord(args.getUiSnapshot(), {});
 
-    if (!hasEssentialUiDimsFromSnapshot(ui)) {
+    if (!hasCanonicalEssentialUiRawDimsFromSnapshot(ui)) {
       const err = new Error(
         '[WardrobePro] Project capture requires essential UI fields in store.ui (width/height/depth/doors). ' +
           'DOM readback is not a supported project-capture input; ensure store.ui is seeded before capture.'
