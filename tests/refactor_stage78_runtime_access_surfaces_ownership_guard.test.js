@@ -106,7 +106,12 @@ test('stage 78 runtime access surfaces ownership split is anchored', () => {
 
   assert.match(uiStore, /readUiStateFromStore/);
   assert.match(uiStore, /readCanonicalUiRawDimsCmFromSnapshot\(ui\)/);
-  assert.match(uiStore, /readUiRawDimsCmFromSnapshot\(ui\)/);
+  assert.doesNotMatch(uiStore, /ui_raw_selectors_snapshot/);
+  assert.doesNotMatch(
+    uiStore,
+    /readUiRawScalarFromStore|readUiRawNumberFromStore|readUiRawIntFromStore|readUiRawNumberFromStoreUi|readUiRawIntFromStoreUi|readUiRawDimsCmFromStore/,
+    'ui.raw store adapter should expose only canonical store-level reads'
+  );
   assert.doesNotMatch(uiStore, /readUiDirectScalar|missingEssentialUiRawDims/);
 
   const rtFacade = read('esm/native/runtime/runtime_selectors.ts');

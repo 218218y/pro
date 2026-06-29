@@ -78,12 +78,7 @@ export {
   readCanonicalUiRawNumberFromSnapshot,
   readCanonicalUiRawIntFromSnapshot,
   readCanonicalUiRawDimsCmFromSnapshot,
-  readUiRawNumberFromStore,
-  readUiRawIntFromStore,
-  readUiRawNumberFromStoreUi,
-  readUiRawIntFromStoreUi,
   readUiRawDimsCmFromSnapshot,
-  readUiRawDimsCmFromStore,
   readCanonicalUiRawDimsCmFromStore,
 } from '../runtime/ui_raw_selectors.js';
 

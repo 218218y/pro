@@ -26,11 +26,4 @@ export {
   readCanonicalUiRawNumberFromSnapshot,
   readUiRawScalarFromCanonicalSnapshot,
 } from './ui_raw_selectors_canonical.js';
-export {
-  readCanonicalUiRawDimsCmFromStore,
-  readUiRawDimsCmFromStore,
-  readUiRawIntFromStore,
-  readUiRawIntFromStoreUi,
-  readUiRawNumberFromStore,
-  readUiRawNumberFromStoreUi,
-} from './ui_raw_selectors_store.js';
+export { readCanonicalUiRawDimsCmFromStore } from './ui_raw_selectors_store.js';

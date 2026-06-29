@@ -140,6 +140,7 @@ const loaderRel = 'esm/native/io/project_io_orchestrator_project_load.ts';
 const uiSelectorsRel = 'esm/native/runtime/ui_raw_selectors.ts';
 const uiSnapshotSelectorsRel = 'esm/native/runtime/ui_raw_selectors_snapshot.ts';
 const uiCanonicalSelectorsRel = 'esm/native/runtime/ui_raw_selectors_canonical.ts';
+const uiStoreSelectorsRel = 'esm/native/runtime/ui_raw_selectors_store.ts';
 const canonicalSnapshotRel = 'esm/native/io/project_load_canonical_snapshot.ts';
 const runtimeSelectorTestRel = 'tests/project_migration_runtime_selector_hardening_runtime.test.ts';
 const coreApiRel = 'esm/native/core/api.ts';
@@ -149,6 +150,7 @@ const loader = read(loaderRel);
 const uiSelectors = read(uiSelectorsRel);
 const uiSnapshotSelectors = read(uiSnapshotSelectorsRel);
 const uiCanonicalSelectors = read(uiCanonicalSelectorsRel);
+const uiStoreSelectors = read(uiStoreSelectorsRel);
 const canonicalSnapshot = read(canonicalSnapshotRel);
 const runtimeSelectorTest = read(runtimeSelectorTestRel);
 const coreApi = read(coreApiRel);
@@ -313,6 +315,46 @@ requireFunctionNotIncludes(
 requirePublicUiRawExports(coreApiRel, coreApi);
 requirePublicUiRawExports(stateSurfaceRel, stateSurface);
 
+for (const [rel, source] of [
+  [uiSelectorsRel, uiSelectors],
+  [coreApiRel, coreApi],
+  [stateSurfaceRel, stateSurface],
+]) {
+  for (const symbol of [
+    'readUiRawNumberFromStore',
+    'readUiRawIntFromStore',
+    'readUiRawNumberFromStoreUi',
+    'readUiRawIntFromStoreUi',
+    'readUiRawDimsCmFromStore',
+  ]) {
+    requireNotIncludes(
+      rel,
+      source,
+      symbol,
+      `${rel} must not expose tolerant store-level ui.raw selector ${symbol}`
+    );
+  }
+}
+
+requireIncludes(
+  uiStoreSelectorsRel,
+  uiStoreSelectors,
+  'readCanonicalUiRawDimsCmFromSnapshot(ui)',
+  'ui.raw store adapter must delegate to the canonical raw-only dimensions reader'
+);
+requireNotIncludes(
+  uiStoreSelectorsRel,
+  uiStoreSelectors,
+  'ui_raw_selectors_snapshot',
+  'ui.raw store adapter must not import tolerant snapshot readers'
+);
+requireNotIncludes(
+  uiStoreSelectorsRel,
+  uiStoreSelectors,
+  'readUiRawScalarFromStore',
+  'ui.raw store adapter must not expose direct raw scalar fallback readers'
+);
+
 requireIncludes(
   runtimeSelectorTestRel,
   runtimeSelectorTest,
@@ -330,6 +372,12 @@ requireIncludes(
   runtimeSelectorTest,
   'readCanonicalUiRawDimsCmFromSnapshot(oldSnapshot',
   'runtime selector tests must prove canonical batch readers reject old top-level-only snapshots'
+);
+requireIncludes(
+  runtimeSelectorTestRel,
+  runtimeSelectorTest,
+  'tolerant store-level ui.raw readers are not exposed through public surfaces',
+  'runtime selector tests must lock removal of tolerant store-level ui.raw public readers'
 );
 
 if (failures.length) {

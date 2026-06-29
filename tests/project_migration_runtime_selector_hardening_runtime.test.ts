@@ -143,3 +143,26 @@ test('canonical ui.raw readers are exposed through public core and state surface
     );
   }
 });
+
+test('tolerant store-level ui.raw readers are not exposed through public surfaces', () => {
+  const facade = readFileSync('esm/native/runtime/ui_raw_selectors.ts', 'utf8');
+  const coreApi = readFileSync('esm/native/core/api.ts', 'utf8');
+  const stateSurface = readFileSync('esm/native/services/api_state_surface.ts', 'utf8');
+  const storeOwner = readFileSync('esm/native/runtime/ui_raw_selectors_store.ts', 'utf8');
+  const removedStoreReaders = [
+    'readUiRawNumberFromStore',
+    'readUiRawIntFromStore',
+    'readUiRawNumberFromStoreUi',
+    'readUiRawIntFromStoreUi',
+    'readUiRawDimsCmFromStore',
+  ];
+
+  for (const source of [facade, coreApi, stateSurface, storeOwner]) {
+    for (const symbol of removedStoreReaders) {
+      assert.doesNotMatch(source, new RegExp(`\\b${symbol}\\b`), `${symbol} should stay retired`);
+    }
+  }
+
+  assert.match(storeOwner, /readCanonicalUiRawDimsCmFromSnapshot\(ui\)/);
+  assert.doesNotMatch(storeOwner, /ui_raw_selectors_snapshot/);
+});
