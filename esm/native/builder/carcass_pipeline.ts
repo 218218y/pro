@@ -16,14 +16,12 @@ import { getBuilderRenderOps } from '../runtime/builder_service_access.js';
 import { computeCarcassOps } from './pure_api.js';
 import { CARCASS_SHELL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { CARCASS_BACK_INSET_Z, CARCASS_FRONT_INSET_Z } from './core_carcass_shared.js';
-
-function asFiniteNumber(v: unknown, name: string): number {
-  const n = typeof v === 'number' ? v : Number(v);
-  if (!Number.isFinite(n)) {
-    throw new Error(`[WardrobePro] Carcass pipeline: ${name} must be a finite number`);
-  }
-  return n;
-}
+import {
+  readCarcassPipelineIntegerOr,
+  readCarcassPipelineNumberOr,
+  readOptionalCarcassPipelineNumber,
+  readRequiredCarcassPipelineNumber,
+} from './carcass_pipeline_number_contracts.js';
 
 type PartIdLike = {
   partId?: unknown;
@@ -132,8 +130,8 @@ function appendStackSplitDividerBoardIfNeeded(
     stackSplitDividerY?: number | null;
   }
 ): void {
-  const dividerTopY = Number(args.stackSplitDividerY);
-  if (!Number.isFinite(dividerTopY) || dividerTopY <= args.woodThick) return;
+  const dividerTopY = readOptionalCarcassPipelineNumber(args.stackSplitDividerY);
+  if (dividerTopY == null || dividerTopY <= args.woodThick) return;
 
   const boards = Array.isArray(carcassOps.boards) ? carcassOps.boards : null;
   if (!boards) return;
@@ -229,18 +227,16 @@ export function applyCarcassAndGetCabinetMetrics(
   const cfgObj = asRecord(safeArgs.cfg);
   const isMultiColorMode = !!cfgObj?.isMultiColorMode;
 
-  const totalWn = asFiniteNumber(safeArgs.totalW, 'totalW');
-  const Dn = asFiniteNumber(safeArgs.D, 'D');
-  const Hn = asFiniteNumber(safeArgs.H, 'H');
-  const woodThickN = asFiniteNumber(safeArgs.woodThick, 'woodThick');
+  const totalWn = readRequiredCarcassPipelineNumber(safeArgs.totalW, 'totalW');
+  const Dn = readRequiredCarcassPipelineNumber(safeArgs.D, 'D');
+  const Hn = readRequiredCarcassPipelineNumber(safeArgs.H, 'H');
+  const woodThickN = readRequiredCarcassPipelineNumber(safeArgs.woodThick, 'woodThick');
 
-  const doorsCountN =
-    typeof safeArgs.doorsCount === 'number' ? safeArgs.doorsCount : Number(safeArgs.doorsCount ?? 0);
-  const safeDoorsCount = Number.isFinite(doorsCountN) ? doorsCountN : 0;
+  const safeDoorsCount = readCarcassPipelineIntegerOr(safeArgs.doorsCount, 0);
 
   const baseTypeStr = typeof safeArgs.baseType === 'string' ? safeArgs.baseType : '';
-  let baseHeight = typeof safeArgs.baseHeight === 'number' ? safeArgs.baseHeight : 0;
-  let startY = typeof safeArgs.startY === 'number' ? safeArgs.startY : 0;
+  let baseHeight = readCarcassPipelineNumberOr(safeArgs.baseHeight, 0);
+  let startY = readCarcassPipelineNumberOr(safeArgs.startY, 0);
 
   const carcassOpsRaw = computeCarcassOps({
     totalW: totalWn,

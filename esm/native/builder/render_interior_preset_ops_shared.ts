@@ -8,7 +8,12 @@ import type {
   InteriorValueRecord,
   RenderInteriorOpsDeps,
 } from './render_interior_ops_contracts.js';
-import { readRenderOpNumber, readRenderOpNumberOr } from './render_ops_number_contracts.js';
+import { readRenderOpNumberOr } from './render_ops_number_contracts.js';
+import {
+  buildInteriorRenderIndexSet,
+  readInteriorRenderGridIndex,
+  readInteriorRenderInteger,
+} from './render_interior_ops_index_contracts.js';
 
 export type InteriorPresetInput = InteriorValueRecord & {
   THREE?: unknown;
@@ -109,23 +114,15 @@ export function readModuleKeyString(input: InteriorPresetInput, moduleIndex: num
 }
 
 export function readPresetInteger(value: unknown, defaultValue: number): number {
-  const n = readRenderOpNumber(value);
-  return n != null ? Math.trunc(n) : defaultValue;
+  return readInteriorRenderInteger(value, defaultValue);
 }
 
 export function readPresetGridIndex(value: unknown): number | null {
-  const n = readRenderOpNumber(value);
-  return n != null ? Math.trunc(n) : null;
+  return readInteriorRenderGridIndex(value);
 }
 
 export function buildBraceShelfIndexSet(input: InteriorPresetInput): Record<number, true> {
-  const braceSet: Record<number, true> = Object.create(null);
-  const braceShelves = Array.isArray(input.braceShelves) ? input.braceShelves : [];
-  for (let i = 0; i < braceShelves.length; i += 1) {
-    const value = readPresetGridIndex(braceShelves[i]);
-    if (value != null) braceSet[value] = true;
-  }
-  return braceSet;
+  return buildInteriorRenderIndexSet(input.braceShelves);
 }
 
 export function readPresetNumber(value: unknown, defaultValue: number): number {

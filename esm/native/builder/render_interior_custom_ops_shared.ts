@@ -9,7 +9,15 @@ import type {
   InteriorValueRecord,
   RenderInteriorOpsDeps,
 } from './render_interior_ops_contracts.js';
-import { readRenderOpNumber, readRenderOpNumberOr } from './render_ops_number_contracts.js';
+import { readRenderOpNumberOr } from './render_ops_number_contracts.js';
+import {
+  buildInteriorRenderIndexSet,
+  buildInteriorShelfVariantByIndex,
+  readInteriorRenderGridDivisions,
+  readInteriorRenderGridIndex,
+  readInteriorRenderInteger,
+  type InteriorShelfVariant,
+} from './render_interior_ops_index_contracts.js';
 
 export type InteriorCustomInput = InteriorValueRecord & {
   THREE?: unknown;
@@ -57,7 +65,7 @@ export type InteriorRodMapEntry = InteriorValueRecord & {
   enableSingleHanger?: unknown;
 };
 
-export type ShelfVariant = 'double' | 'glass' | 'brace' | 'regular';
+export type ShelfVariant = InteriorShelfVariant;
 
 export type InteriorCustomModuleFaces = {
   leftX: number;
@@ -133,59 +141,27 @@ export function readCustomRenderNumber(value: unknown, defaultValue: number): nu
 }
 
 export function readCustomRenderInteger(value: unknown, defaultValue: number): number {
-  const n = readRenderOpNumber(value);
-  return n != null ? Math.trunc(n) : defaultValue;
+  return readInteriorRenderInteger(value, defaultValue);
 }
 
 export function readCustomRenderGridIndex(value: unknown): number | null {
-  const n = readRenderOpNumber(value);
-  return n != null ? Math.trunc(n) : null;
+  return readInteriorRenderGridIndex(value);
 }
 
 export function readGridDivisions(value: unknown, defaultValue = 6): number {
-  const gridDivisions = readCustomRenderInteger(value, defaultValue);
-  return gridDivisions >= 1 ? gridDivisions : defaultValue;
+  return readInteriorRenderGridDivisions(value, defaultValue);
 }
 
 export function buildBraceShelfIndexSet(input: InteriorCustomInput): Record<number, true> {
-  const braceSet: Record<number, true> = Object.create(null);
-  const braceShelves = Array.isArray(input.braceShelves) ? input.braceShelves : [];
-  for (let i = 0; i < braceShelves.length; i += 1) {
-    const value = readCustomRenderGridIndex(braceShelves[i]);
-    if (value != null) braceSet[value] = true;
-  }
-  return braceSet;
+  return buildInteriorRenderIndexSet(input.braceShelves);
 }
 
 export function buildShelfIndexSet(ops: InteriorValueRecord): Record<number, true> {
-  const shelfSet: Record<number, true> = Object.create(null);
-  if (!Array.isArray(ops.shelves)) return shelfSet;
-  for (let i = 0; i < ops.shelves.length; i += 1) {
-    const idx = readCustomRenderGridIndex(ops.shelves[i]);
-    if (idx != null) shelfSet[idx] = true;
-  }
-  return shelfSet;
+  return buildInteriorRenderIndexSet(ops.shelves);
 }
 
 export function buildShelfVariantByIndex(ops: InteriorValueRecord): Record<number, ShelfVariant> {
-  const shelfVariantByIndex: Record<number, ShelfVariant> = Object.create(null);
-  try {
-    const shelfVariants = asRecord(ops.shelfVariants);
-    if (!shelfVariants || Array.isArray(shelfVariants)) return shelfVariantByIndex;
-    for (const key in shelfVariants) {
-      if (!Object.prototype.hasOwnProperty.call(shelfVariants, key)) continue;
-      const idx = parseInt(key, 10);
-      if (!Number.isFinite(idx)) continue;
-      const rawValue = shelfVariants[key];
-      const value = typeof rawValue === 'string' ? rawValue.trim().toLowerCase() : '';
-      if (value === 'double' || value === 'glass' || value === 'brace' || value === 'regular') {
-        shelfVariantByIndex[idx] = value;
-      }
-    }
-  } catch {
-    // Invalid shelfVariants should not block custom op rendering.
-  }
-  return shelfVariantByIndex;
+  return buildInteriorShelfVariantByIndex(ops.shelfVariants);
 }
 
 export function buildRodMap(ops: InteriorValueRecord): Record<number, InteriorRodMapEntry> {
