@@ -10,7 +10,6 @@ import {
   isBaseLegStageUiState,
   willHeightDepthTargetCreateActiveSpecialOverride,
 } from '../features/base_leg_stage_special_dims_guard.js';
-import { __asNum } from './canvas_picking_core_helpers.js';
 import type { CornerCellDimsContext } from './canvas_picking_cell_dims_corner_shared.js';
 import {
   cloneRecord,
@@ -24,6 +23,7 @@ import {
   buildCornerCellToastMessage,
   sanitizeCornerModulesForPatch,
 } from './canvas_picking_cell_dims_corner_shared.js';
+import { readCanonicalPositiveNumberOr } from './canvas_picking_cell_dims_numbers.js';
 import type {
   CornerCellWidthDistribution,
   CornerCellWidthSelectionState,
@@ -53,8 +53,8 @@ function needsLockWidth(App: CornerCellDimsContext['App'], cfgCell: UnknownRecor
   try {
     const currentDims = readCornerSpecialDims(cfgCell);
     if (!currentDims) return true;
-    const baseWidth = __asNum(currentDims.baseWidthCm, NaN);
-    const width = __asNum(currentDims.widthCm, NaN);
+    const baseWidth = readCanonicalPositiveNumberOr(currentDims.baseWidthCm, NaN);
+    const width = readCanonicalPositiveNumberOr(currentDims.widthCm, NaN);
     if (!Number.isFinite(baseWidth) || Math.abs(baseWidth - widthCm) > eps) return true;
     if (!Number.isFinite(width) || Math.abs(width - widthCm) > eps) return true;
     return false;
@@ -89,7 +89,7 @@ export function applyCornerCellWidthSelection(
       const nextCellCfg = cloneRecord(prevCellCfg);
       const sdCell = cloneSpecialDims(readCornerSpecialDims(nextCellCfg));
 
-      let baseW = __asNum(sdCell.baseWidthCm, NaN);
+      let baseW = readCanonicalPositiveNumberOr(sdCell.baseWidthCm, NaN);
       if (!Number.isFinite(baseW) || baseW <= 0)
         baseW = selection.toggledBackCellW ? selection.cellBaseW : selection.curCellW;
       applyOverrideToSpecialDims({
@@ -102,7 +102,7 @@ export function applyCornerCellWidthSelection(
       });
 
       if (applyH != null && (selection.toggledBackCellH || selection.willChangeH || selection.hasActiveH)) {
-        let baseH = __asNum(sdCell.baseHeightCm, NaN);
+        let baseH = readCanonicalPositiveNumberOr(sdCell.baseHeightCm, NaN);
         if (!Number.isFinite(baseH) || baseH <= 0) baseH = selection.cellBaseH;
         applyOverrideToSpecialDims({
           sd: sdCell,
@@ -115,7 +115,7 @@ export function applyCornerCellWidthSelection(
       }
 
       if (applyD != null && (selection.toggledBackCellD || selection.willChangeD || selection.hasActiveD)) {
-        let baseD = __asNum(sdCell.baseDepthCm, NaN);
+        let baseD = readCanonicalPositiveNumberOr(sdCell.baseDepthCm, NaN);
         if (!Number.isFinite(baseD) || baseD <= 0) baseD = selection.cellBaseD;
         applyOverrideToSpecialDims({
           sd: sdCell,

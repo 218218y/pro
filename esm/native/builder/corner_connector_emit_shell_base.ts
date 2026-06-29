@@ -10,8 +10,7 @@ const BASE_LEG_LAYOUT_DIMENSIONS = CARCASS_BASE_DIMENSIONS.legs;
 const LEG_PLATFORM_DIMENSIONS = CARCASS_BASE_DIMENSIONS.legs.platform;
 
 function readPositiveNumber(value: unknown, defaultValue = 0): number {
-  const n = Number(value);
-  return Number.isFinite(n) && n > 0 ? n : defaultValue;
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : defaultValue;
 }
 
 export function createCornerConnectorPlinthShape(

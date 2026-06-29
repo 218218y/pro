@@ -5,11 +5,16 @@ import {
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { AppContainer, UnknownRecord } from '../../../types';
 import type { CanvasCornerCellDimsArgs } from './canvas_picking_cell_dims_contracts.js';
-import { __wp_reportPickingIssue, __asNum, __asInt } from './canvas_picking_core_helpers.js';
+import { __wp_reportPickingIssue, __asInt } from './canvas_picking_core_helpers.js';
 import { readCornerConfigurationSnapshotForStack } from '../features/modules_configuration/corner_cells_api.js';
 import { readModulesConfigurationListFromConfigSnapshot } from '../features/modules_configuration/modules_config_api.js';
 import { cloneSpecialDims, getActiveOverrideCm } from '../features/special_dims/index.js';
 import type { SpecialDimsRecord } from '../features/special_dims/index.js';
+import {
+  readCanonicalIntOr,
+  readCanonicalNumberOr,
+  readCanonicalPositiveNumberOr,
+} from './canvas_picking_cell_dims_numbers.js';
 import type {
   CornerCellDimsContext,
   CornerConfigShape,
@@ -42,12 +47,15 @@ export function readConnectorSpecialDims(cfg: unknown): SpecialDimsRecord | null
 function readPositiveSpecialDimCm(sd: unknown, key: string): number | null {
   const rec = asRecord(sd);
   if (!rec) return null;
-  const n = __asNum(rec[key], NaN);
+  const n = readCanonicalPositiveNumberOr(rec[key], NaN);
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
 function readCornerDoorsCount(ui: UnknownRecord, raw: UnknownRecord): number {
-  const doors = __asInt(ui.cornerDoors, __asInt(raw.cornerDoors, WARDROBE_DEFAULTS.corner.doorsCount));
+  const doors = readCanonicalIntOr(
+    ui.cornerDoors,
+    readCanonicalIntOr(raw.cornerDoors, WARDROBE_DEFAULTS.corner.doorsCount)
+  );
   return Number.isFinite(doors) && doors > 0 ? doors : WARDROBE_DEFAULTS.corner.doorsCount;
 }
 
@@ -115,7 +123,7 @@ export function reportCornerDimsIssue(
 export function readStoredWidthCm(cfgCell: UnknownRecord, App: AppContainer, op: string): number | null {
   try {
     const sd0 = readCornerSpecialDims(cfgCell);
-    const v = sd0 ? __asNum(sd0.widthCm, NaN) : NaN;
+    const v = sd0 ? readCanonicalPositiveNumberOr(sd0.widthCm, NaN) : NaN;
     return Number.isFinite(v) && v > 0 ? v : null;
   } catch (_e) {
     reportCornerDimsIssue(App, _e, op, 1000);
@@ -142,11 +150,17 @@ export function buildCornerCellDimsContext(args: CanvasCornerCellDimsArgs): Corn
 
   const isBottomStack = args.isBottomStack === true;
   const stackKey = isBottomStack ? 'bottom' : 'top';
-  const topCornerWidthBase = __asNum(ui.cornerWidth, CORNER_WING_DIMENSIONS.wing.defaultWidthCm);
-  const topCornerHeightBase = __asNum(ui.cornerHeight, __asNum(raw.height, WARDROBE_DEFAULTS.heightCm));
-  const topCornerDepthBase = __asNum(
+  const topCornerWidthBase = readCanonicalNumberOr(
+    ui.cornerWidth,
+    CORNER_WING_DIMENSIONS.wing.defaultWidthCm
+  );
+  const topCornerHeightBase = readCanonicalNumberOr(
+    ui.cornerHeight,
+    readCanonicalNumberOr(raw.height, WARDROBE_DEFAULTS.heightCm)
+  );
+  const topCornerDepthBase = readCanonicalNumberOr(
     ui.cornerDepth,
-    __asNum(raw.depth, WARDROBE_DEFAULTS.byType.hinged.depthCm)
+    readCanonicalNumberOr(raw.depth, WARDROBE_DEFAULTS.byType.hinged.depthCm)
   );
   const lowerCornerWidthBase = resolveBottomCornerWidthBase({
     ui,
@@ -156,14 +170,17 @@ export function buildCornerCellDimsContext(args: CanvasCornerCellDimsArgs): Corn
   });
   const cornerWBase = isBottomStack ? lowerCornerWidthBase : topCornerWidthBase;
   const cornerHBase = isBottomStack
-    ? __asNum(raw.stackSplitLowerHeight, topCornerHeightBase)
+    ? readCanonicalNumberOr(raw.stackSplitLowerHeight, topCornerHeightBase)
     : topCornerHeightBase;
   const cornerDBase = isBottomStack
-    ? __asNum(raw.stackSplitLowerDepth, topCornerDepthBase)
+    ? readCanonicalNumberOr(raw.stackSplitLowerDepth, topCornerDepthBase)
     : topCornerDepthBase;
-  const wallLenBase = __asNum(
+  const wallLenBase = readCanonicalNumberOr(
     ui.cornerCabinetWallLenCm,
-    __asNum(ui.cornerCabinetWallLen, CORNER_WING_DIMENSIONS.connector.defaultWallLengthM * CM_PER_METER)
+    readCanonicalNumberOr(
+      ui.cornerCabinetWallLen,
+      CORNER_WING_DIMENSIONS.connector.defaultWallLengthM * CM_PER_METER
+    )
   );
 
   const cornerCfg0 = asCornerConfig(readCornerConfigurationSnapshotForStack(cfg, stackKey));

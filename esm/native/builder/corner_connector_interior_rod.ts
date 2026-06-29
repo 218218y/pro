@@ -17,6 +17,10 @@ export type CornerConnectorAttachRodFlowParams = CornerConnectorInteriorFlowPara
   emitters: Pick<CornerConnectorInteriorEmitters, 'emitRealisticHanger' | 'emitHangingClothes'>;
 };
 
+function readFiniteNumberOr(value: unknown, defaultValue: number): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
+}
+
 export function applyCornerConnectorAttachRod(params: CornerConnectorAttachRodFlowParams): void {
   const { ctx, locals, helpers, emitters } = params;
   const {
@@ -54,19 +58,14 @@ export function applyCornerConnectorAttachRod(params: CornerConnectorAttachRodFl
     ui.cornerPentAttachRodRadiusMm ?? CORNER_CONNECTOR_INTERIOR_DIMENSIONS.attachRod.radiusDefaultMm;
 
   const rodY =
-    (Number.isFinite(parseFloat(String(hCmRaw)))
-      ? parseFloat(String(hCmRaw))
-      : CORNER_CONNECTOR_INTERIOR_DIMENSIONS.attachRod.heightDefaultCm) /
+    readFiniteNumberOr(hCmRaw, CORNER_CONNECTOR_INTERIOR_DIMENSIONS.attachRod.heightDefaultCm) /
       CM_PER_METER +
     startY;
   const endInset =
-    (Number.isFinite(parseFloat(String(endInsetCmRaw)))
-      ? parseFloat(String(endInsetCmRaw))
-      : CORNER_CONNECTOR_INTERIOR_DIMENSIONS.attachRod.endInsetDefaultCm) / CM_PER_METER;
+    readFiniteNumberOr(endInsetCmRaw, CORNER_CONNECTOR_INTERIOR_DIMENSIONS.attachRod.endInsetDefaultCm) /
+    CM_PER_METER;
   const radius =
-    (Number.isFinite(parseFloat(String(rMmRaw)))
-      ? parseFloat(String(rMmRaw))
-      : CORNER_CONNECTOR_INTERIOR_DIMENSIONS.attachRod.radiusDefaultMm) / MM_PER_METER;
+    readFiniteNumberOr(rMmRaw, CORNER_CONNECTOR_INTERIOR_DIMENSIONS.attachRod.radiusDefaultMm) / MM_PER_METER;
 
   // Keep the rod inside the usable vertical range.
   const minY = startY + woodThick + CORNER_CONNECTOR_INTERIOR_DIMENSIONS.attachRod.verticalClearanceM;

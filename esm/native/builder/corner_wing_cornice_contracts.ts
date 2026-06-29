@@ -136,8 +136,8 @@ export function asBufferAttr(value: unknown): BufferAttrLike | null {
 }
 
 export function positiveCorniceTopPlatformHeight(ctx: { baseLegTopPlatformHeightM?: unknown }): number {
-  const value = Number(ctx.baseLegTopPlatformHeightM);
-  return Number.isFinite(value) && value > 0 ? value : 0;
+  const value = ctx.baseLegTopPlatformHeightM;
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : 0;
 }
 
 export function resolveCornerWingCorniceTopY(

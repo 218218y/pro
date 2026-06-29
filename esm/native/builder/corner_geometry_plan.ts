@@ -69,7 +69,7 @@ function readExternalDrawerCount(cellCfg: ValueRecord | null | undefined): numbe
       : typeof cell.extDrawers === 'number'
         ? cell.extDrawers
         : 0;
-  return Number.isFinite(raw) ? Number(raw) : 0;
+  return Number.isFinite(raw) ? raw : 0;
 }
 
 function hasShoeDrawer(cellCfg: ValueRecord | null | undefined): boolean {
@@ -250,8 +250,7 @@ export function asRecord(v: unknown): ValueRecord {
 }
 
 export function readFiniteNumber(v: unknown): number | null {
-  const n = typeof v === 'number' ? v : typeof v === 'string' ? Number(v) : NaN;
-  return Number.isFinite(n) ? n : null;
+  return typeof v === 'number' && Number.isFinite(v) ? v : null;
 }
 
 export function readNumFrom(obj: unknown, key: string, defaultValue: number): number {

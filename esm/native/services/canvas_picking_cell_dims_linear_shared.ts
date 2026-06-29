@@ -63,6 +63,13 @@ export function readBool(rec: unknown, key: string): boolean {
   return !!(obj && obj[key]);
 }
 
+export {
+  readCanonicalNumber,
+  readCanonicalNumberOr,
+  readCanonicalPositiveNumberOr,
+  readCanonicalIntOr,
+} from './canvas_picking_cell_dims_numbers.js';
+
 export function readSpecialDimsRecord(cfgMod: unknown): UnknownRecord | null {
   const mod = asRecord(cfgMod);
   const dims = mod ? asRecord(mod.specialDims) : null;

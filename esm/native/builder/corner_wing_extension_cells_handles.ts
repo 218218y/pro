@@ -3,6 +3,7 @@ import {
   __edgeHandleAlignedBaseAbsYForCornerCells,
   __edgeHandleLongLiftAbsYForCornerCells,
   asRecord,
+  readFiniteNumber,
 } from './corner_geometry_plan.js';
 
 import type { CornerCellCfg } from './corner_geometry_plan.js';
@@ -18,8 +19,8 @@ export function resolveCornerWingDoorCount(
     asRecord(args.uiAny).cornerDoors ??
     asRecord(args.uiAny).cornerDoorCount ??
     asRecord(args.uiAny).cornerDoorsCount;
-  const parsed = Number.isFinite(parseFloat(String(doorRaw))) ? parseFloat(String(doorRaw)) : NaN;
-  return Number.isFinite(parsed)
+  const parsed = readFiniteNumber(doorRaw);
+  return parsed != null
     ? Math.max(0, Math.round(parsed))
     : args.activeWidth > CORNER_WING_DIMENSIONS.wing.minActiveWidthM
       ? Math.max(

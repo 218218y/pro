@@ -1,5 +1,5 @@
 import { getActiveOverrideCm, isOverrideActive } from '../features/special_dims/index.js';
-import { __asNum } from './canvas_picking_core_helpers.js';
+import { readCanonicalPositiveNumberOr } from './canvas_picking_cell_dims_numbers.js';
 import type {
   CornerCellHeightDepthContext,
   CornerCellHeightDepthState,
@@ -11,12 +11,12 @@ export function resolveCornerCellHeightDepthState(
   const { sdCell, curH, curD, applyH, applyD } = ctx;
 
   const cellCurH = getActiveOverrideCm(sdCell, 'heightCm', 'baseHeightCm') ?? curH;
-  const cellBaseH0 = __asNum(sdCell.baseHeightCm, NaN);
+  const cellBaseH0 = readCanonicalPositiveNumberOr(sdCell.baseHeightCm, NaN);
   const cellBaseH = Number.isFinite(cellBaseH0) && cellBaseH0 > 0 ? cellBaseH0 : curH;
   const hasActiveH = isOverrideActive(sdCell, 'heightCm', 'baseHeightCm');
 
   const cellCurD = getActiveOverrideCm(sdCell, 'depthCm', 'baseDepthCm') ?? curD;
-  const cellBaseD0 = __asNum(sdCell.baseDepthCm, NaN);
+  const cellBaseD0 = readCanonicalPositiveNumberOr(sdCell.baseDepthCm, NaN);
   const cellBaseD = Number.isFinite(cellBaseD0) && cellBaseD0 > 0 ? cellBaseD0 : curD;
   const hasActiveD = isOverrideActive(sdCell, 'depthCm', 'baseDepthCm');
 

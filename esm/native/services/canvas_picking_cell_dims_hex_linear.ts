@@ -11,6 +11,7 @@ import {
 } from '../features/hex_cell/index.js';
 import { applyCanvasLinearCellDimsContextWithOptions } from './canvas_picking_cell_dims_linear_apply.js';
 import { buildCanvasLinearCellDimsContext } from './canvas_picking_cell_dims_linear_context.js';
+import { readCanonicalNumber } from './canvas_picking_cell_dims_linear_shared.js';
 import { __wp_toast } from './canvas_picking_core_helpers.js';
 
 const EPS_CM = 1e-6;
@@ -34,7 +35,9 @@ function shouldRemoveLinearHexCell(
   if (!moduleHasHexCell(current)) return false;
 
   const moduleWidthCm =
-    ctx.applyW != null && Number.isFinite(ctx.applyW) ? ctx.applyW : Number(ctx.widthsCurr[ctx.idx]) || 0;
+    ctx.applyW != null && Number.isFinite(ctx.applyW)
+      ? ctx.applyW
+      : (readCanonicalNumber(ctx.widthsCurr[ctx.idx]) ?? 0);
 
   return (
     !hasLinearHexCellDimensionChange(ctx) &&
@@ -72,7 +75,7 @@ export function handleCanvasLinearHexCellClick(args: CanvasLinearCellDimsArgs): 
       const moduleWidthCm =
         linearCtx.applyW != null && Number.isFinite(linearCtx.applyW)
           ? linearCtx.applyW
-          : Number(linearCtx.widthsCurr[linearCtx.idx]) || 0;
+          : (readCanonicalNumber(linearCtx.widthsCurr[linearCtx.idx]) ?? 0);
 
       assignHexCellToConfig(
         next,

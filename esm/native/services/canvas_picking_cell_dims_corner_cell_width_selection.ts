@@ -1,7 +1,7 @@
 import { cloneSpecialDims, getActiveOverrideCm, isOverrideActive } from '../features/special_dims/index.js';
-import { __asNum } from './canvas_picking_core_helpers.js';
 import type { CornerCellDimsContext } from './canvas_picking_cell_dims_corner_shared.js';
 import { readCornerSpecialDims, reportCornerDimsIssue } from './canvas_picking_cell_dims_corner_shared.js';
+import { readCanonicalPositiveNumberOr } from './canvas_picking_cell_dims_numbers.js';
 import type {
   CornerCellWidthDistribution,
   CornerCellWidthSelectionState,
@@ -30,11 +30,11 @@ export function resolveCornerCellWidthSelectionState(
     const selectedCellCfg = distribution.getCellCfg(cellIdx);
     const selectedDims = cloneSpecialDims(readCornerSpecialDims(selectedCellCfg));
 
-    const baseW0 = __asNum(selectedDims.baseWidthCm, NaN);
+    const baseW0 = readCanonicalPositiveNumberOr(selectedDims.baseWidthCm, NaN);
     if (Number.isFinite(baseW0) && baseW0 > 0) cellBaseW = baseW0;
-    const baseH0 = __asNum(selectedDims.baseHeightCm, NaN);
+    const baseH0 = readCanonicalPositiveNumberOr(selectedDims.baseHeightCm, NaN);
     if (Number.isFinite(baseH0) && baseH0 > 0) cellBaseH = baseH0;
-    const baseD0 = __asNum(selectedDims.baseDepthCm, NaN);
+    const baseD0 = readCanonicalPositiveNumberOr(selectedDims.baseDepthCm, NaN);
     if (Number.isFinite(baseD0) && baseD0 > 0) cellBaseD = baseD0;
 
     const hAct = getActiveOverrideCm(selectedDims, 'heightCm', 'baseHeightCm');

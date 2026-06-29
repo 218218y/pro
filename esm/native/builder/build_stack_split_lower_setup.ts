@@ -47,11 +47,11 @@ export function prepareStackSplitLowerSetup(
   const splitBottomStartIndex = group && Array.isArray(group.children) ? group.children.length : -1;
   const bottomWidthCm =
     Number.isFinite(args.lowerWidthCm) && args.lowerWidthCm > 0
-      ? Math.round(Number(args.lowerWidthCm))
+      ? Math.round(args.lowerWidthCm)
       : args.widthCm;
   const bottomDoorsCount =
     Number.isFinite(args.lowerDoorsCount) && args.lowerDoorsCount >= 0
-      ? Math.max(0, Math.round(Number(args.lowerDoorsCount)))
+      ? Math.max(0, Math.round(args.lowerDoorsCount))
       : args.doorsCount;
   const bottomTotalW = bottomWidthCm / 100;
 

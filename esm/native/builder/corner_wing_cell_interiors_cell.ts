@@ -1,4 +1,5 @@
 import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { readFiniteNumber } from './corner_geometry_plan.js';
 import type { CornerCell } from './corner_wing_cell_shared.js';
 import type {
   CornerWingInteriorCellRuntime,
@@ -92,8 +93,8 @@ export function createCornerWingInteriorCellRuntime(
   const __braceSet: Record<number, true> = Object.create(null);
   const arr = Array.isArray(cfgCell.braceShelves) ? cfgCell.braceShelves : [];
   for (let i = 0; i < arr.length; i++) {
-    const v = parseInt(String(arr[i]), 10);
-    if (Number.isFinite(v) && v > 0) __braceSet[v] = true;
+    const v = readFiniteNumber(arr[i]);
+    if (v != null && Number.isInteger(v) && v > 0) __braceSet[v] = true;
   }
   const __internalDepth = Math.max(
     CORNER_WING_DIMENSIONS.interior.minCellWidthM,

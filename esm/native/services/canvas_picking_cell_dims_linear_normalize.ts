@@ -10,8 +10,12 @@ import {
   isOverrideActive,
   assignSpecialDimsToConfig,
 } from '../features/special_dims/index.js';
-import { __asNum, __wp_reportPickingIssue } from './canvas_picking_core_helpers.js';
-import { asModuleShape, readSpecialDimsRecord } from './canvas_picking_cell_dims_linear_shared.js';
+import { __wp_reportPickingIssue } from './canvas_picking_core_helpers.js';
+import {
+  asModuleShape,
+  readCanonicalNumber,
+  readSpecialDimsRecord,
+} from './canvas_picking_cell_dims_linear_shared.js';
 
 export type LinearCellDimsUniformAxis = 'height' | 'depth';
 
@@ -39,7 +43,7 @@ export function promoteUniformLinearCellDim(
     for (let i = 0; i < ctx.moduleCount; i++) {
       const m = asModuleShape(nextModsCfg[i]);
       const sd = readSpecialDimsRecord(m);
-      const cm = sd ? __asNum(sd[key], NaN) : NaN;
+      const cm = sd ? (readCanonicalNumber(sd[key]) ?? NaN) : NaN;
       const active = isOverrideActive(sd, key, baseKey);
       eff.push(active ? cm : totalValue);
     }

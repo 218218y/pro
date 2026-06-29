@@ -15,8 +15,7 @@ import {
 } from './corner_state_normalize_layout.js';
 
 function readPositiveThickness(value: unknown, defaultThickness: number): number {
-  const n = Number(value);
-  return Number.isFinite(n) && n > 0 ? n : defaultThickness;
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : defaultThickness;
 }
 
 export function normalizeCornerWingState(args: {

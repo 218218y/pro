@@ -1,7 +1,7 @@
 import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { resolveExternalDrawerFitFromBody } from '../../shared/wardrobe_construction_validation_shared.js';
 import { resolveCornerCellHexGeometry } from './corner_wing_hex_cell_geometry.js';
-import type { CornerCell, CornerCellCfg } from './corner_geometry_plan.js';
+import { readFiniteNumber, type CornerCell, type CornerCellCfg } from './corner_geometry_plan.js';
 import type {
   CornerWingCellCfgResolver,
   CornerWingCellDerivationArgs,
@@ -226,8 +226,8 @@ function readStoredWidthCm(cfgMod: unknown): number | null {
   const mod = isValueRecord(cfgMod) ? cfgMod : null;
   const specialDims = mod && isValueRecord(mod.specialDims) ? mod.specialDims : null;
   const raw = specialDims ? specialDims.widthCm : null;
-  const parsed = raw != null ? parseFloat(String(raw)) : NaN;
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  const parsed = readFiniteNumber(raw);
+  return parsed != null && parsed > 0 ? parsed : null;
 }
 
 function readStoredHeightCm(cfgMod: unknown): { heightCm: number | null; baseHeightCm: number | null } {
@@ -235,11 +235,11 @@ function readStoredHeightCm(cfgMod: unknown): { heightCm: number | null; baseHei
   const specialDims = mod && isValueRecord(mod.specialDims) ? mod.specialDims : null;
   const heightRaw = specialDims ? specialDims.heightCm : null;
   const baseHeightRaw = specialDims ? specialDims.baseHeightCm : null;
-  const height = heightRaw != null ? parseFloat(String(heightRaw)) : NaN;
-  const baseHeight = baseHeightRaw != null ? parseFloat(String(baseHeightRaw)) : NaN;
+  const height = readFiniteNumber(heightRaw);
+  const baseHeight = readFiniteNumber(baseHeightRaw);
   return {
-    heightCm: Number.isFinite(height) && height > 0 ? height : null,
-    baseHeightCm: Number.isFinite(baseHeight) && baseHeight > 0 ? baseHeight : null,
+    heightCm: height != null && height > 0 ? height : null,
+    baseHeightCm: baseHeight != null && baseHeight > 0 ? baseHeight : null,
   };
 }
 
@@ -248,11 +248,11 @@ function readStoredDepthCm(cfgMod: unknown): { depthCm: number | null; baseDepth
   const specialDims = mod && isValueRecord(mod.specialDims) ? mod.specialDims : null;
   const depthRaw = specialDims ? specialDims.depthCm : null;
   const baseDepthRaw = specialDims ? specialDims.baseDepthCm : null;
-  const depth = depthRaw != null ? parseFloat(String(depthRaw)) : NaN;
-  const baseDepth = baseDepthRaw != null ? parseFloat(String(baseDepthRaw)) : NaN;
+  const depth = readFiniteNumber(depthRaw);
+  const baseDepth = readFiniteNumber(baseDepthRaw);
   return {
-    depthCm: Number.isFinite(depth) && depth > 0 ? depth : null,
-    baseDepthCm: Number.isFinite(baseDepth) && baseDepth > 0 ? baseDepth : null,
+    depthCm: depth != null && depth > 0 ? depth : null,
+    baseDepthCm: baseDepth != null && baseDepth > 0 ? baseDepth : null,
   };
 }
 

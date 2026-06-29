@@ -4,12 +4,15 @@ import type { ModulesConfigBucketKey } from '../features/modules_configuration/m
 import { calculateModuleStructure } from '../features/modules_configuration/calc_module_structure.js';
 import { readModulesConfigurationListFromConfigSnapshot } from '../features/modules_configuration/modules_config_api.js';
 
-import { __asInt, __wp_reportPickingIssue } from './canvas_picking_core_helpers.js';
+import { __wp_reportPickingIssue } from './canvas_picking_core_helpers.js';
 import {
   asModuleShape,
   readString,
   readBuildModulesStructure,
   readModulesStructureFromCfg,
+  readCanonicalNumberOr,
+  readCanonicalPositiveNumberOr,
+  readCanonicalIntOr,
 } from './canvas_picking_cell_dims_linear_shared.js';
 
 export interface ResolvedLinearModules {
@@ -21,18 +24,13 @@ export interface ResolvedLinearModules {
   sumDoors: number;
 }
 
-function readPositiveNumber(value: unknown, defaultValue: number): number {
-  const n = Number(value);
-  return Number.isFinite(n) && n > 0 ? n : defaultValue;
-}
-
 function readBottomScalar(
   raw: Record<string, unknown>,
   valueKey: string,
   manualKey: string,
   defaultValue: number
 ): number {
-  return raw[manualKey] ? readPositiveNumber(raw[valueKey], defaultValue) : defaultValue;
+  return raw[manualKey] === true ? readCanonicalPositiveNumberOr(raw[valueKey], defaultValue) : defaultValue;
 }
 
 export function readLinearCellDimsTotals(args: CanvasLinearCellDimsArgs): {
@@ -41,23 +39,25 @@ export function readLinearCellDimsTotals(args: CanvasLinearCellDimsArgs): {
   totalD: number;
 } {
   const raw = (args.raw || {}) as Record<string, unknown>;
-  const totalWTop = Number(args.raw.width) || 0;
-  const totalHTop = Number(args.raw.height) || 0;
-  const totalDTop = Number(args.raw.depth) || 0;
+  const totalWTop = readCanonicalNumberOr(args.raw.width, 0);
+  const totalHTop = readCanonicalNumberOr(args.raw.height, 0);
+  const totalDTop = readCanonicalNumberOr(args.raw.depth, 0);
   if (!args.isBottomStack) return { totalW: totalWTop, totalH: totalHTop, totalD: totalDTop };
 
   return {
     totalW: readBottomScalar(raw, 'stackSplitLowerWidth', 'stackSplitLowerWidthManual', totalWTop),
-    totalH: readPositiveNumber(raw.stackSplitLowerHeight, totalHTop),
+    totalH: readCanonicalPositiveNumberOr(raw.stackSplitLowerHeight, totalHTop),
     totalD: readBottomScalar(raw, 'stackSplitLowerDepth', 'stackSplitLowerDepthManual', totalDTop),
   };
 }
 
 function resolveDoorsCount(args: CanvasLinearCellDimsArgs): number {
   const { ui, raw } = args;
-  const topDoors = __asInt(raw.doors, __asInt(ui.doors, 0));
+  const topDoors = readCanonicalIntOr(raw.doors, readCanonicalIntOr(ui.doors, 0));
   if (!args.isBottomStack) return topDoors;
-  return raw.stackSplitLowerDoorsManual ? __asInt(raw.stackSplitLowerDoors, topDoors) : topDoors;
+  return raw.stackSplitLowerDoorsManual === true
+    ? readCanonicalIntOr(raw.stackSplitLowerDoors, topDoors)
+    : topDoors;
 }
 
 function hasOwn(record: Record<string, unknown>, key: string): boolean {
@@ -83,7 +83,7 @@ function resolveSingleDoorPos(args: CanvasLinearCellDimsArgs): string {
 function resolveStructureSelect(args: CanvasLinearCellDimsArgs, doorsCount: number): unknown {
   const structureSelect = readRawPreferredValue(args.ui, args.raw, 'structureSelect');
   if (!args.isBottomStack) return structureSelect;
-  const topDoors = __asInt(args.raw.doors, __asInt(args.ui.doors, doorsCount));
+  const topDoors = readCanonicalIntOr(args.raw.doors, readCanonicalIntOr(args.ui.doors, doorsCount));
   return doorsCount !== topDoors ? '' : structureSelect;
 }
 
@@ -95,7 +95,7 @@ function readModulesFromConfigBucket(
   if (!Array.isArray(list) || !list.length) return [];
   return list.map((entry, index) => {
     const mod = asModuleShape(entry);
-    return { doors: __asInt(mod.doors, 1), __configIndex: index };
+    return { doors: readCanonicalIntOr(mod.doors, 1), __configIndex: index };
   });
 }
 
@@ -107,7 +107,7 @@ export function syncDoorsPerModule(
   const doorsPerModule: number[] = [];
   for (let i = 0; i < moduleCount; i++) {
     const md = asModuleShape(modules[i]);
-    let d = __asInt(md.doors, 1);
+    let d = readCanonicalIntOr(md.doors, 1);
     if (d < 1) d = 1;
     doorsPerModule.push(d);
     sumDoors += d;

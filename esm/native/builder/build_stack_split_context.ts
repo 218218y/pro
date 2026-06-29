@@ -173,12 +173,29 @@ export function applyStackSplitLowerCornerWingIfNeeded(args: {
     throw new Error('[WardrobePro] Lower build context dims missing for stack-split corner wing build.');
   }
 
+  const totalW =
+    typeof lowerDims.totalW === 'number' && Number.isFinite(lowerDims.totalW) ? lowerDims.totalW : null;
+  const cabinetBodyHeight =
+    typeof lowerDims.cabinetBodyHeight === 'number' && Number.isFinite(lowerDims.cabinetBodyHeight)
+      ? lowerDims.cabinetBodyHeight
+      : null;
+  const depthM = typeof lowerDims.D === 'number' && Number.isFinite(lowerDims.D) ? lowerDims.D : null;
+  const startY =
+    typeof lowerDims.startY === 'number' && Number.isFinite(lowerDims.startY) ? lowerDims.startY : null;
+  if (totalW == null || cabinetBodyHeight == null || depthM == null || startY == null) {
+    throw new Error(
+      '[WardrobePro] Lower build context dims must be finite numbers for stack-split corner wing build.'
+    );
+  }
+  const stackOffsetZ =
+    typeof lowerDims.startZ === 'number' && Number.isFinite(lowerDims.startZ) ? lowerDims.startZ : 0;
+
   buildArgs.buildCornerWing(
-    Number(lowerDims.totalW),
-    Number(lowerDims.cabinetBodyHeight),
-    Number(lowerDims.D),
+    totalW,
+    cabinetBodyHeight,
+    depthM,
     buildArgs.woodThick,
-    Number(lowerDims.startY),
+    startY,
     {
       body: buildArgs.bodyMat,
       front: buildArgs.globalFrontMat,
@@ -199,7 +216,7 @@ export function applyStackSplitLowerCornerWingIfNeeded(args: {
       baseLegWidthCm: buildArgs.baseLegWidthCm,
       stackSplitEnabled: true,
       stackSplitUnifiedFrame: !!buildArgs.stackSplitUnifiedFrame,
-      stackOffsetZ: Number.isFinite(Number(lowerDims.startZ)) ? Number(lowerDims.startZ) : 0,
+      stackOffsetZ,
       shelfThick: buildArgs.shelfThick,
       snapshot: {
         ui: lowerCtx.ui || {},

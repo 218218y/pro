@@ -8,7 +8,9 @@ const SRC = path.resolve(process.cwd(), 'esm/native/builder/corner_wing_extensio
 test('[corner-ext-drawers-config] corner cell normalization preserves ext drawers count from the stored corner cell config', () => {
   const src = fs.readFileSync(SRC, 'utf8');
 
+  assert.match(src, /function readFiniteInt\(value: unknown\): number \| null \{/);
   assert.match(src, /const extRaw = cfgBase\.extDrawersCount \?\? cfgBase\.extDrawers;/);
-  assert.match(src, /const ext = parseInt\(String\(extRaw \?\? ''\), 10\);/);
-  assert.match(src, /cfg\.extDrawersCount = Number\.isFinite\(ext\) \? ext : 0;/);
+  assert.match(src, /const ext = readFiniteInt\(extRaw\);/);
+  assert.match(src, /cfg\.extDrawersCount = ext != null \? ext : 0;/);
+  assert.doesNotMatch(src, /parseInt\(String\(extRaw/);
 });

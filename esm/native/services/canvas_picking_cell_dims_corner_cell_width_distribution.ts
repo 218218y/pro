@@ -1,6 +1,5 @@
 import type { UnknownRecord } from '../../../types';
 
-import { __asInt } from './canvas_picking_core_helpers.js';
 import type { CornerCellDimsContext } from './canvas_picking_cell_dims_corner_shared.js';
 import {
   readCornerModules,
@@ -8,11 +7,12 @@ import {
   reportCornerDimsIssue,
 } from './canvas_picking_cell_dims_corner_shared.js';
 import { createCornerCellConfigReader } from './canvas_picking_cell_dims_corner_cell_shared.js';
+import { readCanonicalIntOr } from './canvas_picking_cell_dims_numbers.js';
 import type { CornerCellWidthDistribution } from './canvas_picking_cell_dims_corner_cell_width_contracts.js';
 
 export function createCornerCellWidthDistribution(ctx: CornerCellDimsContext): CornerCellWidthDistribution {
   const { App, nextCornerCfg, curWingW } = ctx;
-  const doors = __asInt(ctx.ui.cornerDoors, __asInt(ctx.raw.cornerDoors, 3));
+  const doors = readCanonicalIntOr(ctx.ui.cornerDoors, readCanonicalIntOr(ctx.raw.cornerDoors, 3));
   const doorCount = Number.isFinite(doors) ? Math.max(1, doors) : 1;
   const cellCount = Math.max(1, Math.ceil(doorCount / 2));
 

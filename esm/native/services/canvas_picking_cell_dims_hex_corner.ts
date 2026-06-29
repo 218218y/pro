@@ -31,7 +31,8 @@ import {
 } from './canvas_picking_cell_dims_corner_shared.js';
 import { createCornerCellConfigReader } from './canvas_picking_cell_dims_corner_cell_shared.js';
 import { createCornerCellWidthDistribution } from './canvas_picking_cell_dims_corner_cell_width_distribution.js';
-import { __asNum, __wp_toast } from './canvas_picking_core_helpers.js';
+import { __wp_toast } from './canvas_picking_core_helpers.js';
+import { readCanonicalPositiveNumberOr } from './canvas_picking_cell_dims_numbers.js';
 
 const EPS_CM = 1e-6;
 
@@ -88,7 +89,7 @@ function shouldRemoveCornerHexCell(args: {
 }
 
 function readPositiveBase(sd: UnknownRecord, key: string, defaultValue: number): number {
-  const value = __asNum(sd[key], NaN);
+  const value = readCanonicalPositiveNumberOr(sd[key], NaN);
   return Number.isFinite(value) && value > 0 ? value : defaultValue;
 }
 
@@ -265,7 +266,8 @@ export function handleCanvasCornerHexCellClick(args: CanvasCornerCellDimsArgs): 
       const prevCell = getCellCfg(cellIdx);
       const nextCell = cloneRecord(prevCell);
       const sd = cloneSpecialDims(readCornerSpecialDims(nextCell));
-      const moduleWidthCm = distribution.widthsCurr[cellIdx] || __asNum(sd.widthCm, NaN) || ctx.curWingW;
+      const moduleWidthCm =
+        distribution.widthsCurr[cellIdx] || readCanonicalPositiveNumberOr(sd.widthCm, NaN) || ctx.curWingW;
 
       assignHeightDepthOverrides({
         cell: nextCell,

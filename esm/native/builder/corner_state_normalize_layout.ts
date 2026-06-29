@@ -67,9 +67,12 @@ function readCornerDoorsCount(uiAny: CornerBuildUI): number {
   const rec = isRecord(uiAny) ? uiAny : {};
   const raw = readUiRawRecord(uiAny);
   const rawDoors = raw ? raw.cornerDoors : undefined;
-  const parsed = Math.round(
-    Number(rec.cornerDoors ?? rec.cornerDoorCount ?? rec.cornerDoorsCount ?? rawDoors)
-  );
+  const parsedRaw =
+    readFiniteNumber(rec.cornerDoors) ??
+    readFiniteNumber(rec.cornerDoorCount) ??
+    readFiniteNumber(rec.cornerDoorsCount) ??
+    readFiniteNumber(rawDoors);
+  const parsed = parsedRaw != null ? Math.round(parsedRaw) : NaN;
   return Number.isFinite(parsed) && parsed > 0 ? parsed : WARDROBE_DEFAULTS.corner.doorsCount;
 }
 
@@ -185,7 +188,7 @@ export function resolveCornerWingStackMeta(
     __stackSplitUnifiedFrame: !!(metaRec && metaRec.stackSplitUnifiedFrame),
     __stackOffsetZ:
       metaRec && typeof metaRec.stackOffsetZ === 'number' && Number.isFinite(metaRec.stackOffsetZ)
-        ? Number(metaRec.stackOffsetZ)
+        ? metaRec.stackOffsetZ
         : 0,
     __baseTypeOverride: metaRec ? metaRec.baseType : undefined,
     __baseLegStyleOverride: metaRec ? metaRec.baseLegStyle : undefined,
@@ -437,9 +440,8 @@ export function resolveCornerWingPlacement(args: {
 
   const rawWallLen =
     uiAny.cornerCabinetWallLenCm ?? uiAny.cornerCabinetWallLen ?? uiAny.cornerConnectorWallLenCm;
-  let cornerWallL = Number.isFinite(readFiniteNumber(rawWallLen) ?? NaN)
-    ? Number(rawWallLen) / 100
-    : CORNER_CONNECTOR.defaultWallLengthM;
+  const wallLenCm = readFiniteNumber(rawWallLen);
+  let cornerWallL = wallLenCm != null ? wallLenCm / 100 : CORNER_CONNECTOR.defaultWallLengthM;
   if (!Number.isFinite(cornerWallL) || cornerWallL <= CORNER_CONNECTOR.minWallLengthM) {
     cornerWallL = CORNER_CONNECTOR.defaultWallLengthM;
   }
@@ -452,9 +454,11 @@ export function resolveCornerWingPlacement(args: {
 
   const rawOX = uiAny.cornerCabinetOffsetXcm;
   const rawOZ = uiAny.cornerCabinetOffsetZcm;
-  let cornerOX = Number.isFinite(readFiniteNumber(rawOX) ?? NaN) ? Number(rawOX) / 100 : 0;
+  const offsetXCm = readFiniteNumber(rawOX);
+  let cornerOX = offsetXCm != null ? offsetXCm / 100 : 0;
   if (cornerSide === 'left') cornerOX = -cornerOX;
-  const cornerOZ = Number.isFinite(readFiniteNumber(rawOZ) ?? NaN) ? Number(rawOZ) / 100 : 0;
+  const offsetZCm = readFiniteNumber(rawOZ);
+  const cornerOZ = offsetZCm != null ? offsetZCm / 100 : 0;
 
   const roomCornerX = (cornerSide === 'left' ? -mainW / 2 - cornerWallL : mainW / 2 + cornerWallL) + cornerOX;
   const roomCornerZ = -(mainD / 2) + cornerOZ;

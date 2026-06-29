@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { createFakeThreeRuntime } from './_fake_three_runtime.ts';
 
 import { applyCornerWingCornice } from '../esm/native/builder/corner_wing_cornice_emit.ts';
+import { positiveCorniceTopPlatformHeight } from '../esm/native/builder/corner_wing_cornice_contracts.ts';
+import { shouldBuildSegmentedCornerWingCornice } from '../esm/native/builder/corner_wing_cornice_path.ts';
 import {
   CARCASS_BASE_DIMENSIONS,
   CARCASS_CORNICE_DIMENSIONS,
@@ -155,6 +157,18 @@ test('corner wing cornice sits above the upper leg stage like the regular wardro
       )
     );
   }
+});
+
+test('corner wing cornice rejects string-encoded platform and cell metrics', () => {
+  assert.equal(positiveCorniceTopPlatformHeight({ baseLegTopPlatformHeightM: '0.12' }), 0);
+
+  const { params } = makeCorniceParams('classic');
+  const cell = makeCornerCell({ idx: 0, startX: 0, width: 1.2, depth: 0.6 });
+  (cell as any).depth = '0.45';
+  (cell as any).bodyHeight = '1.6';
+  params.locals.cornerCells = [cell];
+
+  assert.equal(shouldBuildSegmentedCornerWingCornice(params.ctx as any, params.locals as any), false);
 });
 
 test('corner wing classic cornice follows per-cell depth changes instead of one straight front', () => {

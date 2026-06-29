@@ -11,8 +11,7 @@ import type { CornerConnectorInteriorFlowParams } from './corner_connector_inter
 import type { CornerConnectorSpecialMetrics } from './corner_connector_interior_special_types.js';
 
 function readCentimetersAsMeters(raw: unknown, defaultMeters: number): number {
-  const parsed = parseFloat(String(raw));
-  return Number.isFinite(parsed) ? parsed / CM_PER_METER : defaultMeters;
+  return typeof raw === 'number' && Number.isFinite(raw) ? raw / CM_PER_METER : defaultMeters;
 }
 
 export function resolveCornerConnectorSpecialMetrics(args: {

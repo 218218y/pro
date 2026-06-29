@@ -406,6 +406,34 @@ test('corner lower-stack builder metrics link default width to the corner wing a
   assert.equal(top.wingD, 0.65);
 });
 
+test('corner lower-stack runtime metrics reject string-encoded dimensions', () => {
+  const metrics = resolveCornerWingMetrics({
+    uiAny: {
+      cornerWidth: '180',
+      cornerDepth: '65',
+      raw: {
+        stackSplitLowerDepth: '45',
+      },
+    },
+    config: {
+      specialDims: {
+        widthCm: '100',
+        depthCm: '45',
+      },
+    },
+    rootConfig: {},
+    mainH: 0.8,
+    mainD: 0.55,
+    woodThick: 0.018,
+    startY: 0,
+    __stackKey: 'bottom',
+    __stackSplitEnabled: true,
+  } as any);
+
+  assert.equal(metrics.wingW, 1.2);
+  assert.equal(metrics.wingD, 0.55);
+});
+
 test('corner lower-stack builder renders a 20cm stored special cell width', () => {
   const derived = deriveCornerWingCells({
     App: {},
@@ -432,4 +460,34 @@ test('corner lower-stack builder renders a 20cm stored special cell width', () =
   assert.equal(derived.cornerCells.length, 2);
   assert.equal(Math.round(derived.cornerCells[0].width * 100), 80);
   assert.equal(Math.round(derived.cornerCells[1].width * 100), 20);
+});
+
+test('corner wing cell derivation ignores string cell width overrides from runtime config', () => {
+  const derived = deriveCornerWingCells({
+    App: {},
+    activeWidth: 1,
+    blindWidth: 0,
+    cabinetBodyHeight: 1.8,
+    config: {
+      modulesConfiguration: [
+        { specialDims: { baseWidthCm: 40, widthCm: '20' } },
+        { specialDims: { widthCm: '30' } },
+      ],
+    },
+    startY: 0,
+    uiAny: { cornerDoors: 3 },
+    wingD: 0.55,
+    wingH: 1.8,
+    woodThick: 0.018,
+    __cfg: {},
+    __mirrorX: 1,
+    __stackKey: 'top',
+    __stackSplitEnabled: false,
+  } as any);
+
+  assert.equal(derived.doorCount, 3);
+  assert.deepEqual(
+    derived.cornerCells.map(cell => Math.round(cell.width * 100)),
+    [67, 33]
+  );
 });

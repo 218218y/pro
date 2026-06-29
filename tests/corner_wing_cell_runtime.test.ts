@@ -198,3 +198,52 @@ test('corner wing extension-cell config runtime: bottom stack defaults stay shel
   assert.deepEqual(second.customData?.shelves, [false, true, false, true, false, false]);
   assert.deepEqual(second.customData?.rods, []);
 });
+
+test('corner wing extension-cell config ignores string numeric runtime values', () => {
+  const resolver = createCornerWingCellCfgResolver(
+    {
+      App: {},
+      config: {
+        modulesConfiguration: [
+          {
+            layout: 'shelves',
+            extDrawersCount: '2',
+            gridDivisions: '8',
+            isCustom: true,
+            customData: {},
+          },
+        ],
+      },
+      __stackSplitEnabled: false,
+      __stackKey: 'top',
+      __mirrorX: 1,
+    } as any,
+    1
+  );
+
+  const cfg = resolver(0);
+
+  assert.equal(cfg.extDrawersCount, 0);
+  assert.equal(cfg.gridDivisions, CORNER_WING_DIMENSIONS.cells.defaultGridDivisions);
+});
+
+test('corner wing brace shelves ignore string-encoded shelf indexes', () => {
+  const cell = createCornerCell(0, 0, 0.6, {
+    cfg: {
+      braceShelves: ['2', 3],
+    },
+  });
+  const runtime: any = {
+    cornerCells: [cell],
+    woodThick: 0.018,
+    blindWidth: 0,
+    wingW: 0.6,
+    wingD: 0.55,
+    startY: 0,
+  };
+
+  const cellRuntime = createCornerWingInteriorCellRuntime(runtime, cell) as any;
+
+  assert.equal(cellRuntime.__braceSet[2], undefined);
+  assert.equal(cellRuntime.__braceSet[3], true);
+});

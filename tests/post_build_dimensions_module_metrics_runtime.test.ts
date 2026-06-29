@@ -9,8 +9,8 @@ test('post-build corner dimensions use only the captured UI snapshot with canoni
   const dimensions = readPostBuildCornerDimensions({
     uiSnapshot: {
       cornerSide: 'left',
-      cornerDoors: '3',
-      cornerWidth: '150',
+      cornerDoors: 3,
+      cornerWidth: 150,
       cornerHeight: 240,
       cornerDepth: 70,
       cornerCabinetWallLenCm: 125,
@@ -34,6 +34,36 @@ test('post-build corner dimensions use only the captured UI snapshot with canoni
   assert.equal(dimensions.cornerWallLenM, 1.25);
   assert.equal(dimensions.cornerOffsetXM, -0.08);
   assert.equal(dimensions.cornerOffsetZM, -0.04);
+});
+
+test('post-build corner dimensions reject string-encoded UI snapshot dimensions', () => {
+  const dimensions = readPostBuildCornerDimensions({
+    uiSnapshot: {
+      cornerSide: 'right',
+      cornerDoors: '7',
+      cornerWidth: '150',
+      cornerHeight: '240',
+      cornerDepth: '70',
+      cornerCabinetWallLenCm: '125',
+      cornerCabinetOffsetXcm: '8',
+      cornerCabinetOffsetZcm: '-4',
+      raw: {
+        cornerConnectorEnabled: false,
+      },
+    },
+    dimH: 2.1,
+    dimD: 0.6,
+  });
+
+  assert.equal(dimensions.cornerSide, 'right');
+  assert.equal(dimensions.cornerDoorCount, 3);
+  assert.equal(dimensions.cornerConnectorEnabled, false);
+  assert.equal(dimensions.cornerWingLenM, 1.2);
+  assert.equal(dimensions.cornerWingHeightM, 2.1);
+  assert.equal(dimensions.cornerWingDepthM, 0.6);
+  assert.equal(dimensions.cornerWallLenM, 1.03);
+  assert.equal(dimensions.cornerOffsetXM, 0);
+  assert.equal(dimensions.cornerOffsetZM, 0);
 });
 
 test('post-build dimension metrics preserve fixed width overrides and add stack-split depth helper coverage', () => {

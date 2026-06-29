@@ -571,8 +571,7 @@ export function resolveCornerProfileSideEndZ(args: {
 }
 
 function finiteNumberOr(value: unknown, defaultValue: number): number {
-  const n = typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : NaN;
-  return Number.isFinite(n) ? n : defaultValue;
+  return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
 }
 
 function positiveNumberOr(value: unknown, defaultValue: number): number {

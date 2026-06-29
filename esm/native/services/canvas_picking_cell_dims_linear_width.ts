@@ -10,7 +10,11 @@ import {
   cloneSpecialDims,
   stripWidthOverridesFromConfig,
 } from '../features/special_dims/index.js';
-import { readSpecialDimsRecord, readBool } from './canvas_picking_cell_dims_linear_shared.js';
+import {
+  readSpecialDimsRecord,
+  readBool,
+  readCanonicalNumber,
+} from './canvas_picking_cell_dims_linear_shared.js';
 
 export interface LinearCellDimsWidthResult {
   setManualWidth: boolean;
@@ -111,9 +115,9 @@ export function applyLinearCellDimsWidthPolicy(
         looksAuto = false;
         break;
       }
-      const wcm = Number(prevSD.widthCm);
-      const bwcm = Number(prevSD.baseWidthCm);
-      if (!Number.isFinite(wcm) || !Number.isFinite(bwcm)) {
+      const wcm = readCanonicalNumber(prevSD.widthCm);
+      const bwcm = readCanonicalNumber(prevSD.baseWidthCm);
+      if (wcm == null || bwcm == null) {
         looksAuto = false;
         break;
       }

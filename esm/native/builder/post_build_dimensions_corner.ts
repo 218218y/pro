@@ -5,7 +5,11 @@ import {
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 import type { CornerDimensionsState } from './post_build_dimensions_shared.js';
-import { asRecord, parseNum, readKey, type ValueRecord } from './post_build_extras_shared.js';
+import { asRecord, readKey, type ValueRecord } from './post_build_extras_shared.js';
+
+function readSnapshotNumber(value: unknown): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : NaN;
+}
 
 export function readPostBuildCornerDimensions(args: {
   uiSnapshot: unknown;
@@ -55,28 +59,28 @@ export function readPostBuildCornerDimensions(args: {
   if (typeof connectorEnabledRaw !== 'undefined') cornerConnectorEnabled = !!connectorEnabledRaw;
 
   const cornerDoorsRaw = pick('ui', 'cornerDoors', ['cornerDoorCount', 'cornerDoorsCount']);
-  const cornerDoorsNum = parseNum(cornerDoorsRaw);
+  const cornerDoorsNum = readSnapshotNumber(cornerDoorsRaw);
   if (Number.isFinite(cornerDoorsNum)) cornerDoorCount = Math.max(0, Math.round(cornerDoorsNum));
 
   const wingLenRaw = pick('ui', 'cornerWidth');
-  let wingLenCm = parseNum(wingLenRaw);
+  let wingLenCm = readSnapshotNumber(wingLenRaw);
   if (!Number.isFinite(wingLenCm)) wingLenCm = CORNER_WING_DIMENSIONS.wing.defaultWidthCm;
   if (wingLenCm < 0) wingLenCm = 0;
   cornerWingLenM = wingLenCm / CM_PER_METER;
 
   const wingHeightRaw = pick('ui', 'cornerHeight', ['cornerHeightCm']);
-  const wingHeightCm = parseNum(wingHeightRaw);
+  const wingHeightCm = readSnapshotNumber(wingHeightRaw);
   if (Number.isFinite(wingHeightCm) && wingHeightCm > 0) cornerWingHeightM = wingHeightCm / CM_PER_METER;
 
   const wingDepthRaw = pick('ui', 'cornerDepth', ['cornerDepthCm']);
-  const wingDepthCm = parseNum(wingDepthRaw);
+  const wingDepthCm = readSnapshotNumber(wingDepthRaw);
   if (Number.isFinite(wingDepthCm) && wingDepthCm > 0) cornerWingDepthM = wingDepthCm / CM_PER_METER;
 
   const wallLenRaw = pick('ui', 'cornerCabinetWallLenCm', [
     'cornerCabinetWallLen',
     'cornerConnectorWallLenCm',
   ]);
-  const wallLenCm = parseNum(wallLenRaw);
+  const wallLenCm = readSnapshotNumber(wallLenRaw);
   if (
     Number.isFinite(wallLenCm) &&
     wallLenCm > CORNER_WING_DIMENSIONS.connector.minWallLengthM * CM_PER_METER
@@ -84,11 +88,11 @@ export function readPostBuildCornerDimensions(args: {
     cornerWallLenM = wallLenCm / CM_PER_METER;
 
   const offsetXRaw = pick('ui', 'cornerCabinetOffsetXcm', ['cornerCabinetOffsetX']);
-  const offsetXCm = parseNum(offsetXRaw);
+  const offsetXCm = readSnapshotNumber(offsetXRaw);
   if (Number.isFinite(offsetXCm)) cornerOffsetXM = offsetXCm / CM_PER_METER;
 
   const offsetZRaw = pick('ui', 'cornerCabinetOffsetZcm', ['cornerCabinetOffsetZ']);
-  const offsetZCm = parseNum(offsetZRaw);
+  const offsetZCm = readSnapshotNumber(offsetZRaw);
   if (Number.isFinite(offsetZCm)) cornerOffsetZM = offsetZCm / CM_PER_METER;
 
   if (cornerSide === 'left') cornerOffsetXM = -cornerOffsetXM;

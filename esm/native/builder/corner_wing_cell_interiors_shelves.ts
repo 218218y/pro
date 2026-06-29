@@ -188,7 +188,11 @@ function resolveCornerShelfContentsMaxHeight(
   let topLimitY = cellRuntime.effectiveTopY;
   const customData = runtime.isRecord(cfgCell.customData) ? cfgCell.customData : null;
   const shelves = Array.isArray(customData?.shelves) ? customData.shelves : [];
-  const maxGrid = Math.max(0, Math.floor(Number(cellRuntime.gridDivisions) || 0));
+  const gridDivisions =
+    typeof cellRuntime.gridDivisions === 'number' && Number.isFinite(cellRuntime.gridDivisions)
+      ? cellRuntime.gridDivisions
+      : 0;
+  const maxGrid = Math.max(0, Math.floor(gridDivisions));
 
   for (let nextIndex = gridIndex + 1; nextIndex < maxGrid; nextIndex += 1) {
     if (shelves[nextIndex - 1]) {

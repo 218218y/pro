@@ -185,3 +185,33 @@ test('stack-split lower corner build forwards the lower UI with the shared confi
   assert.equal(receivedMeta.stackSplitUnifiedFrame, true);
   assert.equal(receivedMeta.stackOffsetZ, 0.12);
 });
+
+test('stack-split lower corner build rejects string-encoded build-context dimensions', () => {
+  let called = false;
+
+  assert.throws(
+    () =>
+      applyStackSplitLowerCornerWingIfNeeded({
+        buildArgs: {
+          App: {},
+          isCornerMode: true,
+          buildCornerWing() {
+            called = true;
+          },
+        } as any,
+        lowerCtx: {
+          ui: {},
+          state: { mode: { primary: 'none' } },
+          dims: {
+            totalW: '1.4',
+            cabinetBodyHeight: 0.9,
+            D: 0.55,
+            startY: 0,
+          },
+        } as any,
+      }),
+    /finite numbers/
+  );
+
+  assert.equal(called, false);
+});

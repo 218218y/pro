@@ -14,8 +14,7 @@ const PLINTH_DIMENSIONS = CARCASS_BASE_DIMENSIONS.plinth;
 const LEG_PLATFORM_DIMENSIONS = CARCASS_BASE_DIMENSIONS.legs.platform;
 
 function asFinitePositive(value: unknown, defaultValue = 0): number {
-  const n = Number(value);
-  return Number.isFinite(n) && n > 0 ? n : defaultValue;
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : defaultValue;
 }
 
 function resolvePlatformSideOverhang(

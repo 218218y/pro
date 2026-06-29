@@ -46,8 +46,7 @@ function resolveSeparatorMaterial(args: BuildStackSplitLowerUnitArgs): unknown {
 }
 
 function readPositive(value: unknown, defaultValue: number): number {
-  const n = Number(value);
-  return Number.isFinite(n) && n > 0 ? n : defaultValue;
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : defaultValue;
 }
 
 type AddChildObject = UnknownRecord & { add?: (child: unknown) => unknown };
@@ -154,7 +153,9 @@ export function addStackSplitDecorativeSeparatorIfNeeded(args: {
 
   const width = Math.max(dims.minWidthM, totalW + sideOverhang * 2);
   const depth = Math.max(dims.minDepthM, totalD + frontOverhang);
-  const seamY = prepared.bottomH + Math.max(0, Number(buildArgs.splitSeamGapM) || 0) / 2;
+  const splitSeamGapM =
+    Number.isFinite(buildArgs.splitSeamGapM) && buildArgs.splitSeamGapM > 0 ? buildArgs.splitSeamGapM : 0;
+  const seamY = prepared.bottomH + splitSeamGapM / 2;
   const slabY = seamY + slabHeight / 2 - Math.max(0, dims.seamCoverDropM);
   const slabZ = -totalD / 2 + depth / 2;
 

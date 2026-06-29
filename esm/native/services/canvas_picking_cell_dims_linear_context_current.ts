@@ -1,7 +1,10 @@
 import { getActiveOverrideCm } from '../features/special_dims/index.js';
 
-import { __asInt, __asNum } from './canvas_picking_core_helpers.js';
-import { asModuleShape, readSpecialDimsRecord } from './canvas_picking_cell_dims_linear_shared.js';
+import {
+  asModuleShape,
+  readCanonicalNumber,
+  readSpecialDimsRecord,
+} from './canvas_picking_cell_dims_linear_shared.js';
 
 export interface LinearCurrentDimsState {
   defaultWidths: number[];
@@ -64,20 +67,20 @@ export function computeCurrentLinearDims(
       wcm = seg;
     }
 
-    let hcm = __asNum(prevSD.heightCm, NaN);
-    let dcm = __asNum(prevSD.depthCm, NaN);
+    let hcm = readCanonicalNumber(prevSD.heightCm) ?? NaN;
+    let dcm = readCanonicalNumber(prevSD.depthCm) ?? NaN;
     if (!Number.isFinite(hcm) || hcm <= 0) hcm = totalH;
     if (!Number.isFinite(dcm) || dcm <= 0) dcm = totalD;
 
-    let bwcm = __asNum(prevSD.baseWidthCm, NaN);
-    let bhcm = __asNum(prevSD.baseHeightCm, NaN);
-    let bdcm = __asNum(prevSD.baseDepthCm, NaN);
+    let bwcm = readCanonicalNumber(prevSD.baseWidthCm) ?? NaN;
+    let bhcm = readCanonicalNumber(prevSD.baseHeightCm) ?? NaN;
+    let bdcm = readCanonicalNumber(prevSD.baseDepthCm) ?? NaN;
 
-    if (!Number.isFinite(bwcm) || bwcm <= 0) bwcm = Number(wcm) || defaultWidths[i];
+    if (!Number.isFinite(bwcm) || bwcm <= 0) bwcm = wcm || defaultWidths[i];
     if (!Number.isFinite(bhcm) || bhcm <= 0) bhcm = totalH;
     if (!Number.isFinite(bdcm) || bdcm <= 0) bdcm = totalD;
 
-    widthsCurr.push(Number(wcm) || 0);
+    widthsCurr.push(wcm || 0);
     heightsCurr.push(hcm);
     depthsCurr.push(dcm);
     baseW.push(bwcm);

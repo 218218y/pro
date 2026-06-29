@@ -4,6 +4,10 @@ import { createFakeThreeRuntime } from './_fake_three_runtime.ts';
 
 import { applyCornerConnectorCornice } from '../esm/native/builder/corner_connector_cornice_emit.ts';
 import {
+  positiveConnectorTopPlatformHeight,
+  resolveCornerConnectorCorniceSideReturns,
+} from '../esm/native/builder/corner_connector_cornice_shared.ts';
+import {
   CARCASS_BASE_DIMENSIONS,
   CARCASS_CORNICE_DIMENSIONS,
 } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
@@ -116,6 +120,21 @@ test('pentagon cornice sits above the upper leg stage like the regular wardrobe'
       Number((ctx.startY + ctx.wingH + platformH + CARCASS_CORNICE_DIMENSIONS.common.yLiftM).toFixed(6))
     );
   }
+});
+
+test('pentagon cornice rejects string-encoded platform and neighbor metrics', () => {
+  assert.equal(positiveConnectorTopPlatformHeight({ baseLegTopPlatformHeightM: '0.12' }), 0);
+
+  const { ctx, locals } = makeConnectorParams({
+    type: 'classic',
+    connectorBodyHeight: 2.4,
+    mainBodyHeight: 2.4,
+  });
+  (ctx as any).mainH = '2.1';
+  (locals as any).adjacentMainBodyHeight = '2.1';
+  (locals as any).adjacentWingBodyHeight = '2.1';
+
+  assert.deepEqual(resolveCornerConnectorCorniceSideReturns({ ctx, locals } as any), []);
 });
 
 test('pentagon side-return resolver uses the adjacent main cell height, not only the global main height', () => {

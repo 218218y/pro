@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { handleCanvasCellDimsClick } from '../esm/native/services/canvas_picking_cell_dims_flow.ts';
 import { handleCanvasLinearCellDimsClick } from '../esm/native/services/canvas_picking_cell_dims_linear.ts';
+import { readLinearCellDimsTotals } from '../esm/native/services/canvas_picking_cell_dims_linear_context_modules.ts';
 
 function cloneJson<T>(value: T): T {
   return JSON.parse(JSON.stringify(value));
@@ -10,6 +12,10 @@ function cloneJson<T>(value: T): T {
 function createStore(state: Record<string, unknown>) {
   return {
     getState() {
+      return state;
+    },
+    patch(patch: Record<string, unknown>) {
+      Object.assign(state, patch);
       return state;
     },
   };
@@ -140,6 +146,43 @@ test('linear cell-dims seam applies manual width through the canonical snapshot/
     meta: { source: 'cellDims.apply', immediate: true, force: true, reason: 'cellDims.apply' },
   });
   assert.match(calls.toasts[0]?.message || '', /הוחל על תא 2/);
+});
+
+test('linear cell-dims parses UI draft strings only at click ingress and rejects string runtime totals', () => {
+  const totals = readLinearCellDimsTotals({
+    isBottomStack: true,
+    raw: {
+      width: 160,
+      height: 220,
+      depth: 55,
+      stackSplitLowerWidthManual: 'true',
+      stackSplitLowerWidth: '120',
+      stackSplitLowerHeight: '80',
+      stackSplitLowerDepthManual: 'true',
+      stackSplitLowerDepth: '45',
+    },
+  } as any);
+
+  assert.deepEqual(totals, { totalW: 160, totalH: 220, totalD: 55 });
+
+  const { App, state, calls } = createAppHarness();
+  state.ui.raw.cellDimsWidth = '90';
+  state.ui.raw.cellDimsHeight = '';
+  state.ui.raw.cellDimsDepth = '';
+
+  handleCanvasCellDimsClick({
+    App,
+    foundModuleIndex: 1,
+    foundPartId: null,
+    isBottomStack: false,
+    ensureCornerCellConfigRef: () => null,
+  });
+
+  assert.equal(calls.snapshots.length, 1);
+  assert.deepEqual(calls.snapshots[0].snapshot.modulesConfiguration[1].specialDims, {
+    baseWidthCm: 80,
+    widthCm: 90,
+  });
 });
 
 test('linear cell-dims seam promotes uniform height through the canonical snapshot and raw-ui patch path', () => {

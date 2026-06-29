@@ -26,8 +26,7 @@ export function isRemovedDoorToggleValue(value: unknown): value is RemovedDoorsM
 }
 
 export function readFiniteNumber(v: unknown): number | null {
-  const n = typeof v === 'number' ? v : typeof v === 'string' ? Number(v) : NaN;
-  return Number.isFinite(n) ? n : null;
+  return typeof v === 'number' && Number.isFinite(v) ? v : null;
 }
 
 export function readPositiveCm(v: unknown): number {

@@ -70,9 +70,9 @@ function createApp(args: {
 test('normalizeCornerWingState seeds lower split config and scopes bottom removal without leaking upper removals', () => {
   const App = createApp({
     buildUi: {
-      cornerWidth: '140',
-      cornerHeight: '230',
-      cornerDepth: '65',
+      cornerWidth: 140,
+      cornerHeight: 230,
+      cornerDepth: 65,
       cornerSide: 'right',
       baseType: 'legs',
       cornerCabinetWallLenCm: 120,
@@ -101,9 +101,9 @@ test('normalizeCornerWingState seeds lower split config and scopes bottom remova
       stackOffsetZ: 0.11,
       snapshot: {
         ui: {
-          cornerWidth: '140',
-          cornerHeight: '230',
-          cornerDepth: '65',
+          cornerWidth: 140,
+          cornerHeight: 230,
+          cornerDepth: 65,
           cornerSide: 'right',
           baseType: 'legs',
           cornerCabinetWallLenCm: 120,
@@ -195,6 +195,43 @@ test('normalizeCornerWingState does not let top corner special width seed a miss
   assert.equal(state.wingD, 0.55);
   assert.equal((state.config as Record<string, unknown>).specialDims, undefined);
   assert.equal((state.config as Record<string, unknown>).connectorSpecialDims, undefined);
+});
+
+test('normalizeCornerWingState rejects string-encoded corner snapshot dimensions', () => {
+  const state = normalizeCornerWingState({
+    mainW: 1.6,
+    mainH: 0.8,
+    mainD: 0.55,
+    woodThick: 0.017,
+    startY: 0,
+    meta: {
+      stackKey: 'bottom',
+      stackSplitEnabled: true,
+      snapshot: {
+        ui: {
+          cornerWidth: '180',
+          cornerHeight: '230',
+          cornerDepth: '70',
+          cornerDoors: '4',
+          raw: { stackSplitLowerDepth: '45' },
+        },
+        cfg: {
+          cornerConfiguration: {
+            stackSplitLower: {
+              layout: 'shelves',
+              specialDims: { widthCm: '100', depthCm: '45' },
+            },
+          },
+        },
+        primaryMode: 'none',
+        renderPolicy: normalRenderPolicy,
+      },
+    },
+  });
+
+  assert.equal(state.wingLengthCM, 120);
+  assert.equal(state.wingW, 1.2);
+  assert.equal(state.wingD, 0.55);
 });
 
 test('normalizeCornerWingState reads corner config and removed doors from meta snapshot, not stale App maps', () => {

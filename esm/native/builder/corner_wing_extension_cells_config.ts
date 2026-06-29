@@ -1,7 +1,7 @@
 import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { getModulesActions } from '../runtime/actions_access_domains.js';
 import { readModulesConfigurationListFromConfigSnapshot } from '../features/modules_configuration/modules_config_api.js';
-import { cloneMaybe, isRecord } from './corner_geometry_plan.js';
+import { cloneMaybe, isRecord, readFiniteNumber } from './corner_geometry_plan.js';
 
 import type { CornerCellCfg, CornerCellCustomData } from './corner_geometry_plan.js';
 import type {
@@ -10,6 +10,13 @@ import type {
 } from './corner_wing_extension_cells_contracts.js';
 
 type RecordBag = Record<string, unknown>;
+
+function readFiniteInt(value: unknown): number | null {
+  const n = readFiniteNumber(value);
+  if (n == null) return null;
+  const rounded = Math.trunc(n);
+  return Number.isFinite(rounded) ? rounded : null;
+}
 
 export function createCornerWingCellCfgResolver(
   args: CornerWingCellDerivationArgs,
@@ -56,8 +63,7 @@ function createCornerWingModuleCfgNormalizer(args: CornerWingCellDerivationArgs,
     const isBottomStack = args.__stackSplitEnabled && args.__stackKey === 'bottom';
     const rawRec = isValueRecord(raw) ? raw : null;
     const rawLayout = rawRec && typeof rawRec.layout === 'string' ? String(rawRec.layout).trim() : '';
-    const rawGridDiv =
-      rawRec && rawRec.gridDivisions != null ? parseInt(String(rawRec.gridDivisions), 10) : NaN;
+    const rawGridDiv = rawRec ? readFiniteInt(rawRec.gridDivisions) : null;
 
     if (!rawLayout) {
       if (isBottomStack) cfg.layout = 'shelves';
@@ -69,13 +75,13 @@ function createCornerWingModuleCfgNormalizer(args: CornerWingCellDerivationArgs,
     }
 
     const extRaw = cfgBase.extDrawersCount ?? cfgBase.extDrawers;
-    const ext = parseInt(String(extRaw ?? ''), 10);
-    cfg.extDrawersCount = Number.isFinite(ext) ? ext : 0;
+    const ext = readFiniteInt(extRaw);
+    cfg.extDrawersCount = ext != null ? ext : 0;
     cfg.hasShoeDrawer = !!cfgBase.hasShoeDrawer;
     cfg.isCustom = !!cfgBase.isCustom;
     cfg.gridDivisions = (() => {
-      const gd = parseInt(String(cfgBase.gridDivisions ?? ''), 10);
-      return Number.isFinite(gd) && gd > 0 ? gd : CORNER_WING_DIMENSIONS.cells.defaultGridDivisions;
+      const gd = readFiniteInt(cfgBase.gridDivisions);
+      return gd != null && gd > 0 ? gd : CORNER_WING_DIMENSIONS.cells.defaultGridDivisions;
     })();
 
     const customData = cfg.customData;
@@ -102,7 +108,7 @@ function createCornerWingModuleCfgNormalizer(args: CornerWingCellDerivationArgs,
         cfg.isCustom = true;
         cfg.hasShoeDrawer = false;
         cfg.extDrawersCount = 0;
-        if (!Number.isFinite(rawGridDiv) || rawGridDiv <= 0) {
+        if (rawGridDiv == null || rawGridDiv <= 0) {
           cfg.gridDivisions = CORNER_WING_DIMENSIONS.cells.defaultGridDivisions;
         }
         const hasShelves = anyTruthy(customData.shelves || []);
@@ -123,15 +129,12 @@ function createCornerWingModuleCfgNormalizer(args: CornerWingCellDerivationArgs,
 function createDefaultCornerCfgDetector() {
   return (cfg0: unknown): boolean => {
     const cfg = isValueRecord(cfg0) ? cfg0 : {};
-    const parseIntSafe = (value: unknown, defaultValue: number): number => {
-      const parsed = parseInt(String(value ?? ''), 10);
-      return Number.isFinite(parsed) ? parsed : defaultValue;
-    };
+    const readIntOr = (value: unknown, defaultValue: number): number => readFiniteInt(value) ?? defaultValue;
     const layout = typeof cfg.layout === 'string' ? cfg.layout : 'shelves';
-    const ext = parseIntSafe(cfg.extDrawersCount, 0);
+    const ext = readIntOr(cfg.extDrawersCount, 0);
     const shoe = !!cfg.hasShoeDrawer;
     const custom = !!cfg.isCustom;
-    const gridDivisions = parseIntSafe(cfg.gridDivisions, CORNER_WING_DIMENSIONS.cells.defaultGridDivisions);
+    const gridDivisions = readIntOr(cfg.gridDivisions, CORNER_WING_DIMENSIONS.cells.defaultGridDivisions);
     const customData = isValueRecord(cfg.customData) ? cfg.customData : {};
     const shelves = readUnknownArray(customData.shelves);
     const rods = readUnknownArray(customData.rods);

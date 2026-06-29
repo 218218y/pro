@@ -32,7 +32,8 @@ export function createInsetPolygon(
     const sign = dot >= 0 ? 1 : -1;
     const nx = nux * sign;
     const nz = nuz * sign;
-    const d = Math.max(0, Number(edgeInsets[i] ?? 0));
+    const rawInset = edgeInsets[i];
+    const d = typeof rawInset === 'number' && Number.isFinite(rawInset) ? Math.max(0, rawInset) : 0;
     const c = nx * a.x + nz * a.z + d;
     lines.push({ nx, nz, c });
   }

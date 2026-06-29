@@ -37,8 +37,7 @@ import { deriveCornerWingCells } from './corner_wing_extension_cells.js';
 import { createCornerConfigMapReader } from './corner_config_readers.js';
 
 function readPositiveNumber(value: unknown): number | null {
-  const n = typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : NaN;
-  return Number.isFinite(n) && n > 0 ? n : null;
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : null;
 }
 
 function readStoredHeightCm(cfgMod: unknown): { heightCm: number | null; baseHeightCm: number | null } {
@@ -120,8 +119,11 @@ function resolveConnectorAdjacentWingBodyHeight(ctx: CornerOpsEmitContext): numb
     });
     if (!(derived.doorCount > 0)) return null;
     const firstCell = derived.cornerCells[0];
-    const bodyHeight = Number(firstCell?.bodyHeight);
-    return Number.isFinite(bodyHeight) && bodyHeight > 0 ? bodyHeight : ctx.wingH;
+    const bodyHeight =
+      typeof firstCell?.bodyHeight === 'number' && Number.isFinite(firstCell.bodyHeight)
+        ? firstCell.bodyHeight
+        : null;
+    return bodyHeight != null && bodyHeight > 0 ? bodyHeight : ctx.wingH;
   } catch {
     return undefined;
   }

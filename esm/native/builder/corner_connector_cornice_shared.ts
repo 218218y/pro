@@ -96,8 +96,8 @@ export type CornerConnectorCorniceFlowParams = {
 };
 
 export function positiveConnectorTopPlatformHeight(ctx: { baseLegTopPlatformHeightM?: unknown }): number {
-  const value = Number(ctx.baseLegTopPlatformHeightM);
-  return Number.isFinite(value) && value > 0 ? value : 0;
+  const value = ctx.baseLegTopPlatformHeightM;
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : 0;
 }
 
 export function resolveCornerConnectorCorniceTopY(ctx: {
@@ -146,8 +146,7 @@ export type CornerConnectorCorniceSideReturn = {
 };
 
 function finitePositiveOrNull(value: unknown): number | null {
-  const n = typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : NaN;
-  return Number.isFinite(n) && n > 0 ? n : null;
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : null;
 }
 
 function readOptionalNeighborBodyHeight(value: unknown, defaultHeight: number): number | null {

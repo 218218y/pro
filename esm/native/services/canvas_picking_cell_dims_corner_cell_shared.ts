@@ -1,13 +1,13 @@
 import type { UnknownRecord } from '../../../types';
 
-import { __asInt } from './canvas_picking_core_helpers.js';
 import type { CornerCellDimsContext } from './canvas_picking_cell_dims_corner_shared.js';
 import { asRecord, reportCornerDimsIssue } from './canvas_picking_cell_dims_corner_shared.js';
+import { readCanonicalIntOr } from './canvas_picking_cell_dims_numbers.js';
 
 export type CornerCellConfigReader = (cellIdx: number) => UnknownRecord;
 
 export function readCornerCellCount(ctx: CornerCellDimsContext): number {
-  const doors = __asInt(ctx.ui.cornerDoors, __asInt(ctx.raw.cornerDoors, 3));
+  const doors = readCanonicalIntOr(ctx.ui.cornerDoors, readCanonicalIntOr(ctx.raw.cornerDoors, 3));
   const doorCount = Number.isFinite(doors) ? Math.max(1, doors) : 1;
   return Math.max(1, Math.ceil(doorCount / 2));
 }

@@ -103,7 +103,9 @@ export function emitCornerWingExtension(ctx: CornerOpsEmitContext): void {
   // This allows stepped tops when the user applies per-cell height overrides (like a regular wardrobe).
 
   const legSupportH =
-    Number.isFinite(Number(baseLegHeightM)) && Number(baseLegHeightM) > 0 ? Number(baseLegHeightM) : baseH;
+    typeof baseLegHeightM === 'number' && Number.isFinite(baseLegHeightM) && baseLegHeightM > 0
+      ? baseLegHeightM
+      : baseH;
 
   if (baseType === 'legs') {
     if (legSupportH > 0) {
