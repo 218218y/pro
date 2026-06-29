@@ -16,12 +16,16 @@ export function readMeasurementEntries(input: SketchPlacementPreviewArgs): Measu
   return out;
 }
 
-export function readMeasurementNumber(value: unknown): number | null {
+export function readFinite(value: unknown): number | null {
   return readPreviewNumber(value);
 }
 
+export function readMeasurementNumber(value: unknown): number | null {
+  return readFinite(value);
+}
+
 export function normalizeMeasurementFaceSign(value: unknown): number | null {
-  const n = readMeasurementNumber(value);
+  const n = readFinite(value);
   if (n == null) return null;
   return n < 0 ? -1 : 1;
 }

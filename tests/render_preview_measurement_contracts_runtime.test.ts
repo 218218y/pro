@@ -2,11 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  readFinite,
   readMeasurementNumber,
   resolveMeasurementLabelFaceSign,
 } from '../esm/native/builder/render_preview_sketch_measurements_input.ts';
 
 test('preview measurement numbers use explicit preview scalar parsing only', () => {
+  assert.equal(readFinite(0.25), 0.25);
   assert.equal(readMeasurementNumber(0.25), 0.25);
   assert.equal(readMeasurementNumber(' 0.25 '), 0.25);
   assert.equal(readMeasurementNumber(''), null);

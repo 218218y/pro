@@ -170,11 +170,10 @@ export function createApplyInternalDrawersOps(deps: BuilderRenderDrawerDeps) {
 }
 
 function resolveInternalDrawerFrontMaxZ(depth: number): number {
-  const d = Number(depth);
-  if (!Number.isFinite(d) || d <= 0) return 0;
+  if (!Number.isFinite(depth) || depth <= 0) return 0;
 
   const drawerBoxDimensions = CHEST_MODE_DIMENSIONS.drawerBox;
   const accentFrontLift = drawerBoxDimensions.accentZOffsetM + drawerBoxDimensions.accentStripDepthM / 2;
 
-  return d / 2 + Math.max(0, accentFrontLift);
+  return depth / 2 + Math.max(0, accentFrontLift);
 }

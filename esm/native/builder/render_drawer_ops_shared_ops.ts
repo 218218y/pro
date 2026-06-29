@@ -1,12 +1,12 @@
-import { isRecord, readFinite } from './render_drawer_ops_shared_guards.js';
+import { isRecord, readFinite, readOptionalFinite } from './render_drawer_ops_shared_guards.js';
 import type { ExternalDrawerOpLike, InternalDrawerOpLike } from './render_drawer_ops_shared_types.js';
 
 function readPositionTriplet(value: unknown): { x?: number; y?: number; z?: number } | undefined {
   if (!isRecord(value)) return undefined;
   return {
-    x: typeof value.x === 'number' && Number.isFinite(value.x) ? value.x : undefined,
-    y: typeof value.y === 'number' && Number.isFinite(value.y) ? value.y : undefined,
-    z: typeof value.z === 'number' && Number.isFinite(value.z) ? value.z : undefined,
+    x: readOptionalFinite(value.x),
+    y: readOptionalFinite(value.y),
+    z: readOptionalFinite(value.z),
   };
 }
 
@@ -34,31 +34,21 @@ export function readExternalDrawerOp(value: unknown): ExternalDrawerOpLike | nul
     dividerKey: typeof value.dividerKey === 'string' ? value.dividerKey : undefined,
     visualW,
     visualH,
-    visualT: typeof value.visualT === 'number' && Number.isFinite(value.visualT) ? value.visualT : undefined,
+    visualT: readOptionalFinite(value.visualT),
     boxW,
     boxH,
     boxD,
-    boxOffsetZ:
-      typeof value.boxOffsetZ === 'number' && Number.isFinite(value.boxOffsetZ)
-        ? value.boxOffsetZ
-        : undefined,
+    boxOffsetZ: readOptionalFinite(value.boxOffsetZ),
     moduleIndex: value.moduleIndex,
-    connectW:
-      typeof value.connectW === 'number' && Number.isFinite(value.connectW) ? value.connectW : undefined,
-    connectH:
-      typeof value.connectH === 'number' && Number.isFinite(value.connectH) ? value.connectH : undefined,
-    connectD:
-      typeof value.connectD === 'number' && Number.isFinite(value.connectD) ? value.connectD : undefined,
-    connectZ:
-      typeof value.connectZ === 'number' && Number.isFinite(value.connectZ) ? value.connectZ : undefined,
+    connectW: readOptionalFinite(value.connectW),
+    connectH: readOptionalFinite(value.connectH),
+    connectD: readOptionalFinite(value.connectD),
+    connectZ: readOptionalFinite(value.connectZ),
     closed: readPositionTriplet(value.closed),
     open: readPositionTriplet(value.open),
-    faceW: typeof value.faceW === 'number' && Number.isFinite(value.faceW) ? value.faceW : undefined,
-    faceOffsetX:
-      typeof value.faceOffsetX === 'number' && Number.isFinite(value.faceOffsetX)
-        ? value.faceOffsetX
-        : undefined,
-    frontZ: typeof value.frontZ === 'number' && Number.isFinite(value.frontZ) ? value.frontZ : undefined,
+    faceW: readOptionalFinite(value.faceW),
+    faceOffsetX: readOptionalFinite(value.faceOffsetX),
+    frontZ: readOptionalFinite(value.frontZ),
   };
 }
 
@@ -84,7 +74,7 @@ export function readInternalDrawerOp(value: unknown): InternalDrawerOpLike | nul
     x: readFinite(value.x),
     y: readFinite(value.y),
     z: readFinite(value.z),
-    openZ: typeof value.openZ === 'number' && Number.isFinite(value.openZ) ? value.openZ : undefined,
+    openZ: readOptionalFinite(value.openZ),
     sketchBoxId:
       typeof value.sketchBoxId === 'string' && value.sketchBoxId.trim()
         ? value.sketchBoxId.trim()
@@ -92,33 +82,12 @@ export function readInternalDrawerOp(value: unknown): InternalDrawerOpLike | nul
     sketchModuleKey: value.sketchModuleKey,
     sketchFreePlacement: value.sketchFreePlacement === true,
     sketchStack: value.sketchStack === 'bottom' ? 'bottom' : value.sketchStack === 'top' ? 'top' : undefined,
-    cassetteBaseY:
-      typeof value.cassetteBaseY === 'number' && Number.isFinite(value.cassetteBaseY)
-        ? value.cassetteBaseY
-        : undefined,
-    cassetteOuterWidth:
-      typeof value.cassetteOuterWidth === 'number' && Number.isFinite(value.cassetteOuterWidth)
-        ? value.cassetteOuterWidth
-        : undefined,
-    cassetteDepth:
-      typeof value.cassetteDepth === 'number' && Number.isFinite(value.cassetteDepth)
-        ? value.cassetteDepth
-        : undefined,
-    cassetteCenterX:
-      typeof value.cassetteCenterX === 'number' && Number.isFinite(value.cassetteCenterX)
-        ? value.cassetteCenterX
-        : undefined,
-    cassetteCenterZ:
-      typeof value.cassetteCenterZ === 'number' && Number.isFinite(value.cassetteCenterZ)
-        ? value.cassetteCenterZ
-        : undefined,
-    cassetteStackH:
-      typeof value.cassetteStackH === 'number' && Number.isFinite(value.cassetteStackH)
-        ? value.cassetteStackH
-        : undefined,
-    cassetteWoodThick:
-      typeof value.cassetteWoodThick === 'number' && Number.isFinite(value.cassetteWoodThick)
-        ? value.cassetteWoodThick
-        : undefined,
+    cassetteBaseY: readOptionalFinite(value.cassetteBaseY),
+    cassetteOuterWidth: readOptionalFinite(value.cassetteOuterWidth),
+    cassetteDepth: readOptionalFinite(value.cassetteDepth),
+    cassetteCenterX: readOptionalFinite(value.cassetteCenterX),
+    cassetteCenterZ: readOptionalFinite(value.cassetteCenterZ),
+    cassetteStackH: readOptionalFinite(value.cassetteStackH),
+    cassetteWoodThick: readOptionalFinite(value.cassetteWoodThick),
   };
 }

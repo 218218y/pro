@@ -3,10 +3,11 @@ import type {
   SlidingDoorOpLike,
   SlidingRailLike,
 } from './render_door_ops_shared_contracts.js';
+import { readRenderOpNumber, readRenderOpNumberOr } from './render_ops_number_contracts.js';
 import { isRecord } from './render_door_ops_shared_core.js';
 
 function readFinite(value: unknown, defaultValue = 0): number {
-  return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
+  return readRenderOpNumberOr(value, defaultValue);
 }
 
 function readString(value: unknown, defaultValue = ''): string {
@@ -30,10 +31,10 @@ export function readSlidingDoorOp(value: unknown, index: number): SlidingDoorOpL
     height,
     partId: readDoorPartId(value.partId, `sliding_door_${index + 1}`),
     isOuter: value.isOuter === true,
-    index: typeof value.index === 'number' && Number.isFinite(value.index) ? value.index : undefined,
-    total: typeof value.total === 'number' && Number.isFinite(value.total) ? value.total : undefined,
-    minX: typeof value.minX === 'number' && Number.isFinite(value.minX) ? value.minX : undefined,
-    maxX: typeof value.maxX === 'number' && Number.isFinite(value.maxX) ? value.maxX : undefined,
+    index: readRenderOpNumber(value.index) ?? undefined,
+    total: readRenderOpNumber(value.total) ?? undefined,
+    minX: readRenderOpNumber(value.minX) ?? undefined,
+    maxX: readRenderOpNumber(value.maxX) ?? undefined,
   };
 }
 
@@ -66,32 +67,25 @@ export function readHingedDoorOp(value: unknown): HingedDoorOpLike | null {
     z: readFinite(value.z),
     width,
     height,
-    thickness:
-      typeof value.thickness === 'number' && Number.isFinite(value.thickness) ? value.thickness : undefined,
+    thickness: readRenderOpNumber(value.thickness) ?? undefined,
     partId,
     isLeftHinge: value.isLeftHinge === true,
-    openAngle:
-      typeof value.openAngle === 'number' && Number.isFinite(value.openAngle) ? value.openAngle : undefined,
+    openAngle: readRenderOpNumber(value.openAngle) ?? undefined,
     isRemoved: value.isRemoved === true,
     isMirror: value.isMirror === true,
     hasGroove: value.hasGroove === true,
     moduleIndex: value.moduleIndex,
-    pivotX: typeof value.pivotX === 'number' && Number.isFinite(value.pivotX) ? value.pivotX : undefined,
-    meshOffsetX:
-      typeof value.meshOffsetX === 'number' && Number.isFinite(value.meshOffsetX)
-        ? value.meshOffsetX
-        : undefined,
+    pivotX: readRenderOpNumber(value.pivotX) ?? undefined,
+    meshOffsetX: readRenderOpNumber(value.meshOffsetX) ?? undefined,
     style: typeof value.style === 'string' ? value.style : undefined,
     curtain: value.curtain,
-    handleAbsY:
-      typeof value.handleAbsY === 'number' && Number.isFinite(value.handleAbsY)
-        ? value.handleAbsY
-        : undefined,
+    handleAbsY: readRenderOpNumber(value.handleAbsY) ?? undefined,
     allowHandle: value.allowHandle === false ? false : undefined,
   };
-  if (typeof value.moduleDoors === 'number' && Number.isFinite(value.moduleDoors)) {
+  const moduleDoors = readRenderOpNumber(value.moduleDoors);
+  if (moduleDoors != null) {
     Object.defineProperty(op, 'moduleDoors', {
-      value: Math.max(1, Math.floor(value.moduleDoors)),
+      value: Math.max(1, Math.floor(moduleDoors)),
       enumerable: false,
       configurable: true,
       writable: true,

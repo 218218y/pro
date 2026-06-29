@@ -1,4 +1,9 @@
 import type { Object3DLike, ThreeLike, UnknownRecord } from '../../../types';
+import {
+  readRenderOpNumber,
+  readRenderOpNumberOr,
+  readRenderOpPositiveNumber,
+} from './render_ops_number_contracts.js';
 import type { FnLike } from './render_drawer_ops_shared_types.js';
 
 export function isRecord(value: unknown): value is UnknownRecord {
@@ -10,7 +15,7 @@ export function isFunction(value: unknown): value is FnLike {
 }
 
 export function readFinite(value: unknown, defaultValue = 0): number {
-  return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
+  return readRenderOpNumberOr(value, defaultValue);
 }
 
 function isObject3DLike(value: unknown): value is Object3DLike {
@@ -36,5 +41,9 @@ export function readThreeLike(value: unknown): ThreeLike | null {
 }
 
 export function readFinitePositive(value: unknown): number | null {
-  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : null;
+  return readRenderOpPositiveNumber(value);
+}
+
+export function readOptionalFinite(value: unknown): number | undefined {
+  return readRenderOpNumber(value) ?? undefined;
 }
