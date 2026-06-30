@@ -101,7 +101,8 @@ export function applyCornerWingCarcassCeiling(
       __cellW - __leftInsetX - __rightInsetX - CORNER_WING_DIMENSIONS.ceiling.widthClearanceM
     );
     const topX = __cellStartX + __leftInsetX + topW / 2;
-    const topY = startY + __h - woodThick / 2;
+    const topCenterY = startY + __h - woodThick / 2;
+    const topSurfaceY = startY + __h;
     const partId = `corner_cell_top_c${cell.idx}`;
     if (
       cell.__hexCellGeometry &&
@@ -110,14 +111,14 @@ export function applyCornerWingCarcassCeiling(
         metrics,
         cell,
         partId,
-        y: topY,
+        y: topSurfaceY,
         material: __wingCeilMat,
       })
     ) {
       continue;
     }
     const top = new THREE.Mesh(new THREE.BoxGeometry(topW, woodThick, __hz.depth), __wingCeilMat);
-    top.position.set(topX, topY, __hz.z);
+    top.position.set(topX, topCenterY, __hz.z);
     top.userData = {
       partId,
       moduleIndex: cell.key,

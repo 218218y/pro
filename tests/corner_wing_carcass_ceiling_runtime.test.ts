@@ -22,12 +22,37 @@ class FakeBoxGeometry {
   }
 }
 
+class FakeShape {
+  points: Array<{ x: number; z: number }> = [];
+  moveTo(x: number, z: number) {
+    this.points.push({ x, z });
+  }
+  lineTo(x: number, z: number) {
+    this.points.push({ x, z });
+  }
+  closePath() {
+    return undefined;
+  }
+}
+
+class FakeExtrudeGeometry {
+  shape: FakeShape;
+  options: Record<string, unknown>;
+  constructor(shape: FakeShape, options: Record<string, unknown>) {
+    this.shape = shape;
+    this.options = options;
+  }
+}
+
 class FakeMesh {
   position = new FakeVector3();
+  rotation = { x: 0, y: 0, z: 0 };
   userData: Record<string, unknown> = {};
-  geometry: FakeBoxGeometry;
+  geometry: FakeBoxGeometry | FakeExtrudeGeometry;
   material: unknown;
-  constructor(geometry: FakeBoxGeometry, material: unknown) {
+  castShadow = false;
+  receiveShadow = false;
+  constructor(geometry: FakeBoxGeometry | FakeExtrudeGeometry, material: unknown) {
     this.geometry = geometry;
     this.material = material;
   }
@@ -51,7 +76,12 @@ function createCeilingHarness(options: {
 
   const params = {
     ctx: {
-      THREE: { Mesh: FakeMesh, BoxGeometry: FakeBoxGeometry },
+      THREE: {
+        Mesh: FakeMesh,
+        BoxGeometry: FakeBoxGeometry,
+        Shape: FakeShape,
+        ExtrudeGeometry: FakeExtrudeGeometry,
+      },
       woodThick,
       startY: 0.1,
       wingD,
@@ -106,7 +136,8 @@ function createCell(idx: number, startX: number, width: number): Record<string, 
 }
 
 function rightEdge(mesh: FakeMesh): number {
-  return mesh.position.x + mesh.geometry.parameters.width / 2;
+  const geometry = mesh.geometry as FakeBoxGeometry;
+  return mesh.position.x + geometry.parameters.width / 2;
 }
 
 function findPart(added: AddedMesh[], partId: string): AddedMesh {
@@ -163,6 +194,28 @@ test('corner wing last segmented roof reaches the right side inner face', () => 
     findPart(harness.added, 'corner_cell_top_c1'),
     harness.wingW,
     harness.woodThick
+  );
+});
+
+test('corner wing hex-cell roof uses the same top surface plane as the cornice', () => {
+  const harness = createCeilingHarness({
+    unified: false,
+    cornerCells: [
+      {
+        ...createCell(0, 0, 0.8),
+        __hexCellGeometry: { sideDepthM: 0.45, doorDepthM: 0.62, doorWidthM: 0.38 },
+      },
+    ],
+  });
+
+  applyCornerWingCarcassCeiling(harness.params, harness.metrics);
+
+  const roof = findPart(harness.added, 'corner_cell_top_c0');
+  assert.equal(roof.userData.kind, 'hexCellHorizontal');
+  assert.equal(
+    Number(roof.position.y.toFixed(6)),
+    Number((harness.params.ctx.startY + 2.1).toFixed(6)),
+    'a rotated hex top board uses position.y as its top surface, not as a centered BoxGeometry y'
   );
 });
 
