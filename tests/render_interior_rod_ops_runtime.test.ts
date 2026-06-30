@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createBuilderRenderInteriorRodOps } from '../esm/native/builder/render_interior_rod_ops.ts';
+import { resolveInteriorRodAvailableHeight } from '../esm/native/builder/render_interior_rod_clearance.ts';
 
 function makeFakeThree() {
   class CylinderGeometry {
@@ -282,4 +283,42 @@ test('render interior rod reserves folded clothes above shelf blockers', () => {
   assert.equal(clothesCalls.length, 1);
   // Shelf center 0.4 + 0.01m half board + max folded stack (7 * 0.025m) + 0.006m contents gap.
   assert.equal(Number(clothesCalls[0][5].toFixed(3)), 0.609);
+});
+
+test('render interior rod rejects string-encoded runtime coordinates', () => {
+  const THREE = makeFakeThree();
+  const { ops, added, group } = createRodOpsHarness();
+
+  const created = ops.createRodWithContents({
+    THREE,
+    yPos: '1.4',
+    innerW: 0.8,
+    internalCenterX: 0,
+    internalZ: 0,
+    wardrobeGroup: group,
+  });
+
+  assert.equal(created, false);
+  assert.equal(added.length, 0);
+});
+
+test('rod clearance ignores string-encoded custom rod runtime positions', () => {
+  const availableHeight = resolveInteriorRodAvailableHeight({
+    config: {
+      isCustom: true,
+      customData: {
+        shelves: [],
+        rods: [],
+        rodOps: [{ gridIndex: '2', yFactor: '2', yAdd: '0' }],
+        storage: false,
+      },
+    },
+    yPos: 1.2,
+    effectiveBottomY: 0,
+    effectiveTopY: 2.4,
+    localGridStep: 0.4,
+    gridDivisions: 6,
+  });
+
+  assert.equal(Number(availableHeight.toFixed(3)), 1.2);
 });

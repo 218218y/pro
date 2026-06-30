@@ -26,8 +26,8 @@ test('post-build corner dimensions use only the captured UI snapshot with canoni
   });
 
   assert.equal(dimensions.cornerSide, 'left');
-  assert.equal(dimensions.cornerDoorCount, 3);
-  assert.equal(dimensions.cornerConnectorEnabled, false);
+  assert.equal(dimensions.cornerWingDoorCount, 3);
+  assert.equal(dimensions.cornerConnectorActive, true);
   assert.equal(dimensions.cornerWingLenM, 1.5);
   assert.equal(dimensions.cornerWingHeightM, 2.4);
   assert.equal(dimensions.cornerWingDepthM, 0.7);
@@ -56,8 +56,8 @@ test('post-build corner dimensions reject string-encoded UI snapshot dimensions'
   });
 
   assert.equal(dimensions.cornerSide, 'right');
-  assert.equal(dimensions.cornerDoorCount, 3);
-  assert.equal(dimensions.cornerConnectorEnabled, false);
+  assert.equal(dimensions.cornerWingDoorCount, 3);
+  assert.equal(dimensions.cornerConnectorActive, true);
   assert.equal(dimensions.cornerWingLenM, 1.2);
   assert.equal(dimensions.cornerWingHeightM, 2.1);
   assert.equal(dimensions.cornerWingDepthM, 0.6);

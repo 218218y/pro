@@ -48,9 +48,8 @@ function isRecord(value: unknown): value is UnknownRecord {
   return !!value && typeof value === 'object' && !Array.isArray(value);
 }
 
-function readNumber(value: unknown): number | null {
-  const next = Number(value);
-  return Number.isFinite(next) ? next : null;
+function readRuntimeNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
 function readBoolArray(value: unknown): boolean[] {
@@ -62,9 +61,9 @@ function readRecordArray(value: unknown): UnknownRecord[] {
 }
 
 function readGridDivisions(config: UnknownRecord | null, explicit: unknown): number {
-  const explicitDivisions = readNumber(explicit);
+  const explicitDivisions = readRuntimeNumber(explicit);
   if (explicitDivisions != null && explicitDivisions > 0) return Math.round(explicitDivisions);
-  const configDivisions = readNumber(config?.gridDivisions);
+  const configDivisions = readRuntimeNumber(config?.gridDivisions);
   if (configDivisions != null && configDivisions > 0) return Math.round(configDivisions);
   return CARCASS_SHELL_DIMENSIONS.drawerGridDivisions;
 }
@@ -100,18 +99,18 @@ function resolveRodY(args: {
 }): number | null {
   const { rod, effectiveBottomY, localGridStep, fallbackGridIndex } = args;
   if (!(localGridStep > 0)) return null;
-  const rawYFactor = readNumber(rod.yFactor);
-  const rawGridIndex = readNumber(rod.gridIndex);
+  const rawYFactor = readRuntimeNumber(rod.yFactor);
+  const rawGridIndex = readRuntimeNumber(rod.gridIndex);
   const factor = rawYFactor ?? rawGridIndex ?? fallbackGridIndex ?? null;
   if (factor == null) return null;
-  const yAdd = readNumber(rod.yAdd) ?? 0;
+  const yAdd = readRuntimeNumber(rod.yAdd) ?? 0;
   return effectiveBottomY + factor * localGridStep + yAdd;
 }
 
 function pushRodBlockers(args: { blockers: number[]; rods: RodPoint[] }): void {
   const { blockers, rods } = args;
   for (let i = 0; i < rods.length; i += 1) {
-    const y = Number(rods[i]?.y);
+    const y = rods[i]?.y;
     if (Number.isFinite(y)) blockers.push(y);
   }
 }
@@ -131,7 +130,7 @@ function collectPresetBlockers(args: {
 
   const addShelves = (rows: readonly number[]): void => {
     for (let i = 0; i < rows.length; i += 1) {
-      pushShelfBlocker({ blockers, effectiveBottomY, localGridStep, index: Number(rows[i]), shelfThick });
+      pushShelfBlocker({ blockers, effectiveBottomY, localGridStep, index: rows[i], shelfThick });
     }
   };
   const addRod = (yFactor: number): void => {
@@ -200,7 +199,7 @@ function collectCustomBlockers(args: {
   const rodOps = readRecordArray(customData.rodOps);
   const explicitRodGridIndexes = new Set<number>();
   for (let i = 0; i < rodOps.length; i += 1) {
-    const rawGridIndex = readNumber(rodOps[i].gridIndex);
+    const rawGridIndex = readRuntimeNumber(rodOps[i].gridIndex);
     if (rawGridIndex != null && rawGridIndex >= 1) explicitRodGridIndexes.add(Math.round(rawGridIndex));
     const rodY = resolveRodY({
       rod: rodOps[i],
@@ -227,7 +226,7 @@ function collectCustomBlockers(args: {
 }
 
 function resolvePositiveThickness(value: unknown): number {
-  const thickness = readNumber(value);
+  const thickness = readRuntimeNumber(value);
   if (thickness != null && thickness > 0) return thickness;
   return MATERIAL_DIMENSIONS.wood.thicknessM;
 }
@@ -287,7 +286,7 @@ function resolveSketchExternalDrawerRange(args: {
 }): DrawerRange | null {
   const { item, effectiveBottomY, effectiveTopY, span } = args;
   const metrics = resolveSketchExternalDrawerMetrics({
-    drawerCount: readNumber(item.count),
+    drawerCount: readRuntimeNumber(item.count),
     drawerHeightM: readSketchDrawerHeightMFromItem(item, DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M),
   });
   const availableHeight = Math.max(0, effectiveTopY - effectiveBottomY);
@@ -359,7 +358,7 @@ function collectSketchExtraBlockers(args: {
   if (!(span > 0)) return false;
 
   const clampNormY = (value: unknown): number | null => {
-    const raw = readNumber(value);
+    const raw = readRuntimeNumber(value);
     if (raw == null) return null;
     const n = Math.max(0, Math.min(1, raw));
     const geometryDims = SKETCH_BOX_DIMENSIONS.geometry;
@@ -393,7 +392,7 @@ function collectSketchExtraBlockers(args: {
     const barrier = storageBarriers[i];
     const baseY = clampNormY(barrier.yNorm);
     const height =
-      readNumber(barrier.heightM ?? barrier.hM) ?? INTERIOR_FITTINGS_DIMENSIONS.storage.barrierHeightM;
+      readRuntimeNumber(barrier.heightM ?? barrier.hM) ?? INTERIOR_FITTINGS_DIMENSIONS.storage.barrierHeightM;
     if (baseY != null) {
       blockers.push(baseY + Math.max(0, height) / 2);
       hasEvidence = true;
@@ -415,10 +414,10 @@ function collectSketchExtraBlockers(args: {
 
 export function resolveInteriorRodAvailableHeight(args: RodClearanceArgs): number {
   const config = isRecord(args.config) ? args.config : null;
-  const yPos = Number(args.yPos);
-  const effectiveBottomY = Number(args.effectiveBottomY);
-  const localGridStep = Number(args.localGridStep);
-  if (!Number.isFinite(yPos) || !Number.isFinite(effectiveBottomY)) return 0;
+  const yPos = readRuntimeNumber(args.yPos);
+  const effectiveBottomY = readRuntimeNumber(args.effectiveBottomY);
+  const localGridStep = readRuntimeNumber(args.localGridStep) ?? NaN;
+  if (yPos == null || effectiveBottomY == null) return 0;
 
   const gridDivisions = readGridDivisions(config, args.gridDivisions);
   const woodThick = resolvePositiveThickness(args.woodThick);
@@ -427,7 +426,7 @@ export function resolveInteriorRodAvailableHeight(args: RodClearanceArgs): numbe
     Number.isFinite(localGridStep) && localGridStep > 0
       ? effectiveBottomY + gridDivisions * localGridStep
       : yPos;
-  const effectiveTopYRaw = readNumber(args.effectiveTopY);
+  const effectiveTopYRaw = readRuntimeNumber(args.effectiveTopY);
   const effectiveTopY = effectiveTopYRaw != null ? effectiveTopYRaw : derivedTopY;
 
   const blockers: number[] = [effectiveBottomY];
@@ -467,15 +466,16 @@ export function resolveInteriorRodAvailableHeight(args: RodClearanceArgs): numbe
   let blockerY = effectiveBottomY;
   const sameRodTolerance = Math.max(1e-5, Math.abs(localGridStep || 0) * 1e-4);
   for (let i = 0; i < blockers.length; i += 1) {
-    const blocker = Number(blockers[i]);
+    const blocker = blockers[i];
     if (!Number.isFinite(blocker)) continue;
     if (blocker < yPos - sameRodTolerance && blocker > blockerY) blockerY = blocker;
   }
 
   if (hasEvidence) return Math.max(0, yPos - blockerY);
 
-  if (args.manualHeightLimit != null && Number.isFinite(Number(args.manualHeightLimit))) {
-    return Math.max(0, Number(args.manualHeightLimit));
+  const manualHeightLimit = readRuntimeNumber(args.manualHeightLimit);
+  if (manualHeightLimit != null) {
+    return Math.max(0, manualHeightLimit);
   }
 
   return Math.max(0, yPos - effectiveBottomY);

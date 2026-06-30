@@ -11,7 +11,7 @@ test('[no-main] dimension overlay is suppressed when the main wardrobe has 0 doo
   const srcNorm = normalizeWhitespace(src);
   assert.match(
     srcNorm,
-    /const\s+doorsCountNow\s*=\s*ctx && ctx\.dims && typeof ctx\.dims\.doorsCount === 'number' \? Number\(ctx\.dims\.doorsCount\) : NaN;/
+    /const\s+doorsCountNow\s*=\s*readPostBuildRuntimeNumber\(ctx\?\.dims\?\.doorsCount\) \?\? NaN;/
   );
   assert.match(
     srcNorm,

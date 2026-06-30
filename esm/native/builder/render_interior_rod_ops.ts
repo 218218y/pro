@@ -87,13 +87,11 @@ function isRodArgs(value: unknown): value is RenderInteriorRodArgs {
 }
 
 function readFiniteNumber(value: unknown, defaultValue = 0): number {
-  const next = Number(value);
-  return Number.isFinite(next) ? next : defaultValue;
+  return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
 }
 
 function readOptionalFiniteNumber(value: unknown): number | null {
-  const next = Number(value);
-  return Number.isFinite(next) ? next : null;
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
 function resolveRodMaterial(args: {
