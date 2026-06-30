@@ -18,7 +18,6 @@
     "manual_handle_position.js",
     "metal_finish_palette.js",
     "mirror_layout.js",
-    "model_record/model_record_normalizer.js",
     "modules_configuration/calc_module_structure.js",
     "modules_configuration/corner_cells_api.js",
     "modules_configuration/modules_config_api.js",
@@ -54,7 +53,6 @@
     "manual_handle_position": ["manual_handle_position.js"],
     "metal_finish_palette": ["metal_finish_palette.js"],
     "mirror_layout": ["mirror_layout.js"],
-    "model_record": ["model_record/model_record_normalizer.js"],
     "modules_configuration": [
       "modules_configuration/calc_module_structure.js",
       "modules_configuration/corner_cells_api.js",
@@ -836,11 +834,19 @@
     },
     {
       "file": "esm/native/data/model_record_normalizer.ts",
-      "entry": "model_record/model_record_normalizer.js"
+      "entry": "project_config/project_config_lists_canonical.js"
     },
     {
       "file": "esm/native/data/model_record_normalizer.ts",
-      "entry": "model_record/model_record_normalizer.js"
+      "entry": "project_config/project_config_snapshot_canonical.js"
+    },
+    {
+      "file": "esm/native/data/model_record_normalizer.ts",
+      "entry": "modules_configuration/calc_module_structure.js"
+    },
+    {
+      "file": "esm/native/data/model_record_normalizer.ts",
+      "entry": "modules_configuration/modules_config_api.js"
     },
     {
       "file": "esm/native/io/project_io_config_snapshot_canonical.ts",
@@ -1053,10 +1059,6 @@
     {
       "file": "esm/native/platform/store_shared.ts",
       "entry": "project_config/project_config_lists_canonical.js"
-    },
-    {
-      "file": "esm/native/services/api_services_project_surface.ts",
-      "entry": "model_record/model_record_normalizer.js"
     },
     {
       "file": "esm/native/services/api_state_surface.ts",
@@ -1720,19 +1722,11 @@
     },
     {
       "file": "esm/native/services/models_apply_project_snapshot.ts",
-      "entry": "model_record/model_record_normalizer.js"
-    },
-    {
-      "file": "esm/native/services/models_apply_project_snapshot.ts",
       "entry": "project_config/project_config_snapshot_canonical.js"
     },
     {
       "file": "esm/native/services/models_apply_project_snapshot.ts",
       "entry": "project_config/project_config_persisted_snapshot.js"
-    },
-    {
-      "file": "esm/native/services/models_registry_normalization.ts",
-      "entry": "model_record/model_record_normalizer.js"
     },
     {
       "file": "esm/native/services/viewer_measurement_tool.ts",

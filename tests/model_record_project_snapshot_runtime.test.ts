@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { normalizeModelRecord } from '../esm/native/features/model_record/model_record_normalizer.ts';
+import { normalizeModelRecord } from '../esm/native/data/model_record_normalizer.ts';
 import { buildProjectStructureFromModel } from '../esm/native/services/models_apply_project_snapshot.ts';
 import { normalizeProjectData } from '../esm/native/io/project_schema_normalize.ts';
 

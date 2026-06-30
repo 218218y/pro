@@ -34,6 +34,7 @@ test('features public API manifest exposes canonical facades instead of private 
   assert.equal(entries.has('special_dims/special_dims.js'), false);
   assert.equal(entries.has('library_preset/module_defaults.js'), false);
   assert.equal(entries.has('shelf_front_edge_material.js'), false);
+  assert.equal(entries.has('model_record/model_record_normalizer.js'), false);
 });
 
 test('features public API reports use platform-independent ordering', () => {

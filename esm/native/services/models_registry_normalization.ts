@@ -1,6 +1,6 @@
 import type { AppContainer, ModelsNormalizer, SavedModelLike } from '../../../types';
 
-import { normalizeModelRecord } from '../features/model_record/model_record_normalizer.js';
+import { normalizeModelRecord } from '../data/model_record_normalizer.js';
 
 import { asMutableSavedModel, readModelId, syncPresetFlags } from './models_registry_contracts.js';
 import { _modelsReportNonFatal } from './models_registry_nonfatal.js';

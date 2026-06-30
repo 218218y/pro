@@ -56,10 +56,7 @@ import {
   type ProjectRestoreFailureResult,
 } from '../runtime/project_recovery_action_result.js';
 import { normalizeModelsCommandReason } from '../runtime/models_access.js';
-import {
-  normalizeModelRecord,
-  normalizeModelList,
-} from '../features/model_record/model_record_normalizer.js';
+import { normalizeModelRecord, normalizeModelList } from '../data/model_record_normalizer.js';
 
 export {
   getProjectIoServiceMaybe,
