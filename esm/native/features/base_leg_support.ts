@@ -1,7 +1,7 @@
 import type { UnknownRecord } from '../../../types/index.js';
 
 import { BASE_LEG_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
-import { METAL_FINISH_PALETTE_BY_COLOR } from './metal_finish_palette.js';
+import { METAL_FINISH_PALETTE_BY_COLOR } from './finish_palette/api.js';
 
 export type BaseLegStyle = 'tapered' | 'round' | 'square' | 'wheels';
 export type BaseLegColor = 'black' | 'nickel' | 'gold';

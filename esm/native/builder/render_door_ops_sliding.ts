@@ -1,6 +1,6 @@
 import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { resolveConfiguredHandleColor } from './handle_finish_runtime.js';
-import { resolveHandleFinishPalette } from '../features/handle_finish_shared.js';
+import { resolveHandleFinishPalette } from '../features/finish_palette/api.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
 import { resolveEffectiveDoorStyle } from '../features/door_style_overrides.js';
 import { hasMirrorSurfaceOnFace } from '../features/mirror_layout.js';

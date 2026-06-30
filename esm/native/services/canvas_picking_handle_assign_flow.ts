@@ -10,7 +10,7 @@ import {
   DEFAULT_HANDLE_FINISH_COLOR,
   handleColorPartKey,
   normalizeHandleFinishColor,
-} from '../features/handle_finish_shared.js';
+} from '../features/finish_palette/api.js';
 import {
   createManualHandlePositionFromLocalPoint,
   isManualHandlePositionMode,

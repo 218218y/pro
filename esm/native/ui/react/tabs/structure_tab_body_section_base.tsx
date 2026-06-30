@@ -25,7 +25,7 @@ import {
   DEFAULT_BASE_LEG_STYLE,
   isBaseLegWheelsStyle,
 } from '../../../features/base_leg_support.js';
-import { METAL_FINISH_PALETTE_BY_COLOR } from '../../../features/metal_finish_palette.js';
+import { METAL_FINISH_PALETTE_BY_COLOR } from '../../../features/finish_palette/api.js';
 import {
   DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM,
   DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM,

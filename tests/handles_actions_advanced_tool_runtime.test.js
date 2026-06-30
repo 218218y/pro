@@ -109,7 +109,7 @@ function loadHandlesActionsHarness(initial = {}) {
           },
         };
       }
-      if (spec === '../../../features/handle_finish_shared.js') {
+      if (spec === '../../../features/finish_palette/api.js') {
         return {
           DEFAULT_HANDLE_FINISH_COLOR: 'nickel',
           HANDLE_COLOR_GLOBAL_KEY: '__handle_color__',

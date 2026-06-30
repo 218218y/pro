@@ -7,7 +7,7 @@ import {
   type CreateHandleMeshCtx,
   type NodeLike,
 } from './handles_shared.js';
-import { normalizeHandleFinishColor, resolveHandleFinishPalette } from '../features/handle_finish_shared.js';
+import { normalizeHandleFinishColor, resolveHandleFinishPalette } from '../features/finish_palette/api.js';
 import { HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 export function createHandleMeshV7(

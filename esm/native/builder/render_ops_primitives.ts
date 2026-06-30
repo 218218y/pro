@@ -1,5 +1,5 @@
 import { createDoorEdgeHandleProfile } from './edge_handle_profile.js';
-import { normalizeHandleFinishColor, resolveHandleFinishPalette } from '../features/handle_finish_shared.js';
+import { normalizeHandleFinishColor, resolveHandleFinishPalette } from '../features/finish_palette/api.js';
 import {
   HANDLE_DIMENSIONS,
   INTERIOR_FITTINGS_DIMENSIONS,

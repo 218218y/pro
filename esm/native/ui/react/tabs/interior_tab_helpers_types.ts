@@ -6,7 +6,7 @@ import type {
   BaseLegPlatformSideMode,
   BaseLegStyle,
 } from '../../../features/base_leg_support.js';
-import type { HandleFinishColor } from '../../../features/handle_finish_shared.js';
+import type { HandleFinishColor } from '../../../features/finish_palette/api.js';
 
 export type LayoutTypeId = 'shelves' | 'hanging' | 'hanging_split' | 'mixed' | 'storage' | 'brace_shelves';
 export type ManualToolId = 'shelf' | 'rod' | 'storage';

@@ -1,7 +1,7 @@
 import type { CSSProperties, Dispatch, SetStateAction } from 'react';
 
-import { METAL_FINISH_PALETTE_BY_COLOR } from '../../../features/metal_finish_palette.js';
-import type { HandleFinishColor, HandleFinishPresetColor } from '../../../features/handle_finish_shared.js';
+import { METAL_FINISH_PALETTE_BY_COLOR } from '../../../features/finish_palette/api.js';
+import type { HandleFinishColor, HandleFinishPresetColor } from '../../../features/finish_palette/api.js';
 import type {
   DoorTrimUiAxis,
   DoorTrimUiColor,

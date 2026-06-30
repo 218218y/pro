@@ -27,7 +27,7 @@ const sandbox = {
     if (spec === '../../../features/manual_handle_position.js') {
       return { isManualHandlePositionMode: value => String(value || '') === 'manual' };
     }
-    if (spec === '../../../features/handle_finish_shared.js') {
+    if (spec === '../../../features/finish_palette/api.js') {
       return { DEFAULT_HANDLE_FINISH_COLOR: 'nickel', HANDLE_COLOR_GLOBAL_KEY: '__handle_color__' };
     }
     if (spec === './interior_tab_helpers.js') {

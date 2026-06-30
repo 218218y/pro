@@ -25,7 +25,7 @@ import {
   HANDLE_COLOR_GLOBAL_KEY,
   handleColorPartKey,
   normalizeHandleFinishColor,
-} from '../features/handle_finish_shared.js';
+} from '../features/finish_palette/api.js';
 import {
   captureHandlesConfigSnapshot,
   createHandlesDoorRemovedReader,

@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import type { ChangeEvent, ReactElement } from 'react';
 
-import { isHandleFinishCustomColor } from '../../../features/handle_finish_shared.js';
+import { isHandleFinishCustomColor } from '../../../features/finish_palette/api.js';
 import { InlineNotice } from '../components/InlineNotice.js';
 import { ToggleRow } from '../components/ToggleRow.js';
 import { OptionBtn, cx } from './interior_tab_helpers.js';

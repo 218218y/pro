@@ -10,13 +10,12 @@
     "door_visual_map_lookup.js",
     "door_trim.js",
     "drawer_box_identity.js",
+    "finish_palette/api.js",
     "front_color_shelf_inheritance.js",
-    "handle_finish_shared.js",
     "hex_cell/index.js",
     "interior_layout_presets/api.js",
     "library_preset/library_preset.js",
     "manual_handle_position.js",
-    "metal_finish_palette.js",
     "mirror_layout.js",
     "model_record/api.js",
     "modules_configuration/calc_module_structure.js",
@@ -43,13 +42,12 @@
     "door_visual_map_lookup": ["door_visual_map_lookup.js"],
     "door_trim": ["door_trim.js"],
     "drawer_box_identity": ["drawer_box_identity.js"],
+    "finish_palette": ["finish_palette/api.js"],
     "front_color_shelf_inheritance": ["front_color_shelf_inheritance.js"],
-    "handle_finish_shared": ["handle_finish_shared.js"],
     "hex_cell": ["hex_cell/index.js"],
     "interior_layout_presets": ["interior_layout_presets/api.js"],
     "library_preset": ["library_preset/library_preset.js"],
     "manual_handle_position": ["manual_handle_position.js"],
-    "metal_finish_palette": ["metal_finish_palette.js"],
     "mirror_layout": ["mirror_layout.js"],
     "model_record": ["model_record/api.js"],
     "modules_configuration": [
@@ -360,7 +358,7 @@
     },
     {
       "file": "esm/native/builder/door_trim_visuals.ts",
-      "entry": "metal_finish_palette.js"
+      "entry": "finish_palette/api.js"
     },
     {
       "file": "esm/native/builder/door_trim_visuals.ts",
@@ -380,7 +378,7 @@
     },
     {
       "file": "esm/native/builder/handle_finish_runtime.ts",
-      "entry": "handle_finish_shared.js"
+      "entry": "finish_palette/api.js"
     },
     {
       "file": "esm/native/builder/handles_apply_doors.ts",
@@ -400,15 +398,15 @@
     },
     {
       "file": "esm/native/builder/handles_apply_shared.ts",
-      "entry": "handle_finish_shared.js"
+      "entry": "finish_palette/api.js"
     },
     {
       "file": "esm/native/builder/handles_mesh.ts",
-      "entry": "handle_finish_shared.js"
+      "entry": "finish_palette/api.js"
     },
     {
       "file": "esm/native/builder/handles_shared.ts",
-      "entry": "handle_finish_shared.js"
+      "entry": "finish_palette/api.js"
     },
     {
       "file": "esm/native/builder/hex_cell_diagonal_visual.ts",
@@ -572,11 +570,11 @@
     },
     {
       "file": "esm/native/builder/render_door_ops_shared_materials.ts",
-      "entry": "metal_finish_palette.js"
+      "entry": "finish_palette/api.js"
     },
     {
       "file": "esm/native/builder/render_door_ops_sliding.ts",
-      "entry": "handle_finish_shared.js"
+      "entry": "finish_palette/api.js"
     },
     {
       "file": "esm/native/builder/render_door_ops_sliding.ts",
@@ -768,7 +766,7 @@
     },
     {
       "file": "esm/native/builder/render_ops_primitives.ts",
-      "entry": "handle_finish_shared.js"
+      "entry": "finish_palette/api.js"
     },
     {
       "file": "esm/native/builder/render_preview_sketch_pipeline_linear.ts",
@@ -1348,7 +1346,7 @@
     },
     {
       "file": "esm/native/services/canvas_picking_handle_assign_flow.ts",
-      "entry": "handle_finish_shared.js"
+      "entry": "finish_palette/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_handle_assign_flow.ts",
@@ -1728,7 +1726,7 @@
     },
     {
       "file": "esm/native/ui/react/actions/handles_actions.ts",
-      "entry": "handle_finish_shared.js"
+      "entry": "finish_palette/api.js"
     },
     {
       "file": "esm/native/ui/react/actions/handles_actions.ts",
@@ -1860,7 +1858,7 @@
     },
     {
       "file": "esm/native/ui/react/tabs/interior_tab_helpers_types.ts",
-      "entry": "handle_finish_shared.js"
+      "entry": "finish_palette/api.js"
     },
     {
       "file": "esm/native/ui/react/tabs/interior_tab_local_state_shared.ts",
@@ -1880,15 +1878,15 @@
     },
     {
       "file": "esm/native/ui/react/tabs/interior_tab_sections_handles.tsx",
-      "entry": "handle_finish_shared.js"
+      "entry": "finish_palette/api.js"
     },
     {
       "file": "esm/native/ui/react/tabs/interior_tab_sections_shared.ts",
-      "entry": "metal_finish_palette.js"
+      "entry": "finish_palette/api.js"
     },
     {
       "file": "esm/native/ui/react/tabs/interior_tab_sections_shared.ts",
-      "entry": "handle_finish_shared.js"
+      "entry": "finish_palette/api.js"
     },
     {
       "file": "esm/native/ui/react/tabs/interior_tab_view_state_runtime.ts",
@@ -1896,11 +1894,11 @@
     },
     {
       "file": "esm/native/ui/react/tabs/interior_tab_view_state_runtime.ts",
-      "entry": "handle_finish_shared.js"
+      "entry": "finish_palette/api.js"
     },
     {
       "file": "esm/native/ui/react/tabs/interior_tab_view_state_shared.ts",
-      "entry": "handle_finish_shared.js"
+      "entry": "finish_palette/api.js"
     },
     {
       "file": "esm/native/ui/react/tabs/structure_tab_body_section_base.tsx",
@@ -1908,7 +1906,7 @@
     },
     {
       "file": "esm/native/ui/react/tabs/structure_tab_body_section_base.tsx",
-      "entry": "metal_finish_palette.js"
+      "entry": "finish_palette/api.js"
     },
     {
       "file": "esm/native/ui/react/tabs/structure_tab_body_section_base.tsx",

@@ -1,6 +1,6 @@
 import type { UnknownRecord } from '../../../../../types';
 
-import { normalizeHandleFinishColor } from '../../../features/handle_finish_shared.js';
+import { normalizeHandleFinishColor } from '../../../features/finish_palette/api.js';
 import { asStr } from './interior_tab_helpers.js';
 import type {
   DoorTrimUiAxis,

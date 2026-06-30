@@ -6,7 +6,7 @@ import type {
   SlidingUiState,
 } from './render_door_ops_shared_contracts.js';
 import { readCloneableMaterial } from './render_door_ops_shared_core.js';
-import { METAL_FINISH_PALETTE_BY_COLOR } from '../features/metal_finish_palette.js';
+import { METAL_FINISH_PALETTE_BY_COLOR } from '../features/finish_palette/api.js';
 
 export function createSlidingTrackPalette(uiState: SlidingUiState): SlidingTrackPalette {
   const isBlackSlidingTracks = uiState.slidingTracksColor === 'black';

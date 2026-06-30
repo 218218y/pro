@@ -21,7 +21,28 @@ const paletteSandbox = { module: { exports: {} }, exports: {} };
 paletteSandbox.exports = paletteSandbox.module.exports;
 vm.runInNewContext(paletteTranspiled, paletteSandbox, { filename: palettePath });
 
-const srcPath = path.resolve('esm/native/features/handle_finish_shared.ts');
+const handlePath = path.resolve('esm/native/features/handle_finish_shared.ts');
+const handleSrc = fs.readFileSync(handlePath, 'utf8');
+const handleTranspiled = ts.transpileModule(handleSrc, {
+  compilerOptions: {
+    module: ts.ModuleKind.CommonJS,
+    target: ts.ScriptTarget.ES2020,
+  },
+  fileName: handlePath,
+}).outputText;
+
+const handleSandbox = {
+  module: { exports: {} },
+  exports: {},
+  require: spec => {
+    if (spec === './metal_finish_palette.js') return paletteSandbox.module.exports;
+    throw new Error(`Unexpected import: ${spec}`);
+  },
+};
+handleSandbox.exports = handleSandbox.module.exports;
+vm.runInNewContext(handleTranspiled, handleSandbox, { filename: handlePath });
+
+const srcPath = path.resolve('esm/native/features/finish_palette/api.ts');
 const src = fs.readFileSync(srcPath, 'utf8');
 const transpiled = ts.transpileModule(src, {
   compilerOptions: {
@@ -35,7 +56,8 @@ const sandbox = {
   module: { exports: {} },
   exports: {},
   require: spec => {
-    if (spec === './metal_finish_palette.js') return paletteSandbox.module.exports;
+    if (spec === '../metal_finish_palette.js') return paletteSandbox.module.exports;
+    if (spec === '../handle_finish_shared.js') return handleSandbox.module.exports;
     throw new Error(`Unexpected import: ${spec}`);
   },
 };
@@ -49,7 +71,7 @@ const {
   isHandleFinishCustomColor,
 } = sandbox.module.exports;
 
-test('handle finish shared supports pink and custom hex colors canonically', () => {
+test('finish palette API supports pink and custom hex handle colors canonically', () => {
   assert.deepEqual(Array.from(HANDLE_FINISH_COLORS), ['nickel', 'silver', 'gold', 'black', 'pink']);
   assert.equal(normalizeHandleFinishColor('pink'), 'pink');
   assert.equal(normalizeHandleFinishColor('#F3B6CB'), '#f3b6cb');
@@ -58,7 +80,7 @@ test('handle finish shared supports pink and custom hex colors canonically', () 
   assert.equal(isHandleFinishCustomColor('gold'), false);
 });
 
-test('handle finish shared brightens gold, keeps nickel visible, and preserves custom palette hex', () => {
+test('finish palette API brightens gold, keeps nickel visible, and preserves custom palette hex', () => {
   const gold = resolveHandleFinishPalette('gold');
   const nickel = resolveHandleFinishPalette('nickel');
   const custom = resolveHandleFinishPalette('#abcdef');

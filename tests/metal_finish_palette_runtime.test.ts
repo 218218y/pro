@@ -2,8 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { getBaseLegColorHex } from '../esm/native/features/base_leg_support.ts';
-import { resolveHandleFinishPalette } from '../esm/native/features/handle_finish_shared.ts';
-import { METAL_FINISH_PALETTE_BY_COLOR } from '../esm/native/features/metal_finish_palette.ts';
+import {
+  METAL_FINISH_PALETTE_BY_COLOR,
+  resolveHandleFinishPalette,
+} from '../esm/native/features/finish_palette/api.ts';
 import { createSlidingTrackPalette } from '../esm/native/builder/render_door_ops_shared_materials.ts';
 
 test('nickel finish is shared by sliding tracks, base legs, and handles', () => {
