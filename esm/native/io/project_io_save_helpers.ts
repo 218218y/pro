@@ -8,11 +8,11 @@ import type {
 
 import { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from './project_schema.js';
 import { validateProjectData } from './project_schema_validation.js';
-import { canonicalizeComparableProjectConfigSnapshot } from '../features/project_config/project_config_snapshot_canonical.js';
+import { canonicalizeComparableProjectConfigSnapshot } from '../features/project_config/api.js';
 import {
   buildStructureCfgSnapshot,
   buildStructureUiSnapshotFromUiState,
-} from '../features/project_config/project_config_lists_canonical.js';
+} from '../features/project_config/api.js';
 import { readPersistedProjectConfigSnapshot } from './project_config_persisted_snapshot.js';
 import { SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY } from '../features/shoe_drawer_base_constraint.js';
 

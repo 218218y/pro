@@ -11,7 +11,7 @@ import type {
   WardrobeType,
 } from '../../../types';
 
-import { canonicalizeProjectConfigStructuralSnapshot } from '../features/project_config/project_config_lists_canonical.js';
+import { canonicalizeProjectConfigStructuralSnapshot } from '../features/project_config/api.js';
 
 export type MetaNoBuildFn = (
   actions: ActionsNamespaceLike,

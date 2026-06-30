@@ -5,7 +5,7 @@ import {
   isPlainRecord,
   shallowCloneRecord,
 } from './store_contract.js';
-import { canonicalizeProjectConfigStructuralSnapshot } from '../features/project_config/project_config_lists_canonical.js';
+import { canonicalizeProjectConfigStructuralSnapshot } from '../features/project_config/api.js';
 
 export type UnknownRecord = Record<string, unknown>;
 export type RootSliceValue = RootStateLike[RootSliceKey];

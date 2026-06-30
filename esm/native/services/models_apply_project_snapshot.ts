@@ -5,7 +5,7 @@ import { captureProjectSnapshotMaybe } from '../runtime/project_capture_access.j
 import { readPersistedProjectConfigSnapshot } from '../io/project_config_persisted_snapshot.js';
 import { cloneProjectJson } from '../io/project_payload_shared.js';
 import { normalizeModelRecord } from '../features/model_record/api.js';
-import { canonicalizeComparableProjectConfigSnapshot } from '../features/project_config/project_config_snapshot_canonical.js';
+import { canonicalizeComparableProjectConfigSnapshot } from '../features/project_config/api.js';
 import { asCornerConfiguration } from '../runtime/cfg_access_shared.js';
 import { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from '../../shared/project_schema_constants.js';
 

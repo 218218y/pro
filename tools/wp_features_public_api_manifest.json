@@ -23,9 +23,7 @@
     "modules_configuration/corner_cells_api.js",
     "modules_configuration/modules_config_api.js",
     "platform_overhang_support.js",
-    "project_config/project_config_lists_canonical.js",
-    "project_config/project_config_map_readers.js",
-    "project_config/project_config_snapshot_canonical.js",
+    "project_config/api.js",
     "removable_parts.js",
     "shelf_part_identity.js",
     "shoe_drawer_base_constraint.js",
@@ -59,11 +57,7 @@
       "modules_configuration/corner_cells_api.js",
       "modules_configuration/modules_config_api.js"
     ],
-    "project_config": [
-      "project_config/project_config_lists_canonical.js",
-      "project_config/project_config_map_readers.js",
-      "project_config/project_config_snapshot_canonical.js"
-    ],
+    "project_config": ["project_config/api.js"],
     "removable_parts": ["removable_parts.js"],
     "shelf_part_identity": ["shelf_part_identity.js"],
     "shoe_drawer_base_constraint": ["shoe_drawer_base_constraint.js"],

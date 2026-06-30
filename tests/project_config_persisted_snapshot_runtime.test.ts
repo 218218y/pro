@@ -5,7 +5,7 @@ import {
   canonicalizeComparableProjectConfigPatch,
   canonicalizeComparableProjectConfigSnapshot,
   PERSISTED_PROJECT_CONFIG_BRANCH_KEYS,
-} from '../esm/native/features/project_config/project_config_snapshot_canonical.ts';
+} from '../esm/native/features/project_config/api.ts';
 import {
   readConfigStateProjectConfigSnapshot,
   readPersistedProjectConfigSnapshot,

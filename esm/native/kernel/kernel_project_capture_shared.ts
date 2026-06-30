@@ -4,7 +4,7 @@ import {
   buildStructureCfgSnapshot as buildProjectConfigStructureCfgSnapshot,
   buildStructureUiSnapshotFromUiAndRaw as buildProjectConfigStructureUiSnapshotFromUiAndRaw,
   normalizeWardrobeType as normalizeProjectConfigWardrobeType,
-} from '../features/project_config/project_config_lists_canonical.js';
+} from '../features/project_config/api.js';
 
 function isObjectRecord(value: unknown): value is UnknownRecord {
   return !!value && typeof value === 'object' && !Array.isArray(value);

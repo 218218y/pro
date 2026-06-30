@@ -36,7 +36,7 @@ import {
   readSplitDoorsBottomMapValue as readSplitDoorsBottomMapValueShared,
   readSplitDoorsMapValue as readSplitDoorsMapValueShared,
   readToggleMap as readToggleMapShared,
-} from '../features/project_config/project_config_map_readers.js';
+} from '../features/project_config/api.js';
 
 export function readStringMap(value: unknown): Record<string, string | null | undefined> {
   return readStringMapShared(value);

@@ -14,7 +14,7 @@ import type {
   BuildStateLike,
 } from '../../../types/index.js';
 
-import { canonicalizeProjectConfigStructuralSnapshot } from '../features/project_config/project_config_lists_canonical.js';
+import { canonicalizeProjectConfigStructuralSnapshot } from '../features/project_config/api.js';
 import { asRecord, cloneRecord } from '../runtime/record.js';
 import { getActionNamespace } from '../runtime/actions_access_core.js';
 import { getConfigActions } from '../runtime/actions_access_domains.js';

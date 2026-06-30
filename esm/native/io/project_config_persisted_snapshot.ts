@@ -31,7 +31,7 @@ import {
 import {
   PERSISTED_PROJECT_CONFIG_BRANCH_KEYS,
   type PersistedProjectConfigBranchKey,
-} from '../features/project_config/project_config_snapshot_canonical.js';
+} from '../features/project_config/api.js';
 
 export type PersistedSavedColorsSnapshot = Array<SavedColorLike | string>;
 type PersistedCornerConfigurationSnapshot = ReturnType<typeof cloneCornerConfigurationListsSnapshot>;

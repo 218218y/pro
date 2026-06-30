@@ -1,7 +1,9 @@
 import type { SavedModelLike, UnknownRecord } from '../../../../types/index.js';
 
-import { canonicalizeProjectConfigListsForLoad } from '../project_config/project_config_lists_canonical.js';
-import { canonicalizeComparableProjectConfigSnapshot } from '../project_config/project_config_snapshot_canonical.js';
+import {
+  canonicalizeComparableProjectConfigSnapshot,
+  canonicalizeProjectConfigListsForLoad,
+} from '../project_config/api.js';
 import { calculateModuleStructure } from '../modules_configuration/calc_module_structure.js';
 import { materializeTopModulesConfigurationForStructure } from '../modules_configuration/modules_config_api.js';
 

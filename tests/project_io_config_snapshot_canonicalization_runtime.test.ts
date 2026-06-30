@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { buildProjectConfigSnapshot } from '../esm/native/io/project_io_load_helpers.ts';
-import { canonicalizeComparableProjectConfigSnapshot } from '../esm/native/features/project_config/project_config_snapshot_canonical.ts';
+import { canonicalizeComparableProjectConfigSnapshot } from '../esm/native/features/project_config/api.ts';
 import {
   buildDefaultProjectDataSnapshot,
   finalizeProjectForSavePayload,

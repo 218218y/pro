@@ -2,7 +2,7 @@ import type { UnknownRecord } from '../../../types';
 
 import { cloneModulesConfigurationSnapshot } from '../features/modules_configuration/modules_config_api.js';
 import { buildStructureCfgSnapshot, buildStructureUiSnapshot } from './kernel_project_capture_shared.js';
-import { cloneCanonicalCornerConfiguration } from '../features/project_config/project_config_lists_canonical.js';
+import { cloneCanonicalCornerConfiguration } from '../features/project_config/api.js';
 
 export interface KernelProjectCaptureCanonicalConfigLists {
   modulesConfiguration: unknown;

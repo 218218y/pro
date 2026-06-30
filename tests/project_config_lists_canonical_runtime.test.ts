@@ -8,7 +8,7 @@ import {
   canonicalizeProjectConfigStructuralLists,
   canonicalizeProjectConfigStructuralPatch,
   canonicalizeProjectConfigStructuralSnapshot,
-} from '../esm/native/features/project_config/project_config_lists_canonical.ts';
+} from '../esm/native/features/project_config/api.ts';
 
 test('project config canonicalization: structural list helper reconciles sparse top modules against structure context and keeps empty corner snapshots light in auto mode', () => {
   const result = canonicalizeProjectConfigStructuralLists(

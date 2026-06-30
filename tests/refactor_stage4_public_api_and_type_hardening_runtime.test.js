@@ -30,7 +30,7 @@ test('features public API manifest exposes canonical facades instead of private 
   assert.equal(entries.has('special_dims/index.js'), true);
   assert.equal(entries.has('library_preset/library_preset.js'), true);
   assert.equal(entries.has('model_record/api.js'), true);
-  assert.equal(entries.has('project_config/project_config_map_readers.js'), true);
+  assert.equal(entries.has('project_config/api.js'), true);
   assert.equal(entries.has('modules_configuration/modules_config_contracts.js'), false);
   assert.equal(entries.has('stack_split/module_config.js'), false);
   assert.equal(entries.has('special_dims/special_dims.js'), false);
@@ -39,6 +39,9 @@ test('features public API manifest exposes canonical facades instead of private 
   assert.equal(entries.has('model_record/model_record_normalizer.js'), false);
   assert.equal(entries.has('project_config/project_config_persisted_snapshot.js'), false);
   assert.equal(entries.has('project_config/project_config_persisted_payload_shared.js'), false);
+  assert.equal(entries.has('project_config/project_config_lists_canonical.js'), false);
+  assert.equal(entries.has('project_config/project_config_map_readers.js'), false);
+  assert.equal(entries.has('project_config/project_config_snapshot_canonical.js'), false);
 });
 
 test('features public API reports use platform-independent ordering', () => {

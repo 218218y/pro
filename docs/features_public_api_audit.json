@@ -23,9 +23,7 @@
     "modules_configuration/corner_cells_api.js",
     "modules_configuration/modules_config_api.js",
     "platform_overhang_support.js",
-    "project_config/project_config_lists_canonical.js",
-    "project_config/project_config_map_readers.js",
-    "project_config/project_config_snapshot_canonical.js",
+    "project_config/api.js",
     "removable_parts.js",
     "shelf_part_identity.js",
     "shoe_drawer_base_constraint.js",
@@ -60,11 +58,7 @@
       "modules_configuration/modules_config_api.js"
     ],
     "platform_overhang_support": ["platform_overhang_support.js"],
-    "project_config": [
-      "project_config/project_config_lists_canonical.js",
-      "project_config/project_config_map_readers.js",
-      "project_config/project_config_snapshot_canonical.js"
-    ],
+    "project_config": ["project_config/api.js"],
     "removable_parts": ["removable_parts.js"],
     "shelf_part_identity": ["shelf_part_identity.js"],
     "shoe_drawer_base_constraint": ["shoe_drawer_base_constraint.js"],
@@ -142,7 +136,7 @@
     },
     {
       "file": "esm/native/builder/build_state_resolver.ts",
-      "entry": "project_config/project_config_lists_canonical.js"
+      "entry": "project_config/api.js"
     },
     {
       "file": "esm/native/builder/build_visible_config_gates.ts",
@@ -782,7 +776,7 @@
     },
     {
       "file": "esm/native/builder/store_access.ts",
-      "entry": "project_config/project_config_lists_canonical.js"
+      "entry": "project_config/api.js"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
@@ -850,15 +844,15 @@
     },
     {
       "file": "esm/native/io/project_config_persisted_snapshot.ts",
-      "entry": "project_config/project_config_snapshot_canonical.js"
+      "entry": "project_config/api.js"
     },
     {
       "file": "esm/native/io/project_io_config_snapshot_canonical.ts",
-      "entry": "project_config/project_config_lists_canonical.js"
+      "entry": "project_config/api.js"
     },
     {
       "file": "esm/native/io/project_io_config_snapshot_canonical.ts",
-      "entry": "project_config/project_config_snapshot_canonical.js"
+      "entry": "project_config/api.js"
     },
     {
       "file": "esm/native/io/project_io_load_helpers.ts",
@@ -866,15 +860,15 @@
     },
     {
       "file": "esm/native/io/project_io_load_helpers_maps.ts",
-      "entry": "project_config/project_config_map_readers.js"
+      "entry": "project_config/api.js"
     },
     {
       "file": "esm/native/io/project_io_save_helpers.ts",
-      "entry": "project_config/project_config_snapshot_canonical.js"
+      "entry": "project_config/api.js"
     },
     {
       "file": "esm/native/io/project_io_save_helpers.ts",
-      "entry": "project_config/project_config_lists_canonical.js"
+      "entry": "project_config/api.js"
     },
     {
       "file": "esm/native/io/project_io_save_helpers.ts",
@@ -934,7 +928,7 @@
     },
     {
       "file": "esm/native/kernel/domain_api_room_section_shared.ts",
-      "entry": "project_config/project_config_lists_canonical.js"
+      "entry": "project_config/api.js"
     },
     {
       "file": "esm/native/kernel/kernel_project_capture_config_lists.ts",
@@ -942,7 +936,7 @@
     },
     {
       "file": "esm/native/kernel/kernel_project_capture_config_lists.ts",
-      "entry": "project_config/project_config_lists_canonical.js"
+      "entry": "project_config/api.js"
     },
     {
       "file": "esm/native/kernel/kernel_project_capture_payload.ts",
@@ -958,19 +952,19 @@
     },
     {
       "file": "esm/native/kernel/kernel_project_capture_shared.ts",
-      "entry": "project_config/project_config_lists_canonical.js"
+      "entry": "project_config/api.js"
     },
     {
       "file": "esm/native/kernel/kernel_project_config_snapshot_canonical.ts",
-      "entry": "project_config/project_config_snapshot_canonical.js"
+      "entry": "project_config/api.js"
     },
     {
       "file": "esm/native/kernel/kernel_project_config_snapshot_canonical.ts",
-      "entry": "project_config/project_config_snapshot_canonical.js"
+      "entry": "project_config/api.js"
     },
     {
       "file": "esm/native/kernel/kernel_project_config_snapshot_canonical.ts",
-      "entry": "project_config/project_config_snapshot_canonical.js"
+      "entry": "project_config/api.js"
     },
     {
       "file": "esm/native/kernel/kernel_snapshot_store_build_state.ts",
@@ -1042,7 +1036,7 @@
     },
     {
       "file": "esm/native/platform/store_shared.ts",
-      "entry": "project_config/project_config_lists_canonical.js"
+      "entry": "project_config/api.js"
     },
     {
       "file": "esm/native/services/api_services_project_surface.ts",
@@ -1714,7 +1708,7 @@
     },
     {
       "file": "esm/native/services/models_apply_project_snapshot.ts",
-      "entry": "project_config/project_config_snapshot_canonical.js"
+      "entry": "project_config/api.js"
     },
     {
       "file": "esm/native/services/models_registry_normalization.ts",
