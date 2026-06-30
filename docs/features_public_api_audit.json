@@ -28,7 +28,6 @@
     "project_config/project_config_persisted_snapshot.js",
     "project_config/project_config_snapshot_canonical.js",
     "removable_parts.js",
-    "shelf_front_edge_material.js",
     "shelf_part_identity.js",
     "shoe_drawer_base_constraint.js",
     "sketch_box_regular_external_drawers.js",
@@ -69,7 +68,6 @@
       "project_config/project_config_snapshot_canonical.js"
     ],
     "removable_parts": ["removable_parts.js"],
-    "shelf_front_edge_material": ["shelf_front_edge_material.js"],
     "shelf_part_identity": ["shelf_part_identity.js"],
     "shoe_drawer_base_constraint": ["shoe_drawer_base_constraint.js"],
     "sketch_box_regular_external_drawers": ["sketch_box_regular_external_drawers.js"],
@@ -127,10 +125,6 @@
     {
       "file": "esm/native/builder/build_flow_plan_materials.ts",
       "entry": "front_color_shelf_inheritance.js"
-    },
-    {
-      "file": "esm/native/builder/build_flow_plan_materials.ts",
-      "entry": "shelf_front_edge_material.js"
     },
     {
       "file": "esm/native/builder/build_no_main_sketch_host.ts",
@@ -463,10 +457,6 @@
     {
       "file": "esm/native/builder/materials_apply_color_policy.ts",
       "entry": "front_color_shelf_inheritance.js"
-    },
-    {
-      "file": "esm/native/builder/materials_apply_color_policy.ts",
-      "entry": "shelf_front_edge_material.js"
     },
     {
       "file": "esm/native/builder/materials_apply_color_policy.ts",

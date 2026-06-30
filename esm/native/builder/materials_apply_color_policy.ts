@@ -1,6 +1,6 @@
 import { isDrawerBoxPartId } from '../features/drawer_box_identity.js';
 import { isFrontColorBraceShelvesOnlyMode } from '../features/front_color_shelf_inheritance.js';
-import { createShelfFrontEdgeMaterials } from '../features/shelf_front_edge_material.js';
+import { createShelfFrontEdgeMaterials } from './shelf_front_edge_material.js';
 import {
   SHELF_GROUP_PART_ID,
   CORNER_SHELF_GROUP_PART_ID,

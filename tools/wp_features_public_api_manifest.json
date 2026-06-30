@@ -28,7 +28,6 @@
     "project_config/project_config_persisted_snapshot.js",
     "project_config/project_config_snapshot_canonical.js",
     "removable_parts.js",
-    "shelf_front_edge_material.js",
     "shelf_part_identity.js",
     "shoe_drawer_base_constraint.js",
     "sketch_box_regular_external_drawers.js",
@@ -68,7 +67,6 @@
       "project_config/project_config_snapshot_canonical.js"
     ],
     "removable_parts": ["removable_parts.js"],
-    "shelf_front_edge_material": ["shelf_front_edge_material.js"],
     "shelf_part_identity": ["shelf_part_identity.js"],
     "shoe_drawer_base_constraint": ["shoe_drawer_base_constraint.js"],
     "sketch_box_regular_external_drawers": ["sketch_box_regular_external_drawers.js"],

@@ -1,5 +1,3 @@
-// Shelf front-edge material helpers
-//
 // THREE.BoxGeometry face material order is: +X, -X, +Y, -Y, +Z, -Z.
 // Wardrobe shelf depth is rendered on the Z axis, so the user-visible front edge is +Z.
 
