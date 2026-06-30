@@ -14,6 +14,7 @@ export {
   setCfgIndividualColors,
   setCfgLibraryMode,
   setCfgManualWidth,
+  setCfgMirrorReflectorEnabled,
   setCfgLowerModulesConfiguration,
   setCfgMap,
   setCfgModulesConfiguration,

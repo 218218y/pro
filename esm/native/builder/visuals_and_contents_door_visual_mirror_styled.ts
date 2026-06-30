@@ -208,7 +208,7 @@ export function createStyledMirrorDoorVisual(args: CreateStyledMirrorDoorVisualA
         sketchMode: args.isSketch,
       });
     } catch {
-      // Keep the legacy envMap material as a safe fallback.
+      // Keep the existing envMap mirror material for cube mode.
     }
     center.panel.add(mirrorMesh);
   }
@@ -255,7 +255,7 @@ export function createStyledFullMirrorDoorVisual(args: CreateStyledMirrorDoorVis
         sketchMode: args.isSketch,
       });
     } catch {
-      // Keep the legacy envMap material as a safe fallback.
+      // Keep the existing envMap mirror material for cube mode.
     }
     visualGroup.add(mirrorMesh);
   }

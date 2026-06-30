@@ -1,6 +1,7 @@
 import type { AppContainer, MetaActionsNamespaceLike } from '../../../../../types';
 
 import {
+  setCfgMirrorReflectorEnabled,
   setCfgShowDimensions,
   setUiDarkMode,
   setUiGlobalClickUi,
@@ -15,6 +16,7 @@ import { runPerfAction } from '../../../services/api.js';
 export type SettingsVisualDisplayController = {
   syncGlobalClickState: (globalClickRt: boolean, globalClickUi: boolean) => void;
   onToggleShowDimensions: (checked: boolean) => void;
+  onToggleMirrorReflector: (checked: boolean) => void;
   onToggleShowHanger: (checked: boolean) => void;
   onToggleGlobalClick: (checked: boolean) => void;
   onToggleDarkMode: (checked: boolean) => void;
@@ -24,6 +26,7 @@ type SettingsVisualDisplayControllerArgs = {
   app: AppContainer;
   meta: MetaActionsNamespaceLike;
   setCfgShowDimensionsFn?: typeof setCfgShowDimensions;
+  setCfgMirrorReflectorEnabledFn?: typeof setCfgMirrorReflectorEnabled;
   setUiDarkModeFn?: typeof setUiDarkMode;
   setUiShowHangerFn?: typeof setUiShowHanger;
   setUiGlobalClickUiFn?: typeof setUiGlobalClickUi;
@@ -38,6 +41,7 @@ export function createSettingsVisualDisplayController(
     app,
     meta,
     setCfgShowDimensionsFn = setCfgShowDimensions,
+    setCfgMirrorReflectorEnabledFn = setCfgMirrorReflectorEnabled,
     setUiDarkModeFn = setUiDarkMode,
     setUiShowHangerFn = setUiShowHanger,
     setUiGlobalClickUiFn = setUiGlobalClickUi,
@@ -55,6 +59,20 @@ export function createSettingsVisualDisplayController(
           immediate: true,
         }),
       { detail: { checked: !!checked } }
+    );
+  };
+
+  const onToggleMirrorReflector = (checked: boolean): void => {
+    const next = !!checked;
+    runPerfAction(
+      app,
+      'settingsVisual.mirrorReflector.toggle',
+      () =>
+        setCfgMirrorReflectorEnabledFn(app, next, {
+          source: 'react:settingsVisual:mirrorReflector',
+          immediate: true,
+        }),
+      { detail: { checked: next } }
     );
   };
 
@@ -115,6 +133,7 @@ export function createSettingsVisualDisplayController(
   return {
     syncGlobalClickState,
     onToggleShowDimensions,
+    onToggleMirrorReflector,
     onToggleShowHanger,
     onToggleGlobalClick,
     onToggleDarkMode,

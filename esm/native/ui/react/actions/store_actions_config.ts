@@ -29,6 +29,7 @@ export {
   setCfgGlobalHandleType,
   setCfgLibraryMode,
   setCfgMultiColorMode,
+  setCfgMirrorReflectorEnabled,
   setCfgSavedColors,
   setCfgShowDimensions,
 } from './store_actions_config_modes.js';

@@ -9,11 +9,13 @@ import type {
 
 export type SettingsVisualDisplaySectionModel = {
   showDimensions: boolean;
+  mirrorReflectorEnabled: boolean;
   showContents: boolean;
   showHanger: boolean;
   globalClickUi: boolean;
   darkMode: boolean;
   onToggleShowDimensions: (checked: boolean) => void;
+  onToggleMirrorReflector: (checked: boolean) => void;
   onToggleShowHanger: (checked: boolean) => void;
   onToggleGlobalClick: (checked: boolean) => void;
   onToggleDarkMode: (checked: boolean) => void;

@@ -12,6 +12,7 @@ import {
   setCfgGlobalHandleType as setCfgGlobalHandleTypeApi,
   setCfgLibraryMode as setCfgLibraryModeApi,
   setCfgMultiColorMode as setCfgMultiColorModeApi,
+  setCfgMirrorReflectorEnabled as setCfgMirrorReflectorEnabledApi,
   setCfgSavedColors as setCfgSavedColorsApi,
   setCfgShowDimensions as setCfgShowDimensionsApi,
 } from '../../../services/api.js';
@@ -88,6 +89,10 @@ function setCfgShowDimensions(app: AppContainer, on: boolean | unknown, meta?: A
   void setCfgShowDimensionsApi(app, asBoolean(on), meta);
 }
 
+function setCfgMirrorReflectorEnabled(app: AppContainer, on: boolean | unknown, meta?: ActionMetaLike): void {
+  void setCfgMirrorReflectorEnabledApi(app, asBoolean(on), meta);
+}
+
 function setCfgLibraryMode(app: AppContainer, on: boolean | unknown, meta?: ActionMetaLike): void {
   void setCfgLibraryModeApi(app, asBoolean(on), meta);
 }
@@ -104,6 +109,7 @@ export {
   setCfgGlobalHandleType,
   setCfgLibraryMode,
   setCfgMultiColorMode,
+  setCfgMirrorReflectorEnabled,
   setCfgSavedColors,
   setCfgShowDimensions,
 };

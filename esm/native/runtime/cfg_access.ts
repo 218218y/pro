@@ -33,6 +33,7 @@ export {
   setCfgLibraryMode,
   setCfgLowerModulesConfiguration,
   setCfgManualWidth,
+  setCfgMirrorReflectorEnabled,
   setCfgModulesConfiguration,
   setCfgMultiColorMode,
   setCfgSavedColors,

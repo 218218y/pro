@@ -16,6 +16,7 @@ export type ConfigScalarKey =
   | 'isLibraryMode'
   | 'isMultiColorMode'
   | 'showDimensions'
+  | 'MIRROR_REFLECTOR_ENABLED'
   | 'isManualWidth'
   | 'customUploadedDataURL'
   | 'grooveLinesCount'
@@ -46,6 +47,7 @@ export type ConfigScalarValueMap = {
   isLibraryMode: boolean;
   isMultiColorMode: boolean;
   showDimensions: boolean;
+  MIRROR_REFLECTOR_ENABLED: boolean;
   isManualWidth: boolean;
   customUploadedDataURL: string | null;
   grooveLinesCount: number | null;

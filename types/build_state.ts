@@ -297,6 +297,7 @@ export interface ConfigStateLike extends UnknownRecord {
   globalHandleType?: HandleType;
   isMultiColorMode?: boolean;
   showDimensions?: boolean;
+  MIRROR_REFLECTOR_ENABLED?: boolean;
   isManualWidth?: boolean;
   boardMaterial?: BoardMaterial | '';
   doorMountMode?: DoorMountMode | '';

@@ -37,6 +37,17 @@ export function SettingsVisualDisplaySection(props: {
       <ToggleRow
         label={
           <>
+            <i className="fas fa-gem"></i> מראה ממשית
+          </>
+        }
+        checked={model.mirrorReflectorEnabled}
+        onChange={model.onToggleMirrorReflector}
+        testId="toggle-mirror-reflector"
+      />
+
+      <ToggleRow
+        label={
+          <>
             <i className="fas fa-hanger"></i> קולב למוט (תצוגה)
           </>
         }

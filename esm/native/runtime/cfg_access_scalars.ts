@@ -134,6 +134,16 @@ export function setCfgShowDimensions(App: unknown, on: unknown, meta?: ActionMet
   return next;
 }
 
+export function setCfgMirrorReflectorEnabled(
+  App: unknown,
+  on: unknown,
+  meta?: ActionMetaLike
+): boolean | undefined {
+  const next = !!on;
+  void cfgSetScalar(App, 'MIRROR_REFLECTOR_ENABLED', next, meta);
+  return next;
+}
+
 export function setCfgLibraryMode(App: unknown, on: unknown, meta?: ActionMetaLike): boolean | undefined {
   const next = !!on;
   void cfgSetScalar(App, 'isLibraryMode', next, meta);

@@ -5,8 +5,9 @@ import { createRenderLoopMirrorDriver } from '../esm/native/platform/render_loop
 
 type AnyRecord = Record<string, unknown>;
 
-function makeApp(mirrors: AnyRecord[]) {
+function makeApp(mirrors: AnyRecord[], config: AnyRecord = { MIRROR_REFLECTOR_ENABLED: false }) {
   return {
+    config,
     render: {
       mirrorCubeCamera: {
         updateCalls: 0,
@@ -57,6 +58,29 @@ function createDriver(
     },
   });
 }
+
+test('render loop mirror driver does not run cube updates while realistic mirror mode is enabled', () => {
+  const trackedMirror = { isMesh: true, __taggedMirror: true, parent: {}, visible: true };
+  const app = makeApp([trackedMirror], { MIRROR_REFLECTOR_ENABLED: true });
+  const slots = makeSlots({
+    __mirrorLastUpdateMs: -1,
+    __mirrorMotionActive: false,
+    __frameStartMs: 100,
+    __mirrorDirty: true,
+    __mirrorPresenceKnown: true,
+    __mirrorPresenceHasMirror: true,
+    __mirrorPresenceCheckedAtMs: 80,
+    __mirrorTrackedPruneAtMs: 0,
+  });
+
+  const driver = createDriver(app, slots, { now: 105 });
+
+  driver.updateMirrorCube();
+
+  assert.equal(((app.render as AnyRecord).mirrorCubeCamera as AnyRecord).updateCalls, 0);
+  assert.equal(slots.__mirrorDirty, false);
+  assert.equal(slots.__mirrorWorkPending, false);
+});
 
 test('render loop mirror driver defers tracked prune and presence scans when the frame is already over budget', () => {
   const trackedMirror = { isMesh: true, __taggedMirror: true, parent: {} };

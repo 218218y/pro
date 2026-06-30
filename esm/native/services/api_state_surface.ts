@@ -102,6 +102,7 @@ export {
   setCfgDoorMountMode,
   setCfgGlobalHandleType,
   setCfgShowDimensions,
+  setCfgMirrorReflectorEnabled,
   setCfgLibraryMode,
   setCfgWidth,
   setCfgHeight,

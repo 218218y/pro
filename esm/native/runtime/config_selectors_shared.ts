@@ -58,6 +58,7 @@ export const DEFAULTS: ConfigScalarDefaults = {
   isLibraryMode: false,
   isMultiColorMode: false,
   showDimensions: true,
+  MIRROR_REFLECTOR_ENABLED: true,
   isManualWidth: false,
   customUploadedDataURL: null,
   grooveLinesCount: null,
@@ -88,11 +89,18 @@ export function isGlobalHandleTypeKey(key: ConfigScalarKey): key is 'globalHandl
 
 export function isBooleanConfigKey(
   key: ConfigScalarKey
-): key is 'isLibraryMode' | 'isMultiColorMode' | 'showDimensions' | 'isManualWidth' | 'dirty' {
+): key is
+  | 'isLibraryMode'
+  | 'isMultiColorMode'
+  | 'showDimensions'
+  | 'MIRROR_REFLECTOR_ENABLED'
+  | 'isManualWidth'
+  | 'dirty' {
   return (
     key === 'isLibraryMode' ||
     key === 'isMultiColorMode' ||
     key === 'showDimensions' ||
+    key === 'MIRROR_REFLECTOR_ENABLED' ||
     key === 'isManualWidth' ||
     key === 'dirty'
   );

@@ -12,11 +12,13 @@ test('[settings-visual-sections-runtime] display section renders dark mode first
     React.createElement(SettingsVisualDisplaySection, {
       model: {
         showDimensions: true,
+        mirrorReflectorEnabled: true,
         showContents: false,
         showHanger: true,
         globalClickUi: true,
         darkMode: false,
         onToggleShowDimensions: noop,
+        onToggleMirrorReflector: noop,
         onToggleShowHanger: noop,
         onToggleGlobalClick: noop,
         onToggleDarkMode: noop,
@@ -24,11 +26,13 @@ test('[settings-visual-sections-runtime] display section renders dark mode first
     })
   );
   assert.match(html, /toggle-show-dimensions/);
+  assert.match(html, /toggle-mirror-reflector/);
   assert.match(html, /toggle-global-click/);
   assert.match(html, /toggle-dark-mode/);
   assert.ok(html.indexOf('toggle-dark-mode') < html.indexOf('toggle-show-dimensions'));
   assert.ok(html.indexOf('toggle-dark-mode') < html.indexOf('toggle-global-click'));
   assert.match(html, /מצב כהה/);
+  assert.match(html, /מראה ממשית/);
 });
 test('[settings-visual-sections-runtime] room section renders canonical room-design controls and fallback notice', () => {
   const roomHtml = renderToStaticMarkup(

@@ -9,8 +9,8 @@ const DEFAULT_REFLECTOR_MIN_EDGE = 384;
 const DEFAULT_REFLECTOR_MAX_COUNT = 8;
 const DEFAULT_REFLECTOR_CLIP_BIAS = 0.003;
 const DEFAULT_REFLECTOR_MULTISAMPLE = 4;
-const DEFAULT_REFLECTOR_COLOR = 0xa3a3a3;
-const DEFAULT_REFLECTOR_BRIGHTNESS = 1.0;
+const DEFAULT_REFLECTOR_COLOR = 0x7f7f7f;
+const DEFAULT_REFLECTOR_BRIGHTNESS = 1.04;
 const DEFAULT_REFLECTOR_SURFACE_GAP_M = 0.004;
 const DEFAULT_REFLECTOR_SURFACE_INSET_M = 0.006;
 const DEFAULT_REFLECTOR_EDGE_FEATHER_UV = 0.012;
@@ -372,14 +372,14 @@ function readBoxGeometryParameters(mirror: Object3DLike): UnknownRecord | null {
     : null;
 }
 
-function readEdgeMaterial(original: unknown, fallback: UnknownRecord): unknown {
+function readEdgeMaterial(original: unknown, defaultMaterial: UnknownRecord): unknown {
   if (Array.isArray(original)) {
     for (let i = 0; i < original.length; i += 1) {
       const material = readRecord(original[i]);
       if (material && readRecord(material.userData)?.__wpPlanarReflectorMaterial !== true) return material;
     }
   }
-  return readRecord(original) || fallback;
+  return readRecord(original) || defaultMaterial;
 }
 
 function cloneStableMirrorBackingMaterial(THREE: ThreeLike, original: unknown): UnknownRecord | null {

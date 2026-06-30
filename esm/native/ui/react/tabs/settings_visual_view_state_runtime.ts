@@ -7,6 +7,7 @@ import { asFiniteNumber, asRecord, getFloorTypeFromUi } from './settings_visual_
 
 export type SettingsVisualCfgState = {
   showDimensions: boolean;
+  mirrorReflectorEnabled: boolean;
 };
 
 export type SettingsVisualUiState = {
@@ -33,6 +34,8 @@ export type SettingsVisualRuntimeState = {
 export function readSettingsVisualCfgState(cfg: UnknownRecord): SettingsVisualCfgState {
   return {
     showDimensions: !!cfg.showDimensions,
+    mirrorReflectorEnabled:
+      typeof cfg.MIRROR_REFLECTOR_ENABLED === 'boolean' ? !!cfg.MIRROR_REFLECTOR_ENABLED : true,
   };
 }
 

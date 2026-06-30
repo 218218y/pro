@@ -448,7 +448,7 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
         sketchMode: renderPolicy.sketchMode,
       });
     } catch {
-      // Keep the legacy envMap material as a safe fallback.
+      // Keep the existing envMap mirror material for cube mode.
     }
     mirror.renderOrder = 2;
     trackMirrorSurface(App, mirror);

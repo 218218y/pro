@@ -28,6 +28,7 @@ function loadSettingsVisualDisplayControllerModule() {
     }
     if (specifier === '../actions/store_actions.js') {
       return {
+        setCfgMirrorReflectorEnabled: () => undefined,
         setCfgShowDimensions: () => undefined,
         setUiDarkMode: () => undefined,
         setUiGlobalClickUi: () => undefined,
@@ -76,6 +77,8 @@ test('[settings-visual-display-controller] delegates display/global-click action
     meta,
     setCfgShowDimensionsFn: (nextApp, checked, actionMeta) =>
       calls.push(['dimensions', nextApp, checked, actionMeta]),
+    setCfgMirrorReflectorEnabledFn: (nextApp, checked, actionMeta) =>
+      calls.push(['mirrorReflector', nextApp, checked, actionMeta]),
     setUiDarkModeFn: (nextApp, checked, actionMeta) => calls.push(['darkMode', nextApp, checked, actionMeta]),
     setUiShowHangerFn: (nextApp, checked, actionMeta) => calls.push(['hanger', nextApp, checked, actionMeta]),
     setUiGlobalClickUiFn: (nextApp, checked, actionMeta) =>
@@ -86,6 +89,7 @@ test('[settings-visual-display-controller] delegates display/global-click action
   });
 
   controller.onToggleShowDimensions(true);
+  controller.onToggleMirrorReflector(false);
   controller.onToggleShowHanger(true);
   controller.onToggleGlobalClick(false);
   controller.onToggleGlobalClick(true);
@@ -97,6 +101,7 @@ test('[settings-visual-display-controller] delegates display/global-click action
     JSON.stringify(calls),
     JSON.stringify([
       ['dimensions', app, true, { source: 'react:settingsVisual:showDimensions', immediate: true }],
+      ['mirrorReflector', app, false, { source: 'react:settingsVisual:mirrorReflector', immediate: true }],
       ['hanger', app, true, { source: 'react:settingsVisual:showHanger', immediate: true }],
       ['globalUi', app, false, { source: 'react:settingsVisual:globalClickUi', immediate: true }],
       ['globalRt', app, false, { source: 'react:settingsVisual:globalClick', immediate: true }],

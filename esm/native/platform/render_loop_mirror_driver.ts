@@ -160,6 +160,7 @@ export function createRenderLoopMirrorDriver(
     const motionActive = !!getRenderSlot<boolean>(A, '__mirrorMotionActive');
     const interval = motionActive ? moveInterval : baseInterval;
     const disableDuringMotion = !!readConfigLooseScalarFromApp(A, 'MIRROR_DISABLE_DURING_MOTION', true);
+    const cubeMirrorMode = readConfigLooseScalarFromApp(A, 'MIRROR_REFLECTOR_ENABLED', true) === false;
 
     const frameStart0 = getRenderSlot<number>(A, '__frameStartMs');
     const frameStart = typeof frameStart0 === 'number' && Number.isFinite(frameStart0) ? frameStart0 : 0;
@@ -251,8 +252,8 @@ export function createRenderLoopMirrorDriver(
         ? readTrackedPlanarMirrorStats(A)
         : { mirrorCount: 0, planarCount: 0, fallbackCount: 0 };
       const hasPlanarReflectors = planarStats.planarCount > 0;
-      const hasLegacyMirrorSurfaces =
-        planarStats.fallbackCount > 0 || (hasMirror && planarStats.mirrorCount === 0);
+      const hasCubeMirrorSurfaces =
+        cubeMirrorMode && (planarStats.fallbackCount > 0 || (hasMirror && planarStats.mirrorCount === 0));
       const planarLast = readFiniteSlotNumber(getRenderSlot, A, '__mirrorPlanarLastUpdateMs', -1);
       const planarIntervalRaw = motionActive
         ? readConfigNumberLooseFromApp(A, 'MIRROR_REFLECTOR_MOVE_UPDATE_MS', 160)
@@ -277,18 +278,29 @@ export function createRenderLoopMirrorDriver(
           setRenderSlot(A, '__mirrorPresenceKnown', true);
           setRenderSlot(A, '__mirrorPresenceHasMirror', true);
           setRenderSlot(A, '__mirrorPresenceCheckedAtMs', mirrorNow);
-          if (!hasLegacyMirrorSurfaces) setRenderSlot(A, '__mirrorDirty', false);
-        } else if (mirrorDirty && !hasLegacyMirrorSurfaces) {
+          if (!hasCubeMirrorSurfaces) setRenderSlot(A, '__mirrorDirty', false);
+        } else if (mirrorDirty && !hasCubeMirrorSurfaces) {
           setRenderSlot(A, '__mirrorWorkPending', true);
         }
       }
 
-      if (hasMirror && hasPlanarReflectors && !hasLegacyMirrorSurfaces) {
+      if (hasMirror && hasPlanarReflectors && !hasCubeMirrorSurfaces) {
         if (!planarIntervalDue || planarRefreshed) {
           setRenderSlot(A, '__mirrorPresenceKnown', true);
           setRenderSlot(A, '__mirrorPresenceHasMirror', true);
           setRenderSlot(A, '__mirrorPresenceCheckedAtMs', mirrorNow);
           if (!mirrorDirty || planarRefreshed) setRenderSlot(A, '__mirrorWorkPending', false);
+        }
+        return;
+      }
+
+      if (!cubeMirrorMode) {
+        if (hasMirror) {
+          setRenderSlot(A, '__mirrorPresenceKnown', true);
+          setRenderSlot(A, '__mirrorPresenceHasMirror', true);
+          setRenderSlot(A, '__mirrorPresenceCheckedAtMs', mirrorNow);
+          setRenderSlot(A, '__mirrorDirty', false);
+          setRenderSlot(A, '__mirrorWorkPending', false);
         }
         return;
       }
@@ -303,7 +315,8 @@ export function createRenderLoopMirrorDriver(
         incrementRenderSlotCounter(getRenderSlot, setRenderSlot, A, '__mirrorMotionDeferredCount');
       }
 
-      let shouldRunMirrorCube = hasMirror && canRunInBudget && !mirrorDisabledForMotion && intervalDue;
+      let shouldRunMirrorCube =
+        cubeMirrorMode && hasMirror && canRunInBudget && !mirrorDisabledForMotion && intervalDue;
 
       if (shouldRunMirrorCube && mirrorsArr && mirrorsArr.length) {
         let foundMirrorForUpdate = false;

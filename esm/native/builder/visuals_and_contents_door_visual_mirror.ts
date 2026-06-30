@@ -162,7 +162,7 @@ export function createMirrorDoorVisual(args: MirrorDoorVisualArgs): Object3DLike
         sketchMode: isSketch,
       });
     } catch {
-      // Fallback to the existing envMap mirror material when reflector setup is unavailable.
+      // Keep the existing envMap mirror material for cube mode.
     }
     visualGroup.add(mirrorMesh);
 
