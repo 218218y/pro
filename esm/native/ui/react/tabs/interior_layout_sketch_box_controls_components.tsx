@@ -44,6 +44,7 @@ export function SketchBoxNumericField(props: NumericFieldProps): ReactElement {
       <div className={props.onReset ? 'wp-r-input-row wp-r-input-row--with-addon' : 'wp-r-input-row'}>
         <input
           id={inputId}
+          name={inputId}
           type="number"
           className={props.onReset ? 'wp-r-input wp-r-input--with-addon' : 'wp-r-input'}
           value={props.value}
@@ -96,13 +97,17 @@ export function SketchBoxPlatformOverhangField(props: {
   onChange: (value: number) => void;
   resetTitle: string;
 }): ReactElement {
+  const inputId = useId();
+
   return (
     <div className="wp-r-door-thickness-field wp-r-platform-overhang-field">
-      <label className="wp-r-door-thickness-label">
+      <label className="wp-r-door-thickness-label" htmlFor={inputId}>
         <span>{props.label}</span>
       </label>
       <div className="wp-r-door-thickness-input-row wp-r-platform-overhang-input-row">
         <input
+          id={inputId}
+          name={inputId}
           type="number"
           inputMode="decimal"
           className="wp-r-door-thickness-input wp-r-platform-overhang-input"

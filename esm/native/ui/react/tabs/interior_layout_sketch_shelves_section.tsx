@@ -1,5 +1,7 @@
 import type { ReactElement } from 'react';
 
+import { useReactDomId } from '../components/form_field_id.js';
+
 import { ModeToggleButton } from '../components/index.js';
 import {
   DEFAULT_SKETCH_SHELF_DEPTH_EDIT_CM,
@@ -203,6 +205,7 @@ export function InteriorSketchShelvesSection(props: InteriorLayoutSectionProps):
 }
 
 export function InteriorSketchShelfDepthField(props: InteriorLayoutSectionProps): ReactElement {
+  const shelfDepthInputId = useReactDomId('wp-r-sketch-shelf-depth');
   const activeSketchShelfVariant = parseSketchShelfVariant(props.manualToolRaw);
   const activeSketchShelfDepthDraft = activeSketchShelfVariant
     ? props.sketchShelfDepthDraftByVariant[activeSketchShelfVariant] || ''
@@ -223,10 +226,15 @@ export function InteriorSketchShelfDepthField(props: InteriorLayoutSectionProps)
           testId="interior-sketch-shelf-depth-reset-button"
         />
         <div className="wp-r-sketch-drawer-height-control">
-          <label className="wp-r-label wp-r-label--center wp-r-sketch-drawer-height-label">
+          <label
+            className="wp-r-label wp-r-label--center wp-r-sketch-drawer-height-label"
+            htmlFor={shelfDepthInputId}
+          >
             עומק מדף (ס"מ)
           </label>
           <input
+            id={shelfDepthInputId}
+            name={shelfDepthInputId}
             type="number"
             className="wp-r-input wp-r-sketch-drawer-height-input"
             value={activeSketchShelfDepthDraft}
@@ -339,6 +347,8 @@ export function InteriorSketchShelfDepthField(props: InteriorLayoutSectionProps)
 }
 
 export function InteriorSketchStorageHeightField(props: InteriorLayoutSectionProps): ReactElement {
+  const storageHeightInputId = useReactDomId('wp-r-sketch-storage-height');
+
   return (
     <div
       className={cx(
@@ -354,10 +364,15 @@ export function InteriorSketchStorageHeightField(props: InteriorLayoutSectionPro
           testId="interior-sketch-storage-height-reset-button"
         />
         <div className="wp-r-sketch-drawer-height-control">
-          <label className="wp-r-label wp-r-label--center wp-r-sketch-drawer-height-label">
+          <label
+            className="wp-r-label wp-r-label--center wp-r-sketch-drawer-height-label"
+            htmlFor={storageHeightInputId}
+          >
             גובה אוגר מצעים (ס"מ)
           </label>
           <input
+            id={storageHeightInputId}
+            name={storageHeightInputId}
             type="number"
             className="wp-r-input wp-r-sketch-drawer-height-input"
             value={props.sketchStorageHeightDraft}

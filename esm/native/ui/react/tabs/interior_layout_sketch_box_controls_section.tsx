@@ -1,5 +1,7 @@
 import type { ReactElement } from 'react';
 
+import { useReactDomId } from '../components/form_field_id.js';
+
 import {
   SKETCH_TOOL_BOX_DIVIDER,
   SKETCH_TOOL_BOX_DIVIDER_HORIZONTAL,
@@ -75,6 +77,7 @@ import {
 import type { InteriorSketchBoxControlsSectionProps } from './interior_layout_sketch_section_types.js';
 
 export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControlsSectionProps): ReactElement {
+  const plinthHeightInputId = useReactDomId('wp-r-sketch-box-plinth-height');
   const {
     isSketchBoxControlsOpen,
     isSketchBoxToolActive,
@@ -297,10 +300,15 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
                     <span>ברירת מחדל</span>
                   </button>
                   <div className="wp-r-sketch-drawer-height-control">
-                    <label className="wp-r-label wp-r-label--center wp-r-sketch-drawer-height-label">
+                    <label
+                      className="wp-r-label wp-r-label--center wp-r-sketch-drawer-height-label"
+                      htmlFor={plinthHeightInputId}
+                    >
                       גובה צוקל (ס&quot;מ)
                     </label>
                     <input
+                      id={plinthHeightInputId}
+                      name={plinthHeightInputId}
                       type="number"
                       className="wp-r-input wp-r-sketch-drawer-height-input"
                       min={BASE_PLINTH_HEIGHT_MIN_CM}

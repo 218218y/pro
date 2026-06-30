@@ -90,6 +90,8 @@ function HandleColorRow(props: {
             <span>{customLabel}</span>
             <input
               ref={colorInputRef}
+              id="wp-r-handle-custom-color"
+              name="handleCustomColor"
               type="color"
               value={readPickerValue(props.selectedColor)}
               onChange={(event: ChangeEvent<HTMLInputElement>) =>

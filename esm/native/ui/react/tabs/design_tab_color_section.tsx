@@ -183,6 +183,7 @@ export function DesignTabColorSection(props: { model: DesignTabColorSectionModel
 
               <div className="wp-r-color-row">
                 <input
+                  id="wp-r-custom-color-input"
                   type="color"
                   value={model.draftColor}
                   onChange={model.onPickCustomColor}
@@ -201,10 +202,12 @@ export function DesignTabColorSection(props: { model: DesignTabColorSectionModel
                 <input
                   ref={model.fileRef}
                   id="wp-r-texture-upload"
+                  name="customTexture"
                   type="file"
                   accept="image/*"
                   onChange={model.onPickTextureFile}
                   className="wp-r-file-hidden"
+                  aria-label="העלה טקסטורה"
                 />
 
                 <label

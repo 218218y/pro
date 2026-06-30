@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import type { ChangeEvent, FocusEvent, ReactElement } from 'react';
 
 import {
@@ -18,13 +19,17 @@ export function StructurePlatformOverhangField(props: {
   onChange: (value: number) => void;
   resetTitle: string;
 }): ReactElement {
+  const inputId = useId();
+
   return (
     <div className="wp-r-door-thickness-field wp-r-platform-overhang-field">
-      <label className="wp-r-door-thickness-label">
+      <label className="wp-r-door-thickness-label" htmlFor={inputId}>
         <span>{props.label}</span>
       </label>
       <div className="wp-r-door-thickness-input-row wp-r-platform-overhang-input-row">
         <input
+          id={inputId}
+          name={inputId}
           type="number"
           inputMode="decimal"
           className="wp-r-door-thickness-input wp-r-platform-overhang-input"

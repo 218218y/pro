@@ -131,10 +131,15 @@ export function StructureBodyBaseControls(props: {
               <span>ברירת מחדל</span>
             </button>
             <div className="wp-r-sketch-drawer-height-control">
-              <label className="wp-r-label wp-r-label--center wp-r-sketch-drawer-height-label">
+              <label
+                className="wp-r-label wp-r-label--center wp-r-sketch-drawer-height-label"
+                htmlFor="wp-r-base-plinth-height"
+              >
                 גובה צוקל (ס"מ)
               </label>
               <input
+                id="wp-r-base-plinth-height"
+                name="basePlinthHeight"
                 type="number"
                 className="wp-r-input wp-r-sketch-drawer-height-input"
                 min={BASE_PLINTH_HEIGHT_MIN_CM}
@@ -273,8 +278,12 @@ export function StructureBodyBaseControls(props: {
 
           <div className="wp-r-leg-size-fields">
             <div className="wp-field wp-r-leg-size-field">
-              <div className="wp-field-label">גובה רגליים (ס"מ)</div>
+              <label className="wp-field-label" htmlFor="wp-r-base-leg-height">
+                גובה רגליים (ס"מ)
+              </label>
               <input
+                id="wp-r-base-leg-height"
+                name="baseLegHeight"
                 type="number"
                 className="wp-r-input"
                 min={BASE_LEG_HEIGHT_MIN_CM}
@@ -289,8 +298,12 @@ export function StructureBodyBaseControls(props: {
             </div>
 
             <div className="wp-field wp-r-leg-size-field">
-              <div className="wp-field-label">רוחב רגליים (ס"מ)</div>
+              <label className="wp-field-label" htmlFor="wp-r-base-leg-width">
+                רוחב רגליים (ס"מ)
+              </label>
               <input
+                id="wp-r-base-leg-width"
+                name="baseLegWidth"
                 type="number"
                 className="wp-r-input"
                 min={BASE_LEG_WIDTH_MIN_CM}

@@ -400,6 +400,7 @@ export function OrderPdfOverlayEditorSurface(props: OrderPdfOverlayEditorSurface
             {ORDER_PDF_INPUTS.map(input => (
               <input
                 key={input.key}
+                id={`wp-pdf-editor-${input.key}`}
                 className={input.className}
                 style={layout.fieldStyles[input.styleKey]}
                 dir={input.dir}

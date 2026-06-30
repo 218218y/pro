@@ -239,6 +239,7 @@ function DoorMountThicknessField(props: {
       <div className="wp-r-door-thickness-input-row">
         <input
           id={props.id}
+          name={props.id}
           className="wp-r-door-thickness-input"
           data-testid={props.inputTestId}
           type="number"

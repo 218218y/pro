@@ -31,8 +31,11 @@ async function copyText(win: Window | null, txt: unknown): Promise<boolean> {
     const doc = win && win.document;
     if (!doc || typeof doc.createElement !== 'function') return false;
     ta = doc.createElement('textarea');
+    ta.name = 'bootFatalCopyBuffer';
+    ta.setAttribute('aria-label', 'Temporary copy buffer');
     ta.value = String(txt || '');
     ta.setAttribute('readonly', '');
+    ta.setAttribute('tabindex', '-1');
     ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0';
     const body = doc.body;
     if (!body) return false;

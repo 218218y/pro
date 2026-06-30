@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import type { CSSProperties, ReactElement } from 'react';
 
 import type { FloorStyle } from './settings_visual_shared_contracts.js';
@@ -77,11 +78,15 @@ export function WallColorSwatch(props: {
 export function LightSlider(props: LightSliderProps): ReactElement {
   const bounds = getLightBounds(props.name);
   const value = clamp(props.value, bounds.min, bounds.max);
+  const inputId = useId();
 
   return (
     <>
-      <label className="wp-r-light-label">{props.label}</label>
+      <label className="wp-r-light-label" htmlFor={inputId}>
+        {props.label}
+      </label>
       <input
+        id={inputId}
         type="range"
         className="lighting-slider"
         min={bounds.min}

@@ -1404,6 +1404,91 @@ test('viewer point measurement treats front edge clicks on side panels as the wa
   assert.ok(Math.abs(points[0].x - points[1].x) > 0.02);
 });
 
+test('viewer point measurement promotes side-panel front edge measurements in front of external doors', () => {
+  const wardrobe = createGroup();
+  const leftSidePanel = createMesh({
+    width: 0.02,
+    height: 2,
+    depth: 0.58,
+    x: -0.51,
+    userData: { partId: 'left_side_panel' },
+  });
+  const rightSidePanel = createMesh({
+    width: 0.02,
+    height: 2,
+    depth: 0.58,
+    x: 0.51,
+    userData: { partId: 'right_side_panel' },
+  });
+  const externalDoor = createMesh({
+    width: 1,
+    height: 2,
+    depth: 0.02,
+    z: 0.31,
+    userData: { partId: 'door_1_full' },
+  });
+  wardrobe.add(leftSidePanel);
+  wardrobe.add(rightSidePanel);
+  wardrobe.add(externalDoor);
+  const labels: string[] = [];
+  const App = createApp(wardrobe, labels);
+  setViewerMeasurementToolMode(App, 'points', false);
+
+  tryHandleViewerMeasurementClick({
+    App,
+    hitState: {
+      intersects: [{ object: leftSidePanel, point: { x: -0.52, y: 1, z: 0.29 } }],
+      foundPartId: 'left_side_panel',
+      foundModuleIndex: null,
+      foundModuleStack: 'top',
+      effectiveDoorId: null,
+      foundDrawerId: null,
+      primaryHitObject: leftSidePanel,
+      doorHitObject: null,
+      doorHitGroup: null,
+      primaryHitPoint: { x: -0.52, y: 1, z: 0.29 },
+      doorHitPoint: null,
+      moduleHitY: null,
+      doorHitY: null,
+      primaryHitY: 1,
+      hitIdentity: { partId: 'left_side_panel' } as any,
+      hitUserData: leftSidePanel.userData,
+    },
+  });
+
+  tryHandleViewerMeasurementClick({
+    App,
+    hitState: {
+      intersects: [{ object: rightSidePanel, point: { x: 0.52, y: 1, z: 0.29 } }],
+      foundPartId: 'right_side_panel',
+      foundModuleIndex: null,
+      foundModuleStack: 'top',
+      effectiveDoorId: null,
+      foundDrawerId: null,
+      primaryHitObject: rightSidePanel,
+      doorHitObject: null,
+      doorHitGroup: null,
+      primaryHitPoint: { x: 0.52, y: 1, z: 0.29 },
+      doorHitPoint: null,
+      moduleHitY: null,
+      doorHitY: null,
+      primaryHitY: 1,
+      hitIdentity: { partId: 'right_side_panel' } as any,
+      hitUserData: rightSidePanel.userData,
+    },
+  });
+
+  assert.ok(labels.includes('104'));
+  const dimensionLine = wardrobe.children.find(
+    child => child.type === 'Line' && child.userData?.__wpViewerMeasurementOverlay && !child.name
+  );
+  assert.ok(dimensionLine);
+  const points = dimensionLine.geometry.points;
+  assert.equal(points.length, 2);
+  assert.ok(points.every((point: { z: number }) => Math.abs(point.z - 0.326) < 1e-9));
+  assert.ok(points.every((point: { z: number }) => point.z > 0.32));
+});
+
 test('viewer point measurement treats front edge clicks on top boards as the wardrobe front plane', () => {
   const wardrobe = createGroup();
   const cabinetBounds = createMesh({
@@ -1652,4 +1737,163 @@ test('viewer measurement tool mode is cached and defaults back to part when inva
   assert.equal(getViewerMeasurementToolMode(App), 'points');
   App.render.cache.__wpViewerMeasurementToolMode = 'bad-value';
   assert.equal(getViewerMeasurementToolMode(App), 'part');
+});
+
+test('viewer part measurement keeps pentagon doors on their diagonal front plane', () => {
+  const wardrobe = createGroup();
+  const mount = createGroup();
+  mount.name = 'corner-pentagon-front-mount';
+  mount.rotation.y = Math.PI / 4;
+  const door = createGroup();
+  door.name = 'corner-pentagon-door';
+  door.position.set(0, 1, 0.02);
+  door.userData = {
+    partId: 'corner_pent_door_1_full',
+    __wpCornerPentDoor: true,
+    __doorWidth: 0.6,
+    __doorHeight: 2,
+    __doorMeshOffsetX: 0,
+    __wpFrontThickness: 0.018,
+    __handleZSign: 1,
+  };
+  mount.add(door);
+  wardrobe.add(mount);
+  const labels: string[] = [];
+  const App = createApp(wardrobe, labels);
+
+  tryHandleViewerMeasurementClick({
+    App,
+    hitState: {
+      intersects: [{ object: door, point: { x: 0, y: 1, z: 0.02 } }],
+      foundPartId: 'corner_pent_door_1_full',
+      foundModuleIndex: null,
+      foundModuleStack: 'top',
+      effectiveDoorId: 'corner_pent_door_1_full',
+      foundDrawerId: null,
+      primaryHitObject: door,
+      doorHitObject: door,
+      doorHitGroup: door,
+      primaryHitPoint: { x: 0, y: 1, z: 0.02 },
+      doorHitPoint: { x: 0, y: 1, z: 0.02 },
+      moduleHitY: null,
+      doorHitY: 1,
+      primaryHitY: 1,
+      hitIdentity: { partId: 'corner_pent_door_1_full', doorId: 'corner_pent_door_1_full' } as any,
+      hitUserData: door.userData,
+    },
+  });
+
+  assert.deepEqual(labels, ['60', '200', '1.8']);
+  const frame = wardrobe.children.find(child => child.name === 'wp-viewer-measurement-selection-frame');
+  assert.ok(frame);
+  const points = frame.geometry.points;
+  assert.ok(Math.abs(points[0].x - points[1].x) > 0.35);
+  assert.ok(Math.abs(points[0].z - points[1].z) > 0.35);
+});
+
+test('viewer point measurement uses the clicked main-front plane instead of the aggregate corner-front plane', () => {
+  const wardrobe = createGroup();
+  const mainFront = createMesh({
+    width: 1,
+    height: 2,
+    depth: 0.02,
+    z: 0.29,
+    userData: { partId: 'main_front_door' },
+  });
+  const cornerFrontBound = createMesh({
+    width: 0.5,
+    height: 2,
+    depth: 0.1,
+    x: 0.75,
+    z: 1,
+    userData: { partId: 'corner_far_front_bound' },
+  });
+  wardrobe.add(mainFront);
+  wardrobe.add(cornerFrontBound);
+  const labels: string[] = [];
+  const App = createApp(wardrobe, labels);
+  setViewerMeasurementToolMode(App, 'points', false);
+
+  tryHandleViewerMeasurementClick({
+    App,
+    hitState: {
+      intersects: [{ object: mainFront, point: { x: 0, y: 1, z: 0.3 } }],
+      foundPartId: 'main_front_door',
+      foundModuleIndex: null,
+      foundModuleStack: 'top',
+      effectiveDoorId: 'main_front_door',
+      foundDrawerId: null,
+      primaryHitObject: mainFront,
+      doorHitObject: mainFront,
+      doorHitGroup: mainFront,
+      primaryHitPoint: { x: 0, y: 1, z: 0.3 },
+      doorHitPoint: { x: 0, y: 1, z: 0.3 },
+      moduleHitY: null,
+      doorHitY: 1,
+      primaryHitY: 1,
+      hitIdentity: { partId: 'main_front_door', doorId: 'main_front_door' } as any,
+      hitUserData: mainFront.userData,
+    },
+  });
+
+  const marker = wardrobe.children.find(child =>
+    String(child.name || '').startsWith('wp-viewer-measurement-point-draft-start')
+  );
+  assert.ok(marker);
+  for (const point of marker.geometry.points) {
+    assert.ok(Math.abs(point.z - 0.306) < 1e-9);
+  }
+});
+
+test('viewer point measurement keeps pentagon door points on the diagonal door plane', () => {
+  const wardrobe = createGroup();
+  const mount = createGroup();
+  mount.rotation.y = Math.PI / 4;
+  const door = createGroup();
+  door.position.set(0, 1, 0.02);
+  door.userData = {
+    partId: 'corner_pent_door_1_full',
+    __wpCornerPentDoor: true,
+    __doorWidth: 0.6,
+    __doorHeight: 2,
+    __doorMeshOffsetX: 0,
+    __wpFrontThickness: 0.018,
+    __handleZSign: 1,
+  };
+  mount.add(door);
+  wardrobe.add(mount);
+  const labels: string[] = [];
+  const App = createApp(wardrobe, labels);
+  setViewerMeasurementToolMode(App, 'points', false);
+
+  tryHandleViewerMeasurementClick({
+    App,
+    hitState: {
+      intersects: [{ object: door, point: { x: 0, y: 1, z: 0.02 } }],
+      foundPartId: 'corner_pent_door_1_full',
+      foundModuleIndex: null,
+      foundModuleStack: 'top',
+      effectiveDoorId: 'corner_pent_door_1_full',
+      foundDrawerId: null,
+      primaryHitObject: door,
+      doorHitObject: door,
+      doorHitGroup: door,
+      primaryHitPoint: { x: 0, y: 1, z: 0.02 },
+      doorHitPoint: { x: 0, y: 1, z: 0.02 },
+      moduleHitY: null,
+      doorHitY: 1,
+      primaryHitY: 1,
+      hitIdentity: { partId: 'corner_pent_door_1_full', doorId: 'corner_pent_door_1_full' } as any,
+      hitUserData: door.userData,
+    },
+  });
+
+  const marker = wardrobe.children.find(child =>
+    String(child.name || '').startsWith('wp-viewer-measurement-point-draft-start')
+  );
+  assert.ok(marker);
+  const points = marker.geometry.points;
+  assert.ok(
+    points.some((point: { z: number }, index: number) => index > 0 && Math.abs(point.z - points[0].z) > 0.01)
+  );
 });

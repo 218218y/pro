@@ -137,11 +137,13 @@ function MultiColorMirrorDraftField(props: {
         </button>
         <input
           id={props.id}
+          name={props.id}
           type="text"
           inputMode="decimal"
           className="form-control wp-r-mirror-draft-input"
           placeholder={MULTI_MIRROR_AUTO}
           value={props.value}
+          aria-label={props.label}
           onChange={onChange}
         />
       </div>

@@ -184,8 +184,11 @@ export function copyFatalOverlayText(win: Window | null, txt: unknown): boolean 
     const doc = win && win.document;
     if (!doc || typeof doc.createElement !== 'function') return false;
     const ta = doc.createElement('textarea');
+    ta.name = 'fatalOverlayCopyBuffer';
+    ta.setAttribute('aria-label', 'Temporary copy buffer');
     ta.value = String(txt || '');
     ta.setAttribute('readonly', '');
+    ta.setAttribute('tabindex', '-1');
     ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0';
     doc.body.appendChild(ta);
     ta.select();

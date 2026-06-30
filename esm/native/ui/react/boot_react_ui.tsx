@@ -191,7 +191,7 @@ export function bootReactUi(opts: BootReactUiOpts): void {
     if (mountedRoots.has(el)) return;
 
     const perfSpanId = startPerfSpan(app, `boot.react.mount.${id}`);
-    const root = createRoot(el);
+    const root = createRoot(el, { identifierPrefix: `${id}-` });
     try {
       root.render(
         <StrictMode>

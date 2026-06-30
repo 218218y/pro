@@ -84,6 +84,9 @@ function renderSpanButtons(
 }
 
 export function DoorTrimAxisPanel(props: DoorTrimAxisPanelProps): ReactElement {
+  const customInputId = `wp-r-door-trim-${props.axis}-custom-size`;
+  const crossInputId = `wp-r-door-trim-${props.axis}-cross-size`;
+
   return (
     <>
       <div className="wp-r-label wp-r-label--center" style={{ marginTop: 14, marginBottom: 8 }}>
@@ -94,7 +97,12 @@ export function DoorTrimAxisPanel(props: DoorTrimAxisPanelProps): ReactElement {
         {renderSpanButtons(DOOR_TRIM_SPAN_SECONDARY_OPTIONS, props)}
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, direction: 'rtl' }}>
+        <label className="sr-only" htmlFor={customInputId}>
+          {props.customPlaceholder}
+        </label>
         <input
+          id={customInputId}
+          name={customInputId}
           type="number"
           className="wp-r-input"
           value={props.customDraft}
@@ -102,6 +110,7 @@ export function DoorTrimAxisPanel(props: DoorTrimAxisPanelProps): ReactElement {
           max={MAX_DOOR_TRIM_CUSTOM_CM}
           step={1}
           placeholder={props.customPlaceholder}
+          aria-label={props.customPlaceholder}
           onFocus={(e: import('react').FocusEvent<HTMLInputElement>) => e.target.select()}
           onChange={(e: import('react').ChangeEvent<HTMLInputElement>) => {
             const raw = e.target.value;
@@ -141,7 +150,12 @@ export function DoorTrimAxisPanel(props: DoorTrimAxisPanelProps): ReactElement {
               props.activateDoorTrimMode(props.axis, 'custom', next, props.crossCm);
           }}
         />
+        <label className="sr-only" htmlFor={crossInputId}>
+          {props.crossPlaceholder}
+        </label>
         <input
+          id={crossInputId}
+          name={crossInputId}
           type="number"
           className="wp-r-input"
           value={props.crossDraft}
@@ -149,6 +163,7 @@ export function DoorTrimAxisPanel(props: DoorTrimAxisPanelProps): ReactElement {
           max={MAX_DOOR_TRIM_CROSS_SIZE_CM}
           step={0.5}
           placeholder={props.crossPlaceholder}
+          aria-label={props.crossPlaceholder}
           onFocus={(e: import('react').FocusEvent<HTMLInputElement>) => e.target.select()}
           onChange={(e: import('react').ChangeEvent<HTMLInputElement>) => {
             const raw = e.target.value;

@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import type { ChangeEvent, FocusEvent, ReactElement } from 'react';
 
 import {
@@ -52,6 +53,8 @@ export function resetSketchDrawerHeightDraft(controller: SketchDrawerHeightDraft
 }
 
 export function SketchDrawerHeightField(props: SketchDrawerHeightFieldProps): ReactElement {
+  const inputId = useId();
+
   return (
     <div className="wp-field wp-r-sketch-drawer-height-field">
       <div className="wp-r-sketch-drawer-height-row">
@@ -64,10 +67,12 @@ export function SketchDrawerHeightField(props: SketchDrawerHeightFieldProps): Re
           <span>ברירת מחדל</span>
         </button>
         <div className="wp-r-sketch-drawer-height-control">
-          <label className="wp-r-label wp-r-label--center wp-r-sketch-drawer-height-label">
+          <label className="wp-r-label wp-r-label--center wp-r-sketch-drawer-height-label" htmlFor={inputId}>
             {props.label}
           </label>
           <input
+            id={inputId}
+            name={inputId}
             type="number"
             className="wp-r-input wp-r-sketch-drawer-height-input"
             value={props.value}

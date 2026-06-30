@@ -150,9 +150,12 @@ export function OrderPdfOverlayToolbar(props: OrderPdfOverlayToolbarProps): Reac
 
         <input
           ref={pdfFileInputRef}
+          id="wp-pdf-editor-load-input"
+          name="orderPdfLoadFile"
           type="file"
           accept="application/pdf"
           style={{ display: 'none' }}
+          aria-label="טען PDF קיים לעריכה"
           onChange={onPdfFileSelected}
           data-testid="order-pdf-load-input"
         />

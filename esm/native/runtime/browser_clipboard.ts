@@ -80,8 +80,11 @@ function execCommandCopyText(
 
   const ta = doc.createElement('textarea');
   try {
+    ta.name = 'clipboardCopyBuffer';
+    ta.setAttribute?.('aria-label', 'Temporary copy buffer');
     ta.value = text;
     ta.setAttribute?.('readonly', '');
+    ta.setAttribute?.('tabindex', '-1');
     ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0';
     doc.body.appendChild?.(ta);
     ta.select?.();

@@ -35,7 +35,12 @@ export function DoorFeaturesSection(props: DoorFeaturesSectionProps): ReactEleme
 
           {showGrooveLinesControls ? (
             <div className="wp-r-mt-2 wp-r-groove-lines-block">
-              <label className="wp-r-label wp-r-label--center wp-r-groove-lines-label">מספר חריטות</label>
+              <label
+                className="wp-r-label wp-r-label--center wp-r-groove-lines-label"
+                htmlFor="wp-r-groove-lines-count"
+              >
+                מספר חריטות
+              </label>
               <div className="wp-r-groove-lines-row">
                 <button
                   type="button"
@@ -46,6 +51,8 @@ export function DoorFeaturesSection(props: DoorFeaturesSectionProps): ReactEleme
                   <span>ברירת מחדל</span>
                 </button>
                 <input
+                  id="wp-r-groove-lines-count"
+                  name="grooveLinesCount"
                   type="number"
                   className={
                     model.grooveLinesCountIsAuto

@@ -348,7 +348,8 @@ declare module 'react-dom' {
 
 declare module 'react-dom/client' {
   export type Root = { render(children: import('react').ReactNode): void; unmount(): void };
-  export function createRoot(container: Element | DocumentFragment): Root;
+  export type RootOptions = { identifierPrefix?: string };
+  export function createRoot(container: Element | DocumentFragment, options?: RootOptions): Root;
 }
 
 type ReactGlobalJsxElement = import('react').ReactElement<any, any>;
