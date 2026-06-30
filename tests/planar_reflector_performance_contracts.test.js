@@ -31,10 +31,10 @@ test('planar mirror refresh supports budgeted progressive batches', () => {
   assert.match(runtimeSource, /planar-reflector-budget-deferred/);
 });
 
-test('render loop throttles planar reflector work during motion instead of updating every mirror at once', () => {
+test('render loop keeps planar reflector motion live with small progressive batches', () => {
   assert.match(driverSource, /MIRROR_REFLECTOR_MOVE_MAX_UPDATES_PER_FRAME/);
   assert.match(driverSource, /MIRROR_REFLECTOR_MAX_UPDATES_PER_FRAME/);
-  assert.match(driverSource, /MIRROR_REFLECTOR_MOVE_UPDATE_MS', 240/);
+  assert.match(driverSource, /MIRROR_REFLECTOR_MOVE_UPDATE_MS', 32/);
   assert.match(driverSource, /__mirrorPlanarCursorIndex/);
   assert.match(driverSource, /__mirrorPlanarBatchPending/);
   assert.match(driverSource, /markPlanarBatchPending/);

@@ -71,7 +71,11 @@ test('settings visual controls view-state runtime reads cfg state through canoni
   const mod = loadSettingsVisualViewStateModule();
   assert.equal(
     JSON.stringify(mod.readSettingsVisualCfgState({ showDimensions: 1, savedNotes: [{}, {}] })),
-    JSON.stringify({ showDimensions: true })
+    JSON.stringify({ showDimensions: true, mirrorReflectorEnabled: true })
+  );
+  assert.equal(
+    JSON.stringify(mod.readSettingsVisualCfgState({ showDimensions: 0, MIRROR_REFLECTOR_ENABLED: false })),
+    JSON.stringify({ showDimensions: false, mirrorReflectorEnabled: false })
   );
 });
 

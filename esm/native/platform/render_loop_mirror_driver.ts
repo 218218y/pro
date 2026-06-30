@@ -89,9 +89,9 @@ function markPlanarBatchPending(
 
 function resolvePlanarUpdatesPerFrame(A: AppContainer, motionActive: boolean): number {
   const raw = motionActive
-    ? readConfigNumberLooseFromApp(A, 'MIRROR_REFLECTOR_MOVE_MAX_UPDATES_PER_FRAME', 1)
-    : readConfigNumberLooseFromApp(A, 'MIRROR_REFLECTOR_MAX_UPDATES_PER_FRAME', 2);
-  return Math.max(1, Math.floor(Number.isFinite(raw) ? raw : motionActive ? 1 : 2));
+    ? readConfigNumberLooseFromApp(A, 'MIRROR_REFLECTOR_MOVE_MAX_UPDATES_PER_FRAME', 2)
+    : readConfigNumberLooseFromApp(A, 'MIRROR_REFLECTOR_MAX_UPDATES_PER_FRAME', 3);
+  return Math.max(1, Math.floor(Number.isFinite(raw) ? raw : motionActive ? 2 : 3));
 }
 
 function resolveRemainingFrameBudgetMs(nowMs: number, frameStartMs: number, budgetMs: number): number {
@@ -278,7 +278,7 @@ export function createRenderLoopMirrorDriver(
         cubeMirrorMode && (planarStats.fallbackCount > 0 || (hasMirror && planarStats.mirrorCount === 0));
       const planarLast = readFiniteSlotNumber(getRenderSlot, A, '__mirrorPlanarLastUpdateMs', -1);
       const planarIntervalRaw = motionActive
-        ? readConfigNumberLooseFromApp(A, 'MIRROR_REFLECTOR_MOVE_UPDATE_MS', 240)
+        ? readConfigNumberLooseFromApp(A, 'MIRROR_REFLECTOR_MOVE_UPDATE_MS', 32)
         : readConfigNumberLooseFromApp(A, 'MIRROR_REFLECTOR_UPDATE_MS', 120);
       const planarInterval = Math.max(0, Number.isFinite(planarIntervalRaw) ? planarIntervalRaw : 160);
       const planarBatchPending = !!getRenderSlot<boolean>(A, '__mirrorPlanarBatchPending');
