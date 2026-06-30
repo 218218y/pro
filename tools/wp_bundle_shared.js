@@ -181,11 +181,8 @@ export function isDistSourceFile(abs) {
   return DIST_SOURCE_EXTENSIONS.has(path.extname(abs));
 }
 
-export function resolveBuiltEntry(root) {
-  const preferred = path.join(root, 'dist', 'esm', 'release_main.js');
-  const fallback = path.join(root, 'dist', 'esm', 'main.js');
-  const entryAbs = exists(preferred) ? preferred : fallback;
-  return { preferred, fallback, entryAbs };
+export function resolveBundleDistEntry(root) {
+  return path.join(root, 'dist', 'esm', 'release_main.js');
 }
 
 export function createBundleTempDir() {

@@ -37,12 +37,12 @@ test('bundle arg parsing preserves out/sourcemap/minify/rebuild policy', () => {
   );
 });
 
-test('bundle path resolution derives out dir and legacy tmp dir canonically', () => {
+test('bundle path resolution derives out dir and stale tmp cleanup dir canonically', () => {
   const root = '/repo';
   const paths = resolveBundlePaths({ root, outFile: path.join('dist', 'wardrobepro.bundle.js') });
   assert.equal(paths.outFileAbs, path.join(root, 'dist', 'wardrobepro.bundle.js'));
   assert.equal(paths.outDirAbs, path.join(root, 'dist'));
-  assert.equal(paths.legacyTmpDirAbs, path.join(root, 'dist', '.tmp_vite_bundle'));
+  assert.equal(paths.staleTmpDirAbs, path.join(root, 'dist', '.tmp_vite_bundle'));
 });
 
 test('bundle dist freshness requests rebuild when entry/build info are stale or missing', () => {
@@ -58,10 +58,18 @@ test('bundle dist freshness requests rebuild when entry/build info are stale or 
   assert.equal(missing.rebuild, true);
   assert.match(missing.reason, /missing built ESM entry/);
 
+  const oldEntryAbs = path.join(root, 'dist', 'esm', 'main.js');
   const entryAbs = path.join(root, 'dist', 'esm', 'release_main.js');
   const buildInfoAbs = path.join(root, 'dist', '.tsconfig.dist.tsbuildinfo');
-  fs.writeFileSync(entryAbs, 'export {};\n', 'utf8');
+  fs.writeFileSync(oldEntryAbs, 'export {};\n', 'utf8');
   fs.writeFileSync(buildInfoAbs, 'info\n', 'utf8');
+
+  const oldEntryOnly = shouldRebuildDistModules(root, {});
+  assert.equal(oldEntryOnly.rebuild, true);
+  assert.match(oldEntryOnly.reason, /missing built ESM entry/);
+  assert.equal(oldEntryOnly.entryAbs, entryAbs);
+
+  fs.writeFileSync(entryAbs, 'export {};\n', 'utf8');
   const staleTime = new Date(Date.now() - 10_000);
   const freshTime = new Date(Date.now() + 10_000);
   fs.utimesSync(entryAbs, staleTime, staleTime);

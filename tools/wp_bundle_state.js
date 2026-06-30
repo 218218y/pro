@@ -80,6 +80,6 @@ export function maybeHandleBundleHelp(argv) {
 export function resolveBundlePaths({ root, outFile }) {
   const outFileAbs = path.isAbsolute(outFile) ? outFile : path.join(root, outFile);
   const outDirAbs = path.dirname(outFileAbs);
-  const legacyTmpDirAbs = path.join(outDirAbs, '.tmp_vite_bundle');
-  return { outFileAbs, outDirAbs, legacyTmpDirAbs };
+  const staleTmpDirAbs = path.join(outDirAbs, '.tmp_vite_bundle');
+  return { outFileAbs, outDirAbs, staleTmpDirAbs };
 }

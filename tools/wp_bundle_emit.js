@@ -135,13 +135,13 @@ export async function buildBundleArtifacts({
   entryAbs,
   outFileAbs,
   outDirAbs,
-  legacyTmpDirAbs,
+  staleTmpDirAbs,
   args,
   viteBuild,
 }) {
   mkdirp(outDirAbs);
   cleanOldBundleArtifacts(outDirAbs);
-  rmrf(legacyTmpDirAbs);
+  rmrf(staleTmpDirAbs);
   const tmpDirAbs = createBundleTempDir();
 
   try {
@@ -158,6 +158,6 @@ export async function buildBundleArtifacts({
     });
   } finally {
     rmrf(tmpDirAbs);
-    rmrf(legacyTmpDirAbs);
+    rmrf(staleTmpDirAbs);
   }
 }

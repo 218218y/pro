@@ -7,27 +7,26 @@ import {
   getOldestMtimeMs,
   isDistSourceFile,
   mkdirp,
-  resolveBuiltEntry,
+  resolveBundleDistEntry,
   resolveTscInvocation,
   rmrf,
 } from './wp_bundle_shared.js';
 
 export function shouldRebuildDistModules(root, options = {}) {
-  const { entryAbs, preferred, fallback } = resolveBuiltEntry(root);
+  const entryAbs = resolveBundleDistEntry(root);
   const buildInfoAbs = path.join(root, DIST_BUILD_INFO_REL);
 
   if (options.forceDistRebuild) {
-    return { rebuild: true, reason: 'forced by --force-dist-rebuild', preferred, fallback, buildInfoAbs };
+    return { rebuild: true, reason: 'forced by --force-dist-rebuild', entryAbs, buildInfoAbs };
   }
   if (!exists(entryAbs)) {
-    return { rebuild: true, reason: 'missing built ESM entry', preferred, fallback, buildInfoAbs };
+    return { rebuild: true, reason: 'missing built ESM entry', entryAbs, buildInfoAbs };
   }
   if (!exists(buildInfoAbs)) {
     return {
       rebuild: true,
       reason: 'missing TypeScript incremental build info',
-      preferred,
-      fallback,
+      entryAbs,
       buildInfoAbs,
     };
   }
@@ -48,8 +47,7 @@ export function shouldRebuildDistModules(root, options = {}) {
     return {
       rebuild: true,
       reason: 'dist/esm entry or TypeScript build info is older than a source or config file',
-      preferred,
-      fallback,
+      entryAbs,
       buildInfoAbs,
     };
   }
@@ -57,8 +55,6 @@ export function shouldRebuildDistModules(root, options = {}) {
   return {
     rebuild: false,
     reason: 'dist/esm entry and TypeScript build info are fresh',
-    preferred,
-    fallback,
     buildInfoAbs,
     entryAbs,
   };
@@ -108,11 +104,9 @@ export function buildDistModules(root, options = {}) {
     throw new Error(`[WP Bundle] TypeScript build failed (exit ${res.status ?? 'unknown'})`);
   }
 
-  const { preferred, fallback, entryAbs } = resolveBuiltEntry(root);
+  const entryAbs = resolveBundleDistEntry(root);
   if (!exists(entryAbs)) {
-    throw new Error(
-      `[WP Bundle] Build completed but missing entry: ${path.relative(root, preferred)} (or fallback: ${path.relative(root, fallback)})`
-    );
+    throw new Error(`[WP Bundle] Build completed but missing entry: ${path.relative(root, entryAbs)}`);
   }
 
   return entryAbs;

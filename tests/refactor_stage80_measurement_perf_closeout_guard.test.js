@@ -36,6 +36,7 @@ test('stage 80 measurement and performance closeout is anchored', () => {
   const perfSmoke = read('tools/wp_perf_smoke.mjs');
   const perfSmokeShared = read('tools/wp_perf_smoke_shared.js');
   const browserPerf = read('tools/wp_browser_perf_smoke.mjs');
+  const browserPerfPaths = read('tools/wp_browser_perf_paths.js');
   const perfBaselineDoc = read('docs/PERF_AND_STABILITY_BASELINE.md');
   const browserBaselineDoc = read('docs/BROWSER_PERF_AND_E2E_BASELINE.md');
 
@@ -106,6 +107,10 @@ test('stage 80 measurement and performance closeout is anchored', () => {
   assert.match(perfSmokeShared, /wp_perf_smoke_baseline\.json/);
   assert.match(browserPerf, /BROWSER_PERF_AND_E2E_BASELINE/);
   assert.match(browserPerf, /resolveBrowserPerfBaselinePath/);
+  assert.match(browserPerfPaths, /BROWSER_PERF_BASELINE_RELATIVE_PATH/);
+  assert.match(browserPerfPaths, /wp_browser_perf_smoke_baseline\.json/);
+  assert.doesNotMatch(browserPerfPaths, /BROWSER_PERF_BASELINE_CANDIDATES/);
+  assert.doesNotMatch(browserPerfPaths, /wp_perf_smoke_baseline\.json/);
 
   assert.match(perfHotpath, /handles_apply\.ts/);
   assert.match(perfHotpath, /scheduler_shared_timers\.ts/);

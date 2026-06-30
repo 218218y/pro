@@ -19,7 +19,7 @@ export async function runBundleCli(argv = process.argv.slice(2)) {
   const args = parseBundleArgs(argv);
   const root = path.resolve(__dirname, '..');
   const entryAbs = buildDistModules(root, { forceDistRebuild: args.forceDistRebuild });
-  const { outFileAbs, outDirAbs, legacyTmpDirAbs } = resolveBundlePaths({ root, outFile: args.outFile });
+  const { outFileAbs, outDirAbs, staleTmpDirAbs } = resolveBundlePaths({ root, outFile: args.outFile });
 
   const viteBuild = await loadViteBuild();
   if (!viteBuild) process.exit(1);
@@ -29,7 +29,7 @@ export async function runBundleCli(argv = process.argv.slice(2)) {
     entryAbs,
     outFileAbs,
     outDirAbs,
-    legacyTmpDirAbs,
+    staleTmpDirAbs,
     args,
     viteBuild,
   });
