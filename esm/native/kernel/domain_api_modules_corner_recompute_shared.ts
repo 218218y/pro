@@ -13,7 +13,7 @@ import {
   readModulesConfigurationListFromConfigSnapshot,
 } from '../features/modules_configuration/modules_config_api.js';
 import { calculateModuleStructure as calculateModuleStructurePure } from '../features/modules_configuration/calc_module_structure.js';
-import { createLibraryTopModuleConfig } from '../features/library_preset/module_defaults.js';
+import { createLibraryTopModuleConfig } from '../features/library_preset/library_preset.js';
 import { snapshotStoreValueEqual } from './kernel_snapshot_store_shared.js';
 import {
   asModulesStructureList,

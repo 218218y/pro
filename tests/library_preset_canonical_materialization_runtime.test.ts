@@ -10,7 +10,7 @@ import {
 import {
   createLibraryLowerModuleConfig,
   createLibraryTopModuleConfig,
-} from '../esm/native/features/library_preset/module_defaults.ts';
+} from '../esm/native/features/library_preset/library_preset.ts';
 import { normalizeLowerModuleConfig } from '../esm/native/features/stack_split/index.ts';
 
 test('library preset door signatures follow the canonical module-structure calculator', () => {

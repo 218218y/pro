@@ -28,7 +28,7 @@ import type {
 import type { HingeMap } from '../../../types/maps.js';
 
 import { readModulesConfigurationListFromConfigSnapshot } from '../features/modules_configuration/modules_config_api.js';
-import { createLibraryTopModuleConfig } from '../features/library_preset/module_defaults.js';
+import { createLibraryTopModuleConfig } from '../features/library_preset/library_preset.js';
 import { reportError } from '../runtime/errors.js';
 
 type ModuleLike = BuildModuleStructureItemLike;

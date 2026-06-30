@@ -6,7 +6,7 @@ import {
   assignSpecialDimsToConfig,
   clearOverrideKeys,
   cloneSpecialDims,
-} from '../../../features/special_dims/special_dims.js';
+} from '../../../features/special_dims/index.js';
 import { clearHexCellFromConfig } from '../../../features/hex_cell/index.js';
 import { resolveAutoWidthForDoors } from '../../../services/api.js';
 import type {

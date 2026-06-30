@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { installStateApi } from '../esm/native/kernel/state_api.ts';
-import { createLibraryTopModuleConfig } from '../esm/native/features/library_preset/module_defaults.ts';
+import { createLibraryTopModuleConfig } from '../esm/native/features/library_preset/library_preset.ts';
 
 type AnyRecord = Record<string, unknown>;
 

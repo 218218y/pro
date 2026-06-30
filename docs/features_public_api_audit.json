@@ -15,7 +15,6 @@
     "hex_cell/index.js",
     "interior_layout_presets/api.js",
     "library_preset/library_preset.js",
-    "library_preset/module_defaults.js",
     "manual_handle_position.js",
     "metal_finish_palette.js",
     "mirror_layout.js",
@@ -37,7 +36,6 @@
     "sketch_internal_drawer_cassette.js",
     "sketch_stack_positioning.js",
     "special_dims/index.js",
-    "special_dims/special_dims.js",
     "stack_split/index.js"
   ],
   "byFamily": {
@@ -53,7 +51,7 @@
     "handle_finish_shared": ["handle_finish_shared.js"],
     "hex_cell": ["hex_cell/index.js"],
     "interior_layout_presets": ["interior_layout_presets/api.js"],
-    "library_preset": ["library_preset/library_preset.js", "library_preset/module_defaults.js"],
+    "library_preset": ["library_preset/library_preset.js"],
     "manual_handle_position": ["manual_handle_position.js"],
     "metal_finish_palette": ["metal_finish_palette.js"],
     "mirror_layout": ["mirror_layout.js"],
@@ -78,7 +76,7 @@
     "sketch_drawer_sizing": ["sketch_drawer_sizing.js"],
     "sketch_internal_drawer_cassette": ["sketch_internal_drawer_cassette.js"],
     "sketch_stack_positioning": ["sketch_stack_positioning.js"],
-    "special_dims": ["special_dims/index.js", "special_dims/special_dims.js"],
+    "special_dims": ["special_dims/index.js"],
     "stack_split": ["stack_split/index.js"]
   },
   "importSites": [
@@ -496,7 +494,7 @@
     },
     {
       "file": "esm/native/builder/module_layout_pipeline.ts",
-      "entry": "library_preset/module_defaults.js"
+      "entry": "library_preset/library_preset.js"
     },
     {
       "file": "esm/native/builder/module_loop_pipeline_hex_cell.ts",
@@ -932,7 +930,7 @@
     },
     {
       "file": "esm/native/kernel/domain_api_modules_corner_recompute_shared.ts",
-      "entry": "library_preset/module_defaults.js"
+      "entry": "library_preset/library_preset.js"
     },
     {
       "file": "esm/native/kernel/domain_api_modules_corner_selectors.ts",
@@ -1792,7 +1790,7 @@
     },
     {
       "file": "esm/native/ui/react/selectors/config_selectors.ts",
-      "entry": "special_dims/special_dims.js"
+      "entry": "special_dims/index.js"
     },
     {
       "file": "esm/native/ui/react/selectors/config_selectors.ts",
@@ -2028,7 +2026,7 @@
     },
     {
       "file": "esm/native/ui/react/tabs/structure_tab_workflows_controller_shared.ts",
-      "entry": "special_dims/special_dims.js"
+      "entry": "special_dims/index.js"
     },
     {
       "file": "esm/native/ui/react/tabs/structure_tab_workflows_controller_shared.ts",

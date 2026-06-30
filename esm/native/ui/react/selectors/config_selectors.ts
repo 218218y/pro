@@ -20,7 +20,7 @@ import {
   readCornerConfigurationFromConfigSnapshot,
 } from '../../../services/api.js';
 import { readModulesConfigurationListFromConfigSnapshot } from '../../../features/modules_configuration/modules_config_api.js';
-import { moduleHasAnyActiveSpecialDims } from '../../../features/special_dims/special_dims.js';
+import { moduleHasAnyActiveSpecialDims } from '../../../features/special_dims/index.js';
 import { moduleHasHexCell } from '../../../features/hex_cell/index.js';
 import { hasSketchInternalDrawersDirtyOrData } from '../../../features/sketch_drawer_sizing.js';
 import { resolveDoorMountThicknessesFromConfig } from '../../../../shared/wardrobe_dimension_tokens_shared.js';

@@ -18,7 +18,7 @@ test('library mode recompute seeds library defaults for added modules instead of
   assert.match(ownerSource, /domain_api_modules_corner_recompute\.js/);
   assert.match(
     source,
-    /import \{ createLibraryTopModuleConfig \} from '\.\.\/features\/library_preset\/module_defaults\.js';/
+    /import \{ createLibraryTopModuleConfig \} from '\.\.\/features\/library_preset\/library_preset\.js';/
   );
   assert.match(source, /isLibraryMode:\s*!!cfg\.isLibraryMode/);
   assert.match(

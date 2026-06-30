@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { installDomainApiModulesCorner } from '../esm/native/kernel/domain_api_modules_corner.ts';
-import { createLibraryTopModuleConfig } from '../esm/native/features/library_preset/module_defaults.ts';
+import { createLibraryTopModuleConfig } from '../esm/native/features/library_preset/library_preset.ts';
 import { createDefaultTopModuleConfig } from '../esm/native/features/modules_configuration/module_defaults.ts';
 import { computeModulesAndLayout } from '../esm/native/builder/module_layout_pipeline.ts';
 
