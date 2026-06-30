@@ -156,8 +156,8 @@ function createHandleTypeResolver(
 
 function clampAbsYToGroup(absY: number, centerY: number, height: number): number {
   let y = absY;
-  const H = Number(height);
-  const CY = Number(centerY);
+  const H = height;
+  const CY = centerY;
   if (
     !Number.isFinite(y) ||
     !Number.isFinite(H) ||

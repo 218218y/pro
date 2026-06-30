@@ -103,6 +103,33 @@ test('post-build dimension metrics preserve fixed width overrides and add stack-
   assert.equal(metrics.dimD, 0.7);
 });
 
+test('post-build dimension metrics do not coerce runtime module door counts from strings', () => {
+  const metrics = derivePostBuildDimensionMetrics({
+    ctx: {
+      dims: {
+        defaultH: 2.1,
+        defaultD: 0.58,
+      },
+      layout: {
+        modules: [{ doors: '3' }, { doors: 1 }, { doors: 1 }],
+        moduleCfgList: [{}, { specialDims: { widthCm: 50, baseWidthCm: 60 } }, {}],
+      },
+    },
+    App: {},
+    H: 2.1,
+    D: 0.58,
+    totalW: 2,
+    stackSplitActive: false,
+    splitBottomHeightCm: 0,
+    splitBottomDepthCm: 0,
+  });
+
+  assert.deepEqual(
+    metrics.moduleWidthsCm?.map(value => Math.round(value)),
+    [75, 50, 75]
+  );
+});
+
 test('stack-split helper appends two dimension lines on the free side of right-corner wardrobes', () => {
   class Vector3 {
     constructor(

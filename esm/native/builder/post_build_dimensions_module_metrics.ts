@@ -28,11 +28,11 @@ export function derivePostBuildDimensionMetrics(args: {
 
   const overallHeightCm =
     ctx && isRecord(ctx) && isRecord(ctx.dims) && typeof ctx.dims.heightCm === 'number'
-      ? Number(ctx.dims.heightCm)
+      ? ctx.dims.heightCm
       : NaN;
   const overallDepthCm =
     ctx && isRecord(ctx) && isRecord(ctx.dims) && typeof ctx.dims.depthCm === 'number'
-      ? Number(ctx.dims.depthCm)
+      ? ctx.dims.depthCm
       : NaN;
 
   let dimH =
@@ -65,7 +65,8 @@ export function derivePostBuildDimensionMetrics(args: {
     const doorsArr: number[] = [];
     for (let i = 0; i < mods.length; i++) {
       const m = asRecord(mods[i]);
-      const d = Math.max(1, Number(m ? readKey(m, 'doors') : 1) || 1);
+      const rawDoors = m ? readKey(m, 'doors') : 1;
+      const d = typeof rawDoors === 'number' && Number.isFinite(rawDoors) ? Math.max(1, rawDoors) : 1;
       doorsArr.push(d);
       sumDoors += d;
     }
@@ -112,7 +113,10 @@ export function derivePostBuildDimensionMetrics(args: {
     }
 
     let sumSegCm = 0;
-    for (let i = 0; i < segWidthsCm.length; i++) sumSegCm += Number(segWidthsCm[i]) || 0;
+    for (let i = 0; i < segWidthsCm.length; i++) {
+      const width = segWidthsCm[i];
+      if (Number.isFinite(width)) sumSegCm += width;
+    }
     const deltaCm = totalWcm - sumSegCm;
 
     if (mods.length > 0 && Number.isFinite(deltaCm) && Math.abs(deltaCm) > 1e-6) {
@@ -122,7 +126,8 @@ export function derivePostBuildDimensionMetrics(args: {
       const adjustSegments = (indices: number[]) => {
         for (let k = 0; k < indices.length && Math.abs(rem) > 1e-6; k++) {
           const i = indices[k];
-          const cur = Number(segWidthsCm[i]) || 0;
+          const width = segWidthsCm[i];
+          const cur = Number.isFinite(width) ? width : 0;
           if (rem > 0) {
             segWidthsCm[i] = cur + rem;
             rem = 0;
@@ -152,19 +157,11 @@ export function derivePostBuildDimensionMetrics(args: {
     }
 
     const dimsRec = ctx && isRecord(ctx) && isRecord(ctx.dims) ? ctx.dims : null;
-    const defaultH =
-      dimsRec && typeof readKey(dimsRec, 'defaultH') === 'number'
-        ? Number(readKey(dimsRec, 'defaultH'))
-        : typeof H === 'number'
-          ? H
-          : 0;
+    const rawDefaultH = dimsRec ? readKey(dimsRec, 'defaultH') : undefined;
+    const defaultH = typeof rawDefaultH === 'number' ? rawDefaultH : typeof H === 'number' ? H : 0;
 
-    const defaultD =
-      dimsRec && typeof readKey(dimsRec, 'defaultD') === 'number'
-        ? Number(readKey(dimsRec, 'defaultD'))
-        : typeof D === 'number'
-          ? D
-          : 0;
+    const rawDefaultD = dimsRec ? readKey(dimsRec, 'defaultD') : undefined;
+    const defaultD = typeof rawDefaultD === 'number' ? rawDefaultD : typeof D === 'number' ? D : 0;
 
     const baseTopHcm = Number.isFinite(defaultH) ? defaultH * 100 : 0;
     const baseTopDcm = Number.isFinite(defaultD) ? defaultD * 100 : 0;

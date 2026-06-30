@@ -5,6 +5,7 @@
 import { computeHingedDoorPivotMap, computeModuleLayout } from './pure_api.js';
 import { stripWidthOverridesFromConfig } from '../features/special_dims/index.js';
 import { asRecord } from '../runtime/record.js';
+import { readCanonicalPositiveIntegerText } from './build_flow_readers.js';
 import { moduleRequiresCustomBoundaryGeometry } from './module_custom_geometry_policy.js';
 import {
   readCorePureInteger,
@@ -169,8 +170,8 @@ function readHingedDoorPivotMap(value: unknown): HingedDoorPivotMapLike | null {
   for (const key of Object.keys(rec)) {
     const entry = asRecord<BuildHingedDoorPivotEntryLike>(rec[key]);
     if (!entry) continue;
-    if (!/^\d+$/.test(key)) continue;
-    const doorId = parseInt(key, 10);
+    const doorId = readCanonicalPositiveIntegerText(key);
+    if (doorId == null) continue;
     out[doorId] = { ...entry };
   }
   return out;

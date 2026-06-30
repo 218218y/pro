@@ -57,11 +57,18 @@ export function makeHandleCreator(args: HandleCreatorArgs | null | undefined) {
       throw err;
     }
 
-    const W = Number.isFinite(w) ? w : Number(w);
-    const H = Number.isFinite(h) ? h : Number(h);
+    if (!Number.isFinite(w) || !Number.isFinite(h)) {
+      const err = new Error(`[WardrobePro] Invalid handle dimensions (type="${type}")`);
+      if (reportError) {
+        try {
+          reportError(err, { where: 'builder/handle_factory', type });
+        } catch (_) {}
+      }
+      throw err;
+    }
 
     const handleOpts: BuilderHandleMeshOptionsLike = { THREE, addOutlines, ...extraOpts };
-    const mesh = fn(type, W, H, !!isLeftHinge, handleOpts);
+    const mesh = fn(type, w, h, !!isLeftHinge, handleOpts);
 
     if (!mesh) {
       const err = new Error(`[WardrobePro] createHandleMesh returned null/undefined (type="${type}")`);
