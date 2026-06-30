@@ -12,6 +12,7 @@ import {
   type LineMaterialLike,
   type ValueRecord,
 } from './post_build_extras_shared.js';
+import { readGeometryRuntimeNumber } from './geometry_runtime_contracts.js';
 import { analyzeFrontColor, lumaFromHex } from './post_build_front_reveal_frames_materials_shared.js';
 
 export type FrontRevealMaterialPicker = {
@@ -86,8 +87,8 @@ export function createFrontRevealMaterialPicker(
     if (!root) return baseLineMaterial;
     try {
       const preferredHex = readPreferredRevealHex(root, sampleTextureToneHex);
-      if (preferredHex != null && Number.isFinite(Number(preferredHex))) {
-        const metrics = analyzeFrontColor(Number(preferredHex));
+      if (preferredHex != null) {
+        const metrics = analyzeFrontColor(preferredHex);
         return ensureAdaptiveRevealLineMaterial(metrics.darkness);
       }
 
@@ -120,17 +121,19 @@ export function createFrontRevealMaterialPicker(
 
         const size = new THREE.Vector3();
         bb.getSize(size);
-        const area = Math.max(0, Number(size.x) || 0) * Math.max(0, Number(size.y) || 0);
+        const sizeX = readGeometryRuntimeNumber(size.x);
+        const sizeY = readGeometryRuntimeNumber(size.y);
+        const sizeZ = readGeometryRuntimeNumber(size.z);
+        const minZ = readGeometryRuntimeNumber(bb.min && bb.min.z);
+        const maxZ = readGeometryRuntimeNumber(bb.max && bb.max.z);
+        if (sizeX == null || sizeY == null || sizeZ == null || minZ == null || maxZ == null) return;
+
+        const area = Math.max(0, sizeX) * Math.max(0, sizeY);
         if (!(area > 1e-4)) return;
 
-        const zDepth = Math.max(0, Number(size.z) || 0);
-        const minZ = Number(bb.min && bb.min.z);
-        const maxZ = Number(bb.max && bb.max.z);
-        const frontness = Math.max(
-          Number.isFinite(minZ) ? Math.abs(minZ) : 0,
-          Number.isFinite(maxZ) ? Math.abs(maxZ) : 0
-        );
-        const thin = zDepth <= Math.max(0.03, Math.min(size.x, size.y) * 0.45);
+        const zDepth = Math.max(0, sizeZ);
+        const frontness = Math.max(Math.abs(minZ), Math.abs(maxZ));
+        const thin = zDepth <= Math.max(0.03, Math.min(sizeX, sizeY) * 0.45);
 
         const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
         const hex = pickMaterialHex(mats, sampleTextureToneHex);
@@ -165,8 +168,8 @@ export function createFrontRevealMaterialPicker(
         return b.frontness - a.frontness;
       });
 
-      const bestHex = pool[0] ? Number(pool[0].hex) : NaN;
-      if (!Number.isFinite(bestHex)) return baseLineMaterial;
+      const bestHex = pool[0]?.hex;
+      if (bestHex == null) return baseLineMaterial;
 
       const metrics = analyzeFrontColor(bestHex);
       return ensureAdaptiveRevealLineMaterial(metrics.darkness);
@@ -190,11 +193,14 @@ function pickMaterialHex(
     try {
       const color = toValueRecord(readKey(mm, 'color'));
       if (color && typeof color.getHex === 'function') {
-        directHex = Number(color.getHex());
+        const rawHex = color.getHex();
+        directHex = typeof rawHex === 'number' && Number.isFinite(rawHex) ? rawHex : null;
       } else if (color && typeof color.getHexString === 'function') {
-        const sHex = String(color.getHexString());
-        const n = Number.parseInt(sHex, 16);
-        if (Number.isFinite(n)) directHex = n;
+        const sHex = String(color.getHexString()).trim();
+        if (/^[0-9a-fA-F]{1,6}$/.test(sHex)) {
+          const n = Number.parseInt(sHex, 16);
+          if (Number.isFinite(n)) directHex = n;
+        }
       }
     } catch (_error) {
       directHex = null;
@@ -204,9 +210,7 @@ function pickMaterialHex(
     const texHex = mapRecord ? sampleTextureToneHex(mapRecord) : null;
     const shouldPreferTexture = texHex != null && (directHex == null || lumaFromHex(directHex) >= 0.9);
     const chosenHex = shouldPreferTexture ? texHex : directHex != null ? directHex : texHex;
-    if (chosenHex != null && Number.isFinite(Number(chosenHex))) {
-      return Number(chosenHex);
-    }
+    if (chosenHex != null) return chosenHex;
   }
   return null;
 }

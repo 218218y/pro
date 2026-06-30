@@ -23,11 +23,20 @@ export type CreateFrontRevealTextureToneSamplerArgs = {
 const TEXTURE_TONE_HEX_KEY = '__wpFrontRevealToneHex';
 const TEXTURE_TONE_MISS_KEY = '__wpFrontRevealToneHexMiss';
 
+function readFiniteTextureRuntimeNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function readPositiveTextureRuntimeInteger(value: unknown): number | null {
+  const n = readFiniteTextureRuntimeNumber(value);
+  return n != null && n > 0 ? Math.floor(n) : null;
+}
+
 function readCachedTextureToneHex(tex: ValueRecord | null): number | null | undefined {
   const userData = asRecord(tex?.userData);
   if (!userData) return undefined;
-  const cachedHex = Number(userData[TEXTURE_TONE_HEX_KEY]);
-  if (Number.isFinite(cachedHex)) return cachedHex;
+  const cachedHex = readFiniteTextureRuntimeNumber(userData[TEXTURE_TONE_HEX_KEY]);
+  if (cachedHex != null) return cachedHex;
   if (userData[TEXTURE_TONE_MISS_KEY] === true) return null;
   return undefined;
 }
@@ -55,8 +64,8 @@ export function createFrontRevealTextureToneSampler(
   let textureToneReadCtx: Ctx2DLike | null = null;
 
   const getTextureToneReadCtx = (wIn: number, hIn: number) => {
-    const w = Math.max(1, Math.floor(Number(wIn) || 1));
-    const h = Math.max(1, Math.floor(Number(hIn) || 1));
+    const w = readPositiveTextureRuntimeInteger(wIn) ?? 1;
+    const h = readPositiveTextureRuntimeInteger(hIn) ?? 1;
     let canvas = textureToneReadCanvas;
     let ctx2d = textureToneReadCtx;
 
@@ -116,9 +125,9 @@ export function createFrontRevealTextureToneSampler(
       const texSource = isRecord(tex?.source) ? tex.source : null;
       const sourceData = texSource && isRecord(texSource.data) ? texSource.data : null;
       const img = texImage || sourceData;
-      const w = Number(img && img.width);
-      const h = Number(img && img.height);
-      if (img && w > 0 && h > 0) {
+      const w = readPositiveTextureRuntimeInteger(img && img.width);
+      const h = readPositiveTextureRuntimeInteger(img && img.height);
+      if (img && w != null && h != null) {
         const readback = getTextureToneReadCtx(w, h);
         let ctx2d = readback ? readback.ctx2d : null;
         if (ctx2d && typeof ctx2d.getImageData === 'function' && typeof ctx2d.drawImage === 'function') {
@@ -155,11 +164,16 @@ export function createFrontRevealTextureToneSampler(
               const py = Math.max(0, Math.min(h - 1, Math.round(pts[i][1] * (h - 1))));
               const offset = (py * w + px) * 4;
               if (offset + 3 >= data.length) continue;
-              const a = Number(data[offset + 3]) / 255;
+              const alpha = readFiniteTextureRuntimeNumber(data[offset + 3]);
+              const red = readFiniteTextureRuntimeNumber(data[offset]);
+              const green = readFiniteTextureRuntimeNumber(data[offset + 1]);
+              const blue = readFiniteTextureRuntimeNumber(data[offset + 2]);
+              if (alpha == null || red == null || green == null || blue == null) continue;
+              const a = alpha / 255;
               if (!(a > 0)) continue;
-              rAcc += Number(data[offset]) * a;
-              gAcc += Number(data[offset + 1]) * a;
-              bAcc += Number(data[offset + 2]) * a;
+              rAcc += red * a;
+              gAcc += green * a;
+              bAcc += blue * a;
               aAcc += a;
               n++;
             }

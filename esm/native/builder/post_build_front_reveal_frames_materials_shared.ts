@@ -36,7 +36,7 @@ export function srgbToLinear(v: number): number {
 }
 
 export function lumaFromHex(hex: number): number {
-  const n = Number(hex) >>> 0;
+  const n = typeof hex === 'number' && Number.isFinite(hex) ? hex >>> 0 : 0;
   const r = ((n >> 16) & 255) / 255;
   const g = ((n >> 8) & 255) / 255;
   const b = (n & 255) / 255;
@@ -127,7 +127,7 @@ export function createFrontRevealLineMaterialCache(
 }
 
 function hexToRgb01(hex: number) {
-  const n = Number(hex) >>> 0;
+  const n = typeof hex === 'number' && Number.isFinite(hex) ? hex >>> 0 : 0;
   return {
     r: ((n >> 16) & 255) / 255,
     g: ((n >> 8) & 255) / 255,

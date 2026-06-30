@@ -294,3 +294,62 @@ test('front reveal materials persist sampled texture tone on the texture across 
     else (globalThis as any).OffscreenCanvas = prevOffscreenCanvas;
   }
 });
+
+test('front reveal materials ignore non-canonical runtime panel dimensions and color values', () => {
+  const { runtime } = createRuntime();
+  const root = createRoot([
+    createPanel({
+      size: { x: '1.3', y: 2.1, z: 0.02 } as any,
+      minZ: -0.08,
+      maxZ: 0.08,
+      directHex: 0x101010,
+    } as any),
+    {
+      geometry: new FakeGeometry({ x: 1.3, y: 2.1, z: 0.02 }, -0.08, 0.08),
+      material: { color: { getHex: () => '16' } },
+      matrixWorld: { offsetZ: 0 },
+    },
+    {
+      geometry: new FakeGeometry({ x: 1.3, y: 2.1, z: 0.02 }, -0.08, 0.08),
+      material: { color: { getHexString: () => '101010zz' } },
+      matrixWorld: { offsetZ: 0 },
+    },
+  ]);
+
+  const picked = runtime!.pickRevealLineMaterial(root);
+
+  assert.equal(picked, runtime!.baseLineMaterial);
+});
+
+test('front reveal texture sampler ignores stale string tone cache and rewrites numeric runtime cache', () => {
+  const prevOffscreenCanvas = globalThis.OffscreenCanvas;
+  (globalThis as any).OffscreenCanvas = FakeOffscreenCanvas;
+  FakeOffscreenCanvas.drawCalls = 0;
+  try {
+    const sharedTexture: any = {
+      userData: { __wpFrontRevealToneHex: String(0x101010) },
+      image: new FakeOffscreenCanvas(2, 2, [32, 32, 32, 255]),
+    };
+    const root = createRoot([
+      {
+        geometry: new FakeGeometry({ x: 1.2, y: 2.1, z: 0.02 }, -0.02, 0.02),
+        material: {
+          color: { getHex: () => 0xffffff },
+          map: sharedTexture,
+        },
+        matrixWorld: { offsetZ: 0 },
+      },
+    ]);
+
+    const { runtime } = createRuntime();
+    const picked = runtime!.pickRevealLineMaterial(root);
+
+    assert.ok(picked);
+    assert.notEqual(picked, runtime!.baseLineMaterial);
+    assert.ok(FakeOffscreenCanvas.drawCalls > 0);
+    assert.equal(sharedTexture.userData.__wpFrontRevealToneHex, 0x202020);
+  } finally {
+    if (prevOffscreenCanvas === undefined) delete (globalThis as any).OffscreenCanvas;
+    else (globalThis as any).OffscreenCanvas = prevOffscreenCanvas;
+  }
+});

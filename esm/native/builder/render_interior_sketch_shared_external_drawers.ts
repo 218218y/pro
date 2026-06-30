@@ -42,9 +42,9 @@ export function applySketchExternalDrawerFaceOverrides(
 }
 
 export function resolveSketchExternalDrawerDoorFaceTopY(effectiveTopY: number, woodThick: number): number {
-  const topY = Number(effectiveTopY);
-  const thick = Number(woodThick);
-  if (!Number.isFinite(topY)) return 0;
+  const topY = toFiniteNumber(effectiveTopY);
+  const thick = toFiniteNumber(woodThick);
+  if (topY == null) return 0;
 
   // Module hinged doors are built against `effectiveTopLimit`, which is half a board
   // above the module's inner top (`effectiveTopY`). The drawer stack itself is clamped
@@ -53,8 +53,8 @@ export function resolveSketchExternalDrawerDoorFaceTopY(effectiveTopY: number, w
   // door. Do not subtract the 4mm render-mesh shrink here: the visual/outline contract and
   // cut metadata use the full front envelope, and subtracting it leaves a snapped-top
   // sketch drawer visibly lower than the neighboring door.
-  const doorFaceTopY = Number.isFinite(thick) && thick > 0 ? topY + thick / 2 : topY;
-  return Number.isFinite(doorFaceTopY) && doorFaceTopY > topY ? doorFaceTopY : topY;
+  const doorFaceTopY = thick != null && thick > 0 ? topY + thick / 2 : topY;
+  return doorFaceTopY > topY ? doorFaceTopY : topY;
 }
 
 export function resolveSketchExternalDrawerFaceVerticalAlignment(args: {
@@ -70,36 +70,40 @@ export function resolveSketchExternalDrawerFaceVerticalAlignment(args: {
   flushTargetMaxY?: number;
   epsilon?: number;
 }): SketchExternalDrawerFaceVerticalAlignment {
-  const visualH = Number.isFinite(args.visualH) && args.visualH > 0 ? args.visualH : 0;
-  const centerY = Number.isFinite(args.centerY) ? args.centerY : 0;
+  const visualHRaw = toFiniteNumber(args.visualH);
+  const centerYRaw = toFiniteNumber(args.centerY);
+  const visualH = visualHRaw != null && visualHRaw > 0 ? visualHRaw : 0;
+  const centerY = centerYRaw ?? 0;
   const epsilon =
     typeof args.epsilon === 'number' && Number.isFinite(args.epsilon) && args.epsilon >= 0
       ? args.epsilon
       : DRAWER_DIMENSIONS.sketch.faceVerticalAlignmentEpsilonM;
-  const drawerIndex = Math.max(0, Math.floor(args.drawerIndex));
-  const drawerCount = Math.max(1, Math.floor(args.drawerCount));
+  const drawerIndexRaw = toFiniteNumber(args.drawerIndex);
+  const drawerCountRaw = toFiniteNumber(args.drawerCount);
+  const drawerIndex = Math.max(0, Math.floor(drawerIndexRaw ?? 0));
+  const drawerCount = Math.max(1, Math.floor(drawerCountRaw ?? 1));
   const isBottomDrawer = drawerIndex === 0;
   const isTopDrawer = drawerIndex === drawerCount - 1;
-  const stackMinY = Number(args.stackMinY);
-  const stackMaxY = Number(args.stackMaxY);
-  const containerMinY = Number(args.containerMinY);
-  const containerMaxY = Number(args.containerMaxY);
+  const stackMinY = toFiniteNumber(args.stackMinY);
+  const stackMaxY = toFiniteNumber(args.stackMaxY);
+  const containerMinY = toFiniteNumber(args.containerMinY);
+  const containerMaxY = toFiniteNumber(args.containerMaxY);
   const flushBottom =
     isBottomDrawer &&
-    Number.isFinite(stackMinY) &&
-    Number.isFinite(containerMinY) &&
+    stackMinY != null &&
+    containerMinY != null &&
     Math.abs(stackMinY - containerMinY) <= epsilon;
   const flushTop =
     isTopDrawer &&
-    Number.isFinite(stackMaxY) &&
-    Number.isFinite(containerMaxY) &&
+    stackMaxY != null &&
+    containerMaxY != null &&
     Math.abs(stackMaxY - containerMaxY) <= epsilon;
   const currentMinY = centerY - visualH / 2;
   const currentMaxY = centerY + visualH / 2;
-  const flushTargetMinY = Number(args.flushTargetMinY);
-  const flushTargetMaxY = Number(args.flushTargetMaxY);
-  const targetMinY = Number.isFinite(flushTargetMinY) ? flushTargetMinY : containerMinY;
-  const targetMaxY = Number.isFinite(flushTargetMaxY) ? flushTargetMaxY : containerMaxY;
+  const flushTargetMinY = toFiniteNumber(args.flushTargetMinY);
+  const flushTargetMaxY = toFiniteNumber(args.flushTargetMaxY);
+  const targetMinY = flushTargetMinY ?? containerMinY ?? currentMinY;
+  const targetMaxY = flushTargetMaxY ?? containerMaxY ?? currentMaxY;
   const minY = flushBottom ? targetMinY : currentMinY;
   const maxY = flushTop ? targetMaxY : currentMaxY;
   const height = maxY - minY;
