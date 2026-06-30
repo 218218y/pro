@@ -6,7 +6,7 @@ import {
   findMirrorLayoutMatchInRect,
   readMirrorLayoutFaceSign,
   readMirrorLayoutList,
-} from '../features/mirror_layout.js';
+} from '../features/door_authoring/api.js';
 import { __wp_projectWorldPointToLocal } from './canvas_picking_local_helpers.js';
 import {
   readMirrorPlacementRectFromUserData,

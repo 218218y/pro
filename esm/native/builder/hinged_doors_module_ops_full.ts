@@ -1,5 +1,5 @@
 import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
-import { hasMirrorSurfaceOnFace } from '../features/mirror_layout.js';
+import { hasMirrorSurfaceOnFace } from '../features/door_authoring/api.js';
 import { readDoorVisualMirrorLayout } from './door_visual_lookup_state.js';
 import { clampHandleAbsY } from './hinged_doors_module_ops_shared.js';
 import { attachHiddenModuleDoors } from './hinged_doors_module_ops_metadata.js';

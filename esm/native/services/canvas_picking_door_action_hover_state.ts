@@ -7,7 +7,7 @@ import {
   readPointXYZ,
   resolveDoorHitOwnerByPartId,
 } from './canvas_picking_door_shared.js';
-import { mapDoorTrimSurfaceLocalPoint } from '../features/door_trim.js';
+import { mapDoorTrimSurfaceLocalPoint } from '../features/door_authoring/api.js';
 import {
   __wp_isDoorActionPaintTargetPartId,
   __wp_isDoorTrimActionTargetPartId,

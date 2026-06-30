@@ -1,17 +1,17 @@
 import type { AppContainer, DoorSpecialMap, MirrorLayoutMap, CurtainMap } from '../../../types';
 
 import { cfgSetMap } from '../runtime/cfg_access.js';
-import { readDoorVisualMapEntry } from '../features/door_visual_map_lookup.js';
 import {
-  isDoorVisualInheritedOwner,
-  materializeInheritedDoorVisualOwner,
-} from './canvas_picking_door_segment_materialization.js';
-import {
+  readDoorVisualMapEntry,
   isDoorStyleOverrideValue,
   parseDoorStyleOverridePaintToken,
   readDoorStyleMap,
   toDoorStyleOverrideMapKey,
-} from '../features/door_style_overrides.js';
+} from '../features/door_authoring/api.js';
+import {
+  isDoorVisualInheritedOwner,
+  materializeInheritedDoorVisualOwner,
+} from './canvas_picking_door_segment_materialization.js';
 import {
   __wp_historyBatch,
   __wp_isDoorOrDrawerLikePartId,

@@ -6,7 +6,7 @@ import {
 import {
   isRemoveDoorModeFromSnapshot,
   resolveRemoveDoorsEnabledFromSnapshots,
-} from '../features/door_removal_visibility.js';
+} from '../features/door_authoring/api.js';
 import { bindEdgeHandleDefaultNoneReader } from './edge_handle_default_none_runtime.js';
 import { makeHandleCreator } from './handle_factory.js';
 import { resolveBuildFlowPlan } from './build_flow_plan.js';

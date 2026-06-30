@@ -21,7 +21,7 @@ import {
   type MultiColorPanelViewState,
   type MultiColorSwatchDot,
 } from './design_tab_multicolor_panel_contracts.js';
-import type { DoorStyleOverrideValue } from '../../../features/door_style_overrides.js';
+import type { DoorStyleOverrideValue } from '../../../features/door_authoring/api.js';
 
 type MirrorDraftFieldKey = 'currentMirrorDraftHeightCm' | 'currentMirrorDraftWidthCm';
 

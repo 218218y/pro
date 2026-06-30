@@ -4,7 +4,7 @@ import type {
   BuilderCreateInternalDrawerBoxFn,
   BuilderOutlineFn,
 } from '../../../types';
-import { readDoorStyleMap } from '../features/door_style_overrides.js';
+import { readDoorStyleMap } from '../features/door_authoring/api.js';
 import { isFunction, isRecord, readObject3D } from './render_drawer_ops_shared_guards.js';
 import type {
   DrawerConfig,

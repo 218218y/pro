@@ -1,8 +1,7 @@
 import type { UnknownRecord } from '../../../types';
 
 import { readUiRawScalarFromCanonicalSnapshot } from '../runtime/ui_raw_selectors.js';
-import { readMirrorLayoutMap } from '../features/mirror_layout.js';
-import { readDoorTrimMap } from '../features/door_trim.js';
+import { readMirrorLayoutMap, readDoorTrimMap } from '../features/door_authoring/api.js';
 import { normalizeDoorMountThicknessCm } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY } from '../features/shoe_drawer_base_constraint.js';
 

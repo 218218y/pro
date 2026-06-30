@@ -8,7 +8,7 @@ import {
   edgeHandleVariantPartKey,
   normEdgeHandleVariant,
 } from './handles_shared.js';
-import { readDoorStyleMap } from '../features/door_style_overrides.js';
+import { readDoorStyleMap } from '../features/door_authoring/api.js';
 import { readManualHandlePositionForPart } from '../features/manual_handle_position.js';
 import { makeDoorRemovalChecker } from './doors_state_utils.js';
 import { readDoorVisualMapValue, readDoorVisualMirrorLayout } from './door_visual_lookup_state.js';

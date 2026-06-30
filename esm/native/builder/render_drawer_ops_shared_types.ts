@@ -4,7 +4,7 @@ import type {
   DrawerVisualEntryLike,
   UnknownCallable,
 } from '../../../types';
-import type { readDoorStyleMap } from '../features/door_style_overrides.js';
+import type { readDoorStyleMap } from '../features/door_authoring/api.js';
 
 export type FnLike = UnknownCallable;
 export type RegisterFn = (App: AppContainer, partId: unknown, obj: unknown, kind: unknown) => void;

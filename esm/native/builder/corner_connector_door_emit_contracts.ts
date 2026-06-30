@@ -1,5 +1,5 @@
 import type { AppContainer, BuilderCreateDoorVisualFn, Object3DLike } from '../../../types';
-import type { readDoorTrimMap } from '../features/door_trim.js';
+import type { readDoorTrimMap } from '../features/door_authoring/api.js';
 
 type CornerWingMaterialsResult = ReturnType<typeof import('./corner_materials.js').createCornerWingMaterials>;
 

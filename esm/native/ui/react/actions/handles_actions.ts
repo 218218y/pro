@@ -29,7 +29,7 @@ import {
   MANUAL_HANDLE_POSITION_MODE,
   isManualHandlePositionMode,
 } from '../../../features/manual_handle_position.js';
-import { resolveRemoveDoorsEnabledFromSnapshots } from '../../../features/door_removal_visibility.js';
+import { resolveRemoveDoorsEnabledFromSnapshots } from '../../../features/door_authoring/api.js';
 
 export const EDGE_HANDLE_VARIANT_GLOBAL_KEY = '__wp_edge_handle_variant_global';
 

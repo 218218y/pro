@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { encodeGlassFrameStylePaintToken } from '../../../features/door_style_overrides.js';
+import { encodeGlassFrameStylePaintToken } from '../../../features/door_authoring/api.js';
 import type { StructureTabNumericKey } from './structure_tab_shared.js';
 
 export const STRUCTURE_CELL_DIMS_SECTION_TEST_ID = 'structure-cell-dims-section';

@@ -1,4 +1,4 @@
-import { readDoorVisualMapEntry } from '../features/door_visual_map_lookup.js';
+import { readDoorVisualMapEntry } from '../features/door_authoring/api.js';
 import { isIndividualShelfPartId, resolveShelfGroupPartId } from '../features/part_identity/api.js';
 import type { IndividualColorsMap } from '../../../types/maps';
 import type { PartStackKey } from './materials_apply_shared.js';

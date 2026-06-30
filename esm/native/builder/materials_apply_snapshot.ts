@@ -1,6 +1,6 @@
 import type { AppContainer, BuilderMaterialSnapshotLike } from '../../../types';
 import { readRuntimeScalarOrDefault } from '../runtime/runtime_selectors.js';
-import { resolveRemoveDoorsEnabledFromSnapshots } from '../features/door_removal_visibility.js';
+import { resolveRemoveDoorsEnabledFromSnapshots } from '../features/door_authoring/api.js';
 import { asObject, type BuildUiLike, type MaterialsCfgLike } from './materials_apply_shared.js';
 import { getBuildStateMaybe } from './store_access.js';
 

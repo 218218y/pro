@@ -1,5 +1,5 @@
 import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
-import { readDoorTrimMap } from '../features/door_trim.js';
+import { readDoorTrimMap } from '../features/door_authoring/api.js';
 
 import type { CornerConnectorDoorContext } from './corner_connector_door_emit_contracts.js';
 import type { CornerConnectorDoorFlowParams } from './corner_connector_door_emit_flow_contracts.js';

@@ -15,7 +15,7 @@ import {
   encodeDoorStyleOverridePaintToken,
   isGlassPaintSelection,
   type DoorStyleOverrideValue,
-} from '../../../features/door_style_overrides.js';
+} from '../../../features/door_authoring/api.js';
 
 export type DesignTabMirrorDraftKey = 'currentMirrorDraftHeightCm' | 'currentMirrorDraftWidthCm';
 

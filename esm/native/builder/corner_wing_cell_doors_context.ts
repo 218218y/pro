@@ -4,7 +4,7 @@ import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_s
 // Keep stack-scoped map access, hinge defaults, and trim readers out of the
 // public wing-door owner so downstream door flows receive one canonical context.
 
-import { readDoorTrimMap } from '../features/door_trim.js';
+import { readDoorTrimMap } from '../features/door_authoring/api.js';
 import {
   requireCreateDoorVisual,
   requireGroupLike,

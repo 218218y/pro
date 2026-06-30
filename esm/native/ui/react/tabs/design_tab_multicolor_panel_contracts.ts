@@ -1,7 +1,7 @@
 import {
   encodeGlassFrameStylePaintToken,
   type DoorStyleOverrideValue,
-} from '../../../features/door_style_overrides.js';
+} from '../../../features/door_authoring/api.js';
 import type { CurtainPreset, DefaultSwatch, SavedColor } from './design_tab_multicolor_shared.js';
 
 export const MULTI_ICON_BRUSH = '🖌️';

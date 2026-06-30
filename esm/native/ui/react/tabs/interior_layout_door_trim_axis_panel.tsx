@@ -7,7 +7,7 @@ import {
   MAX_DOOR_TRIM_CUSTOM_CM,
   MIN_DOOR_TRIM_CROSS_SIZE_CM,
   MIN_DOOR_TRIM_CUSTOM_CM,
-} from '../../../features/door_trim.js';
+} from '../../../features/door_authoring/api.js';
 import { CountBtn } from './interior_tab_helpers.js';
 import {
   DOOR_TRIM_SPAN_PRIMARY_OPTIONS,

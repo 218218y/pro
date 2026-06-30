@@ -4,7 +4,7 @@ import {
   normalizeDoorTrimAxis,
   normalizeDoorTrimColor,
   normalizeDoorTrimSpan,
-} from '../features/door_trim.js';
+} from '../features/door_authoring/api.js';
 import { readMapOrEmpty } from '../runtime/maps_access.js';
 import {
   readDoorTrimConfigMap as readDoorTrimConfigMapForEdit,

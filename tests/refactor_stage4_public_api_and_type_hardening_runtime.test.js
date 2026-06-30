@@ -33,6 +33,7 @@ test('features public API manifest exposes canonical facades instead of private 
   assert.equal(entries.has('model_record/api.js'), true);
   assert.equal(entries.has('project_config/api.js'), true);
   assert.equal(entries.has('part_identity/api.js'), true);
+  assert.equal(entries.has('door_authoring/api.js'), true);
   assert.equal(entries.has('modules_configuration/modules_config_contracts.js'), false);
   assert.equal(entries.has('stack_split/module_config.js'), false);
   assert.equal(entries.has('special_dims/special_dims.js'), false);
@@ -49,6 +50,11 @@ test('features public API manifest exposes canonical facades instead of private 
   assert.equal(entries.has('drawer_box_identity.js'), false);
   assert.equal(entries.has('removable_parts.js'), false);
   assert.equal(entries.has('shelf_part_identity.js'), false);
+  assert.equal(entries.has('door_removal_visibility.js'), false);
+  assert.equal(entries.has('door_style_overrides.js'), false);
+  assert.equal(entries.has('door_trim.js'), false);
+  assert.equal(entries.has('door_visual_map_lookup.js'), false);
+  assert.equal(entries.has('mirror_layout.js'), false);
 });
 
 test('features public API reports use platform-independent ordering', () => {

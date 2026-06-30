@@ -1,5 +1,5 @@
 import type { MirrorLayoutList } from '../../../types';
-import { readMirrorLayoutListForPart } from '../features/mirror_layout.js';
+import { readMirrorLayoutListForPart } from '../features/door_authoring/api.js';
 import type { CornerWingCellFlowParams, ValueRecord } from './corner_wing_cell_shared.js';
 import {
   requireAddFoldedClothes,

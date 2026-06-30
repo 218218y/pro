@@ -1,4 +1,4 @@
-import { resolveEffectiveDoorStyle } from '../features/door_style_overrides.js';
+import { resolveEffectiveDoorStyle } from '../features/door_authoring/api.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
 
 import type { InteriorGroupLike } from './render_interior_ops_contracts.js';

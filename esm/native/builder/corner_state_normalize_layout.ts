@@ -19,7 +19,7 @@ import {
   platformOverhangCmToM,
 } from '../features/platform_overhang_support.js';
 import { getBasePlinthHeightM, normalizeBasePlinthHeightCm } from '../features/base_plinth_support.js';
-import { resolveRemoveDoorsEnabledFromSnapshots } from '../features/door_removal_visibility.js';
+import { resolveRemoveDoorsEnabledFromSnapshots } from '../features/door_authoring/api.js';
 import {
   readBool,
   readFiniteNumber,

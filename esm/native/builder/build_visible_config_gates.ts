@@ -1,7 +1,7 @@
 import type { ConfigStateLike, ModeStateLike, UiStateLike } from '../../../types';
 
 import { normalizeKnownMapSnapshot } from '../runtime/maps_access.js';
-import { resolveRemoveDoorsEnabledFromSnapshots } from '../features/door_removal_visibility.js';
+import { resolveRemoveDoorsEnabledFromSnapshots } from '../features/door_authoring/api.js';
 
 function readBuildUiToggle(value: unknown): boolean {
   return value === true;

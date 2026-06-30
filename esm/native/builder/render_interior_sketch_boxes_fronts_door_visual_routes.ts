@@ -1,4 +1,4 @@
-import { resolveEffectiveDoorStyle } from '../features/door_style_overrides.js';
+import { resolveEffectiveDoorStyle } from '../features/door_authoring/api.js';
 
 import type { InteriorOpsCallable } from './render_interior_ops_contracts.js';
 import type {

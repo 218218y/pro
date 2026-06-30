@@ -1,5 +1,5 @@
 import { reportError, shouldFailFast } from '../runtime/api.js';
-import { readDoorVisualMapValue } from '../features/door_visual_map_lookup.js';
+import { readDoorVisualMapValue } from '../features/door_authoring/api.js';
 import { readCanonicalPositiveIntegerText } from './build_flow_readers.js';
 import {
   DOOR_SYSTEM_DIMENSIONS,

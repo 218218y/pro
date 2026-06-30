@@ -5,7 +5,7 @@ import type {
   DoorVisualEntryLike,
   Object3DLike,
 } from '../../../types';
-import type { readDoorStyleMap } from '../features/door_style_overrides.js';
+import type { readDoorStyleMap } from '../features/door_authoring/api.js';
 
 export type HandleMeshFactory = (
   type: string,

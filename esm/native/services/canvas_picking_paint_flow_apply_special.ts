@@ -1,17 +1,17 @@
 import type { MirrorLayoutEntry, MirrorLayoutList } from '../../../types';
 
-import { readMirrorLayoutList } from '../features/mirror_layout.js';
-import { readDoorVisualMapEntry } from '../features/door_visual_map_lookup.js';
+import {
+  readMirrorLayoutList,
+  readDoorVisualMapEntry,
+  isDoorStyleOverrideValue,
+  resolveGlassFrameStylePaintSelection,
+  type DoorStyleOverrideValue,
+} from '../features/door_authoring/api.js';
 import {
   deleteDoorVisualOwnerAliasEntries,
   deletePrefixedDoorVisualOwnerAliasEntries,
   readPrefixedDoorVisualOwnerAliasValue,
 } from './canvas_picking_door_visual_owner_map.js';
-import {
-  isDoorStyleOverrideValue,
-  resolveGlassFrameStylePaintSelection,
-  type DoorStyleOverrideValue,
-} from '../features/door_style_overrides.js';
 import { isHexCellDiagonalPanelPartId } from '../features/hex_cell/index.js';
 import {
   __wp_canonDoorPartKeyForMaps,

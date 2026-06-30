@@ -41,7 +41,7 @@ import {
   buildDoorTrimSurfaceUserData,
   isCabinetBodyDoorTrimSurfacePartId,
   resolveCabinetBodyDoorTrimSurfaceInfo,
-} from '../features/door_trim.js';
+} from '../features/door_authoring/api.js';
 import { applyFrontRevealFrames } from './post_build_front_reveal_frames.js';
 import { requireContentsRenderPolicy } from './visuals_contents_shared.js';
 

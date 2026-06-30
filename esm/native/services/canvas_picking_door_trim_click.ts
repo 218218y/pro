@@ -2,8 +2,8 @@ import type { AppContainer, UnknownRecord } from '../../../types';
 
 import { cfgSetMap } from '../runtime/cfg_access.js';
 import { getThreeMaybe } from '../runtime/three_access.js';
-import { readMirrorLayoutListForPart } from '../features/mirror_layout.js';
 import {
+  readMirrorLayoutListForPart,
   buildDoorTrimCenterFromLocal,
   buildSnappedDoorTrimCenterFromLocal,
   createDoorTrimEntry,
@@ -12,14 +12,14 @@ import {
   normalizeDoorTrimColor,
   normalizeDoorTrimSpan,
   resolveDoorTrimPlacementAvoidingMirror,
-} from '../features/door_trim.js';
+  mapDoorTrimSurfaceLocalPoint,
+} from '../features/door_authoring/api.js';
 import {
   readDoorLeafRectFromUserData,
   readPointXYZ,
   resolveDoorTrimTargetFromHitObject,
 } from './canvas_picking_door_shared.js';
 import { asRecord, readDoorTrimConfigMap, readDoorTrimModeOpts } from './canvas_picking_door_edit_shared.js';
-import { mapDoorTrimSurfaceLocalPoint } from '../features/door_trim.js';
 import { createCanvasPickingDoorAuthoringStructuralMeta } from './canvas_picking_door_authoring_meta.js';
 import { __wp_historyBatch, __wp_map } from './canvas_picking_core_helpers.js';
 

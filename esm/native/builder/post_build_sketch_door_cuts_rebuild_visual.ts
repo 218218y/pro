@@ -2,13 +2,13 @@
 //
 // Owns per-segment material selection and visual creation for segmented sketch-door rebuild flows.
 
-import { resolveEffectiveDoorStyle } from '../features/door_style_overrides.js';
 import {
+  resolveEffectiveDoorStyle,
   hasAnyDoorVisualSegmentMapEntry,
   readDoorVisualPrefixedMapEntry,
   readDoorVisualPrefixedOwnMapEntry,
   readDoorVisualSegmentBasePartId,
-} from '../features/door_visual_map_lookup.js';
+} from '../features/door_authoring/api.js';
 import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 import { asRecord, isObject3DLike, type ValueRecord } from './post_build_extras_shared.js';

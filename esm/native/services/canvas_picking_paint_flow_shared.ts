@@ -11,7 +11,13 @@ import type {
 } from '../../../types';
 
 import { getBuilderMaterialsService } from '../runtime/builder_service_access.js';
-import { isGlassPaintSelection, readDoorStyleMap } from '../features/door_style_overrides.js';
+import {
+  isGlassPaintSelection,
+  readDoorStyleMap,
+  cloneMirrorLayoutList,
+  mirrorLayoutListEquals,
+  readMirrorLayoutMap,
+} from '../features/door_authoring/api.js';
 import { isCanvasPickingSpecialPaintTargetPartId } from './canvas_picking_special_paint_targets.js';
 import { __wp_map, __wp_ui } from './canvas_picking_core_helpers.js';
 import {
@@ -22,11 +28,6 @@ import {
   __isAnyCornicePart,
   __isCorniceWavePart,
 } from './canvas_picking_paint_targets.js';
-import {
-  cloneMirrorLayoutList,
-  mirrorLayoutListEquals,
-  readMirrorLayoutMap,
-} from '../features/mirror_layout.js';
 
 export type RejectedMirrorLayoutClickResult = {
   nextLayout: null;

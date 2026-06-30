@@ -11,7 +11,10 @@ import {
   readMirrorPlacementRectMetadata,
 } from './visuals_and_contents_door_visual_tagging.js';
 import { FULL_MIRROR_INSET_M } from '../../shared/mirror_layout_contracts_shared.js';
-import { readMirrorLayoutFaceSign, resolveMirrorPlacementListInRect } from '../features/mirror_layout.js';
+import {
+  readMirrorLayoutFaceSign,
+  resolveMirrorPlacementListInRect,
+} from '../features/door_authoring/api.js';
 
 import type { AppContainer, MirrorLayoutList, Object3DLike, ThreeLike } from '../../../types/index.js';
 import type { StyledDoorVisualArgs } from './visuals_and_contents_door_visual_style_contracts.js';

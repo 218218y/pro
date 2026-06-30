@@ -2,7 +2,7 @@ import {
   isDoorStyleOverridePaintToken,
   isGlassPaintSelection,
   resolveGlassFrameStylePaintSelection,
-} from '../../../features/door_style_overrides.js';
+} from '../../../features/door_authoring/api.js';
 import { isCurtainPreset, type CurtainPreset } from './design_tab_multicolor_shared.js';
 import {
   MULTI_MSG_HINT_DOOR_STYLE,

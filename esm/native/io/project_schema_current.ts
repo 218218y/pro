@@ -1,8 +1,6 @@
 import type { ProjectDataLike } from '../../../types/index.js';
 
-import { readMirrorLayoutMap } from '../features/mirror_layout.js';
-import { readDoorTrimMap } from '../features/door_trim.js';
-import { readDoorStyleMap } from '../features/door_style_overrides.js';
+import { readMirrorLayoutMap, readDoorTrimMap, readDoorStyleMap } from '../features/door_authoring/api.js';
 
 import {
   readCurtainMap,

@@ -3,7 +3,13 @@ import {
   buildSnappedMirrorCenterFromHit,
   findMirrorLayoutMatchInRect,
   resolveMirrorPlacementInRect,
-} from '../features/mirror_layout.js';
+  isGlassPaintSelection,
+  parseDoorStyleOverridePaintToken,
+  resolveDoorStyleOverrideValue,
+  resolveGlassFrameStylePaintSelection,
+  readDoorVisualMapValue,
+  readDoorVisualMirrorLayout,
+} from '../features/door_authoring/api.js';
 import {
   readMirrorPlacementRectFromUserData,
   resolveMirrorPlacementOwnerByPartId,
@@ -22,13 +28,6 @@ import {
   type DoorPaintHoverPreviewArgs,
 } from './canvas_picking_door_action_hover_preview_shared.js';
 import type { UnknownRecord } from '../../../types';
-import {
-  isGlassPaintSelection,
-  parseDoorStyleOverridePaintToken,
-  resolveDoorStyleOverrideValue,
-  resolveGlassFrameStylePaintSelection,
-} from '../features/door_style_overrides.js';
-import { readDoorVisualMapValue, readDoorVisualMirrorLayout } from '../features/door_visual_map_lookup.js';
 import { isHexCellDiagonalPanelPartId } from '../features/hex_cell/index.js';
 import {
   buildRectClearanceMeasurementEntries,

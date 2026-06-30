@@ -1,4 +1,4 @@
-import { readDoorStyleMap } from '../features/door_style_overrides.js';
+import { readDoorStyleMap } from '../features/door_authoring/api.js';
 
 import type {
   BuilderDoorVisualFrameStyle,

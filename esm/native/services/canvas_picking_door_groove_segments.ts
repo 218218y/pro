@@ -10,7 +10,7 @@ import {
   readDoorVisualPrefixedOwnMapEntry,
   readDoorVisualSegmentBasePartId,
   stripDoorVisualSurfaceSuffix,
-} from '../features/door_visual_map_lookup.js';
+} from '../features/door_authoring/api.js';
 
 const GROOVE_PREFIX = 'groove_';
 

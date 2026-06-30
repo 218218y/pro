@@ -2,9 +2,11 @@ import {
   CORNER_WING_DIMENSIONS,
   INTERIOR_FITTINGS_DIMENSIONS,
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
-import { resolveEffectiveDoorStyle } from '../features/door_style_overrides.js';
-import { readDoorTrimListForPart } from '../features/door_trim.js';
-import { hasMirrorSurfaceOnFace } from '../features/mirror_layout.js';
+import {
+  resolveEffectiveDoorStyle,
+  readDoorTrimListForPart,
+  hasMirrorSurfaceOnFace,
+} from '../features/door_authoring/api.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
 import {
   CORNER_SHELF_GROUP_PART_ID,

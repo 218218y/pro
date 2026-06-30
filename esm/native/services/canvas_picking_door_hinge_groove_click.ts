@@ -1,7 +1,6 @@
 import type { AppContainer, DoorVisualEntryLike } from '../../../types';
 
-import { hasMirrorSurfaceOnFace } from '../features/mirror_layout.js';
-import { readDoorVisualMirrorLayout } from '../features/door_visual_map_lookup.js';
+import { hasMirrorSurfaceOnFace, readDoorVisualMirrorLayout } from '../features/door_authoring/api.js';
 import { setDoorsOpenViaService } from '../runtime/doors_access.js';
 import { getDoorsArray } from '../runtime/render_access.js';
 import { toggleGrooveKey, writeHinge } from '../runtime/maps_access.js';

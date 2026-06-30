@@ -60,9 +60,19 @@ function loadTsModule(file, overrides = {}) {
 const { applyPaintPartMutation } = loadTsModule(
   path.join(process.cwd(), 'esm/native/services/canvas_picking_paint_flow_apply_special.ts'),
   {
-    '../features/mirror_layout.js': {
+    '../features/door_authoring/api.js': {
       readMirrorLayoutList(value) {
         return Array.isArray(value) ? value : [];
+      },
+      readDoorVisualMapEntry(map, partId) {
+        if (!map || !partId || !Object.prototype.hasOwnProperty.call(map, partId)) return null;
+        return { key: partId, value: map[partId] };
+      },
+      isDoorStyleOverrideValue(value) {
+        return value === 'flat' || value === 'profile' || value === 'double_profile';
+      },
+      resolveGlassFrameStylePaintSelection(value) {
+        return value === 'glass' ? 'profile' : null;
       },
     },
     './canvas_picking_core_helpers.js': {

@@ -1,4 +1,4 @@
-import { normalizeDoorStyleOverrideValue } from '../features/door_style_overrides.js';
+import { normalizeDoorStyleOverrideValue } from '../features/door_authoring/api.js';
 import { readDoorVisualMapValue } from './door_visual_lookup_state.js';
 import { readCurtainType } from './render_door_ops_shared_core.js';
 

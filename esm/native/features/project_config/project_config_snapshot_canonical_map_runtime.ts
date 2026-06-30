@@ -1,12 +1,14 @@
-import { readMirrorLayoutMap } from '../mirror_layout.js';
 import { isCanonicalRemovedDoorsMapKey } from '../../../shared/removed_doors_map_keys_shared.js';
 import {
   readGroovesMap,
   readSplitDoorsBottomMapValue,
   readSplitDoorsMapValue,
 } from './project_config_map_readers.js';
-import { readDoorTrimMap } from '../door_trim.js';
-import { readDoorStyleMap as normalizeDoorStyleMap } from '../door_style_overrides.js';
+import {
+  readDoorStyleMap as normalizeDoorStyleMap,
+  readDoorTrimMap,
+  readMirrorLayoutMap,
+} from '../door_authoring/api.js';
 import {
   cloneComparableProjectConfigValue,
   isComparableRecord,

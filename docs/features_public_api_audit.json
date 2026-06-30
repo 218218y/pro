@@ -5,17 +5,13 @@
     "base_leg_support.js",
     "base_leg_stage_special_dims_guard.js",
     "base_plinth_support.js",
-    "door_removal_visibility.js",
-    "door_style_overrides.js",
-    "door_visual_map_lookup.js",
-    "door_trim.js",
+    "door_authoring/api.js",
     "finish_palette/api.js",
     "front_color_shelf_inheritance.js",
     "hex_cell/index.js",
     "interior_layout_presets/api.js",
     "library_preset/library_preset.js",
     "manual_handle_position.js",
-    "mirror_layout.js",
     "model_record/api.js",
     "modules_configuration/calc_module_structure.js",
     "modules_configuration/corner_cells_api.js",
@@ -35,17 +31,13 @@
     "base_leg_support": ["base_leg_support.js"],
     "base_leg_stage_special_dims_guard": ["base_leg_stage_special_dims_guard.js"],
     "base_plinth_support": ["base_plinth_support.js"],
-    "door_removal_visibility": ["door_removal_visibility.js"],
-    "door_style_overrides": ["door_style_overrides.js"],
-    "door_visual_map_lookup": ["door_visual_map_lookup.js"],
-    "door_trim": ["door_trim.js"],
+    "door_authoring": ["door_authoring/api.js"],
     "finish_palette": ["finish_palette/api.js"],
     "front_color_shelf_inheritance": ["front_color_shelf_inheritance.js"],
     "hex_cell": ["hex_cell/index.js"],
     "interior_layout_presets": ["interior_layout_presets/api.js"],
     "library_preset": ["library_preset/library_preset.js"],
     "manual_handle_position": ["manual_handle_position.js"],
-    "mirror_layout": ["mirror_layout.js"],
     "model_record": ["model_record/api.js"],
     "modules_configuration": [
       "modules_configuration/calc_module_structure.js",
@@ -134,11 +126,11 @@
     },
     {
       "file": "esm/native/builder/build_visible_config_gates.ts",
-      "entry": "door_removal_visibility.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/build_wardrobe_flow_context.ts",
-      "entry": "door_removal_visibility.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/build_wardrobe_flow_context_hinged.ts",
@@ -206,31 +198,19 @@
     },
     {
       "file": "esm/native/builder/corner_config_readers.ts",
-      "entry": "door_visual_map_lookup.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/corner_connector_door_emit_context.ts",
-      "entry": "door_trim.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/corner_connector_door_emit_contracts.ts",
-      "entry": "door_trim.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/corner_connector_door_emit_visuals.ts",
-      "entry": "mirror_layout.js"
-    },
-    {
-      "file": "esm/native/builder/corner_connector_door_emit_visuals.ts",
-      "entry": "door_trim.js"
-    },
-    {
-      "file": "esm/native/builder/corner_connector_door_emit_visuals.ts",
-      "entry": "door_style_overrides.js"
-    },
-    {
-      "file": "esm/native/builder/corner_connector_door_emit_visuals.ts",
-      "entry": "door_removal_visibility.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/corner_connector_emit.ts",
@@ -254,7 +234,7 @@
     },
     {
       "file": "esm/native/builder/corner_materials.ts",
-      "entry": "door_visual_map_lookup.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/corner_state_normalize_config.ts",
@@ -278,35 +258,23 @@
     },
     {
       "file": "esm/native/builder/corner_state_normalize_layout.ts",
-      "entry": "door_removal_visibility.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/corner_wing_cell_doors_context.ts",
-      "entry": "door_trim.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/corner_wing_cell_doors_contracts.ts",
-      "entry": "door_trim.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/corner_wing_cell_doors_rendering.ts",
-      "entry": "mirror_layout.js"
-    },
-    {
-      "file": "esm/native/builder/corner_wing_cell_doors_rendering.ts",
-      "entry": "door_trim.js"
-    },
-    {
-      "file": "esm/native/builder/corner_wing_cell_doors_rendering.ts",
-      "entry": "door_style_overrides.js"
-    },
-    {
-      "file": "esm/native/builder/corner_wing_cell_doors_rendering.ts",
-      "entry": "door_removal_visibility.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/corner_wing_cell_interiors_runtime.ts",
-      "entry": "mirror_layout.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/corner_wing_cell_interiors_shelves.ts",
@@ -314,15 +282,7 @@
     },
     {
       "file": "esm/native/builder/corner_wing_cell_interiors_storage.ts",
-      "entry": "door_style_overrides.js"
-    },
-    {
-      "file": "esm/native/builder/corner_wing_cell_interiors_storage.ts",
-      "entry": "door_trim.js"
-    },
-    {
-      "file": "esm/native/builder/corner_wing_cell_interiors_storage.ts",
-      "entry": "mirror_layout.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/corner_wing_cell_interiors_storage.ts",
@@ -346,19 +306,15 @@
     },
     {
       "file": "esm/native/builder/door_trim_visuals.ts",
-      "entry": "door_trim.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/door_trim_visuals.ts",
       "entry": "finish_palette/api.js"
     },
     {
-      "file": "esm/native/builder/door_trim_visuals.ts",
-      "entry": "door_trim.js"
-    },
-    {
       "file": "esm/native/builder/door_visual_lookup_state.ts",
-      "entry": "door_visual_map_lookup.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/external_drawer_shelf.ts",
@@ -402,15 +358,15 @@
     },
     {
       "file": "esm/native/builder/hex_cell_diagonal_visual.ts",
-      "entry": "door_style_overrides.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/hinged_doors_module_ops_context.ts",
-      "entry": "door_visual_map_lookup.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/hinged_doors_module_ops_full.ts",
-      "entry": "mirror_layout.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/hinged_doors_module_ops_handle_policy.ts",
@@ -418,11 +374,11 @@
     },
     {
       "file": "esm/native/builder/hinged_doors_module_ops_segments.ts",
-      "entry": "mirror_layout.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/material_color_lookup.ts",
-      "entry": "door_visual_map_lookup.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/material_color_lookup.ts",
@@ -442,7 +398,7 @@
     },
     {
       "file": "esm/native/builder/materials_apply_snapshot.ts",
-      "entry": "door_removal_visibility.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/module_custom_geometry_policy.ts",
@@ -494,7 +450,7 @@
     },
     {
       "file": "esm/native/builder/post_build_removed_parts.ts",
-      "entry": "door_removal_visibility.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/post_build_removed_parts.ts",
@@ -518,15 +474,11 @@
     },
     {
       "file": "esm/native/builder/post_build_sketch_door_cuts_rebuild_visual.ts",
-      "entry": "door_style_overrides.js"
-    },
-    {
-      "file": "esm/native/builder/post_build_sketch_door_cuts_rebuild_visual.ts",
-      "entry": "door_visual_map_lookup.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/post_build_sketch_door_cuts_runtime.ts",
-      "entry": "door_style_overrides.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/post_build_sketch_door_cuts_runtime.ts",
@@ -542,19 +494,15 @@
     },
     {
       "file": "esm/native/builder/render_carcass_ops_base.ts",
-      "entry": "door_trim.js"
-    },
-    {
-      "file": "esm/native/builder/render_carcass_ops_base.ts",
-      "entry": "door_trim.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/render_door_ops_shared_config.ts",
-      "entry": "door_style_overrides.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/render_door_ops_shared_contracts.ts",
-      "entry": "door_style_overrides.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/render_door_ops_shared_materials.ts",
@@ -566,11 +514,7 @@
     },
     {
       "file": "esm/native/builder/render_door_ops_sliding.ts",
-      "entry": "door_style_overrides.js"
-    },
-    {
-      "file": "esm/native/builder/render_door_ops_sliding.ts",
-      "entry": "mirror_layout.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/render_drawer_ops_external.ts",
@@ -582,11 +526,11 @@
     },
     {
       "file": "esm/native/builder/render_drawer_ops_shared_readers.ts",
-      "entry": "door_style_overrides.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/render_drawer_ops_shared_types.ts",
-      "entry": "door_style_overrides.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/render_interior_custom_ops_shelves.ts",
@@ -626,7 +570,7 @@
     },
     {
       "file": "esm/native/builder/render_interior_sketch_boxes_fronts_door_visual_routes.ts",
-      "entry": "door_style_overrides.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_apply.ts",
@@ -654,7 +598,7 @@
     },
     {
       "file": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_visual.ts",
-      "entry": "door_style_overrides.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_boxes_shared.ts",
@@ -690,7 +634,7 @@
     },
     {
       "file": "esm/native/builder/render_interior_sketch_drawers_external_visual.ts",
-      "entry": "door_style_overrides.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_drawers_internal.ts",
@@ -706,7 +650,7 @@
     },
     {
       "file": "esm/native/builder/render_interior_sketch_input_contract.ts",
-      "entry": "door_style_overrides.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_internal_drawer_cassette.ts",
@@ -754,7 +698,7 @@
     },
     {
       "file": "esm/native/builder/render_preview_sketch_pipeline_linear.ts",
-      "entry": "door_trim.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/store_access.ts",
@@ -762,15 +706,15 @@
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "entry": "mirror_layout.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual_mirror.ts",
-      "entry": "mirror_layout.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual_mirror_styled.ts",
-      "entry": "mirror_layout.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/visuals_chest_mode_build.ts",
@@ -782,7 +726,7 @@
     },
     {
       "file": "esm/native/builder/visuals_chest_mode_build.ts",
-      "entry": "door_trim.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/visuals_chest_mode_inputs.ts",
@@ -862,15 +806,7 @@
     },
     {
       "file": "esm/native/io/project_schema_current.ts",
-      "entry": "mirror_layout.js"
-    },
-    {
-      "file": "esm/native/io/project_schema_current.ts",
-      "entry": "door_trim.js"
-    },
-    {
-      "file": "esm/native/io/project_schema_current.ts",
-      "entry": "door_style_overrides.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/kernel/domain_api.ts",
@@ -922,11 +858,7 @@
     },
     {
       "file": "esm/native/kernel/kernel_project_capture_payload.ts",
-      "entry": "mirror_layout.js"
-    },
-    {
-      "file": "esm/native/kernel/kernel_project_capture_payload.ts",
-      "entry": "door_trim.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/kernel/kernel_project_capture_payload.ts",
@@ -1178,19 +1110,11 @@
     },
     {
       "file": "esm/native/services/canvas_picking_door_action_hover_preview_marker.ts",
-      "entry": "door_trim.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_door_action_hover_preview_paint.ts",
-      "entry": "mirror_layout.js"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_door_action_hover_preview_paint.ts",
-      "entry": "door_style_overrides.js"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_door_action_hover_preview_paint.ts",
-      "entry": "door_visual_map_lookup.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_door_action_hover_preview_paint.ts",
@@ -1198,19 +1122,11 @@
     },
     {
       "file": "esm/native/services/canvas_picking_door_action_hover_preview_state.ts",
-      "entry": "door_trim.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_door_action_hover_preview_trim.ts",
-      "entry": "door_trim.js"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_door_action_hover_preview_trim.ts",
-      "entry": "mirror_layout.js"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_door_action_hover_preview_trim.ts",
-      "entry": "door_trim.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_door_action_hover_state.ts",
@@ -1218,23 +1134,19 @@
     },
     {
       "file": "esm/native/services/canvas_picking_door_action_hover_state.ts",
-      "entry": "door_trim.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_door_edit_shared.ts",
-      "entry": "door_trim.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_door_groove_segments.ts",
-      "entry": "door_visual_map_lookup.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_door_hinge_groove_click.ts",
-      "entry": "mirror_layout.js"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_door_hinge_groove_click.ts",
-      "entry": "door_visual_map_lookup.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_door_hover_targets_hit_scan.ts",
@@ -1250,15 +1162,11 @@
     },
     {
       "file": "esm/native/services/canvas_picking_door_part_helpers.ts",
-      "entry": "door_visual_map_lookup.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_door_part_helpers.ts",
       "entry": "hex_cell/index.js"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_door_part_helpers.ts",
-      "entry": "door_trim.js"
     },
     {
       "file": "esm/native/services/canvas_picking_door_shared.ts",
@@ -1266,15 +1174,7 @@
     },
     {
       "file": "esm/native/services/canvas_picking_door_trim_click.ts",
-      "entry": "mirror_layout.js"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_door_trim_click.ts",
-      "entry": "door_trim.js"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_door_trim_click.ts",
-      "entry": "door_trim.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_door_trim_targets.ts",
@@ -1282,7 +1182,7 @@
     },
     {
       "file": "esm/native/services/canvas_picking_door_trim_targets.ts",
-      "entry": "door_trim.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_drawer_cross_family.ts",
@@ -1306,7 +1206,7 @@
     },
     {
       "file": "esm/native/services/canvas_picking_generic_paint_hover_flow.ts",
-      "entry": "door_style_overrides.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_generic_paint_hover_preview.ts",
@@ -1446,23 +1346,11 @@
     },
     {
       "file": "esm/native/services/canvas_picking_paint_flow_apply_door_style.ts",
-      "entry": "door_visual_map_lookup.js"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_paint_flow_apply_door_style.ts",
-      "entry": "door_style_overrides.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_paint_flow_apply_special.ts",
-      "entry": "mirror_layout.js"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_paint_flow_apply_special.ts",
-      "entry": "door_visual_map_lookup.js"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_paint_flow_apply_special.ts",
-      "entry": "door_style_overrides.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_paint_flow_apply_special.ts",
@@ -1470,15 +1358,11 @@
     },
     {
       "file": "esm/native/services/canvas_picking_paint_flow_mirror.ts",
-      "entry": "mirror_layout.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_paint_flow_shared.ts",
-      "entry": "door_style_overrides.js"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_paint_flow_shared.ts",
-      "entry": "mirror_layout.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_projection_runtime_box_no_main_workspace.ts",
@@ -1702,7 +1586,7 @@
     },
     {
       "file": "esm/native/ui/react/actions/builder_actions.ts",
-      "entry": "door_removal_visibility.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/ui/react/actions/handles_actions.ts",
@@ -1714,7 +1598,7 @@
     },
     {
       "file": "esm/native/ui/react/actions/handles_actions.ts",
-      "entry": "door_removal_visibility.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/ui/react/actions/store_actions_ui_structure.ts",
@@ -1758,23 +1642,23 @@
     },
     {
       "file": "esm/native/ui/react/tabs/design_tab_multicolor_controller_runtime.ts",
-      "entry": "door_style_overrides.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/ui/react/tabs/design_tab_multicolor_panel.tsx",
-      "entry": "door_style_overrides.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/ui/react/tabs/design_tab_multicolor_panel_contracts.ts",
-      "entry": "door_style_overrides.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/ui/react/tabs/design_tab_multicolor_panel_state.ts",
-      "entry": "door_style_overrides.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/ui/react/tabs/design_tab_multicolor_panel_view.tsx",
-      "entry": "door_style_overrides.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/ui/react/tabs/design_tab_view_state_runtime.ts",
@@ -1782,7 +1666,7 @@
     },
     {
       "file": "esm/native/ui/react/tabs/interior_layout_door_trim_axis_panel.tsx",
-      "entry": "door_trim.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/ui/react/tabs/interior_layout_sketch_box_controls_components.tsx",
@@ -1910,7 +1794,7 @@
     },
     {
       "file": "esm/native/ui/react/tabs/structure_tab_dimensions_section_contracts.ts",
-      "entry": "door_style_overrides.js"
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/ui/react/tabs/structure_tab_dimensions_section_stack_split.tsx",

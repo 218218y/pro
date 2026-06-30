@@ -2,7 +2,7 @@ import type { AppContainer, ThreeLike, UnknownRecord } from '../../../types/inde
 
 import { getWardrobeGroup } from '../runtime/render_access.js';
 import { readConfigMapFromSnapshot } from '../runtime/config_selectors.js';
-import { isRemoveDoorModeFromSnapshot } from '../features/door_removal_visibility.js';
+import { isRemoveDoorModeFromSnapshot } from '../features/door_authoring/api.js';
 import { isCanvasRemovablePartId, canonicalRemovablePartKey } from '../features/part_identity/api.js';
 import { asRecord } from './post_build_extras_shared.js';
 

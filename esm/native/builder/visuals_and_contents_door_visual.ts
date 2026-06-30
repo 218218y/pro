@@ -1,4 +1,4 @@
-import { hasMirrorSurfaceOnFace, readMirrorLayoutFaceSign } from '../features/mirror_layout.js';
+import { hasMirrorSurfaceOnFace, readMirrorLayoutFaceSign } from '../features/door_authoring/api.js';
 import { createMirrorDoorVisual } from './visuals_and_contents_door_visual_mirror.js';
 import {
   createStyledFullMirrorDoorVisual,

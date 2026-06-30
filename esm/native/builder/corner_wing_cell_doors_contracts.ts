@@ -3,7 +3,7 @@
 // Keep the public door layer and its helpers aligned on one canonical type
 // surface while dedicated modules own context creation and derived door state.
 
-import { readDoorTrimMap } from '../features/door_trim.js';
+import { readDoorTrimMap } from '../features/door_authoring/api.js';
 import type {
   CornerCell,
   CornerCellCfg,

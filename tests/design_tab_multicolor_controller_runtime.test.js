@@ -42,7 +42,7 @@ function loadDesignTabMulticolorControllerModule(reportCalls) {
         setMultiEnabled: (...args) => reportCalls.push(['setMultiEnabled', ...args]),
       };
     }
-    if (specifier === '../../../features/door_style_overrides.js') {
+    if (specifier === '../../../features/door_authoring/api.js') {
       return {
         encodeDoorStyleOverridePaintToken: value => `__door_style__:${value}`,
         isGlassPaintSelection: value =>

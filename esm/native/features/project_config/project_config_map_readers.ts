@@ -18,9 +18,11 @@ import type {
 } from '../../../../types/index.js';
 
 import { isCanonicalRemovedDoorsMapKey } from '../../../shared/removed_doors_map_keys_shared.js';
-import { readDoorStyleMap as readCanonicalDoorStyleMap } from '../door_style_overrides.js';
-import { readDoorTrimMap } from '../door_trim.js';
-import { readMirrorLayoutMap } from '../mirror_layout.js';
+import {
+  readDoorStyleMap as readCanonicalDoorStyleMap,
+  readDoorTrimMap,
+  readMirrorLayoutMap,
+} from '../door_authoring/api.js';
 
 function isObjectRecord(value: unknown): value is UnknownRecord {
   return !!value && typeof value === 'object' && !Array.isArray(value);

@@ -122,7 +122,7 @@ function loadHandlesActionsHarness(initial = {}) {
           isManualHandlePositionMode: value => value === 'manual',
         };
       }
-      if (spec === '../../../features/door_removal_visibility.js') {
+      if (spec === '../../../features/door_authoring/api.js') {
         return {
           resolveRemoveDoorsEnabledFromSnapshots: (ui, mode) =>
             ui?.removeDoorsEnabled === true || mode?.primary === 'remove_door',

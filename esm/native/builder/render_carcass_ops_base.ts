@@ -1,11 +1,11 @@
 import type { AnyMap, BackPanelSeg, BoardOp, RenderCarcassRuntime } from './render_carcass_ops_shared.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
-import { readDoorTrimMap } from '../features/door_trim.js';
 import {
+  readDoorTrimMap,
   buildDoorTrimSurfaceUserData,
   isCabinetBodyDoorTrimSurfacePartId,
   resolveCabinetBodyDoorTrimSurfaceInfo,
-} from '../features/door_trim.js';
+} from '../features/door_authoring/api.js';
 import { readRootState } from '../runtime/root_state_access.js';
 import {
   __asFinite,

@@ -13,7 +13,7 @@ import {
   isGlassPaintSelection,
   parseDoorStyleOverridePaintToken,
   type DoorStyleOverrideValue,
-} from '../../../features/door_style_overrides.js';
+} from '../../../features/door_authoring/api.js';
 import { selectIsMultiColorMode, selectSavedColors } from '../selectors/config_selectors.js';
 
 export {

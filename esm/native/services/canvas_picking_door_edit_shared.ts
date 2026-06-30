@@ -7,7 +7,7 @@ import {
   PENDING_GROOVE_LINES_COUNT_MAP_RUNTIME_KEY,
   readPendingGrooveLinesCountMap,
 } from '../runtime/groove_lines_access.js';
-import { readDoorTrimMap } from '../features/door_trim.js';
+import { readDoorTrimMap } from '../features/door_authoring/api.js';
 import { createCanvasPickingDoorAuthoringRefreshGatedMeta } from './canvas_picking_door_authoring_meta.js';
 import { __wp_map } from './canvas_picking_core_helpers.js';
 

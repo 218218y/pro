@@ -4,8 +4,12 @@ import {
   findDoorTrimMatchInRect,
   resolveDoorTrimPlacement,
   resolveDoorTrimPlacementAvoidingMirror,
-} from '../features/door_trim.js';
-import { readMirrorLayoutListForPart } from '../features/mirror_layout.js';
+  readMirrorLayoutListForPart,
+  mapDoorTrimSurfaceLocalPoint,
+  readDoorTrimSurfaceFaceCoordFromUserData,
+  readDoorTrimSurfaceFaceSignFromUserData,
+  readDoorTrimSurfacePlaneFromUserData,
+} from '../features/door_authoring/api.js';
 import { resolveDoorTrimTarget } from './canvas_picking_door_trim_targets.js';
 import {
   __asObject,
@@ -24,12 +28,6 @@ import {
   markCenteredRectClearanceMeasurements,
   resolveCellMeasurementLabelOutsets,
 } from './canvas_picking_hover_clearance_measurements.js';
-import {
-  mapDoorTrimSurfaceLocalPoint,
-  readDoorTrimSurfaceFaceCoordFromUserData,
-  readDoorTrimSurfaceFaceSignFromUserData,
-  readDoorTrimSurfacePlaneFromUserData,
-} from '../features/door_trim.js';
 
 export function tryHandleDoorTrimHoverPreview(args: DoorTrimHoverPreviewArgs): boolean {
   const {

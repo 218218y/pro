@@ -16,6 +16,28 @@ export const PRIVATE_OWNER_IMPORT_FAMILIES = Object.freeze([
     ],
   },
   {
+    id: 'features:door-authoring',
+    publicFacade: 'esm/native/features/door_authoring/api.ts',
+    privateOwners: [
+      'esm/native/features/door_removal_visibility.ts',
+      'esm/native/features/door_style_overrides.ts',
+      'esm/native/features/door_trim.ts',
+      'esm/native/features/door_trim_map.ts',
+      'esm/native/features/door_trim_placement.ts',
+      'esm/native/features/door_trim_placement_contracts.ts',
+      'esm/native/features/door_trim_placement_geometry.ts',
+      'esm/native/features/door_trim_placement_match.ts',
+      'esm/native/features/door_trim_placement_mirror.ts',
+      'esm/native/features/door_trim_shared.ts',
+      'esm/native/features/door_trim_surface_targets.ts',
+      'esm/native/features/door_visual_map_lookup.ts',
+      'esm/native/features/mirror_layout.ts',
+      'esm/native/features/mirror_layout_contracts.ts',
+      'esm/native/features/mirror_layout_geometry.ts',
+      'esm/native/features/mirror_layout_lookup.ts',
+    ],
+  },
+  {
     id: 'builder:sketch-box-door-visuals',
     publicFacade: 'esm/native/builder/render_interior_sketch_boxes_fronts_door_visuals.ts',
     privateOwners: [

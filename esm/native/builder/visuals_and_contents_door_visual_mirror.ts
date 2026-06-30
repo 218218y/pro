@@ -6,7 +6,10 @@
 import { createCanvasViaPlatform } from '../runtime/platform_access.js';
 import { DOOR_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { getCacheBag } from '../runtime/cache_access.js';
-import { readMirrorLayoutFaceSign, resolveMirrorPlacementListInRect } from '../features/mirror_layout.js';
+import {
+  readMirrorLayoutFaceSign,
+  resolveMirrorPlacementListInRect,
+} from '../features/door_authoring/api.js';
 import { appendGrooveStrips } from './visuals_and_contents_door_visual_grooves.js';
 import { applyDoorFaceIdentityMetadata } from './visuals_and_contents_door_visual_tagging.js';
 import { __asCanvas, __markMirrorTracked } from './visuals_and_contents_shared.js';

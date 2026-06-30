@@ -3,11 +3,13 @@
 // This owner keeps part-key normalization, stack scoping, nearest actionable
 // hit resolution, and door-specific config reads out of the runtime helper seam.
 
-import { readDoorVisualMapValue } from '../features/door_visual_map_lookup.js';
+import {
+  readDoorVisualMapValue,
+  isCabinetBodyDoorTrimSurfacePartId,
+} from '../features/door_authoring/api.js';
 
 import type { AppContainer } from '../../../types';
 import { isHexCellDiagonalPanelPartId } from '../features/hex_cell/index.js';
-import { isCabinetBodyDoorTrimSurfacePartId } from '../features/door_trim.js';
 import type { HitObjectLike } from './canvas_picking_engine.js';
 import { __wp_asHitObject, __wp_asRecord, __wp_map, __wp_str } from './canvas_picking_core_shared.js';
 

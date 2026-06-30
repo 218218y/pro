@@ -16,7 +16,7 @@ import type {
 } from './library_preset_types.js';
 
 import { createLibraryPresetRuntime } from './library_preset_runtime.js';
-import { readDoorStyleMap } from '../door_style_overrides.js';
+import { readDoorStyleMap } from '../door_authoring/api.js';
 import {
   captureModulesConfigurationSnapshot,
   cloneDoorSpecialMap,

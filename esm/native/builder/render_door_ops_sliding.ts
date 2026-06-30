@@ -2,8 +2,7 @@ import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_s
 import { resolveConfiguredHandleColor } from './handle_finish_runtime.js';
 import { resolveHandleFinishPalette } from '../features/finish_palette/api.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
-import { resolveEffectiveDoorStyle } from '../features/door_style_overrides.js';
-import { hasMirrorSurfaceOnFace } from '../features/mirror_layout.js';
+import { resolveEffectiveDoorStyle, hasMirrorSurfaceOnFace } from '../features/door_authoring/api.js';
 import type { BuilderRenderDoorDeps } from './render_door_ops_shared.js';
 import {
   buildRailGroup,

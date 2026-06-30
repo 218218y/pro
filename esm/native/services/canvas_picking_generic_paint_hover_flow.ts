@@ -14,7 +14,7 @@ import {
   createPreviewOpsArgs,
 } from './canvas_picking_generic_paint_hover_shared.js';
 import { resolveGenericPartPaintTarget } from './canvas_picking_generic_paint_target_resolution.js';
-import { isDoorStyleOverridePaintToken, isGlassPaintSelection } from '../features/door_style_overrides.js';
+import { isDoorStyleOverridePaintToken, isGlassPaintSelection } from '../features/door_authoring/api.js';
 import { resolvePaintPreviewGroupBox } from './canvas_picking_generic_paint_hover_preview.js';
 import { isNonPaintableCanvasPaintPartId } from './canvas_picking_paint_part_eligibility.js';
 

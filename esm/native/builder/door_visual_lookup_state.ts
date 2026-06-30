@@ -5,4 +5,4 @@ export {
   readDoorVisualTextValue,
   readDoorVisualMirrorLayout,
   type DoorVisualMapEntry,
-} from '../features/door_visual_map_lookup.js';
+} from '../features/door_authoring/api.js';

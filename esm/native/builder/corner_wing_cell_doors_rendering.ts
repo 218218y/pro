@@ -4,10 +4,13 @@
 // split/full emitters can focus on segment sizing only.
 
 import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
-import { hasMirrorSurfaceOnFace, readMirrorLayoutListForPart } from '../features/mirror_layout.js';
-import { readDoorTrimListForPart } from '../features/door_trim.js';
-import { resolveEffectiveDoorStyle } from '../features/door_style_overrides.js';
-import { isRemoveDoorModeFromSnapshot } from '../features/door_removal_visibility.js';
+import {
+  hasMirrorSurfaceOnFace,
+  readMirrorLayoutListForPart,
+  readDoorTrimListForPart,
+  resolveEffectiveDoorStyle,
+  isRemoveDoorModeFromSnapshot,
+} from '../features/door_authoring/api.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
 import {
   readCurtainType,

@@ -9,7 +9,7 @@ import {
   readUiStateFromApp,
   refreshBuilderHandles,
 } from '../../../services/api.js';
-import { resolveRemoveDoorsEnabledFromSnapshots } from '../../../features/door_removal_visibility.js';
+import { resolveRemoveDoorsEnabledFromSnapshots } from '../../../features/door_authoring/api.js';
 
 export function syncHandlesAfterDoorOps(app: AppContainer): void {
   try {
