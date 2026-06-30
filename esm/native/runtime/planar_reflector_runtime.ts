@@ -6,6 +6,9 @@ import { ensureRenderMetaArray } from './render_access_state_bags.js';
 
 const DEFAULT_REFLECTOR_LONG_EDGE = 1024;
 const DEFAULT_REFLECTOR_MIN_EDGE = 384;
+const DEFAULT_REFLECTOR_SMALL_LONG_EDGE = 512;
+const DEFAULT_REFLECTOR_MEDIUM_LONG_EDGE = 768;
+const DEFAULT_REFLECTOR_SHARED_LONG_EDGE = 640;
 const DEFAULT_REFLECTOR_MAX_COUNT = 8;
 const DEFAULT_REFLECTOR_CLIP_BIAS = 0.003;
 const DEFAULT_REFLECTOR_MULTISAMPLE = 4;
@@ -95,7 +98,18 @@ export type PlanarMirrorRefreshResult = {
   mirrorCount: number;
   planarCount: number;
   fallbackCount: number;
+  refreshedCount: number;
+  deferredCount: number;
+  nextIndex: number;
+  completedCycle: boolean;
   skippedReason: string | null;
+};
+
+export type PlanarMirrorRefreshOptions = {
+  maxSurfaces?: number | null;
+  maxBudgetMs?: number | null;
+  startIndex?: number | null;
+  now?: (() => number) | null;
 };
 
 function isRecord(value: unknown): value is UnknownRecord {
@@ -285,7 +299,7 @@ function readMirrorDimensionM(mirror: Object3DLike, axis: 'width' | 'height'): n
     : 1;
 }
 
-function resolveReflectorLongEdge(App: unknown): number {
+function resolveConfiguredReflectorLongEdge(App: unknown): number {
   const configuredLongEdge = readConfigNumberLooseFromApp(App, 'MIRROR_REFLECTOR_LONG_EDGE', NaN);
   const legacySquareSize = readConfigNumberLooseFromApp(App, 'MIRROR_REFLECTOR_SIZE', NaN);
   return Math.floor(
@@ -302,8 +316,35 @@ function resolveReflectorLongEdge(App: unknown): number {
   );
 }
 
-function resolveReflectorTargetSize(App: unknown, mirror: Object3DLike): { width: number; height: number } {
-  const longEdge = resolveReflectorLongEdge(App);
+function resolveReflectorLongEdge(App: unknown, mirror: Object3DLike, installedPlanarCount: number): number {
+  const configuredLongEdge = resolveConfiguredReflectorLongEdge(App);
+  const mirrorWidth = readMirrorDimensionM(mirror, 'width');
+  const mirrorHeight = readMirrorDimensionM(mirror, 'height');
+  const mirrorLongM = Math.max(mirrorWidth, mirrorHeight);
+  const mirrorAreaM2 = mirrorWidth * mirrorHeight;
+  let adaptiveLongEdge = configuredLongEdge;
+
+  if (mirrorLongM <= 0.75 || mirrorAreaM2 <= 0.45) {
+    adaptiveLongEdge = Math.min(adaptiveLongEdge, DEFAULT_REFLECTOR_SMALL_LONG_EDGE);
+  } else if (mirrorLongM <= 1.45 || mirrorAreaM2 <= 1.2) {
+    adaptiveLongEdge = Math.min(adaptiveLongEdge, DEFAULT_REFLECTOR_MEDIUM_LONG_EDGE);
+  }
+
+  if (installedPlanarCount >= 4) {
+    adaptiveLongEdge = Math.min(adaptiveLongEdge, DEFAULT_REFLECTOR_SHARED_LONG_EDGE);
+  } else if (installedPlanarCount >= 2) {
+    adaptiveLongEdge = Math.min(adaptiveLongEdge, DEFAULT_REFLECTOR_MEDIUM_LONG_EDGE);
+  }
+
+  return Math.floor(clampNumber(adaptiveLongEdge, configuredLongEdge, 256, 1536));
+}
+
+function resolveReflectorTargetSize(
+  App: unknown,
+  mirror: Object3DLike,
+  installedPlanarCount: number
+): { width: number; height: number } {
+  const longEdge = resolveReflectorLongEdge(App, mirror, installedPlanarCount);
   const minEdge = Math.min(
     longEdge,
     Math.floor(
@@ -340,10 +381,11 @@ function resolveReflectorMultisample(App: unknown): number {
 function makeReflectorRenderTarget(
   App: unknown,
   THREE: ThreeLike,
-  mirror: Object3DLike
+  mirror: Object3DLike,
+  installedPlanarCount: number
 ): UnknownRecord | null {
   try {
-    const size = resolveReflectorTargetSize(App, mirror);
+    const size = resolveReflectorTargetSize(App, mirror, installedPlanarCount);
     const options: UnknownRecord = {
       minFilter: THREE.LinearFilter,
       magFilter: THREE.LinearFilter,
@@ -578,9 +620,10 @@ export function installPlanarMirrorReflector(
     1,
     Math.floor(readConfigNumberLooseFromApp(App, 'MIRROR_REFLECTOR_MAX_COUNT', DEFAULT_REFLECTOR_MAX_COUNT))
   );
-  if (countInstalledPlanarReflectors(App) >= maxReflectors) return false;
+  const installedPlanarCount = countInstalledPlanarReflectors(App);
+  if (installedPlanarCount >= maxReflectors) return false;
 
-  const target = makeReflectorRenderTarget(App, THREE, mirrorMesh);
+  const target = makeReflectorRenderTarget(App, THREE, mirrorMesh, installedPlanarCount);
   if (!target) return false;
 
   const textureMatrix = readRecord(new THREE.Matrix4());
@@ -858,12 +901,41 @@ export function readTrackedPlanarMirrorStats(App: unknown): {
   return { mirrorCount, planarCount, fallbackCount };
 }
 
-export function refreshTrackedPlanarMirrorSurfacesNow(App: unknown): PlanarMirrorRefreshResult {
+function normalizeRefreshStartIndex(startIndex: unknown, length: number): number {
+  if (!length) return 0;
+  const numeric = typeof startIndex === 'number' && Number.isFinite(startIndex) ? Math.floor(startIndex) : 0;
+  return ((numeric % length) + length) % length;
+}
+
+function resolveRefreshLimit(value: unknown, defaultValue: number): number {
+  return Math.max(1, Math.floor(clampNumber(value, defaultValue, 1, 64)));
+}
+
+function readRefreshNow(options: PlanarMirrorRefreshOptions | undefined): number {
+  try {
+    if (typeof options?.now === 'function') {
+      const value = options.now();
+      if (typeof value === 'number' && Number.isFinite(value)) return value;
+    }
+  } catch {
+    // Fall through to the native clock.
+  }
+  return Date.now();
+}
+
+export function refreshTrackedPlanarMirrorSurfacesNow(
+  App: unknown,
+  options?: PlanarMirrorRefreshOptions
+): PlanarMirrorRefreshResult {
   const result: PlanarMirrorRefreshResult = {
     refreshed: false,
     mirrorCount: 0,
     planarCount: 0,
     fallbackCount: 0,
+    refreshedCount: 0,
+    deferredCount: 0,
+    nextIndex: 0,
+    completedCycle: true,
     skippedReason: null,
   };
 
@@ -880,14 +952,25 @@ export function refreshTrackedPlanarMirrorSurfacesNow(App: unknown): PlanarMirro
   result.mirrorCount = stats.mirrorCount;
   result.planarCount = stats.planarCount;
   result.fallbackCount = stats.fallbackCount;
-  if (!result.planarCount) {
+  if (!result.planarCount || !mirrors.length) {
     result.skippedReason = 'no-planar-reflector-surfaces';
     return result;
   }
 
-  let refreshedCount = 0;
-  for (let i = 0; i < mirrors.length; i += 1) {
-    const mirror = readRecord(mirrors[i]);
+  const maxSurfaces = resolveRefreshLimit(options?.maxSurfaces, result.planarCount);
+  const budgetMs = clampNumber(options?.maxBudgetMs, Number.POSITIVE_INFINITY, 1, 1000);
+  const startedAt = readRefreshNow(options);
+  const startIndex = normalizeRefreshStartIndex(options?.startIndex, mirrors.length);
+  let scannedCount = 0;
+  let nextIndex = startIndex;
+
+  for (; scannedCount < mirrors.length; scannedCount += 1) {
+    if (result.refreshedCount >= maxSurfaces) break;
+    if (result.refreshedCount > 0 && readRefreshNow(options) - startedAt >= budgetMs) break;
+
+    const index = (startIndex + scannedCount) % mirrors.length;
+    nextIndex = (index + 1) % mirrors.length;
+    const mirror = readRecord(mirrors[index]);
     if (!mirror || !isTaggedMirrorSurface(mirror)) continue;
     const state = readPlanarReflectorState(mirror);
     if (!state) continue;
@@ -898,13 +981,19 @@ export function refreshTrackedPlanarMirrorSurfacesNow(App: unknown): PlanarMirro
       scene,
       camera,
     });
-    if (ok) refreshedCount += 1;
+    if (ok) result.refreshedCount += 1;
   }
 
-  if (refreshedCount > 0) {
+  result.nextIndex = nextIndex;
+  result.completedCycle = scannedCount >= mirrors.length;
+  result.deferredCount = result.completedCycle ? 0 : Math.max(0, result.planarCount - result.refreshedCount);
+
+  if (result.refreshedCount > 0) {
     result.refreshed = true;
     return result;
   }
-  result.skippedReason = 'planar-reflector-render-failed';
+  result.skippedReason = result.completedCycle
+    ? 'planar-reflector-render-failed'
+    : 'planar-reflector-budget-deferred';
   return result;
 }
