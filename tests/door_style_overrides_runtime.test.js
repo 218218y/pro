@@ -4,7 +4,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
 import { createRequire } from 'node:module';
-import { toDoorStyleOverrideMapKey } from '../esm/native/features/door_authoring/api.ts';
+import {
+  buildDoorVisualOwnerAliasKeys,
+  resolveDoorStylePaintTargetKey,
+  resolveDoorVisualSegmentIdentity,
+  toDoorStyleOverrideMapKey,
+} from '../esm/native/features/door_authoring/api.ts';
 
 const require = createRequire(import.meta.url);
 const ts = require('typescript');
@@ -112,6 +117,30 @@ test('[door-style-overrides] tokens, map normalization, and effective style reso
 
   assert.equal(toDoorStyleOverrideMapKey('d7'), 'd7_full');
   assert.equal(toDoorStyleOverrideMapKey('drawer_9'), 'drawer_9');
+  assert.deepEqual(resolveDoorVisualSegmentIdentity('d7_mid2_accent_top'), {
+    partId: 'd7_mid2',
+    basePartId: 'd7',
+    fullPartId: 'd7_full',
+    isSegment: true,
+    lookupKeys: ['d7_mid2', 'd7_full', 'd7'],
+  });
+  assert.deepEqual(buildDoorVisualOwnerAliasKeys('d7_full'), ['d7_full', 'd7']);
+  assert.deepEqual(buildDoorVisualOwnerAliasKeys('sketch_box_free_0_boxStyle_door_main'), [
+    'sketch_box_free_0_boxStyle_door_main',
+    'sketch_box_free_0_boxStyle_door_main_full',
+  ]);
+  assert.equal(
+    resolveDoorStylePaintTargetKey({
+      foundPartId: 'corner_door_7',
+      effectiveDoorId: 'corner_door_7',
+      foundDrawerId: null,
+      activeStack: 'bottom',
+      isDoorOrDrawerLikePartId: partId => String(partId || '').includes('door'),
+      scopePartKeyForStack: (partId, stack) =>
+        stack === 'bottom' && !partId.startsWith('lower_') ? `lower_${partId}` : partId,
+    }),
+    'lower_corner_door_7_full'
+  );
   assert.equal(mod.resolveDoorStyleOverrideValue({ d7_full: 'double_profile' }, 'd7'), 'double_profile');
   assert.equal(mod.resolveDoorStyleOverrideValue({ d7: 'profile' }, 'd7_top'), 'profile');
   assert.equal(

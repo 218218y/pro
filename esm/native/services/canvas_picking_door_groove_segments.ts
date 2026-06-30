@@ -3,13 +3,10 @@ import type { AppContainer, UnknownRecord } from '../../../types';
 import { asRecord } from '../runtime/record.js';
 import { getDoorsArray } from '../runtime/render_access.js';
 import {
-  buildDoorVisualLookupKeys,
   hasAnyDoorVisualSegmentMapEntry,
-  isDoorVisualSegmentPartId,
   readDoorVisualPrefixedMapEntry,
   readDoorVisualPrefixedOwnMapEntry,
-  readDoorVisualSegmentBasePartId,
-  stripDoorVisualSurfaceSuffix,
+  resolveDoorVisualSegmentIdentity,
 } from '../features/door_authoring/api.js';
 
 const GROOVE_PREFIX = 'groove_';
@@ -26,9 +23,7 @@ function readGrooveBooleanValue(value: unknown): boolean {
 function readNodePartId(node: unknown): string {
   const record = asRecord<UnknownRecord>(node);
   const userData = asRecord<UnknownRecord>(record?.userData);
-  return typeof userData?.partId === 'string'
-    ? stripDoorVisualSurfaceSuffix(String(userData.partId || ''))
-    : '';
+  return typeof userData?.partId === 'string' ? resolveDoorVisualSegmentIdentity(userData.partId).partId : '';
 }
 
 function readNodeChildren(node: unknown): unknown[] {
@@ -37,16 +32,15 @@ function readNodeChildren(node: unknown): unknown[] {
 }
 
 export function readDoorGrooveBasePartId(partId: string): string {
-  return readDoorVisualSegmentBasePartId(partId);
+  return resolveDoorVisualSegmentIdentity(partId).basePartId;
 }
 
 export function isDoorGrooveSegmentPartId(partId: string): boolean {
-  return isDoorVisualSegmentPartId(partId);
+  return resolveDoorVisualSegmentIdentity(partId).isSegment;
 }
 
 export function readDoorGrooveFullPartId(partId: string): string {
-  const basePartId = readDoorGrooveBasePartId(partId);
-  return basePartId ? `${basePartId}_full` : '';
+  return resolveDoorVisualSegmentIdentity(partId).fullPartId;
 }
 
 export function readDoorGrooveMapFlag(
@@ -122,9 +116,9 @@ export function readDoorGrooveLinesCountForPart(
   map: Record<string, unknown> | null | undefined,
   partId: string
 ): number | null {
-  const key = stripDoorVisualSurfaceSuffix(String(partId || ''));
-  if (!map || !key) return null;
-  const keys = buildDoorVisualLookupKeys(key);
+  const identity = resolveDoorVisualSegmentIdentity(partId);
+  if (!map || !identity.partId) return null;
+  const keys = identity.lookupKeys;
   for (let index = 0; index < keys.length; index += 1) {
     const candidateKey = keys[index];
     const raw = readOwnMapValue(map, candidateKey);

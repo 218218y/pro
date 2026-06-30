@@ -1169,6 +1169,10 @@
       "entry": "hex_cell/index.js"
     },
     {
+      "file": "esm/native/services/canvas_picking_door_segment_materialization.ts",
+      "entry": "door_authoring/api.js"
+    },
+    {
       "file": "esm/native/services/canvas_picking_door_shared.ts",
       "entry": "part_identity/api.js"
     },
@@ -1182,6 +1186,10 @@
     },
     {
       "file": "esm/native/services/canvas_picking_door_trim_targets.ts",
+      "entry": "door_authoring/api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_visual_owner_map.ts",
       "entry": "door_authoring/api.js"
     },
     {

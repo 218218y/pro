@@ -2,10 +2,7 @@ import type { AppContainer, UnknownRecord } from '../../../types';
 
 import { asRecord } from '../runtime/record.js';
 import { getDoorsArray } from '../runtime/render_access.js';
-
-const SEGMENTED_DOOR_ANY_SUFFIX_RE = /_(?:full|top|bot|mid\d*)$/i;
-const SEGMENTED_DOOR_PART_SUFFIX_RE = /_(?:top|bot|mid\d*)$/i;
-const DOOR_VISUAL_SURFACE_SUFFIX_RE = /_(?:accent|groove)_(?:top|bottom|left|right)$/i;
+import { resolveDoorVisualSegmentIdentity } from '../features/door_authoring/api.js';
 
 function readOwnMapValue(map: Record<string, unknown> | null | undefined, key: string): unknown {
   if (!map || !key || !Object.prototype.hasOwnProperty.call(map, key)) return undefined;
@@ -31,9 +28,7 @@ function cloneDoorVisualValue(value: unknown): unknown {
 function readNodePartId(node: unknown): string {
   const record = asRecord<UnknownRecord>(node);
   const userData = asRecord<UnknownRecord>(record?.userData);
-  return typeof userData?.partId === 'string'
-    ? stripDoorVisualSurfaceSuffix(String(userData.partId || ''))
-    : '';
+  return typeof userData?.partId === 'string' ? resolveDoorVisualSegmentIdentity(userData.partId).partId : '';
 }
 
 function readNodeChildren(node: unknown): unknown[] {
@@ -48,32 +43,15 @@ function collectDoorVisualSegmentPartIdsFromNode(args: {
 }): void {
   const { node, basePartId, out } = args;
   if (!basePartId) return;
-  const partId = readNodePartId(node);
-  if (partId && partId.startsWith(`${basePartId}_`) && isDoorVisualSegmentPartId(partId)) {
-    out.add(partId);
+  const identity = resolveDoorVisualSegmentIdentity(readNodePartId(node));
+  if (identity.partId && identity.partId.startsWith(`${basePartId}_`) && identity.isSegment) {
+    out.add(identity.partId);
   }
 
   const children = readNodeChildren(node);
   for (let index = 0; index < children.length; index += 1) {
     collectDoorVisualSegmentPartIdsFromNode({ node: children[index], basePartId, out });
   }
-}
-
-export function stripDoorVisualSurfaceSuffix(partId: string): string {
-  return String(partId || '').replace(DOOR_VISUAL_SURFACE_SUFFIX_RE, '');
-}
-
-export function readDoorVisualSegmentBasePartId(partId: string): string {
-  return stripDoorVisualSurfaceSuffix(String(partId || '')).replace(SEGMENTED_DOOR_ANY_SUFFIX_RE, '');
-}
-
-export function isDoorVisualSegmentPartId(partId: string): boolean {
-  return SEGMENTED_DOOR_PART_SUFFIX_RE.test(stripDoorVisualSurfaceSuffix(String(partId || '')));
-}
-
-export function readDoorVisualFullPartId(partId: string): string {
-  const basePartId = readDoorVisualSegmentBasePartId(partId);
-  return basePartId ? `${basePartId}_full` : '';
 }
 
 export function readDoorVisualSiblingSegmentPartIds(args: {
@@ -108,11 +86,10 @@ export function isDoorVisualInheritedOwner(args: {
   targetPartId: string;
   ownerPartId: string | null | undefined;
 }): boolean {
-  const targetPartId = stripDoorVisualSurfaceSuffix(String(args.targetPartId || ''));
-  const ownerPartId = stripDoorVisualSurfaceSuffix(String(args.ownerPartId || ''));
-  if (!targetPartId || !ownerPartId || !isDoorVisualSegmentPartId(targetPartId)) return false;
-  const basePartId = readDoorVisualSegmentBasePartId(targetPartId);
-  return ownerPartId === basePartId || ownerPartId === `${basePartId}_full`;
+  const target = resolveDoorVisualSegmentIdentity(args.targetPartId);
+  const owner = resolveDoorVisualSegmentIdentity(args.ownerPartId);
+  if (!target.partId || !owner.partId || !target.isSegment) return false;
+  return owner.partId === target.basePartId || owner.partId === target.fullPartId;
 }
 
 export type DoorVisualSegmentMaterializeResult = {
@@ -132,12 +109,14 @@ export function materializeInheritedDoorVisualOwner(args: {
   ownerPartId: string | null | undefined;
 }): DoorVisualSegmentMaterializeResult | null {
   const map = args.map;
-  const clickedPartId = stripDoorVisualSurfaceSuffix(String(args.targetPartId || ''));
-  const ownerPartId = stripDoorVisualSurfaceSuffix(String(args.ownerPartId || ''));
+  const target = resolveDoorVisualSegmentIdentity(args.targetPartId);
+  const owner = resolveDoorVisualSegmentIdentity(args.ownerPartId);
+  const clickedPartId = target.partId;
+  const ownerPartId = owner.partId;
   if (!map || !isDoorVisualInheritedOwner({ targetPartId: clickedPartId, ownerPartId })) return null;
 
-  const basePartId = readDoorVisualSegmentBasePartId(clickedPartId);
-  const fullPartId = `${basePartId}_full`;
+  const basePartId = target.basePartId;
+  const fullPartId = target.fullPartId;
   const ownerValue = readOwnMapValue(map, ownerPartId);
   if (ownerValue === undefined) return null;
 

@@ -3,6 +3,13 @@ import { readMirrorLayoutList } from './mirror_contracts.js';
 import type { MirrorLayoutList } from '../../../../../types';
 
 export type DoorVisualMapEntry = { key: string; value: unknown };
+export type DoorVisualSegmentIdentity = {
+  partId: string;
+  basePartId: string;
+  fullPartId: string;
+  isSegment: boolean;
+  lookupKeys: string[];
+};
 
 const SEGMENTED_DOOR_ANY_SUFFIX_RE = /_(?:full|top|bot|mid\d*)$/i;
 const SEGMENTED_DOOR_PART_SUFFIX_RE = /_(?:top|bot|mid\d*)$/i;
@@ -10,6 +17,10 @@ const DOOR_VISUAL_SURFACE_SUFFIX_RE = /_(?:accent|groove)_(?:top|bottom|left|rig
 
 function hasOwn(map: Record<string, unknown> | undefined | null, key: string): boolean {
   return !!map && !!key && Object.prototype.hasOwnProperty.call(map, key);
+}
+
+function normalizePartKey(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : String(value ?? '').trim();
 }
 
 function isSegmentedDoorBaseId(partId: string): boolean {
@@ -76,20 +87,67 @@ export function stripDoorVisualSurfaceSuffix(partId: string): string {
   return String(partId || '').replace(DOOR_VISUAL_SURFACE_SUFFIX_RE, '');
 }
 
+export function resolveDoorVisualSegmentIdentity(partId: unknown): DoorVisualSegmentIdentity {
+  const key = stripDoorVisualSurfaceSuffix(String(partId || ''));
+  const basePartId = key.replace(SEGMENTED_DOOR_ANY_SUFFIX_RE, '');
+  const fullPartId = basePartId ? `${basePartId}_full` : '';
+  return {
+    partId: key,
+    basePartId,
+    fullPartId,
+    isSegment: SEGMENTED_DOOR_PART_SUFFIX_RE.test(key),
+    lookupKeys: buildDoorVisualLookupKeys(key),
+  };
+}
+
 export function readDoorVisualSegmentBasePartId(partId: string): string {
-  return stripDoorVisualSurfaceSuffix(String(partId || '')).replace(SEGMENTED_DOOR_ANY_SUFFIX_RE, '');
+  return resolveDoorVisualSegmentIdentity(partId).basePartId;
 }
 
 export function isDoorVisualSegmentPartId(partId: string): boolean {
-  return SEGMENTED_DOOR_PART_SUFFIX_RE.test(stripDoorVisualSurfaceSuffix(String(partId || '')));
+  return resolveDoorVisualSegmentIdentity(partId).isSegment;
+}
+
+export function buildDoorVisualOwnerAliasKeys(partId: unknown): string[] {
+  const key = normalizePartKey(partId);
+  if (!key) return [];
+  const out: string[] = [key];
+  const push = (value: string) => {
+    if (value && !out.includes(value)) out.push(value);
+  };
+
+  if (key.endsWith('_full')) push(key.slice(0, -5));
+  else if (isSegmentedDoorBaseId(key)) push(`${key}_full`);
+
+  return out;
 }
 
 export function toDoorStyleOverrideMapKey(partId: unknown): string {
-  const pid = typeof partId === 'string' ? partId.trim() : String(partId ?? '').trim();
+  const pid = normalizePartKey(partId);
   if (!pid) return '';
   if (SEGMENTED_DOOR_ANY_SUFFIX_RE.test(pid)) return pid;
   if (isDoorStyleSegmentedBaseId(pid)) return `${pid}_full`;
   return pid;
+}
+
+export function resolveDoorStylePaintTargetKey(args: {
+  foundPartId: unknown;
+  effectiveDoorId?: unknown;
+  foundDrawerId?: unknown;
+  activeStack: 'top' | 'bottom';
+  isDoorOrDrawerLikePartId: (partId: unknown) => boolean;
+  scopePartKeyForStack: (partId: string, stack: 'top' | 'bottom') => string;
+}): string {
+  const foundPartId =
+    typeof args.foundPartId === 'string' ? args.foundPartId : String(args.foundPartId ?? '');
+  const effectiveDoorId =
+    typeof args.effectiveDoorId === 'string' && args.effectiveDoorId ? args.effectiveDoorId : '';
+  const foundDrawerId =
+    typeof args.foundDrawerId === 'string' && args.foundDrawerId ? args.foundDrawerId : '';
+  const rawTarget =
+    effectiveDoorId || foundDrawerId || (args.isDoorOrDrawerLikePartId(foundPartId) ? foundPartId : '');
+  const scopedTarget = rawTarget ? args.scopePartKeyForStack(rawTarget, args.activeStack) : '';
+  return toDoorStyleOverrideMapKey(scopedTarget);
 }
 
 export function readDoorVisualPrefixedOwnMapEntry(args: {

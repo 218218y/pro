@@ -6,7 +6,7 @@ import {
   isDoorStyleOverrideValue,
   parseDoorStyleOverridePaintToken,
   readDoorStyleMap,
-  toDoorStyleOverrideMapKey,
+  resolveDoorStylePaintTargetKey as resolveDoorAuthoringStylePaintTargetKey,
 } from '../features/door_authoring/api.js';
 import {
   isDoorVisualInheritedOwner,
@@ -43,12 +43,14 @@ export function resolveDoorStylePaintTargetKey(args: {
   foundDrawerId?: string | null;
   activeStack: 'top' | 'bottom';
 }): string {
-  const rawTarget =
-    args.effectiveDoorId ||
-    args.foundDrawerId ||
-    (__wp_isDoorOrDrawerLikePartId(args.foundPartId) ? args.foundPartId : '');
-  const scopedTarget = __wp_scopeCornerPartKeyForStack(rawTarget, args.activeStack);
-  return toDoorStyleOverrideMapKey(scopedTarget);
+  return resolveDoorAuthoringStylePaintTargetKey({
+    foundPartId: args.foundPartId,
+    effectiveDoorId: args.effectiveDoorId,
+    foundDrawerId: args.foundDrawerId,
+    activeStack: args.activeStack,
+    isDoorOrDrawerLikePartId: __wp_isDoorOrDrawerLikePartId,
+    scopePartKeyForStack: __wp_scopeCornerPartKeyForStack,
+  });
 }
 
 function cloneMirrorMap(src: MirrorLayoutMap): MirrorLayoutMap {

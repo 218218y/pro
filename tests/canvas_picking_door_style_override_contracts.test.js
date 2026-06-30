@@ -15,6 +15,9 @@ test('door-style override mode is wired through design tab, paint apply, and hov
   const controller = read('esm/native/ui/react/tabs/design_tab_multicolor_controller_runtime.ts');
   const paintApply = read('esm/native/services/canvas_picking_paint_flow_apply.ts');
   const paintDoorStyle = read('esm/native/services/canvas_picking_paint_flow_apply_door_style.ts');
+  const grooveSegments = read('esm/native/services/canvas_picking_door_groove_segments.ts');
+  const materialization = read('esm/native/services/canvas_picking_door_segment_materialization.ts');
+  const ownerMap = read('esm/native/services/canvas_picking_door_visual_owner_map.ts');
   const hover = read('esm/native/services/canvas_picking_door_action_hover_preview_paint.ts');
   const hinged = read('esm/native/builder/render_door_ops_hinged.ts');
   const drawers = [
@@ -30,9 +33,20 @@ test('door-style override mode is wired through design tab, paint apply, and hov
   assert.match(paintApply, /tryHandleDoorStyleOverridePaintClick\(/);
   assert.match(paintDoorStyle, /parseDoorStyleOverridePaintToken\(args\.paintSelection\)/);
   assert.match(paintDoorStyle, /cfgSetMap\(args\.App, 'doorStyleMap'/);
-  assert.match(paintDoorStyle, /__wp_isDoorOrDrawerLikePartId\(args\.foundPartId\)/);
+  assert.match(paintDoorStyle, /resolveDoorAuthoringStylePaintTargetKey\(\{/);
+  assert.match(paintDoorStyle, /isDoorOrDrawerLikePartId: __wp_isDoorOrDrawerLikePartId/);
+  assert.match(paintDoorStyle, /scopePartKeyForStack: __wp_scopeCornerPartKeyForStack/);
+  assert.doesNotMatch(paintDoorStyle, /toDoorStyleOverrideMapKey/);
   assert.match(hover, /resolveDoorStylePaintSelectionState\(\{/);
   assert.match(hover, /doorStylePaintState\.willRemove/);
+  for (const source of [grooveSegments, materialization, ownerMap]) {
+    assert.match(source, /features\/door_authoring\/api\.js/);
+    assert.doesNotMatch(source, /SEGMENTED_DOOR_/);
+    assert.doesNotMatch(source, /DOOR_VISUAL_SURFACE_SUFFIX_RE/);
+  }
+  assert.match(grooveSegments, /resolveDoorVisualSegmentIdentity/);
+  assert.match(materialization, /resolveDoorVisualSegmentIdentity/);
+  assert.match(ownerMap, /buildDoorVisualOwnerAliasKeys/);
   assert.match(hinged, /resolveDoorVisualStyle\(/);
   assert.match(drawers, /resolveDoorVisualStyle\(/);
 });
