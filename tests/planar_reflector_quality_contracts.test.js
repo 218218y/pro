@@ -86,8 +86,8 @@ test('box reflector backing is stable and non-reflective behind the planar surfa
 
 test('sliding inner-lane mirrors get dedicated reflector edge clearance', () => {
   assert.match(source, /DEFAULT_REFLECTOR_SLIDING_INNER_SURFACE_GAP_M = 0\.006/);
-  assert.match(source, /DEFAULT_REFLECTOR_SLIDING_INNER_SURFACE_INSET_X_M = 0\.018/);
-  assert.match(source, /DEFAULT_REFLECTOR_SLIDING_INNER_EDGE_FEATHER_UV = 0\.018/);
+  assert.match(source, /DEFAULT_REFLECTOR_SLIDING_INNER_SURFACE_INSET_X_M = 0\.032/);
+  assert.match(source, /DEFAULT_REFLECTOR_SLIDING_INNER_EDGE_FEATHER_UV = 0\.012/);
   assert.match(source, /__wpMirrorSlidingLane/);
   assert.match(source, /resolveReflectorSurfaceInsetM\(App, mirror, 'x'\)/);
   assert.match(source, /resolveReflectorSurfaceInsetM\(App, mirror, 'y'\)/);
@@ -110,6 +110,8 @@ test('sliding inner-lane reflectors clip the area hidden behind a front sliding 
   assert.match(source, /visibleMaxX = Math\.min\(visibleMaxX, overlapMinX - clearance\)/);
   assert.match(source, /visibleMinX = Math\.max\(visibleMinX, overlapMaxX \+ clearance\)/);
   assert.match(source, /surfaceObject\.onBeforeRender = function/);
+  assert.match(source, /hidePlanarReflectorSurfacesForInternalPass/);
+  assert.match(source, /restorePlanarReflectorSurfacesAfterInternalPass/);
   assert.match(mirrorVisualSource, /__wpMirrorSlidingDoorIndex/);
   assert.match(slidingSource, /slidingDoorWidthM: doorOp\.width/);
 });

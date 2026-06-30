@@ -18,9 +18,9 @@ const DEFAULT_REFLECTOR_SURFACE_GAP_M = 0.004;
 const DEFAULT_REFLECTOR_SURFACE_INSET_M = 0.006;
 const DEFAULT_REFLECTOR_EDGE_FEATHER_UV = 0.012;
 const DEFAULT_REFLECTOR_SLIDING_INNER_SURFACE_GAP_M = 0.006;
-const DEFAULT_REFLECTOR_SLIDING_INNER_SURFACE_INSET_X_M = 0.018;
-const DEFAULT_REFLECTOR_SLIDING_INNER_EDGE_FEATHER_UV = 0.018;
-const DEFAULT_REFLECTOR_SLIDING_OCCLUSION_CLEARANCE_M = 0.012;
+const DEFAULT_REFLECTOR_SLIDING_INNER_SURFACE_INSET_X_M = 0.032;
+const DEFAULT_REFLECTOR_SLIDING_INNER_EDGE_FEATHER_UV = 0.012;
+const DEFAULT_REFLECTOR_SLIDING_OCCLUSION_CLEARANCE_M = 0.024;
 const DEFAULT_REFLECTOR_SLIDING_OCCLUSION_FEATHER_UV = 0.01;
 const DEFAULT_REFLECTOR_POLYGON_OFFSET_FACTOR = -2;
 const DEFAULT_REFLECTOR_POLYGON_OFFSET_UNITS = -8;
@@ -601,6 +601,38 @@ function readSlidingDoorEntryWidth(entry: UnknownRecord): number | null {
   return fromGroup != null && fromGroup > 0 ? fromGroup : null;
 }
 
+type HiddenPlanarReflectorSurface = { object: UnknownRecord; visible: unknown };
+
+function hidePlanarReflectorSurfacesForInternalPass(App: unknown): HiddenPlanarReflectorSurface[] {
+  const hidden: HiddenPlanarReflectorSurface[] = [];
+  const mirrors = ensureRenderMetaArray<UnknownRecord>(App, 'mirrors');
+  const seen = new Set<UnknownRecord>();
+
+  for (let i = 0; i < mirrors.length; i += 1) {
+    const mirror = readRecord(mirrors[i]);
+    if (!mirror) continue;
+    const state = readPlanarReflectorState(mirror);
+    const surface = readRecord(state?.surfaceObject);
+    if (!surface || seen.has(surface)) continue;
+    seen.add(surface);
+    hidden.push({ object: surface, visible: surface.visible });
+    surface.visible = false;
+  }
+
+  return hidden;
+}
+
+function restorePlanarReflectorSurfacesAfterInternalPass(hidden: HiddenPlanarReflectorSurface[]): void {
+  for (let i = hidden.length - 1; i >= 0; i -= 1) {
+    const entry = hidden[i];
+    try {
+      entry.object.visible = entry.visible;
+    } catch {
+      // Best-effort restoration only.
+    }
+  }
+}
+
 function clamp01(value: number): number {
   if (value < 0) return 0;
   if (value > 1) return 1;
@@ -747,7 +779,7 @@ function resolveReflectorSurfaceInsetM(App: unknown, mirror?: unknown, axis: 'x'
     isSlidingInnerMirrorSurface(mirror) && axis === 'x'
       ? 'MIRROR_REFLECTOR_SLIDING_INNER_SURFACE_INSET_X_M'
       : 'MIRROR_REFLECTOR_SURFACE_INSET_M';
-  return clampNumber(readConfigNumberLooseFromApp(App, configKey, defaultValue), defaultValue, 0, 0.03);
+  return clampNumber(readConfigNumberLooseFromApp(App, configKey, defaultValue), defaultValue, 0, 0.06);
 }
 
 function makeBoxReflectorSurfacePlane(args: {
@@ -960,15 +992,17 @@ function writeReflectorTextureMatrix(textureMatrix: UnknownRecord): void {
 }
 
 function renderPlanarMirrorSurface(args: {
+  App: unknown;
   mirror: UnknownRecord;
   state: PlanarReflectorState;
   renderer: UnknownRecord;
   scene: unknown;
   camera: UnknownRecord;
 }): boolean {
-  const { mirror, state, renderer, scene, camera } = args;
+  const { App, mirror, state, renderer, scene, camera } = args;
   const surface = readRecord(state.surfaceObject) || mirror;
   const mirrorVisibleBefore = mirror.visible;
+  let hiddenPlanarSurfaces: HiddenPlanarReflectorSurface[] = [];
   const rendererShadowMap = readRecord(renderer.shadowMap);
   const previousShadowAutoUpdate = rendererShadowMap ? rendererShadowMap.autoUpdate : undefined;
   const xr = readRecord(renderer.xr);
@@ -1083,6 +1117,7 @@ function renderPlanarMirrorSurface(args: {
     elements[14] = clipPlane.w;
 
     previousRenderTarget = getRenderTarget ? call0(renderer, getRenderTarget) : null;
+    hiddenPlanarSurfaces = hidePlanarReflectorSurfacesForInternalPass(App);
     mirror.visible = false;
     if (rendererShadowMap && typeof previousShadowAutoUpdate !== 'undefined') {
       rendererShadowMap.autoUpdate = false;
@@ -1105,6 +1140,7 @@ function renderPlanarMirrorSurface(args: {
     return false;
   } finally {
     if (renderTargetChanged) call1(renderer, setRenderTarget, previousRenderTarget);
+    restorePlanarReflectorSurfacesAfterInternalPass(hiddenPlanarSurfaces);
     mirror.visible = mirrorVisibleBefore;
     if (rendererShadowMap && typeof previousShadowAutoUpdate !== 'undefined') {
       rendererShadowMap.autoUpdate = previousShadowAutoUpdate;
@@ -1209,6 +1245,7 @@ export function refreshTrackedPlanarMirrorSurfacesNow(
     const state = readPlanarReflectorState(mirror);
     if (!state) continue;
     const ok = renderPlanarMirrorSurface({
+      App,
       mirror,
       state,
       renderer,
