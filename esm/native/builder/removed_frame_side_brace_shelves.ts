@@ -3,6 +3,7 @@ import {
   isRoundedFrameSideShelvesOn,
   type RemovableFrameSide,
 } from '../features/removable_parts.js';
+import { readCanonicalPositiveIntegerText } from './build_flow_readers.js';
 
 export type RemovedFrameSideBraceInput = {
   cfg?: unknown;
@@ -13,14 +14,13 @@ export type RemovedFrameSideBraceInput = {
 
 export type RemovedFrameSideShelfRounding = 'left' | 'right' | 'both';
 
-function readFiniteIndex(value: unknown): number {
-  const num = typeof value === 'number' ? value : Number(value);
-  return Number.isFinite(num) ? Math.floor(num) : -1;
+function readRuntimeIndex(value: unknown): number {
+  return typeof value === 'number' && Number.isFinite(value) ? Math.floor(value) : -1;
 }
 
 export function shouldForceBraceShelvesForRemovedFrameSide(input: RemovedFrameSideBraceInput): boolean {
-  const moduleIndex = readFiniteIndex(input.moduleIndex);
-  const modulesLength = readFiniteIndex(input.modulesLength);
+  const moduleIndex = readRuntimeIndex(input.moduleIndex);
+  const modulesLength = readRuntimeIndex(input.modulesLength);
   if (!(moduleIndex >= 0) || !(modulesLength > 0)) return false;
 
   if (moduleIndex === 0 && isRemovedFrameSideOn(input.cfg, 'left', input.frameSidePartIdPrefix)) return true;
@@ -48,8 +48,8 @@ function shouldRoundRemovedFrameSideShelves(
 export function getRoundedShelfSideForRemovedFrameSide(
   input: RemovedFrameSideBraceInput
 ): RemovedFrameSideShelfRounding | null {
-  const moduleIndex = readFiniteIndex(input.moduleIndex);
-  const modulesLength = readFiniteIndex(input.modulesLength);
+  const moduleIndex = readRuntimeIndex(input.moduleIndex);
+  const modulesLength = readRuntimeIndex(input.modulesLength);
   if (!(moduleIndex >= 0) || !(modulesLength > 0)) return null;
 
   const roundLeft = shouldRoundRemovedFrameSideShelves(
@@ -88,12 +88,13 @@ export function forceShelfIndexesToBrace(args: {
 
   if (shelfSet && Object.keys(shelfSet).length) {
     for (const key of Object.keys(shelfSet)) {
-      if (shelfSet[Number(key)] === true) markBrace(Number(key));
+      const shelfIndex = readCanonicalPositiveIntegerText(key);
+      if (shelfIndex != null && shelfSet[shelfIndex] === true) markBrace(shelfIndex);
     }
     return;
   }
 
-  const gridDivisions = readFiniteIndex(args.gridDivisions);
+  const gridDivisions = readRuntimeIndex(args.gridDivisions);
   const maxShelfIndex = gridDivisions > 1 ? gridDivisions - 1 : 0;
   for (let i = 1; i <= maxShelfIndex; i += 1) markBrace(i);
 }

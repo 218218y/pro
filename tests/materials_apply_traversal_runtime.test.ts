@@ -128,6 +128,10 @@ test('materials apply traversal inherits canonical part ids through the tree and
     shouldKeepMaterialsApplyMeshMaterial({ material: { transparent: true, opacity: 0 } } as any),
     true
   );
+  assert.equal(
+    shouldKeepMaterialsApplyMeshMaterial({ material: { transparent: true, opacity: '0' } } as any),
+    false
+  );
   assert.equal(shouldKeepMaterialsApplyMeshMaterial({ material: { visible: true } } as any), false);
 });
 

@@ -20,7 +20,7 @@ export function shouldKeepMaterialsApplyMeshMaterial(obj: WardrobeMeshLike | nul
   if (materialUserData.__keepMaterial === true) return true;
   if (material.visible === false) return true;
   if (material.colorWrite === false) return true;
-  if (material.transparent === true && Number(material.opacity) === 0) return true;
+  if (material.transparent === true && material.opacity === 0) return true;
 
   return false;
 }

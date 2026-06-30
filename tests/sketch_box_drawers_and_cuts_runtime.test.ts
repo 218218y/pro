@@ -7,6 +7,7 @@ import {
   createSketchExternalDrawerBraceShelfPartId,
 } from '../esm/native/features/shelf_part_identity.ts';
 import { applySketchBoxExternalDrawerDoorCuts } from '../esm/native/builder/post_build_sketch_door_cuts_box.ts';
+import { applySketchDrawerDoorCuts } from '../esm/native/builder/post_build_sketch_door_cuts_shared.ts';
 
 import {
   FakeBoxGeometry,
@@ -134,6 +135,31 @@ function applyBoxDoorCutsForTest(args: {
     globalFrontMat: new FakeMaterial(),
   });
 }
+
+test('sketch drawer door cuts ignore string-encoded split positions from runtime selections', () => {
+  const partId = 'sketch_box_free_0_boxStringSplit_door_main';
+  const doorGroup = createSketchBoxDoorForCuts(partId, 'boxStringSplit');
+  const originalLeaf = doorGroup.children[0];
+  const App = {
+    render: {
+      doorsArray: [{ group: doorGroup, type: 'hinged' }],
+    },
+    services: { uiFeedback: { toast() {} } },
+  } as never;
+
+  applySketchDrawerDoorCuts({
+    App,
+    runtime: {} as never,
+    selectDoorCuts: () => ({
+      basePartId: partId,
+      stacks: [],
+      splitPosList: ['0.5' as unknown as number],
+    }),
+  });
+
+  assert.equal(doorGroup.userData.__wpSketchSegmentedDoor, undefined);
+  assert.deepEqual(doorGroup.children, [originalLeaf]);
+});
 
 test('manual split positions segment free-placement sketch box doors without enabling default box cuts', () => {
   const partId = 'sketch_box_free_0_boxManual_door_main';

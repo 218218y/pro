@@ -98,6 +98,27 @@ test('forceShelfIndexesToBrace only converts existing shelves to brace geometry 
   assert.equal(variants[4], undefined);
 });
 
+test('removed frame side brace helpers require runtime numeric indexes and canonical shelf keys', () => {
+  const cfg = { removedDoorsMap: { removed_body_left: true } };
+
+  assert.equal(
+    shouldForceBraceShelvesForRemovedFrameSide({ cfg, moduleIndex: '0', modulesLength: 2 }),
+    false
+  );
+  assert.equal(getRoundedShelfSideForRemovedFrameSide({ cfg, moduleIndex: '0', modulesLength: 2 }), null);
+
+  const braceFromStringGrid: Record<number, true> = Object.create(null);
+  forceShelfIndexesToBrace({ braceSet: braceFromStringGrid, gridDivisions: '6' });
+  assert.deepEqual(Object.keys(braceFromStringGrid), []);
+
+  const braceFromShelfSet: Record<number, true> = Object.create(null);
+  forceShelfIndexesToBrace({
+    braceSet: braceFromShelfSet,
+    shelfSet: { 2: true, '03': true, '4x': true } as Record<number, true>,
+  });
+  assert.deepEqual(Object.keys(braceFromShelfSet), ['2']);
+});
+
 test('removing a frame side shows the user that adjacent shelves became brace shelves', () => {
   const toasts: Array<{ message: string; type: string | undefined }> = [];
   const removedDoorsMap: Record<string, unknown> = {};

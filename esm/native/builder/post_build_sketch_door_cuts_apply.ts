@@ -21,6 +21,7 @@ import {
   readGeometryUserDataNumberKey,
   readGeometryUserDataPositiveNumberKey,
 } from './geometry_user_data_contracts.js';
+import { readGeometryRuntimeNumber } from './geometry_runtime_contracts.js';
 
 function clampSketchDoorCutValue(value: number, min: number, max: number): number {
   if (value < min) return min;
@@ -55,8 +56,8 @@ function appendManualSplitLineCutIntervals(args: {
   );
   const rawCutsAbs: number[] = [];
   for (let i = 0; i < splitPosList.length; i += 1) {
-    const n = Number(splitPosList[i]);
-    if (!Number.isFinite(n)) continue;
+    const n = readGeometryRuntimeNumber(splitPosList[i]);
+    if (n == null) continue;
     const clampedNorm = clampSketchDoorCutValue(n, 0, 1);
     const y = clampSketchDoorCutValue(doorMin + clampedNorm * doorHeight, doorMin + padAbs, doorMax - padAbs);
     if (Number.isFinite(y)) rawCutsAbs.push(y);

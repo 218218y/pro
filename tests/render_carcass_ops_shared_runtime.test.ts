@@ -97,3 +97,29 @@ test('render_carcass shared keeps sketch back-panel material and strips selected
   assert.deepEqual(state.indices, [2, 3, 2]);
   assert.deepEqual(normalsCalls, []);
 });
+
+test('render_carcass miter cap stripping ignores string-encoded geometry index data', () => {
+  const state = {
+    indices: ['0', '1', '0', '2', '3', '2'] as unknown[],
+    attr: { count: 4 },
+  };
+  let setIndexCalled = false;
+
+  __stripMiterCaps(
+    {
+      getIndex: () => ({ array: state.indices }),
+      getAttribute: () => state.attr,
+      setIndex: () => {
+        setIndexCalled = true;
+      },
+    },
+    true,
+    false,
+    err => {
+      throw err;
+    }
+  );
+
+  assert.equal(setIndexCalled, false);
+  assert.deepEqual(state.indices, ['0', '1', '0', '2', '3', '2']);
+});

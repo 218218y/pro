@@ -40,5 +40,5 @@ test('[paint-material-refresh] hidden selector hit meshes keep their invisible m
   assert.match(src, /export function shouldKeepMaterialsApplyMeshMaterial\(/);
   assert.match(src, /userData\.isModuleSelector === true/);
   assert.match(src, /material\.colorWrite === false/);
-  assert.match(src, /material\.transparent === true && Number\(material\.opacity\) === 0/);
+  assert.match(src, /material\.transparent === true && material\.opacity === 0/);
 });

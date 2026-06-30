@@ -12,9 +12,10 @@ export function normalizeSketchDrawerCutIntervals(
   list: SketchDrawerCutSegment[],
   options: { minHeight?: number } = {}
 ): SketchDrawerCutSegment[] {
-  const minHeight = Number.isFinite(options.minHeight)
-    ? Math.max(0, Number(options.minHeight))
-    : DRAWER_DIMENSIONS.sketch.doorCutIntervalMinHeightM;
+  const minHeight =
+    typeof options.minHeight === 'number' && Number.isFinite(options.minHeight)
+      ? Math.max(0, options.minHeight)
+      : DRAWER_DIMENSIONS.sketch.doorCutIntervalMinHeightM;
   const sorted = list
     .filter(seg => Number.isFinite(seg.yMin) && Number.isFinite(seg.yMax) && seg.yMax - seg.yMin > minHeight)
     .sort((a, b) => a.yMin - b.yMin);
