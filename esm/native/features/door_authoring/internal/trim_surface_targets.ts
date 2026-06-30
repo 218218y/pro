@@ -174,3 +174,21 @@ export function mapDoorTrimSurfaceLogicalToLocalPoint(args: {
   if (plane === 'xz') return { x: args.localX, y: args.faceCoord, z: args.localY };
   return { x: args.localX, y: args.localY, z: args.faceCoord };
 }
+
+export function resolveDoorTrimSurfaceLogicalPoint(args: {
+  userData?: UnknownRecord | null;
+  surfacePlane?: DoorTrimSurfacePlane;
+  localX: number;
+  localY: number;
+  faceCoord: number;
+}): { x: number; y: number; z: number } {
+  const userData = args.surfacePlane
+    ? { ...(args.userData || {}), __wpDoorTrimSurfacePlane: args.surfacePlane }
+    : args.userData;
+  return mapDoorTrimSurfaceLogicalToLocalPoint({
+    userData,
+    localX: args.localX,
+    localY: args.localY,
+    faceCoord: args.faceCoord,
+  });
+}

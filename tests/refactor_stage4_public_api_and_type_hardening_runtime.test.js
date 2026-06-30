@@ -100,7 +100,6 @@ test('door authoring facade exposes only audited public symbols', () => {
     'buildMirrorLayoutFromHit',
     'buildSnappedDoorTrimCenterFromLocal',
     'buildSnappedMirrorCenterFromHit',
-    'cloneMirrorLayoutList',
     'createDoorTrimEntry',
     'encodeDoorStyleOverridePaintToken',
     'encodeGlassFrameStylePaintToken',
@@ -115,15 +114,12 @@ test('door authoring facade exposes only audited public symbols', () => {
     'isGlassPaintSelection',
     'isRemoveDoorModeFromSnapshot',
     'mapDoorTrimSurfaceLocalPoint',
-    'mapDoorTrimSurfaceLogicalToLocalPoint',
-    'mirrorLayoutListEquals',
-    'normalizeDoorStyleOverrideValue',
+    'mirrorLayoutMapEquals',
     'normalizeDoorTrimAxis',
     'normalizeDoorTrimColor',
     'normalizeDoorTrimSpan',
     'parseDoorStyleOverridePaintToken',
     'readDoorStyleMap',
-    'readDoorTrimList',
     'readDoorTrimListForPart',
     'readDoorTrimMap',
     'readDoorTrimSurfaceFaceCoordFromUserData',
@@ -140,11 +136,14 @@ test('door authoring facade exposes only audited public symbols', () => {
     'readMirrorLayoutListForPart',
     'readMirrorLayoutMap',
     'resolveCabinetBodyDoorTrimSurfaceInfo',
-    'resolveDoorStyleOverrideValue',
+    'resolveDoorStylePaintSelectionState',
     'resolveDoorTrimPlacement',
     'resolveDoorTrimPlacementAvoidingMirror',
+    'resolveDoorTrimPlacements',
+    'resolveDoorTrimSurfaceLogicalPoint',
     'resolveEffectiveDoorStyle',
     'resolveGlassFrameStylePaintSelection',
+    'resolveGlassFrameStyleValue',
     'resolveMirrorPlacementInRect',
     'resolveMirrorPlacementListInRect',
     'resolveRemoveDoorsEnabledFromSnapshots',
@@ -152,6 +151,16 @@ test('door authoring facade exposes only audited public symbols', () => {
     'toDoorStyleOverrideMapKey',
   ]);
   assert.doesNotMatch(api, /export\s+\*/);
+  for (const narrowHelper of [
+    'normalizeDoorStyleOverrideValue',
+    'resolveDoorStyleOverrideValue',
+    'readDoorTrimList',
+    'mapDoorTrimSurfaceLogicalToLocalPoint',
+    'cloneMirrorLayoutList',
+    'mirrorLayoutListEquals',
+  ]) {
+    assert.equal(symbols.includes(narrowHelper), false, `${narrowHelper} should stay internal`);
+  }
 });
 
 test('features public API reports use platform-independent ordering', () => {

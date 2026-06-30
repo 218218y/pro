@@ -67,6 +67,16 @@ export function resolveGlassFrameStylePaintSelection(value: unknown): DoorStyleO
   return parseGlassFrameStylePaintToken(value);
 }
 
+export function resolveGlassFrameStyleValue(
+  rawFrameStyle: unknown,
+  globalDoorStyle: unknown
+): DoorStyleOverrideValue {
+  return normalizeDoorStyleOverrideValue(
+    rawFrameStyle,
+    normalizeDoorStyleOverrideValue(globalDoorStyle, 'profile')
+  );
+}
+
 export function readDoorStyleMap(value: unknown): DoorStyleMap {
   const rec = asRecord(value);
   const out: DoorStyleMap = Object.create(null);
@@ -98,6 +108,24 @@ export function resolveDoorStyleOverrideValue(
   }
 
   return null;
+}
+
+export function resolveDoorStylePaintSelectionState(args: {
+  paintSelection: unknown;
+  doorStyleMap: DoorStyleMap | Record<string, unknown> | null | undefined;
+  partId: unknown;
+}): {
+  selection: DoorStyleOverrideValue | null;
+  existingStyle: DoorStyleOverrideValue | null;
+  willRemove: boolean;
+} {
+  const selection = parseDoorStyleOverridePaintToken(args.paintSelection);
+  const existingStyle = resolveDoorStyleOverrideValue(args.doorStyleMap, args.partId);
+  return {
+    selection,
+    existingStyle,
+    willRemove: !!selection && existingStyle === selection,
+  };
 }
 
 export function resolveEffectiveDoorStyle(

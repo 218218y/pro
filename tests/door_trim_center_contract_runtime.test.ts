@@ -7,6 +7,7 @@ import {
   createDoorTrimEntry,
   resolveDoorTrimPlacement,
   resolveDoorTrimPlacementAvoidingMirror,
+  resolveDoorTrimPlacements,
 } from '../esm/native/features/door_authoring/api.ts';
 
 const rect = { minX: 0, maxX: 1, minY: 0, maxY: 1 };
@@ -32,6 +33,10 @@ test('door trim center contract keeps explicit normalized X/Y coordinates throug
   assert.equal(horizontal.centerXNorm, 0.2);
   assert.equal(horizontal.centerYNorm, 0.8);
   assert.equal(Object.prototype.hasOwnProperty.call(horizontal, 'center' + 'Norm'), false);
+  const resolved = resolveDoorTrimPlacements({ rect, trims: [entry] });
+  assert.equal(resolved.length, 1);
+  assert.deepEqual(resolved[0].entry, entry);
+  assert.deepEqual(resolved[0].placement, horizontal);
 
   const vertical = resolveDoorTrimPlacement({
     rect,

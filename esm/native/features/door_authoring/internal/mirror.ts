@@ -6,6 +6,7 @@ export {
   cloneMirrorLayoutList,
   hasMirrorSurfaceOnFace,
   mirrorLayoutEquals,
+  mirrorLayoutMapEquals,
   mirrorLayoutListEquals,
   normalizeMirrorDraftInput,
   normalizeMirrorFaceSign,

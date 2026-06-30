@@ -4,8 +4,7 @@ import {
   findMirrorLayoutMatchInRect,
   resolveMirrorPlacementInRect,
   isGlassPaintSelection,
-  parseDoorStyleOverridePaintToken,
-  resolveDoorStyleOverrideValue,
+  resolveDoorStylePaintSelectionState,
   resolveGlassFrameStylePaintSelection,
   readDoorVisualMapValue,
   readDoorVisualMirrorLayout,
@@ -67,12 +66,11 @@ export function tryHandleDoorPaintHoverPreview(args: DoorPaintHoverPreviewArgs):
   const doorSpecialMap = __readMapRecord(App, 'doorSpecialMap');
   const mirrorLayoutMap = __readMapRecord(App, 'mirrorLayoutMap');
   const doorStyleMap = __readMapRecord(App, 'doorStyleMap');
-  const existingDoorStyle = (() => {
-    const doorStyleSelection = parseDoorStyleOverridePaintToken(normalizedPaintSelection);
-    return doorStyleSelection
-      ? (resolveDoorStyleOverrideValue(doorStyleMap, partKey) ?? undefined)
-      : undefined;
-  })();
+  const doorStylePaintState = resolveDoorStylePaintSelectionState({
+    paintSelection: normalizedPaintSelection,
+    doorStyleMap,
+    partId: partKey,
+  });
   const existingSpecialValue = readDoorVisualMapValue(doorSpecialMap, partKey);
   const existingSpecial =
     existingSpecialValue === 'mirror' || existingSpecialValue === 'glass'
@@ -92,9 +90,9 @@ export function tryHandleDoorPaintHoverPreview(args: DoorPaintHoverPreviewArgs):
   const baseMarkerMaterial = doorMarker?.material;
   let previewMaterial = markerUd.__matAdd || markerUd.__matGroove || baseMarkerMaterial;
 
-  const doorStyleSelection = parseDoorStyleOverridePaintToken(normalizedPaintSelection);
+  const doorStyleSelection = doorStylePaintState.selection;
   if (doorStyleSelection) {
-    const willRemoveDoorStyle = existingDoorStyle === doorStyleSelection;
+    const willRemoveDoorStyle = doorStylePaintState.willRemove;
     previewMaterial = willRemoveDoorStyle
       ? markerUd.__matRemove || markerUd.__matGroove || baseMarkerMaterial
       : markerUd.__matAdd || markerUd.__matGroove || baseMarkerMaterial;
@@ -237,7 +235,7 @@ export function tryHandleDoorPaintHoverPreview(args: DoorPaintHoverPreviewArgs):
     }
     const curtainChoice = __readCurtainChoice(readUi, App);
     const glassFrameStyleSelection = resolveGlassFrameStylePaintSelection(normalizedPaintSelection);
-    const existingGlassFrameStyle = resolveDoorStyleOverrideValue(doorStyleMap, partKey) ?? null;
+    const existingGlassFrameStyle = doorStylePaintState.existingStyle;
     const normalizedExistingCurtain = existingCurtain || 'none';
     const willRemoveGlass =
       existingSpecial === 'glass' &&

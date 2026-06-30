@@ -1,4 +1,4 @@
-import { normalizeDoorStyleOverrideValue } from '../features/door_authoring/api.js';
+import { resolveGlassFrameStyleValue } from '../features/door_authoring/api.js';
 import { readDoorVisualMapValue } from './door_visual_lookup_state.js';
 import { readCurtainType } from './render_door_ops_shared_core.js';
 
@@ -74,10 +74,7 @@ export function resolveHexCellDiagonalGlassState(args: {
 
   return {
     curtainType,
-    glassFrameStyle: normalizeDoorStyleOverrideValue(
-      rawFrameStyle,
-      normalizeDoorStyleOverrideValue(args.globalDoorStyle, 'profile')
-    ),
+    glassFrameStyle: resolveGlassFrameStyleValue(rawFrameStyle, args.globalDoorStyle),
   };
 }
 

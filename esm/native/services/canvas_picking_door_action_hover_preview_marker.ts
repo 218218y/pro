@@ -11,7 +11,7 @@ import type {
 } from './canvas_picking_door_action_hover_preview_contracts.js';
 import type { UnknownRecord } from '../../../types';
 import {
-  mapDoorTrimSurfaceLogicalToLocalPoint,
+  resolveDoorTrimSurfaceLogicalPoint,
   type DoorTrimSurfacePlane,
 } from '../features/door_authoring/api.js';
 
@@ -38,10 +38,9 @@ export function __positionDoorMarker(args: {
 }): void {
   const { groupRec, wardrobeGroup, doorMarker, local, wq, centerX, centerY, zOff } = args;
   const userData = __asObject<UnknownRecord>(groupRec?.userData);
-  const localPoint = mapDoorTrimSurfaceLogicalToLocalPoint({
-    userData: args.surfacePlane
-      ? { ...(userData || {}), __wpDoorTrimSurfacePlane: args.surfacePlane }
-      : userData,
+  const localPoint = resolveDoorTrimSurfaceLogicalPoint({
+    userData,
+    surfacePlane: args.surfacePlane,
     localX: centerX,
     localY: centerY,
     faceCoord: resolveMarkerLocalZ(groupRec, zOff),

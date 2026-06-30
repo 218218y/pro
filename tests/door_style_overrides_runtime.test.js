@@ -121,6 +121,16 @@ test('[door-style-overrides] tokens, map normalization, and effective style reso
   assert.equal(mod.resolveDoorStyleOverrideValue({ d7_full: 'profile' }, 'd7_top'), 'profile');
   assert.equal(mod.resolveDoorStyleOverrideValue({ d7_full: 'double_profile' }, 'd7_mid1'), 'double_profile');
   assert.equal(mod.resolveEffectiveDoorStyle('flat', { d7_full: 'profile' }, 'd7_bot'), 'profile');
+  assert.equal(mod.resolveGlassFrameStyleValue(null, 'flat'), 'flat');
+  assert.equal(mod.resolveGlassFrameStyleValue('bad', 'bad'), 'profile');
+  const paintSelectionState = mod.resolveDoorStylePaintSelectionState({
+    paintSelection: '__wp_door_style__:profile',
+    doorStyleMap: { d7_full: 'profile' },
+    partId: 'd7_top',
+  });
+  assert.equal(paintSelectionState.selection, 'profile');
+  assert.equal(paintSelectionState.existingStyle, 'profile');
+  assert.equal(paintSelectionState.willRemove, true);
   assert.equal(
     mod.resolveEffectiveDoorStyle(
       'flat',

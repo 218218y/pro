@@ -14,8 +14,7 @@ import { getBuilderMaterialsService } from '../runtime/builder_service_access.js
 import {
   isGlassPaintSelection,
   readDoorStyleMap,
-  cloneMirrorLayoutList,
-  mirrorLayoutListEquals,
+  mirrorLayoutMapEquals,
   readMirrorLayoutMap,
 } from '../features/door_authoring/api.js';
 import { isCanvasPickingSpecialPaintTargetPartId } from './canvas_picking_special_paint_targets.js';
@@ -117,12 +116,7 @@ export function cloneDoorStyleMap(src: DoorStyleMap): DoorStyleMap {
 }
 
 export function cloneMirrorLayoutConfigMap(src: MirrorLayoutMap): MirrorLayoutMap {
-  const out: MirrorLayoutMap = {};
-  for (const [key, value] of Object.entries(src || {})) {
-    const next = cloneMirrorLayoutList(value);
-    if (next.length) out[key] = next;
-  }
-  return out;
+  return readMirrorLayoutMap(src);
 }
 
 export function readIndividualColorsMap(App: AppContainer): IndividualColorsMap {
@@ -206,15 +200,7 @@ export function sameFlatMap<T extends Record<string, unknown>>(a: T, b: T): bool
 }
 
 export function sameMirrorLayoutMap(a: MirrorLayoutMap, b: MirrorLayoutMap): boolean {
-  const aKeys = Object.keys(a || {});
-  const bKeys = Object.keys(b || {});
-  if (aKeys.length !== bKeys.length) return false;
-  for (let i = 0; i < aKeys.length; i += 1) {
-    const key = aKeys[i];
-    if (!Object.prototype.hasOwnProperty.call(b, key)) return false;
-    if (!mirrorLayoutListEquals(a[key], b[key])) return false;
-  }
-  return true;
+  return mirrorLayoutMapEquals(a, b);
 }
 
 export function isSpecialPart(__paintPartKey: string): boolean {

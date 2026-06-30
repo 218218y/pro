@@ -1,8 +1,7 @@
 import type { MaterialLike, UnknownRecord } from '../../../types';
 import {
   DEFAULT_DOOR_TRIM_DEPTH_M,
-  readDoorTrimList,
-  resolveDoorTrimPlacement,
+  resolveDoorTrimPlacements,
   type DoorTrimSurfacePlane,
 } from '../features/door_authoring/api.js';
 import { DOOR_TRIM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
@@ -168,8 +167,6 @@ export function appendDoorTrimVisuals(args: DoorTrimVisualArgs): void {
   const three = asMinimalThree(THREE);
   const groupObj = asMinimalGroup(group);
   if (!three || !groupObj) return;
-  const trimList = readDoorTrimList(trims);
-  if (!trimList.length) return;
   const width = readGeometryUserDataPositiveNumber(doorWidth);
   const height = readGeometryUserDataPositiveNumber(doorHeight);
   if (width == null || height == null) return;
@@ -181,6 +178,8 @@ export function appendDoorTrimVisuals(args: DoorTrimVisualArgs): void {
     minY: -height / 2,
     maxY: height / 2,
   };
+  const resolvedTrims = resolveDoorTrimPlacements({ rect, trims });
+  if (!resolvedTrims.length) return;
   const plane = normalizeSurfacePlane(surfacePlane);
   const face = readGeometryUserDataSign(faceSign, 1) ?? 1;
   const faceCoord = resolveSurfaceCenterCoord({
@@ -191,9 +190,8 @@ export function appendDoorTrimVisuals(args: DoorTrimVisualArgs): void {
   });
   const renderOrder = readRenderOrder(groupObj);
 
-  for (let i = 0; i < trimList.length; i += 1) {
-    const entry = trimList[i];
-    const placement = resolveDoorTrimPlacement({ rect, entry });
+  for (let i = 0; i < resolvedTrims.length; i += 1) {
+    const { entry, placement } = resolvedTrims[i];
     const material = getTrimMaterial({ App, THREE: three, color: placement.color });
     if (!material) continue;
     try {

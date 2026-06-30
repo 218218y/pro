@@ -1,4 +1,5 @@
-import { readDoorTrimEntry } from './trim_map.js';
+import { readDoorTrimEntry, readDoorTrimList } from './trim_map.js';
+import type { DoorTrimEntry } from './trim_shared.js';
 import type {
   DoorTrimCenterFromLocalArgs,
   DoorTrimPlacementArgs,
@@ -162,6 +163,22 @@ export function resolveDoorTrimPlacement(args: DoorTrimPlacementArgs): ResolvedD
     width,
     height,
   };
+}
+
+export function resolveDoorTrimPlacements(args: {
+  rect: DoorTrimRect;
+  trims: unknown;
+}): Array<{ entry: DoorTrimEntry; placement: ResolvedDoorTrimPlacement }> {
+  const trimList = readDoorTrimList(args.trims);
+  const out: Array<{ entry: DoorTrimEntry; placement: ResolvedDoorTrimPlacement }> = [];
+  for (let i = 0; i < trimList.length; i += 1) {
+    const entry = trimList[i];
+    out.push({
+      entry,
+      placement: resolveDoorTrimPlacement({ rect: args.rect, entry }),
+    });
+  }
+  return out;
 }
 
 export function buildDoorTrimRectFromPlacement(placement: ResolvedDoorTrimPlacement): DoorTrimRect {

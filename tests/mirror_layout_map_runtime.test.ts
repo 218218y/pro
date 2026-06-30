@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  cloneMirrorLayoutList,
   findMirrorLayoutMatchInRect,
+  mirrorLayoutMapEquals,
   readMirrorLayoutMap,
   resolveMirrorPlacementListInRect,
 } from '../esm/native/features/door_authoring/api.ts';
@@ -16,15 +16,11 @@ test('mirror layout runtime clones map/list payloads so callers cannot mutate ca
   const map = readMirrorLayoutMap(source);
   assert.notEqual(map.d1, source.d1);
   assert.notEqual(map.d1[0], source.d1[0]);
+  assert.equal(mirrorLayoutMapEquals(map, readMirrorLayoutMap(source)), true);
 
   map.d1[0].widthCm = 90;
   assert.equal(source.d1[0].widthCm, 55);
-
-  const cloned = cloneMirrorLayoutList(source.d1);
-  assert.notEqual(cloned, source.d1);
-  assert.notEqual(cloned[0], source.d1[0]);
-  cloned[0].heightCm = 12;
-  assert.equal(source.d1[0].heightCm, 65);
+  assert.equal(mirrorLayoutMapEquals(map, readMirrorLayoutMap(source)), false);
 });
 
 test('mirror layout runtime preserves placement/match parity after family split', () => {

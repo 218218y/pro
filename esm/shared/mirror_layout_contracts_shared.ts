@@ -194,6 +194,20 @@ export function mirrorLayoutListEquals(a: unknown, b: unknown): boolean {
   return true;
 }
 
+export function mirrorLayoutMapEquals(a: unknown, b: unknown): boolean {
+  const aa = isRecord(a) ? a : {};
+  const bb = isRecord(b) ? b : {};
+  const aKeys = Object.keys(aa);
+  const bKeys = Object.keys(bb);
+  if (aKeys.length !== bKeys.length) return false;
+  for (let i = 0; i < aKeys.length; i += 1) {
+    const key = aKeys[i];
+    if (!Object.prototype.hasOwnProperty.call(bb, key)) return false;
+    if (!mirrorLayoutListEquals(aa[key], bb[key])) return false;
+  }
+  return true;
+}
+
 export function normalizeMirrorDraftInput(value: unknown): MirrorDraftInput {
   const rec = isRecord(value) ? value : null;
   return {
