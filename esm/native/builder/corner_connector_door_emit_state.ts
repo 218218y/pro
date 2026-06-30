@@ -28,7 +28,7 @@ export function createCornerConnectorDoorStateInternal(
     topSplitEnabled: splitPolicy.topSplitEnabled,
     bottomSplitEnabled: splitPolicy.bottomSplitEnabled,
     shouldSplit: splitPolicy.shouldSplit,
-    defaultHandleAbsY: resolveCornerConnectorDefaultHandleAbsY(ctx, doorBaseId),
+    defaultHandleAbsY: resolveCornerConnectorDefaultHandleAbsY(ctx, doorIndex, doorBaseId),
   };
 }
 

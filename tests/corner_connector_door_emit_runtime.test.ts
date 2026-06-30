@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 
 import { CORNER_WING_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.js';
 import { readSplitPosListFromMap } from '../esm/native/runtime/maps_access.js';
+import { createHandlesApplyRuntime } from '../esm/native/builder/handles_apply_shared.js';
+import { resetEdgeHandleDefaultNoneCacheMaps } from '../esm/native/builder/edge_handle_default_none_runtime.js';
 import {
   clampCornerConnectorHandleAbsY,
   createCornerConnectorDoorContext,
@@ -163,6 +165,32 @@ test('corner connector door shared wrappers assemble context/state and normalize
 
   const clamped = clampCornerConnectorHandleAbsY(ctx!, 'corner_pent_door_1_top', 5, 0.5, 0.8);
   assert.equal(clamped, 0.79);
+});
+
+test('corner connector edge handles default to one riding handle for the pentagon door pair', () => {
+  const params = createFlowParams();
+  params.helpers.cfgSnapshot = {
+    globalHandleType: 'edge',
+    handlesMap: {},
+    removedDoorsMap: {},
+    splitDoorsBottomMap: {},
+  };
+  resetEdgeHandleDefaultNoneCacheMaps(params.ctx.App);
+
+  const ctx = createCornerConnectorDoorContext(params);
+  assert.ok(ctx);
+  createCornerConnectorDoorState(ctx!, 1);
+  createCornerConnectorDoorState(ctx!, 2);
+
+  const runtime = createHandlesApplyRuntime({
+    App: params.ctx.App,
+    cfgSnapshot: params.helpers.cfgSnapshot,
+    addOutlines: () => undefined,
+    removeDoorsEnabled: false,
+  });
+
+  assert.equal(runtime.getHandleType('corner_pent_door_1_full', 'bottom'), 'none');
+  assert.equal(runtime.getHandleType('corner_pent_door_2_full', 'bottom'), 'edge');
 });
 
 test('corner connector custom split cuts ignore string-encoded runtime normalized positions', () => {

@@ -26,9 +26,10 @@ export function resolveCornerConnectorDoorSplitPolicy(
 
 export function resolveCornerConnectorDefaultHandleAbsY(
   ctx: CornerConnectorDoorContext,
+  doorIndex: 1 | 2,
   doorBaseId: string
 ): number {
-  maybeSeedEdgeHandleDefaultNone(ctx, doorBaseId);
+  maybeSeedEdgeHandleDefaultNone(ctx, doorIndex, doorBaseId);
 
   let defaultHandleAbsY = getCornerPentSharedAlignedHandleBaseAbsY(ctx);
   if (ctx.isLongEdgeHandleVariantForPart(ctx.cfg0, doorBaseId)) {
@@ -37,8 +38,18 @@ export function resolveCornerConnectorDefaultHandleAbsY(
   return defaultHandleAbsY;
 }
 
-function maybeSeedEdgeHandleDefaultNone(ctx: CornerConnectorDoorContext, doorBaseId: string): void {
+function maybeSeedEdgeHandleDefaultNone(
+  ctx: CornerConnectorDoorContext,
+  doorIndex: 1 | 2,
+  doorBaseId: string
+): void {
   if (!(ctx.cfg0 && ctx.asRecord(ctx.cfg0).globalHandleType === 'edge' && ctx.App)) return;
+
+  // The pentagon front is a two-door connector cell. Match the regular/corner-cell
+  // edge-handle default: the first/left door in each pair has no handle, so the
+  // visible riding handle is created once on the second/right door.
+  if (doorIndex !== 1) return;
+
   markEdgeHandleDefaultNone(ctx.App, ctx.stackKey === 'bottom' ? 'bottom' : 'top', doorBaseId, 'pent');
 }
 
