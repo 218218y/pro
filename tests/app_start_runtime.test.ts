@@ -13,7 +13,7 @@ import {
 } from '../esm/native/runtime/install_state_access.ts';
 import { installAppStartService } from '../esm/native/services/app_start.ts';
 
-test('app start runtime: installs canonical appStart seam and uiBoot start entry', () => {
+test('app start runtime: installs canonical appStart seam without publishing retired uiBoot.start', () => {
   const calls: string[] = [];
   const App: any = {
     services: {
@@ -33,7 +33,8 @@ test('app start runtime: installs canonical appStart seam and uiBoot start entry
   assert.equal(getServiceInstallStateMaybe(App)?.appStartInstalled, true);
 
   const uiBoot = getUiBootServiceMaybe(App);
-  assert.equal(typeof uiBoot?.start, 'function');
+  assert.equal(typeof uiBoot?.bootMain, 'function');
+  assert.equal((uiBoot as Record<string, unknown> | null)?.start, undefined);
   const entry = getBootStartEntry(App);
   assert.equal(typeof entry, 'function');
 

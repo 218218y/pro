@@ -28,6 +28,7 @@ export {
   subscribeNotesDrawMode,
   beginUiBootSession,
   clearUiBootRuntimeState,
+  clearRetiredUiBootStart,
   installUiBootReadyTimers,
 } from './api_services_ui_surface.js';
 

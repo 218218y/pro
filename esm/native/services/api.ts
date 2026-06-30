@@ -151,6 +151,7 @@ export {
   subscribeNotesDrawMode,
   beginUiBootSession,
   clearUiBootRuntimeState,
+  clearRetiredUiBootStart,
   installUiBootReadyTimers,
   nextProjectIoRestoreGeneration,
   isProjectIoRestoreGenerationCurrent,

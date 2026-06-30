@@ -17,11 +17,7 @@ function isAppStartServiceLike(value: unknown): value is AppStartServiceLike {
 
 function isUiBootServiceLike(value: unknown): value is UiBootServiceLike {
   const rec = readRecord<UiBootServiceLike>(value);
-  return (
-    !!rec &&
-    (typeof rec.bootMain === 'function' || typeof rec.bootMain === 'undefined') &&
-    (typeof rec.start === 'function' || typeof rec.start === 'undefined')
-  );
+  return !!rec && (typeof rec.bootMain === 'function' || typeof rec.bootMain === 'undefined');
 }
 
 function readAppStartService(v: unknown): AppStartServiceLike | null {
@@ -56,6 +52,21 @@ export function getUiBootServiceMaybe(App: unknown): UiBootServiceLike | null {
 export function ensureUiBootService(App: unknown): UiBootServiceLike {
   const current = readUiBootService(getServiceSlotMaybe<UiBootServiceLike>(App, 'uiBoot'));
   return current || ensureServiceSlot<UiBootServiceLike>(App, 'uiBoot');
+}
+
+export function clearRetiredUiBootStart(App: unknown): void {
+  const uiBoot = readRecord(getServiceSlotMaybe<RecordLike>(App, 'uiBoot'));
+  if (!uiBoot || !Object.prototype.hasOwnProperty.call(uiBoot, 'start')) return;
+
+  try {
+    delete uiBoot.start;
+  } catch {
+    throw new Error('[WardrobePro][ESM] Retired App.services.uiBoot.start surface is not removable.');
+  }
+
+  if (Object.prototype.hasOwnProperty.call(uiBoot, 'start')) {
+    throw new Error('[WardrobePro][ESM] Retired App.services.uiBoot.start surface is not removable.');
+  }
 }
 
 export function getBootStartEntry(App: unknown): UnknownCallable | null {

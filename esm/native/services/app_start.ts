@@ -16,15 +16,14 @@ import {
   setAppStartStarted,
 } from '../runtime/install_state_access.js';
 import {
+  clearRetiredUiBootStart,
   ensureAppStartService,
-  ensureUiBootService,
   getUiBootServiceMaybe,
 } from '../runtime/boot_entry_access.js';
 import { resolveInstallContext, type InstallContext } from '../runtime/install_context.js';
 import { installStableSurfaceMethod } from '../runtime/stable_surface_methods.js';
 
 const APP_START_CANONICAL_KEY = '__wpCanonicalStart';
-const UI_BOOT_START_CANONICAL_KEY = '__wpCanonicalUiStart';
 
 const appStartInstallContexts = new WeakMap<object, InstallContext<AppContainer>>();
 
@@ -85,15 +84,6 @@ function ensureCanonicalStart(context: InstallContext<AppContainer>, svc: AppSta
   );
 }
 
-function ensureUiBootStartAlias(App: AppContainer, startFn: () => unknown): void {
-  try {
-    const uiBoot = ensureUiBootService(App);
-    installStableSurfaceMethod(uiBoot, 'start', UI_BOOT_START_CANONICAL_KEY, () => startFn);
-  } catch {
-    // ignore
-  }
-}
-
 function fillAppStartSurface(context: InstallContext<AppContainer>, svc: AppStartService): AppStartService {
   ensureCanonicalStart(context, svc);
   return svc;
@@ -104,8 +94,8 @@ export function installAppStartService(App: AppContainer): AppStartService {
   const svc = ensureAppStartService(app);
   const context = resolveInstallContext(appStartInstallContexts, svc, app);
   fillAppStartSurface(context, svc);
+  clearRetiredUiBootStart(app);
 
   if (!isAppStartInstalled(app)) markAppStartInstalled(app);
-  if (typeof svc.start === 'function') ensureUiBootStartAlias(app, svc.start);
   return svc;
 }

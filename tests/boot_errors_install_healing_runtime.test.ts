@@ -78,7 +78,7 @@ function createErrorsHarness() {
   return { App, handlers, addCalls, removeCalls };
 }
 
-test('boot/errors install healing: uiBootMain preserves the canonical entry and heals missing aliases', () => {
+test('boot/errors install healing: uiBootMain preserves bootMain and clears retired start slot', () => {
   const calls: string[] = [];
   const App: any = {
     services: {
@@ -92,27 +92,26 @@ test('boot/errors install healing: uiBootMain preserves the canonical entry and 
 
   const uiBoot = installUiBootMain(App);
   const bootMainRef = uiBoot?.bootMain;
-  const startRef = uiBoot?.start;
 
   assert.equal(typeof bootMainRef, 'function');
-  assert.equal(startRef, bootMainRef);
+  assert.equal((uiBoot as Record<string, unknown> | null)?.start, undefined);
 
   const sameUiBoot = installUiBootMain(App);
   assert.equal(sameUiBoot, uiBoot);
   assert.equal(sameUiBoot?.bootMain, bootMainRef);
-  assert.equal(sameUiBoot?.start, startRef);
+  assert.equal((sameUiBoot as Record<string, unknown> | null)?.start, undefined);
 
-  delete (uiBoot as Record<string, unknown>).start;
+  (uiBoot as Record<string, unknown>).start = () => calls.push('retired:start');
   const healedStart = installUiBootMain(App);
   assert.equal(healedStart?.bootMain, bootMainRef);
-  assert.equal(healedStart?.start, bootMainRef);
+  assert.equal((healedStart as Record<string, unknown> | null)?.start, undefined);
 
   delete (uiBoot as Record<string, unknown>).bootMain;
   const healedBootMain = installUiBootMain(App);
-  assert.equal(healedBootMain?.start, bootMainRef);
+  assert.equal((healedBootMain as Record<string, unknown> | null)?.start, undefined);
   assert.equal(healedBootMain?.bootMain, bootMainRef);
 
-  healedBootMain?.start?.();
+  healedBootMain?.bootMain?.();
   assert.deepEqual(calls, ['boot']);
 });
 

@@ -56,7 +56,7 @@ test('service install healing runtime: autosave reinstall preserves live refs an
   assert.equal(healedSvc.forceSaveNow, forceSaveNow);
 });
 
-test('service install healing runtime: appStart reinstall heals missing aliases without replacing the start surface', () => {
+test('service install healing runtime: appStart reinstall heals start surface and clears retired uiBoot start', () => {
   const calls: string[] = [];
   const App: any = {
     services: {
@@ -70,26 +70,25 @@ test('service install healing runtime: appStart reinstall heals missing aliases 
 
   const svc = installAppStartService(App);
   const startRef = svc.start;
-  const aliasRef = App.services.uiBoot.start;
 
   assert.equal(typeof startRef, 'function');
-  assert.equal(aliasRef, startRef);
+  assert.equal(App.services.uiBoot.start, undefined);
 
   const sameSvc = installAppStartService(App);
   assert.equal(sameSvc, svc);
   assert.equal(sameSvc.start, startRef);
-  assert.equal(App.services.uiBoot.start, aliasRef);
+  assert.equal(App.services.uiBoot.start, undefined);
 
-  delete App.services.uiBoot.start;
+  App.services.uiBoot.start = () => calls.push('retired:uiBoot.start');
   const healedAliasSvc = installAppStartService(App);
   assert.equal(healedAliasSvc.start, startRef);
-  assert.equal(App.services.uiBoot.start, startRef);
+  assert.equal(App.services.uiBoot.start, undefined);
 
   delete svc.start;
   const healedSvc = installAppStartService(App);
   assert.equal(healedSvc, svc);
   assert.equal(typeof healedSvc.start, 'function');
-  assert.equal(App.services.uiBoot.start, startRef);
+  assert.equal(App.services.uiBoot.start, undefined);
 
   healedSvc.start?.();
   assert.deepEqual(calls, ['bootMain']);

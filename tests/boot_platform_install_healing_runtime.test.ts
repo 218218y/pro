@@ -82,7 +82,7 @@ test('app_start reinstall heals drifted public service slots in place', () => {
 
   const service = installAppStartService(App);
   const canonicalStart = service.start;
-  const canonicalUiStart = App.services.uiBoot.start;
+  assert.equal(App.services.uiBoot.start, undefined);
 
   service.start = () => calls.push('foreign:start');
   App.services.uiBoot.start = () => calls.push('foreign:uiStart');
@@ -90,7 +90,7 @@ test('app_start reinstall heals drifted public service slots in place', () => {
   installAppStartService(App);
 
   assert.equal(service.start, canonicalStart);
-  assert.equal(App.services.uiBoot.start, canonicalUiStart);
+  assert.equal(App.services.uiBoot.start, undefined);
   service.start?.();
   assert.deepEqual(calls, ['bootMain']);
 });

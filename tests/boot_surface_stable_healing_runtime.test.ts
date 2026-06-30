@@ -118,7 +118,7 @@ test('boot main reinstall heals missing public boot methods from canonical hidde
   assert.equal(healed.setReady, canonicalSetReady);
 });
 
-test('app start reinstall heals both appStart.start and uiBoot.start from canonical refs', () => {
+test('app start reinstall heals appStart.start and clears retired uiBoot.start', () => {
   const calls: string[] = [];
   const App: any = {
     services: {
@@ -132,18 +132,17 @@ test('app start reinstall heals both appStart.start and uiBoot.start from canoni
 
   const service = installAppStartService(App) as AnyRecord;
   const canonicalStart = service.start as (() => void) | undefined;
-  const canonicalUiStart = App.services.uiBoot.start as (() => void) | undefined;
 
   assert.equal(service.__wpCanonicalStart, canonicalStart);
-  assert.equal(App.services.uiBoot.__wpCanonicalUiStart, canonicalUiStart);
+  assert.equal(App.services.uiBoot.start, undefined);
 
   delete service.start;
-  delete App.services.uiBoot.start;
+  App.services.uiBoot.start = () => calls.push('retired:uiBoot.start');
 
   installAppStartService(App);
 
   assert.equal(service.start, canonicalStart);
-  assert.equal(App.services.uiBoot.start, canonicalUiStart);
+  assert.equal(App.services.uiBoot.start, undefined);
   service.start?.();
   assert.deepEqual(calls, ['bootMain']);
 });

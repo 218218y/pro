@@ -135,7 +135,6 @@ export interface AppStartServiceLike extends UnknownRecord {
 
 export interface UiBootServiceLike extends UnknownRecord {
   bootMain?: BootStartFn;
-  start?: BootStartFn;
 }
 
 export interface UiBootRuntimeServiceLike extends UnknownRecord {

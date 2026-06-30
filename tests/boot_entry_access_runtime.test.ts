@@ -41,6 +41,18 @@ test('boot entry access runtime: getBootStartEntry prefers appStart.start then u
   assert.deepEqual(calls, ['appStart', 'uiBoot']);
 });
 
+test('boot entry access runtime: getBootStartEntry ignores retired uiBoot.start', () => {
+  const calls: string[] = [];
+  const App: any = {
+    services: {
+      uiBoot: { start: () => calls.push('uiBoot.start') },
+    },
+  };
+
+  assert.equal(getBootStartEntry(App), null);
+  assert.deepEqual(calls, []);
+});
+
 test('boot entry access runtime: returns null when no canonical start surface exists', () => {
   assert.equal(getBootStartEntry({}), null);
 });

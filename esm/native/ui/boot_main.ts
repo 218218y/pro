@@ -10,6 +10,7 @@
 import {
   get$,
   getDocumentMaybe,
+  clearRetiredUiBootStart,
   ensureUiBootService,
   isUiBootMainInstalled,
   markUiBootMainInstalled,
@@ -31,7 +32,6 @@ import type { AppContainer, UnknownRecord } from '../../../types';
 
 type UiBootServiceLike = UnknownRecord & {
   bootMain?: () => void;
-  start?: () => void;
 };
 
 const UI_BOOT_MAIN_CANONICAL_KEY = '__wpCanonicalUiBootMain';
@@ -72,13 +72,11 @@ export function installUiBootMain(App: AppContainer) {
   if (!App || typeof App !== 'object') return null;
 
   const uiBoot = ensureUiBootService(App) as UiBootInstallable;
-  const canonicalBootMain = installStableSurfaceMethod(uiBoot, 'bootMain', UI_BOOT_MAIN_CANONICAL_KEY, () => {
+  installStableSurfaceMethod(uiBoot, 'bootMain', UI_BOOT_MAIN_CANONICAL_KEY, () => {
     return () => bootMain(App);
   });
-  const currentStart = typeof uiBoot.start === 'function' ? uiBoot.start : null;
-  const canonicalStart = currentStart || canonicalBootMain;
+  clearRetiredUiBootStart(App);
 
-  if (uiBoot.start !== canonicalStart) uiBoot.start = canonicalStart;
   if (!isUiBootMainInstalled(App)) markUiBootMainInstalled(App);
 
   return uiBoot;

@@ -5,6 +5,7 @@ export {
   ensureAppStartService,
   getUiBootServiceMaybe,
   ensureUiBootService,
+  clearRetiredUiBootStart,
   getBootStartEntry,
 } from '../runtime/boot_entry_access.js';
 export {
