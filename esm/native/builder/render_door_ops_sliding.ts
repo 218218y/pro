@@ -161,6 +161,18 @@ export function createApplySlidingDoorsOps(deps: BuilderRenderDoorDeps) {
           });
           if (!slideMirrorMat) slideMirrorMat = slideWoodMat;
         }
+        const mirrorReflectorProfile = visualState.isMirror
+          ? ({
+              slidingLane: zPos === innerZ ? 'inner' : 'outer',
+              slidingDoorIndex: doorOp.index,
+              slidingDoorTotal: doorOp.total,
+              slidingDoorWidthM: doorOp.width,
+            } as const)
+          : null;
+        const doorVisualOptions = {
+          ...(visualState.isGlass ? { glassFrameStyle: effectiveDoorStyleBase } : null),
+          ...(mirrorReflectorProfile ? { mirrorReflectorProfile } : null),
+        };
         visual = createDoorVisual(
           doorOp.width,
           doorOp.height,
@@ -175,7 +187,7 @@ export function createApplySlidingDoorsOps(deps: BuilderRenderDoorDeps) {
           false,
           mirrorLayout,
           slideID,
-          visualState.isGlass ? { glassFrameStyle: effectiveDoorStyleBase } : null
+          Object.keys(doorVisualOptions).length ? doorVisualOptions : null
         );
       } else {
         visual = new THREE.Mesh(

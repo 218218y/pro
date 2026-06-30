@@ -15,7 +15,13 @@ import { appendGrooveStrips } from './visuals_and_contents_door_visual_grooves.j
 import { applyDoorFaceIdentityMetadata } from './visuals_and_contents_door_visual_tagging.js';
 import { __asCanvas, __markMirrorTracked } from './visuals_and_contents_shared.js';
 
-import type { AppContainer, MirrorLayoutList, Object3DLike, ThreeLike } from '../../../types/index.js';
+import type {
+  AppContainer,
+  BuilderMirrorReflectorProfile,
+  MirrorLayoutList,
+  Object3DLike,
+  ThreeLike,
+} from '../../../types/index.js';
 import type { CanvasLike } from './visuals_and_contents_shared.js';
 import type { TagDoorVisualPartFn } from './visuals_and_contents_door_visual_support_contracts.js';
 
@@ -37,6 +43,7 @@ type MirrorDoorVisualArgs = {
   groovePartId?: string | null;
   grooveLinesCount?: number | null;
   tagDoorVisualPart?: TagDoorVisualPartFn | null;
+  mirrorReflectorProfile?: BuilderMirrorReflectorProfile | null;
 };
 
 function getOrCreateSketchPatternCanvas(App: AppContainer, _THREE: ThreeLike): CanvasLike | null {
@@ -103,6 +110,33 @@ function resolveMirrorDoorDepthLayout(thickness: number): MirrorDoorDepthLayout 
   return { baseDoorThick, mirrorThick, adhesiveGap, mirrorCenterZ, mirrorFrontZ };
 }
 
+function writeFiniteMirrorProfileNumber(
+  userData: Object3DLike['userData'],
+  key: string,
+  value: unknown
+): void {
+  const num = typeof value === 'number' ? value : value != null ? Number(value) : NaN;
+  if (Number.isFinite(num)) userData[key] = num;
+}
+
+export function applyMirrorReflectorProfileMetadata(
+  mirrorMesh: Object3DLike,
+  profile: BuilderMirrorReflectorProfile | null | undefined
+): void {
+  if (!profile || profile.slidingLane == null) return;
+  const lane = profile.slidingLane === 'inner' ? 'inner' : profile.slidingLane === 'outer' ? 'outer' : null;
+  if (!lane) return;
+  mirrorMesh.userData = mirrorMesh.userData || {};
+  mirrorMesh.userData.__wpMirrorSlidingLane = lane;
+  writeFiniteMirrorProfileNumber(mirrorMesh.userData, '__wpMirrorSlidingDoorIndex', profile.slidingDoorIndex);
+  writeFiniteMirrorProfileNumber(mirrorMesh.userData, '__wpMirrorSlidingDoorTotal', profile.slidingDoorTotal);
+  writeFiniteMirrorProfileNumber(
+    mirrorMesh.userData,
+    '__wpMirrorSlidingDoorWidthM',
+    profile.slidingDoorWidthM
+  );
+}
+
 export function createMirrorDoorVisual(args: MirrorDoorVisualArgs): Object3DLike {
   const { App, THREE, w, h, thickness, mat, baseMaterial, zSign, isSketch, mirrorLayout, addOutlines } = args;
   const tagDoorVisualPart: TagDoorVisualPartFn =
@@ -151,6 +185,7 @@ export function createMirrorDoorVisual(args: MirrorDoorVisualArgs): Object3DLike
     mirrorMesh.userData.__keepMaterial = true;
     mirrorMesh.userData.__wpMirrorSurface = true;
     applyDoorFaceIdentityMetadata(mirrorMesh, placementFaceSign);
+    applyMirrorReflectorProfileMetadata(mirrorMesh, args.mirrorReflectorProfile);
     mirrorMesh.position.set(
       placement.offsetX,
       placement.offsetY,

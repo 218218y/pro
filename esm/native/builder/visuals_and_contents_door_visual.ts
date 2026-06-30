@@ -127,6 +127,7 @@ export function createDoorVisual(
           hasGrooves: hasOutsideGrooves,
           groovePartId,
           grooveLinesCount: options?.grooveLinesCount ?? null,
+          mirrorReflectorProfile: options?.mirrorReflectorProfile ?? null,
         });
       }
 
@@ -151,6 +152,7 @@ export function createDoorVisual(
           hasGrooves: hasOutsideGrooves,
           groovePartId,
           grooveLinesCount: options?.grooveLinesCount ?? null,
+          mirrorReflectorProfile: options?.mirrorReflectorProfile ?? null,
         });
       }
     }
@@ -171,6 +173,7 @@ export function createDoorVisual(
       groovePartId,
       grooveLinesCount: options?.grooveLinesCount ?? null,
       tagDoorVisualPart,
+      mirrorReflectorProfile: options?.mirrorReflectorProfile ?? null,
     });
   }
 

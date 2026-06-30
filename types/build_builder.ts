@@ -74,9 +74,17 @@ export type BuilderHangerContentsPolicy = BuilderContentsRenderPolicy &
     showHangerEnabled: boolean;
   }>;
 
+export type BuilderMirrorReflectorProfile = {
+  slidingLane?: 'inner' | 'outer' | null;
+  slidingDoorIndex?: number | null;
+  slidingDoorTotal?: number | null;
+  slidingDoorWidthM?: number | null;
+};
+
 export type BuilderDoorVisualOptions = {
   glassFrameStyle?: BuilderDoorVisualFrameStyle | null;
   grooveLinesCount?: number | null;
+  mirrorReflectorProfile?: BuilderMirrorReflectorProfile | null;
   renderPolicy?: BuilderContentsRenderPolicy;
 };
 

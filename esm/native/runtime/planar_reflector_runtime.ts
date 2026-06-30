@@ -1,7 +1,7 @@
 import type { Object3DLike, ThreeLike, UnknownRecord } from '../../../types/index.js';
 
 import { readConfigBoolFromApp, readConfigNumberLooseFromApp } from './config_selectors.js';
-import { getCamera, getRenderer, getScene } from './render_access_surface.js';
+import { getCamera, getDoorsArray, getRenderer, getScene } from './render_access_surface.js';
 import { ensureRenderMetaArray } from './render_access_state_bags.js';
 
 const DEFAULT_REFLECTOR_LONG_EDGE = 1024;
@@ -17,6 +17,11 @@ const DEFAULT_REFLECTOR_BRIGHTNESS = 1.04;
 const DEFAULT_REFLECTOR_SURFACE_GAP_M = 0.004;
 const DEFAULT_REFLECTOR_SURFACE_INSET_M = 0.006;
 const DEFAULT_REFLECTOR_EDGE_FEATHER_UV = 0.012;
+const DEFAULT_REFLECTOR_SLIDING_INNER_SURFACE_GAP_M = 0.006;
+const DEFAULT_REFLECTOR_SLIDING_INNER_SURFACE_INSET_X_M = 0.018;
+const DEFAULT_REFLECTOR_SLIDING_INNER_EDGE_FEATHER_UV = 0.018;
+const DEFAULT_REFLECTOR_SLIDING_OCCLUSION_CLEARANCE_M = 0.012;
+const DEFAULT_REFLECTOR_SLIDING_OCCLUSION_FEATHER_UV = 0.01;
 const DEFAULT_REFLECTOR_POLYGON_OFFSET_FACTOR = -2;
 const DEFAULT_REFLECTOR_POLYGON_OFFSET_UNITS = -8;
 const DEFAULT_REFLECTOR_BACKING_COLOR = 0x6f7f88;
@@ -41,6 +46,9 @@ uniform sampler2D tDiffuse;
 uniform float opacity;
 uniform float brightness;
 uniform float edgeFeather;
+uniform float clipLeftUv;
+uniform float clipRightUv;
+uniform float occlusionFeather;
 varying vec4 vUv;
 varying vec2 vMirrorUv;
 #include <common>
@@ -64,7 +72,11 @@ void main() {
   vec2 edgeUv = min(vMirrorUv, 1.0 - vMirrorUv);
   float edgeMask = min(edgeUv.x, edgeUv.y);
   float edgeAlpha = smoothstep(0.0, max(edgeFeather, 0.0001), edgeMask);
-  gl_FragColor = vec4(reflectedColor, opacity * edgeAlpha);
+  float clipFeather = max(occlusionFeather, 0.0001);
+  float clipLeftAlpha = smoothstep(clipLeftUv, clipLeftUv + clipFeather, vMirrorUv.x);
+  float clipRightAlpha = 1.0 - smoothstep(clipRightUv - clipFeather, clipRightUv, vMirrorUv.x);
+  float clipAlpha = clamp(clipLeftAlpha * clipRightAlpha, 0.0, 1.0);
+  gl_FragColor = vec4(reflectedColor, opacity * edgeAlpha * clipAlpha);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
   #include <dithering_fragment>
@@ -155,6 +167,15 @@ function readMirrorUserData(mirror: unknown): UnknownRecord | null {
   return readRecord(rec?.userData);
 }
 
+function readMirrorSlidingLane(mirror: unknown): 'inner' | 'outer' | null {
+  const lane = readMirrorUserData(mirror)?.__wpMirrorSlidingLane;
+  return lane === 'inner' ? 'inner' : lane === 'outer' ? 'outer' : null;
+}
+
+function isSlidingInnerMirrorSurface(mirror: unknown): boolean {
+  return readMirrorSlidingLane(mirror) === 'inner';
+}
+
 function isTaggedMirrorSurface(mirror: unknown): boolean {
   return readMirrorUserData(mirror)?.__wpMirrorSurface === true;
 }
@@ -210,10 +231,37 @@ function readReflectorBrightness(App: unknown): number {
   );
 }
 
-function resolveReflectorEdgeFeatherUv(App: unknown): number {
+function resolveReflectorEdgeFeatherUv(App: unknown, mirror?: unknown): number {
+  const defaultValue = isSlidingInnerMirrorSurface(mirror)
+    ? DEFAULT_REFLECTOR_SLIDING_INNER_EDGE_FEATHER_UV
+    : DEFAULT_REFLECTOR_EDGE_FEATHER_UV;
+  const configKey = isSlidingInnerMirrorSurface(mirror)
+    ? 'MIRROR_REFLECTOR_SLIDING_INNER_EDGE_FEATHER_UV'
+    : 'MIRROR_REFLECTOR_EDGE_FEATHER_UV';
+  return clampNumber(readConfigNumberLooseFromApp(App, configKey, defaultValue), defaultValue, 0, 0.04);
+}
+
+function resolveSlidingOcclusionClearanceM(App: unknown): number {
   return clampNumber(
-    readConfigNumberLooseFromApp(App, 'MIRROR_REFLECTOR_EDGE_FEATHER_UV', DEFAULT_REFLECTOR_EDGE_FEATHER_UV),
-    DEFAULT_REFLECTOR_EDGE_FEATHER_UV,
+    readConfigNumberLooseFromApp(
+      App,
+      'MIRROR_REFLECTOR_SLIDING_OCCLUSION_CLEARANCE_M',
+      DEFAULT_REFLECTOR_SLIDING_OCCLUSION_CLEARANCE_M
+    ),
+    DEFAULT_REFLECTOR_SLIDING_OCCLUSION_CLEARANCE_M,
+    0,
+    0.04
+  );
+}
+
+function resolveSlidingOcclusionFeatherUv(App: unknown): number {
+  return clampNumber(
+    readConfigNumberLooseFromApp(
+      App,
+      'MIRROR_REFLECTOR_SLIDING_OCCLUSION_FEATHER_UV',
+      DEFAULT_REFLECTOR_SLIDING_OCCLUSION_FEATHER_UV
+    ),
+    DEFAULT_REFLECTOR_SLIDING_OCCLUSION_FEATHER_UV,
     0,
     0.04
   );
@@ -249,7 +297,8 @@ function createReflectorMaterial(
   App: unknown,
   THREE: ThreeLike,
   texture: unknown,
-  textureMatrix: unknown
+  textureMatrix: unknown,
+  mirror?: unknown
 ): UnknownRecord | null {
   try {
     const material = readRecord(
@@ -261,7 +310,10 @@ function createReflectorMaterial(
           textureMatrix: { value: textureMatrix },
           opacity: { value: 1.0 },
           brightness: { value: readReflectorBrightness(App) },
-          edgeFeather: { value: resolveReflectorEdgeFeatherUv(App) },
+          edgeFeather: { value: resolveReflectorEdgeFeatherUv(App, mirror) },
+          clipLeftUv: { value: 0.0 },
+          clipRightUv: { value: 1.0 },
+          occlusionFeather: { value: 0.0 },
         },
         vertexShader: REFLECTOR_VERTEX_SHADER,
         fragmentShader: REFLECTOR_FRAGMENT_SHADER,
@@ -491,6 +543,169 @@ function writeStableBoxBackingMaterial(THREE: ThreeLike, mirror: Object3DLike): 
   }
 }
 
+function readFiniteNumber(value: unknown): number | null {
+  const num = typeof value === 'number' ? value : value != null ? Number(value) : NaN;
+  return Number.isFinite(num) ? num : null;
+}
+
+function readPositionAxis(obj: UnknownRecord | null, axis: 'x' | 'y' | 'z'): number {
+  const position = readRecord(obj?.position);
+  const value = position ? readFiniteNumber(position[axis]) : null;
+  return value == null ? 0 : value;
+}
+
+function readWorldAxisPosition(obj: unknown, axis: 'x' | 'y' | 'z'): number {
+  let cursor = readRecord(obj);
+  let total = 0;
+  let guard = 0;
+  while (cursor && guard < 64) {
+    total += readPositionAxis(cursor, axis);
+    cursor = readRecord(cursor.parent);
+    guard += 1;
+  }
+  return total;
+}
+
+function findSlidingDoorRoot(obj: unknown): UnknownRecord | null {
+  let cursor = readRecord(obj);
+  let guard = 0;
+  while (cursor && guard < 64) {
+    const userData = readRecord(cursor.userData);
+    if (userData?.__doorType === 'sliding') return cursor;
+    cursor = readRecord(cursor.parent);
+    guard += 1;
+  }
+  return null;
+}
+
+function readDoorEntryGroup(entry: unknown): UnknownRecord | null {
+  return readRecord(readRecord(entry)?.group);
+}
+
+function findSlidingDoorEntryForGroup(App: unknown, group: UnknownRecord | null): UnknownRecord | null {
+  if (!group) return null;
+  const doors = getDoorsArray(App);
+  for (let i = 0; i < doors.length; i += 1) {
+    const entry = readRecord(doors[i]);
+    if (!entry || entry.type !== 'sliding') continue;
+    if (readDoorEntryGroup(entry) === group) return entry;
+  }
+  return null;
+}
+
+function readSlidingDoorEntryWidth(entry: UnknownRecord): number | null {
+  const direct = readFiniteNumber(entry.width);
+  if (direct != null && direct > 0) return direct;
+  const groupUserData = readRecord(readDoorEntryGroup(entry)?.userData);
+  const fromGroup = readFiniteNumber(groupUserData?.__doorWidth);
+  return fromGroup != null && fromGroup > 0 ? fromGroup : null;
+}
+
+function clamp01(value: number): number {
+  if (value < 0) return 0;
+  if (value > 1) return 1;
+  return value;
+}
+
+function writeReflectorClipUniforms(
+  state: PlanarReflectorState,
+  clipLeftUv: number,
+  clipRightUv: number,
+  occlusionFeather: number
+): void {
+  const uniforms = readRecord(state.material.uniforms);
+  const leftUniform = readRecord(uniforms?.clipLeftUv);
+  const rightUniform = readRecord(uniforms?.clipRightUv);
+  const featherUniform = readRecord(uniforms?.occlusionFeather);
+  if (leftUniform) leftUniform.value = clipLeftUv;
+  if (rightUniform) rightUniform.value = clipRightUv;
+  if (featherUniform) featherUniform.value = occlusionFeather;
+}
+
+function readReflectorSurfaceWidthM(state: PlanarReflectorState, mirror: Object3DLike): number {
+  const surfaceUserData = readRecord(readRecord(state.surfaceObject)?.userData);
+  const fromSurface = readFiniteNumber(surfaceUserData?.__wpPlanarReflectorSurfaceWidthM);
+  if (fromSurface != null && fromSurface > 0) return fromSurface;
+  return Math.max(0.001, readMirrorDimensionM(mirror, 'width'));
+}
+
+function syncSlidingInnerReflectorOcclusionClip(
+  App: unknown,
+  mirror: Object3DLike,
+  state: PlanarReflectorState
+): void {
+  if (!isSlidingInnerMirrorSurface(mirror)) {
+    writeReflectorClipUniforms(state, 0, 1, 0);
+    return;
+  }
+
+  const innerGroup = findSlidingDoorRoot(mirror);
+  const innerEntry = findSlidingDoorEntryForGroup(App, innerGroup);
+  if (!innerGroup || !innerEntry) {
+    writeReflectorClipUniforms(state, 0, 1, 0);
+    return;
+  }
+
+  const surface = readRecord(state.surfaceObject) || readRecord(mirror);
+  const surfaceWidth = readReflectorSurfaceWidthM(state, mirror);
+  if (!(surfaceWidth > 0)) {
+    writeReflectorClipUniforms(state, 0, 1, 0);
+    return;
+  }
+
+  const mirrorCenterX = readWorldAxisPosition(surface, 'x');
+  const surfaceMinX = mirrorCenterX - surfaceWidth / 2;
+  const surfaceMaxX = mirrorCenterX + surfaceWidth / 2;
+  const innerZ = readWorldAxisPosition(innerGroup, 'z');
+  const clearance = resolveSlidingOcclusionClearanceM(App);
+
+  let visibleMinX = surfaceMinX;
+  let visibleMaxX = surfaceMaxX;
+  let clipped = false;
+  const doors = getDoorsArray(App);
+
+  for (let i = 0; i < doors.length; i += 1) {
+    const candidate = readRecord(doors[i]);
+    if (!candidate || candidate === innerEntry || candidate.type !== 'sliding') continue;
+    const candidateGroup = readDoorEntryGroup(candidate);
+    if (!candidateGroup || candidateGroup === innerGroup || candidateGroup.visible === false) continue;
+    const candidateUserData = readRecord(candidateGroup.userData);
+    if (candidateUserData?.__wpDoorRemoved === true) continue;
+
+    const candidateZ = readWorldAxisPosition(candidateGroup, 'z');
+    if (!(candidateZ > innerZ + 0.001)) continue;
+
+    const candidateWidth = readSlidingDoorEntryWidth(candidate);
+    if (!(candidateWidth != null && candidateWidth > 0)) continue;
+    const candidateCenterX = readWorldAxisPosition(candidateGroup, 'x');
+    const candidateMinX = candidateCenterX - candidateWidth / 2;
+    const candidateMaxX = candidateCenterX + candidateWidth / 2;
+    const overlapMinX = Math.max(surfaceMinX, candidateMinX);
+    const overlapMaxX = Math.min(surfaceMaxX, candidateMaxX);
+    if (!(overlapMaxX > overlapMinX + 0.001)) continue;
+
+    clipped = true;
+    if (candidateCenterX >= mirrorCenterX) {
+      visibleMaxX = Math.min(visibleMaxX, overlapMinX - clearance);
+    } else {
+      visibleMinX = Math.max(visibleMinX, overlapMaxX + clearance);
+    }
+  }
+
+  if (!clipped) {
+    const surfaceObject = readRecord(state.surfaceObject);
+    if (surfaceObject) surfaceObject.visible = true;
+    writeReflectorClipUniforms(state, 0, 1, 0);
+    return;
+  }
+
+  const clipLeftUv = clamp01((visibleMinX - surfaceMinX) / surfaceWidth);
+  const clipRightUv = clamp01((visibleMaxX - surfaceMinX) / surfaceWidth);
+  const surfaceObject = readRecord(state.surfaceObject);
+  if (surfaceObject) surfaceObject.visible = clipRightUv > clipLeftUv + 0.002;
+  writeReflectorClipUniforms(state, clipLeftUv, clipRightUv, resolveSlidingOcclusionFeatherUv(App));
+}
+
 function writeMirrorMaterial(mirror: Object3DLike, material: UnknownRecord, faceSign: number): boolean {
   try {
     const originalMaterial = Reflect.get(mirror, 'material');
@@ -513,22 +728,26 @@ function writeMirrorMaterial(mirror: Object3DLike, material: UnknownRecord, face
   }
 }
 
-function resolveReflectorSurfaceGapM(App: unknown): number {
-  return clampNumber(
-    readConfigNumberLooseFromApp(App, 'MIRROR_REFLECTOR_SURFACE_GAP_M', DEFAULT_REFLECTOR_SURFACE_GAP_M),
-    DEFAULT_REFLECTOR_SURFACE_GAP_M,
-    0.001,
-    0.02
-  );
+function resolveReflectorSurfaceGapM(App: unknown, mirror?: unknown): number {
+  const defaultValue = isSlidingInnerMirrorSurface(mirror)
+    ? DEFAULT_REFLECTOR_SLIDING_INNER_SURFACE_GAP_M
+    : DEFAULT_REFLECTOR_SURFACE_GAP_M;
+  const configKey = isSlidingInnerMirrorSurface(mirror)
+    ? 'MIRROR_REFLECTOR_SLIDING_INNER_SURFACE_GAP_M'
+    : 'MIRROR_REFLECTOR_SURFACE_GAP_M';
+  return clampNumber(readConfigNumberLooseFromApp(App, configKey, defaultValue), defaultValue, 0.001, 0.02);
 }
 
-function resolveReflectorSurfaceInsetM(App: unknown): number {
-  return clampNumber(
-    readConfigNumberLooseFromApp(App, 'MIRROR_REFLECTOR_SURFACE_INSET_M', DEFAULT_REFLECTOR_SURFACE_INSET_M),
-    DEFAULT_REFLECTOR_SURFACE_INSET_M,
-    0,
-    0.03
-  );
+function resolveReflectorSurfaceInsetM(App: unknown, mirror?: unknown, axis: 'x' | 'y' = 'x'): number {
+  const defaultValue =
+    isSlidingInnerMirrorSurface(mirror) && axis === 'x'
+      ? DEFAULT_REFLECTOR_SLIDING_INNER_SURFACE_INSET_X_M
+      : DEFAULT_REFLECTOR_SURFACE_INSET_M;
+  const configKey =
+    isSlidingInnerMirrorSurface(mirror) && axis === 'x'
+      ? 'MIRROR_REFLECTOR_SLIDING_INNER_SURFACE_INSET_X_M'
+      : 'MIRROR_REFLECTOR_SURFACE_INSET_M';
+  return clampNumber(readConfigNumberLooseFromApp(App, configKey, defaultValue), defaultValue, 0, 0.03);
 }
 
 function makeBoxReflectorSurfacePlane(args: {
@@ -549,13 +768,16 @@ function makeBoxReflectorSurfacePlane(args: {
   if (boxWidth <= 0 || boxHeight <= 0 || boxDepth <= 0) return null;
 
   try {
-    const inset = Math.min(
-      resolveReflectorSurfaceInsetM(App),
-      Math.max(0, boxWidth / 2 - 0.001),
+    const insetX = Math.min(
+      resolveReflectorSurfaceInsetM(App, mirror, 'x'),
+      Math.max(0, boxWidth / 2 - 0.001)
+    );
+    const insetY = Math.min(
+      resolveReflectorSurfaceInsetM(App, mirror, 'y'),
       Math.max(0, boxHeight / 2 - 0.001)
     );
-    const surfaceWidth = Math.max(0.001, boxWidth - inset * 2);
-    const surfaceHeight = Math.max(0.001, boxHeight - inset * 2);
+    const surfaceWidth = Math.max(0.001, boxWidth - insetX * 2);
+    const surfaceHeight = Math.max(0.001, boxHeight - insetY * 2);
     const geometry = new THREE.PlaneGeometry(surfaceWidth, surfaceHeight);
     const surface = readRecord(new THREE.Mesh(geometry, material));
     if (!surface) return null;
@@ -565,6 +787,10 @@ function makeBoxReflectorSurfacePlane(args: {
     surface.userData = surfaceUserData;
     surfaceUserData.__keepMaterial = true;
     surfaceUserData.__wpPlanarReflectorSurface = true;
+    surfaceUserData.__wpPlanarReflectorSurfaceWidthM = surfaceWidth;
+    surfaceUserData.__wpPlanarReflectorSurfaceHeightM = surfaceHeight;
+    surfaceUserData.__wpPlanarReflectorSurfaceInsetXM = insetX;
+    surfaceUserData.__wpPlanarReflectorSurfaceInsetYM = insetY;
     surface.raycast = function () {};
     writeStableBoxBackingMaterial(THREE, mirror);
     const sign = faceSign < 0 ? -1 : 1;
@@ -574,7 +800,7 @@ function makeBoxReflectorSurfacePlane(args: {
       surfacePosition?.set,
       0,
       0,
-      sign * (boxDepth / 2 + resolveReflectorSurfaceGapM(App))
+      sign * (boxDepth / 2 + resolveReflectorSurfaceGapM(App, mirror))
     );
     const surfaceRotation = readRecord(surface.rotation);
     if (sign < 0 && surfaceRotation) surfaceRotation.y = Math.PI;
@@ -630,7 +856,7 @@ export function installPlanarMirrorReflector(
   const virtualCamera = readRecord(new THREE.PerspectiveCamera());
   if (!textureMatrix || !virtualCamera) return false;
 
-  const material = createReflectorMaterial(App, THREE, target.texture, textureMatrix);
+  const material = createReflectorMaterial(App, THREE, target.texture, textureMatrix, mirrorMesh);
   if (!material) return false;
   const faceSign = opts?.faceSign === -1 ? -1 : 1;
   const surfaceInstall = installReflectorSurfaceMaterial({
@@ -693,6 +919,14 @@ export function installPlanarMirrorReflector(
     reflectorPlane,
     q,
   };
+
+  const surfaceObject = readRecord(surfaceInstall.surfaceObject);
+  if (surfaceObject) {
+    surfaceObject.onBeforeRender = function () {
+      syncSlidingInnerReflectorOcclusionClip(App, mirrorMesh, state);
+    };
+  }
+  syncSlidingInnerReflectorOcclusionClip(App, mirrorMesh, state);
 
   userData.__wpPlanarReflector = state;
   userData.__wpMirrorSurface = true;
