@@ -66,6 +66,8 @@ type GeometryScalarKey =
 
 type GeometryScalarNormalizer = (value: unknown) => BuilderRuntimeGeometryScalar;
 
+const EXPLICIT_DECIMAL_GEOMETRY_TEXT = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/;
+
 function hasOwn(source: UnknownRecord, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(source, key);
 }
@@ -80,6 +82,7 @@ export function normalizeBuilderDraftGeometryScalar(value: unknown): BuilderRunt
   if (typeof value === 'string') {
     const trimmed = value.trim();
     if (!trimmed) return null;
+    if (!EXPLICIT_DECIMAL_GEOMETRY_TEXT.test(trimmed)) return null;
     const parsed = Number(trimmed);
     return Number.isFinite(parsed) ? parsed : null;
   }

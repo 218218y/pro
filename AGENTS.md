@@ -3,11 +3,17 @@
 ## Mission
 
 Work as a careful senior engineer inside this repository.
-Make high-confidence changes that preserve the project’s architecture and migration direction.
-Prefer minimal, surgical edits with strong verification over broad speculative rewrites.
+Make high-confidence changes that preserve the project’s architecture and complete its migration direction.
+Prefer the smallest coherent architectural change over broad speculative rewrites, but do not confuse
+"focused" with "timid". When the task is cleanup/modernization and the old path is proven obsolete,
+remove it end-to-end instead of preserving it behind aliases, fallbacks, or compatibility wrappers.
 
 Do not optimize for quick green checks at the cost of reintroducing legacy patterns.
 If a test is outdated relative to the intended architecture, update the test instead of regressing the code.
+
+For release-bound modernization work, finishing one seam properly is better than leaving three half-migrated
+bridges in place. Prefer a clear breaking cleanup with updated callers/tests/docs over a quiet compatibility
+ladder that keeps the codebase confused.
 
 ---
 
@@ -134,6 +140,17 @@ Especially avoid restoring:
 - wrapper aliases for old names when callers should be updated
 - “temporary” fallback bridges that become permanent
 
+If an existing alias/fallback/compatibility path is still present, treat it as debt that needs an owner:
+
+- prove whether current callers still need it
+- move callers to the canonical API first
+- add or update a guard so new callers cannot return to the old path
+- remove the old path when the import graph and tests show it is unused
+- document only the durable rule, not a stage diary
+
+Do not keep obsolete wrappers only because removal touches several files. A multi-file cleanup is acceptable
+when it removes a real second implementation and leaves the system simpler.
+
 ### 7) Build pipeline discipline
 
 For build/builder work, prefer the canonical pipeline/context patterns already present in the repo.
@@ -149,10 +166,12 @@ When forced to cast, keep the cast narrow and local.
 
 ## Editing rules
 
-- Keep diffs focused.
-- Do not rename/move files unless it materially improves the solution.
+- Keep diffs focused on one coherent seam or product bug.
+- Do not rename/move files casually, but do rename/move when it materially improves ownership, removes an
+  obsolete public name, or completes a planned migration.
 - Do not change unrelated code while “cleaning up”.
-- Preserve public APIs unless the task explicitly requires API change.
+- Preserve public APIs by default. When the task explicitly asks for modernization or public API cleanup,
+  redesign the API deliberately after mapping consumers and migration risk.
 - Keep comments aligned with reality; remove stale comments if behavior changes.
 - Do not edit generated/build/vendor outputs unless the task explicitly targets them.
 - Do not change release/obfuscation behavior unless requested.
@@ -167,12 +186,61 @@ For every non-trivial task:
 
 1. Read the relevant docs/tests/files first.
 2. State the likely root cause or change target.
-3. Make the smallest correct architectural fix.
+3. Make the smallest correct architectural fix, or the smallest complete modernization slice when cleanup is
+   the task.
 4. Run the smallest meaningful verification set first.
 5. Expand verification only when the change risk justifies it, the user requests it, or a release-style handoff needs it.
 6. Summarize exactly what changed and why.
 
 Do not claim success without verification evidence.
+
+---
+
+## Modernization / cleanup work mode
+
+Use this mode when the user asks to remove old compatibility, fallbacks, aliases, unclear paths, stale public
+API, or mixed ownership.
+
+### Required mapping before editing
+
+Before changing code in a modernization task, map the seam:
+
+1. current public/import surface and all consumers
+2. canonical owner and intended replacement path
+3. legacy/fallback/alias entry points, including CLI/script names and generated artifacts
+4. persisted-data or deployment compatibility risk
+5. tests/guards that must change so the old path cannot return
+6. smallest complete slice that can be verified independently
+
+If the map shows the old path is unused or only used by stale tests, remove it and update the tests. If the map
+shows a real external/deployment dependency, keep a narrow compatibility boundary with a documented removal
+condition; do not scatter fallback reads through runtime code.
+
+### Public API cleanup sequence
+
+When a public API looks stale or too broad:
+
+1. inventory import sites with the existing contract/audit tools and direct search
+2. classify each entry as canonical public facade, private owner leaked as public, external/deployment API, or
+   unused stale entry
+3. introduce or confirm the canonical API with typed contracts
+4. migrate internal consumers to the canonical API
+5. update the public API manifest/docs/guards
+6. delete the stale entry only after the contract proves no live consumer remains
+
+Do not leave a deprecated API in the manifest just because it is harmless. Harmless stale API becomes future
+confusion.
+
+### Cleanup quality bar
+
+A cleanup is complete only when:
+
+- there is one canonical read/write path
+- old names are removed from source, scripts, docs, and tests unless intentionally kept as an external boundary
+- generated/audit report targets are regenerated when their checked-in content is part of the contract
+- callers are migrated rather than routed through a new shim
+- tests prove both the new behavior and the removal guard
+- the final summary states any remaining compatibility boundary explicitly
 
 ---
 

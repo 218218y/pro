@@ -5,7 +5,7 @@ function readCount(value: unknown): number {
 }
 
 function ratio(num: number, den: number): number {
-  return den > 0 ? Number((num / den).toFixed(4)) : 0;
+  return den > 0 ? Math.round((num / den) * 10000) / 10000 : 0;
 }
 
 export function summarizeBuildDebugBudget(

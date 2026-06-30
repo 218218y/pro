@@ -14,6 +14,10 @@ type BuilderWaitScheduleOpts = {
   onStaleWakeup?: (() => void) | null;
 };
 
+function readSchedulerVersion(value: unknown): number {
+  return typeof value === 'number' && Number.isFinite(value) ? Math.max(0, value) : 0;
+}
+
 function clearTimeoutHandle(
   clearFn: (handle: TimeoutHandleLike | undefined) => void,
   handle: TimeoutHandleLike
@@ -51,13 +55,14 @@ function createDebouncedRunner(
   let pendingHandle: TimeoutHandleLike | undefined;
   const handleVersions = new Map<TimeoutHandleLike, number>();
   return () => {
-    const scheduledVersion =
-      typeof opts?.readScheduledVersion === 'function' ? Number(opts.readScheduledVersion() || 0) : 0;
+    const scheduledVersion = readSchedulerVersion(
+      typeof opts?.readScheduledVersion === 'function' ? opts.readScheduledVersion() : 0
+    );
     const fireWhenCurrent = (handle: TimeoutHandleLike | undefined) => {
       if (pendingHandle === handle) pendingHandle = undefined;
       const capturedVersion =
         handle !== undefined && handleVersions.has(handle)
-          ? Number(handleVersions.get(handle) || 0)
+          ? (handleVersions.get(handle) ?? 0)
           : scheduledVersion;
       if (handle !== undefined) handleVersions.delete(handle);
       const state = ensureSchedulerState(App);
