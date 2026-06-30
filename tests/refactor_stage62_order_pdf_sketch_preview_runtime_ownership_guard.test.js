@@ -46,8 +46,9 @@ test('stage 62 order pdf sketch preview runtime ownership split is anchored', ()
   assert.match(pdfDocument, /collectTrailingNonFormPageIndexes/);
   assert.match(pdfDocument, /export async function loadOrderPdfSketchPreviewPdfJsDocument/);
   assert.match(pdfDocument, /disableWorker: true/);
-  assert.match(pdfDocument, /export function destroyOrderPdfSketchPreviewPdfJsSession/);
+  assert.match(pdfDocument, /export function destroyOrderPdfSketchPreviewPdfJsTask/);
   assert.doesNotMatch(pdfDocument, /createObjectURL|canvasToPngBytes|fillRect/);
+  assert.doesNotMatch(pdfDocument, /pdfDoc\.destroy|document-owned hook|pdfjs-dist 5/);
 
   assert.match(renderPage, /export async function renderOrderPdfSketchPreviewPageToUrl/);
   assert.match(renderPage, /getViewport\(\{ scale: 1\.15 \}\)/);
@@ -61,7 +62,7 @@ test('stage 62 order pdf sketch preview runtime ownership split is anchored', ()
   assert.match(build, /collectOrderPdfSketchPreviewTailPageMap/);
   assert.match(build, /loadOrderPdfSketchPreviewPdfJsDocument/);
   assert.match(build, /renderOrderPdfSketchPreviewPageToUrl/);
-  assert.match(build, /destroyOrderPdfSketchPreviewPdfJsSession/);
+  assert.match(build, /destroyOrderPdfSketchPreviewPdfJsTask/);
   assert.doesNotMatch(build, /loadPdfDocumentCtor|createObjectURL|fillRect/);
 
   assert.match(previewAction, /from '\.\/order_pdf_overlay_sketch_preview\.js';/);

@@ -39,23 +39,11 @@ export async function loadOrderPdfSketchPreviewPdfJsDocument(args: {
   }
 }
 
-export function destroyOrderPdfSketchPreviewPdfJsSession(args: {
-  pdfDoc: PdfJsDocumentLike;
-  task: PdfJsLoadingTaskLike;
-}): void {
-  let taskDestroyed = false;
+export function destroyOrderPdfSketchPreviewPdfJsTask(args: { task: PdfJsLoadingTaskLike }): void {
   try {
     if (typeof args.task.destroy === 'function') {
       args.task.destroy();
-      taskDestroyed = true;
     }
-  } catch {
-    // best effort cleanup
-  }
-  try {
-    // pdfjs-dist 5.x: when no task cleanup hook exists, release through the
-    // document-owned hook if present. pdfjs-dist 6 owns cleanup on the task.
-    if (!taskDestroyed && typeof args.pdfDoc.destroy === 'function') args.pdfDoc.destroy();
   } catch {
     // best effort cleanup
   }

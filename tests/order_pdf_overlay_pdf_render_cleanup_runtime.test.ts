@@ -29,6 +29,10 @@ test('cleanupOrderPdfLoadedDocument clears loaded page/doc state so a strict rem
   };
   const pdfDocRef = {
     current: {
+      getPage: async () => ({
+        getViewport: () => ({ width: 1, height: 1 }),
+        render: () => ({ promise: Promise.resolve() }),
+      }),
       destroy: () => {
         docDestroyed += 1;
       },
@@ -52,7 +56,7 @@ test('cleanupOrderPdfLoadedDocument clears loaded page/doc state so a strict rem
 
   assert.equal(renderCancelled, 1);
   assert.equal(taskDestroyed, 1);
-  assert.equal(docDestroyed, 1);
+  assert.equal(docDestroyed, 0);
   assert.equal(pdfRenderTaskRef.current, null);
   assert.equal(pdfDocTaskRef.current, null);
   assert.equal(pdfDocRef.current, null);

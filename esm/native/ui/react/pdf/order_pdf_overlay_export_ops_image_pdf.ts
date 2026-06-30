@@ -268,21 +268,12 @@ export function createOrderPdfOverlayImagePdfOps(deps: OrderPdfOverlayExportOpsD
       const outName = baseFileName.replace(/\.pdf$/i, '') + '_image.pdf';
       return { outBytes, outName };
     } finally {
-      let taskDestroyed = false;
       try {
         if (task && typeof task.destroy === 'function') {
           task.destroy();
-          taskDestroyed = true;
         }
       } catch (err) {
         orderPdfOverlayReportNonFatal('orderPdfOverlay.rasterizeInteractivePdf.destroyTask', err);
-      }
-      try {
-        // pdfjs-dist 5.x: when no task cleanup hook exists, release through the
-        // document-owned hook if present. pdfjs-dist 6 owns cleanup on the task.
-        if (!taskDestroyed && pdfDoc && typeof pdfDoc.destroy === 'function') pdfDoc.destroy();
-      } catch (err) {
-        orderPdfOverlayReportNonFatal('orderPdfOverlay.rasterizeInteractivePdf.destroyDoc', err);
       }
     }
   }

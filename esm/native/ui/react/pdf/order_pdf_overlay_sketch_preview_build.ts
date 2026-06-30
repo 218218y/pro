@@ -6,7 +6,7 @@ import type {
 import { listOrderPdfSketchImageSlotSpecs } from './order_pdf_overlay_sketch_image_slots_runtime.js';
 import {
   collectOrderPdfSketchPreviewTailPageMap,
-  destroyOrderPdfSketchPreviewPdfJsSession,
+  destroyOrderPdfSketchPreviewPdfJsTask,
   loadOrderPdfSketchPreviewPdfJsDocument,
 } from './order_pdf_overlay_sketch_preview_pdf_document.js';
 import { renderOrderPdfSketchPreviewPageToUrl } from './order_pdf_overlay_sketch_preview_render_page.js';
@@ -54,7 +54,7 @@ export async function buildOrderPdfSketchPreviewEntries(args: {
       });
     }
   } finally {
-    destroyOrderPdfSketchPreviewPdfJsSession({ pdfDoc, task });
+    destroyOrderPdfSketchPreviewPdfJsTask({ task });
   }
 
   return entries;

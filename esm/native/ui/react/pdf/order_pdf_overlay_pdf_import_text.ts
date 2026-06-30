@@ -269,12 +269,6 @@ async function readPdfJsTextLayerPages(bytes: Uint8Array): Promise<PdfTextLayerP
     } catch {
       // best effort cleanup only
     }
-    try {
-      const docRecord = asRecord(pdfDoc);
-      if (docRecord && typeof docRecord.destroy === 'function') docRecord.destroy();
-    } catch {
-      // best effort cleanup only
-    }
   }
 }
 

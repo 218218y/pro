@@ -1,5 +1,4 @@
 export {
-  cleanupOrderPdfDoc,
   cleanupOrderPdfDocTask,
   cleanupOrderPdfLoadedDocument,
   cleanupOrderPdfRenderTask,

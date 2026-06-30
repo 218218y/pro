@@ -67,19 +67,6 @@ export function cleanupOrderPdfDocTask(
   pdfDocTaskRef.current = null;
 }
 
-export function cleanupOrderPdfDoc(
-  pdfDocRef: RefBox<PdfJsDocumentLike | null>,
-  reportNonFatal: ReportNonFatal
-): void {
-  try {
-    const d = pdfDocRef.current;
-    if (d && typeof d.destroy === 'function') d.destroy();
-  } catch (__wpErr) {
-    reportNonFatal('orderPdfRender:cleanupDoc', __wpErr);
-  }
-  pdfDocRef.current = null;
-}
-
 export function cleanupOrderPdfLoadedDocument(args: {
   pdfRenderTaskRef: RefBox<PdfJsRenderTaskLike | null>;
   pdfDocTaskRef: RefBox<PdfJsLoadingTaskLike | null>;
@@ -101,7 +88,7 @@ export function cleanupOrderPdfLoadedDocument(args: {
 
   cleanupOrderPdfRenderTask(pdfRenderTaskRef, reportNonFatal);
   cleanupOrderPdfDocTask(pdfDocTaskRef, reportNonFatal);
-  cleanupOrderPdfDoc(pdfDocRef, reportNonFatal);
+  pdfDocRef.current = null;
   pageRef.current = null;
   pageSizeRef.current = null;
   lastLoadedPdfTickRef.current = -1;

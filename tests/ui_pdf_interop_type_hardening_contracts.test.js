@@ -12,6 +12,7 @@ function readSource(relPath) {
 }
 
 const pdfLibHelper = readSource('esm/native/ui/react/pdf/order_pdf_overlay_pdf_lib.ts');
+const pdfContracts = readSource('esm/native/ui/react/pdf/order_pdf_overlay_contracts.ts');
 const exportShared = readSource('esm/native/ui/react/pdf/order_pdf_overlay_export_ops_shared.ts');
 const imagePdfOps = readSource('esm/native/ui/react/pdf/order_pdf_overlay_export_ops_image_pdf.ts');
 const imagePdfSupport = readSource(
@@ -23,6 +24,8 @@ const pdfImportInteractive = readSource(
 );
 const pdfImportPages = readSource('esm/native/ui/react/pdf/order_pdf_overlay_pdf_import_pages.ts');
 const pdfImportShared = readSource('esm/native/ui/react/pdf/order_pdf_overlay_pdf_import_shared.ts');
+const pdfImportText = readSource('esm/native/ui/react/pdf/order_pdf_overlay_pdf_import_text.ts');
+const pdfRenderShared = readSource('esm/native/ui/react/pdf/order_pdf_overlay_pdf_render_shared.ts');
 const sketchPreview = readSource('esm/native/ui/react/pdf/order_pdf_overlay_sketch_preview.ts');
 const sketchPreviewPdfDocument = readSource(
   'esm/native/ui/react/pdf/order_pdf_overlay_sketch_preview_pdf_document.ts'
@@ -53,6 +56,11 @@ const notesTimerFiles = [
   notesWorkflowPersistenceRuntime,
 ];
 
+function readPdfJsDocumentLikeBlock() {
+  const match = /export type PdfJsDocumentLike[\s\S]*?};/.exec(pdfContracts);
+  return match ? match[0] : '';
+}
+
 test('ui type hardening installs one canonical pdf-lib bridge', () => {
   assert.match(pdfLibHelper, /export async function loadPdfLibNamespace\(/);
   assert.match(pdfLibHelper, /export function readPdfDocumentCtor\(/);
@@ -73,6 +81,16 @@ test('ui type hardening routes order-pdf seams through the local pdf-lib bridge'
   assert.match(pdfImportShared, /order_pdf_overlay_pdf_lib\.js/);
   assert.match(sketchPreview, /order_pdf_overlay_sketch_preview_build\.js/);
   assert.match(sketchPreviewPdfDocument, /order_pdf_overlay_pdf_lib\.js/);
+});
+
+test('ui type hardening keeps pdfjs cleanup owned by the loading task', () => {
+  assert.doesNotMatch(readPdfJsDocumentLikeBlock(), /destroy\?:/);
+  for (const source of [imagePdfOps, pdfImportText, pdfRenderShared, sketchPreviewPdfDocument]) {
+    assert.doesNotMatch(source, /pdfDoc\.destroy|document-owned hook|pdfjs-dist 5/);
+    assert.doesNotMatch(source, /export function cleanupOrderPdfDoc\b|cleanupOrderPdfDoc\(/);
+  }
+  assert.match(pdfContracts, /export type PdfJsLoadingTaskLike/);
+  assert.match(pdfContracts, /destroy\?: \(\) => void/);
 });
 
 test('ui type hardening normalizes notes typing timers to TimeoutHandleLike', () => {

@@ -149,9 +149,6 @@ export type PdfJsPageLike = Record<string, unknown> & {
 
 export type PdfJsDocumentLike = Record<string, unknown> & {
   getPage: (pageNumber: number) => Promise<PdfJsPageLike>;
-  // Legacy pdfjs-dist 5.x only. pdfjs-dist 6 removed this alias; cleanup must
-  // prefer PDFDocumentLoadingTask.destroy() whenever the loading task is known.
-  destroy?: () => void;
 };
 
 export type PdfJsLoadingTaskLike = Record<string, unknown> & {

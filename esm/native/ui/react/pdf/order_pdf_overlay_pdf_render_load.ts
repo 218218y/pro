@@ -7,7 +7,6 @@ import {
 } from './order_pdf_overlay_runtime.js';
 import {
   asPdfJsPageReadyLike,
-  cleanupOrderPdfDoc,
   cleanupOrderPdfDocTask,
   cleanupOrderPdfRenderTask,
   clonePdfBytes,
@@ -155,7 +154,7 @@ export async function loadOrderPdfFirstPage(args: {
   if (pageRef.current && (lastLoadedPdfTickRef.current !== pdfSourceTick || !pdfDocRef.current)) {
     cleanupOrderPdfRenderTask(pdfRenderTaskRef, reportNonFatal);
     cleanupOrderPdfDocTask(pdfDocTaskRef, reportNonFatal);
-    cleanupOrderPdfDoc(pdfDocRef, reportNonFatal);
+    pdfDocRef.current = null;
     pageRef.current = null;
     pageSizeRef.current = null;
   }
@@ -183,9 +182,7 @@ export async function loadOrderPdfFirstPage(args: {
   pdfDocTaskRef.current = task;
   const pdfDoc = await task.promise;
   if (isCancelled()) {
-    // PDF.js 6 removed PDFDocumentProxy.destroy(); the loading task is now the
-    // canonical cleanup owner. Keep cancellation cleanup centered there so the
-    // same code path is safe for both pdfjs-dist 5.x and 6.x.
+    // PDF.js 6 cleanup is owned by PDFDocumentLoadingTask.destroy().
     cleanupOrderPdfDocTask(pdfDocTaskRef, reportNonFatal);
     pdfDocRef.current = null;
     pageRef.current = null;
@@ -197,7 +194,7 @@ export async function loadOrderPdfFirstPage(args: {
   const page = await pdfDoc.getPage(1);
   if (isCancelled()) {
     cleanupOrderPdfDocTask(pdfDocTaskRef, reportNonFatal);
-    cleanupOrderPdfDoc(pdfDocRef, reportNonFatal);
+    pdfDocRef.current = null;
     pageRef.current = null;
     pageSizeRef.current = null;
     return false;
