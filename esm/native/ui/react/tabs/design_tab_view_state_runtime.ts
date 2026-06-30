@@ -13,7 +13,7 @@ import {
   type DesignTabCorniceType,
   type DesignTabDoorStyle,
 } from './design_tab_shared.js';
-import { readRemovedFrameSideShelfState } from '../../../features/removable_parts.js';
+import { readRemovedFrameSideShelfState } from '../../../features/part_identity/api.js';
 import { readUiRawIntFromSnapshot } from '../selectors/ui_raw_selectors.js';
 
 import type { UnknownRecord } from '../../../../../types';

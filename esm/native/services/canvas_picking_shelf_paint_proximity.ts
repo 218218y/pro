@@ -1,6 +1,6 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
 
-import { isIndividualShelfPartId } from '../features/shelf_part_identity.js';
+import { isIndividualShelfPartId } from '../features/part_identity/api.js';
 import { __wp_measureObjectLocalBox } from './canvas_picking_local_helpers.js';
 import { __wp_projectWorldPointToLocal } from './canvas_picking_projection_runtime_plane.js';
 import { asRecordMap } from './canvas_picking_generic_paint_hover_shared.js';

@@ -3,7 +3,7 @@ import {
   SHELF_GROUP_PART_ID,
   markShelfBoardUserData,
   resolveShelfPartMaterial,
-} from '../features/shelf_part_identity.js';
+} from '../features/part_identity/api.js';
 import { asRecord } from '../runtime/record.js';
 import type { UnknownRecord } from '../../../types';
 

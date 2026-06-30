@@ -11,7 +11,7 @@ import { addSketchBoxExternalDrawerFrontVisual } from './render_interior_sketch_
 import { addSketchBoxExternalDrawerBoxAndConnector } from './render_interior_sketch_boxes_fronts_drawers_box.js';
 import { registerSketchBoxExternalDrawerMotionEntry } from './render_interior_sketch_boxes_fronts_drawers_motion.js';
 import { emitExternalDrawerBraceShelf } from './external_drawer_shelf.js';
-import { createSketchExternalDrawerBraceShelfPartId } from '../features/shelf_part_identity.js';
+import { createSketchExternalDrawerBraceShelfPartId } from '../features/part_identity/api.js';
 import { resolveSketchExternalDrawerStackKey } from './render_interior_sketch_drawers_shared.js';
 
 export function renderSketchBoxExternalDrawers(args: RenderSketchBoxExternalDrawersArgs): void {

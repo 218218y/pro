@@ -1,6 +1,6 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
 
-import { isDrawerBoxPartId } from '../features/drawer_box_identity.js';
+import { isDrawerBoxPartId } from '../features/part_identity/api.js';
 import { getBuilderRegistry } from '../runtime/builder_service_access.js';
 import {
   __readObjectLocalGeometryBox,

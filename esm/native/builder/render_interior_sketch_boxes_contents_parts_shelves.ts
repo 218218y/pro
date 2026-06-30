@@ -3,10 +3,13 @@ import {
   MATERIAL_DIMENSIONS,
   SKETCH_BOX_DIMENSIONS,
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
-import { SHELF_GROUP_PART_ID, markShelfBoardUserData } from '../features/shelf_part_identity.js';
+import {
+  SHELF_GROUP_PART_ID,
+  markShelfBoardUserData,
+  readSketchBoxRemovedSideShelfState,
+} from '../features/part_identity/api.js';
 import type { RenderSketchBoxStaticContentsArgs } from './render_interior_sketch_boxes_contents_parts_types.js';
 import type { SketchShelfExtra } from './render_interior_sketch_shared.js';
-import { readSketchBoxRemovedSideShelfState } from '../features/removable_parts.js';
 import type { RemovedFrameSideShelfRounding } from './removed_frame_side_brace_shelves.js';
 
 import { asMesh, asRecordArray } from './render_interior_sketch_shared.js';

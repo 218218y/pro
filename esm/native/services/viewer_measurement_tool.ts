@@ -8,7 +8,7 @@ import type {
 import type { Vector3Like } from '../../../types/three_like.js';
 
 import { getBuilderRenderOps } from '../runtime/builder_service_access.js';
-import { isShelfBoardPartId } from '../features/shelf_part_identity.js';
+import { isShelfBoardPartId } from '../features/part_identity/api.js';
 import { getInternalGridMap } from '../runtime/cache_access.js';
 import { getDocumentMaybe } from '../runtime/dom_access.js';
 import { setModePrimary } from '../runtime/mode_write_access.js';

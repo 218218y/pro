@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { makeDrawerBoxPartId } from '../esm/native/features/drawer_box_identity.ts';
+import { makeDrawerBoxPartId } from '../esm/native/features/part_identity/api.ts';
 import { createInternalDrawerBox } from '../esm/native/builder/visuals_chest_mode_drawer_box.ts';
 import { buildChestOnly } from '../esm/native/builder/visuals_chest_mode.ts';
 import {

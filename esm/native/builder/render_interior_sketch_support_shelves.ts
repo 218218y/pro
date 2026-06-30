@@ -7,7 +7,7 @@ import {
   createSketchShelfPartId,
   markShelfBoardUserData,
   resolveShelfPartMaterial,
-} from '../features/shelf_part_identity.js';
+} from '../features/part_identity/api.js';
 import type { InteriorValueRecord } from './render_interior_ops_contracts.js';
 import type { ApplySketchShelvesArgs } from './render_interior_sketch_support_contracts.js';
 

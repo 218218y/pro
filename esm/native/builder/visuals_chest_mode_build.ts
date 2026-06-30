@@ -13,7 +13,7 @@ import {
   resolveDoorMountThicknessesFromConfig,
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { isBaseLegWheelsStyle, resolveBaseLegGeometrySpec } from '../features/base_leg_support.js';
-import { makeDrawerBoxPartId } from '../features/drawer_box_identity.js';
+import { makeDrawerBoxPartId } from '../features/part_identity/api.js';
 
 import type { AppContainer, BuilderBuildChestOnlyOptsLike } from '../../../types/index.js';
 

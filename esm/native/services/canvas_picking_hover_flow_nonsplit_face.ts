@@ -1,4 +1,4 @@
-import { isDrawerBoxPartId, resolveDrawerBoxOwnerPartId } from '../features/drawer_box_identity.js';
+import { isDrawerBoxPartId, resolveDrawerBoxOwnerPartId } from '../features/part_identity/api.js';
 import { resolveCanvasPickingClickHitState } from './canvas_picking_click_hit_flow.js';
 import { __wp_isDoorOrDrawerLikePartId } from './canvas_picking_core_helpers.js';
 import { asRecordMap } from './canvas_picking_hover_flow_shared.js';

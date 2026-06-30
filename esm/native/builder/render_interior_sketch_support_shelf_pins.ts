@@ -1,5 +1,5 @@
 import { INTERIOR_FITTINGS_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
-import { SHELF_GROUP_PART_ID, markShelfBoardUserData } from '../features/shelf_part_identity.js';
+import { SHELF_GROUP_PART_ID, markShelfBoardUserData } from '../features/part_identity/api.js';
 import type {
   InteriorGroupLike,
   InteriorMaterialLike,

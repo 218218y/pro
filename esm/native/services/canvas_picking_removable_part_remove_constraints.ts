@@ -7,7 +7,7 @@ import {
   readRemovableFrameSideFromPartId,
   readRemovableSketchBoxSideFromPartId,
   canonicalRemovablePartKey,
-} from '../features/removable_parts.js';
+} from '../features/part_identity/api.js';
 import { readStoreStateMaybe } from '../runtime/store_surface_access.js';
 import { __wp_isRemoved, __wp_toast } from './canvas_picking_core_helpers.js';
 

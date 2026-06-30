@@ -4,7 +4,7 @@
 // polygon math, and folded-content planning live in sibling owners.
 
 import { CORNER_CONNECTOR_INTERIOR_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
-import { CORNER_SHELF_GROUP_PART_ID, markShelfBoardUserData } from '../features/shelf_part_identity.js';
+import { CORNER_SHELF_GROUP_PART_ID, markShelfBoardUserData } from '../features/part_identity/api.js';
 import type { P2 } from './corner_connector_interior_shared.js';
 import type { CornerConnectorSpecialInteriorFlowParams } from './corner_connector_interior_special_types.js';
 import {

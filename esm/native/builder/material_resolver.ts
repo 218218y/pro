@@ -19,7 +19,7 @@ import type {
 import type { IndividualColorsMap } from '../../../types/maps';
 import { getBuilderRenderOps } from '../runtime/builder_service_access.js';
 import { getPlatformReportError } from '../runtime/platform_access.js';
-import { isDrawerBoxPartId } from '../features/drawer_box_identity.js';
+import { isDrawerBoxPartId } from '../features/part_identity/api.js';
 import { readPartColorEntry } from './material_color_lookup.js';
 import { resolveSelectionFrontMaterial } from './material_selection.js';
 

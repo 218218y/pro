@@ -15,7 +15,7 @@ import {
   DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM,
   platformOverhangCmToM,
 } from '../features/platform_overhang_support.js';
-import { isRemovedFrameSideOn } from '../features/removable_parts.js';
+import { isRemovedFrameSideOn } from '../features/part_identity/api.js';
 import { readModuleConfig } from './build_flow_readers.js';
 import { getBasePlinthHeightM } from '../features/base_plinth_support.js';
 import { readCorePureNumberArray } from './core_pure_number_contracts.js';

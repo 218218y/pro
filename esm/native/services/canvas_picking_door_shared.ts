@@ -2,7 +2,7 @@ import type { AppContainer, UnknownRecord } from '../../../types';
 
 import { asRecord } from '../runtime/record.js';
 import { resolveDoorTrimTarget } from './canvas_picking_door_trim_targets.js';
-import { resolveDrawerBoxOwnerPartId } from '../features/drawer_box_identity.js';
+import { resolveDrawerBoxOwnerPartId } from '../features/part_identity/api.js';
 
 export type DoorHitNode = UnknownRecord & {
   userData?: UnknownRecord | null;

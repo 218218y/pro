@@ -1,12 +1,12 @@
-import { isDrawerBoxPartId } from '../features/drawer_box_identity.js';
 import { isFrontColorBraceShelvesOnlyMode } from '../features/front_color_shelf_inheritance.js';
 import { createShelfFrontEdgeMaterials } from './shelf_front_edge_material.js';
 import {
-  SHELF_GROUP_PART_ID,
   CORNER_SHELF_GROUP_PART_ID,
+  SHELF_GROUP_PART_ID,
+  isDrawerBoxPartId,
   isShelfBoardPartId,
   resolveShelfGroupPartId,
-} from '../features/shelf_part_identity.js';
+} from '../features/part_identity/api.js';
 import type { BuilderGetMaterialFn } from '../../../types';
 import type { IndividualColorsMap } from '../../../types/maps';
 import {

@@ -1,4 +1,4 @@
-import { isShelfBoardPartId } from '../features/shelf_part_identity.js';
+import { isShelfBoardPartId } from '../features/part_identity/api.js';
 import { createCanvasPickingConfigStructuralPatchMeta } from './canvas_picking_config_patch_meta.js';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
 import type { ManualLayoutSketchDirectHitContext } from './canvas_picking_sketch_direct_hit_workflow_contracts.js';

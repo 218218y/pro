@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { createApplyHingedDoorsOps } from '../esm/native/builder/render_door_ops_hinged.ts';
 import { createBuilderRenderDrawerOps } from '../esm/native/builder/render_drawer_ops.ts';
-import { makeDrawerBoxPartId } from '../esm/native/features/drawer_box_identity.ts';
+import { makeDrawerBoxPartId } from '../esm/native/features/part_identity/api.ts';
 
 function createThreeStub() {
   class Group {

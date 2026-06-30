@@ -1,5 +1,5 @@
 import type { AppContainer, Object3DLike, UnknownRecord } from '../../../types';
-import { isDrawerBoxPartId, resolveDrawerBoxOwnerPartId } from '../features/drawer_box_identity.js';
+import { isDrawerBoxPartId, resolveDrawerBoxOwnerPartId } from '../features/part_identity/api.js';
 import type { DoorHoverHit, IsViewportRootFn, StrFn } from './canvas_picking_door_hover_targets_shared.js';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
 import { __isReusableVectorLike } from './canvas_picking_door_hover_targets_shared.js';

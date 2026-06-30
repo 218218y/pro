@@ -11,7 +11,7 @@ import {
   createSketchShelfPartId,
   isShelfBoardPartId,
   resolveShelfGroupPartId,
-} from '../esm/native/features/shelf_part_identity.ts';
+} from '../esm/native/features/part_identity/api.ts';
 import { createPartMaterialResolver } from '../esm/native/builder/materials_apply_color_policy.ts';
 import { readPartColorEntry } from '../esm/native/builder/material_color_lookup.ts';
 import { makeMaterialResolver } from '../esm/native/builder/material_resolver.ts';

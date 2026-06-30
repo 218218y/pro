@@ -1,6 +1,6 @@
 // Corner wing: material resolution + multi-color/special doors
 
-import { CORNER_SHELF_GROUP_PART_ID } from '../features/shelf_part_identity.js';
+import { CORNER_SHELF_GROUP_PART_ID } from '../features/part_identity/api.js';
 import { readDoorVisualMapEntry } from '../features/door_visual_map_lookup.js';
 import { getCommonMatsOrThrow } from './common_mats_resolver.js';
 import { asRecord, cloneRecord } from '../runtime/record.js';

@@ -6,8 +6,11 @@ import { resolveEffectiveDoorStyle } from '../features/door_style_overrides.js';
 import { readDoorTrimListForPart } from '../features/door_trim.js';
 import { hasMirrorSurfaceOnFace } from '../features/mirror_layout.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
-import { makeDrawerBoxPartId } from '../features/drawer_box_identity.js';
-import { CORNER_SHELF_GROUP_PART_ID, markShelfBoardUserData } from '../features/shelf_part_identity.js';
+import {
+  CORNER_SHELF_GROUP_PART_ID,
+  makeDrawerBoxPartId,
+  markShelfBoardUserData,
+} from '../features/part_identity/api.js';
 import { readCurtainType } from './render_door_ops_shared.js';
 import type {
   CornerWingInteriorCellRuntime,

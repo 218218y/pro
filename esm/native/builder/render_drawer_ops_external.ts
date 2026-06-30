@@ -1,4 +1,4 @@
-import { makeDrawerBoxPartId, resolveDrawerBoxPaintMaterial } from '../features/drawer_box_identity.js';
+import { makeDrawerBoxPartId, resolveDrawerBoxPaintMaterial } from '../features/part_identity/api.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
 import { resolveDoorVisualStyle } from './render_door_ops_shared.js';
 import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';

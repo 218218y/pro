@@ -51,7 +51,7 @@ function loadDesignTabViewStateRuntimeModule(stubs = {}) {
           }),
       };
     }
-    if (specifier === '../../../features/removable_parts.js') {
+    if (specifier === '../../../features/part_identity/api.js') {
       const readMap = (cfg, name) =>
         cfg && typeof cfg === 'object' && cfg[name] && typeof cfg[name] === 'object' ? cfg[name] : {};
       return {

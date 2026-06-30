@@ -1,5 +1,5 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
-import { isDrawerBoxPartId } from '../features/drawer_box_identity.js';
+import { isDrawerBoxPartId } from '../features/part_identity/api.js';
 import { __wp_isDoorOrDrawerLikePartId } from './canvas_picking_core_helpers.js';
 import { __wp_isViewportRoot } from './canvas_picking_local_helpers.js';
 import { asRecordMap } from './canvas_picking_generic_paint_hover_shared.js';

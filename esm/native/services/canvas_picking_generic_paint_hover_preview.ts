@@ -1,7 +1,6 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
 
-import { isDrawerBoxPartId } from '../features/drawer_box_identity.js';
-import { isShelfBoardPartId } from '../features/shelf_part_identity.js';
+import { isDrawerBoxPartId, isShelfBoardPartId } from '../features/part_identity/api.js';
 import { isSketchInternalDrawerCassettePartId } from '../features/sketch_internal_drawer_cassette.js';
 import type { PaintPreviewGroupBox } from './canvas_picking_generic_paint_hover_shared.js';
 import { collectPaintPreviewPartObjects } from './canvas_picking_generic_paint_hover_preview_objects.js';

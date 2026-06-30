@@ -1,5 +1,5 @@
 import { getDrawersArray, getWardrobeGroup } from '../runtime/render_access.js';
-import { isDrawerBoxPartId, resolveDrawerBoxOwnerPartId } from '../features/drawer_box_identity.js';
+import { isDrawerBoxPartId, resolveDrawerBoxOwnerPartId } from '../features/part_identity/api.js';
 import { HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { resolveManualHandleLocalPosition } from '../features/manual_handle_position.js';
 import { createHandleMeshV7 } from './handles_mesh.js';

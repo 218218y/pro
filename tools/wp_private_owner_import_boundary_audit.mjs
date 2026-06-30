@@ -7,6 +7,15 @@ const root = process.cwd();
 
 export const PRIVATE_OWNER_IMPORT_FAMILIES = Object.freeze([
   {
+    id: 'features:part-identity',
+    publicFacade: 'esm/native/features/part_identity/api.ts',
+    privateOwners: [
+      'esm/native/features/drawer_box_identity.ts',
+      'esm/native/features/removable_parts.ts',
+      'esm/native/features/shelf_part_identity.ts',
+    ],
+  },
+  {
     id: 'builder:sketch-box-door-visuals',
     publicFacade: 'esm/native/builder/render_interior_sketch_boxes_fronts_door_visuals.ts',
     privateOwners: [

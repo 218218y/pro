@@ -1,4 +1,4 @@
-import { makeDrawerBoxPartId } from '../features/drawer_box_identity.js';
+import { makeDrawerBoxPartId } from '../features/part_identity/api.js';
 import { readRenderOpNumber } from './render_ops_number_contracts.js';
 import { computeExternalDrawersOpsForModule } from './pure_api.js';
 import {

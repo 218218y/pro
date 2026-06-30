@@ -8,7 +8,7 @@ import {
   CORNER_SHELF_GROUP_PART_ID,
   createCornerShelfPartId,
   markShelfBoardUserData,
-} from '../features/shelf_part_identity.js';
+} from '../features/part_identity/api.js';
 import type {
   CornerWingInteriorCellRuntime,
   CornerWingInteriorRuntime,

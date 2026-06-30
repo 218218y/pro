@@ -1,5 +1,5 @@
 import { DRAWER_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
-import { resolveDrawerBoxPaintMaterial } from '../features/drawer_box_identity.js';
+import { resolveDrawerBoxPaintMaterial } from '../features/part_identity/api.js';
 import { getDrawersArray } from '../runtime/render_access.js';
 import { resolveBuilderMirrorMaterial } from '../runtime/builder_service_access.js';
 import { readSketchBoxRegularExternalDrawersForRender } from '../features/sketch_box_regular_external_drawers.js';

@@ -11,7 +11,7 @@ import {
 } from './canvas_picking_generic_paint_hover_shared.js';
 import { resolveNonDoorHoverTargetFromObject } from './canvas_picking_generic_paint_hover_target.js';
 import { resolvePaintPreviewGroupBox } from './canvas_picking_generic_paint_hover_preview.js';
-import { isCanvasRemovablePartId, canonicalRemovablePartKey } from '../features/removable_parts.js';
+import { isCanvasRemovablePartId, canonicalRemovablePartKey } from '../features/part_identity/api.js';
 
 function isRemoved(App: AppContainer, partId: string): boolean {
   try {

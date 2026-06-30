@@ -13,7 +13,7 @@ import { computeExternalDrawersOpsForModule } from './pure_api.js';
 import { requireBuilderRenderOps } from '../runtime/builder_service_access.js';
 import { reportError } from '../runtime/errors.js';
 import { asRecord } from '../runtime/record.js';
-import { createModuleExternalDrawerBraceShelfPartId } from '../features/shelf_part_identity.js';
+import { createModuleExternalDrawerBraceShelfPartId } from '../features/part_identity/api.js';
 import { emitExternalDrawerBraceShelf } from './external_drawer_shelf.js';
 import type {
   UnknownRecord,

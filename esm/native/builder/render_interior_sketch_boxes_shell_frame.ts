@@ -8,7 +8,7 @@ import { asMesh, toFiniteNumber } from './render_interior_sketch_shared.js';
 import { applySketchBoxPickMeta } from './render_interior_sketch_pick_meta.js';
 import { renderSketchFreeBoxDimensions } from './render_interior_sketch_layout.js';
 import { renderSketchBoxCarcassAdornment } from './render_interior_sketch_visuals.js';
-import { readSketchBoxRemovedSideShelfState, sketchBoxSideToPartId } from '../features/removable_parts.js';
+import { readSketchBoxRemovedSideShelfState, sketchBoxSideToPartId } from '../features/part_identity/api.js';
 
 type SketchBoxHorizontalCapSpan = {
   width: number;

@@ -15,7 +15,7 @@ import {
 import {
   ROUNDED_FRAME_SIDE_SHELVES_MAP_NAME,
   readRemovedFrameSidePartIds,
-} from '../../../features/removable_parts.js';
+} from '../../../features/part_identity/api.js';
 import { materializeActiveGrooveLinesCountMap, readStoreStateMaybe } from '../../../services/api.js';
 
 import type {

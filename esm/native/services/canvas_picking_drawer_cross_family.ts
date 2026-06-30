@@ -1,5 +1,5 @@
 import type { AppContainer, ModuleConfigLike, UnknownRecord } from '../../../types';
-import { resolveDrawerBoxOwnerPartId } from '../features/drawer_box_identity.js';
+import { resolveDrawerBoxOwnerPartId } from '../features/part_identity/api.js';
 import {
   isSketchInternalDrawerCassettePartId,
   SKETCH_INTERNAL_DRAWER_CASSETTE_PART_SUFFIX,

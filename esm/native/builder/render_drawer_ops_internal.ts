@@ -1,5 +1,5 @@
 import { CHEST_MODE_DIMENSIONS, DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
-import { makeDrawerBoxPartId, resolveDrawerBoxPaintMaterial } from '../features/drawer_box_identity.js';
+import { makeDrawerBoxPartId, resolveDrawerBoxPaintMaterial } from '../features/part_identity/api.js';
 import { emitSketchInternalDrawerCassettePanels } from './render_interior_sketch_internal_drawer_cassette.js';
 import type { BuilderCreateBoardFn } from '../../../types';
 import type { BuilderRenderDrawerDeps } from './render_drawer_ops_shared.js';

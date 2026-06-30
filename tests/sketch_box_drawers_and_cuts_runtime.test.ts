@@ -1,11 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { makeDrawerBoxPartId } from '../esm/native/features/drawer_box_identity.ts';
 import {
   SHELF_GROUP_PART_ID,
   createSketchExternalDrawerBraceShelfPartId,
-} from '../esm/native/features/shelf_part_identity.ts';
+  makeDrawerBoxPartId,
+} from '../esm/native/features/part_identity/api.ts';
 import { applySketchBoxExternalDrawerDoorCuts } from '../esm/native/builder/post_build_sketch_door_cuts_box.ts';
 import { applySketchDrawerDoorCuts } from '../esm/native/builder/post_build_sketch_door_cuts_shared.ts';
 

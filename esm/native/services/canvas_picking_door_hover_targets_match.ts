@@ -1,5 +1,5 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
-import { resolveDrawerBoxOwnerPartId } from '../features/drawer_box_identity.js';
+import { resolveDrawerBoxOwnerPartId } from '../features/part_identity/api.js';
 import type { HitObjectLike } from './canvas_picking_engine.js';
 import {
   type IsViewportRootFn,

@@ -7,7 +7,7 @@ import {
   createModuleShelfPartId,
   markShelfBoardUserData,
   resolveShelfPartMaterial,
-} from '../features/shelf_part_identity.js';
+} from '../features/part_identity/api.js';
 import type {
   InteriorGroupLike,
   InteriorMaterialLike,

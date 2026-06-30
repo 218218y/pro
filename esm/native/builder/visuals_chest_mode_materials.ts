@@ -1,4 +1,4 @@
-import { isDrawerBoxPartId } from '../features/drawer_box_identity.js';
+import { isDrawerBoxPartId } from '../features/part_identity/api.js';
 import { getBaseLegColorHex, type BaseLegColor } from '../features/base_leg_support.js';
 
 import type {

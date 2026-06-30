@@ -6,7 +6,7 @@ import { buildSketchInternalDrawerOps } from '../esm/native/builder/render_inter
 import {
   SHELF_GROUP_PART_ID,
   createSketchExternalDrawerBraceShelfPartId,
-} from '../esm/native/features/shelf_part_identity.ts';
+} from '../esm/native/features/part_identity/api.ts';
 import { DRAWER_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
 
 class FakeVector3 {

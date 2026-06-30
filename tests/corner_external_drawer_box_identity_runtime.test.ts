@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { makeDrawerBoxPartId } from '../esm/native/features/drawer_box_identity.ts';
+import { makeDrawerBoxPartId } from '../esm/native/features/part_identity/api.ts';
 import { emitCornerWingExternalDrawers } from '../esm/native/builder/corner_wing_cell_interiors_storage.ts';
 
 class PositionStub {

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { applyMaterials } from '../esm/native/builder/materials_apply.ts';
-import { makeDrawerBoxPartId } from '../esm/native/features/drawer_box_identity.ts';
+import { makeDrawerBoxPartId } from '../esm/native/features/part_identity/api.ts';
 import { readPartColorEntry } from '../esm/native/builder/material_color_lookup.ts';
 
 function applyMaterialsFromState(App: any) {

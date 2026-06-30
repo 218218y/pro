@@ -9,7 +9,6 @@
     "door_style_overrides.js",
     "door_visual_map_lookup.js",
     "door_trim.js",
-    "drawer_box_identity.js",
     "finish_palette/api.js",
     "front_color_shelf_inheritance.js",
     "hex_cell/index.js",
@@ -21,10 +20,9 @@
     "modules_configuration/calc_module_structure.js",
     "modules_configuration/corner_cells_api.js",
     "modules_configuration/modules_config_api.js",
+    "part_identity/api.js",
     "platform_overhang_support.js",
     "project_config/api.js",
-    "removable_parts.js",
-    "shelf_part_identity.js",
     "shoe_drawer_base_constraint.js",
     "sketch_box_regular_external_drawers.js",
     "sketch_drawer_sizing.js",
@@ -41,7 +39,6 @@
     "door_style_overrides": ["door_style_overrides.js"],
     "door_visual_map_lookup": ["door_visual_map_lookup.js"],
     "door_trim": ["door_trim.js"],
-    "drawer_box_identity": ["drawer_box_identity.js"],
     "finish_palette": ["finish_palette/api.js"],
     "front_color_shelf_inheritance": ["front_color_shelf_inheritance.js"],
     "hex_cell": ["hex_cell/index.js"],
@@ -55,10 +52,9 @@
       "modules_configuration/corner_cells_api.js",
       "modules_configuration/modules_config_api.js"
     ],
+    "part_identity": ["part_identity/api.js"],
     "platform_overhang_support": ["platform_overhang_support.js"],
     "project_config": ["project_config/api.js"],
-    "removable_parts": ["removable_parts.js"],
-    "shelf_part_identity": ["shelf_part_identity.js"],
     "shoe_drawer_base_constraint": ["shoe_drawer_base_constraint.js"],
     "sketch_box_regular_external_drawers": ["sketch_box_regular_external_drawers.js"],
     "sketch_drawer_sizing": ["sketch_drawer_sizing.js"],
@@ -186,7 +182,7 @@
     },
     {
       "file": "esm/native/builder/core_carcass_shared.ts",
-      "entry": "removable_parts.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/builder/core_carcass_shared.ts",
@@ -246,7 +242,7 @@
     },
     {
       "file": "esm/native/builder/corner_connector_interior_special_apply.ts",
-      "entry": "shelf_part_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/builder/corner_geometry_plan.ts",
@@ -254,7 +250,7 @@
     },
     {
       "file": "esm/native/builder/corner_materials.ts",
-      "entry": "shelf_part_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/builder/corner_materials.ts",
@@ -314,7 +310,7 @@
     },
     {
       "file": "esm/native/builder/corner_wing_cell_interiors_shelves.ts",
-      "entry": "shelf_part_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/builder/corner_wing_cell_interiors_storage.ts",
@@ -330,11 +326,7 @@
     },
     {
       "file": "esm/native/builder/corner_wing_cell_interiors_storage.ts",
-      "entry": "drawer_box_identity.js"
-    },
-    {
-      "file": "esm/native/builder/corner_wing_cell_interiors_storage.ts",
-      "entry": "shelf_part_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/builder/corner_wing_extension_cells_config.ts",
@@ -370,11 +362,11 @@
     },
     {
       "file": "esm/native/builder/external_drawer_shelf.ts",
-      "entry": "shelf_part_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/builder/external_drawers_pipeline.ts",
-      "entry": "shelf_part_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/builder/handle_finish_runtime.ts",
@@ -386,7 +378,7 @@
     },
     {
       "file": "esm/native/builder/handles_apply_drawers.ts",
-      "entry": "drawer_box_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/builder/handles_apply_drawers.ts",
@@ -434,15 +426,11 @@
     },
     {
       "file": "esm/native/builder/material_color_lookup.ts",
-      "entry": "shelf_part_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/builder/material_resolver.ts",
-      "entry": "drawer_box_identity.js"
-    },
-    {
-      "file": "esm/native/builder/materials_apply_color_policy.ts",
-      "entry": "drawer_box_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/builder/materials_apply_color_policy.ts",
@@ -450,7 +438,7 @@
     },
     {
       "file": "esm/native/builder/materials_apply_color_policy.ts",
-      "entry": "shelf_part_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/builder/materials_apply_snapshot.ts",
@@ -510,7 +498,7 @@
     },
     {
       "file": "esm/native/builder/post_build_removed_parts.ts",
-      "entry": "removable_parts.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/builder/post_build_sketch_door_cuts_contracts.ts",
@@ -550,7 +538,7 @@
     },
     {
       "file": "esm/native/builder/removed_frame_side_brace_shelves.ts",
-      "entry": "removable_parts.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/builder/render_carcass_ops_base.ts",
@@ -586,11 +574,11 @@
     },
     {
       "file": "esm/native/builder/render_drawer_ops_external.ts",
-      "entry": "drawer_box_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/builder/render_drawer_ops_internal.ts",
-      "entry": "drawer_box_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/builder/render_drawer_ops_shared_readers.ts",
@@ -602,11 +590,11 @@
     },
     {
       "file": "esm/native/builder/render_interior_custom_ops_shelves.ts",
-      "entry": "shelf_part_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/builder/render_interior_preset_ops_shelves.ts",
-      "entry": "shelf_part_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/builder/render_interior_rod_clearance.ts",
@@ -634,11 +622,7 @@
     },
     {
       "file": "esm/native/builder/render_interior_sketch_boxes_contents_parts_shelves.ts",
-      "entry": "shelf_part_identity.js"
-    },
-    {
-      "file": "esm/native/builder/render_interior_sketch_boxes_contents_parts_shelves.ts",
-      "entry": "removable_parts.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_boxes_fronts_door_visual_routes.ts",
@@ -646,11 +630,11 @@
     },
     {
       "file": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_apply.ts",
-      "entry": "shelf_part_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_context.ts",
-      "entry": "drawer_box_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_context.ts",
@@ -658,7 +642,7 @@
     },
     {
       "file": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts",
-      "entry": "drawer_box_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts",
@@ -682,19 +666,19 @@
     },
     {
       "file": "esm/native/builder/render_interior_sketch_boxes_shell_frame.ts",
-      "entry": "removable_parts.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_drawers_external_apply.ts",
-      "entry": "shelf_part_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_drawers_external_context.ts",
-      "entry": "drawer_box_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_drawers_external_plan.ts",
-      "entry": "drawer_box_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_drawers_external_plan.ts",
@@ -726,7 +710,7 @@
     },
     {
       "file": "esm/native/builder/render_interior_sketch_internal_drawer_cassette.ts",
-      "entry": "shelf_part_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_internal_drawer_cassette.ts",
@@ -742,11 +726,11 @@
     },
     {
       "file": "esm/native/builder/render_interior_sketch_support_shelf_pins.ts",
-      "entry": "shelf_part_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_support_shelves.ts",
-      "entry": "shelf_part_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_visuals_adornments.ts",
@@ -794,7 +778,7 @@
     },
     {
       "file": "esm/native/builder/visuals_chest_mode_build.ts",
-      "entry": "drawer_box_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/builder/visuals_chest_mode_build.ts",
@@ -814,7 +798,7 @@
     },
     {
       "file": "esm/native/builder/visuals_chest_mode_materials.ts",
-      "entry": "drawer_box_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/builder/visuals_chest_mode_materials.ts",
@@ -1254,11 +1238,11 @@
     },
     {
       "file": "esm/native/services/canvas_picking_door_hover_targets_hit_scan.ts",
-      "entry": "drawer_box_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_door_hover_targets_match.ts",
-      "entry": "drawer_box_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_door_hover_targets_policy.ts",
@@ -1278,7 +1262,7 @@
     },
     {
       "file": "esm/native/services/canvas_picking_door_shared.ts",
-      "entry": "drawer_box_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_door_trim_click.ts",
@@ -1294,7 +1278,7 @@
     },
     {
       "file": "esm/native/services/canvas_picking_door_trim_targets.ts",
-      "entry": "drawer_box_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_door_trim_targets.ts",
@@ -1302,7 +1286,7 @@
     },
     {
       "file": "esm/native/services/canvas_picking_drawer_cross_family.ts",
-      "entry": "drawer_box_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_drawer_cross_family.ts",
@@ -1326,11 +1310,7 @@
     },
     {
       "file": "esm/native/services/canvas_picking_generic_paint_hover_preview.ts",
-      "entry": "drawer_box_identity.js"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_generic_paint_hover_preview.ts",
-      "entry": "shelf_part_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_generic_paint_hover_preview.ts",
@@ -1338,11 +1318,11 @@
     },
     {
       "file": "esm/native/services/canvas_picking_generic_paint_hover_preview_objects.ts",
-      "entry": "drawer_box_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_generic_paint_hover_target.ts",
-      "entry": "drawer_box_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_handle_assign_flow.ts",
@@ -1354,7 +1334,7 @@
     },
     {
       "file": "esm/native/services/canvas_picking_hover_flow_nonsplit_face.ts",
-      "entry": "drawer_box_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_hover_preview_modes_cell_dims_inputs.ts",
@@ -1510,11 +1490,11 @@
     },
     {
       "file": "esm/native/services/canvas_picking_removable_part_hover.ts",
-      "entry": "removable_parts.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_removable_part_remove_click.ts",
-      "entry": "removable_parts.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_removable_part_remove_constraints.ts",
@@ -1522,15 +1502,15 @@
     },
     {
       "file": "esm/native/services/canvas_picking_removable_part_remove_constraints.ts",
-      "entry": "removable_parts.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_shelf_hit_targets.ts",
-      "entry": "shelf_part_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_shelf_paint_proximity.ts",
-      "entry": "shelf_part_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_shoe_drawer_base_auto_none.ts",
@@ -1606,7 +1586,7 @@
     },
     {
       "file": "esm/native/services/canvas_picking_sketch_direct_hit_workflow_shelf.ts",
-      "entry": "shelf_part_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_sketch_free_boxes.ts",
@@ -1674,7 +1654,7 @@
     },
     {
       "file": "esm/native/services/canvas_picking_sketch_module_surface_preview_shelf.ts",
-      "entry": "shelf_part_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_special_paint_targets.ts",
@@ -1714,7 +1694,7 @@
     },
     {
       "file": "esm/native/services/viewer_measurement_tool.ts",
-      "entry": "shelf_part_identity.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/ui/export_canvas.ts",
@@ -1774,7 +1754,7 @@
     },
     {
       "file": "esm/native/ui/react/tabs/design_tab_controller_runtime.ts",
-      "entry": "removable_parts.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/ui/react/tabs/design_tab_multicolor_controller_runtime.ts",
@@ -1798,7 +1778,7 @@
     },
     {
       "file": "esm/native/ui/react/tabs/design_tab_view_state_runtime.ts",
-      "entry": "removable_parts.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/ui/react/tabs/interior_layout_door_trim_axis_panel.tsx",

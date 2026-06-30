@@ -2,7 +2,7 @@ import {
   isRemovedFrameSideOn,
   isRoundedFrameSideShelvesOn,
   type RemovableFrameSide,
-} from '../features/removable_parts.js';
+} from '../features/part_identity/api.js';
 import { readCanonicalPositiveIntegerText } from './build_flow_readers.js';
 
 export type RemovedFrameSideBraceInput = {

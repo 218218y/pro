@@ -11,7 +11,7 @@ import {
   readRemovableSketchBoxSideFromPartId,
   readSketchBoxRemovedSideShelfState,
   sketchBoxSideToPartId,
-} from '../esm/native/features/removable_parts.ts';
+} from '../esm/native/features/part_identity/api.ts';
 
 test('canvas removable non-door scope includes stack-aware frame sides and sketch-box side walls', () => {
   assert.equal(isCanvasRemovablePartId('body_left'), true);

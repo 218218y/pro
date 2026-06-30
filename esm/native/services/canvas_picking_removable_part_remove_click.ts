@@ -6,7 +6,7 @@ import {
   canonicalRemovablePartKey,
   readRemovableFrameSideFromPartId,
   readRemovableSketchBoxSideFromPartId,
-} from '../features/removable_parts.js';
+} from '../features/part_identity/api.js';
 import {
   createCanvasPickingDoorAuthoringRefreshGatedMeta,
   createCanvasPickingDoorAuthoringStructuralMeta,

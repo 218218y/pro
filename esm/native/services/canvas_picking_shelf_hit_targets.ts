@@ -1,4 +1,4 @@
-import { isShelfBoardPartId } from '../features/shelf_part_identity.js';
+import { isShelfBoardPartId } from '../features/part_identity/api.js';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
 
 export const SHELF_PICK_VERTICAL_HALO_MIN_M = 0.035;
