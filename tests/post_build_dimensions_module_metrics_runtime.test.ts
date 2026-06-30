@@ -5,7 +5,7 @@ import { derivePostBuildDimensionMetrics } from '../esm/native/builder/post_buil
 import { appendStackSplitDimensionLines } from '../esm/native/builder/post_build_dimensions_stack_split.ts';
 import { readPostBuildCornerDimensions } from '../esm/native/builder/post_build_dimensions_corner.ts';
 
-test('post-build corner dimensions use only canonical captured UI snapshot fields', () => {
+test('post-build corner dimensions use only the captured UI snapshot with canonical precedence', () => {
   const dimensions = readPostBuildCornerDimensions({
     uiSnapshot: {
       cornerSide: 'left',
@@ -17,7 +17,7 @@ test('post-build corner dimensions use only canonical captured UI snapshot field
       cornerCabinetOffsetXcm: 8,
       cornerCabinetOffsetZcm: -4,
       raw: {
-        cornerDoors: 9,
+        cornerConnectorEnabled: false,
         cornerWidth: 999,
       },
     },
@@ -26,8 +26,8 @@ test('post-build corner dimensions use only canonical captured UI snapshot field
   });
 
   assert.equal(dimensions.cornerSide, 'left');
-  assert.equal(dimensions.cornerWingDoorCount, 3);
-  assert.equal(dimensions.cornerConnectorActive, true);
+  assert.equal(dimensions.cornerDoorCount, 3);
+  assert.equal(dimensions.cornerConnectorEnabled, false);
   assert.equal(dimensions.cornerWingLenM, 1.5);
   assert.equal(dimensions.cornerWingHeightM, 2.4);
   assert.equal(dimensions.cornerWingDepthM, 0.7);
@@ -47,15 +47,17 @@ test('post-build corner dimensions reject string-encoded UI snapshot dimensions'
       cornerCabinetWallLenCm: '125',
       cornerCabinetOffsetXcm: '8',
       cornerCabinetOffsetZcm: '-4',
-      raw: {},
+      raw: {
+        cornerConnectorEnabled: false,
+      },
     },
     dimH: 2.1,
     dimD: 0.6,
   });
 
   assert.equal(dimensions.cornerSide, 'right');
-  assert.equal(dimensions.cornerWingDoorCount, 3);
-  assert.equal(dimensions.cornerConnectorActive, true);
+  assert.equal(dimensions.cornerDoorCount, 3);
+  assert.equal(dimensions.cornerConnectorEnabled, false);
   assert.equal(dimensions.cornerWingLenM, 1.2);
   assert.equal(dimensions.cornerWingHeightM, 2.1);
   assert.equal(dimensions.cornerWingDepthM, 0.6);
@@ -103,22 +105,24 @@ test('post-build dimension metrics preserve fixed width overrides and add stack-
   assert.equal(metrics.dimD, 0.7);
 });
 
-test('post-build dimension metrics do not coerce runtime module door counts from strings', () => {
+test('post-build dimension metrics reject string-encoded runtime doors without shifting module widths', () => {
   const metrics = derivePostBuildDimensionMetrics({
     ctx: {
       dims: {
-        defaultH: 2.1,
-        defaultD: 0.58,
+        heightCm: '240',
+        depthCm: '62',
+        defaultH: '2.4',
+        defaultD: '0.62',
       },
       layout: {
-        modules: [{ doors: '3' }, { doors: 1 }, { doors: 1 }],
-        moduleCfgList: [{}, { specialDims: { widthCm: 50, baseWidthCm: 60 } }, {}],
+        modules: [{ doors: 1 }, { doors: '2' }, { doors: 1 }],
+        moduleCfgList: [{ specialDims: { widthCm: 60, baseWidthCm: 70 } }, {}, {}],
       },
     },
     App: {},
     H: 2.1,
     D: 0.58,
-    totalW: 2,
+    totalW: 1.8,
     stackSplitActive: false,
     splitBottomHeightCm: 0,
     splitBottomDepthCm: 0,
@@ -126,8 +130,10 @@ test('post-build dimension metrics do not coerce runtime module door counts from
 
   assert.deepEqual(
     metrics.moduleWidthsCm?.map(value => Math.round(value)),
-    [75, 50, 75]
+    [60, 60, 60]
   );
+  assert.equal(metrics.dimH, 2.1);
+  assert.equal(metrics.dimD, 0.58);
 });
 
 test('stack-split helper appends two dimension lines on the free side of right-corner wardrobes', () => {

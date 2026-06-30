@@ -164,3 +164,22 @@ test('corner connector door shared wrappers assemble context/state and normalize
   const clamped = clampCornerConnectorHandleAbsY(ctx!, 'corner_pent_door_1_top', 5, 0.5, 0.8);
   assert.equal(clamped, 0.79);
 });
+
+test('corner connector custom split cuts ignore string-encoded runtime normalized positions', () => {
+  const params = createFlowParams();
+  params.ctx.App.maps.getMap = (name: string) => {
+    if (name === 'splitDoorsMap') return { splitpos_lower_corner_pent_door_1: ['0.25', 0.75] };
+    return {};
+  };
+
+  const ctx = createCornerConnectorDoorContext(params);
+  const state = createCornerConnectorDoorState(ctx!, 1);
+  const topEdge = ctx!.effectiveTopLimit - CORNER_WING_DIMENSIONS.connector.doorTopClearanceM;
+  const doorHeight = topEdge - ctx!.doorBottomY;
+  const cuts = readCornerConnectorCustomSplitCutsY(ctx!, state);
+
+  assert.deepEqual(
+    cuts.map(v => Number(v.toFixed(3))),
+    [Number((ctx!.doorBottomY + 0.75 * doorHeight).toFixed(3))]
+  );
+});

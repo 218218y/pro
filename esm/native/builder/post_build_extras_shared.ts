@@ -4,6 +4,7 @@
 // post-build owners can stay focused on dimensions / sketch overlays / finalize flows.
 
 import { reportError, shouldFailFast } from '../runtime/api.js';
+import { readGeometryRuntimeNumber } from './geometry_runtime_contracts.js';
 
 import type {
   AppContainer,
@@ -91,8 +92,7 @@ export function parseNum(v: unknown): number {
     const n = Number(t);
     return Number.isFinite(n) ? n : NaN;
   }
-  const n = Number(v);
-  return Number.isFinite(n) ? n : NaN;
+  return NaN;
 }
 
 export function asRecord(v: unknown): ValueRecord | null {
@@ -182,7 +182,7 @@ export function readBoundsAxis(
 ): number {
   const point = edge === 'min' ? box?.min : box?.max;
   const raw = point && typeof point === 'object' ? Reflect.get(point, axis) : undefined;
-  return Number(raw);
+  return readGeometryRuntimeNumber(raw) ?? NaN;
 }
 
 export function readCtxSection<T extends ValueRecord>(value: T | null | undefined): T | null {

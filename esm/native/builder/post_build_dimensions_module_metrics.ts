@@ -8,6 +8,15 @@ import {
 import type { PostBuildDimensionMetrics } from './post_build_dimensions_shared.js';
 import { asArray, asRecord, isRecord, readKey, reportPostBuildSoft } from './post_build_extras_shared.js';
 
+function readPostBuildMetricNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function readPostBuildMetricPositiveNumber(value: unknown): number | null {
+  const n = readPostBuildMetricNumber(value);
+  return n != null && n > 0 ? n : null;
+}
+
 export function derivePostBuildDimensionMetrics(args: {
   ctx: unknown;
   App: AppContainer;
@@ -26,14 +35,9 @@ export function derivePostBuildDimensionMetrics(args: {
   let moduleHeightsAllManual = false;
   let moduleDepthsAllManual = false;
 
-  const overallHeightCm =
-    ctx && isRecord(ctx) && isRecord(ctx.dims) && typeof ctx.dims.heightCm === 'number'
-      ? ctx.dims.heightCm
-      : NaN;
-  const overallDepthCm =
-    ctx && isRecord(ctx) && isRecord(ctx.dims) && typeof ctx.dims.depthCm === 'number'
-      ? ctx.dims.depthCm
-      : NaN;
+  const dimsRuntime = ctx && isRecord(ctx) && isRecord(ctx.dims) ? ctx.dims : null;
+  const overallHeightCm = readPostBuildMetricNumber(dimsRuntime?.heightCm) ?? NaN;
+  const overallDepthCm = readPostBuildMetricNumber(dimsRuntime?.depthCm) ?? NaN;
 
   let dimH =
     stackSplitActive && Number.isFinite(overallHeightCm) && overallHeightCm > 0
@@ -65,8 +69,7 @@ export function derivePostBuildDimensionMetrics(args: {
     const doorsArr: number[] = [];
     for (let i = 0; i < mods.length; i++) {
       const m = asRecord(mods[i]);
-      const rawDoors = m ? readKey(m, 'doors') : 1;
-      const d = typeof rawDoors === 'number' && Number.isFinite(rawDoors) ? Math.max(1, rawDoors) : 1;
+      const d = Math.max(1, Math.trunc(readPostBuildMetricPositiveNumber(m ? readKey(m, 'doors') : 1) ?? 1));
       doorsArr.push(d);
       sumDoors += d;
     }
@@ -113,10 +116,7 @@ export function derivePostBuildDimensionMetrics(args: {
     }
 
     let sumSegCm = 0;
-    for (let i = 0; i < segWidthsCm.length; i++) {
-      const width = segWidthsCm[i];
-      if (Number.isFinite(width)) sumSegCm += width;
-    }
+    for (let i = 0; i < segWidthsCm.length; i++) sumSegCm += readPostBuildMetricNumber(segWidthsCm[i]) ?? 0;
     const deltaCm = totalWcm - sumSegCm;
 
     if (mods.length > 0 && Number.isFinite(deltaCm) && Math.abs(deltaCm) > 1e-6) {
@@ -126,8 +126,7 @@ export function derivePostBuildDimensionMetrics(args: {
       const adjustSegments = (indices: number[]) => {
         for (let k = 0; k < indices.length && Math.abs(rem) > 1e-6; k++) {
           const i = indices[k];
-          const width = segWidthsCm[i];
-          const cur = Number.isFinite(width) ? width : 0;
+          const cur = readPostBuildMetricNumber(segWidthsCm[i]) ?? 0;
           if (rem > 0) {
             segWidthsCm[i] = cur + rem;
             rem = 0;
@@ -157,11 +156,11 @@ export function derivePostBuildDimensionMetrics(args: {
     }
 
     const dimsRec = ctx && isRecord(ctx) && isRecord(ctx.dims) ? ctx.dims : null;
-    const rawDefaultH = dimsRec ? readKey(dimsRec, 'defaultH') : undefined;
-    const defaultH = typeof rawDefaultH === 'number' ? rawDefaultH : typeof H === 'number' ? H : 0;
+    const defaultH =
+      readPostBuildMetricNumber(readKey(dimsRec, 'defaultH')) ?? (typeof H === 'number' ? H : 0);
 
-    const rawDefaultD = dimsRec ? readKey(dimsRec, 'defaultD') : undefined;
-    const defaultD = typeof rawDefaultD === 'number' ? rawDefaultD : typeof D === 'number' ? D : 0;
+    const defaultD =
+      readPostBuildMetricNumber(readKey(dimsRec, 'defaultD')) ?? (typeof D === 'number' ? D : 0);
 
     const baseTopHcm = Number.isFinite(defaultH) ? defaultH * 100 : 0;
     const baseTopDcm = Number.isFinite(defaultD) ? defaultD * 100 : 0;

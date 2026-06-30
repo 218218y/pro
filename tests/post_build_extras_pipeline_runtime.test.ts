@@ -187,6 +187,39 @@ test('post-build extras: corner builds reject a missing config snapshot before i
   assert.equal(buildCalls, 0);
 });
 
+test('post-build extras: corner builder rejects string-encoded BuildContext runtime dimensions', () => {
+  let buildCalls = 0;
+  const App: any = {};
+
+  assert.throws(
+    () =>
+      applyPostBuildExtras(
+        createPostBuildContext(App, {
+          cfg: { showDimensions: false, cornerConfiguration: { layout: 'shelves' } },
+          flags: { isCornerMode: true, globalClickMode: false },
+          dims: {
+            doorsCount: 2,
+            totalW: '1.8',
+            cabinetBodyHeight: 2.1,
+            D: 0.6,
+            woodThick: 0.018,
+            shelfThick: 0.018,
+            startY: 0,
+          },
+          materials: {},
+          fns: {
+            buildCornerWing() {
+              buildCalls += 1;
+            },
+          },
+        })
+      ),
+    /corner\.totalW must be a finite runtime number/
+  );
+
+  assert.equal(buildCalls, 0);
+});
+
 test('post-build extras: corner builder receives one canonical UI/config/mode/render snapshot', () => {
   let receivedMeta: any = null;
   const ui = { cornerWidth: 175, cornerSide: 'left' };

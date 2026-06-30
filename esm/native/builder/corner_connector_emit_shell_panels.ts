@@ -9,6 +9,11 @@ import type { CornerConnectorShellMetrics } from './corner_connector_emit_shell_
 
 type BackPanelShrink = boolean | number;
 
+function resolveBackPanelInset(value: BackPanelShrink, junctionInset: number): number {
+  if (typeof value === 'number') return Number.isFinite(value) ? Math.max(0, value) : 0;
+  return value ? junctionInset : 0;
+}
+
 export function createCornerConnectorEdgePanelAdder(
   setup: CornerConnectorSetup,
   panelThick: number,
@@ -103,10 +108,8 @@ function appendCornerConnectorBackEdgePanel(
     ctx: { startY, wingH, __stackKey },
   } = setup;
   const junctionInset = CORNER_WING_DIMENSIONS.connector.shellBackJunctionInsetM;
-  const startInset =
-    typeof shrinkStart === 'number' ? Math.max(0, Number(shrinkStart)) : shrinkStart ? junctionInset : 0;
-  const endInset =
-    typeof shrinkEnd === 'number' ? Math.max(0, Number(shrinkEnd)) : shrinkEnd ? junctionInset : 0;
+  const startInset = resolveBackPanelInset(shrinkStart, junctionInset);
+  const endInset = resolveBackPanelInset(shrinkEnd, junctionInset);
 
   let ax = a.x;
   let az = a.z;

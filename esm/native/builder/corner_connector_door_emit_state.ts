@@ -1,4 +1,5 @@
 import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { readGeometryRuntimeNumber } from './geometry_runtime_contracts.js';
 import type {
   CornerConnectorDoorContext,
   CornerConnectorDoorState,
@@ -47,8 +48,8 @@ export function readCornerConnectorCustomSplitCutsYInternal(
     const padAbs = CORNER_WING_DIMENSIONS.connector.splitCutMinGapM;
     const abs: number[] = [];
     for (let i = 0; i < norms.length; i++) {
-      const rawNorm = Number(norms[i]);
-      if (!Number.isFinite(rawNorm)) continue;
+      const rawNorm = readGeometryRuntimeNumber(norms[i]);
+      if (rawNorm == null) continue;
       const normalized = Math.max(0, Math.min(1, rawNorm));
       let y = ctx.doorBottomY + normalized * height;
       y = Math.max(ctx.doorBottomY + padAbs, Math.min(topEdge - padAbs, y));

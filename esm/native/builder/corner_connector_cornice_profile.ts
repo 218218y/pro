@@ -10,6 +10,7 @@ import {
   resolveCornerConnectorCorniceSideReturns,
   resolveCornerConnectorCorniceTopY,
 } from './corner_connector_cornice_shared.js';
+import { readGeometryRuntimeNumber } from './geometry_runtime_contracts.js';
 
 export function applyCornerConnectorProfileCornice(args: {
   ctx: CornerConnectorCorniceCtx;
@@ -253,9 +254,10 @@ export function applyCornerConnectorProfileCornice(args: {
       const baseSealEps = corniceProfile.baseSealEpsilonM;
 
       for (let vi = 0; vi < pos.count; vi++) {
-        const vx = Number(pos.getX(vi));
-        const vy = Number(pos.getY(vi));
-        const vz = Number(pos.getZ(vi));
+        const vx = readGeometryRuntimeNumber(pos.getX(vi));
+        const vy = readGeometryRuntimeNumber(pos.getY(vi));
+        const vz = readGeometryRuntimeNumber(pos.getZ(vi));
+        if (vx == null || vy == null || vz == null) continue;
         const t = Math.min(1, Math.max(0, 1 - vx / xOuter)); // clamp; negative x doesn't over-trim
 
         const sealBase = Number.isFinite(vy) && vy <= baseBandY && Number.isFinite(vx) && vx <= 0;

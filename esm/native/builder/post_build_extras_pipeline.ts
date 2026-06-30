@@ -79,6 +79,18 @@ function reportPostBuildRequiredDependencyMissing(App: unknown, op: string, mess
   return error;
 }
 
+function readPostBuildRuntimeNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function requirePostBuildRuntimeNumber(value: unknown, name: string): number {
+  const n = readPostBuildRuntimeNumber(value);
+  if (n == null) {
+    throw new Error(`[builder/post_build_extras] ${name} must be a finite runtime number`);
+  }
+  return n;
+}
+
 export function applyPostBuildExtras(input: BuildContextLike) {
   if (!isBuildContext(input)) {
     throw new Error('[builder/post_build_extras] BuildContext required');
@@ -148,8 +160,7 @@ export function applyPostBuildExtras(input: BuildContextLike) {
   const splitBottomHeightCm = __stackSplit.lowerHeightCm;
   const splitBottomDepthCm = __stackSplit.lowerDepthCm;
   const __stackKey = getStackKeyFromFlags(ctx.flags);
-  const doorsCountNow =
-    ctx && ctx.dims && typeof ctx.dims.doorsCount === 'number' ? Number(ctx.dims.doorsCount) : NaN;
+  const doorsCountNow = readPostBuildRuntimeNumber(ctx?.dims?.doorsCount) ?? NaN;
   const noMainWardrobe = !!(
     cfg &&
     cfg.wardrobeType !== 'sliding' &&
@@ -189,7 +200,12 @@ export function applyPostBuildExtras(input: BuildContextLike) {
       );
     }
     const cornerCfgSnapshot = requireCornerConfigSnapshot(cfg);
-    const resolvedShelfThick = Number(shelfThick);
+    const cornerTotalW = requirePostBuildRuntimeNumber(totalW, 'corner.totalW');
+    const cornerBodyHeight = requirePostBuildRuntimeNumber(cabinetBodyHeight, 'corner.cabinetBodyHeight');
+    const cornerDepth = requirePostBuildRuntimeNumber(D, 'corner.D');
+    const cornerWoodThick = requirePostBuildRuntimeNumber(woodThick, 'corner.woodThick');
+    const cornerStartY = requirePostBuildRuntimeNumber(startY, 'corner.startY');
+    const resolvedShelfThick = readPostBuildRuntimeNumber(shelfThick) ?? cornerWoodThick;
     const cornerBuildSnapshot = {
       ui: ctx.ui || {},
       cfg: cornerCfgSnapshot,
@@ -229,11 +245,11 @@ export function applyPostBuildExtras(input: BuildContextLike) {
       : null;
     if (__cornerWingMeta) {
       buildCornerWing(
-        Number(totalW),
-        Number(cabinetBodyHeight),
-        Number(D),
-        Number(woodThick),
-        Number(startY),
+        cornerTotalW,
+        cornerBodyHeight,
+        cornerDepth,
+        cornerWoodThick,
+        cornerStartY,
         {
           body: bodyMat,
           front: globalFrontMat,
@@ -244,11 +260,11 @@ export function applyPostBuildExtras(input: BuildContextLike) {
       );
     } else {
       buildCornerWing(
-        Number(totalW),
-        Number(cabinetBodyHeight),
-        Number(D),
-        Number(woodThick),
-        Number(startY),
+        cornerTotalW,
+        cornerBodyHeight,
+        cornerDepth,
+        cornerWoodThick,
+        cornerStartY,
         {
           body: bodyMat,
           front: globalFrontMat,
