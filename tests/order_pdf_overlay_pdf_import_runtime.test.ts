@@ -169,7 +169,7 @@ test('order pdf pdf-import detects trailing non-form pages and keeps extracted d
   assert.match(next.notesHtml, /הערה/);
 });
 
-test('order pdf pdf-import extracts fallback field names through the canonical document-field runtime', async () => {
+test('order pdf pdf-import extracts generated field names through the canonical document-field runtime', async () => {
   const doc = await PDFDocument.create();
   const page = doc.addPage([600, 840]);
   const form = doc.getForm();

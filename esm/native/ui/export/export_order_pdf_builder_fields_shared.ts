@@ -19,7 +19,7 @@ export type OrderPdfBuilderFieldTextOps = {
   resolveFieldFontSize: (spec: OrderPdfFieldSpecLike) => number;
   getOrCreateTextField: (
     templateFieldName: string,
-    fallbackFieldName: string,
+    generatedFieldName: string,
     box: PdfRectLike,
     fontSize: number
   ) => PdfTextFieldLike | null;

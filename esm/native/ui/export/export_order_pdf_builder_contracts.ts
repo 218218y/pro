@@ -116,7 +116,7 @@ export type OrderPdfBuilderRuntimeLike = {
 
 export type OrderPdfFieldSpecLike = {
   templateFieldName: string;
-  fallbackFieldName: string;
+  generatedFieldName: string;
   key: string;
   value: string;
   box: PdfRectLike;

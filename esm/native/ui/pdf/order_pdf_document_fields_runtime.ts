@@ -50,7 +50,7 @@ function buildOrderPdfScalarFieldValues(
 
 export function getOrderPdfFieldReadNames(key: OrderPdfFieldKey): readonly string[] {
   const spec = ORDER_PDF_FIELD_SPECS[key];
-  return Object.freeze([spec.templateFieldName, spec.fallbackFieldName]);
+  return Object.freeze([spec.templateFieldName, spec.generatedFieldName]);
 }
 
 export function readOrderPdfScalarFieldValues(

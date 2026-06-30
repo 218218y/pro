@@ -51,7 +51,7 @@ export function createOrderPdfBuilderFieldTextOps(
 
   const getOrCreateTextField = (
     templateFieldName: string,
-    fallbackFieldName: string,
+    generatedFieldName: string,
     box: PdfRectLike,
     fontSize: number
   ): PdfTextFieldLike | null => {
@@ -65,7 +65,7 @@ export function createOrderPdfBuilderFieldTextOps(
 
     if (!field) {
       try {
-        field = form.createTextField(fallbackFieldName);
+        field = form.createTextField(generatedFieldName);
         field.addToPage(firstPage, {
           x: box.x,
           y: box.y,
@@ -77,7 +77,7 @@ export function createOrderPdfBuilderFieldTextOps(
           borderWidth: 0,
         });
       } catch (e) {
-        reportOrderPdfBuilderFieldError(ctx, 'buildOrderPdfInteractive.setFieldText.createSecondaryField', e);
+        reportOrderPdfBuilderFieldError(ctx, 'buildOrderPdfInteractive.setFieldText.createGeneratedField', e);
         field = null;
       }
     }
@@ -87,7 +87,7 @@ export function createOrderPdfBuilderFieldTextOps(
 
   const setFieldText = (spec: OrderPdfFieldSpecLike): void => {
     const fontSize = resolveFieldFontSize(spec);
-    const field = getOrCreateTextField(spec.templateFieldName, spec.fallbackFieldName, spec.box, fontSize);
+    const field = getOrCreateTextField(spec.templateFieldName, spec.generatedFieldName, spec.box, fontSize);
     if (!field) return;
     acrobatOps.configureFieldForAcrobat(field, fontSize, spec, 'buildOrderPdfInteractive.setFieldText');
     acrobatOps.writeFieldText(field, spec.value, 'buildOrderPdfInteractive.setFieldText');

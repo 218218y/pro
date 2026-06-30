@@ -38,7 +38,7 @@ function setPrimaryDocumentFields(input: {
   for (const spec of listOrderPdfFieldSpecs()) {
     fieldOps.setFieldText({
       templateFieldName: spec.templateFieldName,
-      fallbackFieldName: spec.fallbackFieldName,
+      generatedFieldName: spec.generatedFieldName,
       key: spec.key,
       value: valueByKey[spec.key],
       box: spec.templateBox,

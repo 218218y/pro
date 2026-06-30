@@ -24,6 +24,8 @@ test('[order-pdf] canonical field specs keep overlay/template/image mappings ali
   );
 
   for (const spec of specs) {
+    assert.equal(Object.hasOwn(spec, 'fallbackFieldName'), false);
+    assert.match(spec.generatedFieldName, /^wp_/);
     assert.equal(spec.templateBox.x, spec.overlayRect.x);
     assert.equal(spec.templateBox.y, ORDER_PDF_TEMPLATE_PAGE_HEIGHT - spec.overlayRect.top);
     assert.equal(spec.templateBox.w, spec.overlayRect.w);

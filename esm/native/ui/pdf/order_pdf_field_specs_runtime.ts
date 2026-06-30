@@ -13,7 +13,7 @@ export type OrderPdfFieldSpec = {
   key: OrderPdfFieldKey;
   imageKey: OrderPdfImageFieldKey;
   templateFieldName: string;
-  fallbackFieldName: string;
+  generatedFieldName: string;
   overlayRect: OrderPdfOverlayFieldRectLike;
   templateBox: OrderPdfTemplateBoxLike;
   dir: 'rtl' | 'ltr';
@@ -72,7 +72,7 @@ export const ORDER_PDF_FIELD_SPECS: Readonly<Record<OrderPdfFieldKey, OrderPdfFi
     key: 'orderNumber',
     imageKey: 'orderNo',
     templateFieldName: 'מלל1',
-    fallbackFieldName: 'wp_order_number',
+    generatedFieldName: 'wp_order_number',
     overlayRect: { x: 392.202, top: 181.709, w: 91.877, h: 17.288 },
     dir: 'ltr',
     align: 'right',
@@ -82,7 +82,7 @@ export const ORDER_PDF_FIELD_SPECS: Readonly<Record<OrderPdfFieldKey, OrderPdfFi
     key: 'orderDate',
     imageKey: 'date',
     templateFieldName: '0',
-    fallbackFieldName: 'wp_order_date',
+    generatedFieldName: 'wp_order_date',
     overlayRect: { x: 65.0322, top: 178.039, w: 102.109, h: 16.581 },
     dir: 'ltr',
     align: 'left',
@@ -92,7 +92,7 @@ export const ORDER_PDF_FIELD_SPECS: Readonly<Record<OrderPdfFieldKey, OrderPdfFi
     key: 'projectName',
     imageKey: 'name',
     templateFieldName: '1',
-    fallbackFieldName: 'wp_project_name',
+    generatedFieldName: 'wp_project_name',
     overlayRect: { x: 394.872, top: 238.89, w: 125.672, h: 17.726 },
     dir: 'rtl',
     align: 'right',
@@ -102,7 +102,7 @@ export const ORDER_PDF_FIELD_SPECS: Readonly<Record<OrderPdfFieldKey, OrderPdfFi
     key: 'deliveryAddress',
     imageKey: 'address',
     templateFieldName: '2',
-    fallbackFieldName: 'wp_delivery_address',
+    generatedFieldName: 'wp_delivery_address',
     overlayRect: { x: 26.1378, top: 239.128, w: 229.745, h: 18.061 },
     dir: 'rtl',
     align: 'right',
@@ -112,7 +112,7 @@ export const ORDER_PDF_FIELD_SPECS: Readonly<Record<OrderPdfFieldKey, OrderPdfFi
     key: 'phone',
     imageKey: 'phone',
     templateFieldName: '3',
-    fallbackFieldName: 'wp_phone',
+    generatedFieldName: 'wp_phone',
     overlayRect: { x: 377.235, top: 271.985, w: 125.673, h: 16.581 },
     dir: 'ltr',
     align: 'right',
@@ -122,7 +122,7 @@ export const ORDER_PDF_FIELD_SPECS: Readonly<Record<OrderPdfFieldKey, OrderPdfFi
     key: 'mobile',
     imageKey: 'mobile',
     templateFieldName: '4',
-    fallbackFieldName: 'wp_mobile',
+    generatedFieldName: 'wp_mobile',
     overlayRect: { x: 201.701, top: 271.918, w: 125.672, h: 16.582 },
     dir: 'ltr',
     align: 'right',
@@ -132,7 +132,7 @@ export const ORDER_PDF_FIELD_SPECS: Readonly<Record<OrderPdfFieldKey, OrderPdfFi
     key: 'details',
     imageKey: 'details',
     templateFieldName: '5',
-    fallbackFieldName: 'wp_order_details',
+    generatedFieldName: 'wp_order_details',
     overlayRect: { x: 32.2911, top: 589.966, w: 514.911, h: 246.11 },
     dir: 'rtl',
     align: 'right',
@@ -142,7 +142,7 @@ export const ORDER_PDF_FIELD_SPECS: Readonly<Record<OrderPdfFieldKey, OrderPdfFi
     key: 'notes',
     imageKey: 'notes',
     templateFieldName: '6',
-    fallbackFieldName: 'wp_notes',
+    generatedFieldName: 'wp_notes',
     overlayRect: { x: 30.5456, top: 709.53, w: 516.656, h: 93.382 },
     dir: 'rtl',
     align: 'right',
