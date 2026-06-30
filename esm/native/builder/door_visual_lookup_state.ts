@@ -1,8 +1,1 @@
-export {
-  buildDoorVisualLookupKeys,
-  readDoorVisualMapEntry,
-  readDoorVisualMapValue,
-  readDoorVisualTextValue,
-  readDoorVisualMirrorLayout,
-  type DoorVisualMapEntry,
-} from '../features/door_authoring/api.js';
+export { readDoorVisualMapValue, readDoorVisualMirrorLayout } from '../features/door_authoring/api.js';

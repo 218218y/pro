@@ -26,10 +26,7 @@ import {
   DEFAULT_BASE_LEG_HEIGHT_CM,
   DEFAULT_TAPERED_BASE_LEG_WIDTH_CM,
 } from '../esm/native/features/base_leg_support.ts';
-import {
-  DEFAULT_DOOR_TRIM_CROSS_SIZE_CM,
-  DEFAULT_DOOR_TRIM_THICKNESS_M,
-} from '../esm/native/features/door_authoring/api.ts';
+import { DEFAULT_DOOR_TRIM_CROSS_SIZE_CM } from '../esm/native/features/door_authoring/api.ts';
 import {
   DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM,
   DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M,
@@ -64,7 +61,6 @@ test('wardrobe default tokens preserve hinged and sliding business defaults', ()
 test('feature facades read physical dimensions from the shared token source', () => {
   assert.equal(DEFAULT_BASE_LEG_HEIGHT_CM, BASE_LEG_DIMENSIONS.defaults.heightCm);
   assert.equal(DEFAULT_TAPERED_BASE_LEG_WIDTH_CM, BASE_LEG_DIMENSIONS.defaults.taperedWidthCm);
-  assert.equal(DEFAULT_DOOR_TRIM_THICKNESS_M, DOOR_TRIM_DIMENSIONS.defaults.thicknessM);
   assert.equal(DEFAULT_DOOR_TRIM_CROSS_SIZE_CM, DOOR_TRIM_DIMENSIONS.defaults.crossSizeCm);
   assert.equal(DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM, DRAWER_DIMENSIONS.sketch.externalDefaultHeightCm);
   assert.equal(SKETCH_EXTERNAL_DRAWER_COUNT_MAX, DRAWER_DIMENSIONS.sketch.externalCountMax);

@@ -17,6 +17,29 @@ function runNodeScript(script, args = []) {
   );
 }
 
+function compareCodePoints(left, right) {
+  return left < right ? -1 : left > right ? 1 : 0;
+}
+
+function extractNamedExportSymbols(source) {
+  const symbols = [];
+  const exportRe = /export\s+(?:type\s+)?\{([^}]+)\}\s+from\s+['"][^'"]+['"]/g;
+  for (const match of source.matchAll(exportRe)) {
+    const body = match[1];
+    for (const rawPart of body.split(',')) {
+      const part = rawPart.trim();
+      if (!part) continue;
+      const exportedName = part
+        .replace(/^type\s+/, '')
+        .split(/\s+as\s+/)
+        .pop()
+        .trim();
+      if (exportedName) symbols.push(exportedName);
+    }
+  }
+  return symbols.sort(compareCodePoints);
+}
+
 test('feature imports outside features use only the public manifest surface', () => {
   runNodeScript('tools/wp_features_public_api_contract.mjs');
 });
@@ -55,6 +78,80 @@ test('features public API manifest exposes canonical facades instead of private 
   assert.equal(entries.has('door_trim.js'), false);
   assert.equal(entries.has('door_visual_map_lookup.js'), false);
   assert.equal(entries.has('mirror_layout.js'), false);
+});
+
+test('door authoring facade exposes only audited public symbols', () => {
+  const api = readSourceText('esm/native/features/door_authoring/api.ts');
+  const symbols = extractNamedExportSymbols(api);
+
+  assert.deepEqual(symbols, [
+    'DEFAULT_DOOR_TRIM_CROSS_SIZE_CM',
+    'DEFAULT_DOOR_TRIM_DEPTH_M',
+    'DEFAULT_FACE_SIGN',
+    'DoorStyleOverrideValue',
+    'DoorTrimSurfacePlane',
+    'MAX_DOOR_TRIM_CROSS_SIZE_CM',
+    'MAX_DOOR_TRIM_CUSTOM_CM',
+    'MIN_DOOR_TRIM_CROSS_SIZE_CM',
+    'MIN_DOOR_TRIM_CUSTOM_CM',
+    'buildDoorTrimCenterFromLocal',
+    'buildDoorTrimSurfaceUserData',
+    'buildDoorVisualLookupKeys',
+    'buildMirrorLayoutFromHit',
+    'buildSnappedDoorTrimCenterFromLocal',
+    'buildSnappedMirrorCenterFromHit',
+    'cloneMirrorLayoutList',
+    'createDoorTrimEntry',
+    'encodeDoorStyleOverridePaintToken',
+    'encodeGlassFrameStylePaintToken',
+    'findDoorTrimMatchInRect',
+    'findMirrorLayoutMatchInRect',
+    'hasAnyDoorVisualSegmentMapEntry',
+    'hasMirrorSurfaceOnFace',
+    'isCabinetBodyDoorTrimSurfacePartId',
+    'isDoorStyleOverridePaintToken',
+    'isDoorStyleOverrideValue',
+    'isDoorVisualSegmentPartId',
+    'isGlassPaintSelection',
+    'isRemoveDoorModeFromSnapshot',
+    'mapDoorTrimSurfaceLocalPoint',
+    'mapDoorTrimSurfaceLogicalToLocalPoint',
+    'mirrorLayoutListEquals',
+    'normalizeDoorStyleOverrideValue',
+    'normalizeDoorTrimAxis',
+    'normalizeDoorTrimColor',
+    'normalizeDoorTrimSpan',
+    'parseDoorStyleOverridePaintToken',
+    'readDoorStyleMap',
+    'readDoorTrimList',
+    'readDoorTrimListForPart',
+    'readDoorTrimMap',
+    'readDoorTrimSurfaceFaceCoordFromUserData',
+    'readDoorTrimSurfaceFaceSignFromUserData',
+    'readDoorTrimSurfacePlaneFromUserData',
+    'readDoorVisualMapEntry',
+    'readDoorVisualMapValue',
+    'readDoorVisualMirrorLayout',
+    'readDoorVisualPrefixedMapEntry',
+    'readDoorVisualPrefixedOwnMapEntry',
+    'readDoorVisualSegmentBasePartId',
+    'readMirrorLayoutFaceSign',
+    'readMirrorLayoutList',
+    'readMirrorLayoutListForPart',
+    'readMirrorLayoutMap',
+    'resolveCabinetBodyDoorTrimSurfaceInfo',
+    'resolveDoorStyleOverrideValue',
+    'resolveDoorTrimPlacement',
+    'resolveDoorTrimPlacementAvoidingMirror',
+    'resolveEffectiveDoorStyle',
+    'resolveGlassFrameStylePaintSelection',
+    'resolveMirrorPlacementInRect',
+    'resolveMirrorPlacementListInRect',
+    'resolveRemoveDoorsEnabledFromSnapshots',
+    'stripDoorVisualSurfaceSuffix',
+    'toDoorStyleOverrideMapKey',
+  ]);
+  assert.doesNotMatch(api, /export\s+\*/);
 });
 
 test('features public API reports use platform-independent ordering', () => {
