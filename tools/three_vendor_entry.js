@@ -17,8 +17,10 @@
 // Core math / types
 import { Vector2 } from 'three/src/math/Vector2.js';
 import { Vector3 } from 'three/src/math/Vector3.js';
+import { Vector4 } from 'three/src/math/Vector4.js';
 import { Color } from 'three/src/math/Color.js';
 import { Matrix4 } from 'three/src/math/Matrix4.js';
+import { Plane } from 'three/src/math/Plane.js';
 import { Quaternion } from 'three/src/math/Quaternion.js';
 import { Box3 } from 'three/src/math/Box3.js';
 
@@ -38,12 +40,14 @@ import { Raycaster } from 'three/src/core/Raycaster.js';
 // Render targets / renderer
 import { WebGLRenderer } from 'three/src/renderers/WebGLRenderer.js';
 import { WebGLCubeRenderTarget } from 'three/src/renderers/WebGLCubeRenderTarget.js';
+import { WebGLRenderTarget } from 'three/src/renderers/WebGLRenderTarget.js';
 
 // Materials
 import { MeshStandardMaterial } from 'three/src/materials/MeshStandardMaterial.js';
 import { MeshBasicMaterial } from 'three/src/materials/MeshBasicMaterial.js';
 import { LineBasicMaterial } from 'three/src/materials/LineBasicMaterial.js';
 import { SpriteMaterial } from 'three/src/materials/SpriteMaterial.js';
+import { ShaderMaterial } from 'three/src/materials/ShaderMaterial.js';
 
 // Textures
 import { Texture } from 'three/src/textures/Texture.js';
@@ -98,8 +102,10 @@ export const THREE = {
   // Core math / types
   Vector2,
   Vector3,
+  Vector4,
   Color,
   Matrix4,
+  Plane,
   Quaternion,
   Box3,
 
@@ -119,12 +125,14 @@ export const THREE = {
   // Renderer / targets
   WebGLRenderer,
   WebGLCubeRenderTarget,
+  WebGLRenderTarget,
 
   // Materials
   MeshStandardMaterial,
   MeshBasicMaterial,
   LineBasicMaterial,
   SpriteMaterial,
+  ShaderMaterial,
 
   // Textures
   Texture,

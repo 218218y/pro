@@ -8,6 +8,8 @@ import {
   getRenderer,
   getScene,
   getShadowMap,
+  readTrackedPlanarMirrorStats,
+  refreshTrackedPlanarMirrorSurfacesNow,
 } from '../runtime/render_access.js';
 import { readConfigLooseScalarFromApp, readConfigNumberLooseFromApp } from '../runtime/config_selectors.js';
 
@@ -243,6 +245,52 @@ export function createRenderLoopMirrorDriver(
         } else if (presenceKnown && presenceHasMirror && !hasMirror) {
           hasMirror = trackedMirrorCount > 0;
         }
+      }
+
+      const planarStats = hasMirror
+        ? readTrackedPlanarMirrorStats(A)
+        : { mirrorCount: 0, planarCount: 0, fallbackCount: 0 };
+      const hasPlanarReflectors = planarStats.planarCount > 0;
+      const hasLegacyMirrorSurfaces =
+        planarStats.fallbackCount > 0 || (hasMirror && planarStats.mirrorCount === 0);
+      const planarLast = readFiniteSlotNumber(getRenderSlot, A, '__mirrorPlanarLastUpdateMs', -1);
+      const planarIntervalRaw = motionActive
+        ? readConfigNumberLooseFromApp(A, 'MIRROR_REFLECTOR_MOVE_UPDATE_MS', 160)
+        : readConfigNumberLooseFromApp(A, 'MIRROR_REFLECTOR_UPDATE_MS', 120);
+      const planarInterval = Math.max(0, Number.isFinite(planarIntervalRaw) ? planarIntervalRaw : 160);
+      const planarIntervalDue =
+        mirrorDirty || planarInterval === 0 || planarLast < 0 || mirrorNow - planarLast >= planarInterval;
+      let planarRefreshed = false;
+
+      if (hasPlanarReflectors && planarIntervalDue && !canRunInBudget) {
+        markBudgetDeferred(getRenderSlot, setRenderSlot, A, mirrorNow, '__mirrorPlanarBudgetSkipCount');
+      }
+
+      if (hasPlanarReflectors && planarIntervalDue && canRunInBudget) {
+        const planarResult = refreshTrackedPlanarMirrorSurfacesNow(A);
+        if (planarResult.refreshed) {
+          planarRefreshed = true;
+          setRenderSlot(A, '__mirrorPlanarLastUpdateMs', mirrorNow);
+          setRenderSlot(A, '__mirrorLastUpdateMs', mirrorNow);
+          incrementRenderSlotCounter(getRenderSlot, setRenderSlot, A, '__mirrorPlanarUpdateCount');
+          setRenderSlot(A, '__mirrorWorkPending', false);
+          setRenderSlot(A, '__mirrorPresenceKnown', true);
+          setRenderSlot(A, '__mirrorPresenceHasMirror', true);
+          setRenderSlot(A, '__mirrorPresenceCheckedAtMs', mirrorNow);
+          if (!hasLegacyMirrorSurfaces) setRenderSlot(A, '__mirrorDirty', false);
+        } else if (mirrorDirty && !hasLegacyMirrorSurfaces) {
+          setRenderSlot(A, '__mirrorWorkPending', true);
+        }
+      }
+
+      if (hasMirror && hasPlanarReflectors && !hasLegacyMirrorSurfaces) {
+        if (!planarIntervalDue || planarRefreshed) {
+          setRenderSlot(A, '__mirrorPresenceKnown', true);
+          setRenderSlot(A, '__mirrorPresenceHasMirror', true);
+          setRenderSlot(A, '__mirrorPresenceCheckedAtMs', mirrorNow);
+          if (!mirrorDirty || planarRefreshed) setRenderSlot(A, '__mirrorWorkPending', false);
+        }
+        return;
       }
 
       const intervalDue = mirrorDirty || interval === 0 || last < 0 || mirrorNow - last >= interval;

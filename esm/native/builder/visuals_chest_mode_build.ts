@@ -1,5 +1,6 @@
 import {
   getDrawersArray,
+  installPlanarMirrorReflector,
   refreshTrackedMirrorSurfacesNow,
   getViewportSurface,
   getWardrobeGroup,
@@ -441,6 +442,14 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
       __mirrorWidthM: mirrorW,
       __mirrorHeightM: mirrorH,
     };
+    try {
+      installPlanarMirrorReflector(App, THREE, mirror, {
+        faceSign: 1,
+        sketchMode: renderPolicy.sketchMode,
+      });
+    } catch {
+      // Keep the legacy envMap material as a safe fallback.
+    }
     mirror.renderOrder = 2;
     trackMirrorSurface(App, mirror);
     wardrobeGroup.add(mirror);

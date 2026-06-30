@@ -93,11 +93,17 @@ export type Object3DRuntimeLike = Object3DWritable & {
 export type ThreeRuntime = UnknownRecord & {
   Scene?: new () => unknown;
   WebGLCubeRenderTarget?: new (size: number, opts?: UnknownRecord) => unknown;
+  WebGLRenderTarget?: new (width: number, height: number, opts?: UnknownRecord) => unknown;
   CubeCamera?: new (near: number, far: number, renderTarget: unknown) => unknown;
-  PerspectiveCamera?: new (fov: number, aspect: number, near: number, far: number) => unknown;
+  PerspectiveCamera?: new (fov?: number, aspect?: number, near?: number, far?: number) => unknown;
   WebGLRenderer?: new (opts?: UnknownRecord) => unknown;
   OrbitControls?: new (camera: unknown, domElement: unknown) => unknown;
   Group?: new () => unknown;
+  Matrix4?: new () => unknown;
+  Plane?: new () => unknown;
+  Vector3?: new (x?: number, y?: number, z?: number) => unknown;
+  Vector4?: new (x?: number, y?: number, z?: number, w?: number) => unknown;
+  ShaderMaterial?: new (opts?: UnknownRecord) => unknown;
   LinearFilter?: unknown;
   RGBAFormat?: unknown;
   PCFShadowMap?: unknown;

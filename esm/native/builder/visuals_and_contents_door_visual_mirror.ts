@@ -4,6 +4,7 @@
 // Kept separate so the canonical `createDoorVisual(...)` seam stays readable.
 
 import { createCanvasViaPlatform } from '../runtime/platform_access.js';
+import { installPlanarMirrorReflector } from '../runtime/render_access.js';
 import { DOOR_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { getCacheBag } from '../runtime/cache_access.js';
 import {
@@ -155,6 +156,14 @@ export function createMirrorDoorVisual(args: MirrorDoorVisualArgs): Object3DLike
       placement.offsetY,
       depthLayout.mirrorCenterZ * placementFaceSign
     );
+    try {
+      installPlanarMirrorReflector(App, THREE, mirrorMesh, {
+        faceSign: placementFaceSign,
+        sketchMode: isSketch,
+      });
+    } catch {
+      // Fallback to the existing envMap mirror material when reflector setup is unavailable.
+    }
     visualGroup.add(mirrorMesh);
 
     // Track mirror surfaces for fast reflection updates (avoids full scene traversal on each frame).

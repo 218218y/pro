@@ -16,6 +16,11 @@ import {
 } from './render_access_shared.js';
 import { asRecord } from './record.js';
 import { ensureRenderMetaArray } from './render_access_state_bags.js';
+import {
+  isPlanarMirrorSurface,
+  readTrackedPlanarMirrorStats,
+  refreshTrackedPlanarMirrorSurfacesNow,
+} from './planar_reflector_runtime.js';
 
 export type RenderRuntimeStateLike = {
   ambLightObj: Object3DLike | null;
@@ -316,7 +321,7 @@ export function refreshTrackedMirrorSurfacesNow(App: unknown): MirrorRefreshNowR
       hasMirror = true;
       result.mirrorCount += 1;
       result.materialSyncCount += syncMirrorMaterialEnvMap(mirror, texture);
-      if (mirror && mirror.visible !== false) {
+      if (!isPlanarMirrorSurface(mirror) && mirror && mirror.visible !== false) {
         restored.push({ obj: mirror, visible: mirror.visible });
         mirror.visible = false;
       }
@@ -326,6 +331,16 @@ export function refreshTrackedMirrorSurfacesNow(App: unknown): MirrorRefreshNowR
       writeMirrorPresenceState(renderBag, false, nowMs);
       result.skippedReason = 'no-tracked-mirror-surfaces';
       return result;
+    }
+
+    const planarStats = readTrackedPlanarMirrorStats(App);
+    if (planarStats.planarCount > 0) {
+      const planarResult = refreshTrackedPlanarMirrorSurfacesNow(App);
+      if (planarResult.refreshed) result.refreshed = true;
+      if (planarStats.fallbackCount <= 0 && planarStats.mirrorCount > 0) {
+        writeMirrorPresenceState(renderBag, true, nowMs);
+        return result;
+      }
     }
 
     update.call(cube, renderer, scene);

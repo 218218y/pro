@@ -1,3 +1,4 @@
+import { installPlanarMirrorReflector } from '../runtime/render_access.js';
 import {
   readGeometryRuntimeNumber,
   readGeometryRuntimePositiveBoxDimension,
@@ -201,6 +202,14 @@ export function createStyledMirrorDoorVisual(args: CreateStyledMirrorDoorVisualA
       placement.offsetY,
       (center.depth / 2 + depthLayout.adhesiveGap + depthLayout.mirrorThick / 2) * placementFaceSign
     );
+    try {
+      installPlanarMirrorReflector(args.App, args.THREE, mirrorMesh, {
+        faceSign: placementFaceSign,
+        sketchMode: args.isSketch,
+      });
+    } catch {
+      // Keep the legacy envMap material as a safe fallback.
+    }
     center.panel.add(mirrorMesh);
   }
 
@@ -240,6 +249,14 @@ export function createStyledFullMirrorDoorVisual(args: CreateStyledMirrorDoorVis
         depthLayout.mirrorThick / 2
       )
     );
+    try {
+      installPlanarMirrorReflector(args.App, args.THREE, mirrorMesh, {
+        faceSign: -1,
+        sketchMode: args.isSketch,
+      });
+    } catch {
+      // Keep the legacy envMap material as a safe fallback.
+    }
     visualGroup.add(mirrorMesh);
   }
 

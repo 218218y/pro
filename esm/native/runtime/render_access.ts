@@ -78,3 +78,11 @@ export {
   readRendererLightingDefaults,
   writeRendererLightingDefaults,
 } from './render_access_state.js';
+
+export {
+  installPlanarMirrorReflector,
+  isPlanarMirrorSurface,
+  readTrackedPlanarMirrorStats,
+  refreshTrackedPlanarMirrorSurfacesNow,
+} from './planar_reflector_runtime.js';
+export type { PlanarMirrorRefreshResult } from './planar_reflector_runtime.js';

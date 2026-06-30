@@ -99,6 +99,13 @@ export interface Vector2Like extends UnknownRecord {
   y: number;
 }
 
+export interface Vector4Like extends UnknownRecord {
+  x: number;
+  y: number;
+  z: number;
+  w: number;
+}
+
 export interface Matrix4Like extends UnknownRecord {
   copy: (matrix: unknown) => Matrix4Like;
   invert: () => Matrix4Like;
@@ -110,6 +117,9 @@ export interface EulerRuntimeLike extends UnknownRecord {}
 export interface PerspectiveCameraLike extends UnknownRecord {}
 export interface WebGLRendererLike extends UnknownRecord {}
 export interface WebGLCubeRenderTargetLike extends UnknownRecord {}
+export interface WebGLRenderTargetRuntimeLike extends UnknownRecord {
+  texture?: unknown;
+}
 
 export interface BufferAttributeLike extends UnknownRecord {
   count: number;
@@ -130,6 +140,7 @@ export type ThreeMeshCtor = new (
   material?: MaterialLike | MaterialLike[] | unknown
 ) => Object3DLike;
 export type ThreeVector3Ctor = new (x?: number, y?: number, z?: number) => Vector3Like;
+export type ThreeVector4Ctor = new (x?: number, y?: number, z?: number, w?: number) => Vector4Like;
 export type ThreeBoxGeometryCtor = new (
   width?: number,
   height?: number,
@@ -212,6 +223,11 @@ export type ThreeWebGLCubeRenderTargetCtor = new (
   size?: number,
   options?: UnknownRecord
 ) => WebGLCubeRenderTargetLike;
+export type ThreeWebGLRenderTargetCtor = new (
+  width?: number,
+  height?: number,
+  options?: UnknownRecord
+) => WebGLRenderTargetRuntimeLike;
 export type ThreeCubeCameraCtor = new (
   near?: number,
   far?: number,
@@ -232,6 +248,7 @@ export interface ThreeLike {
   Group: ThreeGroupCtor;
   Mesh: ThreeMeshCtor;
   Vector3: ThreeVector3Ctor;
+  Vector4: ThreeVector4Ctor;
   BoxGeometry: ThreeBoxGeometryCtor;
   PlaneGeometry: ThreePlaneGeometryCtor;
   CylinderGeometry: ThreeCylinderGeometryCtor;
@@ -244,6 +261,7 @@ export interface ThreeLike {
   CanvasTexture: ThreeCanvasTextureCtor;
   MeshStandardMaterial: new (opts?: UnknownRecord) => MaterialLike;
   MeshBasicMaterial: new (opts?: UnknownRecord) => MaterialLike;
+  ShaderMaterial: new (opts?: UnknownRecord) => MaterialLike;
   SpriteMaterial: new (opts?: UnknownRecord) => MaterialLike;
   LineBasicMaterial: new (opts?: UnknownRecord) => MaterialLike;
   Line: ThreeLineCtor;
@@ -270,6 +288,7 @@ export interface ThreeLike {
   PerspectiveCamera: ThreePerspectiveCameraCtor;
   WebGLRenderer: ThreeWebGLRendererCtor;
   WebGLCubeRenderTarget: ThreeWebGLCubeRenderTargetCtor;
+  WebGLRenderTarget: ThreeWebGLRenderTargetCtor;
   CubeCamera: ThreeCubeCameraCtor;
   BufferAttribute: ThreeBufferAttributeCtor;
   Float32BufferAttribute: ThreeFloat32BufferAttributeCtor;
