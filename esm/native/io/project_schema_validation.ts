@@ -3,7 +3,7 @@ import type { ProjectDataLike, ProjectSchemaValidationResult, UnknownRecord } fr
 import {
   PERSISTED_PROJECT_CONFIG_BRANCH_KEYS,
   readPersistedProjectConfigSnapshot,
-} from '../features/project_config/project_config_persisted_snapshot.js';
+} from './project_config_persisted_snapshot.js';
 import { isCanonicalRemovedDoorsMapKey } from '../../shared/removed_doors_map_keys_shared.js';
 
 const REQUIRED_DIMENSION_KEYS = ['width', 'height', 'depth', 'doors'] as const;

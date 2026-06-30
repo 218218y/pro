@@ -19,11 +19,14 @@ test('[stageAS-final] preset/stack/corner surfaces stop introducing fresh AnyRec
   assert.doesNotMatch(moduleCfg, /type AnyRecord = Record<string, unknown>/);
   assert.match(moduleCfg, /function isRecord\(v: unknown\): v is UnknownRecord/);
 
-  assert.match(presets, /import \{[^}]*normalizeModelList[^}]*\} from '\.\/model_record_normalizer\.js';/);
+  assert.match(
+    presets,
+    /import \{[^}]*normalizeModelList[^}]*\} from '\.\.\/features\/model_record\/api\.js';/
+  );
   assert.match(presets, /export const PRESET_MODELS = normalizeModelList\(PRESET_MODELS_RAW\);/);
   assert.match(
     presets,
-    /export \{ (?:normalizeModelRecord, normalizeModelList|normalizeModelList, normalizeModelRecord) \} from '\.\/model_record_normalizer\.js';/
+    /export \{ (?:normalizeModelRecord, normalizeModelList|normalizeModelList, normalizeModelRecord) \} from '\.\.\/features\/model_record\/api\.js';/
   );
   assert.doesNotMatch(presets, /export default\s+/);
   assert.doesNotMatch(presets, /@typedef \{import\('\.\.\.\/types'\)\.AnyRecord\} AnyRecord/);

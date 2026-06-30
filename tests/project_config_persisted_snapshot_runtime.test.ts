@@ -9,7 +9,7 @@ import {
 import {
   readConfigStateProjectConfigSnapshot,
   readPersistedProjectConfigSnapshot,
-} from '../esm/native/features/project_config/project_config_persisted_snapshot.ts';
+} from '../esm/native/io/project_config_persisted_snapshot.ts';
 
 test('project config comparable patch canonicalizes only provided branches and detaches comparable custom payloads', () => {
   const sourceNotes = [{ id: 'n1', blocks: [{ text: 'keep' }] }];

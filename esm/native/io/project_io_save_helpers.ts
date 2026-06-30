@@ -13,7 +13,7 @@ import {
   buildStructureCfgSnapshot,
   buildStructureUiSnapshotFromUiState,
 } from '../features/project_config/project_config_lists_canonical.js';
-import { readPersistedProjectConfigSnapshot } from '../features/project_config/project_config_persisted_snapshot.js';
+import { readPersistedProjectConfigSnapshot } from './project_config_persisted_snapshot.js';
 import { SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY } from '../features/shoe_drawer_base_constraint.js';
 
 type ReportNonFatalFn = (op: string, err: unknown, throttleMs?: number) => void;

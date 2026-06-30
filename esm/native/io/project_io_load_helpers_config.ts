@@ -2,7 +2,7 @@ import {
   canonicalizeComparableProjectConfigSnapshot,
   canonicalizeProjectConfigListsForLoad,
 } from './project_io_config_snapshot_canonical.js';
-import { readConfigStateProjectConfigSnapshot } from '../features/project_config/project_config_persisted_snapshot.js';
+import { readConfigStateProjectConfigSnapshot } from './project_config_persisted_snapshot.js';
 
 import type { ConfigStateLike, ProjectDataLike, UnknownRecord } from '../../../types/index.js';
 

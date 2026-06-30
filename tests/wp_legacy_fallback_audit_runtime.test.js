@@ -62,7 +62,7 @@ test('legacy fallback audit classifies boundary occurrences before runtime risk'
   );
   assert.equal(
     classifyLegacyFallbackOccurrence({
-      relPath: 'esm/native/features/project_config/project_config_persisted_snapshot.ts',
+      relPath: 'esm/native/io/project_config_persisted_snapshot.ts',
       lineText: 'const legacy = migratePersistedPayload(value);',
       term: 'legacy',
     }),

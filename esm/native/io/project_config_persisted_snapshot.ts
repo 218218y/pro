@@ -4,12 +4,12 @@ import type {
   ProjectSavedNotesLike,
   SavedColorLike,
   UnknownRecord,
-} from '../../../../types/index.js';
+} from '../../../types/index.js';
 
-import { normalizeSavedColorsList } from '../../../shared/maps_access_collections_shared.js';
-import { normalizeDoorMountThicknessCm } from '../../../shared/wardrobe_dimension_tokens_shared.js';
-import { cloneCornerConfigurationListsSnapshot } from '../modules_configuration/corner_cells_api.js';
-import { cloneModulesConfigurationSnapshot } from '../modules_configuration/modules_config_api.js';
+import { normalizeSavedColorsList } from '../../shared/maps_access_collections_shared.js';
+import { normalizeDoorMountThicknessCm } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { cloneCornerConfigurationListsSnapshot } from '../features/modules_configuration/corner_cells_api.js';
+import { cloneModulesConfigurationSnapshot } from '../features/modules_configuration/modules_config_api.js';
 import {
   cloneProjectJson,
   readCurtainMap,
@@ -27,11 +27,11 @@ import {
   readSplitDoorsBottomMapValue,
   readSplitDoorsMapValue,
   readToggleMap,
-} from './project_config_persisted_payload_shared.js';
+} from '../features/project_config/project_config_persisted_payload_shared.js';
 import {
   PERSISTED_PROJECT_CONFIG_BRANCH_KEYS,
   type PersistedProjectConfigBranchKey,
-} from './project_config_snapshot_canonical_shared.js';
+} from '../features/project_config/project_config_snapshot_canonical.js';
 
 export type PersistedSavedColorsSnapshot = Array<SavedColorLike | string>;
 type PersistedCornerConfigurationSnapshot = ReturnType<typeof cloneCornerConfigurationListsSnapshot>;

@@ -1,9 +1,9 @@
-import type { SavedModelLike, UnknownRecord } from '../../../types/index.js';
+import type { SavedModelLike, UnknownRecord } from '../../../../types/index.js';
 
-import { canonicalizeProjectConfigListsForLoad } from '../features/project_config/project_config_lists_canonical.js';
-import { canonicalizeComparableProjectConfigSnapshot } from '../features/project_config/project_config_snapshot_canonical.js';
-import { calculateModuleStructure } from '../features/modules_configuration/calc_module_structure.js';
-import { materializeTopModulesConfigurationForStructure } from '../features/modules_configuration/modules_config_api.js';
+import { canonicalizeProjectConfigListsForLoad } from '../project_config/project_config_lists_canonical.js';
+import { canonicalizeComparableProjectConfigSnapshot } from '../project_config/project_config_snapshot_canonical.js';
+import { calculateModuleStructure } from '../modules_configuration/calc_module_structure.js';
+import { materializeTopModulesConfigurationForStructure } from '../modules_configuration/modules_config_api.js';
 
 type SavedModelRecordLike = Record<string, unknown> & {
   settings?: unknown;
