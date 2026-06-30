@@ -820,7 +820,7 @@ export interface BuilderRegistryLike extends UnknownRecord {
   __esm_v1?: boolean;
   reset?: () => unknown;
   registerPartObject?: (partId: string, obj: unknown, kind?: string) => unknown;
-  registerModuleHitBox?: (moduleIndex: number | string, hitBox: unknown) => unknown;
+  registerModuleHitBox?: (moduleIndex: number, hitBox: unknown) => unknown;
   finalize?: () => unknown;
   get?: (partId: string) => unknown;
 }

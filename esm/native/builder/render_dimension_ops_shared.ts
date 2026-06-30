@@ -127,8 +127,8 @@ function asFiniteNumberArray(v: unknown): number[] | null {
   const out: number[] = [];
   for (let i = 0; i < v.length; i++) {
     const raw = v[i];
-    const n = typeof raw === 'number' ? raw : parseFloat(String(raw));
-    out.push(Number.isFinite(n) ? n : NaN);
+    if (typeof raw !== 'number' || !Number.isFinite(raw)) return null;
+    out.push(raw);
   }
   return out;
 }

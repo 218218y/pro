@@ -5,6 +5,7 @@ import {
   mergeSketchFreeBoxDimensionSpans,
 } from './render_interior_sketch_layout_dimensions_grouping.js';
 import {
+  readSketchDimensionNumber,
   type RenderSketchFreeBoxDimensionGroupArgs,
   type RenderSketchFreeBoxDimensionsArgs,
   type SketchFreeBoxDimensionEntry,
@@ -17,14 +18,15 @@ const overlayRange = (value: number, min: number, max: number, ratio: number): n
 export const renderSketchFreeBoxDimensions = (args: RenderSketchFreeBoxDimensionsArgs) => {
   const THREE = args.THREE;
   const addDimensionLine = args.addDimensionLine;
-  const width = Number(args.width);
-  const height = Number(args.height);
-  const depth = Number(args.depth);
-  const centerX = Number(args.centerX);
-  const centerY = Number(args.centerY);
-  const centerZ = Number(args.centerZ);
-  if (!(width > 0) || !(height > 0) || !(depth > 0)) return;
-  if (!Number.isFinite(centerX) || !Number.isFinite(centerY) || !Number.isFinite(centerZ)) return;
+  const width = readSketchDimensionNumber(args.width);
+  const height = readSketchDimensionNumber(args.height);
+  const depth = readSketchDimensionNumber(args.depth);
+  const centerX = readSketchDimensionNumber(args.centerX);
+  const centerY = readSketchDimensionNumber(args.centerY);
+  const centerZ = readSketchDimensionNumber(args.centerZ);
+  if (centerX == null || centerY == null || centerZ == null) return;
+  if (width == null || height == null || depth == null || !(width > 0) || !(height > 0) || !(depth > 0))
+    return;
 
   const halfW = width / 2;
   const halfH = height / 2;

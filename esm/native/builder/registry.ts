@@ -139,12 +139,11 @@ export function registerPartObject(App: AppContainer, partId: string, obj: unkno
   renderNs._partObjects.push({ id: String(partId), obj, kind: kind || 'part' });
 }
 
-export function registerModuleHitBox(App: AppContainer, moduleIndex: number | string, hitBox: unknown): void {
+export function registerModuleHitBox(App: AppContainer, moduleIndex: number, hitBox: unknown): void {
   const container = assertApp(App, 'native/builder/registry');
   const renderNs = _ensureArrays(container);
-  if ((typeof moduleIndex !== 'number' && typeof moduleIndex !== 'string') || !_isObject3DLike(hitBox))
-    return;
-  renderNs.moduleHitBoxes[Number(moduleIndex)] = hitBox;
+  if (!Number.isInteger(moduleIndex) || moduleIndex < 0 || !_isObject3DLike(hitBox)) return;
+  renderNs.moduleHitBoxes[moduleIndex] = hitBox;
 }
 
 // Finalize indexing after build (covers items pushed directly into doorsArray/drawersArray).
@@ -207,7 +206,7 @@ export function createBuilderRegistry(App: AppContainer): BuilderRegistryLike {
     registerPartObject(partId: string, obj: unknown, kind?: string) {
       return registerPartObject(container, partId, obj, kind);
     },
-    registerModuleHitBox(moduleIndex: number | string, hitBox: unknown) {
+    registerModuleHitBox(moduleIndex: number, hitBox: unknown) {
       return registerModuleHitBox(container, moduleIndex, hitBox);
     },
     finalize() {

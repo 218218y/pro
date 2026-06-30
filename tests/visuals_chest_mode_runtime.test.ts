@@ -267,6 +267,61 @@ test('visuals chest mode input/material helpers normalize chest-only UI and text
 
   assert.throws(() => resolveChestModeBuildInputs(undefined as never), /build options snapshot is required/);
 
+  assert.throws(
+    () =>
+      resolveChestModeBuildInputs({
+        H: '0.9',
+        totalW: 1.6,
+        D: 0.45,
+        drawersCount: 3,
+        cfgSnapshot: createChestCfg(),
+        renderPolicy: App.__outlineRenderPolicy,
+      } as any),
+    /positive finite H is required/
+  );
+
+  assert.throws(
+    () =>
+      resolveChestModeBuildInputs({
+        H: 0.9,
+        totalW: 1.6,
+        D: 0.45,
+        drawersCount: '3',
+        cfgSnapshot: createChestCfg(),
+        renderPolicy: App.__outlineRenderPolicy,
+      } as any),
+    /positive finite drawersCount is required/
+  );
+
+  assert.throws(
+    () =>
+      resolveChestModeBuildInputs({
+        H: 0.9,
+        totalW: 1.6,
+        D: 0.45,
+        drawersCount: 2.5,
+        cfgSnapshot: createChestCfg(),
+        renderPolicy: App.__outlineRenderPolicy,
+      } as any),
+    /positive integer drawersCount is required/
+  );
+
+  const stringMirrorInputs = resolveChestModeBuildInputs({
+    H: 0.9,
+    totalW: 1.6,
+    D: 0.45,
+    drawersCount: 3,
+    chestCommodeMirrorHeightCm: '110',
+    chestCommodeMirrorWidthCm: '180',
+    cfgSnapshot: createChestCfg(),
+    renderPolicy: App.__outlineRenderPolicy,
+  } as any);
+  assert.equal(
+    stringMirrorInputs.chestCommodeMirrorHeightCm,
+    CHEST_MODE_DIMENSIONS.commode.defaultMirrorHeightCm
+  );
+  assert.equal(stringMirrorInputs.chestCommodeMirrorWidthCm, 160);
+
   assert.deepEqual(
     resolveChestModeBodyMaterialState({
       colorChoice: 'custom',

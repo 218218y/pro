@@ -48,6 +48,8 @@ test('builder registry runtime: tracks parts, hit-boxes, and installs stable ser
 
   resetRegistry(App);
   registerModuleHitBox(App, 2, hitBox);
+  registerModuleHitBox(App, '3' as any, hitBox);
+  registerModuleHitBox(App, 2.5, hitBox);
   registerPartObject(App, 'body_1', partObj, 'part');
   App.render.doorsArray.push({
     id: 'door_1',
@@ -68,6 +70,8 @@ test('builder registry runtime: tracks parts, hit-boxes, and installs stable ser
   assert.equal(getRegistered(App, 'drawer_1') != null, true);
   assert.equal(getRegistered(App, 'body_1'), partObj);
   assert.equal(getRegistered(App, 'module:2'), hitBox);
+  assert.equal(getRegistered(App, 'module:3'), null);
+  assert.equal(App.render.moduleHitBoxes[2.5], undefined);
 
   const created = createBuilderRegistry(App);
   assert.equal(typeof created.get, 'function');

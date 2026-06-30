@@ -53,13 +53,32 @@ export type ChestModeBuildInputs = {
   isGroovesEnabled: boolean;
 };
 
+function readRuntimeNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function readRequiredPositiveRuntimeNumber(value: unknown, name: string): number {
+  const n = readRuntimeNumber(value);
+  if (n == null || n <= 0) {
+    throw new TypeError(`[visuals_chest_mode] positive finite ${name} is required`);
+  }
+  return n;
+}
+
+function readRequiredPositiveIntegerRuntimeNumber(value: unknown, name: string): number {
+  const n = readRequiredPositiveRuntimeNumber(value, name);
+  if (!Number.isInteger(n)) {
+    throw new TypeError(`[visuals_chest_mode] positive integer ${name} is required`);
+  }
+  return n;
+}
+
 function normalizeChestCommodeDimensionCm(
   value: unknown,
   fallbackCm: number,
   bounds: { min: number; max: number }
 ): number {
-  const n = typeof value === 'number' ? value : Number(value);
-  const raw = Number.isFinite(n) ? n : fallbackCm;
+  const raw = readRuntimeNumber(value) ?? fallbackCm;
   return clampDimension(raw, bounds.min, bounds.max);
 }
 
@@ -67,13 +86,10 @@ export function resolveChestModeBuildInputs(opts: BuilderBuildChestOnlyOptsLike)
   if (!opts || typeof opts !== 'object') {
     throw new TypeError('[visuals_chest_mode] build options snapshot is required');
   }
-  const H = Number(opts.H);
-  const totalW = Number(opts.totalW);
-  const D = Number(opts.D);
-  const drawersCount = parseInt(String(opts.drawersCount), 10);
-  if (![H, totalW, D, drawersCount].every(value => Number.isFinite(value) && value > 0)) {
-    throw new TypeError('[visuals_chest_mode] positive finite dimensions and drawersCount are required');
-  }
+  const H = readRequiredPositiveRuntimeNumber(opts.H, 'H');
+  const totalW = readRequiredPositiveRuntimeNumber(opts.totalW, 'totalW');
+  const D = readRequiredPositiveRuntimeNumber(opts.D, 'D');
+  const drawersCount = readRequiredPositiveIntegerRuntimeNumber(opts.drawersCount, 'drawersCount');
 
   const rawBaseType = opts.baseType;
   const legSource = opts;

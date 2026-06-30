@@ -58,6 +58,39 @@ test('renderSketchFreeBoxDimensions keeps height on the right and depth on the l
   assert.ok(depthLine.textOffset.x < 0);
 });
 
+test('renderSketchFreeBoxDimensions rejects string-encoded runtime dimensions', () => {
+  const recorder = createRecorder();
+  renderSketchFreeBoxDimensions({
+    THREE: { Vector3 } as never,
+    addDimensionLine: recorder.addDimensionLine,
+    centerX: 1,
+    centerY: 2,
+    centerZ: 3,
+    width: '0.8',
+    height: 1.2,
+    depth: 0.5,
+  } as any);
+
+  assert.equal(recorder.lines.length, 0);
+});
+
+test('renderSketchFreeBoxDimensionOverlays rejects string-encoded grouped dimension entries', () => {
+  const recorder = createRecorder();
+  renderSketchFreeBoxDimensionOverlays({
+    THREE: { Vector3 } as never,
+    addDimensionLine: recorder.addDimensionLine,
+    entries: [
+      { centerX: 0.3, centerY: 0.5, centerZ: 0, width: 0.6, height: 1, depth: 0.5 },
+      { centerX: '0.9', centerY: 0.5, centerZ: 0, width: 0.6, height: 1, depth: 0.5 },
+    ],
+  } as any);
+
+  assert.deepEqual(
+    recorder.lines.map(line => line.label),
+    ['60', '100', '50']
+  );
+});
+
 test('renderSketchFreeBoxDimensionOverlays groups adjacent entries and renders merged width plus segment widths', () => {
   const recorder = createRecorder();
   renderSketchFreeBoxDimensionOverlays({

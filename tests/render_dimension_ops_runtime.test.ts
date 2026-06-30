@@ -34,6 +34,26 @@ test('render_dimension_ops emits main-run width/height/depth overlays from the f
   assert.deepEqual(labels, ['200', '60', '70', '70', '240', '220', '20', '60', '55']);
 });
 
+test('render_dimension_ops rejects string-encoded runtime dimension arrays instead of partially parsing them', () => {
+  const calls: any[] = [];
+  const ops = createBuilderRenderDimensionOps({ app: () => ({}) as any, ops: () => null });
+  const ok = ops.applyDimensions({
+    THREE: { Vector3: FakeVector3 },
+    addDimensionLine: (...args: unknown[]) => calls.push(args),
+    totalW: 2,
+    H: 2.2,
+    D: 0.6,
+    moduleWidthsCm: [60, '70', 70],
+    moduleHeightsCm: ['240'],
+    moduleDepthsCm: [55, '60'],
+    stackSplitActive: true,
+  });
+
+  assert.equal(ok, true);
+  const labels = calls.map(call => call[3]);
+  assert.deepEqual(labels, ['200', '220', '60']);
+});
+
 test('render_dimension_ops keeps only no-main corner depth outside the pentagon on the main side', () => {
   const calls: any[] = [];
   const ops = createBuilderRenderDimensionOps({ app: () => ({}) as any, ops: () => null });

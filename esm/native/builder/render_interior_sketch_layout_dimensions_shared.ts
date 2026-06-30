@@ -41,17 +41,33 @@ export type RenderSketchFreeBoxDimensionGroupArgs = {
   entries: SketchFreeBoxDimensionSegment[];
 };
 
+export function readSketchDimensionNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function readSketchPositiveDimensionNumber(value: unknown): number | null {
+  const n = readSketchDimensionNumber(value);
+  return n != null && n > 0 ? n : null;
+}
+
 export function normalizeSketchFreeBoxDimensionEntry(
   entry: SketchFreeBoxDimensionEntry
 ): SketchFreeBoxDimensionSegment | null {
-  const centerX = Number(entry.centerX);
-  const centerY = Number(entry.centerY);
-  const centerZ = Number(entry.centerZ);
-  const width = Number(entry.width);
-  const height = Number(entry.height);
-  const depth = Number(entry.depth);
-  if (!(width > 0) || !(height > 0) || !(depth > 0)) return null;
-  if (!Number.isFinite(centerX) || !Number.isFinite(centerY) || !Number.isFinite(centerZ)) return null;
+  const centerX = readSketchDimensionNumber(entry.centerX);
+  const centerY = readSketchDimensionNumber(entry.centerY);
+  const centerZ = readSketchDimensionNumber(entry.centerZ);
+  const width = readSketchPositiveDimensionNumber(entry.width);
+  const height = readSketchPositiveDimensionNumber(entry.height);
+  const depth = readSketchPositiveDimensionNumber(entry.depth);
+  if (
+    centerX == null ||
+    centerY == null ||
+    centerZ == null ||
+    width == null ||
+    height == null ||
+    depth == null
+  )
+    return null;
 
   const halfW = width / 2;
   const halfH = height / 2;
