@@ -159,8 +159,8 @@ export function InteriorLayoutManualControls(props: InteriorLayoutSectionProps):
         ))}
       </div>
 
-      <InteriorSketchShelfDepthField {...props} />
-      <InteriorSketchStorageHeightField {...props} />
+      <InteriorSketchShelfDepthField {...props} formFieldIdScope="interior-layout-manual-controls" />
+      <InteriorSketchStorageHeightField {...props} formFieldIdScope="interior-layout-manual-controls" />
 
       {props.isBraceShelvesMode ? (
         <InlineNotice>מדפי קושרת: לחץ על מדף כדי להחליף בין רגיל (45 ס"מ) לקושרת (עומק מלא).</InlineNotice>

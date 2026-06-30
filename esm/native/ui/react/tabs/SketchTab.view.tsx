@@ -104,7 +104,10 @@ function SketchTabInner(props: { active: boolean }): ReactElement {
               </div>
             </div>
             <div className="wp-sketch-row">
-              <InteriorLayoutSketchToolsPanel {...createInteriorLayoutSectionProps(state, workflows)} />
+              <InteriorLayoutSketchToolsPanel
+                {...createInteriorLayoutSectionProps(state, workflows)}
+                formFieldIdScope="sketch-tab-sketch-tools"
+              />
             </div>
           </div>
         </div>

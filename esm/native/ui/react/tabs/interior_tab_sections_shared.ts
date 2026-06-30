@@ -152,6 +152,7 @@ export type InteriorLayoutSectionProps = {
   layoutTypes: LayoutTypeOption[];
   manualTools: ManualToolOption[];
   gridDivs: number[];
+  formFieldIdScope?: string;
   setManualRowOpen: Dispatch<SetStateAction<boolean>>;
   setManualUiTool: Dispatch<SetStateAction<ManualToolId>>;
   setSketchShelvesOpen: Dispatch<SetStateAction<boolean>>;

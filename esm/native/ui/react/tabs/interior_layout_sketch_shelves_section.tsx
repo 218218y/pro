@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 
-import { useReactDomId } from '../components/form_field_id.js';
+import { buildScopedFormFieldId } from '../components/form_field_id.js';
 
 import { ModeToggleButton } from '../components/index.js';
 import {
@@ -205,7 +205,7 @@ export function InteriorSketchShelvesSection(props: InteriorLayoutSectionProps):
 }
 
 export function InteriorSketchShelfDepthField(props: InteriorLayoutSectionProps): ReactElement {
-  const shelfDepthInputId = useReactDomId('wp-r-sketch-shelf-depth');
+  const shelfDepthInputId = buildScopedFormFieldId('wp-r-sketch-shelf-depth', props.formFieldIdScope);
   const activeSketchShelfVariant = parseSketchShelfVariant(props.manualToolRaw);
   const activeSketchShelfDepthDraft = activeSketchShelfVariant
     ? props.sketchShelfDepthDraftByVariant[activeSketchShelfVariant] || ''
@@ -347,7 +347,7 @@ export function InteriorSketchShelfDepthField(props: InteriorLayoutSectionProps)
 }
 
 export function InteriorSketchStorageHeightField(props: InteriorLayoutSectionProps): ReactElement {
-  const storageHeightInputId = useReactDomId('wp-r-sketch-storage-height');
+  const storageHeightInputId = buildScopedFormFieldId('wp-r-sketch-storage-height', props.formFieldIdScope);
 
   return (
     <div

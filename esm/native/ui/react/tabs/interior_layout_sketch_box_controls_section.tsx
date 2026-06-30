@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 
-import { useReactDomId } from '../components/form_field_id.js';
+import { buildScopedFormFieldId } from '../components/form_field_id.js';
 
 import {
   SKETCH_TOOL_BOX_DIVIDER,
@@ -77,7 +77,7 @@ import {
 import type { InteriorSketchBoxControlsSectionProps } from './interior_layout_sketch_section_types.js';
 
 export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControlsSectionProps): ReactElement {
-  const plinthHeightInputId = useReactDomId('wp-r-sketch-box-plinth-height');
+  const plinthHeightInputId = buildScopedFormFieldId('wp-r-sketch-box-plinth-height', props.formFieldIdScope);
   const {
     isSketchBoxControlsOpen,
     isSketchBoxToolActive,

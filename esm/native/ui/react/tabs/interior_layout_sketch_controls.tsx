@@ -73,7 +73,7 @@ export function InteriorLayoutSketchControls(props: InteriorLayoutSectionProps):
       </OptionBtn>
 
       <div className={cx('wp-sketch-row', shouldShowSketchRow ? '' : 'hidden')}>
-        <InteriorLayoutSketchToolsPanel {...props} />
+        <InteriorLayoutSketchToolsPanel {...props} formFieldIdScope="interior-layout-sketch-tools" />
       </div>
     </>
   );

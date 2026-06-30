@@ -25,10 +25,12 @@ function assertNoLiteralFieldId(source, id, label) {
 
 test('dual-mounted sketch tool fields use instance-scoped DOM ids', () => {
   const sketchControls = read('esm/native/ui/react/tabs/interior_layout_sketch_controls.tsx');
+  const manualControls = read('esm/native/ui/react/tabs/interior_layout_manual_controls.tsx');
   const interiorTab = read('esm/native/ui/react/tabs/InteriorTab.view.tsx');
   const sketchTab = read('esm/native/ui/react/tabs/SketchTab.view.tsx');
   const sketchShelves = read('esm/native/ui/react/tabs/interior_layout_sketch_shelves_section.tsx');
   const sketchBox = read('esm/native/ui/react/tabs/interior_layout_sketch_box_controls_section.tsx');
+  const fieldIdHelper = read('esm/native/ui/react/components/form_field_id.ts');
 
   assert.match(
     interiorTab,
@@ -46,9 +48,29 @@ test('dual-mounted sketch tool fields use instance-scoped DOM ids', () => {
     'Sketch tab renders the same shared tool panel'
   );
 
-  assert.match(sketchShelves, /useReactDomId\('wp-r-sketch-shelf-depth'\)/);
-  assert.match(sketchShelves, /useReactDomId\('wp-r-sketch-storage-height'\)/);
-  assert.match(sketchBox, /useReactDomId\('wp-r-sketch-box-plinth-height'\)/);
+  assert.match(
+    fieldIdHelper,
+    /export function buildScopedFormFieldId\(prefix: string, scope\?: string\): string/
+  );
+  assert.doesNotMatch(
+    fieldIdHelper,
+    /useId|useMemo|from ['"]react['"]/,
+    'field id helper must stay pure because several runtime tests call exported leaf components directly'
+  );
+
+  assert.match(sketchShelves, /buildScopedFormFieldId\('wp-r-sketch-shelf-depth', props\.formFieldIdScope\)/);
+  assert.match(
+    sketchShelves,
+    /buildScopedFormFieldId\('wp-r-sketch-storage-height', props\.formFieldIdScope\)/
+  );
+  assert.match(
+    sketchBox,
+    /buildScopedFormFieldId\('wp-r-sketch-box-plinth-height', props\.formFieldIdScope\)/
+  );
+
+  assert.match(manualControls, /formFieldIdScope="interior-layout-manual-controls"/);
+  assert.match(sketchControls, /formFieldIdScope="interior-layout-sketch-tools"/);
+  assert.match(sketchTab, /formFieldIdScope="sketch-tab-sketch-tools"/);
 
   assertNoLiteralFieldId(sketchShelves, 'wp-r-sketch-shelf-depth', 'sketch shelf depth field');
   assertNoLiteralFieldId(sketchShelves, 'wp-r-sketch-storage-height', 'sketch storage height field');
