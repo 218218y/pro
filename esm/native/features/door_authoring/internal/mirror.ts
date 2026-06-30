@@ -1,4 +1,4 @@
-export type { MirrorDraftInput } from './mirror_layout_contracts.js';
+export type { MirrorDraftInput } from './mirror_contracts.js';
 export {
   DEFAULT_CENTER_NORM,
   DEFAULT_FACE_SIGN,
@@ -13,20 +13,20 @@ export {
   readMirrorLayoutFaceSign,
   readMirrorLayoutList,
   readMirrorLayoutMap,
-} from './mirror_layout_contracts.js';
+} from './mirror_contracts.js';
 
 export type {
   MirrorRect,
   PreparedMirrorRect,
   ResolvedMirrorPlacement,
   SnappedMirrorCenter,
-} from './mirror_layout_geometry.js';
+} from './mirror_geometry.js';
 export {
   buildMirrorLayoutFromHit,
   buildSnappedMirrorCenterFromHit,
   resolveMirrorPlacementInRect,
   resolveMirrorPlacementListInRect,
-} from './mirror_layout_geometry.js';
+} from './mirror_geometry.js';
 
-export type { MirrorLayoutHitMatch } from './mirror_layout_lookup.js';
-export { findMirrorLayoutMatchInRect, readMirrorLayoutListForPart } from './mirror_layout_lookup.js';
+export type { MirrorLayoutHitMatch } from './mirror_lookup.js';
+export { findMirrorLayoutMatchInRect, readMirrorLayoutListForPart } from './mirror_lookup.js';

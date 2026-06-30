@@ -1,17 +1,17 @@
-import { readDoorTrimList } from './door_trim_map.js';
+import { readDoorTrimList } from './trim_map.js';
 import type {
   DoorTrimAxis,
   DoorTrimFindMatchArgs,
   DoorTrimRect,
   DoorTrimMatch,
-} from './door_trim_placement_contracts.js';
+} from './trim_placement_contracts.js';
 import {
   DEFAULT_DOOR_TRIM_AXIS,
   DEFAULT_DOOR_TRIM_THICKNESS_M,
   normalizeDoorTrimAxis,
-} from './door_trim_shared.js';
-import { DOOR_TRIM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
-import { resolveDoorTrimPlacement } from './door_trim_placement_geometry.js';
+} from './trim_shared.js';
+import { DOOR_TRIM_DIMENSIONS } from '../../../../shared/wardrobe_dimension_tokens_shared.js';
+import { resolveDoorTrimPlacement } from './trim_placement_geometry.js';
 
 export function resolveDoorTrimRemoveToleranceM(args: { rect: DoorTrimRect; axis: DoorTrimAxis }): number {
   const crossSpan =

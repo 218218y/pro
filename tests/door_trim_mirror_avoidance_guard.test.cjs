@@ -9,14 +9,14 @@ function read(rel) {
 
 function bundleDoorTrimFeature() {
   return [
-    'esm/native/features/door_trim.ts',
-    'esm/native/features/door_trim_shared.ts',
-    'esm/native/features/door_trim_map.ts',
-    'esm/native/features/door_trim_placement.ts',
-    'esm/native/features/door_trim_placement_contracts.ts',
-    'esm/native/features/door_trim_placement_geometry.ts',
-    'esm/native/features/door_trim_placement_mirror.ts',
-    'esm/native/features/door_trim_placement_match.ts',
+    'esm/native/features/door_authoring/internal/trim.ts',
+    'esm/native/features/door_authoring/internal/trim_shared.ts',
+    'esm/native/features/door_authoring/internal/trim_map.ts',
+    'esm/native/features/door_authoring/internal/trim_placement.ts',
+    'esm/native/features/door_authoring/internal/trim_placement_contracts.ts',
+    'esm/native/features/door_authoring/internal/trim_placement_geometry.ts',
+    'esm/native/features/door_authoring/internal/trim_placement_mirror.ts',
+    'esm/native/features/door_authoring/internal/trim_placement_match.ts',
   ]
     .map(read)
     .join('\n');

@@ -7,8 +7,11 @@ import { normalizeWhitespace } from './_source_bundle.js';
 
 const MATERIALS_SRC = path.resolve(process.cwd(), 'esm/native/builder/corner_materials.ts');
 const REMOVE_SRC = path.resolve(process.cwd(), 'esm/native/builder/corner_state_normalize_config.ts');
-const MIRROR_SRC = path.resolve(process.cwd(), 'esm/native/features/mirror_layout.ts');
-const MIRROR_LOOKUP_SRC = path.resolve(process.cwd(), 'esm/native/features/mirror_layout_lookup.ts');
+const MIRROR_SRC = path.resolve(process.cwd(), 'esm/native/features/door_authoring/internal/mirror.ts');
+const MIRROR_LOOKUP_SRC = path.resolve(
+  process.cwd(),
+  'esm/native/features/door_authoring/internal/mirror_lookup.ts'
+);
 const HOVER_SRC = path.resolve(
   process.cwd(),
   'esm/native/services/canvas_picking_door_action_hover_state.ts'

@@ -12,11 +12,11 @@ function normalizeWhitespace(input) {
 }
 
 test('[mirror-layout-family] canonical seam keeps split contracts/geometry/lookup owners with face/scoped consumers', () => {
-  const mirrorLayout = read('esm/native/features/mirror_layout.ts');
-  const contracts = read('esm/native/features/mirror_layout_contracts.ts');
+  const mirrorLayout = read('esm/native/features/door_authoring/internal/mirror.ts');
+  const contracts = read('esm/native/features/door_authoring/internal/mirror_contracts.ts');
   const sharedContracts = read('esm/shared/mirror_layout_contracts_shared.ts');
-  const geometry = read('esm/native/features/mirror_layout_geometry.ts');
-  const lookup = read('esm/native/features/mirror_layout_lookup.ts');
+  const geometry = read('esm/native/features/door_authoring/internal/mirror_geometry.ts');
+  const lookup = read('esm/native/features/door_authoring/internal/mirror_lookup.ts');
   const mirrorLayoutNorm = normalizeWhitespace(mirrorLayout);
   const contractsNorm = normalizeWhitespace(contracts);
   const sharedContractsNorm = normalizeWhitespace(sharedContracts);
@@ -53,11 +53,14 @@ test('[mirror-layout-family] canonical seam keeps split contracts/geometry/looku
     .join('\n');
   const connector = read('esm/native/builder/corner_connector_door_emit_visuals.ts');
 
-  assert.match(mirrorLayoutNorm, /from '\.\/mirror_layout_contracts\.js';/);
-  assert.match(mirrorLayoutNorm, /from '\.\/mirror_layout_geometry\.js';/);
-  assert.match(mirrorLayoutNorm, /from '\.\/mirror_layout_lookup\.js';/);
+  assert.match(mirrorLayoutNorm, /from '\.\/mirror_contracts\.js';/);
+  assert.match(mirrorLayoutNorm, /from '\.\/mirror_geometry\.js';/);
+  assert.match(mirrorLayoutNorm, /from '\.\/mirror_lookup\.js';/);
 
-  assert.match(contractsNorm, /export \* from '\.\.\/\.\.\/shared\/mirror_layout_contracts_shared\.js';/);
+  assert.match(
+    contractsNorm,
+    /export \* from '\.\.\/\.\.\/\.\.\/\.\.\/shared\/mirror_layout_contracts_shared\.js';/
+  );
   assert.match(sharedContractsNorm, /export function readMirrorLayoutEntry\(/);
   assert.match(sharedContractsNorm, /export function readMirrorLayoutList\(/);
   assert.match(sharedContractsNorm, /export function readMirrorLayoutMap\(/);

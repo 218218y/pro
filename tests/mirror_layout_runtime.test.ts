@@ -8,7 +8,7 @@ import {
   readMirrorLayoutListForPart,
   resolveMirrorPlacementInRect,
   resolveMirrorPlacementListInRect,
-} from '../esm/native/features/mirror_layout.ts';
+} from '../esm/native/features/door_authoring/api.ts';
 
 test('mirror layout runtime resolves scoped part lookup and canonical full-key fallback for lower stacks', () => {
   const scopedOnly = readMirrorLayoutListForPart({

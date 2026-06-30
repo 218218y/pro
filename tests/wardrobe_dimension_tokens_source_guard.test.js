@@ -162,12 +162,12 @@ test('[dimension tokens] mirror layout measurements read door visual dimension t
 
   for (const rel of [
     'esm/shared/mirror_layout_contracts_shared.ts',
-    'esm/native/features/mirror_layout_geometry.ts',
+    'esm/native/features/door_authoring/internal/mirror_geometry.ts',
     'esm/native/builder/visuals_and_contents_door_visual_mirror_styled.ts',
   ]) {
     assertUsesToken(
       rel,
-      rel.endsWith('mirror_layout_geometry.ts') ? 'MIRROR_REMOVE_TOLERANCE_SIZE_RATIO' : 'FULL_MIRROR_INSET_M'
+      rel.endsWith('mirror_geometry.ts') ? 'MIRROR_REMOVE_TOLERANCE_SIZE_RATIO' : 'FULL_MIRROR_INSET_M'
     );
   }
 
@@ -177,7 +177,7 @@ test('[dimension tokens] mirror layout measurements read door visual dimension t
   assert.doesNotMatch(contracts, /MIN_MIRROR_SIZE_M\s*=\s*0\.02/);
   assert.doesNotMatch(contracts, /DEFAULT_REMOVE_TOLERANCE_M\s*=\s*0\.03/);
 
-  const geometry = read('esm/native/features/mirror_layout_geometry.ts');
+  const geometry = read('esm/native/features/door_authoring/internal/mirror_geometry.ts');
   assert.doesNotMatch(geometry, /\* 0\.18/);
 });
 
@@ -238,10 +238,10 @@ test('[dimension tokens] door trim placement and front reveal frame geometry are
   assert.match(tokens, /export const FRONT_REVEAL_FRAME_DIMENSIONS = Object\.freeze\(\{/);
 
   for (const rel of [
-    'esm/native/features/door_trim_shared.ts',
-    'esm/native/features/door_trim_placement_geometry.ts',
-    'esm/native/features/door_trim_placement_match.ts',
-    'esm/native/features/door_trim_placement_mirror.ts',
+    'esm/native/features/door_authoring/internal/trim_shared.ts',
+    'esm/native/features/door_authoring/internal/trim_placement_geometry.ts',
+    'esm/native/features/door_authoring/internal/trim_placement_match.ts',
+    'esm/native/features/door_authoring/internal/trim_placement_mirror.ts',
   ]) {
     assertUsesToken(rel, 'DOOR_TRIM_DIMENSIONS');
   }
@@ -255,10 +255,10 @@ test('[dimension tokens] door trim placement and front reveal frame geometry are
     assertUsesToken(rel, 'FRONT_REVEAL_FRAME_DIMENSIONS');
   }
 
-  const trimShared = read('esm/native/features/door_trim_shared.ts');
+  const trimShared = read('esm/native/features/door_authoring/internal/trim_shared.ts');
   assert.doesNotMatch(trimShared, /CENTER_EPSILON = 1e-4/);
 
-  const trimMatch = read('esm/native/features/door_trim_placement_match.ts');
+  const trimMatch = read('esm/native/features/door_authoring/internal/trim_placement_match.ts');
   assert.doesNotMatch(trimMatch, /DEFAULT_DOOR_TRIM_THICKNESS_M \* 1\.15/);
   assert.doesNotMatch(trimMatch, /Math\.min\(0\.09, crossSpan \* 0\.12\)/);
 

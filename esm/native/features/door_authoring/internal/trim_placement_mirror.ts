@@ -1,17 +1,17 @@
-import { readMirrorLayoutList, resolveMirrorPlacementListInRect } from './mirror_layout.js';
+import { readMirrorLayoutList, resolveMirrorPlacementListInRect } from './mirror.js';
 import type {
   DoorTrimMirrorPlacementArgs,
   DoorTrimRect,
   ResolvedDoorTrimPlacement,
-} from './door_trim_placement_contracts.js';
-import { DOOR_TRIM_MIRROR_EDGE_GAP_M, DOOR_TRIM_MIRROR_SNAP_ZONE_M } from './door_trim_shared.js';
-import { DOOR_TRIM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+} from './trim_placement_contracts.js';
+import { DOOR_TRIM_MIRROR_EDGE_GAP_M, DOOR_TRIM_MIRROR_SNAP_ZONE_M } from './trim_shared.js';
+import { DOOR_TRIM_DIMENSIONS } from '../../../../shared/wardrobe_dimension_tokens_shared.js';
 import {
   buildDoorTrimCenterNormFromResolvedCenter,
   buildDoorTrimRectFromPlacement,
   clampDoorTrimCenterWithinDoor,
   resolveDoorTrimPlacement,
-} from './door_trim_placement_geometry.js';
+} from './trim_placement_geometry.js';
 
 function rectsOverlap(a: DoorTrimRect, b: DoorTrimRect, clearance: number): boolean {
   return !(

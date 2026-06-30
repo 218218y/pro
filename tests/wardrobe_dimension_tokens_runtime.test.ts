@@ -29,7 +29,7 @@ import {
 import {
   DEFAULT_DOOR_TRIM_CROSS_SIZE_CM,
   DEFAULT_DOOR_TRIM_THICKNESS_M,
-} from '../esm/native/features/door_trim_shared.ts';
+} from '../esm/native/features/door_authoring/api.ts';
 import {
   DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM,
   DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M,

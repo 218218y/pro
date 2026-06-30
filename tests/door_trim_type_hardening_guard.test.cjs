@@ -32,10 +32,10 @@ test('[door-trim] type hardening keeps trim maps normalized and marker access nu
   const kernel = read('types/kernel.ts');
   const canonicalCenterContracts = [
     read('types/maps.ts'),
-    read('esm/native/features/door_trim_map.ts'),
-    read('esm/native/features/door_trim_placement_contracts.ts'),
-    read('esm/native/features/door_trim_placement_geometry.ts'),
-    read('esm/native/features/door_trim_placement_mirror.ts'),
+    read('esm/native/features/door_authoring/internal/trim_map.ts'),
+    read('esm/native/features/door_authoring/internal/trim_placement_contracts.ts'),
+    read('esm/native/features/door_authoring/internal/trim_placement_geometry.ts'),
+    read('esm/native/features/door_authoring/internal/trim_placement_mirror.ts'),
     read('esm/native/runtime/maps_access_normalizers_visuals.ts'),
     edit,
     read('esm/native/services/canvas_picking_door_action_hover_preview_trim.ts'),

@@ -5,9 +5,9 @@ import type {
   DoorTrimMap,
   DoorTrimSpan,
   UnknownRecord,
-} from '../../../types';
+} from '../../../../../types';
 
-import { DOOR_TRIM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DOOR_TRIM_DIMENSIONS } from '../../../../shared/wardrobe_dimension_tokens_shared.js';
 
 export type { DoorTrimAxis, DoorTrimColor, DoorTrimEntry, DoorTrimMap, DoorTrimSpan, UnknownRecord };
 

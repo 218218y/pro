@@ -5,7 +5,7 @@ import type {
   DoorTrimRect,
   DoorTrimSpan,
   ResolvedDoorTrimPlacement,
-} from './door_trim_shared.js';
+} from './trim_shared.js';
 
 export type {
   DoorTrimAxis,

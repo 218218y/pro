@@ -15,7 +15,7 @@ import {
   summarizePaintFlowChanges,
   type PaintFlowMutableState,
 } from '../esm/native/services/canvas_picking_paint_flow_apply_state.ts';
-import { buildMirrorLayoutFromHit } from '../esm/native/features/mirror_layout.ts';
+import { buildMirrorLayoutFromHit } from '../esm/native/features/door_authoring/api.ts';
 import { isSpecialPart, getPaintSourceTag } from '../esm/native/services/canvas_picking_paint_flow_shared.ts';
 import {
   resolveDoorStylePaintTargetKey,

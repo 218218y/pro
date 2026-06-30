@@ -35,7 +35,7 @@ test('stage 42 legacy fallback inventory closeout is anchored', () => {
     'esm/native/builder/corner_wing_cornice_profile.ts',
     'esm/native/builder/render_preview_sketch_pipeline_box_content_drawers.ts',
     'esm/native/builder/module_loop_pipeline_runtime_shared.ts',
-    'esm/native/features/door_trim_map.ts',
+    'esm/native/features/door_authoring/internal/trim_map.ts',
     'esm/native/features/stack_split/stack_split.ts',
     'esm/native/services/canvas_picking_sketch_free_box_gap.ts',
     'esm/native/services/render_surface_runtime_support.ts',

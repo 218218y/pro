@@ -6,7 +6,7 @@ function read(relativePath) {
   return fs.readFileSync(new URL(`../${relativePath}`, import.meta.url), 'utf8');
 }
 
-const owner = read('esm/native/features/door_removal_visibility.ts');
+const owner = read('esm/native/features/door_authoring/internal/removal.ts');
 const consumers = [
   read('esm/native/builder/build_wardrobe_flow_context.ts'),
   read('esm/native/builder/corner_state_normalize_layout.ts'),

@@ -32,9 +32,9 @@ const previewSketchBundle = bundleSources(
 
 test('[mirror-center] mirror by-size hover uses shared center snap and measurement-line center highlights', () => {
   const feature = [
-    read('esm/native/features/mirror_layout.ts'),
-    read('esm/native/features/mirror_layout_contracts.ts'),
-    read('esm/native/features/mirror_layout_geometry.ts'),
+    read('esm/native/features/door_authoring/internal/mirror.ts'),
+    read('esm/native/features/door_authoring/internal/mirror_contracts.ts'),
+    read('esm/native/features/door_authoring/internal/mirror_geometry.ts'),
   ].join('\n');
   const hover = [
     'esm/native/services/canvas_picking_door_action_hover_preview_paint.ts',

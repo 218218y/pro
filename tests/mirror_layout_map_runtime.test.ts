@@ -6,7 +6,7 @@ import {
   findMirrorLayoutMatchInRect,
   readMirrorLayoutMap,
   resolveMirrorPlacementListInRect,
-} from '../esm/native/features/mirror_layout.ts';
+} from '../esm/native/features/door_authoring/api.ts';
 
 test('mirror layout runtime clones map/list payloads so callers cannot mutate canonical mirror snapshots', () => {
   const source = {

@@ -63,8 +63,8 @@ function loadTsModule(entryFile, overrides = Object.create(null)) {
 }
 
 function loadDoorTrimModule() {
-  return loadTsModule(path.join(process.cwd(), 'esm/native/features/door_trim.ts'), {
-    './mirror_layout.js': {
+  return loadTsModule(path.join(process.cwd(), 'esm/native/features/door_authoring/internal/trim.ts'), {
+    './mirror.js': {
       readMirrorLayoutList: () => [],
       resolveMirrorPlacementListInRect: () => [],
     },

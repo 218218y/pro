@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
 import { createRequire } from 'node:module';
+import { toDoorStyleOverrideMapKey } from '../esm/native/features/door_authoring/api.ts';
 
 const require = createRequire(import.meta.url);
 const ts = require('typescript');
@@ -34,7 +35,24 @@ function createDoorVisualMapLookupMock() {
     return out;
   }
 
+  function isDoorStyleSegmentedBaseId(partId) {
+    return (
+      /^(?:lower_)?d\d+$/.test(partId) ||
+      /^(?:lower_)?corner_door_\d+$/.test(partId) ||
+      /^(?:lower_)?corner_pent_door_\d+$/.test(partId)
+    );
+  }
+
+  function toDoorStyleOverrideMapKeyMock(partId) {
+    const pid = typeof partId === 'string' ? partId.trim() : String(partId ?? '').trim();
+    if (!pid) return '';
+    if (anySuffixRe.test(pid)) return pid;
+    if (isDoorStyleSegmentedBaseId(pid)) return `${pid}_full`;
+    return pid;
+  }
+
   return {
+    toDoorStyleOverrideMapKey: toDoorStyleOverrideMapKeyMock,
     readDoorVisualMapEntry(map, partId) {
       for (const key of buildDoorVisualLookupKeys(partId)) {
         if (map && Object.prototype.hasOwnProperty.call(map, key)) return { key, value: map[key] };
@@ -45,7 +63,7 @@ function createDoorVisualMapLookupMock() {
 }
 
 function loadDoorStyleOverridesModule() {
-  const file = path.join(process.cwd(), 'esm/native/features/door_style_overrides.ts');
+  const file = path.join(process.cwd(), 'esm/native/features/door_authoring/internal/style.ts');
   const source = fs.readFileSync(file, 'utf8');
   const transpiled = ts.transpileModule(source, {
     compilerOptions: {
@@ -56,7 +74,7 @@ function loadDoorStyleOverridesModule() {
   }).outputText;
   const mod = { exports: {} };
   const localRequire = spec => {
-    if (spec === './door_visual_map_lookup.js') return createDoorVisualMapLookupMock();
+    if (spec === './visual_keys.js') return createDoorVisualMapLookupMock();
     return require(spec);
   };
   const sandbox = {
@@ -92,8 +110,8 @@ test('[door-style-overrides] tokens, map normalization, and effective style reso
   assert.equal(map.d1_full, 'profile');
   assert.equal(map.drawer_1, 'double_profile');
 
-  assert.equal(mod.toDoorStyleOverrideMapKey('d7'), 'd7_full');
-  assert.equal(mod.toDoorStyleOverrideMapKey('drawer_9'), 'drawer_9');
+  assert.equal(toDoorStyleOverrideMapKey('d7'), 'd7_full');
+  assert.equal(toDoorStyleOverrideMapKey('drawer_9'), 'drawer_9');
   assert.equal(mod.resolveDoorStyleOverrideValue({ d7_full: 'double_profile' }, 'd7'), 'double_profile');
   assert.equal(mod.resolveDoorStyleOverrideValue({ d7: 'profile' }, 'd7_top'), 'profile');
   assert.equal(

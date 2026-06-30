@@ -1,4 +1,4 @@
-import type { UnknownRecord } from '../../../types';
+import type { UnknownRecord } from '../../../../../types';
 
 export const CABINET_BODY_DOOR_TRIM_SURFACE_PARTS = Object.freeze([
   'body_left',

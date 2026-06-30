@@ -1,4 +1,4 @@
-import type { DoorTrimEntry, DoorTrimMap } from './door_trim_shared.js';
+import type { DoorTrimEntry, DoorTrimMap } from './trim_shared.js';
 import {
   DEFAULT_DOOR_TRIM_AXIS,
   DEFAULT_DOOR_TRIM_COLOR,
@@ -11,7 +11,7 @@ import {
   normalizeDoorTrimCustomSizeCm,
   normalizeDoorTrimSpan,
   resolveDoorTrimCenterPair,
-} from './door_trim_shared.js';
+} from './trim_shared.js';
 
 function buildTrimId(seed?: unknown): string {
   if (typeof seed === 'string' && seed.trim()) return String(seed);

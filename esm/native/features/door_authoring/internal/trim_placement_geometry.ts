@@ -1,4 +1,4 @@
-import { readDoorTrimEntry } from './door_trim_map.js';
+import { readDoorTrimEntry } from './trim_map.js';
 import type {
   DoorTrimCenterFromLocalArgs,
   DoorTrimPlacementArgs,
@@ -6,7 +6,7 @@ import type {
   DoorTrimSnappedCenterFromLocalArgs,
   DoorTrimSpan,
   ResolvedDoorTrimPlacement,
-} from './door_trim_placement_contracts.js';
+} from './trim_placement_contracts.js';
 import {
   DEFAULT_DOOR_TRIM_AXIS,
   DEFAULT_DOOR_TRIM_CENTER_NORM,
@@ -25,8 +25,8 @@ import {
   normalizeDoorTrimSpan,
   resolveDoorTrimCenterPair,
   resolveDoorTrimNormalizedCenter,
-} from './door_trim_shared.js';
-import { DOOR_TRIM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+} from './trim_shared.js';
+import { DOOR_TRIM_DIMENSIONS } from '../../../../shared/wardrobe_dimension_tokens_shared.js';
 
 export function buildDoorTrimCenterFromLocal(args: DoorTrimCenterFromLocalArgs): {
   centerXNorm: number;

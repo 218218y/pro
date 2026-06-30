@@ -1,6 +1,6 @@
-import type { DoorStyleMap, UnknownRecord } from '../../../types';
+import type { DoorStyleMap, UnknownRecord } from '../../../../../types';
 
-import { readDoorVisualMapEntry } from './door_visual_map_lookup.js';
+import { readDoorVisualMapEntry, toDoorStyleOverrideMapKey } from './visual_keys.js';
 
 export type DoorStyleOverrideValue = 'flat' | 'profile' | 'double_profile';
 
@@ -65,22 +65,6 @@ export function isGlassPaintSelection(value: unknown): boolean {
 export function resolveGlassFrameStylePaintSelection(value: unknown): DoorStyleOverrideValue | null {
   if (value === 'glass') return 'profile';
   return parseGlassFrameStylePaintToken(value);
-}
-
-function isSegmentedDoorBaseId(partId: string): boolean {
-  return (
-    /^(?:lower_)?d\d+$/.test(partId) ||
-    /^(?:lower_)?corner_door_\d+$/.test(partId) ||
-    /^(?:lower_)?corner_pent_door_\d+$/.test(partId)
-  );
-}
-
-export function toDoorStyleOverrideMapKey(partId: unknown): string {
-  const pid = typeof partId === 'string' ? partId.trim() : String(partId ?? '').trim();
-  if (!pid) return '';
-  if (/(?:_(?:full|top|bot|mid\d*))$/i.test(pid)) return pid;
-  if (isSegmentedDoorBaseId(pid)) return `${pid}_full`;
-  return pid;
 }
 
 export function readDoorStyleMap(value: unknown): DoorStyleMap {

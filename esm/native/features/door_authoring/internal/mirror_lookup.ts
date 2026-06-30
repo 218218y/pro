@@ -1,4 +1,4 @@
-import type { MirrorLayoutEntry, MirrorLayoutList } from '../../../types';
+import type { MirrorLayoutEntry, MirrorLayoutList } from '../../../../../types';
 
 import {
   cloneMirrorLayoutEntry,
@@ -7,7 +7,7 @@ import {
   readMirrorLayoutFaceSign,
   readMirrorLayoutList,
   isRecord,
-} from './mirror_layout_contracts.js';
+} from './mirror_contracts.js';
 import {
   distanceFromPointToRect,
   placementRect,
@@ -16,8 +16,8 @@ import {
   resolveRemoveToleranceM,
   type MirrorRect,
   type ResolvedMirrorPlacement,
-} from './mirror_layout_geometry.js';
-import { buildDoorVisualLookupKeys } from './door_visual_map_lookup.js';
+} from './mirror_geometry.js';
+import { buildDoorVisualLookupKeys } from './visual_keys.js';
 
 export type MirrorLayoutHitMatch = {
   index: number;

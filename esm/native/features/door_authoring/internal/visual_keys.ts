@@ -1,6 +1,6 @@
-import { readMirrorLayoutList } from './mirror_layout_contracts.js';
+import { readMirrorLayoutList } from './mirror_contracts.js';
 
-import type { MirrorLayoutList } from '../../../types';
+import type { MirrorLayoutList } from '../../../../../types';
 
 export type DoorVisualMapEntry = { key: string; value: unknown };
 
@@ -20,6 +20,14 @@ function isSegmentedDoorBaseId(partId: string): boolean {
   if (/^sketch_box(?:_free)?_.+_door(?:_|$)/i.test(partId) && !SEGMENTED_DOOR_ANY_SUFFIX_RE.test(partId))
     return true;
   return false;
+}
+
+function isDoorStyleSegmentedBaseId(partId: string): boolean {
+  return (
+    /^(?:lower_)?d\d+$/.test(partId) ||
+    /^(?:lower_)?corner_door_\d+$/.test(partId) ||
+    /^(?:lower_)?corner_pent_door_\d+$/.test(partId)
+  );
 }
 
 /**
@@ -74,6 +82,14 @@ export function readDoorVisualSegmentBasePartId(partId: string): string {
 
 export function isDoorVisualSegmentPartId(partId: string): boolean {
   return SEGMENTED_DOOR_PART_SUFFIX_RE.test(stripDoorVisualSurfaceSuffix(String(partId || '')));
+}
+
+export function toDoorStyleOverrideMapKey(partId: unknown): string {
+  const pid = typeof partId === 'string' ? partId.trim() : String(partId ?? '').trim();
+  if (!pid) return '';
+  if (SEGMENTED_DOOR_ANY_SUFFIX_RE.test(pid)) return pid;
+  if (isDoorStyleSegmentedBaseId(pid)) return `${pid}_full`;
+  return pid;
 }
 
 export function readDoorVisualPrefixedOwnMapEntry(args: {

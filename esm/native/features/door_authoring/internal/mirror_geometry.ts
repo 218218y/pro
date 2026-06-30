@@ -1,4 +1,4 @@
-import type { MirrorLayoutEntry } from '../../../types';
+import type { MirrorLayoutEntry } from '../../../../../types';
 
 import {
   buildCenterNorm,
@@ -20,7 +20,7 @@ import {
   readMirrorLayoutList,
   DEFAULT_REMOVE_TOLERANCE_M,
   type MirrorDraftInput,
-} from './mirror_layout_contracts.js';
+} from './mirror_contracts.js';
 
 export type MirrorRect = {
   minX: number;

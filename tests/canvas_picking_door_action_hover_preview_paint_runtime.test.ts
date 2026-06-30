@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {
   buildMirrorLayoutFromHit,
   resolveMirrorPlacementInRect,
-} from '../esm/native/features/mirror_layout.ts';
+} from '../esm/native/features/door_authoring/api.ts';
 import { tryHandleDoorPaintHoverPreview } from '../esm/native/services/canvas_picking_door_action_hover_preview_paint.ts';
 
 class Vec3 {

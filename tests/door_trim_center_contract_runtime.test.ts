@@ -7,7 +7,7 @@ import {
   createDoorTrimEntry,
   resolveDoorTrimPlacement,
   resolveDoorTrimPlacementAvoidingMirror,
-} from '../esm/native/features/door_trim.ts';
+} from '../esm/native/features/door_authoring/api.ts';
 
 const rect = { minX: 0, maxX: 1, minY: 0, maxY: 1 };
 

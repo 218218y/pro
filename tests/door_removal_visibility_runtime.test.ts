@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {
   isRemoveDoorModeFromSnapshot,
   resolveRemoveDoorsEnabledFromSnapshots,
-} from '../esm/native/features/door_removal_visibility.ts';
+} from '../esm/native/features/door_authoring/api.ts';
 
 test('door removal visibility resolves only canonical UI and primary-mode snapshots', () => {
   assert.equal(isRemoveDoorModeFromSnapshot({ primary: 'remove_door' }), true);
