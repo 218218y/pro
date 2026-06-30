@@ -6,7 +6,7 @@ import { readFirstExisting } from './_read_src.js';
 const source = readFirstExisting(['../esm/native/runtime/planar_reflector_runtime.ts'], import.meta.url);
 
 test('planar reflector shader follows Three.js color pipeline with a mild neutral brightness boost', () => {
-  assert.match(source, /const DEFAULT_REFLECTOR_COLOR = 0x7f7f7f;/);
+  assert.match(source, /const DEFAULT_REFLECTOR_COLOR = 0xa3a3a3;/);
   assert.match(source, /const DEFAULT_REFLECTOR_BRIGHTNESS = 1\.04;/);
   assert.match(source, /blendOverlay\(reflected\.rgb, color\) \* brightness/);
   assert.match(source, /#include <tonemapping_fragment>/);
