@@ -24,7 +24,7 @@
     "modules_configuration/modules_config_api.js",
     "platform_overhang_support.js",
     "project_config/project_config_lists_canonical.js",
-    "project_config/project_config_persisted_payload_shared.js",
+    "project_config/project_config_map_readers.js",
     "project_config/project_config_snapshot_canonical.js",
     "removable_parts.js",
     "shelf_part_identity.js",
@@ -61,7 +61,7 @@
     ],
     "project_config": [
       "project_config/project_config_lists_canonical.js",
-      "project_config/project_config_persisted_payload_shared.js",
+      "project_config/project_config_map_readers.js",
       "project_config/project_config_snapshot_canonical.js"
     ],
     "removable_parts": ["removable_parts.js"],

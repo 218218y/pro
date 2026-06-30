@@ -11,11 +11,15 @@ import type {
   MirrorLayoutMap,
   DoorTrimMap,
   RemovedDoorsMap,
+  RoundedFrameSideShelvesMap,
   SplitDoorsBottomMap,
   SplitDoorsMap,
+  ToggleValue,
 } from '../../../types/index.js';
 
 import {
+  isHingeMapEntry as isHingeMapEntryShared,
+  isToggleValue as isToggleValueShared,
   readCurtainMap as readCurtainMapShared,
   readDoorSpecialMap as readDoorSpecialMapShared,
   readDoorStyleMap as readDoorStyleMapShared,
@@ -27,13 +31,31 @@ import {
   readIndividualColorsMap as readIndividualColorsMapShared,
   readMirrorLayoutConfigMap as readMirrorLayoutConfigMapShared,
   readRemovedDoorsMap as readRemovedDoorsMapShared,
+  readRoundedFrameSideShelvesMap as readRoundedFrameSideShelvesMapShared,
+  readStringMap as readStringMapShared,
   readSplitDoorsBottomMapValue as readSplitDoorsBottomMapValueShared,
   readSplitDoorsMapValue as readSplitDoorsMapValueShared,
   readToggleMap as readToggleMapShared,
-} from '../features/project_config/project_config_persisted_payload_shared.js';
+} from '../features/project_config/project_config_map_readers.js';
+
+export function readStringMap(value: unknown): Record<string, string | null | undefined> {
+  return readStringMapShared(value);
+}
+
+export function isToggleValue(value: unknown): value is ToggleValue | undefined {
+  return isToggleValueShared(value);
+}
+
+export function readToggleMap(value: unknown): Record<string, ToggleValue | undefined> {
+  return readToggleMapShared(value);
+}
 
 export function readHingeMap(value: unknown): HingeMap {
   return readHingeMapShared(value);
+}
+
+export function isHingeMapEntry(value: unknown): value is HingeMap[string] {
+  return isHingeMapEntryShared(value);
 }
 
 export function readHandlesMap(value: unknown): HandlesMap {
@@ -50,6 +72,10 @@ export function readGrooveLinesCountMap(value: unknown): GrooveLinesCountMap {
 
 export function readRemovedDoorsMap(value: unknown): RemovedDoorsMap {
   return readRemovedDoorsMapShared(value);
+}
+
+export function readRoundedFrameSideShelvesMap(value: unknown): RoundedFrameSideShelvesMap {
+  return readRoundedFrameSideShelvesMapShared(value);
 }
 
 export function readDrawerDividersMap(value: unknown): DrawerDividersMap {

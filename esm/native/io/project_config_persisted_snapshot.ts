@@ -10,9 +10,10 @@ import { normalizeSavedColorsList } from '../../shared/maps_access_collections_s
 import { normalizeDoorMountThicknessCm } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { cloneCornerConfigurationListsSnapshot } from '../features/modules_configuration/corner_cells_api.js';
 import { cloneModulesConfigurationSnapshot } from '../features/modules_configuration/modules_config_api.js';
+import { cloneProjectJson } from './project_payload_shared.js';
 import {
-  cloneProjectJson,
   readCurtainMap,
+  readDrawerDividersMap,
   readDoorSpecialMap,
   readDoorStyleMap,
   readDoorTrimConfigMap,
@@ -26,8 +27,7 @@ import {
   readRoundedFrameSideShelvesMap,
   readSplitDoorsBottomMapValue,
   readSplitDoorsMapValue,
-  readToggleMap,
-} from '../features/project_config/project_config_persisted_payload_shared.js';
+} from './project_io_load_helpers_maps.js';
 import {
   PERSISTED_PROJECT_CONFIG_BRANCH_KEYS,
   type PersistedProjectConfigBranchKey,
@@ -137,7 +137,7 @@ const PERSISTED_PROJECT_CONFIG_BRANCH_READERS: {
   removedDoorsMap: canonicalConfig => readRemovedDoorsMap(canonicalConfig.removedDoorsMap),
   roundedFrameSideShelvesMap: canonicalConfig =>
     readRoundedFrameSideShelvesMap(canonicalConfig.roundedFrameSideShelvesMap),
-  drawerDividersMap: canonicalConfig => readToggleMap(canonicalConfig.drawerDividersMap),
+  drawerDividersMap: canonicalConfig => readDrawerDividersMap(canonicalConfig.drawerDividersMap),
   individualColors: canonicalConfig => readIndividualColorsMap(canonicalConfig.individualColors),
   doorSpecialMap: canonicalConfig => readDoorSpecialMap(canonicalConfig.doorSpecialMap),
   doorStyleMap: canonicalConfig => readDoorStyleMap(canonicalConfig.doorStyleMap),

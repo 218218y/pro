@@ -24,7 +24,7 @@
     "modules_configuration/modules_config_api.js",
     "platform_overhang_support.js",
     "project_config/project_config_lists_canonical.js",
-    "project_config/project_config_persisted_payload_shared.js",
+    "project_config/project_config_map_readers.js",
     "project_config/project_config_snapshot_canonical.js",
     "removable_parts.js",
     "shelf_part_identity.js",
@@ -62,7 +62,7 @@
     "platform_overhang_support": ["platform_overhang_support.js"],
     "project_config": [
       "project_config/project_config_lists_canonical.js",
-      "project_config/project_config_persisted_payload_shared.js",
+      "project_config/project_config_map_readers.js",
       "project_config/project_config_snapshot_canonical.js"
     ],
     "removable_parts": ["removable_parts.js"],
@@ -850,10 +850,6 @@
     },
     {
       "file": "esm/native/io/project_config_persisted_snapshot.ts",
-      "entry": "project_config/project_config_persisted_payload_shared.js"
-    },
-    {
-      "file": "esm/native/io/project_config_persisted_snapshot.ts",
       "entry": "project_config/project_config_snapshot_canonical.js"
     },
     {
@@ -870,7 +866,7 @@
     },
     {
       "file": "esm/native/io/project_io_load_helpers_maps.ts",
-      "entry": "project_config/project_config_persisted_payload_shared.js"
+      "entry": "project_config/project_config_map_readers.js"
     },
     {
       "file": "esm/native/io/project_io_save_helpers.ts",
@@ -889,10 +885,6 @@
       "entry": "modules_configuration/corner_cells_api.js"
     },
     {
-      "file": "esm/native/io/project_payload_shared.ts",
-      "entry": "project_config/project_config_persisted_payload_shared.js"
-    },
-    {
       "file": "esm/native/io/project_schema_current.ts",
       "entry": "mirror_layout.js"
     },
@@ -903,10 +895,6 @@
     {
       "file": "esm/native/io/project_schema_current.ts",
       "entry": "door_style_overrides.js"
-    },
-    {
-      "file": "esm/native/io/project_schema_door_maps.ts",
-      "entry": "project_config/project_config_persisted_payload_shared.js"
     },
     {
       "file": "esm/native/kernel/domain_api.ts",

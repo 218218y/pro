@@ -4,7 +4,7 @@ import {
   readGroovesMap,
   readSplitDoorsBottomMapValue,
   readSplitDoorsMapValue,
-} from './project_config_persisted_payload_shared.js';
+} from './project_config_map_readers.js';
 import { readDoorTrimMap } from '../door_trim.js';
 import { readDoorStyleMap as normalizeDoorStyleMap } from '../door_style_overrides.js';
 import {
