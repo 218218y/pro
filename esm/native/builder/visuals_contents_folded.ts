@@ -58,6 +58,15 @@ function resolveBookDepth(baseDepth: number): number {
   return clamp(randomizedDepth, dims.depthMinM, baseDepth);
 }
 
+function readVisualContentRuntimeNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function readPositiveVisualContentRuntimeNumber(value: unknown): number | null {
+  const n = readVisualContentRuntimeNumber(value);
+  return n != null && n > 0 ? n : null;
+}
+
 function resolveRotatedBookFootprintWidth(width: number, height: number, angleZ: number): number {
   const angleCos = Math.abs(Math.cos(angleZ));
   const angleSin = Math.abs(Math.sin(angleZ));
@@ -164,12 +173,9 @@ function addShelfBooks(args: {
   const sideMargin = dims.sideMarginM;
   const topSafety = dims.topSafetyM;
   const minBookHeight = dims.minHeightM;
-  const resolvedMaxDepth =
-    typeof maxDepth === 'number' && Number.isFinite(maxDepth) && maxDepth > 0
-      ? Number(maxDepth)
-      : dims.defaultMaxDepthM;
+  const resolvedMaxDepth = readPositiveVisualContentRuntimeNumber(maxDepth) ?? dims.defaultMaxDepthM;
   const maxBookDepth = Math.min(dims.depthMaxM, Math.max(dims.depthMinM, resolvedMaxDepth - depthMargin * 2));
-  const availableHeight = Math.max(0, Number(maxHeight) - topSafety);
+  const availableHeight = Math.max(0, (readVisualContentRuntimeNumber(maxHeight) ?? 0) - topSafety);
   if (
     !(width > sideMargin * 2) ||
     !(availableHeight >= minBookHeight) ||
@@ -372,6 +378,7 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
   if (typeof maxHeight === 'undefined' || maxHeight === null) {
     maxHeight = CONTENT_VISUAL_DIMENSIONS.foldedClothes.defaultMaxHeightM;
   }
+  const resolvedMaxHeight = readVisualContentRuntimeNumber(maxHeight) ?? 0;
 
   const isLibraryContents = resolveLibraryContents(policy);
   if (!resolveShowContents(policy)) return;
@@ -390,7 +397,7 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
       shelfZ,
       width,
       parentGroup,
-      maxHeight,
+      maxHeight: resolvedMaxHeight,
       maxDepth,
       addOutlines,
       isSketch,
@@ -401,8 +408,7 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
   const dims = CONTENT_VISUAL_DIMENSIONS.foldedClothes;
   const baseItemDepth = dims.baseItemDepthM;
   const depthMargin = dims.depthMarginM;
-  const resolvedMaxDepth =
-    typeof maxDepth === 'number' && Number.isFinite(maxDepth) && maxDepth > 0 ? Number(maxDepth) : null;
+  const resolvedMaxDepth = readPositiveVisualContentRuntimeNumber(maxDepth);
   const maxItemDepth =
     resolvedMaxDepth != null ? Math.max(0, resolvedMaxDepth - depthMargin * 2) : baseItemDepth;
   const itemDepth = resolvedMaxDepth != null ? Math.min(baseItemDepth, maxItemDepth) : baseItemDepth;
@@ -419,14 +425,14 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
     resolvedMaxDepth != null ? Math.min(dims.zSpreadMaxM, zRoom * dims.zSpreadRatio) : dims.zSpreadMaxM;
 
   const itemHeight = dims.itemHeightM;
-  const maxItemsAllowed = Math.floor((maxHeight - dims.heightHeadroomM) / itemHeight);
+  const maxItemsAllowed = Math.floor((resolvedMaxHeight - dims.heightHeadroomM) / itemHeight);
   const stacks = Math.floor(width / dims.stackPitchM);
 
   for (let i = 0; i < stacks; i++) {
     const xPos = shelfX - width / 2 + dims.stackXInsetM + i * dims.stackPitchM;
     let itemsInStack = Math.floor(seededRandom.random() * dims.randomItemsRange) + dims.stackBaseItems;
     if (itemsInStack > maxItemsAllowed) itemsInStack = maxItemsAllowed;
-    if (itemsInStack < 1 && maxHeight > dims.minHeightForSingleItemM) itemsInStack = 1;
+    if (itemsInStack < 1 && resolvedMaxHeight > dims.minHeightForSingleItemM) itemsInStack = 1;
     if (itemsInStack < 0) itemsInStack = 0;
 
     let currentY = shelfY;

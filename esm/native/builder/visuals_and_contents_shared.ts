@@ -6,6 +6,7 @@ import { assertApp } from '../runtime/api.js';
 import { trackMirrorSurface } from '../runtime/render_access.js';
 import { ensureBuilderService } from '../runtime/builder_service_access.js';
 import { assertThreeViaDeps } from '../runtime/three_access.js';
+import { readGeometryRuntimeNumber } from './geometry_runtime_contracts.js';
 
 import type {
   AppContainer,
@@ -54,7 +55,7 @@ function __asBufferAttribute(value: unknown): BufferAttributeRuntimeLike | null 
   }
   return {
     count: rec.count,
-    getX: (index: number) => Number(Reflect.apply(getX, value, [index])),
+    getX: (index: number) => readGeometryRuntimeNumber(Reflect.apply(getX, value, [index])) ?? NaN,
     setZ: (index: number, nextValue: number) => {
       Reflect.apply(setZ, value, [index, nextValue]);
     },

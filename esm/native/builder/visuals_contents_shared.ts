@@ -213,7 +213,7 @@ export function quantizeVisualContentMetric(value: number): number {
   const sign = value < 0 ? -1 : 1;
   const absValue = Math.abs(value);
   const bucketed = Math.floor(absValue / VISUAL_CONTENT_GEOMETRY_BUCKET_M) * VISUAL_CONTENT_GEOMETRY_BUCKET_M;
-  return sign * Number(bucketed.toFixed(6));
+  return (sign * Math.round(bucketed * 1_000_000)) / 1_000_000;
 }
 
 function geometryKey(kind: string, ...values: Array<number | string | boolean | undefined>): string {

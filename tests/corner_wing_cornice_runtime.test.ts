@@ -68,6 +68,7 @@ function makeCornerCell(args: {
   width: number;
   depth: number;
   bodyHeight?: number;
+  hasActiveHeight?: boolean;
   hasActiveDepth?: boolean;
   hasActiveSpecialDims?: boolean;
   hex?: CornerCell['__hexCellGeometry'];
@@ -83,7 +84,7 @@ function makeCornerCell(args: {
     centerX: args.startX + args.width / 2,
     bodyHeight,
     depth: args.depth,
-    __hasActiveHeight: false,
+    __hasActiveHeight: args.hasActiveHeight === true,
     __hasActiveDepth: args.hasActiveDepth === true,
     __hasActiveSpecialDims: args.hasActiveSpecialDims === true,
     __hexCellGeometry: args.hex ?? null,
@@ -296,4 +297,60 @@ test('corner wing wave cornice bridges a changed-depth first cell back to the pe
   );
   assert.equal(Number(geometryDepth(connectorReturn).toFixed(3)), 0.15);
   assert.equal(Number((connectorReturn as { position: { z: number } }).position.z.toFixed(3)), 0.08);
+});
+
+test('corner wing classic cornice exposes the connector-side return when the first wing cell is taller than the pentagon', () => {
+  const { params, wingGroup } = makeCorniceParams('classic');
+  params.locals.cornerCells = [
+    makeCornerCell({
+      idx: 0,
+      startX: 0,
+      width: 1.2,
+      depth: 0.6,
+      bodyHeight: 2.3,
+      hasActiveHeight: true,
+    }),
+  ];
+
+  applyCornerWingCornice(params as never);
+
+  const leftReturn = wingGroup.children.find(child => childPartId(child) === 'corner_cornice_side_left');
+  assert.ok(
+    leftReturn,
+    'a taller first corner-wing cell must render an exterior left cornice side above the lower pentagon'
+  );
+  assert.equal(
+    Number((leftReturn as { position: { y: number } }).position.y.toFixed(6)),
+    Number((params.ctx.startY + 2.3 + CARCASS_CORNICE_DIMENSIONS.common.yLiftM).toFixed(6))
+  );
+});
+
+test('corner wing wave cornice exposes the connector-side return when the first wing cell is taller than the pentagon', () => {
+  const { params, wingGroup } = makeCorniceParams('wave');
+  params.locals.cornerCells = [
+    makeCornerCell({
+      idx: 0,
+      startX: 0,
+      width: 1.2,
+      depth: 0.6,
+      bodyHeight: 2.3,
+      hasActiveHeight: true,
+    }),
+  ];
+
+  applyCornerWingCornice(params as never);
+
+  const leftReturn = wingGroup.children.find(child => childPartId(child) === 'corner_cornice_side_left');
+  assert.ok(leftReturn, 'wave cornice must also render the exposed side above the lower pentagon seam');
+  assert.equal(
+    Number((leftReturn as { position: { y: number } }).position.y.toFixed(6)),
+    Number(
+      (
+        params.ctx.startY +
+        2.3 +
+        CARCASS_CORNICE_DIMENSIONS.common.yLiftM +
+        CARCASS_CORNICE_DIMENSIONS.wave.maxHeightM / 2
+      ).toFixed(6)
+    )
+  );
 });

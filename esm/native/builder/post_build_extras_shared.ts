@@ -84,11 +84,13 @@ export function readKey(obj: ValueRecord | null, key: string): unknown {
   return Object.prototype.hasOwnProperty.call(obj, key) ? obj[key] : undefined;
 }
 
+const EXPLICIT_DECIMAL_NUMBER_TEXT = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/;
+
 export function parseNum(v: unknown): number {
   if (typeof v === 'number') return Number.isFinite(v) ? v : NaN;
   if (typeof v === 'string') {
     const t = v.trim();
-    if (!t) return NaN;
+    if (!EXPLICIT_DECIMAL_NUMBER_TEXT.test(t)) return NaN;
     const n = Number(t);
     return Number.isFinite(n) ? n : NaN;
   }

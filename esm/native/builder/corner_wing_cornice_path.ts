@@ -249,6 +249,11 @@ function resolveCornerRunSideClosure(
 ): CornerCorniceSideClosure | null {
   if (!neighbor) {
     if (side === 'left' && ctx.cornerConnectorActive) {
+      const connectorTopY = resolveCornerWingCorniceTopY(ctx, ctx.wingH);
+      if (run.topY > connectorTopY + CORNER_CORNICE_EPS) {
+        return { startZ: backTrimZ, internal: false };
+      }
+
       const firstFrontZ = firstCornerRunFrontZ(run, side);
       const connectorFrontZ = CARCASS_SHELL_DIMENSIONS.frontInsetZM;
       if (Math.abs(firstFrontZ - connectorFrontZ) > CORNER_CORNICE_EPS) {

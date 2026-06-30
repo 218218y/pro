@@ -17,6 +17,7 @@ import {
   resolveShowContents,
   resolveShowHanger,
 } from '../esm/native/builder/visuals_contents_shared.ts';
+import { __asBufferAttribute } from '../esm/native/builder/visuals_and_contents_shared.ts';
 import { CONTENT_VISUAL_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
 
 class FakeVector3 {
@@ -273,6 +274,26 @@ test('visuals_contents render policy requires explicit sketch mode and outline c
   );
 });
 
+test('visuals_and_contents buffer attribute reader does not coerce runtime geometry strings', () => {
+  const numericAttr = __asBufferAttribute({
+    count: 1,
+    getX() {
+      return 0.42;
+    },
+    setZ() {},
+  });
+  assert.equal(numericAttr?.getX(0), 0.42);
+
+  const stringAttr = __asBufferAttribute({
+    count: 1,
+    getX() {
+      return '0.42';
+    },
+    setZ() {},
+  });
+  assert.ok(Number.isNaN(stringAttr?.getX(0)));
+});
+
 test('visuals_contents hanging clothes honor showContents, style depth, and outline only cloth meshes', () => {
   const { App, outlined } = createApp({ buildUI: { showContents: true, doorStyle: 'profile' } });
   const parent = new FakeGroup();
@@ -365,6 +386,18 @@ test('visuals_contents folded clothes clamp depth and use only the explicit sket
       child.children.some((detail: any) => String(detail.userData.__kind || '').startsWith('folded_cloth_'))
     )
   );
+});
+
+test('visuals_contents folded shelf runtime dimensions reject numeric strings', () => {
+  const { App } = createApp({ buildUI: { showContents: true } });
+  const foldedParent = new FakeGroup();
+  const libraryParent = new FakeGroup();
+
+  addFoldedClothes(App, 0, 0.2, 0, 0.6, foldedParent as any, '0.25' as any, 0.2, foldedContentsPolicy(false));
+  assert.equal(foldedParent.children.length, 0, 'folded runtime maxHeight string should not render');
+
+  addFoldedClothes(App, 0, 0.2, 0, 0.6, libraryParent as any, '0.25' as any, 0.2, foldedContentsPolicy(true));
+  assert.equal(libraryParent.children.length, 0, 'library shelf runtime maxHeight string should not render');
 });
 
 test('visuals_contents folded shelf renders books instead of clothes in library mode', () => {
