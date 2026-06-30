@@ -3,6 +3,11 @@ import type { AppContainer, BuilderCreateInternalDrawerBoxFn } from '../../../ty
 
 import { ensureChestModeApp, ensureChestModeTHREE } from './visuals_chest_mode_runtime.js';
 
+function readPositiveRuntimeNumber(value: unknown, name: string): number {
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0) return value;
+  throw new TypeError(`[visuals_chest_mode] positive finite ${name} is required`);
+}
+
 type AppAwareCreateInternalDrawerBoxFn = (
   App: AppContainer,
   ...args: Parameters<BuilderCreateInternalDrawerBoxFn>
@@ -27,33 +32,36 @@ export const createInternalDrawerBox: AppAwareCreateInternalDrawerBoxFn = (
     throw new TypeError('[visuals_chest_mode] snapshot outline binding is required');
   }
   const outline = outlineFunc;
+  const width = readPositiveRuntimeNumber(w, 'drawer box width');
+  const height = readPositiveRuntimeNumber(h, 'drawer box height');
+  const depth = readPositiveRuntimeNumber(d, 'drawer box depth');
   const drawerBoxDimensions = CHEST_MODE_DIMENSIONS.drawerBox;
   const thickness = drawerBoxDimensions.panelThicknessM;
-  const innerH = h;
+  const innerH = height;
   const omitFrontPanel = options?.omitFrontPanel === true;
 
-  const floorGeo = new THREE.BoxGeometry(w, thickness, d);
+  const floorGeo = new THREE.BoxGeometry(width, thickness, depth);
   const floor = new THREE.Mesh(floorGeo, mat);
-  floor.position.set(0, -h / 2 + thickness / 2, 0);
+  floor.position.set(0, -height / 2 + thickness / 2, 0);
   group.add(floor);
 
-  const backGeo = new THREE.BoxGeometry(w, innerH, thickness);
+  const backGeo = new THREE.BoxGeometry(width, innerH, thickness);
   const back = new THREE.Mesh(backGeo, mat);
-  back.position.set(0, 0, -d / 2 + thickness / 2);
+  back.position.set(0, 0, -depth / 2 + thickness / 2);
   outline(back);
   group.add(back);
 
   if (!omitFrontPanel) {
-    const frontGeo = new THREE.BoxGeometry(w, innerH, thickness);
+    const frontGeo = new THREE.BoxGeometry(width, innerH, thickness);
     const front = new THREE.Mesh(frontGeo, mat);
-    front.position.set(0, 0, d / 2 - thickness / 2);
+    front.position.set(0, 0, depth / 2 - thickness / 2);
     outline(front);
     group.add(front);
 
     try {
-      const accentW = Number(w);
-      const accentH = Number(innerH);
-      const accentZ = d / 2 + drawerBoxDimensions.accentZOffsetM;
+      const accentW = width;
+      const accentH = innerH;
+      const accentZ = depth / 2 + drawerBoxDimensions.accentZOffsetM;
       if (
         Number.isFinite(accentW) &&
         Number.isFinite(accentH) &&
@@ -106,19 +114,19 @@ export const createInternalDrawerBox: AppAwareCreateInternalDrawerBoxFn = (
     }
   }
 
-  const sideGeo = new THREE.BoxGeometry(thickness, innerH, d - 2 * thickness);
+  const sideGeo = new THREE.BoxGeometry(thickness, innerH, depth - 2 * thickness);
   const left = new THREE.Mesh(sideGeo, mat);
-  left.position.set(-w / 2 + thickness / 2, 0, 0);
+  left.position.set(-width / 2 + thickness / 2, 0, 0);
   outline(left);
   group.add(left);
 
   const right = new THREE.Mesh(sideGeo, mat);
-  right.position.set(w / 2 - thickness / 2, 0, 0);
+  right.position.set(width / 2 - thickness / 2, 0, 0);
   outline(right);
   group.add(right);
 
   if (hasDivider) {
-    const divider = new THREE.Mesh(new THREE.BoxGeometry(thickness, innerH, d - 2 * thickness), mat);
+    const divider = new THREE.Mesh(new THREE.BoxGeometry(thickness, innerH, depth - 2 * thickness), mat);
     divider.position.set(0, 0, 0);
     outline(divider);
     group.add(divider);
@@ -135,7 +143,7 @@ export const createInternalDrawerBox: AppAwareCreateInternalDrawerBoxFn = (
     );
     handle.userData = handle.userData || {};
     handle.userData.__keepMaterial = true;
-    handle.position.set(0, 0, d / 2 + drawerBoxDimensions.handleFrontOffsetM);
+    handle.position.set(0, 0, depth / 2 + drawerBoxDimensions.handleFrontOffsetM);
     group.add(handle);
   }
 

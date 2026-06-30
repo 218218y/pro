@@ -12,6 +12,7 @@ import {
 } from '../features/sketch_internal_drawer_cassette.js';
 import type { BuilderCreateBoardFn } from '../../../types';
 import type { InteriorValueRecord } from './render_interior_ops_contracts.js';
+import { readRenderOpPositiveNumber } from './render_ops_number_contracts.js';
 
 export type SketchInternalDrawerCassettePanelArgs = {
   createBoard?: BuilderCreateBoardFn | null;
@@ -46,8 +47,7 @@ function asRecord(value: unknown): InteriorValueRecord | null {
 }
 
 function readFinitePositive(value: unknown): number | null {
-  const n = typeof value === 'number' ? value : value != null && value !== '' ? Number(value) : NaN;
-  return Number.isFinite(n) && n > 0 ? n : null;
+  return readRenderOpPositiveNumber(value);
 }
 
 export function emitSketchInternalDrawerCassettePanels(args: SketchInternalDrawerCassettePanelArgs): boolean {

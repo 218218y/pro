@@ -219,6 +219,39 @@ test('split hinged glass doors inherit the full-door glass frame style instead o
   assert.deepEqual(calls[1][13], { glassFrameStyle: 'profile' });
 });
 
+test('hinged door build writes only canonical door ids into runtime userData', () => {
+  const THREE = createThreeStub();
+  const wardrobeGroup = new THREE.Group();
+  const applyHingedDoorsOps = createApplyHingedDoorsOps({
+    __app: input => input.App,
+    __ops: () => undefined,
+    __wardrobeGroup: () => wardrobeGroup,
+    __reg: () => undefined,
+    __doors: () => [],
+    __markSplitHoverPickablesDirty: () => undefined,
+    __tagAndTrackMirrorSurfaces: () => 0,
+    getMirrorMaterial: () => ({ kind: 'mirror' }),
+  });
+
+  const didApply = applyHingedDoorsOps({
+    App: {},
+    THREE,
+    ops: [
+      { partId: 'd1_full', width: 0.5, height: 1.2, isLeftHinge: true },
+      { partId: 'd01_full', width: 0.5, height: 1.2, isLeftHinge: true },
+      { partId: 'd1x_full', width: 0.5, height: 1.2, isLeftHinge: true },
+    ],
+    cfg: {},
+    globalFrontMat: { kind: 'front' },
+    getPartMaterial: () => ({ kind: 'wood' }),
+  });
+
+  assert.equal(didApply, true);
+  assert.equal(wardrobeGroup.children[0].userData.__wpDoorId, 1);
+  assert.equal(wardrobeGroup.children[1].userData.__wpDoorId, null);
+  assert.equal(wardrobeGroup.children[2].userData.__wpDoorId, null);
+});
+
 test('external drawer build treats glass specials like real glass fronts, keeps the selected frame style, and hides the inner wood front', () => {
   const calls = [];
   const drawerBoxCalls = [];

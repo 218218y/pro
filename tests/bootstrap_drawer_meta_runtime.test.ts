@@ -201,3 +201,14 @@ test('drawer rebuild finalization uses its captured mode instead of reading the 
   runRebuildDrawerMeta(App, snapshot);
   assert.equal(drawer.isOpen, true);
 });
+
+test('drawer rebuild snapshot rejects string-encoded intent versions', () => {
+  const { App, state } = createApp('divider', 'int_4');
+  const snapshot = {
+    primaryMode: state.mode.primary,
+    forcedOpenDrawerId: state.runtime.drawersOpenId,
+    intent: { targetId: 'int_4', version: '1' },
+  };
+
+  assert.throws(() => runRebuildDrawerMeta(App, snapshot as never), /drawer rebuild snapshot is required/);
+});

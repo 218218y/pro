@@ -62,7 +62,7 @@ type DimensionTextScaleSpec = {
 };
 
 function readFiniteScale(value: unknown, defaultValue: number): number {
-  const numeric = typeof value === 'number' ? value : Number(value);
+  const numeric = typeof value === 'number' ? value : NaN;
   return Number.isFinite(numeric) && numeric > 0 ? numeric : defaultValue;
 }
 

@@ -165,3 +165,19 @@ test('dimension extras can render a compact black total style without falling ba
   assert.equal((line.material as FakeLineBasicMaterial).opts.color, 0x555555);
   assert.deepEqual(sprite.scale.values, [0.3168, 0.1584, 1]);
 });
+
+test('dimension extras text scale ignores string-encoded runtime scale values', () => {
+  const { App, wardrobeGroup } = makeApp();
+
+  addDimensionLine(
+    new FakeVector3(0, 0, 0),
+    new FakeVector3(1, 0, 0),
+    new FakeVector3(0, 0, 0),
+    '160',
+    { scale: '0.66', styleKey: 'compactTotal' },
+    { App }
+  );
+
+  const [, sprite] = wardrobeGroup.children as [FakeLine, FakeSprite];
+  assert.deepEqual(sprite.scale.values, [0.48, 0.24, 1]);
+});

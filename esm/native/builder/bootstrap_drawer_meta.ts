@@ -40,6 +40,7 @@ function requireDrawerRebuildSnapshot(value: unknown): BuilderDrawerRebuildSnaps
   const forcedOpenDrawerId = snapshot?.forcedOpenDrawerId;
   const intent = snapshot?.intent;
   const intentRecord = intent == null ? null : asRecord(intent);
+  const intentVersion = intentRecord?.version;
   const validForcedOpenId =
     forcedOpenDrawerId == null ||
     typeof forcedOpenDrawerId === 'string' ||
@@ -49,8 +50,9 @@ function requireDrawerRebuildSnapshot(value: unknown): BuilderDrawerRebuildSnaps
     !!(
       intentRecord &&
       (typeof intentRecord.targetId === 'string' || typeof intentRecord.targetId === 'number') &&
-      Number.isSafeInteger(intentRecord.version) &&
-      Number(intentRecord.version) >= 0
+      typeof intentVersion === 'number' &&
+      Number.isSafeInteger(intentVersion) &&
+      intentVersion >= 0
     );
   if (!snapshot || typeof snapshot.primaryMode !== 'string' || !validForcedOpenId || !validIntent) {
     throw new TypeError('[builder/bootstrap.__rebuildDrawerMeta] drawer rebuild snapshot is required');

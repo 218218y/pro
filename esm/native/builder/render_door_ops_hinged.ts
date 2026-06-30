@@ -1,5 +1,6 @@
 import { resolveConfiguredHandleColor } from './handle_finish_runtime.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
+import { readCanonicalPositiveIntegerText } from './build_flow_readers.js';
 import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { BuilderRenderDoorDeps } from './render_door_ops_shared.js';
 import {
@@ -63,11 +64,8 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
       const partId = doorOp.partId;
 
       let doorIdNum: number | null = null;
-      const match = /^d(\d+)/.exec(String(partId));
-      if (match?.[1]) {
-        const parsedDoorId = Number(match[1]);
-        if (Number.isFinite(parsedDoorId) && parsedDoorId > 0) doorIdNum = parsedDoorId;
-      }
+      const match = /^d(\d+)(?=_|$)/.exec(partId);
+      doorIdNum = readCanonicalPositiveIntegerText(match?.[1]);
 
       const group = new THREE.Group();
       group.userData = {

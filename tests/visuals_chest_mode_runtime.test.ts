@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { makeDrawerBoxPartId } from '../esm/native/features/drawer_box_identity.ts';
+import { createInternalDrawerBox } from '../esm/native/builder/visuals_chest_mode_drawer_box.ts';
 import { buildChestOnly } from '../esm/native/builder/visuals_chest_mode.ts';
 import {
   createChestModePartMaterialResolver,
@@ -455,6 +456,40 @@ test('visuals chest mode drawer box material follows only explicit drawer-box pa
       drawerBoxColorValue: 'glass',
     }),
     globalMat
+  );
+});
+
+test('visuals chest mode drawer box requires real positive runtime dimensions', () => {
+  const { App } = createChestApp();
+  const outline = () => undefined;
+
+  const box = createInternalDrawerBox(
+    App,
+    0.7,
+    0.18,
+    0.4,
+    new FakeMaterial(),
+    new FakeMaterial(),
+    outline,
+    false,
+    false
+  );
+  assert.equal(box.children.length > 0, true);
+
+  assert.throws(
+    () =>
+      createInternalDrawerBox(
+        App,
+        '0.7' as never,
+        0.18,
+        0.4,
+        new FakeMaterial(),
+        new FakeMaterial(),
+        outline,
+        false,
+        false
+      ),
+    /positive finite drawer box width is required/
   );
 });
 
