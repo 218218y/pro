@@ -23,7 +23,6 @@
     "modules_configuration/calc_module_structure.js",
     "modules_configuration/corner_cells_api.js",
     "modules_configuration/modules_config_api.js",
-    "modules_configuration/modules_config_contracts.js",
     "platform_overhang_support.js",
     "project_config/project_config_lists_canonical.js",
     "project_config/project_config_persisted_payload_shared.js",
@@ -39,8 +38,7 @@
     "sketch_stack_positioning.js",
     "special_dims/index.js",
     "special_dims/special_dims.js",
-    "stack_split/index.js",
-    "stack_split/module_config.js"
+    "stack_split/index.js"
   ],
   "families": {
     "base_leg_support": ["base_leg_support.js"],
@@ -63,8 +61,7 @@
     "modules_configuration": [
       "modules_configuration/calc_module_structure.js",
       "modules_configuration/corner_cells_api.js",
-      "modules_configuration/modules_config_api.js",
-      "modules_configuration/modules_config_contracts.js"
+      "modules_configuration/modules_config_api.js"
     ],
     "project_config": [
       "project_config/project_config_lists_canonical.js",
@@ -80,7 +77,7 @@
     "sketch_drawer_sizing": ["sketch_drawer_sizing.js"],
     "sketch_stack_positioning": ["sketch_stack_positioning.js"],
     "special_dims": ["special_dims/index.js", "special_dims/special_dims.js"],
-    "stack_split": ["stack_split/index.js", "stack_split/module_config.js"],
+    "stack_split": ["stack_split/index.js"],
     "sketch_internal_drawer_cassette": ["sketch_internal_drawer_cassette.js"],
     "platform_overhang_support": ["platform_overhang_support.js"]
   }

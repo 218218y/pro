@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import fs from 'node:fs';
 import test from 'node:test';
 import { readSourceText } from '../tools/wp_source_text.mjs';
 
@@ -18,6 +19,16 @@ function runNodeScript(script, args = []) {
 
 test('feature imports outside features use only the public manifest surface', () => {
   runNodeScript('tools/wp_features_public_api_contract.mjs');
+});
+
+test('features public API manifest exposes canonical facades instead of private owners', () => {
+  const manifest = JSON.parse(fs.readFileSync('tools/wp_features_public_api_manifest.json', 'utf8'));
+  const entries = new Set(manifest.publicEntries);
+
+  assert.equal(entries.has('modules_configuration/modules_config_api.js'), true);
+  assert.equal(entries.has('stack_split/index.js'), true);
+  assert.equal(entries.has('modules_configuration/modules_config_contracts.js'), false);
+  assert.equal(entries.has('stack_split/module_config.js'), false);
 });
 
 test('features public API reports use platform-independent ordering', () => {

@@ -11,7 +11,7 @@ import {
   createLibraryLowerModuleConfig,
   createLibraryTopModuleConfig,
 } from '../esm/native/features/library_preset/module_defaults.ts';
-import { normalizeLowerModuleConfig } from '../esm/native/features/stack_split/module_config.ts';
+import { normalizeLowerModuleConfig } from '../esm/native/features/stack_split/index.ts';
 
 test('library preset door signatures follow the canonical module-structure calculator', () => {
   const ui = {

@@ -5,7 +5,7 @@ import {
   normalizeLowerModuleConfig,
   normalizeTopModuleConfig,
   modulesConfigurationKeyForStack,
-} from '../esm/native/features/stack_split/module_config.ts';
+} from '../esm/native/features/stack_split/index.ts';
 import { normalizeModelList, normalizeModelRecord } from '../esm/native/data/preset_models.ts';
 
 function asPlainRecord<T extends Record<string, unknown> | null | undefined>(
