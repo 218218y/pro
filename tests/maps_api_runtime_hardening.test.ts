@@ -2,7 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { installMapsApi } from '../esm/native/kernel/maps_api.ts';
+import { cfgSetMap, patchConfigMap, setCfgDoorStyleMap } from '../esm/native/runtime/cfg_access.ts';
 import {
+  isVisualKeyedMapName,
   readMapOrEmpty,
   splitBottomKey,
   splitKey,
@@ -10,9 +12,21 @@ import {
   toggleGrooveKey,
   writeHandle,
   writeMapKey,
+  writeRemoved,
   writeSplit,
   writeSplitBottom,
+  writeSplitPositionList,
 } from '../esm/native/runtime/maps_access.ts';
+
+function withSuppressedConsoleWarn(fn: () => void): void {
+  const originalWarn = console.warn;
+  console.warn = () => undefined;
+  try {
+    fn();
+  } finally {
+    console.warn = originalWarn;
+  }
+}
 
 test('runtime split key helpers use the door split authoring base for visual surface ids', () => {
   assert.equal(splitKey('d4_top'), 'split_d4');
@@ -172,8 +186,8 @@ test('maps_api and runtime writers replace groove maps with canonical prefixed k
   App.maps.setSplit('d4_top', true, { source: 'test:maps:setSplit:surface' });
   App.maps.setSplitBottom('splitb_d5_bot', true, { source: 'test:maps:setSplitBottom:surface' });
 
-  assert.deepEqual(state.config.splitDoorsMap, { d4: true, split_d4: true });
-  assert.deepEqual(state.config.splitDoorsBottomMap, { d5: true, splitb_d5: true });
+  assert.deepEqual({ ...state.config.splitDoorsMap }, { split_d4: true });
+  assert.deepEqual({ ...state.config.splitDoorsBottomMap }, { splitb_d5: true });
   assert.equal(state.config.splitDoorsMap.split_d4_top, undefined);
   assert.equal(state.config.splitDoorsBottomMap.splitb_d5_bot, undefined);
 
@@ -181,7 +195,7 @@ test('maps_api and runtime writers replace groove maps with canonical prefixed k
     toggleGrooveKey(App, 'groove_d3_full', { source: 'test:runtime:toggleGrooveKey:canonical' }),
     true
   );
-  assert.deepEqual(state.config.groovesMap, { groove_d3_full: true });
+  assert.deepEqual({ ...state.config.groovesMap }, { groove_d3_full: true });
 
   state.config.splitDoorsMap = { d6: true } as Record<string, unknown>;
   state.config.splitDoorsBottomMap = { d7: true } as Record<string, unknown>;
@@ -197,9 +211,77 @@ test('maps_api and runtime writers replace groove maps with canonical prefixed k
     true
   );
 
-  assert.deepEqual(state.config.splitDoorsMap, { d6: true, split_d6: false });
-  assert.deepEqual(state.config.splitDoorsBottomMap, { d7: true, splitb_d7: true });
-  assert.deepEqual(state.config.groovesMap, { groove_d8_full: true });
+  assert.deepEqual({ ...state.config.splitDoorsMap }, { split_d6: false });
+  assert.deepEqual({ ...state.config.splitDoorsBottomMap }, { splitb_d7: true });
+  assert.deepEqual({ ...state.config.groovesMap }, { groove_d8_full: true });
   assert.equal(state.config.splitDoorsMap.split_d6_top, undefined);
   assert.equal(state.config.splitDoorsBottomMap.splitb_d7_bot, undefined);
+});
+
+test('generic map writers reject visual keyed maps unless routed through an owner', () => {
+  const state = {
+    ui: {},
+    runtime: {},
+    mode: { primary: 'edit', opts: {} },
+    meta: { version: 1 },
+    config: {} as Record<string, unknown>,
+  };
+  const App: any = {
+    maps: {},
+    actions: {
+      config: {
+        patch: (patch: Record<string, unknown>) => {
+          Object.assign(state.config, patch);
+          return patch;
+        },
+      },
+    },
+    store: {
+      getState: () => state,
+      patch: () => undefined,
+      subscribe: () => () => undefined,
+    },
+  };
+
+  installMapsApi(App);
+
+  assert.equal(isVisualKeyedMapName('doorStyleMap'), true);
+  assert.equal(isVisualKeyedMapName('handlesMap'), false);
+
+  assert.throws(
+    () => cfgSetMap(App, 'doorStyleMap', { d1_full: 'profile' }, { source: 'test:cfgSetMap' }),
+    /cfgSetMap cannot write visual\/keyed map "doorStyleMap"/
+  );
+  assert.throws(
+    () => patchConfigMap(App, 'doorTrimMap', { d1_full: [] }, { source: 'test:patchConfigMap' }),
+    /patchConfigMap cannot write visual\/keyed map "doorTrimMap"/
+  );
+
+  withSuppressedConsoleWarn(() => {
+    assert.equal(writeMapKey(App, 'doorStyleMap', 'd1_full', 'profile'), false);
+    assert.equal(writeMapKey(App, 'mirrorLayoutMap', 'd1_full', [{ widthCm: 50 }]), false);
+    assert.equal(writeMapKey(App, 'removedDoorsMap', 'removed_d1_full', true), false);
+    assert.equal(writeMapKey(App, 'splitDoorsMap', 'split_d1', true), false);
+    assert.equal(writeMapKey(App, 'splitDoorsBottomMap', 'splitb_d1', true), false);
+  });
+
+  assert.equal(state.config.doorStyleMap, undefined);
+  assert.equal(state.config.mirrorLayoutMap, undefined);
+  assert.equal(state.config.removedDoorsMap, undefined);
+  assert.equal(state.config.splitDoorsMap, undefined);
+  assert.equal(state.config.splitDoorsBottomMap, undefined);
+
+  withSuppressedConsoleWarn(() => {
+    App.maps.setKey('doorStyleMap', 'd1_full', 'profile', { source: 'test:maps:setKey:style' });
+  });
+  assert.equal(state.config.doorStyleMap, undefined);
+
+  setCfgDoorStyleMap(App, { d1_full: 'PROFILE', d1_mid2_accent_top: 'flat' }, { source: 'test:styleOwner' });
+  assert.deepEqual({ ...state.config.doorStyleMap }, { d1_full: 'profile' });
+
+  assert.equal(writeRemoved(App, 'd1_mid2_accent_top', true, { source: 'test:removedOwner' }), true);
+  assert.deepEqual({ ...state.config.removedDoorsMap }, { removed_d1_mid2: true });
+
+  assert.equal(writeSplitPositionList(App, 'd1_mid2_accent_top', [0.25, NaN, 0.75]), true);
+  assert.deepEqual({ ...state.config.splitDoorsMap }, { splitpos_d1: [0.25, 0.75] });
 });

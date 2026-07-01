@@ -14,6 +14,7 @@ export {
   setCfgCurtainMap,
   setCfgDoorSpecialMap,
   setCfgDoorStyleMap,
+  setCfgVisualKeyedMapFromOwner,
   setCfgHandlesMap,
   setCfgHingeMap,
   setCfgIndividualColors,

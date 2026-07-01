@@ -37,6 +37,12 @@ const MAP_ALIAS_READERS = {
 };
 
 const ASSIGNMENT_OPERATOR_PATTERN = String.raw`(?:=(?!=|>)|\+=|-=|\*=|/=|%=|&&=|\|\|=|\?\?=)`;
+const GENERIC_MAP_WRITE_APIS = [
+  'cfgSetMap',
+  'patchConfigMap',
+  'writeMapKey',
+  'setCfgVisualKeyedMapFromOwner',
+];
 
 function readSourceFile(relPath) {
   return fs.readFileSync(path.join(PROJECT_ROOT, relPath), 'utf8');
@@ -107,6 +113,39 @@ function readAliasNames(source, mapName) {
   return aliases;
 }
 
+function readMapNameAliases(source, mapName) {
+  const aliasPattern = new RegExp(
+    String.raw`\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*(?::[^=;\n]+)?=\s*['"]${escapeRegExp(mapName)}['"](?:\s+as\s+const)?`,
+    'g'
+  );
+  const aliases = new Set();
+  let match;
+  while ((match = aliasPattern.exec(source))) aliases.add(match[1]);
+  return aliases;
+}
+
+function pushGenericApiMatches(violations, args) {
+  const { file, rawSource, strippedSource, mapName, mapArgPattern } = args;
+  for (const apiName of GENERIC_MAP_WRITE_APIS) {
+    pushRegexMatches(violations, {
+      file,
+      rawSource,
+      strippedSource,
+      mapName,
+      kind: `generic ${apiName}`,
+      regex: new RegExp(String.raw`\b${apiName}\s*\([^,\n]+,\s*${mapArgPattern}`, 'g'),
+    });
+  }
+  pushRegexMatches(violations, {
+    file,
+    rawSource,
+    strippedSource,
+    mapName,
+    kind: 'generic maps.setKey',
+    regex: new RegExp(String.raw`\bsetKey\s*\(\s*${mapArgPattern}`, 'g'),
+  });
+}
+
 function collectVisualMapWriteViolations() {
   const violations = [];
   const files = SOURCE_ROOTS.flatMap(root => walkSourceFiles(root));
@@ -161,6 +200,13 @@ function collectVisualMapWriteViolations() {
         kind: 'direct patchConfigMap',
         regex: new RegExp(String.raw`\bpatchConfigMap\s*\([^,\n]+,\s*['"]${escapedMap}['"]`, 'g'),
       });
+      pushGenericApiMatches(violations, {
+        file,
+        rawSource,
+        strippedSource,
+        mapName,
+        mapArgPattern: String.raw`['"]${escapedMap}['"]`,
+      });
 
       for (const alias of readAliasNames(strippedSource, mapName)) {
         const escapedAlias = escapeRegExp(alias);
@@ -190,6 +236,16 @@ function collectVisualMapWriteViolations() {
           mapName,
           kind: `alias object spread (${alias})`,
           regex: new RegExp(String.raw`\.\.\.\s*${escapedAlias}\b`, 'g'),
+        });
+      }
+
+      for (const mapNameAlias of readMapNameAliases(strippedSource, mapName)) {
+        pushGenericApiMatches(violations, {
+          file,
+          rawSource,
+          strippedSource,
+          mapName,
+          mapArgPattern: String.raw`${escapeRegExp(mapNameAlias)}\b`,
         });
       }
     }

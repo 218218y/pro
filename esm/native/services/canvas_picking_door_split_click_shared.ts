@@ -1,11 +1,11 @@
 import { getDoorsArray } from '../runtime/render_access.js';
 import { readCanvasDoorSplitEffectiveNodeBounds } from './canvas_picking_door_split_bounds_shared.js';
 import {
-  writeMapKey,
   readSplitPosListFromMap,
   splitBottomKey as __splitBottomKey,
   splitKey as __splitKey,
   splitPosKey as __splitPosKey,
+  writeSplitPositionList,
 } from '../runtime/maps_access.js';
 import { callDoorsAction, hasDoorsAction } from '../runtime/actions_access_domains.js';
 import type { AppContainer } from '../../../types';
@@ -130,12 +130,10 @@ export function writeCanvasDoorSplitPosList(args: {
   try {
     const splitPosKey = __splitPosKey(doorBaseKey);
     if (!splitPosKey) return;
-    const stored: number[] | null = nextList.length > 0 ? nextList : null;
-    writeMapKey(
+    writeSplitPositionList(
       App,
-      'splitDoorsMap',
-      splitPosKey,
-      stored,
+      doorBaseKey,
+      nextList,
       createCanvasPickingDoorAuthoringStructuralMeta(source)
     );
   } catch (error) {

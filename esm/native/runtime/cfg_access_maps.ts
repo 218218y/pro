@@ -14,6 +14,7 @@ import {
 } from './cfg_access_shared.js';
 import { applyConfigPatchReplaceKeys } from './cfg_access_scalars.js';
 import { normalizeDoorStyleMap } from './maps_access_normalizers_shared.js';
+import { isVisualKeyedMapName, type VisualKeyedMapName } from './visual_keyed_map_names.js';
 
 type CfgMap = {
   <K extends KnownMapName>(App: unknown, mapName: K): MapsByName[K];
@@ -35,12 +36,18 @@ type CfgSetMap = {
   (App: unknown, mapName: string, nextMap: UnknownRecord, meta?: ActionMetaLike): UnknownRecord;
 };
 
-export const cfgSetMap: CfgSetMap = (
+function readVisualKeyedMapWriteError(apiName: string, mapName: string): Error {
+  return new Error(
+    `[WardrobePro] ${apiName} cannot write visual/keyed map "${mapName}"; use the map owner writer`
+  );
+}
+
+function cfgSetMapFromOwner(
   App: unknown,
   mapName: unknown,
   nextMap: unknown,
   meta?: ActionMetaLike
-): UnknownRecord => {
+): UnknownRecord {
   const name = String(mapName || '');
   const next = readMapRecord(nextMap);
   if (!name) return next;
@@ -53,7 +60,27 @@ export const cfgSetMap: CfgSetMap = (
 
   applyConfigPatchReplaceKeys(App, { [name]: next }, { [name]: true }, meta);
   return next;
+}
+
+export const cfgSetMap: CfgSetMap = (
+  App: unknown,
+  mapName: unknown,
+  nextMap: unknown,
+  meta?: ActionMetaLike
+): UnknownRecord => {
+  const name = String(mapName || '');
+  if (isVisualKeyedMapName(name)) throw readVisualKeyedMapWriteError('cfgSetMap', name);
+  return cfgSetMapFromOwner(App, name, nextMap, meta);
 };
+
+export function setCfgVisualKeyedMapFromOwner<K extends VisualKeyedMapName>(
+  App: unknown,
+  mapName: K,
+  nextMap: unknown,
+  meta?: ActionMetaLike
+): MapsByName[K] {
+  return cfgSetMapFromOwner(App, mapName, nextMap, meta) as MapsByName[K];
+}
 
 type PatchConfigMap = {
   <K extends KnownMapName>(
@@ -78,6 +105,7 @@ export const patchConfigMap: PatchConfigMap = (
 ): UnknownRecord => {
   const name = String(mapName || '');
   if (!name) return {};
+  if (isVisualKeyedMapName(name)) throw readVisualKeyedMapWriteError('patchConfigMap', name);
 
   const normalizedPatchOrFn = readPatchMapInput(patchOrFn);
   if (!normalizedPatchOrFn) return cfgMapRecord(App, name);
@@ -156,7 +184,9 @@ export function setCfgDoorStyleMap(
   next: unknown,
   meta?: ActionMetaLike
 ): MapsByName['doorStyleMap'] {
-  return normalizeDoorStyleMap(cfgSetMap(App, 'doorStyleMap', normalizeDoorStyleMap(next), meta));
+  return normalizeDoorStyleMap(
+    setCfgVisualKeyedMapFromOwner(App, 'doorStyleMap', normalizeDoorStyleMap(next), meta)
+  );
 }
 
 export function setCfgMirrorLayoutMap(
@@ -165,6 +195,6 @@ export function setCfgMirrorLayoutMap(
   meta?: ActionMetaLike
 ): MapsByName['mirrorLayoutMap'] {
   return readMirrorLayoutMapSnapshot(
-    cfgSetMap(App, 'mirrorLayoutMap', readMirrorLayoutMapSnapshot(next), meta)
+    setCfgVisualKeyedMapFromOwner(App, 'mirrorLayoutMap', readMirrorLayoutMapSnapshot(next), meta)
   );
 }

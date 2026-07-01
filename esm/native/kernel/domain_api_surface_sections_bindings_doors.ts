@@ -12,6 +12,7 @@ import {
   splitKey,
   writeHandle,
   writeHinge,
+  writeRemoved,
   writeSplit,
   writeSplitBottom,
 } from '../runtime/maps_access.js';
@@ -105,6 +106,7 @@ function createDoorsActionBindings(state: DomainApiSurfaceSectionsState): Unknow
       if (!canonicalPartId) return;
       const removedKey = 'removed_' + canonicalPartId;
       const value = !!isRemoved ? true : null;
+      if (writeRemoved(state.App, doorId, !!isRemoved, nextMeta)) return;
       return commitCanonicalMapValue(state, 'removedDoorsMap', removedKey, value, nextMeta);
     },
     setSplit(doorId: unknown, isSplit: unknown, meta: ActionMetaLike | undefined) {

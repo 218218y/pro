@@ -32,14 +32,18 @@ export {
   readMapOrEmpty,
 } from './maps_access_readers.js';
 export {
+  VISUAL_KEYED_MAP_NAMES,
+  isVisualKeyedMapName,
   patchCanonicalVisualMapEntries,
   toggleDivider,
   toggleGrooveKey,
   writeHandle,
   writeHinge,
   writeMapKey,
+  writeRemoved,
   writeSplit,
   writeSplitBottom,
+  writeSplitPositionList,
 } from './maps_access_writers.js';
 export {
   readSavedColors,

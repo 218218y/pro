@@ -1,7 +1,12 @@
 import type { AppContainer, ActionMetaLike } from '../../../types';
 
-import { cfgSetMap, patchConfigMap } from '../runtime/cfg_access.js';
-import { splitBottomKey, splitKey } from '../runtime/maps_access.js';
+import { patchConfigMap, setCfgVisualKeyedMapFromOwner } from '../runtime/cfg_access.js';
+import {
+  isVisualKeyedMapName,
+  patchCanonicalVisualMapEntries,
+  splitBottomKey,
+  splitKey,
+} from '../runtime/maps_access.js';
 import { normalizeKnownMapSnapshot } from '../runtime/maps_access.js';
 import type { MapsApiShared } from './maps_api_shared.js';
 import { createRecord, asObject } from './maps_api_shared.js';
@@ -18,10 +23,39 @@ function normalizePrefixedMapKey(value: unknown, prefix: string): string {
   return key.indexOf(prefix) === 0 ? key : prefix + key;
 }
 
+function patchVisualKeyedMapEntry(
+  App: AppContainer,
+  shared: MapsApiShared,
+  mapName: 'removedDoorsMap' | 'splitDoorsMap' | 'splitDoorsBottomMap' | 'groovesMap',
+  canonicalKey: string,
+  nextValue: unknown,
+  meta: ActionMetaLike | undefined
+): unknown {
+  if (!canonicalKey) return undefined;
+  const currentMap = normalizeKnownMapSnapshot(mapName, shared.readNamedMap(mapName));
+  const nextMap = { ...currentMap };
+  if (nextValue == null) {
+    delete nextMap[canonicalKey];
+  } else {
+    const normalizedEntryMap = normalizeKnownMapSnapshot(mapName, { [canonicalKey]: nextValue });
+    if (Object.prototype.hasOwnProperty.call(normalizedEntryMap, canonicalKey)) {
+      nextMap[canonicalKey] = normalizedEntryMap[canonicalKey];
+    } else {
+      delete nextMap[canonicalKey];
+    }
+  }
+  return setCfgVisualKeyedMapFromOwner(
+    App,
+    mapName,
+    nextMap,
+    shared.metaNorm(meta, 'maps:' + mapName + ':canonical')
+  );
+}
+
 function patchCanonicalPrefixedMapEntry(
   App: AppContainer,
   shared: MapsApiShared,
-  mapName: string,
+  mapName: 'splitDoorsMap' | 'splitDoorsBottomMap',
   value: unknown,
   prefix: string,
   nextValue: unknown,
@@ -29,8 +63,7 @@ function patchCanonicalPrefixedMapEntry(
 ): unknown {
   const canonicalKey = normalizePrefixedMapKey(value, prefix);
   if (!canonicalKey) return undefined;
-  const patch: Record<string, unknown> = { [canonicalKey]: nextValue };
-  return patchConfigMap(App, mapName, patch, shared.metaNorm(meta, 'maps:' + mapName + ':canonical'));
+  return patchVisualKeyedMapEntry(App, shared, mapName, canonicalKey, nextValue, meta);
 }
 
 export function installMapsApiNamedMaps(App: AppContainer, shared: MapsApiShared): void {
@@ -46,6 +79,21 @@ export function installMapsApiNamedMaps(App: AppContainer, shared: MapsApiShared
     const cleanKey = String(key || '');
     if (!cleanMapName || !cleanKey) return undefined;
     const metaFixed = metaNorm(meta, 'maps:setKey:' + cleanMapName);
+    if (
+      cleanMapName === 'doorTrimMap' ||
+      cleanMapName === 'groovesMap' ||
+      cleanMapName === 'grooveLinesCountMap'
+    ) {
+      return patchCanonicalVisualMapEntries(App, cleanMapName, [{ key: cleanKey, value: val }], metaFixed);
+    }
+    if (isVisualKeyedMapName(cleanMapName)) {
+      reportNonFatal(
+        'maps.setKey.visualKeyedMapRejected',
+        new Error(`maps.setKey cannot write visual/keyed map "${cleanMapName}"; use the map owner writer`),
+        6000
+      );
+      return undefined;
+    }
 
     try {
       return patchConfigMap(App, cleanMapName, createMapPatch(cleanKey, val), metaFixed);
@@ -80,7 +128,12 @@ export function installMapsApiNamedMaps(App: AppContainer, shared: MapsApiShared
     const nextMap = { ...normalizeKnownMapSnapshot('groovesMap', readNamedMap('groovesMap')) };
     if (nextMap[canonicalKey] === true) delete nextMap[canonicalKey];
     else nextMap[canonicalKey] = true;
-    return cfgSetMap(App, 'groovesMap', nextMap, metaNorm(meta, 'maps:groovesMap:canonical'));
+    return setCfgVisualKeyedMapFromOwner(
+      App,
+      'groovesMap',
+      nextMap,
+      metaNorm(meta, 'maps:groovesMap:canonical')
+    );
   };
 
   maps.getGroove = function getGroove(partId: string) {
@@ -141,7 +194,7 @@ export function installMapsApiNamedMaps(App: AppContainer, shared: MapsApiShared
     const metaFixed = metaNorm(meta, 'maps:setRemoved');
     const k = toCanonicalRemovedDoorsMapKey(partId);
     if (!k) return undefined;
-    return maps.setKey?.('removedDoorsMap', k, isRemoved ? true : null, metaFixed);
+    return patchVisualKeyedMapEntry(App, shared, 'removedDoorsMap', k, isRemoved ? true : null, metaFixed);
   };
 
   maps.getHandle = function getHandle(partId: string) {

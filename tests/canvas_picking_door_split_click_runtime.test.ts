@@ -46,7 +46,10 @@ function createSplitClickApp(args: {
   };
   const state = {
     ui: {},
-    config: {},
+    config: {
+      splitDoorsMap: maps.splitDoorsMap,
+      splitDoorsBottomMap: maps.splitDoorsBottomMap,
+    },
     runtime: {},
     mode: { opts: { splitVariant: args.splitVariant || '' } },
     meta: { version: 0, updatedAt: 0, dirty: false },
@@ -83,13 +86,27 @@ function createSplitClickApp(args: {
       },
     },
     actions: {
+      config: {
+        patch(patch: Record<string, unknown>) {
+          Object.assign(state.config, patch || {});
+          for (const key of ['splitDoorsMap', 'splitDoorsBottomMap']) {
+            const value = patch?.[key];
+            if (value && typeof value === 'object' && !Array.isArray(value)) {
+              maps[key] = value as Record<string, unknown>;
+            }
+          }
+          return patch;
+        },
+      },
       doors: {
         setSplit(key: string, next: boolean, meta?: { source?: unknown }) {
           maps.splitDoorsMap[key] = next;
+          state.config.splitDoorsMap = maps.splitDoorsMap;
           calls.push({ type: 'setSplit', key, next, source: meta?.source });
         },
         setSplitBottom(key: string, next: boolean, meta?: { source?: unknown }) {
           maps.splitDoorsBottomMap[key] = next;
+          state.config.splitDoorsBottomMap = maps.splitDoorsBottomMap;
           calls.push({ type: 'setSplitBottom', key, next, source: meta?.source });
         },
       },
@@ -176,7 +193,6 @@ test('lower corner custom split commits canonical split position against full-fa
     [
       ['setSplitBottom', '', 'splitb_lower_corner_door_2', false, 'splitDoors:custom'],
       ['setSplit', '', 'split_lower_corner_door_2', true, 'splitDoors:custom'],
-      ['setKey', 'splitDoorsMap', 'splitpos_lower_corner_door_2', [0.625], 'splitDoors:custom'],
     ]
   );
   assert.deepEqual(maps.splitDoorsMap.splitpos_lower_corner_door_2, [0.625]);
@@ -213,7 +229,7 @@ test('regular split click on sketch-box doors stores a concrete split position a
 
   assert.equal(handledRemove, true);
   assert.equal(maps.splitDoorsMap[`split_${partId}`], false);
-  assert.equal(maps.splitDoorsMap[`splitpos_${partId}`], null);
+  assert.equal(maps.splitDoorsMap[`splitpos_${partId}`], undefined);
 });
 
 test('regular split click on sketch-box doors keeps fixed top and bottom slots only', () => {
@@ -683,7 +699,7 @@ test('custom split click removes an existing cut by screen-space line proximity 
 
   assert.equal(handled, true);
   assert.equal(maps.splitDoorsMap.split_d1, false);
-  assert.equal(maps.splitDoorsMap.splitpos_d1, null);
+  assert.equal(maps.splitDoorsMap.splitpos_d1, undefined);
 });
 
 test('custom split hover shows a blocked marker when construction policy would reject a nearby cut', () => {
