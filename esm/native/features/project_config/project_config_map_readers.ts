@@ -2,7 +2,11 @@ import type {
   CurtainMap,
   DoorSpecialMap,
   DoorStyleMap,
+  DoorTrimAxis,
+  DoorTrimColor,
+  DoorTrimEntry,
   DoorTrimMap,
+  DoorTrimSpan,
   GroovesMap,
   GrooveLinesCountMap,
   HandlesMap,
@@ -25,7 +29,6 @@ import { isCanonicalRemovedDoorsMapKey } from '../../../shared/removed_doors_map
 import { isCanonicalDoorVisualMapKey } from '../../../shared/door_visual_key_contracts_shared.js';
 import { isCanonicalDoorTrimTargetKey } from '../../../shared/door_trim_key_contracts_shared.js';
 import { readCanonicalMirrorLayoutMap } from '../../../shared/mirror_layout_contracts_shared.js';
-import { readDoorTrimMap } from '../door_authoring/api.js';
 
 function isObjectRecord(value: unknown): value is UnknownRecord {
   return !!value && typeof value === 'object' && !Array.isArray(value);
@@ -252,15 +255,109 @@ export function readMirrorLayoutConfigMap(value: unknown): MirrorLayoutMap {
   return readCanonicalMirrorLayoutMap(value);
 }
 
+function readDoorTrimAxis(value: unknown): DoorTrimAxis {
+  return value === 'vertical' ? 'vertical' : 'horizontal';
+}
+
+function readDoorTrimColor(value: unknown): DoorTrimColor {
+  return value === 'silver' || value === 'gold' || value === 'black' || value === 'nickel' ? value : 'nickel';
+}
+
+function readDoorTrimSpan(value: unknown): DoorTrimSpan {
+  return value === 'full' ||
+    value === 'three_quarters' ||
+    value === 'half' ||
+    value === 'third' ||
+    value === 'quarter' ||
+    value === 'custom'
+    ? value
+    : 'full';
+}
+
+function readDoorTrimCenterNorm(value: unknown): number {
+  const n = typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : NaN;
+  return Number.isFinite(n) ? Math.max(0, Math.min(1, n)) : 0.5;
+}
+
+function readDoorTrimPositiveCm(value: unknown): number | null {
+  const n = typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : NaN;
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+function readStableDoorTrimId(parts: {
+  axis: DoorTrimAxis;
+  color: DoorTrimColor;
+  span: DoorTrimSpan;
+  centerXNorm: number;
+  centerYNorm: number;
+  sizeCm: number | null;
+  crossSizeCm: number | null;
+}): string {
+  const tokens = [
+    parts.axis,
+    parts.color,
+    parts.span,
+    parts.centerXNorm.toFixed(4),
+    parts.centerYNorm.toFixed(4),
+    parts.sizeCm == null ? '' : parts.sizeCm.toFixed(4),
+    parts.crossSizeCm == null ? '' : parts.crossSizeCm.toFixed(4),
+  ];
+  let hash = 2166136261;
+  const seed = tokens.join('|');
+  for (let index = 0; index < seed.length; index += 1) {
+    hash ^= seed.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return `trim_${(hash >>> 0).toString(36)}`;
+}
+
+function readDoorTrimEntryForConfig(value: unknown): DoorTrimEntry | null {
+  const rec = asObjectRecord(value);
+  if (!rec) return null;
+  const axis = readDoorTrimAxis(rec.axis);
+  const color = readDoorTrimColor(rec.color);
+  const span = readDoorTrimSpan(rec.span);
+  const centerXNorm = readDoorTrimCenterNorm(rec.centerXNorm);
+  const centerYNorm = readDoorTrimCenterNorm(rec.centerYNorm);
+  const sizeCm = readDoorTrimPositiveCm(rec.sizeCm);
+  const crossSizeCm = readDoorTrimPositiveCm(rec.crossSizeCm);
+  const explicitId = typeof rec.id === 'string' && rec.id.trim() ? String(rec.id) : '';
+  const out: DoorTrimEntry = {
+    id:
+      explicitId ||
+      readStableDoorTrimId({ axis, color, span, centerXNorm, centerYNorm, sizeCm, crossSizeCm }),
+    axis,
+    color,
+    span,
+    centerXNorm,
+    centerYNorm,
+  };
+  if (span === 'custom' && sizeCm != null) out.sizeCm = sizeCm;
+  if (crossSizeCm != null) out.crossSizeCm = crossSizeCm;
+  return out;
+}
+
+function readDoorTrimConfigList(value: unknown): DoorTrimEntry[] {
+  if (Array.isArray(value)) {
+    const out: DoorTrimEntry[] = [];
+    for (const item of value) {
+      const entry = readDoorTrimEntryForConfig(item);
+      if (entry) out.push({ ...entry });
+    }
+    return out;
+  }
+  const entry = readDoorTrimEntryForConfig(value);
+  return entry ? [{ ...entry }] : [];
+}
+
 export function readDoorTrimConfigMap(value: unknown): DoorTrimMap {
   const src = asObjectRecord(value);
   const out: DoorTrimMap = {};
   if (!src) return out;
   for (const [key, entry] of Object.entries(src)) {
     if (!isCanonicalDoorTrimTargetKey(key)) continue;
-    const normalized = readDoorTrimMap({ [key]: entry });
-    const next = normalized[key];
-    if (Array.isArray(next) && next.length) out[key] = next;
+    const next = readDoorTrimConfigList(entry);
+    if (next.length) out[key] = next;
   }
   return out;
 }
