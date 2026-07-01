@@ -254,6 +254,25 @@ test('drawer divider clicks immediately re-run hover at the same pointer after a
   const hoverCalls: Array<{ x: number; y: number; hasDivider: boolean }> = [];
   const openedDrawers: unknown[] = [];
   const App = createApp(false, rafQueue);
+  const config: Record<string, any> = { drawerDividersMap: Object.create(null) };
+  App.store = {
+    getState() {
+      return { config, ui: {}, runtime: {}, mode: { opts: {} }, meta: {} };
+    },
+    patch(patch: Record<string, unknown>) {
+      Object.assign(config, patch);
+      return patch;
+    },
+  };
+  App.actions = {
+    config: {
+      setMap(mapName: string, nextMap: Record<string, unknown>) {
+        config[mapName] = nextMap;
+        App.maps[mapName] = nextMap;
+        return nextMap;
+      },
+    },
+  };
   const drawerGroup = { userData: { partId: 'int_4', drawerId: 'int_4' } };
   App.render = {
     drawersArray: [
@@ -265,7 +284,7 @@ test('drawer divider clicks immediately re-run hover at the same pointer after a
       },
     ],
   };
-  App.maps = { drawerDividersMap: Object.create(null) };
+  App.maps = { drawerDividersMap: config.drawerDividersMap };
   App.services = {
     tools: {
       setDrawersOpenId(id: unknown) {
