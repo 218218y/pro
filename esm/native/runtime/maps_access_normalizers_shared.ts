@@ -1,5 +1,6 @@
 import type { KnownMapName, MapsByName } from '../../../types';
 
+import { resolveDoorSplitAuthoringBaseKey } from '../../shared/door_visual_key_contracts_shared.js';
 import { isCanonicalRemovedDoorsMapKey } from '../../shared/removed_doors_map_keys_shared.js';
 import { asMapRecord, asRecord, readFiniteNumber } from './maps_access_shared.js';
 
@@ -63,8 +64,16 @@ function normalizeCanonicalToggleMap(
   return out;
 }
 
-function hasDoorSegmentSuffix(value: string): boolean {
-  return /_(?:full|top|bot|mid\d*)$/i.test(value);
+function readCanonicalSplitMapBaseKey(key: string, prefix: string): string {
+  if (!key.startsWith(prefix)) return '';
+  const base = key.slice(prefix.length);
+  if (!base) return '';
+  return resolveDoorSplitAuthoringBaseKey(base);
+}
+
+function isCanonicalSplitMapKey(key: string, prefix: string): boolean {
+  const base = readCanonicalSplitMapBaseKey(key, prefix);
+  return !!base && key === `${prefix}${base}`;
 }
 
 export function normalizeGroovesMap(value: unknown): MapsByName['groovesMap'] {
@@ -88,8 +97,7 @@ export function normalizeSplitDoorsBottomMap(value: unknown): MapsByName['splitD
   const out: MapsByName['splitDoorsBottomMap'] = Object.create(null);
   if (!rec) return out;
   for (const key of Object.keys(rec)) {
-    if (!key.startsWith('splitb_')) continue;
-    if (hasDoorSegmentSuffix(key)) continue;
+    if (!isCanonicalSplitMapKey(key, 'splitb_')) continue;
     const entry = rec[key];
     if (entry === true) out[key] = true;
     else if (entry === false) out[key] = false;
@@ -163,7 +171,8 @@ export function normalizeSplitDoorsMap(value: unknown): MapsByName['splitDoorsMa
     const isSplitToggleKey = key.startsWith('split_');
     const isSplitPositionKey = key.startsWith('splitpos_');
     if (!isSplitToggleKey && !isSplitPositionKey) continue;
-    if (hasDoorSegmentSuffix(key)) continue;
+    if (isSplitToggleKey && !isCanonicalSplitMapKey(key, 'split_')) continue;
+    if (isSplitPositionKey && !isCanonicalSplitMapKey(key, 'splitpos_')) continue;
     const entry = rec[key];
     if (entry === null) {
       if (isSplitToggleKey) out[key] = null;

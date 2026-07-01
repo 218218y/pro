@@ -67,9 +67,15 @@ test('maps access normalizers keep split maps on canonical keys and values only'
   const splitDoorsMap = normalizeKnownMapSnapshot('splitDoorsMap', {
     split_d1: true,
     split_d2_full: false,
+    split_d2_mid2_accent_top: true,
+    split_d2_mid2_groove_left: true,
     split_d3: 'true',
     split_d4: 1,
     splitpos_d1: [0.25, '0.5', 0.75],
+    splitpos_d1_mid2_accent_top: [0.4],
+    splitpos_d1_mid2_groove_left: [0.4],
+    split_sketch_box_0_boxA_door_left_mid2_accent_top: true,
+    split_sketch_box_free_0_boxA_door_sbdr_1_mid2_groove_left: true,
     splitpos_d2: '0.4',
     d5: true,
   });
@@ -79,6 +85,8 @@ test('maps access normalizers keep split maps on canonical keys and values only'
   const splitDoorsBottomMap = normalizeKnownMapSnapshot('splitDoorsBottomMap', {
     splitb_d1: true,
     splitb_d2_full: true,
+    splitb_d2_mid2_accent_top: true,
+    splitb_d2_mid2_groove_left: true,
     splitb_d3: 1,
     splitb_d4: 'true',
     d5: true,

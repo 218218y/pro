@@ -1,19 +1,23 @@
 import { readMirrorLayoutList } from './mirror_contracts.js';
 
 import type { MirrorLayoutList } from '../../../../../types';
+import {
+  buildDoorVisualLookupKeys,
+  hasDoorVisualSegmentSuffix,
+  isSegmentedDoorBaseId,
+  resolveDoorSplitAuthoringBaseKey,
+  resolveDoorVisualSegmentIdentity,
+  stripDoorVisualSurfaceSuffix,
+} from '../../../../shared/door_visual_key_contracts_shared.js';
 
 export type DoorVisualMapEntry = { key: string; value: unknown };
-export type DoorVisualSegmentIdentity = {
-  partId: string;
-  basePartId: string;
-  fullPartId: string;
-  isSegment: boolean;
-  lookupKeys: string[];
+export type { DoorVisualSegmentIdentity } from '../../../../shared/door_visual_key_contracts_shared.js';
+export {
+  buildDoorVisualLookupKeys,
+  resolveDoorSplitAuthoringBaseKey,
+  resolveDoorVisualSegmentIdentity,
+  stripDoorVisualSurfaceSuffix,
 };
-
-const SEGMENTED_DOOR_ANY_SUFFIX_RE = /_(?:full|top|bot|mid\d*)$/i;
-const SEGMENTED_DOOR_PART_SUFFIX_RE = /_(?:top|bot|mid\d*)$/i;
-const DOOR_VISUAL_SURFACE_SUFFIX_RE = /_(?:accent|groove)_(?:top|bottom|left|right)$/i;
 
 function hasOwn(map: Record<string, unknown> | undefined | null, key: string): boolean {
   return !!map && !!key && Object.prototype.hasOwnProperty.call(map, key);
@@ -23,52 +27,12 @@ function normalizePartKey(value: unknown): string {
   return typeof value === 'string' ? value.trim() : String(value ?? '').trim();
 }
 
-function isSegmentedDoorBaseId(partId: string): boolean {
-  if (!partId) return false;
-  if (/^(?:lower_)?d\d+$/.test(partId)) return true;
-  if (/^(?:lower_)?corner_door_\d+$/.test(partId)) return true;
-  if (/^(?:lower_)?corner_pent_door_\d+$/.test(partId)) return true;
-  if (/^sketch_box(?:_free)?_.+_door(?:_|$)/i.test(partId) && !SEGMENTED_DOOR_ANY_SUFFIX_RE.test(partId))
-    return true;
-  return false;
-}
-
 function isDoorStyleSegmentedBaseId(partId: string): boolean {
   return (
     /^(?:lower_)?d\d+$/.test(partId) ||
     /^(?:lower_)?corner_door_\d+$/.test(partId) ||
     /^(?:lower_)?corner_pent_door_\d+$/.test(partId)
   );
-}
-
-/**
- * Ordered lookup keys for door/drawer visual maps.
- *
- * Direct segment keys always win. Split segments then inherit from their *_full
- * owner so a full-door paint/special/style remains stable after the user cuts
- * the door, while a later segment-specific click can still override it.
- */
-export function buildDoorVisualLookupKeys(partId: string): string[] {
-  if (typeof partId !== 'string' || !partId) return [];
-  const out: string[] = [partId];
-  const push = (value: string) => {
-    if (!value || out.includes(value)) return;
-    out.push(value);
-  };
-
-  if (/(?:_(?:top|bot|mid\d*))$/i.test(partId)) {
-    const base = partId.replace(/_(top|bot|mid\d*)$/i, '');
-    push(`${base}_full`);
-    push(base);
-  }
-  if (partId.endsWith('_full')) {
-    push(partId.slice(0, -5));
-  }
-  if (isSegmentedDoorBaseId(partId)) {
-    push(`${partId}_full`);
-  }
-
-  return out;
 }
 
 export function readDoorVisualMapEntry(
@@ -81,36 +45,6 @@ export function readDoorVisualMapEntry(
     if (hasOwn(map, key)) return { key, value: map![key] };
   }
   return null;
-}
-
-export function stripDoorVisualSurfaceSuffix(partId: string): string {
-  return String(partId || '').replace(DOOR_VISUAL_SURFACE_SUFFIX_RE, '');
-}
-
-export function resolveDoorVisualSegmentIdentity(partId: unknown): DoorVisualSegmentIdentity {
-  const key = stripDoorVisualSurfaceSuffix(String(partId || ''));
-  const basePartId = key.replace(SEGMENTED_DOOR_ANY_SUFFIX_RE, '');
-  const fullPartId = basePartId ? `${basePartId}_full` : '';
-  return {
-    partId: key,
-    basePartId,
-    fullPartId,
-    isSegment: SEGMENTED_DOOR_PART_SUFFIX_RE.test(key),
-    lookupKeys: buildDoorVisualLookupKeys(key),
-  };
-}
-
-/**
- * Canonical split-authoring base key for hover/click/map keys.
- *
- * Split authoring is keyed by the same base door identity used by door visual
- * authoring. Surface-specific ids such as *_accent_* and *_groove_* are
- * intentionally normalized to the owning door segment/base before split keys are
- * built, so split/manual-position maps stay attached to the door itself rather
- * than to a decorative surface key.
- */
-export function resolveDoorSplitAuthoringBaseKey(partId: unknown): string {
-  return resolveDoorVisualSegmentIdentity(partId).basePartId;
 }
 
 export function readDoorVisualSegmentBasePartId(partId: string): string {
@@ -138,7 +72,7 @@ export function buildDoorVisualOwnerAliasKeys(partId: unknown): string[] {
 export function toDoorStyleOverrideMapKey(partId: unknown): string {
   const pid = normalizePartKey(partId);
   if (!pid) return '';
-  if (SEGMENTED_DOOR_ANY_SUFFIX_RE.test(pid)) return pid;
+  if (hasDoorVisualSegmentSuffix(pid)) return pid;
   if (isDoorStyleSegmentedBaseId(pid)) return `${pid}_full`;
   return pid;
 }

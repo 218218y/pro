@@ -1,8 +1,5 @@
+import { resolveDoorSplitAuthoringBaseKey } from '../../shared/door_visual_key_contracts_shared.js';
 import { asRecord, readOwn } from './maps_access_shared.js';
-
-function stripDoorSuffix(id0: string): string {
-  return String(id0 || '').replace(/_(full|top|bot|mid\d*)$/i, '');
-}
 
 function canonDoorBaseId(id0: unknown): string {
   let id = String(id0 || '').trim();
@@ -10,7 +7,7 @@ function canonDoorBaseId(id0: unknown): string {
   if (id.indexOf('splitpos_') === 0) id = id.slice(9);
   if (id.indexOf('splitb_') === 0) id = id.slice(7);
   if (id.indexOf('split_') === 0) id = id.slice(6);
-  return stripDoorSuffix(id);
+  return resolveDoorSplitAuthoringBaseKey(id);
 }
 
 export function splitKey(doorId: unknown): string {

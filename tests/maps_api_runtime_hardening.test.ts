@@ -4,12 +4,29 @@ import assert from 'node:assert/strict';
 import { installMapsApi } from '../esm/native/kernel/maps_api.ts';
 import {
   readMapOrEmpty,
+  splitBottomKey,
+  splitKey,
+  splitPosKey,
   toggleGrooveKey,
   writeHandle,
   writeMapKey,
   writeSplit,
   writeSplitBottom,
 } from '../esm/native/runtime/maps_access.ts';
+
+test('runtime split key helpers use the door split authoring base for visual surface ids', () => {
+  assert.equal(splitKey('d4_top'), 'split_d4');
+  assert.equal(splitKey('d4_mid2'), 'split_d4');
+  assert.equal(splitKey('d4_mid2_accent_top'), 'split_d4');
+  assert.equal(splitKey('d4_mid2_groove_left'), 'split_d4');
+  assert.equal(splitPosKey('d4_mid2_accent_top'), 'splitpos_d4');
+  assert.equal(splitBottomKey('splitb_d5_bot'), 'splitb_d5');
+  assert.equal(splitKey('sketch_box_0_boxA_door_left_mid2_accent_top'), 'split_sketch_box_0_boxA_door_left');
+  assert.equal(
+    splitKey('sketch_box_free_0_boxA_door_sbdr_1_mid2_groove_left'),
+    'split_sketch_box_free_0_boxA_door_sbdr_1'
+  );
+});
 
 test('maps_api keeps map writes store-backed and mirrors saved colors to storage without stale array reuse', () => {
   const storageWrites: Array<[string, unknown]> = [];
