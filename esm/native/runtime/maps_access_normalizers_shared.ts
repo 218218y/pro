@@ -9,7 +9,7 @@ import {
   isCanonicalGroovesMapKey,
 } from '../../shared/door_groove_key_contracts_shared.js';
 import { isCanonicalRemovedDoorsMapKey } from '../../shared/removed_doors_map_keys_shared.js';
-import { asMapRecord, asRecord, readFiniteNumber } from './maps_access_shared.js';
+import { asMapRecord, asRecord } from './maps_access_shared.js';
 
 export type KnownMapNormalizerMap = { [K in KnownMapName]: (value: unknown) => MapsByName[K] };
 export type NullableStringMap = Record<string, string | null | undefined>;
@@ -237,52 +237,4 @@ export function normalizeDoorStyleMap(value: unknown): MapsByName['doorStyleMap'
     if (entry === 'flat' || entry === 'profile' || entry === 'double_profile') out[key] = entry;
   }
   return out;
-}
-
-export function normalizeDoorTrimCenterNorm(value: unknown): number {
-  const n = readFiniteNumber(value);
-  if (!Number.isFinite(n)) return 0.5;
-  const next = Math.max(0, Math.min(1, Number(n)));
-  return Math.abs(next - 0.5) <= 1e-4 ? 0.5 : next;
-}
-
-export function normalizeDoorTrimCustomSizeCm(value: unknown): number | null {
-  const n = readFiniteNumber(value);
-  if (!Number.isFinite(n) || !(Number(n) > 0)) return null;
-  return Math.max(4, Math.min(400, Number(n)));
-}
-
-export function normalizeDoorTrimCrossSizeCm(value: unknown): number | null {
-  const n = readFiniteNumber(value);
-  if (!Number.isFinite(n) || !(Number(n) > 0)) return null;
-  return Math.max(1, Math.min(120, Number(n)));
-}
-
-export function formatStableNormNumber(value: number | null): string {
-  if (typeof value !== 'number' || !Number.isFinite(value)) return 'na';
-  const rounded = Math.round(value * 10000) / 10000;
-  return String(rounded)
-    .replace(/\.0+$/, '')
-    .replace(/(\.\d*?)0+$/, '$1');
-}
-
-export function createStableDoorTrimId(parts: {
-  axis: string;
-  color: string;
-  span: string;
-  centerXNorm: number;
-  centerYNorm: number;
-  sizeCm: number | null;
-  crossSizeCm: number | null;
-}): string {
-  const core = [
-    parts.axis,
-    parts.color,
-    parts.span,
-    formatStableNormNumber(parts.centerXNorm),
-    formatStableNormNumber(parts.centerYNorm),
-    formatStableNormNumber(parts.sizeCm),
-    formatStableNormNumber(parts.crossSizeCm),
-  ].join('_');
-  return `trim_${core}`;
 }

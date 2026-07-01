@@ -3,18 +3,13 @@ import {
   listDoorTrimTargetLookupKeys,
   toCanonicalDoorTrimTargetKey,
 } from '../../../../shared/door_trim_key_contracts_shared.js';
+import { normalizeDoorTrimEntryValue } from '../../../../shared/door_trim_value_contracts_shared.js';
 import {
   DEFAULT_DOOR_TRIM_AXIS,
   DEFAULT_DOOR_TRIM_COLOR,
   DEFAULT_DOOR_TRIM_SPAN,
   DEFAULT_DOOR_TRIM_CENTER_NORM,
   isDoorTrimRecord,
-  normalizeDoorTrimAxis,
-  normalizeDoorTrimColor,
-  normalizeDoorTrimCrossSizeCm,
-  normalizeDoorTrimCustomSizeCm,
-  normalizeDoorTrimSpan,
-  resolveDoorTrimCenterPair,
 } from './trim_shared.js';
 
 function buildTrimId(seed?: unknown): string {
@@ -28,24 +23,7 @@ function cloneDoorTrimEntry(entry: DoorTrimEntry): DoorTrimEntry {
 
 export function readDoorTrimEntry(value: unknown): DoorTrimEntry | null {
   if (!isDoorTrimRecord(value)) return null;
-  const axis = normalizeDoorTrimAxis(value.axis, DEFAULT_DOOR_TRIM_AXIS);
-  const color = normalizeDoorTrimColor(value.color, DEFAULT_DOOR_TRIM_COLOR);
-  const span = normalizeDoorTrimSpan(value.span, DEFAULT_DOOR_TRIM_SPAN);
-  const { centerXNorm, centerYNorm } = resolveDoorTrimCenterPair(value);
-  const sizeCm = normalizeDoorTrimCustomSizeCm(value.sizeCm);
-  const crossSizeCm = normalizeDoorTrimCrossSizeCm(value.crossSizeCm);
-
-  const out: DoorTrimEntry = {
-    id: buildTrimId(value.id),
-    axis,
-    color,
-    span,
-    centerXNorm,
-    centerYNorm,
-  };
-  if (span === 'custom' && sizeCm != null) out.sizeCm = sizeCm;
-  if (crossSizeCm != null) out.crossSizeCm = crossSizeCm;
-  return out;
+  return normalizeDoorTrimEntryValue(value, { missingId: buildTrimId(value.id) });
 }
 
 export function readDoorTrimList(value: unknown): DoorTrimEntry[] {

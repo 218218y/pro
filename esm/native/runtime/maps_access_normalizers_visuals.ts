@@ -1,83 +1,17 @@
-import type {
-  DoorTrimAxis,
-  DoorTrimColor,
-  DoorTrimEntry,
-  DoorTrimMap,
-  DoorTrimSpan,
-  MapsByName,
-} from '../../../types';
+import type { DoorTrimEntry, DoorTrimMap, MapsByName } from '../../../types';
 
 import { readCanonicalMirrorLayoutMap } from '../../shared/mirror_layout_contracts_shared.js';
 import { isCanonicalDoorTrimTargetKey } from '../../shared/door_trim_key_contracts_shared.js';
+import { normalizeDoorTrimEntryValueList } from '../../shared/door_trim_value_contracts_shared.js';
 import { asRecord } from './maps_access_shared.js';
-import {
-  createStableDoorTrimId,
-  normalizeDoorStyleMap,
-  normalizeDoorTrimCenterNorm,
-  normalizeDoorTrimCrossSizeCm,
-  normalizeDoorTrimCustomSizeCm,
-} from './maps_access_normalizers_shared.js';
+import { normalizeDoorStyleMap } from './maps_access_normalizers_shared.js';
 
 export function normalizeMirrorLayoutMap(value: unknown): MapsByName['mirrorLayoutMap'] {
   return readCanonicalMirrorLayoutMap(value);
 }
 
-function normalizeDoorTrimAxis(value: unknown): DoorTrimAxis {
-  return value === 'vertical' ? 'vertical' : 'horizontal';
-}
-
-function normalizeDoorTrimColor(value: unknown): DoorTrimColor {
-  return value === 'silver' || value === 'gold' || value === 'black' || value === 'nickel' ? value : 'nickel';
-}
-
-function normalizeDoorTrimSpan(value: unknown): DoorTrimSpan {
-  return value === 'full' ||
-    value === 'three_quarters' ||
-    value === 'half' ||
-    value === 'third' ||
-    value === 'quarter' ||
-    value === 'custom'
-    ? value
-    : 'full';
-}
-
-function normalizeDoorTrimEntry(value: unknown): DoorTrimEntry | null {
-  const rec = asRecord(value);
-  if (!rec) return null;
-  const axis = normalizeDoorTrimAxis(rec.axis);
-  const color = normalizeDoorTrimColor(rec.color);
-  const span = normalizeDoorTrimSpan(rec.span);
-  const centerXNorm = normalizeDoorTrimCenterNorm(rec.centerXNorm);
-  const centerYNorm = normalizeDoorTrimCenterNorm(rec.centerYNorm);
-  const sizeCm = normalizeDoorTrimCustomSizeCm(rec.sizeCm);
-  const crossSizeCm = normalizeDoorTrimCrossSizeCm(rec.crossSizeCm);
-  const explicitId = typeof rec.id === 'string' && rec.id.trim() ? String(rec.id) : '';
-  const out: DoorTrimEntry = {
-    id:
-      explicitId ||
-      createStableDoorTrimId({ axis, color, span, centerXNorm, centerYNorm, sizeCm, crossSizeCm }),
-    axis,
-    color,
-    span,
-    centerXNorm,
-    centerYNorm,
-  };
-  if (span === 'custom' && sizeCm != null) out.sizeCm = sizeCm;
-  if (crossSizeCm != null) out.crossSizeCm = crossSizeCm;
-  return out;
-}
-
 function normalizeDoorTrimList(value: unknown): DoorTrimEntry[] {
-  if (Array.isArray(value)) {
-    const out: DoorTrimEntry[] = [];
-    for (let i = 0; i < value.length; i += 1) {
-      const entry = normalizeDoorTrimEntry(value[i]);
-      if (entry) out.push({ ...entry });
-    }
-    return out;
-  }
-  const single = normalizeDoorTrimEntry(value);
-  return single ? [{ ...single }] : [];
+  return normalizeDoorTrimEntryValueList(value, { useStableIdWhenMissing: true });
 }
 
 export function normalizeDoorTrimMap(value: unknown): DoorTrimMap {

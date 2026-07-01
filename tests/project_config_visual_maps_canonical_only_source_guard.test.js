@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 
+import { readDoorTrimConfigMap } from '../esm/native/features/project_config/project_config_map_readers.ts';
 import { normalizeKnownMapSnapshot } from '../esm/native/runtime/maps_access_normalizers.ts';
 
 const PROJECT_ROOT = process.cwd();
@@ -102,6 +103,37 @@ test('storage/project visual-map boundaries keep using explicit canonical-only r
 
   assert.doesNotMatch(projectMapReaders, /features\/door_authoring\/api\.js/);
   assert.doesNotMatch(projectMapReaders, /\.\.\/door_authoring\/api\.js/);
+});
+
+test('storage/project visual-map boundaries may use value-only trim normalization but not random trim ids', () => {
+  const projectMapReaders = readSource('esm/native/features/project_config/project_config_map_readers.ts');
+  const runtimeVisuals = readSource('esm/native/runtime/maps_access_normalizers_visuals.ts');
+  const trimValueContracts = readSource('esm/shared/door_trim_value_contracts_shared.ts');
+  const storageSources = [projectMapReaders, runtimeVisuals, trimValueContracts].join('\n');
+
+  assert.match(projectMapReaders, tokenRe('normalizeDoorTrimEntryValueList'));
+  assert.match(runtimeVisuals, tokenRe('normalizeDoorTrimEntryValueList'));
+  assert.match(trimValueContracts, tokenRe('normalizeDoorTrimEntryValue'));
+
+  assert.doesNotMatch(storageSources, /Math\.random\s*\(/);
+  assert.doesNotMatch(trimValueContracts, tokenRe('toCanonicalDoorTrimTargetKey'));
+  assert.doesNotMatch(trimValueContracts, tokenRe('listDoorTrimTargetLookupKeys'));
+});
+
+test('project config doorTrimMap keeps only direct canonical keys', () => {
+  const doorTrimMap = readDoorTrimConfigMap({
+    d1_full: [{ id: 'trim_direct', axis: 'vertical', color: 'gold', span: 'custom', sizeCm: '12' }],
+    d1: [{ id: 'trim_base', axis: 'horizontal', color: 'black', span: 'half' }],
+    d1_mid2_accent_top: [{ id: 'trim_decorated', axis: 'horizontal', color: 'silver', span: 'third' }],
+    d2_top_trim_preview_hover: [{ id: 'trim_preview', axis: 'horizontal', color: 'silver', span: 'third' }],
+  });
+
+  assert.equal(doorTrimMap.d1_full?.length, 1);
+  assert.equal(doorTrimMap.d1_full?.[0]?.id, 'trim_direct');
+  assert.equal(doorTrimMap.d1_full?.[0]?.axis, 'vertical');
+  assert.equal('d1' in doorTrimMap, false);
+  assert.equal('d1_mid2_accent_top' in doorTrimMap, false);
+  assert.equal('d2_top_trim_preview_hover' in doorTrimMap, false);
 });
 
 test('runtime storage normalizers keep visual maps canonical-only without alias repair', () => {
