@@ -10,6 +10,10 @@ const SEGMENTED_DOOR_ANY_SUFFIX_RE = /_(?:full|top|bot|mid\d*)$/i;
 const SEGMENTED_DOOR_PART_SUFFIX_RE = /_(?:top|bot|mid\d*)$/i;
 const DOOR_VISUAL_SURFACE_SUFFIX_RE = /_(?:accent|groove)_(?:top|bottom|left|right)$/i;
 
+function readPartKey(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : String(value ?? '').trim();
+}
+
 export function hasDoorVisualSegmentSuffix(partId: string): boolean {
   return SEGMENTED_DOOR_ANY_SUFFIX_RE.test(partId);
 }
@@ -23,6 +27,21 @@ export function isSegmentedDoorBaseId(partId: string): boolean {
     return true;
   }
   return false;
+}
+
+export function isDoorStyleSegmentedBaseId(partId: string): boolean {
+  return (
+    /^(?:lower_)?d\d+$/.test(partId) ||
+    /^(?:lower_)?corner_door_\d+$/.test(partId) ||
+    /^(?:lower_)?corner_pent_door_\d+$/.test(partId)
+  );
+}
+
+export function toDoorStyleOverrideMapKey(partId: unknown): string {
+  const key = readPartKey(partId);
+  if (!key) return '';
+  if (hasDoorVisualSegmentSuffix(key)) return key;
+  return isDoorStyleSegmentedBaseId(key) ? `${key}_full` : key;
 }
 
 /**

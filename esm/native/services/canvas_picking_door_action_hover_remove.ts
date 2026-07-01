@@ -1,4 +1,5 @@
 import type { UnknownRecord } from '../../../types';
+import { stripDoorVisualSurfaceSuffix } from '../../shared/door_visual_key_contracts_shared.js';
 import { getDoorsArray } from '../runtime/render_access.js';
 import { __wp_map } from './canvas_picking_core_helpers.js';
 import {
@@ -103,7 +104,7 @@ function normalizeGrooveHoverPartKey(args: {
   const scoped = String(state.scopedHitDoorPid || state.hitDoorPid || '');
   const canon = hoverArgs.canonDoorPartKeyForMaps(scoped);
   if (!canon) return '';
-  return canon.replace(/_(?:accent|groove)_(?:top|bottom|left|right)$/i, '');
+  return stripDoorVisualSurfaceSuffix(canon);
 }
 
 export function readDoorActionHoverWillRemoveGroove(args: {

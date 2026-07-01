@@ -6,10 +6,12 @@ import vm from 'node:vm';
 import { createRequire } from 'node:module';
 import {
   buildDoorVisualOwnerAliasKeys,
-  resolveDoorSplitAuthoringBaseKey,
   resolveDoorStylePaintTargetKey,
-  resolveDoorVisualSegmentIdentity,
 } from '../esm/native/features/door_authoring/api.ts';
+import {
+  resolveDoorSplitAuthoringBaseKey,
+  resolveDoorVisualSegmentIdentity,
+} from '../esm/shared/door_visual_key_contracts_shared.ts';
 
 const require = createRequire(import.meta.url);
 const ts = require('typescript');

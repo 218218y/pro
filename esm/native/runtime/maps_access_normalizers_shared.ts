@@ -1,6 +1,9 @@
 import type { KnownMapName, MapsByName } from '../../../types';
 
-import { resolveDoorSplitAuthoringBaseKey } from '../../shared/door_visual_key_contracts_shared.js';
+import {
+  resolveDoorSplitAuthoringBaseKey,
+  toDoorStyleOverrideMapKey,
+} from '../../shared/door_visual_key_contracts_shared.js';
 import { isCanonicalRemovedDoorsMapKey } from '../../shared/removed_doors_map_keys_shared.js';
 import { asMapRecord, asRecord, readFiniteNumber } from './maps_access_shared.js';
 
@@ -232,28 +235,13 @@ export function normalizeDoorStyleMap(value: unknown): MapsByName['doorStyleMap'
   if (!rec) return out;
   for (const key of Object.keys(rec)) {
     const entry = typeof rec[key] === 'string' ? String(rec[key]).trim().toLowerCase() : '';
-    const mapKey = toDoorStyleMapKey(key);
+    const mapKey = toDoorStyleOverrideMapKey(key);
     if (!mapKey) continue;
     if (entry === 'flat' || entry === 'profile' || entry === 'double_profile') {
       if (mapKey === key || typeof out[mapKey] === 'undefined') out[mapKey] = entry;
     }
   }
   return out;
-}
-
-function isSegmentedDoorStyleBaseKey(value: string): boolean {
-  return (
-    /^(?:lower_)?d\d+$/.test(value) ||
-    /^(?:lower_)?corner_door_\d+$/.test(value) ||
-    /^(?:lower_)?corner_pent_door_\d+$/.test(value)
-  );
-}
-
-function toDoorStyleMapKey(value: unknown): string {
-  const key = typeof value === 'string' ? value.trim() : String(value ?? '').trim();
-  if (!key) return '';
-  if (/(?:_(?:full|top|bot|mid\d*))$/i.test(key)) return key;
-  return isSegmentedDoorStyleBaseKey(key) ? `${key}_full` : key;
 }
 
 export function normalizeDoorTrimCenterNorm(value: unknown): number {

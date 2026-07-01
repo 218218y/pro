@@ -1,4 +1,5 @@
 import type { AppContainer, DoorVisualEntryLike, UnknownRecord } from '../../../types';
+import { stripDoorVisualSurfaceSuffix } from '../../shared/door_visual_key_contracts_shared.js';
 import { getDoorsArray, getDrawersArray } from '../runtime/render_access.js';
 import { isDrawerBoxPartId } from '../features/part_identity/api.js';
 import { isCabinetBodyDoorTrimSurfacePartId } from '../features/door_authoring/api.js';
@@ -139,9 +140,7 @@ function normalizeDoorTrimMapPartId(candidatePartId: unknown, preferredGroup: Do
 
 function stripDoorTrimDecorationSuffix(partId: string): string {
   if (!partId) return '';
-  return partId
-    .replace(/_(?:accent|groove)_(?:top|bottom|left|right)$/i, '')
-    .replace(/_(?:trim|trim_preview)(?:_[a-z0-9]+)?$/i, '');
+  return stripDoorVisualSurfaceSuffix(partId).replace(/_(?:trim|trim_preview)(?:_[a-z0-9]+)?$/i, '');
 }
 
 function pushCandidate(out: string[], seen: Set<string>, value: unknown): void {

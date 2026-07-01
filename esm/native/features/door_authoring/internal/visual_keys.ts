@@ -3,21 +3,14 @@ import { readMirrorLayoutList } from './mirror_contracts.js';
 import type { MirrorLayoutList } from '../../../../../types';
 import {
   buildDoorVisualLookupKeys,
-  hasDoorVisualSegmentSuffix,
   isSegmentedDoorBaseId,
-  resolveDoorSplitAuthoringBaseKey,
   resolveDoorVisualSegmentIdentity,
   stripDoorVisualSurfaceSuffix,
+  toDoorStyleOverrideMapKey,
 } from '../../../../shared/door_visual_key_contracts_shared.js';
 
 export type DoorVisualMapEntry = { key: string; value: unknown };
-export type { DoorVisualSegmentIdentity } from '../../../../shared/door_visual_key_contracts_shared.js';
-export {
-  buildDoorVisualLookupKeys,
-  resolveDoorSplitAuthoringBaseKey,
-  resolveDoorVisualSegmentIdentity,
-  stripDoorVisualSurfaceSuffix,
-};
+export { buildDoorVisualLookupKeys, stripDoorVisualSurfaceSuffix, toDoorStyleOverrideMapKey };
 
 function hasOwn(map: Record<string, unknown> | undefined | null, key: string): boolean {
   return !!map && !!key && Object.prototype.hasOwnProperty.call(map, key);
@@ -25,14 +18,6 @@ function hasOwn(map: Record<string, unknown> | undefined | null, key: string): b
 
 function normalizePartKey(value: unknown): string {
   return typeof value === 'string' ? value.trim() : String(value ?? '').trim();
-}
-
-function isDoorStyleSegmentedBaseId(partId: string): boolean {
-  return (
-    /^(?:lower_)?d\d+$/.test(partId) ||
-    /^(?:lower_)?corner_door_\d+$/.test(partId) ||
-    /^(?:lower_)?corner_pent_door_\d+$/.test(partId)
-  );
 }
 
 export function readDoorVisualMapEntry(
@@ -45,10 +30,6 @@ export function readDoorVisualMapEntry(
     if (hasOwn(map, key)) return { key, value: map![key] };
   }
   return null;
-}
-
-export function readDoorVisualSegmentBasePartId(partId: string): string {
-  return resolveDoorVisualSegmentIdentity(partId).basePartId;
 }
 
 export function isDoorVisualSegmentPartId(partId: string): boolean {
@@ -67,14 +48,6 @@ export function buildDoorVisualOwnerAliasKeys(partId: unknown): string[] {
   else if (isSegmentedDoorBaseId(key)) push(`${key}_full`);
 
   return out;
-}
-
-export function toDoorStyleOverrideMapKey(partId: unknown): string {
-  const pid = normalizePartKey(partId);
-  if (!pid) return '';
-  if (hasDoorVisualSegmentSuffix(pid)) return pid;
-  if (isDoorStyleSegmentedBaseId(pid)) return `${pid}_full`;
-  return pid;
 }
 
 export function resolveDoorStylePaintTargetKey(args: {

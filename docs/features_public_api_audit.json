@@ -457,10 +457,6 @@
       "entry": "part_identity/api.js"
     },
     {
-      "file": "esm/native/builder/post_build_sketch_door_cuts_box.ts",
-      "entry": "door_authoring/api.js"
-    },
-    {
       "file": "esm/native/builder/post_build_sketch_door_cuts_contracts.ts",
       "entry": "manual_handle_position.js"
     },
@@ -1173,10 +1169,6 @@
       "entry": "hex_cell/index.js"
     },
     {
-      "file": "esm/native/services/canvas_picking_door_segment_materialization.ts",
-      "entry": "door_authoring/api.js"
-    },
-    {
       "file": "esm/native/services/canvas_picking_door_shared.ts",
       "entry": "part_identity/api.js"
     },
@@ -1555,10 +1547,6 @@
     {
       "file": "esm/native/services/canvas_picking_special_paint_targets.ts",
       "entry": "hex_cell/index.js"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_split_hover_bounds.ts",
-      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_split_hover_preview_line.ts",

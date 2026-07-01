@@ -6,8 +6,8 @@ import {
   hasAnyDoorVisualSegmentMapEntry,
   readDoorVisualPrefixedMapEntry,
   readDoorVisualPrefixedOwnMapEntry,
-  resolveDoorVisualSegmentIdentity,
 } from '../features/door_authoring/api.js';
+import { resolveDoorVisualSegmentIdentity } from '../../shared/door_visual_key_contracts_shared.js';
 
 const GROOVE_PREFIX = 'groove_';
 

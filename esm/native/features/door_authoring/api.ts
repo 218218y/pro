@@ -61,7 +61,6 @@ export {
 } from './internal/mirror.js';
 
 export {
-  buildDoorVisualLookupKeys,
   buildDoorVisualOwnerAliasKeys,
   hasAnyDoorVisualSegmentMapEntry,
   readDoorVisualMapEntry,
@@ -69,8 +68,5 @@ export {
   readDoorVisualMirrorLayout,
   readDoorVisualPrefixedMapEntry,
   readDoorVisualPrefixedOwnMapEntry,
-  readDoorVisualSegmentBasePartId,
-  resolveDoorSplitAuthoringBaseKey,
   resolveDoorStylePaintTargetKey,
-  resolveDoorVisualSegmentIdentity,
 } from './internal/visual_keys.js';

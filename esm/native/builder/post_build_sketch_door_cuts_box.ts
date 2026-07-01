@@ -4,7 +4,7 @@
 
 import { getDrawersArray } from '../runtime/render_access.js';
 import { isSplitEnabledInMap, readSplitPosListFromMap } from '../runtime/maps_access.js';
-import { resolveDoorSplitAuthoringBaseKey } from '../features/door_authoring/api.js';
+import { resolveDoorSplitAuthoringBaseKey } from '../../shared/door_visual_key_contracts_shared.js';
 import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { AppContainer, BuildContextLike, ThreeLike } from '../../../types/index.js';
 import { getMirrorMaterial } from './render_ops.js';

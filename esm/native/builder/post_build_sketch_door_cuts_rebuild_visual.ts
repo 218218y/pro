@@ -7,8 +7,8 @@ import {
   hasAnyDoorVisualSegmentMapEntry,
   readDoorVisualPrefixedMapEntry,
   readDoorVisualPrefixedOwnMapEntry,
-  readDoorVisualSegmentBasePartId,
 } from '../features/door_authoring/api.js';
+import { resolveDoorVisualSegmentIdentity } from '../../shared/door_visual_key_contracts_shared.js';
 import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 import { asRecord, isObject3DLike, type ValueRecord } from './post_build_extras_shared.js';
@@ -83,7 +83,7 @@ function readSketchSegmentGrooveEnabled(args: {
   sourceUserData?: ValueRecord | null;
 }): boolean {
   const { groovesMap, segmentPartId, sourceUserData } = args;
-  const basePartId = readDoorVisualSegmentBasePartId(segmentPartId);
+  const basePartId = resolveDoorVisualSegmentIdentity(segmentPartId).basePartId;
   const hasExplicitSegmentState = hasAnySketchSegmentGrooveMapEntry(groovesMap, basePartId);
   const directFlag = readSketchSegmentGrooveMapFlag(groovesMap, segmentPartId);
 

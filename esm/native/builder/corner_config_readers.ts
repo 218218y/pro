@@ -1,5 +1,6 @@
 import type { ConfigStateLike, KnownMapName, MapsByName } from '../../../types/index.js';
-import { buildDoorVisualLookupKeys, readDoorVisualMapValue } from '../features/door_authoring/api.js';
+import { buildDoorVisualLookupKeys } from '../../shared/door_visual_key_contracts_shared.js';
+import { readDoorVisualMapValue } from '../features/door_authoring/api.js';
 import { normalizeKnownMapSnapshot } from '../runtime/maps_access.js';
 import { asRecord } from '../runtime/record.js';
 

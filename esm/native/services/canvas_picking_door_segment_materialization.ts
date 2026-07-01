@@ -2,7 +2,7 @@ import type { AppContainer, UnknownRecord } from '../../../types';
 
 import { asRecord } from '../runtime/record.js';
 import { getDoorsArray } from '../runtime/render_access.js';
-import { resolveDoorVisualSegmentIdentity } from '../features/door_authoring/api.js';
+import { resolveDoorVisualSegmentIdentity } from '../../shared/door_visual_key_contracts_shared.js';
 
 function readOwnMapValue(map: Record<string, unknown> | null | undefined, key: string): unknown {
   if (!map || !key || !Object.prototype.hasOwnProperty.call(map, key)) return undefined;

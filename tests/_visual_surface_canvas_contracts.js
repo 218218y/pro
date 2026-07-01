@@ -689,7 +689,7 @@ test('[canvas-family] paint + overlap + split-hover + toggle seams stay thin ove
     assert,
     splitHoverBounds,
     [
-      /features\/door_authoring\/api\.js/,
+      /shared\/door_visual_key_contracts_shared\.js/,
       /resolveDoorSplitAuthoringBaseKey/,
       /export type SplitHoverDoorBounds = \{ minY: number; maxY: number \};/,
       /export function __wp_getSplitHoverDoorBaseKey\(/,

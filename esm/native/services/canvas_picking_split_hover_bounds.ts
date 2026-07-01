@@ -1,5 +1,5 @@
 import type { AppContainer } from '../../../types';
-import { resolveDoorSplitAuthoringBaseKey } from '../features/door_authoring/api.js';
+import { resolveDoorSplitAuthoringBaseKey } from '../../shared/door_visual_key_contracts_shared.js';
 import { __wp_asRecord, __wp_getCanvasPickingRuntime } from './canvas_picking_core_shared.js';
 
 export type SplitHoverDoorBounds = { minY: number; maxY: number };

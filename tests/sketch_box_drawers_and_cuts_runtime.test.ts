@@ -894,7 +894,7 @@ test('sketch box external drawer cuts rebuild segmented box doors from drawer ru
     src,
     /function collectSketchBoxExternalDrawerStackBounds\(App: AppContainer\): SketchBoxDrawerStackBounds\[]/
   );
-  assert.match(boxSrc, /features\/door_authoring\/api\.js/);
+  assert.match(boxSrc, /shared\/door_visual_key_contracts_shared\.js/);
   assert.match(boxSrc, /resolveDoorSplitAuthoringBaseKey/);
   assert.doesNotMatch(boxSrc, /readSketchBoxDoorBasePartId/);
   assert.match(src, /ud\.__wpSketchExtDrawer !== true/);
