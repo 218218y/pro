@@ -65,7 +65,6 @@ export interface MapsApiShared {
   safeCfg: () => CfgSnapshotLike;
   readConfigMap: (mapName: string) => UnknownRecord;
   readNamedMap: <K extends KnownMapName>(mapName: K) => MapsByName[K];
-  createMapPatch: (key: string, value: unknown) => UnknownRecord;
   shouldSkipStorageWrite: (meta: ActionMetaLike | UnknownRecord | null | undefined) => boolean;
   writeStorageJson: (key: string, value: unknown, op: string) => void;
   getSavedColorsStorageKey: () => string;
@@ -129,12 +128,6 @@ export function createMapsApiShared(App: AppContainer): MapsApiShared {
     return empty;
   }
 
-  function createMapPatch(key: string, value: unknown): UnknownRecord {
-    const patch = createRecord();
-    patch[key] = value;
-    return patch;
-  }
-
   function shouldSkipStorageWrite(meta: ActionMetaLike | UnknownRecord | null | undefined): boolean {
     try {
       const m = asObject(meta) || {};
@@ -180,7 +173,6 @@ export function createMapsApiShared(App: AppContainer): MapsApiShared {
     safeCfg,
     readConfigMap,
     readNamedMap,
-    createMapPatch,
     shouldSkipStorageWrite,
     writeStorageJson,
     getSavedColorsStorageKey,

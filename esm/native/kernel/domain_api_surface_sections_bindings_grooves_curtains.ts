@@ -4,11 +4,11 @@ import { patchDoorGrooveMapEntries, toggleGrooveKey, writeCurtainPreset } from '
 import {
   areDomainMapValuesEquivalent,
   normalizePrefixedMapKey,
+  shouldSkipSimpleMapWrite,
   type DomainApiSurfaceSectionBindings,
   type DomainApiSurfaceSectionBindingFactory,
   type DomainApiSurfaceSectionKey,
   type DomainApiSurfaceSectionsState,
-  writeSimpleMapValue,
 } from './domain_api_surface_sections_shared.js';
 
 function createGroovesSelectBindings(state: DomainApiSurfaceSectionsState): UnknownRecord {
@@ -61,9 +61,11 @@ function createCurtainsActionBindings(state: DomainApiSurfaceSectionsState): Unk
   return {
     set(partId: unknown, preset: unknown, meta: ActionMetaLike | undefined) {
       const nextMeta = state._meta(meta, 'actions:curtains:set');
+      const key = String(partId || '');
+      if (!key) return;
       const value = preset === undefined || preset === null ? null : String(preset || 'none');
-      if (writeCurtainPreset(state.App, partId, value, nextMeta)) return;
-      return writeSimpleMapValue(state, 'curtainMap', partId, value, nextMeta);
+      if (shouldSkipSimpleMapWrite(state, 'curtainMap', key, value)) return;
+      return writeCurtainPreset(state.App, key, value, nextMeta);
     },
   };
 }

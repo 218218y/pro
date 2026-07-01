@@ -136,7 +136,7 @@ test('[domain-api-sections] shared facade delegates contracts, prefixed maps, ma
       /export function commitCanonicalPrefixedMapValue\(/,
       /export function writeSimpleMapValue\(/,
       /export function shouldSkipCanonicalPrefixedMapCommit\(/,
-      /writeMapKey\(/,
+      /patchSimpleWritableMapEntryFromOwner/,
     ],
     'sectionsMapWritesOwner'
   );

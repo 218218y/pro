@@ -20,6 +20,7 @@ const VISUAL_KEYED_MAPS = [
 ];
 
 const VISUAL_KEYED_OWNER_MODULE = 'esm/native/runtime/visual_keyed_map_writer_owner.ts';
+const SIMPLE_WRITABLE_OWNER_MODULE = 'esm/native/runtime/simple_writable_map_writer_owner.ts';
 
 const DIRECT_WRITE_OWNER_FILES = new Set([VISUAL_KEYED_OWNER_MODULE]);
 
@@ -33,6 +34,17 @@ const OWNER_HELPER_NAMES = [
   'setCfgVisualKeyedMapFromOwner',
   'patchVisualKeyedMapEntriesFromOwner',
   'toggleVisualKeyedMapEntryFromOwner',
+];
+
+const SIMPLE_OWNER_HELPER_IMPORT_ALLOWLIST = new Set([
+  'esm/native/runtime/maps_access_writers.ts',
+  'esm/native/kernel/maps_api_named_maps.ts',
+  'esm/native/kernel/domain_api_surface_sections_map_writes.ts',
+]);
+
+const SIMPLE_OWNER_HELPER_NAMES = [
+  'patchSimpleWritableMapEntryFromOwner',
+  'toggleSimpleWritableBooleanMapEntryFromOwner',
 ];
 
 const SERVICE_SEMANTIC_WRITER_EXPECTATIONS = [
@@ -71,10 +83,7 @@ const SIMPLE_WRITABLE_MAPS = [
   'roundedFrameSideShelvesMap',
 ];
 
-const WRITE_MAP_KEY_CALL_ALLOWLIST = new Set([
-  'esm/native/runtime/maps_access_writers.ts',
-  'esm/native/kernel/domain_api_surface_sections_map_writes.ts',
-]);
+const WRITE_MAP_KEY_CALL_ALLOWLIST = new Set();
 
 const MAP_ALIAS_READERS = {
   doorStyleMap: ['readDoorStyleMap'],
@@ -88,7 +97,7 @@ const MAP_ALIAS_READERS = {
 };
 
 const ASSIGNMENT_OPERATOR_PATTERN = String.raw`(?:=(?!=|>)|\+=|-=|\*=|/=|%=|&&=|\|\|=|\?\?=)`;
-const GENERIC_MAP_WRITE_APIS = ['cfgSetMap', 'patchConfigMap', 'writeMapKey'];
+const GENERIC_MAP_WRITE_APIS = ['cfgSetMap', 'patchConfigMap'];
 
 function readSourceFile(relPath) {
   return fs.readFileSync(path.join(PROJECT_ROOT, relPath), 'utf8');
@@ -319,6 +328,23 @@ function collectOwnerHelperImportViolations() {
   return violations;
 }
 
+function collectSimpleOwnerHelperImportViolations() {
+  const violations = [];
+  const files = SOURCE_ROOTS.flatMap(root => walkSourceFiles(root));
+  const helperPattern = new RegExp(
+    String.raw`\b(?:${SIMPLE_OWNER_HELPER_NAMES.map(escapeRegExp).join('|')})\b`
+  );
+
+  for (const file of files) {
+    if (file === SIMPLE_WRITABLE_OWNER_MODULE) continue;
+    const source = stripCommentsPreserveLines(readSourceFile(file));
+    if (!helperPattern.test(source)) continue;
+    if (!SIMPLE_OWNER_HELPER_IMPORT_ALLOWLIST.has(file)) violations.push(file);
+  }
+
+  return violations;
+}
+
 function collectDomainGenericVisualWriteHelperViolations() {
   const violations = [];
   const files = walkSourceFiles('esm/native/kernel').filter(file =>
@@ -410,11 +436,15 @@ test('visual/keyed config maps are written only by canonical owner files', () =>
 test('visual/keyed owner helpers stay out of broad runtime facades', () => {
   const cfgAccessFacade = readSourceFile('esm/native/runtime/cfg_access.ts');
   const mapsAccessFacade = readSourceFile('esm/native/runtime/maps_access.ts');
+  const coreApiFacade = readSourceFile('esm/native/core/api.ts');
+  const servicesStateFacade = readSourceFile('esm/native/services/api_state_surface.ts');
 
   assert.doesNotMatch(cfgAccessFacade, /setCfgVisualKeyedMapFromOwner/);
   assert.doesNotMatch(mapsAccessFacade, /patchVisualKeyedMapEntriesFromOwner/);
   assert.doesNotMatch(mapsAccessFacade, /patchCanonicalVisualMapEntries/);
-  assert.match(mapsAccessFacade, /writeMapKey/);
+  assert.doesNotMatch(mapsAccessFacade, /writeMapKey/);
+  assert.doesNotMatch(coreApiFacade, /writeMapKey/);
+  assert.doesNotMatch(servicesStateFacade, /writeMapKey/);
 });
 
 test('visual/keyed owner helpers are imported only by approved owners', () => {
@@ -464,36 +494,63 @@ test('domain api visual writes are blocked from generic helpers and routed throu
 });
 
 test('simple generic map writers are allowlisted and semantic actions prefer named writers', () => {
+  const simpleOwner = readSourceFile(SIMPLE_WRITABLE_OWNER_MODULE);
   const mapsWriters = readSourceFile('esm/native/runtime/maps_access_writers.ts');
   const mapsAccessFacade = readSourceFile('esm/native/runtime/maps_access.ts');
   const mapWrites = readSourceFile(DOMAIN_API_MAP_WRITES_FILE);
   const mapsApiNamedMaps = readSourceFile(MAPS_API_NAMED_MAPS_FILE);
+  const doorBindings = readSourceFile(DOMAIN_API_DOOR_BINDINGS_FILE);
   const grooveCurtainBindings = readSourceFile(DOMAIN_API_GROOVE_BINDINGS_FILE);
   const drawerDividerBindings = readSourceFile(DOMAIN_API_DRAWERS_DIVIDERS_BINDINGS_FILE);
 
-  assert.match(mapsWriters, /SIMPLE_WRITABLE_MAP_NAMES\s*=\s*\[/);
-  assert.match(mapsWriters, /export function isSimpleWritableMapName\(/);
-  assert.match(mapsWriters, /!isSimpleWritableMapName\(name\)/);
+  assert.match(simpleOwner, /SIMPLE_WRITABLE_MAP_NAMES\s*=\s*\[/);
+  assert.match(simpleOwner, /export function isSimpleWritableMapName\(/);
+  assert.match(simpleOwner, /export function patchSimpleWritableMapEntryFromOwner\(/);
+  assert.match(simpleOwner, /export function toggleSimpleWritableBooleanMapEntryFromOwner\(/);
+  assert.match(mapsWriters, /simple_writable_map_writer_owner\.js/);
+  assert.match(mapsApiNamedMaps, /simple_writable_map_writer_owner\.js/);
+  assert.match(mapWrites, /simple_writable_map_writer_owner\.js/);
   assert.match(mapsAccessFacade, /SIMPLE_WRITABLE_MAP_NAMES/);
   assert.match(mapsAccessFacade, /isSimpleWritableMapName/);
   for (const mapName of SIMPLE_WRITABLE_MAPS) {
     assert.match(
-      mapsWriters,
+      simpleOwner,
       new RegExp(String.raw`['"]${escapeRegExp(mapName)}['"]`),
       `${mapName} must be explicit in SIMPLE_WRITABLE_MAP_NAMES`
     );
   }
 
   assert.match(mapWrites, /isSimpleWritableMapName/);
+  assert.match(mapWrites, /patchSimpleWritableMapEntryFromOwner/);
   assert.match(mapsApiNamedMaps, /isSimpleWritableMapName\(cleanMapName\)/);
+  assert.match(mapsApiNamedMaps, /patchSimpleWritableMapEntryFromOwner/);
   assert.match(grooveCurtainBindings, /writeCurtainPreset\(state\.App/);
   assert.match(drawerDividerBindings, /writeDividerState\(state\.App/);
+  assert.match(doorBindings, /writeHandle\(state\.App/);
+  assert.match(doorBindings, /writeHinge\(state\.App/);
+  assert.doesNotMatch(grooveCurtainBindings, /writeCurtainPreset\([\s\S]*?writeSimpleMapValue/);
+  assert.doesNotMatch(drawerDividerBindings, /writeDividerState\([\s\S]*?writeSimpleMapValue/);
+  assert.doesNotMatch(drawerDividerBindings, /toggleDivider\([\s\S]*?toggleSimpleBooleanMapValue/);
+  assert.doesNotMatch(doorBindings, /writeHandle\([\s\S]*?writeSimpleMapValue/);
+  assert.doesNotMatch(doorBindings, /writeHinge\([\s\S]*?writeSimpleMapValue/);
+  assert.doesNotMatch(mapsWriters, /\bensureMapRecord\b/);
+  assert.doesNotMatch(mapsWriters, /\bwriteOwn\b/);
+  assert.doesNotMatch(mapsWriters, /\btrySetKey\b/);
+  assert.doesNotMatch(mapsApiNamedMaps, /\bpatchConfigMap\b/);
+  assert.doesNotMatch(mapsApiNamedMaps, /\bcreateMapPatch\b/);
 
   const violations = collectBroadWriteMapKeyCallViolations().map(formatViolation);
   assert.deepEqual(
     violations,
     [],
-    `writeMapKey calls must stay behind runtime/domain writer owners:\n${violations.join('\n')}`
+    `writeMapKey must not be used by source runtime/domain writers:\n${violations.join('\n')}`
+  );
+
+  const simpleOwnerImportViolations = collectSimpleOwnerHelperImportViolations();
+  assert.deepEqual(
+    simpleOwnerImportViolations,
+    [],
+    `Simple writable owner helpers may only be imported by approved writer owners:\n${simpleOwnerImportViolations.join('\n')}`
   );
 });
 

@@ -5,13 +5,14 @@ import { installMapsApi } from '../esm/native/kernel/maps_api.ts';
 import { cfgSetMap, patchConfigMap, setCfgDoorStyleMap } from '../esm/native/runtime/cfg_access.ts';
 import {
   isVisualKeyedMapName,
+  patchDoorGrooveLinesCountEntries,
+  patchDoorGrooveMapEntries,
   readMapOrEmpty,
   splitBottomKey,
   splitKey,
   splitPosKey,
   toggleGrooveKey,
   writeHandle,
-  writeMapKey,
   writeRemoved,
   writeSplit,
   writeSplitBottom,
@@ -126,9 +127,14 @@ test('maps_api keeps map writes store-backed and mirrors saved colors to storage
   assert.equal(App.maps.getHandle('d1'), 'bar');
 
   assert.equal(writeHandle(App, 'd2', 'knob', { source: 'test:handle' }), true);
-  assert.equal(writeMapKey(App, 'groovesMap', 'groove_d2', true, { source: 'test:map-write' }), true);
   assert.equal(
-    writeMapKey(App, 'grooveLinesCountMap', 'groove_d2_mid2', 6, { source: 'test:map-write:count' }),
+    patchDoorGrooveMapEntries(App, [{ key: 'groove_d2', value: true }], { source: 'test:map-write' }),
+    true
+  );
+  assert.equal(
+    patchDoorGrooveLinesCountEntries(App, [{ key: 'groove_d2_mid2', value: 6 }], {
+      source: 'test:map-write:count',
+    }),
     true
   );
 
@@ -218,7 +224,7 @@ test('maps_api and runtime writers replace groove maps with canonical prefixed k
   assert.equal(state.config.splitDoorsBottomMap.splitb_d7_bot, undefined);
 });
 
-test('generic map writers reject visual keyed maps unless routed through an owner', () => {
+test('generic config and maps API writers reject visual keyed maps unless routed through an owner', () => {
   const state = {
     ui: {},
     runtime: {},
@@ -256,15 +262,6 @@ test('generic map writers reject visual keyed maps unless routed through an owne
     () => patchConfigMap(App, 'doorTrimMap', { d1_full: [] }, { source: 'test:patchConfigMap' }),
     /patchConfigMap cannot write visual\/keyed map "doorTrimMap"/
   );
-
-  withSuppressedConsoleWarn(() => {
-    assert.equal(writeMapKey(App, 'doorStyleMap', 'd1_full', 'profile'), false);
-    assert.equal(writeMapKey(App, 'mirrorLayoutMap', 'd1_full', [{ widthCm: 50 }]), false);
-    assert.equal(writeMapKey(App, 'removedDoorsMap', 'removed_d1_full', true), false);
-    assert.equal(writeMapKey(App, 'splitDoorsMap', 'split_d1', true), false);
-    assert.equal(writeMapKey(App, 'splitDoorsBottomMap', 'splitb_d1', true), false);
-    assert.equal(writeMapKey(App, 'unknownMap', 'd1', true), false);
-  });
 
   assert.equal(state.config.doorStyleMap, undefined);
   assert.equal(state.config.mirrorLayoutMap, undefined);

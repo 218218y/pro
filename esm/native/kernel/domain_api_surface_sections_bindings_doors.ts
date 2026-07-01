@@ -26,7 +26,6 @@ import {
   type DomainApiSurfaceSectionBindingFactory,
   type DomainApiSurfaceSectionKey,
   type DomainApiSurfaceSectionsState,
-  writeSimpleMapValue,
 } from './domain_api_surface_sections_shared.js';
 
 function createDoorsSelectBindings(state: DomainApiSurfaceSectionsState): UnknownRecord {
@@ -126,16 +125,14 @@ function createDoorsActionBindings(state: DomainApiSurfaceSectionsState): Unknow
       const key = String(doorId || '');
       if (!key) return;
       if (shouldSkipSimpleMapWrite(state, 'hingeMap', key, hinge)) return;
-      if (writeHinge(state.App, key, hinge, nextMeta)) return;
-      return writeSimpleMapValue(state, 'hingeMap', key, hinge, nextMeta);
+      return writeHinge(state.App, key, hinge, nextMeta);
     },
     setHandle(doorId: unknown, handleType: HandleType | string | null, meta: ActionMetaLike | undefined) {
       const nextMeta = state._meta(meta, 'actions:doors:setHandle');
       const key = String(doorId || '');
       if (!key) return;
       if (shouldSkipSimpleMapWrite(state, 'handlesMap', key, handleType)) return;
-      if (writeHandle(state.App, key, handleType, nextMeta)) return;
-      return writeSimpleMapValue(state, 'handlesMap', key, handleType, nextMeta);
+      return writeHandle(state.App, key, handleType, nextMeta);
     },
     setGlobalHandleType(handleType: HandleType | string | null, meta: ActionMetaLike | undefined) {
       const nextMeta = state._meta(meta, 'actions:doors:setGlobalHandleType');

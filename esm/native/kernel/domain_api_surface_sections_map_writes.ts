@@ -1,5 +1,9 @@
 import type { ActionMetaLike, AppContainer, UnknownRecord } from '../../../types';
-import { isSimpleWritableMapName, isVisualKeyedMapName, writeMapKey } from '../runtime/maps_access.js';
+import { isVisualKeyedMapName } from '../runtime/maps_access.js';
+import {
+  isSimpleWritableMapName,
+  patchSimpleWritableMapEntryFromOwner,
+} from '../runtime/simple_writable_map_writer_owner.js';
 import type { DomainApiSurfaceSectionsState } from './domain_api_surface_sections_contracts.js';
 import {
   normalizePrefixedMapKey,
@@ -133,7 +137,8 @@ export function writeCanonicalMapValueDirect(
 ): boolean {
   if (!canonicalKey) return false;
   if (!isDomainGenericMapWriteAllowed('writeCanonicalMapValueDirect', mapName)) return false;
-  return writeMapKey(App, mapName, canonicalKey, value, meta);
+  if (!isSimpleWritableMapName(mapName)) return false;
+  return patchSimpleWritableMapEntryFromOwner(App, mapName, canonicalKey, value, meta);
 }
 
 export function commitCanonicalMapValue(
@@ -146,10 +151,8 @@ export function commitCanonicalMapValue(
   if (!canonicalKey) return undefined;
   if (!isDomainGenericMapWriteAllowed('commitCanonicalMapValue', mapName)) return undefined;
   if (shouldSkipCanonicalMapCommit(state, mapName, canonicalKey, value)) return undefined;
-  if (writeCanonicalMapValueDirect(state.App, mapName, canonicalKey, value, meta)) {
-    return undefined;
-  }
-  return state.patchCanonicalMapViaCfg(mapName, canonicalKey, value, meta);
+  writeCanonicalMapValueDirect(state.App, mapName, canonicalKey, value, meta);
+  return undefined;
 }
 
 export function patchCanonicalPrefixedMapViaCfg(
@@ -194,8 +197,9 @@ export function writeSimpleMapValue(
   if (!nextMapName || !nextKey) return undefined;
   if (!isDomainGenericMapWriteAllowed('writeSimpleMapValue', nextMapName)) return undefined;
   if (shouldSkipSimpleMapWrite(state, nextMapName, nextKey, value)) return undefined;
-  if (writeMapKey(state.App, nextMapName, nextKey, value, meta)) return undefined;
-  return state._cfgMapPatch(nextMapName, nextKey, value, meta);
+  if (!isSimpleWritableMapName(nextMapName)) return undefined;
+  patchSimpleWritableMapEntryFromOwner(state.App, nextMapName, nextKey, value, meta);
+  return undefined;
 }
 
 export function toggleSimpleBooleanMapValue(

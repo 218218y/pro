@@ -274,7 +274,7 @@ test('domain api surface sections store-backed writes replace legacy groove alia
   );
 });
 
-test('domain api surface sections divider toggle falls back to canonical cfg map patch when maps.toggleDivider is unavailable', () => {
+test('domain api surface sections divider toggle writes through the simple map owner without App.maps', () => {
   const h = createHarness();
   h.env.maps.drawerDividersMap = { divider_a: true } as any;
 
@@ -282,27 +282,29 @@ test('domain api surface sections divider toggle falls back to canonical cfg map
   h.dividersActions.toggle('divider_b', { source: 'test:dividers:toggle:on' });
 
   assert.deepEqual(
-    h.mapPatchCalls.map(({ mapName, key, value }) => ({ mapName, key, value })),
+    h.configSetCalls.map(({ mapName, nextMap }) => ({ mapName, nextMap })),
     [
-      { mapName: 'drawerDividersMap', key: 'divider_a', value: null },
-      { mapName: 'drawerDividersMap', key: 'divider_b', value: true },
+      { mapName: 'drawerDividersMap', nextMap: {} },
+      { mapName: 'drawerDividersMap', nextMap: { divider_b: true } },
     ]
   );
+  assert.deepEqual(h.mapPatchCalls, []);
 });
 
-test('domain api surface sections generic map fallback writers normalize keys once across map and curtain actions', () => {
+test('domain api surface sections generic simple writers normalize keys once across map and curtain actions', () => {
   const h = createHarness();
 
   h.mapActions.setKey('curtainMap', 42, 'linen', { source: 'test:map:setKey:number' });
   h.curtainsActions.set(7, 'sheer', { source: 'test:curtains:set:number' });
 
   assert.deepEqual(
-    h.mapPatchCalls.map(({ mapName, key, value }) => ({ mapName, key, value })),
+    h.configSetCalls.map(({ mapName, nextMap }) => ({ mapName, nextMap })),
     [
-      { mapName: 'curtainMap', key: '42', value: 'linen' },
-      { mapName: 'curtainMap', key: '7', value: 'sheer' },
+      { mapName: 'curtainMap', nextMap: { '42': 'linen' } },
+      { mapName: 'curtainMap', nextMap: { '42': 'linen', '7': 'sheer' } },
     ]
   );
+  assert.deepEqual(h.mapPatchCalls, []);
 });
 
 test('domain api surface sections generic map writers reject visual maps and keep simple maps writable', () => {
@@ -330,12 +332,13 @@ test('domain api surface sections generic map writers reject visual maps and kee
   h.mapActions.setKey('handlesMap', 'd1', 'bar', { source: 'test:generic:handle' });
 
   assert.deepEqual(
-    h.mapPatchCalls.map(({ mapName, key, value }) => ({ mapName, key, value })),
+    h.configSetCalls.map(({ mapName, nextMap }) => ({ mapName, nextMap })),
     [
-      { mapName: 'hingeMap', key: 'd1', value: 'left' },
-      { mapName: 'handlesMap', key: 'd1', value: 'bar' },
+      { mapName: 'hingeMap', nextMap: { d1: 'left' } },
+      { mapName: 'handlesMap', nextMap: { d1: 'bar' } },
     ]
   );
+  assert.deepEqual(h.mapPatchCalls, []);
   assert.deepEqual({ ...h.env.maps.removedDoorsMap }, {});
   assert.deepEqual({ ...h.env.maps.splitDoorsMap }, {});
   assert.deepEqual({ ...h.env.maps.splitDoorsBottomMap }, {});

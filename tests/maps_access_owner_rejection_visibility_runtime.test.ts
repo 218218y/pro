@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { readMap, readSavedColors, writeMapKey, writeSplit } from '../esm/native/runtime/maps_access.ts';
+import { readMap, readSavedColors, writeHandle, writeSplit } from '../esm/native/runtime/maps_access.ts';
 
 type Report = { error: unknown; ctx: any };
 
@@ -44,21 +44,43 @@ test('maps access reports getMap owner rejection and still reads raw map fallbac
   assert.equal(reports[0].ctx.fatal, false);
 });
 
-test('maps access reports setKey owner rejection and preserves local raw-map write recovery', () => {
+test('maps access reports handle owner rejection and repairs through the store-backed simple owner writer', () => {
+  const state = {
+    ui: {},
+    runtime: {},
+    mode: {},
+    meta: {},
+    config: {
+      handlesMap: {},
+    } as Record<string, unknown>,
+  };
   const { App, reports } = createReportingApp({
     handlesMap: {},
-    setKey() {
-      throw new Error('installed maps setKey rejected');
+    setHandle() {
+      throw new Error('installed maps setHandle rejected');
     },
   });
+  App.actions = {
+    config: {
+      setMap(mapName: string, nextMap: Record<string, unknown>) {
+        state.config[mapName] = { ...nextMap };
+        return state.config[mapName];
+      },
+    },
+  };
+  App.store = {
+    getState: () => state,
+    patch: () => undefined,
+  };
 
-  assert.equal(writeMapKey(App, 'handlesMap', 'd2', 'knob'), true);
+  assert.equal(writeHandle(App, 'd2', 'knob'), true);
 
-  assert.equal(App.maps.handlesMap.d2, 'knob');
+  assert.deepEqual(state.config.handlesMap, { d2: 'knob' });
+  assert.deepEqual(App.maps.handlesMap, {});
   assert.equal(reports.length, 1);
-  assert.match(messageOf(reports[0].error), /installed maps setKey rejected/);
+  assert.match(messageOf(reports[0].error), /installed maps setHandle rejected/);
   assert.equal(reports[0].ctx.where, 'native/runtime/maps_access');
-  assert.equal(reports[0].ctx.op, 'maps_access.trySetKey');
+  assert.equal(reports[0].ctx.op, 'maps_access.writeHandle.ownerRejected');
   assert.equal(reports[0].ctx.fatal, false);
 });
 

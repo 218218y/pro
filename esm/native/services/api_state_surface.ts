@@ -156,7 +156,6 @@ export {
   readHandle,
   writeHandle,
   writeHinge,
-  writeMapKey,
   readSavedColors,
   writeSavedColors,
   writeColorSwatchesOrder,

@@ -59,7 +59,10 @@ test('stage 46 domain API shared ownership split is anchored', () => {
   assert.ok(mapWrites.includes('export function shouldSkipCanonicalPrefixedMapCommit'));
   assert.ok(mapWrites.includes('export function commitCanonicalPrefixedMapValue'));
   assert.ok(mapWrites.includes('export function writeSimpleMapValue'));
-  assert.ok(mapWrites.includes('writeMapKey('), 'map write owner must own direct map writes');
+  assert.ok(
+    mapWrites.includes('patchSimpleWritableMapEntryFromOwner'),
+    'map write owner must route simple map writes through the simple owner'
+  );
   assert.equal(
     mapWrites.includes('canonicalRemovedDoorPartId'),
     false,

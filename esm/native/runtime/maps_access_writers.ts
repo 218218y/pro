@@ -1,52 +1,29 @@
-import type { ActionMetaLike, KnownMapName } from '../../../types';
+import type { ActionMetaLike } from '../../../types';
 
-import { ensureMapRecord, mapsAccessReportNonFatal, readOwn, writeOwn } from './maps_access_shared.js';
+import { mapsAccessReportNonFatal } from './maps_access_shared.js';
 import { splitBottomKey, splitKey, splitPosKey } from './maps_access_split_helpers.js';
-import type { HandleValue, HingeValue, KnownMapValue } from './maps_access_shared.js';
-import { readMapsBagOrNull, trySetKey } from './maps_access_runtime.js';
+import type { HandleValue, HingeValue } from './maps_access_shared.js';
+import { readMapsBagOrNull } from './maps_access_runtime.js';
 import { toCanonicalRemovedDoorsMapKey } from '../../shared/removed_doors_map_keys_shared.js';
 import { VISUAL_KEYED_MAP_NAMES, isVisualKeyedMapName } from './visual_keyed_map_names.js';
 import {
   patchVisualKeyedMapEntriesFromOwner,
   toggleVisualKeyedMapEntryFromOwner,
-  type VisualKeyedOwnerPatchMapName,
 } from './visual_keyed_map_writer_owner.js';
+import {
+  SIMPLE_WRITABLE_MAP_NAMES,
+  isSimpleWritableMapName,
+  patchSimpleWritableMapEntryFromOwner,
+  toggleSimpleWritableBooleanMapEntryFromOwner,
+} from './simple_writable_map_writer_owner.js';
 
-export { VISUAL_KEYED_MAP_NAMES, isVisualKeyedMapName };
-
-export const SIMPLE_WRITABLE_MAP_NAMES = [
-  'handlesMap',
-  'hingeMap',
-  'curtainMap',
-  'doorSpecialMap',
-  'individualColors',
-  'drawerDividersMap',
-  'roundedFrameSideShelvesMap',
-] as const;
-
-export type SimpleWritableMapName = (typeof SIMPLE_WRITABLE_MAP_NAMES)[number];
-
-const SIMPLE_WRITABLE_MAP_NAME_SET: ReadonlySet<string> = new Set(SIMPLE_WRITABLE_MAP_NAMES);
-
-export function isSimpleWritableMapName(mapName: unknown): mapName is SimpleWritableMapName {
-  return SIMPLE_WRITABLE_MAP_NAME_SET.has(String(mapName || ''));
-}
+export { SIMPLE_WRITABLE_MAP_NAMES, VISUAL_KEYED_MAP_NAMES, isSimpleWritableMapName, isVisualKeyedMapName };
 
 function readMapKey(value: unknown): string {
   return String(value || '').trim();
 }
 
 type VisualKeyedWriterEntry = { readonly key: unknown; readonly value: unknown };
-
-function writeVisualKeyedMapEntryFromOwner(
-  App: unknown,
-  mapName: Extract<VisualKeyedOwnerPatchMapName, 'doorTrimMap' | 'groovesMap' | 'grooveLinesCountMap'>,
-  key: unknown,
-  value: unknown,
-  meta?: ActionMetaLike
-): boolean {
-  return patchVisualKeyedMapEntriesFromOwner(App, mapName, [{ key, value }], meta);
-}
 
 export function writeDoorTrimListForPart(
   App: unknown,
@@ -78,41 +55,6 @@ export function patchDoorGrooveLinesCountEntries(
   return patchVisualKeyedMapEntriesFromOwner(App, 'grooveLinesCountMap', entries, meta);
 }
 
-function readRuntimeGenericMapWriteError(apiName: string, mapName: string): Error {
-  return new Error(
-    `[WardrobePro] ${apiName} cannot write map "${mapName}"; use a semantic writer or SIMPLE_WRITABLE_MAP_NAMES`
-  );
-}
-
-function reportRuntimeGenericMapWriteRejected(App: unknown, apiName: string, mapName: string): void {
-  mapsAccessReportNonFatal(
-    apiName + '.simpleWritableMapRejected',
-    readRuntimeGenericMapWriteError(apiName, mapName),
-    App
-  );
-}
-
-function writeSimpleWritableMapEntry<K extends SimpleWritableMapName>(
-  App: unknown,
-  mapName: K,
-  key: unknown,
-  val: unknown,
-  meta?: ActionMetaLike,
-  reportOp = 'maps_access.writeSimpleWritableMapEntry.setKey'
-): boolean {
-  const maps = readMapsBagOrNull(App);
-  if (!maps) return false;
-
-  const k = String(key || '');
-  if (!k) return false;
-
-  if (trySetKey(App, maps, mapName, k, val, meta, reportOp)) return true;
-
-  const m = ensureMapRecord(maps, mapName);
-  writeOwn(m, k, val);
-  return true;
-}
-
 export function writeHandle(
   App: unknown,
   partId: unknown,
@@ -122,9 +64,8 @@ export function writeHandle(
   const id = String(partId || '');
   if (!id) return false;
   const maps = readMapsBagOrNull(App);
-  if (!maps) return false;
   try {
-    const setHandle = maps.setHandle;
+    const setHandle = maps?.setHandle;
     if (typeof setHandle === 'function') {
       setHandle.call(maps, id, handleType, meta);
       return true;
@@ -132,10 +73,7 @@ export function writeHandle(
   } catch (err) {
     mapsAccessReportNonFatal('maps_access.writeHandle.ownerRejected', err, App);
   }
-  if (trySetKey(App, maps, 'handlesMap', id, handleType, meta, 'maps_access.writeHandle.setKey')) return true;
-  const m = ensureMapRecord(maps, 'handlesMap');
-  writeOwn(m, id, handleType);
-  return true;
+  return patchSimpleWritableMapEntryFromOwner(App, 'handlesMap', id, handleType, meta);
 }
 
 export function writeHinge(
@@ -147,10 +85,9 @@ export function writeHinge(
   const id = String(doorId || '');
   if (!id) return false;
   const maps = readMapsBagOrNull(App);
-  if (!maps) return false;
 
   try {
-    const setHinge = maps.setHinge;
+    const setHinge = maps?.setHinge;
     if (typeof setHinge === 'function') {
       setHinge.call(maps, id, hinge, meta);
       return true;
@@ -159,11 +96,7 @@ export function writeHinge(
     mapsAccessReportNonFatal('maps_access.writeHinge.ownerRejected', err, App);
   }
 
-  if (trySetKey(App, maps, 'hingeMap', id, hinge, meta, 'maps_access.writeHinge.setKey')) return true;
-
-  const m = ensureMapRecord(maps, 'hingeMap');
-  writeOwn(m, id, hinge);
-  return true;
+  return patchSimpleWritableMapEntryFromOwner(App, 'hingeMap', id, hinge, meta);
 }
 
 export function writeCurtainPreset(
@@ -173,14 +106,7 @@ export function writeCurtainPreset(
   meta?: ActionMetaLike
 ): boolean {
   const value = preset === undefined || preset === null ? null : String(preset || 'none');
-  return writeSimpleWritableMapEntry(
-    App,
-    'curtainMap',
-    partId,
-    value,
-    meta,
-    'maps_access.writeCurtainPreset.setKey'
-  );
+  return patchSimpleWritableMapEntryFromOwner(App, 'curtainMap', partId, value, meta);
 }
 
 export function writeDividerState(
@@ -189,42 +115,7 @@ export function writeDividerState(
   isOn: unknown,
   meta?: ActionMetaLike
 ): boolean {
-  return writeSimpleWritableMapEntry(
-    App,
-    'drawerDividersMap',
-    dividerKey,
-    isOn ? true : null,
-    meta,
-    'maps_access.writeDividerState.setKey'
-  );
-}
-
-export function writeMapKey<K extends string>(
-  App: unknown,
-  mapName: K,
-  key: unknown,
-  val: K extends KnownMapName ? KnownMapValue<Extract<K, KnownMapName>> : unknown,
-  meta?: ActionMetaLike
-): boolean {
-  const name = String(mapName || '');
-  if (!name) return false;
-  if (name === 'doorTrimMap' || name === 'groovesMap' || name === 'grooveLinesCountMap') {
-    return writeVisualKeyedMapEntryFromOwner(App, name, key, val, meta);
-  }
-  if (isVisualKeyedMapName(name)) {
-    mapsAccessReportNonFatal(
-      'maps_access.writeMapKey.visualKeyedMapRejected',
-      new Error(`writeMapKey cannot write visual/keyed map "${name}"; use the map owner writer`),
-      App
-    );
-    return false;
-  }
-  if (!isSimpleWritableMapName(name)) {
-    reportRuntimeGenericMapWriteRejected(App, 'maps_access.writeMapKey', name);
-    return false;
-  }
-
-  return writeSimpleWritableMapEntry(App, name, key, val, meta, 'maps_access.trySetKey');
+  return patchSimpleWritableMapEntryFromOwner(App, 'drawerDividersMap', dividerKey, isOn ? true : null, meta);
 }
 
 export function writeSplit(App: unknown, doorId: unknown, isSplit: boolean, meta?: ActionMetaLike): boolean {
@@ -325,10 +216,9 @@ function toggleKeyInMap(
 ): boolean {
   if (!key) return false;
   const maps = readMapsBagOrNull(App);
-  if (!maps) return false;
 
   try {
-    const fn = maps.toggleDivider;
+    const fn = maps?.toggleDivider;
     if (typeof fn === 'function') {
       fn.call(maps, key, meta);
       return true;
@@ -337,14 +227,7 @@ function toggleKeyInMap(
     mapsAccessReportNonFatal('maps_access.toggleKeyInMap.ownerRejected', err, App);
   }
 
-  const m = ensureMapRecord(maps, mapName);
-  const cur = readOwn(m, key);
-  const next = cur ? null : true;
-
-  if (trySetKey(App, maps, mapName, key, next, meta, 'maps_access.toggleKeyInMap.setKey')) return true;
-
-  writeOwn(m, key, next);
-  return true;
+  return toggleSimpleWritableBooleanMapEntryFromOwner(App, mapName, key, meta);
 }
 
 function toggleCanonicalGrooveKeyInMap(

@@ -1,13 +1,11 @@
 import type { AppContainer, ActionMetaLike } from '../../../types';
 
-import { patchConfigMap } from '../runtime/cfg_access.js';
+import { isVisualKeyedMapName, splitBottomKey, splitKey } from '../runtime/maps_access.js';
+import { normalizeKnownMapSnapshot } from '../runtime/maps_access.js';
 import {
   isSimpleWritableMapName,
-  isVisualKeyedMapName,
-  splitBottomKey,
-  splitKey,
-} from '../runtime/maps_access.js';
-import { normalizeKnownMapSnapshot } from '../runtime/maps_access.js';
+  patchSimpleWritableMapEntryFromOwner,
+} from '../runtime/simple_writable_map_writer_owner.js';
 import {
   patchVisualKeyedMapEntriesFromOwner,
   toggleVisualKeyedMapEntryFromOwner,
@@ -22,7 +20,7 @@ function readMapKey(value: unknown): string {
 }
 
 export function installMapsApiNamedMaps(App: AppContainer, shared: MapsApiShared): void {
-  const { maps, metaNorm, readConfigMap, readNamedMap, createMapPatch, reportNonFatal } = shared;
+  const { maps, metaNorm, readConfigMap, readNamedMap, reportNonFatal } = shared;
 
   maps.getMap = function getMap(mapName: string) {
     const name = String(mapName || '');
@@ -66,9 +64,9 @@ export function installMapsApiNamedMaps(App: AppContainer, shared: MapsApiShared
     }
 
     try {
-      return patchConfigMap(App, cleanMapName, createMapPatch(cleanKey, val), metaFixed);
+      return patchSimpleWritableMapEntryFromOwner(App, cleanMapName, cleanKey, val, metaFixed);
     } catch (_e) {
-      reportNonFatal('maps.setKey.patchConfigMap', _e, 6000);
+      reportNonFatal('maps.setKey.patchSimpleWritableMapEntryFromOwner', _e, 6000);
       return undefined;
     }
   };

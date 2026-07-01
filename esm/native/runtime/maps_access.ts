@@ -45,7 +45,6 @@ export {
   writeDoorTrimListForPart,
   writeHandle,
   writeHinge,
-  writeMapKey,
   writeRemoved,
   writeSplit,
   writeSplitBottom,
