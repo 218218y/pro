@@ -178,6 +178,27 @@ test('manual split positions segment free-placement sketch box doors without ena
   assert.deepEqual(directSegmentIds, [`${partId}_bot`, `${partId}_top`]);
 });
 
+test('manual split positions normalize sketch-box accent and groove surface ids to the base door', () => {
+  for (const suffix of ['mid2_accent_top', 'mid2_groove_left']) {
+    const boxId = `boxSurface${suffix.replace(/[^a-z0-9]+/gi, '')}`;
+    const basePartId = `sketch_box_free_0_${boxId}_door_main`;
+    const surfacePartId = `${basePartId}_${suffix}`;
+    const doorGroup = createSketchBoxDoorForCuts(surfacePartId, boxId);
+
+    applyBoxDoorCutsForTest({
+      doorGroup,
+      splitDoorsMap: {
+        [`split_${basePartId}`]: true,
+        [`splitpos_${basePartId}`]: [0.5],
+      },
+    });
+
+    const directSegmentIds = doorGroup.children.map(child => String(child.userData?.partId || '')).sort();
+    assert.equal(doorGroup.userData.__wpSketchSegmentedDoor, true);
+    assert.deepEqual(directSegmentIds, [`${basePartId}_bot`, `${basePartId}_top`]);
+  }
+});
+
 test('manual split positions on sketch box doors are applied against the visible door above external drawers', () => {
   const boxId = 'boxManualDrawers';
   const partId = `sketch_box_free_0_${boxId}_door_main`;

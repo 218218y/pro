@@ -97,68 +97,37 @@ function loadDoorStyleOverridesModule() {
   return mod.exports;
 }
 
-test('[door-visual-keys] split authoring base keys preserve the canvas split-map contract', () => {
-  for (const [partId, expectedSplitBase, expectedVisualBase] of [
-    ['d4', 'd4', 'd4'],
-    ['d4_full', 'd4', 'd4'],
-    ['d4_top', 'd4', 'd4'],
-    ['d4_mid2', 'd4', 'd4'],
-    ['d4_any_custom_suffix', 'd4', 'd4_any_custom_suffix'],
-    ['d4_mid2_accent_top', 'd4', 'd4'],
-    ['d4_mid2_groove_left', 'd4', 'd4'],
-    ['lower_d4_bot', 'lower_d4', 'lower_d4'],
-    ['corner_door_2_mid', 'corner_door_2', 'corner_door_2'],
-    ['lower_corner_door_2_top', 'lower_corner_door_2', 'lower_corner_door_2'],
-    ['corner_pent_door_3_bot', 'corner_pent_door_3', 'corner_pent_door_3'],
-    ['lower_corner_pent_door_3_bot', 'lower_corner_pent_door_3', 'lower_corner_pent_door_3'],
-    ['sketch_box_0_boxA_door_left', 'sketch_box_0_boxA_door_left', 'sketch_box_0_boxA_door_left'],
-    ['sketch_box_0_boxA_door_left_full', 'sketch_box_0_boxA_door_left', 'sketch_box_0_boxA_door_left'],
-    ['sketch_box_0_boxA_door_left_top', 'sketch_box_0_boxA_door_left', 'sketch_box_0_boxA_door_left'],
-    ['sketch_box_0_boxA_door_left_bot', 'sketch_box_0_boxA_door_left', 'sketch_box_0_boxA_door_left'],
-    ['sketch_box_0_boxA_door_left_mid2', 'sketch_box_0_boxA_door_left', 'sketch_box_0_boxA_door_left'],
-    [
-      'sketch_box_0_boxA_door_left_mid2_accent_top',
-      'sketch_box_0_boxA_door_left_mid2_accent',
-      'sketch_box_0_boxA_door_left',
-    ],
-    [
-      'sketch_box_free_0_boxA_door_sbdr_1',
-      'sketch_box_free_0_boxA_door_sbdr_1',
-      'sketch_box_free_0_boxA_door_sbdr_1',
-    ],
-    [
-      'sketch_box_free_0_boxA_door_sbdr_1_full',
-      'sketch_box_free_0_boxA_door_sbdr_1',
-      'sketch_box_free_0_boxA_door_sbdr_1',
-    ],
-    [
-      'sketch_box_free_0_boxA_door_sbdr_1_top',
-      'sketch_box_free_0_boxA_door_sbdr_1',
-      'sketch_box_free_0_boxA_door_sbdr_1',
-    ],
-    [
-      'sketch_box_free_0_boxA_door_sbdr_1_bot',
-      'sketch_box_free_0_boxA_door_sbdr_1',
-      'sketch_box_free_0_boxA_door_sbdr_1',
-    ],
-    [
-      'sketch_box_free_0_boxA_door_sbdr_1_mid2',
-      'sketch_box_free_0_boxA_door_sbdr_1',
-      'sketch_box_free_0_boxA_door_sbdr_1',
-    ],
-    [
-      'sketch_box_free_0_boxA_door_sbdr_1_mid2_accent_top',
-      'sketch_box_free_0_boxA_door_sbdr_1_mid2_accent',
-      'sketch_box_free_0_boxA_door_sbdr_1',
-    ],
-    [
-      'sketch_box_free_0_boxA_door_sbdr_1_mid2_groove_left',
-      'sketch_box_free_0_boxA_door_sbdr_1_mid2_groove_left',
-      'sketch_box_free_0_boxA_door_sbdr_1',
-    ],
+test('[door-visual-keys] split authoring base keys use the canonical visual base', () => {
+  for (const [partId, expectedBase] of [
+    ['d4', 'd4'],
+    ['d4_full', 'd4'],
+    ['d4_top', 'd4'],
+    ['d4_mid2', 'd4'],
+    ['d4_any_custom_suffix', 'd4_any_custom_suffix'],
+    ['d4_mid2_accent_top', 'd4'],
+    ['d4_mid2_groove_left', 'd4'],
+    ['lower_d4_bot', 'lower_d4'],
+    ['corner_door_2_mid', 'corner_door_2'],
+    ['lower_corner_door_2_top', 'lower_corner_door_2'],
+    ['corner_pent_door_3_bot', 'corner_pent_door_3'],
+    ['lower_corner_pent_door_3_bot', 'lower_corner_pent_door_3'],
+    ['sketch_box_0_boxA_door_left', 'sketch_box_0_boxA_door_left'],
+    ['sketch_box_0_boxA_door_left_full', 'sketch_box_0_boxA_door_left'],
+    ['sketch_box_0_boxA_door_left_top', 'sketch_box_0_boxA_door_left'],
+    ['sketch_box_0_boxA_door_left_bot', 'sketch_box_0_boxA_door_left'],
+    ['sketch_box_0_boxA_door_left_mid2', 'sketch_box_0_boxA_door_left'],
+    ['sketch_box_0_boxA_door_left_mid2_accent_top', 'sketch_box_0_boxA_door_left'],
+    ['sketch_box_0_boxA_door_left_mid2_groove_left', 'sketch_box_0_boxA_door_left'],
+    ['sketch_box_free_0_boxA_door_sbdr_1', 'sketch_box_free_0_boxA_door_sbdr_1'],
+    ['sketch_box_free_0_boxA_door_sbdr_1_full', 'sketch_box_free_0_boxA_door_sbdr_1'],
+    ['sketch_box_free_0_boxA_door_sbdr_1_top', 'sketch_box_free_0_boxA_door_sbdr_1'],
+    ['sketch_box_free_0_boxA_door_sbdr_1_bot', 'sketch_box_free_0_boxA_door_sbdr_1'],
+    ['sketch_box_free_0_boxA_door_sbdr_1_mid2', 'sketch_box_free_0_boxA_door_sbdr_1'],
+    ['sketch_box_free_0_boxA_door_sbdr_1_mid2_accent_top', 'sketch_box_free_0_boxA_door_sbdr_1'],
+    ['sketch_box_free_0_boxA_door_sbdr_1_mid2_groove_left', 'sketch_box_free_0_boxA_door_sbdr_1'],
   ]) {
-    assert.equal(resolveDoorSplitAuthoringBaseKey(partId), expectedSplitBase);
-    assert.equal(resolveDoorVisualSegmentIdentity(partId).basePartId, expectedVisualBase);
+    assert.equal(resolveDoorSplitAuthoringBaseKey(partId), expectedBase);
+    assert.equal(resolveDoorVisualSegmentIdentity(partId).basePartId, expectedBase);
   }
 });
 
