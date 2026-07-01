@@ -32,7 +32,8 @@ test('door-style override mode is wired through design tab, paint apply, and hov
   assert.match(controller, /encodeDoorStyleOverridePaintToken\(style\)/);
   assert.match(paintApply, /tryHandleDoorStyleOverridePaintClick\(/);
   assert.match(paintDoorStyle, /parseDoorStyleOverridePaintToken\(args\.paintSelection\)/);
-  assert.match(paintDoorStyle, /cfgSetMap\(args\.App, 'doorStyleMap'/);
+  assert.match(paintDoorStyle, /setCfgDoorStyleMap\(args\.App, doorStyleMap, baseMeta\)/);
+  assert.doesNotMatch(paintDoorStyle, /cfgSetMap\(args\.App, 'doorStyleMap'/);
   assert.match(paintDoorStyle, /resolveDoorAuthoringStylePaintTargetKey\(\{/);
   assert.match(paintDoorStyle, /isDoorOrDrawerLikePartId: __wp_isDoorOrDrawerLikePartId/);
   assert.match(paintDoorStyle, /scopePartKeyForStack: __wp_scopeCornerPartKeyForStack/);

@@ -13,7 +13,7 @@ test('normalizeModelRecord canonicalizes persisted model config maps and detache
     modulesConfiguration: [{ layout: 'drawers', doors: '2' }, { doors: '2' }, { doors: '2' }],
     stackSplitLowerModulesConfiguration: [{ extDrawersCount: '3' }],
     cornerConfiguration: { modulesConfiguration: [{ doors: '5' }] },
-    splitDoorsBottomMap: { splitb_lower: true, splitb_off: false, lower: true, junk: 'maybe' },
+    splitDoorsBottomMap: { splitb_d1: true, splitb_lower_d2: false, lower: true, junk: 'maybe' },
     mirrorLayoutMap: { d1_full: [{ widthCm: '55', heightCm: 88 }, { widthCm: 0 }] },
     doorTrimMap: {
       d1_full: [{ axis: 'vertical', span: 'custom', sizeCm: '11', color: 'gold' }, { bad: true }],
@@ -24,7 +24,7 @@ test('normalizeModelRecord canonicalizes persisted model config maps and detache
 
   const normalized = normalizeModelRecord(sourceModel as never);
 
-  assert.deepEqual({ ...normalized.splitDoorsBottomMap }, { splitb_lower: true, splitb_off: false });
+  assert.deepEqual({ ...normalized.splitDoorsBottomMap }, { splitb_d1: true, splitb_lower_d2: false });
   assert.deepEqual({ ...normalized.mirrorLayoutMap }, { d1_full: [{ widthCm: 55, heightCm: 88 }] });
   assert.equal(Array.isArray(normalized.doorTrimMap?.d1_full), true);
   assert.equal(normalized.doorTrimMap?.d1_full?.length, 2);
@@ -76,7 +76,7 @@ test('buildProjectStructureFromModel keeps canonical mirror/layout payloads and 
     stackSplitLowerModulesConfiguration: [{ extDrawersCount: '3' }],
     cornerConfiguration: { modulesConfiguration: [{ doors: '5' }] },
     splitDoorsMap: { split_d1: true, splitpos_main: [0.25, 0.75, NaN], main: [0.5] },
-    splitDoorsBottomMap: { splitb_lower: true, splitb_off: false, lower: true },
+    splitDoorsBottomMap: { splitb_d1: true, splitb_lower_d2: false, lower: true },
     mirrorLayoutMap: { d1_full: [{ widthCm: '55', heightCm: 88 }, { widthCm: 0 }] },
     doorTrimMap: { d1_full: [{ axis: 'vertical', color: 'gold' }] },
     savedNotes: [{ blocks: [{ text: 'note' }] }],
@@ -88,7 +88,7 @@ test('buildProjectStructureFromModel keeps canonical mirror/layout payloads and 
 
   assert.deepEqual(built.savedColors, [{ id: 'keep-color', value: '#fff' }]);
   assert.deepEqual(built.splitDoorsMap, { split_d1: true, splitpos_main: [0.25, 0.75] });
-  assert.deepEqual({ ...built.splitDoorsBottomMap }, { splitb_lower: true, splitb_off: false });
+  assert.deepEqual({ ...built.splitDoorsBottomMap }, { splitb_d1: true, splitb_lower_d2: false });
   assert.deepEqual({ ...built.mirrorLayoutMap }, { d1_full: [{ widthCm: 55, heightCm: 88 }] });
   assert.equal(Array.isArray(built.doorTrimMap?.d1_full), true);
   assert.equal(built.doorTrimMap?.d1_full?.[0]?.color, 'gold');

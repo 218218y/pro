@@ -10,13 +10,20 @@ type MapPatchCall = {
   meta: unknown;
 };
 
+type ConfigSetCall = {
+  mapName: unknown;
+  nextMap: Record<string, unknown>;
+  meta: unknown;
+};
+
 function createHarness(overrides?: {
   maps?: Record<string, Record<string, unknown>>;
   ui?: Record<string, unknown>;
   runtime?: Record<string, unknown>;
 }) {
   const mapPatchCalls: MapPatchCall[] = [];
-  const env = {
+  const configSetCalls: ConfigSetCall[] = [];
+  const env: { installVersion: number; maps: Record<string, Record<string, unknown>> } = {
     installVersion: 1,
     maps: {
       splitDoorsMap: { ...(overrides?.maps?.splitDoorsMap || {}) },
@@ -27,7 +34,52 @@ function createHarness(overrides?: {
     },
   };
 
-  const App: any = {};
+  const rootState = {
+    ui: { ...(overrides?.ui || {}) },
+    runtime: { ...(overrides?.runtime || {}) },
+    mode: {},
+    meta: {},
+    config: env.maps,
+  };
+
+  const readMapRecord = (value: unknown): Record<string, unknown> =>
+    value && typeof value === 'object' && !Array.isArray(value)
+      ? { ...(value as Record<string, unknown>) }
+      : {};
+
+  const setConfigMap = (mapName: unknown, nextMap: unknown, meta?: unknown) => {
+    const cleanMapName = String(mapName || '');
+    const cleanMap = readMapRecord(nextMap);
+    if (cleanMapName) env.maps[cleanMapName] = cleanMap;
+    configSetCalls.push({ mapName, nextMap: cleanMap, meta });
+    return cleanMap;
+  };
+
+  const App: any = {
+    actions: {
+      config: {
+        setMap: setConfigMap,
+        patch(patch: Record<string, unknown>, meta?: unknown) {
+          for (const [key, value] of Object.entries(patch || {})) {
+            if (key === '__replace') continue;
+            env.maps[key] = readMapRecord(value);
+          }
+          return { patch, meta };
+        },
+      },
+    },
+    store: {
+      getState: () => rootState,
+      patch(patch: Record<string, unknown>) {
+        if (patch && typeof patch === 'object' && patch.config && typeof patch.config === 'object') {
+          Object.assign(env.maps, patch.config);
+        }
+        Object.assign(rootState, patch || {});
+        rootState.config = env.maps;
+        return patch;
+      },
+    },
+  };
   let select: any = {};
   let mapActions: any = {};
   let doorsActions: any = {};
@@ -52,13 +104,21 @@ function createHarness(overrides?: {
       texturesActions,
       groovesActions,
       curtainsActions,
-      _cfg: () => ({}) as any,
-      _ui: () => ({ ...(overrides?.ui || {}) }) as any,
-      _rt: () => ({ ...(overrides?.runtime || {}) }) as any,
+      _cfg: () => rootState.config as any,
+      _ui: () => rootState.ui as any,
+      _rt: () => rootState.runtime as any,
       _meta: (meta, source) => ({ ...(meta || {}), installVersion: env.installVersion, source }),
       _map: mapName => ({ ...(env.maps[String(mapName)] || {}) }),
       _num: value => (typeof value === 'number' ? value : null),
       _cfgMapPatch: (mapName, key, value, meta) => {
+        const cleanMapName = String(mapName || '');
+        const cleanKey = String(key || '');
+        if (cleanMapName && cleanKey) {
+          const nextMap = { ...(env.maps[cleanMapName] || {}) };
+          if (value == null) delete nextMap[cleanKey];
+          else nextMap[cleanKey] = value;
+          env.maps[cleanMapName] = nextMap;
+        }
         mapPatchCalls.push({ mapName, key, value, meta });
         return { ok: true };
       },
@@ -113,6 +173,7 @@ function createHarness(overrides?: {
     },
     env,
     mapPatchCalls,
+    configSetCalls,
     install,
     replacePublicRoots,
   };
@@ -172,51 +233,45 @@ test('domain api surface sections door count ignores top-level-only UI door alia
   assert.equal(h.select.doors.count(), 3);
 });
 
-test('domain api surface sections fallback writes normalize prefixed map keys exactly once and suppress semantic no-op defaults', () => {
+test('domain api surface sections writes normalize prefixed map keys exactly once and suppress semantic no-op defaults', () => {
   const h = createHarness();
 
   h.doorsActions.setSplit('d8_top', true, { source: 'test:split' });
   h.doorsActions.setSplitBottom('splitb_d9_bot', false, { source: 'test:split-bottom:no-op-default' });
   h.groovesActions.set('d10_full', true, { source: 'test:groove:set' });
 
-  assert.deepEqual(
-    h.mapPatchCalls.map(({ mapName, key, value }) => ({ mapName, key, value })),
-    [
-      { mapName: 'splitDoorsMap', key: 'split_d8', value: true },
-      { mapName: 'groovesMap', key: 'groove_d10_full', value: true },
-    ]
-  );
+  assert.deepEqual({ ...h.env.maps.splitDoorsMap }, { split_d8: true });
+  assert.deepEqual({ ...h.env.maps.splitDoorsBottomMap }, {});
+  assert.deepEqual({ ...h.env.maps.groovesMap }, { groove_d10_full: true });
 });
 
-test('domain api surface sections fallback writes canonical prefixed ids without legacy alias cleanup', () => {
+test('domain api surface sections writes canonical prefixed ids without legacy alias cleanup', () => {
   const h = createHarness();
 
   h.doorsActions.setSplit('split_d11', true, { source: 'test:split:canonical-clear' });
   h.doorsActions.setSplitBottom('splitb_d12', true, { source: 'test:split-bottom:canonical-clear' });
   h.groovesActions.set('groove_d13_full', true, { source: 'test:groove:canonical-clear' });
 
-  assert.deepEqual(
-    h.mapPatchCalls.map(({ mapName, key, value }) => ({ mapName, key, value })),
-    [
-      { mapName: 'splitDoorsMap', key: 'split_d11', value: true },
-      { mapName: 'splitDoorsBottomMap', key: 'splitb_d12', value: true },
-      { mapName: 'groovesMap', key: 'groove_d13_full', value: true },
-    ]
-  );
+  assert.deepEqual({ ...h.env.maps.splitDoorsMap }, { split_d11: true });
+  assert.deepEqual({ ...h.env.maps.splitDoorsBottomMap }, { splitb_d12: true });
+  assert.deepEqual({ ...h.env.maps.groovesMap }, { groove_d13_full: true });
 });
 
-test('domain api surface sections direct map writes replace legacy groove aliases with the canonical key only', () => {
-  const h = createHarness();
-  h.App.maps = {
-    groovesMap: { d14_full: true },
-  } as any;
+test('domain api surface sections store-backed writes replace legacy groove aliases with the canonical key only', () => {
+  const h = createHarness({
+    maps: {
+      groovesMap: { d14_full: true },
+    },
+  });
 
   h.groovesActions.set('groove_d14_full', true, { source: 'test:groove:direct-clear' });
 
-  assert.deepEqual(h.App.maps.groovesMap, {
-    groove_d14_full: true,
-  });
-  assert.deepEqual(h.mapPatchCalls, []);
+  assert.deepEqual(
+    { ...h.env.maps.groovesMap },
+    {
+      groove_d14_full: true,
+    }
+  );
 });
 
 test('domain api surface sections divider toggle falls back to canonical cfg map patch when maps.toggleDivider is unavailable', () => {
@@ -250,19 +305,14 @@ test('domain api surface sections generic map fallback writers normalize keys on
   );
 });
 
-test('domain api surface sections fallback writes canonical split ids and removed door keys only', () => {
+test('domain api surface sections writes canonical split ids and removed door keys only', () => {
   const h = createHarness();
 
   h.doorsActions.setSplit('d11', true, { source: 'test:split:legacy-clear' });
   h.doorsActions.setRemoved('d12', true, { source: 'test:removed:base-id' });
 
-  assert.deepEqual(
-    h.mapPatchCalls.map(({ mapName, key, value }) => ({ mapName, key, value })),
-    [
-      { mapName: 'splitDoorsMap', key: 'split_d11', value: true },
-      { mapName: 'removedDoorsMap', key: 'removed_d12_full', value: true },
-    ]
-  );
+  assert.deepEqual({ ...h.env.maps.splitDoorsMap }, { split_d11: true });
+  assert.deepEqual({ ...h.env.maps.removedDoorsMap }, { removed_d12_full: true });
 });
 
 test('domain api surface sections heal missing action/select methods without replacing intact refs', () => {
@@ -426,20 +476,14 @@ test('domain api surface sections semantic no-op map writes stay silent when the
       curtainMap: { d91_full: 'linen' },
     },
   });
-  h.App.maps = {
-    groovesMap: { groove_d90_full: true },
-    curtainMap: { d91_full: 'linen' },
-    setKey: () => {
-      throw new Error('setKey should stay silent for semantic no-op writes');
-    },
-  } as any;
 
   h.groovesActions.set('groove_d90_full', true, { source: 'test:groove:no-op' });
   h.curtainsActions.set('d91_full', 'linen', { source: 'test:curtain:no-op' });
 
-  assert.deepEqual(h.App.maps.groovesMap, { groove_d90_full: true });
-  assert.deepEqual(h.App.maps.curtainMap, { d91_full: 'linen' });
+  assert.deepEqual({ ...h.env.maps.groovesMap }, { groove_d90_full: true });
+  assert.deepEqual({ ...h.env.maps.curtainMap }, { d91_full: 'linen' });
   assert.deepEqual(h.mapPatchCalls, []);
+  assert.deepEqual(h.configSetCalls, []);
 });
 
 test('domain api surface sections no-op suppression ignores legacy aliases when canonical values already match', () => {
@@ -448,15 +492,16 @@ test('domain api surface sections no-op suppression ignores legacy aliases when 
       splitDoorsMap: { split_d92: true, d92: true },
     },
   });
-  h.App.maps = {
-    splitDoorsMap: { split_d92: true, d92: true },
-  } as any;
 
   h.doorsActions.setSplit('d92', true, { source: 'test:split:no-op-alias-clear' });
 
-  assert.deepEqual(h.App.maps.splitDoorsMap, {
-    split_d92: true,
-    d92: true,
-  });
+  assert.deepEqual(
+    { ...h.env.maps.splitDoorsMap },
+    {
+      split_d92: true,
+      d92: true,
+    }
+  );
   assert.deepEqual(h.mapPatchCalls, []);
+  assert.deepEqual(h.configSetCalls, []);
 });

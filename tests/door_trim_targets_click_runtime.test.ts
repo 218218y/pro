@@ -67,6 +67,10 @@ function createDoorTrimApp() {
       getState() {
         return rootState;
       },
+      patch(patch: Record<string, unknown>) {
+        Object.assign(rootState, patch || {});
+        return patch;
+      },
     },
     actions: {
       config: {

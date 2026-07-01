@@ -62,25 +62,39 @@ test('maps access reports setKey owner rejection and preserves local raw-map wri
   assert.equal(reports[0].ctx.fatal, false);
 });
 
-test('maps access reports canonical split owner rejection and falls back through canonical setKey only', () => {
-  const writes: Array<{ mapName: string; key: string; value: unknown }> = [];
+test('maps access reports canonical split owner rejection and repairs through the store-backed owner writer', () => {
+  const state = {
+    ui: {},
+    runtime: {},
+    mode: {},
+    meta: {},
+    config: {
+      splitDoorsMap: { d3: true },
+    } as Record<string, unknown>,
+  };
   const { App, reports } = createReportingApp({
     splitDoorsMap: { d3: true },
     setSplit() {
       throw new Error('installed maps setSplit rejected');
     },
-    setKey(mapName: string, key: string, value: unknown) {
-      writes.push({ mapName, key, value });
-      (this as any)[mapName] ||= {};
-      (this as any)[mapName][key] = value;
-    },
   });
+  App.actions = {
+    config: {
+      setMap(mapName: string, nextMap: Record<string, unknown>) {
+        state.config[mapName] = { ...nextMap };
+        return state.config[mapName];
+      },
+    },
+  };
+  App.store = {
+    getState: () => state,
+    patch: () => undefined,
+  };
 
   assert.equal(writeSplit(App, 'd3_top', true, { source: 'test' }), true);
 
-  assert.deepEqual(writes, [{ mapName: 'splitDoorsMap', key: 'split_d3', value: true }]);
-  assert.equal(App.maps.splitDoorsMap.split_d3, true);
-  assert.equal(App.maps.splitDoorsMap.d3, true);
+  assert.deepEqual(state.config.splitDoorsMap, { split_d3: true });
+  assert.deepEqual(App.maps.splitDoorsMap, { d3: true });
   assert.equal(reports.length, 1);
   assert.match(messageOf(reports[0].error), /installed maps setSplit rejected/);
   assert.equal(reports[0].ctx.where, 'native/runtime/maps_access');
