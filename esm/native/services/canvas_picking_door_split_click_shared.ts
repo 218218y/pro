@@ -77,12 +77,10 @@ export function readCanvasDoorSplitBounds(
 export function createCanvasDoorSplitKeyState(doorBaseKey: string): {
   splitKey: string;
   splitBottomKey: string;
-  splitPosKey: string;
 } {
   return {
     splitKey: __splitKey(doorBaseKey),
     splitBottomKey: __splitBottomKey(doorBaseKey),
-    splitPosKey: __splitPosKey(doorBaseKey),
   };
 }
 
@@ -124,12 +122,14 @@ export function callCanvasDoorSplitBottomAction(args: {
 
 export function writeCanvasDoorSplitPosList(args: {
   App: AppContainer;
-  splitPosKey: string;
+  doorBaseKey: string;
   nextList: number[];
   source: string;
 }): void {
-  const { App, splitPosKey, nextList, source } = args;
+  const { App, doorBaseKey, nextList, source } = args;
   try {
+    const splitPosKey = __splitPosKey(doorBaseKey);
+    if (!splitPosKey) return;
     const stored: number[] | null = nextList.length > 0 ? nextList : null;
     writeMapKey(
       App,

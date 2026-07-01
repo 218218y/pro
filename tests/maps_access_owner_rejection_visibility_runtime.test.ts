@@ -76,7 +76,7 @@ test('maps access reports canonical split owner rejection and falls back through
     },
   });
 
-  assert.equal(writeSplit(App, 'd3', true, { source: 'test' }), true);
+  assert.equal(writeSplit(App, 'd3_top', true, { source: 'test' }), true);
 
   assert.deepEqual(writes, [{ mapName: 'splitDoorsMap', key: 'split_d3', value: true }]);
   assert.equal(App.maps.splitDoorsMap.split_d3, true);

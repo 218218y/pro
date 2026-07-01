@@ -144,11 +144,13 @@ test('maps_api and runtime writers use canonical prefixed map keys without legac
   assert.equal(App.maps.getGroove('groove_d3_full'), false);
   assert.equal(App.maps.getGroove('d3_full'), false);
 
-  App.maps.setSplit('split_d4', true, { source: 'test:maps:setSplit:canonical' });
-  App.maps.setSplitBottom('splitb_d5', true, { source: 'test:maps:setSplitBottom:canonical' });
+  App.maps.setSplit('d4_top', true, { source: 'test:maps:setSplit:surface' });
+  App.maps.setSplitBottom('splitb_d5_bot', true, { source: 'test:maps:setSplitBottom:surface' });
 
   assert.deepEqual(state.config.splitDoorsMap, { d4: true, split_d4: true });
   assert.deepEqual(state.config.splitDoorsBottomMap, { d5: true, splitb_d5: true });
+  assert.equal(state.config.splitDoorsMap.split_d4_top, undefined);
+  assert.equal(state.config.splitDoorsBottomMap.splitb_d5_bot, undefined);
 
   assert.equal(
     toggleGrooveKey(App, 'groove_d3_full', { source: 'test:runtime:toggleGrooveKey:canonical' }),
@@ -160,9 +162,9 @@ test('maps_api and runtime writers use canonical prefixed map keys without legac
   state.config.splitDoorsBottomMap = { d7: true } as Record<string, unknown>;
   state.config.groovesMap = { d8_full: true } as Record<string, unknown>;
 
-  assert.equal(writeSplit(App, 'split_d6', false, { source: 'test:runtime:writeSplit:canonical' }), true);
+  assert.equal(writeSplit(App, 'split_d6_top', false, { source: 'test:runtime:writeSplit:surface' }), true);
   assert.equal(
-    writeSplitBottom(App, 'splitb_d7', false, { source: 'test:runtime:writeSplitBottom:canonical' }),
+    writeSplitBottom(App, 'splitb_d7_bot', true, { source: 'test:runtime:writeSplitBottom:surface' }),
     true
   );
   assert.equal(
@@ -171,6 +173,8 @@ test('maps_api and runtime writers use canonical prefixed map keys without legac
   );
 
   assert.deepEqual(state.config.splitDoorsMap, { d6: true, split_d6: false });
-  assert.deepEqual(state.config.splitDoorsBottomMap, { d7: true });
+  assert.deepEqual(state.config.splitDoorsBottomMap, { d7: true, splitb_d7: true });
   assert.deepEqual(state.config.groovesMap, { d8_full: true, groove_d8_full: true });
+  assert.equal(state.config.splitDoorsMap.split_d6_top, undefined);
+  assert.equal(state.config.splitDoorsBottomMap.splitb_d7_bot, undefined);
 });

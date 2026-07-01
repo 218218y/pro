@@ -175,8 +175,8 @@ test('domain api surface sections door count ignores top-level-only UI door alia
 test('domain api surface sections fallback writes normalize prefixed map keys exactly once and suppress semantic no-op defaults', () => {
   const h = createHarness();
 
-  h.doorsActions.setSplit('d8', true, { source: 'test:split' });
-  h.doorsActions.setSplitBottom('splitb_d9', false, { source: 'test:split-bottom:no-op-default' });
+  h.doorsActions.setSplit('d8_top', true, { source: 'test:split' });
+  h.doorsActions.setSplitBottom('splitb_d9_bot', false, { source: 'test:split-bottom:no-op-default' });
   h.groovesActions.set('d10_full', true, { source: 'test:groove:set' });
 
   assert.deepEqual(

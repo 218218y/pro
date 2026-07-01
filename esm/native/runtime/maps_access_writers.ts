@@ -1,6 +1,7 @@
 import type { ActionMetaLike, KnownMapName } from '../../../types';
 
 import { ensureMapRecord, mapsAccessReportNonFatal, readOwn, writeOwn } from './maps_access_shared.js';
+import { splitBottomKey, splitKey } from './maps_access_split_helpers.js';
 import type { HandleValue, HingeValue, KnownMapValue } from './maps_access_shared.js';
 import { readMapsBagOrNull, trySetKey } from './maps_access_runtime.js';
 
@@ -93,7 +94,8 @@ export function writeSplit(App: unknown, doorId: unknown, isSplit: boolean, meta
   const maps = readMapsBagOrNull(App);
   if (!maps) return false;
 
-  const canonicalKey = normalizePrefixedMapKey(id0, 'split_');
+  const canonicalKey = splitKey(id0);
+  if (!canonicalKey) return false;
 
   try {
     const fn = maps.setSplit;
@@ -119,7 +121,8 @@ export function writeSplitBottom(
   const maps = readMapsBagOrNull(App);
   if (!maps) return false;
 
-  const canonicalKey = normalizePrefixedMapKey(id0, 'splitb_');
+  const canonicalKey = splitBottomKey(id0);
+  if (!canonicalKey) return false;
 
   try {
     const fn = maps.setSplitBottom;

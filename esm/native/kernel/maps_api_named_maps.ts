@@ -1,6 +1,7 @@
 import type { AppContainer, ActionMetaLike } from '../../../types';
 
 import { patchConfigMap } from '../runtime/cfg_access.js';
+import { splitBottomKey, splitKey } from '../runtime/maps_access.js';
 import type { MapsApiShared } from './maps_api_shared.js';
 import { createRecord, asObject } from './maps_api_shared.js';
 
@@ -102,11 +103,13 @@ export function installMapsApiNamedMaps(App: AppContainer, shared: MapsApiShared
   maps.setSplit = function setSplit(doorId: string, isSplit: boolean, meta?: ActionMetaLike) {
     const k = readMapKey(doorId);
     if (!k) return undefined;
+    const canonicalKey = splitKey(k);
+    if (!canonicalKey) return undefined;
     return patchCanonicalPrefixedMapEntry(
       App,
       shared,
       'splitDoorsMap',
-      k,
+      canonicalKey,
       'split_',
       isSplit ? true : false,
       meta
@@ -116,11 +119,13 @@ export function installMapsApiNamedMaps(App: AppContainer, shared: MapsApiShared
   maps.setSplitBottom = function setSplitBottom(doorId: string, isOn: boolean, meta?: ActionMetaLike) {
     const k0 = readMapKey(doorId);
     if (!k0) return undefined;
+    const canonicalKey = splitBottomKey(k0);
+    if (!canonicalKey) return undefined;
     return patchCanonicalPrefixedMapEntry(
       App,
       shared,
       'splitDoorsBottomMap',
-      k0,
+      canonicalKey,
       'splitb_',
       isOn ? true : null,
       meta

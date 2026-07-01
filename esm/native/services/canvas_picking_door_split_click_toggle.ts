@@ -162,7 +162,7 @@ function handleSketchBoxStandardSplitClick(args: {
   const bottomNorm = resolveSketchBoxStandardSplitLineNorm({ click, bounds, isBottomRegion: true });
   const clickedNorm = isBottomRegion ? bottomNorm : topNorm;
   if (!Number.isFinite(Number(clickedNorm))) return true;
-  const { splitKey, splitBottomKey, splitPosKey } = createCanvasDoorSplitKeyState(doorBaseKey);
+  const { splitKey, splitBottomKey } = createCanvasDoorSplitKeyState(doorBaseKey);
   const { nextList, changedToSplit, nextBottomSplit } = resolveSketchBoxStandardSplitToggle({
     App: click.App,
     doorBaseKey,
@@ -192,7 +192,7 @@ function handleSketchBoxStandardSplitClick(args: {
       });
       writeCanvasDoorSplitPosList({
         App: click.App,
-        splitPosKey,
+        doorBaseKey,
         nextList,
         source: 'splitDoors:click:sketchBox',
       });
