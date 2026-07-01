@@ -54,7 +54,7 @@ export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs)
   )
     return;
 
-  const partId = typeof ud.partId === 'string' ? String(ud.partId) : basePartId;
+  const partId = basePartId || (typeof ud.partId === 'string' ? String(ud.partId) : '');
   const doorMeshOffsetX = readGeometryUserDataNumberKey(ud, '__doorMeshOffsetX') ?? 0;
   const isLeftHinge = !!readKey(ud, '__hingeLeft');
   const handleAbsY = resolveOriginalDoorHandleAbsY(ud, centerY);
