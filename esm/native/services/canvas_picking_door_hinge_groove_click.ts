@@ -3,8 +3,13 @@ import type { AppContainer, DoorVisualEntryLike } from '../../../types';
 import { hasMirrorSurfaceOnFace, readDoorVisualMirrorLayout } from '../features/door_authoring/api.js';
 import { setDoorsOpenViaService } from '../runtime/doors_access.js';
 import { getDoorsArray } from '../runtime/render_access.js';
-import { normalizeKnownMapSnapshot, toggleGrooveKey, writeHinge } from '../runtime/maps_access.js';
-import { patchVisualKeyedMapEntriesFromOwner } from '../runtime/visual_keyed_map_writer_owner.js';
+import {
+  normalizeKnownMapSnapshot,
+  patchDoorGrooveLinesCountEntries,
+  patchDoorGrooveMapEntries,
+  toggleGrooveKey,
+  writeHinge,
+} from '../runtime/maps_access.js';
 import { callDoorsAction, hasDoorsAction } from '../runtime/actions_access_domains.js';
 import { toggleGrooveViaActions } from '../runtime/actions_access_mutations.js';
 import {
@@ -411,12 +416,7 @@ export function handleCanvasDoorGrooveClick(args: CanvasDoorGrooveClickArgs): bo
         nextGrooveOn && grooveLinesCountForClick != null ? grooveLinesCountForClick : null,
         'groove:click:pendingCount'
       );
-      patchVisualKeyedMapEntriesFromOwner(
-        App,
-        'grooveLinesCountMap',
-        grooveLinesCountPatchEntries,
-        grooveCountRefreshGatedMeta
-      );
+      patchDoorGrooveLinesCountEntries(App, grooveLinesCountPatchEntries, grooveCountRefreshGatedMeta);
       if (isSketchBoxSegmentTarget || isInheritedRegularSegmentGrooveOn) {
         const groovePatchEntries: { key: unknown; value: unknown }[] = [];
         const siblingPartIds = isInheritedSketchSegmentGrooveOn
@@ -443,7 +443,7 @@ export function handleCanvasDoorGrooveClick(args: CanvasDoorGrooveClickArgs): bo
         } else {
           groovePatchEntries.push({ key: grooveKey, value: null });
         }
-        patchVisualKeyedMapEntriesFromOwner(App, 'groovesMap', groovePatchEntries, grooveRefreshGatedMeta);
+        patchDoorGrooveMapEntries(App, groovePatchEntries, grooveRefreshGatedMeta);
       } else if (!shouldUpdateExistingGrooveLinesCount) {
         if (!toggleGrooveViaActions(App, grooveKey, grooveRefreshGatedMeta)) {
           toggleGrooveKey(App, grooveKey, grooveRefreshGatedMeta);

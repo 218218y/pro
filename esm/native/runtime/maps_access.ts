@@ -34,8 +34,11 @@ export {
 export {
   VISUAL_KEYED_MAP_NAMES,
   isVisualKeyedMapName,
+  patchDoorGrooveLinesCountEntries,
+  patchDoorGrooveMapEntries,
   toggleDivider,
   toggleGrooveKey,
+  writeDoorTrimListForPart,
   writeHandle,
   writeHinge,
   writeMapKey,

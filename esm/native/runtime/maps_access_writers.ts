@@ -18,6 +18,8 @@ function readMapKey(value: unknown): string {
   return String(value || '').trim();
 }
 
+type VisualKeyedWriterEntry = { readonly key: unknown; readonly value: unknown };
+
 function writeVisualKeyedMapEntryFromOwner(
   App: unknown,
   mapName: Extract<VisualKeyedOwnerPatchMapName, 'doorTrimMap' | 'groovesMap' | 'grooveLinesCountMap'>,
@@ -26,6 +28,36 @@ function writeVisualKeyedMapEntryFromOwner(
   meta?: ActionMetaLike
 ): boolean {
   return patchVisualKeyedMapEntriesFromOwner(App, mapName, [{ key, value }], meta);
+}
+
+export function writeDoorTrimListForPart(
+  App: unknown,
+  partId: unknown,
+  trimListOrNull: unknown,
+  meta?: ActionMetaLike
+): boolean {
+  return patchVisualKeyedMapEntriesFromOwner(
+    App,
+    'doorTrimMap',
+    [{ key: partId, value: trimListOrNull }],
+    meta
+  );
+}
+
+export function patchDoorGrooveMapEntries(
+  App: unknown,
+  entries: readonly VisualKeyedWriterEntry[],
+  meta?: ActionMetaLike
+): boolean {
+  return patchVisualKeyedMapEntriesFromOwner(App, 'groovesMap', entries, meta);
+}
+
+export function patchDoorGrooveLinesCountEntries(
+  App: unknown,
+  entries: readonly VisualKeyedWriterEntry[],
+  meta?: ActionMetaLike
+): boolean {
+  return patchVisualKeyedMapEntriesFromOwner(App, 'grooveLinesCountMap', entries, meta);
 }
 
 export function writeHandle(

@@ -27,14 +27,23 @@ const OWNER_HELPER_IMPORT_ALLOWLIST = new Set([
   'esm/native/runtime/cfg_access_maps.ts',
   'esm/native/runtime/maps_access_writers.ts',
   'esm/native/kernel/maps_api_named_maps.ts',
-  'esm/native/services/canvas_picking_door_hinge_groove_click.ts',
-  'esm/native/services/canvas_picking_door_trim_click.ts',
 ]);
 
 const OWNER_HELPER_NAMES = [
   'setCfgVisualKeyedMapFromOwner',
   'patchVisualKeyedMapEntriesFromOwner',
   'toggleVisualKeyedMapEntryFromOwner',
+];
+
+const SERVICE_SEMANTIC_WRITER_EXPECTATIONS = [
+  {
+    file: 'esm/native/services/canvas_picking_door_trim_click.ts',
+    writers: ['writeDoorTrimListForPart'],
+  },
+  {
+    file: 'esm/native/services/canvas_picking_door_hinge_groove_click.ts',
+    writers: ['patchDoorGrooveMapEntries', 'patchDoorGrooveLinesCountEntries'],
+  },
 ];
 
 const MAP_ALIAS_READERS = {
@@ -336,6 +345,30 @@ test('visual/keyed owner helpers are imported only by approved owners', () => {
   );
 });
 
+test('canvas picking services use semantic runtime writers instead of owner helpers', () => {
+  for (const { file, writers } of SERVICE_SEMANTIC_WRITER_EXPECTATIONS) {
+    const source = readSourceFile(file);
+    assert.doesNotMatch(
+      source,
+      /visual_keyed_map_writer_owner\.js/,
+      `${file} must not import the owner module`
+    );
+    assert.doesNotMatch(
+      source,
+      /\bpatchVisualKeyedMapEntriesFromOwner\b/,
+      `${file} must not call the low-level owner patch helper`
+    );
+    assert.match(
+      source,
+      /from ['"]\.\.\/runtime\/maps_access\.js['"]/,
+      `${file} must use the runtime writer facade`
+    );
+    for (const writer of writers) {
+      assert.match(source, new RegExp(`\\b${escapeRegExp(writer)}\\b`), `${file} must use ${writer}`);
+    }
+  }
+});
+
 test('visual/keyed patch implementation is centralized in the owner module', () => {
   const owner = readSourceFile(VISUAL_KEYED_OWNER_MODULE);
   const mapsWriters = readSourceFile('esm/native/runtime/maps_access_writers.ts');
@@ -344,6 +377,12 @@ test('visual/keyed patch implementation is centralized in the owner module', () 
   assert.match(owner, /export function patchVisualKeyedMapEntriesFromOwner\(/);
   assert.match(owner, /export function setCfgVisualKeyedMapFromOwner(?:<[^>]+>)?\(/);
   assert.match(owner, /export function toggleVisualKeyedMapEntryFromOwner\(/);
+
+  const ownerPatchExportFiles = SOURCE_ROOTS.flatMap(root => walkSourceFiles(root)).filter(file =>
+    /export function patchVisualKeyedMapEntriesFromOwner\(/.test(readSourceFile(file))
+  );
+  assert.deepEqual(ownerPatchExportFiles, [VISUAL_KEYED_OWNER_MODULE]);
+
   assert.match(mapsWriters, /visual_keyed_map_writer_owner\.js/);
   assert.match(mapsApiNamedMaps, /visual_keyed_map_writer_owner\.js/);
   assert.doesNotMatch(mapsWriters, /function\s+patchCanonicalOwnerMapEntries\b/);

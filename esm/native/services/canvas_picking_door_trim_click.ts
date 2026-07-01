@@ -1,6 +1,6 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
 
-import { patchVisualKeyedMapEntriesFromOwner } from '../runtime/visual_keyed_map_writer_owner.js';
+import { writeDoorTrimListForPart } from '../runtime/maps_access.js';
 import { getThreeMaybe } from '../runtime/three_access.js';
 import {
   readMirrorLayoutListForPart,
@@ -118,12 +118,7 @@ export function handleCanvasDoorTrimClick(args: CanvasDoorTrimClickArgs): boolea
 
   const meta = createCanvasPickingDoorAuthoringStructuralMeta('doorTrim:click');
   __wp_historyBatch(App, meta, () => {
-    patchVisualKeyedMapEntriesFromOwner(
-      App,
-      'doorTrimMap',
-      [{ key: trimPartId, value: nextList.length ? nextList : null }],
-      meta
-    );
+    writeDoorTrimListForPart(App, trimPartId, nextList.length ? nextList : null, meta);
     return undefined;
   });
   return true;
