@@ -104,8 +104,9 @@ test('canvas picking door-authoring writes use one immediate structural meta own
   );
   assert.match(
     doorSplitShared,
-    /writeMapKey\(App, 'splitDoorsMap', splitPosKey, stored, createCanvasPickingDoorAuthoringStructuralMeta\(source\)\)/
+    /writeSplitPositionList\([\s\S]*App,[\s\S]*doorBaseKey,[\s\S]*nextList,[\s\S]*createCanvasPickingDoorAuthoringStructuralMeta\(source\)[\s\S]*\)/
   );
+  assert.doesNotMatch(doorSplitShared, /writeMapKey\(App, 'splitDoorsMap'/);
   assert.doesNotMatch(doorSplitCustom, /splitPosKey,/);
   assert.doesNotMatch(doorSplitToggle, /splitPosKey,/);
   assert.match(doorSplitCustom, /runCanvasDoorSplitHistoryBatch\(App, 'splitDoors:custom'/);

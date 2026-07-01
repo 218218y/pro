@@ -55,6 +55,37 @@ function readCanonicalOwnerPatchKey(mapName: CanonicalOwnerPatchMapName, key: un
   return readCanonicalVisualPatchKey(mapName, key);
 }
 
+function readConfigStateMapForPatch(
+  App: unknown,
+  mapName: CanonicalOwnerPatchMapName
+): Record<string, unknown> | null {
+  try {
+    const app = App as { store?: { getState?: () => unknown } };
+    const root = app?.store && typeof app.store.getState === 'function' ? app.store.getState() : null;
+    const config =
+      root && typeof root === 'object' && !Array.isArray(root) ? (root as { config?: unknown }).config : null;
+    const map =
+      config && typeof config === 'object' && !Array.isArray(config)
+        ? (config as Record<string, unknown>)[mapName]
+        : null;
+    return map && typeof map === 'object' && !Array.isArray(map) ? (map as Record<string, unknown>) : null;
+  } catch {
+    return null;
+  }
+}
+
+function readCurrentOwnerMapForPatch(
+  App: unknown,
+  mapName: CanonicalOwnerPatchMapName,
+  maps: Record<string, unknown> | null
+): Record<string, unknown> | null {
+  try {
+    return cfgMap(App, mapName) as Record<string, unknown>;
+  } catch {
+    return readConfigStateMapForPatch(App, mapName) || (maps ? ensureMapRecord(maps, mapName) : {});
+  }
+}
+
 function patchCanonicalOwnerMapEntries(
   App: unknown,
   mapName: CanonicalOwnerPatchMapName,
@@ -63,7 +94,8 @@ function patchCanonicalOwnerMapEntries(
 ): boolean {
   if (!entries.length) return false;
   const maps = readMapsBagOrNull(App);
-  const current = cfgMap(App, mapName);
+  const current = readCurrentOwnerMapForPatch(App, mapName, maps);
+  if (!current) return false;
   const nextMap = { ...(normalizeKnownMapSnapshot(mapName, current) as Record<string, unknown>) };
 
   for (let i = 0; i < entries.length; i += 1) {

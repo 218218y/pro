@@ -1,5 +1,5 @@
 import type { ActionMetaLike, AppContainer, UnknownRecord } from '../../../types';
-import { writeMapKey } from '../runtime/maps_access.js';
+import { isVisualKeyedMapName, writeMapKey } from '../runtime/maps_access.js';
 import type { DomainApiSurfaceSectionsState } from './domain_api_surface_sections_contracts.js';
 import {
   normalizePrefixedMapKey,
@@ -100,6 +100,12 @@ export function patchCanonicalMapValue(
   return undefined;
 }
 
+const VISUAL_KEYED_MAPS_ROUTED_BY_WRITE_MAP_KEY = new Set<string>([
+  'doorTrimMap',
+  'groovesMap',
+  'grooveLinesCountMap',
+]);
+
 export function writeCanonicalMapValueDirect(
   App: AppContainer,
   mapName: string,
@@ -108,6 +114,9 @@ export function writeCanonicalMapValueDirect(
   meta?: ActionMetaLike
 ): boolean {
   if (!canonicalKey) return false;
+  if (isVisualKeyedMapName(mapName) && !VISUAL_KEYED_MAPS_ROUTED_BY_WRITE_MAP_KEY.has(mapName)) {
+    return false;
+  }
   return writeMapKey(App, mapName, canonicalKey, value, meta);
 }
 
