@@ -66,12 +66,14 @@ test('kernel_state_kernel_config captures and applies normalized config map snap
     grooveLinesCountMap: { d1: 4.7, legacy: '4', bad: 'x' },
     doorSpecialMap: { d1: 'glass', drop: 3 },
     mirrorLayoutMap: {
-      d1: [{ widthCm: 55, heightCm: 88, faceSign: -1 }, { widthCm: 0 }],
-      d2: [{ faceSign: -1 }],
+      d1_full: [{ widthCm: 55, heightCm: 88, faceSign: -1 }, { widthCm: 0 }],
+      d2_full: [{ faceSign: -1 }],
+      d1: [{ widthCm: 44, heightCm: 77, faceSign: -1 }],
+      d1_mid2_accent_top: [{ widthCm: 33, heightCm: 66, faceSign: -1 }],
       drop: 'x',
     },
     doorTrimMap: {
-      d1: [
+      d1_full: [
         {
           axis: 'vertical',
           color: 'gold',
@@ -79,6 +81,20 @@ test('kernel_state_kernel_config captures and applies normalized config map snap
           sizeCm: '11',
           centerXNorm: '0.3',
           centerYNorm: '0.7',
+        },
+      ],
+      d1: [
+        {
+          axis: 'horizontal',
+          color: 'black',
+          span: 'half',
+        },
+      ],
+      d1_mid2_trim_preview_hover: [
+        {
+          axis: 'horizontal',
+          color: 'silver',
+          span: 'quarter',
         },
       ],
     },
@@ -108,12 +124,15 @@ test('kernel_state_kernel_config captures and applies normalized config map snap
       ])
     ),
     {
-      d1: [{ widthCm: 55, heightCm: 88, faceSign: -1 }],
-      d2: [{ faceSign: -1 }],
+      d1_full: [{ widthCm: 55, heightCm: 88, faceSign: -1 }],
+      d2_full: [{ faceSign: -1 }],
     }
   );
+  assert.equal('d1' in captured.mirrorLayoutMap, false);
+  assert.equal('d1_mid2_accent_top' in captured.mirrorLayoutMap, false);
   assert.equal(captured.doorTrimMap.d1_full[0].sizeCm, 11);
   assert.equal('d1' in captured.doorTrimMap, false);
+  assert.equal('d1_mid2_trim_preview_hover' in captured.doorTrimMap, false);
   assert.deepEqual(captured.savedColors, [
     {
       id: 'c2',
@@ -131,8 +150,10 @@ test('kernel_state_kernel_config captures and applies normalized config map snap
       groovesMap: { groove_d2: true, drop: 'wat' },
       doorSpecialMap: { d2: 'mirror', drop: 3 },
       mirrorLayoutMap: {
-        d2: [{ widthCm: 60, heightCm: 90, faceSign: -1 }, { widthCm: 0 }],
-        d3: [{ faceSign: -1 }],
+        d2_full: [{ widthCm: 60, heightCm: 90, faceSign: -1 }, { widthCm: 0 }],
+        d3_full: [{ faceSign: -1 }],
+        d2: [{ widthCm: 44, heightCm: 77, faceSign: -1 }],
+        d3_mid2_accent_top: [{ widthCm: 33, heightCm: 66, faceSign: -1 }],
         drop: 'x',
       },
       savedColors: [
@@ -164,10 +185,12 @@ test('kernel_state_kernel_config captures and applies normalized config map snap
       )
     ),
     {
-      d2: [{ widthCm: 60, heightCm: 90, faceSign: -1 }],
-      d3: [{ faceSign: -1 }],
+      d2_full: [{ widthCm: 60, heightCm: 90, faceSign: -1 }],
+      d3_full: [{ faceSign: -1 }],
     }
   );
+  assert.equal('d2' in (patches[0].patch.mirrorLayoutMap as Record<string, unknown>), false);
+  assert.equal('d3_mid2_accent_top' in (patches[0].patch.mirrorLayoutMap as Record<string, unknown>), false);
   assert.deepEqual(patches[0].patch.savedColors, [
     {
       id: 'c3',
