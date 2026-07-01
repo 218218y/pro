@@ -4,6 +4,10 @@ import {
   resolveDoorSplitAuthoringBaseKey,
   toDoorStyleOverrideMapKey,
 } from '../../shared/door_visual_key_contracts_shared.js';
+import {
+  toCanonicalGrooveLinesCountMapKey,
+  toCanonicalGroovesMapKey,
+} from '../../shared/door_groove_key_contracts_shared.js';
 import { isCanonicalRemovedDoorsMapKey } from '../../shared/removed_doors_map_keys_shared.js';
 import { asMapRecord, asRecord, readFiniteNumber } from './maps_access_shared.js';
 
@@ -52,21 +56,6 @@ export function normalizeToggleMap(value: unknown): MapsByName['drawerDividersMa
   return out;
 }
 
-function normalizeCanonicalToggleMap(
-  value: unknown,
-  isCanonicalKey: (key: string) => boolean
-): MapsByName['groovesMap'] {
-  const rec = asMapRecord(value);
-  const out: MapsByName['groovesMap'] = Object.create(null);
-  if (!rec) return out;
-  for (const key of Object.keys(rec)) {
-    if (!isCanonicalKey(key)) continue;
-    const next = normalizeToggleValue(rec[key]);
-    if (typeof next !== 'undefined') out[key] = next;
-  }
-  return out;
-}
-
 function readCanonicalSplitMapBaseKey(key: string, prefix: string): string {
   if (!key.startsWith(prefix)) return '';
   const base = key.slice(prefix.length);
@@ -80,7 +69,22 @@ function isCanonicalSplitMapKey(key: string, prefix: string): boolean {
 }
 
 export function normalizeGroovesMap(value: unknown): MapsByName['groovesMap'] {
-  return normalizeCanonicalToggleMap(value, key => key.startsWith('groove_'));
+  const rec = asMapRecord(value);
+  const out: MapsByName['groovesMap'] = Object.create(null);
+  const directByKey: Record<string, boolean> = Object.create(null);
+  if (!rec) return out;
+  for (const key of Object.keys(rec)) {
+    if (!key.startsWith('groove_')) continue;
+    const canonicalKey = toCanonicalGroovesMapKey(key);
+    if (!canonicalKey) continue;
+    const next = normalizeToggleValue(rec[key]);
+    if (typeof next === 'undefined') continue;
+    const isDirect = key === canonicalKey;
+    if (directByKey[canonicalKey] && !isDirect) continue;
+    out[canonicalKey] = next;
+    directByKey[canonicalKey] = isDirect;
+  }
+  return out;
 }
 
 export function normalizeRemovedDoorsMap(value: unknown): MapsByName['removedDoorsMap'] {
@@ -215,16 +219,23 @@ export function normalizeNullableStringMap(value: unknown): NullableStringMap {
 export function normalizeNullablePositiveIntMap(value: unknown): MapsByName['grooveLinesCountMap'] {
   const rec = asMapRecord(value);
   const out: MapsByName['grooveLinesCountMap'] = Object.create(null);
+  const directByKey: Record<string, boolean> = Object.create(null);
   if (!rec) return out;
   for (const key of Object.keys(rec)) {
+    const canonicalKey = toCanonicalGrooveLinesCountMapKey(key);
+    if (!canonicalKey) continue;
     const entry = rec[key];
+    let next: number | null | undefined;
     if (entry === null) {
-      out[key] = null;
-      continue;
+      next = null;
+    } else if (typeof entry === 'number' && Number.isFinite(entry) && entry >= 1) {
+      next = Math.max(1, Math.floor(entry));
     }
-    if (typeof entry === 'number' && Number.isFinite(entry) && entry >= 1) {
-      out[key] = Math.max(1, Math.floor(entry));
-    }
+    if (typeof next === 'undefined') continue;
+    const isDirect = key === canonicalKey;
+    if (directByKey[canonicalKey] && !isDirect) continue;
+    out[canonicalKey] = next;
+    directByKey[canonicalKey] = isDirect;
   }
   return out;
 }

@@ -37,10 +37,32 @@ test('groove line count config scalar keeps typed numbers and rejects legacy str
 test('project io load snapshot keeps typed groove line counts and drops legacy string counts', () => {
   const cfg = buildProjectConfigSnapshot({
     grooveLinesCount: 12.8,
-    grooveLinesCountMap: { d1_full: 15.2, legacy: '15.2', bad: 'x' },
+    grooveLinesCountMap: {
+      d1_full: 15.2,
+      groove_d2_full: 9.8,
+      d3_mid2_accent_top: 6.2,
+      d4_mid2_groove_left: 5.9,
+      d5_top_trim_preview_hover: 4.1,
+      d6_mid2_accent_top: 2,
+      d6_mid2: 3,
+      legacy: '15.2',
+      bad: 'x',
+    },
   });
   assert.equal(cfg.grooveLinesCount, 12);
-  assert.deepEqual(asPlainRecord(cfg.grooveLinesCountMap as Record<string, unknown>), { d1_full: 15 });
+  const grooveLinesCountMap = asPlainRecord(cfg.grooveLinesCountMap as Record<string, unknown>);
+  assert.deepEqual(grooveLinesCountMap, {
+    d1_full: 15,
+    d2_full: 9,
+    d3_mid2: 6,
+    d4_mid2: 5,
+    d5_top: 4,
+    d6_mid2: 3,
+  });
+  assert.equal('groove_d2_full' in grooveLinesCountMap, false);
+  assert.equal('d3_mid2_accent_top' in grooveLinesCountMap, false);
+  assert.equal('d4_mid2_groove_left' in grooveLinesCountMap, false);
+  assert.equal('d5_top_trim_preview_hover' in grooveLinesCountMap, false);
 
   const fallbackCfg = buildProjectConfigSnapshot({ grooveLinesCount: '12.8' });
   assert.equal(fallbackCfg.grooveLinesCount, null);
@@ -133,9 +155,13 @@ test('materializeActiveGrooveLinesCountMap freezes active grooved doors to stabl
             groovesMap: {
               groove_d1_full: true,
               groove_d2_full: true,
+              groove_d3_mid2_accent_top: true,
+              groove_d4_mid2_groove_left: true,
             },
             grooveLinesCountMap: {
               d1_full: 9,
+              groove_d3_mid2: 7,
+              d4_mid2_accent_top: 8,
             },
           },
           ui: {
@@ -162,6 +188,8 @@ test('materializeActiveGrooveLinesCountMap freezes active grooved doors to stabl
   assert.deepEqual(asPlainRecord(materializeActiveGrooveLinesCountMap(App as never)), {
     d1_full: 9,
     d2_full: 10,
+    d3_mid2: 7,
+    d4_mid2: 8,
   });
 });
 

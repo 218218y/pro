@@ -1,6 +1,7 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
 
 import { asRecord as readRecord } from '../runtime/record.js';
+import { normalizeKnownMapSnapshot } from '../runtime/maps_access.js';
 import { readRootState } from '../runtime/root_state_access.js';
 import { patchRuntime } from '../runtime/runtime_write_access.js';
 import {
@@ -8,6 +9,7 @@ import {
   readPendingGrooveLinesCountMap,
 } from '../runtime/groove_lines_access.js';
 import { readDoorTrimMap } from '../features/door_authoring/api.js';
+import { toCanonicalGrooveLinesCountMapKey } from '../../shared/door_groove_key_contracts_shared.js';
 import { createCanvasPickingDoorAuthoringRefreshGatedMeta } from './canvas_picking_door_authoring_meta.js';
 import { __wp_map } from './canvas_picking_core_helpers.js';
 
@@ -55,7 +57,7 @@ export function readDoorTrimConfigMap(App: AppContainer) {
 }
 
 export function readGrooveLinesCountMap(App: AppContainer): UnknownRecord {
-  return __wp_map(App, 'grooveLinesCountMap');
+  return normalizeKnownMapSnapshot('grooveLinesCountMap', __wp_map(App, 'grooveLinesCountMap'));
 }
 
 export function writePendingGrooveLinesCountForPart(
@@ -64,7 +66,7 @@ export function writePendingGrooveLinesCountForPart(
   grooveLinesCount: number | null,
   source: string
 ): void {
-  const key = String(partId || '');
+  const key = toCanonicalGrooveLinesCountMapKey(partId);
   if (!key) return;
   const currentMap = readPendingGrooveLinesCountMap(App);
   const nextMap: Record<string, number> = { ...currentMap };

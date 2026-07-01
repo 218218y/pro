@@ -1,4 +1,5 @@
 import { getBuilderCreateDoorVisual } from '../runtime/builder_service_access.js';
+import { toCanonicalGroovesMapKey } from '../../shared/door_groove_key_contracts_shared.js';
 import { resolveDoorVisualStyle } from './render_door_ops_shared.js';
 import { readDrawerConfig, resolveDrawerVisualState } from './render_drawer_ops_shared.js';
 import { getMirrorMaterialFromServices } from './visuals_chest_mode_runtime.js';
@@ -96,13 +97,12 @@ export function createChestDrawerFrontVisual(args: ChestDrawerFrontVisualArgs): 
   const effectiveDrawerFrameStyle =
     effectiveDrawerFrameStyleRaw === 'glass' ? 'profile' : effectiveDrawerFrameStyleRaw;
   const effectiveDrawerStyle = drawerVisualState.isGlass ? 'glass' : effectiveDrawerFrameStyle;
-  const grooveKey = `groove_${args.drawerId}`;
   const hasGroove =
     !!args.isGroovesEnabled &&
     !drawerVisualState.isGlass &&
     !drawerVisualState.isMirror &&
     !!cfg.groovesMap &&
-    cfg.groovesMap[grooveKey] != null;
+    cfg.groovesMap[toCanonicalGroovesMapKey(args.drawerId)] === true;
 
   const visual = createDoorVisual(
     args.drawerWidth,

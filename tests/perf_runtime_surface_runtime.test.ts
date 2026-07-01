@@ -65,7 +65,7 @@ test('perf runtime surface records marks, spans, summaries, and errors', async (
             boardMaterial: 'sandwich',
             grooveLinesCount: 12,
             groovesMap: { groove_d1_full: true, groove_d2_full: true, empty: false },
-            grooveLinesCountMap: { groove_d1_full: 12, groove_d2_full: 8 },
+            grooveLinesCountMap: { d1_full: 12, d2_full: 8 },
             splitDoorsMap: { split_d1: true, split_d2: true },
             splitDoorsBottomMap: { splitb_d1: true },
             removedDoorsMap: { removed_d3_full: true, removed_d4_full: true },

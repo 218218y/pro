@@ -1,6 +1,7 @@
 import type { UnknownRecord } from '../../../types';
-import { stripDoorVisualSurfaceSuffix } from '../../shared/door_visual_key_contracts_shared.js';
+import { toCanonicalDoorGrooveTargetKey } from '../../shared/door_groove_key_contracts_shared.js';
 import { resolveRemovedDoorPartIdentity } from '../../shared/removed_doors_map_keys_shared.js';
+import { normalizeKnownMapSnapshot } from '../runtime/maps_access.js';
 import { getDoorsArray } from '../runtime/render_access.js';
 import { __wp_map } from './canvas_picking_core_helpers.js';
 import {
@@ -112,7 +113,7 @@ function normalizeGrooveHoverPartKey(args: {
   const scoped = String(state.scopedHitDoorPid || state.hitDoorPid || '');
   const canon = hoverArgs.canonDoorPartKeyForMaps(scoped);
   if (!canon) return '';
-  return stripDoorVisualSurfaceSuffix(canon);
+  return toCanonicalDoorGrooveTargetKey(canon);
 }
 
 export function readDoorActionHoverWillRemoveGroove(args: {
@@ -123,7 +124,7 @@ export function readDoorActionHoverWillRemoveGroove(args: {
   try {
     const partKey = normalizeGrooveHoverPartKey(args);
     const sketchTarget = parseSketchBoxDoorTarget(partKey || state.scopedHitDoorPid || state.hitDoorPid);
-    const groovesMap = __asObject<UnknownRecord>(__wp_map(hoverArgs.App, 'groovesMap'));
+    const groovesMap = normalizeKnownMapSnapshot('groovesMap', __wp_map(hoverArgs.App, 'groovesMap'));
     if (sketchTarget) {
       if (partKey && isSketchBoxDoorSegmentPartId(partKey)) {
         const segmentFlag = readDoorGrooveMapFlag(groovesMap, partKey);

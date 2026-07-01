@@ -5,6 +5,12 @@ import {
 } from './config_selectors.js';
 import { getDoorsArray, getDrawersArray } from './render_access.js';
 import { readRuntimeStateFromApp, readUiStateFromApp } from './root_state_access.js';
+import { normalizeKnownMapSnapshot } from './maps_access_normalizers.js';
+import {
+  listDoorGrooveTargetLookupKeys,
+  toCanonicalDoorGrooveTargetKey,
+  toCanonicalGrooveLinesCountMapKey,
+} from '../../shared/door_groove_key_contracts_shared.js';
 
 import type {
   AppContainer,
@@ -15,7 +21,6 @@ import type {
 } from '../../../types/index.js';
 
 export const DEFAULT_GROOVE_DENSITY = 20;
-const GROOVE_KEY_PREFIX = 'groove_';
 export const PENDING_GROOVE_LINES_COUNT_MAP_RUNTIME_KEY = 'pendingGrooveLinesCountMap';
 
 function isRecord(value: unknown): value is UnknownRecord {
@@ -37,10 +42,17 @@ function readPartId(value: unknown): string {
 function readPositiveIntRecord(value: unknown): Record<string, number> {
   const src = readRecord(value);
   const out: Record<string, number> = Object.create(null);
+  const directByKey: Record<string, boolean> = Object.create(null);
   if (!src) return out;
   for (const [key, entry] of Object.entries(src)) {
+    const canonicalKey = toCanonicalGrooveLinesCountMapKey(key);
+    if (!canonicalKey) continue;
     const normalized = normalizeGrooveLinesCountMapEntry(entry);
-    if (normalized !== null && key) out[key] = normalized;
+    if (normalized === null) continue;
+    const isDirect = key === canonicalKey;
+    if (directByKey[canonicalKey] && !isDirect) continue;
+    out[canonicalKey] = normalized;
+    directByKey[canonicalKey] = isDirect;
   }
   return out;
 }
@@ -95,13 +107,13 @@ function readFrontWidthForPart(App: AppContainer, partId: string): number | null
 
 function readActiveGroovePartIds(App: AppContainer): string[] {
   const rawMap = readConfigMapFromSnapshot(readConfigStateFromApp(App), 'groovesMap', {});
-  const record = readRecord(rawMap) || Object.create(null);
+  const record = normalizeKnownMapSnapshot('groovesMap', rawMap);
   const out: string[] = [];
   for (const [rawKey, rawValue] of Object.entries(record)) {
     if (rawValue == null || rawValue === false) continue;
     const key = String(rawKey || '');
     if (!key) continue;
-    const partId = key.startsWith(GROOVE_KEY_PREFIX) ? key.slice(GROOVE_KEY_PREFIX.length) : key;
+    const partId = toCanonicalDoorGrooveTargetKey(key);
     if (!partId) continue;
     out.push(partId);
   }
@@ -137,10 +149,17 @@ export function readGrooveLinesCountForPart(
   App: AppContainer,
   partId: string | null | undefined
 ): number | null {
-  const key = String(partId || '');
-  if (!key) return null;
-  const rawMap = readConfigMapFromSnapshot(readConfigStateFromApp(App), 'grooveLinesCountMap', {});
-  return normalizeGrooveLinesCountMapEntry(readRecord(rawMap)?.[key]);
+  const keys = listDoorGrooveTargetLookupKeys(partId);
+  if (!keys.length) return null;
+  const map = normalizeKnownMapSnapshot(
+    'grooveLinesCountMap',
+    readConfigMapFromSnapshot(readConfigStateFromApp(App), 'grooveLinesCountMap', {})
+  );
+  for (let index = 0; index < keys.length; index += 1) {
+    const normalized = normalizeGrooveLinesCountMapEntry(map[keys[index]]);
+    if (normalized !== null) return normalized;
+  }
+  return null;
 }
 
 export function readPendingGrooveLinesCountMap(App: AppContainer): Record<string, number> {
@@ -152,7 +171,7 @@ export function readPendingGrooveLinesCountForPart(
   App: AppContainer,
   partId: string | null | undefined
 ): number | null {
-  const key = String(partId || '');
+  const key = toCanonicalGrooveLinesCountMapKey(partId);
   if (!key) return null;
   const pendingMap = readPendingGrooveLinesCountMap(App);
   return normalizeGrooveLinesCountMapEntry(pendingMap[key]);

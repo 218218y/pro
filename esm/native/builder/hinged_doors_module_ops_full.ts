@@ -1,4 +1,8 @@
 import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  listDoorGrooveTargetLookupKeys,
+  toCanonicalGroovesMapKey,
+} from '../../shared/door_groove_key_contracts_shared.js';
 import { hasMirrorSurfaceOnFace } from '../features/door_authoring/api.js';
 import { readDoorVisualMirrorLayout } from './door_visual_lookup_state.js';
 import { clampHandleAbsY } from './hinged_doors_module_ops_shared.js';
@@ -14,12 +18,9 @@ function readFullDoorGrooveEnabled(
 ): boolean {
   const colorKey = state.sourceKey;
   const grooveMap = ctx.cfg.groovesMap && typeof ctx.cfg.groovesMap === 'object' ? ctx.cfg.groovesMap : {};
-  const doorGrooveKey = `groove_${colorKey}`;
-  let mapGrooveOn = !!grooveMap[doorGrooveKey] || !!grooveMap[colorKey];
-  if (!mapGrooveOn && colorKey.endsWith('_full')) {
-    const base = colorKey.slice(0, -5);
-    mapGrooveOn = !!grooveMap[`groove_${base}_full`] || mapGrooveOn;
-  }
+  const mapGrooveOn = listDoorGrooveTargetLookupKeys(colorKey).some(
+    key => grooveMap[toCanonicalGroovesMapKey(key)] === true
+  );
   return ctx.grooveValSafe(state.currentDoorId, 'full', mapGrooveOn);
 }
 

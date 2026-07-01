@@ -2,13 +2,13 @@
 //
 // Owns per-segment material selection and visual creation for segmented sketch-door rebuild flows.
 
-import {
-  resolveEffectiveDoorStyle,
-  hasAnyDoorVisualSegmentMapEntry,
-  readDoorVisualPrefixedMapEntry,
-  readDoorVisualPrefixedOwnMapEntry,
-} from '../features/door_authoring/api.js';
+import { resolveEffectiveDoorStyle } from '../features/door_authoring/api.js';
 import { resolveDoorVisualSegmentIdentity } from '../../shared/door_visual_key_contracts_shared.js';
+import {
+  listDoorGrooveTargetLookupKeys,
+  toCanonicalDoorGrooveTargetKey,
+  toCanonicalGroovesMapKey,
+} from '../../shared/door_groove_key_contracts_shared.js';
 import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 import { asRecord, isObject3DLike, type ValueRecord } from './post_build_extras_shared.js';
@@ -25,27 +25,40 @@ export type SketchSegmentVisualFlags = {
   segmentMirrorLayout: unknown;
 };
 
-const GROOVE_MAP_PREFIX = 'groove_';
-
 function readGrooveBooleanValue(value: unknown): boolean {
   return value === true;
 }
 
 function readSketchSegmentGrooveMapFlag(map: ValueRecord | null | undefined, partId: string): boolean | null {
-  const entry = readDoorVisualPrefixedOwnMapEntry({ map, partId, prefix: GROOVE_MAP_PREFIX });
-  return entry ? readGrooveBooleanValue(entry.value) : null;
+  const key = toCanonicalGroovesMapKey(partId);
+  if (!map || !key || !Object.prototype.hasOwnProperty.call(map, key)) return null;
+  return readGrooveBooleanValue(map[key]);
 }
 
 function readSketchSegmentGrooveVisualMapFlag(
   map: ValueRecord | null | undefined,
   partId: string
 ): boolean | null {
-  const entry = readDoorVisualPrefixedMapEntry({ map, partId, prefix: GROOVE_MAP_PREFIX });
-  return entry ? readGrooveBooleanValue(entry.value) : null;
+  const keys = listDoorGrooveTargetLookupKeys(partId);
+  for (let index = 0; index < keys.length; index += 1) {
+    const flag = readSketchSegmentGrooveMapFlag(map, keys[index]);
+    if (flag !== null) return flag;
+  }
+  return null;
 }
 
 function hasAnySketchSegmentGrooveMapEntry(map: ValueRecord | null | undefined, basePartId: string): boolean {
-  return hasAnyDoorVisualSegmentMapEntry({ map, basePartId, prefix: GROOVE_MAP_PREFIX });
+  const base = resolveDoorVisualSegmentIdentity(toCanonicalDoorGrooveTargetKey(basePartId)).basePartId;
+  if (!map || !base) return false;
+  const keys = Object.keys(map);
+  for (let index = 0; index < keys.length; index += 1) {
+    const key = keys[index];
+    if (!key || map[key] == null || key !== toCanonicalGroovesMapKey(key)) continue;
+    const segmentPartId = toCanonicalDoorGrooveTargetKey(key);
+    const identity = resolveDoorVisualSegmentIdentity(segmentPartId);
+    if (identity.isSegment && identity.basePartId === base) return true;
+  }
+  return false;
 }
 
 export function readSegmentMaterial(args: {
@@ -83,7 +96,9 @@ function readSketchSegmentGrooveEnabled(args: {
   sourceUserData?: ValueRecord | null;
 }): boolean {
   const { groovesMap, segmentPartId, sourceUserData } = args;
-  const basePartId = resolveDoorVisualSegmentIdentity(segmentPartId).basePartId;
+  const basePartId = resolveDoorVisualSegmentIdentity(
+    toCanonicalDoorGrooveTargetKey(segmentPartId)
+  ).basePartId;
   const hasExplicitSegmentState = hasAnySketchSegmentGrooveMapEntry(groovesMap, basePartId);
   const directFlag = readSketchSegmentGrooveMapFlag(groovesMap, segmentPartId);
 

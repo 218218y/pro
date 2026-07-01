@@ -1,4 +1,5 @@
 import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { toCanonicalGroovesMapKey } from '../../shared/door_groove_key_contracts_shared.js';
 import { resolveConfiguredHandleColor } from './handle_finish_runtime.js';
 import { resolveHandleFinishPalette } from '../features/finish_palette/api.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
@@ -143,9 +144,11 @@ export function createApplySlidingDoorsOps(deps: BuilderRenderDoorDeps) {
       const visualState = resolveSlidingDoorVisualState(cfg, slideID, getPartColorValue);
       const mirrorLayout = resolveMirrorLayout(cfg, slideID);
       const hasOutsideMirrorSurface = visualState.isMirror && hasMirrorSurfaceOnFace(mirrorLayout, 1, 1);
-      const grooveKey = `groove_${slideID}`;
       const hasSlideGrooves =
-        isGroovesEnabled && !hasOutsideMirrorSurface && !visualState.isGlass && groovesMap[grooveKey] != null;
+        isGroovesEnabled &&
+        !hasOutsideMirrorSurface &&
+        !visualState.isGlass &&
+        groovesMap[toCanonicalGroovesMapKey(slideID)] === true;
       const effectiveDoorStyleBase = resolveEffectiveDoorStyle(doorStyle, cfg.doorStyleMap, slideID);
       const effectiveDoorStyle = visualState.isGlass ? 'glass' : effectiveDoorStyleBase;
 

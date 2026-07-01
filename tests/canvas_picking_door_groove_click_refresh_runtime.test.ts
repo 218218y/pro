@@ -5,7 +5,10 @@ import {
   handleCanvasDoorGrooveClick,
   handleCanvasDoorHingeClick,
 } from '../esm/native/services/canvas_picking_door_hinge_groove_click.ts';
-import { readDoorActionHoverWillRestore } from '../esm/native/services/canvas_picking_door_action_hover_remove.ts';
+import {
+  readDoorActionHoverWillRemoveGroove,
+  readDoorActionHoverWillRestore,
+} from '../esm/native/services/canvas_picking_door_action_hover_remove.ts';
 import { handleCanvasDoorRemoveClick } from '../esm/native/services/canvas_picking_door_remove_click.ts';
 import {
   isSketchBoxDoorSegmentPartId,
@@ -277,6 +280,42 @@ test('regular segmented door groove click materializes inherited full-door groov
   assert.equal(buildRequests[0].meta.immediate, true);
 });
 
+test('regular segmented door groove line-count change materializes inherited full-door groove without disabling the family', () => {
+  const { App, state, buildRequests } = createApp();
+  state.config.grooveLinesCount = 9;
+  state.config.groovesMap = { groove_d1_full: true };
+  state.config.grooveLinesCountMap = { d1_full: 7 };
+  App.render.doorsArray = [
+    { group: { userData: { partId: 'd1_bot' }, children: [] } },
+    { group: { userData: { partId: 'd1_top' }, children: [] } },
+  ];
+
+  const handled = handleCanvasDoorGrooveClick({
+    App,
+    effectiveDoorId: 'd1_bot',
+    foundPartId: null,
+    activeStack: 'top',
+    foundModuleStack: 'top',
+    doorHitObject: {
+      userData: {
+        partId: 'd1_bot',
+        __doorWidth: 0.45,
+      },
+    },
+  });
+
+  assert.equal(handled, true);
+  assert.equal(state.config.groovesMap.groove_d1_full, undefined);
+  assert.equal(state.config.groovesMap.groove_d1_bot, true);
+  assert.equal(state.config.groovesMap.groove_d1_top, true);
+  assert.equal(state.config.grooveLinesCountMap.d1_full, undefined);
+  assert.equal(state.config.grooveLinesCountMap.d1_bot, 9);
+  assert.equal(state.config.grooveLinesCountMap.d1_top, 7);
+  assert.equal(state.config.grooveLinesCountMap.groove_d1_bot, undefined);
+  assert.equal(buildRequests.length, 1);
+  assert.equal(buildRequests[0].meta.source, 'groove:click');
+});
+
 test('free sketch-box door groove click updates changed line count without requiring remove and re-add', () => {
   const { App, state } = createApp();
   const patchCalls: Array<{
@@ -532,6 +571,67 @@ test('door remove hover and click share canonical keys for decorated mid segment
   );
   assert.deepEqual(state.config.removedDoorsMap, {});
   assert.equal(readDoorActionHoverWillRestore({ hoverArgs, state: hoverState } as any), false);
+});
+
+test('door groove remove hover and click share canonical keys for decorated mid segments', () => {
+  const { App, state } = createApp();
+  state.config.groovesMap = { groove_d1_mid2: true };
+  const hoverArgs = {
+    App,
+    canonDoorPartKeyForMaps(partId: string) {
+      return partId;
+    },
+  };
+  const hoverState = {
+    scopedHitDoorPid: 'd1_mid2_accent_top',
+    hitDoorPid: 'd1_mid2_accent_top',
+    hitDoorStack: 'top',
+  };
+
+  assert.equal(readDoorActionHoverWillRemoveGroove({ hoverArgs, state: hoverState } as any), true);
+  assert.equal(
+    handleCanvasDoorGrooveClick({
+      App,
+      effectiveDoorId: 'd1_mid2_accent_top',
+      foundPartId: null,
+      activeStack: 'top',
+      foundModuleStack: 'top',
+      doorHitObject: {
+        userData: {
+          partId: 'd1_mid2_accent_top',
+          __doorWidth: 0.45,
+        },
+      },
+    }),
+    true
+  );
+  assert.equal(state.config.groovesMap.groove_d1_mid2, undefined);
+  assert.equal(state.config.groovesMap.groove_d1_mid2_accent_top, undefined);
+  assert.equal(state.config.grooveLinesCountMap.d1_mid2, undefined);
+  assert.equal(readDoorActionHoverWillRemoveGroove({ hoverArgs, state: hoverState } as any), false);
+
+  assert.equal(
+    handleCanvasDoorGrooveClick({
+      App,
+      effectiveDoorId: 'd1_mid2_accent_top',
+      foundPartId: null,
+      activeStack: 'top',
+      foundModuleStack: 'top',
+      doorHitObject: {
+        userData: {
+          partId: 'd1_mid2_accent_top',
+          __doorWidth: 0.45,
+        },
+      },
+    }),
+    true
+  );
+  assert.equal(state.config.groovesMap.groove_d1_mid2, true);
+  assert.equal(state.config.groovesMap.groove_d1_mid2_accent_top, undefined);
+  assert.equal(typeof state.config.grooveLinesCountMap.d1_mid2, 'number');
+  assert.equal(state.config.grooveLinesCountMap.groove_d1_mid2, undefined);
+  assert.equal(state.config.grooveLinesCountMap.d1_mid2_accent_top, undefined);
+  assert.equal(readDoorActionHoverWillRemoveGroove({ hoverArgs, state: hoverState } as any), true);
 });
 
 test('sketch-box door target parser normalizes segmented door suffixes before patching door config', () => {

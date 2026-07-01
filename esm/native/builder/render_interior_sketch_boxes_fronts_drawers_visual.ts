@@ -1,4 +1,5 @@
 import { resolveEffectiveDoorStyle } from '../features/door_authoring/api.js';
+import { toCanonicalGroovesMapKey } from '../../shared/door_groove_key_contracts_shared.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
 
 import type { InteriorGroupLike } from './render_interior_ops_contracts.js';
@@ -25,7 +26,7 @@ export function addSketchBoxExternalDrawerFrontVisual(
   const hasGroove = !!(
     resolveSketchGroovesEnabled(context.input) &&
     groovesMap &&
-    (groovesMap[`groove_${opPlan.partId}`] != null || groovesMap[opPlan.partId] != null)
+    groovesMap[toCanonicalGroovesMapKey(opPlan.partId)] === true
   );
   opPlan.omitBoxFrontPanel = frontVisualState.isGlass;
   opPlan.omitConnectorPanel = frontVisualState.isGlass;

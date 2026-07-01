@@ -3,13 +3,11 @@ import type { AppContainer, UnknownRecord } from '../../../types';
 import { asRecord } from '../runtime/record.js';
 import { getDoorsArray } from '../runtime/render_access.js';
 import {
-  hasAnyDoorVisualSegmentMapEntry,
-  readDoorVisualPrefixedMapEntry,
-  readDoorVisualPrefixedOwnMapEntry,
-} from '../features/door_authoring/api.js';
+  listDoorGrooveTargetLookupKeys,
+  toCanonicalDoorGrooveTargetKey,
+  toCanonicalGroovesMapKey,
+} from '../../shared/door_groove_key_contracts_shared.js';
 import { resolveDoorVisualSegmentIdentity } from '../../shared/door_visual_key_contracts_shared.js';
-
-const GROOVE_PREFIX = 'groove_';
 
 function readOwnMapValue(map: Record<string, unknown> | null | undefined, key: string): unknown {
   if (!map || !key || !Object.prototype.hasOwnProperty.call(map, key)) return undefined;
@@ -23,7 +21,7 @@ function readGrooveBooleanValue(value: unknown): boolean {
 function readNodePartId(node: unknown): string {
   const record = asRecord<UnknownRecord>(node);
   const userData = asRecord<UnknownRecord>(record?.userData);
-  return typeof userData?.partId === 'string' ? resolveDoorVisualSegmentIdentity(userData.partId).partId : '';
+  return typeof userData?.partId === 'string' ? toCanonicalDoorGrooveTargetKey(userData.partId) : '';
 }
 
 function readNodeChildren(node: unknown): unknown[] {
@@ -32,38 +30,59 @@ function readNodeChildren(node: unknown): unknown[] {
 }
 
 export function readDoorGrooveBasePartId(partId: string): string {
-  return resolveDoorVisualSegmentIdentity(partId).basePartId;
+  return resolveDoorVisualSegmentIdentity(toCanonicalDoorGrooveTargetKey(partId)).basePartId;
 }
 
 export function isDoorGrooveSegmentPartId(partId: string): boolean {
-  return resolveDoorVisualSegmentIdentity(partId).isSegment;
+  return resolveDoorVisualSegmentIdentity(toCanonicalDoorGrooveTargetKey(partId)).isSegment;
 }
 
 export function readDoorGrooveFullPartId(partId: string): string {
-  return resolveDoorVisualSegmentIdentity(partId).fullPartId;
+  return resolveDoorVisualSegmentIdentity(toCanonicalDoorGrooveTargetKey(partId)).fullPartId;
 }
 
 export function readDoorGrooveMapFlag(
   map: Record<string, unknown> | null | undefined,
   partId: string
 ): boolean | null {
-  const entry = readDoorVisualPrefixedOwnMapEntry({ map, partId, prefix: GROOVE_PREFIX });
-  return entry ? readGrooveBooleanValue(entry.value) : null;
+  const key = toCanonicalGroovesMapKey(partId);
+  if (!map || !key) return null;
+  const raw = readOwnMapValue(map, key);
+  return raw === undefined ? null : readGrooveBooleanValue(raw);
 }
 
 export function readDoorGrooveVisualMapFlag(
   map: Record<string, unknown> | null | undefined,
   partId: string
 ): boolean | null {
-  const entry = readDoorVisualPrefixedMapEntry({ map, partId, prefix: GROOVE_PREFIX });
-  return entry ? readGrooveBooleanValue(entry.value) : null;
+  const keys = listDoorGrooveTargetLookupKeys(partId);
+  for (let index = 0; index < keys.length; index += 1) {
+    const flag = readDoorGrooveMapFlag(map, keys[index]);
+    if (flag !== null) return flag;
+  }
+  return null;
 }
 
 export function hasAnyDoorGrooveSegmentMapEntry(
   map: Record<string, unknown> | null | undefined,
   basePartId: string
 ): boolean {
-  return hasAnyDoorVisualSegmentMapEntry({ map, basePartId, prefix: GROOVE_PREFIX });
+  const baseTarget = toCanonicalDoorGrooveTargetKey(basePartId);
+  const base = resolveDoorVisualSegmentIdentity(baseTarget).basePartId || baseTarget;
+  if (!map || !base) return false;
+  const keys = Object.keys(map);
+  for (let index = 0; index < keys.length; index += 1) {
+    const key = keys[index];
+    if (!key || map[key] == null || key !== toCanonicalGroovesMapKey(key)) continue;
+    const segmentPartId = toCanonicalDoorGrooveTargetKey(key);
+    if (
+      segmentPartId &&
+      readDoorGrooveBasePartId(segmentPartId) === base &&
+      isDoorGrooveSegmentPartId(segmentPartId)
+    )
+      return true;
+  }
+  return false;
 }
 
 function collectDoorGrooveSegmentPartIdsFromNode(args: {
@@ -116,13 +135,11 @@ export function readDoorGrooveLinesCountForPart(
   map: Record<string, unknown> | null | undefined,
   partId: string
 ): number | null {
-  const identity = resolveDoorVisualSegmentIdentity(partId);
-  if (!map || !identity.partId) return null;
-  const keys = identity.lookupKeys;
+  if (!map) return null;
+  const keys = listDoorGrooveTargetLookupKeys(partId);
   for (let index = 0; index < keys.length; index += 1) {
     const candidateKey = keys[index];
-    const raw = readOwnMapValue(map, candidateKey);
-    const value = raw === undefined ? readOwnMapValue(map, `${GROOVE_PREFIX}${candidateKey}`) : raw;
+    const value = readOwnMapValue(map, candidateKey);
     if (value == null || value === '') continue;
     const n = Number(value);
     if (Number.isFinite(n) && n > 0) return Math.floor(n);

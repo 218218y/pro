@@ -5,6 +5,10 @@ import {
   readPersistedProjectConfigSnapshot,
 } from './project_config_persisted_snapshot.js';
 import { isCanonicalRemovedDoorsMapKey } from '../../shared/removed_doors_map_keys_shared.js';
+import {
+  isCanonicalGrooveLinesCountMapKey,
+  isCanonicalGroovesMapKey,
+} from '../../shared/door_groove_key_contracts_shared.js';
 
 const REQUIRED_DIMENSION_KEYS = ['width', 'height', 'depth', 'doors'] as const;
 const OPTIONAL_NUMERIC_SETTINGS_KEYS = [
@@ -112,15 +116,11 @@ function isCanonicalSplitDoorsBottomMapKey(value: string): boolean {
   return value.startsWith('splitb_') && !hasDoorSegmentSuffix(value);
 }
 
-function isCanonicalGroovesMapKey(value: string): boolean {
-  return value.startsWith('groove_');
-}
-
 function validateMapKeys(
   data: ProjectDataLike,
   mapName: keyof Pick<
     ProjectDataLike,
-    'splitDoorsMap' | 'splitDoorsBottomMap' | 'removedDoorsMap' | 'groovesMap'
+    'splitDoorsMap' | 'splitDoorsBottomMap' | 'removedDoorsMap' | 'groovesMap' | 'grooveLinesCountMap'
   >,
   isCanonicalKey: (key: string) => boolean,
   errors: string[]
@@ -286,6 +286,7 @@ export function validateProjectData(data: ProjectDataLike): ProjectSchemaValidat
   validateMapKeys(data, 'splitDoorsBottomMap', isCanonicalSplitDoorsBottomMapKey, errors);
   validateMapKeys(data, 'removedDoorsMap', isCanonicalRemovedDoorsMapKey, errors);
   validateMapKeys(data, 'groovesMap', isCanonicalGroovesMapKey, errors);
+  validateMapKeys(data, 'grooveLinesCountMap', isCanonicalGrooveLinesCountMapKey, errors);
 
   if (!errors.length) {
     const canonicalConfig = readPersistedProjectConfigSnapshot(data as UnknownRecord);

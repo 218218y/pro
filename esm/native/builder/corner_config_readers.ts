@@ -1,5 +1,8 @@
 import type { ConfigStateLike, KnownMapName, MapsByName } from '../../../types/index.js';
-import { buildDoorVisualLookupKeys } from '../../shared/door_visual_key_contracts_shared.js';
+import {
+  listDoorGrooveTargetLookupKeys,
+  toCanonicalGroovesMapKey,
+} from '../../shared/door_groove_key_contracts_shared.js';
 import { readDoorVisualMapValue } from '../features/door_authoring/api.js';
 import { normalizeKnownMapSnapshot } from '../runtime/maps_access.js';
 import { asRecord } from '../runtime/record.js';
@@ -66,12 +69,10 @@ export function createCornerGrooveReader(cfgSnapshot: unknown): SnapshotReader {
   return (partId: string) => {
     const baseId = String(partId || '');
     if (!baseId) return undefined;
-    const keys = buildDoorVisualLookupKeys(baseId);
+    const keys = listDoorGrooveTargetLookupKeys(baseId);
     for (let i = 0; i < keys.length; i += 1) {
-      const prefixed = readScopedSnapshotValue(key => grooves[`groove_${key}`], keys[i]);
+      const prefixed = readScopedSnapshotValue(key => grooves[toCanonicalGroovesMapKey(key)], keys[i]);
       if (typeof prefixed !== 'undefined') return prefixed;
-      const raw = grooves[keys[i]];
-      if (typeof raw !== 'undefined') return raw;
     }
     return undefined;
   };

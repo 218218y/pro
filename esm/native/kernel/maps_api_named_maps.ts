@@ -1,9 +1,11 @@
 import type { AppContainer, ActionMetaLike } from '../../../types';
 
-import { patchConfigMap } from '../runtime/cfg_access.js';
+import { cfgSetMap, patchConfigMap } from '../runtime/cfg_access.js';
 import { splitBottomKey, splitKey } from '../runtime/maps_access.js';
+import { normalizeKnownMapSnapshot } from '../runtime/maps_access.js';
 import type { MapsApiShared } from './maps_api_shared.js';
 import { createRecord, asObject } from './maps_api_shared.js';
+import { toCanonicalGroovesMapKey } from '../../shared/door_groove_key_contracts_shared.js';
 import { toCanonicalRemovedDoorsMapKey } from '../../shared/removed_doors_map_keys_shared.js';
 
 function readMapKey(value: unknown): string {
@@ -14,12 +16,6 @@ function normalizePrefixedMapKey(value: unknown, prefix: string): string {
   const key = readMapKey(value);
   if (!key) return '';
   return key.indexOf(prefix) === 0 ? key : prefix + key;
-}
-
-function readPrefixedMapFlag(map: Record<string, unknown>, value: unknown, prefix: string): boolean {
-  const canonicalKey = normalizePrefixedMapKey(value, prefix);
-  if (!canonicalKey) return false;
-  return Object.prototype.hasOwnProperty.call(map, canonicalKey) && map[canonicalKey] === true;
 }
 
 function patchCanonicalPrefixedMapEntry(
@@ -78,18 +74,19 @@ export function installMapsApiNamedMaps(App: AppContainer, shared: MapsApiShared
   };
 
   maps.toggleGrooveKey = function toggleGrooveKey(grooveKey: string, meta?: ActionMetaLike) {
-    const k0 = readMapKey(grooveKey);
-    if (!k0) return undefined;
+    const canonicalKey = toCanonicalGroovesMapKey(grooveKey);
+    if (!canonicalKey) return undefined;
 
-    const current = readNamedMap('groovesMap');
-    const next = readPrefixedMapFlag(current, k0, 'groove_') ? null : true;
-    return patchCanonicalPrefixedMapEntry(App, shared, 'groovesMap', k0, 'groove_', next, meta);
+    const nextMap = { ...normalizeKnownMapSnapshot('groovesMap', readNamedMap('groovesMap')) };
+    if (nextMap[canonicalKey] === true) delete nextMap[canonicalKey];
+    else nextMap[canonicalKey] = true;
+    return cfgSetMap(App, 'groovesMap', nextMap, metaNorm(meta, 'maps:groovesMap:canonical'));
   };
 
   maps.getGroove = function getGroove(partId: string) {
-    const k = readMapKey(partId);
-    if (!k) return false;
-    return readPrefixedMapFlag(readNamedMap('groovesMap'), k, 'groove_');
+    const canonicalKey = toCanonicalGroovesMapKey(partId);
+    if (!canonicalKey) return false;
+    return normalizeKnownMapSnapshot('groovesMap', readNamedMap('groovesMap'))[canonicalKey] === true;
   };
 
   maps.getCurtain = function getCurtain(partId: string) {

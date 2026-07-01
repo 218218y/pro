@@ -225,7 +225,7 @@ test('[state-api.config] applyProjectSnapshot marks snapshot-owned visual/config
     ui: { doors: 4, raw: { doors: 4 } },
     config: {
       wardrobeType: 'hinged',
-      grooveLinesCountMap: { groove_d1_full: 9 },
+      grooveLinesCountMap: { d1_full: 9 },
       doorTrimMap: { d1_full: [{ axis: 'vertical', color: 'gold', span: 'custom', sizeCm: 11 }] },
       doorStyleMap: { d1_full: 'profile' },
       mirrorLayoutMap: { d1_full: [{ widthCm: 55, heightCm: 88, faceSign: -1 }] },

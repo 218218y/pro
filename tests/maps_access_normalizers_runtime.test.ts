@@ -141,11 +141,34 @@ test('maps access normalizers keep generic toggle maps on canonical boolean/null
     groove_d1_full: true,
     groove_d2_full: false,
     groove_d3_full: null,
+    groove_d10_mid2_accent_top: true,
+    groove_d11_mid2_groove_left: true,
+    groove_d12_top_trim_preview_hover: true,
+    groove_d13_mid2_accent_top: true,
+    groove_d13_mid2: false,
+    groove_d14_mid2: null,
+    groove_d14_mid2_groove_left: true,
     groove_d4_full: 1,
     groove_d5_full: 'true',
     d6_full: true,
   });
-  assert.deepEqual({ ...groovesMap }, { groove_d1_full: true, groove_d2_full: false, groove_d3_full: null });
+  assert.deepEqual(
+    { ...groovesMap },
+    {
+      groove_d1_full: true,
+      groove_d2_full: false,
+      groove_d3_full: null,
+      groove_d10_mid2: true,
+      groove_d11_mid2: true,
+      groove_d12_top: true,
+      groove_d13_mid2: false,
+      groove_d14_mid2: null,
+    }
+  );
+  assert.equal('groove_d10_mid2_accent_top' in groovesMap, false);
+  assert.equal('groove_d11_mid2_groove_left' in groovesMap, false);
+  assert.equal('groove_d12_top_trim_preview_hover' in groovesMap, false);
+  assert.equal('d6_full' in groovesMap, false);
 
   const drawerDividersMap = normalizeKnownMapSnapshot('drawerDividersMap', {
     'div:int_1': true,
@@ -155,4 +178,37 @@ test('maps access normalizers keep generic toggle maps on canonical boolean/null
     'div:int_5': 'off',
   });
   assert.deepEqual({ ...drawerDividersMap }, { 'div:int_1': true, 'div:int_2': false, 'div:int_3': null });
+});
+
+test('maps access normalizers keep groove line count keys unprefixed and canonical', () => {
+  const grooveLinesCountMap = normalizeKnownMapSnapshot('grooveLinesCountMap', {
+    d1_mid2_accent_top: 4.9,
+    d2_mid2_groove_left: 5.8,
+    d3_top_trim_preview_hover: 6.2,
+    groove_d4_mid2: 8.9,
+    d5_mid2_accent_top: 9,
+    d5_mid2: 11,
+    d6_mid2: 12,
+    groove_d6_mid2: 13,
+    d7_mid2_accent_top: null,
+    d8_full: '8',
+    d9_full: 0,
+  });
+
+  assert.deepEqual(
+    { ...grooveLinesCountMap },
+    {
+      d1_mid2: 4,
+      d2_mid2: 5,
+      d3_top: 6,
+      d4_mid2: 8,
+      d5_mid2: 11,
+      d6_mid2: 12,
+      d7_mid2: null,
+    }
+  );
+  assert.equal('d1_mid2_accent_top' in grooveLinesCountMap, false);
+  assert.equal('d2_mid2_groove_left' in grooveLinesCountMap, false);
+  assert.equal('d3_top_trim_preview_hover' in grooveLinesCountMap, false);
+  assert.equal('groove_d4_mid2' in grooveLinesCountMap, false);
 });

@@ -1,4 +1,8 @@
 import { readTextMap } from './hinged_doors_shared.js';
+import {
+  toCanonicalDoorGrooveTargetKey,
+  toCanonicalGroovesMapKey,
+} from '../../shared/door_groove_key_contracts_shared.js';
 import type {
   HingedDoorIterationState,
   HingedDoorModuleOpsContext,
@@ -26,8 +30,8 @@ export function grooveForPart(
   try {
     const grooveMap = readTextMap(ctx.cfg && ctx.cfg.groovesMap);
     if (!grooveMap) return !!defaultValue;
-    const key = String(partId || '');
-    return !!(grooveMap[`groove_${key}`] || grooveMap[key] || defaultValue);
+    const key = toCanonicalDoorGrooveTargetKey(partId);
+    return !!((key && grooveMap[toCanonicalGroovesMapKey(key)] === true) || defaultValue);
   } catch {
     return !!defaultValue;
   }

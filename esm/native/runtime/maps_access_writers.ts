@@ -4,15 +4,61 @@ import { ensureMapRecord, mapsAccessReportNonFatal, readOwn, writeOwn } from './
 import { splitBottomKey, splitKey } from './maps_access_split_helpers.js';
 import type { HandleValue, HingeValue, KnownMapValue } from './maps_access_shared.js';
 import { readMapsBagOrNull, trySetKey } from './maps_access_runtime.js';
+import { cfgSetMap } from './cfg_access_maps.js';
+import { normalizeKnownMapSnapshot } from './maps_access_normalizers.js';
+import {
+  toCanonicalGrooveLinesCountMapKey,
+  toCanonicalGroovesMapKey,
+} from '../../shared/door_groove_key_contracts_shared.js';
+
+type GrooveContractMapName = 'groovesMap' | 'grooveLinesCountMap';
 
 function readMapKey(value: unknown): string {
   return String(value || '').trim();
 }
 
-function normalizePrefixedMapKey(value: unknown, prefix: string): string {
-  const key = readMapKey(value);
-  if (!key) return '';
-  return key.indexOf(prefix) === 0 ? key : prefix + key;
+function replaceMapRecord(target: Record<string, unknown>, next: Record<string, unknown>): void {
+  for (const key of Object.keys(target)) delete target[key];
+  for (const key of Object.keys(next)) writeOwn(target, key, next[key]);
+}
+
+function readGrooveContractMapKey(mapName: GrooveContractMapName, key: unknown): string {
+  return mapName === 'groovesMap' ? toCanonicalGroovesMapKey(key) : toCanonicalGrooveLinesCountMapKey(key);
+}
+
+function writeGrooveContractMapKey(
+  App: unknown,
+  maps: NonNullable<ReturnType<typeof readMapsBagOrNull>>,
+  mapName: GrooveContractMapName,
+  key: unknown,
+  value: unknown,
+  meta?: ActionMetaLike
+): boolean {
+  const canonicalKey = readGrooveContractMapKey(mapName, key);
+  if (!canonicalKey) return false;
+
+  const current = ensureMapRecord(maps, mapName);
+  const nextMap = { ...(normalizeKnownMapSnapshot(mapName, current) as Record<string, unknown>) };
+  if (value == null) {
+    delete nextMap[canonicalKey];
+  } else {
+    const normalizedEntryMap = normalizeKnownMapSnapshot(mapName, {
+      [canonicalKey]: value,
+    }) as Record<string, unknown>;
+    if (Object.prototype.hasOwnProperty.call(normalizedEntryMap, canonicalKey)) {
+      nextMap[canonicalKey] = normalizedEntryMap[canonicalKey];
+    } else {
+      delete nextMap[canonicalKey];
+    }
+  }
+
+  try {
+    cfgSetMap(App, mapName, nextMap, meta);
+    return true;
+  } catch {
+    replaceMapRecord(current, nextMap);
+  }
+  return true;
 }
 
 export function writeHandle(
@@ -76,10 +122,15 @@ export function writeMapKey<K extends string>(
   meta?: ActionMetaLike
 ): boolean {
   const name = String(mapName || '');
-  const k = String(key || '');
-  if (!name || !k) return false;
+  if (!name) return false;
   const maps = readMapsBagOrNull(App);
   if (!maps) return false;
+  if (name === 'groovesMap' || name === 'grooveLinesCountMap') {
+    return writeGrooveContractMapKey(App, maps, name, key, val, meta);
+  }
+
+  const k = String(key || '');
+  if (!k) return false;
 
   if (trySetKey(App, maps, name, k, val, meta)) return true;
 
@@ -167,36 +218,29 @@ function toggleKeyInMap(
   return true;
 }
 
-function toggleCanonicalPrefixedKeyInMap(
+function toggleCanonicalGrooveKeyInMap(
   App: unknown,
   mapName: 'groovesMap',
-  prefix: string,
   key: unknown,
   meta?: ActionMetaLike
 ): boolean {
-  const canonicalKey = normalizePrefixedMapKey(key, prefix);
+  const canonicalKey = toCanonicalGroovesMapKey(key);
   if (!canonicalKey) return false;
   const maps = readMapsBagOrNull(App);
   if (!maps) return false;
 
-  const m = ensureMapRecord(maps, mapName);
-  const next = readOwn(m, canonicalKey) === true ? null : true;
+  const current = ensureMapRecord(maps, mapName);
+  const nextMap = { ...normalizeKnownMapSnapshot(mapName, current) };
+  if (nextMap[canonicalKey] === true) delete nextMap[canonicalKey];
+  else nextMap[canonicalKey] = true;
 
-  if (
-    trySetKey(
-      App,
-      maps,
-      mapName,
-      canonicalKey,
-      next,
-      meta,
-      'maps_access.toggleCanonicalPrefixedKeyInMap.setKey'
-    )
-  ) {
+  try {
+    cfgSetMap(App, mapName, nextMap, meta);
     return true;
+  } catch {
+    replaceMapRecord(current, nextMap);
   }
 
-  writeOwn(m, canonicalKey, next);
   return true;
 }
 
@@ -205,5 +249,5 @@ export function toggleDivider(App: unknown, dividerKey: unknown, meta?: ActionMe
 }
 
 export function toggleGrooveKey(App: unknown, grooveKey: unknown, meta?: ActionMetaLike): boolean {
-  return toggleCanonicalPrefixedKeyInMap(App, 'groovesMap', 'groove_', grooveKey, meta);
+  return toggleCanonicalGrooveKeyInMap(App, 'groovesMap', grooveKey, meta);
 }

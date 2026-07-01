@@ -245,8 +245,8 @@ const SCENARIO_BUILDERS = {
       groove_d3_full: true,
     };
     project.grooveLinesCountMap = {
-      groove_d1_full: 12,
-      groove_d2_full: 8,
+      d1_full: 12,
+      d2_full: 8,
     };
     project.splitDoorsMap = {
       split_d1: true,
@@ -312,9 +312,9 @@ const SCENARIO_BUILDERS = {
       groove_d4_full: true,
     };
     project.grooveLinesCountMap = {
-      groove_d1_full: 9,
-      groove_d2_full: 7,
-      groove_d4_full: 5,
+      d1_full: 9,
+      d2_full: 7,
+      d4_full: 5,
     };
     project.splitDoorsMap = {
       split_d1: true,

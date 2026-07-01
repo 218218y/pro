@@ -1145,10 +1145,6 @@
       "entry": "door_authoring/api.js"
     },
     {
-      "file": "esm/native/services/canvas_picking_door_groove_segments.ts",
-      "entry": "door_authoring/api.js"
-    },
-    {
       "file": "esm/native/services/canvas_picking_door_hinge_groove_click.ts",
       "entry": "door_authoring/api.js"
     },

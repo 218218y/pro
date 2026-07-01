@@ -113,14 +113,22 @@ test('maps_api keeps map writes store-backed and mirrors saved colors to storage
 
   assert.equal(writeHandle(App, 'd2', 'knob', { source: 'test:handle' }), true);
   assert.equal(writeMapKey(App, 'groovesMap', 'groove_d2', true, { source: 'test:map-write' }), true);
+  assert.equal(
+    writeMapKey(App, 'grooveLinesCountMap', 'groove_d2_mid2', 6, { source: 'test:map-write:count' }),
+    true
+  );
 
   const handles = readMapOrEmpty(App, 'handlesMap');
   const grooves = readMapOrEmpty(App, 'groovesMap');
+  const grooveLineCounts = readMapOrEmpty(App, 'grooveLinesCountMap');
   assert.equal(handles.d2, 'knob');
   assert.equal(grooves.groove_d2, true);
+  assert.equal((state.config.groovesMap as Record<string, unknown>).d2, undefined);
+  assert.equal(grooveLineCounts.d2_mid2, 6);
+  assert.equal((state.config.grooveLinesCountMap as Record<string, unknown>).groove_d2_mid2, undefined);
 });
 
-test('maps_api and runtime writers use canonical prefixed map keys without legacy raw alias cleanup', () => {
+test('maps_api and runtime writers replace groove maps with canonical prefixed keys', () => {
   const state = {
     ui: {},
     runtime: {},
@@ -173,7 +181,7 @@ test('maps_api and runtime writers use canonical prefixed map keys without legac
     toggleGrooveKey(App, 'groove_d3_full', { source: 'test:runtime:toggleGrooveKey:canonical' }),
     true
   );
-  assert.deepEqual(state.config.groovesMap, { d3_full: true, groove_d3_full: true });
+  assert.deepEqual(state.config.groovesMap, { groove_d3_full: true });
 
   state.config.splitDoorsMap = { d6: true } as Record<string, unknown>;
   state.config.splitDoorsBottomMap = { d7: true } as Record<string, unknown>;
@@ -191,7 +199,7 @@ test('maps_api and runtime writers use canonical prefixed map keys without legac
 
   assert.deepEqual(state.config.splitDoorsMap, { d6: true, split_d6: false });
   assert.deepEqual(state.config.splitDoorsBottomMap, { d7: true, splitb_d7: true });
-  assert.deepEqual(state.config.groovesMap, { d8_full: true, groove_d8_full: true });
+  assert.deepEqual(state.config.groovesMap, { groove_d8_full: true });
   assert.equal(state.config.splitDoorsMap.split_d6_top, undefined);
   assert.equal(state.config.splitDoorsBottomMap.splitb_d7_bot, undefined);
 });

@@ -2,6 +2,7 @@ import { makeDrawerBoxPartId, resolveDrawerBoxPaintMaterial } from '../features/
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
 import { resolveDoorVisualStyle } from './render_door_ops_shared.js';
 import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { toCanonicalGroovesMapKey } from '../../shared/door_groove_key_contracts_shared.js';
 import type { BuilderRenderDrawerDeps } from './render_drawer_ops_shared.js';
 import {
   isRecord,
@@ -60,9 +61,9 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
 
       const partId = drawerOp.partId;
       const drawerBoxPartId = makeDrawerBoxPartId(partId);
-      const grooveKey = drawerOp.grooveKey || `groove_${partId}`;
+      const grooveKey = toCanonicalGroovesMapKey(drawerOp.grooveKey || partId);
       const dividerKey = drawerOp.dividerKey || null;
-      const hasGroove = isGroovesEnabled && groovesMap[grooveKey] != null;
+      const hasGroove = isGroovesEnabled && groovesMap[grooveKey] === true;
       const hasDivider = !!(
         dividerKey &&
         (drawerDividersMap[dividerKey] != null || drawerDividersMap[partId] != null)
